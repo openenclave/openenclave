@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <wctype.h>
 #include "libc.h"
 
@@ -9,7 +10,6 @@ static const struct {
 	signed char lower;
 	unsigned char len;
 } casemaps[] = {
-	CASEMAP('A','Z','a'),
 	CASEMAP(0xc0,0xde,0xe0),
 
 	CASELACE(0x0100,0x012e),
@@ -29,7 +29,7 @@ static const struct {
 	CASELACE(0x4c1,0x4cd),
 	CASELACE(0x4d0,0x50e),
 
-	CASELACE(0x514,0x526),
+	CASELACE(0x514,0x52e),
 	CASEMAP(0x531,0x556,0x561),
 
 	CASELACE(0x01a0,0x01a4),
@@ -63,6 +63,10 @@ static const struct {
 	CASEMAP(0x1ff8,0x1ff9,0x1f78),
 	CASEMAP(0x1ffa,0x1ffb,0x1f7c),
 
+	CASEMAP(0x13f0,0x13f5,0x13f8),
+	CASELACE(0xa698,0xa69a),
+	CASELACE(0xa796,0xa79e),
+
 	CASELACE(0x246,0x24e),
 	CASELACE(0x510,0x512),
 	CASEMAP(0x2160,0x216f,0x2170),
@@ -81,6 +85,8 @@ static const struct {
 
 	CASELACE(0xa790,0xa792),
 	CASELACE(0xa7a0,0xa7a8),
+
+	CASELACE(0xa7b4,0xa7b6),
 
 	CASEMAP(0xff21,0xff3a,0xff41),
 	{ 0,0,0 }
@@ -216,6 +222,26 @@ static const unsigned short pairs[][2] = {
 	{ 0x395, 0x3f5 },
 	{ 0x3cf, 0x3d7 },
 
+	{ 0xa7ab, 0x25c },
+	{ 0xa7ac, 0x261 },
+	{ 0xa7ad, 0x26c },
+	{ 0xa7ae, 0x26a },
+	{ 0xa7b0, 0x29e },
+	{ 0xa7b1, 0x287 },
+	{ 0xa7b2, 0x29d },
+	{ 0xa7b3, 0xab53 },
+
+	/* special cyrillic lowercase forms */
+	{ 0x412, 0x1c80 },
+	{ 0x414, 0x1c81 },
+	{ 0x41e, 0x1c82 },
+	{ 0x421, 0x1c83 },
+	{ 0x422, 0x1c84 },
+	{ 0x422, 0x1c85 },
+	{ 0x42a, 0x1c86 },
+	{ 0x462, 0x1c87 },
+	{ 0xa64a, 0x1c88 },
+
 	{ 0,0 }
 };
 
@@ -229,7 +255,8 @@ static wchar_t __towcase(wchar_t wc, int lower)
 	if (!iswalpha(wc)
 	 || (unsigned)wc - 0x0600 <= 0x0fff-0x0600
 	 || (unsigned)wc - 0x2e00 <= 0xa63f-0x2e00
-	 || (unsigned)wc - 0xa800 <= 0xfeff-0xa800)
+	 || (unsigned)wc - 0xa800 <= 0xab52-0xa800
+	 || (unsigned)wc - 0xabc0 <= 0xfeff-0xabc0)
 		return wc;
 	/* special case because the diff between upper/lower is too big */
 	if (lower && (unsigned)wc - 0x10a0 < 0x2e)
@@ -238,6 +265,10 @@ static wchar_t __towcase(wchar_t wc, int lower)
 	if (!lower && (unsigned)wc - 0x2d00 < 0x26)
 		if (wc>0x2d25 && wc != 0x2d27 && wc != 0x2d2d) return wc;
 		else return wc + 0x10a0 - 0x2d00;
+	if (lower && (unsigned)wc - 0x13a0 < 0x50)
+		return wc + 0xab70 - 0x13a0;
+	if (!lower && (unsigned)wc - 0xab70 < 0x50)
+		return wc + 0x13a0 - 0xab70;
 	for (i=0; casemaps[i].len; i++) {
 		int base = casemaps[i].upper + (lmask & casemaps[i].lower);
 		if ((unsigned)wc-base < casemaps[i].len) {
@@ -252,17 +283,25 @@ static wchar_t __towcase(wchar_t wc, int lower)
 	}
 	if ((unsigned)wc - (0x10428 - 0x28*lower) < 0x28)
 		return wc - 0x28 + 0x50*lower;
+	if ((unsigned)wc - (0x104d8 - 0x28*lower) < 0x24)
+		return wc - 0x28 + 0x50*lower;
+	if ((unsigned)wc - (0x10cc0 - 0x40*lower) < 0x33)
+		return wc - 0x40 + 0x80*lower;
+	if ((unsigned)wc - (0x118c0 - 0x20*lower) < 0x20)
+		return wc - 0x20 + 0x40*lower;
+	if ((unsigned)wc - (0x1e922 - 0x22*lower) < 0x22)
+		return wc - 0x22 + 0x44*lower;
 	return wc;
 }
 
 wint_t towupper(wint_t wc)
 {
-	return __towcase(wc, 0);
+	return (unsigned)wc < 128 ? toupper(wc) : __towcase(wc, 0);
 }
 
 wint_t towlower(wint_t wc)
 {
-	return __towcase(wc, 1);
+	return (unsigned)wc < 128 ? tolower(wc) : __towcase(wc, 1);
 }
 
 wint_t __towupper_l(wint_t c, locale_t l)

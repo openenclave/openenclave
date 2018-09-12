@@ -41,10 +41,7 @@ void StorePublicKey(oe_enclave_t* enclave, QuotedPublicKey* quotedPublicKey)
 /**
  * Fetch encrypted data from the enclave.
  */
-void GenerateEncryptedData(
-    oe_enclave_t* enclave,
-    uint8_t** data,
-    uint32_t* size)
+void GenerateEncryptedData(oe_enclave_t* enclave, uint8_t** data, size_t* size)
 {
     GenerateEncryptedDataArgs args = {};
     oe_result_t result =
@@ -66,7 +63,7 @@ void GenerateEncryptedData(
 void ProcessEncryptedData(
     oe_enclave_t* enclave,
     const uint8_t* data,
-    uint32_t size)
+    size_t size)
 {
     ProcessEncryptedDataArgs args = {};
     args.data = data;

@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 #include <openenclave/host.h>
-#include <openenclave/internal/backtrace_symbols.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/error.h>
+#include <openenclave/internal/tests.h>
 #include <openenclave/internal/tests.h>
 #include <cassert>
 #include <cstdio>
@@ -13,34 +13,6 @@
 #include "../args.h"
 
 const char* arg0;
-
-static void _print_backtrace(
-    oe_enclave_t* enclave,
-    void* const* buffer,
-    int size,
-    int num_expected_symbols,
-    const char* expected_symbols[])
-{
-/* Backtrace does not work in release mode */
-#ifndef NDEBUG
-
-    char** symbols = oe_backtrace_symbols(enclave, buffer, size);
-    OE_TEST(symbols != NULL);
-
-    printf("=== backtrace:\n");
-
-    for (int i = 0; i < size; i++)
-        printf("%s(): (%p)\n", symbols[i], buffer[i]);
-
-    OE_TEST(size == num_expected_symbols);
-
-    for (int i = 0; i < size; i++)
-        OE_TEST(strcmp(expected_symbols[i], symbols[i]) == 0);
-
-    free(symbols);
-
-#endif
-}
 
 int main(int argc, const char* argv[])
 {
@@ -69,17 +41,16 @@ int main(int argc, const char* argv[])
             "__oe_handle_main",
             "oe_enter",
         };
-        int nsyms = OE_COUNTOF(syms);
         Args args;
-        args.size = 0;
+        args.syms = syms;
+        args.num_syms = OE_COUNTOF(syms);
+        args.okay = false;
         r = oe_call_enclave(enclave, "Test", &args);
         OE_TEST(r == OE_OK);
 
-        _print_backtrace(enclave, args.buffer, args.size, nsyms, syms);
-
-        if (args.size <= 0)
+        if (!args.okay)
         {
-            fprintf(stderr, "%s: backtrace failed\n", argv[0]);
+            fprintf(stderr, "%s: backtrace failed: Test()\n", argv[0]);
             exit(1);
         }
     }
@@ -97,17 +68,16 @@ int main(int argc, const char* argv[])
             "__oe_handle_main",
             "oe_enter",
         };
-        int nsyms = OE_COUNTOF(syms);
         Args args;
-        args.size = 0;
+        args.syms = syms;
+        args.num_syms = OE_COUNTOF(syms);
+        args.okay = false;
         r = oe_call_enclave(enclave, "TestUnwind", &args);
         OE_TEST(r == OE_OK);
 
-        _print_backtrace(enclave, args.buffer, args.size, nsyms, syms);
-
-        if (args.size <= 0)
+        if (!args.okay)
         {
-            fprintf(stderr, "%s: backtrace failed\n", argv[0]);
+            fprintf(stderr, "%s: backtrace failed: TestUnwind()\n", argv[0]);
             exit(1);
         }
     }

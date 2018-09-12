@@ -21,10 +21,7 @@ target_compile_options(libctest-support PRIVATE
 target_link_libraries(libctest-support PUBLIC oelibc oeenclave oecore)
 
 function(add_libc_test_enc NAME CFILE)
-    add_enclave_executable(libctest-${NAME}_enc sign.conf private.pem
-        enc.c
-        main.c
-        )
+    add_executable(libctest-${NAME}_enc enc.c main.c)
 
     target_include_directories(libctest-${NAME}_enc PRIVATE
         ..

@@ -21,7 +21,7 @@ char *__strchrnul(const char *, int);
 
 char *setlocale(int cat, const char *name)
 {
-	static volatile int lock[2];
+	static volatile int lock[1];
 
 	if ((unsigned)cat > LC_ALL) return 0;
 
@@ -48,10 +48,13 @@ char *setlocale(int cat, const char *name)
 			}
 		}
 		char *s = buf;
+		const char *part;
+		int same = 0;
 		for (i=0; i<LC_ALL; i++) {
 			const struct __locale_map *lm =
 				libc.global_locale.cat[i];
-			const char *part = lm ? lm->name : "C";
+			if (lm == libc.global_locale.cat[0]) same++;
+			part = lm ? lm->name : "C";
 			size_t l = strlen(part);
 			memcpy(s, part, l);
 			s[l] = ';';
@@ -59,7 +62,7 @@ char *setlocale(int cat, const char *name)
 		}
 		*--s = 0;
 		UNLOCK(lock);
-		return buf;
+		return same==LC_ALL ? (char *)part : buf;
 	}
 
 	char *ret = setlocale_one_unlocked(cat, name);

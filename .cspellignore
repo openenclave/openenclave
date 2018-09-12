@@ -237,6 +237,7 @@ sif
 sig
 sigact
 sigill
+signer_id
 sigrl
 SigRL
 SigRLs
@@ -308,7 +309,6 @@ TOK
 Spectre
 ld
 pubKey
-AuthorID
 constness
 CRLs
 derData

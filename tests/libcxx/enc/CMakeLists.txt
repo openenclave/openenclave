@@ -17,7 +17,7 @@ target_compile_options(libcxxtest-support PRIVATE
     $<$<COMPILE_LANGUAGE:CXX>:-std=c++14>
     )
 
-add_target_cxx_compile_flags_if_supported(libcxxtest-support PRIVATE
+add_target_compile_flags_if_supported(libcxxtest-support PRIVATE CXX
     -Wno-error=attributes
     -Wno-error=maybe-uninitialized
     -Wno-error=strict-overflow
@@ -32,9 +32,7 @@ target_link_libraries(libcxxtest-support INTERFACE -Wl,--undefined=Test)
 # helper function to create enclave binary
 function(add_libcxx_test_enc NAME CXXFILE)
     #message("libcxx-test NAME=${NAME} CXXFILE=${CXXFILE}")
-    add_enclave_executable(libcxxtest-${NAME}_enc sign.conf private.pem
-        main.cpp
-        )
+    add_executable(libcxxtest-${NAME}_enc main.cpp)
 
     target_include_directories(libcxxtest-${NAME}_enc PRIVATE
         ..
@@ -43,7 +41,14 @@ function(add_libcxx_test_enc NAME CXXFILE)
         ${PROJECT_SOURCE_DIR}/3rdparty/libcxx/libcxx/fuzzing
         )
 
-    target_compile_options(libcxxtest-${NAME}_enc PRIVATE -Wno-error --std=c++14)
+    # Remove NDEBUG to enable the libcxx testsuite assertions in Release
+    target_compile_options(libcxxtest-${NAME}_enc PRIVATE -Wno-error --std=c++14 -UNDEBUG)
+
+    # Clang does not support variants of operator delete[] taking size_t in C++14 unless
+    # -fsized-deallocation is passed explicity. (Note, gcc 4.7/4.8/4.9 do not support this either.)
+    if ("${NAME}" MATCHES "sized_delete_array14")
+        add_target_compile_flags_if_supported(libcxxtest-${NAME}_enc PRIVATE CXX -fsized-deallocation)
+    endif()
     target_compile_definitions(libcxxtest-${NAME}_enc PRIVATE -DWITH_MAIN -D__TEST__="${CXXFILE}")
     target_link_libraries(libcxxtest-${NAME}_enc libcxxtest-support oeenclave)
 endfunction(add_libcxx_test_enc)

@@ -28,7 +28,7 @@ if (NOT BUILD_NUMBER)
     set(BUILD_NUMBER "0")
 endif(NOT BUILD_NUMBER)
 
-project("openenclave" VERSION ${OE_VERSION} LANGUAGES ${OE_ASM} C CXX)
+project("open-enclave" VERSION ${OE_VERSION} LANGUAGES ${OE_ASM} C CXX)
 
 # allow simpler include() of our scripts
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
@@ -56,9 +56,24 @@ install(FILES ${OE_DATADIR}/openenclave/config.mak DESTINATION ${CMAKE_INSTALL_D
 install(FILES ${OE_DATADIR}/openenclave/config.mak DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave)
 
 # generate & install CMake Export file for other projects using CMAKE
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+    cmake/openenclave-config.cmake.in
+    ${CMAKE_BINARY_DIR}/cmake/openenclave-config.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
+)
+write_basic_package_version_file(
+    ${CMAKE_BINARY_DIR}/cmake/openenclave-config-version.cmake
+    COMPATIBILITY SameMajorVersion)
 install(
-  EXPORT      openenclave-config
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave
+    FILES ${CMAKE_BINARY_DIR}/cmake/openenclave-config.cmake
+          ${CMAKE_BINARY_DIR}/cmake/openenclave-config-version.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
+)
+install(
+    EXPORT openenclave-targets
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
+    FILE openenclave-targets.cmake
 )
 
 # cpack package handling

@@ -17,6 +17,8 @@
 #include <Windows.h>
 #endif
 
+#include <assert.h>
+#include <openenclave/bits/safemath.h>
 #include <openenclave/internal/aesm.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxcreate.h>
@@ -110,7 +112,7 @@ static uint32_t _MakeMemoryProtectParam(uint64_t inflags, bool simulate)
     return outflags;
 }
 
-static sgx_secs_t* _NewSecs(uint64_t base, uint64_t size, bool debug)
+static sgx_secs_t* _NewSecs(uint64_t base, size_t size, bool debug)
 {
     sgx_secs_t* secs = NULL;
 
@@ -148,29 +150,44 @@ static sgx_secs_t* _NewSecs(uint64_t base, uint64_t size, bool debug)
 **    [BASE...BASE+SIZE]            - used
 **    [BASE+SIZE...MPTR+SIZE*2]     - unused
 */
-static void* _AllocateEnclaveMemory(uint64_t enclaveSize, int fd)
+static void* _AllocateEnclaveMemory(size_t enclaveSize, int fd)
 {
 #if defined(__linux__)
 
     /* Allocate enclave memory for simulated and real mode */
     void* result = NULL;
     void* base = NULL;
-    void* mptr = NULL;
+    void* mptr = MAP_FAILED;
 
     /* Map memory region */
     {
         int mprot = PROT_READ | PROT_WRITE | PROT_EXEC;
         int mflags = MAP_SHARED;
+        uint64_t mmap_size = enclaveSize;
 
-        /* If no file descriptor, then perform anonymous mapping */
+        /* If no file descriptor, then perform anonymous mapping and double
+         * the allocation size, so that BASE can be aligned on the SIZE
+         * boundary. This isn't neccessary on hardware backed enclaves, since
+         * the driver will do the alignment. */
         if (fd == -1)
+        {
             mflags |= MAP_ANONYMOUS;
+            if (oe_safe_mul_u64(mmap_size, 2, &mmap_size) != OE_OK)
+                goto done;
+        }
 
-        /* Allocate double so BASE can be aligned on SIZE boundary */
-        mptr = mmap(NULL, enclaveSize * 2, mprot, mflags, fd, 0);
+        mptr = mmap(NULL, mmap_size, mprot, mflags, fd, 0);
 
         if (mptr == MAP_FAILED)
             goto done;
+
+        /* Exit early in hardware backed enclaves, since it's aligned. */
+        if (fd > -1)
+        {
+            assert((uintptr_t)mptr % mmap_size == 0);
+            result = mptr;
+            goto done;
+        }
     }
 
     /* Align BASE on a boundary of SIZE */
@@ -394,7 +411,7 @@ void oe_sgx_cleanup_load_context(oe_sgx_load_context_t* context)
 
 oe_result_t oe_sgx_create_enclave(
     oe_sgx_load_context_t* context,
-    uint64_t enclaveSize,
+    size_t enclaveSize,
     uint64_t* enclaveAddr)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -414,13 +431,18 @@ oe_result_t oe_sgx_create_enclave(
     if (enclaveSize != oe_round_u64_to_pow2(enclaveSize))
         OE_RAISE(OE_INVALID_PARAMETER);
 
-#if defined(OE_USE_LIBSGX) || defined(_WIN32)
-    if (oe_sgx_is_simulation_load_context(context))
-#endif
+    /* Only allocate memory if we are creating an enclave in either simulation
+     * mode or on Linux Kabylake machines. */
+    if (context->type == OE_SGX_LOAD_TYPE_CREATE)
     {
-        /* Allocation memory-mapped region */
-        if (!(base = _AllocateEnclaveMemory(enclaveSize, context->dev)))
-            OE_RAISE(OE_OUT_OF_MEMORY);
+#if defined(OE_USE_LIBSGX) || defined(_WIN32)
+        if (oe_sgx_is_simulation_load_context(context))
+#endif
+        {
+            /* Allocation memory-mapped region */
+            if (!(base = _AllocateEnclaveMemory(enclaveSize, context->dev)))
+                OE_RAISE(OE_OUT_OF_MEMORY);
+        }
     }
 
     /* Create SECS structure */
@@ -496,6 +518,10 @@ oe_result_t oe_sgx_create_enclave(
     result = OE_OK;
 
 done:
+
+    if (result != OE_OK && context->type == OE_SGX_LOAD_TYPE_CREATE &&
+        base != NULL)
+        munmap(base, enclaveSize);
 
     if (secs)
         oe_memalign_free(secs);
@@ -723,8 +749,10 @@ oe_result_t oe_sgx_delete_enclave(oe_enclave_t* enclave)
     if (!enclave)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-#if defined(OE_USE_LIBSGX)
+#if defined(__linux__)
 
+/* FLC Linux needs to call `enclave_delete` in SGX mode. */
+#if defined(OE_USE_LIBSGX)
     if (!enclave->simulate)
     {
         uint32_t enclaveError = 0;
@@ -733,16 +761,23 @@ oe_result_t oe_sgx_delete_enclave(oe_enclave_t* enclave)
         if (enclaveError != 0)
             OE_RAISE(OE_PLATFORM_ERROR);
     }
-
-#elif defined(__linux__)
-
-    /* Non-FLC Linux allocates memory in both simulation & SGX */
-    munmap((void*)enclave->addr, enclave->size);
+    else /* FLC simulation mode needs to munmap. */
+#endif
+    {
+        /* Non-FLC Linux and simulation mode both allocate memory. */
+        munmap((void*)enclave->addr, enclave->size);
+    }
 
 #elif defined(_WIN32)
-
+    /* SGX enclaves can be freed with `VirtualFree` with the `MEM_RELEASE`
+     * flag. We can't do this for simulation mode because `MEM_RELEASE`
+     * requires `enclave->addr` to be the same one returned by `VirtualAlloc`,
+     * which is often not the case due to the enclave address alignment
+     * requirements. We use `MEM_DECOMMIT` instead. */
     if (!enclave->simulate)
         VirtualFree((void*)enclave->addr, 0, MEM_RELEASE);
+    else
+        VirtualFree((void*)enclave->addr, enclave->size, MEM_DECOMMIT);
 
 #endif
 

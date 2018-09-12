@@ -1,9 +1,7 @@
 #include "pthread_impl.h"
 #include "syscall.h"
 
-#ifdef SHARED
 __attribute__((__visibility__("hidden")))
-#endif
 long __syscall_cp_c();
 
 static long sccp(syscall_arg_t nr,

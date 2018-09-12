@@ -6,7 +6,10 @@ include $(OPENENCLAVE_CONFIG)
 
 all: build
 
-CXXFLAGS=-Wall -g -std=c++11
+CXX = clang++-7
+
+CXXFLAGS += -Wall -g -std=c++11
+CXXFLAGS += -mllvm -x86-speculative-load-hardening
 
 INCLUDES = -I$(OE_INCLUDEDIR)
 
@@ -22,8 +25,8 @@ LIBRARIES += -lsgx_ngsa_ql
 LIBRARIES += -lsgx_urts_ng
 
 build:
-	g++ -c $(CXXFLAGS) $(INCLUDES) host.cpp ecalls.cpp
-	g++ -o attestation_host host.o ecalls.o $(LDFLAGS) $(LIBRARIES)
+	$(CXX) -c $(CXXFLAGS) $(INCLUDES) host.cpp ecalls.cpp
+	$(CXX) -o attestation_host host.o ecalls.o $(LDFLAGS) $(LIBRARIES)
 
 clean:
 	rm -f attestation_host host.o

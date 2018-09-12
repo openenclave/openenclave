@@ -11,7 +11,7 @@
 #include <fcntl.h>
 #include "libc.h"
 
-static volatile int lock[2];
+static volatile int lock[1];
 static char log_ident[32];
 static int log_opt;
 static int log_facility = LOG_USER;
@@ -48,12 +48,8 @@ void closelog(void)
 
 static void __openlog()
 {
-	int fd = socket(AF_UNIX, SOCK_DGRAM|SOCK_CLOEXEC, 0);
-	if (fd < 0) return;
-	if (connect(fd, (void *)&log_addr, sizeof log_addr) < 0)
-		close(fd);
-	else
-		log_fd = fd;
+	log_fd = socket(AF_UNIX, SOCK_DGRAM|SOCK_CLOEXEC, 0);
+	if (log_fd >= 0) connect(log_fd, (void *)&log_addr, sizeof log_addr);
 }
 
 void openlog(const char *ident, int opt, int facility)
@@ -76,6 +72,11 @@ void openlog(const char *ident, int opt, int facility)
 
 	UNLOCK(lock);
 	pthread_setcancelstate(cs, 0);
+}
+
+static int is_lost_conn(int e)
+{
+	return e==ECONNREFUSED || e==ECONNRESET || e==ENOTCONN || e==EPIPE;
 }
 
 static void _vsyslog(int priority, const char *message, va_list ap)
@@ -107,7 +108,10 @@ static void _vsyslog(int priority, const char *message, va_list ap)
 		if (l2 >= sizeof buf - l) l = sizeof buf - 1;
 		else l += l2;
 		if (buf[l-1] != '\n') buf[l++] = '\n';
-		if (send(log_fd, buf, l, 0) < 0 && (log_opt & LOG_CONS)) {
+		if (send(log_fd, buf, l, 0) < 0 && (!is_lost_conn(errno)
+		    || connect(log_fd, (void *)&log_addr, sizeof log_addr) < 0
+		    || send(log_fd, buf, l, 0) < 0)
+		    && (log_opt & LOG_CONS)) {
 			fd = open("/dev/console", O_WRONLY|O_NOCTTY|O_CLOEXEC);
 			if (fd >= 0) {
 				dprintf(fd, "%.*s", l-hlen, buf+hlen);

@@ -11,7 +11,7 @@
 #
 
 # Needed for Open Enclave build and scripts
-PACKAGES="clang-format cmake gcc g++ make"
+PACKAGES="clang-format cmake make"
 
 # Needed for using oedbg
 PACKAGES="$PACKAGES gdb"
@@ -38,3 +38,39 @@ PACKAGES="$PACKAGES libssl-dev"
 PACKAGES="$PACKAGES subversion"
 
 apt-get -y install $PACKAGES
+
+# Now install clang from LLVM private repo, this has the spectre mitigations
+# (unlike anything in Ubuntu 16.04).
+if (apt list --installed | grep clang-7 > /dev/null); then
+    echo clang-7 already installed.
+else
+    # These repositories are appropriate only for Ubuntu 16.04.
+    # Make sure we don't mess up anyone else's system
+    if ! (lsb_release -a 2>/dev/null | grep xenial > /dev/null); then
+        echo 'This script targets Ubuntu 16.04 (Xenial Xerus) only'
+        exit 1
+    fi
+
+    # First, apt.llvm.org public key
+    wget -q https://apt.llvm.org/llvm-snapshot.gpg.key
+    # Verify fingerprint
+    if ! (gpg --homedir /dev/null --with-fingerprint llvm-snapshot.gpg.key 2>/dev/null \
+        | grep fingerprint | egrep '6084 F3CF 814B 57C1 CF12 +EFD5 15CF 4D18 AF4F 7421'); then
+        echo apt.llvm.org key did not have expected fingerprint; key left in llvm-snapshot.gpg.key
+        exit 1
+    fi
+    apt-key add llvm-snapshot.gpg.key
+
+    # Add repo
+    if ! (grep apt.llvm.org/xenial /etc/apt/sources.list); then
+        cat << EOF >> /etc/apt/sources.list
+
+# LLVM/clang-7 (with spectre mitigations)
+deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main
+deb-src http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main
+EOF
+        apt-get update
+    fi
+
+    apt-get -y install clang-7
+fi

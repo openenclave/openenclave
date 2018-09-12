@@ -12,14 +12,14 @@
 
 oe_result_t oe_aes_cmac_sign(
     const uint8_t* key,
-    uint32_t keySize,
+    size_t keySize,
     const uint8_t* message,
-    uint32_t messageLength,
+    size_t messageLength,
     OE_AESCMAC* aesCMAC)
 {
     oe_result_t result = OE_UNEXPECTED;
     const mbedtls_cipher_info_t* info = NULL;
-    uint32_t keySizeBits = keySize * 8;
+    size_t keySizeBits = keySize * 8;
 
     if (aesCMAC == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);

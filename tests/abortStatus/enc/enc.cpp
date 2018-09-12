@@ -28,7 +28,6 @@ OE_ECALL void RegularAbort(void* args_)
 OE_ECALL void GenerateUnhandledHardwareException(void* args_)
 {
     AbortStatusArgs* args = (AbortStatusArgs*)args_;
-    int t = 1;
 
     if (!oe_is_outside_enclave(args, sizeof(AbortStatusArgs)))
     {
@@ -37,13 +36,11 @@ OE_ECALL void GenerateUnhandledHardwareException(void* args_)
 
     args->ret = 0;
 
-    // Generate a divide by zero hardware exception. Since there is no
-    // handler to handle it, the enclave should abort itself.
-    t = t / args->divisor;
-    // We should never get here but this is to trick optimizer
-    args->divisor = t;
-    oe_host_printf(
-        "Error: unreachable code is reached. Divisor=%d\n", args->divisor);
+    // Generate a hardware exception via an undefined instruction. Since there
+    // is no handler to handle it, the enclave should abort itself.
+    asm volatile("ud2" ::: "memory");
+    // We should never get here...
+    oe_host_printf("Error: unreachable code is reached. ");
     args->ret = -1;
     return;
 }
@@ -87,3 +84,11 @@ OE_ECALL void NormalECall(void* args_)
     args->ret = 0;
     return;
 }
+
+OE_SET_ENCLAVE_SGX(
+    1,    /* ProductID */
+    1,    /* SecurityVersion */
+    true, /* AllowDebug */
+    1024, /* HeapPageCount */
+    1024, /* StackPageCount */
+    5);   /* TCSCount */

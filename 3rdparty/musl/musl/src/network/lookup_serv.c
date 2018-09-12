@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <fcntl.h>
+#include <errno.h>
 #include "lookup.h"
 #include "stdio_impl.h"
 
@@ -63,13 +64,20 @@ int __lookup_serv(struct service buf[static MAXSERVS], const char *name, int pro
 		return cnt;
 	}
 
-	if (flags & AI_NUMERICSERV) return EAI_SERVICE;
+	if (flags & AI_NUMERICSERV) return EAI_NONAME;
 
 	size_t l = strlen(name);
 
 	unsigned char _buf[1032];
 	FILE _f, *f = __fopen_rb_ca("/etc/services", &_f, _buf, sizeof _buf);
-	if (!f) return EAI_SERVICE;
+	if (!f) switch (errno) {
+	case ENOENT:
+	case ENOTDIR:
+	case EACCES:
+		return EAI_SERVICE;
+	default:
+		return EAI_SYSTEM;
+	}
 
 	while (fgets(line, sizeof line, f) && cnt < MAXSERVS) {
 		if ((p=strchr(line, '#'))) *p++='\n', *p=0;

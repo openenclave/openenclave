@@ -116,7 +116,7 @@ long double creall(long double complex);
 
 #if __STDC_VERSION__ >= 201112L
 #if defined(_Imaginary_I)
-#define __CMPLX(x, y, t) ((t)(x) + _Imaginary_I*(t)(y)))
+#define __CMPLX(x, y, t) ((t)(x) + _Imaginary_I*(t)(y))
 #elif defined(__clang__)
 #define __CMPLX(x, y, t) (+(_Complex t){ (t)(x), (t)(y) })
 #else

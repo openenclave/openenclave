@@ -40,7 +40,14 @@ __cp_end:
 	nop
 
 __cp_cancel:
+	move    $2, $ra
+	bal     1f
 	addu    $sp, $sp, 32
-	lw      $25, %call16(__cancel)($gp)
+	.gpword .
+	.gpword __cancel
+1:	lw      $3, ($ra)
+	subu    $3, $ra, $3
+	lw      $25, 4($ra)
+	addu    $25, $25, $3
 	jr      $25
-	nop
+	move    $ra, $2

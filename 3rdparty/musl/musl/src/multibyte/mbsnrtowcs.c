@@ -1,9 +1,3 @@
-/* 
- * This code was written by Rich Felker in 2010; no copyright is claimed.
- * This code is in the public domain. Attribution is appreciated but
- * unnecessary.
- */
-
 #include <wchar.h>
 
 size_t mbsnrtowcs(wchar_t *restrict wcs, const char **restrict src, size_t n, size_t wn, mbstate_t *restrict st)
@@ -11,6 +5,7 @@ size_t mbsnrtowcs(wchar_t *restrict wcs, const char **restrict src, size_t n, si
 	size_t l, cnt=0, n2;
 	wchar_t *ws, wbuf[256];
 	const char *s = *src;
+	const char *tmp_s;
 
 	if (!wcs) ws = wbuf, wn = sizeof wbuf / sizeof *wbuf;
 	else ws = wcs;
@@ -21,7 +16,7 @@ size_t mbsnrtowcs(wchar_t *restrict wcs, const char **restrict src, size_t n, si
 
 	while ( s && wn && ( (n2=n/4)>=wn || n2>32 ) ) {
 		if (n2>=wn) n2=wn;
-		n -= n2;
+		tmp_s = s;
 		l = mbsrtowcs(ws, &s, n2, st);
 		if (!(l+1)) {
 			cnt = l;
@@ -32,6 +27,7 @@ size_t mbsnrtowcs(wchar_t *restrict wcs, const char **restrict src, size_t n, si
 			ws += l;
 			wn -= l;
 		}
+		n = s ? n - (s - tmp_s) : 0;
 		cnt += l;
 	}
 	if (s) while (wn && n) {

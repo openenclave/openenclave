@@ -3,8 +3,6 @@
 
 include(add_enclave_executable)
 
-add_enclave_executable(echo_enc sign.conf private.pem 
-    enc.c
-    )
+add_executable(echo_enc enc.c)
 
 target_link_libraries(echo_enc oeenclave)

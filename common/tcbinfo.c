@@ -1,9 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 #include "tcbinfo.h"
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/hexdump.h>
-#include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/trace.h>
 #include "common.h"
@@ -93,7 +91,7 @@ static oe_result_t _read_string(
     const uint8_t** itr,
     const uint8_t* end,
     const uint8_t** str,
-    uint32_t* length)
+    size_t* length)
 {
     oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
     const uint8_t* p = *itr;
@@ -138,18 +136,18 @@ static oe_result_t _read_hex_string(
     const uint8_t** itr,
     const uint8_t* end,
     uint8_t* bytes,
-    uint32_t length)
+    size_t length)
 {
     oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
     const uint8_t* str = NULL;
-    uint32_t str_length = 0;
+    size_t str_length = 0;
     uint16_t value = 0;
 
     OE_CHECK(_read_string(itr, end, &str, &str_length));
     // Each byte takes up two hex digits.
     if (str_length == length * 2)
     {
-        for (uint32_t i = 0; i < length; ++i)
+        for (size_t i = 0; i < length; ++i)
         {
             value =
                 (_hex_to_dec(str[i * 2]) << 4) | _hex_to_dec(str[i * 2 + 1]);
@@ -171,13 +169,15 @@ static oe_result_t _read_property_name_and_colon(
 {
     oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
     const uint8_t* name = NULL;
-    uint32_t name_length = 0;
+    size_t name_length = 0;
+    const uint8_t* tmp_itr = *itr;
 
-    OE_CHECK(_read_string(itr, end, &name, &name_length));
+    OE_CHECK(_read_string(&tmp_itr, end, &name, &name_length));
     if (name_length == strlen(property_name) &&
         memcmp(property_name, name, name_length) == 0)
     {
-        OE_CHECK(_read(':', itr, end));
+        OE_CHECK(_read(':', &tmp_itr, end));
+        *itr = tmp_itr;
         result = OE_OK;
     }
 done:
@@ -186,10 +186,10 @@ done:
 
 static bool _json_str_equal(
     const uint8_t* str1,
-    uint32_t str1_length,
+    size_t str1_length,
     const char* str2)
 {
-    uint32_t str2_length = (uint32_t)strlen(str2);
+    size_t str2_length = strlen(str2);
 
     // Strings in json stream are not zero terminated.
     // Hence the special comparison function.
@@ -197,7 +197,7 @@ static bool _json_str_equal(
            (memcmp(str1, str2, str2_length) == 0);
 }
 
-static void _trace_json_string(const uint8_t* str, uint32_t str_length)
+static void _trace_json_string(const uint8_t* str, size_t str_length)
 {
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
     char buffer[str_length + 1];
@@ -325,7 +325,7 @@ static oe_result_t _read_tcb_level(
     oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
     oe_tcb_level_t tcb_level = {{0}};
     const uint8_t* status = NULL;
-    uint32_t status_length = 0;
+    size_t status_length = 0;
 
     OE_CHECK(_read('{', itr, end));
 
@@ -347,6 +347,8 @@ static oe_result_t _read_tcb_level(
         tcb_level.status = OE_TCB_LEVEL_STATUS_OUT_OF_DATE;
     else if (_json_str_equal(status, status_length, "Revoked"))
         tcb_level.status = OE_TCB_LEVEL_STATUS_REVOKED;
+    else if (_json_str_equal(status, status_length, "ConfigurationNeeded"))
+        tcb_level.status = OE_TCB_LEVEL_STATUS_CONFIGURATION_NEEDED;
 
     if (tcb_level.status != OE_TCB_LEVEL_STATUS_UNKNOWN)
     {
@@ -376,6 +378,8 @@ static oe_result_t _read_tcb_info(
 {
     oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
     uint64_t value = 0;
+    const uint8_t* date_str = NULL;
+    size_t date_size = 0;
 
     parsed_info->tcb_info_start = *itr;
     OE_CHECK(_read('{', itr, end));
@@ -388,10 +392,28 @@ static oe_result_t _read_tcb_info(
 
     OE_TRACE_INFO("Reading issueDate\n");
     OE_CHECK(_read_property_name_and_colon("issueDate", itr, end));
-    OE_CHECK(
-        _read_string(
-            itr, end, &parsed_info->issue_date, &parsed_info->issue_date_size));
+    OE_CHECK(_read_string(itr, end, &date_str, &date_size));
+    if (oe_datetime_from_string(
+            (const char*)date_str, date_size, &parsed_info->issue_date) !=
+        OE_OK)
+        OE_RAISE(OE_TCB_INFO_PARSE_ERROR);
     OE_CHECK(_read(',', itr, end));
+
+    // nextUpdate is treated as an optional property.
+    OE_TRACE_INFO("Reading nextUpdate\n");
+    if (_read_property_name_and_colon("nextUpdate", itr, end) == OE_OK)
+    {
+        OE_CHECK(_read_string(itr, end, &date_str, &date_size));
+        if (oe_datetime_from_string(
+                (const char*)date_str, date_size, &parsed_info->next_update) !=
+            OE_OK)
+            OE_RAISE(OE_TCB_INFO_PARSE_ERROR);
+        OE_CHECK(_read(',', itr, end));
+    }
+    else
+    {
+        memset(&parsed_info->next_update, 0, sizeof(parsed_info->next_update));
+    }
 
     OE_TRACE_INFO("Reading fmspc\n");
     OE_CHECK(_read_property_name_and_colon("fmspc", itr, end));
@@ -434,7 +456,7 @@ done:
  */
 oe_result_t oe_parse_tcb_info_json(
     const uint8_t* tcb_info_json,
-    uint32_t tcb_info_json_size,
+    size_t tcb_info_json_size,
     oe_tcb_level_t* platform_tcb_level,
     oe_parsed_tcb_info_t* parsed_info)
 {
@@ -484,14 +506,14 @@ done:
 static oe_result_t _ECDSAVerify(
     oe_ec_public_key_t* publicKey,
     const void* data,
-    uint32_t dataSize,
+    size_t dataSize,
     sgx_ecdsa256_signature_t* signature)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_sha256_context_t sha256Ctx = {0};
     OE_SHA256 sha256 = {0};
     uint8_t asn1Signature[256];
-    uint64_t asn1SignatureSize = sizeof(asn1Signature);
+    size_t asn1SignatureSize = sizeof(asn1Signature);
 
     OE_CHECK(oe_sha256_init(&sha256Ctx));
     OE_CHECK(oe_sha256_update(&sha256Ctx, data, dataSize));
@@ -522,7 +544,7 @@ done:
 
 oe_result_t oe_verify_tcb_signature(
     const uint8_t* tcb_info_start,
-    uint32_t tcb_info_size,
+    size_t tcb_info_size,
     sgx_ecdsa256_signature_t* signature,
     oe_cert_chain_t* tcb_cert_chain)
 {

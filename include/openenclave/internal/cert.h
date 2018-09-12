@@ -118,7 +118,8 @@ oe_result_t oe_cert_chain_free(oe_cert_chain_t* chain);
  *
  * @param cert verify this certificate
  * @param chain verify the certificate against this certificate chain
- * @param crl verify the certificate against this CRL
+ * @param crls verify the certificate against these CRLs (may be null).
+ * @param num_crls number of CRLs.
  * @param error Optional. Holds the error message if this function failed.
  *
  * @return OE_OK verify ok
@@ -129,7 +130,8 @@ oe_result_t oe_cert_chain_free(oe_cert_chain_t* chain);
 oe_result_t oe_cert_verify(
     oe_cert_t* cert,
     oe_cert_chain_t* chain,
-    const oe_crl_t* crl,
+    const oe_crl_t* const* crls,
+    size_t num_crls,
     oe_verify_cert_error_t* error);
 
 /**
@@ -137,7 +139,7 @@ oe_result_t oe_cert_verify(
  *
  * This function gets the RSA public key from the given certificate. If the
  * the certificate does not contain an RSA public key, this function returns
- * OE_WRONG_TYPE.
+ * OE_PUBLIC_KEY_NOT_FOUND.
  *
  * @param cert the certificate whose RSA public key is sought.
  * @param publicKey the handle of an RSA public key upon successful return.
@@ -146,7 +148,8 @@ oe_result_t oe_cert_verify(
  *
  * @return OE_OK success
  * @return OE_INVALID_PARAMETER a parameter is invalid
- * @return OE_WRONG_TYPE the certificate does not contain an RSA public key
+ * @return OE_PUBLIC_KEY_NOT_FOUND the certificate does not contain an RSA
+ * public key
  * @return OE_FAILURE general failure
  */
 oe_result_t oe_cert_get_rsa_public_key(
@@ -158,7 +161,7 @@ oe_result_t oe_cert_get_rsa_public_key(
  *
  * This function gets the EC public key from the given certificate. If the
  * the certificate does not contain an EC public key, this function returns
- * OE_WRONG_TYPE.
+ * OE_PUBLIC_KEY_NOT_FOUND.
  *
  * @param cert the certificate whose EC public key is sought.
  * @param publicKey the handle of an EC public key upon successful return.
@@ -167,7 +170,8 @@ oe_result_t oe_cert_get_rsa_public_key(
  *
  * @return OE_OK success
  * @return OE_INVALID_PARAMETER a parameter is invalid
- * @return OE_WRONG_TYPE the certificate does not contain an EC public key
+ * @return OE_PUBLIC_KEY_NOT_FOUND the certificate does not contain an EC public
+ * key
  * @return OE_FAILURE general failure
  */
 oe_result_t oe_cert_get_ec_public_key(

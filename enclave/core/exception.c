@@ -245,7 +245,7 @@ int _EmulateIllegalInstruction(sgx_ssa_gpr_t* ssa_gpr)
 */
 void _oe_exception_dispatcher(oe_context_t* oe_context)
 {
-    TD* td = TD_Get();
+    TD* td = oe_get_td();
 
     // Change the rip of oe_context to the real exception address.
     oe_context->rip = td->base.exception_address;

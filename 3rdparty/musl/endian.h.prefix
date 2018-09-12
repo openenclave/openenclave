@@ -1,5 +1,0 @@
-#ifndef __MUSL_ENDIAN_H_WRAPPER
-#define __MUSL_ENDIAN_H_WRAPPER
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wparentheses"

@@ -24,7 +24,6 @@ void TestAbortStatus(oe_enclave_t* enclave, const char* functionName)
 {
     oe_result_t result;
     AbortStatusArgs args;
-    args.divisor = 0;
     args.ret = -1;
 
     printf("=== %s(%s)  \n", __FUNCTION__, functionName);
@@ -42,7 +41,6 @@ static void CrashEnclaveThread(
     oe_result_t result;
     AbortStatusArgs args;
     args.ret = -1;
-    args.divisor = 0;
     args.thread_ready_count = thread_ready_count;
     args.is_enclave_crashed = is_enclave_crashed;
 

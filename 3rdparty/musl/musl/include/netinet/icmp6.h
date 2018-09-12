@@ -9,6 +9,7 @@ extern "C" {
 #include <string.h>
 #include <sys/types.h>
 #include <netinet/in.h>
+#include <endian.h>
 
 #define ICMP6_FILTER 1
 

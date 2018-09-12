@@ -7,4 +7,4 @@ if (UNIX)
 	add_subdirectory(enc)
 endif()
 
-add_enclave_test(tests/hexdump ./host hexdump_host ./enc hexdump_enc.signed.so)
+add_enclave_test(tests/hexdump ./host hexdump_host ./enc hexdump_enc)

@@ -1,7 +1,6 @@
 #include <endian.h>
 
-struct msghdr
-{
+struct msghdr {
 	void *msg_name;
 	socklen_t msg_namelen;
 	struct iovec *msg_iov;
@@ -21,8 +20,7 @@ struct msghdr
 	int msg_flags;
 };
 
-struct cmsghdr
-{
+struct cmsghdr {
 #if __BYTE_ORDER == __BIG_ENDIAN
 	int __pad1;
 	socklen_t cmsg_len;

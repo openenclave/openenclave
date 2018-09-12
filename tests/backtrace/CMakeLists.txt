@@ -8,4 +8,4 @@ if (UNIX)
 endif()
 
 add_enclave_test(tests/backtrace 
-    ./host backtrace_host ./enc backtrace_enc.signed.so)
+    ./host backtrace_host ./enc backtrace_enc)

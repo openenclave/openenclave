@@ -24,7 +24,6 @@ set(PLATFORM_SRC
     linux/sgxsign.c
     linux/time.c
     sgxquoteprovider.c
-    backtrace.c
     )
 elseif (WIN32)
 set(PLATFORM_SRC
@@ -43,6 +42,7 @@ endif()
 add_library(oehost STATIC
     ../common/datetime.c
     ../common/quote.c
+    ../common/report.c
     ../common/revocation.c
     ../common/sgxcertextensions.c
     ../common/tcbinfo.c    
@@ -122,7 +122,7 @@ endif()
 set_property(TARGET oehost PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/host)
 
 # install lib-archive upon install-time
-install(TARGETS oehost EXPORT openenclave-config ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host)
+install(TARGETS oehost EXPORT openenclave-targets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host)
 
 # provide oehostapp to install-base as well
-install(TARGETS oehostapp EXPORT openenclave-config)
+install(TARGETS oehostapp EXPORT openenclave-targets)

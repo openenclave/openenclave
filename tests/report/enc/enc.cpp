@@ -30,8 +30,8 @@
 oe_result_t oe_copy_input(
     void* dst,
     volatile void* src,
-    uint32_t size,
-    uint32_t maxSize)
+    size_t size,
+    size_t maxSize)
 {
     oe_result_t result = OE_UNEXPECTED;
 
@@ -164,3 +164,11 @@ OE_ECALL void TestVerifyTCBInfo(VerifyTCBInfoArgs* args)
 }
 
 #endif
+
+OE_SET_ENCLAVE_SGX(
+    0,    /* ProductID */
+    0,    /* SecurityVersion */
+    true, /* AllowDebug */
+    1024, /* HeapPageCount */
+    1024, /* StackPageCount */
+    2);   /* TCSCount */

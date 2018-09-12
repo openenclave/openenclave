@@ -13,7 +13,6 @@
 #define inline inline __attribute__((always_inline))
 #endif
 
-uintptr_t __brk(uintptr_t);
 void *__mmap(void *, size_t, int, int, int, off_t);
 int __munmap(void *, size_t);
 void *__mremap(void *, size_t, size_t, int, ...);
@@ -31,13 +30,9 @@ struct bin {
 };
 
 static struct {
-	uintptr_t brk;
-	size_t *heap;
 	volatile uint64_t binmap;
 	struct bin bins[64];
-	volatile int brk_lock[2];
 	volatile int free_lock[2];
-	unsigned mmap_step;
 } mal;
 
 
@@ -116,19 +111,29 @@ static int first_set(uint64_t x)
 #endif
 }
 
+static const unsigned char bin_tab[60] = {
+	            32,33,34,35,36,36,37,37,38,38,39,39,
+	40,40,40,40,41,41,41,41,42,42,42,42,43,43,43,43,
+	44,44,44,44,44,44,44,44,45,45,45,45,45,45,45,45,
+	46,46,46,46,46,46,46,46,47,47,47,47,47,47,47,47,
+};
+
 static int bin_index(size_t x)
 {
 	x = x / SIZE_ALIGN - 1;
 	if (x <= 32) return x;
+	if (x < 512) return bin_tab[x/8-4];
 	if (x > 0x1c00) return 63;
-	return ((union { float v; uint32_t r; }){(int)x}.r>>21) - 496;
+	return bin_tab[x/128-4] + 16;
 }
 
 static int bin_index_up(size_t x)
 {
 	x = x / SIZE_ALIGN - 1;
 	if (x <= 32) return x;
-	return ((union { float v; uint32_t r; }){(int)x}.r+0x1fffff>>21) - 496;
+	x--;
+	if (x < 512) return bin_tab[x/8-4] + 1;
+	return bin_tab[x/128-4] + 17;
 }
 
 #if 0
@@ -152,69 +157,52 @@ void __dump_heap(int x)
 }
 #endif
 
+void *__expand_heap(size_t *);
+
 static struct chunk *expand_heap(size_t n)
 {
-	static int init;
+	static int heap_lock[2];
+	static void *end;
+	void *p;
 	struct chunk *w;
-	uintptr_t new;
 
-	lock(mal.brk_lock);
+	/* The argument n already accounts for the caller's chunk
+	 * overhead needs, but if the heap can't be extended in-place,
+	 * we need room for an extra zero-sized sentinel chunk. */
+	n += SIZE_ALIGN;
 
-	if (!init) {
-		mal.brk = __brk(0);
-#ifdef SHARED
-		mal.brk = mal.brk + PAGE_SIZE-1 & -PAGE_SIZE;
-#endif
-		mal.brk = mal.brk + 2*SIZE_ALIGN-1 & -SIZE_ALIGN;
-		mal.heap = (void *)mal.brk;
-		init = 1;
+	lock(heap_lock);
+
+	p = __expand_heap(&n);
+	if (!p) {
+		unlock(heap_lock);
+		return 0;
 	}
 
-	if (n > SIZE_MAX - mal.brk - 2*PAGE_SIZE) goto fail;
-	new = mal.brk + n + SIZE_ALIGN + PAGE_SIZE - 1 & -PAGE_SIZE;
-	n = new - mal.brk;
-
-	if (__brk(new) != new) {
-		size_t min = (size_t)PAGE_SIZE << mal.mmap_step/2;
-		n += -n & PAGE_SIZE-1;
-		if (n < min) n = min;
-		void *area = __mmap(0, n, PROT_READ|PROT_WRITE,
-			MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
-		if (area == MAP_FAILED) goto fail;
-
-		mal.mmap_step++;
-		area = (char *)area + SIZE_ALIGN - OVERHEAD;
-		w = area;
+	/* If not just expanding existing space, we need to make a
+	 * new sentinel chunk below the allocated space. */
+	if (p != end) {
+		/* Valid/safe because of the prologue increment. */
 		n -= SIZE_ALIGN;
+		p = (char *)p + SIZE_ALIGN;
+		w = MEM_TO_CHUNK(p);
 		w->psize = 0 | C_INUSE;
-		w->csize = n | C_INUSE;
-		w = NEXT_CHUNK(w);
-		w->psize = n | C_INUSE;
-		w->csize = 0 | C_INUSE;
-
-		unlock(mal.brk_lock);
-
-		return area;
 	}
 
-	w = MEM_TO_CHUNK(mal.heap);
-	w->psize = 0 | C_INUSE;
-
-	w = MEM_TO_CHUNK(new);
+	/* Record new heap end and fill in footer. */
+	end = (char *)p + n;
+	w = MEM_TO_CHUNK(end);
 	w->psize = n | C_INUSE;
 	w->csize = 0 | C_INUSE;
 
-	w = MEM_TO_CHUNK(mal.brk);
+	/* Fill in header, which may be new or may be replacing a
+	 * zero-size sentinel header at the old end-of-heap. */
+	w = MEM_TO_CHUNK(p);
 	w->csize = n | C_INUSE;
-	mal.brk = new;
-	
-	unlock(mal.brk_lock);
+
+	unlock(heap_lock);
 
 	return w;
-fail:
-	unlock(mal.brk_lock);
-	errno = ENOMEM;
-	return 0;
 }
 
 static int adjust_size(size_t *n)
@@ -378,6 +366,17 @@ void *malloc(size_t n)
 	return CHUNK_TO_MEM(c);
 }
 
+void *__malloc0(size_t n)
+{
+	void *p = malloc(n);
+	if (p && !IS_MMAPPED(MEM_TO_CHUNK(p))) {
+		size_t *z;
+		n = (n + sizeof *z - 1)/sizeof *z;
+		for (z=p; n; n--, z++) if (*z) *z=0;
+	}
+	return p;
+}
+
 void *realloc(void *p, size_t n)
 {
 	struct chunk *self, *next;
@@ -407,7 +406,7 @@ void *realloc(void *p, size_t n)
 		if (oldlen == newlen) return p;
 		base = __mremap(base, oldlen, newlen, MREMAP_MAYMOVE);
 		if (base == (void *)-1)
-			return newlen < oldlen ? p : 0;
+			goto copy_realloc;
 		self = (void *)(base + extra);
 		self->csize = newlen - extra;
 		return CHUNK_TO_MEM(self);
@@ -440,6 +439,7 @@ void *realloc(void *p, size_t n)
 		return CHUNK_TO_MEM(self);
 	}
 
+copy_realloc:
 	/* As a last resort, allocate a new chunk and copy to it. */
 	new = malloc(n-OVERHEAD);
 	if (!new) return 0;
@@ -450,13 +450,14 @@ void *realloc(void *p, size_t n)
 
 void free(void *p)
 {
-	struct chunk *self = MEM_TO_CHUNK(p);
-	struct chunk *next;
+	struct chunk *self, *next;
 	size_t final_size, new_size, size;
 	int reclaim=0;
 	int i;
 
 	if (!p) return;
+
+	self = MEM_TO_CHUNK(p);
 
 	if (IS_MMAPPED(self)) {
 		size_t extra = self->psize;
@@ -475,18 +476,6 @@ void free(void *p)
 	if (next->psize != self->csize) a_crash();
 
 	for (;;) {
-		/* Replace middle of large chunks with fresh zero pages */
-		if (reclaim && (self->psize & next->csize & C_INUSE)) {
-			uintptr_t a = (uintptr_t)self + SIZE_ALIGN+PAGE_SIZE-1 & -PAGE_SIZE;
-			uintptr_t b = (uintptr_t)next - SIZE_ALIGN & -PAGE_SIZE;
-#if 1
-			__madvise((void *)a, b-a, MADV_DONTNEED);
-#else
-			__mmap((void *)a, b-a, PROT_READ|PROT_WRITE,
-				MAP_PRIVATE|MAP_ANONYMOUS|MAP_FIXED, -1, 0);
-#endif
-		}
-
 		if (self->psize & next->csize & C_INUSE) {
 			self->csize = final_size | C_INUSE;
 			next->psize = final_size | C_INUSE;
@@ -516,6 +505,9 @@ void free(void *p)
 		}
 	}
 
+	if (!(mal.binmap & 1ULL<<i))
+		a_or_64(&mal.binmap, 1ULL<<i);
+
 	self->csize = final_size;
 	next->psize = final_size;
 	unlock(mal.free_lock);
@@ -525,8 +517,17 @@ void free(void *p)
 	self->next->prev = self;
 	self->prev->next = self;
 
-	if (!(mal.binmap & 1ULL<<i))
-		a_or_64(&mal.binmap, 1ULL<<i);
+	/* Replace middle of large chunks with fresh zero pages */
+	if (reclaim) {
+		uintptr_t a = (uintptr_t)self + SIZE_ALIGN+PAGE_SIZE-1 & -PAGE_SIZE;
+		uintptr_t b = (uintptr_t)next - SIZE_ALIGN & -PAGE_SIZE;
+#if 1
+		__madvise((void *)a, b-a, MADV_DONTNEED);
+#else
+		__mmap((void *)a, b-a, PROT_READ|PROT_WRITE,
+			MAP_PRIVATE|MAP_ANONYMOUS|MAP_FIXED, -1, 0);
+#endif
+	}
 
 	unlock_bin(i);
 }

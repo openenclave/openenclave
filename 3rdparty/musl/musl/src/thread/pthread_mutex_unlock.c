@@ -24,7 +24,7 @@ int __pthread_mutex_unlock(pthread_mutex_t *m)
 		if (next != &self->robust_list.head) *(volatile void *volatile *)
 			((char *)next - sizeof(void *)) = prev;
 	}
-	cont = a_swap(&m->_m_lock, (type & 8) ? 0x40000000 : 0);
+	cont = a_swap(&m->_m_lock, (type & 8) ? 0x7fffffff : 0);
 	if (type != PTHREAD_MUTEX_NORMAL && !priv) {
 		self->robust_list.pending = 0;
 		__vm_unlock();

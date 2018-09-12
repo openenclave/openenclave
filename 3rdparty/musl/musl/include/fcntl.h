@@ -21,8 +21,7 @@ extern "C" {
 
 #include <bits/fcntl.h>
 
-struct flock
-{
+struct flock {
 	short l_type;
 	short l_whence;
 	off_t l_start;
@@ -100,7 +99,7 @@ int posix_fallocate(int, off_t, off_t);
 #define AT_EMPTY_PATH 0x1000
 
 #define FAPPEND O_APPEND
-#define FFSYNC O_FSYNC
+#define FFSYNC O_SYNC
 #define FASYNC O_ASYNC
 #define FNONBLOCK O_NONBLOCK
 #define FNDELAY O_NDELAY
@@ -127,6 +126,18 @@ int posix_fallocate(int, off_t, off_t);
 #define F_SEAL_SHRINK	0x0002
 #define F_SEAL_GROW	0x0004
 #define F_SEAL_WRITE	0x0008
+
+#define F_GET_RW_HINT		1035
+#define F_SET_RW_HINT		1036
+#define F_GET_FILE_RW_HINT	1037
+#define F_SET_FILE_RW_HINT	1038
+
+#define RWF_WRITE_LIFE_NOT_SET	0
+#define RWH_WRITE_LIFE_NONE	1
+#define RWH_WRITE_LIFE_SHORT	2
+#define RWH_WRITE_LIFE_MEDIUM	3
+#define RWH_WRITE_LIFE_LONG	4
+#define RWH_WRITE_LIFE_EXTREME	5
 
 #define DN_ACCESS	0x00000001
 #define DN_MODIFY	0x00000002
