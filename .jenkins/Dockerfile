@@ -46,14 +46,10 @@ ENV PATH="/cmake-3.11.4-Linux-x86_64/bin:${PATH}"
 
 RUN apt-get -y update
 RUN apt-get -y install wget
-RUN echo "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial main" >> /etc/apt/sources.list; echo "deb-src http://apt.llvm.org/xenial/ llvm-toolchain-xenial main" >> /etc/apt/sources.list; echo "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-6.0 main" >> /etc/apt/sources.list; echo "deb-src http://apt.llvm.org/xenial/ llvm-toolchain-xenial-6.0 main" >> /etc/apt/sources.list; echo "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" >> /etc/apt/sources.list; echo "deb-src http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" >> /etc/apt/sources.list; wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -; apt-get -y update; apt-get -y install clang-7 lldb-7 lld-7
-RUN apt-get -y install dpkg-dev
-
-RUN apt-get -y install sudo git
-
+RUN echo "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" >> /etc/apt/sources.list; echo "deb-src http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" >> /etc/apt/sources.list; wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -; apt-get -y update; apt-get -y install clang-7 lldb-7 lld-7
 
 # install all the packages specified in install-prereqs except cmake
-RUN apt-get -y install clang-format gcc g++ make gdb autoconf libtool doxygen graphviz gawk libexpat1-dev openssl libssl-dev subversion ocaml-native-compilers libcurl3 dh-exec libmbedtls10
+RUN apt-get -y install clang-format gcc g++ make gdb autoconf libtool doxygen graphviz gawk libexpat1-dev openssl libssl-dev subversion ocaml-native-compilers libcurl3 dh-exec libmbedtls10 sudo git dpkg-dev
 
 # install wget as this is needed for getting latest cmake & Libsgx FLC packages
 # dpkg-dev is also needed by those packages for installing symlinks to lib files
@@ -64,12 +60,13 @@ RUN wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz
 RUN tar xf cmake-3.11.4-Linux-x86_64.tar.gz
 
 # Download the Libsgx FLC packages
-RUN wget http://10.31.100.105/libsgx-enclave-common_1.0.101.45575-1.0_amd64.deb
-RUN wget http://10.31.100.105/libsgx-enclave-common-dev_1.0.101.45575-1.0_amd64.deb
-RUN wget http://10.31.100.105/libsgx-ngsa-ql_1.0.101.45575-1.0_amd64.deb
-RUN wget http://10.31.100.105/libsgx-ngsa-ql-dev_1.0.101.45575-1.0_amd64.deb
-RUN wget http://10.31.100.105/azquotprov_0.2-1_amd64.deb
-RUN wget http://10.31.100.105/sgx_linux_x64_driver.bin
+ARG webserver=10.31.100.105
+RUN wget http://$webserver/libsgx-enclave-common_1.0.101.45575-1.0_amd64.deb
+RUN wget http://$webserver/libsgx-enclave-common-dev_1.0.101.45575-1.0_amd64.deb
+RUN wget http://$webserver/libsgx-ngsa-ql_1.0.101.45575-1.0_amd64.deb
+RUN wget http://$webserver/libsgx-ngsa-ql-dev_1.0.101.45575-1.0_amd64.deb
+RUN wget http://$webserver/azquotprov_0.2-1_amd64.deb
+RUN wget http://$webserver/sgx_linux_x64_driver.bin
 
 RUN dpkg -i libsgx-enclave-common_1.0.101.45575-1.0_amd64.deb
 RUN dpkg -i libsgx-enclave-common-dev_1.0.101.45575-1.0_amd64.deb
