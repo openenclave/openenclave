@@ -5,6 +5,7 @@
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/tests.h>
+#include <openenclave/internal/pthreadhooks.h>
 #include <pthread.h>
 #include <atomic>
 #include <csignal>
@@ -14,8 +15,6 @@
 #include <vector>
 #include "../host/args.h"
 #include "../host/ocalls.h"
-
-#define pthread_create _pthread_create_impl
 
 extern const char* __test__;
 
@@ -75,7 +74,7 @@ int pthread_detach(pthread_t);
 _Noreturn void pthread_exit(void *);
 int pthread_join(pthread_t, void **);
 */
-extern "C" void _pthread_create_impl(
+static int _pthread_create_hook(
     pthread_t* thread,
     const pthread_attr_t* attr,
     void* (*start_routine)(void*),
@@ -94,6 +93,8 @@ extern "C" void _pthread_create_impl(
 
     if (oe_call_host("host_create_pthread", NULL) != OE_OK)
         oe_abort();
+
+    return 0;
 }
 
 OE_ECALL void _EnclaveLaunchThread()
@@ -108,6 +109,12 @@ OE_ECALL void _EnclaveLaunchThread()
 
 OE_ECALL void Test(Args* args)
 {
+    static oe_pthread_hooks_t _hooks = 
+    {
+        .create = _pthread_create_hook
+    };
+    oe_register_pthread_hooks(&_hooks);
+
     extern const char* __TEST__NAME;
     if (args)
     {
