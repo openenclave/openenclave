@@ -20,25 +20,25 @@ The current implementation of Open Enclave is built on [Intel Software Guard Ext
 Design Overview
 -------------
 
-The [Design Overview](docs/DesignOverview.pdf) document provides a brief design overview of the Open Enclave SDK. It describes the parts of the SDK and how they work together to create, invoke, and terminate enclaves. 
+The [Design Overview](https://github.com/Microsoft/openenclave/blob/master/docs/DesignOverview.pdf) document provides a brief design overview of the Open Enclave SDK. It describes the parts of the SDK and how they work together to create, invoke, and terminate enclaves. 
 
 Getting Started
 ---------------
 
-For OE application developers, user intends to build/develop an OE application. Start [here](docs/GettingStartedDocs/GettingStarted_User.md)
+For OE application developers, user intends to build/develop an OE application. Start [here](https://github.com/Microsoft/openenclave/blob/master/docs/GettingStartedDocs/GettingStarted_User.md)
 
-For OE Developer/Builder of OE Source, users who not only want to experience OE applications but also want to dig into how OE was implemented, and potentially contribute to this open source effort, start [here](docs/GettingStartedDocs/GettingStarted.md)
+For OE Developer/Builder of OE Source, users who not only want to experience OE applications but also want to dig into how OE was implemented, and potentially contribute to this open source effort, start [here](https://github.com/Microsoft/openenclave/blob/master/docs/GettingStartedDocs/GettingStarted.md)
 
 Contributing
 ------------
 
-This project welcomes contributions and suggestions. Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, see [Contributing to Open Enclave](docs/Contributing.md).
+This project welcomes contributions and suggestions. Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, see [Contributing to Open Enclave](https://github.com/Microsoft/openenclave/blob/master/docs/Contributing.md).
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
 contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
-See the [Development Guide](docs/DevelopmentGuide.md) for details about developing code in this repo, such as coding style and development processes.
+See the [Development Guide](https://github.com/Microsoft/openenclave/blob/master/docs/DevelopmentGuide.md) for details about developing code in this repo, such as coding style and development processes.
 
 
 Licensing
