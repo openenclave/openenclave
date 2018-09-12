@@ -67,7 +67,7 @@ ifdef USE_PKGS_IN
 	done
 else
 	@ for PKG in $(PACKAGES); do \
-		wget http://10.224.140.70:8888/$$PKG; \
+		wget http://10.31.100.105/$$PKG; \
 	done
 endif
 

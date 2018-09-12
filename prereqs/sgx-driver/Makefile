@@ -38,7 +38,7 @@ get-driver:
 ifdef USE_PKGS_IN
 	cp $(USE_PKGS_IN)/sgx_linux_x64_driver.bin .
 else
-	@ wget http://10.224.140.70:8888/sgx_linux_x64_driver.bin
+	@ wget http://10.31.100.105/sgx_linux_x64_driver.bin
 endif
 	chmod 744 sgx_linux_x64_driver.bin
 
