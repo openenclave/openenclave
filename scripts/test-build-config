@@ -48,8 +48,8 @@ OE_INSTALL_DIR="/opt/openenclave"
 ENABLE_FULL_LIBC_TESTS=0
 #Flag for enabling full libcxx tests.
 ENABLE_FULL_LIBCXX_TESTS=0
-#Flag to build with clang instead of gcc
-COMPILER_VALUE="gcc"
+#Valid COMPILER_VALUE inputs are clang-7|gcc
+COMPILER_VALUE="clang-7"
 
 #Parse the command line - keep looping as long as there is at least one more argument
 while [[ $# -gt 0 ]]; do

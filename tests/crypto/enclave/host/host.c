@@ -30,7 +30,8 @@ int main(int argc, const char* argv[])
     if ((result = oe_call_enclave(enclave, "Test", NULL)) != OE_OK)
         oe_put_err("oe_call_enclave() failed: result=%u", result);
 
-    oe_terminate_enclave(enclave);
+    if ((result = oe_terminate_enclave(enclave)) != OE_OK)
+        oe_put_err("oe_terminate_enclave() failed: %u\n", result);
 
     printf("=== passed all tests (%s)\n", argv[0]);
 

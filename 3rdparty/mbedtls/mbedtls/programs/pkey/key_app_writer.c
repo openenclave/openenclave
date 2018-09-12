@@ -29,8 +29,11 @@
 #include "mbedtls/platform.h"
 #else
 #include <stdio.h>
-#define mbedtls_printf     printf
-#endif
+#include <stdlib.h>
+#define mbedtls_printf          printf
+#define MBEDTLS_EXIT_SUCCESS    EXIT_SUCCESS
+#define MBEDTLS_EXIT_FAILURE    EXIT_FAILURE
+#endif /* MBEDTLS_PLATFORM_C */
 
 #if defined(MBEDTLS_PK_WRITE_C) && defined(MBEDTLS_FS_IO)
 #include "mbedtls/error.h"
@@ -76,7 +79,7 @@
 #define OUTPUT_FORMAT_DER              1
 
 #define USAGE \
-    "\n usage: key_app param=<>...\n"                   \
+    "\n usage: key_app_writer param=<>...\n"            \
     "\n acceptable parameters:\n"                       \
     "    mode=private|public default: none\n"           \
     "    filename=%%s         default: keyfile.key\n"   \
@@ -128,7 +131,7 @@ static int write_public_key( mbedtls_pk_context *key, const char *output_file )
             return( ret );
 
         len = ret;
-        c = output_buf + sizeof(output_buf) - len - 1;
+        c = output_buf + sizeof(output_buf) - len;
     }
 
     if( ( f = fopen( output_file, "w" ) ) == NULL )
@@ -189,11 +192,14 @@ static int write_private_key( mbedtls_pk_context *key, const char *output_file )
 
 int main( int argc, char *argv[] )
 {
-    int ret = 0;
-    mbedtls_pk_context key;
+    int ret = 1;
+    int exit_code = MBEDTLS_EXIT_FAILURE;
     char buf[1024];
     int i;
     char *p, *q;
+
+    mbedtls_pk_context key;
+    mbedtls_mpi N, P, Q, D, E, DP, DQ, QP;
 
     /*
      * Set to sane values
@@ -201,10 +207,13 @@ int main( int argc, char *argv[] )
     mbedtls_pk_init( &key );
     memset( buf, 0, sizeof( buf ) );
 
+    mbedtls_mpi_init( &N ); mbedtls_mpi_init( &P ); mbedtls_mpi_init( &Q );
+    mbedtls_mpi_init( &D ); mbedtls_mpi_init( &E ); mbedtls_mpi_init( &DP );
+    mbedtls_mpi_init( &DQ ); mbedtls_mpi_init( &QP );
+
     if( argc == 0 )
     {
     usage:
-        ret = 1;
         mbedtls_printf( USAGE );
         goto exit;
     }
@@ -300,14 +309,22 @@ int main( int argc, char *argv[] )
         if( mbedtls_pk_get_type( &key ) == MBEDTLS_PK_RSA )
         {
             mbedtls_rsa_context *rsa = mbedtls_pk_rsa( key );
-            mbedtls_mpi_write_file( "N:  ",  &rsa->N,  16, NULL );
-            mbedtls_mpi_write_file( "E:  ",  &rsa->E,  16, NULL );
-            mbedtls_mpi_write_file( "D:  ",  &rsa->D,  16, NULL );
-            mbedtls_mpi_write_file( "P:  ",  &rsa->P,  16, NULL );
-            mbedtls_mpi_write_file( "Q:  ",  &rsa->Q,  16, NULL );
-            mbedtls_mpi_write_file( "DP: ",  &rsa->DP, 16, NULL );
-            mbedtls_mpi_write_file( "DQ:  ", &rsa->DQ, 16, NULL );
-            mbedtls_mpi_write_file( "QP:  ", &rsa->QP, 16, NULL );
+
+            if( ( ret = mbedtls_rsa_export    ( rsa, &N, &P, &Q, &D, &E ) ) != 0 ||
+                ( ret = mbedtls_rsa_export_crt( rsa, &DP, &DQ, &QP ) )      != 0 )
+            {
+                mbedtls_printf( " failed\n  ! could not export RSA parameters\n\n" );
+                goto exit;
+            }
+
+            mbedtls_mpi_write_file( "N:  ",  &N,  16, NULL );
+            mbedtls_mpi_write_file( "E:  ",  &E,  16, NULL );
+            mbedtls_mpi_write_file( "D:  ",  &D,  16, NULL );
+            mbedtls_mpi_write_file( "P:  ",  &P,  16, NULL );
+            mbedtls_mpi_write_file( "Q:  ",  &Q,  16, NULL );
+            mbedtls_mpi_write_file( "DP: ",  &DP, 16, NULL );
+            mbedtls_mpi_write_file( "DQ:  ", &DQ, 16, NULL );
+            mbedtls_mpi_write_file( "QP:  ", &QP, 16, NULL );
         }
         else
 #endif
@@ -353,8 +370,15 @@ int main( int argc, char *argv[] )
         if( mbedtls_pk_get_type( &key ) == MBEDTLS_PK_RSA )
         {
             mbedtls_rsa_context *rsa = mbedtls_pk_rsa( key );
-            mbedtls_mpi_write_file( "N: ", &rsa->N, 16, NULL );
-            mbedtls_mpi_write_file( "E: ", &rsa->E, 16, NULL );
+
+            if( ( ret = mbedtls_rsa_export( rsa, &N, NULL, NULL,
+                                            NULL, &E ) ) != 0 )
+            {
+                mbedtls_printf( " failed\n  ! could not export RSA parameters\n\n" );
+                goto exit;
+            }
+            mbedtls_mpi_write_file( "N: ", &N, 16, NULL );
+            mbedtls_mpi_write_file( "E: ", &E, 16, NULL );
         }
         else
 #endif
@@ -382,9 +406,11 @@ int main( int argc, char *argv[] )
         write_private_key( &key, opt.output_file );
     }
 
+    exit_code = MBEDTLS_EXIT_SUCCESS;
+
 exit:
 
-    if( ret != 0 && ret != 1)
+    if( exit_code != MBEDTLS_EXIT_SUCCESS )
     {
 #ifdef MBEDTLS_ERROR_C
         mbedtls_strerror( ret, buf, sizeof( buf ) );
@@ -394,6 +420,10 @@ exit:
 #endif
     }
 
+    mbedtls_mpi_free( &N ); mbedtls_mpi_free( &P ); mbedtls_mpi_free( &Q );
+    mbedtls_mpi_free( &D ); mbedtls_mpi_free( &E ); mbedtls_mpi_free( &DP );
+    mbedtls_mpi_free( &DQ ); mbedtls_mpi_free( &QP );
+
     mbedtls_pk_free( &key );
 
 #if defined(_WIN32)
@@ -401,6 +431,6 @@ exit:
     fflush( stdout ); getchar();
 #endif
 
-    return( ret );
+    return( exit_code );
 }
 #endif /* MBEDTLS_PK_WRITE_C && MBEDTLS_FS_IO */
