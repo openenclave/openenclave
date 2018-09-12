@@ -40,8 +40,7 @@ typedef struct _oe_enclave_size_settings
 } oe_enclave_size_settings_t;
 
 /**
- *
- *Base type for enclave properties 
+ * Enclave properties header 
 */
 typedef struct _oe_enclave_properties_header
 {
