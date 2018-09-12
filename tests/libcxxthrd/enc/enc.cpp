@@ -4,8 +4,8 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
-#include <openenclave/internal/tests.h>
 #include <openenclave/internal/pthreadhooks.h>
+#include <openenclave/internal/tests.h>
 #include <pthread.h>
 #include <atomic>
 #include <csignal>
@@ -109,10 +109,7 @@ OE_ECALL void _EnclaveLaunchThread()
 
 OE_ECALL void Test(Args* args)
 {
-    static oe_pthread_hooks_t _hooks = 
-    {
-        .create = _pthread_create_hook
-    };
+    static oe_pthread_hooks_t _hooks = {.create = _pthread_create_hook};
     oe_register_pthread_hooks(&_hooks);
 
     extern const char* __TEST__NAME;

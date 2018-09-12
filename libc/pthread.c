@@ -6,9 +6,9 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/defs.h>
 #include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/pthreadhooks.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/thread.h>
-#include <openenclave/internal/pthreadhooks.h>
 #include <pthread.h>
 #include "locale_impl.h"
 #include "pthread_impl.h"

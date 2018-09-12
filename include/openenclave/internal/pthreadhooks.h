@@ -21,8 +21,7 @@ typedef struct _oe_pthread_hooks
     int (*join)(pthread_t thread, void** retval);
 
     int (*detach)(pthread_t thread);
-}
-oe_pthread_hooks_t;
+} oe_pthread_hooks_t;
 
 void oe_register_pthread_hooks(oe_pthread_hooks_t* pthread_hooks);
 
