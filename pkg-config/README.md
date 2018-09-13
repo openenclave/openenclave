@@ -6,15 +6,15 @@ This directory defines the following **pkg-config** files.
 ```
 oeenclave-gcc.pc
 oeenclave-g++.pc
-oehost-gcc.pc
-oehost-g++.pc
 oeenclave-clang.pc
 oeenclave-clang++.pc
+oehost-gcc.pc
+oehost-g++.pc
 oehost-clang.pc
 oehost-clang++.pc
 ```
 
-These are installed in the following directory.
+These install in the following directory.
 
 ```
 $ /usr/local/share/pkgconfig

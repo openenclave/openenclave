@@ -63,7 +63,11 @@ set(HOST_CXXFLAGS_GCC "${HOST_CFLAGS}")
 ##
 ##==============================================================================
 
-set(HOST_CLIBS "-rdynamic -loehost -ldl -lpthread -L\${libdir}/openenclave/host")
+if(USE_LIBSGX)
+    set(SGX_LIBS "-lsgx_enclave_common -lsgx_ngsa_ql -lsgx_urts_ng")
+endif()
+
+set(HOST_CLIBS "-rdynamic -L\${libdir}/openenclave/host -loehost -ldl -lpthread ${SGX_LIBS}")
 
 set(HOST_CXXLIBS "${HOST_CLIBS}")
 
