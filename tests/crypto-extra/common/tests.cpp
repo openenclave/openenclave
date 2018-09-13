@@ -27,7 +27,8 @@ oe_result_t create_and_read_chain(
 void test_cert_chain_positive(
     const char* root,
     const char* intermediate,
-    const char* leaf)
+    const char* leaf,
+    const char* leaf2)
 {
     oe_cert_chain_t chain = {0};
 
@@ -38,7 +39,9 @@ void test_cert_chain_positive(
             std::vector<const char*>{leaf, intermediate, root}, &chain) ==
         OE_OK);
 
-    // Duplicates are allowed.
+    // Duplicates are allowed, so long as a valid chain in correct
+    // order is present. In the following, the second occurence of leaf
+    // is followed by intermediate and root, allowing successful validdation.
     OE_TEST(
         create_and_read_chain(
             std::vector<const char*>{
@@ -50,10 +53,14 @@ void test_cert_chain_positive(
         create_and_read_chain(
             std::vector<const char*>{intermediate, root}, &chain) == OE_OK);
 
-    // Extra cert is allowed.
+    // Two leaf certs in chain, but starts at intermediate.
+    // For successful validation, for each cert in the chain, its
+    // ancestor (ie it's CA certificate) must occur atleast once to
+    // its right.
     OE_TEST(
         create_and_read_chain(
-            std::vector<const char*>{intermediate, leaf, intermediate, root},
+            std::vector<const char*>{
+                intermediate, leaf, leaf2, intermediate, root},
             &chain) == OE_OK);
 
     oe_cert_chain_free(&chain);
@@ -62,7 +69,8 @@ void test_cert_chain_positive(
 void test_cert_chain_negative(
     const char* root,
     const char* intermediate,
-    const char* leaf)
+    const char* leaf,
+    const char* leaf2)
 {
     oe_cert_chain_t chain = {0};
 
@@ -88,6 +96,12 @@ void test_cert_chain_negative(
     OE_TEST(
         create_and_read_chain(
             std::vector<const char*>{leaf, NULL, root}, &chain) == OE_FAILURE);
+
+    // Incorrect order. Leaf2 is not followed by intermediate.
+    OE_TEST(
+        create_and_read_chain(
+            std::vector<const char*>{leaf, intermediate, leaf2, root},
+            &chain) == OE_FAILURE);
 
     oe_cert_chain_free(&chain);
 }

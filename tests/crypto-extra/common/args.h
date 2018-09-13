@@ -9,6 +9,7 @@ struct test_cert_chain_args_t
     const char* root;
     const char* intermediate;
     const char* leaf;
+    const char* leaf2;
 };
 
 #endif //_ARGS_H_

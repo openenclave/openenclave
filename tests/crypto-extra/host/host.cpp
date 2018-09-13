@@ -25,21 +25,25 @@ std::vector<uint8_t> read_file(const char* path)
     return bytes;
 }
 
-void run_test_cert_chain_positive(oe_enclave_t* enclave)
+void run_cert_chain_tests(oe_enclave_t* enclave)
 {
     auto root_ca1 = read_file("./data/RootCA1.crt.pem");
     auto intermediate_ca1 = read_file("./data/IntermediateCA1.crt.pem");
     auto leaf1 = read_file("./data/Leaf1.crt.pem");
+    auto leaf2 = read_file("./data/Leaf2.crt.pem");
 
     test_cert_chain_args_t args = {.root = (char*)&root_ca1[0],
                                    .intermediate = (char*)&intermediate_ca1[0],
-                                   .leaf = (char*)&leaf1[0]};
-    test_cert_chain_positive(args.root, args.intermediate, args.leaf);
+                                   .leaf = (char*)&leaf1[0],
+                                   .leaf2 = (char*)&leaf2[0]};
+    test_cert_chain_positive(
+        args.root, args.intermediate, args.leaf, args.leaf2);
     OE_TEST(
         oe_call_enclave(enclave, "ecall_test_cert_chain_positive", &args) ==
         OE_OK);
 
-    test_cert_chain_negative(args.root, args.intermediate, args.leaf);
+    test_cert_chain_negative(
+        args.root, args.intermediate, args.leaf, args.leaf2);
     OE_TEST(
         oe_call_enclave(enclave, "ecall_test_cert_chain_negative", &args) ==
         OE_OK);
@@ -66,7 +70,7 @@ int main(int argc, const char* argv[])
         oe_put_err("oe_create_enclave(): result=%u", result);
     }
 
-    run_test_cert_chain_positive(enclave);
+    run_cert_chain_tests(enclave);
 
     /* Terminate the enclave */
     if ((result = oe_terminate_enclave(enclave)) != OE_OK)

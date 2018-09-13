@@ -7,13 +7,15 @@
 OE_ECALL void ecall_test_cert_chain_positive(void* args_)
 {
     test_cert_chain_args_t* args = (test_cert_chain_args_t*)args_;
-    test_cert_chain_positive(args->root, args->intermediate, args->leaf);
+    test_cert_chain_positive(
+        args->root, args->intermediate, args->leaf, args->leaf2);
 }
 
 OE_ECALL void ecall_test_cert_chain_negative(void* args_)
 {
     test_cert_chain_args_t* args = (test_cert_chain_args_t*)args_;
-    test_cert_chain_negative(args->root, args->intermediate, args->leaf);
+    test_cert_chain_negative(
+        args->root, args->intermediate, args->leaf, args->leaf2);
 }
 
 OE_SET_ENCLAVE_SGX(
