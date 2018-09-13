@@ -45,14 +45,14 @@ FROM ubuntu:16.04
 ENV PATH="/cmake-3.11.4-Linux-x86_64/bin:${PATH}"
 
 RUN apt-get -y update
-RUN apt-get -y install sudo git
+RUN apt-get -y install wget
+RUN echo "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" >> /etc/apt/sources.list; echo "deb-src http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" >> /etc/apt/sources.list; wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -; apt-get -y update; apt-get -y install clang-7 lldb-7 lld-7
 
 # install all the packages specified in install-prereqs except cmake
-RUN apt-get -y install clang-format gcc g++ make gdb autoconf libtool doxygen graphviz gawk libexpat1-dev openssl libssl-dev subversion ocaml-native-compilers
+RUN apt-get -y install clang-format gcc g++ make gdb autoconf libtool doxygen graphviz gawk libexpat1-dev openssl libssl-dev subversion ocaml-native-compilers libcurl3 dh-exec libmbedtls10 sudo git dpkg-dev
 
 # install wget as this is needed for getting latest cmake & Libsgx FLC packages
 # dpkg-dev is also needed by those packages for installing symlinks to lib files
-RUN apt-get -y install wget dpkg-dev
 
 # Install cmake v3.11 so that skipped tests are not marked as failures. This
 # version is not currently available via apt-get.
@@ -60,15 +60,20 @@ RUN wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz
 RUN tar xf cmake-3.11.4-Linux-x86_64.tar.gz
 
 # Download the Libsgx FLC packages
-RUN wget http://10.224.140.70:8888/libsgx-enclave-common_1.0.101.45575-1.0_amd64.deb
-RUN wget http://10.224.140.70:8888/libsgx-enclave-common-dev_1.0.101.45575-1.0_amd64.deb
-RUN wget http://10.224.140.70:8888/libsgx-ngsa-ql_1.0.101.45575-1.0_amd64.deb
-RUN wget http://10.224.140.70:8888/libsgx-ngsa-ql-dev_1.0.101.45575-1.0_amd64.deb
+ARG webserver=10.31.100.105
+RUN wget http://$webserver/libsgx-enclave-common_1.0.101.45575-1.0_amd64.deb
+RUN wget http://$webserver/libsgx-enclave-common-dev_1.0.101.45575-1.0_amd64.deb
+RUN wget http://$webserver/libsgx-ngsa-ql_1.0.101.45575-1.0_amd64.deb
+RUN wget http://$webserver/libsgx-ngsa-ql-dev_1.0.101.45575-1.0_amd64.deb
+RUN wget http://$webserver/azquotprov_0.2-1_amd64.deb
+RUN wget http://$webserver/sgx_linux_x64_driver.bin
 
 RUN dpkg -i libsgx-enclave-common_1.0.101.45575-1.0_amd64.deb
 RUN dpkg -i libsgx-enclave-common-dev_1.0.101.45575-1.0_amd64.deb
 RUN dpkg -i libsgx-ngsa-ql_1.0.101.45575-1.0_amd64.deb
 RUN dpkg -i libsgx-ngsa-ql-dev_1.0.101.45575-1.0_amd64.deb
+RUN dpkg -i azquotprov_0.2-1_amd64.deb
+RUN chmod +x sgx_linux_x64_driver.bin; mkdir -p /opt/bits; mv sgx_linux_x64_driver.bin /opt/bits
 
 RUN git config --global user.email "oeciteam@microsoft.com"
 RUN git config --global user.name "OE CI Team"
@@ -80,3 +85,4 @@ RUN rm -f libsgx-enclave-common_1.0.101.45575-1.0_amd64.deb
 RUN rm -f libsgx-enclave-common-dev_1.0.101.45575-1.0_amd64.deb
 RUN rm -f libsgx-ngsa-ql_1.0.101.45575-1.0_amd64.deb
 RUN rm -f libsgx-ngsa-ql-dev_1.0.101.45575-1.0_amd64.deb
+RUN rm -f azquotprov_0.2-1_amd64.deb
