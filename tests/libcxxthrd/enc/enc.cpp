@@ -53,7 +53,7 @@ extern "C" int close(int fd)
     return 0;
 }
 
-static std::vector<std::function<void()>> _thread_functions;
+static std::vector<std::function<void*()>> _thread_functions;
 static std::atomic_flag _lock = ATOMIC_FLAG_INIT;
 static pthread_t _next_thread_id = 0;
 
