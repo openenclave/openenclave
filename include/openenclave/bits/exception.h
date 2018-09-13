@@ -75,7 +75,7 @@ typedef struct _oe_basic_xstate
 {
     uint8_t blob[512]; /**< Holds XState i.e. X87 and SSE data */
 } OE_ALIGNED(16) oe_basic_xstate_t;
- /**< typedef struct _oe_basic_xstate oe_basic_xstate_t*/
+/**< typedef struct _oe_basic_xstate oe_basic_xstate_t*/
 
 /**
  * Register state to  be saved before an exception and
@@ -151,10 +151,11 @@ typedef struct _oe_exception_record
 /**< typedef struct _oe_exception_record oe_exception_record_t*/
 
 /**
- * oe_vectored_exception_handler_t - Pointer to Vectored exception handler
- * registered in the enclave.
- * @param exceptionContext Holds the exception code, flags, address and
- * calling context.
+ * oe_vectored_exception_handler_t - Function pointer for a vectored exception
+ * handler in an enclave.
+ * @param exceptionContext The record of exception information to be handled by
+ * the function which includes any flags, the failure code, faulting address and
+ * calling context for the exception.
  */
 typedef uint64_t (*oe_vectored_exception_handler_t)(
     oe_exception_record_t* exceptionContext);
