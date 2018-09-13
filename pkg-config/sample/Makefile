@@ -1,11 +1,11 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-ENCLAVE_CFLAGS=$(shell pkg-config oeenclave --cflags)
-ENCLAVE_LIBS=$(shell pkg-config oeenclave --libs)
+ENCLAVE_CFLAGS=$(shell pkg-config oeenclave-gcc --cflags)
+ENCLAVE_LIBS=$(shell pkg-config oeenclave-gcc --libs)
 
-HOST_CFLAGS=$(shell pkg-config oehost --cflags)
-HOST_LIBS=$(shell pkg-config oehost --libs)
+HOST_CFLAGS=$(shell pkg-config oehost-gcc --cflags)
+HOST_LIBS=$(shell pkg-config oehost-gcc --libs)
 
 all: build_enclave build_host
 

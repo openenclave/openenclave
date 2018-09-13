@@ -7,13 +7,8 @@ includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
 libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
 
 Name: Open Enclave
-
-Description: Open Enclave C flags and libraries for building hosts.
-
-Version: 1.0.0
-
-Requires: openssl
-
-Libs: -rdynamic -L${libdir}/openenclave/host -loehost -ldl -lpthread
-
-Cflags: -I${includedir}
+Description: Open Enclave clang flags and libraries for building enclaves.
+Version: @OE_VERSION@
+Requires:
+Cflags: @ENCLAVE_CFLAGS_CLANG@
+Libs: @ENCLAVE_CLIBS@
