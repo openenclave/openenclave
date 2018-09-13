@@ -104,6 +104,7 @@ typedef struct _oe_identity
      * For SGX enclaves, this is the ISVPRODID value. */
     uint8_t product_id[OE_PRODUCT_ID_SIZE];
 } oe_identity_t;
+/**< typedef struct _oe_identity oe_identity_t*/
 
 /**
  * oe_report_t structure holds the parsed form of a report.
@@ -133,6 +134,7 @@ typedef struct _oe_report
     /** Contains the IDs and attributes that are part of oe_identity_t */
     oe_identity_t identity;
 } oe_report_t;
+/**< typedef struct _oe_report oe_report_t*/
 
 OE_EXTERNC_END
 

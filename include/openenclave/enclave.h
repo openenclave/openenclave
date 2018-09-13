@@ -386,6 +386,7 @@ typedef enum _oe_seal_policy {
      */
     _OE_SEAL_POLICY_MAX = OE_ENUM_MAX,
 } oe_seal_policy_t;
+/**< typedef enum _oe_seal_policy oe_seal_policy_t*/
 
 /**
 * Get a symmetric encryption key derived from the specified policy and coupled

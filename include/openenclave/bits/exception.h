@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+/// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 /**
@@ -73,11 +73,9 @@ OE_EXTERNC_BEGIN
  */
 typedef struct _oe_basic_xstate
 {
-    /**
-      * Holds XState i.e. X87 and SSE data.
-      */
-    uint8_t blob[512];
+    uint8_t blob[512]; /**< Holds XState i.e. X87 and SSE data */
 } OE_ALIGNED(16) oe_basic_xstate_t;
+ /**< typedef struct _oe_basic_xstate oe_basic_xstate_t*/
 
 /**
  * Register state to  be saved before an exception and
@@ -134,6 +132,7 @@ typedef struct _oe_context
 
     // Don't need to manipulate other XSTATE (AVX etc.).
 } oe_context_t;
+/**< typedef struct _oe_context oe_context_t*/
 
 /**
  * Exception context structure with the exception code, flags, address and
@@ -149,6 +148,7 @@ typedef struct _oe_exception_record
 
     oe_context_t* context; /**< Exception context */
 } oe_exception_record_t;
+/**< typedef struct _oe_exception_record oe_exception_record_t*/
 
 /**
  * oe_vectored_exception_handler_t - Pointer to Vectored exception handler
