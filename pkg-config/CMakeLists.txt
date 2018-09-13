@@ -19,9 +19,9 @@ set(ENCLAVE_CFLAGS "-nostdinc -m64 -fPIC -I\${includedir} -I\${includedir}/libc"
 
 set(ENCLAVE_CXXFLAGS "${ENCLAVE_CFLAGS} -I\${includedir}/libcxx")
 
-set(ENCLAVE_CFLAGS_CLANG "${ENCLAVE_CFLAGS} -mllvm -x86-speculative-load-hardening -mxsave")
+set(ENCLAVE_CFLAGS_CLANG "${ENCLAVE_CFLAGS} -mllvm -x86-speculative-load-hardening")
 
-set(ENCLAVE_CXXFLAGS_CLANG "${ENCLAVE_CXXFLAGS} -mllvm -x86-speculative-load-hardening -mxsave")
+set(ENCLAVE_CXXFLAGS_CLANG "${ENCLAVE_CXXFLAGS} -mllvm -x86-speculative-load-hardening")
 
 set(ENCLAVE_CFLAGS_GCC "${ENCLAVE_CFLAGS}")
 
@@ -49,7 +49,7 @@ set(ENCLAVE_CXXLIBS "${ENCLAVE_CLIBS_1} -loelibcxx ${ENCLAVE_CLIBS_2}")
 
 set(HOST_CFLAGS "-I\${includedir}")
 
-set(HOST_CFLAGS_CLANG "-mllvm -x86-speculative-load-hardening -mxsave ${HOST_CFLAGS}")
+set(HOST_CFLAGS_CLANG "-mllvm -x86-speculative-load-hardening ${HOST_CFLAGS}")
 
 set(HOST_CXXFLAGS_CLANG "${HOST_CFLAGS_CLANG}")
 
