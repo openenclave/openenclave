@@ -21,7 +21,7 @@
    | libcurl3                          | client-side URL transfers library|
    | clang-7                           | clang-7 |
 
-  See [/scripts/install-prereqs](/scripts/install-prereqs) script for a up-to-date list
+  See [/scripts/install-prereqs](/scripts/install-prereqs) script for an up-to-date list
 
 For application developers: install the following basic runtime prerequisites
 
@@ -36,7 +36,6 @@ Both types of developers need to install clang-7 (see next section)
 The "install-prereqs" script was created to make installing the prerequisites less tedious.
 Execute the following commands from the root of the source tree to install above prerequisites for you
 
-        cd openenclave
         sudo ./scripts/install-prereqs
 
 # Install Clang-7
