@@ -2,6 +2,9 @@
 # Licensed under the MIT License.
 
 PACKAGE_VER=1.0.101.45575-1.0_amd64
+
+# The azquotprov package is temporary and will be replaced by an Intel
+# impelmentation in the future.
 AZQUOTE_VER=0.2-1_amd64
 
 PACKAGE_NAMES=\
