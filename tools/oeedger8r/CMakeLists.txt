@@ -21,3 +21,6 @@ add_custom_target(oeedger8r ALL
     DEPENDS ${OE_BINDIR}/oeedger8r      
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/src
 )
+
+# install rule
+install (PROGRAMS ${OE_BINDIR}/oeedger8r DESTINATION ${CMAKE_INSTALL_BINDIR})
