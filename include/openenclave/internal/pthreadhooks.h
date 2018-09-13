@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_BITS_PTHREADHOOKS_H
-#define _OE_BITS_PTHREADHOOKS_H
+#ifndef _OE_INTERNAL_PTHREADHOOKS_H
+#define _OE_INTERNAL_PTHREADHOOKS_H
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/result.h>
@@ -27,4 +27,4 @@ void oe_register_pthread_hooks(oe_pthread_hooks_t* pthread_hooks);
 
 OE_EXTERNC_END
 
-#endif /* _OE_BITS_PTHREADHOOKS_H */
+#endif /* _OE_INTERNAL_PTHREADHOOKS_H */

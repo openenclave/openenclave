@@ -12,6 +12,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <functional>
+#include <iostream> //std::cout
 #include <vector>
 #include "../host/args.h"
 #include "../host/ocalls.h"
@@ -67,31 +68,36 @@ static void _release_lock()
     _lock.clear(std::memory_order_release);
 }
 
-/* pthread function prototypes
-int pthread_create(pthread_t *__restrict, const pthread_attr_t *__restrict, void
-*(*)(void *), void *__restrict);
-int pthread_detach(pthread_t);
-_Noreturn void pthread_exit(void *);
-int pthread_join(pthread_t, void **);
-*/
 static int _pthread_create_hook(
     pthread_t* thread,
     const pthread_attr_t* attr,
     void* (*start_routine)(void*),
     void* arg)
 {
-    // enc_stack(enc_func_ptr);
-    // Call host to create thread
-    // my_pthread_create_ocall(thread, attr, enc_func_ptr, arg);
-
     _acquire_lock();
 
-    _thread_functions.push_back([start_routine, arg]() { start_routine(arg); });
+    _thread_functions.push_back(
+        [start_routine, arg]() { return start_routine(arg); });
 
     *thread = ++_next_thread_id;
     _release_lock();
 
     if (oe_call_host("host_create_pthread", NULL) != OE_OK)
+        oe_abort();
+
+    return 0;
+}
+
+static int _pthread_join_hook(pthread_t thread, void** retval)
+{
+    // Check if valid thread_id has been passed
+    if (thread > _next_thread_id)
+    {
+        std::cout << "Invalid Thread ID " << thread << std::endl;
+        oe_abort();
+    }
+
+    if (oe_call_host("host_join_pthread", NULL) != OE_OK)
         oe_abort();
 
     return 0;
@@ -107,9 +113,15 @@ OE_ECALL void _EnclaveLaunchThread()
     f();
 }
 
+OE_ECALL void _EnclaveJoinThread()
+{
+    printf("In _EnclaveJoinThread function\n");
+}
+
 OE_ECALL void Test(Args* args)
 {
-    static oe_pthread_hooks_t _hooks = {.create = _pthread_create_hook};
+    static oe_pthread_hooks_t _hooks = {.create = _pthread_create_hook,
+                                        .join = _pthread_join_hook};
     oe_register_pthread_hooks(&_hooks);
 
     extern const char* __TEST__NAME;

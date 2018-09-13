@@ -1,6 +1,5 @@
 ../../3rdparty/libcxx/libcxx/test/libcxx/thread/thread.condition/PR30202_notify_from_pthread_created_thread.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/thread/thread.mutex/thread_safety_requires_capability.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/thread/thread.threads/thread.thread.class/thread.thread.member/native_handle.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/thread/thread.threads/thread.thread.this/sleep_for.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.search/awk.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.async/async.pass.cpp
@@ -94,3 +93,5 @@
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.threads/thread.thread.class/thread.thread.member/swap.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.threads/thread.thread.class/thread.thread.static/hardware_concurrency.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.threads/thread.thread.this/sleep_until.pass.cpp
+
+../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.lock/thread.lock.unique/thread.lock.unique.locking/lock.pass.cpp
