@@ -14,7 +14,7 @@ OE_ECALL void test_struct_edl_ocalls(void*)
     const size_t count = 5;
     const size_t size = sizeof(MyStruct1) * 5;
 
-    MyStruct1 retval = {0};
+    MyStruct1 retval = {{0}};
     MyStruct1 a1 = {{1}, 2};
 
     static MyStruct1 a2[5];
@@ -29,7 +29,7 @@ OE_ECALL void test_struct_edl_ocalls(void*)
     }
 
     MyStruct1 a4[1][1][1];
-    a4[0][0][0] = MyStruct1{0};
+    a4[0][0][0] = MyStruct1{{0}};
 
     MyStruct1 a5 = {{5}, 5};
     MyStruct1 a6 = {{1}, 2};

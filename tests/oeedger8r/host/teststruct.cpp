@@ -12,7 +12,7 @@ void test_struct_edl_ecalls(oe_enclave_t* enclave)
     const size_t count = 5;
     const size_t size = sizeof(MyStruct1) * 5;
 
-    MyStruct1 retval = {0};
+    MyStruct1 retval = {{0}};
     MyStruct1 a1 = {{1}, 2};
 
     static MyStruct1 a2[5];
@@ -27,7 +27,7 @@ void test_struct_edl_ecalls(oe_enclave_t* enclave)
     }
 
     MyStruct1 a4[1][1][1];
-    a4[0][0][0] = MyStruct1{0};
+    a4[0][0][0] = MyStruct1{{0}};
 
     MyStruct1 a5 = {{5}, 5};
     MyStruct1 a6 = {{1}, 2};
