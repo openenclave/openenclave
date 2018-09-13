@@ -19,6 +19,10 @@ The certificates and CRLs were generated using the following openssl commands.
       2. openssl req -new -key Leaf.key.pem -out Leaf.csr
       3. openssl x509 -req -in Leaf.csr -CA IntermediateCA.crt.pem -CAkey IntermediateCA.key.pem -CAcreateserial -out Leaf.crt.pem
   
-**Preparing Test Data**
-  1. test_cert_chain: Asserts that   
+**List of Tests**
+  1. test_cert_chain_positive: 
+        Asserts the following condition: "In a valid cert chain, each certificate's issuer CA occurs atleast once after the certificate".
+        Tests correct ordering, duplicates, two and three level chains.
+  2. test_cert_chain_negative: Negative tests involving incorrect ordering, missing certs etc.
+        
 
