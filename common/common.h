@@ -24,6 +24,7 @@
 
 #define memcpy oe_memcpy
 #define memcmp oe_memcmp
+#define memmove oe_memmove
 #define memset oe_memset
 
 #define strlen oe_strlen

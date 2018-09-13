@@ -23,6 +23,12 @@ oe_result_t oe_strncat_s(
     char* dst,
     size_t dst_size,
     const char* src,
-    size_t count);
+    size_t num_bytes);
+
+oe_result_t oe_strncpy_s(
+    char* dst,
+    size_t dst_size,
+    const char* src,
+    size_t num_bytes);
 
 #endif // _OE_SAFECRT_H
