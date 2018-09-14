@@ -34,6 +34,7 @@ all:
 	$(MAKE) sign
 
 build:
+	$(OE_BINDIR)/oeedger8r ../helloworld.edl --trusted
 	$(CC) -c $(CFLAGS) $(INCLUDES) enc.c -o enc.o
 	$(CC) -c $(CFLAGS) $(INCLUDES) helloworld_t.c -o helloworld_t.o
 	$(CC) -o helloworldenc.so helloworld_t.o enc.o $(LDFLAGS) $(LIBRARIES)

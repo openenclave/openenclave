@@ -35,6 +35,7 @@ LIBRARIES += $(call optlib,sgx_ngsa_ql)
 LIBRARIES += $(call optlib,sgx_urts_ng)
 
 build:
+	$(OE_BINDIR)/oeedger8r ../helloworld.edl --untrusted
 	$(CC) -c $(CFLAGS) $(INCLUDES) host.c
 	$(CC) -c $(CFLAGS) $(INCLUDES) helloworld_u.c
 	$(CC) -o helloworldhost helloworld_u.o host.o $(LDFLAGS) $(LIBRARIES)
