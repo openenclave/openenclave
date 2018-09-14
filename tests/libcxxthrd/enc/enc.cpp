@@ -14,6 +14,8 @@
 #include <functional>
 #include <iostream> //std::cout
 #include <vector>
+#include <map>
+#include "../args.h"
 #include "../host/args.h"
 #include "../host/ocalls.h"
 
@@ -55,7 +57,8 @@ extern "C" int close(int fd)
 
 static std::vector<std::function<void*()>> _thread_functions;
 static std::atomic_flag _lock = ATOMIC_FLAG_INIT;
-static pthread_t _next_thread_id = 0;
+static pthread_t _next_enc_thread_id = 0;
+static std::map<pthread_t, pthread_t> _enclave_host_id_map;
 
 static void _acquire_lock()
 {
@@ -69,7 +72,7 @@ static void _release_lock()
 }
 
 static int _pthread_create_hook(
-    pthread_t* thread,
+    pthread_t* enc_thread,
     const pthread_attr_t* attr,
     void* (*start_routine)(void*),
     void* arg)
@@ -79,7 +82,7 @@ static int _pthread_create_hook(
     _thread_functions.push_back(
         [start_routine, arg]() { return start_routine(arg); });
 
-    *thread = ++_next_thread_id;
+    *enc_thread = ++_next_enc_thread_id;
     _release_lock();
 
     if (oe_call_host("host_create_pthread", NULL) != OE_OK)
@@ -88,34 +91,70 @@ static int _pthread_create_hook(
     return 0;
 }
 
-static int _pthread_join_hook(pthread_t thread, void** retval)
+static int _pthread_join_hook(pthread_t enc_thread, void** retval)
 {
+  std::map<pthread_t, pthread_t>::iterator it;
+  
     // Check if valid thread_id has been passed
-    if (thread > _next_thread_id)
+    if (enc_thread > _next_enc_thread_id)
     {
-        std::cout << "Invalid Thread ID " << thread << std::endl;
+        std::cout << "(_pthread_join_hook)Invalid Thread ID " << enc_thread << std::endl;
         oe_abort();
     }
 
-    if (oe_call_host("host_join_pthread", NULL) != OE_OK)
+    //Get the host thread id and pass it to host for join
+    it = _enclave_host_id_map.find(enc_thread);
+    /* if (it == _enclave_host_id_map.end())
+       oe_abort(); */
+    
+    my_pthread_args_t args;
+    args.host_thread_id = it->second; //_enclave_host_id_map[enc_thread];
+    args.ret = 0;
+    std::cout << "_pthread_join_hook " << args.host_thread_id << std::endl;
+    
+    if (oe_call_host("host_join_pthread", &args) != OE_OK)
         oe_abort();
 
     return 0;
 }
 
-OE_ECALL void _EnclaveLaunchThread()
+OE_ECALL void _EnclaveLaunchThread(void* args_)
 {
+  my_pthread_args_t* args = (my_pthread_args_t*)args_;
+  std::cout << "Entering Enclave Launch thread----------hostid=" << args->host_thread_id << std::endl;
+    
     std::function<void()> f;
     _acquire_lock();
+    if (!_next_enc_thread_id)
+      {
+        std::cout << "(_EnclaveLaunchThread)Invalid Next Thread ID " << _next_enc_thread_id << std::endl;
+        oe_abort();
+      } 
+    //Add the mapping of enc_thread_id to host_thread_id
+    _enclave_host_id_map[_next_enc_thread_id-1] = args->host_thread_id;
     f = _thread_functions.back();
     _thread_functions.pop_back();
     _release_lock();
     f();
+    printf("Exiting Enclave Launch thread---------\n");
 }
 
-OE_ECALL void _EnclaveJoinThread()
+OE_ECALL void _EnclaveJoinThread(void* args_)
 {
-    printf("In _EnclaveJoinThread function\n");
+  std::cout << "In _EnclaveJoinThread function\n";
+  my_pthread_args_t* args = (my_pthread_args_t*)args_;
+
+  if (args)
+    {
+      std::cout << "host thread id in _EnclaveJoinThread is " << args->host_thread_id << std::endl;;
+      pthread_join(args->host_thread_id, NULL);
+    }
+  
+  /* if (pthread_join(args->host_thread_id, &retVal) != 0)
+    {
+      std::cout << "(_EnclaveJoinThread)pthread_join failed for " << args->host_thread_id << std::endl;
+      oe_abort();
+      } */
 }
 
 OE_ECALL void Test(Args* args)
@@ -143,4 +182,4 @@ OE_SET_ENCLAVE_SGX(
     true, /* AllowDebug */
     8192, /* HeapPageCount */
     1024, /* StackPageCount */
-    2);   /* TCSCount */
+    4);   /* TCSCount */

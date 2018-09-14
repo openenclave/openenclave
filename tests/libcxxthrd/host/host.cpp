@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <thread>
+#include "../args.h"
 #include "args.h"
 #include "ocalls.h"
 
@@ -40,16 +41,23 @@ OE_OCALL void ocall_exit(uint64_t arg)
 
 OE_OCALL void host_create_pthread(void* arg, oe_enclave_t* enclave)
 {
+  my_pthread_args_t args;
+  args.host_thread_id = pthread_self();
+  args.ret = -1;
+  
     // host side it doesn't matter whether we use pthread or std::thread.
-    std::thread([enclave]() {
-        oe_call_enclave(enclave, "_EnclaveLaunchThread", NULL);
+  std::thread([enclave, &args]() {
+        oe_call_enclave(enclave, "_EnclaveLaunchThread", &args);
     }).detach();
 }
 
 OE_OCALL void host_join_pthread(void* arg, oe_enclave_t* enclave)
 {
-    std::thread([enclave]() {
-        oe_call_enclave(enclave, "_EnclaveJoinThread", NULL);
+  my_pthread_args_t* args = (my_pthread_args_t*)arg;
+  args->ret = -1;
+  
+  std::thread([enclave, args]() {
+        oe_call_enclave(enclave, "_EnclaveJoinThread", args);
     }).join();
 }
 
