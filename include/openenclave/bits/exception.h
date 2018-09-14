@@ -45,11 +45,11 @@ OE_EXTERNC_BEGIN
  */
 #define OE_EXCEPTION_X87_FLOAT_POINT 0x6
 /**
- * x87 FPU floating-point exception code, used by vectored exception handler.
+ * Alignment check exception code, used by vectored exception handler.
  */
 #define OE_EXCEPTION_MISALIGNMENT 0x7
 /**
- * Alignment check exception code, used by vectored exception handler.
+ * SIMD floating point exception code, used by vectored exception handler.
  */
 #define OE_EXCEPTION_SIMD_FLOAT_POINT 0x8
 /**
