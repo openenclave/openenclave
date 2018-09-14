@@ -561,6 +561,7 @@ oe_result_t oe_cert_verify(
     Cert* certImpl = (Cert*)cert;
     CertChain* chainImpl = (CertChain*)chain;
     X509_STORE_CTX* ctx = NULL;
+    X509_STORE* store = NULL;
     X509* x509 = NULL;
     STACK_OF(X509_CRL)* crl_stack = NULL;
     X509_VERIFY_PARAM* verify_param = NULL;
@@ -597,6 +598,20 @@ oe_result_t oe_cert_verify(
     /* Initialize OpenSSL (if not already initialized) */
     oe_initialize_openssl();
 
+    /* Create an X509 store */
+    if (!(store = X509_STORE_new()))
+    {
+        _SetErr(error, "failed to allocate X509 store");
+        OE_RAISE(OE_FAILURE);
+    }
+
+    /* Set the flags for this store */
+    if (crls)
+    {
+        unsigned long flags = X509_V_FLAG_CRL_CHECK | X509_V_FLAG_CRL_CHECK_ALL;
+        X509_STORE_set_flags(store, flags);
+    }
+
     /* Create a context for verification */
     if (!(ctx = X509_STORE_CTX_new()))
     {
@@ -605,7 +620,7 @@ oe_result_t oe_cert_verify(
     }
 
     /* Initialize the context that will be used to verify the certificate */
-    if (!X509_STORE_CTX_init(ctx, NULL, NULL, NULL))
+    if (!X509_STORE_CTX_init(ctx, store, NULL, NULL))
     {
         _SetErr(error, "failed to initialize X509 context");
         OE_RAISE(OE_FAILURE);
@@ -642,6 +657,9 @@ oe_result_t oe_cert_verify(
 
             if (!_X509_CRL_up_ref(crl_impl->crl))
                 OE_RAISE(OE_FAILURE);
+
+            if (!X509_STORE_add_crl(store, crl_impl->crl))
+                OE_RAISE(OE_FAILURE);
         }
 
         X509_STORE_CTX_set0_crls(ctx, crl_stack);
@@ -649,6 +667,7 @@ oe_result_t oe_cert_verify(
         // Enable CRL checking: without this flag, OpenSSL ingores the CRL list
         // installed above.
         X509_VERIFY_PARAM_set_flags(verify_param, X509_V_FLAG_CRL_CHECK);
+        X509_VERIFY_PARAM_set_flags(verify_param, X509_V_FLAG_CRL_CHECK_ALL);
     }
 
     /* Finally verify the certificate */
@@ -672,6 +691,9 @@ done:
 
     if (crl_stack)
         sk_X509_CRL_pop_free(crl_stack, X509_CRL_free);
+
+    if (store)
+        X509_STORE_free(store);
 
     return result;
 }
