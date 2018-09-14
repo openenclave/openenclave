@@ -31,8 +31,9 @@
 #include "enclave.h"
 #include "memalign.h"
 #include "sgxload.h"
+#include "sgxquoteprovider.h"
 
-static oe_once_type _enclave_init_once;
+static oe_once_type _enclave_init_once = OE_H_ONCE_INITIALIZER;
 
 static void _InitializeExceptionHandling(void)
 {
@@ -1406,6 +1407,9 @@ oe_result_t oe_create_enclave(
     oe_sgx_load_context_t context;
 
     _InitializeEnclaveHost();
+
+    // Experimental
+    oe_initialize_quote_provider();
 
     if (enclaveOut)
         *enclaveOut = NULL;
