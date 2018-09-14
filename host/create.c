@@ -32,7 +32,7 @@
 #include "memalign.h"
 #include "sgxload.h"
 
-static oe_once_type _enclave_init_once;
+static oe_once_type _enclave_init_once = OE_H_ONCE_INITIALIZER;
 
 static void _InitializeExceptionHandling(void)
 {
