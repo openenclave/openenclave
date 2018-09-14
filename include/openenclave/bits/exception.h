@@ -156,7 +156,6 @@ typedef struct _oe_exception_record
  * @param exceptionContext The record of exception information to be handled by
  * the function which includes any flags, the failure code, faulting address and
  * calling context for the exception.
->>>>>>> Address Simon's comments
  */
 typedef uint64_t (*oe_vectored_exception_handler_t)(
     oe_exception_record_t* exceptionContext);
