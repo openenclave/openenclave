@@ -23,8 +23,13 @@ install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/make/sort
 
 endif()
 
-# Install the helloworld.
+# Install the helloworld sample.
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/make/helloworld
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
+    )
+
+# Install the file-encryptor sample
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/make/file-encryptor
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
     )
 
