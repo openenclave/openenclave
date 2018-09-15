@@ -42,3 +42,10 @@ The certificates and CRLs were generated using the following openssl commands.
        Asserts the following condition: "In a valid cert chain, each certificate's issuer CA occurs atleast once after the certificate".
         Tests correct ordering, duplicates, two and three level chains.
   2. test_cert_chain_negative: Negative tests involving incorrect ordering, missing certs etc.
+  3. test_crls.
+      1. Assert that verify succeeds when no crls are passed.
+      2. Assert that when crls are passed, but don't revoke certs, verify succeeds.
+      3. Assert that when crl revoking leaf is passed, verify fails.
+      4. Assert that when crl revoking intermediate is passed in, verify fails. (This behavior is currently broken.)
+      5. Assert that when only one crl is passed in (either root or intermediate), verify fails. (This behavior is currently broken.)
+
