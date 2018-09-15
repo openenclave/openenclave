@@ -10,9 +10,18 @@
 
 ## About the helloworld sample
 
-This sample is about as simple as you can get whereby the host calls in to the enclave calling a function with no parameters, and then the enclave calls back into the host calling another function with no parameters. A little message is printed in both of these functions to help show the progression through the code.
+This sample is about as simple as you can get regarding creating and calling into an enclave. In this sample you will see:
 
-This sample uses the SDK edger8r to generate the code necessary for the host to call the enclave function, as well as generate the code necessary for the enclave to call the host function. To achieve this we need to author an `edl` file and generate these files. The following is the contents of the helloworld.edl file that is in the root of this sample:
+- The host creates an enclave
+- The host calls a simple function in the enclave
+- The enclave function prints a message and then calls a simple function back in the host
+- The host function prints a message before returning to the enclave
+- The enclave function returns back to the host
+- The enclave is terminated
+
+This sample uses the Open enclave SDK `oeedger8r` tool to generate marshaling code necessary to call functions between the enclave and the host.
+
+First we need to define the functions we want to call between the enclave and host. To do this we create a `helloworld.edl` file:
 
 ```edl
 enclave {
@@ -27,38 +36,56 @@ enclave {
 };
 ```
 
-This file generates two function stubs, one for the function that lives in the enclave called `enclave_helloworld()` and one for the function that lives in the host called `host_helloworld()`. In this case the functions do not take any parameters as well as not returning anything. Other samples will cover the parameters in more details.
+In this `helloworld.edl` file we define two different function.
 
-The generated files are created by calling the following:
-```bash 
-edger8r helloworld.edl --untrusted-dir host --trusted-dir enc
+```c
+public void enclave_helloworld();
 ```
 
-This command compiles the helloworld.edl file and generates the following files:
+This method will be implemented inside the trusted enclave itself and the untrusted host will call it. For the host to be able to call this function the host needs to call through the Open Enclave SDK to transition from the untrusted host into the trusted enclave. To help with this the `eoedger8r` tool generates some marshaling code in the host directory with the same signature as the function in the enclave, with the addition of an enclave handle so the SDK knows which enclave will execute the code.
+
+```c
+void host_helloworld();
+```
+
+The reverse is also true for functions defined in the untrusted host that the trusted enclave needs to call into. The untrusted host will implement this function and the `oeedger8r` tool generates some marshaling code in the enc directory with the same signature as the function in the host.
+
+To generate the functions with the marshaling code the `oeedger8r` is called in both the host and enc directories from their makefiles:
+
+To generate the marshaling code the untrusted host uses to call into the trusted enclave the following command is run:
+
+```bash
+oeedger8r ../helloworld.edl --untrusted
+```
+
+This command compiles the `helloworld.edl` file and generates the following files within te host directory:
 
 | file | description |
 |---|---|
-| enc/helloworld_args.h | Defines the parameters that are passed to both functions in the enclave and host |
-| enc/helloworld_t.c | Contains a proxy implementation of the untrusted function that calls into the host itself |
-| enc/helloworld_t.h | Defines the function prototypes of the untrusted host functions|
-| host/helloworld_args.h | Defines the parameters that are passed to both functions in the enclave and host |
-| host/helloworld_t.c | Contains a proxy implementation of the trusted function that calls into the enclave itself |
-| host/helloworld_t.h | Defines the function prototypes of the trusted enclave functions |
+| host/helloworld_args.h | Defines the parameters that are passed to all functions defined in the edl file |
+| host/helloworld_t.c | Contains the `enclave_helloworld()` function with the marshaling code to call into the enclave version of the `enclave_helloworld()` function |
+| host/helloworld_t.h | Defines the function prototypes `enclave_helloworld()` function that will be called from the untructed host |
 
-Note that `helloworld_args.h` in both directories are actually the same file.
+To generate the marshaling code the trusted enclave uses to call into the untrusted host the following command is run:
+
+```bash
+oeedger8r ../helloworld.edl --ctrusted
+```
+
+| file | description |
+|---|---|
+| enc/helloworld_args.h | Defines the parameters that are passed to all functions defined in the edl file |
+| enc/helloworld_t.c | Contains the `host_helloworld()` function with the marshaling code to call into the host version of the `host_helloworld()` function |
+| enc/helloworld_t.h | Defines the function prototypes `host_helloworld()` function that will be called from the trusted enclave |
 
 The Makefile in the root of this sample directory has three rules
 
-- build: Generates the files from the edl, builds the enclave code, and followed builds the host code
-- clean: Deletes all temporary files generated during the build
-- run: Runs the host, passing in the signed enclave shared library
+- build: Calls into the makefiles in the host and enc directories to build
+- clean: Calls in to the makefiles in the host and enc directories to clean all generated files
+- run: Runs the generated host executable, passing the signed enclave shared library as a parameter
 
 ```make
-OPENENCLAVE_CONFIG=../config.mak
-include $(OPENENCLAVE_CONFIG)
-
 build:
-        $(OE_BINDIR)/oeedger8r helloworld.edl --untrusted-dir host --trusted-dir enc
         $(MAKE) -C enc
         $(MAKE) -C host
 
@@ -70,19 +97,19 @@ run:
         host/helloworldhost ./enc/helloworldenc.signed.so
 ```
 
-Build the project as follows:
+Build the project with the following command:
 
 ```bash
 make build
 ```
 
-Clean the project as follows:
+Clean the project with the following command:
 
 ```bash
 make clean
 ```
 
-Run the built sample as follows:
+Run the built sample with the following command:
 
 ```bash
 make run
@@ -133,7 +160,7 @@ Each line will now be described in turn.
 
 An enclave library will be loaded into and run inside a host application which is a user-mode process. To keep the [Trusted computing base](https://en.wikipedia.org/wiki/Trusted_computing_base) small, the decision was made to make only a specific set of APIs available to an enclave library. A complete list of APIs available to an enclave library can be found [here](/docs/GettingStartedDocs/APIsAvaiableToEnclave.md#apis-available-to-an-enclave-library)
   
-The `stdio.h` header file is included in this sample because we are calling the CRT function `fprintf` to print a message on the screen. However this function has a dependency on the kernel to print a message on the screen so this code cannot execute within the enclave itself. Instead this function is a proxy function that calls through to the host to carry out the call on the enclaves behalf. Only a subset of the CRT is made available through this proxy library.
+The `stdio.h` header file is included in this sample because we are calling the CRT function `fprintf` to print a message on the screen. However this function has a dependency on the kernel to print a message on the screen so this code cannot execute within the enclave itself. Instead this function marshals the call through to the host to carry out the call on the enclaves behalf. Only a subset of the CRT is made available through this open enclave library.
 
  ```c
 void enclave_helloworld()
@@ -145,17 +172,17 @@ An enclave exposes its functionality via a set of methods defined in the `hellow
 fprintf(stdout, "Hello world from the enclave\n");
 ```
 
-As described above when the `stdio.h` header file was included, this is a call to print a message on the screen. As we are in the enclave this function is implemented as a proxy function in the SDK enclave libraries which call into the host to carry out the actual `fprintf` call.
+As described above, this call to print a message on the screen marshals the call out of the enclave and back to the untrusted host to print the message.
 
 ```c
 host_helloworld();
 ```
 
-This calls the proxy function that was generated from the `helloworld.edl` file which in turn calls into the function within the host.
+This calls the marshalling function that is generated from the `helloworld.edl` file which in turn calls into the function within the host.
 
 ### Build and sign an enclave
 
-As mentioned in [how-to-build-and-run-samples](/docs/GettingStartedDocs/sampedocs/README.md#how-to-build-and-run-samples), make files were provided for each sample, you can build the helloworld enclave by running `make build` inside the `enc` directory, or build the enclave and host code by running `make build` from the sample root directory. Note that you will need to run the `make build` from the sample root directory anyway in order to generate the proxy and header files from the `helloworld.edl` file.
+As mentioned in [how-to-build-and-run-samples](/docs/GettingStartedDocs/sampedocs/README.md#how-to-build-and-run-samples), make files are provided for each sample. You can build the whole sample by running `make build` from the sample root, or you can build the enclave and host separately by running `make build` in each directory.
 
 The following enclave files come with the sample:
 
@@ -163,6 +190,7 @@ The following enclave files come with the sample:
 | --- | --- |
 | enc.c | Source code for the enclave `enclave_helloworld` function |
 | Makefile | Makefile used to build the enclave |
+| helloworld.conf | Configuration parameters for the enclave |
 
 The following files are generated during the build.
 
@@ -170,12 +198,11 @@ The following files are generated during the build.
 | --- | --- |
 | enc.o | Compiled source file |
 | helloworld_args.h | generated arguments header file from `helloworld.edl` |
-| helloworld.conf |  |
 | helloworldenc.signed.so | signed version of the enclave shared library |
 | helloworldenc.so | built and linked enclave shared library |
-| helloworld_t.c | generated proxy source file for trusted code from `helloworld.edl` |
-| helloworld_t.h | generated proxy header file trusted code from `helloworld.edl` |
-| helloworld_t.o | compiled proxy source file |
+| helloworld_t.c | generated marshaling code for trusted code from `helloworld.edl` |
+| helloworld_t.h | generated marshaling header for trusted code from `helloworld.edl` |
+| helloworld_t.o | compiled marshaling code |
 | private.pem | generated signature used for signing the shared library |
 | public.pem | generated signature used for signing the shared library |
 
@@ -214,23 +241,25 @@ LIBRARIES += -loelibc
 LIBRARIES += -loecore
 
 all:
-        $(MAKE) build
-        $(MAKE) keys
-        $(MAKE) sign
+    $(MAKE) build
+    $(MAKE) keys
+    $(MAKE) sign
 
 build:
-        $(CC) -c $(CFLAGS) $(INCLUDES) enc.c -o enc.o
-        $(CC) -c $(CFLAGS) $(INCLUDES) helloworld_t.c -o helloworld_t.o
-        $(CC) -o helloworldenc.so helloworld_t.o enc.o $(LDFLAGS) $(LIBRARIES)
+    $(OE_BINDIR)/oeedger8r ../helloworld.edl --trusted
+    $(CC) -c $(CFLAGS) $(INCLUDES) enc.c -o enc.o
+    $(CC) -c $(CFLAGS) $(INCLUDES) helloworld_t.c -o helloworld_t.o
+    $(CC) -o helloworldenc.so helloworld_t.o enc.o $(LDFLAGS) $(LIBRARIES)
 
 sign:
-        $(OE_BINDIR)/oesign helloworldenc.so helloworld.conf private.pem
+    $(OE_BINDIR)/oesign helloworldenc.so helloworld.conf private.pem
+
 clean:
-        rm -f enc.o helloworldenc.so helloworldenc.signed.so private.pem public.pem helloworld_t.o helloworld_t.h helloworld_t.c helloworld_args.h
+    rm -f enc.o helloworldenc.so helloworldenc.signed.so private.pem public.pem helloworld_t.o helloworld_t.h helloworld_t.c helloworld_args.h
 
 keys:
-        openssl genrsa -out private.pem -3 3072
-        openssl rsa -in private.pem -pubout -out public.pem
+    openssl genrsa -out private.pem -3 3072
+    openssl rsa -in private.pem -pubout -out public.pem
  ```
 
 ##### Build
@@ -337,7 +366,7 @@ Includes the header for the open enclave functions used in this file, including 
 #include <stdio.h>
 ```
 
-Includes the standard CRT libraries. Unlike the enclave implementation that includes a special enclave proxy version of the stdio library, the host is not protected and so uses all the normal C libraries and functions.
+Includes the standard CRT libraries. Unlike the enclave implementation that includes a special enclave version of the stdio library that marshals APIs to the host, the host is not protected and so uses all the normal C libraries and functions.
 
 ```c
 void host_helloworld()
@@ -355,8 +384,8 @@ int main(int argc, const char* argv[])
 The host is the application that creates and calls into the enclave so this host is a normal C executable with a standard `main` function.
 
 ```c
-    result = oe_create_enclave(
-        argv[1], OE_ENCLAVE_TYPE_SGX, OE_ENCLAVE_FLAG_DEBUG, NULL, 0, &enclave);
+result = oe_create_enclave(
+    argv[1], OE_ENCLAVE_TYPE_SGX, OE_ENCLAVE_FLAG_DEBUG, NULL, 0, &enclave);
 ```
 
 This function sets up the enclave environment for the target enclave library including allocating resource, validating enclave library, creating enclave instance, and loading the enclave library.
@@ -368,10 +397,10 @@ On a successful creation it returns an opaque enclave handle for any future oper
 Note: - You can create multiple enclave instances this way if there is remaining enclave resource available. such as Enclave Page Cache (EPC).
 
 ```c
-    enclave_helloworld(enclave);
+enclave_helloworld(enclave);
 ```
 
-This function calls into the generated host proxy function that was generated from the `helloworld.edl` file. It handles the code that marshals any parameters and calls the function within in the enclave itself. In this sample we do not have any actual function parameters.
+This function calls into the generated host marshalling function that is generated from the `helloworld.edl` file. It handles the code that marshals any parameters and calls the function within in the enclave itself. In this sample we do not have any actual function parameters.
 
 The Open Enclave handles all the context switching between the host mode and the enclave mode.
 
@@ -383,7 +412,7 @@ Terminates the enclave and frees up all associated resources associated with it.
 
 ### Build a host
 
-The helloworld sample comes with a Makefile with a `build` target. You can run `make build` to build host app. Note that all generated files are created from the makefile in the root of the sample and needs to be run before building can happen in the host directory itself.
+The helloworld sample comes with a Makefile with a `build` target. You can run `make build` to generate the marshaling files and build the host app.
   
 Listing of [helloworld.edger8r/host/Makefile](/samples/make/helloworld.edger8r/host/Makefile)
 
@@ -422,12 +451,13 @@ LIBRARIES += $(call optlib,sgx_ngsa_ql)
 LIBRARIES += $(call optlib,sgx_urts_ng)
 
 build:
-	$(CC) -c $(CFLAGS) $(INCLUDES) host.c
-	$(CC) -c $(CFLAGS) $(INCLUDES) helloworld_u.c
-	$(CC) -o helloworldhost helloworld_u.o host.o $(LDFLAGS) $(LIBRARIES)
+    $(OE_BINDIR)/oeedger8r ../helloworld.edl --untrusted
+    $(CC) -c $(CFLAGS) $(INCLUDES) host.c
+    $(CC) -c $(CFLAGS) $(INCLUDES) helloworld_u.c
+    $(CC) -o helloworldhost helloworld_u.o host.o $(LDFLAGS) $(LIBRARIES)
 
 clean:
-	rm -f helloworldhost host.o helloworld_u.o helloworld_u.c helloworld_u.h helloworld_args.h
+    helloworld_args.h
 
 ```
 
@@ -445,9 +475,9 @@ The following files are generated during the build.
 | host.o | Compiled host source file |
 | helloworld_args.h | generated arguments header file from `helloworld.edl` |
 | helloworldhost | built and linked host executable |
-| helloworld_u.c | generated proxy source file for untrusted code from `helloworld.edl` |
-| helloworld_u.h | generated proxy header file for untrusted code from `helloworld.edl` |
-| helloworld_u.o | compiled proxy source file |
+| helloworld_u.c | generated marshaling code for untrusted code from `helloworld.edl` |
+| helloworld_u.h | generated marshaling code for untrusted code from `helloworld.edl` |
+| helloworld_u.o | compiled marshaling code |
 
 # How to Run
 
