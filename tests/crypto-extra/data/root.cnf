@@ -9,8 +9,8 @@ default_ca	= CA_default		# The default ca section
 
 ####################################################################
 [ CA_default ]
-database = ./index.txt
-crlnumber = ./crl_number
+database = ./root_index.txt
+crlnumber = ./root_crl_number
 private_key = ./RootCA1.key
 
 default_days	= 365		# how long to certify for

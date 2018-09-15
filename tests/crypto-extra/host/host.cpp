@@ -49,6 +49,47 @@ void run_cert_chain_tests(oe_enclave_t* enclave)
         OE_OK);
 }
 
+void run_crl_tests(oe_enclave_t* enclave)
+{
+    auto root_ca1 = read_file("./data/RootCA1.crt.pem");
+    auto intermediate_ca1 = read_file("./data/IntermediateCA1.crt.pem");
+    auto leaf1 = read_file("./data/Leaf1.crt.pem");
+    auto leaf2 = read_file("./data/Leaf2.crt.pem");
+    auto root_crl1 = read_file("./data/root_crl1.der");
+    auto root_crl2 = read_file("./data/root_crl2.der");
+    auto intermediate_crl1 = read_file("./data/intermediate_crl1.der");
+    auto intermediate_crl2 = read_file("./data/intermediate_crl2.der");
+
+    test_crl_args_t args = {
+        .root = (char*)&root_ca1[0],
+        .intermediate = (char*)&intermediate_ca1[0],
+        .leaf1 = (char*)&leaf1[0],
+        .leaf2 = (char*)&leaf2[0],
+        .root_crl1 = &root_crl1[0],
+        .root_crl1_size = root_crl1.size() - 1,
+        .root_crl2 = &root_crl2[0],
+        .root_crl2_size = root_crl2.size() - 1,
+        .intermediate_crl1 = &intermediate_crl1[0],
+        .intermediate_crl1_size = intermediate_crl1.size() - 1,
+        .intermediate_crl2 = &intermediate_crl2[0],
+        .intermediate_crl2_size = intermediate_crl2.size() - 1};
+    test_crls(
+        args.root,
+        args.intermediate,
+        args.leaf1,
+        args.leaf2,
+        args.root_crl1,
+        args.root_crl1_size,
+        args.root_crl2,
+        args.root_crl2_size,
+        args.intermediate_crl1,
+        args.intermediate_crl1_size,
+        args.intermediate_crl2,
+        args.intermediate_crl2_size);
+
+    OE_TEST(oe_call_enclave(enclave, "ecall_test_crls", &args) == OE_OK);
+}
+
 int main(int argc, const char* argv[])
 {
     oe_result_t result;
@@ -71,6 +112,7 @@ int main(int argc, const char* argv[])
     }
 
     run_cert_chain_tests(enclave);
+    run_crl_tests(enclave);
 
     /* Terminate the enclave */
     if ((result = oe_terminate_enclave(enclave)) != OE_OK)

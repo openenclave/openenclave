@@ -18,6 +18,24 @@ OE_ECALL void ecall_test_cert_chain_negative(void* args_)
         args->root, args->intermediate, args->leaf, args->leaf2);
 }
 
+OE_ECALL void ecall_test_crls(void* args_)
+{
+    test_crl_args_t* args = (test_crl_args_t*)args_;
+    test_crls(
+        args->root,
+        args->intermediate,
+        args->leaf1,
+        args->leaf2,
+        args->root_crl1,
+        args->root_crl1_size,
+        args->root_crl2,
+        args->root_crl2_size,
+        args->intermediate_crl1,
+        args->intermediate_crl1_size,
+        args->intermediate_crl2,
+        args->intermediate_crl2_size);
+}
+
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
