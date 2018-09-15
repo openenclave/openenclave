@@ -16,6 +16,7 @@
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
 #include <time.h>
+#include "../crypto/init.h"
 #include "../host/enclave.h"
 
 static void _MemReverse(void* dest_, const void* src_, size_t n)
@@ -381,9 +382,7 @@ static oe_result_t _LoadRSAPrivateKey(
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Initialize OpenSSL */
-    OpenSSL_add_all_algorithms();
-    ERR_load_BIO_strings();
-    ERR_load_crypto_strings();
+    oe_initialize_openssl();
 
     /* Create a BIO object for loading the PEM data */
     if (!(bio = BIO_new_mem_buf(pemData, pemSize)))
