@@ -19,7 +19,7 @@ This sample is about as simple as you can get regarding creating and calling int
 - The enclave function returns back to the host
 - The enclave is terminated
 
-This sample uses the Open enclave SDK `oeedger8r` tool to generate marshaling code necessary to call functions between the enclave and the host.
+This sample uses the Open Enclave SDK `oeedger8r` tool to generate marshaling code necessary to call functions between the enclave and the host.
 
 First we need to define the functions we want to call between the enclave and host. To do this we create a `helloworld.edl` file:
 
@@ -36,13 +36,13 @@ enclave {
 };
 ```
 
-In this `helloworld.edl` file we define two different function.
+In this `helloworld.edl` file we define two different functions.
 
 ```c
 public void enclave_helloworld();
 ```
 
-This method will be implemented inside the trusted enclave itself and the untrusted host will call it. For the host to be able to call this function the host needs to call through the Open Enclave SDK to transition from the untrusted host into the trusted enclave. To help with this the `eoedger8r` tool generates some marshaling code in the host directory with the same signature as the function in the enclave, with the addition of an enclave handle so the SDK knows which enclave will execute the code.
+This method will be implemented inside the trusted enclave itself and the untrusted host will call it. For the host to be able to call this function the host needs to call through the Open Enclave SDK to transition from the untrusted host into the trusted enclave. To help with this the `oeedger8r` tool generates some marshaling code in the host directory with the same signature as the function in the enclave, with the addition of an enclave handle so the SDK knows which enclave will execute the code.
 
 ```c
 void host_helloworld();
@@ -58,25 +58,25 @@ To generate the marshaling code the untrusted host uses to call into the trusted
 oeedger8r ../helloworld.edl --untrusted
 ```
 
-This command compiles the `helloworld.edl` file and generates the following files within te host directory:
+This command compiles the `helloworld.edl` file and generates the following files within the host directory:
 
 | file | description |
 |---|---|
 | host/helloworld_args.h | Defines the parameters that are passed to all functions defined in the edl file |
-| host/helloworld_t.c | Contains the `enclave_helloworld()` function with the marshaling code to call into the enclave version of the `enclave_helloworld()` function |
-| host/helloworld_t.h | Defines the function prototypes `enclave_helloworld()` function that will be called from the untructed host |
+| host/helloworld_u.c | Contains the `enclave_helloworld()` function with the marshaling code to call into the enclave version of the `enclave_helloworld()` function |
+| host/helloworld_u.h | Function prototype for `enclave_helloworld()` function |
 
 To generate the marshaling code the trusted enclave uses to call into the untrusted host the following command is run:
 
 ```bash
-oeedger8r ../helloworld.edl --ctrusted
+oeedger8r ../helloworld.edl --trusted
 ```
 
 | file | description |
 |---|---|
 | enc/helloworld_args.h | Defines the parameters that are passed to all functions defined in the edl file |
 | enc/helloworld_t.c | Contains the `host_helloworld()` function with the marshaling code to call into the host version of the `host_helloworld()` function |
-| enc/helloworld_t.h | Defines the function prototypes `host_helloworld()` function that will be called from the trusted enclave |
+| enc/helloworld_t.h | function prototype for `host_helloworld()` function |
 
 The Makefile in the root of this sample directory has three rules
 
@@ -178,7 +178,7 @@ As described above, this call to print a message on the screen marshals the call
 host_helloworld();
 ```
 
-This calls the marshalling function that is generated from the `helloworld.edl` file which in turn calls into the function within the host.
+This calls the marshaling function that is generated from the `helloworld.edl` file which in turn calls into the function within the host.
 
 ### Build and sign an enclave
 
@@ -196,13 +196,13 @@ The following files are generated during the build.
 
 | File | Description |
 | --- | --- |
-| enc.o | Compiled source file |
-| helloworld_args.h | generated arguments header file from `helloworld.edl` |
-| helloworldenc.signed.so | signed version of the enclave shared library |
+| enc.o | Compiled source file for enc.c |
 | helloworldenc.so | built and linked enclave shared library |
-| helloworld_t.c | generated marshaling code for trusted code from `helloworld.edl` |
-| helloworld_t.h | generated marshaling header for trusted code from `helloworld.edl` |
-| helloworld_t.o | compiled marshaling code |
+| helloworldenc.signed.so | signed version of the enclave shared library |
+| helloworld_args.h | Defines the parameters that are passed to all functions defined in the edl file |
+| helloworld_t.c | Contains the `host_helloworld()` function with the marshaling code to call into the host version of the `host_helloworld()` function |
+| helloworld_t.h | function prototype for `host_helloworld()` function |
+| helloworld_t.o | compiled marshaling code for helloworld_t.c |
 | private.pem | generated signature used for signing the shared library |
 | public.pem | generated signature used for signing the shared library |
 
@@ -400,7 +400,7 @@ Note: - You can create multiple enclave instances this way if there is remaining
 enclave_helloworld(enclave);
 ```
 
-This function calls into the generated host marshalling function that is generated from the `helloworld.edl` file. It handles the code that marshals any parameters and calls the function within in the enclave itself. In this sample we do not have any actual function parameters.
+This function calls into the generated host marshaling function that is generated from the `helloworld.edl` file. It handles the code that marshals any parameters and calls the function within in the enclave itself. In this sample we do not have any actual function parameters.
 
 The Open Enclave handles all the context switching between the host mode and the enclave mode.
 
@@ -472,12 +472,12 @@ The following files are generated during the build.
 
 | File | Description |
 | --- | --- |
-| host.o | Compiled host source file |
-| helloworld_args.h | generated arguments header file from `helloworld.edl` |
+| host.o | Compiled host.c source file |
 | helloworldhost | built and linked host executable |
-| helloworld_u.c | generated marshaling code for untrusted code from `helloworld.edl` |
-| helloworld_u.h | generated marshaling code for untrusted code from `helloworld.edl` |
-| helloworld_u.o | compiled marshaling code |
+| helloworld_args.h | Defines the parameters that are passed to all functions defined in the edl file |
+| helloworld_u.c | Contains the `enclave_helloworld()` function with the marshaling code to call into the enclave version of the `enclave_helloworld()` function |
+| helloworld_u.h | Function prototype for `enclave_helloworld()` function |
+| helloworld_u.o | compiled helloworld_u.c source file |
 
 # How to Run
 
