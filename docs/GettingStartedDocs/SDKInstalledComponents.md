@@ -1,7 +1,7 @@
 
 ## Open Enclave SDK Components
 
-On a successful Open Enclave SDK installation, the following components could be found installed under the installation target directory
+On a successful Open Enclave SDK installation, the following components can be found installed under the installation target directory
 : install_prefix (for example /opt/openenclave)
 
 It contains the following subfolders:

@@ -104,9 +104,9 @@ void Crypto::Sha256(const uint8_t* data, size_t dataSize, uint8_t sha256[32])
     mbedtls_sha256_context ctx;
 
     mbedtls_sha256_init(&ctx);
-    mbedtls_sha256_starts(&ctx, 0);
-    mbedtls_sha256_update(&ctx, data, dataSize);
-    mbedtls_sha256_finish(&ctx, sha256);
+    mbedtls_sha256_starts_ret(&ctx, 0);
+    mbedtls_sha256_update_ret(&ctx, data, dataSize);
+    mbedtls_sha256_finish_ret(&ctx, sha256);
 }
 
 /**

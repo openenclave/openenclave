@@ -553,16 +553,16 @@ done:
 oe_result_t oe_cert_verify(
     oe_cert_t* cert,
     oe_cert_chain_t* chain,
-    const oe_crl_t* crl,
+    const oe_crl_t* const* crls,
+    size_t num_crls,
     oe_verify_cert_error_t* error)
 {
     oe_result_t result = OE_UNEXPECTED;
     Cert* certImpl = (Cert*)cert;
     CertChain* chainImpl = (CertChain*)chain;
-    crl_t* crl_impl = (crl_t*)crl;
     X509_STORE_CTX* ctx = NULL;
     X509* x509 = NULL;
-    STACK_OF(X509_CRL)* crls = NULL;
+    STACK_OF(X509_CRL)* crl_stack = NULL;
     X509_VERIFY_PARAM* verify_param = NULL;
 
     /* Initialize error to NULL for now */
@@ -580,13 +580,6 @@ oe_result_t oe_cert_verify(
     if (!_CertChainIsValid(chainImpl))
     {
         _SetErr(error, "invalid chain parameter");
-        OE_RAISE(OE_INVALID_PARAMETER);
-    }
-
-    /* Reject invalid CRL */
-    if (crl_impl && !crl_is_valid(crl_impl))
-    {
-        _SetErr(error, "invalid crl parameter");
         OE_RAISE(OE_INVALID_PARAMETER);
     }
 
@@ -628,22 +621,27 @@ oe_result_t oe_cert_verify(
     if (!(verify_param = X509_STORE_CTX_get0_param(ctx)))
         OE_RAISE(OE_FAILURE);
 
-    /* Ignore the non-standard SGX extension */
-    X509_VERIFY_PARAM_set_flags(verify_param, X509_V_FLAG_IGNORE_CRITICAL);
-
     /* Set the CRLs if any */
-    if (crl_impl)
+    if (crls && num_crls)
     {
-        if (!(crls = sk_X509_CRL_new_null()))
+        if (!(crl_stack = sk_X509_CRL_new_null()))
             OE_RAISE(OE_OUT_OF_MEMORY);
 
-        if (!_X509_CRL_up_ref(crl_impl->crl))
-            OE_RAISE(OE_FAILURE);
+        for (size_t i = 0; i < num_crls; i++)
+        {
+            crl_t* crl_impl = (crl_t*)crls[i];
 
-        if (!sk_X509_CRL_push(crls, crl_impl->crl))
-            OE_RAISE(OE_FAILURE);
+            if (!crl_is_valid(crl_impl))
+                OE_RAISE(OE_INVALID_PARAMETER);
 
-        X509_STORE_CTX_set0_crls(ctx, crls);
+            if (!sk_X509_CRL_push(crl_stack, crl_impl->crl))
+                OE_RAISE(OE_FAILURE);
+
+            if (!_X509_CRL_up_ref(crl_impl->crl))
+                OE_RAISE(OE_FAILURE);
+        }
+
+        X509_STORE_CTX_set0_crls(ctx, crl_stack);
 
         // Enable CRL checking: without this flag, OpenSSL ingores the CRL list
         // installed above.
@@ -669,8 +667,8 @@ done:
     if (x509)
         X509_free(x509);
 
-    if (crls)
-        sk_X509_CRL_pop_free(crls, X509_CRL_free);
+    if (crl_stack)
+        sk_X509_CRL_pop_free(crl_stack, X509_CRL_free);
 
     return result;
 }
