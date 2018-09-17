@@ -19,7 +19,7 @@ char* oe_host_strdup(const char* str)
     return dup;
 }
 
-int enc_echo(char *in, char out[100])
+int enc_echo(char* in, char out[100])
 {
     oe_result_t result;
 
@@ -28,7 +28,7 @@ int enc_echo(char *in, char out[100])
         return -1;
     }
 
-    char *hostAllocatedStr = oe_host_strdup("oe_host_strdup2");
+    char* hostAllocatedStr = oe_host_strdup("oe_host_strdup2");
     if (hostAllocatedStr == NULL)
     {
         return -1;
@@ -38,13 +38,12 @@ int enc_echo(char *in, char out[100])
     int returnVal;
 
     result = host_echo(
-            &returnVal,
-            in, 
-            out, 
-            "oe_host_strdup1",
-            hostAllocatedStr,
-            stackAllocatedStr
-        );
+        &returnVal,
+        in,
+        out,
+        "oe_host_strdup1",
+        hostAllocatedStr,
+        stackAllocatedStr);
     if (result != OE_OK)
     {
         return -1;

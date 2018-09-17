@@ -383,7 +383,6 @@ MyStruct1 ecall_struct1(
     return MyStruct1{{num}, num};
 }
 
-
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */

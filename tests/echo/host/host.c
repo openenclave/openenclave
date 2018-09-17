@@ -11,7 +11,7 @@
 #include "../../../host/strings.h"
 #include "echo_u.h"
 
-int host_echo(char *in, char *out, char* str1, char* str2, char str3[100])
+int host_echo(char* in, char* out, char* str1, char* str2, char str3[100])
 {
     OE_TEST(strcmp(str1, "oe_host_strdup1") == 0);
     OE_TEST(strcmp(str2, "oe_host_strdup2") == 0);
@@ -42,13 +42,9 @@ int main(int argc, const char* argv[])
     char outParameter[100];
     int returnVal;
 
-    result = enc_echo(
-            enclave,
-            &returnVal,
-            "Hello World",
-            outParameter);
+    result = enc_echo(enclave, &returnVal, "Hello World", outParameter);
 
-    if (result  != OE_OK)
+    if (result != OE_OK)
         oe_put_err("oe_call_enclave() failed: result=%u", result);
 
     if (returnVal != 0)
