@@ -19,8 +19,8 @@ oe_result_t oe_sgx_qe_get_target_info(uint8_t* target_info)
 
 oe_result_t oe_sgx_qe_get_quote_size(size_t* quote_size)
 {
-    uint32_t* quote_size = (uint32_t*)quote_size;
-    quote3_error_t err = sgx_qe_get_quote_size(quote_size);
+    uint32_t* local_quote_size = (uint32_t*)quote_size;
+    quote3_error_t err = sgx_qe_get_quote_size(local_quote_size);
     return (err == SGX_QL_SUCCESS) ? OE_OK : OE_PLATFORM_ERROR;
 }
 
