@@ -1,0 +1,5 @@
+enclave {
+    trusted {
+        public int enclave_test_print();
+    };
+};
