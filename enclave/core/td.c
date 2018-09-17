@@ -2,12 +2,14 @@
 // Licensed under the MIT License.
 
 #include "td.h"
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/utils.h>
 #include "asmdefs.h"
 
 OE_STATIC_ASSERT(OE_OFFSETOF(td_t, magic) == td_magic);

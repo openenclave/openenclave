@@ -7,6 +7,7 @@
 #include <mbedtls/pem.h>
 #include <mbedtls/platform.h>
 #include <mbedtls/x509_crt.h>
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atomic.h>
 #include <openenclave/internal/cert.h>
@@ -331,10 +332,11 @@ static bool _find_extension(
 
         /* Copy to caller's buffer */
         if (args->data)
-            oe_memcpy(args->data, data, *args->size);
+            args->result = oe_memcpy_s(args->data, *args->size, data, size);
+        else
+            args->result = OE_OK;
 
         *args->size = size;
-        args->result = OE_OK;
         return true;
     }
 
@@ -651,7 +653,9 @@ oe_result_t oe_cert_verify(
             if (!(p = oe_malloc(sizeof(mbedtls_x509_crl))))
                 OE_RAISE(OE_OUT_OF_MEMORY);
 
-            oe_memcpy(p, crl_impl->crl, sizeof(mbedtls_x509_crl));
+            OE_CHECK(
+                oe_memcpy_s(
+                    p, sizeof(*p), crl_impl->crl, sizeof(mbedtls_x509_crl)));
 
             /* Append to the linked-list */
             {
@@ -746,7 +750,7 @@ oe_result_t oe_cert_get_rsa_public_key(
 
     /* Clear public key for all error pathways */
     if (public_key)
-        oe_memset(public_key, 0, sizeof(oe_rsa_public_key_t));
+        oe_secure_zero_fill(public_key, sizeof(oe_rsa_public_key_t));
 
     /* Reject invalid parameters */
     if (!_cert_is_valid(impl) || !public_key)
@@ -775,7 +779,7 @@ oe_result_t oe_cert_get_ec_public_key(
 
     /* Clear public key for all error pathways */
     if (public_key)
-        oe_memset(public_key, 0, sizeof(oe_ec_public_key_t));
+        oe_secure_zero_fill(public_key, sizeof(oe_ec_public_key_t));
 
     /* Reject invalid parameters */
     if (!_cert_is_valid(impl) || !public_key)

@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#define OE_TRACE_LEVEL 1
-
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/load.h>
+#include <openenclave/internal/raise.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include <stdlib.h>
@@ -37,11 +37,11 @@ oe_result_t __oe_load_segments(
 
     /* Check for null parameters */
     if (!path || !segments || !nsegments || !entryaddr || !textaddr)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Load the ELF-64 object */
     if (elf64_load(path, &elf) != 0)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Save pointer to header for convenience */
     eh = (elf64_ehdr_t*)elf.data;
@@ -54,11 +54,11 @@ oe_result_t __oe_load_segments(
 
     /* Fail if not Intel X86 64-bit */
     if (eh->e_machine != EM_X86_64)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Fail if image is relocatable */
     if (eh->e_type == ET_REL)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Save entry point address */
     *entryaddr = eh->e_entry;
@@ -71,7 +71,7 @@ oe_result_t __oe_load_segments(
 
             /* Invalid section header. The elf file is corrupted. */
             if (sh == NULL)
-                OE_THROW(OE_FAILURE);
+                OE_RAISE(OE_FAILURE);
 
             const char* name =
                 elf64_get_string_from_shstrtab(&elf, sh->sh_name);
@@ -93,7 +93,7 @@ oe_result_t __oe_load_segments(
 
         /* If text section not found */
         if (*textaddr == 0)
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
     }
 
     /* Add all loadable program segments to SEGMENTS array */
@@ -104,7 +104,7 @@ oe_result_t __oe_load_segments(
 
         /* Check for corrupted program header. */
         if (ph == NULL)
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         /* Skip non-loadable program segments */
         if (ph->p_type != PT_LOAD)
@@ -112,11 +112,11 @@ oe_result_t __oe_load_segments(
 
         /* Check for proper sizes for the program segment. */
         if (ph->p_filesz > ph->p_memsz)
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         /* ATTN: handle PT_TLS (thread local storage) segments */
         if (ph->p_type == PT_TLS)
-            OE_THROW(OE_UNSUPPORTED);
+            OE_RAISE(OE_UNSUPPORTED);
 
         /* Clear the segment */
         memset(&seg, 0, sizeof(oe_segment_t));
@@ -149,9 +149,14 @@ oe_result_t __oe_load_segments(
         if (elf64_get_segment(&elf, i))
         {
             if (!(seg.filedata = malloc(seg.filesz)))
-                OE_THROW(OE_OUT_OF_MEMORY);
+                OE_RAISE(OE_OUT_OF_MEMORY);
 
-            memcpy(seg.filedata, elf64_get_segment(&elf, i), seg.filesz);
+            OE_CHECK(
+                oe_memcpy_s(
+                    seg.filedata,
+                    seg.filesz,
+                    elf64_get_segment(&elf, i),
+                    seg.filesz));
 
             /* Zero out the .oeinfo section if within this segment */
             if (oeinfo_size && (oeinfo_offset >= seg.offset) &&
@@ -159,7 +164,7 @@ oe_result_t __oe_load_segments(
             {
                 /* Check the section doesn't cross the end of the segment */
                 if ((oeinfo_offset + oeinfo_size) > (seg.offset + seg.filesz))
-                    OE_THROW(OE_OUT_OF_BOUNDS);
+                    OE_RAISE(OE_OUT_OF_BOUNDS);
 
                 memset( // All sizes/address calculations in bytes
                     ((char*)seg.filedata) + oeinfo_offset - seg.offset,
@@ -171,7 +176,7 @@ oe_result_t __oe_load_segments(
 
         /* Check for array overflow */
         if (*nsegments == OE_MAX_SEGMENTS)
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         /* Add to segments array */
         segments[(*nsegments)++] = seg;
@@ -179,11 +184,11 @@ oe_result_t __oe_load_segments(
 
     /* If no segments found */
     if (*nsegments == 0)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     result = OE_OK;
 
-OE_CATCH:
+done:
 
     if (result != OE_OK)
     {
@@ -272,7 +277,7 @@ oe_result_t __oe_combine_segments(
 
     /* Reject bad parameters */
     if (!segments || nsegments == 0 || !pages || !npages)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Calculate boundaries (LO and HI) of the image */
     {
@@ -288,18 +293,18 @@ oe_result_t __oe_combine_segments(
         }
 
         if (lo != 0)
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         if (hi == 0)
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
     }
 
     /* Calculate the full size of the image (rounded up to the page size) */
-    OE_TRY(__oe_calculate_segments_size(segments, nsegments, &size));
+    OE_CHECK(__oe_calculate_segments_size(segments, nsegments, &size));
 
     /* Allocate data on a page boundary */
     if (!(data = (unsigned char*)oe_memalign(OE_PAGE_SIZE, size)))
-        OE_THROW(OE_OUT_OF_MEMORY);
+        OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* Clear the image memory */
     memset(data, 0, size);
@@ -308,7 +313,9 @@ oe_result_t __oe_combine_segments(
     for (i = 0; i < nsegments; i++)
     {
         const oe_segment_t* seg = &segments[i];
-        memcpy(data + seg->vaddr, seg->filedata, seg->filesz);
+        OE_CHECK(
+            oe_memcpy_s(
+                data + seg->vaddr, seg->filesz, seg->filedata, seg->filesz));
     }
 
     *pages = (oe_page_t*)data;
@@ -316,8 +323,7 @@ oe_result_t __oe_combine_segments(
 
     result = OE_OK;
 
-OE_CATCH:
-
+done:
     if (result != OE_OK)
         oe_memalign_free(data);
 

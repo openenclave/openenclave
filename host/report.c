@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
@@ -50,13 +51,20 @@ static oe_result_t _oe_get_local_report(
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     if (opt_params != NULL)
-        memcpy(arg->opt_params, opt_params, opt_params_size);
+        OE_CHECK(
+            oe_memcpy_s(
+                arg->opt_params, opt_params_size, opt_params, opt_params_size));
 
     arg->opt_params_size = opt_params_size;
 
     OE_CHECK(oe_ecall(enclave, OE_ECALL_GET_SGX_REPORT, (uint64_t)arg, NULL));
 
-    memcpy(report_buffer, &arg->sgx_report, sizeof(sgx_report_t));
+    OE_CHECK(
+        oe_memcpy_s(
+            report_buffer,
+            *report_buffer_size,
+            &arg->sgx_report,
+            sizeof(sgx_report_t)));
     *report_buffer_size = sizeof(sgx_report_t);
     result = OE_OK;
 

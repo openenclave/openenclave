@@ -6,14 +6,17 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/utils.h>
 #include "common.h"
 
-static void _oe_parse_sgx_report_body(
+static oe_result_t _oe_parse_sgx_report_body(
     const sgx_report_body_t* report_body,
     bool remote,
     oe_report_t* parsed_report)
 {
-    memset(parsed_report, 0, sizeof(oe_report_t));
+    oe_result_t result = OE_UNEXPECTED;
+
+    oe_secure_zero_fill(parsed_report, sizeof(oe_report_t));
 
     parsed_report->size = sizeof(oe_report_t);
     parsed_report->type = OE_ENCLAVE_TYPE_SGX;
@@ -33,19 +36,23 @@ static void _oe_parse_sgx_report_body(
     OE_STATIC_ASSERT(
         sizeof(parsed_report->identity.unique_id) >=
         sizeof(report_body->mrenclave));
-    memcpy(
-        parsed_report->identity.unique_id,
-        report_body->mrenclave,
-        sizeof(report_body->mrenclave));
+    OE_CHECK(
+        oe_memcpy_s(
+            parsed_report->identity.unique_id,
+            sizeof(parsed_report->identity.unique_id),
+            report_body->mrenclave,
+            sizeof(report_body->mrenclave)));
 
     OE_STATIC_ASSERT(
         sizeof(parsed_report->identity.signer_id) >=
         sizeof(report_body->mrsigner));
 
-    memcpy(
-        parsed_report->identity.signer_id,
-        report_body->mrsigner,
-        sizeof(report_body->mrsigner));
+    OE_CHECK(
+        oe_memcpy_s(
+            parsed_report->identity.signer_id,
+            sizeof(parsed_report->identity.signer_id),
+            report_body->mrsigner,
+            sizeof(report_body->mrsigner)));
 
     parsed_report->identity.product_id[0] = report_body->isvprodid & 0xFF;
     parsed_report->identity.product_id[1] =
@@ -58,6 +65,10 @@ static void _oe_parse_sgx_report_body(
     parsed_report->report_data_size = sizeof(sgx_report_data_t);
     parsed_report->enclave_report = (uint8_t*)report_body;
     parsed_report->enclave_report_size = sizeof(sgx_report_body_t);
+
+    result = OE_OK;
+done:
+    return result;
 }
 
 oe_result_t oe_parse_report(
@@ -85,13 +96,16 @@ oe_result_t oe_parse_report(
     if (header->report_type == OE_REPORT_TYPE_SGX_LOCAL)
     {
         sgx_report = (const sgx_report_t*)header->report;
-        _oe_parse_sgx_report_body(&sgx_report->body, false, parsed_report);
+        OE_CHECK(
+            _oe_parse_sgx_report_body(&sgx_report->body, false, parsed_report));
         result = OE_OK;
     }
     else if (header->report_type == OE_REPORT_TYPE_SGX_REMOTE)
     {
         sgx_quote = (const sgx_quote_t*)header->report;
-        _oe_parse_sgx_report_body(&sgx_quote->report_body, true, parsed_report);
+        OE_CHECK(
+            _oe_parse_sgx_report_body(
+                &sgx_quote->report_body, true, parsed_report));
         result = OE_OK;
     }
     else

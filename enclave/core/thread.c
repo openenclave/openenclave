@@ -2,10 +2,12 @@
 // Licensed under the MIT License.
 
 #include "thread.h"
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/hostalloc.h>
+#include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/thread.h>
 #include "td.h"
@@ -166,6 +168,7 @@ OE_STATIC_ASSERT(sizeof(oe_mutex_impl_t) <= sizeof(oe_mutex_t));
 oe_result_t oe_mutex_init(oe_mutex_t* mutex)
 {
     oe_mutex_impl_t* m = (oe_mutex_impl_t*)mutex;
+    oe_result_t result = OE_UNEXPECTED;
 
     if (!m)
         return OE_INVALID_PARAMETER;
@@ -173,7 +176,9 @@ oe_result_t oe_mutex_init(oe_mutex_t* mutex)
     oe_memset(m, 0, sizeof(oe_mutex_t));
     m->lock = OE_SPINLOCK_INITIALIZER;
 
-    return OE_OK;
+    result = OE_OK;
+
+    return result;
 }
 
 /* Caller manages the spinlock */
@@ -370,6 +375,7 @@ OE_STATIC_ASSERT(sizeof(oe_cond_impl_t) <= sizeof(oe_cond_t));
 oe_result_t oe_cond_init(oe_cond_t* condition)
 {
     oe_cond_impl_t* cond = (oe_cond_impl_t*)condition;
+    oe_result_t result = OE_UNEXPECTED;
 
     if (!cond)
         return OE_INVALID_PARAMETER;
@@ -377,7 +383,9 @@ oe_result_t oe_cond_init(oe_cond_t* condition)
     oe_memset(cond, 0, sizeof(oe_cond_t));
     cond->lock = OE_SPINLOCK_INITIALIZER;
 
-    return OE_OK;
+    result = OE_OK;
+
+    return result;
 }
 
 oe_result_t oe_cond_destroy(oe_cond_t* condition)
@@ -529,6 +537,7 @@ OE_STATIC_ASSERT(sizeof(oe_rwlock_impl_t) <= sizeof(oe_rwlock_t));
 oe_result_t oe_rwlock_init(oe_rwlock_t* read_write_lock)
 {
     oe_rwlock_impl_t* rw_lock = (oe_rwlock_impl_t*)read_write_lock;
+    oe_result_t result = OE_UNEXPECTED;
 
     if (!rw_lock)
         return OE_INVALID_PARAMETER;
@@ -536,7 +545,9 @@ oe_result_t oe_rwlock_init(oe_rwlock_t* read_write_lock)
     oe_memset(rw_lock, 0, sizeof(oe_rwlock_t));
     rw_lock->lock = OE_SPINLOCK_INITIALIZER;
 
-    return OE_OK;
+    result = OE_OK;
+
+    return result;
 }
 
 oe_result_t oe_rwlock_rdlock(oe_rwlock_t* read_write_lock)

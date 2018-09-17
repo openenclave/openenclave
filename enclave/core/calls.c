@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atexit.h>
@@ -12,10 +13,10 @@
 #include <openenclave/internal/jump.h>
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/print.h>
+#include <openenclave/internal/raise.h>
 #include <openenclave/internal/reloc.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/thread.h>
-#include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include "../report.h"
 #include "asmdefs.h"
@@ -143,7 +144,7 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
         if (!oe_is_outside_enclave(
                 (void*)arg_in, sizeof(oe_init_enclave_args_t)))
         {
-            OE_THROW(OE_INVALID_PARAMETER);
+            OE_RAISE(OE_INVALID_PARAMETER);
         }
 
         static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
@@ -158,19 +159,19 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
                 oe_init_enclave_args_t safe_args;
 
                 if (!oe_is_outside_enclave(args, sizeof(*args)))
-                    OE_THROW(OE_INVALID_PARAMETER);
+                    OE_RAISE(OE_INVALID_PARAMETER);
 
                 /* Copy structure into enclave memory */
                 safe_args = *args;
 
                 if (!oe_is_outside_enclave(safe_args.enclave, 1))
-                    OE_THROW(OE_INVALID_PARAMETER);
+                    OE_RAISE(OE_INVALID_PARAMETER);
 
                 oe_enclave = safe_args.enclave;
             }
 
             /* Call all enclave state initialization functions */
-            oe_initialize_cpuid(arg_in);
+            OE_CHECK(oe_initialize_cpuid(arg_in));
 
             /* Call global constructors. Now they can safely use simulated
              * instructions like CPUID. */
@@ -184,7 +185,7 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
 
         oe_spin_unlock(&_lock);
     }
-OE_CATCH:
+done:
     return result;
 }
 
@@ -221,7 +222,7 @@ static oe_result_t _handle_call_enclave(uint64_t arg_in)
 
     if (!oe_is_outside_enclave((void*)arg_in, sizeof(oe_call_enclave_args_t)))
     {
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
     }
     args_ptr = (oe_call_enclave_args_t*)arg_in;
     args = *args_ptr;
@@ -229,7 +230,7 @@ static oe_result_t _handle_call_enclave(uint64_t arg_in)
     if (!args.vaddr || (args.func >= ecall_pages->num_vaddrs) ||
         ((vaddr = ecall_pages->vaddrs[args.func]) != args.vaddr))
     {
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
     }
 
     /* Translate function address from virtual to real address */
@@ -241,7 +242,7 @@ static oe_result_t _handle_call_enclave(uint64_t arg_in)
 
     args_ptr->result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
@@ -285,10 +286,9 @@ static void _handle_ecall(
     oe_result_t result = OE_OK;
 
     /* Insert ECALL context onto front of td_t.ecalls list */
-    Callsite callsite;
+    Callsite callsite = {{0}};
     uint64_t arg_out = 0;
 
-    oe_memset(&callsite, 0, sizeof(callsite));
     td_push_callsite(td, &callsite);
 
     // Acquire release semantics for __oe_initialized are present in
@@ -441,15 +441,15 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
     /* If the enclave is in crashing/crashed status, new OCALL should fail
     immediately. */
     if (__oe_enclave_status != OE_OK)
-        OE_THROW((oe_result_t)__oe_enclave_status);
+        OE_RAISE((oe_result_t)__oe_enclave_status);
 
     /* Check for unexpected failures */
     if (!callsite)
-        OE_THROW(OE_UNEXPECTED);
+        OE_RAISE(OE_UNEXPECTED);
 
     /* Check for unexpected failures */
     if (!td_initialized(td))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Save call site where execution will resume after OCALL */
     if (oe_setjmp(&callsite->jmpbuf) == 0)
@@ -462,7 +462,7 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
     }
     else
     {
-        OE_TRY(result = (oe_result_t)td->oret_result);
+        OE_CHECK(result = (oe_result_t)td->oret_result);
 
         if (arg_out)
             *arg_out = td->oret_arg;
@@ -472,7 +472,7 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
 
     result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
@@ -491,7 +491,7 @@ oe_result_t oe_call_host(const char* func, void* args_in)
 
     /* Reject invalid parameters */
     if (!func)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize the arguments */
     {
@@ -499,7 +499,7 @@ oe_result_t oe_call_host(const char* func, void* args_in)
         size_t total_len;
 
         OE_STATIC_ASSERT(sizeof(oe_call_host_args_t) < OE_SIZE_MAX);
-        OE_TRY(
+        OE_CHECK(
             oe_safe_add_sizet(
                 len, 1 + sizeof(oe_call_host_args_t), &total_len));
 
@@ -507,25 +507,25 @@ oe_result_t oe_call_host(const char* func, void* args_in)
         {
             /* If the enclave is in crashing/crashed status, new OCALL should
              * fail immediately. */
-            OE_TRY(__oe_enclave_status);
-            OE_THROW(OE_OUT_OF_MEMORY);
+            OE_CHECK(__oe_enclave_status);
+            OE_RAISE(OE_OUT_OF_MEMORY);
         }
 
-        oe_memcpy(args->func, func, len + 1);
+        OE_CHECK(oe_memcpy_s(args->func, len + 1, func, len + 1));
 
         args->args = args_in;
         args->result = OE_UNEXPECTED;
     }
 
     /* Call into the host */
-    OE_TRY(oe_ocall(OE_OCALL_CALL_HOST, (int64_t)args, NULL));
+    OE_CHECK(oe_ocall(OE_OCALL_CALL_HOST, (int64_t)args, NULL));
 
     /* Check the result */
-    OE_TRY(args->result);
+    OE_CHECK(args->result);
 
     result = OE_OK;
 
-OE_CATCH:
+done:
     oe_host_free_for_call_host(args);
     return result;
 }
@@ -547,19 +547,19 @@ oe_result_t oe_call_host_by_address(
 
     /* Reject invalid parameters */
     if (!func)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Verify that the function address is outside the enclave */
     if (!oe_is_outside_enclave(func, sizeof(func)))
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize the arguments */
     {
         if (!(args = oe_host_alloc_for_call_host(sizeof(*args))))
         {
             /* Fail if the enclave is crashing. */
-            OE_TRY(__oe_enclave_status);
-            OE_THROW(OE_OUT_OF_MEMORY);
+            OE_CHECK(__oe_enclave_status);
+            OE_RAISE(OE_OUT_OF_MEMORY);
         }
 
         args->args = args_in;
@@ -568,14 +568,14 @@ oe_result_t oe_call_host_by_address(
     }
 
     /* Call the host function with this address */
-    OE_TRY(oe_ocall(OE_OCALL_CALL_HOST_BY_ADDRESS, (int64_t)args, NULL));
+    OE_CHECK(oe_ocall(OE_OCALL_CALL_HOST_BY_ADDRESS, (int64_t)args, NULL));
 
     /* Check the result */
-    OE_TRY(args->result);
+    OE_CHECK(args->result);
 
     result = OE_OK;
 
-OE_CATCH:
+done:
 
     oe_host_free_for_call_host(args);
 

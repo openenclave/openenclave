@@ -4,9 +4,10 @@
 #ifndef _OE_CPUID_ENCLAVE_H
 #define _OE_CPUID_ENCLAVE_H
 
+#include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
 
-void oe_initialize_cpuid(uint64_t arg_in);
+oe_result_t oe_initialize_cpuid(uint64_t arg_in);
 
 int oe_emulate_cpuid(
     uint64_t* rax,

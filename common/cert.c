@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/asn1.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/raise.h>
@@ -55,13 +56,14 @@ done:
 // less than 'n' bytes remain, then ignore the excess bytes of string 's'.
 // Update the offset, which may legally exceed the buffer size. Upon return,
 // the offset indicates how many bytes would be required to hold the data.
-static void _append(
+static oe_result_t _append(
     void* buffer,
     size_t size,
     size_t* offset,
     const void* s,
     size_t n)
 {
+    oe_result_t result = OE_UNEXPECTED;
     /* If any space remaining in the buffer: */
     if (*offset < size)
     {
@@ -72,16 +74,20 @@ static void _append(
         if (s)
         {
             // Copy 'm' bytes from string 's'.
-            oe_memcpy_s(ptr, remaining, s, m);
+            OE_CHECK(oe_memcpy_s(ptr, remaining, s, m));
         }
         else
         {
             // Fill with 'm' zero bytes.
-            memset(ptr, 0, m);
+            oe_secure_zero_fill(ptr, m);
         }
     }
 
     *offset += n;
+    result = OE_OK;
+
+done:
+    return result;
 }
 
 oe_result_t oe_get_crl_distribution_points(
@@ -145,7 +151,7 @@ oe_result_t oe_get_crl_distribution_points(
         urls_bytes = sizeof(char*) * (*num_urls);
 
         /* Leave space for urls[] array */
-        _append(buffer, *buffer_size, &offset, NULL, urls_bytes);
+        OE_CHECK(_append(buffer, *buffer_size, &offset, NULL, urls_bytes));
 
         /* Set the pointer to the urls[] array if enough space */
         if (buffer && urls_bytes <= *buffer_size)
@@ -177,10 +183,11 @@ oe_result_t oe_get_crl_distribution_points(
                 }
 
                 /* Append the URL */
-                _append(buffer, *buffer_size, &offset, url, url_len);
+                OE_CHECK(_append(buffer, *buffer_size, &offset, url, url_len));
 
                 /* Append null terminator */
-                _append(buffer, *buffer_size, &offset, NULL, sizeof(char));
+                OE_CHECK(
+                    _append(buffer, *buffer_size, &offset, NULL, sizeof(char)));
             }
         }
     }
