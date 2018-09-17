@@ -21,7 +21,7 @@ typedef struct _oe_datetime
     uint32_t seconds; /* range: 0-59 */
 } oe_datetime_t;
 
-// ISO 8601 format: YYYY-MM-DDThh:mm:ssZ
+// ISO 8601 format: YYYY-MM-DDThh:mm:ss_z
 #define OE_DATETIME_FORMAT ("YYYY-MM-DDThh:mm:ssZ")
 
 /**

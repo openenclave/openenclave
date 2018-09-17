@@ -5,10 +5,10 @@
 #include <string.h>
 #include "log.h"
 
-Attestation::Attestation(Crypto* pCrypto, uint8_t* enclaveMRSigner)
+Attestation::Attestation(Crypto* crypto, uint8_t* enclave_mr_signer)
 {
-    m_pCrypto = pCrypto;
-    m_pEnclaveMRSigner = enclaveMRSigner;
+    m_p_crypto = crypto;
+    m_p_enclave_mr_signer = enclave_mr_signer;
 }
 
 /**
@@ -17,13 +17,13 @@ Attestation::Attestation(Crypto* pCrypto, uint8_t* enclaveMRSigner)
  */
 bool Attestation::GenerateRemoteReport(
     const uint8_t* data,
-    const size_t dataSize,
-    uint8_t* remoteReportBuffer,
-    size_t* remoteReportBufferSize)
+    const size_t data_size,
+    uint8_t* remote_report_buffer,
+    size_t* remote_report_buffer_size)
 {
     bool ret = false;
     uint8_t sha256[32];
-    m_pCrypto->Sha256(data, dataSize, sha256);
+    m_p_crypto->Sha256(data, data_size, sha256);
 
     // To generate a remote report that can be attested remotely by an enclave
     // running  on a different platform, pass the
@@ -39,10 +39,10 @@ bool Attestation::GenerateRemoteReport(
         OE_REPORT_FLAGS_REMOTE_ATTESTATION,
         sha256, // Store sha256 in report_data field
         sizeof(sha256),
-        NULL, // optParams must be null
+        NULL, // opt_params must be null
         0,
-        remoteReportBuffer,
-        remoteReportBufferSize);
+        remote_report_buffer,
+        remote_report_buffer_size);
 
     if (result != OE_OK)
     {
@@ -69,19 +69,19 @@ exit:
  * report_data field.
  */
 bool Attestation::AttestRemoteReport(
-    const uint8_t* remoteReport,
-    size_t remoteReportSize,
+    const uint8_t* remote_report,
+    size_t remote_report_size,
     const uint8_t* data,
-    size_t dataSize)
+    size_t data_size)
 {
     bool ret = false;
     uint8_t sha256[32];
-    oe_report_t parsedReport = {0};
+    oe_report_t parsed_report = {0};
     oe_result_t result = OE_OK;
 
     // While attesting, the remote report being attested must not be tampered
     // with. Ensure that it has been copied over to the enclave.
-    if (!oe_is_within_enclave(remoteReport, remoteReportSize))
+    if (!oe_is_within_enclave(remote_report, remote_report_size))
     {
         ENC_DEBUG_PRINTF("Cannot attest remote report in host memory. Unsafe.");
         goto exit;
@@ -89,7 +89,7 @@ bool Attestation::AttestRemoteReport(
 
     // 1)  Validate the report's trustworthiness
     // Verify the remote report to ensure its authenticity.
-    result = oe_verify_report(remoteReport, remoteReportSize, &parsedReport);
+    result = oe_verify_report(remote_report, remote_report_size, &parsed_report);
     if (result != OE_OK)
     {
         ENC_DEBUG_PRINTF(
@@ -101,18 +101,18 @@ bool Attestation::AttestRemoteReport(
     // signed_id is the hash of the public signing key that was used to sign an
     // enclave.
     // Check that the enclave was signed by an trusted entity.
-    if (memcmp(parsedReport.identity.signer_id, m_pEnclaveMRSigner, 32) != 0)
+    if (memcmp(parsed_report.identity.signer_id, m_p_enclave_mr_signer, 32) != 0)
     {
         ENC_DEBUG_PRINTF("identity.signer_id checking failed.");
         ENC_DEBUG_PRINTF(
-            "identity.signer_id %s", parsedReport.identity.signer_id);
+            "identity.signer_id %s", parsed_report.identity.signer_id);
 
         for (int i = 0; i < 32; i++)
         {
             ENC_DEBUG_PRINTF(
                 "m_pEnclaveMRSigner[%d]=0x%0x\n",
                 i,
-                (uint8_t)m_pEnclaveMRSigner[i]);
+                (uint8_t)m_p_enclave_mr_signer[i]);
         }
 
         ENC_DEBUG_PRINTF("\n\n\n");
@@ -122,24 +122,24 @@ bool Attestation::AttestRemoteReport(
             ENC_DEBUG_PRINTF(
                 "parsedReport.identity.signer_id)[%d]=0x%0x\n",
                 i,
-                (uint8_t)parsedReport.identity.signer_id[i]);
+                (uint8_t)parsed_report.identity.signer_id[i]);
         }
 
         ENC_DEBUG_PRINTF("\n\n\n");
 
-        ENC_DEBUG_PRINTF("m_pEnclaveMRSigner %s", m_pEnclaveMRSigner);
+        ENC_DEBUG_PRINTF("m_pEnclaveMRSigner %s", m_p_enclave_mr_signer);
         goto exit;
     }
 
     // Check the enclave's product id and security version
     // See enc.conf for values specified when signing the enclave.
-    if (parsedReport.identity.product_id[0] != 1)
+    if (parsed_report.identity.product_id[0] != 1)
     {
         ENC_DEBUG_PRINTF("identity.product_id checking failed.");
         goto exit;
     }
 
-    if (parsedReport.identity.security_version < 1)
+    if (parsed_report.identity.security_version < 1)
     {
         ENC_DEBUG_PRINTF("identity.security_version checking failed.");
         goto exit;
@@ -147,9 +147,9 @@ bool Attestation::AttestRemoteReport(
 
     // 3) Validate the report data
     //    The report_data has the hash value of the report data
-    m_pCrypto->Sha256(data, dataSize, sha256);
+    m_p_crypto->Sha256(data, data_size, sha256);
 
-    if (memcmp(parsedReport.report_data, sha256, sizeof(sha256)) != 0)
+    if (memcmp(parsed_report.report_data, sha256, sizeof(sha256)) != 0)
     {
         ENC_DEBUG_PRINTF("SHA256 mismatch.");
         goto exit;

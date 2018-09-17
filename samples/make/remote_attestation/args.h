@@ -12,20 +12,20 @@
 
 struct RemoteReportWithPubKey
 {
-    uint8_t pemKey[512]; // public key information
-    uint8_t* remoteReport;
-    size_t remoteReportSize;
+    uint8_t pem_key[512]; // public key information
+    uint8_t* remote_report;
+    size_t remote_report_size;
 };
 
 struct GetRemoteReportWithPubKeyArgs
 {
-    RemoteReportWithPubKey* reportWithPubKey; /* out */
+    RemoteReportWithPubKey* report_with_pub_key; /* out */
     bool success;                             /* out */
 };
 
 struct VerifyReportWithPubKeyArgs
 {
-    RemoteReportWithPubKey* reportWithPubKey; /* in */
+    RemoteReportWithPubKey* report_with_pub_key; /* in */
     bool success;                             /* out */
 };
 

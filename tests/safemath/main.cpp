@@ -6,7 +6,7 @@
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/tests.h>
 
-bool _Check8BitUnsigned(oe_result_t result, int num, uint8_t num_u8)
+bool _check_8_bit_unsigned(oe_result_t result, int num, uint8_t num_u8)
 {
     if ((num < 0 || num > OE_UINT8_MAX) && result != OE_INTEGER_OVERFLOW)
         return false;
@@ -17,7 +17,7 @@ bool _Check8BitUnsigned(oe_result_t result, int num, uint8_t num_u8)
     return true;
 }
 
-bool _Check8BitSigned(oe_result_t result, int num, int8_t num_s8)
+bool _check_8_bit_signed(oe_result_t result, int num, int8_t num_s8)
 {
     if ((num < OE_INT8_MIN || num > OE_INT8_MAX) &&
         result != OE_INTEGER_OVERFLOW)
@@ -29,7 +29,7 @@ bool _Check8BitSigned(oe_result_t result, int num, int8_t num_s8)
     return true;
 }
 
-void _Test8Bit()
+void _test8_bit()
 {
     /* Unsigned tests. */
     for (int a = 0; a <= OE_UINT8_MAX; a++)
@@ -40,19 +40,19 @@ void _Test8Bit()
             uint8_t c_u8;
             int c = a + b;
             oe_result_t res = oe_safe_add_u8((uint8_t)a, (uint8_t)b, &c_u8);
-            if (!_Check8BitUnsigned(res, c, c_u8))
+            if (!_check_8_bit_unsigned(res, c, c_u8))
                 oe_put_err("oe_safe_add_u8() failed with inputs: %d %d", a, b);
 
             /* Test subtraction. */
             c = a - b;
             res = oe_safe_sub_u8((uint8_t)a, (uint8_t)b, &c_u8);
-            if (!_Check8BitUnsigned(res, c, c_u8))
+            if (!_check_8_bit_unsigned(res, c, c_u8))
                 oe_put_err("oe_safe_sub_u8() failed with inputs: %d %d", a, b);
 
             /* Test multiplication. */
             c = a * b;
             res = oe_safe_mul_u8((uint8_t)a, (uint8_t)b, &c_u8);
-            if (!_Check8BitUnsigned(res, c, c_u8))
+            if (!_check_8_bit_unsigned(res, c, c_u8))
                 oe_put_err("oe_safe_mul_u8() failed with inputs: %d %d", a, b);
         }
     }
@@ -66,19 +66,19 @@ void _Test8Bit()
             int8_t c_s8;
             int c = a + b;
             oe_result_t res = oe_safe_add_s8((int8_t)a, (int8_t)b, &c_s8);
-            if (!_Check8BitSigned(res, c, c_s8))
+            if (!_check_8_bit_signed(res, c, c_s8))
                 oe_put_err("oe_safe_add_s8() failed with inputs: %d %d", a, b);
 
             /* Test subtraction. */
             c = a - b;
             res = oe_safe_sub_s8((int8_t)a, (int8_t)b, &c_s8);
-            if (!_Check8BitSigned(res, c, c_s8))
+            if (!_check_8_bit_signed(res, c, c_s8))
                 oe_put_err("oe_safe_sub_s8() failed with inputs: %d %d", a, b);
 
             /* Test multiplication. */
             c = a * b;
             res = oe_safe_mul_s8((int8_t)a, (int8_t)b, &c_s8);
-            if (!_Check8BitSigned(res, c, c_s8))
+            if (!_check_8_bit_signed(res, c, c_s8))
                 oe_put_err("oe_safe_mul_s8() failed with inputs: %d %d", a, b);
         }
     }
@@ -772,7 +772,7 @@ struct SignedTest
     }
 };
 
-void _TestUnsigned()
+void _test_unsigned()
 {
     UnsignedTest<uint16_t> u16 = {
         oe_safe_add_u16, oe_safe_sub_u16, oe_safe_mul_u16, OE_UINT16_MAX};
@@ -792,7 +792,7 @@ void _TestUnsigned()
     sizet.Run();
 }
 
-void _TestSigned()
+void _test_signed()
 {
     SignedTest<int16_t> s16 = {oe_safe_add_s16,
                                oe_safe_sub_s16,
@@ -820,11 +820,11 @@ void _TestSigned()
 int main(int argc, const char* argv[])
 {
     /* For 8-bit math, we can quickly exhaust all combinations. */
-    _Test8Bit();
+    _test8_bit();
 
     /* For the other sizes, we will test selected cases. */
-    _TestUnsigned();
-    _TestSigned();
+    _test_unsigned();
+    _test_signed();
 
     printf("=== passed all tests (safemath)\n");
 

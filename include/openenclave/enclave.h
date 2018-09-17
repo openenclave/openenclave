@@ -37,11 +37,11 @@ OE_EXTERNC_BEGIN
  * the registered handler will be called when an exception happens inside the
  * enclave.
  *
- * @param isFirstHandler The parameter indicates that the input handler should
+ * @param is_first_handler The parameter indicates that the input handler should
  * be the first exception handler to be called. If it is false, the input
  * handler will be appended to the end of exception handler chain, otherwise
  * it will be added as the first handler in the exception handler chain.
- * @param vectoredHandler The input vectored exception handler to register. It
+ * @param vectored_handler The input vectored exception handler to register. It
  * must be a function defined in the enclave. The same handler can only be
  * registered once; a 2nd registration will fail. If the function succeeds, the
  * handler may be removed later by passing it to
@@ -52,13 +52,13 @@ OE_EXTERNC_BEGIN
  * @returns OE_FAILED failed to add handler
 */
 oe_result_t oe_add_vectored_exception_handler(
-    bool isFirstHandler,
-    oe_vectored_exception_handler_t vectoredHandler);
+    bool is_first_handler,
+    oe_vectored_exception_handler_t vectored_handler);
 
 /**
 * Remove an existing vectored exception handler.
 *
-* @param vectoredHandler The pointer to a registered exception handler returned
+* @param vectored_handler The pointer to a registered exception handler returned
 * from a successful oe_add_vectored_exception_handler() call.
 *
 * @returns OE_OK success
@@ -66,7 +66,7 @@ oe_result_t oe_add_vectored_exception_handler(
 * @returns OE_FAILED failed to remove handler
 */
 oe_result_t oe_remove_vectored_exception_handler(
-    oe_vectored_exception_handler_t vectoredHandler);
+    oe_vectored_exception_handler_t vectored_handler);
 
 /**
  * Perform a high-level enclave function call (OCALL).
@@ -293,45 +293,45 @@ void __oe_assert_fail(
  * Get a report signed by the enclave platform for use in attestation.
  *
  * This function creates a report to be used in local or remote attestation. The
- * report shall contain the data given by the **reportData** parameter.
+ * report shall contain the data given by the **report_data** parameter.
  *
- * If the *reportBuffer* is NULL or *reportSize* parameter is too small,
+ * If the *report_buffer* is NULL or *report_size* parameter is too small,
  * this function returns OE_BUFFER_TOO_SMALL.
  *
  * @param flags Specifying default value (0) generates a report for local
  * attestation. Specifying OE_REPORT_FLAGS_REMOTE_ATTESTATION generates a
  * report for remote attestation.
- * @param reportData The report data that will be included in the report.
- * @param reportDataSize The size of the **reportData** in bytes.
- * @param optParams Optional additional parameters needed for the current
+ * @param report_data The report data that will be included in the report.
+ * @param report_data_size The size of the **report_data** in bytes.
+ * @param opt_params Optional additional parameters needed for the current
  * enclave type. For SGX, this can be sgx_target_info_t for local attestation.
- * @param optParamsSize The size of the **optParams** buffer.
- * @param reportBuffer The buffer to where the resulting report will be copied.
- * @param reportBufferSize The size of the **report** buffer. This is set to the
+ * @param opt_params_size The size of the **opt_params** buffer.
+ * @param report_buffer The buffer to where the resulting report will be copied.
+ * @param report_buffer_size The size of the **report** buffer. This is set to the
  * required size of the report buffer on return.
  *
  * @retval OE_OK The report was successfully created.
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
- * @retval OE_BUFFER_TOO_SMALL The **reportBuffer** buffer is NULL or too small.
+ * @retval OE_BUFFER_TOO_SMALL The **report_buffer** buffer is NULL or too small.
  * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
  *
  */
 oe_result_t oe_get_report(
     uint32_t flags,
-    const uint8_t* reportData,
-    size_t reportDataSize,
-    const void* optParams,
-    size_t optParamsSize,
-    uint8_t* reportBuffer,
-    size_t* reportBufferSize);
+    const uint8_t* report_data,
+    size_t report_data_size,
+    const void* opt_params,
+    size_t opt_params_size,
+    uint8_t* report_buffer,
+    size_t* report_buffer_size);
 
 /**
  * Parse an enclave report into a standard format for reading.
  *
  * @param report The buffer containing the report to parse.
- * @param reportSize The size of the **report** buffer.
- * @param parsedReport The **oe_report_t** structure to populate with the report
- * properties in a standard format. The *parsedReport* holds pointers to fields
+ * @param report_size The size of the **report** buffer.
+ * @param parsed_report The **oe_report_t** structure to populate with the report
+ * properties in a standard format. The *parsed_report* holds pointers to fields
  * within the supplied *report* and must not be used beyond the lifetime of the
  * *report*.
  *
@@ -341,8 +341,8 @@ oe_result_t oe_get_report(
  */
 oe_result_t oe_parse_report(
     const uint8_t* report,
-    size_t reportSize,
-    oe_report_t* parsedReport);
+    size_t report_size,
+    oe_report_t* parsed_report);
 
 /**
  * Verify the integrity of the report and its signature.
@@ -353,8 +353,8 @@ oe_result_t oe_parse_report(
  * rooted to a trusted authority such as the enclave platform manufacturer.
  *
  * @param report The buffer containing the report to verify.
- * @param reportSize The size of the **report** buffer.
- * @param parsedReport Optional **oe_report_t** structure to populate with the
+ * @param report_size The size of the **report** buffer.
+ * @param parsed_report Optional **oe_report_t** structure to populate with the
  * report properties in a standard format.
  *
  * @retval OE_OK The report was successfully created.
@@ -363,8 +363,8 @@ oe_result_t oe_parse_report(
  */
 oe_result_t oe_verify_report(
     const uint8_t* report,
-    size_t reportSize,
-    oe_report_t* parsedReport);
+    size_t report_size,
+    oe_report_t* parsed_report);
 
 /**
  * This enumeration type defines the policy used to derive a seal key.
@@ -393,59 +393,59 @@ typedef enum _oe_seal_policy {
 * Get a symmetric encryption key derived from the specified policy and coupled
 * to the enclave platform.
 *
-* @param sealPolicy The policy for the identity properties used to derive the
+* @param seal_policy The policy for the identity properties used to derive the
 * seal key.
-* @param keyBuffer The buffer to write the resulting seal key to.
-* @param keyBufferSize The size of the **keyBuffer** buffer. If this is too
+* @param key_buffer The buffer to write the resulting seal key to.
+* @param key_buffer_size The size of the **key_buffer** buffer. If this is too
 * small, this function sets it to the required size and returns
 * OE_BUFFER_TOO_SMALL. When this function success, the number of bytes written
-* to keyBuffer is set to it.
-* @param keyInfo Optional buffer for the enclave-specific key information which
+* to key_buffer is set to it.
+* @param key_info Optional buffer for the enclave-specific key information which
 * can be used to retrieve the same key later, on a newer security version.
-* @param keyInfoSize The size of the **keyInfo** buffer. If this is too small,
+* @param key_info_size The size of the **key_info** buffer. If this is too small,
 * this function sets it to the required size and returns OE_BUFFER_TOO_SMALL.
-* When this function success, the number of bytes written to keyInfo is set to
+* When this function success, the number of bytes written to key_info is set to
 * it.
 
 * @retval OE_OK The seal key was successfully requested.
 * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
-* @retval OE_BUFFER_TOO_SMALL The **keyBuffer** or **keyInfo** buffer is too
+* @retval OE_BUFFER_TOO_SMALL The **key_buffer** or **key_info** buffer is too
 * small.
 * @retval OE_UNEXPECTED An unexpected error happened.
 */
 oe_result_t oe_get_seal_key_by_policy(
-    oe_seal_policy_t sealPolicy,
-    uint8_t* keyBuffer,
-    size_t* keyBufferSize,
-    uint8_t* keyInfo,
-    size_t* keyInfoSize);
+    oe_seal_policy_t seal_policy,
+    uint8_t* key_buffer,
+    size_t* key_buffer_size,
+    uint8_t* key_info,
+    size_t* key_info_size);
 
 /**
 * Get a symmetric encryption key from the enclave platform using existing key
 * information.
 *
-* @param keyInfo The enclave-specific key information to derive the seal key
+* @param key_info The enclave-specific key information to derive the seal key
 * with.
-* @param keyInfoSize The size of the **keyInfo** buffer.
-* @param keyBuffer The buffer to write the resulting seal key to. It will not
+* @param key_info_size The size of the **key_info** buffer.
+* @param key_buffer The buffer to write the resulting seal key to. It will not
 * be changed if this function fails.
-* @param keyBufferSize The size of the **keyBuffer** buffer. If this is too
+* @param key_buffer_size The size of the **key_buffer** buffer. If this is too
 * small, this function sets it to the required size and returns
 * OE_BUFFER_TOO_SMALL. When this function success, the number of bytes written
-* to keyBuffer is set to it.
+* to key_buffer is set to it.
 *
 * @retval OE_OK The seal key was successfully requested.
 * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
-* @retval OE_BUFFER_TOO_SMALL The **keyBuffer** buffer is too small.
-* @retval OE_INVALID_CPUSVN **keyInfo** contains an invalid CPUSVN.
-* @retval OE_INVALID_ISVSVN **keyInfo** contains an invalid ISVSVN.
-* @retval OE_INVALID_KEYNAME **keyInfo** contains an invalid KEYNAME.
+* @retval OE_BUFFER_TOO_SMALL The **key_buffer** buffer is too small.
+* @retval OE_INVALID_CPUSVN **key_info** contains an invalid CPUSVN.
+* @retval OE_INVALID_ISVSVN **key_info** contains an invalid ISVSVN.
+* @retval OE_INVALID_KEYNAME **key_info** contains an invalid KEYNAME.
 */
 oe_result_t oe_get_seal_key(
-    const uint8_t* keyInfo,
-    size_t keyInfoSize,
-    uint8_t* keyBuffer,
-    size_t* keyBufferSize);
+    const uint8_t* key_info,
+    size_t key_info_size,
+    uint8_t* key_buffer,
+    size_t* key_buffer_size);
 
 /**
  * Obtains the enclave handle.

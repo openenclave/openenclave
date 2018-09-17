@@ -46,16 +46,16 @@ OE_STATIC_ASSERT(sizeof(oe_ec_type_t) == sizeof(unsigned int));
  * The caller is responsible for releasing the key by passing it to
  * oe_ec_private_key_free().
  *
- * @param privateKey initialized key handle upon return
- * @param pemData zero-terminated PEM data
- * @param pemSize size of the PEM data (including the zero-terminator)
+ * @param private_key initialized key handle upon return
+ * @param pem_data zero-terminated PEM data
+ * @param pem_size size of the PEM data (including the zero-terminator)
  *
  * @return OE_OK upon success
  */
 oe_result_t oe_ec_private_key_read_pem(
-    oe_ec_private_key_t* privateKey,
-    const uint8_t* pemData,
-    size_t pemSize);
+    oe_ec_private_key_t* private_key,
+    const uint8_t* pem_data,
+    size_t pem_size);
 
 /**
  * Reads a public EC key from PEM data
@@ -70,16 +70,16 @@ oe_result_t oe_ec_private_key_read_pem(
  * The caller is responsible for releasing the key by passing it to
  * oe_ec_public_key_free().
  *
- * @param publicKey initialized key handle upon return
- * @param pemData zero-terminated PEM data
- * @param pemSize size of the PEM data (including the zero-terminator)
+ * @param public_key initialized key handle upon return
+ * @param pem_data zero-terminated PEM data
+ * @param pem_size size of the PEM data (including the zero-terminator)
  *
  * @return OE_OK upon success
  */
 oe_result_t oe_ec_public_key_read_pem(
-    oe_ec_public_key_t* publicKey,
-    const uint8_t* pemData,
-    size_t pemSize);
+    oe_ec_public_key_t* public_key,
+    const uint8_t* pem_data,
+    size_t pem_size);
 
 /**
  * Writes a private EC key to PEM format
@@ -91,17 +91,17 @@ oe_result_t oe_ec_public_key_read_pem(
  *     ...
  *     -----END EC PRIVATE KEY-----
  *
- * @param privateKey key to be written
- * @param pemData buffer where PEM data will be written
- * @param[in,out] pemSize buffer size (in); PEM data size (out)
+ * @param private_key key to be written
+ * @param pem_data buffer where PEM data will be written
+ * @param[in,out] pem_size buffer size (in); PEM data size (out)
  *
  * @return OE_OK upon success
  * @return OE_BUFFER_TOO_SMALL PEM buffer is too small
  */
 oe_result_t oe_ec_private_key_write_pem(
-    const oe_ec_private_key_t* privateKey,
-    uint8_t* pemData,
-    size_t* pemSize);
+    const oe_ec_private_key_t* private_key,
+    uint8_t* pem_data,
+    size_t* pem_size);
 
 /*ATTN*/
 
@@ -115,17 +115,17 @@ oe_result_t oe_ec_private_key_write_pem(
  *     ...
  *     -----END PUBLIC KEY-----
  *
- * @param publicKey key to be written
- * @param pemData buffer where PEM data will be written
- * @param[in,out] pemSize buffer size (in); PEM data size (out)
+ * @param public_key key to be written
+ * @param pem_data buffer where PEM data will be written
+ * @param[in,out] pem_size buffer size (in); PEM data size (out)
  *
  * @return OE_OK upon success
  * @return OE_BUFFER_TOO_SMALL PEM buffer is too small
  */
 oe_result_t oe_ec_public_key_write_pem(
-    const oe_ec_public_key_t* publicKey,
-    uint8_t* pemData,
-    size_t* pemSize);
+    const oe_ec_public_key_t* public_key,
+    uint8_t* pem_data,
+    size_t* pem_size);
 
 /**
  * Releases a private EC key
@@ -136,7 +136,7 @@ oe_result_t oe_ec_public_key_write_pem(
  *
  * @return OE_OK upon success
  */
-oe_result_t oe_ec_private_key_free(oe_ec_private_key_t* privateKey);
+oe_result_t oe_ec_private_key_free(oe_ec_private_key_t* private_key);
 
 /**
  * Releases a public EC key
@@ -147,30 +147,30 @@ oe_result_t oe_ec_private_key_free(oe_ec_private_key_t* privateKey);
  *
  * @return OE_OK upon success
  */
-oe_result_t oe_ec_public_key_free(oe_ec_public_key_t* publicKey);
+oe_result_t oe_ec_public_key_free(oe_ec_public_key_t* public_key);
 
 /**
  * Digitally signs a message with a private EC key
  *
  * This function uses a private EC key to sign a message with the given hash.
  *
- * @param privateKey private EC key of signer
- * @param hashType type of hash parameter
- * @param hashData hash of the message being signed
- * @param hashSize size of the hash data
+ * @param private_key private EC key of signer
+ * @param hash_type type of hash parameter
+ * @param hash_data hash of the message being signed
+ * @param hash_size size of the hash data
  * @param signature signature buffer
- * @param[in,out] signatureSize buffer size (in); signature size (out)
+ * @param[in,out] signature_size buffer size (in); signature size (out)
  *
  * @return OE_OK on success
  * @return OE_BUFFER_TOO_SMALL signature buffer is too small
  */
 oe_result_t oe_ec_private_key_sign(
-    const oe_ec_private_key_t* privateKey,
-    oe_hash_type_t hashType,
-    const void* hashData,
-    size_t hashSize,
+    const oe_ec_private_key_t* private_key,
+    oe_hash_type_t hash_type,
+    const void* hash_data,
+    size_t hash_size,
     uint8_t* signature,
-    size_t* signatureSize);
+    size_t* signature_size);
 
 /**
  * Verifies that a message was signed by an EC key
@@ -178,22 +178,22 @@ oe_result_t oe_ec_private_key_sign(
  * This function verifies that the message with the given hash was signed by the
  * given EC key.
  *
- * @param publicKey public EC key of signer
- * @param hashType type of hash parameter
- * @param hashData hash of the signed message
- * @param hashSize size of the hash data
+ * @param public_key public EC key of signer
+ * @param hash_type type of hash parameter
+ * @param hash_data hash of the signed message
+ * @param hash_size size of the hash data
  * @param signature expected signature
- * @param signatureSize size of the expected signature
+ * @param signature_size size of the expected signature
  *
  * @return OE_OK if the message was signed with the given certificate
  */
 oe_result_t oe_ec_public_key_verify(
-    const oe_ec_public_key_t* publicKey,
-    oe_hash_type_t hashType,
-    const void* hashData,
-    size_t hashSize,
+    const oe_ec_public_key_t* public_key,
+    oe_hash_type_t hash_type,
+    const void* hash_data,
+    size_t hash_size,
     const uint8_t* signature,
-    size_t signatureSize);
+    size_t signature_size);
 
 /**
  * Generates an EC private-public key pair
@@ -201,32 +201,32 @@ oe_result_t oe_ec_public_key_verify(
  * This function generates an EC private-public key pair from the given
  * parameters.
  *
- * @param ecType type of elliptical curve to be generated
- * @param privateKey generated private key
- * @param publicKey generated public key
+ * @param ec_type type of elliptical curve to be generated
+ * @param private_key generated private key
+ * @param public_key generated public key
  *
  * @return OE_OK on success
  */
 oe_result_t oe_ec_generate_key_pair(
-    oe_ec_type_t ecType,
-    oe_ec_private_key_t* privateKey,
-    oe_ec_public_key_t* publicKey);
+    oe_ec_type_t ec_type,
+    oe_ec_private_key_t* private_key,
+    oe_ec_public_key_t* public_key);
 
 /**
  * Determine whether two EC public keys are identical.
  *
  * This function determines whether two EC public keys are identical.
  *
- * @param publicKey1 first key.
- * @param publicKey2 second key.
+ * @param public_key1 first key.
+ * @param public_key2 second key.
  * @param equal[out] true if the keys are identical.
  *
  * @return OE_OK successful and **equal** is either true or false.
  * @return OE_INVALID_PARAMETER a parameter was invalid.
  */
 oe_result_t oe_ec_public_key_equal(
-    const oe_ec_public_key_t* publicKey1,
-    const oe_ec_public_key_t* publicKey2,
+    const oe_ec_public_key_t* public_key1,
+    const oe_ec_public_key_t* public_key2,
     bool* equal);
 
 /**
@@ -235,23 +235,23 @@ oe_result_t oe_ec_public_key_equal(
  * This function initializes an EC public key from X and Y coordinates in
  * uncompressed format.
  *
- * @param publicKey key which is initialized.
- * @param ecType type of elliptical curve to create.
- * @param xData the bytes for the X coordinate
- * @param xSize the size of the xData buffer
- * @param yData the bytes for the Y coordinate
- * @param ySize the size of the yData buffer
+ * @param public_key key which is initialized.
+ * @param ec_type type of elliptical curve to create.
+ * @param x_data the bytes for the X coordinate
+ * @param x_size the size of the x_data buffer
+ * @param y_data the bytes for the Y coordinate
+ * @param y_size the size of the y_data buffer
  *
  * @return OE_OK upon success
  * @return OE_FAILED on failure
  */
 oe_result_t oe_ec_public_key_from_coordinates(
-    oe_ec_public_key_t* publicKey,
-    oe_ec_type_t ecType,
-    const uint8_t* xData,
-    size_t xSize,
-    const uint8_t* yData,
-    size_t ySize);
+    oe_ec_public_key_t* public_key,
+    oe_ec_type_t ec_type,
+    const uint8_t* x_data,
+    size_t x_size,
+    const uint8_t* y_data,
+    size_t y_size);
 
 OE_EXTERNC_END
 
@@ -263,23 +263,23 @@ OE_EXTERNC_END
  * **oe_ec_public_key_verify()** function.
  *
  * @param signature the buffer that will contain the signature
- * @param signatureSize[in,out] buffer size (in); signature size (out)
- * @param rData the R coordinate in binary form
- * @param rSize the size of the R coordinate buffer
- * @param sData the S coordinate in binary form
- * @param sSize the size of the S coordinate buffer
+ * @param signature_size[in,out] buffer size (in); signature size (out)
+ * @param data the R coordinate in binary form
+ * @param size the size of the R coordinate buffer
+ * @param s_data the S coordinate in binary form
+ * @param s_size the size of the S coordinate buffer
  *
  * @return OE_OK success
  * @return OE_INVALID_PARAMETER invalid parameter
  * @return OE_BUFFER_TOO_SMALL **signature** buffer is too small
- *         and **signatureSize** contains the required size.
+ *         and **signature_size** contains the required size.
  */
 oe_result_t oe_ecdsa_signature_write_der(
     unsigned char* signature,
-    size_t* signatureSize,
-    const uint8_t* rData,
-    size_t rSize,
-    const uint8_t* sData,
-    size_t sSize);
+    size_t* signature_size,
+    const uint8_t* data,
+    size_t size,
+    const uint8_t* s_data,
+    size_t s_size);
 
 #endif /* _OE_EC_H */

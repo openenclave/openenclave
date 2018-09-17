@@ -11,38 +11,38 @@
 #define ENCRYPTION_KEY_SIZE_IN_BYTES (ENCRYPTION_KEY_SIZE / 8)
 
 // EncryptionHeader contains encryption metadata used for decryption
-// fileDataSize: this is the size of the data in an input file, excluding the
-// header digest: this field contains hash value of a password encryptedKey:
+// file_data_size: this is the size of the data in an input file, excluding the
+// header digest: this field contains hash value of a password encrypted_key:
 // this is the encrypted version of the encryption key used for encrypting and
 // decrypting the data
-typedef struct _EncryptionHeader
+typedef struct _encryption_header
 {
-    size_t fileDataSize;
+    size_t file_data_size;
     unsigned char digest[HASH_VALUE_SIZE_IN_BYTES];
-    unsigned char encryptedKey[ENCRYPTION_KEY_SIZE_IN_BYTES];
+    unsigned char encrypted_key[ENCRYPTION_KEY_SIZE_IN_BYTES];
 } EncryptionHeader;
 
-typedef struct _EncryptInitializeArgs
+typedef struct _encrypt_initialize_args
 {
-    bool bEncrypt;
+    bool do_encrypt;
     const char* password;
-    size_t passwordLen;
-    EncryptionHeader* pHeader;
+    size_t password_len;
+    EncryptionHeader* header;
     oe_result_t result;
 } EncryptInitializeArgs;
 
-typedef struct _EncryptBlockArgs
+typedef struct _encrypt_block_args
 {
-    bool bEncrypt;
+    bool do_encrypt;
     unsigned char* inputbuf;
     unsigned char* outputbuf;
     size_t size;
     oe_result_t result;
 } EncryptBlockArgs;
 
-typedef struct _CloseEncryptorArgs
+typedef struct _close_encryptor_args
 {
-    bool bEncrypt;
+    bool do_encrypt;
     oe_result_t result;
 } CloseEncryptorArgs;
 

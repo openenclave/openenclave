@@ -79,8 +79,8 @@ typedef struct oe_sgx_enclave_properties_t
 #define OE_INFO_SECTION_BEGIN __attribute__((section(".oeinfo")))
 #define OE_INFO_SECTION_END
 
-#define OE_MAKE_ATTRIBUTES(_AllowDebug_) \
-    (OE_SGX_FLAGS_MODE64BIT | (_AllowDebug_ ? OE_SGX_FLAGS_DEBUG : 0))
+#define OE_MAKE_ATTRIBUTES(_allow_debug_) \
+    (OE_SGX_FLAGS_MODE64BIT | (_allow_debug_ ? OE_SGX_FLAGS_DEBUG : 0))
 
 /**
  * @endcond
@@ -96,29 +96,29 @@ typedef struct oe_sgx_enclave_properties_t
  * an enclave binary. These properties can be overwritten at sign time by
  * the oesign tool.
  *
- * @param \_ProductID\_ ISV assigned Product ID (ISVPRODID) to use in the
+ * @param \_product_id\_ ISV assigned Product ID (ISVPRODID) to use in the
  * enclave signature
- * @param \_SecurityVersion\_ ISV assigned Security Version number (ISVSVN)
+ * @param \_security_version\_ ISV assigned Security Version number (ISVSVN)
  * to use in the enclave signature
- * @param \_AllowDebug\_ If true, allows the enclave to be created with
+ * @param \_allow_debug\_ If true, allows the enclave to be created with
  * OE_ENCLAVE_FLAG_DEBUG and debugged at runtime
- * @param \_HeapPageCount\_ Number of heap pages to allocate in the enclave
- * @param \_StackPageCount\_ Number of stack pages per thread to reserve in
+ * @param \_heap_page_count\_ Number of heap pages to allocate in the enclave
+ * @param \_stack_page_count\_ Number of stack pages per thread to reserve in
  * the enclave
- * @param \_TcsCount\_ Number of concurrent threads in an enclave to support
+ * @param \_tcs_count\_ Number of concurrent threads in an enclave to support
  */
 // Note: disable clang-format since it badly misformats this macro
 // clang-format off
 
 #define OE_SET_ENCLAVE_SGX(                                               \
-    _ProductID_,                                                          \
-    _SecurityVersion_,                                                    \
-    _AllowDebug_,                                                         \
-    _HeapPageCount_,                                                      \
-    _StackPageCount_,                                                     \
-    _TcsCount_)                                                           \
+    _product_id_,                                                          \
+    _security_version_,                                                    \
+    _allow_debug_,                                                         \
+    _heap_page_count_,                                                      \
+    _stack_page_count_,                                                     \
+    _tcs_count_)                                                           \
     OE_INFO_SECTION_BEGIN                                                 \
-    OE_EXPORT_CONST oe_sgx_enclave_properties_t oe_enclavePropertiesSGX = \
+    OE_EXPORT_CONST oe_sgx_enclave_properties_t oe_enclave_properties_sgx = \
     {                                                                     \
         .header =                                                         \
         {                                                                 \
@@ -126,17 +126,17 @@ typedef struct oe_sgx_enclave_properties_t
             .enclave_type = OE_ENCLAVE_TYPE_SGX,                          \
             .size_settings =                                              \
             {                                                             \
-                .num_heap_pages = _HeapPageCount_,                        \
-                .num_stack_pages = _StackPageCount_,                      \
-                .num_tcs = _TcsCount_                                     \
+                .num_heap_pages = _heap_page_count_,                        \
+                .num_stack_pages = _stack_page_count_,                      \
+                .num_tcs = _tcs_count_                                     \
             }                                                             \
         },                                                                \
         .config =                                                         \
         {                                                                 \
-            .product_id = _ProductID_,                                    \
-            .security_version = _SecurityVersion_,                        \
+            .product_id = _product_id_,                                    \
+            .security_version = _security_version_,                        \
             .padding = 0,                                                 \
-            .attributes = OE_MAKE_ATTRIBUTES(_AllowDebug_)                \
+            .attributes = OE_MAKE_ATTRIBUTES(_allow_debug_)                \
         },                                                                \
         .sigstruct =                                                      \
         {                                                                 \

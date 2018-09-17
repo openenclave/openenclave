@@ -10,23 +10,23 @@
 
 using namespace std;
 
-typedef struct _EnclaveConfigData
+typedef struct _enclave_config_data
 {
-    uint8_t* enclaveSecretData;
-    uint8_t* enclaveMRSigner;
+    uint8_t* enclave_secret_data;
+    uint8_t* enclave_mr_signer;
 } EnclaveConfigData;
 
 class EcallDispatcher
 {
   private:
-    bool m_Initialized;
-    Crypto* m_pCrypto;
+    bool m_initialized;
+    Crypto* m_p_crypto;
     Attestation* m_attestation;
     string m_name;
-    EnclaveConfigData* m_EnclaveConfig;
+    EnclaveConfigData* m_enclave_config;
 
   public:
-    EcallDispatcher(const char* name, EnclaveConfigData* enclaveConfig);
+    EcallDispatcher(const char* name, EnclaveConfigData* enclave_config);
     ~EcallDispatcher();
     void GetRemoteReportWithPublicKey(GetRemoteReportWithPubKeyArgs* arg);
     void VerifyReportAndSetKey(VerifyReportWithPubKeyArgs* arg);

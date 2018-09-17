@@ -33,18 +33,18 @@ oe_secure_aes_cmac_equal(const OE_AESCMAC* a, const OE_AESCMAC* b)
  * specified key.
  *
  * @param key The key used to compute the AES-CMAC.
- * @param keySize The size of the key in bytes.
+ * @param key_size The size of the key in bytes.
  * @param message Pointer to start of the message.
- * @param messageLength Length of the message in bytes.
+ * @param message_length Length of the message in bytes.
  *
  * @param cmac Output parameter where the computed AES-CMAC will be written to.
  */
 oe_result_t oe_aes_cmac_sign(
     const uint8_t* key,
-    size_t keySize,
+    size_t key_size,
     const uint8_t* message,
-    size_t messageLength,
-    OE_AESCMAC* aesCMAC);
+    size_t message_length,
+    OE_AESCMAC* aes_cmac);
 
 OE_EXTERNC_END
 

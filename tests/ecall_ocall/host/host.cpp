@@ -27,23 +27,23 @@
 // custom code in the enclave).
 struct EnclaveWrap
 {
-    EnclaveWrap(const char* enclavePath, uint32_t flags)
+    EnclaveWrap(const char* enclave_path, uint32_t flags)
     {
         EncSetEnclaveIdArg args = {};
         oe_enclave_t* enclave;
         oe_result_t result;
 
         if ((result = oe_create_enclave(
-                 enclavePath, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) !=
+                 enclave_path, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) !=
             OE_OK)
         {
             oe_put_err("oe_create_enclave(): result=%u", result);
             throw std::runtime_error("oe_create_enclave() failed");
         }
-        m_Id = m_Enclaves.size();
+        m_id = m_enclaves.size();
 
         args.result = OE_FAILURE;
-        args.id = m_Id;
+        args.id = m_id;
         if ((result = oe_call_enclave(enclave, "EncSetEnclaveId", &args)) !=
             OE_OK)
         {
@@ -56,8 +56,8 @@ struct EnclaveWrap
             throw std::runtime_error("EncSetEnclaveId() failed");
         }
 
-        m_EnclaveBase = args.baseAddr;
-        m_Enclaves.push_back(enclave);
+        m_enclave_base = args.base_addr;
+        m_enclaves.push_back(enclave);
     }
 
     ~EnclaveWrap()
@@ -68,38 +68,38 @@ struct EnclaveWrap
             oe_put_err("oe_terminate_enclave(): result=%u", result);
         }
         // simplified cleanup to keep identifiers stable
-        m_Enclaves[m_Id] = NULL;
+        m_enclaves[m_id] = NULL;
     }
 
     unsigned GetId() const
     {
-        return m_Id;
+        return m_id;
     }
     const void* GetBase() const
     {
-        return m_EnclaveBase;
+        return m_enclave_base;
     }
     oe_enclave_t* Get() const
     {
-        return m_Enclaves[m_Id];
+        return m_enclaves[m_id];
     }
 
     static oe_enclave_t* Get(unsigned Id)
     {
-        return m_Enclaves[Id];
+        return m_enclaves[Id];
     }
 
     static size_t Count()
     {
-        return m_Enclaves.size();
+        return m_enclaves.size();
     }
 
   private:
-    unsigned m_Id;
-    const void* m_EnclaveBase;
-    static std::vector<oe_enclave_t*> m_Enclaves;
+    unsigned m_id;
+    const void* m_enclave_base;
+    static std::vector<oe_enclave_t*> m_enclaves;
 };
-std::vector<oe_enclave_t*> EnclaveWrap::m_Enclaves;
+std::vector<oe_enclave_t*> EnclaveWrap::m_enclaves;
 
 static std::vector<void*> InitOCallValues;
 
@@ -112,15 +112,15 @@ OE_OCALL void InitOcallHandler(void* arg_)
 
 // Initial OCall test helper - Verify that the ocall happened (by asking the
 // enclave), and obtain the result of it.
-static void TestInitOcallResult(unsigned enclaveId)
+static void TestInitOcallResult(unsigned enclave_id)
 {
-    oe_result_t result, resultOcall;
+    oe_result_t result, result_ocall;
 
-    resultOcall = OE_FAILURE;
+    result_ocall = OE_FAILURE;
     result = oe_call_enclave(
-        EnclaveWrap::Get(enclaveId), "EncGetInitOcallResult", &resultOcall);
+        EnclaveWrap::Get(enclave_id), "EncGetInitOcallResult", &result_ocall);
     OE_TEST(result == OE_OK);
-    OE_TEST(resultOcall == OE_OK);
+    OE_TEST(result_ocall == OE_OK);
 }
 
 // For ocall-test on not explicitly OE_OCALL-tagged function
@@ -145,30 +145,30 @@ InternalHostFunction(void*)
 
 // Test availability and non-availability of functions, according to their
 // OE_OCALL/OE_ECALL annotations.
-static void TestInvalidFunctions(unsigned enclaveId)
+static void TestInvalidFunctions(unsigned enclave_id)
 {
     oe_result_t result;
     EncTestCallHostFunctionArg args = {};
 
     result = oe_call_enclave(
-        EnclaveWrap::Get(enclaveId), "EncDummyEncFunction", NULL);
+        EnclaveWrap::Get(enclave_id), "EncDummyEncFunction", NULL);
     printf("oe_call_enclave(EncDummyEncFunction): %u\n", result);
     OE_TEST(result == OE_OK);
 
     result = oe_call_enclave(
-        EnclaveWrap::Get(enclaveId), "EncUnExportedFunction", NULL);
+        EnclaveWrap::Get(enclave_id), "EncUnExportedFunction", NULL);
     printf("oe_call_enclave(EncUnExportedFunction): %u\n", result);
     OE_TEST(result == OE_NOT_FOUND);
 
     result = oe_call_enclave(
-        EnclaveWrap::Get(enclaveId), "NonExistingFunction", NULL);
+        EnclaveWrap::Get(enclave_id), "NonExistingFunction", NULL);
     printf("oe_call_enclave(NonExistingFunction): %u\n", result);
     OE_TEST(result == OE_NOT_FOUND);
 
     args.result = OE_FAILURE;
-    args.functionName = "InternalHostFunction";
+    args.function_name = "InternalHostFunction";
     result = oe_call_enclave(
-        EnclaveWrap::Get(enclaveId), "EncTestCallHostFunction", &args);
+        EnclaveWrap::Get(enclave_id), "EncTestCallHostFunction", &args);
     printf(
         "oe_call_enclave(EncTestCallHostFunction, InternalHostFunction): "
         "%u/%u\n",
@@ -178,9 +178,9 @@ static void TestInvalidFunctions(unsigned enclaveId)
     OE_TEST(args.result == OE_NOT_FOUND);
 
     args.result = OE_FAILURE;
-    args.functionName = "NonExistingFunction";
+    args.function_name = "NonExistingFunction";
     result = oe_call_enclave(
-        EnclaveWrap::Get(enclaveId), "EncTestCallHostFunction", &args);
+        EnclaveWrap::Get(enclave_id), "EncTestCallHostFunction", &args);
     printf(
         "oe_call_enclave(EncTestCallHostFunction, NonExistingFunction): "
         "%u/%u\n",
@@ -190,9 +190,9 @@ static void TestInvalidFunctions(unsigned enclaveId)
     OE_TEST(args.result == OE_NOT_FOUND);
 
     args.result = OE_FAILURE;
-    args.functionName = "ExportedHostFunction";
+    args.function_name = "ExportedHostFunction";
     result = oe_call_enclave(
-        EnclaveWrap::Get(enclaveId), "EncTestCallHostFunction", &args);
+        EnclaveWrap::Get(enclave_id), "EncTestCallHostFunction", &args);
     printf(
         "oe_call_enclave(EncTestCallHostFunction, ExportedHostFunction): "
         "%u/%u\n",
@@ -204,8 +204,8 @@ static void TestInvalidFunctions(unsigned enclaveId)
 
 // Helper function for parallel test
 static void ParallelThread(
-    unsigned enclaveId,
-    unsigned flowId,
+    unsigned enclave_id,
+    unsigned flow_id,
     volatile unsigned* counter,
     volatile unsigned* release)
 {
@@ -213,61 +213,61 @@ static void ParallelThread(
 
     EncParallelExecutionArg args = {};
     args.result = OE_FAILURE;
-    args.enclaveId = enclaveId;
-    args.flowId = flowId;
+    args.enclave_id = enclave_id;
+    args.flow_id = flow_id;
     args.counter = counter;
     args.release = release;
 
     OE_TRACE_INFO(
-        "%s(Enclave=%u, Flow=%u) started\n", __FUNCTION__, enclaveId, flowId);
+        "%s(Enclave=%u, Flow=%u) started\n", __FUNCTION__, enclave_id, flow_id);
     result = oe_call_enclave(
-        EnclaveWrap::Get(enclaveId), "EncParallelExecution", &args);
+        EnclaveWrap::Get(enclave_id), "EncParallelExecution", &args);
     OE_TRACE_INFO(
-        "%s(Enclave=%u, Flow=%u) done.\n", __FUNCTION__, enclaveId, flowId);
+        "%s(Enclave=%u, Flow=%u) done.\n", __FUNCTION__, enclave_id, flow_id);
     OE_TEST(result == OE_OK);
     OE_TEST(args.result == OE_OK);
 }
 
 // Parallel execution test - verify parallel threads are actually executed
 static void TestExecutionParallel(
-    std::vector<unsigned> enclaveIds,
-    unsigned threadCount)
+    std::vector<unsigned> enclave_ids,
+    unsigned thread_count)
 {
     std::vector<std::thread> threads;
     volatile unsigned counter = 0;
     volatile unsigned release = 0;
 
     printf("%s(): Test parallel execution across enclaves {", __FUNCTION__);
-    for (unsigned e : enclaveIds)
+    for (unsigned e : enclave_ids)
         printf("%u ", e);
-    printf("} with %u threads each\n", threadCount);
+    printf("} with %u threads each\n", thread_count);
 
     counter = release = 0;
 
-    for (unsigned enclaveId : enclaveIds)
+    for (unsigned enclave_id : enclave_ids)
     {
-        for (unsigned i = 0; i < threadCount; i++)
+        for (unsigned i = 0; i < thread_count; i++)
         {
             threads.push_back(
                 std::thread(
-                    ParallelThread, enclaveId, i + 1, &counter, &release));
+                    ParallelThread, enclave_id, i + 1, &counter, &release));
         }
     }
 
     // wait for all enclave-threads to have incremented the counter
-    while (counter < enclaveIds.size() * threadCount)
+    while (counter < enclave_ids.size() * thread_count)
     {
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
 
-        static unsigned oldVal;
-        if (counter != oldVal)
+        static unsigned old_val;
+        if (counter != old_val)
         {
             printf(
                 "%s(): Looking for counter=%u, have %u.\n",
                 __FUNCTION__,
-                (unsigned)EnclaveIds.size() * threadCount,
+                (unsigned)EnclaveIds.size() * thread_count,
                 counter);
-            oldVal = counter;
+            old_val = counter;
         }
 #endif
     }
@@ -283,12 +283,12 @@ static void TestExecutionParallel(
 
 OE_OCALL void CrossEnclaveCall(CrossEnclaveCallArg* arg)
 {
-    if (arg->enclaveId < EnclaveWrap::Count())
+    if (arg->enclave_id < EnclaveWrap::Count())
     {
         // Forward the call to the next enclave.
         OE_TEST(
             oe_call_enclave(
-                EnclaveWrap::Get(arg->enclaveId), "EncCrossEnclaveCall", arg) ==
+                EnclaveWrap::Get(arg->enclave_id), "EncCrossEnclaveCall", arg) ==
             OE_OK);
     }
     else

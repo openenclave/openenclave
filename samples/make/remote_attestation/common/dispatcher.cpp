@@ -7,17 +7,17 @@
 
 EcallDispatcher::EcallDispatcher(
     const char* name,
-    EnclaveConfigData* enclaveConfig)
-    : m_pCrypto(NULL), m_attestation(NULL)
+    EnclaveConfigData* enclave_config)
+    : m_p_crypto(NULL), m_attestation(NULL)
 {
-    m_EnclaveConfig = enclaveConfig;
-    m_Initialized = initialize(name);
+    m_enclave_config = enclave_config;
+    m_initialized = initialize(name);
 }
 
 EcallDispatcher::~EcallDispatcher()
 {
-    if (m_pCrypto)
-        delete m_pCrypto;
+    if (m_p_crypto)
+        delete m_p_crypto;
 
     if (m_attestation)
         delete m_attestation;
@@ -28,14 +28,14 @@ bool EcallDispatcher::initialize(const char* name)
     bool ret = false;
 
     m_name = name;
-    m_pCrypto = new Crypto();
-    if (m_pCrypto == NULL)
+    m_p_crypto = new Crypto();
+    if (m_p_crypto == NULL)
     {
         goto exit;
     }
 
     m_attestation =
-        new Attestation(m_pCrypto, m_EnclaveConfig->enclaveMRSigner);
+        new Attestation(m_p_crypto, m_enclave_config->enclave_mr_signer);
     if (m_attestation == NULL)
     {
         goto exit;
@@ -53,11 +53,11 @@ exit:
 void EcallDispatcher::GetRemoteReportWithPublicKey(
     GetRemoteReportWithPubKeyArgs* arg)
 {
-    uint8_t pemPublicKey[512];
-    uint8_t* remoteReport = NULL;
-    size_t remoteReportSize = 0;
+    uint8_t pem_public_key[512];
+    uint8_t* remote_report = NULL;
+    size_t remote_report_size = 0;
 
-    if (m_Initialized == false)
+    if (m_initialized == false)
     {
         ENC_DEBUG_PRINTF("EcallDispatcher initialization failed.");
         goto exit;
@@ -67,35 +67,35 @@ void EcallDispatcher::GetRemoteReportWithPublicKey(
     if (!arg || !oe_is_outside_enclave(arg, sizeof(*arg)))
         goto exit;
 
-    m_pCrypto->RetrievePublicKey(pemPublicKey);
+    m_p_crypto->RetrievePublicKey(pem_public_key);
 
     // Generate a remote report for the public key so that the enclave that
     // receives the
     // key can attest this enclave. It is safer to use enclave memory for all
     // operations within the enclave. A malicious host could tamper with host
     // memory while enclave is processing it.
-    remoteReport = new uint8_t[OE_MAX_REPORT_SIZE];
-    remoteReportSize = OE_MAX_REPORT_SIZE;
+    remote_report = new uint8_t[OE_MAX_REPORT_SIZE];
+    remote_report_size = OE_MAX_REPORT_SIZE;
 
     if (m_attestation->GenerateRemoteReport(
-            pemPublicKey,
-            sizeof(pemPublicKey),
-            remoteReport,
-            &remoteReportSize))
+            pem_public_key,
+            sizeof(pem_public_key),
+            remote_report,
+            &remote_report_size))
     {
         // Copy the remote report to the host memory.
-        uint8_t* hostRemoteReport = (uint8_t*)oe_host_malloc(remoteReportSize);
-        memcpy(hostRemoteReport, remoteReport, remoteReportSize);
+        uint8_t* host_remote_report = (uint8_t*)oe_host_malloc(remote_report_size);
+        memcpy(host_remote_report, remote_report, remote_report_size);
 
         // Create return parameter.
-        RemoteReportWithPubKey* reportWithPubKey =
+        RemoteReportWithPubKey* report_with_pub_key =
             (RemoteReportWithPubKey*)oe_host_malloc(
                 sizeof(RemoteReportWithPubKey));
-        memcpy(reportWithPubKey->pemKey, pemPublicKey, sizeof(pemPublicKey));
-        reportWithPubKey->remoteReport = hostRemoteReport;
-        reportWithPubKey->remoteReportSize = remoteReportSize;
+        memcpy(report_with_pub_key->pem_key, pem_public_key, sizeof(pem_public_key));
+        report_with_pub_key->remote_report = host_remote_report;
+        report_with_pub_key->remote_report_size = remote_report_size;
 
-        arg->reportWithPubKey = reportWithPubKey;
+        arg->report_with_pub_key = report_with_pub_key;
         arg->success = true;
 
         ENC_DEBUG_PRINTF(
@@ -109,16 +109,16 @@ void EcallDispatcher::GetRemoteReportWithPublicKey(
     }
 
 exit:
-    if (remoteReport)
-        delete[] remoteReport;
+    if (remote_report)
+        delete[] remote_report;
 }
 void EcallDispatcher::VerifyReportAndSetKey(VerifyReportWithPubKeyArgs* arg)
 {
-    VerifyReportWithPubKeyArgs encArg = *arg;
-    RemoteReportWithPubKey reportWithPubKey;
-    uint8_t* remoteReport = NULL;
+    VerifyReportWithPubKeyArgs enc_arg = *arg;
+    RemoteReportWithPubKey report_with_pub_key;
+    uint8_t* remote_report = NULL;
 
-    if (m_Initialized == false)
+    if (m_initialized == false)
     {
         ENC_DEBUG_PRINTF(
             "%s: EcallDispatcher initialization failed.\n", m_name.c_str());
@@ -135,28 +135,28 @@ void EcallDispatcher::VerifyReportAndSetKey(VerifyReportWithPubKeyArgs* arg)
     // A malicious host could tamper with host memory while enclave is
     // processing it. Perform deep copy of argument.
 
-    reportWithPubKey = *encArg.reportWithPubKey;
-    if (!reportWithPubKey.remoteReport ||
+    report_with_pub_key = *enc_arg.report_with_pub_key;
+    if (!report_with_pub_key.remote_report ||
         !oe_is_outside_enclave(
-            reportWithPubKey.remoteReport, reportWithPubKey.remoteReportSize))
+            report_with_pub_key.remote_report, report_with_pub_key.remote_report_size))
         goto exit;
 
-    remoteReport = new uint8_t[reportWithPubKey.remoteReportSize];
+    remote_report = new uint8_t[report_with_pub_key.remote_report_size];
     memcpy(
-        remoteReport,
-        reportWithPubKey.remoteReport,
-        reportWithPubKey.remoteReportSize);
+        remote_report,
+        report_with_pub_key.remote_report,
+        report_with_pub_key.remote_report_size);
 
     // Attest the remote report and accompanying key.
     if (m_attestation->AttestRemoteReport(
-            remoteReport,
-            reportWithPubKey.remoteReportSize,
-            reportWithPubKey.pemKey,
-            sizeof(reportWithPubKey.pemKey)))
+            remote_report,
+            report_with_pub_key.remote_report_size,
+            report_with_pub_key.pem_key,
+            sizeof(report_with_pub_key.pem_key)))
     {
         memcpy(
-            m_pCrypto->get_2ndenclave_public_key(),
-            reportWithPubKey.pemKey,
+            m_p_crypto->get_2ndenclave_public_key(),
+            report_with_pub_key.pem_key,
             PUBLIC_KEY_SIZE);
 
         arg->success = true;
@@ -171,15 +171,15 @@ void EcallDispatcher::VerifyReportAndSetKey(VerifyReportWithPubKeyArgs* arg)
     }
 
 exit:
-    if (remoteReport)
-        delete[] remoteReport;
+    if (remote_report)
+        delete[] remote_report;
 }
 void EcallDispatcher::GenerateEncryptedData(GenerateEncryptedMessageArgs* arg)
 {
-    uint8_t encryptedDataBuffer[1024];
-    size_t encryptedDataSize;
+    uint8_t encrypted_data_buffer[1024];
+    size_t encrypted_data_size;
 
-    if (m_Initialized == false)
+    if (m_initialized == false)
     {
         ENC_DEBUG_PRINTF(
             "%s: EcallDispatcher initialization failed.\n", m_name.c_str());
@@ -190,18 +190,18 @@ void EcallDispatcher::GenerateEncryptedData(GenerateEncryptedMessageArgs* arg)
     if (!arg || !oe_is_outside_enclave(arg, sizeof(*arg)))
         goto exit;
 
-    encryptedDataSize = sizeof(encryptedDataBuffer);
-    if (m_pCrypto->Encrypt(
-            m_pCrypto->get_2ndenclave_public_key(),
-            m_EnclaveConfig->enclaveSecretData,
+    encrypted_data_size = sizeof(encrypted_data_buffer);
+    if (m_p_crypto->Encrypt(
+            m_p_crypto->get_2ndenclave_public_key(),
+            m_enclave_config->enclave_secret_data,
             sizeof(ENCLAVE_SECRET_DATA_SIZE),
-            encryptedDataBuffer,
-            &encryptedDataSize))
+            encrypted_data_buffer,
+            &encrypted_data_size))
     {
-        uint8_t* hostBuffer = (uint8_t*)oe_host_malloc(encryptedDataSize);
-        memcpy(hostBuffer, encryptedDataBuffer, encryptedDataSize);
-        arg->data = hostBuffer;
-        arg->size = encryptedDataSize;
+        uint8_t* host_buffer = (uint8_t*)oe_host_malloc(encrypted_data_size);
+        memcpy(host_buffer, encrypted_data_buffer, encrypted_data_size);
+        arg->data = host_buffer;
+        arg->size = encrypted_data_size;
         arg->success = true;
     }
     else
@@ -214,12 +214,12 @@ exit:
 
 void EcallDispatcher::ProcessEncryptedData(ProcessEncryptedMessageArgs* arg)
 {
-    ProcessEncryptedMessageArgs encArg = *arg;
-    uint8_t* encryptedData = NULL;
+    ProcessEncryptedMessageArgs enc_arg = *arg;
+    uint8_t* encrypted_data = NULL;
     uint8_t data[ENCLAVE_SECRET_DATA_SIZE];
-    size_t dataSize = 0;
+    size_t data_size = 0;
 
-    if (m_Initialized == false)
+    if (m_initialized == false)
     {
         ENC_DEBUG_PRINTF(
             "%s: EcallDispatcher initialization failed.\n", m_name.c_str());
@@ -236,34 +236,34 @@ void EcallDispatcher::ProcessEncryptedData(ProcessEncryptedMessageArgs* arg)
     // A malicious host could tamper with host memory while enclave is
     // processing it. Perform deep copy of argument.
 
-    if (!encArg.data || !oe_is_outside_enclave(encArg.data, encArg.size))
+    if (!enc_arg.data || !oe_is_outside_enclave(enc_arg.data, enc_arg.size))
         goto exit;
 
-    encryptedData = new uint8_t[encArg.size];
-    memcpy(encryptedData, encArg.data, encArg.size);
+    encrypted_data = new uint8_t[enc_arg.size];
+    memcpy(encrypted_data, enc_arg.data, enc_arg.size);
 
-    dataSize = sizeof(data);
+    data_size = sizeof(data);
 
     arg->success = true;
 
-    if (m_pCrypto->Decrypt(encryptedData, encArg.size, data, &dataSize))
+    if (m_p_crypto->Decrypt(encrypted_data, enc_arg.size, data, &data_size))
     {
         // This is where the business logic for verifying the data should be.
         // In this sample, both enclaves start with identical data in
-        // m_EnclaveConfig->enclaveSecretData
+        // m_enclave_config->enclave_secret_data
         // The following checking is to make sure the decrypted values are what
         // we have expected.
         printf("Decrypted data: ");
-        for (uint32_t i = 0; i < dataSize; ++i)
+        for (uint32_t i = 0; i < data_size; ++i)
         {
             printf("%d ", data[i]);
-            if (m_EnclaveConfig->enclaveSecretData[i] != data[i])
+            if (m_enclave_config->enclave_secret_data[i] != data[i])
             {
                 printf(
                     "%s: Expecting [0x%x] but received unexpected value "
                     "[0x%x]\n ",
                     m_name.c_str(),
-                    m_EnclaveConfig->enclaveSecretData[i],
+                    m_enclave_config->enclave_secret_data[i],
                     data[i]);
                 arg->success = false;
                 break;
@@ -276,6 +276,6 @@ void EcallDispatcher::ProcessEncryptedData(ProcessEncryptedMessageArgs* arg)
         arg->success = false;
     }
 exit:
-    if (encryptedData)
-        delete[] encryptedData;
+    if (encrypted_data)
+        delete[] encrypted_data;
 }

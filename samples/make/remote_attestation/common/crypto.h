@@ -21,14 +21,14 @@
 class Crypto
 {
   private:
-    mbedtls_ctr_drbg_context m_CtrDrbgContext;
-    mbedtls_entropy_context m_EntropyContext;
-    mbedtls_pk_context m_RsaContext;
-    uint8_t m_MyPublicKey[512];
-    bool m_Initialized;
+    mbedtls_ctr_drbg_context m_ctr_drbg_context;
+    mbedtls_entropy_context m_entropy_context;
+    mbedtls_pk_context m_rsa_context;
+    uint8_t m_my_public_key[512];
+    bool m_initialized;
 
     // Public key of another enclave.
-    uint8_t m_OtherEnclavePemPublicKey[PUBLIC_KEY_SIZE];
+    uint8_t m_other_enclave_pem_public_key[PUBLIC_KEY_SIZE];
 
   public:
     Crypto();
@@ -37,39 +37,39 @@ class Crypto
     /**
      * Get this enclave's own public key
      */
-    void RetrievePublicKey(uint8_t pemPublicKey[512]);
+    void RetrievePublicKey(uint8_t pem_public_key[512]);
 
     /**
      * Encrypt encrypts the given data using the given public key.
      * Used to encrypt data using the public key of another enclave.
     */
     bool Encrypt(
-        const uint8_t* pemPublicKey,
+        const uint8_t* pem_public_key,
         const uint8_t* data,
         size_t size,
-        uint8_t* encryptedData,
-        size_t* encryptedDataSize);
+        uint8_t* encrypted_data,
+        size_t* encrypted_data_size);
 
     /**
      * Decrypt decrypts the given data using current enclave's private key.
      * Used to receive encrypted data from another enclave.
      */
     bool Decrypt(
-        const uint8_t* encryptedData,
-        size_t encryptedDataSize,
+        const uint8_t* encrypted_data,
+        size_t encrypted_data_size,
         uint8_t* data,
-        size_t* dataSize);
+        size_t* data_size);
 
     // Public key of another enclave.
     uint8_t* get_2ndenclave_public_key()
     {
-        return m_OtherEnclavePemPublicKey;
+        return m_other_enclave_pem_public_key;
     }
 
     /**
      * Compute the sha256 hash of given data.
      */
-    void Sha256(const uint8_t* data, size_t dataSize, uint8_t sha256[32]);
+    void Sha256(const uint8_t* data, size_t data_size, uint8_t sha256[32]);
 
   private:
     /**
