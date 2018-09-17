@@ -31,7 +31,7 @@ void TestNegative(oe_datetime_t dateTime, oe_result_t result)
     OE_TEST(oe_datetime_to_string(&dateTime, utcString, &length) == result);
 }
 
-void TestIso8601Time()
+void test_iso8601_time()
 {
     // Single digit fields
     TestPositive(oe_datetime_t{2018, 8, 8, 0, 0, 0}, "2018-08-08T00:00:00Z");
@@ -97,7 +97,7 @@ void TestIso8601Time()
     oe_host_printf("TestIso8601Time passed\n");
 }
 
-void TestIso8601TimeNegative()
+void test_iso8601_time_negative()
 {
     // Year before unix epoch 1970.
     TestNegative(oe_datetime_t{1969, 8, 8, 0, 0, 0}, OE_INVALID_UTC_DATE_TIME);

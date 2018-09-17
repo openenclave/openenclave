@@ -15,5 +15,5 @@ add_custom_command(TARGET report_host
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/../data ${CMAKE_CURRENT_BINARY_DIR}/../data
 )
 
-target_include_directories(report_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(report_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../common)
 target_link_libraries(report_host oehostapp)

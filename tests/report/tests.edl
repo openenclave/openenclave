@@ -2,9 +2,19 @@
 // Licensed under the MIT License.
 
 enclave {
+    include "includes.h"
+
     trusted {
-        public void TestIso8601Time();
-        public void TestIso8601TimeNegative();
+        // datetime tests.
+        public void test_iso8601_time();
+        public void test_iso8601_time_negative();
+
+        // tcb info tests.
+        public oe_result_t test_verify_tcb_info(
+            [in, string] const char* tcb_info,
+            [user_check] oe_tcb_level_t* platform_tcb_level,
+            [user_check] oe_parsed_tcb_info_t* parsed_tcb_info
+        );
     };
 
     untrusted {

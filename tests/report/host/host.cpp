@@ -7,7 +7,7 @@
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/tests.h>
 #include <openenclave/internal/utils.h>
-
+#include "../../../common/tcbinfo.h"
 #include "../../../host/quote.h"
 #include "../common/args.h"
 #include "../common/tests.cpp"
@@ -66,8 +66,8 @@ int main(int argc, const char* argv[])
 #ifdef OE_USE_LIBSGX
     TestRemoteVerifyReport(NULL);
 
-    OE_TEST(TestIso8601Time(enclave) == OE_OK);
-    OE_TEST(TestIso8601TimeNegative(enclave) == OE_OK);
+    OE_TEST(test_iso8601_time(enclave) == OE_OK);
+    OE_TEST(test_iso8601_time_negative(enclave) == OE_OK);
 #endif
 
     /*
