@@ -78,33 +78,30 @@ The host does the following in this sample:
 
    2. Ask enclave1 for a remote report and a public key, which is returned in a `RemoteReportWithPKey` structure.
 
-      This is done through a call into the enclave1 `GetRemoteReportWithPKey` `OE_ECALL`
+      This is done through a call into the enclave1 `GetRemoteReportWithPubKey` `OE_ECALL`
 
-      ```c
-      oe_call_enclave(enclave, "GetRemoteReportWithPKey", &args);
+      oe_call_enclave(enclave, "GetRemoteReportWithPubKey", &args);
 
-      struct RemoteReportWithPKey
-      {
-          uint8_t pemKey[512]; // public key information
-          uint8_t* remoteReport;
-          size_t remoteReportSize;
-      };
-      ```
-
+```c
+    struct RemoteReportWithPubKey
+    {
+        uint8_t pemKey[512]; // public key information
+        uint8_t* remoteReport;
+        size_t remoteReportSize;
+    };
+```
       Where:
-
         - `pemKey` holds the public key that identifying enclave1 and will be used for establishing a secure communication channel between the enclave1 and the enclave2 once the attestation was done.
-
         - `remoteReport` contains a remote report signed by the enclave platform for use in remote attestation
 
    3. Ask enclave2 to attest (validate) enclave1's remote report (remoteReport from above)
 
       This is done through the following call:
       ```c
-      oe_call_enclave(enclave, "VerifyReportAndSetPKey", &args);
+      oe_call_enclave(enclave, "VerifyReportAndSetPubKey", &args);
       ```
 
-      In the enclave2's implmentation of `VerifyReportAndSetPKey`, it calls `oe_verify_report`, which will be described in the enclave section to handle all the platform specfic report validation operations (including PCK certificate chain checking). If successful the public key in `RemoteReportWithPKey.pemKey` will be stored inside the enclave for future use
+      In the enclave2's implementation of `VerifyReportAndSetPubKey`, it calls `oe_verify_report`, which will be described in the enclave section to handle all the platform specific report validation operations (including PCK certificate chain checking). If successful the public key in `RemoteReportWithPubKey.pemKey` will be stored inside the enclave for future use
 
    4. Repeat step 2 and 3 for asking enclave1 to validate enclave2
   

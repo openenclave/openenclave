@@ -56,7 +56,7 @@ The enclave.h header file was included in this sample because it uses the oe_cal
 
  ### Build and sign an enclave 
  
-   As mentioned in [how-to-build-and-run-samples](/docs/GettingStartedDocs/sampedocs/README.md#how-to-build-and-run-samples), make files were provided for each sample, you can build the helloworld enclave by running "make build" inside the helloworld/enc directory
+   As mentioned in [how-to-build-and-run-samples](/docs/GettingStartedDocs/sampledocs/README.md#how-to-build-and-run-samples), make files were provided for each sample, you can build the helloworld enclave by running "make build" inside the helloworld/enc directory
   
   For example:
   
@@ -216,7 +216,7 @@ Here is a listing of key components in the helloworld/enc/Makefile. [complete li
               
        oe_terminate_enclave(enclave);
  
-The listing from [helloworld/host/host.c](/samples/make/helloworld/enc/Makefile)
+The listing from [helloworld/host/host.c](/samples/make/helloworld/host/host.c)
 
             #include <openenclave/host.h>
             #include <stdio.h>
