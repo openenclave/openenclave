@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atexit.h>
 #include <openenclave/internal/calls.h>
@@ -253,8 +254,7 @@ void _oe_exception_dispatcher(oe_context_t* oe_context)
     // Compose the oe_exception_record_t.
     // N.B. In second pass exception handling, the XSTATE is recovered by SGX
     // hardware correctly on ERESUME, so we don't touch the XSTATE.
-    oe_exception_record_t oe_exception_record;
-    oe_memset(&oe_exception_record, 0, sizeof(oe_exception_record_t));
+    oe_exception_record_t oe_exception_record = {0};
     oe_exception_record.code = td->base.exception_code;
     oe_exception_record.flags = td->base.exception_flags;
     oe_exception_record.address = td->base.exception_address;
@@ -317,8 +317,7 @@ void _oe_virtual_exception_dispatcher(
     uint64_t arg_in,
     uint64_t* arg_out)
 {
-    SSA_Info ssa_info;
-    oe_memset(&ssa_info, 0, sizeof(SSA_Info));
+    SSA_Info ssa_info = {0};
 
     // Verify if the first SSA has valid exception info.
     if (_get_enclave_thread_first_ssa_info(td, &ssa_info) != 0)

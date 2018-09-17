@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#define OE_TRACE_LEVEL 1
 #include "strings.h"
 
 #if defined(__linux__)
@@ -13,6 +12,7 @@
 
 #include <assert.h>
 #include <openenclave/bits/defs.h>
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
@@ -21,6 +21,7 @@
 #include <openenclave/internal/load.h>
 #include <openenclave/internal/mem.h>
 #include <openenclave/internal/properties.h>
+#include <openenclave/internal/raise.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxcreate.h>
 #include <openenclave/internal/sgxtypes.h>
@@ -1012,7 +1013,7 @@ oe_result_t oe_sgx_load_properties(
     size_t section_size;
 
     if (properties)
-        memset(properties, 0, sizeof(oe_sgx_enclave_properties_t));
+        memset(properties, 0, sizeof(*properties));
 
     /* Check for null parameter */
     if (!elf || !section_name || !properties)
@@ -1044,7 +1045,9 @@ oe_result_t oe_sgx_load_properties(
             goto done;
         }
 
-        memcpy(properties, header, sizeof(oe_sgx_enclave_properties_t));
+        OE_CHECK(
+            oe_memcpy_s(
+                properties, sizeof(*properties), header, sizeof(*properties)));
     }
 
     result = OE_OK;
@@ -1091,7 +1094,9 @@ oe_result_t oe_sgx_update_enclave_properties(
             goto done;
         }
 
-        memcpy(header, properties, sizeof(oe_sgx_enclave_properties_t));
+        OE_CHECK(
+            oe_memcpy_s(
+                header, sizeof(*properties), properties, sizeof(*properties)));
     }
 
     result = OE_OK;
@@ -1255,7 +1260,7 @@ oe_result_t oe_sgx_build_enclave(
             path, segments, &num_segments, &entry_addr, &start_addr));
 
     /* Load the relocations into memory (zero-padded to next page size) */
-    if (elf64_load_relocations(&elf, &reloc_data, &reloc_size) != 0)
+    if (elf64_load_relocations(&elf, &reloc_data, &reloc_size) != OE_OK)
         OE_RAISE(OE_FAILURE);
 
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
@@ -1552,7 +1557,8 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
     oe_mutex_destroy(&enclave->lock);
 
     /* Clear the contents of the enclave structure */
-    memset(enclave, 0x00, sizeof(oe_enclave_t));
+
+    memset(enclave, 0, sizeof(oe_enclave_t));
 
     /* Free the enclave structure */
     free(enclave);
