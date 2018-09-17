@@ -151,7 +151,7 @@ void enclave_helloworld()
     oe_result_t result = host_helloworld();
     if (result != OE_OK)
     {
-        fprintf(stderr, "Call to host_helloworld failed: result=%u\n", result);
+        fprintf(stderr, "Call to host_helloworld failed: result=%u (%s)\n", result, oe_result_str(result));
     }
 }
 ```
@@ -182,7 +182,7 @@ As described above, this call to print a message on the screen marshals the call
 oe_result_t result = host_helloworld();
 if (result != OE_OK)
 {
-    fprintf(stderr, "Call to host_helloworld failed: result=%u\n", result);
+    fprintf(stderr, "Call to host_helloworld failed: result=%u (%s)\n", result, oe_result_str(result));
 }
 ```
 
@@ -344,7 +344,7 @@ int main(int argc, const char* argv[])
         argv[1], OE_ENCLAVE_TYPE_SGX, OE_ENCLAVE_FLAG_DEBUG, NULL, 0, &enclave);
     if (result != OE_OK)
     {
-        fprintf(stderr, "oe_create_enclave(): result=%u", result);
+        fprintf(stderr, "oe_create_enclave(): result=%u (%s)\n", result, oe_result_str(result));
         goto exit;
     }
 
@@ -352,7 +352,7 @@ int main(int argc, const char* argv[])
     result = enclave_helloworld(enclave);
     if (result != OE_OK)
     {
-        fprintf(stderr, "calling into enclave_helloworld failed: result=%u\n", result);
+        fprintf(stderr, "calling into enclave_helloworld failed: result=%u (%s)\n", result, oe_result_str(result));
         goto exit;
     }
 
@@ -413,7 +413,7 @@ Note: - You can create multiple enclave instances this way if there is remaining
 result = enclave_helloworld(enclave);
 if (result != OE_OK)
 {
-    fprintf(stderr, "calling into enclave_helloworld failed: result=%u\n", result);
+    fprintf(stderr, "calling into enclave_helloworld failed: result=%u (%s)\n", result, oe_result_str(result));
     goto exit;
 }
 ```
