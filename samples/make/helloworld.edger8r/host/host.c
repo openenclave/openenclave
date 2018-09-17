@@ -38,7 +38,12 @@ int main(int argc, const char* argv[])
     }
 
     // Call into the enclave
-    enclave_helloworld(enclave);
+    result = enclave_helloworld(enclave);
+    if (result != OE_OK)
+    {
+        fprintf(stderr, "calling into enclave_helloworld failed: result=%u\n", result);
+        goto exit;
+    }
 
     ret = 0;
 

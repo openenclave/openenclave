@@ -21,5 +21,9 @@ void enclave_helloworld()
     fprintf(stdout, "Hello world from the enclave\n");
 
     // Call back into the host
-    host_helloworld();
+    oe_result_t result = host_helloworld();
+    if (result != OE_OK)
+    {
+        fprintf(stderr, "Call to host_helloworld failed: result=%u\n", result);
+    }
 }
