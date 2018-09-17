@@ -9,7 +9,6 @@
 #include <openenclave/internal/utils.h>
 #include "../../../common/tcbinfo.h"
 #include "../../../host/quote.h"
-#include "../common/args.h"
 #include "../common/tests.cpp"
 #include "tests_u.h"
 

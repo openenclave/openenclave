@@ -10,7 +10,6 @@
 #include <string.h>
 #include "../../../common/quote.h"
 #include "../../../common/tcbinfo.h"
-#include "../common/args.h"
 #include "../common/tests.cpp"
 #include "tests_t.h"
 
