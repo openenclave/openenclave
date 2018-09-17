@@ -589,14 +589,15 @@ done:
 oe_result_t oe_cert_verify(
     oe_cert_t* cert,
     oe_cert_chain_t* chain,
-    const oe_crl_t* crl,
+    const oe_crl_t* const* crls,
+    size_t num_crls,
     oe_verify_cert_error_t* error)
 {
     oe_result_t result = OE_UNEXPECTED;
     Cert* certImpl = (Cert*)cert;
     CertChain* chainImpl = (CertChain*)chain;
-    crl_t* crl_impl = (crl_t*)crl;
     uint32_t flags = 0;
+    mbedtls_x509_crl* crl_list = NULL;
 
     /* Initialize error */
     if (error)
@@ -616,18 +617,44 @@ oe_result_t oe_cert_verify(
         OE_RAISE(OE_INVALID_PARAMETER);
     }
 
-    /* Reject invalid CRL */
-    if (crl_impl && !crl_is_valid(crl_impl))
+    // Build the list of CRLS if any. Copy them onto auxilliary memory
+    // to avoid modifying them when putting them on the list.
+    if (crls && num_crls)
     {
-        _SetErr(error, "invalid crl parameter");
-        OE_RAISE(OE_INVALID_PARAMETER);
+        mbedtls_x509_crl* last = NULL;
+
+        for (size_t i = 0; i < num_crls; i++)
+        {
+            const crl_t* crl_impl = (crl_t*)crls[i];
+            mbedtls_x509_crl* p;
+
+            if (!crl_is_valid(crl_impl))
+                OE_RAISE(OE_INVALID_PARAMETER);
+
+            if (!(p = oe_malloc(sizeof(mbedtls_x509_crl))))
+                OE_RAISE(OE_OUT_OF_MEMORY);
+
+            oe_memcpy(p, crl_impl->crl, sizeof(mbedtls_x509_crl));
+
+            /* Append to the linked-list */
+            {
+                p->next = NULL;
+
+                if (crl_list)
+                    last->next = p;
+                else
+                    crl_list = p;
+            }
+
+            last = p;
+        }
     }
 
     /* Verify the certificate */
     if (mbedtls_x509_crt_verify(
             certImpl->cert,
             &chainImpl->referent->crt,
-            crl_impl ? crl_impl->crl : NULL,
+            crl_list,
             NULL,
             &flags,
             NULL,
@@ -645,6 +672,17 @@ oe_result_t oe_cert_verify(
     result = OE_OK;
 
 done:
+
+    if (crl_list)
+    {
+        /* Free the linked list of CRL objects */
+        for (mbedtls_x509_crl* p = crl_list; p;)
+        {
+            mbedtls_x509_crl* next = p->next;
+            oe_free(p);
+            p = next;
+        }
+    }
 
     return result;
 }

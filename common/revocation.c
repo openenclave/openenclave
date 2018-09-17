@@ -160,6 +160,7 @@ oe_result_t oe_enforce_revocation(
     char* intermediate_crl_url = NULL;
     char* leaf_crl_url = NULL;
     oe_crl_t crls[2] = {{{0}}};
+    const oe_crl_t* crl_ptrs[2] = {&crls[0], &crls[1]};
     oe_datetime_t crl_this_update_date = {0};
     oe_datetime_t crl_next_update_date = {0};
 
@@ -211,13 +212,14 @@ oe_result_t oe_enforce_revocation(
     // Verify leaf and intermediate certs againt the CRL.
     OE_CHECK(
         oe_cert_verify(
-            leaf_cert, &crl_issuer_chain[0], &crls[0], &cert_verify_error));
+            leaf_cert, &crl_issuer_chain[0], crl_ptrs, 2, &cert_verify_error));
 
     OE_CHECK(
         oe_cert_verify(
             intermediate_cert,
             &crl_issuer_chain[1],
-            &crls[1],
+            crl_ptrs,
+            2,
             &cert_verify_error));
 
     for (uint32_t i = 0; i < OE_COUNTOF(platform_tcb_level.sgx_tcb_comp_svn);
