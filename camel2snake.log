@@ -901,7 +901,6 @@ signedType                              => signed_type
 sizeOut                                 => size_out
 srcDataSize                             => src_data_size
 srcFile                                 => src_file
-ssZ                                     => ss_z
 stackSize                               => stack_size
 standbyHost                             => standby_host
 startAddr                               => start_addr
