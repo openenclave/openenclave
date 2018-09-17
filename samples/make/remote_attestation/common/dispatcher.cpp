@@ -84,14 +84,18 @@ void EcallDispatcher::GetRemoteReportWithPublicKey(
             &remote_report_size))
     {
         // Copy the remote report to the host memory.
-        uint8_t* host_remote_report = (uint8_t*)oe_host_malloc(remote_report_size);
+        uint8_t* host_remote_report =
+            (uint8_t*)oe_host_malloc(remote_report_size);
         memcpy(host_remote_report, remote_report, remote_report_size);
 
         // Create return parameter.
         RemoteReportWithPubKey* report_with_pub_key =
             (RemoteReportWithPubKey*)oe_host_malloc(
                 sizeof(RemoteReportWithPubKey));
-        memcpy(report_with_pub_key->pem_key, pem_public_key, sizeof(pem_public_key));
+        memcpy(
+            report_with_pub_key->pem_key,
+            pem_public_key,
+            sizeof(pem_public_key));
         report_with_pub_key->remote_report = host_remote_report;
         report_with_pub_key->remote_report_size = remote_report_size;
 
@@ -138,7 +142,8 @@ void EcallDispatcher::VerifyReportAndSetKey(VerifyReportWithPubKeyArgs* arg)
     report_with_pub_key = *enc_arg.report_with_pub_key;
     if (!report_with_pub_key.remote_report ||
         !oe_is_outside_enclave(
-            report_with_pub_key.remote_report, report_with_pub_key.remote_report_size))
+            report_with_pub_key.remote_report,
+            report_with_pub_key.remote_report_size))
         goto exit;
 
     remote_report = new uint8_t[report_with_pub_key.remote_report_size];

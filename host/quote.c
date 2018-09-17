@@ -73,8 +73,8 @@ static oe_result_t _sgx_get_quote_size_from_aesm(
         sizeof(sgx_epid_signature_t) + (n * sizeof(sgx_epid_nr_proof_t));
 
     *quote_size = sizeof(sgx_quote_t) + sizeof(sgx_wrap_key_t) +
-                 SGX_QUOTE_IV_SIZE + sizeof(uint32_t) + signature_size +
-                 SGX_MAC_SIZE;
+                  SGX_QUOTE_IV_SIZE + sizeof(uint32_t) + signature_size +
+                  SGX_MAC_SIZE;
 
     result = OE_OK;
 

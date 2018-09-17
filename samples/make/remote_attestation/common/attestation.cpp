@@ -89,7 +89,8 @@ bool Attestation::AttestRemoteReport(
 
     // 1)  Validate the report's trustworthiness
     // Verify the remote report to ensure its authenticity.
-    result = oe_verify_report(remote_report, remote_report_size, &parsed_report);
+    result =
+        oe_verify_report(remote_report, remote_report_size, &parsed_report);
     if (result != OE_OK)
     {
         ENC_DEBUG_PRINTF(
@@ -101,7 +102,8 @@ bool Attestation::AttestRemoteReport(
     // signed_id is the hash of the public signing key that was used to sign an
     // enclave.
     // Check that the enclave was signed by an trusted entity.
-    if (memcmp(parsed_report.identity.signer_id, m_p_enclave_mr_signer, 32) != 0)
+    if (memcmp(parsed_report.identity.signer_id, m_p_enclave_mr_signer, 32) !=
+        0)
     {
         ENC_DEBUG_PRINTF("identity.signer_id checking failed.");
         ENC_DEBUG_PRINTF(

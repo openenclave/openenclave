@@ -30,7 +30,7 @@ typedef struct BucketElement
 
 typedef struct Bucket
 {
-    size_t size;     // capacity in bytes of <elements>
+    size_t size;      // capacity in bytes of <elements>
     size_t base_free; // byte-offset into <elements> of first free byte
     BucketElement elements[0];
 } Bucket;
@@ -130,7 +130,9 @@ static void _put_thread_buckets(ThreadBuckets* tb)
 }
 
 // 0 success, error otherwise
-static int _fetch_bucket_element(const volatile void* p, BucketElement* contents)
+static int _fetch_bucket_element(
+    const volatile void* p,
+    BucketElement* contents)
 {
     if (!oe_is_outside_enclave((void*)p, sizeof(BucketElement)))
         return -1;
@@ -179,7 +181,8 @@ void* oe_host_alloc_for_call_host(size_t size)
         return NULL;
 
     if ((tb->active_host != NULL) &&
-        (_get_bucket_available_bytes(&tb->cached) >= size + sizeof(BucketElement)))
+        (_get_bucket_available_bytes(&tb->cached) >=
+         size + sizeof(BucketElement)))
     {
         size_t off = tb->cached.base_free;
         tb->cached.base_free += size + sizeof(BucketElement);
@@ -214,8 +217,9 @@ void* oe_host_alloc_for_call_host(size_t size)
 
         if (is_host == NULL)
         {
-            size_t alloc_size = MAX(
-                size + sizeof(Bucket) + sizeof(BucketElement), _bucket_min_size);
+            size_t alloc_size =
+                MAX(size + sizeof(Bucket) + sizeof(BucketElement),
+                    _bucket_min_size);
             if ((is_host = (Bucket*)oe_host_malloc(alloc_size)) == NULL)
                 goto Exit;
 
@@ -238,7 +242,7 @@ void oe_host_free_for_call_host(void* p)
 {
     BucketElement e = {};
     volatile BucketElement* e_host; // deliberate non-init
-    ThreadBuckets* tb;             // deliberate non-init
+    ThreadBuckets* tb;              // deliberate non-init
 
     if (p == NULL)
         return;
@@ -290,7 +294,8 @@ void oe_host_free_for_call_host(void* p)
     if ((size_t)p >= (size_t)(&tb->active_host->elements) + tb->cached.size)
         oe_abort();
 
-    tb->cached.base_free = (size_t)(e_host) - (size_t)(&tb->active_host->elements);
+    tb->cached.base_free =
+        (size_t)(e_host) - (size_t)(&tb->active_host->elements);
 
     if ((tb->flags & THREAD_BUCKET_FLAG_RUNDOWN) && (tb->cached.base_free == 0))
     {

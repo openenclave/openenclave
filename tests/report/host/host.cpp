@@ -76,7 +76,8 @@ int main(int argc, const char* argv[])
 
     OE_TEST(oe_call_enclave(enclave, "TestLocalReport", &target_info) == OE_OK);
 
-    OE_TEST(oe_call_enclave(enclave, "TestRemoteReport", &target_info) == OE_OK);
+    OE_TEST(
+        oe_call_enclave(enclave, "TestRemoteReport", &target_info) == OE_OK);
 
     OE_TEST(
         oe_call_enclave(enclave, "TestParseReportNegative", &target_info) ==

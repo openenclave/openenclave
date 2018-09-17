@@ -25,7 +25,10 @@
 
 static struct sigaction g_previous_sigaction[_NSIG];
 
-static void _host_signal_handler(int sig_num, siginfo_t* sig_info, void* sig_data)
+static void _host_signal_handler(
+    int sig_num,
+    siginfo_t* sig_info,
+    void* sig_data)
 {
     ucontext_t* context = (ucontext_t*)sig_data;
     uint64_t exit_code = context->uc_mcontext.gregs[REG_RAX];
@@ -94,7 +97,8 @@ static void _host_signal_handler(int sig_num, siginfo_t* sig_info, void* sig_dat
         // Call sa_handler or sa_sigaction based on the flags.
         if (g_previous_sigaction[sig_num].sa_flags & SA_SIGINFO)
         {
-            g_previous_sigaction[sig_num].sa_sigaction(sig_num, sig_info, sig_data);
+            g_previous_sigaction[sig_num].sa_sigaction(
+                sig_num, sig_info, sig_data);
         }
         else
         {

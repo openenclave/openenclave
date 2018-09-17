@@ -41,7 +41,10 @@ static void _launch_enclave(const char* path, uint32_t flags, bool call_enclave)
         oe_put_err("oe_terminate_enclave(): result=%u", result);
 }
 
-static void _test_sequential(const char* path, uint32_t flags, bool call_enclave)
+static void _test_sequential(
+    const char* path,
+    uint32_t flags,
+    bool call_enclave)
 {
     for (int i = 0; i < MAX_ENCLAVES; i++)
     {
