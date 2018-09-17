@@ -11,4 +11,4 @@ add_executable(pingpong_enc
     )
 
 target_include_directories(pingpong_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(pingpong_enc oeidl oeenclave)
+target_link_libraries(pingpong_enc oeenclave)
