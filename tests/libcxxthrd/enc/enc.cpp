@@ -81,11 +81,11 @@ static int _pthread_create_hook(
     _thread_functions.push_back(
         [start_routine, arg]() { return start_routine(arg); });
 
-    *enc_thread = ++_next_enc_thread_id; //Enclave thread IDs start at 1
+    *enc_thread = ++_next_enc_thread_id; // Enclave thread IDs start at 1
     _release_lock();
 
-    //Send the enclave id so that host can maintain the map between
-    //enclave and host id
+    // Send the enclave id so that host can maintain the map between
+    // enclave and host id
     printf("_pthread_create_hook:enc_thread= %ld\n", *enc_thread);
     if (oe_call_host("host_create_pthread", enc_thread) != OE_OK)
         oe_abort();
@@ -95,7 +95,8 @@ static int _pthread_create_hook(
 
 static int _pthread_join_hook(pthread_t enc_thread, void** retval)
 {
-    printf("In _pthread_join_hook routine - enc thread id is %ld\n", enc_thread);
+    printf(
+        "In _pthread_join_hook routine - enc thread id is %ld\n", enc_thread);
     // Check if valid thread_id has been passed
     if (enc_thread > _next_enc_thread_id)
     {
@@ -103,7 +104,7 @@ static int _pthread_join_hook(pthread_t enc_thread, void** retval)
                   << std::endl;
         oe_abort();
     }
-    
+
     if (oe_call_host("host_join_pthread", &enc_thread) != OE_OK)
         oe_abort();
 
@@ -113,7 +114,7 @@ static int _pthread_join_hook(pthread_t enc_thread, void** retval)
 OE_ECALL void _EnclaveLaunchThread(void* args_)
 {
     std::function<void()> f;
-    
+
     _acquire_lock();
     f = _thread_functions.back();
     _thread_functions.pop_back();

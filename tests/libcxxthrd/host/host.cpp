@@ -17,7 +17,7 @@
 #include "args.h"
 #include "ocalls.h"
 
-//Host maintains a map of enclave to host thread ID
+// Host maintains a map of enclave to host thread ID
 static std::map<pthread_t, pthread_t> enclave_host_id_map;
 static pthread_t host_thread_id;
 
@@ -45,51 +45,52 @@ OE_OCALL void ocall_exit(uint64_t arg)
     exit(arg);
 }
 
-void* EnclaveThread(void *args)
+void* EnclaveThread(void* args)
 {
-  oe_enclave_t* enclave = (oe_enclave_t*)args;
+    oe_enclave_t* enclave = (oe_enclave_t*)args;
 
-  printf("(host EnclaveThread) thread id=0x%ld\n", pthread_self());
-  oe_result_t result =
-  oe_call_enclave(enclave, "_EnclaveLaunchThread", NULL);
-  OE_TEST(result == OE_OK);
+    printf("(host EnclaveThread) thread id=0x%ld\n", pthread_self());
+    oe_result_t result = oe_call_enclave(enclave, "_EnclaveLaunchThread", NULL);
+    OE_TEST(result == OE_OK);
 
-  return NULL;
+    return NULL;
 }
 
 OE_OCALL void host_create_pthread(void* arg, oe_enclave_t* enclave)
 {
-  pthread_t* enc_id = (pthread_t*)arg;
-  
-  //New Thread is created and executes EnclaveThread
-  pthread_create(&host_thread_id, NULL, EnclaveThread, enclave);
+    pthread_t* enc_id = (pthread_t*)arg;
 
-  //Main host thread continues - update the enclave id to host id mapping
-  printf("(host_create_pthread)Enc id=%ld has Host id of 0x%ld\n", *enc_id, host_thread_id);  
-  enclave_host_id_map.emplace(*enc_id, host_thread_id);
+    // New Thread is created and executes EnclaveThread
+    pthread_create(&host_thread_id, NULL, EnclaveThread, enclave);
+
+    // Main host thread continues - update the enclave id to host id mapping
+    printf(
+        "(host_create_pthread)Enc id=%ld has Host id of 0x%ld\n",
+        *enc_id,
+        host_thread_id);
+    enclave_host_id_map.emplace(*enc_id, host_thread_id);
 }
 
 OE_OCALL void host_join_pthread(void* arg, oe_enclave_t* enclave)
 {
     pthread_t* enc_id = (pthread_t*)arg;
-    void *ret;
+    void* ret;
 
     /* Find the host_thread_id from the enc_id */
     std::map<pthread_t, pthread_t>::iterator it;
     it = enclave_host_id_map.find(*enc_id);
     if (it != enclave_host_id_map.end())
-      {
-	printf("(host_join_pthread)Host Thread ID is 0x%ld\n", it->second);
-	if (pthread_join(it->second, &ret) != 0)
-	  {
-	    printf("pthread_join failed for 0x%ld\n", it->second);
-	    abort();
-	  }
-	else
-	    printf("pthread_join succeeded for 0x%ld\n", it->second);
-      }
+    {
+        printf("(host_join_pthread)Host Thread ID is 0x%ld\n", it->second);
+        if (pthread_join(it->second, &ret) != 0)
+        {
+            printf("pthread_join failed for 0x%ld\n", it->second);
+            abort();
+        }
+        else
+            printf("pthread_join succeeded for 0x%ld\n", it->second);
+    }
 }
-
 
 static int _GetOpt(
     int& argc,
