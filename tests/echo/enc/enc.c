@@ -50,6 +50,11 @@ int enc_echo(char *in, char out[100])
         return -1;
     }
 
+    if (returnVal != 0)
+    {
+        return -1;
+    }
+
     oe_host_printf("Hello from Echo function!\n");
 
     oe_host_free_for_call_host(hostAllocatedStr);
