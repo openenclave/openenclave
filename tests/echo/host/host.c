@@ -9,23 +9,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../../../host/strings.h"
-#include "../args.h"
+#include "echo_u.h"
 
-OE_OCALL void Echo(void* args_)
+int host_echo(char *in, char *out, char* str1, char* str2, char str3[100])
 {
-    EchoArgs* args = (EchoArgs*)args_;
+    OE_TEST(strcmp(str1, "oe_host_strdup1") == 0);
+    OE_TEST(strcmp(str2, "oe_host_strdup2") == 0);
+    OE_TEST(strcmp(str3, "oe_host_strdup3") == 0);
 
-    OE_TEST(strcmp(args->str1, "oe_host_stack_strdup1") == 0);
-    OE_TEST(strcmp(args->str2, "oe_host_stack_strdup2") == 0);
-    OE_TEST(strcmp(args->str3, "oe_host_stack_strdup3") == 0);
+    strcpy(out, in);
 
-    if (!(args->out = oe_strdup(args->in)))
-    {
-        args->ret = -1;
-        return;
-    }
-
-    args->ret = 0;
+    return 0;
 }
 
 int main(int argc, const char* argv[])
@@ -45,26 +39,23 @@ int main(int argc, const char* argv[])
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);
 
-    EchoArgs args;
-    memset(&args, 0, sizeof(args));
-    args.ret = -1;
-    if (!(args.in = oe_strdup("Hello World")))
-        oe_put_err("Strdup() failed");
+    char outParameter[100];
+    int returnVal;
 
-    if ((result = oe_call_enclave(enclave, "Echo", &args)) != OE_OK)
+    result = enc_echo(
+            enclave,
+            &returnVal,
+            "Hello World",
+            outParameter);
+
+    if (result  != OE_OK)
         oe_put_err("oe_call_enclave() failed: result=%u", result);
 
-    if (args.ret != 0)
-        oe_put_err("ECALL failed args.result=%d", args.ret);
+    if (returnVal != 0)
+        oe_put_err("ECALL failed args.result=%d", returnVal);
 
-    OE_TEST(args.in);
-    OE_TEST(args.out);
-
-    if (strcmp(args.in, args.out) != 0)
-        oe_put_err("ecall failed: %s != %s\n", args.in, args.out);
-
-    free((char*)args.in);
-    free((char*)args.out);
+    if (strcmp("Hello World", outParameter) != 0)
+        oe_put_err("ecall failed: %s != %s\n", "Hello World", outParameter);
 
     result = oe_terminate_enclave(enclave);
     OE_TEST(result == OE_OK);
