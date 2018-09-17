@@ -33,12 +33,17 @@ int main(int argc, const char* argv[])
         argv[1], OE_ENCLAVE_TYPE_SGX, OE_ENCLAVE_FLAG_DEBUG, NULL, 0, &enclave);
     if (result != OE_OK)
     {
-        fprintf(stderr, "oe_create_enclave(): result=%u", result);
+        fprintf(stderr, "oe_create_enclave(): result=%u (%s)\n", result, oe_result_str(result));
         goto exit;
     }
 
     // Call into the enclave
-    enclave_helloworld(enclave);
+    result = enclave_helloworld(enclave);
+    if (result != OE_OK)
+    {
+        fprintf(stderr, "calling into enclave_helloworld failed: result=%u (%s)\n", result, oe_result_str(result));
+        goto exit;
+    }
 
     ret = 0;
 

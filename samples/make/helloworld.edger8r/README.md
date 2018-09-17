@@ -148,7 +148,11 @@ void enclave_helloworld()
     fprintf(stdout, "Hello world from the enclave\n");
 
     // Call back into the host
-    host_helloworld();
+    oe_result_t result = host_helloworld();
+    if (result != OE_OK)
+    {
+        fprintf(stderr, "Call to host_helloworld failed: result=%u (%s)\n", result, oe_result_str(result));
+    }
 }
 ```
 
@@ -175,10 +179,14 @@ fprintf(stdout, "Hello world from the enclave\n");
 As described above, this call to print a message on the screen marshals the call out of the enclave and back to the untrusted host to print the message.
 
 ```c
-host_helloworld();
+oe_result_t result = host_helloworld();
+if (result != OE_OK)
+{
+    fprintf(stderr, "Call to host_helloworld failed: result=%u (%s)\n", result, oe_result_str(result));
+}
 ```
 
-This calls the marshaling function that is generated from the `helloworld.edl` file which in turn calls into the function within the host.
+This calls the marshaling function that is generated from the `helloworld.edl` file which in turn calls into the function within the host. Even though the `host_helloworld()` function is a `void` this call can still fail within the marshaling code itself and so we should always validate it. If `host_helloworld()` were to return a value itself it would be passed back as an out parameter to the function.
 
 ### Build and sign an enclave
 
@@ -336,12 +344,17 @@ int main(int argc, const char* argv[])
         argv[1], OE_ENCLAVE_TYPE_SGX, OE_ENCLAVE_FLAG_DEBUG, NULL, 0, &enclave);
     if (result != OE_OK)
     {
-        fprintf(stderr, "oe_create_enclave(): result=%u", result);
+        fprintf(stderr, "oe_create_enclave(): result=%u (%s)\n", result, oe_result_str(result));
         goto exit;
     }
 
     // Call into the enclave
-    enclave_helloworld(enclave);
+    result = enclave_helloworld(enclave);
+    if (result != OE_OK)
+    {
+        fprintf(stderr, "calling into enclave_helloworld failed: result=%u (%s)\n", result, oe_result_str(result));
+        goto exit;
+    }
 
     ret = 0;
 
@@ -397,10 +410,15 @@ On a successful creation it returns an opaque enclave handle for any future oper
 Note: - You can create multiple enclave instances this way if there is remaining enclave resource available. such as Enclave Page Cache (EPC).
 
 ```c
-enclave_helloworld(enclave);
+result = enclave_helloworld(enclave);
+if (result != OE_OK)
+{
+    fprintf(stderr, "calling into enclave_helloworld failed: result=%u (%s)\n", result, oe_result_str(result));
+    goto exit;
+}
 ```
 
-This function calls into the generated host marshaling function that is generated from the `helloworld.edl` file. It handles the code that marshals any parameters and calls the function within in the enclave itself. In this sample we do not have any actual function parameters.
+This function calls into the generated host marshaling function that is generated from the `helloworld.edl` file. It handles the code that marshals any parameters and calls the function within in the enclave itself. In this sample we do not have any actual function parameters. Even though `enclave_helloworld()` function itself is a `void` with no return valid, the marshaling code itself can fail so we need to validate the return code associated with this. If `enclave_helloworld()` were to return a value this would be passed back as an out parameter.
 
 The Open Enclave handles all the context switching between the host mode and the enclave mode.
 
