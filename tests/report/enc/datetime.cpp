@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-#ifdef OE_USE_LIBSGX
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/datetime.h>
@@ -149,5 +148,3 @@ void test_iso8601_time_negative()
 
     oe_host_printf("TestIso8601TimeNegative passed\n");
 }
-
-#endif
