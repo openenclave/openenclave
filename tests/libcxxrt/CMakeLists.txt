@@ -4,11 +4,11 @@
 # add a test-case for each file listed in tests.supported
 include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/get_testcase_name.cmake)
 
-file(COPY ${PROJECT_SOURCE_DIR}/3rdparty/libcxxrt/libcxxrt/test/run_test.sh DESTINATION ${PROJECT_BINARY_DIR}/tests/libcxxrt/)
 
 add_subdirectory(host)
 
 if(UNIX)
+	file(COPY ${PROJECT_SOURCE_DIR}/3rdparty/libcxxrt/libcxxrt/test/run_test.sh DESTINATION ${PROJECT_BINARY_DIR}/tests/libcxxrt/)
 	add_subdirectory(enc)
 
 	# read tests.supported, sanitize the cpp-file, and create the test-case
