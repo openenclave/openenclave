@@ -11,6 +11,7 @@
 #include "../../../host/quote.h"
 #include "../common/args.h"
 #include "../common/tests.cpp"
+#include "tests_u.h"
 
 #define SKIP_RETURN_CODE 2
 
@@ -65,9 +66,8 @@ int main(int argc, const char* argv[])
 #ifdef OE_USE_LIBSGX
     TestRemoteVerifyReport(NULL);
 
-    OE_TEST(oe_call_enclave(enclave, "TestIso8601Time", NULL) == OE_OK);
-
-    OE_TEST(oe_call_enclave(enclave, "TestIso8601TimeNegative", NULL) == OE_OK);
+    OE_TEST(TestIso8601Time(enclave) == OE_OK);
+    OE_TEST(TestIso8601TimeNegative(enclave) == OE_OK);
 #endif
 
     /*

@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "../../../common/quote.h"
+#include "tests_t.h"
 
 void TestPositive(const oe_datetime_t& dateTime, const char* expected)
 {
@@ -30,7 +31,7 @@ void TestNegative(oe_datetime_t dateTime, oe_result_t result)
     OE_TEST(oe_datetime_to_string(&dateTime, utcString, &length) == result);
 }
 
-OE_ECALL void TestIso8601Time(void*)
+void TestIso8601Time()
 {
     // Single digit fields
     TestPositive(oe_datetime_t{2018, 8, 8, 0, 0, 0}, "2018-08-08T00:00:00Z");
@@ -96,7 +97,7 @@ OE_ECALL void TestIso8601Time(void*)
     oe_host_printf("TestIso8601Time passed\n");
 }
 
-OE_ECALL void TestIso8601TimeNegative(void*)
+void TestIso8601TimeNegative()
 {
     // Year before unix epoch 1970.
     TestNegative(oe_datetime_t{1969, 8, 8, 0, 0, 0}, OE_INVALID_UTC_DATE_TIME);
