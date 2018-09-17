@@ -10,7 +10,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <iostream> //std::cout
 #include <map>
 #include <thread>
 #include "../args.h"
@@ -49,7 +48,6 @@ void* EnclaveThread(void* args)
 {
     oe_enclave_t* enclave = (oe_enclave_t*)args;
 
-    printf("(host EnclaveThread) thread id=0x%ld\n", pthread_self());
     oe_result_t result = oe_call_enclave(enclave, "_EnclaveLaunchThread", NULL);
     OE_TEST(result == OE_OK);
 
@@ -65,7 +63,7 @@ OE_OCALL void host_create_pthread(void* arg, oe_enclave_t* enclave)
 
     // Main host thread continues - update the enclave id to host id mapping
     printf(
-        "(host_create_pthread)Enc id=%ld has Host id of 0x%ld\n",
+        "host_create_pthread(): Enc id=%lu has Host id of 0x%lu\n",
         *enc_id,
         host_thread_id);
     enclave_host_id_map.emplace(*enc_id, host_thread_id);
@@ -81,14 +79,11 @@ OE_OCALL void host_join_pthread(void* arg, oe_enclave_t* enclave)
     it = enclave_host_id_map.find(*enc_id);
     if (it != enclave_host_id_map.end())
     {
-        printf("(host_join_pthread)Host Thread ID is 0x%ld\n", it->second);
         if (pthread_join(it->second, &ret) != 0)
         {
-            printf("pthread_join failed for 0x%ld\n", it->second);
+            printf("pthread_join failed for 0x%lu\n", it->second);
             abort();
         }
-        else
-            printf("pthread_join succeeded for 0x%ld\n", it->second);
     }
 }
 

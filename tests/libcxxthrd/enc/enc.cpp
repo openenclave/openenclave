@@ -12,7 +12,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <functional>
-#include <iostream> //std::cout
 #include <map>
 #include <vector>
 #include "../args.h"
@@ -86,7 +85,7 @@ static int _pthread_create_hook(
 
     // Send the enclave id so that host can maintain the map between
     // enclave and host id
-    printf("_pthread_create_hook:enc_thread= %ld\n", *enc_thread);
+    printf("_pthread_create_hook(): enc_thread= %lu\n", *enc_thread);
     if (oe_call_host("host_create_pthread", enc_thread) != OE_OK)
         oe_abort();
 
@@ -95,13 +94,11 @@ static int _pthread_create_hook(
 
 static int _pthread_join_hook(pthread_t enc_thread, void** retval)
 {
-    printf(
-        "In _pthread_join_hook routine - enc thread id is %ld\n", enc_thread);
+    printf("_pthread_join_hook(): enc thread id is %lu\n", enc_thread);
     // Check if valid thread_id has been passed
     if (enc_thread > _next_enc_thread_id)
     {
-        std::cout << "(_pthread_join_hook)Invalid Thread ID " << enc_thread
-                  << std::endl;
+        printf("_pthread_join_hook(): Invalid Thread ID %lu\n", enc_thread);
         oe_abort();
     }
 
