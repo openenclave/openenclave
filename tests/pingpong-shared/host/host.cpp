@@ -9,7 +9,7 @@
 
 static bool gotPong = false;
 
-OE_EXTERNC void Log(const char* str, uint64_t x)
+void Log(const char* str, uint64_t x)
 {
     printf("LOG: %s: %llu\n", str, OE_LLU(x));
 }
