@@ -25,23 +25,23 @@ using namespace std;
 oe_enclave_t* enclave = NULL;
 
 // Dump Encryption header
-void dump_header(EncryptionHeader* _p_header)
+void dump_header(EncryptionHeader* _header)
 {
     cout << "--------- Dumping header -------------\n";
-    cout << "Host: fileDataSize = " << _p_header->file_data_size << endl;
+    cout << "Host: fileDataSize = " << _header->file_data_size << endl;
 
     cout << "Host: password digest:\n";
     for (int i = 0; i < HASH_VALUE_SIZE_IN_BYTES; i++)
     {
         cout << "Host: digest[" << i << "]" << std::hex
-             << (unsigned int)(_p_header->digest[i]) << endl;
+             << (unsigned int)(_header->digest[i]) << endl;
     }
 
     cout << "Host: encryption key" << endl;
     for (int i = 0; i < ENCRYPTION_KEY_SIZE_IN_BYTES; i++)
     {
         cout << "Host: key[" << i << "]=" << std::hex
-             << (unsigned int)(_p_header->encrypted_key[i]) << endl;
+             << (unsigned int)(_header->encrypted_key[i]) << endl;
     }
 }
 

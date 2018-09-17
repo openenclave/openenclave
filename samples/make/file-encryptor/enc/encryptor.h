@@ -21,7 +21,7 @@ class ECallDispatcher
     bool m_b_encrypt;
     string m_password;
 
-    EncryptionHeader* m_p_header;
+    EncryptionHeader* m_header;
 
     // initialization vector
     unsigned char m_original_iv[IV_SIZE];

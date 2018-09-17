@@ -5,7 +5,7 @@
 #include <string.h>
 #include "common.h"
 
-ECallDispatcher::ECallDispatcher() : m_b_encrypt(true), m_p_header(NULL)
+ECallDispatcher::ECallDispatcher() : m_b_encrypt(true), m_header(NULL)
 {
     unsigned char iv[IV_SIZE] = {0xb2,
                                  0x4b,
@@ -86,8 +86,8 @@ void ECallDispatcher::close(CloseEncryptorArgs* args)
 {
     if (m_b_encrypt)
     {
-        oe_host_free(m_p_header);
-        m_p_header = NULL;
+        oe_host_free(m_header);
+        m_header = NULL;
     }
 
     // free aes context

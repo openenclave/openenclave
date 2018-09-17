@@ -396,31 +396,31 @@ int ECallDispatcher::process_encryption_header(EncryptInitializeArgs* args)
     m_password =
         std::string(args->password, args->password + args->password_len);
     m_b_encrypt = args->do_encrypt;
-    m_p_header = args->header;
+    m_header = args->header;
 
     if (m_b_encrypt)
     {
         // allocate host memory for the header and it will be returned back to
         // the host
-        m_p_header =
+        m_header =
             (EncryptionHeader*)oe_host_malloc(sizeof(EncryptionHeader));
-        if (m_p_header == NULL)
+        if (m_header == NULL)
         {
             ret = 1;
             goto exit;
         }
 
-        ret = prepare_encryption_header(m_p_header, m_password);
+        ret = prepare_encryption_header(m_header, m_password);
         if (ret != 0)
         {
             ENC_DEBUG_PRINTF("prepareEncryptionHeader failed with %d", ret);
             goto exit;
         }
-        args->header = m_p_header;
+        args->header = m_header;
     }
     else
     {
-        ret = parse_encryption_header(m_p_header, m_password);
+        ret = parse_encryption_header(m_header, m_password);
         if (ret != 0)
         {
             ENC_DEBUG_PRINTF("parseEncryptionHeader failed with %d", ret);
