@@ -9,14 +9,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../../../host/strings.h"
-#include "../args.h"
+#include "getenclave_u.h"
 
 static oe_enclave_t* _enclave;
 static bool _called_test_get_enclave_ocall;
 
-OE_OCALL void test_get_enclave_ocall(void* args)
+void test_get_enclave_ocall(oe_enclave_t *enclaveParam)
 {
-    OE_TEST(args == _enclave);
+    OE_TEST(enclaveParam == _enclave);
     _called_test_get_enclave_ocall = true;
 }
 
@@ -36,11 +36,10 @@ int main(int argc, const char* argv[])
     result = oe_create_enclave(argv[1], type, flags, NULL, 0, &_enclave);
     OE_TEST(result == OE_OK);
 
-    args_t args;
-    args.result = OE_UNEXPECTED;
-    args.enclave = _enclave;
-    result = oe_call_enclave(_enclave, "test_get_enclave_ecall", &args);
+    oe_result_t returnValue;
+    result = test_get_enclave_ecall(_enclave, &returnValue, _enclave);
     OE_TEST(result == OE_OK);
+    OE_TEST(returnValue == OE_OK);
     OE_TEST(_called_test_get_enclave_ocall == true);
 
     oe_terminate_enclave(_enclave);

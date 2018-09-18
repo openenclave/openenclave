@@ -3,27 +3,26 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/tests.h>
-#include "../args.h"
+#include "getenclave_t.h"
 
-OE_ECALL void test_get_enclave_ecall(void* args_)
+oe_result_t test_get_enclave_ecall(oe_enclave_t *enclaveParam)
 {
     oe_result_t result = OE_UNEXPECTED;
-    args_t* args = (args_t*)args_;
     oe_enclave_t* enclave;
 
     if (!(enclave = oe_get_enclave()))
         goto done;
 
-    if (args->enclave != enclave)
+    if (enclaveParam != enclave)
         goto done;
 
-    if (oe_call_host("test_get_enclave_ocall", enclave) != OE_OK)
+    if (test_get_enclave_ocall(enclave) != OE_OK)
         goto done;
 
-    args->result = OE_OK;
+    result = OE_OK;
 
 done:
-    args->result = result;
+    return result;
 }
 
 #if defined(__GNUC__)
