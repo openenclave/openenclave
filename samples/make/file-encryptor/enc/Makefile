@@ -4,14 +4,20 @@
 OPENENCLAVE_CONFIG=../../config.mak
 include $(OPENENCLAVE_CONFIG)
 
+# C++ build environment setup
 CXX = clang++-7
-
 CXXFLAGS += -Wall -Werror -g -m64 -nostdinc -fPIC -std=c++11 -nostdinc++
 CXXFLAGS += -mllvm -x86-speculative-load-hardening
-
 INCLUDES += -I$(OE_INCLUDEDIR)
 INCLUDES += -I$(OE_INCLUDEDIR)/libcxx
 INCLUDES += -I$(OE_INCLUDEDIR)/libc
+
+# C build environment setup
+CC = clang-7
+CFLAGS += -Wall -Werror -O2 -m64 -nostdinc -fPIC
+CFLAGS += -mllvm -x86-speculative-load-hardening
+CINCLUDES += -I$(OE_INCLUDEDIR)
+CINCLUDES += -I$(OE_INCLUDEDIR)/libc
 
 LDFLAGS += -Wl,--no-undefined 
 LDFLAGS += -nostdlib 
@@ -36,14 +42,16 @@ all:
 	$(MAKE) sign
 
 build:
+	$(OE_BINDIR)/oeedger8r ../fileencryptor.edl --trusted
 	$(CXX) -c $(CXXFLAGS) $(INCLUDES) ecalls.cpp encryptor.cpp keys.cpp
-	$(CXX) -o file-encryptorenc.so ecalls.o encryptor.o keys.o $(LDFLAGS) $(LIBRARIES)
+	$(CC) -c $(CFLAGS) $(CINCLUDES) fileencryptor_t.c -o fileencryptor_t.o
+	$(CXX) -o file-encryptorenc.so ecalls.o encryptor.o keys.o fileencryptor_t.o $(LDFLAGS) $(LIBRARIES)
 
 sign:
 	$(OE_BINDIR)/oesign file-encryptorenc.so file-encryptor.conf private.pem
 
 clean:
-	rm -f file-encryptorenc.so encryptor.o ecalls.o keys.o file-encryptorenc.signed.so private.pem public.pem
+	rm -f *.so *.o fileencryptor_t.* fileencryptor_args.h private.pem public.pem
 
 keys:
 	openssl genrsa -out private.pem -3 3072

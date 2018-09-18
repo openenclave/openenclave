@@ -11,20 +11,20 @@
 class Attestation
 {
   private:
-    Crypto* m_pCrypto;
-    uint8_t* m_pEnclaveMRSigner;
+    Crypto* m_crypto;
+    uint8_t* m_enclave_mrsigner;
 
   public:
-    Attestation(Crypto* pCrypto, uint8_t* enclaveMRSigner);
+    Attestation(Crypto* pCrypto, uint8_t* enclave_mrsigner);
 
     // Generate a remote report for the given data. The SHA256 digest of the
     // data is stored
     // in the report_data field of the generated remote report.
-    bool GenerateRemoteReport(
+    bool generate_remote_report(
         const uint8_t* data,
-        size_t dataSize,
-        uint8_t* remoteReportBuffer,
-        size_t* remoteReportBufferSize);
+        size_t data_size,
+        uint8_t* remote_report_buf,
+        size_t* remote_report_buf_size);
 
     /**
      * Attest the given remote report and accompanying data. The remote report
@@ -35,11 +35,11 @@ class Attestation
      * accompanying data is ensured by comparing its SHA256 digest against the
      * report_data field.
      */
-    bool AttestRemoteReport(
-        const uint8_t* remoteReport,
-        size_t remoteReportSize,
+    bool attest_remote_report(
+        const uint8_t* remote_report,
+        size_t remote_report_size,
         const uint8_t* data,
-        size_t dataSize);
+        size_t data_size);
 };
 
 #endif // OE_SAMPLES_ATTESTATION_ENC_ATTESTATION_H

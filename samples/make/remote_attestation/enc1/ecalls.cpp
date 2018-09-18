@@ -1,39 +1,25 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 #include <openenclave/enclave.h>
-#include "../args.h"
 #include "../common/dispatcher.h"
-
-template <typename T>
-bool is_outside_enclave(T* args)
-{
-    if (oe_is_outside_enclave(args, sizeof(T)))
-        return true;
-    return false;
-}
-
-#define DISPATCH(x)                          \
-    if (!is_outside_enclave(arg))            \
-    {                                        \
-        arg->success = OE_INVALID_PARAMETER; \
-        return;                              \
-    }                                        \
-    dispatcher.x(arg);
+#include "../common/remoteattestation_t.h"
 
 // For this purpose of this example: demonstrating how to do remote attestation
-// g_EnclaveSecretData is hardcoded as part of the enclave. In this sample, the
+// g_enclave_secret_data is hardcoded as part of the enclave. In this sample,
+// the
 // secret data is hard coded as part of the enclave binary. In a real world
 // enclave implementation, secrets are never hard coded in the enclave binary
 // since the enclave binary itself is not encrypted. Instead, secrets are
 // acquired via provisioning from a service (such as a cloud server) after
 // successful attestation.
-// This g_EnclaveSecretData holds the secret data specific to the holding
+// This g_enclave_secret_data holds the secret data specific to the holding
 // enclave, it's only visible inside this secured enclave. Arbitrary enclave
 // specific seccret data exchanged by the enclaves. In this sample, the first
-// enclave sends its g_EnclaveSecretData (encrypted) to the second enclave. The
+// enclave sends its g_enclave_secret_data (encrypted) to the second enclave.
+// The
 // this enclave decrypts the received data and adds it to its own
-// g_EnclaveSecretData, and sends it back to the other enclave.
-uint8_t g_EnclaveSecretData[ENCLAVE_SECRET_DATA_SIZE] =
+// g_enclave_secret_data, and sends it back to the other enclave.
+uint8_t g_enclave_secret_data[ENCLAVE_SECRET_DATA_SIZE] =
     {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
 
 // The SHA-256 hash of the public key in the private.pem file used to sign the
@@ -46,38 +32,47 @@ uint8_t g_encalve2MRSigner[] = {0x21, 0x80, 0x00, 0xc2, 0xa2, 0xc6, 0x83, 0x21,
                                 0x0b, 0x94, 0x29, 0xa5, 0xbb, 0x7a, 0x64, 0x05,
                                 0x82, 0x9e, 0xb5, 0xf0, 0x50, 0xe6, 0x06, 0x32};
 
-EnclaveConfigData configData = {g_EnclaveSecretData, g_encalve2MRSigner};
+enclave_config_data_t configData = {g_enclave_secret_data, g_encalve2MRSigner};
 
 // Declare a static dispatcher object for enabling
 // for better organizing enclave-wise global variables
-static EcallDispatcher dispatcher("Enclave1", &configData);
-
-// ECalls
-
+static ecall_dispatcher dispatcher("Enclave1", &configData);
+const char* enclaveName = "Enclave1";
 /**
  * Return the public key of this enclave along with the enclave's remote report.
  * Another enclave can use the remote report to attest the enclave and verify
  * the integrity of the public key.
  */
-OE_ECALL void GetRemoteReportWithPubKey(GetRemoteReportWithPubKeyArgs* arg)
+int get_remote_report_with_pubkey(
+    uint8_t** pem_key,
+    size_t* key_size,
+    uint8_t** remote_report,
+    size_t* remote_report_size)
 {
-    DISPATCH(GetRemoteReportWithPublicKey);
+    ENC_DEBUG_PRINTF("enter get_remote_report_with_pubkey");
+    return dispatcher.get_remote_report_with_pubkey(
+        pem_key, key_size, remote_report, remote_report_size);
 }
 
 // Attest and store the public key of another enclave.
-OE_ECALL void VerifyReportAndSetPubKey(VerifyReportWithPubKeyArgs* arg)
+int verify_report_and_set_pubkey(
+    uint8_t* pem_key,
+    size_t key_size,
+    uint8_t* remote_report,
+    size_t remote_report_size)
 {
-    DISPATCH(VerifyReportAndSetKey);
+    return dispatcher.verify_report_and_set_pubkey(
+        pem_key, key_size, remote_report, remote_report_size);
 }
 
 // Encrypt message for another enclave using the public key stored for it.
-OE_ECALL void GenerateEncryptedMessage(GenerateEncryptedMessageArgs* arg)
+int generate_encrypted_message(uint8_t** data, size_t* size)
 {
-    DISPATCH(GenerateEncryptedData);
+    return dispatcher.generate_encrypted_message(data, size);
 }
 
 // Process encrypted message
-OE_ECALL void ProcessEncryptedMessage(ProcessEncryptedMessageArgs* arg)
+int process_encrypted_msg(uint8_t* data, size_t size)
 {
-    DISPATCH(ProcessEncryptedData);
+    return dispatcher.process_encrypted_msg(data, size);
 }
