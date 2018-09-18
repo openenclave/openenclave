@@ -21,7 +21,7 @@ static const char* g_expected_root_certificate_key =
     "-----END PUBLIC KEY-----\n";
 
 // The mrsigner value of Intel's Production quoting enclave.
-static const uint8_t g_qe_mr_signer[32] = {
+static const uint8_t g_qe_mrsigner[32] = {
     0x8c, 0x4f, 0x57, 0x75, 0xd7, 0x96, 0x50, 0x3e, 0x96, 0x13, 0x7f,
     0x77, 0xc6, 0x8a, 0x82, 0x9a, 0x00, 0x56, 0xac, 0x8d, 0xed, 0x70,
     0x14, 0x0b, 0x08, 0x1b, 0x09, 0x44, 0x90, 0xc5, 0x7b, 0xff};
@@ -289,8 +289,8 @@ oe_result_t VerifyQuoteImpl(
         // enclave's mrsigner.
         if (!oe_constant_time_mem_equal(
                 quote_auth_data->qe_report_body.mrsigner,
-                g_qe_mr_signer,
-                sizeof(g_qe_mr_signer)))
+                g_qe_mrsigner,
+                sizeof(g_qe_mrsigner)))
             OE_RAISE(OE_VERIFY_FAILED);
 
         if (quote_auth_data->qe_report_body.isvprodid != g_qe_isvprodid)

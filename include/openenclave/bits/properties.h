@@ -105,7 +105,7 @@ typedef struct oe_sgx_enclave_properties_t
  * @param \_heap_page_count\_ Number of heap pages to allocate in the enclave
  * @param \_stack_page_count\_ Number of stack pages per thread to reserve in
  * the enclave
- * @param \TCS_COUNT\_ Number of concurrent threads in an enclave to support
+ * @param \_tcs_count\_ Number of concurrent threads in an enclave to support
  */
 // Note: disable clang-format since it badly misformats this macro
 // clang-format off
@@ -116,7 +116,7 @@ typedef struct oe_sgx_enclave_properties_t
     ALLOW_DEBUG,                                                         \
     HEAP_PAGE_COUNT,                                                      \
     STACK_PAGE_COUNT,                                                     \
-    _tcs_count_)                                                           \
+    TCS_COUNT)                                                           \
     OE_INFO_SECTION_BEGIN                                                 \
     OE_EXPORT_CONST oe_sgx_enclave_properties_t oe_enclave_properties_sgx = \
     {                                                                     \
@@ -128,7 +128,7 @@ typedef struct oe_sgx_enclave_properties_t
             {                                                             \
                 .num_heap_pages = HEAP_PAGE_COUNT,                        \
                 .num_stack_pages = STACK_PAGE_COUNT,                      \
-                .num_tcs = _tcs_count_                                     \
+                .num_tcs = TCS_COUNT                                     \
             }                                                             \
         },                                                                \
         .config =                                                         \
