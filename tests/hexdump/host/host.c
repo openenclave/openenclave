@@ -4,7 +4,9 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/tests.h>
-#include "../args.h"
+#include "hexdump_u.h"
+
+#define DATA_SIZE 1024
 
 /* Randomly generated data */
 static const unsigned char _data[DATA_SIZE] = {
@@ -149,31 +151,23 @@ int main(int argc, const char* argv[])
         (result = oe_create_enclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) == OE_OK);
 
-    /* Check buffer sizes */
-    {
-        Args args;
-        OE_TEST(sizeof(args.data) == sizeof(_data));
-        OE_TEST(sizeof(args.hexstr) == sizeof(_hexstr));
-    }
-
     /* Test enclave version of oe_hex_string() */
     {
-        Args args;
-        memcpy(args.data, _data, sizeof(args.data));
-        args.ret = -1;
+        char hexstr[sizeof(_hexstr)];
+        int returnValue;
 
-        OE_TEST((result = oe_call_enclave(enclave, "Test", &args)) == OE_OK);
-        OE_TEST(args.ret == 0);
-        OE_TEST(strcmp(args.hexstr, _hexstr) == 0);
+
+        OE_TEST((result = test(enclave, &returnValue, _data, sizeof(_data), hexstr, sizeof(hexstr))) == OE_OK);
+        OE_TEST(returnValue == 0);
+        OE_TEST(strcmp(hexstr, _hexstr) == 0);
     }
 
     /* Test host version of oe_hex_string() */
     {
-        unsigned char data[DATA_SIZE];
-        char hexstr[2 * DATA_SIZE + 1];
-        memcpy(data, _data, sizeof(data));
+        char hexstr[sizeof(_hexstr)];
 
-        OE_TEST(oe_hex_string(hexstr, sizeof(hexstr), data, sizeof(data)));
+
+        OE_TEST(oe_hex_string(hexstr, sizeof(hexstr), _data, sizeof(_data)));
         OE_TEST(strcmp(hexstr, _hexstr) == 0);
 
         oe_hex_dump(_data, DATA_SIZE);
