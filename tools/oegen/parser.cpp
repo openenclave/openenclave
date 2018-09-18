@@ -304,7 +304,8 @@ static int _check_qualifiers(
                 goto done;
             }
 
-            if (is_char && is_ptr && (flags & FLAG_OUT) && !(flags & FLAG_COUNT))
+            if (is_char && is_ptr && (flags & FLAG_OUT) &&
+                !(flags & FLAG_COUNT))
             {
                 lexer.SetErr(
                     "[count] qualifier required here: '%s'", name.c_str());

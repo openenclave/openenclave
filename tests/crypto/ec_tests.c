@@ -274,7 +274,8 @@ static void _test_generate()
     uint8_t* signature = NULL;
     size_t signature_size = 0;
 
-    r = oe_ec_generate_key_pair(OE_EC_TYPE_SECP256R1, &private_key, &public_key);
+    r = oe_ec_generate_key_pair(
+        OE_EC_TYPE_SECP256R1, &private_key, &public_key);
     OE_TEST(r == OE_OK);
 
     r = oe_ec_private_key_sign(

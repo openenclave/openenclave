@@ -24,7 +24,8 @@ static oe_result_t _oe_get_report_key(
     sgx_key_request_t sgx_key_request = {0};
 
     sgx_key_request.key_name = SGX_KEYSELECT_REPORT;
-    oe_memcpy(sgx_key_request.key_id, sgx_report->keyid, sizeof(sgx_report->keyid));
+    oe_memcpy(
+        sgx_key_request.key_id, sgx_report->keyid, sizeof(sgx_report->keyid));
 
     OE_CHECK(oe_get_key(&sgx_key_request, sgx_key));
     result = OE_OK;
@@ -118,8 +119,8 @@ static oe_result_t _safe_copy_verify_report_args(
     oe_result_t result = OE_UNEXPECTED;
     oe_verify_report_args_t* unsafe_arg = (oe_verify_report_args_t*)arg_in;
 
-    if (!unsafe_arg || !oe_is_outside_enclave(unsafe_arg, sizeof(*unsafe_arg)) ||
-        !buffer)
+    if (!unsafe_arg ||
+        !oe_is_outside_enclave(unsafe_arg, sizeof(*unsafe_arg)) || !buffer)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Always set output.

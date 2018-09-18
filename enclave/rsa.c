@@ -202,7 +202,8 @@ oe_result_t oe_public_key_get_modulus(
     uint8_t* buffer,
     size_t* buffer_size)
 {
-    return _get_public_key_modulus_or_exponent(public_key, buffer, buffer_size, true);
+    return _get_public_key_modulus_or_exponent(
+        public_key, buffer, buffer_size, true);
 }
 
 oe_result_t oe_public_key_get_exponent(
@@ -210,7 +211,8 @@ oe_result_t oe_public_key_get_exponent(
     uint8_t* buffer,
     size_t* buffer_size)
 {
-    return _get_public_key_modulus_or_exponent(public_key, buffer, buffer_size, false);
+    return _get_public_key_modulus_or_exponent(
+        public_key, buffer, buffer_size, false);
 }
 
 static oe_result_t oe_public_key_equal(

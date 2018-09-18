@@ -43,11 +43,13 @@ void AssertParsedValues(oe_parsed_tcb_info_t& parsed_info)
 
     oe_datetime_t expected_issue_date = {2018, 6, 6, 10, 12, 17};
     OE_TEST(
-        oe_datetime_compare(&parsed_info.issue_date, &expected_issue_date) == 0);
+        oe_datetime_compare(&parsed_info.issue_date, &expected_issue_date) ==
+        0);
 
     uint8_t expected_fm_spc[6] = {0x00, 0x90, 0x6E, 0xA1, 0x00, 0x00};
     OE_TEST(
-        memcmp(parsed_info.fmspc, expected_fm_spc, sizeof(expected_fm_spc)) == 0);
+        memcmp(parsed_info.fmspc, expected_fm_spc, sizeof(expected_fm_spc)) ==
+        0);
 
     const uint8_t expected_signature[] = {
         0x62, 0xd1, 0x81, 0xc4, 0xba, 0x86, 0x32, 0x13, 0xb8, 0x25, 0xd1,
@@ -70,8 +72,10 @@ void TestVerifyTCBInfo(
 {
     std::vector<uint8_t> tcb_info = FileToBytes("./data/tcbInfo.json");
     oe_parsed_tcb_info_t parsed_info = {0};
-    VerifyTCBInfoArgs args = {
-        &tcb_info[0], (uint32_t)tcb_info.size(), platform_tcb_level, &parsed_info};
+    VerifyTCBInfoArgs args = {&tcb_info[0],
+                              (uint32_t)tcb_info.size(),
+                              platform_tcb_level,
+                              &parsed_info};
 
     OE_TEST(oe_call_enclave(enclave, "TestVerifyTCBInfo", &args) == OE_OK);
     AssertParsedValues(parsed_info);
@@ -83,8 +87,10 @@ void TestVerifyTCBInfo(
     tcb_info = FileToBytes("./data/tcbInfo1.json");
     memset(&parsed_info, 0, sizeof(parsed_info));
     platform_tcb_level->status = OE_TCB_LEVEL_STATUS_UNKNOWN;
-    VerifyTCBInfoArgs args1 = {
-        &tcb_info[0], (uint32_t)tcb_info.size(), platform_tcb_level, &parsed_info};
+    VerifyTCBInfoArgs args1 = {&tcb_info[0],
+                               (uint32_t)tcb_info.size(),
+                               platform_tcb_level,
+                               &parsed_info};
     OE_TEST(oe_call_enclave(enclave, "TestVerifyTCBInfo", &args1) == OE_OK);
     AssertParsedValues(parsed_info);
 
@@ -140,7 +146,8 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
 
     // Set each of the fields to a value not listed in the json and
     // test that the determined status is OE_TCB_LEVEL_INVALID
-    for (uint32_t i = 0; i < OE_COUNTOF(platform_tcb_level.sgx_tcb_comp_svn); ++i)
+    for (uint32_t i = 0; i < OE_COUNTOF(platform_tcb_level.sgx_tcb_comp_svn);
+         ++i)
     {
         platform_tcb_level.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
         platform_tcb_level.sgx_tcb_comp_svn[i] = 0;

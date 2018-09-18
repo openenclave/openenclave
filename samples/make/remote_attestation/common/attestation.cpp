@@ -89,7 +89,8 @@ bool Attestation::AttestRemoteReport(
 
     // 1)  Validate the report's trustworthiness
     // Verify the remote report to ensure its authenticity.
-    result = oe_verify_report(remote_report, remote_report_size, &parsed_report);
+    result =
+        oe_verify_report(remote_report, remote_report_size, &parsed_report);
     if (result != OE_OK)
     {
         ENC_DEBUG_PRINTF(

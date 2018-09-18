@@ -286,7 +286,7 @@ oe_result_t AESMGetLaunchToken(
         OE_KEY_SIZE,              /* public_key_size */
         (PUINT8)attributes,       /* se_attributes */
         sizeof(sgx_attributes_t), /* se_attributes_size */
-        (PUINT8)launch_token,      /* lictoken */
+        (PUINT8)launch_token,     /* lictoken */
         /* MSR-SDK passes sizeof(sgx_einittoken_t) */
         sizeof(sgx_einittoken_t), /* lictoken_size */
         &error);                  /* result */
@@ -382,20 +382,20 @@ oe_result_t AESMGetQuote(
 
     // Get quote for a given report.
     HRESULT hr = instance->vtbl->GetQuote(
-        instance,                          /* this */
-        (uint8_t*)report,                  /* report */
-        sizeof(sgx_report_t),              /* report_size */
-        (uint32_t)quote_type,               /* type */
-        (uint8_t*)spid,                    /* spid */
-        sizeof(sgx_spid_t),                /* spid_size */
-        (uint8_t*)nonce,                   /* nonce */
-        sizeof(sgx_nonce_t),               /* nonce_size */
+        instance,                            /* this */
+        (uint8_t*)report,                    /* report */
+        sizeof(sgx_report_t),                /* report_size */
+        (uint32_t)quote_type,                /* type */
+        (uint8_t*)spid,                      /* spid */
+        sizeof(sgx_spid_t),                  /* spid_size */
+        (uint8_t*)nonce,                     /* nonce */
+        sizeof(sgx_nonce_t),                 /* nonce_size */
         (uint8_t*)signature_revocation_list, /* sig_rl */
-        signature_revocation_list_size,       /* sigrl_size */
-        (uint8_t*)report_out,               /* qe_report */
-        sizeof(sgx_report_t),              /* qe_report_size */
-        (uint8_t*)quote,                   /* quote */
-        (uint32_t)quote_size,               /* buffer_size */
+        signature_revocation_list_size,      /* sigrl_size */
+        (uint8_t*)report_out,                /* qe_report */
+        sizeof(sgx_report_t),                /* qe_report_size */
+        (uint8_t*)quote,                     /* quote */
+        (uint32_t)quote_size,                /* buffer_size */
         &error);
 
     if (!SUCCEEDED(hr) || error != 0)

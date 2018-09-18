@@ -211,12 +211,15 @@ oe_result_t VerifyQuoteImpl(
         // Read and validate the chain.
         OE_CHECK(
             oe_cert_chain_read_pem(
-                &pck_cert_chain, pem_pck_certificate, pem_pck_certificate_size));
+                &pck_cert_chain,
+                pem_pck_certificate,
+                pem_pck_certificate_size));
 
         // Fetch leaf and root certificates.
         OE_CHECK(oe_cert_chain_get_leaf_cert(&pck_cert_chain, &leaf_cert));
         OE_CHECK(oe_cert_chain_get_root_cert(&pck_cert_chain, &root_cert));
-        OE_CHECK(oe_cert_chain_get_cert(&pck_cert_chain, 1, &intermediate_cert));
+        OE_CHECK(
+            oe_cert_chain_get_cert(&pck_cert_chain, 1, &intermediate_cert));
 
         OE_CHECK(oe_cert_get_ec_public_key(&leaf_cert, &leaf_public_key));
         OE_CHECK(oe_cert_get_ec_public_key(&root_cert, &root_public_key));
@@ -235,7 +238,8 @@ oe_result_t VerifyQuoteImpl(
             OE_RAISE(OE_VERIFY_FAILED);
 
         OE_CHECK(
-            oe_enforce_revocation(&leaf_cert, &intermediate_cert, &pck_cert_chain));
+            oe_enforce_revocation(
+                &leaf_cert, &intermediate_cert, &pck_cert_chain));
     }
 
     // Quote validations.
@@ -260,7 +264,8 @@ oe_result_t VerifyQuoteImpl(
         if (qe_auth_data.size > 0)
         {
             OE_CHECK(
-                oe_sha256_update(&sha256_ctx, qe_auth_data.data, qe_auth_data.size));
+                oe_sha256_update(
+                    &sha256_ctx, qe_auth_data.data, qe_auth_data.size));
         }
         OE_CHECK(oe_sha256_final(&sha256_ctx, &sha256));
 
@@ -273,7 +278,8 @@ oe_result_t VerifyQuoteImpl(
         // Verify SHA256 ECDSA (attestation_key, SGX_QUOTE_SIGNED_DATA,
         // signature)
         OE_CHECK(
-            _read_public_key(&quote_auth_data->attestation_key, &attestation_key));
+            _read_public_key(
+                &quote_auth_data->attestation_key, &attestation_key));
 
         OE_CHECK(
             _ecdsa_verify(

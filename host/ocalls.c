@@ -155,7 +155,8 @@ void HandleGetQuote(uint64_t arg_in)
 
 void HandleGetQuoteRevocationInfo(uint64_t arg_in)
 {
-    oe_get_revocation_info_args_t* args = (oe_get_revocation_info_args_t*)arg_in;
+    oe_get_revocation_info_args_t* args =
+        (oe_get_revocation_info_args_t*)arg_in;
     if (!args)
         return;
 
