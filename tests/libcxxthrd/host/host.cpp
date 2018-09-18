@@ -18,7 +18,6 @@
 
 // Host maintains a map of enclave to host thread ID
 static std::map<pthread_t, pthread_t> enclave_host_id_map;
-static pthread_t host_thread_id;
 
 void Test(oe_enclave_t* enclave)
 {
@@ -56,6 +55,8 @@ void* EnclaveThread(void* args)
 
 OE_OCALL void host_create_pthread(pthread_t enc_id, oe_enclave_t* enclave)
 {
+    pthread_t host_thread_id;
+
     // New Thread is created and executes EnclaveThread
     pthread_create(&host_thread_id, NULL, EnclaveThread, enclave);
 
@@ -64,7 +65,9 @@ OE_OCALL void host_create_pthread(pthread_t enc_id, oe_enclave_t* enclave)
         "host_create_pthread(): Enc id=%lu has Host id of 0x%lu\n",
         enc_id,
         host_thread_id);
+    _acquire_lock(); // Using atomic locks to protect the enclave_host_id_map
     enclave_host_id_map.emplace(enc_id, host_thread_id);
+    _release_lock();
 }
 
 OE_OCALL void host_join_pthread(void* arg, oe_enclave_t* enclave)

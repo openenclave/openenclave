@@ -4,10 +4,16 @@
 #ifndef _libcxxthrd_args_h
 #define _libcxxthrd_args_h
 
-typedef struct _my_pthread_args
+static std::atomic_flag _lock = ATOMIC_FLAG_INIT;
+static void _acquire_lock()
 {
-    int ret;
-    pthread_t host_thread_id;
-} my_pthread_args_t;
+    while (_lock.test_and_set(std::memory_order_acquire))
+        ;
+}
+
+static void _release_lock()
+{
+    _lock.clear(std::memory_order_release);
+}
 
 #endif /* _libcxxthrd_args_h */

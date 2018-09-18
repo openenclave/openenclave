@@ -55,19 +55,7 @@ extern "C" int close(int fd)
 }
 
 static std::vector<std::function<void*()>> _thread_functions;
-static std::atomic_flag _lock = ATOMIC_FLAG_INIT;
 static pthread_t _next_enc_thread_id = 0;
-
-static void _acquire_lock()
-{
-    while (_lock.test_and_set(std::memory_order_acquire))
-        ;
-}
-
-static void _release_lock()
-{
-    _lock.clear(std::memory_order_release);
-}
 
 static int _pthread_create_hook(
     pthread_t* enc_thread,
