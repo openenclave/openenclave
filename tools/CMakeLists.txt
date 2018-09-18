@@ -2,6 +2,5 @@
 # Licensed under the MIT License.
 
 add_subdirectory(oeedger8r)
-add_subdirectory(oegen)
 add_subdirectory(oesgx)
 add_subdirectory(oesign)
