@@ -202,7 +202,7 @@ static void _TestHostStrndup(oe_enclave_t* enclave)
     OE_TEST(args.outStr[0] == '\0');
     OE_TEST(oe_call_enclave(enclave, "HostFree", args.outStr) == OE_OK);
 
-    /* String length is less than size. */
+    /* String length is greater than size. */
     args.inStr = "hello";
     args.inSize = 2;
     args.outStr = NULL;
@@ -211,7 +211,7 @@ static void _TestHostStrndup(oe_enclave_t* enclave)
     OE_TEST(memcmp(args.outStr, "he", 3) == 0);
     OE_TEST(oe_call_enclave(enclave, "HostFree", args.outStr) == OE_OK);
 
-    /* String length is greater than size. */
+    /* String length is less than size. */
     args.inStr = "hello";
     args.inSize = 10;
     args.outStr = NULL;
