@@ -22,7 +22,7 @@ if (NOT CMAKE_C_COMPILER AND "$ENV{CC}" STREQUAL "")
     message(STATUS "Trying to find a supported version of Clang")
     find_program(CMAKE_C_COMPILER NAMES clang-7.0 clang-7)
     if (CMAKE_C_COMPILER)
-        set(CMAKE_CXX_COMPILER ${CMAKE_C_COMPILER})
+        string(REPLACE "/clang-" "/clang++-" CMAKE_CXX_COMPILER ${CMAKE_C_COMPILER})
     else()
         message(WARNING "Clang not found, will use default compiler. "
             "Override the compiler by setting CC and CXX environment variables.")
