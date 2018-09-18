@@ -75,18 +75,22 @@ static int _pthread_create_hook(
     void* (*start_routine)(void*),
     void* arg)
 {
+    pthread_t enc_id;
+
     _acquire_lock();
 
     _thread_functions.push_back(
         [start_routine, arg]() { return start_routine(arg); });
 
     *enc_thread = ++_next_enc_thread_id; // Enclave thread IDs start at 1
+    enc_id = *enc_thread;
+    void* ptr = (void*)enc_id;
     _release_lock();
 
     // Send the enclave id so that host can maintain the map between
     // enclave and host id
     printf("_pthread_create_hook(): enc_thread= %lu\n", *enc_thread);
-    if (oe_call_host("host_create_pthread", enc_thread) != OE_OK)
+    if (oe_call_host("host_create_pthread", ptr) != OE_OK)
         oe_abort();
 
     return 0;

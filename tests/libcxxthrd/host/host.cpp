@@ -54,19 +54,17 @@ void* EnclaveThread(void* args)
     return NULL;
 }
 
-OE_OCALL void host_create_pthread(void* arg, oe_enclave_t* enclave)
+OE_OCALL void host_create_pthread(pthread_t enc_id, oe_enclave_t* enclave)
 {
-    pthread_t* enc_id = (pthread_t*)arg;
-
     // New Thread is created and executes EnclaveThread
     pthread_create(&host_thread_id, NULL, EnclaveThread, enclave);
 
     // Main host thread continues - update the enclave id to host id mapping
     printf(
         "host_create_pthread(): Enc id=%lu has Host id of 0x%lu\n",
-        *enc_id,
+        enc_id,
         host_thread_id);
-    enclave_host_id_map.emplace(*enc_id, host_thread_id);
+    enclave_host_id_map.emplace(enc_id, host_thread_id);
 }
 
 OE_OCALL void host_join_pthread(void* arg, oe_enclave_t* enclave)
