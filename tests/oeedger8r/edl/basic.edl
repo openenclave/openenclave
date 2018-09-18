@@ -44,7 +44,9 @@ enclave  {
         public uint8_t ecall_ret_uint8_t();
         public uint16_t ecall_ret_uint16_t();
         public uint32_t ecall_ret_uint32_t();
-        public uint64_t ecall_ret_uint64_t();        
+        public uint64_t ecall_ret_uint64_t();   
+
+        public void test_basic_edl_ocalls();             
     };
 
     untrusted {

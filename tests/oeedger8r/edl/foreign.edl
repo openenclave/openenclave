@@ -72,7 +72,8 @@ enclave  {
 
         public my_type1 ecall_foreign_value(
             my_type1 a1);
-                                                       
+
+        public void test_foreign_edl_ocalls();                              
     };
 
     untrusted {

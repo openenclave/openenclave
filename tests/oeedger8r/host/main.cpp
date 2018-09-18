@@ -4,6 +4,13 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/tests.h>
 #include <wchar.h>
+#include "array_u.h"
+#include "basic_u.h"
+#include "enum_u.h"
+#include "foreign_u.h"
+#include "pointer_u.h"
+#include "string_u.h"
+#include "struct_u.h"
 
 void test_basic_edl_ecalls(oe_enclave_t* enclave);
 void test_string_edl_ecalls(oe_enclave_t* enclave);
@@ -35,25 +42,25 @@ int main(int argc, const char* argv[])
     }
 
     test_basic_edl_ecalls(enclave);
-    OE_TEST(oe_call_enclave(enclave, "test_basic_edl_ocalls", NULL) == OE_OK);
+    OE_TEST(test_basic_edl_ocalls(enclave) == OE_OK);
 
     test_string_edl_ecalls(enclave);
-    OE_TEST(oe_call_enclave(enclave, "test_string_edl_ocalls", NULL) == OE_OK);
+    OE_TEST(test_string_edl_ocalls(enclave) == OE_OK);
 
     test_array_edl_ecalls(enclave);
-    OE_TEST(oe_call_enclave(enclave, "test_array_edl_ocalls", NULL) == OE_OK);
+    OE_TEST(test_array_edl_ocalls(enclave) == OE_OK);
 
     test_pointer_edl_ecalls(enclave);
-    OE_TEST(oe_call_enclave(enclave, "test_pointer_edl_ocalls", NULL) == OE_OK);
+    OE_TEST(test_pointer_edl_ocalls(enclave) == OE_OK);
 
     test_struct_edl_ecalls(enclave);
-    OE_TEST(oe_call_enclave(enclave, "test_struct_edl_ocalls", NULL) == OE_OK);
+    OE_TEST(test_struct_edl_ocalls(enclave) == OE_OK);
 
     test_enum_edl_ecalls(enclave);
-    OE_TEST(oe_call_enclave(enclave, "test_enum_edl_ocalls", NULL) == OE_OK);
+    OE_TEST(test_enum_edl_ocalls(enclave) == OE_OK);
 
     test_foreign_edl_ecalls(enclave);
-    OE_TEST(oe_call_enclave(enclave, "test_foreign_edl_ocalls", NULL) == OE_OK);
+    OE_TEST(test_foreign_edl_ocalls(enclave) == OE_OK);
 
     oe_terminate_enclave(enclave);
 

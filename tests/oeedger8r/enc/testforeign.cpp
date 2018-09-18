@@ -49,7 +49,7 @@ static void test_ocall(F f, size_t count)
     OE_TEST(f(NULL, NULL, NULL) == OE_OK);
 }
 
-OE_ECALL void test_foreign_edl_ocalls(void*)
+void test_foreign_edl_ocalls()
 {
     // raw pointer to foreign type.
     test_ocall(ocall_foreign_ptr_1, 1);

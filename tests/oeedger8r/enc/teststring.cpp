@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include "string_t.c"
 
-OE_ECALL void test_string_edl_ocalls(void*)
+void test_string_edl_ocalls()
 {
     const char* str_value = "Hello, World\n";
 
@@ -39,7 +39,7 @@ OE_ECALL void test_string_edl_ocalls(void*)
     // Multiple string params. One null.
     OE_TEST(ocall_string_fun7(str, NULL) == OE_OK);
 
-    printf("=== test_basic_edl_ocalls passed\n");
+    printf("=== test_string_edl_ocalls passed\n");
 }
 
 void ecall_string_fun1(char* s)

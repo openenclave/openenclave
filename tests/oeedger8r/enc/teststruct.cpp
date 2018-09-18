@@ -9,7 +9,7 @@
 #include <algorithm>
 #include "struct_t.c"
 
-OE_ECALL void test_struct_edl_ocalls(void*)
+void test_struct_edl_ocalls()
 {
     const size_t count = 5;
     const size_t size = sizeof(MyStruct1) * 5;

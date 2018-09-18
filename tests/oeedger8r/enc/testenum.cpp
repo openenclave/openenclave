@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include "enum_t.c"
 
-OE_ECALL void test_enum_edl_ocalls(void*)
+void test_enum_edl_ocalls()
 {
     // All inputs are initialized to Green.
     // All outputs are expected to be Blue.

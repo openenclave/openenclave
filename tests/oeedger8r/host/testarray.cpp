@@ -71,9 +71,7 @@ void test_array_edl_ecalls(oe_enclave_t* enclave)
     test_ecall_array_fun<uint32_t>(enclave, ecall_array_uint32_t);
     test_ecall_array_fun<uint64_t>(enclave, ecall_array_uint64_t);
 
-    OE_TEST(
-        oe_call_enclave(enclave, "ecall_array_assert_all_called", NULL) ==
-        OE_OK);
+    OE_TEST(ecall_array_assert_all_called(enclave) == OE_OK);
     printf("=== test_array_edl_ecalls passed\n");
 }
 
@@ -253,7 +251,7 @@ void ocall_array_uint64_t(
     ocall_array_fun_impl(a1, a2, a3, a4);
 }
 
-OE_OCALL void ocall_array_assert_all_called(void*)
+void ocall_array_assert_all_called()
 {
     // Each of the 16 functions above is called twice.
     // Once with arrays and then with nulls.

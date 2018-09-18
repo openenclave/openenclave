@@ -161,7 +161,7 @@ static void test_ocall_pointer_fun(F ocall_pointer_fun)
             psize) == OE_OK);
 }
 
-OE_ECALL void test_pointer_edl_ocalls(void*)
+void test_pointer_edl_ocalls()
 {
     test_ocall_pointer_fun<char>(ocall_pointer_char);
     test_ocall_pointer_fun<short>(ocall_pointer_short);
@@ -180,7 +180,7 @@ OE_ECALL void test_pointer_edl_ocalls(void*)
     test_ocall_pointer_fun<uint32_t>(ocall_pointer_uint32_t);
     test_ocall_pointer_fun<uint64_t>(ocall_pointer_uint64_t);
 
-    OE_TEST(oe_call_host("ocall_pointer_assert_all_called", NULL) == OE_OK);
+    OE_TEST(ocall_pointer_assert_all_called() == OE_OK);
     printf("=== test_pointer_edl_ocalls passed\n");
 }
 
@@ -1036,7 +1036,7 @@ uint64_t* ecall_pointer_uint64_t(
         psize);
 }
 
-OE_ECALL void ecall_pointer_assert_all_called(void*)
+void ecall_pointer_assert_all_called()
 {
     // Each of the 16 functions above is called twice.
     // Once with arrays and then with nulls.

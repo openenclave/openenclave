@@ -117,6 +117,9 @@ enclave  {
             [out] uint64_t a3[3][3],
             [user_check] uint64_t a4[4][4]
         );       
+
+        public void test_array_edl_ocalls();
+        public void ecall_array_assert_all_called();
     };
 
     untrusted {
@@ -234,5 +237,6 @@ enclave  {
             [user_check] uint64_t a4[4][4]
         );         
     
+        void ocall_array_assert_all_called();
     };
 };

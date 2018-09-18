@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include "basic_t.c"
 
-OE_ECALL void test_basic_edl_ocalls(void*)
+void test_basic_edl_ocalls()
 {
     OE_TEST(
         ocall_basic_types(

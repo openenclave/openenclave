@@ -17,6 +17,8 @@ enclave {
 
         // Multiple string parameters
         public void ecall_string_fun7([string, in] char* s1, [string, in] char* s2);
+
+        public void test_string_edl_ocalls();
     };
 
     untrusted {

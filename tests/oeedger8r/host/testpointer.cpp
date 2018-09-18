@@ -179,9 +179,7 @@ void test_pointer_edl_ecalls(oe_enclave_t* enclave)
     test_ecall_pointer_fun<uint32_t>(enclave, ecall_pointer_uint32_t);
     test_ecall_pointer_fun<uint64_t>(enclave, ecall_pointer_uint64_t);
 
-    OE_TEST(
-        oe_call_enclave(enclave, "ecall_pointer_assert_all_called", NULL) ==
-        OE_OK);
+    OE_TEST(ecall_pointer_assert_all_called(enclave) == OE_OK);
     printf("=== test_pointer_edl_ecalls passed\n");
 }
 
@@ -1031,7 +1029,7 @@ uint64_t* ocall_pointer_uint64_t(
         psize);
 }
 
-OE_OCALL void ocall_pointer_assert_all_called(void*)
+void ocall_pointer_assert_all_called()
 {
     // Each of the 16 functions above is called twice.
     // Once with arrays and then with nulls.

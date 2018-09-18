@@ -45,6 +45,7 @@ enclave {
             size_t size
         );
 
+        public void test_struct_edl_ocalls();
     };
 
     untrusted {

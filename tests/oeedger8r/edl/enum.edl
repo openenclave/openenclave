@@ -46,6 +46,8 @@ enclave  {
 
             //[user_check]oe_enclave_t* foo
         );
+
+        public void test_enum_edl_ocalls();
     };
 
     untrusted {

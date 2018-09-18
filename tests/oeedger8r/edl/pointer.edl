@@ -602,7 +602,10 @@ enclave {
             uint16_t uint16_t_size,
             uint32_t uint32_t_size,
             uint64_t uint64_t_size
-        );                                                                                                                              
+        );  
+
+        public void test_pointer_edl_ocalls();
+        public void ecall_pointer_assert_all_called();                                                                                                                            
     };
 
     untrusted {
@@ -1205,6 +1208,8 @@ enclave {
             uint16_t uint16_t_size,
             uint32_t uint32_t_size,
             uint64_t uint64_t_size
-        );                                                                                                                                 
+        );      
+
+        void ocall_pointer_assert_all_called();                                                                                                                           
     };    
 };
