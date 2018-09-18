@@ -121,10 +121,13 @@ static oe_result_t _get_crl_distribution_point(oe_cert_t* cert, char** url)
         if (num_urls != 1)
             OE_RAISE(OE_FAILURE);
 
-        // Include null character in length.
-        result = oe_safe_add_sizet(strlen(urls[0]), 1, &url_length);
-        if (result != OE_OK)
-            goto done;
+        // Sanity check. No URL should be this large.
+        url_length = strlen(urls[0]);
+        if (url_length > OE_INT16_MAX)
+            OE_RAISE(OE_OUT_OF_BOUNDS);
+
+        // Add +1 to include null character.
+        url_length++;
 
         *url = (char*)malloc(url_length);
         if (*url == NULL)

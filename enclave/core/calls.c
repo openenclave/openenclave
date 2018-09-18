@@ -494,12 +494,10 @@ oe_result_t oe_call_host(const char* func, void* args_in)
         size_t len = oe_strlen(func);
         size_t total_len;
 
-        if (len == OE_SIZE_MAX)
-            OE_THROW(OE_INTEGER_OVERFLOW);
-
+        OE_STATIC_ASSERT(sizeof(oe_call_host_args_t) < OE_SIZE_MAX);
         OE_TRY(
             oe_safe_add_sizet(
-                len + 1, sizeof(oe_call_host_args_t), &total_len));
+                len, 1 + sizeof(oe_call_host_args_t), &total_len));
 
         if (!(args = oe_host_alloc_for_call_host(total_len)))
         {
