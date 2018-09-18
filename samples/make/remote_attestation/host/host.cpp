@@ -110,8 +110,7 @@ int main(int argc, const char* argv[])
     }
 
     printf("\n\n=====Sending encrypted message to second enclave=====\n");
-    result =
-        ProcessEncryptedMessage(enclave2, encrypted_msg, encrypted_msg_size);
+    result = ProcessEncryptedMessage(enclave2, encrypted_msg, encrypted_msg_size);
     if (result != OE_OK)
     {
         printf("ProcessEncryptedMessage failed. %s", oe_result_str(result));
@@ -132,8 +131,7 @@ int main(int argc, const char* argv[])
     }
 
     printf("\n\n=====Sending encrypted message to first enclave=====\n");
-    result =
-        ProcessEncryptedMessage(enclave1, encrypted_msg, encrypted_msg_size);
+    result = ProcessEncryptedMessage(enclave1, encrypted_msg, encrypted_msg_size);
     if (result != OE_OK)
     {
         printf("ProcessEncryptedMessage failed. %s", oe_result_str(result));

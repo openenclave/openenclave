@@ -84,8 +84,7 @@ OE_ECALL void VerifyQuote(void* args_)
     oe_secure_zero_fill(enc_tcb_info_json, TCB_INFO_JSON_SIZE_MAX);
 
     // Take snapshot of host_arg to prevent TOCTOU issues.
-    OE_CHECK(
-        oe_copy_input(enc_arg, host_arg, sizeof(*enc_arg), sizeof(*enc_arg)));
+    OE_CHECK(oe_copy_input(enc_arg, host_arg, sizeof(*enc_arg), sizeof(*enc_arg)));
 
     // TODO: How to manage memory for all these buffers?
     // Max size vs actual size vs where to allocate, function stack

@@ -5,10 +5,10 @@
 #include <string.h>
 #include "log.h"
 
-Attestation::Attestation(Crypto* crypto, uint8_t* enclave_mr_signer)
+Attestation::Attestation(Crypto* crypto, uint8_t* enclave_mrsigner)
 {
     m_p_crypto = crypto;
-    m_p_enclave_mr_signer = enclave_mr_signer;
+    m_enclave_mrsigner = enclave_mrsigner;
 }
 
 /**
@@ -89,8 +89,7 @@ bool Attestation::AttestRemoteReport(
 
     // 1)  Validate the report's trustworthiness
     // Verify the remote report to ensure its authenticity.
-    result =
-        oe_verify_report(remote_report, remote_report_size, &parsed_report);
+    result = oe_verify_report(remote_report, remote_report_size, &parsed_report);
     if (result != OE_OK)
     {
         ENC_DEBUG_PRINTF(
@@ -102,8 +101,7 @@ bool Attestation::AttestRemoteReport(
     // signed_id is the hash of the public signing key that was used to sign an
     // enclave.
     // Check that the enclave was signed by an trusted entity.
-    if (memcmp(parsed_report.identity.signer_id, m_p_enclave_mr_signer, 32) !=
-        0)
+    if (memcmp(parsed_report.identity.signer_id, m_enclave_mrsigner, 32) != 0)
     {
         ENC_DEBUG_PRINTF("identity.signer_id checking failed.");
         ENC_DEBUG_PRINTF(
@@ -114,7 +112,7 @@ bool Attestation::AttestRemoteReport(
             ENC_DEBUG_PRINTF(
                 "m_pEnclaveMRSigner[%d]=0x%0x\n",
                 i,
-                (uint8_t)m_p_enclave_mr_signer[i]);
+                (uint8_t)m_enclave_mrsigner[i]);
         }
 
         ENC_DEBUG_PRINTF("\n\n\n");
@@ -129,7 +127,7 @@ bool Attestation::AttestRemoteReport(
 
         ENC_DEBUG_PRINTF("\n\n\n");
 
-        ENC_DEBUG_PRINTF("m_pEnclaveMRSigner %s", m_p_enclave_mr_signer);
+        ENC_DEBUG_PRINTF("m_pEnclaveMRSigner %s", m_enclave_mrsigner);
         goto exit;
     }
 

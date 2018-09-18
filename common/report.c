@@ -47,8 +47,7 @@ static void _oe_parse_sgx_report_body(
         sizeof(report_body->mrsigner));
 
     parsed_report->identity.product_id[0] = report_body->isvprodid & 0xFF;
-    parsed_report->identity.product_id[1] =
-        (report_body->isvprodid >> 8) & 0xFF;
+    parsed_report->identity.product_id[1] = (report_body->isvprodid >> 8) & 0xFF;
 
     /*
      * Set pointer fields.

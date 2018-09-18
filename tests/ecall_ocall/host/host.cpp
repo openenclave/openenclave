@@ -34,12 +34,8 @@ struct EnclaveWrap
         oe_result_t result;
 
         if ((result = oe_create_enclave(
-                 enclave_path,
-                 OE_ENCLAVE_TYPE_SGX,
-                 flags,
-                 NULL,
-                 0,
-                 &enclave)) != OE_OK)
+                 enclave_path, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) !=
+            OE_OK)
         {
             oe_put_err("oe_create_enclave(): result=%u", result);
             throw std::runtime_error("oe_create_enclave() failed");
@@ -292,9 +288,8 @@ OE_OCALL void CrossEnclaveCall(CrossEnclaveCallArg* arg)
         // Forward the call to the next enclave.
         OE_TEST(
             oe_call_enclave(
-                EnclaveWrap::Get(arg->enclave_id),
-                "EncCrossEnclaveCall",
-                arg) == OE_OK);
+                EnclaveWrap::Get(arg->enclave_id), "EncCrossEnclaveCall", arg) ==
+            OE_OK);
     }
     else
     {

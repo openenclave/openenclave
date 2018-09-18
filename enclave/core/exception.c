@@ -311,10 +311,7 @@ void _oe_exception_dispatcher(oe_context_t* oe_context)
 **
 **==============================================================================
 */
-void _oe_virtual_exception_dispatcher(
-    TD* td,
-    uint64_t arg_in,
-    uint64_t* arg_out)
+void _oe_virtual_exception_dispatcher(TD* td, uint64_t arg_in, uint64_t* arg_out)
 {
     SSA_Info ssa_info;
     oe_memset(&ssa_info, 0, sizeof(SSA_Info));

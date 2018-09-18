@@ -268,17 +268,13 @@ int EncryptFile(
         bytes_left = src_data_size - leftoverbytes;
     }
     requested_read_size = DATA_BLOCK_SIZE;
-    cout << "Host: start " << (_do_encrypt ? "encrypting" : "decrypting")
-         << endl;
-    while ((bytes_read = fread(
-                read_buffer,
-                sizeof(unsigned char),
-                requested_read_size,
-                src_file)) &&
-           bytes_read > 0)
+    cout << "Host: start " << (_do_encrypt ? "encrypting" : "decrypting") << endl;
+    while (
+        (bytes_read = fread(
+             read_buffer, sizeof(unsigned char), requested_read_size, src_file)) &&
+        bytes_read > 0)
     {
-        result =
-            EncryptBlock(_do_encrypt, read_buffer, write_buffer, bytes_read);
+        result = EncryptBlock(_do_encrypt, read_buffer, write_buffer, bytes_read);
         if (result != OE_OK)
         {
             ret = 1;
@@ -384,8 +380,7 @@ int EncryptFile(
         }
     }
 
-    cout << "Host: done  " << (_do_encrypt ? "encrypting" : "decrypting")
-         << endl;
+    cout << "Host: done  " << (_do_encrypt ? "encrypting" : "decrypting") << endl;
 
     // close files
     fclose(src_file);

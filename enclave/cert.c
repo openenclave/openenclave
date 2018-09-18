@@ -120,10 +120,7 @@ typedef struct _cert
 
 OE_STATIC_ASSERT(sizeof(Cert) <= sizeof(oe_cert_t));
 
-OE_INLINE void _cert_init(
-    Cert* impl,
-    mbedtls_x509_crt* cert,
-    Referent* referent)
+OE_INLINE void _cert_init(Cert* impl, mbedtls_x509_crt* cert, Referent* referent)
 {
     impl->magic = OE_CERT_MAGIC;
     impl->cert = cert;

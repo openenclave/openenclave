@@ -563,11 +563,7 @@ oe_result_t AESMInitQuote(
         /* Unpack epid_group_id */
         OE_TRY(
             _unpack_length_delimited(
-                &response,
-                &pos,
-                3,
-                epid_group_id,
-                sizeof(sgx_epid_group_id_t)));
+                &response, &pos, 3, epid_group_id, sizeof(sgx_epid_group_id_t)));
     }
 
     result = OE_OK;

@@ -29,8 +29,7 @@ OE_ECALL void GetPublicKey(GetPublicKeyArgs* arg)
     uint8_t* quote = new uint8_t[OE_MAX_REPORT_SIZE];
     size_t quote_size = OE_MAX_REPORT_SIZE;
 
-    if (GenerateQuote(
-            pem_public_key, sizeof(pem_public_key), quote, &quote_size))
+    if (GenerateQuote(pem_public_key, sizeof(pem_public_key), quote, &quote_size))
     {
         // Copy the quote to the host memory.
         uint8_t* host_quote = (uint8_t*)oe_host_malloc(quote_size);
@@ -39,8 +38,7 @@ OE_ECALL void GetPublicKey(GetPublicKeyArgs* arg)
         // Create return parameter.
         QuotedPublicKey* quoted_public_key =
             (QuotedPublicKey*)oe_host_malloc(sizeof(QuotedPublicKey));
-        memcpy(
-            quoted_public_key->pem_key, pem_public_key, sizeof(pem_public_key));
+        memcpy(quoted_public_key->pem_key, pem_public_key, sizeof(pem_public_key));
         quoted_public_key->quote = host_quote;
         quoted_public_key->quote_size = quote_size;
 
@@ -111,8 +109,7 @@ OE_ECALL void StorePublicKey(StorePublicKeyArgs* arg)
 }
 
 // Arbitrary test data exchanged by the enclaves. The first enclave sends its
-// g_test_data (encrypted) to the second enclave. The second enclave decrypts
-// the
+// g_test_data (encrypted) to the second enclave. The second enclave decrypts the
 // received data and adds it to its own g_test_data, and sends it back to the
 // first enclave.
 uint8_t g_test_data[16] =

@@ -193,9 +193,7 @@ oe_result_t oe_get_report(
     header->report_size = *report_buffer_size;
     OE_CHECK(
         oe_safe_add_u64(
-            *report_buffer_size,
-            sizeof(oe_report_header_t),
-            report_buffer_size));
+            *report_buffer_size, sizeof(oe_report_header_t), report_buffer_size));
     result = OE_OK;
 
 done:

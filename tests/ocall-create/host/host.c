@@ -66,9 +66,7 @@ static void _test_ecall_ocall(oe_enclave_t* enclave)
     OE_TEST(num == 2048);
 }
 
-static void _test_create_enclave_ocall_for_host(
-    const char* path,
-    uint32_t flags)
+static void _test_create_enclave_ocall_for_host(const char* path, uint32_t flags)
 {
     printf("\n_TestCreateEnclaveOCallForHost\n");
 
@@ -113,9 +111,7 @@ static void _test_create_enclave_ocall_for_host(
         oe_put_err("oe_terminate_enclave(): result=%u", result);
 }
 
-static void _test_create_enclave_ocall_for_enclave(
-    const char* path,
-    uint32_t flags)
+static void _test_create_enclave_ocall_for_enclave(const char* path, uint32_t flags)
 {
     printf("\n_TestCreateEnclaveOCallForEnclave\n");
 

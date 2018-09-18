@@ -246,9 +246,8 @@ oe_result_t _oe_get_remote_report(
         OE_RAISE(OE_UNEXPECTED);
 
     if (oe_memcmp(
-            &sgx_quote->report_body,
-            &sgx_report.body,
-            sizeof(sgx_report.body)) != 0)
+            &sgx_quote->report_body, &sgx_report.body, sizeof(sgx_report.body)) !=
+        0)
         OE_RAISE(OE_UNEXPECTED);
 
     result = OE_OK;
@@ -311,9 +310,7 @@ oe_result_t oe_get_report(
     header->report_size = *report_buffer_size;
     OE_CHECK(
         oe_safe_add_u64(
-            *report_buffer_size,
-            sizeof(oe_report_header_t),
-            report_buffer_size));
+            *report_buffer_size, sizeof(oe_report_header_t), report_buffer_size));
     result = OE_OK;
 
 done:

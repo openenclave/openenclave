@@ -112,17 +112,13 @@ static bool TestBasicAbort(const char* enclave_name)
 
     const uint32_t flags = oe_get_create_flags();
     const char* function_names[] = {"RegularAbort",
-                                    "GenerateUnhandledHardwareException"};
+                                   "GenerateUnhandledHardwareException"};
 
     for (uint32_t i = 0; i < OE_COUNTOF(function_names); i++)
     {
         if ((result = oe_create_enclave(
-                 enclave_name,
-                 OE_ENCLAVE_TYPE_SGX,
-                 flags,
-                 NULL,
-                 0,
-                 &enclave)) != OE_OK)
+                 enclave_name, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) !=
+            OE_OK)
         {
             oe_put_err("oe_create_enclave(): result=%u", result);
             return false;
@@ -169,12 +165,8 @@ static bool TestMultipleThreadAbort(const char* enclave_name)
     for (uint32_t i = 0; i < function_names.size(); i++)
     {
         if ((result = oe_create_enclave(
-                 enclave_name,
-                 OE_ENCLAVE_TYPE_SGX,
-                 flags,
-                 NULL,
-                 0,
-                 &enclave)) != OE_OK)
+                 enclave_name, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) !=
+            OE_OK)
         {
             oe_put_err("oe_create_enclave(): result=%u", result);
             return false;

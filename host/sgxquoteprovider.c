@@ -144,8 +144,7 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
         OE_RAISE(OE_QUOTE_PROVIDER_CALL_ERROR);
     }
 
-    if (revocation_info->tcb_info == NULL ||
-        revocation_info->tcb_info_size == 0)
+    if (revocation_info->tcb_info == NULL || revocation_info->tcb_info_size == 0)
     {
         OE_TRACE_INFO("tcb_info is NULL.\n");
         OE_RAISE(OE_INVALID_REVOCATION_INFO);

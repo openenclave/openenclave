@@ -47,7 +47,7 @@ static oe_result_t _sgx_get_quote_size_from_aesm(
     oe_result_t result = OE_FAILURE;
     size_t signature_size = 0;
     uint32_t n = 0;
-    const sgx_sig_rl_t* sigrl = (const sgx_sig_rl_t*)signature_revocation_list;
+    const sgx_sig_rl_t* sig_rl = (const sgx_sig_rl_t*)signature_revocation_list;
 
     if (quote_size)
         *quote_size = 0;
@@ -55,16 +55,16 @@ static oe_result_t _sgx_get_quote_size_from_aesm(
     if (!quote_size)
         goto done;
 
-    if (sigrl)
+    if (sig_rl)
     {
-        if (sigrl->protocol_version != SGX_SE_EPID_SIG_RL_VERSION ||
-            sigrl->epid_identifier != SGX_SE_EPID_SIG_RL_ID)
+        if (sig_rl->protocol_version != SGX_SE_EPID_SIG_RL_VERSION ||
+            sig_rl->epid_identifier != SGX_SE_EPID_SIG_RL_ID)
         {
             goto done;
         }
 
-        assert(sizeof(sigrl->sigrl.n2) == sizeof(uint32_t));
-        const void* tmp = &sigrl->sigrl.n2;
+        assert(sizeof(sig_rl->sig_rl.n2) == sizeof(uint32_t));
+        const void* tmp = &sig_rl->sig_rl.n2;
         n = oe_byte_swap32(*(uint32_t*)tmp);
     }
 
@@ -73,8 +73,8 @@ static oe_result_t _sgx_get_quote_size_from_aesm(
         sizeof(sgx_epid_signature_t) + (n * sizeof(sgx_epid_nr_proof_t));
 
     *quote_size = sizeof(sgx_quote_t) + sizeof(sgx_wrap_key_t) +
-                  SGX_QUOTE_IV_SIZE + sizeof(uint32_t) + signature_size +
-                  SGX_MAC_SIZE;
+                 SGX_QUOTE_IV_SIZE + sizeof(uint32_t) + signature_size +
+                 SGX_MAC_SIZE;
 
     result = OE_OK;
 

@@ -397,7 +397,7 @@ static oe_result_t _calculate_enclave_size(
 
     /* Compute end of the enclave */
     *enclave_end = segments_size + reloc_size + ecall_size + heap_size +
-                   (num_bindings * (stack_size + control_size));
+                  (num_bindings * (stack_size + control_size));
 
     /* Calculate the total size of the enclave */
     *enclave_size = oe_round_u64_to_pow2(*enclave_end);
@@ -567,8 +567,7 @@ static oe_result_t _add_pages(
         if (Elf64_FindDynamicSymbolByName(elf, "oe_base_reloc_page", &sym) != 0)
             OE_RAISE(OE_FAILURE);
 
-        OE_CHECK(
-            _patch_page(segpages, nsegpages, sym.st_value, base_reloc_page));
+        OE_CHECK(_patch_page(segpages, nsegpages, sym.st_value, base_reloc_page));
     }
 
     /* Patch the "oe_num_reloc_pages" */
@@ -590,8 +589,7 @@ static oe_result_t _add_pages(
         if (Elf64_FindDynamicSymbolByName(elf, "oe_base_ecall_page", &sym) != 0)
             OE_RAISE(OE_FAILURE);
 
-        OE_CHECK(
-            _patch_page(segpages, nsegpages, sym.st_value, base_ecall_page));
+        OE_CHECK(_patch_page(segpages, nsegpages, sym.st_value, base_ecall_page));
     }
 
     /* Patch the "oe_num_ecall_pages" */
@@ -613,8 +611,7 @@ static oe_result_t _add_pages(
         if (Elf64_FindDynamicSymbolByName(elf, "oe_base_heap_page", &sym) != 0)
             OE_RAISE(OE_FAILURE);
 
-        OE_CHECK(
-            _patch_page(segpages, nsegpages, sym.st_value, base_heap_page));
+        OE_CHECK(_patch_page(segpages, nsegpages, sym.st_value, base_heap_page));
     }
 
     /* Patch the "oe_num_heap_pages" */
@@ -670,8 +667,7 @@ static oe_result_t _add_pages(
 
     /* Add the ECALL pages */
     OE_CHECK(
-        _add_ecall_pages(
-            context, enclave_addr, ecall_data, ecall_size, &vaddr));
+        _add_ecall_pages(context, enclave_addr, ecall_data, ecall_size, &vaddr));
 
     /* Create the heap */
     OE_CHECK(_add_heap_pages(context, enclave_addr, &vaddr, nheappages));

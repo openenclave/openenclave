@@ -51,10 +51,10 @@ bool GenerateQuote(
 // The SHA-256 hash of the public key in the private.pem file used to sign the
 // enclave. This value is populated in the signer_id sub-field of a parsed
 // oe_report_t's identity field.
-const uint8_t g_mr_signer[] = {0xCA, 0x9A, 0xD7, 0x33, 0x14, 0x48, 0x98, 0x0A,
-                               0xA2, 0x88, 0x90, 0xCE, 0x73, 0xE4, 0x33, 0x63,
-                               0x83, 0x77, 0xF1, 0x79, 0xAB, 0x44, 0x56, 0xB2,
-                               0xFE, 0x23, 0x71, 0x93, 0x19, 0x3A, 0x8D, 0x0A};
+const uint8_t g_mrsigner[] = {0xCA, 0x9A, 0xD7, 0x33, 0x14, 0x48, 0x98, 0x0A,
+                              0xA2, 0x88, 0x90, 0xCE, 0x73, 0xE4, 0x33, 0x63,
+                              0x83, 0x77, 0xF1, 0x79, 0xAB, 0x44, 0x56, 0xB2,
+                              0xFE, 0x23, 0x71, 0x93, 0x19, 0x3A, 0x8D, 0x0A};
 /**
  * Attest the given quote and accompanying data. The quote is first attested
  * using the oe_verify_report API. This ensures the authenticity of the enclave
@@ -91,9 +91,8 @@ bool AttestQuote(
     // enclave.
     // Check that the enclave was signed by an trusted entity.
     if (memcmp(
-            parsed_report.identity.signer_id,
-            g_mr_signer,
-            sizeof(g_mr_signer)) != 0)
+            parsed_report.identity.signer_id, g_mrsigner, sizeof(g_mrsigner)) !=
+        0)
         return false;
 
     // Check the enclave's product id and security version

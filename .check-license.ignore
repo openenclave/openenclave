@@ -84,4 +84,3 @@ VERSION
 ./tests/libunwind/tests.supported
 ./tests/libunwind/tests.unsupported
 *Jenkinsfile
-./camel2snake.log

@@ -24,8 +24,7 @@ static oe_result_t _oe_get_report_key(
     sgx_key_request_t sgx_key_request = {0};
 
     sgx_key_request.key_name = SGX_KEYSELECT_REPORT;
-    oe_memcpy(
-        sgx_key_request.key_id, sgx_report->keyid, sizeof(sgx_report->keyid));
+    oe_memcpy(sgx_key_request.key_id, sgx_report->keyid, sizeof(sgx_report->keyid));
 
     OE_CHECK(oe_get_key(&sgx_key_request, sgx_key));
     result = OE_OK;
@@ -53,8 +52,8 @@ oe_result_t oe_verify_report(
     sgx_report_t* sgx_report = NULL;
 
     const size_t aes_cmac_length = sizeof(sgx_key);
-    OE_AESCMAC report_aescmac = {{0}};
-    OE_AESCMAC computed_aescmac = {{0}};
+    oe_aes_cmac_t report_aes_cmac = {{0}};
+    oe_aes_cmac_t computed_aes_cmac = {{0}};
 
     // Ensure that the report is parseable before using the header.
     OE_CHECK(oe_parse_report(report, report_size, &oe_report));
@@ -84,13 +83,13 @@ oe_result_t oe_verify_report(
                 sizeof(sgx_key),
                 (uint8_t*)&sgx_report->body,
                 sizeof(sgx_report->body),
-                &computed_aescmac));
+                &computed_aes_cmac));
 
         // Fetch cmac from sgx_report.
-        // Note: sizeof(sgx_report->mac) <= sizeof(OE_AESCMAC).
-        oe_secure_memcpy(&report_aescmac, sgx_report->mac, aes_cmac_length);
+        // Note: sizeof(sgx_report->mac) <= sizeof(oe_aes_cmac_t).
+        oe_secure_memcpy(&report_aes_cmac, sgx_report->mac, aes_cmac_length);
 
-        if (!oe_secure_aes_cmac_equal(&computed_aescmac, &report_aescmac))
+        if (!oe_secure_aes_cmac_equal(&computed_aes_cmac, &report_aes_cmac))
             OE_RAISE(OE_VERIFY_FAILED);
     }
     else
@@ -119,8 +118,8 @@ static oe_result_t _safe_copy_verify_report_args(
     oe_result_t result = OE_UNEXPECTED;
     oe_verify_report_args_t* unsafe_arg = (oe_verify_report_args_t*)arg_in;
 
-    if (!unsafe_arg ||
-        !oe_is_outside_enclave(unsafe_arg, sizeof(*unsafe_arg)) || !buffer)
+    if (!unsafe_arg || !oe_is_outside_enclave(unsafe_arg, sizeof(*unsafe_arg)) ||
+        !buffer)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Always set output.

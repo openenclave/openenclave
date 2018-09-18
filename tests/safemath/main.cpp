@@ -29,7 +29,7 @@ bool _check_8_bit_signed(oe_result_t result, int num, int8_t num_s8)
     return true;
 }
 
-void _test8_bit()
+void _test_8_bit()
 {
     /* Unsigned tests. */
     for (int a = 0; a <= OE_UINT8_MAX; a++)
@@ -820,7 +820,7 @@ void _test_signed()
 int main(int argc, const char* argv[])
 {
     /* For 8-bit math, we can quickly exhaust all combinations. */
-    _test8_bit();
+    _test_8_bit();
 
     /* For the other sizes, we will test selected cases. */
     _test_unsigned();

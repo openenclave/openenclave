@@ -576,8 +576,7 @@ oe_result_t oe_sgx_load_enclave_data(
 
         /* Set page access permissions */
         {
-            uint32_t prot =
-                _make_memory_protect_param(flags, true /*simulate*/);
+            uint32_t prot = _make_memory_protect_param(flags, true /*simulate*/);
 
 #if defined(__linux__)
             if (mprotect((void*)addr, OE_PAGE_SIZE, prot) != 0)
@@ -622,8 +621,7 @@ oe_result_t oe_sgx_load_enclave_data(
         SIZE_T num_bytes = 0;
         DWORD enclave_error;
 
-        DWORD protect =
-            _make_memory_protect_param(flags, false /*not simulate*/);
+        DWORD protect = _make_memory_protect_param(flags, false /*not simulate*/);
         if (!extend)
             protect |= PAGE_ENCLAVE_UNVALIDATED;
 

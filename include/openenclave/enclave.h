@@ -307,14 +307,12 @@ void __oe_assert_fail(
  * enclave type. For SGX, this can be sgx_target_info_t for local attestation.
  * @param opt_params_size The size of the **opt_params** buffer.
  * @param report_buffer The buffer to where the resulting report will be copied.
- * @param report_buffer_size The size of the **report** buffer. This is set to
- * the
+ * @param report_buffer_size The size of the **report** buffer. This is set to the
  * required size of the report buffer on return.
  *
  * @retval OE_OK The report was successfully created.
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
- * @retval OE_BUFFER_TOO_SMALL The **report_buffer** buffer is NULL or too
- * small.
+ * @retval OE_BUFFER_TOO_SMALL The **report_buffer** buffer is NULL or too small.
  * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
  *
  */
@@ -332,8 +330,7 @@ oe_result_t oe_get_report(
  *
  * @param report The buffer containing the report to parse.
  * @param report_size The size of the **report** buffer.
- * @param parsed_report The **oe_report_t** structure to populate with the
- * report
+ * @param parsed_report The **oe_report_t** structure to populate with the report
  * properties in a standard format. The *parsed_report* holds pointers to fields
  * within the supplied *report* and must not be used beyond the lifetime of the
  * *report*.
@@ -405,8 +402,7 @@ typedef enum _oe_seal_policy {
 * to key_buffer is set to it.
 * @param key_info Optional buffer for the enclave-specific key information which
 * can be used to retrieve the same key later, on a newer security version.
-* @param key_info_size The size of the **key_info** buffer. If this is too
-small,
+* @param key_info_size The size of the **key_info** buffer. If this is too small,
 * this function sets it to the required size and returns OE_BUFFER_TOO_SMALL.
 * When this function success, the number of bytes written to key_info is set to
 * it.

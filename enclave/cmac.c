@@ -15,7 +15,7 @@ oe_result_t oe_aes_cmac_sign(
     size_t key_size,
     const uint8_t* message,
     size_t message_length,
-    OE_AESCMAC* aes_cmac)
+    oe_aes_cmac_t* aes_cmac)
 {
     oe_result_t result = OE_UNEXPECTED;
     const mbedtls_cipher_info_t* info = NULL;

@@ -332,8 +332,8 @@ typedef struct sgx_ssa_gpr_t
     uint64_t urbp;
     sgx_exit_info exit_info;
     uint32_t reserved;
-    uint64_t fsbase;
-    uint64_t gsbase;
+    uint64_t fs_base;
+    uint64_t gs_base;
 } sgx_ssa_gpr_t, *PSGX_SsaGpr;
 
 /*
@@ -938,7 +938,7 @@ typedef struct _sgx_sig_rl
     uint16_t epid_identifier;
 
     /* Signature revocation list implementation */
-    sgx_epid_sig_rl_t sigrl;
+    sgx_epid_sig_rl_t sig_rl;
 
 } sgx_sig_rl_t;
 OE_PACK_END

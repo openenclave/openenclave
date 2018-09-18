@@ -34,7 +34,7 @@ struct AbortStatusEncRecursionArg
     unsigned flow_id;         // In
     unsigned recursions_left; // InOut
     unsigned initial_count;   // InOut
-    uint32_t crc;             // InOut
+    uint32_t crc;            // InOut
 };
 
 #endif /* _stdc_args_h */

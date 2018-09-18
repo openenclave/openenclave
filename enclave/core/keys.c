@@ -10,9 +10,7 @@
 OE_STATIC_ASSERT(sizeof(oe_seal_policy_t) == sizeof(unsigned int));
 
 /* The EGETKEY wrapper. */
-uint64_t oe_egetkey(
-    const sgx_key_request_t* sgx_key_request,
-    sgx_key_t* sgx_key);
+uint64_t oe_egetkey(const sgx_key_request_t* sgx_key_request, sgx_key_t* sgx_key);
 
 /*
  * The get key implementation that requests the key from processor and convert

@@ -12,18 +12,18 @@
 OE_EXTERNC_BEGIN
 
 /* Opaque representation of an AES-CMAC */
-typedef struct _OE_AESCMAC
+typedef struct _oe_aes_cmac
 {
     /* Internal implementation */
     uint64_t impl[4];
-} OE_AESCMAC;
+} oe_aes_cmac_t;
 
 /**
  * oe_secure_aes_cmac_equal does a secure constant time comparison of two
- * OE_AESCMAC instances. Returns 1 if equal and 0 otherwise.
+ * oe_aes_cmac_t instances. Returns 1 if equal and 0 otherwise.
  */
 OE_INLINE uint8_t
-oe_secure_aes_cmac_equal(const OE_AESCMAC* a, const OE_AESCMAC* b)
+oe_secure_aes_cmac_equal(const oe_aes_cmac_t* a, const oe_aes_cmac_t* b)
 {
     return oe_constant_time_mem_equal(a, b, sizeof(*a)) ? 1 : 0;
 }
@@ -44,7 +44,7 @@ oe_result_t oe_aes_cmac_sign(
     size_t key_size,
     const uint8_t* message,
     size_t message_length,
-    OE_AESCMAC* aes_cmac);
+    oe_aes_cmac_t* aes_cmac);
 
 OE_EXTERNC_END
 

@@ -79,8 +79,8 @@ typedef struct oe_sgx_enclave_properties_t
 #define OE_INFO_SECTION_BEGIN __attribute__((section(".oeinfo")))
 #define OE_INFO_SECTION_END
 
-#define OE_MAKE_ATTRIBUTES(_allow_debug_) \
-    (OE_SGX_FLAGS_MODE64BIT | (_allow_debug_ ? OE_SGX_FLAGS_DEBUG : 0))
+#define OE_MAKE_ATTRIBUTES(ALLOW_DEBUG) \
+    (OE_SGX_FLAGS_MODE64BIT | (ALLOW_DEBUG ? OE_SGX_FLAGS_DEBUG : 0))
 
 /**
  * @endcond
@@ -105,17 +105,17 @@ typedef struct oe_sgx_enclave_properties_t
  * @param \_heap_page_count\_ Number of heap pages to allocate in the enclave
  * @param \_stack_page_count\_ Number of stack pages per thread to reserve in
  * the enclave
- * @param \_tcs_count\_ Number of concurrent threads in an enclave to support
+ * @param \TCS_COUNT\_ Number of concurrent threads in an enclave to support
  */
 // Note: disable clang-format since it badly misformats this macro
 // clang-format off
 
 #define OE_SET_ENCLAVE_SGX(                                               \
-    _product_id_,                                                          \
-    _security_version_,                                                    \
-    _allow_debug_,                                                         \
-    _heap_page_count_,                                                      \
-    _stack_page_count_,                                                     \
+    PRODUCT_ID,                                                          \
+    SECURITY_VERSION,                                                    \
+    ALLOW_DEBUG,                                                         \
+    HEAP_PAGE_COUNT,                                                      \
+    STACK_PAGE_COUNT,                                                     \
     _tcs_count_)                                                           \
     OE_INFO_SECTION_BEGIN                                                 \
     OE_EXPORT_CONST oe_sgx_enclave_properties_t oe_enclave_properties_sgx = \
@@ -126,17 +126,17 @@ typedef struct oe_sgx_enclave_properties_t
             .enclave_type = OE_ENCLAVE_TYPE_SGX,                          \
             .size_settings =                                              \
             {                                                             \
-                .num_heap_pages = _heap_page_count_,                        \
-                .num_stack_pages = _stack_page_count_,                      \
+                .num_heap_pages = HEAP_PAGE_COUNT,                        \
+                .num_stack_pages = STACK_PAGE_COUNT,                      \
                 .num_tcs = _tcs_count_                                     \
             }                                                             \
         },                                                                \
         .config =                                                         \
         {                                                                 \
-            .product_id = _product_id_,                                    \
-            .security_version = _security_version_,                        \
+            .product_id = PRODUCT_ID,                                    \
+            .security_version = SECURITY_VERSION,                        \
             .padding = 0,                                                 \
-            .attributes = OE_MAKE_ATTRIBUTES(_allow_debug_)                \
+            .attributes = OE_MAKE_ATTRIBUTES(ALLOW_DEBUG)                \
         },                                                                \
         .sigstruct =                                                      \
         {                                                                 \

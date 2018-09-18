@@ -145,14 +145,12 @@ oe_result_t oe_call_enclave(
  * enclave type. For SGX, this can be sgx_target_info_t for local attestation.
  * @param opt_params_size The size of the **opt_params** buffer.
  * @param report_buffer The buffer to where the resulting report will be copied.
- * @param report_buffer_size The size of the **report** buffer. This is set to
- * the
+ * @param report_buffer_size The size of the **report** buffer. This is set to the
  * required size of the report buffer on return.
  *
  * @retval OE_OK The report was successfully created.
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
- * @retval OE_BUFFER_TOO_SMALL The **report_buffer** buffer is NULL or too
- * small.
+ * @retval OE_BUFFER_TOO_SMALL The **report_buffer** buffer is NULL or too small.
  * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
  *
  */
@@ -169,8 +167,7 @@ oe_result_t oe_get_report(
  *
  * @param report The buffer containing the report to parse.
  * @param report_size The size of the **report** buffer.
- * @param parsed_report The **oe_report_t** structure to populate with the
- * report
+ * @param parsed_report The **oe_report_t** structure to populate with the report
  * properties in a standard format. The *parsed_report* holds pointers to fields
  * within the supplied *report* and must not be used beyond the lifetime of the
  * *report*.

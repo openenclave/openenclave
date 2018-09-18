@@ -259,10 +259,7 @@ static void _handle_exit(oe_code_t code, uint16_t func, uint64_t arg)
     oe_exit(oe_make_call_arg1(code, func, 0, OE_OK), arg);
 }
 
-void _oe_virtual_exception_dispatcher(
-    TD* td,
-    uint64_t arg_in,
-    uint64_t* arg_out);
+void _oe_virtual_exception_dispatcher(TD* td, uint64_t arg_in, uint64_t* arg_out);
 
 /*
 **==============================================================================

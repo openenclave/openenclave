@@ -15,13 +15,13 @@
 **
 **     LONGLONG get_posix_to_windows_epoch_ticks()
 **     {
-**         SYSTEMTIME st = { .w_year = 1970, .w_month = 1, .w_day = 1 };
+**         SYSTEMTIME st = { .wYear = 1970, .wMonth = 1, .wDay = 1 };
 **         FILETIME ft;
 **         ULARGE_INTEGER x;
 **
 **         SystemTimeToFileTime(&st, &ft);
-**         x.u.LowPart = ft.dw_low_date_time;
-**         x.u.HighPart = ft.dw_high_date_time;
+**         x.u.LowPart = ft.dwLowDateTime;
+**         x.u.HighPart = ft.dwHighDateTime;
 **
 **         return x.QuadPart;
 **     }
@@ -38,8 +38,8 @@ static uint64_t _time()
     const LONGLONG TICKS_PER_MILLISECOND = 10000UL;
 
     GetSystemTimeAsFileTime(&ft);
-    x.u.LowPart = ft.dw_low_date_time;
-    x.u.HighPart = ft.dw_high_date_time;
+    x.u.LowPart = ft.dwLowDateTime;
+    x.u.HighPart = ft.dwHighDateTime;
     x.QuadPart -= POSIX_TO_WINDOWS_EPOCH_TICKS;
 
     return = x.QuadPart / TICKS_PER_MILLISECOND;

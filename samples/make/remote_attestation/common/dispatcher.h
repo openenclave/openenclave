@@ -13,7 +13,7 @@ using namespace std;
 typedef struct _enclave_config_data
 {
     uint8_t* enclave_secret_data;
-    uint8_t* enclave_mr_signer;
+    uint8_t* enclave_mrsigner;
 } EnclaveConfigData;
 
 class EcallDispatcher

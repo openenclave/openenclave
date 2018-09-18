@@ -73,10 +73,7 @@ OE_STATIC_ASSERT(
  * 3) If *p == 0x80, then the data is variable length and is terminated by two
  * zeros. We don't support this since Intel extensions are not variable length.
  */
-static oe_result_t _read_asn1_length(
-    uint8_t** itr,
-    uint8_t* end,
-    size_t* length)
+static oe_result_t _read_asn1_length(uint8_t** itr, uint8_t* end, size_t* length)
 {
     oe_result_t result = OE_INVALID_SGX_CERTIFICATE_EXTENSIONS;
     uint8_t* p = NULL;
@@ -344,8 +341,7 @@ static oe_result_t _read_enumeration_extension(
     size_t data_length = 0;
 
     OE_CHECK(
-        _read_extension(
-            itr, end, oid, SGX_ENUMERATION_TAG, &data, &data_length));
+        _read_extension(itr, end, oid, SGX_ENUMERATION_TAG, &data, &data_length));
 
     if (data_length != 1)
         OE_RAISE(OE_INVALID_SGX_CERTIFICATE_EXTENSIONS);
@@ -468,11 +464,7 @@ oe_result_t ParseSGXExtensions(
 
     OE_CHECK(
         _read_integer_extension_as_uint16(
-            "pce-svn",
-            TCB_PCESVN_OID,
-            &tcb_itr,
-            tcb_end,
-            &parsed_info->pce_svn));
+            "pce-svn", TCB_PCESVN_OID, &tcb_itr, tcb_end, &parsed_info->pce_svn));
 
     OE_CHECK(
         _read_octet_extension(

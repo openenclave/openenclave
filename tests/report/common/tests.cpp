@@ -66,9 +66,9 @@ oe_result_t VerifyReport(
 uint8_t g_unique_id[32];
 
 uint8_t g_signer_id[32] = {0xca, 0x9a, 0xd7, 0x33, 0x14, 0x48, 0x98, 0x0a,
-                           0xa2, 0x88, 0x90, 0xce, 0x73, 0xe4, 0x33, 0x63,
-                           0x83, 0x77, 0xf1, 0x79, 0xab, 0x44, 0x56, 0xb2,
-                           0xfe, 0x23, 0x71, 0x93, 0x19, 0x3a, 0x8d, 0xa};
+                          0xa2, 0x88, 0x90, 0xce, 0x73, 0xe4, 0x33, 0x63,
+                          0x83, 0x77, 0xf1, 0x79, 0xab, 0x44, 0x56, 0xb2,
+                          0xfe, 0x23, 0x71, 0x93, 0x19, 0x3a, 0x8d, 0xa};
 
 uint8_t g_product_id[16] = {0};
 
@@ -80,8 +80,7 @@ static bool CheckReportData(
     size_t report_data_size)
 {
     oe_report_t parsed_report = {0};
-    OE_TEST(
-        oe_parse_report(report_buffer, report_size, &parsed_report) == OE_OK);
+    OE_TEST(oe_parse_report(report_buffer, report_size, &parsed_report) == OE_OK);
 
     return (
         Memcmp(parsed_report.report_data, report_data, report_data_size) == 0);
@@ -103,8 +102,7 @@ static void ValidateReport(
 
     static bool first_time = true;
 
-    OE_TEST(
-        oe_parse_report(report_buffer, report_size, &parsed_report) == OE_OK);
+    OE_TEST(oe_parse_report(report_buffer, report_size, &parsed_report) == OE_OK);
 
     /* Validate header. */
     OE_TEST(parsed_report.type == OE_ENCLAVE_TYPE_SGX);
@@ -130,8 +128,7 @@ static void ValidateReport(
         OE_TEST(report_size == OE_LOCAL_REPORT_SIZE);
         sgx_report = (sgx_report_t*)header->report;
 
-        OE_TEST(
-            parsed_report.report_data == sgx_report->body.report_data.field);
+        OE_TEST(parsed_report.report_data == sgx_report->body.report_data.field);
         OE_TEST(parsed_report.report_data_size == sizeof(sgx_report_data_t));
         OE_TEST(parsed_report.enclave_report == (uint8_t*)&sgx_report->body);
         OE_TEST(parsed_report.enclave_report_size == sizeof(sgx_report_body_t));
@@ -220,8 +217,7 @@ TEST_FCN void TestLocalReport(void* args_)
         oe_result_t expected_result = OE_OK;
         report_size = 1024 * 1024;
         OE_TEST(
-            GetReport(0, NULL, 0, NULL, 0, report_buffer, &report_size) ==
-            OE_OK);
+            GetReport(0, NULL, 0, NULL, 0, report_buffer, &report_size) == OE_OK);
 
         if (expected_result == OE_OK)
         {
@@ -243,11 +239,7 @@ TEST_FCN void TestLocalReport(void* args_)
         if (expected_result == OE_OK)
         {
             ValidateReport(
-                report_buffer,
-                report_size,
-                false,
-                report_data,
-                report_data_size);
+                report_buffer, report_size, false, report_data, report_data_size);
 
             OE_TEST(
                 CheckReportData(
@@ -272,11 +264,7 @@ TEST_FCN void TestLocalReport(void* args_)
         if (expected_result == OE_OK)
         {
             ValidateReport(
-                report_buffer,
-                report_size,
-                false,
-                report_data,
-                report_data_size);
+                report_buffer, report_size, false, report_data, report_data_size);
         }
 
         report_size = 1024 * 1024;
@@ -318,8 +306,7 @@ TEST_FCN void TestLocalReport(void* args_)
 
         report_size = 1024 * 1024;
         OE_TEST(
-            GetReport(0, NULL, 0, NULL, 0, report_buffer, &report_size) ==
-            OE_OK);
+            GetReport(0, NULL, 0, NULL, 0, report_buffer, &report_size) == OE_OK);
         ValidateReport(
             report_buffer, report_size, false, zeros, OE_REPORT_DATA_SIZE);
 
@@ -428,11 +415,7 @@ TEST_FCN void TestRemoteReport(void* args_)
         if (expected_result == OE_OK)
         {
             ValidateReport(
-                report_buffer,
-                report_size,
-                true,
-                report_data,
-                report_data_size);
+                report_buffer, report_size, true, report_data, report_data_size);
             OE_TEST(
                 CheckReportData(
                     report_buffer,
@@ -455,11 +438,7 @@ TEST_FCN void TestRemoteReport(void* args_)
         if (expected_result == OE_OK)
         {
             ValidateReport(
-                report_buffer,
-                report_size,
-                true,
-                report_data,
-                report_data_size);
+                report_buffer, report_size, true, report_data, report_data_size);
         }
 
         report_size = sizeof(report_buffer);
@@ -543,8 +522,7 @@ TEST_FCN void TestParseReportNegative(void* args_)
     // 3. Report size greater than size of sgx_report_t but less than
     // sizeof(sgx_quote_t)
     OE_TEST(
-        oe_parse_report(
-            report_buffer, sizeof(sgx_quote_t) - 1, &parsed_report) ==
+        oe_parse_report(report_buffer, sizeof(sgx_quote_t) - 1, &parsed_report) ==
         OE_INVALID_PARAMETER);
 
     // 4. NULL parsed_report passed in.
@@ -554,10 +532,8 @@ TEST_FCN void TestParseReportNegative(void* args_)
 
     // Get a valid report and tweak fields.
     size_t report_size = OE_MAX_REPORT_SIZE;
-    OE_TEST(
-        GetReport(0, NULL, 0, NULL, 0, report_buffer, &report_size) == OE_OK);
-    OE_TEST(
-        oe_parse_report(report_buffer, report_size, &parsed_report) == OE_OK);
+    OE_TEST(GetReport(0, NULL, 0, NULL, 0, report_buffer, &report_size) == OE_OK);
+    OE_TEST(oe_parse_report(report_buffer, report_size, &parsed_report) == OE_OK);
 
     oe_report_header_t* header = (oe_report_header_t*)report_buffer;
 
@@ -567,18 +543,15 @@ TEST_FCN void TestParseReportNegative(void* args_)
         oe_parse_report(report_buffer, report_size, &parsed_report) ==
         OE_INVALID_PARAMETER);
     header->version--;
-    OE_TEST(
-        oe_parse_report(report_buffer, report_size, &parsed_report) == OE_OK);
+    OE_TEST(oe_parse_report(report_buffer, report_size, &parsed_report) == OE_OK);
 
     // 6. Header's report_size is invalid.
     // ie: report_size + sizeof(oe_report_header_t) != report_size
     header->report_size++;
     OE_TEST(
-        oe_parse_report(report_buffer, report_size, &parsed_report) ==
-        OE_FAILURE);
+        oe_parse_report(report_buffer, report_size, &parsed_report) == OE_FAILURE);
     header->report_size--;
-    OE_TEST(
-        oe_parse_report(report_buffer, report_size, &parsed_report) == OE_OK);
+    OE_TEST(oe_parse_report(report_buffer, report_size, &parsed_report) == OE_OK);
 
     // 7. Header's report_type is invalid.
     header->report_type = (oe_report_type_t)20;
@@ -596,8 +569,7 @@ static void GetSGXTargetInfo(sgx_target_info_t* sgx_target_info)
     oe_report_header_t* header = (oe_report_header_t*)report_buffer;
     sgx_report_t* sgx_report = (sgx_report_t*)header->report;
 
-    OE_TEST(
-        GetReport(0, NULL, 0, NULL, 0, report_buffer, &report_size) == OE_OK);
+    OE_TEST(GetReport(0, NULL, 0, NULL, 0, report_buffer, &report_size) == OE_OK);
 
     Memset(sgx_target_info, 0, sizeof(*sgx_target_info));
     Memcpy(

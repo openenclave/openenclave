@@ -21,8 +21,7 @@ bool is_outside_enclave(T* args)
     dispatcher.x(arg);
 
 // For this purpose of this example: demonstrating how to do remote attestation
-// g_enclave_secret_data is hardcoded as part of the enclave. In this sample,
-// the
+// g_enclave_secret_data is hardcoded as part of the enclave. In this sample, the
 // secret data is hard coded as part of the enclave binary. In a real world
 // enclave implementation, secrets are never hard coded in the enclave binary
 // since the enclave binary itself is not encrypted. Instead, secrets are
@@ -31,8 +30,7 @@ bool is_outside_enclave(T* args)
 // This g_enclave_secret_data holds the secret data specific to the holding
 // enclave, it's only visible inside this secured enclave. Arbitrary enclave
 // specific seccret data exchanged by the enclaves. In this sample, the first
-// enclave sends its g_enclave_secret_data (encrypted) to the second enclave.
-// The
+// enclave sends its g_enclave_secret_data (encrypted) to the second enclave. The
 // this enclave decrypts the received data and adds it to its own
 // g_enclave_secret_data, and sends it back to the other enclave.
 uint8_t g_enclave_secret_data[ENCLAVE_SECRET_DATA_SIZE] =
@@ -43,12 +41,12 @@ uint8_t g_enclave_secret_data[ENCLAVE_SECRET_DATA_SIZE] =
 // oe_report_t's identity field.
 // Note: if the private key (private.pem) used to sign the enclave is changed,
 // the following hash must be updated.
-uint8_t g_encalve1_mr_signer[] = {
-    0xCA, 0x9A, 0xD7, 0x33, 0x14, 0x48, 0x98, 0x0A, 0xA2, 0x88, 0x90,
-    0xCE, 0x73, 0xE4, 0x33, 0x63, 0x83, 0x77, 0xF1, 0x79, 0xAB, 0x44,
-    0x56, 0xB2, 0xFE, 0x23, 0x71, 0x93, 0x19, 0x3A, 0x8D, 0x0A};
+uint8_t g_enclave1_mrsigner[] = {0xCA, 0x9A, 0xD7, 0x33, 0x14, 0x48, 0x98, 0x0A,
+                                0xA2, 0x88, 0x90, 0xCE, 0x73, 0xE4, 0x33, 0x63,
+                                0x83, 0x77, 0xF1, 0x79, 0xAB, 0x44, 0x56, 0xB2,
+                                0xFE, 0x23, 0x71, 0x93, 0x19, 0x3A, 0x8D, 0x0A};
 
-EnclaveConfigData config_data = {g_enclave_secret_data, g_encalve1_mr_signer};
+EnclaveConfigData config_data = {g_enclave_secret_data, g_enclave1_mrsigner};
 
 // Declare a static dispatcher object for enabling
 // for better organizing enclave-wise global variables
