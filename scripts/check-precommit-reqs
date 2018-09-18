@@ -10,9 +10,8 @@
 ##
 ##==============================================================================
 
-## Check whether source code has been formatted:
-./scripts/format-code --whatif | grep -q "@@"
-if [ "$?" == "0" ]; then
+## Check whether source code has been formatted (diff outputs '@@'):
+if ./scripts/format-code --whatif | grep -q "@@"; then
     echo ""
     echo "Commit failed: please run ./scripts/format-code"
     echo ""
@@ -20,8 +19,7 @@ if [ "$?" == "0" ]; then
 fi
 
 # Check whether all sources have the license header:
-./scripts/check-license
-if [ "$?" != "0" ]; then
+if ! ./scripts/check-license; then
     echo ""
     echo "Commit failed: please add license headers to the above files"
     echo ""

@@ -8,13 +8,13 @@
 function trap_handler()
 {
     echo "ERROR LINE# ${1} : ${2}"
-    exit ${1}
+    exit "${1}"
 }
 
 trap 'trap_handler ${LINENO} $?' ERR
 
-builddir="$1"
-mode="$2"
+builddir=$1
+mode=$2
 
 case $mode in 
     ssh)
@@ -37,7 +37,7 @@ case $mode in
 esac 
 
 root="$(git rev-parse --show-toplevel)"
-cd "$root"/"$builddir"
+cd "${root}/${builddir}" || exit 1
 
 make refman
 
@@ -45,11 +45,11 @@ tmp=$(mktemp -d)
 
 branch=gh-pages
 
-cp -r "$root"/docs/refman/index.html $tmp/
+cp -r "${root}/docs/refman/index.html" "${tmp}/"
 
-cp -r docs/refman/html $tmp/api
+cp -r docs/refman/html "${tmp}/api"
 
-cd $tmp
+cd "$tmp" || exit 1
 
 git init
 
@@ -72,5 +72,4 @@ case $mode in
     ;;
 esac
 
-rm -rf $tmp
-
+rm -rf "$tmp"
