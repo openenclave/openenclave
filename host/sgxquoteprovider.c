@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-// Uncomment this line to enable tracing.
 #include <dlfcn.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/raise.h>

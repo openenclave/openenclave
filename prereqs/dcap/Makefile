@@ -1,21 +1,23 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-PACKAGE_VER=1.0.101.45575-1.0_amd64
-
-# The azquotprov package is temporary and will be replaced by an Intel
-# impelmentation in the future.
-AZQUOTE_VER=0.2-1_amd64
-
 PACKAGE_NAMES=\
-       libsgx-enclave-common\
-       libsgx-dcap-ql\
-       libsgx-dcap-ql-dev\
+	libsgx-enclave-common\
+	libsgx-enclave-common-dev\
+	libsgx-dcap-ql\
+	libsgx-dcap-ql-dev\
 
 PACKAGES=\
-	libsgx-enclave-common_2.3.100.46224-1_amd64.deb\
-	libsgx-dcap-ql_1.0.100.46226-1.0_amd64.deb\
-	libsgx-dcap-ql-dev_1.0.100.46226-1.0_amd64.deb
+	libsgx-enclave-common_2.3.100.46354-1_amd64.deb\
+	libsgx-enclave-common-dev_2.3.100.0-1_amd64.deb\
+	libsgx-dcap-ql_1.0.100.46460-1.0_amd64.deb\
+	libsgx-dcap-ql-dev_1.0.100.46460-1.0_amd64.deb\
+
+PACKAGE_URLS=\
+	https://download.01.org/intel-sgx/dcap-1.0/SGX_installers/ubuntu16.04/libsgx-enclave-common_2.3.100.46354-1_amd64.deb\
+	https://download.01.org/intel-sgx/sgx_repo/ubuntu/pool/main/libs/libsgx-enclave-common-dev/libsgx-enclave-common-dev_2.3.100.0-1_amd64.deb\
+	https://download.01.org/intel-sgx/dcap-1.0/DCAP_installers/ubuntu16.04/libsgx-dcap-ql_1.0.100.46460-1.0_amd64.deb\
+	https://download.01.org/intel-sgx/dcap-1.0/DCAP_installers/ubuntu16.04/libsgx-dcap-ql-dev_1.0.100.46460-1.0_amd64.deb\
 
 UNINSTALL_NAMES=$(call reverse-list,$(PACKAGE_NAMES))
 
@@ -61,18 +63,16 @@ PACKAGES_INSTALLED=\
 			"Verified: $(PKG) package installed",\
 			"*** Failed to install $(PKG) package"))
 
-# Workaround until Intel-signed binary drops of libraries and enclaves from
-# https://github.com/otcshare/NextGenSGXAttestationLibs.git are available as
-# packages for apt-get
+# Workaround until these packages are available via apt-get directly
 get-package:
-	apt-get -y install wget dpkg-dev
+	apt-get -y install wget dpkg-dev libprotobuf9v5
 ifdef USE_PKGS_IN
 	@ for PKG in $(PACKAGES); do \
 		cp $(USE_PKGS_IN)/$$PKG .; \
 	done
 else
-	@ for PKG in $(PACKAGES); do \
-		wget http://10.31.100.105/$$PKG; \
+	@ for PKG_URL in $(PACKAGE_URLS); do \
+		wget $$PKG_URL; \
 	done
 endif
 
