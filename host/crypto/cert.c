@@ -621,9 +621,6 @@ oe_result_t oe_cert_verify(
     if (!(verify_param = X509_STORE_CTX_get0_param(ctx)))
         OE_RAISE(OE_FAILURE);
 
-    /* Ignore the non-standard SGX extension */
-    X509_VERIFY_PARAM_set_flags(verify_param, X509_V_FLAG_IGNORE_CRITICAL);
-
     /* Set the CRLs if any */
     if (crls && num_crls)
     {

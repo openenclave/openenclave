@@ -4,7 +4,7 @@ The section contains information on how to configure/build/run the existing Open
 
 ## Configure samples
 
-Before going further, you want to make sure you have a success Open Enclave setup with a calen unittests run and finish [install Open Enclave SDK](InstallInfo.md)
+Before going further, you want to make sure you have a successful Open Enclave setup and can run unittests successfully [install Open Enclave SDK](InstallInfo.md)
 
    Assuming you installed SDK with the following steps, 
 

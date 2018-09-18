@@ -18,7 +18,7 @@ void* oe_host_malloc(size_t size)
         return NULL;
     }
 
-    if (!oe_is_outside_enclave((void*)argOut, size))
+    if (argOut && !oe_is_outside_enclave((void*)argOut, size))
         oe_abort();
 
     return (void*)argOut;
