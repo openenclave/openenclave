@@ -9,11 +9,21 @@
 void test_host_malloc(size_t in_size, void_ptr* out_ptr)
 {
     *out_ptr = oe_host_malloc(in_size);
+    if (*out_ptr && !oe_is_outside_enclave(*out_ptr, in_size))
+    {
+        oe_abort();
+        return;
+    }
 }
 
 void test_host_calloc(size_t in_num, size_t in_size, void_ptr* out_ptr)
 {
     *out_ptr = oe_host_calloc(in_num, in_size);
+    if (*out_ptr && !oe_is_outside_enclave(*out_ptr, in_size*in_num))
+    {
+        oe_abort();
+        return;
+    }
 }
 
 void test_host_realloc(
