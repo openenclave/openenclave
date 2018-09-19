@@ -217,6 +217,8 @@ set(ENCLAVE_CINCLUDES
 set(ENCLAVE_CXXINCLUDES 
     "-I\${includedir}/openenclave/libcxx ${ENCLAVE_CINCLUDES}")
 
+set(HOST_INCLUDES "-I${PROJECT_SOURCE_DIR}/include")
+
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/oeenclave-gcc.pc
     ${CMAKE_BINARY_DIR}/pkgconfig/oeenclave-gcc.pc

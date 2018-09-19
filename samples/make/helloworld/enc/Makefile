@@ -1,9 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-OPENENCLAVE_CONFIG=../../config.mak
-include $(OPENENCLAVE_CONFIG)
-
 CC=clang-7
 
 CFLAGS=$(shell pkg-config oeenclave-clang --cflags)
@@ -20,10 +17,10 @@ build:
 	$(CC) -o helloworldenc.so enc.o $(LDFLAGS)
 
 sign:
-	$(OE_BINDIR)/oesign helloworldenc.so helloworld.conf private.pem
+	oesign helloworldenc.so helloworld.conf private.pem
 
 clean:
-	rm -f enc.o helloworldenc.so hellowworldenc.signed.so private.pem public.pem
+	rm -f enc.o helloworldenc.so hellowworldenc.signed.so
 
 keys:
 	openssl genrsa -out private.pem -3 3072
