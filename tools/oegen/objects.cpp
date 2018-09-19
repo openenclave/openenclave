@@ -13,7 +13,7 @@
 **==============================================================================
 */
 
-static void _dump_qualifiers(unsigned int flags, const QualifierValues& values)
+static void _DumpQualifiers(unsigned int flags, const QualifierValues& values)
 {
     unsigned int mask = 0;
     mask |= FLAG_ECALL;
@@ -97,7 +97,7 @@ static void _dump_qualifiers(unsigned int flags, const QualifierValues& values)
 
 void ReturnType::Dump() const
 {
-    _dump_qualifiers(flags, qvals);
+    _DumpQualifiers(flags, qvals);
 
     if (flags & FLAG_CONST)
         printf("const ");
@@ -121,7 +121,7 @@ void ReturnType::Dump() const
 
 void Param::Dump() const
 {
-    _dump_qualifiers(flags, qvals);
+    _DumpQualifiers(flags, qvals);
 
     if (flags & FLAG_CONST)
         printf("const ");
@@ -147,7 +147,7 @@ void Param::Dump() const
 
 void Field::Dump() const
 {
-    _dump_qualifiers(flags, qvals);
+    _DumpQualifiers(flags, qvals);
 
     if (flags & FLAG_CONST)
         printf("const ");
@@ -191,7 +191,7 @@ void Function::Dump() const
 {
     printf("function ");
 
-    return_type.Dump();
+    returnType.Dump();
 
     printf("%s(\n", name.c_str());
 

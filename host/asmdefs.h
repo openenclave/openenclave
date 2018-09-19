@@ -55,8 +55,8 @@ void oe_enter_sim(
 int __oe_dispatch_ocall(
     uint64_t arg1,
     uint64_t arg2,
-    uint64_t* arg1_out,
-    uint64_t* arg2_out,
+    uint64_t* arg1Out,
+    uint64_t* arg2Out,
     void* tcs,
     oe_enclave_t* enclave);
 #endif
@@ -65,8 +65,8 @@ int __oe_dispatch_ocall(
 int _oe_host_stack_bridge(
     uint64_t arg1,
     uint64_t arg2,
-    uint64_t* arg1_out,
-    uint64_t* arg2_out,
+    uint64_t* arg1Out,
+    uint64_t* arg2Out,
     void* tcs,
     void* rsp);
 #endif

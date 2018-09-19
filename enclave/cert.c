@@ -33,7 +33,7 @@
 **==============================================================================
 */
 
-typedef struct _referent
+typedef struct _Referent
 {
     /* The first certificate in the chain (crt->next points to the next) */
     mbedtls_x509_crt crt;
@@ -46,7 +46,7 @@ typedef struct _referent
 } Referent;
 
 /* Allocate and initialize a new referent */
-OE_INLINE Referent* _referent_new(void)
+OE_INLINE Referent* _ReferentNew(void)
 {
     Referent* referent;
 
@@ -60,7 +60,7 @@ OE_INLINE Referent* _referent_new(void)
     return referent;
 }
 
-OE_INLINE mbedtls_x509_crt* _referent_get_cert(Referent* referent, size_t index)
+OE_INLINE mbedtls_x509_crt* _ReferentGetCert(Referent* referent, size_t index)
 {
     size_t i = 0;
 
@@ -75,14 +75,14 @@ OE_INLINE mbedtls_x509_crt* _referent_get_cert(Referent* referent, size_t index)
 }
 
 /* Increase the reference count */
-OE_INLINE void _referent_add_ref(Referent* referent)
+OE_INLINE void _ReferentAddRef(Referent* referent)
 {
     if (referent)
         oe_atomic_increment(&referent->refs);
 }
 
 /* Decrease the reference count and release if count becomes zero */
-OE_INLINE void _referent_free(Referent* referent)
+OE_INLINE void _ReferentFree(Referent* referent)
 {
     /* If this was the last reference, release the object */
     if (oe_atomic_decrement(&referent->refs) == 0)
@@ -107,7 +107,7 @@ OE_INLINE void _referent_free(Referent* referent)
 /* Randomly generated magic number */
 #define OE_CERT_MAGIC 0x028ce9294bcb451a
 
-typedef struct _cert
+typedef struct _Cert
 {
     uint64_t magic;
 
@@ -120,29 +120,26 @@ typedef struct _cert
 
 OE_STATIC_ASSERT(sizeof(Cert) <= sizeof(oe_cert_t));
 
-OE_INLINE void _cert_init(
-    Cert* impl,
-    mbedtls_x509_crt* cert,
-    Referent* referent)
+OE_INLINE void _CertInit(Cert* impl, mbedtls_x509_crt* cert, Referent* referent)
 {
     impl->magic = OE_CERT_MAGIC;
     impl->cert = cert;
     impl->referent = referent;
-    _referent_add_ref(impl->referent);
+    _ReferentAddRef(impl->referent);
 }
 
-OE_INLINE bool _cert_is_valid(const Cert* impl)
+OE_INLINE bool _CertIsValid(const Cert* impl)
 {
     return impl && (impl->magic == OE_CERT_MAGIC) && impl->cert;
 }
 
-OE_INLINE void _cert_free(Cert* impl)
+OE_INLINE void _CertFree(Cert* impl)
 {
     /* Release the referent if its reference count is one */
     if (impl->referent)
     {
         /* impl->cert == &impl->referent->crt */
-        _referent_free(impl->referent);
+        _ReferentFree(impl->referent);
     }
     else
     {
@@ -167,7 +164,7 @@ OE_INLINE void _cert_free(Cert* impl)
 /* Randomly generated magic number */
 #define OE_CERT_CHAIN_MAGIC 0x7d82c57a12af4c70
 
-typedef struct _cert_chain
+typedef struct _CertChain
 {
     uint64_t magic;
 
@@ -177,15 +174,15 @@ typedef struct _cert_chain
 
 OE_STATIC_ASSERT(sizeof(CertChain) <= sizeof(oe_cert_chain_t));
 
-OE_INLINE oe_result_t _cert_chain_init(CertChain* impl, Referent* referent)
+OE_INLINE oe_result_t _CertChainInit(CertChain* impl, Referent* referent)
 {
     impl->magic = OE_CERT_CHAIN_MAGIC;
     impl->referent = referent;
-    _referent_add_ref(referent);
+    _ReferentAddRef(referent);
     return OE_OK;
 }
 
-OE_INLINE bool _cert_chain_is_valid(const CertChain* impl)
+OE_INLINE bool _CertChainIsValid(const CertChain* impl)
 {
     return impl && (impl->magic == OE_CERT_CHAIN_MAGIC) && impl->referent;
 }
@@ -198,7 +195,7 @@ OE_INLINE bool _cert_chain_is_valid(const CertChain* impl)
 **==============================================================================
 */
 
-static void _set_err(oe_verify_cert_error_t* error, const char* str)
+static void _SetErr(oe_verify_cert_error_t* error, const char* str)
 {
     if (error)
         oe_strlcpy(error->buf, str, sizeof(error->buf));
@@ -214,7 +211,7 @@ static bool _x509_buf_equal(
 
 // Find the last certificate in the chain and then verify that it's a
 // self-signed certificate (a root certificate).
-static mbedtls_x509_crt* _find_root_cert(mbedtls_x509_crt* chain)
+static mbedtls_x509_crt* _FindRootCert(mbedtls_x509_crt* chain)
 {
     mbedtls_x509_crt* p;
 
@@ -230,7 +227,7 @@ static mbedtls_x509_crt* _find_root_cert(mbedtls_x509_crt* chain)
 }
 
 /* Verify each certificate in the chain against its predecessors. */
-static oe_result_t _verify_whole_chain(mbedtls_x509_crt* chain)
+static oe_result_t _VerifyWholeChain(mbedtls_x509_crt* chain)
 {
     oe_result_t result = OE_UNEXPECTED;
     uint32_t flags = 0;
@@ -240,7 +237,7 @@ static oe_result_t _verify_whole_chain(mbedtls_x509_crt* chain)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Find the root certificate in this chain */
-    if (!(root = _find_root_cert(chain)))
+    if (!(root = _FindRootCert(chain)))
         OE_RAISE(OE_FAILURE);
 
     // Verify each certificate in the chain against the following subchain.
@@ -287,7 +284,7 @@ typedef bool (*parse_extensions_callback_t)(
     size_t size,
     void* args);
 
-typedef struct _find_extension_args
+typedef struct _FindExtensionArgs
 {
     oe_result_t result;
     const char* oid;
@@ -295,7 +292,7 @@ typedef struct _find_extension_args
     size_t* size;
 } FindExtensionArgs;
 
-static bool _find_extension(
+static bool _FindExtension(
     size_t index,
     const char* oid,
     bool critical,
@@ -328,12 +325,12 @@ static bool _find_extension(
     return false;
 }
 
-typedef struct _get_extension_count_args
+typedef struct _GetExtensionCountArgs
 {
     size_t* count;
 } GetExtensionCountArgs;
 
-typedef struct _get_extension_args
+typedef struct _GetExtensionArgs
 {
     oe_result_t result;
     size_t index;
@@ -371,9 +368,9 @@ static int _parse_extensions(
     while (end - p > 1)
     {
         oe_oid_string_t oidstr;
-        int is_critical = 0;
+        int isCritical = 0;
         const uint8_t* octets;
-        size_t octets_size;
+        size_t octetsSize;
 
         /* Parse the OID */
         {
@@ -408,7 +405,7 @@ static int _parse_extensions(
 
         /* Parse the critical flag */
         {
-            r = (mbedtls_asn1_get_bool(&p, end, &is_critical));
+            r = (mbedtls_asn1_get_bool(&p, end, &isCritical));
             if (r != 0 && r != MBEDTLS_ERR_ASN1_UNEXPECTED_TAG)
                 goto done;
         }
@@ -420,12 +417,12 @@ static int _parse_extensions(
                 goto done;
 
             octets = p;
-            octets_size = len;
+            octetsSize = len;
             p += len;
         }
 
         /* Invoke the caller's callback (returns true when done) */
-        if (callback(index, oidstr.buf, is_critical, octets, octets_size, args))
+        if (callback(index, oidstr.buf, isCritical, octets, octetsSize, args))
         {
             ret = 0;
             goto done;
@@ -451,8 +448,8 @@ done:
 
 oe_result_t oe_cert_read_pem(
     oe_cert_t* cert,
-    const void* pem_data,
-    size_t pem_size)
+    const void* pemData,
+    size_t pemSize)
 {
     oe_result_t result = OE_UNEXPECTED;
     Cert* impl = (Cert*)cert;
@@ -463,11 +460,11 @@ oe_result_t oe_cert_read_pem(
         oe_memset(impl, 0, sizeof(Cert));
 
     /* Check parameters */
-    if (!pem_data || !pem_size || !cert)
+    if (!pemData || !pemSize || !cert)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Must have pem_size-1 non-zero characters followed by zero-terminator */
-    if (oe_strnlen((const char*)pem_data, pem_size) != pem_size - 1)
+    /* Must have pemSize-1 non-zero characters followed by zero-terminator */
+    if (oe_strnlen((const char*)pemData, pemSize) != pemSize - 1)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Allocate memory for the certificate */
@@ -478,11 +475,11 @@ oe_result_t oe_cert_read_pem(
     mbedtls_x509_crt_init(crt);
 
     /* Read the PEM buffer into DER format */
-    if (mbedtls_x509_crt_parse(crt, (const uint8_t*)pem_data, pem_size) != 0)
+    if (mbedtls_x509_crt_parse(crt, (const uint8_t*)pemData, pemSize) != 0)
         OE_RAISE(OE_FAILURE);
 
     /* Initialize the implementation */
-    _cert_init(impl, crt, NULL);
+    _CertInit(impl, crt, NULL);
     crt = NULL;
 
     result = OE_OK;
@@ -505,11 +502,11 @@ oe_result_t oe_cert_free(oe_cert_t* cert)
     Cert* impl = (Cert*)cert;
 
     /* Check the parameter */
-    if (!_cert_is_valid(impl))
+    if (!_CertIsValid(impl))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Free the certificate */
-    _cert_free(impl);
+    _CertFree(impl);
 
     result = OE_OK;
 
@@ -519,8 +516,8 @@ done:
 
 oe_result_t oe_cert_chain_read_pem(
     oe_cert_chain_t* chain,
-    const void* pem_data,
-    size_t pem_size)
+    const void* pemData,
+    size_t pemSize)
 {
     oe_result_t result = OE_UNEXPECTED;
     CertChain* impl = (CertChain*)chain;
@@ -531,39 +528,39 @@ oe_result_t oe_cert_chain_read_pem(
         oe_memset(impl, 0, sizeof(CertChain));
 
     /* Check parameters */
-    if (!pem_data || !pem_size || !chain)
+    if (!pemData || !pemSize || !chain)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Must have pem_size-1 non-zero characters followed by zero-terminator */
-    if (oe_strnlen((const char*)pem_data, pem_size) != pem_size - 1)
+    /* Must have pemSize-1 non-zero characters followed by zero-terminator */
+    if (oe_strnlen((const char*)pemData, pemSize) != pemSize - 1)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Create the referent */
-    if (!(referent = _referent_new()))
+    if (!(referent = _ReferentNew()))
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* Read the PEM buffer into DER format */
     if (mbedtls_x509_crt_parse(
-            &referent->crt, (const uint8_t*)pem_data, pem_size) != 0)
+            &referent->crt, (const uint8_t*)pemData, pemSize) != 0)
     {
         OE_RAISE(OE_FAILURE);
     }
 
     /* Verify the whole certificate chain */
-    OE_CHECK(_verify_whole_chain(&referent->crt));
+    OE_CHECK(_VerifyWholeChain(&referent->crt));
 
     /* Calculate the length of the certificate chain */
     for (mbedtls_x509_crt* p = &referent->crt; p; p = p->next)
         referent->length++;
 
     /* Initialize the implementation and increment reference count */
-    OE_CHECK(_cert_chain_init(impl, referent));
+    OE_CHECK(_CertChainInit(impl, referent));
 
     result = OE_OK;
 
 done:
 
-    _referent_free(referent);
+    _ReferentFree(referent);
 
     return result;
 }
@@ -574,11 +571,11 @@ oe_result_t oe_cert_chain_free(oe_cert_chain_t* chain)
     CertChain* impl = (CertChain*)chain;
 
     /* Check the parameter */
-    if (!_cert_chain_is_valid(impl))
+    if (!_CertChainIsValid(impl))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Release the referent if the reference count is one */
-    _referent_free(impl->referent);
+    _ReferentFree(impl->referent);
 
     /* Clear the implementation (making it invalid) */
     oe_memset(impl, 0, sizeof(CertChain));
@@ -597,8 +594,8 @@ oe_result_t oe_cert_verify(
     oe_verify_cert_error_t* error)
 {
     oe_result_t result = OE_UNEXPECTED;
-    Cert* cert_impl = (Cert*)cert;
-    CertChain* chain_impl = (CertChain*)chain;
+    Cert* certImpl = (Cert*)cert;
+    CertChain* chainImpl = (CertChain*)chain;
     uint32_t flags = 0;
     mbedtls_x509_crl* crl_list = NULL;
 
@@ -607,16 +604,16 @@ oe_result_t oe_cert_verify(
         *error->buf = '\0';
 
     /* Reject invalid certificate */
-    if (!_cert_is_valid(cert_impl))
+    if (!_CertIsValid(certImpl))
     {
-        _set_err(error, "invalid cert parameter");
+        _SetErr(error, "invalid cert parameter");
         OE_RAISE(OE_INVALID_PARAMETER);
     }
 
     /* Reject invalid certificate chain */
-    if (!_cert_chain_is_valid(chain_impl))
+    if (!_CertChainIsValid(chainImpl))
     {
-        _set_err(error, "invalid chain parameter");
+        _SetErr(error, "invalid chain parameter");
         OE_RAISE(OE_INVALID_PARAMETER);
     }
 
@@ -655,8 +652,8 @@ oe_result_t oe_cert_verify(
 
     /* Verify the certificate */
     if (mbedtls_x509_crt_verify(
-            cert_impl->cert,
-            &chain_impl->referent->crt,
+            certImpl->cert,
+            &chainImpl->referent->crt,
             crl_list,
             NULL,
             &flags,
@@ -692,17 +689,17 @@ done:
 
 oe_result_t oe_cert_get_rsa_public_key(
     const oe_cert_t* cert,
-    oe_rsa_public_key_t* public_key)
+    oe_rsa_public_key_t* publicKey)
 {
     oe_result_t result = OE_UNEXPECTED;
     const Cert* impl = (const Cert*)cert;
 
     /* Clear public key for all error pathways */
-    if (public_key)
-        oe_memset(public_key, 0, sizeof(oe_rsa_public_key_t));
+    if (publicKey)
+        oe_memset(publicKey, 0, sizeof(oe_rsa_public_key_t));
 
     /* Reject invalid parameters */
-    if (!_cert_is_valid(impl) || !public_key)
+    if (!_CertIsValid(impl) || !publicKey)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If certificate does not contain an RSA key */
@@ -710,7 +707,7 @@ oe_result_t oe_cert_get_rsa_public_key(
         OE_RAISE(OE_FAILURE);
 
     /* Copy the public key from the certificate */
-    OE_CHECK(oe_rsa_public_key_init(public_key, &impl->cert->pk));
+    OE_CHECK(oe_rsa_public_key_init(publicKey, &impl->cert->pk));
 
     result = OE_OK;
 
@@ -721,17 +718,17 @@ done:
 
 oe_result_t oe_cert_get_ec_public_key(
     const oe_cert_t* cert,
-    oe_ec_public_key_t* public_key)
+    oe_ec_public_key_t* publicKey)
 {
     oe_result_t result = OE_UNEXPECTED;
     const Cert* impl = (const Cert*)cert;
 
     /* Clear public key for all error pathways */
-    if (public_key)
-        oe_memset(public_key, 0, sizeof(oe_ec_public_key_t));
+    if (publicKey)
+        oe_memset(publicKey, 0, sizeof(oe_ec_public_key_t));
 
     /* Reject invalid parameters */
-    if (!_cert_is_valid(impl) || !public_key)
+    if (!_CertIsValid(impl) || !publicKey)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If certificate does not contain an EC key */
@@ -739,7 +736,7 @@ oe_result_t oe_cert_get_ec_public_key(
         OE_RAISE(OE_FAILURE);
 
     /* Copy the public key from the certificate */
-    OE_RAISE(oe_ec_public_key_init(public_key, &impl->cert->pk));
+    OE_RAISE(oe_ec_public_key_init(publicKey, &impl->cert->pk));
 
     result = OE_OK;
 
@@ -760,7 +757,7 @@ oe_result_t oe_cert_chain_get_length(
         *length = 0;
 
     /* Reject invalid parameters */
-    if (!_cert_chain_is_valid(impl) || !length)
+    if (!_CertChainIsValid(impl) || !length)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Set the length output parameter */
@@ -780,7 +777,7 @@ oe_result_t oe_cert_chain_get_cert(
 {
     oe_result_t result = OE_UNEXPECTED;
     CertChain* impl = (CertChain*)chain;
-    Cert* cert_impl = (Cert*)cert;
+    Cert* certImpl = (Cert*)cert;
     mbedtls_x509_crt* crt = NULL;
 
     /* Clear the output certificate for all error pathways */
@@ -788,15 +785,15 @@ oe_result_t oe_cert_chain_get_cert(
         oe_memset(cert, 0, sizeof(oe_cert_t));
 
     /* Reject invalid parameters */
-    if (!_cert_chain_is_valid(impl) || !cert)
+    if (!_CertChainIsValid(impl) || !cert)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Find the certificate with this index */
-    if (!(crt = _referent_get_cert(impl->referent, index)))
+    if (!(crt = _ReferentGetCert(impl->referent, index)))
         OE_RAISE(OE_OUT_OF_BOUNDS);
 
     /* Initialize the implementation */
-    _cert_init(cert_impl, crt, impl->referent);
+    _CertInit(certImpl, crt, impl->referent);
 
     result = OE_OK;
 
@@ -831,7 +828,7 @@ oe_result_t oe_cert_find_extension(
     const Cert* impl = (const Cert*)cert;
 
     /* Reject invalid parameters */
-    if (!_cert_is_valid(impl) || !oid || !size)
+    if (!_CertIsValid(impl) || !oid || !size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Find the extension with the given OID using a callback */
@@ -842,7 +839,7 @@ oe_result_t oe_cert_find_extension(
         args.data = data;
         args.size = size;
 
-        if (_parse_extensions(impl->cert, _find_extension, &args) != 0)
+        if (_parse_extensions(impl->cert, _FindExtension, &args) != 0)
             OE_RAISE(OE_FAILURE);
 
         result = args.result;

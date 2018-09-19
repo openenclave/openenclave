@@ -12,34 +12,34 @@
 
 oe_result_t oe_aes_cmac_sign(
     const uint8_t* key,
-    size_t key_size,
+    size_t keySize,
     const uint8_t* message,
-    size_t message_length,
-    oe_aes_cmac_t* aes_cmac)
+    size_t messageLength,
+    OE_AESCMAC* aesCMAC)
 {
     oe_result_t result = OE_UNEXPECTED;
     const mbedtls_cipher_info_t* info = NULL;
-    size_t key_size_bits = key_size * 8;
+    size_t keySizeBits = keySize * 8;
 
-    if (aes_cmac == NULL)
+    if (aesCMAC == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (key_size_bits != 128)
+    if (keySizeBits != 128)
         OE_RAISE(OE_UNSUPPORTED);
 
     info = mbedtls_cipher_info_from_type(MBEDTLS_CIPHER_AES_128_ECB);
     if (info == NULL)
         OE_RAISE(OE_FAILURE);
 
-    oe_secure_zero_fill(aes_cmac->impl, sizeof(*aes_cmac));
+    oe_secure_zero_fill(aesCMAC->impl, sizeof(*aesCMAC));
 
     if (mbedtls_cipher_cmac(
             info,
             key,
-            key_size_bits,
+            keySizeBits,
             message,
-            message_length,
-            (uint8_t*)aes_cmac->impl) != 0)
+            messageLength,
+            (uint8_t*)aesCMAC->impl) != 0)
         OE_RAISE(OE_FAILURE);
 
     result = OE_OK;

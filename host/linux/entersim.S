@@ -112,8 +112,8 @@ oe_enter_sim:
     // RAX = __oe_dispatch_ocall(
     //     RDI=arg1
     //     RSI=arg2
-    //     RDX=arg1_out
-    //     RCX=arg2_out
+    //     RDX=arg1Out
+    //     RCX=arg2Out
     //     R8=TCS)
     mov ARG1OUT, %rdi
     mov ARG2OUT, %rsi

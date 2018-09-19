@@ -9,15 +9,15 @@
 
 #define TEST1_MAGIC 0xec9a613e
 
-typedef struct _test1_args
+typedef struct _Test1Args
 {
     void* self;
 
     /* --- Input arguments --- */
 
-    int64_t in_num;
+    int64_t inNum;
 
-    const char* in_str;
+    const char* inStr;
 
     /* --- Output arguments --- */
 
@@ -37,35 +37,35 @@ typedef struct _test1_args
     int ret;
 } Test1Args;
 
-typedef struct _test2_args
+typedef struct _Test2Args
 {
     int64_t in;
     int64_t out;
 } Test2Args;
 
-typedef struct _test_allocator_args
+typedef struct _TestAllocatorArgs
 {
     int ret;
 } TestAllocatorArgs;
 
-typedef struct _func1_args
+typedef struct _Func1Args
 {
     char buf[128];
 } Func1Args;
 
-typedef struct _set_tsd_args
+typedef struct _SetTSDArgs
 {
     void* value;
     int ret;
 } SetTSDArgs;
 
-typedef struct _get_tsd_args
+typedef struct _GetTSDArgs
 {
     void* value;
     int ret;
 } GetTSDArgs;
 
-typedef struct _test_my_ocall_args
+typedef struct _TestMyOCallArgs
 {
     uint64_t result;
 } TestMyOCallArgs;

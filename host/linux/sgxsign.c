@@ -19,7 +19,7 @@
 #include "../crypto/init.h"
 #include "../host/enclave.h"
 
-static void _mem_reverse(void* dest_, const void* src_, size_t n)
+static void _MemReverse(void* dest_, const void* src_, size_t n)
 {
     unsigned char* dest = (unsigned char*)dest_;
     const unsigned char* src = (const unsigned char*)src_;
@@ -29,7 +29,7 @@ static void _mem_reverse(void* dest_, const void* src_, size_t n)
         *dest++ = *--end;
 }
 
-static oe_result_t _get_date(unsigned int* date)
+static oe_result_t _GetDate(unsigned int* date)
 {
     oe_result_t result = OE_UNEXPECTED;
     time_t t;
@@ -69,7 +69,7 @@ OE_CATCH:
     return result;
 }
 
-static oe_result_t _get_modulus(RSA* rsa, uint8_t modulus[OE_KEY_SIZE])
+static oe_result_t _GetModulus(RSA* rsa, uint8_t modulus[OE_KEY_SIZE])
 {
     oe_result_t result = OE_UNEXPECTED;
     uint8_t buf[OE_KEY_SIZE];
@@ -80,7 +80,7 @@ static oe_result_t _get_modulus(RSA* rsa, uint8_t modulus[OE_KEY_SIZE])
     if (!BN_bn2bin(rsa->n, buf))
         OE_THROW(OE_FAILURE);
 
-    _mem_reverse(modulus, buf, OE_KEY_SIZE);
+    _MemReverse(modulus, buf, OE_KEY_SIZE);
 
     result = OE_OK;
 
@@ -88,7 +88,7 @@ OE_CATCH:
     return result;
 }
 
-static oe_result_t _get_exponent(RSA* rsa, uint8_t exponent[OE_EXPONENT_SIZE])
+static oe_result_t _GetExponent(RSA* rsa, uint8_t exponent[OE_EXPONENT_SIZE])
 {
     oe_result_t result = OE_UNEXPECTED;
     // uint8_t buf[OE_EXPONENT_SIZE];
@@ -113,15 +113,15 @@ OE_CATCH:
     return result;
 }
 
-static oe_result_t _get_q1_and_q2(
+static oe_result_t _GetQ1AndQ2(
     const void* signature,
-    size_t signature_size,
+    size_t signatureSize,
     const void* modulus,
-    size_t modulus_size,
-    void* q1_out,
-    size_t q1_out_size,
-    void* q2_out,
-    size_t q2_out_size)
+    size_t modulusSize,
+    void* q1Out,
+    size_t q1OutSize,
+    void* q2Out,
+    size_t q2OutSize)
 {
     oe_result_t result = OE_UNEXPECTED;
     BIGNUM* s = NULL;
@@ -131,13 +131,13 @@ static oe_result_t _get_q1_and_q2(
     BIGNUM* t1 = NULL;
     BIGNUM* t2 = NULL;
     BN_CTX* ctx = NULL;
-    unsigned char q1buf[q1_out_size + 8];
-    unsigned char q2buf[q2_out_size + 8];
-    unsigned char sbuf[signature_size];
-    unsigned char mbuf[modulus_size];
+    unsigned char q1buf[q1OutSize + 8];
+    unsigned char q2buf[q2OutSize + 8];
+    unsigned char sbuf[signatureSize];
+    unsigned char mbuf[modulusSize];
 
-    if (!signature || !signature_size || !modulus || !modulus_size || !q1_out ||
-        !q1_out_size || !q2_out || !q2_out_size)
+    if (!signature || !signatureSize || !modulus || !modulusSize || !q1Out ||
+        !q1OutSize || !q2Out || !q2OutSize)
     {
         OE_THROW(OE_INVALID_PARAMETER);
     }
@@ -145,8 +145,8 @@ static oe_result_t _get_q1_and_q2(
     memset(sbuf, 0, sizeof(sbuf));
     memset(mbuf, 0, sizeof(mbuf));
 
-    _mem_reverse(sbuf, signature, sizeof(sbuf));
-    _mem_reverse(mbuf, modulus, sizeof(mbuf));
+    _MemReverse(sbuf, signature, sizeof(sbuf));
+    _MemReverse(mbuf, modulus, sizeof(mbuf));
 
     /* Create new objects */
     {
@@ -194,11 +194,11 @@ static oe_result_t _get_q1_and_q2(
         if (n > sizeof(q1buf))
             OE_THROW(OE_FAILURE);
 
-        if (n > q1_out_size)
-            n = q1_out_size;
+        if (n > q1OutSize)
+            n = q1OutSize;
 
         BN_bn2bin(q1, q1buf);
-        _mem_reverse(q1_out, q1buf, n);
+        _MemReverse(q1Out, q1buf, n);
     }
 
     /* Copy Q2 to Q2OUT parameter */
@@ -208,11 +208,11 @@ static oe_result_t _get_q1_and_q2(
         if (n > sizeof(q2buf))
             OE_THROW(OE_FAILURE);
 
-        if (n > q2_out_size)
-            n = q2_out_size;
+        if (n > q2OutSize)
+            n = q2OutSize;
 
         BN_bn2bin(q2, q2buf);
-        _mem_reverse(q2_out, q2buf, n);
+        _MemReverse(q2Out, q2buf, n);
     }
 
     result = OE_OK;
@@ -237,7 +237,7 @@ OE_CATCH:
     return result;
 }
 
-static oe_result_t _init_sigstruct(
+static oe_result_t _InitSigstruct(
     const OE_SHA256* mrenclave,
     uint64_t attributes,
     uint16_t product_id,
@@ -263,7 +263,7 @@ static oe_result_t _init_sigstruct(
     sigstruct->vendor = 0;
 
     /* sgx_sigstruct_t.date */
-    OE_TRY(_get_date(&sigstruct->date));
+    OE_TRY(_GetDate(&sigstruct->date));
 
     /* sgx_sigstruct_t.header2 */
     memcpy(
@@ -273,10 +273,10 @@ static oe_result_t _init_sigstruct(
     sigstruct->swdefined = 0;
 
     /* sgx_sigstruct_t.modulus */
-    OE_TRY(_get_modulus(rsa, sigstruct->modulus));
+    OE_TRY(_GetModulus(rsa, sigstruct->modulus));
 
     /* sgx_sigstruct_t.date */
-    OE_TRY(_get_exponent(rsa, sigstruct->exponent));
+    OE_TRY(_GetExponent(rsa, sigstruct->exponent));
 
     /* sgx_sigstruct_t.signature: fill in after other fields */
 
@@ -323,7 +323,7 @@ static oe_result_t _init_sigstruct(
             OE_SHA256 sha256;
             oe_sha256_context_t context;
             unsigned char signature[OE_KEY_SIZE];
-            unsigned int signature_size;
+            unsigned int signatureSize;
 
             oe_sha256_init(&context);
             oe_sha256_update(&context, buf, n);
@@ -334,22 +334,22 @@ static oe_result_t _init_sigstruct(
                     sha256.buf,
                     sizeof(sha256),
                     signature,
-                    &signature_size,
+                    &signatureSize,
                     rsa))
             {
                 OE_THROW(OE_FAILURE);
             }
 
-            if (sizeof(sigstruct->signature) != signature_size)
+            if (sizeof(sigstruct->signature) != signatureSize)
                 OE_THROW(OE_FAILURE);
 
             /* The signature is backwards and needs to be reversed */
-            _mem_reverse(sigstruct->signature, signature, sizeof(signature));
+            _MemReverse(sigstruct->signature, signature, sizeof(signature));
         }
     }
 
     OE_TRY(
-        _get_q1_and_q2(
+        _GetQ1AndQ2(
             sigstruct->signature,
             sizeof(sigstruct->signature),
             sigstruct->modulus,
@@ -365,9 +365,9 @@ OE_CATCH:
     return result;
 }
 
-static oe_result_t _load_rsa_private_key(
-    const uint8_t* pem_data,
-    size_t pem_size,
+static oe_result_t _LoadRSAPrivateKey(
+    const uint8_t* pemData,
+    size_t pemSize,
     RSA** key)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -378,14 +378,14 @@ static oe_result_t _load_rsa_private_key(
         *key = NULL;
 
     /* Check parameters */
-    if (!pem_data || pem_size == 0 || !key)
+    if (!pemData || pemSize == 0 || !key)
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Initialize OpenSSL */
     oe_initialize_openssl();
 
     /* Create a BIO object for loading the PEM data */
-    if (!(bio = BIO_new_mem_buf(pem_data, pem_size)))
+    if (!(bio = BIO_new_mem_buf(pemData, pemSize)))
         OE_THROW(OE_FAILURE);
 
     /* Read the RSA structure from the PEM data */
@@ -414,8 +414,8 @@ oe_result_t oe_sgx_sign_enclave(
     uint64_t attributes,
     uint16_t product_id,
     uint16_t security_version,
-    const uint8_t* pem_data,
-    size_t pem_size,
+    const uint8_t* pemData,
+    size_t pemSize,
     sgx_sigstruct_t* sigstruct)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -429,11 +429,11 @@ oe_result_t oe_sgx_sign_enclave(
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Load the RSA private key from PEM */
-    OE_TRY(_load_rsa_private_key(pem_data, pem_size, &rsa));
+    OE_TRY(_LoadRSAPrivateKey(pemData, pemSize, &rsa));
 
     /* Initialize the sigstruct */
     OE_TRY(
-        _init_sigstruct(
+        _InitSigstruct(
             mrenclave,
             attributes,
             product_id,

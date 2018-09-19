@@ -121,14 +121,14 @@ bool oe_disable_debug_malloc_check;
 /*
 **==============================================================================
 **
-** _handle_init_enclave()
+** _HandleInitEnclave()
 **
 **     Handle the OE_ECALL_INIT_ENCLAVE from host and ensures that each state
 **     initialization function in the enclave only runs once.
 **
 **==============================================================================
 */
-static oe_result_t _handle_init_enclave(uint64_t arg_in)
+static oe_result_t _HandleInitEnclave(uint64_t argIn)
 {
     static bool _once = false;
     oe_result_t result = OE_OK;
@@ -140,7 +140,7 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
     if (o == false)
     {
         if (!oe_is_outside_enclave(
-                (void*)arg_in, sizeof(oe_init_enclave_args_t)))
+                (void*)argIn, sizeof(oe_init_enclave_args_t)))
         {
             OE_THROW(OE_INVALID_PARAMETER);
         }
@@ -151,9 +151,9 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
         if (_once == false)
         {
             /* Set the global enclave handle */
-            if (arg_in)
+            if (argIn)
             {
-                oe_init_enclave_args_t* args = (oe_init_enclave_args_t*)arg_in;
+                oe_init_enclave_args_t* args = (oe_init_enclave_args_t*)argIn;
                 oe_init_enclave_args_t safe_args;
 
                 if (!oe_is_outside_enclave(args, sizeof(*args)))
@@ -169,7 +169,7 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
             }
 
             /* Call all enclave state initialization functions */
-            oe_initialize_cpuid(arg_in);
+            oe_initialize_cpuid(argIn);
 
             /* Call global constructors. Now they can safely use simulated
              * instructions like CPUID. */
@@ -190,7 +190,7 @@ OE_CATCH:
 /*
 **==============================================================================
 **
-** _handle_call_enclave()
+** _HandleCallEnclave()
 **
 **     This function handles a high-level enclave call.
 **
@@ -198,7 +198,7 @@ OE_CATCH:
 */
 
 /* Get ECALL pages, check that ECALL pages are valid, and cache. */
-static const oe_ecall_pages_t* _get_ecall_pages()
+static const oe_ecall_pages_t* _GetECallPages()
 {
     static const oe_ecall_pages_t* pages;
 
@@ -211,22 +211,22 @@ static const oe_ecall_pages_t* _get_ecall_pages()
     return pages;
 }
 
-static oe_result_t _handle_call_enclave(uint64_t arg_in)
+static oe_result_t _HandleCallEnclave(uint64_t argIn)
 {
-    oe_call_enclave_args_t args, *args_ptr;
+    oe_call_enclave_args_t args, *argsPtr;
     oe_result_t result = OE_OK;
     uint64_t vaddr;
-    const oe_ecall_pages_t* ecall_pages = _get_ecall_pages();
+    const oe_ecall_pages_t* ecallPages = _GetECallPages();
 
-    if (!oe_is_outside_enclave((void*)arg_in, sizeof(oe_call_enclave_args_t)))
+    if (!oe_is_outside_enclave((void*)argIn, sizeof(oe_call_enclave_args_t)))
     {
         OE_THROW(OE_INVALID_PARAMETER);
     }
-    args_ptr = (oe_call_enclave_args_t*)arg_in;
-    args = *args_ptr;
+    argsPtr = (oe_call_enclave_args_t*)argIn;
+    args = *argsPtr;
 
-    if (!args.vaddr || (args.func >= ecall_pages->num_vaddrs) ||
-        ((vaddr = ecall_pages->vaddrs[args.func]) != args.vaddr))
+    if (!args.vaddr || (args.func >= ecallPages->num_vaddrs) ||
+        ((vaddr = ecallPages->vaddrs[args.func]) != args.vaddr))
     {
         OE_THROW(OE_INVALID_PARAMETER);
     }
@@ -238,7 +238,7 @@ static oe_result_t _handle_call_enclave(uint64_t arg_in)
         func(args.args);
     }
 
-    args_ptr->result = OE_OK;
+    argsPtr->result = OE_OK;
 
 OE_CATCH:
     return result;
@@ -247,51 +247,48 @@ OE_CATCH:
 /*
 **==============================================================================
 **
-** _handle_exit()
+** _HandleExit()
 **
 **     Initiate call to EEXIT.
 **
 **==============================================================================
 */
 
-static void _handle_exit(oe_code_t code, uint16_t func, uint64_t arg)
+static void _HandleExit(oe_code_t code, uint16_t func, uint64_t arg)
 {
     oe_exit(oe_make_call_arg1(code, func, 0, OE_OK), arg);
 }
 
-void _oe_virtual_exception_dispatcher(
-    TD* td,
-    uint64_t arg_in,
-    uint64_t* arg_out);
+void _oe_virtual_exception_dispatcher(TD* td, uint64_t argIn, uint64_t* argOut);
 
 /*
 **==============================================================================
 **
-** _handle_ecall()
+** _HandleECall()
 **
 **     Handle an ECALL.
 **
 **==============================================================================
 */
 
-static void _handle_ecall(
+static void _HandleECall(
     TD* td,
     uint16_t func,
-    uint64_t arg_in,
-    uint64_t* output_arg1,
-    uint64_t* output_arg2)
+    uint64_t argIn,
+    uint64_t* outputArg1,
+    uint64_t* outputArg2)
 {
     oe_result_t result = OE_OK;
 
     /* Insert ECALL context onto front of TD.ecalls list */
     Callsite callsite;
-    uint64_t arg_out = 0;
+    uint64_t argOut = 0;
 
     oe_memset(&callsite, 0, sizeof(callsite));
     TD_PushCallsite(td, &callsite);
 
     // Acquire release semantics for __oe_initialized are present in
-    // _handle_init_enclave.
+    // _HandleInitEnclave.
     if (!__oe_initialized)
     {
         // The first call to the enclave must be to initialize it.
@@ -329,13 +326,13 @@ static void _handle_ecall(
     {
         case OE_ECALL_CALL_ENCLAVE:
         {
-            arg_out = _handle_call_enclave(arg_in);
+            argOut = _HandleCallEnclave(argIn);
             break;
         }
         case OE_ECALL_DESTRUCTOR:
         {
             /* Call functions installed by __cxa_atexit() and oe_atexit() */
-            oe_call_atexit_functions();
+            oe_call_at_exit_functions();
 
             /* Call all finalization functions */
             oe_call_fini_functions();
@@ -352,22 +349,22 @@ static void _handle_ecall(
         }
         case OE_ECALL_VIRTUAL_EXCEPTION_HANDLER:
         {
-            _oe_virtual_exception_dispatcher(td, arg_in, &arg_out);
+            _oe_virtual_exception_dispatcher(td, argIn, &argOut);
             break;
         }
         case OE_ECALL_INIT_ENCLAVE:
         {
-            arg_out = _handle_init_enclave(arg_in);
+            argOut = _HandleInitEnclave(argIn);
             break;
         }
         case OE_ECALL_GET_SGX_REPORT:
         {
-            arg_out = _handle_get_sgx_report(arg_in);
+            argOut = _HandleGetSgxReport(argIn);
             break;
         }
         case OE_ECALL_VERIFY_REPORT:
         {
-            oe_handle_verify_report(arg_in, &arg_out);
+            oe_handle_verify_report(argIn, &argOut);
             break;
         }
         default:
@@ -389,21 +386,21 @@ done:
     TD_PopCallsite(td);
 
     /* Perform ERET, giving control back to host */
-    *output_arg1 = oe_make_call_arg1(OE_CODE_ERET, func, 0, result);
-    *output_arg2 = arg_out;
+    *outputArg1 = oe_make_call_arg1(OE_CODE_ERET, func, 0, result);
+    *outputArg2 = argOut;
 }
 
 /*
 **==============================================================================
 **
-** _handle_oret()
+** _HandleORET()
 **
 **     Handle an OCALL return.
 **
 **==============================================================================
 */
 
-OE_INLINE void _handle_oret(TD* td, uint16_t func, uint16_t result, int64_t arg)
+OE_INLINE void _HandleORET(TD* td, uint16_t func, uint16_t result, int64_t arg)
 {
     Callsite* callsite = td->callsites;
 
@@ -427,7 +424,7 @@ OE_INLINE void _handle_oret(TD* td, uint16_t func, uint16_t result, int64_t arg)
 **==============================================================================
 */
 
-oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
+oe_result_t oe_ocall(uint16_t func, uint64_t argIn, uint64_t* argOut)
 {
     oe_result_t result = OE_UNEXPECTED;
     TD* td = oe_get_td();
@@ -450,7 +447,7 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
     if (oe_setjmp(&callsite->jmpbuf) == 0)
     {
         /* Exit, giving control back to the host so it can handle OCALL */
-        _handle_exit(OE_CODE_OCALL, func, arg_in);
+        _HandleExit(OE_CODE_OCALL, func, argIn);
 
         /* Unreachable! Host will transfer control back to oe_enter() */
         oe_abort();
@@ -459,8 +456,8 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
     {
         OE_TRY(result = (oe_result_t)td->oret_result);
 
-        if (arg_out)
-            *arg_out = td->oret_arg;
+        if (argOut)
+            *argOut = td->oret_arg;
 
         /* ORET here */
     }
@@ -479,7 +476,7 @@ OE_CATCH:
 **==============================================================================
 */
 
-oe_result_t oe_call_host(const char* func, void* args_in)
+oe_result_t oe_call_host(const char* func, void* argsIn)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_call_host_args_t* args = NULL;
@@ -503,7 +500,7 @@ oe_result_t oe_call_host(const char* func, void* args_in)
 
         oe_memcpy(args->func, func, len + 1);
 
-        args->args = args_in;
+        args->args = argsIn;
         args->result = OE_UNEXPECTED;
     }
 
@@ -530,7 +527,7 @@ OE_CATCH:
 
 oe_result_t oe_call_host_by_address(
     void (*func)(void*, oe_enclave_t*),
-    void* args_in)
+    void* argsIn)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_call_host_by_address_args_t* args = NULL;
@@ -552,7 +549,7 @@ oe_result_t oe_call_host_by_address(
             OE_THROW(OE_OUT_OF_MEMORY);
         }
 
-        args->args = args_in;
+        args->args = argsIn;
         args->func = func;
         args->result = OE_UNEXPECTED;
     }
@@ -665,15 +662,15 @@ void __oe_handle_main(
     uint64_t arg2,
     uint64_t cssa,
     void* tcs,
-    uint64_t* output_arg1,
-    uint64_t* output_arg2)
+    uint64_t* outputArg1,
+    uint64_t* outputArg2)
 {
     oe_code_t code = oe_get_code_from_call_arg1(arg1);
     uint16_t func = oe_get_func_from_call_arg1(arg1);
     uint16_t arg1_result = oe_get_result_from_call_arg1(arg1);
-    uint64_t arg_in = arg2;
-    *output_arg1 = 0;
-    *output_arg2 = 0;
+    uint64_t argIn = arg2;
+    *outputArg1 = 0;
+    *outputArg2 = 0;
 
     // Block enclave enter based on current enclave status.
     switch (__oe_enclave_status)
@@ -696,9 +693,9 @@ void __oe_handle_main(
                 else
                 {
                     // Return crashing status.
-                    *output_arg1 =
+                    *outputArg1 =
                         oe_make_call_arg1(OE_CODE_ERET, func, 0, OE_OK);
-                    *output_arg2 = __oe_enclave_status;
+                    *outputArg2 = __oe_enclave_status;
                     return;
                 }
             }
@@ -708,8 +705,8 @@ void __oe_handle_main(
         default:
         {
             // Return crashed status.
-            *output_arg1 = oe_make_call_arg1(OE_CODE_ERET, func, 0, OE_OK);
-            *output_arg2 = OE_ENCLAVE_ABORTED;
+            *outputArg1 = oe_make_call_arg1(OE_CODE_ERET, func, 0, OE_OK);
+            *outputArg2 = OE_ENCLAVE_ABORTED;
             return;
         }
     }
@@ -732,13 +729,13 @@ void __oe_handle_main(
         switch (code)
         {
             case OE_CODE_ECALL:
-                _handle_ecall(td, func, arg_in, output_arg1, output_arg2);
+                _HandleECall(td, func, argIn, outputArg1, outputArg2);
                 break;
 
             case OE_CODE_ORET:
                 /* Eventually calls oe_exit() and never returns here if
                  * successful */
-                _handle_oret(td, func, arg1_result, arg_in);
+                _HandleORET(td, func, arg1_result, argIn);
             // fallthrough
 
             default:
@@ -751,7 +748,7 @@ void __oe_handle_main(
         if ((code == OE_CODE_ECALL) &&
             (func == OE_ECALL_VIRTUAL_EXCEPTION_HANDLER))
         {
-            _handle_ecall(td, func, arg_in, output_arg1, output_arg2);
+            _HandleECall(td, func, argIn, outputArg1, outputArg2);
             return;
         }
 
@@ -784,7 +781,7 @@ void __oe_handle_main(
 */
 void _oe_notify_nested_exit_start(
     uint64_t arg1,
-    oe_ocall_context_t* ocall_context)
+    oe_ocall_context_t* ocallContext)
 {
     // Check if it is an OCALL.
     oe_code_t code = oe_get_code_from_call_arg1(arg1);
@@ -794,7 +791,7 @@ void _oe_notify_nested_exit_start(
     // Save the ocallcontext to the callsite of current enclave thread.
     TD* td = oe_get_td();
     Callsite* callsite = td->callsites;
-    callsite->ocall_context = ocall_context;
+    callsite->ocallContext = ocallContext;
 
     return;
 }
@@ -809,6 +806,6 @@ void oe_abort(void)
     }
 
     // Return to the latest ECALL.
-    _handle_exit(OE_CODE_ERET, 0, __oe_enclave_status);
+    _HandleExit(OE_CODE_ERET, 0, __oe_enclave_status);
     return;
 }

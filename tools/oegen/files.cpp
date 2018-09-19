@@ -8,7 +8,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-int LoadFile(const char* path, size_t extra_bytes, void** data, size_t* size)
+int LoadFile(const char* path, size_t extraBytes, void** data, size_t* size)
 {
     int rc = -1;
     FILE* is = NULL;
@@ -34,7 +34,7 @@ int LoadFile(const char* path, size_t extra_bytes, void** data, size_t* size)
     }
 
     /* Allocate memory */
-    if (!(*data = malloc(*size + extra_bytes)))
+    if (!(*data = malloc(*size + extraBytes)))
         goto done;
 
     /* Open the file */
@@ -46,8 +46,8 @@ int LoadFile(const char* path, size_t extra_bytes, void** data, size_t* size)
         goto done;
 
     /* Zero-fill any extra bytes */
-    if (extra_bytes)
-        memset((unsigned char*)*data + *size, 0, extra_bytes);
+    if (extraBytes)
+        memset((unsigned char*)*data + *size, 0, extraBytes);
 
     rc = 0;
 
@@ -71,14 +71,14 @@ done:
     return rc;
 }
 
-int LoadFile(const char* path, size_t extra_bytes, std::vector<char>& v)
+int LoadFile(const char* path, size_t extraBytes, std::vector<char>& v)
 {
     void* data;
     size_t size;
 
-    if (LoadFile(path, extra_bytes, &data, &size) != 0)
+    if (LoadFile(path, extraBytes, &data, &size) != 0)
         return -1;
 
-    v.insert(v.begin(), (char*)data, (char*)data + size + extra_bytes);
+    v.insert(v.begin(), (char*)data, (char*)data + size + extraBytes);
     return 0;
 }

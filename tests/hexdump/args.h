@@ -6,7 +6,7 @@
 
 #define DATA_SIZE 1024
 
-typedef struct _args
+typedef struct _Args
 {
     /* Enclave converts this data buffer into a hex string */
     unsigned char data[DATA_SIZE];

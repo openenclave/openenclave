@@ -6,11 +6,11 @@
 
 #include <stddef.h>
 
-typedef struct _test_args
+typedef struct _TestArgs
 {
     char buf1[1024];
     char buf2[1024];
-    int strdup_ok;
+    int strdupOk;
 } TestArgs;
 
 #endif /* _stdc_args_h */

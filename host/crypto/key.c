@@ -20,30 +20,30 @@ bool oe_public_key_is_valid(const oe_public_key_t* impl, uint64_t magic)
 }
 
 void oe_public_key_init(
-    oe_public_key_t* public_key,
+    oe_public_key_t* publicKey,
     EVP_PKEY* pkey,
     uint64_t magic)
 {
-    oe_public_key_t* impl = (oe_public_key_t*)public_key;
+    oe_public_key_t* impl = (oe_public_key_t*)publicKey;
     impl->magic = magic;
     impl->pkey = pkey;
 }
 
 void oe_private_key_init(
-    oe_private_key_t* private_key,
+    oe_private_key_t* privateKey,
     EVP_PKEY* pkey,
     uint64_t magic)
 {
-    oe_private_key_t* impl = (oe_private_key_t*)private_key;
+    oe_private_key_t* impl = (oe_private_key_t*)privateKey;
     impl->magic = magic;
     impl->pkey = pkey;
 }
 
 oe_result_t oe_private_key_read_pem(
-    const uint8_t* pem_data,
-    size_t pem_size,
+    const uint8_t* pemData,
+    size_t pemSize,
     oe_private_key_t* key,
-    int key_type,
+    int keyType,
     uint64_t magic)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -56,18 +56,18 @@ oe_result_t oe_private_key_read_pem(
         memset(impl, 0, sizeof(*impl));
 
     /* Check parameters */
-    if (!pem_data || pem_size == 0 || !impl)
+    if (!pemData || pemSize == 0 || !impl)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Must have pem_size-1 non-zero characters followed by zero-terminator */
-    if (strnlen((const char*)pem_data, pem_size) != pem_size - 1)
+    /* Must have pemSize-1 non-zero characters followed by zero-terminator */
+    if (strnlen((const char*)pemData, pemSize) != pemSize - 1)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize OpenSSL */
     oe_initialize_openssl();
 
     /* Create a BIO object for reading the PEM data */
-    if (!(bio = BIO_new_mem_buf(pem_data, pem_size)))
+    if (!(bio = BIO_new_mem_buf(pemData, pemSize)))
         OE_RAISE(OE_FAILURE);
 
     /* Read the key object */
@@ -75,7 +75,7 @@ oe_result_t oe_private_key_read_pem(
         OE_RAISE(OE_FAILURE);
 
     /* Verify that it is the right key type */
-    if (pkey->type != key_type)
+    if (pkey->type != keyType)
         OE_RAISE(OE_FAILURE);
 
     /* Initialize the key */
@@ -97,10 +97,10 @@ done:
 }
 
 oe_result_t oe_public_key_read_pem(
-    const uint8_t* pem_data,
-    size_t pem_size,
+    const uint8_t* pemData,
+    size_t pemSize,
     oe_public_key_t* key,
-    int key_type,
+    int keyType,
     uint64_t magic)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -113,18 +113,18 @@ oe_result_t oe_public_key_read_pem(
         memset(impl, 0, sizeof(*impl));
 
     /* Check parameters */
-    if (!pem_data || pem_size == 0 || !impl)
+    if (!pemData || pemSize == 0 || !impl)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Must have pem_size-1 non-zero characters followed by zero-terminator */
-    if (strnlen((const char*)pem_data, pem_size) != pem_size - 1)
+    /* Must have pemSize-1 non-zero characters followed by zero-terminator */
+    if (strnlen((const char*)pemData, pemSize) != pemSize - 1)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize OpenSSL */
     oe_initialize_openssl();
 
     /* Create a BIO object for reading the PEM data */
-    if (!(bio = BIO_new_mem_buf(pem_data, pem_size)))
+    if (!(bio = BIO_new_mem_buf(pemData, pemSize)))
         OE_RAISE(OE_FAILURE);
 
     /* Read the key object */
@@ -132,7 +132,7 @@ oe_result_t oe_public_key_read_pem(
         OE_RAISE(OE_FAILURE);
 
     /* Verify that it is the right key type */
-    if (pkey->type != key_type)
+    if (pkey->type != keyType)
         OE_RAISE(OE_FAILURE);
 
     /* Initialize the key */
@@ -154,16 +154,16 @@ done:
 }
 
 oe_result_t oe_private_key_write_pem(
-    const oe_private_key_t* private_key,
+    const oe_private_key_t* privateKey,
     uint8_t* data,
     size_t* size,
-    oe_private_key_write_pem_callback private_key_write_pem_callback,
+    oe_private_key_write_pem_callback privateKeyWritePEMCallback,
     uint64_t magic)
 {
     oe_result_t result = OE_UNEXPECTED;
-    const oe_private_key_t* impl = (const oe_private_key_t*)private_key;
+    const oe_private_key_t* impl = (const oe_private_key_t*)privateKey;
     BIO* bio = NULL;
-    const char null_terminator = '\0';
+    const char nullTerminator = '\0';
 
     /* Check parameters */
     if (!oe_private_key_is_valid(impl, magic) || !size)
@@ -178,10 +178,10 @@ oe_result_t oe_private_key_write_pem(
         OE_RAISE(OE_FAILURE);
 
     /* Write key to BIO */
-    OE_CHECK(private_key_write_pem_callback(bio, impl->pkey));
+    OE_CHECK(privateKeyWritePEMCallback(bio, impl->pkey));
 
     /* Write a NULL terminator onto BIO */
-    if (BIO_write(bio, &null_terminator, sizeof(null_terminator)) <= 0)
+    if (BIO_write(bio, &nullTerminator, sizeof(nullTerminator)) <= 0)
         OE_RAISE(OE_FAILURE);
 
     /* Copy the BIO onto caller's memory */
@@ -222,7 +222,7 @@ oe_result_t oe_public_key_write_pem(
     oe_result_t result = OE_UNEXPECTED;
     BIO* bio = NULL;
     const oe_public_key_t* impl = (const oe_public_key_t*)key;
-    const char null_terminator = '\0';
+    const char nullTerminator = '\0';
 
     /* Check parameters */
     if (!oe_public_key_is_valid(impl, magic) || !size)
@@ -241,7 +241,7 @@ oe_result_t oe_public_key_write_pem(
         OE_RAISE(OE_FAILURE);
 
     /* Write a NULL terminator onto BIO */
-    if (BIO_write(bio, &null_terminator, sizeof(null_terminator)) <= 0)
+    if (BIO_write(bio, &nullTerminator, sizeof(nullTerminator)) <= 0)
         OE_RAISE(OE_FAILURE);
 
     /* Copy the BIO onto caller's memory */
@@ -326,29 +326,29 @@ done:
 }
 
 oe_result_t oe_private_key_sign(
-    const oe_private_key_t* private_key,
-    oe_hash_type_t hash_type,
-    const void* hash_data,
-    size_t hash_size,
+    const oe_private_key_t* privateKey,
+    oe_hash_type_t hashType,
+    const void* hashData,
+    size_t hashSize,
     uint8_t* signature,
-    size_t* signature_size,
+    size_t* signatureSize,
     uint64_t magic)
 {
     oe_result_t result = OE_UNEXPECTED;
-    const oe_private_key_t* impl = (const oe_private_key_t*)private_key;
+    const oe_private_key_t* impl = (const oe_private_key_t*)privateKey;
     EVP_PKEY_CTX* ctx = NULL;
 
     /* Check for null parameters */
-    if (!oe_private_key_is_valid(impl, magic) || !hash_data || !hash_size ||
-        !signature_size)
+    if (!oe_private_key_is_valid(impl, magic) || !hashData || !hashSize ||
+        !signatureSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Check that hash buffer is big enough (hash_type is size of that hash) */
-    if (hash_type > hash_size)
+    /* Check that hash buffer is big enough (hashType is size of that hash) */
+    if (hashType > hashSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If signature buffer is null, then signature size must be zero */
-    if (!signature && *signature_size != 0)
+    if (!signature && *signatureSize != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize OpenSSL */
@@ -370,21 +370,20 @@ oe_result_t oe_private_key_sign(
     {
         size_t size;
 
-        if (EVP_PKEY_sign(ctx, NULL, &size, hash_data, hash_size) <= 0)
+        if (EVP_PKEY_sign(ctx, NULL, &size, hashData, hashSize) <= 0)
             OE_RAISE(OE_FAILURE);
 
-        if (size > *signature_size)
+        if (size > *signatureSize)
         {
-            *signature_size = size;
+            *signatureSize = size;
             OE_RAISE(OE_BUFFER_TOO_SMALL);
         }
 
-        *signature_size = size;
+        *signatureSize = size;
     }
 
     /* Compute the signature */
-    if (EVP_PKEY_sign(ctx, signature, signature_size, hash_data, hash_size) <=
-        0)
+    if (EVP_PKEY_sign(ctx, signature, signatureSize, hashData, hashSize) <= 0)
         OE_RAISE(OE_FAILURE);
 
     result = OE_OK;
@@ -398,27 +397,27 @@ done:
 }
 
 oe_result_t oe_public_key_verify(
-    const oe_public_key_t* public_key,
-    oe_hash_type_t hash_type,
-    const void* hash_data,
-    size_t hash_size,
+    const oe_public_key_t* publicKey,
+    oe_hash_type_t hashType,
+    const void* hashData,
+    size_t hashSize,
     const uint8_t* signature,
-    size_t signature_size,
+    size_t signatureSize,
     uint64_t magic)
 {
     oe_result_t result = OE_UNEXPECTED;
-    const oe_public_key_t* impl = (const oe_public_key_t*)public_key;
+    const oe_public_key_t* impl = (const oe_public_key_t*)publicKey;
     EVP_PKEY_CTX* ctx = NULL;
 
     /* Check for null parameters */
-    if (!oe_public_key_is_valid(impl, magic) || !hash_data || !hash_size ||
-        !signature || !signature_size)
+    if (!oe_public_key_is_valid(impl, magic) || !hashData || !hashSize ||
+        !signature || !signatureSize)
     {
         OE_RAISE(OE_INVALID_PARAMETER);
     }
 
-    /* Check that hash buffer is big enough (hash_type is size of that hash) */
-    if (hash_type > hash_size)
+    /* Check that hash buffer is big enough (hashType is size of that hash) */
+    if (hashType > hashSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize OpenSSL */
@@ -437,8 +436,7 @@ oe_result_t oe_public_key_verify(
         OE_RAISE(OE_FAILURE);
 
     /* Compute the signature */
-    if (EVP_PKEY_verify(ctx, signature, signature_size, hash_data, hash_size) <=
-        0)
+    if (EVP_PKEY_verify(ctx, signature, signatureSize, hashData, hashSize) <= 0)
         OE_RAISE(OE_VERIFY_FAILED);
 
     result = OE_OK;

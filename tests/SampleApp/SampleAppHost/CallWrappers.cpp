@@ -7,7 +7,7 @@ struct SecureStrPatchingARGS
 {
     const char* src;
     char* dst;
-    int dst_length;
+    int dstLength;
     int ret;
 };
 
@@ -15,13 +15,13 @@ int EnclaveSecureStrPatching(
     oe_enclave_t* Enclave,
     const char* src,
     char* dst,
-    int dst_length)
+    int dstLength)
 {
     SecureStrPatchingARGS* data =
         (SecureStrPatchingARGS*)malloc(sizeof(SecureStrPatchingARGS));
     data->dst = dst;
     data->src = src;
-    data->dst_length = dst_length;
+    data->dstLength = dstLength;
     if (oe_call_enclave(Enclave, "SecureStrPatching", data) != OE_OK)
     {
         fprintf(stderr, "Error failed callin with error\n");
@@ -30,10 +30,10 @@ int EnclaveSecureStrPatching(
     return data->ret;
 }
 
-int UnsecureStrPatching(const char* src, char* dst, int dst_length);
+int UnsecureStrPatching(const char* src, char* dst, int dstLength);
 
 OE_OCALL void UnsecureStrPatching(void* data)
 {
     SecureStrPatchingARGS* args = (SecureStrPatchingARGS*)data;
-    args->ret = UnsecureStrPatching(args->src, args->dst, args->dst_length);
+    args->ret = UnsecureStrPatching(args->src, args->dst, args->dstLength);
 }

@@ -44,17 +44,17 @@ void TestSigillHandling(oe_enclave_t* enclave)
 
     // Verify that the enclave cached CPUID values match host's
     // First, verify values being tested do not reach above max supported leaf.
-    uint32_t cpuid_maxlevel[OE_CPUID_REG_COUNT];
-    memset(cpuid_maxlevel, 0, sizeof(cpuid_maxlevel));
+    uint32_t cpuidMaxlevel[OE_CPUID_REG_COUNT];
+    memset(cpuidMaxlevel, 0, sizeof(cpuidMaxlevel));
     oe_get_cpuid(
         0,
         0,
-        &cpuid_maxlevel[OE_CPUID_RAX],
-        &cpuid_maxlevel[OE_CPUID_RBX],
-        &cpuid_maxlevel[OE_CPUID_RCX],
-        &cpuid_maxlevel[OE_CPUID_RDX]);
+        &cpuidMaxlevel[OE_CPUID_RAX],
+        &cpuidMaxlevel[OE_CPUID_RBX],
+        &cpuidMaxlevel[OE_CPUID_RCX],
+        &cpuidMaxlevel[OE_CPUID_RDX]);
 
-    if (OE_CPUID_LEAF_COUNT - 1 > cpuid_maxlevel[OE_CPUID_RAX])
+    if (OE_CPUID_LEAF_COUNT - 1 > cpuidMaxlevel[OE_CPUID_RAX])
         oe_put_err(
             "Test machine does not support CPUID leaf %x expected by "
             "TestSigillHandling.\n",
@@ -63,19 +63,19 @@ void TestSigillHandling(oe_enclave_t* enclave)
     // Check all values.
     for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
-        uint32_t cpuid_info[OE_CPUID_REG_COUNT];
-        memset(cpuid_info, 0, sizeof(cpuid_info));
+        uint32_t cpuidInfo[OE_CPUID_REG_COUNT];
+        memset(cpuidInfo, 0, sizeof(cpuidInfo));
         oe_get_cpuid(
             i,
             0,
-            &cpuid_info[OE_CPUID_RAX],
-            &cpuid_info[OE_CPUID_RBX],
-            &cpuid_info[OE_CPUID_RCX],
-            &cpuid_info[OE_CPUID_RDX]);
+            &cpuidInfo[OE_CPUID_RAX],
+            &cpuidInfo[OE_CPUID_RBX],
+            &cpuidInfo[OE_CPUID_RCX],
+            &cpuidInfo[OE_CPUID_RDX]);
 
         for (int j = 0; j < OE_CPUID_REG_COUNT; j++)
         {
-            OE_TEST(cpuid_info[j] == args.cpuid_table[i][j]);
+            OE_TEST(cpuidInfo[j] == args.cpuidTable[i][j]);
         }
     }
 }

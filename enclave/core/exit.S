@@ -81,7 +81,7 @@ _oe_exit:
     push %rsi
 
     // Notify a nested exit happens.
-    // _oe_notify_nested_exit_start(rdi=arg1, rsi=ocall_context)
+    // _oe_notify_nested_exit_start(rdi=arg1, rsi=ocallContext)
     mov %r12, %rsi
     call _oe_notify_nested_exit_start
 

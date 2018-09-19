@@ -6,17 +6,17 @@
 
 #include <openenclave/bits/types.h>
 
-typedef struct _test_mutex_cxx_args
+typedef struct _TestMutexCxxArgs
 {
     size_t count1;
     size_t count2;
-    size_t num_threads;
+    size_t numThreads;
 } TestMutexCxxArgs;
 
-typedef struct _wait_cxx_args
+typedef struct _WaitCxxArgs
 {
     /* The number of threads that will call wait */
-    size_t num_threads;
+    size_t numThreads;
 } WaitCxxArgs;
 
 #endif /* THREADCXX_ARGS_H */

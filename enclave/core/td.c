@@ -109,7 +109,7 @@ void TD_PopCallsite(TD* td)
 **
 **     This layout is determined by the enclave builder. See:
 **
-**         ../host/build.c (_add_control_pages)
+**         ../host/build.c (_AddControlPages)
 **
 **     The GS segment register is set by the EENTER instruction and the TD
 **     page is zero filled upon initial enclave entry. Software sets the

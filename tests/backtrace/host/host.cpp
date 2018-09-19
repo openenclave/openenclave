@@ -36,8 +36,8 @@ int main(int argc, const char* argv[])
         static const char* syms[] = {
             "GetBacktrace",
             "Test",
-            "_handle_call_enclave",
-            "_handle_ecall",
+            "_HandleCallEnclave",
+            "_HandleECall",
             "__oe_handle_main",
             "oe_enter",
         };
@@ -63,8 +63,8 @@ int main(int argc, const char* argv[])
             "func2",
             "func1",
             "TestUnwind",
-            "_handle_call_enclave",
-            "_handle_ecall",
+            "_HandleCallEnclave",
+            "_HandleECall",
             "__oe_handle_main",
             "oe_enter",
         };

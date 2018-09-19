@@ -152,7 +152,7 @@ class Function : public Object
 {
   public:
     std::string name;
-    ReturnType return_type;
+    ReturnType returnType;
     std::vector<Param> params;
 
     virtual ~Function();
@@ -162,7 +162,7 @@ class Function : public Object
     void Clear()
     {
         name.clear();
-        return_type.Clear();
+        returnType.Clear();
         params.clear();
     }
 

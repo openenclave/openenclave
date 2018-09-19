@@ -38,16 +38,16 @@ typedef struct _oe_rsa_public_key
  * The caller is responsible for releasing the key by passing it to
  * oe_rsa_private_key_free().
  *
- * @param private_key initialized key handle upon return
- * @param pem_data zero-terminated PEM data
- * @param pem_size size of the PEM data (including the zero-terminator)
+ * @param privateKey initialized key handle upon return
+ * @param pemData zero-terminated PEM data
+ * @param pemSize size of the PEM data (including the zero-terminator)
  *
  * @return OE_OK upon success
  */
 oe_result_t oe_rsa_private_key_read_pem(
-    oe_rsa_private_key_t* private_key,
-    const uint8_t* pem_data,
-    size_t pem_size);
+    oe_rsa_private_key_t* privateKey,
+    const uint8_t* pemData,
+    size_t pemSize);
 
 /**
  * Reads a public RSA key from PEM data
@@ -62,16 +62,16 @@ oe_result_t oe_rsa_private_key_read_pem(
  * The caller is responsible for releasing the key by passing it to
  * oe_rsa_public_key_free().
  *
- * @param public_key initialized key handle upon return
- * @param pem_data zero-terminated PEM data
- * @param pem_size size of the PEM data (including the zero-terminator)
+ * @param publicKey initialized key handle upon return
+ * @param pemData zero-terminated PEM data
+ * @param pemSize size of the PEM data (including the zero-terminator)
  *
  * @return OE_OK upon success
  */
 oe_result_t oe_rsa_public_key_read_pem(
-    oe_rsa_public_key_t* public_key,
-    const uint8_t* pem_data,
-    size_t pem_size);
+    oe_rsa_public_key_t* publicKey,
+    const uint8_t* pemData,
+    size_t pemSize);
 
 /**
  * Writes a private RSA key to PEM format
@@ -83,17 +83,17 @@ oe_result_t oe_rsa_public_key_read_pem(
  *     ...
  *     -----END RSA PRIVATE KEY-----
  *
- * @param private_key key to be written
- * @param pem_data buffer where PEM data will be written
- * @param[in,out] pem_size buffer size (in); PEM data size (out)
+ * @param privateKey key to be written
+ * @param pemData buffer where PEM data will be written
+ * @param[in,out] pemSize buffer size (in); PEM data size (out)
  *
  * @return OE_OK upon success
  * @return OE_BUFFER_TOO_SMALL PEM buffer is too small
  */
 oe_result_t oe_rsa_private_key_write_pem(
-    const oe_rsa_private_key_t* private_key,
-    uint8_t* pem_data,
-    size_t* pem_size);
+    const oe_rsa_private_key_t* privateKey,
+    uint8_t* pemData,
+    size_t* pemSize);
 
 /**
  * Writes a public RSA key to PEM format
@@ -105,17 +105,17 @@ oe_result_t oe_rsa_private_key_write_pem(
  *     ...
  *     -----END PUBLIC KEY-----
  *
- * @param public_key key to be written
- * @param pem_data buffer where PEM data will be written
- * @param[in,out] pem_size buffer size (in); PEM data size (out)
+ * @param publicKey key to be written
+ * @param pemData buffer where PEM data will be written
+ * @param[in,out] pemSize buffer size (in); PEM data size (out)
  *
  * @return OE_OK upon success
  * @return OE_BUFFER_TOO_SMALL PEM buffer is too small
  */
 oe_result_t oe_rsa_public_key_write_pem(
-    const oe_rsa_public_key_t* public_key,
-    uint8_t* pem_data,
-    size_t* pem_size);
+    const oe_rsa_public_key_t* publicKey,
+    uint8_t* pemData,
+    size_t* pemSize);
 
 /**
  * Releases an RSA private key
@@ -126,7 +126,7 @@ oe_result_t oe_rsa_public_key_write_pem(
  *
  * @return OE_OK upon success
  */
-oe_result_t oe_rsa_private_key_free(oe_rsa_private_key_t* private_key);
+oe_result_t oe_rsa_private_key_free(oe_rsa_private_key_t* privateKey);
 
 /**
  * Releases an RSA public key
@@ -137,30 +137,30 @@ oe_result_t oe_rsa_private_key_free(oe_rsa_private_key_t* private_key);
  *
  * @return OE_OK upon success
  */
-oe_result_t oe_rsa_public_key_free(oe_rsa_public_key_t* public_key);
+oe_result_t oe_rsa_public_key_free(oe_rsa_public_key_t* publicKey);
 
 /**
  * Digitally signs a message with a private RSA key
  *
  * This function uses a private RSA key to sign a message with the given hash.
  *
- * @param private_key private RSA key of signer
- * @param hash_type type of hash parameter
- * @param hash_data hash of the message being signed
- * @param hash_size size of the hash data
+ * @param privateKey private RSA key of signer
+ * @param hashType type of hash parameter
+ * @param hashData hash of the message being signed
+ * @param hashSize size of the hash data
  * @param signature signature buffer
- * @param[in,out] signature_size buffer size (in); signature size (out)
+ * @param[in,out] signatureSize buffer size (in); signature size (out)
  *
  * @return OE_OK on success
  * @return OE_BUFFER_TOO_SMALL signature buffer is too small
  */
 oe_result_t oe_rsa_private_key_sign(
-    const oe_rsa_private_key_t* private_key,
-    oe_hash_type_t hash_type,
-    const void* hash_data,
-    size_t hash_size,
+    const oe_rsa_private_key_t* privateKey,
+    oe_hash_type_t hashType,
+    const void* hashData,
+    size_t hashSize,
     uint8_t* signature,
-    size_t* signature_size);
+    size_t* signatureSize);
 
 /**
  * Verifies that a message was signed by an RSA key
@@ -168,22 +168,22 @@ oe_result_t oe_rsa_private_key_sign(
  * This function verifies that the message with the given hash was signed by the
  * given RSA key.
  *
- * @param public_key public RSA key of signer
- * @param hash_type type of hash parameter
- * @param hash_data hash of the signed message
- * @param hash_size size of the hash data
+ * @param publicKey public RSA key of signer
+ * @param hashType type of hash parameter
+ * @param hashData hash of the signed message
+ * @param hashSize size of the hash data
  * @param signature expected signature
- * @param signature_size size of the expected signature
+ * @param signatureSize size of the expected signature
  *
  * @return OE_OK if the message was signed with the given certificate
  */
 oe_result_t oe_rsa_public_key_verify(
-    const oe_rsa_public_key_t* public_key,
-    oe_hash_type_t hash_type,
-    const void* hash_data,
-    size_t hash_size,
+    const oe_rsa_public_key_t* publicKey,
+    oe_hash_type_t hashType,
+    const void* hashData,
+    size_t hashSize,
     const uint8_t* signature,
-    size_t signature_size);
+    size_t signatureSize);
 
 /**
  * Generates an RSA private-public key pair
@@ -193,16 +193,16 @@ oe_result_t oe_rsa_public_key_verify(
  *
  * @param bits the number of bits in the key
  * @param exponent the exponent for this key
- * @param private_key generated private key
- * @param public_key generated public key
+ * @param privateKey generated private key
+ * @param publicKey generated public key
  *
  * @return OE_OK on success
  */
 oe_result_t oe_rsa_generate_key_pair(
     uint64_t bits,
     uint64_t exponent,
-    oe_rsa_private_key_t* private_key,
-    oe_rsa_public_key_t* public_key);
+    oe_rsa_private_key_t* privateKey,
+    oe_rsa_public_key_t* publicKey);
 
 /**
  * Get the modulus from a public RSA key.
@@ -210,18 +210,18 @@ oe_result_t oe_rsa_generate_key_pair(
  * This function gets the modulus from a public RSA key. The modulus is
  * written to **buffer**.
  *
- * @param public_key key whose modulus is fetched.
+ * @param publicKey key whose modulus is fetched.
  * @param buffer buffer where modulus is written (may be null).
- * @param buffer_size[in,out] buffer size on input; actual size on output.
+ * @param bufferSize[in,out] buffer size on input; actual size on output.
  *
  * @return OE_OK upon success
- * @return OE_BUFFER_TOO_SMALL buffer is too small and **buffer_size** contains
+ * @return OE_BUFFER_TOO_SMALL buffer is too small and **bufferSize** contains
  *         the required size.
  */
 oe_result_t oe_rsa_public_key_get_modulus(
-    const oe_rsa_public_key_t* public_key,
+    const oe_rsa_public_key_t* publicKey,
     uint8_t* buffer,
-    size_t* buffer_size);
+    size_t* bufferSize);
 
 /**
  * Get the exponent from a public RSA key.
@@ -229,26 +229,26 @@ oe_result_t oe_rsa_public_key_get_modulus(
  * This function gets the exponent from a public RSA key. The exponent is
  * written to **buffer**.
  *
- * @param public_key key whose exponent is fetched.
+ * @param publicKey key whose exponent is fetched.
  * @param buffer buffer where exponent is written (may be null).
- * @param buffer_size[in,out] buffer size on input; actual size on output.
+ * @param bufferSize[in,out] buffer size on input; actual size on output.
  *
  * @return OE_OK upon success
- * @return OE_BUFFER_TOO_SMALL buffer is too small and **buffer_size** contains
+ * @return OE_BUFFER_TOO_SMALL buffer is too small and **bufferSize** contains
  *         the required size.
  */
 oe_result_t oe_rsa_public_key_get_exponent(
-    const oe_rsa_public_key_t* public_key,
+    const oe_rsa_public_key_t* publicKey,
     uint8_t* buffer,
-    size_t* buffer_size);
+    size_t* bufferSize);
 
 /**
  * Determine whether two RSA public keys are identical.
  *
  * This function determines whether two RSA public keys are identical.
  *
- * @param public_key1 first key.
- * @param public_key2 second key.
+ * @param publicKey1 first key.
+ * @param publicKey2 second key.
  * @param equal[out] true if the keys are identical.
  *
  * @return OE_OK successful and **equal** is either true or false.
@@ -256,8 +256,8 @@ oe_result_t oe_rsa_public_key_get_exponent(
  *
  */
 oe_result_t oe_rsa_public_key_equal(
-    const oe_rsa_public_key_t* public_key1,
-    const oe_rsa_public_key_t* public_key2,
+    const oe_rsa_public_key_t* publicKey1,
+    const oe_rsa_public_key_t* publicKey2,
     bool* equal);
 
 OE_EXTERNC_END

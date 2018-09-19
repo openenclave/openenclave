@@ -10,20 +10,20 @@
 
 #define FUNC1 1
 
-typedef struct _test_args
+typedef struct _TestArgs
 {
     void* self;
     unsigned int magic;
-    uint64_t base_heap_page;
+    uint64_t baseHeapPage;
     uint64_t num_heap_pages;
-    uint64_t num_pages;
+    uint64_t numPages;
     const void* base;
-    oe_thread_data_t thread_data;
-    uint64_t thread_data_addr;
+    oe_thread_data_t threadData;
+    uint64_t threadDataAddr;
     unsigned int mm;
     unsigned int dd;
     unsigned int yyyy;
-    unsigned int setjmp_result;
+    unsigned int setjmpResult;
     unsigned int magic2;
 } TestArgs;
 

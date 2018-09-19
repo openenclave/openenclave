@@ -148,7 +148,7 @@ typedef struct _sgx_epid_signature
     /* Revocation list version number */
     sgx_epid_oct_str32_t rl_ver;
 
-    /* number of entries in sig_rl */
+    /* number of entries in SigRL */
     sgx_epid_oct_str32_t n2;
 
     /* array of non-revoked proofs (variable length array) */
@@ -193,7 +193,7 @@ typedef struct _sgx_epid_sig_rl
     /* Number of entries */
     uint8_t n2[4];
 
-    /* sig_rl entries */
+    /* SigRL entries */
     sgx_epid_sig_rl_entry_t bk[1];
 } sgx_epid_sig_rl_t;
 OE_PACK_END

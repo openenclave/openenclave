@@ -108,8 +108,8 @@ dispatch_ocall_sim:
     ;; RAX = __oe_dispatch_ocall(
     ;;     RCX=arg1
     ;;     RDX=arg2
-    ;;     R8=arg1_out
-    ;;     R9=arg2_out
+    ;;     R8=arg1Out
+    ;;     R9=arg2Out
     ;;     [RSP+32]=TCS,
     ;;     [RSP+40]=ENCLAVE);
     sub rsp, 56

@@ -9,8 +9,8 @@
 #include <stdlib.h>
 #include "../args.h"
 
-static oe_rwlock_t rw_lock = OE_RWLOCK_INITIALIZER;
-static oe_spinlock_t rw_args_lock = OE_SPINLOCK_INITIALIZER;
+static oe_rwlock_t rwLock = OE_RWLOCK_INITIALIZER;
+static oe_spinlock_t rwArgsLock = OE_SPINLOCK_INITIALIZER;
 
 inline size_t max(size_t a, size_t b)
 {
@@ -55,20 +55,20 @@ OE_ECALL void ReaderThreadImpl(void* args_)
     for (size_t i = 0; i < RWLOCK_TEST_ITERS; ++i)
     {
         // Obtain read lock.
-        oe_rwlock_rdlock(&rw_lock);
+        oe_rwlock_rdlock(&rwLock);
 
         {
             // Update test data.
-            ScopedSpinLock lock(&rw_args_lock);
+            ScopedSpinLock lock(&rwArgsLock);
 
             ++args->readers;
 
             // Maximum number of simultaneous readers.
-            args->max_readers = max(args->max_readers, args->readers);
+            args->maxReaders = max(args->maxReaders, args->readers);
 
             // Allow all reader threads to be simultaneously active
             // at least once.
-            while (args->max_readers < NUM_READER_THREADS)
+            while (args->maxReaders < NUM_READER_THREADS)
             {
                 lock.Unlock();
                 oe_call_host("host_usleep", (void*)sleep_utime);
@@ -76,8 +76,8 @@ OE_ECALL void ReaderThreadImpl(void* args_)
             }
 
             // Are readers and writers simultaneously active?
-            args->readers_and_writers =
-                args->readers_and_writers || (args->readers && args->writers);
+            args->readersAndWriters =
+                args->readersAndWriters || (args->readers && args->writers);
         }
 
         // Hold on to the lock for some time to test ownership constraints.
@@ -86,17 +86,17 @@ OE_ECALL void ReaderThreadImpl(void* args_)
 
         {
             // Update test data.
-            ScopedSpinLock lock(&rw_args_lock);
+            ScopedSpinLock lock(&rwArgsLock);
 
             // Are readers and writers simultaneously active?
-            args->readers_and_writers =
-                args->readers_and_writers || (args->readers && args->writers);
+            args->readersAndWriters =
+                args->readersAndWriters || (args->readers && args->writers);
 
             --args->readers;
         }
 
         // Release read lock
-        oe_rwlock_unlock(&rw_lock);
+        oe_rwlock_unlock(&rwLock);
     }
 
     oe_host_printf("%llu: Reader Exiting\n", OE_LLU(oe_thread_self()));
@@ -109,20 +109,20 @@ OE_ECALL void WriterThreadImpl(void* args_)
     for (size_t i = 0; i < RWLOCK_TEST_ITERS; ++i)
     {
         // Obtain write lock
-        oe_rwlock_wrlock(&rw_lock);
+        oe_rwlock_wrlock(&rwLock);
 
         {
             // Update test data
-            ScopedSpinLock lock(&rw_args_lock);
+            ScopedSpinLock lock(&rwArgsLock);
 
             ++args->writers;
 
             // Maximum number of simultaneous writers
-            args->max_writers = max(args->max_writers, args->writers);
+            args->maxWriters = max(args->maxWriters, args->writers);
 
             // Are readers and writers simultaneously active?
-            args->readers_and_writers =
-                args->readers_and_writers || (args->readers && args->writers);
+            args->readersAndWriters =
+                args->readersAndWriters || (args->readers && args->writers);
         }
 
         // Hold on to the lock for some time to test ownership constraints.
@@ -131,17 +131,17 @@ OE_ECALL void WriterThreadImpl(void* args_)
 
         {
             // Update test data
-            ScopedSpinLock lock(&rw_args_lock);
+            ScopedSpinLock lock(&rwArgsLock);
 
             // Are readers and writers simultaneously active?
-            args->readers_and_writers =
-                args->readers_and_writers || (args->readers && args->writers);
+            args->readersAndWriters =
+                args->readersAndWriters || (args->readers && args->writers);
 
             --args->writers;
         }
 
         // Release write lock
-        oe_rwlock_unlock(&rw_lock);
+        oe_rwlock_unlock(&rwLock);
     }
 
     oe_host_printf("%llu: Writer Exiting\n", OE_LLU(oe_thread_self()));

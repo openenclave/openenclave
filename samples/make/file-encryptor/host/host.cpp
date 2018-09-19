@@ -25,28 +25,28 @@ using namespace std;
 oe_enclave_t* enclave = NULL;
 
 // Dump Encryption header
-void dump_header(EncryptionHeader* _header)
+void dumpHeader(EncryptionHeader* _pHeader)
 {
     cout << "--------- Dumping header -------------\n";
-    cout << "Host: fileDataSize = " << _header->file_data_size << endl;
+    cout << "Host: fileDataSize = " << _pHeader->fileDataSize << endl;
 
     cout << "Host: password digest:\n";
     for (int i = 0; i < HASH_VALUE_SIZE_IN_BYTES; i++)
     {
         cout << "Host: digest[" << i << "]" << std::hex
-             << (unsigned int)(_header->digest[i]) << endl;
+             << (unsigned int)(_pHeader->digest[i]) << endl;
     }
 
     cout << "Host: encryption key" << endl;
     for (int i = 0; i < ENCRYPTION_KEY_SIZE_IN_BYTES; i++)
     {
         cout << "Host: key[" << i << "]=" << std::hex
-             << (unsigned int)(_header->encrypted_key[i]) << endl;
+             << (unsigned int)(_pHeader->encryptedKey[i]) << endl;
     }
 }
 
 // get the file size
-int get_file_size(FILE* file, size_t* _file_size)
+int getFileSize(FILE* file, size_t* _fileSize)
 {
     int ret = 0;
     long int oldpos = 0;
@@ -56,7 +56,7 @@ int get_file_size(FILE* file, size_t* _file_size)
     if (ret != 0)
         goto exit;
 
-    *_file_size = (size_t)ftell(file);
+    *_fileSize = (size_t)ftell(file);
     fseek(file, oldpos, SEEK_SET);
 exit:
     return ret;
@@ -64,20 +64,20 @@ exit:
 
 // Compare file1 and file2: return 0 if the first file1.size bytes of the file2
 // is equal to file1's contents  Otherwise it returns 1
-int compare_two_files(const char* first_file, const char* second_file)
+int compareTwoFiles(const char* firstFile, const char* secondFile)
 {
     int ret = 0;
-    std::ifstream f1(first_file, std::ios::binary);
-    std::ifstream f2(second_file, std::ios::binary);
-    std::vector<uint8_t> f1_data_bytes = std::vector<uint8_t>(
+    std::ifstream f1(firstFile, std::ios::binary);
+    std::ifstream f2(secondFile, std::ios::binary);
+    std::vector<uint8_t> f1DataBytes = std::vector<uint8_t>(
         std::istreambuf_iterator<char>(f1), std::istreambuf_iterator<char>());
-    std::vector<uint8_t> f2_data_bytes = std::vector<uint8_t>(
+    std::vector<uint8_t> f2DataBytes = std::vector<uint8_t>(
         std::istreambuf_iterator<char>(f2), std::istreambuf_iterator<char>());
-    auto f1iterator = f1_data_bytes.begin();
-    auto f2iterator = f2_data_bytes.begin();
+    auto f1iterator = f1DataBytes.begin();
+    auto f2iterator = f2DataBytes.begin();
 
     // compare files
-    for (; f1iterator != f1_data_bytes.end() - 1; ++f1iterator, ++f2iterator)
+    for (; f1iterator != f1DataBytes.end() - 1; ++f1iterator, ++f2iterator)
     {
         if (!(*f1iterator == *f2iterator))
         {
@@ -90,22 +90,22 @@ int compare_two_files(const char* first_file, const char* second_file)
 }
 
 // Initialize the encryptor inside the enclave
-// Parameters: do_encrypt: a bool value to set the encryptor mode, true for
+// Parameters: bEncrypt: a bool value to set the encryptor mode, true for
 // encryption and false for decryption
 // password is provided for encryption key used inside the encryptor. Upon
 // return, _header will be filled with encryption key information for encryption
 // operation. In the case of decryption, the caller provides header information
 // from a previously encrypted file
 oe_result_t InitializeEncryptor(
-    bool do_encrypt,
+    bool bEncrypt,
     EncryptionHeader* _header,
     const char* password)
 {
     EncryptInitializeArgs arg = {0};
     oe_result_t result = OE_OK;
-    arg.do_encrypt = do_encrypt;
+    arg.bEncrypt = bEncrypt;
     arg.password = password;
-    arg.header = _header;
+    arg.pHeader = _header;
 
     result = oe_call_enclave(enclave, "InitializeEncryptor", (void*)&arg);
     if (result != OE_OK)
@@ -113,27 +113,27 @@ oe_result_t InitializeEncryptor(
         cerr << "Host: InitializeEncryptor failed:" << result << endl;
         goto exit;
     }
-    memcpy(_header, arg.header, sizeof(EncryptionHeader));
+    memcpy(_header, arg.pHeader, sizeof(EncryptionHeader));
 
 exit:
     return result;
 }
 
-// Request for the enclave to encrypt or decrypt _input_buffer. The input data
+// Request for the enclave to encrypt or decrypt _inputBuffer. The input data
 // size, _size, needs to be a multiple of CIPHER_BLOCK_SIZE. In this sample,
 // DATA_BLOCK_SIZE is used except the last block, which will have to pad it to
 // be a multiple of CIPHER_BLOCK_SIZE.
 oe_result_t EncryptBlock(
-    bool _do_encrypt,
-    unsigned char* _input_buffer,
-    unsigned char* _output_buffer,
+    bool _bEncrypt,
+    unsigned char* _inputBuffer,
+    unsigned char* _outputBuffer,
     size_t _size)
 {
     EncryptBlockArgs arg;
     oe_result_t result = OE_OK;
-    arg.do_encrypt = _do_encrypt;
-    arg.inputbuf = _input_buffer;
-    arg.outputbuf = _output_buffer;
+    arg.bEncrypt = _bEncrypt;
+    arg.inputbuf = _inputBuffer;
+    arg.outputbuf = _outputBuffer;
     arg.size = _size;
 
     result = oe_call_enclave(enclave, "EncryptBlock", (void*)&arg);
@@ -149,7 +149,7 @@ oe_result_t CloseEncryptor()
 {
     CloseEncryptorArgs arg = {0};
     oe_result_t result;
-    arg.do_encrypt = true;
+    arg.bEncrypt = true;
 
     result = oe_call_enclave(enclave, "CloseEncryptor", (void*)&arg);
     if (result != OE_OK)
@@ -160,36 +160,36 @@ oe_result_t CloseEncryptor()
 }
 
 int EncryptFile(
-    bool _do_encrypt,
+    bool _bEncrypt,
     const char* _password,
-    const char* _input_file,
-    const char* _output_file)
+    const char* _inputFile,
+    const char* _outputFile)
 {
     oe_result_t result;
     int ret = 0;
-    FILE* src_file = NULL;
-    FILE* dest_file = NULL;
-    unsigned char* read_buffer = NULL;
-    unsigned char* write_buffer = NULL;
-    size_t bytes_read;
-    size_t bytes_written;
+    FILE* srcFile = NULL;
+    FILE* destFile = NULL;
+    unsigned char* readBuffer = NULL;
+    unsigned char* writeBuffer = NULL;
+    size_t bytesRead;
+    size_t bytesWritten;
     size_t srcfilesize = 0;
-    size_t src_data_size = 0;
+    size_t srcDataSize = 0;
     size_t leftoverbytes = 0;
-    size_t bytes_left = 0;
-    size_t requested_read_size = 0;
+    size_t bytesLeft = 0;
+    size_t requestedReadSize = 0;
     EncryptionHeader header;
 
     // allocate read/write buffers
-    read_buffer = new unsigned char[DATA_BLOCK_SIZE];
-    if (read_buffer == NULL)
+    readBuffer = new unsigned char[DATA_BLOCK_SIZE];
+    if (readBuffer == NULL)
     {
         ret = 1;
         goto exit;
     }
 
-    write_buffer = new unsigned char[DATA_BLOCK_SIZE];
-    if (write_buffer == NULL)
+    writeBuffer = new unsigned char[DATA_BLOCK_SIZE];
+    if (writeBuffer == NULL)
     {
         cerr << "Host: writeBuffer allocation error" << endl;
         ret = 1;
@@ -197,44 +197,44 @@ int EncryptFile(
     }
 
     // open source and dest files
-    src_file = fopen(_input_file, "r");
-    if (!src_file)
+    srcFile = fopen(_inputFile, "r");
+    if (!srcFile)
     {
-        cout << "Host: fopen " << _input_file << " failed." << endl;
+        cout << "Host: fopen " << _inputFile << " failed." << endl;
         ret = 1;
         goto exit;
     }
 
-    ret = get_file_size(src_file, &srcfilesize);
+    ret = getFileSize(srcFile, &srcfilesize);
     if (ret != 0)
     {
         ret = 1;
         goto exit;
     }
-    src_data_size = srcfilesize;
-    dest_file = fopen(_output_file, "w");
-    if (!dest_file)
+    srcDataSize = srcfilesize;
+    destFile = fopen(_outputFile, "w");
+    if (!destFile)
     {
-        cerr << "Host: fopen " << _output_file << " failed." << endl;
+        cerr << "Host: fopen " << _outputFile << " failed." << endl;
         ret = 1;
         goto exit;
     }
 
     // For decryption, we want to read encryption header data into the header
     // structure before calling InitializeEncryptor
-    if (!_do_encrypt)
+    if (!_bEncrypt)
     {
-        bytes_read = fread(&header, 1, sizeof(header), src_file);
-        if (bytes_read != sizeof(header))
+        bytesRead = fread(&header, 1, sizeof(header), srcFile);
+        if (bytesRead != sizeof(header))
         {
             cerr << "Host: read header failed." << endl;
             ret = 1;
             goto exit;
         }
-        src_data_size = srcfilesize - sizeof(header);
+        srcDataSize = srcfilesize - sizeof(header);
     }
 
-    result = InitializeEncryptor(_do_encrypt, &header, _password);
+    result = InitializeEncryptor(_bEncrypt, &header, _password);
     if (result != OE_OK)
     {
         ret = 1;
@@ -243,62 +243,58 @@ int EncryptFile(
 
     // For encryption, on return from InitializeEncryptor call, the header will
     // have encryption information. Write this header to the output file.
-    if (_do_encrypt)
+    if (_bEncrypt)
     {
-        header.file_data_size = srcfilesize;
-        bytes_written = fwrite(&header, 1, sizeof(header), dest_file);
-        if (bytes_written != sizeof(header))
+        header.fileDataSize = srcfilesize;
+        bytesWritten = fwrite(&header, 1, sizeof(header), destFile);
+        if (bytesWritten != sizeof(header))
         {
             cerr << "Host: writting header failed. bytesWritten = "
-                 << bytes_written << " sizeof(header)=" << sizeof(header)
+                 << bytesWritten << " sizeof(header)=" << sizeof(header)
                  << endl;
             ret = 1;
             goto exit;
         }
     }
 
-    leftoverbytes = src_data_size % CIPHER_BLOCK_SIZE;
+    leftoverbytes = srcDataSize % CIPHER_BLOCK_SIZE;
 
-    // Encrypt each block in the source file and write to the dest_file. Process
+    // Encrypt each block in the source file and write to the destFile. Process
     // all the blocks except the last one if its size is not a multiple of
     // CIPHER_BLOCK_SIZE
-    bytes_left = src_data_size;
+    bytesLeft = srcDataSize;
     if (leftoverbytes)
     {
-        bytes_left = src_data_size - leftoverbytes;
+        bytesLeft = srcDataSize - leftoverbytes;
     }
-    requested_read_size = DATA_BLOCK_SIZE;
-    cout << "Host: start " << (_do_encrypt ? "encrypting" : "decrypting")
-         << endl;
-    while ((bytes_read = fread(
-                read_buffer,
-                sizeof(unsigned char),
-                requested_read_size,
-                src_file)) &&
-           bytes_read > 0)
+    requestedReadSize = DATA_BLOCK_SIZE;
+    cout << "Host: start " << (_bEncrypt ? "encrypting" : "decrypting") << endl;
+    while (
+        (bytesRead = fread(
+             readBuffer, sizeof(unsigned char), requestedReadSize, srcFile)) &&
+        bytesRead > 0)
     {
-        result =
-            EncryptBlock(_do_encrypt, read_buffer, write_buffer, bytes_read);
+        result = EncryptBlock(_bEncrypt, readBuffer, writeBuffer, bytesRead);
         if (result != OE_OK)
         {
             ret = 1;
             goto exit;
         }
 
-        if ((bytes_written = fwrite(
-                 write_buffer, sizeof(unsigned char), bytes_read, dest_file)) !=
-            bytes_read)
+        if ((bytesWritten = fwrite(
+                 writeBuffer, sizeof(unsigned char), bytesRead, destFile)) !=
+            bytesRead)
         {
-            cerr << "Host: fwrite error  " << _output_file << endl;
+            cerr << "Host: fwrite error  " << _outputFile << endl;
             ret = 1;
             goto exit;
         }
-        bytes_left -= requested_read_size;
-        if (bytes_left == 0)
+        bytesLeft -= requestedReadSize;
+        if (bytesLeft == 0)
             break;
-        if (bytes_left < DATA_BLOCK_SIZE)
+        if (bytesLeft < DATA_BLOCK_SIZE)
         {
-            requested_read_size = bytes_left;
+            requestedReadSize = bytesLeft;
         }
     }
 
@@ -317,11 +313,11 @@ int EncryptFile(
 
         memset(paddingtest_ciphertext, 0, CIPHER_BLOCK_SIZE);
         memset(paddingtest, 0, CIPHER_BLOCK_SIZE);
-        if (_do_encrypt)
+        if (_bEncrypt)
         {
-            bytes_read = fread(
-                paddingtest, sizeof(unsigned char), leftoverbytes, src_file);
-            if (bytes_read != leftoverbytes)
+            bytesRead = fread(
+                paddingtest, sizeof(unsigned char), leftoverbytes, srcFile);
+            if (bytesRead != leftoverbytes)
                 goto exit;
 
             // PKCS5 Padding
@@ -331,33 +327,33 @@ int EncryptFile(
             }
 
             result = EncryptBlock(
-                _do_encrypt,
+                _bEncrypt,
                 paddingtest,
                 paddingtest_ciphertext,
                 CIPHER_BLOCK_SIZE);
             if (result != OE_OK)
                 goto exit;
 
-            bytes_written = fwrite(
+            bytesWritten = fwrite(
                 paddingtest_ciphertext,
                 sizeof(unsigned char),
                 CIPHER_BLOCK_SIZE,
-                dest_file);
-            if (bytes_written != CIPHER_BLOCK_SIZE)
+                destFile);
+            if (bytesWritten != CIPHER_BLOCK_SIZE)
                 goto exit;
         }
         else
         {
-            bytes_read = fread(
+            bytesRead = fread(
                 paddingtest_ciphertext,
                 sizeof(unsigned char),
                 CIPHER_BLOCK_SIZE,
-                src_file);
-            if (bytes_read != CIPHER_BLOCK_SIZE)
+                srcFile);
+            if (bytesRead != CIPHER_BLOCK_SIZE)
                 goto exit;
 
             result = EncryptBlock(
-                _do_encrypt,
+                _bEncrypt,
                 paddingtest_ciphertext,
                 paddingtest,
                 CIPHER_BLOCK_SIZE);
@@ -377,23 +373,22 @@ int EncryptFile(
                         goto exit;
                 }
             }
-            bytes_written = fwrite(
-                paddingtest, sizeof(unsigned char), leftoverbytes, dest_file);
-            if (bytes_written != leftoverbytes)
+            bytesWritten = fwrite(
+                paddingtest, sizeof(unsigned char), leftoverbytes, destFile);
+            if (bytesWritten != leftoverbytes)
                 goto exit;
         }
     }
 
-    cout << "Host: done  " << (_do_encrypt ? "encrypting" : "decrypting")
-         << endl;
+    cout << "Host: done  " << (_bEncrypt ? "encrypting" : "decrypting") << endl;
 
     // close files
-    fclose(src_file);
-    fclose(dest_file);
+    fclose(srcFile);
+    fclose(destFile);
 
 exit:
-    free(read_buffer);
-    free(write_buffer);
+    free(readBuffer);
+    free(writeBuffer);
     cout << "Host: called CloseEncryptor" << endl;
     CloseEncryptor();
     return ret;
@@ -442,7 +437,7 @@ int main(int argc, const char* argv[])
     // are not equal
     cout << "Host: compared file:" << encrypted_file
          << " to file:" << decrypted_file << endl;
-    ret = compare_two_files(input_file, encrypted_file);
+    ret = compareTwoFiles(input_file, encrypted_file);
     if (ret == 0)
     {
         cerr << "Host: checking failed! " << input_file
@@ -471,7 +466,7 @@ int main(int argc, const char* argv[])
     }
     cout << "Host: compared file:" << encrypted_file
          << " to file:" << decrypted_file << endl;
-    ret = compare_two_files(input_file, decrypted_file);
+    ret = compareTwoFiles(input_file, decrypted_file);
     if (ret != 0)
     {
         cerr << "Host: checking failed! " << input_file

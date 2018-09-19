@@ -17,22 +17,21 @@
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
 
 static oe_result_t _oe_get_report_key(
-    const sgx_report_t* sgx_report,
-    sgx_key_t* sgx_key)
+    const sgx_report_t* sgxReport,
+    sgx_key_t* sgxKey)
 {
     oe_result_t result = OE_UNEXPECTED;
-    sgx_key_request_t sgx_key_request = {0};
+    sgx_key_request_t sgxKeyRequest = {0};
 
-    sgx_key_request.key_name = SGX_KEYSELECT_REPORT;
-    oe_memcpy(
-        sgx_key_request.key_id, sgx_report->keyid, sizeof(sgx_report->keyid));
+    sgxKeyRequest.key_name = SGX_KEYSELECT_REPORT;
+    oe_memcpy(sgxKeyRequest.key_id, sgxReport->keyid, sizeof(sgxReport->keyid));
 
-    OE_CHECK(oe_get_key(&sgx_key_request, sgx_key));
+    OE_CHECK(oe_get_key(&sgxKeyRequest, sgxKey));
     result = OE_OK;
 
 done:
     // Cleanup secret.
-    oe_secure_zero_fill(&sgx_key_request, sizeof(sgx_key_request));
+    oe_secure_zero_fill(&sgxKeyRequest, sizeof(sgxKeyRequest));
 
     return result;
 }
@@ -42,22 +41,22 @@ done:
 // of in oecore. Also see ECall_HandleVerifyReport below.
 oe_result_t oe_verify_report(
     const uint8_t* report,
-    size_t report_size,
-    oe_report_t* parsed_report)
+    size_t reportSize,
+    oe_report_t* parsedReport)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_report_t oe_report = {0};
-    sgx_key_t sgx_key = {{0}};
+    oe_report_t oeReport = {0};
+    sgx_key_t sgxKey = {{0}};
     oe_report_header_t* header = (oe_report_header_t*)report;
 
-    sgx_report_t* sgx_report = NULL;
+    sgx_report_t* sgxReport = NULL;
 
-    const size_t aes_cmac_length = sizeof(sgx_key);
-    oe_aes_cmac_t report_aes_cmac = {{0}};
-    oe_aes_cmac_t computed_aes_cmac = {{0}};
+    const size_t aesCMACLength = sizeof(sgxKey);
+    OE_AESCMAC reportAESCMAC = {{0}};
+    OE_AESCMAC computedAESCMAC = {{0}};
 
     // Ensure that the report is parseable before using the header.
-    OE_CHECK(oe_parse_report(report, report_size, &oe_report));
+    OE_CHECK(oe_parse_report(report, reportSize, &oeReport));
 
     if (header->report_type == OE_REPORT_TYPE_SGX_REMOTE)
     {
@@ -74,23 +73,23 @@ oe_result_t oe_verify_report(
     }
     else if (header->report_type == OE_REPORT_TYPE_SGX_LOCAL)
     {
-        sgx_report = (sgx_report_t*)header->report;
+        sgxReport = (sgx_report_t*)header->report;
 
-        OE_CHECK(_oe_get_report_key(sgx_report, &sgx_key));
+        OE_CHECK(_oe_get_report_key(sgxReport, &sgxKey));
 
         OE_CHECK(
             oe_aes_cmac_sign(
-                (uint8_t*)&sgx_key,
-                sizeof(sgx_key),
-                (uint8_t*)&sgx_report->body,
-                sizeof(sgx_report->body),
-                &computed_aes_cmac));
+                (uint8_t*)&sgxKey,
+                sizeof(sgxKey),
+                (uint8_t*)&sgxReport->body,
+                sizeof(sgxReport->body),
+                &computedAESCMAC));
 
-        // Fetch cmac from sgx_report.
-        // Note: sizeof(sgx_report->mac) <= sizeof(oe_aes_cmac_t).
-        oe_secure_memcpy(&report_aes_cmac, sgx_report->mac, aes_cmac_length);
+        // Fetch cmac from sgxReport.
+        // Note: sizeof(sgxReport->mac) <= sizeof(OE_AESCMAC).
+        oe_secure_memcpy(&reportAESCMAC, sgxReport->mac, aesCMACLength);
 
-        if (!oe_secure_aes_cmac_equal(&computed_aes_cmac, &report_aes_cmac))
+        if (!oe_secure_aes_cmac_equal(&computedAESCMAC, &reportAESCMAC))
             OE_RAISE(OE_VERIFY_FAILED);
     }
     else
@@ -99,69 +98,69 @@ oe_result_t oe_verify_report(
     }
 
     // Optionally return parsed report.
-    if (parsed_report != NULL)
-        *parsed_report = oe_report;
+    if (parsedReport != NULL)
+        *parsedReport = oeReport;
 
     result = OE_OK;
 
 done:
     // Cleanup secret.
-    oe_secure_zero_fill(&sgx_key, sizeof(sgx_key));
+    oe_secure_zero_fill(&sgxKey, sizeof(sgxKey));
 
     return result;
 }
 
-static oe_result_t _safe_copy_verify_report_args(
-    uint64_t arg_in,
-    oe_verify_report_args_t* safe_arg,
+static oe_result_t _SafeCopyVerifyReportArgs(
+    uint64_t argIn,
+    oe_verify_report_args_t* safeArg,
     uint8_t** buffer)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_verify_report_args_t* unsafe_arg = (oe_verify_report_args_t*)arg_in;
+    oe_verify_report_args_t* unsafeArg = (oe_verify_report_args_t*)argIn;
 
-    if (!unsafe_arg ||
-        !oe_is_outside_enclave(unsafe_arg, sizeof(*unsafe_arg)) || !buffer)
+    if (!unsafeArg || !oe_is_outside_enclave(unsafeArg, sizeof(*unsafeArg)) ||
+        !buffer)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Always set output.
     *buffer = NULL;
 
     // Copy arg to prevent TOCTOU issues.
-    oe_secure_memcpy(safe_arg, unsafe_arg, sizeof(*safe_arg));
+    oe_secure_memcpy(safeArg, unsafeArg, sizeof(*safeArg));
 
-    if (!safe_arg->report ||
-        !oe_is_outside_enclave(safe_arg->report, safe_arg->report_size))
+    if (!safeArg->report ||
+        !oe_is_outside_enclave(safeArg->report, safeArg->reportSize))
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (safe_arg->report_size > OE_MAX_REPORT_SIZE)
+    if (safeArg->reportSize > OE_MAX_REPORT_SIZE)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Caller is expected to free the allocated buffer.
-    *buffer = oe_calloc(1, safe_arg->report_size);
+    *buffer = oe_calloc(1, safeArg->reportSize);
     if (*buffer == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     // Copy report to prevent TOCTOU issues.
-    oe_secure_memcpy(*buffer, safe_arg->report, safe_arg->report_size);
-    safe_arg->report = *buffer;
+    oe_secure_memcpy(*buffer, safeArg->report, safeArg->reportSize);
+    safeArg->report = *buffer;
 
     result = OE_OK;
 done:
     return result;
 }
 
-static oe_result_t _safe_copy_verify_report_args_ouput(
-    const oe_verify_report_args_t* safe_arg,
-    uint64_t arg_in)
+static oe_result_t _SafeCopyVerifyReportArgsOuput(
+    const oe_verify_report_args_t* safeArg,
+    uint64_t argIn)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_verify_report_args_t* unsafe_arg = (oe_verify_report_args_t*)arg_in;
+    oe_verify_report_args_t* unsafeArg = (oe_verify_report_args_t*)argIn;
 
-    if (!unsafe_arg || !oe_is_outside_enclave(unsafe_arg, sizeof(*unsafe_arg)))
+    if (!unsafeArg || !oe_is_outside_enclave(unsafeArg, sizeof(*unsafeArg)))
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    unsafe_arg->result = safe_arg->result;
-    result = safe_arg->result;
+    unsafeArg->result = safeArg->result;
+    result = safeArg->result;
 
 done:
     return result;
@@ -170,20 +169,20 @@ done:
 // The report key is never sent out to the host. The host side oe_verify_report
 // invokes OE_ECALL_VERIFY_REPORT ECALL in the enclave. This function is called
 // from liboecore.
-void oe_handle_verify_report(uint64_t arg_in, uint64_t* arg_out)
+void oe_handle_verify_report(uint64_t argIn, uint64_t* argOut)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_verify_report_args_t arg;
     uint8_t* buffer = NULL;
 
-    OE_CHECK(_safe_copy_verify_report_args(arg_in, &arg, &buffer));
+    OE_CHECK(_SafeCopyVerifyReportArgs(argIn, &arg, &buffer));
 
-    OE_CHECK(oe_verify_report(arg.report, arg.report_size, NULL));
+    OE_CHECK(oe_verify_report(arg.report, arg.reportSize, NULL));
 
     // success.
     result = OE_OK;
 done:
     arg.result = result;
-    _safe_copy_verify_report_args_ouput(&arg, arg_in);
+    _SafeCopyVerifyReportArgsOuput(&arg, argIn);
     oe_free(buffer);
 }

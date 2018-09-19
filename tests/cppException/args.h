@@ -12,7 +12,7 @@ typedef enum _unhandled_exception_func_num {
     UNHANDLED_EXCEPTION,
 } unhandled_exception_func_num;
 
-typedef struct _args
+typedef struct _Args
 {
     unhandled_exception_func_num func_num;
     int ret;

@@ -40,15 +40,15 @@
 **==============================================================================
 */
 
-typedef struct _callsite Callsite;
+typedef struct _Callsite Callsite;
 
-struct _callsite
+struct _Callsite
 {
     /* Enclave callsite stored here when exiting to make an OCALL */
     oe_jmpbuf_t jmpbuf;
 
     /* Pointer ot the ocall context */
-    oe_ocall_context_t* ocall_context;
+    oe_ocall_context_t* ocallContext;
 
     /* Pointer to next ECALL context */
     Callsite* next;

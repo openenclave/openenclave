@@ -10,18 +10,18 @@
 
 void* oe_host_malloc(size_t size)
 {
-    uint64_t arg_in = size;
-    uint64_t arg_out = 0;
+    uint64_t argIn = size;
+    uint64_t argOut = 0;
 
-    if (oe_ocall(OE_OCALL_MALLOC, arg_in, &arg_out) != OE_OK)
+    if (oe_ocall(OE_OCALL_MALLOC, argIn, &argOut) != OE_OK)
     {
         return NULL;
     }
 
-    if (!oe_is_outside_enclave((void*)arg_out, size))
+    if (argOut && !oe_is_outside_enclave((void*)argOut, size))
         oe_abort();
 
-    return (void*)arg_out;
+    return (void*)argOut;
 }
 
 void* oe_host_calloc(size_t nmemb, size_t size)
@@ -36,28 +36,28 @@ void* oe_host_calloc(size_t nmemb, size_t size)
 
 void* oe_host_realloc(void* ptr, size_t size)
 {
-    oe_realloc_args_t* arg_in = NULL;
-    uint64_t arg_out = 0;
+    oe_realloc_args_t* argIn = NULL;
+    uint64_t argOut = 0;
 
-    if (!(arg_in = (oe_realloc_args_t*)oe_host_alloc_for_call_host(
+    if (!(argIn = (oe_realloc_args_t*)oe_host_alloc_for_call_host(
               sizeof(oe_realloc_args_t))))
         goto done;
 
-    arg_in->ptr = ptr;
-    arg_in->size = size;
+    argIn->ptr = ptr;
+    argIn->size = size;
 
-    if (oe_ocall(OE_OCALL_REALLOC, (uint64_t)arg_in, &arg_out) != OE_OK)
+    if (oe_ocall(OE_OCALL_REALLOC, (uint64_t)argIn, &argOut) != OE_OK)
     {
-        arg_out = 0;
+        argOut = 0;
         goto done;
     }
 
-    if (arg_out && !oe_is_outside_enclave((void*)arg_out, size))
+    if (argOut && !oe_is_outside_enclave((void*)argOut, size))
         oe_abort();
 
 done:
-    oe_host_free_for_call_host(arg_in);
-    return (void*)arg_out;
+    oe_host_free_for_call_host(argIn);
+    return (void*)argOut;
 }
 
 void oe_host_free(void* ptr)

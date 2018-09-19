@@ -15,9 +15,9 @@ OE_EXTERNC_BEGIN
 
 typedef struct _oe_enclave oe_enclave_t;
 
-typedef void (*oe_ecall_function)(uint64_t arg_in, uint64_t* arg_out);
+typedef void (*oe_ecall_function)(uint64_t argIn, uint64_t* argOut);
 
-typedef void (*oe_ocall_function)(uint64_t arg_in, uint64_t* arg_out);
+typedef void (*oe_ocall_function)(uint64_t argIn, uint64_t* argOut);
 
 /*
 **==============================================================================
@@ -308,7 +308,7 @@ typedef struct _oe_realloc_args
 
 typedef struct _oe_init_enclave_args
 {
-    uint32_t cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
+    uint32_t cpuidTable[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
     oe_enclave_t* enclave;
 } oe_init_enclave_args_t;
 
@@ -337,9 +337,9 @@ typedef struct _oe_backtrace_symbols_args
  * function indicated by the **func** parameter. The enclave defines a
  * corresponding function with the following signature.
  *
- *     void (*)(uint64_t arg_in, uint64_t* arg_out);
+ *     void (*)(uint64_t argIn, uint64_t* argOut);
  *
- * The meaning of the **arg_in** arg **arg_out** parameters is defined by the
+ * The meaning of the **argIn** arg **argOut** parameters is defined by the
  * implementer of the function and either may be null.
  *
  * Open Enclave uses the low-level ECALL interface to implement internal calls,
@@ -360,8 +360,8 @@ typedef struct _oe_backtrace_symbols_args
  * error reporting scheme based on its parameters.
  *
  * @param func The number of the function to be called.
- * @param args_in The input argument passed to the function.
- * @param arg_out The output argument passed back from the function.
+ * @param argsIn The input argument passed to the function.
+ * @param argOut The output argument passed back from the function.
  *
  * @retval OE_OK The function was successful.
  * @retval OE_FAILED The function failed.
@@ -373,8 +373,8 @@ typedef struct _oe_backtrace_symbols_args
 oe_result_t oe_ecall(
     oe_enclave_t* enclave,
     uint16_t func,
-    uint64_t arg_in,
-    uint64_t* arg_out);
+    uint64_t argIn,
+    uint64_t* argOut);
 
 /**
  * Perform a low-level host function call (OCALL).
@@ -383,9 +383,9 @@ oe_result_t oe_ecall(
  * function indicated by the **func** parameter. The host defines a
  * corresponding function with the following signature.
  *
- *     void (*)(uint64_t arg_in, uint64_t* arg_out);
+ *     void (*)(uint64_t argIn, uint64_t* argOut);
  *
- * The meaning of the **arg_in** arg **arg_out** parameters is defined by the
+ * The meaning of the **argIn** arg **argOut** parameters is defined by the
  * implementer of the function and either may be null.
  *
  * Open Enclave uses this interface to implement internal calls. Enclave
@@ -405,8 +405,8 @@ oe_result_t oe_ecall(
  * error reporting scheme based on its parameters.
  *
  * @param func The number of the function to be called.
- * @param arg_in The input argument passed to the function.
- * @param arg_out The output argument passed back from the function.
+ * @param argIn The input argument passed to the function.
+ * @param argOut The output argument passed back from the function.
  *
  * @retval OE_OK The function was successful.
  * @retval OE_FAILED The function failed.
@@ -415,7 +415,7 @@ oe_result_t oe_ecall(
  * @retval OE_UNEXPECTED An unexpected error occurred.
  *
  */
-oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out);
+oe_result_t oe_ocall(uint16_t func, uint64_t argIn, uint64_t* argOut);
 
 OE_EXTERNC_END
 

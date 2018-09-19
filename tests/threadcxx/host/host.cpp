@@ -29,7 +29,7 @@ void* Thread(void* args)
 void TestMutexCxx(oe_enclave_t* enclave)
 {
     std::thread threads[NUM_THREADS];
-    _args.num_threads = NUM_THREADS;
+    _args.numThreads = NUM_THREADS;
     for (size_t i = 0; i < NUM_THREADS; i++)
     {
         threads[i] = std::thread(Thread, enclave);

@@ -6,12 +6,12 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/queue.h>
 
-static OE_LIST_HEAD(EnclaveListHead, _enclave_entry) g_enclave_list_head;
+static OE_LIST_HEAD(EnclaveListHead, _EnclaveEntry) g_enclave_list_head;
 static oe_mutex g_enclave_list_lock = OE_H_MUTEX_INITIALIZER;
 
-typedef struct _enclave_entry
+typedef struct _EnclaveEntry
 {
-    OE_LIST_ENTRY(_enclave_entry) next_entry;
+    OE_LIST_ENTRY(_EnclaveEntry) next_entry;
     oe_enclave_t* enclave;
 } EnclaveEntry;
 
@@ -30,7 +30,7 @@ uint32_t _oe_push_enclave_instance(oe_enclave_t* enclave)
 {
     uint32_t ret = 1;
     bool locked = false;
-    EnclaveEntry* new_entry = NULL;
+    EnclaveEntry* newEntry = NULL;
 
     // Take the lock.
     if (oe_mutex_lock(&g_enclave_list_lock) != 0)
@@ -53,16 +53,16 @@ uint32_t _oe_push_enclave_instance(oe_enclave_t* enclave)
     }
 
     // Allocate new entry.
-    new_entry = (EnclaveEntry*)calloc(1, sizeof(EnclaveEntry));
-    if (new_entry == NULL)
+    newEntry = (EnclaveEntry*)calloc(1, sizeof(EnclaveEntry));
+    if (newEntry == NULL)
     {
         goto cleanup;
     }
 
-    new_entry->enclave = enclave;
+    newEntry->enclave = enclave;
 
     // Insert to the beginning of the list.
-    OE_LIST_INSERT_HEAD(&g_enclave_list_head, new_entry, next_entry);
+    OE_LIST_INSERT_HEAD(&g_enclave_list_head, newEntry, next_entry);
 
     // Return success.
     ret = 0;

@@ -10,8 +10,8 @@ oe_result_t oe_sgx_sign_enclave(
     uint64_t attributes,
     uint16_t product_id,
     uint16_t security_version,
-    const char* pem_data,
-    size_t pem_size,
+    const char* pemData,
+    size_t pemSize,
     sgx_sigstruct_t* sigstruct)
 {
     /* ATTN: unsupported on Windows */

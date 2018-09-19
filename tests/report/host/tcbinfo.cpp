@@ -37,21 +37,19 @@ std::vector<uint8_t> FileToBytes(const char* path)
     return bytes;
 }
 
-void AssertParsedValues(oe_parsed_tcb_info_t& parsed_info)
+void AssertParsedValues(oe_parsed_tcb_info_t& parsedInfo)
 {
-    OE_TEST(parsed_info.version == 1);
+    OE_TEST(parsedInfo.version == 1);
 
-    oe_datetime_t expected_issue_date = {2018, 6, 6, 10, 12, 17};
+    oe_datetime_t expectedIssueDate = {2018, 6, 6, 10, 12, 17};
     OE_TEST(
-        oe_datetime_compare(&parsed_info.issue_date, &expected_issue_date) ==
-        0);
+        oe_datetime_compare(&parsedInfo.issue_date, &expectedIssueDate) == 0);
 
-    uint8_t expected_fm_spc[6] = {0x00, 0x90, 0x6E, 0xA1, 0x00, 0x00};
+    uint8_t expectedFmSpc[6] = {0x00, 0x90, 0x6E, 0xA1, 0x00, 0x00};
     OE_TEST(
-        memcmp(parsed_info.fmspc, expected_fm_spc, sizeof(expected_fm_spc)) ==
-        0);
+        memcmp(parsedInfo.fmspc, expectedFmSpc, sizeof(expectedFmSpc)) == 0);
 
-    const uint8_t expected_signature[] = {
+    const uint8_t expectedSignature[] = {
         0x62, 0xd1, 0x81, 0xc4, 0xba, 0x86, 0x32, 0x13, 0xb8, 0x25, 0xd1,
         0xc0, 0xb6, 0x6b, 0x92, 0xa3, 0xdb, 0xdb, 0x27, 0xb8, 0xff, 0x7c,
         0x72, 0x50, 0xcb, 0x2b, 0x2a, 0xb8, 0x7a, 0x8f, 0x90, 0xd5, 0xe5,
@@ -60,52 +58,48 @@ void AssertParsedValues(oe_parsed_tcb_info_t& parsed_info)
         0x7a, 0x93, 0xde, 0xc5, 0x20, 0x67, 0xcb, 0xfd, 0x7b};
     OE_TEST(
         memcmp(
-            parsed_info.signature,
-            expected_signature,
-            sizeof(expected_signature)) == 0);
+            parsedInfo.signature,
+            expectedSignature,
+            sizeof(expectedSignature)) == 0);
 }
 
 void TestVerifyTCBInfo(
     oe_enclave_t* enclave,
-    oe_tcb_level_t* platform_tcb_level,
+    oe_tcb_level_t* platformTcbLevel,
     oe_result_t expected)
 {
-    std::vector<uint8_t> tcb_info = FileToBytes("./data/tcbInfo.json");
-    oe_parsed_tcb_info_t parsed_info = {0};
-    VerifyTCBInfoArgs args = {&tcb_info[0],
-                              (uint32_t)tcb_info.size(),
-                              platform_tcb_level,
-                              &parsed_info};
+    std::vector<uint8_t> tcbInfo = FileToBytes("./data/tcbInfo.json");
+    oe_parsed_tcb_info_t parsedInfo = {0};
+    VerifyTCBInfoArgs args = {
+        &tcbInfo[0], (uint32_t)tcbInfo.size(), platformTcbLevel, &parsedInfo};
 
     OE_TEST(oe_call_enclave(enclave, "TestVerifyTCBInfo", &args) == OE_OK);
-    AssertParsedValues(parsed_info);
+    AssertParsedValues(parsedInfo);
     OE_TEST(
-        oe_datetime_is_valid(&parsed_info.next_update) ==
+        oe_datetime_is_valid(&parsedInfo.next_update) ==
         OE_INVALID_UTC_DATE_TIME);
 
-    // Contains next_update field.
-    tcb_info = FileToBytes("./data/tcbInfo1.json");
-    memset(&parsed_info, 0, sizeof(parsed_info));
-    platform_tcb_level->status = OE_TCB_LEVEL_STATUS_UNKNOWN;
-    VerifyTCBInfoArgs args1 = {&tcb_info[0],
-                               (uint32_t)tcb_info.size(),
-                               platform_tcb_level,
-                               &parsed_info};
+    // Contains nextUpdate field.
+    tcbInfo = FileToBytes("./data/tcbInfo1.json");
+    memset(&parsedInfo, 0, sizeof(parsedInfo));
+    platformTcbLevel->status = OE_TCB_LEVEL_STATUS_UNKNOWN;
+    VerifyTCBInfoArgs args1 = {
+        &tcbInfo[0], (uint32_t)tcbInfo.size(), platformTcbLevel, &parsedInfo};
     OE_TEST(oe_call_enclave(enclave, "TestVerifyTCBInfo", &args1) == OE_OK);
-    AssertParsedValues(parsed_info);
+    AssertParsedValues(parsedInfo);
 
-    oe_datetime_t next_update = {2019, 6, 6, 10, 12, 17};
-    OE_TEST(oe_datetime_compare(&parsed_info.next_update, &next_update) == 0);
+    oe_datetime_t nextUpdate = {2019, 6, 6, 10, 12, 17};
+    OE_TEST(oe_datetime_compare(&parsedInfo.next_update, &nextUpdate) == 0);
 }
 
 void TestVerifyTCBInfo(oe_enclave_t* enclave)
 {
-    oe_tcb_level_t platform_tcb_level = {
+    oe_tcb_level_t platformTcbLevel = {
         {4, 4, 2, 4, 1, 128, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
         8,
         OE_TCB_LEVEL_STATUS_UNKNOWN};
 
-    // ./data/tcb_info.json contains 4 tcb levels.
+    // ./data/tcbInfo.json contains 4 tcb levels.
     // The first level with pce svn = 5 is up to date.
     // The second level with pce svn = 4 needs configuration.
     // The third level with pce svn = 3 is out of date.
@@ -113,53 +107,52 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
 
     // Set platform pce svn to 8 and assert that
     // the determined status is up to date.
-    platform_tcb_level.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
-    platform_tcb_level.pce_svn = 8;
-    TestVerifyTCBInfo(enclave, &platform_tcb_level, OE_OK);
-    OE_TEST(platform_tcb_level.status == OE_TCB_LEVEL_STATUS_UP_TO_DATE);
+    platformTcbLevel.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
+    platformTcbLevel.pce_svn = 8;
+    TestVerifyTCBInfo(enclave, &platformTcbLevel, OE_OK);
+    OE_TEST(platformTcbLevel.status == OE_TCB_LEVEL_STATUS_UP_TO_DATE);
     printf("UptoDate TCB Level determination test passed.\n");
 
     // Set platform pce svn to 4 and assert that
     // the determined status is configuration needed.
-    platform_tcb_level.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
-    platform_tcb_level.pce_svn = 4;
-    TestVerifyTCBInfo(enclave, &platform_tcb_level, OE_TCB_LEVEL_INVALID);
+    platformTcbLevel.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
+    platformTcbLevel.pce_svn = 4;
+    TestVerifyTCBInfo(enclave, &platformTcbLevel, OE_TCB_LEVEL_INVALID);
     OE_TEST(
-        platform_tcb_level.status == OE_TCB_LEVEL_STATUS_CONFIGURATION_NEEDED);
+        platformTcbLevel.status == OE_TCB_LEVEL_STATUS_CONFIGURATION_NEEDED);
     printf("ConfigurationNeeded TCB Level determination test passed.\n");
 
     // Set platform pce svn to 3 and assert that
     // the determined status is out of date.
-    platform_tcb_level.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
-    platform_tcb_level.pce_svn = 3;
-    TestVerifyTCBInfo(enclave, &platform_tcb_level, OE_TCB_LEVEL_INVALID);
-    OE_TEST(platform_tcb_level.status == OE_TCB_LEVEL_STATUS_OUT_OF_DATE);
+    platformTcbLevel.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
+    platformTcbLevel.pce_svn = 3;
+    TestVerifyTCBInfo(enclave, &platformTcbLevel, OE_TCB_LEVEL_INVALID);
+    OE_TEST(platformTcbLevel.status == OE_TCB_LEVEL_STATUS_OUT_OF_DATE);
     printf("OutOfDate TCB Level determination test passed.\n");
 
     // Set platform pce svn to 2 and assert that
     // the determined status is revoked.
-    platform_tcb_level.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
-    platform_tcb_level.pce_svn = 2;
-    TestVerifyTCBInfo(enclave, &platform_tcb_level, OE_TCB_LEVEL_INVALID);
-    OE_TEST(platform_tcb_level.status == OE_TCB_LEVEL_STATUS_REVOKED);
+    platformTcbLevel.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
+    platformTcbLevel.pce_svn = 2;
+    TestVerifyTCBInfo(enclave, &platformTcbLevel, OE_TCB_LEVEL_INVALID);
+    OE_TEST(platformTcbLevel.status == OE_TCB_LEVEL_STATUS_REVOKED);
     printf("OutOfDate TCB Level determination test passed.\n");
 
     // Set each of the fields to a value not listed in the json and
     // test that the determined status is OE_TCB_LEVEL_INVALID
-    for (uint32_t i = 0; i < OE_COUNTOF(platform_tcb_level.sgx_tcb_comp_svn);
-         ++i)
+    for (uint32_t i = 0; i < OE_COUNTOF(platformTcbLevel.sgx_tcb_comp_svn); ++i)
     {
-        platform_tcb_level.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
-        platform_tcb_level.sgx_tcb_comp_svn[i] = 0;
-        TestVerifyTCBInfo(enclave, &platform_tcb_level, OE_TCB_LEVEL_INVALID);
-        OE_TEST(platform_tcb_level.status == OE_TCB_LEVEL_STATUS_UNKNOWN);
-        platform_tcb_level.sgx_tcb_comp_svn[i] = 1;
+        platformTcbLevel.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
+        platformTcbLevel.sgx_tcb_comp_svn[i] = 0;
+        TestVerifyTCBInfo(enclave, &platformTcbLevel, OE_TCB_LEVEL_INVALID);
+        OE_TEST(platformTcbLevel.status == OE_TCB_LEVEL_STATUS_UNKNOWN);
+        platformTcbLevel.sgx_tcb_comp_svn[i] = 1;
     }
     printf("Unknown TCB Level determination test passed.\n");
 
     printf("TestVerifyTCBInfo: Positive Tests passed\n");
 
-    const char* negative_files[] = {
+    const char* negativeFiles[] = {
         // In the following files, a property in corresponding level has been
         // capitalized. JSON is case sensitive and therefore schema validation
         // should fail.
@@ -180,10 +173,10 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
         // pce Svn greater than uint16_t
         "./data/tcbInfoNegativePceSvn.json",
 
-        // Invalid issue_date field.
+        // Invalid issueDate field.
         "./data/tcbInfoNegativeInvalidIssueDate.json",
 
-        // Invalid next_update field.
+        // Invalid nextUpdate field.
         "./data/tcbInfoNegativeInvalidNextUpdate.json",
 
         // Signature != 64 bytes
@@ -196,21 +189,21 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
         "./data/tcbInfoNegativeFloat.json",
     };
 
-    for (size_t i = 0; i < sizeof(negative_files) / sizeof(negative_files[0]);
+    for (size_t i = 0; i < sizeof(negativeFiles) / sizeof(negativeFiles[0]);
          ++i)
     {
-        std::vector<uint8_t> tcb_info = FileToBytes(negative_files[i]);
-        oe_parsed_tcb_info_t parsed_info = {0};
-        oe_tcb_level_t platform_tcb_level = {{0}};
-        VerifyTCBInfoArgs args = {&tcb_info[0],
-                                  (uint32_t)tcb_info.size(),
-                                  &platform_tcb_level,
-                                  &parsed_info};
+        std::vector<uint8_t> tcbInfo = FileToBytes(negativeFiles[i]);
+        oe_parsed_tcb_info_t parsedInfo = {0};
+        oe_tcb_level_t platformTcbLevel = {{0}};
+        VerifyTCBInfoArgs args = {&tcbInfo[0],
+                                  (uint32_t)tcbInfo.size(),
+                                  &platformTcbLevel,
+                                  &parsedInfo};
         OE_TEST(
             oe_call_enclave(enclave, "TestVerifyTCBInfo", &args) == OE_OK &&
             args.result == OE_TCB_INFO_PARSE_ERROR);
         printf(
-            "TestVerifyTCBInfo: Negative Test %s passed\n", negative_files[i]);
+            "TestVerifyTCBInfo: Negative Test %s passed\n", negativeFiles[i]);
     }
 }
 

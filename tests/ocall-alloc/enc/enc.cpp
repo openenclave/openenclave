@@ -208,7 +208,7 @@ static Cmd Commands[] = {
 };
 
 // Command interpreter for above array - actual test driver
-oe_result_t TestRun(bool do_verify_allocation, const Allocator alloc)
+oe_result_t TestRun(bool doVerifyAllocation, const Allocator alloc)
 {
     AllocStack stack;
 
@@ -223,12 +223,12 @@ oe_result_t TestRun(bool do_verify_allocation, const Allocator alloc)
                 Dealloc(stack, cmd.val1 ?: 1, alloc);
                 break;
             case 't':
-                if (!do_verify_allocation)
+                if (!doVerifyAllocation)
                     break;
                 Exit();
                 break;
             case 'v':
-                if (!do_verify_allocation)
+                if (!doVerifyAllocation)
                     break;
 
                 if ((GetAllocationBytes() != cmd.val1 ||

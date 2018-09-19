@@ -12,13 +12,13 @@ typedef struct _oe_enclave oe_enclave_t;
 
 void _oe_notify_gdb_enclave_creation(
     const oe_enclave_t* enclave,
-    const char* enclave_path,
-    uint32_t enclave_path_length);
+    const char* enclavePath,
+    uint32_t enclavePathLength);
 
 void _oe_notify_gdb_enclave_termination(
     const oe_enclave_t* enclave,
-    const char* enclave_path,
-    uint32_t enclave_path_length);
+    const char* enclavePath,
+    uint32_t enclavePathLength);
 
 OE_EXTERNC_END
 

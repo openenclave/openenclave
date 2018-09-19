@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-typedef struct _test_print_args
+typedef struct _TestPrintArgs
 {
     int rc;
 } TestPrintArgs;

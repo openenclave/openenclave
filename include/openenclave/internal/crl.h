@@ -25,8 +25,8 @@ typedef struct _oe_crl oe_crl_t;
  * oe_crl_free().
  *
  * @param crl initialized certificate handle upon return
- * @param der_data zero-terminated DER data.
- * @param der_size size of the DER data
+ * @param derData zero-terminated DER data.
+ * @param derSize size of the DER data
  *
  * @return OE_OK load was successful
  */

@@ -29,18 +29,18 @@ int ConstructObject(Object& o, size_t id, const char* name)
 }
 
 OE_EXTERNC int32_t OCALL_MultipleParams(
-    const char* str_in,
-    uint32_t num_in,
-    const struct Object* object_in,
-    char* str_out,
-    uint32_t* num_out,
-    struct Object* object_out,
-    struct Object** object_ref_out)
+    const char* strIn,
+    uint32_t numIn,
+    const struct Object* objectIn,
+    char* strOut,
+    uint32_t* numOut,
+    struct Object* objectOut,
+    struct Object** objectRefOut)
 {
     return -1;
 }
 
-void _check_result(
+void __CheckResult(
     const char* file,
     unsigned int line,
     oe_result_t result,
@@ -60,7 +60,7 @@ void _check_result(
     }
 }
 
-#define CheckResult(...) _check_result(__FILE__, __LINE__, __VA_ARGS__)
+#define CheckResult(...) __CheckResult(__FILE__, __LINE__, __VA_ARGS__)
 
 bool CheckObject(const Object& x, size_t id, const char* name)
 {
@@ -229,32 +229,32 @@ int main(int argc, const char* argv[])
 
     // Test: ECALL_MultipleParams()
     {
-        Object object_in;
-        ConstructObject(object_in, 111, "0111");
-        Object object_out;
-        memset(&object_out, 0, sizeof(Object));
+        Object objectIn;
+        ConstructObject(objectIn, 111, "0111");
+        Object objectOut;
+        memset(&objectOut, 0, sizeof(Object));
         int32_t ret = -1;
-        char str_out[128] = {'\0'};
-        uint32_t num_out = 0xFFFFFFFF;
-        Object* object_ref_out = NULL;
+        char strOut[128] = {'\0'};
+        uint32_t numOut = 0xFFFFFFFF;
+        Object* objectRefOut = NULL;
         result = ECALL_MultipleParams(
             enclave,
             &ret,
             "strIn",
             999,
-            &object_in,
-            str_out,
-            &num_out,
-            &object_out,
-            &object_ref_out);
+            &objectIn,
+            strOut,
+            &numOut,
+            &objectOut,
+            &objectRefOut);
         CheckResult(result, "ECALL_MultipleParams()");
         OE_TEST(ret == 0);
-        OE_TEST(strcmp(str_out, "strIn") == 0);
-        OE_TEST(num_out == 999);
-        OE_TEST(CheckObject(object_out, 111, "0111"));
-        oe_destroy_struct(&Object_ti, &object_in, free);
-        oe_destroy_struct(&Object_ti, &object_out, free);
-        oe_free_struct(&Object_ti, object_ref_out, free);
+        OE_TEST(strcmp(strOut, "strIn") == 0);
+        OE_TEST(numOut == 999);
+        OE_TEST(CheckObject(objectOut, 111, "0111"));
+        oe_destroy_struct(&Object_ti, &objectIn, free);
+        oe_destroy_struct(&Object_ti, &objectOut, free);
+        oe_free_struct(&Object_ti, objectRefOut, free);
         printf("=== passed ECALL_MultipleParams()\n");
     }
 

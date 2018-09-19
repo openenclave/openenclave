@@ -83,16 +83,16 @@ int oe_thread_equal(oe_thread thread1, oe_thread thread2);
  *
  *     static oe_once_type _once = OE_H_ONCE_INITIALIZER;
  *
- *     static void _initialize(void)
+ *     static void _Initialize(void)
  *     {
  *         // Perform one time initialization here!
  *     }
  *
  *     ...
  *
- *     oe_once(&_once, _initialize);
+ *     oe_once(&_once, _Initialize);
  *
- * The **_initialize** function is called by the first thread to call oe_once()
+ * The **_Initialize** function is called by the first thread to call oe_once()
  * for the *_once* variable.
  *
  * @param once The variable used to synchronize one-time call to **func**.

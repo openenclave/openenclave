@@ -6,6 +6,6 @@
 
 #include <openenclave/enclave.h>
 
-void oe_handle_verify_report(uint64_t arg_in, uint64_t* arg_out);
+void oe_handle_verify_report(uint64_t argIn, uint64_t* argOut);
 
 #endif /* OE_ENCLAVE_REPORT_H */

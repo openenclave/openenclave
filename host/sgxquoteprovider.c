@@ -113,8 +113,8 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
     oe_result_t result = OE_FAILURE;
     sgx_ql_get_revocation_info_params_t params = {0};
     sgx_plat_error_t r = SGX_PLAT_ERROR_OUT_OF_MEMORY;
-    sgx_ql_revocation_info_t* revocation_info = NULL;
-    uint32_t host_buffer_size = 0;
+    sgx_ql_revocation_info_t* revocationInfo = NULL;
+    uint32_t hostBufferSize = 0;
     uint8_t* p = 0;
     uint8_t* p_end = 0;
 
@@ -137,120 +137,119 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
     }
 #endif
 
-    r = _get_revocation_info(&params, &revocation_info);
+    r = _get_revocation_info(&params, &revocationInfo);
 
-    if (r != SGX_PLAT_ERROR_OK || revocation_info == NULL)
+    if (r != SGX_PLAT_ERROR_OK || revocationInfo == NULL)
     {
         OE_RAISE(OE_QUOTE_PROVIDER_CALL_ERROR);
     }
 
-    if (revocation_info->tcb_info == NULL ||
-        revocation_info->tcb_info_size == 0)
+    if (revocationInfo->tcb_info == NULL || revocationInfo->tcb_info_size == 0)
     {
         OE_TRACE_INFO("tcb_info is NULL.\n");
         OE_RAISE(OE_INVALID_REVOCATION_INFO);
     }
-    host_buffer_size += revocation_info->tcb_info_size + 1;
+    hostBufferSize += revocationInfo->tcb_info_size + 1;
 
-    if (revocation_info->tcb_issuer_chain == NULL ||
-        revocation_info->tcb_issuer_chain_size == 0)
+    if (revocationInfo->tcb_issuer_chain == NULL ||
+        revocationInfo->tcb_issuer_chain_size == 0)
     {
         OE_TRACE_INFO("tcb_issuer_chain is NULL.\n");
         OE_RAISE(OE_INVALID_REVOCATION_INFO);
     }
-    host_buffer_size += revocation_info->tcb_issuer_chain_size + 1;
+    hostBufferSize += revocationInfo->tcb_issuer_chain_size + 1;
 
-    if (revocation_info->crl_count != args->num_crl_urls)
+    if (revocationInfo->crl_count != args->num_crl_urls)
     {
         OE_TRACE_INFO(
             "crl_count mismatch: %d != %d.\n",
-            revocation_info->crl_count,
+            revocationInfo->crl_count,
             args->num_crl_urls);
         OE_RAISE(OE_INVALID_REVOCATION_INFO);
     }
 
-    for (uint32_t i = 0; i < revocation_info->crl_count; ++i)
+    for (uint32_t i = 0; i < revocationInfo->crl_count; ++i)
     {
-        if (revocation_info->crls[i].crl_data == NULL ||
-            revocation_info->crls[i].crl_data_size == 0)
+        if (revocationInfo->crls[i].crl_data == NULL ||
+            revocationInfo->crls[i].crl_data_size == 0)
         {
             OE_TRACE_INFO("crl[%d].crl_data is NULL.\n", i);
             OE_RAISE(OE_INVALID_REVOCATION_INFO);
         }
         // CRL is in DER format. Null not added.
-        host_buffer_size += revocation_info->crls[i].crl_data_size;
+        hostBufferSize += revocationInfo->crls[i].crl_data_size;
 
-        if (revocation_info->crls[i].crl_issuer_chain == NULL ||
-            revocation_info->crls[i].crl_issuer_chain_size == 0)
+        if (revocationInfo->crls[i].crl_issuer_chain == NULL ||
+            revocationInfo->crls[i].crl_issuer_chain_size == 0)
         {
             OE_TRACE_INFO("crl[%d].crl_issuer_chain is NULL.\n", i);
             OE_RAISE(OE_INVALID_REVOCATION_INFO);
         }
-        host_buffer_size += revocation_info->crls[i].crl_issuer_chain_size + 1;
+        hostBufferSize += revocationInfo->crls[i].crl_issuer_chain_size + 1;
     }
 
     OE_TRACE_INFO("sgx_ql_get_revocation_info succeeded.\n");
 
-    p = (uint8_t*)calloc(1, host_buffer_size);
-    p_end = p + host_buffer_size;
+    p = (uint8_t*)calloc(1, hostBufferSize);
+    p_end = p + hostBufferSize;
     if (p == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     args->host_out_buffer = p;
 
-    if (revocation_info->tcb_info != NULL)
+    if (revocationInfo->tcb_info != NULL)
     {
         args->tcb_info = p;
-        args->tcb_info_size = revocation_info->tcb_info_size;
-        memcpy(args->tcb_info, revocation_info->tcb_info, args->tcb_info_size);
+        args->tcb_info_size = revocationInfo->tcb_info_size;
+        memcpy(args->tcb_info, revocationInfo->tcb_info, args->tcb_info_size);
         // Add null terminator
         args->tcb_info[args->tcb_info_size++] = 0;
         p += args->tcb_info_size;
-        OE_TRACE_INFO("tcb_info_size = %d\n", revocation_info->tcb_info_size);
+        OE_TRACE_INFO("tcb_info_size = %d\n", revocationInfo->tcb_info_size);
         OE_TRACE_INFO("tcb_info json = \n%s\n", args->tcb_info);
     }
 
-    if (revocation_info->tcb_issuer_chain != NULL)
+    if (revocationInfo->tcb_issuer_chain != NULL)
     {
         args->tcb_issuer_chain = p;
-        args->tcb_issuer_chain_size = revocation_info->tcb_issuer_chain_size;
+        args->tcb_issuer_chain_size = revocationInfo->tcb_issuer_chain_size;
         memcpy(
             args->tcb_issuer_chain,
-            revocation_info->tcb_issuer_chain,
+            revocationInfo->tcb_issuer_chain,
             args->tcb_issuer_chain_size);
         // Add null terminator
         args->tcb_issuer_chain[args->tcb_issuer_chain_size++] = 0;
         p += args->tcb_issuer_chain_size;
         OE_TRACE_INFO(
             "tcb_issuer_chain_size = %d\n",
-            revocation_info->tcb_issuer_chain_size);
+            revocationInfo->tcb_issuer_chain_size);
     }
 
-    for (uint32_t i = 0; i < revocation_info->crl_count; ++i)
+    for (uint32_t i = 0; i < revocationInfo->crl_count; ++i)
     {
-        if (revocation_info->crls[i].crl_data != NULL)
+        if (revocationInfo->crls[i].crl_data != NULL)
         {
             args->crl[i] = p;
-            args->crl_size[i] = revocation_info->crls[i].crl_data_size;
+            args->crl_size[i] = revocationInfo->crls[i].crl_data_size;
             memcpy(
                 args->crl[i],
-                revocation_info->crls[i].crl_data,
+                revocationInfo->crls[i].crl_data,
                 args->crl_size[i]);
             // CRL is in DER format. Null not added.
             p += args->crl_size[i];
             OE_TRACE_INFO(
                 "crls[%d].crl_data_size = %d\n",
                 i,
-                revocation_info->crls[i].crl_data_size);
+                revocationInfo->crls[i].crl_data_size);
         }
-        if (revocation_info->crls[i].crl_issuer_chain != NULL)
+        if (revocationInfo->crls[i].crl_issuer_chain != NULL)
         {
             args->crl_issuer_chain[i] = p;
             args->crl_issuer_chain_size[i] =
-                revocation_info->crls[i].crl_issuer_chain_size;
+                revocationInfo->crls[i].crl_issuer_chain_size;
             memcpy(
                 args->crl_issuer_chain[i],
-                revocation_info->crls[i].crl_issuer_chain,
+                revocationInfo->crls[i].crl_issuer_chain,
                 args->crl_issuer_chain_size[i]);
             // Add null terminator
             args->crl_issuer_chain[i][args->crl_issuer_chain_size[i]++] = 0;
@@ -258,13 +257,13 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
             OE_TRACE_INFO(
                 "crls[%d].crl_issuer_chain_size = %d\n",
                 i,
-                revocation_info->crls[i].crl_issuer_chain_size);
+                revocationInfo->crls[i].crl_issuer_chain_size);
             OE_TRACE_INFO(
                 "crls[%d].crl_issuer_chain = \n%*.*s\n",
                 i,
-                revocation_info->crls[i].crl_issuer_chain_size,
-                revocation_info->crls[i].crl_issuer_chain_size,
-                revocation_info->crls[i].crl_issuer_chain);
+                revocationInfo->crls[i].crl_issuer_chain_size,
+                revocationInfo->crls[i].crl_issuer_chain_size,
+                revocationInfo->crls[i].crl_issuer_chain);
         }
     }
 
@@ -273,10 +272,10 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
 
     result = OE_OK;
 done:
-    if (revocation_info != NULL)
+    if (revocationInfo != NULL)
     {
         OE_TRACE_INFO("Freeing revocation info. \n");
-        _free_revocation_info(revocation_info);
+        _free_revocation_info(revocationInfo);
         OE_TRACE_INFO("Freed revocation info.\n");
     }
 

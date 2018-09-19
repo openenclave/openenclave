@@ -20,14 +20,14 @@ using namespace std;
 
 #define THREAD_COUNT 3
 
-void TestAbortStatus(oe_enclave_t* enclave, const char* function_name)
+void TestAbortStatus(oe_enclave_t* enclave, const char* functionName)
 {
     oe_result_t result;
     AbortStatusArgs args;
     args.ret = -1;
 
-    printf("=== %s(%s)  \n", __FUNCTION__, function_name);
-    result = oe_call_enclave(enclave, function_name, &args);
+    printf("=== %s(%s)  \n", __FUNCTION__, functionName);
+    result = oe_call_enclave(enclave, functionName, &args);
     OE_TEST(result == OE_ENCLAVE_ABORTING);
     OE_TEST(args.ret == 0);
 }
@@ -105,24 +105,20 @@ static void OcallAfterCrashThread(
 }
 // Test the regular abort case and un-handled hardware exception case in
 // single thread.
-static bool TestBasicAbort(const char* enclave_name)
+static bool TestBasicAbort(const char* enclaveName)
 {
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
 
     const uint32_t flags = oe_get_create_flags();
-    const char* function_names[] = {"RegularAbort",
-                                    "GenerateUnhandledHardwareException"};
+    const char* functionNames[] = {"RegularAbort",
+                                   "GenerateUnhandledHardwareException"};
 
-    for (uint32_t i = 0; i < OE_COUNTOF(function_names); i++)
+    for (uint32_t i = 0; i < OE_COUNTOF(functionNames); i++)
     {
         if ((result = oe_create_enclave(
-                 enclave_name,
-                 OE_ENCLAVE_TYPE_SGX,
-                 flags,
-                 NULL,
-                 0,
-                 &enclave)) != OE_OK)
+                 enclaveName, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) !=
+            OE_OK)
         {
             oe_put_err("oe_create_enclave(): result=%u", result);
             return false;
@@ -130,9 +126,9 @@ static bool TestBasicAbort(const char* enclave_name)
 
         // Skip the last test for simulation mode.
         if ((flags & OE_ENCLAVE_FLAG_SIMULATE) == 0 ||
-            (i != OE_COUNTOF(function_names) - 1))
+            (i != OE_COUNTOF(functionNames) - 1))
         {
-            TestAbortStatus(enclave, function_names[i]);
+            TestAbortStatus(enclave, functionNames[i]);
         }
 
         if ((result = oe_terminate_enclave(enclave)) != OE_OK)
@@ -151,30 +147,26 @@ static bool TestBasicAbort(const char* enclave_name)
 //  fail with abort status.
 // Thread 3 -> do an OCALL after thread 1 abort the enclave. The OCALL should
 //  fail with abort status.
-static bool TestMultipleThreadAbort(const char* enclave_name)
+static bool TestMultipleThreadAbort(const char* enclaveName)
 {
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
 
     // Create the enclave.
     const uint32_t flags = oe_get_create_flags();
-    vector<string> function_names{"RegularAbort"};
+    vector<string> functionNames{"RegularAbort"};
 
     // Only run hardware exception test on non-simulated mode.
     if ((flags & OE_ENCLAVE_FLAG_SIMULATE) == 0)
     {
-        function_names.push_back("GenerateUnhandledHardwareException");
+        functionNames.push_back("GenerateUnhandledHardwareException");
     }
 
-    for (uint32_t i = 0; i < function_names.size(); i++)
+    for (uint32_t i = 0; i < functionNames.size(); i++)
     {
         if ((result = oe_create_enclave(
-                 enclave_name,
-                 OE_ENCLAVE_TYPE_SGX,
-                 flags,
-                 NULL,
-                 0,
-                 &enclave)) != OE_OK)
+                 enclaveName, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) !=
+            OE_OK)
         {
             oe_put_err("oe_create_enclave(): result=%u", result);
             return false;
@@ -191,7 +183,7 @@ static bool TestMultipleThreadAbort(const char* enclave_name)
                 enclave,
                 &thread_ready_count,
                 &is_enclave_crashed,
-                function_names[i].c_str()));
+                functionNames[i].c_str()));
 
         threads.push_back(
             std::thread(

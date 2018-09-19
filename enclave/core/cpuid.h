@@ -6,7 +6,7 @@
 
 #include <openenclave/bits/types.h>
 
-void oe_initialize_cpuid(uint64_t arg_in);
+void oe_initialize_cpuid(uint64_t argIn);
 
 int oe_emulate_cpuid(
     uint64_t* rax,

@@ -13,7 +13,7 @@
 #define HAVE_SGX1(regs) (((regs.eax) & 1))
 #define HAVE_SGX2(regs) (((regs.eax) >> 1) & 1)
 
-typedef struct _regs
+typedef struct _Regs
 {
     unsigned int eax;
     unsigned int ebx;
@@ -21,7 +21,7 @@ typedef struct _regs
     unsigned int edx;
 } Regs;
 
-void dump_regs(Regs* regs)
+void dumpRegs(Regs* regs)
 {
     printf("eax = 0x%x\n", regs->eax);
     printf("ebx = 0x%x\n", regs->ebx);
@@ -85,7 +85,7 @@ int main(int argc, const char* argv[])
         result = _CPUID(&regs);
         if (result)
         {
-            dump_regs(&regs);
+            dumpRegs(&regs);
             return result;
         }
 
@@ -112,7 +112,7 @@ int main(int argc, const char* argv[])
         if (result)
         {
             printf("Read SGX_CAPABILITY_ENUMERATION failed:\n");
-            dump_regs(&regs);
+            dumpRegs(&regs);
             return result;
         }
 

@@ -26,7 +26,7 @@ void TestStdc(oe_enclave_t* enclave)
     OE_TEST(result == OE_OK);
     OE_TEST(strcmp(args.buf1, "AAABBBCCC") == 0);
     OE_TEST(strcmp(args.buf2, "value=100") == 0);
-    OE_TEST(args.strdup_ok);
+    OE_TEST(args.strdupOk);
 }
 
 int main(int argc, const char* argv[])

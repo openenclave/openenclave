@@ -64,13 +64,13 @@ struct Container
     bool b;
     struct Embedded e;
     struct Embedded ae[2];
-    [count=arr_size] uint32_t* arr_data;
-    size_t arr_size;
-    [unchecked] struct DefinedStruct defined_struct;
-    [unchecked] struct UndefinedStruct* undefined_struct;
+    [count=arrSize] uint32_t* arrData;
+    size_t arrSize;
+    [unchecked] struct DefinedStruct definedStruct;
+    [unchecked] struct UndefinedStruct* undefinedStruct;
 
     // unimplemented [count=size] const char* strings[2];
-    //size num_strings;
+    //size numStrings;
 
     [count=sizevarr] const void* varr;
     size_t sizevarr;

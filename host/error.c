@@ -6,17 +6,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static const char* _program_name = "";
+static const char* _programName = "";
 
 void oe_set_program_name(const char* name)
 {
-    _program_name = name;
+    _programName = name;
 }
 
 OE_PRINTF_FORMAT(3, 4)
 void __oe_put_err(const char* file, unsigned int line, const char* format, ...)
 {
-    fprintf(stderr, "%s: %s(%u): error: ", _program_name, file, line);
+    fprintf(stderr, "%s: %s(%u): error: ", _programName, file, line);
 
     va_list ap;
     va_start(ap, format);

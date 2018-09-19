@@ -8,7 +8,7 @@
 
 #define MAX_ADDRESSES 64
 
-typedef struct _args
+typedef struct _Args
 {
     const char** syms;
     size_t num_syms;

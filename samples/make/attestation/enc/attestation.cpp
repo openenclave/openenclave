@@ -13,12 +13,12 @@
  */
 bool GenerateQuote(
     const uint8_t* data,
-    const size_t data_size,
-    uint8_t* quote_buffer,
-    size_t* quote_buffer_size)
+    const size_t dataSize,
+    uint8_t* quoteBuffer,
+    size_t* quoteBufferSize)
 {
     uint8_t sha256[32];
-    Sha256(data, data_size, sha256);
+    Sha256(data, dataSize, sha256);
 
     // To generate a quote that can be attested remotely by an enclave running
     // on a different platform, pass the OE_REPORT_FLAGS_REMOTE_ATTESTATION
@@ -33,10 +33,10 @@ bool GenerateQuote(
         OE_REPORT_FLAGS_REMOTE_ATTESTATION,
         sha256, // Store sha256 in report_data field
         sizeof(sha256),
-        NULL, // opt_params must be null
+        NULL, // optParams must be null
         0,
-        quote_buffer,
-        quote_buffer_size);
+        quoteBuffer,
+        quoteBufferSize);
 
     if (result != OE_OK)
     {
@@ -51,7 +51,7 @@ bool GenerateQuote(
 // The SHA-256 hash of the public key in the private.pem file used to sign the
 // enclave. This value is populated in the signer_id sub-field of a parsed
 // oe_report_t's identity field.
-const uint8_t g_mrsigner[] = {0xCA, 0x9A, 0xD7, 0x33, 0x14, 0x48, 0x98, 0x0A,
+const uint8_t g_MRSigner[] = {0xCA, 0x9A, 0xD7, 0x33, 0x14, 0x48, 0x98, 0x0A,
                               0xA2, 0x88, 0x90, 0xCE, 0x73, 0xE4, 0x33, 0x63,
                               0x83, 0x77, 0xF1, 0x79, 0xAB, 0x44, 0x56, 0xB2,
                               0xFE, 0x23, 0x71, 0x93, 0x19, 0x3A, 0x8D, 0x0A};
@@ -66,21 +66,21 @@ const uint8_t g_mrsigner[] = {0xCA, 0x9A, 0xD7, 0x33, 0x14, 0x48, 0x98, 0x0A,
  */
 bool AttestQuote(
     const uint8_t* quote,
-    size_t quote_size,
+    size_t quoteSize,
     const uint8_t* data,
-    size_t data_size)
+    size_t dataSize)
 {
     // While attesting, the quote being attested must not be tampered with.
     // Ensure that it has been copied over to the enclave.
-    if (!oe_is_within_enclave(quote, quote_size))
+    if (!oe_is_within_enclave(quote, quoteSize))
     {
         ENC_DEBUG_PRINTF("Cannot attest quote in host memory. Unsafe.");
         return false;
     }
 
     // Verify the quote to ensure its authenticity.
-    oe_report_t parsed_report = {0};
-    oe_result_t result = oe_verify_report(quote, quote_size, &parsed_report);
+    oe_report_t parsedReport = {0};
+    oe_result_t result = oe_verify_report(quote, quoteSize, &parsedReport);
     if (result != OE_OK)
     {
         ENC_DEBUG_PRINTF("oe_verify_report failed.");
@@ -91,22 +91,22 @@ bool AttestQuote(
     // enclave.
     // Check that the enclave was signed by an trusted entity.
     if (memcmp(
-            parsed_report.identity.signer_id, g_mrsigner, sizeof(g_mrsigner)) !=
+            parsedReport.identity.signer_id, g_MRSigner, sizeof(g_MRSigner)) !=
         0)
         return false;
 
     // Check the enclave's product id and security version
     // See enc.conf for values specified when signing the enclave.
-    if (parsed_report.identity.product_id[0] != 1)
+    if (parsedReport.identity.product_id[0] != 1)
         return false;
 
-    if (parsed_report.identity.security_version < 1)
+    if (parsedReport.identity.security_version < 1)
         return false;
 
     uint8_t sha256[32];
-    Sha256(data, data_size, sha256);
+    Sha256(data, dataSize, sha256);
 
-    if (memcmp(parsed_report.report_data, sha256, sizeof(sha256)) != 0)
+    if (memcmp(parsedReport.report_data, sha256, sizeof(sha256)) != 0)
     {
         ENC_DEBUG_PRINTF("SHA256 mismatch.");
         return false;

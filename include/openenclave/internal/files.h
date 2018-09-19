@@ -16,7 +16,7 @@ bool __oe_file_exists(const char* path);
 
 oe_result_t __oe_load_file(
     const char* path,
-    size_t extra_bytes,
+    size_t extraBytes,
     void** data,
     size_t* size);
 

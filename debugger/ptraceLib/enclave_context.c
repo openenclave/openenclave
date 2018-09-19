@@ -14,7 +14,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-typedef struct _ssa_info
+typedef struct _SSA_Info
 {
     void* base_address;
     int64_t frame_byte_size;
@@ -160,7 +160,7 @@ cleanup:
     return ret;
 }
 
-static int _get_enclave_ssa_frame_size(
+static int _GetEnclaveSsaFrameSize(
     pid_t pid,
     void* tcs_addr,
     int64_t* ssa_frame_size)
@@ -197,7 +197,7 @@ static int _get_enclave_ssa_frame_size(
     return 0;
 }
 
-static int _get_enclave_thread_current_ssa_info(
+static int _GetEnclaveThreadCurrentSsaInfo(
     pid_t pid,
     void* tcs_addr,
     SSA_Info* ssa_info)
@@ -225,7 +225,7 @@ static int _get_enclave_thread_current_ssa_info(
     }
 
     // Get SSA frame size
-    _get_enclave_ssa_frame_size(pid, tcs_addr, &ssa_frame_size);
+    _GetEnclaveSsaFrameSize(pid, tcs_addr, &ssa_frame_size);
     if (ret != 0)
     {
         return ret;
@@ -238,7 +238,7 @@ static int _get_enclave_thread_current_ssa_info(
     return 0;
 }
 
-static inline void _ssa_gpr_to_user_regs(
+static inline void _SsaGprToUserRegs(
     const sgx_ssa_gpr_t* ssa_gpr,
     struct user_regs_struct* regs)
 {
@@ -267,7 +267,7 @@ static inline void _ssa_gpr_to_user_regs(
     return;
 }
 
-static inline void _user_regs_to_ssa_gpr(
+static inline void _UserRegsToSsaGpr(
     const struct user_regs_struct* regs,
     sgx_ssa_gpr_t* ssa_gpr)
 {
@@ -327,7 +327,7 @@ int oe_get_enclave_thread_gpr(
     void* gpr_addr;
 
     // Get current ssa info.
-    ret = _get_enclave_thread_current_ssa_info(pid, tcs_addr, &ssa_info);
+    ret = _GetEnclaveThreadCurrentSsaInfo(pid, tcs_addr, &ssa_info);
     if (ret != 0)
     {
         return ret;
@@ -355,7 +355,7 @@ int oe_get_enclave_thread_gpr(
     }
 
     // Fill in user_regs_struct.
-    _ssa_gpr_to_user_regs(&ssa_gpr, regs);
+    _SsaGprToUserRegs(&ssa_gpr, regs);
 
     return 0;
 }
@@ -392,7 +392,7 @@ int oe_set_enclave_thread_gpr(
     void* gpr_addr;
 
     // Get current ssa frame info.
-    ret = _get_enclave_thread_current_ssa_info(pid, tcs_addr, &ssa_info);
+    ret = _GetEnclaveThreadCurrentSsaInfo(pid, tcs_addr, &ssa_info);
     if (ret != 0)
     {
         return ret;
@@ -420,7 +420,7 @@ int oe_set_enclave_thread_gpr(
     }
 
     // Write the general registers to ssa gpr structure.
-    _user_regs_to_ssa_gpr(regs, &ssa_gpr);
+    _UserRegsToSsaGpr(regs, &ssa_gpr);
 
     // Write gpr value to ssa.
     ret = oe_write_process_memory(
@@ -471,7 +471,7 @@ int oe_get_enclave_thread_fpr(
     SSA_Info ssa_info;
 
     // Get current ssa frame info.
-    ret = _get_enclave_thread_current_ssa_info(pid, tcs_addr, &ssa_info);
+    ret = _GetEnclaveThreadCurrentSsaInfo(pid, tcs_addr, &ssa_info);
     if (ret != 0)
     {
         return ret;
@@ -526,7 +526,7 @@ int oe_set_enclave_thread_fpr(
     SSA_Info ssa_info;
 
     // Get current ssa frame info.
-    ret = _get_enclave_thread_current_ssa_info(pid, tcs_addr, &ssa_info);
+    ret = _GetEnclaveThreadCurrentSsaInfo(pid, tcs_addr, &ssa_info);
     if (ret != 0)
     {
         return ret;
@@ -583,7 +583,7 @@ int oe_get_enclave_thread_xstate(
     SSA_Info ssa_info;
 
     // Get current ssa frame info.
-    ret = _get_enclave_thread_current_ssa_info(pid, tcs_addr, &ssa_info);
+    ret = _GetEnclaveThreadCurrentSsaInfo(pid, tcs_addr, &ssa_info);
     if (ret != 0)
     {
         return ret;
@@ -646,7 +646,7 @@ int oe_set_enclave_thread_xstate(
     SSA_Info ssa_info;
 
     // Get current ssa frame info.
-    ret = _get_enclave_thread_current_ssa_info(pid, tcs_addr, &ssa_info);
+    ret = _GetEnclaveThreadCurrentSsaInfo(pid, tcs_addr, &ssa_info);
     if (ret != 0)
     {
         return ret;

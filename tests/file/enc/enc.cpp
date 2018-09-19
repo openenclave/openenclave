@@ -9,8 +9,8 @@ OE_EXTERNC int TestReadFile(const char* path, unsigned int* checksum)
 {
     int rc = -1;
     MY_FILE* is = NULL;
-    const size_t buf_size = 32;
-    unsigned char buf[buf_size];
+    const size_t bufSize = 32;
+    unsigned char buf[bufSize];
     oe_result_t r;
 
     if (!path || !checksum)
@@ -20,7 +20,7 @@ OE_EXTERNC int TestReadFile(const char* path, unsigned int* checksum)
         goto done;
 
     size_t n;
-    while ((r = Fread(&n, buf, buf_size, is)) == OE_OK && n > 0)
+    while ((r = Fread(&n, buf, bufSize, is)) == OE_OK && n > 0)
     {
         for (size_t i = 0; i < n; i++)
             (*checksum) += buf[i];

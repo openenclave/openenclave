@@ -5,13 +5,13 @@
 #include <stdio.h>
 #include "ecalls.h"
 
-oe_enclave_t* CreateEnclave(const char* enclave_path)
+oe_enclave_t* CreateEnclave(const char* enclavePath)
 {
     oe_enclave_t* enclave = NULL;
 
-    printf("Enclave library %s\n", enclave_path);
+    printf("Enclave library %s\n", enclavePath);
     oe_result_t result = oe_create_enclave(
-        enclave_path,
+        enclavePath,
         OE_ENCLAVE_TYPE_SGX,
         OE_ENCLAVE_FLAG_DEBUG,
         NULL,
@@ -39,10 +39,10 @@ int main(int argc, const char* argv[])
 {
     oe_enclave_t* enclave1 = NULL;
     oe_enclave_t* enclave2 = NULL;
-    RemoteReportWithPubKey* report_with_pub_key1 = NULL;
-    RemoteReportWithPubKey* report_with_pub_key2 = NULL;
-    uint8_t* encrypted_msg = NULL;
-    size_t encrypted_msg_size = 0;
+    RemoteReportWithPubKey* reportWithPubKey1 = NULL;
+    RemoteReportWithPubKey* reportWithPubKey2 = NULL;
+    uint8_t* encryptedMsg = NULL;
+    size_t encryptedMsgSize = 0;
     oe_result_t result = OE_OK;
     int ret = 1;
 
@@ -69,13 +69,13 @@ int main(int argc, const char* argv[])
     printf(
         "\n\n=====Requesting a remote report and the encryption key from "
         "first enclave=====\n");
-    report_with_pub_key1 = GetRemoteReportWithPubKey(enclave1);
-    printf("First enclave's public key: \n%s", report_with_pub_key1->pem_key);
+    reportWithPubKey1 = GetRemoteReportWithPubKey(enclave1);
+    printf("First enclave's public key: \n%s", reportWithPubKey1->pemKey);
 
     printf(
         "\n\n=====Requesting second enclave to attest first enclave's "
         "the remote report and the public key=====\n");
-    result = VerifyReportAndSetPubKey(enclave2, report_with_pub_key1);
+    result = VerifyReportAndSetPubKey(enclave2, reportWithPubKey1);
     if (result != OE_OK)
     {
         printf("VerifyReportAndSetPubKey failed. %s", oe_result_str(result));
@@ -85,13 +85,13 @@ int main(int argc, const char* argv[])
     printf(
         "\n\n=====Requesting a remote report and the encryption key from "
         "second enclave=====\n");
-    report_with_pub_key2 = GetRemoteReportWithPubKey(enclave2);
-    printf("Second enclave's public key: \n%s", report_with_pub_key2->pem_key);
+    reportWithPubKey2 = GetRemoteReportWithPubKey(enclave2);
+    printf("Second enclave's public key: \n%s", reportWithPubKey2->pemKey);
 
     printf(
         "\n\n=====Requesting first enclave to attest second enclave's "
         "remote report and the public key=====\n");
-    result = VerifyReportAndSetPubKey(enclave1, report_with_pub_key2);
+    result = VerifyReportAndSetPubKey(enclave1, reportWithPubKey2);
     if (result != OE_OK)
     {
         printf("VerifyReportAndSetPubKey failed. %s", oe_result_str(result));
@@ -102,7 +102,7 @@ int main(int argc, const char* argv[])
 
     printf("\n\n=====Requesting encrypted message from first enclave=====\n");
     result =
-        GenerateEncryptedMessage(enclave1, &encrypted_msg, &encrypted_msg_size);
+        GenerateEncryptedMessage(enclave1, &encryptedMsg, &encryptedMsgSize);
     if (result != OE_OK)
     {
         printf("GenerateEncryptedMessage failed. %s", oe_result_str(result));
@@ -110,8 +110,7 @@ int main(int argc, const char* argv[])
     }
 
     printf("\n\n=====Sending encrypted message to second enclave=====\n");
-    result =
-        ProcessEncryptedMessage(enclave2, encrypted_msg, encrypted_msg_size);
+    result = ProcessEncryptedMessage(enclave2, encryptedMsg, encryptedMsgSize);
     if (result != OE_OK)
     {
         printf("ProcessEncryptedMessage failed. %s", oe_result_str(result));
@@ -119,12 +118,12 @@ int main(int argc, const char* argv[])
     }
 
     // Free host memory allocated by the enclave
-    free(encrypted_msg);
-    encrypted_msg = NULL;
+    free(encryptedMsg);
+    encryptedMsg = NULL;
 
     printf("\n\n=====Requesting encrypted message from second enclave=====\n");
     result =
-        GenerateEncryptedMessage(enclave2, &encrypted_msg, &encrypted_msg_size);
+        GenerateEncryptedMessage(enclave2, &encryptedMsg, &encryptedMsgSize);
     if (result != OE_OK)
     {
         printf("GenerateEncryptedMessage failed. %s", oe_result_str(result));
@@ -132,8 +131,7 @@ int main(int argc, const char* argv[])
     }
 
     printf("\n\n=====Sending encrypted message to first enclave=====\n");
-    result =
-        ProcessEncryptedMessage(enclave1, encrypted_msg, encrypted_msg_size);
+    result = ProcessEncryptedMessage(enclave1, encryptedMsg, encryptedMsgSize);
     if (result != OE_OK)
     {
         printf("ProcessEncryptedMessage failed. %s", oe_result_str(result));
@@ -141,20 +139,20 @@ int main(int argc, const char* argv[])
     }
 
     // Free host memory allocated by the enclave.
-    free(encrypted_msg);
-    encrypted_msg = NULL;
+    free(encryptedMsg);
+    encryptedMsg = NULL;
     ret = 0;
 
 exit:
 
-    if (encrypted_msg != NULL)
-        free(encrypted_msg);
+    if (encryptedMsg != NULL)
+        free(encryptedMsg);
 
     // Free host memory allocated by the enclave.
-    if (report_with_pub_key1)
-        free(report_with_pub_key1);
-    if (report_with_pub_key2)
-        free(report_with_pub_key2);
+    if (reportWithPubKey1)
+        free(reportWithPubKey1);
+    if (reportWithPubKey2)
+        free(reportWithPubKey2);
 
     printf("\n\n=====Terminating enclaves.=====\n");
     if (enclave1)

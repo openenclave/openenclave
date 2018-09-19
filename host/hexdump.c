@@ -24,18 +24,18 @@ void oe_hex_dump(const void* data_, size_t size)
 
 char* oe_hex_string(
     char* str,
-    size_t str_size,
+    size_t strSize,
     const void* data,
-    size_t data_size)
+    size_t dataSize)
 {
     char* s = str;
     const uint8_t* p = (const uint8_t*)data;
-    size_t n = data_size;
+    size_t n = dataSize;
 
     if (!str || !data)
         return NULL;
 
-    if (str_size < (2 * data_size + 1))
+    if (strSize < (2 * dataSize + 1))
         return NULL;
 
     while (n--)

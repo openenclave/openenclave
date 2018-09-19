@@ -6,19 +6,19 @@
 
 #include <openenclave/bits/types.h>
 
-typedef struct _test_mutex_args
+typedef struct _TestMutexArgs
 {
     size_t count1;
     size_t count2;
 } TestMutexArgs;
 
-typedef struct _wait_args
+typedef struct _WaitArgs
 {
     /* The number of threads that will call wait */
-    size_t num_threads;
+    size_t numThreads;
 } WaitArgs;
 
-typedef struct _test_rwlock_args
+typedef struct _TestRWLockArgs
 {
     // Number of simultaneously active readers
     size_t readers;
@@ -27,13 +27,13 @@ typedef struct _test_rwlock_args
     size_t writers;
 
     // Maximum number of simultaneously active readers
-    size_t max_readers;
+    size_t maxReaders;
 
     // Maximum number of simultaneously active writers
-    size_t max_writers;
+    size_t maxWriters;
 
     // Readers and writers active at same time
-    bool readers_and_writers;
+    bool readersAndWriters;
 } TestRWLockArgs;
 
 #endif /* _stdc_args_h */

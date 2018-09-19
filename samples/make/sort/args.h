@@ -4,7 +4,7 @@
 #ifndef _ARGS_H
 #define _ARGS_H
 
-typedef struct _args
+typedef struct _Args
 {
     size_t* data;
     size_t size;

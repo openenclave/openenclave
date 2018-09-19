@@ -43,7 +43,7 @@ int Fclose(MY_FILE* stream)
     return r;
 }
 
-static int _get_file_check_sum(const char* path, unsigned int* checksum)
+static int _GetFileCheckSum(const char* path, unsigned int* checksum)
 {
     int rc = -1;
     FILE* is = NULL;
@@ -100,9 +100,9 @@ int main(int argc, const char* argv[])
 
     {
         unsigned int checksum1;
-        if (_get_file_check_sum(argv[1], &checksum1) != 0)
+        if (_GetFileCheckSum(argv[1], &checksum1) != 0)
         {
-            fprintf(stderr, "%s: _get_file_check_sum() failed", argv[0]);
+            fprintf(stderr, "%s: _GetFileCheckSum() failed", argv[0]);
             return 1;
         }
 

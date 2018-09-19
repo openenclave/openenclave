@@ -10,29 +10,29 @@ int EnclaveSecureStrPatching(
     oe_enclave_t* Enclave,
     const char* src,
     char* dst,
-    int dst_length);
+    int dstLength);
 
 const char* Message = "Hello world from Host\n\0";
 
-int UnsecureStrPatching(const char* src, char* dst, int dst_length)
+int UnsecureStrPatching(const char* src, char* dst, int dstLength)
 {
-    int running_length = dst_length;
-    while (running_length > 0 && *src != '\0')
+    int runningLength = dstLength;
+    while (runningLength > 0 && *src != '\0')
     {
         *dst = *src;
-        running_length--;
+        runningLength--;
         src++;
         dst++;
     }
     const char* ptr = Message;
-    while (running_length > 0 && *ptr != '\0')
+    while (runningLength > 0 && *ptr != '\0')
     {
         *dst = *ptr;
-        running_length--;
+        runningLength--;
         ptr++;
         dst++;
     }
-    if (running_length < 1)
+    if (runningLength < 1)
     {
         return -1;
     }

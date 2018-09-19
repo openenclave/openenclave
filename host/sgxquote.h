@@ -9,11 +9,11 @@
 
 #define OE_MAX_UINT32 0xFFFFFFFF
 
-oe_result_t oe_sgx_qe_get_target_info(uint8_t* target_info);
-oe_result_t oe_sgx_qe_get_quote_size(size_t* quote_size);
+oe_result_t oe_sgx_qe_get_target_info(uint8_t* targetInfo);
+oe_result_t oe_sgx_qe_get_quote_size(size_t* quoteSize);
 oe_result_t oe_sgx_qe_get_quote(
     uint8_t* report,
-    size_t quote_size,
+    size_t quoteSize,
     uint8_t* quote);
 
 #endif // _OE_SGXQUOTE_H

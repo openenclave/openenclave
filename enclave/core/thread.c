@@ -18,7 +18,7 @@
 **==============================================================================
 */
 
-static int _thread_wait(oe_thread_data_t* self)
+static int _ThreadWait(oe_thread_data_t* self)
 {
     const void* tcs = TD_ToTCS((TD*)self);
 
@@ -28,7 +28,7 @@ static int _thread_wait(oe_thread_data_t* self)
     return 0;
 }
 
-static int _thread_wake(oe_thread_data_t* self)
+static int _ThreadWake(oe_thread_data_t* self)
 {
     const void* tcs = TD_ToTCS((TD*)self);
 
@@ -38,7 +38,7 @@ static int _thread_wake(oe_thread_data_t* self)
     return 0;
 }
 
-static int _thread_wake_wait(oe_thread_data_t* waiter, oe_thread_data_t* self)
+static int _ThreadWakeWait(oe_thread_data_t* waiter, oe_thread_data_t* self)
 {
     int ret = -1;
     oe_thread_wake_wait_args_t* args = NULL;
@@ -68,13 +68,13 @@ done:
 **==============================================================================
 */
 
-typedef struct _queue
+typedef struct _Queue
 {
     oe_thread_data_t* front;
     oe_thread_data_t* back;
 } Queue;
 
-static void _queue_push_back(Queue* queue, oe_thread_data_t* thread)
+static void _QueuePushBack(Queue* queue, oe_thread_data_t* thread)
 {
     thread->next = NULL;
 
@@ -86,7 +86,7 @@ static void _queue_push_back(Queue* queue, oe_thread_data_t* thread)
     queue->back = thread;
 }
 
-static oe_thread_data_t* _queue_pop_front(Queue* queue)
+static oe_thread_data_t* _QueuePopFront(Queue* queue)
 {
     oe_thread_data_t* thread = queue->front;
 
@@ -101,7 +101,7 @@ static oe_thread_data_t* _queue_pop_front(Queue* queue)
     return thread;
 }
 
-static bool _queue_contains(Queue* queue, oe_thread_data_t* thread)
+static bool _QueueContains(Queue* queue, oe_thread_data_t* thread)
 {
     oe_thread_data_t* p;
 
@@ -114,7 +114,7 @@ static bool _queue_contains(Queue* queue, oe_thread_data_t* thread)
     return false;
 }
 
-static __inline__ bool _queue_empty(Queue* queue)
+static __inline__ bool _QueueEmpty(Queue* queue)
 {
     return queue->front ? false : true;
 }
@@ -177,7 +177,7 @@ oe_result_t oe_mutex_init(oe_mutex_t* mutex)
 }
 
 /* Caller manages the spinlock */
-static int _mutex_lock(oe_mutex_impl_t* m, oe_thread_data_t* self)
+static int _MutexLock(oe_mutex_impl_t* m, oe_thread_data_t* self)
 {
     /* If this thread has already locked the mutex */
     if (m->owner == self)
@@ -203,7 +203,7 @@ static int _mutex_lock(oe_mutex_impl_t* m, oe_thread_data_t* self)
         if (m->queue.front == self)
         {
             /* Remove this thread from front of the waiters queue */
-            _queue_pop_front(&m->queue);
+            _QueuePopFront(&m->queue);
 
             /* Obtain the mutex */
             m->owner = self;
@@ -229,23 +229,23 @@ oe_result_t oe_mutex_lock(oe_mutex_t* mutex)
         oe_spin_lock(&m->lock);
         {
             /* Attempt to acquire lock */
-            if (_mutex_lock(m, self) == 0)
+            if (_MutexLock(m, self) == 0)
             {
                 oe_spin_unlock(&m->lock);
                 return OE_OK;
             }
 
             /* If the waiters queue does not contain this thread */
-            if (!_queue_contains(&m->queue, self))
+            if (!_QueueContains(&m->queue, self))
             {
                 /* Insert thread at back of waiters queue */
-                _queue_push_back(&m->queue, self);
+                _QueuePushBack(&m->queue, self);
             }
         }
         oe_spin_unlock(&m->lock);
 
         /* Ask host to wait for an event on this thread */
-        _thread_wait(self);
+        _ThreadWait(self);
     }
 
     /* Unreachable! */
@@ -262,7 +262,7 @@ oe_result_t oe_mutex_trylock(oe_mutex_t* mutex)
     oe_spin_lock(&m->lock);
     {
         /* Attempt to acquire lock */
-        if (_mutex_lock(m, self) == 0)
+        if (_MutexLock(m, self) == 0)
         {
             oe_spin_unlock(&m->lock);
             return OE_OK;
@@ -273,7 +273,7 @@ oe_result_t oe_mutex_trylock(oe_mutex_t* mutex)
     return OE_BUSY;
 }
 
-static int _mutex_unlock(oe_mutex_t* mutex, oe_thread_data_t** waiter)
+static int _MutexUnlock(oe_mutex_t* mutex, oe_thread_data_t** waiter)
 {
     oe_mutex_impl_t* m = (oe_mutex_impl_t*)mutex;
     oe_thread_data_t* self = oe_get_thread_data();
@@ -309,13 +309,13 @@ oe_result_t oe_mutex_unlock(oe_mutex_t* m)
     if (!m)
         return OE_INVALID_PARAMETER;
 
-    if (_mutex_unlock(m, &waiter) != 0)
+    if (_MutexUnlock(m, &waiter) != 0)
         return OE_NOT_OWNER;
 
     if (waiter)
     {
         /* Ask host to wake up this thread */
-        _thread_wake(waiter);
+        _ThreadWake(waiter);
     }
 
     return OE_OK;
@@ -332,7 +332,7 @@ oe_result_t oe_mutex_destroy(oe_mutex_t* mutex)
 
     oe_spin_lock(&m->lock);
     {
-        if (_queue_empty(&m->queue))
+        if (_QueueEmpty(&m->queue))
         {
             oe_memset(m, 0, sizeof(oe_mutex_t));
             result = OE_OK;
@@ -414,10 +414,10 @@ oe_result_t oe_cond_wait(oe_cond_t* condition, oe_mutex_t* mutex)
         oe_thread_data_t* waiter = NULL;
 
         /* Add the self thread to the end of the wait queue */
-        _queue_push_back((Queue*)&cond->queue, self);
+        _QueuePushBack((Queue*)&cond->queue, self);
 
         /* Unlock this mutex and get the waiter at the front of the queue */
-        if (_mutex_unlock(mutex, &waiter) != 0)
+        if (_MutexUnlock(mutex, &waiter) != 0)
         {
             oe_spin_unlock(&cond->lock);
             return OE_BUSY;
@@ -429,18 +429,18 @@ oe_result_t oe_cond_wait(oe_cond_t* condition, oe_mutex_t* mutex)
             {
                 if (waiter)
                 {
-                    _thread_wake_wait(waiter, self);
+                    _ThreadWakeWait(waiter, self);
                     waiter = NULL;
                 }
                 else
                 {
-                    _thread_wait(self);
+                    _ThreadWait(self);
                 }
             }
             oe_spin_lock(&cond->lock);
 
             /* If self is no longer in the queue, then it was selected */
-            if (!_queue_contains((Queue*)&cond->queue, self))
+            if (!_QueueContains((Queue*)&cond->queue, self))
                 break;
         }
     }
@@ -459,13 +459,13 @@ oe_result_t oe_cond_signal(oe_cond_t* condition)
         return OE_INVALID_PARAMETER;
 
     oe_spin_lock(&cond->lock);
-    waiter = _queue_pop_front((Queue*)&cond->queue);
+    waiter = _QueuePopFront((Queue*)&cond->queue);
     oe_spin_unlock(&cond->lock);
 
     if (!waiter)
         return OE_OK;
 
-    _thread_wake(waiter);
+    _ThreadWake(waiter);
     return OE_OK;
 }
 
@@ -481,8 +481,8 @@ oe_result_t oe_cond_broadcast(oe_cond_t* condition)
     {
         oe_thread_data_t* p;
 
-        while ((p = _queue_pop_front((Queue*)&cond->queue)))
-            _queue_push_back(&waiters, p);
+        while ((p = _QueuePopFront((Queue*)&cond->queue)))
+            _QueuePushBack(&waiters, p);
     }
     oe_spin_unlock(&cond->lock);
 
@@ -493,7 +493,7 @@ oe_result_t oe_cond_broadcast(oe_cond_t* condition)
         // primitive that could modify the next field.
         // Therefore fetch the next thread before waking up p.
         p_next = p->next;
-        _thread_wake(p);
+        _ThreadWake(p);
     }
 
     return OE_OK;
@@ -526,258 +526,258 @@ typedef struct _oe_rwlock_impl
 
 OE_STATIC_ASSERT(sizeof(oe_rwlock_impl_t) <= sizeof(oe_rwlock_t));
 
-oe_result_t oe_rwlock_init(oe_rwlock_t* read_write_lock)
+oe_result_t oe_rwlock_init(oe_rwlock_t* readWriteLock)
 {
-    oe_rwlock_impl_t* rw_lock = (oe_rwlock_impl_t*)read_write_lock;
+    oe_rwlock_impl_t* rwLock = (oe_rwlock_impl_t*)readWriteLock;
 
-    if (!rw_lock)
+    if (!rwLock)
         return OE_INVALID_PARAMETER;
 
-    oe_memset(rw_lock, 0, sizeof(oe_rwlock_t));
-    rw_lock->lock = OE_SPINLOCK_INITIALIZER;
+    oe_memset(rwLock, 0, sizeof(oe_rwlock_t));
+    rwLock->lock = OE_SPINLOCK_INITIALIZER;
 
     return OE_OK;
 }
 
-oe_result_t oe_rwlock_rdlock(oe_rwlock_t* read_write_lock)
+oe_result_t oe_rwlock_rdlock(oe_rwlock_t* readWriteLock)
 {
-    oe_rwlock_impl_t* rw_lock = (oe_rwlock_impl_t*)read_write_lock;
+    oe_rwlock_impl_t* rwLock = (oe_rwlock_impl_t*)readWriteLock;
     oe_thread_data_t* self = oe_get_thread_data();
 
-    if (!rw_lock)
+    if (!rwLock)
         return OE_INVALID_PARAMETER;
 
-    oe_spin_lock(&rw_lock->lock);
+    oe_spin_lock(&rwLock->lock);
 
     // Wait for writer to finish.
     // Multiple readers can concurrently operate.
-    while (rw_lock->writer != NULL)
+    while (rwLock->writer != NULL)
     {
         // Add self to list of waiters, and go to wait state.
-        if (!_queue_contains(&rw_lock->queue, self))
-            _queue_push_back(&rw_lock->queue, self);
+        if (!_QueueContains(&rwLock->queue, self))
+            _QueuePushBack(&rwLock->queue, self);
 
-        oe_spin_unlock(&rw_lock->lock);
-        _thread_wait(self);
+        oe_spin_unlock(&rwLock->lock);
+        _ThreadWait(self);
 
         // Upon waking, re-acquire the lock.
         // Just like a condition variable.
-        oe_spin_lock(&rw_lock->lock);
+        oe_spin_lock(&rwLock->lock);
     }
 
     // Increment number of readers.
-    rw_lock->readers++;
+    rwLock->readers++;
 
-    oe_spin_unlock(&rw_lock->lock);
+    oe_spin_unlock(&rwLock->lock);
 
     return OE_OK;
 }
 
-oe_result_t oe_rwlock_tryrdlock(oe_rwlock_t* read_write_lock)
+oe_result_t oe_rwlock_tryrdlock(oe_rwlock_t* readWriteLock)
 {
-    oe_rwlock_impl_t* rw_lock = (oe_rwlock_impl_t*)read_write_lock;
+    oe_rwlock_impl_t* rwLock = (oe_rwlock_impl_t*)readWriteLock;
 
-    if (!rw_lock)
+    if (!rwLock)
         return OE_INVALID_PARAMETER;
 
-    oe_spin_lock(&rw_lock->lock);
+    oe_spin_lock(&rwLock->lock);
 
     oe_result_t result = OE_BUSY;
 
     // If no writer is active, then lock is successful.
-    if (rw_lock->writer == NULL)
+    if (rwLock->writer == NULL)
     {
-        rw_lock->readers++;
+        rwLock->readers++;
         result = OE_OK;
     }
 
-    oe_spin_unlock(&rw_lock->lock);
+    oe_spin_unlock(&rwLock->lock);
 
     return result;
 }
 
 // The current thread must hold the spinlock.
-// _wake_waiters releases ownership of the spinlock.
-static oe_result_t _wake_waiters(oe_rwlock_impl_t* rw_lock)
+// _WakeWaiters releases ownership of the spinlock.
+static oe_result_t _WakeWaiters(oe_rwlock_impl_t* rwLock)
 {
     oe_thread_data_t* p = NULL;
     Queue waiters = {NULL, NULL};
 
     // Take a snapshot of current list of waiters.
-    while ((p = _queue_pop_front(&rw_lock->queue)))
-        _queue_push_back(&waiters, p);
+    while ((p = _QueuePopFront(&rwLock->queue)))
+        _QueuePushBack(&waiters, p);
 
     // Release the lock and wake up the waiters. This allows waiter that is
     // woken up to immediately acquire the spinlock and subsequently, the
-    // ownership of the rw_lock.
-    oe_spin_unlock(&rw_lock->lock);
+    // ownership of the rwLock.
+    oe_spin_unlock(&rwLock->lock);
 
     // Wake the waiters in FIFO order. However actual acquisition of the lock
     // will be dependent on OS scheduling of the threads.
-    while ((p = _queue_pop_front(&waiters)))
-        _thread_wake(p);
+    while ((p = _QueuePopFront(&waiters)))
+        _ThreadWake(p);
 
     return OE_OK;
 }
 
-static oe_result_t _rwlock_rdunlock(oe_rwlock_t* read_write_lock)
+static oe_result_t _rwlock_rdunlock(oe_rwlock_t* readWriteLock)
 {
-    oe_rwlock_impl_t* rw_lock = (oe_rwlock_impl_t*)read_write_lock;
+    oe_rwlock_impl_t* rwLock = (oe_rwlock_impl_t*)readWriteLock;
 
-    if (!rw_lock)
+    if (!rwLock)
         return OE_INVALID_PARAMETER;
 
-    oe_spin_lock(&rw_lock->lock);
+    oe_spin_lock(&rwLock->lock);
 
     // There must be at least 1 reader and no writers.
-    if (rw_lock->readers < 1 || rw_lock->writer != NULL)
+    if (rwLock->readers < 1 || rwLock->writer != NULL)
     {
-        oe_spin_unlock(&rw_lock->lock);
+        oe_spin_unlock(&rwLock->lock);
         return OE_NOT_OWNER;
     }
 
-    if (--rw_lock->readers == 0)
+    if (--rwLock->readers == 0)
     {
         // This is the last reader. Wake up all waiting threads.
-        return _wake_waiters(rw_lock);
+        return _WakeWaiters(rwLock);
     }
 
-    oe_spin_unlock(&rw_lock->lock);
+    oe_spin_unlock(&rwLock->lock);
 
     return OE_OK;
 }
 
-oe_result_t oe_rwlock_wrlock(oe_rwlock_t* read_write_lock)
+oe_result_t oe_rwlock_wrlock(oe_rwlock_t* readWriteLock)
 {
-    oe_rwlock_impl_t* rw_lock = (oe_rwlock_impl_t*)read_write_lock;
+    oe_rwlock_impl_t* rwLock = (oe_rwlock_impl_t*)readWriteLock;
     oe_thread_data_t* self = oe_get_thread_data();
 
-    if (!rw_lock)
+    if (!rwLock)
         return OE_INVALID_PARAMETER;
 
-    oe_spin_lock(&rw_lock->lock);
+    oe_spin_lock(&rwLock->lock);
 
     // Recursive writer lock.
-    if (rw_lock->writer == self)
+    if (rwLock->writer == self)
     {
-        oe_spin_unlock(&rw_lock->lock);
+        oe_spin_unlock(&rwLock->lock);
         return OE_BUSY;
     }
 
     // Wait for all readers and any other writer to finish.
-    while (rw_lock->readers > 0 || rw_lock->writer != NULL)
+    while (rwLock->readers > 0 || rwLock->writer != NULL)
     {
         // Add self to list of waiters, and go to wait state.
-        if (!_queue_contains(&rw_lock->queue, self))
-            _queue_push_back(&rw_lock->queue, self);
+        if (!_QueueContains(&rwLock->queue, self))
+            _QueuePushBack(&rwLock->queue, self);
 
-        oe_spin_unlock(&rw_lock->lock);
+        oe_spin_unlock(&rwLock->lock);
 
-        _thread_wait(self);
+        _ThreadWait(self);
 
         // Upon waking, re-acquire the lock.
         // Just like a condition variable.
-        oe_spin_lock(&rw_lock->lock);
+        oe_spin_lock(&rwLock->lock);
     }
 
-    rw_lock->writer = self;
-    oe_spin_unlock(&rw_lock->lock);
+    rwLock->writer = self;
+    oe_spin_unlock(&rwLock->lock);
 
     return OE_OK;
 }
 
-oe_result_t oe_rwlock_trywrlock(oe_rwlock_t* read_write_lock)
+oe_result_t oe_rwlock_trywrlock(oe_rwlock_t* readWriteLock)
 {
-    oe_rwlock_impl_t* rw_lock = (oe_rwlock_impl_t*)read_write_lock;
+    oe_rwlock_impl_t* rwLock = (oe_rwlock_impl_t*)readWriteLock;
     oe_thread_data_t* self = oe_get_thread_data();
 
-    if (!rw_lock)
+    if (!rwLock)
         return OE_INVALID_PARAMETER;
 
     oe_result_t result = OE_BUSY;
-    oe_spin_lock(&rw_lock->lock);
+    oe_spin_lock(&rwLock->lock);
 
     // If no readers and no writers are active, then lock is successful.
-    if (rw_lock->readers == 0 && rw_lock->writer == NULL)
+    if (rwLock->readers == 0 && rwLock->writer == NULL)
     {
-        rw_lock->writer = self;
+        rwLock->writer = self;
         result = OE_OK;
     }
 
-    oe_spin_unlock(&rw_lock->lock);
+    oe_spin_unlock(&rwLock->lock);
 
     return result;
 }
 
-static oe_result_t _rwlock_wrunlock(oe_rwlock_t* read_write_lock)
+static oe_result_t _rwlock_wrunlock(oe_rwlock_t* readWriteLock)
 {
-    oe_rwlock_impl_t* rw_lock = (oe_rwlock_impl_t*)read_write_lock;
+    oe_rwlock_impl_t* rwLock = (oe_rwlock_impl_t*)readWriteLock;
     oe_thread_data_t* self = oe_get_thread_data();
 
-    if (!rw_lock)
+    if (!rwLock)
         return OE_INVALID_PARAMETER;
 
-    oe_spin_lock(&rw_lock->lock);
+    oe_spin_lock(&rwLock->lock);
 
     // Self must be the owner.
-    if (rw_lock->writer != self)
+    if (rwLock->writer != self)
     {
-        oe_spin_unlock(&rw_lock->lock);
+        oe_spin_unlock(&rwLock->lock);
         return OE_NOT_OWNER;
     }
 
     // No readers should exist.
-    if (rw_lock->readers > 0)
+    if (rwLock->readers > 0)
     {
-        oe_spin_unlock(&rw_lock->lock);
+        oe_spin_unlock(&rwLock->lock);
         return OE_BUSY;
     }
 
     // Mark writer as done.
-    rw_lock->writer = NULL;
+    rwLock->writer = NULL;
 
     // Wake waiting threads.
-    return _wake_waiters(rw_lock);
+    return _WakeWaiters(rwLock);
 }
 
-oe_result_t oe_rwlock_destroy(oe_rwlock_t* read_write_lock)
+oe_result_t oe_rwlock_destroy(oe_rwlock_t* readWriteLock)
 {
-    oe_rwlock_impl_t* rw_lock = (oe_rwlock_impl_t*)read_write_lock;
+    oe_rwlock_impl_t* rwLock = (oe_rwlock_impl_t*)readWriteLock;
 
-    if (!rw_lock)
+    if (!rwLock)
         return OE_INVALID_PARAMETER;
 
-    oe_spin_lock(&rw_lock->lock);
+    oe_spin_lock(&rwLock->lock);
 
     // There must not be any active readers or writers.
-    if (rw_lock->readers != 0 || rw_lock->writer != NULL)
+    if (rwLock->readers != 0 || rwLock->writer != NULL)
     {
-        oe_spin_unlock(&rw_lock->lock);
+        oe_spin_unlock(&rwLock->lock);
         return OE_BUSY;
     }
 
-    oe_spin_unlock(&rw_lock->lock);
+    oe_spin_unlock(&rwLock->lock);
 
     return OE_OK;
 }
 
 // For compatibility with pthread_rwlock API.
-oe_result_t oe_rwlock_unlock(oe_rwlock_t* read_write_lock)
+oe_result_t oe_rwlock_unlock(oe_rwlock_t* readWriteLock)
 {
-    oe_rwlock_impl_t* rw_lock = (oe_rwlock_impl_t*)read_write_lock;
+    oe_rwlock_impl_t* rwLock = (oe_rwlock_impl_t*)readWriteLock;
     oe_thread_data_t* self = oe_get_thread_data();
 
-    if (!rw_lock)
+    if (!rwLock)
         return OE_INVALID_PARAMETER;
 
     // If the current thread is the writer that owns the lock, then call
     // oe_rwlock_wrunlock. Call oe_rwlock_rdunlock otherwise. No locking is
     // necessary here since the condition is expected to be true only when the
     // current thread is the writer thread.
-    if (rw_lock->writer == self)
-        return _rwlock_wrunlock(read_write_lock);
+    if (rwLock->writer == self)
+        return _rwlock_wrunlock(readWriteLock);
     else
-        return _rwlock_rdunlock(read_write_lock);
+        return _rwlock_rdunlock(readWriteLock);
 }
 
 /*
@@ -790,7 +790,7 @@ oe_result_t oe_rwlock_unlock(oe_rwlock_t* read_write_lock)
 
 #define MAX_KEYS (OE_PAGE_SIZE / sizeof(void*))
 
-typedef struct _key_slot
+typedef struct _KeySlot
 {
     bool used;
     void (*destructor)(void* value);
@@ -799,7 +799,7 @@ typedef struct _key_slot
 static KeySlot _slots[MAX_KEYS];
 static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
 
-static void** _get_tsd_page(void)
+static void** _GetTSDPage(void)
 {
     oe_thread_data_t* td = oe_get_thread_data();
 
@@ -873,7 +873,7 @@ oe_result_t oe_thread_setspecific(oe_thread_key_t key, const void* value)
     if (key == 0 || key >= MAX_KEYS)
         return OE_INVALID_PARAMETER;
 
-    if (!(tsd_page = _get_tsd_page()))
+    if (!(tsd_page = _GetTSDPage()))
         return OE_INVALID_PARAMETER;
 
     tsd_page[key] = (void*)value;
@@ -888,7 +888,7 @@ void* oe_thread_getspecific(oe_thread_key_t key)
     if (key == 0 || key >= MAX_KEYS)
         return NULL;
 
-    if (!(tsd_page = _get_tsd_page()))
+    if (!(tsd_page = _GetTSDPage()))
         return NULL;
 
     return tsd_page[key];
@@ -899,7 +899,7 @@ void oe_thread_destruct_specific(void)
     void** tsd_page;
 
     /* Get the thread-specific-data page for the current thread. */
-    if ((tsd_page = _get_tsd_page()))
+    if ((tsd_page = _GetTSDPage()))
     {
         oe_spin_lock(&_lock);
         {

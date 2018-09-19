@@ -7,7 +7,7 @@
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
 
-static void _measure_zeros(oe_sha256_context_t* context, size_t size)
+static void _MeasureZeros(oe_sha256_context_t* context, size_t size)
 {
     char zeros[128] = {0};
 
@@ -26,7 +26,7 @@ static void _measure_zeros(oe_sha256_context_t* context, size_t size)
     }
 }
 
-static void _measure_eextend(
+static void _MeasureEExtend(
     oe_sha256_context_t* context,
     uint64_t vaddr,
     uint64_t flags,
@@ -42,7 +42,7 @@ static void _measure_eextend(
 
         oe_sha256_update(context, "EEXTEND", 8);
         oe_sha256_update(context, &moffset, sizeof(moffset));
-        _measure_zeros(context, 48);
+        _MeasureZeros(context, 48);
         oe_sha256_update(context, (const uint8_t*)page + pgoff, CHUNK_SIZE);
     }
 }
@@ -63,7 +63,7 @@ oe_result_t oe_sgx_measure_create_enclave(
     oe_sha256_update(context, "ECREATE", 8);
     oe_sha256_update(context, &secs->ssaframesize, sizeof(uint32_t));
     oe_sha256_update(context, &secs->size, sizeof(uint64_t));
-    _measure_zeros(context, 44);
+    _MeasureZeros(context, 44);
 
     result = OE_OK;
 
@@ -89,11 +89,11 @@ oe_result_t oe_sgx_measure_load_enclave_data(
     oe_sha256_update(context, "EADD\0\0\0", 8);
     oe_sha256_update(context, &vaddr, sizeof(vaddr));
     oe_sha256_update(context, &flags, sizeof(flags));
-    _measure_zeros(context, 40);
+    _MeasureZeros(context, 40);
 
     /* Measure EEXTEND if requested */
     if (extend)
-        _measure_eextend(context, vaddr, flags, (void*)src);
+        _MeasureEExtend(context, vaddr, flags, (void*)src);
 
     result = OE_OK;
 

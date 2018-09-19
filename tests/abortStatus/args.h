@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include <atomic>
 
-typedef struct _abort_status_args
+typedef struct _AbortStatusArgs
 {
     std::atomic<uint32_t>* thread_ready_count;
     std::atomic<bool>* is_enclave_crashed;
@@ -31,10 +31,10 @@ struct AbortStatusEncRecursionArg
     void* enclave;
     std::atomic<uint32_t>* thread_ready_count;
     std::atomic<bool>* is_enclave_crashed;
-    unsigned flow_id;         // In
-    unsigned recursions_left; // InOut
-    unsigned initial_count;   // InOut
-    uint32_t crc;             // InOut
+    unsigned flowId;         // In
+    unsigned recursionsLeft; // InOut
+    unsigned initialCount;   // InOut
+    uint32_t crc;            // InOut
 };
 
 #endif /* _stdc_args_h */

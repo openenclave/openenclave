@@ -47,22 +47,22 @@ function [ecall] int32_t CopyObjects(
     [in] const struct Object src[2]);
 
 function [ecall] int32_t ECALL_MultipleParams(
-    [in, string] const char* str_in,
-    [in] uint32_t num_in,
-    [in, one] const struct Object* object_in,
-    [out, string, count=128] char* str_out,
-    [out, one] uint32_t* num_out,
-    [out, one] struct Object* object_out,
-    [out, one, ref] struct Object* object_ref_out);
+    [in, string] const char* strIn,
+    [in] uint32_t numIn,
+    [in, one] const struct Object* objectIn,
+    [out, string, count=128] char* strOut,
+    [out, one] uint32_t* numOut,
+    [out, one] struct Object* objectOut,
+    [out, one, ref] struct Object* objectRefOut);
 
 function [ocall] int32_t OCALL_MultipleParams(
-    [in, string] const char* str_in,
-    [in] uint32_t num_in,
-    [in, one] const struct Object* object_in,
-    [out, string, count=128] char* str_out,
-    [out, one] uint32_t* num_out,
-    [out, one] struct Object* object_out,
-    [out, one, ref] struct Object* object_ref_out);
+    [in, string] const char* strIn,
+    [in] uint32_t numIn,
+    [in, one] const struct Object* objectIn,
+    [out, string, count=128] char* strOut,
+    [out, one] uint32_t* numOut,
+    [out, one] struct Object* objectOut,
+    [out, one, ref] struct Object* objectRefOut);
 
 function [ecall] int32_t GetObjectRef(
     [out, ref, one] struct Object* object);
@@ -88,7 +88,7 @@ function [ecall] void TestCallback(
     [in, unchecked] void* func);
 
 function [ecall] bool TestIntPtrRef(
-    [out, ref, count=n] int32_t* int_ptr_out,
+    [out, ref, count=n] int32_t* intPtrOut,
     [in] size_t n);
 
 function [ecall] void TestBufferOverrun(
@@ -100,5 +100,5 @@ function [ecall] void TestBufferCopy(
     [out, count=n] void* dest,
     [in, count=n] const void* src,
     [in] size_t n,
-    [in] bool force_overwrite);
+    [in] bool forceOverwrite);
 

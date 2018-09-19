@@ -10,7 +10,7 @@
 #include <string.h>
 #include <unistd.h>
 
-typedef struct _args
+typedef struct _Args
 {
     char* test;
     int ret;

@@ -6,7 +6,7 @@
 
 #include <openenclave/bits/properties.h>
 
-typedef struct _args
+typedef struct _Args
 {
     int ret;
 } Args;

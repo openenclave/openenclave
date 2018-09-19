@@ -11,51 +11,51 @@
 using namespace std;
 
 static set<string> _types;
-static bool _initialize_types;
+static bool _initializeTypes;
 
 // #define HAVE_PTR_PTR
 
-static int _add_type(unsigned int flags, const string& type)
+static int _AddType(unsigned int flags, const string& type)
 {
-    string full_type_name;
+    string fullTypeName;
 
     if (flags & FLAG_STRUCT)
-        full_type_name = "struct " + type;
+        fullTypeName = "struct " + type;
     else
-        full_type_name = type;
+        fullTypeName = type;
 
-    if (_types.find(full_type_name) != _types.end())
+    if (_types.find(fullTypeName) != _types.end())
         return -1;
 
-    _types.insert(full_type_name);
+    _types.insert(fullTypeName);
 
     return 0;
 }
 
-static int _check_type(unsigned int flags, const string& type)
+static int _CheckType(unsigned int flags, const string& type)
 {
-    if (!_initialize_types)
+    if (!_initializeTypes)
     {
         for (size_t i = 0; i < ntypes; i++)
-            _types.insert(types[i].idl_name);
+            _types.insert(types[i].idlName);
 
-        _initialize_types = true;
+        _initializeTypes = true;
     }
 
-    string full_type_name;
+    string fullTypeName;
 
     if (flags & FLAG_STRUCT)
-        full_type_name = "struct " + type;
+        fullTypeName = "struct " + type;
     else
-        full_type_name = type;
+        fullTypeName = type;
 
-    if (_types.find(full_type_name) == _types.end())
+    if (_types.find(fullTypeName) == _types.end())
         return -1;
 
     return 0;
 }
 
-static bool _is_number(const string& s)
+static bool _IsNumber(const string& s)
 {
     for (size_t i = 0; i < s.size(); i++)
     {
@@ -66,7 +66,7 @@ static bool _is_number(const string& s)
     return true;
 }
 
-static int _parse_qualifiers(
+static int _ParseQualifiers(
     Lexer& lexer,
     unsigned int& flags,
     QualifierValues& qvals)
@@ -125,16 +125,16 @@ static int _parse_qualifiers(
         switch (tok = lexer.Next())
         {
             case TOK_EQUAL:
-                goto parse_initializer;
+                goto parseInitializer;
             case TOK_COMMA:
-                goto parse_comma;
+                goto parseComma;
             case TOK_CLOSE_BRACKET:
-                goto parse_close_bracket;
+                goto parseCloseBracket;
             default:
-                goto malformed_qualifier_list;
+                goto malformedQualifierList;
         }
 
-    parse_initializer:
+    parseInitializer:
 
         switch ((tok = lexer.Next()))
         {
@@ -168,18 +168,18 @@ static int _parse_qualifiers(
         switch (tok = lexer.Next())
         {
             case TOK_COMMA:
-                goto parse_comma;
+                goto parseComma;
             case TOK_CLOSE_BRACKET:
-                goto parse_close_bracket;
+                goto parseCloseBracket;
             default:
-                goto malformed_qualifier_list;
+                goto malformedQualifierList;
         }
 
-    parse_comma:
+    parseComma:
 
         continue;
 
-    parse_close_bracket:
+    parseCloseBracket:
 
         rc = 0;
         goto done;
@@ -189,7 +189,7 @@ static int _parse_qualifiers(
     rc = -1;
     return rc;
 
-malformed_qualifier_list:
+malformedQualifierList:
 
     lexer.SetErr("malformed qualifier list");
     return rc;
@@ -199,10 +199,10 @@ done:
     return rc;
 }
 
-static int _check_qualifiers(
+static int _CheckQualifiers(
     Lexer& lexer,
-    bool is_return_type,
-    bool is_param,
+    bool isReturnType,
+    bool isParam,
     const string& name,
     unsigned int flags,
     const string& type)
@@ -213,7 +213,7 @@ static int _check_qualifiers(
     {
         if (flags & FLAG_ECALL)
         {
-            if (!is_return_type)
+            if (!isReturnType)
             {
                 lexer.SetErr("[ecall] illegal on '%s'", name.c_str());
                 goto done;
@@ -228,7 +228,7 @@ static int _check_qualifiers(
 
         if (flags & FLAG_OCALL)
         {
-            if (!is_return_type)
+            if (!isReturnType)
             {
                 lexer.SetErr("[ocall] illegal on '%s'", name.c_str());
                 goto done;
@@ -237,7 +237,7 @@ static int _check_qualifiers(
 
         if (flags & FLAG_IN)
         {
-            if (is_return_type)
+            if (isReturnType)
             {
                 lexer.SetErr("[in] illegal on '%s'", name.c_str());
                 goto done;
@@ -246,7 +246,7 @@ static int _check_qualifiers(
 
         if (flags & FLAG_OUT)
         {
-            if (is_return_type)
+            if (isReturnType)
             {
                 lexer.SetErr("[in] illegal on '%s'", name.c_str());
                 goto done;
@@ -293,19 +293,18 @@ static int _check_qualifiers(
 
         if (flags & FLAG_STRING)
         {
-            bool is_ptr = (flags & FLAG_PTR);
-            bool is_char = type == "char" || type == "wchar_t";
-            bool is_arr = (flags & FLAG_ARRAY);
+            bool isPtr = (flags & FLAG_PTR);
+            bool isChar = type == "char" || type == "wchar_t";
+            bool isArr = (flags & FLAG_ARRAY);
 
-            if (!is_char || (!is_ptr && !is_arr))
+            if (!isChar || (!isPtr && !isArr))
             {
                 lexer.SetErr(
                     "[string] not allowed on this type: '%s'", name.c_str());
                 goto done;
             }
 
-            if (is_char && is_ptr && (flags & FLAG_OUT) &&
-                !(flags & FLAG_COUNT))
+            if (isChar && isPtr && (flags & FLAG_OUT) && !(flags & FLAG_COUNT))
             {
                 lexer.SetErr(
                     "[count] qualifier required here: '%s'", name.c_str());
@@ -316,7 +315,7 @@ static int _check_qualifiers(
 
     // Check for missing qualifiers:
     {
-        if (is_return_type && !(flags & FLAG_ECALL) && !(flags & FLAG_OCALL))
+        if (isReturnType && !(flags & FLAG_ECALL) && !(flags & FLAG_OCALL))
         {
             lexer.SetErr("need [ecall] or [ocall]: '%s'", name.c_str());
             goto done;
@@ -344,7 +343,7 @@ static int _check_qualifiers(
     }
 
     // Reject reference qualifiers on non-parameters:
-    if (!is_param && (flags & FLAG_REF))
+    if (!isParam && (flags & FLAG_REF))
     {
         lexer.SetErr("[ref] only valid on parameters: '%s'", name.c_str());
         goto done;
@@ -359,9 +358,9 @@ static int _check_qualifiers(
 
 // Handle qualifiers on pointer-params and array-params:
 #if 0
-    if (is_param && (flags & FLAG_PTR || flags & FLAG_ARRAY))
+    if (isParam && (flags & FLAG_PTR || flags & FLAG_ARRAY))
 #endif
-    if (is_param && name.size()) // Ignore void:
+    if (isParam && name.size()) // Ignore void:
     {
         if (!(flags & FLAG_IN || flags & FLAG_OUT))
         {
@@ -371,7 +370,7 @@ static int _check_qualifiers(
     }
 
     // Handle qualifiers on non-pointer-params and non-array-params:
-    if (is_param && !(flags & FLAG_PTR || flags & FLAG_ARRAY))
+    if (isParam && !(flags & FLAG_PTR || flags & FLAG_ARRAY))
     {
         if (flags & FLAG_OUT)
         {
@@ -386,12 +385,12 @@ done:
     return rc;
 }
 
-static int _parse_return_type(Lexer& lexer, ReturnType& x)
+static int _ParseReturnType(Lexer& lexer, ReturnType& x)
 {
     int rc = -1;
     Tok tok = TOK_ERR;
-    bool signed_type = false;
-    bool unsigned_type = false;
+    bool signedType = false;
+    bool unsignedType = false;
 
     x.Clear();
 
@@ -400,107 +399,107 @@ static int _parse_return_type(Lexer& lexer, ReturnType& x)
     switch (tok = lexer.Next())
     {
         case TOK_OPEN_BRACKET:
-            goto parse_qualifiers;
+            goto parseQualifiers;
         case TOK_CONST:
-            goto parse_const;
+            goto parseConst;
         case TOK_STRUCT:
-            goto parse_struct;
+            goto parseStruct;
         case TOK_SIGNED:
-            goto parse_signed;
+            goto parseSigned;
         case TOK_UNSIGNED:
-            goto parse_unsigned;
+            goto parseUnsigned;
         case TOK_IDENTIFIER:
-            goto parse_type;
+            goto parseType;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 
-parse_qualifiers:
+parseQualifiers:
 
-    if (_parse_qualifiers(lexer, x.flags, x.qvals) != 0)
+    if (_ParseQualifiers(lexer, x.flags, x.qvals) != 0)
         goto done;
 
     switch (tok = lexer.Next())
     {
         case TOK_CONST:
-            goto parse_const;
+            goto parseConst;
         case TOK_STRUCT:
-            goto parse_struct;
+            goto parseStruct;
         case TOK_SIGNED:
-            goto parse_signed;
+            goto parseSigned;
         case TOK_UNSIGNED:
-            goto parse_unsigned;
+            goto parseUnsigned;
         case TOK_IDENTIFIER:
-            goto parse_type;
+            goto parseType;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 
-parse_const:
+parseConst:
 
     x.flags |= FLAG_CONST;
 
     switch (tok = lexer.Next())
     {
         case TOK_STRUCT:
-            goto parse_struct;
+            goto parseStruct;
         case TOK_SIGNED:
-            goto parse_signed;
+            goto parseSigned;
         case TOK_UNSIGNED:
-            goto parse_unsigned;
+            goto parseUnsigned;
         case TOK_IDENTIFIER:
-            goto parse_type;
+            goto parseType;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 
-parse_struct:
+parseStruct:
 
     x.flags |= FLAG_STRUCT;
 
     switch (tok = lexer.Next())
     {
         case TOK_IDENTIFIER:
-            goto parse_type;
+            goto parseType;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 
-parse_signed:
+parseSigned:
 
-    signed_type = true;
+    signedType = true;
 
     switch (tok = lexer.Next())
     {
         case TOK_IDENTIFIER:
-            goto parse_type;
+            goto parseType;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 
-parse_unsigned:
+parseUnsigned:
 
-    unsigned_type = true;
+    unsignedType = true;
 
     switch (tok = lexer.Next())
     {
         case TOK_IDENTIFIER:
-            goto parse_type;
+            goto parseType;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 
-parse_type:
+parseType:
 
-    if (signed_type)
+    if (signedType)
         x.type = "signed " + string(lexer.text);
-    else if (unsigned_type)
+    else if (unsignedType)
         x.type = "unsigned " + string(lexer.text);
     else
         x.type = string(lexer.text);
@@ -508,15 +507,15 @@ parse_type:
     switch (tok = lexer.Next())
     {
         case TOK_PTR:
-            goto parse_ptr;
+            goto parsePtr;
         case TOK_IDENTIFIER:
-            goto parse_name;
+            goto parseName;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 
-parse_ptr:
+parsePtr:
 
     x.flags |= FLAG_PTR;
 
@@ -524,17 +523,17 @@ parse_ptr:
     {
 #ifdef HAVE_PTR_PTR
         case TOK_PTR:
-            goto parse_ptr_ptr;
+            goto parsePtrPtr;
 #endif /* HAVE_PTR_PTR */
         case TOK_IDENTIFIER:
-            goto parse_name;
+            goto parseName;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 
 #ifdef HAVE_PTR_PTR
-parse_ptr_ptr:
+parsePtrPtr:
 
     x.flags &= ~FLAG_PTR;
     x.flags |= FLAG_PTR_PTR;
@@ -542,27 +541,27 @@ parse_ptr_ptr:
     switch (tok = lexer.Next())
     {
         case TOK_IDENTIFIER:
-            goto parse_name;
+            goto parseName;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 #endif /* HAVE_PTR_PTR */
 
-parse_name:
+parseName:
 
-    goto check_qualifiers;
+    goto checkQualifiers;
 
-check_qualifiers:
+checkQualifiers:
 
-    if (_check_qualifiers(lexer, true, false, "return", x.flags, x.type) != 0)
+    if (_CheckQualifiers(lexer, true, false, "return", x.flags, x.type) != 0)
         goto done;
 
-    goto check_type;
+    goto checkType;
 
-check_type:
+checkType:
 
-    if (_check_type(x.flags, x.type) != 0 && !(x.flags & FLAG_UNCHECKED))
+    if (_CheckType(x.flags, x.type) != 0 && !(x.flags & FLAG_UNCHECKED))
     {
         lexer.SetErr("undefined return type: %s\n", x.type.c_str());
         goto done;
@@ -575,12 +574,12 @@ done:
     return rc;
 }
 
-static int _parse_field(Lexer& lexer, const Struct& s, Field& x, bool& found)
+static int _ParseField(Lexer& lexer, const Struct& s, Field& x, bool& found)
 {
     int rc = -1;
     Tok tok = TOK_ERR;
-    bool signed_type = false;
-    bool unsigned_type = false;
+    bool signedType = false;
+    bool unsignedType = false;
 
     x.Clear();
 
@@ -589,109 +588,109 @@ static int _parse_field(Lexer& lexer, const Struct& s, Field& x, bool& found)
     switch (tok = lexer.Next())
     {
         case TOK_CLOSE_BRACE:
-            goto parse_close_brace;
+            goto parseCloseBrace;
         case TOK_OPEN_BRACKET:
-            goto parse_qualifiers;
+            goto parseQualifiers;
         case TOK_CONST:
-            goto parse_const;
+            goto parseConst;
         case TOK_STRUCT:
-            goto parse_struct;
+            goto parseStruct;
         case TOK_SIGNED:
-            goto parse_signed;
+            goto parseSigned;
         case TOK_UNSIGNED:
-            goto parse_unsigned;
+            goto parseUnsigned;
         case TOK_IDENTIFIER:
-            goto parse_type;
+            goto parseType;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 
-parse_qualifiers:
+parseQualifiers:
 
-    if (_parse_qualifiers(lexer, x.flags, x.qvals) != 0)
+    if (_ParseQualifiers(lexer, x.flags, x.qvals) != 0)
         goto done;
 
     switch (tok = lexer.Next())
     {
         case TOK_CONST:
-            goto parse_const;
+            goto parseConst;
         case TOK_STRUCT:
-            goto parse_struct;
+            goto parseStruct;
         case TOK_SIGNED:
-            goto parse_signed;
+            goto parseSigned;
         case TOK_UNSIGNED:
-            goto parse_unsigned;
+            goto parseUnsigned;
         case TOK_IDENTIFIER:
-            goto parse_type;
+            goto parseType;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 
-parse_const:
+parseConst:
 
     x.flags |= FLAG_CONST;
 
     switch (tok = lexer.Next())
     {
         case TOK_STRUCT:
-            goto parse_struct;
+            goto parseStruct;
         case TOK_SIGNED:
-            goto parse_signed;
+            goto parseSigned;
         case TOK_UNSIGNED:
-            goto parse_unsigned;
+            goto parseUnsigned;
         case TOK_IDENTIFIER:
-            goto parse_type;
+            goto parseType;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 
-parse_struct:
+parseStruct:
 
     x.flags |= FLAG_STRUCT;
 
     switch (tok = lexer.Next())
     {
         case TOK_IDENTIFIER:
-            goto parse_type;
+            goto parseType;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 
-parse_signed:
+parseSigned:
 
-    signed_type = true;
+    signedType = true;
 
     switch (tok = lexer.Next())
     {
         case TOK_IDENTIFIER:
-            goto parse_type;
+            goto parseType;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 
-parse_unsigned:
+parseUnsigned:
 
-    unsigned_type = true;
+    unsignedType = true;
 
     switch (tok = lexer.Next())
     {
         case TOK_IDENTIFIER:
-            goto parse_type;
+            goto parseType;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 
-parse_type:
+parseType:
 
-    if (signed_type)
+    if (signedType)
         x.type = "signed " + string(lexer.text);
-    else if (unsigned_type)
+    else if (unsignedType)
         x.type = "unsigned " + string(lexer.text);
     else
         x.type = string(lexer.text);
@@ -699,15 +698,15 @@ parse_type:
     switch (tok = lexer.Next())
     {
         case TOK_PTR:
-            goto parse_ptr;
+            goto parsePtr;
         case TOK_IDENTIFIER:
-            goto parse_name;
+            goto parseName;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 
-parse_ptr:
+parsePtr:
 
     x.flags |= FLAG_PTR;
 
@@ -715,17 +714,17 @@ parse_ptr:
     {
 #ifdef HAVE_PTR_PTR
         case TOK_PTR:
-            goto parse_ptr_ptr;
+            goto parsePtrPtr;
 #endif /* HAVE_PTR_PTR */
         case TOK_IDENTIFIER:
-            goto parse_name;
+            goto parseName;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 
 #ifdef HAVE_PTR_PTR
-parse_ptr_ptr:
+parsePtrPtr:
 
     x.flags &= ~FLAG_PTR;
     x.flags |= FLAG_PTR_PTR;
@@ -733,14 +732,14 @@ parse_ptr_ptr:
     switch (tok = lexer.Next())
     {
         case TOK_IDENTIFIER:
-            goto parse_name;
+            goto parseName;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 #endif /* HAVE_PTR_PTR */
 
-parse_name:
+parseName:
 
     found = true;
     x.name = lexer.text;
@@ -754,15 +753,15 @@ parse_name:
     switch (tok = lexer.Next())
     {
         case TOK_OPEN_BRACKET:
-            goto parse_subscript;
+            goto parseSubscript;
         case TOK_SEMICOLON:
-            goto parse_semicolon;
+            goto parseSemicolon;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 
-parse_subscript:
+parseSubscript:
 
     // '[' [0-9][0-9]* ']'
 
@@ -798,35 +797,35 @@ parse_subscript:
     switch (tok = lexer.Next())
     {
         case TOK_SEMICOLON:
-            goto parse_semicolon;
+            goto parseSemicolon;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 
-parse_semicolon:
+parseSemicolon:
 
     rc = 0;
-    goto check_qualifiers;
+    goto checkQualifiers;
 
-parse_close_brace:
+parseCloseBrace:
 
     rc = 1;
-    goto check_qualifiers;
+    goto checkQualifiers;
 
-check_qualifiers:
+checkQualifiers:
 
-    if (_check_qualifiers(lexer, false, false, x.name, x.flags, x.type) != 0)
+    if (_CheckQualifiers(lexer, false, false, x.name, x.flags, x.type) != 0)
     {
         rc = -1;
         goto done;
     }
 
-    goto check_type;
+    goto checkType;
 
-check_type:
+checkType:
 
-    if (x.name.size() && _check_type(x.flags, x.type) != 0 &&
+    if (x.name.size() && _CheckType(x.flags, x.type) != 0 &&
         !(x.flags & FLAG_UNCHECKED))
     {
         rc = -1;
@@ -840,12 +839,12 @@ done:
     return rc;
 }
 
-static int _parse_param(Lexer& lexer, const Function& f, Param& x, bool& found)
+static int _ParseParam(Lexer& lexer, const Function& f, Param& x, bool& found)
 {
     int rc = -1;
     Tok tok = TOK_ERR;
-    bool signed_type = false;
-    bool unsigned_type = false;
+    bool signedType = false;
+    bool unsignedType = false;
 
     x.Clear();
 
@@ -854,109 +853,109 @@ static int _parse_param(Lexer& lexer, const Function& f, Param& x, bool& found)
     switch (tok = lexer.Next())
     {
         case TOK_CLOSE_PAREN:
-            goto parse_close_paren;
+            goto parseCloseParen;
         case TOK_OPEN_BRACKET:
-            goto parse_qualifiers;
+            goto parseQualifiers;
         case TOK_CONST:
-            goto parse_const;
+            goto parseConst;
         case TOK_SIGNED:
-            goto parse_signed;
+            goto parseSigned;
         case TOK_UNSIGNED:
-            goto parse_unsigned;
+            goto parseUnsigned;
         case TOK_STRUCT:
-            goto parse_struct;
+            goto parseStruct;
         case TOK_IDENTIFIER:
-            goto parse_type;
+            goto parseType;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 
-parse_qualifiers:
+parseQualifiers:
 
-    if (_parse_qualifiers(lexer, x.flags, x.qvals) != 0)
+    if (_ParseQualifiers(lexer, x.flags, x.qvals) != 0)
         goto done;
 
     switch (tok = lexer.Next())
     {
         case TOK_CONST:
-            goto parse_const;
+            goto parseConst;
         case TOK_SIGNED:
-            goto parse_signed;
+            goto parseSigned;
         case TOK_UNSIGNED:
-            goto parse_unsigned;
+            goto parseUnsigned;
         case TOK_STRUCT:
-            goto parse_struct;
+            goto parseStruct;
         case TOK_IDENTIFIER:
-            goto parse_type;
+            goto parseType;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 
-parse_const:
+parseConst:
 
     x.flags |= FLAG_CONST;
 
     switch (tok = lexer.Next())
     {
         case TOK_SIGNED:
-            goto parse_signed;
+            goto parseSigned;
         case TOK_UNSIGNED:
-            goto parse_unsigned;
+            goto parseUnsigned;
         case TOK_STRUCT:
-            goto parse_struct;
+            goto parseStruct;
         case TOK_IDENTIFIER:
-            goto parse_type;
+            goto parseType;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 
-parse_struct:
+parseStruct:
 
     x.flags |= FLAG_STRUCT;
 
     switch (tok = lexer.Next())
     {
         case TOK_IDENTIFIER:
-            goto parse_type;
+            goto parseType;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 
-parse_signed:
+parseSigned:
 
-    signed_type = true;
+    signedType = true;
 
     switch (tok = lexer.Next())
     {
         case TOK_IDENTIFIER:
-            goto parse_type;
+            goto parseType;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 
-parse_unsigned:
+parseUnsigned:
 
-    unsigned_type = true;
+    unsignedType = true;
 
     switch (tok = lexer.Next())
     {
         case TOK_IDENTIFIER:
-            goto parse_type;
+            goto parseType;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 
-parse_type:
+parseType:
 
-    if (signed_type)
+    if (signedType)
         x.type = "signed " + string(lexer.text);
-    else if (unsigned_type)
+    else if (unsignedType)
         x.type = "unsigned " + string(lexer.text);
     else
         x.type = string(lexer.text);
@@ -964,15 +963,15 @@ parse_type:
     switch (tok = lexer.Next())
     {
         case TOK_PTR:
-            goto parse_ptr;
+            goto parsePtr;
         case TOK_IDENTIFIER:
-            goto parse_name;
+            goto parseName;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 
-parse_ptr:
+parsePtr:
 
     x.flags |= FLAG_PTR;
 
@@ -980,17 +979,17 @@ parse_ptr:
     {
 #ifdef HAVE_PTR_PTR
         case TOK_PTR:
-            goto parse_ptr_ptr;
+            goto parsePtrPtr;
 #endif /* HAVE_PTR_PTR */
         case TOK_IDENTIFIER:
-            goto parse_name;
+            goto parseName;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 
 #ifdef HAVE_PTR_PTR
-parse_ptr_ptr:
+parsePtrPtr:
 
     x.flags &= ~FLAG_PTR;
     x.flags |= FLAG_PTR_PTR;
@@ -998,14 +997,14 @@ parse_ptr_ptr:
     switch (tok = lexer.Next())
     {
         case TOK_IDENTIFIER:
-            goto parse_name;
+            goto parseName;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 #endif /* HAVE_PTR_PTR */
 
-parse_name:
+parseName:
 
     found = true;
     x.name = lexer.text;
@@ -1019,17 +1018,17 @@ parse_name:
     switch (tok = lexer.Next())
     {
         case TOK_OPEN_BRACKET:
-            goto parse_subscript;
+            goto parseSubscript;
         case TOK_COMMA:
-            goto parse_comma;
+            goto parseComma;
         case TOK_CLOSE_PAREN:
-            goto parse_close_paren;
+            goto parseCloseParen;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 
-parse_subscript:
+parseSubscript:
 
     // '[' [0-9][0-9]* ']'
     x.flags |= FLAG_ARRAY;
@@ -1064,37 +1063,37 @@ parse_subscript:
     switch (tok = lexer.Next())
     {
         case TOK_COMMA:
-            goto parse_comma;
+            goto parseComma;
         case TOK_CLOSE_PAREN:
-            goto parse_close_paren;
+            goto parseCloseParen;
         default:
             lexer.SetErr("syntax error");
             goto done;
     }
 
-parse_comma:
+parseComma:
 
     rc = 0;
-    goto check_qualifiers;
+    goto checkQualifiers;
 
-parse_close_paren:
+parseCloseParen:
 
     rc = 1;
-    goto check_qualifiers;
+    goto checkQualifiers;
 
-check_qualifiers:
+checkQualifiers:
 
-    if (_check_qualifiers(lexer, false, true, x.name, x.flags, x.type) != 0)
+    if (_CheckQualifiers(lexer, false, true, x.name, x.flags, x.type) != 0)
     {
         rc = -1;
         goto done;
     }
 
-    goto check_type;
+    goto checkType;
 
-check_type:
+checkType:
 
-    if (x.type.size() && _check_type(x.flags, x.type) != 0 &&
+    if (x.type.size() && _CheckType(x.flags, x.type) != 0 &&
         !(x.flags & FLAG_UNCHECKED))
     {
         lexer.SetErr("undefined parameter type: %s\n", x.type.c_str());
@@ -1107,7 +1106,7 @@ done:
     return rc;
 }
 
-static int _check_function_qualifiers(Lexer& lexer, const vector<Param>& params)
+static int _CheckFunctionQualifiers(Lexer& lexer, const vector<Param>& params)
 {
     int rc = -1;
 
@@ -1118,7 +1117,7 @@ static int _check_function_qualifiers(Lexer& lexer, const vector<Param>& params)
 
         if (p.flags & FLAG_COUNT)
         {
-            if (!_is_number(p.qvals.count))
+            if (!_IsNumber(p.qvals.count))
             {
                 size_t pos = FindParam(params, p.qvals.count);
 
@@ -1150,7 +1149,7 @@ done:
     return rc;
 }
 
-static int _check_struct_qualifiers(Lexer& lexer, Struct& s)
+static int _CheckStructQualifiers(Lexer& lexer, Struct& s)
 {
     int rc = -1;
 
@@ -1161,7 +1160,7 @@ static int _check_struct_qualifiers(Lexer& lexer, Struct& s)
 
         if (f.flags & FLAG_COUNT)
         {
-            if (!_is_number(f.qvals.count))
+            if (!_IsNumber(f.qvals.count))
             {
                 size_t pos = s.FindField(f.qvals.count);
 
@@ -1193,15 +1192,15 @@ done:
     return rc;
 }
 
-static int _parse_function(Lexer& lexer, Function& x)
+static int _ParseFunction(Lexer& lexer, Function& x)
 {
     int rc = -1;
-    ReturnType return_type;
+    ReturnType returnType;
     Param param;
     Tok tok = TOK_ERR;
 
     /* Get return type */
-    if (_parse_return_type(lexer, x.return_type) != 0)
+    if (_ParseReturnType(lexer, x.returnType) != 0)
         goto done;
 
     /* Get function name */
@@ -1226,7 +1225,7 @@ static int _parse_function(Lexer& lexer, Function& x)
     {
         bool found = false;
 
-        while ((rc = _parse_param(lexer, x, param, found)) == 0)
+        while ((rc = _ParseParam(lexer, x, param, found)) == 0)
         {
             x.params.push_back(param);
         }
@@ -1247,7 +1246,7 @@ static int _parse_function(Lexer& lexer, Function& x)
     }
 
     /* Check cross-parameter qualifiers */
-    if (_check_function_qualifiers(lexer, x.params) != 0)
+    if (_CheckFunctionQualifiers(lexer, x.params) != 0)
         goto done;
 
     rc = 0;
@@ -1257,10 +1256,10 @@ done:
     return rc;
 }
 
-static int _parse_struct(Lexer& lexer, Struct& x)
+static int _ParseStruct(Lexer& lexer, Struct& x)
 {
     int rc = -1;
-    ReturnType return_type;
+    ReturnType returnType;
     Field field;
     Tok tok = TOK_ERR;
 
@@ -1276,7 +1275,7 @@ static int _parse_struct(Lexer& lexer, Struct& x)
     }
 
     /* Add this type to the types list */
-    if (_add_type(FLAG_STRUCT, x.name) != 0)
+    if (_AddType(FLAG_STRUCT, x.name) != 0)
     {
         lexer.SetErr("struct type already defined: %s", x.name.c_str());
         goto done;
@@ -1293,7 +1292,7 @@ static int _parse_struct(Lexer& lexer, Struct& x)
     {
         bool found = false;
 
-        while ((rc = _parse_field(lexer, x, field, found)) == 0)
+        while ((rc = _ParseField(lexer, x, field, found)) == 0)
         {
             x.fields.push_back(field);
         }
@@ -1311,7 +1310,7 @@ static int _parse_struct(Lexer& lexer, Struct& x)
     }
 
     /* Check cross-parameter qualifiers */
-    if (_check_struct_qualifiers(lexer, x) != 0)
+    if (_CheckStructQualifiers(lexer, x) != 0)
         goto done;
 
     rc = 0;
@@ -1321,7 +1320,7 @@ done:
     return rc;
 }
 
-static int _parse_verbatim(Lexer& lexer, Verbatim& x)
+static int _ParseVerbatim(Lexer& lexer, Verbatim& x)
 {
     int rc = -1;
     Tok tok = TOK_ERR;
@@ -1345,7 +1344,7 @@ done:
     return rc;
 }
 
-static int _parse_include(Lexer& lexer, string& filename)
+static int _ParseInclude(Lexer& lexer, string& filename)
 {
     int rc = -1;
     Tok tok = TOK_ERR;
@@ -1410,7 +1409,7 @@ int Parser::Parse(Lexer& lexer)
         {
             Verbatim verbatim;
 
-            if (_parse_verbatim(lexer, verbatim) != 0)
+            if (_ParseVerbatim(lexer, verbatim) != 0)
             {
                 rc = -1;
                 break;
@@ -1423,7 +1422,7 @@ int Parser::Parse(Lexer& lexer)
             string filename;
 
             // Get the filename:
-            if (_parse_include(lexer, filename) != 0)
+            if (_ParseInclude(lexer, filename) != 0)
             {
                 rc = -1;
                 break;
@@ -1460,7 +1459,7 @@ int Parser::Parse(Lexer& lexer)
         {
             Struct s;
 
-            if (_parse_struct(lexer, s) != 0)
+            if (_ParseStruct(lexer, s) != 0)
             {
                 rc = -1;
                 break;
@@ -1472,7 +1471,7 @@ int Parser::Parse(Lexer& lexer)
         {
             Function function;
 
-            if (_parse_function(lexer, function) != 0)
+            if (_ParseFunction(lexer, function) != 0)
             {
                 rc = -1;
                 break;

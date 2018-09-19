@@ -11,7 +11,7 @@ static oe_mutex_t mutex1 = OE_MUTEX_INITIALIZER;
 static oe_mutex_t mutex2 = OE_MUTEX_INITIALIZER;
 
 // Force parallel invocation of malloc():
-static void _test_parallel_mallocs()
+static void _TestParallelMallocs()
 {
     const size_t N = 100;
     void* ptrs[N];
@@ -46,7 +46,7 @@ OE_ECALL void TestMutex(void* args_)
     oe_host_printf("TestMutex: %lld\n", OE_LLU(oe_thread_self()));
 }
 
-static void _test_mutex1(size_t* count)
+static void _TestMutex1(size_t* count)
 {
     OE_TEST(oe_mutex_lock(&mutex1) == 0);
     (*count)++;
@@ -54,7 +54,7 @@ static void _test_mutex1(size_t* count)
     oe_host_printf("TestMutex1: %llu\n", OE_LLU(oe_thread_self()));
 }
 
-static void _test_mutex2(size_t* count)
+static void _TestMutex2(size_t* count)
 {
     OE_TEST(oe_mutex_lock(&mutex2) == 0);
     (*count)++;
@@ -85,15 +85,15 @@ OE_ECALL void Wait(void* args_)
     static size_t _count2 = 0;
     WaitArgs* args = (WaitArgs*)args_;
 
-    _test_parallel_mallocs();
+    _TestParallelMallocs();
 
     /* Assign the mutex to test */
     size_t n = AssignMutex();
 
     if (n == 1)
-        _test_mutex1(&_count1);
+        _TestMutex1(&_count1);
     else if (n == 2)
-        _test_mutex2(&_count2);
+        _TestMutex2(&_count2);
     else
         OE_TEST(0);
 
@@ -109,9 +109,9 @@ OE_ECALL void Wait(void* args_)
 
     oe_mutex_unlock(&cond_mutex);
 
-    OE_TEST(_count1 + _count2 == args->num_threads);
+    OE_TEST(_count1 + _count2 == args->numThreads);
 
-    _test_parallel_mallocs();
+    _TestParallelMallocs();
 }
 
 OE_ECALL void Signal()

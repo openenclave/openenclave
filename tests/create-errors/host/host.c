@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static void _test_invalid_param(const char* path, uint32_t flags)
+static void _TestInvalidParam(const char* path, uint32_t flags)
 {
     oe_enclave_t* enclave = NULL;
 
@@ -48,7 +48,7 @@ static void _test_invalid_param(const char* path, uint32_t flags)
     OE_TEST(result == OE_INVALID_PARAMETER);
 }
 
-static void _test_enclave_path(uint32_t flags)
+static void _TestEnclavePath(uint32_t flags)
 {
     oe_enclave_t* enclave = NULL;
     oe_result_t result;
@@ -91,10 +91,10 @@ int main(int argc, const char* argv[])
     const uint32_t flags = oe_get_create_flags();
 
     /* Test basic invalid parameter arguments. */
-    _test_invalid_param(argv[1], flags);
+    _TestInvalidParam(argv[1], flags);
 
     /* Test Enclave path parameter. */
-    _test_enclave_path(flags);
+    _TestEnclavePath(flags);
 
     return 0;
 }

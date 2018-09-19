@@ -47,7 +47,7 @@ struct _oe_field_ti
     const oe_struct_ti_t* sti;
 
     /* For pointer types: the field in the struct that holds the array size */
-    const char* count_field;
+    const char* countField;
 
     /* Offset of this field within struct */
     size_t offset;
@@ -84,34 +84,34 @@ oe_result_t oe_struct_eq(
     bool* flag);
 
 oe_result_t oe_copy_struct(
-    const oe_struct_ti_t* struc_ti,
-    const void* struct_in,
-    void* struct_out,
+    const oe_struct_ti_t* strucTI,
+    const void* structIn,
+    void* structOut,
     void*(alloc)(size_t size));
 
 oe_result_t oe_clone_struct(
-    const oe_struct_ti_t* struct_ti,
-    const void* struct_in,
-    void** struct_out,
+    const oe_struct_ti_t* structTI,
+    const void* structIn,
+    void** structOut,
     void*(alloc)(size_t size));
 
-void oe_print_struct(const oe_struct_ti_t* struct_ti, const void* struct_in);
+void oe_print_struct(const oe_struct_ti_t* structTI, const void* structIn);
 
 oe_result_t oe_destroy_struct(
-    const oe_struct_ti_t* struct_ti,
-    void* struct_ptr,
+    const oe_struct_ti_t* structTI,
+    void* structPtr,
     oe_dealloc_proc_t dealloc);
 
 oe_result_t oe_free_struct(
-    const oe_struct_ti_t* struct_ti,
-    void* struct_ptr,
+    const oe_struct_ti_t* structTI,
+    void* structPtr,
     oe_dealloc_proc_t dealloc);
 
 oe_result_t oe_init_arg(
     const oe_struct_ti_t* sti,
     void* strct,
     size_t index,
-    bool is_ptr_ptr,
+    bool isPtrPtr,
     void* arg,
     void*(alloc)(size_t size));
 
@@ -119,7 +119,7 @@ oe_result_t oe_clear_arg(
     const oe_struct_ti_t* sti,
     void* strct,
     size_t index,
-    bool is_ptr_ptr,
+    bool isPtrPtr,
     void* arg,
     oe_dealloc_proc_t dealloc);
 
@@ -127,7 +127,7 @@ oe_result_t oe_clear_arg_by_name(
     const oe_struct_ti_t* sti,
     void* strct,
     const char* name,
-    bool is_ptr_ptr,
+    bool isPtrPtr,
     void* arg,
     oe_dealloc_proc_t dealloc);
 
@@ -135,7 +135,7 @@ oe_result_t oe_set_arg(
     const oe_struct_ti_t* sti,
     void* strct,
     size_t index,
-    bool is_ptr_ptr, /* if 'arg' is a pointer to a pointer to an object */
+    bool isPtrPtr, /* if 'arg' is a pointer to a pointer to an object */
     void* arg,
     void*(alloc)(size_t size));
 
@@ -143,11 +143,11 @@ oe_result_t oe_set_arg_by_name(
     const oe_struct_ti_t* sti,
     void* strct,
     const char* name,
-    bool is_ptr_ptr, /* if 'arg' is a pointer to a pointer to an object */
+    bool isPtrPtr, /* if 'arg' is a pointer to a pointer to an object */
     void* arg,
     void*(alloc)(size_t size));
 
-size_t oe_struct_find_field(const oe_struct_ti_t* struct_ti, const char* name);
+size_t oe_struct_find_field(const oe_struct_ti_t* structTI, const char* name);
 
 oe_result_t oe_check_pre_constraints(
     const oe_struct_ti_t* sti,

@@ -8,7 +8,7 @@
 
 static pthread_once_t _once = PTHREAD_ONCE_INIT;
 
-static void _initialize(void)
+static void _Initialize(void)
 {
     OpenSSL_add_all_algorithms();
     ERR_load_BIO_strings();
@@ -17,5 +17,5 @@ static void _initialize(void)
 
 void oe_initialize_openssl(void)
 {
-    pthread_once(&_once, _initialize);
+    pthread_once(&_once, _Initialize);
 }

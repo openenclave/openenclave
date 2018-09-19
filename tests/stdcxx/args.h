@@ -6,12 +6,12 @@
 
 #include <stddef.h>
 
-typedef struct _test_args
+typedef struct _TestArgs
 {
     int ret;
     bool caught;
-    bool dynamic_cast_works;
-    size_t num_constructions;
+    bool dynamicCastWorks;
+    size_t numConstructions;
 } TestArgs;
 
 #endif /* _stdc_args_h */

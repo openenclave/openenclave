@@ -44,7 +44,7 @@ OE_ECALL void CreateEnclave(void* args_)
     args->ret = oe_call_host("CreateEnclave", args);
 }
 
-static oe_enclave_t* _create_enclave(TestEnclaveArgs* args)
+static oe_enclave_t* _CreateEnclave(TestEnclaveArgs* args)
 {
     /* Allocate memory for the CreateEnclaveArgs struct. */
     CreateEnclaveArgs* create_args =
@@ -71,55 +71,55 @@ static oe_enclave_t* _create_enclave(TestEnclaveArgs* args)
     return enclave;
 }
 
-static void _call_enclave(oe_enclave_t* enclave, const char* func)
+static void _CallEnclave(oe_enclave_t* enclave, const char* func)
 {
     /* Allocate memory for calling the enclave. */
-    CallEnclaveArgs* call_args =
+    CallEnclaveArgs* callArgs =
         (CallEnclaveArgs*)oe_host_malloc(sizeof(CallEnclaveArgs));
 
-    OE_TEST(call_args != NULL);
+    OE_TEST(callArgs != NULL);
 
     /* Fill struct values. */
-    call_args->enclave = enclave;
+    callArgs->enclave = enclave;
 
-    call_args->func = oe_host_strndup(func, OE_SIZE_MAX);
-    OE_TEST(call_args->func != NULL);
+    callArgs->func = oe_host_strndup(func, OE_SIZE_MAX);
+    OE_TEST(callArgs->func != NULL);
 
-    call_args->args = oe_host_malloc(sizeof(int));
-    OE_TEST(call_args->args != NULL);
-    *((int*)call_args->args) = 123;
+    callArgs->args = oe_host_malloc(sizeof(int));
+    OE_TEST(callArgs->args != NULL);
+    *((int*)callArgs->args) = 123;
 
-    call_args->ret = 1;
+    callArgs->ret = 1;
 
     /* Test calling the enclave via an OCALL. */
-    oe_result_t result = oe_call_host("CallEnclave", call_args);
+    oe_result_t result = oe_call_host("CallEnclave", callArgs);
     OE_TEST(result == OE_OK);
-    OE_TEST(call_args->ret == OE_OK);
-    OE_TEST(*((int*)call_args->args) == 246);
+    OE_TEST(callArgs->ret == OE_OK);
+    OE_TEST(*((int*)callArgs->args) == 246);
 
-    oe_host_free(call_args->args);
-    oe_host_free(call_args->func);
-    oe_host_free(call_args);
+    oe_host_free(callArgs->args);
+    oe_host_free(callArgs->func);
+    oe_host_free(callArgs);
 }
 
-static void _terminate_enclave(oe_enclave_t* enclave)
+static void _TerminateEnclave(oe_enclave_t* enclave)
 {
     /* Allocate memory for terminating the enclave. */
-    TerminateEnclaveArgs* terminate_args =
+    TerminateEnclaveArgs* terminateArgs =
         (TerminateEnclaveArgs*)oe_host_malloc(sizeof(TerminateEnclaveArgs));
 
-    OE_TEST(terminate_args != NULL);
+    OE_TEST(terminateArgs != NULL);
 
     /* Fill struct values. */
-    terminate_args->enclave = enclave;
-    terminate_args->ret = 1;
+    terminateArgs->enclave = enclave;
+    terminateArgs->ret = 1;
 
     /* Call terminate enclave via OCALL. */
-    oe_result_t result = oe_call_host("TerminateEnclave", terminate_args);
+    oe_result_t result = oe_call_host("TerminateEnclave", terminateArgs);
     OE_TEST(result == OE_OK);
-    OE_TEST(terminate_args->ret == OE_OK);
+    OE_TEST(terminateArgs->ret == OE_OK);
 
-    oe_host_free(terminate_args);
+    oe_host_free(terminateArgs);
 }
 
 OE_ECALL void TestOCallEnclave(void* args_)
@@ -135,17 +135,17 @@ OE_ECALL void TestOCallEnclave(void* args_)
     }
 
     /* Create Enclave via OCALL. */
-    oe_enclave_t* enclave = _create_enclave(args);
+    oe_enclave_t* enclave = _CreateEnclave(args);
     OE_TEST(enclave != NULL);
 
     /* Test ECALL on this enclave. */
-    _call_enclave(enclave, "Double");
+    _CallEnclave(enclave, "Double");
 
     /* Test OCALL on this enclave. */
-    _call_enclave(enclave, "DoubleOCall");
+    _CallEnclave(enclave, "DoubleOCall");
 
     /* Test terminating the enclave. */
-    _terminate_enclave(enclave);
+    _TerminateEnclave(enclave);
 
     args->ret = 0;
 }

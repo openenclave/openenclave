@@ -6,7 +6,7 @@
 
 #include <openenclave/bits/types.h>
 
-typedef struct _create_enclave_args
+typedef struct _CreateEnclaveArgs
 {
     const char* path;
     oe_enclave_type_t type;
@@ -15,7 +15,7 @@ typedef struct _create_enclave_args
     oe_result_t ret;
 } CreateEnclaveArgs;
 
-typedef struct _call_enclave_args
+typedef struct _CallEnclaveArgs
 {
     oe_enclave_t* enclave;
     char* func;
@@ -23,13 +23,13 @@ typedef struct _call_enclave_args
     oe_result_t ret;
 } CallEnclaveArgs;
 
-typedef struct _terminate_enclave_args
+typedef struct _TerminateEnclaveArgs
 {
     oe_enclave_t* enclave;
     oe_result_t ret;
 } TerminateEnclaveArgs;
 
-typedef struct _test_enclave_args
+typedef struct _TestEnclaveArgs
 {
     const char* path;
     uint32_t flags;

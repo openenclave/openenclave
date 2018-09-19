@@ -21,7 +21,7 @@ static std::mutex mutex1;
 static std::mutex mutex2;
 
 // Force parallel invocation of malloc():
-static void _test_parallel_mallocs()
+static void _TestParallelMallocs()
 {
     const size_t N = 100;
     void* ptrs[N];
@@ -69,7 +69,7 @@ OE_ECALL void TestMutexCxx(void* args_)
     std::cout << ss.str();
 }
 
-static void _test_mutex1_cxx(size_t* count)
+static void _TestMutex1Cxx(size_t* count)
 {
     std::stringstream ss;
 
@@ -80,7 +80,7 @@ static void _test_mutex1_cxx(size_t* count)
     std::cout << ss.str();
 }
 
-static void _test_mutex2_cxx(size_t* count)
+static void _TestMutex2Cxx(size_t* count)
 {
     std::stringstream ss;
 
@@ -115,15 +115,15 @@ OE_ECALL void WaitCxx(void* args_)
     WaitCxxArgs* args = (WaitCxxArgs*)args_;
     std::stringstream ss;
 
-    _test_parallel_mallocs();
+    _TestParallelMallocs();
 
     /* Assign the mutex to test */
     size_t n = AssignMutexCxx();
 
     if (n == 1)
-        _test_mutex1_cxx(&_count1);
+        _TestMutex1Cxx(&_count1);
     else if (n == 2)
-        _test_mutex2_cxx(&_count2);
+        _TestMutex2Cxx(&_count2);
     else
         OE_TEST(0);
 
@@ -141,9 +141,9 @@ OE_ECALL void WaitCxx(void* args_)
         std::cout << "Done waiting!\n";
     }
 
-    OE_TEST(_count1 + _count2 == args->num_threads);
+    OE_TEST(_count1 + _count2 == args->numThreads);
 
-    _test_parallel_mallocs();
+    _TestParallelMallocs();
 }
 
 OE_ECALL void SignalCxx()

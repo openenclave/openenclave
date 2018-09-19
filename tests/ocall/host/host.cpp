@@ -10,11 +10,11 @@
 #include <cstring>
 #include "../args.h"
 
-static bool _func1_called = false;
+static bool _func1Called = false;
 
 OE_OCALL void Func1(void* args)
 {
-    _func1_called = true;
+    _func1Called = true;
 }
 
 OE_OCALL void my_ocall(void* arg)
@@ -25,19 +25,19 @@ OE_OCALL void my_ocall(void* arg)
         args->out = args->in * 7;
 }
 
-static bool _func2_ok = false;
+static bool _func2Ok = false;
 
 OE_OCALL void Func2(void* args)
 {
     // unsigned char* buf = (unsigned char*)args;
-    _func2_ok = true;
+    _func2Ok = true;
 }
 
-static bool _func_a_called = false;
+static bool _funcACalled = false;
 
 OE_OCALL void A(void* args)
 {
-    _func_a_called = true;
+    _funcACalled = true;
 }
 
 /* This function called by test_callback() ECALL */
@@ -50,7 +50,7 @@ OE_OCALL void callback(void* arg, oe_enclave_t* enclave)
 }
 
 static oe_enclave_t* _enclave = NULL;
-static bool _reentrancy_tested = false;
+static bool _reentrancyTested = false;
 
 OE_OCALL void TestReentrancy(void*)
 {
@@ -65,7 +65,7 @@ OE_OCALL void TestReentrancy(void*)
     printf("result ==== %s\n", oe_result_str(result));
     OE_TEST(result == OE_REENTRANT_ECALL);
 
-    _reentrancy_tested = true;
+    _reentrancyTested = true;
 }
 
 int main(int argc, const char* argv[])
@@ -99,7 +99,7 @@ int main(int argc, const char* argv[])
     {
         oe_result_t result = oe_call_enclave(enclave, "Test4", NULL);
         OE_TEST(result == OE_OK);
-        OE_TEST(_func2_ok);
+        OE_TEST(_func2Ok);
     }
 
     /* Call was_destructor_called() */
@@ -157,7 +157,7 @@ int main(int argc, const char* argv[])
             oe_call_enclave(enclave, "TestOCallEdgeCases", NULL);
 
         OE_TEST(result == OE_OK);
-        OE_TEST(_func_a_called);
+        OE_TEST(_funcACalled);
     }
 
     /* Test oe_call_host_by_address() by having enclave invoke host callback */
@@ -179,7 +179,7 @@ int main(int argc, const char* argv[])
         oe_result_t result = oe_call_enclave(enclave, "TestReentrancy", NULL);
 
         OE_TEST(result == OE_OK);
-        OE_TEST(_reentrancy_tested);
+        OE_TEST(_reentrancyTested);
     }
 
     oe_terminate_enclave(enclave);

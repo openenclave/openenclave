@@ -12,21 +12,21 @@
 
 struct QuotedPublicKey
 {
-    uint8_t pem_key[512];
+    uint8_t pemKey[512];
     uint8_t* quote;
-    size_t quote_size;
+    size_t quoteSize;
 };
 
 struct GetPublicKeyArgs
 {
-    QuotedPublicKey* quoted_public_key; /* out */
-    bool success;                       /* out */
+    QuotedPublicKey* quotedPublicKey; /* out */
+    bool success;                     /* out */
 };
 
 struct StorePublicKeyArgs
 {
-    QuotedPublicKey* quoted_public_key; /* in */
-    bool success;                       /* out */
+    QuotedPublicKey* quotedPublicKey; /* in */
+    bool success;                     /* out */
 };
 
 struct GenerateEncryptedDataArgs
