@@ -1,5 +1,5 @@
-libcxx tests
-============
+libcxxthrd tests
+================
 
 This directory runs each LLVM libcxxthrd unit test from within an enclave. It does
 this by repeatedly building and runing the enclave located under the 'enc' 
