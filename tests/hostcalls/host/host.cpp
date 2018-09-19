@@ -7,125 +7,125 @@
 #include <cstring>
 #include "../args.h"
 
-static void _TestHostMalloc(oe_enclave_t* enclave)
+static void _test_host_malloc(oe_enclave_t* enclave)
 {
     TestHostMallocArgs args;
 
     /* Try 0 size malloc. The returned pointer is implementation defined
      * but we should be able to free it. */
-    args.inSize = 0;
-    args.outPtr = NULL;
+    args.in_size = 0;
+    args.out_ptr = NULL;
     OE_TEST(oe_call_enclave(enclave, "TestHostMalloc", &args) == OE_OK);
-    OE_TEST(oe_call_enclave(enclave, "HostFree", args.outPtr) == OE_OK);
+    OE_TEST(oe_call_enclave(enclave, "HostFree", args.out_ptr) == OE_OK);
 
     /* Try malloc and see if the host can access it. */
-    args.inSize = 16;
-    args.outPtr = NULL;
+    args.in_size = 16;
+    args.out_ptr = NULL;
     OE_TEST(oe_call_enclave(enclave, "TestHostMalloc", &args) == OE_OK);
-    OE_TEST(args.outPtr != NULL);
+    OE_TEST(args.out_ptr != NULL);
 
     /* Shouldn't crash since it's host memory. */
-    memset(args.outPtr, 0, args.inSize);
-    OE_TEST(oe_call_enclave(enclave, "HostFree", args.outPtr) == OE_OK);
+    memset(args.out_ptr, 0, args.in_size);
+    OE_TEST(oe_call_enclave(enclave, "HostFree", args.out_ptr) == OE_OK);
 
     /* Make malloc fail. */
-    args.inSize = ~((size_t)0);
-    OE_TEST(args.outPtr != NULL);
+    args.in_size = ~((size_t)0);
+    OE_TEST(args.out_ptr != NULL);
     OE_TEST(oe_call_enclave(enclave, "TestHostMalloc", &args) == OE_OK);
-    OE_TEST(args.outPtr == NULL);
+    OE_TEST(args.out_ptr == NULL);
 }
 
-static void _TestHostCalloc(oe_enclave_t* enclave)
+static void _test_host_calloc(oe_enclave_t* enclave)
 {
     TestHostCallocArgs args;
 
     /* Try with 0 arguments. Only thing we can do is free after we calloc. */
-    args.inNum = 0;
-    args.inSize = 0;
-    args.outPtr = NULL;
+    args.in_num = 0;
+    args.in_size = 0;
+    args.out_ptr = NULL;
     OE_TEST(oe_call_enclave(enclave, "TestHostCalloc", &args) == OE_OK);
-    OE_TEST(oe_call_enclave(enclave, "HostFree", args.outPtr) == OE_OK);
+    OE_TEST(oe_call_enclave(enclave, "HostFree", args.out_ptr) == OE_OK);
 
     /* Try calloc and see if the host can access it. */
-    args.inNum = 16;
-    args.inSize = 1;
-    args.outPtr = NULL;
+    args.in_num = 16;
+    args.in_size = 1;
+    args.out_ptr = NULL;
     OE_TEST(oe_call_enclave(enclave, "TestHostCalloc", &args) == OE_OK);
-    OE_TEST(args.outPtr != NULL);
+    OE_TEST(args.out_ptr != NULL);
 
     /* Should be all zeros since it's host memory. */
     unsigned char expected[16] = {0};
-    OE_TEST(memcmp(args.outPtr, expected, args.inSize) == 0);
-    OE_TEST(oe_call_enclave(enclave, "HostFree", args.outPtr) == OE_OK);
+    OE_TEST(memcmp(args.out_ptr, expected, args.in_size) == 0);
+    OE_TEST(oe_call_enclave(enclave, "HostFree", args.out_ptr) == OE_OK);
 
     /* Make calloc fail. */
-    args.inNum = ~((size_t)0);
-    args.inSize = 1;
-    OE_TEST(args.outPtr != NULL);
+    args.in_num = ~((size_t)0);
+    args.in_size = 1;
+    OE_TEST(args.out_ptr != NULL);
     OE_TEST(oe_call_enclave(enclave, "TestHostCalloc", &args) == OE_OK);
-    OE_TEST(args.outPtr == NULL);
+    OE_TEST(args.out_ptr == NULL);
 }
 
 OE_INLINE bool IsReallocBufferTestInitialized(void* ptr, size_t size)
 {
-    uint8_t* outBytes = (uint8_t*)ptr;
+    uint8_t* out_bytes = (uint8_t*)ptr;
     for (uint32_t i = 0; i < size; i++)
     {
-        if (outBytes[i] != TEST_HOSTREALLOC_INIT_VALUE)
+        if (out_bytes[i] != TEST_HOSTREALLOC_INIT_VALUE)
             return false;
     }
     return true;
 }
 
-static void _TestHostRealloc(oe_enclave_t* enclave)
+static void _test_host_realloc(oe_enclave_t* enclave)
 {
     TestHostReallocArgs args;
 
     /* oe_host_realloc with null ptr should behave like malloc */
     {
-        args.inPtr = NULL;
-        args.oldSize = 0;
-        args.newSize = 1023;
-        args.outPtr = NULL;
+        args.in_ptr = NULL;
+        args.old_size = 0;
+        args.new_size = 1023;
+        args.out_ptr = NULL;
         oe_result_t result = oe_call_enclave(enclave, "TestHostRealloc", &args);
         OE_TEST(result == OE_OK);
-        OE_TEST(args.outPtr);
-        OE_TEST(IsReallocBufferTestInitialized(args.outPtr, args.newSize));
+        OE_TEST(args.out_ptr);
+        OE_TEST(IsReallocBufferTestInitialized(args.out_ptr, args.new_size));
     }
 
     /* oe_host_realloc to expand an existing pointer */
     {
-        args.inPtr = args.outPtr;
-        args.oldSize = args.newSize;
-        args.newSize = 65537;
-        args.outPtr = NULL;
+        args.in_ptr = args.out_ptr;
+        args.old_size = args.new_size;
+        args.new_size = 65537;
+        args.out_ptr = NULL;
         oe_result_t result = oe_call_enclave(enclave, "TestHostRealloc", &args);
         OE_TEST(result == OE_OK);
-        OE_TEST(args.outPtr);
-        OE_TEST(IsReallocBufferTestInitialized(args.outPtr, args.newSize));
+        OE_TEST(args.out_ptr);
+        OE_TEST(IsReallocBufferTestInitialized(args.out_ptr, args.new_size));
     }
 
     /* oe_host_realloc no-op to same size buffer */
     {
-        args.inPtr = args.outPtr;
-        args.oldSize = args.newSize;
-        args.outPtr = NULL;
+        args.in_ptr = args.out_ptr;
+        args.old_size = args.new_size;
+        args.out_ptr = NULL;
         oe_result_t result = oe_call_enclave(enclave, "TestHostRealloc", &args);
         OE_TEST(result == OE_OK);
-        OE_TEST(args.outPtr);
-        OE_TEST(IsReallocBufferTestInitialized(args.outPtr, args.newSize));
+        OE_TEST(args.out_ptr);
+        OE_TEST(IsReallocBufferTestInitialized(args.out_ptr, args.new_size));
     }
 
     /* oe_host_realloc to contract an existing pointer */
     {
-        args.inPtr = args.outPtr;
-        args.oldSize = args.newSize;
-        args.newSize = 1;
-        args.outPtr = NULL;
+        args.in_ptr = args.out_ptr;
+        args.old_size = args.new_size;
+        args.new_size = 1;
+        args.out_ptr = NULL;
         oe_result_t result = oe_call_enclave(enclave, "TestHostRealloc", &args);
         OE_TEST(result == OE_OK);
-        OE_TEST(args.outPtr);
-        OE_TEST(IsReallocBufferTestInitialized(args.outPtr, args.newSize));
+        OE_TEST(args.out_ptr);
+        OE_TEST(IsReallocBufferTestInitialized(args.out_ptr, args.new_size));
     }
 
     /* oe_host_realloc to 0 size should free the pointer
@@ -133,13 +133,13 @@ static void _TestHostRealloc(oe_enclave_t* enclave)
      * consistency between compilers for enclave use.
      */
     {
-        args.inPtr = args.outPtr;
-        args.oldSize = args.newSize;
-        args.newSize = 0;
-        args.outPtr = NULL;
+        args.in_ptr = args.out_ptr;
+        args.old_size = args.new_size;
+        args.new_size = 0;
+        args.out_ptr = NULL;
         oe_result_t result = oe_call_enclave(enclave, "TestHostRealloc", &args);
         OE_TEST(result == OE_OK);
-        OE_TEST(!args.outPtr);
+        OE_TEST(!args.out_ptr);
     }
 
     /* oe_host_realloc of pointer from calloc.
@@ -150,75 +150,75 @@ static void _TestHostRealloc(oe_enclave_t* enclave)
     {
         size_t nmem = 8;
         size_t size = 512;
-        args.inPtr = calloc(nmem, size);
-        args.oldSize = nmem * size;
-        args.newSize = args.oldSize + 1;
-        args.outPtr = NULL;
+        args.in_ptr = calloc(nmem, size);
+        args.old_size = nmem * size;
+        args.new_size = args.old_size + 1;
+        args.out_ptr = NULL;
         oe_result_t result = oe_call_enclave(enclave, "TestHostRealloc", &args);
         OE_TEST(result == OE_OK);
 
         // Resulting buffer should retain its original zero contents from calloc
-        OE_TEST(args.outPtr);
-        uint8_t* outBytes = (uint8_t*)args.outPtr;
-        for (uint32_t i = 0; i < args.oldSize; i++)
+        OE_TEST(args.out_ptr);
+        uint8_t* out_bytes = (uint8_t*)args.out_ptr;
+        for (uint32_t i = 0; i < args.old_size; i++)
         {
-            OE_TEST(outBytes[i] == 0);
+            OE_TEST(out_bytes[i] == 0);
         }
 
         /* TestHostRealloc only writes init value into expanded area for this
          * check */
-        OE_TEST(outBytes[args.oldSize] == TEST_HOSTREALLOC_INIT_VALUE);
+        OE_TEST(out_bytes[args.old_size] == TEST_HOSTREALLOC_INIT_VALUE);
 
-        free(args.outPtr);
+        free(args.out_ptr);
     }
 }
 
-static void _TestHostStrndup(oe_enclave_t* enclave)
+static void _test_host_strndup(oe_enclave_t* enclave)
 {
     TestHostStrndupArgs args;
 
     /* NULL check. */
-    args.inStr = NULL;
-    args.inSize = 0;
-    args.outStr = (char*)0x1;
+    args.in_str = NULL;
+    args.in_size = 0;
+    args.out_str = (char*)0x1;
     OE_TEST(oe_call_enclave(enclave, "TestHostStrndup", &args) == OE_OK);
-    OE_TEST(args.outStr == NULL);
+    OE_TEST(args.out_str == NULL);
 
     /* Empty string check. */
-    args.inStr = "";
-    args.inSize = 0;
-    args.outStr = NULL;
+    args.in_str = "";
+    args.in_size = 0;
+    args.out_str = NULL;
     OE_TEST(oe_call_enclave(enclave, "TestHostStrndup", &args) == OE_OK);
-    OE_TEST(args.outStr != NULL);
-    OE_TEST(args.outStr[0] == '\0');
-    OE_TEST(oe_call_enclave(enclave, "HostFree", args.outStr) == OE_OK);
+    OE_TEST(args.out_str != NULL);
+    OE_TEST(args.out_str[0] == '\0');
+    OE_TEST(oe_call_enclave(enclave, "HostFree", args.out_str) == OE_OK);
 
     /* 0 size check. */
-    args.inStr = "hello";
-    args.inSize = 0;
-    args.outStr = NULL;
+    args.in_str = "hello";
+    args.in_size = 0;
+    args.out_str = NULL;
     OE_TEST(oe_call_enclave(enclave, "TestHostStrndup", &args) == OE_OK);
-    OE_TEST(args.outStr != NULL);
-    OE_TEST(args.outStr[0] == '\0');
-    OE_TEST(oe_call_enclave(enclave, "HostFree", args.outStr) == OE_OK);
+    OE_TEST(args.out_str != NULL);
+    OE_TEST(args.out_str[0] == '\0');
+    OE_TEST(oe_call_enclave(enclave, "HostFree", args.out_str) == OE_OK);
 
     /* String length is greater than size. */
-    args.inStr = "hello";
-    args.inSize = 2;
-    args.outStr = NULL;
+    args.in_str = "hello";
+    args.in_size = 2;
+    args.out_str = NULL;
     OE_TEST(oe_call_enclave(enclave, "TestHostStrndup", &args) == OE_OK);
-    OE_TEST(args.outStr != NULL);
-    OE_TEST(memcmp(args.outStr, "he", 3) == 0);
-    OE_TEST(oe_call_enclave(enclave, "HostFree", args.outStr) == OE_OK);
+    OE_TEST(args.out_str != NULL);
+    OE_TEST(memcmp(args.out_str, "he", 3) == 0);
+    OE_TEST(oe_call_enclave(enclave, "HostFree", args.out_str) == OE_OK);
 
     /* String length is less than size. */
-    args.inStr = "hello";
-    args.inSize = 10;
-    args.outStr = NULL;
+    args.in_str = "hello";
+    args.in_size = 10;
+    args.out_str = NULL;
     OE_TEST(oe_call_enclave(enclave, "TestHostStrndup", &args) == OE_OK);
-    OE_TEST(args.outStr != NULL);
-    OE_TEST(memcmp(args.outStr, "hello", 6) == 0);
-    OE_TEST(oe_call_enclave(enclave, "HostFree", args.outStr) == OE_OK);
+    OE_TEST(args.out_str != NULL);
+    OE_TEST(memcmp(args.out_str, "hello", 6) == 0);
+    OE_TEST(oe_call_enclave(enclave, "HostFree", args.out_str) == OE_OK);
 }
 
 int main(int argc, const char* argv[])
@@ -238,10 +238,10 @@ int main(int argc, const char* argv[])
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);
 
-    _TestHostMalloc(enclave);
-    _TestHostCalloc(enclave);
-    _TestHostRealloc(enclave);
-    _TestHostStrndup(enclave);
+    _test_host_malloc(enclave);
+    _test_host_calloc(enclave);
+    _test_host_realloc(enclave);
+    _test_host_strndup(enclave);
 
     oe_terminate_enclave(enclave);
 

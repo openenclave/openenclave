@@ -25,17 +25,17 @@
     asm volatile("lfence #" OE_SOURCE_POS::: "memory");
 
 // Check that input data lies outside the enclave and that
-// fits within maxSize. If so, allocate buffer on enclave
+// fits within max_size. If so, allocate buffer on enclave
 // stack and copy.
 oe_result_t oe_copy_input(
     void* dst,
     volatile void* src,
     size_t size,
-    size_t maxSize)
+    size_t max_size)
 {
     oe_result_t result = OE_UNEXPECTED;
 
-    if (size > maxSize || size == 0)
+    if (size > max_size || size == 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (!src || !oe_is_outside_enclave((void*)src, size))
@@ -69,22 +69,23 @@ done:
 OE_ECALL void VerifyQuote(void* args_)
 {
     oe_result_t result = OE_UNEXPECTED;
-    volatile VerifyQuoteArgs* hostArg = (VerifyQuoteArgs*)args_;
+    volatile VerifyQuoteArgs* host_arg = (VerifyQuoteArgs*)args_;
 
-    VerifyQuoteArgs encArgObj = {0};
-    VerifyQuoteArgs* encArg = &encArgObj;
-    static uint8_t encQuote[QUOTE_SIZE_MAX];
-    static uint8_t encPemPckCertificate[PEM_PCK_CERTIFICATE_SIZE_MAX];
-    static uint8_t encPckCrl[PCK_CRL_SIZE_MAX];
-    static uint8_t encTcbInfoJson[TCB_INFO_JSON_SIZE_MAX];
+    VerifyQuoteArgs enc_arg_obj = {0};
+    VerifyQuoteArgs* enc_arg = &enc_arg_obj;
+    static uint8_t enc_quote[QUOTE_SIZE_MAX];
+    static uint8_t enc_pem_pck_certificate[PEM_PCK_CERTIFICATE_SIZE_MAX];
+    static uint8_t enc_pck_crl[PCK_CRL_SIZE_MAX];
+    static uint8_t enc_tcb_info_json[TCB_INFO_JSON_SIZE_MAX];
 
-    oe_secure_zero_fill(encQuote, QUOTE_SIZE_MAX);
-    oe_secure_zero_fill(encPemPckCertificate, PEM_PCK_CERTIFICATE_SIZE_MAX);
-    oe_secure_zero_fill(encPckCrl, PCK_CRL_SIZE_MAX);
-    oe_secure_zero_fill(encTcbInfoJson, TCB_INFO_JSON_SIZE_MAX);
+    oe_secure_zero_fill(enc_quote, QUOTE_SIZE_MAX);
+    oe_secure_zero_fill(enc_pem_pck_certificate, PEM_PCK_CERTIFICATE_SIZE_MAX);
+    oe_secure_zero_fill(enc_pck_crl, PCK_CRL_SIZE_MAX);
+    oe_secure_zero_fill(enc_tcb_info_json, TCB_INFO_JSON_SIZE_MAX);
 
-    // Take snapshot of hostArg to prevent TOCTOU issues.
-    OE_CHECK(oe_copy_input(encArg, hostArg, sizeof(*encArg), sizeof(*encArg)));
+    // Take snapshot of host_arg to prevent TOCTOU issues.
+    OE_CHECK(
+        oe_copy_input(enc_arg, host_arg, sizeof(*enc_arg), sizeof(*enc_arg)));
 
     // TODO: How to manage memory for all these buffers?
     // Max size vs actual size vs where to allocate, function stack
@@ -93,31 +94,31 @@ OE_ECALL void VerifyQuote(void* args_)
     // Copy input buffers to enclave memory.
     OE_CHECK(
         oe_copy_input(
-            encQuote, encArg->quote, encArg->quoteSize, QUOTE_SIZE_MAX));
+            enc_quote, enc_arg->quote, enc_arg->quote_size, QUOTE_SIZE_MAX));
 
     // Copy optional inputs buffers to enclave memory.
-    if (encArg->pemPckCertificate)
+    if (enc_arg->pem_pck_certificate)
         OE_CHECK(
             oe_copy_input(
-                encPemPckCertificate,
-                encArg->pemPckCertificate,
-                encArg->pemPckCertificateSize,
+                enc_pem_pck_certificate,
+                enc_arg->pem_pck_certificate,
+                enc_arg->pem_pck_certificate_size,
                 PEM_PCK_CERTIFICATE_SIZE_MAX));
 
-    if (encArg->pckCrl)
+    if (enc_arg->pck_crl)
         OE_CHECK(
             oe_copy_input(
-                encPckCrl,
-                encArg->pckCrl,
-                encArg->pckCrlSize,
+                enc_pck_crl,
+                enc_arg->pck_crl,
+                enc_arg->pck_crl_size,
                 PCK_CRL_SIZE_MAX));
 
-    if (encArg->tcbInfoJson)
+    if (enc_arg->tcb_info_json)
         OE_CHECK(
             oe_copy_input(
-                encTcbInfoJson,
-                encArg->tcbInfoJson,
-                encArg->tcbInfoJsonSize,
+                enc_tcb_info_json,
+                enc_arg->tcb_info_json,
+                enc_arg->tcb_info_json_size,
                 TCB_INFO_JSON_SIZE_MAX));
 
     // Additional custom validations that can be performed at enclave boundary.
@@ -128,28 +129,28 @@ OE_ECALL void VerifyQuote(void* args_)
 
     OE_CHECK(
         VerifyQuoteImpl(
-            encQuote,
-            encArg->quoteSize,
-            encPemPckCertificate,
-            encArg->pemPckCertificateSize,
-            encArg->pckCrlSize ? encPckCrl : NULL,
-            encArg->pckCrlSize,
-            encArg->tcbInfoJsonSize ? encTcbInfoJson : NULL,
-            encArg->tcbInfoJsonSize));
+            enc_quote,
+            enc_arg->quote_size,
+            enc_pem_pck_certificate,
+            enc_arg->pem_pck_certificate_size,
+            enc_arg->pck_crl_size ? enc_pck_crl : NULL,
+            enc_arg->pck_crl_size,
+            enc_arg->tcb_info_json_size ? enc_tcb_info_json : NULL,
+            enc_arg->tcb_info_json_size));
 
     result = OE_OK;
 
 done:
-    if (hostArg)
-        hostArg->result = result;
+    if (host_arg)
+        host_arg->result = result;
 
     // Free enclave buffers.
     // Make sure to oe_secure_zero_fill any secrets.
     // Secrets ought not to exist at this level.
-    oe_free_buffer(encQuote);
-    oe_free_buffer(encPemPckCertificate);
-    oe_free_buffer(encPckCrl);
-    oe_free_buffer(encTcbInfoJson);
+    oe_free_buffer(enc_quote);
+    oe_free_buffer(enc_pem_pck_certificate);
+    oe_free_buffer(enc_pck_crl);
+    oe_free_buffer(enc_tcb_info_json);
 }
 
 #ifdef OE_USE_LIBSGX
@@ -158,9 +159,9 @@ OE_ECALL void TestVerifyTCBInfo(VerifyTCBInfoArgs* args)
 {
     args->result = oe_parse_tcb_info_json(
         args->tcbInfo,
-        args->tcbInfoSize,
-        (oe_tcb_level_t*)args->platformTcbLevel,
-        (oe_parsed_tcb_info_t*)args->parsedTcbInfo);
+        args->tcb_info_size,
+        (oe_tcb_level_t*)args->platform_tcb_level,
+        (oe_parsed_tcb_info_t*)args->parsed_tcb_info);
 }
 
 #endif

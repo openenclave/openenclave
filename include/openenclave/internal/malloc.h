@@ -21,9 +21,9 @@ void oe_set_allocation_failure_callback(
 
 typedef struct _oe_malloc_stats
 {
-    uint64_t peakSystemBytes;
-    uint64_t systemBytes;
-    uint64_t inUseBytes;
+    uint64_t peak_system_bytes;
+    uint64_t system_bytes;
+    uint64_t in_use_bytes;
 } oe_malloc_stats_t;
 
 /**

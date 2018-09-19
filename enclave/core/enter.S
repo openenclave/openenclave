@@ -189,7 +189,7 @@ oe_enter:
     push %rsi
 
     // Notify a nested exit happens.
-    // _oe_notify_nested_exit_start(rdi=arg1, rsi=ocallContext)
+    // _oe_notify_nested_exit_start(rdi=arg1, rsi=ocall_context)
     mov %r12, %rsi
     call _oe_notify_nested_exit_start
 
@@ -325,8 +325,8 @@ oe_exception_dispatcher:
 
     // Should never reach here since _oe_exception_dispatcher will not return.
 
-.foreverLoop:
-    jmp .foreverLoop
+.forever_loop:
+    jmp .forever_loop
 .cfi_endproc
 
 .size oe_exception_dispatcher, .-oe_exception_dispatcher

@@ -7,7 +7,7 @@
 #include <openenclave/internal/types.h>
 #include "pingpong_u.h"
 
-static bool gotPong = false;
+static bool got_pong = false;
 
 OE_EXTERNC void Log(const char* str, uint64_t x)
 {
@@ -22,7 +22,7 @@ void Pong(const char* in, char* out)
     {
         if (strcmp(in, "String1") == 0 && strcmp(out, "String2") == 0)
         {
-            gotPong = true;
+            got_pong = true;
         }
     }
 
@@ -62,7 +62,7 @@ int main_shared(int argc, const char* argv[])
 
     oe_terminate_enclave(enclave);
 
-    if (!gotPong)
+    if (!got_pong)
         fprintf(stderr, "%s: never received pong request\n", argv[0]);
 
     fprintf(stdout, "=== passed all tests (pingpong)\n");

@@ -15,23 +15,23 @@ static uint32_t _oe_cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
 ** oe_initialize_cpuid()
 **
 **     Initialize the enclave view of CPUID information as provided by host
-**     during _InitializeEnclave call as part of oe_create_enclave.
+**     during _initialize_enclave call as part of oe_create_enclave.
 **
 **==============================================================================
 */
-void oe_initialize_cpuid(uint64_t argIn)
+void oe_initialize_cpuid(uint64_t arg_in)
 {
-    oe_init_enclave_args_t* args = (oe_init_enclave_args_t*)argIn;
+    oe_init_enclave_args_t* args = (oe_init_enclave_args_t*)arg_in;
     if (args != NULL)
     {
         // Abort the enclave if AESNI support is not present in the cached
         // CPUID Feature information (cpuid leaf of 1)
-        if (!(args->cpuidTable[1][OE_CPUID_RCX] & OE_CPUID_AESNI_FEATURE))
+        if (!(args->cpuid_table[1][OE_CPUID_RCX] & OE_CPUID_AESNI_FEATURE))
             oe_abort();
 
         oe_memcpy(
             _oe_cpuid_table,
-            args->cpuidTable,
+            args->cpuid_table,
             OE_CPUID_LEAF_COUNT * OE_CPUID_REG_COUNT *
                 sizeof(_oe_cpuid_table[0][0]));
     }
@@ -64,19 +64,19 @@ void oe_initialize_cpuid(uint64_t argIn)
 int oe_emulate_cpuid(uint64_t* rax, uint64_t* rbx, uint64_t* rcx, uint64_t* rdx)
 {
     // upper bits zeroed on 64-bit for CPUID
-    uint32_t cpuidLeaf = (*rax) & 0xFFFFFFFF;
-    uint32_t cpuidSubLeaf = (*rcx) & 0xFFFFFFFF;
+    uint32_t cpuid_leaf = (*rax) & 0xFFFFFFFF;
+    uint32_t cpuid_sub_leaf = (*rcx) & 0xFFFFFFFF;
 
-    if (cpuidLeaf < OE_CPUID_LEAF_COUNT)
+    if (cpuid_leaf < OE_CPUID_LEAF_COUNT)
     {
         // For leaf 4 of cpuid, only subleaf of 0 is emulated
-        if ((cpuidLeaf == 4) && (cpuidSubLeaf != 0))
+        if ((cpuid_leaf == 4) && (cpuid_sub_leaf != 0))
             return -1;
 
-        *rax = _oe_cpuid_table[cpuidLeaf][OE_CPUID_RAX];
-        *rbx = _oe_cpuid_table[cpuidLeaf][OE_CPUID_RBX];
-        *rcx = _oe_cpuid_table[cpuidLeaf][OE_CPUID_RCX];
-        *rdx = _oe_cpuid_table[cpuidLeaf][OE_CPUID_RDX];
+        *rax = _oe_cpuid_table[cpuid_leaf][OE_CPUID_RAX];
+        *rbx = _oe_cpuid_table[cpuid_leaf][OE_CPUID_RBX];
+        *rcx = _oe_cpuid_table[cpuid_leaf][OE_CPUID_RCX];
+        *rdx = _oe_cpuid_table[cpuid_leaf][OE_CPUID_RDX];
         return 0;
     }
     return -1;

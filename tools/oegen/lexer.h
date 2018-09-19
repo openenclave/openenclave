@@ -76,7 +76,7 @@ struct Lexer
     }
 
   private:
-    Tok _Next();
+    Tok _next();
 
     const char* _file;
     unsigned int _line;

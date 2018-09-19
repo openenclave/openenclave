@@ -5,7 +5,7 @@
 #include <string.h>
 #include "common.h"
 
-ECallDispatcher::ECallDispatcher() : m_bEncrypt(true), m_pHeader(NULL)
+ECallDispatcher::ECallDispatcher() : m_b_encrypt(true), m_header(NULL)
 {
     unsigned char iv[IV_SIZE] = {0xb2,
                                  0x4b,
@@ -31,9 +31,9 @@ void ECallDispatcher::Initialize(EncryptInitializeArgs* args)
     int ret = 0;
     ENC_DEBUG_PRINTF(
         "ECallDispatcher::Initialize : %s request",
-        args->bEncrypt ? "encrypting" : "decrypting");
+        args->do_encrypt ? "encrypting" : "decrypting");
 
-    ret = processEncryptionHeader(args);
+    ret = process_encryption_header(args);
     if (ret != 0)
     {
         ENC_DEBUG_PRINTF("processEncryptionHeader failed with %d", ret);
@@ -44,7 +44,7 @@ void ECallDispatcher::Initialize(EncryptInitializeArgs* args)
     mbedtls_aes_init(&m_aescontext);
 
     // set aes key
-    if (args->bEncrypt)
+    if (args->do_encrypt)
         ret = mbedtls_aes_setkey_enc(
             &m_aescontext, m_encryption_key, ENCRYPTION_KEY_SIZE);
     else
@@ -71,7 +71,7 @@ void ECallDispatcher::EncryptBlock(EncryptBlockArgs* args)
 
     ret = mbedtls_aes_crypt_cbc(
         &m_aescontext,
-        (args->bEncrypt) ? MBEDTLS_AES_ENCRYPT : MBEDTLS_AES_DECRYPT,
+        (args->do_encrypt) ? MBEDTLS_AES_ENCRYPT : MBEDTLS_AES_DECRYPT,
         size,           // input data length in bytes,
         m_operating_iv, // Initialization vector (updated after use)
         inputbuf,
@@ -84,10 +84,10 @@ void ECallDispatcher::EncryptBlock(EncryptBlockArgs* args)
 
 void ECallDispatcher::close(CloseEncryptorArgs* args)
 {
-    if (m_bEncrypt)
+    if (m_b_encrypt)
     {
-        oe_host_free(m_pHeader);
-        m_pHeader = NULL;
+        oe_host_free(m_header);
+        m_header = NULL;
     }
 
     // free aes context
