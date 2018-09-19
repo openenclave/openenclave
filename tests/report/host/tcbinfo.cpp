@@ -70,10 +70,10 @@ void TestVerifyTCBInfo(
     oe_tcb_level_t* platform_tcb_level,
     oe_result_t expected)
 {
-    std::vector<uint8_t> tcb_info = FileToBytes("./data/tcbInfo.json");
+    std::vector<uint8_t> tcbInfo = FileToBytes("./data/tcbInfo.json");
     oe_parsed_tcb_info_t parsed_info = {0};
-    VerifyTCBInfoArgs args = {&tcb_info[0],
-                              (uint32_t)tcb_info.size(),
+    VerifyTCBInfoArgs args = {&tcbInfo[0],
+                              (uint32_t)tcbInfo.size(),
                               platform_tcb_level,
                               &parsed_info};
 
@@ -84,11 +84,11 @@ void TestVerifyTCBInfo(
         OE_INVALID_UTC_DATE_TIME);
 
     // Contains nextUpdate field.
-    tcb_info = FileToBytes("./data/tcbInfo1.json");
+    tcbInfo = FileToBytes("./data/tcbInfo1.json");
     memset(&parsed_info, 0, sizeof(parsed_info));
     platform_tcb_level->status = OE_TCB_LEVEL_STATUS_UNKNOWN;
-    VerifyTCBInfoArgs args1 = {&tcb_info[0],
-                               (uint32_t)tcb_info.size(),
+    VerifyTCBInfoArgs args1 = {&tcbInfo[0],
+                               (uint32_t)tcbInfo.size(),
                                platform_tcb_level,
                                &parsed_info};
     OE_TEST(oe_call_enclave(enclave, "TestVerifyTCBInfo", &args1) == OE_OK);
@@ -105,7 +105,7 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
         8,
         OE_TCB_LEVEL_STATUS_UNKNOWN};
 
-    // ./data/tcb_info.json contains 4 tcb levels.
+    // ./data/tcbInfo.json contains 4 tcb levels.
     // The first level with pce svn = 5 is up to date.
     // The second level with pce svn = 4 needs configuration.
     // The third level with pce svn = 3 is out of date.
@@ -199,11 +199,11 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
     for (size_t i = 0; i < sizeof(negative_files) / sizeof(negative_files[0]);
          ++i)
     {
-        std::vector<uint8_t> tcb_info = FileToBytes(negative_files[i]);
+        std::vector<uint8_t> tcbInfo = FileToBytes(negative_files[i]);
         oe_parsed_tcb_info_t parsed_info = {0};
         oe_tcb_level_t platform_tcb_level = {{0}};
-        VerifyTCBInfoArgs args = {&tcb_info[0],
-                                  (uint32_t)tcb_info.size(),
+        VerifyTCBInfoArgs args = {&tcbInfo[0],
+                                  (uint32_t)tcbInfo.size(),
                                   &platform_tcb_level,
                                   &parsed_info};
         OE_TEST(

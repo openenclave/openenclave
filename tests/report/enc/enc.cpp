@@ -158,7 +158,7 @@ done:
 OE_ECALL void TestVerifyTCBInfo(VerifyTCBInfoArgs* args)
 {
     args->result = oe_parse_tcb_info_json(
-        args->tcb_info,
+        args->tcbInfo,
         args->tcb_info_size,
         (oe_tcb_level_t*)args->platform_tcb_level,
         (oe_parsed_tcb_info_t*)args->parsed_tcb_info);

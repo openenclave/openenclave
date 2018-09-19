@@ -450,7 +450,7 @@ done:
 /**
  * Schema:
  * {
- *    "tcb_info" : object of type tcbInfo,
+ *    "tcbInfo" : object of type tcbInfo,
  *    "signature" : "hex string"
  * }
  */
@@ -478,8 +478,8 @@ oe_result_t oe_parse_tcb_info_json(
     itr = _skip_ws(itr, end);
     OE_CHECK(_read('{', &itr, end));
 
-    OE_TRACE_INFO("Reading tcb_info\n");
-    OE_CHECK(_read_property_name_and_colon("tcb_info", &itr, end));
+    OE_TRACE_INFO("Reading tcbInfo\n");
+    OE_CHECK(_read_property_name_and_colon("tcbInfo", &itr, end));
     OE_CHECK(_read_tcb_info(&itr, end, platform_tcb_level, parsed_info));
     OE_CHECK(_read(',', &itr, end));
 

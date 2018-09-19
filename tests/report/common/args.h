@@ -25,7 +25,7 @@ struct VerifyQuoteArgs
 
 struct VerifyTCBInfoArgs
 {
-    uint8_t* tcb_info;        /* in */
+    uint8_t* tcbInfo;         /* in */
     size_t tcb_info_size;     /* in */
     void* platform_tcb_level; /* in */
     void* parsed_tcb_info;    /* out */
