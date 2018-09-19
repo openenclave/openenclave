@@ -63,6 +63,7 @@ done:
 oe_result_t oe_memset_s(void* dst, size_t dst_size, int value, size_t num_bytes)
 {
     oe_result_t result = OE_FAILURE;
+    volatile unsigned char* p = dst;
 
     if (dst == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -80,7 +81,6 @@ oe_result_t oe_memset_s(void* dst, size_t dst_size, int value, size_t num_bytes)
     }
 
     /* memset_s cannot be optimized away by the compiler */
-    volatile unsigned char* p = dst;
     while (num_bytes--)
         *p++ = (volatile unsigned char)value;
 
@@ -117,6 +117,8 @@ oe_result_t oe_strncat_s(
     size_t num_bytes)
 {
     oe_result_t result = OE_FAILURE;
+    char* p = dst;
+    size_t available = dst_size;
 
     /* Reject invalid parameters. */
     OE_CHECK(_oe_validate_string(dst, dst_size));
@@ -127,8 +129,6 @@ oe_result_t oe_strncat_s(
         OE_RAISE(OE_INVALID_PARAMETER);
     }
 
-    char* p = dst;
-    size_t available = dst_size;
     while (available > 0 && *p != 0)
     {
         if (p == src)
@@ -169,6 +169,9 @@ oe_result_t oe_strncpy_s(
     size_t num_bytes)
 {
     oe_result_t result = OE_FAILURE;
+    const char* current_src = src;
+    char* current_dst = dst;
+    size_t current_dst_size = dst_size;
 
     /* Reject invalid parameters. */
     OE_CHECK(_oe_validate_string(dst, dst_size));
@@ -180,9 +183,6 @@ oe_result_t oe_strncpy_s(
     }
 
     /* Copy until we hit one of the terminating conditions. */
-    const char* current_src = src;
-    char* current_dst = dst;
-    size_t current_dst_size = dst_size;
     while (current_dst_size != 0)
     {
         /* If we detect an overlapped copy, we will return an error. */
