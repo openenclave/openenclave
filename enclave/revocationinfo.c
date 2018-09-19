@@ -55,8 +55,8 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
     // arguments.
     for (uint32_t i = 0; i < args->num_crl_urls; ++i)
     {
-        result =
-            oe_safe_add_sizet(oe_strlen(args->crl_urls[i]), 1, &crl_url_sizes[i]);
+        result = oe_safe_add_sizet(
+            oe_strlen(args->crl_urls[i]), 1, &crl_url_sizes[i]);
         if (result != OE_OK)
             goto done;
 
