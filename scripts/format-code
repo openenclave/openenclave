@@ -124,6 +124,8 @@ check_version()
         if [[ ${v1[$i]} -gt ${v2[$i]} ]]; then
             echo "format-code requires clang-format version $1, installed version is $2"
             exit 1
+        elif [[ ${v1[$i]} -lt ${v2[$i]} ]]; then
+            break
         fi
     done
 }
