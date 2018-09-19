@@ -11,7 +11,7 @@
 
 #define err(...) oe_put_err(__VA_ARGS__)
 
-static void __Test(const char* file, unsigned int line, const char* cond)
+static void __test(const char* file, unsigned int line, const char* cond)
 {
     fprintf(stderr, "%s(%u): %s: (test failed)\n", file, line, cond);
 }
@@ -21,7 +21,7 @@ static void __Test(const char* file, unsigned int line, const char* cond)
     {                                          \
         if (!(COND))                           \
         {                                      \
-            __Test(__FILE__, __LINE__, #COND); \
+            __test(__FILE__, __LINE__, #COND); \
             exit(1);                           \
         }                                      \
     } while (0)
@@ -76,8 +76,8 @@ int TestContainer(bool trace)
     memset(&c, 0, sizeof(c));
 
     uint32_t arr[] = {100, 200, 300};
-    c.arrData = arr;
-    c.arrSize = OE_COUNTOF(arr);
+    c.arr_data = arr;
+    c.arr_size = OE_COUNTOF(arr);
 
     if (trace)
         oe_print_struct(&Container_ti, &c);

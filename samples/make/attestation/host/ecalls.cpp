@@ -11,23 +11,23 @@ QuotedPublicKey* GetPublicKey(oe_enclave_t* enclave)
 {
     GetPublicKeyArgs args = {};
     oe_result_t result = oe_call_enclave(enclave, "GetPublicKey", &args);
-    if (result != OE_OK || !args.success || args.quotedPublicKey == NULL)
+    if (result != OE_OK || !args.success || args.quoted_public_key == NULL)
     {
         printf("GetPublicKey failed. %s", oe_result_str(result));
         exit(1);
     }
 
     printf("GetPublicKey succeeded.\n");
-    return args.quotedPublicKey;
+    return args.quoted_public_key;
 }
 
 /**
  * Ask the enclave to attest and store the public key of another enclave.
  */
-void StorePublicKey(oe_enclave_t* enclave, QuotedPublicKey* quotedPublicKey)
+void StorePublicKey(oe_enclave_t* enclave, QuotedPublicKey* quoted_public_key)
 {
     StorePublicKeyArgs args = {};
-    args.quotedPublicKey = quotedPublicKey;
+    args.quoted_public_key = quoted_public_key;
     oe_result_t result = oe_call_enclave(enclave, "StorePublicKey", &args);
     if (result != OE_OK || !args.success)
     {

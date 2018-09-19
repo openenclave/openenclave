@@ -14,10 +14,10 @@ static uint64_t _PUBLIC_KEY_MAGIC = 0x713600af058c447a;
 OE_STATIC_ASSERT(sizeof(oe_private_key_t) <= sizeof(oe_rsa_private_key_t));
 OE_STATIC_ASSERT(sizeof(oe_public_key_t) <= sizeof(oe_rsa_public_key_t));
 
-static oe_result_t _CopyKey(
+static oe_result_t _copy_key(
     mbedtls_pk_context* dest,
     const mbedtls_pk_context* src,
-    bool copyPrivateFields)
+    bool copy_private_fields)
 {
     oe_result_t result = OE_UNEXPECTED;
     const mbedtls_pk_info_t* info;
@@ -51,7 +51,7 @@ static oe_result_t _CopyKey(
         OE_RAISE(OE_FAILURE);
 
     /* If not a private key, then clear private key fields */
-    if (!copyPrivateFields)
+    if (!copy_private_fields)
     {
         mbedtls_mpi_free(&rsa->D);
         mbedtls_mpi_free(&rsa->P);
@@ -76,48 +76,48 @@ done:
     return result;
 }
 
-static oe_result_t _GetPublicKeyModulusOrExponent(
-    const oe_public_key_t* publicKey,
+static oe_result_t _get_public_key_modulus_or_exponent(
+    const oe_public_key_t* public_key,
     uint8_t* buffer,
-    size_t* bufferSize,
-    bool getModulus)
+    size_t* buffer_size,
+    bool get_modulus)
 {
     oe_result_t result = OE_UNEXPECTED;
-    size_t requiredSize;
+    size_t required_size;
     mbedtls_rsa_context* rsa;
     const mbedtls_mpi* mpi;
 
     /* Check for invalid parameters */
-    if (!oe_public_key_is_valid(publicKey, _PUBLIC_KEY_MAGIC) || !bufferSize)
+    if (!oe_public_key_is_valid(public_key, _PUBLIC_KEY_MAGIC) || !buffer_size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* If buffer is null, then bufferSize must be zero */
-    if (!buffer && *bufferSize != 0)
+    /* If buffer is null, then buffer_size must be zero */
+    if (!buffer && *buffer_size != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Get the RSA context */
-    if (!(rsa = publicKey->pk.pk_ctx))
+    if (!(rsa = public_key->pk.pk_ctx))
         OE_RAISE(OE_FAILURE);
 
     /* Pick modulus or exponent */
-    if (!(mpi = getModulus ? &rsa->N : &rsa->E))
+    if (!(mpi = get_modulus ? &rsa->N : &rsa->E))
         OE_RAISE(OE_FAILURE);
 
     /* Determine the required size in bytes */
-    requiredSize = mbedtls_mpi_size(mpi);
+    required_size = mbedtls_mpi_size(mpi);
 
     /* If buffer is null or not big enough */
-    if (!buffer || (*bufferSize < requiredSize))
+    if (!buffer || (*buffer_size < required_size))
     {
-        *bufferSize = requiredSize;
+        *buffer_size = required_size;
         OE_RAISE(OE_BUFFER_TOO_SMALL);
     }
 
     /* Copy key bytes to the caller's buffer */
-    if (mbedtls_mpi_write_binary(mpi, buffer, requiredSize) != 0)
+    if (mbedtls_mpi_write_binary(mpi, buffer, required_size) != 0)
         OE_RAISE(OE_FAILURE);
 
-    *bufferSize = requiredSize;
+    *buffer_size = required_size;
 
     result = OE_OK;
 
@@ -126,11 +126,11 @@ done:
     return result;
 }
 
-static oe_result_t _GenerateKeyPair(
+static oe_result_t _generate_key_pair(
     uint64_t bits,
     uint64_t exponent,
-    oe_private_key_t* privateKey,
-    oe_public_key_t* publicKey)
+    oe_private_key_t* private_key,
+    oe_public_key_t* public_key)
 {
     oe_result_t result = OE_UNEXPECTED;
     mbedtls_ctr_drbg_context* drbg;
@@ -139,14 +139,14 @@ static oe_result_t _GenerateKeyPair(
     /* Initialize structures */
     mbedtls_pk_init(&pk);
 
-    if (privateKey)
-        oe_memset(privateKey, 0, sizeof(*privateKey));
+    if (private_key)
+        oe_memset(private_key, 0, sizeof(*private_key));
 
-    if (publicKey)
-        oe_memset(publicKey, 0, sizeof(*publicKey));
+    if (public_key)
+        oe_memset(public_key, 0, sizeof(*public_key));
 
     /* Check for invalid parameters */
-    if (!privateKey || !publicKey)
+    if (!private_key || !public_key)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Check range of bits and exponent parameters */
@@ -174,10 +174,10 @@ static oe_result_t _GenerateKeyPair(
 
     /* Initialize the private key parameter */
     OE_CHECK(
-        oe_private_key_init(privateKey, &pk, _CopyKey, _PRIVATE_KEY_MAGIC));
+        oe_private_key_init(private_key, &pk, _copy_key, _PRIVATE_KEY_MAGIC));
 
     /* Initialize the public key parameter */
-    OE_CHECK(oe_public_key_init(publicKey, &pk, _CopyKey, _PUBLIC_KEY_MAGIC));
+    OE_CHECK(oe_public_key_init(public_key, &pk, _copy_key, _PUBLIC_KEY_MAGIC));
 
     result = OE_OK;
 
@@ -187,35 +187,37 @@ done:
 
     if (result != OE_OK)
     {
-        if (oe_private_key_is_valid(privateKey, _PRIVATE_KEY_MAGIC))
-            oe_private_key_free(privateKey, _PRIVATE_KEY_MAGIC);
+        if (oe_private_key_is_valid(private_key, _PRIVATE_KEY_MAGIC))
+            oe_private_key_free(private_key, _PRIVATE_KEY_MAGIC);
 
-        if (oe_public_key_is_valid(publicKey, _PUBLIC_KEY_MAGIC))
-            oe_public_key_free(publicKey, _PUBLIC_KEY_MAGIC);
+        if (oe_public_key_is_valid(public_key, _PUBLIC_KEY_MAGIC))
+            oe_public_key_free(public_key, _PUBLIC_KEY_MAGIC);
     }
 
     return result;
 }
 
 oe_result_t oe_public_key_get_modulus(
-    const oe_public_key_t* publicKey,
+    const oe_public_key_t* public_key,
     uint8_t* buffer,
-    size_t* bufferSize)
+    size_t* buffer_size)
 {
-    return _GetPublicKeyModulusOrExponent(publicKey, buffer, bufferSize, true);
+    return _get_public_key_modulus_or_exponent(
+        public_key, buffer, buffer_size, true);
 }
 
 oe_result_t oe_public_key_get_exponent(
-    const oe_public_key_t* publicKey,
+    const oe_public_key_t* public_key,
     uint8_t* buffer,
-    size_t* bufferSize)
+    size_t* buffer_size)
 {
-    return _GetPublicKeyModulusOrExponent(publicKey, buffer, bufferSize, false);
+    return _get_public_key_modulus_or_exponent(
+        public_key, buffer, buffer_size, false);
 }
 
 static oe_result_t oe_public_key_equal(
-    const oe_public_key_t* publicKey1,
-    const oe_public_key_t* publicKey2,
+    const oe_public_key_t* public_key1,
+    const oe_public_key_t* public_key2,
     bool* equal)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -224,14 +226,14 @@ static oe_result_t oe_public_key_equal(
         *equal = false;
 
     /* Reject bad parameters */
-    if (!oe_public_key_is_valid(publicKey1, _PUBLIC_KEY_MAGIC) ||
-        !oe_public_key_is_valid(publicKey2, _PUBLIC_KEY_MAGIC) || !equal)
+    if (!oe_public_key_is_valid(public_key1, _PUBLIC_KEY_MAGIC) ||
+        !oe_public_key_is_valid(public_key2, _PUBLIC_KEY_MAGIC) || !equal)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Compare the exponent and modulus */
     {
-        const mbedtls_rsa_context* rsa1 = publicKey1->pk.pk_ctx;
-        const mbedtls_rsa_context* rsa2 = publicKey2->pk.pk_ctx;
+        const mbedtls_rsa_context* rsa1 = public_key1->pk.pk_ctx;
+        const mbedtls_rsa_context* rsa2 = public_key2->pk.pk_ctx;
 
         if (!rsa1 || !rsa2)
             OE_RAISE(OE_INVALID_PARAMETER);
@@ -250,146 +252,146 @@ done:
 }
 
 oe_result_t oe_rsa_public_key_init(
-    oe_rsa_public_key_t* publicKey,
+    oe_rsa_public_key_t* public_key,
     const mbedtls_pk_context* pk)
 {
     return oe_public_key_init(
-        (oe_public_key_t*)publicKey, pk, _CopyKey, _PUBLIC_KEY_MAGIC);
+        (oe_public_key_t*)public_key, pk, _copy_key, _PUBLIC_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_private_key_read_pem(
-    oe_rsa_private_key_t* privateKey,
-    const uint8_t* pemData,
-    size_t pemSize)
+    oe_rsa_private_key_t* private_key,
+    const uint8_t* pem_data,
+    size_t pem_size)
 {
     return oe_private_key_read_pem(
-        pemData,
-        pemSize,
-        (oe_private_key_t*)privateKey,
+        pem_data,
+        pem_size,
+        (oe_private_key_t*)private_key,
         MBEDTLS_PK_RSA,
         _PRIVATE_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_private_key_write_pem(
-    const oe_rsa_private_key_t* privateKey,
-    uint8_t* pemData,
-    size_t* pemSize)
+    const oe_rsa_private_key_t* private_key,
+    uint8_t* pem_data,
+    size_t* pem_size)
 {
     return oe_private_key_write_pem(
-        (const oe_private_key_t*)privateKey,
-        pemData,
-        pemSize,
+        (const oe_private_key_t*)private_key,
+        pem_data,
+        pem_size,
         _PRIVATE_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_public_key_read_pem(
-    oe_rsa_public_key_t* privateKey,
-    const uint8_t* pemData,
-    size_t pemSize)
+    oe_rsa_public_key_t* private_key,
+    const uint8_t* pem_data,
+    size_t pem_size)
 {
     return oe_public_key_read_pem(
-        pemData,
-        pemSize,
-        (oe_public_key_t*)privateKey,
+        pem_data,
+        pem_size,
+        (oe_public_key_t*)private_key,
         MBEDTLS_PK_RSA,
         _PUBLIC_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_public_key_write_pem(
-    const oe_rsa_public_key_t* privateKey,
-    uint8_t* pemData,
-    size_t* pemSize)
+    const oe_rsa_public_key_t* private_key,
+    uint8_t* pem_data,
+    size_t* pem_size)
 {
     return oe_public_key_write_pem(
-        (const oe_public_key_t*)privateKey,
-        pemData,
-        pemSize,
+        (const oe_public_key_t*)private_key,
+        pem_data,
+        pem_size,
         _PUBLIC_KEY_MAGIC);
 }
 
-oe_result_t oe_rsa_private_key_free(oe_rsa_private_key_t* privateKey)
+oe_result_t oe_rsa_private_key_free(oe_rsa_private_key_t* private_key)
 {
     return oe_private_key_free(
-        (oe_private_key_t*)privateKey, _PRIVATE_KEY_MAGIC);
+        (oe_private_key_t*)private_key, _PRIVATE_KEY_MAGIC);
 }
 
-oe_result_t oe_rsa_public_key_free(oe_rsa_public_key_t* publicKey)
+oe_result_t oe_rsa_public_key_free(oe_rsa_public_key_t* public_key)
 {
-    return oe_public_key_free((oe_public_key_t*)publicKey, _PUBLIC_KEY_MAGIC);
+    return oe_public_key_free((oe_public_key_t*)public_key, _PUBLIC_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_private_key_sign(
-    const oe_rsa_private_key_t* privateKey,
-    oe_hash_type_t hashType,
-    const void* hashData,
-    size_t hashSize,
+    const oe_rsa_private_key_t* private_key,
+    oe_hash_type_t hash_type,
+    const void* hash_data,
+    size_t hash_size,
     uint8_t* signature,
-    size_t* signatureSize)
+    size_t* signature_size)
 {
     return oe_private_key_sign(
-        (oe_private_key_t*)privateKey,
-        hashType,
-        hashData,
-        hashSize,
+        (oe_private_key_t*)private_key,
+        hash_type,
+        hash_data,
+        hash_size,
         signature,
-        signatureSize,
+        signature_size,
         _PRIVATE_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_public_key_verify(
-    const oe_rsa_public_key_t* publicKey,
-    oe_hash_type_t hashType,
-    const void* hashData,
-    size_t hashSize,
+    const oe_rsa_public_key_t* public_key,
+    oe_hash_type_t hash_type,
+    const void* hash_data,
+    size_t hash_size,
     const uint8_t* signature,
-    size_t signatureSize)
+    size_t signature_size)
 {
     return oe_public_key_verify(
-        (oe_public_key_t*)publicKey,
-        hashType,
-        hashData,
-        hashSize,
+        (oe_public_key_t*)public_key,
+        hash_type,
+        hash_data,
+        hash_size,
         signature,
-        signatureSize,
+        signature_size,
         _PUBLIC_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_generate_key_pair(
     uint64_t bits,
     uint64_t exponent,
-    oe_rsa_private_key_t* privateKey,
-    oe_rsa_public_key_t* publicKey)
+    oe_rsa_private_key_t* private_key,
+    oe_rsa_public_key_t* public_key)
 {
-    return _GenerateKeyPair(
+    return _generate_key_pair(
         bits,
         exponent,
-        (oe_private_key_t*)privateKey,
-        (oe_public_key_t*)publicKey);
+        (oe_private_key_t*)private_key,
+        (oe_public_key_t*)public_key);
 }
 
 oe_result_t oe_rsa_public_key_get_modulus(
-    const oe_rsa_public_key_t* publicKey,
+    const oe_rsa_public_key_t* public_key,
     uint8_t* buffer,
-    size_t* bufferSize)
+    size_t* buffer_size)
 {
     return oe_public_key_get_modulus(
-        (oe_public_key_t*)publicKey, buffer, bufferSize);
+        (oe_public_key_t*)public_key, buffer, buffer_size);
 }
 
 oe_result_t oe_rsa_public_key_get_exponent(
-    const oe_rsa_public_key_t* publicKey,
+    const oe_rsa_public_key_t* public_key,
     uint8_t* buffer,
-    size_t* bufferSize)
+    size_t* buffer_size)
 {
     return oe_public_key_get_exponent(
-        (oe_public_key_t*)publicKey, buffer, bufferSize);
+        (oe_public_key_t*)public_key, buffer, buffer_size);
 }
 
 oe_result_t oe_rsa_public_key_equal(
-    const oe_rsa_public_key_t* publicKey1,
-    const oe_rsa_public_key_t* publicKey2,
+    const oe_rsa_public_key_t* public_key1,
+    const oe_rsa_public_key_t* public_key2,
     bool* equal)
 {
     return oe_public_key_equal(
-        (oe_public_key_t*)publicKey1, (oe_public_key_t*)publicKey2, equal);
+        (oe_public_key_t*)public_key1, (oe_public_key_t*)public_key2, equal);
 }

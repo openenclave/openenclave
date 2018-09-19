@@ -6,13 +6,13 @@
 
 //==============================================================================
 //
-// uint64_t oe_egetkey(const SgxKeyRequest* sgxKeyRequest, SgxKey* sgxKey);
+// uint64_t oe_egetkey(const SgxKeyRequest* sgx_key_request, SgxKey* sgx_key);
 //
 //     The EGETKEY instruction wrapper.
 //
 //     Registers:
-//         RDI - sgxKeyRequest
-//         RSI - sgxKey
+//         RDI - sgx_key_request
+//         RSI - sgx_key
 //
 //     return:
 //         Return values in RAX

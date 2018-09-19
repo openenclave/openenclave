@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/safemath.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
@@ -10,23 +11,27 @@
 
 void* oe_host_malloc(size_t size)
 {
-    uint64_t argIn = size;
-    uint64_t argOut = 0;
+    uint64_t arg_in = size;
+    uint64_t arg_out = 0;
 
-    if (oe_ocall(OE_OCALL_MALLOC, argIn, &argOut) != OE_OK)
+    if (oe_ocall(OE_OCALL_MALLOC, arg_in, &arg_out) != OE_OK)
     {
         return NULL;
     }
 
-    if (argOut && !oe_is_outside_enclave((void*)argOut, size))
+    if (arg_out && !oe_is_outside_enclave((void*)arg_out, size))
         oe_abort();
 
-    return (void*)argOut;
+    return (void*)arg_out;
 }
 
 void* oe_host_calloc(size_t nmemb, size_t size)
 {
-    void* ptr = oe_host_malloc(nmemb * size);
+    size_t total_size;
+    if (oe_safe_mul_sizet(nmemb, size, &total_size) != OE_OK)
+        return NULL;
+
+    void* ptr = oe_host_malloc(total_size);
 
     if (ptr)
         oe_memset(ptr, 0, nmemb * size);
@@ -36,28 +41,28 @@ void* oe_host_calloc(size_t nmemb, size_t size)
 
 void* oe_host_realloc(void* ptr, size_t size)
 {
-    oe_realloc_args_t* argIn = NULL;
-    uint64_t argOut = 0;
+    oe_realloc_args_t* arg_in = NULL;
+    uint64_t arg_out = 0;
 
-    if (!(argIn = (oe_realloc_args_t*)oe_host_alloc_for_call_host(
+    if (!(arg_in = (oe_realloc_args_t*)oe_host_alloc_for_call_host(
               sizeof(oe_realloc_args_t))))
         goto done;
 
-    argIn->ptr = ptr;
-    argIn->size = size;
+    arg_in->ptr = ptr;
+    arg_in->size = size;
 
-    if (oe_ocall(OE_OCALL_REALLOC, (uint64_t)argIn, &argOut) != OE_OK)
+    if (oe_ocall(OE_OCALL_REALLOC, (uint64_t)arg_in, &arg_out) != OE_OK)
     {
-        argOut = 0;
+        arg_out = 0;
         goto done;
     }
 
-    if (argOut && !oe_is_outside_enclave((void*)argOut, size))
+    if (arg_out && !oe_is_outside_enclave((void*)arg_out, size))
         oe_abort();
 
 done:
-    oe_host_free_for_call_host(argIn);
-    return (void*)argOut;
+    oe_host_free_for_call_host(arg_in);
+    return (void*)arg_out;
 }
 
 void oe_host_free(void* ptr)
@@ -77,6 +82,10 @@ char* oe_host_strndup(const char* str, size_t n)
 
     if (n < len)
         len = n;
+
+    /* Would be an integer overflow in the next statement. */
+    if (len == OE_SIZE_MAX)
+        return NULL;
 
     if (!(p = oe_host_malloc(len + 1)))
         return NULL;
@@ -100,12 +109,15 @@ int oe_host_write(int device, const char* str, size_t len)
     if (len == (size_t)-1)
         len = oe_strlen(str);
 
-    /* Allocate space for the arguments followed by null-terminated string */
-    if (!(args = (oe_print_args_t*)oe_host_alloc_for_call_host(
-              sizeof(oe_print_args_t) + len + 1)))
-    {
+    /* Check for integer overflow and allocate space for the arguments followed
+     * by null-terminated string */
+    size_t total_size;
+    if (oe_safe_add_sizet(len, 1 + sizeof(oe_print_args_t), &total_size) !=
+        OE_OK)
         goto done;
-    }
+
+    if (!(args = (oe_print_args_t*)oe_host_alloc_for_call_host(total_size)))
+        goto done;
 
     /* Initialize the arguments */
     args->device = device;

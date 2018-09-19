@@ -18,10 +18,10 @@ class ECallDispatcher
 {
   private:
     mbedtls_aes_context m_aescontext;
-    bool m_bEncrypt;
-    string m_Password;
+    bool m_b_encrypt;
+    string m_password;
 
-    EncryptionHeader* m_pHeader;
+    EncryptionHeader* m_header;
 
     // initialization vector
     unsigned char m_original_iv[IV_SIZE];
@@ -37,25 +37,25 @@ class ECallDispatcher
     void close(CloseEncryptorArgs* args);
 
   private:
-    int generatePasswordKey(
+    int generate_password_key(
         const char* _password,
         unsigned char* _key,
-        unsigned int _keyLength);
+        unsigned int _key_length);
 
-    int generateEncryptionKey(unsigned char* _key, unsigned int _keyLength);
+    int generate_encryption_key(unsigned char* _key, unsigned int _key_length);
 
-    int cipherEncryptionKey(
-        bool bEncrypt,
-        unsigned char* pInputData,
-        unsigned int inputDataSize,
-        unsigned char* encryptKey,
-        unsigned char* pOutData,
-        unsigned int outputDataSize);
+    int cipher_encryption_key(
+        bool do_encrypt,
+        unsigned char* input_data,
+        unsigned int input_data_size,
+        unsigned char* encrypt_key,
+        unsigned char* out_data,
+        unsigned int output_data_size);
 
-    int prepareEncryptionHeader(EncryptionHeader* pHeader, string password);
-    int parseEncryptionHeader(EncryptionHeader* pHeader, string password);
+    int prepare_encryption_header(EncryptionHeader* header, string password);
+    int parse_encryption_header(EncryptionHeader* header, string password);
 
-    int Sha256(const uint8_t* data, size_t dataSize, uint8_t sha256[32]);
-    void dumpData(const char* name, unsigned char* pData, size_t dataSize);
-    int processEncryptionHeader(EncryptInitializeArgs* args);
+    int Sha256(const uint8_t* data, size_t data_size, uint8_t sha256[32]);
+    void dump_data(const char* name, unsigned char* data, size_t data_size);
+    int process_encryption_header(EncryptInitializeArgs* args);
 };

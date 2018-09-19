@@ -21,19 +21,19 @@ static TLSWrapper PerThreadFlowId;
 // class to verify OCalls in static Initializers
 struct StaticInitOcaller
 {
-    StaticInitOcaller() : m_Result(OE_FAILURE)
+    StaticInitOcaller() : m_result(OE_FAILURE)
     {
-        m_Result =
+        m_result =
             oe_call_host("InitOcallHandler", (void*)__oe_get_enclave_base());
-        OE_TEST(m_Result == OE_OK);
+        OE_TEST(m_result == OE_OK);
     }
     oe_result_t GetOcallResult() const
     {
-        return m_Result;
+        return m_result;
     }
 
   private:
-    oe_result_t m_Result;
+    oe_result_t m_result;
 } StaticInitOcaller_;
 
 // obtain static init ocall result
@@ -52,16 +52,16 @@ OE_ECALL void EncSetEnclaveId(void* Args_)
     if (!oe_is_outside_enclave(Args_, sizeof(EncSetEnclaveIdArg)))
         return;
 
-    EncSetEnclaveIdArg* argsHost = (EncSetEnclaveIdArg*)Args_;
-    EncSetEnclaveIdArg args = *argsHost;
+    EncSetEnclaveIdArg* args_host = (EncSetEnclaveIdArg*)Args_;
+    EncSetEnclaveIdArg args = *args_host;
 
     if (EnclaveId != ~0u)
     {
-        argsHost->result = OE_INVALID_PARAMETER;
+        args_host->result = OE_INVALID_PARAMETER;
     }
     EnclaveId = args.id;
-    argsHost->baseAddr = __oe_get_enclave_base();
-    argsHost->result = OE_OK;
+    args_host->base_addr = __oe_get_enclave_base();
+    args_host->result = OE_OK;
 }
 
 // Parallel execution test. Using a (trivialized) barrier in the host,
@@ -71,42 +71,42 @@ OE_ECALL void EncParallelExecution(void* Args_)
     if (!oe_is_outside_enclave(Args_, sizeof(EncParallelExecutionArg)))
         return;
 
-    EncParallelExecutionArg* argsHost = (EncParallelExecutionArg*)Args_;
-    EncParallelExecutionArg args = *argsHost;
+    EncParallelExecutionArg* args_host = (EncParallelExecutionArg*)Args_;
+    EncParallelExecutionArg args = *args_host;
 
     if (!oe_is_outside_enclave((void*)args.counter, sizeof(unsigned)) ||
         !oe_is_outside_enclave((void*)args.release, sizeof(unsigned)))
         return;
 
-    unsigned oldFlowId = PerThreadFlowId.GetU();
-    if (oldFlowId)
+    unsigned old_flow_id = PerThreadFlowId.GetU();
+    if (old_flow_id)
     {
         printf(
             "%s(): Starting flow=%u, though thread already has %u\n",
             __FUNCTION__,
-            args.flowId,
-            oldFlowId);
+            args.flow_id,
+            old_flow_id);
         return;
     }
-    PerThreadFlowId.Set(args.flowId);
+    PerThreadFlowId.Set(args.flow_id);
 
     __atomic_add_fetch(args.counter, 1, __ATOMIC_SEQ_CST);
     while (!*args.release)
         ;
 
-    oldFlowId = PerThreadFlowId.GetU();
-    if (oldFlowId != args.flowId)
+    old_flow_id = PerThreadFlowId.GetU();
+    if (old_flow_id != args.flow_id)
     {
         printf(
             "%s(): Stopping flow=%u, though overwritten with %u\n",
             __FUNCTION__,
-            args.flowId,
-            oldFlowId);
+            args.flow_id,
+            old_flow_id);
         return;
     }
     PerThreadFlowId.Set(0u);
 
-    argsHost->result = OE_OK;
+    args_host->result = OE_OK;
 }
 
 // Exported helper function for reachability test
@@ -125,40 +125,40 @@ OE_ECALL void EncTestCallHostFunction(void* Args_)
     if (!oe_is_outside_enclave(Args_, sizeof(EncTestCallHostFunctionArg)))
         return;
 
-    EncTestCallHostFunctionArg* argsHost = (EncTestCallHostFunctionArg*)Args_;
-    EncTestCallHostFunctionArg args = *argsHost;
+    EncTestCallHostFunctionArg* args_host = (EncTestCallHostFunctionArg*)Args_;
+    EncTestCallHostFunctionArg args = *args_host;
 
     // Testing for a string to be outside the enclave is ugly. We might want
     // to provide a helper.
-    if (!oe_is_outside_enclave(args.functionName, 1))
+    if (!oe_is_outside_enclave(args.function_name, 1))
     {
-        argsHost->result = OE_INVALID_PARAMETER;
+        args_host->result = OE_INVALID_PARAMETER;
         return;
     }
 
-    argsHost->result = oe_call_host(args.functionName, NULL);
+    args_host->result = oe_call_host(args.function_name, NULL);
 }
 
 size_t Factor = 0;
 
 OE_ECALL void EncCrossEnclaveCall(CrossEnclaveCallArg* arg)
 {
-    uint32_t myInput = arg->input;
-    uint32_t myEnclaveId = arg->enclaveId;
+    uint32_t my_input = arg->input;
+    uint32_t my_enclave_id = arg->enclave_id;
 
     // Call next enclave via host.
     ++arg->input;
-    ++arg->enclaveId;
+    ++arg->enclave_id;
     OE_TEST(oe_call_host("CrossEnclaveCall", arg) == OE_OK);
 
     // augment result with my result.
-    uint32_t myResult = myInput * Factor;
-    arg->output += myResult;
+    uint32_t my_result = my_input * Factor;
+    arg->output += my_result;
     printf(
         "enclave %u: Factor=%lu, myResult = %u, arg.output=%u\n",
-        myEnclaveId,
+        my_enclave_id,
         Factor,
-        myResult,
+        my_result,
         arg->output);
 }
 

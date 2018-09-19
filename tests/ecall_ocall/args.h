@@ -5,16 +5,16 @@
 
 struct EncSetEnclaveIdArg
 {
-    oe_result_t result;   // Out
-    unsigned id;          // In
-    const void* baseAddr; // Out
+    oe_result_t result;    // Out
+    unsigned id;           // In
+    const void* base_addr; // Out
 };
 
 struct EncParallelExecutionArg
 {
     oe_result_t result;         // Out
-    unsigned enclaveId;         // In
-    unsigned flowId;            // In
+    unsigned enclave_id;        // In
+    unsigned flow_id;           // In
     volatile unsigned* counter; // Inout
     volatile unsigned* release; // In
 };
@@ -25,18 +25,18 @@ struct EncParallelExecutionArg
  */
 struct EncRecursionArg
 {
-    unsigned enclaveId;             // In
-    unsigned flowId;                // In
-    unsigned recursionsLeft;        // InOut
-    unsigned initialCount : 31;     // InOut
-    unsigned isRotatingEnclave : 1; // In
-    uint32_t crc;                   // InOut
+    unsigned enclave_id;              // In
+    unsigned flow_id;                 // In
+    unsigned recursions_left;         // InOut
+    unsigned initial_count : 31;      // InOut
+    unsigned is_rotating_enclave : 1; // In
+    uint32_t crc;                     // InOut
 };
 
 struct EncTestCallHostFunctionArg
 {
-    oe_result_t result;       // Out
-    const char* functionName; // In
+    oe_result_t result;        // Out
+    const char* function_name; // In
 };
 
 enum
@@ -49,7 +49,7 @@ enum
 
 struct CrossEnclaveCallArg
 {
-    uint32_t enclaveId;
+    uint32_t enclave_id;
     uint32_t input;
     uint32_t output;
 };

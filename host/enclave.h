@@ -15,7 +15,7 @@
 #include <windows.h>
 #endif
 
-typedef struct _EnclaveEvent
+typedef struct _enclave_event
 {
 #if defined(__linux__)
     uint32_t value;
@@ -26,7 +26,7 @@ typedef struct _EnclaveEvent
 
 #define ENCLAVE_MAGIC 0x20dc98463a5ad8b8
 
-typedef struct _ECallNameAddr
+typedef struct _ecall_name_addr
 {
     /* ECALL function name */
     char* name;
@@ -59,7 +59,7 @@ typedef struct _ECallNameAddr
 **==============================================================================
 */
 
-typedef struct _ThreadBinding
+typedef struct _thread_binding
 {
     /* Address of the enclave's thread control structure */
     uint64_t tcs;
