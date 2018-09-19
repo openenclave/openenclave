@@ -15,22 +15,22 @@
 #include <mbedtls/sha256.h>
 #include "log.h"
 
-mbedtls_ctr_drbg_context g_CtrDrbgContext;
-mbedtls_entropy_context g_EntropyContext;
+mbedtls_ctr_drbg_context g_ctr_drbg_context;
+mbedtls_entropy_context g_entropy_context;
 
-mbedtls_pk_context g_RsaContext;
-uint8_t g_MyPublicKey[512];
+mbedtls_pk_context g_rsa_context;
+uint8_t g_my_public_key[512];
 
-bool g_Initialized = false;
+bool g_initialized = false;
 
 /**
  * mbedtls cleanup during shutdown.
  */
 static void CleanupMbedtls(void)
 {
-    mbedtls_pk_free(&g_RsaContext);
-    mbedtls_entropy_free(&g_EntropyContext);
-    mbedtls_ctr_drbg_free(&g_CtrDrbgContext);
+    mbedtls_pk_free(&g_rsa_context);
+    mbedtls_entropy_free(&g_entropy_context);
+    mbedtls_ctr_drbg_free(&g_ctr_drbg_context);
     ENC_DEBUG_PRINTF("mbedtls cleaned up.");
 }
 
@@ -42,12 +42,12 @@ static void InitializeMbedtls(void)
 {
     int res = -1;
 
-    mbedtls_ctr_drbg_init(&g_CtrDrbgContext);
-    mbedtls_entropy_init(&g_EntropyContext);
+    mbedtls_ctr_drbg_init(&g_ctr_drbg_context);
+    mbedtls_entropy_init(&g_entropy_context);
 
     // Initialize entropy.
     res = mbedtls_ctr_drbg_seed(
-        &g_CtrDrbgContext, mbedtls_entropy_func, &g_EntropyContext, NULL, 0);
+        &g_ctr_drbg_context, mbedtls_entropy_func, &g_entropy_context, NULL, 0);
 
     if (res != 0)
     {
@@ -57,7 +57,7 @@ static void InitializeMbedtls(void)
 
     // Initialize RSA context.
     res = mbedtls_pk_setup(
-        &g_RsaContext, mbedtls_pk_info_from_type(MBEDTLS_PK_RSA));
+        &g_rsa_context, mbedtls_pk_info_from_type(MBEDTLS_PK_RSA));
     if (res != 0)
     {
         ENC_DEBUG_PRINTF("mbedtls_pk_setup failed.");
@@ -67,9 +67,9 @@ static void InitializeMbedtls(void)
     // Generate an ephemeral 2048-bit RSA key pair with
     // exponent 65537 for the enclave.
     res = mbedtls_rsa_gen_key(
-        mbedtls_pk_rsa(g_RsaContext),
+        mbedtls_pk_rsa(g_rsa_context),
         mbedtls_ctr_drbg_random,
-        &g_CtrDrbgContext,
+        &g_ctr_drbg_context,
         2048,
         65537);
 
@@ -81,7 +81,7 @@ static void InitializeMbedtls(void)
 
     // Write out the public key in PEM format for exchange with other enclaves.
     res = mbedtls_pk_write_pubkey_pem(
-        &g_RsaContext, g_MyPublicKey, sizeof(g_MyPublicKey));
+        &g_rsa_context, g_my_public_key, sizeof(g_my_public_key));
     if (res != 0)
     {
         ENC_DEBUG_PRINTF("mbedtls_pk_write_pubkey_pem failed.");
@@ -91,7 +91,7 @@ static void InitializeMbedtls(void)
     // Schedule cleanup.
     atexit(CleanupMbedtls);
 
-    g_Initialized = true;
+    g_initialized = true;
     ENC_DEBUG_PRINTF("mbedtls initialized.");
 }
 
@@ -101,27 +101,27 @@ static void InitializeMbedtls(void)
 bool InitializeCrypto(void)
 {
     InitializeMbedtls();
-    return g_Initialized;
+    return g_initialized;
 }
 
 /**
  * Get the public key for this enclave.
  */
-void GetPublicKey(uint8_t pemPublicKey[512])
+void GetPublicKey(uint8_t pem_public_key[512])
 {
-    memcpy(pemPublicKey, g_MyPublicKey, sizeof(g_MyPublicKey));
+    memcpy(pem_public_key, g_my_public_key, sizeof(g_my_public_key));
 }
 
 /**
  * Compute the sha256 hash of given data.
  */
-void Sha256(const uint8_t* data, size_t dataSize, uint8_t sha256[32])
+void Sha256(const uint8_t* data, size_t data_size, uint8_t sha256[32])
 {
     mbedtls_sha256_context ctx;
 
     mbedtls_sha256_init(&ctx);
     mbedtls_sha256_starts_ret(&ctx, 0);
-    mbedtls_sha256_update_ret(&ctx, data, dataSize);
+    mbedtls_sha256_update_ret(&ctx, data, data_size);
     mbedtls_sha256_finish_ret(&ctx, sha256);
 }
 
@@ -130,25 +130,25 @@ void Sha256(const uint8_t* data, size_t dataSize, uint8_t sha256[32])
  * Used to encrypt data using the public key of another enclave.
 */
 bool Encrypt(
-    const uint8_t* pemPublicKey,
+    const uint8_t* pem_public_key,
     const uint8_t* data,
-    size_t dataSize,
-    uint8_t* encryptedData,
-    size_t* encryptedDataSize)
+    size_t data_size,
+    uint8_t* encrypted_data,
+    size_t* encrypted_data_size)
 {
     bool result = false;
     mbedtls_pk_context key;
-    size_t keySize = 0;
+    size_t key_size = 0;
     int res = -1;
 
     mbedtls_pk_init(&key);
 
-    if (!g_Initialized)
+    if (!g_initialized)
         goto done;
 
     // Read the given public key.
-    keySize = strlen((const char*)pemPublicKey) + 1; // Include ending '\0'.
-    res = mbedtls_pk_parse_public_key(&key, pemPublicKey, keySize);
+    key_size = strlen((const char*)pem_public_key) + 1; // Include ending '\0'.
+    res = mbedtls_pk_parse_public_key(&key, pem_public_key, key_size);
     if (res != 0)
     {
         ENC_DEBUG_PRINTF("mbedtls_pk_parse_public_key failed.");
@@ -159,11 +159,11 @@ bool Encrypt(
     res = mbedtls_rsa_pkcs1_encrypt(
         mbedtls_pk_rsa(key),
         mbedtls_ctr_drbg_random,
-        &g_CtrDrbgContext,
+        &g_ctr_drbg_context,
         MBEDTLS_RSA_PUBLIC,
-        dataSize,
+        data_size,
         data,
-        encryptedData);
+        encrypted_data);
 
     if (res != 0)
     {
@@ -171,7 +171,7 @@ bool Encrypt(
         goto done;
     }
 
-    *encryptedDataSize = mbedtls_pk_rsa(key)->len;
+    *encrypted_data_size = mbedtls_pk_rsa(key)->len;
 
     result = true;
 done:
@@ -184,31 +184,31 @@ done:
  * Used to receive encrypted data from another enclave.
  */
 bool Decrypt(
-    const uint8_t* encryptedData,
-    size_t encryptedDataSize,
+    const uint8_t* encrypted_data,
+    size_t encrypted_data_size,
     uint8_t* data,
-    size_t* dataSize)
+    size_t* data_size)
 {
-    if (!g_Initialized)
+    if (!g_initialized)
         return false;
 
-    mbedtls_pk_rsa(g_RsaContext)->len = encryptedDataSize;
+    mbedtls_pk_rsa(g_rsa_context)->len = encrypted_data_size;
 
-    size_t outputSize = *dataSize;
+    size_t output_size = *data_size;
     int res = mbedtls_rsa_pkcs1_decrypt(
-        mbedtls_pk_rsa(g_RsaContext),
+        mbedtls_pk_rsa(g_rsa_context),
         mbedtls_ctr_drbg_random,
-        &g_CtrDrbgContext,
+        &g_ctr_drbg_context,
         MBEDTLS_RSA_PRIVATE,
-        &outputSize,
-        encryptedData,
+        &output_size,
+        encrypted_data,
         data,
-        outputSize);
+        output_size);
     if (res != 0)
     {
         ENC_DEBUG_PRINTF("mbedtls_rsa_pkcs1_decrypt failed.");
         return false;
     }
-    *dataSize = outputSize;
+    *data_size = output_size;
     return true;
 }

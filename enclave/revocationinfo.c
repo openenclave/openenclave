@@ -44,7 +44,7 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
     oe_get_revocation_info_args_t* host_args = NULL;
     oe_get_revocation_info_args_t tmp_args = {0};
     uint8_t* p = NULL;
-    uint32_t crlUrlSizes[2] = {0};
+    uint32_t crl_url_sizes[2] = {0};
 
     if (args == NULL || args->num_crl_urls != 2 || args->crl_urls[0] == NULL ||
         args->crl_urls[1] == NULL)
@@ -54,8 +54,8 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
     // arguments.
     for (uint32_t i = 0; i < args->num_crl_urls; ++i)
     {
-        crlUrlSizes[i] = oe_strlen(args->crl_urls[i]) + 1;
-        host_args_buffer_size += crlUrlSizes[i];
+        crl_url_sizes[i] = oe_strlen(args->crl_urls[i]) + 1;
+        host_args_buffer_size += crl_url_sizes[i];
     }
 
     host_args_buffer = oe_host_malloc(host_args_buffer_size);
@@ -72,8 +72,8 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
     for (uint32_t i = 0; i < args->num_crl_urls; ++i)
     {
         host_args->crl_urls[i] = (const char*)p;
-        oe_memcpy(p, args->crl_urls[i], crlUrlSizes[i]);
-        p += crlUrlSizes[i];
+        oe_memcpy(p, args->crl_urls[i], crl_url_sizes[i]);
+        p += crl_url_sizes[i];
     }
 
     OE_CHECK(oe_ocall(OE_OCALL_GET_REVOCATION_INFO, (uint64_t)host_args, NULL));

@@ -19,15 +19,15 @@
 #define DECRYPT_OPERATION false
 #define SALT_SIZE_IN_BYTES 16 // Length of salt size
 
-void ECallDispatcher::dumpData(
+void ECallDispatcher::dump_data(
     const char* name,
-    unsigned char* pData,
-    size_t dataSize)
+    unsigned char* data,
+    size_t data_size)
 {
     ENC_DEBUG_PRINTF("Data name: %s", name);
-    for (size_t i = 0; i < dataSize; i++)
+    for (size_t i = 0; i < data_size; i++)
     {
-        ENC_DEBUG_PRINTF("[%ld]-0x%02X", i, pData[i]);
+        ENC_DEBUG_PRINTF("[%ld]-0x%02X", i, data[i]);
     }
     ENC_DEBUG_PRINTF("\n");
 }
@@ -35,7 +35,7 @@ void ECallDispatcher::dumpData(
 // Compute the sha256 hash of given data.
 int ECallDispatcher::Sha256(
     const uint8_t* data,
-    size_t dataSize,
+    size_t data_size,
     uint8_t sha256[32])
 {
     int ret = 0;
@@ -47,7 +47,7 @@ int ECallDispatcher::Sha256(
     if (ret)
         goto exit;
 
-    ret = mbedtls_sha256_update_ret(&ctx, data, dataSize);
+    ret = mbedtls_sha256_update_ret(&ctx, data, data_size);
     if (ret)
         goto exit;
 
@@ -60,16 +60,16 @@ exit:
     return ret;
 }
 
-// This routine uses the mbedTLS library to derive an AES key from the input
+// This routine uses the mbed_tls library to derive an AES key from the input
 // password and produce a password based key. Note : A set of hardcoded salt
 // values are used here for the purpose simplifying this sample, which caused
 // this routine to return the same key when taking the same password. This saves
 // the sample from having to write salt values to the encryption header. In a
 // real world application, randomly generated salt values are recommended.
-int ECallDispatcher::generatePasswordKey(
+int ECallDispatcher::generate_password_key(
     const char* _password,
     unsigned char* _key,
-    unsigned int _keyLength)
+    unsigned int _key_length)
 {
     mbedtls_ctr_drbg_context ctr_drbg;
     mbedtls_entropy_context entropy;
@@ -98,7 +98,7 @@ int ECallDispatcher::generatePasswordKey(
 
     ENC_DEBUG_PRINTF("generatePasswordKey");
 
-    memset(_key, 0, _keyLength);
+    memset(_key, 0, _key_length);
     info_sha = mbedtls_md_info_from_type(MBEDTLS_MD_SHA256);
     if (info_sha == NULL)
     {
@@ -126,7 +126,7 @@ int ECallDispatcher::generatePasswordKey(
         salt,                            // salt to use when generating key
         SALT_SIZE_IN_BYTES,              // size of salt
         100000,                          // iteration count
-        _keyLength,                      // length of generated key in bytes
+        _key_length,                      // length of generated key in bytes
         _key);                           // generated key
     if (ret != 0)
     {
@@ -142,9 +142,9 @@ exit:
 }
 
 // Generate an ephemeral key: this is the key used to encrypt data
-int ECallDispatcher::generateEncryptionKey(
+int ECallDispatcher::generate_encryption_key(
     unsigned char* _key,
-    unsigned int _keyLength)
+    unsigned int _key_length)
 {
     mbedtls_ctr_drbg_context ctr_drbg;
     mbedtls_entropy_context entropy;
@@ -155,7 +155,7 @@ int ECallDispatcher::generateEncryptionKey(
 
     mbedtls_entropy_init(&entropy);
     mbedtls_ctr_drbg_init(&ctr_drbg);
-    memset(_key, 0, _keyLength);
+    memset(_key, 0, _key_length);
 
     // mbedtls_ctr_drbg_seed seeds and sets up the CTR_DRBG entropy source for
     // future reseeds.
@@ -172,7 +172,7 @@ int ECallDispatcher::generateEncryptionKey(
     }
 
     // mbedtls_ctr_drbg_random uses CTR_DRBG to generate random data
-    ret = mbedtls_ctr_drbg_random(&ctr_drbg, _key, _keyLength);
+    ret = mbedtls_ctr_drbg_random(&ctr_drbg, _key, _key_length);
     if (ret != 0)
     {
         ENC_DEBUG_PRINTF("mbedtls_ctr_drbg_random failed with -0x%04x\n", -ret);
@@ -180,7 +180,7 @@ int ECallDispatcher::generateEncryptionKey(
     }
     ENC_DEBUG_PRINTF(
         "Encryption key successfully generated: a %d byte key (hex):  ",
-        _keyLength);
+        _key_length);
 
 exit:
     mbedtls_ctr_drbg_free(&ctr_drbg);
@@ -192,13 +192,13 @@ exit:
 // header as part of the encryption metadata. Note: using fixed initialization
 // vector (iv) is good enough because its used only for the purpose of
 // encrypting encryption key, just once.
-int ECallDispatcher::cipherEncryptionKey(
-    bool bEncrypt,
-    unsigned char* pInputData,
-    unsigned int inputDataSize,
-    unsigned char* encryptKey,
-    unsigned char* pOutData,
-    unsigned int outputDataSize)
+int ECallDispatcher::cipher_encryption_key(
+    bool do_encrypt,
+    unsigned char* input_data,
+    unsigned int input_data_size,
+    unsigned char* encrypt_key,
+    unsigned char* out_data,
+    unsigned int output_data_size)
 {
     int ret = 0;
     mbedtls_aes_context aescontext;
@@ -220,13 +220,13 @@ int ECallDispatcher::cipherEncryptionKey(
                                  0x75};
 
     ENC_DEBUG_PRINTF(
-        "cipherEncryptionKey: %s", bEncrypt ? "encrypting" : "decrypting");
+        "cipherEncryptionKey: %s", do_encrypt ? "encrypting" : "decrypting");
 
     // init context
     mbedtls_aes_init(&aescontext);
 
     // set aes key
-    ret = mbedtls_aes_setkey_enc(&aescontext, encryptKey, ENCRYPTION_KEY_SIZE);
+    ret = mbedtls_aes_setkey_enc(&aescontext, encrypt_key, ENCRYPTION_KEY_SIZE);
     if (ret != 0)
     {
         ENC_DEBUG_PRINTF("mbedtls_aes_setkey_enc failed with %d", ret);
@@ -235,11 +235,11 @@ int ECallDispatcher::cipherEncryptionKey(
 
     ret = mbedtls_aes_crypt_cbc(
         &aescontext,
-        bEncrypt ? MBEDTLS_AES_ENCRYPT : MBEDTLS_AES_DECRYPT,
-        inputDataSize, // input data length in bytes,
+        do_encrypt ? MBEDTLS_AES_ENCRYPT : MBEDTLS_AES_DECRYPT,
+        input_data_size, // input data length in bytes,
         iv,            // Initialization vector (updated after use)
-        pInputData,
-        pOutData);
+        input_data,
+        out_data);
     if (ret != 0)
     {
         ENC_DEBUG_PRINTF("mbedtls_aes_crypt_cbc failed with %d", ret);
@@ -262,32 +262,32 @@ exit:
 //  3)generate a digest for the password
 //  4)encrypt the ephemeral key with a password key
 //
-int ECallDispatcher::prepareEncryptionHeader(
-    EncryptionHeader* pHeader,
+int ECallDispatcher::prepare_encryption_header(
+    EncryptionHeader* header,
     string password)
 {
     int ret = 0;
     unsigned char digest[HASH_VALUE_SIZE_IN_BYTES]; // password derived key
     unsigned char
-        passwordKey[ENCRYPTION_KEY_SIZE_IN_BYTES]; // encrypted ephemeral key
-    unsigned char encryptedEphemeralKey[ENCRYPTION_KEY_SIZE_IN_BYTES];
+        password_key[ENCRYPTION_KEY_SIZE_IN_BYTES]; // encrypted ephemeral key
+    unsigned char encrypted_ephemeral_key[ENCRYPTION_KEY_SIZE_IN_BYTES];
 
     ENC_DEBUG_PRINTF("prepareEncryptionHeader");
     // derive a key from the password using PBDKF2
-    ret = generatePasswordKey(
-        password.c_str(), passwordKey, ENCRYPTION_KEY_SIZE_IN_BYTES);
+    ret = generate_password_key(
+        password.c_str(), password_key, ENCRYPTION_KEY_SIZE_IN_BYTES);
     if (ret != 0)
     {
         ENC_DEBUG_PRINTF("passwordKey");
         for (unsigned int i = 0; i < ENCRYPTION_KEY_SIZE_IN_BYTES; i++)
             ENC_DEBUG_PRINTF(
-                "passwordKey[%d] =0x%02x", i, (unsigned int)(passwordKey[i]));
+                "passwordKey[%d] =0x%02x", i, (unsigned int)(password_key[i]));
         goto exit;
     }
 
     // produce a ephemeral key
     ENC_DEBUG_PRINTF("produce a ephemeral key");
-    ret = generateEncryptionKey(
+    ret = generate_encryption_key(
         (unsigned char*)m_encryption_key, ENCRYPTION_KEY_SIZE_IN_BYTES);
     if (ret != 0)
     {
@@ -307,16 +307,16 @@ int ECallDispatcher::prepareEncryptionHeader(
         goto exit;
     }
 
-    memcpy(pHeader->digest, digest, ENCRYPTION_KEY_SIZE_IN_BYTES);
+    memcpy(header->digest, digest, ENCRYPTION_KEY_SIZE_IN_BYTES);
 
     // encrypt the ephemeral key with a password key
     ENC_DEBUG_PRINTF("encrypt the ephemeral key with a psswd key");
-    ret = cipherEncryptionKey(
+    ret = cipher_encryption_key(
         ENCRYPT_OPERATION,
         m_encryption_key,
         ENCRYPTION_KEY_SIZE_IN_BYTES,
-        passwordKey,
-        encryptedEphemeralKey,
+        password_key,
+        encrypted_ephemeral_key,
         ENCRYPTION_KEY_SIZE_IN_BYTES);
     if (ret != 0)
     {
@@ -324,8 +324,8 @@ int ECallDispatcher::prepareEncryptionHeader(
         goto exit;
     }
     memcpy(
-        pHeader->encryptedKey,
-        encryptedEphemeralKey,
+        header->encrypted_key,
+        encrypted_ephemeral_key,
         ENCRYPTION_KEY_SIZE_IN_BYTES);
     ENC_DEBUG_PRINTF("Done with prepareEncryptionHeader successfully.");
 exit:
@@ -337,8 +337,8 @@ exit:
 //  1)Check password by comparing their digests
 //  2)reproduce a ephemeral key from the password
 //  3)decrypt the ephemeral key with a password key
-int ECallDispatcher::parseEncryptionHeader(
-    EncryptionHeader* pHeader,
+int ECallDispatcher::parse_encryption_header(
+    EncryptionHeader* header,
     string password)
 {
     int ret = 0;
@@ -347,14 +347,14 @@ int ECallDispatcher::parseEncryptionHeader(
 
     // check password by comparing their digests
     ret =
-        Sha256((const uint8_t*)m_Password.c_str(), m_Password.length(), digest);
+        Sha256((const uint8_t*)m_password.c_str(), m_password.length(), digest);
     if (ret)
     {
         ENC_DEBUG_PRINTF("Sha256 failed with %d", ret);
         goto exit;
     }
 
-    if (memcmp(pHeader->digest, digest, HASH_VALUE_SIZE_IN_BYTES) != 0)
+    if (memcmp(header->digest, digest, HASH_VALUE_SIZE_IN_BYTES) != 0)
     {
         ENC_DEBUG_PRINTF("incorrect password");
         ret = 1;
@@ -362,7 +362,7 @@ int ECallDispatcher::parseEncryptionHeader(
     }
 
     // derive a key from the password using PBDKF2
-    ret = generatePasswordKey(
+    ret = generate_password_key(
         password.c_str(), passwordkey, ENCRYPTION_KEY_SIZE_IN_BYTES);
     if (ret != 0)
     {
@@ -370,9 +370,9 @@ int ECallDispatcher::parseEncryptionHeader(
         goto exit;
     }
     // decrypt the "encrypted ephemeral key" using the password key
-    ret = cipherEncryptionKey(
+    ret = cipher_encryption_key(
         DECRYPT_OPERATION,
-        pHeader->encryptedKey,
+        header->encrypted_key,
         ENCRYPTION_KEY_SIZE_IN_BYTES,
         (unsigned char*)m_encryption_key,
         passwordkey,
@@ -389,37 +389,37 @@ exit:
     return ret;
 }
 
-int ECallDispatcher::processEncryptionHeader(EncryptInitializeArgs* args)
+int ECallDispatcher::process_encryption_header(EncryptInitializeArgs* args)
 {
     int ret = 0;
 
-    m_Password =
-        std::string(args->password, args->password + args->passwordLen);
-    m_bEncrypt = args->bEncrypt;
-    m_pHeader = args->pHeader;
+    m_password =
+        std::string(args->password, args->password + args->password_len);
+    m_b_encrypt = args->do_encrypt;
+    m_header = args->header;
 
-    if (m_bEncrypt)
+    if (m_b_encrypt)
     {
         // allocate host memory for the header and it will be returned back to
         // the host
-        m_pHeader = (EncryptionHeader*)oe_host_malloc(sizeof(EncryptionHeader));
-        if (m_pHeader == NULL)
+        m_header = (EncryptionHeader*)oe_host_malloc(sizeof(EncryptionHeader));
+        if (m_header == NULL)
         {
             ret = 1;
             goto exit;
         }
 
-        ret = prepareEncryptionHeader(m_pHeader, m_Password);
+        ret = prepare_encryption_header(m_header, m_password);
         if (ret != 0)
         {
             ENC_DEBUG_PRINTF("prepareEncryptionHeader failed with %d", ret);
             goto exit;
         }
-        args->pHeader = m_pHeader;
+        args->header = m_header;
     }
     else
     {
-        ret = parseEncryptionHeader(m_pHeader, m_Password);
+        ret = parse_encryption_header(m_header, m_password);
         if (ret != 0)
         {
             ENC_DEBUG_PRINTF("parseEncryptionHeader failed with %d", ret);

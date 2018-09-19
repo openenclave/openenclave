@@ -17,8 +17,8 @@
 typedef struct _oe_init_quote_args
 {
     oe_result_t result;
-    sgx_target_info_t targetInfo;
-    sgx_epid_group_id_t epidGroupID;
+    sgx_target_info_t target_info;
+    sgx_epid_group_id_t epid_group_id;
 } oe_init_quote_args_t;
 
 /*
@@ -31,7 +31,7 @@ typedef struct _oe_init_quote_args
 typedef struct _oe_get_qetarget_info_args
 {
     oe_result_t result;
-    sgx_target_info_t targetInfo;
+    sgx_target_info_t target_info;
 } oe_get_qetarget_info_args_t;
 
 /*
@@ -44,8 +44,8 @@ typedef struct _oe_get_qetarget_info_args
 typedef struct _oe_get_quote_args
 {
     oe_result_t result;
-    sgx_report_t sgxReport;
-    size_t quoteSize;
+    sgx_report_t sgx_report;
+    size_t quote_size;
     uint8_t quote[1];
 } oe_get_quote_args_t;
 
@@ -60,10 +60,10 @@ typedef struct _oe_get_sgx_report_args
 {
     oe_result_t result; /* out */
 
-    uint8_t optParams[sizeof(sgx_target_info_t)]; /* in */
-    size_t optParamsSize;                         /* in */
+    uint8_t opt_params[sizeof(sgx_target_info_t)]; /* in */
+    size_t opt_params_size;                         /* in */
 
-    sgx_report_t sgxReport; /* out */
+    sgx_report_t sgx_report; /* out */
 } oe_get_sgx_report_args_t;
 
 /*
@@ -78,7 +78,7 @@ typedef struct _oe_verify_report_args
     oe_result_t result; /* out */
 
     uint8_t* report;   /* in */
-    size_t reportSize; /* in */
+    size_t report_size; /* in */
 } oe_verify_report_args_t;
 
 /*

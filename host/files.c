@@ -20,7 +20,7 @@ bool __oe_file_exists(const char* path)
 
 oe_result_t __oe_load_file(
     const char* path,
-    size_t extraBytes,
+    size_t extra_bytes,
     void** data,
     size_t* size)
 {
@@ -48,7 +48,7 @@ oe_result_t __oe_load_file(
     }
 
     /* Allocate memory */
-    if (!(*data = malloc(*size + extraBytes)))
+    if (!(*data = malloc(*size + extra_bytes)))
         OE_THROW(OE_OUT_OF_MEMORY);
 
     /* Open the file */
@@ -60,8 +60,8 @@ oe_result_t __oe_load_file(
         OE_THROW(OE_READ_FAILED);
 
     /* Zero-fill any extra bytes */
-    if (extraBytes)
-        memset((unsigned char*)*data + *size, 0, extraBytes);
+    if (extra_bytes)
+        memset((unsigned char*)*data + *size, 0, extra_bytes);
 
     result = OE_OK;
 

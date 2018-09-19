@@ -12,20 +12,20 @@
 
 struct QuotedPublicKey
 {
-    uint8_t pemKey[512];
+    uint8_t pem_key[512];
     uint8_t* quote;
-    size_t quoteSize;
+    size_t quote_size;
 };
 
 struct GetPublicKeyArgs
 {
-    QuotedPublicKey* quotedPublicKey; /* out */
+    QuotedPublicKey* quoted_public_key; /* out */
     bool success;                     /* out */
 };
 
 struct StorePublicKeyArgs
 {
-    QuotedPublicKey* quotedPublicKey; /* in */
+    QuotedPublicKey* quoted_public_key; /* in */
     bool success;                     /* out */
 };
 

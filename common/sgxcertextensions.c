@@ -16,7 +16,7 @@
 
 #define TCB_OID SGX_EXTENSION_OID "\x02"
 
-static const char* _TcbCompSvnOids[16] = {
+static const char* _tcb_comp_svn_oids[16] = {
     TCB_OID "\x01",
     TCB_OID "\x02",
     TCB_OID "\x03",
@@ -60,8 +60,8 @@ static const char* _TcbCompSvnOids[16] = {
 #define SGX_SEQUENCE_TAG (0x30)
 
 OE_STATIC_ASSERT(
-    OE_COUNTOF(((ParsedExtensionInfo*)0)->compSvn) ==
-    OE_COUNTOF(_TcbCompSvnOids));
+    OE_COUNTOF(((ParsedExtensionInfo*)0)->comp_svn) ==
+    OE_COUNTOF(_tcb_comp_svn_oids));
 
 /**
  * Read length from the current location in ASN1 stream.
@@ -73,7 +73,7 @@ OE_STATIC_ASSERT(
  * 3) If *p == 0x80, then the data is variable length and is terminated by two
  * zeros. We don't support this since Intel extensions are not variable length.
  */
-static oe_result_t _ReadASN1Length(uint8_t** itr, uint8_t* end, size_t* length)
+static oe_result_t _read_asn1_length(uint8_t** itr, uint8_t* end, size_t* length)
 {
     oe_result_t result = OE_INVALID_SGX_CERTIFICATE_EXTENSIONS;
     uint8_t* p = NULL;
@@ -122,41 +122,41 @@ done:
 /**
  * Check whether an oid is equal to the given byte value string.
  */
-static int8_t _OIDEqual(
+static int8_t _oid_equal(
     uint8_t* oid,
     uint8_t* end,
-    size_t oidLength,
-    const char* expectedOid)
+    size_t oid_length,
+    const char* expected_oid)
 {
-    size_t expectedLength = strlen(expectedOid);
-    return (oidLength == expectedLength) && (oid + oidLength < end) &&
-           (memcmp(oid, expectedOid, oidLength) == 0);
+    size_t expected_length = strlen(expected_oid);
+    return (oid_length == expected_length) && (oid + oid_length < end) &&
+           (memcmp(oid, expected_oid, oid_length) == 0);
 }
 
 /**
  * Each individual extension is encoded as an ASN1 sequence object
  * that consists of two objects: oid object, data object.
- * extension = (SGX_SEQUENCE_TAG sequenceLength
- *                 (SGX_OBJECT_ID_TAG oidLength oidBytes)
- *                 (dataTag dataLength dataBytes)
+ * extension = (SGX_SEQUENCE_TAG sequence_length
+ *                 (SGX_OBJECT_ID_TAG oid_length oid_bytes)
+ *                 (data_tag data_length data_bytes)
  *              )
 */
-static oe_result_t _ReadExtension(
+static oe_result_t _read_extension(
     uint8_t** itr,
     uint8_t* end,
-    const char* expectedOid,
-    uint8_t dataTag,
+    const char* expected_oid,
+    uint8_t data_tag,
     uint8_t** data,
-    size_t* dataLength)
+    size_t* data_length)
 {
     oe_result_t result = OE_INVALID_SGX_CERTIFICATE_EXTENSIONS;
     uint8_t* p = NULL;
     size_t length = 0;
-    size_t oidLength = 0;
-    uint8_t* objectEnd = NULL;
+    size_t oid_length = 0;
+    uint8_t* object_end = NULL;
 
-    if (itr == NULL || *itr == NULL || end == NULL || expectedOid == NULL ||
-        data == NULL || dataLength == NULL)
+    if (itr == NULL || *itr == NULL || end == NULL || expected_oid == NULL ||
+        data == NULL || data_length == NULL)
     {
         OE_RAISE(OE_INVALID_PARAMETER);
     }
@@ -167,24 +167,24 @@ static oe_result_t _ReadExtension(
 
     if (*p++ == SGX_SEQUENCE_TAG && p < end)
     {
-        OE_CHECK(_ReadASN1Length(&p, end, &length));
+        OE_CHECK(_read_asn1_length(&p, end, &length));
         if (p + length <= end && length > 0)
         {
             // Record the end of current sequence object.
-            objectEnd = p + length;
+            object_end = p + length;
             if (*p++ == SGX_OBJECT_ID_TAG && p < end)
             {
-                OE_CHECK(_ReadASN1Length(&p, end, &oidLength));
-                if (!_OIDEqual(p, end, oidLength, expectedOid))
+                OE_CHECK(_read_asn1_length(&p, end, &oid_length));
+                if (!_oid_equal(p, end, oid_length, expected_oid))
                     OE_RAISE(OE_FAILURE);
-                p += oidLength;
-                if (p < end && *p++ == dataTag)
+                p += oid_length;
+                if (p < end && *p++ == data_tag)
                 {
-                    OE_CHECK(_ReadASN1Length(&p, end, dataLength));
-                    if (p + *dataLength == objectEnd)
+                    OE_CHECK(_read_asn1_length(&p, end, data_length));
+                    if (p + *data_length == object_end)
                     {
                         *data = p;
-                        *itr = objectEnd;
+                        *itr = object_end;
                         result = OE_OK;
                     }
                 }
@@ -195,7 +195,7 @@ done:
     return result;
 }
 
-static void _TraceHexDump(const char* tag, const uint8_t* data, size_t size)
+static void _trace_hex_dump(const char* tag, const uint8_t* data, size_t size)
 {
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
     OE_TRACE_INFO("%s = ", tag);
@@ -206,7 +206,7 @@ static void _TraceHexDump(const char* tag, const uint8_t* data, size_t size)
 /**
  * Read an extension with given oid and data of type octet string.
  */
-static oe_result_t _ReadOctetExtension(
+static oe_result_t _read_octet_extension(
     const char* tag,
     const char* oid,
     uint8_t** itr,
@@ -216,16 +216,16 @@ static oe_result_t _ReadOctetExtension(
 {
     oe_result_t result = OE_INVALID_SGX_CERTIFICATE_EXTENSIONS;
     uint8_t* data = NULL;
-    size_t dataLength = 0;
+    size_t data_length = 0;
 
     OE_CHECK(
-        _ReadExtension(
-            itr, end, oid, SGX_OCTET_STRING_TAG, &data, &dataLength));
-    if (dataLength != length)
+        _read_extension(
+            itr, end, oid, SGX_OCTET_STRING_TAG, &data, &data_length));
+    if (data_length != length)
         OE_RAISE(OE_FAILURE);
 
-    memcpy(buffer, data, dataLength);
-    _TraceHexDump(tag, buffer, dataLength);
+    memcpy(buffer, data, data_length);
+    _trace_hex_dump(tag, buffer, data_length);
     result = OE_OK;
 done:
     return result;
@@ -235,23 +235,23 @@ done:
  * Read an Integer extension with given oid and check that the value fits in
  * the specified number of bytes.
  */
-static oe_result_t _ReadIntegerExtension(
+static oe_result_t _read_integer_extension(
     const char* tag,
     const char* oid,
     uint8_t** itr,
     uint8_t* end,
-    size_t numBytes,
+    size_t num_bytes,
     uint64_t* value)
 {
     oe_result_t result = OE_INVALID_SGX_CERTIFICATE_EXTENSIONS;
     uint8_t* data = NULL;
-    size_t dataLength = 0;
+    size_t data_length = 0;
 
     OE_CHECK(
-        _ReadExtension(itr, end, oid, SGX_INTEGER_TAG, &data, &dataLength));
+        _read_extension(itr, end, oid, SGX_INTEGER_TAG, &data, &data_length));
 
     *value = 0;
-    for (size_t i = 0; i < dataLength; ++i)
+    for (size_t i = 0; i < data_length; ++i)
     {
         *value = (*value << 8) | (data[i]);
     }
@@ -259,16 +259,16 @@ static oe_result_t _ReadIntegerExtension(
     // If the leftmost bit of the integer is 1, then it is prefixed with a zero
     // byte to indicate that it is a positive number, rather than a negative
     // number. Negative numbers in two's complement form have the leftmost bit
-    // set. Thus, dataLength can be numBytes + 1, in which case the first byte
+    // set. Thus, data_length can be num_bytes + 1, in which case the first byte
     // must be zero.
-    if (dataLength == numBytes + 1)
+    if (data_length == num_bytes + 1)
     {
         if (data[0] != 0)
             OE_RAISE(OE_INVALID_SGX_CERTIFICATE_EXTENSIONS);
     }
     else
     {
-        if (dataLength > numBytes)
+        if (data_length > num_bytes)
             OE_RAISE(OE_INVALID_SGX_CERTIFICATE_EXTENSIONS);
     }
 
@@ -283,7 +283,7 @@ done:
  * Read an Integer extension with given oid and check that the value fits in a
  * byte.
  */
-static oe_result_t _ReadIntegerExtensionAsUint8(
+static oe_result_t _read_integer_extension_as_uint8(
     const char* tag,
     const char* oid,
     uint8_t** itr,
@@ -294,7 +294,7 @@ static oe_result_t _ReadIntegerExtensionAsUint8(
     uint64_t value64 = 0;
 
     OE_CHECK(
-        _ReadIntegerExtension(tag, oid, itr, end, sizeof(uint8_t), &value64));
+        _read_integer_extension(tag, oid, itr, end, sizeof(uint8_t), &value64));
 
     *value = (uint8_t)value64;
     result = OE_OK;
@@ -307,7 +307,7 @@ done:
  * Read an Integer extension with given oid and check that the value fits in a
  * uint16_t.
  */
-static oe_result_t _ReadIntegerExtensionAsUint16(
+static oe_result_t _read_integer_extension_as_uint16(
     const char* tag,
     const char* oid,
     uint8_t** itr,
@@ -317,7 +317,7 @@ static oe_result_t _ReadIntegerExtensionAsUint16(
     oe_result_t result = OE_INVALID_SGX_CERTIFICATE_EXTENSIONS;
     uint64_t value64 = 0;
 
-    OE_CHECK(_ReadIntegerExtension(tag, oid, itr, end, 2, &value64));
+    OE_CHECK(_read_integer_extension(tag, oid, itr, end, 2, &value64));
 
     *value = (uint16_t)value64;
     result = OE_OK;
@@ -329,7 +329,7 @@ done:
 /**
  * Read an enumeration extension.
  */
-static oe_result_t _ReadEnumerationExtension(
+static oe_result_t _read_enumeration_extension(
     const char* tag,
     const char* oid,
     uint8_t** itr,
@@ -338,12 +338,12 @@ static oe_result_t _ReadEnumerationExtension(
 {
     oe_result_t result = OE_INVALID_SGX_CERTIFICATE_EXTENSIONS;
     uint8_t* data = NULL;
-    size_t dataLength = 0;
+    size_t data_length = 0;
 
     OE_CHECK(
-        _ReadExtension(itr, end, oid, SGX_ENUMERATION_TAG, &data, &dataLength));
+        _read_extension(itr, end, oid, SGX_ENUMERATION_TAG, &data, &data_length));
 
-    if (dataLength != 1)
+    if (data_length != 1)
         OE_RAISE(OE_INVALID_SGX_CERTIFICATE_EXTENSIONS);
 
     OE_TRACE_INFO("%s = %d\n", tag, *value);
@@ -357,7 +357,7 @@ done:
 /**
  * Read a boolean extension.
  */
-static oe_result_t _ReadBooleanExtension(
+static oe_result_t _read_boolean_extension(
     const char* tag,
     const char* oid,
     uint8_t** itr,
@@ -366,12 +366,12 @@ static oe_result_t _ReadBooleanExtension(
 {
     oe_result_t result = OE_INVALID_SGX_CERTIFICATE_EXTENSIONS;
     uint8_t* data = NULL;
-    size_t dataLength = 0;
+    size_t data_length = 0;
 
     OE_CHECK(
-        _ReadExtension(itr, end, oid, SGX_BOOLEAN_TAG, &data, &dataLength));
+        _read_extension(itr, end, oid, SGX_BOOLEAN_TAG, &data, &data_length));
 
-    if (dataLength != 1)
+    if (data_length != 1)
         OE_RAISE(OE_FAILURE);
 
     OE_TRACE_INFO("%s = %d\n", tag, *value);
@@ -386,43 +386,43 @@ done:
  * Get the root SGX extension. The root extension contains a sequence
  * of sgx extension objects.
  */
-static oe_result_t _GetSGXExtension(
+static oe_result_t _get_sgx_extension(
     oe_cert_t* cert,
     uint8_t* data,
-    size_t* dataSize)
+    size_t* data_size)
 {
     oe_result_t result = OE_INVALID_SGX_CERTIFICATE_EXTENSIONS;
-    size_t size = *dataSize;
+    size_t size = *data_size;
     OE_CHECK(oe_cert_find_extension(cert, SGX_EXTENSION_OID_STR, data, &size));
 
     result = OE_OK;
 done:
-    *dataSize = size;
+    *data_size = size;
     return result;
 }
 
 oe_result_t ParseSGXExtensions(
     oe_cert_t* cert,
     uint8_t* buffer,
-    size_t* bufferSize,
-    ParsedExtensionInfo* parsedInfo)
+    size_t* buffer_size,
+    ParsedExtensionInfo* parsed_info)
 {
     oe_result_t result = OE_INVALID_SGX_CERTIFICATE_EXTENSIONS;
     uint8_t* itr = NULL;
     uint8_t* end = NULL;
-    size_t dataLength = 0;
-    uint8_t* tcbItr = NULL;
-    size_t tcbLength = 0;
-    uint8_t* tcbEnd = NULL;
+    size_t data_length = 0;
+    uint8_t* tcb_itr = NULL;
+    size_t tcb_length = 0;
+    uint8_t* tcb_end = NULL;
 
-    if (cert == NULL || buffer == NULL || bufferSize == NULL ||
-        parsedInfo == NULL)
+    if (cert == NULL || buffer == NULL || buffer_size == NULL ||
+        parsed_info == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    OE_CHECK(_GetSGXExtension(cert, buffer, bufferSize));
+    OE_CHECK(_get_sgx_extension(cert, buffer, buffer_size));
 
     itr = buffer;
-    end = itr + *bufferSize;
+    end = itr + *buffer_size;
     if (end <= itr)
         OE_RAISE(OE_INVALID_SGX_CERTIFICATE_EXTENSIONS);
 
@@ -431,97 +431,97 @@ oe_result_t ParseSGXExtensions(
         OE_RAISE(OE_INVALID_SGX_CERTIFICATE_EXTENSIONS);
 
     // Assert that the sequence end lines up with length.
-    OE_CHECK(_ReadASN1Length(&itr, end, &dataLength));
-    if (itr + dataLength != end)
+    OE_CHECK(_read_asn1_length(&itr, end, &data_length));
+    if (itr + data_length != end)
         OE_RAISE(OE_INVALID_SGX_CERTIFICATE_EXTENSIONS);
 
     // Read first extension.
     OE_CHECK(
-        _ReadOctetExtension(
+        _read_octet_extension(
             "ppid",
             PPID_OID,
             &itr,
             end,
-            parsedInfo->ppid,
-            sizeof(parsedInfo->ppid)));
+            parsed_info->ppid,
+            sizeof(parsed_info->ppid)));
 
     // Read TCB extension and nested component extensions.
     OE_CHECK(
-        _ReadExtension(
-            &itr, end, TCB_OID, SGX_SEQUENCE_TAG, &tcbItr, &tcbLength));
-    tcbEnd = tcbItr + tcbLength;
+        _read_extension(
+            &itr, end, TCB_OID, SGX_SEQUENCE_TAG, &tcb_itr, &tcb_length));
+    tcb_end = tcb_itr + tcb_length;
 
-    for (uint32_t i = 0; i < OE_COUNTOF(_TcbCompSvnOids); ++i)
+    for (uint32_t i = 0; i < OE_COUNTOF(_tcb_comp_svn_oids); ++i)
     {
         OE_CHECK(
-            _ReadIntegerExtensionAsUint8(
+            _read_integer_extension_as_uint8(
                 "tcb-comp-svn",
-                _TcbCompSvnOids[i],
-                &tcbItr,
-                tcbEnd,
-                &parsedInfo->compSvn[i]));
+                _tcb_comp_svn_oids[i],
+                &tcb_itr,
+                tcb_end,
+                &parsed_info->comp_svn[i]));
     }
 
     OE_CHECK(
-        _ReadIntegerExtensionAsUint16(
-            "pce-svn", TCB_PCESVN_OID, &tcbItr, tcbEnd, &parsedInfo->pceSvn));
+        _read_integer_extension_as_uint16(
+            "pce-svn", TCB_PCESVN_OID, &tcb_itr, tcb_end, &parsed_info->pce_svn));
 
     OE_CHECK(
-        _ReadOctetExtension(
+        _read_octet_extension(
             "tcb-cpu-svn",
             TCB_CPUSVN_OID,
-            &tcbItr,
-            tcbEnd,
-            parsedInfo->cpuSvn,
-            sizeof(parsedInfo->cpuSvn)));
+            &tcb_itr,
+            tcb_end,
+            parsed_info->cpu_svn,
+            sizeof(parsed_info->cpu_svn)));
 
     // Assert that all bytes of tcb extension have been read.
-    if (tcbItr != tcbEnd)
+    if (tcb_itr != tcb_end)
         OE_RAISE(OE_FAILURE);
 
     // Read other first level extensions.
     OE_CHECK(
-        _ReadOctetExtension(
+        _read_octet_extension(
             "PCEID",
             PCEID_OID,
             &itr,
             end,
-            parsedInfo->pceId,
-            sizeof(parsedInfo->pceId)));
+            parsed_info->pce_id,
+            sizeof(parsed_info->pce_id)));
 
     OE_CHECK(
-        _ReadOctetExtension(
+        _read_octet_extension(
             "FMSPC",
             FMSPC_OID,
             &itr,
             end,
-            parsedInfo->fmspc,
-            sizeof(parsedInfo->fmspc)));
+            parsed_info->fmspc,
+            sizeof(parsed_info->fmspc)));
 
     OE_CHECK(
-        _ReadEnumerationExtension(
-            "sgx-type", SGX_TYPE_OID, &itr, end, &parsedInfo->sgxType));
+        _read_enumeration_extension(
+            "sgx-type", SGX_TYPE_OID, &itr, end, &parsed_info->sgx_type));
 
-    if (parsedInfo->sgxType >= 2)
+    if (parsed_info->sgx_type >= 2)
         OE_RAISE(OE_FAILURE);
 
     if (itr != end)
     {
         // There are two possible optional extensions. They are expected to be
         // in increasing order of OIDs. Their values are ignored.
-        _ReadBooleanExtension(
+        _read_boolean_extension(
             "opt-dynamic-platform",
             OPT_DYNAMIC_PLATFORM_OID,
             &itr,
             end,
-            &parsedInfo->optDynamicPlatform);
+            &parsed_info->opt_dynamic_platform);
 
-        _ReadBooleanExtension(
+        _read_boolean_extension(
             "opt-cached-keys",
             OPT_CACHED_KEYS_OID,
             &itr,
             end,
-            &parsedInfo->optCachedKeys);
+            &parsed_info->opt_cached_keys);
 
         // Assert that the optional extensions have been read.
         if (itr != end)

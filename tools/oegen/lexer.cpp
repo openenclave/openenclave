@@ -4,7 +4,7 @@
 #include "lexer.h"
 #include <ctype.h>
 
-Tok Lexer::_Next()
+Tok Lexer::_next()
 {
     Tok tok = TOK_ERR;
 
@@ -255,7 +255,7 @@ Tok Lexer::Next()
 {
     Tok tok;
 
-    while ((tok = _Next()) == TOK_COMMENT)
+    while ((tok = _next()) == TOK_COMMENT)
         ;
 
     return tok;

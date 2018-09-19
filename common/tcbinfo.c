@@ -450,7 +450,7 @@ done:
 /**
  * Schema:
  * {
- *    "tcbInfo" : object of type tcbInfo,
+ *    "tcb_info" : object of type tcbInfo,
  *    "signature" : "hex string"
  * }
  */
@@ -478,8 +478,8 @@ oe_result_t oe_parse_tcb_info_json(
     itr = _skip_ws(itr, end);
     OE_CHECK(_read('{', &itr, end));
 
-    OE_TRACE_INFO("Reading tcbInfo\n");
-    OE_CHECK(_read_property_name_and_colon("tcbInfo", &itr, end));
+    OE_TRACE_INFO("Reading tcb_info\n");
+    OE_CHECK(_read_property_name_and_colon("tcb_info", &itr, end));
     OE_CHECK(_read_tcb_info(&itr, end, platform_tcb_level, parsed_info));
     OE_CHECK(_read(',', &itr, end));
 
@@ -503,7 +503,7 @@ done:
     return result;
 }
 
-static oe_result_t _ECDSAVerify(
+static oe_result_t _ecdsa_verify(
     oe_ec_public_key_t* publicKey,
     const void* data,
     size_t dataSize,
@@ -567,7 +567,7 @@ oe_result_t oe_verify_tcb_signature(
     OE_CHECK(oe_cert_get_ec_public_key(&leaf_cert, &tcb_signing_key));
 
     OE_CHECK(
-        _ECDSAVerify(
+        _ecdsa_verify(
             &tcb_signing_key, tcb_info_start, tcb_info_size, signature));
 
     // Ensure that the root certificate matches root of trust.
