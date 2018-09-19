@@ -126,7 +126,7 @@ int ECallDispatcher::generate_password_key(
         salt,                            // salt to use when generating key
         SALT_SIZE_IN_BYTES,              // size of salt
         100000,                          // iteration count
-        _key_length,                      // length of generated key in bytes
+        _key_length,                     // length of generated key in bytes
         _key);                           // generated key
     if (ret != 0)
     {
@@ -237,7 +237,7 @@ int ECallDispatcher::cipher_encryption_key(
         &aescontext,
         do_encrypt ? MBEDTLS_AES_ENCRYPT : MBEDTLS_AES_DECRYPT,
         input_data_size, // input data length in bytes,
-        iv,            // Initialization vector (updated after use)
+        iv,              // Initialization vector (updated after use)
         input_data,
         out_data);
     if (ret != 0)

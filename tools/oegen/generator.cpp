@@ -592,7 +592,8 @@ static void _gen_trusted_icall(std::ostream& os, const Function* function)
 
                 /* If in-out argument */
                 if (p.flags & FLAG_IN)
-                    _gen_clear_arg(os, index, p.flags, prefix, p.name, free_str);
+                    _gen_clear_arg(
+                        os, index, p.flags, prefix, p.name, free_str);
 
                 _gen_set_arg(os, index, p.flags, prefix, p.name, malloc_str);
             }
@@ -1092,7 +1093,10 @@ static void _gen_flags(ostream& os, unsigned int flags)
     }
 }
 
-static int _gen_field_type_info(std::ostream& os, const Struct& s, const Field& f)
+static int _gen_field_type_info(
+    std::ostream& os,
+    const Struct& s,
+    const Field& f)
 {
     int rc = -1;
     Ind ind;
@@ -1466,15 +1470,15 @@ int Generator::GenerateSourceFile(
     if (trusted)
     {
         const char malloc_text[] = "OE_INLINE void* _host_alloc(size_t size)\n"
-                                  "{\n"
-                                  "    return oe_host_malloc(size);\n"
-                                  "}\n\n";
+                                   "{\n"
+                                   "    return oe_host_malloc(size);\n"
+                                   "}\n\n";
         os << malloc_text << endl;
 
         const char free_text[] = "OE_INLINE void _host_free(void* ptr)\n"
-                                "{\n"
-                                "     oe_host_free(ptr);\n"
-                                "}\n\n";
+                                 "{\n"
+                                 "     oe_host_free(ptr);\n"
+                                 "}\n\n";
         os << free_text << endl;
     }
 

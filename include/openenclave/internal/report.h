@@ -61,7 +61,7 @@ typedef struct _oe_get_sgx_report_args
     oe_result_t result; /* out */
 
     uint8_t opt_params[sizeof(sgx_target_info_t)]; /* in */
-    size_t opt_params_size;                         /* in */
+    size_t opt_params_size;                        /* in */
 
     sgx_report_t sgx_report; /* out */
 } oe_get_sgx_report_args_t;
@@ -77,7 +77,7 @@ typedef struct _oe_verify_report_args
 {
     oe_result_t result; /* out */
 
-    uint8_t* report;   /* in */
+    uint8_t* report;    /* in */
     size_t report_size; /* in */
 } oe_verify_report_args_t;
 

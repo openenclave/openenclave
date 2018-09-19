@@ -72,7 +72,8 @@ OE_ECALL void TestHostStrndup(void* _args)
     /* Check if string is outside the enclave. */
     TestHostStrndupArgs strndup_args = *args;
     if (strndup_args.in_str != NULL)
-        OE_TEST(oe_is_outside_enclave(strndup_args.in_str, strndup_args.in_size));
+        OE_TEST(
+            oe_is_outside_enclave(strndup_args.in_str, strndup_args.in_size));
 
     args->out_str = oe_host_strndup(strndup_args.in_str, strndup_args.in_size);
 }

@@ -51,7 +51,8 @@ bool TestOEGetRegularKeys()
     sgx_key_request.attribute_mask.xfrm = OE_SEALKEY_DEFAULT_XFRMMASK;
     sgx_key_request.misc_attribute_mask = OE_SEALKEY_DEFAULT_MISCMASK;
 
-    for (uint16_t key_name = SGX_KEYSELECT_REPORT; key_name <= SGX_KEYSELECT_SEAL;
+    for (uint16_t key_name = SGX_KEYSELECT_REPORT;
+         key_name <= SGX_KEYSELECT_SEAL;
          key_name++)
     {
         sgx_key_request.key_name = key_name;
@@ -154,7 +155,8 @@ bool TestOEGetSealKey()
         OE_TEST(third_key_buffer_size == sizeof(sgx_key_t));
 
         // The seal keys should match.
-        if ((oe_memcmp(key_buffer, second_key_buffer, sizeof(sgx_key_t)) != 0) ||
+        if ((oe_memcmp(key_buffer, second_key_buffer, sizeof(sgx_key_t)) !=
+             0) ||
             (oe_memcmp(key_buffer, third_key_buffer, sizeof(sgx_key_t)) != 0))
         {
             return false;

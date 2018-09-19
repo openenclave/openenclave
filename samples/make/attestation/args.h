@@ -20,13 +20,13 @@ struct QuotedPublicKey
 struct GetPublicKeyArgs
 {
     QuotedPublicKey* quoted_public_key; /* out */
-    bool success;                     /* out */
+    bool success;                       /* out */
 };
 
 struct StorePublicKeyArgs
 {
     QuotedPublicKey* quoted_public_key; /* in */
-    bool success;                     /* out */
+    bool success;                       /* out */
 };
 
 struct GenerateEncryptedDataArgs

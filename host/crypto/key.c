@@ -383,7 +383,8 @@ oe_result_t oe_private_key_sign(
     }
 
     /* Compute the signature */
-    if (EVP_PKEY_sign(ctx, signature, signature_size, hash_data, hash_size) <= 0)
+    if (EVP_PKEY_sign(ctx, signature, signature_size, hash_data, hash_size) <=
+        0)
         OE_RAISE(OE_FAILURE);
 
     result = OE_OK;
@@ -436,7 +437,8 @@ oe_result_t oe_public_key_verify(
         OE_RAISE(OE_FAILURE);
 
     /* Compute the signature */
-    if (EVP_PKEY_verify(ctx, signature, signature_size, hash_data, hash_size) <= 0)
+    if (EVP_PKEY_verify(ctx, signature, signature_size, hash_data, hash_size) <=
+        0)
         OE_RAISE(OE_VERIFY_FAILED);
 
     result = OE_OK;

@@ -12,7 +12,9 @@ typedef oe_result_t (*oe_copy_key)(
     const mbedtls_pk_context* src,
     bool copy_private_fields);
 
-bool oe_private_key_is_valid(const oe_private_key_t* private_key, uint64_t magic)
+bool oe_private_key_is_valid(
+    const oe_private_key_t* private_key,
+    uint64_t magic)
 {
     return private_key && private_key->magic == magic;
 }
@@ -146,7 +148,8 @@ oe_result_t oe_private_key_read_pem(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Parse PEM format into key structure */
-    if (mbedtls_pk_parse_key(&private_key->pk, pem_data, pem_size, NULL, 0) != 0)
+    if (mbedtls_pk_parse_key(&private_key->pk, pem_data, pem_size, NULL, 0) !=
+        0)
         OE_RAISE(OE_FAILURE);
 
     /* Fail if PEM data did not contain this type of key */
@@ -344,8 +347,8 @@ oe_result_t oe_private_key_sign(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Check parameters */
-    if (!oe_private_key_is_valid(private_key, magic) || !hash_data || !hash_size ||
-        !signature_size)
+    if (!oe_private_key_is_valid(private_key, magic) || !hash_data ||
+        !hash_size || !signature_size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If signature buffer is null, then signature size must be zero */
@@ -398,8 +401,8 @@ oe_result_t oe_public_key_verify(
     mbedtls_md_type_t type = _map_hash_type(hash_type);
 
     /* Check for null parameters */
-    if (!oe_public_key_is_valid(public_key, magic) || !hash_data || !hash_size ||
-        !signature || !signature_size)
+    if (!oe_public_key_is_valid(public_key, magic) || !hash_data ||
+        !hash_size || !signature || !signature_size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Verify the signature */
