@@ -4,29 +4,11 @@
 OPENENCLAVE_CONFIG=../../config.mak
 include $(OPENENCLAVE_CONFIG)
 
-CC = clang-7
+CC=clang-7
 
-CFLAGS += -Wall -Werror -O2 -m64 -nostdinc -fPIC
-CFLAGS += -mllvm -x86-speculative-load-hardening
+CFLAGS=$(shell pkg-config oeenclave-clang --cflags)
 
-INCLUDES += -I$(OE_INCLUDEDIR)
-INCLUDES += -I$(OE_INCLUDEDIR)/libc
-
-LDFLAGS += -Wl,--no-undefined 
-LDFLAGS += -nostdlib 
-LDFLAGS += -nodefaultlibs 
-LDFLAGS += -nostartfiles 
-LDFLAGS += -Wl,-Bstatic 
-LDFLAGS += -Wl,-Bsymbolic 
-LDFLAGS += -Wl,--export-dynamic 
-LDFLAGS += -Wl,-pie
-
-LIBRARIES += -L${OE_LIBDIR}/openenclave/enclave 
-LIBRARIES += -loeenclave
-LIBRARIES += -lmbedx509 
-LIBRARIES += -lmbedcrypto 
-LIBRARIES += -loelibc
-LIBRARIES += -loecore
+LDFLAGS=$(shell pkg-config oeenclave-clang --libs)
 
 all:
 	$(MAKE) build
@@ -34,11 +16,12 @@ all:
 	$(MAKE) sign
 
 build:
-	$(CC) -c $(CFLAGS) $(INCLUDES) enc.c -o enc.o
-	$(CC) -o helloworldenc.so enc.o $(LDFLAGS) $(LIBRARIES)
+	$(CC) -c $(CFLAGS) enc.c -o enc.o
+	$(CC) -o helloworldenc.so enc.o $(LDFLAGS)
 
 sign:
 	$(OE_BINDIR)/oesign helloworldenc.so helloworld.conf private.pem
+
 clean:
 	rm -f enc.o helloworldenc.so hellowworldenc.signed.so private.pem public.pem
 

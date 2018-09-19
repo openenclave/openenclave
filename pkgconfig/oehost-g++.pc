@@ -1,14 +1,14 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-prefix=@CMAKE_INSTALL_PREFIX@
+prefix=@PREFIX@
 exec_prefix=${prefix}
 includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
 libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
 
 Name: Open Enclave
-Description: Open Enclave clang flags and libraries for building enclaves.
+Description: Open Enclave g++ flags and libraries for building hosts.
 Version: @OE_VERSION@
-Requires:
-Cflags: @ENCLAVE_CFLAGS_CLANG@
-Libs: @ENCLAVE_CLIBS@
+Requires: openssl
+Cflags: @HOST_CFLAGS_GCC@ @HOST_INCLUDES@ 
+Libs: @HOST_CLIBS@

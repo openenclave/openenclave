@@ -11,21 +11,29 @@ file(STRINGS "../VERSION" OE_VERSION)
 
 ##==============================================================================
 ##
+## Prefix where Open Enclave is installed.
+##
+##==============================================================================
+
+set(PREFIX "${CMAKE_INSTALL_PREFIX}")
+
+##==============================================================================
+##
 ## Enclave compiler flags:
 ##
 ##==============================================================================
 
-set(ENCLAVE_CFLAGS "-nostdinc -m64 -fPIC -I\${includedir} -I\${includedir}/libc")
+set(ENCLAVE_CINCLUDES 
+    "-I\${includedir}/libc -I\${includedir}")
 
-set(ENCLAVE_CXXFLAGS "${ENCLAVE_CFLAGS} -I\${includedir}/libcxx")
+set(ENCLAVE_CXXINCLUDES 
+    "-I\${includedir}/libcxx ${ENCLAVE_CINCLUDES}")
 
-set(ENCLAVE_CFLAGS_CLANG "${ENCLAVE_CFLAGS} -mllvm -x86-speculative-load-hardening")
+set(ENCLAVE_CFLAGS_CLANG 
+    "-nostdinc -m64 -fPIC -mllvm -x86-speculative-load-hardening")
 
-set(ENCLAVE_CXXFLAGS_CLANG "${ENCLAVE_CXXFLAGS} -mllvm -x86-speculative-load-hardening")
-
-set(ENCLAVE_CFLAGS_GCC "${ENCLAVE_CFLAGS}")
-
-set(ENCLAVE_CXXFLAGS_GCC "${ENCLAVE_CXXFLAGS}")
+set(ENCLAVE_CFLAGS_GCC 
+    "-nostdinc -m64 -fPIC")
 
 ##==============================================================================
 ##
@@ -47,15 +55,11 @@ set(ENCLAVE_CXXLIBS "${ENCLAVE_CLIBS_1} -loelibcxx ${ENCLAVE_CLIBS_2}")
 ##
 ##==============================================================================
 
-set(HOST_CFLAGS "-I\${includedir}")
+set(HOST_INCLUDES "-I\${includedir}")
 
-set(HOST_CFLAGS_CLANG "-mllvm -x86-speculative-load-hardening ${HOST_CFLAGS}")
+set(HOST_CFLAGS_CLANG "-mllvm -x86-speculative-load-hardening")
 
-set(HOST_CXXFLAGS_CLANG "${HOST_CFLAGS_CLANG}")
-
-set(HOST_CFLAGS_GCC "${HOST_CFLAGS}")
-
-set(HOST_CXXFLAGS_GCC "${HOST_CFLAGS}")
+set(HOST_CFLAGS_GCC "")
 
 ##==============================================================================
 ##
@@ -198,4 +202,52 @@ install(FILES
     ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-clang++.pc
     DESTINATION 
     /usr/local/share/pkgconfig)
+
+##==============================================================================
+##
+## Reconfigure .pc files so that samples and tests may use them.
+##
+##==============================================================================
+
+set(PREFIX "${CMAKE_BINARY_DIR}/output")
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/oeenclave-gcc.pc
+    ${CMAKE_BINARY_DIR}/pkgconfig/oeenclave-gcc.pc
+    @ONLY)
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/oeenclave-g++.pc
+    ${CMAKE_BINARY_DIR}/pkgconfig/oeenclave-g++.pc
+    @ONLY)
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/oehost-gcc.pc
+    ${CMAKE_BINARY_DIR}/pkgconfig/oehost-gcc.pc
+    @ONLY)
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/oehost-g++.pc
+    ${CMAKE_BINARY_DIR}/pkgconfig/oehost-g++.pc
+    @ONLY)
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/oeenclave-clang.pc
+    ${CMAKE_BINARY_DIR}/pkgconfig/oeenclave-clang.pc
+    @ONLY)
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/oeenclave-clang++.pc
+    ${CMAKE_BINARY_DIR}/pkgconfig/oeenclave-clang++.pc
+    @ONLY)
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/oehost-clang.pc
+    ${CMAKE_BINARY_DIR}/pkgconfig/oehost-clang.pc
+    @ONLY)
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/oehost-clang++.pc
+    ${CMAKE_BINARY_DIR}/pkgconfig/oehost-clang++.pc
+    @ONLY)
 
