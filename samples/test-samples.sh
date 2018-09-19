@@ -40,7 +40,7 @@ TEST_MAKE_DIR="$INSTALL_DIR/share/openenclave/samples"
 
 # Set the PKG_CONFIG_PATH environment variable so that the samples will use
 # the OE pkg-config scripts located in the build directory.
-export PKG_CONFIG_PATH="$BIN_DIR/output/share/pkgconfig"
+export PKG_CONFIG_PATH="$BIN_DIR/pkgconfig"
 
 # build and run the make samples
 # The only exception is to not run them in simulation mode on SGX1-FLC platforms

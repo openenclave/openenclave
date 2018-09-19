@@ -211,6 +211,12 @@ install(FILES
 
 set(PREFIX "${CMAKE_BINARY_DIR}/output")
 
+set(ENCLAVE_CINCLUDES 
+    "-I\${includedir}/openenclave/libc -I\${includedir} -I${PROJECT_SOURCE_DIR}/include")
+
+set(ENCLAVE_CXXINCLUDES 
+    "-I\${includedir}/openenclave/libcxx ${ENCLAVE_CINCLUDES}")
+
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/oeenclave-gcc.pc
     ${CMAKE_BINARY_DIR}/pkgconfig/oeenclave-gcc.pc
