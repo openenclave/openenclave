@@ -60,6 +60,34 @@ done:
     return result;
 }
 
+oe_result_t oe_memset_s(void* dst, size_t dst_size, int value, size_t num_bytes)
+{
+    oe_result_t result = OE_FAILURE;
+
+    if (dst == NULL)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* The C11 standard states that memset_s will store `value` in
+     * `dst[0...dst_size]` even during a runtime violation. */
+    if (dst_size < num_bytes)
+    {
+        result = OE_INVALID_PARAMETER;
+        num_bytes = dst_size;
+    }
+    else
+    {
+        result = OE_OK;
+    }
+
+    /* memset_s cannot be optimized away by the compiler */
+    volatile unsigned char* p = dst;
+    while (num_bytes--)
+        *p++ = (volatile unsigned char)value;
+
+done:
+    return result;
+}
+
 OE_INLINE oe_result_t _oe_validate_string(char* str, size_t size)
 {
     if (str != NULL && size > 0)

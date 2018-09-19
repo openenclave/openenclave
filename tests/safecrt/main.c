@@ -246,12 +246,33 @@ static void _test_strncat_s()
     OE_TEST(strcmp(dst, "abbcccd") == 0);
 }
 
+static void _test_memset_s()
+{
+    unsigned char buf[TEST_BUFFER_SIZE] = {0};
+
+    /* Test invalid parameters */
+    OE_TEST(
+        oe_memset_s(NULL, sizeof(buf), 1, sizeof(buf) == OE_INVALID_PARAMETER));
+
+    OE_TEST(oe_memset_s(buf, 4, 1, sizeof(buf)) == OE_INVALID_PARAMETER);
+    OE_TEST(buffer_is_set(buf, 1, 4));
+
+    /* Test valid cases of oe_memset_s. */
+    OE_TEST(oe_memset_s(buf, sizeof(buf), 2, sizeof(buf)) == OE_OK);
+    OE_TEST(buffer_is_set(buf, 2, sizeof(buf)));
+
+    OE_TEST(oe_memset_s(buf, sizeof(buf), 3, 4) == OE_OK);
+    OE_TEST(buffer_is_set(buf, 3, 4));
+    OE_TEST(buffer_is_set(buf + 4, 2, sizeof(buf) - 4));
+}
+
 int main(int argc, const char* argv[])
 {
     _test_memcpy_s();
     _test_memmove_s();
     _test_strncpy_s();
     _test_strncat_s();
+    _test_memset_s();
 
     printf("=== passed all tests (safecrt)\n");
 

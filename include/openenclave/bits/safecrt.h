@@ -19,6 +19,12 @@ oe_result_t oe_memmove_s(
     const void* src,
     size_t num_bytes);
 
+oe_result_t oe_memset_s(
+    void* dst,
+    size_t dst_size,
+    int value,
+    size_t num_bytes);
+
 oe_result_t oe_strncat_s(
     char* dst,
     size_t dst_size,
