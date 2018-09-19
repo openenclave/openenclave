@@ -12,12 +12,12 @@
 #include <cstring>
 #include <map>
 #include <thread>
-#include "../args.h"
 #include "args.h"
 #include "ocalls.h"
 
 // Host maintains a map of enclave to host thread ID
 static std::map<pthread_t, pthread_t> enclave_host_id_map;
+static std::atomic_flag _host_lock = ATOMIC_FLAG_INIT;
 
 void Test(oe_enclave_t* enclave)
 {
@@ -65,9 +65,9 @@ OE_OCALL void host_create_pthread(pthread_t enc_id, oe_enclave_t* enclave)
         enc_id,
         host_thread_id);
     // Using atomic locks to protect the enclave_host_id_map
-    _acquire_lock();
+    _acquire_lock(&_host_lock);
     enclave_host_id_map.emplace(enc_id, host_thread_id);
-    _release_lock();
+    _release_lock(&_host_lock);
 }
 
 OE_OCALL void host_join_pthread(pthread_t enc_id, oe_enclave_t* enclave)
@@ -76,7 +76,10 @@ OE_OCALL void host_join_pthread(pthread_t enc_id, oe_enclave_t* enclave)
 
     /* Find the host_thread_id from the enc_id */
     std::map<pthread_t, pthread_t>::iterator it;
+    // Using atomic locks to protect the enclave_host_id_map
+    _acquire_lock(&_host_lock);
     it = enclave_host_id_map.find(enc_id);
+    _release_lock(&_host_lock);
     if (it != enclave_host_id_map.end())
     {
         if (pthread_join(it->second, &ret) != 0)

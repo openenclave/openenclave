@@ -14,7 +14,6 @@
 #include <functional>
 #include <map>
 #include <vector>
-#include "../args.h"
 #include "../host/args.h"
 #include "../host/ocalls.h"
 
@@ -58,20 +57,22 @@ static std::vector<std::function<void*()>> _thread_functions;
 static pthread_t _next_enc_thread_id = 0;
 static pthread_t enc_id;
 
+static std::atomic_flag _enc_lock = ATOMIC_FLAG_INIT;
+
 static int _pthread_create_hook(
     pthread_t* enc_thread,
     const pthread_attr_t* attr,
     void* (*start_routine)(void*),
     void* arg)
 {
-    _acquire_lock();
+    _acquire_lock(&_enc_lock);
 
     _thread_functions.push_back(
         [start_routine, arg]() { return start_routine(arg); });
 
     *enc_thread = ++_next_enc_thread_id; // Enclave thread IDs start at 1
     enc_id = *enc_thread;
-    _release_lock();
+    _release_lock(&_enc_lock);
 
     // Send the enclave id so that host can maintain the map between
     // enclave and host id
@@ -102,10 +103,10 @@ OE_ECALL void _EnclaveLaunchThread(void* args_)
 {
     std::function<void()> f;
 
-    _acquire_lock();
+    _acquire_lock(&_enc_lock);
     f = _thread_functions.back();
     _thread_functions.pop_back();
-    _release_lock();
+    _release_lock(&_enc_lock);
     f();
 }
 
