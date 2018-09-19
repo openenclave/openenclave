@@ -18,9 +18,9 @@ else()
 endif()
 
 if(ENABLE_FULL_LIBCXX_THREAD_TESTS)
-    message("ENABLE_FULL_LIBCXX_THREAD_TESTS set - building all libcxx tests")
+    message("ENABLE_FULL_LIBCXX_THREAD_TESTS set - building all libcxx thread tests")
 else()
-    message("ENABLE_FULL_LIBCXX_THREAD_TESTS not set - building some libcxx tests")
+    message("ENABLE_FULL_LIBCXX_THREAD_TESTS not set - building some libcxx thread tests")
 endif()
 
 
