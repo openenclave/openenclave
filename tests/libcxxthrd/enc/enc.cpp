@@ -56,6 +56,7 @@ extern "C" int close(int fd)
 
 static std::vector<std::function<void*()>> _thread_functions;
 static pthread_t _next_enc_thread_id = 0;
+static pthread_t enc_id;
 
 static int _pthread_create_hook(
     pthread_t* enc_thread,
@@ -63,8 +64,6 @@ static int _pthread_create_hook(
     void* (*start_routine)(void*),
     void* arg)
 {
-    pthread_t enc_id;
-
     _acquire_lock();
 
     _thread_functions.push_back(
@@ -86,6 +85,8 @@ static int _pthread_create_hook(
 
 static int _pthread_join_hook(pthread_t enc_thread, void** retval)
 {
+    void* ptr = (void*)enc_thread;
+
     printf("_pthread_join_hook(): enc thread id is %lu\n", enc_thread);
     // Check if valid thread_id has been passed
     if (enc_thread > _next_enc_thread_id)
@@ -94,7 +95,7 @@ static int _pthread_join_hook(pthread_t enc_thread, void** retval)
         oe_abort();
     }
 
-    if (oe_call_host("host_join_pthread", &enc_thread) != OE_OK)
+    if (oe_call_host("host_join_pthread", (void*)enc_thread) != OE_OK)
         oe_abort();
 
     return 0;

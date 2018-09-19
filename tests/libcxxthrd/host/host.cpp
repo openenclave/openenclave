@@ -59,32 +59,39 @@ OE_OCALL void host_create_pthread(pthread_t enc_id, oe_enclave_t* enclave)
 
     // New Thread is created and executes EnclaveThread
     pthread_create(&host_thread_id, NULL, EnclaveThread, enclave);
-
     // Main host thread continues - update the enclave id to host id mapping
     printf(
         "host_create_pthread(): Enc id=%lu has Host id of 0x%lu\n",
         enc_id,
         host_thread_id);
-    _acquire_lock(); // Using atomic locks to protect the enclave_host_id_map
+    // Using atomic locks to protect the enclave_host_id_map
+    _acquire_lock();
     enclave_host_id_map.emplace(enc_id, host_thread_id);
     _release_lock();
 }
 
-OE_OCALL void host_join_pthread(void* arg, oe_enclave_t* enclave)
+OE_OCALL void host_join_pthread(pthread_t enc_id, oe_enclave_t* enclave)
 {
-    pthread_t* enc_id = (pthread_t*)arg;
     void* ret;
 
     /* Find the host_thread_id from the enc_id */
     std::map<pthread_t, pthread_t>::iterator it;
-    it = enclave_host_id_map.find(*enc_id);
+    it = enclave_host_id_map.find(enc_id);
     if (it != enclave_host_id_map.end())
     {
         if (pthread_join(it->second, &ret) != 0)
         {
-            printf("pthread_join failed for 0x%lu\n", it->second);
+            printf(
+                "pthread_join failed for enclave id=0x%lu, host id=0x%lu\n",
+                enc_id,
+                it->second);
             abort();
         }
+        else
+            printf(
+                "pthread_join succeeded for enclave id=0x%lu, host id=0x%lu\n",
+                enc_id,
+                it->second);
     }
 }
 
