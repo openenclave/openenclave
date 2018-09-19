@@ -4,82 +4,61 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/tests.h>
-#include "../args.h"
+#include "hostcalls_t.h"
 
-OE_ECALL void TestHostMalloc(void* _args)
+void test_host_malloc(size_t in_size, void_ptr* out_ptr)
 {
-    /* Check arguments are outside the enclave. */
-    TestHostMallocArgs* args = (TestHostMallocArgs*)_args;
-    OE_TEST(args != NULL);
-    OE_TEST(oe_is_outside_enclave(args, sizeof(*args)));
-
-    args->outPtr = oe_host_malloc(args->inSize);
+    *out_ptr = oe_host_malloc(in_size);
 }
 
-OE_ECALL void TestHostCalloc(void* _args)
+void test_host_calloc(size_t in_num, size_t in_size, void_ptr* out_ptr)
 {
-    /* Check arguments are outside the enclave. */
-    TestHostCallocArgs* args = (TestHostCallocArgs*)_args;
-    OE_TEST(args != NULL);
-    OE_TEST(oe_is_outside_enclave(args, sizeof(*args)));
-
-    args->outPtr = oe_host_calloc(args->inNum, args->inSize);
+    *out_ptr = oe_host_calloc(in_num, in_size);
 }
 
-OE_ECALL void TestHostRealloc(void* _args)
+void test_host_realloc(
+    void_ptr in_ptr,
+    size_t old_size,
+    size_t new_size,
+    void_ptr* _out_ptr)
 {
-    TestHostReallocArgs args = *(TestHostReallocArgs*)_args;
-
     /* Check that pointers passed in are not enclave pointers */
-    if (args.inPtr && args.oldSize > 0)
+    if (in_ptr && old_size > 0)
     {
-        if (!oe_is_outside_enclave(args.inPtr, args.oldSize))
+        if (!oe_is_outside_enclave(in_ptr, old_size))
         {
             oe_abort();
             return;
         }
     }
 
-    args.outPtr = oe_host_realloc(args.inPtr, args.newSize);
+    void_ptr out_ptr = oe_host_realloc(in_ptr, new_size);
 
     /* Initialize only newly allocated bytes for verification by host */
-    if (args.outPtr)
+    if (out_ptr)
     {
-        if (!args.inPtr)
+        if (!in_ptr)
         {
-            oe_memset(args.outPtr, TEST_HOSTREALLOC_INIT_VALUE, args.newSize);
+            oe_memset(out_ptr, TEST_HOSTREALLOC_INIT_VALUE, new_size);
         }
-        else if (args.oldSize < args.newSize)
+        else if (old_size < new_size)
         {
-            void* extPtr = (void*)((uint64_t)args.outPtr + args.oldSize);
-            oe_memset(
-                extPtr,
-                TEST_HOSTREALLOC_INIT_VALUE,
-                args.newSize - args.oldSize);
+            void* extPtr = (void*)((uint64_t)out_ptr + old_size);
+            oe_memset(extPtr, TEST_HOSTREALLOC_INIT_VALUE, new_size - old_size);
         }
     }
 
-    ((TestHostReallocArgs*)_args)->outPtr = args.outPtr;
+    *_out_ptr = out_ptr;
 }
 
-OE_ECALL void TestHostStrndup(void* _args)
+void test_host_strndup(const char* in_str, size_t in_size, char** out_str)
 {
-    /* Check arguments are outsid the enclave. */
-    TestHostStrndupArgs* args = (TestHostStrndupArgs*)_args;
-    OE_TEST(args != NULL);
-    OE_TEST(oe_is_outside_enclave(args, sizeof(*args)));
-
-    /* Check if string is outside the enclave. */
-    TestHostStrndupArgs strndupArgs = *args;
-    if (strndupArgs.inStr != NULL)
-        OE_TEST(oe_is_outside_enclave(strndupArgs.inStr, strndupArgs.inSize));
-
-    args->outStr = oe_host_strndup(strndupArgs.inStr, strndupArgs.inSize);
+    *out_str = oe_host_strndup(in_str, in_size);
 }
 
-OE_ECALL void HostFree(void* args)
+void test_host_free(void_ptr in_ptr)
 {
-    oe_host_free(args);
+    oe_host_free(in_ptr);
 }
 
 OE_SET_ENCLAVE_SGX(
