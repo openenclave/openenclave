@@ -47,7 +47,8 @@ void* EnclaveThread(void* args)
 {
     oe_enclave_t* enclave = (oe_enclave_t*)args;
 
-    oe_result_t result = oe_call_enclave(enclave, "_enclave_launch_thread", NULL);
+    oe_result_t result =
+        oe_call_enclave(enclave, "_enclave_launch_thread", NULL);
     OE_TEST(result == OE_OK);
 
     return NULL;
