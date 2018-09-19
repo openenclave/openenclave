@@ -99,7 +99,7 @@ static int _pthread_join_hook(pthread_t enc_thread, void** retval)
     return 0;
 }
 
-OE_ECALL void _EnclaveLaunchThread(void* args_)
+OE_ECALL void _enclave_launch_thread(void* args_)
 {
     std::function<void()> f;
 

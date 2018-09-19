@@ -47,7 +47,7 @@ void* EnclaveThread(void* args)
 {
     oe_enclave_t* enclave = (oe_enclave_t*)args;
 
-    oe_result_t result = oe_call_enclave(enclave, "_EnclaveLaunchThread", NULL);
+    oe_result_t result = oe_call_enclave(enclave, "_enclave_launch_thread", NULL);
     OE_TEST(result == OE_OK);
 
     return NULL;
@@ -98,7 +98,7 @@ OE_OCALL void host_join_pthread(pthread_t enc_id, oe_enclave_t* enclave)
     }
 }
 
-static int _GetOpt(
+static int _get_opt(
     int& argc,
     const char* argv[],
     const char* name,
@@ -137,7 +137,7 @@ int main(int argc, const char* argv[])
     uint32_t flags = OE_ENCLAVE_FLAG_DEBUG;
 
     // Check for the --sim option:
-    if (_GetOpt(argc, argv, "--simulate") == 1)
+    if (_get_opt(argc, argv, "--simulate") == 1)
         flags |= OE_ENCLAVE_FLAG_SIMULATE;
     else
         flags = oe_get_create_flags();

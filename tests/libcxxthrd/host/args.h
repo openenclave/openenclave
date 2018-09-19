@@ -6,7 +6,7 @@
 
 #include <atomic>
 
-typedef struct _Args
+typedef struct _args
 {
     const char* test;
     int ret;
