@@ -17,6 +17,7 @@
 
 #include <openenclave/host.h>
 
+#include <openenclave/bits/safemath.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/report.h>
@@ -200,7 +201,8 @@ static char** _backtrace_symbols(
     /* Determine total memory requirements */
     {
         /* Calculate space for the array of string pointers */
-        malloc_size = size * sizeof(char*);
+        if (oe_safe_mul_sizet(size, sizeof(char*), &malloc_size) != OE_OK)
+            goto done;
 
         /* Calculate space for each string */
         for (int i = 0; i < size; i++)
@@ -211,7 +213,13 @@ static char** _backtrace_symbols(
             if (!name)
                 name = unknown;
 
-            malloc_size += strlen(name) + sizeof(char);
+            if (oe_safe_add_sizet(malloc_size, strlen(name), &malloc_size) !=
+                OE_OK)
+                goto done;
+
+            if (oe_safe_add_sizet(malloc_size, sizeof(char), &malloc_size) !=
+                OE_OK)
+                goto done;
         }
     }
 

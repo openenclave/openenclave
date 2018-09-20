@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "../common/revocation.h"
+#include <openenclave/bits/safemath.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
@@ -39,12 +40,12 @@ done:
 oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
 {
     oe_result_t result = OE_FAILURE;
-    uint32_t host_args_buffer_size = sizeof(*args);
+    size_t host_args_buffer_size = sizeof(*args);
     uint8_t* host_args_buffer = NULL;
     oe_get_revocation_info_args_t* host_args = NULL;
     oe_get_revocation_info_args_t tmp_args = {0};
     uint8_t* p = NULL;
-    uint32_t crl_url_sizes[2] = {0};
+    size_t crl_url_sizes[2] = {0};
 
     if (args == NULL || args->num_crl_urls != 2 || args->crl_urls[0] == NULL ||
         args->crl_urls[1] == NULL)
@@ -54,8 +55,16 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
     // arguments.
     for (uint32_t i = 0; i < args->num_crl_urls; ++i)
     {
-        crl_url_sizes[i] = oe_strlen(args->crl_urls[i]) + 1;
-        host_args_buffer_size += crl_url_sizes[i];
+        result = oe_safe_add_sizet(
+            oe_strlen(args->crl_urls[i]), 1, &crl_url_sizes[i]);
+        if (result != OE_OK)
+            goto done;
+
+        result = oe_safe_add_sizet(
+            host_args_buffer_size, crl_url_sizes[i], &host_args_buffer_size);
+
+        if (result != OE_OK)
+            goto done;
     }
 
     host_args_buffer = oe_host_malloc(host_args_buffer_size);
