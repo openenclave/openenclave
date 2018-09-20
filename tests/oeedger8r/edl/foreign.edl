@@ -1,0 +1,147 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave  {
+    include "mytypes.h"
+
+    trusted {
+
+        public void ecall_foreign_ptr_1(
+            // count=1
+            [in] my_type1* a1,
+            [in, out] my_type1* a2,
+            [out] my_type1* a3);
+
+        public void ecall_foreign_ptr_2(
+            // count attribute
+            [in, count=5] my_type1* a1,
+            [in, out, count=5] my_type1* a2,
+            [out, count=5] my_type1* a3);
+
+        public void ecall_foreign_ptr_3(
+            // size attribute
+            [in, size=64] my_type1* a1,
+            [in, out, size=64] my_type1* a2,
+            [out, size=64] my_type1* a3);
+
+        public void ecall_foreign_ptr_4(
+            // count parameter
+            [in, count=count] my_type1* a1,
+            [in, out, count=count] my_type1* a2,
+            [out, count=count] my_type1* a3,
+            size_t count);
+
+        public void ecall_foreign_ptr_5(
+            // size parameter
+            [in, size=size] my_type1* a1,
+            [in, out, size=size] my_type1* a2,
+            [out, size=size] my_type1* a3,
+            size_t size);                                             
+        
+        public void ecall_foreign_isptr_1(
+            [in, isptr] my_type2 a1,
+            [in, out, isptr] my_type2 a2,
+            [out, isptr] my_type2 a3);
+
+        public void ecall_foreign_isptr_2(
+            [in, isptr, count=5] my_type2 a1,
+            [in, out, isptr, count=5] my_type2 a2,
+            [out, isptr, count=5] my_type2 a3);            
+    
+        public void ecall_foreign_isptr_3(
+            [in, isptr, size=64] my_type2 a1,
+            [in, out, isptr, size=64] my_type2 a2,
+            [out, isptr, size=64] my_type2 a3);
+    
+        public void ecall_foreign_isptr_4(
+            [in, isptr, count=count] my_type2 a1,
+            [in, out, isptr, count=count] my_type2 a2,
+            [out, isptr, count=count] my_type2 a3,
+            size_t count);    
+
+        public void ecall_foreign_isptr_5(
+            [in, isptr, size=size] my_type2 a1,
+            [in, out, isptr, size=size] my_type2 a2,
+            [out, isptr, size=size] my_type2 a3,
+            size_t size);    
+
+        public void ecall_foreign_isary(
+            [in, isary] my_type3 a1,
+            [in, out, isary] my_type3 a2,
+            [out, isary] my_type3 a3);   
+
+        public my_type1 ecall_foreign_value(
+            my_type1 a1);
+
+        public void test_foreign_edl_ocalls();                              
+    };
+
+    untrusted {
+        void ocall_foreign_ptr_1(
+            // count=1
+            [in] my_type1* a1,
+            [in, out] my_type1* a2,
+            [out] my_type1* a3);
+
+        void ocall_foreign_ptr_2(
+            // count attribute
+            [in, count=5] my_type1* a1,
+            [in, out, count=5] my_type1* a2,
+            [out, count=5] my_type1* a3);
+
+        void ocall_foreign_ptr_3(
+            // size attribute
+            [in, size=64] my_type1* a1,
+            [in, out, size=64] my_type1* a2,
+            [out, size=64] my_type1* a3);
+
+        void ocall_foreign_ptr_4(
+            // count parameter
+            [in, count=count] my_type1* a1,
+            [in, out, count=count] my_type1* a2,
+            [out, count=count] my_type1* a3,
+            size_t count);
+
+        void ocall_foreign_ptr_5(
+            // size parameter
+            [in, size=size] my_type1* a1,
+            [in, out, size=size] my_type1* a2,
+            [out, size=size] my_type1* a3,
+            size_t size);                                             
+        
+        void ocall_foreign_isptr_1(
+            [in, isptr] my_type2 a1,
+            [in, out, isptr] my_type2 a2,
+            [out, isptr] my_type2 a3);
+
+        void ocall_foreign_isptr_2(
+            [in, isptr, count=5] my_type2 a1,
+            [in, out, isptr, count=5] my_type2 a2,
+            [out, isptr, count=5] my_type2 a3);            
+    
+        void ocall_foreign_isptr_3(
+            [in, isptr, size=64] my_type2 a1,
+            [in, out, isptr, size=64] my_type2 a2,
+            [out, isptr, size=64] my_type2 a3);
+    
+        void ocall_foreign_isptr_4(
+            [in, isptr, count=count] my_type2 a1,
+            [in, out, isptr, count=count] my_type2 a2,
+            [out, isptr, count=count] my_type2 a3,
+            size_t count);    
+
+        void ocall_foreign_isptr_5(
+            [in, isptr, size=size] my_type2 a1,
+            [in, out, isptr, size=size] my_type2 a2,
+            [out, isptr, size=size] my_type2 a3,
+            size_t size);    
+
+        void ocall_foreign_isary(
+            [in, isary] my_type3 a1,
+            [in, out, isary] my_type3 a2,
+            [out, isary] my_type3 a3);   
+
+        my_type1 ocall_foreign_value(
+            my_type1 a1);
+    };
+};

@@ -35,9 +35,11 @@ LIBRARIES += $(call optlib,sgx_dcap_ql)
 LIBRARIES += $(call optlib,sgx_urts)
 
 build:
+	$(OE_BINDIR)/oeedger8r ../helloworld.edl --untrusted
 	$(CC) -c $(CFLAGS) $(INCLUDES) host.c
-	$(CC) -o helloworldhost host.o $(LDFLAGS) $(LIBRARIES)
+	$(CC) -c $(CFLAGS) $(INCLUDES) helloworld_u.c
+	$(CC) -o helloworldhost helloworld_u.o host.o $(LDFLAGS) $(LIBRARIES)
 
 clean:
-	rm -f helloworldhost host.o
+	rm -f helloworldhost host.o helloworld_u.o helloworld_u.c helloworld_u.h helloworld_args.h
 

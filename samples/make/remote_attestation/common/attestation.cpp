@@ -7,7 +7,7 @@
 
 Attestation::Attestation(Crypto* crypto, uint8_t* enclave_mrsigner)
 {
-    m_p_crypto = crypto;
+    m_crypto = crypto;
     m_enclave_mrsigner = enclave_mrsigner;
 }
 
@@ -15,19 +15,24 @@ Attestation::Attestation(Crypto* crypto, uint8_t* enclave_mrsigner)
  * Generate a remote report for the given data. The SHA256 digest of the data is
  * stored in the report_data field of the generated remote report.
  */
-bool Attestation::GenerateRemoteReport(
+bool Attestation::generate_remote_report(
     const uint8_t* data,
     const size_t data_size,
-    uint8_t* remote_report_buffer,
-    size_t* remote_report_buffer_size)
+    uint8_t* remote_report_buf,
+    size_t* remote_report_buf_size)
 {
     bool ret = false;
     uint8_t sha256[32];
-    m_p_crypto->Sha256(data, data_size, sha256);
+    oe_result_t result = OE_OK;
+
+    if (m_crypto->Sha256(data, data_size, sha256) != 0)
+    {
+        goto exit;
+    }
 
     // To generate a remote report that can be attested remotely by an enclave
     // running  on a different platform, pass the
-    // OE_REPORT_OPTIONS_REMOTE_ATTESTATION option. This uses the trusted
+    // OE_REPORT_FLAGS_REMOTE_ATTESTATION option. This uses the trusted
     // quoting enclave to generate the report based on this enclave's local
     // report.
     // To generate a remote report that just needs to be attested by another
@@ -35,22 +40,21 @@ bool Attestation::GenerateRemoteReport(
     // EREPORT instruction to generate this enclave's local report.
     // Both kinds of reports can be verified using the oe_verify_report
     // function.
-    oe_result_t result = oe_get_report(
+    result = oe_get_report(
         OE_REPORT_FLAGS_REMOTE_ATTESTATION,
         sha256, // Store sha256 in report_data field
         sizeof(sha256),
         NULL, // opt_params must be null
         0,
-        remote_report_buffer,
-        remote_report_buffer_size);
-
+        remote_report_buf,
+        remote_report_buf_size);
     if (result != OE_OK)
     {
         ENC_DEBUG_PRINTF("oe_get_report failed.");
         goto exit;
     }
     ret = true;
-    ENC_DEBUG_PRINTF("GenerateRemoteReport succeeded.");
+    ENC_DEBUG_PRINTF("generate_remote_report succeeded.");
 exit:
     return ret;
 }
@@ -68,7 +72,7 @@ exit:
  * accompanying data is ensured by comparing its SHA256 digest against the
  * report_data field.
  */
-bool Attestation::AttestRemoteReport(
+bool Attestation::attest_remote_report(
     const uint8_t* remote_report,
     size_t remote_report_size,
     const uint8_t* data,
@@ -111,7 +115,7 @@ bool Attestation::AttestRemoteReport(
         for (int i = 0; i < 32; i++)
         {
             ENC_DEBUG_PRINTF(
-                "m_pEnclaveMRSigner[%d]=0x%0x\n",
+                "m_enclave_mrsigner[%d]=0x%0x\n",
                 i,
                 (uint8_t)m_enclave_mrsigner[i]);
         }
@@ -125,10 +129,7 @@ bool Attestation::AttestRemoteReport(
                 i,
                 (uint8_t)parsed_report.identity.signer_id[i]);
         }
-
-        ENC_DEBUG_PRINTF("\n\n\n");
-
-        ENC_DEBUG_PRINTF("m_pEnclaveMRSigner %s", m_enclave_mrsigner);
+        ENC_DEBUG_PRINTF("m_enclave_mrsigner %s", m_enclave_mrsigner);
         goto exit;
     }
 
@@ -148,7 +149,10 @@ bool Attestation::AttestRemoteReport(
 
     // 3) Validate the report data
     //    The report_data has the hash value of the report data
-    m_p_crypto->Sha256(data, data_size, sha256);
+    if (m_crypto->Sha256(data, data_size, sha256) != 0)
+    {
+        goto exit;
+    }
 
     if (memcmp(parsed_report.report_data, sha256, sizeof(sha256)) != 0)
     {

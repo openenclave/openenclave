@@ -4,39 +4,31 @@
 #include <openenclave/enclave.h>
 #include "../args.h"
 #include "encryptor.h"
-
-template <typename T>
-bool is_outside_enclave(T* args)
-{
-    if (oe_is_outside_enclave(args, sizeof(T)))
-        return true;
-    return false;
-}
-
-#define DISPATCH(x)                          \
-    if (!is_outside_enclave(args))           \
-    {                                        \
-        args->result = OE_INVALID_PARAMETER; \
-        return;                              \
-    }                                        \
-    dispatcher.x(args);
+#include "fileencryptor_t.h"
 
 // Declare a static dispatcher object for enabling for better organization
 // enclave-wise global variables
-static ECallDispatcher dispatcher;
+static ecall_dispatcher dispatcher;
 
-// OE calls
-OE_ECALL void InitializeEncryptor(EncryptInitializeArgs* args)
+int initialize_encryptor(
+    bool encrypt,
+    const char* password,
+    size_t password_len,
+    encryption_header_t* header)
 {
-    DISPATCH(Initialize);
+    return dispatcher.initialize(encrypt, password, password_len, header);
 }
 
-OE_ECALL void EncryptBlock(EncryptBlockArgs* args)
+int encrypt_block(
+    bool encrypt,
+    unsigned char* inputbuf,
+    unsigned char* outputbuf,
+    size_t size)
 {
-    DISPATCH(EncryptBlock);
+    return dispatcher.encrypt_block(encrypt, inputbuf, outputbuf, size);
 }
 
-OE_ECALL void CloseEncryptor(CloseEncryptorArgs* args)
+void close_encryptor()
 {
-    DISPATCH(close);
+    return dispatcher.close();
 }

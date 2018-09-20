@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../../../host/strings.h"
+#include "enclaveparam_u.h"
 
 oe_enclave_t* enclave_1;
 oe_enclave_t* enclave_2;
@@ -18,35 +19,33 @@ size_t called_callback_1;
 size_t called_callback_2;
 size_t called_callback_3;
 
-OE_OCALL void callback_1(void* args, oe_enclave_t* enclave)
+void callback_1(oe_enclave_t* enclave)
 {
     oe_result_t result;
 
     OE_TEST(enclave == enclave_1);
 
     /* Call into enclave b, which calls callback_2 */
-    result =
-        oe_call_enclave(enclave_2, "test_ocall_enclave_param", "callback_2");
+    result = test_ocall_enclave_param(enclave_2, "callback_2");
     OE_TEST(result == OE_OK);
 
     called_callback_1++;
 }
 
-OE_OCALL void callback_2(void* args, oe_enclave_t* enclave)
+void callback_2(oe_enclave_t* enclave)
 {
     oe_result_t result;
 
     OE_TEST(enclave == enclave_2);
 
     /* Call into enclave c, which calls callback_3 */
-    result =
-        oe_call_enclave(enclave_3, "test_ocall_enclave_param", "callback_3");
+    result = test_ocall_enclave_param(enclave_3, "callback_3");
     OE_TEST(result == OE_OK);
 
     called_callback_2++;
 }
 
-OE_OCALL void callback_3(void* args, oe_enclave_t* enclave)
+void callback_3(oe_enclave_t* enclave)
 {
     OE_TEST(enclave == enclave_3);
     called_callback_3++;
@@ -75,8 +74,7 @@ int main(int argc, const char* argv[])
     OE_TEST(result == OE_OK);
 
     /* Call into enclave a, which calls callback_1 */
-    result =
-        oe_call_enclave(enclave_1, "test_ocall_enclave_param", "callback_1");
+    result = test_ocall_enclave_param(enclave_1, "callback_1");
     OE_TEST(result == OE_OK);
 
     oe_terminate_enclave(enclave_1);

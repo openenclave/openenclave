@@ -21,14 +21,14 @@
 class Crypto
 {
   private:
-    mbedtls_ctr_drbg_context m_ctr_drbg_context;
+    mbedtls_ctr_drbg_context m_ctr_drbg_contex;
     mbedtls_entropy_context m_entropy_context;
-    mbedtls_pk_context m_rsa_context;
-    uint8_t m_my_public_key[512];
+    mbedtls_pk_context m_pk_context;
+    uint8_t m_public_key[512];
     bool m_initialized;
 
     // Public key of another enclave.
-    uint8_t m_other_enclave_pem_public_key[PUBLIC_KEY_SIZE];
+    uint8_t m_other_enclave_pubkey[PUBLIC_KEY_SIZE];
 
   public:
     Crypto();
@@ -37,7 +37,7 @@ class Crypto
     /**
      * Get this enclave's own public key
      */
-    void RetrievePublicKey(uint8_t pem_public_key[512]);
+    void retrieve_public_key(uint8_t pem_public_key[512]);
 
     /**
      * Encrypt encrypts the given data using the given public key.
@@ -51,25 +51,25 @@ class Crypto
         size_t* encrypted_data_size);
 
     /**
-     * Decrypt decrypts the given data using current enclave's private key.
+     * decrypt decrypts the given data using current enclave's private key.
      * Used to receive encrypted data from another enclave.
      */
-    bool Decrypt(
+    bool decrypt(
         const uint8_t* encrypted_data,
         size_t encrypted_data_size,
         uint8_t* data,
         size_t* data_size);
 
     // Public key of another enclave.
-    uint8_t* get_2ndenclave_public_key()
+    uint8_t* get_the_other_enclave_public_key()
     {
-        return m_other_enclave_pem_public_key;
+        return m_other_enclave_pubkey;
     }
 
     /**
      * Compute the sha256 hash of given data.
      */
-    void Sha256(const uint8_t* data, size_t data_size, uint8_t sha256[32]);
+    int Sha256(const uint8_t* data, size_t data_size, uint8_t sha256[32]);
 
   private:
     /**
@@ -80,11 +80,11 @@ class Crypto
      * encrypted to the provided public key.
      */
 
-    /** InitializeMbedtls initializes the crypto module.
+    /** init_mbedtls initializes the crypto module.
      */
-    bool InitializeMbedtls(void);
+    bool init_mbedtls(void);
 
-    void CleanupMbedtls(void);
+    void cleanup_mbedtls(void);
 };
 
 #endif // OE_SAMPLES_ATTESTATION_ENC_CRYPTO_H
