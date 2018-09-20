@@ -71,11 +71,7 @@ int ecall_dispatcher::get_remote_report_with_pubkey(
     m_crypto->retrieve_public_key(pem_public_key);
 
     // Generate a remote report for the public key so that the enclave that
-    // receives the
-    // key can attest this enclave. It is safer to use enclave memory for all
-    // operations within the enclave. A malicious host could tamper with host
-    // memory while enclave is processing it.
-    // report = new uint8_t[OE_MAX_REPORT_SIZE];
+    // receives the key can attest this enclave.
     report = (uint8_t*)oe_host_malloc(OE_MAX_REPORT_SIZE);
     if (report == NULL)
     {
@@ -111,9 +107,9 @@ exit:
     if (ret != 0)
     {
         if (report)
-            free(report);
+            oe_host_free(report);
         if (key_buf)
-            free(key_buf);
+            oe_host_free(key_buf);
     }
     return ret;
 }
@@ -207,7 +203,7 @@ int ecall_dispatcher::process_encrypted_msg(
     {
         // This is where the business logic for verifying the data should be.
         // In this sample, both enclaves start with identical data in
-        // m_enclave_config->enclave_secret_data
+        // m_enclave_config->enclave_secret_data.
         // The following checking is to make sure the decrypted values are what
         // we have expected.
         ENC_DEBUG_PRINTF("Decrypted data: ");
