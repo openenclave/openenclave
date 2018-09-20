@@ -4,7 +4,7 @@
 #ifndef _OE_LIBC_DEPRECATIONS_H
 #define _OE_LIBC_DEPRECATIONS_H
 
-#if !defined(__ASSEMBLER__)
+#if !defined(OE_LIBC_SUPPRESS_DEPRECATIONS) && !defined(__ASSEMBLER__)
 
 #define __NEED_size_t
 #define __NEED_pthread_t
@@ -24,12 +24,14 @@
 OE_LIBC_EXTERN_C_BEGIN
 
 OE_LIBC_DEPRECATED("unsupported function")
-int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
-    void *(*start_routine) (void *), void *arg);
-
+int pthread_create(
+    pthread_t *thread, 
+    const pthread_attr_t *attr,
+    void *(*start_routine) (void *), 
+    void *arg);
 
 OE_LIBC_EXTERN_C_END
 
-#endif /* !defined(__ASSEMBLER__) */
+#endif /* !defined(OE_LIBC_SUPPRESS_DEPRECATIONS) && !defined(__ASSEMBLER__) */
 
 #endif /* _OE_LIBC_DEPRECATIONS_H */
