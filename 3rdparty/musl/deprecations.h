@@ -9,6 +9,7 @@
 #define __NEED_size_t
 #define __NEED_pthread_t
 #define __NEED_pthread_attr_t
+#define __NEED_locale_t
 #include <bits/alltypes.h>
 
 #if defined(__cplusplus)
@@ -23,12 +24,52 @@
 
 OE_LIBC_EXTERN_C_BEGIN
 
+/*
+**==============================================================================
+**
+** <pthread.h>
+**
+**==============================================================================
+*/
+
 OE_LIBC_DEPRECATED("unsupported function")
 int pthread_create(
     pthread_t *thread, 
     const pthread_attr_t *attr,
     void *(*start_routine) (void *), 
     void *arg);
+
+OE_LIBC_DEPRECATED("unsupported function")
+int pthread_join(pthread_t thread, void** retval);
+
+OE_LIBC_DEPRECATED("unsupported function")
+int pthread_detach(pthread_t thread);
+
+/*
+**==============================================================================
+**
+** <time.h>
+**
+**==============================================================================
+*/
+
+// Need this since including <time.h> will create a circular dependency.
+struct tm;
+
+OE_LIBC_DEPRECATED("unsupported function")
+size_t strftime(
+    char* s, 
+    size_t max, 
+    const char* format, 
+    const struct tm* tm);
+
+OE_LIBC_DEPRECATED("unsupported function")
+size_t strftime_l(
+    char* s,
+    size_t max,
+    const char* format,
+    const struct tm* tm,
+    locale_t loc);
 
 OE_LIBC_EXTERN_C_END
 
