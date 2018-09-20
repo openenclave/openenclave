@@ -329,9 +329,8 @@ exit:
     return ret;
 }
 
-// Parse an input header for validate the password and getting the encryption
-// key
-// in preparing for decryption/encryption operations
+// Parse an input header for validating the password and getting the encryption
+// key in preparation for decryption/encryption operations
 //  1)Check password by comparing their digests
 //  2)reproduce a encryption key from the password
 //  3)decrypt the encryption key with a password key
