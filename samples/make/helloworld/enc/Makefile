@@ -34,13 +34,15 @@ all:
 	$(MAKE) sign
 
 build:
+	$(OE_BINDIR)/oeedger8r ../helloworld.edl --trusted
 	$(CC) -c $(CFLAGS) $(INCLUDES) enc.c -o enc.o
-	$(CC) -o helloworldenc.so enc.o $(LDFLAGS) $(LIBRARIES)
+	$(CC) -c $(CFLAGS) $(INCLUDES) helloworld_t.c -o helloworld_t.o
+	$(CC) -o helloworldenc.so helloworld_t.o enc.o $(LDFLAGS) $(LIBRARIES)
 
 sign:
 	$(OE_BINDIR)/oesign helloworldenc.so helloworld.conf private.pem
 clean:
-	rm -f enc.o helloworldenc.so hellowworldenc.signed.so private.pem public.pem
+	rm -f enc.o helloworldenc.so helloworldenc.signed.so private.pem public.pem helloworld_t.o helloworld_t.h helloworld_t.c helloworld_args.h
 
 keys:
 	openssl genrsa -out private.pem -3 3072

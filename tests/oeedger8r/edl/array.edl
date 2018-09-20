@@ -1,0 +1,242 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave  {
+    trusted {        
+        // Test in, in-out, out, user_check attributes.
+        // Also check ability to pass NULL.
+        // Note: const keyword cannot be applied to arrays.
+        public void ecall_array_char(
+            [in] char a1[2],
+            [in,out] char a2[2][2],
+            [out] char a3[3][3],
+            [user_check] char a4[4][4]
+        );
+
+        public void ecall_array_short(
+            [in] short a1[2],
+            [in,out] short a2[2][2],
+            [out] short a3[3][3],
+            [user_check] short a4[4][4]
+        );
+
+        public void ecall_array_int(
+            [in] int a1[2],
+            [in,out] int a2[2][2],
+            [out] int a3[3][3],
+            [user_check] int a4[4][4]
+        );
+
+        public void ecall_array_float(
+            [in] float a1[2],
+            [in,out] float a2[2][2],
+            [out] float a3[3][3],
+            [user_check] float a4[4][4]
+        );
+
+        public void ecall_array_double(
+            [in] double a1[2],
+            [in,out] double a2[2][2],
+            [out] double a3[3][3],
+            [user_check] double a4[4][4]
+        );
+
+        public void ecall_array_long(
+            [in] long a1[2],
+            [in,out] long a2[2][2],
+            [out] long a3[3][3],
+            [user_check] long a4[4][4]
+        );
+
+        public void ecall_array_size_t(
+            [in] size_t a1[2],
+            [in,out] size_t a2[2][2],
+            [out] size_t a3[3][3],
+            [user_check] size_t a4[4][4]
+        );                        
+
+        public void ecall_array_unsigned(
+            [in] unsigned a1[2],
+            [in,out] unsigned a2[2][2],
+            [out] unsigned a3[3][3],
+            [user_check] unsigned a4[4][4]
+        );
+        
+        public void ecall_array_int8_t(
+            [in] int8_t a1[2],
+            [in,out] int8_t a2[2][2],
+            [out] int8_t a3[3][3],
+            [user_check] int8_t a4[4][4]
+        );
+        
+        public void ecall_array_int16_t(
+            [in] int16_t a1[2],
+            [in,out] int16_t a2[2][2],
+            [out] int16_t a3[3][3],
+            [user_check] int16_t a4[4][4]
+        );
+
+        public void ecall_array_int32_t(
+            [in] int32_t a1[2],
+            [in,out] int32_t a2[2][2],
+            [out] int32_t a3[3][3],
+            [user_check] int32_t a4[4][4]
+        );
+
+        public void ecall_array_int64_t(
+            [in] int64_t a1[2],
+            [in,out] int64_t a2[2][2],
+            [out] int64_t a3[3][3],
+            [user_check] int64_t a4[4][4]
+        );
+
+        public void ecall_array_uint8_t(
+            [in] uint8_t a1[2],
+            [in,out] uint8_t a2[2][2],
+            [out] uint8_t a3[3][3],
+            [user_check] uint8_t a4[4][4]
+        );
+        
+        public void ecall_array_uint16_t(
+            [in] uint16_t a1[2],
+            [in,out] uint16_t a2[2][2],
+            [out] uint16_t a3[3][3],
+            [user_check] uint16_t a4[4][4]
+        );
+
+        public void ecall_array_uint32_t(
+            [in] uint32_t a1[2],
+            [in,out] uint32_t a2[2][2],
+            [out] uint32_t a3[3][3],
+            [user_check] uint32_t a4[4][4]
+        );
+
+        public void ecall_array_uint64_t(
+            [in] uint64_t a1[2],
+            [in,out] uint64_t a2[2][2],
+            [out] uint64_t a3[3][3],
+            [user_check] uint64_t a4[4][4]
+        );       
+
+        public void test_array_edl_ocalls();
+        public void ecall_array_assert_all_called();
+    };
+
+    untrusted {
+        // Test in, in-out, out, user_check attributes.
+        // Also check ability to pass NULL.
+        void ocall_array_char(
+            [in] char a1[2],
+            [in,out] char a2[2][2],
+            [out] char a3[3][3],
+            [user_check] char a4[4][4]
+        );
+    
+        void ocall_array_short(
+            [in] short a1[2],
+            [in,out] short a2[2][2],
+            [out] short a3[3][3],
+            [user_check] short a4[4][4]
+        );
+
+        void ocall_array_int(
+            [in] int a1[2],
+            [in,out] int a2[2][2],
+            [out] int a3[3][3],
+            [user_check] int a4[4][4]
+        );
+
+        void ocall_array_float(
+            [in] float a1[2],
+            [in,out] float a2[2][2],
+            [out] float a3[3][3],
+            [user_check] float a4[4][4]
+        );
+
+        void ocall_array_double(
+            [in] double a1[2],
+            [in,out] double a2[2][2],
+            [out] double a3[3][3],
+            [user_check] double a4[4][4]
+        );
+
+        void ocall_array_long(
+            [in] long a1[2],
+            [in,out] long a2[2][2],
+            [out] long a3[3][3],
+            [user_check] long a4[4][4]
+        );
+
+        void ocall_array_size_t(
+            [in] size_t a1[2],
+            [in,out] size_t a2[2][2],
+            [out] size_t a3[3][3],
+            [user_check] size_t a4[4][4]
+        );                        
+
+        void ocall_array_unsigned(
+            [in] unsigned a1[2],
+            [in,out] unsigned a2[2][2],
+            [out] unsigned a3[3][3],
+            [user_check] unsigned a4[4][4]
+        );
+        
+        void ocall_array_int8_t(
+            [in] int8_t a1[2],
+            [in,out] int8_t a2[2][2],
+            [out] int8_t a3[3][3],
+            [user_check] int8_t a4[4][4]
+        );
+        
+        void ocall_array_int16_t(
+            [in] int16_t a1[2],
+            [in,out] int16_t a2[2][2],
+            [out] int16_t a3[3][3],
+            [user_check] int16_t a4[4][4]
+        );
+
+        void ocall_array_int32_t(
+            [in] int32_t a1[2],
+            [in,out] int32_t a2[2][2],
+            [out] int32_t a3[3][3],
+            [user_check] int32_t a4[4][4]
+        );
+
+        void ocall_array_int64_t(
+            [in] int64_t a1[2],
+            [in,out] int64_t a2[2][2],
+            [out] int64_t a3[3][3],
+            [user_check] int64_t a4[4][4]
+        );
+
+        void ocall_array_uint8_t(
+            [in] uint8_t a1[2],
+            [in,out] uint8_t a2[2][2],
+            [out] uint8_t a3[3][3],
+            [user_check] uint8_t a4[4][4]
+        );
+        
+        void ocall_array_uint16_t(
+            [in] uint16_t a1[2],
+            [in,out] uint16_t a2[2][2],
+            [out] uint16_t a3[3][3],
+            [user_check] uint16_t a4[4][4]
+        );
+
+        void ocall_array_uint32_t(
+            [in] uint32_t a1[2],
+            [in,out] uint32_t a2[2][2],
+            [out] uint32_t a3[3][3],
+            [user_check] uint32_t a4[4][4]
+        );
+
+        void ocall_array_uint64_t(
+            [in] uint64_t a1[2],
+            [in,out] uint64_t a2[2][2],
+            [out] uint64_t a3[3][3],
+            [user_check] uint64_t a4[4][4]
+        );         
+    
+        void ocall_array_assert_all_called();
+    };
+};

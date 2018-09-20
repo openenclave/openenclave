@@ -70,6 +70,9 @@ LICENSE
 ./tests/tester/file
 ./THIRD_PARTY_NOTICES
 ./tools/bins/dead.txt
+./tools/oeedger8r/intel
+./tools/oeedger8r/main.ml
+./tools/oeedger8r/Makefile
 ./tools/oesign/files/log.txt
 VERSION
 ./prereqs/packages/.packages
