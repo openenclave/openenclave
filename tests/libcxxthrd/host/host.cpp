@@ -57,10 +57,6 @@ void* EnclaveThread(void* args)
 OE_OCALL void host_create_pthread(uint64_t enc_key, oe_enclave_t* enclave)
 {
     pthread_t host_thread_id;
-    // int *enc_key = static_cast<int*>(enc_key_ptr);
-
-    // int* enc_key = (int*)args;
-
     // New Thread is created and executes EnclaveThread
     pthread_create(&host_thread_id, NULL, EnclaveThread, enclave);
     // Main host thread continues - update the enclave id to host id mapping
@@ -77,16 +73,19 @@ OE_OCALL void host_create_pthread(uint64_t enc_key, oe_enclave_t* enclave)
 OE_OCALL void host_join_pthread(int enc_key, oe_enclave_t* enclave)
 {
     void* ret;
+    pthread_t host_thread_id = 0;
 
-    /* Find the host_thread_id from the enc_key */
-    std::map<int, pthread_t>::iterator it;
+    // Find the host_thread_id from the enclave_host_id_map using the enc_key
+
     // Using atomic locks to protect the enclave_host_id_map
     _acquire_lock(&_host_lock);
-    it = enclave_host_id_map.find(enc_key);
-    _release_lock(&_host_lock);
+    auto it = enclave_host_id_map.find(enc_key);
     if (it != enclave_host_id_map.end())
     {
-        if (pthread_join(it->second, &ret) != 0)
+        host_thread_id = it->second;
+        _release_lock(&_host_lock);
+
+        if (pthread_join(host_thread_id, &ret) != 0)
         {
             printf(
                 "pthread_join failed for enclave key=0x%d, host id=0x%lu\n",
@@ -102,6 +101,7 @@ OE_OCALL void host_join_pthread(int enc_key, oe_enclave_t* enclave)
     }
     else
     {
+        _release_lock(&_host_lock);
         printf(
             "pthread_join failed to find enclave id=0x%d in host map\n",
             enc_key);

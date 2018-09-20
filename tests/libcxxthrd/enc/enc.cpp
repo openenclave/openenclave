@@ -130,12 +130,11 @@ OE_ECALL void _enclave_launch_thread(void* args_)
     std::function<void()> f;
 
     _acquire_lock(&_enc_lock);
-    _key_to_thread_id_map[enc_key] =
-        pthread_self(); // TODO - enc_key can be modified by another thread.
-                        // Need to get this from host
+    _key_to_thread_id_map[enc_key] = pthread_self();
+
     printf(
         "_enclave_launch_thread - pthread_self returns = 0x%lu\n",
-        pthread_self()); // Delete later
+        pthread_self());
     f = _thread_functions.back();
     _thread_functions.pop_back();
     _release_lock(&_enc_lock);
