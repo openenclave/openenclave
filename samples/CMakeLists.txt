@@ -9,13 +9,6 @@ install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/make/remote_attestation
     )
 
 
-else()
-
-# Install the sort sample.
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/make/sort
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
-    )
-
 endif()
 
 # Install the helloworld sample.
