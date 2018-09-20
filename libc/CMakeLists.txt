@@ -693,8 +693,6 @@ endif()
 
 add_target_compile_defs(oelibc PRIVATE C _XOPEN_SOURCE=700)
 
-target_compile_definitions(oelibc PRIVATE -DOE_LIBC_SUPPRESS_DEPRECATIONS)
-
 if(USE_DEBUG_MALLOC)
     add_target_compile_defs(oelibc PRIVATE C OE_USE_DEBUG_MALLOC)
 endif()

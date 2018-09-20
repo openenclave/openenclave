@@ -59,7 +59,6 @@ target_compile_definitions(oelibcxx_cxx PRIVATE
     -DLIBCXXRT
     -D_LIBCPP_PROVIDES_DEFAULT_RUNE_TABLE
     -D_LIBCPP_BUILDING_LIBRARY
-    -DOE_LIBC_SUPPRESS_DEPRECATIONS
     )
 
 # need the LIBCXX_CXX headers placed

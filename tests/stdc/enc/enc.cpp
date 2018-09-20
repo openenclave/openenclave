@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#define OE_LIBC_SUPPRESS_DEPRECATIONS
-
 #include <ctype.h>
 #include <endian.h>
 #include <errno.h>

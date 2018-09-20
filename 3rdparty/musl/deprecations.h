@@ -4,9 +4,11 @@
 #ifndef _OE_LIBC_DEPRECATIONS_H
 #define _OE_LIBC_DEPRECATIONS_H
 
-#if !defined(OE_LIBC_SUPPRESS_DEPRECATIONS) && !defined(__ASSEMBLER__)
+#if !defined(__ASSEMBLER__)
 
 #define __NEED_size_t
+#define __NEED_pthread_t
+#define __NEED_pthread_attr_t
 #include <bits/alltypes.h>
 
 #if defined(__cplusplus)
@@ -21,17 +23,13 @@
 
 OE_LIBC_EXTERN_C_BEGIN
 
-OE_LIBC_DEPRECATED("unsafe function")
-char* strcpy(char* dest, const char* src);
+OE_LIBC_DEPRECATED("unsupported function")
+int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
+    void *(*start_routine) (void *), void *arg);
 
-OE_LIBC_DEPRECATED("unsafe function")
-char* strcat(char* dest, const char* src);
-
-OE_LIBC_DEPRECATED("unsafe function")
-size_t strlen(const char* s);
 
 OE_LIBC_EXTERN_C_END
 
-#endif /* !defined(OE_LIBC_SUPPRESS_DEPRECATIONS) */
+#endif /* !defined(__ASSEMBLER__) */
 
 #endif /* _OE_LIBC_DEPRECATIONS_H */

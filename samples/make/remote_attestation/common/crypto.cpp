@@ -132,8 +132,7 @@ bool Crypto::Encrypt(
         goto done;
 
     // Read the given public key.
-    keySize = strnlen((const char*)pemPublicKey, SIZE_MAX) +
-              1; // Include ending '\0'.
+    keySize = strlen((const char*)pemPublicKey) + 1; // Include ending '\0'.
     res = mbedtls_pk_parse_public_key(&key, pemPublicKey, keySize);
     if (res != 0)
     {
