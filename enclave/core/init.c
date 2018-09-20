@@ -82,11 +82,11 @@ static void _check_memory_boundaries(void)
 **
 **     Call all global initialization functions. The compiler generates an
 **     array of initialization functions which it places in one of the dynamic
-**     program segments (where Elf64_Phdr.type == PT_DYNAMIC). This segment
-**     contains two Elf64_Dyn structures whose tags are given as follows:
+**     program segments (where elf64_phdr_t.type == PT_DYNAMIC). This segment
+**     contains two elf64_dyn structures whose tags are given as follows:
 **
-**         Elf64_Dyn.d_tag == DT_INIT_ARRAY
-**         Elf64_Dyn.d_tag == DT_INIT_ARRAYSZ
+**         elf64_dyn.d_tag == DT_INIT_ARRAY
+**         elf64_dyn.d_tag == DT_INIT_ARRAYSZ
 **
 **     The first (INIT_ARRAY) is an array of function pointers to global
 **     initializers. The second (INIT_ARRAYSZ) is the size of that array in
@@ -146,11 +146,11 @@ void oe_call_init_functions(void)
 **
 **     Call all global finalization functions. The compiler generates an array
 **     of finalization functions which it places in one of the dynamic program
-**     segments (where Elf64_Phdr.type == PT_DYNAMIC). This segment contains
-**     two Elf64_Dyn structures whose tags are given as follows:
+**     segments (where elf64_phdr_t.type == PT_DYNAMIC). This segment contains
+**     two elf64_dyn structures whose tags are given as follows:
 **
-**         Elf64_Dyn.d_tag == DT_FINI_ARRAY
-**         Elf64_Dyn.d_tag == DT_FINI_ARRAYSZ
+**         elf64_dyn.d_tag == DT_FINI_ARRAY
+**         elf64_dyn.d_tag == DT_FINI_ARRAYSZ
 **
 **     The first (FINI_ARRAY) is an array of function pointers to the
 **     finalizers. The second (FINI_ARRAYSZ) is the size of that array in

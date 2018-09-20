@@ -20,11 +20,11 @@ oe_result_t __oe_load_segments(
     uint64_t* textaddr)
 {
     oe_result_t result = OE_UNEXPECTED;
-    Elf64 elf = ELF64_INIT;
+    elf64_t elf = ELF64_INIT;
     size_t i;
-    const Elf64_Ehdr* eh;
-    Elf64_Off oeinfo_offset = 0;
-    Elf64_Xword oeinfo_size = 0;
+    const elf64_ehdr_t* eh;
+    elf64_off_t oeinfo_offset = 0;
+    elf64_xword_t oeinfo_size = 0;
 
     if (nsegments)
         *nsegments = 0;
@@ -40,11 +40,11 @@ oe_result_t __oe_load_segments(
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Load the ELF-64 object */
-    if (Elf64_Load(path, &elf) != 0)
+    if (elf64_load(path, &elf) != 0)
         OE_THROW(OE_FAILURE);
 
     /* Save pointer to header for convenience */
-    eh = (Elf64_Ehdr*)elf.data;
+    eh = (elf64_ehdr_t*)elf.data;
 
 /* Fail if not a dynamic object */
 #if 0
@@ -67,13 +67,13 @@ oe_result_t __oe_load_segments(
     {
         for (i = 0; i < eh->e_shnum; i++)
         {
-            const Elf64_Shdr* sh = Elf64_GetSectionHeader(&elf, i);
+            const elf64_shdr_t* sh = elf64_get_section_header(&elf, i);
 
             /* Invalid section header. The elf file is corrupted. */
             if (sh == NULL)
                 OE_THROW(OE_FAILURE);
 
-            const char* name = Elf64_GetStringFromShstrtab(&elf, sh->sh_name);
+            const char* name = elf64_get_string_from_shstrtab(&elf, sh->sh_name);
 
             if (name && strcmp(name, ".text") == 0)
             {
@@ -98,7 +98,7 @@ oe_result_t __oe_load_segments(
     /* Add all loadable program segments to SEGMENTS array */
     for (i = 0; i < eh->e_phnum; i++)
     {
-        const Elf64_Phdr* ph = Elf64_GetProgramHeader(&elf, i);
+        const elf64_phdr_t* ph = elf64_get_program_header(&elf, i);
         oe_segment_t seg;
 
         /* Check for corrupted program header. */
@@ -145,12 +145,12 @@ oe_result_t __oe_load_segments(
         }
 
         /* Make a heap copy of this segment */
-        if (Elf64_GetSegment(&elf, i))
+        if (elf64_get_segment(&elf, i))
         {
             if (!(seg.filedata = malloc(seg.filesz)))
                 OE_THROW(OE_OUT_OF_MEMORY);
 
-            memcpy(seg.filedata, Elf64_GetSegment(&elf, i), seg.filesz);
+            memcpy(seg.filedata, elf64_get_segment(&elf, i), seg.filesz);
 
             /* Zero out the .oeinfo section if within this segment */
             if (oeinfo_size && (oeinfo_offset >= seg.offset) &&
@@ -198,7 +198,7 @@ OE_CATCH:
         }
     }
 
-    Elf64_Unload(&elf);
+    elf64_unload(&elf);
 
     return result;
 }

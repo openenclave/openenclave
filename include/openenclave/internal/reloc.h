@@ -9,7 +9,7 @@
 
 OE_EXTERNC_BEGIN
 
-/* Same layout as Elf64_Rela (see elf.h) */
+/* Same layout as elf64_rela_t (see elf.h) */
 typedef struct _oe_reloc
 {
     uint64_t offset;

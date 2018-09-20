@@ -23,20 +23,20 @@
 #define OE_ARG_FLAG_GS 0x0001
 #endif
 
-/* Offsets into TD structure */
-#define TD_self_addr 0
-#define TD_last_sp 8
-#define TD_magic 168
-#define TD_depth (TD_magic + 8)
-#define TD_host_rcx (TD_depth + 8)
-#define TD_host_rsp (TD_host_rcx + 8)
-#define TD_host_rbp (TD_host_rsp + 8)
-#define TD_host_previous_rsp (TD_host_rbp + 8)
-#define TD_host_previous_rbp (TD_host_previous_rsp + 8)
-#define TD_oret_func (TD_host_previous_rbp + 8)
-#define TD_oret_arg (TD_oret_func + 8)
-#define TD_callsites (TD_oret_arg + 8)
-#define TD_simulate (TD_callsites + 8)
+/* Offsets into td_t structure */
+#define td_self_addr 0
+#define td_last_sp 8
+#define td_magic 168
+#define td_depth (td_magic + 8)
+#define td_host_rcx (td_depth + 8)
+#define td_host_rsp (td_host_rcx + 8)
+#define td_host_rbp (td_host_rsp + 8)
+#define td_host_previous_rsp (td_host_rbp + 8)
+#define td_host_previous_rbp (td_host_previous_rsp + 8)
+#define td_oret_func (td_host_previous_rbp + 8)
+#define td_oret_arg (td_oret_func + 8)
+#define td_callsites (td_oret_arg + 8)
+#define td_simulate (td_callsites + 8)
 
 #define oe_exit __morestack
 #ifndef __ASSEMBLER__

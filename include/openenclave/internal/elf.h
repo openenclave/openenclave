@@ -19,9 +19,9 @@
 
 ELF_EXTERNC_BEGIN
 
-#define EI_NIDENT 16
+//#define EI_NIDENT 16
 
-/* Elf64_Ehdr.e_ident */
+/* elf64_ehdr_t.e_ident */
 #define EI_MAG0 0    /* File identification */
 #define EI_MAG1 1    /* File identification */
 #define EI_MAG2 2    /* File identification */
@@ -42,7 +42,7 @@ ELF_EXTERNC_BEGIN
 #define ELFDATA2LSB 1  /* See below */
 #define ELFDATA2MSB 2  /* See below */
 
-/* Elf64_Ehdr.e_type */
+/* elf64_ehdr_t.e_type */
 #define ET_NONE 0        /* no file */
 #define ET_REL 1         /* relocatable file */
 #define ET_EXEC 2        /* executable file */
@@ -51,7 +51,7 @@ ELF_EXTERNC_BEGIN
 #define ET_LOPROC 0xff00 /* processor-specific */
 #define ET_HIPROC 0xffff /* processor-specific */
 
-/* Elf64_Ehdr.e_machine */
+/* elf64_ehdr_t.e_machine */
 #define EM_NONE 0    /* no machine */
 #define EM_M32 1     /* AT&T WE 32100 */
 #define EM_SPARC 2   /* SPARC */
@@ -62,11 +62,11 @@ ELF_EXTERNC_BEGIN
 #define EM_MIPS 8    /* MIPS RS3000 */
 #define EM_X86_64 62 /* Intel X86-64 */
 
-/* Elf64_Ehdr.e_version */
+/* elf64_ehdr_t.e_version */
 #define EV_NONE 0    /* Invalid version */
 #define EV_CURRENT 1 /* Current version */
 
-/* Elf64_Ehdr.e_shstrndx */
+/* elf64_ehdr_t.e_shstrndx */
 #define SHN_UNDEF 0
 #define SHN_LORESERVE 0xff00
 #define SHN_LOPROC 0xff00
@@ -75,7 +75,7 @@ ELF_EXTERNC_BEGIN
 #define SHN_COMMON 0xfff2
 #define SHN_HIRESERVE 0xffff
 
-/* Elf64_Shdr.sh_type */
+/* elf64_shdr_t.sh_type */
 #define SHT_NULL 0          /* Marks an unused section header */
 #define SHT_PROGBITS 1      /* information defined by the program */
 #define SHT_SYMTAB 2        /* linker symbol table */
@@ -136,87 +136,87 @@ ELF_EXTERNC_BEGIN
 #define STT_LOPROC 13 /* Processor-specific use */
 #define STT_HIPROC 15
 
-/* Elf64_Rel.r_info */
+/* elf64_rel.r_info */
 #define R_X86_64_RELATIVE 8
 #define ELF64_R_SYM(i) ((i) >> 32)
 #define ELF64_R_TYPE(i) ((i)&0xffffffffL)
 #define ELF64_R_INFO(s, t) (((s) << 32) + ((t)&0xffffffffL))
 
-typedef uint64_t Elf64_Addr;
-typedef uint64_t Elf64_Off;
-typedef unsigned short Elf64_Half;
-typedef unsigned int Elf64_Word;
-typedef signed int Elf64_Sword;
-typedef uint64_t Elf64_Xword;
-typedef int64_t Elf64_Sxword;
-typedef signed int Elf64_Sword;
+typedef uint64_t elf64_addr_t;
+typedef uint64_t elf64_off_t;
+typedef unsigned short elf64_half_t;
+typedef unsigned int elf64_word_t;
+typedef signed int elf64_sword_t;
+typedef uint64_t elf64_xword_t;
+typedef int64_t elf64_sxword_t;
+typedef signed int elf64_sword_t;
 
 typedef struct
 {
     unsigned char e_ident[EI_NIDENT];
-    Elf64_Half e_type;
-    Elf64_Half e_machine;
-    Elf64_Word e_version;
-    Elf64_Addr e_entry;     /* entry point virtual address */
-    Elf64_Off e_phoff;      /* program header table offset */
-    Elf64_Off e_shoff;      /* (40) section header table offset */
-    Elf64_Word e_flags;     /* process-specific flags */
-    Elf64_Half e_ehsize;    /* ELF header size */
-    Elf64_Half e_phentsize; /* Program header table entry size */
-    Elf64_Half e_phnum;     /* Number of program header table entries */
-    Elf64_Half e_shentsize; /* Section header size */
-    Elf64_Half e_shnum;     /* Number of section headers */
-    Elf64_Half e_shstrndx;  /* Index of the string-table section header */
-} Elf64_Ehdr;
+    elf64_half_t e_type;
+    elf64_half_t e_machine;
+    elf64_word_t e_version;
+    elf64_addr_t e_entry;     /* entry point virtual address */
+    elf64_off_t e_phoff;      /* program header table offset */
+    elf64_off_t e_shoff;      /* (40) section header table offset */
+    elf64_word_t e_flags;     /* process-specific flags */
+    elf64_half_t e_ehsize;    /* ELF header size */
+    elf64_half_t e_phentsize; /* Program header table entry size */
+    elf64_half_t e_phnum;     /* Number of program header table entries */
+    elf64_half_t e_shentsize; /* Section header size */
+    elf64_half_t e_shnum;     /* Number of section headers */
+    elf64_half_t e_shstrndx;  /* Index of the string-table section header */
+} elf64_ehdr_t;
 
 typedef struct
 {
-    Elf64_Word sh_name;       /* Section name */
-    Elf64_Word sh_type;       /* Section type */
-    Elf64_Xword sh_flags;     /* Section attributes */
-    Elf64_Addr sh_addr;       /* Virtual address in memory */
-    Elf64_Off sh_offset;      /* Offset in file */
-    Elf64_Xword sh_size;      /* Size of section */
-    Elf64_Word sh_link;       /* Link to other section */
-    Elf64_Word sh_info;       /* Miscellaneous information */
-    Elf64_Xword sh_addralign; /* Address alignment boundary */
-    Elf64_Xword sh_entsize;   /* Size of entries, if section has table */
-} Elf64_Shdr;
+    elf64_word_t sh_name;       /* Section name */
+    elf64_word_t sh_type;       /* Section type */
+    elf64_xword_t sh_flags;     /* Section attributes */
+    elf64_addr_t sh_addr;       /* Virtual address in memory */
+    elf64_off_t sh_offset;      /* Offset in file */
+    elf64_xword_t sh_size;      /* Size of section */
+    elf64_word_t sh_link;       /* Link to other section */
+    elf64_word_t sh_info;       /* Miscellaneous information */
+    elf64_xword_t sh_addralign; /* Address alignment boundary */
+    elf64_xword_t sh_entsize;   /* Size of entries, if section has table */
+} elf64_shdr_t;
 
 typedef struct
 {
-    Elf64_Word p_type;    /* Type of segment */
-    Elf64_Word p_flags;   /* Segment attributes */
-    Elf64_Off p_offset;   /* Offset in file */
-    Elf64_Addr p_vaddr;   /* Virtual address in memory */
-    Elf64_Addr p_paddr;   /* Reserved */
-    Elf64_Xword p_filesz; /* Size of segment in file */
-    Elf64_Xword p_memsz;  /* Size of segment in memory */
-    Elf64_Xword p_align;  /* Alignment of segment */
-} Elf64_Phdr;
+    elf64_word_t p_type;    /* Type of segment */
+    elf64_word_t p_flags;   /* Segment attributes */
+    elf64_off_t p_offset;   /* Offset in file */
+    elf64_addr_t p_vaddr;   /* Virtual address in memory */
+    elf64_addr_t p_paddr;   /* Reserved */
+    elf64_xword_t p_filesz; /* Size of segment in file */
+    elf64_xword_t p_memsz;  /* Size of segment in memory */
+    elf64_xword_t p_align;  /* Alignment of segment */
+} elf64_phdr_t;
 
 typedef struct
 {
-    Elf64_Word st_name;     /* Symbol name */
+    elf64_word_t st_name;     /* Symbol name */
     unsigned char st_info;  /* Type and Binding attributes */
     unsigned char st_other; /* Reserved */
-    Elf64_Half st_shndx;    /* Section table index */
-    Elf64_Addr st_value;    /* Symbol value */
-    Elf64_Xword st_size;    /* Size of object (e.g., common) */
-} Elf64_Sym;
+    elf64_half_t st_shndx;    /* Section table index */
+    elf64_addr_t st_value;    /* Symbol value */
+    elf64_xword_t st_size;    /* Size of object (e.g., common) */
+} elf64_sym_t;
 
 typedef struct
 {
-    Elf64_Addr r_offset; /* Address of reference */
-    Elf64_Xword r_info;  /* Symbol index and type of relocation */
-} Elf64_Rel;
+    elf64_addr_t r_offset; /* Address of reference */
+    elf64_xword_t r_info;  /* Symbol index and type of relocation */
+} elf64_rel;
 
 typedef struct
 {
-    Elf64_Addr r_offset;   /* Address of reference */
-    Elf64_Xword r_info;    /* Symbol index and type of relocation */
-    Elf64_Sxword r_addend; /* Constant part of expression */
-} Elf64_Rela;
+    elf64_addr_t r_offset;   /* Address of reference */
+    elf64_xword_t r_info;    /* Symbol index and type of relocation */
+    elf64_sxword_t r_addend; /* Constant part of expression */
+} elf64_rela_t;
 
 #define ELF_MAGIC 0x7d7ad33b
 #define ELF64_INIT         \
@@ -234,99 +234,99 @@ typedef struct
 
     /* File image size */
     size_t size;
-} Elf64;
+} elf64_t;
 
-int Elf64_TestHeader(const Elf64_Ehdr* header);
+int elf64_test_header(const elf64_ehdr_t* header);
 
-int Elf64_Load(const char* path, Elf64* elf);
+int elf64_load(const char* path, elf64_t* elf);
 
-int Elf64_Unload(Elf64* elf);
+int elf64_unload(elf64_t* elf);
 
-const void* Elf64_GetSymbolTableSection(const Elf64* elf);
+const void* elf64_get_symbol_table_section(const elf64_t* elf);
 
-void Elf64_DumpHeader(const Elf64_Ehdr* ehdr);
+void elf64_dump_header(const elf64_ehdr_t* ehdr);
 
-void Elf64_DumpShdr(const Elf64_Shdr* sh, size_t index);
+void elf64_dump_shdr(const elf64_shdr_t* sh, size_t index);
 
-void Elf64_Dump(const Elf64* elf);
+void elf64_dump(const elf64_t* elf);
 
-int Elf64_DumpSections(const Elf64* elf);
+int elf64_dump_sections(const elf64_t* elf);
 
-void Elf64_DumpSymbol(const Elf64* elf, const Elf64_Sym* sym);
+void elf64_dump_symbol(const elf64_t* elf, const elf64_sym_t* sym);
 
-int Elf64_DumpSymbols(const Elf64* elf);
+int elf64_dump_symbols(const elf64_t* elf);
 
-int Elf64_FindSymbolByName(const Elf64* elf, const char* name, Elf64_Sym* sym);
+int elf64_find_symbol_by_name(const elf64_t* elf, const char* name, elf64_sym_t* sym);
 
-const char* Elf64_GetStringFromDynstr(const Elf64* elf, Elf64_Word offset);
+const char* elf64_get_string_from_dynstr(const elf64_t* elf, elf64_word_t offset);
 
-int Elf64_FindDynamicSymbolByName(
-    const Elf64* elf,
+int elf64_find_dynamic_symbol_by_name(
+    const elf64_t* elf,
     const char* name,
-    Elf64_Sym* sym);
+    elf64_sym_t* sym);
 
-int Elf64_FindDynamicSymbolByAddress(
-    const Elf64* elf,
-    Elf64_Addr addr,
+int elf64_find_dynamic_symbol_by_address(
+    const elf64_t* elf,
+    elf64_addr_t addr,
     unsigned int type, /* STT_? */
-    Elf64_Sym* sym);
+    elf64_sym_t* sym);
 
-int Elf64_FindSymbolByAddress(
-    const Elf64* elf,
-    Elf64_Addr addr,
+int elf64_find_symbol_by_address(
+    const elf64_t* elf,
+    elf64_addr_t addr,
     unsigned int type, /* STT_? */
-    Elf64_Sym* sym);
+    elf64_sym_t* sym);
 
-int Elf64_FindSection(
-    const Elf64* elf,
+int elf64_find_section(
+    const elf64_t* elf,
     const char* name,
     unsigned char** data,
     size_t* size);
 
-const char* Elf64_GetStringFromShstrtab(const Elf64* elf, Elf64_Word offset);
+const char* elf64_get_string_from_shstrtab(const elf64_t* elf, elf64_word_t offset);
 
-const char* Elf64_GetStringFromStrtab(const Elf64* elf, Elf64_Word offset);
+const char* elf64_get_string_from_strtab(const elf64_t* elf, elf64_word_t offset);
 
-int Elf64_AddSection(
-    Elf64* elf,
+int elf64_add_section(
+    elf64_t* elf,
     const char* name,
     unsigned int type,
     const void* secdata,
     size_t secsize);
 
-int Elf64_RemoveSection(Elf64* elf, const char* name);
+int elf64_remove_section(elf64_t* elf, const char* name);
 
-void Elf64_DumpSectionNames(const Elf64* elf);
+void elf64_dump_section_names(const elf64_t* elf);
 
-void Elf64_DumpStrings(const Elf64* elf);
+void elf64_dump_strings(const elf64_t* elf);
 
-int Elf64_FindSectionHeader(
-    const Elf64* elf,
+int elf64_find_section_header(
+    const elf64_t* elf,
     const char* name,
-    Elf64_Shdr* shdr);
+    elf64_shdr_t* shdr);
 
-int Elf64_VisitSymbols(
-    const Elf64* elf,
-    int (*visit)(const Elf64_Sym* sym, void* data),
+int elf64_visit_symbols(
+    const elf64_t* elf,
+    int (*visit)(const elf64_sym_t* sym, void* data),
     void* data);
 
 /* Load relocations (size will be a multiple of the page size) */
-int Elf64_LoadRelocations(const Elf64* elf, void** data, size_t* size);
+int elf64_load_relocations(const elf64_t* elf, void** data, size_t* size);
 
 /* Get the segment with the given index; return NULL on error */
-void* Elf64_GetSegment(const Elf64* elf, size_t index);
+void* elf64_get_segment(const elf64_t* elf, size_t index);
 
 /* Get the section header with the given index; return NULL on error */
-Elf64_Shdr* Elf64_GetSectionHeader(const Elf64* elf, size_t index);
+elf64_shdr_t* elf64_get_section_header(const elf64_t* elf, size_t index);
 
 /* Get the program header with the given index; return NULL on error */
-Elf64_Phdr* Elf64_GetProgramHeader(const Elf64* elf, size_t index);
+elf64_phdr_t* elf64_get_program_header(const elf64_t* elf, size_t index);
 
-/* Get pointer to the Elf64_Ehdr */
-Elf64_Ehdr* Elf64_GetHeader(const Elf64* elf);
+/* Get pointer to the elf64_ehdr_t */
+elf64_ehdr_t* elf64_get_header(const elf64_t* elf);
 
 /* Return the name of the function that contains this address */
-const char* Elf64_GetFunctionName(const Elf64* elf, Elf64_Addr addr);
+const char* elf64_get_function_name(const elf64_t* elf, elf64_addr_t addr);
 
 ELF_EXTERNC_END
 
