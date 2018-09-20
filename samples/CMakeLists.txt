@@ -3,11 +3,6 @@
 
 if(USE_LIBSGX)
 
-# Install the attestation sample.
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/make/attestation
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
-    )
-
 # Install the remote_attestation sample.
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/make/remote_attestation
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
