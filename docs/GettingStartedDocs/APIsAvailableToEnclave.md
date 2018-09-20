@@ -1,13 +1,13 @@
-# Open Encalve APIs
+# Open Enclave APIs
 
 ## APIs available to an Enclave library
 
- To keep the Trusted computing base small for better security, the decision was made to make only a specific set of APIs available to an enclave library.
+ To keep the trusted computing base (TCB) small for better security, the decision was made to make only a specific set of APIs available to an enclave library.
 
 #### Enclave Runtime library
 
-  This library was created to help an enclave interact with its host, and retrieve enclave properties from the secure hardware 
-  The current list of enclave APIs can be found [in this header file](/include/openenclave/enclave.h)
+  This library was created to help an enclave interact with its host, and retrieve enclave properties from the secure hardware.
+  The current list of enclave APIs can be found [in this header file](/include/openenclave/enclave.h).
   
 #### [oelibc library](../LibcSupport.md):
 
@@ -28,5 +28,5 @@
 #### Enclave Host Runtime
 
   This library was created to help a host to manage an enclave life cycle and interact with it.
-  The current list of host APIs could be found [in this header file](/include/openenclave/host.h)
+  The current list of host APIs could be found [in this header file](/include/openenclave/host.h).
 
