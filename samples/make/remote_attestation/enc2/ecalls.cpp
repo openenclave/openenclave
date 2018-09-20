@@ -6,8 +6,7 @@
 
 // For this purpose of this example: demonstrating how to do remote attestation
 // g_enclave_secret_data is hardcoded as part of the enclave. In this sample,
-// the
-// secret data is hard coded as part of the enclave binary. In a real world
+// the secret data is hard coded as part of the enclave binary. In a real world
 // enclave implementation, secrets are never hard coded in the enclave binary
 // since the enclave binary itself is not encrypted. Instead, secrets are
 // acquired via provisioning from a service (such as a cloud server) after
@@ -16,8 +15,7 @@
 // enclave, it's only visible inside this secured enclave. Arbitrary enclave
 // specific secret data exchanged by the enclaves. In this sample, the first
 // enclave sends its g_enclave_secret_data (encrypted) to the second enclave.
-// The
-// this enclave decrypts the received data and adds it to its own
+// The second enclave decrypts the received data and adds it to its own
 // g_enclave_secret_data, and sends it back to the other enclave.
 uint8_t g_enclave_secret_data[ENCLAVE_SECRET_DATA_SIZE] =
     {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};

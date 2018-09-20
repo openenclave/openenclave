@@ -102,10 +102,9 @@ bool Attestation::attest_remote_report(
         goto exit;
     }
 
-    // 2) validate the enclave's identify
-    // signed_id is the hash of the public signing key that was used to sign an
-    // enclave.
-    // Check that the enclave was signed by an trusted entity.
+    // 2) validate the enclave identity's signed_id is the hash of the public
+    // signing key that was used to sign an enclave. Check that the enclave was
+    // signed by an trusted entity.
     if (memcmp(parsed_report.identity.signer_id, m_enclave_mrsigner, 32) != 0)
     {
         ENC_DEBUG_PRINTF("identity.signer_id checking failed.");

@@ -18,8 +18,7 @@ class Attestation
     Attestation(Crypto* crypto, uint8_t* enclave_mrsigner);
 
     // Generate a remote report for the given data. The SHA256 digest of the
-    // data is stored
-    // in the report_data field of the generated remote report.
+    // data is stored in the report_data field of the generated remote report.
     bool generate_remote_report(
         const uint8_t* data,
         size_t data_size,
