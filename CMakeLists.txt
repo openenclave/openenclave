@@ -29,16 +29,28 @@ if (NOT CMAKE_C_COMPILER AND "$ENV{CC}" STREQUAL "")
     endif()
 endif()
 
-# set default Jenkins variables
-if (NOT GIT_BRANCH)
-    set(GIT_BRANCH "null")
-endif(NOT GIT_BRANCH)
-if (NOT GIT_COMMIT)
-    set(GIT_COMMIT "null")
-endif(NOT GIT_COMMIT)
+# Collect Git info
+if (IS_DIRECTORY "${CMAKE_SOURCE_DIR}/.git")
+  execute_process(
+    COMMAND git rev-parse HEAD
+    OUTPUT_VARIABLE GIT_COMMIT
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    ERROR_QUIET
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  execute_process(
+    COMMAND git symbolic-ref HEAD
+    OUTPUT_VARIABLE GIT_BRANCH
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    ERROR_QUIET
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+endif ()
+
+# Get Jenkins build number
+set(BUILD_NUMBER $ENV{BUILD_NUMBER})
 if (NOT BUILD_NUMBER)
-    set(BUILD_NUMBER "0")
-endif(NOT BUILD_NUMBER)
+  set(BUILD_NUMBER "0")
+endif ()
 
 project("open-enclave" VERSION ${OE_VERSION} LANGUAGES ${OE_ASM} C CXX)
 

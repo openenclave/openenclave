@@ -140,17 +140,6 @@ if [[ ${ENABLE_FULL_LIBC_TESTS} -eq 1 ]]; then
     CMAKE+=" -DENABLE_FULL_LIBC_TESTS=1"
 fi
 
-# Jenkins variables below. If unset for a dev build, they default to null/0.
-if [[ -n ${GIT_COMMIT} ]]; then
-    CMAKE+=" -DGIT_COMMIT=${GIT_COMMIT}"
-fi
-if [[ -n ${GIT_BRANCH} ]]; then
-    CMAKE+=" -DGIT_BRANCH=${GIT_BRANCH}"
-fi
-if [[ -n ${BUILD_NUMBER} ]]; then
-    CMAKE+=" -DBUILD_NUMBER=${BUILD_NUMBER}"
-fi
-
 echo "CMake command is '${CMAKE}'"
 
 if [[ ${COMPILER_VALUE} == "gcc" ]]; then
