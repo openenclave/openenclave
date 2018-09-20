@@ -5,7 +5,7 @@
 # IMPORTANT- Please update the version number in the next sentence
 # when you create a new docker image.
 #
-# This Dockerfile script builds an image for tag oetools-azure:1.2
+# This Dockerfile script builds an image for tag oetools-azure:1.5
 
 # To use this Dockerfile, you will need to install docker-ce.
 # Instructions for installing it on Ubuntu 16.04 LTS are at:
@@ -45,38 +45,51 @@ FROM ubuntu:16.04
 ENV PATH="/cmake-3.11.4-Linux-x86_64/bin:${PATH}"
 
 RUN apt-get -y update
-RUN apt-get -y install sudo git
+RUN apt-get -y install wget
 
-# install all the packages specified in install-prereqs except cmake
-RUN apt-get -y install clang-format gcc g++ make gdb autoconf libtool doxygen graphviz gawk libexpat1-dev openssl libssl-dev subversion ocaml-native-compilers
+# Install the Clang 7 for OE SDK to build with Spectre mitigation flags
+RUN echo "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" >> /etc/apt/sources.list
+RUN echo "deb-src http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" >> /etc/apt/sources.list
+RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
+RUN apt-get -y update
+RUN apt-get -y install clang-7 lldb-7 lld-7
 
-# install wget as this is needed for getting latest cmake & Libsgx FLC packages
-# dpkg-dev is also needed by those packages for installing symlinks to lib files
-RUN apt-get -y install wget dpkg-dev
+# Install all the packages specified in install-prereqs except cmake.
+RUN apt-get -y install clang-format gcc g++ make gdb autoconf libtool doxygen graphviz gawk libexpat1-dev openssl libssl-dev subversion ocaml-native-compilers libcurl3 dh-exec libmbedtls10 sudo git dpkg-dev libprotobuf9v5
 
 # Install cmake v3.11 so that skipped tests are not marked as failures. This
 # version is not currently available via apt-get.
 RUN wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz
 RUN tar xf cmake-3.11.4-Linux-x86_64.tar.gz
 
-# Download the Libsgx FLC packages
-RUN wget http://10.224.140.70:8888/libsgx-enclave-common_1.0.101.45575-1.0_amd64.deb
-RUN wget http://10.224.140.70:8888/libsgx-enclave-common-dev_1.0.101.45575-1.0_amd64.deb
-RUN wget http://10.224.140.70:8888/libsgx-ngsa-ql_1.0.101.45575-1.0_amd64.deb
-RUN wget http://10.224.140.70:8888/libsgx-ngsa-ql-dev_1.0.101.45575-1.0_amd64.deb
+# Download the Intel DCAP dependencies
+RUN wget https://download.01.org/intel-sgx/dcap-1.0/SGX_installers/ubuntu16.04/libsgx-enclave-common_2.3.100.46354-1_amd64.deb
+RUN wget https://download.01.org/intel-sgx/sgx_repo/ubuntu/pool/main/libs/libsgx-enclave-common-dev/libsgx-enclave-common-dev_2.3.100.0-1_amd64.deb
+RUN wget https://download.01.org/intel-sgx/dcap-1.0/DCAP_installers/ubuntu16.04/libsgx-dcap-ql_1.0.100.46460-1.0_amd64.deb
+RUN wget https://download.01.org/intel-sgx/dcap-1.0/DCAP_installers/ubuntu16.04/libsgx-dcap-ql-dev_1.0.100.46460-1.0_amd64.deb
+RUN wget https://download.01.org/intel-sgx/dcap-1.0/sgx_linux_x64_driver_dcap_36594a7.bin -O sgx_linux_x64_driver.bin
 
-RUN dpkg -i libsgx-enclave-common_1.0.101.45575-1.0_amd64.deb
-RUN dpkg -i libsgx-enclave-common-dev_1.0.101.45575-1.0_amd64.deb
-RUN dpkg -i libsgx-ngsa-ql_1.0.101.45575-1.0_amd64.deb
-RUN dpkg -i libsgx-ngsa-ql-dev_1.0.101.45575-1.0_amd64.deb
+# Download Azure Quote provider package
+ARG webserver=10.31.100.105
+RUN wget http://$webserver/azquotprov_0.3-1_amd64.deb
 
+# Install all prerequisite packages
+RUN dpkg -i libsgx-enclave-common_2.3.100.46354-1_amd64.deb
+RUN dpkg -i libsgx-enclave-common-dev_2.3.100.0-1_amd64.deb
+RUN dpkg -i libsgx-dcap-ql_1.0.100.46460-1.0_amd64.deb
+RUN dpkg -i libsgx-dcap-ql-dev_1.0.100.46460-1.0_amd64.deb
+RUN dpkg -i azquotprov_0.3-1_amd64.deb
+RUN chmod +x sgx_linux_x64_driver.bin; mkdir -p /opt/bits; mv sgx_linux_x64_driver.bin /opt/bits
+
+# Configure git in target image to enable merge/rebase actions
 RUN git config --global user.email "oeciteam@microsoft.com"
 RUN git config --global user.name "OE CI Team"
 
 # Cleanup after we are done
 RUN rm -f cmake-3.11.4-Linux-x86_64.tar.gz
 
-RUN rm -f libsgx-enclave-common_1.0.101.45575-1.0_amd64.deb
-RUN rm -f libsgx-enclave-common-dev_1.0.101.45575-1.0_amd64.deb
-RUN rm -f libsgx-ngsa-ql_1.0.101.45575-1.0_amd64.deb
-RUN rm -f libsgx-ngsa-ql-dev_1.0.101.45575-1.0_amd64.deb
+RUN rm -f libsgx-enclave-common_2.3.100.46354-1_amd64.deb
+RUN rm -f libsgx-enclave-common-dev_2.3.100.0-1_amd64.deb
+RUN rm -f libsgx-dcap-ql_1.0.100.46460-1.0_amd64.deb
+RUN rm -f libsgx-dcap-ql-dev_1.0.100.46460-1.0_amd64.deb
+RUN rm -f azquotprov_0.3-1_amd64.deb

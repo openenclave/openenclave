@@ -12,14 +12,14 @@ RemoteReportWithPubKey* GetRemoteReportWithPubKey(oe_enclave_t* enclave)
     GetRemoteReportWithPubKeyArgs args = {};
     oe_result_t result =
         oe_call_enclave(enclave, "GetRemoteReportWithPubKey", &args);
-    if (result != OE_OK || !args.success || args.reportWithPubKey == NULL)
+    if (result != OE_OK || !args.success || args.report_with_pub_key == NULL)
     {
         printf("GetRemoteReportWithPubKey failed. %s", oe_result_str(result));
         exit(1);
     }
 
     printf("GetRemoteReportWithPubKey succeeded.\n");
-    return args.reportWithPubKey;
+    return args.report_with_pub_key;
 }
 
 /**
@@ -27,10 +27,10 @@ RemoteReportWithPubKey* GetRemoteReportWithPubKey(oe_enclave_t* enclave)
  */
 oe_result_t VerifyReportAndSetPubKey(
     oe_enclave_t* enclave,
-    RemoteReportWithPubKey* reportWithPubKey)
+    RemoteReportWithPubKey* report_with_pub_key)
 {
     VerifyReportWithPubKeyArgs args = {};
-    args.reportWithPubKey = reportWithPubKey;
+    args.report_with_pub_key = report_with_pub_key;
     oe_result_t result = OE_OK;
 
     result = oe_call_enclave(enclave, "VerifyReportAndSetPubKey", &args);

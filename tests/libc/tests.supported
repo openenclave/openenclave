@@ -2,7 +2,6 @@
 ../../3rdparty/musl/libc-test/src/functional/argv.c
 ../../3rdparty/musl/libc-test/src/functional/basename.c
 ../../3rdparty/musl/libc-test/src/functional/clock_gettime.c
-../../3rdparty/musl/libc-test/src/functional/crypt.c
 ../../3rdparty/musl/libc-test/src/functional/dirname.c
 ../../3rdparty/musl/libc-test/src/functional/env.c
 ../../3rdparty/musl/libc-test/src/functional/qsort.c

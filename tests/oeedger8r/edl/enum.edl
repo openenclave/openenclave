@@ -1,0 +1,92 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave  {
+    enum Color {
+        Red = 1,
+        Green = 2,
+        Blue = 80000
+    };
+
+    trusted {
+        public Color ecall_enum1(
+            Color a1,
+
+            [in] Color a2[5],
+            [in,out] Color a3[5][5],
+            [out] Color a4[1][1][1],
+
+            // count = 1
+            [in] Color* a5,
+            [in,out] Color* a6,
+            [out] Color* a7,
+
+            // count attribute           
+            [in, count=5] Color* a8,
+            [in,out, count=5] Color* a9,
+            [out, count=5] Color* a10,
+
+            // size attribute
+            [in, size=8] Color* a11,
+            [in,out, size=8] Color* a12,
+            [out, size=8] Color* a13,
+
+            // count parameter
+            [in, count=count] Color* a14,
+            [in,out, count=count] Color* a15,
+            [out, count=count] Color* a16,
+
+            // size parameter
+            [in, size=size] Color* a17,
+            [in,out, size=size] Color* a18,
+            [out, size=size] Color* a19,
+
+            size_t count,
+            size_t size
+
+            //[user_check]oe_enclave_t* foo
+        );
+
+        public void test_enum_edl_ocalls();
+    };
+
+    untrusted {
+        Color ocall_enum1(
+            Color a1,
+
+            [in] Color a2[5],
+            [in,out] Color a3[5][5],
+            [out] Color a4[1][1][1],
+
+            // count = 1
+            [in] Color* a5,
+            [in,out] Color* a6,
+            [out] Color* a7,
+
+            // count attribute           
+            [in, count=5] Color* a8,
+            [in,out, count=5] Color* a9,
+            [out, count=5] Color* a10,
+
+            // size attribute
+            [in, size=8] Color* a11,
+            [in,out, size=8] Color* a12,
+            [out, size=8] Color* a13,
+
+            // count parameter
+            [in, count=count] Color* a14,
+            [in,out, count=count] Color* a15,
+            [out, count=count] Color* a16,
+
+            // size parameter
+            [in, size=size] Color* a17,
+            [in,out, size=size] Color* a18,
+            [out, size=size] Color* a19,
+
+            size_t count,
+            size_t size
+
+            //[user_check]oe_enclave_t* foo
+        );
+    };
+};

@@ -4,83 +4,83 @@ pipeline {
     stage('Precommit-checking') {
       agent {
         docker {
-          image 'oetools-azure:1.2'
+          image 'oetools-azure:1.5'
         }
 
       }
       steps {
-        sh 'bash ./scripts/check-precommit-reqs'
+        sh './scripts/check-precommit-reqs'
       }
     }
     stage('Build and Test') {
       parallel {
-        stage('Simulation GCC SGX1 Debug') {
+        stage('Simulation clang-7 SGX1 Debug') {
           agent {
             docker {
-              image 'oetools-azure:1.2'
+              image 'oetools-azure:1.5'
             }
 
           }
           steps {
-            sh 'bash ./scripts/test-build-config -b Debug --compiler=gcc'
+            sh './scripts/test-build-config -b Debug --compiler=clang-7'
           }
         }
-        stage('Simulation GCC SGX1 Release') {
+        stage('Simulation clang-7 SGX1 Release') {
           agent {
             docker {
-              image 'oetools-azure:1.2'
+              image 'oetools-azure:1.5'
             }
 
           }
           steps {
-            sh 'bash ./scripts/test-build-config -p SGX1 -b Release --compiler=gcc'
+            sh './scripts/test-build-config -p SGX1 -b Release --compiler=clang-7'
           }
         }
-        stage('Simulation GCC SGX1 RelWithDebInfo') {
+        stage('Simulation clang-7 SGX1 RelWithDebInfo') {
           agent {
             docker {
-              image 'oetools-azure:1.2'
+              image 'oetools-azure:1.5'
             }
 
           }
           steps {
-            sh 'bash ./scripts/test-build-config -p SGX1 -b RelWithDebInfo --compiler=gcc'
+            sh './scripts/test-build-config -p SGX1 -b RelWithDebInfo --compiler=clang-7'
           }
         }
-        stage('Simulation GCC SGX1-FLC Debug') {
+        stage('Simulation clang-7 SGX1-FLC Debug') {
           agent {
             docker {
-              image 'oetools-azure:1.2'
+              image 'oetools-azure:1.5'
             }
 
           }
           steps {
-            sh 'bash ./scripts/test-build-config -p SGX1FLC -b Debug --compiler=gcc'
+            sh './scripts/test-build-config -p SGX1FLC -b Debug --compiler=clang-7'
           }
         }
-        stage('Simulation GCC SGX1-FLC Release') {
+        stage('Simulation clang-7 SGX1-FLC Release') {
           agent {
             docker {
-              image 'oetools-azure:1.2'
+              image 'oetools-azure:1.5'
             }
 
           }
           steps {
-            sh 'bash ./scripts/test-build-config -p SGX1FLC -b Release --compiler=gcc'
+            sh './scripts/test-build-config -p SGX1FLC -b Release --compiler=clang-7'
           }
         }
-        stage('Simulation GCC SGX1-FLC RelWithDebInfo') {
+        stage('Simulation clang-7 SGX1-FLC RelWithDebInfo') {
           agent {
             docker {
-              image 'oetools-azure:1.2'
+              image 'oetools-azure:1.5'
             }
 
           }
           steps {
-            sh 'bash ./scripts/test-build-config -p SGX1FLC -b RelWithDebInfo --compiler=gcc'
+            sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo --compiler=clang-7'
           }
         }
-        stage('Kabylake GCC SGX1 Debug') {
+        stage('Kabylake clang-7 SGX1 Debug') {
           agent {
             node {
               label 'SGX'
@@ -88,10 +88,10 @@ pipeline {
 
           }
           steps {
-            sh 'bash ./scripts/test-build-config -p SGX1 -b Debug -d --compiler=gcc'
+            sh './scripts/test-build-config -p SGX1 -b Debug -d --compiler=clang-7'
           }
         }
-        stage('Kabylake GCC SGX1 Release') {
+        stage('Kabylake clang-7 SGX1 Release') {
           agent {
             node {
               label 'SGX'
@@ -99,10 +99,10 @@ pipeline {
 
           }
           steps {
-            sh 'bash ./scripts/test-build-config -p SGX1 -b Release -d --compiler=gcc'
+            sh './scripts/test-build-config -p SGX1 -b Release -d --compiler=clang-7'
           }
         }
-        stage('Kabylake GCC SGX1 RelWithDebInfo') {
+        stage('Kabylake clang-7 SGX1 RelWithDebInfo') {
           agent {
             node {
               label 'SGX'
@@ -110,10 +110,10 @@ pipeline {
 
           }
           steps {
-            sh 'bash ./scripts/test-build-config -p SGX1 -b RelWithDebInfo -d --compiler=gcc'
+            sh './scripts/test-build-config -p SGX1 -b RelWithDebInfo -d --compiler=clang-7'
           }
         }
-        stage('Coffeelake GCC SGX1-FLC Debug') {
+        stage('Coffeelake clang-7 SGX1-FLC Debug') {
           agent {
             node {
               label 'hardware'
@@ -121,10 +121,10 @@ pipeline {
 
           }
           steps {
-            sh 'bash ./scripts/test-build-config -p SGX1FLC -b Debug -d --compiler=gcc'
+            sh './scripts/test-build-config -p SGX1FLC -b Debug -d --compiler=clang-7'
           }
         }
-        stage('Coffeelake GCC SGX1-FLC Release') {
+        stage('Coffeelake clang-7 SGX1-FLC Release') {
           agent {
             node {
               label 'hardware'
@@ -132,10 +132,10 @@ pipeline {
 
           }
           steps {
-            sh 'bash ./scripts/test-build-config -p SGX1FLC -b Release -d --compiler=gcc'
+            sh './scripts/test-build-config -p SGX1FLC -b Release -d --compiler=clang-7'
           }
         }
-        stage('Coffeelake GCC SGX1-FLC RelWithDebInfo') {
+        stage('Coffeelake clang-7 SGX1-FLC RelWithDebInfo') {
           agent {
             node {
               label 'hardware'
@@ -143,10 +143,10 @@ pipeline {
 
           }
           steps {
-            sh 'bash ./scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d --compiler=gcc'
+            sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d --compiler=clang-7'
           }
         }
-        stage('Coffeelake Clang SGX1-FLC Debug') {
+        stage('Coffeelake gcc SGX1-FLC Debug') {
           agent {
             node {
               label 'hardware'
@@ -154,10 +154,10 @@ pipeline {
 
           }
           steps {
-            sh 'bash ./scripts/test-build-config -p SGX1FLC -b Debug -d --compiler=clang-7'
+            sh './scripts/test-build-config -p SGX1FLC -b Debug -d --compiler=gcc'
           }
         }
-        stage('Coffeelake Clang SGX1-FLC Release') {
+        stage('Coffeelake gcc SGX1-FLC Release') {
           agent {
             node {
               label 'hardware'
@@ -165,10 +165,10 @@ pipeline {
 
           }
           steps {
-            sh 'bash ./scripts/test-build-config -p SGX1FLC -b Release -d --compiler=clang-7'
+            sh './scripts/test-build-config -p SGX1FLC -b Release -d --compiler=gcc'
           }
         }
-        stage('Coffeelake Clang SGX1-FLC RelWithDebInfo') {
+        stage('Coffeelake gcc SGX1-FLC RelWithDebInfo') {
           agent {
             node {
               label 'hardware'
@@ -176,7 +176,7 @@ pipeline {
 
           }
           steps {
-            sh 'bash ./scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d --compiler=clang-7'
+            sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d --compiler=gcc'
           }
         }
       }

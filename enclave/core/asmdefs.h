@@ -49,8 +49,8 @@ void __oe_handle_main(
     uint64_t arg2,
     uint64_t cssa,
     void* tcs,
-    uint64_t* outputArg1,
-    uint64_t* outputArg2);
+    uint64_t* output_arg1,
+    uint64_t* output_arg2);
 
 void oe_exception_dispatcher(void* context);
 #endif
@@ -58,7 +58,7 @@ void oe_exception_dispatcher(void* context);
 #ifndef __ASSEMBLER__
 void _oe_notify_nested_exit_start(
     uint64_t arg1,
-    oe_ocall_context_t* ocallContext);
+    oe_ocall_context_t* ocall_context);
 #endif
 
 #endif /* _ASMDEFS_H */

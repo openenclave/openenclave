@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-#ifdef OE_USE_LIBSGX
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/datetime.h>
@@ -8,29 +7,30 @@
 #include <stdio.h>
 #include <string.h>
 #include "../../../common/quote.h"
+#include "tests_t.h"
 
-void TestPositive(const oe_datetime_t& dateTime, const char* expected)
+void TestPositive(const oe_datetime_t& date_time, const char* expected)
 {
-    char utcString[21];
-    size_t length = sizeof(utcString);
-    OE_TEST(oe_datetime_to_string(&dateTime, utcString, &length) == OE_OK);
-    OE_TEST(strcmp(utcString, expected) == 0);
+    char utc_string[21];
+    size_t length = sizeof(utc_string);
+    OE_TEST(oe_datetime_to_string(&date_time, utc_string, &length) == OE_OK);
+    OE_TEST(strcmp(utc_string, expected) == 0);
 
-    oe_datetime_t dateTimeRoundTrip = {0};
+    oe_datetime_t date_time_round_trip = {0};
     OE_TEST(
-        oe_datetime_from_string(utcString, length, &dateTimeRoundTrip) ==
+        oe_datetime_from_string(utc_string, length, &date_time_round_trip) ==
         OE_OK);
-    OE_TEST(memcmp(&dateTime, &dateTimeRoundTrip, sizeof(dateTime)) == 0);
+    OE_TEST(memcmp(&date_time, &date_time_round_trip, sizeof(date_time)) == 0);
 }
 
-void TestNegative(oe_datetime_t dateTime, oe_result_t result)
+void TestNegative(oe_datetime_t date_time, oe_result_t result)
 {
-    char utcString[21];
-    size_t length = sizeof(utcString);
-    OE_TEST(oe_datetime_to_string(&dateTime, utcString, &length) == result);
+    char utc_string[21];
+    size_t length = sizeof(utc_string);
+    OE_TEST(oe_datetime_to_string(&date_time, utc_string, &length) == result);
 }
 
-OE_ECALL void TestIso8601Time(void*)
+void test_iso8601_time()
 {
     // Single digit fields
     TestPositive(oe_datetime_t{2018, 8, 8, 0, 0, 0}, "2018-08-08T00:00:00Z");
@@ -96,7 +96,7 @@ OE_ECALL void TestIso8601Time(void*)
     oe_host_printf("TestIso8601Time passed\n");
 }
 
-OE_ECALL void TestIso8601TimeNegative(void*)
+void test_iso8601_time_negative()
 {
     // Year before unix epoch 1970.
     TestNegative(oe_datetime_t{1969, 8, 8, 0, 0, 0}, OE_INVALID_UTC_DATE_TIME);
@@ -148,5 +148,3 @@ OE_ECALL void TestIso8601TimeNegative(void*)
 
     oe_host_printf("TestIso8601TimeNegative passed\n");
 }
-
-#endif

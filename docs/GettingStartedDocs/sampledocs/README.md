@@ -1,4 +1,4 @@
-# OE Samples (work in progress)
+# OE Samples
 
 All the samples that come with the Open Enclave SDK installation share similar directory structure and build instructions. The section contains general information on how to setup/build/sign/run all samples. It's important that you read information on this page before jumping into any individual sample.
 
@@ -66,22 +66,7 @@ binaries.
 
 #### [HelloWorld](/samples/make/helloworld/README.md)
 
+#### [File-Encryptor](/samples/make/file-encryptor/README.md)
+
 #### [Remote Attestation](/samples/make/remote_attestation/README.md)
 
-#### Echo (Under construction)
- 
-  - Written in C++
-  - Demonstrates the parameter passing feature
-  - Showcase the enclave public APIs
-  - In progress
-  
-#### File-encryptor (Under construction)
- 
-  - Written in C++
-  - Demonstrates data passing and the built-in mbedtls API
-  - In progress
-
-####  Data Sealing (Under construction)
-  - Written in C++
-  - Demonstrates Open Enclave's sealing feature
-  - In progress

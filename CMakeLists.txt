@@ -17,6 +17,18 @@ elseif(WIN32)
   set(OE_ASM ASM_MASM)
 endif()
 
+# Prefer clang over other compilers
+if (NOT CMAKE_C_COMPILER AND "$ENV{CC}" STREQUAL "")
+    message(STATUS "Trying to find a supported version of Clang")
+    find_program(CMAKE_C_COMPILER NAMES clang-7.0 clang-7)
+    if (CMAKE_C_COMPILER)
+        string(REPLACE "/clang-" "/clang++-" CMAKE_CXX_COMPILER ${CMAKE_C_COMPILER})
+    else()
+        message(WARNING "Clang not found, will use default compiler. "
+            "Override the compiler by setting CC and CXX environment variables.")
+    endif()
+endif()
+
 # set default Jenkins variables
 if (NOT GIT_BRANCH)
     set(GIT_BRANCH "null")
@@ -29,6 +41,16 @@ if (NOT BUILD_NUMBER)
 endif(NOT BUILD_NUMBER)
 
 project("open-enclave" VERSION ${OE_VERSION} LANGUAGES ${OE_ASM} C CXX)
+
+# warn about unsupported Clang versions
+if (CMAKE_C_COMPILER_ID MATCHES "Clang")
+    if (CMAKE_C_COMPILER_VERSION VERSION_LESS 7 OR
+        CMAKE_C_COMPILER_VERSION VERSION_GREATER 7.99)
+        message(WARNING "Open Enclave officially supports Clang 7 only, "
+            "but your Clang version (${CMAKE_C_COMPILER_VERSION}) "
+            "is older or newer than that. Build problems may occur.")
+    endif()
+endif()
 
 # allow simpler include() of our scripts
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
@@ -84,7 +106,7 @@ set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 set(CPACK_PACKAGE_VERSION ${OE_VERSION})
 set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libsgx-enclave-common (>=1.0.101.45575-1.0), libsgx-enclave-common-dev (>=1.0.101.45575-1.0), libsgx-ngsa-ql (>=1.0.101.45575-1.0), libsgx-ngsa-ql-dev (>=1.0.101.45575-1.0)")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libsgx-enclave-common (>=2.3.100.46354-1), libsgx-enclave-common-dev (>=2.3.100.0-1), libsgx-dcap-ql (>=1.0.100.46460-1.0), libsgx-dcap-ql-dev (>=1.0.100.46460-1.0)")
 include(CPack)
 
 # define build options that affect cmake across multiple subdirectories
@@ -110,7 +132,6 @@ add_subdirectory(debugger)
 add_subdirectory(docs/refman)
 add_subdirectory(enclave)
 add_subdirectory(enclave/core)
-add_subdirectory(idl)
 add_subdirectory(libc)
 add_subdirectory(libcxx)
 add_subdirectory(pkgconfig)

@@ -26,6 +26,7 @@ LICENSE
 *.md
 *.html
 *.json
+*.toml
 ./.openenclaveroot
 *.pem
 ./prereqs/aesm/.build
@@ -36,13 +37,15 @@ LICENSE
 ./prereqs/aesm/.sdk
 ./prereqs/aesm/.sdk_installer
 ./prereqs/isgx/linux-sgx-driver
-./prereqs/ngsa/libsgx
+./prereqs/dcap/libsgx
 ./prereqs/sgx-driver/sgx-driver
+./samples/make/file-encryptor/diagram.png
 ./samples/make/remote_attestation/images/attestationsample.png
 ./samples/make/remote_attestation/images/localattestation.png
 ./samples/make/remote_attestation/images/remoteattestation_sample_details.png
 ./samples/make/remote_attestation/images/remoteattestation_sample.png
 ./samples/make/remote_attestation/images/remoteattestation_service.png
+./samples/make/file-encryptor/testfile
 ./.check-license.ignore
 ./tests/eenter/dead.txt
 ./tests/hashstr/dead.txt
@@ -67,6 +70,9 @@ LICENSE
 ./tests/tester/file
 ./THIRD_PARTY_NOTICES
 ./tools/bins/dead.txt
+./tools/oeedger8r/intel
+./tools/oeedger8r/main.ml
+./tools/oeedger8r/Makefile
 ./tools/oesign/files/log.txt
 VERSION
 ./prereqs/packages/.packages

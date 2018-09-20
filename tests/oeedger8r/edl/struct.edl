@@ -1,0 +1,82 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    // Empty structs are not supported.
+
+    struct MyStruct0 {
+        int x;
+    };
+
+    struct MyStruct1 {
+        MyStruct0 s0;
+        int y;
+    };
+
+    trusted {
+
+        public MyStruct1 ecall_struct1 (
+            MyStruct1 a1,
+            [in] MyStruct1 a2[5],
+            [in, out] MyStruct1 a3[5][5],
+            [out] MyStruct1 a4[1][1][1],
+            
+            [in] MyStruct1* a5,
+            [in, out] MyStruct1* a6,
+            [out] MyStruct1* a7,
+
+            [in, count=5] MyStruct1* a8,
+            [in, out, count=5] MyStruct1* a9,
+            [out, count=5] MyStruct1* a10,
+
+            [in, size=40] MyStruct1* a11,
+            [in, out, size=40] MyStruct1* a12,
+            [out, size=40] MyStruct1* a13,
+            
+            [in, count=count] MyStruct1* a14,
+            [in, out, count=count] MyStruct1* a15,
+            [out, count=count] MyStruct1* a16,            
+
+            [in, size=size] MyStruct1* a17,
+            [in, out, size=size] MyStruct1* a18,
+            [out, size=size] MyStruct1* a19,               
+
+            size_t count,
+            size_t size
+        );
+
+        public void test_struct_edl_ocalls();
+    };
+
+    untrusted {
+        MyStruct1 ocall_struct1 (
+            MyStruct1 a1,
+            [in] MyStruct1 a2[5],
+            [in, out] MyStruct1 a3[5][5],
+            [out] MyStruct1 a4[1][1][1],
+            
+            [in] MyStruct1* a5,
+            [in, out] MyStruct1* a6,
+            [out] MyStruct1* a7,
+
+            [in, count=5] MyStruct1* a8,
+            [in, out, count=5] MyStruct1* a9,
+            [out, count=5] MyStruct1* a10,
+
+            [in, size=40] MyStruct1* a11,
+            [in, out, size=40] MyStruct1* a12,
+            [out, size=40] MyStruct1* a13,
+            
+            [in, count=count] MyStruct1* a14,
+            [in, out, count=count] MyStruct1* a15,
+            [out, count=count] MyStruct1* a16,            
+
+            [in, size=size] MyStruct1* a17,
+            [in, out, size=size] MyStruct1* a18,
+            [out, size=size] MyStruct1* a19,               
+
+            size_t count,
+            size_t size
+        );
+    };
+};

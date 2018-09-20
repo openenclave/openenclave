@@ -3,24 +3,24 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/hexdump.h>
-#include "../args.h"
+#include "hexdump_t.h"
 
-OE_ECALL void Test(void* args_)
+int test(
+    const unsigned char* data,
+    size_t data_length,
+    char* hexstr,
+    size_t hexstr_length)
 {
-    Args* args = (Args*)args_;
+    oe_hex_dump(data, data_length);
 
-    oe_hex_dump(args->data, sizeof(args->data));
+    const char* str = oe_hex_string(hexstr, hexstr_length, data, data_length);
 
-    const char* str = oe_hex_string(
-        args->hexstr, sizeof(args->hexstr), args->data, sizeof(args->data));
-
-    if (str != args->hexstr)
+    if (str != hexstr)
     {
-        args->ret = -1;
-        return;
+        return -1;
     }
 
-    args->ret = 0;
+    return 0;
 }
 
 OE_SET_ENCLAVE_SGX(

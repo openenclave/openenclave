@@ -1,7 +1,7 @@
+#!/usr/bin/env bash
+
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
-
-#!/bin/bash
 
 ##====================================================================================
 ##
@@ -15,7 +15,7 @@
 ## For CI runs, the Docker image will contain the necessary packages.
 ##
 ##====================================================================================
-if [ "$1" == "-h" -o "$1" == "--help" ]; then
+if [[ $1 == "-h" || $1 == "--help" ]]; then
    echo "Script to fire OE build and test with specified platform/build-type/test mode" 
    echo " Usage: "
    echo " ./scripts/test-build-config"
@@ -33,28 +33,28 @@ if [ "$1" == "-h" -o "$1" == "--help" ]; then
    exit 0
 fi
 
-#Default values for the arguments
-#Disable Simulator test mode to run on SGX hardware. 
-#Default test mode is Simulator, disable Simulator test mode with -d or --disable_sim 
+# Default values for the arguments
+# Disable Simulator test mode to run on SGX hardware
+# Default test mode is Simulator, disable Simulator test mode with -d or --disable_sim
 DISABLE_SIM=0
-#Valid PLATFORM_MODE values are SGX1 or SGX1FLC
+# Valid PLATFORM_MODE values are SGX1 or SGX1FLC
 PLATFORM_MODE="SGX1"
-#Valid BUILDTYPE values are Debug|Release|RelWithDebInfo
+# Valid BUILDTYPE values are Debug|Release|RelWithDebInfo
 BUILD_TYPE="DEBUG"
-#Build a package. Default is disabled
+# Build a package. Default is disabled
 BUILD_PACKAGE=0
 OE_INSTALL_DIR="/opt/openenclave"
-#Flag for enabling full libc tests.
+# Flag for enabling full libc tests.
 ENABLE_FULL_LIBC_TESTS=0
-#Flag for enabling full libcxx tests.
+# Flag for enabling full libcxx tests.
 ENABLE_FULL_LIBCXX_TESTS=0
-#Flag to build with clang instead of gcc
-COMPILER_VALUE="gcc"
+# Valid COMPILER_VALUE inputs are clang-7|gcc
+COMPILER_VALUE="clang-7"
 
-#Parse the command line - keep looping as long as there is at least one more argument
+# Parse the command line - keep looping as long as there is at least one more argument
 while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
+    key=$1
+    case $key in
         # This is a flag type option. Will catch either -d or --disable_sim
         -d|--disable_sim)
         DISABLE_SIM=1
@@ -66,7 +66,7 @@ while [[ $# -gt 0 ]]; do
         # This is an arg value type option. Will catch -p value or --platform_mode value
         -p|--platform_mode)
         shift # past the key and to the value
-        PLATFORM_MODE="$1"
+        PLATFORM_MODE=$1
         ;;
         # This is an arg=value type option. Will catch -p=value or --platform_mode=value
         -p=*|--platform_mode=*)
@@ -76,7 +76,7 @@ while [[ $# -gt 0 ]]; do
         # This is an arg value type option. Will catch -b value or --build_type value
         -b|--build_type)
         shift # past the key and to the value
-        BUILD_TYPE="$1"
+        BUILD_TYPE=$1
         ;;
         --compiler=*)
         COMPILER_VALUE="${key#*=}"
@@ -93,7 +93,7 @@ while [[ $# -gt 0 ]]; do
         ENABLE_FULL_LIBC_TESTS=1
         ;;
         *)
-        echo "Unknown option '$key'"
+        echo "Unknown option '${key}'"
         exit 1
         ;;
     esac
@@ -102,100 +102,95 @@ while [[ $# -gt 0 ]]; do
 done
 
 echo "DISABLE SIMULATOR MODE = ${DISABLE_SIM}"
-PLATFORM_MODE=`echo $PLATFORM_MODE|tr '[a-z]' '[A-Z]'`
-echo "PLATFORM MODE  = ${PLATFORM_MODE}"
-BUILD_TYPE=`echo $BUILD_TYPE|tr '[a-z]' '[A-Z]'`
-echo "BUILD_TYPE  = ${BUILD_TYPE}"
+PLATFORM_MODE=$(echo "$PLATFORM_MODE" | tr '[:lower:]' '[:upper:]')
+echo "PLATFORM MODE = ${PLATFORM_MODE}"
+BUILD_TYPE=$(echo "$BUILD_TYPE" | tr '[:lower:]' '[:upper:]')
+echo "BUILD_TYPE = ${BUILD_TYPE}"
 
-#Check if the parameter values are correct
+# Check if the parameter values are correct
 if [[ ${PLATFORM_MODE} != "SGX1" && ${PLATFORM_MODE} != "SGX1FLC" ]]; then
-   echo "Invalid value for ${PLATFORM_MODE} "
+   echo "Invalid value for ${PLATFORM_MODE}"
    exit 1
 fi
 
 if [[ ${BUILD_TYPE} != "DEBUG" && ${BUILD_TYPE} != "RELEASE" && ${BUILD_TYPE} != "RELWITHDEBINFO" ]]; then
-   echo "Invalid value for ${BUILD_TYPE} "
+   echo "Invalid value for ${BUILD_TYPE}"
    exit 1
 fi
 
-#Delete the build directory if it exists. This allows calling this script iteratively
-#for multiple configurations for a platform.
-if [ -d "./build" ]; then
+# Delete the build directory if it exists. This allows calling this script iteratively
+# for multiple configurations for a platform.
+if [[ -d ./build ]]; then
   rm -rf ./build
 fi
 
-mkdir build
-cd build
+mkdir build && cd build || exit 1
 
-
-CMAKE_FLAGS="-DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
-if [ ${PLATFORM_MODE} == "SGX1FLC" ]; then
-    CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_LIBSGX=1"
+CMAKE="cmake .. -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
+if [[ ${PLATFORM_MODE} == "SGX1FLC" ]]; then
+    CMAKE+=" -DUSE_LIBSGX=1"
 fi
-if [ ${BUILD_PACKAGE} = 1 ]; then
-    CMAKE_FLAGS="${CMAKE_FLAGS} -DCMAKE_INSTALL_PREFIX:PATH=${OE_INSTALL_DIR} -DCPACK_GENERATOR=DEB"
+if [[ ${BUILD_PACKAGE} -eq 1 ]]; then
+    CMAKE+=" -DCMAKE_INSTALL_PREFIX:PATH=${OE_INSTALL_DIR} -DCPACK_GENERATOR=DEB"
 fi
-if [ ${ENABLE_FULL_LIBCXX_TESTS} = 1 ]; then
-    CMAKE_FLAGS="${CMAKE_FLAGS} -DENABLE_FULL_LIBCXX_TESTS=1"
+if [[ ${ENABLE_FULL_LIBCXX_TESTS} -eq 1 ]]; then
+    CMAKE+=" -DENABLE_FULL_LIBCXX_TESTS=1"
 fi
-if [ ${ENABLE_FULL_LIBC_TESTS} = 1 ]; then
-    CMAKE_FLAGS="${CMAKE_FLAGS} -DENABLE_FULL_LIBC_TESTS=1"
+if [[ ${ENABLE_FULL_LIBC_TESTS} -eq 1 ]]; then
+    CMAKE+=" -DENABLE_FULL_LIBC_TESTS=1"
 fi
 
 # Jenkins variables below. If unset for a dev build, they default to null/0.
-if [ -n "${GIT_COMMIT}" ]; then
-    CMAKE_FLAGS="${CMAKE_FLAGS} -DGIT_COMMIT=${GIT_COMMIT}"
+if [[ -n ${GIT_COMMIT} ]]; then
+    CMAKE+=" -DGIT_COMMIT=${GIT_COMMIT}"
 fi
-if [ -n "${GIT_BRANCH}" ]; then
-    CMAKE_FLAGS="${CMAKE_FLAGS} -DGIT_BRANCH=${GIT_BRANCH}"
+if [[ -n ${GIT_BRANCH} ]]; then
+    CMAKE+=" -DGIT_BRANCH=${GIT_BRANCH}"
 fi
-if [ -n "${BUILD_NUMBER}" ]; then
-    CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_NUMBER=${BUILD_NUMBER}"
+if [[ -n ${BUILD_NUMBER} ]]; then
+    CMAKE+=" -DBUILD_NUMBER=${BUILD_NUMBER}"
 fi
 
-echo "CMAKE_FLAGS are ${CMAKE_FLAGS}"
+echo "CMake command is '${CMAKE}'"
 
-if [ "$COMPILER_VALUE" = "gcc" ]; then
+if [[ ${COMPILER_VALUE} == "gcc" ]]; then
     export CC="gcc"
     export CXX="g++"
-elif [ "$COMPILER_VALUE" = "clang-7" ]; then
+elif [[ ${COMPILER_VALUE} == "clang-7" ]]; then
     export CC="clang-7"
     export CXX="clang++-7"
 fi
 
-cmake .. ${CMAKE_FLAGS}
-if [ "$?" != "0" ]; then
+if ! ${CMAKE}; then
     echo ""
     echo "cmake failed for ${PLATFORM_MODE}"
     echo ""
     exit 1
 fi
 
-make
-if [ "$?" != "0" ]; then
+if ! make; then
     echo ""
     echo "Build failed for ${PLATFORM_MODE}"
     echo ""
     exit 1
 fi
 
-#Finally run the tests in Simulator mode or on Hardware
-if [ ${DISABLE_SIM} != 1 ]; then
-   SIMULATION_MODE_TEXT="simulation"
-   OE_SIMULATION=1 ctest --output-on-failure
+# Finally run the tests in Simulator mode or on Hardware
+if [[ ${DISABLE_SIM} -ne 1 ]]; then
+    SIMULATION_MODE_TEXT="simulation"
+    export OE_SIMULATION=1
 else
-   SIMULATION_MODE_TEXT="hardware"
-   ctest --output-on-failure
+    SIMULATION_MODE_TEXT="hardware"
 fi
 
-if [ "$?" != "0" ]; then
+if ! ctest --output-on-failure; then
     echo ""
     echo "Test failed for ${PLATFORM_MODE} ${BUILD_TYPE} in ${SIMULATION_MODE_TEXT} mode"
     echo ""
     exit 1
 fi
 
-if [ ${BUILD_PACKAGE} = 1 ]; then
+if [[ ${BUILD_PACKAGE} -eq 1 ]]; then
     echo "Building package"
     echo ""
     make package

@@ -39,7 +39,7 @@ Please refer to the following [documentation](SGXSupportLevel.md) to determine t
 #### 3. `Build, install and run`
 
    Choose an operating mode that is compatible with the SGX support level of your target system.
-   The links below contain instructions on how to setup Open Enclave SDK environment for a given mode.
+   The links below contain instructions on how to set up Open Enclave SDK environment for a given mode.
 
   - [Setup Open Enclave SDK for SGX1+FLC mode](SGX1FLCGettingStarted.md)   
   - [Setup Open Enclave SDK for SGX1 mode](SGX1GettingStarted.md)
@@ -48,12 +48,12 @@ Please refer to the following [documentation](SGXSupportLevel.md) to determine t
 Samples
 -------------------------------
 
-Assuming you install the SDK you built the following way in the [Basic install section](InstallInfo.md#basic-install)
+Assuming you install the SDK as below (also described in the [basic install section](InstallInfo.md#basic-install))
 
     build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=~/openenclave ..
     build$ make install
 
-Open Enclave samples could be found in ~/openenclave/share/openenclave/samples
+Open Enclave samples can be found in ~/openenclave/share/openenclave/samples
 
 See [Open Enclave samples](sampledocs/README.md) for details
 

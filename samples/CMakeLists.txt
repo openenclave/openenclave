@@ -3,28 +3,21 @@
 
 if(USE_LIBSGX)
 
-# Install the attestation sample.
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/make/attestation
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
-    )
-
 # Install the remote_attestation sample.
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/make/remote_attestation
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
     )
 
 
-else()
+endif()
 
-# Install the sort sample.
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/make/sort
+# Install the helloworld sample.
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/make/helloworld
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
     )
 
-endif()
-
-# Install the helloworld.
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/make/helloworld
+# Install the file-encryptor sample
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/make/file-encryptor
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
     )
 
