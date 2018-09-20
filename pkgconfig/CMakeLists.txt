@@ -105,7 +105,7 @@ configure_file(
 install(FILES
     ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oeenclave-gcc.pc
     DESTINATION 
-    /usr/local/share/pkgconfig)
+    "${CMAKE_INSTALL_DATADIR}/pkgconfig")
 
 ##==============================================================================
 ##
@@ -121,7 +121,7 @@ configure_file(
 install(FILES
     ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oeenclave-g++.pc
     DESTINATION 
-    /usr/local/share/pkgconfig)
+    "${CMAKE_INSTALL_DATADIR}/pkgconfig")
 
 ##==============================================================================
 ##
@@ -137,7 +137,7 @@ configure_file(
 install(FILES
     ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-gcc.pc
     DESTINATION 
-    /usr/local/share/pkgconfig)
+    "${CMAKE_INSTALL_DATADIR}/pkgconfig")
 
 ##==============================================================================
 ##
@@ -153,7 +153,7 @@ configure_file(
 install(FILES
     ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-g++.pc
     DESTINATION 
-    /usr/local/share/pkgconfig)
+    "${CMAKE_INSTALL_DATADIR}/pkgconfig")
 
 ##==============================================================================
 ##
@@ -169,7 +169,7 @@ configure_file(
 install(FILES
     ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oeenclave-clang.pc
     DESTINATION 
-    /usr/local/share/pkgconfig)
+    "${CMAKE_INSTALL_DATADIR}/pkgconfig")
 
 ##==============================================================================
 ##
@@ -185,7 +185,7 @@ configure_file(
 install(FILES
     ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oeenclave-clang++.pc
     DESTINATION 
-    /usr/local/share/pkgconfig)
+    "${CMAKE_INSTALL_DATADIR}/pkgconfig")
 
 ##==============================================================================
 ##
@@ -201,7 +201,7 @@ configure_file(
 install(FILES
     ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-clang.pc
     DESTINATION 
-    /usr/local/share/pkgconfig)
+    "${CMAKE_INSTALL_DATADIR}/pkgconfig")
 
 ##==============================================================================
 ##
@@ -217,7 +217,7 @@ configure_file(
 install(FILES
     ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-clang++.pc
     DESTINATION 
-    /usr/local/share/pkgconfig)
+    "${CMAKE_INSTALL_DATADIR}/pkgconfig")
 
 ##==============================================================================
 ##
