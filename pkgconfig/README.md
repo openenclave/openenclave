@@ -46,7 +46,7 @@ $ clang++-7 ${cxxflags} -o enc enc.cpp ${libs}
 Building host applications:
 ---------------------------
 
-To build host application with the Clang C compiler, use the following 
+To build a host application with the Clang C compiler, use the following 
 commands.
 
 ```
@@ -55,7 +55,7 @@ libs=`pkg-config oehost-clang --libs`
 $ clang-7 ${cflags} -o host host.c ${libs}
 ```
 
-To build host application with the Clang C++ compiler, use these commands.
+To build a host application with the Clang C++ compiler, use these commands.
 
 ```
 cflags=`pkg-config oehost-clang++ --cflags`
