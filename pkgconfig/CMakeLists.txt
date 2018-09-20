@@ -41,9 +41,21 @@ set(ENCLAVE_CFLAGS_GCC
 ##
 ##==============================================================================
 
-set(ENCLAVE_CLIBS_1 "-nostdlib -nodefaultlibs -nostartfiles -Wl,--no-undefined -Wl,-Bstatic -Wl,-Bsymbolic -Wl,--export-dynamic -Wl,-pie -L\${libdir}/openenclave/enclave -loeenclave -lmbedx509 -lmbedcrypto")
+string(APPEND ENCLAVE_CLIBS_1 "-nostdlib ")
+string(APPEND ENCLAVE_CLIBS_1 "-nodefaultlibs ")
+string(APPEND ENCLAVE_CLIBS_1 "-nostartfiles ")
+string(APPEND ENCLAVE_CLIBS_1 "-Wl,--no-undefined ")
+string(APPEND ENCLAVE_CLIBS_1 "-Wl,-Bstatic ")
+string(APPEND ENCLAVE_CLIBS_1 "-Wl,-Bsymbolic ")
+string(APPEND ENCLAVE_CLIBS_1 "-Wl,--export-dynamic ")
+string(APPEND ENCLAVE_CLIBS_1 "-Wl,-pie ")
+string(APPEND ENCLAVE_CLIBS_1 "-L\${libdir}/openenclave/enclave ")
+string(APPEND ENCLAVE_CLIBS_1 "-loeenclave ")
+string(APPEND ENCLAVE_CLIBS_1 "-lmbedx509 ")
+string(APPEND ENCLAVE_CLIBS_1 "-lmbedcrypto ")
 
-set(ENCLAVE_CLIBS_2 "-loelibc -loecore")
+string(APPEND ENCLAVE_CLIBS_2 "-loelibc ")
+string(APPEND ENCLAVE_CLIBS_2 "-loecore ")
 
 set(ENCLAVE_CLIBS "${ENCLAVE_CLIBS_1} ${ENCLAVE_CLIBS_2}")
 
@@ -59,7 +71,11 @@ set(HOST_INCLUDES "-I\${includedir}")
 
 set(HOST_CFLAGS_CLANG "-mllvm -x86-speculative-load-hardening")
 
+set(HOST_CXXFLAGS_CLANG "${HOST_CFLAGS_CLANG}")
+
 set(HOST_CFLAGS_GCC "")
+
+set(HOST_CXXFLAGS_GCC "${HOST_CFLAGS_GCC}")
 
 ##==============================================================================
 ##
