@@ -172,10 +172,8 @@ int encrypt_file(
     // encryption and false for decryption
     // password is provided for encryption key used inside the encryptor. Upon
     // return, _header will be filled with encryption key information for
-    // encryption
-    // operation. In the case of decryption, the caller provides header
-    // information
-    // from a previously encrypted file
+    // encryption operation. In the case of decryption, the caller provides
+    // header information from a previously encrypted file
     result = initialize_encryptor(
         enclave, &ret, encrypt, password, strlen(password), &header);
     if (result != OE_OK)
@@ -222,13 +220,9 @@ int encrypt_file(
         bytes_read > 0)
     {
         // Request for the enclave to encrypt or decrypt _input_buffer. The
-        // input
-        // data
-        // size, _size, needs to be a multiple of CIPHER_BLOCK_SIZE. In this
-        // sample,
-        // DATA_BLOCK_SIZE is used except the last block, which will have to pad
-        // it to
-        // be a multiple of CIPHER_BLOCK_SIZE.
+        // block size (bytes_read), needs to be a multiple of CIPHER_BLOCK_SIZE.
+        // In this sample, DATA_BLOCK_SIZE is used except the last block, which
+        // will have to pad it to be a multiple of CIPHER_BLOCK_SIZE.
         result = encrypt_block(
             enclave, &ret, encrypt, r_buffer, w_buffer, bytes_read);
         if (result != OE_OK)
