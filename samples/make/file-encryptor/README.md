@@ -104,32 +104,6 @@ Send a block of data to the enclave for encryption using the configuration setup
   
    Free all the source allocated as part of this encryptor instance.
  
-## A few things demonstrated in this enclave
-
-1. An ecall_dispatcher class object was defined to make it easier to organize ECALLs implementation in the context of C++. All the ECALLs are dispatched from the ecall_dispatcher **dispatcher** object. A macro DISPATCH(x) was defined to do the actual ECALLs dispatching work into **dispatcher** object's each corresponding method.
-
-2. For security reasons, all the ECALLs are strongly recommended to check whether input and output buffers are in host’s address space to avoid enclave data leaked to the untrusted host
-
-    Here is why:
-
-    A host application cannot be trusted. And since a host knows the layout and address range of the enclave, the host could pass in an argument structure whose address is within the enclave itself. Then the enclave could overwrite its own memory. This is similar to a buffer-overrun attack. Or the host could trick an enclave to reveal its memory contents. To prevent this kind of security concerns, an enclave must check that args memory that passed to it form the host really resides within the host address space.
-
-    This following OE API could be used for this kind of memory range checking
-
-    ```c
-    oe_is_outside_enclave(args, sizeof(args)))
-    ```
-
-    In this sample, above checking was added into DISPATCH(x) macro, which benefits all the ECALLs without duplicating code in each ECALL. 
-
-    The same memory range checking should be applied to all nested buffers inside the args structure.
- 
-3. Copy the input/output buffer locally, into enclave's address range, inside the enclave before processing it.
-
-    A host might update the args (such as the size of a buffer) parameters between enclave’s reading of the args, which is very difficult to detect. This belongs to the *Time of check to time of use[(TOCTTOU)](https://en.wikipedia.org/wiki/Time_of_check_to_time_of_use)* class of software bugs.
-
-    In this example, before operating on it, the *password* information originated from the initialize_encryptor ECall was copied from args->password, which resides in the host memory range, over to enclave memory for avoiding TOCTTOU type attack.
-
 
 ## Build and run
 
