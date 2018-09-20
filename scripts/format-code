@@ -121,11 +121,11 @@ check_version()
     fi
     for ((i=0; i<${#v1[@]}; i++));
     do
-        if [[ ${v1[$i]} -gt ${v2[$i]} ]]; then
+        # Because clang-format is not invariant across versions, this
+        # is an explicit equivalence check.
+        if [[ ${v1[$i]} -ne ${v2[$i]} ]]; then
             echo "format-code requires clang-format version $1, installed version is $2"
             exit 1
-        elif [[ ${v1[$i]} -lt ${v2[$i]} ]]; then
-            break
         fi
     done
 }
@@ -137,17 +137,23 @@ check_version()
 ##==============================================================================
 check_clang-format()
 {
-    cf=$(which clang-format 2> /dev/null)
+    # First check explicitly for the 3.8 executable.
+    cf=$(which clang-format-3.8 2> /dev/null)
 
-    if [[ ! -x ${cf} ]]; then
-        echo "clang-format is not installed. Please run scripts/install-prereqs first."
-        exit 1
+    if [[ -x ${cf} ]]; then
+        return
+    else
+        cf=$(which clang-format 2> /dev/null)
+        if [[ ! -x ${cf} ]]; then
+            echo "clang-format is not installed. Please run scripts/install-prereqs first."
+            exit 1
+        fi
     fi
 
-    local mincfver='3.6.0'
+    local required_cfver='3.8.0'
     # shellcheck disable=SC2155
     local cfver=$(${cf} --version | grep -o -E '[0-9]+.[0-9]+.[0-9]+')
-    check_version "${mincfver}" "${cfver}"
+    check_version "${required_cfver}" "${cfver}"
 }
 
 check_clang-format
