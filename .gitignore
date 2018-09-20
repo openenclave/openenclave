@@ -15,6 +15,6 @@ prereqs/aesm/.sdk_installer
 prereqs/aesm/dynamic-application-loader-host-interface/
 prereqs/aesm/linux-sgx/
 prereqs/isgx/linux-sgx-driver/
-prereqs/ngsa/*.deb
+prereqs/dcap/*.deb
 prereqs/packages/.packages
 prereqs/sgx-driver/*.bin

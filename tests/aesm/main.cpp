@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 #if defined(OE_USE_LIBSGX)
-#include <sgx_ngsa_ql_wrapper.h>
+#include <sgx_dcap_ql_wrapper.h>
 #else
 #include <openenclave/internal/aesm.h>
 #endif

@@ -31,8 +31,8 @@ define optlib
 $(patsubst /usr/lib/x86_64-linux-gnu/lib%.so,-l%,$(wildcard /usr/lib/x86_64-linux-gnu/lib$(1).so))
 endef
 LIBRARIES += $(call optlib,sgx_enclave_common)
-LIBRARIES += $(call optlib,sgx_ngsa_ql)
-LIBRARIES += $(call optlib,sgx_urts_ng)
+LIBRARIES += $(call optlib,sgx_dcap_ql)
+LIBRARIES += $(call optlib,sgx_urts)
 
 build:
 	$(CC) -c $(CFLAGS) $(INCLUDES) host.c

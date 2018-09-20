@@ -28,7 +28,7 @@ LIBRARIES += -ldl
 # call to optlib as part of the $1 parameter
 LIBRARIES += $(call optlib,sgx_enclave_common)
 LIBRARIES += $(call optlib,sgxoeql)
-LIBRARIES += $(call optlib,sgx_urts_ng)
+LIBRARIES += $(call optlib,sgx_urts)
 
 build:
 	$(CXX) -c $(CXXFLAGS) $(INCLUDES) host.cpp

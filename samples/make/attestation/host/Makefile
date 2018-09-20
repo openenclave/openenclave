@@ -21,8 +21,8 @@ LIBRARIES += -lcrypto
 LIBRARIES += -lpthread
 LIBRARIES += -ldl
 LIBRARIES += -lsgx_enclave_common
-LIBRARIES += -lsgx_ngsa_ql
-LIBRARIES += -lsgx_urts_ng
+LIBRARIES += -lsgx_dcap_ql
+LIBRARIES += -lsgx_urts
 
 build:
 	$(CXX) -c $(CXXFLAGS) $(INCLUDES) host.cpp ecalls.cpp
