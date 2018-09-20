@@ -6,16 +6,14 @@
 #include "hexdump_t.h"
 
 int test(
-        const unsigned char* data,
-        size_t data_length,
-        char* hexstr,
-        size_t hexstr_length
-        )
+    const unsigned char* data,
+    size_t data_length,
+    char* hexstr,
+    size_t hexstr_length)
 {
     oe_hex_dump(data, data_length);
 
-    const char* str = oe_hex_string(
-       hexstr, hexstr_length, data, data_length);
+    const char* str = oe_hex_string(hexstr, hexstr_length, data, data_length);
 
     if (str != hexstr)
     {

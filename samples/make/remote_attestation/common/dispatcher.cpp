@@ -9,7 +9,7 @@ ecall_dispatcher::ecall_dispatcher(
     enclave_config_data_t* enclave_config)
     : m_crypto(NULL), m_attestation(NULL)
 {
-    m_EnclaveConfig = enclave_config;
+    m_enclave_config = enclave_config;
     m_initialized = initialize(name);
 }
 
@@ -34,7 +34,7 @@ bool ecall_dispatcher::initialize(const char* name)
     }
 
     m_attestation =
-        new Attestation(m_crypto, m_EnclaveConfig->enclave_mrsigner);
+        new Attestation(m_crypto, m_enclave_config->enclave_mrsigner);
     if (m_attestation == NULL)
     {
         goto exit;
@@ -165,7 +165,7 @@ int ecall_dispatcher::generate_encrypted_message(uint8_t** data, size_t* size)
     encrypted_data_size = sizeof(encrypted_data_buf);
     if (m_crypto->Encrypt(
             m_crypto->get_the_other_enclave_public_key(),
-            m_EnclaveConfig->enclaveSecretData,
+            m_enclave_config->enclave_secret_data,
             ENCLAVE_SECRET_DATA_SIZE,
             encrypted_data_buf,
             &encrypted_data_size))
@@ -207,19 +207,19 @@ int ecall_dispatcher::process_encrypted_msg(
     {
         // This is where the business logic for verifying the data should be.
         // In this sample, both enclaves start with identical data in
-        // m_EnclaveConfig->enclaveSecretData
+        // m_enclave_config->enclave_secret_data
         // The following checking is to make sure the decrypted values are what
         // we have expected.
         ENC_DEBUG_PRINTF("Decrypted data: ");
         for (uint32_t i = 0; i < data_size; ++i)
         {
             printf("%d ", data[i]);
-            if (m_EnclaveConfig->enclaveSecretData[i] != data[i])
+            if (m_enclave_config->enclave_secret_data[i] != data[i])
             {
                 printf(
                     "Expecting [0x%x] but received unexpected value "
                     "[0x%x]\n ",
-                    m_EnclaveConfig->enclaveSecretData[i],
+                    m_enclave_config->enclave_secret_data[i],
                     data[i]);
                 ret = 1;
                 break;
@@ -233,8 +233,9 @@ int ecall_dispatcher::process_encrypted_msg(
             "Encalve:ecall_dispatcher::process_encrypted_msg failed");
         goto exit;
     }
-    ENC_DEBUG_PRINTF("Decrypted data matches with the enclave internal secret "
-                     "data: descryption validation succeeded");
+    ENC_DEBUG_PRINTF(
+        "Decrypted data matches with the enclave internal secret "
+        "data: descryption validation succeeded");
     ret = 0;
 exit:
     return ret;

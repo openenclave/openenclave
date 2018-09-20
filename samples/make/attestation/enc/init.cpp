@@ -4,4 +4,4 @@
 #include "crypto.h"
 
 // Initialize various modules in well-defined order.
-bool g_Initialize = InitializeCrypto();
+bool g_initialize = InitializeCrypto();

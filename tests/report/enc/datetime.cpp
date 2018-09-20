@@ -9,25 +9,25 @@
 #include "../../../common/quote.h"
 #include "tests_t.h"
 
-void TestPositive(const oe_datetime_t& dateTime, const char* expected)
+void TestPositive(const oe_datetime_t& date_time, const char* expected)
 {
-    char utcString[21];
-    size_t length = sizeof(utcString);
-    OE_TEST(oe_datetime_to_string(&dateTime, utcString, &length) == OE_OK);
-    OE_TEST(strcmp(utcString, expected) == 0);
+    char utc_string[21];
+    size_t length = sizeof(utc_string);
+    OE_TEST(oe_datetime_to_string(&date_time, utc_string, &length) == OE_OK);
+    OE_TEST(strcmp(utc_string, expected) == 0);
 
-    oe_datetime_t dateTimeRoundTrip = {0};
+    oe_datetime_t date_time_round_trip = {0};
     OE_TEST(
-        oe_datetime_from_string(utcString, length, &dateTimeRoundTrip) ==
+        oe_datetime_from_string(utc_string, length, &date_time_round_trip) ==
         OE_OK);
-    OE_TEST(memcmp(&dateTime, &dateTimeRoundTrip, sizeof(dateTime)) == 0);
+    OE_TEST(memcmp(&date_time, &date_time_round_trip, sizeof(date_time)) == 0);
 }
 
-void TestNegative(oe_datetime_t dateTime, oe_result_t result)
+void TestNegative(oe_datetime_t date_time, oe_result_t result)
 {
-    char utcString[21];
-    size_t length = sizeof(utcString);
-    OE_TEST(oe_datetime_to_string(&dateTime, utcString, &length) == result);
+    char utc_string[21];
+    size_t length = sizeof(utc_string);
+    OE_TEST(oe_datetime_to_string(&date_time, utc_string, &length) == result);
 }
 
 void test_iso8601_time()

@@ -5,11 +5,11 @@
 
 const char* ProtectedMessage = "Hello world from Enclave\n\0";
 
-int HostUnsecureStrPatching(const char* src, char* dst, int dstLength);
+int HostUnsecureStrPatching(const char* src, char* dst, int dst_length);
 
-int SecureStrPatching(const char* src, char* dst, int dstLength)
+int SecureStrPatching(const char* src, char* dst, int dst_length)
 {
-    if (!oe_is_outside_enclave(dst, dstLength))
+    if (!oe_is_outside_enclave(dst, dst_length))
     {
         return -1;
     }
@@ -17,31 +17,31 @@ int SecureStrPatching(const char* src, char* dst, int dstLength)
     {
         return -1;
     }
-    const char* runningSrc = src;
-    int runningLength = dstLength;
-    while (runningLength > 0 && *runningSrc != '\0')
+    const char* running_src = src;
+    int running_length = dst_length;
+    while (running_length > 0 && *running_src != '\0')
     {
-        *dst = *runningSrc;
-        runningLength--;
-        runningSrc++;
+        *dst = *running_src;
+        running_length--;
+        running_src++;
         dst++;
-        if (!oe_is_outside_enclave(runningSrc, 1))
+        if (!oe_is_outside_enclave(running_src, 1))
         {
             return -1;
         }
     }
     const char* ptr = ProtectedMessage;
-    while (runningLength > 0 && *ptr != '\0')
+    while (running_length > 0 && *ptr != '\0')
     {
         *dst = *ptr;
-        runningLength--;
+        running_length--;
         ptr++;
         dst++;
     }
-    if (runningLength < 1)
+    if (running_length < 1)
     {
         return -1;
     }
     *dst = '\0';
-    return HostUnsecureStrPatching(src, dst, dstLength);
+    return HostUnsecureStrPatching(src, dst, dst_length);
 }

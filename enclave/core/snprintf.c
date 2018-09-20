@@ -4,7 +4,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
 
-static char _NibbleToChar(uint64_t x)
+static char _nibble_to_char(uint64_t x)
 {
     static char _table[] = {'0',
                             '1',
@@ -26,32 +26,32 @@ static char _NibbleToChar(uint64_t x)
     return _table[x & 0x000000000000000f];
 }
 
-static const char* _U32ToHexStr(char buf[9], uint32_t x)
+static const char* _u32_to_hex_str(char buf[9], uint32_t x)
 {
-    buf[0] = _NibbleToChar((0xf0000000 & x) >> 28);
-    buf[1] = _NibbleToChar((0x0f000000 & x) >> 24);
-    buf[2] = _NibbleToChar((0x00f00000 & x) >> 20);
-    buf[3] = _NibbleToChar((0x000f0000 & x) >> 16);
-    buf[4] = _NibbleToChar((0x0000f000 & x) >> 12);
-    buf[5] = _NibbleToChar((0x00000f00 & x) >> 8);
-    buf[6] = _NibbleToChar((0x000000f0 & x) >> 4);
-    buf[7] = _NibbleToChar((0x0000000f & x));
+    buf[0] = _nibble_to_char((0xf0000000 & x) >> 28);
+    buf[1] = _nibble_to_char((0x0f000000 & x) >> 24);
+    buf[2] = _nibble_to_char((0x00f00000 & x) >> 20);
+    buf[3] = _nibble_to_char((0x000f0000 & x) >> 16);
+    buf[4] = _nibble_to_char((0x0000f000 & x) >> 12);
+    buf[5] = _nibble_to_char((0x00000f00 & x) >> 8);
+    buf[6] = _nibble_to_char((0x000000f0 & x) >> 4);
+    buf[7] = _nibble_to_char((0x0000000f & x));
     buf[8] = '\0';
     return buf;
 }
 
-static const char* _U64ToHexStr(char buf[17], uint64_t x)
+static const char* _u64_to_hex_str(char buf[17], uint64_t x)
 {
     uint64_t hi = (0xffffffff00000000 & x) >> 32;
     uint64_t lo = (0x00000000ffffffff & x);
 
-    _U32ToHexStr(buf, hi);
-    _U32ToHexStr(buf + 8, lo);
+    _u32_to_hex_str(buf, hi);
+    _u32_to_hex_str(buf + 8, lo);
 
     return buf;
 }
 
-static const char* _U64ToStr(char buf[21], uint64_t x)
+static const char* _u64_to_str(char buf[21], uint64_t x)
 {
     char* end = &buf[21];
 
@@ -73,7 +73,7 @@ static const char* _U64ToStr(char buf[21], uint64_t x)
     return end;
 }
 
-static const char* _S64ToStr(char buf[21], int64_t x)
+static const char* _s64_to_str(char buf[21], int64_t x)
 {
     char* p;
     int neg = 0;
@@ -130,62 +130,63 @@ int oe_vsnprintf(char* str, size_t size, const char* fmt, oe_va_list ap)
             }
             else if (p[0] == 'u')
             {
-                s = _U64ToStr(scratch, oe_va_arg(ap, uint32_t));
+                s = _u64_to_str(scratch, oe_va_arg(ap, uint32_t));
                 p++;
             }
             else if (p[0] == 'd')
             {
-                s = _S64ToStr(scratch, oe_va_arg(ap, int32_t));
+                s = _s64_to_str(scratch, oe_va_arg(ap, int32_t));
                 p++;
             }
             else if (p[0] == 'x')
             {
-                s = _U32ToHexStr(scratch, oe_va_arg(ap, uint32_t));
+                s = _u32_to_hex_str(scratch, oe_va_arg(ap, uint32_t));
                 p++;
             }
             else if (p[0] == 'l' && p[1] == 'u')
             {
-                s = _U64ToStr(scratch, oe_va_arg(ap, uint64_t));
+                s = _u64_to_str(scratch, oe_va_arg(ap, uint64_t));
                 p += 2;
             }
             else if (p[0] == 'l' && p[1] == 'l' && p[2] == 'u')
             {
-                s = _U64ToStr(scratch, oe_va_arg(ap, uint64_t));
+                s = _u64_to_str(scratch, oe_va_arg(ap, uint64_t));
                 p += 3;
             }
             else if (p[0] == 'l' && p[1] == 'd')
             {
-                s = _S64ToStr(scratch, oe_va_arg(ap, int64_t));
+                s = _s64_to_str(scratch, oe_va_arg(ap, int64_t));
                 p += 2;
             }
             else if (p[0] == 'l' && p[1] == 'l' && p[2] == 'd')
             {
-                s = _S64ToStr(scratch, oe_va_arg(ap, int64_t));
+                s = _s64_to_str(scratch, oe_va_arg(ap, int64_t));
                 p += 3;
             }
             else if (p[0] == 'l' && p[1] == 'x')
             {
-                s = _U64ToHexStr(scratch, oe_va_arg(ap, uint64_t));
+                s = _u64_to_hex_str(scratch, oe_va_arg(ap, uint64_t));
                 p += 2;
             }
             else if (p[0] == 'l' && p[1] == 'x' && p[2] == 'x')
             {
-                s = _U64ToHexStr(scratch, oe_va_arg(ap, uint64_t));
+                s = _u64_to_hex_str(scratch, oe_va_arg(ap, uint64_t));
                 p += 3;
             }
             else if (p[0] == 'z' && p[1] == 'u')
             {
-                s = _U64ToStr(scratch, oe_va_arg(ap, size_t));
+                s = _u64_to_str(scratch, oe_va_arg(ap, size_t));
                 p += 2;
             }
             else if (p[0] == 'z' && p[1] == 'd')
             {
-                s = _S64ToStr(scratch, oe_va_arg(ap, ssize_t));
+                s = _s64_to_str(scratch, oe_va_arg(ap, ssize_t));
                 p += 2;
             }
             else if (p[0] == 'p')
             {
-                s = _U64ToHexStr(scratch + 2, (uint64_t)oe_va_arg(ap, void*));
+                s = _u64_to_hex_str(
+                    scratch + 2, (uint64_t)oe_va_arg(ap, void*));
                 ((char*)s)[-1] = 'x';
                 ((char*)s)[-2] = '0';
                 s -= 2;

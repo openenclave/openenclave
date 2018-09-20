@@ -19,14 +19,14 @@ struct remote_report_with_pubkey_t
 
 struct GetRemoteReportWithPubKeyArgs
 {
-    remote_report_with_pubkey_t* reportWithPubKey; /* out */
-    bool success;                                  /* out */
+    remote_report_with_pubkey_t* report_with_pub_key; /* out */
+    bool success;                                     /* out */
 };
 
 struct VerifyReportWithPubKeyArgs
 {
-    remote_report_with_pubkey_t* reportWithPubKey; /* in */
-    bool success;                                  /* out */
+    remote_report_with_pubkey_t* report_with_pub_key; /* in */
+    bool success;                                     /* out */
 };
 
 struct GenerateEncryptedMessageArgs

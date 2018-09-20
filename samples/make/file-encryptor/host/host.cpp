@@ -27,28 +27,28 @@ using namespace std;
 oe_enclave_t* enclave = NULL;
 
 // Dump Encryption header
-void dump_header(encryption_header_t* _pHeader)
+void dump_header(encryption_header_t* _header)
 {
     cout << "--------- Dumping header -------------\n";
-    cout << "Host: fileDataSize = " << _pHeader->fileDataSize << endl;
+    cout << "Host: fileDataSize = " << _header->file_data_size << endl;
 
     cout << "Host: password digest:\n";
     for (int i = 0; i < HASH_VALUE_SIZE_IN_BYTES; i++)
     {
         cout << "Host: digest[" << i << "]" << std::hex
-             << (unsigned int)(_pHeader->digest[i]) << endl;
+             << (unsigned int)(_header->digest[i]) << endl;
     }
 
     cout << "Host: encryption key" << endl;
     for (int i = 0; i < ENCRYPTION_KEY_SIZE_IN_BYTES; i++)
     {
         cout << "Host: key[" << i << "]=" << std::hex
-             << (unsigned int)(_pHeader->encrypted_key[i]) << endl;
+             << (unsigned int)(_header->encrypted_key[i]) << endl;
     }
 }
 
 // get the file size
-int get_file_size(FILE* file, size_t* _fileSize)
+int get_file_size(FILE* file, size_t* _file_size)
 {
     int ret = 0;
     long int oldpos = 0;
@@ -58,7 +58,7 @@ int get_file_size(FILE* file, size_t* _fileSize)
     if (ret != 0)
         goto exit;
 
-    *_fileSize = (size_t)ftell(file);
+    *_file_size = (size_t)ftell(file);
     fseek(file, oldpos, SEEK_SET);
 exit:
     return ret;
@@ -66,20 +66,20 @@ exit:
 
 // Compare file1 and file2: return 0 if the first file1.size bytes of the file2
 // is equal to file1's contents  Otherwise it returns 1
-int compare_2_files(const char* firstFile, const char* secondFile)
+int compare_2_files(const char* first_file, const char* second_file)
 {
     int ret = 0;
-    std::ifstream f1(firstFile, std::ios::binary);
-    std::ifstream f2(secondFile, std::ios::binary);
-    std::vector<uint8_t> f1DataBytes = std::vector<uint8_t>(
+    std::ifstream f1(first_file, std::ios::binary);
+    std::ifstream f2(second_file, std::ios::binary);
+    std::vector<uint8_t> f1_data_bytes = std::vector<uint8_t>(
         std::istreambuf_iterator<char>(f1), std::istreambuf_iterator<char>());
-    std::vector<uint8_t> f2DataBytes = std::vector<uint8_t>(
+    std::vector<uint8_t> f2_data_bytes = std::vector<uint8_t>(
         std::istreambuf_iterator<char>(f2), std::istreambuf_iterator<char>());
-    auto f1iterator = f1DataBytes.begin();
-    auto f2iterator = f2DataBytes.begin();
+    auto f1iterator = f1_data_bytes.begin();
+    auto f2iterator = f2_data_bytes.begin();
 
     // compare files
-    for (; f1iterator != f1DataBytes.end() - 1; ++f1iterator, ++f2iterator)
+    for (; f1iterator != f1_data_bytes.end() - 1; ++f1iterator, ++f2iterator)
     {
         if (!(*f1iterator == *f2iterator))
         {
@@ -192,7 +192,7 @@ int encrypt_file(
     // have encryption information. Write this header to the output file.
     if (encrypt)
     {
-        header.fileDataSize = src_file_size;
+        header.file_data_size = src_file_size;
         bytes_written = fwrite(&header, 1, sizeof(header), dest_file);
         if (bytes_written != sizeof(header))
         {
@@ -221,7 +221,8 @@ int encrypt_file(
              r_buffer, sizeof(unsigned char), requested_read_size, src_file)) &&
         bytes_read > 0)
     {
-        // Request for the enclave to encrypt or decrypt _inputBuffer. The input
+        // Request for the enclave to encrypt or decrypt _input_buffer. The
+        // input
         // data
         // size, _size, needs to be a multiple of CIPHER_BLOCK_SIZE. In this
         // sample,

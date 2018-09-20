@@ -42,18 +42,18 @@ OE_ECALL void Test(void* args_)
     const oe_thread_data_t* td;
     if ((td = oe_get_thread_data()))
     {
-        args->threadData = *td;
-        args->threadDataAddr = (uint64_t)td;
+        args->thread_data = *td;
+        args->thread_data_addr = (uint64_t)td;
     }
 
     /* Get enclave offsets and bases */
-    args->baseHeapPage = __oe_baseHeapPage;
-    args->num_heap_pages = __oe_numHeapPages;
-    args->numPages = __oe_numPages;
+    args->base_heap_page = oe_base_heap_page;
+    args->num_heap_pages = oe_num_heap_pages;
+    args->num_pages = oe_num_pages;
     args->base = __oe_get_enclave_base();
 
     /* Test the oe_setjmp/oe_longjmp functions */
-    args->setjmpResult = TestSetjmp();
+    args->setjmp_result = TestSetjmp();
 
     /* Test snprintf() */
     {

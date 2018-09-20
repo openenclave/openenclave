@@ -226,9 +226,9 @@ oe_result_t oe_enforce_revocation(
          ++i)
     {
         platform_tcb_level.sgx_tcb_comp_svn[i] =
-            parsed_extension_info.compSvn[i];
+            parsed_extension_info.comp_svn[i];
     }
-    platform_tcb_level.pce_svn = parsed_extension_info.pceSvn;
+    platform_tcb_level.pce_svn = parsed_extension_info.pce_svn;
     platform_tcb_level.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
 
     OE_CHECK(

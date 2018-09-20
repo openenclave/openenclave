@@ -134,7 +134,7 @@ bool Crypto::Encrypt(
 {
     bool result = false;
     mbedtls_pk_context key;
-    size_t keySize = 0;
+    size_t key_size = 0;
     int res = -1;
 
     mbedtls_pk_init(&key);
@@ -143,8 +143,8 @@ bool Crypto::Encrypt(
         goto exit;
 
     // Read the given public key.
-    keySize = strlen((const char*)pem_public_key) + 1; // Include ending '\0'.
-    res = mbedtls_pk_parse_public_key(&key, pem_public_key, keySize);
+    key_size = strlen((const char*)pem_public_key) + 1; // Include ending '\0'.
+    res = mbedtls_pk_parse_public_key(&key, pem_public_key, key_size);
     if (res != 0)
     {
         ENC_DEBUG_PRINTF("mbedtls_pk_parse_public_key failed.");

@@ -15,7 +15,7 @@ class Attestation
     uint8_t* m_enclave_mrsigner;
 
   public:
-    Attestation(Crypto* pCrypto, uint8_t* enclave_mrsigner);
+    Attestation(Crypto* crypto, uint8_t* enclave_mrsigner);
 
     // Generate a remote report for the given data. The SHA256 digest of the
     // data is stored

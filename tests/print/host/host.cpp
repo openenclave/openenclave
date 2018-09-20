@@ -13,12 +13,12 @@
 void TestPrint(oe_enclave_t* enclave)
 {
     oe_result_t result;
-    int returnValue;
+    int return_value;
 
     printf("=== %s() \n", __FUNCTION__);
-    result = enclave_test_print(enclave, &returnValue);
+    result = enclave_test_print(enclave, &return_value);
     OE_TEST(result == OE_OK);
-    OE_TEST(returnValue == 0);
+    OE_TEST(return_value == 0);
 }
 
 int main(int argc, const char* argv[])

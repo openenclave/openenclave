@@ -60,7 +60,7 @@ exit:
     return ret;
 }
 
-// This routine uses the mbedTLS library to derive an AES key from the input
+// This routine uses the mbed_tls library to derive an AES key from the input
 // password and produce a password based key. Note : A set of hardcoded salt
 // values are used here for the purpose simplifying this sample, which caused
 // this routine to return the same key when taking the same password. This saves

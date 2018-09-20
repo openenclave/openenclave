@@ -19,7 +19,7 @@ void test_host_malloc(size_t in_size, void_ptr* out_ptr)
 void test_host_calloc(size_t in_num, size_t in_size, void_ptr* out_ptr)
 {
     *out_ptr = oe_host_calloc(in_num, in_size);
-    if (*out_ptr && !oe_is_outside_enclave(*out_ptr, in_size*in_num))
+    if (*out_ptr && !oe_is_outside_enclave(*out_ptr, in_size * in_num))
     {
         oe_abort();
         return;
@@ -53,8 +53,9 @@ void test_host_realloc(
         }
         else if (old_size < new_size)
         {
-            void* extPtr = (void*)((uint64_t)out_ptr + old_size);
-            oe_memset(extPtr, TEST_HOSTREALLOC_INIT_VALUE, new_size - old_size);
+            void* ext_ptr = (void*)((uint64_t)out_ptr + old_size);
+            oe_memset(
+                ext_ptr, TEST_HOSTREALLOC_INIT_VALUE, new_size - old_size);
         }
     }
 

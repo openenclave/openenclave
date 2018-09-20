@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-typedef struct _SealKeyArgs
+typedef struct _seal_key_args
 {
     int ret;
 } SealKeyArgs;

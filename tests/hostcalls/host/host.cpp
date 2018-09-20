@@ -7,7 +7,7 @@
 #include <cstring>
 #include "hostcalls_u.h"
 
-static void _TestHostMalloc(oe_enclave_t* enclave)
+static void _test_host_malloc(oe_enclave_t* enclave)
 {
     void_ptr out_ptr;
 
@@ -30,7 +30,7 @@ static void _TestHostMalloc(oe_enclave_t* enclave)
     OE_TEST(out_ptr == NULL);
 }
 
-static void _TestHostCalloc(oe_enclave_t* enclave)
+static void _test_host_calloc(oe_enclave_t* enclave)
 {
     void_ptr out_ptr;
 
@@ -55,16 +55,16 @@ static void _TestHostCalloc(oe_enclave_t* enclave)
 
 OE_INLINE bool IsReallocBufferTestInitialized(void* ptr, size_t size)
 {
-    uint8_t* outBytes = (uint8_t*)ptr;
+    uint8_t* out_bytes = (uint8_t*)ptr;
     for (uint32_t i = 0; i < size; i++)
     {
-        if (outBytes[i] != TEST_HOSTREALLOC_INIT_VALUE)
+        if (out_bytes[i] != TEST_HOSTREALLOC_INIT_VALUE)
             return false;
     }
     return true;
 }
 
-static void _TestHostRealloc(oe_enclave_t* enclave)
+static void _test_host_realloc(oe_enclave_t* enclave)
 {
     void_ptr out_ptr;
 
@@ -132,21 +132,21 @@ static void _TestHostRealloc(oe_enclave_t* enclave)
 
         // Resulting buffer should retain its original zero contents from calloc
         OE_TEST(out_ptr);
-        uint8_t* outBytes = (uint8_t*)out_ptr;
+        uint8_t* out_bytes = (uint8_t*)out_ptr;
         for (uint32_t i = 0; i < old_size; i++)
         {
-            OE_TEST(outBytes[i] == 0);
+            OE_TEST(out_bytes[i] == 0);
         }
 
         /* TestHostRealloc only writes init value into expanded area for this
          * check */
-        OE_TEST(outBytes[old_size] == TEST_HOSTREALLOC_INIT_VALUE);
+        OE_TEST(out_bytes[old_size] == TEST_HOSTREALLOC_INIT_VALUE);
 
         free(out_ptr);
     }
 }
 
-static void _TestHostStrndup(oe_enclave_t* enclave)
+static void _test_host_strndup(oe_enclave_t* enclave)
 {
     char* out_str;
 
@@ -198,10 +198,10 @@ int main(int argc, const char* argv[])
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);
 
-    _TestHostMalloc(enclave);
-    _TestHostCalloc(enclave);
-    _TestHostRealloc(enclave);
-    _TestHostStrndup(enclave);
+    _test_host_malloc(enclave);
+    _test_host_calloc(enclave);
+    _test_host_realloc(enclave);
+    _test_host_strndup(enclave);
 
     oe_terminate_enclave(enclave);
 

@@ -1,15 +1,15 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/hostalloc.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/tests.h>
+#include <string.h>
 #include "enclaveparam_t.h"
 
- void test_ocall_enclave_param(char* func)
+void test_ocall_enclave_param(char* func)
 {
     oe_result_t result = OE_INVALID_PARAMETER;
     oe_enclave_t* enclave = oe_get_enclave();

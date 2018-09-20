@@ -28,35 +28,35 @@ int enc_echo(char* in, char out[100])
         return -1;
     }
 
-    char* hostAllocatedStr = oe_host_strdup("oe_host_strdup2");
-    if (hostAllocatedStr == NULL)
+    char* host_allocated_str = oe_host_strdup("oe_host_strdup2");
+    if (host_allocated_str == NULL)
     {
         return -1;
     }
 
-    char stackAllocatedStr[100] = "oe_host_strdup3";
-    int returnVal;
+    char stack_allocated_str[100] = "oe_host_strdup3";
+    int return_val;
 
     result = host_echo(
-        &returnVal,
+        &return_val,
         in,
         out,
         "oe_host_strdup1",
-        hostAllocatedStr,
-        stackAllocatedStr);
+        host_allocated_str,
+        stack_allocated_str);
     if (result != OE_OK)
     {
         return -1;
     }
 
-    if (returnVal != 0)
+    if (return_val != 0)
     {
         return -1;
     }
 
     oe_host_printf("Hello from Echo function!\n");
 
-    oe_host_free_for_call_host(hostAllocatedStr);
+    oe_host_free_for_call_host(host_allocated_str);
 
     return 0;
 }

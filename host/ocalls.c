@@ -27,20 +27,20 @@
 #include "quote.h"
 #include "sgxquoteprovider.h"
 
-void HandleMalloc(uint64_t argIn, uint64_t* argOut)
+void HandleMalloc(uint64_t arg_in, uint64_t* arg_out)
 {
-    if (argOut)
-        *argOut = (uint64_t)malloc(argIn);
+    if (arg_out)
+        *arg_out = (uint64_t)malloc(arg_in);
 }
 
-void HandleRealloc(uint64_t argIn, uint64_t* argOut)
+void HandleRealloc(uint64_t arg_in, uint64_t* arg_out)
 {
-    oe_realloc_args_t* args = (oe_realloc_args_t*)argIn;
+    oe_realloc_args_t* args = (oe_realloc_args_t*)arg_in;
 
     if (args)
     {
-        if (argOut)
-            *argOut = (uint64_t)realloc(args->ptr, args->size);
+        if (arg_out)
+            *arg_out = (uint64_t)realloc(args->ptr, args->size);
     }
 }
 
@@ -49,9 +49,9 @@ void HandleFree(uint64_t arg)
     free((void*)arg);
 }
 
-void HandlePrint(uint64_t argIn)
+void HandlePrint(uint64_t arg_in)
 {
-    oe_print_args_t* args = (oe_print_args_t*)argIn;
+    oe_print_args_t* args = (oe_print_args_t*)arg_in;
 
     if (args)
     {
@@ -68,9 +68,9 @@ void HandlePrint(uint64_t argIn)
     }
 }
 
-void HandleThreadWait(oe_enclave_t* enclave, uint64_t argIn)
+void HandleThreadWait(oe_enclave_t* enclave, uint64_t arg_in)
 {
-    const uint64_t tcs = argIn;
+    const uint64_t tcs = arg_in;
     EnclaveEvent* event = GetEnclaveEvent(enclave, tcs);
     assert(event);
 
@@ -102,9 +102,9 @@ void HandleThreadWait(oe_enclave_t* enclave, uint64_t argIn)
 #endif
 }
 
-void HandleThreadWake(oe_enclave_t* enclave, uint64_t argIn)
+void HandleThreadWake(oe_enclave_t* enclave, uint64_t arg_in)
 {
-    const uint64_t tcs = argIn;
+    const uint64_t tcs = arg_in;
     EnclaveEvent* event = GetEnclaveEvent(enclave, tcs);
     assert(event);
 
@@ -121,9 +121,9 @@ void HandleThreadWake(oe_enclave_t* enclave, uint64_t argIn)
 #endif
 }
 
-void HandleThreadWakeWait(oe_enclave_t* enclave, uint64_t argIn)
+void HandleThreadWakeWait(oe_enclave_t* enclave, uint64_t arg_in)
 {
-    oe_thread_wake_wait_args_t* args = (oe_thread_wake_wait_args_t*)argIn;
+    oe_thread_wake_wait_args_t* args = (oe_thread_wake_wait_args_t*)arg_in;
 
     if (!args)
         return;
@@ -141,21 +141,22 @@ void HandleThreadWakeWait(oe_enclave_t* enclave, uint64_t argIn)
 #endif
 }
 
-void HandleGetQuote(uint64_t argIn)
+void HandleGetQuote(uint64_t arg_in)
 {
-    oe_get_quote_args_t* args = (oe_get_quote_args_t*)argIn;
+    oe_get_quote_args_t* args = (oe_get_quote_args_t*)arg_in;
     if (!args)
         return;
 
     args->result =
-        sgx_get_quote(&args->sgxReport, args->quote, &args->quoteSize);
+        sgx_get_quote(&args->sgx_report, args->quote, &args->quote_size);
 }
 
 #ifdef OE_USE_LIBSGX
 
-void HandleGetQuoteRevocationInfo(uint64_t argIn)
+void HandleGetQuoteRevocationInfo(uint64_t arg_in)
 {
-    oe_get_revocation_info_args_t* args = (oe_get_revocation_info_args_t*)argIn;
+    oe_get_revocation_info_args_t* args =
+        (oe_get_revocation_info_args_t*)arg_in;
     if (!args)
         return;
 
@@ -164,13 +165,13 @@ void HandleGetQuoteRevocationInfo(uint64_t argIn)
 
 #endif
 
-void HandleGetQETargetInfo(uint64_t argIn)
+void HandleGetQETargetInfo(uint64_t arg_in)
 {
-    oe_get_qetarget_info_args_t* args = (oe_get_qetarget_info_args_t*)argIn;
+    oe_get_qetarget_info_args_t* args = (oe_get_qetarget_info_args_t*)arg_in;
     if (!args)
         return;
 
-    args->result = sgx_get_qetarget_info(&args->targetInfo);
+    args->result = sgx_get_qetarget_info(&args->target_info);
 }
 
 static char** _backtrace_symbols(

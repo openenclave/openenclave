@@ -5,9 +5,9 @@
 #include <string.h>
 #include "log.h"
 
-Attestation::Attestation(Crypto* pCrypto, uint8_t* enclave_mrsigner)
+Attestation::Attestation(Crypto* crypto, uint8_t* enclave_mrsigner)
 {
-    m_crypto = pCrypto;
+    m_crypto = crypto;
     m_enclave_mrsigner = enclave_mrsigner;
 }
 
@@ -44,7 +44,7 @@ bool Attestation::generate_remote_report(
         OE_REPORT_FLAGS_REMOTE_ATTESTATION,
         sha256, // Store sha256 in report_data field
         sizeof(sha256),
-        NULL, // optParams must be null
+        NULL, // opt_params must be null
         0,
         remote_report_buf,
         remote_report_buf_size);
@@ -80,7 +80,7 @@ bool Attestation::attest_remote_report(
 {
     bool ret = false;
     uint8_t sha256[32];
-    oe_report_t parsedReport = {0};
+    oe_report_t parsed_report = {0};
     oe_result_t result = OE_OK;
 
     // While attesting, the remote report being attested must not be tampered
@@ -93,7 +93,8 @@ bool Attestation::attest_remote_report(
 
     // 1)  Validate the report's trustworthiness
     // Verify the remote report to ensure its authenticity.
-    result = oe_verify_report(remote_report, remote_report_size, &parsedReport);
+    result =
+        oe_verify_report(remote_report, remote_report_size, &parsed_report);
     if (result != OE_OK)
     {
         ENC_DEBUG_PRINTF(
@@ -105,11 +106,11 @@ bool Attestation::attest_remote_report(
     // signed_id is the hash of the public signing key that was used to sign an
     // enclave.
     // Check that the enclave was signed by an trusted entity.
-    if (memcmp(parsedReport.identity.signer_id, m_enclave_mrsigner, 32) != 0)
+    if (memcmp(parsed_report.identity.signer_id, m_enclave_mrsigner, 32) != 0)
     {
         ENC_DEBUG_PRINTF("identity.signer_id checking failed.");
         ENC_DEBUG_PRINTF(
-            "identity.signer_id %s", parsedReport.identity.signer_id);
+            "identity.signer_id %s", parsed_report.identity.signer_id);
 
         for (int i = 0; i < 32; i++)
         {
@@ -126,7 +127,7 @@ bool Attestation::attest_remote_report(
             ENC_DEBUG_PRINTF(
                 "parsedReport.identity.signer_id)[%d]=0x%0x\n",
                 i,
-                (uint8_t)parsedReport.identity.signer_id[i]);
+                (uint8_t)parsed_report.identity.signer_id[i]);
         }
         ENC_DEBUG_PRINTF("m_enclave_mrsigner %s", m_enclave_mrsigner);
         goto exit;
@@ -134,13 +135,13 @@ bool Attestation::attest_remote_report(
 
     // Check the enclave's product id and security version
     // See enc.conf for values specified when signing the enclave.
-    if (parsedReport.identity.product_id[0] != 1)
+    if (parsed_report.identity.product_id[0] != 1)
     {
         ENC_DEBUG_PRINTF("identity.product_id checking failed.");
         goto exit;
     }
 
-    if (parsedReport.identity.security_version < 1)
+    if (parsed_report.identity.security_version < 1)
     {
         ENC_DEBUG_PRINTF("identity.security_version checking failed.");
         goto exit;
@@ -153,7 +154,7 @@ bool Attestation::attest_remote_report(
         goto exit;
     }
 
-    if (memcmp(parsedReport.report_data, sha256, sizeof(sha256)) != 0)
+    if (memcmp(parsed_report.report_data, sha256, sizeof(sha256)) != 0)
     {
         ENC_DEBUG_PRINTF("SHA256 mismatch.");
         goto exit;

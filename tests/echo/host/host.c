@@ -39,19 +39,19 @@ int main(int argc, const char* argv[])
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);
 
-    char outParameter[100];
-    int returnVal;
+    char out_parameter[100];
+    int return_val;
 
-    result = enc_echo(enclave, &returnVal, "Hello World", outParameter);
+    result = enc_echo(enclave, &return_val, "Hello World", out_parameter);
 
     if (result != OE_OK)
         oe_put_err("oe_call_enclave() failed: result=%u", result);
 
-    if (returnVal != 0)
-        oe_put_err("ECALL failed args.result=%d", returnVal);
+    if (return_val != 0)
+        oe_put_err("ECALL failed args.result=%d", return_val);
 
-    if (strcmp("Hello World", outParameter) != 0)
-        oe_put_err("ecall failed: %s != %s\n", "Hello World", outParameter);
+    if (strcmp("Hello World", out_parameter) != 0)
+        oe_put_err("ecall failed: %s != %s\n", "Hello World", out_parameter);
 
     result = oe_terminate_enclave(enclave);
     OE_TEST(result == OE_OK);

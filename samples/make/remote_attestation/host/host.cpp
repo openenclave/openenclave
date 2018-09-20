@@ -67,8 +67,9 @@ int main(int argc, const char* argv[])
         goto exit;
     }
 
-    printf("Host: requesting a remote report and the encryption key from 1st "
-           "enclave\n");
+    printf(
+        "Host: requesting a remote report and the encryption key from 1st "
+        "enclave\n");
     result = get_remote_report_with_pubkey(
         enclave1,
         &ret,
@@ -87,8 +88,9 @@ int main(int argc, const char* argv[])
     }
     printf("Host: 1st enclave's public key: \n%s", pem_key);
 
-    printf("Host: requesting 2nd enclave to attest 1st enclave's the remote "
-           "report and the public key\n");
+    printf(
+        "Host: requesting 2nd enclave to attest 1st enclave's the remote "
+        "report and the public key\n");
     result = verify_report_and_set_pubkey(
         enclave2,
         &ret,

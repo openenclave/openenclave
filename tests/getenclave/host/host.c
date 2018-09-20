@@ -14,9 +14,9 @@
 static oe_enclave_t* _enclave;
 static bool _called_test_get_enclave_ocall;
 
-void test_get_enclave_ocall(oe_enclave_t *enclaveParam)
+void test_get_enclave_ocall(oe_enclave_t* enclave_param)
 {
-    OE_TEST(enclaveParam == _enclave);
+    OE_TEST(enclave_param == _enclave);
     _called_test_get_enclave_ocall = true;
 }
 
@@ -36,10 +36,10 @@ int main(int argc, const char* argv[])
     result = oe_create_enclave(argv[1], type, flags, NULL, 0, &_enclave);
     OE_TEST(result == OE_OK);
 
-    oe_result_t returnValue;
-    result = test_get_enclave_ecall(_enclave, &returnValue, _enclave);
+    oe_result_t return_value;
+    result = test_get_enclave_ecall(_enclave, &return_value, _enclave);
     OE_TEST(result == OE_OK);
-    OE_TEST(returnValue == OE_OK);
+    OE_TEST(return_value == OE_OK);
     OE_TEST(_called_test_get_enclave_ocall == true);
 
     oe_terminate_enclave(_enclave);

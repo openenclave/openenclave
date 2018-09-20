@@ -5,7 +5,7 @@
 #include <openenclave/internal/tests.h>
 #include "getenclave_t.h"
 
-oe_result_t test_get_enclave_ecall(oe_enclave_t *enclaveParam)
+oe_result_t test_get_enclave_ecall(oe_enclave_t* enclave_param)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_enclave_t* enclave;
@@ -13,7 +13,7 @@ oe_result_t test_get_enclave_ecall(oe_enclave_t *enclaveParam)
     if (!(enclave = oe_get_enclave()))
         goto done;
 
-    if (enclaveParam != enclave)
+    if (enclave_param != enclave)
         goto done;
 
     if (test_get_enclave_ocall(enclave) != OE_OK)

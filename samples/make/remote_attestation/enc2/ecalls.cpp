@@ -32,12 +32,13 @@ uint8_t g_encalve1_mrsigner[] = {
     0xCE, 0x73, 0xE4, 0x33, 0x63, 0x83, 0x77, 0xF1, 0x79, 0xAB, 0x44,
     0x56, 0xB2, 0xFE, 0x23, 0x71, 0x93, 0x19, 0x3A, 0x8D, 0x0A};
 
-enclave_config_data_t configData = {g_enclave_secret_data, g_encalve1_mrsigner};
+enclave_config_data_t config_data = {g_enclave_secret_data,
+                                     g_encalve1_mrsigner};
 
 // Declare a static dispatcher object for enabling
 // for better organizing enclave-wise global variables
-static ecall_dispatcher dispatcher("Enclave2", &configData);
-const char* enclaveName = "Enclave2";
+static ecall_dispatcher dispatcher("Enclave2", &config_data);
+const char* enclave_name = "Enclave2";
 
 /**
  * Return the public key of this enclave along with the enclave's remote report.
@@ -45,24 +46,24 @@ const char* enclaveName = "Enclave2";
  * the integrity of the public key.
  */
 int get_remote_report_with_pubkey(
-    uint8_t** pemKey,
+    uint8_t** pem_key,
     size_t* key_size,
     uint8_t** remote_report,
     size_t* remote_report_size)
 {
     return dispatcher.get_remote_report_with_pubkey(
-        pemKey, key_size, remote_report, remote_report_size);
+        pem_key, key_size, remote_report, remote_report_size);
 }
 
 // Attest and store the public key of another enclave.
 int verify_report_and_set_pubkey(
-    uint8_t* pemKey,
+    uint8_t* pem_key,
     size_t key_size,
     uint8_t* remote_report,
     size_t remote_report_size)
 {
     return dispatcher.verify_report_and_set_pubkey(
-        pemKey, key_size, remote_report, remote_report_size);
+        pem_key, key_size, remote_report, remote_report_size);
 }
 
 // Encrypt message for another enclave using the public key stored for it.

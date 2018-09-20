@@ -18,7 +18,7 @@ extern void TestVerifyTCBInfo(oe_enclave_t* enclave);
 
 int main(int argc, const char* argv[])
 {
-    sgx_target_info_t targetInfo;
+    sgx_target_info_t target_info;
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
 
@@ -47,7 +47,7 @@ int main(int argc, const char* argv[])
 
     /* Initialize the target info */
     {
-        if ((result = sgx_get_qetarget_info(&targetInfo)) != OE_OK)
+        if ((result = sgx_get_qetarget_info(&target_info)) != OE_OK)
         {
             oe_put_err("sgx_get_qetarget_info(): result=%u", result);
         }
@@ -56,8 +56,8 @@ int main(int argc, const char* argv[])
     /*
      * Host API tests.
      */
-    g_Enclave = enclave;
-    TestLocalReport(&targetInfo);
+    g_enclave = enclave;
+    TestLocalReport(&target_info);
     TestRemoteReport(NULL);
     TestParseReportNegative(NULL);
     TestLocalVerifyReport(NULL);
@@ -73,21 +73,22 @@ int main(int argc, const char* argv[])
      * Enclave API tests.
      */
 
-    OE_TEST(oe_call_enclave(enclave, "TestLocalReport", &targetInfo) == OE_OK);
-
-    OE_TEST(oe_call_enclave(enclave, "TestRemoteReport", &targetInfo) == OE_OK);
+    OE_TEST(oe_call_enclave(enclave, "TestLocalReport", &target_info) == OE_OK);
 
     OE_TEST(
-        oe_call_enclave(enclave, "TestParseReportNegative", &targetInfo) ==
+        oe_call_enclave(enclave, "TestRemoteReport", &target_info) == OE_OK);
+
+    OE_TEST(
+        oe_call_enclave(enclave, "TestParseReportNegative", &target_info) ==
         OE_OK);
 
     OE_TEST(
-        oe_call_enclave(enclave, "TestLocalVerifyReport", &targetInfo) ==
+        oe_call_enclave(enclave, "TestLocalVerifyReport", &target_info) ==
         OE_OK);
 
 #ifdef OE_USE_LIBSGX
     OE_TEST(
-        oe_call_enclave(enclave, "TestRemoteVerifyReport", &targetInfo) ==
+        oe_call_enclave(enclave, "TestRemoteVerifyReport", &target_info) ==
         OE_OK);
 
     TestVerifyTCBInfo(enclave);

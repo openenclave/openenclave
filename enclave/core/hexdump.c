@@ -6,42 +6,42 @@
 #include <openenclave/internal/print.h>
 
 /* Convert a nibble to an ASCII character: Example 0xF => 'F' */
-OE_INLINE char _NibbleToHexChar(uint8_t x)
+OE_INLINE char _nibble_to_hex_char(uint8_t x)
 {
     return (x < 10) ? ('0' + x) : ('A' + (x - 10));
 }
 
 /* Convert high nibble to a hex character */
-OE_INLINE char _HighNibbleToHexChar(uint8_t byte)
+OE_INLINE char _high_nibble_to_hex_char(uint8_t byte)
 {
-    return _NibbleToHexChar(byte >> 4);
+    return _nibble_to_hex_char(byte >> 4);
 }
 
 /* Convert low nibble to a hex character */
-OE_INLINE char _LowNibbleToHexChar(uint8_t byte)
+OE_INLINE char _low_nibble_to_hex_char(uint8_t byte)
 {
-    return _NibbleToHexChar(byte & 0x0F);
+    return _nibble_to_hex_char(byte & 0x0F);
 }
 
 char* oe_hex_string(
     char* str,
-    size_t strSize,
+    size_t str_size,
     const void* data,
-    size_t dataSize)
+    size_t data_size)
 {
     /* Check parameters */
-    if (!str || !data || (strSize < (2 * dataSize + 1)))
+    if (!str || !data || (str_size < (2 * data_size + 1)))
         return NULL;
 
     char* s = str;
     const uint8_t* p = (const uint8_t*)data;
-    size_t n = dataSize;
+    size_t n = data_size;
 
     /* For each byte in data buffer */
     while (n--)
     {
-        *s++ = _HighNibbleToHexChar(*p);
-        *s++ = _LowNibbleToHexChar(*p);
+        *s++ = _high_nibble_to_hex_char(*p);
+        *s++ = _low_nibble_to_hex_char(*p);
         p++;
     }
 
@@ -55,20 +55,20 @@ void oe_hex_dump(const void* data, size_t size)
 {
     const uint8_t* p = (const uint8_t*)data;
     size_t n = size;
-    const size_t chunkSize = 1024;
-    char buf[2 * chunkSize + 1];
+    const size_t chunk_size = 1024;
+    char buf[2 * chunk_size + 1];
 
     /* Return if nothing to print */
     if (!data || !size)
         return;
 
     /* Print N-sized chunks first to reduce OCALLS */
-    while (n >= chunkSize)
+    while (n >= chunk_size)
     {
-        oe_hex_string(buf, sizeof(buf), p, chunkSize);
+        oe_hex_string(buf, sizeof(buf), p, chunk_size);
         oe_host_printf("%s", buf);
-        p += chunkSize;
-        n -= chunkSize;
+        p += chunk_size;
+        n -= chunk_size;
     }
 
     /* Print any remaining bytes */

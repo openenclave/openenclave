@@ -154,18 +154,23 @@ int main(int argc, const char* argv[])
     /* Test enclave version of oe_hex_string() */
     {
         char hexstr[sizeof(_hexstr)];
-        int returnValue;
+        int return_value;
 
-
-        OE_TEST((result = test(enclave, &returnValue, _data, sizeof(_data), hexstr, sizeof(hexstr))) == OE_OK);
-        OE_TEST(returnValue == 0);
+        OE_TEST(
+            (result = test(
+                 enclave,
+                 &return_value,
+                 _data,
+                 sizeof(_data),
+                 hexstr,
+                 sizeof(hexstr))) == OE_OK);
+        OE_TEST(return_value == 0);
         OE_TEST(strcmp(hexstr, _hexstr) == 0);
     }
 
     /* Test host version of oe_hex_string() */
     {
         char hexstr[sizeof(_hexstr)];
-
 
         OE_TEST(oe_hex_string(hexstr, sizeof(hexstr), _data, sizeof(_data)));
         OE_TEST(strcmp(hexstr, _hexstr) == 0);
