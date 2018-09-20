@@ -220,7 +220,7 @@ int encrypt_file(
         bytes_read > 0)
     {
         // Request for the enclave to encrypt or decrypt _input_buffer. The
-        // input data size, _size, needs to be a multiple of CIPHER_BLOCK_SIZE.
+        // block size (bytes_read), needs to be a multiple of CIPHER_BLOCK_SIZE.
         // In this sample, DATA_BLOCK_SIZE is used except the last block, which
         // will have to pad it to be a multiple of CIPHER_BLOCK_SIZE.
         result = encrypt_block(
