@@ -53,11 +53,11 @@ void* EnclaveThread(void* args)
     _acquire_lock(&_host_lock);
     // Populate the enclave_host_id map with the host thread id
     enclave_host_id_map[thread_args->enc_key] = host_thread_id;
+    _release_lock(&_host_lock);
     printf(
         "EnclaveThread(): Enc key=%lu has Host id of 0x%lu\n",
         thread_args->enc_key,
         host_thread_id);
-    _release_lock(&_host_lock);
 
     // Launch the thread
     oe_result_t result =
