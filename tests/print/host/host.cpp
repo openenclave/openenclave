@@ -8,24 +8,17 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "../args.h"
-
-#if 0
-#define ECHO
-#endif
-
-uint64_t prev;
+#include "print_u.h"
 
 void TestPrint(oe_enclave_t* enclave)
 {
     oe_result_t result;
-    TestPrintArgs args;
+    int return_value;
 
     printf("=== %s() \n", __FUNCTION__);
-    args.rc = -1;
-    result = oe_call_enclave(enclave, "TestPrint", &args);
+    result = enclave_test_print(enclave, &return_value);
     OE_TEST(result == OE_OK);
-    OE_TEST(args.rc == 0);
+    OE_TEST(return_value == 0);
 }
 
 int main(int argc, const char* argv[])

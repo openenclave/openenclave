@@ -3,15 +3,11 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
+#include "create_rapid_t.h"
 
-OE_ECALL void Test(void* args)
+int test(int arg)
 {
-    int* ret = (int*)args;
-
-    if (!ret)
-        return;
-
-    *ret = *ret * 2;
+    return arg * 2;
 }
 
 OE_SET_ENCLAVE_SGX(

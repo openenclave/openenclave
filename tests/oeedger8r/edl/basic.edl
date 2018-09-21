@@ -1,0 +1,95 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave  {
+    trusted {
+        
+        /* Test all basic type parameters */
+        public void ecall_basic_types(
+            char arg1, 
+            // wchar_t is not supported since
+            // wchar_t has different sizes on linux and windows.
+            //wchar_t arg2, 
+            short arg3, 
+            int arg4, 
+            float arg5, 
+            double arg6, 
+            long arg7, 
+            size_t arg8, 
+            unsigned arg9,
+            int8_t arg10, 
+            int16_t arg11, 
+            int32_t arg12, 
+            int64_t arg13,
+            uint8_t arg14, 
+            uint16_t arg15, 
+            uint32_t arg16, 
+            uint64_t arg17
+        );
+
+        /* Test all basic types are return type */
+        public char ecall_ret_char();
+        //public wchar_t ecall_ret_wchar_t();
+        public short ecall_ret_short();
+        public int ecall_ret_int();
+        public float ecall_ret_float();
+        public double ecall_ret_double();
+        public long ecall_ret_long();
+        public size_t ecall_ret_size_t();
+        public unsigned ecall_ret_unsigned();
+        public int8_t ecall_ret_int8_t();
+        public int16_t ecall_ret_int16_t();
+        public int32_t ecall_ret_int32_t();
+        public int64_t ecall_ret_int64_t();
+        public uint8_t ecall_ret_uint8_t();
+        public uint16_t ecall_ret_uint16_t();
+        public uint32_t ecall_ret_uint32_t();
+        public uint64_t ecall_ret_uint64_t();   
+
+        public void test_basic_edl_ocalls();             
+    };
+
+    untrusted {
+        /* Test all basic type parameters */
+        void ocall_basic_types(
+            char arg1, 
+            // wchar_t is not supported since
+            // wchar_t has different sizes on linux and windows.
+            //wchar_t arg2, 
+            short arg3, 
+            int arg4, 
+            float arg5, 
+            double arg6, 
+            long arg7, 
+            size_t arg8, 
+            unsigned arg9,
+            int8_t arg10, 
+            int16_t arg11, 
+            int32_t arg12, 
+            int64_t arg13,
+            uint8_t arg14, 
+            uint16_t arg15, 
+            uint32_t arg16, 
+            uint64_t arg17
+        );
+
+        /* Test all basic types are return type */
+        char ocall_ret_char();
+        //public wchar_t ocall_ret_wchar_t();
+        short ocall_ret_short();
+        int ocall_ret_int();
+        float ocall_ret_float();
+        double ocall_ret_double();
+        long ocall_ret_long();
+        size_t ocall_ret_size_t();
+        unsigned ocall_ret_unsigned();
+        int8_t ocall_ret_int8_t();
+        int16_t ocall_ret_int16_t();
+        int32_t ocall_ret_int32_t();
+        int64_t ocall_ret_int64_t();
+        uint8_t ocall_ret_uint8_t();
+        uint16_t ocall_ret_uint16_t();
+        uint32_t ocall_ret_uint32_t();
+        uint64_t ocall_ret_uint64_t();          
+    }; 
+};

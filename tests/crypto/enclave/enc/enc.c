@@ -19,7 +19,7 @@
 #include <string.h>
 #include "../../tests.h"
 
-OE_ECALL void Test(void* args_)
+void test()
 {
     TestAll();
 }
