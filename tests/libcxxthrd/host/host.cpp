@@ -88,23 +88,29 @@ OE_OCALL void host_create_pthread(uint64_t enc_key, oe_enclave_t* enclave)
     if (ret != 0)
     {
         printf("host_create_pthread(): pthread_create error %d\n", ret);
+        delete thread_args;
         abort();
     }
 
     // Main host thread waits for the enclave id to host id mapping to be
     // updated
-    while (1)
+    pthread_t host_thread_id_map = 0;
+    while (!host_thread_id_map)
     {
         _acquire_lock(&_host_lock);
-        host_thread_id = enclave_host_id_map[enc_key];
+        host_thread_id_map = enclave_host_id_map[enc_key];
         _release_lock(&_host_lock);
-        if (!host_thread_id)
-        {
+        if (!host_thread_id_map)
             std::this_thread::sleep_for(std::chrono::microseconds(10 * 1000));
-        }
-        else
-            break;
     }
+    // Sanity check
+    if (host_thread_id != host_thread_id_map)
+    {
+        printf("Host thread id incorrect in the enclave_host_id_map\n");
+        delete thread_args;
+        abort();
+    }
+    delete thread_args;
 }
 
 OE_OCALL void host_join_pthread(uint64_t enc_key, oe_enclave_t* enclave)
@@ -127,14 +133,14 @@ OE_OCALL void host_join_pthread(uint64_t enc_key, oe_enclave_t* enclave)
             printf(
                 "pthread_join failed for enclave key=0x%lu, host id=0x%lu\n",
                 enc_key,
-                it->second);
+                host_thread_id);
             abort();
         }
         else
             printf(
                 "pthread_join succeeded for enclave id=0x%lu, host id=0x%lu\n",
                 enc_key,
-                it->second);
+                host_thread_id);
     }
     else
     {
