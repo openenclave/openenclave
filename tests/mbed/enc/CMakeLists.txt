@@ -5,10 +5,13 @@
 # >> In one of the test "ssl" we are using a variable called new which is a function in C++
 #    causes improper behaviour at compile time leads us to use C instead of C++
 
+include(oeedl_file)
 include(add_enclave_executable)
 include(${CMAKE_CURRENT_LIST_DIR}/../../../cmake/get_testcase_name.cmake)
 include_directories(${CMAKE_BINARY_DIR}/3rdparty/mbedtls/mbedtls-wrap-prefix/src/mbedtls-wrap/include/)
 # helper lib to contain file needed by some tests
+
+oeedl_file(../mbed.edl enclave gen)
 
 # helper function to create enclave binary
 function(add_libmbed_test_enc NAME )
@@ -33,6 +36,7 @@ function(add_libmbed_test_enc NAME )
      enc.c
      main.c
      start.S
+     ${gen}
     )
     target_compile_options(libmbedtest_suite_${NAME} PRIVATE
       -Wno-error
@@ -42,17 +46,19 @@ function(add_libmbed_test_enc NAME )
     target_include_directories(libmbedtest_suite_${NAME} PUBLIC
         ..
         ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests
+        PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
         )
     target_compile_definitions(libmbedtest_suite_${NAME} PRIVATE -DWITH_MAIN -D__TEST__="${CMAKE_CURRENT_BINARY_DIR}/test_suite_${NAME}.c")
     target_link_libraries(libmbedtest_suite_${NAME} mbedcrypto oelibc oecore)
 endfunction(add_libmbed_test_enc)
 
 function(add_libmbed_selftest_enc NAME SOURCE )
-    add_executable(libmbedtest-${NAME}_enc enc.c main.c start.S)
+    add_executable(libmbedtest-${NAME}_enc enc.c main.c start.S ${gen})
 
     target_include_directories(libmbedtest-${NAME}_enc PUBLIC
         ..
         ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests
+        PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
         )
 
     target_compile_definitions(libmbedtest-${NAME}_enc PRIVATE -DWITH_MAIN -D__TEST__="${SOURCE}")
