@@ -1,6 +1,16 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+# Check Clang version
+if (CMAKE_C_COMPILER_ID MATCHES "Clang")
+  if (CMAKE_C_COMPILER_VERSION VERSION_LESS 7 OR
+      CMAKE_C_COMPILER_VERSION VERSION_GREATER 7.99)
+    message(WARNING "Open Enclave officially supports Clang 7 only, "
+      "but your Clang version (${CMAKE_C_COMPILER_VERSION}) "
+      "is older or newer than that. Build problems may occur.")
+  endif ()
+endif ()
+
 include(add_compile_flags_if_supported)
 
 if (NOT CMAKE_C_COMPILER_ID STREQUAL CMAKE_CXX_COMPILER_ID)

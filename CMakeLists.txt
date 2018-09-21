@@ -48,19 +48,10 @@ endif ()
 
 project("open-enclave" VERSION ${OE_VERSION} LANGUAGES ${OE_ASM} C CXX)
 
-# warn about unsupported Clang versions
-if (CMAKE_C_COMPILER_ID MATCHES "Clang")
-    if (CMAKE_C_COMPILER_VERSION VERSION_LESS 7 OR
-        CMAKE_C_COMPILER_VERSION VERSION_GREATER 7.99)
-        message(WARNING "Open Enclave officially supports Clang 7 only, "
-            "but your Clang version (${CMAKE_C_COMPILER_VERSION}) "
-            "is older or newer than that. Build problems may occur.")
-    endif()
-endif()
-
 # allow simpler include() of our scripts
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
+# See `cmake/compilersettings.cmake` for all compiler settings
 include(compilersettings)
 
 # yes, we want tests
