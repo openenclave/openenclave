@@ -54,7 +54,7 @@ typedef struct _oe_sgx_load_context
     int dev;
 
     /* Hash context used to measure enclave as it is loaded */
-    oe_sha256_context_t hashContext;
+    oe_sha256_context_t hash_context;
 } oe_sgx_load_context_t;
 
 oe_result_t oe_sgx_initialize_load_context(
@@ -78,7 +78,7 @@ oe_result_t oe_sgx_build_enclave(
  * the specified section of the ELF binary.
  *
  * @param elf ELF instance
- * @param sectionName name of section to search for enclave properties
+ * @param section_name name of section to search for enclave properties
  * @param properties pointer where enclave properties are copied
  *
  * @returns OE_OK
@@ -89,7 +89,7 @@ oe_result_t oe_sgx_build_enclave(
  */
 oe_result_t oe_sgx_load_properties(
     const Elf64* elf,
-    const char* sectionName,
+    const char* section_name,
     oe_sgx_enclave_properties_t* properties);
 
 /**
@@ -100,7 +100,7 @@ oe_result_t oe_sgx_load_properties(
  * updated with the value of the **properties** parameter.
  *
  * @param elf ELF instance
- * @param sectionName name of section to search for enclave properties
+ * @param section_name name of section to search for enclave properties
  * @param properties new value of enclave properties
  *
  * @returns OE_OK
@@ -111,7 +111,7 @@ oe_result_t oe_sgx_load_properties(
  */
 oe_result_t oe_sgx_update_enclave_properties(
     const Elf64* elf,
-    const char* sectionName,
+    const char* section_name,
     const oe_sgx_enclave_properties_t* properties);
 
 /**
@@ -126,11 +126,11 @@ oe_result_t oe_sgx_update_enclave_properties(
  *     - num_heap_pages
  *     - num_tcs
  *
- * If not the **fieldName** output parameter points to the name of the first
+ * If not the **field_name** output parameter points to the name of the first
  * field with an invalid value.
  *
  * @param properties SGX enclave properties
- * @param fieldName[output] name of first invalid field (may be null)
+ * @param field_name[output] name of first invalid field (may be null)
  *
  * @returns OE_OK
  * @returns OE_INVALID_PARAMETER a parameter is null
@@ -139,7 +139,7 @@ oe_result_t oe_sgx_update_enclave_properties(
  */
 oe_result_t oe_sgx_validate_enclave_properties(
     const oe_sgx_enclave_properties_t* properties,
-    const char** fieldName);
+    const char** field_name);
 
 OE_EXTERNC_END
 

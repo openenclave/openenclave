@@ -10,23 +10,23 @@
 // In the enclave, stdint.h is picked up from openenclave/libc.
 #include <stdint.h>
 
-struct RemoteReportWithPubKey
+struct remote_report_with_pubkey_t
 {
-    uint8_t pemKey[512]; // public key information
-    uint8_t* remoteReport;
-    size_t remoteReportSize;
+    uint8_t pem_key[512]; // public key information
+    uint8_t* remote_report;
+    size_t remote_report_size;
 };
 
 struct GetRemoteReportWithPubKeyArgs
 {
-    RemoteReportWithPubKey* reportWithPubKey; /* out */
-    bool success;                             /* out */
+    remote_report_with_pubkey_t* report_with_pub_key; /* out */
+    bool success;                                     /* out */
 };
 
 struct VerifyReportWithPubKeyArgs
 {
-    RemoteReportWithPubKey* reportWithPubKey; /* in */
-    bool success;                             /* out */
+    remote_report_with_pubkey_t* report_with_pub_key; /* in */
+    bool success;                                     /* out */
 };
 
 struct GenerateEncryptedMessageArgs

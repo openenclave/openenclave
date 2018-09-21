@@ -5,11 +5,10 @@
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
-#include "../args.h"
+#include "print_t.h"
 
-OE_ECALL void TestPrint(void* args_)
+int enclave_test_print()
 {
-    TestPrintArgs* args = (TestPrintArgs*)args_;
     size_t n;
 
     /* Write to standard output */
@@ -51,7 +50,7 @@ OE_ECALL void TestPrint(void* args_)
         oe_host_write(1, str, sizeof(str) - 1);
     }
 
-    args->rc = 0;
+    return 0;
 }
 
 OE_SET_ENCLAVE_SGX(

@@ -153,12 +153,12 @@ typedef struct _oe_exception_record
 /**
  * oe_vectored_exception_handler_t - Function pointer for a vectored exception
  * handler in an enclave.
- * @param exceptionContext The record of exception information to be handled by
+ * @param exception_context The record of exception information to be handled by
  * the function which includes any flags, the failure code, faulting address and
  * calling context for the exception.
  */
 typedef uint64_t (*oe_vectored_exception_handler_t)(
-    oe_exception_record_t* exceptionContext);
+    oe_exception_record_t* exception_context);
 
 OE_EXTERNC_END
 

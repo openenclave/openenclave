@@ -70,9 +70,3 @@ binaries.
 
 #### [Remote Attestation](/samples/make/remote_attestation/README.md)
 
-#### Echo (in progress)
-  - Demonstrates how to use OE APIs
-
-#### Data Sealing (in progress)
-  - Demonstrates Open Enclave's sealing feature
-

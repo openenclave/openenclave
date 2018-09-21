@@ -199,7 +199,7 @@ OE_ECALL void Test(Args* args)
  **==============================================================================
  */
 
-void oe_handle_verify_report(uint64_t argIn, uint64_t* argOut)
+void oe_handle_verify_report(uint64_t arg_in, uint64_t* arg_out)
 {
     assert("oe_handle_verify_report()" == NULL);
     abort();

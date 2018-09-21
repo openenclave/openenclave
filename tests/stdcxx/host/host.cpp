@@ -26,8 +26,8 @@ void TestStdcxx(oe_enclave_t* enclave)
     OE_TEST(result == OE_OK);
     OE_TEST(args.ret == 0);
     OE_TEST(args.caught);
-    OE_TEST(args.dynamicCastWorks);
-    OE_TEST(args.numConstructions == 6);
+    OE_TEST(args.dynamic_cast_works);
+    OE_TEST(args.num_constructions == 6);
 }
 
 int main(int argc, const char* argv[])

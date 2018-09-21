@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
@@ -11,33 +11,36 @@
 #
 
 # Needed for Open Enclave build and scripts
-PACKAGES="clang-format cmake make"
+PACKAGES="clang-format-3.8 cmake make"
 
 # Needed for using oedbg
-PACKAGES="$PACKAGES gdb"
+PACKAGES+=" gdb"
 
 # Needed for 3rdparty/libunwind
-PACKAGES="$PACKAGES autoconf libtool"
+PACKAGES+=" autoconf libtool"
 
 # Needed to generate documentation during make
-PACKAGES="$PACKAGES doxygen graphviz"
+PACKAGES+=" doxygen graphviz"
 
 # Needed for cmake/get_c_compiler_dir.sh
-PACKAGES="$PACKAGES gawk"
+PACKAGES+=" gawk"
 
 # Needed for dox2md document generation
-PACKAGES="$PACKAGES libexpat1-dev"
+PACKAGES+=" libexpat1-dev"
 
 # Needed for oesign
-PACKAGES="$PACKAGES openssl"
+PACKAGES+=" openssl"
 
 # Needed for oehost
-PACKAGES="$PACKAGES libssl-dev"
+PACKAGES+=" libssl-dev"
 
 # Needed for 3rdparty/libcxx/update.make
-PACKAGES="$PACKAGES subversion"
+PACKAGES+=" subversion"
 
-apt-get -y install $PACKAGES
+# Needed for oeedger8r
+PACKAGES+=" ocaml-native-compilers"
+
+apt-get -y install "$PACKAGES"
 
 # Now install clang from LLVM private repo, this has the spectre mitigations
 # (unlike anything in Ubuntu 16.04).
@@ -55,7 +58,7 @@ else
     wget -q https://apt.llvm.org/llvm-snapshot.gpg.key
     # Verify fingerprint
     if ! (gpg --homedir /dev/null --with-fingerprint llvm-snapshot.gpg.key 2>/dev/null \
-        | grep fingerprint | egrep '6084 F3CF 814B 57C1 CF12 +EFD5 15CF 4D18 AF4F 7421'); then
+        | grep fingerprint | grep -E '6084 F3CF 814B 57C1 CF12 +EFD5 15CF 4D18 AF4F 7421'); then
         echo apt.llvm.org key did not have expected fingerprint; key left in llvm-snapshot.gpg.key
         exit 1
     fi

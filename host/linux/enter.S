@@ -80,7 +80,7 @@ __morestack:
     // Input:
     //      RBX=TCS, RCX=AEP, RDI=ARG1, RSI=ARG2,
     //      RBP=Current host stack rbp,
-    //      RSP=Current host stack rSP.
+    //      RSP=Current host stack sp.
     //      All other registers are NOT used/ignored.
     // Output:
     //      RDI=ARG1OUT, RSI=ARG2OUT,
@@ -130,8 +130,8 @@ __morestack:
     // RAX = __oe_host_stack_bridge(
     //     RDI=arg1
     //     RSI=arg2
-    //     RDX=arg1Out
-    //     RCX=arg2Out
+    //     RDX=arg1_out
+    //     RCX=arg2_out
     //     R8=TCS,
     //     R9=RSP)
     mov ARG1OUT, %rdi

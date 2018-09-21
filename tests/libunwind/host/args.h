@@ -4,7 +4,7 @@
 #ifndef _RUNTEST_ARGS_H
 #define _RUNTEST_ARGS_H
 
-typedef struct _Args
+typedef struct _args
 {
     const char* test;
     int ret;

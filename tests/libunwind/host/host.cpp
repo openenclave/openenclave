@@ -37,7 +37,7 @@ OE_OCALL void ExitOCall(void* arg)
     exit((uint64_t)arg);
 }
 
-static int _GetOpt(
+static int _get_opt(
     int& argc,
     const char* argv[],
     const char* name,
@@ -76,7 +76,7 @@ int main(int argc, const char* argv[])
     uint32_t flags = OE_ENCLAVE_FLAG_DEBUG;
 
     // Check for the --sim option:
-    if (_GetOpt(argc, argv, "--simulate") == 1)
+    if (_get_opt(argc, argv, "--simulate") == 1)
         flags |= OE_ENCLAVE_FLAG_SIMULATE;
     else
         flags = oe_get_create_flags();
