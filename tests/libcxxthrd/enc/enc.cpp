@@ -17,6 +17,7 @@
 #include <vector>
 #include "../host/args.h"
 #include "../host/ocalls.h"
+#include "../host/threadArgs.h"
 
 extern const char* __test__;
 
@@ -70,15 +71,12 @@ static int _pthread_create_hook(
     void* arg)
 {
     _acquire_lock(&_enc_lock);
-
     _thread_functions.push_back(
         [start_routine, arg]() { return start_routine(arg); });
-
     enc_key = ++_next_enc_thread_id;
     printf("pthread_create_hook(): enc_key is %d\n", enc_key);
-
-    _key_to_thread_id_map.emplace(
-        enc_key, 0); // Populate the enclave key to thread id map in advance
+    // Populate the enclave key to thread id map in advance
+    _key_to_thread_id_map.emplace(enc_key, 0);
     _release_lock(&_enc_lock);
 
     // Send the enclave id so that host can maintain the map between
@@ -86,39 +84,49 @@ static int _pthread_create_hook(
     if (oe_call_host("host_create_pthread", (void*)(uint64_t)enc_key) != OE_OK)
         oe_abort();
 
-    // Block until the enclave pthread_id becomes available
-    while (_key_to_thread_id_map[enc_key] == 0)
+    // Block until the enclave pthread_id becomes available in the map
+    while (1)
     {
-        std::this_thread::sleep_for(std::chrono::microseconds(20 * 1000));
+        _acquire_lock(&_enc_lock);
+        *enc_thread = _key_to_thread_id_map[enc_key];
+        _release_lock(&_enc_lock);
+        if (*enc_thread == 0)
+        {
+            std::this_thread::sleep_for(std::chrono::microseconds(20 * 1000));
+        }
+        else
+            break;
     }
-    _acquire_lock(&_enc_lock);
-    *enc_thread = _key_to_thread_id_map[enc_key];
-    _release_lock(&_enc_lock);
+
     printf("_pthread_create_hook(): Enclave thread id=0x%lu\n", *enc_thread);
     return 0;
 }
 
 static int _pthread_join_hook(pthread_t enc_thread, void** retval)
 {
+    int join_enc_key;
     // Find the enc_key from the enc_thread
+    _acquire_lock(&_enc_lock);
     auto it = std::find_if(
         _key_to_thread_id_map.begin(),
         _key_to_thread_id_map.end(),
         [&enc_thread](const std::pair<int, pthread_t>& p) {
             return p.second == enc_thread;
         });
-
     if (it == _key_to_thread_id_map.end())
     {
         printf("Enclave Key for thread ID 0x%lu not found\n", enc_thread);
         oe_abort();
     }
+    join_enc_key = it->first;
+    _release_lock(&_enc_lock);
 
     printf(
         "_pthread_join_hook(): Enclave Key for thread ID 0x%lu is %d\n",
         enc_thread,
-        it->first);
-    if (oe_call_host("host_join_pthread", (void*)(uint64_t)it->first) != OE_OK)
+        join_enc_key);
+    if (oe_call_host("host_join_pthread", (void*)(uint64_t)join_enc_key) !=
+        OE_OK)
         oe_abort();
 
     return 0;
@@ -131,10 +139,10 @@ OE_ECALL void _enclave_launch_thread(void* args_)
 
     _acquire_lock(&_enc_lock);
     _key_to_thread_id_map[enc_key] = pthread_self();
+    _release_lock(&_enc_lock); // Release the lock so that pthread_create can
+                               // acquire the lock
 
-    printf(
-        "_enclave_launch_thread - pthread_self returns = 0x%lu\n",
-        pthread_self());
+    _acquire_lock(&_enc_lock);
     f = _thread_functions.back();
     _thread_functions.pop_back();
     _release_lock(&_enc_lock);

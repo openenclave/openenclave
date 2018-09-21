@@ -14,6 +14,7 @@
 #include <thread>
 #include "args.h"
 #include "ocalls.h"
+#include "threadArgs.h"
 
 // Host maintains a map of enclave key to host thread ID
 static std::map<uint64_t, pthread_t> enclave_host_id_map;
@@ -56,6 +57,7 @@ void* EnclaveThread(void* args)
         "EnclaveThread(): Enc key=%lu has Host id of 0x%lu\n",
         thread_args->enc_key,
         host_thread_id);
+    _release_lock(&_host_lock);
 
     // Launch the thread
     oe_result_t result =
@@ -79,10 +81,10 @@ OE_OCALL void host_create_pthread(uint64_t enc_key, oe_enclave_t* enclave)
     // Using atomic locks to protect the enclave_host_id_map
     _acquire_lock(&_host_lock);
     enclave_host_id_map.emplace(enc_key, host_thread_id);
-    // New Thread is created and executes EnclaveThread
-    int ret = pthread_create(&host_thread_id, NULL, EnclaveThread, thread_args);
     _release_lock(&_host_lock);
 
+    // New Thread is created and executes EnclaveThread
+    int ret = pthread_create(&host_thread_id, NULL, EnclaveThread, thread_args);
     if (ret != 0)
     {
         printf("host_create_pthread(): pthread_create error %d\n", ret);
@@ -91,10 +93,17 @@ OE_OCALL void host_create_pthread(uint64_t enc_key, oe_enclave_t* enclave)
 
     // Main host thread waits for the enclave id to host id mapping to be
     // updated
-    // Lock is not necessary for reading the map entry
-    while (enclave_host_id_map[enc_key] == 0)
+    while (1)
     {
-        std::this_thread::sleep_for(std::chrono::microseconds(20 * 1000));
+        _acquire_lock(&_host_lock);
+        host_thread_id = enclave_host_id_map[enc_key];
+        _release_lock(&_host_lock);
+        if (!host_thread_id)
+        {
+            std::this_thread::sleep_for(std::chrono::microseconds(10 * 1000));
+        }
+        else
+            break;
     }
 }
 
