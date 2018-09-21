@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <thread>
 #include <vector>
+#include "create_rapid_u.h"
 
 #define MAX_ENCLAVES 200
 #define MAX_SIMULTANEOUS_ENCLAVES 32
@@ -28,12 +29,13 @@ static void _launch_enclave(const char* path, uint32_t flags, bool call_enclave)
     if (call_enclave)
     {
         int arg = 123;
-        if ((result = oe_call_enclave(enclave, "Test", &arg)) != OE_OK)
+        int return_value;
+        if ((result = test(enclave, &return_value, arg)) != OE_OK)
         {
             oe_terminate_enclave(enclave);
             oe_put_err("oe_call_enclave(): result=%u", result);
         }
-        OE_TEST(arg == 246);
+        OE_TEST(return_value == 246);
     }
 
     result = oe_terminate_enclave(enclave);
@@ -82,20 +84,20 @@ static void _test_simultaneous(
     {
         for (int i = 0; i < num_enclaves; i++)
         {
-            int args = i;
-            result = oe_call_enclave(enclaves[i], "Test", &args);
+            int arg = i;
+            int return_value;
+            result = test(enclaves[i], &return_value, arg);
 
             if (result != OE_OK)
             {
-                fprintf(
-                    stderr, "oe_call_enclave(): result=%u, iter=%u", result, i);
+                fprintf(stderr, "test(): result=%u, iter=%u", result, i);
 
                 goto Cleanup;
             }
 
             // This is an arbitrary test validation that the enclave
             // call behaves this way
-            OE_TEST(args == 2 * i);
+            OE_TEST(return_value == 2 * i);
         }
     }
 
