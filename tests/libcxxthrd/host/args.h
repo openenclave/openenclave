@@ -12,6 +12,12 @@ typedef struct _args
     int ret;
 } Args;
 
+typedef struct _thread_args
+{
+    oe_enclave_t* enclave;
+    uint64_t enc_key;
+} ThreadArgs;
+
 static inline void _acquire_lock(std::atomic_flag* lock)
 {
     while (lock->test_and_set(std::memory_order_acquire))
