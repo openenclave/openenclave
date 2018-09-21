@@ -51,8 +51,8 @@ project("open-enclave" VERSION ${OE_VERSION} LANGUAGES ${OE_ASM} C CXX)
 # allow simpler include() of our scripts
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
-# See `cmake/compilersettings.cmake` for all compiler settings
-include(compilersettings)
+# See `cmake/compiler_settings.cmake` for all compiler settings
+include(compiler_settings)
 
 # yes, we want tests
 enable_testing()
