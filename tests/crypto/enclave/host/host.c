@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "crypto_u.h"
 
 int main(int argc, const char* argv[])
 {
@@ -27,8 +28,8 @@ int main(int argc, const char* argv[])
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);
 
-    if ((result = oe_call_enclave(enclave, "Test", NULL)) != OE_OK)
-        oe_put_err("oe_call_enclave() failed: result=%u", result);
+    if ((result = test(enclave)) != OE_OK)
+        oe_put_err("test() failed: result=%u", result);
 
     if ((result = oe_terminate_enclave(enclave)) != OE_OK)
         oe_put_err("oe_terminate_enclave() failed: %u\n", result);
