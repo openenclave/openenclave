@@ -17,17 +17,11 @@ elseif(WIN32)
   set(OE_ASM ASM_MASM)
 endif()
 
-# Prefer clang over other compilers
-if (NOT CMAKE_C_COMPILER AND "$ENV{CC}" STREQUAL "")
-    message(STATUS "Trying to find a supported version of Clang")
-    find_program(CMAKE_C_COMPILER NAMES clang-7.0 clang-7)
-    if (CMAKE_C_COMPILER)
-        string(REPLACE "/clang-" "/clang++-" CMAKE_CXX_COMPILER ${CMAKE_C_COMPILER})
-    else()
-        message(WARNING "Clang not found, will use default compiler. "
-            "Override the compiler by setting CC and CXX environment variables.")
-    endif()
-endif()
+# Set compiler search order to prefer Clang
+# This has to be done before `project`
+# http://cmake.3232098.n2.nabble.com/Prefer-clang-over-gcc-td7597742.html
+set(CMAKE_C_COMPILER_NAMES clang-7 cc)
+set(CMAKE_CXX_COMPILER_NAMES clang++-7 c++)
 
 # Collect Git info
 if (IS_DIRECTORY "${CMAKE_SOURCE_DIR}/.git")
