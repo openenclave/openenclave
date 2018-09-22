@@ -3,7 +3,7 @@
 
 #include <openenclave/host.h>
 #include <openenclave/internal/tests.h>
-#include "../args.h"
+#include "bigmalloc_u.h"
 
 #if defined(__linux__)
 #include <sys/sysinfo.h>
@@ -63,11 +63,10 @@ int main(int argc, const char* argv[])
     result = oe_create_enclave(argv[1], type, flags, NULL, 0, &enclave);
     OE_TEST(result == OE_OK);
 
-    args_t args;
-    args.result = OE_UNEXPECTED;
-    result = oe_call_enclave(enclave, "test_malloc", &args);
+    oe_result_t return_value;
+    result = test_malloc(enclave, &return_value);
     OE_TEST(result == OE_OK);
-    OE_TEST(args.result == OE_OK);
+    OE_TEST(return_value == OE_OK);
 
     oe_terminate_enclave(enclave);
 
