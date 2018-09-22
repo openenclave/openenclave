@@ -57,7 +57,7 @@ extern "C" int close(int fd)
 
 static std::vector<std::function<void*()>> _thread_functions;
 static int _next_enc_thread_id = 0;
-static int enc_key = 0;
+int enc_key = 0;
 static std::map<int, pthread_t> _key_to_thread_id_map; // Map of enc_key to
                                                        // thread_id returned by
                                                        // pthread_self()
