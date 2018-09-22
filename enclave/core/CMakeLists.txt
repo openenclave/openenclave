@@ -65,6 +65,7 @@ endif()
 
 if(USE_DEBUG_MALLOC)
     add_target_compile_defs(oecore PRIVATE "C;CXX" OE_USE_DEBUG_MALLOC)
+    message("USE_DEBUG_MALLOC is set, building oecore with memory leak detection.")
 endif()
 
 add_target_compile_defs(oecore PUBLIC "C;CXX" OE_BUILD_ENCLAVE)
