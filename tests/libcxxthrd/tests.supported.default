@@ -1,0 +1,2 @@
+../../3rdparty/libcxx/libcxx/test/std/thread/thread.threads/thread.thread.this/yield.pass.cpp
+../../3rdparty/libcxx/libcxx/test/libcxx/thread/thread.threads/thread.thread.class/thread.thread.member/native_handle.pass.cpp

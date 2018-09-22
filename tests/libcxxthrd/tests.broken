@@ -1,0 +1,10 @@
+../../3rdparty/libcxx/libcxx/test/libcxx/thread/thread.threads/thread.thread.this/sleep_for.pass.cpp
+../../3rdparty/libcxx/libcxx/test/libcxx/thread/thread.mutex/thread_safety_requires_capability.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/thread/thread.condition/thread.condition.condvarany/wait_for.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/thread/thread.condition/thread.condition.condvarany/wait_for_pred.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/thread/thread.condition/thread.condition.condvarany/wait_until.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/thread/thread.condition/thread.condition.condvarany/wait_until_pred.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/thread/thread.condition/thread.condition.condvar/wait_for.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/thread/thread.condition/thread.condition.condvar/wait_for_pred.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/thread/thread.condition/thread.condition.condvar/wait_until.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/thread/thread.condition/thread.condition.condvar/wait_until_pred.pass.cpp
