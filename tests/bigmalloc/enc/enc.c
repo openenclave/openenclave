@@ -4,19 +4,17 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/globals.h>
-#include "../args.h"
+#include "bigmalloc_t.h"
 
 /* Test a large memory allocation */
-OE_ECALL void test_malloc(void* args_)
+oe_result_t test_malloc()
 {
-    args_t* args = (args_t*)args_;
     const size_t GIGABYTE = 1024 * 1024 * 1024;
     size_t heap_remaining;
     uint8_t* ptr = NULL;
     extern void* dlmalloc(size_t n);
     extern void dlfree(void* ptr);
-
-    args->result = OE_UNEXPECTED;
+    oe_result_t return_value = OE_UNEXPECTED;
 
     /* Determine how much heap memory remains */
     {
@@ -27,7 +25,7 @@ OE_ECALL void test_malloc(void* args_)
         /* Sanity checks */
         if (!(base <= brk && brk < end))
         {
-            args->result = OE_FAILURE;
+            return_value = OE_FAILURE;
             goto done;
         }
 
@@ -37,7 +35,7 @@ OE_ECALL void test_malloc(void* args_)
     /* Verify that at least 15.9 gigabytes of heap memory are available */
     if (!(heap_remaining > (float)(15.9 * GIGABYTE)))
     {
-        args->result = OE_FAILURE;
+        return_value = OE_FAILURE;
         goto done;
     }
 
@@ -47,7 +45,7 @@ OE_ECALL void test_malloc(void* args_)
 
         if (!(ptr = (uint8_t*)dlmalloc(allocation_size)))
         {
-            args->result = OE_OUT_OF_MEMORY;
+            return_value = OE_OUT_OF_MEMORY;
             goto done;
         }
 
@@ -56,10 +54,12 @@ OE_ECALL void test_malloc(void* args_)
         ptr[allocation_size - 1] = 0;
     }
 
+    return_value = OE_OK;
+
 done:
 
     if (ptr)
         dlfree(ptr);
 
-    args->result = OE_OK;
+    return return_value;
 }
