@@ -64,6 +64,8 @@ void* EnclaveThread(void* args)
         oe_call_enclave(thread_args->enclave, "_enclave_launch_thread", NULL);
     OE_TEST(result == OE_OK);
 
+    delete thread_args;
+
     return NULL;
 }
 
@@ -110,7 +112,6 @@ OE_OCALL void host_create_pthread(uint64_t enc_key, oe_enclave_t* enclave)
         delete thread_args;
         abort();
     }
-    delete thread_args;
 }
 
 OE_OCALL void host_join_pthread(uint64_t enc_key, oe_enclave_t* enclave)
