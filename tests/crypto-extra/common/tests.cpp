@@ -34,7 +34,7 @@ void test_cert_chain_positive(
     oe_cert_chain_t chain = {0};
 
     // The expected order is leaf, intermediate, root.
-    // But it is inverse of open ssl order.
+    // Open ssl accepts CA (i.e. intermediate and root) in any order.
     OE_TEST(
         create_and_read_chain(
             std::vector<const char*>{leaf, intermediate, root}, &chain) ==
@@ -111,10 +111,16 @@ void test_cert_chain_negative(
 }
 
 #ifndef OE_BUILD_ENCLAVE
+
 #define ERROR_MSG_CERT_REVOKED "certificate revoked"
+#define ERROR_MSG_MISSING_CRL "unable to get certificate CRL"
+
 #else
+
 #define ERROR_MSG_CERT_REVOKED \
     "The certificate has been revoked (is on a CRL)\n"
+#define ERROR_MSG_MISSING_CRL "unable to get certificate CRL"
+
 #endif
 
 void test_crls(
@@ -227,52 +233,56 @@ void test_crls(
 
     // With root_crl2 and intermediate_crl1, both leaf1 and leaf2 should fail.
     // This is because the intermediate cert has been revoked.
-    // But currently this is not the behavior.
     {
         oe_crl_t* crls[] = {&root_crl2_obj, &intermediate_crl1_obj};
         OE_TEST(
-            oe_cert_verify(&leaf_cert1, &cert_chain, crls, 2, &error) == OE_OK);
+            oe_cert_verify(&leaf_cert1, &cert_chain, crls, 2, &error) ==
+            OE_VERIFY_FAILED);
+        OE_TEST(strcmp(error.buf, ERROR_MSG_CERT_REVOKED) == 0);
 
         OE_TEST(
-            oe_cert_verify(&leaf_cert2, &cert_chain, crls, 2, &error) == OE_OK);
-        // OE_TEST(strcmp(error.buf, ERROR_MSG_CERT_REVOKED) == 0);
+            oe_cert_verify(&leaf_cert2, &cert_chain, crls, 2, &error) ==
+            OE_VERIFY_FAILED);
+        OE_TEST(strcmp(error.buf, ERROR_MSG_CERT_REVOKED) == 0);
 
         // Crls can be given in any order.
         std::swap(crls[0], crls[1]);
         OE_TEST(
-            oe_cert_verify(&leaf_cert1, &cert_chain, crls, 2, &error) == OE_OK);
+            oe_cert_verify(&leaf_cert1, &cert_chain, crls, 2, &error) ==
+            OE_VERIFY_FAILED);
+        OE_TEST(strcmp(error.buf, ERROR_MSG_CERT_REVOKED) == 0);
 
         OE_TEST(
-            oe_cert_verify(&leaf_cert2, &cert_chain, crls, 2, &error) == OE_OK);
-        // OE_TEST(strcmp(error.buf, ERROR_MSG_CERT_REVOKED) == 0);
+            oe_cert_verify(&leaf_cert2, &cert_chain, crls, 2, &error) ==
+            OE_VERIFY_FAILED);
+        OE_TEST(strcmp(error.buf, ERROR_MSG_CERT_REVOKED) == 0);
     }
 
     // If you pass CRL for only one of the CAs (ie root or intermediate), then
     // verification should fail.
-    // Currently this is not the behavior, and causes crash.
     {
-        // oe_crl_t* crls[] = {&root_crl1_obj};
-        // OE_TEST(
-        //     oe_cert_verify(&leaf_cert1, &cert_chain, crls, 1, &error) ==
-        //     OE_VERIFY_FAILED
-        // );
+        oe_crl_t* crls[] = {&root_crl1_obj};
+        OE_TEST(
+            oe_cert_verify(&leaf_cert1, &cert_chain, crls, 1, &error) ==
+            OE_VERIFY_FAILED);
+        OE_TEST(strcmp(error.buf, ERROR_MSG_MISSING_CRL) == 0);
 
-        // OE_TEST(
-        //     oe_cert_verify(&leaf_cert2, &cert_chain, crls, 1, &error) ==
-        //     OE_VERIFY_FAILED
-        // );
+        OE_TEST(
+            oe_cert_verify(&leaf_cert2, &cert_chain, crls, 1, &error) ==
+            OE_VERIFY_FAILED);
+        OE_TEST(strcmp(error.buf, ERROR_MSG_MISSING_CRL) == 0);
 
-        // // Try out the other crl.
-        // crls[0] = &intermediate_crl1_obj;
-        // OE_TEST(
-        //     oe_cert_verify(&leaf_cert1, &cert_chain, crls, 1, &error) ==
-        //     OE_VERIFY_FAILED
-        // );
+        // Try out the other crl.
+        crls[0] = &intermediate_crl1_obj;
+        OE_TEST(
+            oe_cert_verify(&leaf_cert1, &cert_chain, crls, 1, &error) ==
+            OE_VERIFY_FAILED);
+        OE_TEST(strcmp(error.buf, ERROR_MSG_MISSING_CRL) == 0);
 
-        // OE_TEST(
-        //     oe_cert_verify(&leaf_cert2, &cert_chain, crls, 1, &error) ==
-        //     OE_VERIFY_FAILED
-        // );
+        OE_TEST(
+            oe_cert_verify(&leaf_cert2, &cert_chain, crls, 1, &error) ==
+            OE_VERIFY_FAILED);
+        OE_TEST(strcmp(error.buf, ERROR_MSG_MISSING_CRL) == 0);
     }
 
     /* Clean up */
