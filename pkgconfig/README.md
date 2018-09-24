@@ -23,6 +23,12 @@ $ /usr/local/share/pkgconfig
 Once installed, **pkg-config** may be used to obtain compiler and linker flags 
 sufficient for building enclave applications with the GCC or Clang compiler.
 
+Setting **PKG_CONFIG_PATH**
+---------------------------
+
+If **Open Enclave** is not installed with the default prefix (**/usr/local**),
+the **PKG_CONFIG_PATH** variable must be set relative to that custom prefix.
+
 Building enclave applications:
 ------------------------------
 
