@@ -41,7 +41,7 @@ OE_ECALL void CreateEnclave(void* args_)
     }
 
     /* Create enclave with an OCALL from host. */
-    args->ret = oe_call_host("CreateEnclave", args);
+    args->ret = oe_call_host("CreateEnclaveHost", args);
 }
 
 static oe_enclave_t* _create_enclave(TestEnclaveArgs* args)
@@ -60,7 +60,7 @@ static oe_enclave_t* _create_enclave(TestEnclaveArgs* args)
     create_args->ret = 1;
 
     /* Create enclave with an OCALL from host. */
-    oe_result_t result = oe_call_host("CreateEnclave", create_args);
+    oe_result_t result = oe_call_host("CreateEnclaveHost", create_args);
     OE_TEST(result == OE_OK);
     OE_TEST(create_args->ret == OE_OK);
 
@@ -92,7 +92,7 @@ static void _call_enclave(oe_enclave_t* enclave, const char* func)
     call_args->ret = 1;
 
     /* Test calling the enclave via an OCALL. */
-    oe_result_t result = oe_call_host("CallEnclave", call_args);
+    oe_result_t result = oe_call_host("CallEnclaveHost", call_args);
     OE_TEST(result == OE_OK);
     OE_TEST(call_args->ret == OE_OK);
     OE_TEST(*((int*)call_args->args) == 246);

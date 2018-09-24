@@ -519,9 +519,11 @@ oe_result_t oe_sgx_create_enclave(
 
 done:
 
+#if defined(__linux__)
     if (result != OE_OK && context->type == OE_SGX_LOAD_TYPE_CREATE &&
         base != NULL)
         munmap(base, enclave_size);
+#endif
 
     if (secs)
         oe_memalign_free(secs);
