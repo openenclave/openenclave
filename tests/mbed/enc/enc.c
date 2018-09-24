@@ -20,7 +20,6 @@
 #include <sys/syscall.h>
 #include <sys/uio.h>
 #include <unistd.h>
-#include "../host/args.h"
 #include "../syscall_args.h"
 #include "mbed_t.h"
 
