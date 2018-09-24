@@ -27,22 +27,32 @@ OE_LIBC_EXTERN_C_BEGIN
 /*
 **==============================================================================
 **
+** OE_UNSUPPORTED_ENCLAVE_FUNCTION
+**
+**==============================================================================
+*/
+
+#define OE_UNSUPPORTED_ENCLAVE_FUNCTION "unsupported enclave function"
+
+/*
+**==============================================================================
+**
 ** <pthread.h>
 **
 **==============================================================================
 */
 
-OE_LIBC_DEPRECATED("unsupported function")
+OE_LIBC_DEPRECATED(OE_UNSUPPORTED_ENCLAVE_FUNCTION)
 int pthread_create(
     pthread_t *thread, 
     const pthread_attr_t *attr,
     void *(*start_routine) (void *), 
     void *arg);
 
-OE_LIBC_DEPRECATED("unsupported function")
+OE_LIBC_DEPRECATED(OE_UNSUPPORTED_ENCLAVE_FUNCTION)
 int pthread_join(pthread_t thread, void** retval);
 
-OE_LIBC_DEPRECATED("unsupported function")
+OE_LIBC_DEPRECATED(OE_UNSUPPORTED_ENCLAVE_FUNCTION)
 int pthread_detach(pthread_t thread);
 
 /*
@@ -56,14 +66,14 @@ int pthread_detach(pthread_t thread);
 // Need this since including <time.h> will create a circular dependency.
 struct tm;
 
-OE_LIBC_DEPRECATED("unsupported function")
+OE_LIBC_DEPRECATED(OE_UNSUPPORTED_ENCLAVE_FUNCTION)
 size_t strftime(
     char* s, 
     size_t max, 
     const char* format, 
     const struct tm* tm);
 
-OE_LIBC_DEPRECATED("unsupported function")
+OE_LIBC_DEPRECATED(OE_UNSUPPORTED_ENCLAVE_FUNCTION)
 size_t strftime_l(
     char* s,
     size_t max,
