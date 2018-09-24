@@ -16,8 +16,8 @@
 
 using namespace std;
 
-size_t numConstructions;
-size_t numDestructions;
+size_t num_constructions;
+size_t num_destructions;
 
 static string _str;
 
@@ -58,13 +58,13 @@ class G
   public:
     G()
     {
-        numConstructions++;
+        num_constructions++;
         printf("G::G()\n");
     }
 
     ~G()
     {
-        numDestructions++;
+        num_destructions++;
         printf("G::~G()\n");
     }
 };
@@ -75,8 +75,8 @@ G _g2;
 
 void MyAtExit()
 {
-    OE_TEST(numConstructions == 6);
-    OE_TEST(numDestructions == 0);
+    OE_TEST(num_constructions == 6);
+    OE_TEST(num_destructions == 0);
     oe_host_printf("MyAtExit()\n");
 }
 
@@ -185,19 +185,19 @@ OE_ECALL void Test(void* args_)
 
     /* Test RTTI */
     {
-        args->dynamicCastWorks = false;
+        args->dynamic_cast_works = false;
 
         X* x = new Y;
 
         Y* y = dynamic_cast<Y*>(x);
 
         if (y)
-            args->dynamicCastWorks = true;
+            args->dynamic_cast_works = true;
 
         delete x;
     }
 
-    args->numConstructions = numConstructions;
+    args->num_constructions = num_constructions;
 
     args->ret = 0;
 }
@@ -205,14 +205,14 @@ OE_ECALL void Test(void* args_)
 __attribute__((constructor)) void Constructor(void)
 {
     oe_host_printf("Constructor()\n");
-    OE_TEST(numConstructions == 0);
+    OE_TEST(num_constructions == 0);
 }
 
 __attribute__((destructor)) void Destructor(void)
 {
     oe_host_printf("Destructor()\n");
-    OE_TEST(numConstructions == 6);
-    OE_TEST(numDestructions == 6);
+    OE_TEST(num_constructions == 6);
+    OE_TEST(num_destructions == 6);
 }
 
 OE_SET_ENCLAVE_SGX(

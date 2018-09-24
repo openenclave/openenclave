@@ -6,13 +6,29 @@
 #include <openenclave/internal/hostalloc.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/tests.h>
+#include <string.h>
+#include "enclaveparam_t.h"
 
-OE_ECALL void test_ocall_enclave_param(void* args)
+void test_ocall_enclave_param(char* func)
 {
-    const char* func = (const char*)args;
+    oe_result_t result = OE_INVALID_PARAMETER;
+    oe_enclave_t* enclave = oe_get_enclave();
+
     OE_TEST(func != NULL);
 
-    oe_result_t result = oe_call_host(func, args);
+    if (strcmp(func, "callback_1") == 0)
+    {
+        result = callback_1(enclave);
+    }
+    else if (strcmp(func, "callback_2") == 0)
+    {
+        result = callback_2(enclave);
+    }
+    else if (strcmp(func, "callback_3") == 0)
+    {
+        result = callback_3(enclave);
+    }
+
     OE_TEST(result == OE_OK);
 }
 

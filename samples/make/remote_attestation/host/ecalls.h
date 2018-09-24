@@ -16,7 +16,7 @@ RemoteReportWithPubKey* GetRemoteReportWithPubKey(oe_enclave_t* enclave);
 // Ask the enclave to attest and store the public key of another enclave
 oe_result_t VerifyReportAndSetPubKey(
     oe_enclave_t* enclave,
-    RemoteReportWithPubKey* reportWithPubKey);
+    RemoteReportWithPubKey* report_with_pub_key);
 
 // Fetch encrypted data from the enclave
 oe_result_t GenerateEncryptedMessage(

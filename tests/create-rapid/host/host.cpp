@@ -9,12 +9,13 @@
 #include <cstdlib>
 #include <thread>
 #include <vector>
+#include "create_rapid_u.h"
 
 #define MAX_ENCLAVES 200
 #define MAX_SIMULTANEOUS_ENCLAVES 32
 #define MAX_THREADS 32
 
-static void _LaunchEnclave(const char* path, uint32_t flags, bool call_enclave)
+static void _launch_enclave(const char* path, uint32_t flags, bool call_enclave)
 {
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
@@ -28,12 +29,13 @@ static void _LaunchEnclave(const char* path, uint32_t flags, bool call_enclave)
     if (call_enclave)
     {
         int arg = 123;
-        if ((result = oe_call_enclave(enclave, "Test", &arg)) != OE_OK)
+        int return_value;
+        if ((result = test(enclave, &return_value, arg)) != OE_OK)
         {
             oe_terminate_enclave(enclave);
             oe_put_err("oe_call_enclave(): result=%u", result);
         }
-        OE_TEST(arg == 246);
+        OE_TEST(return_value == 246);
     }
 
     result = oe_terminate_enclave(enclave);
@@ -41,15 +43,18 @@ static void _LaunchEnclave(const char* path, uint32_t flags, bool call_enclave)
         oe_put_err("oe_terminate_enclave(): result=%u", result);
 }
 
-static void _TestSequential(const char* path, uint32_t flags, bool call_enclave)
+static void _test_sequential(
+    const char* path,
+    uint32_t flags,
+    bool call_enclave)
 {
     for (int i = 0; i < MAX_ENCLAVES; i++)
     {
-        _LaunchEnclave(path, flags, call_enclave);
+        _launch_enclave(path, flags, call_enclave);
     }
 }
 
-static void _TestSimultaneous(
+static void _test_simultaneous(
     const char* path,
     uint32_t flags,
     bool call_enclave)
@@ -57,11 +62,11 @@ static void _TestSimultaneous(
     oe_enclave_t* enclaves[MAX_SIMULTANEOUS_ENCLAVES];
     oe_result_t result = OE_OK;
 
-    int numEnclaves = 0;
-    for (; numEnclaves < MAX_SIMULTANEOUS_ENCLAVES; numEnclaves++)
+    int num_enclaves = 0;
+    for (; num_enclaves < MAX_SIMULTANEOUS_ENCLAVES; num_enclaves++)
     {
         result = oe_create_enclave(
-            path, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclaves[numEnclaves]);
+            path, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclaves[num_enclaves]);
 
         if (result != OE_OK)
         {
@@ -69,7 +74,7 @@ static void _TestSimultaneous(
                 stderr,
                 "oe_create_enclave(): result=%u, iter=%u",
                 result,
-                numEnclaves);
+                num_enclaves);
 
             goto Cleanup;
         }
@@ -77,33 +82,33 @@ static void _TestSimultaneous(
 
     if (call_enclave)
     {
-        for (int i = 0; i < numEnclaves; i++)
+        for (int i = 0; i < num_enclaves; i++)
         {
-            int args = i;
-            result = oe_call_enclave(enclaves[i], "Test", &args);
+            int arg = i;
+            int return_value;
+            result = test(enclaves[i], &return_value, arg);
 
             if (result != OE_OK)
             {
-                fprintf(
-                    stderr, "oe_call_enclave(): result=%u, iter=%u", result, i);
+                fprintf(stderr, "test(): result=%u, iter=%u", result, i);
 
                 goto Cleanup;
             }
 
             // This is an arbitrary test validation that the enclave
             // call behaves this way
-            OE_TEST(args == 2 * i);
+            OE_TEST(return_value == 2 * i);
         }
     }
 
 Cleanup:
-    for (int i = 0; i < numEnclaves; i++)
+    for (int i = 0; i < num_enclaves; i++)
     {
-        oe_result_t terminateResult = oe_terminate_enclave(enclaves[i]);
-        if (terminateResult != OE_OK)
+        oe_result_t terminate_result = oe_terminate_enclave(enclaves[i]);
+        if (terminate_result != OE_OK)
         {
             // Log that there was an error, but continue termination.
-            result = terminateResult;
+            result = terminate_result;
 
             fprintf(
                 stderr,
@@ -115,10 +120,10 @@ Cleanup:
 
     // Fail the test if any of the functions failed.
     if (result != OE_OK)
-        oe_put_err("_TestSimultaneous failed");
+        oe_put_err("_test_simultaneous failed");
 }
 
-static void _TestMultiThreaded(
+static void _test_multithreaded(
     const char* path,
     uint32_t flags,
     bool call_enclave)
@@ -128,7 +133,7 @@ static void _TestMultiThreaded(
     for (int i = 0; i < MAX_THREADS; i++)
     {
         threads.emplace_back(
-            std::thread(_LaunchEnclave, path, flags, call_enclave));
+            std::thread(_launch_enclave, path, flags, call_enclave));
     }
 
     for (auto& thread : threads)
@@ -146,16 +151,16 @@ int main(int argc, const char* argv[])
     const uint32_t flags = oe_get_create_flags();
 
     // Test rapid enclave creation sequentially.
-    _TestSequential(argv[1], flags, false);
-    _TestSequential(argv[1], flags, true);
+    _test_sequential(argv[1], flags, false);
+    _test_sequential(argv[1], flags, true);
 
     // Test rapid enclave creation simultaneously.
-    _TestSimultaneous(argv[1], flags, false);
-    _TestSimultaneous(argv[1], flags, true);
+    _test_simultaneous(argv[1], flags, false);
+    _test_simultaneous(argv[1], flags, true);
 
     // Test multi-threaded enclave creation.
-    _TestMultiThreaded(argv[1], flags, false);
-    _TestMultiThreaded(argv[1], flags, true);
+    _test_multithreaded(argv[1], flags, false);
+    _test_multithreaded(argv[1], flags, true);
 
     return 0;
 }

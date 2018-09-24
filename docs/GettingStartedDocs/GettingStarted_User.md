@@ -53,6 +53,6 @@ OE Samples
 SDK API Reference
 -------------------------------
 
-  [SDK API Reference](APIsAvaiableToEnclave.md)
+  [SDK API Reference](APIsAvailableToEnclave.md)
 
 

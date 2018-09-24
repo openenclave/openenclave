@@ -65,12 +65,12 @@ Please do:
 * **DO** tag any users that should know about and/or review the change.
 * **DO** ensure each commit successfully builds on all platforms and passes all
   unit tests.
+* **DO** rebase and squash unnecessary commits before opening the PR, so that
+  all the commits in the PR are the commits you want to merge.
+* **DO** ensure your correct name and email are on each commit.
 * **DO** address PR feedback in an additional commit(s) rather than amending the
-  existing commits, and only rebase/squash them when necessary.  This makes it
+  existing commits, and only rebase/squash them when necessary. This makes it
   easier for reviewers to track changes.
-* **DO** assume that ["Squash and Merge"](
-  https://github.com/blog/2141-squash-your-commits) will be used to merge your
-  commit unless you request otherwise in the PR.
 
 Please do not:
 
@@ -96,27 +96,47 @@ Please do not:
   changes. Separate unrelated fixes into separate PRs, especially if they are
   in different libraries.
 
-Merging Pull Requests (for contributors with write access)
-----------------------------------------------------------
+Merging Pull Requests
+---------------------
 
-Please use ["Squash and Merge"](https://github.com/blog/2141-squash-your-commits
-) by default for individual contributions unless requested by the PR author.
-Do so, even if the PR contains only one commit. It creates a simpler history
-than "Create a Merge Commit". Reasons that PR authors may request "Merge and
-Commit" may include (but are not limited to):
+Instead of merging pull requests with "the big green button" on GitHub, we use
+an automated system called [Bors](https://bors.tech/). The Bors bot is the
+_only_ approved mechanism of merging code to `master`. When a PR is ready to be
+merged, a maintainer will comment on it with `bors r+`.
 
-  - The change is easier to understand as a series of focused commits. Each
-    commit in the series must be buildable so as not to break `git bisect`.
-  - Contributor is using an e-mail address other than the primary GitHub address
-    and wants that preserved in the history. Contributor must be willing to
-    squash the commits manually before acceptance.
+Bors will automatically:
+1. Apply the PR's commits to a `staging` branch based on `master`.
+1. Trigger Jenkins to build and test the `staging` branch.
+1. Push the commits and a merge commit to `master` only if everything passes.
+
+We require the use of Bors because it prevents a race condition that can result
+from manual merges: two conflicting PRs may both pass tests independently while
+neither is in master, only to break once both are merged. Bors synchronizes the
+testing of PRs and ensures that passing PRs are immediately merged, so that the
+state of `master` always reflects a tested state.
+
+See the [Bors documentation](https://bors.tech/documentation/) for all the
+available commands. The highlights:
+
+| Syntax | Description
+|--------|------------
+| bors r+ | Run the test suite and push to master if it passes.
+| bors r- | Cancel a pending r+.
+| bors try | Run the test suite but do not merge on success.
+| bors delegate+ | Allow the pull request author to r+.
+| bors delegate=[list] | Allow the listed users to r+.
+| bors ping | Check if Bors is up. If it is, it will comment with _pong_.
+| bors retry | Run the previous command a second time.
+
+Also see our [Bors dashboard](https://oe-bors.westus2.cloudapp.azure.com/).
 
 Commit Messages
 ---------------
 
 Please format commit messages as follows (based on [A Note About Git Commit
-Messages](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html))
-:
+Messages](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)).
+Use the present tense and imperative mood when describing your changes, as if
+you are telling Git what you want it do to the code base.
 
 ```
 Summarize change in 50 characters or less
@@ -143,6 +163,25 @@ Also do your best to factor commits appropriately, not too large with unrelated
 things in the same commit, and not too small with the same small change applied
 _n_ times in _n_ different commits.
 
+Ensure the correct name and email are set for the commit. For example, before
+committing, ensure that Git is configured with your user name and email:
+
+```
+$ git config --global user.name "John Doe"
+$ git config --global user.email johndoe@example.com
+```
+
+See Git's chapter on [Getting
+Started](https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup)
+for more details.
+
+We _will not_ accept commits with incorrect authorship. If you have existing
+commits with incorrect author information, you can fix them as follows:
+
+1. `git rebase --interactive` your working branch.
+1. Choose to `edit` the commits with incorrect authorship.
+   1. For each edit, use `git commit --amend --reset-author`.
+
 Contributor License Agreement
 -----------------------------
 
@@ -153,10 +192,10 @@ You can read more about [Contribution License Agreements (CLA)](
 http://en.wikipedia.org/wiki/Contributor_License_Agreement) on Wikipedia.
 
 You don't have to do this up-front. You can simply clone, fork, and submit your
-pull-request as usual. When your pull-request is created, it is classified by a
+pull request as usual. When your pull request is created, it is classified by a
 CLA bot. If the change is trivial (for example, you just fixed a typo), then the
 PR is labelled with `cla-not-required`. Otherwise it's classified as
-`cla-required`. Once you signed a CLA, the current and all future pull-requests
+`cla-required`. Once you signed a CLA, the current and all future pull requests
 will be labelled as `cla-signed`.
 
 Copying Files from Other Projects

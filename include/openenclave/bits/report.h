@@ -21,22 +21,44 @@ OE_EXTERNC_BEGIN
  */
 #define OE_REPORT_FLAGS_REMOTE_ATTESTATION 0x00000001
 
+/**
+ * Size of embedded data in a local report.
+ */
 #define OE_REPORT_DATA_SIZE 64
 
-// Up to 10 KB reports are supported.
+/**
+ * Maximum report size supported by OE. This is 10 KB.
+ */
 #define OE_MAX_REPORT_SIZE (10 * 1024)
 
 /**
  * @cond DEV
  */
 // Fixed identity property sizes for OEv1
+/**
+ * Size of the enclave's unique ID in bytes.
+ */
 #define OE_UNIQUE_ID_SIZE 32
+/**
+ * Size of the enclave's signer ID in bytes.
+ */
 #define OE_SIGNER_ID_SIZE 32
+/**
+ * Size of the enclave's product ID in bytes.
+ */
 #define OE_PRODUCT_ID_SIZE 16
 
-// Enclave report attribute bit masks
+/**
+ * Bit mask for a debug report.
+ */
 #define OE_REPORT_ATTRIBUTES_DEBUG 0x0000000000000001ULL
+/**
+ * Bit mask for a remote report.
+ */
 #define OE_REPORT_ATTRIBUTES_REMOTE 0x0000000000000002ULL
+/**
+ * Reserved bits.
+ */
 #define OE_REPORT_ATTRIBUTES_RESERVED \
     (~(OE_REPORT_ATTRIBUTES_DEBUG | OE_REPORT_ATTRIBUTES_REMOTE))
 
@@ -45,8 +67,8 @@ OE_EXTERNC_BEGIN
  */
 
 /**
- * oe_identity_t represents the identity of an enclave.
- * The oe_identity_t structure is expected to change in future.
+ * Structure to represent the identity of an enclave.
+ * This structure is expected to change in future.
  * Newer fields are always added at the end and fields are never removed.
  * Before accessing a field, the enclave must first check that the field is
  * valid using the id_version and the table below:
@@ -82,9 +104,10 @@ typedef struct _oe_identity
      * For SGX enclaves, this is the ISVPRODID value. */
     uint8_t product_id[OE_PRODUCT_ID_SIZE];
 } oe_identity_t;
+/**< typedef struct _oe_identity oe_identity_t*/
 
 /**
- * oe_report_t structure holds the parsed form of a report.
+ * Structure to hold the parsed form of a report.
  */
 typedef struct _oe_report
 {
@@ -111,6 +134,7 @@ typedef struct _oe_report
     /** Contains the IDs and attributes that are part of oe_identity_t */
     oe_identity_t identity;
 } oe_report_t;
+/**< typedef struct _oe_report oe_report_t*/
 
 OE_EXTERNC_END
 

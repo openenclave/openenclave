@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "revocation.h"
+#include <openenclave/bits/safemath.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/crl.h>
@@ -119,8 +120,15 @@ static oe_result_t _get_crl_distribution_point(oe_cert_t* cert, char** url)
         // At most 1 distribution point is expected.
         if (num_urls != 1)
             OE_RAISE(OE_FAILURE);
-        // Include null character in length.
-        url_length = strlen(urls[0]) + 1;
+
+        // Sanity check. No URL should be this large.
+        url_length = strlen(urls[0]);
+        if (url_length > OE_INT16_MAX)
+            OE_RAISE(OE_OUT_OF_BOUNDS);
+
+        // Add +1 to include null character.
+        url_length++;
+
         *url = (char*)malloc(url_length);
         if (*url == NULL)
             OE_RAISE(OE_OUT_OF_MEMORY);
@@ -226,9 +234,9 @@ oe_result_t oe_enforce_revocation(
          ++i)
     {
         platform_tcb_level.sgx_tcb_comp_svn[i] =
-            parsed_extension_info.compSvn[i];
+            parsed_extension_info.comp_svn[i];
     }
-    platform_tcb_level.pce_svn = parsed_extension_info.pceSvn;
+    platform_tcb_level.pce_svn = parsed_extension_info.pce_svn;
     platform_tcb_level.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
 
     OE_CHECK(

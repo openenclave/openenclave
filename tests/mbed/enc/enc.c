@@ -18,7 +18,7 @@
 #include <string.h>
 #include <sys/syscall.h>
 #include <unistd.h>
-#include "../host/args.h"
+#include "mbed_t.h"
 
 int main(int argc, const char* argv[]);
 
@@ -81,40 +81,38 @@ done:
     return result;
 }
 
-OE_ECALL void Test(Args* args)
+int test(const char* in_testname, char** out_testname)
 {
-    if (args)
+    int return_value = -1;
+    printf("RUNNING: %s\n", __TEST__);
+
+    // Install a syscall hook to handle special behavior for mbed TLS.
+    oe_register_syscall_hook(_syscall_hook);
+
+    // verbose option is enabled as some of the functionality in helper.function
+    // such as redirect output, restore output is trying to assign values to
+    // stdout which in turn causes segmentation fault.  To avoid this we enabled
+    // verbose options such that those function calls will be suppressed.
+    if (0 == strcmp(
+                 __TEST__,
+                 "../../3rdparty/mbedtls/mbedtls/programs/test/selftest.c"))
     {
-        printf("RUNNING: %s\n", __TEST__);
-
-        // Install a syscall hook to handle special behavior for mbed TLS.
-        oe_register_syscall_hook(_syscall_hook);
-
-        // verbose option is enabled as some of the functionality in
-        // helper.function such as redirect output, restore output is trying
-        // to assign values to stdout which in turn causes segmentation fault.
-        // To avoid this we enabled verbose options such that those function
-        // calls will be suppressed.
-        if (0 == strcmp(
-                     __TEST__,
-                     "../../3rdparty/mbedtls/mbedtls/programs/test/selftest.c"))
-        {
-            // selftest treats the verbose flag "-v" as an invalid test suite
-            // name,
-            // so drop all args when invoking the test, which will execute all
-            // selftests
-            static const char* noargs[2] = {NULL};
-            args->ret = main(1, noargs);
-        }
-        else
-        {
-            static const char* argv[] = {"test", "-v", "NULL"};
-            static int argc = sizeof(argv) / sizeof(argv[0]);
-            argv[2] = args->test;
-            args->ret = main(argc, argv);
-        }
-        args->test = oe_host_strndup(__TEST__, OE_SIZE_MAX);
+        // selftest treats the verbose flag "-v" as an invalid test suite name,
+        // so drop all args when invoking the test, which will execute all
+        // selftests
+        static const char* noargs[2] = {NULL};
+        return_value = main(1, noargs);
     }
+    else
+    {
+        static const char* argv[] = {"test", "-v", "NULL"};
+        static int argc = sizeof(argv) / sizeof(argv[0]);
+        argv[2] = in_testname;
+        return_value = main(argc, argv);
+    }
+    *out_testname = oe_host_strndup(__TEST__, OE_SIZE_MAX);
+
+    return return_value;
 }
 
 /*
@@ -129,7 +127,7 @@ OE_ECALL void Test(Args* args)
  **==============================================================================
  */
 
-void oe_handle_verify_report(uint64_t argIn, uint64_t* argOut)
+void oe_handle_verify_report(uint64_t arg_in, uint64_t* arg_out)
 {
     assert("oe_handle_verify_report()" == NULL);
     abort();

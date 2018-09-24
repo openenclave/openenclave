@@ -1,0 +1,1215 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+
+        public char* ecall_pointer_char(
+            // No count or size, defaults to 1.
+            [in] char* p1,
+            [in,out] char* p2,
+            [out] char* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] char* p4,
+            [in,out, count=16] char* p5,
+            [out, count=16] char* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] char* p7,
+            [in, out, size=80] char* p8,
+            [in, size=80] char* p9,
+
+            // user handled.
+            [user_check] char* p10,
+
+            // count as parameter
+            [in, count=pcount] char* p11,
+            [in,out, count=pcount] char* p12,
+            [out, count=pcount] char* p13,
+
+            // size as parameter
+            [in, size=psize] char* p14,
+            [in,out, size=psize] char* p15,
+            [out, size=psize] char* p16,
+
+            int pcount,
+            int psize
+        );
+
+        public short* ecall_pointer_short(
+            // No count or size, defaults to 1.
+            [in] short* p1,
+            [in,out] short* p2,
+            [out] short* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] short* p4,
+            [in,out, count=16] short* p5,
+            [out, count=16] short* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] short* p7,
+            [in, out, size=80] short* p8,
+            [in, size=80] short* p9,
+
+            // user handled.
+            [user_check] short* p10,
+
+            // count as parameter
+            [in, count=pcount] short* p11,
+            [in,out, count=pcount] short* p12,
+            [out, count=pcount] short* p13,
+
+            // size as parameter
+            [in, size=psize] short* p14,
+            [in,out, size=psize] short* p15,
+            [out, size=psize] short* p16,
+
+            int pcount,
+            int psize           
+        );
+
+        public int* ecall_pointer_int(
+            // No count or size, defaults to 1.
+            [in] int* p1,
+            [in,out] int* p2,
+            [out] int* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] int* p4,
+            [in,out, count=16] int* p5,
+            [out, count=16] int* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] int* p7,
+            [in, out, size=80] int* p8,
+            [in, size=80] int* p9,
+
+            // user handled.
+            [user_check] int* p10,
+
+            // count as parameter
+            [in, count=pcount] int* p11,
+            [in,out, count=pcount] int* p12,
+            [out, count=pcount] int* p13,
+
+            // size as parameter
+            [in, size=psize] int* p14,
+            [in,out, size=psize] int* p15,
+            [out, size=psize] int* p16,
+
+            int pcount,
+            int psize           
+        );
+
+        public float* ecall_pointer_float(
+            // No count or size, defaults to 1.
+            [in] float* p1,
+            [in,out] float* p2,
+            [out] float* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] float* p4,
+            [in,out, count=16] float* p5,
+            [out, count=16] float* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] float* p7,
+            [in, out, size=80] float* p8,
+            [in, size=80] float* p9,
+
+            // user handled.
+            [user_check] float* p10,
+
+            // count as parameter
+            [in, count=pcount] float* p11,
+            [in,out, count=pcount] float* p12,
+            [out, count=pcount] float* p13,
+
+            // size as parameter
+            [in, size=psize] float* p14,
+            [in,out, size=psize] float* p15,
+            [out, size=psize] float* p16,
+
+            int pcount,
+            int psize             
+        );
+
+        public double* ecall_pointer_double(
+            // No count or size, defaults to 1.
+            [in] double* p1,
+            [in,out] double* p2,
+            [out] double* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] double* p4,
+            [in,out, count=16] double* p5,
+            [out, count=16] double* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] double* p7,
+            [in, out, size=80] double* p8,
+            [in, size=80] double* p9,
+
+            // user handled.
+            [user_check] double* p10,
+
+            // count as parameter
+            [in, count=pcount] double* p11,
+            [in,out, count=pcount] double* p12,
+            [out, count=pcount] double* p13,
+
+            // size as parameter
+            [in, size=psize] double* p14,
+            [in,out, size=psize] double* p15,
+            [out, size=psize] double* p16,
+
+            int pcount,
+            int psize             
+        );
+
+        public long* ecall_pointer_long(
+            // No count or size, defaults to 1.
+            [in] long* p1,
+            [in,out] long* p2,
+            [out] long* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] long* p4,
+            [in,out, count=16] long* p5,
+            [out, count=16] long* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] long* p7,
+            [in, out, size=80] long* p8,
+            [in, size=80] long* p9,
+
+            // user handled.
+            [user_check] long* p10,
+
+            // count as parameter
+            [in, count=pcount] long* p11,
+            [in,out, count=pcount] long* p12,
+            [out, count=pcount] long* p13,
+
+            // size as parameter
+            [in, size=psize] long* p14,
+            [in,out, size=psize] long* p15,
+            [out, size=psize] long* p16,
+
+            int pcount,
+            int psize             
+        );
+
+        public size_t* ecall_pointer_size_t(
+            // No count or size, defaults to 1.
+            [in] size_t* p1,
+            [in,out] size_t* p2,
+            [out] size_t* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] size_t* p4,
+            [in,out, count=16] size_t* p5,
+            [out, count=16] size_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] size_t* p7,
+            [in, out, size=80] size_t* p8,
+            [in, size=80] size_t* p9,
+
+            // user handled.
+            [user_check] size_t* p10,
+
+            // count as parameter
+            [in, count=pcount] size_t* p11,
+            [in,out, count=pcount] size_t* p12,
+            [out, count=pcount] size_t* p13,
+
+            // size as parameter
+            [in, size=psize] size_t* p14,
+            [in,out, size=psize] size_t* p15,
+            [out, size=psize] size_t* p16,
+
+            int pcount,
+            int psize             
+        );
+
+        public unsigned* ecall_pointer_unsigned(
+            // No count or size, defaults to 1.
+            [in] unsigned* p1,
+            [in,out] unsigned* p2,
+            [out] unsigned* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] unsigned* p4,
+            [in,out, count=16] unsigned* p5,
+            [out, count=16] unsigned* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] unsigned* p7,
+            [in, out, size=80] unsigned* p8,
+            [in, size=80] unsigned* p9,
+
+            // user handled.
+            [user_check] unsigned* p10,
+
+            // count as parameter
+            [in, count=pcount] unsigned* p11,
+            [in,out, count=pcount] unsigned* p12,
+            [out, count=pcount] unsigned* p13,
+
+            // size as parameter
+            [in, size=psize] unsigned* p14,
+            [in,out, size=psize] unsigned* p15,
+            [out, size=psize] unsigned* p16,
+
+            int pcount,
+            int psize             
+        );
+
+        public int8_t* ecall_pointer_int8_t(
+            // No count or size, defaults to 1.
+            [in] int8_t* p1,
+            [in,out] int8_t* p2,
+            [out] int8_t* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] int8_t* p4,
+            [in,out, count=16] int8_t* p5,
+            [out, count=16] int8_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] int8_t* p7,
+            [in, out, size=80] int8_t* p8,
+            [in, size=80] int8_t* p9,
+
+            // user handled.
+            [user_check] int8_t* p10,
+
+            // count as parameter
+            [in, count=pcount] int8_t* p11,
+            [in,out, count=pcount] int8_t* p12,
+            [out, count=pcount] int8_t* p13,
+
+            // size as parameter
+            [in, size=psize] int8_t* p14,
+            [in,out, size=psize] int8_t* p15,
+            [out, size=psize] int8_t* p16,
+
+            int pcount,
+            int psize             
+        );
+
+        public int16_t* ecall_pointer_int16_t(
+            // No count or size, defaults to 1.
+            [in] int16_t* p1,
+            [in,out] int16_t* p2,
+            [out] int16_t* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] int16_t* p4,
+            [in,out, count=16] int16_t* p5,
+            [out, count=16] int16_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] int16_t* p7,
+            [in, out, size=80] int16_t* p8,
+            [in, size=80] int16_t* p9,
+
+            // user handled.
+            [user_check] int16_t* p10,
+
+            // count as parameter
+            [in, count=pcount] int16_t* p11,
+            [in,out, count=pcount] int16_t* p12,
+            [out, count=pcount] int16_t* p13,
+
+            // size as parameter
+            [in, size=psize] int16_t* p14,
+            [in,out, size=psize] int16_t* p15,
+            [out, size=psize] int16_t* p16,
+
+            int pcount,
+            int psize             
+        );
+
+        public int32_t* ecall_pointer_int32_t(
+            // No count or size, defaults to 1.
+            [in] int32_t* p1,
+            [in,out] int32_t* p2,
+            [out] int32_t* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] int32_t* p4,
+            [in,out, count=16] int32_t* p5,
+            [out, count=16] int32_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] int32_t* p7,
+            [in, out, size=80] int32_t* p8,
+            [in, size=80] int32_t* p9,
+
+            // user handled.
+            [user_check] int32_t* p10,
+
+            // count as parameter
+            [in, count=pcount] int32_t* p11,
+            [in,out, count=pcount] int32_t* p12,
+            [out, count=pcount] int32_t* p13,
+
+            // size as parameter
+            [in, size=psize] int32_t* p14,
+            [in,out, size=psize] int32_t* p15,
+            [out, size=psize] int32_t* p16,
+
+            int pcount,
+            int psize             
+        );
+
+        public int64_t* ecall_pointer_int64_t(
+            // No count or size, defaults to 1.
+            [in] int64_t* p1,
+            [in,out] int64_t* p2,
+            [out] int64_t* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] int64_t* p4,
+            [in,out, count=16] int64_t* p5,
+            [out, count=16] int64_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] int64_t* p7,
+            [in, out, size=80] int64_t* p8,
+            [in, size=80] int64_t* p9,
+
+            // user handled.
+            [user_check] int64_t* p10,
+
+            // count as parameter
+            [in, count=pcount] int64_t* p11,
+            [in,out, count=pcount] int64_t* p12,
+            [out, count=pcount] int64_t* p13,
+
+            // size as parameter
+            [in, size=psize] int64_t* p14,
+            [in,out, size=psize] int64_t* p15,
+            [out, size=psize] int64_t* p16,
+
+            int pcount,
+            int psize             
+        );
+
+        public uint8_t* ecall_pointer_uint8_t(
+            // No count or size, defaults to 1.
+            [in] uint8_t* p1,
+            [in,out] uint8_t* p2,
+            [out] uint8_t* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] uint8_t* p4,
+            [in,out, count=16] uint8_t* p5,
+            [out, count=16] uint8_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] uint8_t* p7,
+            [in, out, size=80] uint8_t* p8,
+            [in, size=80] uint8_t* p9,
+
+            // user handled.
+            [user_check] uint8_t* p10,
+
+            // count as parameter
+            [in, count=pcount] uint8_t* p11,
+            [in,out, count=pcount] uint8_t* p12,
+            [out, count=pcount] uint8_t* p13,
+
+            // size as parameter
+            [in, size=psize] uint8_t* p14,
+            [in,out, size=psize] uint8_t* p15,
+            [out, size=psize] uint8_t* p16,
+
+            int pcount,
+            int psize             
+        );
+
+        public uint16_t* ecall_pointer_uint16_t(
+            // No count or size, defaults to 1.
+            [in] uint16_t* p1,
+            [in,out] uint16_t* p2,
+            [out] uint16_t* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] uint16_t* p4,
+            [in,out, count=16] uint16_t* p5,
+            [out, count=16] uint16_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] uint16_t* p7,
+            [in, out, size=80] uint16_t* p8,
+            [in, size=80] uint16_t* p9,
+
+            // user handled.
+            [user_check] uint16_t* p10,
+
+            // count as parameter
+            [in, count=pcount] uint16_t* p11,
+            [in,out, count=pcount] uint16_t* p12,
+            [out, count=pcount] uint16_t* p13,
+
+            // size as parameter
+            [in, size=psize] uint16_t* p14,
+            [in,out, size=psize] uint16_t* p15,
+            [out, size=psize] uint16_t* p16,
+
+            int pcount,
+            int psize             
+        );
+
+        public uint32_t* ecall_pointer_uint32_t(
+            // No count or size, defaults to 1.
+            [in] uint32_t* p1,
+            [in,out] uint32_t* p2,
+            [out] uint32_t* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] uint32_t* p4,
+            [in,out, count=16] uint32_t* p5,
+            [out, count=16] uint32_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] uint32_t* p7,
+            [in, out, size=80] uint32_t* p8,
+            [in, size=80] uint32_t* p9,
+
+            // user handled.
+            [user_check] uint32_t* p10,
+
+            // count as parameter
+            [in, count=pcount] uint32_t* p11,
+            [in,out, count=pcount] uint32_t* p12,
+            [out, count=pcount] uint32_t* p13,
+
+            // size as parameter
+            [in, size=psize] uint32_t* p14,
+            [in,out, size=psize] uint32_t* p15,
+            [out, size=psize] uint32_t* p16,
+
+            int pcount,
+            int psize             
+        );
+
+        public uint64_t* ecall_pointer_uint64_t(
+            // No count or size, defaults to 1.
+            [in] uint64_t* p1,
+            [in,out] uint64_t* p2,
+            [out] uint64_t* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] uint64_t* p4,
+            [in,out, count=16] uint64_t* p5,
+            [out, count=16] uint64_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] uint64_t* p7,
+            [in, out, size=80] uint64_t* p8,
+            [in, size=80] uint64_t* p9,
+
+            // user handled.
+            [user_check] uint64_t* p10,
+
+            // count as parameter
+            [in, count=pcount] uint64_t* p11,
+            [in,out, count=pcount] uint64_t* p12,
+            [out, count=pcount] uint64_t* p13,
+
+            // size as parameter
+            [in, size=psize] uint64_t* p14,
+            [in,out, size=psize] uint64_t* p15,
+            [out, size=psize] uint64_t* p16,
+
+            int pcount,
+            int psize             
+        ); 
+
+        // Test that various types can be used as size, count attributes.
+        // Checked to make sure no compile errors are encountered.
+        public void ecall_count_attribute_all_types(
+            [in, count=char_count] int* b1,
+            [in, count=short_count] int* b2,
+            [in, count=int_count] int* b3,
+            [in, count=float_count] int* b4,
+            [in, count=double_count] int* b5,
+            [in, count=long_count] int* b6,            
+            [in, count=size_t_count] int* b7,
+            [in, count=unsigned_count] int* b8,
+            [in, count=int8_t_count] int* b9,
+            [in, count=int16_t_count] int* b10,
+            [in, count=int32_t_count] int* b11,
+            [in, count=int64_t_count] int* b12,
+            [in, count=uint8_t_count] int* b13,
+            [in, count=uint16_t_count] int* b14,
+            [in, count=uint32_t_count] int* b15,
+            [in, count=uint64_t_count] int* b16,            
+            char char_count,
+            short short_count,
+            int int_count,
+            float float_count,
+            double double_count,            
+            long long_count,
+            size_t size_t_count,
+            unsigned unsigned_count,
+            int8_t int8_t_count,
+            int16_t int16_t_count,
+            int32_t int32_t_count,
+            int64_t int64_t_count,
+            uint8_t uint8_t_count,
+            uint16_t uint16_t_count,
+            uint32_t uint32_t_count,
+            uint64_t uint64_t_count
+        );
+
+        public void ecall_size_attribute_all_types(
+            [in, size=char_size] int* b1,
+            [in, size=short_size] int* b2,
+            [in, size=int_size] int* b3,
+            [in, size=float_size] int* b4,
+            [in, size=double_size] int* b5,
+            [in, size=long_size] int* b6,            
+            [in, size=size_t_size] int* b7,
+            [in, size=unsigned_size] int* b8,
+            [in, size=int8_t_size] int* b9,
+            [in, size=int16_t_size] int* b10,
+            [in, size=int32_t_size] int* b11,
+            [in, size=int64_t_size] int* b12,
+            [in, size=uint8_t_size] int* b13,
+            [in, size=uint16_t_size] int* b14,
+            [in, size=uint32_t_size] int* b15,
+            [in, size=uint64_t_size] int* b16,            
+            char char_size,
+            short short_size,
+            int int_size,
+            float float_size,
+            double double_size,            
+            long long_size,
+            size_t size_t_size,
+            unsigned unsigned_size,
+            int8_t int8_t_size,
+            int16_t int16_t_size,
+            int32_t int32_t_size,
+            int64_t int64_t_size,
+            uint8_t uint8_t_size,
+            uint16_t uint16_t_size,
+            uint32_t uint32_t_size,
+            uint64_t uint64_t_size
+        );  
+
+        public void test_pointer_edl_ocalls();
+        public void ecall_pointer_assert_all_called();                                                                                                                            
+    };
+
+    untrusted {
+
+        char* ocall_pointer_char(
+            // No count or size, defaults to 1.
+            [in] char* p1,
+            [in,out] char* p2,
+            [out] char* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] char* p4,
+            [in,out, count=16] char* p5,
+            [out, count=16] char* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] char* p7,
+            [in, out, size=80] char* p8,
+            [in, size=80] char* p9,
+
+            // user handled.
+            [user_check] char* p10,
+
+            // count as parameter
+            [in, count=pcount] char* p11,
+            [in,out, count=pcount] char* p12,
+            [out, count=pcount] char* p13,
+
+            // size as parameter
+            [in, size=psize] char* p14,
+            [in,out, size=psize] char* p15,
+            [out, size=psize] char* p16,
+
+            int pcount,
+            int psize            
+        );
+
+        short* ocall_pointer_short(
+            // No count or size, defaults to 1.
+            [in] short* p1,
+            [in,out] short* p2,
+            [out] short* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] short* p4,
+            [in,out, count=16] short* p5,
+            [out, count=16] short* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] short* p7,
+            [in, out, size=80] short* p8,
+            [in, size=80] short* p9,
+
+            // user handled.
+            [user_check] short* p10,
+
+            // count as parameter
+            [in, count=pcount] short* p11,
+            [in,out, count=pcount] short* p12,
+            [out, count=pcount] short* p13,
+
+            // size as parameter
+            [in, size=psize] short* p14,
+            [in,out, size=psize] short* p15,
+            [out, size=psize] short* p16,
+
+            int pcount,
+            int psize              
+        );
+
+        int* ocall_pointer_int(
+            // No count or size, defaults to 1.
+            [in] int* p1,
+            [in,out] int* p2,
+            [out] int* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] int* p4,
+            [in,out, count=16] int* p5,
+            [out, count=16] int* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] int* p7,
+            [in, out, size=80] int* p8,
+            [in, size=80] int* p9,
+
+            // user handled.
+            [user_check] int* p10,
+
+            // count as parameter
+            [in, count=pcount] int* p11,
+            [in,out, count=pcount] int* p12,
+            [out, count=pcount] int* p13,
+
+            // size as parameter
+            [in, size=psize] int* p14,
+            [in,out, size=psize] int* p15,
+            [out, size=psize] int* p16,
+
+            int pcount,
+            int psize   
+        );
+
+        float* ocall_pointer_float(
+            // No count or size, defaults to 1.
+            [in] float* p1,
+            [in,out] float* p2,
+            [out] float* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] float* p4,
+            [in,out, count=16] float* p5,
+            [out, count=16] float* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] float* p7,
+            [in, out, size=80] float* p8,
+            [in, size=80] float* p9,
+
+            // user handled.
+            [user_check] float* p10,
+
+            // count as parameter
+            [in, count=pcount] float* p11,
+            [in,out, count=pcount] float* p12,
+            [out, count=pcount] float* p13,
+
+            // size as parameter
+            [in, size=psize] float* p14,
+            [in,out, size=psize] float* p15,
+            [out, size=psize] float* p16,
+
+            int pcount,
+            int psize
+        );
+
+        double* ocall_pointer_double(
+            // No count or size, defaults to 1.
+            [in] double* p1,
+            [in,out] double* p2,
+            [out] double* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] double* p4,
+            [in,out, count=16] double* p5,
+            [out, count=16] double* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] double* p7,
+            [in, out, size=80] double* p8,
+            [in, size=80] double* p9,
+
+            // user handled.
+            [user_check] double* p10,
+
+            // count as parameter
+            [in, count=pcount] double* p11,
+            [in,out, count=pcount] double* p12,
+            [out, count=pcount] double* p13,
+
+            // size as parameter
+            [in, size=psize] double* p14,
+            [in,out, size=psize] double* p15,
+            [out, size=psize] double* p16,
+
+            int pcount,
+            int psize
+        );
+
+        long* ocall_pointer_long(
+            // No count or size, defaults to 1.
+            [in] long* p1,
+            [in,out] long* p2,
+            [out] long* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] long* p4,
+            [in,out, count=16] long* p5,
+            [out, count=16] long* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] long* p7,
+            [in, out, size=80] long* p8,
+            [in, size=80] long* p9,
+
+            // user handled.
+            [user_check] long* p10,
+
+            // count as parameter
+            [in, count=pcount] long* p11,
+            [in,out, count=pcount] long* p12,
+            [out, count=pcount] long* p13,
+
+            // size as parameter
+            [in, size=psize] long* p14,
+            [in,out, size=psize] long* p15,
+            [out, size=psize] long* p16,
+
+            int pcount,
+            int psize
+        );
+
+        size_t* ocall_pointer_size_t(
+            // No count or size, defaults to 1.
+            [in] size_t* p1,
+            [in,out] size_t* p2,
+            [out] size_t* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] size_t* p4,
+            [in,out, count=16] size_t* p5,
+            [out, count=16] size_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] size_t* p7,
+            [in, out, size=80] size_t* p8,
+            [in, size=80] size_t* p9,
+
+            // user handled.
+            [user_check] size_t* p10,
+
+            // count as parameter
+            [in, count=pcount] size_t* p11,
+            [in,out, count=pcount] size_t* p12,
+            [out, count=pcount] size_t* p13,
+
+            // size as parameter
+            [in, size=psize] size_t* p14,
+            [in,out, size=psize] size_t* p15,
+            [out, size=psize] size_t* p16,
+
+            int pcount,
+            int psize
+        );
+
+        unsigned* ocall_pointer_unsigned(
+            // No count or size, defaults to 1.
+            [in] unsigned* p1,
+            [in,out] unsigned* p2,
+            [out] unsigned* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] unsigned* p4,
+            [in,out, count=16] unsigned* p5,
+            [out, count=16] unsigned* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] unsigned* p7,
+            [in, out, size=80] unsigned* p8,
+            [in, size=80] unsigned* p9,
+
+            // user handled.
+            [user_check] unsigned* p10,
+
+            // count as parameter
+            [in, count=pcount] unsigned* p11,
+            [in,out, count=pcount] unsigned* p12,
+            [out, count=pcount] unsigned* p13,
+
+            // size as parameter
+            [in, size=psize] unsigned* p14,
+            [in,out, size=psize] unsigned* p15,
+            [out, size=psize] unsigned* p16,
+
+            int pcount,
+            int psize
+        );
+
+        int8_t* ocall_pointer_int8_t(
+            // No count or size, defaults to 1.
+            [in] int8_t* p1,
+            [in,out] int8_t* p2,
+            [out] int8_t* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] int8_t* p4,
+            [in,out, count=16] int8_t* p5,
+            [out, count=16] int8_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] int8_t* p7,
+            [in, out, size=80] int8_t* p8,
+            [in, size=80] int8_t* p9,
+
+            // user handled.
+            [user_check] int8_t* p10,
+
+            // count as parameter
+            [in, count=pcount] int8_t* p11,
+            [in,out, count=pcount] int8_t* p12,
+            [out, count=pcount] int8_t* p13,
+
+            // size as parameter
+            [in, size=psize] int8_t* p14,
+            [in,out, size=psize] int8_t* p15,
+            [out, size=psize] int8_t* p16,
+
+            int pcount,
+            int psize
+        );
+
+        int16_t* ocall_pointer_int16_t(
+            // No count or size, defaults to 1.
+            [in] int16_t* p1,
+            [in,out] int16_t* p2,
+            [out] int16_t* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] int16_t* p4,
+            [in,out, count=16] int16_t* p5,
+            [out, count=16] int16_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] int16_t* p7,
+            [in, out, size=80] int16_t* p8,
+            [in, size=80] int16_t* p9,
+
+            // user handled.
+            [user_check] int16_t* p10,
+
+            // count as parameter
+            [in, count=pcount] int16_t* p11,
+            [in,out, count=pcount] int16_t* p12,
+            [out, count=pcount] int16_t* p13,
+
+            // size as parameter
+            [in, size=psize] int16_t* p14,
+            [in,out, size=psize] int16_t* p15,
+            [out, size=psize] int16_t* p16,
+
+            int pcount,
+            int psize
+        );
+
+        int32_t* ocall_pointer_int32_t(
+            // No count or size, defaults to 1.
+            [in] int32_t* p1,
+            [in,out] int32_t* p2,
+            [out] int32_t* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] int32_t* p4,
+            [in,out, count=16] int32_t* p5,
+            [out, count=16] int32_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] int32_t* p7,
+            [in, out, size=80] int32_t* p8,
+            [in, size=80] int32_t* p9,
+
+            // user handled.
+            [user_check] int32_t* p10,
+
+            // count as parameter
+            [in, count=pcount] int32_t* p11,
+            [in,out, count=pcount] int32_t* p12,
+            [out, count=pcount] int32_t* p13,
+
+            // size as parameter
+            [in, size=psize] int32_t* p14,
+            [in,out, size=psize] int32_t* p15,
+            [out, size=psize] int32_t* p16,
+
+            int pcount,
+            int psize
+        );
+
+        int64_t* ocall_pointer_int64_t(
+            // No count or size, defaults to 1.
+            [in] int64_t* p1,
+            [in,out] int64_t* p2,
+            [out] int64_t* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] int64_t* p4,
+            [in,out, count=16] int64_t* p5,
+            [out, count=16] int64_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] int64_t* p7,
+            [in, out, size=80] int64_t* p8,
+            [in, size=80] int64_t* p9,
+
+            // user handled.
+            [user_check] int64_t* p10,
+
+            // count as parameter
+            [in, count=pcount] int64_t* p11,
+            [in,out, count=pcount] int64_t* p12,
+            [out, count=pcount] int64_t* p13,
+
+            // size as parameter
+            [in, size=psize] int64_t* p14,
+            [in,out, size=psize] int64_t* p15,
+            [out, size=psize] int64_t* p16,
+
+            int pcount,
+            int psize
+        );
+
+        uint8_t* ocall_pointer_uint8_t(
+            // No count or size, defaults to 1.
+            [in] uint8_t* p1,
+            [in,out] uint8_t* p2,
+            [out] uint8_t* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] uint8_t* p4,
+            [in,out, count=16] uint8_t* p5,
+            [out, count=16] uint8_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] uint8_t* p7,
+            [in, out, size=80] uint8_t* p8,
+            [in, size=80] uint8_t* p9,
+
+            // user handled.
+            [user_check] uint8_t* p10,
+
+            // count as parameter
+            [in, count=pcount] uint8_t* p11,
+            [in,out, count=pcount] uint8_t* p12,
+            [out, count=pcount] uint8_t* p13,
+
+            // size as parameter
+            [in, size=psize] uint8_t* p14,
+            [in,out, size=psize] uint8_t* p15,
+            [out, size=psize] uint8_t* p16,
+
+            int pcount,
+            int psize
+        );
+
+        uint16_t* ocall_pointer_uint16_t(
+            // No count or size, defaults to 1.
+            [in] uint16_t* p1,
+            [in,out] uint16_t* p2,
+            [out] uint16_t* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] uint16_t* p4,
+            [in,out, count=16] uint16_t* p5,
+            [out, count=16] uint16_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] uint16_t* p7,
+            [in, out, size=80] uint16_t* p8,
+            [in, size=80] uint16_t* p9,
+
+            // user handled.
+            [user_check] uint16_t* p10,
+
+            // count as parameter
+            [in, count=pcount] uint16_t* p11,
+            [in,out, count=pcount] uint16_t* p12,
+            [out, count=pcount] uint16_t* p13,
+
+            // size as parameter
+            [in, size=psize] uint16_t* p14,
+            [in,out, size=psize] uint16_t* p15,
+            [out, size=psize] uint16_t* p16,
+
+            int pcount,
+            int psize
+        );
+
+        uint32_t* ocall_pointer_uint32_t(
+            // No count or size, defaults to 1.
+            [in] uint32_t* p1,
+            [in,out] uint32_t* p2,
+            [out] uint32_t* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] uint32_t* p4,
+            [in,out, count=16] uint32_t* p5,
+            [out, count=16] uint32_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] uint32_t* p7,
+            [in, out, size=80] uint32_t* p8,
+            [in, size=80] uint32_t* p9,
+
+            // user handled.
+            [user_check] uint32_t* p10,
+
+            // count as parameter
+            [in, count=pcount] uint32_t* p11,
+            [in,out, count=pcount] uint32_t* p12,
+            [out, count=pcount] uint32_t* p13,
+
+            // size as parameter
+            [in, size=psize] uint32_t* p14,
+            [in,out, size=psize] uint32_t* p15,
+            [out, size=psize] uint32_t* p16,
+
+            int pcount,
+            int psize
+        );
+
+        uint64_t* ocall_pointer_uint64_t(
+            // No count or size, defaults to 1.
+            [in] uint64_t* p1,
+            [in,out] uint64_t* p2,
+            [out] uint64_t* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] uint64_t* p4,
+            [in,out, count=16] uint64_t* p5,
+            [out, count=16] uint64_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] uint64_t* p7,
+            [in, out, size=80] uint64_t* p8,
+            [in, size=80] uint64_t* p9,
+
+            // user handled.
+            [user_check] uint64_t* p10,
+
+            // count as parameter
+            [in, count=pcount] uint64_t* p11,
+            [in,out, count=pcount] uint64_t* p12,
+            [out, count=pcount] uint64_t* p13,
+
+            // size as parameter
+            [in, size=psize] uint64_t* p14,
+            [in,out, size=psize] uint64_t* p15,
+            [out, size=psize] uint64_t* p16,
+
+            int pcount,
+            int psize
+        ); 
+
+        // Test that various types can be used as size, count attributes.
+        // Checked to make sure no compile errors are encountered.
+        void ocall_count_attribute_all_types(
+            [in, count=char_count] int* b1,
+            [in, count=short_count] int* b2,
+            [in, count=int_count] int* b3,
+            [in, count=float_count] int* b4,
+            [in, count=double_count] int* b5,
+            [in, count=long_count] int* b6,            
+            [in, count=size_t_count] int* b7,
+            [in, count=unsigned_count] int* b8,
+            [in, count=int8_t_count] int* b9,
+            [in, count=int16_t_count] int* b10,
+            [in, count=int32_t_count] int* b11,
+            [in, count=int64_t_count] int* b12,
+            [in, count=uint8_t_count] int* b13,
+            [in, count=uint16_t_count] int* b14,
+            [in, count=uint32_t_count] int* b15,
+            [in, count=uint64_t_count] int* b16,            
+            char char_count,
+            short short_count,
+            int int_count,
+            float float_count,
+            double double_count,            
+            long long_count,
+            size_t size_t_count,
+            unsigned unsigned_count,
+            int8_t int8_t_count,
+            int16_t int16_t_count,
+            int32_t int32_t_count,
+            int64_t int64_t_count,
+            uint8_t uint8_t_count,
+            uint16_t uint16_t_count,
+            uint32_t uint32_t_count,
+            uint64_t uint64_t_count
+        );
+
+        void ocall_size_attribute_all_types(
+            [in, size=char_size] int* b1,
+            [in, size=short_size] int* b2,
+            [in, size=int_size] int* b3,
+            [in, size=float_size] int* b4,
+            [in, size=double_size] int* b5,
+            [in, size=long_size] int* b6,            
+            [in, size=size_t_size] int* b7,
+            [in, size=unsigned_size] int* b8,
+            [in, size=int8_t_size] int* b9,
+            [in, size=int16_t_size] int* b10,
+            [in, size=int32_t_size] int* b11,
+            [in, size=int64_t_size] int* b12,
+            [in, size=uint8_t_size] int* b13,
+            [in, size=uint16_t_size] int* b14,
+            [in, size=uint32_t_size] int* b15,
+            [in, size=uint64_t_size] int* b16,            
+            char char_size,
+            short short_size,
+            int int_size,
+            float float_size,
+            double double_size,            
+            long long_size,
+            size_t size_t_size,
+            unsigned unsigned_size,
+            int8_t int8_t_size,
+            int16_t int16_t_size,
+            int32_t int32_t_size,
+            int64_t int64_t_size,
+            uint8_t uint8_t_size,
+            uint16_t uint16_t_size,
+            uint32_t uint32_t_size,
+            uint64_t uint64_t_size
+        );      
+
+        void ocall_pointer_assert_all_called();                                                                                                                           
+    };    
+};

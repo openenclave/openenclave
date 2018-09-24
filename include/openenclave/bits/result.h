@@ -255,6 +255,7 @@ typedef enum _oe_result {
 
     __OE_RESULT_MAX = OE_ENUM_MAX,
 } oe_result_t;
+/**< typedef enum _oe_result oe_result_t*/
 
 /**
  * Retrieve a string for a result code.

@@ -85,26 +85,26 @@ The host does the following in this sample:
 
       struct RemoteReportWithPKey
       {
-          uint8_t pemKey[512]; // public key information
-          uint8_t* remoteReport;
-          size_t remoteReportSize;
+          uint8_t pem_key[512]; // public key information
+          uint8_t* remote_report;
+          size_t remote_report_size;
       };
       ```
 
       Where:
 
-        - `pemKey` holds the public key that identifying enclave1 and will be used for establishing a secure communication channel between the enclave1 and the enclave2 once the attestation was done.
+        - `pem_key` holds the public key that identifying enclave1 and will be used for establishing a secure communication channel between the enclave1 and the enclave2 once the attestation was done.
 
-        - `remoteReport` contains a remote report signed by the enclave platform for use in remote attestation
+        - `remote_report` contains a remote report signed by the enclave platform for use in remote attestation
 
-   3. Ask enclave2 to attest (validate) enclave1's remote report (remoteReport from above)
+   3. Ask enclave2 to attest (validate) enclave1's remote report (remote_report from above)
 
       This is done through the following call:
       ```c
       oe_call_enclave(enclave, "VerifyReportAndSetPKey", &args);
       ```
 
-      In the enclave2's implmentation of `VerifyReportAndSetPKey`, it calls `oe_verify_report`, which will be described in the enclave section to handle all the platform specfic report validation operations (including PCK certificate chain checking). If successful the public key in `RemoteReportWithPKey.pemKey` will be stored inside the enclave for future use
+      In the enclave2's implmentation of `VerifyReportAndSetPKey`, it calls `oe_verify_report`, which will be described in the enclave section to handle all the platform specfic report validation operations (including PCK certificate chain checking). If successful the public key in `RemoteReportWithPKey.pem_key` will be stored inside the enclave for future use
 
    4. Repeat step 2 and 3 for asking enclave1 to validate enclave2
   
@@ -115,13 +115,13 @@ The host does the following in this sample:
    6. Send encrypted messages securely between enclaves
 
       ```c
-      // Ask enclave1 to encrypt an internal data with its private key and output encrypted message in encryptedMsg
-      GenerateEncryptedMessage(enclave1, &encryptedMsg, &encryptedMsgSize);
+      // Ask enclave1 to encrypt an internal data with its private key and output encrypted message in encrypted_msg
+      generate_encrypted_message(enclave1, &encrypted_msg, &encrypted_msg_size);
 
-      // Send encryptedMsg to the enclave2, which will decrypt it and comparing with its internal data,
+      // Send encrypted_msg to the enclave2, which will decrypt it and comparing with its internal data,
       // In this sample, it starts both enclaves with the exact same data contents for the purpose of
       // demonstrating that the encryption works as expected
-      ProcessEncryptedMessage(enclave2, encryptedMsg, encryptedMsgSize);
+      process_encrypted_msg(enclave2, encrypted_msg, encrypted_msg_size);
       ```
 
    7. Free the resource used, including the host memory allocated by the enclaves and the enclaves themselves

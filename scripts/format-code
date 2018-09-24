@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
@@ -10,7 +10,7 @@
 ##==============================================================================
 log_verbose()
 {
-    if [ "${verbose}" = "1" ]; then
+    if [[ ${verbose} -eq 1 ]]; then
         echo "$1"
     fi
 }
@@ -22,7 +22,7 @@ log_verbose()
 ##==============================================================================
 log_whatif()
 {
-    if [ "${whatif}" = "1" ]; then
+    if [[ ${whatif} -eq 1 ]]; then
         echo "$1"
     fi
 }
@@ -35,11 +35,9 @@ log_whatif()
 
 for opt in "$@"
 do
-
   case $opt in
-
     -h | --help)
-        help=1
+        usage=1
         ;;
 
     -v | --verbose)
@@ -62,9 +60,7 @@ do
       echo "$0: unknown option:  $opt"
       exit 1
       ;;
-
   esac
-
 done
 
 ##==============================================================================
@@ -73,7 +69,7 @@ done
 ##
 ##==============================================================================
 
-if [ "${help}" = "1" ]; then
+if [[ ${usage} -eq 1 ]]; then
     cat<<EOF
 
 OVERVIEW:
@@ -119,13 +115,15 @@ check_version()
 {
     v1=(${1//./ })
     v2=(${2//./ })
-    if [ ${#v1[@]} != ${#v2[@]} ]; then
+    if [[ ${#v1[@]} -ne ${#v2[@]} ]]; then
         echo "Cannot parse clang-format version number: $2"
         exit 1
     fi
     for ((i=0; i<${#v1[@]}; i++));
     do
-        if [ ${v1[$i]} -gt ${v2[$i]} ]; then
+        # Because clang-format is not invariant across versions, this
+        # is an explicit equivalence check.
+        if [[ ${v1[$i]} -ne ${v2[$i]} ]]; then
             echo "format-code requires clang-format version $1, installed version is $2"
             exit 1
         fi
@@ -139,16 +137,23 @@ check_version()
 ##==============================================================================
 check_clang-format()
 {
-    cf=`which clang-format 2> /dev/null`
+    # First check explicitly for the 3.8 executable.
+    cf=$(which clang-format-3.8 2> /dev/null)
 
-    if [ ! -x "${cf}" ]; then
-        echo "clang-format is not installed. Please run scripts/install-prereqs first."
-        exit 1
+    if [[ -x ${cf} ]]; then
+        return
+    else
+        cf=$(which clang-format 2> /dev/null)
+        if [[ ! -x ${cf} ]]; then
+            echo "clang-format is not installed. Please run scripts/install-prereqs first."
+            exit 1
+        fi
     fi
 
-    local mincfver='3.6.0'
+    local required_cfver='3.8.0'
+    # shellcheck disable=SC2155
     local cfver=$(${cf} --version | grep -o -E '[0-9]+.[0-9]+.[0-9]+')
-    check_version ${mincfver} ${cfver}
+    check_version "${required_cfver}" "${cfver}"
 }
 
 check_clang-format
@@ -166,7 +171,7 @@ get_find_args()
     local defaultExcludeDirs='3rdparty prereqs build'
     local defaultIncludeExts='h c cpp'
 
-    if [ -z "${userExcludeDirs}" ]; then
+    if [[ -z ${userExcludeDirs} ]]; then
         local excludeDirs=( ${defaultExcludeDirs} )
     else
         log_verbose "Using user directory exclusions: ${userExcludeDirs}"
@@ -178,7 +183,7 @@ get_find_args()
         findargs="${findargs} ! \( -path ./${exc} -prune \)"
     done
 
-    if [ -z "${userIncludeExts}" ]; then
+    if [[ -z ${userIncludeExts} ]]; then
         local includeExts=( ${defaultIncludeExts} )
     else
         log_verbose "Using user extension inclusions: ${userIncludeExts}"
@@ -189,7 +194,7 @@ get_find_args()
     for ((i=0; i<${#includeExts[@]}; i++));
     do
         findargs="${findargs} -iname '*.${includeExts[$i]}'"
-        if [ $((i + 1)) -lt ${#includeExts[@]} ]; then
+        if [[ $((i + 1)) -lt ${#includeExts[@]} ]]; then
             findargs="${findargs} -o"
         fi
     done
@@ -211,30 +216,31 @@ log_verbose ""
 filecount=0
 changecount=0
 
-if [ "${whatif}" = "1" ]; then
-    cfargs='-style=file '
-else
-    cfargs='-style=file -i '
+cfargs="${cf} -style=file"
+if [[ ${whatif} -ne 1 ]]; then
+    cfargs="${cfargs} -i"
 fi
 
-for file in $(eval $findargs)
+for file in $(eval "$findargs")
 do
     ((filecount+=1))
+    cf="${cfargs} $file"
 
     log_whatif "Formatting $file ..."
 
-    if [ "${whatif}" = "1" ]; then
-        ${cf} ${cfargs} $file | diff -u "$file" -
+    if [[ ${whatif} -eq 1 ]]; then
+        ${cf} | diff -u "$file" -
     else
-        if [ "${verbose}" = "1" ]; then
-            ${cf} ${cfargs} $file
+        if [[ ${verbose} -eq 1 ]]; then
+            ${cf}
         else
-            ${cf} ${cfargs} $file > /dev/null
+            ${cf} > /dev/null
         fi
     fi
 
-    if [ "$?" != "0" ]; then
-        if [ "${whatif}" = "1" ]; then
+    #shellcheck disable=SC2181
+    if [[ $? -ne 0 ]]; then
+        if [[ ${whatif} -eq 1 ]]; then
             ((changecount+=1))
         else
             echo "clang-format failed on file: $file."

@@ -1,9 +1,10 @@
 Advanced test information
 ==========================
 
-If things fail, "**ctest -V**" provides verbose information. Executing ctest from a sub-dir executes the tests underneath.
+If things fail, "**ctest -V**" provides verbose information. Executing ctest from a sub-dir executes
+the tests underneath.
 
-Only a small subset of libc/libcxx tests are enabled by default due to their huge
+Only a small subset of libc/libcxx/libcxxthrd tests are enabled by default due to their huge
 cost on building (a couple hours). Enable the full set by setting the corresponding cmake variable
 **ENABLE_FULL_LIBC_TESTS/ENABLE_FULL_LIBCXX_TESTS** before building.
 

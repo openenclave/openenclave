@@ -15,10 +15,17 @@
 #define ENABLE_LOGGING 1
 #endif
 
+extern const char* enclave_name;
+
 #if (ENABLE_LOGGING)
 
 #define ENC_DEBUG_PRINTF(fmt, ...) \
-    printf("***%s(%d): " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__)
+    printf(                        \
+        "%s ***%s(%d): " fmt "\n", \
+        enclave_name,              \
+        __FILE__,                  \
+        __LINE__,                  \
+        ##__VA_ARGS__)
 
 #else
 

@@ -1,10 +1,10 @@
-# Open Encalve Samples (work in progress)
+# Open Enclave Samples (work in progress)
 
-The section contains information on how to configure/build/run the existing Open Enclave sample
+The section contains information on how to configure/build/run the existing Open Enclave sample.
 
 ## Configure samples
 
-Before going further, you want to make sure you have a successful Open Enclave setup and can run unittests successfully [install Open Enclave SDK](InstallInfo.md)
+Before going further, you want to make sure you have a successful Open Enclave setup and can run unittests successfully [install Open Enclave SDK](InstallInfo.md).
 
    Assuming you installed SDK with the following steps, 
 
@@ -22,7 +22,7 @@ Before going further, you want to make sure you have a successful Open Enclave s
          -rw-r--r-- 1 yourusername yourusername  440 Aug  6 17:56 Makefile
          ....
 
- Note: As part of the sample configuration process, samples/config.mak was created to help setup environment for use
+ Note: As part of the sample configuration process, samples/config.mak was created to help set up environment for use
  in building samples.
  
  
@@ -80,7 +80,7 @@ Before going further, you want to make sure you have a successful Open Enclave s
 #### File-encryptor (Almost ready)
  
   - Written in C++
-  - Demonstrate data passing and the built-in bmedtls api
+  - Demonstrate data passing and the built-in mbedtls API
   - In progress
 
 ####  Data Sealing (Under construction)

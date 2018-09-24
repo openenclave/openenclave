@@ -32,13 +32,12 @@ DEV=$(wildcard /dev/sgx)
 
 RUNNING=$(shell lsmod | grep intel_sgx)
 
-# Workaround until sgx_linux_x64_driver.bin is available from public endpoint
 get-driver:
 	apt-get -y install wget
 ifdef USE_PKGS_IN
 	cp $(USE_PKGS_IN)/sgx_linux_x64_driver.bin .
 else
-	@ wget http://10.224.140.70:8888/sgx_linux_x64_driver.bin
+	@ wget https://download.01.org/intel-sgx/dcap-1.0/sgx_linux_x64_driver_dcap_36594a7.bin -O sgx_linux_x64_driver.bin
 endif
 	chmod 744 sgx_linux_x64_driver.bin
 
