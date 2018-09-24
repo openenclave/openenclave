@@ -73,7 +73,8 @@ oe_result_t __oe_load_segments(
             if (sh == NULL)
                 OE_THROW(OE_FAILURE);
 
-            const char* name = elf64_get_string_from_shstrtab(&elf, sh->sh_name);
+            const char* name =
+                elf64_get_string_from_shstrtab(&elf, sh->sh_name);
 
             if (name && strcmp(name, ".text") == 0)
             {

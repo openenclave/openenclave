@@ -564,7 +564,8 @@ static oe_result_t _add_pages(
     {
         elf64_sym_t sym;
 
-        if (elf64_find_dynamic_symbol_by_name(elf, "oe_base_reloc_page", &sym) != 0)
+        if (elf64_find_dynamic_symbol_by_name(
+                elf, "oe_base_reloc_page", &sym) != 0)
             OE_RAISE(OE_FAILURE);
 
         OE_CHECK(
@@ -575,7 +576,8 @@ static oe_result_t _add_pages(
     {
         elf64_sym_t sym;
 
-        if (elf64_find_dynamic_symbol_by_name(elf, "oe_num_reloc_pages", &sym) != 0)
+        if (elf64_find_dynamic_symbol_by_name(
+                elf, "oe_num_reloc_pages", &sym) != 0)
             OE_RAISE(OE_FAILURE);
 
         OE_CHECK(
@@ -587,7 +589,8 @@ static oe_result_t _add_pages(
     {
         elf64_sym_t sym;
 
-        if (elf64_find_dynamic_symbol_by_name(elf, "oe_base_ecall_page", &sym) != 0)
+        if (elf64_find_dynamic_symbol_by_name(
+                elf, "oe_base_ecall_page", &sym) != 0)
             OE_RAISE(OE_FAILURE);
 
         OE_CHECK(
@@ -598,7 +601,8 @@ static oe_result_t _add_pages(
     {
         elf64_sym_t sym;
 
-        if (elf64_find_dynamic_symbol_by_name(elf, "oe_num_ecall_pages", &sym) != 0)
+        if (elf64_find_dynamic_symbol_by_name(
+                elf, "oe_num_ecall_pages", &sym) != 0)
             OE_RAISE(OE_FAILURE);
 
         OE_CHECK(
@@ -610,7 +614,8 @@ static oe_result_t _add_pages(
     {
         elf64_sym_t sym;
 
-        if (elf64_find_dynamic_symbol_by_name(elf, "oe_base_heap_page", &sym) != 0)
+        if (elf64_find_dynamic_symbol_by_name(elf, "oe_base_heap_page", &sym) !=
+            0)
             OE_RAISE(OE_FAILURE);
 
         OE_CHECK(
@@ -621,7 +626,8 @@ static oe_result_t _add_pages(
     {
         elf64_sym_t sym;
 
-        if (elf64_find_dynamic_symbol_by_name(elf, "oe_num_heap_pages", &sym) != 0)
+        if (elf64_find_dynamic_symbol_by_name(elf, "oe_num_heap_pages", &sym) !=
+            0)
             OE_RAISE(OE_FAILURE);
 
         OE_CHECK(_patch_page(segpages, nsegpages, sym.st_value, nheappages));
@@ -642,8 +648,8 @@ static oe_result_t _add_pages(
     {
         elf64_sym_t sym;
 
-        if (elf64_find_dynamic_symbol_by_name(elf, "oe_virtual_base_addr", &sym) !=
-            0)
+        if (elf64_find_dynamic_symbol_by_name(
+                elf, "oe_virtual_base_addr", &sym) != 0)
         {
             OE_RAISE(OE_FAILURE);
         }
@@ -1016,7 +1022,8 @@ oe_result_t oe_sgx_load_properties(
     }
 
     /* Get pointer to and size of the given section */
-    if (elf64_find_section(elf, section_name, &section_data, &section_size) != 0)
+    if (elf64_find_section(elf, section_name, &section_data, &section_size) !=
+        0)
     {
         result = OE_NOT_FOUND;
         goto done;
@@ -1063,7 +1070,8 @@ oe_result_t oe_sgx_update_enclave_properties(
     }
 
     /* Get pointer to and size of the given section */
-    if (elf64_find_section(elf, section_name, &section_data, &section_size) != 0)
+    if (elf64_find_section(elf, section_name, &section_data, &section_size) !=
+        0)
     {
         result = OE_FAILURE;
         goto done;

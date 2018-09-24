@@ -95,17 +95,17 @@ void td_pop_callsite(td_t* td)
 **     a page pointed to by the GS (segment register). This page occurs 4 pages
 **     after the TCS page. The layout is as follows:
 **
-**         +--------------------------+
-**         | TCS Page                 |
-**         +--------------------------+
-**         | SSA (State Save Area) 0  |
-**         +--------------------------+
-**         | SSA (State Save Area) 1  |
-**         +--------------------------+
-**         | Guard Page               |
-**         +--------------------------+
+**         +----------------------------+
+**         | TCS Page                   |
+**         +----------------------------+
+**         | SSA (State Save Area) 0    |
+**         +----------------------------+
+**         | SSA (State Save Area) 1    |
+**         +----------------------------+
+**         | Guard Page                 |
+**         +----------------------------+
 **         | GS Segment (contains td_t) |
-**         +--------------------------+
+**         +----------------------------+
 **
 **     This layout is determined by the enclave builder. See:
 **
@@ -113,7 +113,8 @@ void td_pop_callsite(td_t* td)
 **
 **     The GS segment register is set by the EENTER instruction and the td_t
 **     page is zero filled upon initial enclave entry. Software sets the
-**     contents of the td_t when it first determines that td_t.self_addr is zero.
+**     contents of the td_t when it first determines that td_t.self_addr is
+**     zero.
 **
 **==============================================================================
 */
@@ -201,7 +202,7 @@ bool td_initialized(td_t* td)
 **         +-------------------------+
 **         | Guard Page              |
 **         +-------------------------+
-**         | GS page (contains td_t)   |
+**         | GS page (contains td_t) |
 **         +-------------------------+
 **
 **     Note: the host register fields are pre-initialized by oe_enter:
@@ -214,7 +215,8 @@ void td_init(td_t* td)
     /* If not already initialized */
     if (!td_initialized(td))
     {
-        /* td_t.hostsp, td_t.hostbp, and td_t.retaddr already set by oe_enter() */
+        // td_t.hostsp, td_t.hostbp, and td_t.retaddr already set by
+        // oe_enter().
 
         /* Clear base structure */
         oe_memset(&td->base, 0, sizeof(td->base));

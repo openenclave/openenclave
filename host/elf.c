@@ -408,7 +408,9 @@ done:
     return result;
 }
 
-const char* elf64_get_string_from_strtab(const elf64_t* elf, elf64_word_t offset)
+const char* elf64_get_string_from_strtab(
+    const elf64_t* elf,
+    elf64_word_t offset)
 {
     size_t index;
 
@@ -421,7 +423,9 @@ const char* elf64_get_string_from_strtab(const elf64_t* elf, elf64_word_t offset
     return _get_string_from_section_index(elf, index, offset);
 }
 
-const char* elf64_get_string_from_shstrtab(const elf64_t* elf, elf64_word_t offset)
+const char* elf64_get_string_from_shstrtab(
+    const elf64_t* elf,
+    elf64_word_t offset)
 {
     size_t index;
 
@@ -432,7 +436,10 @@ const char* elf64_get_string_from_shstrtab(const elf64_t* elf, elf64_word_t offs
     return _get_string_from_section_index(elf, index, offset);
 }
 
-int elf64_find_symbol_by_name(const elf64_t* elf, const char* name, elf64_sym_t* sym)
+int elf64_find_symbol_by_name(
+    const elf64_t* elf,
+    const char* name,
+    elf64_sym_t* sym)
 {
     int rc = -1;
     size_t index;
@@ -498,7 +505,9 @@ done:
     return rc;
 }
 
-const char* elf64_get_string_from_dynstr(const elf64_t* elf, elf64_word_t offset)
+const char* elf64_get_string_from_dynstr(
+    const elf64_t* elf,
+    elf64_word_t offset)
 {
     size_t index;
 
@@ -1776,7 +1785,10 @@ done:
     return rc;
 }
 
-int elf64_load_relocations(const elf64_t* elf, void** data_out, size_t* size_out)
+int elf64_load_relocations(
+    const elf64_t* elf,
+    void** data_out,
+    size_t* size_out)
 {
     int rc = -1;
     size_t index;

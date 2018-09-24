@@ -149,7 +149,6 @@ typedef unsigned int elf64_word_t;
 typedef signed int elf64_sword_t;
 typedef uint64_t elf64_xword_t;
 typedef int64_t elf64_sxword_t;
-typedef signed int elf64_sword_t;
 
 typedef struct
 {
@@ -197,12 +196,12 @@ typedef struct
 
 typedef struct
 {
-    elf64_word_t st_name;     /* Symbol name */
+    elf64_word_t st_name;   /* Symbol name */
     unsigned char st_info;  /* Type and Binding attributes */
     unsigned char st_other; /* Reserved */
-    elf64_half_t st_shndx;    /* Section table index */
-    elf64_addr_t st_value;    /* Symbol value */
-    elf64_xword_t st_size;    /* Size of object (e.g., common) */
+    elf64_half_t st_shndx;  /* Section table index */
+    elf64_addr_t st_value;  /* Symbol value */
+    elf64_xword_t st_size;  /* Size of object (e.g., common) */
 } elf64_sym_t;
 
 typedef struct
@@ -256,9 +255,14 @@ void elf64_dump_symbol(const elf64_t* elf, const elf64_sym_t* sym);
 
 int elf64_dump_symbols(const elf64_t* elf);
 
-int elf64_find_symbol_by_name(const elf64_t* elf, const char* name, elf64_sym_t* sym);
+int elf64_find_symbol_by_name(
+    const elf64_t* elf,
+    const char* name,
+    elf64_sym_t* sym);
 
-const char* elf64_get_string_from_dynstr(const elf64_t* elf, elf64_word_t offset);
+const char* elf64_get_string_from_dynstr(
+    const elf64_t* elf,
+    elf64_word_t offset);
 
 int elf64_find_dynamic_symbol_by_name(
     const elf64_t* elf,
@@ -283,9 +287,13 @@ int elf64_find_section(
     unsigned char** data,
     size_t* size);
 
-const char* elf64_get_string_from_shstrtab(const elf64_t* elf, elf64_word_t offset);
+const char* elf64_get_string_from_shstrtab(
+    const elf64_t* elf,
+    elf64_word_t offset);
 
-const char* elf64_get_string_from_strtab(const elf64_t* elf, elf64_word_t offset);
+const char* elf64_get_string_from_strtab(
+    const elf64_t* elf,
+    elf64_word_t offset);
 
 int elf64_add_section(
     elf64_t* elf,

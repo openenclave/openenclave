@@ -303,7 +303,8 @@ void _oe_exception_dispatcher(oe_context_t* oe_context)
 /*
 **==============================================================================
 **
-** _oe_virtual_exception_dispatcher(td_t* td, uint64_t arg_in, uint64_t* arg_out)
+** _oe_virtual_exception_dispatcher(td_t* td, uint64_t arg_in, uint64_t*
+*arg_out)
 **
 **  The virtual (first pass) exception dispatcher. It checks whether or not
 **  there is an exception in current enclave thread, and save minimal exception
