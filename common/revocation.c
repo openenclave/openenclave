@@ -204,12 +204,13 @@ oe_result_t oe_enforce_revocation(
             revocation_args.tcb_issuer_chain,
             revocation_args.tcb_issuer_chain_size));
 
+    // Read CRLs for each cert other than root. If any CRL is missing, the read
+    // will error out.
     for (uint32_t i = 0; i < revocation_args.num_crl_urls; ++i)
     {
         OE_CHECK(
             oe_crl_read_der(
                 &crls[i], revocation_args.crl[i], revocation_args.crl_size[i]));
-        OE_UNUSED(crls);
         OE_CHECK(
             oe_cert_chain_read_pem(
                 &crl_issuer_chain[i],

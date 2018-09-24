@@ -39,8 +39,8 @@ The certificates and CRLs were generated using the following openssl commands.
 ==List of Tests==
 
   1. test_cert_chain_positive
-       Asserts the following condition: "In a valid cert chain, each certificate's issuer CA occurs atleast once after the certificate".
-        Tests correct ordering, duplicates, two and three level chains.
+       Asserts the following condition: "In a valid cert chain, each certificate's issuer CA occurs at least once after the certificate".
+       Tests correct ordering, duplicates, two and three level chains.
   2. test_cert_chain_negative: Negative tests involving incorrect ordering, missing certs etc.
   3. test_crls.
       1. Assert that verify succeeds when no crls are passed.
