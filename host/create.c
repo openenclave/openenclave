@@ -516,7 +516,7 @@ static oe_result_t _patch_page(
 
 static oe_result_t _add_pages(
     oe_sgx_load_context_t* context,
-    Elf64* elf,
+    elf64_t* elf,
     uint64_t enclave_addr,
     size_t enclave_end,
     size_t enclave_size,
@@ -562,9 +562,10 @@ static oe_result_t _add_pages(
 
     /* Patch the "oe_base_reloc_page" */
     {
-        Elf64_Sym sym;
+        elf64_sym_t sym;
 
-        if (Elf64_FindDynamicSymbolByName(elf, "oe_base_reloc_page", &sym) != 0)
+        if (elf64_find_dynamic_symbol_by_name(
+                elf, "oe_base_reloc_page", &sym) != 0)
             OE_RAISE(OE_FAILURE);
 
         OE_CHECK(
@@ -573,9 +574,10 @@ static oe_result_t _add_pages(
 
     /* Patch the "oe_num_reloc_pages" */
     {
-        Elf64_Sym sym;
+        elf64_sym_t sym;
 
-        if (Elf64_FindDynamicSymbolByName(elf, "oe_num_reloc_pages", &sym) != 0)
+        if (elf64_find_dynamic_symbol_by_name(
+                elf, "oe_num_reloc_pages", &sym) != 0)
             OE_RAISE(OE_FAILURE);
 
         OE_CHECK(
@@ -585,9 +587,10 @@ static oe_result_t _add_pages(
 
     /* Patch the "oe_base_ecall_page" */
     {
-        Elf64_Sym sym;
+        elf64_sym_t sym;
 
-        if (Elf64_FindDynamicSymbolByName(elf, "oe_base_ecall_page", &sym) != 0)
+        if (elf64_find_dynamic_symbol_by_name(
+                elf, "oe_base_ecall_page", &sym) != 0)
             OE_RAISE(OE_FAILURE);
 
         OE_CHECK(
@@ -596,9 +599,10 @@ static oe_result_t _add_pages(
 
     /* Patch the "oe_num_ecall_pages" */
     {
-        Elf64_Sym sym;
+        elf64_sym_t sym;
 
-        if (Elf64_FindDynamicSymbolByName(elf, "oe_num_ecall_pages", &sym) != 0)
+        if (elf64_find_dynamic_symbol_by_name(
+                elf, "oe_num_ecall_pages", &sym) != 0)
             OE_RAISE(OE_FAILURE);
 
         OE_CHECK(
@@ -608,9 +612,10 @@ static oe_result_t _add_pages(
 
     /* Patch the "oe_base_heap_page" */
     {
-        Elf64_Sym sym;
+        elf64_sym_t sym;
 
-        if (Elf64_FindDynamicSymbolByName(elf, "oe_base_heap_page", &sym) != 0)
+        if (elf64_find_dynamic_symbol_by_name(elf, "oe_base_heap_page", &sym) !=
+            0)
             OE_RAISE(OE_FAILURE);
 
         OE_CHECK(
@@ -619,9 +624,10 @@ static oe_result_t _add_pages(
 
     /* Patch the "oe_num_heap_pages" */
     {
-        Elf64_Sym sym;
+        elf64_sym_t sym;
 
-        if (Elf64_FindDynamicSymbolByName(elf, "oe_num_heap_pages", &sym) != 0)
+        if (elf64_find_dynamic_symbol_by_name(elf, "oe_num_heap_pages", &sym) !=
+            0)
             OE_RAISE(OE_FAILURE);
 
         OE_CHECK(_patch_page(segpages, nsegpages, sym.st_value, nheappages));
@@ -629,10 +635,10 @@ static oe_result_t _add_pages(
 
     /* Patch the "oe_num_pages" */
     {
-        Elf64_Sym sym;
+        elf64_sym_t sym;
         uint64_t npages = enclave_end / OE_PAGE_SIZE;
 
-        if (Elf64_FindDynamicSymbolByName(elf, "oe_num_pages", &sym) != 0)
+        if (elf64_find_dynamic_symbol_by_name(elf, "oe_num_pages", &sym) != 0)
             OE_RAISE(OE_FAILURE);
 
         OE_CHECK(_patch_page(segpages, nsegpages, sym.st_value, npages));
@@ -640,10 +646,10 @@ static oe_result_t _add_pages(
 
     /* Patch the "oe_virtual_base_addr" */
     {
-        Elf64_Sym sym;
+        elf64_sym_t sym;
 
-        if (Elf64_FindDynamicSymbolByName(elf, "oe_virtual_base_addr", &sym) !=
-            0)
+        if (elf64_find_dynamic_symbol_by_name(
+                elf, "oe_virtual_base_addr", &sym) != 0)
         {
             OE_RAISE(OE_FAILURE);
         }
@@ -708,17 +714,17 @@ done:
 
 typedef struct _visit_sym_data
 {
-    const Elf64* elf;
-    const Elf64_Shdr* shdr;
+    const elf64_t* elf;
+    const elf64_shdr_t* shdr;
     mem_t* mem;
     oe_result_t result;
 } VisitSymData;
 
-static int _visit_sym(const Elf64_Sym* sym, void* data_)
+static int _visit_sym(const elf64_sym_t* sym, void* data_)
 {
     int rc = -1;
     VisitSymData* data = (VisitSymData*)data_;
-    const Elf64_Shdr* shdr = data->shdr;
+    const elf64_shdr_t* shdr = data->shdr;
     const char* name;
 
     data->result = OE_UNEXPECTED;
@@ -739,7 +745,7 @@ static int _visit_sym(const Elf64_Sym* sym, void* data_)
     }
 
     /* Skip null names */
-    if (!(name = Elf64_GetStringFromDynstr(data->elf, sym->st_name)))
+    if (!(name = elf64_get_string_from_dynstr(data->elf, sym->st_name)))
     {
         rc = 0;
         goto done;
@@ -765,17 +771,17 @@ done:
     return rc;
 }
 
-static oe_result_t _build_ecall_array(oe_enclave_t* enclave, Elf64* elf)
+static oe_result_t _build_ecall_array(oe_enclave_t* enclave, elf64_t* elf)
 {
     oe_result_t result = OE_UNEXPECTED;
-    Elf64_Shdr shdr;
+    elf64_shdr_t shdr;
 
     /* Reject invalid parameters */
     if (!enclave || !elf)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Find the ".ecalls" section */
-    if (Elf64_FindSectionHeader(elf, ".ecall", &shdr) != 0)
+    if (elf64_find_section_header(elf, ".ecall", &shdr) != 0)
         OE_RAISE(OE_FAILURE);
 
     /* Find all functions that reside in the ".ecalls" section */
@@ -787,7 +793,7 @@ static oe_result_t _build_ecall_array(oe_enclave_t* enclave, Elf64* elf)
         data.shdr = &shdr;
         data.mem = &mem;
 
-        if (Elf64_VisitSymbols(elf, _visit_sym, &data) != 0)
+        if (elf64_visit_symbols(elf, _visit_sym, &data) != 0)
             OE_RAISE(OE_FAILURE);
 
         enclave->ecalls = (ECallNameAddr*)mem_ptr(&mem);
@@ -800,17 +806,17 @@ done:
     return result;
 }
 
-static oe_result_t _save_text_address(oe_enclave_t* enclave, Elf64* elf)
+static oe_result_t _save_text_address(oe_enclave_t* enclave, elf64_t* elf)
 {
     oe_result_t result = OE_UNEXPECTED;
-    Elf64_Shdr shdr;
+    elf64_shdr_t shdr;
 
     /* Reject invalid parameters */
     if (!enclave || !elf)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Find the ".text" section header */
-    if (Elf64_FindSectionHeader(elf, ".text", &shdr) != 0)
+    if (elf64_find_section_header(elf, ".text", &shdr) != 0)
         OE_RAISE(OE_FAILURE);
 
     /* Save the offset of the text section */
@@ -825,8 +831,8 @@ done:
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
 OE_INLINE void _dump_relocations(const void* data, size_t size)
 {
-    const Elf64_Rela* p = (const Elf64_Rela*)data;
-    size_t n = size / sizeof(Elf64_Rela);
+    const elf64_rela_t* p = (const elf64_rela_t*)data;
+    size_t n = size / sizeof(elf64_rela_t);
 
     printf("=== Relocations:\n");
 
@@ -997,7 +1003,7 @@ done:
 }
 
 oe_result_t oe_sgx_load_properties(
-    const Elf64* elf,
+    const elf64_t* elf,
     const char* section_name,
     oe_sgx_enclave_properties_t* properties)
 {
@@ -1016,7 +1022,8 @@ oe_result_t oe_sgx_load_properties(
     }
 
     /* Get pointer to and size of the given section */
-    if (Elf64_FindSection(elf, section_name, &section_data, &section_size) != 0)
+    if (elf64_find_section(elf, section_name, &section_data, &section_size) !=
+        0)
     {
         result = OE_NOT_FOUND;
         goto done;
@@ -1047,7 +1054,7 @@ done:
 }
 
 oe_result_t oe_sgx_update_enclave_properties(
-    const Elf64* elf,
+    const elf64_t* elf,
     const char* section_name,
     const oe_sgx_enclave_properties_t* properties)
 {
@@ -1063,7 +1070,8 @@ oe_result_t oe_sgx_update_enclave_properties(
     }
 
     /* Get pointer to and size of the given section */
-    if (Elf64_FindSection(elf, section_name, &section_data, &section_size) != 0)
+    if (elf64_find_section(elf, section_name, &section_data, &section_size) !=
+        0)
     {
         result = OE_FAILURE;
         goto done;
@@ -1179,14 +1187,14 @@ oe_result_t oe_sgx_build_enclave(
     size_t enclave_size = 0;
     uint64_t enclave_addr = 0;
     size_t i;
-    Elf64 elf;
+    elf64_t elf;
     void* reloc_data = NULL;
     size_t reloc_size;
     void* ecall_data = NULL;
     size_t ecall_size;
     oe_sgx_enclave_properties_t props;
 
-    memset(&elf, 0, sizeof(Elf64));
+    memset(&elf, 0, sizeof(elf64_t));
 
     /* Clear and initialize enclave structure */
     {
@@ -1206,7 +1214,7 @@ oe_result_t oe_sgx_build_enclave(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Load the elf object */
-    if (Elf64_Load(path, &elf) != 0)
+    if (elf64_load(path, &elf) != 0)
         OE_RAISE(OE_FAILURE);
 
     // If the **properties** parameter is non-null, use those properties.
@@ -1247,7 +1255,7 @@ oe_result_t oe_sgx_build_enclave(
             path, segments, &num_segments, &entry_addr, &start_addr));
 
     /* Load the relocations into memory (zero-padded to next page size) */
-    if (Elf64_LoadRelocations(&elf, &reloc_data, &reloc_size) != 0)
+    if (elf64_load_relocations(&elf, &reloc_data, &reloc_size) != 0)
         OE_RAISE(OE_FAILURE);
 
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
@@ -1284,9 +1292,9 @@ oe_result_t oe_sgx_build_enclave(
     for (i = 0; i < num_segments; i++)
     {
         const oe_segment_t* seg = &segments[i];
-        Elf64_Ehdr* ehdr = (Elf64_Ehdr*)seg->filedata;
+        elf64_ehdr_t* ehdr = (elf64_ehdr_t*)seg->filedata;
 
-        if (Elf64_TestHeader(ehdr) == 0)
+        if (elf64_test_header(ehdr) == 0)
         {
             ehdr->e_shoff = 0;
             ehdr->e_shnum = 0;
@@ -1344,7 +1352,7 @@ done:
     if (ecall_data)
         free(ecall_data);
 
-    Elf64_Unload(&elf);
+    elf64_unload(&elf);
 
     return result;
 }

@@ -96,16 +96,16 @@ typedef struct oe_sgx_enclave_properties_t
  * an enclave binary. These properties can be overwritten at sign time by
  * the oesign tool.
  *
- * @param \_product_id\_ ISV assigned Product ID (ISVPRODID) to use in the
+ * @param PRODUCT_ID ISV assigned Product ID (ISVPRODID) to use in the
  * enclave signature
- * @param \_security_version\_ ISV assigned Security Version number (ISVSVN)
+ * @param SECURITY_VERSION ISV assigned Security Version number (ISVSVN)
  * to use in the enclave signature
- * @param \_allow_debug\_ If true, allows the enclave to be created with
+ * @param ALLOW_DEBUG If true, allows the enclave to be created with
  * OE_ENCLAVE_FLAG_DEBUG and debugged at runtime
- * @param \_heap_page_count\_ Number of heap pages to allocate in the enclave
- * @param \_stack_page_count\_ Number of stack pages per thread to reserve in
+ * @param HEAP_PAGE_COUNT Number of heap pages to allocate in the enclave
+ * @param STACK_PAGE_COUNT Number of stack pages per thread to reserve in
  * the enclave
- * @param \_tcs_count\_ Number of concurrent threads in an enclave to support
+ * @param TCS_COUNT Number of concurrent threads in an enclave to support
  */
 // Note: disable clang-format since it badly misformats this macro
 // clang-format off

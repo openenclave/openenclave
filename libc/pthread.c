@@ -6,6 +6,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/defs.h>
 #include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/pthreadhooks.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/thread.h>
 #include <pthread.h>
@@ -57,13 +58,13 @@ OE_INLINE int _to_errno(oe_result_t result)
 **==============================================================================
 */
 
-OE_STATIC_ASSERT(sizeof(struct __pthread) <= sizeof(((TD*)NULL)->pthread));
+OE_STATIC_ASSERT(sizeof(struct __pthread) <= sizeof(((td_t*)NULL)->pthread));
 OE_STATIC_ASSERT(sizeof(pthread_mutex_t) >= sizeof(oe_mutex_t));
 OE_STATIC_ASSERT(sizeof(pthread_cond_t) >= sizeof(oe_cond_t));
 
 static void _pthread_self_init()
 {
-    TD* td = oe_get_td();
+    td_t* td = oe_get_td();
 
     if (td)
     {
@@ -76,7 +77,7 @@ static void _pthread_self_init()
 pthread_t __pthread_self()
 {
     static oe_once_t _once = OE_ONCE_INITIALIZER;
-    TD* td;
+    td_t* td;
 
     if (oe_once(&_once, _pthread_self_init) != 0)
         return NULL;
@@ -96,26 +97,48 @@ int pthread_equal(pthread_t thread1, pthread_t thread2)
     return (int)oe_thread_equal((oe_thread_t)thread1, (oe_thread_t)thread2);
 }
 
+static oe_pthread_hooks_t* _pthread_hooks;
+
+void oe_register_pthread_hooks(oe_pthread_hooks_t* pthread_hooks)
+{
+    _pthread_hooks = pthread_hooks;
+}
+
 int pthread_create(
     pthread_t* thread,
     const pthread_attr_t* attr,
     void* (*start_routine)(void*),
     void* arg)
 {
-    oe_assert("pthread_create(): panic" == NULL);
-    return -1;
+    if (!_pthread_hooks || !_pthread_hooks->create)
+    {
+        oe_assert("pthread_create(): panic" == NULL);
+        return -1;
+    }
+
+    return _pthread_hooks->create(thread, attr, start_routine, arg);
 }
 
 int pthread_join(pthread_t thread, void** retval)
 {
-    assert("pthread_join(): panic" == NULL);
-    return -1;
+    if (!_pthread_hooks || !_pthread_hooks->join)
+    {
+        assert("pthread_join(): panic" == NULL);
+        return -1;
+    }
+
+    return _pthread_hooks->join(thread, retval);
 }
 
 int pthread_detach(pthread_t thread)
 {
-    assert("pthread_detach(): panic" == NULL);
-    return -1;
+    if (!_pthread_hooks || !_pthread_hooks->detach)
+    {
+        assert("pthread_detach(): panic" == NULL);
+        return -1;
+    }
+
+    return _pthread_hooks->detach(thread);
 }
 
 /*

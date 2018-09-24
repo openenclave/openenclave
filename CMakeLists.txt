@@ -115,7 +115,14 @@ if (USE_LIBSGX AND WIN32)
 message(FATAL_ERROR "USE_LIBSGX is not supported on Windows. Disable this when calling cmake with -DUSE_LIBSGX=OFF")
 endif()
 
-option(USE_DEBUG_MALLOC "Build oehost using SGX library requiring FLC" OFF)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT WIN32)
+# In non-win32 debug build, debug_malloc is on by default.
+option(USE_DEBUG_MALLOC "Build oeenclave with memory leak detection capability." ON)
+else()
+# In win32 or non-debug builds, debug_malloc is off by default.
+option(USE_DEBUG_MALLOC "Build oeenclave with memory leak detection capability." OFF)
+endif()
+
 if (USE_DEBUG_MALLOC AND WIN32)
 message(FATAL_ERROR "USE_DEBUG_MALLOC is not supported on Windows. Disable this when calling cmake with -DUSE_DEBUG_MALLOC=OFF")
 endif()
@@ -134,6 +141,7 @@ add_subdirectory(enclave)
 add_subdirectory(enclave/core)
 add_subdirectory(libc)
 add_subdirectory(libcxx)
+add_subdirectory(pkgconfig)
 add_subdirectory(samples)
 add_subdirectory(tools)
 endif()
