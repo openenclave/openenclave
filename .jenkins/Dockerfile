@@ -42,54 +42,73 @@
 
 FROM ubuntu:16.04
 
+RUN \
+  apt-get update && apt-get install -y wget \
+  # Install the LLVM 7 toolchain repo.
+  && echo "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" >> /etc/apt/sources.list \
+  && echo "deb-src http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" >> /etc/apt/sources.list \
+  && wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
+  && apt-get update \
+  # Install Clang 7 to build with Spectre mitigation.
+  && apt-get install -y clang-7 lldb-7 lld-7 \
+  # Install all the packages specified in install-prereqs except CMake.
+  && apt-get install -y \
+  # Please keep these sorted alphabetically.
+  autoconf \
+  clang-format \
+  dh-exec \
+  doxygen \
+  dpkg-dev \
+  g++ \
+  gawk \
+  gcc \
+  gdb \
+  git \
+  graphviz \
+  libcurl3 \
+  libexpat1-dev \
+  libmbedtls10 \
+  libprotobuf9v5 \
+  libssl-dev \
+  libtool \
+  make \
+  ocaml-native-compilers \
+  openssl \
+  subversion \
+  sudo \
+  && rm -rf /var/lib/apt/lists/*
+
+# Install packages not available in repositories.
+ARG webserver=10.31.100.105
+RUN \
+  # Install CMake 3.11 so that skipped tests are not marked as failures.
+  wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz \
+  && tar xf cmake-3.11.4-Linux-x86_64.tar.gz \
+  && rm cmake-3.11.4-Linux-x86_64.tar.gz \
+  # Install the Intel DCAP dependencies.
+  && wget https://download.01.org/intel-sgx/dcap-1.0/SGX_installers/ubuntu16.04/libsgx-enclave-common_2.3.100.46354-1_amd64.deb \
+  && dpkg -i libsgx-enclave-common_2.3.100.46354-1_amd64.deb \
+  && rm      libsgx-enclave-common_2.3.100.46354-1_amd64.deb \
+  && wget https://download.01.org/intel-sgx/sgx_repo/ubuntu/pool/main/libs/libsgx-enclave-common-dev/libsgx-enclave-common-dev_2.3.100.0-1_amd64.deb \
+  && dpkg -i libsgx-enclave-common-dev_2.3.100.0-1_amd64.deb \
+  && rm      libsgx-enclave-common-dev_2.3.100.0-1_amd64.deb \
+  && wget https://download.01.org/intel-sgx/dcap-1.0/DCAP_installers/ubuntu16.04/libsgx-dcap-ql_1.0.100.46460-1.0_amd64.deb \
+  && dpkg -i libsgx-dcap-ql_1.0.100.46460-1.0_amd64.deb \
+  && rm      libsgx-dcap-ql_1.0.100.46460-1.0_amd64.deb \
+  && wget https://download.01.org/intel-sgx/dcap-1.0/DCAP_installers/ubuntu16.04/libsgx-dcap-ql-dev_1.0.100.46460-1.0_amd64.deb \
+  && dpkg -i libsgx-dcap-ql-dev_1.0.100.46460-1.0_amd64.deb \
+  && rm      libsgx-dcap-ql-dev_1.0.100.46460-1.0_amd64.deb \
+  && wget https://download.01.org/intel-sgx/dcap-1.0/sgx_linux_x64_driver_dcap_36594a7.bin -O sgx_linux_x64_driver.bin \
+  && chmod +x sgx_linux_x64_driver.bin \
+  && mkdir -p /opt/bits \
+  && mv       sgx_linux_x64_driver.bin /opt/bits \
+  # Install the Azure Quote Provider package.
+  && wget http://$webserver/azquotprov_0.3-1_amd64.deb \
+  && dpkg -i azquotprov_0.3-1_amd64.deb \
+  && rm      azquotprov_0.3-1_amd64.deb
+
 ENV PATH="/cmake-3.11.4-Linux-x86_64/bin:${PATH}"
 
-RUN apt-get -y update
-RUN apt-get -y install wget
-
-# Install the Clang 7 for OE SDK to build with Spectre mitigation flags
-RUN echo "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" >> /etc/apt/sources.list
-RUN echo "deb-src http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" >> /etc/apt/sources.list
-RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
-RUN apt-get -y update
-RUN apt-get -y install clang-7 lldb-7 lld-7
-
-# Install all the packages specified in install-prereqs except cmake.
-RUN apt-get -y install clang-format gcc g++ make gdb autoconf libtool doxygen graphviz gawk libexpat1-dev openssl libssl-dev subversion ocaml-native-compilers libcurl3 dh-exec libmbedtls10 sudo git dpkg-dev libprotobuf9v5
-
-# Install cmake v3.11 so that skipped tests are not marked as failures. This
-# version is not currently available via apt-get.
-RUN wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz
-RUN tar xf cmake-3.11.4-Linux-x86_64.tar.gz
-
-# Download the Intel DCAP dependencies
-RUN wget https://download.01.org/intel-sgx/dcap-1.0/SGX_installers/ubuntu16.04/libsgx-enclave-common_2.3.100.46354-1_amd64.deb
-RUN wget https://download.01.org/intel-sgx/sgx_repo/ubuntu/pool/main/libs/libsgx-enclave-common-dev/libsgx-enclave-common-dev_2.3.100.0-1_amd64.deb
-RUN wget https://download.01.org/intel-sgx/dcap-1.0/DCAP_installers/ubuntu16.04/libsgx-dcap-ql_1.0.100.46460-1.0_amd64.deb
-RUN wget https://download.01.org/intel-sgx/dcap-1.0/DCAP_installers/ubuntu16.04/libsgx-dcap-ql-dev_1.0.100.46460-1.0_amd64.deb
-RUN wget https://download.01.org/intel-sgx/dcap-1.0/sgx_linux_x64_driver_dcap_36594a7.bin -O sgx_linux_x64_driver.bin
-
-# Download Azure Quote provider package
-ARG webserver=10.31.100.105
-RUN wget http://$webserver/azquotprov_0.3-1_amd64.deb
-
-# Install all prerequisite packages
-RUN dpkg -i libsgx-enclave-common_2.3.100.46354-1_amd64.deb
-RUN dpkg -i libsgx-enclave-common-dev_2.3.100.0-1_amd64.deb
-RUN dpkg -i libsgx-dcap-ql_1.0.100.46460-1.0_amd64.deb
-RUN dpkg -i libsgx-dcap-ql-dev_1.0.100.46460-1.0_amd64.deb
-RUN dpkg -i azquotprov_0.3-1_amd64.deb
-RUN chmod +x sgx_linux_x64_driver.bin; mkdir -p /opt/bits; mv sgx_linux_x64_driver.bin /opt/bits
-
-# Configure git in target image to enable merge/rebase actions
+# Configure Git in target image to enable merge/rebase actions.
 RUN git config --global user.email "oeciteam@microsoft.com"
 RUN git config --global user.name "OE CI Team"
-
-# Cleanup after we are done
-RUN rm -f cmake-3.11.4-Linux-x86_64.tar.gz
-
-RUN rm -f libsgx-enclave-common_2.3.100.46354-1_amd64.deb
-RUN rm -f libsgx-enclave-common-dev_2.3.100.0-1_amd64.deb
-RUN rm -f libsgx-dcap-ql_1.0.100.46460-1.0_amd64.deb
-RUN rm -f libsgx-dcap-ql-dev_1.0.100.46460-1.0_amd64.deb
-RUN rm -f azquotprov_0.3-1_amd64.deb
