@@ -371,8 +371,6 @@ static void _test_verify_with_two_crls(
 void TestCRL(void)
 {
     _test_verify_without_crl(_CERT1, _CHAIN1);
-    _test_verify_with_crl(_CERT1, _CHAIN1, _CRL1, sizeof(_CRL1), false);
-
     _test_verify_without_crl(_CERT2, _CHAIN2);
     _test_verify_with_crl(_CERT2, _CHAIN2, _CRL2, sizeof(_CRL2), true);
 
