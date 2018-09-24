@@ -3,3 +3,4 @@
 
 #pragma once
 typedef struct MY_FILE MY_FILE;
+typedef void* void_ptr;

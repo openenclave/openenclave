@@ -89,3 +89,4 @@
 ../../3rdparty/musl/libc-test/src/regression/regexec-nosub.c
 ../../3rdparty/musl/libc-test/src/regression/regex-ere-backref.c
 ../../3rdparty/musl/libc-test/src/regression/regex-negated-range.c
+../../3rdparty/musl/libc-test/src/functional/crypt.c

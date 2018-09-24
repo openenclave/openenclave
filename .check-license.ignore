@@ -37,7 +37,7 @@ LICENSE
 ./prereqs/aesm/.sdk
 ./prereqs/aesm/.sdk_installer
 ./prereqs/isgx/linux-sgx-driver
-./prereqs/ngsa/libsgx
+./prereqs/dcap/libsgx
 ./prereqs/sgx-driver/sgx-driver
 ./samples/make/file-encryptor/diagram.png
 ./samples/make/remote_attestation/images/attestationsample.png
@@ -56,6 +56,7 @@ LICENSE
 ./tests/libc/tests.unsupported
 ./tests/libcxx/tests.*
 ./tests/libcxxrt/tests.*
+./tests/libcxxthrd/tests.*
 ./tests/load/dead.txt
 ./tests/measure/dead.txt
 ./tests/measure/log.txt
@@ -70,6 +71,9 @@ LICENSE
 ./tests/tester/file
 ./THIRD_PARTY_NOTICES
 ./tools/bins/dead.txt
+./tools/oeedger8r/intel
+./tools/oeedger8r/main.ml
+./tools/oeedger8r/Makefile
 ./tools/oesign/files/log.txt
 VERSION
 ./prereqs/packages/.packages

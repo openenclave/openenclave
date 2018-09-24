@@ -15,7 +15,7 @@
 #include <vector>
 #include "../../../common/tcbinfo.h"
 #include "../../../host/quote.h"
-#include "../common/args.h"
+#include "tests_u.h"
 
 #define SKIP_RETURN_CODE 2
 
@@ -72,12 +72,16 @@ void TestVerifyTCBInfo(
 {
     std::vector<uint8_t> tcbInfo = FileToBytes("./data/tcbInfo.json");
     oe_parsed_tcb_info_t parsed_info = {0};
-    VerifyTCBInfoArgs args = {&tcbInfo[0],
-                              (uint32_t)tcbInfo.size(),
-                              platform_tcb_level,
-                              &parsed_info};
 
-    OE_TEST(oe_call_enclave(enclave, "TestVerifyTCBInfo", &args) == OE_OK);
+    oe_result_t ecall_result = OE_FAILURE;
+    OE_TEST(
+        test_verify_tcb_info(
+            enclave,
+            &ecall_result,
+            (const char*)&tcbInfo[0],
+            platform_tcb_level,
+            &parsed_info) == OE_OK);
+    OE_TEST(ecall_result == expected);
     AssertParsedValues(parsed_info);
     OE_TEST(
         oe_datetime_is_valid(&parsed_info.next_update) ==
@@ -87,11 +91,15 @@ void TestVerifyTCBInfo(
     tcbInfo = FileToBytes("./data/tcbInfo1.json");
     memset(&parsed_info, 0, sizeof(parsed_info));
     platform_tcb_level->status = OE_TCB_LEVEL_STATUS_UNKNOWN;
-    VerifyTCBInfoArgs args1 = {&tcbInfo[0],
-                               (uint32_t)tcbInfo.size(),
-                               platform_tcb_level,
-                               &parsed_info};
-    OE_TEST(oe_call_enclave(enclave, "TestVerifyTCBInfo", &args1) == OE_OK);
+
+    OE_TEST(
+        test_verify_tcb_info(
+            enclave,
+            &ecall_result,
+            (const char*)&tcbInfo[0],
+            platform_tcb_level,
+            &parsed_info) == OE_OK);
+    OE_TEST(ecall_result == expected);
     AssertParsedValues(parsed_info);
 
     oe_datetime_t nextUpdate = {2019, 6, 6, 10, 12, 17};
@@ -202,13 +210,15 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
         std::vector<uint8_t> tcbInfo = FileToBytes(negative_files[i]);
         oe_parsed_tcb_info_t parsed_info = {0};
         oe_tcb_level_t platform_tcb_level = {{0}};
-        VerifyTCBInfoArgs args = {&tcbInfo[0],
-                                  (uint32_t)tcbInfo.size(),
-                                  &platform_tcb_level,
-                                  &parsed_info};
+        oe_result_t ecall_result = OE_FAILURE;
         OE_TEST(
-            oe_call_enclave(enclave, "TestVerifyTCBInfo", &args) == OE_OK &&
-            args.result == OE_TCB_INFO_PARSE_ERROR);
+            test_verify_tcb_info(
+                enclave,
+                &ecall_result,
+                (const char*)&tcbInfo[0],
+                &platform_tcb_level,
+                &parsed_info) == OE_OK);
+        OE_TEST(ecall_result == OE_TCB_INFO_PARSE_ERROR);
         printf(
             "TestVerifyTCBInfo: Negative Test %s passed\n", negative_files[i]);
     }

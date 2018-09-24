@@ -1,0 +1,43 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+        // string attribute must be used only with in or in-out attributes.
+        public void  ecall_string_fun1([string, in] char* s);
+        public void  ecall_string_fun2([string, in] const char* s);
+       
+        public void  ecall_string_fun3([string, in, out] char* s);
+
+        // Edger8r allows this even though const cannot be modified.
+        // public void  ecall_string_fun4([string, in, out] const char* s);
+
+        public void  ecall_string_fun5([user_check] char* s);
+        public void  ecall_string_fun6([user_check] const char* s);
+
+        // Multiple string parameters
+        public void ecall_string_fun7([string, in] char* s1, [string, in] char* s2);
+
+        public void test_string_edl_ocalls();
+    };
+
+    untrusted {
+        // string attribute must be used only with in or in-out attributes.
+        void  ocall_string_fun1([string, in] char* s);
+        void  ocall_string_fun2([string, in] const char* s);
+       
+        void  ocall_string_fun3([string, in, out] char* s);
+
+        // Edger8r allows this even though const cannot be modified.
+        // public void  ocall_string_fun4([string, in, out] const char* s);
+
+        // user_check for ocalls does not add much value since
+        // the pointer cannot be de-referenced on the host side.
+        void  ocall_string_fun5([user_check] char* s);
+        void  ocall_string_fun6([user_check] const char* s);
+
+        // Multiple string parameters
+        void ocall_string_fun7([string, in] char* s1, [string, in] char* s2);
+    };
+};
+

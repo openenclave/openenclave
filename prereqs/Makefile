@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 ifdef USE_LIBSGX
-	DIRS = sgx-driver ngsa
+	DIRS = sgx-driver dcap
 else
 	DIRS = packages isgx aesm
 endif

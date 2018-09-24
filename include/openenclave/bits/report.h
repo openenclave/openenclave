@@ -67,8 +67,8 @@ OE_EXTERNC_BEGIN
  */
 
 /**
- * oe_identity_t represents the identity of an enclave.
- * The oe_identity_t structure is expected to change in future.
+ * Structure to represent the identity of an enclave.
+ * This structure is expected to change in future.
  * Newer fields are always added at the end and fields are never removed.
  * Before accessing a field, the enclave must first check that the field is
  * valid using the id_version and the table below:
@@ -107,7 +107,7 @@ typedef struct _oe_identity
 /**< typedef struct _oe_identity oe_identity_t*/
 
 /**
- * oe_report_t structure holds the parsed form of a report.
+ * Structure to hold the parsed form of a report.
  */
 typedef struct _oe_report
 {
