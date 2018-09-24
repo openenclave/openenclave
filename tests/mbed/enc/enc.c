@@ -8,6 +8,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/hostalloc.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/syscall.h>
 #include <signal.h>
@@ -20,19 +21,9 @@
 #include <sys/uio.h>
 #include <unistd.h>
 #include "../host/args.h"
+#include "../syscall_args.h"
 
 int main(int argc, const char* argv[]);
-
-typedef struct _SyscallArgs
-{
-    char* path;
-    int flags;
-    int mode;
-    int fd;
-    void* ptr;
-    int ret;
-    int len;
-} SyscallArgs;
 
 void _exit(int status)
 {
@@ -52,10 +43,10 @@ void exit(int status)
     abort();
 }
 
-char* oe_host_stack_strdup(const char* str)
+char* oe_host_strdup(const char* str)
 {
     size_t n = oe_strlen(str);
-    char* dup = (char*)oe_host_malloc(n + 1);
+    char* dup = (char*)oe_host_alloc_for_call_host(n + 1);
 
     if (dup)
         oe_memcpy(dup, str, n + 1);
@@ -88,14 +79,13 @@ static oe_result_t _syscall_hook(
             const int flags = (const int)arg2;
             if (flags == O_RDONLY)
             {
-                SyscallArgs* args;
-                args = (SyscallArgs*)oe_host_malloc(sizeof(SyscallArgs));
-                args->path = oe_host_stack_strdup((const char*)arg1);
+                syscall_args_t* args;
+                args = (syscall_args_t*)oe_host_malloc(sizeof(syscall_args_t));
+                args->path = oe_host_strdup((const char*)arg1);
                 args->flags = (int)arg2;
                 args->mode = (int)arg3;
                 oe_call_host("mbed_test_open", args);
                 *ret = args->fd;
-                oe_host_free(args->path);
                 oe_host_free(args);
                 OE_RAISE(OE_OK);
             }
@@ -103,8 +93,8 @@ static oe_result_t _syscall_hook(
         }
         case SYS_readv:
         {
-            SyscallArgs* args;
-            args = (SyscallArgs*)oe_host_malloc(sizeof(SyscallArgs));
+            syscall_args_t* args;
+            args = (syscall_args_t*)oe_host_malloc(sizeof(syscall_args_t));
             struct iovec* iov = (struct iovec*)arg2;
             int i;
             struct iovec* iov_host =
@@ -134,8 +124,8 @@ static oe_result_t _syscall_hook(
         }
         case SYS_close:
         {
-            SyscallArgs* args;
-            args = (SyscallArgs*)oe_host_malloc(sizeof(SyscallArgs));
+            syscall_args_t* args;
+            args = (syscall_args_t*)oe_host_malloc(sizeof(syscall_args_t));
             args->fd = (int)arg1;
             oe_call_host("mbed_test_close", args);
             *ret = args->ret;
