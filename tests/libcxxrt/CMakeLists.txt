@@ -11,7 +11,9 @@ if(UNIX)
 	file(COPY ${PROJECT_SOURCE_DIR}/3rdparty/libcxxrt/libcxxrt/test/run_test.sh DESTINATION ${PROJECT_BINARY_DIR}/tests/libcxxrt/)
 	add_subdirectory(enc)
 
-	# read tests.supported, sanitize the cpp-file, and create the test-case
+	# Build each test in tests.supported into a normal-mode executable that is linked against 
+	# the default system libraries, then run the executable to produce the expected output log
+	# for that test. The log from the equivalent enclave test binary will be compared against it.
 	file(STRINGS "tests.supported" alltests)
 	foreach(testcase ${alltests})
 		get_testcase_name(${testcase} name "")
@@ -26,12 +28,11 @@ if(UNIX)
 				-Wno-error
 			)
 			
-			target_link_libraries(${name} gcc_s dl c)
-	# Generating expected output with system-test
+			# Generating expected output with system-test
 			add_custom_target(test-expected-${name}-output ALL
 					COMMAND ${name} > ${PROJECT_BINARY_DIR}/tests/libcxxrt/exp_${name}_output.log 2>&1
 					DEPENDS ${name})
-	# Running Enclave test & comparing with normal test
+			# Running Enclave test & comparing with normal test
 			add_test(tests/libcxxrt/${name} run_test.sh "./host/libcxxrt_host ./enc/libcxxrttest-${name}_enc" exp_${name}_output.log ${name}_output.log)
 		endif()
 	endforeach(testcase)
