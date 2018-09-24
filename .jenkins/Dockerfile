@@ -75,6 +75,7 @@ RUN \
   make \
   ocaml-native-compilers \
   openssl \
+  shellcheck \
   subversion \
   sudo \
   && rm -rf /var/lib/apt/lists/*
