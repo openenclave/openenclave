@@ -82,10 +82,10 @@ RUN \
 # Install packages not available in repositories.
 ARG webserver=10.31.100.105
 RUN \
-  # Install CMake 3.11 so that skipped tests are not marked as failures.
-  wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz \
-  && tar xf cmake-3.11.4-Linux-x86_64.tar.gz \
-  && rm cmake-3.11.4-Linux-x86_64.tar.gz \
+  # Install CMake 3.12 so that skipped tests are not marked as failures.
+  wget https://cmake.org/files/v3.12/cmake-3.12.2-Linux-x86_64.tar.gz \
+  && tar xf cmake-3.12.2-Linux-x86_64.tar.gz \
+  && rm cmake-3.12.2-Linux-x86_64.tar.gz \
   # Install the Intel DCAP dependencies.
   && wget https://download.01.org/intel-sgx/dcap-1.0/SGX_installers/ubuntu16.04/libsgx-enclave-common_2.3.100.46354-1_amd64.deb \
   && dpkg -i libsgx-enclave-common_2.3.100.46354-1_amd64.deb \
@@ -108,7 +108,7 @@ RUN \
   && dpkg -i azquotprov_0.3-1_amd64.deb \
   && rm      azquotprov_0.3-1_amd64.deb
 
-ENV PATH="/cmake-3.11.4-Linux-x86_64/bin:${PATH}"
+ENV PATH="/cmake-3.12.2-Linux-x86_64/bin:${PATH}"
 
 # Configure Git in target image to enable merge/rebase actions.
 RUN git config --global user.email "oeciteam@microsoft.com"
