@@ -43,18 +43,19 @@
 FROM ubuntu:16.04
 
 RUN \
-  apt-get update && apt-get install -y wget \
+  apt-get update && apt-get install --no-install-recommends -y wget ca-certificates \
   # Install the LLVM 7 toolchain repo.
   && echo "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" >> /etc/apt/sources.list \
   && echo "deb-src http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" >> /etc/apt/sources.list \
   && wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
   && apt-get update \
   # Install Clang 7 to build with Spectre mitigation.
-  && apt-get install -y clang-7 lldb-7 lld-7 \
+  && apt-get install --no-install-recommends -y clang-7 lldb-7 lld-7 \
   # Install all the packages specified in install-prereqs except CMake.
-  && apt-get install -y \
+  && apt-get install --no-install-recommends -y \
   # Please keep these sorted alphabetically.
   autoconf \
+  automake \
   clang-format \
   dh-exec \
   doxygen \
