@@ -45,8 +45,8 @@ FROM ubuntu:16.04
 RUN \
   apt-get update && apt-get install --no-install-recommends -y wget ca-certificates \
   # Install the LLVM 7 toolchain repo.
-  && echo "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" >> /etc/apt/sources.list \
-  && echo "deb-src http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" >> /etc/apt/sources.list \
+  && echo "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" >> /etc/apt/sources.list.d/llvm-toolchain-xenial-7.list \
+  && echo "deb-src http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" >> /etc/apt/sources.list.d/llvm-toolchain-xenial-7.list \
   && wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
   && apt-get update \
   # Install Clang 7 to build with Spectre mitigation.
