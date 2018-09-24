@@ -58,13 +58,13 @@ OE_INLINE int _to_errno(oe_result_t result)
 **==============================================================================
 */
 
-OE_STATIC_ASSERT(sizeof(struct __pthread) <= sizeof(((TD*)NULL)->pthread));
+OE_STATIC_ASSERT(sizeof(struct __pthread) <= sizeof(((td_t*)NULL)->pthread));
 OE_STATIC_ASSERT(sizeof(pthread_mutex_t) >= sizeof(oe_mutex_t));
 OE_STATIC_ASSERT(sizeof(pthread_cond_t) >= sizeof(oe_cond_t));
 
 static void _pthread_self_init()
 {
-    TD* td = oe_get_td();
+    td_t* td = oe_get_td();
 
     if (td)
     {
@@ -77,7 +77,7 @@ static void _pthread_self_init()
 pthread_t __pthread_self()
 {
     static oe_once_t _once = OE_ONCE_INITIALIZER;
-    TD* td;
+    td_t* td;
 
     if (oe_once(&_once, _pthread_self_init) != 0)
         return NULL;

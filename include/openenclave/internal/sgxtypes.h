@@ -540,7 +540,7 @@ oe_thread_data_t* oe_get_thread_data(void);
 /*
 **==============================================================================
 **
-** TD
+** td_t
 **
 **     Extended thread data
 **
@@ -552,7 +552,7 @@ oe_thread_data_t* oe_get_thread_data(void);
 typedef struct _callsite Callsite;
 
 OE_PACK_BEGIN
-typedef struct _TD
+typedef struct _td
 {
     oe_thread_data_t base;
 
@@ -591,13 +591,13 @@ typedef struct _TD
 
     /* Reserved */
     uint8_t reserved[3324];
-} TD;
+} td_t;
 OE_PACK_END
 
-OE_CHECK_SIZE(sizeof(TD), 4096);
+OE_CHECK_SIZE(sizeof(td_t), 4096);
 
 /* Get the thread data object for the current thread */
-TD* oe_get_td(void);
+td_t* oe_get_td(void);
 
 /*
 **==============================================================================

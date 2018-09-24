@@ -38,6 +38,13 @@ fi || printandexit
 
 TEST_MAKE_DIR="$INSTALL_DIR/share/openenclave/samples"
 
+# Set the PKG_CONFIG_PATH environment variable so that the samples will use
+# the OE pkg-config scripts located in the build directory.
+export PKG_CONFIG_PATH="$BIN_DIR/pkgconfig"
+
+# Put OE_BINDIR on the path first:
+export PATH="${OE_BINDIR}:${PATH}"
+
 # build and run the make samples
 # The only exception is to not run them in simulation mode on SGX1-FLC platforms
 if [ $OE_SIMULATION ] && [ $USE_LIBSGX ]; then

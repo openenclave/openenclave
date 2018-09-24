@@ -40,6 +40,16 @@ ExternalProject_Add(oelibc_includes
         COMMAND ${CMAKE_COMMAND} -E copy 
             ${PATCHES_DIR}/endian.h
             ${OE_INCDIR}/openenclave/libc/endian.h
+
+        # Append deprecations.h to all C header files.
+        COMMAND ${CMAKE_CURRENT_LIST_DIR}/append-deprecations
+            ${OE_INCDIR}/openenclave/libc
+
+        # Copy local deprecations.h to include/bits/deprecated.h.
+        COMMAND ${CMAKE_COMMAND} -E copy
+            ${CMAKE_CURRENT_LIST_DIR}/deprecations.h
+            ${OE_INCDIR}/openenclave/libc/bits/deprecations.h
+
     BUILD_BYPRODUCTS 
         ${OE_INCDIR}/openenclave/libc ${CMAKE_CURRENT_BINARY_DIR}/musl
     INSTALL_COMMAND "")

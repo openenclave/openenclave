@@ -51,7 +51,7 @@ static oe_result_t _sgx_load_enclave_properties(
     oe_sgx_enclave_properties_t* properties)
 {
     oe_result_t result = OE_UNEXPECTED;
-    Elf64 elf = ELF64_INIT;
+    elf64_t elf = ELF64_INIT;
 
     if (properties)
         memset(properties, 0, sizeof(oe_sgx_enclave_properties_t));
@@ -61,7 +61,7 @@ static oe_result_t _sgx_load_enclave_properties(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Load the ELF image */
-    if (Elf64_Load(path, &elf) != 0)
+    if (elf64_load(path, &elf) != 0)
         OE_RAISE(OE_FAILURE);
 
     /* Load the SGX enclave properties */
@@ -75,7 +75,7 @@ static oe_result_t _sgx_load_enclave_properties(
 done:
 
     if (elf.magic == ELF_MAGIC)
-        Elf64_Unload(&elf);
+        elf64_unload(&elf);
 
     return result;
 }

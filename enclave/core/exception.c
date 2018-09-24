@@ -169,9 +169,9 @@ typedef struct _ssa_info
 **
 **==============================================================================
 */
-static int _get_enclave_thread_first_ssa_info(TD* td, SSA_Info* ssa_info)
+static int _get_enclave_thread_first_ssa_info(td_t* td, SSA_Info* ssa_info)
 {
-    sgx_tcs_t* tcs = (sgx_tcs_t*)TD_ToTCS(td);
+    sgx_tcs_t* tcs = (sgx_tcs_t*)td_to_tcs(td);
     uint64_t ssa_frame_size = td->base.__ssa_frame_size;
     if (ssa_frame_size == 0)
     {
@@ -245,7 +245,7 @@ int _emulate_illegal_instruction(sgx_ssa_gpr_t* ssa_gpr)
 */
 void _oe_exception_dispatcher(oe_context_t* oe_context)
 {
-    TD* td = oe_get_td();
+    td_t* td = oe_get_td();
 
     // Change the rip of oe_context to the real exception address.
     oe_context->rip = td->base.exception_address;
@@ -303,7 +303,8 @@ void _oe_exception_dispatcher(oe_context_t* oe_context)
 /*
 **==============================================================================
 **
-** _oe_virtual_exception_dispatcher(TD* td, uint64_t arg_in, uint64_t* arg_out)
+** _oe_virtual_exception_dispatcher(td_t* td, uint64_t arg_in, uint64_t*
+*arg_out)
 **
 **  The virtual (first pass) exception dispatcher. It checks whether or not
 **  there is an exception in current enclave thread, and save minimal exception
@@ -312,7 +313,7 @@ void _oe_exception_dispatcher(oe_context_t* oe_context)
 **==============================================================================
 */
 void _oe_virtual_exception_dispatcher(
-    TD* td,
+    td_t* td,
     uint64_t arg_in,
     uint64_t* arg_out)
 {

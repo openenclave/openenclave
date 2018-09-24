@@ -57,23 +57,23 @@ struct _callsite
 /*
 **==============================================================================
 **
-** TD methods:
+** td_t methods:
 **
 **==============================================================================
 */
 
-void TD_PushCallsite(TD* td, Callsite* ec);
+void td_push_callsite(td_t* td, Callsite* ec);
 
-void TD_PopCallsite(TD* td);
+void td_pop_callsite(td_t* td);
 
-TD* TD_FromTCS(void* tcs);
+td_t* td_from_tcs(void* tcs);
 
-void* TD_ToTCS(const TD* td);
+void* td_to_tcs(const td_t* td);
 
-void TD_Init(TD* td);
+void td_init(td_t* td);
 
-void TD_Clear(TD* td);
+void td_clear(td_t* td);
 
-bool TD_Initialized(TD* td);
+bool td_initialized(td_t* td);
 
 #endif /* _TD_H */
