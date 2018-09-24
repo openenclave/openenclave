@@ -75,6 +75,7 @@ RUN \
   make \
   ocaml-native-compilers \
   openssl \
+  pkg-config \
   shellcheck \
   subversion \
   sudo \
