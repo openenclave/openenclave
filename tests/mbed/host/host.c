@@ -14,6 +14,9 @@ typedef struct _Args
 {
     char* test;
     int ret;
+    int passed;
+    int skipped;
+    int total;
 } Args;
 
 char* find_data_file(char* str)
@@ -72,6 +75,12 @@ void Test(oe_enclave_t* enclave, int selftest, char* data_file_name)
 
     oe_result_t result = oe_call_enclave(enclave, "Test", &args);
     OE_TEST(result == OE_OK);
+
+    if (args.total == args.skipped)
+        printf("FAILED: all tests are skipped \n");
+
+    if (args.total == 0)
+        printf("FAILED: no tests running \n");
 
     if (args.ret == 0)
     {

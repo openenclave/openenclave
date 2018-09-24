@@ -10,4 +10,5 @@ ecjpake
 gcm.camellia
 memory_buffer_alloc
 xtea
-
+pkwrite
+x509write

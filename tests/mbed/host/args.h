@@ -8,6 +8,9 @@ typedef struct _Args
 {
     const char* test;
     int ret;
+    int passed;
+    int skipped;
+    int total;
 } Args;
 
 #endif /* _RUNTEST_ARGS_H */

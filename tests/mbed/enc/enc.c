@@ -20,9 +20,18 @@
 #include <sys/uio.h>
 #include <unistd.h>
 #include "../host/args.h"
-
+#define STRMAXLEN 500
 int main(int argc, const char* argv[]);
 int checkerflag = 0;
+typedef struct test_result
+{
+    int passed;
+    int skipped;
+    int total;
+} test_result_t;
+
+test_result_t test_result;
+
 typedef struct _SyscallArgs
 {
     char* path;
@@ -62,40 +71,20 @@ char* oe_host_stack_strdup(const char* str)
 
     return dup;
 }
-void catenate(char* full_str, char* part_str, int len)
+void test_checker(char* str)
 {
-    strncat(full_str, part_str, len);
-}
-void test_checker(char* st)
-{
-    char str[300];
-    strcpy(str, st);
-    char* checker = "\n--------------------------------------------------------"
-                    "--------------------\n\n";
     int i;
-    int total_tests, skipped_tests;
     char* token[6];
-    if (checkerflag == 1)
+    if ((strncmp(str, "PASSED", 6) == 0) && (strlen(str) >= 32))
     {
         token[0] = strtok(str, " ");
-        if (!(strcmp(token[0], "PASSED")))
+        for (i = 1; i < 6; i++)
         {
-            for (i = 1; i < 6; i++)
-            {
-                token[i] = strtok(NULL, " ");
-            }
-            total_tests = atoi(token[3]);
-            skipped_tests = atoi((token[5] + 1));
-
-            if ((total_tests == 0) || (total_tests == skipped_tests))
-            {
-                abort();
-            }
+            token[i] = strtok(NULL, " ");
         }
-    }
-    if (strcmp(str, checker) == 0)
-    {
-        checkerflag = 1;
+        test_result.total = atoi(token[3]);
+        test_result.skipped = atoi((token[5] + 1));
+        test_result.passed = atoi((token[1] + 1));
     }
 }
 
@@ -181,15 +170,18 @@ static oe_result_t _syscall_hook(
         }
         case SYS_writev:
         {
-            char str_full[1000] = {0};
+            char* str_full = malloc(STRMAXLEN);
+            memset(str_full, 0, STRMAXLEN);
             int i;
             const struct iovec* iov = (const struct iovec*)arg2;
             unsigned long iovcnt = (unsigned long)arg3;
             for (i = 0; i < iovcnt; i++)
             {
-                catenate(str_full, iov[i].iov_base, iov[i].iov_len);
+                strncat(str_full, iov[i].iov_base, iov[i].iov_len);
             }
             test_checker(str_full);
+            free(str_full);
+            OE_RAISE(OE_UNSUPPORTED);
             break;
         }
     }
@@ -231,6 +223,9 @@ OE_ECALL void Test(Args* args)
             static int argc = sizeof(argv) / sizeof(argv[0]);
             argv[2] = args->test;
             args->ret = main(argc, argv);
+            args->passed = test_result.passed;
+            args->skipped = test_result.skipped;
+            args->total = test_result.total;
         }
         args->test = oe_host_strndup(__TEST__, OE_SIZE_MAX);
     }
