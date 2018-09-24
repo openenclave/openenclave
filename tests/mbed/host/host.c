@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include "mbed_u.h"
 
 typedef struct _args
 {
@@ -66,26 +67,27 @@ void datafileloc(char* data_file_name, char* path)
 void Test(oe_enclave_t* enclave, int selftest, char* data_file_name)
 {
     char path[1024];
-    Args args;
-    args.ret = 1;
-    args.test = NULL;
+    int return_value = 1;
+    char* in_testname = NULL;
+    char* out_testname = NULL;
 
     if (!selftest)
     {
         datafileloc(data_file_name, path);
-        args.test = path;
+        in_testname = path;
     }
 
-    oe_result_t result = oe_call_enclave(enclave, "Test", &args);
+    oe_result_t result =
+        test(enclave, &return_value, in_testname, &out_testname);
     OE_TEST(result == OE_OK);
 
-    if (args.ret == 0)
+    if (return_value == 0)
     {
-        printf("PASSED: %s\n", args.test);
+        printf("PASSED: %s\n", out_testname);
     }
     else
     {
-        printf("FAILED: %s (ret=%d)\n", args.test, args.ret);
+        printf("FAILED: %s (ret=%d)\n", out_testname, return_value);
         abort();
     }
 }
