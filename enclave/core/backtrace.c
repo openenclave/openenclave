@@ -46,8 +46,21 @@ int oe_backtrace(void** buffer, int size)
         : /* no clobbers */
         );
 
-    // For each frame, frame[1] ie 8(rbp) contains the return-address.
-    // Note: This is just a very-good guess.
+    // Upon entry to a function, rsp + 0 contains the return address.
+    // Generally, the first thing that a function does upong entry is
+    //     push %rbp
+    // rbp is expected to contain the callee's frame pointer.
+    // Thus after saving rbp,
+    //     rsp + 0  (frame[0]) contains callee's frame pointer.
+    //     rsp + 8  (frame[1]) contains return address (within the callee).
+    //
+    // However, the compiler may not always store the callee's frame-ptr in the
+    // rbp register. Within optimizations enabled, the compiler could use rbp
+    // just like other general-purpose register and hold some value rather than
+    // the frame-pointer. While frame[1] always contains the return address,
+    // frame[0] may not always contain the pointer to callee's stack frame.
+    // To be on the safer-side, we always check that the values we access
+    // while traversing the stack always lie within the enclave.
     int n = 0;
     while (n < size)
     {
