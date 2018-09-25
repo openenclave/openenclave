@@ -368,6 +368,7 @@ static oe_result_t _init_sigstruct(
             oe_sha256_context_t context;
             unsigned char signature[OE_KEY_SIZE];
             unsigned int signature_size;
+            size_t i;
 
             oe_sha256_init(&context);
             oe_sha256_update(&context, buf, n);
@@ -389,6 +390,10 @@ static oe_result_t _init_sigstruct(
 
             /* The signature is backwards and needs to be reversed */
             _mem_reverse(sigstruct->signature, signature, sizeof(signature));
+
+			for (i = 0; i < sizeof(signature); i++)
+                printf("%d ", signature[i]);
+            printf("\n");
         }
     }
 
