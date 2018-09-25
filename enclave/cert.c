@@ -231,8 +231,8 @@ static mbedtls_x509_crt* _find_root_cert(mbedtls_x509_crt* chain)
 
 /* Return true if the CRL list contains a CRL for this CA. */
 static mbedtls_x509_crl* _crl_list_find_issuer_for_cert(
-    mbedtls_x509_crl *crl_list,
-    mbedtls_x509_crt *crt)
+    mbedtls_x509_crl* crl_list,
+    mbedtls_x509_crt* crt)
 {
     for (mbedtls_x509_crl* p = crl_list; p; p = p->next)
     {
