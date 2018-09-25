@@ -218,18 +218,24 @@ oe_result_t oe_enforce_revocation(
                 revocation_args.crl_issuer_chain_size[i]));
     }
 
-    // Verify leaf and intermediate certs againt the CRL.
+    // Verify the leaf cert.
+    // oe_cert_verify incorporates openssl -crl_check_all semantics.
+    // For successful verification:
+    //    1. The certificate chain must be valid. Each cert must
+    //       have its issuer CA in the chain.
+    //    2. Each issuer CA (ie all certs other than the leaf cert)
+    //       must also have a matching CRL issued by the issuer CA.
+    //    3. The certificate chain must pass signature verification.
+    //    4. No certificate in the chain must be revoked.
+    // Note: An issuer CA can revoke only the certs that it has issued.
+    // this follows that the certificate chain and CRL issuer chains must
+    // be the same. We pass the crl_issuer_chain here to assert that
+    // constraint. If the crl_issuer_chain was different from the certificate
+    // chain, then verification would fail because the CRLs will not be found
+    // for certificates in the chain.
     OE_CHECK(
         oe_cert_verify(
             leaf_cert, &crl_issuer_chain[0], crl_ptrs, 2, &cert_verify_error));
-
-    OE_CHECK(
-        oe_cert_verify(
-            intermediate_cert,
-            &crl_issuer_chain[1],
-            crl_ptrs,
-            2,
-            &cert_verify_error));
 
     for (uint32_t i = 0; i < OE_COUNTOF(platform_tcb_level.sgx_tcb_comp_svn);
          ++i)
