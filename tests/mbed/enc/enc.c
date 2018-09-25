@@ -8,7 +8,6 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
-#include <openenclave/internal/hostalloc.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/syscall.h>
 #include <signal.h>
@@ -24,6 +23,7 @@
 #include "mbed_t.h"
 
 int main(int argc, const char* argv[]);
+struct mbed_args gmbed_args;
 
 void _exit(int status)
 {
@@ -52,6 +52,22 @@ char* oe_host_strdup(const char* str)
         oe_memcpy(dup, str, n + 1);
 
     return dup;
+}
+void test_checker(char* str)
+{
+    int i;
+    char* token[6];
+    if ((strncmp(str, "PASSED (", 8) == 0) && (strlen(str) >= 32))
+    {
+        token[0] = strtok(str, " ");
+        for (i = 1; i < 6; i++)
+        {
+            token[i] = strtok(NULL, " ");
+        }
+        gmbed_args.total = atoi(token[3]);
+        // Since the first character of subtoken is '('  avoiding it
+        gmbed_args.skipped = atoi((token[5] + 1));
+    }
 }
 
 static oe_result_t _syscall_hook(
@@ -123,6 +139,31 @@ static oe_result_t _syscall_hook(
             result = OE_OK;
             break;
         }
+        case SYS_writev:
+        {
+            char* str_full;
+            int total_buff_len = 0;
+            const struct iovec* iov = (const struct iovec*)arg2;
+            unsigned long iovcnt = (unsigned long)arg3;
+            // Calculating  buffer length
+            for (int i = 0; i < iovcnt; i++)
+            {
+                total_buff_len = total_buff_len + iov[i].iov_len;
+            }
+            // Considering string terminating character
+            total_buff_len += 1;
+            str_full = (char*)calloc(total_buff_len, sizeof(char));
+            for (int i = 0; i < iovcnt; i++)
+            {
+                strncat(str_full, iov[i].iov_base, iov[i].iov_len);
+            }
+            test_checker(str_full);
+            free(str_full);
+            // expecting the runtime implementation of SYS_writev to also be
+            // called.
+            result = OE_UNSUPPORTED;
+            break;
+        }
         case SYS_close:
         {
             syscall_args_t* args;
@@ -134,17 +175,17 @@ static oe_result_t _syscall_hook(
             result = OE_OK;
             break;
         }
-	default:
-	{
-	    OE_RAISE(OE_UNSUPPORTED);
-	}
+        default:
+        {
+            OE_RAISE(OE_UNSUPPORTED);
+        }
     }
 
 done:
     return result;
 }
 
-int test(const char* in_testname, char** out_testname)
+int test(const char* in_testname, char** out_testname, struct mbed_args* args)
 {
     int return_value = -1;
     printf("RUNNING: %s\n", __TEST__);
@@ -172,6 +213,8 @@ int test(const char* in_testname, char** out_testname)
         static int argc = sizeof(argv) / sizeof(argv[0]);
         argv[2] = in_testname;
         return_value = main(argc, argv);
+        args->skipped = gmbed_args.skipped;
+        args->total = gmbed_args.total;
     }
     *out_testname = oe_host_strndup(__TEST__, OE_SIZE_MAX);
 

@@ -35,11 +35,8 @@ pkcs1_v21
 pkcs5
 pk
 pkparse
-pkwrite
 shax
 ssl
 rsa
 version
-x509write
 x509parse
-

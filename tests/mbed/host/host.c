@@ -11,12 +11,6 @@
 #include <unistd.h>
 #include "mbed_u.h"
 
-typedef struct _args
-{
-    char* test;
-    int ret;
-} Args;
-
 char* find_data_file(char* str, size_t size)
 {
     char* tail = ".data";
@@ -70,7 +64,7 @@ void Test(oe_enclave_t* enclave, int selftest, char* data_file_name)
     int return_value = 1;
     char* in_testname = NULL;
     char* out_testname = NULL;
-
+    struct mbed_args args = {0};
     if (!selftest)
     {
         datafileloc(data_file_name, path);
@@ -78,8 +72,13 @@ void Test(oe_enclave_t* enclave, int selftest, char* data_file_name)
     }
 
     oe_result_t result =
-        test(enclave, &return_value, in_testname, &out_testname);
+        test(enclave, &return_value, in_testname, &out_testname, &args);
     OE_TEST(result == OE_OK);
+    if (!selftest)
+    {
+        OE_TEST(args.total > 0);
+        OE_TEST(args.total > args.skipped);
+    }
 
     if (return_value == 0)
     {
