@@ -49,15 +49,14 @@ extern "C" OE_NEVER_INLINE void func1(Args* args)
     func2(args);
 }
 
+/* Backtrace does not work in non-debug builds */
+#ifdef OE_USE_DEBUG_MALLOC
 static void _print_backtrace(
     void* const* buffer,
     int size,
     int num_expected_symbols,
     const char* expected_symbols[])
 {
-/* Backtrace does not work in release mode */
-#ifndef NDEBUG
-
     char** symbols = oe_backtrace_symbols(buffer, size);
     OE_TEST(symbols != NULL);
 
@@ -74,9 +73,8 @@ static void _print_backtrace(
     oe_host_printf("\n");
 
     oe_host_free(symbols);
-
-#endif
 }
+#endif
 
 OE_ECALL void Test(void* args_)
 {
@@ -87,12 +85,15 @@ OE_ECALL void Test(void* args_)
     Backtrace b;
     GetBacktrace(&b);
 
+/* Backtrace does not work in non-debug builds */
+#ifdef OE_USE_DEBUG_MALLOC
     OE_TEST(b.size > 0);
 
     char** syms = oe_backtrace_symbols(b.buffer, b.size);
     OE_TEST(syms != NULL);
 
     _print_backtrace(b.buffer, b.size, args->num_syms, args->syms);
+#endif
 
     args->okay = true;
 }
@@ -109,10 +110,13 @@ OE_ECALL void TestUnwind(void* args_)
     }
     catch (Backtrace& b)
     {
+/* backtrace does not work in non-debug builds */
+#ifdef OE_USE_DEBUG_MALLOC
         char** syms = oe_backtrace_symbols(b.buffer, b.size);
         OE_TEST(syms != NULL);
 
         _print_backtrace(b.buffer, b.size, args->num_syms, args->syms);
+#endif
         args->okay = true;
     }
 }
