@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 enclave {
-    include "includes.h"
+    include "includes.h"    
 
     trusted {
         // datetime tests.
@@ -15,6 +15,8 @@ enclave {
             [user_check] oe_tcb_level_t* platform_tcb_level,
             [user_check] oe_parsed_tcb_info_t* parsed_tcb_info
         );
+
+        public void test_minimum_issue_date(oe_datetime_t now);
     };
 
     untrusted {
