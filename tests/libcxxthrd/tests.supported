@@ -3,7 +3,6 @@
 ../../3rdparty/libcxx/libcxx/test/libcxx/thread/thread.mutex/thread_safety_requires_capability.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.condition/thread.condition.condvarany/default.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.condition/thread.condition.condvarany/notify_all.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/thread/thread.condition/thread.condition.condvarany/notify_one.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.condition/thread.condition.condvarany/wait.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.condition/thread.condition.condvarany/wait_pred.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.condition/thread.condition.condvar/notify_all.pass.cpp
