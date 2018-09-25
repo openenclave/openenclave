@@ -9,7 +9,7 @@
 ../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.promise/set_exception_at_thread_exit.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.promise/set_lvalue_at_thread_exit.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.promise/set_rvalue_at_thread_exit.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.promise/set_vdf87d4fca7d9abd19e102ec24801b7a8b154f0eaalue_at_thread_exit_const.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.promise/set_value_at_thread_exit_const.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.promise/set_value_at_thread_exit_void.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.shared_future/get.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.shared_future/wait_for.pass.cpp
@@ -18,7 +18,7 @@
 ../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.task/futures.task.members/dtor.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.task/futures.task.members/make_ready_at_thread_exit.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.task/futures.task.members/operator.pass.cpp
-../../3rdparty/libcxx/lidf87d4fca7d9abd19e102ec24801b7a8b154f0eabcxx/test/std/thread/futures/futures.unique_future/get.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.unique_future/get.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.unique_future/wait_for.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.unique_future/wait.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.unique_future/wait_until.pass.cpp

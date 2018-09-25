@@ -24,3 +24,7 @@ after pthread_create_hook
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.condition/thread.condition.condvar/notify_one.pass.cpp
 #no info - Test failed with timeout (possible hang)
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.search/awk.pass.cpp
+#intermittent CI failure with SGX1FLC
+../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.cons/mutex_try_to_lock.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/try_lock_shared.pass.cpp
+
