@@ -590,30 +590,13 @@ done:
 }
 
 /* Return true if the CRL list contains a CRL for this CA. */
-static bool _crl_contains_ca(
+static mbedtls_x509_crl* _crl_list_find_issuer(
     mbedtls_x509_crl *crl,
-    mbedtls_x509_crt *ca)
+    mbedtls_x509_crt *crt)
 {
     for (mbedtls_x509_crl* p = crl; p; p = p->next)
     {
-        if (p->version != 0)
-            continue;
-
-        if (_x509_buf_equal(&p->issuer_raw, &ca->subject_raw))
-            return true;
-    }
-
-    return false;
-}
-
-/* Find the issuing CA for this certficate */
-static mbedtls_x509_crt* _find_issuer_cert(
-    mbedtls_x509_crt* chain, 
-    mbedtls_x509_crt* crt)
-{
-    for (mbedtls_x509_crt* p = chain; p; p = p->next)
-    {
-        if (_x509_buf_equal(&crt->issuer_raw, &p->subject_raw))
+        if (_x509_buf_equal(&p->issuer_raw, &crt->subject_raw))
             return p;
     }
 
@@ -726,9 +709,20 @@ oe_result_t oe_cert_verify(
 
                 OE_RAISE(OE_VERIFY_FAILED);
             }
+
+            /* Verify that the CRL list has an issuer for this certificate. */
+            if (crl_list)
+            {
+                if (!_crl_list_find_issuer(crl_list, p))
+                {
+                    _set_err(error, "unable to get certificate CRL");
+                    OE_RAISE(OE_VERIFY_FAILED);
+                }
+            }
         }
     }
 
+#if 0
     /* Verify that the CRL contains a CA for this certificate */
     if (crl_list)
     {
@@ -753,9 +747,7 @@ oe_result_t oe_cert_verify(
         (void)_crl_contains_ca;
 #endif
     }
-
-    (void)_find_issuer_cert;
-    (void)_crl_contains_ca;
+#endif
 
     result = OE_OK;
 
@@ -771,7 +763,6 @@ done:
             p = next;
         }
     }
-
 
     printf("rrrrrrrrrrrrrrrrrrrrrrrrrrr=%u\n", result);
 
