@@ -10,7 +10,7 @@
 
 #include "../args.h"
 
-OE_OCALL void CreateEnclave(void* args_)
+OE_OCALL void CreateEnclaveHost(void* args_)
 {
     printf("==== Host: CreateEnclave\n");
     CreateEnclaveArgs* args = (CreateEnclaveArgs*)args_;
@@ -21,7 +21,7 @@ OE_OCALL void CreateEnclave(void* args_)
     args->ret = result;
 }
 
-OE_OCALL void CallEnclave(void* args_)
+OE_OCALL void CallEnclaveHost(void* args_)
 {
     printf("==== Host: CallEnclave\n");
     CallEnclaveArgs* args = (CallEnclaveArgs*)args_;
