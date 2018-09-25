@@ -10,6 +10,8 @@
 // When compiling for enclave, it routes the C library calls to enclavelibc
 // functions.
 
+#include <openenclave/bits/safecrt.h>
+
 #ifdef OE_BUILD_ENCLAVE
 
 #include <openenclave/enclave.h>
@@ -22,6 +24,7 @@
 
 #define memcpy oe_memcpy
 #define memcmp oe_memcmp
+#define memmove oe_memmove
 #define memset oe_memset
 
 #define strlen oe_strlen
