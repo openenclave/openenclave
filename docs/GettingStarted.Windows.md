@@ -1,4 +1,4 @@
-Getting Started on Windows [Experimental]
+Getting Started on Windows [Work in progress]
 =========================================
 
 Introduction
