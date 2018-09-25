@@ -23,7 +23,6 @@
 ../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.unique_future/wait.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.unique_future/wait_until.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.threads/thread.thread.class/thread.thread.member/detach.pass.cpp
-
 #Exception and test timeout -- no other info
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.condition/thread.condition.condvarany/wait_terminates.sh.cpp
 #clock_gettime() unsupported
