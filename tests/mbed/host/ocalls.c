@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/trace.h>
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
