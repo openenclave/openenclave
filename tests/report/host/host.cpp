@@ -54,6 +54,15 @@ int main(int argc, const char* argv[])
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
 
+    const uint32_t flags = oe_get_create_flags();
+    if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
+    {
+        printf(
+            "=== Skipped unsupported test in simulation mode "
+            "(report)\n");
+        return SKIP_RETURN_CODE;
+    }
+
     // Load and attest report without creating any enclaves.
     if (argc == 3 && strcmp(argv[2], "--attest-generated-report") == 0)
     {
@@ -66,15 +75,6 @@ int main(int argc, const char* argv[])
     {
         fprintf(stderr, "Usage: %s ENCLAVE\n", argv[0]);
         exit(1);
-    }
-
-    const uint32_t flags = oe_get_create_flags();
-    if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
-    {
-        printf(
-            "=== Skipped unsupported test in simulation mode "
-            "(report)\n");
-        return SKIP_RETURN_CODE;
     }
 
     /* Create the enclave */
