@@ -229,6 +229,20 @@ static mbedtls_x509_crt* _find_root_cert(mbedtls_x509_crt* chain)
     return p;
 }
 
+/* Return true if the CRL list contains a CRL for this CA. */
+static mbedtls_x509_crl* _crl_list_find_issuer_for_cert(
+    mbedtls_x509_crl *crl_list,
+    mbedtls_x509_crt *crt)
+{
+    for (mbedtls_x509_crl* p = crl_list; p; p = p->next)
+    {
+        if (_x509_buf_equal(&p->issuer_raw, &crt->subject_raw))
+            return p;
+    }
+
+    return NULL;
+}
+
 /* Verify each certificate in the chain against its predecessors. */
 static oe_result_t _verify_whole_chain(mbedtls_x509_crt* chain)
 {
@@ -589,20 +603,6 @@ done:
     return result;
 }
 
-/* Return true if the CRL list contains a CRL for this CA. */
-static mbedtls_x509_crl* _crl_list_find_issuer(
-    mbedtls_x509_crl *crl,
-    mbedtls_x509_crt *crt)
-{
-    for (mbedtls_x509_crl* p = crl; p; p = p->next)
-    {
-        if (_x509_buf_equal(&p->issuer_raw, &crt->subject_raw))
-            return p;
-    }
-
-    return NULL;
-}
-
 oe_result_t oe_cert_verify(
     oe_cert_t* cert,
     oe_cert_chain_t* chain,
@@ -686,68 +686,38 @@ oe_result_t oe_cert_verify(
         OE_RAISE(OE_VERIFY_FAILED);
     }
 
-    /* Verify every certificate in the certificate chain */
+    /* Verify every certificate in the certificate chain. */
+    for (mbedtls_x509_crt* p = &chain_impl->referent->crt; p; p = p->next)
     {
-        mbedtls_x509_crt* chain_crt = &chain_impl->referent->crt;
-
-        for (mbedtls_x509_crt* p = chain_crt; p; p = p->next)
+        /* Verify the current certificate in the chain. */
+        if (mbedtls_x509_crt_verify(
+                p,
+                &chain_impl->referent->crt,
+                crl_list,
+                NULL,
+                &flags,
+                NULL,
+                NULL) != 0)
         {
-            if (mbedtls_x509_crt_verify(
-                    p,
-                    &chain_impl->referent->crt,
-                    crl_list,
-                    NULL,
-                    &flags,
-                    NULL,
-                    NULL) != 0)
+            if (error)
             {
-                if (error)
-                {
-                    mbedtls_x509_crt_verify_info(
-                        error->buf, sizeof(error->buf), "", flags);
-                }
+                mbedtls_x509_crt_verify_info(
+                    error->buf, sizeof(error->buf), "", flags);
+            }
 
+            OE_RAISE(OE_VERIFY_FAILED);
+        }
+
+        /* Verify that the CRL list has an issuer for this certificate. */
+        if (crl_list)
+        {
+            if (!_crl_list_find_issuer_for_cert(crl_list, p))
+            {
+                _set_err(error, "unable to get certificate CRL");
                 OE_RAISE(OE_VERIFY_FAILED);
             }
-
-            /* Verify that the CRL list has an issuer for this certificate. */
-            if (crl_list)
-            {
-                if (!_crl_list_find_issuer(crl_list, p))
-                {
-                    _set_err(error, "unable to get certificate CRL");
-                    OE_RAISE(OE_VERIFY_FAILED);
-                }
-            }
         }
     }
-
-#if 0
-    /* Verify that the CRL contains a CA for this certificate */
-    if (crl_list)
-    {
-        mbedtls_x509_crt* ca = _find_issuer_cert(
-            &chain_impl->referent->crt,
-            cert_impl->cert);
-
-        if (!ca)
-        {
-            _set_err(error, "chain does not contain a CA for this certificate");
-            OE_RAISE(OE_FAILURE);
-        }
-
-#if 0
-        //if (!_crl_contains_ca(crl_list, ca))
-        if (!_crl_contains_ca(crl_list, cert_impl->cert))
-        {
-            _set_err(error, "CRL does not contain CA for this certificate");
-            OE_RAISE(OE_FAILURE);
-        }
-#else
-        (void)_crl_contains_ca;
-#endif
-    }
-#endif
 
     result = OE_OK;
 
@@ -763,11 +733,6 @@ done:
             p = next;
         }
     }
-
-    printf("rrrrrrrrrrrrrrrrrrrrrrrrrrr=%u\n", result);
-
-    if (result != OE_OK)
-        printf("mmmmmmmmmmmmmmmmmmmmmmmmmmm=%s\n", error->buf);
 
     return result;
 }
