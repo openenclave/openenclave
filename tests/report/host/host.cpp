@@ -7,6 +7,7 @@
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/tests.h>
 #include <openenclave/internal/utils.h>
+#include <vector>
 #include "../../../common/tcbinfo.h"
 #include "../../../host/quote.h"
 #include "../common/tests.cpp"
@@ -15,12 +16,50 @@
 #define SKIP_RETURN_CODE 2
 
 extern void TestVerifyTCBInfo(oe_enclave_t* enclave);
+extern std::vector<uint8_t> FileToBytes(const char* path);
+
+void generate_and_save_report(oe_enclave_t* enclave)
+{
+#ifdef OE_USE_LIBSGX
+    static uint8_t report[OE_MAX_REPORT_SIZE];
+    size_t report_size = sizeof(report);
+    OE_TEST(
+        oe_get_report(
+            enclave,
+            OE_REPORT_FLAGS_REMOTE_ATTESTATION,
+            NULL,
+            0,
+            report,
+            &report_size) == OE_OK);
+
+    FILE* file = fopen("./data/generated_report.bytes", "wb");
+    fwrite(report, 1, report_size, file);
+    fclose(file);
+#endif
+}
+
+void load_and_verify_report()
+{
+#ifdef OE_USE_LIBSGX
+    auto report = FileToBytes("./data/generated_report.bytes");
+    OE_TEST(
+        oe_verify_report(NULL, &report[0], report.size() - 1, NULL) == OE_OK);
+    printf("Attested report without creating an enclave\n");
+#endif
+}
 
 int main(int argc, const char* argv[])
 {
     sgx_target_info_t target_info;
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
+
+    // Load and attest report without creating any enclaves.
+    if (argc == 3 && strcmp(argv[2], "--attest-generated-report") == 0)
+    {
+        load_and_verify_report();
+        return 0;
+    }
 
     /* Check arguments */
     if (argc != 2)
@@ -92,6 +131,8 @@ int main(int argc, const char* argv[])
         OE_OK);
 
     TestVerifyTCBInfo(enclave);
+
+    generate_and_save_report(enclave);
 #endif
 
     /* Terminate the enclave */

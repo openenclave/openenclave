@@ -9,6 +9,10 @@
 #include "../common/quote.h"
 #include "quote.h"
 
+#if defined(OE_USE_LIBSGX)
+#include "sgxquoteprovider.h"
+#endif
+
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
 
 static oe_result_t _oe_get_local_report(
@@ -150,6 +154,13 @@ oe_result_t oe_get_report(
     oe_result_t result = OE_FAILURE;
     oe_report_header_t* header = (oe_report_header_t*)report_buffer;
 
+#if defined(OE_USE_LIBSGX)
+    // The two host side attestation API's are oe_get_report and
+    // oe_verify_report.
+    // Initialize quote provider in both these APIs.
+    oe_initialize_quote_provider();
+#endif
+
     // Reserve space in the buffer for header.
     if (report_buffer && report_buffer_size)
     {
@@ -217,6 +228,13 @@ oe_result_t oe_verify_report(
     oe_report_t oe_report = {0};
     oe_verify_report_args_t arg = {0};
     oe_report_header_t* header = (oe_report_header_t*)report;
+
+#if defined(OE_USE_LIBSGX)
+    // The two host side attestation API's are oe_get_report and
+    // oe_verify_report.
+    // Initialize quote provider in both these APIs.
+    oe_initialize_quote_provider();
+#endif
 
     if (report == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
