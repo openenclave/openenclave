@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <assert.h>
 #include <fcntl.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/trace.h>
-#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -51,9 +51,9 @@ OE_OCALL void mbed_test_check_results(void* test_results)
     int ret;
     test_result_t* args = (test_result_t*)test_results;
 
-    if(args->total == 0)
-	assert ( "args->total" == NULL);
+    if (args->total == 0)
+        assert("total_tests" == NULL);
     else if (args->total == args->skipped)
-	assert ("args->total" == "args->skipped");
+        assert("total_tests" == "total_skipped");
     return;
 }

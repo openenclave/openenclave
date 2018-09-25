@@ -14,10 +14,8 @@ typedef struct _syscall_args
 
 typedef struct test_result
 {
-    int passed;
     int skipped;
     int total;
 } test_result_t;
 
 test_result_t test_result;
-

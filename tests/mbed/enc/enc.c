@@ -23,10 +23,7 @@
 #include "../syscall_args.h"
 #include "mbed_t.h"
 
-#define STRMAXLEN 500
-
 int main(int argc, const char* argv[]);
-int checkerflag = 0;
 
 void _exit(int status)
 {
@@ -60,7 +57,7 @@ void test_checker(char* str)
 {
     int i;
     char* token[6];
-    if ((strncmp(str, "PASSED", 6) == 0) && (strlen(str) >= 32))
+    if ((strncmp(str, "PASSED (", 8) == 0) && (strlen(str) >= 32))
     {
         token[0] = strtok(str, " ");
         for (i = 1; i < 6; i++)
@@ -68,8 +65,8 @@ void test_checker(char* str)
             token[i] = strtok(NULL, " ");
         }
         test_result.total = atoi(token[3]);
+        // Since the first character of subtoken is '('  avoiding it
         test_result.skipped = atoi((token[5] + 1));
-        test_result.passed = atoi((token[1] + 1));
     }
 }
 
@@ -142,20 +139,29 @@ static oe_result_t _syscall_hook(
             result = OE_OK;
             break;
         }
-	case SYS_writev:
+        case SYS_writev:
         {
-            char* str_full = malloc(STRMAXLEN);
-            memset(str_full, 0, STRMAXLEN);
-            int i;
+            char* str_full;
+            int total_buff_len = 0;
             const struct iovec* iov = (const struct iovec*)arg2;
             unsigned long iovcnt = (unsigned long)arg3;
-            for (i = 0; i < iovcnt; i++)
+            // Calculating  buffer length
+            for (int i = 0; i < iovcnt; i++)
+            {
+                total_buff_len = total_buff_len + iov[i].iov_len;
+            }
+            // Considering string terminating character
+            total_buff_len += 1;
+            str_full = (char*)calloc(total_buff_len, sizeof(char));
+            for (int i = 0; i < iovcnt; i++)
             {
                 strncat(str_full, iov[i].iov_base, iov[i].iov_len);
             }
             test_checker(str_full);
             free(str_full);
             result = OE_UNSUPPORTED;
+            // expecting the runtime implementation of SYS_writev to also be
+            // called.
             break;
         }
         case SYS_close:
@@ -169,10 +175,10 @@ static oe_result_t _syscall_hook(
             result = OE_OK;
             break;
         }
-	default:
-	{
-	    OE_RAISE(OE_UNSUPPORTED);
-	}
+        default:
+        {
+            OE_RAISE(OE_UNSUPPORTED);
+        }
     }
 
 done:
@@ -207,13 +213,12 @@ int test(const char* in_testname, char** out_testname)
         static int argc = sizeof(argv) / sizeof(argv[0]);
         argv[2] = in_testname;
         return_value = main(argc, argv);
-       	test_result_t * results; 
-	results = (test_result_t*)oe_host_malloc(sizeof(test_result_t));
-        results->passed =  test_result.passed;
-	results->skipped = test_result.skipped;
-	results->total = test_result.total;
+        test_result_t* results;
+        results = (test_result_t*)oe_host_malloc(sizeof(test_result_t));
+        results->skipped = test_result.skipped;
+        results->total = test_result.total;
         oe_call_host("mbed_test_check_results", results);
-	oe_host_free(results);
+        oe_host_free(results);
     }
     *out_testname = oe_host_strndup(__TEST__, OE_SIZE_MAX);
 

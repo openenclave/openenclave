@@ -9,6 +9,6 @@ dhm
 ecjpake
 gcm.camellia
 memory_buffer_alloc
-xtea
 pkwrite
+xtea
 x509write
