@@ -25,3 +25,11 @@ if ! ./scripts/check-license; then
     echo ""
     exit 1
 fi
+
+# Check whether all scripts pass ShellCheck:
+if ! ./scripts/check-linters; then
+    echo ""
+    echo "Commit failed: please run ./scripts/check-linters"
+    echo ""
+    exit 1
+fi
