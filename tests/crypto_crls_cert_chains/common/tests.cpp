@@ -33,7 +33,7 @@ void test_cert_chain_positive(
     oe_cert_chain_t chain = {0};
 
     // The expected order is leaf, intermediate, root.
-    // Open ssl accepts CA (i.e. intermediate and root) in any order.
+    // OpenSSL accepts CA (i.e. intermediate and root) in any order.
     OE_TEST(
         create_and_read_chain(
             std::vector<const char*>{leaf, intermediate, root}, &chain) ==
@@ -265,7 +265,7 @@ void test_crls(
         OE_TEST(strcmp(error.buf, ERROR_MSG_CERT_REVOKED) == 0);
     }
 
-    // If you pass CRL for only one of the CAs (ie root or intermediate), then
+    // If you pass CRL for only one of the CAs (i.e. root or intermediate), then
     // verification should fail.
     {
         oe_crl_t* crls[] = {&root_crl1_obj};
