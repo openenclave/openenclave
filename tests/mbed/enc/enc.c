@@ -46,7 +46,7 @@ void exit(int status)
 char* oe_host_strdup(const char* str)
 {
     size_t n = oe_strlen(str);
-    char* dup = (char*)oe_host_alloc_for_call_host(n + 1);
+    char* dup = (char*)oe_host_malloc(n + 1);
 
     if (dup)
         oe_memcpy(dup, str, n + 1);
@@ -86,8 +86,9 @@ static oe_result_t _syscall_hook(
                 args->mode = (int)arg3;
                 oe_call_host("mbed_test_open", args);
                 *ret = args->fd;
+                oe_host_free(args->path);
                 oe_host_free(args);
-                OE_RAISE(OE_OK);
+                result = OE_OK;
             }
             break;
         }
@@ -119,7 +120,7 @@ static oe_result_t _syscall_hook(
 
             oe_host_free(iov_host);
             oe_host_free(args);
-            OE_RAISE(OE_OK);
+            result = OE_OK;
             break;
         }
         case SYS_close:
@@ -130,12 +131,14 @@ static oe_result_t _syscall_hook(
             oe_call_host("mbed_test_close", args);
             *ret = args->ret;
             oe_host_free(args);
-            OE_RAISE(OE_OK);
+            result = OE_OK;
             break;
         }
+	default:
+	{
+	    OE_RAISE(OE_UNSUPPORTED);
+	}
     }
-
-    OE_RAISE(OE_UNSUPPORTED);
 
 done:
     return result;
