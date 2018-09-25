@@ -11,12 +11,13 @@
 #include <string.h>
 #include "tests.h"
 
+#define N 64
+#define M 19
+
 void TestRandom(void)
 {
     printf("=== begin %s()\n", __FUNCTION__);
 
-    static const size_t N = 64;
-    static const size_t M = 19;
     uint8_t buf[N][M];
 
     memset(buf, 0, sizeof(buf));

@@ -446,6 +446,7 @@ oe_result_t oe_sgx_create_enclave(
     }
 
     /* Create SECS structure */
+    printf("_new_secs\n");
     if (!(secs = _new_secs(
               (uint64_t)base,
               enclave_size,
@@ -453,6 +454,7 @@ oe_result_t oe_sgx_create_enclave(
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* Measure this operation */
+    printf("measure_cereate_enclave\n");
     OE_CHECK(oe_sgx_measure_create_enclave(&context->hash_context, secs));
 
     if (context->type == OE_SGX_LOAD_TYPE_MEASURE)
@@ -495,6 +497,10 @@ oe_result_t oe_sgx_create_enclave(
 
         /* Ask OS to create the enclave */
         DWORD enclave_error;
+        printf(
+            "CreateEnclave. %zu Secs->size, %zu secs->vbase\n",
+            secs->size,
+            secs->base);
         void* base = CreateEnclave(
             GetCurrentProcess(),
             NULL, /* Let OS choose the enclave base address */
@@ -506,7 +512,11 @@ oe_result_t oe_sgx_create_enclave(
             &enclave_error);
 
         if (!base)
+		{
+            printf("GetLastError: %d\n", GetLastError());
             OE_RAISE(OE_PLATFORM_ERROR);
+		}
+        printf("CreateEnclaveSuccess\n");
 
         secs->base = (uint64_t)base;
 
@@ -522,7 +532,9 @@ done:
 #if defined(__linux__)
     if (result != OE_OK && context->type == OE_SGX_LOAD_TYPE_CREATE &&
         base != NULL)
+	{
         munmap(base, enclave_size);
+    }
 #endif
 
     if (secs)
@@ -671,6 +683,7 @@ oe_result_t oe_sgx_initialize_enclave(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Measure this operation */
+    printf("oe_sgx_measure_intialize_Enclave\n");
     OE_CHECK(
         oe_sgx_measure_initialize_enclave(&context->hash_context, mrenclave));
 
@@ -680,6 +693,8 @@ oe_result_t oe_sgx_initialize_enclave(
     {
         /* Get a debug sigstruct for MRENCLAVE if necessary */
         sgx_sigstruct_t sigstruct;
+
+        printf("_get_sig_struct\n");
         OE_CHECK(_get_sig_struct(properties, mrenclave, &sigstruct));
 
 #if defined(OE_USE_LIBSGX)
@@ -696,6 +711,7 @@ oe_result_t oe_sgx_initialize_enclave(
 #else
         /* If not using libsgx, get a launch token from the AESM service */
         sgx_launch_token_t launch_token;
+        printf("_get_launch_token\n");
         OE_CHECK(_get_launch_token(properties, &sigstruct, &launch_token));
 
 #if defined(__linux__)
@@ -725,6 +741,7 @@ oe_result_t oe_sgx_initialize_enclave(
         memcpy(&info.SigStruct, (void*)&sigstruct, sizeof(info.SigStruct));
         memcpy(&info.EInitToken, (void*)&launch_token, sizeof(info.EInitToken));
 
+		printf("InitializeEnclave\n");
         if (!InitializeEnclave(
                 GetCurrentProcess(),
                 (LPVOID)addr,
@@ -732,6 +749,8 @@ oe_result_t oe_sgx_initialize_enclave(
                 sizeof(info),
                 &enclave_error))
         {
+            printf("InitializeEnclave Error: %d\n", GetLastError());
+            printf("INitializeEnclave SGX error: %d\n", enclave_error);
             OE_RAISE(OE_PLATFORM_ERROR);
         }
 #endif

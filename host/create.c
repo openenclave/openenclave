@@ -1229,6 +1229,7 @@ oe_result_t oe_sgx_build_enclave(
     }
 
     /* Validate the enclave properties structure */
+    printf("validate sgx enclave.\n");
     OE_CHECK(oe_sgx_validate_enclave_properties(&props, NULL));
 
     /* Consolidate enclave-debug-flag with create-debug-flag */
@@ -1282,6 +1283,7 @@ oe_result_t oe_sgx_build_enclave(
             &enclave_size));
 
     /* Perform the ECREATE operation */
+    printf("oe_sgx_create_enclave.\n");
     OE_CHECK(oe_sgx_create_enclave(context, enclave_size, &enclave_addr));
 
     /* Save the enclave base address and size */
@@ -1324,6 +1326,7 @@ oe_result_t oe_sgx_build_enclave(
             enclave));
 
     /* Ask the platform to initialize the enclave and finalize the hash */
+    printf("oe_sgx_init_enclave.\n");
     OE_CHECK(
         oe_sgx_initialize_enclave(
             context, enclave_addr, &props, &enclave->hash));
@@ -1456,11 +1459,13 @@ oe_result_t oe_create_enclave(
 #endif
 
     /* Initialize the context parameter and any driver handles */
+    printf("init load context\n");
     OE_CHECK(
         oe_sgx_initialize_load_context(
             &context, OE_SGX_LOAD_TYPE_CREATE, flags));
 
     /* Build the enclave */
+    printf("build enclave\n");
     OE_CHECK(oe_sgx_build_enclave(&context, enclave_path, NULL, enclave));
 
     /* Push the new created enclave to the global list. */
@@ -1474,6 +1479,7 @@ oe_result_t oe_create_enclave(
         enclave, enclave->path, (uint32_t)strlen(enclave->path));
 
     /* Invoke enclave initialization. */
+    printf("init enclave\n");
     OE_CHECK(_initialize_enclave(enclave));
 
     *enclave_out = enclave;

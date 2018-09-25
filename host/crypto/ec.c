@@ -234,7 +234,7 @@ done:
 
 void oe_ec_public_key_init(oe_ec_public_key_t* public_key, EVP_PKEY* pkey)
 {
-    return oe_public_key_init(
+    oe_public_key_init(
         (oe_public_key_t*)public_key, pkey, _PUBLIC_KEY_MAGIC);
 }
 

@@ -3,6 +3,7 @@
 
 #define OE_TRACE_LEVEL 1
 #include <openenclave/host.h>
+#include <openenclave/bits/safemath.h>
 #include <openenclave/internal/aesm.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/error.h>
@@ -16,8 +17,8 @@
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
 #include <time.h>
-#include "../crypto/init.h"
-#include "../host/enclave.h"
+#include "crypto/init.h"
+#include "enclave.h"
 
 static void _mem_reverse(void* dest_, const void* src_, size_t n)
 {
@@ -41,8 +42,13 @@ static oe_result_t _get_date(unsigned int* date)
 
     t = time(NULL);
 
+#if defined(_MSC_VER)
+    if (localtime_s(&tm, &t) != 0)
+        OE_THROW(OE_FAILURE);
+#else
     if (localtime_r(&t, &tm) == NULL)
         OE_THROW(OE_FAILURE);
+#endif 
 
     {
         char s[9];
@@ -61,6 +67,8 @@ static oe_result_t _get_date(unsigned int* date)
 
         *date = (b[0] << 28) | (b[1] << 24) | (b[2] << 20) | (b[3] << 16) |
                 (b[4] << 12) | (b[5] << 8) | (b[6] << 4) | b[7];
+
+		printf("DATE=%d\n", *date);
     }
 
     result = OE_OK;
@@ -131,10 +139,8 @@ static oe_result_t _get_q1_and_q2(
     BIGNUM* t1 = NULL;
     BIGNUM* t2 = NULL;
     BN_CTX* ctx = NULL;
-    unsigned char q1buf[q1_out_size + 8];
-    unsigned char q2buf[q2_out_size + 8];
-    unsigned char sbuf[signature_size];
-    unsigned char mbuf[modulus_size];
+    unsigned char* sbuf = NULL;
+    unsigned char* mbuf = NULL;
 
     if (!signature || !signature_size || !modulus || !modulus_size || !q1_out ||
         !q1_out_size || !q2_out || !q2_out_size)
@@ -142,18 +148,23 @@ static oe_result_t _get_q1_and_q2(
         OE_THROW(OE_INVALID_PARAMETER);
     }
 
-    memset(sbuf, 0, sizeof(sbuf));
-    memset(mbuf, 0, sizeof(mbuf));
+	sbuf = (unsigned char*)calloc(1, signature_size);
+    if (sbuf == NULL)
+        OE_THROW(OE_OUT_OF_MEMORY);
 
-    _mem_reverse(sbuf, signature, sizeof(sbuf));
-    _mem_reverse(mbuf, modulus, sizeof(mbuf));
+	mbuf = (unsigned char*)calloc(1, modulus_size);
+    if (mbuf == NULL)
+        OE_THROW(OE_OUT_OF_MEMORY);
+
+    _mem_reverse(sbuf, signature, signature_size);
+    _mem_reverse(mbuf, modulus, modulus_size);
 
     /* Create new objects */
     {
-        if (!(s = BN_bin2bn(sbuf, sizeof(sbuf), NULL)))
+        if (!(s = BN_bin2bn(sbuf, signature_size, NULL)))
             OE_THROW(OE_OUT_OF_MEMORY);
 
-        if (!(m = BN_bin2bn(mbuf, sizeof(mbuf), NULL)))
+        if (!(m = BN_bin2bn(mbuf, modulus_size, NULL)))
             OE_THROW(OE_OUT_OF_MEMORY);
 
         if (!(q1 = BN_new()))
@@ -189,30 +200,59 @@ static oe_result_t _get_q1_and_q2(
 
     /* Copy Q1 to Q1OUT parameter */
     {
-        size_t n = BN_num_bytes(q1);
+        unsigned char* q1buf = NULL;
+        size_t q1buf_size;
+        size_t n;
 
-        if (n > sizeof(q1buf))
+		OE_TRY(oe_safe_add_sizet(q1_out_size, 8, &q1buf_size));
+
+		q1buf = (unsigned char*)malloc(q1buf_size);
+        if (q1buf == NULL)
+            OE_THROW(OE_OUT_OF_MEMORY);
+
+		n = BN_num_bytes(q1);
+
+		if (n > q1buf_size)
+		{
+            free(q1buf);
             OE_THROW(OE_FAILURE);
+		}
+			
 
         if (n > q1_out_size)
             n = q1_out_size;
 
         BN_bn2bin(q1, q1buf);
         _mem_reverse(q1_out, q1buf, n);
+        free(q1buf);
     }
 
     /* Copy Q2 to Q2OUT parameter */
     {
-        size_t n = BN_num_bytes(q2);
+        unsigned char* q2buf = NULL;
+        size_t q2buf_size;
+        size_t n;
 
-        if (n > sizeof(q2buf))
+        OE_TRY(oe_safe_add_sizet(q2_out_size, 8, &q2buf_size));
+
+        q2buf = (unsigned char*)malloc(q2buf_size);
+        if (q2buf == NULL)
+            OE_THROW(OE_OUT_OF_MEMORY);
+
+        n = BN_num_bytes(q2);
+
+        if (n > q2buf_size)
+        {
+            free(q2buf);
             OE_THROW(OE_FAILURE);
+        }
 
         if (n > q2_out_size)
             n = q2_out_size;
 
         BN_bn2bin(q2, q2buf);
         _mem_reverse(q2_out, q2buf, n);
+        free(q2buf);
     }
 
     result = OE_OK;
@@ -233,7 +273,11 @@ OE_CATCH:
         BN_free(t2);
     if (ctx)
         BN_CTX_free(ctx);
-
+	if (sbuf)
+        free(sbuf);
+	if (mbuf)
+        free(mbuf);
+	
     return result;
 }
 

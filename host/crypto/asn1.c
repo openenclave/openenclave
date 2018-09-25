@@ -36,13 +36,13 @@ oe_result_t oe_asn1_get_raw(
         long tmp_length = 0;
         int tmp_tag = 0;
         int tmp_class = 0;
+        size_t remaining = oe_asn1_remaining(asn1);
+
+		if (remaining > OE_LONG_MAX)
+            OE_RAISE(OE_FAILURE);
 
         int rc = ASN1_get_object(
-            &asn1->ptr,
-            &tmp_length,
-            &tmp_tag,
-            &tmp_class,
-            oe_asn1_remaining(asn1));
+            &asn1->ptr, &tmp_length, &tmp_tag, &tmp_class, (long)remaining);
 
         if (rc != V_ASN1_CONSTRUCTED && rc != 0)
             OE_RAISE(OE_FAILURE);
@@ -128,9 +128,14 @@ oe_result_t oe_asn1_get_oid(oe_asn1_t* asn1, oe_oid_string_t* oid)
     /* Get the OID and covert it to string */
     {
         const unsigned char* ptr = asn1->ptr;
+        size_t remaining = oe_asn1_remaining(asn1);
+
+        if (remaining > OE_LONG_MAX)
+            OE_RAISE(OE_FAILURE);
+
 
         /* Convert OID to an ASN1 object */
-        if (!(obj = d2i_ASN1_OBJECT(&obj, &ptr, oe_asn1_remaining(asn1))))
+        if (!(obj = d2i_ASN1_OBJECT(&obj, &ptr, (long) remaining)))
             OE_RAISE(OE_FAILURE);
 
         /* Convert OID to string format */

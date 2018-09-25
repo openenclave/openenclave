@@ -3,16 +3,6 @@
 
 if (UNIX)
 set(PLATFORM_SRC
-    ../common/asn1.c
-    ../common/cert.c
-    crypto/asn1.c
-    crypto/cert.c
-    crypto/crl.c
-    crypto/ec.c
-    crypto/init.c
-    crypto/key.c
-    crypto/random.c
-    crypto/rsa.c
     linux/aep.S
     linux/aesm.c
     linux/cpuid.c
@@ -21,7 +11,6 @@ set(PLATFORM_SRC
     linux/exception.c
     linux/hostthread.c
     linux/sgxioctl.c
-    linux/sgxsign.c
     linux/time.c
     sgxquoteprovider.c
     )
@@ -34,19 +23,20 @@ set(PLATFORM_SRC
     windows/entersim.asm
     windows/exception.c
     windows/hostthread.c
-    windows/sgxsign.c
     windows/time.c
     )
 endif()
 
 add_library(oehost STATIC
+	../common/asn1.c
+	../common/cert.c
     ../common/datetime.c
     ../common/quote.c
     ../common/report.c
     ../common/revocation.c
     ../common/safecrt.c
     ../common/sgxcertextensions.c
-    ../common/tcbinfo.c    
+    ../common/tcbinfo.c  
     calls.c
     create.c
     dupenv.c
@@ -67,10 +57,19 @@ add_library(oehost STATIC
     sgxload.c
     sgxmeasure.c
     sgxquote.c
+	sgxsign.c
     sgxtypes.c
     signkey.c
     strings.c
     tests.c
+	crypto/asn1.c
+    crypto/cert.c
+    crypto/crl.c
+    crypto/ec.c
+    crypto/init.c
+    crypto/key.c
+	crypto/random.c
+    crypto/rsa.c
     crypto/sha.c
     ${PLATFORM_SRC}
     )
@@ -81,7 +80,9 @@ target_link_libraries(oehost PUBLIC oe_includes)
 if(UNIX)
 find_library(CRYPTO_LIB NAMES crypto)
 find_library(DL_LIB NAMES dl)
-endif(UNIX)
+elseif(WIN32)
+find_package(OpenSSL REQUIRED)
+endif()
 find_package(Threads REQUIRED)
 
 # linking also requires a number of libs on the host
@@ -89,6 +90,7 @@ if(UNIX)
 target_link_libraries(oehost PRIVATE ${CRYPTO_LIB} ${DL_LIB} Threads::Threads)
 elseif(WIN32)
 target_link_libraries(oehost PRIVATE bcrypt)
+target_link_libraries(oehost PRIVATE OpenSSL::SSL OpenSSL::Crypto)
 endif()
 
 if(UNIX)

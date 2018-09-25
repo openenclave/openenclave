@@ -891,7 +891,8 @@ static void _test_crl_distribution_points(void)
     OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
     {
-        OE_ALIGNED(8) uint8_t buffer[buffer_size];
+        uint8_t* buffer = (uint8_t*)malloc(buffer_size);
+        OE_TEST(buffer != NULL);
 
         r = oe_get_crl_distribution_points(
             &cert, &urls, &num_urls, buffer, &buffer_size);
@@ -904,7 +905,8 @@ static void _test_crl_distribution_points(void)
         printf("URL{%s}\n", urls[0]);
 
         OE_TEST(r == OE_OK);
-    }
+        free(buffer);
+	}
 
     r = oe_cert_free(&cert);
     OE_TEST(r == OE_OK);
