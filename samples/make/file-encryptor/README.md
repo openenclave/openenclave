@@ -44,7 +44,14 @@ The host application drives an enclave to perform the following operations
 
   There are three ECALLs implemented inside the enclave library
 
-### OE_ECALL void initialize_encryptor(EncryptInitializeArgs* args)
+### initialize_encryptor
+```c
+    int initialize_encryptor(
+        bool encrypt,
+        const char* password,
+        size_t password_len,
+        encryption_header_t* header)
+```
 
   The bulk of the operations are done in this enclave call.
 
@@ -96,11 +103,22 @@ See the following routine for details
         string password)
 ```
 
-#### OE_ECALL void encrypt_block(EncryptBlockArgs* args)
+#### encrypt_block
+```c
+    int encrypt_block(
+        bool encrypt,
+        unsigned char* inputbuf,
+        unsigned char* outputbuf,
+        size_t size)
+```
 
 Send a block of data to the enclave for encryption using the configuration setup up by the initialize_encryptor() call
 
-#### OE_ECALL void close_encryptor(CloseEncryptorArgs* args)
+#### close_encryptor()
+
+```c
+    void close_encryptor()
+```
   
    Free all the source allocated as part of this encryptor instance.
  

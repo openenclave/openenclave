@@ -40,15 +40,15 @@ oe_enter:
 
 .save_host_registers:
     // Backup the current host rbp and rsp to previous.
-    mov %gs:TD_host_rbp, %r8
-    mov %r8, %gs:TD_host_previous_rbp
-    mov %gs:TD_host_rsp, %r8
-    mov %r8, %gs:TD_host_previous_rsp
+    mov %gs:td_host_rbp, %r8
+    mov %r8, %gs:td_host_previous_rbp
+    mov %gs:td_host_rsp, %r8
+    mov %r8, %gs:td_host_previous_rsp
 
     // Save host registers (restored on EEXIT)
-    mov %rcx, %gs:TD_host_rcx // host return address here
-    mov %rsp, %gs:TD_host_rsp
-    mov %rbp, %gs:TD_host_rbp
+    mov %rcx, %gs:td_host_rcx // host return address here
+    mov %rsp, %gs:td_host_rsp
+    mov %rbp, %gs:td_host_rbp
 
 .determine_entry_type:
     // Check if this is exception dispatching request.
@@ -62,7 +62,7 @@ oe_enter:
 
     // Check whether this is a clean entry or a nested entry
     // clean-entry-check.
-    mov %gs:TD_depth, %r8
+    mov %gs:td_depth, %r8
     cmp $0, %r8
     je .clean_entry
     jmp .nested_entry
@@ -99,7 +99,7 @@ oe_enter:
     lfence
 
     // Restore stack pointer and enclave registers:
-    mov %gs:TD_last_sp, %rsp
+    mov %gs:td_last_sp, %rsp
 
     // align the stack
     and $-16, %rsp
@@ -121,8 +121,8 @@ oe_enter:
 .call_function:
 
     // Get the host stack pointer.
-    mov %gs:TD_host_rsp, %r8
-    mov %gs:TD_host_rbp, %r9
+    mov %gs:td_host_rsp, %r8
+    mov %gs:td_host_rbp, %r9
 
     // Construct the frame and align the stack.
     pushq $0
@@ -145,13 +145,13 @@ oe_enter:
     sub $OM_STACK_LENGTH, %rsp
 
     // Save the host stack pointers to enclave stack.
-    mov %gs:TD_host_rsp, %r8
-    mov %gs:TD_host_rbp, %r9
+    mov %gs:td_host_rsp, %r8
+    mov %gs:td_host_rbp, %r9
     mov %r8, OM_HOST_RSP
     mov %r9, OM_HOST_RBP
 
     // Save the host return address to enclave stack.
-    mov %gs:TD_host_rcx, %r8
+    mov %gs:td_host_rcx, %r8
     mov %r8, OM_HOST_RETURN_ADDR
 
     // Call __oe_handle_main(ARG1=RDI, ARG2=RSI, CSSA=RDX, TCS=RCX, OUTPUTARG1=R8, OUTPUTARG2=R9)
@@ -169,7 +169,7 @@ oe_enter:
 
     // Check the depth of the ECALL stack (zero for clean exit)
     // exit-type-check.
-    mov %gs:TD_depth, %r8
+    mov %gs:td_depth, %r8
     cmp $0, %r8
     je .clean_exit
 
@@ -201,7 +201,7 @@ oe_enter:
     pop %r12
     pop %r12
 
-    mov %rsp, %gs:TD_last_sp
+    mov %rsp, %gs:td_last_sp
 
     jmp .clear_enclave_registers
 
@@ -210,8 +210,8 @@ oe_enter:
     // after exit-type-check.
     lfence
 
-    // Clear the TD.last_sp field (force oe_enter to calculate stack pointer)
-    movq $0, %gs:TD_last_sp
+    // Clear the td_t.last_sp field (force oe_enter to calculate stack pointer)
+    movq $0, %gs:td_last_sp
 
 .clear_enclave_registers:
 
@@ -227,9 +227,9 @@ oe_enter:
 
 .execute_eexit:
 
-    // Check TD.simulate flag
+    // Check td_t.simulate flag
     // simulation-flag-check.
-    mov %gs:TD_simulate, %rax
+    mov %gs:td_simulate, %rax
     cmp $0, %rax
     jz .execute_eexit_instruction
 

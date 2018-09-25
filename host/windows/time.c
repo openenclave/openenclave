@@ -42,7 +42,7 @@ static uint64_t _time()
     x.u.HighPart = ft.dwHighDateTime;
     x.QuadPart -= POSIX_TO_WINDOWS_EPOCH_TICKS;
 
-    return = x.QuadPart / TICKS_PER_MILLISECOND;
+    return (x.QuadPart / TICKS_PER_MILLISECOND);
 }
 
 void oe_handle_sleep(uint64_t arg_in)

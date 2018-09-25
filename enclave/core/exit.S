@@ -30,15 +30,15 @@
 //
 //      (2) If this is a nested exit, then save the enclave registers
 //          on the enclave stack and save the stack pointer in the
-//          thread data structure (TD.last_sp)
+//          thread data structure (td_t.last_sp)
 //
-//      (3) If this a clean exit, then store zero in TD.last_sp, forcing
+//      (3) If this a clean exit, then store zero in td_t.last_sp, forcing
 //          oe_enter() to recompute it on next entry.
 //
 //      (4) Clear enclave registers to avoid leaking data to the host.
 //
 //      (5) Restore the host registers from the thread data structure
-//          (TD).
+//          (td_t).
 //
 //      (6) Execute the SGX EEXIT instruction, exiting the enclave and
 //          returning control to the host.
@@ -55,7 +55,7 @@ _oe_exit:
 
     // Check the depth of the ECALL stack (zero for clean exit)
     // exit-type-check.
-    mov %gs:TD_depth, %r8
+    mov %gs:td_depth, %r8
     cmp $0, %r8
     je .clean_exit
 
@@ -89,7 +89,7 @@ _oe_exit:
     pop %rsi
     pop %rdi
 
-    mov %rsp, %gs:TD_last_sp
+    mov %rsp, %gs:td_last_sp
 
     jmp .clear_enclave_registers
 
@@ -98,8 +98,8 @@ _oe_exit:
     // after exit-type-check.
     lfence
 
-    // Clear the TD.last_sp field (force oe_enter to calculate stack pointer)
-    movq $0, %gs:TD_last_sp
+    // Clear the td_t.last_sp field (force oe_enter to calculate stack pointer)
+    movq $0, %gs:td_last_sp
 
 .clear_enclave_registers:
 
@@ -108,15 +108,15 @@ _oe_exit:
 
 .restore_host_registers:
 
-    mov %gs:TD_host_rcx, %rcx
-    mov %gs:TD_host_rsp, %rsp
-    mov %gs:TD_host_rbp, %rbp
+    mov %gs:td_host_rcx, %rcx
+    mov %gs:td_host_rsp, %rsp
+    mov %gs:td_host_rbp, %rbp
 
 .execute_eexit:
 
-    // Check TD.simulate flag
+    // Check td_t.simulate flag
     // simulate-flag-check.
-    mov %gs:TD_simulate, %rax
+    mov %gs:td_simulate, %rax
     cmp $0, %rax
     jz .execute_eexit_instruction
 

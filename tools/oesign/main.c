@@ -48,11 +48,11 @@ static int _update_and_write_shared_lib(
     const oe_sgx_enclave_properties_t* properties)
 {
     int rc = -1;
-    Elf64 elf;
+    elf64_t elf;
     FILE* os = NULL;
 
     /* Open ELF file */
-    if (Elf64_Load(path, &elf) != 0)
+    if (elf64_load(path, &elf) != 0)
     {
         Err("cannot load ELF file: %s", path);
         goto done;
@@ -60,33 +60,33 @@ static int _update_and_write_shared_lib(
 
     /* Verify that this enclave contains required symbols */
     {
-        Elf64_Sym sym;
+        elf64_sym_t sym;
 
-        if (Elf64_FindSymbolByName(&elf, "_start", &sym) != 0)
+        if (elf64_find_symbol_by_name(&elf, "_start", &sym) != 0)
         {
             Err("entry point not found: _start()");
             goto done;
         }
 
-        if (Elf64_FindSymbolByName(&elf, "oe_num_pages", &sym) != 0)
+        if (elf64_find_symbol_by_name(&elf, "oe_num_pages", &sym) != 0)
         {
             Err("oe_num_pages() undefined");
             goto done;
         }
 
-        if (Elf64_FindSymbolByName(&elf, "oe_base_heap_page", &sym) != 0)
+        if (elf64_find_symbol_by_name(&elf, "oe_base_heap_page", &sym) != 0)
         {
             Err("oe_base_heap_page() undefined");
             goto done;
         }
 
-        if (Elf64_FindSymbolByName(&elf, "oe_num_heap_pages", &sym) != 0)
+        if (elf64_find_symbol_by_name(&elf, "oe_num_heap_pages", &sym) != 0)
         {
             Err("oe_num_heap_pages() undefined");
             goto done;
         }
 
-        if (Elf64_FindSymbolByName(&elf, "oe_virtual_base_addr", &sym) != 0)
+        if (elf64_find_symbol_by_name(&elf, "oe_virtual_base_addr", &sym) != 0)
         {
             Err("oe_virtual_base_addr() undefined");
             goto done;
@@ -97,7 +97,7 @@ static int _update_and_write_shared_lib(
     if (oe_sgx_update_enclave_properties(
             &elf, OE_INFO_SECTION_NAME, properties) != OE_OK)
     {
-        if (Elf64_AddSection(
+        if (elf64_add_section(
                 &elf,
                 OE_INFO_SECTION_NAME,
                 SHT_PROGBITS,
@@ -146,7 +146,7 @@ done:
     if (os)
         fclose(os);
 
-    Elf64_Unload(&elf);
+    elf64_unload(&elf);
 
     return rc;
 }
@@ -408,7 +408,7 @@ static oe_result_t _sgx_load_enclave_properties(
     oe_sgx_enclave_properties_t* properties)
 {
     oe_result_t result = OE_UNEXPECTED;
-    Elf64 elf = ELF64_INIT;
+    elf64_t elf = ELF64_INIT;
 
     if (properties)
         memset(properties, 0, sizeof(oe_sgx_enclave_properties_t));
@@ -418,7 +418,7 @@ static oe_result_t _sgx_load_enclave_properties(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Load the ELF image */
-    if (Elf64_Load(path, &elf) != 0)
+    if (elf64_load(path, &elf) != 0)
         OE_RAISE(OE_FAILURE);
 
     /* Load the SGX enclave properties */
@@ -432,7 +432,7 @@ static oe_result_t _sgx_load_enclave_properties(
 done:
 
     if (elf.magic == ELF_MAGIC)
-        Elf64_Unload(&elf);
+        elf64_unload(&elf);
 
     return result;
 }

@@ -88,7 +88,7 @@ oe_result_t oe_sgx_build_enclave(
  *
  */
 oe_result_t oe_sgx_load_properties(
-    const Elf64* elf,
+    const elf64_t* elf,
     const char* section_name,
     oe_sgx_enclave_properties_t* properties);
 
@@ -110,7 +110,7 @@ oe_result_t oe_sgx_load_properties(
  *
  */
 oe_result_t oe_sgx_update_enclave_properties(
-    const Elf64* elf,
+    const elf64_t* elf,
     const char* section_name,
     const oe_sgx_enclave_properties_t* properties);
 

@@ -14,7 +14,7 @@
 
 OE_INLINE int* __errno_location(void)
 {
-    TD* td = (TD*)oe_get_thread_data();
+    td_t* td = (td_t*)oe_get_thread_data();
     oe_assert(td);
     return &td->linux_errno;
 }

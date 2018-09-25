@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+##==============================================================================
+##
+## append-deprecations:
+##
+##     Append inclusion of the deprecations header to every header file under
+##     the given directory.
+##
+##==============================================================================
+
+## Check arguments.
+if [ "$#" != "1" ]; then
+    echo "Usage: $0 directory"
+    exit 1
+fi
+
+## Name arguments.
+directory=$1
+
+## If the directory does not exist:
+if [ ! -d "${directory}" ]; then
+    echo "$0: no such directory: ${directory}"
+    exit 1
+fi
+
+headers=`find ${directory} -name '*.h'`
+
+## Append the deprecation inclusion */
+for i in ${headers}
+do
+    echo "#include <bits/deprecations.h>" >> ${i}
+    if [ "$?" != "0" ]; then
+        echo "$0: failed to append ${string}"
+        exit 1
+    fi
+done
