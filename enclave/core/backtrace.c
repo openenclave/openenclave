@@ -34,7 +34,7 @@ const void* _check_address(const void* ptr)
  */
 int oe_backtrace(void** buffer, int size)
 {
-#ifndef NDEBUG
+#ifdef OE_USE_DEBUG_MALLOC
     // Fetch the frame-pointer of the current function.
     // The current function oe_backtrace is not expected to be inlined.
     // The rbp register contains the frame-pointer upon entry to the function.
