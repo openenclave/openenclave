@@ -10,9 +10,9 @@
 #include "../../../host/enclave.h"
 #include "../args.h"
 
-static void _CheckProperties(
+static void _check_properties(
     oe_sgx_enclave_properties_t* props,
-    bool isSigned,
+    bool is_signed,
     uint16_t product_id,
     uint16_t security_version,
     uint64_t attributes,
@@ -40,13 +40,13 @@ static void _CheckProperties(
     const uint8_t sigstruct[OE_SGX_SIGSTRUCT_SIZE] = {0};
 
     /* Check for presence or absence of the signature */
-    if (isSigned)
+    if (is_signed)
         OE_TEST(memcmp(props->sigstruct, sigstruct, sizeof(sigstruct)) != 0);
     else
         OE_TEST(memcmp(props->sigstruct, sigstruct, sizeof(sigstruct)) == 0);
 }
 
-static oe_result_t _SGXLoadEnclaveProperties(
+static oe_result_t _sgx_load_enclave_properties(
     const char* path,
     oe_sgx_enclave_properties_t* properties)
 {
@@ -84,7 +84,7 @@ int main(int argc, const char* argv[])
 {
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
-    bool isSigned = false;
+    bool is_signed = false;
     oe_sgx_enclave_properties_t properties;
 
     if (argc != 3)
@@ -96,11 +96,11 @@ int main(int argc, const char* argv[])
     /* Extract "signed" or "unsigned" command-line argument */
     if (strcmp(argv[2], "signed") == 0)
     {
-        isSigned = true;
+        is_signed = true;
     }
     else if (strcmp(argv[2], "unsigned") == 0)
     {
-        isSigned = false;
+        is_signed = false;
     }
     else
     {
@@ -109,7 +109,7 @@ int main(int argc, const char* argv[])
     }
 
     /* Load the enclave properties */
-    if ((result = _SGXLoadEnclaveProperties(argv[1], &properties)) != OE_OK)
+    if ((result = _sgx_load_enclave_properties(argv[1], &properties)) != OE_OK)
     {
         oe_put_err("oe_sgx_load_properties(): result=%u", result);
     }
@@ -121,11 +121,11 @@ int main(int argc, const char* argv[])
         oe_put_err("oe_create_enclave(): result=%u", result);
 
     /* Check expected enclave property values */
-    if (isSigned)
+    if (is_signed)
     {
-        _CheckProperties(
+        _check_properties(
             &properties,
-            isSigned,
+            is_signed,
             1111,                                        /* product_id */
             2222,                                        /* security_version */
             OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT, /* attributes */
@@ -135,9 +135,9 @@ int main(int argc, const char* argv[])
     }
     else
     {
-        _CheckProperties(
+        _check_properties(
             &properties,
-            isSigned,
+            is_signed,
             1234,                                        /* product_id */
             5678,                                        /* security_version */
             OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT, /* attributes */

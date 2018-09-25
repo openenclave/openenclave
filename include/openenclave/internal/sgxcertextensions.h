@@ -11,24 +11,24 @@
 
 OE_EXTERNC_BEGIN
 
-typedef struct _ParsedExtensionInfo
+typedef struct _parsed_extension_info
 {
     uint8_t ppid[16];
-    uint8_t compSvn[16];
-    uint16_t pceSvn;
-    uint8_t cpuSvn[16];
-    uint8_t pceId[2];
+    uint8_t comp_svn[16];
+    uint16_t pce_svn;
+    uint8_t cpu_svn[16];
+    uint8_t pce_id[2];
     uint8_t fmspc[6];
-    uint8_t sgxType;
-    bool optDynamicPlatform;
-    bool optCachedKeys;
+    uint8_t sgx_type;
+    bool opt_dynamic_platform;
+    bool opt_cached_keys;
 } ParsedExtensionInfo;
 
 oe_result_t ParseSGXExtensions(
     oe_cert_t* cert,
     uint8_t* buffer,
-    size_t* bufferSize,
-    ParsedExtensionInfo* parsedInfo);
+    size_t* buffer_size,
+    ParsedExtensionInfo* parsed_info);
 
 OE_EXTERNC_END
 

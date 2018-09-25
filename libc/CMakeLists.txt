@@ -84,14 +84,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/complex/ctanhf.c
     ${MUSLSRC}/complex/ctanhl.c
     ${MUSLSRC}/complex/ctanl.c
-    ${MUSLSRC}/crypt/crypt_blowfish.c
-    ${MUSLSRC}/crypt/crypt.c
-    ${MUSLSRC}/crypt/crypt_des.c
-    ${MUSLSRC}/crypt/crypt_md5.c
-    ${MUSLSRC}/crypt/crypt_r.c
-    ${MUSLSRC}/crypt/crypt_sha256.c
-    ${MUSLSRC}/crypt/crypt_sha512.c
-    ${MUSLSRC}/crypt/encrypt.c
     ${MUSLSRC}/ctype/__ctype_b_loc.c
     ${MUSLSRC}/ctype/__ctype_get_mb_cur_max.c
     ${MUSLSRC}/ctype/__ctype_tolower_loc.c

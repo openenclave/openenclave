@@ -39,7 +39,7 @@ oesgx utility tool:
 =======================================
  
  The oesgx tool is provided in the Openenclave SDK to help determine whether your system is SGX capable, that is, the CPU supports SGX or not. `"* You still need to make sure SGX is enabled from the BIOS *"`.
-The oesgx tool also detects the presence of the SGX's subfeature, Flexible Launch Control, which impacts how to build and setup Open Enclave SDK.
+The oesgx tool also detects the presence of the SGX's subfeature, Flexible Launch Control, which impacts how to build and set up Open Enclave SDK.
 
    A prebuilt oesgx binary for Linux could be downloaded from [here](https://github.com/soccerGB/Openenclavedoc/tree/master/tools)
    
@@ -81,4 +81,4 @@ This section is for the Microsoft internal development purpose and will be remov
 
 - How to enable SGX on a system and create a Linux VM to run on a Windows host [here](SetupSGXSystem.md)
 
-- How to provision an ACC Azure SGX Azure VM and setup Open Enclave SGX dev environment [here](accvmAccSGXVMSetup.md)
+- How to provision an ACC Azure SGX Azure VM and set up Open Enclave SGX dev environment [here](accvmAccSGXVMSetup.md)

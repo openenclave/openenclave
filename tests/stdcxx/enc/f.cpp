@@ -4,21 +4,21 @@
 #include <openenclave/enclave.h>
 #include <stdio.h>
 
-extern size_t numConstructions;
-extern size_t numDestructions;
+extern size_t num_constructions;
+extern size_t num_destructions;
 
 class F
 {
   public:
     F()
     {
-        numConstructions++;
+        num_constructions++;
         printf("F::F()\n");
     }
 
     ~F()
     {
-        numDestructions++;
+        num_destructions++;
         printf("F::~F()\n");
     }
 };

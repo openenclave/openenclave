@@ -50,7 +50,7 @@ OE_OCALL void Double(void* args_)
     *args = *args * 2;
 }
 
-static void _TestECallOCall(oe_enclave_t* enclave)
+static void _test_ecall_ocall(oe_enclave_t* enclave)
 {
     int num = 512;
     oe_result_t result = oe_call_enclave(enclave, "Double", &num);
@@ -66,7 +66,9 @@ static void _TestECallOCall(oe_enclave_t* enclave)
     OE_TEST(num == 2048);
 }
 
-static void _TestCreateEnclaveOCallForHost(const char* path, uint32_t flags)
+static void _test_create_enclave_ocall_for_host(
+    const char* path,
+    uint32_t flags)
 {
     printf("\n_TestCreateEnclaveOCallForHost\n");
 
@@ -96,10 +98,10 @@ static void _TestCreateEnclaveOCallForHost(const char* path, uint32_t flags)
     OE_TEST(args.enclave != NULL);
 
     /* Test if basic ECALLs and OCALLs work for the new enclave. */
-    _TestECallOCall(args.enclave);
+    _test_ecall_ocall(args.enclave);
 
     /* Test if the old enclave still works. */
-    _TestECallOCall(enclave);
+    _test_ecall_ocall(enclave);
 
     /* Terminate the enclave. */
     result = oe_terminate_enclave(enclave);
@@ -111,7 +113,9 @@ static void _TestCreateEnclaveOCallForHost(const char* path, uint32_t flags)
         oe_put_err("oe_terminate_enclave(): result=%u", result);
 }
 
-static void _TestCreateEnclaveOCallForEnclave(const char* path, uint32_t flags)
+static void _test_create_enclave_ocall_for_enclave(
+    const char* path,
+    uint32_t flags)
 {
     printf("\n_TestCreateEnclaveOCallForEnclave\n");
 
@@ -149,10 +153,10 @@ int main(int argc, const char* argv[])
     const uint32_t flags = oe_get_create_flags();
 
     /* Test if an enclave created via an OCALL can be used by the host. */
-    _TestCreateEnclaveOCallForHost(argv[1], flags);
+    _test_create_enclave_ocall_for_host(argv[1], flags);
 
     /* Test if an OCALL created enclave can be used by the enclave. */
-    _TestCreateEnclaveOCallForEnclave(argv[1], flags);
+    _test_create_enclave_ocall_for_enclave(argv[1], flags);
 
     return 0;
 }

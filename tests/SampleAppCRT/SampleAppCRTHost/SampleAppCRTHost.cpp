@@ -26,16 +26,16 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    int returnValue = INT_MIN;
-    if ((result = oe_call_enclave(enclave, "Test", &returnValue)) != OE_OK)
+    int return_value = INT_MIN;
+    if ((result = oe_call_enclave(enclave, "Test", &return_value)) != OE_OK)
     {
         fprintf(stderr, "%s: ecall failed: result=%u\n", argv[0], result);
         return 1;
     }
 
-    if (returnValue != 0)
+    if (return_value != 0)
     {
-        fprintf(stderr, "ecall failed: returnValue=%d\n", returnValue);
+        fprintf(stderr, "ecall failed: returnValue=%d\n", return_value);
         return 1;
     }
 

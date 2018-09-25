@@ -1,0 +1,12 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+        public int test(
+            [in, count=data_length] const unsigned char* data,
+            size_t data_length,
+            [out, count=hexstr_length] char* hexstr,
+            size_t hexstr_length);
+    };
+};

@@ -8,6 +8,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/hostalloc.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/syscall.h>
 #include <signal.h>
@@ -19,29 +20,13 @@
 #include <sys/syscall.h>
 #include <sys/uio.h>
 #include <unistd.h>
-#include "../host/args.h"
+#include "../syscall_args.h"
+#include "mbed_t.h"
+
 #define STRMAXLEN 500
+
 int main(int argc, const char* argv[]);
 int checkerflag = 0;
-typedef struct test_result
-{
-    int passed;
-    int skipped;
-    int total;
-} test_result_t;
-
-test_result_t test_result;
-
-typedef struct _SyscallArgs
-{
-    char* path;
-    int flags;
-    int mode;
-    int fd;
-    void* ptr;
-    int ret;
-    int len;
-} SyscallArgs;
 
 void _exit(int status)
 {
@@ -61,7 +46,7 @@ void exit(int status)
     abort();
 }
 
-char* oe_host_stack_strdup(const char* str)
+char* oe_host_strdup(const char* str)
 {
     size_t n = oe_strlen(str);
     char* dup = (char*)oe_host_malloc(n + 1);
@@ -113,23 +98,23 @@ static oe_result_t _syscall_hook(
             const int flags = (const int)arg2;
             if (flags == O_RDONLY)
             {
-                SyscallArgs* args;
-                args = (SyscallArgs*)oe_host_malloc(sizeof(SyscallArgs));
-                args->path = oe_host_stack_strdup((const char*)arg1);
+                syscall_args_t* args;
+                args = (syscall_args_t*)oe_host_malloc(sizeof(syscall_args_t));
+                args->path = oe_host_strdup((const char*)arg1);
                 args->flags = (int)arg2;
                 args->mode = (int)arg3;
                 oe_call_host("mbed_test_open", args);
                 *ret = args->fd;
                 oe_host_free(args->path);
                 oe_host_free(args);
-                OE_RAISE(OE_OK);
+                result = OE_OK;
             }
             break;
         }
         case SYS_readv:
         {
-            SyscallArgs* args;
-            args = (SyscallArgs*)oe_host_malloc(sizeof(SyscallArgs));
+            syscall_args_t* args;
+            args = (syscall_args_t*)oe_host_malloc(sizeof(syscall_args_t));
             struct iovec* iov = (struct iovec*)arg2;
             int i;
             struct iovec* iov_host =
@@ -154,21 +139,10 @@ static oe_result_t _syscall_hook(
 
             oe_host_free(iov_host);
             oe_host_free(args);
-            OE_RAISE(OE_OK);
+            result = OE_OK;
             break;
         }
-        case SYS_close:
-        {
-            SyscallArgs* args;
-            args = (SyscallArgs*)oe_host_malloc(sizeof(SyscallArgs));
-            args->fd = (int)arg1;
-            oe_call_host("mbed_test_close", args);
-            *ret = args->ret;
-            oe_host_free(args);
-            OE_RAISE(OE_OK);
-            break;
-        }
-        case SYS_writev:
+	case SYS_writev:
         {
             char* str_full = malloc(STRMAXLEN);
             memset(str_full, 0, STRMAXLEN);
@@ -181,54 +155,69 @@ static oe_result_t _syscall_hook(
             }
             test_checker(str_full);
             free(str_full);
-            OE_RAISE(OE_UNSUPPORTED);
+            result = OE_UNSUPPORTED;
             break;
         }
+        case SYS_close:
+        {
+            syscall_args_t* args;
+            args = (syscall_args_t*)oe_host_malloc(sizeof(syscall_args_t));
+            args->fd = (int)arg1;
+            oe_call_host("mbed_test_close", args);
+            *ret = args->ret;
+            oe_host_free(args);
+            result = OE_OK;
+            break;
+        }
+	default:
+	{
+	    OE_RAISE(OE_UNSUPPORTED);
+	}
     }
-
-    OE_RAISE(OE_UNSUPPORTED);
 
 done:
     return result;
 }
 
-OE_ECALL void Test(Args* args)
+int test(const char* in_testname, char** out_testname)
 {
-    if (args)
+    int return_value = -1;
+    printf("RUNNING: %s\n", __TEST__);
+
+    // Install a syscall hook to handle special behavior for mbed TLS.
+    oe_register_syscall_hook(_syscall_hook);
+
+    // verbose option is enabled as some of the functionality in helper.function
+    // such as redirect output, restore output is trying to assign values to
+    // stdout which in turn causes segmentation fault.  To avoid this we enabled
+    // verbose options such that those function calls will be suppressed.
+    if (0 == strcmp(
+                 __TEST__,
+                 "../../3rdparty/mbedtls/mbedtls/programs/test/selftest.c"))
     {
-        printf("RUNNING: %s\n", __TEST__);
-
-        // Install a syscall hook to handle special behavior for mbed TLS.
-        oe_register_syscall_hook(_syscall_hook);
-
-        // verbose option is enabled as some of the functionality in
-        // helper.function such as redirect output, restore output is trying
-        // to assign values to stdout which in turn causes segmentation fault.
-        // To avoid this we enabled verbose options such that those function
-        // calls will be suppressed.
-        if (0 == strcmp(
-                     __TEST__,
-                     "../../3rdparty/mbedtls/mbedtls/programs/test/selftest.c"))
-        {
-            // selftest treats the verbose flag "-v" as an invalid test suite
-            // name,
-            // so drop all args when invoking the test, which will execute all
-            // selftests
-            static const char* noargs[2] = {NULL};
-            args->ret = main(1, noargs);
-        }
-        else
-        {
-            static const char* argv[] = {"test", "-v", "NULL"};
-            static int argc = sizeof(argv) / sizeof(argv[0]);
-            argv[2] = args->test;
-            args->ret = main(argc, argv);
-            args->passed = test_result.passed;
-            args->skipped = test_result.skipped;
-            args->total = test_result.total;
-        }
-        args->test = oe_host_strndup(__TEST__, OE_SIZE_MAX);
+        // selftest treats the verbose flag "-v" as an invalid test suite name,
+        // so drop all args when invoking the test, which will execute all
+        // selftests
+        static const char* noargs[2] = {NULL};
+        return_value = main(1, noargs);
     }
+    else
+    {
+        static const char* argv[] = {"test", "-v", "NULL"};
+        static int argc = sizeof(argv) / sizeof(argv[0]);
+        argv[2] = in_testname;
+        return_value = main(argc, argv);
+       	test_result_t * results; 
+	results = (test_result_t*)oe_host_malloc(sizeof(test_result_t));
+        results->passed =  test_result.passed;
+	results->skipped = test_result.skipped;
+	results->total = test_result.total;
+        oe_call_host("mbed_test_check_results", results);
+	oe_host_free(results);
+    }
+    *out_testname = oe_host_strndup(__TEST__, OE_SIZE_MAX);
+
+    return return_value;
 }
 
 /*
@@ -243,7 +232,7 @@ OE_ECALL void Test(Args* args)
  **==============================================================================
  */
 
-void oe_handle_verify_report(uint64_t argIn, uint64_t* argOut)
+void oe_handle_verify_report(uint64_t arg_in, uint64_t* arg_out)
 {
     assert("oe_handle_verify_report()" == NULL);
     abort();
