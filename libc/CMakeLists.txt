@@ -281,16 +281,16 @@ add_library(oelibc STATIC
     ${MUSLSRC}/math/log10l.c
     ${MUSLSRC}/math/log1p.c
     ${MUSLSRC}/math/log1pf.c
-    ${MUSLSRC}/math/log1pl.c
+    #${MUSLSRC}/math/log1pl.c
     ${MUSLSRC}/math/log2.c
     ${MUSLSRC}/math/log2f.c
-    ${MUSLSRC}/math/log2l.c
+    #${MUSLSRC}/math/log2l.c
     ${MUSLSRC}/math/logb.c
     ${MUSLSRC}/math/logbf.c
     ${MUSLSRC}/math/logbl.c
     ${MUSLSRC}/math/log.c
     ${MUSLSRC}/math/logf.c
-    ${MUSLSRC}/math/logl.c
+    #${MUSLSRC}/math/logl.c
     ${MUSLSRC}/math/lrint.c
     ${MUSLSRC}/math/lrintf.c
     ${MUSLSRC}/math/lrintl.c
@@ -358,8 +358,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/math/sinhl.c
     ${MUSLSRC}/math/__sinl.c
     ${MUSLSRC}/math/sinl.c
-    ${MUSLSRC}/math/sqrt.c
-    ${MUSLSRC}/math/sqrtf.c
     ${MUSLSRC}/math/__tan.c
     ${MUSLSRC}/math/tan.c
     ${MUSLSRC}/math/__tandf.c
@@ -377,8 +375,13 @@ add_library(oelibc STATIC
     ${MUSLSRC}/math/truncl.c
     ${MUSLSRC}/math/x86_64/acosl.s
     ${MUSLSRC}/math/x86_64/asinl.s
+    ${MUSLSRC}/math/x86_64/log1pl.s
+    ${MUSLSRC}/math/x86_64/log2l.s
+    ${MUSLSRC}/math/x86_64/logl.s
     #${MUSLSRC}/math/x86_64/exp2l.s
+    ${MUSLSRC}/math/x86_64/sqrt.s
     ${MUSLSRC}/math/x86_64/sqrtl.s
+    ${MUSLSRC}/math/x86_64/sqrtf.s
     ${MUSLSRC}/misc/basename.c
     ${MUSLSRC}/misc/dirname.c
     ${MUSLSRC}/mman/mmap.c

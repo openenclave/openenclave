@@ -1,3 +1,10 @@
+../../3rdparty/musl/libc-test/src/math/sqrt.c
+../../3rdparty/musl/libc-test/src/math/sqrtf.c
+
+../../3rdparty/musl/libc-test/src/math/log1pl.c
+../../3rdparty/musl/libc-test/src/math/log2l.c
+../../3rdparty/musl/libc-test/src/math/logl.c
+
 ../../3rdparty/musl/libc-test/src/math/expm1l.c
 ../../3rdparty/musl/libc-test/src/math/exp2l.c
 ../../3rdparty/musl/libc-test/src/api/main.c

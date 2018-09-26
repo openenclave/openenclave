@@ -130,6 +130,9 @@
 ../../3rdparty/musl/libc-test/src/math/logbf.c
 ../../3rdparty/musl/libc-test/src/math/logbl.c
 ../../3rdparty/musl/libc-test/src/math/log.c
+../../3rdparty/musl/libc-test/src/math/log1pl.c
+../../3rdparty/musl/libc-test/src/math/log2l.c
+../../3rdparty/musl/libc-test/src/math/logl.c
 ../../3rdparty/musl/libc-test/src/math/logf.c
 ../../3rdparty/musl/libc-test/src/math/lrint.c
 ../../3rdparty/musl/libc-test/src/math/lrintf.c
@@ -177,6 +180,7 @@
 ../../3rdparty/musl/libc-test/src/math/sinf.c
 ../../3rdparty/musl/libc-test/src/math/sinhf.c
 ../../3rdparty/musl/libc-test/src/math/sinl.c
+../../3rdparty/musl/libc-test/src/math/sqrt.c
 ../../3rdparty/musl/libc-test/src/math/sqrtl.c
 ../../3rdparty/musl/libc-test/src/math/tan.c
 ../../3rdparty/musl/libc-test/src/math/tanf.c
