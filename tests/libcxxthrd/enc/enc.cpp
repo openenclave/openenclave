@@ -131,6 +131,36 @@ static int _pthread_join_hook(pthread_t enc_thread, void** retval)
     return 0;
 }
 
+static int _pthread_detach_hook(pthread_t enc_thread)
+{
+    int detach_enc_key;
+    // Find the enc_key from the enc_thread
+    _acquire_lock(&_enc_lock);
+    auto it = std::find_if(
+        _key_to_thread_id_map.begin(),
+        _key_to_thread_id_map.end(),
+        [&enc_thread](const std::pair<int, pthread_t> p) {
+            return p.second == enc_thread;
+        });
+    if (it == _key_to_thread_id_map.end())
+    {
+        printf("Enclave Key for thread ID 0x%lu not found\n", enc_thread);
+        oe_abort();
+    }
+    detach_enc_key = it->first;
+    _release_lock(&_enc_lock);
+
+    printf(
+        "_pthread_detach_hook(): Enclave Key for thread ID 0x%lu is %d\n",
+        enc_thread,
+        detach_enc_key);
+    if (oe_call_host("host_detach_pthread", (void*)(uint64_t)detach_enc_key) !=
+        OE_OK)
+        oe_abort();
+
+    return 0;
+}
+
 // Launches the new thread in the enclave
 OE_ECALL void _enclave_launch_thread(void* args_)
 {
@@ -151,7 +181,8 @@ OE_ECALL void _enclave_launch_thread(void* args_)
 OE_ECALL void Test(Args* args)
 {
     static oe_pthread_hooks_t _hooks = {.create = _pthread_create_hook,
-                                        .join = _pthread_join_hook};
+                                        .join = _pthread_join_hook,
+                                        .detach = _pthread_detach_hook};
     oe_register_pthread_hooks(&_hooks);
 
     extern const char* __TEST__NAME;

@@ -153,6 +153,48 @@ OE_OCALL void host_join_pthread(uint64_t enc_key, oe_enclave_t* enclave)
     }
 }
 
+OE_OCALL void host_detach_pthread(uint64_t enc_key, oe_enclave_t* enclave)
+{
+    pthread_t host_thread_id = 0;
+    int ret = -1;
+
+    // Find the host_thread_id from the enclave_host_id_map using the enc_key
+
+    // Using atomic locks to protect the enclave_host_id_map
+    _acquire_lock(&_host_lock);
+    auto it = enclave_host_id_map.find(enc_key);
+    if (it != enclave_host_id_map.end())
+    {
+        host_thread_id = it->second;
+        _release_lock(&_host_lock);
+
+        if ((ret = pthread_detach(host_thread_id)) != 0)
+        {
+            printf(
+                "pthread_detach error=%d for enclave key=0x%lu, host "
+                "id=0x%lu\n",
+                ret,
+                enc_key,
+                host_thread_id);
+            abort();
+        }
+        else
+            printf(
+                "pthread_detach succeeded for enclave id=0x%lu, host "
+                "id=0x%lu\n",
+                enc_key,
+                host_thread_id);
+    }
+    else
+    {
+        _release_lock(&_host_lock);
+        printf(
+            "pthread_detach failed to find enclave id=0x%lu in host map\n",
+            enc_key);
+        abort();
+    }
+}
+
 static int _get_opt(
     int& argc,
     const char* argv[],
