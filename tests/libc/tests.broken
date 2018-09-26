@@ -1,6 +1,4 @@
 ../../3rdparty/musl/libc-test/src/functional/tgmath.c
-../../3rdparty/musl/libc-test/src/math/acoshl.c
-../../3rdparty/musl/libc-test/src/math/atanhl.c
 ../../3rdparty/musl/libc-test/src/math/fmax.c
 ../../3rdparty/musl/libc-test/src/math/fmaxf.c
 ../../3rdparty/musl/libc-test/src/math/fmin.c

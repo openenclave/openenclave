@@ -30,6 +30,8 @@
 ../../3rdparty/musl/libc-test/src/functional/wcstol.c
 ../../3rdparty/musl/libc-test/src/math/acos.c
 ../../3rdparty/musl/libc-test/src/math/acosf.c
+../../3rdparty/musl/libc-test/src/math/acoshl.c
+../../3rdparty/musl/libc-test/src/math/atanhl.c
 ../../3rdparty/musl/libc-test/src/math/acoshf.c
 ../../3rdparty/musl/libc-test/src/math/acosl.c
 ../../3rdparty/musl/libc-test/src/math/asin.c
