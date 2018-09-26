@@ -31,6 +31,7 @@ oe_result_t test_verify_tcb_info(
 
 void test_minimum_issue_date(oe_datetime_t now)
 {
+#ifdef OE_USE_LIBSGX
     static uint8_t report[OE_MAX_REPORT_SIZE];
     size_t report_size = sizeof(report);
 
@@ -72,6 +73,7 @@ void test_minimum_issue_date(oe_datetime_t now)
         OE_INVALID_REVOCATION_INFO);
 
     printf("test_minimum_issue_date passed.\n");
+#endif
 }
 
 OE_SET_ENCLAVE_SGX(
