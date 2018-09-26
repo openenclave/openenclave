@@ -7,12 +7,10 @@ typedef struct _error_info
 {
     unsigned int errnum;
     const char* message;
-}
-error_info_t;
+} error_info_t;
 
-static error_info_t _errors[] =
-{
-#define E(errno, message) { errno, message },
+static error_info_t _errors[] = {
+#define E(errno, message) {errno, message},
 #include "../3rdparty/musl/musl/src/errno/__strerror.h"
 };
 
