@@ -28,3 +28,5 @@ after pthread_create_hook
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.cons/mutex_try_to_lock.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/try_lock_shared.pass.cpp
 
+#pthread detach-hook segmentation fault
+../../3rdparty/libcxx/libcxx/test/std/thread/thread.threads/thread.thread.class/thread.thread.member/detach.pass.cpp
