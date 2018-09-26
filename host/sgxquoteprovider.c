@@ -103,7 +103,7 @@ oe_result_t oe_initialize_quote_provider()
 {
     static oe_once_type once = OE_H_ONCE_INITIALIZER;
     oe_once(&once, _load_quote_provider);
-    return _lib_handle ? OE_OK : OE_FAILURE;
+    return _lib_handle ? OE_OK : OE_QUOTE_PROVIDER_LOAD_ERROR;
 }
 
 oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
