@@ -23,8 +23,8 @@ oe_result_t oe_memcpy_s(
     }
 
     /* Reject overlapping buffers. */
-    if ((dst >= src && (dst < (const char*) src + num_bytes)) ||
-        (dst < src && ((const char*) dst + dst_size > src)))
+    if ((dst >= src && ((char*) dst < (char*) src + num_bytes)) ||
+        (dst < src && ((char*) dst + dst_size > (char*) src)))
     {
         memset(dst, 0, dst_size);
         OE_RAISE(OE_OVERLAPPED_COPY);

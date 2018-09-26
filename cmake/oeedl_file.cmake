@@ -41,12 +41,21 @@ function(oeedl_file EDL_FILE TYPE OUT_FILES_VAR)
 	message(${c_file})
 	message(${OE_BINDIR})
 
+if (UNIX)
+	add_custom_command(
+		OUTPUT ${h_file} ${c_file}
+		DEPENDS ${EDL_FILE} ${OE_BINDIR}/oeedger8r
+		COMMAND ${OE_BINDIR}/oeedger8r ${type_opt} ${dir_opt} ${CMAKE_CURRENT_BINARY_DIR} ${EDL_FILE}
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+		)
+else()
 	add_custom_command(
 		OUTPUT ${h_file} ${c_file}
 		DEPENDS ${EDL_FILE} ${OE_BINDIR}/oeedger8r.exe
 		COMMAND ${OE_BINDIR}/oeedger8r ${type_opt} ${dir_opt} ${CMAKE_CURRENT_BINARY_DIR} ${EDL_FILE}
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		)
+endif()
 
 	set_source_files_properties(
 		${h_file} ${c_file}
