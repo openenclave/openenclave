@@ -156,9 +156,8 @@ oe_result_t oe_get_report(
 
 #if defined(OE_USE_LIBSGX)
     // The two host side attestation API's are oe_get_report and
-    // oe_verify_report.
-    // Initialize quote provider in both these APIs.
-    oe_initialize_quote_provider();
+    // oe_verify_report. Initialize the quote provider in both these APIs.
+    OE_CHECK(oe_initialize_quote_provider());
 #endif
 
     // Reserve space in the buffer for header.
@@ -231,9 +230,8 @@ oe_result_t oe_verify_report(
 
 #if defined(OE_USE_LIBSGX)
     // The two host side attestation API's are oe_get_report and
-    // oe_verify_report.
-    // Initialize quote provider in both these APIs.
-    oe_initialize_quote_provider();
+    // oe_verify_report. Initialize the quote provider in both these APIs.
+    OE_CHECK(oe_initialize_quote_provider());
 #endif
 
     if (report == NULL)
