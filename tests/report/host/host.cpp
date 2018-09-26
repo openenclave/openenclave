@@ -7,6 +7,7 @@
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/tests.h>
 #include <openenclave/internal/utils.h>
+#include <ctime>
 #include "../../../common/tcbinfo.h"
 #include "../../../host/quote.h"
 #include "../common/tests.cpp"
@@ -92,6 +93,19 @@ int main(int argc, const char* argv[])
         OE_OK);
 
     TestVerifyTCBInfo(enclave);
+
+    // Get current time and pass it to enclave.
+    std::time_t t = std::time(0);
+    std::tm* tm = std::gmtime(&t);
+
+    // convert std::tm to oe_datetime_t
+    oe_datetime_t now = {(uint32_t)tm->tm_year + 1900,
+                         (uint32_t)tm->tm_mon + 1,
+                         (uint32_t)tm->tm_mday,
+                         (uint32_t)tm->tm_hour,
+                         (uint32_t)tm->tm_min,
+                         (uint32_t)tm->tm_sec};
+    test_minimum_issue_date(enclave, now);
 #endif
 
     /* Terminate the enclave */
