@@ -183,6 +183,7 @@
 ../../3rdparty/musl/libc-test/src/math/sinhf.c
 ../../3rdparty/musl/libc-test/src/math/sinl.c
 ../../3rdparty/musl/libc-test/src/math/sqrt.c
+../../3rdparty/musl/libc-test/src/math/sqrtf.c
 ../../3rdparty/musl/libc-test/src/math/sqrtl.c
 ../../3rdparty/musl/libc-test/src/math/tan.c
 ../../3rdparty/musl/libc-test/src/math/tanf.c
