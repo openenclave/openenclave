@@ -65,8 +65,8 @@ else
     apt-key add llvm-snapshot.gpg.key
 
     # Add repo
-    if ! (grep apt.llvm.org/xenial /etc/apt/sources.list); then
-        cat << EOF >> /etc/apt/sources.list
+    if [[ ! -f /etc/apt/sources.list.d/llvm-toolchain-xenial-7.list ]]; then
+        cat << EOF >> /etc/apt/sources.list.d/llvm-toolchain-xenial-7.list
 
 # LLVM/clang-7 (with spectre mitigations)
 deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main

@@ -28,6 +28,7 @@ LICENSE
 *.json
 *.toml
 ./.openenclaveroot
+*.der
 *.pem
 ./prereqs/aesm/.build
 ./prereqs/aesm/dynamic-application-loader-host-interface

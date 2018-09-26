@@ -561,9 +561,8 @@ oe_result_t oe_cert_verify(
     Cert* cert_impl = (Cert*)cert;
     CertChain* chain_impl = (CertChain*)chain;
     X509_STORE_CTX* ctx = NULL;
+    X509_STORE* store = NULL;
     X509* x509 = NULL;
-    STACK_OF(X509_CRL)* crl_stack = NULL;
-    X509_VERIFY_PARAM* verify_param = NULL;
 
     /* Initialize error to NULL for now */
     if (error)
@@ -604,8 +603,15 @@ oe_result_t oe_cert_verify(
         OE_RAISE(OE_FAILURE);
     }
 
+    /* Create a store for the verification */
+    if (!(store = X509_STORE_new()))
+    {
+        _set_err(error, "failed to allocate X509 store");
+        OE_RAISE(OE_FAILURE);
+    }
+
     /* Initialize the context that will be used to verify the certificate */
-    if (!X509_STORE_CTX_init(ctx, NULL, NULL, NULL))
+    if (!X509_STORE_CTX_init(ctx, store, NULL, NULL))
     {
         _set_err(error, "failed to initialize X509 context");
         OE_RAISE(OE_FAILURE);
@@ -617,35 +623,27 @@ oe_result_t oe_cert_verify(
     /* Set the CA chain into the verification context */
     X509_STORE_CTX_trusted_stack(ctx, chain_impl->sk);
 
-    /* Get the verify parameter (must not be null) */
-    if (!(verify_param = X509_STORE_CTX_get0_param(ctx)))
-        OE_RAISE(OE_FAILURE);
-
     /* Set the CRLs if any */
     if (crls && num_crls)
     {
-        if (!(crl_stack = sk_X509_CRL_new_null()))
-            OE_RAISE(OE_OUT_OF_MEMORY);
+        X509_VERIFY_PARAM* verify_param;
 
         for (size_t i = 0; i < num_crls; i++)
         {
             crl_t* crl_impl = (crl_t*)crls[i];
 
-            if (!crl_is_valid(crl_impl))
-                OE_RAISE(OE_INVALID_PARAMETER);
+            _X509_CRL_up_ref(crl_impl->crl);
 
-            if (!sk_X509_CRL_push(crl_stack, crl_impl->crl))
-                OE_RAISE(OE_FAILURE);
-
-            if (!_X509_CRL_up_ref(crl_impl->crl))
+            if (!X509_STORE_add_crl(store, crl_impl->crl))
                 OE_RAISE(OE_FAILURE);
         }
 
-        X509_STORE_CTX_set0_crls(ctx, crl_stack);
+        /* Get the verify parameter (must not be null) */
+        if (!(verify_param = X509_STORE_CTX_get0_param(ctx)))
+            OE_RAISE(OE_FAILURE);
 
-        // Enable CRL checking: without this flag, OpenSSL ingores the CRL list
-        // installed above.
         X509_VERIFY_PARAM_set_flags(verify_param, X509_V_FLAG_CRL_CHECK);
+        X509_VERIFY_PARAM_set_flags(verify_param, X509_V_FLAG_CRL_CHECK_ALL);
     }
 
     /* Finally verify the certificate */
@@ -664,11 +662,11 @@ done:
     if (ctx)
         X509_STORE_CTX_free(ctx);
 
+    if (store)
+        X509_STORE_free(store);
+
     if (x509)
         X509_free(x509);
-
-    if (crl_stack)
-        sk_X509_CRL_pop_free(crl_stack, X509_CRL_free);
 
     return result;
 }

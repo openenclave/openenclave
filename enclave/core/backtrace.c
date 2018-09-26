@@ -22,129 +22,65 @@ const void* _check_address(const void* ptr)
     return ptr;
 }
 
+/* Safe implementation of oe_backtrace.
+ *
+ * The original implementation used the ___builtin_return_address intrinsic.
+ * The intrinsic however is unsafe and can crash if any function in the
+ * call-stack does not preserve the stack-frame. This scenario can easily happen
+ * if any function in the call-stack has been compiled with optimization, or is
+ * a special function like global initializer.
+ * This new implementation below safely walks up the call-stack, ensuring that
+ * each potential-frame is not null and lies within the enclave.
+ */
 int oe_backtrace(void** buffer, int size)
 {
-    const void* addrs[OE_BACKTRACE_MAX];
+#ifdef OE_USE_DEBUG_MALLOC
+    // Fetch the frame-pointer of the current function.
+    // The current function oe_backtrace is not expected to be inlined.
+    // The rbp register contains the frame-pointer upon entry to the function.
+    void** frame = NULL;
+    asm volatile(
+        "movq %%rbp, %0"
+        : "=r"(frame)
+        : /* no inputs */
+        : /* no clobbers */
+        );
+
+    // Upon entry to a function, rsp + 0 contains the return address.
+    // Generally, the first thing that a function does upong entry is
+    //     push %rbp
+    // rbp is expected to contain the callee's frame pointer.
+    // Thus after saving rbp,
+    //     rsp + 0  (frame[0]) contains callee's frame pointer.
+    //     rsp + 8  (frame[1]) contains return address (within the callee).
+    //
+    // However, the compiler may not always store the callee's frame-ptr in the
+    // rbp register. Within optimizations enabled, the compiler could use rbp
+    // just like other general-purpose register and hold some value rather than
+    // the frame-pointer. While frame[1] always contains the return address,
+    // frame[0] may not always contain the pointer to callee's stack frame.
+    // To be on the safer-side, we always check that the values we access
+    // while traversing the stack always lie within the enclave.
     int n = 0;
-    int i;
-
-    // It isn't possible to use iteration here since __builtin_return_address()
-    // must take a constant argument. Also, the depth is limited to
-    // OE_BACKTRACE_MAX.
-    do
+    while (n < size)
     {
-        if (!(addrs[n] = _check_address(__builtin_return_address(0))))
+        // Ensure that the current frame is safe to access.
+        if (!_check_address(frame))
             break;
 
-        if (!(addrs[++n] = _check_address(__builtin_return_address(1))))
+        // Ensure that the return address is valid.
+        if (!_check_address(frame[1]))
             break;
 
-        if (!(addrs[++n] = _check_address(__builtin_return_address(2))))
-            break;
-
-        if (!(addrs[++n] = _check_address(__builtin_return_address(3))))
-            break;
-
-        if (!(addrs[++n] = _check_address(__builtin_return_address(4))))
-            break;
-
-        if (!(addrs[++n] = _check_address(__builtin_return_address(5))))
-            break;
-
-        if (!(addrs[++n] = _check_address(__builtin_return_address(6))))
-            break;
-
-        if (!(addrs[++n] = _check_address(__builtin_return_address(7))))
-            break;
-
-        if (!(addrs[++n] = _check_address(__builtin_return_address(8))))
-            break;
-
-        if (!(addrs[++n] = _check_address(__builtin_return_address(9))))
-            break;
-
-        if (!(addrs[++n] = _check_address(__builtin_return_address(10))))
-            break;
-
-        if (!(addrs[++n] = _check_address(__builtin_return_address(11))))
-            break;
-
-        if (!(addrs[++n] = _check_address(__builtin_return_address(12))))
-            break;
-
-        if (!(addrs[++n] = _check_address(__builtin_return_address(13))))
-            break;
-
-        if (!(addrs[++n] = _check_address(__builtin_return_address(14))))
-            break;
-
-        if (!(addrs[++n] = _check_address(__builtin_return_address(15))))
-            break;
-
-        if (!(addrs[++n] = _check_address(__builtin_return_address(16))))
-            break;
-
-        if (!(addrs[++n] = _check_address(__builtin_return_address(17))))
-            break;
-
-        if (!(addrs[++n] = _check_address(__builtin_return_address(18))))
-            break;
-
-        if (!(addrs[++n] = _check_address(__builtin_return_address(19))))
-            break;
-
-        if (!(addrs[++n] = _check_address(__builtin_return_address(20))))
-            break;
-
-        if (!(addrs[++n] = _check_address(__builtin_return_address(21))))
-            break;
-
-        if (!(addrs[++n] = _check_address(__builtin_return_address(22))))
-            break;
-
-        if (!(addrs[++n] = _check_address(__builtin_return_address(23))))
-            break;
-
-        if (!(addrs[++n] = _check_address(__builtin_return_address(24))))
-            break;
-
-        if (!(addrs[++n] = _check_address(__builtin_return_address(25))))
-            break;
-
-        if (!(addrs[++n] = _check_address(__builtin_return_address(26))))
-            break;
-
-        if (!(addrs[++n] = _check_address(__builtin_return_address(27))))
-            break;
-
-        if (!(addrs[++n] = _check_address(__builtin_return_address(28))))
-            break;
-
-        if (!(addrs[++n] = _check_address(__builtin_return_address(29))))
-            break;
-
-        if (!(addrs[++n] = _check_address(__builtin_return_address(30))))
-            break;
-
-        if (!(addrs[++n] = _check_address(__builtin_return_address(31))))
-            break;
-
-        OE_STATIC_ASSERT(OE_BACKTRACE_MAX == 32);
-
-    } while (0);
-
-    /* If the caller's buffer is too small */
-    if (n > size)
-        n = size;
-
-    /* Copy addresses to caller's buffer */
-    if (buffer)
-    {
-        for (i = 0; i < n; i++)
-            buffer[i] = (void*)addrs[i];
+        // Store address and move to previous frame.
+        buffer[n++] = frame[1];
+        frame = (void**)*frame;
     }
 
     return n;
+#else
+    return 0;
+#endif
 }
 
 char** oe_backtrace_symbols(void* const* buffer, int size)
