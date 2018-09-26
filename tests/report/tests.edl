@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 enclave {
-    include "includes.h"    
+    include "includes.h"
 
     trusted {
         // datetime tests.
