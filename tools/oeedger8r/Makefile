@@ -50,7 +50,8 @@ build:
 ifeq ($(shell test $(OCAML_VERSION) -lt 402 && echo 1), 1)
 	ocamlbuild -I intel -lflag -ccopt -lflag "-Wl,-z,now" -no-links -libs str,unix  main.native
 else
-	ocamlbuild -I intel -cflags -ccopt,-fpie -lflags -runtime-variant,_pic,-ccopt,-pie,-ccopt -lflag "-Wl,-z,now"  -no-links -libs str,unix main.native
+	ocamlbuild -I intel -libs str,unix  main.native
+	#ocamlbuild -I intel -cflags -ccopt,-fpie -lflags -runtime-variant,_pic,-ccopt,-pie,-ccopt -lflag "-Wl,-z,now"  -no-links -libs str,unix main.native
 endif
 
 $(BUILD_DIR):

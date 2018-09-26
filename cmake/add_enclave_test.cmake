@@ -19,9 +19,8 @@ function(add_enclave_test TEST_NAME HOST_SUBPATH HOST_FILE ENC_SUBPATH ENC_FILE)
 
 if (ADD_WINDOWS_ENCLAVE_TESTS)
 
-	# get test directory name only, so that it can be used to
-	# make complete path.
-	get_filename_component(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+	# Get the test directory path relative to the source root directory.
+	file(RELATIVE_PATH TEST_DIR ${PROJECT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
 	# custom rule to copy binary from linux
 	# take a dependency on host binary to make sure it exists in addition to 

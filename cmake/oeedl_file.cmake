@@ -29,15 +29,21 @@ function(oeedl_file EDL_FILE TYPE OUT_FILES_VAR)
 		message(FATAL_ERROR "unknown EDL generation type ${TYPE} - must be \"enclave\" or \"host\"")
 	endif()
 
+	message(${EDL_FILE})
+
 	get_filename_component(idl_base ${EDL_FILE} NAME_WE)
 	get_filename_component(in_path ${EDL_FILE} PATH)
 
 	set(h_file ${CMAKE_CURRENT_BINARY_DIR}/${idl_base}_${type_id}.h)
 	set(c_file ${CMAKE_CURRENT_BINARY_DIR}/${idl_base}_${type_id}.c)
 
+	message(${h_file})
+	message(${c_file})
+	message(${OE_BINDIR})
+
 	add_custom_command(
 		OUTPUT ${h_file} ${c_file}
-		DEPENDS ${EDL_FILE} oeedger8r
+		DEPENDS ${EDL_FILE} ${OE_BINDIR}/oeedger8r
 		COMMAND ${OE_BINDIR}/oeedger8r ${type_opt} ${dir_opt} ${CMAKE_CURRENT_BINARY_DIR} ${EDL_FILE}
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		)

@@ -7,4 +7,4 @@ if (UNIX)
 	add_subdirectory(enc)
 endif()
 
-add_enclave_test(tests/crypto/enclave ../enclave/host cryptohost ../crypto/enclave/enc cryptoenc)
+add_enclave_test(tests/crypto/enclave ./host cryptohost ./enc cryptoenc)
