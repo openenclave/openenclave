@@ -24,7 +24,7 @@
 #else
 #include MBEDTLS_CONFIG_FILE
 #endif
-
+ajksdhalsjkdfhal;skdjfhalsdf
 #if defined(MBEDTLS_ENTROPY_C)
 
 #if defined(MBEDTLS_TEST_NULL_ENTROPY)
@@ -272,6 +272,7 @@ static int entropy_gather_internal( mbedtls_entropy_context *ctx )
     /*
      * Run through our entropy sources
      */
+    printf("entropy sources: %d\n", ctx->source_count);
     for( i = 0; i < ctx->source_count; i++ )
     {
         if( ctx->source[i].strong == MBEDTLS_ENTROPY_SOURCE_STRONG )

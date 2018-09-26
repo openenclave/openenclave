@@ -274,6 +274,7 @@ static void _test_generate()
     uint8_t* signature = NULL;
     size_t signature_size = 0;
 
+    printf("oe_ec_gen_key_pair\n");
     r = oe_ec_generate_key_pair(
         OE_EC_TYPE_SECP256R1, &private_key, &public_key);
     OE_TEST(r == OE_OK);
@@ -287,8 +288,10 @@ static void _test_generate()
         &signature_size);
     OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
+    printf("oe_ec_malloc\n");
     OE_TEST(signature = (uint8_t*)malloc(signature_size));
 
+    printf("oe_ec_private_key_sign\n");
     r = oe_ec_private_key_sign(
         &private_key,
         OE_HASH_TYPE_SHA256,
@@ -298,6 +301,7 @@ static void _test_generate()
         &signature_size);
     OE_TEST(r == OE_OK);
 
+    printf("oe_ec_verify\n");
     r = oe_ec_public_key_verify(
         &public_key,
         OE_HASH_TYPE_SHA256,
@@ -307,6 +311,7 @@ static void _test_generate()
         signature_size);
     OE_TEST(r == OE_OK);
 
+    printf("freeing\n");
     free(signature);
     oe_ec_private_key_free(&private_key);
     oe_ec_public_key_free(&public_key);

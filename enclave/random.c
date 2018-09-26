@@ -6,6 +6,8 @@
 #include <mbedtls/entropy.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/random.h>
+#include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/random.h>
 #include <openenclave/internal/thread.h>
@@ -23,11 +25,16 @@ static mbedtls_entropy_context _entropy;
 
 static oe_result_t _seed_entropy_source()
 {
-    oe_result_t result = OE_UNEXPECTED;
 
+    oe_result_t result = OE_UNEXPECTED;
+    
+    oe_host_printf("mbedtls_ctr_drbg_init\n");
     mbedtls_ctr_drbg_init(&_drbg);
+
+    oe_host_printf("mbedtls_ctr_entropy_init\n");
     mbedtls_entropy_init(&_entropy);
 
+    oe_host_printf("mbedtls_ctr_drbg_seed\n");
     OE_CHECK(
         mbedtls_ctr_drbg_seed(
             &_drbg, mbedtls_entropy_func, &_entropy, NULL, 0));
@@ -44,11 +51,13 @@ static oe_once_t _seed_once = OE_ONCE_INIT;
 /* Wrapper to set file-scope _seed_result */
 static void _seed_entropy_source_once()
 {
+     oe_host_printf("_seed_entropy_source\n");
     _seed_result = _seed_entropy_source();
 }
 
 mbedtls_ctr_drbg_context* oe_mbedtls_get_drbg()
 {
+    oe_host_printf("get_drg_random()\n");
     oe_once(&_seed_once, _seed_entropy_source_once);
     return &_drbg;
 }

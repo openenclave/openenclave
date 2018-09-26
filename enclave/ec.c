@@ -7,6 +7,7 @@
 #include <mbedtls/ecp.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include "key.h"
 #include "pem.h"
@@ -94,6 +95,7 @@ static oe_result_t _generate_key_pair(
     int curve;
 
     /* Initialize structures */
+    oe_host_printf("init mbedtls\n");
     mbedtls_pk_init(&pk);
 
     if (private_key)
@@ -108,6 +110,7 @@ static oe_result_t _generate_key_pair(
 
     /* Get the group id and curve info structure for this EC type */
     {
+	oe_host_printf("group id and curve info\n");
         const mbedtls_ecp_curve_info* info;
         mbedtls_ecp_group_id group_id;
 
@@ -121,14 +124,17 @@ static oe_result_t _generate_key_pair(
     }
 
     /* Get the drbg object */
+	oe_host_printf("oe_mbedtls_get_drbg\n");
     if (!(drbg = oe_mbedtls_get_drbg()))
         OE_RAISE(OE_FAILURE);
 
     /* Create key struct */
+	oe_host_printf("mbedtls_pk_setup\n");
     if (mbedtls_pk_setup(&pk, mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY)) != 0)
         OE_RAISE(OE_FAILURE);
 
     /* Generate the EC key */
+	oe_host_printf("mbedtls_ecp_gen_key\n");
     if (mbedtls_ecp_gen_key(
             curve, mbedtls_pk_ec(pk), mbedtls_ctr_drbg_random, drbg) != 0)
     {
@@ -136,16 +142,19 @@ static oe_result_t _generate_key_pair(
     }
 
     /* Initialize the private key parameter */
+	oe_host_printf("oe_priv_init\n");
     OE_CHECK(
         oe_private_key_init(private_key, &pk, _copy_key, _PRIVATE_KEY_MAGIC));
 
     /* Initialize the public key parameter */
+	oe_host_printf("oe_pub_init\n");
     OE_CHECK(oe_public_key_init(public_key, &pk, _copy_key, _PUBLIC_KEY_MAGIC));
 
     result = OE_OK;
 
 done:
 
+	oe_host_printf("oe_frees\n");
     mbedtls_pk_free(&pk);
 
     if (result != OE_OK)
@@ -303,6 +312,7 @@ oe_result_t oe_ec_generate_key_pair(
     oe_ec_private_key_t* private_key,
     oe_ec_public_key_t* public_key)
 {
+	oe_host_printf("oe_ec_generate_key_pair\n");
     return _generate_key_pair(
         type, (oe_private_key_t*)private_key, (oe_public_key_t*)public_key);
 }

@@ -3,9 +3,11 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/print.h>
 
 uint64_t _rdrand(void)
 {
+	oe_host_printf("_rdrand\n");
     uint64_t r;
     __asm__ volatile("rdrand %0\n\t" : "=r"(r));
 
@@ -24,6 +26,9 @@ int mbedtls_hardware_poll(
     size_t len,
     size_t* olen)
 {
+
+	oe_host_printf("mbedtls_hardware_poll\n");
+
     int ret = -1;
     unsigned char* p = output;
 

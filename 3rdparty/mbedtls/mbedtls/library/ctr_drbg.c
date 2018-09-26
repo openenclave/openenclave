@@ -49,6 +49,8 @@
 #endif /* MBEDTLS_PLATFORM_C */
 #endif /* MBEDTLS_SELF_TEST */
 
+#include <stdio.h>
+
 /* Implementation that should never be optimized out by the compiler */
 static void mbedtls_zeroize( void *v, size_t n ) {
     volatile unsigned char *p = v; while( n-- ) *p++ = 0;
@@ -59,6 +61,7 @@ static void mbedtls_zeroize( void *v, size_t n ) {
  */
 void mbedtls_ctr_drbg_init( mbedtls_ctr_drbg_context *ctx )
 {
+    printf("mbedtls_ctr_drbg_init\n");
     memset( ctx, 0, sizeof( mbedtls_ctr_drbg_context ) );
 
 #if defined(MBEDTLS_THREADING_C)
@@ -83,6 +86,7 @@ int mbedtls_ctr_drbg_seed_entropy_len(
 
     memset( key, 0, MBEDTLS_CTR_DRBG_KEYSIZE );
 
+    printf("mbeftls_aes_init\n");
     mbedtls_aes_init( &ctx->aes_ctx );
 
     ctx->f_entropy = f_entropy;
@@ -94,11 +98,13 @@ int mbedtls_ctr_drbg_seed_entropy_len(
     /*
      * Initialize with an empty key
      */
+    printf("mbedtls_aes_setkey_enc\n");
     if( ( ret = mbedtls_aes_setkey_enc( &ctx->aes_ctx, key, MBEDTLS_CTR_DRBG_KEYBITS ) ) != 0 )
     {
         return( ret );
     }
 
+    printf("mbedtls_ctr_drbg_reseed\n");
     if( ( ret = mbedtls_ctr_drbg_reseed( ctx, custom, len ) ) != 0 )
     {
         return( ret );
@@ -112,7 +118,8 @@ int mbedtls_ctr_drbg_seed( mbedtls_ctr_drbg_context *ctx,
                    const unsigned char *custom,
                    size_t len )
 {
-    return( mbedtls_ctr_drbg_seed_entropy_len( ctx, f_entropy, p_entropy, custom, len,
+   printf("mbedtls_ctr_drbg_seed2\n"); 
+   return( mbedtls_ctr_drbg_seed_entropy_len( ctx, f_entropy, p_entropy, custom, len,
                                        MBEDTLS_CTR_DRBG_ENTROPY_LEN ) );
 }
 
