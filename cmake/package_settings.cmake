@@ -40,6 +40,7 @@ install(
 
 # CPack package handling
 include(InstallRequiredSystemLibraries)
+set(CPACK_PACKAGE_NAME "open-enclave")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Open Enclave SDK")
 set(CPACK_PACKAGE_CONTACT "openenclave@microsoft.com")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_SOURCE_DIR}/README.md")
