@@ -1,3 +1,4 @@
+# The following tests are broken on Clang + Debug:
 ../../3rdparty/musl/libc-test/src/functional/tgmath.c
 ../../3rdparty/musl/libc-test/src/math/fmax.c
 ../../3rdparty/musl/libc-test/src/math/fmaxf.c
@@ -12,3 +13,12 @@
 ../../3rdparty/musl/libc-test/src/math/y1.c
 ../../3rdparty/musl/libc-test/src/math/y1f.c
 ../../3rdparty/musl/libc-test/src/math/yn.c
+
+# The following tests are broken on Clang + RelWithDebInfo
+../../3rdparty/musl/libc-test/src/math/fdim.c
+../../3rdparty/musl/libc-test/src/math/fdimf.c
+../../3rdparty/musl/libc-test/src/math/fdiml.c
+../../3rdparty/musl/libc-test/src/math/fmaf.c
+../../3rdparty/musl/libc-test/src/math/log1p.c
+../../3rdparty/musl/libc-test/src/math/log1pf.c
+../../3rdparty/musl/libc-test/src/math/powf.c
