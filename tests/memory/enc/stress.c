@@ -14,7 +14,7 @@
 
 #define ITERS 1000
 
-/* We have two free so that the number of frees is balanced with the ones
+/* We have two frees so that the number of frees is balanced with the ones
  * that allocate memory (malloc and calloc). */
 #define TEST_MALLOC 0
 #define TEST_CALLOC 1
@@ -28,7 +28,7 @@
 static inline size_t _RandX(size_t x)
 {
     /* Note that rand() % N is biased if RAND_MAX + 1 isn't divisible
-     * by N. But, slight probability bias doesn't really mater in these
+     * by N. But, slight probability bias doesn't really matter in these
      * tests. */
     return rand() % x;
 }
@@ -38,7 +38,7 @@ static inline size_t _Min(size_t x, size_t y)
     return (x < y) ? x : y;
 }
 
-static size_t _GetAllocSize(size_t size)
+static size_t _GetAllocSize(size_t max_size)
 {
     /*
      * Simple distribution to test varied memory allocation:
@@ -49,13 +49,13 @@ static size_t _GetAllocSize(size_t size)
      */
     size_t val = _RandX(100);
     if (val < 20)
-        return _Min(_RandX(64), size);
+        return _Min(_RandX(64), max_size);
     else if (val < 50)
-        return _Min(_RandX(4096), size);
+        return _Min(_RandX(4096), max_size);
     else if (val < 80)
-        return _Min(_RandX(256 * 1024), size);
+        return _Min(_RandX(256 * 1024), max_size);
     else
-        return _Min(_RandX(16 * 1024 * 1024), size);
+        return _Min(_RandX(16 * 1024 * 1024), max_size);
 }
 
 static void _HandleAlloc(
@@ -184,11 +184,8 @@ OE_ECALL void MallocStressTest(void* args_)
 
     MallocStressTestArgs margs = *args;
 
-    /* Get available heap. */
-    const uint8_t* cur = (const uint8_t*)oe_sbrk(0);
-    const uint8_t* end = (const uint8_t*)__oe_get_heap_end();
-    OE_TEST(cur < end);
-    size_t size = end - cur;
+    /* Get heap size. */
+    size_t size = __oe_get_heap_size();
 
     /* Use the heap divided by the number of threads. */
     size = (size_t)size / margs.threads;

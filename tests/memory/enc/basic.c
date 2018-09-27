@@ -95,13 +95,13 @@ OE_ECALL void TestRealloc(void* args_)
 
     /* realloc(X, 0) is implementation defined, but we can always free it. */
     free(ptr);
-    ptr = realloc(NULL, 16 * sizeof(int));
+    ptr = realloc(NULL, 0);
     free(ptr);
 }
 
 OE_ECALL void TestMemalign(void* args_)
 {
-    /* Get an align pointer below malloc's alignment. */
+    /* Get an aligned pointer below malloc's alignment. */
     int* ptr = (int*)memalign(8, 256 * sizeof(int));
     OE_TEST(ptr != NULL);
     OE_TEST((uintptr_t)ptr % 8 == 0);
