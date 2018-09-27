@@ -49,7 +49,7 @@ OE_EXTERNC_BEGIN
  *
  * @returns OE_OK successful
  * @returns OE_INVALID_PARAMETER a parameter is invalid
- * @returns OE_FAILED failed to add handler
+ * @returns OE_FAILURE failed to add handler
 */
 oe_result_t oe_add_vectored_exception_handler(
     bool is_first_handler,
@@ -63,7 +63,7 @@ oe_result_t oe_add_vectored_exception_handler(
 *
 * @returns OE_OK success
 * @returns OE_INVALID_PARAMETER a parameter is invalid
-* @returns OE_FAILED failed to remove handler
+* @returns OE_FAILURE failed to remove handler
 */
 oe_result_t oe_remove_vectored_exception_handler(
     oe_vectored_exception_handler_t vectored_handler);
