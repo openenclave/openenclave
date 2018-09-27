@@ -125,7 +125,7 @@ An enclave exposes its functionality to the host application in the form of a se
 
 The helloworld sample implements a single function named `enclave_helloworld` which is called by the host. All it does is print out a message and then call back to host. No parameters are passed in this sample for simplicity.
 
-The full source for the enclave implementation is here: [helloworld/enc/enc.c](/samples/make/helloworld/enc/enc.c)
+The full source for the enclave implementation is here: [helloworld/enc/enc.c](/samples/helloworld/enc/enc.c)
 
 ```c
 #include <stdio.h>
@@ -218,7 +218,7 @@ Only the signed version of the enclave `helloworldenc.signed.so` is loadable on 
 
 #### Under the hood for the `make build` operation
 
-Here is a listing of key components in the helloworld/enc/Makefile. [complete listing](/samples/make/helloworld/enc/Makefile)
+Here is a listing of key components in the helloworld/enc/Makefile. [complete listing](/samples/helloworld/enc/Makefile)
 
 ```make
 OPENENCLAVE_CONFIG=../../config.mak
@@ -309,7 +309,7 @@ In this section we will cover how to develop a host to load and run the hellowor
 
 There are relatively fewer restrictions on developing a host application compared to authoring an enclave. In general, you are free to link your choice of additional libraries into the host application. A part of a typical host application job is to manage the life cycle of an enclave. Open Enclave SDK provides [Enclave Host Runtime](/docs/GettingStartedDocs/APIsAvaiableToEnclave.md#enclave-host-library) for enclave management.
 
-The full source for the host implementation is here: [helloworld/host/host.c](/samples/make/helloworld/host/host.c)
+The full source for the host implementation is here: [helloworld/host/host.c](/samples/helloworld/host/host.c)
 
 ```c
 #include <openenclave/host.h>
@@ -432,7 +432,7 @@ Terminates the enclave and frees up all associated resources associated with it.
 
 The helloworld sample comes with a Makefile with a `build` target. You can run `make build` to generate the marshaling files and build the host app.
   
-Listing of [helloworld/host/Makefile](/samples/make/helloworld/host/Makefile)
+Listing of [helloworld/host/Makefile](/samples/helloworld/host/Makefile)
 
 ```make
 OPENENCLAVE_CONFIG=../../config.mak

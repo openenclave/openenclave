@@ -19,7 +19,7 @@ Developing a simple enclave (echo)
 This chapter shows how to develop a simple enclave called echo. The next
 chapter explains how to use this enclave in a host application. This example
 is included in the installed samples directory (see
-\<install_prefix\>/openenclave/share/openenclave/samples/make/hello/).
+\<install_prefix\>/openenclave/share/openenclave/samples/hello/).
 
 ### The ECALL
 
@@ -202,7 +202,7 @@ Other build systems
 -------------------
 
 If you are not using CMake for your project, the Makefile samples under
-***samples/make/*** provide guidance on the necessary includes, libraries, and
+***samples/*** provide guidance on the necessary includes, libraries, and
 flag definitions.
 
 Specifically, the Open Enclave includes for the intrinsics are located under
