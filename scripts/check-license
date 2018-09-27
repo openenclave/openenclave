@@ -16,163 +16,74 @@
 ##
 ##==============================================================================
 
-##==============================================================================
-##
-## Check command line arguments.
-##
-##==============================================================================
+status=0
 
-if [[ $# -ne 0 ]]; then
-    echo "$0: too many parameters"
-    echo "Usage: $0"
-    exit 1
-fi
-
-##==============================================================================
-##
-## expand_ignore_file():
-##
-##     Expand any wildcards in the .check-license.ignore file:
-##
-##==============================================================================
-
-# shellcheck disable=SC2155
 expand_ignore_file()
 {
-    local filename=".check-license.ignore"
+    local ignore_file="$(git rev-parse --show-toplevel)/.check-license.ignore"
+
     local tempfile=$(mktemp)
 
-    # Create empty ignore file:
     touch "${tempfile}"
 
-    # Fail if ignore file does not exist:
-    if [[ -f ${filename} ]]; then
-        # Expand each entry in the ignore file:
-        while IFS= read -r i
-        do
-            bn=$(basename "${i}")
-            if [[ ${bn} == "${i}" ]]; then
-                find . -name "${bn}" >> "${tempfile}"
-            else
-                if [[ -e ${i} ]]; then
-                    echo "${i}" >> "${tempfile}"
-                else
-                    # This relies on globbing.
-                    # shellcheck disable=SC2086
-                    ls -1 ${i} >> "${tempfile}" 2> /dev/null
-                fi
-            fi
-        done <"${filename}"
-    fi
-
-    echo "${tempfile}"
-}
-
-ignorefile=$(expand_ignore_file)
-
-##==============================================================================
-##
-## form_filelist(ignorefile):
-##
-##     Form the list of files by finding all regular files and then removing
-##     ignore files.
-##
-##==============================================================================
-
-# shellcheck disable=SC2155
-form_filelist()
-{
-    local ignorefile=$1
-    local files=$(mktemp)
-    local tmpfile=$(mktemp)
-
-    # Find all regular files:
-    find . -type f > "${files}"
-
-    # Remove lines that match entries from ignore file:
+    # Expand each entry in the ignore file:
     while IFS= read -r i
     do
-        cp "${files}" "${tmpfile}"
-
-        if [[ -d ${i} ]]; then
-            grep -v "${i}/" "${tmpfile}" > "${files}"
+        if [[ $(basename "$i") == "$i" ]]; then
+            find . -name "$i" >> "${tempfile}"
         else
-            grep -v "^${i}\$" "${tmpfile}" > "${files}"
+            if [[ -e ${i} ]]; then
+                echo "$i" >> "$tempfile"
+            else
+                # This relies on globbing.
+                # shellcheck disable=SC2086
+                ls -1 ${i} >> "$tempfile" 2> /dev/null
+            fi
         fi
-    done <"${ignorefile}"
+    done <"$ignore_file"
 
-    rm -f "${tmpfile}"
-
-    echo "${files}"
+    echo "$tempfile"
 }
 
-filelist=$(form_filelist "${ignorefile}")
-rm -rf "${ignorefile}"
+ignore_patterns=$(expand_ignore_file)
 
-# Sanity check: make sure all files that require licenses exist
+# while IFS= read -r i
+# do
+#     if [[ $(basename "$i") == "$i" ]]; then
+#         ignore_patterns+=("$i")
+#     elif [[ -e $i ]]; then
+#         ignore_patterns+=("$i")
+#     else
+#         # This relies on globbing.
+#         # shellcheck disable=SC2086
+#         for j in $(ls -1 $i 2> /dev/null); do
+#             ignore_patterns+=("$j")
+#         done
+#     fi
+# done <"$ignore_file"
+
+# for j in "${ignore_patterns[@]}"; do
+#     echo IGNORING $j
+# done
+
+copyright="Copyright (c) Microsoft Corporation. All rights reserved."
+license="Licensed under the MIT License."
+
 while IFS= read -r i; do
-    if [[ ! -s ${i} ]]; then
-        echo "Iterating through ${filelist}: file not found: ${i}"
-        failed=1
+    if grep -q -F "$ignore_patterns" "$i"; then
+        continue
     fi
-done <"${filelist}"
 
-if [[ $failed -eq 1 ]]; then
-   rm -f "${filelist}"
-   exit 1
-fi
+    if ! grep -m1 -q -F "$copyright" "$i"; then
+        echo "$i"
+        status=1
+        continue
+    fi
 
-##==============================================================================
-##
-## Write the license header to a temporary file.
-##
-##==============================================================================
+    if ! grep -m1 -q -F "$license" "$i"; then
+        echo "$i"
+        status=1
+    fi
+done < <(git ls-files)
 
-license=$(mktemp)
-
-cat > "${license}" <<EOF
-Copyright (c) Microsoft Corporation. All rights reserved.
-Licensed under the MIT License.
-EOF
-
-##==============================================================================
-##
-## check_for_missing_license_headers(filelist, license)
-##
-##     Check each Open Enclave files that are missing the license header.
-##
-##==============================================================================
-
-# shellcheck disable=SC2155
-function check_for_missing_license_headers()
-{
-    local filelist=$1
-    local license=$2
-    local tmpfile=$(mktemp)
-    local ret=0
-
-    while IFS= read -r i; do
-        # Grep for first 'Copyright' line (-m1)
-        # Print the following line too (-A1)
-        # Use SED to strip leading '//' or leading '#':
-        grep -m1 -A1 "Copyright (c) Microsoft Corporation" "${i}" | \
-        sed 's~// ~~g' | \
-        sed 's~;; ~~g' | \
-        sed 's~:: ~~g' | \
-        sed 's~^# ~~g' \
-        > "${tmpfile}"
-
-        # Diff matching file with expected license text:
-        if ! diff -w "${tmpfile}" "${license}" > /dev/null 2> /dev/null; then
-            echo "${i}"
-            ret=1
-        fi
-    done <"${filelist}"
-
-    rm -rf "${tmpfile}"
-    rm -f "${filelist}"
-
-    return ${ret}
-}
-
-check_for_missing_license_headers "${filelist}" "${license}"
+exit $status
