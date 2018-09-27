@@ -21,6 +21,11 @@ install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/file-encryptor
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
     )
 
+# Install the data-sealing sample
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/data-sealing
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
+    )
+
 # Install make file for samples folder.
 install(FILES  ${CMAKE_CURRENT_LIST_DIR}/Makefile
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
