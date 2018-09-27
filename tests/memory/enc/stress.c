@@ -25,7 +25,7 @@
 #define TEST_GET_VAL 6
 #define NUM_TESTS 7
 
-static inline size_t _RandX(size_t x)
+static inline size_t _randx(size_t x)
 {
     /* Note that rand() % N is biased if RAND_MAX + 1 isn't divisible
      * by N. But, slight probability bias doesn't really matter in these
@@ -33,12 +33,12 @@ static inline size_t _RandX(size_t x)
     return rand() % x;
 }
 
-static inline size_t _Min(size_t x, size_t y)
+static inline size_t _min(size_t x, size_t y)
 {
     return (x < y) ? x : y;
 }
 
-static size_t _GetAllocSize(size_t max_size)
+static size_t _get_alloc_size(size_t max_size)
 {
     /*
      * Simple distribution to test varied memory allocation:
@@ -47,100 +47,100 @@ static size_t _GetAllocSize(size_t max_size)
      *  - 30% of the time pick 4K <= x <= 256K bytes.
      *  - 20% of the time pick 256K <= x < 16MB bytes.
      */
-    size_t val = _RandX(100);
+    size_t val = _randx(100);
     if (val < 20)
-        return _Min(_RandX(64), max_size);
+        return _min(_randx(64), max_size);
     else if (val < 50)
-        return _Min(_RandX(4096), max_size);
+        return _min(_randx(4096), max_size);
     else if (val < 80)
-        return _Min(_RandX(256 * 1024), max_size);
+        return _min(_randx(256 * 1024), max_size);
     else
-        return _Min(_RandX(16 * 1024 * 1024), max_size);
+        return _min(_randx(16 * 1024 * 1024), max_size);
 }
 
-static void _HandleAlloc(
-    Buffer* buffer,
+static void _handle_alloc(
+    buffer* buf,
     int action,
     int* index_,
-    size_t* maxSize_)
+    size_t* max_size_)
 {
     size_t index = *index_;
-    size_t maxSize = *maxSize_;
-    size_t toAlloc = _GetAllocSize(maxSize);
+    size_t max_size = *max_size_;
+    size_t to_alloc = _get_alloc_size(max_size);
 
     switch (action)
     {
         /* For malloc/calloc, we add the new memory block to buffer array. */
         case TEST_MALLOC:
-            buffer[index].buf = (unsigned char*)malloc(toAlloc);
-            buffer[index].size = toAlloc;
-            OE_TEST(buffer[index].buf != NULL);
-            maxSize -= toAlloc;
+            buf[index].buf = (unsigned char*)malloc(to_alloc);
+            buf[index].size = to_alloc;
+            OE_TEST(buf[index].buf != NULL);
+            max_size -= to_alloc;
             index++;
             break;
         case TEST_CALLOC:
-            buffer[index].buf = (unsigned char*)calloc(1, toAlloc);
-            buffer[index].size = toAlloc;
-            OE_TEST(buffer[index].buf != NULL);
-            maxSize -= toAlloc;
+            buf[index].buf = (unsigned char*)calloc(1, to_alloc);
+            buf[index].size = to_alloc;
+            OE_TEST(buf[index].buf != NULL);
+            max_size -= to_alloc;
             index++;
             break;
 
         /* For realloc, we change the last allocated block. */
         case TEST_REALLOC:
-            maxSize += buffer[index - 1].size;
-            buffer[index - 1].buf =
-                (unsigned char*)realloc(buffer[index - 1].buf, toAlloc);
-            buffer[index - 1].size = toAlloc;
-            OE_TEST(buffer[index - 1].buf != NULL);
-            maxSize -= toAlloc;
+            max_size += buf[index - 1].size;
+            buf[index - 1].buf =
+                (unsigned char*)realloc(buf[index - 1].buf, to_alloc);
+            buf[index - 1].size = to_alloc;
+            OE_TEST(buf[index - 1].buf != NULL);
+            max_size -= to_alloc;
             break;
         default:
             oe_abort();
     }
 
     *index_ = index;
-    *maxSize_ = maxSize;
+    *max_size_ = max_size;
 }
 
-static void _FreeBuffers(Buffer* buffer, int index)
+static void _free_buffers(buffer* buf, int index)
 {
     for (int i = 0; i < index; i++)
     {
-        free(buffer[i].buf);
-        buffer[i].buf = NULL;
-        buffer[i].size = 0;
+        free(buf[i].buf);
+        buf[i].buf = NULL;
+        buf[i].size = 0;
     }
 }
 
-static void _RunMallocTest(size_t size)
+static void _run_malloc_test(size_t size)
 {
-    Buffer array[ITERS];
+    buffer array[ITERS];
     int index = 0;
-    size_t originalSize = size;
+    size_t original_size = size;
 
     for (int i = 0; i < ITERS; i++)
     {
         /* Malloc if our array is empty. Otherwise, pick a random
          * fuction to execute. */
-        size_t action = index == 0 ? TEST_MALLOC : _RandX(NUM_TESTS);
+        size_t action = index == 0 ? TEST_MALLOC : _randx(NUM_TESTS);
 
         switch (action)
         {
             case TEST_MALLOC:
             case TEST_CALLOC:
             case TEST_REALLOC:
-                if (size < originalSize * 0.15)
+                if (size < original_size * 0.15)
                 {
                     /* Getting low on memory. Free all memory and do malloc. */
-                    _FreeBuffers(array, index);
-                    size = originalSize;
+                    _free_buffers(array, index);
+                    size = original_size;
                     index = 0;
-                    _HandleAlloc(array, TEST_MALLOC, &index, &size);
+                    _handle_alloc(array, TEST_MALLOC, &index, &size);
                 }
                 else
                 {
-                    _HandleAlloc(array, action, &index, &size);
+                    _handle_alloc(array, action, &index, &size);
                 }
                 break;
             case TEST_FREE_0:
@@ -167,22 +167,22 @@ static void _RunMallocTest(size_t size)
     }
 
     /* Clean up remaining buffers. */
-    _FreeBuffers(array, index);
+    _free_buffers(array, index);
 }
 
-OE_ECALL void InitMallocStressTest(void* args)
+OE_ECALL void init_malloc_stress_test(void* args)
 {
     srand(time(NULL));
 }
 
-OE_ECALL void MallocStressTest(void* args_)
+OE_ECALL void malloc_stress_test(void* args_)
 {
     /* Check host input. */
-    MallocStressTestArgs* args = (MallocStressTestArgs*)args_;
+    malloc_stress_test_args* args = (malloc_stress_test_args*)args_;
     OE_TEST(args != NULL);
-    OE_TEST(oe_is_outside_enclave(args, sizeof(MallocStressTestArgs)));
+    OE_TEST(oe_is_outside_enclave(args, sizeof(malloc_stress_test_args)));
 
-    MallocStressTestArgs margs = *args;
+    malloc_stress_test_args margs = *args;
 
     /* Get heap size. */
     size_t size = __oe_get_heap_size();
@@ -190,5 +190,5 @@ OE_ECALL void MallocStressTest(void* args_)
     /* Use the heap divided by the number of threads. */
     size = (size_t)size / margs.threads;
 
-    _RunMallocTest(size);
+    _run_malloc_test(size);
 }

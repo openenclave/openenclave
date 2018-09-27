@@ -8,74 +8,82 @@
 #include "../args.h"
 
 /* C static initialization defaults to the 0 / NULL type. */
-static int defaultInt;
-static float defaultFloat;
-static int* defaultPtr;
-static DummyStruct defaultStruct;
-static DummyUnion defaultUnion;
-static int defaultArray[4];
+static int default_int;
+static float default_float;
+static int* default_ptr;
+static dummy_struct default_struct;
+static dummy_union default_union;
+static int default_array[4];
 
 /* Explicit C static initialization. */
-static int explicitInt = 1;
-static float explicitFloat = 1.0;
-static int* explicitPtr = (int*)0x1;
-static DummyStruct explicitStruct = {1, 1};
-static DummyUnion explicitUnion = {.y = 1};
-static int explicitArray[4] = {1, 1, 1, 1};
+static int explicit_int = 1;
+static float explicit_float = 1.0;
+static int* explicit_ptr = (int*)0x1;
+static dummy_struct explicit_struct = {1, 1};
+static dummy_union explicit_union = {.y = 1};
+static int explicit_array[4] = {1, 1, 1, 1};
 
-OE_ECALL void GetGlobals(void* args)
+OE_ECALL void get_globals(void* args)
 {
-    GlobalArgs* gargs = (GlobalArgs*)args;
+    global_args* gargs = (global_args*)args;
     if (!gargs)
         return;
 
-    if (gargs->getDefault)
+    if (gargs->get_default)
     {
-        gargs->globalInt = defaultInt;
-        gargs->globalFloat = defaultFloat;
-        gargs->globalPtr = defaultPtr;
-        gargs->globalStruct = defaultStruct;
-        gargs->globalUnion = defaultUnion;
+        gargs->global_int = default_int;
+        gargs->global_float = default_float;
+        gargs->global_ptr = default_ptr;
+        gargs->global_struct = default_struct;
+        gargs->global_union = default_union;
         memcpy(
-            gargs->globalArray, defaultArray, GLOBAL_ARRAY_SIZE * sizeof(int));
+            gargs->global_array,
+            default_array,
+            GLOBAL_ARRAY_SIZE * sizeof(int));
     }
     else
     {
-        gargs->globalInt = explicitInt;
-        gargs->globalFloat = explicitFloat;
-        gargs->globalPtr = explicitPtr;
-        gargs->globalStruct = explicitStruct;
-        gargs->globalUnion = explicitUnion;
+        gargs->global_int = explicit_int;
+        gargs->global_float = explicit_float;
+        gargs->global_ptr = explicit_ptr;
+        gargs->global_struct = explicit_struct;
+        gargs->global_union = explicit_union;
         memcpy(
-            gargs->globalArray, explicitArray, GLOBAL_ARRAY_SIZE * sizeof(int));
+            gargs->global_array,
+            explicit_array,
+            GLOBAL_ARRAY_SIZE * sizeof(int));
     }
 }
 
-OE_ECALL void SetGlobals(void* args)
+OE_ECALL void set_globals(void* args)
 {
-    GlobalArgs* gargs = (GlobalArgs*)args;
+    global_args* gargs = (global_args*)args;
     if (!gargs)
         return;
 
-    if (gargs->getDefault)
+    if (gargs->get_default)
     {
-        defaultInt = gargs->globalInt;
-        defaultFloat = gargs->globalFloat;
-        defaultPtr = gargs->globalPtr;
-        defaultStruct = gargs->globalStruct;
-        defaultUnion = gargs->globalUnion;
+        default_int = gargs->global_int;
+        default_float = gargs->global_float;
+        default_ptr = gargs->global_ptr;
+        default_struct = gargs->global_struct;
+        default_union = gargs->global_union;
         memcpy(
-            defaultArray, gargs->globalArray, GLOBAL_ARRAY_SIZE * sizeof(int));
+            default_array,
+            gargs->global_array,
+            GLOBAL_ARRAY_SIZE * sizeof(int));
     }
     else
     {
-        explicitInt = gargs->globalInt;
-        explicitFloat = gargs->globalFloat;
-        explicitPtr = gargs->globalPtr;
-        explicitStruct = gargs->globalStruct;
-        explicitUnion = gargs->globalUnion;
+        explicit_int = gargs->global_int;
+        explicit_float = gargs->global_float;
+        explicit_ptr = gargs->global_ptr;
+        explicit_struct = gargs->global_struct;
+        explicit_union = gargs->global_union;
         memcpy(
-            explicitArray, gargs->globalArray, GLOBAL_ARRAY_SIZE * sizeof(int));
+            explicit_array,
+            gargs->global_array,
+            GLOBAL_ARRAY_SIZE * sizeof(int));
     }
 }
 

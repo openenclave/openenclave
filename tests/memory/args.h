@@ -4,48 +4,23 @@
 #ifndef _MEMORY_TESTS_H
 #define _MEMORY_TESTS_H
 
-typedef struct _MallocStressTestArgs
+typedef struct _malloc_stress_test_args
 {
     int threads;
-} MallocStressTestArgs;
+} malloc_stress_test_args;
 
-typedef struct _Buffer
+typedef struct _buffer
 {
     unsigned char* buf;
     size_t size;
-} Buffer;
+} buffer;
 
-typedef struct _BoundaryArgs
+typedef struct _boundary_args
 {
-    Buffer hostStack;
-    Buffer hostHeap;
-    Buffer enclaveMemory;
-    Buffer enclaveHostMemory;
-} BoundaryArgs;
-
-/* Defintions for checking global variables. */
-#define GLOBAL_ARRAY_SIZE 4
-
-typedef struct _DummyStruct
-{
-    int32_t a;
-    int32_t b;
-} DummyStruct;
-
-typedef union _DummyUnion {
-    DummyStruct x;
-    int64_t y;
-} DummyUnion;
-
-typedef struct _GlobalArgs
-{
-    int globalInt;
-    float globalFloat;
-    int* globalPtr;
-    DummyStruct globalStruct;
-    DummyUnion globalUnion;
-    int globalArray[GLOBAL_ARRAY_SIZE];
-    bool getDefault;
-} GlobalArgs;
+    buffer host_stack;
+    buffer host_heap;
+    buffer enclave_memory;
+    buffer enclave_host_memory;
+} boundary_args;
 
 #endif /* _MEMORY_TESTS_H */

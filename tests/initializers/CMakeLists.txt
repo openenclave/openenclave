@@ -7,5 +7,4 @@ if (UNIX)
 	add_subdirectory(enc)
 endif()
 
-# Test a signed enclave:
 add_enclave_test(tests/initializers ./host initializers_host ./enc initializers_enc)

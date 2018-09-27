@@ -7,26 +7,26 @@
 /* Defintions for checking global variables. */
 #define GLOBAL_ARRAY_SIZE 4
 
-typedef struct _DummyStruct
+typedef struct _dummy_struct
 {
     int32_t a;
     int32_t b;
-} DummyStruct;
+} dummy_struct;
 
-typedef union _DummyUnion {
-    DummyStruct x;
+typedef union _dummy_union {
+    dummy_struct x;
     int64_t y;
-} DummyUnion;
+} dummy_union;
 
-typedef struct _GlobalArgs
+typedef struct _global_args
 {
-    int globalInt;
-    float globalFloat;
-    int* globalPtr;
-    DummyStruct globalStruct;
-    DummyUnion globalUnion;
-    int globalArray[GLOBAL_ARRAY_SIZE];
-    bool getDefault;
-} GlobalArgs;
+    int global_int;
+    float global_float;
+    int* global_ptr;
+    dummy_struct global_struct;
+    dummy_union global_union;
+    int global_array[GLOBAL_ARRAY_SIZE];
+    bool get_default;
+} global_args;
 
 #endif /* _INITIALIZER_TESTS_H */
