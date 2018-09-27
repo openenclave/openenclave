@@ -64,9 +64,9 @@ binaries.
 
   It's recommended to go through the following samples in the order listed below.
 
-#### [HelloWorld](/samples/make/helloworld/README.md)
+#### [HelloWorld](/samples/helloworld/README.md)
 
-#### [File-Encryptor](/samples/make/file-encryptor/README.md)
+#### [File-Encryptor](/samples/file-encryptor/README.md)
 
-#### [Remote Attestation](/samples/make/remote_attestation/README.md)
+#### [Remote Attestation](/samples/remote_attestation/README.md)
 
