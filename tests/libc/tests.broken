@@ -1,4 +1,6 @@
-# The following tests are broken on Clang + Debug:
+# The following tests fail when built with Clang using these cmake flags.
+#     -DCMAKE_BUILD_TYPE=Debug
+#     -DENABLE_FULL_LIBC_TESTS=1
 ../../3rdparty/musl/libc-test/src/functional/tgmath.c
 ../../3rdparty/musl/libc-test/src/math/fmax.c
 ../../3rdparty/musl/libc-test/src/math/fmaxf.c
@@ -14,7 +16,9 @@
 ../../3rdparty/musl/libc-test/src/math/y1f.c
 ../../3rdparty/musl/libc-test/src/math/yn.c
 
-# The following tests are broken on Clang + RelWithDebInfo
+# The following tests fail when built with Clang using these cmake flags.
+#     -DCMAKE_BUILD_TYPE=RelWithDebInfo
+#     -DENABLE_FULL_LIBC_TESTS=1
 ../../3rdparty/musl/libc-test/src/math/fdim.c
 ../../3rdparty/musl/libc-test/src/math/fdimf.c
 ../../3rdparty/musl/libc-test/src/math/fdiml.c
