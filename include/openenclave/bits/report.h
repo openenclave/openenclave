@@ -75,7 +75,7 @@ OE_EXTERNC_BEGIN
  *
  * id_version | Supported fields
  * -----------| --------------------------------------------------------------
- *     0      | security_version, attributes, unique_id, signed_id, product_id
+ *     0      | security_version, attributes, unique_id, signer_id, product_id
  */
 typedef struct _oe_identity
 {
