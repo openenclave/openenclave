@@ -190,22 +190,42 @@ extern "C" int test_math_tgammal_c(int argc, const char* argv[]);
 extern "C" int test_math_trunc_c(int argc, const char* argv[]);
 extern "C" int test_math_truncf_c(int argc, const char* argv[]);
 extern "C" int test_math_truncl_c(int argc, const char* argv[]);
-extern "C" int test_regression_fpclassify_invalid_ld80_c(int argc, const char* argv[]);
+extern "C" int test_regression_fpclassify_invalid_ld80_c(
+    int argc,
+    const char* argv[]);
 extern "C" int test_regression_iswspace_null_c(int argc, const char* argv[]);
-extern "C" int test_regression_lrand48_signextend_c(int argc, const char* argv[]);
+extern "C" int test_regression_lrand48_signextend_c(
+    int argc,
+    const char* argv[]);
 extern "C" int test_regression_malloc_0_c(int argc, const char* argv[]);
-extern "C" int test_regression_mbsrtowcs_overflow_c(int argc, const char* argv[]);
+extern "C" int test_regression_mbsrtowcs_overflow_c(
+    int argc,
+    const char* argv[]);
 extern "C" int test_regression_memmem_oob_c(int argc, const char* argv[]);
 extern "C" int test_regression_memmem_oob_read_c(int argc, const char* argv[]);
 extern "C" int test_regression_printf_1e9_oob_c(int argc, const char* argv[]);
-extern "C" int test_regression_printf_fmt_g_round_c(int argc, const char* argv[]);
-extern "C" int test_regression_printf_fmt_g_zeros_c(int argc, const char* argv[]);
+extern "C" int test_regression_printf_fmt_g_round_c(
+    int argc,
+    const char* argv[]);
+extern "C" int test_regression_printf_fmt_g_zeros_c(
+    int argc,
+    const char* argv[]);
 extern "C" int test_regression_printf_fmt_n_c(int argc, const char* argv[]);
-extern "C" int test_regression_scanf_bytes_consumed_c(int argc, const char* argv[]);
-extern "C" int test_regression_scanf_match_literal_eof_c(int argc, const char* argv[]);
-extern "C" int test_regression_scanf_nullbyte_char_c(int argc, const char* argv[]);
-extern "C" int test_regression_wcsncpy_read_overflow_c(int argc, const char* argv[]);
-extern "C" int test_regression_wcsstr_false_negative_c(int argc, const char* argv[]);
+extern "C" int test_regression_scanf_bytes_consumed_c(
+    int argc,
+    const char* argv[]);
+extern "C" int test_regression_scanf_match_literal_eof_c(
+    int argc,
+    const char* argv[]);
+extern "C" int test_regression_scanf_nullbyte_char_c(
+    int argc,
+    const char* argv[]);
+extern "C" int test_regression_wcsncpy_read_overflow_c(
+    int argc,
+    const char* argv[]);
+extern "C" int test_regression_wcsstr_false_negative_c(
+    int argc,
+    const char* argv[]);
 extern "C" int test_functional_clocale_mbfuncs_c(int argc, const char* argv[]);
 extern "C" int test_functional_iconv_open_c(int argc, const char* argv[]);
 extern "C" int test_functional_memstream_c(int argc, const char* argv[]);
@@ -215,7 +235,9 @@ extern "C" int test_math_scalbnl_c(int argc, const char* argv[]);
 extern "C" int test_musl_pleval_c(int argc, const char* argv[]);
 extern "C" int test_regression_fgets_eof_c(int argc, const char* argv[]);
 extern "C" int test_regression_iconv_roundtrips_c(int argc, const char* argv[]);
-extern "C" int test_regression_putenv_doublefree_c(int argc, const char* argv[]);
+extern "C" int test_regression_putenv_doublefree_c(
+    int argc,
+    const char* argv[]);
 extern "C" int test_regression_strverscmp_c(int argc, const char* argv[]);
 extern "C" int test_functional_random_c(int argc, const char* argv[]);
 extern "C" int test_functional_time_c(int argc, const char* argv[]);
