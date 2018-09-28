@@ -63,6 +63,7 @@ static std::map<int, pthread_t> _key_to_thread_id_map; // Map of enc_key to
                                                        // pthread_self()
 
 static std::atomic_flag _enc_lock = ATOMIC_FLAG_INIT;
+ThreadArgs* thread_args = NULL; //Each new thread will set these to that obtained from the host
 
 static int _pthread_create_hook(
     pthread_t* enc_thread,
@@ -133,8 +134,10 @@ static int _pthread_join_hook(pthread_t enc_thread, void** retval)
 
 static int _pthread_detach_hook(pthread_t enc_thread)
 {
-    int detach_enc_key;
-    // Find the enc_key from the enc_thread
+    if (thread_args == NULL)
+        return 22; //ANITA - Need to check what to return in this case
+
+     // Find the enc_key from the enc_thread
     _acquire_lock(&_enc_lock);
     auto it = std::find_if(
         _key_to_thread_id_map.begin(),
@@ -147,23 +150,32 @@ static int _pthread_detach_hook(pthread_t enc_thread)
         printf("Enclave Key for thread ID 0x%lu not found\n", enc_thread);
         oe_abort();
     }
-    detach_enc_key = it->first;
+    thread_args->enc_key = it->first;
     _release_lock(&_enc_lock);
 
     printf(
-        "_pthread_detach_hook(): Enclave Key for thread ID 0x%lu is %d\n",
+        "_pthread_detach_hook(): Enclave Key for thread ID 0x%lu is %lu\n",
         enc_thread,
-        detach_enc_key);
-    if (oe_call_host("host_detach_pthread", (void*)(uint64_t)detach_enc_key) !=
+        thread_args->enc_key);
+    if (oe_call_host("host_detach_pthread", (void*)thread_args) !=
         OE_OK)
         oe_abort();
 
-    return 0;
+    return thread_args->detach_ret;
+
+    //Check if there is a return value from _enclave_detach_thread
+    if (thread_args->detach_ret == -1)
+    {
+        printf("_pthread_detach_hook() -- May need to wait for detach to happen");
+        //std::this_thread::sleep_for(std::chrono::microseconds(10 * 1000));
+    }
 }
 
 // Launches the new thread in the enclave
 OE_ECALL void _enclave_launch_thread(void* args_)
 {
+    thread_args = (ThreadArgs*)args_; //Set the global value to that obtained from the host
+
     std::function<void()> f;
 
     _acquire_lock(&_enc_lock);

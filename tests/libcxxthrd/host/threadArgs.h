@@ -10,6 +10,7 @@ typedef struct _thread_args
 {
     oe_enclave_t* enclave;
     uint64_t enc_key;
+    int detach_ret;
 } ThreadArgs;
 
 static inline void _acquire_lock(std::atomic_flag* lock)
