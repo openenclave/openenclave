@@ -13,7 +13,7 @@
 #include <iostream>
 #include <iterator>
 #include <vector>
-#include "../args.h"
+#include "../shared.h"
 
 #include "fileencryptor_u.h"
 

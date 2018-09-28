@@ -33,7 +33,7 @@ int ecall_dispatcher::initialize(
     encryption_header_t* header)
 {
     int ret = 0;
-    ENC_DEBUG_PRINTF(
+    TRACE_ENCLAVE(
         "ecall_dispatcher::initialize : %s request",
         encrypt ? "encrypting" : "decrypting");
 
@@ -42,7 +42,7 @@ int ecall_dispatcher::initialize(
     ret = process_encryption_header(encrypt, password, password_len, header);
     if (ret != 0)
     {
-        ENC_DEBUG_PRINTF("process_encryption_header failed with %d", ret);
+        TRACE_ENCLAVE("process_encryption_header failed with %d", ret);
         goto exit;
     }
 
@@ -59,7 +59,7 @@ int ecall_dispatcher::initialize(
 
     if (ret != 0)
     {
-        ENC_DEBUG_PRINTF("mbedtls_aes_setkey_dec failed with %d", ret);
+        TRACE_ENCLAVE("mbedtls_aes_setkey_dec failed with %d", ret);
         goto exit;
     }
     // init iv
@@ -70,8 +70,8 @@ exit:
 
 int ecall_dispatcher::encrypt_block(
     bool encrypt,
-    unsigned char* inputbuf,
-    unsigned char* outputbuf,
+    unsigned char* input_buf,
+    unsigned char* output_buf,
     size_t size)
 {
     int ret = 0;
@@ -80,11 +80,11 @@ int ecall_dispatcher::encrypt_block(
         encrypt ? MBEDTLS_AES_ENCRYPT : MBEDTLS_AES_DECRYPT,
         size,           // input data length in bytes,
         m_operating_iv, // Initialization vector (updated after use)
-        inputbuf,
-        outputbuf);
+        input_buf,
+        output_buf);
     if (ret != 0)
     {
-        ENC_DEBUG_PRINTF("mbedtls_aes_crypt_cbc failed with %d", ret);
+        TRACE_ENCLAVE("mbedtls_aes_crypt_cbc failed with %d", ret);
     }
     return ret;
 }
@@ -99,5 +99,5 @@ void ecall_dispatcher::close()
 
     // free aes context
     mbedtls_aes_free(&m_aescontext);
-    ENC_DEBUG_PRINTF("ecall_dispatcher::close");
+    TRACE_ENCLAVE("ecall_dispatcher::close");
 }

@@ -8,7 +8,7 @@
 #include <mbedtls/entropy.h>
 #include <openenclave/enclave.h>
 #include <string>
-#include "../args.h"
+#include "../shared.h"
 
 using namespace std;
 
@@ -39,8 +39,8 @@ class ecall_dispatcher
         encryption_header_t* header);
     int encrypt_block(
         bool encrypt,
-        unsigned char* inputbuf,
-        unsigned char* outputbuf,
+        unsigned char* input_buf,
+        unsigned char* output_buf,
         size_t size);
     void close();
 
