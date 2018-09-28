@@ -1,4 +1,3 @@
-../../3rdparty/musl/libc-test/src/api/main.c
 ../../3rdparty/musl/libc-test/src/functional/argv.c
 ../../3rdparty/musl/libc-test/src/functional/basename.c
 ../../3rdparty/musl/libc-test/src/functional/clock_gettime.c

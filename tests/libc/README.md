@@ -1,24 +1,21 @@
-libc tests
-==========
+libc2 tests
+===========
 
-This directory runs each MUSL libc unit test from within an enclave. It does
-this by repeatedly building and runing the enclave located under the 'enc' 
-directory for each unit test found in tests.supported.
+This directory runs the MUSL libc unit tests. The **gentests.sh** script
+reads **tests.supported** and generates a wrapper for each of these tests.
 
 The unit tests are partitioned into three files:
 
-* tests.supported -- unit tests that work
-* tests.broken -- unit tests that are broken
-* tests.unsupported -- unit tests that are not supported
+* tests.all -- all unit tests.
+* tests.supported -- unit tests that work.
+* tests.broken -- unit tests that are broken.
+* tests.unsupported -- unit tests that are unsupported.
 
-To run all the tests, type the following command:
+After adding new tests to **tests.supported**, the test wrappers must be
+regenerated as follows.
 
 ```
-# make tests
+./gentest.sh
 ```
 
-As tests are fixed, they should be moved from tests.broken to tests.supported.
-
-As tests are determined to be unsupportable, they should be moved from
-tests.broken to tests.unsupported.
-
+If this creates any new files, they must be added to the Git repository.

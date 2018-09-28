@@ -1,0 +1,2 @@
+#define main test_math_scalbnf_c
+#include "../../../3rdparty/musl/libc-test/src/math/scalbnf.c"
