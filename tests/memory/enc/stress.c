@@ -10,7 +10,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "../args.h"
+#include "memory_t.h"
 
 #define ITERS 1000
 
@@ -170,25 +170,18 @@ static void _run_malloc_test(size_t size)
     _free_buffers(array, index);
 }
 
-OE_ECALL void init_malloc_stress_test(void* args)
+void init_malloc_stress_test()
 {
     srand(time(NULL));
 }
 
-OE_ECALL void malloc_stress_test(void* args_)
+void malloc_stress_test(int threads)
 {
-    /* Check host input. */
-    malloc_stress_test_args* args = (malloc_stress_test_args*)args_;
-    OE_TEST(args != NULL);
-    OE_TEST(oe_is_outside_enclave(args, sizeof(malloc_stress_test_args)));
-
-    malloc_stress_test_args margs = *args;
-
     /* Get heap size. */
     size_t size = __oe_get_heap_size();
 
     /* Use the heap divided by the number of threads. */
-    size = (size_t)size / margs.threads;
+    size = size / threads;
 
     _run_malloc_test(size);
 }

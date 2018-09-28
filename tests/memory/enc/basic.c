@@ -8,6 +8,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "memory_t.h"
+
 static void _set_buffer(int* buf, size_t start, size_t end)
 {
     for (size_t i = start; i < end; i++)

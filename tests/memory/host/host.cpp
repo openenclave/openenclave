@@ -10,26 +10,25 @@
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/tests.h>
 
-#include "../args.h"
+#include "memory_u.h"
 
 #define ITERS 1024
 #define BUFSIZE 1024
 
 static void _malloc_basic_test(oe_enclave_t* enclave)
 {
-    OE_TEST(oe_call_enclave(enclave, "test_malloc", NULL) == OE_OK);
-    OE_TEST(oe_call_enclave(enclave, "test_calloc", NULL) == OE_OK);
-    OE_TEST(oe_call_enclave(enclave, "test_realloc", NULL) == OE_OK);
-    OE_TEST(oe_call_enclave(enclave, "test_memalign", NULL) == OE_OK);
-    OE_TEST(oe_call_enclave(enclave, "test_posix_memalign", NULL) == OE_OK);
+    OE_TEST(test_malloc(enclave) == OE_OK);
+    OE_TEST(test_calloc(enclave) == OE_OK);
+    OE_TEST(test_realloc(enclave) == OE_OK);
+    OE_TEST(test_memalign(enclave) == OE_OK);
+    OE_TEST(test_posix_memalign(enclave) == OE_OK);
 }
 
 static void _malloc_stress_test_single_thread(
     oe_enclave_t* enclave,
     int thread_num)
 {
-    malloc_stress_test_args args = {thread_num};
-    OE_TEST(oe_call_enclave(enclave, "malloc_stress_test", &args) == OE_OK);
+    OE_TEST(malloc_stress_test(enclave, thread_num) == OE_OK);
 }
 
 static void _malloc_stress_test_multithread(oe_enclave_t* enclave)
@@ -45,7 +44,7 @@ static void _malloc_stress_test_multithread(oe_enclave_t* enclave)
 
 static void _malloc_stress_test(oe_enclave_t* enclave)
 {
-    OE_TEST(oe_call_enclave(enclave, "init_malloc_stress_test", NULL) == OE_OK);
+    OE_TEST(init_malloc_stress_test(enclave) == OE_OK);
     _malloc_stress_test_single_thread(enclave, 1);
     _malloc_stress_test_multithread(enclave);
 }
@@ -60,16 +59,14 @@ static void _malloc_boundary_test(oe_enclave_t* enclave, uint32_t flags)
         OE_TEST(array[i].buf != NULL);
         array[i].size = BUFSIZE;
 
-        OE_TEST(
-            oe_call_enclave(enclave, "test_host_boundaries", &array[i]) ==
-            OE_OK);
+        OE_TEST(test_host_boundaries(enclave, array[i]) == OE_OK);
     }
 
     for (int i = 0; i < ITERS; i++)
         free(array[i].buf);
 
     /* Test enclave boundaries. */
-    OE_TEST(oe_call_enclave(enclave, "test_enclave_boundaries", NULL) == OE_OK);
+    OE_TEST(test_enclave_boundaries(enclave) == OE_OK);
 
     /* Test enclave memory across boundaries. */
     unsigned char stackbuf[BUFSIZE];
@@ -81,34 +78,39 @@ static void _malloc_boundary_test(oe_enclave_t* enclave, uint32_t flags)
     for (int i = 0; i < BUFSIZE; i++)
         heapbuf[i] = 2;
 
-    boundary_args args = {
-        .host_stack = {.buf = stackbuf, .size = sizeof(stackbuf)},
-        .host_heap = {.buf = heapbuf, .size = BUFSIZE},
-    };
+    buffer host_stack = {.buf = stackbuf, .size = sizeof(stackbuf)};
+    buffer host_heap = {.buf = heapbuf, .size = BUFSIZE};
+    buffer enclave_memory;
+    buffer enclave_host_memory;
 
     OE_TEST(
-        oe_call_enclave(enclave, "test_between_enclave_boundaries", &args) ==
-        OE_OK);
+        test_between_enclave_boundaries(
+            enclave,
+            host_stack,
+            host_heap,
+            &enclave_memory,
+            &enclave_host_memory) == OE_OK);
 
     /* Abort page returns all 0xFFs when accessing. In simulation mode, it's
      * just regular memory. */
-    for (size_t i = 0; i < args.enclave_memory.size; i++)
+    for (size_t i = 0; i < enclave_memory.size; i++)
     {
         if ((flags & OE_ENCLAVE_FLAG_SIMULATE))
-            OE_TEST(args.enclave_memory.buf[i] == 3);
+            OE_TEST(enclave_memory.buf[i] == 3);
         else
-            OE_TEST(args.enclave_memory.buf[i] == 255);
+            OE_TEST(enclave_memory.buf[i] == 255);
     }
 
-    for (size_t i = 0; i < args.enclave_host_memory.size; i++)
-        OE_TEST(args.enclave_host_memory.buf[i] == 4);
+    for (size_t i = 0; i < enclave_host_memory.size; i++)
+        OE_TEST(enclave_host_memory.buf[i] == 4);
 
     /* Ensure that enclave_memory still works when passed from the host. */
-    OE_TEST(
-        oe_call_enclave(enclave, "try_input_enclave_pointer", &args) == OE_OK);
+    OE_TEST(try_input_enclave_pointer(enclave, enclave_memory) == OE_OK);
 
     /* Cleanup all memory. */
-    OE_TEST(oe_call_enclave(enclave, "free_boundary_memory", &args) == OE_OK);
+    OE_TEST(
+        free_boundary_memory(enclave, enclave_memory, enclave_host_memory) ==
+        OE_OK);
     free(heapbuf);
 }
 
