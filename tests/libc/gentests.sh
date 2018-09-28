@@ -3,7 +3,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-files=`cat tests.supported`
+files=$(cat tests.supported)
 
 ##==============================================================================
 ##
@@ -30,8 +30,8 @@ rm -f ${tests_cpp}
 
 get_test_name()
 {
-    name=`echo $1 | sed s/[\.\/\-]/_/g | sed s/______3rdparty_musl_libc_test_src_/test_/g`
-    echo ${name}
+    name=$(echo "$1" | sed "s~[\.\/\-]~_~g" | sed "s~______3rdparty_musl_libc_test_src_~test_~g")
+    echo "${name}"
 }
 
 ##==============================================================================
@@ -42,9 +42,9 @@ get_test_name()
 
 for i in ${files}
 do
-    name=`get_test_name ${i}`
+    name=$(get_test_name "${i}")
     source_file=enc/${name}.c
-cat > ${source_file} <<END
+cat > "${source_file}" <<END
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
@@ -84,7 +84,7 @@ END
 
 for i in ${files}
 do
-    name=`get_test_name ${i}`
+    name=$(get_test_name "${i}")
 
 cat >> ${tests_h} <<END
 extern "C" int ${name}(int argc, const char* argv[]);
