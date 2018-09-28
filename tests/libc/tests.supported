@@ -85,15 +85,11 @@
 ../../3rdparty/musl/libc-test/src/math/fabs.c
 ../../3rdparty/musl/libc-test/src/math/fabsf.c
 ../../3rdparty/musl/libc-test/src/math/fabsl.c
-../../3rdparty/musl/libc-test/src/math/fdim.c
-../../3rdparty/musl/libc-test/src/math/fdimf.c
-../../3rdparty/musl/libc-test/src/math/fdiml.c
 ../../3rdparty/musl/libc-test/src/math/fenv.c
 ../../3rdparty/musl/libc-test/src/math/floor.c
 ../../3rdparty/musl/libc-test/src/math/floorf.c
 ../../3rdparty/musl/libc-test/src/math/floorl.c
 ../../3rdparty/musl/libc-test/src/math/fma.c
-../../3rdparty/musl/libc-test/src/math/fmaf.c
 ../../3rdparty/musl/libc-test/src/math/fmaxl.c
 ../../3rdparty/musl/libc-test/src/math/fminl.c
 ../../3rdparty/musl/libc-test/src/math/fmod.c
@@ -124,8 +120,6 @@
 ../../3rdparty/musl/libc-test/src/math/log10.c
 ../../3rdparty/musl/libc-test/src/math/log10f.c
 ../../3rdparty/musl/libc-test/src/math/log10l.c
-../../3rdparty/musl/libc-test/src/math/log1p.c
-../../3rdparty/musl/libc-test/src/math/log1pf.c
 ../../3rdparty/musl/libc-test/src/math/log1pl.c
 ../../3rdparty/musl/libc-test/src/math/log2.c
 ../../3rdparty/musl/libc-test/src/math/log2f.c
@@ -157,7 +151,6 @@
 ../../3rdparty/musl/libc-test/src/math/pow10.c
 ../../3rdparty/musl/libc-test/src/math/pow10f.c
 ../../3rdparty/musl/libc-test/src/math/pow10l.c
-../../3rdparty/musl/libc-test/src/math/powf.c
 ../../3rdparty/musl/libc-test/src/math/remainder.c
 ../../3rdparty/musl/libc-test/src/math/remainderf.c
 ../../3rdparty/musl/libc-test/src/math/remainderl.c
