@@ -5,7 +5,9 @@
 #include <openenclave/enclave.h>
 #include <string.h>
 
-#include "../args.h"
+#include <stdio.h>
+
+#include "initializers_t.h"
 
 /* C static initialization defaults to the 0 / NULL type. */
 static int default_int;
@@ -23,67 +25,71 @@ static dummy_struct explicit_struct = {1, 1};
 static dummy_union explicit_union = {.y = 1};
 static int explicit_array[4] = {1, 1, 1, 1};
 
-OE_ECALL void get_globals(void* args)
+void get_globals(
+    int* global_int,
+    float* global_float,
+    int** global_ptr,
+    dummy_struct* global_struct,
+    dummy_union* global_union,
+    int global_array[4],
+    bool get_default)
 {
-    global_args* gargs = (global_args*)args;
-    if (!gargs)
-        return;
+    printf(
+        "get globals %p %p %p %p %p %p\n",
+        global_int,
+        global_float,
+        global_ptr,
+        global_struct,
+        global_union,
+        (int*)global_array);
 
-    if (gargs->get_default)
+    if (get_default)
     {
-        gargs->global_int = default_int;
-        gargs->global_float = default_float;
-        gargs->global_ptr = default_ptr;
-        gargs->global_struct = default_struct;
-        gargs->global_union = default_union;
-        memcpy(
-            gargs->global_array,
-            default_array,
-            GLOBAL_ARRAY_SIZE * sizeof(int));
+        *global_int = default_int;
+        *global_float = default_float;
+        *global_ptr = default_ptr;
+        *global_struct = default_struct;
+        *global_union = default_union;
+        memcpy(global_array, default_array, 4 * sizeof(int));
     }
     else
     {
-        gargs->global_int = explicit_int;
-        gargs->global_float = explicit_float;
-        gargs->global_ptr = explicit_ptr;
-        gargs->global_struct = explicit_struct;
-        gargs->global_union = explicit_union;
-        memcpy(
-            gargs->global_array,
-            explicit_array,
-            GLOBAL_ARRAY_SIZE * sizeof(int));
+        *global_int = explicit_int;
+        *global_float = explicit_float;
+        *global_ptr = explicit_ptr;
+        *global_struct = explicit_struct;
+        *global_union = explicit_union;
+        memcpy(global_array, explicit_array, 4 * sizeof(int));
     }
+    printf("end globals\n");
 }
 
-OE_ECALL void set_globals(void* args)
+void set_globals(
+    int global_int,
+    float global_float,
+    int* global_ptr,
+    dummy_struct global_struct,
+    dummy_union global_union,
+    int global_array[4],
+    bool get_default)
 {
-    global_args* gargs = (global_args*)args;
-    if (!gargs)
-        return;
-
-    if (gargs->get_default)
+    if (get_default)
     {
-        default_int = gargs->global_int;
-        default_float = gargs->global_float;
-        default_ptr = gargs->global_ptr;
-        default_struct = gargs->global_struct;
-        default_union = gargs->global_union;
-        memcpy(
-            default_array,
-            gargs->global_array,
-            GLOBAL_ARRAY_SIZE * sizeof(int));
+        default_int = global_int;
+        default_float = global_float;
+        default_ptr = global_ptr;
+        default_struct = global_struct;
+        default_union = global_union;
+        memcpy(default_array, global_array, 4 * sizeof(int));
     }
     else
     {
-        explicit_int = gargs->global_int;
-        explicit_float = gargs->global_float;
-        explicit_ptr = gargs->global_ptr;
-        explicit_struct = gargs->global_struct;
-        explicit_union = gargs->global_union;
-        memcpy(
-            explicit_array,
-            gargs->global_array,
-            GLOBAL_ARRAY_SIZE * sizeof(int));
+        explicit_int = global_int;
+        explicit_float = global_float;
+        explicit_ptr = global_ptr;
+        explicit_struct = global_struct;
+        explicit_union = global_union;
+        memcpy(explicit_array, global_array, 4 * sizeof(int));
     }
 }
 

@@ -7,59 +7,87 @@
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/tests.h>
 
-#include "../args.h"
+#include "initializers_u.h"
 
 static void _globals_test(oe_enclave_t* enclave)
 {
-    global_args args = {.global_int = 2,
-                        .global_float = 2.0,
-                        .global_ptr = (int*)0x2,
-                        .global_struct = {2, 2},
-                        .global_union = {.y = 2},
-                        .global_array = {2, 2, 2, 2},
-                        .get_default = 1};
+    int global_int = 2;
+    float global_float = 2.0;
+    int* global_ptr = (int*)0x2;
+    dummy_struct global_struct = {2, 2};
+    dummy_union global_union = {.y = 2};
+    int global_array[4] = {2, 2, 2, 2};
 
-    OE_TEST(oe_call_enclave(enclave, "get_globals", &args) == OE_OK);
+    OE_TEST(
+        get_globals(
+            enclave,
+            &global_int,
+            &global_float,
+            &global_ptr,
+            &global_struct,
+            &global_union,
+            global_array,
+            true) == OE_OK);
 
     /* Verify default global initialization works in the enclave. */
-    OE_TEST(args.global_int == 0);
-    OE_TEST(args.global_float == 0.0);
-    OE_TEST(args.global_ptr == NULL);
-    OE_TEST(args.global_struct.a == 0 && args.global_struct.b == 0);
-    OE_TEST(args.global_union.y == 0);
-    for (int i = 0; i < GLOBAL_ARRAY_SIZE; i++)
-        OE_TEST(args.global_array[i] == 0);
+    OE_TEST(global_int == 0);
+    OE_TEST(global_float == 0.0);
+    OE_TEST(global_ptr == NULL);
+    OE_TEST(global_struct.a == 0 && global_struct.b == 0);
+    OE_TEST(global_union.y == 0);
+    for (int i = 0; i < 4; i++)
+        OE_TEST(global_array[i] == 0);
 
     /* Verify explicit global initialization works in the enclave. */
-    args.get_default = 0;
-    OE_TEST(oe_call_enclave(enclave, "get_globals", &args) == OE_OK);
-    OE_TEST(args.global_int == 1);
-    OE_TEST(args.global_float == 1.0);
-    OE_TEST((uintptr_t)args.global_ptr == 0x1);
-    OE_TEST(args.global_struct.a == 1 && args.global_struct.b == 1);
-    OE_TEST(args.global_union.y == 1);
-    for (int i = 0; i < GLOBAL_ARRAY_SIZE; i++)
-        OE_TEST(args.global_array[i] == 1);
+    OE_TEST(
+        get_globals(
+            enclave,
+            &global_int,
+            &global_float,
+            &global_ptr,
+            &global_struct,
+            &global_union,
+            global_array,
+            false) == OE_OK);
+
+    OE_TEST(global_int == 1);
+    OE_TEST(global_float == 1.0);
+    OE_TEST((uintptr_t)global_ptr == 0x1);
+    OE_TEST(global_struct.a == 1 && global_struct.b == 1);
+    OE_TEST(global_union.y == 1);
+    for (int i = 0; i < 4; i++)
+        OE_TEST(global_array[i] == 1);
 
     /* Verify if we can set the globals. */
-    global_args args2 = {.global_int = 2,
-                         .global_float = 2.0,
-                         .global_ptr = (int*)0x2,
-                         .global_struct = {2, 2},
-                         .global_union = {.y = 2},
-                         .global_array = {2, 2, 2, 2},
-                         .get_default = 0};
+    OE_TEST(
+        set_globals(
+            enclave,
+            global_int,
+            global_float,
+            global_ptr,
+            global_struct,
+            global_union,
+            global_array,
+            true) == OE_OK);
 
-    OE_TEST(oe_call_enclave(enclave, "set_globals", &args2) == OE_OK);
-    OE_TEST(oe_call_enclave(enclave, "get_globals", &args) == OE_OK);
+    OE_TEST(
+        get_globals(
+            enclave,
+            &global_int,
+            &global_float,
+            &global_ptr,
+            &global_struct,
+            &global_union,
+            global_array,
+            true) == OE_OK);
 
-    OE_TEST(args.global_int == 2);
-    OE_TEST(args.global_float == 2.0);
-    OE_TEST((uintptr_t)args.global_ptr == 0x2);
-    OE_TEST(args.global_struct.a == 2 && args.global_struct.b == 2);
-    OE_TEST(args.global_union.y == 2);
-    for (int i = 0; i < GLOBAL_ARRAY_SIZE; i++)
-        OE_TEST(args.global_array[i] == 2);
+    OE_TEST(global_int == 1);
+    OE_TEST(global_float == 1.0);
+    OE_TEST((uintptr_t)global_ptr == 0x1);
+    OE_TEST(global_struct.a == 1 && global_struct.b == 1);
+    OE_TEST(global_union.y == 1);
+    for (int i = 0; i < 4; i++)
+        OE_TEST(global_array[i] == 1);
 }
 
 int main(int argc, const char* argv[])
