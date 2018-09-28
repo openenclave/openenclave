@@ -14,5 +14,5 @@ add_executable(hostcrypto
 
 target_link_libraries(hostcrypto oehost)
 
-add_test(tests/crypto/host hostcrypto)
+#add_test(tests/crypto/host hostcrypto)
 
