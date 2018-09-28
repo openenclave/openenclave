@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 extern "C" int test_functional_argv_c(int argc, const char* argv[]);
 extern "C" int test_functional_basename_c(int argc, const char* argv[]);
 extern "C" int test_functional_clock_gettime_c(int argc, const char* argv[]);

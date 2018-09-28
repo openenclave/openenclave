@@ -4,17 +4,17 @@
 #include <openenclave/enclave.h>
 #include "../args.h"
 
-#include <stdint.h>
-#include <stdio.h>
-#include <time.h>
-#include <errno.h>
 #include <dirent.h>
-#include <string.h>
-#include <stdlib.h>
-#include <string.h>
+#include <errno.h>
 #include <libgen.h>
 #include <search.h>
 #include <stdarg.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <string.h>
+#include <time.h>
 #include "mtest.h"
 #include "tests.h"
 
@@ -44,8 +44,8 @@ extern char** __environ;
 extern bool oe_disable_debug_malloc_check;
 
 static void _run_test(
-    const char* name, 
-    int (*func)(int argc, const char* argv[]), 
+    const char* name,
+    int (*func)(int argc, const char* argv[]),
     args_t* args)
 {
     printf("=== running: %s\n", name);
@@ -54,7 +54,7 @@ static void _run_test(
 
     memset(__environ, 0, sizeof(char**));
 
-    const char* argv[] = { "test", NULL };
+    const char* argv[] = {"test", NULL};
 
     if (func(1, argv) != 0)
     {

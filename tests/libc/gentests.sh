@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 files=`cat tests.supported`
 
 ##==============================================================================
@@ -42,6 +45,9 @@ do
     name=`get_test_name ${i}`
     source_file=enc/${name}.c
 cat > ${source_file} <<END
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #define main ${name}
 #include "../${i}"
 END
@@ -58,7 +64,22 @@ done
 rm -rf ${tests_h} ${tests_cpp} ${tests_cmake}
 
 cat >> ${tests_cmake} <<END
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 set(TESTS
+END
+
+cat >> ${tests_h} <<END
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+END
+
+cat >> ${tests_cpp} <<END
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 END
 
 for i in ${files}

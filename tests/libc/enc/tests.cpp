@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 RUN_TEST(test_functional_argv_c);
 RUN_TEST(test_functional_basename_c);
 RUN_TEST(test_functional_clock_gettime_c);
