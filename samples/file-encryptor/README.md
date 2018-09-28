@@ -107,8 +107,8 @@ See the following routine for details
 ```c
     int encrypt_block(
         bool encrypt,
-        unsigned char* inputbuf,
-        unsigned char* outputbuf,
+        unsigned char* input_buf,
+        unsigned char* output_buf,
         size_t size)
 ```
 
