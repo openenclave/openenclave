@@ -61,10 +61,10 @@ int ecall_dispatcher::get_remote_report_with_pubkey(
     uint8_t* key_buf = NULL;
     int ret = 1;
 
-    ENC_DEBUG_PRINTF("get_remote_report_with_pubkey");
+    TRACE_ENCLAVE("get_remote_report_with_pubkey");
     if (m_initialized == false)
     {
-        ENC_DEBUG_PRINTF("ecall_dispatcher initialization failed.");
+        TRACE_ENCLAVE("ecall_dispatcher initialization failed.");
         goto exit;
     }
 
@@ -96,11 +96,11 @@ int ecall_dispatcher::get_remote_report_with_pubkey(
         *key_size = sizeof(pem_public_key);
 
         ret = 0;
-        ENC_DEBUG_PRINTF("get_remote_report_with_pubkey succeeded");
+        TRACE_ENCLAVE("get_remote_report_with_pubkey succeeded");
     }
     else
     {
-        ENC_DEBUG_PRINTF("get_remote_report_with_pubkey failed.");
+        TRACE_ENCLAVE("get_remote_report_with_pubkey failed.");
     }
 
 exit:
@@ -124,7 +124,7 @@ int ecall_dispatcher::verify_report_and_set_pubkey(
 
     if (m_initialized == false)
     {
-        ENC_DEBUG_PRINTF("ecall_dispatcher initialization failed.");
+        TRACE_ENCLAVE("ecall_dispatcher initialization failed.");
         goto exit;
     }
 
@@ -136,11 +136,11 @@ int ecall_dispatcher::verify_report_and_set_pubkey(
     }
     else
     {
-        ENC_DEBUG_PRINTF("verify_report_and_set_pubkey failed.");
+        TRACE_ENCLAVE("verify_report_and_set_pubkey failed.");
         goto exit;
     }
     ret = 0;
-    ENC_DEBUG_PRINTF("verify_report_and_set_pubkey succeeded.");
+    TRACE_ENCLAVE("verify_report_and_set_pubkey succeeded.");
 
 exit:
     return ret;
@@ -154,7 +154,7 @@ int ecall_dispatcher::generate_encrypted_message(uint8_t** data, size_t* size)
 
     if (m_initialized == false)
     {
-        ENC_DEBUG_PRINTF("ecall_dispatcher initialization failed.");
+        TRACE_ENCLAVE("ecall_dispatcher initialization failed.");
         goto exit;
     }
 
@@ -168,7 +168,7 @@ int ecall_dispatcher::generate_encrypted_message(uint8_t** data, size_t* size)
     {
         uint8_t* host_buf = (uint8_t*)oe_host_malloc(encrypted_data_size);
         memcpy(host_buf, encrypted_data_buf, encrypted_data_size);
-        ENC_DEBUG_PRINTF(
+        TRACE_ENCLAVE(
             "enclave: generate_encrypted_message: encrypted_data_size = %ld",
             encrypted_data_size);
         *data = host_buf;
@@ -193,7 +193,7 @@ int ecall_dispatcher::process_encrypted_msg(
 
     if (m_initialized == false)
     {
-        ENC_DEBUG_PRINTF("ecall_dispatcher initialization failed.");
+        TRACE_ENCLAVE("ecall_dispatcher initialization failed.");
         goto exit;
     }
 
@@ -206,7 +206,7 @@ int ecall_dispatcher::process_encrypted_msg(
         // m_enclave_config->enclave_secret_data.
         // The following checking is to make sure the decrypted values are what
         // we have expected.
-        ENC_DEBUG_PRINTF("Decrypted data: ");
+        TRACE_ENCLAVE("Decrypted data: ");
         for (uint32_t i = 0; i < data_size; ++i)
         {
             printf("%d ", data[i]);
@@ -225,11 +225,10 @@ int ecall_dispatcher::process_encrypted_msg(
     }
     else
     {
-        ENC_DEBUG_PRINTF(
-            "Encalve:ecall_dispatcher::process_encrypted_msg failed");
+        TRACE_ENCLAVE("Enclave:ecall_dispatcher::process_encrypted_msg failed");
         goto exit;
     }
-    ENC_DEBUG_PRINTF(
+    TRACE_ENCLAVE(
         "Decrypted data matches with the enclave internal secret "
         "data: descryption validation succeeded");
     ret = 0;
