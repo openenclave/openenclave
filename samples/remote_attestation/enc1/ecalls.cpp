@@ -48,7 +48,7 @@ int get_remote_report_with_pubkey(
     uint8_t** remote_report,
     size_t* remote_report_size)
 {
-    ENC_DEBUG_PRINTF("enter get_remote_report_with_pubkey");
+    TRACE_ENCLAVE("enter get_remote_report_with_pubkey");
     return dispatcher.get_remote_report_with_pubkey(
         pem_key, key_size, remote_report, remote_report_size);
 }

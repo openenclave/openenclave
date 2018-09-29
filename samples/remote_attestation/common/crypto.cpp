@@ -35,7 +35,7 @@ bool Crypto::init_mbedtls(void)
         &m_ctr_drbg_contex, mbedtls_entropy_func, &m_entropy_context, NULL, 0);
     if (res != 0)
     {
-        ENC_DEBUG_PRINTF("mbedtls_ctr_drbg_seed failed.");
+        TRACE_ENCLAVE("mbedtls_ctr_drbg_seed failed.");
         goto exit;
     }
 
@@ -44,7 +44,7 @@ bool Crypto::init_mbedtls(void)
         &m_pk_context, mbedtls_pk_info_from_type(MBEDTLS_PK_RSA));
     if (res != 0)
     {
-        ENC_DEBUG_PRINTF("mbedtls_pk_setup failed (%d).", res);
+        TRACE_ENCLAVE("mbedtls_pk_setup failed (%d).", res);
         goto exit;
     }
 
@@ -58,7 +58,7 @@ bool Crypto::init_mbedtls(void)
         65537);
     if (res != 0)
     {
-        ENC_DEBUG_PRINTF("mbedtls_rsa_gen_key failed (%d)\n", res);
+        TRACE_ENCLAVE("mbedtls_rsa_gen_key failed (%d)\n", res);
         goto exit;
     }
 
@@ -67,11 +67,11 @@ bool Crypto::init_mbedtls(void)
         &m_pk_context, m_public_key, sizeof(m_public_key));
     if (res != 0)
     {
-        ENC_DEBUG_PRINTF("mbedtls_pk_write_pubkey_pem failed (%d)\n", res);
+        TRACE_ENCLAVE("mbedtls_pk_write_pubkey_pem failed (%d)\n", res);
         goto exit;
     }
     ret = true;
-    ENC_DEBUG_PRINTF("mbedtls initialized.");
+    TRACE_ENCLAVE("mbedtls initialized.");
 exit:
     return ret;
 }
@@ -85,7 +85,7 @@ void Crypto::cleanup_mbedtls(void)
     mbedtls_entropy_free(&m_entropy_context);
     mbedtls_ctr_drbg_free(&m_ctr_drbg_contex);
 
-    ENC_DEBUG_PRINTF("mbedtls cleaned up.");
+    TRACE_ENCLAVE("mbedtls cleaned up.");
 }
 
 /**
@@ -147,7 +147,7 @@ bool Crypto::Encrypt(
     res = mbedtls_pk_parse_public_key(&key, pem_public_key, key_size);
     if (res != 0)
     {
-        ENC_DEBUG_PRINTF("mbedtls_pk_parse_public_key failed.");
+        TRACE_ENCLAVE("mbedtls_pk_parse_public_key failed.");
         goto exit;
     }
 
@@ -162,7 +162,7 @@ bool Crypto::Encrypt(
         encrypted_data);
     if (res != 0)
     {
-        ENC_DEBUG_PRINTF("mbedtls_rsa_pkcs1_encrypt failed with %d\n", res);
+        TRACE_ENCLAVE("mbedtls_rsa_pkcs1_encrypt failed with %d\n", res);
         goto exit;
     }
 
@@ -204,7 +204,7 @@ bool Crypto::decrypt(
         output_size);
     if (res != 0)
     {
-        ENC_DEBUG_PRINTF("mbedtls_rsa_pkcs1_decrypt failed with %d\n", res);
+        TRACE_ENCLAVE("mbedtls_rsa_pkcs1_decrypt failed with %d\n", res);
         goto exit;
     }
     *data_size = output_size;
