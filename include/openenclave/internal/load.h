@@ -9,7 +9,13 @@
 #include <openenclave/bits/types.h>
 #include "types.h"
 
+#if defined(__linux__)
+#include <openenclave/internal/elf.h>
+#endif
+
 OE_EXTERNC_BEGIN
+
+#if defined(__linux__)
 
 #define OE_MAX_SEGMENTS 16
 
@@ -38,34 +44,54 @@ typedef struct _oe_segment
     uint32_t flags;
 } oe_segment_t;
 
-OE_INLINE uint64_t __oe_round_up_to_page_size(uint64_t x)
-{
-    uint64_t n = OE_PAGE_SIZE;
-    return (x + n - 1) / n * n;
-}
+#endif // defined(__linux__)
 
-OE_INLINE uint64_t __oe_round_down_to_page_size(uint64_t x)
+typedef struct _oe_enclave_image_t
 {
-    return x & ~(OE_PAGE_SIZE - 1);
-}
+    char* image_base;       /* base of image */
+    size_t image_size;      /* rva of entry_rva point */
+    uint64_t entry_rva;     /* rva of .text section */
+    uint64_t text_rva;      /* rva and file position of .oeinfo section */
 
-oe_result_t __oe_load_segments(
+    /* N.B. file position is needed when we need to write back  */
+    /*      oe_sgx_enclave_properties_t during signing          */
+    uint64_t oeinfo_rva;
+    uint64_t oeinfo_file_pos;
+
+    /* rva/size of .ecall section */
+    uint64_t ecall_rva;
+    uint64_t ecall_section_size;
+
+    /* size of relocation */
+    size_t reloc_size;
+
+#if defined(__linux__)
+
+    Elf64 elf;
+    oe_segment_t *segments;
+    size_t num_segments;
+    void* reloc_data;
+
+#elif defined(_WIN32)
+
+    void *module;
+    void *nt_header;
+    uint64_t reloc_rva;
+
+#else
+
+#error("unsupported");
+
+#endif
+
+} oe_enclave_image_t;
+
+oe_result_t _oe_load_enclave_image(
     const char* path,
-    oe_segment_t segments[OE_MAX_SEGMENTS],
-    size_t* nsegments,
-    uint64_t* entryaddr, /* virtual address of entry point */
-    uint64_t* textaddr); /* virtual address of text section */
+    oe_enclave_image_t* oeimage);
 
-oe_result_t __oe_calculate_segments_size(
-    const oe_segment_t* segments,
-    size_t nsegments,
-    size_t* size);
-
-oe_result_t __oe_combine_segments(
-    const oe_segment_t* segments,
-    size_t nsegments,
-    oe_page_t** pages,
-    size_t* npages);
+oe_result_t _oe_unload_enclave_image(
+    oe_enclave_image_t* oeimage);
 
 OE_EXTERNC_END
 

@@ -51,6 +51,7 @@ static oe_result_t _sgx_load_enclave_properties(
     oe_sgx_enclave_properties_t* properties)
 {
     oe_result_t result = OE_UNEXPECTED;
+    oe_enclave_image_t oeimage;
     Elf64 elf = ELF64_INIT;
 
     if (properties)
@@ -61,11 +62,11 @@ static oe_result_t _sgx_load_enclave_properties(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Load the ELF image */
-    if (Elf64_Load(path, &elf) != 0)
+    if (_oe_load_enclave_image(path, &oeimage) != 0)
         OE_RAISE(OE_FAILURE);
 
     /* Load the SGX enclave properties */
-    if (oe_sgx_load_properties(&elf, OE_INFO_SECTION_NAME, properties) != OE_OK)
+    if (oe_sgx_load_properties(&oeimage, OE_INFO_SECTION_NAME, properties) != OE_OK)
     {
         OE_RAISE(OE_NOT_FOUND);
     }
@@ -75,7 +76,7 @@ static oe_result_t _sgx_load_enclave_properties(
 done:
 
     if (elf.magic == ELF_MAGIC)
-        Elf64_Unload(&elf);
+        _oe_unload_enclave_image(&oeimage);
 
     return result;
 }

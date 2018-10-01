@@ -11,8 +11,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
-#include "fopen.h"
-#include "strings.h"
+#include "../fopen.h"
+#include "../strings.h"
 
 #define GOTO(LABEL)                                            \
     do                                                         \
