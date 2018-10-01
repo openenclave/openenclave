@@ -30,7 +30,7 @@ enclave {
             dummy_struct global_struct,
             dummy_union global_union,
             [in] int global_array[4],
-            bool get_default
+            bool set_default
         );
     };
 };

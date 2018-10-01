@@ -34,15 +34,6 @@ void get_globals(
     int global_array[4],
     bool get_default)
 {
-    printf(
-        "get globals %p %p %p %p %p %p\n",
-        global_int,
-        global_float,
-        global_ptr,
-        global_struct,
-        global_union,
-        (int*)global_array);
-
     if (get_default)
     {
         *global_int = default_int;
@@ -61,7 +52,6 @@ void get_globals(
         *global_union = explicit_union;
         memcpy(global_array, explicit_array, 4 * sizeof(int));
     }
-    printf("end globals\n");
 }
 
 void set_globals(
@@ -71,9 +61,9 @@ void set_globals(
     dummy_struct global_struct,
     dummy_union global_union,
     int global_array[4],
-    bool get_default)
+    bool set_default)
 {
-    if (get_default)
+    if (set_default)
     {
         default_int = global_int;
         default_float = global_float;
