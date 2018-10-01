@@ -41,6 +41,7 @@ LICENSE
 ./prereqs/dcap/libsgx
 ./prereqs/sgx-driver/sgx-driver
 ./samples/file-encryptor/diagram.png
+./samples/local_attestation/images/localattestation_sample_datails.png
 ./samples/remote_attestation/images/attestationsample.png
 ./samples/remote_attestation/images/localattestation.png
 ./samples/remote_attestation/images/remoteattestation_sample_details.png
