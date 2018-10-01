@@ -341,7 +341,7 @@ int main(int argc, const char* argv[])
 
     // Create the enclave
     result = oe_create_enclave(
-        argv[1], OE_ENCLAVE_TYPE_SGX, OE_ENCLAVE_FLAG_DEBUG, NULL, 0, &enclave);
+        argv[1], OE_ENCLAVE_TYPE_SGX, 0, NULL, 0, &enclave);
     if (result != OE_OK)
     {
         fprintf(stderr, "oe_create_enclave(): result=%u (%s)\n", result, oe_result_str(result));
@@ -398,12 +398,12 @@ The host is the application that creates and calls into the enclave so this host
 
 ```c
 result = oe_create_enclave(
-    argv[1], OE_ENCLAVE_TYPE_SGX, OE_ENCLAVE_FLAG_DEBUG, NULL, 0, &enclave);
+    argv[1], OE_ENCLAVE_TYPE_SGX, 0, NULL, 0, &enclave);
 ```
 
 This function sets up the enclave environment for the target enclave library including allocating resource, validating enclave library, creating enclave instance, and loading the enclave library.
 
-The helloworld sample creates an enclave by calling `oe_create_enclave` with the path to the signed enclave library file which happens to be passed as the first parameter to the launching application. You can optionally specify OE_ENCLAVE_FLAG_DEBUG if you want to debug an enclave.
+The helloworld sample creates an enclave by calling `oe_create_enclave` with the path to the signed enclave library file which happens to be passed as the first parameter to the launching application. You can optionally specify OE_ENCLAVE_FLAG_DEBUG in the third parameter if you want to debug an enclave, although doing this exposes the memory of the enclave to a debugger and should not be in shipping code or when working with real customer data..
 
 On a successful creation it returns an opaque enclave handle for any future operation on the enclave
 
