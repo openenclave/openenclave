@@ -1,19 +1,40 @@
-Contributing to Open Enclave
-============================
+Contributing to Open Enclave SDK
+================================
 
-The Open Enclave team maintains guidelines for contributing to the Open Enclave
-repos. An Open Enclave team member will be happy to explain why a guideline is
-defined as it is.
-
-_As the Open Enclave project is not yet public, the team requests that all
-potential contributions be raised as issues for discussion first until the
-initial project development is completed._
+Thank you for wanting to contribute to the Open Enclave SDK! We maintain this
+set of guidelines to help you succeed in contributing to this project. While we
+know it is a chore, please read this document before opening a pull request or
+filing an issue.
 
 General contribution guidance is included in this document. Additional guidance
-is defined in the documents linked below.
+is defined in the documents linked below:
 
+- [Governance Model](GovernanceModel.md) describes how we intend our
+  collaboration to happen.
 - [Development Guide](DevelopmentGuide.md) describes the coding style and other
-development practices applied to this project.
+  development practices applied to this project.
+
+Reporting Security Issues
+-------------------------
+
+Security issues and bugs should be reported privately, via email, to the
+Microsoft Security Response Center (MSRC) at <secure@microsoft.com>. You should
+receive a response within 24 hours. If for some reason you do not, please follow
+up via email to ensure we received your original message. Further information,
+including the [MSRC PGP](https://technet.microsoft.com/en-us/security/dn606155)
+key, can be found in the [Security
+TechCenter](https://technet.microsoft.com/en-us/security/default).
+
+Opening Issues
+--------------
+
+We welcome all questions and suggestions. Everyone is encouraged to open issues
+on GitHub to ask or discuss anything related to the Open Enclave SDK. However,
+security issues and bugs are an exception (see above)!
+
+You are encouraged to start a discussion with us through a GitHub issue before
+implementing any major changes. We want your contributions, but we also want to
+make sure the community is in agreement before you invest your time.
 
 Help Wanted
 ------------
@@ -23,23 +44,16 @@ https://github.com/Microsoft/openenclave/labels/help%20wanted). This set of
 issues is the place to start if you are interested in contributing but new to
 the codebase.
 
-Contribution "Bar"
-------------------
-
-Project maintainers will merge changes that improve the product significantly
-and broadly and that align with the [Open Enclave roadmap](
-https://github.com/Microsoft/openenclave/projects).
-
-Contributions must also satisfy the other published guidelines defined in this
-document. We may revert changes if they are found to be breaking.
-
 General Guidelines
 ------------------
 
 Please do:
 
+- **DO** open an issue for design discussion before making any major changes.
+- **DO** read our [Governance Model](GovernanceModel.md) to understand how our
+  community works.
 - **DO** follow our coding style described in the [Development Guide](
-  DevelopmentGuide.md)
+  DevelopmentGuide.md).
 - **DO** give priority to the current style of the project or file you're
   changing even if it diverges from the general guidelines.
 - **DO** include tests when adding new features. When fixing bugs, start with
@@ -47,7 +61,7 @@ Please do:
 - **DO** update README.md files in the source tree and other documents to be up
   to date with changes in the code.
 - **DO** keep the discussions focused. When a new or related topic comes up it's
-  often better to create new issue than to side track the discussion.
+  often better to create a new issue than to side track the discussion.
 
 DOs and DON'Ts for Pull Requests
 --------------------------------
@@ -229,17 +243,6 @@ file, as described above.
 existing algorithms that are not permissively licensed will generally not be
 accepted. If you want to create or nominate such an implementation, please create
 an issue to discuss the idea.
-
-Reporting Security Issues
--------------------------
-
-Security issues and bugs should be reported privately, via email, to the
-Microsoft Security Response Center (MSRC) at [secure@microsoft.com](
-mailto:secure@microsoft.com). You should receive a response within 24 hours.
-If for some reason you do not, please follow up via email to ensure we received
-your original message. Further information, including the [MSRC PGP](
-https://technet.microsoft.com/en-us/security/dn606155) key, can be found in the
-[Security TechCenter](https://technet.microsoft.com/en-us/security/default).
 
 Code of Conduct
 ---------------

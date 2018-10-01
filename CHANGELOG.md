@@ -17,4 +17,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - A set of [releasing procedures](docs/Releasing.md) to make releases.
 
+- A [governance model](docs/GovernanceModel.md) for the community.
+
 [Unreleased]: https://github.com/microsoft/openenclave/compare/v0.1.0...HEAD
