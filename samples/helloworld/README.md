@@ -403,7 +403,9 @@ result = oe_create_enclave(
 
 This function sets up the enclave environment for the target enclave library including allocating resource, validating enclave library, creating enclave instance, and loading the enclave library.
 
-The helloworld sample creates an enclave by calling `oe_create_enclave` with the path to the signed enclave library file which happens to be passed as the first parameter to the launching application. You can optionally specify OE_ENCLAVE_FLAG_DEBUG if you want to debug an enclave.
+The helloworld sample creates an enclave by calling `oe_create_enclave` with the path to the signed enclave library file which happens to be passed as the first parameter to the launching application. 
+
+The OE_ENCLAVE_FLAG_DEBUG flag allows the enclave to be created without the enclave binary being signed. It also gives a developer permission to debug the process and get access to enclave memory. What this means is ** DO NOT SHIP CODE WITH THE OE_ENCLAVE_FLAG_DEBUG ** because it is unsecure. What it does give is the ability to develop your enclave more easily. Before you ship the code you need to have a proper code signing story for the enclave shared library. Some newer Intel SGX platforms allow self signed certificates to be used, but some of the older Intel SGX platforms require Intel to sign your library.
 
 On a successful creation it returns an opaque enclave handle for any future operation on the enclave
 
