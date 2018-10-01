@@ -38,15 +38,15 @@ General Guidelines
 
 Please do:
 
-* **DO** follow our coding style described in the [Development Guide](
+- **DO** follow our coding style described in the [Development Guide](
   DevelopmentGuide.md)
-* **DO** give priority to the current style of the project or file you're
+- **DO** give priority to the current style of the project or file you're
   changing even if it diverges from the general guidelines.
-* **DO** include tests when adding new features. When fixing bugs, start with
+- **DO** include tests when adding new features. When fixing bugs, start with
   adding a test that highlights how the current behavior is broken.
-* **DO** update README.md files in the source tree and other documents to be up
+- **DO** update README.md files in the source tree and other documents to be up
   to date with changes in the code.
-* **DO** keep the discussions focused. When a new or related topic comes up it's
+- **DO** keep the discussions focused. When a new or related topic comes up it's
   often better to create new issue than to side track the discussion.
 
 DOs and DON'Ts for Pull Requests
@@ -54,44 +54,47 @@ DOs and DON'Ts for Pull Requests
 
 Please do:
 
-* **DO** submit all code changes via pull requests (PRs) rather than through a
+- **DO** submit all code changes via pull requests (PRs) rather than through a
   direct commit. PRs will be reviewed and potentially merged by the repo
   maintainers after a peer review that includes at least one maintainer.
-* **DO** give PRs short-but-descriptive names (e.g. "Improve code coverage for
-  System.Console by 10%", not "Fix #1234")
-* **DO** refer to any relevant issues and include [keywords](
+- **DO** give PRs short-but-descriptive names (e.g. "Improve code coverage for
+  System.Console by 10%", not "Fix #1234").
+- **DO** add breaking changes, new features, deprecations, and bug
+  fixes to the [unreleased section of the
+  changelog](../CHANGELOG.md#unreleased).
+- **DO** refer to any relevant issues and include [keywords](
   https://help.github.com/articles/closing-issues-via-commit-messages/) that
   automatically close issues when the PR is merged.
-* **DO** tag any users that should know about and/or review the change.
-* **DO** ensure each commit successfully builds on all platforms and passes all
+- **DO** tag any users that should know about and/or review the change.
+- **DO** ensure each commit successfully builds on all platforms and passes all
   unit tests.
-* **DO** rebase and squash unnecessary commits before opening the PR, so that
+- **DO** rebase and squash unnecessary commits before opening the PR, so that
   all the commits in the PR are the commits you want to merge.
-* **DO** ensure your correct name and email are on each commit.
-* **DO** address PR feedback in an additional commit(s) rather than amending the
+- **DO** ensure your correct name and email are on each commit.
+- **DO** address PR feedback in an additional commit(s) rather than amending the
   existing commits, and only rebase/squash them when necessary. This makes it
   easier for reviewers to track changes.
 
 Please do not:
 
-* **DON'T** make PRs for style changes. For example, do not send PRs that are
+- **DON'T** make PRs for style changes. For example, do not send PRs that are
   focused on changing usage of ```Int32``` to ```int```. The team would prefer
   to address these holistically with tooling.
-* **DON'T** surprise us with big pull requests. Instead, file an issue and start
+- **DON'T** surprise us with big pull requests. Instead, file an issue and start
   a discussion so we can agree on a direction before you invest a large amount
   of time.
-* **DON'T** commit code that you didn't write. If you find code that you think
+- **DON'T** commit code that you didn't write. If you find code that you think
   is a good fit to add to Open Enclave, file an issue and start a discussion
   before proceeding.
-* **DON'T** submit PRs that alter licensing related files or headers. If you
+- **DON'T** submit PRs that alter licensing related files or headers. If you
   believe there's a problem with them, file an issue and we'll be happy to
   discuss it.
-* **DON'T** submit changes to the public API without filing an issue and
+- **DON'T** submit changes to the public API without filing an issue and
   discussing with us first.
-* **DON'T** submit "work in progress" PRs.  A PR should only be submitted when
+- **DON'T** submit "work in progress" PRs.  A PR should only be submitted when
   it is considered ready for review and subsequent merging by the contributor.
-* **DON'T** fix merge conflicts using a merge commit. Prefer `git rebase`.
-* **DON'T** mix independent, unrelated changes in one PR. Separate real
+- **DON'T** fix merge conflicts using a merge commit. Prefer `git rebase`.
+- **DON'T** mix independent, unrelated changes in one PR. Separate real
   product/test code changes from larger code formatting/dead code removal
   changes. Separate unrelated fixes into separate PRs, especially if they are
   in different libraries.
