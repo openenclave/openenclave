@@ -19,7 +19,9 @@ set(PLATFORM_SRC
     linux/enter.S
     linux/entersim.S
     linux/exception.c
+    linux/elf.c
     linux/hostthread.c
+    linux/load.c
     linux/sgxioctl.c
     linux/time.c
     sgxquoteprovider.c
@@ -34,6 +36,8 @@ set(PLATFORM_SRC
     windows/entersim.asm
     windows/exception.c
     windows/hostthread.c
+    windows/load.c
+    windows/sgxsign.c
     windows/time.c
     ../3rdparty/mbedtls/mbedtls/library/bignum.c
     )
@@ -50,14 +54,12 @@ add_library(oehost STATIC
     calls.c
     create.c
     dupenv.c
-    elf.c
     enclave.c
     enclavemanager.c
     error.c
     files.c
     fopen.c
     hexdump.c
-    load.c
     memalign.c
     ocalls.c
     quote.c

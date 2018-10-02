@@ -48,7 +48,7 @@ static uint64_t _time()
 void oe_handle_sleep(uint64_t arg_in)
 {
     const uint64_t milliseconds = arg_in;
-    Sleep(milliseconds);
+    Sleep((DWORD)milliseconds);
 }
 
 void oe_handle_get_time(uint64_t arg_in, uint64_t* arg_out)

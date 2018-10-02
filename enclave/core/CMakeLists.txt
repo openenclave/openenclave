@@ -9,6 +9,7 @@ add_library(oecore STATIC
     calls.c
     cpuid.c
     debugmalloc.c
+    encprop.c
     entropy.c
     exception.c
     globals.c
