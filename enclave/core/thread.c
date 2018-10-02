@@ -20,7 +20,7 @@
 
 static int _thread_wait(oe_thread_data_t* self)
 {
-    const void* tcs = TD_ToTCS((TD*)self);
+    const void* tcs = td_to_tcs((td_t*)self);
 
     if (oe_ocall(OE_OCALL_THREAD_WAIT, (uint64_t)tcs, NULL) != OE_OK)
         return -1;
@@ -30,7 +30,7 @@ static int _thread_wait(oe_thread_data_t* self)
 
 static int _thread_wake(oe_thread_data_t* self)
 {
-    const void* tcs = TD_ToTCS((TD*)self);
+    const void* tcs = td_to_tcs((td_t*)self);
 
     if (oe_ocall(OE_OCALL_THREAD_WAKE, (uint64_t)tcs, NULL) != OE_OK)
         return -1;
@@ -47,8 +47,8 @@ static int _thread_wake_wait(oe_thread_data_t* waiter, oe_thread_data_t* self)
               oe_host_alloc_for_call_host(sizeof(oe_thread_wake_wait_args_t))))
         goto done;
 
-    args->waiter_tcs = TD_ToTCS((TD*)waiter);
-    args->self_tcs = TD_ToTCS((TD*)self);
+    args->waiter_tcs = td_to_tcs((td_t*)waiter);
+    args->self_tcs = td_to_tcs((td_t*)self);
 
     if (oe_ocall(OE_OCALL_THREAD_WAKE_WAIT, (uint64_t)args, NULL) != OE_OK)
         goto done;

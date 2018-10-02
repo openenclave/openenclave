@@ -11,36 +11,36 @@
 #
 
 # Needed for Open Enclave build and scripts
-PACKAGES="clang-format-3.8 cmake make"
+PACKAGES=('clang-format-3.8' 'cmake' 'make')
 
 # Needed for using oedbg
-PACKAGES+=" gdb"
+PACKAGES+=('gdb')
 
 # Needed for 3rdparty/libunwind
-PACKAGES+=" autoconf libtool"
+PACKAGES+=('autoconf' 'libtool')
 
 # Needed to generate documentation during make
-PACKAGES+=" doxygen graphviz"
+PACKAGES+=('doxygen' 'graphviz')
 
 # Needed for cmake/get_c_compiler_dir.sh
-PACKAGES+=" gawk"
+PACKAGES+=('gawk')
 
 # Needed for dox2md document generation
-PACKAGES+=" libexpat1-dev"
+PACKAGES+=('libexpat1-dev')
 
 # Needed for oesign
-PACKAGES+=" openssl"
+PACKAGES+=('openssl')
 
 # Needed for oehost
-PACKAGES+=" libssl-dev"
+PACKAGES+=('libssl-dev')
 
 # Needed for 3rdparty/libcxx/update.make
-PACKAGES+=" subversion"
+PACKAGES+=('subversion')
 
 # Needed for oeedger8r
-PACKAGES+=" ocaml-native-compilers"
+PACKAGES+=('ocaml-native-compilers')
 
-apt-get -y install "$PACKAGES"
+apt-get -y install "${PACKAGES[@]}"
 
 # Now install clang from LLVM private repo, this has the spectre mitigations
 # (unlike anything in Ubuntu 16.04).
@@ -65,8 +65,8 @@ else
     apt-key add llvm-snapshot.gpg.key
 
     # Add repo
-    if ! (grep apt.llvm.org/xenial /etc/apt/sources.list); then
-        cat << EOF >> /etc/apt/sources.list
+    if [[ ! -f /etc/apt/sources.list.d/llvm-toolchain-xenial-7.list ]]; then
+        cat << EOF >> /etc/apt/sources.list.d/llvm-toolchain-xenial-7.list
 
 # LLVM/clang-7 (with spectre mitigations)
 deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main

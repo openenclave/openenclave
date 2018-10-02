@@ -181,7 +181,7 @@ static char** _backtrace_symbols(
     int size)
 {
     char** ret = NULL;
-    Elf64 elf = ELF64_INIT;
+    elf64_t elf = ELF64_INIT;
     bool elf_loaded = false;
     size_t malloc_size = 0;
     const char unknown[] = "<unknown>";
@@ -192,7 +192,7 @@ static char** _backtrace_symbols(
 
     /* Open the enclave ELF64 image */
     {
-        if (Elf64_Load(enclave->path, &elf) != 0)
+        if (elf64_load(enclave->path, &elf) != 0)
             goto done;
 
         elf_loaded = true;
@@ -208,7 +208,7 @@ static char** _backtrace_symbols(
         for (int i = 0; i < size; i++)
         {
             const uint64_t vaddr = (uint64_t)buffer[i] - enclave->addr;
-            const char* name = Elf64_GetFunctionName(&elf, vaddr);
+            const char* name = elf64_get_function_name(&elf, vaddr);
 
             if (!name)
                 name = unknown;
@@ -237,7 +237,7 @@ static char** _backtrace_symbols(
     for (int i = 0; i < size; i++)
     {
         const uint64_t vaddr = (uint64_t)buffer[i] - enclave->addr;
-        const char* name = Elf64_GetFunctionName(&elf, vaddr);
+        const char* name = elf64_get_function_name(&elf, vaddr);
 
         if (!name)
             name = unknown;
@@ -251,7 +251,7 @@ static char** _backtrace_symbols(
 done:
 
     if (elf_loaded)
-        Elf64_Unload(&elf);
+        elf64_unload(&elf);
 
     return ret;
 }

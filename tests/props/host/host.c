@@ -52,8 +52,8 @@ static oe_result_t _sgx_load_enclave_properties(
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_enclave_image_t oeimage;
-    Elf64 elf = ELF64_INIT;
 
+    oeimage.elf.magic = 0;
     if (properties)
         memset(properties, 0, sizeof(oe_sgx_enclave_properties_t));
 
@@ -75,7 +75,7 @@ static oe_result_t _sgx_load_enclave_properties(
 
 done:
 
-    if (elf.magic == ELF_MAGIC)
+    if (oeimage.elf.magic == ELF_MAGIC)
         _oe_unload_enclave_image(&oeimage);
 
     return result;

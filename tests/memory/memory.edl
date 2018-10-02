@@ -1,0 +1,35 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    struct buffer {
+        unsigned char* buf;
+        size_t size;
+    };
+
+    trusted {
+        public void test_malloc();
+        public void test_calloc();
+        public void test_realloc();
+        public void test_memalign();
+        public void test_posix_memalign();
+
+        public void init_malloc_stress_test();
+        public void malloc_stress_test(int threads);
+
+        public void test_host_boundaries(buffer buf);
+        public void test_enclave_boundaries();
+        public void test_between_enclave_boundaries(
+            buffer host_stack,
+            buffer host_heap,
+            [out] buffer* enclave_memory,
+            [out] buffer* enclave_host_memory
+        );
+
+        public void try_input_enclave_pointer(buffer enclave_memory);
+        public void free_boundary_memory(
+            buffer enclave_memory,
+            buffer enclave_host_memory
+        );
+    };
+};

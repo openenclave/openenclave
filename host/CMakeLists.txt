@@ -47,6 +47,7 @@ add_library(oehost STATIC
     ../common/quote.c
     ../common/report.c
     ../common/revocation.c
+    ../common/safecrt.c
     ../common/sgxcertextensions.c
     ../common/tcbinfo.c    
     calls.c

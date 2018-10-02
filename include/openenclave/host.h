@@ -165,6 +165,35 @@ oe_result_t oe_get_report(
     size_t* report_buffer_size);
 
 /**
+ * Extracts additional platform specific data from the report and writes
+ * it to *target_info_buffer*. After calling this function, the
+ * *target_info_buffer* can used for the *opt_params* field in *oe_get_report*.
+ *
+ * For example, on SGX, the *target_info_buffer* can be used as a
+ * sgx_target_info_t for local attestation.
+ *
+ * If the *target_info_buffer* is NULL or the *target_info_size* parameter is
+ * too small, this function returns OE_BUFFER_TOO_SMALL.
+ *
+ * @param report The report returned by **oe_get_report**.
+ * @param report_size The size of **report** in bytes.
+ * @param target_info_buffer The buffer to where the platform specific data
+ * will be placed.
+ * @param target_info_size The size of **target_info_buffer**. This is set to
+ * the required size of **target_info_buffer** on return.
+ *
+ * @retval OE_OK The platform specific data was successfuly extracted.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ * @retval OE_BUFFER_TOO_SMALL **target_info_buffer** is NULL or too small.
+ *
+ */
+oe_result_t oe_get_target_info(
+    const uint8_t* report,
+    size_t report_size,
+    void* target_info_buffer,
+    size_t* target_info_size);
+
+/**
  * Parse an enclave report into a standard format for reading.
  *
  * @param report The buffer containing the report to parse.

@@ -72,7 +72,7 @@ static void _append(
         if (s)
         {
             // Copy 'm' bytes from string 's'.
-            memcpy(ptr, s, m);
+            oe_memcpy_s(ptr, remaining, s, m);
         }
         else
         {

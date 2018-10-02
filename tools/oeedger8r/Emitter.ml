@@ -221,12 +221,6 @@ let oe_gen_wrapper_prototype (fd: Ast.func_decl) (is_ecall:bool) =
   let args = List.filter (fun s-> s <> "") args
   in 
     sprintf "oe_result_t %s(%s)" fd.Ast.fname (String.concat ", " args)
-  (* [retval_str, plist_str] in
-  if is_ecall then
-    let newargs = []
-    sprintf "oe_result_t %s(oe_enclave_t* enclave%s)" fd.Ast.fname (with_comma args_str)
-  else
-    sprintf "oe_result_t %s(%s)" fd.Ast.fname (with_comma args_str) *)
 
 (*
   Emit struct or union
@@ -359,13 +353,28 @@ let oe_gen_arg_check_macro(os : out_channel) =
   fprintf os "     }                                                      \\\n";
   fprintf os " } while(0)\n\n"
   
+let oe_copy_members_to_enclave (os:out_channel) (fd: Ast.func_decl) =  
+  let is_primitive ptype =
+    match ptype with
+    | Ast.PTPtr (atype, ptr_attr) -> not ptr_attr.Ast.pa_chkptr
+    | _ -> true     
+  in
+  let gen_copy_member (ptype, decl) =
+    if is_primitive ptype then
+      fprintf os "    enc_args.%s = args.%s;\n"      
+        decl.Ast.identifier
+        decl.Ast.identifier
+  in 
+  fprintf os "    /* Copy primitive properties to enc_args */\n";
+  List.iter gen_copy_member fd.Ast.plist;
+  fprintf os "\n"
 
 let oe_gen_allocate_buffers (os:out_channel) (fd: Ast.func_decl) =    
   let gen_allocate_buffer (ptype, decl) =
     match ptype with
       | Ast.PTPtr (atype, ptr_attr) ->
           if ptr_attr.Ast.pa_chkptr then
-            let size = oe_get_param_size (ptype, decl, "enc_args.") in
+            let size = oe_get_param_size (ptype, decl, "args.") in
             let macro = 
               match ptr_attr.Ast.pa_direction with
                 | Ast.PtrOut -> "OE_CHECKED_ALLOCATE_OUTPUT"                
@@ -378,7 +387,7 @@ let oe_gen_allocate_buffers (os:out_channel) (fd: Ast.func_decl) =
           else ()
       | _ -> () (* Non pointer arguments *)    
   in 
-  fprintf os "    /* Copy host buffers to enclave memory */\n";
+  fprintf os "    /* Copy checked buffers properties to enclave memory */\n";
   List.iter gen_allocate_buffer fd.Ast.plist;
   fprintf os "\n"
   
@@ -407,7 +416,7 @@ let oe_gen_copy_outputs (os:out_channel) (fd: Ast.func_decl) =
               fprintf os "        memcpy(args.%s, enc_args.%s, %s);\n"
                 decl.Ast.identifier
                 decl.Ast.identifier
-                (oe_get_param_size (ptype, decl, "enc_args."))              
+                (oe_get_param_size (ptype, decl, "args."))              
             | _ -> ()               
           else ()
       | _ -> () (* Non pointer arguments *)    
@@ -443,8 +452,7 @@ let oe_gen_ecall_function (os:out_channel) (fd: Ast.func_decl) =
   fprintf os "        goto done;\n\n";
   fprintf os "    /* Copy p_host_arg to prevent TOCTOU issues. */\n";
   fprintf os "    args = *(%s_args_t*) p_host_args;\n\n" fd.Ast.fname;
-  fprintf os "    /* enc_args holds buffers in enclave memory.*/\n";
-  fprintf os "    enc_args = args;\n\n";
+  oe_copy_members_to_enclave os fd;
   oe_gen_allocate_buffers os fd;
   oe_gen_call_enclave_function os fd;
   oe_gen_copy_outputs os fd;
@@ -624,7 +632,7 @@ let validate_oe_support (ec: enclave_content) (ep: edger8r_params) =
   if ep.header_only then failwithf "--header_only option is not supported by oeedger8r.";
   List.iter (fun f -> 
     (if f.Ast.tf_is_priv then 
-        failwithf "Function '%s'L 'private' specifier is not supported by oeedger8r" f.Ast.tf_fdecl.fname);
+        failwithf "Function '%s': 'private' specifier is not supported by oeedger8r" f.Ast.tf_fdecl.fname);
     (if f.Ast.tf_is_switchless then
         failwithf "Function '%s': switchless ecalls and ocalls are not yet supported by Open Enclave SDK." f.Ast.tf_fdecl.fname);  
     (if uses_wchar_t_params f.Ast.tf_fdecl then

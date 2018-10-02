@@ -1,0 +1,15 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+     struct mbed_args {
+        int skipped;
+        int total;
+    };
+    trusted {
+        public int test(
+            [in, string] const char* in_testname,
+            [user_check] char** out_testname,
+            [out] mbed_args* args );
+    };
+};

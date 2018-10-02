@@ -10,17 +10,17 @@
 #include <openenclave/internal/sgxtypes.h>
 #include "asmdefs.h"
 
-OE_STATIC_ASSERT(OE_OFFSETOF(TD, magic) == TD_magic);
-OE_STATIC_ASSERT(OE_OFFSETOF(TD, depth) == TD_depth);
-OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_rcx) == TD_host_rcx);
-OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_rsp) == TD_host_rsp);
-OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_rbp) == TD_host_rbp);
-OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_previous_rsp) == TD_host_previous_rsp);
-OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_previous_rbp) == TD_host_previous_rbp);
-OE_STATIC_ASSERT(OE_OFFSETOF(TD, oret_func) == TD_oret_func);
-OE_STATIC_ASSERT(OE_OFFSETOF(TD, oret_arg) == TD_oret_arg);
-OE_STATIC_ASSERT(OE_OFFSETOF(TD, callsites) == TD_callsites);
-OE_STATIC_ASSERT(OE_OFFSETOF(TD, simulate) == TD_simulate);
+OE_STATIC_ASSERT(OE_OFFSETOF(td_t, magic) == td_magic);
+OE_STATIC_ASSERT(OE_OFFSETOF(td_t, depth) == td_depth);
+OE_STATIC_ASSERT(OE_OFFSETOF(td_t, host_rcx) == td_host_rcx);
+OE_STATIC_ASSERT(OE_OFFSETOF(td_t, host_rsp) == td_host_rsp);
+OE_STATIC_ASSERT(OE_OFFSETOF(td_t, host_rbp) == td_host_rbp);
+OE_STATIC_ASSERT(OE_OFFSETOF(td_t, host_previous_rsp) == td_host_previous_rsp);
+OE_STATIC_ASSERT(OE_OFFSETOF(td_t, host_previous_rbp) == td_host_previous_rbp);
+OE_STATIC_ASSERT(OE_OFFSETOF(td_t, oret_func) == td_oret_func);
+OE_STATIC_ASSERT(OE_OFFSETOF(td_t, oret_arg) == td_oret_arg);
+OE_STATIC_ASSERT(OE_OFFSETOF(td_t, callsites) == td_callsites);
+OE_STATIC_ASSERT(OE_OFFSETOF(td_t, simulate) == td_simulate);
 
 /*
 **==============================================================================
@@ -48,15 +48,15 @@ oe_thread_data_t* oe_get_thread_data()
 /*
 **==============================================================================
 **
-** TD_PushCallsite()
+** td_push_callsite()
 **
 **     Insert the Callsite structure for the current ECALL at the
-**     front of the TD.callsites list.
+**     front of the td_t.callsites list.
 **
 **==============================================================================
 */
 
-void TD_PushCallsite(TD* td, Callsite* callsite)
+void td_push_callsite(td_t* td, Callsite* callsite)
 {
     callsite->next = td->callsites;
     td->callsites = callsite;
@@ -66,15 +66,15 @@ void TD_PushCallsite(TD* td, Callsite* callsite)
 /*
 **==============================================================================
 **
-** TD_PopCallsite()
+** td_pop_callsite()
 **
 **     Remove the Callsite structure that is at the head of the
-**     TD.callsites list.
+**     td_t.callsites list.
 **
 **==============================================================================
 */
 
-void TD_PopCallsite(TD* td)
+void td_pop_callsite(td_t* td)
 {
     if (!td->callsites)
         oe_abort();
@@ -82,58 +82,59 @@ void TD_PopCallsite(TD* td)
     td->callsites = td->callsites->next;
 
     if (--td->depth == 0)
-        TD_Clear(td);
+        td_clear(td);
 }
 
 /*
 **==============================================================================
 **
-** TD_FromTCS()
+** td_from_tcs()
 **
-**     This function calculates the address of the TD (thread data structure)
-**     relative to the TCS (Thread Control Structure) page. The TD resides in
+**     This function calculates the address of the td_t (thread data structure)
+**     relative to the TCS (Thread Control Structure) page. The td_t resides in
 **     a page pointed to by the GS (segment register). This page occurs 4 pages
 **     after the TCS page. The layout is as follows:
 **
-**         +--------------------------+
-**         | TCS Page                 |
-**         +--------------------------+
-**         | SSA (State Save Area) 0  |
-**         +--------------------------+
-**         | SSA (State Save Area) 1  |
-**         +--------------------------+
-**         | Guard Page               |
-**         +--------------------------+
-**         | GS Segment (contains TD) |
-**         +--------------------------+
+**         +----------------------------+
+**         | TCS Page                   |
+**         +----------------------------+
+**         | SSA (State Save Area) 0    |
+**         +----------------------------+
+**         | SSA (State Save Area) 1    |
+**         +----------------------------+
+**         | Guard Page                 |
+**         +----------------------------+
+**         | GS Segment (contains td_t) |
+**         +----------------------------+
 **
 **     This layout is determined by the enclave builder. See:
 **
 **         ../host/build.c (_add_control_pages)
 **
-**     The GS segment register is set by the EENTER instruction and the TD
+**     The GS segment register is set by the EENTER instruction and the td_t
 **     page is zero filled upon initial enclave entry. Software sets the
-**     contents of the TD when it first determines that TD.self_addr is zero.
+**     contents of the td_t when it first determines that td_t.self_addr is
+**     zero.
 **
 **==============================================================================
 */
 
-TD* TD_FromTCS(void* tcs)
+td_t* td_from_tcs(void* tcs)
 {
-    return (TD*)((uint8_t*)tcs + (4 * OE_PAGE_SIZE));
+    return (td_t*)((uint8_t*)tcs + (4 * OE_PAGE_SIZE));
 }
 
 /*
 **==============================================================================
 **
-** TD_ToTCS()
+** td_to_tcs()
 **
-**     Compute a TCS pointer from a TD.
+**     Compute a TCS pointer from a td_t.
 **
 **==============================================================================
 */
 
-void* TD_ToTCS(const TD* td)
+void* td_to_tcs(const td_t* td)
 {
     return (uint8_t*)td - (4 * OE_PAGE_SIZE);
 }
@@ -148,19 +149,19 @@ void* TD_ToTCS(const TD* td)
 **==============================================================================
 */
 
-TD* oe_get_td()
+td_t* oe_get_td()
 {
     oe_thread_data_t* td = oe_get_thread_data();
-    return (TD*)td;
+    return (td_t*)td;
 }
 
 /*
 **==============================================================================
 **
-** TD_Initialized()
+** td_initialized()
 **
-**     Returns TRUE if this thread data structure (TD) is initialized. An
-**     initialized TD meets the following conditions:
+**     Returns TRUE if this thread data structure (td_t) is initialized. An
+**     initialized td_t meets the following conditions:
 **
 **         (1) td is not null
 **         (2) td->base.self_addr == td
@@ -169,7 +170,7 @@ TD* oe_get_td()
 **==============================================================================
 */
 
-bool TD_Initialized(TD* td)
+bool td_initialized(td_t* td)
 {
     if (td && td->magic == TD_MAGIC && td->base.self_addr == (uint64_t)td)
         return true;
@@ -180,10 +181,10 @@ bool TD_Initialized(TD* td)
 /*
 **==============================================================================
 **
-** TD_Init()
+** td_init()
 **
-**     Initialize the thread data structure (TD) if not already initialized.
-**     The TD resides in the GS segment and is located relative to the TCS.
+**     Initialize the thread data structure (td_t) if not already initialized.
+**     The td_t resides in the GS segment and is located relative to the TCS.
 **     Refer to the following layout.
 **
 **         +-------------------------+
@@ -201,7 +202,7 @@ bool TD_Initialized(TD* td)
 **         +-------------------------+
 **         | Guard Page              |
 **         +-------------------------+
-**         | GS page (contains TD)   |
+**         | GS page (contains td_t) |
 **         +-------------------------+
 **
 **     Note: the host register fields are pre-initialized by oe_enter:
@@ -209,12 +210,13 @@ bool TD_Initialized(TD* td)
 **==============================================================================
 */
 
-void TD_Init(TD* td)
+void td_init(td_t* td)
 {
     /* If not already initialized */
-    if (!TD_Initialized(td))
+    if (!td_initialized(td))
     {
-        /* TD.hostsp, TD.hostbp, and TD.retaddr already set by oe_enter() */
+        // td_t.hostsp, td_t.hostbp, and td_t.retaddr already set by
+        // oe_enter().
 
         /* Clear base structure */
         oe_memset(&td->base, 0, sizeof(td->base));
@@ -236,15 +238,15 @@ void TD_Init(TD* td)
 /*
 **==============================================================================
 **
-** TD_Clear()
+** td_clear()
 **
-**     Clear the TD. This is called when the ECALL depth falls to zero
-**     in TD_PopCallsite().
+**     Clear the td_t. This is called when the ECALL depth falls to zero
+**     in td_pop_callsite().
 **
 **==============================================================================
 */
 
-void TD_Clear(TD* td)
+void td_clear(td_t* td)
 {
     /* Should not be called unless callsite list is empty */
     if (td->depth != 0 || td->callsites)
@@ -256,5 +258,5 @@ void TD_Clear(TD* td)
     /* Clear the magic number */
     td->magic = 0;
 
-    /* Never clear TD.initialized nor host registers */
+    /* Never clear td_t.initialized nor host registers */
 }

@@ -129,16 +129,6 @@
 /* OE_OCALL */
 #define OE_OCALL OE_EXTERNC OE_EXPORT
 
-// Enable debug-malloc for debug builds, where CMAKE_BUILD_TYPE="Debug". For
-// the following build types, NDEBUG is defined.
-//
-//     CMAKE_BUILD_TYPE="Release"
-//     CMAKE_BUILD_TYPE="RelWithDebugInfo"
-//
-#if !defined(NDEBUG) && !defined(OE_USE_DEBUG_MALLOC)
-#define OE_USE_DEBUG_MALLOC
-#endif
-
 /* The maxiumum value for a four-byte enum tag */
 #define OE_ENUM_MAX 0xffffffff
 

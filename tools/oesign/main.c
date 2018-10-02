@@ -64,33 +64,33 @@ static int _update_and_write_shared_lib(
 
     /* Verify that this enclave contains required symbols */
     {
-        Elf64_Sym sym;
+        elf64_sym_t sym;
 
-        if (Elf64_FindSymbolByName(&oeimage.elf, "_start", &sym) != 0)
+        if (elf64_find_symbol_by_name(&oeimage.elf, "_start", &sym) != 0)
         {
             Err("entry point not found: _start()");
             goto done;
         }
 
-        if (Elf64_FindSymbolByName(&oeimage.elf, "oe_num_pages", &sym) != 0)
+        if (elf64_find_symbol_by_name(&oeimage.elf, "oe_num_pages", &sym) != 0)
         {
             Err("oe_num_pages() undefined");
             goto done;
         }
 
-        if (Elf64_FindSymbolByName(&oeimage.elf, "oe_base_heap_page", &sym) != 0)
+        if (elf64_find_symbol_by_name(&oeimage.elf, "oe_base_heap_page", &sym) != 0)
         {
             Err("oe_base_heap_page() undefined");
             goto done;
         }
 
-        if (Elf64_FindSymbolByName(&oeimage.elf, "oe_num_heap_pages", &sym) != 0)
+        if (elf64_find_symbol_by_name(&oeimage.elf, "oe_num_heap_pages", &sym) != 0)
         {
             Err("oe_num_heap_pages() undefined");
             goto done;
         }
 
-        if (Elf64_FindSymbolByName(&oeimage.elf, "oe_virtual_base_addr", &sym) != 0)
+        if (elf64_find_symbol_by_name(&oeimage.elf, "oe_virtual_base_addr", &sym) != 0)
         {
             Err("oe_virtual_base_addr() undefined");
             goto done;
@@ -104,7 +104,7 @@ static int _update_and_write_shared_lib(
             &oeimage, OE_INFO_SECTION_NAME, properties) != OE_OK)
     {
 #if 0
-        if (Elf64_AddSection(
+        if (elf64_add_section(
                 &elf,
                 OE_INFO_SECTION_NAME,
                 SHT_PROGBITS,

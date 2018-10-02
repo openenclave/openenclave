@@ -153,15 +153,14 @@ oe_result_t sgx_get_qetarget_info(sgx_target_info_t* target_info)
     // oe_initialize_quote_provider performs initialization only once even if
     // called many times.
 
-    oe_initialize_quote_provider();
-    result = oe_sgx_qe_get_target_info((uint8_t*)target_info);
-
+    OE_CHECK(oe_initialize_quote_provider());
+    OE_CHECK(oe_sgx_qe_get_target_info((uint8_t*)target_info));
 #else
-
-    result = _sgx_init_quote_with_aesm(target_info);
-
+    OE_CHECK(_sgx_init_quote_with_aesm(target_info));
 #endif
 
+    result = OE_OK;
+done:
     return result;
 }
 

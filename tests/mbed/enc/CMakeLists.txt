@@ -5,10 +5,13 @@
 # >> In one of the test "ssl" we are using a variable called new which is a function in C++
 #    causes improper behaviour at compile time leads us to use C instead of C++
 
+include(oeedl_file)
 include(add_enclave_executable)
 include(${CMAKE_CURRENT_LIST_DIR}/../../../cmake/get_testcase_name.cmake)
 include_directories(${CMAKE_BINARY_DIR}/3rdparty/mbedtls/mbedtls-wrap-prefix/src/mbedtls-wrap/include/)
 # helper lib to contain file needed by some tests
+
+oeedl_file(../mbed.edl enclave gen)
 
 # helper function to create enclave binary
 function(add_libmbed_test_enc NAME )
@@ -33,6 +36,7 @@ function(add_libmbed_test_enc NAME )
      enc.c
      main.c
      start.S
+     ${gen}
     )
     target_compile_options(libmbedtest_suite_${NAME} PRIVATE
       -Wno-error
@@ -42,17 +46,19 @@ function(add_libmbed_test_enc NAME )
     target_include_directories(libmbedtest_suite_${NAME} PUBLIC
         ..
         ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests
+        PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
         )
     target_compile_definitions(libmbedtest_suite_${NAME} PRIVATE -DWITH_MAIN -D__TEST__="${CMAKE_CURRENT_BINARY_DIR}/test_suite_${NAME}.c")
     target_link_libraries(libmbedtest_suite_${NAME} mbedcrypto oelibc oecore)
 endfunction(add_libmbed_test_enc)
 
 function(add_libmbed_selftest_enc NAME SOURCE )
-    add_executable(libmbedtest-${NAME}_enc enc.c main.c start.S)
+    add_executable(libmbedtest-${NAME}_enc enc.c main.c start.S ${gen})
 
     target_include_directories(libmbedtest-${NAME}_enc PUBLIC
         ..
         ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests
+        PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
         )
 
     target_compile_definitions(libmbedtest-${NAME}_enc PRIVATE -DWITH_MAIN -D__TEST__="${SOURCE}")
@@ -60,16 +66,27 @@ function(add_libmbed_selftest_enc NAME SOURCE )
 
 endfunction(add_libmbed_selftest_enc)
 
+string(TOUPPER ${CMAKE_BUILD_TYPE} build_type)
+if (NOT "${build_type}" STREQUAL "DEBUG")
+	set(is_nondebug_build TRUE)
+endif()
+
 # iterate over the supported tests and create a binary for each.
 file(STRINGS "../tests.supported" alltests)
 foreach(testcase ${alltests})
-     string(FIND "${testcase}" "selftest" var)
-     if(${var} GREATER 0 )
-	   get_testcase_name(${testcase} name "../../3rdparty/mbedtls/mbedtls/programs/test/")
-	   add_libmbed_selftest_enc( ${name} ${testcase})
-     elseif(${var} LESS 0)
-	   add_libmbed_test_enc(${testcase})
-     endif()
+	string(FIND "${testcase}" "selftest" found_selftest)
+	if(${found_selftest} GREATER 0 )
+		get_testcase_name(${testcase} name "../../3rdparty/mbedtls/mbedtls/programs/test/")
+		add_libmbed_selftest_enc( ${name} ${testcase})
+     else()
+		if(${is_nondebug_build})
+			string(FIND "${testcase}" "debug" found_debug)
+			if(NOT ${found_debug} LESS 0)
+				continue()
+			endif()
+		endif()
+	add_libmbed_test_enc(${testcase})
+	endif()
 endforeach(testcase)
 
 File(COPY ${CMAKE_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests/data_files DESTINATION ${CMAKE_BINARY_DIR}/tests/mbed )

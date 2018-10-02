@@ -45,8 +45,8 @@ bool oe_disable_debug_malloc_check;
 **                _start function. It also maintains the index of the
 **                current SSA (TCS.cssa) and the number of SSA's (TCS.nssa).
 **
-**     TD       - Thread data. Per thread data as defined by the
-**                oe_thread_data_t structure and extended by the TD structure.
+**     td_t       - Thread data. Per thread data as defined by the
+**                oe_thread_data_t structure and extended by the td_t structure.
 **                This structure records the stack pointer of the last EENTER.
 **
 **     SP       - Stack pointer. Refers to the enclave's stack pointer.
@@ -261,7 +261,7 @@ static void _handle_exit(oe_code_t code, uint16_t func, uint64_t arg)
 }
 
 void _oe_virtual_exception_dispatcher(
-    TD* td,
+    td_t* td,
     uint64_t arg_in,
     uint64_t* arg_out);
 
@@ -276,7 +276,7 @@ void _oe_virtual_exception_dispatcher(
 */
 
 static void _handle_ecall(
-    TD* td,
+    td_t* td,
     uint16_t func,
     uint64_t arg_in,
     uint64_t* output_arg1,
@@ -284,12 +284,12 @@ static void _handle_ecall(
 {
     oe_result_t result = OE_OK;
 
-    /* Insert ECALL context onto front of TD.ecalls list */
+    /* Insert ECALL context onto front of td_t.ecalls list */
     Callsite callsite;
     uint64_t arg_out = 0;
 
     oe_memset(&callsite, 0, sizeof(callsite));
-    TD_PushCallsite(td, &callsite);
+    td_push_callsite(td, &callsite);
 
     // Acquire release semantics for __oe_initialized are present in
     // _handle_init_enclave.
@@ -314,7 +314,7 @@ static void _handle_ecall(
         }
     }
 
-    // TD_PushCallsite increments the depth. depth > 1 indicates a reentrant
+    // td_push_callsite increments the depth. depth > 1 indicates a reentrant
     // call. Reentrancy is allowed to handle exceptions and to terminate the
     // enclave.
     if (td->depth > 1 && (func != OE_ECALL_VIRTUAL_EXCEPTION_HANDLER &&
@@ -386,8 +386,8 @@ done:
     if (td->depth == 1)
         oe_thread_destruct_specific();
 
-    /* Remove ECALL context from front of TD.ecalls list */
-    TD_PopCallsite(td);
+    /* Remove ECALL context from front of td_t.ecalls list */
+    td_pop_callsite(td);
 
     /* Perform ERET, giving control back to host */
     *output_arg1 = oe_make_call_arg1(OE_CODE_ERET, func, 0, result);
@@ -404,7 +404,11 @@ done:
 **==============================================================================
 */
 
-OE_INLINE void _handle_oret(TD* td, uint16_t func, uint16_t result, int64_t arg)
+OE_INLINE void _handle_oret(
+    td_t* td,
+    uint16_t func,
+    uint16_t result,
+    int64_t arg)
 {
     Callsite* callsite = td->callsites;
 
@@ -431,7 +435,7 @@ OE_INLINE void _handle_oret(TD* td, uint16_t func, uint16_t result, int64_t arg)
 oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
 {
     oe_result_t result = OE_UNEXPECTED;
-    TD* td = oe_get_td();
+    td_t* td = oe_get_td();
     Callsite* callsite = td->callsites;
 
     /* If the enclave is in crashing/crashed status, new OCALL should fail
@@ -444,7 +448,7 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
         OE_THROW(OE_UNEXPECTED);
 
     /* Check for unexpected failures */
-    if (!TD_Initialized(td))
+    if (!td_initialized(td))
         OE_THROW(OE_FAILURE);
 
     /* Save call site where execution will resume after OCALL */
@@ -662,7 +666,7 @@ OE_CATCH:
 **             to the TCS (one page before minus the STATIC stack size).
 **
 **         (*) For nested calls the stack pointer is obtained from the
-**             TD.last_sp field (saved by the previous call).
+**             td_t.last_sp field (saved by the previous call).
 **
 **==============================================================================
 */
@@ -726,11 +730,11 @@ void __oe_handle_main(
     oe_initialize_enclave();
 
     /* Get pointer to the thread data structure */
-    TD* td = TD_FromTCS(tcs);
+    td_t* td = td_from_tcs(tcs);
 
     /* Initialize thread data structure (if not already initialized) */
-    if (!TD_Initialized(td))
-        TD_Init(td);
+    if (!td_initialized(td))
+        td_init(td);
 
     /* If this is a normal (non-exception) entry */
     if (cssa == 0)
@@ -798,7 +802,7 @@ void _oe_notify_nested_exit_start(
         return;
 
     // Save the ocallcontext to the callsite of current enclave thread.
-    TD* td = oe_get_td();
+    td_t* td = oe_get_td();
     Callsite* callsite = td->callsites;
     callsite->ocall_context = ocall_context;
 

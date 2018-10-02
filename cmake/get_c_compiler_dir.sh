@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
@@ -23,10 +23,10 @@ CC=$1
 # to occur. This seems to happen only when multiple invocations of clang are
 # occuring on the same system.
 PREPROCESS_OUTPUT_FILE=$(mktemp preprocess-output.XXXX)
-echo "#include <x86intrin.h>" | $CC -E - -M > $PREPROCESS_OUTPUT_FILE
-file=$(cat $PREPROCESS_OUTPUT_FILE | gawk '/x86intrin\.h/{$0=gensub("-.o: ","","g"); print $1; exit}')
-rm $PREPROCESS_OUTPUT_FILE
-echo $file | grep -q 'x86intrin\.h' && test -f $file
-dir=$(dirname $file)
-test -d $dir
-echo -n $dir
+echo "#include <x86intrin.h>" | $CC -E - -M > "$PREPROCESS_OUTPUT_FILE"
+file=$(gawk '/x86intrin\.h/{$0=gensub("-.o: ","","g"); print $1; exit}' < "$PREPROCESS_OUTPUT_FILE")
+rm "$PREPROCESS_OUTPUT_FILE"
+echo "$file" | grep -q 'x86intrin\.h' && test -f "$file"
+dir=$(dirname "$file")
+test -d "$dir"
+echo -n "$dir"

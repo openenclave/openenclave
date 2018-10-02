@@ -125,9 +125,9 @@ static oe_result_t _enter_sim(
         gsbase = (void*)(enclave->addr + tcs->gsbase);
         saved_gsbase = oe_get_gs_register_base();
 
-        /* Set TD.simulate flag */
+        /* Set td_t.simulate flag */
         {
-            TD* td = (TD*)gsbase;
+            td_t* td = (td_t*)gsbase;
             td->simulate = true;
         }
     }
@@ -508,7 +508,7 @@ static void* _assign_tcs(oe_enclave_t* enclave)
 
     oe_mutex_lock(&enclave->lock);
     {
-        /* First attempt to find a busy TD owned by this thread */
+        /* First attempt to find a busy td_t owned by this thread */
         for (i = 0; i < enclave->num_bindings; i++)
         {
             ThreadBinding* binding = &enclave->bindings[i];
@@ -616,7 +616,7 @@ oe_result_t oe_ecall(
     if (!enclave)
         OE_THROW(OE_INVALID_PARAMETER);
 
-    /* Assign a TD for this operation */
+    /* Assign a td_t for this operation */
     if (!(tcs = _assign_tcs(enclave)))
         OE_THROW(OE_OUT_OF_THREADS);
 

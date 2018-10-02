@@ -9,32 +9,27 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include "mbed_u.h"
 
-typedef struct _args
+char* find_data_file(char* str, size_t size)
 {
-    char* test;
-    int ret;
-} Args;
-
-char* find_data_file(char* str)
-{
-    char* dil = ".signed.so";
     char* tail = ".data";
     char* checker = "test_suite_";
     char *token, *temp;
 
+    if (size < strlen(str) + strlen(tail) + 1)
+    {
+        printf("buffer overflow error");
+        return NULL;
+    }
     token = strstr(str, checker);
     if (token == NULL)
     {
         printf("!!File is not in format !!!!\n");
         return token;
     }
-    temp = strstr((token), dil);
-    if (temp == NULL)
-    {
-        return temp;
-    }
-    strcpy(temp, tail);
+
+    strncat(str, tail, strlen(tail));
     printf("######## data_file: %s ###### \n", token);
     return token;
 }
@@ -66,26 +61,32 @@ void datafileloc(char* data_file_name, char* path)
 void Test(oe_enclave_t* enclave, int selftest, char* data_file_name)
 {
     char path[1024];
-    Args args;
-    args.ret = 1;
-    args.test = NULL;
-
+    int return_value = 1;
+    char* in_testname = NULL;
+    char* out_testname = NULL;
+    struct mbed_args args = {0};
     if (!selftest)
     {
         datafileloc(data_file_name, path);
-        args.test = path;
+        in_testname = path;
     }
 
-    oe_result_t result = oe_call_enclave(enclave, "Test", &args);
+    oe_result_t result =
+        test(enclave, &return_value, in_testname, &out_testname, &args);
     OE_TEST(result == OE_OK);
-
-    if (args.ret == 0)
+    if (!selftest)
     {
-        printf("PASSED: %s\n", args.test);
+        OE_TEST(args.total > 0);
+        OE_TEST(args.total > args.skipped);
+    }
+
+    if (return_value == 0)
+    {
+        printf("PASSED: %s\n", out_testname);
     }
     else
     {
-        printf("FAILED: %s (ret=%d)\n", args.test, args.ret);
+        printf("FAILED: %s (ret=%d)\n", out_testname, return_value);
         abort();
     }
 }
@@ -122,10 +123,10 @@ int main(int argc, const char* argv[])
     {
         selftest = 0;
 
-        data_file_name = find_data_file(temp);
+        data_file_name = find_data_file(temp, sizeof(temp));
         if (data_file_name == NULL)
         {
-            printf("!!!!! it is not sighned.so file !!!! \n");
+            printf("Could not get test data file name from %s\n", temp);
             return 0;
         }
 

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/defs.h>
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgxtypes.h>
@@ -97,6 +98,80 @@ oe_result_t oe_parse_report(
     {
         OE_RAISE(OE_REPORT_PARSE_ERROR);
     }
+
+done:
+    return result;
+}
+
+static oe_result_t _oe_sgx_get_target_info(
+    const uint8_t* report,
+    size_t report_size,
+    void* target_info_buffer,
+    size_t* target_info_size)
+{
+    oe_result_t result = OE_FAILURE;
+    sgx_report_t* sgx_report = (sgx_report_t*)report;
+    sgx_target_info_t* info = (sgx_target_info_t*)target_info_buffer;
+
+    if (!report || report_size < sizeof(*sgx_report) || !target_info_size)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (target_info_buffer == NULL || *target_info_size < sizeof(*info))
+    {
+        *target_info_size = sizeof(*info);
+        OE_RAISE(OE_BUFFER_TOO_SMALL);
+    }
+
+    OE_CHECK(oe_memset_s(info, sizeof(*info), 0, sizeof(*info)));
+
+    OE_CHECK(
+        oe_memcpy_s(
+            info->mrenclave,
+            sizeof(info->mrenclave),
+            sgx_report->body.mrenclave,
+            sizeof(sgx_report->body.mrenclave)));
+
+    info->attributes = sgx_report->body.attributes;
+    info->misc_select = sgx_report->body.miscselect;
+
+    *target_info_size = sizeof(*info);
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+oe_result_t oe_get_target_info(
+    const uint8_t* report,
+    size_t report_size,
+    void* target_info_buffer,
+    size_t* target_info_size)
+{
+    oe_result_t result = OE_FAILURE;
+    oe_report_header_t* report_header = (oe_report_header_t*)report;
+
+    if (!report || report_size < sizeof(*report_header) || !target_info_size)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Validate the report header. */
+    if (report_header->version != OE_REPORT_HEADER_VERSION)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    report_size -= OE_OFFSETOF(oe_report_header_t, report);
+    report += OE_OFFSETOF(oe_report_header_t, report);
+    switch (report_header->report_type)
+    {
+        case OE_REPORT_TYPE_SGX_LOCAL:
+        case OE_REPORT_TYPE_SGX_REMOTE:
+            OE_CHECK(
+                _oe_sgx_get_target_info(
+                    report, report_size, target_info_buffer, target_info_size));
+            break;
+        default:
+            OE_RAISE(OE_INVALID_PARAMETER);
+    }
+
+    result = OE_OK;
 
 done:
     return result;

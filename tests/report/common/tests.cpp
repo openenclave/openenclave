@@ -352,6 +352,75 @@ TEST_FCN void TestLocalReport(void* args_)
             report_buffer, report_size, false, zeros, OE_REPORT_DATA_SIZE);
     }
 
+    /* oe_get_target_info scenario.
+     *   a. Extract the target_info from the report and use that
+     *      as the opt_params field.
+     *   b. Ensure oe_get_target_info fails on improper inputs.
+     */
+    {
+        sgx_target_info_t target;
+        size_t target_size = 0;
+
+        OE_TEST(
+            GetReport(0, NULL, 0, NULL, 0, report_buffer, &report_size) ==
+            OE_OK);
+        ValidateReport(
+            report_buffer, report_size, false, zeros, OE_REPORT_DATA_SIZE);
+
+        OE_TEST(
+            oe_get_target_info(
+                report_buffer, report_size, &target, &target_size) ==
+            OE_BUFFER_TOO_SMALL);
+        OE_TEST(target_size == sizeof(target));
+
+        OE_TEST(
+            oe_get_target_info(
+                report_buffer, report_size, &target, &target_size) == OE_OK);
+        OE_TEST(target_size == sizeof(target));
+
+        OE_TEST(
+            GetReport(
+                0,
+                NULL,
+                0,
+                &target,
+                target_size,
+                report_buffer,
+                &report_size) == OE_OK);
+        ValidateReport(
+            report_buffer, report_size, false, zeros, OE_REPORT_DATA_SIZE);
+
+        /* Failure cases. */
+        OE_TEST(
+            oe_get_target_info(NULL, report_size, &target, &target_size) ==
+            OE_INVALID_PARAMETER);
+
+        OE_TEST(
+            oe_get_target_info(
+                report_buffer,
+                sizeof(oe_report_header_t) + sizeof(sgx_report_t) - 1,
+                &target,
+                &target_size) == OE_INVALID_PARAMETER);
+
+        OE_TEST(
+            oe_get_target_info(report_buffer, report_size, &target, NULL) ==
+            OE_INVALID_PARAMETER);
+
+        target_size = sizeof(target) + 1;
+        OE_TEST(
+            oe_get_target_info(
+                report_buffer, report_size, NULL, &target_size) ==
+            OE_BUFFER_TOO_SMALL);
+        OE_TEST(target_size == sizeof(target));
+
+        target_size = sizeof(target) - 1;
+        OE_TEST(
+            oe_get_target_info(
+                report_buffer, report_size, &target, &target_size) ==
+            OE_BUFFER_TOO_SMALL);
+        OE_TEST(target_size == sizeof(target));
+    }
+
     /*
      * OE_SMALL_BUFFER scenarios:
      *     a. NULL buffer
