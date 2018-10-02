@@ -8,6 +8,10 @@ install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/remote_attestation
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
     )
 
+# Install the local_attestation sample.
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/local_attestation
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
+    )
 
 endif()
 

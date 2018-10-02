@@ -72,3 +72,5 @@ binaries.
 
 #### [Remote Attestation](/samples/remote_attestation/README.md)
 
+#### [Local Attestation](/samples/local_attestation/README.md)
+
