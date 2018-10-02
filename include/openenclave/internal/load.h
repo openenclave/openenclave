@@ -67,7 +67,7 @@ typedef struct _oe_enclave_image_t
 
 #if defined(__linux__)
 
-    Elf64 elf;
+    elf64_t elf;
     oe_segment_t *segments;
     size_t num_segments;
     void* reloc_data;
