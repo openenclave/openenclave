@@ -11,3 +11,7 @@ clean:
 
 run:
 	host/file-encryptorhost testfile ./enc/file-encryptorenc.signed.so
+
+simulate:
+	host/file-encryptorhost testfile ./enc/file-encryptorenc.signed.so --simulate
+

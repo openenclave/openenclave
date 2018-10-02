@@ -7,8 +7,8 @@ It has the following properties:
 - Written in C++
 - Shows how to encrypt and decrypt data inside an enclave
 - Shows how to derive a key from a password string [PBKDF2](https://en.wikipedia.org/wiki/PBKDF2)
-- Use AES mbedtls API to perform encryption and descryption
-- OE APIs used
+- Uses AES mbedtls API to perform encryption and descryption
+- Uses the following OE APIs
   - mbedtls_aes_setkey_*
   - mbedtls_aes_crypt_cbc
   - mbedtls_pkcs5_pbkdf2_hmac
@@ -17,7 +17,9 @@ It has the following properties:
   - mbedtls_ctr_drbg_*
   - mbedtls_sha256_*
   - oe_is_outside_enclave
-  
+- Also runs in OE simulation mode
+
+
 ## Host application
 
 This sample is relatively straightforward, It's all about the use of the mbedtls library. 

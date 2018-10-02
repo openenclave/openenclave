@@ -9,6 +9,21 @@
 // sdk tool oeedger8r against the helloworld.edl file.
 #include "helloworld_u.h"
 
+bool check_simulate_opt(int* argc, const char* argv[])
+{
+    for (int i = 0; i < *argc; i++)
+    {
+        if (strcmp(argv[i], "--simulate") == 0)
+        {
+            fprintf(stdout, "Running in simulation mode\n");
+            memmove(&argv[i], &argv[i + 1], (*argc - i) * sizeof(char*));
+            (*argc)--;
+            return true;
+        }
+    }
+    return false;
+}
+
 // This is the function that the enclave will call back into to
 // print a message.
 void host_helloworld()
@@ -22,15 +37,22 @@ int main(int argc, const char* argv[])
     int ret = 1;
     oe_enclave_t* enclave = NULL;
 
+    uint32_t flags = OE_ENCLAVE_FLAG_DEBUG;
+    if (check_simulate_opt(&argc, argv))
+    {
+        flags |= OE_ENCLAVE_FLAG_SIMULATE;
+    }
+
     if (argc != 2)
     {
-        fprintf(stderr, "Usage: %s enclave_image_path\n", argv[0]);
+        fprintf(
+            stderr, "Usage: %s enclave_image_path [ --simulate  ]\n", argv[0]);
         goto exit;
     }
 
     // Create the enclave
     result = oe_create_enclave(
-        argv[1], OE_ENCLAVE_TYPE_SGX, OE_ENCLAVE_FLAG_DEBUG, NULL, 0, &enclave);
+        argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
     if (result != OE_OK)
     {
         fprintf(
