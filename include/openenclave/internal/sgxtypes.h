@@ -12,7 +12,6 @@
 #include <openenclave/internal/types.h>
 #include "epid.h"
 #include "jump.h"
-#include "load.h"
 #include "sha.h"
 
 OE_EXTERNC_BEGIN

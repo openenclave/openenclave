@@ -6,7 +6,7 @@
 
 #include <openenclave/bits/properties.h>
 #include <openenclave/host.h>
-#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/sgxcreate.h>
 #include <stdbool.h>
 #include "asmdefs.h"
 #include "hostthread.h"
@@ -129,5 +129,29 @@ EnclaveEvent* GetEnclaveEvent(oe_enclave_t* enclave, uint64_t tcs);
 
 /* Initialize the exception processing. */
 void _oe_initialize_host_exception(void);
+
+/* Free enclave ecall allocation */
+void _oe_free_enclave_ecalls(oe_enclave_t* enclave);
+
+typedef struct _oe_sgx_load_context oe_sgx_load_context_t;
+
+oe_result_t _oe_patch_image(
+    oe_enclave_image_t* oeimage,
+    size_t ecall_size,
+    size_t enclave_end);
+
+oe_result_t _oe_add_image_pages(
+    oe_sgx_load_context_t* context,
+    oe_enclave_t* enclave,
+    oe_enclave_image_t* oeimage,
+    uint64_t* vaddr);
+
+oe_result_t _oe_calculate_image_size(
+    const oe_enclave_image_t *oeimage,
+    size_t* image_size);
+
+oe_result_t _oe_build_ecall_array(
+   oe_enclave_t* enclave,
+    oe_enclave_image_t* oeimage);
 
 #endif /* _OE_HOST_ENCLAVE_H */

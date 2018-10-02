@@ -5,7 +5,7 @@
 #define _OE_SGXCREATE_H
 
 #include <openenclave/bits/result.h>
-#include "elf.h"
+#include "load.h"
 #include "sgxtypes.h"
 #include "sha.h"
 
@@ -77,7 +77,7 @@ oe_result_t oe_sgx_build_enclave(
  * within
  * the specified section of the ELF binary.
  *
- * @param elf ELF instance
+ * @param oeimage OE Enclave image
  * @param section_name name of section to search for enclave properties
  * @param properties pointer where enclave properties are copied
  *
@@ -88,7 +88,7 @@ oe_result_t oe_sgx_build_enclave(
  *
  */
 oe_result_t oe_sgx_load_properties(
-    const elf64_t* elf,
+    const oe_enclave_image_t* oeimage,
     const char* section_name,
     oe_sgx_enclave_properties_t* properties);
 
@@ -103,14 +103,14 @@ oe_result_t oe_sgx_load_properties(
  * @param section_name name of section to search for enclave properties
  * @param properties new value of enclave properties
  *
- * @returns OE_OK
+ * @param oeimage OE Enclave image
  * @returns OE_INVALID_PARAMETER null parameter
  * @returns OE_FAILURE section was not found
  * @returns OE_NOT_FOUND enclave properties struct not found
  *
  */
 oe_result_t oe_sgx_update_enclave_properties(
-    const elf64_t* elf,
+    const oe_enclave_image_t* oeimage,
     const char* section_name,
     const oe_sgx_enclave_properties_t* properties);
 
