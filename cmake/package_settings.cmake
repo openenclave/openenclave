@@ -4,6 +4,17 @@
 # Set default paths
 # TODO: See #757: Actually use GNUInstallDirs and don't hard-code our
 # own paths.
+
+# Set the default install prefix for Open Enclave. One may override this value
+# with the cmake command. For example:
+#
+#     $ cmake -DCMAKE_INSTALL_PREFIX:PATH=/opt/my_openenclave ..
+#
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX
+    "/opt/openenclave" CACHE PATH "default install prefix" FORCE)
+endif()
+
 include(GNUInstallDirs)
 set(OE_OUTPUT_DIR ${PROJECT_BINARY_DIR}/output CACHE INTERNAL "Path to the intermittent collector tree")
 set(OE_BINDIR ${OE_OUTPUT_DIR}/bin CACHE INTERNAL "Binary collector")
