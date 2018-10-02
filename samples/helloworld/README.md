@@ -5,6 +5,7 @@
 - Minimum code needed for an Open Enclave app
 - Helps understand the basic components an OE(Open Enclave) application
 - Demonstrates how to build, sign, and run an OE image
+- Also runs in OE simulation mode
 
  Prerequisite: you may want to read [Common Sample Information](/docs/GettingStartedDocs/sampedocs/README.md#common-sample-information) before going further
 
@@ -515,3 +516,10 @@ host/helloworldhost ./enc/helloworldenc.signed.so
 Hello world from the enclave
 Enclave called into host to print: Hello World!
 ```
+
+helloworld sample can run under OE simulation mode.
+
+To run the helloworld sample in simulation mode from the command like, use the following:
+
+~/samples/helloworld$ host/helloworldhost ./enc/helloworldenc.signed.so --simulate
+
