@@ -50,14 +50,14 @@ set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libsgx-enclave-common (>=2.3.100.46354-1), libsgx-enclave-common-dev (>=2.3.100.0-1), libsgx-dcap-ql (>=1.0.100.46460-1.0), libsgx-dcap-ql-dev (>=1.0.100.46460-1.0), pkg-config")
 include(CPack)
 
-# Generate the .openenclaverc script.
+# Generate the openenclaverc script.
 configure_file(
     ${PROJECT_SOURCE_DIR}/cmake/openenclaverc.in
-    ${CMAKE_BINARY_DIR}/output/share/.openenclaverc
+    ${CMAKE_BINARY_DIR}/output/share/openenclaverc
     @ONLY)
 
-# Install the .openenclaverc script.
+# Install the openenclaverc script.
 install(FILES
-    ${CMAKE_BINARY_DIR}/output/share/.openenclaverc
+    ${CMAKE_BINARY_DIR}/output/share/openenclaverc
     DESTINATION
     "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}")
