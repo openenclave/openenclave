@@ -32,6 +32,8 @@
 
 #define MEM_NPOS ((size_t)-1)
 
+#if defined(__linux__)
+
 #ifndef MEM_REALLOC
 #define MEM_REALLOC realloc
 #endif
@@ -39,6 +41,9 @@
 #ifndef MEM_FREE
 #define MEM_FREE free
 #endif
+
+#endif /* defined(__linux__) */
+
 
 /* mem_t.__type */
 typedef enum _mem_type_t {
