@@ -10,12 +10,6 @@
 #include <cstring>
 #include "../args.h"
 
-#if 0
-#define ECHO
-#endif
-
-uint64_t prev;
-
 void Test(oe_enclave_t* enclave)
 {
     oe_result_t r;
