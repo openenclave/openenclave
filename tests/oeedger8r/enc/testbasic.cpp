@@ -13,7 +13,7 @@ void test_basic_edl_ocalls()
     OE_TEST(
         ocall_basic_types(
             '?',
-            // '\x3b1',
+            ohm,
             3,
             4,
             3.1415f,
@@ -28,12 +28,20 @@ void test_basic_edl_ocalls()
             14,
             15,
             16,
-            17) == OE_OK);
+            17,
+            18,
+            19) == OE_OK);
 
     {
         char ret = 0;
         OE_TEST(ocall_ret_char(&ret) == OE_OK);
         OE_TEST(ret == '?');
+    }
+
+    {
+        wchar_t ret = 0;
+        OE_TEST(ocall_ret_wchar_t(&ret) == OE_OK);
+        OE_TEST(ret == ohm);
     }
 
     {
@@ -125,12 +133,24 @@ void test_basic_edl_ocalls()
         OE_TEST(ocall_ret_uint64_t(&ret) == OE_OK);
         OE_TEST(ret == 171717);
     }
+
+    {
+        long long ret = 0;
+        OE_TEST(ocall_ret_long_long(&ret) == OE_OK);
+        OE_TEST(ret == 181818);
+    }
+
+    {
+        long double ret = 0;
+        OE_TEST(ocall_ret_long_double(&ret) == OE_OK);
+        OE_TEST(ret == 0.191919);
+    }
     printf("=== test_basic_edl_ocalls passed\n");
 }
 
 void ecall_basic_types(
     char arg1,
-    // wchar_t arg2,
+    wchar_t arg2,
     short arg3,
     int arg4,
     float arg5,
@@ -145,13 +165,15 @@ void ecall_basic_types(
     uint8_t arg14,
     uint16_t arg15,
     uint32_t arg16,
-    uint64_t arg17)
+    uint64_t arg17,
+    long long arg18,
+    long double arg19)
 {
     ecall_basic_types_args_t args;
 
     // Assert types of fields of the marshaling struct.
     check_type<char>(args.arg1);
-    // check_type<wchar_t>(args.arg2);
+    check_type<wchar_t>(args.arg2);
     check_type<short>(args.arg3);
     check_type<int>(args.arg4);
     check_type<int>(args.arg4);
@@ -170,7 +192,7 @@ void ecall_basic_types(
     check_type<uint64_t>(args.arg17);
 
     OE_TEST(arg1 == '?');
-    // OE_TEST(arg2 == '\x3b1');
+    OE_TEST(arg2 == ohm);
     OE_TEST(arg3 = 3);
     OE_TEST(arg4 = 4);
     OE_TEST(arg5 = 3.1415f);
@@ -186,12 +208,20 @@ void ecall_basic_types(
     OE_TEST(arg15 = 15);
     OE_TEST(arg16 = 16);
     OE_TEST(arg17 = 17);
+    OE_TEST(arg18 = 18);
+    OE_TEST(arg19 = 19);
 }
 
 char ecall_ret_char()
 {
     check_return_type<ecall_ret_char_args_t, char>();
     return '?';
+}
+
+wchar_t ecall_ret_wchar_t()
+{
+    check_return_type<ecall_ret_wchar_t_args_t, wchar_t>();
+    return ohm;
 }
 
 short ecall_ret_short()
@@ -282,4 +312,16 @@ uint64_t ecall_ret_uint64_t()
 {
     check_return_type<ecall_ret_uint64_t_args_t, uint64_t>();
     return 171717;
+}
+
+long long ecall_ret_long_long()
+{
+    check_return_type<ecall_ret_long_long_args_t, long long>();
+    return 181818;
+}
+
+long double ecall_ret_long_double()
+{
+    check_return_type<ecall_ret_long_double_args_t, long double>();
+    return 0.191919;
 }

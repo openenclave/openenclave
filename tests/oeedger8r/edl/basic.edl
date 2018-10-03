@@ -7,9 +7,7 @@ enclave  {
         /* Test all basic type parameters */
         public void ecall_basic_types(
             char arg1, 
-            // wchar_t is not supported since
-            // wchar_t has different sizes on linux and windows.
-            //wchar_t arg2, 
+            wchar_t arg2, 
             short arg3, 
             int arg4, 
             float arg5, 
@@ -24,12 +22,14 @@ enclave  {
             uint8_t arg14, 
             uint16_t arg15, 
             uint32_t arg16, 
-            uint64_t arg17
+            uint64_t arg17,
+            long long arg18,
+            long double arg19
         );
 
         /* Test all basic types are return type */
         public char ecall_ret_char();
-        //public wchar_t ecall_ret_wchar_t();
+        public wchar_t ecall_ret_wchar_t();
         public short ecall_ret_short();
         public int ecall_ret_int();
         public float ecall_ret_float();
@@ -45,6 +45,8 @@ enclave  {
         public uint16_t ecall_ret_uint16_t();
         public uint32_t ecall_ret_uint32_t();
         public uint64_t ecall_ret_uint64_t();   
+        public long long ecall_ret_long_long();
+        public long double ecall_ret_long_double();
 
         public void test_basic_edl_ocalls();             
     };
@@ -53,9 +55,7 @@ enclave  {
         /* Test all basic type parameters */
         void ocall_basic_types(
             char arg1, 
-            // wchar_t is not supported since
-            // wchar_t has different sizes on linux and windows.
-            //wchar_t arg2, 
+            wchar_t arg2, 
             short arg3, 
             int arg4, 
             float arg5, 
@@ -70,12 +70,14 @@ enclave  {
             uint8_t arg14, 
             uint16_t arg15, 
             uint32_t arg16, 
-            uint64_t arg17
+            uint64_t arg17,
+            long long arg18,
+            long double arg19
         );
 
         /* Test all basic types are return type */
         char ocall_ret_char();
-        //public wchar_t ocall_ret_wchar_t();
+        wchar_t ocall_ret_wchar_t();
         short ocall_ret_short();
         int ocall_ret_int();
         float ocall_ret_float();
@@ -90,6 +92,8 @@ enclave  {
         uint8_t ocall_ret_uint8_t();
         uint16_t ocall_ret_uint16_t();
         uint32_t ocall_ret_uint32_t();
-        uint64_t ocall_ret_uint64_t();          
+        uint64_t ocall_ret_uint64_t();     
+        long long ocall_ret_long_long();
+        long double ocall_ret_long_double();             
     }; 
 };
