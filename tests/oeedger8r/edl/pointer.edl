@@ -37,6 +37,39 @@ enclave {
             int psize
         );
 
+        public wchar_t* ecall_pointer_wchar_t(
+            // No count or size, defaults to 1.
+            [in] wchar_t* p1,
+            [in,out] wchar_t* p2,
+            [out] wchar_t* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] wchar_t* p4,
+            [in,out, count=16] wchar_t* p5,
+            [out, count=16] wchar_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] wchar_t* p7,
+            [in, out, size=80] wchar_t* p8,
+            [in, size=80] wchar_t* p9,
+
+            // user handled.
+            [user_check] wchar_t* p10,
+
+            // count as parameter
+            [in, count=pcount] wchar_t* p11,
+            [in,out, count=pcount] wchar_t* p12,
+            [out, count=pcount] wchar_t* p13,
+
+            // size as parameter
+            [in, size=psize] wchar_t* p14,
+            [in,out, size=psize] wchar_t* p15,
+            [out, size=psize] wchar_t* p16,
+
+            int pcount,
+            int psize
+        );
+
         public short* ecall_pointer_short(
             // No count or size, defaults to 1.
             [in] short* p1,
@@ -532,6 +565,72 @@ enclave {
             int psize             
         ); 
 
+        public long long* ecall_pointer_long_long(
+            // No count or size, defaults to 1.
+            [in] long long* p1,
+            [in,out] long long* p2,
+            [out] long long* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] long long* p4,
+            [in,out, count=16] long long* p5,
+            [out, count=16] long long* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] long long* p7,
+            [in, out, size=80] long long* p8,
+            [in, size=80] long long* p9,
+
+            // user handled.
+            [user_check] long long* p10,
+
+            // count as parameter
+            [in, count=pcount] long long* p11,
+            [in,out, count=pcount] long long* p12,
+            [out, count=pcount] long long* p13,
+
+            // size as parameter
+            [in, size=psize] long long* p14,
+            [in,out, size=psize] long long* p15,
+            [out, size=psize] long long* p16,
+
+            int pcount,
+            int psize             
+        ); 
+
+        public long double* ecall_pointer_long_double(
+            // No count or size, defaults to 1.
+            [in] long double* p1,
+            [in,out] long double* p2,
+            [out] long double* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] long double* p4,
+            [in,out, count=16] long double* p5,
+            [out, count=16] long double* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] long double* p7,
+            [in, out, size=80] long double* p8,
+            [in, size=80] long double* p9,
+
+            // user handled.
+            [user_check] long double* p10,
+
+            // count as parameter
+            [in, count=pcount] long double* p11,
+            [in,out, count=pcount] long double* p12,
+            [out, count=pcount] long double* p13,
+
+            // size as parameter
+            [in, size=psize] long double* p14,
+            [in,out, size=psize] long double* p15,
+            [out, size=psize] long double* p16,
+
+            int pcount,
+            int psize             
+        ); 
+
         // Test that various types can be used as size, count attributes.
         // Checked to make sure no compile errors are encountered.
         public void ecall_count_attribute_all_types(
@@ -551,6 +650,9 @@ enclave {
             [in, count=uint16_t_count] int* b14,
             [in, count=uint32_t_count] int* b15,
             [in, count=uint64_t_count] int* b16,            
+            [in, count=wchar_t_count] int* b17,            
+            [in, count=long_long_count] int* b18,            
+            [in, count=long_double_count] int* b19,   
             char char_count,
             short short_count,
             int int_count,
@@ -566,7 +668,10 @@ enclave {
             uint8_t uint8_t_count,
             uint16_t uint16_t_count,
             uint32_t uint32_t_count,
-            uint64_t uint64_t_count
+            uint64_t uint64_t_count,
+            wchar_t wchar_t_count,
+            long long long_long_count,
+            long double long_double_count
         );
 
         public void ecall_size_attribute_all_types(
@@ -585,7 +690,10 @@ enclave {
             [in, size=uint8_t_size] int* b13,
             [in, size=uint16_t_size] int* b14,
             [in, size=uint32_t_size] int* b15,
-            [in, size=uint64_t_size] int* b16,            
+            [in, size=uint64_t_size] int* b16,        
+            [in, size=wchar_t_size] int* b17,            
+            [in, size=long_long_size] int* b18,            
+            [in, size=long_double_size] int* b19,                   
             char char_size,
             short short_size,
             int int_size,
@@ -601,7 +709,10 @@ enclave {
             uint8_t uint8_t_size,
             uint16_t uint16_t_size,
             uint32_t uint32_t_size,
-            uint64_t uint64_t_size
+            uint64_t uint64_t_size,
+            wchar_t wchar_t_size,
+            long long long_long_size,
+            long double long_double_size            
         );  
 
         public void test_pointer_edl_ocalls();
@@ -638,6 +749,39 @@ enclave {
             [in, size=psize] char* p14,
             [in,out, size=psize] char* p15,
             [out, size=psize] char* p16,
+
+            int pcount,
+            int psize            
+        );
+
+        wchar_t* ocall_pointer_wchar_t(
+            // No count or size, defaults to 1.
+            [in] wchar_t* p1,
+            [in,out] wchar_t* p2,
+            [out] wchar_t* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] wchar_t* p4,
+            [in,out, count=16] wchar_t* p5,
+            [out, count=16] wchar_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] wchar_t* p7,
+            [in, out, size=80] wchar_t* p8,
+            [in, size=80] wchar_t* p9,
+
+            // user handled.
+            [user_check] wchar_t* p10,
+
+            // count as parameter
+            [in, count=pcount] wchar_t* p11,
+            [in,out, count=pcount] wchar_t* p12,
+            [out, count=pcount] wchar_t* p13,
+
+            // size as parameter
+            [in, size=psize] wchar_t* p14,
+            [in,out, size=psize] wchar_t* p15,
+            [out, size=psize] wchar_t* p16,
 
             int pcount,
             int psize            
@@ -1138,6 +1282,72 @@ enclave {
             int psize
         ); 
 
+        long long* ocall_pointer_long_long(
+            // No count or size, defaults to 1.
+            [in] long long* p1,
+            [in,out] long long* p2,
+            [out] long long* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] long long* p4,
+            [in,out, count=16] long long* p5,
+            [out, count=16] long long* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] long long* p7,
+            [in, out, size=80] long long* p8,
+            [in, size=80] long long* p9,
+
+            // user handled.
+            [user_check] long long* p10,
+
+            // count as parameter
+            [in, count=pcount] long long* p11,
+            [in,out, count=pcount] long long* p12,
+            [out, count=pcount] long long* p13,
+
+            // size as parameter
+            [in, size=psize] long long* p14,
+            [in,out, size=psize] long long* p15,
+            [out, size=psize] long long* p16,
+
+            int pcount,
+            int psize
+        ); 
+
+        long double* ocall_pointer_long_double(
+            // No count or size, defaults to 1.
+            [in] long double* p1,
+            [in,out] long double* p2,
+            [out] long double* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] long double* p4,
+            [in,out, count=16] long double* p5,
+            [out, count=16] long double* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] long double* p7,
+            [in, out, size=80] long double* p8,
+            [in, size=80] long double* p9,
+
+            // user handled.
+            [user_check] long double* p10,
+
+            // count as parameter
+            [in, count=pcount] long double* p11,
+            [in,out, count=pcount] long double* p12,
+            [out, count=pcount] long double* p13,
+
+            // size as parameter
+            [in, size=psize] long double* p14,
+            [in,out, size=psize] long double* p15,
+            [out, size=psize] long double* p16,
+
+            int pcount,
+            int psize
+        ); 
+
         // Test that various types can be used as size, count attributes.
         // Checked to make sure no compile errors are encountered.
         void ocall_count_attribute_all_types(
@@ -1156,7 +1366,10 @@ enclave {
             [in, count=uint8_t_count] int* b13,
             [in, count=uint16_t_count] int* b14,
             [in, count=uint32_t_count] int* b15,
-            [in, count=uint64_t_count] int* b16,            
+            [in, count=uint64_t_count] int* b16,    
+            [in, count=wchar_t_count] int* b17,            
+            [in, count=long_long_count] int* b18,            
+            [in, count=long_double_count] int* b19,                     
             char char_count,
             short short_count,
             int int_count,
@@ -1172,7 +1385,10 @@ enclave {
             uint8_t uint8_t_count,
             uint16_t uint16_t_count,
             uint32_t uint32_t_count,
-            uint64_t uint64_t_count
+            uint64_t uint64_t_count,
+            wchar_t wchar_t_count,
+            long long long_long_count,
+            long double long_double_count            
         );
 
         void ocall_size_attribute_all_types(
@@ -1191,7 +1407,10 @@ enclave {
             [in, size=uint8_t_size] int* b13,
             [in, size=uint16_t_size] int* b14,
             [in, size=uint32_t_size] int* b15,
-            [in, size=uint64_t_size] int* b16,            
+            [in, size=uint64_t_size] int* b16,           
+            [in, size=wchar_t_size] int* b17,            
+            [in, size=long_long_size] int* b18,            
+            [in, size=long_double_size] int* b19,               
             char char_size,
             short short_size,
             int int_size,
@@ -1207,7 +1426,10 @@ enclave {
             uint8_t uint8_t_size,
             uint16_t uint16_t_size,
             uint32_t uint32_t_size,
-            uint64_t uint64_t_size
+            uint64_t uint64_t_size,
+            wchar_t wchar_t_size,
+            long long long_long_size,
+            long double long_double_size
         );      
 
         void ocall_pointer_assert_all_called();                                                                                                                           

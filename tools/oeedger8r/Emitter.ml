@@ -636,19 +636,19 @@ let validate_oe_support (ec: enclave_content) (ep: edger8r_params) =
     (if f.Ast.tf_is_switchless then
         failwithf "Function '%s': switchless ecalls and ocalls are not yet supported by Open Enclave SDK." f.Ast.tf_fdecl.fname);  
     (if uses_wchar_t_params f.Ast.tf_fdecl then
-        printf "Warning: Function '%s': wchar_t has different sizes on windows and linux." f.Ast.tf_fdecl.fname);     
+        printf "Warning: Function '%s': wchar_t has different sizes on windows and linux.\n" f.Ast.tf_fdecl.fname);     
   ) ec.tfunc_decls;
   List.iter (fun f -> 
     (if f.Ast.uf_fattr.fa_convention <> Ast.CC_NONE then
         failwithf "Function '%s': Calling conventions for ocalls are not supported by oeedger8r." f.Ast.uf_fdecl.fname);
     (if f.Ast.uf_fattr.fa_dllimport then
-        failwithf "Function '%s': dllimport is supported by oeedger8r." f.Ast.uf_fdecl.fname);
+        failwithf "Function '%s': dllimport is not supported by oeedger8r." f.Ast.uf_fdecl.fname);
     (if f.Ast.uf_allow_list != [] then
-        printf "Warning: Function '%s': Reentrant ocalls are not supported by Open Enclave.Allow list ignored." f.Ast.uf_fdecl.fname);
+        printf "Warning: Function '%s': Reentrant ocalls are not supported by Open Enclave. Allow list ignored.\n" f.Ast.uf_fdecl.fname);
     (if f.Ast.uf_is_switchless then
         failwithf "Function '%s': switchless ecalls and ocalls are not yet supported by Open Enclave SDK." f.Ast.uf_fdecl.fname);
     (if uses_wchar_t_params f.Ast.uf_fdecl then
-        printf "Warning: Function '%s': wchar_t has different sizes on windows and linux." f.Ast.uf_fdecl.fname);          
+        printf "Warning: Function '%s': wchar_t has different sizes on windows and linux.\n" f.Ast.uf_fdecl.fname);          
   ) ec.ufunc_decls
 
   (*

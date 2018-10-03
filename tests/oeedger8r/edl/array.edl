@@ -13,6 +13,13 @@ enclave  {
             [user_check] char a4[4][4]
         );
 
+        public void ecall_array_wchar_t(
+            [in] wchar_t a1[2],
+            [in,out] wchar_t a2[2][2],
+            [out] wchar_t a3[3][3],
+            [user_check] wchar_t a4[4][4]
+        );
+
         public void ecall_array_short(
             [in] short a1[2],
             [in,out] short a2[2][2],
@@ -118,6 +125,20 @@ enclave  {
             [user_check] uint64_t a4[4][4]
         );       
 
+        public void ecall_array_long_long(
+            [in] long long a1[2],
+            [in,out] long long a2[2][2],
+            [out] long long a3[3][3],
+            [user_check] long long a4[4][4]
+        );
+
+        public void ecall_array_long_double(
+            [in] long double a1[2],
+            [in,out] long double a2[2][2],
+            [out] long double a3[3][3],
+            [user_check] long double a4[4][4]
+        );
+
         public void test_array_edl_ocalls();
         public void ecall_array_assert_all_called();
     };
@@ -132,6 +153,13 @@ enclave  {
             [user_check] char a4[4][4]
         );
     
+        void ocall_array_wchar_t(
+            [in] wchar_t a1[2],
+            [in,out] wchar_t a2[2][2],
+            [out] wchar_t a3[3][3],
+            [user_check] wchar_t a4[4][4]
+        );
+
         void ocall_array_short(
             [in] short a1[2],
             [in,out] short a2[2][2],
@@ -237,6 +265,20 @@ enclave  {
             [user_check] uint64_t a4[4][4]
         );         
     
+        void ocall_array_long_long(
+            [in] long long a1[2],
+            [in,out] long long a2[2][2],
+            [out] long long a3[3][3],
+            [user_check] long long a4[4][4]
+        );  
+
+        void ocall_array_long_double(
+            [in] long double a1[2],
+            [in,out] long double a2[2][2],
+            [out] long double a3[3][3],
+            [user_check] long double a4[4][4]
+        );  
+
         void ocall_array_assert_all_called();
     };
 };

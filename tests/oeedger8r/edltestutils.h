@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <wchar.h>
+
 // Assert that given arguments are of specified types.
 // Results in compile error on type mismatch.
 template <typename... Args>
@@ -42,3 +44,19 @@ struct unused
     }
 
 DEFINE_ASSERT_NO_FIELD(s_len)
+
+template <typename T, int N, typename U>
+inline int array_compare(const T (&a1)[N], U u)
+{
+    const T* a2 = (const T*)u;
+    for (int i = 0; i < N; ++i)
+    {
+        if (a1[i] < a2[i])
+            return -1;
+        else if (a1[i] > a2[i])
+            return 1;
+    }
+    return 0;
+}
+
+const wchar_t ohm = L'\u2126';
