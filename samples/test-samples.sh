@@ -42,8 +42,12 @@ TEST_MAKE_DIR="$INSTALL_DIR/share/openenclave/samples"
 # the OE pkg-config scripts located in the build directory.
 export PKG_CONFIG_PATH="$BIN_DIR/pkgconfig"
 
-# Put OE_BINDIR on the path first:
-export PATH="${OE_BINDIR}:${PATH}"
+echo "CC=${CC}"
+echo "CXX=${CXX}"
+
+# Add bin path  on the path first:
+export PATH="$INSTALL_DIR/bin:${PATH}"
+echo ${PATH}
 
 # build and run the make samples
 # The only exception is to not run them in simulation mode on SGX1-FLC platforms
@@ -53,6 +57,6 @@ if [ $OE_SIMULATION ] && [ $USE_LIBSGX ]; then
 else
     MAKE_TASKS="world"
 fi
-make -C "$TEST_MAKE_DIR" OPENENCLAVE_CONFIG="$INSTALL_DIR/share/openenclave/samples/config.mak" OE_PREFIX=$INSTALL_DIR $MAKE_TASKS || printandexit
+make -C "$TEST_MAKE_DIR" OE_PREFIX=$INSTALL_DIR $MAKE_TASKS || printandexit
 
 exit 0
