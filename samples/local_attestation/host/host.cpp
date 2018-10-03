@@ -35,7 +35,7 @@ void terminate_enclave(oe_enclave_t* enclave)
     printf("Host: Enclave successfully terminated.\n");
 }
 
-int attest_enclave_a_to_b(
+int attest_one_enclave_to_the_other(
     const char* enclave_a_name,
     oe_enclave_t* enclave_a,
     const char* enclave_b_name,
@@ -52,8 +52,8 @@ int attest_enclave_a_to_b(
 
     printf(
         "\n\nHost: ********** Attest  %s to %s **********\n\n",
-        enclave_a_name,
-        enclave_b_name);
+        enclave_b_name,
+        enclave_a_name);
     printf("Host: Requesting %s target info\n", enclave_a_name);
     result =
         get_target_info(enclave_a, &ret, &target_info_buf, &target_info_size);
@@ -105,9 +105,7 @@ int attest_enclave_a_to_b(
 
 exit:
     free(pem_key);
-    pem_key = NULL;
     free(report);
-    report = NULL;
     free(target_info_buf), target_info_buf = NULL;
     return ret;
 }
@@ -139,16 +137,18 @@ int main(int argc, const char* argv[])
         goto exit;
     }
 
-    // attest enclave 1 to enclave 2
-    ret = attest_enclave_a_to_b("enclave1", enclave1, "enclave2", enclave2);
+    // attest enclave 2 to enclave 1
+    ret = attest_one_enclave_to_the_other(
+        "enclave1", enclave1, "enclave2", enclave2);
     if (ret)
     {
         printf("Host: attestation failed with %d\n", ret);
         goto exit;
     }
 
-    // attest enclave 2 to enclave 1
-    ret = attest_enclave_a_to_b("enclave2", enclave2, "enclave1", enclave1);
+    // attest enclave 1 to enclave 2
+    ret = attest_one_enclave_to_the_other(
+        "enclave2", enclave2, "enclave1", enclave1);
     if (ret)
     {
         printf("Host: attestation failed with %d\n", ret);
