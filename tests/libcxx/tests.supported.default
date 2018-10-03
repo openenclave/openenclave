@@ -1,3 +1,15 @@
+../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array_calls_unsized_delete_array.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array_fsizeddeallocation.sh.cpp
+../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.dataraces/not_testable.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.placement/new_array.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.placement/new.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.single/new_nothrow.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.single/new_nothrow_replace.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.single/new.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.single/new_replace.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.single/sized_delete14.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.single/sized_delete_calls_unsized_delete.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.single/sized_delete_fsizeddeallocation.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/depr/depr.c.headers/complex.h.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/input.output/file.streams/c.files/version_ccstdio.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/input.output/file.streams/fstreams/version.pass.cpp
