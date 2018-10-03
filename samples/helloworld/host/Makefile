@@ -11,7 +11,7 @@ endif
 
 ifeq ($(USE_GCC),)
         CC = clang-7
-	COMPILER=clang
+        COMPILER=clang
 endif
 
 CFLAGS=$(shell pkg-config oehost-$(COMPILER) --cflags)
