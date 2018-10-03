@@ -26,7 +26,7 @@ all:
 	$(MAKE) sign
 
 build:
-	@ echo "Compiler used: $(CC)"
+	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../datasealing.edl --trusted  --trusted-dir ../common
 	$(CXX) -c $(CXXFLAGS) $(INCLUDES) ecalls.cpp ../common/dispatcher.cpp ../common/keys.cpp
 	$(CC) -c $(CFLAGS) $(CINCLUDES) ../common/datasealing_t.c

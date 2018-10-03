@@ -23,7 +23,7 @@ LDFLAGS=$(shell pkg-config oehost-$(CXX_COMPILER) --libs)
 all: build
 
 build:
-	@ echo "Compiler used: $(CC)"
+	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../localattestation.edl --untrusted
 	$(CC) -c $(CFLAGS) $(CINCLUDES) localattestation_u.c 
 	$(CXX) -c $(CXXFLAGS) $(INCLUDES) host.cpp

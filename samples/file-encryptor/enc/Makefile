@@ -26,7 +26,7 @@ all:
 	$(MAKE) sign
 
 build:
-	@ echo "Compiler used: $(CC)"
+	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../fileencryptor.edl --trusted
 	$(CXX) -c $(CXXFLAGS) ecalls.cpp encryptor.cpp keys.cpp
 	$(CC) -c $(CFLAGS) fileencryptor_t.c -o fileencryptor_t.o
