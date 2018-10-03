@@ -16,3 +16,9 @@
 *.sln               text eol=crlf
 *.vcxproj           text eol=crlf
 /CMakeSettings.json text eol=crlf
+
+# Make lists merge easily.
+/CHANGELOG.md          merge=union
+/.check-license.ignore merge=union
+/.cspellignore         merge=union
+/.gitignore            merge=union
