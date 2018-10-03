@@ -1,5 +1,5 @@
-Open Enclave SDK Releasing Procedures
-=====================================
+Open Enclave SDK Release Procedures
+===================================
 
 This document covers how we handle creating a release. Let's look at it from an
 example:
