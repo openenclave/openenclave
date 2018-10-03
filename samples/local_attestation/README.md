@@ -30,7 +30,7 @@ Diagram 2 is the configuration used in this sample.
 
 ### Local Attestation steps
 
-For two enclaves on the same system to locally attest each other, the enclaves need to know each other’s identities. OE SDK provides oe_get_report, oe_get_target_info, and oe_verify_report APIs to help broker the identify retrieve, exchange and validation between two enclaves. 
+For two enclaves on the same system to locally attest each other, the enclaves need to know each other’s identities. OE SDK provides oe_get_report, oe_get_target_info, and oe_verify_report APIs to help broker the identity retrieval, exchange and validation between two enclaves. 
 
  Here are the basic steps of a typical local attestation between two enclaves.
 
@@ -65,12 +65,12 @@ The host does the following in this sample:
 
    2.  Attest enclave 1 to enclave 2
 
-        attest_enclave_a_to_b("enclave1", enclave1, "enclave2", enclave2);
+        attest_one_enclave_to_the_other("enclave1", enclave1, "enclave2", enclave2);
  
 
    3. Attest enclave 2 to enclave 1
 
-      attest_enclave_a_to_b("enclave2", enclave2, "enclave1", enclave1);
+      attest_one_enclave_to_the_other("enclave2", enclave2, "enclave1", enclave1);
 
    With successfully attestation on each other, we are ready to exchange data between enclaves, securely via asymmetric encryption
 
@@ -87,7 +87,7 @@ The host does the following in this sample:
     process_encrypted_msg(enclave2, &ret, encrypted_msg, encrypted_msg_size)
 ```
 
-#### attest_enclave_a_to_b() routine
+#### attest_one_enclave_to_the_other() routine
 
  This routine handles the process of attesting enclave b to enclave a with the following three steps.
 
@@ -123,7 +123,7 @@ The host does the following in this sample:
                             void* target_info_buffer,
                             size_t* target_info_size);
 ```    
-   On a successful return, target_info_buffer will be deposited with platform specific identify information that needed for local attestation.
+   On a successful return, target_info_buffer will be deposited with platform specific identity information needed for local attestation.
 
 ##### 2) Generate a targeted report with the other enclave's target info (identity)
 
