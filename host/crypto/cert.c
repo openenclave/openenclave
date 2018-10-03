@@ -3,6 +3,7 @@
 
 #include <ctype.h>
 #include <openenclave/bits/result.h>
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/asn1.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/hexdump.h>
@@ -39,7 +40,8 @@ static void _set_err(oe_verify_cert_error_t* error, const char* str)
     if (error)
     {
         error->buf[0] = '\0';
-        strncat(error->buf, str, sizeof(error->buf) - 1);
+        oe_strncat_s(
+            error->buf, sizeof(error->buf), str, sizeof(error->buf) - 1);
     }
 }
 
@@ -682,7 +684,7 @@ oe_result_t oe_cert_get_rsa_public_key(
 
     /* Clear public key for all error pathways */
     if (public_key)
-        memset(public_key, 0, sizeof(oe_rsa_public_key_t));
+        oe_secure_zero_fill(public_key, sizeof(oe_rsa_public_key_t));
 
     /* Reject invalid parameters */
     if (!_cert_is_valid(impl) || !public_key)
@@ -723,7 +725,7 @@ oe_result_t oe_cert_get_ec_public_key(
 
     /* Clear public key for all error pathways */
     if (public_key)
-        memset(public_key, 0, sizeof(oe_ec_public_key_t));
+        oe_secure_zero_fill(public_key, sizeof(oe_ec_public_key_t));
 
     /* Reject invalid parameters */
     if (!_cert_is_valid(impl) || !public_key)
@@ -927,7 +929,7 @@ oe_result_t oe_cert_find_extension(
 
             if (data)
             {
-                memcpy(data, str->data, str->length);
+                OE_CHECK(oe_memcpy_s(data, *size, str->data, str->length));
                 *size = str->length;
                 result = OE_OK;
                 goto done;

@@ -2,10 +2,12 @@
 // Licensed under the MIT License.
 
 #include "cpuid.h"
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/raise.h>
 
 static uint32_t _oe_cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
 
@@ -19,8 +21,9 @@ static uint32_t _oe_cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
 **
 **==============================================================================
 */
-void oe_initialize_cpuid(uint64_t arg_in)
+oe_result_t oe_initialize_cpuid(uint64_t arg_in)
 {
+    oe_result_t result = OE_UNEXPECTED;
     oe_init_enclave_args_t* args = (oe_init_enclave_args_t*)arg_in;
     if (args != NULL)
     {
@@ -29,12 +32,20 @@ void oe_initialize_cpuid(uint64_t arg_in)
         if (!(args->cpuid_table[1][OE_CPUID_RCX] & OE_CPUID_AESNI_FEATURE))
             oe_abort();
 
-        oe_memcpy(
-            _oe_cpuid_table,
-            args->cpuid_table,
-            OE_CPUID_LEAF_COUNT * OE_CPUID_REG_COUNT *
-                sizeof(_oe_cpuid_table[0][0]));
+        OE_CHECK(
+            oe_memcpy_s(
+                _oe_cpuid_table,
+                OE_CPUID_LEAF_COUNT * OE_CPUID_REG_COUNT *
+                    sizeof(_oe_cpuid_table[0][0]),
+                args->cpuid_table,
+                OE_CPUID_LEAF_COUNT * OE_CPUID_REG_COUNT *
+                    sizeof(args->cpuid_table[0][0])));
+
+        result = OE_OK;
     }
+
+done:
+    return result;
 }
 
 /*

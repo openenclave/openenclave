@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "report.h"
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/enclave.h>
@@ -44,12 +45,14 @@ oe_result_t sgx_create_report(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (target_info != NULL)
-        oe_memcpy(&ti, target_info, target_info_size);
+        OE_CHECK(
+            oe_memcpy_s(
+                &ti, sizeof(sgx_target_info_t), target_info, target_info_size));
 
     if (report_data != NULL)
-        oe_memcpy(&rd, report_data, report_data_size);
-
-    oe_memset(&r, 0, sizeof(sgx_report_t));
+        OE_CHECK(
+            oe_memcpy_s(
+                &rd, sizeof(sgx_report_data_t), report_data, report_data_size));
 
     /* Invoke EREPORT instruction */
     asm volatile(
@@ -59,7 +62,8 @@ oe_result_t sgx_create_report(
         : "memory");
 
     /* Copy REPORT to caller's buffer */
-    oe_memcpy(report, &r, sizeof(sgx_report_t));
+    OE_CHECK(
+        oe_memcpy_s(report, sizeof(sgx_report_t), &r, sizeof(sgx_report_t)));
 
     result = OE_OK;
 
@@ -175,7 +179,7 @@ static oe_result_t _oe_get_quote(
         *quote_size = args->quote_size;
 
     if (result == OE_OK)
-        oe_memcpy(quote, args->quote, *quote_size);
+        OE_CHECK(oe_memcpy_s(quote, *quote_size, args->quote, *quote_size));
 
 done:
     if (args)

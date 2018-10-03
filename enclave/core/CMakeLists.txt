@@ -5,6 +5,7 @@ include(add_compile_flags_if_supported)
 include(add_compile_defs)
 
 add_library(oecore STATIC
+    ../../common/safecrt.c
     assert.c
     atexit.c
     backtrace.c

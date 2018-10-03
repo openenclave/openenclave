@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "revocation.h"
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/cert.h>
@@ -133,7 +134,7 @@ static oe_result_t _get_crl_distribution_point(oe_cert_t* cert, char** url)
         if (*url == NULL)
             OE_RAISE(OE_OUT_OF_MEMORY);
 
-        memcpy(*url, urls[0], url_length);
+        OE_CHECK(oe_memcpy_s(*url, url_length, urls[0], url_length));
         result = OE_OK;
     }
 
@@ -181,10 +182,12 @@ oe_result_t oe_enforce_revocation(
 
     // Gather fmspc.
     OE_CHECK(_parse_sgx_extensions(leaf_cert, &parsed_extension_info));
-    memcpy(
-        revocation_args.fmspc,
-        parsed_extension_info.fmspc,
-        sizeof(parsed_extension_info.fmspc));
+    OE_CHECK(
+        oe_memcpy_s(
+            revocation_args.fmspc,
+            sizeof(revocation_args.fmspc),
+            parsed_extension_info.fmspc,
+            sizeof(parsed_extension_info.fmspc)));
 
     // Gather CRL distribution point URLs from certs.
     OE_CHECK(

@@ -3,10 +3,12 @@
 
 #include <assert.h>
 #include <ctype.h>
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/load.h>
 #include <openenclave/internal/mem.h>
+#include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
 #include <stdio.h>
 #include <string.h>
@@ -1530,7 +1532,7 @@ int elf64_add_section(
 
     /* Partially initialize the section header (initialize sh.sh_name later) */
     {
-        memset(&sh, 0, sizeof(elf64_shdr_t));
+        oe_memset_s(&sh, sizeof(elf64_shdr_t), 0, sizeof(elf64_shdr_t));
         sh.sh_type = type;
         sh.sh_size = secsize;
         sh.sh_addralign = 1;
@@ -1674,11 +1676,11 @@ done:
 **==============================================================================
 */
 
-int elf64_remove_section(elf64_t* elf, const char* name)
+oe_result_t elf64_remove_section(elf64_t* elf, const char* name)
 {
-    int rc = -1;
     size_t sec_index;
     elf64_shdr_t* shdr;
+    oe_result_t result = OE_UNEXPECTED;
 
     /* Reject invalid parameters */
     if (!_is_valid_elf64(elf) || !name)
@@ -1705,7 +1707,7 @@ int elf64_remove_section(elf64_t* elf, const char* name)
         const uint8_t* end = (const uint8_t*)elf->data + elf->size;
 
         /* Remove section from the memory image */
-        memmove(first, last, end - last);
+        OE_CHECK(oe_memmove_s(first, end - first, last, end - last));
 
         /* Adjust the size of the memory image */
         elf->size -= shdr->sh_size;
@@ -1770,7 +1772,12 @@ int elf64_remove_section(elf64_t* elf, const char* name)
         const elf64_shdr_t* end = first + _get_header(elf)->e_shnum;
 
         /* Remove the header */
-        memmove(first, last, (end - last) * sizeof(elf64_shdr_t));
+        OE_CHECK(
+            oe_memmove_s(
+                first,
+                (end - first) * sizeof(elf64_shdr_t),
+                last,
+                (end - last) * sizeof(elf64_shdr_t)));
 
         /* Adjust the number of headers */
         _get_header(elf)->e_shnum--;
@@ -1779,18 +1786,17 @@ int elf64_remove_section(elf64_t* elf, const char* name)
         elf->size -= sizeof(sizeof(elf64_shdr_t));
     }
 
-    rc = 0;
-
+    result = OE_OK;
 done:
-    return rc;
+    return result;
 }
 
-int elf64_load_relocations(
+oe_result_t elf64_load_relocations(
     const elf64_t* elf,
     void** data_out,
     size_t* size_out)
 {
-    int rc = -1;
+    oe_result_t result = OE_UNEXPECTED;
     size_t index;
     elf64_shdr_t* shdr;
     uint8_t* data;
@@ -1813,7 +1819,7 @@ int elf64_load_relocations(
     {
         *data_out = NULL;
         *size_out = 0;
-        rc = 0;
+        result = OE_OK;
         goto done;
     }
 
@@ -1860,13 +1866,13 @@ int elf64_load_relocations(
         }
 
         memset(*data_out, 0, *size_out);
-        memcpy(*data_out, data, size);
+        OE_CHECK(oe_memcpy_s(*data_out, *size_out, data, size));
     }
 
-    rc = 0;
+    result = 0;
 
 done:
-    return rc;
+    return result;
 }
 
 const char* elf64_get_function_name(const elf64_t* elf, elf64_addr_t addr)
