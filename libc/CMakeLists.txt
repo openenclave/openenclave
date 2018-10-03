@@ -702,7 +702,9 @@ target_include_directories(oelibc PRIVATE
     ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal
     ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/x86_64)
 
-# pick up Open Enclave's version of the headers when using oelibc
+# this project and its dependents require include/libc in the include path.
+# Note the difference between build time (absolute in build tree) and install
+# time (relative to install prefix)
 target_include_directories(oelibc PUBLIC
     $<BUILD_INTERFACE:${OE_INCDIR}/openenclave/libc>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/libc>)
