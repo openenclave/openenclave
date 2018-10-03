@@ -605,23 +605,8 @@ oe_result_t oe_sgx_build_enclave(
         }
     }
 
-<<<<<<< 1af5ffc7bd2b3ff19e5c046258b89901cd1e530d
-    /* Load the program segments into memory */
-    OE_CHECK(
-        __oe_load_segments(
-            path, segments, &num_segments, &entry_addr, &start_addr));
-
-    /* Load the relocations into memory (zero-padded to next page size) */
-    if (elf64_load_relocations(&elf, &reloc_data, &reloc_size) != OE_OK)
-        OE_RAISE(OE_FAILURE);
-
-#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
-    _dump_relocations(reloc_data, reloc_size);
-#endif
-=======
     /* Calculate the size of image */
     OE_CHECK(_oe_calculate_image_size(&oeimage, &image_size));
->>>>>>> Refactor for Windows OE
 
     /* Build an array of all the ECALL functions in the .ecalls section */
     OE_CHECK(_oe_build_ecall_array(enclave, &oeimage));
@@ -789,14 +774,20 @@ oe_result_t oe_create_enclave(
         OE_RAISE(OE_FAILURE);
     }
 
+#if defined(__linux__)
+
     /* Notify GDB that a new enclave is created */
     _oe_notify_gdb_enclave_creation(
         enclave, enclave->path, (uint32_t)strlen(enclave->path));
 
+<<<<<<< 510d1f143f4ea63fbec26540a2bfcfa602ba4cf9
     /* Enclave initialization invokes global constructors which could make
      * ocalls. Therefore setup ocall table prior to initialization. */
     enclave->ocalls = (const oe_ocall_func_t*)ocall_table;
     enclave->num_ocalls = ocall_table_size;
+=======
+#endif /* defined(__linux__) */
+>>>>>>> Fix Windows Build
 
     /* Invoke enclave initialization. */
     OE_CHECK(_initialize_enclave(enclave));
@@ -828,9 +819,13 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
     /* Call the enclave destructor */
     OE_CHECK(oe_ecall(enclave, OE_ECALL_DESTRUCTOR, 0, NULL));
 
+#if defined(__linux__)
+
     /* Notify GDB that this enclave is terminated */
     _oe_notify_gdb_enclave_termination(
         enclave, enclave->path, (uint32_t)strlen(enclave->path));
+
+#endif /* defined(__linux__) */
 
     /* Once the enclave destructor has been invoked, the enclave memory
      * and data structures are freed on a best effort basis from here on */

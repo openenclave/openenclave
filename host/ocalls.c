@@ -181,6 +181,9 @@ static char** _backtrace_symbols(
     int size)
 {
     char** ret = NULL;
+
+#if defined(__linux__)
+
     elf64_t elf = ELF64_INIT;
     bool elf_loaded = false;
     size_t malloc_size = 0;
@@ -252,6 +255,8 @@ done:
 
     if (elf_loaded)
         elf64_unload(&elf);
+
+#endif /* defined(__linux__) */
 
     return ret;
 }
