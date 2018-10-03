@@ -6,12 +6,14 @@
 #include "common.h"
 
 oe_result_t oe_memcpy_s(
-    void* dst,
+    void* dst0,
     size_t dst_size,
-    const void* src,
+    const void* src0,
     size_t num_bytes)
 {
     oe_result_t result = OE_FAILURE;
+	const uint8_t* src = (const uint8_t*)src0;
+	uint8_t* dst = (uint8_t*)dst0;
 
     if (dst == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -82,7 +84,7 @@ oe_result_t oe_memset_s(void* dst, size_t dst_size, int value, size_t num_bytes)
 
     /* memset_s cannot be optimized away by the compiler */
     while (num_bytes--)
-        *p++ = (volatile unsigned char)value;
+        *p++ = (unsigned char)value;
 
 done:
     return result;
