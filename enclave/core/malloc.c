@@ -1,11 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/malloc.h>
+#include <openenclave/internal/raise.h>
 #include <openenclave/internal/thread.h>
 #include "debugmalloc.h"
 
@@ -208,7 +210,7 @@ oe_result_t oe_get_malloc_stats(oe_malloc_stats_t* stats)
     static oe_mutex_t _mutex = OE_MUTEX_INITIALIZER;
 
     if (stats)
-        memset(stats, 0, sizeof(oe_malloc_stats_t));
+        oe_memset(stats, 0, sizeof(oe_malloc_stats_t));
 
     oe_mutex_lock(&_mutex);
 

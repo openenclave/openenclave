@@ -2,9 +2,11 @@
 // Licensed under the MIT License.
 
 #include "key.h"
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/hash.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/utils.h>
 #include "pem.h"
 
 typedef oe_result_t (*oe_copy_key)(
@@ -50,7 +52,7 @@ void oe_private_key_release(oe_private_key_t* private_key, uint64_t magic)
     if (oe_private_key_is_valid(private_key, magic))
     {
         mbedtls_pk_free(&private_key->pk);
-        oe_memset(private_key, 0, sizeof(oe_private_key_t));
+        oe_secure_zero_fill(private_key, sizeof(oe_private_key_t));
     }
 }
 
@@ -90,7 +92,7 @@ void oe_public_key_release(oe_public_key_t* public_key, uint64_t magic)
     if (oe_public_key_is_valid(public_key, magic))
     {
         mbedtls_pk_free(&public_key->pk);
-        oe_memset(public_key, 0, sizeof(oe_public_key_t));
+        oe_secure_zero_fill(public_key, sizeof(oe_public_key_t));
     }
 }
 
@@ -200,7 +202,7 @@ oe_result_t oe_private_key_write_pem(
             OE_RAISE(OE_BUFFER_TOO_SMALL);
         }
 
-        oe_memcpy(pem_data, buf, size);
+        OE_CHECK(oe_memcpy_s(pem_data, *pem_size, buf, size));
         *pem_size = size;
     }
 
@@ -283,7 +285,7 @@ oe_result_t oe_public_key_write_pem(
             OE_RAISE(OE_BUFFER_TOO_SMALL);
         }
 
-        oe_memcpy(pem_data, buf, size);
+        OE_CHECK(oe_memcpy_s(pem_data, *pem_size, buf, size));
         *pem_size = size;
     }
 
@@ -378,7 +380,7 @@ oe_result_t oe_private_key_sign(
     }
 
     /* Copy result to output buffer */
-    oe_memcpy(signature, buffer, buffer_size);
+    OE_CHECK(oe_memcpy_s(signature, *signature_size, buffer, buffer_size));
     *signature_size = buffer_size;
 
     result = OE_OK;

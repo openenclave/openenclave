@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "report.h"
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
@@ -24,8 +25,12 @@ static oe_result_t _oe_get_report_key(
     sgx_key_request_t sgx_key_request = {0};
 
     sgx_key_request.key_name = SGX_KEYSELECT_REPORT;
-    oe_memcpy(
-        sgx_key_request.key_id, sgx_report->keyid, sizeof(sgx_report->keyid));
+    OE_CHECK(
+        oe_memcpy_s(
+            sgx_key_request.key_id,
+            sizeof(sgx_key_request.key_id),
+            sgx_report->keyid,
+            sizeof(sgx_report->keyid)));
 
     OE_CHECK(oe_get_key(&sgx_key_request, sgx_key));
     result = OE_OK;

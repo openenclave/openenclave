@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <dlfcn.h>
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
@@ -200,7 +201,12 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
     {
         args->tcb_info = p;
         args->tcb_info_size = revocation_info->tcb_info_size;
-        memcpy(args->tcb_info, revocation_info->tcb_info, args->tcb_info_size);
+        OE_CHECK(
+            oe_memcpy_s(
+                args->tcb_info,
+                args->tcb_info_size,
+                revocation_info->tcb_info,
+                revocation_info->tcb_info_size));
         // Add null terminator
         args->tcb_info[args->tcb_info_size++] = 0;
         p += args->tcb_info_size;
@@ -212,10 +218,12 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
     {
         args->tcb_issuer_chain = p;
         args->tcb_issuer_chain_size = revocation_info->tcb_issuer_chain_size;
-        memcpy(
-            args->tcb_issuer_chain,
-            revocation_info->tcb_issuer_chain,
-            args->tcb_issuer_chain_size);
+        OE_CHECK(
+            oe_memcpy_s(
+                args->tcb_issuer_chain,
+                args->tcb_issuer_chain_size,
+                revocation_info->tcb_issuer_chain,
+                revocation_info->tcb_issuer_chain_size));
         // Add null terminator
         args->tcb_issuer_chain[args->tcb_issuer_chain_size++] = 0;
         p += args->tcb_issuer_chain_size;
@@ -230,10 +238,12 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
         {
             args->crl[i] = p;
             args->crl_size[i] = revocation_info->crls[i].crl_data_size;
-            memcpy(
-                args->crl[i],
-                revocation_info->crls[i].crl_data,
-                args->crl_size[i]);
+            OE_CHECK(
+                oe_memcpy_s(
+                    args->crl[i],
+                    args->crl_size[i],
+                    revocation_info->crls[i].crl_data,
+                    revocation_info->crls[i].crl_data_size));
             // CRL is in DER format. Null not added.
             p += args->crl_size[i];
             OE_TRACE_INFO(
@@ -246,10 +256,12 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
             args->crl_issuer_chain[i] = p;
             args->crl_issuer_chain_size[i] =
                 revocation_info->crls[i].crl_issuer_chain_size;
-            memcpy(
-                args->crl_issuer_chain[i],
-                revocation_info->crls[i].crl_issuer_chain,
-                args->crl_issuer_chain_size[i]);
+            OE_CHECK(
+                oe_memcpy_s(
+                    args->crl_issuer_chain[i],
+                    args->crl_issuer_chain_size[i],
+                    revocation_info->crls[i].crl_issuer_chain,
+                    revocation_info->crls[i].crl_issuer_chain_size));
             // Add null terminator
             args->crl_issuer_chain[i][args->crl_issuer_chain_size[i]++] = 0;
             p += args->crl_issuer_chain_size[i];

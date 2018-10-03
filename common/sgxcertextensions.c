@@ -1,8 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/ec.h>
 #include <openenclave/internal/hexdump.h>
+#include <openenclave/internal/raise.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxcertextensions.h>
 #include <openenclave/internal/trace.h>
@@ -227,7 +229,7 @@ static oe_result_t _read_octet_extension(
     if (data_length != length)
         OE_RAISE(OE_FAILURE);
 
-    memcpy(buffer, data, data_length);
+    OE_CHECK(oe_memcpy_s(buffer, length, data, data_length));
     _trace_hex_dump(tag, buffer, data_length);
     result = OE_OK;
 done:

@@ -1,16 +1,18 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#define OE_TRACE_LEVEL 1
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/aesm.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/mem.h>
+#include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxsign.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/str.h>
 #include <openenclave/internal/trace.h>
+#include <openenclave/internal/utils.h>
 #include <openssl/bn.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>
@@ -139,7 +141,7 @@ static oe_result_t _get_q1_and_q2(
     if (!signature || !signature_size || !modulus || !modulus_size || !q1_out ||
         !q1_out_size || !q2_out || !q2_out_size)
     {
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
     }
 
     memset(sbuf, 0, sizeof(sbuf));
@@ -151,40 +153,40 @@ static oe_result_t _get_q1_and_q2(
     /* Create new objects */
     {
         if (!(s = BN_bin2bn(sbuf, sizeof(sbuf), NULL)))
-            OE_THROW(OE_OUT_OF_MEMORY);
+            OE_RAISE(OE_OUT_OF_MEMORY);
 
         if (!(m = BN_bin2bn(mbuf, sizeof(mbuf), NULL)))
-            OE_THROW(OE_OUT_OF_MEMORY);
+            OE_RAISE(OE_OUT_OF_MEMORY);
 
         if (!(q1 = BN_new()))
-            OE_THROW(OE_OUT_OF_MEMORY);
+            OE_RAISE(OE_OUT_OF_MEMORY);
 
         if (!(q2 = BN_new()))
-            OE_THROW(OE_OUT_OF_MEMORY);
+            OE_RAISE(OE_OUT_OF_MEMORY);
 
         if (!(t1 = BN_new()))
-            OE_THROW(OE_OUT_OF_MEMORY);
+            OE_RAISE(OE_OUT_OF_MEMORY);
 
         if (!(t2 = BN_new()))
-            OE_THROW(OE_OUT_OF_MEMORY);
+            OE_RAISE(OE_OUT_OF_MEMORY);
 
         if (!(ctx = BN_CTX_new()))
-            OE_THROW(OE_OUT_OF_MEMORY);
+            OE_RAISE(OE_OUT_OF_MEMORY);
     }
 
     /* Perform arithmetic */
     {
         if (!BN_mul(t1, s, s, ctx))
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         if (!BN_div(q1, t2, t1, m, ctx))
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         if (!BN_mul(t1, s, t2, ctx))
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         if (!BN_div(q2, t2, t1, m, ctx))
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
     }
 
     /* Copy Q1 to Q1OUT parameter */
@@ -192,7 +194,7 @@ static oe_result_t _get_q1_and_q2(
         size_t n = BN_num_bytes(q1);
 
         if (n > sizeof(q1buf))
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         if (n > q1_out_size)
             n = q1_out_size;
@@ -206,7 +208,7 @@ static oe_result_t _get_q1_and_q2(
         size_t n = BN_num_bytes(q2);
 
         if (n > sizeof(q2buf))
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         if (n > q2_out_size)
             n = q2_out_size;
@@ -217,8 +219,7 @@ static oe_result_t _get_q1_and_q2(
 
     result = OE_OK;
 
-OE_CATCH:
-
+done:
     if (s)
         BN_free(s);
     if (m)
@@ -248,13 +249,18 @@ static oe_result_t _init_sigstruct(
     oe_result_t result = OE_UNEXPECTED;
 
     if (!sigstruct)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Zero-fill the structure */
     memset(sigstruct, 0, sizeof(sgx_sigstruct_t));
 
     /* sgx_sigstruct_t.header */
-    memcpy(sigstruct->header, SGX_SIGSTRUCT_HEADER, sizeof(sigstruct->header));
+    OE_CHECK(
+        oe_memcpy_s(
+            sigstruct->header,
+            sizeof(sigstruct->header),
+            SGX_SIGSTRUCT_HEADER,
+            SGX_SIGSTRUCT_HEADER_SIZE));
 
     /* sgx_sigstruct_t.type */
     sigstruct->type = 0;
@@ -263,20 +269,24 @@ static oe_result_t _init_sigstruct(
     sigstruct->vendor = 0;
 
     /* sgx_sigstruct_t.date */
-    OE_TRY(_get_date(&sigstruct->date));
+    OE_CHECK(_get_date(&sigstruct->date));
 
     /* sgx_sigstruct_t.header2 */
-    memcpy(
-        sigstruct->header2, SGX_SIGSTRUCT_HEADER2, sizeof(sigstruct->header2));
+    OE_CHECK(
+        oe_memcpy_s(
+            sigstruct->header2,
+            sizeof(sigstruct->header2),
+            SGX_SIGSTRUCT_HEADER2,
+            SGX_SIGSTRUCT_HEADER2_SIZE));
 
     /* sgx_sigstruct_t.swdefined */
     sigstruct->swdefined = 0;
 
     /* sgx_sigstruct_t.modulus */
-    OE_TRY(_get_modulus(rsa, sigstruct->modulus));
+    OE_CHECK(_get_modulus(rsa, sigstruct->modulus));
 
     /* sgx_sigstruct_t.date */
-    OE_TRY(_get_exponent(rsa, sigstruct->exponent));
+    OE_CHECK(_get_exponent(rsa, sigstruct->exponent));
 
     /* sgx_sigstruct_t.signature: fill in after other fields */
 
@@ -299,7 +309,12 @@ static oe_result_t _init_sigstruct(
         sigstruct->attributemask.flags &= ~SGX_FLAGS_DEBUG;
 
     /* sgx_sigstruct_t.enclavehash */
-    memcpy(sigstruct->enclavehash, mrenclave, sizeof(sigstruct->enclavehash));
+    OE_CHECK(
+        oe_memcpy_s(
+            sigstruct->enclavehash,
+            sizeof(sigstruct->enclavehash),
+            mrenclave,
+            sizeof(*mrenclave)));
 
     /* sgx_sigstruct_t.isvprodid */
     sigstruct->isvprodid = product_id;
@@ -312,11 +327,19 @@ static oe_result_t _init_sigstruct(
         unsigned char buf[sizeof(sgx_sigstruct_t)];
         size_t n = 0;
 
-        memcpy(
-            buf, sgx_sigstruct_header(sigstruct), sgx_sigstruct_header_size());
+        OE_CHECK(
+            oe_memcpy_s(
+                buf,
+                sizeof(buf),
+                sgx_sigstruct_header(sigstruct),
+                sgx_sigstruct_header_size()));
         n += sgx_sigstruct_header_size();
-        memcpy(
-            &buf[n], sgx_sigstruct_body(sigstruct), sgx_sigstruct_body_size());
+        OE_CHECK(
+            oe_memcpy_s(
+                &buf[n],
+                sizeof(buf) - n,
+                sgx_sigstruct_body(sigstruct),
+                sgx_sigstruct_body_size()));
         n += sgx_sigstruct_body_size();
 
         {
@@ -337,18 +360,18 @@ static oe_result_t _init_sigstruct(
                     &signature_size,
                     rsa))
             {
-                OE_THROW(OE_FAILURE);
+                OE_RAISE(OE_FAILURE);
             }
 
             if (sizeof(sigstruct->signature) != signature_size)
-                OE_THROW(OE_FAILURE);
+                OE_RAISE(OE_FAILURE);
 
             /* The signature is backwards and needs to be reversed */
             _mem_reverse(sigstruct->signature, signature, sizeof(signature));
         }
     }
 
-    OE_TRY(
+    OE_CHECK(
         _get_q1_and_q2(
             sigstruct->signature,
             sizeof(sigstruct->signature),
@@ -361,7 +384,7 @@ static oe_result_t _init_sigstruct(
 
     result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
@@ -426,13 +449,13 @@ oe_result_t oe_sgx_sign_enclave(
 
     /* Check parameters */
     if (!mrenclave || !sigstruct)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Load the RSA private key from PEM */
-    OE_TRY(_load_rsa_private_key(pem_data, pem_size, &rsa));
+    OE_CHECK(_load_rsa_private_key(pem_data, pem_size, &rsa));
 
     /* Initialize the sigstruct */
-    OE_TRY(
+    OE_CHECK(
         _init_sigstruct(
             mrenclave,
             attributes,
@@ -443,8 +466,7 @@ oe_result_t oe_sgx_sign_enclave(
 
     result = OE_OK;
 
-OE_CATCH:
-
+done:
     if (rsa)
         RSA_free(rsa);
 

@@ -4,6 +4,7 @@
 #ifndef _OE_ELF_H
 #define _OE_ELF_H
 
+#include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -302,7 +303,7 @@ int elf64_add_section(
     const void* secdata,
     size_t secsize);
 
-int elf64_remove_section(elf64_t* elf, const char* name);
+oe_result_t elf64_remove_section(elf64_t* elf, const char* name);
 
 void elf64_dump_section_names(const elf64_t* elf);
 
@@ -319,7 +320,10 @@ int elf64_visit_symbols(
     void* data);
 
 /* Load relocations (size will be a multiple of the page size) */
-int elf64_load_relocations(const elf64_t* elf, void** data, size_t* size);
+oe_result_t elf64_load_relocations(
+    const elf64_t* elf,
+    void** data,
+    size_t* size);
 
 /* Get the segment with the given index; return NULL on error */
 void* elf64_get_segment(const elf64_t* elf, size_t index);

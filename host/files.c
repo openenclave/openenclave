@@ -1,10 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/files.h>
+#include <openenclave/internal/raise.h>
 #include <openenclave/internal/trace.h>
+#include <openenclave/internal/utils.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,33 +39,33 @@ oe_result_t __oe_load_file(
 
     /* Check parameters */
     if (!path || !data || !size)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Get size of this file */
     {
         struct stat st;
 
         if (stat(path, &st) != 0)
-            OE_THROW(OE_NOT_FOUND);
+            OE_RAISE(OE_NOT_FOUND);
 
         *size = st.st_size;
     }
 
     /* Check for integer overflow */
     size_t total_size;
-    OE_TRY(oe_safe_add_sizet(*size, extra_bytes, &total_size));
+    OE_CHECK(oe_safe_add_sizet(*size, extra_bytes, &total_size));
 
     /* Allocate memory */
     if (!(*data = malloc(total_size)))
-        OE_THROW(OE_OUT_OF_MEMORY);
+        OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* Open the file */
     if (oe_fopen(&is, path, "rb") != 0)
-        OE_THROW(OE_NOT_FOUND);
+        OE_RAISE(OE_NOT_FOUND);
 
     /* Read file into memory */
     if (fread(*data, 1, *size, is) != *size)
-        OE_THROW(OE_READ_FAILED);
+        OE_RAISE(OE_READ_FAILED);
 
     /* Zero-fill any extra bytes */
     if (extra_bytes)
@@ -70,8 +73,7 @@ oe_result_t __oe_load_file(
 
     result = OE_OK;
 
-OE_CATCH:
-
+done:
     if (result != OE_OK)
     {
         if (data && *data)

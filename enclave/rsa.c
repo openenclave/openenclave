@@ -2,8 +2,10 @@
 // Licensed under the MIT License.
 
 #include "rsa.h"
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/utils.h>
 #include "key.h"
 #include "pem.h"
 #include "random.h"
@@ -140,10 +142,10 @@ static oe_result_t _generate_key_pair(
     mbedtls_pk_init(&pk);
 
     if (private_key)
-        oe_memset(private_key, 0, sizeof(*private_key));
+        oe_secure_zero_fill(private_key, sizeof(*private_key));
 
     if (public_key)
-        oe_memset(public_key, 0, sizeof(*public_key));
+        oe_secure_zero_fill(public_key, sizeof(*public_key));
 
     /* Check for invalid parameters */
     if (!private_key || !public_key)

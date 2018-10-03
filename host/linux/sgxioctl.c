@@ -2,7 +2,9 @@
 // Licensed under the MIT License.
 
 #include "sgxioctl.h"
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/utils.h>
 #include <string.h>
 #include <sys/ioctl.h>
 

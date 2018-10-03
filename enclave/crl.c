@@ -4,10 +4,12 @@
 #include "crl.h"
 #include <mbedtls/platform.h>
 #include <mbedtls/x509_crl.h>
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/crl.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/utils.h>
 
 /* Randomly generated magic number */
 #define OE_CRL_MAGIC 0xf8cf8e04f4ed40f3

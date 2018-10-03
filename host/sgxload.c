@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#define OE_TRACE_LEVEL 1
-
 #include "sgxload.h"
 #if defined(OE_USE_LIBSGX)
 #include <sgx_enclave_common.h>
@@ -18,6 +16,7 @@
 #endif
 
 #include <assert.h>
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/internal/aesm.h>
 #include <openenclave/internal/raise.h>
@@ -315,7 +314,12 @@ static oe_result_t _get_sig_struct(
     else
     {
         /* Otherwise, treat enclave as signed and use its sigstruct */
-        memcpy(sigstruct, properties->sigstruct, sizeof(sgx_sigstruct_t));
+        OE_CHECK(
+            oe_memcpy_s(
+                sigstruct,
+                sizeof(sgx_sigstruct_t),
+                properties->sigstruct,
+                sizeof(sgx_sigstruct_t)));
     }
 
     result = OE_OK;
@@ -335,12 +339,12 @@ static oe_result_t _get_launch_token(
     oe_result_t result = OE_UNEXPECTED;
     AESM* aesm = NULL;
 
-    memset(launch_token, 0, sizeof(sgx_launch_token_t));
-
     /* Initialize the SGX attributes */
     sgx_attributes_t attributes = {0};
     attributes.flags = properties->config.attributes;
     attributes.xfrm = SGX_ATTRIBUTES_DEFAULT_XFRM;
+
+    memset(launch_token, 0, sizeof(sgx_launch_token_t));
 
     /* Obtain a launch token from the AESM service */
     if (!(aesm = AESMConnect()))
@@ -374,7 +378,6 @@ oe_result_t oe_sgx_initialize_load_context(
 
     if (context)
         memset(context, 0, sizeof(oe_sgx_load_context_t));
-
     if (!context || type == OE_SGX_LOAD_TYPE_UNDEFINED)
         OE_RAISE(OE_INVALID_PARAMETER);
 
@@ -574,7 +577,9 @@ oe_result_t oe_sgx_load_enclave_data(
         }
 
         /* Copy page contents onto memory-mapped region */
-        memcpy((uint8_t*)addr, (uint8_t*)src, OE_PAGE_SIZE);
+        OE_CHECK(
+            oe_memcpy_s(
+                (uint8_t*)addr, OE_PAGE_SIZE, (uint8_t*)src, OE_PAGE_SIZE));
 
         /* Set page access permissions */
         {
@@ -719,11 +724,20 @@ oe_result_t oe_sgx_initialize_enclave(
 
         /* Ask the OS to initialize the enclave */
         DWORD enclave_error;
-        ENCLAVE_INIT_INFO_SGX info;
+        ENCLAVE_INIT_INFO_SGX info = {{0}};
 
-        memset(&info, 0, sizeof(info));
-        memcpy(&info.SigStruct, (void*)&sigstruct, sizeof(info.SigStruct));
-        memcpy(&info.EInitToken, (void*)&launch_token, sizeof(info.EInitToken));
+        OE_CHECK(
+            oe_memcpy_s(
+                &info.SigStruct,
+                sizeof(info.SigStruct),
+                (void*)&sigstruct,
+                sizeof(sigstruct)));
+        OE_CHECK(
+            oe_memcpy_s(
+                &info.EInitToken,
+                sizeof(info.EInitToken),
+                (void*)&launch_token,
+                sizeof(launch_token)));
 
         if (!InitializeEnclave(
                 GetCurrentProcess(),
