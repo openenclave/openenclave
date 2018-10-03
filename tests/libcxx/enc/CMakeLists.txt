@@ -46,7 +46,7 @@ function(add_libcxx_test_enc NAME CXXFILE)
 
     # Clang does not support variants of operator delete[] taking size_t in C++14 unless
     # -fsized-deallocation is passed explicity. (Note, gcc 4.7/4.8/4.9 do not support this either.)
-    if ("${NAME}" MATCHES "sized_delete")
+    if (("${NAME}" MATCHES "sized_delete") AND NOT ("${NAME}" MATCHES "unsized_delete"))
         add_target_compile_flags_if_supported(libcxxtest-${NAME}_enc PRIVATE CXX -fsized-deallocation)
     endif()
     target_compile_definitions(libcxxtest-${NAME}_enc PRIVATE -DWITH_MAIN -D__TEST__="${CXXFILE}")
