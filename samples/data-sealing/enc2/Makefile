@@ -26,7 +26,7 @@ all:
 
 build:
 	cp ../enc1/private.pem .
-	@ echo "Compiler used: $(CC)"
+	@ echo "Compilers used: $(CC), $(CXX)"
 	$(CXX) -c $(CXXFLAGS) $(INCLUDES) ecalls.cpp ../common/dispatcher.cpp ../common/keys.cpp
 	$(CC) -c $(CFLAGS) $(CINCLUDES) ../common/datasealing_t.c
 	$(CXX) -o enclave_a_v2.so ecalls.o dispatcher.o keys.o datasealing_t.o $(LDFLAGS)

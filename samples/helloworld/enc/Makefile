@@ -23,7 +23,7 @@ all:
 	$(MAKE) sign
 
 build:
-	@ echo "Compiler used: $(CC)"
+	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../helloworld.edl --trusted
 	$(CC) -c $(CFLAGS) enc.c -o enc.o
 	$(CC) -c $(CFLAGS) helloworld_t.c -o helloworld_t.o

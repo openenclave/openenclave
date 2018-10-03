@@ -25,7 +25,7 @@ all:
 	$(MAKE) sign
 
 build:
-	@ echo "Compiler used: $(CC)"
+	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../localattestation.edl --trusted --trusted-dir ../common
 	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) ecalls.cpp ../common/attestation.cpp ../common/crypto.cpp ../common/dispatcher.cpp
 	$(CC) -c $(CFLAGS) $(CINCLUDES) ../common/localattestation_t.c	

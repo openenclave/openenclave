@@ -23,7 +23,7 @@ LDFLAGS=$(shell pkg-config oehost-$(CXX_COMPILER) --libs)
 all: build
 
 build:
-	@ echo "Compiler used: $(CC)"
+	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../fileencryptor.edl --untrusted
 	$(CXX) -c $(CXXFLAGS) host.cpp
 	$(CC) -c $(CFLAGS) fileencryptor_u.c

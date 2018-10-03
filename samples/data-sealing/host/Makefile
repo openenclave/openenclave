@@ -24,7 +24,7 @@ LDFLAGS=$(shell pkg-config oehost-$(C_COMPILER) --libs)
 all: build
 
 build:
-	@ echo "Compiler used: $(CC)"
+	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../datasealing.edl --untrusted
 	$(CXX) -c $(CXXFLAGS) $(INCLUDES) host.cpp
 	$(CC) -c $(CFLAGS) $(CINCLUDES) datasealing_u.c 

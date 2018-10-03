@@ -18,7 +18,7 @@ CFLAGS=$(shell pkg-config oehost-$(COMPILER) --cflags)
 LDFLAGS=$(shell pkg-config oehost-$(COMPILER) --libs)
 
 build:
-	@ echo "Compiler used: $(CC)"
+	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../helloworld.edl --untrusted
 	$(CC) -c $(CFLAGS) host.c
 	$(CC) -c $(CFLAGS) helloworld_u.c
