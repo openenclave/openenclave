@@ -5,6 +5,7 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/safemath.h>
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/debug.h>
@@ -561,40 +562,6 @@ done:
     return result;
 }
 
-#if 0
-static oe_result_t _patch_page(
-    oe_page_t* segpages,
-    size_t nsegpages,
-    uint64_t offset,
-    uint64_t value)
-{
-    uint8_t* pagebuf = (uint8_t*)segpages;
-
-    /* Get the total size. */
-    size_t size;
-    oe_result_t ret = oe_safe_mul_sizet(nsegpages, sizeof(oe_page_t), &size);
-    if (ret != OE_OK)
-        return ret;
-
-    /* Check for buffer overflow. */
-    if (offset >= size)
-        return OE_OUT_OF_BOUNDS;
-
-    /* Ensure 8 byte alignment. */
-    uint64_t page;
-    ret = oe_safe_add_u64((uint64_t)pagebuf, offset, &page);
-    if (ret != OE_OK)
-        return ret;
-
-    if (page % sizeof(uint64_t) != 0)
-        return OE_BAD_ALIGNMENT;
-
-    /* Patch the page. */
-    *((uint64_t*)page) = value;
-
-    return OE_OK;
-}
-#endif
 
 oe_result_t _oe_patch_image(
     oe_enclave_image_t* oeimage,
@@ -747,102 +714,18 @@ done:
 }
 
 
-/* Find enclave property struct within an .oeinfo section */
-static oe_result_t _find_enclave_properties_header(
-    uint8_t* section_data,
-    size_t section_size,
-    oe_enclave_type_t enclave_type,
-    size_t struct_size,
-    oe_enclave_properties_header_t** header)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    uint8_t* ptr = section_data;
-    size_t bytes_remaining = section_size;
-
-    *header = NULL;
-
-    /* While there are more enclave property structures */
-    while (bytes_remaining >= struct_size)
-    {
-        oe_enclave_properties_header_t* h =
-            (oe_enclave_properties_header_t*)ptr;
-
-        if (h->enclave_type == enclave_type)
-        {
-            if (h->size != struct_size)
-            {
-                result = OE_FAILURE;
-                goto done;
-            }
-
-            /* Found it! */
-            *header = h;
-            break;
-        }
-
-        /* If size of structure extends beyond end of section */
-        if (h->size > bytes_remaining)
-            break;
-
-        ptr += h->size;
-        bytes_remaining -= h->size;
-    }
-
-    if (*header == NULL)
-    {
-        result = OE_NOT_FOUND;
-        goto done;
-    }
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
 oe_result_t oe_sgx_load_properties(
     const oe_enclave_image_t* oeimage,
     const char* section_name,
     oe_sgx_enclave_properties_t* properties)
 {
     oe_result_t result = OE_UNEXPECTED;
-    uint8_t* section_data;
-    size_t section_size;
 
-    if (properties)
-        memset(properties, 0, sizeof(oe_sgx_enclave_properties_t));
-
-    /* Check for null parameter */
-    if (!oeimage || !section_name || !properties)
-    {
-        result = OE_INVALID_PARAMETER;
-        goto done;
-    }
-
-    /* Get pointer to and size of the given section */
-    if (elf64_find_section(&oeimage->elf, section_name, &section_data, &section_size) != 0)
-    {
-        result = OE_NOT_FOUND;
-        goto done;
-    }
-
-    /* Find SGX enclave property struct */
-    {
-        oe_enclave_properties_header_t* header;
-
-        if ((result = _find_enclave_properties_header(
-                 section_data,
-                 section_size,
-                 OE_ENCLAVE_TYPE_SGX,
-                 sizeof(oe_sgx_enclave_properties_t),
-                 &header)) != OE_OK)
-        {
-            result = OE_NOT_FOUND;
-            goto done;
-        }
-
-        memcpy(properties, header, sizeof(oe_sgx_enclave_properties_t));
-    }
+    /* Copy from the image at oeinfo_rva. */
+    OE_CHECK(
+        oe_memcpy_s(
+            properties, sizeof(*properties),
+            oeimage->image_base + oeimage->oeinfo_rva, sizeof(*properties)));
 
     result = OE_OK;
 
@@ -856,39 +739,17 @@ oe_result_t oe_sgx_update_enclave_properties(
     const oe_sgx_enclave_properties_t* properties)
 {
     oe_result_t result = OE_UNEXPECTED;
-    uint8_t* section_data;
-    size_t section_size;
 
-    /* Check for null parameter */
-    if (!oeimage || !section_name || !properties)
-    {
-        result = OE_INVALID_PARAMETER;
-        goto done;
-    }
+    /* Copy to both the image and ELF file*/
+    OE_CHECK(
+        oe_memcpy_s(
+            (uint8_t*)oeimage->elf.data + oeimage->oeinfo_file_pos, sizeof(*properties),
+            properties, sizeof(*properties)));
 
-    /* Get pointer to and size of the given section */
-    if (elf64_find_section(&oeimage->elf, section_name, &section_data, &section_size) != 0)
-    {
-        result = OE_FAILURE;
-        goto done;
-    }
-
-    /* Find SGX enclave property struct */
-    {
-        oe_enclave_properties_header_t* header;
-
-        if ((result = _find_enclave_properties_header(
-                 section_data,
-                 section_size,
-                 OE_ENCLAVE_TYPE_SGX,
-                 sizeof(oe_sgx_enclave_properties_t),
-                 &header)) != OE_OK)
-        {
-            goto done;
-        }
-
-        memcpy(header, properties, sizeof(oe_sgx_enclave_properties_t));
-    }
+    OE_CHECK(
+        oe_memcpy_s(
+            oeimage->image_base + oeimage->oeinfo_rva, sizeof(*properties),
+            properties, sizeof(*properties)));
 
     result = OE_OK;
 
