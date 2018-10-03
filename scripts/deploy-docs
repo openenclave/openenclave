@@ -51,10 +51,10 @@ branch=gh-pages
 # Obtain a clone of gh-pages, so we preserve version subdirs
 case $mode in
     ssh) 
-        git clone --single-branch -b gh-pages git@github.com:Microsoft/openenclave.git $tmp/openenclave
+        git clone --single-branch -b gh-pages git@github.com:Microsoft/openenclave.git "$tmp/openenclave"
     ;;
     https)
-        git clone --single-branch -b gh-pages https://github.com/Microsoft/openenclave.git $tmp/openenclave
+        git clone --single-branch -b gh-pages https://github.com/Microsoft/openenclave.git "$tmp/openenclave"
     ;;
     *)
         echo "Unexpected"
@@ -69,16 +69,16 @@ mkdir "$tmp/openenclave2"
 cp -r "${root}/docs/refman/index.html" "$tmp/openenclave2"
 
 # Copy all old version subdirs named v* to openenclave2
-if [ -d $tmp/openenclave/v* ]; then
-  cp -r $tmp/openenclave/v* $tmp/openenclave2;
-fi
+#if [ -d $tmp/openenclave/v* ]; then
+#  cp -r $tmp/openenclave/v* $tmp/openenclave2
+#fi
 # Copy all old version subdirs named V* to openenclave2
 if [ -d $tmp/openenclave/V* ]; then
-  cp -r "$tmp/openenclave/V*" "$tmp/openenclave2";
+  cp -r $tmp/openenclave/V* $tmp/openenclave2
 fi  
 
 cd "$tmp/openenclave2"
-# Copy all current docs to current_api
+# Copy all current docs to current dir
 cp -r "${root}/${builddir}/docs/refman/html" current
 
 if [[ -z "${version// }" ]]; then
