@@ -23,16 +23,16 @@ set(PREFIX "${CMAKE_INSTALL_PREFIX}")
 ##
 ##==============================================================================
 
-set(ENCLAVE_CINCLUDES 
-    "-I\${includedir}/libc -I\${includedir}")
+set(ENCLAVE_CINCLUDES
+    "-I\${includedir}/openenclave/3rdparty/libc -I\${includedir}/openenclave/3rdparty -I\${includedir}")
 
-set(ENCLAVE_CXXINCLUDES 
-    "-I\${includedir}/libcxx ${ENCLAVE_CINCLUDES}")
+set(ENCLAVE_CXXINCLUDES
+    "-I\${includedir}/openenclave/3rdparty/libcxx ${ENCLAVE_CINCLUDES}")
 
-set(ENCLAVE_CFLAGS_CLANG 
+set(ENCLAVE_CFLAGS_CLANG
     "-nostdinc -m64 -fPIC -mllvm -x86-speculative-load-hardening")
 
-set(ENCLAVE_CFLAGS_GCC 
+set(ENCLAVE_CFLAGS_GCC
     "-nostdinc -m64 -fPIC")
 
 ##==============================================================================
@@ -104,7 +104,7 @@ configure_file(
 
 install(FILES
     ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oeenclave-gcc.pc
-    DESTINATION 
+    DESTINATION
     "${CMAKE_INSTALL_DATADIR}/pkgconfig")
 
 ##==============================================================================
@@ -120,7 +120,7 @@ configure_file(
 
 install(FILES
     ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oeenclave-g++.pc
-    DESTINATION 
+    DESTINATION
     "${CMAKE_INSTALL_DATADIR}/pkgconfig")
 
 ##==============================================================================
@@ -136,7 +136,7 @@ configure_file(
 
 install(FILES
     ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-gcc.pc
-    DESTINATION 
+    DESTINATION
     "${CMAKE_INSTALL_DATADIR}/pkgconfig")
 
 ##==============================================================================
@@ -152,7 +152,7 @@ configure_file(
 
 install(FILES
     ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-g++.pc
-    DESTINATION 
+    DESTINATION
     "${CMAKE_INSTALL_DATADIR}/pkgconfig")
 
 ##==============================================================================
@@ -168,7 +168,7 @@ configure_file(
 
 install(FILES
     ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oeenclave-clang.pc
-    DESTINATION 
+    DESTINATION
     "${CMAKE_INSTALL_DATADIR}/pkgconfig")
 
 ##==============================================================================
@@ -184,7 +184,7 @@ configure_file(
 
 install(FILES
     ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oeenclave-clang++.pc
-    DESTINATION 
+    DESTINATION
     "${CMAKE_INSTALL_DATADIR}/pkgconfig")
 
 ##==============================================================================
@@ -200,7 +200,7 @@ configure_file(
 
 install(FILES
     ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-clang.pc
-    DESTINATION 
+    DESTINATION
     "${CMAKE_INSTALL_DATADIR}/pkgconfig")
 
 ##==============================================================================
@@ -216,7 +216,7 @@ configure_file(
 
 install(FILES
     ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-clang++.pc
-    DESTINATION 
+    DESTINATION
     "${CMAKE_INSTALL_DATADIR}/pkgconfig")
 
 ##==============================================================================
@@ -225,13 +225,13 @@ install(FILES
 ##
 ##==============================================================================
 
-set(PREFIX "${CMAKE_BINARY_DIR}/output")
+set(PREFIX "$OE_PREFIX")
 
-set(ENCLAVE_CINCLUDES 
-    "-I\${includedir}/openenclave/libc -I\${includedir} -I${PROJECT_SOURCE_DIR}/include")
+set(ENCLAVE_CINCLUDES
+    "-I\${includedir}/openenclave/3rdparty/libc -I\${includedir}/openenclave/3rdparty -I\${includedir} -I${PROJECT_SOURCE_DIR}/include")
 
-set(ENCLAVE_CXXINCLUDES 
-    "-I\${includedir}/openenclave/libcxx ${ENCLAVE_CINCLUDES}")
+set(ENCLAVE_CXXINCLUDES
+    "-I\${includedir}/openenclave/3rdparty/libcxx ${ENCLAVE_CINCLUDES}")
 
 set(HOST_INCLUDES "-I${PROJECT_SOURCE_DIR}/include")
 

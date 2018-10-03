@@ -1,32 +1,21 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-OPENENCLAVE_CONFIG=../../config.mak
-include $(OPENENCLAVE_CONFIG)
+# Detect C and C++ compiler options
+# if not gcc, default to clang-7
 
-CC = clang-7
+COMPILER=$(notdir $(CC))
+ifeq ($(COMPILER), gcc)
+        USE_GCC = true
+endif
 
-CFLAGS += -Wall -Werror -O2 -m64 -nostdinc -fPIC
-CFLAGS += -mllvm -x86-speculative-load-hardening
+ifeq ($(USE_GCC),)
+        CC = clang-7
+        COMPILER=clang
+endif
 
-INCLUDES += -I$(OE_INCLUDEDIR)
-INCLUDES += -I$(OE_INCLUDEDIR)/libc
-
-LDFLAGS += -Wl,--no-undefined 
-LDFLAGS += -nostdlib 
-LDFLAGS += -nodefaultlibs 
-LDFLAGS += -nostartfiles 
-LDFLAGS += -Wl,-Bstatic 
-LDFLAGS += -Wl,-Bsymbolic 
-LDFLAGS += -Wl,--export-dynamic 
-LDFLAGS += -Wl,-pie
-
-LIBRARIES += -L${OE_LIBDIR}/openenclave/enclave 
-LIBRARIES += -loeenclave
-LIBRARIES += -lmbedx509 
-LIBRARIES += -lmbedcrypto 
-LIBRARIES += -loelibc
-LIBRARIES += -loecore
+CFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --cflags)
+LDFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --libs)
 
 all:
 	$(MAKE) build
@@ -34,13 +23,15 @@ all:
 	$(MAKE) sign
 
 build:
-	$(OE_BINDIR)/oeedger8r ../helloworld.edl --trusted
-	$(CC) -c $(CFLAGS) $(INCLUDES) enc.c -o enc.o
-	$(CC) -c $(CFLAGS) $(INCLUDES) helloworld_t.c -o helloworld_t.o
-	$(CC) -o helloworldenc.so helloworld_t.o enc.o $(LDFLAGS) $(LIBRARIES)
+	@ echo "Compiler used: $(CC)"
+	oeedger8r ../helloworld.edl --trusted
+	$(CC) -c $(CFLAGS) enc.c -o enc.o
+	$(CC) -c $(CFLAGS) helloworld_t.c -o helloworld_t.o
+	$(CC) -o helloworldenc.so helloworld_t.o enc.o $(LDFLAGS)
 
 sign:
-	$(OE_BINDIR)/oesign helloworldenc.so helloworld.conf private.pem
+	oesign helloworldenc.so helloworld.conf private.pem
+
 clean:
 	rm -f enc.o helloworldenc.so helloworldenc.signed.so private.pem public.pem helloworld_t.o helloworld_t.h helloworld_t.c helloworld_args.h
 
