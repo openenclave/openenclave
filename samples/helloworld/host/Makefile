@@ -1,45 +1,28 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-OPENENCLAVE_CONFIG=../../config.mak
-include $(OPENENCLAVE_CONFIG)
+# Detect C and C++ compiler options
+# if not gcc, default to clang-7
 
-all: build
+COMPILER=$(notdir $(CC))
+ifeq ($(COMPILER), gcc)
+        USE_GCC = true
+endif
 
-CC = clang-7
+ifeq ($(USE_GCC),)
+        CC = clang-7
+	COMPILER=clang
+endif
 
-CFLAGS += -Wall -g
-CFLAGS += -mllvm -x86-speculative-load-hardening
-
-INCLUDES = -I$(OE_INCLUDEDIR)
-LDFLAGS += -rdynamic
-
-LIBRARIES += -L$(OE_LIBDIR)/openenclave/host
-LIBRARIES += -loehost
-LIBRARIES += -lcrypto
-LIBRARIES += -lpthread
-LIBRARIES += -ldl
-
-# To make this Makefile support building an
-# enclave library for both SGX1 and SGX+FLC systems,
-# the optlib was defined to help optionally
-# link the following Intel SGX libraries, which
-# are needed only for building enclaves library
-# for SGX+FLC systems
-
-define optlib
-$(patsubst /usr/lib/x86_64-linux-gnu/lib%.so,-l%,$(wildcard /usr/lib/x86_64-linux-gnu/lib$(1).so))
-endef
-LIBRARIES += $(call optlib,sgx_enclave_common)
-LIBRARIES += $(call optlib,sgx_dcap_ql)
-LIBRARIES += $(call optlib,sgx_urts)
+CFLAGS=$(shell pkg-config oehost-$(COMPILER) --cflags)
+LDFLAGS=$(shell pkg-config oehost-$(COMPILER) --libs)
 
 build:
-	$(OE_BINDIR)/oeedger8r ../helloworld.edl --untrusted
-	$(CC) -c $(CFLAGS) $(INCLUDES) host.c
-	$(CC) -c $(CFLAGS) $(INCLUDES) helloworld_u.c
-	$(CC) -o helloworldhost helloworld_u.o host.o $(LDFLAGS) $(LIBRARIES)
+	@ echo "Compiler used: $(CC)"
+	oeedger8r ../helloworld.edl --untrusted
+	$(CC) -c $(CFLAGS) host.c
+	$(CC) -c $(CFLAGS) helloworld_u.c
+	$(CC) -o helloworldhost helloworld_u.o host.o $(LDFLAGS)
 
 clean:
 	rm -f helloworldhost host.o helloworld_u.o helloworld_u.c helloworld_u.h helloworld_args.h
-
