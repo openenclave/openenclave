@@ -5,7 +5,7 @@ include(add_enclave_executable)
 
 # Generate the test sources.
 execute_process(
-    COMMAND ${CMAKE_CURRENT_LIST_DIR}/gentests.sh
+    COMMAND ${CMAKE_CURRENT_LIST_DIR}/wrap_tests.sh
     ${CMAKE_CURRENT_LIST_DIR}/../tests.supported
     ${CMAKE_CURRENT_BINARY_DIR})
 

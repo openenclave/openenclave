@@ -5,12 +5,21 @@
 
 ##==============================================================================
 ##
+## wrap_tests.sh INPUT_TESTS_FILE OUTPUT_DIRECTORY
+##
+##     This script reads the test sources (from INPUT_TESTS_FILE)
+##     and creates wrappers for each of them in the OUTPUT_DIRECTORY.
+##
+##==============================================================================
+
+##==============================================================================
+##
 ## Check command line arguments.
 ##
 ##==============================================================================
 
 if [ "$#" != "2" ]; then
-    echo "Usage: $0 INPUT_TESTS OUTPUT_DIRECTORY"
+    echo "Usage: $0 INPUT_TESTS_FILE OUTPUT_DIRECTORY"
     exit 1
 fi
 
@@ -37,8 +46,8 @@ files=$(cat "${input_tests}")
 
 tests_c=${output_directory}/tests.c
 
-rm -f test_*.c
 rm -f ${tests_c}
+rm -f ${output_directory}/test_*.c
 
 ##==============================================================================
 ##
