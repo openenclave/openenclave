@@ -16,11 +16,11 @@ typedef struct _aesm_interface aesm_interface_t;
  * AESM interface. This will eventually be replaced by a different interface
  * that Intel will be providing.
  */
-typedef struct IAESMInterfaceVtbl
+typedef struct aesm_interface_vtbl
 {
     BEGIN_INTERFACE
 
-    HRESULT(STDMETHODCALLTYPE* QueryInterface)
+    HRESULT(STDMETHODCALLTYPE* query_interface)
     (aesm_interface_t* This,
      /* [in] */ REFIID riid,
      /* [annotation][iid_is][out] */
@@ -30,7 +30,7 @@ typedef struct IAESMInterfaceVtbl
 
     ULONG(STDMETHODCALLTYPE* Release)(aesm_interface_t* This);
 
-    HRESULT(STDMETHODCALLTYPE* GetLicenseToken)
+    HRESULT(STDMETHODCALLTYPE* get_license_token)
     (aesm_interface_t* This,
      /* [size_is][ref][in] */ uint8_t* mrenclave,
      uint32_t mrenclave_size,
@@ -42,7 +42,7 @@ typedef struct IAESMInterfaceVtbl
      uint32_t lictoken_size,
      /* [ref][out] */ aesm_error_t* result);
 
-    HRESULT(STDMETHODCALLTYPE* InitQuote)
+    HRESULT(STDMETHODCALLTYPE* init_quote)
     (aesm_interface_t* This,
      /* [size_is][out] */ uint8_t* target_info,
      uint32_t target_info_size,
@@ -50,7 +50,7 @@ typedef struct IAESMInterfaceVtbl
      uint32_t gid_size,
      /* [ref][out] */ aesm_error_t* result);
 
-    HRESULT(STDMETHODCALLTYPE* GetQuote)
+    HRESULT(STDMETHODCALLTYPE* get_quote)
     (aesm_interface_t* This,
      /* [size_is][ref][in] */ uint8_t* report,
      uint32_t report_size,
@@ -67,14 +67,14 @@ typedef struct IAESMInterfaceVtbl
      /* [in] */ uint32_t buf_size,
      /* [ref][out] */ aesm_error_t* result);
 
-    HRESULT(STDMETHODCALLTYPE* CreateSession)
+    HRESULT(STDMETHODCALLTYPE* create_session)
     (aesm_interface_t* This,
      /* [ref][out] */ uint32_t* session_id,
      /* [size_is][ref][out] */ uint8_t* se_dh_msg1,
      uint32_t se_dh_msg1_size,
      /* [ref][out] */ aesm_error_t* result);
 
-    HRESULT(STDMETHODCALLTYPE* ExchangeReport)
+    HRESULT(STDMETHODCALLTYPE* exchange_report)
     (aesm_interface_t* This,
      uint32_t session_id,
      /* [size_is][ref][in] */ uint8_t* se_dh_msg2,
@@ -83,12 +83,12 @@ typedef struct IAESMInterfaceVtbl
      uint32_t se_dh_msg3_size,
      /* [ref][out] */ aesm_error_t* result);
 
-    HRESULT(STDMETHODCALLTYPE* CloseSession)
+    HRESULT(STDMETHODCALLTYPE* close_session)
     (aesm_interface_t* This,
      uint32_t session_id,
      /* [ref][out] */ aesm_error_t* result);
 
-    HRESULT(STDMETHODCALLTYPE* InvokeService)
+    HRESULT(STDMETHODCALLTYPE* invoke_service)
     (aesm_interface_t* This,
      /* [size_is][ref][in] */ uint8_t* pse_message_req,
      uint32_t pse_message_req_size,
@@ -96,7 +96,7 @@ typedef struct IAESMInterfaceVtbl
      uint32_t pse_message_resp_size,
      /* [ref][out] */ aesm_error_t* result);
 
-    HRESULT(STDMETHODCALLTYPE* ReportAttestationStatus)
+    HRESULT(STDMETHODCALLTYPE* report_attestation_status)
     (aesm_interface_t* This,
      /* [size_is][ref][in] */ uint8_t* platform_info,
      uint32_t platform_info_size,
@@ -105,66 +105,66 @@ typedef struct IAESMInterfaceVtbl
      uint32_t update_info_size,
      /* [ref][out] */ aesm_error_t* result);
 
-    HRESULT(STDMETHODCALLTYPE* GetPSCap)
+    HRESULT(STDMETHODCALLTYPE* get_ps_cap)
     (aesm_interface_t* This,
      /* [out] */ uint64_t* ps_cap,
      /* [ref][out] */ aesm_error_t* result);
 
-    HRESULT(STDMETHODCALLTYPE* SgxRegister)
+    HRESULT(STDMETHODCALLTYPE* sgx_register)
     (aesm_interface_t* This,
      /* [size_is][ref][in] */ uint8_t* white_list_cert,
      uint32_t white_list_cert_size,
      uint32_t registration_data_type,
      /* [ref][out] */ aesm_error_t* result);
 
-    HRESULT(STDMETHODCALLTYPE* ProxySettingAssist)
+    HRESULT(STDMETHODCALLTYPE* proxy_setting_assist)
     (aesm_interface_t* This,
      /* [size_is][unique][in] */ uint8_t* proxy_info,
      uint32_t proxy_size,
      /* [ref][out] */ aesm_error_t* result);
 
-    HRESULT(STDMETHODCALLTYPE* QuerySgxStatus)
+    HRESULT(STDMETHODCALLTYPE* query_sgx_status)
     (aesm_interface_t* This,
      /* [ref][out] */ uint32_t* sgx_status,
      /* [ref][out] */ aesm_error_t* result);
 
-    HRESULT(STDMETHODCALLTYPE* GetWhitelistSize)
+    HRESULT(STDMETHODCALLTYPE* get_whitelist_size)
     (aesm_interface_t* This,
      /* [ref][out] */ uint32_t* white_list_size,
      /* [ref][out] */ aesm_error_t* result);
 
-    HRESULT(STDMETHODCALLTYPE* GetWhitelist)
+    HRESULT(STDMETHODCALLTYPE* get_white_list)
     (aesm_interface_t* This,
      /* [size_is][ref][out] */ uint8_t* white_list,
      uint32_t buf_size,
      /* [ref][out] */ aesm_error_t* result);
 
-    HRESULT(STDMETHODCALLTYPE* GetSecDomainId)
+    HRESULT(STDMETHODCALLTYPE* get_sec_domain_id)
     (aesm_interface_t* This,
      /* [ref][out] */ uint32_t* sec_domain_id,
      /* [ref][out] */ aesm_error_t* result);
 
-    HRESULT(STDMETHODCALLTYPE* SwitchSecDomain)
+    HRESULT(STDMETHODCALLTYPE* switch_sec_domain)
     (aesm_interface_t* This,
      uint32_t sec_domain_id,
      /* [ref][out] */ aesm_error_t* result);
 
-    HRESULT(STDMETHODCALLTYPE* GetEPIDProvisionStatus)
+    HRESULT(STDMETHODCALLTYPE* get_epid_provision_status)
     (aesm_interface_t* This,
      /* [ref][out] */ uint32_t* epid_pr_status,
      /* [ref][out] */ aesm_error_t* result);
 
-    HRESULT(STDMETHODCALLTYPE* GetPlatformServiceStatus)
+    HRESULT(STDMETHODCALLTYPE* get_platform_service_status)
     (aesm_interface_t* This,
      /* [ref][out] */ uint32_t* pse_status,
      /* [ref][out] */ aesm_error_t* result);
 
     END_INTERFACE
-} IAESMInterfaceVtbl;
+} aesm_interface_vtbl;
 
 struct _aesm_interface
 {
-    CONST_VTBL struct IAESMInterfaceVtbl* vtbl;
+    CONST_VTBL struct aesm_interface_vtbl* vtbl;
 };
 
 static aesm_interface_t* _create_instance()
@@ -225,7 +225,7 @@ static int _aesm_valid(const AESM* aesm)
     return aesm != NULL && aesm->magic == AESM_MAGIC;
 }
 
-AESM* AESMConnect()
+AESM* aesm_connect()
 {
     AESM* aesm = NULL;
     aesm_interface_t* instance = NULL;
@@ -250,7 +250,7 @@ done:
     return aesm;
 }
 
-void AESMDisconnect(AESM* aesm)
+void aesm_disconnect(AESM* aesm)
 {
     if (_aesm_valid(aesm))
     {
@@ -259,7 +259,7 @@ void AESMDisconnect(AESM* aesm)
     }
 }
 
-oe_result_t AESMGetLaunchToken(
+oe_result_t aesm_get_launch_token(
     AESM* aesm,
     uint8_t mrenclave[OE_SHA256_SIZE],
     uint8_t modulus[OE_KEY_SIZE],
@@ -278,7 +278,7 @@ oe_result_t AESMGetLaunchToken(
         goto done;
 
     /* Obtain a launch token */
-    HRESULT hr = instance->vtbl->GetLicenseToken(
+    HRESULT hr = instance->vtbl->get_license_token(
         instance,                 /* this */
         mrenclave,                /* mrenclave */
         OE_SHA256_SIZE,           /* mrenclave_size */
@@ -307,7 +307,7 @@ done:
     return result;
 }
 
-oe_result_t AESMInitQuote(
+oe_result_t aesm_init_quote(
     AESM* aesm,
     sgx_target_info_t* target_info,
     sgx_epid_group_id_t* epid_group_id)
@@ -324,7 +324,7 @@ oe_result_t AESMInitQuote(
         goto done;
 
     // Get quote for a given report.
-    HRESULT hr = instance->vtbl->InitQuote(
+    HRESULT hr = instance->vtbl->init_quote(
         instance,
         (uint8_t*)target_info,
         sizeof(sgx_target_info_t),
@@ -348,7 +348,7 @@ done:
     return result;
 }
 
-oe_result_t AESMGetQuote(
+oe_result_t aesm_get_quote(
     AESM* aesm,
     const sgx_report_t* report,
     sgx_quote_type_t quote_type,
@@ -381,7 +381,7 @@ oe_result_t AESMGetQuote(
         goto done;
 
     // Get quote for a given report.
-    HRESULT hr = instance->vtbl->GetQuote(
+    HRESULT hr = instance->vtbl->get_quote(
         instance,                            /* this */
         (uint8_t*)report,                    /* report */
         sizeof(sgx_report_t),                /* report_size */

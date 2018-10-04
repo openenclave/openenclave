@@ -26,17 +26,17 @@ static oe_result_t _sgx_init_quote_with_aesm(sgx_target_info_t* target_info)
 
     AESM* aesm = NULL;
 
-    if (!(aesm = AESMConnect()))
+    if (!(aesm = aesm_connect()))
         OE_RAISE(OE_FAILURE);
 
-    OE_CHECK(AESMInitQuote(aesm, target_info, &epid_group_id));
+    OE_CHECK(aesm_init_quote(aesm, target_info, &epid_group_id));
 
     result = OE_OK;
 
 done:
 
     if (aesm)
-        AESMDisconnect(aesm);
+        aesm_disconnect(aesm);
 
     return result;
 }
@@ -114,11 +114,11 @@ static oe_result_t _sgx_get_quote_from_aesm(
     if (!report || !quote || !quote_size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (!(aesm = AESMConnect()))
+    if (!(aesm = aesm_connect()))
         OE_RAISE(OE_SERVICE_UNAVAILABLE);
 
     OE_CHECK(
-        AESMGetQuote(
+        aesm_get_quote(
             aesm,
             report,
             quote_type,
@@ -135,7 +135,7 @@ static oe_result_t _sgx_get_quote_from_aesm(
 done:
 
     if (aesm)
-        AESMDisconnect(aesm);
+        aesm_disconnect(aesm);
 
     return result;
 }

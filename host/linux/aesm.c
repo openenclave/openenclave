@@ -401,7 +401,7 @@ OE_CATCH:
     return result;
 }
 
-AESM* AESMConnect()
+AESM* aesm_connect()
 {
     int sock = -1;
     struct sockaddr_un addr;
@@ -439,7 +439,7 @@ AESM* AESMConnect()
     return aesm;
 }
 
-void AESMDisconnect(AESM* aesm)
+void aesm_disconnect(AESM* aesm)
 {
     if (_aesm_valid(aesm))
     {
@@ -449,7 +449,7 @@ void AESMDisconnect(AESM* aesm)
     }
 }
 
-oe_result_t AESMGetLaunchToken(
+oe_result_t aesm_get_launch_token(
     AESM* aesm,
     uint8_t mrenclave[OE_SHA256_SIZE],
     uint8_t modulus[OE_KEY_SIZE],
@@ -518,7 +518,7 @@ done:
     return result;
 }
 
-oe_result_t AESMInitQuote(
+oe_result_t aesm_init_quote(
     AESM* aesm,
     sgx_target_info_t* target_info,
     sgx_epid_group_id_t* epid_group_id)
@@ -584,7 +584,7 @@ done:
     return result;
 }
 
-oe_result_t AESMGetQuote(
+oe_result_t aesm_get_quote(
     AESM* aesm,
     const sgx_report_t* report,
     sgx_quote_type_t quote_type,

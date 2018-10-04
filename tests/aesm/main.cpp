@@ -35,12 +35,12 @@ int main(int argc, const char* argv[])
     }
 #else
     AESM* aesm;
-    if (!(aesm = AESMConnect()))
+    if (!(aesm = aesm_connect()))
     {
         fprintf(stderr, "%s: failed to connect\n", argv[0]);
         exit(1);
     }
-    AESMDisconnect(aesm);
+    aesm_disconnect(aesm);
 #endif
 
     printf("=== passed all tests (%s)\n", argv[0]);
