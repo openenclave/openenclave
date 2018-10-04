@@ -3,7 +3,31 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-files=$(cat tests.supported)
+##==============================================================================
+##
+## Check command line arguments.
+##
+##==============================================================================
+
+if [ "$#" != "2" ]; then
+    echo "Usage: $0 INPUT_TESTS OUTPUT_DIRECTORY"
+    exit 1
+fi
+
+input_tests=$1
+output_directory=$2
+
+if [ ! -f "${input_tests}" ]; then
+    echo "$0: not found: ${input_tests}"
+    exit 1
+fi
+
+if [ ! -d "${output_directory}" ]; then
+    echo "$0: not found: ${output_directory}"
+    exit 1
+fi
+
+files=$(cat "${input_tests}")
 
 ##==============================================================================
 ##
@@ -11,7 +35,7 @@ files=$(cat tests.supported)
 ##
 ##==============================================================================
 
-tests_c=tests.c
+tests_c=${output_directory}/tests.c
 
 rm -f test_*.c
 rm -f ${tests_c}
@@ -39,7 +63,7 @@ get_test_name()
 for i in ${files}
 do
     name=$(get_test_name "${i}")
-    source_file=${name}.c
+    source_file=${output_directory}/${name}.c
 cat > "${source_file}" <<END
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
@@ -60,8 +84,6 @@ done
 cat >> ${tests_c} <<END
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-
-#include "tests.h"
 
 extern int run_test(
     const char* name,

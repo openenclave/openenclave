@@ -3,7 +3,13 @@
 
 include(add_enclave_executable)
 
-FILE(GLOB TESTS ${CMAKE_CURRENT_BINARY_DIR}/../tests/*.c)
+# Generate the test sources.
+execute_process(
+    COMMAND ${CMAKE_CURRENT_LIST_DIR}/gentests.sh
+    ${CMAKE_CURRENT_LIST_DIR}/../tests.supported
+    ${CMAKE_CURRENT_BINARY_DIR})
+
+FILE(GLOB TESTS ${CMAKE_CURRENT_BINARY_DIR}/*.c)
 
 add_executable(
     libc_enc 

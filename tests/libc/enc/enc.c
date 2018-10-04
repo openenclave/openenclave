@@ -86,10 +86,10 @@ done:
     return ret;
 }
 
+extern int run_tests(void);
+
 OE_ECALL void Test(void* args_)
 {
-    extern int run_tests(void);
-
     args_t* args = (args_t*)args_;
     args->ret = run_tests();
 }
