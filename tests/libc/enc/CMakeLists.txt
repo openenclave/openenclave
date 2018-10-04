@@ -3,17 +3,15 @@
 
 include(add_enclave_executable)
 
-include(tests.cmake)
+FILE(GLOB TESTS ${CMAKE_CURRENT_BINARY_DIR}/../tests/*.c)
 
 add_executable(
     libc_enc 
     enc.c
-    tests.c
     ../../../3rdparty/musl/libc-test/src/common/mtest.c
     ../../../3rdparty/musl/libc-test/src/common/rand.c
     ../../../3rdparty/musl/libc-test/src/functional/tls_align_dso.c
-    ${TESTS}
-    )
+    ${TESTS})
 
 target_compile_options(libc_enc PRIVATE 
     -Wno-error
@@ -28,6 +26,7 @@ target_compile_options(libc_enc PRIVATE
 
 target_include_directories(
     libc_enc PRIVATE
-    -I ../../../3rdparty/musl/libc-test/src/common)
+    ..
+    ../../../3rdparty/musl/libc-test/src/common)
 
 target_link_libraries(libc_enc oelibc oeenclave)

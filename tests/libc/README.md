@@ -1,8 +1,8 @@
 libc tests
 ==========
 
-This directory runs the MUSL libc unit tests. The **gentests.sh** script
-reads **tests.supported** and generates a wrapper for each of these tests.
+This directory runs the MUSL libc unit tests. It reads **tests.supported** and 
+generates a wrapper (in the build directory) for each of these tests.
 
 The unit tests are partitioned into three files:
 
@@ -13,12 +13,3 @@ The unit tests are partitioned into three files:
 
 Tests determined to be unsupportable should be moved from tests.broken to
 tests.unsupportable.
-
-After adding new tests to **tests.supported**, the test wrappers must be
-regenerated as follows.
-
-```
-./gentest.sh
-```
-
-If this creates any new files, they must be added to the Git repository.

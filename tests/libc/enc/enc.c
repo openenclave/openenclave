@@ -17,7 +17,6 @@
 #include <time.h>
 #include <stdbool.h>
 #include "mtest.h"
-#include "tests.h"
 
 int t_status = 0;
 
@@ -89,6 +88,8 @@ done:
 
 OE_ECALL void Test(void* args_)
 {
+    extern int run_tests(void);
+
     args_t* args = (args_t*)args_;
     args->ret = run_tests();
 }
