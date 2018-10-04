@@ -17,6 +17,17 @@
 *.vcxproj           text eol=crlf
 /CMakeSettings.json text eol=crlf
 
+# The 3rdparty dependencies are nested: the first folder contains our
+# build scripts, which we want these attributes to apply to, and the
+# second folder contains the actual upstream 3rdparty code, which we
+# want to exclude from these rules.
+/3rdparty/dlmalloc/dlmalloc/**  -text -eol
+/3rdparty/libcxx/libcxx/**      -text -eol
+/3rdparty/libcxxrt/libcxxrt/**  -text -eol
+/3rdparty/libunwind/libunwind** -text -eol
+/3rdparty/mbedtls/mbedtls/**    -text -eol
+/3rdparty/musl/musl/**          -text -eol
+
 # Make lists merge easily.
 /CHANGELOG.md          merge=union
 /.check-license.ignore merge=union
