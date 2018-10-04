@@ -26,7 +26,7 @@ oe_enclave_t* create_enclave(const char* enclavePath)
     oe_enclave_t* enclave = NULL;
 
     printf("Host: Loading enclave library %s\n", enclavePath);
-    oe_result_t result = oe_create_enclave(
+    oe_result_t result = oe_create_datasealing_enclave(
         enclavePath,
         OE_ENCLAVE_TYPE_SGX,
         OE_ENCLAVE_FLAG_DEBUG,

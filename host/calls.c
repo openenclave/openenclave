@@ -332,6 +332,53 @@ done:
 /*
 **==============================================================================
 **
+** _handle_call_host_function()
+**
+** Handle calls from the enclave.
+**
+**==============================================================================
+*/
+
+static void _handle_call_host_function(uint64_t arg, oe_enclave_t* enclave)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_call_host_function_args_t* args = (oe_call_host_function_args_t*)arg;
+    oe_ocall_func_t func = NULL;
+
+    if (!args)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    // Fetch matching function.
+    if (args->function_id >= enclave->num_ocalls)
+    {
+        result = OE_NOT_FOUND;
+        goto done;
+    }
+
+    func = enclave->ocalls[args->function_id];
+    if (func == NULL)
+    {
+        result = OE_NOT_FOUND;
+        goto done;
+    }
+
+    /* Invoke the function */
+    func(args->input_buffer);
+
+    result = OE_OK;
+
+done:
+
+    if (args)
+        args->result = result;
+}
+
+/*
+**==============================================================================
+**
 ** _handle_ocall()
 **
 **     Handle calls from the enclave (OCALL)
@@ -362,6 +409,10 @@ static oe_result_t _handle_ocall(
 
         case OE_OCALL_CALL_HOST_BY_ADDRESS:
             _handle_call_host_by_address(arg_in, enclave);
+            break;
+
+        case OE_OCALL_CALL_HOST_FUNCTION:
+            _handle_call_host_function(arg_in, enclave);
             break;
 
         case OE_OCALL_MALLOC:
@@ -745,6 +796,66 @@ oe_result_t oe_call_enclave(oe_enclave_t* enclave, const char* func, void* args)
 
     /* Check the result */
     OE_CHECK(call_enclave_args.result);
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+/*
+**==============================================================================
+**
+** oe_call_enclave_function()
+**
+** Call the enclave function specified by the given function-id.
+** Note: Currently only SGX style marshaling is supported. input_buffer contains
+** the marshaling args structure.
+**
+**==============================================================================
+*/
+
+oe_result_t oe_call_enclave_function(
+    oe_enclave_t* enclave,
+    uint32_t function_id,
+    void* input_buffer,
+    size_t input_buffer_size,
+    void* output_buffer,
+    size_t output_buffer_size,
+    size_t* output_bytes_written)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_call_enclave_function_args_t args;
+
+    /* Reject invalid parameters */
+    if (!enclave)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Initialize the call_enclave_args structure */
+    {
+        args.function_id = function_id;
+        args.input_buffer = input_buffer;
+        args.input_buffer_size = input_buffer_size;
+        args.output_buffer = output_buffer;
+        args.output_buffer_size = output_buffer_size;
+        args.result = OE_UNEXPECTED;
+    }
+
+    /* Perform the ECALL */
+    {
+        uint64_t arg_out = 0;
+
+        OE_CHECK(
+            oe_ecall(
+                enclave,
+                OE_ECALL_CALL_ENCLAVE_FUNCTION,
+                (uint64_t)&args,
+                &arg_out));
+        OE_CHECK(arg_out);
+    }
+
+    /* Check the result */
+    OE_CHECK(args.result);
 
     result = OE_OK;
 

@@ -11,6 +11,7 @@
   README.md file
 */
 
+#include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
@@ -76,3 +77,5 @@ OE_SET_ENCLAVE_SGX(
     1024, /* HeapPageCount */
     1024, /* StackPageCount */
     2);   /* TCSCount */
+
+OE_DEFINE_EMPTY_ECALL_TABLE();

@@ -6,7 +6,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
-#include "basic_t.c"
+#include "all_t.h"
 
 void test_basic_edl_ocalls()
 {

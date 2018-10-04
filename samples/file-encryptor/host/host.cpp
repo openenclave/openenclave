@@ -382,7 +382,7 @@ int main(int argc, const char* argv[])
     }
 
     cout << "Host: create enclave for image:" << argv[2] << endl;
-    result = oe_create_enclave(
+    result = oe_create_fileencryptor_enclave(
         argv[2], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
     if (result != OE_OK)
     {

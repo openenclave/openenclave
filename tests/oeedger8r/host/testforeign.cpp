@@ -6,7 +6,7 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/tests.h>
 #include <algorithm>
-#include "foreign_u.c"
+#include "all_u.h"
 
 template <typename F>
 static void test_ecall(oe_enclave_t* enclave, F f, size_t count)

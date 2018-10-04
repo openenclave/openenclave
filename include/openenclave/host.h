@@ -54,6 +54,11 @@ OE_EXTERNC_BEGIN
  */
 
 /**
+ * Type of each function in an ocall-table.
+ */
+typedef void (*oe_ocall_func_t)(void*);
+
+/**
  * Create an enclave from an enclave image file.
  *
  * This function creates an enclave from an enclave image file. On successful
@@ -88,6 +93,8 @@ oe_result_t oe_create_enclave(
     uint32_t flags,
     const void* config,
     uint32_t config_size,
+    const oe_ocall_func_t* ocall_table,
+    uint32_t ocall_table_size,
     oe_enclave_t** enclave);
 
 /**

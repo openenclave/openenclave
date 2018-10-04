@@ -28,8 +28,8 @@ static void _launch_enclave_success(const char* path, const uint32_t flags)
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
 
-    result =
-        oe_create_enclave(path, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
+    result = oe_create_enclave(
+        path, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, NULL, 0, &enclave);
 
     if (result != OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);
@@ -50,8 +50,8 @@ static void _launch_enclave_fail(
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
 
-    result =
-        oe_create_enclave(path, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
+    result = oe_create_enclave(
+        path, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, NULL, 0, &enclave);
 
     if (result == OE_OK)
         oe_terminate_enclave(enclave);
