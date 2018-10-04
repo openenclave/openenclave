@@ -15,6 +15,7 @@ trap 'trap_handler ${LINENO} $?' ERR
 
 builddir=$1
 mode=$2
+version=$3
 
 case $mode in 
     ssh)
@@ -26,12 +27,14 @@ case $mode in
     ;;
     
     *)
-        echo "Usage: $0 builddir [ ssh | https ]";
+        echo "Usage: $0 builddir [ ssh | https ] [release_version]";
         echo "  builddir:  Build directory for OpenEnclave repo"
         echo "  ssh:   Pushes doxygen generated docs to OpenEnclave's gh-pages"
         echo "         via ssh, requires ssh keys to be set up"
         echo "  https: Pushes doxygen generated docs to OpenEnclave's gh-pages"
         echo "         via https, prompts user for username and personal access token"
+        echo "  release_version is optional. If set, a new directory if created for the version in gh-pages."
+        echo "Example: $0 build ssh v0.4" 
         exit 1;
     ;;
 esac 
@@ -45,12 +48,47 @@ tmp=$(mktemp -d)
 
 branch=gh-pages
 
-cp -r "${root}/docs/refman/index.html" "${tmp}/"
+# Obtain a clone of gh-pages, so we preserve version subdirs
+case $mode in
+    ssh) 
+        git clone --single-branch -b gh-pages git@github.com:Microsoft/openenclave.git "$tmp/openenclave"
+    ;;
+    https)
+        git clone --single-branch -b gh-pages https://github.com/Microsoft/openenclave.git "$tmp/openenclave"
+    ;;
+    *)
+        echo "Unexpected"
+        exit 1;
+    ;;
+esac 
 
-cp -r docs/refman/html "${tmp}/api"
 
-cd "$tmp" || exit 1
+# Create a new directory openenclave2, we will do a git init here and push any files copied here to gh-pages
+mkdir "$tmp/openenclave2"
 
+cp -r "${root}/docs/refman/index.html" "$tmp/openenclave2"
+
+# Copy all old version subdirs named v* to openenclave2
+#if [ -d $tmp/openenclave/v* ]; then
+#  cp -r $tmp/openenclave/v* $tmp/openenclave2
+#fi
+# Copy all old version subdirs named V* to openenclave2
+if [ -d $tmp/openenclave/V* ]; then
+  cp -r $tmp/openenclave/V* $tmp/openenclave2
+fi  
+
+cd "$tmp/openenclave2"
+# Copy all current docs to current dir
+cp -r "${root}/${builddir}/docs/refman/html" current
+
+if [[ -z "${version// }" ]]; then
+    echo "version not set"; 
+else
+    # Copy over current docs to version
+    cp -r current  "$version"
+fi
+
+# Create a new repo with contents of directory openenclave2
 git init
 
 git checkout --orphan $branch
@@ -59,6 +97,8 @@ git add -A
 
 git commit -m "doc deploy"
 
+# Replace contents of gh-pages branch with contents of $tmp/openenclave2
+# no history is preserved
 case $mode in 
     ssh)
         git push -f git@github.com:Microsoft/openenclave.git $branch:$branch
@@ -73,3 +113,4 @@ case $mode in
 esac
 
 rm -rf "$tmp"
+
