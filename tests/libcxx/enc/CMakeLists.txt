@@ -39,6 +39,7 @@ function(add_libcxx_test_enc NAME CXXFILE)
         ${PROJECT_SOURCE_DIR}/3rdparty/libcxx/libcxx/test
         ${PROJECT_SOURCE_DIR}/3rdparty/libcxx/libcxx/test/support
         ${PROJECT_SOURCE_DIR}/3rdparty/libcxx/libcxx/fuzzing
+	${PROJECT_SOURCE_DIR}/3rdparty/libcxx/libcxx/src/filesystem
         )
 
     # Remove NDEBUG to enable the libcxx testsuite assertions in Release
