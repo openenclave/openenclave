@@ -46,8 +46,8 @@ files=$(cat "${input_tests}")
 
 tests_c=${output_directory}/tests.c
 
-rm -f ${tests_c}
-rm -f ${output_directory}/test_*.c
+rm -f "${tests_c}"
+rm -f "${output_directory}/test_*.c"
 
 ##==============================================================================
 ##
@@ -90,7 +90,7 @@ done
 ##==============================================================================
 
 
-cat >> ${tests_c} <<END
+cat >> "${tests_c}" <<END
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
@@ -107,14 +107,14 @@ for i in ${files}
 do
     name=$(get_test_name "${i}")
 
-cat >> ${tests_c} <<END
+cat >> "${tests_c}" <<END
     extern int ${name}(int argc, const char* argv[]);
     ret += run_test("${name}", ${name});
 END
 
 done
 
-cat >> ${tests_c} <<END
+cat >> "${tests_c}" <<END
     return ret;
 }
 END
