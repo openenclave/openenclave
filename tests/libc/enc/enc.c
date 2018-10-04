@@ -9,13 +9,13 @@
 #include <libgen.h>
 #include <search.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <string.h>
 #include <time.h>
-#include <stdbool.h>
 #include "mtest.h"
 
 int t_status = 0;
@@ -39,9 +39,7 @@ int t_setrlim(int r, int64_t lim)
     return 0;
 }
 
-int run_test(
-    const char* name,
-    int (*main)(int argc, const char* argv[]))
+int run_test(const char* name, int (*main)(int argc, const char* argv[]))
 {
     extern char** __environ;
     char** environ = NULL;
