@@ -37,18 +37,18 @@ static void test_ocall_array_fun(F ocall_array_fun)
     OE_TEST(ocall_array_fun(a1, a2, a3, a4) == OE_OK);
     {
         T exp[] = {4, 3, 2, 1};
-        OE_TEST(memcmp(exp, a2, sizeof(a2)) == 0);
+        OE_TEST(array_compare(exp, (T*)a2) == 0);
     }
 
     {
         T exp[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
-        OE_TEST(memcmp(exp, a3, sizeof(a3)) == 0);
+        OE_TEST(array_compare(exp, (T*)a3) == 0);
     }
     {
         // a4 cannot be modified by host.
         // expected value is original value.
         T exp[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
-        OE_TEST(memcmp(exp, a4, sizeof(a4)) == 0);
+        OE_TEST(array_compare(exp, (T*)a4) == 0);
     }
 
     // Call with nulls.
@@ -58,6 +58,7 @@ static void test_ocall_array_fun(F ocall_array_fun)
 void test_array_edl_ocalls()
 {
     test_ocall_array_fun<char>(ocall_array_char);
+    test_ocall_array_fun<wchar_t>(ocall_array_wchar_t);
     test_ocall_array_fun<short>(ocall_array_short);
     test_ocall_array_fun<int>(ocall_array_int);
     test_ocall_array_fun<float>(ocall_array_float);
@@ -73,6 +74,8 @@ void test_array_edl_ocalls()
     test_ocall_array_fun<uint16_t>(ocall_array_uint16_t);
     test_ocall_array_fun<uint32_t>(ocall_array_uint32_t);
     test_ocall_array_fun<uint64_t>(ocall_array_uint64_t);
+    test_ocall_array_fun<long long>(ocall_array_long_long);
+    test_ocall_array_fun<long double>(ocall_array_long_double);
 
     OE_TEST(ocall_array_assert_all_called() == OE_OK);
     printf("=== test_array_edl_ocalls passed\n");
@@ -104,7 +107,7 @@ static void ecall_array_fun_impl(T a1[2], T a2[2][2], T a3[3][3], T a4[4][4])
     {
         OE_TEST(oe_is_within_enclave(a2, sizeof(T) * 2 * 2));
         T exp[] = {1, 2, 3, 4};
-        OE_TEST(memcmp(exp, a2, sizeof(T) * 2 * 2) == 0);
+        OE_TEST(array_compare(exp, (T*)a2) == 0);
         reverse((T*)a2, 4);
     }
 
@@ -127,6 +130,15 @@ static void ecall_array_fun_impl(T a1[2], T a2[2][2], T a3[3][3], T a4[4][4])
 }
 
 void ecall_array_char(char a1[2], char a2[2][2], char a3[3][3], char a4[4][4])
+{
+    ecall_array_fun_impl(a1, a2, a3, a4);
+}
+
+void ecall_array_wchar_t(
+    wchar_t a1[2],
+    wchar_t a2[2][2],
+    wchar_t a3[3][3],
+    wchar_t a4[4][4])
 {
     ecall_array_fun_impl(a1, a2, a3, a4);
 }
@@ -258,9 +270,27 @@ void ecall_array_uint64_t(
     ecall_array_fun_impl(a1, a2, a3, a4);
 }
 
+void ecall_array_long_long(
+    long long a1[2],
+    long long a2[2][2],
+    long long a3[3][3],
+    long long a4[4][4])
+{
+    ecall_array_fun_impl(a1, a2, a3, a4);
+}
+
+void ecall_array_long_double(
+    long double a1[2],
+    long double a2[2][2],
+    long double a3[3][3],
+    long double a4[4][4])
+{
+    ecall_array_fun_impl(a1, a2, a3, a4);
+}
+
 void ecall_array_assert_all_called()
 {
-    // Each of the 16 functions above is called twice.
+    // Each of the 19 functions above is called twice.
     // Once with arrays and then with nulls.
-    OE_TEST(num_ecalls == 32);
+    OE_TEST(num_ecalls == 38);
 }

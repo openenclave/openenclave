@@ -65,7 +65,7 @@ before any release is finalized, a feedback solicitation period will happen. The
 release manager will open a GitHub issue announcing a Release Candidate (RC),
 with currently built and tested packages attached, and the suggested release
 notes in the description. The title should be "Release Candidate 1 for v0.4.0",
-which the candidate number and version updated as appropriate.
+with the candidate number and version updated as appropriate.
 
 We are starting with a waiting period of about one week (in addition to the week
 between the initial announcement / version bump and the release candidate), but
@@ -96,9 +96,9 @@ grievance has been discussed, and a fix or compromise was agreed upon.
 Servicing of Releases
 ---------------------
 
-We do not currently intend to service releases, especially before `v1.0.0`. That
-is, if a major bug is found, we'd prefer to just include the fix in the next
-release rather than attempt to backport. As this is pre-release software, our
-expectation is that users are happy to move forward with us as we develop the
-SDK. As we approach a stable release, we would like the community to help us
-decide how to provide release servicing.
+We do not currently intend to service releases before `v1.0.0`. That is, if a
+major bug is found, we will include the fix in the next release rather than
+attempt to backport. As this is pre-release software, our expectation is that
+users are happy to move forward with us as we develop the SDK. As we approach a
+stable release, we would like the community to help us decide how to provide
+release servicing.

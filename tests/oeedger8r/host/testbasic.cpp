@@ -14,7 +14,7 @@ void test_basic_edl_ecalls(oe_enclave_t* enclave)
         ecall_basic_types(
             enclave,
             '?',
-            // '\x3b1',
+            ohm,
             3,
             4,
             3.1415f,
@@ -29,12 +29,20 @@ void test_basic_edl_ecalls(oe_enclave_t* enclave)
             14,
             15,
             16,
-            17) == OE_OK);
+            17,
+            18,
+            19) == OE_OK);
 
     {
         char ret = 0;
         OE_TEST(ecall_ret_char(enclave, &ret) == OE_OK);
         OE_TEST(ret == '?');
+    }
+
+    {
+        wchar_t ret = 0;
+        OE_TEST(ecall_ret_wchar_t(enclave, &ret) == OE_OK);
+        OE_TEST(ret == ohm);
     }
 
     {
@@ -126,12 +134,25 @@ void test_basic_edl_ecalls(oe_enclave_t* enclave)
         OE_TEST(ecall_ret_uint64_t(enclave, &ret) == OE_OK);
         OE_TEST(ret == 171717);
     }
+
+    {
+        long long ret = 0;
+        OE_TEST(ecall_ret_long_long(enclave, &ret) == OE_OK);
+        OE_TEST(ret == 181818);
+    }
+
+    {
+        long double ret = 0;
+        OE_TEST(ecall_ret_long_double(enclave, &ret) == OE_OK);
+        OE_TEST(ret == 0.191919);
+    }
+
     printf("=== test_basic_edl_ecalls passed\n");
 }
 
 void ocall_basic_types(
     char arg1,
-    // wchar_t arg2,
+    wchar_t arg2,
     short arg3,
     int arg4,
     float arg5,
@@ -146,13 +167,15 @@ void ocall_basic_types(
     uint8_t arg14,
     uint16_t arg15,
     uint32_t arg16,
-    uint64_t arg17)
+    uint64_t arg17,
+    long long arg18,
+    long double arg19)
 {
     ecall_basic_types_args_t args;
 
     // Assert types of fields of the marshaling struct.
     check_type<char>(args.arg1);
-    // check_type<wchar_t>(args.arg2);
+    check_type<wchar_t>(args.arg2);
     check_type<short>(args.arg3);
     check_type<int>(args.arg4);
     check_type<int>(args.arg4);
@@ -169,9 +192,11 @@ void ocall_basic_types(
     check_type<uint16_t>(args.arg15);
     check_type<uint32_t>(args.arg16);
     check_type<uint64_t>(args.arg17);
+    check_type<long long>(args.arg18);
+    check_type<long double>(args.arg19);
 
     OE_TEST(arg1 == '?');
-    // OE_TEST(arg2 == '\x3b1');
+    OE_TEST(arg2 == ohm);
     OE_TEST(arg3 = 3);
     OE_TEST(arg4 = 4);
     OE_TEST(arg5 = 3.1415f);
@@ -187,12 +212,20 @@ void ocall_basic_types(
     OE_TEST(arg15 = 15);
     OE_TEST(arg16 = 16);
     OE_TEST(arg17 = 17);
+    OE_TEST(arg18 = 18);
+    OE_TEST(arg19 = 19);
 }
 
 char ocall_ret_char()
 {
     check_return_type<ocall_ret_char_args_t, char>();
     return '?';
+}
+
+wchar_t ocall_ret_wchar_t()
+{
+    check_return_type<ocall_ret_wchar_t_args_t, wchar_t>();
+    return ohm;
 }
 
 short ocall_ret_short()
@@ -283,4 +316,16 @@ uint64_t ocall_ret_uint64_t()
 {
     check_return_type<ocall_ret_uint64_t_args_t, uint64_t>();
     return 171717;
+}
+
+long long ocall_ret_long_long()
+{
+    check_return_type<ocall_ret_long_long_args_t, long long>();
+    return 181818;
+}
+
+long double ocall_ret_long_double()
+{
+    check_return_type<ocall_ret_long_double_args_t, long double>();
+    return 0.191919;
 }
