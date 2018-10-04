@@ -3,11 +3,11 @@
 
 - Written in C
 - Minimum code needed for an Open Enclave app
-- Helps understand the basic components an OE(Open Enclave) application
+- Helps understand the basic components of an Open Enclave (OE) application
 - Demonstrates how to build, sign, and run an OE image
 - Also runs in OE simulation mode
 
- Prerequisite: you may want to read [Common Sample Information](/docs/GettingStartedDocs/sampedocs/README.md#common-sample-information) before going further
+ Prerequisite: you may want to read [Common Sample Information](/docs/GettingStartedDocs/sampledocs/README.md#common-sample-information) before going further
 
 ## About the helloworld sample
 
@@ -51,7 +51,7 @@ void host_helloworld();
 
 The reverse is also true for functions defined in the untrusted host that the trusted enclave needs to call into. The untrusted host will implement this function and the `oeedger8r` tool generates some marshaling code in the enc directory with the same signature as the function in the host.
 
-To generate the functions with the marshaling code the `oeedger8r` is called in both the host and enc directories from their makefiles:
+To generate the functions with the marshaling code the `oeedger8r` is called in both the host and enc directories from their Makefiles:
 
 To generate the marshaling code the untrusted host uses to call into the trusted enclave the following command is run:
 
@@ -81,8 +81,8 @@ oeedger8r ../helloworld.edl --trusted
 
 The Makefile in the root of this sample directory has three rules
 
-- build: Calls into the makefiles in the host and enc directories to build
-- clean: Calls in to the makefiles in the host and enc directories to clean all generated files
+- build: Calls into the Makefiles in the host and enc directories to build
+- clean: Calls in to the Makefiles in the host and enc directories to clean all generated files
 - run: Runs the generated host executable, passing the signed enclave shared library as a parameter
 
 ```make
@@ -122,9 +122,9 @@ This section shows how to develop and build a simple enclave called helloworld.
   
 ### Develop an enclave
   
-An enclave exposes its functionality to the host application in the form of a set of trusted methods that are defined in the `helloworld.edl` file and implemented in within the enclave project.
+An enclave exposes its functionality to the host application in the form of a set of trusted methods that are defined in the `helloworld.edl` file and implemented within the enclave project.
 
-The helloworld sample implements a single function named `enclave_helloworld` which is called by the host. All it does is print out a message and then call back to host. No parameters are passed in this sample for simplicity.
+The helloworld sample implements a single function named `enclave_helloworld` which is called by the host. All it does is print out a message and then call back to the host. No parameters are passed in this sample for simplicity.
 
 The full source for the enclave implementation is here: [helloworld/enc/enc.c](/samples/helloworld/enc/enc.c)
 
@@ -163,9 +163,9 @@ Each line will now be described in turn.
 #include <stdio.h>
 ```
 
-An enclave library will be loaded into and run inside a host application which is a user-mode process. To keep the [Trusted computing base](https://en.wikipedia.org/wiki/Trusted_computing_base) small, the decision was made to make only a specific set of APIs available to an enclave library. A complete list of APIs available to an enclave library can be found [here](/docs/GettingStartedDocs/APIsAvaiableToEnclave.md#apis-available-to-an-enclave-library)
+An enclave library will be loaded into and run inside a host application which is a user-mode process. To keep the [Trusted computing base](https://en.wikipedia.org/wiki/Trusted_computing_base) small, only a specific set of APIs are available to an enclave library. A complete list of those APIs can be found [here](/docs/GettingStartedDocs/APIsAvailableToEnclave.md#apis-available-to-an-enclave-library)
   
-The `stdio.h` header file is included in this sample because we are calling the CRT function `fprintf` to print a message on the screen. However this function has a dependency on the kernel to print a message on the screen so this code cannot execute within the enclave itself. Instead this function marshals the call through to the host to carry out the call on the enclaves behalf. Only a subset of the CRT is made available through this open enclave library.
+The `stdio.h` header file is included in this sample because we are calling the CRT function `fprintf` to print a message on the screen. However this function has a dependency on the kernel to print a message on the screen so this code cannot execute within the enclave itself. Instead this function marshals the call through to the host to carry out the call on the enclave's behalf. Only a subset of the CRT is made available through this OE library.
 
  ```c
 void enclave_helloworld()
@@ -187,11 +187,11 @@ if (result != OE_OK)
 }
 ```
 
-This calls the marshaling function that is generated from the `helloworld.edl` file which in turn calls into the function within the host. Even though the `host_helloworld()` function is a `void` this call can still fail within the marshaling code itself and so we should always validate it. If `host_helloworld()` were to return a value itself it would be passed back as an out parameter to the function.
+This calls the marshaling function that is generated from the `helloworld.edl` file which in turn calls into the function within the host. Even though the `host_helloworld()` function is a `void` this call can still fail within the marshaling code itself and so we should always validate it. If `host_helloworld()` were to return a value, it would actually be passed back as an out parameter of the function.
 
 ### Build and sign an enclave
 
-As mentioned in [how-to-build-and-run-samples](/docs/GettingStartedDocs/sampedocs/README.md#how-to-build-and-run-samples), make files are provided for each sample. You can build the whole sample by running `make build` from the sample root, or you can build the enclave and host separately by running `make build` in each directory.
+As mentioned in [how-to-build-and-run-samples](/docs/GettingStartedDocs/sampledocs/README.md#how-to-build-and-run-samples), Makefiles are provided for each sample. You can build the whole sample by running `make build` from the sample root, or you can build the enclave and host separately by running `make build` in each directory.
 
 The following enclave files come with the sample:
 
@@ -219,7 +219,7 @@ Only the signed version of the enclave `helloworldenc.signed.so` is loadable on 
 
 #### Under the hood for the `make build` operation
 
-Here is a listing of key components in the helloworld/enc/Makefile. [complete listing](/samples/helloworld/enc/Makefile)
+Here is a listing of key components in the helloworld/enc/Makefile. Also see the [complete listing](/samples/helloworld/enc/Makefile).
 
 ```make
 OPENENCLAVE_CONFIG=../../config.mak
@@ -298,17 +298,17 @@ ProductID=1
 SecurityVersion=1
 ```
 
-These parameters are described in the [Getting started Build And Sign](/docs/GettingStartedDocs/sampledocs/buildandsign.md#signing-the-enclave) document.
+These parameters are described in the [Getting Started Build And Sign](/docs/GettingStartedDocs/sampledocs/buildandsign.md#signing-the-enclave) document.
 
 ## Host Application
 
-The host process is what drives the enclave app. It is responsible for managing the lifetime of the enclave and invoking enclave methods but should be considered an untrusted component that is never allowed to handle plaintext secrets intended for the enclave.
+The host process is what drives the enclave app. It is responsible for managing the lifetime of the enclave and invoking enclave methods, but should be considered an untrusted component that is never allowed to handle plaintext secrets intended for the enclave.
 
 In this section we will cover how to develop a host to load and run the helloworld enclave we built above.
 
 ### Develop a host
 
-There are relatively fewer restrictions on developing a host application compared to authoring an enclave. In general, you are free to link your choice of additional libraries into the host application. A part of a typical host application job is to manage the life cycle of an enclave. Open Enclave SDK provides [Enclave Host Runtime](/docs/GettingStartedDocs/APIsAvaiableToEnclave.md#enclave-host-library) for enclave management.
+There are relatively fewer restrictions on developing a host application compared to authoring an enclave. In general, you are free to link your choice of additional libraries into the host application. A part of a typical host application job is to manage the life cycle of an enclave. The Open Enclave SDK provides [Enclave Host Runtime](/docs/GettingStartedDocs/APIsAvaiableToEnclave.md#enclave-host-library) for enclave management.
 
 The full source for the host implementation is here: [helloworld/host/host.c](/samples/helloworld/host/host.c)
 
@@ -374,13 +374,13 @@ Each line will now be described in turn.
 #include <openenclave/host.h>
 ```
 
-Includes the header for the open enclave functions used in this file, including `oe_create_enclave` and `oe_terminate_enclave`.
+Includes the header for the Open Enclave functions used in this file, including `oe_create_enclave` and `oe_terminate_enclave`.
 
 ```c
 #include <stdio.h>
 ```
 
-Includes the standard CRT libraries. Unlike the enclave implementation that includes a special enclave version of the stdio library that marshals APIs to the host, the host is not protected and so uses all the normal C libraries and functions.
+Includes the standard CRT libraries. Unlike the enclave implementation, which includes a special enclave version of the stdio library that marshals APIs to the host, the host is not protected, so uses all the normal C libraries and functions.
 
 ```c
 void host_helloworld()
@@ -389,28 +389,33 @@ void host_helloworld()
 }
 ```
 
-This is the actual host function that the enclave calls in to. The function is defined in the `helloworld.edl` file and implemented here.
+This is the actual host function that the enclave calls into. The function is defined in the `helloworld.edl` file and implemented here.
 
 ```c
 int main(int argc, const char* argv[])
 ```
 
-The host is the application that creates and calls into the enclave so this host is a normal C executable with a standard `main` function.
+The host is the application that creates and calls into the enclave, so this host is a normal C executable with a standard `main` function.
 
 ```c
 result = oe_create_enclave(
     argv[1], OE_ENCLAVE_TYPE_SGX, OE_ENCLAVE_FLAG_DEBUG, NULL, 0, &enclave);
 ```
 
-This function sets up the enclave environment for the target enclave library including allocating resource, validating enclave library, creating enclave instance, and loading the enclave library.
+This function creates an enclave for use in the host process. This includes:
+- Allocating the enclave address space.
+- Loading the enclave code and data from its library file into that address space.
+- Setting up the enclave environment, including the enclave heap and data structures for each enclave thread.
+- Measuring the resulting enclave identity and ensuring it matches the enclave signature.
+- Initializing the enclave so that it is ready to be called from the host.
 
-The helloworld sample creates an enclave by calling `oe_create_enclave` with the path to the signed enclave library file which happens to be passed as the first parameter to the launching application. 
+The helloworld sample creates an enclave by calling `oe_create_enclave` with the path to the signed enclave library file, which happens to be passed as the first parameter to the launching application. 
 
-The OE_ENCLAVE_FLAG_DEBUG flag allows the enclave to be created without the enclave binary being signed. It also gives a developer permission to debug the process and get access to enclave memory. What this means is ** DO NOT SHIP CODE WITH THE OE_ENCLAVE_FLAG_DEBUG ** because it is unsecure. What it does give is the ability to develop your enclave more easily. Before you ship the code you need to have a proper code signing story for the enclave shared library. Some newer Intel SGX platforms allow self signed certificates to be used, but some of the older Intel SGX platforms require Intel to sign your library.
+The `OE_ENCLAVE_FLAG_DEBUG` flag allows the enclave to be created without the enclave binary being signed. It also gives a developer permission to debug the process and get access to enclave memory. What this means is ** DO NOT SHIP CODE WITH THE `OE_ENCLAVE_FLAG_DEBUG` ** because it is insecure. What it gives is the ability to develop your enclave more easily. Before you ship the code, you need to have a proper code signing story for the enclave shared library. Some newer Intel SGX platforms allow self-signed certificates to be used, but some of the older Intel SGX platforms require Intel to sign your library.
 
-On a successful creation it returns an opaque enclave handle for any future operation on the enclave
+On a successful creation, the function returns an opaque enclave handle for any future operation on the enclave.
 
-Note: - You can create multiple enclave instances this way if there is remaining enclave resource available. such as Enclave Page Cache (EPC).
+> You can create multiple enclave instances this way if there are remaining enclave resources available, such as the Enclave Page Cache (EPC).
 
 ```c
 result = enclave_helloworld(enclave);
@@ -421,7 +426,7 @@ if (result != OE_OK)
 }
 ```
 
-This function calls into the generated host marshaling function that is generated from the `helloworld.edl` file. It handles the code that marshals any parameters and calls the function within in the enclave itself. In this sample we do not have any actual function parameters. Even though `enclave_helloworld()` function itself is a `void` with no return valid, the marshaling code itself can fail so we need to validate the return code associated with this. If `enclave_helloworld()` were to return a value this would be passed back as an out parameter.
+This function calls into the host marshaling function that is generated from the `helloworld.edl` file. It handles the code that marshals any parameters, and calls the function within the enclave itself. In this sample, we do not have any actual function parameters. Even though the function `enclave_helloworld()` is a `void` return type, the marshaling code itself can fail, so we need to validate the return code associated with it. If `enclave_helloworld()` were to return a value, this would be passed back as an out parameter.
 
 The Open Enclave handles all the context switching between the host mode and the enclave mode.
 
@@ -429,7 +434,7 @@ The Open Enclave handles all the context switching between the host mode and the
 oe_terminate_enclave
 ```
 
-Terminates the enclave and frees up all associated resources associated with it.
+Terminates the enclave and frees up all resources associated with it.
 
 ### Build a host
 
@@ -505,7 +510,7 @@ The following files are generated during the build.
 You can run the helloworld sample directly on the command line as follows:
 
 ```bash
-host/helloworldhost ./enc/helloworldenc.signed.so
+./host/helloworldhost ./enc/helloworldenc.signed.so
 ```
 
 Or execute `make run` from the root of the sample:
@@ -521,5 +526,6 @@ helloworld sample can run under OE simulation mode.
 
 To run the helloworld sample in simulation mode from the command like, use the following:
 
-~/samples/helloworld$ host/helloworldhost ./enc/helloworldenc.signed.so --simulate
-
+```bash
+./host/helloworldhost ./enc/helloworldenc.signed.so --simulate
+```
