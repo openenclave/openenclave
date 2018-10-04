@@ -5,6 +5,7 @@
 - Minimum code needed for an Open Enclave app
 - Helps understand the basic components an OE(Open Enclave) application
 - Demonstrates how to build, sign, and run an OE image
+- Also runs in OE simulation mode
 
  Prerequisite: you may want to read [Common Sample Information](/docs/GettingStartedDocs/sampedocs/README.md#common-sample-information) before going further
 
@@ -403,7 +404,9 @@ result = oe_create_enclave(
 
 This function sets up the enclave environment for the target enclave library including allocating resource, validating enclave library, creating enclave instance, and loading the enclave library.
 
-The helloworld sample creates an enclave by calling `oe_create_enclave` with the path to the signed enclave library file which happens to be passed as the first parameter to the launching application. You can optionally specify OE_ENCLAVE_FLAG_DEBUG if you want to debug an enclave.
+The helloworld sample creates an enclave by calling `oe_create_enclave` with the path to the signed enclave library file which happens to be passed as the first parameter to the launching application. 
+
+The OE_ENCLAVE_FLAG_DEBUG flag allows the enclave to be created without the enclave binary being signed. It also gives a developer permission to debug the process and get access to enclave memory. What this means is ** DO NOT SHIP CODE WITH THE OE_ENCLAVE_FLAG_DEBUG ** because it is unsecure. What it does give is the ability to develop your enclave more easily. Before you ship the code you need to have a proper code signing story for the enclave shared library. Some newer Intel SGX platforms allow self signed certificates to be used, but some of the older Intel SGX platforms require Intel to sign your library.
 
 On a successful creation it returns an opaque enclave handle for any future operation on the enclave
 
@@ -465,8 +468,8 @@ define optlib
 $(patsubst /usr/lib/x86_64-linux-gnu/lib%.so,-l%,$(wildcard /usr/lib/x86_64-linux-gnu/lib$(1).so))
 endef
 LIBRARIES += $(call optlib,sgx_enclave_common)
-LIBRARIES += $(call optlib,sgx_ngsa_ql)
-LIBRARIES += $(call optlib,sgx_urts_ng)
+LIBRARIES += $(call optlib,sgx_dcap_ql)
+LIBRARIES += $(call optlib,sgx_urts)
 
 build:
     $(OE_BINDIR)/oeedger8r ../helloworld.edl --untrusted
@@ -513,3 +516,10 @@ host/helloworldhost ./enc/helloworldenc.signed.so
 Hello world from the enclave
 Enclave called into host to print: Hello World!
 ```
+
+helloworld sample can run under OE simulation mode.
+
+To run the helloworld sample in simulation mode from the command like, use the following:
+
+~/samples/helloworld$ host/helloworldhost ./enc/helloworldenc.signed.so --simulate
+

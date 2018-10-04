@@ -8,6 +8,10 @@ install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/remote_attestation
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
     )
 
+# Install the local_attestation sample.
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/local_attestation
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
+    )
 
 endif()
 
@@ -18,6 +22,11 @@ install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/helloworld
 
 # Install the file-encryptor sample
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/file-encryptor
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
+    )
+
+# Install the data-sealing sample
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/data-sealing
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
     )
 

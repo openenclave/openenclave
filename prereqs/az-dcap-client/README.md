@@ -1,8 +1,8 @@
-azquotprov
-==========
+az-dcap-client
+==============
 
-This directory contains an optional Makefile to install the Azure quote provider
-package. The quote provider is necessary for performing remote attestation in
+This directory contains an optional Makefile to install the Azure DCAP client
+package. The DCAP client is necessary for performing remote attestation in
 Open Enclave apps running in the Azure environment.
 
 You can download and install the package with:

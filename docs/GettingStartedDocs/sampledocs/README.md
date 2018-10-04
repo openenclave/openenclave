@@ -68,5 +68,9 @@ binaries.
 
 #### [File-Encryptor](/samples/file-encryptor/README.md)
 
+#### [Data-Sealing](/samples/data-sealing/README.md)
+
 #### [Remote Attestation](/samples/remote_attestation/README.md)
+
+#### [Local Attestation](/samples/local_attestation/README.md)
 

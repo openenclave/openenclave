@@ -8,7 +8,8 @@
 cmake_minimum_required(VERSION 3.5.1 FATAL_ERROR)
 
 # Read version from "VERSION" file.
-file(STRINGS "VERSION" OE_VERSION)
+file(STRINGS "VERSION" OE_VERSION_WITH_V)
+string(REGEX REPLACE "^v" "" OE_VERSION ${OE_VERSION_WITH_V})
 
 # Select the assembler
 # TODO: See #755: This should probably be removed

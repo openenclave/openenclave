@@ -15,9 +15,9 @@
 #include <Windows.h>
 #endif
 
-#include <openenclave/host.h>
-
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
+#include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/report.h>
@@ -243,7 +243,7 @@ static char** _backtrace_symbols(
             name = unknown;
 
         size_t name_size = strlen(name) + sizeof(char);
-        memcpy(ptr, name, name_size);
+        oe_memcpy_s(ptr, name_size, name, name_size);
         ret[i] = ptr;
         ptr += name_size;
     }

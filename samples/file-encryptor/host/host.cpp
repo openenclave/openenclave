@@ -13,7 +13,7 @@
 #include <iostream>
 #include <iterator>
 #include <vector>
-#include "../args.h"
+#include "../shared.h"
 
 #include "fileencryptor_u.h"
 
@@ -25,6 +25,21 @@ using namespace std;
 #define DECRYPT_OPERATION false
 
 oe_enclave_t* enclave = NULL;
+
+bool check_simulate_opt(int* argc, const char* argv[])
+{
+    for (int i = 0; i < *argc; i++)
+    {
+        if (strcmp(argv[i], "--simulate") == 0)
+        {
+            cout << "Running in simulation mode" << endl;
+            memmove(&argv[i], &argv[i + 1], (*argc - i) * sizeof(char*));
+            (*argc)--;
+            return true;
+        }
+    }
+    return false;
+}
 
 // Dump Encryption header
 void dump_header(encryption_header_t* _header)
@@ -380,18 +395,24 @@ int main(int argc, const char* argv[])
     const char* input_file = argv[1];
     const char* encrypted_file = "./out.encrypted";
     const char* decrypted_file = "./out.decrypted";
+    uint32_t flags = OE_ENCLAVE_FLAG_DEBUG;
+
+    if (check_simulate_opt(&argc, argv))
+    {
+        flags |= OE_ENCLAVE_FLAG_SIMULATE;
+    }
 
     cout << "Host: enter main" << endl;
     if (argc != 3)
     {
-        cerr << "Usage: " << argv[0] << " source_file_name ENCLAVE_PATH"
-             << endl;
+        cerr << "Usage: " << argv[0]
+             << " testfile enclave_image_path [ --simulate  ]" << endl;
         return 1;
     }
 
     cout << "Host: create enclave for image:" << argv[2] << endl;
     result = oe_create_enclave(
-        argv[2], OE_ENCLAVE_TYPE_SGX, OE_ENCLAVE_FLAG_DEBUG, NULL, 0, &enclave);
+        argv[2], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
     if (result != OE_OK)
     {
         cerr << "oe_create_enclave() failed with " << argv[0] << " " << result

@@ -11,3 +11,7 @@ clean:
 
 run:
 	host/helloworldhost ./enc/helloworldenc.signed.so
+
+simulate:
+	host/helloworldhost ./enc/helloworldenc.signed.so --simulate
+

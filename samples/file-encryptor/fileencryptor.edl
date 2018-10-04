@@ -3,7 +3,7 @@
 
 enclave {
 
-    include "../args.h"
+    include "../shared.h"
 
     trusted {
         public int initialize_encryptor( bool encrypt, 
@@ -12,8 +12,8 @@ enclave {
                                         [in, out] encryption_header_t *header); 
         
         public int encrypt_block(bool encrypt, 
-                                        [in, count=size] unsigned char* inputbuf, 
-                                        [out, count=size] unsigned char* outputbuf, 
+                                        [in, count=size] unsigned char* input_buf, 
+                                        [out, count=size] unsigned char* output_buf, 
                                         size_t size);
 
         public void close_encryptor();

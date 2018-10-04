@@ -29,7 +29,7 @@ sudo ./scripts/install-prereqs
 There are two Intel packages needed for SGX1-FLC:
 
 - Intel(R) SGX driver with FLC support
-- Intel(R) NGSA SDK
+- Intel(R) SGX DCAP SDK
 
 To install these prerequisites type the following commands from the root of
 the source distribution.
@@ -54,6 +54,15 @@ Then run `cmake` to configure the build and generate the make files and build:
 cmake .. -DUSE_LIBSGX=1
 make
 ```
+
+If you are running in an Azure Confidential Compute VM and would like to use the attestation features, you should also run the following command from the root of the source tree:
+
+```bash
+sudo make -C prereqs/az-dcap-client
+sudo make -C prereqs/az-dcap-client install
+```
+
+Open Enclave will support attestation workflows outside of Azure using DCAP in an upcoming release.
 
 Refer to the [Advanced Build Information](advancedBuildInfo.md) documentation for further information.
 
@@ -97,4 +106,4 @@ For more information refer to the [Advanced Test Info](AdvancedTestInfo.md) docu
 
 ## Install
 
- Follow the instructions in the [Install Info](InstallInfo.md) document to install the Open Enclave SDK built above.
+Follow the instructions in the [Install Info](InstallInfo.md) document to install the Open Enclave SDK built above.

@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-AZQUOTPROV=azquotprov_0.3-1_amd64.deb
+AZ_DCAP_PKG=az-dcap-client_1.0_amd64.deb
 
 all: getdist
 
@@ -10,7 +10,7 @@ getdist:
 	$(MAKE) get-quote-provider
 
 distclean:
-	- rm -f $(AZQUOTPROV)
+	- rm -f $(AZ_DCAP_PKG)
 
 build:
 
@@ -18,10 +18,10 @@ clean:
 
 install:
 	$(MAKE) -s uninstall
-	dpkg -i $(AZQUOTPROV)
+	dpkg -i $(AZ_DCAP_PKG)
 
 uninstall:
-	- dpkg -P azquotprov
+	- dpkg -P az-dcap-client
 
 ##==============================================================================
 ##
@@ -31,8 +31,8 @@ uninstall:
 
 get-quote-provider:
 ifdef USE_PKGS_IN
-	cp $(USE_PKGS_IN)/$(AZQUOTPROV) .
+	cp $(USE_PKGS_IN)/$(AZ_DCAP_PKG) .
 else
 	@ apt-get -y install wget
-	@ wget http://10.31.100.105/$(AZQUOTPROV)
+	@ wget https://packages.microsoft.com/repos/microsoft-ubuntu-xenial-prod/pool/main/a/az-dcap-client/$(AZ_DCAP_PKG)
 endif

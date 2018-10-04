@@ -81,7 +81,7 @@ static void test_ocall_pointer_fun(F ocall_pointer_fun)
 
         // p5 is reversed.
         T exp[] = {16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
-        OE_TEST(memcmp(exp, p5, sizeof(exp)) == 0);
+        OE_TEST(array_compare(exp, p5) == 0);
 
         // p6 is initialized
         for (size_t i = 0; i < 16; ++i)
@@ -164,6 +164,7 @@ static void test_ocall_pointer_fun(F ocall_pointer_fun)
 void test_pointer_edl_ocalls()
 {
     test_ocall_pointer_fun<char>(ocall_pointer_char);
+    test_ocall_pointer_fun<wchar_t>(ocall_pointer_wchar_t);
     test_ocall_pointer_fun<short>(ocall_pointer_short);
     test_ocall_pointer_fun<int>(ocall_pointer_int);
     test_ocall_pointer_fun<float>(ocall_pointer_float);
@@ -179,6 +180,8 @@ void test_pointer_edl_ocalls()
     test_ocall_pointer_fun<uint16_t>(ocall_pointer_uint16_t);
     test_ocall_pointer_fun<uint32_t>(ocall_pointer_uint32_t);
     test_ocall_pointer_fun<uint64_t>(ocall_pointer_uint64_t);
+    test_ocall_pointer_fun<long long>(ocall_pointer_long_long);
+    test_ocall_pointer_fun<long double>(ocall_pointer_long_double);
 
     OE_TEST(ocall_pointer_assert_all_called() == OE_OK);
     printf("=== test_pointer_edl_ocalls passed\n");
@@ -277,7 +280,7 @@ static T* ecall_pointer_fun_impl(
 
     // size specified as 80 (lcm of sizeof(double), sizeof(long))
     {
-        size_t count = 80 / sizeof(T);
+        const size_t count = 80 / sizeof(T);
         T exp[count];
         for (size_t i = 0; i < count; ++i)
             exp[i] = i + 1;
@@ -286,7 +289,7 @@ static T* ecall_pointer_fun_impl(
         if (p7)
         {
             OE_TEST(oe_is_within_enclave(p7, 80));
-            OE_TEST(memcmp(p7, exp, 80) == 0);
+            OE_TEST(array_compare(exp, p7) == 0);
 
             // change p7. Should not have any effect on host.
             memset(p7, 0, 80);
@@ -296,7 +299,7 @@ static T* ecall_pointer_fun_impl(
         if (p8)
         {
             OE_TEST(oe_is_within_enclave(p8, 80));
-            OE_TEST(memcmp(p8, exp, 80) == 0);
+            OE_TEST(array_compare(exp, p8) == 0);
             reverse(p8, count);
         }
 
@@ -397,6 +400,47 @@ char* ecall_pointer_char(
     char* p14,
     char* p15,
     char* p16,
+    int pcount,
+    int psize)
+{
+    return ecall_pointer_fun_impl(
+        p1,
+        p2,
+        p3,
+        p4,
+        p5,
+        p6,
+        p7,
+        p8,
+        p9,
+        p10,
+        p11,
+        p12,
+        p13,
+        p14,
+        p15,
+        p16,
+        pcount,
+        psize);
+}
+
+wchar_t* ecall_pointer_wchar_t(
+    wchar_t* p1,
+    wchar_t* p2,
+    wchar_t* p3,
+    wchar_t* p4,
+    wchar_t* p5,
+    wchar_t* p6,
+    wchar_t* p7,
+    wchar_t* p8,
+    wchar_t* p9,
+    wchar_t* p10,
+    wchar_t* p11,
+    wchar_t* p12,
+    wchar_t* p13,
+    wchar_t* p14,
+    wchar_t* p15,
+    wchar_t* p16,
     int pcount,
     int psize)
 {
@@ -1036,12 +1080,94 @@ uint64_t* ecall_pointer_uint64_t(
         psize);
 }
 
+long long* ecall_pointer_long_long(
+    long long* p1,
+    long long* p2,
+    long long* p3,
+    long long* p4,
+    long long* p5,
+    long long* p6,
+    long long* p7,
+    long long* p8,
+    long long* p9,
+    long long* p10,
+    long long* p11,
+    long long* p12,
+    long long* p13,
+    long long* p14,
+    long long* p15,
+    long long* p16,
+    int pcount,
+    int psize)
+{
+    return ecall_pointer_fun_impl(
+        p1,
+        p2,
+        p3,
+        p4,
+        p5,
+        p6,
+        p7,
+        p8,
+        p9,
+        p10,
+        p11,
+        p12,
+        p13,
+        p14,
+        p15,
+        p16,
+        pcount,
+        psize);
+}
+
+long double* ecall_pointer_long_double(
+    long double* p1,
+    long double* p2,
+    long double* p3,
+    long double* p4,
+    long double* p5,
+    long double* p6,
+    long double* p7,
+    long double* p8,
+    long double* p9,
+    long double* p10,
+    long double* p11,
+    long double* p12,
+    long double* p13,
+    long double* p14,
+    long double* p15,
+    long double* p16,
+    int pcount,
+    int psize)
+{
+    return ecall_pointer_fun_impl(
+        p1,
+        p2,
+        p3,
+        p4,
+        p5,
+        p6,
+        p7,
+        p8,
+        p9,
+        p10,
+        p11,
+        p12,
+        p13,
+        p14,
+        p15,
+        p16,
+        pcount,
+        psize);
+}
+
 void ecall_pointer_assert_all_called()
 {
-    // Each of the 16 functions above is called twice.
+    // Each of the 19 functions above is called twice.
     // Once with arrays and then with nulls.
-    OE_TEST(num_ecalls == 32);
-    OE_TEST(num_null_ecalls == 16);
+    OE_TEST(num_ecalls == 38);
+    OE_TEST(num_null_ecalls == 19);
 }
 
 // The following functions exists to make sure there are no
@@ -1064,6 +1190,9 @@ void ecall_count_attribute_all_types(
     int* b14,
     int* b15,
     int* b16,
+    int* b17,
+    int* b18,
+    int* b19,
     char char_count,
     short short_count,
     int int_count,
@@ -1079,7 +1208,10 @@ void ecall_count_attribute_all_types(
     uint8_t uint8_t_count,
     uint16_t uint16_t_count,
     uint32_t uint32_t_count,
-    uint64_t uint64_t_count)
+    uint64_t uint64_t_count,
+    wchar_t wchar_t_count,
+    long long long_long_count,
+    long double long_double_count)
 {
 }
 
@@ -1100,6 +1232,9 @@ void ecall_size_attribute_all_types(
     int* b14,
     int* b15,
     int* b16,
+    int* b17,
+    int* b18,
+    int* b19,
     char char_size,
     short short_size,
     int int_size,
@@ -1115,6 +1250,9 @@ void ecall_size_attribute_all_types(
     uint8_t uint8_t_size,
     uint16_t uint16_t_size,
     uint32_t uint32_t_size,
-    uint64_t uint64_t_size)
+    uint64_t uint64_t_size,
+    wchar_t wchar_t_size,
+    long long long_long_size,
+    long double long_double_size)
 {
 }

@@ -2,7 +2,9 @@
 // Licensed under the MIT License.
 
 #include "key.h"
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/utils.h>
 #include <openssl/bio.h>
 #include <openssl/evp.h>
 #include <openssl/pem.h>
@@ -53,7 +55,7 @@ oe_result_t oe_private_key_read_pem(
 
     /* Initialize the key output parameter */
     if (impl)
-        memset(impl, 0, sizeof(*impl));
+        oe_secure_zero_fill(impl, sizeof(oe_private_key_t));
 
     /* Check parameters */
     if (!pem_data || pem_size == 0 || !impl)
@@ -110,7 +112,7 @@ oe_result_t oe_public_key_read_pem(
 
     /* Zero-initialize the key */
     if (impl)
-        memset(impl, 0, sizeof(*impl));
+        oe_secure_zero_fill(impl, sizeof(oe_public_key_t));
 
     /* Check parameters */
     if (!pem_data || pem_size == 0 || !impl)
@@ -199,7 +201,7 @@ oe_result_t oe_private_key_write_pem(
         }
 
         /* Copy result to output buffer */
-        memcpy(data, mem->data, mem->length);
+        OE_CHECK(oe_memcpy_s(data, *size, mem->data, mem->length));
         *size = mem->length;
     }
 
@@ -259,7 +261,7 @@ oe_result_t oe_public_key_write_pem(
         }
 
         /* Copy result to output buffer */
-        memcpy(data, mem->data, mem->length);
+        OE_CHECK(oe_memcpy_s(data, *size, mem->data, mem->length));
         *size = mem->length;
     }
 
@@ -290,7 +292,7 @@ oe_result_t oe_private_key_free(oe_private_key_t* key, uint64_t magic)
 
         /* Clear the fields of the implementation */
         if (impl)
-            memset(impl, 0, sizeof(*impl));
+            oe_secure_zero_fill(impl, sizeof(oe_private_key_t));
     }
 
     result = OE_OK;
@@ -316,7 +318,7 @@ oe_result_t oe_public_key_free(oe_public_key_t* key, uint64_t magic)
 
         /* Clear the fields of the implementation */
         if (impl)
-            memset(impl, 0, sizeof(*impl));
+            oe_secure_zero_fill(impl, sizeof(oe_public_key_t));
     }
 
     result = OE_OK;

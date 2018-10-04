@@ -50,11 +50,11 @@ bool Attestation::generate_remote_report(
         remote_report_buf_size);
     if (result != OE_OK)
     {
-        ENC_DEBUG_PRINTF("oe_get_report failed.");
+        TRACE_ENCLAVE("oe_get_report failed.");
         goto exit;
     }
     ret = true;
-    ENC_DEBUG_PRINTF("generate_remote_report succeeded.");
+    TRACE_ENCLAVE("generate_remote_report succeeded.");
 exit:
     return ret;
 }
@@ -87,7 +87,7 @@ bool Attestation::attest_remote_report(
     // with. Ensure that it has been copied over to the enclave.
     if (!oe_is_within_enclave(remote_report, remote_report_size))
     {
-        ENC_DEBUG_PRINTF("Cannot attest remote report in host memory. Unsafe.");
+        TRACE_ENCLAVE("Cannot attest remote report in host memory. Unsafe.");
         goto exit;
     }
 
@@ -97,8 +97,7 @@ bool Attestation::attest_remote_report(
         oe_verify_report(remote_report, remote_report_size, &parsed_report);
     if (result != OE_OK)
     {
-        ENC_DEBUG_PRINTF(
-            "oe_verify_report failed (%s).\n", oe_result_str(result));
+        TRACE_ENCLAVE("oe_verify_report failed (%s).\n", oe_result_str(result));
         goto exit;
     }
 
@@ -107,28 +106,28 @@ bool Attestation::attest_remote_report(
     // signed by an trusted entity.
     if (memcmp(parsed_report.identity.signer_id, m_enclave_mrsigner, 32) != 0)
     {
-        ENC_DEBUG_PRINTF("identity.signer_id checking failed.");
-        ENC_DEBUG_PRINTF(
+        TRACE_ENCLAVE("identity.signer_id checking failed.");
+        TRACE_ENCLAVE(
             "identity.signer_id %s", parsed_report.identity.signer_id);
 
         for (int i = 0; i < 32; i++)
         {
-            ENC_DEBUG_PRINTF(
+            TRACE_ENCLAVE(
                 "m_enclave_mrsigner[%d]=0x%0x\n",
                 i,
                 (uint8_t)m_enclave_mrsigner[i]);
         }
 
-        ENC_DEBUG_PRINTF("\n\n\n");
+        TRACE_ENCLAVE("\n\n\n");
 
         for (int i = 0; i < 32; i++)
         {
-            ENC_DEBUG_PRINTF(
+            TRACE_ENCLAVE(
                 "parsedReport.identity.signer_id)[%d]=0x%0x\n",
                 i,
                 (uint8_t)parsed_report.identity.signer_id[i]);
         }
-        ENC_DEBUG_PRINTF("m_enclave_mrsigner %s", m_enclave_mrsigner);
+        TRACE_ENCLAVE("m_enclave_mrsigner %s", m_enclave_mrsigner);
         goto exit;
     }
 
@@ -136,13 +135,13 @@ bool Attestation::attest_remote_report(
     // See enc.conf for values specified when signing the enclave.
     if (parsed_report.identity.product_id[0] != 1)
     {
-        ENC_DEBUG_PRINTF("identity.product_id checking failed.");
+        TRACE_ENCLAVE("identity.product_id checking failed.");
         goto exit;
     }
 
     if (parsed_report.identity.security_version < 1)
     {
-        ENC_DEBUG_PRINTF("identity.security_version checking failed.");
+        TRACE_ENCLAVE("identity.security_version checking failed.");
         goto exit;
     }
 
@@ -155,11 +154,11 @@ bool Attestation::attest_remote_report(
 
     if (memcmp(parsed_report.report_data, sha256, sizeof(sha256)) != 0)
     {
-        ENC_DEBUG_PRINTF("SHA256 mismatch.");
+        TRACE_ENCLAVE("SHA256 mismatch.");
         goto exit;
     }
     ret = true;
-    ENC_DEBUG_PRINTF("remote attestation succeeded.");
+    TRACE_ENCLAVE("remote attestation succeeded.");
 exit:
     return ret;
 }

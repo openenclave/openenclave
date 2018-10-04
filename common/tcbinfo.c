@@ -1,9 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 #include "tcbinfo.h"
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/trace.h>
+#include <openenclave/internal/utils.h>
 #include "common.h"
 
 #ifdef OE_USE_LIBSGX
@@ -197,14 +199,18 @@ static bool _json_str_equal(
            (memcmp(str1, str2, str2_length) == 0);
 }
 
-static void _trace_json_string(const uint8_t* str, size_t str_length)
+static oe_result_t _trace_json_string(const uint8_t* str, size_t str_length)
 {
+    oe_result_t result = OE_OK;
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
     char buffer[str_length + 1];
-    memcpy(buffer, str, str_length);
+    OE_CHECK(oe_memcpy_s(buffer, sizeof(buffer), str, str_length));
     buffer[str_length] = 0;
     OE_TRACE_INFO("value = %s\n", buffer);
+
+done:
 #endif
+    return result;
 }
 
 /**
@@ -337,7 +343,7 @@ static oe_result_t _read_tcb_level(
     OE_TRACE_INFO("Reading status\n");
     OE_CHECK(_read_property_name_and_colon("status", itr, end));
     OE_CHECK(_read_string(itr, end, &status, &status_length));
-    _trace_json_string(status, status_length);
+    OE_CHECK(_trace_json_string(status, status_length));
 
     OE_CHECK(_read('}', itr, end));
 

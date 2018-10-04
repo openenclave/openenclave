@@ -90,6 +90,6 @@ There are relatively fewer restrictions on building a host app compared to build
 - Include path: /opt/openenclave/include 
 - Link library path: /opt/openenclave/lib/openenclave/host
 - Linker option: -rdynamic
-- Link libraries: -loehost -lcrypto -lpthread -ldl -lsgx_enclave_common -lsgxoeql -lsgx_urts_ng
+- Link libraries: -loehost -lcrypto -lpthread -ldl -lsgx_enclave_common -lsgx_dcap_ql -lsgx_urts
 
 As with building an enclave, the /opt/openenclave/share/openenclave/config.mak provides an example of default path constants to use when working with Open Enclave projects.
