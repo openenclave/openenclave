@@ -2368,7 +2368,6 @@
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/new_array.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/new_array_replace.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array14.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array_calls_unsized_delete_array.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array_fsizeddeallocation.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.dataraces/not_testable.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.placement/new_array.pass.cpp
