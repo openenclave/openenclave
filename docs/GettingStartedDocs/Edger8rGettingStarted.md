@@ -1,7 +1,8 @@
 # Getting started with the Open Enclave edger8r
 
-Calling into and out of enclaves is done through special methods that switch into and out of the enclave protection, along with the marshaling of parameters that are passed into these functions.
+Calling into and out of enclaves is done through special methods that switch into and out of the enclave, along with the marshaling of parameters that are passed into these functions.
 A lot of the code necessary to handle these calls and parameter marshaling are common to all function calls.
+Marshaling parameters from the host to the enclave for security purposed, and in doing so also helps to mitigate certain processor vulnerabilities (like spectre).
 The Open Enclave edger8r helps to define these special functions through the use of `edl` files and then generates boilerplate code for you.
 
 This document explains the following concepts:
@@ -9,13 +10,20 @@ This document explains the following concepts:
 - Define secure functions in the `edl` that an unsecure application host can call into.
 - Define unsecure functions in the `edl` that a secure enclave can call into.
 - Generate the marshaling code and header files from the `edl` file using the `oeedger8r` tool.
-- Describes how to write method parameters in the `edl` file and talks about various things to consider while deciding how to pass parameters
+- Define method parameters in the `edl` file and talks about various things to consider while deciding how to pass parameters
 
-It is important to make a note about what memory can be accessed from where, and how this may be different between different architectures. On Intel SGX the enclave can directly access unsecure memory allocated in the unsecure host along with the memory owned by the enclave. ARM TrustedHost on the other hand you can only access secure memory within the secure enclave. Marshaling parameters does have a performance hit, but if you want to work across platform architectures it is important to be consistent.
+It is important to make a note about what memory can be accessed from where, and how this may be different between different architectures. On Intel SGX the enclave can directly access unsecure memory allocated in the unsecure host along with the memory owned by the enclave. On ARM TrustZone on the other hand you can only access secure memory within the secure enclave. Marshaling parameters does have a performance hit, but if you want to work across platform architectures it is important to be consistent.
 
 ## The edger8r
 
-The `edger8r` tool in open enclave is based on the `edger8r` tool in the Intel SGX SDK. The format of the `edl` file is the same as that defined in their SDK. Our tool uses their `edl` file parser and our tool then outputs files based on our own open enclave SDK functions and parameter marshaling code.
+The Open Enclave `oeedger8r` tool is based on the `edger8r` tool in Intel's SGX SDK edger8r. The format of the `edl` file is the same as that defined in their SDK. Our `oeedger8r` tool uses Intel's `edl` file parser and our tool then outputs files based on our own open enclave SDK functions and parameter marshaling code. `edl` stands for Enclave Definition Language. The full Intel `edl` syntax is defined on the [Intel SDX EDL syntax reference](https://software.intel.com/en-us/sgx-sdk-dev-reference-enclave-definition-language-file-syntax).
+Note, however, that Open Enclave does not support the full syntax that Intel defines and will emit an error if an unsupported feature is used. Items not currently supported include:
+
+- `private` specified on methods is not allowed, only `public`.
+- switchless calls from host to enclave, and enclave to host are not supported.
+- Calling conventions (like cdecl, stdcall, fastcall) for enclave functions called from host are not supported.
+- Reentrant calls are not supported and the allow list is ignored, emitting a warning.
+- wchar_t parameters emit a warning because the sizes vary between platforms which could cause problems if the data is sent from one machine to another.
 
 ## Some basics
 
@@ -237,13 +245,14 @@ enclave  {
             uint8_t arg13,
             uint16_t arg14,
             uint32_t arg15,
-            uint64_t arg16
+            uint64_t arg16,
+            wchar_t arg17
         );
     };
 };
 ```
 
-Note that `wchar_t` is not supported since it has different sizes on Linux and Windows.
+Note that `wchar_t` parameters are different sizes on Windows and Linux platforms, namely on Windows they are 2 bytes and on Linux by default they are 4 bytes. If you use this type the `oeedger8r` will emit a warning. This is not a problem if you are just keeping the data on the local platform, but if you are planning on packaging up a `wchar_t` data type and forwarding it to another platform you may run into unexpected problems due to the size differences.
 
 In the above example enclave_basic_types passes one of each basic type as a parameter. Nothing too complicated here. Note that these types can also be the return type.
 
@@ -303,7 +312,7 @@ enclave  {
 };
 ```
 
-Because the marshaling code is marshaling the value in and out of the enclave do not pass the same pointer to multiple threads and expect them all to share the same memory location. They won't. If you were to run an atomic increment on the pointer in the enclave, that atomic operation will not be done on the memory in the host address space so multiple threads accessing this can cause unreliable results.
+The marshaling of parameters into the enclave will allocate memory in the enclave and, if it is an `in` parameter, will copy your version of the data into it. This means that if you call into multiple enclave functions at the same time, as in from multiple threads, with the same pointer you are going to get confusing results and the last function to return will probably win by copying its own private copy back to the host,
 
 Pointer marshaling  is assuming you are only pointing to a single item and not an array. If you want a pointer to a buffer bigger, read on!
 
@@ -375,7 +384,7 @@ enclave  {
 
 In this case it knows it is a null terminated string as a result of the `[string]` specifier so the marshaling code can calculate the length on your behalf.
 
-!!! TODO !!! What the heck does [string, out] actually mean, or [string, in, out]? Does the string need to be the same or shorter than the string passed in? I am guessing so!.
+`[string, out]` is not supported in `edl`. On top of that `[sting, in, out]` is not encouraged because it is confusing and is equivalent of having a fixed length buffer the size of the initial `in` buffer so it cannot be grown in length.
 
 So how do we deal with sending a variable length string back to the caller? We will be handling returning variable length buffers in a later section with the `[user_check]` definition.
 
@@ -427,7 +436,7 @@ enclave  {
 };
 ```
 
-Unfortunately we cannot get much more complicated with structures than this. We **CANNOT** for instance define the following structures within `edl` because of the pointer:
+Unfortunately we cannot get much more complicated with structures than this. For instance define the following structures within `edl` because of the pointer is not recommended:
 
 ```c
 struct MyStruct0 {
@@ -440,7 +449,7 @@ struct MyStruct1 {
 };
 ```
 
-In this structure declaration member variable `s0` is a pointer and the marshaling code cannot handle this pointer properly. This would be especially the case if you wanted `MyStruct0` to be allocated in the enclave and marshaled back. Only flat structures are supported. If you were to have pointers you will be responsible for the marshaling of memory. We will cover that in a later section.
+In this structure declaration member variable `s0` is a pointer and the marshaling code cannot handle this pointer properly. This would be especially the case if you wanted `MyStruct0` to be allocated in the enclave and marshaled back automatically to host memory. In this case if you point enclave memory and marshal this structure back to the host, the host will to be able to read the contents of the memory. The enclave could allocate memory from the host and then that pointer will be marshaled and the host can then access that.
 
 You can have arrays of structures though, and you can specify the sizes as constant declarations or as a parameter as defined in the variable length buffer section.
 
@@ -520,11 +529,13 @@ enclave  {
 };
 ```
 
-In this case both function `call_one` and `call_two` pass a pointer to `my_type_t` In the first case the pointer is explicit, but in the second case the type `my_type_ptr_t` hides the fact that it is pointer in the `edl` definition because the parser does not actually parse what is in `my_type.h`. As a result of the parameter for `call_two` not knowing `in_param` is a pointer we add the `isptr` qualifier to the parameter.
+In this case both function `call_one` and `call_two` pass a pointer to `my_type_t`. In the first case the pointer is explicit, but in the second case the type `my_type_ptr_t` hides the fact that it is pointer in the `edl` definition because the parser does not actually parse what is in `my_type.h`. As a result of the parameter for `call_two` not knowing `in_param` is a pointer we add the `isptr` qualifier to the parameter.
+
+`isptr` parameter marshaling is handled in the same way as `struct` parameters. Directional attributes can be added for in and out. If the parameter type has any pointers embedded the pointers will be marshaled as is and what they point to are not marshaled into host memory.
 
 ### You are on your own
 
-OK, so sometimes you need to do other things that just do not seem to be supported. Imagine the following example:
+OK, so sometimes you need to do other things that just do not seem to be supported, or function in unexpected ways. Imagine the following example:
 
 ```edl
 enclave  {
@@ -537,7 +548,15 @@ enclave  {
 };
 ```
 
-Unfortunately this is not supported, and yet it is a popular programming paradigm in C/C++. The problem here is that marshaling the memory can be done but who owns the memory that is marshaled back? Instead we need to define this a little bit differently:
+The above example will not marshal the actual string back from the enclave to the untrusted host, all it will do is marshal the pointer back. If in the enclave you have code similar to this:
+
+```c
+&out_string = "this is a string"
+```
+
+your host will not have access to the string itself. To pass a string back to the untrusted host the enclave will need to allocate memory out of the host and copy the string into that. Even this approach will only work on some platforms like ARM TrustZone.
+
+To make things more explicit in your definition `user_check` should be used like this:
 
 ```edl
 enclave  {
@@ -619,4 +638,24 @@ void call_with_void_ptr(
 }
 ```
 
-The downside of `[user_check]` is not all platforms will support this. Because Intel SGX can access host memory from the enclave this will work, but with ARM TrustHost the enclave can only access memory in the enclave and not the host. If you want more cross platform you will need to avoid `[user_check]`.
+The downside of `[user_check]` is not all platforms will support this. Because Intel SGX can access host memory from the enclave this will work, but with ARM TrustZone the enclave can only access memory in the enclave and not the host. If you want more cross platform you will need to avoid `[user_check]`.
+
+Overall, pointers to pointers should be avoided.
+If an out parameter has a maximum size you can pass an `[in, out]` parameter with an array of the maximum length and have an out parameter to define the amount used on return.
+Another option is for the enclave to call back into the host with the results of the call. An example would be as follows:
+
+```edl
+enclave {
+    include "types.h"
+
+    trusted {
+        public void call_one();
+    };
+
+    untrusted {
+        void host_accept_call_one_output ([in] char* string);
+    }
+};
+```
+
+In this case the string parameter in the call back to the host can be as long as is needed.
