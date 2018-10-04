@@ -7,4 +7,4 @@ if (UNIX)
     add_subdirectory(enc)
 endif()
 
-add_enclave_test(tests/libc2 ./host libc2_host ./enc libc2_enc)
+add_enclave_test(tests/libc ./host libc_host ./enc libc_enc)

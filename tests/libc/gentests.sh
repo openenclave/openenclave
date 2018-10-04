@@ -11,14 +11,12 @@ files=$(cat tests.supported)
 ##
 ##==============================================================================
 
-tests_h=enc/tests.h
-tests_cpp=enc/tests.cpp
+tests_c=enc/tests.c
 tests_cmake=enc/tests.cmake
 
 rm -f enc/test_*.c
 rm -f ${tests_cmake}
-rm -f ${tests_h}
-rm -f ${tests_cpp}
+rm -f ${tests_c}
 
 ##==============================================================================
 ##
@@ -56,12 +54,12 @@ done
 
 ##==============================================================================
 ##
-## Generate tests.h and tests.cpp
+## Generate tests.cpp
 ##
 ##==============================================================================
 
 
-rm -rf ${tests_h} ${tests_cpp} ${tests_cmake}
+rm -rf ${tests_c} ${tests_cmake}
 
 cat >> ${tests_cmake} <<END
 # Copyright (c) Microsoft Corporation. All rights reserved.
@@ -70,32 +68,32 @@ cat >> ${tests_cmake} <<END
 set(TESTS
 END
 
-cat >> ${tests_h} <<END
+cat >> ${tests_c} <<END
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-END
+#include "tests.h"
 
-cat >> ${tests_cpp} <<END
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
+extern int run_test(
+    const char* name,
+    int (*main)(int argc, const char* argv[]));
 
+int run_tests(void)
+{
+    int ret = 0;
 END
 
 for i in ${files}
 do
     name=$(get_test_name "${i}")
 
-cat >> ${tests_h} <<END
-extern "C" int ${name}(int argc, const char* argv[]);
-END
-
 cat >> ${tests_cmake} <<END
 ${name}.c
 END
 
-cat >> ${tests_cpp} <<END
-RUN_TEST(${name});
+cat >> ${tests_c} <<END
+    extern int ${name}(int argc, const char* argv[]);
+    ret += run_test("${name}", ${name});
 END
 
 done
@@ -104,5 +102,9 @@ cat >> ${tests_cmake} <<END
 )
 END
 
-echo ${tests_h}
-echo ${tests_cpp}
+cat >> ${tests_c} <<END
+    return ret;
+}
+END
+
+echo "Created ${tests_c}"
