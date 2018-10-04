@@ -3,13 +3,13 @@
 
 include(add_enclave_executable)
 
-# Generate the test sources.
+# Wrap the test source files.
 execute_process(
     COMMAND ${CMAKE_CURRENT_LIST_DIR}/wrap_tests.sh
     ${CMAKE_CURRENT_LIST_DIR}/../tests.supported
     ${CMAKE_CURRENT_BINARY_DIR})
 
-FILE(GLOB TESTS ${CMAKE_CURRENT_BINARY_DIR}/*.c)
+AUX_SOURCE_DIRECTORY(${CMAKE_CURRENT_BINARY_DIR} TESTS) 
 
 add_executable(
     libc_enc 
