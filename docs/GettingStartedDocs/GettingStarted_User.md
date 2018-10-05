@@ -48,7 +48,7 @@ OE Samples
    
        /opt/openenclave/share/openenclave/samples
   
-  See [OE samples](sampledocs/README.md) for details
+See [Open Enclave samples](/samples/README.md) for details
     
 SDK API Reference
 -------------------------------

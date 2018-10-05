@@ -16,7 +16,6 @@
 ./docs/DesignOverview.docx
 ./docs/DesignOverview.pdf
 ./docs/GettingStartedDocs/sampledocs/helloworld/helloworld.png
-./docs/GettingStartedDocs/sampledocs/sampledirstructure.png
 ./docs/refman/html
 .exrc
 ./.git
@@ -40,6 +39,7 @@ LICENSE
 ./prereqs/isgx/linux-sgx-driver
 ./prereqs/dcap/libsgx
 ./prereqs/sgx-driver/sgx-driver
+./samples/sampledirstructure.png
 ./samples/file-encryptor/diagram.png
 ./samples/local_attestation/images/localattestation_sample_datails.png
 ./samples/remote_attestation/images/attestationsample.png
