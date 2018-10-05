@@ -20,7 +20,7 @@ This sample is about as simple as you can get regarding creating and calling int
 - The enclave function returns back to the host
 - The enclave is terminated
 
-This sample uses the Open Enclave SDK `oeedger8r` tool to generate marshaling code necessary to call functions between the enclave and the host.
+This sample uses the Open Enclave SDK `oeedger8r` tool to generate marshaling code necessary to call functions between the enclave and the host. For more information on using the Open Enclave oeedger8r tool refer to the [Getting started with the Open Enclave edger8r](/docs/GettingStartedDocs/Edger8rGettingStarted.md).
 
 First we need to define the functions we want to call between the enclave and host. To do this we create a `helloworld.edl` file:
 
