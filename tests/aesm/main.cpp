@@ -34,7 +34,7 @@ int main(int argc, const char* argv[])
         return -1;
     }
 #else
-    AESM* aesm;
+    aesm_t* aesm;
     if (!(aesm = aesm_connect()))
     {
         fprintf(stderr, "%s: failed to connect\n", argv[0]);

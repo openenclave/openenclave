@@ -337,7 +337,7 @@ static oe_result_t _get_launch_token(
     sgx_launch_token_t* launch_token)
 {
     oe_result_t result = OE_UNEXPECTED;
-    AESM* aesm = NULL;
+    aesm_t* aesm = NULL;
 
     /* Initialize the SGX attributes */
     sgx_attributes_t attributes = {0};

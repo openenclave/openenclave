@@ -24,7 +24,7 @@ static oe_result_t _sgx_init_quote_with_aesm(sgx_target_info_t* target_info)
     oe_result_t result = OE_UNEXPECTED;
     sgx_epid_group_id_t epid_group_id = {{0}};
 
-    AESM* aesm = NULL;
+    aesm_t* aesm = NULL;
 
     if (!(aesm = aesm_connect()))
         OE_RAISE(OE_FAILURE);
@@ -109,7 +109,7 @@ static oe_result_t _sgx_get_quote_from_aesm(
     }};
 
     oe_result_t result = OE_UNEXPECTED;
-    AESM* aesm = NULL;
+    aesm_t* aesm = NULL;
 
     if (!report || !quote || !quote_size)
         OE_RAISE(OE_INVALID_PARAMETER);

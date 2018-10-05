@@ -33,9 +33,9 @@
 #define AESM_SOCKET "/var/run/aesmd/aesm.socket"
 
 typedef enum _wire_type {
-    WIRETYPE_VARINT = 0,
-    WIRETYPE_LENGTH_DELIMITED = 2
-} WireType;
+    WIRE_TYPE_VARINT = 0,
+    WIRE_TYPE_LENGTH_DELIMITED = 2
+} wire_type_t;
 
 #define AESM_MAGIC 0x4efaa2a3
 
@@ -43,20 +43,20 @@ typedef enum _message_type {
     MESSAGE_TYPE_INIT_QUOTE = 1,
     MESSAGE_TYPE_GET_QUOTE = 2,
     MESSAGE_TYPE_GET_LAUNCH_TOKEN = 3
-} MessageType;
+} message_type_t;
 
-struct _AESM
+struct _aesm
 {
     uint32_t magic;
     int sock;
 };
 
-static int _aesm_valid(const AESM* aesm)
+static int _aesm_valid(const aesm_t* aesm)
 {
     return aesm != NULL && aesm->magic == AESM_MAGIC;
 }
 
-static int _make_tag(uint8_t field_num, WireType wire_type, uint8_t* tag)
+static int _make_tag(uint8_t field_num, wire_type_t wire_type, uint8_t* tag)
 {
     int ret = -1;
 
@@ -108,7 +108,7 @@ static int _pack_variant_uint32(mem_t* buf, uint32_t x)
     return mem_cat(buf, data, p - data);
 }
 
-static int _pack_tag(mem_t* buf, uint8_t field_num, WireType wire_type)
+static int _pack_tag(mem_t* buf, uint8_t field_num, wire_type_t wire_type)
 {
     uint8_t tag;
 
@@ -173,7 +173,7 @@ static oe_result_t _pack_bytes(
     oe_result_t result = OE_UNEXPECTED;
     uint8_t tag;
 
-    if (_make_tag(field_num, WIRETYPE_LENGTH_DELIMITED, &tag) != 0)
+    if (_make_tag(field_num, WIRE_TYPE_LENGTH_DELIMITED, &tag) != 0)
         OE_THROW(OE_FAILURE);
 
     if (mem_cat(buf, &tag, sizeof(tag)) != 0)
@@ -195,7 +195,7 @@ static int _pack_var_int(mem_t* buf, uint8_t field_num, uint64_t value)
 {
     oe_result_t result = OE_UNEXPECTED;
 
-    if (_pack_tag(buf, field_num, WIRETYPE_VARINT) != 0)
+    if (_pack_tag(buf, field_num, WIRE_TYPE_VARINT) != 0)
         OE_THROW(OE_FAILURE);
 
     if (_pack_variant_uint32(buf, value) != 0)
@@ -220,7 +220,7 @@ static oe_result_t _unpack_var_int(
     if ((*pos = _unpack_tag(buf, *pos, &tag)) == -1)
         OE_THROW(OE_FAILURE);
 
-    if (_make_tag(field_num, WIRETYPE_VARINT, &tmp_tag) != 0)
+    if (_make_tag(field_num, WIRE_TYPE_VARINT, &tmp_tag) != 0)
         OE_THROW(OE_FAILURE);
 
     if (tag != tmp_tag)
@@ -250,7 +250,7 @@ static oe_result_t _unpack_length_delimited(
     if ((*pos = _unpack_tag(buf, *pos, &tag)) == -1)
         OE_RAISE(OE_FAILURE);
 
-    if (_make_tag(field_num, WIRETYPE_LENGTH_DELIMITED, &tmp_tag) != 0)
+    if (_make_tag(field_num, WIRE_TYPE_LENGTH_DELIMITED, &tmp_tag) != 0)
         OE_RAISE(OE_FAILURE);
 
     if (tag != tmp_tag)
@@ -293,8 +293,8 @@ static int _write(int sock, const void* data, size_t size)
 }
 
 static oe_result_t _write_request(
-    AESM* aesm,
-    MessageType message_type,
+    aesm_t* aesm,
+    message_type_t message_type,
     const mem_t* message)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -333,8 +333,8 @@ OE_CATCH:
 }
 
 static oe_result_t _read_response(
-    AESM* aesm,
-    MessageType message_type,
+    aesm_t* aesm,
+    message_type_t message_type,
     mem_t* message)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -369,7 +369,7 @@ static oe_result_t _read_response(
         if ((pos = _unpack_tag(&envelope, pos, &tag)) == (size_t)-1)
             OE_THROW(OE_FAILURE);
 
-        if (_make_tag(message_type, WIRETYPE_LENGTH_DELIMITED, &tmp_tag) != 0)
+        if (_make_tag(message_type, WIRE_TYPE_LENGTH_DELIMITED, &tmp_tag) != 0)
             OE_THROW(OE_FAILURE);
 
         if (tag != tmp_tag)
@@ -401,11 +401,11 @@ OE_CATCH:
     return result;
 }
 
-AESM* aesm_connect()
+aesm_t* aesm_connect()
 {
     int sock = -1;
     struct sockaddr_un addr;
-    AESM* aesm = NULL;
+    aesm_t* aesm = NULL;
 
     /* Create a socket for connecting to the AESM service */
     if ((sock = socket(AF_UNIX, SOCK_STREAM, 0)) < 0)
@@ -426,7 +426,7 @@ AESM* aesm_connect()
 
     /* Allocate and initialize the AESM struct */
     {
-        if (!(aesm = (AESM*)malloc(sizeof(AESM))))
+        if (!(aesm = (aesm_t*)malloc(sizeof(aesm_t))))
         {
             close(sock);
             return NULL;
@@ -439,18 +439,18 @@ AESM* aesm_connect()
     return aesm;
 }
 
-void aesm_disconnect(AESM* aesm)
+void aesm_disconnect(aesm_t* aesm)
 {
     if (_aesm_valid(aesm))
     {
         close(aesm->sock);
-        memset(aesm, 0xDD, sizeof(AESM));
+        memset(aesm, 0xDD, sizeof(aesm_t));
         free(aesm);
     }
 }
 
 oe_result_t aesm_get_launch_token(
-    AESM* aesm,
+    aesm_t* aesm,
     uint8_t mrenclave[OE_SHA256_SIZE],
     uint8_t modulus[OE_KEY_SIZE],
     const sgx_attributes_t* attributes,
@@ -519,7 +519,7 @@ done:
 }
 
 oe_result_t aesm_init_quote(
-    AESM* aesm,
+    aesm_t* aesm,
     sgx_target_info_t* target_info,
     sgx_epid_group_id_t* epid_group_id)
 {
@@ -585,7 +585,7 @@ done:
 }
 
 oe_result_t aesm_get_quote(
-    AESM* aesm,
+    aesm_t* aesm,
     const sgx_report_t* report,
     sgx_quote_type_t quote_type,
     const sgx_spid_t* spid,
