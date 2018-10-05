@@ -14,7 +14,7 @@
 PACKAGES=('make' 'pkg-config')
 
 # Needed for Open Enclave scripts
-PACKAGES+=('clang-format-3.8' 'shellcheck')
+PACKAGES+=('clang-format-3.9' 'shellcheck')
 
 # Needed for using oedbg
 PACKAGES+=('gdb')
