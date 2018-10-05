@@ -29,7 +29,14 @@ OE_EXTERNC_BEGIN
 
 /**
  *  Flag passed into oe_create_enclave to run the enclave in debug mode.
- */
+ *  The flag allows the enclave to be created without the enclave binary
+ *  being signed. It also gives a developer permission to debug the process
+ *  and get access to enclave memory. What this means is ** DO NOT SHIP
+ *  CODE WITH THE OE_ENCLAVE_FLAG_DEBUG ** because it is unsecure. What
+ *  it does give is the ability to develop your enclave more easily. Before
+ *  you ship the code you need to have a proper code signing story for the
+ *  enclave shared library.
+*/
 #define OE_ENCLAVE_FLAG_DEBUG 0x00000001
 
 /**
@@ -61,8 +68,9 @@ OE_EXTERNC_BEGIN
  *
  * @param flags These flags control how the enclave is run.
  *     It is the bitwise OR of zero or more of the following flags
- *     - OE_ENCLAVE_FLAG_DEBUG - runs the enclave in debug mode
  *     - OE_ENCLAVE_FLAG_SIMULATE - runs the enclave in simulation mode
+ *     - OE_ENCLAVE_FLAG_DEBUG - runs the enclave in debug mode.
+ *                               DO NOT SHIP CODE with this flag
  *
  * @param config Additional enclave creation configuration data for the specific
  * enclave type. This parameter is reserved and must be NULL.
