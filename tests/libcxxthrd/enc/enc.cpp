@@ -64,7 +64,7 @@ static std::map<int, pthread_t> _key_to_thread_id_map; // Map of enc_key to
 
 static std::atomic_flag _enc_lock = ATOMIC_FLAG_INIT;
 // Each new thread will set these to that obtained from the host
-ThreadArgs* thread_args = NULL; 
+ThreadArgs* thread_args = NULL;
 
 static int _pthread_create_hook(
     pthread_t* enc_thread,
@@ -136,7 +136,7 @@ static int _pthread_join_hook(pthread_t enc_thread, void** retval)
 static int _pthread_detach_hook(pthread_t enc_thread)
 {
     if (thread_args == NULL)
-        return EINVAL; 
+        return EINVAL;
 
     // Find the enc_key from the enc_thread
     _acquire_lock(&_enc_lock);
@@ -167,7 +167,8 @@ static int _pthread_detach_hook(pthread_t enc_thread)
 // Launches the new thread in the enclave
 OE_ECALL void _enclave_launch_thread(void* args_)
 {
-    thread_args = (ThreadArgs*)args_; // Set the global value to that obtained from the host
+    thread_args = (ThreadArgs*)
+        args_; // Set the global value to that obtained from the host
 
     std::function<void()> f;
 
