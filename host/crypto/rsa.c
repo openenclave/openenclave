@@ -12,6 +12,8 @@
 #include <string.h>
 #include "init.h"
 #include "key.h"
+const BIGNUM *RSA_get0_n(const RSA *d);
+const BIGNUM *RSA_get0_e(const RSA *d);
 
 /* Magic numbers for the RSA key implementation structures */
 static const uint64_t _PRIVATE_KEY_MAGIC = 0x7bf635929a714b2c;
@@ -77,7 +79,11 @@ static oe_result_t _generate_key_pair(
     /* Create the public and private RSA keys */
     {
         /* Create the private key */
-        if (!(rsa_private = RSA_generate_key(bits, exponent, 0, 0)))
+	BIGNUM *e;
+	e = BN_new();
+	BN_set_word(e, exponent);
+        RSA_generate_key_ex(rsa_private, bits, e, 0);
+        if (rsa_private)
             OE_RAISE(OE_FAILURE);
 
         /* Create the public key */
@@ -170,7 +176,7 @@ static oe_result_t _get_public_key_get_modulus_or_exponent(
         OE_RAISE(OE_FAILURE);
 
     /* Select modulus or exponent */
-    bn = get_modulus ? rsa->n : rsa->e;
+    bn = get_modulus ? RSA_get0_n(rsa): RSA_get0_e(rsa);
 
     /* Determine the required size in bytes */
     {
@@ -248,7 +254,7 @@ static oe_result_t _public_key_equal(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Compare modulus and exponent */
-    if (BN_cmp(rsa1->n, rsa2->n) == 0 && BN_cmp(rsa1->e, rsa2->e) == 0)
+    if (BN_cmp(RSA_get0_n(rsa1), RSA_get0_n(rsa2)) == 0 && BN_cmp(RSA_get0_e(rsa1), RSA_get0_e(rsa2)) == 0)
         *equal = true;
 
     result = OE_OK;

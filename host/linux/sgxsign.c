@@ -79,7 +79,7 @@ static oe_result_t _get_modulus(RSA* rsa, uint8_t modulus[OE_KEY_SIZE])
     if (!rsa || !modulus)
         OE_THROW(OE_INVALID_PARAMETER);
 
-    if (!BN_bn2bin(rsa->n, buf))
+    if (!BN_bn2bin(RSA_get0_n(rsa), buf))
         OE_THROW(OE_FAILURE);
 
     _mem_reverse(modulus, buf, OE_KEY_SIZE);

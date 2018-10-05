@@ -208,9 +208,9 @@ oe_result_t oe_crl_get_update_dates(
 
     if (last)
     {
-        ASN1_TIME* time;
+        const ASN1_TIME* time;
 
-        if (!(time = X509_CRL_get_lastUpdate(impl->crl)))
+        if (!(time = X509_CRL_get0_lastUpdate(impl->crl)))
             OE_RAISE(OE_FAILURE);
 
         OE_CHECK(_asn1_time_to_date(time, last));
@@ -218,9 +218,9 @@ oe_result_t oe_crl_get_update_dates(
 
     if (next)
     {
-        ASN1_TIME* time;
+        const ASN1_TIME* time;
 
-        if (!(time = X509_CRL_get_nextUpdate(impl->crl)))
+        if (!(time = X509_CRL_get0_nextUpdate(impl->crl)))
             OE_RAISE(OE_FAILURE);
 
         OE_CHECK(_asn1_time_to_date(time, next));

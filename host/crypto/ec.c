@@ -490,12 +490,15 @@ oe_result_t oe_ecdsa_signature_write_der(
     if (!(sig = ECDSA_SIG_new()))
         OE_RAISE(OE_FAILURE);
 
+    const BIGNUM *sig_r;
+    const BIGNUM *sig_s;
+    ECDSA_SIG_get0(sig, &sig_r, &sig_s);
     /* Convert R to big number object */
-    if (!(BN_bin2bn(data, size, sig->r)))
+    if (!(BN_bin2bn(data, size, (BIGNUM*)sig_r)))
         OE_RAISE(OE_FAILURE);
 
     /* Convert S to big number object */
-    if (!(BN_bin2bn(s_data, s_size, sig->s)))
+    if (!(BN_bin2bn(s_data, s_size, (BIGNUM*)sig_r)))
         OE_RAISE(OE_FAILURE);
 
     /* Determine the size of the binary signature */
