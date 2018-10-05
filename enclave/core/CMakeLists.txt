@@ -4,6 +4,16 @@
 include(add_compile_flags_if_supported)
 include(add_compile_defs)
 
+if (UNIX)
+set(PLATFORM_SRC
+    linux/reloc.c
+    )
+elseif (WIN32)
+set(PLATFORM_SRC
+    windows/reloc.c
+    )
+endif()
+
 add_library(oecore STATIC
     ../../common/safecrt.c
     assert.c
@@ -38,6 +48,7 @@ add_library(oecore STATIC
     enter.S
     exit.S
     getkey.S
+    ${PLATFORM_SRC}
     )
 
 target_link_libraries(oecore PUBLIC oe_includes)
