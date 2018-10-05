@@ -5,10 +5,10 @@
 
 ##==============================================================================
 ##
-## wrap_tests.sh INPUT_TESTS_FILE OUTPUT_DIRECTORY
+## wrap_tests.sh INPUT_FILE OUTPUT_DIRECTORY
 ##
-##     This script reads the test sources (from INPUT_TESTS_FILE)
-##     and creates wrappers for each of them in the OUTPUT_DIRECTORY.
+##     This script reads the test sources from INPUT_FILE and creates wrappers 
+##     for each of them in the OUTPUT_DIRECTORY.
 ##
 ##==============================================================================
 
@@ -19,15 +19,15 @@
 ##==============================================================================
 
 if [ "$#" != "2" ]; then
-    echo "Usage: $0 INPUT_TESTS_FILE OUTPUT_DIRECTORY"
+    echo "Usage: $0 INPUT_FILE OUTPUT_DIRECTORY"
     exit 1
 fi
 
-input_tests=$1
+input_file=$1
 output_directory=$2
 
-if [ ! -f "${input_tests}" ]; then
-    echo "$0: not found: ${input_tests}"
+if [ ! -f "${input_file}" ]; then
+    echo "$0: not found: ${input_file}"
     exit 1
 fi
 
@@ -36,7 +36,8 @@ if [ ! -d "${output_directory}" ]; then
     exit 1
 fi
 
-files=$(cat "${input_tests}")
+# Form the list of files while stripping the "${ROOT}/" prefix.
+files=$(grep "^[ \t]*\${ROOT}/" "${input_file}" | sed "s~[ \t]*\${ROOT}/~~g")
 
 ##==============================================================================
 ##
@@ -60,7 +61,7 @@ rm -f "${output_directory}/test_*.c"
 get_test_name()
 {
     name=$(echo "$1" | sed "s~[\.\/\-]~_~g" | sed "s~______3rdparty_musl_libc_test_src_~test_~g")
-    echo "${name}"
+    echo "_${name}"
 }
 
 ##==============================================================================
@@ -72,13 +73,23 @@ get_test_name()
 for i in ${files}
 do
     name=$(get_test_name "${i}")
-    source_file=${output_directory}/${name}.c
+    dirname=$(dirname "${i}")
+    basename=$(basename "${i}")
+
+    # Create the directory for this source.
+    mkdir -p "${output_directory}/${dirname}"
+
+
+    # Form the full path of the source file.
+    source_file=${output_directory}/${dirname}/${basename}
+
+    # Create the wrapper source file.
 cat > "${source_file}" <<END
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 #define main ${name}
-#include "${i}"
+#include "../../../${i}"
 END
     echo "Created ${source_file}"
 done
@@ -109,6 +120,9 @@ do
 
 cat >> "${tests_c}" <<END
     extern int ${name}(int argc, const char* argv[]);
+END
+
+cat >> "${tests_c}" <<END
     ret += run_test("${name}", ${name});
 END
 

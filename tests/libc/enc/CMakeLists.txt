@@ -3,21 +3,24 @@
 
 include(add_enclave_executable)
 
-# Wrap the test source files.
+# Generate wrappers for libc tests.
 execute_process(
     COMMAND ${CMAKE_CURRENT_LIST_DIR}/wrap_tests.sh
-    ${CMAKE_CURRENT_LIST_DIR}/../tests.supported
-    ${CMAKE_CURRENT_BINARY_DIR})
+        ${CMAKE_CURRENT_LIST_DIR}/../tests.supported
+        ${CMAKE_CURRENT_BINARY_DIR})
 
-AUX_SOURCE_DIRECTORY(${CMAKE_CURRENT_BINARY_DIR} TESTS) 
+# Include the libc tests wrappers:
+set(ROOT ${CMAKE_CURRENT_BINARY_DIR})
+include(../tests.supported)
 
 add_executable(
     libc_enc 
     enc.c
+    ${CMAKE_CURRENT_BINARY_DIR}/tests.c
     ../../../3rdparty/musl/libc-test/src/common/mtest.c
     ../../../3rdparty/musl/libc-test/src/common/rand.c
     ../../../3rdparty/musl/libc-test/src/functional/tls_align_dso.c
-    ${TESTS})
+    ${LIBC_TESTS})
 
 target_compile_options(libc_enc PRIVATE 
     -Wno-error
@@ -32,7 +35,7 @@ target_compile_options(libc_enc PRIVATE
 
 target_include_directories(
     libc_enc PRIVATE
-    ..
+    .
     ../../../3rdparty/musl/libc-test/src/common)
 
 target_link_libraries(libc_enc oelibc oeenclave)
