@@ -24,6 +24,13 @@ cd openenclave
 sudo ./scripts/install-prereqs
 ```
 
+If you are running in an Azure Confidential Compute VM and would like to use the attestation features, you should also run the following command from the root of the source tree:
+
+```bash
+sudo make -C prereqs/az-dcap-client
+sudo make -C prereqs/az-dcap-client install
+```
+
 ## Install Intel SGX FLC support software packages
 
 There are two Intel packages needed for SGX1-FLC:
@@ -53,13 +60,6 @@ Then run `cmake` to configure the build and generate the make files and build:
 ```bash
 cmake .. -DUSE_LIBSGX=1
 make
-```
-
-If you are running in an Azure Confidential Compute VM and would like to use the attestation features, you should also run the following command from the root of the source tree:
-
-```bash
-sudo make -C prereqs/az-dcap-client
-sudo make -C prereqs/az-dcap-client install
 ```
 
 Open Enclave will support attestation workflows outside of Azure using DCAP in an upcoming release.
