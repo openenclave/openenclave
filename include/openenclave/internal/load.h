@@ -48,10 +48,10 @@ typedef struct _oe_segment
 
 typedef struct _oe_enclave_image_t
 {
-    char* image_base;       /* base of image */
-    size_t image_size;      /* rva of entry_rva point */
-    uint64_t entry_rva;     /* rva of .text section */
-    uint64_t text_rva;      /* rva and file position of .oeinfo section */
+    char* image_base;   /* base of image */
+    size_t image_size;  /* rva of entry_rva point */
+    uint64_t entry_rva; /* rva of .text section */
+    uint64_t text_rva;  /* rva and file position of .oeinfo section */
 
     /* N.B. file position is needed when we need to write back  */
     /*      oe_sgx_enclave_properties_t during signing          */
@@ -68,14 +68,14 @@ typedef struct _oe_enclave_image_t
 #if defined(__linux__)
 
     elf64_t elf;
-    oe_segment_t *segments;
+    oe_segment_t* segments;
     size_t num_segments;
     void* reloc_data;
 
 #elif defined(_WIN32)
 
-    void *module;
-    void *nt_header;
+    void* module;
+    void* nt_header;
     uint64_t reloc_rva;
 
 #else
@@ -90,8 +90,7 @@ oe_result_t _oe_load_enclave_image(
     const char* path,
     oe_enclave_image_t* oeimage);
 
-oe_result_t _oe_unload_enclave_image(
-    oe_enclave_image_t* oeimage);
+oe_result_t _oe_unload_enclave_image(oe_enclave_image_t* oeimage);
 
 OE_EXTERNC_END
 

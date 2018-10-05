@@ -58,7 +58,7 @@ static int _update_and_write_shared_lib(
         goto done;
     }
 
-    /* Verification is done inside _oe_load_enclave_image */
+/* Verification is done inside _oe_load_enclave_image */
 
 #if 0
 
@@ -133,7 +133,8 @@ static int _update_and_write_shared_lib(
             goto done;
         }
 
-        if (fwrite(oeimage.elf.data, 1, oeimage.elf.size, os) != oeimage.elf.size)
+        if (fwrite(oeimage.elf.data, 1, oeimage.elf.size, os) !=
+            oeimage.elf.size)
         {
             Err("failed to write: %s", p);
             goto done;
@@ -443,7 +444,8 @@ static oe_result_t _sgx_load_enclave_properties(
     OE_CHECK(_oe_load_enclave_image(path, &oeimage));
 
     /* Load the SGX enclave properties */
-    OE_CHECK(oe_sgx_load_properties(&oeimage, OE_INFO_SECTION_NAME, properties));
+    OE_CHECK(
+        oe_sgx_load_properties(&oeimage, OE_INFO_SECTION_NAME, properties));
 
     result = OE_OK;
 

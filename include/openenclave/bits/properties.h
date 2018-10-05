@@ -56,7 +56,7 @@ typedef struct _oe_enclave_image_info_t
     uint64_t reloc_size;
     uint64_t ecall_rva;
     uint64_t ecall_size;
-    uint64_t heap_rva;      /* heap size is in header.sizesettings */
+    uint64_t heap_rva; /* heap size is in header.sizesettings */
     uint64_t enclave_size;
 } oe_enclave_image_info_t;
 

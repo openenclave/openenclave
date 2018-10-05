@@ -3,9 +3,11 @@
 
 #define OE_TRACE_LEVEL 1
 
+#include <assert.h>
+#include <errno.h>
 #include <openenclave/bits/defs.h>
-#include <openenclave/bits/safemath.h>
 #include <openenclave/bits/safecrt.h>
+#include <openenclave/bits/safemath.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/debug.h>
@@ -17,20 +19,17 @@
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
-#include <sys/mman.h>
-#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
+#include <sys/mman.h>
 #include "../enclave.h"
 #include "../memalign.h"
 #include "../sgxload.h"
 #include "../strings.h"
 
-static oe_result_t _oe_free_elf_image(
-    oe_enclave_image_t* oeimage)
+static oe_result_t _oe_free_elf_image(oe_enclave_image_t* oeimage)
 {
-    if (oeimage->elf.data) 
+    if (oeimage->elf.data)
     {
         free(oeimage->elf.data);
     }
@@ -50,18 +49,16 @@ static oe_result_t _oe_free_elf_image(
     return OE_OK;
 }
 
-static int __cdecl _compare_segments(
-    const void *s1,
-    const void *s2)
+static int __cdecl _compare_segments(const void* s1, const void* s2)
 {
-    const oe_segment_t* seg1 = (const oe_segment_t *) s1;
-    const oe_segment_t* seg2 = (const oe_segment_t *) s2;
+    const oe_segment_t* seg1 = (const oe_segment_t*)s1;
+    const oe_segment_t* seg2 = (const oe_segment_t*)s2;
 
-    return (int) (seg1->vaddr - seg2->vaddr);
+    return (int)(seg1->vaddr - seg2->vaddr);
 }
 
 static oe_result_t __oe_load_elf_image(
-    const char *path,
+    const char* path,
     oe_enclave_image_t* oeimage)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -75,7 +72,7 @@ static oe_result_t __oe_load_elf_image(
 
     if (elf64_load(path, &oeimage->elf) != 0)
     {
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
     }
 
     /* Save pointer to header for convenience */
@@ -84,16 +81,16 @@ static oe_result_t __oe_load_elf_image(
 /* Fail if not a dynamic object */
 #if 0
     if (eh->e_type != ET_DYN)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 #endif
 
     /* Fail if not Intel X86 64-bit */
     if (eh->e_machine != EM_X86_64)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Fail if image is relocatable */
     if (eh->e_type == ET_REL)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Save entry point address */
     oeimage->entry_rva = eh->e_entry;
@@ -106,9 +103,10 @@ static oe_result_t __oe_load_elf_image(
 
             /* Invalid section header. The elf file is corrupted. */
             if (sh == NULL)
-                OE_THROW(OE_FAILURE);
+                OE_RAISE(OE_FAILURE);
 
-            const char* name = elf64_get_string_from_shstrtab(&oeimage->elf, sh->sh_name);
+            const char* name =
+                elf64_get_string_from_shstrtab(&oeimage->elf, sh->sh_name);
 
             if (name)
             {
@@ -121,7 +119,7 @@ static oe_result_t __oe_load_elf_image(
                     /* .oeinfo must contain exactly the property */
                     if (sh->sh_size != sizeof(oe_sgx_enclave_properties_t))
                     {
-                        OE_THROW(OE_FAILURE);
+                        OE_RAISE(OE_FAILURE);
                     }
                     oeimage->oeinfo_rva = sh->sh_addr;
                     oeimage->oeinfo_file_pos = sh->sh_offset;
@@ -139,11 +137,10 @@ static oe_result_t __oe_load_elf_image(
         }
 
         /* Fail if required sections not found */
-        if ((0 == oeimage->text_rva) ||
-            (0 == oeimage->ecall_rva) ||
+        if ((0 == oeimage->text_rva) || (0 == oeimage->ecall_rva) ||
             (0 == oeimage->oeinfo_rva))
         {
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
         }
     }
 
@@ -158,71 +155,72 @@ static oe_result_t __oe_load_elf_image(
 
             /* Check for corrupted program header. */
             if (ph == NULL)
-                OE_THROW(OE_FAILURE);
+                OE_RAISE(OE_FAILURE);
 
             /* Check for proper sizes for the program segment. */
             if (ph->p_filesz > ph->p_memsz)
-                OE_THROW(OE_FAILURE);
+                OE_RAISE(OE_FAILURE);
 
             switch (ph->p_type)
             {
-            case PT_TLS:
-                OE_THROW(OE_UNSUPPORTED);
-                break;
+                case PT_TLS:
+                    OE_RAISE(OE_UNSUPPORTED);
+                    break;
 
-            case PT_LOAD:
+                case PT_LOAD:
 
-            /* kind of surprised that segments may not be page aligned */
+/* kind of surprised that segments may not be page aligned */
 #if 0
                 /* p_vaddr must be page aligned */
                 if (ph->p_vaddr & (OE_PAGE_SIZE - 1))
                 {
-                    OE_THROW(OE_FAILURE);
+                    OE_RAISE(OE_FAILURE);
                 }
 #endif
 
-                if (lo > ph->p_vaddr)
-                    lo = ph->p_vaddr;
+                    if (lo > ph->p_vaddr)
+                        lo = ph->p_vaddr;
 
-                if (hi < ph->p_vaddr + ph->p_memsz)
-                    hi = ph->p_vaddr + ph->p_memsz;
+                    if (hi < ph->p_vaddr + ph->p_memsz)
+                        hi = ph->p_vaddr + ph->p_memsz;
 
-                oeimage->num_segments ++;
-                break;
+                    oeimage->num_segments++;
+                    break;
 
-            default:
-                break;
+                default:
+                    break;
             }
         }
 
         /* Fail if LO not found */
         if (lo != 0)
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         /* Fail if HI not found */
         if (hi == 0)
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         /* Fail if no segment found */
         if (oeimage->num_segments == 0)
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         /* Calculate the full size of the image (rounded up to the page size) */
         oeimage->image_size = __oe_round_up_to_page_size(hi - lo);
     }
 
     /* allocate segments */
-    oeimage->segments = (oe_segment_t*)malloc(oeimage->num_segments * sizeof(oe_segment_t));
+    oeimage->segments =
+        (oe_segment_t*)malloc(oeimage->num_segments * sizeof(oe_segment_t));
     if (!oeimage->segments)
     {
-        OE_THROW(OE_OUT_OF_MEMORY);
+        OE_RAISE(OE_OUT_OF_MEMORY);
     }
 
     /* Allocate image on a page boundary */
     oeimage->image_base = (char*)oe_memalign(OE_PAGE_SIZE, oeimage->image_size);
     if (!oeimage->image_base)
     {
-        OE_THROW(OE_OUT_OF_MEMORY);
+        OE_RAISE(OE_OUT_OF_MEMORY);
     }
 
     /* Clear the image memory */
@@ -233,7 +231,7 @@ static oe_result_t __oe_load_elf_image(
     {
         const elf64_phdr_t* ph = elf64_get_program_header(&oeimage->elf, i);
         oe_segment_t* seg = &oeimage->segments[num_segments];
-        void *segdata;
+        void* segdata;
 
         assert(ph);
         assert(ph->p_filesz <= ph->p_memsz);
@@ -268,7 +266,7 @@ static oe_result_t __oe_load_elf_image(
         }
 
         /* Set oe_segment_t.filedata  IS THE FIELD NEEDED??? */
-        seg->filedata = (unsigned char *) oeimage->elf.data + seg->offset;
+        seg->filedata = (unsigned char*)oeimage->elf.data + seg->offset;
 
         /* Should we fail if elf64_get_segment failed??? */
         segdata = elf64_get_segment(&oeimage->elf, i);
@@ -278,28 +276,35 @@ static oe_result_t __oe_load_elf_image(
             memcpy(oeimage->image_base + seg->vaddr, segdata, seg->filesz);
         }
 
-        num_segments ++;
+        num_segments++;
     }
 
     assert(num_segments == oeimage->num_segments);
 
-    /* sort the segment by vaddr. NOT SURE IF THIS IS NEED - IS ELF SEGMENTED SORTED LIKE PE SECTIONS? */
-    qsort(oeimage->segments, num_segments, sizeof(oe_segment_t), _compare_segments);
+    /* sort the segment by vaddr. NOT SURE IF THIS IS NEED - IS ELF SEGMENTED
+     * SORTED LIKE PE SECTIONS? */
+    qsort(
+        oeimage->segments,
+        num_segments,
+        sizeof(oe_segment_t),
+        _compare_segments);
 
     /* validate segments are valid */
-    for (i = 0; i < oeimage->num_segments - 1; i ++) {
+    for (i = 0; i < oeimage->num_segments - 1; i++)
+    {
         const oe_segment_t* seg = &oeimage->segments[i];
-        const oe_segment_t* seg_next = &oeimage->segments[i+1];
-        if ((seg->vaddr + seg->memsz) > __oe_round_down_to_page_size(seg_next->vaddr))
+        const oe_segment_t* seg_next = &oeimage->segments[i + 1];
+        if ((seg->vaddr + seg->memsz) >
+            __oe_round_down_to_page_size(seg_next->vaddr))
         {
-            OE_THROW(OE_OUT_OF_BOUNDS);
+            OE_RAISE(OE_OUT_OF_BOUNDS);
         }
     }
 
     oeimage->elf.magic = ELF_MAGIC;
     result = OE_OK;
 
-OE_CATCH:
+done:
 
     if (result != OE_OK)
     {
@@ -330,13 +335,12 @@ OE_INLINE void _dump_relocations(const void* data, size_t size)
 #endif
 
 oe_result_t _oe_calculate_image_size(
-    const oe_enclave_image_t *oeimage,
+    const oe_enclave_image_t* oeimage,
     size_t* image_size)
 {
     *image_size = oeimage->image_size + oeimage->reloc_size;
     return OE_OK;
 }
-
 
 oe_result_t _oe_load_enclave_image(
     const char* path,
@@ -350,7 +354,8 @@ oe_result_t _oe_load_enclave_image(
     OE_CHECK(__oe_load_elf_image(path, oeimage));
 
     /* Load the relocations into memory (zero-padded to next page size) */
-    if (elf64_load_relocations(&oeimage->elf, &oeimage->reloc_data, &oeimage->reloc_size) != 0)
+    if (elf64_load_relocations(
+            &oeimage->elf, &oeimage->reloc_data, &oeimage->reloc_size) != 0)
         OE_RAISE(OE_FAILURE);
 
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
@@ -367,10 +372,10 @@ done:
     return result;
 }
 
-oe_result_t _oe_unload_enclave_image(
-    oe_enclave_image_t* oeimage)
+oe_result_t _oe_unload_enclave_image(oe_enclave_image_t* oeimage)
 {
-    if (oeimage->reloc_data) {
+    if (oeimage->reloc_data)
+    {
         free(oeimage->reloc_data);
     }
 
@@ -378,7 +383,6 @@ oe_result_t _oe_unload_enclave_image(
 }
 
 // ------------------------------------------------------------------
-
 
 /*
 **==============================================================================
@@ -473,7 +477,7 @@ done:
 static oe_result_t _add_segment_pages(
     oe_sgx_load_context_t* context,
     uint64_t enclave_addr,
-    const oe_segment_t *segment,
+    const oe_segment_t* segment,
     void* image)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -499,7 +503,7 @@ static oe_result_t _add_segment_pages(
 
     flags |= SGX_SECINFO_REG;
 
-    for ( ; page_rva < segment_end; page_rva += OE_PAGE_SIZE)
+    for (; page_rva < segment_end; page_rva += OE_PAGE_SIZE)
     {
         OE_CHECK(
             oe_sgx_load_enclave_data(
@@ -517,8 +521,8 @@ done:
     return result;
 }
 
- /* Add image to enclave */
- oe_result_t _oe_add_image_pages(
+/* Add image to enclave */
+oe_result_t _oe_add_image_pages(
     oe_sgx_load_context_t* context,
     oe_enclave_t* enclave,
     oe_enclave_image_t* oeimage,
@@ -535,7 +539,7 @@ done:
     assert(enclave->size > oeimage->image_size);
 
     /* Add the program segments first */
-    for (i = 0; i < oeimage->num_segments; i ++)
+    for (i = 0; i < oeimage->num_segments; i++)
     {
         OE_CHECK(
             _add_segment_pages(
@@ -562,7 +566,6 @@ done:
     return result;
 }
 
-
 oe_result_t _oe_patch_image(
     oe_enclave_image_t* oeimage,
     size_t ecall_size,
@@ -573,18 +576,19 @@ oe_result_t _oe_patch_image(
     oe_sgx_enclave_properties_t* oeprops;
     size_t i;
 
-    oeprops = (oe_sgx_enclave_properties_t*)(oeimage->image_base+oeimage->oeinfo_rva);
+    oeprops =
+        (oe_sgx_enclave_properties_t*)(oeimage->image_base + oeimage->oeinfo_rva);
 
-    assert((oeimage->image_size & (OE_PAGE_SIZE-1)) == 0);
-    assert((oeimage->reloc_size & (OE_PAGE_SIZE-1)) == 0);
-    assert((enclave_end & (OE_PAGE_SIZE-1)) == 0);
-    assert((ecall_size & (OE_PAGE_SIZE-1)) == 0);
+    assert((oeimage->image_size & (OE_PAGE_SIZE - 1)) == 0);
+    assert((oeimage->reloc_size & (OE_PAGE_SIZE - 1)) == 0);
+    assert((enclave_end & (OE_PAGE_SIZE - 1)) == 0);
+    assert((ecall_size & (OE_PAGE_SIZE - 1)) == 0);
 
     /* Clear certain ELF header fields */
     for (i = 0; i < oeimage->num_segments; i++)
     {
         const oe_segment_t* seg = &oeimage->segments[i];
-        elf64_ehdr_t* ehdr = (elf64_ehdr_t*)(oeimage->image_base+seg->vaddr);
+        elf64_ehdr_t* ehdr = (elf64_ehdr_t*)(oeimage->image_base + seg->vaddr);
 
         if (elf64_test_header(ehdr) == 0)
         {
@@ -678,7 +682,7 @@ done:
 
 oe_result_t _oe_build_ecall_array(
     oe_enclave_t* enclave,
-     oe_enclave_image_t* oeimage)
+    oe_enclave_image_t* oeimage)
 {
     oe_result_t result = OE_UNEXPECTED;
     elf64_shdr_t shdr;
@@ -713,7 +717,6 @@ done:
     return result;
 }
 
-
 oe_result_t oe_sgx_load_properties(
     const oe_enclave_image_t* oeimage,
     const char* section_name,
@@ -724,8 +727,10 @@ oe_result_t oe_sgx_load_properties(
     /* Copy from the image at oeinfo_rva. */
     OE_CHECK(
         oe_memcpy_s(
-            properties, sizeof(*properties),
-            oeimage->image_base + oeimage->oeinfo_rva, sizeof(*properties)));
+            properties,
+            sizeof(*properties),
+            oeimage->image_base + oeimage->oeinfo_rva,
+            sizeof(*properties)));
 
     result = OE_OK;
 
@@ -743,13 +748,17 @@ oe_result_t oe_sgx_update_enclave_properties(
     /* Copy to both the image and ELF file*/
     OE_CHECK(
         oe_memcpy_s(
-            (uint8_t*)oeimage->elf.data + oeimage->oeinfo_file_pos, sizeof(*properties),
-            properties, sizeof(*properties)));
+            (uint8_t*)oeimage->elf.data + oeimage->oeinfo_file_pos,
+            sizeof(*properties),
+            properties,
+            sizeof(*properties)));
 
     OE_CHECK(
         oe_memcpy_s(
-            oeimage->image_base + oeimage->oeinfo_rva, sizeof(*properties),
-            properties, sizeof(*properties)));
+            oeimage->image_base + oeimage->oeinfo_rva,
+            sizeof(*properties),
+            properties,
+            sizeof(*properties)));
 
     result = OE_OK;
 
@@ -789,5 +798,3 @@ OE_NEVER_INLINE void _oe_notify_gdb_enclave_creation(
 }
 
 OE_NO_OPTIMIZE_END
-
-

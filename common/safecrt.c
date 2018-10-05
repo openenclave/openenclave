@@ -12,8 +12,8 @@ oe_result_t oe_memcpy_s(
     size_t num_bytes)
 {
     oe_result_t result = OE_FAILURE;
-	const uint8_t* src = (const uint8_t*)src0;
-	uint8_t* dst = (uint8_t*)dst0;
+    const uint8_t* src = (const uint8_t*)src0;
+    uint8_t* dst = (uint8_t*)dst0;
 
     if (dst == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
