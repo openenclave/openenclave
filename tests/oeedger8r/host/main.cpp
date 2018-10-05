@@ -14,6 +14,7 @@
 
 void test_basic_edl_ecalls(oe_enclave_t* enclave);
 void test_string_edl_ecalls(oe_enclave_t* enclave);
+void test_wstring_edl_ecalls(oe_enclave_t* enclave);
 void test_array_edl_ecalls(oe_enclave_t* enclave);
 void test_pointer_edl_ecalls(oe_enclave_t* enclave);
 void test_struct_edl_ecalls(oe_enclave_t* enclave);
@@ -47,6 +48,9 @@ int main(int argc, const char* argv[])
 
     test_string_edl_ecalls(enclave);
     OE_TEST(test_string_edl_ocalls(enclave) == OE_OK);
+
+    test_wstring_edl_ecalls(enclave);
+    OE_TEST(test_wstring_edl_ocalls(enclave) == OE_OK);
 
     test_array_edl_ecalls(enclave);
     OE_TEST(test_array_edl_ocalls(enclave) == OE_OK);

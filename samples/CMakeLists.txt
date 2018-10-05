@@ -4,25 +4,34 @@
 if(USE_LIBSGX)
 
 # Install the remote_attestation sample.
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/make/remote_attestation
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/remote_attestation
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
     )
 
+# Install the local_attestation sample.
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/local_attestation
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
+    )
 
 endif()
 
 # Install the helloworld sample.
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/make/helloworld
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/helloworld
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
     )
 
 # Install the file-encryptor sample
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/make/file-encryptor
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/file-encryptor
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
+    )
+
+# Install the data-sealing sample
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/data-sealing
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
     )
 
 # Install make file for samples folder.
-install(FILES  ${CMAKE_CURRENT_LIST_DIR}/make/Makefile
+install(FILES  ${CMAKE_CURRENT_LIST_DIR}/Makefile
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
     )
 

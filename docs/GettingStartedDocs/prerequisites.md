@@ -58,30 +58,32 @@ Execute the following commands from the root of the source tree to install above
 
 Open Enclave is available from GitHub. Use the following command to download the source distribution.
 
-        git clone https://github.com/Microsoft/openenclave
+        git clone https://github.com/Microsoft/openenclave.git
 This creates a source tree under the directory called openenclave.
 
 ### Source tree layout
 
 The files and directories in the top-level directory are described as follows.
 
-- [LICENSE](LICENSE) - The Open Enclave license
-- [README.md](README.md) - This README file
-- [3rdparty](3rdparty) - Contains third-party software packages
-- [cmake](cmake) - Contains CMake scripts for building Open Enclave.
-- [common](common) - Contains sources that work in the enclave and the host
-- [doc](doc) - Contains documentation
-- [core](core) - Contains the source for the oecore library
-- [enclave](enclave) - Contains the source for the oeenclave library
-- [host](host) - Contains source for the oehost library
-- [idl](idl) - Contains source for the oeidl library
-- [include](include) - Contains C header files
-- [libc](libc) - Contains sources for the oelibc enclave library
-- [libcxx](libcxx) - Contains logic for building the oelibcxx library
-- [prereqs](prereqs) - Contains scripts for installing prerequisite software
-- [samples](samples) - Contains enclave-development sample sources
-- [scripts](scripts) - Contains Shell scripts
-- [tests](tests) - Contains all test programs, which may also serve as samples
-- [tools](tools) - Contains command-line tools (oesgx, oesign, oegen)
+- LICENSE - The Open Enclave license
+- README.md - This README file
+- .jekins - Contains CI/CD files
+- 3rdparty - Contains third-party software packages
+- cmake - Contains CMake scripts for building Open Enclave.
+- common - Contains sources that work in the enclave and the host
+- debuggers - Container debugger source code
+- docs - Contains documentation
+- enclave - Contains the source for the oeenclave library
+- host - Contains source for the oehost library
+- idl - Contains source for the oeidl library
+- include - Contains C header files
+- libc - Contains sources for the oelibc enclave library
+- libcxx - Contains logic for building the oelibcxx library
+- pkgconfig - Contains pkg-cinfig pc files
+- prereqs - Contains scripts for installing prerequisite software
+- samples - Contains enclave-development sample sources
+- scripts - Contains Shell scripts
+- tests - Contains all test programs, which may also serve as samples
+- tools - Contains command-line tools (oesgx, oesign, oegen)
 
 

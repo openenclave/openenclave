@@ -5,10 +5,8 @@
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.threads/thread.thread.class/thread.thread.constr/F.pass.cpp
 #pthread_detach failures
 #../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.async/async.pass.cpp =>calls clock_gettime()
-
 #Exception and test timeout -- no other info
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.condition/thread.condition.condvarany/wait_terminates.sh.cpp
-#clock_gettime() unsupported
 #73: Assertion failed: "clock_gettime(): panic" == NULL (/home/accuser/openenclave/libc/syscalls.c: _syscall_clock_gettime: 134); Stopped at failure xx
 ../../3rdparty/libcxx/libcxx/test/libcxx/thread/thread.condition/PR30202_notify_from_pthread_created_thread.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.condition/notify_all_at_thread_exit.pass.cpp
@@ -50,3 +48,15 @@
 #GCC error as attributes are not allowed on a function-definition
 ../../3rdparty/libcxx/libcxx/test/libcxx/thread/thread.mutex/thread_safety_requires_capability.pass.cpp
 
+#Timing sensitive and hence unsupported - 250 milliseconds
+../../3rdparty/libcxx/libcxx/test/std/thread/thread.condition/thread.condition.condvarany/wait_for.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/thread/thread.condition/thread.condition.condvarany/wait_for_pred.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/thread/thread.condition/thread.condition.condvarany/wait_until.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/thread/thread.condition/thread.condition.condvarany/wait_until_pred.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/thread/thread.condition/thread.condition.condvar/wait_for.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/thread/thread.condition/thread.condition.condvar/wait_for_pred.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/thread/thread.condition/thread.condition.condvar/wait_until.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/thread/thread.condition/thread.condition.condvar/wait_until_pred.pass.cpp
+
+#Not supported as it uses several threads and fails occasionally
+../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.async/async_race.pass.cpp

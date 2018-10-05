@@ -17,10 +17,6 @@ Linux and Windows platforms.
 
 The current implementation of Open Enclave is built on [Intel Software Guard Extensions (SGX)](https://software.intel.com/en-us/sgx), other enclave architectures (such as solutions from AMD or ARM) will be added in the future. This public preview focuses on the Linux platform.
 
-Design Overview
--------------
-
-The [Design Overview](docs/DesignOverview.pdf) document provides a brief design overview of the Open Enclave SDK. It describes the parts of the SDK and how they work together to create, invoke, and terminate enclaves. 
 
 Getting Started
 ---------------
@@ -44,4 +40,4 @@ See the [Development Guide](docs/DevelopmentGuide.md) for details about developi
 Licensing
 =========
 
-Microsoft plans to release the [Open Enclave SDK under the MIT license](https://github.com/Microsoft/openenclave/blob/master/LICENSE)
+This project is released under the [MIT License](https://github.com/Microsoft/openenclave/blob/master/LICENSE).

@@ -4,6 +4,7 @@
 #include "quote.h"
 #include <assert.h>
 #include <limits.h>
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxtypes.h>
@@ -144,7 +145,7 @@ done:
 oe_result_t sgx_get_qetarget_info(sgx_target_info_t* target_info)
 {
     oe_result_t result = OE_UNEXPECTED;
-    memset(target_info, 0, sizeof(*target_info));
+    memset(target_info, 0, sizeof(sgx_target_info_t));
 
 #if defined(OE_USE_LIBSGX)
     // Quote workflow always begins with obtaining the target info. Therefore
@@ -153,15 +154,14 @@ oe_result_t sgx_get_qetarget_info(sgx_target_info_t* target_info)
     // oe_initialize_quote_provider performs initialization only once even if
     // called many times.
 
-    oe_initialize_quote_provider();
-    result = oe_sgx_qe_get_target_info((uint8_t*)target_info);
-
+    OE_CHECK(oe_initialize_quote_provider());
+    OE_CHECK(oe_sgx_qe_get_target_info((uint8_t*)target_info));
 #else
-
-    result = _sgx_init_quote_with_aesm(target_info);
-
+    OE_CHECK(_sgx_init_quote_with_aesm(target_info));
 #endif
 
+    result = OE_OK;
+done:
     return result;
 }
 

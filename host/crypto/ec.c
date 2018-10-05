@@ -2,9 +2,11 @@
 // Licensed under the MIT License.
 
 #include "ec.h"
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/defs.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/utils.h>
 #include <openssl/obj_mac.h>
 #include <openssl/pem.h>
 #include <string.h>
@@ -64,10 +66,10 @@ static oe_result_t _generate_key_pair(
     EC_POINT* point = NULL;
 
     if (private_key)
-        memset(private_key, 0, sizeof(*private_key));
+        oe_secure_zero_fill(private_key, sizeof(*private_key));
 
     if (public_key)
-        memset(public_key, 0, sizeof(*public_key));
+        oe_secure_zero_fill(public_key, sizeof(oe_public_key_t));
 
     /* Check parameters */
     if (!private_key || !public_key)
@@ -373,7 +375,7 @@ oe_result_t oe_ec_public_key_from_coordinates(
     BIGNUM* y = NULL;
 
     if (public_key)
-        memset(public_key, 0, sizeof(oe_ec_public_key_t));
+        oe_secure_zero_fill(public_key, sizeof(oe_ec_public_key_t));
 
     /* Initialize OpenSSL */
     oe_initialize_openssl();

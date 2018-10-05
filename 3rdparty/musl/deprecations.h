@@ -69,14 +69,14 @@ struct tm;
 OE_LIBC_DEPRECATED(OE_UNSUPPORTED_ENCLAVE_FUNCTION)
 size_t strftime(
     char* s, 
-    size_t max, 
+    size_t maxparam, 
     const char* format, 
     const struct tm* tm);
 
 OE_LIBC_DEPRECATED(OE_UNSUPPORTED_ENCLAVE_FUNCTION)
 size_t strftime_l(
     char* s,
-    size_t max,
+    size_t maxparam,
     const char* format,
     const struct tm* tm,
     locale_t loc);

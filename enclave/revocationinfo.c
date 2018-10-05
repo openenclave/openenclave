@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "../common/revocation.h"
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
@@ -26,7 +27,7 @@ static oe_result_t _copy_buffer_to_enclave(
     if (*dst == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
-    oe_memcpy(*dst, src, src_size);
+    OE_CHECK(oe_memcpy_s(*dst, src_size, src, src_size));
     *dst_size = src_size;
     result = OE_OK;
 
@@ -81,7 +82,9 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
     for (uint32_t i = 0; i < args->num_crl_urls; ++i)
     {
         host_args->crl_urls[i] = (const char*)p;
-        oe_memcpy(p, args->crl_urls[i], crl_url_sizes[i]);
+        OE_CHECK(
+            oe_memcpy_s(
+                p, crl_url_sizes[i], args->crl_urls[i], crl_url_sizes[i]));
         p += crl_url_sizes[i];
     }
 

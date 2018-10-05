@@ -281,16 +281,16 @@ add_library(oelibc STATIC
     ${MUSLSRC}/math/log10l.c
     ${MUSLSRC}/math/log1p.c
     ${MUSLSRC}/math/log1pf.c
-    ${MUSLSRC}/math/log1pl.c
+    #${MUSLSRC}/math/log1pl.c
     ${MUSLSRC}/math/log2.c
     ${MUSLSRC}/math/log2f.c
-    ${MUSLSRC}/math/log2l.c
+    #${MUSLSRC}/math/log2l.c
     ${MUSLSRC}/math/logb.c
     ${MUSLSRC}/math/logbf.c
     ${MUSLSRC}/math/logbl.c
     ${MUSLSRC}/math/log.c
     ${MUSLSRC}/math/logf.c
-    ${MUSLSRC}/math/logl.c
+    #${MUSLSRC}/math/logl.c
     ${MUSLSRC}/math/lrint.c
     ${MUSLSRC}/math/lrintf.c
     ${MUSLSRC}/math/lrintl.c
@@ -358,8 +358,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/math/sinhl.c
     ${MUSLSRC}/math/__sinl.c
     ${MUSLSRC}/math/sinl.c
-    ${MUSLSRC}/math/sqrt.c
-    ${MUSLSRC}/math/sqrtf.c
     ${MUSLSRC}/math/__tan.c
     ${MUSLSRC}/math/tan.c
     ${MUSLSRC}/math/__tandf.c
@@ -377,8 +375,13 @@ add_library(oelibc STATIC
     ${MUSLSRC}/math/truncl.c
     ${MUSLSRC}/math/x86_64/acosl.s
     ${MUSLSRC}/math/x86_64/asinl.s
+    ${MUSLSRC}/math/x86_64/log1pl.s
+    ${MUSLSRC}/math/x86_64/log2l.s
+    ${MUSLSRC}/math/x86_64/logl.s
     #${MUSLSRC}/math/x86_64/exp2l.s
+    ${MUSLSRC}/math/x86_64/sqrt.s
     ${MUSLSRC}/math/x86_64/sqrtl.s
+    ${MUSLSRC}/math/x86_64/sqrtf.s
     ${MUSLSRC}/misc/basename.c
     ${MUSLSRC}/misc/dirname.c
     ${MUSLSRC}/mman/mmap.c
@@ -695,7 +698,7 @@ target_link_libraries(oelibc oecore)
 # as a pre-build step, place the musl LIBC headers
 add_dependencies(oelibc oelibc_includes)
 
-target_include_directories(oelibc PRIVATE 
+target_include_directories(oelibc PRIVATE
     ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal
     ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/x86_64)
 
@@ -704,7 +707,7 @@ target_include_directories(oelibc PRIVATE
 # time (relative to install prefix)
 target_include_directories(oelibc PUBLIC
     $<BUILD_INTERFACE:${OE_INCDIR}/openenclave/libc>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/libc>)
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/libc>)
 
 # when building this project, we also need a number of internal includes
 target_include_directories(oelibc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/internal)

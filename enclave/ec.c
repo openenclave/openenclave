@@ -5,9 +5,11 @@
 #include <mbedtls/asn1.h>
 #include <mbedtls/asn1write.h>
 #include <mbedtls/ecp.h>
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/utils.h>
 #include "key.h"
 #include "pem.h"
 #include "random.h"
@@ -97,10 +99,10 @@ static oe_result_t _generate_key_pair(
     mbedtls_pk_init(&pk);
 
     if (private_key)
-        oe_memset(private_key, 0, sizeof(*private_key));
+        oe_secure_zero_fill(private_key, sizeof(*private_key));
 
     if (public_key)
-        oe_memset(public_key, 0, sizeof(*public_key));
+        oe_secure_zero_fill(public_key, sizeof(*public_key));
 
     /* Check for invalid parameters */
     if (!private_key || !public_key)
@@ -329,7 +331,7 @@ oe_result_t oe_ec_public_key_from_coordinates(
     const mbedtls_pk_info_t* info;
 
     if (public_key)
-        oe_memset(public_key, 0, sizeof(oe_ec_public_key_t));
+        oe_secure_zero_fill(public_key, sizeof(oe_ec_public_key_t));
 
     if (impl)
         mbedtls_pk_init(&impl->pk);
@@ -460,7 +462,7 @@ oe_result_t oe_ecdsa_signature_write_der(
         OE_RAISE(OE_BUFFER_TOO_SMALL);
     }
 
-    oe_memcpy(signature, p, len);
+    OE_CHECK(oe_memcpy_s(signature, *signature_size, p, len));
     *signature_size = len;
 
     result = OE_OK;

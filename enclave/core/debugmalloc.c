@@ -3,6 +3,7 @@
 
 #define USE_DL_PREFIX
 #include "debugmalloc.h"
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/backtrace.h>
 #include <openenclave/internal/backtrace.h>
@@ -315,7 +316,7 @@ void* oe_debug_malloc(size_t size)
         return NULL;
 
     /* Fill block with 0xAA (Allocated) bytes */
-    oe_memset(block, 0xAA, block_size);
+    oe_memset_s(block, block_size, 0xAA, block_size);
 
     header_t* header = (header_t*)block;
     INIT_BLOCK(header, 0, size);
@@ -336,7 +337,7 @@ void oe_debug_free(void* ptr)
         /* Fill the whole block with 0xDD (Deallocated) bytes */
         void* block = _get_block_address(ptr);
         size_t block_size = _get_block_size(ptr);
-        oe_memset(block, 0xDD, block_size);
+        oe_memset_s(block, block_size, 0xDD, block_size);
 
         dlfree(block);
     }
@@ -354,7 +355,7 @@ void* oe_debug_calloc(size_t nmemb, size_t size)
     if (!(ptr = oe_debug_malloc(total_size)))
         return NULL;
 
-    oe_memset(ptr, 0, total_size);
+    oe_memset_s(ptr, total_size, 0, total_size);
 
     return ptr;
 }
@@ -376,9 +377,15 @@ void* oe_debug_realloc(void* ptr, size_t size)
             return NULL;
 
         if (size > header->size)
-            oe_memcpy(new_ptr, ptr, header->size);
+        {
+            if (oe_memcpy_s(new_ptr, size, ptr, header->size) != OE_OK)
+                return NULL;
+        }
         else
-            oe_memcpy(new_ptr, ptr, size);
+        {
+            if (oe_memcpy_s(new_ptr, size, ptr, size) != OE_OK)
+                return NULL;
+        }
 
         oe_debug_free(ptr);
 
@@ -412,6 +419,15 @@ void* oe_debug_memalign(size_t alignment, size_t size)
 int oe_debug_posix_memalign(void** memptr, size_t alignment, size_t size)
 {
     if (!memptr)
+        return EINVAL;
+
+    size_t d = alignment / sizeof(void*);
+    size_t r = alignment % sizeof(void*);
+
+    bool is_multiple = (d >= 1 && r == 0);
+    bool is_pow2 = (alignment != 0) && ((alignment & (alignment - 1)) == 0);
+
+    if (!is_multiple || !is_pow2)
         return EINVAL;
 
     if (!(*memptr = oe_debug_memalign(alignment, size)))

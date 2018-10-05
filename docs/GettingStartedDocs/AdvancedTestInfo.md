@@ -13,8 +13,4 @@ build$ cmake -DENABLE_FULL_LIBC_TESTS=ON -DENABLE_FULL_LIBCXX_TESTS=ON ..
 build$ make
 ```
 
-To run valgrind-tests, add "**-D ExperimentalMemCheck**" to the ctest call. 
-Enclave tests all seem to fail today.
-
-```
-Execute the tests via ctest (see "man ctest" for details).
+Execute the tests via `ctest` (see `man ctest` for details).

@@ -2,17 +2,21 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/defs.h>
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/utils.h>
 #include "common.h"
 
-static void _oe_parse_sgx_report_body(
+static oe_result_t _oe_parse_sgx_report_body(
     const sgx_report_body_t* report_body,
     bool remote,
     oe_report_t* parsed_report)
 {
-    memset(parsed_report, 0, sizeof(oe_report_t));
+    oe_result_t result = OE_UNEXPECTED;
+
+    oe_secure_zero_fill(parsed_report, sizeof(oe_report_t));
 
     parsed_report->size = sizeof(oe_report_t);
     parsed_report->type = OE_ENCLAVE_TYPE_SGX;
@@ -32,19 +36,23 @@ static void _oe_parse_sgx_report_body(
     OE_STATIC_ASSERT(
         sizeof(parsed_report->identity.unique_id) >=
         sizeof(report_body->mrenclave));
-    memcpy(
-        parsed_report->identity.unique_id,
-        report_body->mrenclave,
-        sizeof(report_body->mrenclave));
+    OE_CHECK(
+        oe_memcpy_s(
+            parsed_report->identity.unique_id,
+            sizeof(parsed_report->identity.unique_id),
+            report_body->mrenclave,
+            sizeof(report_body->mrenclave)));
 
     OE_STATIC_ASSERT(
         sizeof(parsed_report->identity.signer_id) >=
         sizeof(report_body->mrsigner));
 
-    memcpy(
-        parsed_report->identity.signer_id,
-        report_body->mrsigner,
-        sizeof(report_body->mrsigner));
+    OE_CHECK(
+        oe_memcpy_s(
+            parsed_report->identity.signer_id,
+            sizeof(parsed_report->identity.signer_id),
+            report_body->mrsigner,
+            sizeof(report_body->mrsigner)));
 
     parsed_report->identity.product_id[0] = report_body->isvprodid & 0xFF;
     parsed_report->identity.product_id[1] =
@@ -57,6 +65,10 @@ static void _oe_parse_sgx_report_body(
     parsed_report->report_data_size = sizeof(sgx_report_data_t);
     parsed_report->enclave_report = (uint8_t*)report_body;
     parsed_report->enclave_report_size = sizeof(sgx_report_body_t);
+
+    result = OE_OK;
+done:
+    return result;
 }
 
 oe_result_t oe_parse_report(
@@ -84,19 +96,96 @@ oe_result_t oe_parse_report(
     if (header->report_type == OE_REPORT_TYPE_SGX_LOCAL)
     {
         sgx_report = (const sgx_report_t*)header->report;
-        _oe_parse_sgx_report_body(&sgx_report->body, false, parsed_report);
+        OE_CHECK(
+            _oe_parse_sgx_report_body(&sgx_report->body, false, parsed_report));
         result = OE_OK;
     }
     else if (header->report_type == OE_REPORT_TYPE_SGX_REMOTE)
     {
         sgx_quote = (const sgx_quote_t*)header->report;
-        _oe_parse_sgx_report_body(&sgx_quote->report_body, true, parsed_report);
+        OE_CHECK(
+            _oe_parse_sgx_report_body(
+                &sgx_quote->report_body, true, parsed_report));
         result = OE_OK;
     }
     else
     {
         OE_RAISE(OE_REPORT_PARSE_ERROR);
     }
+
+done:
+    return result;
+}
+
+static oe_result_t _oe_sgx_get_target_info(
+    const uint8_t* report,
+    size_t report_size,
+    void* target_info_buffer,
+    size_t* target_info_size)
+{
+    oe_result_t result = OE_FAILURE;
+    sgx_report_t* sgx_report = (sgx_report_t*)report;
+    sgx_target_info_t* info = (sgx_target_info_t*)target_info_buffer;
+
+    if (!report || report_size < sizeof(*sgx_report) || !target_info_size)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (target_info_buffer == NULL || *target_info_size < sizeof(*info))
+    {
+        *target_info_size = sizeof(*info);
+        OE_RAISE(OE_BUFFER_TOO_SMALL);
+    }
+
+    OE_CHECK(oe_memset_s(info, sizeof(*info), 0, sizeof(*info)));
+
+    OE_CHECK(
+        oe_memcpy_s(
+            info->mrenclave,
+            sizeof(info->mrenclave),
+            sgx_report->body.mrenclave,
+            sizeof(sgx_report->body.mrenclave)));
+
+    info->attributes = sgx_report->body.attributes;
+    info->misc_select = sgx_report->body.miscselect;
+
+    *target_info_size = sizeof(*info);
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+oe_result_t oe_get_target_info(
+    const uint8_t* report,
+    size_t report_size,
+    void* target_info_buffer,
+    size_t* target_info_size)
+{
+    oe_result_t result = OE_FAILURE;
+    oe_report_header_t* report_header = (oe_report_header_t*)report;
+
+    if (!report || report_size < sizeof(*report_header) || !target_info_size)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Validate the report header. */
+    if (report_header->version != OE_REPORT_HEADER_VERSION)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    report_size -= OE_OFFSETOF(oe_report_header_t, report);
+    report += OE_OFFSETOF(oe_report_header_t, report);
+    switch (report_header->report_type)
+    {
+        case OE_REPORT_TYPE_SGX_LOCAL:
+        case OE_REPORT_TYPE_SGX_REMOTE:
+            OE_CHECK(
+                _oe_sgx_get_target_info(
+                    report, report_size, target_info_buffer, target_info_size));
+            break;
+        default:
+            OE_RAISE(OE_INVALID_PARAMETER);
+    }
+
+    result = OE_OK;
 
 done:
     return result;

@@ -19,4 +19,6 @@ Test behavior of oe_get_report, oe_parse_report, oe_verify_report APIs:
 **Other tests**
   1. *TestVerifyTCBInfo*: Tests tcbInfo JSON processing. Positive and negative tests. Schema validation.
   2. *TestIso861Time*, *TestIso861TimeNegative*: Positive and negative tests oe_datetime_t.
+  3. test_minimum_issue_date: Tests that setting the minimum crl, tcb issue date has the desired effect on attestation.
+  
   

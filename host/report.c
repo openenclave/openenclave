@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
@@ -8,6 +9,10 @@
 #include <openenclave/internal/utils.h>
 #include "../common/quote.h"
 #include "quote.h"
+
+#if defined(OE_USE_LIBSGX)
+#include "sgxquoteprovider.h"
+#endif
 
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
 
@@ -46,13 +51,20 @@ static oe_result_t _oe_get_local_report(
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     if (opt_params != NULL)
-        memcpy(arg->opt_params, opt_params, opt_params_size);
+        OE_CHECK(
+            oe_memcpy_s(
+                arg->opt_params, opt_params_size, opt_params, opt_params_size));
 
     arg->opt_params_size = opt_params_size;
 
     OE_CHECK(oe_ecall(enclave, OE_ECALL_GET_SGX_REPORT, (uint64_t)arg, NULL));
 
-    memcpy(report_buffer, &arg->sgx_report, sizeof(sgx_report_t));
+    OE_CHECK(
+        oe_memcpy_s(
+            report_buffer,
+            *report_buffer_size,
+            &arg->sgx_report,
+            sizeof(sgx_report_t)));
     *report_buffer_size = sizeof(sgx_report_t);
     result = OE_OK;
 
@@ -150,6 +162,12 @@ oe_result_t oe_get_report(
     oe_result_t result = OE_FAILURE;
     oe_report_header_t* header = (oe_report_header_t*)report_buffer;
 
+#if defined(OE_USE_LIBSGX)
+    // The two host side attestation API's are oe_get_report and
+    // oe_verify_report. Initialize the quote provider in both these APIs.
+    OE_CHECK(oe_initialize_quote_provider());
+#endif
+
     // Reserve space in the buffer for header.
     if (report_buffer && report_buffer_size)
     {
@@ -217,6 +235,12 @@ oe_result_t oe_verify_report(
     oe_report_t oe_report = {0};
     oe_verify_report_args_t arg = {0};
     oe_report_header_t* header = (oe_report_header_t*)report;
+
+#if defined(OE_USE_LIBSGX)
+    // The two host side attestation API's are oe_get_report and
+    // oe_verify_report. Initialize the quote provider in both these APIs.
+    OE_CHECK(oe_initialize_quote_provider());
+#endif
 
     if (report == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
