@@ -1,46 +1,46 @@
 Getting Started for Open Enclave (OE) application developers
 ========================================================
 
-Install Prerequisites
+Acquire Intel SGX DCAP Hardware
 ----------------------------------------------
 
-  - Run the following command to install required tools/library
+ - Azure currently offers an Ubuntu 16.04 ACC VM which supports Intel SGX DCAP. More information can be found here: https://azure.microsoft.com/en-us/solutions/confidential-compute/
 
-        sudo apt-get install make gcc g++ gdb libmbedtls10 libssl-dev dh-exec libcurl3
-
-  - [Install Clang-7](prerequisites.md#install-clang-7) 
-
-  See [here](prerequisites.md#install-prerequisites-1) for more prerequisites explanation
-
-
-Download and Install OE SDK package
+Install Open Enclave SDK
 ----------------------------------------------
- 
- - Download the latest release package from  [OE SDK package releases](https://github.com/Microsoft/openenclave/releases)
- 
-   Let's say, the downloaded OE SDK package is openenclave-x.x.x-Linux.deb
 
- - Install it to your target Linux system with the following dpkg command
+1. Configure APT Repos
+```bash
+echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu xenial main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list
+wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | sudo apt-key add -
 
-       sudo dpkg -i openenclave-x.x.x-Linux.deb
+echo "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" | sudo tee /etc/apt/sources.list.d/llvm-toolchain-xenial-7.list
+wget -qO - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
 
-   On a successful OE SDK installation, you will have the following components installed under the installation target directory: install_prefix (The default installtion path for a release package is /opt/openenclave)
+echo "deb [arch=amd64] https://packages.microsoft.com/ubuntu/16.04/prod xenial main" | sudo tee /etc/apt/sources.list.d/msprod.list
+wget -qO - https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+```
 
+2. Install the base packages
+```bash
+sudo apt-get update
+sudo apt-get -y install clang-7 libssl-dev make gcc gdb g++ pkg-config
+```
 
-| Path                                     | Description                     |
-|------------------------------------------|---------------------------------|
-| /opt/openenclave/bin                     | developer tools such as oe-gdb for debugging and oesign for signing your enclaves |
-| /opt/openenclave/include/openenclave     | OE runtime headers for use in your enclave (enclave.h) and its host (host.h)                        |
-| /opt/openenclaveinclude/libc            | c library headers for use inside the enclave. See the API Reference section for supported functions|
-| /opt/openenclave/include/libcxx          | c++ library headers for use inside the enclave. See the API Reference section for supported functions|
-| /opt/openenclave/include/mbedtls         | mbedtls library headers for use inside the enclave. See the API Reference section for supported function|
-| /opt/openenclave/lib/openenclave/enclave | libraries for linking into the enclave, including the libc, libcxx and mbedtls libraries for OE|
-| /opt/openenclave/lib/openenclave/host    | library for linking into the host process of the enclave|
-| /opt/openenclave/lib/openenclave/debugger| libraries used by the gdb plug-in for debugging enclaves|
-| /opt/openenclave/share/doc/openenclave   | OE API documentation in HTML format, which can be browsed starting with index.html. It is consistent with the version of the SDK installed|
-| /opt/openenclave/share/openenclave/samples  | all OE samples|
+3. Install the Intel SGX DCAP Driver
+```bash
+wget https://download.01.org/intel-sgx/dcap-1.0/sgx_linux_x64_driver_dcap_36594a7.bin -O sgx_linux_x64_driver.bin
+chmod +x sgx_linux_x64_driver.bin
+sudo ./sgx_linux_x64_driver.bin
+```
 
+4. Install the Intel and Open Enclave packages
+```bash
+sudo apt-get -y install libsgx-enclave-common libsgx-enclave-common-dev libsgx-dcap-ql libsgx-dcap-ql-dev az-dcap-client open-enclave
+```
   
+ - As an alternative to all steps above, one can run the [install-open-enclave-stack](/scripts/install-open-enclave-stack) script.
+
 OE Samples
 -------------------------------
 
