@@ -227,7 +227,7 @@ static int _aesm_valid(const aesm_t* aesm)
 
 aesm_t* aesm_connect()
 {
-  aesm_t* aesm = NULL;
+    aesm_t* aesm = NULL;
     aesm_interface_t* instance = NULL;
 
     /* Obtain AESM COM object (as a test only) */
@@ -260,7 +260,7 @@ void aesm_disconnect(aesm_t* aesm)
 }
 
 oe_result_t aesm_get_launch_token(
-  aesm_t* aesm,
+    aesm_t* aesm,
     uint8_t mrenclave[OE_SHA256_SIZE],
     uint8_t modulus[OE_KEY_SIZE],
     const sgx_attributes_t* attributes,
@@ -308,7 +308,7 @@ done:
 }
 
 oe_result_t aesm_init_quote(
-  aesm_t* aesm,
+    aesm_t* aesm,
     sgx_target_info_t* target_info,
     sgx_epid_group_id_t* epid_group_id)
 {
@@ -349,7 +349,7 @@ done:
 }
 
 oe_result_t aesm_get_quote(
-  aesm_t* aesm,
+    aesm_t* aesm,
     const sgx_report_t* report,
     sgx_quote_type_t quote_type,
     const sgx_spid_t* spid,
