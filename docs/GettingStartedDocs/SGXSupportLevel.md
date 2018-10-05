@@ -77,8 +77,7 @@ Note: If the oesgx tool is run a Windows Hyper-V Gen 1 Linux VM, it will report 
 How to configure your dev machine to be SGX enabled
 ---------------------------------------------------
 
-This section is for the Microsoft internal development purpose and will be removed before public reivew
+- How to set up Open Enclave SGX dev environment [here](GettingStarted_User.md)
 
 - How to enable SGX on a system and create a Linux VM to run on a Windows host [here](SetupSGXSystem.md)
 
-- How to provision an ACC Azure SGX Azure VM and set up Open Enclave SGX dev environment [here](accvmAccSGXVMSetup.md)
