@@ -40,4 +40,4 @@ See the [Development Guide](docs/DevelopmentGuide.md) for details about developi
 Licensing
 =========
 
-Microsoft plans to release the [Open Enclave SDK under the MIT license](https://github.com/Microsoft/openenclave/blob/master/LICENSE)
+This project is released under the [MIT License](https://github.com/Microsoft/openenclave/blob/master/LICENSE).
