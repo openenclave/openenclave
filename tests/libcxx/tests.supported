@@ -89,7 +89,6 @@
 ../../3rdparty/libcxx/libcxx/test/libcxx/experimental/any/version.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/experimental/containers/sequences/dynarray/dynarray.cons/alloc.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/experimental/containers/sequences/dynarray/dynarray.cons/default.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/experimental/containers/sequences/dynarray/dynarray.cons/default_throws_bad_alloc.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/experimental/containers/sequences/dynarray/dynarray.data/default.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/experimental/containers/sequences/dynarray/dynarray.mutate/default.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/experimental/containers/sequences/dynarray/dynarray.overview/at.pass.cpp
@@ -2369,7 +2368,6 @@
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/new_array.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/new_array_replace.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array14.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array_calls_unsized_delete_array.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array_fsizeddeallocation.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.dataraces/not_testable.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.placement/new_array.pass.cpp
@@ -4280,7 +4278,6 @@
 ../../3rdparty/libcxx/libcxx/test/std/utilities/memory/default.allocator/allocator.members/address.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/memory/default.allocator/allocator.members/allocate.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/memory/default.allocator/allocator.members/allocate.size.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/utilities/memory/default.allocator/allocator.members/construct.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/memory/default.allocator/allocator.members/max_size.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/memory/default.allocator/allocator_pointers.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/memory/default.allocator/allocator_types.pass.cpp
