@@ -7,7 +7,7 @@
 - Demonstrate how to build, sign, and run an OE image
 - Also runs in OE simulation mode
 
- Prerequisite: you may want to read [Common Sample Information](/samples/README.md#common-sample-information) before going further
+Prerequisite: you may want to read [Common Sample Information](/samples/README.md#common-sample-information) before going further
 
 ## About the helloworld sample
 
@@ -164,9 +164,8 @@ Each line will now be described in turn.
 #include <stdio.h>
 ```
 
+An enclave library will be loaded into and run inside a host application which is a user-mode process. To keep the [Trusted computing base](https://en.wikipedia.org/wiki/Trusted_computing_base) small, the decision was made to make only a specific set of APIs available to an enclave library. A complete list of APIs available to an enclave library can be found [here](/docs/GettingStartedDocs/using_oe_sdk.md#api-references)
 
-An enclave library will be loaded into and run inside a host application which is a user-mode process. To keep the [Trusted computing base](https://en.wikipedia.org/wiki/Trusted_computing_base) small, the decision was made to make only a specific set of APIs available to an enclave library. A complete list of APIs available to an enclave library can be found [here](/docs/GettingStartedDocs/APIsAvailableToEnclave.md#apis-available-to-an-enclave-library)
- 
 The `stdio.h` header file is included in this sample because we are calling the CRT function `fprintf` to print a message on the screen. However this function has a dependency on the kernel to print a message on the screen so this code cannot execute within the enclave itself. Instead this function marshals the call through to the host to carry out the call on the enclaves behalf. Only a subset of the CRT is made available through this open enclave library.
 
  ```c
@@ -192,7 +191,6 @@ if (result != OE_OK)
 This calls the marshaling function that is generated from the `helloworld.edl` file which in turn calls into the function within the host. Even though the `host_helloworld()` function is a `void` this call can still fail within the marshaling code itself and so we should always validate it. If `host_helloworld()` were to return a value, it would actually be passed back as an out parameter of the function.
 
 ### Build and sign an enclave
-
 
 As mentioned in [how-to-build-and-run-samples](/samples/README.md#how-to-build-and-run-samples), make files are provided for each sample. You can build the whole sample by running `make build` from the sample root, or you can build the enclave and host separately by running `make build` in each directory.
 
@@ -262,15 +260,13 @@ clean:
 keys:
 	openssl genrsa -out private.pem -3 3072
 	openssl rsa -in private.pem -pubout -out public.pem
-
- ```
+```
 
 All OE samples use the `pkg-config` tool for building.
 
-If you are interested in its details, you can find OE pkg-config pc files in package_installtation_destination/share/pkgconfig. 
+If you are interested in its details, you can find OE pkg-config pc files in package_installtation_destination/share/pkgconfig.
 
 For example: /opt/openenclave/share/pkgconfig
-
 
 ##### Build
 
@@ -298,7 +294,6 @@ NumTCS=1
 ProductID=1
 SecurityVersion=1
 ```
-
 
 These parameters are described in the [Getting started Build And Sign](/docs/GettingStartedDocs/buildandsign.md#signing-the-enclave) document.
 
@@ -441,7 +436,7 @@ Terminates the enclave and frees up all resources associated with it.
 ### Build a host
 
 The helloworld sample comes with a Makefile with a `build` target. You can run `make build` to generate the marshaling files and build the host app.
-  
+
 Listing of [helloworld/host/Makefile](/samples/helloworld/host/Makefile)
 
 ```make
