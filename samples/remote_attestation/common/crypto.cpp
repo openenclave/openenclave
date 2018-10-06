@@ -136,6 +136,7 @@ bool Crypto::Encrypt(
     mbedtls_pk_context key;
     size_t key_size = 0;
     int res = -1;
+    mbedtls_rsa_context* rsa_context;
 
     mbedtls_pk_init(&key);
 
@@ -151,9 +152,23 @@ bool Crypto::Encrypt(
         goto exit;
     }
 
+    rsa_context = mbedtls_pk_rsa(key);
+    rsa_context->padding = MBEDTLS_RSA_PKCS_V21;
+    rsa_context->hash_id = MBEDTLS_MD_SHA256;
+
+    if (rsa_context->padding == MBEDTLS_RSA_PKCS_V21)
+    {
+        TRACE_ENCLAVE("Padding used: MBEDTLS_RSA_PKCS_V21 for OAEP or PSS");
+    }
+
+    if (rsa_context->padding == MBEDTLS_RSA_PKCS_V15)
+    {
+        TRACE_ENCLAVE("New MBEDTLS_RSA_PKCS_V15  for 1.5 padding");
+    }
+
     // Encrypt the data.
     res = mbedtls_rsa_pkcs1_encrypt(
-        mbedtls_pk_rsa(key),
+        rsa_context,
         mbedtls_ctr_drbg_random,
         &m_ctr_drbg_contex,
         MBEDTLS_RSA_PUBLIC,
@@ -186,15 +201,19 @@ bool Crypto::decrypt(
     bool ret = false;
     size_t output_size = 0;
     int res = 0;
+    mbedtls_rsa_context* rsa_context;
 
     if (!m_initialized)
         goto exit;
 
     mbedtls_pk_rsa(m_pk_context)->len = encrypted_data_size;
+    rsa_context = mbedtls_pk_rsa(m_pk_context);
+    rsa_context->padding = MBEDTLS_RSA_PKCS_V21;
+    rsa_context->hash_id = MBEDTLS_MD_SHA256;
 
     output_size = *data_size;
     res = mbedtls_rsa_pkcs1_decrypt(
-        mbedtls_pk_rsa(m_pk_context),
+        rsa_context,
         mbedtls_ctr_drbg_random,
         &m_ctr_drbg_contex,
         MBEDTLS_RSA_PRIVATE,
