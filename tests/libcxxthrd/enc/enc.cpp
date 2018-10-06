@@ -170,10 +170,16 @@ OE_ECALL void _enclave_launch_thread(void* args_)
     thread_args = (ThreadArgs*)
         args_; // Set the global value to that obtained from the host
 
+    if (thread_args == NULL)
+    {
+        printf("_enclave_launch_thread(): Invalid thread_args from host\n");
+        oe_abort();
+    }
+
     std::function<void()> f;
 
     _acquire_lock(&_enc_lock);
-    _key_to_thread_id_map[enc_key] = pthread_self();
+    _key_to_thread_id_map[thread_args->enc_key] = pthread_self();
     _release_lock(&_enc_lock); // Release the lock so that pthread_create can
                                // acquire the lock
 

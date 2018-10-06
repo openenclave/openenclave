@@ -64,9 +64,6 @@ void* EnclaveThread(void* args)
         thread_args->enclave, "_enclave_launch_thread", thread_args);
     OE_TEST(result == OE_OK);
 
-    // delete thread_args; -- TO REMOVE -- This should be deleted only after
-    // join or detach
-
     return NULL;
 }
 
