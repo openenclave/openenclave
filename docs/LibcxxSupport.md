@@ -49,7 +49,7 @@ sstream | Yes | - |
 stddef | Yes |  - |
 streambuf | Yes | - |
 system_error | Yes | - |
-thread | Partial | Synchronization primitives are not secure across calls to host. Threads are still scheduled by the untrusted host process and an enclave cannot rely on threads making forward progress. Unsupported function: sleep_until() |
+thread | Partial | Synchronization primitives are not secure across calls to host. Threads are still scheduled by the untrusted host process and an enclave cannot rely on threads making forward progress. Unsupported function: sleep_until(), std::create, std::join and std::detach are not supported on the enclave |
 tuple | Partial | Supported function: tie() |
 typeinfo | No | - |
 type_traits | No | - |
