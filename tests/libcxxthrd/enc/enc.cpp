@@ -99,7 +99,11 @@ static int _pthread_create_hook(
         }
     }
 
-    printf("_pthread_create_hook(): Enclave thread id=0x%lu\n", *enc_thread);
+    printf(
+        "_pthread_create_hook(): pthread_create success for enc_key=%d; thread "
+        "id=0x%lu\n",
+        enc_key,
+        *enc_thread);
     return 0;
 }
 
@@ -116,14 +120,17 @@ static int _pthread_join_hook(pthread_t enc_thread, void** retval)
         });
     if (it == _key_to_thread_id_map.end())
     {
-        printf("Enclave Key for thread ID 0x%lu not found\n", enc_thread);
+        printf(
+            "_pthread_join_hook(): Error: enc_key for thread ID 0x%lu not "
+            "found\n",
+            enc_thread);
         oe_abort();
     }
     join_enc_key = it->first;
     _release_lock(&_enc_lock);
 
     printf(
-        "_pthread_join_hook(): Enclave Key for thread ID 0x%lu is %d\n",
+        "_pthread_join_hook(): enc_key for thread ID 0x%lu is %d\n",
         enc_thread,
         join_enc_key);
     if (oe_call_host("host_join_pthread", (void*)(uint64_t)join_enc_key) !=
@@ -148,7 +155,10 @@ static int _pthread_detach_hook(pthread_t enc_thread)
         });
     if (it == _key_to_thread_id_map.end())
     {
-        printf("Enclave Key for thread ID 0x%lu not found\n", enc_thread);
+        printf(
+            "_pthread_detachhook(): Error enc_key for thread ID 0x%lu not "
+            "found\n",
+            enc_thread);
         oe_abort();
     }
     thread_args->enc_key = it->first;
