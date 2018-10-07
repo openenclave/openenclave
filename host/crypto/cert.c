@@ -491,6 +491,42 @@ done:
     return result;
 }
 
+/**
+ * Compare issue dates (not before dates) of two certs.
+ * Returns
+ *      0 if c1 and c2 were issued at the same time
+ *      1 if c1 was issued before c2
+ *     -1 if c1 was issued after c2
+ */
+static int _cert_issue_date_compare(
+    const X509* const* c1,
+    const X509* const* c2)
+{
+    ASN1_TIME* issue_date_c1 = X509_get_notBefore(*c1);
+    ASN1_TIME* issue_date_c2 = X509_get_notBefore(*c2);
+
+    int pday = 0;
+    int psec = 0;
+    // Get days and seconds elapsed after issue of c1 till issue of c2.
+    ASN1_TIME_diff(&pday, &psec, issue_date_c1, issue_date_c2);
+
+    // Use days elapsed first.
+    if (pday != 0)
+        return pday;
+    return psec;
+}
+
+/**
+ * Reorder the cert chain to be leaf->intermeditate->root.
+ * This order simplifies cert validation.
+ * The preferred order is also the reverse chronological order of issue dates.
+ */
+static void _sort_certs_by_issue_date(STACK_OF(X509) * chain)
+{
+    sk_X509_set_cmp_func(chain, _cert_issue_date_compare);
+    sk_X509_sort(chain);
+}
+
 oe_result_t oe_cert_chain_read_pem(
     oe_cert_chain_t* chain,
     const void* pem_data,
@@ -518,6 +554,9 @@ oe_result_t oe_cert_chain_read_pem(
     /* Read the certificate chain into memory */
     if (!(sk = _read_cert_chain((const char*)pem_data)))
         OE_RAISE(OE_FAILURE);
+
+    /* Reorder certs in the chain to preferred order */
+    _sort_certs_by_issue_date(sk);
 
     /* Verify the whole certificate chain */
     OE_CHECK(_verify_whole_chain(sk));
