@@ -7,7 +7,7 @@
 - Demonstrate how to build, sign, and run an OE image
 - Also runs in OE simulation mode
 
-Prerequisite: you may want to read [Common Sample Information](/samples/README.md#common-sample-information) before going further
+Prerequisite: you may want to read [Common Sample Information](../README.md#common-sample-information) before going further
 
 ## About the helloworld sample
 
@@ -20,7 +20,9 @@ This sample is about as simple as you can get regarding creating and calling int
 - The enclave function returns back to the host
 - The enclave is terminated
 
-This sample uses the Open Enclave SDK `oeedger8r` tool to generate marshaling code necessary to call functions between the enclave and the host. For more information on using the Open Enclave oeedger8r tool refer to the [Getting started with the Open Enclave edger8r](/docs/GettingStartedDocs/Edger8rGettingStarted.md).
+This sample uses the Open Enclave SDK `oeedger8r` tool to generate marshaling code necessary to call functions between the enclave
+and the host. For more information on using the Open Enclave oeedger8r tool refer to
+[Getting started with the Open Enclave edger8r](https://github.com/Microsoft/openenclave/tree/master/docs/GettingStartedDocs/Edger8rGettingStarted.md).
 
 First we need to define the functions we want to call between the enclave and host. To do this we create a `helloworld.edl` file:
 
@@ -126,7 +128,7 @@ An enclave exposes its functionality to the host application in the form of a se
 
 The helloworld sample implements a single function named `enclave_helloworld` which is called by the host. All it does is print out a message and then call back to the host. No parameters are passed in this sample for simplicity.
 
-The full source for the enclave implementation is here: [helloworld/enc/enc.c](/samples/helloworld/enc/enc.c)
+The full source for the enclave implementation is here: [helloworld/enc/enc.c](enc/enc.c)
 
 ```c
 #include <stdio.h>
@@ -164,7 +166,7 @@ Each line will now be described in turn.
 #include <stdio.h>
 ```
 
-An enclave library will be loaded into and run inside a host application which is a user-mode process. To keep the [Trusted computing base](https://en.wikipedia.org/wiki/Trusted_computing_base) small, the decision was made to make only a specific set of APIs available to an enclave library. A complete list of APIs available to an enclave library can be found [here](/docs/GettingStartedDocs/using_oe_sdk.md#api-references)
+An enclave library will be loaded into and run inside a host application which is a user-mode process. To keep the [trusted computing base](https://en.wikipedia.org/wiki/Trusted_computing_base) small, the decision was made to make only a specific set of APIs available to an enclave library. A complete list of APIs available to an enclave library can be found [here](https://github.com/Microsoft/openenclave/tree/master/docs/GettingStartedDocs/using_oe_sdk.md#api-references)
 
 The `stdio.h` header file is included in this sample because we are calling the CRT function `fprintf` to print a message on the screen. However this function has a dependency on the kernel to print a message on the screen so this code cannot execute within the enclave itself. Instead this function marshals the call through to the host to carry out the call on the enclaves behalf. Only a subset of the CRT is made available through this open enclave library.
 
@@ -192,7 +194,7 @@ This calls the marshaling function that is generated from the `helloworld.edl` f
 
 ### Build and sign an enclave
 
-As mentioned in [how-to-build-and-run-samples](/samples/README.md#how-to-build-and-run-samples), make files are provided for each sample. You can build the whole sample by running `make build` from the sample root, or you can build the enclave and host separately by running `make build` in each directory.
+As mentioned in [how-to-build-and-run-samples](../README.md#how-to-build-and-run-samples), make files are provided for each sample. You can build the whole sample by running `make build` from the sample root, or you can build the enclave and host separately by running `make build` in each directory.
 
 The following enclave files come with the sample:
 
@@ -220,7 +222,7 @@ Only the signed version of the enclave `helloworldenc.signed.so` is loadable on 
 
 #### Under the hood for the `make build` operation
 
-Here is a listing of key components in the helloworld/enc/Makefile. Also see the [complete listing](/samples/helloworld/enc/Makefile).
+Here is a listing of key components in the helloworld/enc/Makefile. Also see the [complete listing](enc/Makefile).
 
 ```make
 # Detect C and C++ compiler options
@@ -295,7 +297,7 @@ ProductID=1
 SecurityVersion=1
 ```
 
-These parameters are described in the [Getting started Build And Sign](/docs/GettingStartedDocs/buildandsign.md#signing-the-enclave) document.
+These parameters are described in the [Enclave Building and Signing](https://github.com/Microsoft/openenclave/tree/master/docs/GettingStartedDocs/buildandsign.md#signing-the-enclave) document.
 
 ## Host Application
 
@@ -305,9 +307,12 @@ In this section we will cover how to develop a host to load and run the hellowor
 
 ### Develop a host
 
-There are relatively fewer restrictions on developing a host application compared to authoring an enclave. In general, you are free to link your choice of additional libraries into the host application. A part of a typical host application job is to manage the life cycle of an enclave. Open Enclave SDK provides [Enclave Host Runtime](/docs/GettingStartedDocs/APIsAvailableToEnclave.md#enclave-host-library) for enclave management.
+There are relatively fewer restrictions on developing a host application compared to authoring an enclave.
+In general, you are free to link your choice of additional libraries into the host application. A part of
+a typical host application job is to manage the life cycle of an enclave. Open Enclave SDK provides
+an enclave host runtime, with enclave management functions exposed through [openenclave/host.h](https://microsoft.github.io/openenclave/api/host_8h.html).
 
-The full source for the host implementation is here: [helloworld/host/host.c](/samples/helloworld/host/host.c)
+The full source for the host implementation is here: [helloworld/host/host.c](host/host.c)
 
 ```c
 #include <openenclave/host.h>
@@ -437,7 +442,7 @@ Terminates the enclave and frees up all resources associated with it.
 
 The helloworld sample comes with a Makefile with a `build` target. You can run `make build` to generate the marshaling files and build the host app.
 
-Listing of [helloworld/host/Makefile](/samples/helloworld/host/Makefile)
+Listing of [helloworld/host/Makefile](host/Makefile)
 
 ```make
 # Detect C and C++ compiler options

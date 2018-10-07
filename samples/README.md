@@ -86,24 +86,24 @@ username@yourVMname:~/openenclave/share/openenclave/samples/helloworld$ make run
 Enclave called into host to print: Hello World!
 ```
 
-For details on how to configure build and sign options, refer to [Build and Sign an Enclave](/docs/GettingStartedDocs/buildandsign.md).
+For details on how to configure build and sign options, refer to [Enclave Building and Signing](https://github.com/Microsoft/openenclave/blob/master/docs/GettingStartedDocs/buildandsign.md).
 
 ## Samples
 
 The following samples demonstrate how to develop enclave applications using OE APIs. It's recommended to go through the following samples in the order listed.
 
-#### [HelloWorld](/samples/helloworld/README.md)
+#### [HelloWorld](helloworld/README.md)
 
 - Minimum code needed for an OE app
 - Help understand the basic components an OE application
 - Demonstrate how to build, sign, and run an OE image
 
-#### [File-Encryptor](/samples/file-encryptor/README.md)
+#### [File-Encryptor](file-encryptor/README.md)
 
 - Shows how to encrypt and decrypt data inside an enclave
-- Uses AES mbedtls API to perform encryption and decryption
+- Uses AES mbedTLS API to perform encryption and decryption
 
-#### [Data-Sealing](/samples/data-sealing/README.md)
+#### [Data-Sealing](data-sealing/README.md)
 
 - Introduce OE sealing and unsealing features 
 - Demonstrate how to use OE sealing APIs
@@ -111,12 +111,12 @@ The following samples demonstrate how to develop enclave applications using OE A
   - OE_SEAL_POLICY_UNIQUE
   - OE_SEAL_POLICY_PRODUCT
 
-#### [Remote Attestation](/samples/remote_attestation/README.md)
+#### [Remote Attestation](remote_attestation/README.md)
 
 - Explain how OE attestation works
 - Demonstrate an implementation of remote attestation between two enclaves running on different machines
 
-#### [Local Attestation](/samples/local_attestation/README.md)
+#### [Local Attestation](local_attestation/README.md)
 
 - Explain the concept of OE local attestation
 - Demonstrate an implementation of local attestation between two enclaves on the same VM
