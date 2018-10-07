@@ -159,7 +159,6 @@ OE_OCALL void host_detach_pthread(void* args, oe_enclave_t* enclave)
     pthread_t host_thread_id = 0;
     ThreadArgs* thrd_detach_args = (ThreadArgs*)args;
 
-    thrd_detach_args->detach_ret = -1; // this should be pointing to host memory
     printf(
         "host_detach_pthread():enclave key=%lu\n", thrd_detach_args->enc_key);
 
@@ -168,6 +167,7 @@ OE_OCALL void host_detach_pthread(void* args, oe_enclave_t* enclave)
     // Using atomic locks to protect the enclave_host_id_map
     _acquire_lock(&_host_lock);
     auto it = enclave_host_id_map.find(thrd_detach_args->enc_key);
+    thrd_detach_args->detach_ret = -1; // this should be pointing to host memory
     if (it != enclave_host_id_map.end())
     {
         host_thread_id = it->second;
