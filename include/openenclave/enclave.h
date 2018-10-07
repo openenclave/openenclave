@@ -345,7 +345,7 @@ oe_result_t oe_get_report(
  * @param target_info_size The size of **target_info_buffer**. This is set to
  * the required size of **target_info_buffer** on return.
  *
- * @retval OE_OK The platform specific data was successfuly extracted.
+ * @retval OE_OK The platform specific data was successfully extracted.
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
  * @retval OE_BUFFER_TOO_SMALL **target_info_buffer** is NULL or too small.
  *
