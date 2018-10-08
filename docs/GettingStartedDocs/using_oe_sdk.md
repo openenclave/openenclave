@@ -15,7 +15,6 @@ By default, the Open Enclave SDK is installed to `/opt/openenclave`. It contains
 | lib/openenclave/enclave      | Libraries for linking into the enclave, including the libc, libcxx and mbedtls libraries for Open Enclave. |
 | lib/openenclave/host         | Library for linking into the host process of the enclave. |
 | lib/openenclave/debugger     | Libraries used by the gdb plug-in for debugging enclaves. |
-| share/doc/openenclave        | Open Enclave API documentation in HTML format, which can be browsed starting with index.html. |
 | share/openenclave/samples    | Sample code showing how to use the Open Enclave SDK. |
 | share/pkgconfig              | Pkg-config files for header and library includes when building Open Enclave apps. |
 
