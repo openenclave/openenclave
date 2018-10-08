@@ -11,7 +11,7 @@
 #
 
 # Needed for Open Enclave build and scripts
-PACKAGES=('clang-format-3.8' 'cmake' 'make')
+PACKAGES=('clang-format-3.8' 'cmake' 'make' 'shellcheck')
 
 # Needed for using oedbg
 PACKAGES+=('gdb')
