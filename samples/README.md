@@ -86,7 +86,7 @@ username@yourVMname:~/openenclave/share/openenclave/samples/helloworld$ make run
 Enclave called into host to print: Hello World!
 ```
 
-For details on how to configure build and sign options, refer to [Enclave Building and Signing](https://github.com/Microsoft/openenclave/blob/master/docs/GettingStartedDocs/buildandsign.md).
+For details on how to configure build and sign options, refer to [Enclave Building and Signing](https://github.com/Microsoft/openenclave/tree/v0.4.x/docs/GettingStartedDocs/buildandsign.md).
 
 ## Samples
 
