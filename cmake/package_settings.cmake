@@ -40,6 +40,10 @@ install(
   EXPORT openenclave-targets
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
   FILE openenclave-targets.cmake)
+install(
+  FILES ${PROJECT_SOURCE_DIR}/cmake/sdk_cmake_targets_readme.md
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
+  RENAME README.md)
 
 # CPack package handling
 include(InstallRequiredSystemLibraries)
