@@ -111,12 +111,12 @@ typedef struct oe_sgx_enclave_properties_t
 // clang-format off
 
 #define OE_SET_ENCLAVE_SGX(                                               \
-    PRODUCT_ID,                                                          \
-    SECURITY_VERSION,                                                    \
-    ALLOW_DEBUG,                                                         \
+    PRODUCT_ID,                                                           \
+    SECURITY_VERSION,                                                     \
+    ALLOW_DEBUG,                                                          \
     HEAP_PAGE_COUNT,                                                      \
     STACK_PAGE_COUNT,                                                     \
-    TCS_COUNT)                                                           \
+    TCS_COUNT)                                                            \
     OE_INFO_SECTION_BEGIN                                                 \
     OE_EXPORT_CONST oe_sgx_enclave_properties_t oe_enclave_properties_sgx = \
     {                                                                     \
@@ -128,15 +128,15 @@ typedef struct oe_sgx_enclave_properties_t
             {                                                             \
                 .num_heap_pages = HEAP_PAGE_COUNT,                        \
                 .num_stack_pages = STACK_PAGE_COUNT,                      \
-                .num_tcs = TCS_COUNT                                     \
+                .num_tcs = TCS_COUNT                                      \
             }                                                             \
         },                                                                \
         .config =                                                         \
         {                                                                 \
-            .product_id = PRODUCT_ID,                                    \
-            .security_version = SECURITY_VERSION,                        \
+            .product_id = PRODUCT_ID,                                     \
+            .security_version = SECURITY_VERSION,                         \
             .padding = 0,                                                 \
-            .attributes = OE_MAKE_ATTRIBUTES(ALLOW_DEBUG)                \
+            .attributes = OE_MAKE_ATTRIBUTES(ALLOW_DEBUG)                 \
         },                                                                \
         .sigstruct =                                                      \
         {                                                                 \
