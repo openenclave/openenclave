@@ -25,6 +25,8 @@ ecall_dispatcher::~ecall_dispatcher()
 bool ecall_dispatcher::initialize(const char* name)
 {
     bool ret = false;
+    uint8_t* modulus = NULL;
+    size_t modulus_size;
 
     m_name = name;
     m_crypto = new Crypto();
@@ -33,14 +35,44 @@ bool ecall_dispatcher::initialize(const char* name)
         goto exit;
     }
 
-    m_attestation =
-        new Attestation(m_crypto, m_enclave_config->enclave_mrsigner);
+    // Extract modulus from raw PEM.
+    if (!m_crypto->get_rsa_modulus_from_pem(
+            m_enclave_config->other_enclave_pubkey_pem,
+            m_enclave_config->other_enclave_pubkey_pem_size,
+            &modulus,
+            &modulus_size))
+    {
+        goto exit;
+    }
+
+    // Reverse the modulus and compute sha256 on it.
+    for (size_t i = 0; i < modulus_size / 2; i++)
+    {
+        uint8_t tmp = modulus[i];
+        modulus[i] = modulus[modulus_size - 1 - i];
+        modulus[modulus_size - 1 - i] = tmp;
+    }
+
+    // Calculate the MRSIGNER value which is the SHA256 hash of the
+    // little endian representation of the public key modulus. This value
+    // is populated by the signer_id sub-field of a parsed oe_report_t's
+    // identity field.
+    if (m_crypto->Sha256(modulus, modulus_size, m_other_enclave_mrsigner) != 0)
+    {
+        goto exit;
+    }
+
+    m_attestation = new Attestation(m_crypto, m_other_enclave_mrsigner);
     if (m_attestation == NULL)
     {
         goto exit;
     }
     ret = true;
+
 exit:
+    if (modulus != NULL)
+        free(modulus);
+
     return ret;
 }
 
