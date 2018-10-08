@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 #include <openenclave/enclave.h>
 #include "../common/dispatcher.h"
-#include "../common/pubkeys.h"
 #include "../common/remoteattestation_t.h"
 #include "enc1_pubkey.h"
 
