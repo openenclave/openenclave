@@ -137,6 +137,11 @@ static int _pthread_join_hook(pthread_t enc_thread, void** retval)
         OE_OK)
         oe_abort();
 
+    // Delete the _key_to_thread_id_map as this thread id is now invalid
+    _acquire_lock(&_enc_lock);
+    _key_to_thread_id_map.erase(join_enc_key);
+    _release_lock(&_enc_lock);
+
     return 0;
 }
 
@@ -162,6 +167,7 @@ static int _pthread_detach_hook(pthread_t enc_thread)
         oe_abort();
     }
     thread_args->enc_key = it->first;
+    thread_args->detach_ret = -1;
     _release_lock(&_enc_lock);
 
     printf(
@@ -170,6 +176,16 @@ static int _pthread_detach_hook(pthread_t enc_thread)
         it->first);
     if (oe_call_host("host_detach_pthread", (void*)thread_args) != OE_OK)
         oe_abort();
+
+    // On success, delete the _key_to_thread_id_map as this thread id is now
+    // invalid
+    if (!thread_args->detach_ret)
+    {
+        // Delete the _key_to_thread_id_map as this thread id is now invalid
+        _acquire_lock(&_enc_lock);
+        _key_to_thread_id_map.erase(thread_args->enc_key);
+        _release_lock(&_enc_lock);
+    }
 
     return thread_args->detach_ret;
 }

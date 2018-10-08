@@ -49,8 +49,6 @@ void* EnclaveThread(void* args)
     ThreadArgs* thread_args = (ThreadArgs*)args;
     pthread_t host_thread_id = pthread_self();
 
-    printf(
-        "EnclaveThread(): Created for enc_key is %lu\n", thread_args->enc_key);
     _acquire_lock(&_host_lock);
     // Populate the enclave_host_id map with the host thread id
     enclave_host_id_map[thread_args->enc_key] = host_thread_id;
@@ -138,11 +136,18 @@ OE_OCALL void host_join_pthread(uint64_t enc_key, oe_enclave_t* enclave)
             abort();
         }
         else
+        {
+            // Delete the enclave_host_id mapping as host_thread_id may be
+            // reused in future
+            _acquire_lock(&_host_lock);
+            enclave_host_id_map.erase(enc_key);
+            _release_lock(&_host_lock);
             printf(
                 "pthread_join() succeeded for enclave id=0x%lu, host "
                 "id=0x%lu\n",
                 enc_key,
                 host_thread_id);
+        }
     }
     else
     {
@@ -167,13 +172,20 @@ OE_OCALL void host_detach_pthread(void* args, oe_enclave_t* enclave)
     // Using atomic locks to protect the enclave_host_id_map
     _acquire_lock(&_host_lock);
     auto it = enclave_host_id_map.find(thrd_detach_args->enc_key);
-    thrd_detach_args->detach_ret = -1; // this should be pointing to host memory
     if (it != enclave_host_id_map.end())
     {
         host_thread_id = it->second;
         _release_lock(&_host_lock);
 
         thrd_detach_args->detach_ret = pthread_detach(host_thread_id);
+        if (!thrd_detach_args->detach_ret)
+        {
+            // Delete the enclave_host_id mapping as host_thread_id may be
+            // reused in future
+            _acquire_lock(&_host_lock);
+            enclave_host_id_map.erase(thrd_detach_args->enc_key);
+            _release_lock(&_host_lock);
+        }
         printf(
             "host_detach_pthread() returned=%d for enclave id=0x%lu, host "
             "id=0x%lu\n",
@@ -185,7 +197,7 @@ OE_OCALL void host_detach_pthread(void* args, oe_enclave_t* enclave)
     {
         _release_lock(&_host_lock);
         printf(
-            "host_pthread_detach() failed to find enclave key=0x%lu in host "
+            "host_detach_pthread() failed to find enclave key=0x%lu in host "
             "map\n",
             thrd_detach_args->enc_key);
         abort();
