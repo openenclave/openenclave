@@ -3,7 +3,7 @@
 destfile="$1"
 pubkey_file="$2"
 
-cat > $destfile << EOF
+cat > "$destfile" << EOF
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
@@ -19,7 +19,7 @@ do
 done < "$pubkey_file"
 printf ';\n' >> "$destfile"
 
-cat >> $destfile << EOF
+cat >> "$destfile" << EOF
 
 #endif /* SAMPLES_LOCAL_ATTESTATION_PUBKEY_H */
 EOF
