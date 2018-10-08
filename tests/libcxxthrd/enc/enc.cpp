@@ -165,9 +165,9 @@ static int _pthread_detach_hook(pthread_t enc_thread)
     _release_lock(&_enc_lock);
 
     printf(
-        "_pthread_detach_hook(): Enclave Key for thread ID 0x%lu is %lu\n",
+        "_pthread_detach_hook(): Enclave Key for thread ID 0x%lu is %d\n",
         enc_thread,
-        thread_args->enc_key);
+        it->first);
     if (oe_call_host("host_detach_pthread", (void*)thread_args) != OE_OK)
         oe_abort();
 
