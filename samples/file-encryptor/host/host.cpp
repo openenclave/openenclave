@@ -90,8 +90,8 @@ int compare_2_files(const char* first_file, const char* second_file)
         std::istreambuf_iterator<char>(f1), std::istreambuf_iterator<char>());
     std::vector<uint8_t> f2_data_bytes = std::vector<uint8_t>(
         std::istreambuf_iterator<char>(f2), std::istreambuf_iterator<char>());
-    auto f1iterator = f1_data_bytes.begin();
-    auto f2iterator = f2_data_bytes.begin();
+    std::vector<uint8_t>::iterator f1iterator = f1_data_bytes.begin();
+    std::vector<uint8_t>::iterator f2iterator = f2_data_bytes.begin();
 
     // compare files
     for (; f1iterator != f1_data_bytes.end() - 1; ++f1iterator, ++f2iterator)
