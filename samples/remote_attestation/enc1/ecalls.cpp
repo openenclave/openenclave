@@ -4,6 +4,7 @@
 #include "../common/dispatcher.h"
 #include "../common/pubkeys.h"
 #include "../common/remoteattestation_t.h"
+#include "enc2_pubkey.h"
 
 // For this purpose of this example: demonstrating how to do remote attestation
 // g_enclave_secret_data is hardcoded as part of the enclave. In this sample,
@@ -22,8 +23,8 @@ uint8_t g_enclave_secret_data[ENCLAVE_SECRET_DATA_SIZE] =
     {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
 
 enclave_config_data_t config_data = {g_enclave_secret_data,
-                                     ENCLAVE2_PUBLIC_KEY,
-                                     sizeof(ENCLAVE2_PUBLIC_KEY)};
+                                     OTHER_ENCLAVE_PUBLIC_KEY,
+                                     sizeof(OTHER_ENCLAVE_PUBLIC_KEY)};
 
 // Declare a static dispatcher object for enabling
 // for better organizing enclave-wise global variables
