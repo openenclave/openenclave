@@ -1,14 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <stdio.h>
-#define OE_TRACE_LEVEL 1
-
 #include <openenclave/enclave.h>
 #include <openenclave/internal/globals.h> // for __oe_get_enclave_base()
 #include <openenclave/internal/tests.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
+#include <stdio.h>
 #include <mutex>
 #include <system_error>
 #include "../args.h"
