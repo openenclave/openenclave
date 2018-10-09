@@ -21,9 +21,9 @@
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/raise.h>
 #include <openenclave/internal/registers.h>
 #include <openenclave/internal/sgxtypes.h>
-#include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include "asmdefs.h"
 #include "enclave.h"
@@ -113,12 +113,12 @@ static oe_result_t _enter_sim(
 
     /* Reject null parameters */
     if (!enclave || !enclave->addr || !tcs || !tcs->oentry || !tcs->gsbase)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     tcs->u.entry = (void (*)(void))(enclave->addr + tcs->oentry);
 
     if (!tcs->u.entry)
-        OE_THROW(OE_NOT_FOUND);
+        OE_RAISE(OE_NOT_FOUND);
 
     /* Save old GS register base, and set new one */
     const void* gsbase;
@@ -148,7 +148,7 @@ static oe_result_t _enter_sim(
 
     result = OE_OK;
 
-OE_CATCH:
+done:
 
     return result;
 }
@@ -191,7 +191,7 @@ static oe_result_t _do_eenter(
         *arg_out = 0;
 
     if (!code_out || !func_out || !result_out || !arg_out)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     OE_TRACE_INFO(
         "_do_eenter(tcs=%p aep=%p codeIn=%d, funcIn=%x argIn=%llx)\n",
@@ -210,7 +210,7 @@ static oe_result_t _do_eenter(
 
         if (enclave->simulate)
         {
-            OE_TRY(_enter_sim(enclave, tcs, aep, arg1, arg2, &arg3, &arg4));
+            OE_CHECK(_enter_sim(enclave, tcs, aep, arg1, arg2, &arg3, &arg4));
         }
         else
         {
@@ -225,7 +225,7 @@ static oe_result_t _do_eenter(
 
     result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
@@ -349,7 +349,7 @@ static oe_result_t _handle_ocall(
     oe_result_t result = OE_UNEXPECTED;
 
     if (!enclave || !tcs)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     if (arg_out)
         *arg_out = 0;
@@ -422,13 +422,13 @@ static oe_result_t _handle_ocall(
         default:
         {
             /* No function found with the number */
-            OE_THROW(OE_NOT_FOUND);
+            OE_RAISE(OE_NOT_FOUND);
         }
     }
 
     result = OE_OK;
 
-OE_CATCH:
+done:
 
     return result;
 }
@@ -615,14 +615,14 @@ oe_result_t oe_ecall(
     uint64_t arg_out = 0;
 
     if (!enclave)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Assign a td_t for this operation */
     if (!(tcs = _assign_tcs(enclave)))
-        OE_THROW(OE_OUT_OF_THREADS);
+        OE_RAISE(OE_OUT_OF_THREADS);
 
     /* Perform ECALL or ORET */
-    OE_TRY(
+    OE_CHECK(
         _do_eenter(
             enclave,
             tcs,
@@ -637,14 +637,14 @@ oe_result_t oe_ecall(
 
     /* Process OCALLS */
     if (code_out != OE_CODE_ERET)
-        OE_THROW(OE_UNEXPECTED);
+        OE_RAISE(OE_UNEXPECTED);
 
     if (arg_out_ptr)
         *arg_out_ptr = arg_out;
 
     result = (oe_result_t)result_out;
 
-OE_CATCH:
+done:
 
     if (enclave && tcs)
         _release_tcs(enclave, tcs);
@@ -716,14 +716,14 @@ oe_result_t oe_call_enclave(oe_enclave_t* enclave, const char* func, void* args)
 
     /* Reject invalid parameters */
     if (!enclave || !func)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize the call_enclave_args structure */
     {
         if (!(call_enclave_args.vaddr =
                   _find_enclave_func(enclave, func, &call_enclave_args.func)))
         {
-            OE_THROW(OE_NOT_FOUND);
+            OE_RAISE(OE_NOT_FOUND);
         }
 
         call_enclave_args.args = args;
@@ -734,21 +734,21 @@ oe_result_t oe_call_enclave(oe_enclave_t* enclave, const char* func, void* args)
     {
         uint64_t arg_out = 0;
 
-        OE_TRY(
+        OE_CHECK(
             oe_ecall(
                 enclave,
                 OE_ECALL_CALL_ENCLAVE,
                 (uint64_t)&call_enclave_args,
                 &arg_out));
-        OE_TRY(arg_out);
+        OE_CHECK(arg_out);
     }
 
     /* Check the result */
-    OE_TRY(call_enclave_args.result);
+    OE_CHECK(call_enclave_args.result);
 
     result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
