@@ -90,11 +90,11 @@ OE_EXTERNC_BEGIN
 
 #if !defined(OE_RAISE_TRACE)
 
-#if defined(OE_TRACE_LEVEL) && (OE_TRACE_LEVEL == 2)
+#if defined(OE_TRACE_LEVEL)
 
 // With TRACE_LEVEL_INFO, OE_CHECK failures are logged by default.
 #define OE_RAISE_TRACE(RESULT)                                \
-    OE_TRACE_INFO(                                            \
+    OE_TRACE_ERROR(                                           \
         "OE_CHECK failed with %s in function %s at %s:%d \n", \
         oe_result_str(RESULT),                                \
         __FUNCTION__,                                         \
