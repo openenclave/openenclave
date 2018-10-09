@@ -51,7 +51,7 @@ The packages are also available for download directly:
 - [libsgx-dcap-ql_1.0.100.46460-1.0_amd64.deb](https://download.01.org/intel-sgx/dcap-1.0/DCAP_installers/ubuntu16.04/libsgx-dcap-ql_1.0.100.46460-1.0_amd64.deb)
 - [libsgx-dcap-ql-dev_1.0.100.46460-1.0_amd64.deb](https://download.01.org/intel-sgx/dcap-1.0/DCAP_installers/ubuntu16.04/libsgx-dcap-ql-dev_1.0.100.46460-1.0_amd64.deb)
 - [az-dcap-client_1.0_amd64.deb](https://packages.microsoft.com/repos/microsoft-ubuntu-xenial-prod/pool/main/a/az-dcap-client/az-dcap-client_1.0_amd64.deb)
-- [open-enclave_0.4.0_amd64.deb](https://github.com/Microsoft/openenclave/releases/tag/untagged-571afaa1dac7df6fa187)
+- [open-enclave_0.4.0_amd64.deb](https://packages.microsoft.com/repos/microsoft-ubuntu-xenial-prod/pool/main/o/open-enclave/open-enclave-0.4.0-Linux.deb)
 
 #### 5. Verify the Open Enclave SDK install
 
