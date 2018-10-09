@@ -107,9 +107,11 @@ static int _pthread_create_hook(
     return 0;
 }
 
-static int _pthread_join_hook(pthread_t enc_thread, void** retval)
+static int _pthread_join_hook(pthread_t enc_thread, void** value_ptr)
 {
-    int join_enc_key;
+    if (thread_args == NULL)
+        return EINVAL;
+
     // Find the enc_key from the enc_thread
     _acquire_lock(&_enc_lock);
     auto it = std::find_if(
@@ -126,23 +128,35 @@ static int _pthread_join_hook(pthread_t enc_thread, void** retval)
             enc_thread);
         oe_abort();
     }
-    join_enc_key = it->first;
+    thread_args->enc_key = it->first;
+    thread_args->join_value_ptr = value_ptr;
     _release_lock(&_enc_lock);
 
     printf(
         "_pthread_join_hook(): enc_key for thread ID 0x%lu is %d\n",
         enc_thread,
-        join_enc_key);
-    if (oe_call_host("host_join_pthread", (void*)(uint64_t)join_enc_key) !=
-        OE_OK)
+        it->first);
+    if (oe_call_host("host_join_pthread", (void*)thread_args) != OE_OK)
         oe_abort();
 
-    // Delete the _key_to_thread_id_map as this thread id is now invalid
-    _acquire_lock(&_enc_lock);
-    _key_to_thread_id_map.erase(join_enc_key);
-    _release_lock(&_enc_lock);
+    // pthread_join is blocking. So, wait until host returns a value
+    int join_ret = -1;
+    while (join_ret == -1)
+    {
+        _acquire_lock(&_enc_lock);
+        join_ret = thread_args->join_ret;
+        _release_lock(&_enc_lock);
+    }
 
-    return 0;
+    // Since join succeeded, delete the _key_to_thread_id_map
+    if (!join_ret)
+    {
+        _acquire_lock(&_enc_lock);
+        _key_to_thread_id_map.erase(thread_args->enc_key);
+        _release_lock(&_enc_lock);
+    }
+
+    return join_ret;
 }
 
 static int _pthread_detach_hook(pthread_t enc_thread)
@@ -160,6 +174,7 @@ static int _pthread_detach_hook(pthread_t enc_thread)
         });
     if (it == _key_to_thread_id_map.end())
     {
+        _release_lock(&_enc_lock);
         printf(
             "_pthread_detachhook(): Error enc_key for thread ID 0x%lu not "
             "found\n",
@@ -167,7 +182,6 @@ static int _pthread_detach_hook(pthread_t enc_thread)
         oe_abort();
     }
     thread_args->enc_key = it->first;
-    thread_args->detach_ret = -1;
     _release_lock(&_enc_lock);
 
     printf(
@@ -177,11 +191,9 @@ static int _pthread_detach_hook(pthread_t enc_thread)
     if (oe_call_host("host_detach_pthread", (void*)thread_args) != OE_OK)
         oe_abort();
 
-    // On success, delete the _key_to_thread_id_map as this thread id is now
-    // invalid
+    // Since detach succeeded, delete the _key_to_thread_id_map
     if (!thread_args->detach_ret)
     {
-        // Delete the _key_to_thread_id_map as this thread id is now invalid
         _acquire_lock(&_enc_lock);
         _key_to_thread_id_map.erase(thread_args->enc_key);
         _release_lock(&_enc_lock);

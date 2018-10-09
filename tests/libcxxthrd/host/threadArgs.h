@@ -10,6 +10,8 @@ typedef struct _thread_args
 {
     oe_enclave_t* enclave;
     uint64_t enc_key;
+    int join_ret;
+    void* join_value_ptr;
     int detach_ret;
 } ThreadArgs;
 

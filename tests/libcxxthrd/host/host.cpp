@@ -76,6 +76,7 @@ OE_OCALL void host_create_pthread(uint64_t enc_key, oe_enclave_t* enclave)
 
     thread_args->enc_key = enc_key;
     thread_args->enclave = enclave;
+    thread_args->join_ret = -1;
     thread_args->detach_ret = -1;
 
     // Using atomic locks to protect the enclave_host_id_map
@@ -112,40 +113,41 @@ OE_OCALL void host_create_pthread(uint64_t enc_key, oe_enclave_t* enclave)
     }
 }
 
-OE_OCALL void host_join_pthread(uint64_t enc_key, oe_enclave_t* enclave)
+OE_OCALL void host_join_pthread(void* args, oe_enclave_t* enclave)
 {
-    void* ret;
     pthread_t host_thread_id = 0;
+    ThreadArgs* thrd_join_args = (ThreadArgs*)args;
+    int join_ret;
+    void* value_ptr;
 
     // Find the host_thread_id from the enclave_host_id_map using the enc_key
 
     // Using atomic locks to protect the enclave_host_id_map
     _acquire_lock(&_host_lock);
-    auto it = enclave_host_id_map.find(enc_key);
+    auto it = enclave_host_id_map.find(thrd_join_args->enc_key);
     if (it != enclave_host_id_map.end())
     {
         host_thread_id = it->second;
         _release_lock(&_host_lock);
 
-        if (pthread_join(host_thread_id, &ret) != 0)
-        {
-            printf(
-                "pthread_join() failed for enclave key=0x%lu, host id=0x%lu\n",
-                enc_key,
-                host_thread_id);
-            abort();
-        }
-        else
+        join_ret = pthread_join(host_thread_id, &value_ptr);
+        // Update the shared memory only after pthread_join returns
+        _acquire_lock(&_host_lock);
+        thrd_join_args->join_ret = join_ret;
+        thrd_join_args->join_value_ptr = &value_ptr;
+        _release_lock(&_host_lock);
+
+        if (!join_ret)
         {
             // Delete the enclave_host_id mapping as host_thread_id may be
             // reused in future
             _acquire_lock(&_host_lock);
-            enclave_host_id_map.erase(enc_key);
+            enclave_host_id_map.erase(thrd_join_args->enc_key);
             _release_lock(&_host_lock);
             printf(
-                "pthread_join() succeeded for enclave id=0x%lu, host "
+                "host_join_pthread() succeeded for enclave id=0x%lu, host "
                 "id=0x%lu\n",
-                enc_key,
+                thrd_join_args->enc_key,
                 host_thread_id);
         }
     }
@@ -153,8 +155,8 @@ OE_OCALL void host_join_pthread(uint64_t enc_key, oe_enclave_t* enclave)
     {
         _release_lock(&_host_lock);
         printf(
-            "pthread_join() failed to find enclave id=0x%lu in host map\n",
-            enc_key);
+            "host_join_pthread() failed to find enclave id=0x%lu in host map\n",
+            thrd_join_args->enc_key);
         abort();
     }
 }
