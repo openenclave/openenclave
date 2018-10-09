@@ -27,9 +27,3 @@
 /3rdparty/libunwind/libunwind** -text -eol
 /3rdparty/mbedtls/mbedtls/**    -text -eol
 /3rdparty/musl/musl/**          -text -eol
-
-# Make lists merge easily.
-/CHANGELOG.md          merge=union
-/.check-license.ignore merge=union
-/.cspellignore         merge=union
-/.gitignore            merge=union
