@@ -14,6 +14,35 @@ pipeline {
     }
     stage('Build and Test') {
       parallel {
+        stage('Simulation default compiler') {
+          // This particular test asserts that everything (at least
+          // for simulation) can be built after using our
+          // install-prereqs script to bootstrap a machine.
+          agent {
+            dockerfile {
+              filename '.jenkins/Dockerfile.scripts'
+            }
+          }
+          steps {
+            // This is run to test that it works with the dependencies
+            // installed by our install-prereqs script.
+            sh './scripts/check-precommit-reqs'
+
+            // We actually expect `ctest` to fail because it is an
+            // older version that emits a failure if any tests are
+            // skipped. In other stages, we explicitly install an
+            // updated version of CMake.
+            dir('build') {
+              sh '''
+                cmake ..
+                make
+                OE_SIMULATION=1 ctest --verbose --output-on-failure || true
+              '''
+              // Note that `make package` is not expected to work
+              // without extra configuration.
+            }
+          }
+        }
         stage('Simulation clang-7 SGX1 Debug') {
           agent {
             docker {
