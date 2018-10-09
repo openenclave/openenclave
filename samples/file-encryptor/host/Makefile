@@ -30,5 +30,5 @@ build:
 	$(CXX) -o file-encryptorhost host.o fileencryptor_u.o $(LDFLAGS)
 
 clean:
-	rm -f file-encryptorhost fileencryptor_u.* fileencryptor_args.h *.o
+	rm -f file-encryptorhost fileencryptor_u.* fileencryptor_args.h *.o ../out.decrypted ../out.encrypted
 
