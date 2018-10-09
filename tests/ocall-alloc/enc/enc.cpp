@@ -6,7 +6,7 @@
    - Regular nesting / un-nesting
    - Whitebox-tests w/ tracking of allocation/de-allocation
  */
-
+#undef OE_TRACE_LEVEL
 #define OE_TRACE_LEVEL 1
 
 #include <openenclave/enclave.h>

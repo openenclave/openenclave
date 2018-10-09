@@ -9,6 +9,7 @@
 
 #ifdef OE_BUILD_ENCLAVE
 #include <openenclave/enclave.h>
+#include <openenclave/internal/print.h>
 #define OE_PRINTF oe_host_printf
 #else
 #include <stdio.h>

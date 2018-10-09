@@ -63,6 +63,7 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/result.h>
+#include <openenclave/internal/trace.h>
 
 OE_EXTERNC_BEGIN
 
@@ -87,13 +88,30 @@ OE_EXTERNC_BEGIN
             OE_RAISE(_result_);              \
     } while (0)
 
+#if !defined(OE_RAISE_TRACE)
+
+#if defined(OE_TRACE_LEVEL) && (OE_TRACE_LEVEL == 2)
+
+// With TRACE_LEVEL_INFO, OE_CHECK failures are logged by default.
+#define OE_RAISE_TRACE(RESULT)                                \
+    OE_TRACE_INFO(                                            \
+        "OE_CHECK failed with %s in function %s at %s:%d \n", \
+        oe_result_str(RESULT),                                \
+        __FUNCTION__,                                         \
+        __FILE__,                                             \
+        __LINE__)
+
+#else
+
 // This macro is used to trace the OE_RAISE macro. It is empty by default but
 // may be defined prior to including this header file.
-#if !defined(OE_RAISE_TRACE)
 #define OE_RAISE_TRACE(RESULT) \
     do                         \
     {                          \
     } while (0)
+
+#endif
+
 #endif
 
 OE_EXTERNC_END
