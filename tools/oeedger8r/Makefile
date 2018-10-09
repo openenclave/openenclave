@@ -40,17 +40,28 @@ BUILD_DIR=$(CUR_DIR)/dist
 CP=cp
 MKDIR=mkdir
 
+ifeq ($(OS),Windows_NT)
+BINARY=$(BUILD_DIR)/oeedger8r.exe
+else
+BINARY=$(BUILD_DIR)/oeedger8r
+endif
+
 .PHONY: all
 all: build | $(BUILD_DIR)
-	@$(CP) $(CUR_DIR)/_build/main.native $(BUILD_DIR)/oeedger8r
+	@$(CP) $(CUR_DIR)/_build/main.native $(BINARY)
 
 .PHONY: build
 build:
-# ocaml 4.02 - added support for PIC
+ifeq ($(OS),Windows_NT)
+# Windows does not have the linked flags since it doesn't use ld.
+	ocamlbuild -I intel -no-links -libs str,unix main.native
+else
 ifeq ($(shell test $(OCAML_VERSION) -lt 402 && echo 1), 1)
+# ocaml 4.02 - added support for PIC
 	ocamlbuild -I intel -lflag -ccopt -lflag "-Wl,-z,now" -no-links -libs str,unix  main.native
 else
 	ocamlbuild -I intel -cflags -ccopt,-fpie -lflags -runtime-variant,_pic,-ccopt,-pie,-ccopt -lflag "-Wl,-z,now"  -no-links -libs str,unix main.native
+endif
 endif
 
 $(BUILD_DIR):
@@ -59,4 +70,4 @@ $(BUILD_DIR):
 .PHONY:
 clean:
 	@ocamlbuild Edger8rOE.native -clean
-	@$(RM) $(BUILD_DIR)/oeedger8r
+	@$(RM) $(BINARY)
