@@ -18,9 +18,6 @@
 #define OE_ZERO_SIZED_ARRAY /* empty */
 #endif
 
-/* OE_DEPRECATED */
-#define OE_DEPRECATED(MSG) __attribute__((deprecated(MSG)))
-
 /*
  * Define packed types, such as:
  *     OE_PACK_BEGIN
