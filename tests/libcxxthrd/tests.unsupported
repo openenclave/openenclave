@@ -1,5 +1,7 @@
 ../../3rdparty/libcxx/libcxx/test/libcxx/thread/thread.threads/thread.thread.this/sleep_for.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.condition/thread.condition.condvarany/destructor.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/thread/thread.condition/thread.condition.condvar/destructor.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/thread/thread.threads/thread.thread.class/thread.thread.constr/F.pass.cpp
 #pthread_detach failures
 #../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.async/async.pass.cpp =>calls clock_gettime()
 #Exception and test timeout -- no other info
