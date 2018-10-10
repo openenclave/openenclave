@@ -492,6 +492,18 @@ oe_result_t oe_get_seal_key(
  */
 oe_enclave_t* oe_get_enclave(void);
 
+/**
+ * Generate a sequence of random bytes.
+ *
+ * This function generates a sequence of random bytes.
+ *
+ * @param data the buffer that will be filled with random bytes
+ * @param size the size of the buffer
+ *
+ * @return OE_OK on success
+ */
+oe_result_t oe_random(void* data, size_t size);
+
 OE_EXTERNC_END
 
 #endif /* _OE_ENCLAVE_H */
