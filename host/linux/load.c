@@ -75,7 +75,7 @@ static oe_result_t __oe_load_elf_image(
 
     if (elf64_load(path, &oeimage->elf) != 0)
     {
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
     }
 
     /* Save pointer to header for convenience */
@@ -84,16 +84,16 @@ static oe_result_t __oe_load_elf_image(
 /* Fail if not a dynamic object */
 #if 0
     if (eh->e_type != ET_DYN)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 #endif
 
     /* Fail if not Intel X86 64-bit */
     if (eh->e_machine != EM_X86_64)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Fail if image is relocatable */
     if (eh->e_type == ET_REL)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Save entry point address */
     oeimage->entry_rva = eh->e_entry;
@@ -106,7 +106,7 @@ static oe_result_t __oe_load_elf_image(
 
             /* Invalid section header. The elf file is corrupted. */
             if (sh == NULL)
-                OE_THROW(OE_FAILURE);
+                OE_RAISE(OE_FAILURE);
 
             const char* name = elf64_get_string_from_shstrtab(&oeimage->elf, sh->sh_name);
 
@@ -121,7 +121,7 @@ static oe_result_t __oe_load_elf_image(
                     /* .oeinfo must contain exactly the property */
                     if (sh->sh_size != sizeof(oe_sgx_enclave_properties_t))
                     {
-                        OE_THROW(OE_FAILURE);
+                        OE_RAISE(OE_FAILURE);
                     }
                     oeimage->oeinfo_rva = sh->sh_addr;
                     oeimage->oeinfo_file_pos = sh->sh_offset;
@@ -143,7 +143,7 @@ static oe_result_t __oe_load_elf_image(
             (0 == oeimage->ecall_rva) ||
             (0 == oeimage->oeinfo_rva))
         {
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
         }
     }
 
@@ -158,16 +158,16 @@ static oe_result_t __oe_load_elf_image(
 
             /* Check for corrupted program header. */
             if (ph == NULL)
-                OE_THROW(OE_FAILURE);
+                OE_RAISE(OE_FAILURE);
 
             /* Check for proper sizes for the program segment. */
             if (ph->p_filesz > ph->p_memsz)
-                OE_THROW(OE_FAILURE);
+                OE_RAISE(OE_FAILURE);
 
             switch (ph->p_type)
             {
             case PT_TLS:
-                OE_THROW(OE_UNSUPPORTED);
+                OE_RAISE(OE_UNSUPPORTED);
                 break;
 
             case PT_LOAD:
@@ -177,7 +177,7 @@ static oe_result_t __oe_load_elf_image(
                 /* p_vaddr must be page aligned */
                 if (ph->p_vaddr & (OE_PAGE_SIZE - 1))
                 {
-                    OE_THROW(OE_FAILURE);
+                    OE_RAISE(OE_FAILURE);
                 }
 #endif
 
@@ -197,15 +197,15 @@ static oe_result_t __oe_load_elf_image(
 
         /* Fail if LO not found */
         if (lo != 0)
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         /* Fail if HI not found */
         if (hi == 0)
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         /* Fail if no segment found */
         if (oeimage->num_segments == 0)
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         /* Calculate the full size of the image (rounded up to the page size) */
         oeimage->image_size = __oe_round_up_to_page_size(hi - lo);
@@ -215,14 +215,14 @@ static oe_result_t __oe_load_elf_image(
     oeimage->segments = (oe_segment_t*)malloc(oeimage->num_segments * sizeof(oe_segment_t));
     if (!oeimage->segments)
     {
-        OE_THROW(OE_OUT_OF_MEMORY);
+        OE_RAISE(OE_OUT_OF_MEMORY);
     }
 
     /* Allocate image on a page boundary */
     oeimage->image_base = (char*)oe_memalign(OE_PAGE_SIZE, oeimage->image_size);
     if (!oeimage->image_base)
     {
-        OE_THROW(OE_OUT_OF_MEMORY);
+        OE_RAISE(OE_OUT_OF_MEMORY);
     }
 
     /* Clear the image memory */
@@ -292,14 +292,14 @@ static oe_result_t __oe_load_elf_image(
         const oe_segment_t* seg_next = &oeimage->segments[i+1];
         if ((seg->vaddr + seg->memsz) > __oe_round_down_to_page_size(seg_next->vaddr))
         {
-            OE_THROW(OE_OUT_OF_BOUNDS);
+            OE_RAISE(OE_OUT_OF_BOUNDS);
         }
     }
 
     oeimage->elf.magic = ELF_MAGIC;
     result = OE_OK;
 
-OE_CATCH:
+done:
 
     if (result != OE_OK)
     {
