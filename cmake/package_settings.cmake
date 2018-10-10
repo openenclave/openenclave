@@ -23,14 +23,6 @@ set(OE_DOCDIR ${OE_OUTPUT_DIR}/share/doc CACHE INTERNAL "Doc collector root")
 set(OE_INCDIR ${OE_OUTPUT_DIR}/include CACHE INTERNAL "Include collector")
 set(OE_LIBDIR ${OE_OUTPUT_DIR}/lib CACHE INTERNAL "Library collector")
 
-# Generate config files for consumers using Make
-include(gen_config_file)
-gen_config_file(${OE_DATADIR}/openenclave/config.mak "${CMAKE_INSTALL_PREFIX}")
-install(FILES ${OE_DATADIR}/openenclave/config.mak
-  DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
-install(FILES ${OE_DATADIR}/openenclave/config.mak
-  DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave)
-
 # Generate and install CMake export file for consumers using Cmake
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
@@ -48,6 +40,10 @@ install(
   EXPORT openenclave-targets
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
   FILE openenclave-targets.cmake)
+install(
+  FILES ${PROJECT_SOURCE_DIR}/cmake/sdk_cmake_targets_readme.md
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
+  RENAME README.md)
 
 # CPack package handling
 include(InstallRequiredSystemLibraries)

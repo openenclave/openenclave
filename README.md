@@ -21,9 +21,11 @@ The current implementation of Open Enclave is built on [Intel Software Guard Ext
 Getting Started
 ---------------
 
-OE application developers, users who intend to build/develop an OE application, should start [here](docs/GettingStartedDocs/GettingStarted_User.md)
+If you would like to start developing apps with the preview Open Enclave SDK release,
+start here for instructions to [install and use the SDK package](docs/GettingStartedDocs/install_oe_sdk.md).
 
-OE developers/builders of OE Source, users who not only want to devleop OE applications but also want to dig into the OE implementation and potentially contribute to this open source effort, start [here](docs/GettingStartedDocs/GettingStarted.md)
+If you would like to modify and build the Open Enclave SDK from sources, refer to
+the documents for [getting started](docs/GettingStartedDocs/GettingStarted.md).
 
 Contributing
 ------------
@@ -34,10 +36,10 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
 contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
-See the [Development Guide](docs/DevelopmentGuide.md) for details about developing code in this repo, such as coding style and development processes.
+See the [Development Guide](docs/DevelopmentGuide.md) for details about contributing code to this project, such as coding style and development processes.
 
 
 Licensing
 =========
 
-Microsoft plans to release the [Open Enclave SDK under the MIT license](https://github.com/Microsoft/openenclave/blob/master/LICENSE)
+This project is released under the [MIT License](https://github.com/Microsoft/openenclave/blob/master/LICENSE).

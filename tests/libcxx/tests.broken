@@ -14,3 +14,6 @@
 ../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.rel/is_invocable.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.rel/is_nothrow_invocable.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.unary/meta.unary.prop/has_unique_object_representations.pass.cpp
+#Broken with clang RelWithDebInfo 
+../../3rdparty/libcxx/libcxx/test/libcxx/experimental/containers/sequences/dynarray/dynarray.cons/default_throws_bad_alloc.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/utilities/memory/default.allocator/allocator.members/construct.pass.cpp

@@ -108,6 +108,10 @@ target_link_libraries(oehost PUBLIC ${LIBSGX_COMMON} ${LIBSGX_QE} ${LIBSGX_URTS}
 target_compile_definitions(oehost PRIVATE OE_USE_LIBSGX)
 endif()
 
+if(OE_TRACE_LEVEL)
+    target_compile_definitions(oehost PUBLIC "OE_TRACE_LEVEL=${OE_TRACE_LEVEL}")
+endif()
+
 if(USE_DEBUG_MALLOC)
 target_compile_definitions(oehost PRIVATE OE_USE_DEBUG_MALLOC)
 endif()

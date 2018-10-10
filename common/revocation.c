@@ -159,6 +159,7 @@ oe_result_t oe_enforce_revocation(
     oe_cert_chain_t* pck_cert_chain)
 {
     oe_result_t result = OE_FAILURE;
+    oe_result_t r = OE_FAILURE;
     ParsedExtensionInfo parsed_extension_info = {{0}};
     oe_get_revocation_info_args_t revocation_args = {0};
     oe_cert_chain_t tcb_issuer_chain = {0};
@@ -236,9 +237,14 @@ oe_result_t oe_enforce_revocation(
     // constraint. If the crl_issuer_chain was different from the certificate
     // chain, then verification would fail because the CRLs will not be found
     // for certificates in the chain.
-    OE_CHECK(
-        oe_cert_verify(
-            leaf_cert, &crl_issuer_chain[0], crl_ptrs, 2, &cert_verify_error));
+    r = oe_cert_verify(
+        leaf_cert, &crl_issuer_chain[0], crl_ptrs, 2, &cert_verify_error);
+    if (r != OE_OK)
+    {
+        OE_TRACE_INFO(
+            "oe_cer_verify failed with error = %s\n", cert_verify_error.buf);
+        OE_RAISE(r);
+    }
 
     for (uint32_t i = 0; i < OE_COUNTOF(platform_tcb_level.sgx_tcb_comp_svn);
          ++i)

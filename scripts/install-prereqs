@@ -10,8 +10,11 @@
 # and add it to the list.
 #
 
-# Needed for Open Enclave build and scripts
-PACKAGES=('clang-format-3.8' 'cmake' 'make')
+# Needed for Open Enclave build
+PACKAGES=('cmake' 'make' 'pkg-config')
+
+# Needed for Open Enclave scripts
+PACKAGES+=('clang-format-3.8' 'shellcheck')
 
 # Needed for using oedbg
 PACKAGES+=('gdb')
