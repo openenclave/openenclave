@@ -34,4 +34,3 @@
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/lock_shared.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.locking/lock.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.threads/thread.thread.class/thread.thread.member/join.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/try_lock_shared.pass.cpp
