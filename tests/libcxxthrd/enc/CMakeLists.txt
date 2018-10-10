@@ -54,7 +54,7 @@ function(add_libcxxthrd_test_enc NAME CXXFILE)
 endfunction(add_libcxxthrd_test_enc)
 
 # iterate over the supported tests and create a binary for each.
-if (ENABLE_FULL_LIBCXX_THREAD_TESTS)
+if (ENABLE_FULL_LIBCXX_TESTS)
     file(STRINGS "../tests.supported" alltests)
 else()
     file(STRINGS "../tests.supported.default" alltests)
