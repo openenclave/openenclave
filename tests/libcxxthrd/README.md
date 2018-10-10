@@ -25,6 +25,6 @@ tests.broken to tests.unsupported.
 Implementation details:
 Since threads cannot be created or destroyed inside an enclave, the test implements hooks for 
 pthread_create, pthread_join and pthread_detach using the register_hooks interface 
-provided in the core for enclave use. Hence, there is additional timing or delay introduced
-in the multi-threaded test environment.
+provided in the core for test use. Hence, there is additional timing or delay introduced
+in the multi-threaded test environment while transitioning to the host in these hooks.
 

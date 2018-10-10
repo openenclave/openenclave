@@ -57,7 +57,7 @@ extern "C" int close(int fd)
 
 static std::vector<std::function<void*()>> _thread_functions;
 static int _next_enc_thread_id = 0;
-int enc_key = 0; // Monotically increasing enclave key
+int enc_key = 0; // Monotonically increasing enclave key
 static std::map<int, pthread_t> _key_to_thread_id_map; // Map of enc_key to
                                                        // thread_id returned by
                                                        // pthread_self()
@@ -87,7 +87,7 @@ static int _pthread_create_hook(
     {
         printf(
             "Exceeded max number of enclave threads supported %d\n",
-            (int)MAX_ENC_KEYS);
+            (int)MAX_ENC_KEYS - 1);
     }
 
     // Send the enclave id so that host can maintain the map between
@@ -147,26 +147,20 @@ static int _pthread_join_hook(pthread_t enc_thread, void** value_ptr)
     printf(
         "_pthread_join_hook(): enc_key for thread ID 0x%lu is %d\n",
         enc_thread,
-        it->first);
+        join_enc_key);
     if (oe_call_host("host_join_pthread", (void*)thrd_join_args) != OE_OK)
         oe_abort();
 
-    // pthread_join is blocking. So, wait until host returns a value
-    int join_ret = -1;
-    while (join_ret == -1)
-    {
-        _acquire_lock(&_enc_lock);
-        join_ret = thrd_join_args->join_ret;
-        _release_lock(&_enc_lock);
-    }
+    int join_ret;
+    _acquire_lock(&_enc_lock);
+    join_ret = thrd_join_args->join_ret;
 
     // Since join succeeded, delete the _key_to_thread_id_map
     if (!join_ret)
     {
-        _acquire_lock(&_enc_lock);
         _key_to_thread_id_map.erase(join_enc_key);
-        _release_lock(&_enc_lock);
     }
+    _release_lock(&_enc_lock);
 
     return join_ret;
 }
@@ -214,8 +208,8 @@ static int _pthread_detach_hook(pthread_t enc_thread)
     if (!det_ret)
     {
         _key_to_thread_id_map.erase(thrd_det_args->enc_key);
-        _release_lock(&_enc_lock);
     }
+    _release_lock(&_enc_lock);
 
     return det_ret;
 }
