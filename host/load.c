@@ -49,7 +49,7 @@ oe_result_t __oe_load_segments(
 /* Fail if not a dynamic object */
 #if 0
     if (eh->e_type != ET_DYN)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 #endif
 
     /* Fail if not Intel X86 64-bit */
@@ -224,7 +224,7 @@ oe_result_t __oe_calculate_segments_size(
 
     /* Reject bad parameters */
     if (!segments || nsegments == 0 || !size)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Calculate boundaries (LO and HI) of the image */
     for (i = 0; i < nsegments; i++)
@@ -240,18 +240,18 @@ oe_result_t __oe_calculate_segments_size(
 
     /* Fail if LO not found */
     if (lo != 0)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Fail if HI not found */
     if (hi == 0)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Calculate the full size of the image (rounded up to the page size) */
     *size = __oe_round_up_to_page_size(hi - lo);
 
     result = OE_OK;
 
-OE_CATCH:
+done:
 
     return result;
 }

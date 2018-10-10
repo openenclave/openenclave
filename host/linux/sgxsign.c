@@ -39,12 +39,12 @@ static oe_result_t _get_date(unsigned int* date)
     size_t i;
 
     if (!date)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     t = time(NULL);
 
     if (localtime_r(&t, &tm) == NULL)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     {
         char s[9];
@@ -67,7 +67,7 @@ static oe_result_t _get_date(unsigned int* date)
 
     result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
@@ -77,16 +77,16 @@ static oe_result_t _get_modulus(RSA* rsa, uint8_t modulus[OE_KEY_SIZE])
     uint8_t buf[OE_KEY_SIZE];
 
     if (!rsa || !modulus)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     if (!BN_bn2bin(rsa->n, buf))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     _mem_reverse(modulus, buf, OE_KEY_SIZE);
 
     result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
@@ -96,10 +96,10 @@ static oe_result_t _get_exponent(RSA* rsa, uint8_t exponent[OE_EXPONENT_SIZE])
     // uint8_t buf[OE_EXPONENT_SIZE];
 
     if (!rsa || !exponent)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     if (rsa->e->top != 1)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     {
         uint64_t x = rsa->e->d[0];
@@ -111,7 +111,7 @@ static oe_result_t _get_exponent(RSA* rsa, uint8_t exponent[OE_EXPONENT_SIZE])
 
     result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
@@ -402,18 +402,18 @@ static oe_result_t _load_rsa_private_key(
 
     /* Check parameters */
     if (!pem_data || pem_size == 0 || !key)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize OpenSSL */
     oe_initialize_openssl();
 
     /* Create a BIO object for loading the PEM data */
     if (!(bio = BIO_new_mem_buf(pem_data, pem_size)))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Read the RSA structure from the PEM data */
     if (!(rsa = PEM_read_bio_RSAPrivateKey(bio, &rsa, NULL, NULL)))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Set the output key parameter */
     *key = rsa;
@@ -421,7 +421,7 @@ static oe_result_t _load_rsa_private_key(
 
     result = OE_OK;
 
-OE_CATCH:
+done:
 
     if (rsa)
         RSA_free(rsa);

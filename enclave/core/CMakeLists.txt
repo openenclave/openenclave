@@ -64,6 +64,10 @@ if(USE_LIBSGX)
     add_target_compile_defs(oecore PUBLIC "C;CXX" OE_USE_LIBSGX)
 endif()
 
+if(OE_TRACE_LEVEL)
+    target_compile_definitions(oecore PUBLIC "OE_TRACE_LEVEL=${OE_TRACE_LEVEL}")
+endif()
+
 if(USE_DEBUG_MALLOC)
     add_target_compile_defs(oecore PRIVATE "C;CXX" OE_USE_DEBUG_MALLOC)
     message("USE_DEBUG_MALLOC is set, building oecore with memory leak detection.")
