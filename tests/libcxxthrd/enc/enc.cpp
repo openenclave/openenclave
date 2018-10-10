@@ -83,7 +83,7 @@ static int _pthread_create_hook(
     _key_to_thread_id_map.emplace(enc_key, *enc_thread);
     _release_lock(&_enc_lock);
 
-    if (enc_key >= MAX_ENC_KEYS - 1)
+    if (_next_enc_thread_id > (int)(MAX_ENC_KEYS - 1))
     {
         printf(
             "Exceeded max number of enclave threads supported %d\n",
