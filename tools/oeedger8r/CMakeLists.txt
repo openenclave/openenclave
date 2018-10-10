@@ -9,12 +9,32 @@ else()
     set(BUILD_COMMAND make)
 endif()
 
+# Note that we're dealing with OCaml sources instead of C/C++, so we have
+# additional Makefiles that will handle the actual compilation / dependency
+# management. As a result, we add every file to CMake and call the `make`
+# command directly.
+set(OEEDGER8R_SRC
+    Emitter.ml
+    main.ml
+    Makefile
+    intel/Ast.ml
+    intel/CodeGen.ml
+    intel/Edger8r.ml
+    intel/Lexer.mll
+    intel/Makefile
+    intel/Parser.mly
+    intel/Plugin.ml
+    intel/Preprocessor.ml
+    intel/SimpleStack.ml
+    intel/Util.ml
+)
+
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/src
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/src
 
     # Rebuild if source changes
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/*.ml ${CMAKE_CURRENT_SOURCE_DIR}/intel/*.* Makefile
+    DEPENDS ${OEEDGER8R_SRC}
 )
 
 add_custom_command(
