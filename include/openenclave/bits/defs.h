@@ -132,4 +132,13 @@
 /* The maxiumum value for a four-byte enum tag */
 #define OE_ENUM_MAX 0xffffffff
 
+/* OE_DEPRECATED */
+#if defined(__GNUC__)
+#define OE_DEPRECATED(FUNC, MSG) FUNC __attribute__((deprecated(MSG)))
+#elif defined(_MSC_VER)
+#define OE_DEPRECATED(FUNC, MSG) __declspec(deprecated(MSG)) FUNC
+#else
+#define OE_DEPRECATED(FUNC, MSG) FUNC
+#endif
+
 #endif /* _OE_BITS_DEFS_H */
