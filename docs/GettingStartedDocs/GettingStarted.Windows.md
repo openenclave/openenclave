@@ -46,7 +46,16 @@ Linux and Windows binaries:
     https://developer.microsoft.com/en-US/windows/downloads/windows-10-sdk)
 - [Git for Windows 64-bit](https://git-scm.com/download/win)
 - [CMake 3.5.1+](https://cmake.org/download/)
+- [OCaml on Windows 64-bit](https://fdopen.github.io/opam-repository-mingw/installation/) (Note that this will install a Cygwin environment for OCaml.)
 
+Configuring OCaml for Windows
+---------------------------------
+After installing OCaml, there are a few one-time OCaml configuration steps:
+
+1. Add `ocaml-env.exe` to the `PATH` environment variable. The default path of `ocaml-env.exe` is  `C:\OCaml64\usr\local\bin\ocaml-env.exe`.
+2. Open `cmd.exe` (or another shell) and run `ocaml-env exec -- cmd.exe`. This creates a OCaml environment in the shell.
+3. Install `ocamlbuild` by running `opam install ocamlbuild`.
+4. Exit out of the shell.
 
 Obtaining the source distribution
 ---------------------------------
@@ -150,9 +159,9 @@ How to build the CMake project using Visual Studio 2017
 --------------------------------------------------------
 1. Open CMake project in Visual Studio from menu File > Open > CMake...
 	and select top level CMakeLists.txt file which is present in openenclave folder.
-2. Select Linux-Debug configuration and make sure cache is updated and then 
+2. Select Linux-Debug configuration and make sure cache is updated and then
 	select menu CMake > Build only > All(Targets) to build all the projects.
-	
+
 	VS2017 does not copy script files to the target WSL environment with the correct
 	execute permissions, so they will need to be manually granted after the initial
 	build failure.
@@ -169,7 +178,7 @@ How to build the CMake project using Visual Studio 2017
 	$ sudo chmod +755 3rdparty/musl/musl/configure
 	$ sudo chmod +755 3rdparty/musl/musl/tools/install.sh
 	$ sudo chmod +755 3rdparty/libunwind/libunwind/autogen.sh
-	
+
 3. Switch to x64-Debug-test configuration and wait for the cache to update and
 	select menu CMake > BuildAll.
 4. Now to run CTest, select menu CMake > Tests > Run openenclave tests.
