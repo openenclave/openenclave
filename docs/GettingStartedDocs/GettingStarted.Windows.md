@@ -48,6 +48,14 @@ Linux and Windows binaries:
 - [CMake 3.5.1+](https://cmake.org/download/)
 - [OCaml on Windows 64-bit](https://fdopen.github.io/opam-repository-mingw/installation/) (Note that this will install a Cygwin environment for OCaml.)
 
+Configuring OCaml for Windows
+---------------------------------
+After installing OCaml, there are a few one-time OCaml configuration steps:
+
+1. Add `ocaml-env.exe` to the `PATH` environment variable. The default path of `ocaml-env.exe` is  `C:\OCaml64\usr\local\bin\ocaml-env.exe`.
+2. Open `cmd.exe` (or another shell) and run `ocaml-env exec -- cmd.exe`. This creates a OCaml environment in the shell.
+3. Install `ocamlbuild` by running `opam install ocamlbuild`.
+4. Exit out of the shell.
 
 Obtaining the source distribution
 ---------------------------------
@@ -86,14 +94,6 @@ $ cd build
 $ cmake ..
 $ make
 ```
-
-### Configuring OCaml for Windows
-Before building, there are a few OCaml configuration steps:
-
-1. Add `ocaml-env.exe` to the `PATH` environment variable. The default path of `ocaml-env.exe` is  `C:\OCaml64\usr\local\bin\ocaml-env.exe`.
-2. Open `cmd.exe` (or another shell) and run `ocaml-env exec -- cmd.exe`. This is create a OCaml environment in the shell.
-3. Install `ocamlbuild` by running `opam install ocamlbuild`.
-4. Exit out of the shell.
 
 ### Building on Windows using Visual Studio 2017
 [Visual Studio 2017 has integrated support for loading CMake projects](
