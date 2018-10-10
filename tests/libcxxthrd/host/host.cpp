@@ -117,7 +117,7 @@ OE_OCALL void host_join_pthread(void* args, oe_enclave_t* enclave)
 {
     pthread_t host_thread_id = 0;
     ThreadArgs* thrd_join_args = (ThreadArgs*)args;
-    int join_ret;
+    int join_ret = -1;
     void* value_ptr;
 
     // Find the host_thread_id from the enclave_host_id_map using the enc_key
