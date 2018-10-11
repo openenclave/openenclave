@@ -496,9 +496,98 @@ oe_result_t oe_get_seal_key(
  * passes the enclave handle to the enclave during initialization. The
  * handle is an address inside the host address space.
  *
+ * @deprecated This function is deprecated. Host application code should use
+ * edger8r generated instead.
+ *
  * @returns the enclave handle.
  */
-oe_enclave_t* oe_get_enclave(void);
+OE_DEPRECATED(oe_enclave_t* oe_get_enclave(void),
+    "Host application code should use edger8r generated code instead.");
+
+/**
+ * Obtains the public key corresponding to the enclave's private key.
+ *
+ * @param[in] seal_policy The policy for the identity properties used to derive the
+ * key.
+ * @param[out] key_buffer On success, contains a pointer to the key, which should be freed with oe_free_key().
+ * @param[out] key_buffer_size On success, contains the size in bytes of the key buffer.
+ * @param[out] key_info Reserved for future use.  Must be NULL for now.
+ * @param[out] key_info_size Reserved for future use.  Must be NULL for now.
+ */
+oe_result_t oe_get_public_key_by_policy(
+    oe_seal_policy_t seal_policy,
+    uint8_t** key_buffer,
+    size_t* key_buffer_size,
+    uint8_t** key_info,
+    size_t* key_info_size);
+
+/**
+ * Obtains a private key specific to the enclave.
+ *
+ * @param[in] seal_policy The policy for the identity properties used to derive the
+ * key.
+ * @param[out] key_buffer On success, contains a pointer to the key, which should be freed with oe_free_key().
+ * @param[out] key_buffer_size On success, contains the size in bytes of the key buffer.
+ * @param[out] key_info Reserved for future use.  Must be NULL for now.
+ * @param[out] key_info_size Reserved for future use.  Must be NULL for now.
+ */
+oe_result_t oe_get_private_key_by_policy(
+    oe_seal_policy_t seal_policy,
+    uint8_t** key_buffer,
+    size_t* key_buffer_size,
+    uint8_t** key_info,
+    size_t* key_info_size);
+
+/**
+ * Obtains a certificate specific to the enclave, based on the enclave's public key.
+ *
+ * @param[in] seal_policy The policy for the identity properties used to derive the
+ * key.
+ * @param[out] certificate_buffer On success, contains a pointer to the certificate, which should be freed with oe_free_key().
+ * @param[out] certificate_buffer_size On success, contains the size in bytes of the certificate buffer.
+ * @param[out] certificate_info Reserved for future use.  Must be NULL for now.
+ * @param[out] certificate_info_size Reserved for future use.  Must be NULL for now.
+ */
+oe_result_t oe_get_certificate_by_policy(
+    oe_seal_policy_t seal_policy,
+    uint8_t** certificate_buffer,
+    size_t* certificate_buffer_size,
+    uint8_t** certificate_info,
+    size_t* certificate_info_size);
+
+/**
+ * An enclave can call this API to create a handle to pass to the host.
+ *
+ * @param[in] secure_address The address to create a handle for.
+ * @param[out] handle A handle that can be passed to the host application.
+ *
+ * @returns Returns OE_OK on success.
+ */
+oe_result_t oe_allocate_handle(
+    void* secure_address,
+    ptrdiff_t* handle);
+
+/**
+ * An enclave can call this API to resolve a handle to the secure address.
+ *
+ * @param[in] handle The handle to resolve.
+ * @param[out] secure_address The secure address associated with the handle.
+ *
+ * @returns Returns OE_OK on success.
+ */
+oe_result_t oe_resolve_handle(
+    ptrdiff_t handle,
+    void* secure_address);
+
+/** 
+ * An enclave can call this API to free a handle, e.g., before it frees the
+ * memory the secure_address points to.
+ *
+ * @param[in] handle The handle to free.
+ *
+ * @returns Returns OE_OK on success.
+ */
+void oe_free_handle(ptrdiff_t handle);
 
 /**
  * Generate a sequence of random bytes.

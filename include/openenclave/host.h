@@ -59,6 +59,9 @@ OE_EXTERNC_BEGIN
  * This function creates an enclave from an enclave image file. On successful
  * return, the enclave is fully initialized and ready to use.
  *
+ * @deprecated This function is deprecated. Use oeedger8r and call the generated
+ * oe_create_<name>_enclave() API instead.
+ *
  * @param path The path of an enclave image file in ELF-64 format. This
  * file must have been linked with the **oecore** library and signed by the
  * **oesign** tool.
@@ -82,13 +85,14 @@ OE_EXTERNC_BEGIN
  * @returns Returns OE_OK on success.
  *
  */
-oe_result_t oe_create_enclave(
+OE_DEPRECATED(oe_result_t oe_create_enclave(
     const char* path,
     oe_enclave_type_t type,
     uint32_t flags,
     const void* config,
     uint32_t config_size,
-    oe_enclave_t** enclave);
+    oe_enclave_t** enclave),
+    "This function is deprecated. Use oeedger8r and call the generated oe_create_<name>_enclave() API instead.");
 
 /**
  * Terminate an enclave and reclaims its resources.
