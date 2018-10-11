@@ -75,6 +75,14 @@ void TestSigillHandling(oe_enclave_t* enclave)
 
         for (int j = 0; j < OE_CPUID_REG_COUNT; j++)
         {
+            if (cpuid_info[j] != args.cpuid_table[i][j])
+                printf(
+                    "Failed: i=%d, j=%d, lhs=%d, rhs=%d\n",
+                    i,
+                    j,
+                    cpuid_info[j],
+                    args.cpuid_table[i][j]);
+
             OE_TEST(cpuid_info[j] == args.cpuid_table[i][j]);
         }
     }
