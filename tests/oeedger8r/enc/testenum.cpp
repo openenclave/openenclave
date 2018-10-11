@@ -6,7 +6,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
-#include "enum_t.c"
+#include "all_t.h"
 
 void test_enum_edl_ocalls()
 {

@@ -1416,6 +1416,8 @@ oe_result_t oe_create_enclave(
     uint32_t flags,
     const void* config,
     uint32_t config_size,
+    const oe_ocall_func_t* ocall_table,
+    uint32_t ocall_table_size,
     oe_enclave_t** enclave_out)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -1477,6 +1479,11 @@ oe_result_t oe_create_enclave(
     /* Notify GDB that a new enclave is created */
     _oe_notify_gdb_enclave_creation(
         enclave, enclave->path, (uint32_t)strlen(enclave->path));
+
+    /* Enclave initialization invokes global constructors which could make
+     * ocalls. Therefore setup ocall table prior to initialization. */
+    enclave->ocalls = (const oe_ocall_func_t*)ocall_table;
+    enclave->num_ocalls = ocall_table_size;
 
     /* Invoke enclave initialization. */
     OE_CHECK(_initialize_enclave(enclave));
