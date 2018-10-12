@@ -250,6 +250,16 @@ static oe_result_t _add_section_pages(
     assert(image);
 
     flags = _make_secinfo_flags(section_hdr->Characteristics);
+
+    if (flags == 0)
+    {
+        /* should we fail or just skip? follow the old logic for now*/
+        result = OE_OK;
+        goto done;
+    }
+
+    flags |= SGX_SECINFO_REG;
+
     for (i = 0; i < section_hdr->Misc.VirtualSize; i += OE_PAGE_SIZE)
     {
         uint64_t offset = section_hdr->VirtualAddress + i;
@@ -298,7 +308,7 @@ oe_result_t _oe_add_image_pages(
                 enclave->addr,
                 enclave->addr + i,
                 (uint64_t)oeimage->image_base + i,
-                SGX_SECINFO_R,
+                SGX_SECINFO_R|SGX_SECINFO_REG,
                 true));
     }
 
