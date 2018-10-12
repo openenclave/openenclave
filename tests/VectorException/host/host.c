@@ -63,6 +63,9 @@ void TestSigillHandling(oe_enclave_t* enclave)
     // Check all values.
     for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
+        if (!oe_is_emulated_cpuid_leaf(i))
+            continue;
+
         uint32_t cpuid_info[OE_CPUID_REG_COUNT];
         memset(cpuid_info, 0, sizeof(cpuid_info));
         oe_get_cpuid(
@@ -75,7 +78,24 @@ void TestSigillHandling(oe_enclave_t* enclave)
 
         for (int j = 0; j < OE_CPUID_REG_COUNT; j++)
         {
-            OE_TEST(cpuid_info[j] == args.cpuid_table[i][j]);
+            if (i == 1 && j == 1)
+            {
+                // Leaf 1. EBX register.
+                // The highest 8 bits indicates the current executing processor
+                // id.
+                // There is no guarantee that the value is the same across
+                // multiple cpu-id calles since the thread could be scheduled to
+                // different processors for different calls.
+                // Additionally, the enclave returns a cached value which has
+                // lesser chance of matching up with the current value.
+                OE_TEST(
+                    (cpuid_info[j] & 0x00FFFFFF) ==
+                    (args.cpuid_table[i][j] & 0x00FFFFFF));
+            }
+            else
+            {
+                OE_TEST(cpuid_info[j] == args.cpuid_table[i][j]);
+            }
         }
     }
 }
