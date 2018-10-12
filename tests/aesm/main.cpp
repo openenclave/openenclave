@@ -34,13 +34,13 @@ int main(int argc, const char* argv[])
         return -1;
     }
 #else
-    AESM* aesm;
-    if (!(aesm = AESMConnect()))
+    aesm_t* aesm;
+    if (!(aesm = aesm_connect()))
     {
         fprintf(stderr, "%s: failed to connect\n", argv[0]);
         exit(1);
     }
-    AESMDisconnect(aesm);
+    aesm_disconnect(aesm);
 #endif
 
     printf("=== passed all tests (%s)\n", argv[0]);
