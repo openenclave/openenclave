@@ -152,6 +152,7 @@ oe_result_t oe_call_host_function(
             memcpy(enc_ptr, host_ptr, size);                    \
     } while (0)
 
+// Define oe_lfence for Spectre mitigation in x686-64 platforms.
 #if __x86_64__ || _M_X64
 
 // x86_64 processor.
@@ -168,12 +169,13 @@ oe_result_t oe_call_host_function(
 #else
 
 // Not a recognized compiler.
-#define oe_lfence() (void)0
+#error Not a supported compiler
 
 #endif
 
 #else
 
+// On non x86-64 platforms, oe_lfence does nothing.
 #define oe_lfence() (void)0
 
 #endif
