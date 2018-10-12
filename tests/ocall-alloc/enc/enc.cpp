@@ -6,9 +6,7 @@
    - Regular nesting / un-nesting
    - Whitebox-tests w/ tracking of allocation/de-allocation
  */
-
-#define OE_TRACE_LEVEL 1
-
+#include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/hostalloc.h>
 #include <openenclave/internal/print.h>
@@ -288,3 +286,5 @@ OE_SET_ENCLAVE_SGX(
     1024, /* HeapPageCount */
     128,  /* StackPageCount */
     16);  /* TCSCount */
+
+OE_DEFINE_EMPTY_ECALL_TABLE();

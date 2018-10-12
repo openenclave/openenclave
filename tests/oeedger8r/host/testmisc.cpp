@@ -5,7 +5,7 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/tests.h>
 #include <algorithm>
-#include "misc_u.c"
+#include "all_u.h"
 
 void run_misc_tests(oe_enclave_t* enclave)
 {

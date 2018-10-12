@@ -5,7 +5,7 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/tests.h>
 #include "../edltestutils.h"
-#include "struct_u.c"
+#include "all_u.h"
 
 void test_struct_edl_ecalls(oe_enclave_t* enclave)
 {

@@ -28,7 +28,7 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
-    r = oe_create_enclave(argv[1], type, flags, NULL, 0, &enclave);
+    r = oe_create_enclave(argv[1], type, flags, NULL, 0, NULL, 0, &enclave);
     OE_TEST(r == OE_OK);
 
     /* Test() */

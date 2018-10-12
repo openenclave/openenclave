@@ -1,0 +1,29 @@
+# Files identified as text should be checked in with LFs, and checked
+# out with the platform-specific EOL markers.
+#
+# Essentially runs `git config core.autocrlf true` for every clone.
+* text=auto
+
+# Shell scripts should always have LFs.
+*.sh                       text eol=lf
+/debugger/oe-gdb           text eol=lf
+/samples/run               text eol=lf
+/scripts/**                text eol=lf
+/scripts/README.md         text -eol
+/tests/crypto/host/genkeys text eol=lf
+
+# Windows build files should always have CRLFs.
+*.sln               text eol=crlf
+*.vcxproj           text eol=crlf
+/CMakeSettings.json text eol=crlf
+
+# The 3rdparty dependencies are nested: the first folder contains our
+# build scripts, which we want these attributes to apply to, and the
+# second folder contains the actual upstream 3rdparty code, which we
+# want to exclude from these rules.
+/3rdparty/dlmalloc/dlmalloc/**  -text -eol
+/3rdparty/libcxx/libcxx/**      -text -eol
+/3rdparty/libcxxrt/libcxxrt/**  -text -eol
+/3rdparty/libunwind/libunwind** -text -eol
+/3rdparty/mbedtls/mbedtls/**    -text -eol
+/3rdparty/musl/musl/**          -text -eol

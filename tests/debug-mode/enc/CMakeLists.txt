@@ -3,11 +3,11 @@
 
 include(add_enclave_executable)
 
-add_enclave_executable(no_debug_enc sign.conf private.pem
+add_enclave_executable(no_debug_enc sign.conf
     enc.c
     props.c)
 
-add_enclave_executable(debug_enc sign-debug.conf private.pem
+add_enclave_executable(debug_enc sign-debug.conf
     enc.c
     props-debug.c)
 

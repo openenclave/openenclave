@@ -29,7 +29,14 @@ OE_EXTERNC_BEGIN
 
 /**
  *  Flag passed into oe_create_enclave to run the enclave in debug mode.
- */
+ *  The flag allows the enclave to be created without the enclave binary
+ *  being signed. It also gives a developer permission to debug the process
+ *  and get access to enclave memory. What this means is ** DO NOT SHIP
+ *  CODE WITH THE OE_ENCLAVE_FLAG_DEBUG ** because it is unsecure. What
+ *  it does give is the ability to develop your enclave more easily. Before
+ *  you ship the code you need to have a proper code signing story for the
+ *  enclave shared library.
+*/
 #define OE_ENCLAVE_FLAG_DEBUG 0x00000001
 
 /**
@@ -47,6 +54,11 @@ OE_EXTERNC_BEGIN
  */
 
 /**
+ * Type of each function in an ocall-table.
+ */
+typedef void (*oe_ocall_func_t)(void*);
+
+/**
  * Create an enclave from an enclave image file.
  *
  * This function creates an enclave from an enclave image file. On successful
@@ -61,8 +73,9 @@ OE_EXTERNC_BEGIN
  *
  * @param flags These flags control how the enclave is run.
  *     It is the bitwise OR of zero or more of the following flags
- *     - OE_ENCLAVE_FLAG_DEBUG - runs the enclave in debug mode
  *     - OE_ENCLAVE_FLAG_SIMULATE - runs the enclave in simulation mode
+ *     - OE_ENCLAVE_FLAG_DEBUG - runs the enclave in debug mode.
+ *                               DO NOT SHIP CODE with this flag
  *
  * @param config Additional enclave creation configuration data for the specific
  * enclave type. This parameter is reserved and must be NULL.
@@ -80,6 +93,8 @@ oe_result_t oe_create_enclave(
     uint32_t flags,
     const void* config,
     uint32_t config_size,
+    const oe_ocall_func_t* ocall_table,
+    uint32_t ocall_table_size,
     oe_enclave_t** enclave);
 
 /**
@@ -182,7 +197,7 @@ oe_result_t oe_get_report(
  * @param target_info_size The size of **target_info_buffer**. This is set to
  * the required size of **target_info_buffer** on return.
  *
- * @retval OE_OK The platform specific data was successfuly extracted.
+ * @retval OE_OK The platform specific data was successfully extracted.
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
  * @retval OE_BUFFER_TOO_SMALL **target_info_buffer** is NULL or too small.
  *
@@ -221,7 +236,7 @@ oe_result_t oe_parse_report(
  * rooted to a trusted authority such as the enclave platform manufacturer.
  *
  * @param enclave The instance of the enclave that will be used to
- * verify a local report. For remote reports, this parametter can be NULL.
+ * verify a local report. For remote reports, this parameter can be NULL.
  * @param report The buffer containing the report to verify.
  * @param report_size The size of the **report** buffer.
  * @param parsed_report Optional **oe_report_t** structure to populate with the

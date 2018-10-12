@@ -1,8 +1,5 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-
-#define OE_TRACE_LEVEL 1
-
 #include <openenclave/host.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/tests.h>
@@ -37,6 +34,8 @@ struct EnclaveWrap
                  enclave_path,
                  OE_ENCLAVE_TYPE_SGX,
                  flags,
+                 NULL,
+                 0,
                  NULL,
                  0,
                  &enclave)) != OE_OK)

@@ -951,47 +951,46 @@ done:
 }
 
 /* Find enclave property struct within an .oeinfo section */
-static oe_result_t _find_enclave_properties_header(
+static oe_result_t _find_enclave_properties(
     uint8_t* section_data,
     size_t section_size,
     oe_enclave_type_t enclave_type,
     size_t struct_size,
-    oe_enclave_properties_header_t** header)
+    oe_sgx_enclave_properties_t** enclave_properties)
 {
     oe_result_t result = OE_UNEXPECTED;
     uint8_t* ptr = section_data;
     size_t bytes_remaining = section_size;
 
-    *header = NULL;
+    *enclave_properties = NULL;
 
     /* While there are more enclave property structures */
     while (bytes_remaining >= struct_size)
     {
-        oe_enclave_properties_header_t* h =
-            (oe_enclave_properties_header_t*)ptr;
+        oe_sgx_enclave_properties_t* p = (oe_sgx_enclave_properties_t*)ptr;
 
-        if (h->enclave_type == enclave_type)
+        if (p->header.enclave_type == enclave_type)
         {
-            if (h->size != struct_size)
+            if (p->header.size != struct_size)
             {
                 result = OE_FAILURE;
                 goto done;
             }
 
             /* Found it! */
-            *header = h;
+            *enclave_properties = p;
             break;
         }
 
         /* If size of structure extends beyond end of section */
-        if (h->size > bytes_remaining)
+        if (p->header.size > bytes_remaining)
             break;
 
-        ptr += h->size;
-        bytes_remaining -= h->size;
+        ptr += p->header.size;
+        bytes_remaining -= p->header.size;
     }
 
-    if (*header == NULL)
+    if (*enclave_properties == NULL)
     {
         result = OE_NOT_FOUND;
         goto done;
@@ -1032,14 +1031,14 @@ oe_result_t oe_sgx_load_properties(
 
     /* Find SGX enclave property struct */
     {
-        oe_enclave_properties_header_t* header;
+        oe_sgx_enclave_properties_t* enclave_properties;
 
-        if ((result = _find_enclave_properties_header(
+        if ((result = _find_enclave_properties(
                  section_data,
                  section_size,
                  OE_ENCLAVE_TYPE_SGX,
                  sizeof(oe_sgx_enclave_properties_t),
-                 &header)) != OE_OK)
+                 &enclave_properties)) != OE_OK)
         {
             result = OE_NOT_FOUND;
             goto done;
@@ -1047,7 +1046,10 @@ oe_result_t oe_sgx_load_properties(
 
         OE_CHECK(
             oe_memcpy_s(
-                properties, sizeof(*properties), header, sizeof(*properties)));
+                properties,
+                sizeof(*properties),
+                enclave_properties,
+                sizeof(*enclave_properties)));
     }
 
     result = OE_OK;
@@ -1082,21 +1084,24 @@ oe_result_t oe_sgx_update_enclave_properties(
 
     /* Find SGX enclave property struct */
     {
-        oe_enclave_properties_header_t* header;
+        oe_sgx_enclave_properties_t* enclave_properties;
 
-        if ((result = _find_enclave_properties_header(
+        if ((result = _find_enclave_properties(
                  section_data,
                  section_size,
                  OE_ENCLAVE_TYPE_SGX,
                  sizeof(oe_sgx_enclave_properties_t),
-                 &header)) != OE_OK)
+                 &enclave_properties)) != OE_OK)
         {
             goto done;
         }
 
         OE_CHECK(
             oe_memcpy_s(
-                header, sizeof(*properties), properties, sizeof(*properties)));
+                enclave_properties,
+                sizeof(*enclave_properties),
+                properties,
+                sizeof(*properties)));
     }
 
     result = OE_OK;
@@ -1416,6 +1421,8 @@ oe_result_t oe_create_enclave(
     uint32_t flags,
     const void* config,
     uint32_t config_size,
+    const oe_ocall_func_t* ocall_table,
+    uint32_t ocall_table_size,
     oe_enclave_t** enclave_out)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -1477,6 +1484,11 @@ oe_result_t oe_create_enclave(
     /* Notify GDB that a new enclave is created */
     _oe_notify_gdb_enclave_creation(
         enclave, enclave->path, (uint32_t)strlen(enclave->path));
+
+    /* Enclave initialization invokes global constructors which could make
+     * ocalls. Therefore setup ocall table prior to initialization. */
+    enclave->ocalls = (const oe_ocall_func_t*)ocall_table;
+    enclave->num_ocalls = ocall_table_size;
 
     /* Invoke enclave initialization. */
     OE_CHECK(_initialize_enclave(enclave));

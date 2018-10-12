@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "misc_t.c"
+#include "all_t.h"
 
 int8_t* get_enclave_mem_ptr()
 {

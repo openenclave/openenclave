@@ -34,7 +34,14 @@ int main(int argc, const char* argv[])
     printf("=== This program is used to test enclave seal key functions.\n");
 
     if ((result = oe_create_enclave(
-             argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
+             argv[1],
+             OE_ENCLAVE_TYPE_SGX,
+             flags,
+             NULL,
+             0,
+             NULL,
+             0,
+             &enclave)) != OE_OK)
     {
         oe_put_err("oe_create_enclave(): result=%u", result);
         return 1;

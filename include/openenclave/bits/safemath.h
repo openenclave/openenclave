@@ -12,7 +12,7 @@
  * and multiplying 8/16/32/64 bit signed/unsigned integers. These functions
  * return `OE_INTEGER_OVERFLOW` if overflow is detected and `OE_OK` otherwise.
  * Also, these functions will use GCC/Clang's `__builtin_*_overflow` intrinsics
- * if they are availiable.
+ * if they are available.
  */
 
 OE_EXTERNC_BEGIN

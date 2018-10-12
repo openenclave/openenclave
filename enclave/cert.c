@@ -37,7 +37,7 @@
 typedef struct _referent
 {
     /* The first certificate in the chain (crt->next points to the next) */
-    mbedtls_x509_crt crt;
+    mbedtls_x509_crt* crt;
 
     /* The length of the certificate chain */
     size_t length;
@@ -54,7 +54,14 @@ OE_INLINE Referent* _referent_new(void)
     if (!(referent = (Referent*)mbedtls_calloc(1, sizeof(Referent))))
         return NULL;
 
-    mbedtls_x509_crt_init(&referent->crt);
+    if (!(referent->crt =
+              (mbedtls_x509_crt*)mbedtls_calloc(1, sizeof(mbedtls_x509_crt))))
+    {
+        mbedtls_free(referent);
+        return NULL;
+    }
+
+    mbedtls_x509_crt_init(referent->crt);
     referent->length = 0;
     referent->refs = 1;
 
@@ -65,7 +72,7 @@ OE_INLINE mbedtls_x509_crt* _referent_get_cert(Referent* referent, size_t index)
 {
     size_t i = 0;
 
-    for (mbedtls_x509_crt *p = &referent->crt; p; p = p->next, i++)
+    for (mbedtls_x509_crt *p = referent->crt; p; p = p->next, i++)
     {
         if (i == index)
             return p;
@@ -89,7 +96,8 @@ OE_INLINE void _referent_free(Referent* referent)
     if (oe_atomic_decrement(&referent->refs) == 0)
     {
         /* Release the MBEDTLS certificate */
-        mbedtls_x509_crt_free(&referent->crt);
+        mbedtls_x509_crt_free(referent->crt);
+        mbedtls_free(referent->crt);
 
         /* Free the referent structure */
         oe_memset(referent, 0, sizeof(Referent));
@@ -242,6 +250,75 @@ static mbedtls_x509_crl* _crl_list_find_issuer_for_cert(
     }
 
     return NULL;
+}
+
+/**
+ * Return true is time t1 is chronologically before or at time t2.
+ */
+static bool _mbedtls_x509_time_is_before_or_equal(
+    const mbedtls_x509_time* t1,
+    const mbedtls_x509_time* t2)
+{
+    if (t1->year != t2->year)
+        return t1->year < t2->year;
+    if (t1->mon != t2->mon)
+        return t1->mon < t2->mon;
+    if (t1->day != t2->day)
+        return t1->day < t2->day;
+    if (t1->hour != t2->hour)
+        return t1->hour < t2->hour;
+    if (t1->min != t2->min)
+        return t1->min < t2->min;
+    return t1->sec <= t2->sec;
+}
+
+/**
+ * Reorder the cert chain to be leaf->intermeditate->root.
+ * This order simplifies cert validation.
+ * The preferred order is also the reverse chronological order of issue dates.
+ * Before or equal comparison is used to preserve stable sorting, to be
+ * consistent with the sort function in the host side.
+ *
+ * Note: This sorting does not handle certs that are issues within a second of
+ * each other since mbedtls_x509_time's  resolution is seconds. Such certs can
+ * arise in testing code that generates a cert chain on the fly. See issue #864.
+ */
+static mbedtls_x509_crt* _sort_certs_by_issue_date(mbedtls_x509_crt* chain)
+{
+    mbedtls_x509_crt* sorted = NULL;
+    mbedtls_x509_crt* oldest = NULL;
+    mbedtls_x509_crt** p_oldest = NULL;
+    mbedtls_x509_crt** p = NULL;
+
+    while (chain)
+    {
+        // Set the start of the chain as the oldest cert.
+        p_oldest = &chain;
+
+        // Iterate through the chain to select the cert having
+        // the oldest issue date.
+        p = &chain->next;
+        while (*p)
+        {
+            //  // Update oldest if a new oldest cert is found.
+            if (_mbedtls_x509_time_is_before_or_equal(
+                    &(*p)->valid_from, &(*p_oldest)->valid_from))
+            {
+                p_oldest = p;
+            }
+            p = &(*p)->next;
+        }
+
+        // Remove next oldest cert from chain.
+        oldest = *p_oldest;
+        *p_oldest = oldest->next;
+
+        // Recursively insert the next oldest cert at the front of the sorted
+        // list (newest cert at the beginning).
+        oldest->next = sorted;
+        sorted = oldest;
+    }
+    return sorted;
 }
 
 /* Verify each certificate in the chain against its predecessors. */
@@ -560,16 +637,19 @@ oe_result_t oe_cert_chain_read_pem(
 
     /* Read the PEM buffer into DER format */
     if (mbedtls_x509_crt_parse(
-            &referent->crt, (const uint8_t*)pem_data, pem_size) != 0)
+            referent->crt, (const uint8_t*)pem_data, pem_size) != 0)
     {
         OE_RAISE(OE_FAILURE);
     }
 
+    /* Reorder certs in the chain to preferred order */
+    referent->crt = _sort_certs_by_issue_date(referent->crt);
+
     /* Verify the whole certificate chain */
-    OE_CHECK(_verify_whole_chain(&referent->crt));
+    OE_CHECK(_verify_whole_chain(referent->crt));
 
     /* Calculate the length of the certificate chain */
-    for (mbedtls_x509_crt* p = &referent->crt; p; p = p->next)
+    for (mbedtls_x509_crt* p = referent->crt; p; p = p->next)
         referent->length++;
 
     /* Initialize the implementation and increment reference count */
@@ -674,7 +754,7 @@ oe_result_t oe_cert_verify(
     /* Verify the certificate */
     if (mbedtls_x509_crt_verify(
             cert_impl->cert,
-            &chain_impl->referent->crt,
+            chain_impl->referent->crt,
             crl_list,
             NULL,
             &flags,
@@ -691,12 +771,12 @@ oe_result_t oe_cert_verify(
     }
 
     /* Verify every certificate in the certificate chain. */
-    for (mbedtls_x509_crt* p = &chain_impl->referent->crt; p; p = p->next)
+    for (mbedtls_x509_crt* p = chain_impl->referent->crt; p; p = p->next)
     {
         /* Verify the current certificate in the chain. */
         if (mbedtls_x509_crt_verify(
                 p,
-                &chain_impl->referent->crt,
+                chain_impl->referent->crt,
                 crl_list,
                 NULL,
                 &flags,

@@ -174,20 +174,20 @@ static oe_result_t _pack_bytes(
     uint8_t tag;
 
     if (_make_tag(field_num, WIRE_TYPE_LENGTH_DELIMITED, &tag) != 0)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     if (mem_cat(buf, &tag, sizeof(tag)) != 0)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     if (_pack_variant_uint32(buf, size) != 0)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     if (mem_cat(buf, data, size) != 0)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
@@ -196,14 +196,14 @@ static int _pack_var_int(mem_t* buf, uint8_t field_num, uint64_t value)
     oe_result_t result = OE_UNEXPECTED;
 
     if (_pack_tag(buf, field_num, WIRE_TYPE_VARINT) != 0)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     if (_pack_variant_uint32(buf, value) != 0)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
@@ -218,20 +218,20 @@ static oe_result_t _unpack_var_int(
     uint8_t tmp_tag;
 
     if ((*pos = _unpack_tag(buf, *pos, &tag)) == -1)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     if (_make_tag(field_num, WIRE_TYPE_VARINT, &tmp_tag) != 0)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     if (tag != tmp_tag)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     if ((*pos = _unpack_variant_uint32(buf, *pos, value)) == -1)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
@@ -306,7 +306,7 @@ static oe_result_t _write_request(
 #endif
 
     /* Wrap message in envelope */
-    OE_TRY(
+    OE_CHECK(
         _pack_bytes(
             &envelope, message_type, mem_ptr(message), mem_size(message)));
 
@@ -316,16 +316,16 @@ static oe_result_t _write_request(
 
         /* Send message size */
         if (_write(aesm->sock, &size, sizeof(uint32_t)) != 0)
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         /* Send message data */
         if (_write(aesm->sock, mem_ptr(&envelope), mem_size(&envelope)) != 0)
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
     }
 
     result = OE_OK;
 
-OE_CATCH:
+done:
 
     mem_free(&envelope);
 
@@ -347,15 +347,15 @@ static oe_result_t _read_response(
     {
         /* Read the envelope size */
         if (_read(aesm->sock, &size, sizeof(uint32_t)) != 0)
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         /* Expand the buffer */
         if (mem_resize(&envelope, size) != 0)
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         /* Read the message */
         if (_read(aesm->sock, mem_mutable_ptr(&envelope), size) != 0)
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
     }
 
     /* Copy envelope contents into MESSAGE */
@@ -367,21 +367,21 @@ static oe_result_t _read_response(
 
         /* Get the tag of this payload */
         if ((pos = _unpack_tag(&envelope, pos, &tag)) == (size_t)-1)
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         if (_make_tag(message_type, WIRE_TYPE_LENGTH_DELIMITED, &tmp_tag) != 0)
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         if (tag != tmp_tag)
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         /* Get the size of this payload */
         if ((pos = _unpack_variant_uint32(&envelope, pos, &size)) == (size_t)-1)
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         /* Check the size (must equal unread bytes in envelope) */
         if (size != mem_size(&envelope) - pos)
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         /* Read the message from the envelope */
         mem_cat(message, mem_ptr(&envelope) + pos, size);
@@ -394,7 +394,7 @@ static oe_result_t _read_response(
 
     result = OE_OK;
 
-OE_CATCH:
+done:
 
     mem_free(&envelope);
 
