@@ -1,24 +1,26 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <windows.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/globals.h>
+#include <windows.h>
 #include "../init.h"
 
 /*
-    _oe_reloc_bias is used to calculate relocation difference *BEFORE* relocation.
+    _oe_reloc_bias is used to calculate relocation difference *BEFORE*
+   relocation.
     Since _oe_reloc_bias hasn't been relocated, it contains the original value.
     Therefore, before relocation,
         relocation_diff = (uint64_t)&_oe_reloc_bias - _oe_reloc_bias;
-    because &_oe_reloc_bias is pc-relative and will be the post-relocation value.
+    because &_oe_reloc_bias is pc-relative and will be the post-relocation
+   value.
 */
 static volatile uint64_t _oe_reloc_bias = (uint64_t)&_oe_reloc_bias;
 
-static uint64_t _next_reloc_addr(
-    uint64_t reloc_addr)
+static uint64_t _next_reloc_addr(uint64_t reloc_addr)
 {
-    const IMAGE_BASE_RELOCATION* reloc = (const IMAGE_BASE_RELOCATION*)reloc_addr;
+    const IMAGE_BASE_RELOCATION* reloc =
+        (const IMAGE_BASE_RELOCATION*)reloc_addr;
     return (reloc_addr + reloc->SizeOfBlock);
 }
 
@@ -27,13 +29,14 @@ static bool _relocate_one_block(
     uint64_t reloc_addr,
     uint64_t reloc_diff)
 {
-    const IMAGE_BASE_RELOCATION* reloc = (const IMAGE_BASE_RELOCATION*)reloc_addr;
-    PUSHORT reloc_ptr = (PUSHORT) (reloc + 1);
-    PUSHORT reloc_end = (PUSHORT) (reloc_addr + reloc->SizeOfBlock);
+    const IMAGE_BASE_RELOCATION* reloc =
+        (const IMAGE_BASE_RELOCATION*)reloc_addr;
+    PUSHORT reloc_ptr = (PUSHORT)(reloc + 1);
+    PUSHORT reloc_end = (PUSHORT)(reloc_addr + reloc->SizeOfBlock);
     uint64_t block_base_addr = image_base + reloc->VirtualAddress;
     bool result = true;
 
-    for ( ; reloc_ptr < reloc_end; reloc_ptr ++)
+    for (; reloc_ptr < reloc_end; reloc_ptr++)
     {
         uint64_t fixup_addr = block_base_addr + (*reloc_ptr & 0xfff);
 
@@ -44,7 +47,7 @@ static bool _relocate_one_block(
             break;
         }
 
-        *(uint64_t __unaligned *)fixup_addr += reloc_diff;
+        *(uint64_t __unaligned*)fixup_addr += reloc_diff;
     }
     return result;
 }
@@ -61,13 +64,13 @@ static bool _relocate_one_block(
 
 bool _oe_apply_relocations(void)
 {
-    uint64_t image_base = (uint64_t) __oe_get_enclave_base();
-    uint64_t reloc_addr = (uint64_t) __oe_get_reloc_base();
+    uint64_t image_base = (uint64_t)__oe_get_enclave_base();
+    uint64_t reloc_addr = (uint64_t)__oe_get_reloc_base();
     uint64_t reloc_end = reloc_addr + __oe_get_reloc_size();
     uint64_t reloc_diff = (uint64_t)&_oe_reloc_bias - _oe_reloc_bias;
     bool result = true;
 
-    /*  
+    /*
         Can't assert before enclave is initialized.
 
         oe_assert((reloc_diff & (OE_PAGE_SIZE - 1)) == 0);
@@ -91,4 +94,3 @@ bool _oe_apply_relocations(void)
 
     return result && (((uint64_t)&_oe_reloc_bias - _oe_reloc_bias) == 0);
 }
-

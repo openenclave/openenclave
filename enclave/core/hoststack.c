@@ -26,17 +26,15 @@ struct _bucket_t;
 typedef struct _bucket_element_t
 {
     struct _bucket_t* bucket;
-//  char data[0];
+    //  char data[0];
 } bucket_element_t;
 
-OE_INLINE void* _bucket_data(
-    volatile bucket_element_t* bucket_element)
+OE_INLINE void* _bucket_data(volatile bucket_element_t* bucket_element)
 {
-    return (void*)(bucket_element+1);
+    return (void*)(bucket_element + 1);
 }
 
-OE_INLINE bucket_element_t* _bucket_element_of_data(
-    void* data)
+OE_INLINE bucket_element_t* _bucket_element_of_data(void* data)
 {
     return (bucket_element_t*)data - 1;
 }
@@ -45,14 +43,13 @@ typedef struct _bucket_t
 {
     size_t size;      // capacity in bytes of <elements>
     size_t base_free; // byte-offset into <elements> of first free byte
-//  bucket_element_t elements[0];
+    //  bucket_element_t elements[0];
 } bucket_t;
 
-OE_INLINE bucket_element_t* _first_bucket_element(
-    volatile bucket_t* bucket)
+OE_INLINE bucket_element_t* _first_bucket_element(volatile bucket_t* bucket)
 
 {
-    return (bucket_element_t*)(bucket+1);
+    return (bucket_element_t*)(bucket + 1);
 }
 
 static const size_t _bucket_min_size = 4096;
@@ -81,7 +78,6 @@ OE_INLINE bool _is_element_in_thread_bucket(
     return (bucket_element >= first_element) &&
            ((size_t)bucket_element < (size_t)first_element + tb->cached.size);
 }
-
 
 // oe_once() replacement to work around recursion limitation
 static struct OnceType
@@ -141,7 +137,8 @@ static thread_buckets_t* _get_thread_buckets()
     tb = oe_thread_getspecific(_host_stack_tls_key);
     if (tb == NULL)
     {
-        if ((tb = (thread_buckets_t*)oe_sbrk(sizeof(thread_buckets_t))) == (void*)-1)
+        if ((tb = (thread_buckets_t*)oe_sbrk(sizeof(thread_buckets_t))) ==
+            (void*)-1)
             return NULL;
 
         oe_memset(tb, 0, sizeof(*tb));
@@ -324,11 +321,11 @@ void oe_host_free_for_call_host(void* p)
     }
 
     // element in bucket?
-    if (!_is_element_in_thread_bucket(bucket_element,tb))
+    if (!_is_element_in_thread_bucket(bucket_element, tb))
         oe_abort();
 
-    tb->cached.base_free =
-        (size_t)(bucket_element) - (size_t)_first_bucket_element(tb->active_host);
+    tb->cached.base_free = (size_t)(bucket_element) -
+                           (size_t)_first_bucket_element(tb->active_host);
 
     if ((tb->flags & THREAD_BUCKET_FLAG_RUNDOWN) && (tb->cached.base_free == 0))
     {

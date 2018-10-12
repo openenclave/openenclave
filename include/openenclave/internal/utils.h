@@ -4,8 +4,8 @@
 #ifndef _OE_UTILS_H
 #define _OE_UTILS_H
 
-#include <openenclave/internal/defs.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/internal/defs.h>
 
 OE_EXTERNC_BEGIN
 
@@ -168,15 +168,13 @@ OE_INLINE int oe_constant_time_mem_equal(
     return !r;
 }
 
-OE_INLINE uint64_t __oe_round_up_to_page_size(
-    uint64_t x)
+OE_INLINE uint64_t __oe_round_up_to_page_size(uint64_t x)
 {
     uint64_t n = OE_PAGE_SIZE;
     return (x + n - 1) / n * n;
 }
 
-OE_INLINE uint64_t __oe_round_down_to_page_size(
-    uint64_t x)
+OE_INLINE uint64_t __oe_round_down_to_page_size(uint64_t x)
 {
     return x & ~(OE_PAGE_SIZE - 1);
 }

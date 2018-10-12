@@ -227,7 +227,7 @@ done:
 static oe_result_t _calculate_enclave_size(
     size_t image_size,
     size_t ecall_size,
-    const oe_sgx_enclave_properties_t *props,
+    const oe_sgx_enclave_properties_t* props,
     size_t* enclave_end, /* end may be less than size due to rounding */
     size_t* enclave_size)
 
@@ -247,18 +247,16 @@ static oe_result_t _calculate_enclave_size(
     heap_size = size_settings->num_heap_pages * OE_PAGE_SIZE;
 
     /* Compute size of the stack (one per TCS; include guard pages) */
-    stack_size = OE_PAGE_SIZE    // guard page
-               + (size_settings->num_stack_pages * OE_PAGE_SIZE)
-               + OE_PAGE_SIZE;   // guard page
+    stack_size = OE_PAGE_SIZE // guard page
+                 + (size_settings->num_stack_pages * OE_PAGE_SIZE) +
+                 OE_PAGE_SIZE; // guard page
 
     /* Compute the control size in bytes (6 pages total) */
     control_size = 6 * OE_PAGE_SIZE;
 
     /* Compute end of the enclave */
-    *enclave_end = image_size
-                 + ecall_size
-                 + heap_size
-                 + (size_settings->num_tcs * (stack_size + control_size));
+    *enclave_end = image_size + ecall_size + heap_size +
+                   (size_settings->num_tcs * (stack_size + control_size));
 
     /* Calculate the total size of the enclave */
     *enclave_size = oe_round_u64_to_pow2(*enclave_end);
@@ -372,49 +370,38 @@ static oe_result_t _oe_add_data_pages(
 
 {
     oe_result_t result = OE_UNEXPECTED;
-    const oe_enclave_size_settings_t* size_settings = &props->header.size_settings;
+    const oe_enclave_size_settings_t* size_settings =
+        &props->header.size_settings;
     size_t i;
 
     /* Add the heap pages */
     OE_CHECK(
         _add_heap_pages(
-            context,
-            enclave->addr,
-            vaddr,
-            size_settings->num_heap_pages));
+            context, enclave->addr, vaddr, size_settings->num_heap_pages));
 
-    for (i = 0; i < size_settings->num_tcs; i++)    {
-
+    for (i = 0; i < size_settings->num_tcs; i++)
+    {
         /* Add guard page */
         *vaddr += OE_PAGE_SIZE;
 
         /* Add the stack for this thread control structure */
         OE_CHECK(
             _add_stack_pages(
-                context,
-                enclave->addr,
-                vaddr,
-                size_settings->num_stack_pages));
+                context, enclave->addr, vaddr, size_settings->num_stack_pages));
 
         /* Add guard page */
         *vaddr += OE_PAGE_SIZE;
 
         /* Add the "control" pages */
         OE_CHECK(
-        _add_control_pages(
-            context,
-            enclave->addr,
-            enclave->size,
-            entry,
-            vaddr,
-            enclave));
+            _add_control_pages(
+                context, enclave->addr, enclave->size, entry, vaddr, enclave));
     }
 
     result = OE_OK;
 
 done:
     return result;
-
 }
 
 /*
@@ -617,11 +604,7 @@ oe_result_t oe_sgx_build_enclave(
     /* Calculate the size of this enclave in memory */
     OE_CHECK(
         _calculate_enclave_size(
-            image_size,
-            ecall_size,
-            &props,
-            &enclave_end,
-            &enclave_size));
+            image_size, ecall_size, &props, &enclave_end, &enclave_size));
 
     /* Perform the ECREATE operation */
     OE_CHECK(oe_sgx_create_enclave(context, enclave_size, &enclave_addr));
@@ -632,29 +615,20 @@ oe_result_t oe_sgx_build_enclave(
     enclave->text = enclave_addr + oeimage.text_rva;
 
     /* Patch image */
-    OE_CHECK(_oe_patch_image(&oeimage,
-                             ecall_size,
-                             enclave_end));
+    OE_CHECK(_oe_patch_image(&oeimage, ecall_size, enclave_end));
 
     /* Add image to enclave */
-    OE_CHECK(_oe_add_image_pages(context,
-                                 enclave,
-                                 &oeimage,
-                                 &vaddr));
+    OE_CHECK(_oe_add_image_pages(context, enclave, &oeimage, &vaddr));
 
     /* Add ecall pages */
-    OE_CHECK(_add_ecall_pages(context,
-                              enclave->addr,
-                              ecall_data,
-                              ecall_size,
-                              &vaddr));
+    OE_CHECK(
+        _add_ecall_pages(
+            context, enclave->addr, ecall_data, ecall_size, &vaddr));
 
     /* Add data pages */
-    OE_CHECK(_oe_add_data_pages(context,
-                                enclave,
-                                &props,
-                                oeimage.entry_rva,
-                                &vaddr));
+    OE_CHECK(
+        _oe_add_data_pages(
+            context, enclave, &props, oeimage.entry_rva, &vaddr));
 
     /* Ask the platform to initialize the enclave and finalize the hash */
     OE_CHECK(
@@ -681,8 +655,7 @@ done:
     return result;
 }
 
-void _oe_free_enclave_ecalls(
-    oe_enclave_t* enclave)
+void _oe_free_enclave_ecalls(oe_enclave_t* enclave)
 {
     if (enclave->ecalls)
     {

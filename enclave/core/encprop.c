@@ -5,7 +5,7 @@
 #include <openenclave/internal/globals.h>
 
 //
-// Declare an invalid oeinfo to ensure .oeinfo section exists 
+// Declare an invalid oeinfo to ensure .oeinfo section exists
 // - This object won't be linked if enclave has the macro defined.
 // - If enclave does't have the macro defined, it must go through
 //   oesign to update the stucture, which would override the value.

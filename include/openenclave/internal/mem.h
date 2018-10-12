@@ -44,7 +44,6 @@
 
 #endif /* defined(__linux__) */
 
-
 /* mem_t.__type */
 typedef enum _mem_type_t {
     MEM_TYPE_NONE = 1,

@@ -3,27 +3,25 @@
 
 #define OE_TRACE_LEVEL 1
 
-#include <windows.h>
+#include <assert.h>
 #include <openenclave/bits/defs.h>
+#include <openenclave/bits/safemath.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/host.h>
-#include <openenclave/internal/mem.h>
 #include <openenclave/internal/load.h>
-#include <openenclave/internal/trace.h>
+#include <openenclave/internal/mem.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
-#include <openenclave/bits/safemath.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
+#include <windows.h>
 #include "../enclave.h"
 #include "../memalign.h"
 #include "../sgxload.h"
 #include "../strings.h"
 
-oe_result_t _oe_get_nt_header(
-    char* image_base,
-    PIMAGE_NT_HEADERS* nt_header)
+oe_result_t _oe_get_nt_header(char* image_base, PIMAGE_NT_HEADERS* nt_header)
 {
     oe_result_t result = OE_UNEXPECTED;
     PIMAGE_DOS_HEADER dos_header;
@@ -31,14 +29,15 @@ oe_result_t _oe_get_nt_header(
 
     *nt_header = NULL;
     dos_header = (PIMAGE_DOS_HEADER)image_base;
-    if (dos_header->e_magic != IMAGE_DOS_SIGNATURE) {
+    if (dos_header->e_magic != IMAGE_DOS_SIGNATURE)
+    {
         OE_RAISE(OE_FAILURE);
     }
 
     nt_hdr = (PIMAGE_NT_HEADERS)(image_base + dos_header->e_lfanew);
 
     /* must a 64-bit image_base */
-    if (((char *)nt_hdr < image_base) ||
+    if (((char*)nt_hdr < image_base) ||
         (nt_hdr->Signature != IMAGE_NT_SIGNATURE) ||
         (nt_hdr->FileHeader.Machine != IMAGE_FILE_MACHINE_AMD64) ||
         (nt_hdr->OptionalHeader.Magic != IMAGE_NT_OPTIONAL_HDR64_MAGIC))
@@ -55,27 +54,33 @@ done:
 
 oe_result_t oe_sgx_load_properties(
     const oe_enclave_image_t* oeimage,
-    const char* sectionName,    // unused
+    const char* sectionName, // unused
     oe_sgx_enclave_properties_t* properties)
 {
     assert(oeimage);
     assert(oeimage->oeinfo_rva);
     assert(properties);
 
-    memcpy(properties, oeimage->image_base + oeimage->oeinfo_rva, sizeof(*properties));
+    memcpy(
+        properties,
+        oeimage->image_base + oeimage->oeinfo_rva,
+        sizeof(*properties));
     return OE_OK;
 }
 
 oe_result_t oe_sgx_update_enclave_properties(
     const oe_enclave_image_t* oeimage,
-    const char* sectionName,    // unused
+    const char* sectionName, // unused
     const oe_sgx_enclave_properties_t* properties)
 {
     assert(oeimage);
     assert(oeimage->oeinfo_rva);
     assert(properties);
-    
-    memcpy(oeimage->image_base + oeimage->oeinfo_rva, properties, sizeof(*properties));
+
+    memcpy(
+        oeimage->image_base + oeimage->oeinfo_rva,
+        properties,
+        sizeof(*properties));
     return OE_OK;
 }
 
@@ -98,7 +103,7 @@ oe_result_t _oe_load_enclave_image(
     }
 
     /* get image base from module by zeroing out the bottom bits */
-    oeimage->image_base = (char *) ((uint64_t)oeimage->module & -OE_PAGE_SIZE);
+    oeimage->image_base = (char*)((uint64_t)oeimage->module & -OE_PAGE_SIZE);
 
     /* get nt header */
     OE_CHECK(_oe_get_nt_header(oeimage->image_base, &nt_header));
@@ -114,7 +119,8 @@ oe_result_t _oe_load_enclave_image(
     }
 
     /* find the reloc rva/size */
-    idd = &nt_header->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC];
+    idd = &nt_header->OptionalHeader
+               .DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC];
 
     /* cast to uint64_t to avoid arithmetic overflow */
     if ((uint64_t)idd->VirtualAddress + idd->Size > oeimage->image_size)
@@ -126,7 +132,8 @@ oe_result_t _oe_load_enclave_image(
     oeimage->reloc_size = idd->Size;
 
     /* change protection to r/w */
-    if (!VirtualProtect(oeimage->image_base, oeimage->image_size, PAGE_READWRITE, &i))
+    if (!VirtualProtect(
+            oeimage->image_base, oeimage->image_size, PAGE_READWRITE, &i))
     {
         OE_RAISE(OE_FAILURE);
     }
@@ -146,11 +153,13 @@ oe_result_t _oe_load_enclave_image(
 
         /* sections must not overlap */
         next_section_start = ((i + 1) < nt_header->FileHeader.NumberOfSections)
-                           ? section_hdr[1].VirtualAddress
-                           : oeimage->image_size;
+                                 ? section_hdr[1].VirtualAddress
+                                 : oeimage->image_size;
 
         /* cast to uint64_t to avoid arithmetic overflow */
-        if ((uint64_t)section_hdr->VirtualAddress + section_hdr->Misc.VirtualSize > next_section_start)
+        if ((uint64_t)section_hdr->VirtualAddress +
+                section_hdr->Misc.VirtualSize >
+            next_section_start)
         {
             OE_RAISE(OE_FAILURE);
         }
@@ -189,8 +198,7 @@ done:
     return result;
 }
 
-oe_result_t _oe_unload_enclave_image(
-    oe_enclave_image_t* oeimage)
+oe_result_t _oe_unload_enclave_image(oe_enclave_image_t* oeimage)
 {
     if (oeimage->module)
     {
@@ -201,7 +209,7 @@ oe_result_t _oe_unload_enclave_image(
 }
 
 oe_result_t _oe_calculate_image_size(
-    const oe_enclave_image_t *oeimage,
+    const oe_enclave_image_t* oeimage,
     size_t* image_size)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -212,8 +220,7 @@ oe_result_t _oe_calculate_image_size(
     return OE_OK;
 }
 
-static uint64_t _make_secinfo_flags(
-    uint32_t Characteristics)
+static uint64_t _make_secinfo_flags(uint32_t Characteristics)
 {
     uint32_t r = 0;
 
@@ -291,7 +298,8 @@ oe_result_t _oe_add_image_pages(
     section_hdr = IMAGE_FIRST_SECTION(nt_header);
 
     /* Add image header as r/o pages */
-    for (i = 0; i < section_hdr->VirtualAddress; i += OE_PAGE_SIZE) {
+    for (i = 0; i < section_hdr->VirtualAddress; i += OE_PAGE_SIZE)
+    {
         OE_CHECK(
             oe_sgx_load_enclave_data(
                 context,
@@ -307,10 +315,7 @@ oe_result_t _oe_add_image_pages(
     {
         OE_CHECK(
             _add_section_pages(
-                context,
-                enclave->addr,
-                section_hdr,
-                oeimage->image_base));
+                context, enclave->addr, section_hdr, oeimage->image_base));
     }
 
     *vaddr = oeimage->image_size;
@@ -320,18 +325,17 @@ done:
     return result;
 }
 
-
- oe_result_t _oe_build_ecall_array(
+oe_result_t _oe_build_ecall_array(
     oe_enclave_t* enclave,
-     oe_enclave_image_t* oeimage)
+    oe_enclave_image_t* oeimage)
 {
     oe_result_t result = OE_UNEXPECTED;
     const IMAGE_DATA_DIRECTORY* exh;
     const IMAGE_EXPORT_DIRECTORY* exd;
     const IMAGE_NT_HEADERS* nt_header;
-    uint32_t *name_table;
-    uint32_t *func_table;
-    const char *image_base;
+    uint32_t* name_table;
+    uint32_t* func_table;
+    const char* image_base;
     ECallNameAddr* ecall;
     uint32_t i;
 
@@ -340,7 +344,8 @@ done:
 
     image_base = oeimage->image_base;
     nt_header = (const IMAGE_NT_HEADERS*)oeimage->nt_header;
-    exh = &nt_header->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT];
+    exh =
+        &nt_header->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT];
 
     /* cast to uint64_t to avoid arithmetic overflow */
     if ((uint64_t)exh->VirtualAddress + exh->Size > oeimage->image_size)
@@ -348,7 +353,7 @@ done:
         OE_RAISE(OE_FAILURE);
     }
 
-    exd = (const IMAGE_EXPORT_DIRECTORY*) (image_base + exh->VirtualAddress);
+    exd = (const IMAGE_EXPORT_DIRECTORY*)(image_base + exh->VirtualAddress);
 
     /* All exports must be named */
     if (exd->NumberOfFunctions != exd->NumberOfNames)
@@ -357,17 +362,22 @@ done:
     }
 
     /* cast to uint64_t to avoid arithmetic overflow */
-    if ((uint64_t)exd->NumberOfNames * sizeof(uint32_t) + exd->AddressOfNames > oeimage->image_size)
+    if ((uint64_t)exd->NumberOfNames * sizeof(uint32_t) + exd->AddressOfNames >
+        oeimage->image_size)
     {
         OE_RAISE(OE_FAILURE);
     }
-    if ((uint64_t)exd->NumberOfFunctions * sizeof(uint32_t) + exd->AddressOfFunctions > oeimage->image_size)
+    if ((uint64_t)exd->NumberOfFunctions * sizeof(uint32_t) +
+            exd->AddressOfFunctions >
+        oeimage->image_size)
     {
         OE_RAISE(OE_FAILURE);
     }
 
-    /* allocate ecall array (might allocated more than needed if there are exports not in .ecall section) */
-    enclave->ecalls = (ECallNameAddr*)malloc(exd->NumberOfFunctions * sizeof(ECallNameAddr));
+    /* allocate ecall array (might allocated more than needed if there are
+     * exports not in .ecall section) */
+    enclave->ecalls =
+        (ECallNameAddr*)malloc(exd->NumberOfFunctions * sizeof(ECallNameAddr));
     if (!enclave->ecalls)
     {
         OE_RAISE(OE_OUT_OF_MEMORY);
@@ -376,7 +386,7 @@ done:
     name_table = (uint32_t*)(image_base + exd->AddressOfNames);
     func_table = (uint32_t*)(image_base + exd->AddressOfFunctions);
 
-    for (i = 0; i < exd->NumberOfFunctions; i ++)
+    for (i = 0; i < exd->NumberOfFunctions; i++)
     {
         if (func_table[i] - oeimage->ecall_rva < oeimage->ecall_section_size)
         {
@@ -401,7 +411,6 @@ done:
     return result;
 }
 
-
 oe_result_t _oe_patch_image(
     oe_enclave_image_t* oeimage,
     size_t ecall_size,
@@ -410,12 +419,13 @@ oe_result_t _oe_patch_image(
 {
     oe_sgx_enclave_properties_t* oeprops;
 
-    oeprops = (oe_sgx_enclave_properties_t*)(oeimage->image_base+oeimage->oeinfo_rva);
+    oeprops =
+        (oe_sgx_enclave_properties_t*)(oeimage->image_base + oeimage->oeinfo_rva);
 
-    assert((oeimage->image_size & (OE_PAGE_SIZE-1)) == 0);
-    assert((oeimage->oeinfo_rva & (OE_PAGE_SIZE-1)) == 0);
-    assert((enclave_end & (OE_PAGE_SIZE-1)) == 0);
-    assert((ecall_size & (OE_PAGE_SIZE-1)) == 0);
+    assert((oeimage->image_size & (OE_PAGE_SIZE - 1)) == 0);
+    assert((oeimage->oeinfo_rva & (OE_PAGE_SIZE - 1)) == 0);
+    assert((enclave_end & (OE_PAGE_SIZE - 1)) == 0);
+    assert((ecall_size & (OE_PAGE_SIZE - 1)) == 0);
 
     oeprops->image_info.enclave_size = enclave_end;
     oeprops->image_info.oeinfo_rva = oeimage->oeinfo_rva;
@@ -437,4 +447,3 @@ oe_result_t _oe_patch_image(
 
     return OE_OK;
 }
-

@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "../init.h"
 #include <openenclave/enclave.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/reloc.h>
+#include "../init.h"
 
 /*
 **==============================================================================
@@ -163,4 +163,3 @@ void oe_call_fini_functions(void)
         (*fn)();
     }
 }
-

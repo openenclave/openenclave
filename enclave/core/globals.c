@@ -23,7 +23,8 @@ const void* __oe_get_enclave_base()
      * IP-relative by the C-compiler on x86_64, and hence does not have a
      * relocation entry. Thus it works both pre- and post-relocation.
      */
-    return (uint8_t*)&oe_enclave_properties_sgx - oe_enclave_properties_sgx.image_info.oeinfo_rva;
+    return (uint8_t*)&oe_enclave_properties_sgx -
+           oe_enclave_properties_sgx.image_info.oeinfo_rva;
 }
 
 size_t __oe_get_enclave_size()
@@ -98,7 +99,8 @@ const void* __oe_get_heap_base()
 
 const size_t __oe_get_heap_size()
 {
-    return oe_enclave_properties_sgx.header.size_settings.num_heap_pages * OE_PAGE_SIZE;
+    return oe_enclave_properties_sgx.header.size_settings.num_heap_pages *
+           OE_PAGE_SIZE;
 }
 
 const void* __oe_get_heap_end()

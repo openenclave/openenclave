@@ -147,11 +147,11 @@ oe_result_t _oe_add_image_pages(
     uint64_t* vaddr);
 
 oe_result_t _oe_calculate_image_size(
-    const oe_enclave_image_t *oeimage,
+    const oe_enclave_image_t* oeimage,
     size_t* image_size);
 
 oe_result_t _oe_build_ecall_array(
-   oe_enclave_t* enclave,
+    oe_enclave_t* enclave,
     oe_enclave_image_t* oeimage);
 
 #endif /* _OE_HOST_ENCLAVE_H */
