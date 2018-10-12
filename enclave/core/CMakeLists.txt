@@ -2,7 +2,6 @@
 # Licensed under the MIT License.
 
 include(add_compile_flags_if_supported)
-include(add_compile_defs)
 
 add_library(oecore STATIC
     ../../common/safecrt.c
@@ -61,7 +60,7 @@ add_target_compile_flags(oecore PUBLIC CXX
     )
 
 if(USE_LIBSGX)
-    add_target_compile_defs(oecore PUBLIC "C;CXX" OE_USE_LIBSGX)
+    target_compile_definitions(oecore PUBLIC OE_USE_LIBSGX)
 endif()
 
 if(OE_TRACE_LEVEL)
@@ -69,11 +68,11 @@ if(OE_TRACE_LEVEL)
 endif()
 
 if(USE_DEBUG_MALLOC)
-    add_target_compile_defs(oecore PRIVATE "C;CXX" OE_USE_DEBUG_MALLOC)
+    target_compile_definitions(oecore PRIVATE OE_USE_DEBUG_MALLOC)
     message("USE_DEBUG_MALLOC is set, building oecore with memory leak detection.")
 endif()
 
-add_target_compile_defs(oecore PUBLIC "C;CXX" OE_BUILD_ENCLAVE)
+target_compile_definitions(oecore PUBLIC OE_BUILD_ENCLAVE)
 
 # addl link-options for enclave apps
 target_link_libraries(oecore INTERFACE
