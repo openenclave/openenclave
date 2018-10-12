@@ -5,10 +5,12 @@ Introduction
 ------------
 
 Open Enclave (OE) is an SDK for building enclave applications in C and C++. An
-enclave application partitions itself into two components (1) An untrusted component (called the
-host) and (2) A trusted component (called the enclave). An enclave is a secure
-container whose memory is protected from entities outside the enclave. These
-protections allow enclaves to perform secure computations with assurances that
+enclave application partitions itself into two components:  
+(1) An untrusted component (called the
+host), and   
+(2) A trusted component (called the enclave).  
+  An enclave is a secure container whose memory is protected from entities outside the enclave.   
+  These protections allow enclaves to perform secure computations with assurances that
 secrets will not be compromised.
 
 This SDK is a fully open-source and transparent project, which plans to generalize enclave application models across 
