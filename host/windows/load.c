@@ -316,7 +316,7 @@ oe_result_t _oe_add_image_pages(
                 enclave->addr,
                 enclave->addr + i,
                 (uint64_t)oeimage->image_base + i,
-                SGX_SECINFO_R|SGX_SECINFO_REG,
+                SGX_SECINFO_R | SGX_SECINFO_REG,
                 true));
     }
 
