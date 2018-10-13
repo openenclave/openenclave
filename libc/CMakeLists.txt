@@ -647,7 +647,7 @@ add_library(oelibc STATIC
     ${MUSLSRC}/unistd/dup.c
     ${MUSLSRC}/unistd/dup3.c)
 
-add_target_compile_flags(oelibc PRIVATE C
+target_compile_options(oelibc PRIVATE
     -std=c99
     -fno-builtin-memcpy
     -fno-builtin-memset
@@ -656,7 +656,7 @@ add_target_compile_flags(oelibc PRIVATE C
     )
 
 if (CMAKE_C_COMPILER_ID MATCHES "GNU")
-    add_target_compile_flags(oelibc PRIVATE C
+    target_compile_options(oelibc PRIVATE
         -fexcess-precision=standard
         -frounding-math
         )

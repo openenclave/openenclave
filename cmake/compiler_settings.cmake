@@ -76,7 +76,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
   # to fix warnings as they arise, so they don't accumulate "to be fixed later".
   add_compile_options(-Wall -Werror)
 
-  add_compile_flags("C;CXX" -fno-strict-aliasing)
+  add_compile_options(-fno-strict-aliasing)
 
   add_compile_flags_if_supported(C -Wjump-misses-init)
 
@@ -95,7 +95,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
 
   # We should only need this for in-enclave code but it's easier
   # and conservative to specify everywhere
-  add_compile_flags("C;CXX" -fno-builtin-malloc -fno-builtin-calloc)
+  add_compile_options(-fno-builtin-malloc -fno-builtin-calloc)
 elseif (MSVC)
   # MSVC options go here
 endif ()

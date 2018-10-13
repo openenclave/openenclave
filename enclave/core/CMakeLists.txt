@@ -47,7 +47,7 @@ target_include_directories(oecore SYSTEM PRIVATE ${OE_C_COMPILER_INCDIR})
 # This directory contains dummy C headers needed by dlmalloc:
 target_include_directories(oecore PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dlmalloc)
 
-add_target_compile_flags(oecore PUBLIC "C;CXX"
+target_compile_options(oecore PUBLIC
     -m64
     -fPIC
     -nostdinc
@@ -55,9 +55,7 @@ add_target_compile_flags(oecore PUBLIC "C;CXX"
     -fvisibility=hidden
     )
 
-add_target_compile_flags(oecore PUBLIC CXX
-    -nostdinc++
-    )
+target_compile_options(oecore INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>)
 
 if(USE_LIBSGX)
     target_compile_definitions(oecore PUBLIC OE_USE_LIBSGX)
