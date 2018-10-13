@@ -341,42 +341,6 @@ let get_cast_from_mem_expr (ptype, decl)=
            (* for ptrs, only constness is removed; add it back *)
            sprintf "(const %s) " (get_tystr t)
         else ""
-
-(* oe: Generate arg check macro*)
-let oe_gen_arg_check_macro(os : out_channel) =  
-  fprintf os "#define OE_CHECKED_COPY_INPUT(enc_ptr, host_ptr, size) \\\n";
-  fprintf os " do {                                                  \\\n";
-  fprintf os "     if (host_ptr &&                                   \\\n";
-  fprintf os "             !oe_is_outside_enclave(host_ptr, size)) { \\\n";
-  fprintf os "         __result = OE_INVALID_PARAMETER;              \\\n";
-  fprintf os "         goto done;                                    \\\n";
-  fprintf os "     }                                                 \\\n";
-  fprintf os "     enc_ptr = NULL;                                   \\\n"; 
-  fprintf os "     if (host_ptr) {                                   \\\n";
-  fprintf os "         *(void**)&enc_ptr = malloc(size);             \\\n";
-  fprintf os "         if (!enc_ptr) {                               \\\n";
-  fprintf os "             __result = OE_OUT_OF_MEMORY;              \\\n";
-  fprintf os "             goto done;                                \\\n";
-  fprintf os "         }                                             \\\n";
-  fprintf os "         memcpy(enc_ptr, host_ptr, size);              \\\n";
-  fprintf os "     }                                                 \\\n";  
-  fprintf os " } while(0)\n\n";
-  fprintf os "#define OE_CHECKED_ALLOCATE_OUTPUT(enc_ptr, host_ptr, size) \\\n";
-  fprintf os " do {                                                       \\\n";
-  fprintf os "     if (host_ptr &&                                        \\\n";
-  fprintf os "             !oe_is_outside_enclave(host_ptr, size)) {      \\\n";
-  fprintf os "         __result = OE_INVALID_PARAMETER;                   \\\n";
-  fprintf os "         goto done;                                         \\\n";
-  fprintf os "     }                                                      \\\n";
-  fprintf os "     enc_ptr = NULL;                                        \\\n";
-  fprintf os "     if (host_ptr) {                                        \\\n";
-  fprintf os "         *(void**)&enc_ptr = malloc(size);                  \\\n";
-  fprintf os "         if (!enc_ptr) {                                    \\\n";
-  fprintf os "             __result = OE_OUT_OF_MEMORY;                   \\\n";
-  fprintf os "             goto done;                                     \\\n";
-  fprintf os "         }                                                  \\\n";
-  fprintf os "     }                                                      \\\n";
-  fprintf os " } while(0)\n\n"
   
 let oe_copy_members_to_enclave (os:out_channel) (fd: Ast.func_decl) =  
   let is_primitive ptype =
@@ -460,7 +424,7 @@ let oe_gen_call_enclave_function (os:out_channel) (fd: Ast.func_decl) =
     | _ -> "p_host_args->_retval = " in
   let call_str = ret_str ^ fd.Ast.fname ^ params_str in
   fprintf os "    /* lfence after checks */\n";
-  fprintf os "    __builtin_ia32_lfence();\n\n";
+  fprintf os "    oe_lfence();\n\n";
   fprintf os "    /* Call enclave function */\n";
   fprintf os "    %s;\n" call_str  
   
@@ -539,28 +503,6 @@ let oe_get_host_ecall_function (os:out_channel) (fd:Ast.func_decl) =
   fprintf os "done:    \n";  
   fprintf os "    return __result;\n";
   fprintf os "}\n\n"
-
-
-(* Generate macros for ocall *)
-let oe_gen_ocall_macros (os:out_channel) =
-  fprintf os "#define OE_COPY_TO_HOST(host_ptr, enc_ptr, size) \\\n";
-  fprintf os " do {                                            \\\n";
-  fprintf os "     if (!enc_ptr)                               \\\n";
-  fprintf os "         break;                                  \\\n";
-  fprintf os "     *(void**)&host_ptr = (void*) __host_ptr;    \\\n";
-  fprintf os "     __host_ptr += (size_t) size;                \\\n";
-  fprintf os "     memcpy(host_ptr, enc_ptr, size);            \\\n";
-  fprintf os " } while(0)\n\n";
-  fprintf os "#define OE_COPY_FROM_HOST(enc_ptr, host_ptr, size)     \\\n";
-  fprintf os " do {                                                  \\\n";
-  fprintf os "     if (host_ptr &&                                   \\\n";
-  fprintf os "             !oe_is_outside_enclave(host_ptr, size)) { \\\n";
-  fprintf os "         __result = OE_INVALID_PARAMETER;              \\\n";
-  fprintf os "         goto done;                                    \\\n";
-  fprintf os "     }                                                 \\\n";
-  fprintf os "     if (host_ptr)                                     \\\n";
-  fprintf os "         memcpy(enc_ptr, host_ptr, size);              \\\n";
-  fprintf os " } while(0)\n\n"
 
 let iter_ptr_params f params = 
   List.iter (fun (ptype, decl)->
@@ -733,11 +675,9 @@ let gen_t_c (ec: enclave_content) (ep: edger8r_params) =
   fprintf os "\n";
   fprintf os "OE_EXTERNC_BEGIN\n\n";
   if ec.tfunc_decls <> [] then (
-    oe_gen_arg_check_macro os;
     oe_gen_ecall_functions os ec;
     oe_gen_ecall_table os ec);
   if ec.ufunc_decls <> [] then (
-    oe_gen_ocall_macros os;
     fprintf os "\n/* ocall wrappers */\n\n";
     List.iter (fun d -> oe_gen_ocall_enclave_wrapper os d.Ast.uf_fdecl)  ec.ufunc_decls);
   fprintf os "OE_EXTERNC_END\n";
