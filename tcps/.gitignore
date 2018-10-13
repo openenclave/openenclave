@@ -1,0 +1,37 @@
+# Build Files
+bin
+obj
+lib
+
+# Visual Studio generated files 
+.vs
+Debug
+DebugMockOptee
+*.vcxproj.user
+TCPS-SDK.VC.*
+SampleTA_t.*
+SampleTA_u.*
+TcpsCalls_t.*
+TcpsCalls_u.*
+TcpsSdkTestTA_t.*
+TcpsSdkTestTA_u.*
+HelloWorldEnc_t.*
+HelloWorldEnc_u.*
+
+# Other generated files
+*.o
+*.o.d
+*.o.cmd
+*.elf
+*.ta
+*.lds
+*.ld.d
+*.dmp
+*.map
+
+gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/
+gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi.tar.xz
+
+# External SGX SDK
+/External/SGXSDK/
+SGXSDK.zip

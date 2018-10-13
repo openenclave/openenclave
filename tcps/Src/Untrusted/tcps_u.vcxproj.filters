@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="ufiles.c" />
+    <ClCompile Include="uhelper.c" />
+    <ClCompile Include="TcpsCalls_u.c">
+      <Filter>SGX</Filter>
+    </ClCompile>
+    <ClCompile Include="uTcpsFileOcalls.c" />
+    <ClCompile Include="$(ProjectKaylaDir)driver\TrEE\OpteeCalls\OpteeCalls.c" />
+    <ClCompile Include="urpc-optee.c">
+      <Filter>OPTEE</Filter>
+    </ClCompile>
+    <ClCompile Include="usockets.c" />
+    <ClCompile Include="..\buffer.c" />
+    <ClCompile Include="teehost-sgx.c">
+      <Filter>SGX</Filter>
+    </ClCompile>
+    <ClCompile Include="uio.c" />
+    <ClCompile Include="teehost-optee.c">
+      <Filter>OPTEE</Filter>
+    </ClCompile>
+    <ClCompile Include="oeshim_u.c">
+      <Filter>OpenEnclave</Filter>
+    </ClCompile>
+    <ClCompile Include="uProtectedFs-optee.c">
+      <Filter>OPTEE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\oeresult.c">
+      <Filter>OpenEnclave</Filter>
+    </ClCompile>
+    <ClCompile Include="..\oeshim-common.c">
+      <Filter>OpenEnclave</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="TcpsCalls_u.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(ProjectKaylaDir)driver\TrEE\OpteeCalls\targetver.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{d941226f-24f9-4141-871d-8539e8884dbd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SGX">
+      <UniqueIdentifier>{afcfeebc-c563-42d0-958d-9fcea35c2942}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="OPTEE">
+      <UniqueIdentifier>{54ad9c6f-2df0-4344-8ef7-80fb1a2c82a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="OpenEnclave">
+      <UniqueIdentifier>{347fd50b-0194-4845-b544-23adc10ed643}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\..\Inc\TcpsCalls.edl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Inc\TcpsFile.edl" />
+    <None Include="..\..\Inc\TcpsSockets.edl" />
+  </ItemGroup>
+</Project>

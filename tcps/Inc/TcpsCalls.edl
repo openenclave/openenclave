@@ -1,0 +1,147 @@
+/* Copyright (c) Microsoft Corporation. All rights reserved. */
+/* Licensed under the MIT License. */
+enclave {
+    from "TcpsFile.edl" import *;
+    from "TcpsSockets.edl" import *;
+
+    include "tcps.h"
+
+    struct ocall_tm {
+        int tm_sec;
+        int tm_min;
+        int tm_hour;
+        int tm_mday;
+        int tm_mon;
+        int tm_year;
+        int tm_wday;
+        int tm_yday;
+        int tm_isdst;
+    };
+
+    /* define OCALL results here. We must pass arguments by value for OP-TEE, 
+     * and we cannot apply [out] to a value argument so we must define structs
+     * for the return value of each function with multiple out parameters.
+     */
+    struct GetTm_Result {
+        int err;
+        struct ocall_tm tm;
+    };
+
+    struct QueryPerformanceCounter_Result {
+        unsigned int status;
+        uint64_t count;
+    };
+
+    struct FindFirstUntrustedFile_Result {
+        uint32_t status;
+        char matchingFileName[256];
+        uint32_t findNextHandle;
+    };
+
+    struct FindNextUntrustedFile_Result {
+        uint32_t result;
+        char matchingFileName[256];
+    };
+
+    struct BufferChunk {
+        char buffer[1024];
+        int size;
+    };
+
+    struct CreateBuffer_Result {
+        Tcps_StatusCode uStatus;
+        void* hBuffer;
+    };
+
+    struct GetChunk_Result {
+        Tcps_StatusCode uStatus;
+        char buffer[1024];
+        int size;
+    };
+
+    struct GetReport_Result {
+        int result;
+        char report_buffer[1024];
+        int report_buffer_size;
+    };
+
+    struct callV2_Result {
+        char outBuffer[4096];
+        int outBufferSize; 
+    };
+
+    /* define ECALLs here. */
+    trusted {
+        public CreateBuffer_Result ecall_CreateTeeBuffer(BufferChunk chunk);
+
+        public Tcps_StatusCode ecall_AppendToTeeBuffer(
+            [user_check] void* hTeeBuffer,
+            BufferChunk chunk);
+
+        public void ecall_FreeTeeBuffer([user_check] void* hTeeBuffer);
+
+        public GetReport_Result ecall_get_report(uint32_t flags,
+                                                 buffer1024 opt_params,
+                                                 size_t opt_params_size);
+        public int ecall_verify_report(buffer1024 report,
+                                       size_t report_size);
+
+        public callV2_Result ecall_v2(uint32_t func,
+                                      buffer4096 inBuffer,
+                                      size_t inBufferSize);
+    };
+
+    untrusted {
+        /* define OCALLs here. */
+
+        CreateBuffer_Result ocall_CreateReeBuffer(BufferChunk chunk);
+
+        Tcps_StatusCode ocall_AppendToReeBuffer(
+            [user_check] void* hReeBuffer,
+            BufferChunk chunk);
+
+        void ocall_FreeReeBuffer([user_check] void* hBuffer);
+
+        GetChunk_Result ocall_GetReeBufferChunk(
+            [user_check] void* hReeBuffer,
+            int offset);
+
+        unsigned int ocall_ExportPublicCertificate(buffer256 location, buffer4096 ptr, size_t len);
+        
+        /* Time APIs. */
+        unsigned int ocall_GetTickCount(void);
+        uint64_t ocall_time64(void);
+        GetTm_Result ocall_localtime64(uint64_t timer);
+        GetTm_Result ocall_gmtime64(uint64_t timer);
+        QueryPerformanceCounter_Result ocall_QueryPerformanceCounter(void);
+
+        unsigned int ocall_exit(int result);
+        unsigned int ocall_puts(buffer1024 str, int bNewline);
+
+        FindFirstUntrustedFile_Result
+        ocall_FindFirstUntrustedFile(
+            buffer256 filePathWithWildcards,
+            uint32_t matchingFileNameSize);
+
+        FindNextUntrustedFile_Result
+        ocall_FindNextUntrustedFile(
+            uint32_t findNextHandle,
+            uint32_t matchingFileNameSize);
+
+        uint32_t
+        ocall_FindNextUntrustedFileClose(
+            uint32_t findNextHandle);
+
+        void* ocall_malloc(size_t size);
+        void* ocall_realloc([user_check] void* ptr, size_t size);
+        void* ocall_calloc(size_t nmemb, size_t size);
+        void ocall_free([user_check] void* ptr);
+        void ocall_CopyReeMemoryFromBufferChunk(
+            [user_check] void* ptr,
+            BufferChunk chunk);
+
+        callV2_Result ocall_v2(uint32_t func,
+                               buffer4096 inBuffer,
+                               size_t inBufferSize);
+    };
+};

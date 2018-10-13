@@ -1,0 +1,17 @@
+/* Copyright (c) Microsoft Corporation. All rights reserved. */
+/* Licensed under the MIT License. */
+enclave {
+    /* Import TcpsCalls to get support for all TCPS-SDK APIs. */
+    from "TcpsCalls.edl" import *;
+
+    trusted {
+        /* define ECALLs here. */
+        public int ecall_RunClient(buffer256 server, buffer256 port);
+        public int ecall_RunServer(buffer256 port);
+    };
+
+    untrusted {
+        /* define OCALLs here. */
+    
+    };
+};

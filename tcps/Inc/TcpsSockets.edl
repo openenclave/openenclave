@@ -1,0 +1,257 @@
+/* Copyright (c) Microsoft Corporation. All rights reserved. */
+/* Licensed under the MIT License. */
+enclave {
+
+    enum Tcps_SocketError {
+        TCPS_WSA_NOT_ENOUGH_MEMORY = 8,
+        TCPS_WSAEFAULT       = 10014,
+        TCPS_WSAEINVAL       = 10022,
+        TCPS_WSAEWOULDBLOCK  = 10035,
+        TCPS_WSAEINPROGRESS  = 10036,
+        TCPS_WSAENOPROTOOPT  = 10042,
+        TCPS_WSAENETDOWN     = 10050,
+        TCPS_WSAECONNABORTED = 10053,
+        TCPS_WSAECONNRESET   = 10054,
+        TCPS_WSASYSNOTREADY  = 10091,
+        TCPS_WSANO_RECOVERY  = 11003
+    };
+
+    enum Tcps_SocketAddressFamily {
+        TCPS_AF_INET = 2,
+        TCPS_AF_INET6 = 23
+    };
+
+    enum Tcps_SocketType {
+        TCPS_SOCK_STREAM = 1
+    };
+
+    enum Tcps_ShutdownHow {
+        TCPS_SD_RECEIVE = 0,
+        TCPS_SD_SEND = 1,
+        TCPS_SD_BOTH = 2
+    };
+
+    struct accept_Result {
+        Tcps_SocketError error;
+        void* hNewSocket;
+        int addrlen;
+        char addr[256];
+    };
+
+    /* Serialized buffer of addrinfo structures. */
+    struct addrinfo_Buffer {
+        int ai_flags;
+        int ai_family;
+        int ai_socktype;
+        int ai_protocol;
+        int ai_addrlen;
+        buffer256 ai_canonname;
+        buffer256 ai_addr;
+    };
+
+    struct getaddrinfo_Result {
+        Tcps_SocketError error;
+        int addressCount;
+        void* hMessage; /* Handle to pass to TcpsImportBuffer() */
+    };
+
+    struct gethostname_Result {
+        Tcps_SocketError error;
+        char name[256];
+    };
+
+    struct getnameinfo_Result {
+        Tcps_SocketError error;
+        buffer256 host;
+        buffer256 serv;
+    };
+
+    struct GetSockName_Result {
+        Tcps_SocketError error;
+        int addrlen;
+        char addr[256];
+    };
+
+    struct getsockopt_Result {
+        Tcps_SocketError error;
+        char buffer[256];
+        int len;
+    };
+
+    struct ioctlsocket_Result {
+        Tcps_SocketError error;
+        unsigned int outputValue;
+    };
+
+    struct Tcps_Timeval {
+        int tv_sec;
+        int tv_usec;
+    };
+
+    struct Tcps_FdSet {
+        unsigned int count;
+        void* fdArray[64];
+    };
+
+    struct select_Result {
+        Tcps_SocketError error;
+        int socketsSet;
+        Tcps_FdSet readFds;
+        Tcps_FdSet writeFds;
+        Tcps_FdSet exceptFds;
+    };
+
+    struct send_Result {
+        Tcps_SocketError error;
+        int bytesSent;
+    };
+
+    struct socket_Result {
+        Tcps_SocketError error;
+        void* hSocket;
+    };
+
+    struct recv_Result {
+        Tcps_SocketError error;
+        int bytesReceived;
+        void* hMessage; /* Handle to pass to TcpsImportBuffer() */
+    };
+
+    struct TCPConnect_Result {
+        Tcps_StatusCode status;
+        uint32_t connectionHandle;
+    };
+
+    struct TCPSend_Result {
+        Tcps_StatusCode status;
+        uint32_t sizeSent;
+    };
+
+    struct TCPReceive_Result {
+        Tcps_StatusCode status;
+        char buffer[4096];
+        uint32_t sizeReceived;
+    };
+
+    trusted {
+    };
+
+    untrusted {
+        [cdecl] accept_Result ocall_accept(
+            [user_check] void* a_hSocket,
+            int a_nAddrLen);
+
+        [cdecl] Tcps_SocketError ocall_bind(
+            [user_check] void* a_hSocket,
+            buffer256 a_Name,
+            int a_nNameLen);
+
+        [cdecl] Tcps_SocketError ocall_closesocket(
+            [user_check] void* a_hSocket);
+
+        [cdecl] Tcps_SocketError ocall_connect(
+            [user_check] void* a_hSocket,
+            buffer256 a_Name,
+            int a_nNameLen);
+
+        [cdecl] getaddrinfo_Result ocall_getaddrinfo(
+            buffer256 a_NodeName,
+            buffer256 a_ServiceName,
+            int a_Flags,
+            int a_Family,
+            int a_SockType,
+            int a_Protocol);
+
+        [cdecl] gethostname_Result ocall_gethostname(void);
+
+        [cdecl] getnameinfo_Result ocall_getnameinfo(
+            buffer256 a_Addr,
+            int a_AddrLen,
+            int a_Flags);
+
+        [cdecl] GetSockName_Result ocall_getpeername(
+            [user_check] void* a_hSocket,
+            int a_nNameLen);
+
+        [cdecl] GetSockName_Result ocall_getsockname(
+            [user_check] void* a_hSocket,
+            int a_nNameLen);
+
+        [cdecl] getsockopt_Result ocall_getsockopt(
+            [user_check] void* a_hSocket,
+            int a_nLevel,
+            int a_nOptName,
+            int a_nOptLen);
+
+        [cdecl] ioctlsocket_Result ocall_ioctlsocket(
+            [user_check] void* a_hSocket,
+            int a_nCommand,
+            unsigned int a_uInputValue);
+
+        [cdecl] Tcps_SocketError ocall_listen(
+            [user_check] void* a_hSocket,
+            int a_nMaxConnections);
+
+        [cdecl] recv_Result ocall_recv(
+            [user_check] void* a_hSocket,
+            int a_nBufferSize,
+            int a_Flags);
+
+        [cdecl] select_Result ocall_select(
+            int a_nFds,
+            Tcps_FdSet a_ReadFds,
+            Tcps_FdSet a_WriteFds,
+            Tcps_FdSet a_ExceptFds,
+            Tcps_Timeval a_Timeval);
+
+        [cdecl] send_Result ocall_send(
+            [user_check] void* a_hSocket,
+            [user_check] void* a_hMessage,
+            int a_Flags);
+
+        [cdecl] Tcps_SocketError ocall_setsockopt(
+            [user_check] void* a_hSocket,
+            int a_nLevel,
+            int a_nOptName,
+            buffer256 a_OptVal,
+            int a_nOptLen);
+
+        [cdecl] Tcps_SocketError ocall_shutdown(
+            [user_check] void* a_hSocket,
+            Tcps_ShutdownHow a_How);
+
+        [cdecl] socket_Result ocall_socket(
+            Tcps_SocketAddressFamily a_AddressFamily,
+            Tcps_SocketType a_Type,
+            int a_Protocol);
+
+        [cdecl] Tcps_SocketError ocall_WSACleanup(void);
+
+        [cdecl] Tcps_SocketError ocall_WSAStartup(void);
+
+        /* TCPSClient transport. All of these ocalls return Tcps_StatusCode. */
+        /* TODO: remove and combine TCPConnect into connect() */
+        TCPConnect_Result
+        ocall_TCPConnect(
+            buffer256 serverName,
+            uint16_t port);
+
+        /* TODO: remove and combine TCPSend into send() */
+        TCPSend_Result
+        ocall_TCPSend(
+            uint32_t connectionHandle,
+            buffer4096 buffer,
+            uint32_t sizeToSend);
+
+        /* TODO: remove and combine TCPReceive into recv() */
+        TCPReceive_Result
+        ocall_TCPReceive(
+            uint32_t connectionHandle,
+            uint32_t sizeToReceive);
+
+        /* TODO: remove and combine TCPClose into closesocket() */
+        unsigned int
+        ocall_TCPClose(
+            uint32_t connectionHandle);
+    };
+};

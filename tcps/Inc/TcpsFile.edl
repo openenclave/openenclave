@@ -1,0 +1,73 @@
+/* Copyright (c) Microsoft Corporation. All rights reserved. */
+/* Licensed under the MIT License. */
+enclave {
+    /* For SGX, we need ocalls to support fopen etc. */
+    from "sgx_tprotected_fs.edl" import *;
+
+    struct ocall_struct_stat64i32 {
+        unsigned int   st_dev;  
+        unsigned short st_ino;  
+        unsigned short st_mode;  
+        short          st_nlink;  
+        short          st_uid;  
+        short          st_gid;  
+        unsigned int   st_rdev;  
+        long           st_size;  
+        uint64_t       st_atime;  
+        uint64_t       st_mtime;  
+        uint64_t       st_ctime; 
+    };
+
+    struct buffer256 {
+        char buffer[256];
+    };
+
+    struct buffer1024 {
+        char buffer[1024];
+    };
+    
+    struct buffer4096 {
+        char buffer[4096];
+    };
+
+    struct GetUntrustedFileSize_Result {
+        unsigned int status;
+        int32_t fileSize;
+    };
+
+    struct GetUntrustedFileContent_Result {
+        unsigned int status;
+        char content[4096];
+    };
+
+    struct stat64i32_Result {
+        unsigned int status;
+        struct ocall_struct_stat64i32 buffer;
+    };
+    
+    trusted {
+    };
+
+    untrusted {
+        // File APIs
+
+        [cdecl] int ocall_mkdir(buffer256 dirname);
+        
+        [cdecl] GetUntrustedFileSize_Result ocall_GetUntrustedFileSize(
+            buffer256 filename);
+
+        [cdecl] GetUntrustedFileContent_Result ocall_GetUntrustedFileContent(
+            buffer256 location,
+            size_t len);
+
+        [cdecl] unsigned int ocall_ExportFile(
+            buffer256 filename,
+            unsigned int appendToExistingFile,
+            buffer4096 content,
+            size_t len);
+
+        [cdecl] stat64i32_Result ocall_stat64i32(buffer256 path);
+
+        [cdecl] int ocallTcpsFileDelete(buffer256 filename);
+    };
+};

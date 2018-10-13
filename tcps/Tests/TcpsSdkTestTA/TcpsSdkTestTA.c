@@ -1,0 +1,227 @@
+/* Copyright (c) Microsoft Corporation. All rights reserved. */
+/* Licensed under the MIT License. */
+#include "TcpsSdkTestTA_t.h"
+#include "sgx_trts.h"
+#include "tcps_socket_t.h"
+#include <string.h>
+
+Tcps_StatusCode ecall_DoNothing()
+{
+    return Tcps_Good;
+}
+
+CreateBuffer_Result ecall_CreateReeBufferFromTeeBuffer(_In_ void* hTeeBuffer)
+{
+    CreateBuffer_Result result = { 0 };
+    char* data;
+    int size;
+
+    result.uStatus = TcpsGetTeeBuffer(hTeeBuffer, &data, &size);
+    if (Tcps_IsBad(result.uStatus)) {
+        return result;
+    }
+
+    result.uStatus = TcpsPushDataToReeBuffer(data, size, &result.hBuffer);
+    return result;
+}
+
+/* This client connects to an echo server, sends a text message,
+* and outputs the text reply.
+*/
+Tcps_StatusCode ecall_RunClient(buffer256 server, buffer256 serv)
+{
+    Tcps_StatusCode uStatus = Tcps_BadCommunicationError;
+    struct addrinfo* ai = NULL;
+    SOCKET s = INVALID_SOCKET;
+
+    /* Resolve server name. */
+    struct addrinfo hints = { 0 };
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    int err = getaddrinfo(server.buffer, serv.buffer, &hints, &ai);
+    if (err != 0) {
+        goto Done;
+    }
+
+    /* Create connection. */
+    s = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
+    if (s == INVALID_SOCKET) {
+        goto Done;
+    }
+    if (connect(s, ai->ai_addr, ai->ai_addrlen) == SOCKET_ERROR) {
+        goto Done;
+    }
+
+    /* Send a message, prefixed by its size. */
+    const char *message = "Hello, world!";
+    int messageLength = strlen(message);
+    int netMessageLength = htonl(messageLength);
+    int bytesSent = send(s, (char*)&netMessageLength, sizeof(netMessageLength), 0);
+    if (bytesSent == SOCKET_ERROR) {
+        goto Done;
+    }
+    bytesSent = send(s, message, messageLength, 0);
+    if (bytesSent == SOCKET_ERROR) {
+        goto Done;
+    }
+
+    /* Receive a text reply, prefixed by its size. */
+    int replyLength;
+    char reply[80];
+    int bytesReceived = recv(s, (char*)&replyLength, sizeof(replyLength), MSG_WAITALL);
+    if (bytesReceived == SOCKET_ERROR) {
+        goto Done;
+    }
+    replyLength = ntohl(replyLength);
+    if (replyLength > sizeof(reply) - 1) {
+        goto Done;
+    }
+    bytesReceived = recv(s, reply, replyLength, MSG_WAITALL);
+    if (bytesReceived != bytesSent) {
+        goto Done;
+    }
+
+    /* Add null termination. */
+    reply[replyLength] = 0;
+
+    uStatus = Tcps_Good;
+
+Done:
+    if (s != INVALID_SOCKET) {
+        closesocket(s);
+    }
+    if (ai != NULL) {
+        freeaddrinfo(ai);
+    }
+    return uStatus;
+}
+
+SOCKET g_TestListener = INVALID_SOCKET;
+
+Tcps_StatusCode ecall_StartServer(buffer256 serv)
+{
+    Tcps_StatusCode uStatus = Tcps_BadCommunicationError;
+    struct addrinfo* ai = NULL;
+    SOCKET listener = INVALID_SOCKET;
+
+    /* Resolve service name. */
+    struct addrinfo hints = { 0 };
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+    int err = getaddrinfo(NULL, serv.buffer, &hints, &ai);
+    if (err != 0) {
+        return Tcps_BadCommunicationError;
+    }
+
+    /* Create listener socket. */
+    listener = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
+    if (listener == INVALID_SOCKET) {
+        freeaddrinfo(ai);
+        return Tcps_BadCommunicationError;
+    }
+    if (bind(listener, ai->ai_addr, ai->ai_addrlen) == SOCKET_ERROR) {
+        closesocket(listener);
+        freeaddrinfo(ai);
+        return Tcps_BadCommunicationError;
+    }
+    freeaddrinfo(ai);
+
+    if (listen(listener, SOMAXCONN) == SOCKET_ERROR) {
+        closesocket(listener);
+        return Tcps_BadCommunicationError;
+    }
+    
+    g_TestListener = listener;
+    return Tcps_Good;
+}
+
+/* This server acts as an echo server.  It accepts a connection,
+* receives messages, and echoes them back.
+*/
+Tcps_StatusCode ecall_FinishServer(void)
+{
+    Tcps_StatusCode uStatus = Tcps_BadCommunicationError;
+    SOCKET s = INVALID_SOCKET;
+    SOCKET listener = g_TestListener;
+    g_TestListener = INVALID_SOCKET;
+
+    /* Accept a client connection. */
+    struct sockaddr_storage addr;
+    int addrlen = sizeof(addr);
+    s = accept(listener, (struct sockaddr*)&addr, &addrlen);
+    if (s == INVALID_SOCKET) {
+        goto Done;
+    }
+
+    /* Receive a text message, prefixed by its size. */
+    int netMessageLength;
+    int messageLength;
+    char message[80];
+    int bytesReceived = recv(s, (char*)&netMessageLength, sizeof(netMessageLength), MSG_WAITALL);
+    if (bytesReceived == SOCKET_ERROR) {
+        goto Done;
+    }
+    messageLength = ntohl(netMessageLength);
+    if (messageLength > sizeof(message)) {
+        goto Done;
+    }
+    bytesReceived = recv(s, message, messageLength, MSG_WAITALL);
+    if (bytesReceived != messageLength) {
+        goto Done;
+    }
+
+    /* Send it back to the client, prefixed by its size. */
+    int bytesSent = send(s, (char*)&netMessageLength, sizeof(netMessageLength), 0);
+    if (bytesSent == SOCKET_ERROR) {
+        goto Done;
+    }
+    bytesSent = send(s, message, messageLength, 0);
+    if (bytesSent == SOCKET_ERROR) {
+        goto Done;
+    }
+    uStatus = Tcps_Good;
+
+Done:
+    if (s != INVALID_SOCKET) {
+        closesocket(s);
+    }
+    if (listener != INVALID_SOCKET) {
+        closesocket(listener);
+    }
+    return uStatus;
+}
+
+Tcps_StatusCode ecall_TestSgxIsWithinEnclave(void* outside, int size)
+{
+    int result = sgx_is_within_enclave(&result, sizeof(result));
+    Tcps_ReturnErrorIfTrue(result == 0, Tcps_Bad);
+
+#ifndef USE_OPTEE
+    // TrustZone uses a separate address space and requires marshalling data.
+    // As such, there is a (separate) address with the same numeric value,
+    // and the following check currently doesn't work.  There's probably
+    // some way to differentiate and make this work in the future.
+    result = sgx_is_within_enclave(outside, size);
+    Tcps_ReturnErrorIfTrue(result != 0, Tcps_Bad);
+#endif
+
+    return Tcps_Good;
+}
+
+Tcps_StatusCode ecall_TestSgxIsOutsideEnclave(void* outside, int size)
+{
+    int result = sgx_is_outside_enclave(outside, size);
+    Tcps_ReturnErrorIfTrue(result == 0, Tcps_Bad);
+
+#ifndef USE_OPTEE
+    // TrustZone uses a separate address space and requires marshalling data.
+    // As such, there is a (separate) address with the same numeric value,
+    // and the following check currently doesn't work.  There's probably
+    // some way to differentiate and make this work in the future.
+    result = sgx_is_outside_enclave(&result, sizeof(result));
+    Tcps_ReturnErrorIfTrue(result != 0, Tcps_Bad);
+#endif
+
+    return Tcps_Good;
+}

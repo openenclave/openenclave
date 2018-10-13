@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <PropertyGroup Label="Globals">
+    <ClientRoot>$(SolutionDir)</ClientRoot>
+    <TcpsSdkDir>$(ClientRoot)</TcpsSdkDir>
+    <RIoTDir>$(TcpsSdkDir)External\RIoT\</RIoTDir>
+    <TinyCborDir>$(RIoTDir)External\tinycbor\</TinyCborDir>
+    <GTestDir>$(TcpsSdkDir)External\googletest\googletest\</GTestDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(TcpsSdkDir)\Inc;$(TinyCborDir)Src;$(RIoTDir)CyReP\cyrep;$(RIoTDir)CyReP\tcps;%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup />
+</Project>

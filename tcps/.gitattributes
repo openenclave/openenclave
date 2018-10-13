@@ -1,0 +1,25 @@
+# Set the default behavior, in case people don't have core.autocrlf set.
+* text=auto
+
+# Explictly declare text files you want to always be normalized and converted
+# to native line endings on checkout.
+*.c text
+*.h text
+*.cs text
+*.cpp text
+
+# Declare files that will always have CRLF line endings on checkout.
+*.sln text eol=crlf
+*.vcxproj text eol=crlf
+
+# Declare files that will always have LF line endings on checkout.
+*.sh text eol=lf
+*.mak text eol=lf
+*.mk text eol=lf
+
+# sgx_edger8r generates LF line endings.
+Src/Trusted/TcpsCalls_t.* text eol=lf
+Src/Untrusted/TcpsCalls_u.* text eol=lf
+
+# Denote all files that are truly binary and should not be modified.
+# *.png binary
