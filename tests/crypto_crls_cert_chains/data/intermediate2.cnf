@@ -9,8 +9,8 @@ default_ca = CA_default        # The default ca section
 
 ####################################################################
 [ CA_default ]
-database    = ./intermediate_index.txt
-crlnumber   = ./intermediate_crl_number
+database    = ./intermediate_index2.txt
+crlnumber   = ./intermediate_crl_number2
 
 # The root key and root certificate.
 private_key       = ../data/IntermediateCA1.key.pem
