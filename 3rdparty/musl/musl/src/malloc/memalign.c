@@ -2,55 +2,53 @@
 #include <stdint.h>
 #include <errno.h>
 #include "libc.h"
-
-/* This function should work with most dlmalloc-like chunk bookkeeping
- * systems, but it's only guaranteed to work with the native implementation
- * used in this library. */
+#include "malloc_impl.h"
 
 void *__memalign(size_t align, size_t len)
 {
-	unsigned char *mem, *new, *end;
-	size_t header, footer;
+	unsigned char *mem, *new;
 
 	if ((align & -align) != align) {
 		errno = EINVAL;
-		return NULL;
+		return 0;
 	}
 
-	if (len > SIZE_MAX - align) {
+	if (len > SIZE_MAX - align || __malloc_replaced) {
 		errno = ENOMEM;
-		return NULL;
+		return 0;
 	}
 
-	if (align <= 4*sizeof(size_t)) {
-		if (!(mem = malloc(len)))
-			return NULL;
-		return mem;
-	}
+	if (align <= SIZE_ALIGN)
+		return malloc(len);
 
 	if (!(mem = malloc(len + align-1)))
-		return NULL;
+		return 0;
 
 	new = (void *)((uintptr_t)mem + align-1 & -align);
 	if (new == mem) return mem;
 
-	header = ((size_t *)mem)[-1];
+	struct chunk *c = MEM_TO_CHUNK(mem);
+	struct chunk *n = MEM_TO_CHUNK(new);
 
-	if (!(header & 7)) {
-		((size_t *)new)[-2] = ((size_t *)mem)[-2] + (new-mem);
-		((size_t *)new)[-1] = ((size_t *)mem)[-1] - (new-mem);
+	if (IS_MMAPPED(c)) {
+		/* Apply difference between aligned and original
+		 * address to the "extra" field of mmapped chunk. */
+		n->psize = c->psize + (new-mem);
+		n->csize = c->csize - (new-mem);
 		return new;
 	}
 
-	end = mem + (header & -8);
-	footer = ((size_t *)end)[-2];
+	struct chunk *t = NEXT_CHUNK(c);
 
-	((size_t *)mem)[-1] = header&7 | new-mem;
-	((size_t *)new)[-2] = footer&7 | new-mem;
-	((size_t *)new)[-1] = header&7 | end-new;
-	((size_t *)end)[-2] = footer&7 | end-new;
+	/* Split the allocated chunk into two chunks. The aligned part
+	 * that will be used has the size in its footer reduced by the
+	 * difference between the aligned and original addresses, and
+	 * the resulting size copied to its header. A new header and
+	 * footer are written for the split-off part to be freed. */
+	n->psize = c->csize = C_INUSE | (new-mem);
+	n->csize = t->psize -= new-mem;
 
-	free(mem);
+	__bin_chunk(c);
 	return new;
 }
 

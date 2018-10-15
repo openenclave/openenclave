@@ -100,5 +100,6 @@ E(EREMOTEIO,    "Remote I/O error")
 E(EDQUOT,       "Quota exceeded")
 E(ENOMEDIUM,    "No medium found")
 E(EMEDIUMTYPE,  "Wrong medium type")
+E(EMULTIHOP,    "Multihop attempted")
 
 E(0,            "No error information")

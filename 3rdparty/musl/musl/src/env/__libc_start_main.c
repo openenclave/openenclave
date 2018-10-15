@@ -42,11 +42,13 @@ void __init_libc(char **envp, char *pn)
 		&& !aux[AT_SECURE]) return;
 
 	struct pollfd pfd[3] = { {.fd=0}, {.fd=1}, {.fd=2} };
+	int r =
 #ifdef SYS_poll
 	__syscall(SYS_poll, pfd, 3, 0);
 #else
 	__syscall(SYS_ppoll, pfd, 3, &(struct timespec){0}, 0, _NSIG/8);
 #endif
+	if (r<0) a_crash();
 	for (i=0; i<3; i++) if (pfd[i].revents&POLLNVAL)
 		if (__sys_open("/dev/null", O_RDWR)<0)
 			a_crash();

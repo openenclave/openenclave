@@ -61,6 +61,7 @@ struct cmsghdr {
 #define SO_BSDCOMPAT    14
 #define SO_PASSCRED     17
 #define SO_PEERCRED     18
+#define SO_PEERSEC      30
 #define SO_SNDBUFFORCE  31
 #define SO_RCVBUFFORCE  33
 

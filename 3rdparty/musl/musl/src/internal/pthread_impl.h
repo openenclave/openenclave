@@ -19,43 +19,57 @@ struct pthread {
 	void **dtv, *unused1, *unused2;
 	uintptr_t sysinfo;
 	uintptr_t canary, canary2;
-	pid_t tid, pid;
 
 	/* Part 2 -- implementation details, non-ABI. */
-	int tsd_used, errno_val;
-	volatile int cancel, canceldisable, cancelasync;
-	int detached;
+	int tid;
+	int errno_val;
+	volatile int detach_state;
+	volatile int cancel;
+	volatile unsigned char canceldisable, cancelasync;
+	unsigned char tsd_used:1;
+	unsigned char unblock_cancel:1;
+	unsigned char dlerror_flag:1;
 	unsigned char *map_base;
 	size_t map_size;
 	void *stack;
 	size_t stack_size;
+	size_t guard_size;
 	void *start_arg;
 	void *(*start)(void *);
 	void *result;
 	struct __ptcb *cancelbuf;
 	void **tsd;
-	volatile int dead;
 	struct {
 		volatile void *volatile head;
 		long off;
 		volatile void *volatile pending;
 	} robust_list;
-	int unblock_cancel;
 	volatile int timer_id;
 	locale_t locale;
 	volatile int killlock[1];
-	volatile int exitlock[1];
-	volatile int startlock[2];
-	unsigned long sigmask[_NSIG/8/sizeof(long)];
 	char *dlerror_buf;
-	int dlerror_flag;
 	void *stdio_locks;
-	size_t guard_size;
 
 	/* Part 3 -- the positions of these fields relative to
 	 * the end of the structure is external and internal ABI. */
 	uintptr_t canary_at_end;
 	void **dtv_copy;
+};
+
+struct start_sched_args {
+	void *start_arg;
+	void *(*start_fn)(void *);
+	sigset_t mask;
+	pthread_attr_t *attr;
+	volatile int futex;
+};
+
+enum {
+	DT_EXITED = 0,
+	DT_EXITING,
+	DT_JOINABLE,
+	DT_DETACHED,
+	DT_DYNAMIC,
 };
 
 struct __timer {
@@ -147,8 +161,8 @@ static inline void __wake(volatile void *addr, int cnt, int priv)
 static inline void __futexwait(volatile void *addr, int val, int priv)
 {
 	if (priv) priv = FUTEX_PRIVATE;
-	__syscall(SYS_futex, addr, FUTEX_WAIT|priv, val) != -ENOSYS ||
-	__syscall(SYS_futex, addr, FUTEX_WAIT, val);
+	__syscall(SYS_futex, addr, FUTEX_WAIT|priv, val, 0) != -ENOSYS ||
+	__syscall(SYS_futex, addr, FUTEX_WAIT, val, 0);
 }
 
 void __acquire_ptc(void);
