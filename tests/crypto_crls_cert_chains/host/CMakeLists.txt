@@ -61,7 +61,7 @@ add_custom_command(TARGET crypto-extra_host
 
             # Generating a root and intermediate CRLs
             COMMAND openssl ca -gencrl -config ${DATA_DIR}/root.cnf -out ${DATA_DIR}/root_crl1.pem 
-            COMMAND openssl ca -gencrl -config ${DATA_DIR}/root2.cnf -out ${DATA_DIR}/root_crl2.pem> /dev/null
+            COMMAND openssl ca -gencrl -config ${DATA_DIR}/root2.cnf -out ${DATA_DIR}/root_crl2.pem
             COMMAND openssl ca -gencrl -config ${DATA_DIR}/intermediate.cnf -out ${DATA_DIR}/intermediate_crl1.pem
             COMMAND openssl ca -gencrl -config ${DATA_DIR}/intermediate2.cnf -out ${DATA_DIR}/intermediate_crl2.pem
 
@@ -75,7 +75,7 @@ add_custom_command(TARGET crypto-extra_host
 
             # Converting crl from pem to der format.
             COMMAND openssl crl -inform pem -outform der -in ${DATA_DIR}/root_crl1.pem -out ${DATA_DIR}/root_crl1.der
-            COMMAND openssl crl -inform pem -outform der -in ${DATA_DIR}/root_crl2.pem -out ${DATA_DIR}/root_crl2.der> /dev/null
+            COMMAND openssl crl -inform pem -outform der -in ${DATA_DIR}/root_crl2.pem -out ${DATA_DIR}/root_crl2.der
             COMMAND openssl crl -inform pem -outform der -in ${DATA_DIR}/intermediate_crl1.pem -out ${DATA_DIR}/intermediate_crl1.der
             COMMAND openssl crl -inform pem -outform der -in ${DATA_DIR}/intermediate_crl2.pem -out ${DATA_DIR}/intermediate_crl2.der
             )
