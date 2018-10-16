@@ -3,9 +3,10 @@
 
 # Build the C library, using local sources and sources from MUSL
 
-include(add_compile_flags_if_supported)
+# TODO: Fix this build so `-D` flags etc. are not used when assembling
+# `.S` sources. See #760.
 
-set (MUSLSRC ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
+set(MUSLSRC ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
 add_library(oelibc STATIC
     abort.S
@@ -647,75 +648,83 @@ add_library(oelibc STATIC
     ${MUSLSRC}/unistd/dup.c
     ${MUSLSRC}/unistd/dup3.c)
 
+set_property(TARGET oelibc PROPERTY C_STANDARD 99)
+
 target_compile_options(oelibc PRIVATE
-    -std=c99
     -fno-builtin-memcpy
     -fno-builtin-memset
     -ffreestanding
-    -mrdrnd
-    )
+    -mrdrnd)
 
-if (CMAKE_C_COMPILER_ID MATCHES "GNU")
-    target_compile_options(oelibc PRIVATE
-        -fexcess-precision=standard
-        -frounding-math
-        )
-endif()
+if (CMAKE_C_COMPILER_ID MATCHES GNU)
+  target_compile_options(oelibc PRIVATE
+    -fexcess-precision=standard
+    -frounding-math)
+endif ()
 
-if (CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
-    add_target_compile_flags_if_supported(oelibc PRIVATE C
-        -Wno-attributes
-        -Wno-format
-        -Wno-missing-braces
-        -Wno-parentheses
-        -Wno-pointer-sign
-        -Wno-shift-negative-value
-        -Wno-string-plus-int
-        -Wno-typedef-redefinition
-        -Wno-unknown-pragmas
-        -Wno-unused-but-set-variable
-        -Wno-unused-value
-        -Wno-unused-function
-        -Wno-unneeded-internal-declaration
-        -Wno-jump-misses-init
-        -Wno-maybe-uninitialized
-        -Wno-macro-redefined
-        -Wno-self-assign
-        -Wno-parentheses-equality)
-
-endif()
+# Ignore warnings from musl sources. First, shared warnings:
+if (CMAKE_C_COMPILER_ID MATCHES GNU OR CMAKE_C_COMPILER_ID MATCHES Clang)
+  target_compile_options(oelibc PRIVATE
+    -Wno-missing-braces
+    -Wno-parentheses
+    -Wno-unknown-pragmas)
+endif ()
+# Second: compiler-specific warnings:
+if (CMAKE_C_COMPILER_ID MATCHES GNU)
+  target_compile_options(oelibc PRIVATE
+    -Wno-jump-misses-init
+    -Wno-maybe-uninitialized
+    -Wno-unknown-pragmas
+    -Wno-unused-but-set-variable
+    -Wno-unused-function
+    -Wno-unused-value
+    -Wno-unused-variable)
+elseif (CMAKE_C_COMPILER_ID MATCHES Clang)
+  target_compile_options(oelibc PRIVATE
+    -Wno-dangling-else
+    -Wno-ignored-attributes
+    -Wno-logical-op-parentheses
+    -Wno-string-plus-int
+    -Wno-typedef-redefinition
+    -Wno-unneeded-internal-declaration)
+endif ()
 
 target_compile_definitions(oelibc PRIVATE _XOPEN_SOURCE=700)
 
-if(USE_DEBUG_MALLOC)
-    target_compile_definitions(oelibc PRIVATE OE_USE_DEBUG_MALLOC)
-endif()
+if (USE_DEBUG_MALLOC)
+  target_compile_definitions(oelibc PRIVATE OE_USE_DEBUG_MALLOC)
+endif ()
 
-# this project (and is dependents) require the enclave headers+lib
-target_link_libraries(oelibc oecore)
+# This project (and is dependents) require the enclave headers and
+# library.
+target_link_libraries(oelibc PUBLIC oecore)
 
-# as a pre-build step, place the musl LIBC headers
+# As a pre-build step, place the musl LIBC headers.
 add_dependencies(oelibc oelibc_includes)
 
 target_include_directories(oelibc PRIVATE
-    ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal
-    ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/x86_64)
+  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal
+  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/x86_64)
 
-# this project and its dependents require include/libc in the include path.
-# Note the difference between build time (absolute in build tree) and install
-# time (relative to install prefix)
+# This project and its dependents require include/libc in the include path.
+#
+# Note the difference between build time (absolute in build tree) and
+# install time (relative to install prefix).
 target_include_directories(oelibc PUBLIC
-    $<BUILD_INTERFACE:${OE_INCDIR}/openenclave/libc>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/libc>)
+  $<BUILD_INTERFACE:${OE_INCDIR}/openenclave/libc>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/libc>)
 
-# when building this project, we also need a number of internal includes
-target_include_directories(oelibc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/internal)
-target_include_directories(oelibc PRIVATE ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal)
+# When building this project, we also need a number of internal includes:
+target_include_directories(oelibc PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}/internal
+  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal)
 
 target_include_directories(oelibc SYSTEM PRIVATE ${OE_C_COMPILER_INCDIR})
 
-# assemble lib-archive into proper dir
-set_property(TARGET oelibc PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
+# Assemble lib-archive into proper directory.
+set_property(TARGET oelibc PROPERTY
+  ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 
-# install lib-archive upon install-time
-install (TARGETS oelibc EXPORT openenclave-targets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+# Install lib-archive upon install-time.
+install(TARGETS oelibc EXPORT openenclave-targets
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
