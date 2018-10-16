@@ -10,8 +10,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased]
 ------------
 
+### Added
+
+- Function table/id based ecall/ocall dispatching
+  - oeedger8r generates ecall tables and ocall tables
+  - Dispatching based on function-id (index into table)
+  - oeedger8r generates oe_create_foo_enclave function for foo.edl
+
 ### Changed
+
 - Update mbedTLS library to version 2.7.6.
+- oe_create_enclave takes two additional parameters: ocall_table, ocall_table_size.
+
+### Deprecated
+- String based ocalls/ecalls, OE_ECALL, OE_OCALL macros.
+
 
 [v0.4.0] - 2018-10-08
 ---------------------
