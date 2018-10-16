@@ -31,11 +31,12 @@ The json will look like
     },
     "windowsProfile": {
       "adminUsername": "*your username here*",
-      "adminPassword": "*your password here"
+      "adminPassword": "*your password here*"
     }
   }
 }
 ```
+The json allows a number of different options which are outside of this discussion.  
 
 Prerequisites
 -------------
