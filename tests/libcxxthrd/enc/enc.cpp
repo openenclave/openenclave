@@ -118,6 +118,8 @@ static int _pthread_create_hook(
 
 static int _pthread_join_hook(pthread_t enc_thread, void** value_ptr)
 {
+    int join_enc_key;
+
     // Find the enc_key from the enc_thread
     _acquire_lock(&_enc_lock);
     auto it = std::find_if(
@@ -134,36 +136,37 @@ static int _pthread_join_hook(pthread_t enc_thread, void** value_ptr)
             enc_thread);
         oe_abort();
     }
-    int join_enc_key = it->first;
-    ThreadArgs* thrd_join_args = thread_args[join_enc_key - 1];
-    if (thrd_join_args == NULL)
-    {
-        _release_lock(&_enc_lock);
-        return EINVAL;
-    }
-    thrd_join_args->enc_key = join_enc_key;
-    thrd_join_args->join_value_ptr = value_ptr;
+    join_enc_key = it->first;
     _release_lock(&_enc_lock);
 
     printf(
         "_pthread_join_hook(): enc_key for thread ID 0x%lu is %d\n",
         enc_thread,
         join_enc_key);
-    if (oe_call_host("host_join_pthread", (void*)thrd_join_args) != OE_OK)
-        oe_abort();
 
-    int join_ret;
     _acquire_lock(&_enc_lock);
-    join_ret = thrd_join_args->join_ret;
-
-    // Since join succeeded, delete the _key_to_thread_id_map
-    if (!join_ret)
+    ThreadArgs* thrd_join_args = thread_args[join_enc_key - 1];
+    if (thrd_join_args != NULL)
     {
-        _key_to_thread_id_map.erase(join_enc_key);
+        thrd_join_args->enc_key = join_enc_key;
+        thrd_join_args->join_value_ptr = value_ptr;
+        _release_lock(&_enc_lock);
+
+        if (oe_call_host("host_join_pthread", (void*)thrd_join_args) != OE_OK)
+            oe_abort();
+
+        // Since join succeeded, delete the _key_to_thread_id_map for this
+        // enc_key
+        if (!thrd_join_args->join_ret)
+        {
+            _acquire_lock(&_enc_lock);
+            _key_to_thread_id_map.erase(join_enc_key);
+            _release_lock(&_enc_lock);
+            return thrd_join_args->join_ret;
+        }
     }
     _release_lock(&_enc_lock);
-
-    return join_ret;
+    return EINVAL;
 }
 
 static int _pthread_detach_hook(pthread_t enc_thread)
