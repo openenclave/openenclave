@@ -14,6 +14,29 @@ then enclave binaries. That information, along with a step-by-step tutorial
 on building an enclave application, is covered in [Getting Started with
 Open Enclave](GettingStarted.md) document.
 
+Using an ACC VM via oe-engine
+------------------------------
+
+The quickest way to begin development would be to use a pre-deployed acc VM. This will install and configure the environment. 
+In order to do so, you need to find a binary or build oe-engine, which is located [here](https://github.com/Microsoft/oe-engine).
+
+oe-engine will generate an azure resource manager template suitable for deployment by azure from a json file.
+The json will look like
+'''
+{
+  "properties": {
+    "masterProfile": {
+      "vmSize": "Standard_DC2s",
+      "VMName": "*your hostname here*"
+    },
+    "windowsProfile": {
+      "adminUsername": "*your username here*",
+      "adminPassword": "*your password here"
+    }
+  }
+}
+'''
+
 Prerequisites
 -------------
 
