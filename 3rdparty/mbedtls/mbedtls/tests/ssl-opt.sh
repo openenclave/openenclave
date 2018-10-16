@@ -605,6 +605,9 @@ run_test() {
     if [ "$PRESERVE_LOGS" -gt 0 ]; then
         mv $SRV_OUT o-srv-${TESTS}.log
         mv $CLI_OUT o-cli-${TESTS}.log
+        if [ -n "$PXY_CMD" ]; then
+            mv $PXY_OUT o-pxy-${TESTS}.log
+        fi
     fi
 
     rm -f $SRV_OUT $CLI_OUT $PXY_OUT
@@ -781,6 +784,22 @@ run_test    "RC4: both enabled" \
             0 \
             -S "SSL - None of the common ciphersuites is usable" \
             -S "SSL - The server has no ciphersuites in common"
+
+# Test empty CA list in CertificateRequest in TLS 1.1 and earlier
+
+requires_gnutls
+requires_config_enabled MBEDTLS_SSL_PROTO_TLS1_1
+run_test    "CertificateRequest with empty CA list, TLS 1.1 (GnuTLS server)" \
+            "$G_SRV"\
+            "$P_CLI force_version=tls1_1" \
+            0
+
+requires_gnutls
+requires_config_enabled MBEDTLS_SSL_PROTO_TLS1
+run_test    "CertificateRequest with empty CA list, TLS 1.0 (GnuTLS server)" \
+            "$G_SRV"\
+            "$P_CLI force_version=tls1" \
+            0
 
 # Tests for SHA-1 support
 
@@ -4116,6 +4135,56 @@ run_test    "Large packet TLS 1.2 AEAD shorter tag" \
             0 \
             -c "16384 bytes written in 1 fragments" \
             -s "Read from client: 16384 bytes read"
+
+# Tests for ECC extensions (rfc 4492)
+
+requires_config_enabled MBEDTLS_AES_C
+requires_config_enabled MBEDTLS_CIPHER_MODE_CBC
+requires_config_enabled MBEDTLS_SHA256_C
+requires_config_enabled MBEDTLS_KEY_EXCHANGE_RSA_ENABLED
+run_test    "Force a non ECC ciphersuite in the client side" \
+            "$P_SRV debug_level=3" \
+            "$P_CLI debug_level=3 force_ciphersuite=TLS-RSA-WITH-AES-128-CBC-SHA256" \
+            0 \
+            -C "client hello, adding supported_elliptic_curves extension" \
+            -C "client hello, adding supported_point_formats extension" \
+            -S "found supported elliptic curves extension" \
+            -S "found supported point formats extension"
+
+requires_config_enabled MBEDTLS_AES_C
+requires_config_enabled MBEDTLS_CIPHER_MODE_CBC
+requires_config_enabled MBEDTLS_SHA256_C
+requires_config_enabled MBEDTLS_KEY_EXCHANGE_RSA_ENABLED
+run_test    "Force a non ECC ciphersuite in the server side" \
+            "$P_SRV debug_level=3 force_ciphersuite=TLS-RSA-WITH-AES-128-CBC-SHA256" \
+            "$P_CLI debug_level=3" \
+            0 \
+            -C "found supported_point_formats extension" \
+            -S "server hello, supported_point_formats extension"
+
+requires_config_enabled MBEDTLS_AES_C
+requires_config_enabled MBEDTLS_CIPHER_MODE_CBC
+requires_config_enabled MBEDTLS_SHA256_C
+requires_config_enabled MBEDTLS_KEY_EXCHANGE_ECDHE_ECDSA_ENABLED
+run_test    "Force an ECC ciphersuite in the client side" \
+            "$P_SRV debug_level=3" \
+            "$P_CLI debug_level=3 force_ciphersuite=TLS-ECDHE-ECDSA-WITH-AES-128-CBC-SHA256" \
+            0 \
+            -c "client hello, adding supported_elliptic_curves extension" \
+            -c "client hello, adding supported_point_formats extension" \
+            -s "found supported elliptic curves extension" \
+            -s "found supported point formats extension"
+
+requires_config_enabled MBEDTLS_AES_C
+requires_config_enabled MBEDTLS_CIPHER_MODE_CBC
+requires_config_enabled MBEDTLS_SHA256_C
+requires_config_enabled MBEDTLS_KEY_EXCHANGE_ECDHE_ECDSA_ENABLED
+run_test    "Force an ECC ciphersuite in the server side" \
+            "$P_SRV debug_level=3 force_ciphersuite=TLS-ECDHE-ECDSA-WITH-AES-128-CBC-SHA256" \
+            "$P_CLI debug_level=3" \
+            0 \
+            -c "found supported_point_formats extension" \
+            -s "server hello, supported_point_formats extension"
 
 # Tests for DTLS HelloVerifyRequest
 
