@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
-TCPS_SDK_ROOT_PATH = ../../../
+OE_SDK_ROOT_PATH = ../../../../
+TCPS_SDK_ROOT_PATH = $(OE_SDK_ROOT_PATH)tcps/
 
 BINARY=3156152a-19d1-423c-96ea-5adf5675798f
 

@@ -323,7 +323,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>UNTRUSTED_CODE;USE_OPTEE;SIMULATE_TEE;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;$(GTestDir)include;$(TcpsSdkDir)Inc\optee\Untrusted;$(TcpsSdkDir)Inc\optee;$(TcpsSdkDir)Inc;$(TcpsSdkDir)External\openenclave\include;$(SGXSDKInstallPath)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;$(GTestDir)include;$(TcpsSdkDir)Inc\optee\Untrusted;$(TcpsSdkDir)Inc\optee;$(TcpsSdkDir)Inc;$(OESdkDir)include;$(SGXSDKInstallPath)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -339,7 +339,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>UNTRUSTED_CODE;USE_OPTEE;SIMULATE_TEE;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;$(GTestDir)include;$(TcpsSdkDir)Inc\optee\Untrusted;$(TcpsSdkDir)Inc\optee;$(TcpsSdkDir)Inc;$(TcpsSdkDir)External\openenclave\include;$(SGXSDKInstallPath)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;$(GTestDir)include;$(TcpsSdkDir)Inc\optee\Untrusted;$(TcpsSdkDir)Inc\optee;$(TcpsSdkDir)Inc;$(OESdkDir)include;$(SGXSDKInstallPath)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -407,7 +407,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>UNTRUSTED_CODE;USE_OPTEE;SIMULATE_TEE;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;$(GTestDir)include;$(TcpsSdkDir)Inc\optee\Untrusted;$(TcpsSdkDir)Inc\optee;$(TcpsSdkDir)Inc;$(TcpsSdkDir)External\openenclave\include;$(SGXSDKInstallPath)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;$(GTestDir)include;$(TcpsSdkDir)Inc\optee\Untrusted;$(TcpsSdkDir)Inc\optee;$(TcpsSdkDir)Inc;$(OESdkDir)include;$(SGXSDKInstallPath)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

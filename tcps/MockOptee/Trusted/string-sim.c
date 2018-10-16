@@ -104,9 +104,9 @@ typedef long long intmax_t;
 typedef unsigned long long uintmax_t;
 #include "tcps_t.h"
 #define __ILP32__ 1
-#include "../../External/optee_os/lib/libutils/ext/trace.c"
+#include "../../../3rdparty/optee_os/lib/libutils/ext/trace.c"
 #pragma warning( disable : 4146 )
-#include "../../External/optee_os/lib/libutils/ext/snprintk.c"
+#include "../../../3rdparty/optee_os/lib/libutils/ext/snprintk.c"
 
 int trace_ext_get_thread_id(void)
 {

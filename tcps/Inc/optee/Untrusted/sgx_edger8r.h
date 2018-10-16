@@ -5,7 +5,7 @@
 # error TCPS-SDK\Inc\optee\Untrusted headers should only be included with UNTRUSTED_CODE
 #endif
 
-#include "../../../External/SGXSDK/include/sgx_edger8r.h"  /* SGX API prototypes to map */
+#include "../../../../3rdparty/SGXSDK/include/sgx_edger8r.h"  /* SGX API prototypes to map */
 
 /* We currently assume the macros below are only used from generated code. */
 

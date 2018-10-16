@@ -7,7 +7,7 @@ global-incdirs-y += $(TCPS_SDK_ROOT_PATH)Inc
 global-incdirs-y += optee
 
 # Add any additional include directories here
-global-incdirs-y += $(TCPS_SDK_ROOT_PATH)External/openenclave/include
+global-incdirs-y += $(OE_SDK_ROOT_PATH)include
 
 TcpsSdkTestTA_t.c: ../../TcpsSdkTestTA.edl
 	$(SGX_EDGER8R) --trusted --search-path "$(TCPS_SDK_ROOT_PATH)Inc$(SGX_PATHSEP)$(SGX_PATH)include" ../../TcpsSdkTestTA.edl

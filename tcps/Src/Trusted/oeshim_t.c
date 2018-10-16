@@ -280,11 +280,11 @@ int oe_over_sgx_exception_handler(sgx_exception_info_t *info)
     } else if (info->exception_type == SGX_EXCEPTION_SOFTWARE) {
         record.flags |= OE_EXCEPTION_FLAGS_SOFTWARE;
     }
-    record.address = info->cpu_context.eip;
     record.context = &context;
 
     context.flags = record.flags;
 #if defined (_M_X64) || defined (__x86_64__)
+    record.address = info->cpu_context.rip;
     context.rax = info->cpu_context.rax;
     context.rbx = info->cpu_context.rbx;
     context.rcx = info->cpu_context.rcx;
@@ -305,6 +305,7 @@ int oe_over_sgx_exception_handler(sgx_exception_info_t *info)
     context.mxcsr = info->cpu_context.rflags;
     /* context.basic_xstate = ... */
 #else
+    record.address = info->cpu_context.eip;
     context.rax = info->cpu_context.eax;
     context.rbx = info->cpu_context.ebx;
     context.rcx = info->cpu_context.ecx;

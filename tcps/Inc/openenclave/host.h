@@ -4,7 +4,7 @@
 
 #include <tcps_u.h>
 #include <openenclave/bits/types.h>
-#include "../External/openenclave/include/openenclave/host.h"
+#include "../../include/openenclave/host.h"
 
 #include <sgx.h>
 

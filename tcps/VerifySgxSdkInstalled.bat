@@ -9,14 +9,14 @@ pushd %~dp0
 where.exe sgx_edger8r.exe /q
 if %errorlevel% EQU 0 goto HaveEdger8rInPath
 
-if exist External/SGXSDK goto HaveExternalSGXSDKDirectory
+if exist ..\3rdparty\SGXSDK goto HaveExternalSGXSDKDirectory
 if "%IntelSGXSDKInstallerURI%" == "" goto TriedUri
     echo Downloading "%IntelSGXSDKInstallerURI%" to "%~dp0\SGXSDK.zip"
     powershell wget "%IntelSGXSDKInstallerURI%" -Outfile "%~dp0\SGXSDK.zip"
 :TriedUri
 
 if not exist %~dp0\SGXSDK.zip goto NoSGXSDK
-unzip SGXSDK.zip -d External
+unzip SGXSDK.zip -d ..\3rdparty
 goto HaveExternalSGXSDKDirectory
 
 :NoSGXSDK
@@ -24,7 +24,7 @@ echo Could not find "%~dp0\SGXSDK.zip"
 goto Done
 
 :HaveExternalSGXSDKDirectory
-set SGXSDKInstallPath=%~dp0\External\SGXSDK
+set SGXSDKInstallPath=%~dp0\..\3rdparty\SGXSDK
 set PATH=%PATH%;%SGXSDKInstallPath%\bin\win32\Release
 echo Set PATH to %PATH%
 goto Done
@@ -39,8 +39,8 @@ if "%SGXSDKInstallPath%" NEQ "" goto HaveIntelSGXSDK
     popd
 
 :HaveIntelSGXSDK
-if exist External\SGXSDK goto Done
-mklink /d /j External\SGXSDK "%SGXSDKInstallPath%" > NUL
+if exist ..\3rdparty\SGXSDK goto Done
+mklink /d /j ..\3rdparty\SGXSDK "%SGXSDKInstallPath%" > NUL
 
 :Done
 echo VerifySgxSdkinstalled: SGXSDKInstallPath is %SGXSDKInstallPath%

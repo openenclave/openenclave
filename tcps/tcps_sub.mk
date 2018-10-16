@@ -1,12 +1,15 @@
 CFLAGS += -DTRUSTED_CODE -DUSE_OPTEE
 
-export SGXSDKInstallPath=$(TCPS_SDK_ROOT_PATH)/External/SGXSDK
-export CYREP_CYREP_PATH=$(TCPS_SDK_ROOT_PATH)/External/RIoT/CyReP/cyrep
+export TCPS_SDK_ROOT_PATH=$(OE_SDK_ROOT_PATH)tcps/
+export RIoTDir=$(OE_SDK_ROOT_PATH)3rdparty/RIoT/
+export OpteeDir=$(OE_SDK_ROOT_PATH)3rdparty/optee_os/
+export SGXSDKInstallPath=$(OE_SDK_ROOT_PATH)3rdparty/SGXSDK
+export CYREP_CYREP_PATH=$(RIoTDir)CyReP/cyrep
 
-global-incdirs-y += $(TCPS_SDK_ROOT_PATH)/Inc/optee/Trusted
-global-incdirs-y += $(TCPS_SDK_ROOT_PATH)/Inc/optee
-global-incdirs-y += $(TCPS_SDK_ROOT_PATH)/Inc
-global-incdirs-y += $(TCPS_SDK_ROOT_PATH)/External/openenclave/include
+global-incdirs-y += $(TCPS_SDK_ROOT_PATH)Inc/optee/Trusted
+global-incdirs-y += $(TCPS_SDK_ROOT_PATH)Inc/optee
+global-incdirs-y += $(TCPS_SDK_ROOT_PATH)Inc
+global-incdirs-y += $(OE_SDK_ROOT_PATH)include
 global-incdirs-y += $(CYREP_CYREP_PATH)
 global-incdirs-y += $(SGXSDKInstallPath)/include
 global-incdirs-y += $(SGXSDKInstallPath)

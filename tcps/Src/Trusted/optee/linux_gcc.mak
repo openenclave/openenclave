@@ -2,8 +2,8 @@
 # Licensed under the MIT License.
 MKDIR = mkdir -p
 
-TCPS_SDK_ROOT_PATH       = ../../..
-TCPS_OPTEE_BIN_PATH      = $(TCPS_SDK_ROOT_PATH)/bin/optee
+OE_SDK_ROOT_PATH         = ../../../../
+TCPS_OPTEE_BIN_PATH      = $(OE_SDK_ROOT_PATH)tcps/bin/optee
 TCPS_TRUSTED_LIB_NAME    = tcps_t
 TCPS_TRUSTED_OUTPUT_PATH = $(TCPS_OPTEE_BIN_PATH)/tcps
 TCPS_TRUSTED_LIB_PATH    = $(TCPS_TRUSTED_OUTPUT_PATH)/lib$(TCPS_TRUSTED_LIB_NAME).a

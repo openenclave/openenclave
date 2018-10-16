@@ -3,7 +3,7 @@
 #pragma once
 #include <tcps_t.h>
 #include <stdbool.h>
-#include "../External/openenclave/include/openenclave/enclave.h"
+#include "../../include/openenclave/enclave.h"
 #define _UINTPTR_T_DEFINED_
 #define _UINTPTR_T_DEFINED
 #define _SIZE_T_DEFINED_

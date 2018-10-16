@@ -26,25 +26,28 @@ echo Checking for Intel SGX SDK
 # IntelSGXSDKInstallerURI environment variable is set,
 # then fetch it from there, else tell the user to go get it.
 # This provides a mechanism usable by github-CI.
-if [ -e External/SGXSDK/bin/x64/sgx_edger8r ]; then
-    export PATH="$PATH:$PWD/External/SGXSDK/bin/x64"
+if [ -e ../3rdparty/SGXSDK/bin/x64/sgx_edger8r ]; then
+    export PATH="$PATH:$PWD/../3rdparty/SGXSDK/bin/x64"
+fi
+if [ -e ../3rdparty/SGXSDK/bin/win32/Release/sgx_edger8r ]; then
+    export PATH="$PATH:$PWD/../3rdparty/SGXSDK/bin/win32/Release"
 fi
 edgepath=`which sgx_edger8r`
 if [ -z "$edgepath" ]; then
     edgepath=`which sgx_edger8r.exe`
 fi
 if [ -z "$edgepath" ]; then
-    if [ ! -e External/SGXSDK ]; then
+    if [ ! -e ../3rdparty/SGXSDK ]; then
        if [ -n "${IntelSGXSDKInstallerURI}" ]; then
            wget ${IntelSGXSDKInstallerURI}
        fi
        if [ -e SGXSDK.zip ]; then
-           unzip SGXSDK.zip -d External
+           unzip SGXSDK.zip -d ../3rdparty
        fi
     fi
-    if [ -e External/SGXSDK ]; then
-        export PATH="$PATH:$PWD/External/SGXSDK/bin/x64"
-	chmod 755 $PWD/External/SGXSDK/bin/x64/sgx_edger8r
+    if [ -e ../3rdparty/SGXSDK ]; then
+        export PATH="$PATH:$PWD/../3rdparty/SGXSDK/bin/x64"
+	chmod 755 $PWD/../3rdparty/SGXSDK/bin/x64/sgx_edger8r
     fi
 fi
 edgepath=`which sgx_edger8r`
@@ -71,19 +74,19 @@ else
     binPath=$(dirname "${binX64Path}")
 fi
 sgxSdkPath=$(dirname "${binPath}")
-export SGX_PATH=${sgxSdkPath}/
 
 # The linaro tools have problems with spaces in include paths,
 # so create a link we can use without spaces.
-if [ ! -e External/SGXSDK ]; then
-    ln -s "${sgxSdkPath}" External/SGXSDK
+if [ ! -e ../3rdparty/SGXSDK ]; then
+    ln -s "${sgxSdkPath}" ../3rdparty/SGXSDK
 fi
+export SGX_PATH=$PWD/../3rdparty/SGXSDK/
 
 echo Building OPTEE OS
 
-pushd External/optee_os/
+pushd ../3rdparty/optee_os/
 
-export CROSS_COMPILE=../../$GCCPREFIX/bin/arm-linux-gnueabi-
+export CROSS_COMPILE=../../tcps/$GCCPREFIX/bin/arm-linux-gnueabi-
 export ARCH=arm
 
 # TODO: change imx-mx6qmbbedge to imx-mx6qgeneric below once we find a branch
@@ -95,7 +98,7 @@ popd
 echo Building TCPS-SDK
 
 export CROSS_COMPILE=/usr/bin/arm-linux-gnueabi-
-export TA_DEV_KIT_DIR=$PWD/External/optee_os/out/arm-plat-imx/export-ta_arm32
+export TA_DEV_KIT_DIR=$PWD/../3rdparty/optee_os/out/arm-plat-imx/export-ta_arm32
 
 make -C Src/Trusted/optee -f linux_gcc.mak BUILD_TARGET=debug $*
 

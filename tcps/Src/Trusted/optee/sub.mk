@@ -18,10 +18,10 @@ global-incdirs-y += ../..
 global-incdirs-y += ../../../Inc/optee/Trusted
 global-incdirs-y += ../../../Inc/optee
 global-incdirs-y += ../../../Inc
-global-incdirs-y += $(ROOT_RELATIVE_PATH)External/optee_os/lib/libutee/include
-global-incdirs-y += $(ROOT_RELATIVE_PATH)External/RIoT/CyReP/cyrep
-global-incdirs-y += $(ROOT_RELATIVE_PATH)External/RIoT/External/tinycbor/src
-global-incdirs-y += $(ROOT_RELATIVE_PATH)External/openenclave/include
+global-incdirs-y += $(OpteeDir)lib/libutee/include
+global-incdirs-y += $(RIoTDir)CyReP/cyrep
+global-incdirs-y += $(RIoTDir)External/tinycbor/src
+global-incdirs-y += $(OE_SDK_ROOT_PATH)include
 
 srcs-y += ../TcpsCalls_t.c
 srcs-y += ../../buffer.c

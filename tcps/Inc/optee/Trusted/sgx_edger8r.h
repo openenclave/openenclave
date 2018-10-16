@@ -9,7 +9,7 @@
 # include "Simulator/tcps_t.h"
 #endif
 
-#include "../../../External/SGXSDK/include/sgx_edger8r.h"  /* SGX API prototypes to map */
+#include "../../../../3rdparty/SGXSDK/include/sgx_edger8r.h"  /* SGX API prototypes to map */
 #include <tee_api.h>         /* OP-TEE APIs to map them to */
 #include "TcpsRpcOptee.h"
 

@@ -349,7 +349,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>TRUSTED_CODE;OPENSSL_NO_SOCK;USE_SGX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(TcpsSdkDir)Inc;$(ProjectDir)..;$(TcpsSdkDir)External\wolfssl;$(TcpsSdkDir)External\wolfssl\wolfssl;$(SolutionDir)\openssl\include;$(TcpsSdkDir)External\openenclave\include;$(ProjectDir);$(SolutionDir)\Stack\platforms\sgx_trusted;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(ProjectDir)sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TcpsSdkDir)Inc;$(ProjectDir)..;$(SolutionDir)\openssl\include;$(OESdkDir)include;$(ProjectDir);$(SolutionDir)\Stack\platforms\sgx_trusted;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(ProjectDir)sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
       <ShowIncludes>false</ShowIncludes>
@@ -369,7 +369,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>TRUSTED_CODE;OPENSSL_NO_SOCK;USE_SGX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(TcpsSdkDir)Inc;$(ProjectDir)..;$(TcpsSdkDir)External\wolfssl;$(TcpsSdkDir)External\wolfssl\wolfssl;$(SolutionDir)\openssl\include;$(TcpsSdkDir)External\openenclave\include;$(ProjectDir);$(SolutionDir)\Stack\platforms\sgx_trusted;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(ProjectDir)sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TcpsSdkDir)Inc;$(ProjectDir)..;$(SolutionDir)\openssl\include;$(OESdkDir)include;$(ProjectDir);$(SolutionDir)\Stack\platforms\sgx_trusted;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(ProjectDir)sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
       <ShowIncludes>false</ShowIncludes>
@@ -389,7 +389,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>TRUSTED_CODE;OPENSSL_NO_SOCK;USE_OPTEE;SIMULATE_TEE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)..;$(ProjectDir);$(TcpsSdkDir)Inc\optee\Trusted\Simulator;$(TcpsSdkDir)Inc\optee\Trusted;$(TcpsSdkDir)Inc\optee;$(TcpsSdkDir)Inc;$(TcpsSdkDir)External\optee_os\lib\libutee\include;$(TcpsSdkDir)External\optee_os\lib\libutils\ext\include;$(SGXSDKInstallPath)include;$(TcpsSdkDir)External\openenclave\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..;$(ProjectDir);$(TcpsSdkDir)Inc\optee\Trusted\Simulator;$(TcpsSdkDir)Inc\optee\Trusted;$(TcpsSdkDir)Inc\optee;$(TcpsSdkDir)Inc;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(SGXSDKInstallPath)include;$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
       <ShowIncludes>false</ShowIncludes>
@@ -409,7 +409,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>TRUSTED_CODE;OPENSSL_NO_SOCK;USE_OPTEE;SIMULATE_TEE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)..;$(ProjectDir);$(TcpsSdkDir)Inc\optee\Trusted\Simulator;$(TcpsSdkDir)Inc\optee\Trusted;$(TcpsSdkDir)Inc\optee;$(TcpsSdkDir)Inc;$(TcpsSdkDir)External\optee_os\lib\libutee\include;$(TcpsSdkDir)External\optee_os\lib\libutils\ext\include;$(SGXSDKInstallPath)include;$(TcpsSdkDir)External\openenclave\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..;$(ProjectDir);$(TcpsSdkDir)Inc\optee\Trusted\Simulator;$(TcpsSdkDir)Inc\optee\Trusted;$(TcpsSdkDir)Inc\optee;$(TcpsSdkDir)Inc;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(SGXSDKInstallPath)include;$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
       <ShowIncludes>false</ShowIncludes>
@@ -431,7 +431,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>USE_SGX;TRUSTED_CODE;OPENSSL_NO_SOCK;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(TcpsSdkDir)Inc;$(ProjectDir)..;$(TcpsSdkDir)External\wolfssl;$(TcpsSdkDir)External\wolfssl\wolfssl;$(SolutionDir)\openssl\include;$(TcpsSdkDir)External\openenclave\include;$(ProjectDir);$(SolutionDir)\Stack\platforms\sgx_trusted;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(ProjectDir)sgx;$(ProjectDir)sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TcpsSdkDir)Inc;$(ProjectDir)..;$(SolutionDir)\openssl\include;$(OESdkDir)include;$(ProjectDir);$(SolutionDir)\Stack\platforms\sgx_trusted;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(ProjectDir)sgx;$(ProjectDir)sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Lib>
       <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
@@ -450,7 +450,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>TRUSTED_CODE;OPENSSL_NO_SOCK;USE_OPTEE;SIMULATE_TEE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)..;$(ProjectDir);$(TcpsSdkDir)Inc\optee\Trusted\Simulator;$(TcpsSdkDir)Inc\optee\Trusted;$(TcpsSdkDir)Inc\optee;$(TcpsSdkDir)Inc;$(TcpsSdkDir)External\optee_os\lib\libutee\include;$(TcpsSdkDir)External\optee_os\lib\libutils\ext\include;$(SGXSDKInstallPath)include;$(TcpsSdkDir)External\openenclave\include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\libc++;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..;$(ProjectDir);$(TcpsSdkDir)Inc\optee\Trusted\Simulator;$(TcpsSdkDir)Inc\optee\Trusted;$(TcpsSdkDir)Inc\optee;$(TcpsSdkDir)Inc;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(SGXSDKInstallPath)include;$(OESdkDir)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\libc++;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Lib>
       <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
@@ -471,7 +471,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>TRUSTED_CODE;OPENSSL_NO_SOCK;USE_SGX;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(TcpsSdkDir)Inc;$(ProjectDir)..;$(TcpsSdkDir)External\wolfssl;$(TcpsSdkDir)External\wolfssl\wolfssl;$(SolutionDir)\openssl\include;$(ProjectDir);$(SolutionDir)\Stack\platforms\sgx_trusted;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\libc++;$(ProjectDir)sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TcpsSdkDir)Inc;$(ProjectDir)..;$(SolutionDir)\openssl\include;$(ProjectDir);$(SolutionDir)\Stack\platforms\sgx_trusted;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\libc++;$(ProjectDir)sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
     </ClCompile>
     <Lib>
@@ -493,7 +493,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>TRUSTED_CODE;OPENSSL_NO_SOCK;USE_SGX;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(TcpsSdkDir)Inc;$(ProjectDir)..;$(TcpsSdkDir)External\wolfssl;$(TcpsSdkDir)External\wolfssl\wolfssl;$(SolutionDir)\openssl\include;$(ProjectDir);$(SolutionDir)\Stack\platforms\sgx_trusted;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\libc++;$(ProjectDir)sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TcpsSdkDir)Inc;$(ProjectDir)..;$(SolutionDir)\openssl\include;$(ProjectDir);$(SolutionDir)\Stack\platforms\sgx_trusted;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\libc++;$(ProjectDir)sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
     </ClCompile>
     <Lib>
@@ -515,7 +515,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>USE_SGX;TRUSTED_CODE;OPENSSL_NO_SOCK;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(TcpsSdkDir)Inc;$(ProjectDir)..;$(TcpsSdkDir)External\wolfssl;$(TcpsSdkDir)External\wolfssl\wolfssl;$(ProjectDir)..;$(ProjectDir)..\..\External\wolfssl;$(ProjectDir)..\..\External\wolfssl\wolfssl\openssl;$(SGXSDKInstallPath)\include;$(ProjectDir);$(SolutionDir)openssl/include;$(SolutionDir)Stack/core;$(SolutionDir)Stack/stackcore;$(SolutionDir)Stack/proxystub/clientproxy;$(SolutionDir)Stack/proxystub/serverstub;$(SolutionDir)Stack/platforms/win32sgx_u;$(SolutionDir)Stack/securechannel;$(SolutionDir)Stack/transport/tcp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TcpsSdkDir)Inc;$(ProjectDir)..;$(ProjectDir)..;$(SGXSDKInstallPath)\include;$(ProjectDir);$(SolutionDir)openssl/include;$(SolutionDir)Stack/core;$(SolutionDir)Stack/stackcore;$(SolutionDir)Stack/proxystub/clientproxy;$(SolutionDir)Stack/proxystub/serverstub;$(SolutionDir)Stack/platforms/win32sgx_u;$(SolutionDir)Stack/securechannel;$(SolutionDir)Stack/transport/tcp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Lib>
       <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>

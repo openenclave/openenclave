@@ -4,11 +4,15 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
   <PropertyGroup Label="Globals">
+    <OESdkDir>$(SolutionDir)..\</OESdkDir>
     <ClientRoot>$(SolutionDir)</ClientRoot>
     <TcpsSdkDir>$(ClientRoot)</TcpsSdkDir>
-    <RIoTDir>$(TcpsSdkDir)External\RIoT\</RIoTDir>
+    <ExternalDir>$(OESdkDir)3rdparty\</ExternalDir>
+    <OpteeDir>$(ExternalDir)optee_os\</OpteeDir>
+    <ProjectKaylaDir>$(ExternalDir)project-kayla\</ProjectKaylaDir>
+    <RIoTDir>$(ExternalDir)RIoT\</RIoTDir>
     <TinyCborDir>$(RIoTDir)External\tinycbor\</TinyCborDir>
-    <GTestDir>$(TcpsSdkDir)External\googletest\googletest\</GTestDir>
+    <GTestDir>$(ExternalDir)googletest\googletest\</GTestDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>

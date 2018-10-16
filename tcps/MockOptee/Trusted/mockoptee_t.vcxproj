@@ -45,6 +45,7 @@
     <ProjectName>mockoptee_t</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(SolutionDir)\TcpsVsSettings.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
@@ -142,7 +143,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>TRUSTED_CODE;USE_OPTEE;SIMULATE_TEE;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\Inc\optee\Trusted\Simulator;$(ProjectDir)..\..\Inc\optee\Trusted;$(ProjectDir)..\..\Inc\optee;$(ProjectDir)..\..\Inc;$(ProjectDir)..\..\External\optee_os\lib\libutee\include;$(ProjectDir)..\..\External\optee_os\lib\libutils\ext\include;$(SGXSDKInstallPath)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\Inc\optee\Trusted\Simulator;$(ProjectDir)..\..\Inc\optee\Trusted;$(ProjectDir)..\..\Inc\optee;$(ProjectDir)..\..\Inc;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(SGXSDKInstallPath)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -156,7 +157,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>TRUSTED_CODE;USE_OPTEE;SIMULATE_TEE;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\Inc\optee\Trusted\Simulator;$(ProjectDir)..\..\Inc\optee\Trusted;$(ProjectDir)..\..\Inc\optee;$(ProjectDir)..\..\Inc;$(ProjectDir)..\..\External\optee_os\lib\libutee\include;$(ProjectDir)..\..\External\optee_os\lib\libutils\ext\include;$(SGXSDKInstallPath)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\Inc\optee\Trusted\Simulator;$(ProjectDir)..\..\Inc\optee\Trusted;$(ProjectDir)..\..\Inc\optee;$(ProjectDir)..\..\Inc;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(SGXSDKInstallPath)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -170,7 +171,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>TRUSTED_CODE;USE_OPTEE;SIMULATE_TEE;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\Inc\optee\Trusted\Simulator;$(ProjectDir)..\..\Inc\optee\Trusted;$(ProjectDir)..\..\Inc\optee;$(ProjectDir)..\..\Inc;$(ProjectDir)..\..\External\optee_os\lib\libutee\include;$(ProjectDir)..\..\External\optee_os\lib\libutils\ext\include;$(SGXSDKInstallPath)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\Inc\optee\Trusted\Simulator;$(ProjectDir)..\..\Inc\optee\Trusted;$(ProjectDir)..\..\Inc\optee;$(ProjectDir)..\..\Inc;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(SGXSDKInstallPath)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
