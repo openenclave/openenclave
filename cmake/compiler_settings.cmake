@@ -50,8 +50,6 @@ endif (CCACHE_FOUND)
 # Check for compiler flags
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
-# TODO: Remove this when no longer used.
-include(add_compile_flags_if_supported)
 
 # Apply Spectre mitigations if available.
 set(SPECTRE_MITIGATION_FLAGS "-mllvm;-x86-speculative-load-hardening")
@@ -82,7 +80,10 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
 
   add_compile_options(-fno-strict-aliasing)
 
-  add_compile_flags_if_supported(C -Wjump-misses-init)
+  check_c_compiler_flag(-Wjump-misses-init WARN_JUMP_MISSES_INIT_SUPPORTED)
+  if (WARN_JUMP_MISSES_INIT_SUPPORTED)
+    add_compile_options($<$<COMPILE_LANGUAGE:C>:-Wjump-misses-init>)
+  endif ()
 
   # Enables XSAVE intrinsics.
   add_compile_options(-mxsave)
