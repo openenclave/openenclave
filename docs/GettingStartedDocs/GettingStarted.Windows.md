@@ -22,7 +22,7 @@ In order to do so, you need to find a binary or build oe-engine, which is locate
 
 oe-engine will generate an azure resource manager template suitable for deployment by azure from a json file.
 The json will look like
-'''
+```
 {
   "properties": {
     "masterProfile": {
@@ -35,7 +35,7 @@ The json will look like
     }
   }
 }
-'''
+```
 
 Prerequisites
 -------------
