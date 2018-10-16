@@ -357,7 +357,7 @@ Tcps_StatusCode TestOcallHandler()
 {
     int input = 1;
     int output = 0;
-    int outBufferSizeWritten = 0;
+    size_t outBufferSizeWritten = 0;
     oe_result_t oeResult = oe_call_host_function(0, &input, sizeof(input), &output, sizeof(output), &outBufferSizeWritten);
     if (oeResult != OE_OK) {
         return Tcps_Bad;

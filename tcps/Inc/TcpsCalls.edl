@@ -67,7 +67,7 @@ enclave {
 
     struct callV2_Result {
         char outBuffer[4096];
-        int outBufferSize; 
+        size_t outBufferSize; 
     };
 
     /* define ECALLs here. */

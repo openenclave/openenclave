@@ -208,7 +208,7 @@ TEST_F(OEHostTest, ecall_Success)
 
     int input = 1;
     int output = 0;
-    uint32_t outputSize = 0;
+    size_t outputSize = 0;
     oe_result_t oeResult = oe_call_enclave_function(
         GetEnclave(),
         0,

@@ -47,6 +47,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gtest", "Tests\gtest\gtest.vcxproj", "{C2A86939-0961-4089-A706-0C1C27634186}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TcpsSdkTestTA", "Tests\TcpsSdkTestTA\TcpsSdkTestTA.vcxproj", "{E759EE7C-5BB2-4988-89D1-CE1C0FD623F3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{AFF02E67-1671-4004-B169-9C3AAB5CD103} = {AFF02E67-1671-4004-B169-9C3AAB5CD103}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EchoSockets", "EchoSockets", "{48808102-01B7-4963-89AC-6ACE5D705B3A}"
 EndProject
