@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased]
 ------------
 
-No current delta from v0.4.0.
+### Changed
+- Update mbedTLS library to version 2.7.6.
 
 [v0.4.0] - 2018-10-08
 ---------------------
