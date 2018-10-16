@@ -386,8 +386,8 @@ int main(int argc, const char* argv[])
         argv[2], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
     if (result != OE_OK)
     {
-        cerr << "oe_create_enclave() failed with " << argv[0] << " " << result
-             << endl;
+        cerr << "oe_create_fileencryptor_enclave() failed with " << argv[0]
+             << " " << result << endl;
         ret = 1;
         goto exit;
     }

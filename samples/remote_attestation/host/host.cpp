@@ -20,7 +20,9 @@ oe_enclave_t* create_enclave(const char* enclave_path)
 
     if (result != OE_OK)
     {
-        printf("Host: oe_create_enclave failed. %s", oe_result_str(result));
+        printf(
+            "Host: oe_create_remoteattestation_enclave failed. %s",
+            oe_result_str(result));
     }
     else
     {

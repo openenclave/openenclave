@@ -57,7 +57,7 @@ int main(int argc, const char* argv[])
     {
         fprintf(
             stderr,
-            "oe_create_enclave(): result=%u (%s)\n",
+            "oe_create_helloworld_enclave(): result=%u (%s)\n",
             result,
             oe_result_str(result));
         goto exit;
