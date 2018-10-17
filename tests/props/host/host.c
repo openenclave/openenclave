@@ -53,7 +53,7 @@ static oe_result_t _sgx_load_enclave_properties(
     oe_result_t result = OE_UNEXPECTED;
     oe_enclave_image_t oeimage;
 
-    oeimage.elf.magic = 0;
+    oeimage.u.elf.elf.magic = 0;
     if (properties)
         memset(properties, 0, sizeof(oe_sgx_enclave_properties_t));
 
@@ -62,11 +62,11 @@ static oe_result_t _sgx_load_enclave_properties(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Load the ELF image */
-    if (_oe_load_enclave_image(path, &oeimage) != 0)
+    if (oe_load_enclave_image(path, &oeimage) != 0)
         OE_RAISE(OE_FAILURE);
 
     /* Load the SGX enclave properties */
-    if (oe_sgx_load_properties(&oeimage, OE_INFO_SECTION_NAME, properties) !=
+    if (oe_sgx_load_enclave_properties(&oeimage, OE_INFO_SECTION_NAME, properties) !=
         OE_OK)
     {
         OE_RAISE(OE_NOT_FOUND);
@@ -76,8 +76,8 @@ static oe_result_t _sgx_load_enclave_properties(
 
 done:
 
-    if (oeimage.elf.magic == ELF_MAGIC)
-        _oe_unload_enclave_image(&oeimage);
+    if (oeimage.u.elf.elf.magic == ELF_MAGIC)
+        oe_unload_enclave_image(&oeimage);
 
     return result;
 }
@@ -113,7 +113,7 @@ int main(int argc, const char* argv[])
     /* Load the enclave properties */
     if ((result = _sgx_load_enclave_properties(argv[1], &properties)) != OE_OK)
     {
-        oe_put_err("oe_sgx_load_properties(): result=%u", result);
+        oe_put_err("oe_sgx_load_enclave_properties(): result=%u", result);
     }
 
     const uint32_t flags = oe_get_create_flags();

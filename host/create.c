@@ -553,7 +553,7 @@ oe_result_t oe_sgx_build_enclave(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Load the elf object */
-    if (_oe_load_enclave_image(path, &oeimage) != 0)
+    if (oe_load_enclave_image(path, &oeimage) != OE_OK)
         OE_RAISE(OE_FAILURE);
 
     // If the **properties** parameter is non-null, use those properties.
@@ -593,10 +593,10 @@ oe_result_t oe_sgx_build_enclave(
     }
 
     /* Calculate the size of image */
-    OE_CHECK(_oe_calculate_image_size(&oeimage, &image_size));
+    OE_CHECK(oeimage.calculate_size(&oeimage, &image_size));
 
     /* Build an array of all the ECALL functions in the .ecalls section */
-    OE_CHECK(_oe_build_ecall_array(enclave, &oeimage));
+    OE_CHECK(oeimage.build_ecall_array(&oeimage, enclave));
 
     /* Build ECALL pages for enclave (list of addresses) */
     OE_CHECK(_build_ecall_data(enclave, &ecall_data, &ecall_size));
@@ -615,10 +615,10 @@ oe_result_t oe_sgx_build_enclave(
     enclave->text = enclave_addr + oeimage.text_rva;
 
     /* Patch image */
-    OE_CHECK(_oe_patch_image(&oeimage, ecall_size, enclave_end));
+    OE_CHECK(oeimage.patch(&oeimage, ecall_size, enclave_end));
 
     /* Add image to enclave */
-    OE_CHECK(_oe_add_image_pages(context, enclave, &oeimage, &vaddr));
+    OE_CHECK(oeimage.add_pages(&oeimage, context, enclave, &vaddr));
 
     /* Add ecall pages */
     OE_CHECK(
@@ -650,7 +650,7 @@ done:
     if (ecall_data)
         free(ecall_data);
 
-    _oe_unload_enclave_image(&oeimage);
+    oe_unload_enclave_image(&oeimage);
 
     return result;
 }

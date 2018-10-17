@@ -78,7 +78,7 @@ typedef struct oe_sgx_enclave_config_t
 } oe_sgx_enclave_config_t;
 
 /* Extends oe_enclave_properties_header_t base type */
-typedef struct oe_sgx_enclave_properties_t
+typedef struct _oe_sgx_enclave_properties
 {
     /* (0) */
     oe_enclave_properties_header_t header;
