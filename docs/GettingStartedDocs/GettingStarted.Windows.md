@@ -17,11 +17,13 @@ Open Enclave](GettingStarted.md) document.
 Using an ACC VM via oe-engine
 ------------------------------
 
-The quickest way to begin development would be to use a pre-deployed acc VM. This will install and configure the environment. 
+The quickest way to begin development would be to use a pre-deployed acc VM. This will install and configure the environment. This document describes performing the deployment on linux. It can also be done on Windows in a similar fashion.
+
 In order to do so, you need to find a binary or build oe-engine, which is located [here](https://github.com/Microsoft/oe-engine).
 
+
 oe-engine will generate an azure resource manager template suitable for deployment by azure from a json file.
-The json will look like
+The contents of the json file will look like
 ```
 {
   "properties": {
@@ -36,7 +38,104 @@ The json will look like
   }
 }
 ```
-The json allows a number of different options which are outside of this discussion.  
+Of course you should populate the VMname, adminUserName and adminPassword with concrete values.
+
+The json allows a number of different options which are outside of this discussion.  For normal development use, just the bare minimum will do.
+
+Running the command line 
+```
+oe-engine generate ~/tmp/myfile.json
+```
+where ~/tmp/myfile.json is the location of the instance of the json we just described will create a and Azure Resource Manager deployment template in the directory ./_output.  
+```
+ls ./_output
+
+azuredeploy.json azuredeploy.parametsers.json apimodel.json
+```
+
+apimodel.json is the fully populated input json for oe-engine. Ignore it.
+The other two files are used by the azure command line utilities to perform the deployment.
+
+Make sure you are logged into your azure account. If you already are logged in skip this step.
+``` 
+az login
+
+$ az account set --subscription "<SUBSCRIPTION NAME OR ID>"
+```
+
+First, define a resource group. 
+
+```
+az group create -name <my-group -location "West Europe"
+```
+now, cd ./_output and build the deployment:
+```
+
+$ az group deployment create \
+    --name "<DEPLOYMENT NAME>" \
+    --resource-group "<RESOURCE_GROUP_NAME>" \
+    --template-file "./azuredeploy.json" \
+    --parameters "./azuredeploy.parameters.json"
+```
+deployment name can be anything you like so long as it is unique within your subscription. 
+
+This will kick the deployment process off and result in a full deployment, including a VM, public ip address, NSG, storage accounts etc. You can TS into the public IP using the credentials you specified in the json.
+
+Currently we can only deploy linux 16.04 or Windows Server 2016 images. So the windows machine you deploy will be windows server 2016. The machine will not be domain joined, and will not have been updated. 
+```
+mstsc -v <public ip>
+```
+
+Now that we are on windows, we will assume a powershell windows un as administrator.
+
+Once there you will notice the machine has been provisioned with suitable sgx drivers and PSW. If you start taskmgr you will see the service AESMService.  It will almost certainly not have been started. Start the service (just once).
+```
+Start-Service "AESMService"
+```
+followed by registering the ocaml installation. Both of these things are quirks that will be sorted out soon.
+```
+cd "c:/Program Files/ocpwin6/4.xxxxxx/bin
+./ocpwin -in
+```
+cd to the projects directory.
+```
+cd ~/Projects
+```
+and clone this repository.
+```
+git clone https:/github.com/Microsoft/openenclave.git
+```
+cd into the repository and make the build directory.
+```
+cd openenclave
+mkdir build
+cd build
+
+```
+then cmake. 
+```
+cmake -G "Visual Studio 15 2017 Win64" ..
+```
+Then launch a developer command window.
+```
+$env:VC150COMNTOOLS/launchdevcmd.bat
+```
+and run  powershell again. This sets the environment. There is also a batch file to just set the environment, but we use this method.  again, get back to the build directory which we got switched off of.
+
+```
+cd ~/Projects/openenclave/build
+```
+and build
+```
+msbuild ./ALL_BUILD.vcxproj -p:Configuration=Debug
+```
+To clean the build
+```
+msbuild ./ALL_BUILD.vcxprok -t:clean
+```
+
+
+
 
 Prerequisites
 -------------
