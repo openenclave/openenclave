@@ -33,7 +33,7 @@ build:
 	$(CXX) -o enclave_a_v1.so ecalls.o dispatcher.o keys.o datasealing_t.o $(LDFLAGS)
 
 sign:
-	oesign enclave_a_v1.so data-sealing.conf private.pem
+	oesign sign enclave_a_v1.so data-sealing.conf private.pem
 
 clean:
 	rm -f *.so *.o *.pem ../common/datasealing_t.* ../common/datasealing_args.h
