@@ -3,10 +3,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <windows.h> // for LARGE_INTEGER
-
-#include <tcps.h>
-
-#include "tcps_u.h"
+#include <openenclave/host.h>
 #include "TcpsCalls_u.h"
 #include "buffer.h"
 
@@ -89,11 +86,11 @@ Tcps_StatusCode ocall_puts(buffer1024 str, int bNewline)
 int g_GlobalMutexInitialized = 0;
 CRITICAL_SECTION g_GlobalMutex;
 
-Tcps_StatusCode TcpsAcquireTAMutex(_In_ sgx_enclave_id_t eid)
+oe_result_t oe_acquire_enclave_mutex(_In_ oe_enclave_t* enclave)
 {
-    Tcps_StatusCode uStatus = Tcps_Good;
+    oe_result_t result = OE_OK;
 
-    TCPS_UNUSED(eid);
+    TCPS_UNUSED(enclave);
 
     if (!g_GlobalMutexInitialized) {
         InitializeCriticalSection(&g_GlobalMutex);
@@ -113,19 +110,19 @@ Tcps_StatusCode TcpsAcquireTAMutex(_In_ sgx_enclave_id_t eid)
                 Tcps_TraceLevelWarning,
                 "%s: abandoning!\n", 
                 __FUNCTION__);
-            uStatus = Tcps_BadOperationAbandoned;
+            result = OE_ENCLAVE_ABORTING;
             break;
         }
 
         Sleep(100);
     }
 
-    return uStatus;
+    return result;
 }
 
-Tcps_Void TcpsReleaseTAMutex(_In_ sgx_enclave_id_t eid)
+void oe_release_enclave_mutex(_In_ oe_enclave_t* enclave)
 {
-    TCPS_UNUSED(eid);
+    TCPS_UNUSED(enclave);
     LeaveCriticalSection(&g_GlobalMutex);
     //printf("-ecall: %x\n", GetCurrentThreadId());
 }
@@ -147,8 +144,8 @@ TcpsPushDataToTeeBuffer(
 Tcps_InitializeStatus(Tcps_Module_Helper_u, "TcpsPushDataToTeeBuffer"); 
 
     while (bytesCopied < a_BufferSize) {
-        int bytesRemaining = a_BufferSize - bytesCopied;
-        chunk.size = MIN(sizeof(chunk.buffer), bytesRemaining);
+        size_t bytesRemaining = a_BufferSize - bytesCopied;
+        chunk.size = (int)MIN(sizeof(chunk.buffer), bytesRemaining);
 
         COPY_BUFFER(chunk, a_Buffer + bytesCopied, chunk.size);
 

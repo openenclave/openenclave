@@ -1,7 +1,7 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
 #include <stdio.h>
-#include <tcps_u.h>
+#include <openenclave/host.h>
 #include "TcpsCalls_u.h"
 #include <sgx.h>
 #include <sgx_urts.h>
@@ -314,7 +314,7 @@ static int initialize_enclave(
     return 0;
 }
 
-Tcps_StatusCode Tcps_CreateTA(
+Tcps_StatusCode Tcps_CreateTAInternal(
     _In_z_ const char* a_TaIdString,
     _In_ uint32_t a_Flags,
     _Out_ sgx_enclave_id_t* a_pId)
@@ -348,11 +348,12 @@ Tcps_StatusCode Tcps_CreateTA(
     return Tcps_Good;
 }
 
-Tcps_StatusCode Tcps_DestroyTA(
-    _In_ sgx_enclave_id_t a_Id)
+oe_result_t oe_terminate_enclave(_In_ oe_enclave_t* enclave)
 {
+    sgx_enclave_id_t eid = (sgx_enclave_id_t)enclave;
+
     WSACleanup();
 
-    sgx_status_t sgxStatus = sgx_destroy_enclave(a_Id);
-    return (sgxStatus == SGX_SUCCESS) ? Tcps_Good : Tcps_Bad;
+    sgx_status_t sgxStatus = sgx_destroy_enclave(eid);
+    return (sgxStatus == SGX_SUCCESS) ? OE_OK : OE_FAILURE;
 }

@@ -17,19 +17,8 @@ extern "C" {
 
 #include <sgx_eid.h>
 
-/* OP-TEE only allows one thread per TA to be in an ecall.  Even if it has
- * an ocall in progress, that ecall must complete before another ecall
- * can enter the TA.  SGX, on the other hand, would allow a second ecall
- * to enter.  So to allow them to function identically, apps should wrap
- * ecalls in the following mutex Acquire/Release calls.  In the future,
- * if we have our own code generator instead of sgx_edger8r, these could
- * be automatic instead of requiring manual coding effort to call.
- */
-Tcps_StatusCode TcpsAcquireTAMutex( _In_ sgx_enclave_id_t eid);
-Tcps_Void TcpsReleaseTAMutex( _In_ sgx_enclave_id_t eid);
-
-#define oe_acquire_enclave_mutex(enclave) TcpsAcquireTAMutex((sgx_enclave_id_t)enclave)
-#define oe_release_enclave_mutex(enclave) TcpsReleaseTAMutex((sgx_enclave_id_t)enclave)
+#define TcpsAcquireTAMutex(eid) oe_acquire_enclave_mutex((oe_enclave_t*)eid)
+#define TcpsReleaseTAMutex(eid) oe_release_enclave_mutex((oe_enclave_t*)eid)
 
 /* The caller is responsible for freeing the buffer after calling this. */
 void* TcpsCreateReeBuffer(_In_ int a_BufferSize);
@@ -56,13 +45,15 @@ void TcpsFreeTeeBuffer(_In_ void* a_hTeeBuffer);
 #define TCPS_ENCLAVE_FLAG_DEBUG ((int)0)
 #endif
 
-Tcps_StatusCode Tcps_CreateTA(
+TCPS_DEPRECATED(Tcps_StatusCode Tcps_CreateTA(
     _In_z_ const char* a_TaIdString,
     _In_ uint32_t a_Flags,
-    _Out_ sgx_enclave_id_t* a_pId);
+    _Out_ sgx_enclave_id_t* a_pId),
+    "Tcps_CreateTA is deprecated. Use oe_create_enclave instead.");
 
-Tcps_StatusCode Tcps_DestroyTA(
-    _In_ sgx_enclave_id_t a_Id);
+TCPS_DEPRECATED(Tcps_StatusCode Tcps_DestroyTA(
+    _In_ sgx_enclave_id_t a_Id),
+    "Tcps_DestroyTA is deprecated. Use oe_terminate_enclave instead.");
 
 #ifdef __cplusplus
 }

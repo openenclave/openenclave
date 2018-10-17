@@ -1,6 +1,6 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
-#include <tcps_u.h>
+#include <openenclave/host.h>
 #include <sgx.h>
 #include "gtest/gtest.h"
 #include <TcpsSdkTestTA_u.h>

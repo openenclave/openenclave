@@ -15,6 +15,34 @@ typedef struct {
 
 ocall_table_v2_t g_ocall_table_v2 = { 0 };
 
+/* TODO: this API is deprecated.  Remove once callers are changed. */
+Tcps_StatusCode Tcps_CreateTA(
+    _In_z_ const char* a_TaIdString,
+    _In_ uint32_t a_Flags,
+    _Out_ sgx_enclave_id_t* a_pId)
+{
+    *a_pId = 0;
+    oe_enclave_t* enclave;
+    oe_result_t result = oe_create_enclave(a_TaIdString,
+                                           0,
+                                           a_Flags,
+                                           NULL,
+                                           0,
+                                           NULL,
+                                           0,
+                                           &enclave);
+    if (result != OE_OK) {
+        return Tcps_Bad;
+    }
+    *a_pId = (sgx_enclave_id_t)enclave;
+    return Tcps_Good;
+}
+
+Tcps_StatusCode Tcps_CreateTAInternal(
+    _In_z_ const char* a_TaIdString,
+    _In_ uint32_t a_Flags,
+    _Out_ sgx_enclave_id_t* a_pId);
+
 oe_result_t oe_create_enclave(
     _In_z_ const char* path,
     _In_ oe_enclave_type_t type,
@@ -36,7 +64,7 @@ oe_result_t oe_create_enclave(
 
     // Load the enclave.
     sgx_enclave_id_t eid;
-    Tcps_StatusCode uStatus = Tcps_CreateTA(path, flags, &eid);
+    Tcps_StatusCode uStatus = Tcps_CreateTAInternal(path, flags, &eid);
     if (Tcps_IsBad(uStatus)) {
         return OE_FAILURE;
     }
@@ -57,11 +85,13 @@ oe_result_t oe_ecall(oe_enclave_t* enclave, uint16_t func, uint64_t argIn, uint6
     return OE_FAILURE;
 }
 
-oe_result_t oe_terminate_enclave(_In_ oe_enclave_t* enclave)
+/* TODO: delete this API once callers are updated to call oe_terminate_enclave */
+Tcps_StatusCode Tcps_DestroyTA(
+    _In_ sgx_enclave_id_t a_Id)
 {
-    sgx_enclave_id_t eid = (sgx_enclave_id_t)enclave;
-    Tcps_StatusCode uStatus = Tcps_DestroyTA(eid);
-    return Tcps_IsBad(uStatus) ? OE_FAILURE : OE_OK;
+    oe_enclave_t* enclave = (oe_enclave_t*)a_Id;
+    oe_result_t result = oe_terminate_enclave(enclave);
+    return (result != OE_OK) ? Tcps_Bad : Tcps_Good;
 }
 
 const char* oe_result_str(_In_ oe_result_t result)

@@ -29,11 +29,6 @@ unsigned int custom_rand_generate(void)
 
 sgx_status_t sgx_read_rand(unsigned char *ptr, size_t len)
 {
-    return Tcps_FillRandom(ptr, len);
-}
-
-int Tcps_FillRandom(void* ptr, size_t len)
-{
     TEE_GenerateRandom(ptr, len);
-    return 0;
+    return SGX_SUCCESS;
 }

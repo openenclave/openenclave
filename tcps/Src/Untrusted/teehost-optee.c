@@ -8,7 +8,7 @@
 #include <string.h>
 #include <strsafe.h>
 #include <rpc.h>
-#include "tcps_u.h"
+#include <openenclave/host.h>
 #include "TcpsCalls_u.h"
 
 static HANDLE OpenServiceHandleByFilename(_In_ LPCGUID ServiceGuid)
@@ -68,7 +68,7 @@ static HANDLE OpenServiceHandleByFilename(_In_ LPCGUID ServiceGuid)
     return serviceHandle;
 }
 
-Tcps_StatusCode Tcps_CreateTA(
+Tcps_StatusCode Tcps_CreateTAInternal(
     _In_z_ const char* a_TaIdString,
     _In_ uint32_t a_Flags,
     _Out_ sgx_enclave_id_t* a_pId)
@@ -99,14 +99,13 @@ Tcps_StatusCode Tcps_CreateTA(
     return Tcps_Good;
 }
 
-Tcps_StatusCode Tcps_DestroyTA(
-    _In_ sgx_enclave_id_t a_Id)
+oe_result_t oe_terminate_enclave(_In_ oe_enclave_t* enclave)
 {
     WSACleanup();
 
-    if (a_Id != (sgx_enclave_id_t)INVALID_HANDLE_VALUE) {
-        CloseHandle((HANDLE)a_Id);
-        a_Id = (sgx_enclave_id_t)INVALID_HANDLE_VALUE;
+    if (enclave != (oe_enclave_t*)INVALID_HANDLE_VALUE) {
+        CloseHandle((HANDLE)enclave);
+        enclave = (oe_enclave_t*)INVALID_HANDLE_VALUE;
     }
-    return Tcps_Good;
+    return OE_OK;
 }

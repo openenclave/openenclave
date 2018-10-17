@@ -182,12 +182,15 @@ Tcps_StatusCode Provision_Certificate(
     _In_z_ const char* destinationLocation, 
     _In_z_ const char* sourceLocation);
 
-// TODO: remove this define
-#define FillRandom Tcps_FillRandom
-
-int Tcps_FillRandom(
+TCPS_DEPRECATED(int FillRandom(
     _Out_writes_bytes_all_(len) void* ptr,
-    _In_ size_t len);
+    _In_ size_t len),
+    "FillRandom is deprecated. Use oe_random() instead.");
+
+TCPS_DEPRECATED(int Tcps_FillRandom(
+    _Out_writes_bytes_all_(len) void* ptr,
+    _In_ size_t len),
+    "Tcps_FillRandom is deprecated. Use oe_random() instead.");
 
 /*************************************************************/
 

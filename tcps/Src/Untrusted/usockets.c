@@ -157,7 +157,7 @@ getaddrinfo_Result ocall_getaddrinfo(
         aib->ai_family = ai->ai_family; 
         aib->ai_socktype = ai->ai_socktype; 
         aib->ai_protocol = ai->ai_protocol; 
-        aib->ai_addrlen = ai->ai_addrlen; 
+        aib->ai_addrlen = (int)ai->ai_addrlen; 
         COPY_BUFFER_FROM_STRING(aib->ai_canonname, (ai->ai_canonname != NULL) ? ai->ai_canonname : "");
         COPY_BUFFER(aib->ai_addr, ai->ai_addr, ai->ai_addrlen);
     }

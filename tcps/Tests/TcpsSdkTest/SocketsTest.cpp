@@ -29,13 +29,13 @@ public:
         if (s == INVALID_SOCKET) {
             goto Done;
         }
-        if (connect(s, ai->ai_addr, ai->ai_addrlen) == SOCKET_ERROR) {
+        if (connect(s, ai->ai_addr, (int)ai->ai_addrlen) == SOCKET_ERROR) {
             goto Done;
         }
 
         /* Send a message, prefixed by its size. */
         const char *message = "Hello, world!";
-        int messageLength = strlen(message);
+        int messageLength = (int)strlen(message);
         int netMessageLength = htonl(messageLength);
         int bytesSent = send(s, (char*)&netMessageLength, sizeof(netMessageLength), 0);
         if (bytesSent == SOCKET_ERROR) {
@@ -102,7 +102,7 @@ public:
             freeaddrinfo(ai);
             return Tcps_BadCommunicationError;
         }
-        if (bind(listener, ai->ai_addr, ai->ai_addrlen) == SOCKET_ERROR) {
+        if (bind(listener, ai->ai_addr, (int)ai->ai_addrlen) == SOCKET_ERROR) {
             closesocket(listener);
             freeaddrinfo(ai);
             return Tcps_BadCommunicationError;

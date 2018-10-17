@@ -7,10 +7,10 @@ global-incdirs-y += optee
 #global-incdirs-y += ...
 
 SampleTA_t.c: ../../SampleTA.edl
-	$(SGX_EDGER8R) --trusted --search-path "$(TCPS_SDK_ROOT_PATH)Inc$(SGX_PATHSEP)$(SGX_PATH)include" ../../SampleTA.edl
+	$(SGX_EDGER8R) --trusted --search-path "$(TCPS_SDK_ROOT_PATH)Inc$(SGX_PATHSEP)$(TCPS_SDK_ROOT_PATH)$(SGX_RELATIVE_PATH)include" ../../SampleTA.edl
 
 SampleTA_t.h: ../../SampleTA.edl
-	$(SGX_EDGER8R) --trusted --search-path "$(TCPS_SDK_ROOT_PATH)Inc$(SGX_PATHSEP)$(SGX_PATH)include" ../../SampleTA.edl
+	$(SGX_EDGER8R) --trusted --search-path "$(TCPS_SDK_ROOT_PATH)Inc$(SGX_PATHSEP)$(TCPS_SDK_ROOT_PATH)$(SGX_RELATIVE_PATH)include" ../../SampleTA.edl
 
 # Add the c file generated from your EDL file here
 srcs-y             += SampleTA_t.c

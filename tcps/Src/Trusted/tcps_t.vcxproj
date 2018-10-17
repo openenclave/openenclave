@@ -152,11 +152,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|ARM'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="sgx\rand_sgx.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|ARM'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="sgx\strings-sgx.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|ARM'">true</ExcludedFromBuild>

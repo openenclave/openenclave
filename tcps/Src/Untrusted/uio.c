@@ -33,7 +33,7 @@ ocall_TCPConnect(
     }
 
     /* Connect socket. */
-    err = connect(s, ai->ai_addr, ai->ai_addrlen);
+    err = connect(s, ai->ai_addr, (int)ai->ai_addrlen);
     freeaddrinfo(ai);
     if (err == SOCKET_ERROR) {
         closesocket(s);

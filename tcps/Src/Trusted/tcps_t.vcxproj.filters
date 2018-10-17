@@ -36,9 +36,6 @@
     <ClCompile Include="sgx\time-sgx.c">
       <Filter>sgx</Filter>
     </ClCompile>
-    <ClCompile Include="sgx\rand_sgx.c">
-      <Filter>sgx</Filter>
-    </ClCompile>
     <ClCompile Include="optee\cyrep-optee.c">
       <Filter>optee</Filter>
     </ClCompile>

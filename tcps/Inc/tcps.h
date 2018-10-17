@@ -194,3 +194,11 @@ typedef enum {
         memset((dest).buffer + (srcLen), 0, sizeof((dest).buffer) - (srcLen)); \
     } \
     memcpy((dest).buffer, (src), (srcLen));
+
+#if defined(__GNUC__)
+#define TCPS_DEPRECATED(FUNC, MSG) FUNC __attribute__((deprecated(MSG)))
+#elif defined(_MSC_VER)
+#define TCPS_DEPRECATED(FUNC, MSG) __declspec(deprecated(MSG)) FUNC
+#else
+#define TCPS_DEPRECATED(FUNC, MSG) FUNC
+#endif
