@@ -1,1 +1,1 @@
-set PATH=%PATH%;%~dp0\..\External\SGXSDK\bin\win32\Release
+set PATH=%PATH%;%~dp0\..\..\3rdparty\SGXSDK\bin\win32\Release

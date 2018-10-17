@@ -1,4 +1,5 @@
 #!/bin/bash
+cd "$( dirname "${BASH_SOURCE[0]}" )"
 
 echo Installing build essentials
 
@@ -82,7 +83,7 @@ if [ ! -e ../3rdparty/SGXSDK ]; then
 fi
 export SGX_PATH=$PWD/../3rdparty/SGXSDK/
 
-echo Building OPTEE OS
+echo Building OP-TEE OS
 
 pushd ../3rdparty/optee_os/
 
