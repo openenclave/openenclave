@@ -2,14 +2,14 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
-#include "../common/datasealing_t.h"
-#include "../common/dispatcher.h"
 #include "../shared.h"
+#include "datasealing_t.h"
+#include "dispatcher.h"
 
 // Declare a static dispatcher object for better organization of enclave-wise
 // global variables
 static ecall_dispatcher dispatcher;
-const char* enclave_name = "Enclave1";
+const char* enclave_name = ENCLAVE_NAME;
 
 int seal_data(
     int sealPolicy,
@@ -20,6 +20,7 @@ int seal_data(
     sealed_data_t** sealed_data,
     size_t* sealed_data_size)
 {
+    printf("Enclave %s: seal_data\n", enclave_name);
     return dispatcher.seal_data(
         sealPolicy,
         opt_mgs,
@@ -35,6 +36,7 @@ int unseal_data(
     unsigned char** data,
     size_t* data_size)
 {
+    printf("Enclave %s: unseal_data\n", enclave_name);
     return dispatcher.unseal_data(
         sealed_data, sealed_data_size, data, data_size);
 }
