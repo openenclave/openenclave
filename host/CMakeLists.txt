@@ -19,12 +19,14 @@ set(PLATFORM_SRC
     linux/enter.S
     linux/entersim.S
     linux/exception.c
-    linux/elf.c
     linux/hostthread.c
-    linux/load.c
     linux/sgxioctl.c
     linux/sgxsign.c
     linux/time.c
+    elf.c
+    load.c
+    elfload.c
+    peload.c
     sgxquoteprovider.c
     )
 elseif (WIN32)

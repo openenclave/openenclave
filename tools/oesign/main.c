@@ -52,13 +52,13 @@ static int _update_and_write_shared_lib(
     FILE* os = NULL;
 
     /* Open ELF file */
-    if (_oe_load_enclave_image(path, &oeimage) != OE_OK)
+    if (oe_load_enclave_image(path, &oeimage) != OE_OK)
     {
         Err("cannot load ELF file: %s", path);
         goto done;
     }
 
-/* Verification is done inside _oe_load_enclave_image */
+/* Verification is done inside oe_load_enclave_image */
 
 #if 0
 
@@ -133,8 +133,8 @@ static int _update_and_write_shared_lib(
             goto done;
         }
 
-        if (fwrite(oeimage.elf.data, 1, oeimage.elf.size, os) !=
-            oeimage.elf.size)
+        if (fwrite(oeimage.u.elf.elf.data, 1, oeimage.u.elf.elf.size, os) !=
+            oeimage.u.elf.elf.size)
         {
             Err("failed to write: %s", p);
             goto done;
@@ -155,7 +155,7 @@ done:
     if (os)
         fclose(os);
 
-    _oe_unload_enclave_image(&oeimage);
+    oeimage.unload(&oeimage);
 
     return rc;
 }
@@ -420,7 +420,7 @@ static oe_result_t _sgx_load_enclave_properties(
     oe_enclave_image_t oeimage;
 
     /* clear ELF magic */
-    oeimage.elf.magic = 0;
+    oeimage.u.elf.elf.magic = 0;
 
     if (properties)
         memset(properties, 0, sizeof(oe_sgx_enclave_properties_t));
@@ -430,18 +430,18 @@ static oe_result_t _sgx_load_enclave_properties(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Load the ELF image */
-    OE_CHECK(_oe_load_enclave_image(path, &oeimage));
+    OE_CHECK(oe_load_enclave_image(path, &oeimage));
 
     /* Load the SGX enclave properties */
     OE_CHECK(
-        oe_sgx_load_properties(&oeimage, OE_INFO_SECTION_NAME, properties));
+        oe_sgx_load_enclave_properties(&oeimage, OE_INFO_SECTION_NAME, properties));
 
     result = OE_OK;
 
 done:
 
-    if (oeimage.elf.magic == ELF_MAGIC)
-        _oe_unload_enclave_image(&oeimage);
+    if (oeimage.u.elf.elf.magic == ELF_MAGIC)
+        oeimage.unload(&oeimage);
 
     return result;
 }
