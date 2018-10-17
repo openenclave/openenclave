@@ -161,6 +161,7 @@
     <IncludePath>$(NoInherit)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(Platform)\$(TargetName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <GenerateManifest>false</GenerateManifest>
@@ -168,6 +169,7 @@
     <IncludePath>$(NoInherit)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(Platform)\$(TargetName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|Win32'">
     <GenerateManifest>false</GenerateManifest>
@@ -175,6 +177,7 @@
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
     <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
     <TargetName>ae372c5d-1476-4278-a1f9-3c3702d0d71a</TargetName>
+    <IntDir>$(SolutionDir)obj\$(Platform)\$(TargetName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|ARM'">
     <GenerateManifest>false</GenerateManifest>
@@ -182,6 +185,7 @@
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
     <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
     <TargetName>ae372c5d-1476-4278-a1f9-3c3702d0d71a</TargetName>
+    <IntDir>$(SolutionDir)obj\$(Platform)\$(TargetName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">
     <GenerateManifest>false</GenerateManifest>
@@ -189,6 +193,7 @@
     <IncludePath>$(NoInherit)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(Platform)\$(TargetName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Simulation|ARM'">
     <GenerateManifest>false</GenerateManifest>
@@ -196,6 +201,7 @@
     <IncludePath>$(NoInherit)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(Platform)\$(TargetName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <GenerateManifest>false</GenerateManifest>
@@ -203,6 +209,7 @@
     <IncludePath>$(NoInherit)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(Platform)\$(TargetName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <GenerateManifest>false</GenerateManifest>
@@ -210,6 +217,7 @@
     <IncludePath>$(NoInherit)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(Platform)\$(TargetName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">
     <GenerateManifest>false</GenerateManifest>
@@ -217,6 +225,7 @@
     <IncludePath>$(NoInherit)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(Platform)\$(TargetName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'">
     <GenerateManifest>false</GenerateManifest>
@@ -224,6 +233,7 @@
     <IncludePath>$(NoInherit)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(Platform)\$(TargetName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <GenerateManifest>false</GenerateManifest>
@@ -231,6 +241,7 @@
     <IncludePath>$(NoInherit)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(Platform)\$(TargetName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|x64'">
     <GenerateManifest>false</GenerateManifest>
@@ -238,6 +249,7 @@
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
     <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
     <TargetName>ae372c5d-1476-4278-a1f9-3c3702d0d71a</TargetName>
+    <IntDir>$(SolutionDir)obj\$(Platform)\$(TargetName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">
     <GenerateManifest>false</GenerateManifest>
@@ -245,6 +257,7 @@
     <IncludePath>$(NoInherit)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(Platform)\$(TargetName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <GenerateManifest>false</GenerateManifest>
@@ -252,6 +265,7 @@
     <IncludePath>$(NoInherit)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(Platform)\$(TargetName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">
     <GenerateManifest>false</GenerateManifest>
@@ -259,6 +273,7 @@
     <IncludePath>$(NoInherit)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(Platform)\$(TargetName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

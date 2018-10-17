@@ -13,6 +13,8 @@ CFLAGS += -DCFG_TEE_TA_LOG_LEVEL=$(CFG_TEE_TA_LOG_LEVEL) $(EXTRA_CFLAGS)
 
 O := $(TCPS_SDK_OPTEE_BIN_PATH)/Samples/EchoSockets
 
+include $(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk
+
 clean1: clean_stripped_file clean_output_dir
 
 .PHONY: clean_stripped_file clean_output_dir
