@@ -16,7 +16,7 @@ OE_OCALL void CreateEnclaveHost(void* args_)
     CreateEnclaveArgs* args = (CreateEnclaveArgs*)args_;
 
     oe_result_t result = oe_create_enclave(
-        args->path, args->type, args->flags, NULL, 0, &args->enclave);
+        args->path, args->type, args->flags, NULL, 0, NULL, 0, &args->enclave);
 
     args->ret = result;
 }
@@ -75,8 +75,8 @@ static void _test_create_enclave_ocall_for_host(
     oe_result_t result;
     oe_enclave_t* enclave;
 
-    result =
-        oe_create_enclave(path, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
+    result = oe_create_enclave(
+        path, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, NULL, 0, &enclave);
 
     if (result != OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);
@@ -122,8 +122,8 @@ static void _test_create_enclave_ocall_for_enclave(
     oe_result_t result;
     oe_enclave_t* enclave;
 
-    result =
-        oe_create_enclave(path, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
+    result = oe_create_enclave(
+        path, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, NULL, 0, &enclave);
 
     if (result != OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);

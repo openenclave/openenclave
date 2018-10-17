@@ -10,28 +10,28 @@
 
 OE_EXTERNC_BEGIN
 
-typedef struct _AESM AESM;
+typedef struct _aesm aesm_t;
 typedef struct _sgx_target_info sgx_target_info_t;
 typedef struct _sgx_epid_group_id sgx_epid_group_id_t;
 
-AESM* AESMConnect(void);
+aesm_t* aesm_connect(void);
 
-void AESMDisconnect(AESM* aesm);
+void aesm_disconnect(aesm_t* aesm);
 
-oe_result_t AESMGetLaunchToken(
-    AESM* aesm,
+oe_result_t aesm_get_launch_token(
+    aesm_t* aesm,
     uint8_t mrenclave[OE_SHA256_SIZE],
     uint8_t modulus[OE_KEY_SIZE],
     const sgx_attributes_t* attributes,
     sgx_launch_token_t* launch_token);
 
-oe_result_t AESMInitQuote(
-    AESM* aesm,
+oe_result_t aesm_init_quote(
+    aesm_t* aesm,
     sgx_target_info_t* target_info,
     sgx_epid_group_id_t* epid_group_id);
 
-oe_result_t AESMGetQuote(
-    AESM* aesm,
+oe_result_t aesm_get_quote(
+    aesm_t* aesm,
     const sgx_report_t* report,
     sgx_quote_type_t quote_type,
     const sgx_spid_t* spid,

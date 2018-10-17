@@ -6,7 +6,7 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/tests.h>
 #include <wchar.h>
-#include "string_u.c"
+#include "all_u.h"
 
 void test_string_edl_ecalls(oe_enclave_t* enclave)
 {

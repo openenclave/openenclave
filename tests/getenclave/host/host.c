@@ -33,7 +33,8 @@ int main(int argc, const char* argv[])
     const uint32_t flags = oe_get_create_flags();
     const oe_enclave_type_t type = OE_ENCLAVE_TYPE_SGX;
 
-    result = oe_create_enclave(argv[1], type, flags, NULL, 0, &_enclave);
+    result =
+        oe_create_getenclave_enclave(argv[1], type, flags, NULL, 0, &_enclave);
     OE_TEST(result == OE_OK);
 
     oe_result_t return_value;

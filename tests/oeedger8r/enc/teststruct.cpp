@@ -7,7 +7,7 @@
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <algorithm>
-#include "struct_t.c"
+#include "all_t.h"
 
 void test_struct_edl_ocalls()
 {

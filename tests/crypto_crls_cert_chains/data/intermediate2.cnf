@@ -1,0 +1,22 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+# OpenSSL configuration for test CRL generation
+#
+####################################################################
+[ ca ]
+default_ca = CA_default        # The default ca section
+
+####################################################################
+[ CA_default ]
+database    = ./intermediate_index2.txt
+crlnumber   = ./intermediate_crl_number2
+
+# The root key and root certificate.
+private_key       = ../data/IntermediateCA1.key.pem
+certificate       = ../data/IntermediateCA1.crt.pem
+
+default_days     = 365       # how long to certify for
+default_crl_days = 3650      # how long before next CRL
+default_md       = default   # use public key default MD
+preserve         = no        # keep passed DN ordering

@@ -73,7 +73,7 @@ The host does the following in this sample:
    1. Create two enclaves for attesting each other, let's say they are enclave1 and enclave2
 
       ```c
-      oe_create_enclave( enclaveImagePath, OE_ENCLAVE_TYPE_SGX, OE_ENCLAVE_FLAG_DEBUG, NULL, 0, &enclave);
+      oe_create_remoteattestation_enclave( enclaveImagePath, OE_ENCLAVE_TYPE_SGX, OE_ENCLAVE_FLAG_DEBUG, NULL, 0, &enclave);
       ```
 
    2. Ask enclave1 for a remote report and a public key, which is returned in a `RemoteReportWithPKey` structure.

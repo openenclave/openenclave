@@ -10,7 +10,7 @@ oe_enclave_t* create_enclave(const char* enclave_path)
     oe_enclave_t* enclave = NULL;
 
     printf("Host: Enclave library %s\n", enclave_path);
-    oe_result_t result = oe_create_enclave(
+    oe_result_t result = oe_create_localattestation_enclave(
         enclave_path,
         OE_ENCLAVE_TYPE_SGX,
         OE_ENCLAVE_FLAG_DEBUG,
@@ -20,7 +20,9 @@ oe_enclave_t* create_enclave(const char* enclave_path)
 
     if (result != OE_OK)
     {
-        printf("Host: oe_create_enclave failed. %s", oe_result_str(result));
+        printf(
+            "Host: oe_create_localattestation_enclave failed. %s",
+            oe_result_str(result));
     }
     else
     {

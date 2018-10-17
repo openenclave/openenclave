@@ -5,6 +5,7 @@
 #define _OE_HOST_ENCLAVE_H
 
 #include <openenclave/bits/properties.h>
+#include <openenclave/edger8r/host.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <stdbool.h>
@@ -116,6 +117,10 @@ struct _oe_enclave
     /* Array of ECALL entry points */
     ECallNameAddr* ecalls;
     size_t num_ecalls;
+
+    /* Array of ocall functions */
+    const oe_ocall_func_t* ocalls;
+    size_t num_ocalls;
 
     /* Debug mode */
     bool debug;

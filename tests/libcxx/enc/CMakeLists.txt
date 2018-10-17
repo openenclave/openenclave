@@ -61,5 +61,13 @@ else()
 endif()
 foreach(testcase ${alltests})
     get_testcase_name(${testcase} name "../../3rdparty/libcxx/libcxx/test/")
+
+# the allocations are entirely optimized out by Clang in these tests and are excluded from Clang release builds
+    if ("${name}" MATCHES "cons_default_throws_bad_alloc.pass" OR "${name}" MATCHES "allocator_allocator.members_construct.pass")
+	if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND CMAKE_BUILD_TYPE MATCHES "Rel")
+		continue()
+	endif()
+    endif()
+
     add_libcxx_test_enc("${name}" "${testcase}")
 endforeach(testcase)

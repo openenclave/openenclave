@@ -27,7 +27,6 @@ sudo ./scripts/install-prereqs
 If you are running in an Azure Confidential Compute VM and would like to use the attestation features, you should also run the following command from the root of the source tree:
 
 ```bash
-sudo make -C prereqs/az-dcap-client
 sudo make -C prereqs/az-dcap-client install
 ```
 
