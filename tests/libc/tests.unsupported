@@ -86,7 +86,6 @@
 ../../3rdparty/musl/libc-test/src/regression/rewind-clear-error.c
 ../../3rdparty/musl/libc-test/src/regression/rlimit-open-files.c
 ../../3rdparty/musl/libc-test/src/regression/setenv-oom.c
-../../3rdparty/musl/libc-test/src/regression/setvbuf-unget.c
 ../../3rdparty/musl/libc-test/src/regression/sigaltstack.c
 ../../3rdparty/musl/libc-test/src/regression/sigprocmask-internal.c
 ../../3rdparty/musl/libc-test/src/regression/sigreturn.c
