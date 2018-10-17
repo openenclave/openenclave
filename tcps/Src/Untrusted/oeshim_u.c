@@ -21,6 +21,8 @@ oe_result_t oe_create_enclave(
     _In_ uint32_t flags,
     _In_reads_bytes_(configSize) const void* config,
     _In_ uint32_t configSize,
+    _In_ const oe_ocall_func_t* ocall_table,
+    _In_ uint32_t ocall_table_size,
     _Out_ oe_enclave_t** enclave)
 {
     *enclave = NULL;
@@ -28,6 +30,9 @@ oe_result_t oe_create_enclave(
     TCPS_UNUSED(type);
     TCPS_UNUSED(config);
     TCPS_UNUSED(configSize);
+
+    g_ocall_table_v2.nr_ocall = ocall_table_size;
+    g_ocall_table_v2.call_addr = (oe_call_t*)ocall_table;
 
     // Load the enclave.
     sgx_enclave_id_t eid;
@@ -38,24 +43,6 @@ oe_result_t oe_create_enclave(
 
     *enclave = (oe_enclave_t*)eid;
     return OE_OK;
-}
-
-oe_result_t oe_create_enclave_v2(
-    const char* path,
-    oe_enclave_type_t type,
-    uint32_t flags,
-    const void* config,
-    uint32_t config_size,
-    void (**ocall_table)(void*), /* TODO: type of this argument is still being discussed */
-    uint32_t ocall_table_size,
-    oe_enclave_t** enclave)
-{
-    TCPS_UNUSED(ocall_table_size);
-
-    g_ocall_table_v2.nr_ocall = ocall_table_size;
-    g_ocall_table_v2.call_addr = (oe_call_t*)ocall_table;
-    
-    return oe_create_enclave(path, type, flags, config, config_size, enclave);
 }
 
 oe_result_t oe_call_enclave(oe_enclave_t* enclave, const char* func, void* args)

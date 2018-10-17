@@ -81,7 +81,8 @@ sgxSdkPath=$(dirname "${binPath}")
 if [ ! -e ../3rdparty/SGXSDK ]; then
     ln -s "${sgxSdkPath}" ../3rdparty/SGXSDK
 fi
-export SGX_PATH=$PWD/../3rdparty/SGXSDK/
+export SGX_RELATIVE_PATH=../3rdparty/SGXSDK/
+export SGX_PATH=$PWD${SGX_RELATIVE_PATH}
 
 echo Building OP-TEE OS
 

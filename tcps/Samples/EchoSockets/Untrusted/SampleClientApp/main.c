@@ -34,6 +34,8 @@ int main(int argc, char** argv)
                                            enclave_flags,
                                            NULL,
                                            0,
+                                           NULL,
+                                           0,
                                            &enclave);
     if (result != OE_OK) {
         printf("Error %u creating TA\n", result);

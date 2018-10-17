@@ -6,10 +6,10 @@ WARNS=0
 ROOT_RELATIVE_PATH = ../../../
 
 ../TcpsCalls_t.c: ../../../Inc/TcpsCalls.edl
-	$(SGX_EDGER8R) --trusted --search-path "$(ROOT_RELATIVE_PATH)Inc$(SGX_PATHSEP)$(ROOT_RELATIVE_PATH)../3rdparty/SGXSDK/include" --trusted-dir ".."  ../../../Inc/TcpsCalls.edl
+	$(SGX_EDGER8R) --trusted --search-path "$(ROOT_RELATIVE_PATH)Inc$(SGX_PATHSEP)$(ROOT_RELATIVE_PATH)$(SGX_RELATIVE_PATH)include" --trusted-dir ".."  ../../../Inc/TcpsCalls.edl
 
 ../TcpsCalls_t.h: ../../../Inc/TcpsCalls.edl
-	$(SGX_EDGER8R) --trusted --search-path "$(ROOT_RELATIVE_PATH)Inc$(SGX_PATHSEP)$(ROOT_RELATIVE_PATH)../3rdparty/SGXSDK/include" --trusted-dir ".."  ../../../Inc/TcpsCalls.edl
+	$(SGX_EDGER8R) --trusted --search-path "$(ROOT_RELATIVE_PATH)Inc$(SGX_PATHSEP)$(ROOT_RELATIVE_PATH)$(SGX_RELATIVE_PATH)include" --trusted-dir ".."  ../../../Inc/TcpsCalls.edl
 
 CFLAGS += -DTRUSTED_CODE -DUSE_OPTEE
 

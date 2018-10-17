@@ -9,10 +9,10 @@ global-incdirs-y += optee
 #global-incdirs-y += ...
 
 helloworld_t.c: ../../helloworld.edl
-	$(SGX_EDGER8R) --trusted --search-path "$(TCPS_SDK_ROOT_PATH)Inc$(SGX_PATHSEP)$(SGX_PATH)include" ../../helloworld.edl
+	$(SGX_EDGER8R) --trusted --search-path "$(TCPS_SDK_ROOT_PATH)Inc$(SGX_PATHSEP)$(TCPS_SDK_ROOT_PATH)$(SGX_RELATIVE_PATH)include" ../../helloworld.edl
 
 helloworld_t.h: ../../helloworld.edl
-	$(SGX_EDGER8R) --trusted --search-path "$(TCPS_SDK_ROOT_PATH)Inc$(SGX_PATHSEP)$(SGX_PATH)include" ../../helloworld.edl
+	$(SGX_EDGER8R) --trusted --search-path "$(TCPS_SDK_ROOT_PATH)Inc$(SGX_PATHSEP)$(TCPS_SDK_ROOT_PATH)$(SGX_RELATIVE_PATH)include" ../../helloworld.edl
 
 # Add the c file generated from your EDL file here
 srcs-y             += helloworld_t.c

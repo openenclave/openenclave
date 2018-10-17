@@ -19,6 +19,8 @@ TEST(TeeHost, create_enclave_BadId)
         OE_ENCLAVE_FLAG_DEBUG,
         NULL,
         0,
+        NULL,
+        0,
         &enclave);
     EXPECT_NE(OE_OK, result);
     EXPECT_TRUE(enclave == NULL);
@@ -27,6 +29,8 @@ TEST(TeeHost, create_enclave_BadId)
         "abcdef",
         OE_ENCLAVE_TYPE_SGX,
         OE_ENCLAVE_FLAG_DEBUG,
+        NULL,
+        0,
         NULL,
         0,
         &enclave);
@@ -40,7 +44,7 @@ TEST(TeeHost, create_enclave_v2_BadId)
     oe_enclave_t* enclave = NULL;
 
     // Try to create a non-existent TA.
-    result = oe_create_enclave_v2(
+    result = oe_create_enclave(
         "acfc9047-a611-4e10-bf65-a7b85a93452d",
         OE_ENCLAVE_TYPE_SGX,
         OE_ENCLAVE_FLAG_DEBUG,
@@ -52,7 +56,7 @@ TEST(TeeHost, create_enclave_v2_BadId)
     EXPECT_NE(OE_OK, result);
     EXPECT_TRUE(enclave == NULL);
 
-    result = oe_create_enclave_v2(
+    result = oe_create_enclave(
         "abcdef",
         OE_ENCLAVE_TYPE_SGX,
         OE_ENCLAVE_FLAG_DEBUG,
@@ -77,6 +81,8 @@ TEST(TeeHost, create_enclave_Success)
         OE_ENCLAVE_FLAG_DEBUG,
         NULL,
         0,
+        NULL,
+        0,
         &enclave);
     ASSERT_EQ(OE_OK, result);
     EXPECT_TRUE(enclave != NULL);
@@ -96,7 +102,7 @@ TEST(TeeHost, create_enclave_v2_Success)
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
 
-    result = oe_create_enclave_v2(
+    result = oe_create_enclave(
         TA_ID,
         OE_ENCLAVE_TYPE_SGX,
         OE_ENCLAVE_FLAG_DEBUG,
