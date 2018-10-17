@@ -2,6 +2,7 @@
 /* Licensed under the MIT License. */
 #include "gtest/gtest.h"
 #include <openenclave/host.h>
+#include <openenclave/edger8r/host.h>
 #include <TcpsSdkTestTA_u.h>
 #include "TrustedAppTest.h"
 #include <openenclave/host.h>
@@ -124,12 +125,6 @@ TEST(TeeHost, create_enclave_v2_Success)
 }
 
 class OEHostTest : public TrustedAppTest {
-public:
-    void* GetEnclave() {
-        sgx_enclave_id_t eid = GetTAId();
-        void* enclave = (void*)eid;
-        return enclave;
-    }
 };
 
 TEST_F(OEHostTest, get_report_Success)
@@ -137,7 +132,7 @@ TEST_F(OEHostTest, get_report_Success)
     uint8_t report_buffer[1024];
     size_t report_buffer_size = sizeof(report_buffer);
 
-    oe_result_t oeResult = oe_get_report(GetEnclave(),
+    oe_result_t oeResult = oe_get_report(GetOEEnclave(),
                                          0,
                                          NULL, // opt_params,
                                          0,    // opt_params_size,
@@ -149,7 +144,7 @@ TEST_F(OEHostTest, get_report_Success)
     oeResult = oe_parse_report(report_buffer, report_buffer_size, &parsed_report);
     EXPECT_EQ(OE_OK, oeResult);
 
-    oeResult = oe_verify_report(GetEnclave(), report_buffer, report_buffer_size, NULL);
+    oeResult = oe_verify_report(GetOEEnclave(), report_buffer, report_buffer_size, NULL);
     EXPECT_EQ(OE_OK, oeResult);
 }
 
@@ -170,7 +165,7 @@ TEST_F(OEHostTest, get_target_info_Success)
     uint8_t report_buffer[1024];
     size_t report_buffer_size = sizeof(report_buffer);
 
-    oe_result_t oeResult = oe_get_report(GetEnclave(),
+    oe_result_t oeResult = oe_get_report(GetOEEnclave(),
         0,
         NULL, // opt_params,
         0,    // opt_params_size,
@@ -190,7 +185,7 @@ TEST_F(OEHostTest, get_target_info_Success)
     oeResult = oe_get_target_info(report_buffer, report_buffer_size, targetInfo, &targetInfoSize);
     EXPECT_EQ(OE_OK, oeResult);
 
-    oeResult = oe_get_report(GetEnclave(),
+    oeResult = oe_get_report(GetOEEnclave(),
         0,
         targetInfo,
         targetInfoSize,
@@ -200,7 +195,7 @@ TEST_F(OEHostTest, get_target_info_Success)
 
     free(targetInfo);
 
-    oeResult = oe_verify_report(GetEnclave(), report_buffer, report_buffer_size, NULL);
+    oeResult = oe_verify_report(GetOEEnclave(), report_buffer, report_buffer_size, NULL);
     EXPECT_EQ(OE_OK, oeResult);
 }
 
@@ -216,7 +211,7 @@ TEST_F(OEHostTest, ecall_Success)
     int output = 0;
     size_t outputSize = 0;
     oe_result_t oeResult = oe_call_enclave_function(
-        GetEnclave(),
+        GetOEEnclave(),
         0,
         &input,
         sizeof(input),

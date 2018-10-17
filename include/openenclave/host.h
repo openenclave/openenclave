@@ -14,6 +14,10 @@
 #error "enclave.h and host.h must not be included in the same compilation unit."
 #endif
 
+#ifdef UNTRUSTED_CODE
+#include <tcps_u.h>
+#endif
+
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -265,5 +269,9 @@ oe_result_t oe_verify_report(
     oe_report_t* parsed_report);
 
 OE_EXTERNC_END
+
+#ifdef UNTRUSTED_CODE
+#include <sgx.h>
+#endif
 
 #endif /* _OE_HOST_H */

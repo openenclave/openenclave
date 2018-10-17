@@ -6,6 +6,24 @@
 
 #include "defs.h"
 
+#if defined(TRUSTED_CODE) || defined(UNTRUSTED_CODE)
+#pragma once
+#ifdef TRUSTED_CODE
+#include <tcps_t.h>
+#endif
+#ifdef UNTRUSTED_CODE
+#include <tcps_u.h>
+#endif
+
+typedef void (*oe_call_t)(
+    void* inBuffer,
+    size_t inBufferSize,
+    void* outBuffer,
+    size_t outBufferSize,
+    size_t* outBufferSizeWritten);
+
+#else
+
 /* Basic types */
 #if defined(__GNUC__)
 typedef long ssize_t;
@@ -76,6 +94,9 @@ typedef long long ptrdiff_t;
 #define OE_INT64_MAX (0x7fffffffffffffff)
 #define OE_UINT64_MAX (0xffffffffffffffffu)
 #define OE_SIZE_MAX OE_UINT64_MAX
+
+#endif /* !TRUSTED_CODE && !UNTRUSTED_CODE */
+
 
 /**
  * This enumeration defines values for the **enclave_type** parameter

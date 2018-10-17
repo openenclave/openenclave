@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 #include "gtest/gtest.h"
+#include <openenclave/edger8r/host.h>
 #include "TrustedAppTest.h"
 #include "TcpsSdkTestTA_u.h"
 
@@ -167,7 +168,7 @@ TEST_F(OEEnclaveTest, ocall_Success)
     uStatus = Tcps_BadNotImplemented;
     size_t outputSize = 0;
     oe_result_t oeResult = oe_call_enclave_function(
-        GetEnclave(),
+        GetOEEnclave(),
         1,
         NULL,
         0,

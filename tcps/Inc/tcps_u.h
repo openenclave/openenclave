@@ -28,6 +28,9 @@ extern "C" {
 Tcps_StatusCode TcpsAcquireTAMutex( _In_ sgx_enclave_id_t eid);
 Tcps_Void TcpsReleaseTAMutex( _In_ sgx_enclave_id_t eid);
 
+#define oe_acquire_enclave_mutex(enclave) TcpsAcquireTAMutex((sgx_enclave_id_t)enclave)
+#define oe_release_enclave_mutex(enclave) TcpsReleaseTAMutex((sgx_enclave_id_t)enclave)
+
 /* The caller is responsible for freeing the buffer after calling this. */
 void* TcpsCreateReeBuffer(_In_ int a_BufferSize);
 

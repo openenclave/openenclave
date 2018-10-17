@@ -14,6 +14,11 @@
 #error "enclave.h and host.h must not be included in the same compilation unit."
 #endif
 
+#ifdef TRUSTED_CODE
+#include <tcps_t.h>
+#include <stdbool.h>
+#endif
+
 #include "bits/defs.h"
 #include "bits/exception.h"
 #include "bits/properties.h"
@@ -600,6 +605,19 @@ void oe_free_handle(ptrdiff_t handle);
  * @return OE_OK on success
  */
 oe_result_t oe_random(void* data, size_t size);
+
+#ifdef TRUSTED_CODE
+#define _UINTPTR_T_DEFINED_
+#define _UINTPTR_T_DEFINED
+#define _SIZE_T_DEFINED_
+#define _SIZE_T_DEFINED
+#define _PTRDIFF_T_DEFINED_
+#define _PTRDIFF_T_DEFINED
+#define _SSIZE_T_DEFINED_
+#include <sgx.h>
+#undef OE_ECALL
+#define OE_ECALL
+#endif /* TRUSTED_CODE */
 
 OE_EXTERNC_END
 

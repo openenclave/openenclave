@@ -2,6 +2,7 @@
 /* Licensed under the MIT License. */
 #include "TcpsSdkTestTA_t.h"
 #include "openenclave/enclave.h"
+#include "openenclave/edger8r/enclave.h"
 #include "openenclave/internal/random.h"
 #include "TcpsCallbacks_t.h"
 #include <stdlib.h>
