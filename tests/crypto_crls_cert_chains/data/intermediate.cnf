@@ -11,7 +11,10 @@ default_ca = CA_default        # The default ca section
 [ CA_default ]
 database    = ./intermediate_index.txt
 crlnumber   = ./intermediate_crl_number
-private_key = ./IntermediateCA1.key
+
+# The root key and root certificate.
+private_key       = ../data/IntermediateCA1.key.pem
+certificate       = ../data/IntermediateCA1.crt.pem
 
 default_days     = 365       # how long to certify for
 default_crl_days = 3650      # how long before next CRL

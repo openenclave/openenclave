@@ -7,7 +7,7 @@
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <algorithm>
-#include "foreign_t.c"
+#include "all_t.h"
 
 template <typename F>
 static void test_ocall(F f, size_t count)

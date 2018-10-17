@@ -7,7 +7,7 @@
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <algorithm>
-#include "array_t.c"
+#include "all_t.h"
 
 template <typename T>
 static void init_arrays(T (&a1)[2], T (&a2)[2][2], T (&a3)[3][3], T (&a4)[4][4])

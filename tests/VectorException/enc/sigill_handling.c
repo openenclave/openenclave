@@ -173,21 +173,15 @@ OE_ECALL void TestSigillHandling(void* args_)
     // Return enclave-cached CPUID leaves to host for further validation
     for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
-        oe_get_cpuid(
-            i,
-            0,
-            &args->cpuid_table[i][OE_CPUID_RAX],
-            &args->cpuid_table[i][OE_CPUID_RBX],
-            &args->cpuid_table[i][OE_CPUID_RCX],
-            &args->cpuid_table[i][OE_CPUID_RDX]);
-
-        // Do something with the out param to prevent call from getting
-        // optimized out
-        if (args->cpuid_table[i][OE_CPUID_RAX] != 0)
+        if (oe_is_emulated_cpuid_leaf(i))
         {
-            oe_host_printf(
-                "The value of cpuidRAX is now: %d\n.",
-                args->cpuid_table[i][OE_CPUID_RAX]);
+            oe_get_cpuid(
+                i,
+                0,
+                &args->cpuid_table[i][OE_CPUID_RAX],
+                &args->cpuid_table[i][OE_CPUID_RBX],
+                &args->cpuid_table[i][OE_CPUID_RCX],
+                &args->cpuid_table[i][OE_CPUID_RDX]);
         }
     }
 

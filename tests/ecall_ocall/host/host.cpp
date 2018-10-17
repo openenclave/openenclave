@@ -36,6 +36,8 @@ struct EnclaveWrap
                  flags,
                  NULL,
                  0,
+                 NULL,
+                 0,
                  &enclave)) != OE_OK)
         {
             oe_put_err("oe_create_enclave(): result=%u", result);

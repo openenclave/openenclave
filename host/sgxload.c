@@ -337,7 +337,7 @@ static oe_result_t _get_launch_token(
     sgx_launch_token_t* launch_token)
 {
     oe_result_t result = OE_UNEXPECTED;
-    AESM* aesm = NULL;
+    aesm_t* aesm = NULL;
 
     /* Initialize the SGX attributes */
     sgx_attributes_t attributes = {0};
@@ -347,11 +347,11 @@ static oe_result_t _get_launch_token(
     memset(launch_token, 0, sizeof(sgx_launch_token_t));
 
     /* Obtain a launch token from the AESM service */
-    if (!(aesm = AESMConnect()))
+    if (!(aesm = aesm_connect()))
         OE_RAISE(OE_FAILURE);
 
     OE_CHECK(
-        AESMGetLaunchToken(
+        aesm_get_launch_token(
             aesm,
             sigstruct->enclavehash,
             sigstruct->modulus,
@@ -363,7 +363,7 @@ static oe_result_t _get_launch_token(
 done:
 
     if (aesm)
-        AESMDisconnect(aesm);
+        aesm_disconnect(aesm);
 
     return result;
 }

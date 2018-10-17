@@ -7,7 +7,7 @@
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <algorithm>
-#include "pointer_t.c"
+#include "all_t.h"
 
 template <typename T, typename F>
 static void test_ocall_pointer_fun(F ocall_pointer_fun)

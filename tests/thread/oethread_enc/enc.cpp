@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+#include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/tests.h>
 #include <openenclave/internal/thread.h>
@@ -251,3 +252,5 @@ OE_SET_ENCLAVE_SGX(
     512,  /* HeapPageCount */
     512,  /* StackPageCount */
     16);  /* TCSCount */
+
+OE_DEFINE_EMPTY_ECALL_TABLE();

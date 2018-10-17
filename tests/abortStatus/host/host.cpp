@@ -122,6 +122,8 @@ static bool TestBasicAbort(const char* enclave_name)
                  flags,
                  NULL,
                  0,
+                 NULL,
+                 0,
                  &enclave)) != OE_OK)
         {
             oe_put_err("oe_create_enclave(): result=%u", result);
@@ -172,6 +174,8 @@ static bool TestMultipleThreadAbort(const char* enclave_name)
                  enclave_name,
                  OE_ENCLAVE_TYPE_SGX,
                  flags,
+                 NULL,
+                 0,
                  NULL,
                  0,
                  &enclave)) != OE_OK)

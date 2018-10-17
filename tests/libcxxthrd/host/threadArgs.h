@@ -6,10 +6,15 @@
 
 #include <atomic>
 
+const size_t MAX_ENC_KEYS = 16;
+
 typedef struct _thread_args
 {
     oe_enclave_t* enclave;
     uint64_t enc_key;
+    int join_ret;
+    void* join_value_ptr;
+    int detach_ret;
 } ThreadArgs;
 
 static inline void _acquire_lock(std::atomic_flag* lock)

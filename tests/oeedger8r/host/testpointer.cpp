@@ -6,7 +6,7 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/tests.h>
 #include <algorithm>
-#include "pointer_u.c"
+#include "all_u.h"
 
 template <typename T, typename F>
 static void test_ecall_pointer_fun(oe_enclave_t* enclave, F ecall_pointer_fun)

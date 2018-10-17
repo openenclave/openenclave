@@ -6,7 +6,8 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
-#include "string_t.c"
+#include <string.h>
+#include "all_t.h"
 
 void test_string_edl_ocalls()
 {

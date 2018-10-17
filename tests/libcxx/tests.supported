@@ -89,6 +89,7 @@
 ../../3rdparty/libcxx/libcxx/test/libcxx/experimental/any/version.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/experimental/containers/sequences/dynarray/dynarray.cons/alloc.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/experimental/containers/sequences/dynarray/dynarray.cons/default.pass.cpp
+../../3rdparty/libcxx/libcxx/test/libcxx/experimental/containers/sequences/dynarray/dynarray.cons/default_throws_bad_alloc.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/experimental/containers/sequences/dynarray/dynarray.data/default.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/experimental/containers/sequences/dynarray/dynarray.mutate/default.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/experimental/containers/sequences/dynarray/dynarray.overview/at.pass.cpp
@@ -4278,6 +4279,7 @@
 ../../3rdparty/libcxx/libcxx/test/std/utilities/memory/default.allocator/allocator.members/address.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/memory/default.allocator/allocator.members/allocate.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/memory/default.allocator/allocator.members/allocate.size.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/utilities/memory/default.allocator/allocator.members/construct.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/memory/default.allocator/allocator.members/max_size.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/memory/default.allocator/allocator_pointers.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/memory/default.allocator/allocator_types.pass.cpp
