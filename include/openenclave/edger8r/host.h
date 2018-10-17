@@ -21,6 +21,8 @@
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
 
+OE_EXTERNC_BEGIN
+
 /**
  * The type of a function in ocall function table.
  */
@@ -62,5 +64,7 @@ oe_result_t oe_call_enclave_function(
     void* output_buffer,
     size_t output_buffer_size,
     size_t* output_bytes_written);
+
+OE_EXTERNC_END
 
 #endif // _OE_EDGER8R_HOST_H
