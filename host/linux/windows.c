@@ -1,6 +1,9 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include "windows.h"
-#include <openenclave/internal/defs.h>
 #include <malloc.h>
+#include <openenclave/internal/defs.h>
 
 HMODULE LoadLibraryExA(LPCSTR path, HANDLE file, DWORD flags)
 {

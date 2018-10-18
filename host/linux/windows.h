@@ -6,8 +6,8 @@
 
 #include <openenclave/host.h>
 #include <stdio.h>
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #define FIELD_OFFSET(TYPE, Field) ((UINTN)(&(((TYPE*)0)->Field)))
