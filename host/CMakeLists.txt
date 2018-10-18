@@ -23,10 +23,6 @@ set(PLATFORM_SRC
     linux/sgxioctl.c
     linux/sgxsign.c
     linux/time.c
-    elf.c
-    load.c
-    elfload.c
-    peload.c
     sgxquoteprovider.c
     )
 elseif (WIN32)
@@ -38,7 +34,6 @@ set(PLATFORM_SRC
     windows/entersim.asm
     windows/exception.c
     windows/hostthread.c
-    windows/load.c
     windows/sgxsign.c
     windows/time.c
     )
@@ -54,6 +49,7 @@ add_library(oehost STATIC
     ../common/tcbinfo.c    
     calls.c
     create.c
+    elf.c
     dupenv.c
     enclave.c
     enclavemanager.c
@@ -61,6 +57,9 @@ add_library(oehost STATIC
     files.c
     fopen.c
     hexdump.c
+    load.c
+    loadelf.c
+    loadpe.c
     memalign.c
     ocalls.c
     quote.c

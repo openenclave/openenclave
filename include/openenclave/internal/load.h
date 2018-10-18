@@ -7,11 +7,8 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
-#include "types.h"
-
-#if defined(__linux__)
 #include <openenclave/internal/elf.h>
-#endif
+#include "types.h"
 
 OE_EXTERNC_BEGIN
 

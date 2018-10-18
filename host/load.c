@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include "enclave.h"
+#include "fopen.h"
 #include <openenclave/internal/raise.h>
 
 #if defined(_WIN32)
@@ -20,7 +21,7 @@ static oe_result_t _get_image_type(const char* path, oe_image_type* type)
     {
         elf64_ehdr_t header;
 
-        if (!(is = fopen(path, "rb")))
+        if (oe_fopen(&is, path, "rb") != 0)
             OE_RAISE(OE_NOT_FOUND);
 
         if (fread(&header, 1, sizeof(header), is) != sizeof(header))
@@ -40,7 +41,7 @@ static oe_result_t _get_image_type(const char* path, oe_image_type* type)
     {
         IMAGE_DOS_HEADER header;
 
-        if (!(is = fopen(path, "rb")))
+        if (oe_fopen(&is, path, "rb") != 0)
             OE_RAISE(OE_NOT_FOUND);
 
         if (fread(&header, 1, sizeof(header), is) != sizeof(header))
