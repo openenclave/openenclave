@@ -202,3 +202,10 @@ typedef enum {
 #else
 #define TCPS_DEPRECATED(FUNC, MSG) FUNC
 #endif
+
+#ifdef USE_SGX
+# define OE_ENCLAVE_TYPE_DEFAULT OE_ENCLAVE_TYPE_SGX
+#endif
+#ifdef USE_OPTEE
+# define OE_ENCLAVE_TYPE_DEFAULT OE_ENCLAVE_TYPE_TRUSTZONE
+#endif

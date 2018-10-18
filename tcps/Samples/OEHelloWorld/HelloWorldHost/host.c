@@ -33,8 +33,7 @@ int main(int argc, const char* argv[])
 #ifdef _DEBUG
     enclave_flags |= OE_ENCLAVE_FLAG_DEBUG;
 #endif
-    result = oe_create_enclave(
-        argv[1], OE_ENCLAVE_TYPE_SGX, enclave_flags, NULL, 0, NULL, 0, &enclave);
+    result = oe_create_enclave(argv[1], 0, enclave_flags, NULL, 0, NULL, 0, &enclave);
     if (result != OE_OK)
     {
         fprintf(

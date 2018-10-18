@@ -9,7 +9,7 @@ void TrustedAppTest::SetUp()
 {
     oe_result_t result = oe_create_enclave(
         TA_ID,
-        OE_ENCLAVE_TYPE_SGX,
+        OE_ENCLAVE_TYPE_UNDEFINED,
         OE_ENCLAVE_FLAG_DEBUG,
         NULL,
         0,
