@@ -1,0 +1,117 @@
+# -*- makefile -*-
+# Copyright (c) 1999-2007 Hewlett-Packard Development Company, L.P.
+#	Contributed by David Mosberger <davidm@hpl.hp.com>
+#	Contributed by Stephane Eranian <eranian@hpl.hp.com>
+#
+#    All rights reserved.
+#
+#    Redistribution and use in source and binary forms, with or without
+#    modification, are permitted provided that the following conditions
+#    are met:
+#
+#    * Redistributions of source code must retain the above copyright
+#      notice, this list of conditions and the following disclaimer.
+#    * Redistributions in binary form must reproduce the above
+#      copyright notice, this list of conditions and the following
+#      disclaimer in the documentation and/or other materials
+#      provided with the distribution.
+#    * Neither the name of Hewlett-Packard Co. nor the names of its
+#      contributors may be used to endorse or promote products derived
+#      from this software without specific prior written permission.
+#
+#    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+#    CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+#    INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#    MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+#    DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
+#    BE LIABLE FOR ANYDIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+#    OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#    PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+#    PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+#    THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+#    TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+#    THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+#    SUCH DAMAGE.
+#
+
+TOPDIR := $(shell if [ "$$PWD" != "" ]; then echo $$PWD; else pwd; fi)
+
+#
+# Variables below overridable from command-line:
+#   make VARNAME=value ...
+#
+
+#
+# Where to install the package. GNU-EFI will create and access
+# lib and include under the root
+#
+INSTALLROOT  := /
+PREFIX       := /usr/local
+LIBDIR 	     := $(PREFIX)/lib
+INSTALL	     := install
+
+# Compilation tools
+prefix       := /usr/bin/
+CC           := $(prefix)gcc
+AS           := $(prefix)as
+LD           := $(prefix)ld
+AR           := $(prefix)ar
+RANLIB       := $(prefix)ranlib
+OBJCOPY      := $(prefix)objcopy
+
+
+# Host/target identification
+OS	     := $(shell uname -s)
+HOSTARCH     := $(shell $(CC) -dumpmachine | cut -f1 -d- | sed s,i[3456789]86,ia32,)
+ARCH	     := $(shell uname -m | sed s,i[3456789]86,ia32,)
+
+# FreeBSD (and possibly others) reports amd64 instead of x86_64
+ifeq ($(ARCH),amd64)
+  override ARCH := x86_64
+endif
+
+#
+# Variables below derived from variables above
+#
+
+GCCVERSION   := $(shell $(CC) -dumpversion | cut -f1 -d.)
+GCCMINOR     := $(shell $(CC) -dumpversion | cut -f2 -d.)
+
+# Rely on GCC MS ABI support?
+GCCNEWENOUGH := $(shell ( [ $(GCCVERSION) -gt "4" ]           \
+                          || ( [ $(GCCVERSION) -eq "4" ]      \
+                               && [ $(GCCMINOR) -ge "7" ] ) ) \
+                        && echo 1)
+ifeq ($(GCCNEWENOUGH),1)
+  CPPFLAGS += -DGNU_EFI_USE_MS_ABI -maccumulate-outgoing-args --std=c11
+endif
+
+# Arch-specific compilation flags
+CPPFLAGS += -DCONFIG_$(ARCH)
+
+ifeq ($(ARCH),ia64)
+  CFLAGS += -mfixed-range=f32-f127
+endif
+
+ifeq ($(ARCH),ia32)
+  CFLAGS += -mno-mmx -mno-sse
+  ifeq ($(HOSTARCH),x86_64)
+    ARCH3264 = -m32
+  endif
+endif
+
+ifeq ($(ARCH),x86_64)
+  CFLAGS += -mno-red-zone -mno-mmx -mno-sse
+  ifeq ($(HOSTARCH),ia32)
+    ARCH3264 = -m64
+  endif
+endif
+
+# Generic compilation flags
+INCDIR  += -I$(SRCDIR) -I$(TOPDIR)/inc -I$(TOPDIR)/inc/$(ARCH) \
+           -I$(TOPDIR)/inc/protocol
+CFLAGS  += $(ARCH3264) -O2 -fpic -Wall -fshort-wchar -fno-strict-aliasing \
+           -fno-merge-constants -ffreestanding -fno-stack-protector       \
+           -fno-stack-check
+ASFLAGS += $(ARCH3264)
+LDFLAGS	+= -nostdlib --warn-common --no-undefined --fatal-warnings

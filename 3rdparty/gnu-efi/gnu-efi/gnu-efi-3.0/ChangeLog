@@ -1,0 +1,607 @@
+2014-01-13 Nigel Croxon <nigel.croxon@hp.com>
+   Implement VSPrint function, prints a formatted unicode string to a buffer.
+       
+    Signed-off-by: Jeremy Compostella <jeremy.compostella@gmail.com>
+    Signed-off-by: Nigel Croxon <nigel.croxon@hp.com>
+
+2014-01-10 Nigel Croxon <nigel.croxon@hp.com>
+    Created lib/argify.c and inc/argify.h containing the function argify.
+    It contains verbatim copy of the comment at beginning of file from
+    elilo.
+    There was no COPYING file in the elilo source that the comment refers to.
+
+    Signed-off-by: Jerry Hoemann <jerry.hoemann@hp.com>
+    Signed-off-by: Nigel Croxon <nigel.croxon@hp.com>
+
+2014-01-08 Nigel Croxon <nigel.croxon@hp.com>
+    The information needed is not really the host architecture as given by
+    the kernel arch. The information actually needed is the default target
+    of gcc.
+	        
+    Signed-off-by: Sylvain Gault <sylvain.gault@gmail.com>
+    Signed-off-by: Nigel Croxon <nigel.croxon@hp.com>
+
+2013-10-11 Nigel Croxon <nigel.croxon@hp.com>
+    Added support for SetVariable to store volatile variable,
+    and SetNVVariable to store non volatile variable.
+	    
+    Signed-off-by: Sylvain Chouleur <sylvain.chouleur@gmail.com>
+    Signed-off-by: Nigel Croxon <nigel.croxon@hp.com>
+
+2013-10-07 Nigel Croxon <nigel.croxon@hp.com>
+
+    Atoi needs to have consistent declaration/definition.
+    
+    Signed-off-by: Nigel Croxon <nigel.croxon@hp.com>
+
+2013-10-07 Nigel Croxon <nigel.croxon@hp.com>
+    if you have a function that takes const arguments and then
+    e.g. tries to copy StrCmp, gcc will give you warnings about those
+    calls, and the warnings are right.  These clutter up other things
+    you might miss that you should be more concered about.
+
+    You could work around it through vigorous typecasting
+    to non-const types, but why should you have to? All of these
+    functions are regorously defined as not changing their input
+    - it is const, and should be marked as such.
+
+    Signed-off-by: Peter Jones <pjones@redhat.com>
+
+2013-10-02 Nigel Croxon <nigel.croxon@hp.com>
+
+    Added two simple applications to allocate/free memory at EFI.
+    Used to test/find memory fragmentation issues linux.
+	    
+    Signed-off-by: Jerry Hoemann <jerry.hoemann@hp.com>
+    Signed-off-by: Nigel Croxon <nigel.croxon@hp.com>
+
+2013-06-25 Nigel Croxon <nigel.croxon@hp.com>
+    Sample boot service driver.
+        
+    Signed-off-by: David Decotigny <decot@googlers.com>
+
+2013-06-25 Nigel Croxon <nigel.croxon@hp.com>
+Date:   Tue Jun 25 08:47:03 2013 -0400
+
+    Be more pedantic when linking, don't allow duplicate symbols,
+    abort upon first error. Also make sure linker script comes 
+    last for apps.
+
+    Signed-off-by: David Decotigny <decot@googlers.com>
+
+2013-06-25 Nigel Croxon <nigel.croxon@hp.com>
+    Fix compilation on x86_64 without HAVE_USE_MS_ABI
+    make -C apps would fail on tcc.c because uefi_call_wrapper()
+    doesn't deal correctly with efi_callO-type invocation.
+
+    Signed-off-by: David Decotigny <decot@googlers.com>
+
+2013-06-12 Nigel Croxon <nigel.croxon@hp.com>
+    Fix typo when disabling mno-mmx
+        
+    Signed-Off-By: Nigel Croxon <nigel.croxon@hp.com>
+
+2013-06-12 Nigel Croxon <nigel.croxon@hp.com>
+    Disable MMX and SSE
+    
+    GCC 4.8.0 adds some optimizations that will use movups/movaps (and use
+    %xmm* registers) when they're faster, and of course that won't work at
+    all since UEFI firmwares aren't guaranteed to initialize the mmx/sse
+    instructions.
+    
+    This will be even more annoying, since most UEFI firmwares don't
+    initialize the #DE or #UD trap handlers, and your backtrace will be a
+    random path through uninitialized memory, occasionally including
+    whatever address the IDT has for #UD, but also addresses like "0x4" and
+    "0x507" that you don't normally expect to see in your call path.
+    
+    Signed-off-by: Peter Jones <pjones@redhat.com>
+
+    Author: Nigel Croxon <nigel.croxon@hp.com>
+    Date:   Wed Jun 12 10:29:40 2013 -0400
+
+    bug in make 3.82 expand to odd values
+    
+    Some Makefiles tickle a bug in make 3.82 that cause libefi.a
+    and libgnuefi.a dependencies to expand to the odd values:
+    
+    libefi.a: boxdraw.o) smbios.o) ...
+    libgnuefi.a(reloc_x86_64.o:
+    
+    The patch replaces libgnuefi.a($(OBJS)) & libefi.a($(OBJS))
+    with an equivalent expansion that should work with any make
+    that supports $(patsubst).
+
+    Author: Nigel Croxon <nigel.croxon@hp.com>
+    Date:   Wed Jun 12 09:53:01 2013 -0400
+
+    support .text.* sections on x86_64
+    
+    Group them in .text. Also add vague linkage sections in .text.
+    
+    Signed-off-by: David Decotigny <decot@googlers.com>
+
+    Author: Nigel Croxon <nigel.croxon@hp.com>
+    Date:   Wed Jun 12 09:51:36 2013 -0400
+
+    cleanup and fix Make.defaults
+    
+    Reorder variables in Make.defaults so that they are grouped by
+    functions. Also fixed ifeq (x,y) to have required syntax and make it
+    work for ARCH amd64->x86_64 renaming on BSD. Also provides top-level
+    Makefile with a "mkvars" target that displays effective variables.
+    
+    Signed-off-by: David Decotigny <decot@googlers.com>
+
+    Author: Nigel Croxon <nigel.croxon@hp.com>
+    Date:   Wed Jun 12 09:47:16 2013 -0400
+
+    automatically determine number of uefi_call_wrapper() args on x86_64
+    
+    Instead of asking developers to explicitly pass the number of
+    parameters to the functions that get called, we determine them
+    automatically at preprocessing time. This should result in more
+    robust code.
+    
+    Argument va_num is now ignored in x86_64 code, both with and
+    without HAVE_USE_MS_ABI.
+    
+    Credits to the macro magic given in the comments.
+    
+    Signed-off-by: David Decotigny <decot@googlers.com>
+
+    Author: Nigel Croxon <nigel.croxon@hp.com>
+    Date:   Wed Jun 12 09:38:10 2013 -0400
+
+    fix parameter-passing corruption on x86_64 for >= 5 args
+    
+    On x86_64 without HAVE_USE_MS_ABI support, uefi_call_wrapper() is a
+    variadic function. Parameters >=5 are copied to the stack and, when
+    passed small immediate values (and possibly other parameters), gcc
+    would emit a movl instruction before calling uefi_call_wrapper(). As a
+    result, only the lower 32b of these stack values are significant, the
+    upper 32b potentially contain garbage. Considering that
+    uefi_call_wrapper() assumes these arguments are clean 64b values
+    before calling the efi_callX() trampolines, the latter may be passed
+    garbage. This makes calling functions like
+    EFI_PCI_IO_PROTOCOL.Mem.Read()/Write() or BS->OpenProtocol() quite
+    unreliable.
+    
+    This patch fixes this by turning uefi_call_wrapper() into a macro that
+    allows to expose the efi_callX() trampoline signatures to the callers,
+    so that gcc can know upfront that it has to pass all arguments to
+    efi_callX() as clean 64b values (eg. movq for immediates). The
+    _cast64_efi_callX macros are just here to avoid a gcc warning, they do
+    nothing otherwise.
+    
+    Signed-off-by: David Decotigny <decot@googlers.com>
+
+    Author: noxorc <nigel.croxon@hp.com>
+    Date:   Wed May 15 15:26:16 2013 -0400
+
+    - Removes the ElfW() macro usage from reloc_ia32.c and reloc_x86_64.c. These
+    macros only exist in link.h on Linux. On FreeBSD, the equivalent macro is
+    __ElfN(). But the macro usage is redundant. You're only going to compile the
+    ia32 file for IA32 binaries and the x86_64 file for X64 binaries. If you had
+    just one file built for both cases, then using the macro might make more
+    sense.
+    
+    - Removes the "#define foo_t efi_foo_t" macros from reloc_ia32.c and
+    reloc_x86_64.c.
+    
+    - Modifies inc/x86_64/efibind.h and inc/ia32/efibind.h to use the new
+    definitions for uint64_t, int64_t and int8_t. The 64-bit types are now defined
+    as:
+    
+            typedef int __attribute__((__mode__(__DI__)))           int64_t;
+            typedef unsigned int __attribute__((__mode__(__DI__)))  uint64_t;
+    
+    This removes the conflict between the host types dragged in by elf.h and the
+    type definitions in efibind.h that made the #define foo_t efi_foo_t" hack
+    necessary. Also, int8_t is now defined as signed char instead of just char
+    (assuming char == signed char is apparently not good enough).
+    
+    - Also modifies these files to use stdint.h instead of stdint-gcc.h. It's
+    unclear if this is completely correct, but stdint-gcc.h is not present with
+    all GCC installs, and if you use -std=c99 or later you will force this case to
+    be hit. This also can break clang, which doesn't have a stdint-gcc.h at all.
+    
+    - Removes the #include of <link.h> from reloc_ia32.c and reloc_x86_64.c (since
+    with the previous changes it's not needed anymore).
+    
+    - Places the #include of <elf.h> after #include <efi>/#include <efilib.h> so
+    that we know the types will always be defined properly, in case you build on a
+    system where <elf.h> doesn't automatically pull in the right header files to
+    define all the needed types. (This actually happens on VxWorks. It's harmless
+    elsewhere. If you don't care about VxWorks, you can leave this out.)
+    
+    - Modifies setjmp_ia32.S and setjmp_x86_64.S so to change "function" to
+    @function. The clang compiler doesn't like the former. Clang and GCC both like
+    the latter.
+    
+    - Modifles Make.defaults so that if ARCH is detected as "amd64," it's changed
+    to "x86_64." It happens that uname -m on 64-bit FreeBSD reports the former
+    rather than the latter, which breaks the build. This may also be the case on
+    some other OSes. There's a way to force uname(1) to return x86_64 as the
+    machine type, but this way is a little friendlier.
+    
+    - Creates gnuefi/elf_ia32_fbsd_efi.lds which specifies the object file type as
+    elf-ia32-freebsd. This is required for building on FreeBSD/i386, not just
+    FreeBSD/amd64.
+    
+    - Modifies apps/Makefile to always use
+    $(TOPDIR)/gnuefi/elf_$(ARCH)_fbsd_efi.lds when building on either 32-bit or
+    64-bit FreeBSD instead of just for the x86_64 case.
+    
+    - Changed LDFLAGS in Make.defaults to include --no-undefined. This will cause
+    linking to fail if there are any unsatisfied symbols when creating foo.so
+    during any of the app builds, as opposed to just silently succeeding and
+    producing an unusable binary.
+    
+    - Changed CFLAGS to include -ffreestanding -fno-stack-protector -fno-stack-
+    check. This prevents clang from inserting a call to memset() when compiling
+    the RtZeroMem() and RtSetMem() routines in lib/runtime/efirtlib.c and guards
+    against the native compiler in some Linux distros from adding in stack
+    checking code which relies on libc help that isn't present in the EFI runtime
+    environment.
+    
+    This does the following:
+    
+    - Cleans up the ia32 and x86-64 relocation code a bit (tries to break the
+    dependency between the host ELF headers and the EFI runtime environment)
+    - Avoids the dependency on stdint-gcc.h which may not always be available
+    - Allows GNU EFI to build out of the box on both FreeBSD/i386 and
+    FreeBSD/amd64
+    - Allows GNU EFI to build out of the box with either GCC or clang on
+    FreeBSD/i386 and FreeBSD/amd64 9.0 and later.
+    - Makes things a little easier to port to VxWorks
+    - Avoids creating un-runable binaries with unresolved symbol definitions
+    (which can be very confusing to debug)
+
+    Author: noxorc <nigel.croxon@hp.com>
+    Date:   Wed May 8 16:29:45 2013 -0400
+
+    Add the definitions for TCP, UDP and IP, for both IPv4 and IPv6.
+
+
+2013-05-02 Nigel Croxon <nigel.croxon@hp.com>
+	* Chnage from Matt Fleming <matt.fleming@intel.com>
+	  - Preparation for adding the networking protocol definitions.
+	    Add the service binding protocol.
+
+2013-02-21 Nigel Croxon <nigel.croxon@hp.com>
+	* Change from Peter Jones <pjones@redhat.com>
+	  - Previously we were incorrectly passing 3 functions with
+            the System V ABI to UEFI functions as EFI ABI functions.
+            Mark them as EFIAPI so the compiler will (in our new
+            GNU_EFI_USE_MS_ABI world) use the correct ABI.
+          - These need to be EFIAPI functions because in some cases
+            they call ST->ConOut->OutputString(), which is an EFIAPI
+            function. (Which means that previously in cases that 
+            needed "cdecl", these didn't work right.)
+          - If the compiler version is new enough, and GNU_EFI_USE_MS_ABI
+            is defined, use the function attribute ms_abi on everything
+            defined with "EFIAPI".  Such calls will no longer go through
+            efi_call*, and as such will be properly type-checked.
+          - Honor PREFIX and LIBDIR correctly when passed in during the build.
+          - Add machine type defines for i386, arm/thumb, ia64, ebc, x86_64.
+          - __STDC_VERSION__ never actually gets defined unless there's a
+            --std=... line.  So we were accidentally defining lots of c99
+            types ourself. Since it's 2012, use --std=c11 where appropriate,
+            and if it's defined and we're using gcc, actually include gcc's
+            stdint definitions.
+          - New test application added: route80h. This is a test program
+            for PciIo.  It routes ioport 80h on ICH10 to PCI. This is also
+            useful on a very limited set of hardware to enable use of
+            a port 80h debug card.
+          - New test applcation added: modelist. This lists video modes
+            the GOP driver is showing us.
+	* Change from Finnbarr Murphy
+          - https://sourceforge.net/p/gnu-efi/feature-requests/2/
+            Please add the following status codes to <efierr.h>
+            EFI_INCOMPATIBLE_VERSION 25
+            EFI_SECURITY_VIOLATION 26 
+            EFI_CRC_ERROR 27 
+            EFI_END_OF_MEDIA 28 
+            EFI_END_OF_FILE 31 
+            EFI_INVALID_LANGUAGE 32 
+            EFI_COMPROMISED_DATA 33
+	* Change from SourceForge.net Bug report
+          - https://sourceforge.net/p/gnu-efi/bugs/5/
+            BufferSize is a UINT64 *. The file shipped with GNU EFI is from
+            1998 whereas the latest one is from 2004. I suspect Intel changed
+            the API in order handle 64-bit systems.
+        * Change from Felipe Contreras <felipe.contreras@gmail.com>
+          - The current code seems to screw the stack at certain points.
+            Multiple people have complained that gummiboot hangs right away,
+            which is in part the fault of gummiboot, but happens only
+            because the stack gets screwed. x86_64 EFI already aligns the
+            stack, so there's no need for so much code to find a proper
+            alignment, we always need to shift by 8 anyway.
+        * Change from A. Steinmetz
+          - https://sourceforge.net/p/gnu-efi/patches/1/
+            The patch prepares for elilo to support uefi pxe over ipv6
+            See uefi spec 2.3.1 errata c page 963 as reference.
+            Verfied on an ASUS Sabertooth X79 BIOS Rev. 2104 system which
+            is able to do an IPv6 UEFI PXE boot.
+	* Release 3.0t
+
+2012-09-21 Nigel Croxon <nigel.croxon@hp.com>
+	* Change from Peter Jones <pjones@redhat.com>
+	  - EFI Block I/O protocol versions 2 and 3 provide more information
+	    regarding physical disk layout, including alingment offset at the
+	    beginning of the disk ("LowestAlignedLba"), logical block size
+	    ("LogicalBlocksPerPhysicalBlock"), and optimal block transfer size
+	    ("OptimalTransferLengthGranularity").
+	* Release 3.0r
+
+2012-04-30 Nigel Croxon <nigel.croxon@hp.com>
+	* Change from Matt Fleming <matt.fleming@intel.com>
+	  -  The .reloc section is now 4096-byte boundary for x86_64.
+	     Without this patch the .reloc section will not adhere to
+	     the alignment value in the FileAlignment field (512 bytes by
+	     default) of the PE/COFF header. This results in a signed
+	     executable failing to boot in a secure boot environment.
+	* Release 3.0q
+
+2011-12-12 Nigel Croxon <nigel.croxon@hp.com>
+        * Changes from Fenghua Yu <fenghua.yu@intel.com>
+          - This fixes redefined types compilation failure for tcc.c on x86_64 machines.
+        * Release 3.0p
+
+2011-11-15 Nigel Croxon <nigel.croxon@hp.com>
+        * Changes from Darren Hart <dvhart@linux.intel.com>
+          - Conditionally assign toolchain binaries to allow overriding them.
+          - Force a dependency on lib for gnuefi.
+        * Release 3.0n
+
+2011-08-23 Nigel Croxon <nigel.croxon@hp.com>
+        * Changes from Peter Jones <pjones@redhat.com>
+          - Add guarantee 16-byte stack alignment on x86_64.
+          - Add routine to make callbacks work.
+          - Add apps/tcc.efi to test calling convention.
+        * Release 3.0m
+
+2011-07-22 Nigel Croxon <nigel.croxon@hp.com>
+	* Changed Makefiles from GPL to BSD.
+	* Changes from Peter Jones <pjones@redhat.com>
+	  - Add ifdefs for ia64 to mirror ia32 and x86-64 so that
+	    one can build with GCC.
+	  - Add headers for PciIo.
+	  - Add the UEFI 2.x bits for EFI_BOOT_SERVICES
+	  - Add an ignore for .note.GNU-stack section in X86-64 linker maps.
+        * Release 3.0l
+
+2011-04-07  Nigel Croxon <nigel.croxon@hp.com>
+        * Change license from GPL to BSD.
+        * Release 3.0j
+
+2009-09-12  Julien BLACHE <jb@jblache.org>
+	* Add support for FreeBSD.
+	* Release 3.0i
+
+2009-09-11  Julien BLACHE <jb@jblache.org>
+	* Fix elf_ia32_efi.lds linker script to be compatible with the new
+          linker behaviour. Patch from the RedHat bugzilla 492183.
+
+2009-06-18  Nigel Croxon <nigel.croxon@hp.com>
+        * Release 3.0h
+
+2008-11-06  Nigel Croxon <nigel.croxon@hp.com>
+        * Fix to not having any relocations at all. 
+
+2008-09-18  Nigel Croxon <nigel.croxon@hp.com>
+        * Use LIBDIR in makefiles
+        * Add setjmp/longjmp
+        * Fixes incorrect section attribute in crt0-efi-ia32.S
+        * Adds value EfiResetShutdown to enum EFI_RESET_TYPE
+        * Fixes a RAW warning in reloc_ia64.S
+        * Adds the USB HCI device path structure in the headers
+          patches were supplied by Peter Jones @ RedHat
+
+2008-02-22  Nigel Croxon <nigel.croxon@hp.com>
+	* Added '-mno-red-zone' to x68_64 compiles.
+	  Patch provided by Mats Andersson.
+
+2008-01-23  Nigel Croxon <nigel.croxon@hp.com>
+        * release 3.0e to support x86_64
+          EFI calling convention, the stack should be aligned in 16 bytes
+          to make it possible to use SSE2 in EFI boot services.
+          This patch fixes this issue. Patch provided by Huang Ying from Intel.
+
+2007-05-11 Nigel Croxon <nigel.croxon@hp.com>
+        * release 3.0d to support x86_64 from Chandramouli Narayanan
+          from Intel and based on 3.0c-1
+
+2006-03-21  Stephane Eranian <eranian@hpl.hp.com>
+	* merged patch to support gcc-4.1 submitted by
+	  Raymund Will from Novell/SuSE
+
+2006-03-20  Stephane Eranian <eranian@hpl.hp.com>
+	* updated ia-64 and ia-32 linker scripts to
+	  match latest gcc. The new gcc may put functions in
+	  .text* sections. patch submitted by H.J. Lu from Intel.
+
+2004-11-19  Stephane Eranian <eranian@hpl.hp.com>
+	* added patch to ignore .eh_frame section for IA-32. Patch
+	  submitted by Jim Wilson
+
+2004-09-23  Stephane Eranian <eranian@hpl.hp.com>
+	* added patch to discard unwind sections, newer toolchains
+	  complained about them. Patch submitted by Jesse Barnes from SGI.
+
+2003-09-29  Stephane Eranian <eranian@hpl.hp.com>
+	* updated elf_ia64_efi.lds to reflect new data sections 
+	  created by gcc-3.3. Patch provided by Andreas Schwab from Suse.
+
+2003-06-20  Stephane Eranian <eranian@hpl.hp.com>
+	* updated elf_ia64_efi.lds and elf_ia32_efi.lds to include
+	  new types data sections produced by recent version of gcc-3.x
+
+2002-02-22  Stephane Eranian <eranian@hpl.hp.com>
+	* release 3.0a
+	* modified both IA-64 and IA-32 loader scripts to add support for the
+	  new .rodata sections names (such as rodata.str2.8). Required
+	  for new versions of gcc3.x.
+
+2001-06-20  Stephane Eranian <eranian@hpl.hp.com>
+	* release 3.0
+	* split gnu-efi package in two different packages: the libary+include+crt and the bootloader.
+	* removed W2U() hack and related files to get from wide-char to unicode. 
+	* Use -fshort-wchar option for unicode.
+	* restructured Makefiles now install under INSTALLROOT.
+
+2001-04-06  Stephane Eranian <eranian@hpl.hp.com>
+
+	* incorporated patches from David and Michael Johnston at Intel
+	  to get the package to compile for IA-32 linux target.
+
+	* Fixed ELILO to compile for Ia-32 (does not execute yet, though):
+	  Makefile and start_kernel() function.
+
+2001-04-06  Andreas Schwab <schwab@suse.de>
+
+	* Fixed config.c  to
+	  get the timeout directive to do something. implemented the global
+	  root= directive.
+
+	* Fix the efi_main() to deal with the -C option properly
+
+2001-04-05  Stephane Eranian <eranian@hpl.hp.com>
+
+	* update efi library to latest EFI toolkit 1.02 as distributed
+	  by Intel. Fixed header + library files to compile with GCC
+
+	* merged ELI and LILO (as of gnu-efi-1.1) together, mostly
+	  taking the config file feature of ELI.
+
+	* renamed LILO to ELILO to make the distinction
+
+	* restructured code to make it easier to understand and maintain
+
+	* fixed FPSWA driver checking and loading: we try all possible
+	  files and let the driver itself figure out if it is the most
+	  recent.
+	* added support for compression (gzip) but keep support for plain
+	  ELF image. ELILO autodetects the format
+
+	* change the way the kernel is invoked. Now we call it in 
+	  physical memory mode. This breaks the dependency between the
+	  kernel code and the loader. No more lilo_start.c madness.
+
+	* changed the way the boot_params are passed. We don't use the 
+	  ZERO_PAGE_ADDR trick anymore. Instead we use EFI runtime memory.
+	  The address of the structure is passed to the kernel in r28
+	  by our convention.
+
+	* released as gnu-efi-2.0
+
+2001-04-03  David Mosberger  <davidm@hpl.hp.com>
+
+	* gnuefi/reloc_ia32.c (_relocate): Change return type from "void"
+	to "int".  Return error status if relocation fails for some
+	reason.
+
+	* gnuefi/elf_ia32_efi.lds: Drop unneeded ".rel.reloc" section.
+
+	* gnuefi/crt0-efi-ia32.S (_start): Exit if _relocate() returns with
+	non-zero exit status.
+
+	* inc/ia32/efibind.h [__GNUC__]: Force 8-byte alignment for 64-bit
+	types as that is what EFI appears to be expecting, despite the
+	"#pragma pack()" at the beginning of the file!
+
+2001-03-29  David Mosberger  <davidm@hpl.hp.com>
+
+	* gnuefi/reloc_ia32.c: Add a couple of defines to work around
+	libc/efilib collision on uint64_t et al.
+	(_relocate): Use ELF32_R_TYPE() instead of ELFW(R_TYPE)().
+
+	* gnuefi/crt0-efi-ia32.S (dummy): Add a dummy relocation entry.
+
+2001-03-29  David Mosberger  <davidm@hpl.hp.com>
+
+        * gnuefi/reloc_ia32.c: Add a couple of defines to work around
+        libc/efilib collision on uint64_t et al.
+        (_relocate): Use ELF32_R_TYPE() instead of ELFW(R_TYPE)().
+
+        * gnuefi/crt0-efi-ia32.S (dummy): Add a dummy relocation entry.
+
+2000-10-26  David Mosberger  <davidm@hpl.hp.com>
+ 
+ 	* gnuefi/elf_ia64_efi.lds: Mention .rela.sdata.
+ 
+ 	* Make.defaults (CFLAGS): Remove -nostdinc flags so we can pick
+ 	up the C compiler's stdarg.h.
+ 
+ 	* inc/stdarg.h: Remove this file.  It's not correct for gcc (nor
+ 	most other optimizing compilers).
+
+2000-10-10  Stephane Eranian <eranian@hpl.hp.com>
+
+	* cleaned up the error message and printing of those.
+	* added support to load the FPSWA from a file in case support is not
+	  present in the firmware already
+	* fixed split_args() to do the right thing when you have leading spaces
+	  before kernel name
+	* changed the argify() function to rely on \0 instead of LoadOptionSize
+	  as the field seems to be broken with current firmware
+	* bumped version to 1.0
+
+2000-10-04  David Mosberger  <davidm@hpl.hp.com>
+ 
+	* gnuefi/reloc_ia64.S: Reserve space for up to 750 function descriptors.
+
+	* gnuefi/elf_ia64_efi.lds: Add .sdata section for small data and
+	put __gp in the "middle" of it.
+
+	* gnuefi/crt0-efi-ia64.S (_start): Use movl/add to load
+	gp-relative addresses that could be out of the range of the addl
+	offset.
+	* gnuefi/reloc_ia64.S (_relocate): Ditto.
+
+	* apps/Makefile: Remove standard rules and include Make.rules instead.
+	* lilo/Makefile: Ditto.
+
+	* Make.rules: New file.
+
+2000-08-04  Stephane Eranian <eranian@hpl.hp.com>
+	* released version 0.9
+	* incorporated ACPI changes for Asuza by NEC < kouchi@hpc.bs1.fc.nec.co.jp>
+	* added support for initrd (-i option) original ELI code from Bill Nottingham <notting@redhat.com>)
+	* lots of cleanups 
+	* got rid of #ifdef LILO_DEBUG and uses macro instead
+	* fix a few extra memory leaks in create_boot_params()
+	* added exit capability just before starting the kernel
+
+2000-06-22  David Mosberger  <davidm@hpl.hp.com>
+
+	* gnuefi/elf_ia64_efi.lds: Add .srodata, .ctors, .IA64.unwind,
+	.IA64.unwind_info to .data section and .rela.ctors to .rela
+	section.
+
+2000-04-03  David Mosberger  <davidm@hpl.hp.com>
+
+	* lilo/lilo.c (LILO_VERSION): Up version number to 0.9.
+
+	* gnuefi/elf_ia64_efi.lds: Include .IA_64.unwind and
+	.IA_64.unwind_info in .data segment to avoid EFI load error
+	"ImageAddress: pointer outside of image" error due to the .dynsym
+	relocations against these sections.
+
+	* ChangeLog: Moved from lilo/ChangeLogs.
+
+	* gnuefi/reloc_ia64.S: fixed typo: .space directive had constant
+	100 hardcoded instead of using MAX_FUNCTION_DESCRIPTORS
+	macro. Duh.
+
+Fri Mar 17 15:19:18 PST 2000 Stephane Eranian <eranian@hpl.hp.com>
+
+	* Released 0.8
+	* replace the  getopt.c with new version free with better license
+	* created a documentation file
+	* fix a couple of memory leaks
+	* code cleanups
+	* created a separate directory for lilo in the gnu-efi package.
+	* added support for the BOOT_IMAGE argument to kernel
+	* default is to build natively now

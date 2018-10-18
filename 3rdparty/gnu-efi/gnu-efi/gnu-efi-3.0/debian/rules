@@ -1,0 +1,109 @@
+#!/usr/bin/make -f
+
+buildarch := $(shell dpkg-architecture -qDEB_BUILD_ARCH)
+ifneq (,$(findstring i386,$(buildarch)))
+	efiarch := ia32
+else ifneq (,$(findstring amd64,$(buildarch)))
+	efiarch := x86_64
+else
+	efiarch := $(buildarch)
+endif
+
+build: build-stamp
+build-stamp:
+	dh_testdir
+
+ifneq (,$(findstring amd64,$(buildarch)))
+	mkdir build-ia32
+	$(MAKE) -C build-ia32 -f ../Makefile SRCDIR=.. ARCH=ia32
+endif
+
+ifneq (,$(findstring i386,$(buildarch)))
+	mkdir build-x86_64
+	$(MAKE) -C build-x86_64 -f ../Makefile SRCDIR=.. ARCH=x86_64
+endif
+
+	$(MAKE)
+
+	touch build-stamp
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp configure-stamp
+	[ ! -f Makefile ] || $(MAKE) clean
+	rm -rf build-ia32 build-x86_64
+	dh_clean
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs -A
+
+	# gnu-efi files
+	cp -r inc/* debian/gnu-efi/usr/include/efi/
+	rm debian/gnu-efi/usr/include/efi/Makefile
+	rm debian/gnu-efi/usr/include/efi/inc.mak
+	rm debian/gnu-efi/usr/include/efi/make.inf
+	rm debian/gnu-efi/usr/include/efi/makefile.hdr
+	rm debian/gnu-efi/usr/include/efi/protocol/make.inf
+	rm debian/gnu-efi/usr/include/efi/protocol/makefile.hdr
+	rm debian/gnu-efi/usr/include/efi/protocol/readme.txt
+ifeq ($(buildarch),ia64)
+	rm -rf debian/gnu-efi/usr/include/efi/ia32
+	rm -rf debian/gnu-efi/usr/include/efi/x84_64
+else
+	rm -rf debian/gnu-efi/usr/include/efi/ia64
+endif
+	cp gnuefi/*.a debian/gnu-efi/usr/lib/
+ifeq ($(buildarch),kfreebsd-amd64)
+	cp gnuefi/elf_$(efiarch)_fbsd_efi.lds debian/gnu-efi/usr/lib
+else
+	cp gnuefi/elf_$(efiarch)_efi.lds debian/gnu-efi/usr/lib
+endif
+	cp gnuefi/crt0-efi-$(efiarch).o debian/gnu-efi/usr/lib
+	cp lib/*.a debian/gnu-efi/usr/lib/
+
+ifneq (,$(findstring amd64,$(buildarch)))
+	mkdir -p debian/gnu-efi/usr/lib32
+	cp build-ia32/gnuefi/*.a debian/gnu-efi/usr/lib32/
+	cp gnuefi/elf_ia32_efi.lds debian/gnu-efi/usr/lib32/
+	cp build-ia32/gnuefi/crt0-efi-ia32.o debian/gnu-efi/usr/lib32/
+	cp build-ia32/lib/*.a debian/gnu-efi/usr/lib32/
+endif
+
+ifneq (,$(findstring i386,$(buildarch)))
+	mkdir -p debian/gnu-efi/usr/lib64
+	cp build-x86_64/gnuefi/*.a debian/gnu-efi/usr/lib64/
+ifeq ($(buildarch),kfreebsd-i386)
+	cp gnuefi/elf_x86_64_fbsd_efi.lds debian/gnu-efi/usr/lib64/
+else
+	cp gnuefi/elf_x86_64_efi.lds debian/gnu-efi/usr/lib64/
+endif
+	cp build-x86_64/gnuefi/crt0-efi-x86_64.o debian/gnu-efi/usr/lib64/
+	cp build-x86_64/lib/*.a debian/gnu-efi/usr/lib64/
+endif
+
+# Build architecture-independent files here.
+binary-indep: build install
+# We have nothing to do by default.
+
+# Build architecture-dependent files here.
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installdocs -a
+	dh_installchangelogs -a ChangeLog
+	dh_link
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install configure

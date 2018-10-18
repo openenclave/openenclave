@@ -1,0 +1,155 @@
+gnu-efi (3.0i-1) unstable; urgency=low
+
+  * New upstream release.
+    + Support for FreeBSD (closes: #535696).
+
+  * debian/control:
+    + Make kfreebsd-amd64 a supported architecture.
+    + Build-depend on gcc-multilib on kfreebsd-amd64 too.
+  * debian/rules:
+    + Add support for both kfreebsd-{i386,amd64}.
+    + Install FreeBSD x86_64 linker script on kfreebsd-amd64.
+    + Do not install ia64-specific headers on i386/amd64, do not install
+      i386/amd64-specific headers on ia64.
+
+ -- Julien BLACHE <jblache@debian.org>  Sat, 12 Sep 2009 11:38:57 +0200
+
+gnu-efi (3.0h-1) unstable; urgency=low
+
+  * Clean up and recover from a broken NMU.
+
+  * debian/control:
+    + Bump Standards-Version to 3.8.3 (no changes).
+    + Added myself as uploader.
+
+  * gnuefi/elf_ia32_efi.lds:
+    + Fix linker script for elf-i386 (closes: #545202).
+
+ -- Julien BLACHE <jblache@debian.org>  Fri, 11 Sep 2009 18:26:22 +0200
+
+gnu-efi (3.0h-0.1) unstable; urgency=low
+
+  * NMU
+  * New upstream version.
+  * Bump to Standards-Version 3.8.2.
+  * Add watch file.
+  * Conflict with libc6-i386 (<= 2.9-18).  closes: #533003.
+
+ -- Clint Adams <schizo@debian.org>  Sun, 02 Aug 2009 12:06:40 -0400
+
+gnu-efi (3.0e-3) unstable; urgency=low
+
+  * Non-maintainer upload with maintainer's consent.
+
+  * debian/rules:
+    + Move files from /emul/ia32-linux to /usr/lib32 (closes: #533003).
+
+  * debian/control:
+    + Bump Standards-Version to 3.8.1 (no changes).
+
+ -- Julien BLACHE <jblache@debian.org>  Wed, 17 Jun 2009 16:41:26 +0200
+
+gnu-efi (3.0e-2) unstable; urgency=low
+
+  * Fixes wrong lib when cross-building, Closes: #482077
+  * Fixes x86_64 builds on i386, Closes: #482078
+  * Acknowledge NMU, Closes: #473721
+
+ -- Nigel Croxon <nigel.croxon@hp.com>  Wed, 04 Jun 2008 15:11:12 -0600
+
+gnu-efi (3.0e-1.1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Fix installing below /emul/ia32-linux/usr/lib (not /usr/lib32) on
+    AMD64. This closes: bug#473721.
+
+ -- Jonas Smedegaard <dr@jones.dk>  Wed, 30 Apr 2008 01:22:35 +0200
+
+gnu-efi (3.0e-1) unstable; urgency=low
+
+  * Fixes x86_64 clobbering registers
+  * Added binutils >= 2.17.50.0.14, Closes: #461640
+  * fixes installs parts of its build system, Closes: #439092
+
+ -- Nigel Croxon <nigel.croxon@hp.com>  Mon, 31 Mar 2008 09:31:52 -0600
+
+gnu-efi (3.0d-1) unstable; urgency=low
+
+  * new (sponsored) maintainer
+  * Add patches to support x86_64 from C.Narayanan (Intel)
+    with support on EFI 1.10 and UEFI 2.0 firmware.
+  * new upstream version, Closes: #376000
+  * fixes x86_64 elilo support, Closes: #438954
+  * Added support for amd64, Closes: #383801
+
+ -- Nigel Croxon <nigel.croxon@hp.com>  Wed, 21 Aug 2007 14:12:09 -0600
+
+gnu-efi (3.0c-1) unstable; urgency=low
+
+  * new upstream version, described as a maintenance release for 
+    compatibility with current gcc and binutils versions
+
+ -- Bdale Garbee <bdale@gag.com>  Fri, 24 Mar 2006 05:02:28 -0700
+
+gnu-efi (3.0b-1) unstable; urgency=low
+
+  * new upstream version, closes: #341124
+  * downgrade priority to optional, closes: #280646
+  * fix lib/print.c to prevent printing garbage when items were passed on
+    software stack, closes: #283842
+
+ -- Bdale Garbee <bdale@gag.com>  Wed,  7 Dec 2005 20:55:46 -0800
+
+gnu-efi (3.0a-4) unstable; urgency=low
+
+  * fix gcc path problem in Makefile exposed by build on i386, closes: #215050
+  * merge patches from upstream to address linker problems on i386
+
+ -- Bdale Garbee <bdale@gag.com>  Thu, 23 Oct 2003 19:53:19 -0600
+
+gnu-efi (3.0a-3) unstable; urgency=low
+
+  * add i386 to the list of supported architectures
+
+ -- Bdale Garbee <bdale@gag.com>  Mon,  6 Oct 2003 10:04:13 -0600
+
+gnu-efi (3.0a-2) unstable; urgency=low
+
+  * patch to linker scripts from Matthew Wilcox <willy@debian.org> that 
+    allows compilation with GCC 3.3
+
+ -- Bdale Garbee <bdale@gag.com>  Wed,  1 Oct 2003 13:52:51 -0600
+
+gnu-efi (3.0a-1) unstable; urgency=low
+
+  * new upstream version.  fixes linker scripts to work with recent compilers,
+    so gnu-efi is buildable from source again.
+
+ -- Bdale Garbee <bdale@gag.com>  Tue, 26 Feb 2002 20:50:35 -0700
+
+gnu-efi (3.0-2) unstable; urgency=low
+
+  * change section to devel, since elilo is a separate package now and this
+    package only provides libs that EFI applications link
+
+ -- Bdale Garbee <bdale@gag.com>  Thu, 22 Nov 2001 10:28:15 -0700
+
+gnu-efi (3.0-1) unstable; urgency=low
+
+  * new upstream version, no longer includes elilo which is now a separate
+    package
+
+ -- Bdale Garbee <bdale@gag.com>  Tue, 10 Jul 2001 13:18:50 -0600
+
+gnu-efi (2.5-1) unstable; urgency=low
+
+  * newer upstream release, repackages to use real upstream source
+
+ -- Bdale Garbee <bdale@gag.com>  Tue,  5 Jun 2001 22:51:58 -0600
+
+gnu-efi (1.1-1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Randolph Chung <tausq@debian.org>  Mon, 15 Jan 2001 21:05:34 -0800
+
