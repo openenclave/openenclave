@@ -23,6 +23,7 @@ set(PLATFORM_SRC
     linux/sgxioctl.c
     linux/sgxsign.c
     linux/time.c
+    linux/windows.c
     sgxquoteprovider.c
     )
 elseif (WIN32)

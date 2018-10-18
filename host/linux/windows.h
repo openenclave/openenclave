@@ -5,6 +5,10 @@
 #define _OE_HOST_WINDOWS_H
 
 #include <openenclave/host.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #define FIELD_OFFSET(TYPE, Field) ((UINTN)(&(((TYPE*)0)->Field)))
 #define PAGE_READWRITE 0x04
@@ -28,24 +32,14 @@ typedef DWORD* PDWORD;
 
 #include "pe.h"
 
-OE_INLINE HMODULE
-LoadLibraryExA(LPCSTR lpLibFileName, HANDLE hFile, DWORD dwFlags)
-{
-    return NULL;
-}
+HMODULE LoadLibraryExA(LPCSTR path, HANDLE file, DWORD flags);
 
-OE_INLINE BOOL VirtualProtect(
+BOOL VirtualProtect(
     LPVOID lpAddress,
     SIZE_T dwSize,
     DWORD flNewProtect,
-    PDWORD lpflOldProtect)
-{
-    return false;
-}
+    PDWORD lpflOldProtect);
 
-OE_INLINE BOOL FreeLibrary(HMODULE hLibModule)
-{
-    return false;
-}
+BOOL FreeLibrary(HMODULE module);
 
 #endif /* _OE_HOST_WINDOWS_H */
