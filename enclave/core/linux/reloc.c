@@ -9,7 +9,7 @@
 /*
 **==============================================================================
 **
-** _oe_apply_relocations()
+** oe_apply_relocations()
 **
 **     Apply symbol relocations from the relocation pages, whose content
 **     was copied from the ELF file during loading. These relocations are
@@ -18,7 +18,7 @@
 **==============================================================================
 */
 
-bool _oe_apply_relocations(void)
+bool oe_apply_relocations(void)
 {
     const oe_reloc_t* relocs = (const oe_reloc_t*)__oe_get_reloc_base();
     size_t nrelocs = __oe_get_reloc_size() / sizeof(oe_reloc_t);

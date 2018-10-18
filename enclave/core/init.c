@@ -42,7 +42,7 @@ static void _check_memory_boundaries(void)
 static void _initialize_enclave_image()
 {
     /* Relocate symbols */
-    if (!_oe_apply_relocations())
+    if (!oe_apply_relocations())
     {
         oe_abort();
     }
