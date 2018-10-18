@@ -8,8 +8,6 @@
 ../../3rdparty/libcxx/libcxx/test/std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/wchar_t_encoding.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/wchar_t_max_length.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/numerics/rand/rand.device/ctor.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.match/exponential.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.search/exponential.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.traits/lookup_classname.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.rel/is_invocable.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.rel/is_nothrow_invocable.pass.cpp
