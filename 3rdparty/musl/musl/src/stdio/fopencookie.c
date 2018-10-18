@@ -116,15 +116,12 @@ FILE *fopencookie(void *cookie, const char *mode, cookie_io_functions_t iofuncs)
 
 	/* Set up our fcookie */
 	f->fc.cookie = cookie;
-	f->fc.iofuncs.read = iofuncs.read;
-	f->fc.iofuncs.write = iofuncs.write;
-	f->fc.iofuncs.seek = iofuncs.seek;
-	f->fc.iofuncs.close = iofuncs.close;
+	f->fc.iofuncs = iofuncs;
 
 	f->f.fd = -1;
 	f->f.cookie = &f->fc;
 	f->f.buf = f->buf + UNGET;
-	f->f.buf_size = BUFSIZ;
+	f->f.buf_size = sizeof f->buf - UNGET;
 	f->f.lbf = EOF;
 
 	/* Initialize op ptrs. No problem if some are unneeded. */

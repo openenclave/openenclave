@@ -15,6 +15,7 @@ long double complex casinl(long double complex z)
 	x = creall(z);
 	y = cimagl(z);
 	w = CMPLXL(1.0 - (x - y)*(x + y), -2.0*x*y);
-	return clogl(CMPLXL(-y, x) + csqrtl(w));
+	long double complex r = clogl(CMPLXL(-y, x) + csqrtl(w));
+	return CMPLXL(cimagl(r), -creall(r));
 }
 #endif

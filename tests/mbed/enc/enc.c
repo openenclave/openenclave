@@ -108,6 +108,26 @@ static oe_result_t _syscall_hook(
             }
             break;
         }
+        case SYS_read:
+        {
+            syscall_args_t* args;
+            args = (syscall_args_t*)oe_host_malloc(sizeof(syscall_args_t));
+            char* enc_buf = (char*)arg2;
+            char* host_buf = (void*)oe_host_malloc(arg3);
+            args->ptr = (void*)host_buf;
+            args->fd = (int)arg1;
+            args->len = (int)arg3;
+            oe_call_host("mbed_test_read", args);
+
+            if ((args->ret) > 0)
+                oe_memcpy(enc_buf, host_buf, arg3);
+            *ret = args->ret;
+            oe_host_free(host_buf);
+
+            oe_host_free(args);
+            result = OE_OK;
+            break;
+        }
         case SYS_readv:
         {
             syscall_args_t* args;

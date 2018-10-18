@@ -49,6 +49,7 @@ extern "C" {
 
 typedef union _G_fpos64_t {
 	char __opaque[16];
+	long long __lldata;
 	double __align;
 } fpos_t;
 

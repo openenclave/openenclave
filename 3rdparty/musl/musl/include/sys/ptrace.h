@@ -40,6 +40,7 @@ extern "C" {
 #define PTRACE_GETSIGMASK 0x420a
 #define PTRACE_SETSIGMASK 0x420b
 #define PTRACE_SECCOMP_GET_FILTER 0x420c
+#define PTRACE_SECCOMP_GET_METADATA 0x420d
 
 #define PT_READ_I PTRACE_PEEKTEXT
 #define PT_READ_D PTRACE_PEEKDATA
@@ -83,13 +84,21 @@ extern "C" {
 #define PTRACE_EVENT_VFORK_DONE 5
 #define PTRACE_EVENT_EXIT 6
 #define PTRACE_EVENT_SECCOMP 7
+#define PTRACE_EVENT_STOP 128
 
 #define PTRACE_PEEKSIGINFO_SHARED 1
 
-struct ptrace_peeksiginfo_args {
+#include <bits/ptrace.h>
+
+struct __ptrace_peeksiginfo_args {
 	uint64_t off;
 	uint32_t flags;
 	int32_t nr;
+};
+
+struct __ptrace_seccomp_metadata {
+	uint64_t filter_off;
+	uint64_t flags;
 };
 
 long ptrace(int, ...);

@@ -458,16 +458,24 @@ size_t iconv(iconv_t cd, char **restrict in, size_t *restrict inb, char **restri
 				 * range in the hkscs table then hard-coded
 				 * here. Ugly, yes. */
 				if (c/256 == 0xdc) {
-					if (totype-0300U > 8) k = 2;
-					else k = "\10\4\4\10\4\4\10\2\4"[totype-0300];
-					if (k > *outb) goto toobig;
-					x += iconv(combine_to_from(to, 0),
+					union {
+						char c[8];
+						wchar_t wc[2];
+					} tmp;
+					char *ptmp = tmp.c;
+					size_t tmpx = iconv(combine_to_from(to, find_charmap("utf8")),
 						&(char *){"\303\212\314\204"
 						"\303\212\314\214"
 						"\303\252\314\204"
 						"\303\252\314\214"
 						+c%256}, &(size_t){4},
-						out, outb);
+						&ptmp, &(size_t){sizeof tmp});
+					size_t tmplen = ptmp - tmp.c;
+					if (tmplen > *outb) goto toobig;
+					if (tmpx) x++;
+					memcpy(*out, &tmp, tmplen);
+					*out += tmplen;
+					*outb -= tmplen;
 					continue;
 				}
 				if (!c) goto ilseq;
@@ -539,6 +547,7 @@ size_t iconv(iconv_t cd, char **restrict in, size_t *restrict inb, char **restri
 			if (*outb < 1) goto toobig;
 			if (c<256 && c==legacy_map(tomap, c)) {
 			revout:
+				if (*outb < 1) goto toobig;
 				*(*out)++ = c;
 				*outb -= 1;
 				break;
@@ -645,6 +654,8 @@ size_t iconv(iconv_t cd, char **restrict in, size_t *restrict inb, char **restri
 			*out += 4;
 			*outb -= 4;
 			break;
+		case UTF_32:
+			totype = UTF_32BE;
 		case UTF_32BE:
 		case UTF_32LE:
 			if (*outb < 4) goto toobig;

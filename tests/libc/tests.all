@@ -42,6 +42,7 @@
 ../../3rdparty/musl/libc-test/src/functional/sscanf.c
 ../../3rdparty/musl/libc-test/src/functional/sscanf_long.c
 ../../3rdparty/musl/libc-test/src/functional/stat.c
+../../3rdparty/musl/libc-test/src/functional/strftime.c
 ../../3rdparty/musl/libc-test/src/functional/string.c
 ../../3rdparty/musl/libc-test/src/functional/string_memcpy.c
 ../../3rdparty/musl/libc-test/src/functional/string_memmem.c
@@ -62,6 +63,7 @@
 ../../3rdparty/musl/libc-test/src/functional/tls_align_dlopen.c
 ../../3rdparty/musl/libc-test/src/functional/tls_init.c
 ../../3rdparty/musl/libc-test/src/functional/tls_init_dlopen.c
+../../3rdparty/musl/libc-test/src/functional/tls_local_exec.c
 ../../3rdparty/musl/libc-test/src/functional/udiv.c
 ../../3rdparty/musl/libc-test/src/functional/ungetc.c
 ../../3rdparty/musl/libc-test/src/functional/vfork.c
@@ -296,6 +298,7 @@
 ../../3rdparty/musl/libc-test/src/regression/printf-fmt-g-round.c
 ../../3rdparty/musl/libc-test/src/regression/printf-fmt-g-zeros.c
 ../../3rdparty/musl/libc-test/src/regression/printf-fmt-n.c
+../../3rdparty/musl/libc-test/src/regression/pthread_atfork-errno-clobber.c
 ../../3rdparty/musl/libc-test/src/regression/pthread_cancel-sem_wait.c
 ../../3rdparty/musl/libc-test/src/regression/pthread_condattr_setclock.c
 ../../3rdparty/musl/libc-test/src/regression/pthread_cond-smasher.c
@@ -320,6 +323,7 @@
 ../../3rdparty/musl/libc-test/src/regression/scanf-match-literal-eof.c
 ../../3rdparty/musl/libc-test/src/regression/scanf-nullbyte-char.c
 ../../3rdparty/musl/libc-test/src/regression/setenv-oom.c
+../../3rdparty/musl/libc-test/src/regression/setvbuf-unget.c
 ../../3rdparty/musl/libc-test/src/regression/sigaltstack.c
 ../../3rdparty/musl/libc-test/src/regression/sigprocmask-internal.c
 ../../3rdparty/musl/libc-test/src/regression/sigreturn.c

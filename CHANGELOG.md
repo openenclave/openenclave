@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Update mbedTLS library to version 2.7.6.
 - oe_create_enclave takes two additional parameters: ocall_table, ocall_table_size.
+- Update MUSL libc to version 1.1.20.
 
 ### Deprecated
 - String based ocalls/ecalls, OE_ECALL, OE_OCALL macros.

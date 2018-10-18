@@ -11,7 +11,7 @@ int main(void)
 	jmp_buf jb;
 	sigjmp_buf sjb;
 	volatile sigset_t oldset;
-	sigset_t set;
+	sigset_t set, set2;
 
 	if (!setjmp(jb)) {
 		x = 1;
@@ -29,8 +29,8 @@ int main(void)
 
 	sigemptyset(&set);
 	sigaddset(&set, SIGUSR1);
-	sigprocmask(SIG_UNBLOCK, &set, &set);
-	oldset = set;
+	sigprocmask(SIG_UNBLOCK, &set, &set2);
+	oldset = set2;
 
 	/* Improve the chances of catching failure of sigsetjmp to
 	 * properly save the signal mask in the sigjmb_buf. */
@@ -43,8 +43,23 @@ int main(void)
 		siglongjmp(sjb, 1);
 	}
 	set = oldset;
-	sigprocmask(SIG_SETMASK, &set, &set);
-	TEST(sigismember(&set, SIGUSR1)==0, "siglongjmp failed to restore mask\n");
+	sigprocmask(SIG_SETMASK, &set, &set2);
+	TEST(sigismember(&set2, SIGUSR1)==0, "siglongjmp failed to restore mask\n");
+
+	sigemptyset(&set);
+	sigaddset(&set, SIGUSR1);
+	sigprocmask(SIG_UNBLOCK, &set, &set2);
+	oldset = set2;
+
+	if (!sigsetjmp(sjb, 0)) {
+		sigemptyset(&set);
+		sigaddset(&set, SIGUSR1);
+		sigprocmask(SIG_BLOCK, &set, 0);
+		siglongjmp(sjb, 1);
+	}
+	set = oldset;
+	sigprocmask(SIG_SETMASK, &set, &set2);
+	TEST(sigismember(&set2, SIGUSR1)==1, "siglongjmp incorrectly restored mask\n");
 
 	return t_status;
 }

@@ -3,8 +3,6 @@
 #include <inttypes.h>
 #include <errno.h>
 
-#define MIN(a,b) ((a)<(b) ? (a) : (b))
-
 ssize_t getdelim(char **restrict s, size_t *restrict n, int delim, FILE *restrict f)
 {
 	char *tmp;
