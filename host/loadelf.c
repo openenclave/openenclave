@@ -206,7 +206,7 @@ static oe_result_t _oe_load_elf_image(
             OE_RAISE(OE_FAILURE);
 
         /* Calculate the full size of the image (rounded up to the page size) */
-        image->image_size = __oe_round_up_to_page_size(hi - lo);
+        image->image_size = oe_round_up_to_page_size(hi - lo);
     }
 
     /* allocate segments */
@@ -296,7 +296,7 @@ static oe_result_t _oe_load_elf_image(
         const oe_elf_segment_t* seg = &image->u.elf.segments[i];
         const oe_elf_segment_t* seg_next = &image->u.elf.segments[i + 1];
         if ((seg->vaddr + seg->memsz) >
-            __oe_round_down_to_page_size(seg_next->vaddr))
+            oe_round_down_to_page_size(seg_next->vaddr))
         {
             OE_RAISE(OE_OUT_OF_BOUNDS);
         }
@@ -461,7 +461,7 @@ static oe_result_t _add_segment_pages(
     assert(image);
 
     /* Take into account that segment base address may not be page aligned */
-    page_rva = __oe_round_down_to_page_size(segment->vaddr);
+    page_rva = oe_round_down_to_page_size(segment->vaddr);
     segment_end = segment->vaddr + segment->memsz;
     flags = _make_secinfo_flags(segment->flags);
 

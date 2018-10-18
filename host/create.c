@@ -334,7 +334,7 @@ static oe_result_t _build_ecall_data(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Calculate size needed for the ECALL pages */
-    size = __oe_round_up_to_page_size(
+    size = oe_round_up_to_page_size(
         sizeof(oe_ecall_pages_t) + (enclave->num_ecalls * sizeof(uint64_t)));
 
     /* Allocate the pages */
