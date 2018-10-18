@@ -50,8 +50,8 @@ add_library(oehost STATIC
     ../common/tcbinfo.c    
     calls.c
     create.c
-    elf.c
     dupenv.c
+    elf.c
     enclave.c
     enclavemanager.c
     error.c
