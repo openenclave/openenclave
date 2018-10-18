@@ -22,6 +22,7 @@ set(PLATFORM_SRC
     linux/hostthread.c
     linux/sgxioctl.c
     linux/time.c
+    linux/windows.c
     sgxquoteprovider.c
     )
 elseif (WIN32)
