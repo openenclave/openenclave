@@ -16,8 +16,10 @@ enclave {
         public Tcps_StatusCode ecall_TestOEIsWithinEnclave([user_check] void* outside, int size);
         public Tcps_StatusCode ecall_TestOEIsOutsideEnclave([user_check] void* outside, int size);
         public Tcps_StatusCode ecall_TestOERandom();
-        public Tcps_StatusCode ecall_TestOEGetReport(uint32_t flags);
-        public Tcps_StatusCode ecall_TestOEGetTargetInfo(uint32_t flags);
+        public Tcps_StatusCode ecall_TestOEGetReportV1(uint32_t flags);
+        public Tcps_StatusCode ecall_TestOEGetReportV2(uint32_t flags);
+        public Tcps_StatusCode ecall_TestOEGetTargetInfoV1(uint32_t flags);
+        public Tcps_StatusCode ecall_TestOEGetTargetInfoV2(uint32_t flags);
         public Tcps_StatusCode ecall_TestOEExceptions();
         public Tcps_StatusCode ecall_TestOEEcall();
         public Tcps_StatusCode ecall_TestOEGetSealKey(int policy);

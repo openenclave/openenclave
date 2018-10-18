@@ -187,7 +187,7 @@ typedef enum _oe_result {
     OE_MISSING_CERTIFICATE_CHAIN,
 
     /**
-     * An operation cannot be performed beause the resource is busy. For
+     * An operation cannot be performed because the resource is busy. For
      * example, a non-recursive mutex cannot be locked because it is already
      * locked.
      */

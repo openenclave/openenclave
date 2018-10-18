@@ -4,10 +4,10 @@
 /**
  * @file properties.h
  *
- * This file defines the SGX properties for an enclave.
+ * This file defines the properties for an enclave.
  *
  * The enclave properties should only be defined once for all code compiled
- * into an enclave binary using the OE_SET_ENCLAVE_SGX macro.
+ * into an enclave binary.
  * These properties can be overwritten at sign time by the oesign tool.
  */
 

@@ -93,7 +93,7 @@ oe_result_t oe_remove_vectored_exception_handler(
  * the enclave. A re-entrant ECALL will fail and return OE_REENTRANT_ECALL.
  *
  * @deprecated This function has been deprecated. Use oeedger8r to generate
- * code that will call oe_ocall() instead.
+ * code that will call oe_call_host_function() instead.
  *
  * @param func The name of the enclave function that will be called.
  * @param args The arguments to be passed to the enclave function.
@@ -102,7 +102,7 @@ oe_result_t oe_remove_vectored_exception_handler(
  *
  */
 OE_DEPRECATED(oe_result_t oe_call_host(const char* func, void* args),
-              "This function is deprecated. Use oeedger8r to generate code that will call oe_ocall() instead.");
+              "This function is deprecated. Use oeedger8r to generate code that will call oe_call_host_function() instead.");
 
 /**
  * Perform a high-level host function call (OCALL).
@@ -121,7 +121,7 @@ OE_DEPRECATED(oe_result_t oe_call_host(const char* func, void* args),
  * define its own error reporting scheme based on **args**.
  *
  * @deprecated This function is deprecated. Use oeedger8r to generate code that
- * will call oe_ocall() instead.
+ * will call oe_call_host_function() instead.
  *
  * @param func The address of the host function that will be called.
  * @param args The arguments to be passed to the host function.
@@ -133,7 +133,7 @@ OE_DEPRECATED(oe_result_t oe_call_host(const char* func, void* args),
 OE_DEPRECATED(oe_result_t oe_call_host_by_address(
     void (*func)(void*, oe_enclave_t*),
     void* args),
-    "This function is deprecated. Use oeedger8r to generate code that will call oe_ocall() instead.");
+    "This function is deprecated. Use oeedger8r to generate code that will call oe_call_host_function() instead.");
 
 /**
  * Check whether the given buffer is strictly within the enclave.
@@ -302,6 +302,16 @@ void __oe_assert_fail(
 #define oe_assert(EXPR)
 #endif
 
+#if (OE_API_VERSION < 2)
+#define oe_get_report             oe_get_report_v1
+#define oe_get_target_info        oe_get_target_info_v1
+#define oe_get_seal_key_by_policy oe_get_seal_key_by_policy_v1
+#else
+#define oe_get_report             oe_get_report_v2
+#define oe_get_target_info        oe_get_target_info_v2
+#define oe_get_seal_key_by_policy oe_get_seal_key_by_policy_v2
+#endif
+
 /**
  * Get a report signed by the enclave platform for use in attestation.
  *
@@ -310,6 +320,8 @@ void __oe_assert_fail(
  *
  * If the *report_buffer* is NULL or *report_size* parameter is too small,
  * this function returns OE_BUFFER_TOO_SMALL.
+ *
+ * @deprecated This function is deprecated. Use oe_get_report_v2() instead.
  *
  * @param flags Specifying default value (0) generates a report for local
  * attestation. Specifying OE_REPORT_FLAGS_REMOTE_ATTESTATION generates a
@@ -331,14 +343,54 @@ void __oe_assert_fail(
  * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
  *
  */
-oe_result_t oe_get_report(
+OE_DEPRECATED(oe_result_t oe_get_report_v1(
     uint32_t flags,
     const uint8_t* report_data,
     size_t report_data_size,
     const void* opt_params,
     size_t opt_params_size,
     uint8_t* report_buffer,
+    size_t* report_buffer_size),
+    "This function is deprecated. Use oe_get_report_v2() instead.");
+
+/**
+ * Get a report signed by the enclave platform for use in attestation.
+ *
+ * This function creates a report to be used in local or remote attestation. The
+ * report shall contain the data given by the **report_data** parameter.
+ *
+ * @param[in] flags Specifying default value (0) generates a report for local
+ * attestation. Specifying OE_REPORT_FLAGS_REMOTE_ATTESTATION generates a
+ * report for remote attestation.
+ * @param[in] report_data The report data that will be included in the report.
+ * @param[in] report_data_size The size of the **report_data** in bytes.
+ * @param[in] opt_params Optional additional parameters needed for the current
+ * enclave type. For SGX, this can be sgx_target_info_t for local attestation.
+ * @param[in] opt_params_size The size of the **opt_params** buffer.
+ * @param[out] report_buffer This points to the resulting report upon success.
+ * @param[out] report_buffer_size This is set to the
+ * size of the report buffer on success.
+ *
+ * @retval OE_OK The report was successfully created.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
+ *
+ */
+oe_result_t oe_get_report_v2(
+    uint32_t flags,
+    const uint8_t* report_data,
+    size_t report_data_size,
+    const void* opt_params,
+    size_t opt_params_size,
+    uint8_t** report_buffer,
     size_t* report_buffer_size);
+
+/**
+ * Frees a report buffer obtained from oe_get_report.
+ *
+ * @param[in] report_buffer The report buffer to free.
+ */
+void oe_free_report(uint8_t* report_buffer);
 
 /**
  * Extracts additional platform specific data from the report and writes
@@ -350,6 +402,8 @@ oe_result_t oe_get_report(
  *
  * If the *target_info_buffer* is NULL or the *target_info_size* parameter is
  * too small, this function returns OE_BUFFER_TOO_SMALL.
+ *
+ * @deprecated This function is deprecated. Use oe_get_target_info_v2() instead.
  *
  * @param report The report returned by **oe_get_report**.
  * @param report_size The size of **report** in bytes.
@@ -363,11 +417,46 @@ oe_result_t oe_get_report(
  * @retval OE_BUFFER_TOO_SMALL **target_info_buffer** is NULL or too small.
  *
  */
-oe_result_t oe_get_target_info(
+OE_DEPRECATED(oe_result_t oe_get_target_info_v1(
     const uint8_t* report,
     size_t report_size,
     void* target_info_buffer,
+    size_t* target_info_size),
+    "This function is deprecated. Use oe_get_target_info_v2() instead.");
+
+/**
+ * Extracts additional platform specific data from the report and writes
+ * it to *target_info_buffer*. After calling this function, the
+ * *target_info_buffer* can used for the *opt_params* field in *oe_get_report*.
+ *
+ * For example, on SGX, the *target_info_buffer* can be used as a
+ * sgx_target_info_t for local attestation.
+ *
+ * @param[in] report The report returned by **oe_get_report**.
+ * @param[in] report_size The size of **report** in bytes.
+ * @param[out] target_info_buffer This points to the platform specific data
+ * upon success.
+ * @param[out] target_info_size This is set to
+ * the size of **target_info_buffer** on success.
+ *
+ * @retval OE_OK The platform specific data was successfully extracted.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
+ *
+ */
+oe_result_t oe_get_target_info_v2(
+    const uint8_t* report,
+    size_t report_size,
+    void** target_info_buffer,
     size_t* target_info_size);
+
+/**
+ * Frees target info obtained from oe_get_target_info.
+ *
+ * @param[in] target_info The platform specific data to free.
+ *
+ */
+void oe_free_target_info(void* target_info);
 
 /**
  * Parse an enclave report into a standard format for reading.
@@ -410,29 +499,6 @@ oe_result_t oe_verify_report(
     const uint8_t* report,
     size_t report_size,
     oe_report_t* parsed_report);
-
-/**
- * This enumeration type defines the policy used to derive a seal key.
- */
-typedef enum _oe_seal_policy {
-    /**
-     * Key is derived from a measurement of the enclave. Under this policy,
-     * the sealed secret can only be unsealed by an instance of the exact
-     * enclave code that sealed it.
-     */
-    OE_SEAL_POLICY_UNIQUE = 1,
-    /**
-     * Key is derived from the signer of the enclave. Under this policy,
-     * the sealed secret can be unsealed by any enclave signed by the same
-     * signer as that of the sealing enclave.
-     */
-    OE_SEAL_POLICY_PRODUCT = 2,
-    /**
-     * Unused.
-     */
-    _OE_SEAL_POLICY_MAX = OE_ENUM_MAX,
-} oe_seal_policy_t;
-/**< typedef enum _oe_seal_policy oe_seal_policy_t*/
 
 /**
 * Get a symmetric encryption key derived from the specified policy and coupled

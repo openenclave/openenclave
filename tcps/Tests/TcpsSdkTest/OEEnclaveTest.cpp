@@ -76,18 +76,34 @@ TEST_F(OEEnclaveTest, exceptions_Success)
     EXPECT_EQ(Tcps_Good, uStatus);
 }
 
-TEST_F(OEEnclaveTest, get_report_Success)
+TEST_F(OEEnclaveTest, get_report_v1_Success)
 {
     Tcps_StatusCode uStatus;
-    oe_result_t oeResult = (oe_result_t)ecall_TestOEGetReport(GetTAId(), &uStatus, 0);
+    oe_result_t oeResult = (oe_result_t)ecall_TestOEGetReportV1(GetTAId(), &uStatus, 0);
     EXPECT_EQ(OE_OK, oeResult);
     EXPECT_EQ(Tcps_Good, uStatus);
 }
 
-TEST_F(OEEnclaveTest, get_target_info_Success)
+TEST_F(OEEnclaveTest, get_report_v2_Success)
 {
     Tcps_StatusCode uStatus;
-    oe_result_t oeResult = (oe_result_t)ecall_TestOEGetTargetInfo(GetTAId(), &uStatus, 0);
+    oe_result_t oeResult = (oe_result_t)ecall_TestOEGetReportV2(GetTAId(), &uStatus, 0);
+    EXPECT_EQ(OE_OK, oeResult);
+    EXPECT_EQ(Tcps_Good, uStatus);
+}
+
+TEST_F(OEEnclaveTest, get_target_info_v1_Success)
+{
+    Tcps_StatusCode uStatus;
+    oe_result_t oeResult = (oe_result_t)ecall_TestOEGetTargetInfoV1(GetTAId(), &uStatus, 0);
+    EXPECT_EQ(OE_OK, oeResult);
+    EXPECT_EQ(Tcps_Good, uStatus);
+}
+
+TEST_F(OEEnclaveTest, get_target_info_v2_Success)
+{
+    Tcps_StatusCode uStatus;
+    oe_result_t oeResult = (oe_result_t)ecall_TestOEGetTargetInfoV2(GetTAId(), &uStatus, 0);
     EXPECT_EQ(OE_OK, oeResult);
     EXPECT_EQ(Tcps_Good, uStatus);
 }

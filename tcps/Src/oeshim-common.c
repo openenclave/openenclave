@@ -8,7 +8,51 @@
 #include <string.h>
 #include <sgx_utils.h>
 
-oe_result_t oe_get_target_info(
+static void fill_sgx_target_info(
+    _In_ const sgx_report_t* sgx_report,
+    _Out_ sgx_target_info_t* info)
+{
+    memset(info, 0, sizeof(*info));
+
+    info->mr_enclave = sgx_report->body.mr_enclave;
+    info->attributes = sgx_report->body.attributes;
+    info->misc_select = sgx_report->body.misc_select;
+}
+
+oe_result_t oe_get_target_info_v2(
+    _In_reads_bytes_(report_size) const uint8_t* report,
+    _In_ size_t report_size,
+    _Outptr_ void** target_info_buffer,
+    _Out_ size_t* target_info_size)
+{
+    sgx_report_t* sgx_report = (sgx_report_t*)report; 
+    sgx_target_info_t* info;
+
+    if (report == NULL || report_size < sizeof(*sgx_report) ||
+        target_info_size == NULL) {
+        return OE_INVALID_PARAMETER;
+    }
+
+    info = (sgx_target_info_t*)malloc(sizeof(*info));
+    if (info == NULL)
+    {
+        return OE_OUT_OF_MEMORY;
+    }
+
+    fill_sgx_target_info(sgx_report, info);
+
+    *target_info_buffer = info;
+    *target_info_size = sizeof(*info);
+    return OE_OK;
+}
+
+void oe_free_target_info(
+    _In_ void* target_info_buffer)
+{
+    free(target_info_buffer);
+}
+
+oe_result_t oe_get_target_info_v1(
     _In_reads_bytes_(report_size) const uint8_t* report,
     _In_ size_t report_size,
     _Out_writes_bytes_(*target_info_size) void* target_info_buffer,
@@ -28,11 +72,7 @@ oe_result_t oe_get_target_info(
         return OE_BUFFER_TOO_SMALL;
     }
 
-    memset(info, 0, sizeof(*info));
-
-    info->mr_enclave = sgx_report->body.mr_enclave;
-    info->attributes = sgx_report->body.attributes;
-    info->misc_select = sgx_report->body.misc_select;
+    fill_sgx_target_info(sgx_report, info);
 
     *target_info_size = sizeof(*info);
     return OE_OK;

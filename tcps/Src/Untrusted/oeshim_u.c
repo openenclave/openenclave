@@ -15,6 +15,9 @@ typedef struct {
 
 ocall_table_v2_t g_ocall_table_v2 = { 0 };
 
+/* TODO: this flag should be per enclave */
+int g_serialize_ecalls = FALSE;
+
 /* TODO: this API is deprecated.  Remove once callers are changed. */
 Tcps_StatusCode Tcps_CreateTA(
     _In_z_ const char* a_TaIdString,
@@ -61,6 +64,13 @@ oe_result_t oe_create_enclave(
 
     g_ocall_table_v2.nr_ocall = ocall_table_size;
     g_ocall_table_v2.call_addr = (oe_call_t*)ocall_table;
+
+    if (flags & OE_ENCLAVE_FLAG_SERIALIZE_ECALLS) {
+        g_serialize_ecalls = TRUE;
+        flags &= ~OE_ENCLAVE_FLAG_SERIALIZE_ECALLS;
+    } else {
+        g_serialize_ecalls = FALSE;
+    }
 
     // Load the enclave.
     sgx_enclave_id_t eid;
@@ -128,7 +138,7 @@ void ocall_CopyReeMemoryFromBufferChunk(
     memcpy(ptr, chunk.buffer, chunk.size);
 }
 
-oe_result_t oe_get_report(
+oe_result_t oe_get_report_v1(
     _In_ oe_enclave_t* enclave,
     _In_ uint32_t flags,
     _In_reads_opt_(opt_params_size) const void* opt_params,
@@ -147,6 +157,36 @@ oe_result_t oe_get_report(
         memcpy(report_buffer, result.report_buffer, result.report_buffer_size);
     }
     return oeResult;
+}
+
+oe_result_t oe_get_report_v2(
+    _In_ oe_enclave_t* enclave,
+    _In_ uint32_t flags,
+    _In_reads_opt_(opt_params_size) const void* opt_params,
+    _In_ size_t opt_params_size,
+    _Outptr_ uint8_t** report_buffer,
+    _Out_ size_t* report_buffer_size)
+{
+    GetReport_Result result;
+    buffer1024 optParamsBuffer;
+    sgx_enclave_id_t eid = (sgx_enclave_id_t)enclave;
+    COPY_BUFFER(optParamsBuffer, opt_params, opt_params_size);
+    sgx_status_t sgxStatus = ecall_get_report(eid, &result, flags, optParamsBuffer, opt_params_size);
+    oe_result_t oeResult = GetOEResultFromSgxStatus(sgxStatus);
+    if (oeResult == OE_OK) {
+        *report_buffer = malloc(result.report_buffer_size);
+        if (*report_buffer == NULL) {
+            return OE_OUT_OF_MEMORY;
+        }
+        *report_buffer_size = result.report_buffer_size;
+        memcpy(*report_buffer, result.report_buffer, result.report_buffer_size);
+    }
+    return oeResult;
+}
+
+void oe_free_report(uint8_t* report_buffer)
+{
+    free(report_buffer);
 }
 
 oe_result_t oe_verify_report(
@@ -201,6 +241,8 @@ oe_result_t oe_call_enclave_function(
     _In_ size_t output_buffer_size,
     _Out_ size_t* output_bytes_written)
 {
+    int serialize_ecall = g_serialize_ecalls;
+
     if (output_buffer_size > 4096) {
         return OE_INVALID_PARAMETER;
     }
@@ -213,7 +255,17 @@ oe_result_t oe_call_enclave_function(
     sgx_enclave_id_t eid = (sgx_enclave_id_t)enclave;
     buffer4096 inBufferStruct;
     COPY_BUFFER(inBufferStruct, input_buffer, input_buffer_size);
+
+    if (serialize_ecall) {
+        oe_acquire_enclave_mutex(enclave);
+    }
+
     sgx_status_t sgxStatus = ecall_v2(eid, result, function_id, inBufferStruct, input_buffer_size);
+
+    if (serialize_ecall) {
+        oe_release_enclave_mutex(enclave);
+    }
+
     if (sgxStatus == SGX_SUCCESS) {
         memcpy(output_buffer, result->outBuffer, result->outBufferSize);
         *output_bytes_written = result->outBufferSize;
@@ -221,4 +273,38 @@ oe_result_t oe_call_enclave_function(
     oe_result_t oeResult = GetOEResultFromSgxStatus(sgxStatus);
     free(result);
     return oeResult;
+}
+
+/**
+ * Gets the public key of an enclave.
+ *
+ * @param[in] enclave The instance of the enclave that will be used.
+ * @param[in] seal_policy The seal policy used to determine which key to get.
+ * @param[out] key_buffer Upon success, this points to the public key.
+ * @param[out] key_buffer_size Upon success, this contains the size of the *key_buffer* buffer.
+ * @param[out] key_info Reserved for future use.  Must pass NULL.
+ * @param[out] key_info_size Reserved for future use.  Must pass NULL.
+ *
+ * @retval OE_OK The public key was successfully obtained.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
+ */
+oe_result_t oe_get_public_key_by_policy(
+    oe_enclave_t* enclave,
+    oe_seal_policy_t seal_policy,
+    uint8_t** key_buffer,
+    size_t* key_buffer_size,
+    uint8_t** key_info,
+    size_t* key_info_size)
+{
+    /* TODO: to be implemented */
+    return OE_FAILURE;
+}
+
+void oe_free_public_key(
+    uint8_t* key_buffer,
+    uint8_t* key_info)
+{
+    free(key_buffer);
+    free(key_info);
 }

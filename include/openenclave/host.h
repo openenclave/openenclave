@@ -49,6 +49,11 @@ OE_EXTERNC_BEGIN
 #define OE_ENCLAVE_FLAG_SIMULATE 0x00000002
 
 /**
+ *  Flag passed into oe_create_enclave to serialize all ECALLs.
+ */
+#define OE_ENCLAVE_FLAG_SERIALIZE_ECALLS 0x00000004
+
+/**
  * @cond DEV
  */
 #define OE_ENCLAVE_FLAG_RESERVED \
@@ -141,7 +146,7 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave);
  * define its own error reporting scheme based on **args**.
  *
  * @deprecated This function is deprecated. Use oeedger8r to generate
- * code that will call oe_ecall() instead.
+ * code that will call oe_call_enclave_function() instead.
  *
  * @param enclave The instance of the enclave to be called.
  *
@@ -156,7 +161,15 @@ OE_DEPRECATED(oe_result_t oe_call_enclave(
     oe_enclave_t* enclave,
     const char* func,
     void* args),
-    "This function is deprecated. Use oeedger8r to generate code that will call oe_ecall() instead.");
+    "This function is deprecated. Use oeedger8r to generate code that will call oe_call_enclave_function() instead.");
+
+#if (OE_API_VERSION < 2)
+#define oe_get_report      oe_get_report_v1
+#define oe_get_target_info oe_get_target_info_v1
+#else
+#define oe_get_report      oe_get_report_v2
+#define oe_get_target_info oe_get_target_info_v2
+#endif
 
 /**
  * Get a report signed by the enclave platform for use in attestation.
@@ -165,6 +178,8 @@ OE_DEPRECATED(oe_result_t oe_call_enclave(
  *
  * If the *report_buffer* is NULL or *report_size* parameter is too small,
  * this function returns OE_BUFFER_TOO_SMALL.
+ *
+ * @deprecated This function is deprecated. Use oe_get_report_v2() instead.
  *
  * @param enclave The instance of the enclave that will generate the report.
  * @param flags Specifying default value (0) generates a report for local
@@ -185,13 +200,50 @@ OE_DEPRECATED(oe_result_t oe_call_enclave(
  * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
  *
  */
-oe_result_t oe_get_report(
+OE_DEPRECATED(oe_result_t oe_get_report_v1(
     oe_enclave_t* enclave,
     uint32_t flags,
     const void* opt_params,
     size_t opt_params_size,
     uint8_t* report_buffer,
+    size_t* report_buffer_size),
+    "This function is deprecated. Use oe_get_report_v2() instead.");
+
+/**
+ * Get a report signed by the enclave platform for use in attestation.
+ *
+ * This function creates a report to be used in local or remote attestation.
+ *
+ * @param[in] enclave The instance of the enclave that will generate the report.
+ * @param[in] flags Specifying default value (0) generates a report for local
+ * attestation. Specifying OE_REPORT_FLAGS_REMOTE_ATTESTATION generates a
+ * report for remote attestation.
+ * @param[in] opt_params Optional additional parameters needed for the current
+ * enclave type. For SGX, this can be sgx_target_info_t for local attestation.
+ * @param[in] opt_params_size The size of the **opt_params** buffer.
+ * @param[out] report_buffer This points to the resulting report upon success.
+ * @param[out] report_buffer_size This is set to the size of the report buffer
+ * on success.
+ *
+ * @retval OE_OK The report was successfully created.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
+ *
+ */
+oe_result_t oe_get_report_v2(
+    oe_enclave_t* enclave,
+    uint32_t flags,
+    const void* opt_params,
+    size_t opt_params_size,
+    uint8_t** report_buffer,
     size_t* report_buffer_size);
+
+/**
+ * Frees a report buffer obtained from oe_get_report.
+ *
+ * @param[in] report_buffer The report buffer to free.
+ */
+void oe_free_report(uint8_t* report_buffer);
 
 /**
  * Extracts additional platform specific data from the report and writes
@@ -203,6 +255,8 @@ oe_result_t oe_get_report(
  *
  * If the *target_info_buffer* is NULL or the *target_info_size* parameter is
  * too small, this function returns OE_BUFFER_TOO_SMALL.
+ *
+ * @deprecated This function is deprecated. Use oe_get_target_info_v2() instead.
  *
  * @param report The report returned by **oe_get_report**.
  * @param report_size The size of **report** in bytes.
@@ -216,11 +270,49 @@ oe_result_t oe_get_report(
  * @retval OE_BUFFER_TOO_SMALL **target_info_buffer** is NULL or too small.
  *
  */
-oe_result_t oe_get_target_info(
+OE_DEPRECATED(oe_result_t oe_get_target_info_v1(
     const uint8_t* report,
     size_t report_size,
     void* target_info_buffer,
+    size_t* target_info_size),
+    "This function is deprecated. Use oe_get_target_info_v2() instead.");
+
+/**
+ * Extracts additional platform specific data from the report and writes
+ * it to *target_info_buffer*. After calling this function, the
+ * *target_info_buffer* can used for the *opt_params* field in *oe_get_report*.
+ *
+ * For example, on SGX, the *target_info_buffer* can be used as a
+ * sgx_target_info_t for local attestation.
+ *
+ * If the *target_info_buffer* is NULL or the *target_info_size* parameter is
+ * too small, this function returns OE_BUFFER_TOO_SMALL.
+ *
+ * @param[in] report The report returned by **oe_get_report**.
+ * @param[in] report_size The size of **report** in bytes.
+ * @param[out] target_info_buffer This points to the platform specific data
+ * upon success.
+ * @param[out] target_info_size This is set to
+ * the size of **target_info_buffer** on success.
+ *
+ * @retval OE_OK The platform specific data was successfully extracted.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
+ *
+ */
+oe_result_t oe_get_target_info_v2(
+    const uint8_t* report,
+    size_t report_size,
+    void** target_info_buffer,
     size_t* target_info_size);
+
+/**
+ * Frees a target info obtained from oe_get_target_info.
+ *
+ * @param[in] target_info_buffer The target info to free.
+ */
+void oe_free_target_info(
+    void* target_info_buffer);
 
 /**
  * Parse an enclave report into a standard format for reading.
@@ -265,6 +357,38 @@ oe_result_t oe_verify_report(
     const uint8_t* report,
     size_t report_size,
     oe_report_t* parsed_report);
+
+/**
+ * Gets the public key of an enclave.
+ *
+ * @param[in] enclave The instance of the enclave that will be used.
+ * @param[in] seal_policy The seal policy used to determine which key to get.
+ * @param[out] key_buffer Upon success, this points to the public key.
+ * @param[out] key_buffer_size Upon success, this contains the size of the *key_buffer* buffer.
+ * @param[out] key_info Reserved for future use.  Must pass NULL.
+ * @param[out] key_info_size Reserved for future use.  Must pass NULL.
+ *
+ * @retval OE_OK The public key was successfully obtained.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
+ */
+oe_result_t oe_get_public_key_by_policy(
+    oe_enclave_t* enclave,
+    oe_seal_policy_t seal_policy,
+    uint8_t** key_buffer,
+    size_t* key_buffer_size,
+    uint8_t** key_info,
+    size_t* key_info_size);
+
+/**
+ * Frees a public key.
+ *
+ * @param[in] key_buffer If non-NULL, frees the key buffer.
+ * @param[in] key_info If non-NULL, frees the key info.
+ */
+void oe_free_public_key(
+    uint8_t* key_buffer,
+    uint8_t* key_info);
 
 #ifdef UNTRUSTED_CODE
 #include <sgx.h>

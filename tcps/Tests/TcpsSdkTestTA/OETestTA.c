@@ -99,20 +99,20 @@ Tcps_StatusCode ecall_TestOERandom()
     return (count > 2) ? Tcps_Good : Tcps_Bad;
 }
 
-Tcps_StatusCode ecall_TestOEGetReport(uint32_t flags)
+Tcps_StatusCode ecall_TestOEGetReportV1(uint32_t flags)
 {
     uint8_t report_buffer[1024];
     size_t report_buffer_size = sizeof(report_buffer);
     uint8_t report_data[OE_REPORT_DATA_SIZE] = { 0 };
     size_t report_data_size = OE_REPORT_DATA_SIZE;
 
-    oe_result_t oeResult = oe_get_report(flags,
-                                         report_data,
-                                         report_data_size,
-                                         NULL, // opt_params,
-                                         0,    // opt_params_size,
-                                         report_buffer,
-                                         &report_buffer_size);
+    oe_result_t oeResult = oe_get_report_v1(flags,
+                                            report_data,
+                                            report_data_size,
+                                            NULL, // opt_params,
+                                            0,    // opt_params_size,
+                                            report_buffer,
+                                            &report_buffer_size);
     if (oeResult != OE_OK) {
         return Tcps_Bad;
     }
@@ -133,14 +133,50 @@ Tcps_StatusCode ecall_TestOEGetReport(uint32_t flags)
     return Tcps_Good;
 }
 
-Tcps_StatusCode ecall_TestOEGetTargetInfo(uint32_t flags)
+Tcps_StatusCode ecall_TestOEGetReportV2(uint32_t flags)
+{
+    uint8_t* report_buffer = NULL;
+    size_t report_buffer_size = sizeof(report_buffer);
+    uint8_t report_data[OE_REPORT_DATA_SIZE] = { 0 };
+    size_t report_data_size = OE_REPORT_DATA_SIZE;
+
+    oe_result_t oeResult = oe_get_report_v2(flags,
+                                            report_data,
+                                            report_data_size,
+                                            NULL, // opt_params,
+                                            0,    // opt_params_size,
+                                            &report_buffer,
+                                            &report_buffer_size);
+    if (oeResult != OE_OK) {
+        return Tcps_Bad;
+    }
+
+    oe_report_t parsed_report;
+    oeResult = oe_parse_report(report_buffer, report_buffer_size, &parsed_report);
+    if (oeResult != OE_OK) {
+        oe_free_report(report_buffer);
+        return Tcps_Bad;
+    }
+
+    oeResult = oe_verify_report(report_buffer,
+        report_buffer_size,
+        NULL);
+    oe_free_report(report_buffer);
+    if (oeResult != OE_OK) {
+        return Tcps_Bad;
+    }
+
+    return Tcps_Good;
+}
+
+Tcps_StatusCode ecall_TestOEGetTargetInfoV1(uint32_t flags)
 {
     uint8_t report_buffer[1024];
     size_t report_buffer_size = sizeof(report_buffer);
     uint8_t report_data[OE_REPORT_DATA_SIZE] = { 0 };
     size_t report_data_size = OE_REPORT_DATA_SIZE;
 
-    oe_result_t oeResult = oe_get_report(flags,
+    oe_result_t oeResult = oe_get_report_v1(flags,
         report_data,
         report_data_size,
         NULL, // opt_params,
@@ -153,7 +189,7 @@ Tcps_StatusCode ecall_TestOEGetTargetInfo(uint32_t flags)
 
     /* Get target info size. */
     size_t targetInfoSize = 0;
-    oeResult = oe_get_target_info(report_buffer, report_buffer_size, NULL, &targetInfoSize);
+    oeResult = oe_get_target_info_v1(report_buffer, report_buffer_size, NULL, &targetInfoSize);
     if (oeResult != OE_BUFFER_TOO_SMALL) {
         return Tcps_Bad;
     }
@@ -166,13 +202,13 @@ Tcps_StatusCode ecall_TestOEGetTargetInfo(uint32_t flags)
         return Tcps_BadOutOfMemory;
     }
     
-    oeResult = oe_get_target_info(report_buffer, report_buffer_size, targetInfo, &targetInfoSize);
+    oeResult = oe_get_target_info_v1(report_buffer, report_buffer_size, targetInfo, &targetInfoSize);
     if (oeResult != OE_OK) {
         free(targetInfo);
         return Tcps_Bad;
     }
 
-    oeResult = oe_get_report(flags,
+    oeResult = oe_get_report_v1(flags,
         report_data,
         report_data_size,
         targetInfo,
@@ -185,6 +221,57 @@ Tcps_StatusCode ecall_TestOEGetTargetInfo(uint32_t flags)
     }
 
     oeResult = oe_verify_report(report_buffer, report_buffer_size, NULL);
+    if (oeResult != OE_OK) {
+        return Tcps_Bad;
+    }
+
+    return Tcps_Good;
+}
+
+Tcps_StatusCode ecall_TestOEGetTargetInfoV2(uint32_t flags)
+{
+    uint8_t* report_buffer = NULL;
+    size_t report_buffer_size = sizeof(report_buffer);
+    uint8_t report_data[OE_REPORT_DATA_SIZE] = { 0 };
+    size_t report_data_size = OE_REPORT_DATA_SIZE;
+
+    oe_result_t oeResult = oe_get_report_v2(flags,
+        report_data,
+        report_data_size,
+        NULL, // opt_params,
+        0,    // opt_params_size,
+        &report_buffer,
+        &report_buffer_size);
+    if (oeResult != OE_OK) {
+        return Tcps_Bad;
+    }
+
+    size_t targetInfoSize = 0;
+    void* targetInfo = NULL;
+    oeResult = oe_get_target_info_v2(report_buffer, report_buffer_size, &targetInfo, &targetInfoSize);
+    oe_free_report(report_buffer);
+    if (oeResult != OE_OK) {
+        return Tcps_Bad;
+    }
+    if (targetInfoSize == 0) {
+        return Tcps_Bad;
+    }
+
+    oeResult = oe_get_report_v2(flags,
+        report_data,
+        report_data_size,
+        targetInfo,
+        targetInfoSize,
+        &report_buffer,
+        &report_buffer_size);
+    oe_free_target_info(targetInfo);
+    if (oeResult != OE_OK) {
+        oe_free_report(report_buffer);
+        return Tcps_Bad;
+    }
+
+    oeResult = oe_verify_report(report_buffer, report_buffer_size, NULL);
+    oe_free_report(report_buffer);
     if (oeResult != OE_OK) {
         return Tcps_Bad;
     }

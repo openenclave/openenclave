@@ -114,7 +114,7 @@ typedef struct _oe_report
     /** Size of the oe_report_t structure. */
     size_t size;
 
-    /** The enclave type. Currently always OE_ENCLAVE_TYPE_SGX. */
+    /** The enclave type. */
     oe_enclave_type_t type;
 
     /** Size of report_data */

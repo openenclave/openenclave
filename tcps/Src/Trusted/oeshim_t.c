@@ -143,13 +143,47 @@ char* oe_host_strndup(const char* str, size_t n)
  * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
  *
  */
-oe_result_t oe_get_report(
+oe_result_t oe_get_report_v1(
     uint32_t flags,
     const uint8_t* report_data,
     size_t report_data_size,
     const void* opt_params,
     size_t opt_params_size,
     uint8_t* report_buffer,
+    size_t* report_buffer_size)
+{
+    oe_result_t result;
+    uint8_t* new_buffer;
+
+    if (report_buffer == NULL ||
+        *report_buffer_size < sizeof(sgx_report_t)) {
+        *report_buffer_size = sizeof(sgx_report_t);
+        return OE_BUFFER_TOO_SMALL;
+    }
+
+    result = oe_get_report_v2(flags,
+                              report_data,
+                              report_data_size,
+                              opt_params,
+                              opt_params_size,
+                              &new_buffer,
+                              report_buffer_size);
+    if (result != OE_OK) {
+        return result;
+    }
+
+    memcpy(report_buffer, new_buffer, *report_buffer_size);
+    oe_free_report(new_buffer);
+    return OE_OK;
+}
+
+oe_result_t oe_get_report_v2(
+    uint32_t flags,
+    const uint8_t* report_data,
+    size_t report_data_size,
+    const void* opt_params,
+    size_t opt_params_size,
+    uint8_t** report_buffer,
     size_t* report_buffer_size)
 {
     sgx_report_t sgxReport = { 0 };
@@ -171,11 +205,6 @@ oe_result_t oe_get_report(
     if (opt_params_size != 0 &&
         opt_params_size != sizeof(sgx_target_info_t)) {
         return OE_INVALID_PARAMETER;
-    }
-    if (report_buffer == NULL ||
-        *report_buffer_size < sizeof(sgx_report_t)) {
-        *report_buffer_size = sizeof(sgx_report_t);
-        return OE_BUFFER_TOO_SMALL;
     }
 
     sgxStatus = sgx_create_report(sgxTargetInfo, sgxReportData, &sgxReport);
@@ -199,10 +228,18 @@ oe_result_t oe_get_report(
         }
     }
 
-    memcpy(report_buffer, &sgxReport, sizeof(sgxReport));
+    *report_buffer = malloc(sizeof(sgx_report_t));
+    if (report_buffer == NULL) {
+        return OE_OUT_OF_MEMORY;
+    }
+    memcpy(*report_buffer, &sgxReport, sizeof(sgxReport));
     *report_buffer_size = sizeof(sgxReport);
-
     return OE_OK;
+}
+
+void oe_free_report(uint8_t* report_buffer)
+{
+    free(report_buffer);
 }
 
 oe_result_t oe_verify_report(
