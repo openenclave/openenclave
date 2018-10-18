@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "rsa.h"
+#include "../rsa.h"
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/defs.h>
 #include <openenclave/internal/raise.h>
@@ -10,8 +10,8 @@
 #include <openssl/evp.h>
 #include <openssl/pem.h>
 #include <string.h>
-#include "init.h"
-#include "key.h"
+#include "../init.h"
+#include "../key.h"
 
 /* Magic numbers for the RSA key implementation structures */
 static const uint64_t _PRIVATE_KEY_MAGIC = 0x7bf635929a714b2c;
@@ -458,6 +458,9 @@ done:
 
     if (rsa_public)
         RSA_free(rsa_public);
+
+    if (rsa_private)
+        RSA_free(rsa_private);
 
     return result;
 }

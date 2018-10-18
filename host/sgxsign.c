@@ -14,10 +14,16 @@
 #include <openenclave/internal/str.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
-#include <openssl/bn.h>
 #include <time.h>
-#include "../crypto/rsa.h"
-#include "../enclave.h"
+#include "crypto/rsa.h"
+#include "enclave.h"
+
+/* Use mbedtls/openssl for bignum math on Windows/Linux respectively. */
+#if defined(_WIN32)
+#include <mbedtls/bignum.h>
+#else
+#include <openssl/bn.h>
+#endif
 
 static void _mem_reverse(void* dest_, const void* src_, size_t n)
 {
@@ -41,9 +47,13 @@ static oe_result_t _get_date(unsigned int* date)
 
     t = time(NULL);
 
+#if defined(_MSC_VER)
+    if (localtime_s(&tm, &t) != 0)
+        OE_RAISE(OE_FAILURE);
+#else
     if (localtime_r(&t, &tm) == NULL)
         OE_RAISE(OE_FAILURE);
-
+#endif
     {
         char s[9];
         unsigned char b[8];
@@ -124,6 +134,183 @@ done:
     return result;
 }
 
+#if defined(_WIN32)
+static oe_result_t _calc_q1_q2_bignum(
+    const unsigned char* signature,
+    size_t signature_size,
+    const unsigned char* modulus,
+    size_t modulus_size,
+    mbedtls_mpi* q1,
+    mbedtls_mpi* q2)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    mbedtls_mpi s;
+    mbedtls_mpi m;
+    mbedtls_mpi r1;
+    mbedtls_mpi t1;
+
+    mbedtls_mpi_init(&s);
+    mbedtls_mpi_init(&m);
+    mbedtls_mpi_init(&r1);
+    mbedtls_mpi_init(&t1);
+
+    if (!signature || !signature_size || !modulus || !modulus_size || !q1 ||
+        !q2)
+    {
+        OE_RAISE(OE_INVALID_PARAMETER);
+    }
+
+    /* Create new objects */
+    {
+        if (mbedtls_mpi_read_binary(&s, signature, signature_size) != 0)
+            OE_RAISE(OE_OUT_OF_MEMORY);
+
+        if (mbedtls_mpi_read_binary(&m, modulus, modulus_size) != 0)
+            OE_RAISE(OE_OUT_OF_MEMORY);
+    }
+
+    /*
+     * Intel SGX docs state that Q1 and Q2 should store the following values.
+     *   - Q1 = FLOOR(signature^2 / modulus)
+     *   - Q2 = FLOOR(signature^3 - Q1 * signature * modulus) / modulus
+     *
+     * These values are used to optimize the RSA signature verification,
+     * which is normally calculated as S^3 mod M. We see that we can
+     * derive these Q1 & Q2 values:
+     *  - S^3 mod M
+     *    -> (S * (S^2 mod M)) mod M
+     *  - S^2 mod M
+     *    -> S^2 = FLOOR(S^2 / M) * M + R1
+     *    -> R1 = S^2 - Q1 * M
+     *  - (S * R1) mod M
+     *    -> S * R1 = FLOOR (S * R1 / M) * M + R2
+     *    -> R2 = S * R1 - Q2 * M
+     *    -> R2 = S * (S^2 - Q1 * M) - Q2 * M
+     */
+    {
+        if (mbedtls_mpi_mul_mpi(&t1, &s, &s) != 0)
+            OE_RAISE(OE_FAILURE);
+
+        if (mbedtls_mpi_div_mpi(q1, &r1, &t1, &m) != 0)
+            OE_RAISE(OE_FAILURE);
+
+        /*
+         * As shown by the derivations of Q1 and Q2, we can get Q2 by
+         * calculating (S * R1) / M instead of following Intel's
+         * formula directly. Intel also does this in their SDK.
+         */
+        if (mbedtls_mpi_mul_mpi(&t1, &s, &r1) != 0)
+            OE_RAISE(OE_FAILURE);
+
+        if (mbedtls_mpi_div_mpi(q2, &r1, &t1, &m) != 0)
+            OE_RAISE(OE_FAILURE);
+    }
+
+    result = OE_OK;
+
+done:
+    mbedtls_mpi_free(&s);
+    mbedtls_mpi_free(&m);
+    mbedtls_mpi_free(&r1);
+    mbedtls_mpi_free(&t1);
+
+    return result;
+}
+
+static oe_result_t _copy_q_to_buffer(
+    const mbedtls_mpi* q,
+    unsigned char* q_out,
+    size_t q_out_size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    unsigned char* qbuf = NULL;
+
+    if (!q || !q_out || !q_out_size)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Sanity check. The Q1/Q2 math shouldn't make this bigger an expected. */
+    if (mbedtls_mpi_size(q) > q_out_size)
+        OE_RAISE(OE_FAILURE);
+
+    qbuf = (unsigned char*)malloc(q_out_size);
+    if (!qbuf)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    /* If qbuf is too big, it will be zero filled by mbedtls. */
+    if (mbedtls_mpi_write_binary(q, qbuf, q_out_size) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    _mem_reverse(q_out, qbuf, q_out_size);
+
+    result = OE_OK;
+
+done:
+    if (qbuf)
+        free(qbuf);
+
+    return result;
+}
+
+static oe_result_t _get_q1_and_q2(
+    const void* signature,
+    size_t signature_size,
+    const void* modulus,
+    size_t modulus_size,
+    void* q1_out,
+    size_t q1_out_size,
+    void* q2_out,
+    size_t q2_out_size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    mbedtls_mpi q1;
+    mbedtls_mpi q2;
+    unsigned char* sbuf = NULL;
+    unsigned char* mbuf = NULL;
+
+    mbedtls_mpi_init(&q1);
+    mbedtls_mpi_init(&q2);
+
+    if (!signature || !signature_size || !modulus || !modulus_size || !q1_out ||
+        !q1_out_size || !q2_out || !q2_out_size)
+    {
+        OE_RAISE(OE_INVALID_PARAMETER);
+    }
+
+    sbuf = (unsigned char*)malloc(signature_size);
+    if (sbuf == NULL)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    mbuf = (unsigned char*)malloc(modulus_size);
+    if (mbuf == NULL)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    /* Reverse the buffers, since mbedtls expects them in big endian. */
+    _mem_reverse(sbuf, signature, signature_size);
+    _mem_reverse(mbuf, modulus, modulus_size);
+
+    /* Calculate Q1 and Q2 values. */
+    OE_CHECK(
+        _calc_q1_q2_bignum(sbuf, signature_size, mbuf, modulus_size, &q1, &q2));
+
+    /* Copy Q1 and Q2 to Q1OUT and Q2OUT parameters */
+    OE_CHECK(_copy_q_to_buffer(&q1, q1_out, q1_out_size));
+    OE_CHECK(_copy_q_to_buffer(&q2, q2_out, q2_out_size));
+
+    result = OE_OK;
+
+done:
+    mbedtls_mpi_free(&q1);
+    mbedtls_mpi_free(&q2);
+
+    if (sbuf)
+        free(sbuf);
+
+    if (mbuf)
+        free(mbuf);
+
+    return result;
+}
+#else
 static oe_result_t _get_q1_and_q2(
     const void* signature,
     size_t signature_size,
@@ -246,6 +433,7 @@ done:
 
     return result;
 }
+#endif
 
 static oe_result_t _init_sigstruct(
     const OE_SHA256* mrenclave,

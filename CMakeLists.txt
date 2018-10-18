@@ -85,13 +85,13 @@ enable_testing()
 include(add_enclave_test)
 
 # Recurse through subdirectories
+add_subdirectory(3rdparty)
 add_subdirectory(host)
 add_subdirectory(include)
 add_subdirectory(tests)
 add_subdirectory(tools)
 
 if (UNIX)
-  add_subdirectory(3rdparty)
   add_subdirectory(debugger)
   add_subdirectory(docs/refman)
   add_subdirectory(enclave)
