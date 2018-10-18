@@ -7,14 +7,16 @@
 #include "../init.h"
 
 /*
-    _reloc_bias is used to calculate relocation difference *BEFORE*
-   relocation.
-    Since _reloc_bias hasn't been relocated, it contains the original value.
-    Therefore, before relocation,
-        relocation_diff = (uint64_t)&_reloc_bias - _reloc_bias;
-    because &_reloc_bias is pc-relative and will be the post-relocation
-   value.
-*/
+ *  _reloc_bias is used to calculate relocation difference *BEFORE*
+ *  relocation.
+ *
+ *  Since _reloc_bias hasn't been relocated, it contains the original value.
+ *  Therefore, before relocation,
+ *      relocation_diff = (uint64_t)&_reloc_bias - _reloc_bias;
+ *
+ *  because &_reloc_bias is pc-relative and will be the post-relocation
+ *  value.
+ */
 static volatile uint64_t _reloc_bias = (uint64_t)&_reloc_bias;
 
 static uint64_t _next_reloc_addr(uint64_t reloc_addr)
@@ -70,13 +72,6 @@ bool oe_apply_relocations(void)
     uint64_t reloc_diff = (uint64_t)&_reloc_bias - _reloc_bias;
     bool result = true;
 
-    /*
-        Can't assert before enclave is initialized.
-
-        oe_assert((reloc_diff & (OE_PAGE_SIZE - 1)) == 0);
-        oe_assert((image_base & (OE_PAGE_SIZE - 1)) == 0);
-    */
-
     while (reloc_addr < reloc_end)
     {
         result = _relocate_one_block(image_base, reloc_addr, reloc_diff);
@@ -88,9 +83,9 @@ bool oe_apply_relocations(void)
     }
 
     /*
-        _reloc_bias must be allocated after relocation. Therefore it must
-        be equal to its address.
-    */
+     *  _reloc_bias must be allocated after relocation. Therefore it must
+     *  be equal to its address.
+     */
 
     return result && (((uint64_t)&_reloc_bias - _reloc_bias) == 0);
 }

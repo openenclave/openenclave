@@ -32,6 +32,10 @@ const size_t __oe_get_heap_size(void);
 /* The enclave handle passed by host during initialization */
 extern oe_enclave_t* oe_enclave;
 
+uint64_t oe_get_base_heap_page(void);
+uint64_t oe_get_num_heap_pages(void);
+uint64_t oe_get_num_pages(void);
+
 OE_EXTERNC_END
 
 #endif /* _OE_GLOBALS_H */

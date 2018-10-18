@@ -125,3 +125,28 @@ oe_enclave_t* oe_get_enclave(void)
 {
     return oe_enclave;
 }
+
+/*
+**==============================================================================
+**
+** Page-oriented convenience functions.
+**
+**==============================================================================
+*/
+
+uint64_t oe_get_base_heap_page(void)
+{
+    const uint64_t heap_base = (uint64_t)__oe_get_heap_base();
+    const uint64_t enclave_base = (uint64_t)__oe_get_enclave_base();
+    return (heap_base - enclave_base) / OE_PAGE_SIZE;
+}
+
+uint64_t oe_get_num_heap_pages(void)
+{
+    return __oe_get_heap_size() / OE_PAGE_SIZE;
+}
+
+uint64_t oe_get_num_pages(void)
+{
+    return __oe_get_enclave_size() / OE_PAGE_SIZE;
+}

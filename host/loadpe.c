@@ -463,7 +463,7 @@ oe_result_t oe_load_pe_enclave_image(
         OE_RAISE(OE_FAILURE);
     }
 
-    image->type = OE_IMAGE_TYPE_ELF;
+    image->type = OE_IMAGE_TYPE_PE;
     image->calculate_size = _calculate_size;
     image->add_pages = _add_pages;
     image->patch = _patch;

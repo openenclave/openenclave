@@ -1857,7 +1857,7 @@ oe_result_t elf64_load_relocations(
 
     /* Make a copy of the relocation section (zero-padded to page size) */
     {
-        *size_out = __oe_round_up_to_page_size(size);
+        *size_out = oe_round_up_to_page_size(size);
 
         if (!(*data_out = malloc(*size_out)))
         {
