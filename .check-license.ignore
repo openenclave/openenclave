@@ -92,3 +92,4 @@ VERSION
 ./tests/libunwind/tests.unsupported
 *Jenkinsfile
 .gitattributes
+./host/linux/pe.h
