@@ -316,7 +316,7 @@ static oe_result_t _build_ecall_array(
 done:
     if (OE_OK != result)
     {
-        _oe_free_enclave_ecalls(enclave);
+        oe_free_enclave_ecalls(enclave);
     }
     return result;
 }

@@ -36,7 +36,7 @@ static oe_once_type _enclave_init_once;
 
 static void _initialize_exception_handling(void)
 {
-    _oe_initialize_host_exception();
+    oe_initialize_host_exception();
 }
 
 /*
@@ -655,7 +655,7 @@ done:
     return result;
 }
 
-void _oe_free_enclave_ecalls(oe_enclave_t* enclave)
+void oe_free_enclave_ecalls(oe_enclave_t* enclave)
 {
     if (enclave->ecalls)
     {
@@ -770,7 +770,7 @@ done:
 
     if (result != OE_OK && enclave)
     {
-        _oe_free_enclave_ecalls(enclave);
+        oe_free_enclave_ecalls(enclave);
         free(enclave);
     }
 
@@ -814,7 +814,7 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
         result = oe_sgx_delete_enclave(enclave);
 
         /* Release the enclave->ecalls[] array */
-        _oe_free_enclave_ecalls(enclave);
+        oe_free_enclave_ecalls(enclave);
 
 #if defined(_WIN32)
 
