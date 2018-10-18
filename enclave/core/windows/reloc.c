@@ -7,15 +7,15 @@
 #include "../init.h"
 
 /*
-    _oe_reloc_bias is used to calculate relocation difference *BEFORE*
+    _reloc_bias is used to calculate relocation difference *BEFORE*
    relocation.
-    Since _oe_reloc_bias hasn't been relocated, it contains the original value.
+    Since _reloc_bias hasn't been relocated, it contains the original value.
     Therefore, before relocation,
-        relocation_diff = (uint64_t)&_oe_reloc_bias - _oe_reloc_bias;
-    because &_oe_reloc_bias is pc-relative and will be the post-relocation
+        relocation_diff = (uint64_t)&_reloc_bias - _reloc_bias;
+    because &_reloc_bias is pc-relative and will be the post-relocation
    value.
 */
-static volatile uint64_t _oe_reloc_bias = (uint64_t)&_oe_reloc_bias;
+static volatile uint64_t _reloc_bias = (uint64_t)&_reloc_bias;
 
 static uint64_t _next_reloc_addr(uint64_t reloc_addr)
 {
@@ -55,19 +55,19 @@ static bool _relocate_one_block(
 /*
 **==============================================================================
 **
-** _oe_apply_relocations()
+** oe_apply_relocations()
 **
 **     Apply relocations from PE Enclave image.
 **
 **==============================================================================
 */
 
-bool _oe_apply_relocations(void)
+bool oe_apply_relocations(void)
 {
     uint64_t image_base = (uint64_t)__oe_get_enclave_base();
     uint64_t reloc_addr = (uint64_t)__oe_get_reloc_base();
     uint64_t reloc_end = reloc_addr + __oe_get_reloc_size();
-    uint64_t reloc_diff = (uint64_t)&_oe_reloc_bias - _oe_reloc_bias;
+    uint64_t reloc_diff = (uint64_t)&_reloc_bias - _reloc_bias;
     bool result = true;
 
     /*
@@ -88,9 +88,9 @@ bool _oe_apply_relocations(void)
     }
 
     /*
-        _oe_reloc_bias must be allocated after relocation. Therefore it must
+        _reloc_bias must be allocated after relocation. Therefore it must
         be equal to its address.
     */
 
-    return result && (((uint64_t)&_oe_reloc_bias - _oe_reloc_bias) == 0);
+    return result && (((uint64_t)&_reloc_bias - _reloc_bias) == 0);
 }
