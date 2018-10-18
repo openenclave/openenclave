@@ -18,9 +18,50 @@
 
 #if defined(_WIN32)
 #include <windows.h>
-#elif defined(__linux__)
-#include "windows_stubs.h"
 #endif
+
+#if defined(__linux__)
+#include "pe.h"
+#define PAGE_READWRITE 0x04
+#define LOAD_LIBRARY_AS_IMAGE_RESOURCE 0x00000020
+#define IMAGE_FILE_MACHINE_AMD64 0x8664
+#define IMAGE_NT_OPTIONAL_HDR64_MAGIC 0x20b
+typedef void* LPVOID;
+typedef void* HMODULE;
+typedef const char* LPCSTR;
+typedef void* HANDLE;
+typedef UINT32 DWORD;
+typedef size_t SIZE_T;
+typedef DWORD* PDWORD;
+#endif /* defined(__linux__) */
+
+#if defined(__linux__)
+OE_INLINE HMODULE LoadLibraryExA(
+    LPCSTR lpLibFileName,
+    HANDLE hFile,
+    DWORD dwFlags)
+{
+    return NULL;
+}
+#endif /* defined(__linux__) */
+
+#if defined(__linux__)
+OE_INLINE BOOL VirtualProtect(
+    LPVOID lpAddress,
+    SIZE_T dwSize,
+    DWORD flNewProtect,
+    PDWORD lpflOldProtect)
+{
+    return false;
+}
+#endif /* defined(__linux__) */
+
+#if defined(__linux__)
+OE_INLINE BOOL FreeLibrary(HMODULE hLibModule)
+{
+    return false;
+}
+#endif /* defined(__linux__) */
 
 #include "enclave.h"
 #include "memalign.h"

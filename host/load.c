@@ -9,7 +9,7 @@
 #if defined(_WIN32)
 #include <windows.h>
 #elif defined(__linux__)
-#include "windows_stubs.h"
+#include "pe.h"
 #endif
 
 static oe_result_t _get_image_type(const char* path, oe_image_type* type)
