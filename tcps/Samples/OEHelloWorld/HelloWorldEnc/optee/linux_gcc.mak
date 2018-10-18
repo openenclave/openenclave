@@ -11,7 +11,7 @@ CFG_TEE_TA_LOG_LEVEL=4
 
 CFLAGS += -DCFG_TEE_TA_LOG_LEVEL=$(CFG_TEE_TA_LOG_LEVEL) $(EXTRA_CFLAGS)
 
-O := $(TCPS_SDK_OPTEE_BIN_PATH)/Samples/EchoSockets
+O := $(TCPS_SDK_OPTEE_BIN_PATH)/Samples/HelloWorldEnc
 
 include $(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk
 
