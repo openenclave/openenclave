@@ -11,8 +11,14 @@ add_custom_command(
             --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../edl
             --trusted
 
-    # Regenerate if any edl file changes
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../edl/*.edl
+    # Regenerate if any edl file changes or oeedger8r changes
+    # Temorary workaround:
+    # Add explict dependency to oeedger8r binary.
+    # oeedger8r custom target cannot declare its output binary.
+    # Without the explicity dependecy to the binary below, running make on a test
+    # will rebuild the edger8r if it is out of date, but will not invoke the newly build edger8r
+    # on the edl file.
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../edl/*.edl oeedger8r ${OE_BINDIR}/oeedger8r
 )
 
 # Copy generated c file to cpp file.
