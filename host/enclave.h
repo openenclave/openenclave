@@ -135,6 +135,14 @@ struct _oe_enclave
 
 // Static asserts for consistency with
 // debugger/pythonExtension/gdb_sgx_plugin.py
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_t, magic) == 0);
+
+// Python plugin seems to code this as just 2.
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_t, addr) == 2 * sizeof(void*));
+
+// The fields up to binding correspond to 'ENCLAVE_HEADER'
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_t, bindings) == 0x28);
+
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_t, debug) == 0x598);
 OE_STATIC_ASSERT(
     OE_OFFSETOF(oe_enclave_t, debug) + 1 ==
