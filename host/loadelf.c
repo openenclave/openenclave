@@ -105,8 +105,8 @@ static oe_result_t _oe_load_elf_image(
             if (sh == NULL)
                 OE_RAISE(OE_FAILURE);
 
-            const char* name = elf64_get_string_from_shstrtab(
-                &image->u.elf.elf, sh->sh_name);
+            const char* name =
+                elf64_get_string_from_shstrtab(&image->u.elf.elf, sh->sh_name);
 
             if (name)
             {
@@ -230,8 +230,7 @@ static oe_result_t _oe_load_elf_image(
     /* Add all loadable program segments to SEGMENTS array */
     for (i = 0, num_segments = 0; i < eh->e_phnum; i++)
     {
-        const elf64_phdr_t* ph =
-            elf64_get_program_header(&image->u.elf.elf, i);
+        const elf64_phdr_t* ph = elf64_get_program_header(&image->u.elf.elf, i);
         oe_elf_segment_t* seg = &image->u.elf.segments[num_segments];
         void* segdata;
 
@@ -738,7 +737,7 @@ done:
 }
 
 oe_result_t oe_load_elf_enclave_image(
-    const char* path, 
+    const char* path,
     oe_enclave_image_t* image)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -750,9 +749,8 @@ oe_result_t oe_load_elf_enclave_image(
 
     /* Load the relocations into memory (zero-padded to next page size) */
     if (elf64_load_relocations(
-            &image->u.elf.elf,
-            &image->u.elf.reloc_data,
-            &image->reloc_size) != 0)
+            &image->u.elf.elf, &image->u.elf.reloc_data, &image->reloc_size) !=
+        0)
         OE_RAISE(OE_FAILURE);
 
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)

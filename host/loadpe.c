@@ -15,17 +15,16 @@
 #include <openenclave/internal/utils.h>
 #include <stdlib.h>
 #include <string.h>
-
-#if defined(_WIN32)
-#include <windows.h>
-#elif defined(__linux__)
-#include "windows_stubs.h"
-#endif
-
 #include "enclave.h"
 #include "memalign.h"
 #include "sgxload.h"
 #include "strings.h"
+
+#if defined(_WIN32)
+#include <windows.h>
+#elif defined(__linux__)
+#include "linux/windows.h"
+#endif
 
 static oe_result_t _oe_get_nt_header(
     char* image_base,
@@ -70,9 +69,7 @@ static oe_result_t _sgx_load_enclave_properties(
     assert(properties);
 
     memcpy(
-        properties,
-        image->image_base + image->oeinfo_rva,
-        sizeof(*properties));
+        properties, image->image_base + image->oeinfo_rva, sizeof(*properties));
     return OE_OK;
 }
 
@@ -86,9 +83,7 @@ static oe_result_t _sgx_update_enclave_properties(
     assert(properties);
 
     memcpy(
-        image->image_base + image->oeinfo_rva,
-        properties,
-        sizeof(*properties));
+        image->image_base + image->oeinfo_rva, properties, sizeof(*properties));
     return OE_OK;
 }
 
@@ -363,7 +358,7 @@ static oe_result_t _patch(
 }
 
 oe_result_t oe_load_pe_enclave_image(
-    const char* path, 
+    const char* path,
     oe_enclave_image_t* image)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -383,8 +378,7 @@ oe_result_t oe_load_pe_enclave_image(
     }
 
     /* get image base from module by zeroing out the bottom bits */
-    image->image_base =
-        (char*)((uint64_t)image->u.pe.module & -OE_PAGE_SIZE);
+    image->image_base = (char*)((uint64_t)image->u.pe.module & -OE_PAGE_SIZE);
 
     /* get nt header */
     OE_CHECK(_oe_get_nt_header(image->image_base, &nt_header));
