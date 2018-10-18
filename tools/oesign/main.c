@@ -343,7 +343,7 @@ done:
     return rc;
 }
 
-static int _load_file(const char* path, void** data, size_t* size)
+static int _load_pem_file(const char* path, void** data, size_t* size)
 {
     int rc = -1;
     FILE* is = NULL;
@@ -368,8 +368,12 @@ static int _load_file(const char* path, void** data, size_t* size)
         *size = st.st_size;
     }
 
-    /* Allocate memory */
-    if (!(*data = (uint8_t*)malloc(*size)))
+    /* Allocate memory. We add 1 to null terimate the file since the crypto
+     * libraries require null terminated PEM data. */
+    if (*size == SIZE_MAX)
+        goto done;
+
+    if (!(*data = (uint8_t*)malloc(*size + 1)))
         goto done;
 
     /* Open the file */
@@ -379,6 +383,8 @@ static int _load_file(const char* path, void** data, size_t* size)
     /* Read file into memory */
     if (fread(*data, 1, *size, is) != *size)
         goto done;
+
+    *size += 1;
 
     rc = 0;
 
@@ -614,7 +620,7 @@ int main(int argc, const char* argv[])
     }
 
     /* Load private key into memory */
-    if (_load_file(keyfile, &pem_data, &pem_size) != 0)
+    if (_load_pem_file(keyfile, &pem_data, &pem_size) != 0)
     {
         Err("Failed to load file: %s", keyfile);
         goto done;

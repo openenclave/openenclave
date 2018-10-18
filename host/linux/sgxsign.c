@@ -8,18 +8,16 @@
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/mem.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/rsa.h>
 #include <openenclave/internal/sgxsign.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/str.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include <openssl/bn.h>
-#include <openssl/err.h>
-#include <openssl/pem.h>
-#include <openssl/rsa.h>
 #include <time.h>
-#include "../crypto/init.h"
-#include "../host/enclave.h"
+#include "../crypto/rsa.h"
+#include "../enclave.h"
 
 static void _mem_reverse(void* dest_, const void* src_, size_t n)
 {
@@ -71,18 +69,24 @@ done:
     return result;
 }
 
-static oe_result_t _get_modulus(RSA* rsa, uint8_t modulus[OE_KEY_SIZE])
+static oe_result_t _get_modulus(
+    const oe_rsa_public_key_t* rsa,
+    uint8_t modulus[OE_KEY_SIZE])
 {
     oe_result_t result = OE_UNEXPECTED;
     uint8_t buf[OE_KEY_SIZE];
+    size_t bufsize = sizeof(buf);
 
     if (!rsa || !modulus)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (!BN_bn2bin(rsa->n, buf))
+    OE_CHECK(oe_rsa_public_key_get_modulus(rsa, buf, &bufsize));
+
+    /* RSA key length is the modulus length, so these have to be equal. */
+    if (bufsize != OE_KEY_SIZE)
         OE_RAISE(OE_FAILURE);
 
-    _mem_reverse(modulus, buf, OE_KEY_SIZE);
+    _mem_reverse(modulus, buf, bufsize);
 
     result = OE_OK;
 
@@ -90,24 +94,29 @@ done:
     return result;
 }
 
-static oe_result_t _get_exponent(RSA* rsa, uint8_t exponent[OE_EXPONENT_SIZE])
+static oe_result_t _get_exponent(
+    const oe_rsa_public_key_t* rsa,
+    uint8_t exponent[OE_EXPONENT_SIZE])
 {
     oe_result_t result = OE_UNEXPECTED;
-    // uint8_t buf[OE_EXPONENT_SIZE];
+    uint8_t buf[OE_EXPONENT_SIZE];
+    size_t bufsize = sizeof(buf);
 
     if (!rsa || !exponent)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (rsa->e->top != 1)
-        OE_RAISE(OE_FAILURE);
+    OE_CHECK(oe_rsa_public_key_get_exponent(rsa, buf, &bufsize));
 
-    {
-        uint64_t x = rsa->e->d[0];
-        exponent[0] = (x & 0x00000000000000FF) >> 0;
-        exponent[1] = (x & 0x000000000000FF00) >> 8;
-        exponent[2] = (x & 0x0000000000FF0000) >> 16;
-        exponent[3] = (x & 0x00000000FF000000) >> 24;
-    }
+    /* Exponent is in big endian. So, we need to reverse. */
+    _mem_reverse(exponent, buf, bufsize);
+
+    /* We zero out the rest to get the right exponent in little endian. */
+    OE_CHECK(
+        oe_memset_s(
+            exponent + bufsize,
+            OE_EXPONENT_SIZE - bufsize,
+            0,
+            OE_EXPONENT_SIZE - bufsize));
 
     result = OE_OK;
 
@@ -243,10 +252,12 @@ static oe_result_t _init_sigstruct(
     uint64_t attributes,
     uint16_t product_id,
     uint16_t security_version,
-    RSA* rsa,
+    const oe_rsa_private_key_t* rsa,
     sgx_sigstruct_t* sigstruct)
 {
     oe_result_t result = OE_UNEXPECTED;
+    oe_rsa_public_key_t rsa_public;
+    bool key_initialized = false;
 
     if (!sigstruct)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -282,11 +293,14 @@ static oe_result_t _init_sigstruct(
     /* sgx_sigstruct_t.swdefined */
     sigstruct->swdefined = 0;
 
-    /* sgx_sigstruct_t.modulus */
-    OE_CHECK(_get_modulus(rsa, sigstruct->modulus));
+    OE_CHECK(oe_rsa_get_public_key_from_private(rsa, &rsa_public));
+    key_initialized = true;
 
-    /* sgx_sigstruct_t.date */
-    OE_CHECK(_get_exponent(rsa, sigstruct->exponent));
+    /* sgx_sigstruct_t.modulus */
+    OE_CHECK(_get_modulus(&rsa_public, sigstruct->modulus));
+
+    /* sgx_sigstruct_t.exponent */
+    OE_CHECK(_get_exponent(&rsa_public, sigstruct->exponent));
 
     /* sgx_sigstruct_t.signature: fill in after other fields */
 
@@ -346,22 +360,20 @@ static oe_result_t _init_sigstruct(
             OE_SHA256 sha256;
             oe_sha256_context_t context;
             unsigned char signature[OE_KEY_SIZE];
-            unsigned int signature_size;
+            size_t signature_size = sizeof(signature);
 
             oe_sha256_init(&context);
             oe_sha256_update(&context, buf, n);
             oe_sha256_final(&context, &sha256);
 
-            if (!RSA_sign(
-                    NID_sha256,
+            OE_CHECK(
+                oe_rsa_private_key_sign(
+                    rsa,
+                    OE_HASH_TYPE_SHA256,
                     sha256.buf,
                     sizeof(sha256),
                     signature,
-                    &signature_size,
-                    rsa))
-            {
-                OE_RAISE(OE_FAILURE);
-            }
+                    &signature_size));
 
             if (sizeof(sigstruct->signature) != signature_size)
                 OE_RAISE(OE_FAILURE);
@@ -385,49 +397,8 @@ static oe_result_t _init_sigstruct(
     result = OE_OK;
 
 done:
-    return result;
-}
-
-static oe_result_t _load_rsa_private_key(
-    const uint8_t* pem_data,
-    size_t pem_size,
-    RSA** key)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    BIO* bio = NULL;
-    RSA* rsa = NULL;
-
-    if (key)
-        *key = NULL;
-
-    /* Check parameters */
-    if (!pem_data || pem_size == 0 || !key)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Initialize OpenSSL */
-    oe_initialize_openssl();
-
-    /* Create a BIO object for loading the PEM data */
-    if (!(bio = BIO_new_mem_buf(pem_data, pem_size)))
-        OE_RAISE(OE_FAILURE);
-
-    /* Read the RSA structure from the PEM data */
-    if (!(rsa = PEM_read_bio_RSAPrivateKey(bio, &rsa, NULL, NULL)))
-        OE_RAISE(OE_FAILURE);
-
-    /* Set the output key parameter */
-    *key = rsa;
-    rsa = NULL;
-
-    result = OE_OK;
-
-done:
-
-    if (rsa)
-        RSA_free(rsa);
-
-    if (bio)
-        BIO_free(bio);
+    if (key_initialized)
+        oe_rsa_public_key_free(&rsa_public);
 
     return result;
 }
@@ -441,18 +412,20 @@ oe_result_t oe_sgx_sign_enclave(
     size_t pem_size,
     sgx_sigstruct_t* sigstruct)
 {
+    oe_rsa_private_key_t rsa;
+    bool rsa_initalized = false;
     oe_result_t result = OE_UNEXPECTED;
-    RSA* rsa = NULL;
 
     if (sigstruct)
         memset(sigstruct, 0, sizeof(sgx_sigstruct_t));
 
     /* Check parameters */
-    if (!mrenclave || !sigstruct)
+    if (!mrenclave || !sigstruct || !pem_data)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Load the RSA private key from PEM */
-    OE_CHECK(_load_rsa_private_key(pem_data, pem_size, &rsa));
+    OE_CHECK(oe_rsa_private_key_read_pem(&rsa, pem_data, pem_size));
+    rsa_initalized = true;
 
     /* Initialize the sigstruct */
     OE_CHECK(
@@ -461,14 +434,14 @@ oe_result_t oe_sgx_sign_enclave(
             attributes,
             product_id,
             security_version,
-            rsa,
+            &rsa,
             sigstruct));
 
     result = OE_OK;
 
 done:
-    if (rsa)
-        RSA_free(rsa);
+    if (rsa_initalized)
+        oe_rsa_private_key_free(&rsa);
 
     return result;
 }

@@ -407,3 +407,57 @@ oe_result_t oe_rsa_public_key_equal(
     return _public_key_equal(
         (oe_public_key_t*)public_key1, (oe_public_key_t*)public_key2, equal);
 }
+
+oe_result_t oe_rsa_get_public_key_from_private(
+    const oe_rsa_private_key_t* private_key,
+    oe_rsa_public_key_t* public_key)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_private_key_t* private_key_temp = (oe_private_key_t*)private_key;
+    RSA* rsa_private = NULL;
+    RSA* rsa_public = NULL;
+    EVP_PKEY* rsa_public_pkey = NULL;
+
+    /* Check for invalid parameters */
+    if (!private_key || !public_key)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Get RSA private key */
+    if (!(rsa_private = EVP_PKEY_get1_RSA(private_key_temp->pkey)))
+        OE_RAISE(OE_FAILURE);
+
+    /* Check if it's possible to get the public key. */
+    if (!rsa_private->e || !rsa_private->n)
+        OE_RAISE(OE_FAILURE);
+
+    /* Create RSA public key. */
+    if (!(rsa_public = RSA_new()))
+        OE_RAISE(OE_FAILURE);
+
+    if (!(rsa_public->e = BN_dup(rsa_private->e)))
+        OE_RAISE(OE_FAILURE);
+
+    if (!(rsa_public->n = BN_dup(rsa_private->n)))
+        OE_RAISE(OE_FAILURE);
+
+    /* Init the OE public key type. */
+    if (!(rsa_public_pkey = EVP_PKEY_new()))
+        OE_RAISE(OE_FAILURE);
+
+    if (EVP_PKEY_set1_RSA(rsa_public_pkey, rsa_public) == 0)
+        OE_RAISE(OE_FAILURE);
+
+    oe_rsa_public_key_init(public_key, rsa_public_pkey);
+
+    result = OE_OK;
+    rsa_public_pkey = NULL;
+
+done:
+    if (rsa_public_pkey)
+        EVP_PKEY_free(rsa_public_pkey);
+
+    if (rsa_public)
+        RSA_free(rsa_public);
+
+    return result;
+}
