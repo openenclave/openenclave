@@ -51,7 +51,7 @@ static oe_result_t _sgx_load_enclave_properties(
     oe_sgx_enclave_properties_t* properties)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_enclave_image_t oeimage = { 0 };
+    oe_enclave_image_t oeimage = {0};
 
     if (properties)
         memset(properties, 0, sizeof(oe_sgx_enclave_properties_t));
