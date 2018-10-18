@@ -47,8 +47,8 @@ genkey: public.pem
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../localattestation.edl --trusted --trusted-dir ../common
-	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) ecalls.cpp ../common/attestation.cpp ../common/crypto.cpp ../common/dispatcher.cpp
-	$(CC) -c $(CFLAGS) $(CINCLUDES) ../common/localattestation_t.c	
+	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -std=c++11 ecalls.cpp ../common/attestation.cpp ../common/crypto.cpp ../common/dispatcher.cpp
+	$(CC) -c $(CFLAGS) $(CINCLUDES) ../common/localattestation_t.c
 	$(CXX) -o enclave2.so attestation.o crypto.o ecalls.o dispatcher.o localattestation_t.o $(LDFLAGS)
 
 sign:
