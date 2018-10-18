@@ -9,7 +9,7 @@
 // Declare a static dispatcher object for better organization of enclave-wise
 // global variables
 static ecall_dispatcher dispatcher;
-const char* enclave_name = "Enclave1";
+const char* enclave_name = "Enclave2";
 
 int seal_data(
     int sealPolicy,
