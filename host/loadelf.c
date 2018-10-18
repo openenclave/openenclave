@@ -26,10 +26,6 @@
 #include "sgxload.h"
 #include "strings.h"
 
-#if defined(__linux__)
-#include <sys/mman.h>
-#endif
-
 static oe_result_t _oe_free_elf_image(oe_enclave_image_t* image)
 {
     if (image->u.elf.elf.data)
