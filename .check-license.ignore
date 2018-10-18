@@ -1,4 +1,5 @@
 ./3rdparty/dlmalloc/dlmalloc
+./3rdparty/gnu-efi
 ./3rdparty/libcxx/libcxx
 ./3rdparty/libcxxrt/libcxxrt
 ./3rdparty/libunwind/libunwind

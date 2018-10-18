@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/internal/raise.h>
 #include <stdio.h>
 #include "enclave.h"
 #include "fopen.h"
-#include <openenclave/internal/raise.h>
 
 #if defined(_WIN32)
 #include <windows.h>
@@ -68,9 +68,7 @@ done:
     return result;
 }
 
-oe_result_t oe_load_enclave_image(
-    const char* path, 
-    oe_enclave_image_t* image)
+oe_result_t oe_load_enclave_image(const char* path, oe_enclave_image_t* image)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_image_type type;

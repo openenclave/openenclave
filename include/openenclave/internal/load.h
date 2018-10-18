@@ -91,9 +91,8 @@ struct _oe_enclave_image
         oe_enclave_pe_image_t pe;
     } u;
 
-    oe_result_t (*calculate_size)(
-        const oe_enclave_image_t* image,
-        size_t* image_size);
+    oe_result_t (
+        *calculate_size)(const oe_enclave_image_t* image, size_t* image_size);
 
     oe_result_t (*add_pages)(
         oe_enclave_image_t* image,
@@ -106,9 +105,8 @@ struct _oe_enclave_image
         size_t ecall_size,
         size_t enclave_end);
 
-    oe_result_t (*build_ecall_array)(
-        oe_enclave_image_t* image,
-        oe_enclave_t* enclave);
+    oe_result_t (
+        *build_ecall_array)(oe_enclave_image_t* image, oe_enclave_t* enclave);
 
     oe_result_t (*sgx_load_enclave_properties)(
         const oe_enclave_image_t* image,
@@ -120,15 +118,18 @@ struct _oe_enclave_image
         const char* section_name,
         const oe_sgx_enclave_properties_t* properties);
 
-    oe_result_t (*unload)(
-        oe_enclave_image_t* image);
+    oe_result_t (*unload)(oe_enclave_image_t* image);
 };
 
 oe_result_t oe_load_enclave_image(const char* path, oe_enclave_image_t* image);
 
-oe_result_t oe_load_elf_enclave_image(const char* path, oe_enclave_image_t* image);
+oe_result_t oe_load_elf_enclave_image(
+    const char* path,
+    oe_enclave_image_t* image);
 
-oe_result_t oe_load_pe_enclave_image(const char* path, oe_enclave_image_t* image);
+oe_result_t oe_load_pe_enclave_image(
+    const char* path,
+    oe_enclave_image_t* image);
 
 oe_result_t oe_unload_enclave_image(oe_enclave_image_t* oeimage);
 

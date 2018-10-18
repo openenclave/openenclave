@@ -434,7 +434,8 @@ static oe_result_t _sgx_load_enclave_properties(
 
     /* Load the SGX enclave properties */
     OE_CHECK(
-        oe_sgx_load_enclave_properties(&oeimage, OE_INFO_SECTION_NAME, properties));
+        oe_sgx_load_enclave_properties(
+            &oeimage, OE_INFO_SECTION_NAME, properties));
 
     result = OE_OK;
 
