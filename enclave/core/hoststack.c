@@ -47,8 +47,8 @@ typedef struct ThreadBuckets
 {
     volatile Bucket* active_host;
     volatile Bucket* standby_host;
-    Bucket cached; // valid if active_host != NULL
     ThreadBucketFlags flags;
+    Bucket cached; // valid if active_host != NULL
 } ThreadBuckets;
 
 // oe_once() replacement to work around recursion limitation
