@@ -89,6 +89,10 @@ OE_STATIC_ASSERT(OE_OFFSETOF(ThreadBinding, tcs) == ThreadBinding_tcs);
 /* Get thread data from thread-specific data (TSD) */
 ThreadBinding* GetThreadBinding(void);
 
+/**
+ *  This structure must be kept in sync with the defines in
+ *  debugger/pythonExtension/gdb_sgx_plugin.py.
+ */
 struct _oe_enclave
 {
     /* A "magic number" to validate structure */
@@ -128,6 +132,13 @@ struct _oe_enclave
     /* Simulation mode */
     bool simulate;
 };
+
+// Static asserts for consistency with
+// debugger/pythonExtension/gdb_sgx_plugin.py
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_t, debug) == 0x598);
+OE_STATIC_ASSERT(
+    OE_OFFSETOF(oe_enclave_t, debug) + 1 ==
+    OE_OFFSETOF(oe_enclave_t, simulate));
 
 /* Get the event for the given TCS */
 EnclaveEvent* GetEnclaveEvent(oe_enclave_t* enclave, uint64_t tcs);
