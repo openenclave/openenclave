@@ -216,6 +216,7 @@ typedef struct _oe_call_enclave_function_args
     size_t input_buffer_size;
     void* output_buffer;
     size_t output_buffer_size;
+    size_t output_bytes_written;
     oe_result_t result;
 } oe_call_enclave_function_args_t;
 
@@ -234,15 +235,9 @@ typedef struct _oe_call_host_function_args
     size_t input_buffer_size;
     void* output_buffer;
     size_t output_buffer_size;
+    size_t output_bytes_written;
     oe_result_t result;
 } oe_call_host_function_args_t;
-
-/**
-**==============================================================================
-** oe_ocall_func_t
-**==============================================================================
-**/
-typedef void (*oe_ocall_func_t)(void*);
 
 /*
 **==============================================================================

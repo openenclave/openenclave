@@ -19,6 +19,7 @@
 #endif
 
 #include <openenclave/bits/safecrt.h>
+#include <openenclave/bits/safemath.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>
@@ -339,41 +340,61 @@ done:
 **==============================================================================
 */
 
-static void _handle_call_host_function(uint64_t arg, oe_enclave_t* enclave)
+static oe_result_t _handle_call_host_function(
+    uint64_t arg,
+    oe_enclave_t* enclave)
 {
-    oe_result_t result = OE_UNEXPECTED;
-    oe_call_host_function_args_t* args = (oe_call_host_function_args_t*)arg;
+    oe_call_host_function_args_t* args_ptr = NULL;
+    oe_result_t result = OE_OK;
     oe_ocall_func_t func = NULL;
+    size_t buffer_size = 0;
 
-    if (!args)
-    {
-        result = OE_INVALID_PARAMETER;
-        goto done;
-    }
+    args_ptr = (oe_call_host_function_args_t*)arg;
+    if (args_ptr == NULL)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    // Input and output buffers must not be NULL.
+    if (args_ptr->input_buffer == NULL || args_ptr->output_buffer == NULL)
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     // Fetch matching function.
-    if (args->function_id >= enclave->num_ocalls)
-    {
-        result = OE_NOT_FOUND;
-        goto done;
-    }
+    if (args_ptr->function_id >= enclave->num_ocalls)
+        OE_RAISE(OE_NOT_FOUND);
 
-    func = enclave->ocalls[args->function_id];
+    func = enclave->ocalls[args_ptr->function_id];
     if (func == NULL)
     {
         result = OE_NOT_FOUND;
         goto done;
     }
 
-    /* Invoke the function */
-    func(args->input_buffer);
+    OE_CHECK(
+        oe_safe_add_u64(
+            args_ptr->input_buffer_size,
+            args_ptr->output_buffer_size,
+            &buffer_size));
 
+    // Buffer sizes must be pointer aligned.
+    if ((args_ptr->input_buffer_size % OE_EDGER8R_BUFFER_ALIGNMENT) != 0)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if ((args_ptr->output_buffer_size % OE_EDGER8R_BUFFER_ALIGNMENT) != 0)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    // Call the function.
+    func(
+        args_ptr->input_buffer,
+        args_ptr->input_buffer_size,
+        args_ptr->output_buffer,
+        args_ptr->output_buffer_size,
+        &args_ptr->output_bytes_written);
+
+    // The ocall succeeded.
+    args_ptr->result = OE_OK;
     result = OE_OK;
-
 done:
 
-    if (args)
-        args->result = result;
+    return result;
 }
 
 /*
@@ -838,6 +859,7 @@ oe_result_t oe_call_enclave_function(
         args.input_buffer_size = input_buffer_size;
         args.output_buffer = output_buffer;
         args.output_buffer_size = output_buffer_size;
+        args.output_bytes_written = 0;
         args.result = OE_UNEXPECTED;
     }
 
@@ -857,6 +879,7 @@ oe_result_t oe_call_enclave_function(
     /* Check the result */
     OE_CHECK(args.result);
 
+    *output_bytes_written = args.output_bytes_written;
     result = OE_OK;
 
 done:
