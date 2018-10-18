@@ -25,14 +25,14 @@ struct Bucket;
 typedef struct BucketElement
 {
     struct Bucket* bucket;
-    char data[0];
+    OE_ZERO_SIZED_ARRAY char data[0];
 } BucketElement;
 
 typedef struct Bucket
 {
     size_t size;      // capacity in bytes of <elements>
     size_t base_free; // byte-offset into <elements> of first free byte
-    BucketElement elements[0];
+    OE_ZERO_SIZED_ARRAY BucketElement elements[0];
 } Bucket;
 
 static const size_t _bucket_min_size = 4096;
