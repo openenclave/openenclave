@@ -49,7 +49,7 @@ oe_result_t oe_parse_report(
 
     const sgx_report_t* sgxReport = (sgx_report_t*)report;
     parsed_report->size = sizeof(*parsed_report);
-    parsed_report->type = OE_ENCLAVE_TYPE_SGX;
+    parsed_report->type = OE_ENCLAVE_TYPE_DEFAULT;
 
     parsed_report->enclave_report_size = sizeof(sgxReport->body);
     parsed_report->enclave_report = (uint8_t*)&sgxReport->body;

@@ -106,6 +106,7 @@ typedef long long ptrdiff_t;
 typedef enum _oe_enclave_type {
     OE_ENCLAVE_TYPE_UNDEFINED,
     OE_ENCLAVE_TYPE_SGX,
+    OE_ENCLAVE_TYPE_TRUSTZONE,
     __OE_ENCLAVE_TYPE_MAX = OE_ENUM_MAX,
 } oe_enclave_type_t;
 

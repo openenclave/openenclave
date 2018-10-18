@@ -30,7 +30,7 @@ int main(int argc, char** argv)
     enclave_flags |= OE_ENCLAVE_FLAG_DEBUG;
 #endif
     oe_result_t result = oe_create_enclave(TA_ID, 
-                                           OE_ENCLAVE_TYPE_SGX,
+                                           0,
                                            enclave_flags,
                                            NULL,
                                            0,

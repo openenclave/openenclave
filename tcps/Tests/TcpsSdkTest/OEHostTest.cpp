@@ -16,7 +16,7 @@ TEST(TeeHost, create_enclave_BadId)
     // Try to create a non-existent TA.
     result = oe_create_enclave(
         "acfc9047-a611-4e10-bf65-a7b85a93452d",
-        OE_ENCLAVE_TYPE_SGX,
+        OE_ENCLAVE_TYPE_UNDEFINED,
         OE_ENCLAVE_FLAG_DEBUG,
         NULL,
         0,
@@ -28,7 +28,7 @@ TEST(TeeHost, create_enclave_BadId)
 
     result = oe_create_enclave(
         "abcdef",
-        OE_ENCLAVE_TYPE_SGX,
+        OE_ENCLAVE_TYPE_UNDEFINED,
         OE_ENCLAVE_FLAG_DEBUG,
         NULL,
         0,
@@ -47,7 +47,7 @@ TEST(TeeHost, create_enclave_v2_BadId)
     // Try to create a non-existent TA.
     result = oe_create_enclave(
         "acfc9047-a611-4e10-bf65-a7b85a93452d",
-        OE_ENCLAVE_TYPE_SGX,
+        OE_ENCLAVE_TYPE_UNDEFINED,
         OE_ENCLAVE_FLAG_DEBUG,
         NULL,
         0,
@@ -59,7 +59,7 @@ TEST(TeeHost, create_enclave_v2_BadId)
 
     result = oe_create_enclave(
         "abcdef",
-        OE_ENCLAVE_TYPE_SGX,
+        OE_ENCLAVE_TYPE_UNDEFINED,
         OE_ENCLAVE_FLAG_DEBUG,
         NULL,
         0,
@@ -78,7 +78,7 @@ TEST(TeeHost, create_enclave_Success)
 
     result = oe_create_enclave(
         TA_ID,
-        OE_ENCLAVE_TYPE_SGX,
+        OE_ENCLAVE_TYPE_UNDEFINED,
         OE_ENCLAVE_FLAG_DEBUG,
         NULL,
         0,
@@ -105,7 +105,7 @@ TEST(TeeHost, create_enclave_v2_Success)
 
     result = oe_create_enclave(
         TA_ID,
-        OE_ENCLAVE_TYPE_SGX,
+        OE_ENCLAVE_TYPE_UNDEFINED,
         OE_ENCLAVE_FLAG_DEBUG,
         NULL,
         0,

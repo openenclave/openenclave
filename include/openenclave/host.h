@@ -68,15 +68,13 @@ typedef void (*oe_ocall_func_t)(void*);
  * This function creates an enclave from an enclave image file. On successful
  * return, the enclave is fully initialized and ready to use.
  *
- * @deprecated This function is deprecated. Use oeedger8r and call the generated
- * oe_create_<name>_enclave() API instead.
- *
  * @param path The path of an enclave image file in ELF-64 format. This
  * file must have been linked with the **oecore** library and signed by the
  * **oesign** tool.
  *
  * @param type The type of enclave supported by the enclave image file.
- *     - OE_ENCLAVE_TYPE_SGX - An SGX enclave
+ *     - 0 - Automatically detect based on processor
+ *     - non-zero - An enclave of the specified type
  *
  * @param flags These flags control how the enclave is run.
  *     It is the bitwise OR of zero or more of the following flags
