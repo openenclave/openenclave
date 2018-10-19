@@ -384,7 +384,12 @@ static int _load_pem_file(const char* path, void** data, size_t* size)
     if (fread(*data, 1, *size, is) != *size)
         goto done;
 
-    *size += 1;
+    /* Zero terminate the PEM data. */
+    {
+        uint8_t* data_tmp = (uint8_t*)*data;
+        data_tmp[*size] = 0;
+        *size += 1;
+    }
 
     rc = 0;
 
