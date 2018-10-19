@@ -1,8 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-include(add_compile_flags_if_supported)
-
 include(oeedl_file)
 include(add_enclave_executable)
 
@@ -17,9 +15,11 @@ target_compile_options(print_enc PRIVATE
     -fno-builtin-memset
     )
 
-add_target_compile_flags_if_supported(print_enc PRIVATE CXX
-    -Wno-error=unused-but-set-variable
-    )
+if (CMAKE_C_COMPILER_ID MATCHES GNU)
+    target_compile_options(print_enc PRIVATE
+        -Wno-error=unused-but-set-variable
+        )
+endif ()
 
 target_include_directories(print_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
