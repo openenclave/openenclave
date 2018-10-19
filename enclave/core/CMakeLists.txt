@@ -26,7 +26,6 @@ add_library(oecore STATIC
     exception.c
     globals.c
     hostcalls.c
-    hoststack.c
     hexdump.c
     init.c
     jump.c
