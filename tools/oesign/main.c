@@ -58,52 +58,11 @@ static int _update_and_write_shared_lib(
         goto done;
     }
 
-/* Verification is done inside oe_load_enclave_image */
-
-#if 0
-
-    /* Verify that this enclave contains required symbols */
-    {
-        elf64_sym_t sym;
-
-        if (elf64_find_symbol_by_name(&oeimage.elf, "_start", &sym) != 0)
-        {
-            Err("entry point not found: _start()");
-            goto done;
-        }
-
-        if (elf64_find_symbol_by_name(&oeimage.elf, "oe_num_pages", &sym) != 0)
-        {
-            Err("oe_num_pages() undefined");
-            goto done;
-        }
-
-        if (elf64_find_symbol_by_name(&oeimage.elf, "oe_base_heap_page", &sym) != 0)
-        {
-            Err("oe_base_heap_page() undefined");
-            goto done;
-        }
-
-        if (elf64_find_symbol_by_name(&oeimage.elf, "oe_num_heap_pages", &sym) != 0)
-        {
-            Err("oe_num_heap_pages() undefined");
-            goto done;
-        }
-
-        if (elf64_find_symbol_by_name(&oeimage.elf, "oe_virtual_base_addr", &sym) != 0)
-        {
-            Err("oe_virtual_base_addr() undefined");
-            goto done;
-        }
-    }
-
-#endif
-
     // Update or create a new .oeinfo section.
     if (oe_sgx_update_enclave_properties(
             &oeimage, OE_INFO_SECTION_NAME, properties) != OE_OK)
     {
-#if 0
+#if defined(__linux__)
         if (elf64_add_section(
                 &elf,
                 OE_INFO_SECTION_NAME,
