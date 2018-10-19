@@ -3497,6 +3497,7 @@
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/nothing_to_do.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.match/awk.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.match/egrep.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.match/exponential.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.match/grep.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.match/lookahead_capture.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.match/parse_curly_brackets.pass.cpp
@@ -3508,6 +3509,7 @@
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.replace/test6.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.search/backup.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.search/egrep.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.search/exponential.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.search/grep.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.search/invert_neg_word_search.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.search/lookahead.pass.cpp

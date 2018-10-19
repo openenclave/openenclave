@@ -19,6 +19,12 @@ weak_alias(dummy_0, __pthread_tsd_run_dtors);
 weak_alias(dummy_0, __do_orphaned_stdio_locks);
 weak_alias(dummy_0, __dl_thread_cleanup);
 
+static void *dummy_1(void *p)
+{
+	return 0;
+}
+weak_alias(dummy_1, __start_sched);
+
 _Noreturn void __pthread_exit(void *result)
 {
 	pthread_t self = __pthread_self();
@@ -37,11 +43,11 @@ _Noreturn void __pthread_exit(void *result)
 
 	__pthread_tsd_run_dtors();
 
-	LOCK(self->exitlock);
-
-	/* Mark this thread dead before decrementing count */
+	/* Access to target the exiting thread with syscalls that use
+	 * its kernel tid is controlled by killlock. For detached threads,
+	 * any use past this point would have undefined behavior, but for
+	 * joinable threads it's a valid usage that must be handled. */
 	LOCK(self->killlock);
-	self->dead = 1;
 
 	/* Block all signals before decrementing the live thread count.
 	 * This is important to ensure that dynamically allocated TLS
@@ -49,20 +55,14 @@ _Noreturn void __pthread_exit(void *result)
 	 * reasons as well. */
 	__block_all_sigs(&set);
 
-	/* Wait to unlock the kill lock, which governs functions like
-	 * pthread_kill which target a thread id, until signals have
-	 * been blocked. This precludes observation of the thread id
-	 * as a live thread (with application code running in it) after
-	 * the thread was reported dead by ESRCH being returned. */
-	UNLOCK(self->killlock);
-
 	/* It's impossible to determine whether this is "the last thread"
 	 * until performing the atomic decrement, since multiple threads
 	 * could exit at the same time. For the last thread, revert the
-	 * decrement and unblock signals to give the atexit handlers and
-	 * stdio cleanup code a consistent state. */
+	 * decrement, restore the tid, and unblock signals to give the
+	 * atexit handlers and stdio cleanup code a consistent state. */
 	if (a_fetch_add(&libc.threads_minus_1, -1)==0) {
 		libc.threads_minus_1 = 0;
+		UNLOCK(self->killlock);
 		__restore_sigs(&set);
 		exit(0);
 	}
@@ -89,15 +89,19 @@ _Noreturn void __pthread_exit(void *result)
 	__do_orphaned_stdio_locks();
 	__dl_thread_cleanup();
 
-	if (self->detached && self->map_base) {
+	/* This atomic potentially competes with a concurrent pthread_detach
+	 * call; the loser is responsible for freeing thread resources. */
+	int state = a_cas(&self->detach_state, DT_JOINABLE, DT_EXITING);
+
+	if (state>=DT_DETACHED && self->map_base) {
 		/* Detached threads must avoid the kernel clear_child_tid
 		 * feature, since the virtual address will have been
 		 * unmapped and possibly already reused by a new mapping
 		 * at the time the kernel would perform the write. In
 		 * the case of threads that started out detached, the
 		 * initial clone flags are correct, but if the thread was
-		 * detached later (== 2), we need to clear it here. */
-		if (self->detached == 2) __syscall(SYS_set_tid_address, 0);
+		 * detached later, we need to clear it here. */
+		if (state == DT_DYNAMIC) __syscall(SYS_set_tid_address, 0);
 
 		/* Robust list will no longer be valid, and was already
 		 * processed above, so unregister it with the kernel. */
@@ -112,6 +116,12 @@ _Noreturn void __pthread_exit(void *result)
 		 * and then exits without touching the stack. */
 		__unmapself(self->map_base, self->map_size);
 	}
+
+	/* After the kernel thread exits, its tid may be reused. Clear it
+	 * to prevent inadvertent use and inform functions that would use
+	 * it that it's no longer available. */
+	self->tid = 0;
+	UNLOCK(self->killlock);
 
 	for (;;) __syscall(SYS_exit, 0);
 }
@@ -131,19 +141,6 @@ void __do_cleanup_pop(struct __ptcb *cb)
 static int start(void *p)
 {
 	pthread_t self = p;
-	/* States for startlock:
-	 * 0 = no need for start sync
-	 * 1 = waiting for parent to do work
-	 * 2 = failure in parent, child must abort
-	 * 3 = success in parent, child must restore sigmask */
-	if (self->startlock[0]) {
-		__wait(self->startlock, 0, 1, 1);
-		if (self->startlock[0] == 2) {
-			self->detached = 2;
-			pthread_exit(0);
-		}
-		__restore_sigs(self->sigmask);
-	}
 	if (self->unblock_cancel)
 		__syscall(SYS_rt_sigprocmask, SIG_UNBLOCK,
 			SIGPT_SET, 0, _NSIG/8);
@@ -168,8 +165,8 @@ static void *dummy_tsd[1] = { 0 };
 weak_alias(dummy_tsd, __pthread_tsd_main);
 
 volatile int __block_new_threads = 0;
-size_t __default_stacksize = DEFAULT_STACK_SIZE;
-size_t __default_guardsize = DEFAULT_GUARD_SIZE;
+extern size_t __default_stacksize;
+extern size_t __default_guardsize;
 
 static FILE *volatile dummy_file = 0;
 weak_alias(dummy_file, __stdin_used);
@@ -194,6 +191,7 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 		| CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID | CLONE_DETACHED;
 	int do_sched = 0;
 	pthread_attr_t attr = { 0 };
+	struct start_sched_args ssa;
 
 	if (!libc.can_do_threads) return ENOSYS;
 	self = __pthread_self();
@@ -272,24 +270,32 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 	new->tsd = (void *)tsd;
 	new->locale = &libc.global_locale;
 	if (attr._a_detach) {
-		new->detached = 1;
+		new->detach_state = DT_DETACHED;
 		flags -= CLONE_CHILD_CLEARTID;
+	} else {
+		new->detach_state = DT_JOINABLE;
 	}
 	if (attr._a_sched) {
-		do_sched = new->startlock[0] = 1;
-		__block_app_sigs(new->sigmask);
+		do_sched = 1;
+		ssa.futex = -1;
+		ssa.start_fn = new->start;
+		ssa.start_arg = new->start_arg;
+		ssa.attr = &attr;
+		new->start = __start_sched;
+		new->start_arg = &ssa;
+		__block_app_sigs(&ssa.mask);
 	}
 	new->robust_list.head = &new->robust_list.head;
 	new->unblock_cancel = self->cancel;
 	new->CANARY = self->CANARY;
 
 	a_inc(&libc.threads_minus_1);
-	ret = __clone((c11 ? start_c11 : start), stack, flags, new, &new->tid, TP_ADJ(new), &new->tid);
+	ret = __clone((c11 ? start_c11 : start), stack, flags, new, &new->tid, TP_ADJ(new), &new->detach_state);
 
 	__release_ptc();
 
 	if (do_sched) {
-		__restore_sigs(new->sigmask);
+		__restore_sigs(&ssa.mask);
 	}
 
 	if (ret < 0) {
@@ -299,11 +305,9 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 	}
 
 	if (do_sched) {
-		ret = __syscall(SYS_sched_setscheduler, new->tid,
-			attr._a_policy, &attr._a_prio);
-		a_store(new->startlock, ret<0 ? 2 : 3);
-		__wake(new->startlock, 1, 1);
-		if (ret < 0) return -ret;
+		__futexwait(&ssa.futex, -1, 1);
+		ret = ssa.futex;
+		if (ret) return ret;
 	}
 
 	*res = new;

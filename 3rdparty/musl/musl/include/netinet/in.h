@@ -363,6 +363,7 @@ struct ip6_mtuinfo {
 #define IPV6_TRANSPARENT        75
 #define IPV6_UNICAST_IF         76
 #define IPV6_RECVFRAGSIZE       77
+#define IPV6_FREEBIND           78
 
 #define IPV6_ADD_MEMBERSHIP     IPV6_JOIN_GROUP
 #define IPV6_DROP_MEMBERSHIP    IPV6_LEAVE_GROUP

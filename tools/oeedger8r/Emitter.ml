@@ -627,7 +627,8 @@ let validate_oe_support (ec: enclave_content) (ep: edger8r_params) =
   ) ec.tfunc_decls;
   List.iter (fun f -> 
     (if f.Ast.uf_fattr.fa_convention <> Ast.CC_NONE then
-        failwithf "Function '%s': Calling conventions for ocalls are not supported by oeedger8r." f.Ast.uf_fdecl.fname);
+        let cconv_str = Ast.get_call_conv_str f.Ast.uf_fattr.Ast.fa_convention in
+        printf "Warning: Function '%s': Calling convention '%s' for ocalls is not supported by oeedger8r.\n" f.Ast.uf_fdecl.fname cconv_str);
     (if f.Ast.uf_fattr.fa_dllimport then
         failwithf "Function '%s': dllimport is not supported by oeedger8r." f.Ast.uf_fdecl.fname);
     (if f.Ast.uf_allow_list != [] then

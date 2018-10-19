@@ -22,6 +22,17 @@ OE_OCALL void mbed_test_open(void* syscall_args)
     return;
 }
 
+OE_OCALL void mbed_test_read(void* syscall_args)
+{
+    int ret;
+    syscall_args_t* args = (syscall_args_t*)syscall_args;
+
+    ret = read(args->fd, (char*)args->ptr, args->len);
+    args->ret = ret;
+
+    return;
+}
+
 OE_OCALL void mbed_test_readv(void* syscall_args)
 {
     syscall_args_t* args = (syscall_args_t*)syscall_args;
