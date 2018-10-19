@@ -26,6 +26,15 @@
 #include "linux/windows.h"
 #endif
 
+/* Redefine IMAGE_FIRST_SECTION on Linux */
+#if defined(__linux__)
+#undef IMAGE_FIRST_SECTION
+#define IMAGE_FIRST_SECTION(ntheader)                                       \
+    ((PIMAGE_SECTION_HEADER)(                                               \
+        (UINT8*)ntheader + FIELD_OFFSET(IMAGE_NT_HEADERS, OptionalHeader) + \
+        ((PIMAGE_NT_HEADERS)(ntheader))->FileHeader.SizeOfOptionalHeader))
+#endif
+
 static oe_result_t _oe_get_nt_header(
     char* image_base,
     PIMAGE_NT_HEADERS* nt_header)

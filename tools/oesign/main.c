@@ -62,14 +62,6 @@ static int _update_and_write_shared_lib(
     if (oe_sgx_update_enclave_properties(
             &oeimage, OE_INFO_SECTION_NAME, properties) != OE_OK)
     {
-#if defined(__linux__)
-        if (elf64_add_section(
-                &elf,
-                OE_INFO_SECTION_NAME,
-                SHT_PROGBITS,
-                properties,
-                sizeof(oe_sgx_enclave_properties_t)) != 0)
-#endif
         {
             Err("section doesn't exist: %s", OE_INFO_SECTION_NAME);
             goto done;

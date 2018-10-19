@@ -23,7 +23,7 @@ OE_CHECK_SIZE(OE_OFFSETOF(oe_sgx_enclave_properties_t, header), 0);
 OE_CHECK_SIZE(OE_OFFSETOF(oe_sgx_enclave_properties_t, config), 32);
 OE_CHECK_SIZE(OE_OFFSETOF(oe_sgx_enclave_properties_t, image_info), 48);
 OE_CHECK_SIZE(OE_OFFSETOF(oe_sgx_enclave_properties_t, sigstruct), 112);
-OE_CHECK_SIZE(sizeof(oe_sgx_enclave_properties_t), 1920);
+OE_CHECK_SIZE(sizeof(oe_sgx_enclave_properties_t), 1928);
 
 //
 // Declare an invalid oeinfo to ensure .oeinfo section exists

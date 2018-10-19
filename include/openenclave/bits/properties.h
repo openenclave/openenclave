@@ -89,8 +89,11 @@ typedef struct _oe_sgx_enclave_properties
     /* (48) */
     oe_enclave_image_info_t image_info;
 
-    /* (102)  */
+    /* (112)  */
     uint8_t sigstruct[OE_SGX_SIGSTRUCT_SIZE];
+
+    /* (1920) end-marker to make sure 0-filled signstruct doesn't get omitted */
+    uint64_t end_marker;
 } oe_sgx_enclave_properties_t;
 
 #define OE_INFO_SECTION_BEGIN __attribute__((section(OE_INFO_SECTION_NAME)))
@@ -162,7 +165,8 @@ typedef struct _oe_sgx_enclave_properties
         .sigstruct =                                                      \
         {                                                                 \
             0                                                             \
-        }                                                                 \
+        },                                                                \
+        .end_marker = 0xecececececececec,                                 \
     };                                                                    \
     OE_INFO_SECTION_END
 

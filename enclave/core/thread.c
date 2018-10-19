@@ -44,8 +44,7 @@ static int _thread_wake_wait(oe_thread_data_t* waiter, oe_thread_data_t* self)
     int ret = -1;
     oe_thread_wake_wait_args_t* args = NULL;
 
-    if (!(args =
-              oe_host_calloc(1,sizeof(oe_thread_wake_wait_args_t))))
+    if (!(args = oe_host_calloc(1, sizeof(oe_thread_wake_wait_args_t))))
         goto done;
 
     args->waiter_tcs = td_to_tcs((td_t*)waiter);

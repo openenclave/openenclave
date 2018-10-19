@@ -10,7 +10,7 @@ char* oe_host_strdup(const char* str)
 {
     size_t n = oe_strlen(str);
 
-    char* dup = (char*)oe_host_calloc(1,n + 1);
+    char* dup = (char*)oe_host_calloc(1, n + 1);
 
     if (dup)
         oe_memcpy(dup, str, n + 1);

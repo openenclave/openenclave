@@ -48,7 +48,7 @@ static oe_result_t _oe_free_elf_image(oe_enclave_image_t* image)
     return OE_OK;
 }
 
-static int __cdecl _compare_segments(const void* s1, const void* s2)
+static int _compare_segments(const void* s1, const void* s2)
 {
     const oe_elf_segment_t* seg1 = (const oe_elf_segment_t*)s1;
     const oe_elf_segment_t* seg2 = (const oe_elf_segment_t*)s2;
@@ -116,11 +116,13 @@ static oe_result_t _oe_load_elf_image(
                 }
                 else if (strcmp(name, ".oeinfo") == 0)
                 {
+#if 0
                     /* .oeinfo must contain exactly the property */
                     if (sh->sh_size != sizeof(oe_sgx_enclave_properties_t))
                     {
                         OE_RAISE(OE_FAILURE);
                     }
+#endif
                     image->oeinfo_rva = sh->sh_addr;
                     image->oeinfo_file_pos = sh->sh_offset;
                     OE_TRACE_INFO(
