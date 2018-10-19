@@ -3,8 +3,15 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/globals.h>
-#include <openenclave/internal/reloc.h>
 #include "../init.h"
+
+/* Same layout as elf64_rela_t (see elf.h) */
+typedef struct _oe_reloc
+{
+    uint64_t offset;
+    uint64_t info;
+    int64_t addend;
+} oe_reloc_t;
 
 /*
 **==============================================================================
