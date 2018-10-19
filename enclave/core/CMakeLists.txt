@@ -1,8 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-include(add_compile_flags_if_supported)
-
 add_library(oecore STATIC
     ../../common/safecrt.c
     assert.c
