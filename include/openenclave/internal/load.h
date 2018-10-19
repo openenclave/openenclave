@@ -162,11 +162,11 @@ oe_result_t oe_sgx_load_enclave_properties(
  * within the specified section of the ELF binary. If found, the section is
  * updated with the value of the **properties** parameter.
  *
- * @param elf ELF instance
+ * @param oeimage OE Enclave image
  * @param section_name name of section to search for enclave properties
  * @param properties new value of enclave properties
  *
- * @param oeimage OE Enclave image
+ * @returns OE_OK
  * @returns OE_INVALID_PARAMETER null parameter
  * @returns OE_FAILURE section was not found
  * @returns OE_NOT_FOUND enclave properties struct not found
