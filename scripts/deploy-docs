@@ -4,7 +4,6 @@
 # Licensed under the MIT License.
 
 ##==============================================================================
-set -x
 
 function trap_handler()
 {
@@ -66,9 +65,7 @@ case $mode in
         git push -f git@github.com:Microsoft/openenclave.git $branch:$branch
     ;; 
     https)
-        echo "
-        git  push -f https://${username}:${password}@github.com/Microsoft/openenclave.git $branch:$branch"
-       git push  -f "https://${username}:${password}@github.com/Microsoft/openenclave.git" $branch:$branch
+        git push  -f "https://${username}:${password}@github.com/Microsoft/openenclave.git" $branch:$branch
     ;;
     *)
         echo " Unexpected"
