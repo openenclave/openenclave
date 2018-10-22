@@ -12,7 +12,7 @@
 #include <openenclave/internal/utils.h>
 #include "asmdefs.h"
 
-#define TD_FROM_TCS 4 * OE_PAGE_SIZE
+#define TD_FROM_TCS (4 * OE_PAGE_SIZE)
 
 OE_STATIC_ASSERT(OE_OFFSETOF(td_t, magic) == td_magic);
 OE_STATIC_ASSERT(OE_OFFSETOF(td_t, depth) == td_depth);
@@ -32,7 +32,7 @@ OE_STATIC_ASSERT(OE_OFFSETOF(td_t, simulate) == td_simulate);
 OE_STATIC_ASSERT(td_callsites == 0xf0);
 OE_STATIC_ASSERT(OE_OFFSETOF(Callsite, ocall_context) == 0x40);
 OE_STATIC_ASSERT(TD_FROM_TCS == 0x4000);
-OE_STATIC_ASSERT(sizeof(oe_ocall_context_t) == 2 * 8);
+OE_STATIC_ASSERT(sizeof(oe_ocall_context_t) == (2 * sizeof(uintptr_t)));
 #endif
 
 /*
