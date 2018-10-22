@@ -29,7 +29,7 @@ OE_STATIC_ASSERT(OE_OFFSETOF(td_t, simulate) == td_simulate);
 // Static asserts for consistency with
 // debugger/pythonExtension/gdb_sgx_plugin.py
 OE_STATIC_ASSERT(td_callsites == 0xf0);
-OE_STATIC_ASSERT(OE_OFFSETOF(Callsite, ocall_context)  == 0x40);
+OE_STATIC_ASSERT(OE_OFFSETOF(Callsite, ocall_context) == 0x40);
 OE_STATIC_ASSERT(TD_FROM_TCS == 0x4000);
 OE_STATIC_ASSERT(sizeof(oe_ocall_context_t) == 2 * 8);
 
