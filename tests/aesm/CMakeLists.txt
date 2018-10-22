@@ -3,7 +3,6 @@
 
 add_executable(aesm main.cpp)
 target_link_libraries(aesm oehost)
-
 # Additional compilation options when using libsgx instead of AESM
 if(USE_LIBSGX)
 target_compile_definitions(aesm PRIVATE OE_USE_LIBSGX)

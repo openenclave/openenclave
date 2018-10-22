@@ -8,6 +8,7 @@ oeedl_file(../tests.edl enclave gen)
 add_executable(report_enc enc.cpp datetime.cpp ${gen})
 
 target_compile_options(report_enc PRIVATE
+    -Wconversion
     $<$<COMPILE_LANGUAGE:CXX>:-std=c++11>
 )
 

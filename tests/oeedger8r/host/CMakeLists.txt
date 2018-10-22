@@ -37,4 +37,6 @@ set_property(
     TARGET edl_host
     PROPERTY CXX_STANDARD 11
 )
+target_compile_options(edl_host PRIVATE -Wno-conversion -Wno-pointer-arith $<$<COMPILE_LANGUAGE:CXX>:-std=c++11>)
+
 target_link_libraries(edl_host oehostapp)

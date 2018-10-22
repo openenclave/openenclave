@@ -35,6 +35,7 @@ target_include_directories(edl_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_C
 set_property(
     TARGET edl_enc
     PROPERTY CXX_STANDARD 11
+    PROPERTY COMPILE_FLAGS -Wno-conversion
 )
 
 target_link_libraries(edl_enc oelibcxx oeenclave)

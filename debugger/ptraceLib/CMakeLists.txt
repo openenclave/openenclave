@@ -19,6 +19,8 @@ target_link_libraries(oe_ptrace ${DL_LIB} Threads::Threads)
 target_compile_options(oe_ptrace PRIVATE 
     -Wall -Werror -Wno-attributes -Wmissing-prototypes
     -m64
+    -Wno-conversion
+    -Wno-pointer-arith
     )
 target_compile_definitions(oe_ptrace PRIVATE -DOE_BUILD_UNTRUSTED)
 

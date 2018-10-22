@@ -3,3 +3,6 @@
 
 add_executable(VectorException_host host.c)
 target_link_libraries(VectorException_host oehostapp)
+target_compile_options(VectorException_host PRIVATE
+    -Wconversion
+    )

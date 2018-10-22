@@ -15,3 +15,6 @@ add_enclave_executable(bigmalloc_enc sign.conf
 
 target_include_directories(bigmalloc_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(bigmalloc_enc oeenclave)
+target_compile_options(bigmalloc_enc PRIVATE -Wconversion)
+   
+   

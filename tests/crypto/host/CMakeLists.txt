@@ -13,5 +13,5 @@ add_executable(hostcrypto
     ../tests.c)
 
 target_link_libraries(hostcrypto oehost)
-
+target_compile_options(hostcrypto PRIVATE -Wno-conversion)
 add_test(tests/crypto/host hostcrypto)

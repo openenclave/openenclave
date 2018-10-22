@@ -9,6 +9,7 @@ target_compile_options(stdc_enc PRIVATE
     -fno-builtin-strcat
     -fno-builtin-memcpy
     -fno-builtin-memset
+    -Wno-error=conversion
     )
 
 target_link_libraries(stdc_enc oelibc oeenclave)

@@ -4,6 +4,11 @@
 add_executable(oesign main.c)
 
 target_link_libraries(oesign oehost)
+target_compile_options(oesign PRIVATE
+    -Wconversion
+    -Wpointer-arith
+    )
+
 
 # assemble into proper collector dir
 set_property(TARGET oesign PROPERTY RUNTIME_OUTPUT_DIRECTORY ${OE_BINDIR})
