@@ -340,8 +340,8 @@ static oe_result_t _patch(
     oeprops =
         (oe_sgx_enclave_properties_t*)(image->image_base + image->oeinfo_rva);
 
-    assert((image->image_size & (OE_PAGE_SIZE - 1)) == 0);
-    assert((image->oeinfo_rva & (OE_PAGE_SIZE - 1)) == 0);
+    assert((image->image_size & ((uint64_t)OE_PAGE_SIZE - 1)) == 0);
+    assert((image->oeinfo_rva & ((uint64_t)OE_PAGE_SIZE - 1)) == 0);
     assert((enclave_end & (OE_PAGE_SIZE - 1)) == 0);
     assert((ecall_size & (OE_PAGE_SIZE - 1)) == 0);
 
@@ -387,7 +387,8 @@ oe_result_t oe_load_pe_enclave_image(
     }
 
     /* get image base from module by zeroing out the bottom bits */
-    image->image_base = (char*)((uint64_t)image->u.pe.module & -OE_PAGE_SIZE);
+    image->image_base =
+        (char*)((uint64_t)image->u.pe.module & (uint64_t)-OE_PAGE_SIZE);
 
     /* get nt header */
     OE_CHECK(_oe_get_nt_header(image->image_base, &nt_header));

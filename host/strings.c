@@ -31,7 +31,7 @@ size_t oe_strlcpy(char* dest, const char* src, size_t size)
     while (*src)
         src++;
 
-    return src - start;
+    return (size_t)(src - start);
 }
 
 size_t oe_strlcat(char* dest, const char* src, size_t size)

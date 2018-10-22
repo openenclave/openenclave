@@ -37,7 +37,7 @@ static char* _make_signed_lib_name(const char* path)
     if ((!(p = strrchr(path, '.'))) || (strcmp(p, ".so") != 0))
         p = path + strlen(path);
 
-    mem_append(&buf, path, p - path);
+    mem_append(&buf, path, (size_t)(p - path));
     mem_append(&buf, ".signed.so", 11);
 
     return (char*)mem_steal(&buf);
@@ -325,7 +325,7 @@ static int _load_pem_file(const char* path, void** data, size_t* size)
         if (stat(path, &st) != 0)
             goto done;
 
-        *size = st.st_size;
+        *size = (size_t)st.st_size;
     }
 
     /* Allocate memory. We add 1 to null terimate the file since the crypto
@@ -566,10 +566,13 @@ int main(int argc, const char* argv[])
         }
     }
 
+    if (props.config.attributes > OE_UINT32_MAX)
+        goto done;
     /* Initialize the context parameters for measurement only */
     if (oe_sgx_initialize_load_context(
-            &context, OE_SGX_LOAD_TYPE_MEASURE, props.config.attributes) !=
-        OE_OK)
+            &context,
+            OE_SGX_LOAD_TYPE_MEASURE,
+            (uint32_t)props.config.attributes) != OE_OK)
     {
         Err("oe_sgx_initialize_load_context() failed");
         goto done;
@@ -609,7 +612,8 @@ int main(int argc, const char* argv[])
     }
 
     /* Create signature section and write out new file */
-    if ((result = _update_and_write_shared_lib(enclave, &props)) != OE_OK)
+    if ((result = (oe_result_t)_update_and_write_shared_lib(enclave, &props)) !=
+        OE_OK)
     {
         Err("_update_and_write_shared_lib(): result=%s (%u)",
             oe_result_str(result),

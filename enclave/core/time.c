@@ -6,7 +6,7 @@
 
 int oe_sleep(uint64_t milliseconds)
 {
-    size_t ret = -1;
+    int ret = -1;
 
     if (oe_ocall(OE_OCALL_SLEEP, milliseconds, NULL) != OE_OK)
         goto done;

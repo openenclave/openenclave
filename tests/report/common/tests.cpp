@@ -186,7 +186,7 @@ TEST_FCN void TestLocalReport(void* args_)
 #ifdef OE_BUILD_ENCLAVE
     size_t report_data_size = 0;
     uint8_t report_data[OE_REPORT_DATA_SIZE];
-    for (uint32_t i = 0; i < OE_REPORT_DATA_SIZE; ++i)
+    for (uint8_t i = 0; i < OE_REPORT_DATA_SIZE; ++i)
         report_data[i] = i;
 #endif
 
@@ -446,7 +446,7 @@ TEST_FCN void TestRemoteReport(void* args_)
 #ifdef OE_BUILD_ENCLAVE
     size_t report_data_size = 0;
     uint8_t report_data[OE_REPORT_DATA_SIZE];
-    for (uint32_t i = 0; i < OE_REPORT_DATA_SIZE; ++i)
+    for (uint8_t i = 0; i < OE_REPORT_DATA_SIZE; ++i)
         report_data[i] = i;
     const uint8_t zeros[OE_REPORT_DATA_SIZE] = {0};
 #endif
@@ -693,7 +693,7 @@ TEST_FCN void TestLocalVerifyReport(void* args_)
     sgx_target_info_t* tampered_target_info = NULL;
 
     uint8_t report_data[sizeof(sgx_report_data_t)];
-    for (uint32_t i = 0; i < sizeof(report_data); ++i)
+    for (uint8_t i = 0; i < sizeof(report_data); ++i)
     {
         report_data[i] = i;
     }
@@ -755,7 +755,7 @@ TEST_FCN void TestRemoteVerifyReport(void* args_)
     uint8_t report_data[sizeof(sgx_report_data_t)];
     size_t report_data_size = sizeof(report_data);
 
-    for (uint32_t i = 0; i < sizeof(report_data); ++i)
+    for (uint8_t i = 0; i < sizeof(report_data); ++i)
     {
         report_data[i] = i;
     }

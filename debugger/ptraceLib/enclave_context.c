@@ -188,7 +188,12 @@ static int _get_enclave_ssa_frame_size(
         return -1;
     }
 
-    *ssa_frame_size = oe_thread_data.__ssa_frame_size;
+    if (oe_thread_data.__ssa_frame_size > OE_INT64_MAX)
+    {
+        return -1;
+    }
+
+    *ssa_frame_size = (int64_t)oe_thread_data.__ssa_frame_size;
     if (*ssa_frame_size == 0)
     {
         *ssa_frame_size = OE_DEFAULT_SSA_FRAME_SIZE;
@@ -590,7 +595,7 @@ int oe_get_enclave_thread_xstate(
     }
 
     if (xstate_size >
-        (ssa_info.frame_byte_size - sizeof(struct user_regs_struct)))
+        (ssa_info.frame_byte_size - (int64_t)sizeof(struct user_regs_struct)))
     {
         return -1;
     }
@@ -600,7 +605,7 @@ int oe_get_enclave_thread_xstate(
         pid,
         ssa_info.base_address,
         (void*)xstate,
-        xstate_size,
+        (size_t)xstate_size,
         &read_byte_length);
     if (ret != 0)
     {
@@ -653,7 +658,7 @@ int oe_set_enclave_thread_xstate(
     }
 
     if (xstate_size >
-        (ssa_info.frame_byte_size - sizeof(struct user_regs_struct)))
+        (ssa_info.frame_byte_size - (int64_t)sizeof(struct user_regs_struct)))
     {
         return -1;
     }
@@ -663,7 +668,7 @@ int oe_set_enclave_thread_xstate(
         pid,
         ssa_info.base_address,
         (void*)xstate,
-        xstate_size,
+        (size_t)xstate_size,
         &write_byte_length);
     if (ret != 0)
     {

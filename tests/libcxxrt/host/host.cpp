@@ -39,7 +39,7 @@ void Test(oe_enclave_t* enclave)
 
 OE_OCALL void ocall_exit(uint64_t arg)
 {
-    exit(arg);
+    exit((int)arg);
 }
 
 static int _get_opt(
@@ -55,7 +55,9 @@ static int _get_opt(
             if (!arg)
             {
                 memmove(
-                    (void*)&argv[i], &argv[i + 1], (argc - i) * sizeof(char*));
+                    (void*)&argv[i],
+                    &argv[i + 1],
+                    size_t(argc - i) * sizeof(char*));
                 argc--;
                 return 1;
             }
@@ -65,7 +67,9 @@ static int _get_opt(
 
             *arg = argv[i + 1];
             memmove(
-                (char**)&argv[i], &argv[i + 2], (argc - i - 1) * sizeof(char*));
+                (char**)&argv[i],
+                &argv[i + 2],
+                size_t(argc - i - 1) * sizeof(char*));
             argc -= 2;
             return 1;
         }

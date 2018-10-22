@@ -168,8 +168,8 @@ static oe_result_t _generate_key_pair(
             mbedtls_pk_rsa(pk),
             mbedtls_ctr_drbg_random,
             drbg,
-            bits,
-            exponent) != 0)
+            (unsigned int)bits,
+            (int)exponent) != 0)
     {
         OE_RAISE(OE_FAILURE);
     }

@@ -50,11 +50,11 @@ oe_result_t oe_crl_read_der(
         memset(impl, 0, sizeof(crl_t));
 
     /* Check for invalid parameters */
-    if (!der_data || !der_size || !crl)
+    if (!der_data || !der_size || der_size > OE_INT_MAX || !crl)
         OE_RAISE(OE_UNEXPECTED);
 
     /* Create a BIO for reading the DER-formatted data */
-    if (!(bio = BIO_new_mem_buf(der_data, der_size)))
+    if (!(bio = BIO_new_mem_buf(der_data, (int)der_size)))
         goto done;
 
     /* Read BIO into X509_CRL object */

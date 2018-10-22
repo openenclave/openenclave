@@ -21,6 +21,7 @@ OE_EXTERNC_BEGIN
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wtype-limits"
+#pragma GCC diagnostic ignored "-Wconversion"
 #endif /* __GNUC__ */
 
 /* Some compilers don't have __has_builtin like MSVC. */

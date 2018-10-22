@@ -18,13 +18,13 @@ void test_struct_edl_ocalls()
     MyStruct1 a1 = {{1}, 2};
 
     static MyStruct1 a2[5];
-    for (size_t i = 0; i < 5; ++i)
+    for (int i = 0; i < 5; ++i)
         a2[i].s0.x = a2[i].y = i;
 
     static MyStruct1 a3[5][5];
-    for (size_t i = 0; i < 5; ++i)
+    for (int i = 0; i < 5; ++i)
     {
-        for (size_t j = 0; j < 5; ++j)
+        for (int j = 0; j < 5; ++j)
             a3[i][j].s0.x = a3[i][j].y = i * j;
     }
 
@@ -38,7 +38,7 @@ void test_struct_edl_ocalls()
     static MyStruct1 a8[5];
     static MyStruct1 a9[5];
     static MyStruct1 a10[5];
-    for (size_t i = 0; i < 5; ++i)
+    for (int i = 0; i < 5; ++i)
     {
         a8[i].s0.x = a8[i].y = 8;
         a9[i].s0.x = 1;
@@ -49,7 +49,7 @@ void test_struct_edl_ocalls()
     static MyStruct1 a11[5];
     static MyStruct1 a12[5];
     static MyStruct1 a13[5];
-    for (size_t i = 0; i < 5; ++i)
+    for (int i = 0; i < 5; ++i)
     {
         a11[i].s0.x = a11[i].y = 11;
         a12[i].s0.x = 1;
@@ -60,7 +60,7 @@ void test_struct_edl_ocalls()
     static MyStruct1 a14[count];
     static MyStruct1 a15[count];
     static MyStruct1 a16[count];
-    for (size_t i = 0; i < count; ++i)
+    for (int i = 0; i < (int)count; ++i)
     {
         a14[i].s0.x = a14[i].y = 14;
         a15[i].s0.x = 1;
@@ -71,7 +71,7 @@ void test_struct_edl_ocalls()
     static MyStruct1 a17[count];
     static MyStruct1 a18[count];
     static MyStruct1 a19[count];
-    for (size_t i = 0; i < count; ++i)
+    for (int i = 0; i < (int)count; ++i)
     {
         a17[i].s0.x = a17[i].y = 17;
         a18[i].s0.x = 1;
@@ -108,16 +108,16 @@ void test_struct_edl_ocalls()
     OE_TEST(retval.y == 1);
 
     // a2 is in parameter and should not be modified.
-    for (size_t i = 0; i < 5; ++i)
+    for (int i = 0; i < 5; ++i)
     {
-        OE_TEST(a2[i].s0.x == (int)i);
-        OE_TEST(a2[i].y == (int)i);
+        OE_TEST(a2[i].s0.x == i);
+        OE_TEST(a2[i].y == i);
     }
 
     // a3 is in-out parameter that is expected to be set to 3.
-    for (size_t i = 0; i < 5; ++i)
+    for (int i = 0; i < 5; ++i)
     {
-        for (size_t j = 0; j < 5; ++j)
+        for (int j = 0; j < 5; ++j)
         {
             OE_TEST(a3[i][j].s0.x == 3);
             OE_TEST(a3[i][j].y == 3);
@@ -137,7 +137,7 @@ void test_struct_edl_ocalls()
     // a7 is 1 element out pointer that is expected to be set to 7.
     OE_TEST(a7.s0.x == 7 && a7.y == 7);
 
-    for (size_t i = 0; i < 5; ++i)
+    for (int i = 0; i < 5; ++i)
     {
         // a8 is 5 count in pointer that must not be modified.
         OE_TEST(a8[i].s0.x == 8 && a8[i].y == 8);
@@ -149,7 +149,7 @@ void test_struct_edl_ocalls()
         OE_TEST(a10[i].s0.x == 10 && a10[i].y == 10);
     }
 
-    for (size_t i = 0; i < 5; ++i)
+    for (int i = 0; i < 5; ++i)
     {
         // a11 is 40 size in pointer that must not be modified.
         OE_TEST(a11[i].s0.x == 11 && a11[i].y == 11);
@@ -161,7 +161,7 @@ void test_struct_edl_ocalls()
         OE_TEST(a13[i].s0.x == 13 && a13[i].y == 13);
     }
 
-    for (size_t i = 0; i < count; ++i)
+    for (int i = 0; i < (int)count; ++i)
     {
         // a14 is in pointer with attribute 'count' = count.
         // Must not be modified.
@@ -176,7 +176,7 @@ void test_struct_edl_ocalls()
         OE_TEST(a16[i].s0.x == 16 && a16[i].y == 16);
     }
 
-    for (size_t i = 0; i < count; ++i)
+    for (int i = 0; i < (int)count; ++i)
     {
         // a17 is in pointer with attribute 'size' = size.
         // Must not be modified.
@@ -254,10 +254,10 @@ MyStruct1 ecall_struct1(
     if (a2)
     {
         // a2 is in parameter.
-        for (size_t i = 0; i < 5; ++i)
+        for (int i = 0; i < 5; ++i)
         {
-            OE_TEST(a2[i].s0.x == (int)i);
-            OE_TEST(a2[i].y == (int)i);
+            OE_TEST(a2[i].s0.x == i);
+            OE_TEST(a2[i].y == i);
             // Modifying a2 should not have any effect on the host.
             a2[i].s0.x = a2[i].y = 0;
         }
@@ -266,12 +266,12 @@ MyStruct1 ecall_struct1(
     if (a3)
     {
         // a3 is in out parameter.
-        for (size_t i = 0; i < 5; ++i)
+        for (int i = 0; i < 5; ++i)
         {
-            for (size_t j = 0; j < 5; ++j)
+            for (int j = 0; j < 5; ++j)
             {
-                OE_TEST(a3[i][j].s0.x == int(i * j));
-                OE_TEST(a3[i][j].y == int(i * j));
+                OE_TEST(a3[i][j].s0.x == i * j);
+                OE_TEST(a3[i][j].y == i * j);
                 a3[i][j].s0.x = 3;
                 a3[i][j].y = 3;
             }
@@ -302,7 +302,7 @@ MyStruct1 ecall_struct1(
 
     if (a8 && a9 && a10)
     {
-        for (size_t i = 0; i < 5; ++i)
+        for (int i = 0; i < 5; ++i)
         {
             // a8 is 5 count in pointer.
             OE_TEST(a8[i].s0.x == 8 && a8[i].y == 8);
@@ -321,7 +321,7 @@ MyStruct1 ecall_struct1(
 
     if (a11 && a12 && a13)
     {
-        for (size_t i = 0; i < 5; ++i)
+        for (int i = 0; i < 5; ++i)
         {
             // a11 is 40 size in pointer.
             OE_TEST(a11[i].s0.x == 11 && a11[i].y == 11);
@@ -342,7 +342,7 @@ MyStruct1 ecall_struct1(
 
     if (a14 && a15 && a16)
     {
-        for (size_t i = 0; i < count; ++i)
+        for (int i = 0; i < (int)count; ++i)
         {
             // a14 is in pointer with 'count' = count.
             OE_TEST(a14[i].s0.x == 14 && a14[i].y == 14);
@@ -362,7 +362,7 @@ MyStruct1 ecall_struct1(
     OE_TEST(size == 40);
     if (a17 && a18 && a19)
     {
-        for (size_t i = 0; i < count; ++i)
+        for (int i = 0; i < (int)count; ++i)
         {
             // a17 is in pointer with 'size' = size.
             OE_TEST(a17[i].s0.x == 17 && a17[i].y == 17);

@@ -144,7 +144,7 @@ static STACK_OF(X509) * _read_cert_chain(const char* pem)
             end++;
 
         /* Create a BIO for this certificate */
-        if (!(bio = BIO_new_mem_buf(pem, end - pem)))
+        if (!(bio = BIO_new_mem_buf(pem, (int)(end - pem))))
             goto done;
 
         /* Read BIO into X509 object */
@@ -200,7 +200,10 @@ static X509* _clone_x509(X509* x509)
     if (!BIO_get_mem_ptr(out, &mem))
         goto done;
 
-    if (!(in = BIO_new_mem_buf(mem->data, mem->length)))
+    if (mem->length > OE_INT_MAX)
+        goto done;
+
+    if (!(in = BIO_new_mem_buf(mem->data, (int)mem->length)))
         goto done;
 
     ret = PEM_read_bio_X509(in, NULL, 0, NULL);
@@ -246,7 +249,7 @@ static oe_result_t _cert_chain_get_length(const CertChain* impl, int* length)
     if ((num = sk_X509_num(impl->sk)) <= 0)
         OE_RAISE(OE_FAILURE);
 
-    *length = (size_t)num;
+    *length = num;
 
     result = OE_OK;
 
@@ -438,7 +441,7 @@ oe_result_t oe_cert_read_pem(
         impl->magic = 0;
 
     /* Check parameters */
-    if (!pem_data || !pem_size || !cert)
+    if (!pem_data || !pem_size || pem_size > OE_INT_MAX || !cert)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Must have pem_size-1 non-zero characters followed by zero-terminator */
@@ -449,7 +452,7 @@ oe_result_t oe_cert_read_pem(
     oe_initialize_openssl();
 
     /* Create a BIO object for reading the PEM data */
-    if (!(bio = BIO_new_mem_buf(pem_data, pem_size)))
+    if (!(bio = BIO_new_mem_buf(pem_data, (int)pem_size)))
         OE_RAISE(OE_FAILURE);
 
     /* Convert the PEM BIO into a certificate object */
@@ -962,14 +965,15 @@ oe_result_t oe_cert_find_extension(
             /* If the caller's buffer is too small, raise error */
             if (str->length > *size)
             {
-                *size = str->length;
+                *size = (size_t)str->length;
                 OE_RAISE(OE_BUFFER_TOO_SMALL);
             }
 
             if (data)
             {
-                OE_CHECK(oe_memcpy_s(data, *size, str->data, str->length));
-                *size = str->length;
+                OE_CHECK(
+                    oe_memcpy_s(data, *size, str->data, (size_t)str->length));
+                *size = (size_t)str->length;
                 result = OE_OK;
                 goto done;
             }

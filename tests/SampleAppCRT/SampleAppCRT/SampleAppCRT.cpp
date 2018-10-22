@@ -13,7 +13,7 @@
 
 static uint32_t func()
 {
-    static int state = 0;
+    static uint32_t state = 0;
 
     if (state < 2)
         ++state;
@@ -22,7 +22,7 @@ static uint32_t func()
 }
 
 int global_static = 1;
-int global_dynamic = func();
+int global_dynamic = (int)func();
 uint32_t thread_local_static = 2;
 uint32_t thread_local_dynamic = func();
 char asciistring[] = "HelloWorld";

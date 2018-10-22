@@ -6,7 +6,10 @@
 
 oe_result_t oe_random_internal(void* data, size_t size)
 {
-    if (!RAND_bytes(data, size))
+    if (size > OE_INT_MAX)
+        return OE_INVALID_PARAMETER;
+
+    if (!RAND_bytes(data, (int)size))
         return OE_FAILURE;
 
     return OE_OK;

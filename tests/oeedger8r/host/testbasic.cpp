@@ -207,8 +207,8 @@ void ocall_basic_types(
     OE_TEST(arg1 == '?');
     OE_TEST(arg2 = 3);
     OE_TEST(arg3 = 4);
-    OE_TEST(arg4 = 3.1415f);
-    OE_TEST(arg5 = 1.0 / 3.0);
+    OE_TEST((bool)(arg4 = 3.1415f));
+    OE_TEST((bool)(arg5 = 1.0 / 3.0));
     OE_TEST(arg6 = 8);
     OE_TEST(arg7 = 9);
     OE_TEST(arg8 = 10);

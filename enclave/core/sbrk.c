@@ -18,7 +18,7 @@ void* oe_sbrk(ptrdiff_t increment)
         if (!_heap_next)
             _heap_next = (unsigned char*)__oe_get_heap_base();
 
-        remaining = (unsigned char*)__oe_get_heap_end() - _heap_next;
+        remaining = (size_t)((unsigned char*)__oe_get_heap_end() - _heap_next);
 
         if (increment <= remaining)
         {

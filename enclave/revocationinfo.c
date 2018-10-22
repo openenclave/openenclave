@@ -154,7 +154,7 @@ void oe_cleanup_get_revocation_info_args(oe_get_revocation_info_args_t* args)
         return;
 
     // Free buffers on the enclave side.
-    for (int32_t i = args->num_crl_urls - 1; i >= 0; --i)
+    for (int32_t i = (int32_t)(args->num_crl_urls - 1); i >= 0; --i)
     {
         oe_free(args->crl_issuer_chain[i]);
         oe_free(args->crl[i]);

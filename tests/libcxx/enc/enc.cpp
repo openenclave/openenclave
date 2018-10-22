@@ -147,7 +147,7 @@ static int _pthread_join_hook(pthread_t enc_thread, void** value_ptr)
         _release_lock(&_enc_lock);
         return EINVAL;
     }
-    thrd_join_args->enc_key = join_enc_key;
+    thrd_join_args->enc_key = (uint64_t)join_enc_key;
     thrd_join_args->join_value_ptr = value_ptr;
     _release_lock(&_enc_lock);
 
@@ -205,7 +205,7 @@ static int _pthread_detach_hook(pthread_t enc_thread)
         return EINVAL;
     }
 
-    thrd_det_args->enc_key = det_enc_key;
+    thrd_det_args->enc_key = (uint64_t)det_enc_key;
     _release_lock(&_enc_lock);
 
     printf(
@@ -226,7 +226,9 @@ static int _pthread_detach_hook(pthread_t enc_thread)
     int det_ret = thrd_det_args->detach_ret;
     if (!det_ret)
     {
-        _key_to_thread_id_map.erase(thrd_det_args->enc_key);
+        if (thrd_det_args->enc_key > OE_INT_MAX)
+            oe_abort();
+        _key_to_thread_id_map.erase((int)thrd_det_args->enc_key);
     }
     _release_lock(&_enc_lock);
 
@@ -248,7 +250,8 @@ OE_ECALL void _enclave_launch_thread(void* args_)
     std::function<void()> f;
 
     _acquire_lock(&_enc_lock);
-    _key_to_thread_id_map[(thread_args[enc_key - 1])->enc_key] = pthread_self();
+    _key_to_thread_id_map[(int)((thread_args[enc_key - 1])->enc_key)] =
+        pthread_self();
     _release_lock(&_enc_lock); // Release the lock so that pthread_create can
                                // acquire the lock
 

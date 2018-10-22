@@ -16,7 +16,8 @@ static uint64_t _time()
     if (clock_gettime(CLOCK_REALTIME, &ts) != 0)
         return 0;
 
-    return (ts.tv_sec * _SEC_TO_MSEC) + (ts.tv_nsec / _MSEC_TO_NSEC);
+    return ((uint64_t)ts.tv_sec * _SEC_TO_MSEC) +
+           ((uint64_t)ts.tv_nsec / _MSEC_TO_NSEC);
 }
 
 static void _sleep(uint64_t milliseconds)

@@ -162,7 +162,7 @@ OE_INLINE int oe_constant_time_mem_equal(
 
     for (uint32_t i = 0; i < len; ++i)
     {
-        r |= p1[i] ^ p2[i];
+        r = r | (p1[i] ^ p2[i]);
     }
 
     return !r;
@@ -176,7 +176,7 @@ OE_INLINE uint64_t oe_round_up_to_page_size(uint64_t x)
 
 OE_INLINE uint64_t oe_round_down_to_page_size(uint64_t x)
 {
-    return x & ~(OE_PAGE_SIZE - 1);
+    return x & ~((uint64_t)OE_PAGE_SIZE - 1);
 }
 
 OE_EXTERNC_END

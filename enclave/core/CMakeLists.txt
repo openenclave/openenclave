@@ -61,10 +61,6 @@ endif ()
 
 set_source_files_properties(malloc.c PROPERTIES COMPILE_FLAGS -Wno-conversion)
 
-if (CMAKE_C_COMPILER_ID MATCHES GNU)
-	set_source_files_properties(exception.c PROPERTIES COMPILE_FLAGS -Wno-conversion)
-endif()
-
 target_compile_options(oecore PUBLIC
     -m64
     -fPIC

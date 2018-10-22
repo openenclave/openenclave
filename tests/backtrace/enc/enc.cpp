@@ -92,8 +92,8 @@ OE_ECALL void Test(void* args_)
 
     char** syms = oe_backtrace_symbols(b.buffer, b.size);
     OE_TEST(syms != NULL);
-
-    _print_backtrace(b.buffer, b.size, args->num_syms, args->syms);
+    OE_TEST(args->num_syms <= OE_INT_MAX);
+    _print_backtrace(b.buffer, b.size, (int)args->num_syms, args->syms);
 #endif
 
     args->okay = true;
@@ -115,8 +115,9 @@ OE_ECALL void TestUnwind(void* args_)
 #ifdef OE_USE_DEBUG_MALLOC
         char** syms = oe_backtrace_symbols(b.buffer, b.size);
         OE_TEST(syms != NULL);
+        OE_TEST(args->num_syms <= OE_INT_MAX);
 
-        _print_backtrace(b.buffer, b.size, args->num_syms, args->syms);
+        _print_backtrace(b.buffer, b.size, (int)args->num_syms, args->syms);
 #endif
         args->okay = true;
     }

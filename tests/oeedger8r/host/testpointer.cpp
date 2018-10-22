@@ -112,7 +112,7 @@ static void test_ecall_pointer_fun(oe_enclave_t* enclave, F ecall_pointer_fun)
 
         // p12 is in-out and should be reversed.
         for (size_t i = 0; i < (size_t)pcount; ++i)
-            OE_TEST(p12[i] == (T)(pcount - i));
+            OE_TEST(p12[i] == (T)((size_t)pcount - i));
 
         // p13 is out and should have value pcount.
         for (size_t i = 0; i < (size_t)pcount; ++i)
@@ -322,7 +322,7 @@ static T* ocall_pointer_fun_impl(
             }
 
             // change p11. Should not have any effect on enclave.
-            memset(p11, 0, sizeof(T) * pcount);
+            memset(p11, 0, sizeof(T) * (size_t)pcount);
         }
 
         // in-out
@@ -330,7 +330,7 @@ static T* ocall_pointer_fun_impl(
         {
             for (int i = 0; i < pcount; ++i)
                 OE_TEST(p12[i] == (T)(i + 1));
-            reverse(p12, pcount);
+            reverse(p12, (size_t)pcount);
         }
 
         // out
@@ -342,7 +342,7 @@ static T* ocall_pointer_fun_impl(
     }
 
     {
-        size_t count = psize / sizeof(T);
+        size_t count = (size_t)psize / sizeof(T);
         // in
         if (p14)
         {

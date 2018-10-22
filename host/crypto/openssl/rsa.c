@@ -78,7 +78,7 @@ static oe_result_t _generate_key_pair(
     /* Create the public and private RSA keys */
     {
         /* Create the private key */
-        if (!(rsa_private = RSA_generate_key(bits, exponent, 0, 0)))
+        if (!(rsa_private = RSA_generate_key((int)bits, exponent, 0, 0)))
             OE_RAISE(OE_FAILURE);
 
         /* Create the public key */

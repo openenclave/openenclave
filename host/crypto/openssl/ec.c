@@ -381,7 +381,8 @@ oe_result_t oe_ec_public_key_from_coordinates(
     oe_initialize_openssl();
 
     /* Reject invalid parameters */
-    if (!public_key || !x_data || !x_size || !y_data || !y_size)
+    if (!public_key || !x_data || !x_size || x_size > OE_INT_MAX || !y_data ||
+        !y_size || y_size > OE_INT_MAX)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Get the NID for this curve type */
@@ -405,10 +406,10 @@ oe_result_t oe_ec_public_key_from_coordinates(
         if (!(x = BN_new()) || !(y = BN_new()))
             OE_RAISE(OE_FAILURE);
 
-        if (!(BN_bin2bn(x_data, x_size, x)))
+        if (!(BN_bin2bn(x_data, (int)x_size, x)))
             OE_RAISE(OE_FAILURE);
 
-        if (!(BN_bin2bn(y_data, y_size, y)))
+        if (!(BN_bin2bn(y_data, (int)y_size, y)))
             OE_RAISE(OE_FAILURE);
 
         if (!EC_POINT_set_affine_coordinates_GFp(group, point, x, y, NULL))
@@ -479,7 +480,8 @@ oe_result_t oe_ecdsa_signature_write_der(
     int sig_len;
 
     /* Reject invalid parameters */
-    if (!signature_size || !data || !size || !s_data || !s_size)
+    if (!signature_size || !data || !size || size > OE_INT_MAX || !s_data ||
+        !s_size || s_size > OE_INT_MAX)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If signature is null, then signature_size must be zero */
@@ -491,11 +493,11 @@ oe_result_t oe_ecdsa_signature_write_der(
         OE_RAISE(OE_FAILURE);
 
     /* Convert R to big number object */
-    if (!(BN_bin2bn(data, size, sig->r)))
+    if (!(BN_bin2bn(data, (int)size, sig->r)))
         OE_RAISE(OE_FAILURE);
 
     /* Convert S to big number object */
-    if (!(BN_bin2bn(s_data, s_size, sig->s)))
+    if (!(BN_bin2bn(s_data, (int)s_size, sig->s)))
         OE_RAISE(OE_FAILURE);
 
     /* Determine the size of the binary signature */
@@ -517,12 +519,12 @@ oe_result_t oe_ecdsa_signature_write_der(
     /* Check whether buffer is too small */
     if (sig_len > *signature_size)
     {
-        *signature_size = sig_len;
+        *signature_size = (size_t)sig_len;
         OE_RAISE(OE_BUFFER_TOO_SMALL);
     }
 
     /* Set the size of the output buffer */
-    *signature_size = sig_len;
+    *signature_size = (size_t)sig_len;
 
     result = OE_OK;
 

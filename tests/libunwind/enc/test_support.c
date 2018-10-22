@@ -13,5 +13,5 @@ int setrlimit(int resource, int* rlim)
 
 pid_t getpid(void)
 {
-    return g_pid;
+    return (int)g_pid;
 }

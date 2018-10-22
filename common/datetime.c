@@ -96,17 +96,17 @@ OE_INLINE uint8_t oe_num_to_str(uint32_t num, uint8_t digits, char* p)
     {
         d = num % 10;
         num /= 10;
-        p[i] = '0' + d;
+        p[i] = (char)('0' + d);
     }
     return digits;
 }
 
 OE_INLINE uint8_t oe_str_to_num(const char* p, uint8_t digits, uint32_t* num)
 {
-    *num = p[0] - '0';
+    *num = (uint32_t)(p[0] - '0');
     for (int32_t i = 1; i < digits; ++i)
     {
-        *num = *num * 10 + (p[i] - '0');
+        *num = *num * 10 + (uint32_t)(p[i] - '0');
     }
     return digits;
 }
