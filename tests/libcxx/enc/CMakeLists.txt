@@ -64,8 +64,9 @@ foreach(testcase ${alltests})
 
 # the allocations are entirely optimized out by Clang in these tests and are excluded from Clang release builds
     if ("${name}" MATCHES "cons_default_throws_bad_alloc.pass" OR "${name}" MATCHES "allocator_allocator.members_construct.pass")
-	if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND CMAKE_BUILD_TYPE MATCHES "Rel")
-		continue()
+        string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE_UPPER)
+        if (CMAKE_CXX_COMPILER_ID MATCHES Clang AND BUILD_TYPE_UPPER MATCHES REL)
+            continue()
 	endif()
     endif()
 
