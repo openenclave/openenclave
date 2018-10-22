@@ -149,7 +149,6 @@
 ../../3rdparty/libcxx/libcxx/test/libcxx/input.output/file.streams/fstreams/ofstream.members/open_wchar_pointer.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/input.output/file.streams/fstreams/version.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/input.output/filesystems/class.path/path.req/is_pathable.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/input.output/filesystems/convert_file_time.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/input.output/filesystems/version.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/input.output/iostream.format/input.streams/version.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/input.output/iostream.format/output.streams/version.pass.cpp

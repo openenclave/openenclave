@@ -6,6 +6,7 @@
 ../../3rdparty/libcxx/libcxx/test/libcxx/debug/containers/db_unord_container_tests.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/experimental/language.support/support.coroutines/dialect_support.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/input.output/filesystems/class.path/path.itr/iterator_db.pass.cpp
+../../3rdparty/libcxx/libcxx/test/libcxx/input.output/filesystems/convert_file_time.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/language.support/has_c11_features.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/language.support/support.dynamic/new_faligned_allocation.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/memory/aligned_allocation_macro.pass.cpp
@@ -267,6 +268,8 @@
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/new_size_nothrow.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/new_size.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array11.pass.cpp
+#See issue #830 for issue with clang
+../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array_calls_unsized_delete_array.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.single/delete_align_val_t_replace.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.single/new_align_val_t_nothrow.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.single/new_align_val_t_nothrow_replace.pass.cpp
@@ -671,8 +674,6 @@
 ../../3rdparty/libcxx/libcxx/test/std/utilities/tuple/tuple.tuple/tuple.helper/tuple_size_v.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/utility/as_const/as_const.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/utility/pairs/pairs.pair/assign_pair_cxx03.pass.cpp
-#See issue #830 for issue with clang
-../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array_calls_unsized_delete_array.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/utility/pairs/pairs.pair/implicit_deduction_guides.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/utility/utility.inplace/inplace.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/variant/variant.bad_variant_access/bad_variant_access.pass.cpp
