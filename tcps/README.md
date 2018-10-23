@@ -1,11 +1,12 @@
 # TCPS-SDK
 
-The TCPS SDK is a framework library for building trusted applications on SGX
+This SDK is a framework library for building trusted applications on SGX
 and TrustZone.
 
 ## Prerequisites
 
-This library relies on having the Intel SGX SDK installed even if developing
+This library currently relies on having the Intel SGX SDK installed even if
+developing
 for TrustZone, since it requires using the sgx\_edger8r.exe utility that comes
 with that SDK, and various header files.
 
@@ -20,9 +21,9 @@ of current limitations in the Intel SGX SDK.
 To build for Windows, open TCPS-SDK.sln with Visual Studio 2015, and build
 for the chosen platform (x86, x86, or ARM) and configuration.  This will
 build any relevant binaries except for Trusted Applications that need to
-run in OP-TEE.
+run in OP-TEE (i.e., in TrustZone).
 
-To build OP-TEE Trusted Applications, run the build_optee.sh script from
+To build OP-TEE Trusted Applications, run the build\_optee.sh script from
 a bash shell.
 
 ## Generating API calls between Trusted Apps and Untrusted Apps
@@ -75,17 +76,18 @@ OP-TEE only allows one thread per TA to be in an ecall (i.e., a call into
 a TA from a regular app).  Even if it has an ocall (i.e., an out-call
 back into the regular app) in progress, the ecall must complete before
 another ecall can enter the TA.  SGX, on the other hand, would allow a
-second ecall to enter.  So to allow them to function identically, apps
+second ecall to enter.  So if you want them to function identically, apps
 should wrap ecalls in the following mutex Acquire/Release calls:
 
 ```
-TcpsAcquireTAMutex(taid);
-sgxStatus = ecall_MyEcall(taid, ...);
-TcpsReleaseTAMutex(taid);
+oe_acquire_enclave_mutex(enclave);
+sgxStatus = ecall_MyEcall(enclave, ...);
+oe_acquire_enclave_mutex(enclave);
 ```
 
-In the future, if we have our own code generator instead of sgx_edger8r,
-these could be automatic instead of requiring manual coding effort to call.
+In the future, once we use oeedger8r instead of sgx\_edger8r, this will
+not be needed, but one can pass the OE\_ENCLAVE\_FLAG\_SERIALIZE\_ECALLS
+flag when creating an enclave to automatically get this behavior.
 
 ## Include paths, preprocessor defines, and libraries
 
@@ -135,7 +137,7 @@ standard C header (e.g., "stdio.h"), the convention is that instead of
 including *token*.h, one would include (instead or in addition to the
 one provided by SGX or OP-TEE if any), tcps\_*token*\_t.h for defines
 common to both SGX and OP-TEE, or tcps\_*token*\_optee\_t.h for defines
-unique to OP-TEE, since the SGX SDK already provides more than OP-TEE
+unique to OP-TEE, since the Intel SGX SDK already provides more than OP-TEE
 provides and such files provide the equivalent for OP-TEE.  For example,
 the following such headers exist:
 
