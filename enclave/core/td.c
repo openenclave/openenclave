@@ -12,6 +12,8 @@
 #include <openenclave/internal/utils.h>
 #include "asmdefs.h"
 
+#define TD_FROM_TCS (4 * OE_PAGE_SIZE)
+
 OE_STATIC_ASSERT(OE_OFFSETOF(td_t, magic) == td_magic);
 OE_STATIC_ASSERT(OE_OFFSETOF(td_t, depth) == td_depth);
 OE_STATIC_ASSERT(OE_OFFSETOF(td_t, host_rcx) == td_host_rcx);
@@ -23,6 +25,15 @@ OE_STATIC_ASSERT(OE_OFFSETOF(td_t, oret_func) == td_oret_func);
 OE_STATIC_ASSERT(OE_OFFSETOF(td_t, oret_arg) == td_oret_arg);
 OE_STATIC_ASSERT(OE_OFFSETOF(td_t, callsites) == td_callsites);
 OE_STATIC_ASSERT(OE_OFFSETOF(td_t, simulate) == td_simulate);
+
+// Static asserts for consistency with
+// debugger/pythonExtension/gdb_sgx_plugin.py
+#if defined(__linux__)
+OE_STATIC_ASSERT(td_callsites == 0xf0);
+OE_STATIC_ASSERT(OE_OFFSETOF(Callsite, ocall_context) == 0x40);
+OE_STATIC_ASSERT(TD_FROM_TCS == 0x4000);
+OE_STATIC_ASSERT(sizeof(oe_ocall_context_t) == (2 * sizeof(uintptr_t)));
+#endif
 
 /*
 **==============================================================================
@@ -123,7 +134,7 @@ void td_pop_callsite(td_t* td)
 
 td_t* td_from_tcs(void* tcs)
 {
-    return (td_t*)((uint8_t*)tcs + (4 * OE_PAGE_SIZE));
+    return (td_t*)((uint8_t*)tcs + TD_FROM_TCS);
 }
 
 /*
