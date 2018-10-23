@@ -10,7 +10,7 @@ The Open Enclave SDK is published on GitHub. Use the following command to downlo
 
         git clone https://github.com/Microsoft/openenclave.git
 
-This creates a source tree under the current directory called openenclave.
+This creates a source tree under the current directory called `openenclave`.
 
 ## Licensing
 
