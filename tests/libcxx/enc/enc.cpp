@@ -69,6 +69,6 @@ OE_SET_ENCLAVE_SGX(
     true,  /* AllowDebug */
     12288, /* HeapPageCount */
     1024,  /* StackPageCount */
-    2);    /* TCSCount */
+    8);    /* TCSCount */
 
 OE_DEFINE_EMPTY_ECALL_TABLE();
