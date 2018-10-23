@@ -268,7 +268,7 @@ static void TestExecutionParallel(
             printf(
                 "%s(): Looking for counter=%u, have %u.\n",
                 __FUNCTION__,
-                (unsigned)EnclaveIds.size() * thread_count,
+                (unsigned)enclave_ids.size() * thread_count,
                 counter);
             old_val = counter;
         }
