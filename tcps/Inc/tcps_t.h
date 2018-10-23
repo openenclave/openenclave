@@ -29,6 +29,7 @@ typedef uint32_t __uint32_t;
 #define _In_z_
 #define _In_
 #define _Outptr_
+#define _Outptr_opt_
 #define _Out_
 #define _In_reads_bytes_(x)
 #define _Inout_

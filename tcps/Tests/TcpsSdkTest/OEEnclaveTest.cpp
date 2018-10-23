@@ -108,26 +108,50 @@ TEST_F(OEEnclaveTest, get_target_info_v2_Success)
     EXPECT_EQ(Tcps_Good, uStatus);
 }
 
-TEST_F(OEEnclaveTest, get_seal_key_Unique_Success)
+TEST_F(OEEnclaveTest, get_seal_key_v1_Unique_Success)
 {
     Tcps_StatusCode uStatus;
-    oe_result_t oeResult = (oe_result_t)ecall_TestOEGetSealKey(GetTAId(), &uStatus, 1);
+    oe_result_t oeResult = (oe_result_t)ecall_TestOEGetSealKeyV1(GetTAId(), &uStatus, 1);
     EXPECT_EQ(OE_OK, oeResult);
     EXPECT_EQ(Tcps_Good, uStatus);
 }
 
-TEST_F(OEEnclaveTest, get_seal_key_Product_Success)
+TEST_F(OEEnclaveTest, get_seal_key_v2_Unique_Success)
 {
     Tcps_StatusCode uStatus;
-    oe_result_t oeResult = (oe_result_t)ecall_TestOEGetSealKey(GetTAId(), &uStatus, 2);
+    oe_result_t oeResult = (oe_result_t)ecall_TestOEGetSealKeyV2(GetTAId(), &uStatus, 1);
     EXPECT_EQ(OE_OK, oeResult);
     EXPECT_EQ(Tcps_Good, uStatus);
 }
 
-TEST_F(OEEnclaveTest, get_seal_key_BadPolicy_InvalidParameter)
+TEST_F(OEEnclaveTest, get_seal_key_v1_Product_Success)
 {
     Tcps_StatusCode uStatus;
-    oe_result_t oeResult = (oe_result_t)ecall_TestOEGetSealKey(GetTAId(), &uStatus, 0);
+    oe_result_t oeResult = (oe_result_t)ecall_TestOEGetSealKeyV1(GetTAId(), &uStatus, 2);
+    EXPECT_EQ(OE_OK, oeResult);
+    EXPECT_EQ(Tcps_Good, uStatus);
+}
+
+TEST_F(OEEnclaveTest, get_seal_key_v2_Product_Success)
+{
+    Tcps_StatusCode uStatus;
+    oe_result_t oeResult = (oe_result_t)ecall_TestOEGetSealKeyV2(GetTAId(), &uStatus, 2);
+    EXPECT_EQ(OE_OK, oeResult);
+    EXPECT_EQ(Tcps_Good, uStatus);
+}
+
+TEST_F(OEEnclaveTest, get_seal_key_v1_BadPolicy_InvalidParameter)
+{
+    Tcps_StatusCode uStatus;
+    oe_result_t oeResult = (oe_result_t)ecall_TestOEGetSealKeyV1(GetTAId(), &uStatus, 0);
+    EXPECT_EQ(OE_OK, oeResult);
+    EXPECT_EQ(Tcps_Bad, uStatus);
+}
+
+TEST_F(OEEnclaveTest, get_seal_key_v2_BadPolicy_InvalidParameter)
+{
+    Tcps_StatusCode uStatus;
+    oe_result_t oeResult = (oe_result_t)ecall_TestOEGetSealKeyV2(GetTAId(), &uStatus, 0);
     EXPECT_EQ(OE_OK, oeResult);
     EXPECT_EQ(Tcps_Bad, uStatus);
 }

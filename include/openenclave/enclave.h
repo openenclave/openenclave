@@ -55,21 +55,21 @@ OE_EXTERNC_BEGIN
  * @returns OE_OK successful
  * @returns OE_INVALID_PARAMETER a parameter is invalid
  * @returns OE_FAILURE failed to add handler
-*/
+ */
 oe_result_t oe_add_vectored_exception_handler(
     bool is_first_handler,
     oe_vectored_exception_handler_t vectored_handler);
 
 /**
-* Remove an existing vectored exception handler.
-*
-* @param vectored_handler The pointer to a registered exception handler returned
-* from a successful oe_add_vectored_exception_handler() call.
-*
-* @returns OE_OK success
-* @returns OE_INVALID_PARAMETER a parameter is invalid
-* @returns OE_FAILURE failed to remove handler
-*/
+ * Remove an existing vectored exception handler.
+ *
+ * @param vectored_handler The pointer to a registered exception handler returned
+ * from a successful oe_add_vectored_exception_handler() call.
+ *
+ * @returns OE_OK success
+ * @returns OE_INVALID_PARAMETER a parameter is invalid
+ * @returns OE_FAILURE failed to remove handler
+ */
 oe_result_t oe_remove_vectored_exception_handler(
     oe_vectored_exception_handler_t vectored_handler);
 
@@ -306,10 +306,12 @@ void __oe_assert_fail(
 #define oe_get_report             oe_get_report_v1
 #define oe_get_target_info        oe_get_target_info_v1
 #define oe_get_seal_key_by_policy oe_get_seal_key_by_policy_v1
+#define oe_get_seal_key           oe_get_seal_key_v1
 #else
 #define oe_get_report             oe_get_report_v2
 #define oe_get_target_info        oe_get_target_info_v2
 #define oe_get_seal_key_by_policy oe_get_seal_key_by_policy_v2
+#define oe_get_seal_key           oe_get_seal_key_v2
 #endif
 
 /**
@@ -501,63 +503,125 @@ oe_result_t oe_verify_report(
     oe_report_t* parsed_report);
 
 /**
-* Get a symmetric encryption key derived from the specified policy and coupled
-* to the enclave platform.
-*
-* @param seal_policy The policy for the identity properties used to derive the
-* seal key.
-* @param key_buffer The buffer to write the resulting seal key to.
-* @param key_buffer_size The size of the **key_buffer** buffer. If this is too
-* small, this function sets it to the required size and returns
-* OE_BUFFER_TOO_SMALL. When this function success, the number of bytes written
-* to key_buffer is set to it.
-* @param key_info Optional buffer for the enclave-specific key information which
-* can be used to retrieve the same key later, on a newer security version.
-* @param key_info_size The size of the **key_info** buffer. If this is too
-small,
-* this function sets it to the required size and returns OE_BUFFER_TOO_SMALL.
-* When this function success, the number of bytes written to key_info is set to
-* it.
-
-* @retval OE_OK The seal key was successfully requested.
-* @retval OE_INVALID_PARAMETER At least one parameter is invalid.
-* @retval OE_BUFFER_TOO_SMALL The **key_buffer** or **key_info** buffer is too
-* small.
-* @retval OE_UNEXPECTED An unexpected error happened.
-*/
-oe_result_t oe_get_seal_key_by_policy(
+ * Get a symmetric encryption key derived from the specified policy and coupled
+ * to the enclave platform.
+ *
+ * @deprecated This function is deprecated. Use oe_get_seal_key_by_policy_v2() instead.
+ *
+ * @param seal_policy The policy for the identity properties used to derive the
+ * seal key.
+ * @param key_buffer The buffer to write the resulting seal key to.
+ * @param key_buffer_size The size of the **key_buffer** buffer. If this is too
+ * small, this function sets it to the required size and returns
+ * OE_BUFFER_TOO_SMALL. When this function success, the number of bytes written
+ * to key_buffer is set to it.
+ * @param key_info Optional buffer for the enclave-specific key information which
+ * can be used to retrieve the same key later, on a newer security version.
+ * @param key_info_size The size of the **key_info** buffer. If this is too
+ small,
+ * this function sets it to the required size and returns OE_BUFFER_TOO_SMALL.
+ * When this function success, the number of bytes written to key_info is set to
+ * it.
+ *
+ * @retval OE_OK The seal key was successfully requested.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ * @retval OE_BUFFER_TOO_SMALL The **key_buffer** or **key_info** buffer is too
+ * small.
+ * @retval OE_UNEXPECTED An unexpected error happened.
+ */
+OE_DEPRECATED(oe_result_t oe_get_seal_key_by_policy_v1(
     oe_seal_policy_t seal_policy,
     uint8_t* key_buffer,
     size_t* key_buffer_size,
     uint8_t* key_info,
+    size_t* key_info_size),
+    "This function is deprecated. Use oe_get_seal_key_by_policy_v2() instead");
+
+/**
+ * Get a symmetric encryption key derived from the specified policy and coupled
+ * to the enclave platform.
+ *
+ * @param[in] seal_policy The policy for the identity properties used to derive the
+ * seal key.
+ * @param[out] key_buffer This contains the resulting seal key upon success.
+ * @param[out] key_buffer_size This contains the size of the **key_buffer** buffer upon success. 
+ * @param[out] key_info If non-NULL, then on success this points to the enclave-specific key information which
+ * can be used to retrieve the same key later, on a newer security version.
+ * @param[out] key_info_size On success, this is the size of the **key_info** buffer.
+ *
+ * @retval OE_OK The seal key was successfully requested.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ * @retval OE_UNEXPECTED An unexpected error happened.
+ * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
+ */
+oe_result_t oe_get_seal_key_by_policy_v2(
+    oe_seal_policy_t seal_policy,
+    uint8_t** key_buffer,
+    size_t* key_buffer_size,
+    uint8_t** key_info,
     size_t* key_info_size);
 
 /**
-* Get a symmetric encryption key from the enclave platform using existing key
-* information.
-*
-* @param key_info The enclave-specific key information to derive the seal key
-* with.
-* @param key_info_size The size of the **key_info** buffer.
-* @param key_buffer The buffer to write the resulting seal key to. It will not
-* be changed if this function fails.
-* @param key_buffer_size The size of the **key_buffer** buffer. If this is too
-* small, this function sets it to the required size and returns
-* OE_BUFFER_TOO_SMALL. When this function success, the number of bytes written
-* to key_buffer is set to it.
-*
-* @retval OE_OK The seal key was successfully requested.
-* @retval OE_INVALID_PARAMETER At least one parameter is invalid.
-* @retval OE_BUFFER_TOO_SMALL The **key_buffer** buffer is too small.
-* @retval OE_INVALID_CPUSVN **key_info** contains an invalid CPUSVN.
-* @retval OE_INVALID_ISVSVN **key_info** contains an invalid ISVSVN.
-* @retval OE_INVALID_KEYNAME **key_info** contains an invalid KEYNAME.
-*/
-oe_result_t oe_get_seal_key(
+ * Get a symmetric encryption key from the enclave platform using existing key
+ * information.
+ *
+ * @deprecated This function is deprecated. Use oe_get_seal_key_v2() instead.
+ *
+ * @param key_info The enclave-specific key information to derive the seal key
+ * with.
+ * @param key_info_size The size of the **key_info** buffer.
+ * @param key_buffer The buffer to write the resulting seal key to. It will not
+ * be changed if this function fails.
+ * @param key_buffer_size The size of the **key_buffer** buffer. If this is too
+ * small, this function sets it to the required size and returns
+ * OE_BUFFER_TOO_SMALL. When this function success, the number of bytes written
+ * to key_buffer is set to it.
+ *
+ * @retval OE_OK The seal key was successfully requested.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ * @retval OE_BUFFER_TOO_SMALL The **key_buffer** buffer is too small.
+ * @retval OE_INVALID_CPUSVN **key_info** contains an invalid CPUSVN.
+ * @retval OE_INVALID_ISVSVN **key_info** contains an invalid ISVSVN.
+ * @retval OE_INVALID_KEYNAME **key_info** contains an invalid KEYNAME.
+ */
+OE_DEPRECATED(oe_result_t oe_get_seal_key_v1(
     const uint8_t* key_info,
     size_t key_info_size,
     uint8_t* key_buffer,
+    size_t* key_buffer_size),
+    "This function is deprecated. Use oe_get_seal_key_v2() instead.");
+
+/**
+ * Get a symmetric encryption key from the enclave platform using existing key
+ * information.
+ *
+ * @param key_info The enclave-specific key information to derive the seal key
+ * with.
+ * @param key_info_size The size of the **key_info** buffer.
+ * @param key_buffer Upon success, this points to the resulting seal key, which should be freed with oe_free_key().
+ * @param key_buffer_size Upon success, this contains the size of the **key_buffer** buffer, which should be freed with oe_free_key().
+ *
+ * @retval OE_OK The seal key was successfully requested.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ * @retval OE_INVALID_CPUSVN **key_info** contains an invalid CPUSVN.
+ * @retval OE_INVALID_ISVSVN **key_info** contains an invalid ISVSVN.
+ * @retval OE_INVALID_KEYNAME **key_info** contains an invalid KEYNAME.
+ * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
+ */
+oe_result_t oe_get_seal_key_v2(
+    const uint8_t* key_info,
+    size_t key_info_size,
+    uint8_t** key_buffer,
     size_t* key_buffer_size);
+
+/* Free a key and/or key info.
+ *
+ * @param[in] key_buffer If non-NULL, the key buffer to free.
+ * @param[in] key_info If non-NULL, the key info buffer to free.
+ */
+void oe_free_key(
+    uint8_t* key_buffer,
+    uint8_t* key_info); 
 
 /**
  * Obtains the enclave handle.
@@ -568,12 +632,12 @@ oe_result_t oe_get_seal_key(
  * handle is an address inside the host address space.
  *
  * @deprecated This function is deprecated. Host application code should use
- * edger8r generated instead.
+ * edger8r generated code instead.
  *
  * @returns the enclave handle.
  */
 OE_DEPRECATED(oe_enclave_t* oe_get_enclave(void),
-    "Host application code should use edger8r generated code instead.");
+    "This function is deprecated. Host application code should use edger8r generated code instead.");
 
 /**
  * Obtains the public key corresponding to the enclave's private key.
@@ -582,8 +646,9 @@ OE_DEPRECATED(oe_enclave_t* oe_get_enclave(void),
  * key.
  * @param[out] key_buffer On success, contains a pointer to the key, which should be freed with oe_free_key().
  * @param[out] key_buffer_size On success, contains the size in bytes of the key buffer.
- * @param[out] key_info Reserved for future use.  Must be NULL for now.
- * @param[out] key_info_size Reserved for future use.  Must be NULL for now.
+ * @param[out] key_info If non-NULL, then on success this points to the enclave-specific key information which
+ * can be used to retrieve the same key later, on a newer security version.
+ * @param[out] key_info_size On success, this is the size of the **key_info** buffer.
  */
 oe_result_t oe_get_public_key_by_policy(
     oe_seal_policy_t seal_policy,
@@ -593,14 +658,38 @@ oe_result_t oe_get_public_key_by_policy(
     size_t* key_info_size);
 
 /**
+ * Get a public key from the enclave platform using existing key
+ * information.
+ *
+ * @param key_info The enclave-specific key information to derive the public key
+ * with.
+ * @param key_info_size The size of the **key_info** buffer.
+ * @param key_buffer Upon success, this points to the resulting public key, which should be freed with oe_free_key().
+ * @param key_buffer_size Upon success, this contains the size of the **key_buffer** buffer, which should be freed with oe_free_key().
+ *
+ * @retval OE_OK The seal key was successfully requested.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ * @retval OE_INVALID_CPUSVN **key_info** contains an invalid CPUSVN.
+ * @retval OE_INVALID_ISVSVN **key_info** contains an invalid ISVSVN.
+ * @retval OE_INVALID_KEYNAME **key_info** contains an invalid KEYNAME.
+ * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
+ */
+oe_result_t oe_get_public_key(
+    const uint8_t* key_info,
+    size_t key_info_size,
+    uint8_t** key_buffer,
+    size_t* key_buffer_size);
+
+/**
  * Obtains a private key specific to the enclave.
  *
  * @param[in] seal_policy The policy for the identity properties used to derive the
  * key.
  * @param[out] key_buffer On success, contains a pointer to the key, which should be freed with oe_free_key().
  * @param[out] key_buffer_size On success, contains the size in bytes of the key buffer.
- * @param[out] key_info Reserved for future use.  Must be NULL for now.
- * @param[out] key_info_size Reserved for future use.  Must be NULL for now.
+ * @param[out] key_info If non-NULL, then on success this points to the enclave-specific key information which
+ * can be used to retrieve the same key later, on a newer security version.
+ * @param[out] key_info_size On success, this is the size of the **key_info** buffer.
  */
 oe_result_t oe_get_private_key_by_policy(
     oe_seal_policy_t seal_policy,
@@ -610,21 +699,39 @@ oe_result_t oe_get_private_key_by_policy(
     size_t* key_info_size);
 
 /**
- * Obtains a certificate specific to the enclave, based on the enclave's public key.
+ * Get a private key from the enclave platform using existing key
+ * information.
  *
- * @param[in] seal_policy The policy for the identity properties used to derive the
- * key.
- * @param[out] certificate_buffer On success, contains a pointer to the certificate, which should be freed with oe_free_key().
- * @param[out] certificate_buffer_size On success, contains the size in bytes of the certificate buffer.
- * @param[out] certificate_info Reserved for future use.  Must be NULL for now.
- * @param[out] certificate_info_size Reserved for future use.  Must be NULL for now.
+ * @param key_info The enclave-specific key information to derive the private key
+ * with.
+ * @param key_info_size The size of the **key_info** buffer.
+ * @param key_buffer Upon success, this points to the resulting private key, which should be freed with oe_free_key().
+ * @param key_buffer_size Upon success, this contains the size of the **key_buffer** buffer, which should be freed with oe_free_key().
+ *
+ * @retval OE_OK The seal key was successfully requested.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ * @retval OE_INVALID_CPUSVN **key_info** contains an invalid CPUSVN.
+ * @retval OE_INVALID_ISVSVN **key_info** contains an invalid ISVSVN.
+ * @retval OE_INVALID_KEYNAME **key_info** contains an invalid KEYNAME.
+ * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
  */
-oe_result_t oe_get_certificate_by_policy(
-    oe_seal_policy_t seal_policy,
-    uint8_t** certificate_buffer,
-    size_t* certificate_buffer_size,
-    uint8_t** certificate_info,
-    size_t* certificate_info_size);
+oe_result_t oe_get_private_key(
+    const uint8_t* key_info,
+    size_t key_info_size,
+    uint8_t** key_buffer,
+    size_t* key_buffer_size);
+
+/**
+ * Dereference another enclave and reclaim its resources if this was the last
+ * reference. Once this is performed, the other enclave can no longer be accessed.
+ *
+ * @param enclave The instance of the other enclave to be terminated, which was
+ * previously obtained by calling a generated oe_create_<foo>_enclave() API.
+ *
+ * @returns Returns OE_OK on success.
+ *
+ */
+oe_result_t oe_terminate_enclave(oe_enclave_t* enclave);
 
 /**
  * An enclave can call this API to create a handle to pass to the host.

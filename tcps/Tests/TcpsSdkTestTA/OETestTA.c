@@ -279,7 +279,7 @@ Tcps_StatusCode ecall_TestOEGetTargetInfoV2(uint32_t flags)
     return Tcps_Good;
 }
 
-Tcps_StatusCode ecall_TestOEGetSealKey(int policy)
+Tcps_StatusCode ecall_TestOEGetSealKeyV1(int policy)
 {
     oe_result_t oeResult;
     size_t keySize = 0;
@@ -289,7 +289,7 @@ Tcps_StatusCode ecall_TestOEGetSealKey(int policy)
 
     /* Test getting sizes. */
     keySize = 0;
-    oeResult = oe_get_seal_key_by_policy(
+    oeResult = oe_get_seal_key_by_policy_v1(
         (oe_seal_policy_t)policy,
         NULL,
         &keySize,
@@ -306,7 +306,7 @@ Tcps_StatusCode ecall_TestOEGetSealKey(int policy)
     }
 
     /* Test getting key without getting key info. */
-    oeResult = oe_get_seal_key_by_policy(
+    oeResult = oe_get_seal_key_by_policy_v1(
         (oe_seal_policy_t)policy,
         key,
         &keySize,
@@ -317,7 +317,7 @@ Tcps_StatusCode ecall_TestOEGetSealKey(int policy)
     }
 
     /* Test getting key and key info. */
-    oeResult = oe_get_seal_key_by_policy(
+    oeResult = oe_get_seal_key_by_policy_v1(
         (oe_seal_policy_t)policy,
         key,
         &keySize,
@@ -329,7 +329,7 @@ Tcps_StatusCode ecall_TestOEGetSealKey(int policy)
 
     /* Test getting key size by key info. */
     keySize = 0;
-    oeResult = oe_get_seal_key(keyInfo, keyInfoSize, NULL, &keySize);
+    oeResult = oe_get_seal_key_v1(keyInfo, keyInfoSize, NULL, &keySize);
     if (oeResult != OE_BUFFER_TOO_SMALL) {
         return Tcps_Bad;
     }
@@ -338,7 +338,52 @@ Tcps_StatusCode ecall_TestOEGetSealKey(int policy)
     }
 
     /* Test getting key by key info. */
-    oeResult = oe_get_seal_key(keyInfo, keyInfoSize, key, &keySize);
+    oeResult = oe_get_seal_key_v1(keyInfo, keyInfoSize, key, &keySize);
+    if (oeResult != OE_OK) {
+        return Tcps_Bad;
+    }
+
+    return Tcps_Good;
+}
+
+Tcps_StatusCode ecall_TestOEGetSealKeyV2(int policy)
+{
+    oe_result_t oeResult;
+    size_t keySize = 0;
+    size_t keyInfoSize = 0;
+    uint8_t* key;
+    uint8_t* keyInfo;
+
+    /* Test getting key without getting key info. */
+    oeResult = oe_get_seal_key_by_policy_v2(
+        (oe_seal_policy_t)policy,
+        &key,
+        &keySize,
+        NULL,
+        &keyInfoSize);
+    if (oeResult != OE_OK) {
+        return Tcps_Bad;
+    }
+    oe_free_key(key, NULL);
+    if (keySize == 0) {
+        return Tcps_Bad;
+    }
+
+    /* Test getting key and key info. */
+    oeResult = oe_get_seal_key_by_policy_v2(
+        (oe_seal_policy_t)policy,
+        &key,
+        &keySize,
+        &keyInfo,
+        &keyInfoSize);
+    if (oeResult != OE_OK) {      
+        return Tcps_Bad;
+    }
+    oe_free_key(key, NULL);
+
+    /* Test getting key by key info. */
+    oeResult = oe_get_seal_key_v2(keyInfo, keyInfoSize, &key, &keySize);
+    oe_free_key(key, keyInfo);
     if (oeResult != OE_OK) {
         return Tcps_Bad;
     }
