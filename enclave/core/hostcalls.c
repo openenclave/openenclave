@@ -44,8 +44,8 @@ void* oe_host_realloc(void* ptr, size_t size)
     oe_realloc_args_t* arg_in = NULL;
     uint64_t arg_out = 0;
 
-    if (!(arg_in = (oe_realloc_args_t*)oe_host_calloc(1,
-              sizeof(oe_realloc_args_t))))
+    if (!(arg_in =
+              (oe_realloc_args_t*)oe_host_calloc(1, sizeof(oe_realloc_args_t))))
         goto done;
 
     arg_in->ptr = ptr;
@@ -117,7 +117,7 @@ int oe_host_write(int device, const char* str, size_t len)
         OE_OK)
         goto done;
 
-    if (!(args = (oe_print_args_t*)oe_host_calloc(1,total_size)))
+    if (!(args = (oe_print_args_t*)oe_host_calloc(1, total_size)))
         goto done;
 
     /* Initialize the arguments */

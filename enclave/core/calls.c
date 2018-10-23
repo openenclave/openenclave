@@ -552,7 +552,7 @@ oe_result_t oe_call_host(const char* func, void* args_in)
             oe_safe_add_sizet(
                 len, 1 + sizeof(oe_call_host_args_t), &total_len));
 
-        if (!(args = oe_host_calloc(1,total_len)))
+        if (!(args = oe_host_calloc(1, total_len)))
         {
             /* If the enclave is in crashing/crashed status, new OCALL should
              * fail immediately. */
@@ -604,7 +604,7 @@ oe_result_t oe_call_host_by_address(
 
     /* Initialize the arguments */
     {
-        if (!(args = oe_host_calloc(1,sizeof(*args))))
+        if (!(args = oe_host_calloc(1, sizeof(*args))))
         {
             /* Fail if the enclave is crashing. */
             OE_CHECK(__oe_enclave_status);
@@ -657,7 +657,7 @@ oe_result_t oe_call_host_function(
 
     /* Initialize the arguments */
     {
-        if (!(args = oe_host_calloc(1,sizeof(*args))))
+        if (!(args = oe_host_calloc(1, sizeof(*args))))
         {
             /* Fail if the enclave is crashing. */
             OE_CHECK(__oe_enclave_status);
