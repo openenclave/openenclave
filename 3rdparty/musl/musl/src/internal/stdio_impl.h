@@ -9,7 +9,7 @@
 
 #define FFINALLOCK(f) ((f)->lock>=0 ? __lockfile((f)) : 0)
 #define FLOCK(f) int __need_unlock = ((f)->lock>=0 ? __lockfile((f)) : 0)
-#define FUNLOCK(f) if (__need_unlock) __unlockfile((f)); else
+#define FUNLOCK(f) do { if (__need_unlock) __unlockfile((f)); } while (0)
 
 #define F_PERM 1
 #define F_NORD 4

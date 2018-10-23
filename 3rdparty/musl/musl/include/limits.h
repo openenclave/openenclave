@@ -9,7 +9,7 @@
 
 /* Support signed or unsigned plain-char */
 
-#if '\0'-1 > 0
+#if '\xff' > 0
 #define CHAR_MIN 0
 #define CHAR_MAX 255
 #else
@@ -40,14 +40,9 @@
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 
 #define PIPE_BUF 4096
-#ifdef PAGE_SIZE
-#define PAGESIZE PAGE_SIZE
-#endif
 #define FILESIZEBITS 64
 #define NAME_MAX 255
-#define SYMLINK_MAX 255
 #define PATH_MAX 4096
-#define NZERO 20
 #define NGROUPS_MAX 32
 #define ARG_MAX 131072
 #define IOV_MAX 1024
@@ -82,10 +77,19 @@
 #define RE_DUP_MAX 255
 
 #define NL_ARGMAX 9
-#define NL_LANGMAX 32
 #define NL_MSGMAX 32767
 #define NL_SETMAX 255
 #define NL_TEXTMAX 2048
+
+#endif
+
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE) || defined(_XOPEN_SOURCE)
+
+#ifdef PAGESIZE
+#define PAGE_SIZE PAGESIZE
+#endif
+#define NZERO 20
+#define NL_LANGMAX 32
 
 #endif
 

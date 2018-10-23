@@ -27,6 +27,9 @@ pipeline {
             sh 'bash ./scripts/test-build-config -p SGX1FLC -b Release -d --build_package'
             azureUpload(storageCredentialId: 'oejenkinsciartifacts_storageaccount', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: 'master/${BUILD_NUMBER}/Release/SGX1FLC/', containerName: 'oejenkins')
             azureUpload(storageCredentialId: 'oejenkinsciartifacts_storageaccount', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: 'master/latest/Release/SGX1FLC/', containerName: 'oejenkins')
+            withCredentials([usernamePassword(credentialsId: 'https_gh_pages_push', passwordVariable: 'GHUSER_PASSWORD', usernameVariable: 'GHUSER_ID')]) {
+                sh 'bash ./scripts/deploy-docs build https $GHUSER_ID $GHUSER_PASSWORD'
+            }
           }
         }
         stage('SGX1FLC Package RelWithDebInfo') {

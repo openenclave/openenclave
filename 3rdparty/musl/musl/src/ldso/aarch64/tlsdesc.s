@@ -14,7 +14,7 @@ __tlsdesc_static:
 // size_t __tlsdesc_dynamic(size_t *a)
 // {
 // 	struct {size_t modidx,off;} *p = (void*)a[1];
-// 	size_t *dtv = *(size_t**)(tp + 16 - 8);
+// 	size_t *dtv = *(size_t**)(tp - 8);
 // 	if (p->modidx <= dtv[0])
 // 		return dtv[p->modidx] + p->off - tp;
 // 	return __tls_get_new(p) - tp;
@@ -28,8 +28,7 @@ __tlsdesc_dynamic:
 	mrs x1,tpidr_el0      // tp
 	ldr x0,[x0,#8]        // p
 	ldr x2,[x0]           // p->modidx
-	add x3,x1,#8
-	ldr x3,[x3]           // dtv
+	ldr x3,[x1,#-8]       // dtv
 	ldr x4,[x3]           // dtv[0]
 	cmp x2,x4
 	b.hi 1f

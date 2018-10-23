@@ -17,10 +17,10 @@ cat <<EOF
 libgcc.a%s %:if-exists(libgcc_eh.a%s)
 
 *startfile:
-%{!shared: $libdir/%{pie:S}crt1.o} $libdir/crti.o %{shared|pie:crtbeginS.o%s;:crtbegin.o%s}
+%{!shared: $libdir/Scrt1.o} $libdir/crti.o crtbeginS.o%s
 
 *endfile:
-%{shared|pie:crtendS.o%s;:crtend.o%s} $libdir/crtn.o
+crtendS.o%s $libdir/crtn.o
 
 *link:
 -dynamic-linker $ldso -nostdlib %{shared:-shared} %{static:-static} %{rdynamic:-export-dynamic}

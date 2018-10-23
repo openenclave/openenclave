@@ -623,6 +623,7 @@ typedef struct {
 
 
 #define NT_PRSTATUS	1
+#define NT_PRFPREG	2
 #define NT_FPREGSET	2
 #define NT_PRPSINFO	3
 #define NT_PRXREG	4
@@ -644,6 +645,19 @@ typedef struct {
 #define NT_PPC_VMX	0x100
 #define NT_PPC_SPE	0x101
 #define NT_PPC_VSX	0x102
+#define NT_PPC_TAR	0x103
+#define NT_PPC_PPR	0x104
+#define NT_PPC_DSCR	0x105
+#define NT_PPC_EBB	0x106
+#define NT_PPC_PMU	0x107
+#define NT_PPC_TM_CGPR	0x108
+#define NT_PPC_TM_CFPR	0x109
+#define NT_PPC_TM_CVMX	0x10a
+#define NT_PPC_TM_CVSX	0x10b
+#define NT_PPC_TM_SPR	0x10c
+#define NT_PPC_TM_CTAR	0x10d
+#define NT_PPC_TM_CPPR	0x10e
+#define NT_PPC_TM_CDSCR	0x10f
 #define NT_386_TLS	0x200
 #define NT_386_IOPERM	0x201
 #define NT_X86_XSTATE	0x202
@@ -656,14 +670,21 @@ typedef struct {
 #define NT_S390_LAST_BREAK	0x306
 #define NT_S390_SYSTEM_CALL	0x307
 #define NT_S390_TDB	0x308
+#define NT_S390_VXRS_LOW	0x309
+#define NT_S390_VXRS_HIGH	0x30a
+#define NT_S390_GS_CB	0x30b
+#define NT_S390_GS_BC	0x30c
+#define NT_S390_RI_CB	0x30d
 #define NT_ARM_VFP	0x400
 #define NT_ARM_TLS	0x401
 #define NT_ARM_HW_BREAK	0x402
 #define NT_ARM_HW_WATCH	0x403
 #define NT_ARM_SYSTEM_CALL	0x404
+#define NT_ARM_SVE	0x405
 #define NT_METAG_CBUF	0x500
 #define NT_METAG_RPIPE	0x501
 #define NT_METAG_TLS	0x502
+#define NT_ARC_V2	0x600
 #define NT_VERSION	1
 
 
@@ -721,7 +742,8 @@ typedef struct {
 #define DT_ENCODING	32
 #define DT_PREINIT_ARRAY 32
 #define DT_PREINIT_ARRAYSZ 33
-#define	DT_NUM		34
+#define DT_SYMTAB_SHNDX	34
+#define	DT_NUM		35
 #define DT_LOOS		0x6000000d
 #define DT_HIOS		0x6ffff000
 #define DT_LOPROC	0x70000000
@@ -821,6 +843,8 @@ typedef struct {
 #define	DF_1_SYMINTPOSE	0x00800000
 #define	DF_1_GLOBAUDIT	0x01000000
 #define	DF_1_SINGLETON	0x02000000
+#define	DF_1_STUB	0x04000000
+#define	DF_1_PIE	0x08000000
 
 #define DTF_1_PARINIT	0x00000001
 #define DTF_1_CONFEXP	0x00000002
@@ -1002,6 +1026,14 @@ typedef struct {
 #define AT_L2_CACHESHAPE	36
 #define AT_L3_CACHESHAPE	37
 
+#define AT_L1I_CACHESIZE	40
+#define AT_L1I_CACHEGEOMETRY	41
+#define AT_L1D_CACHESIZE	42
+#define AT_L1D_CACHEGEOMETRY	43
+#define AT_L2_CACHESIZE		44
+#define AT_L2_CACHEGEOMETRY	45
+#define AT_L3_CACHESIZE		46
+#define AT_L3_CACHEGEOMETRY	47
 
 
 
@@ -1097,7 +1129,25 @@ typedef struct {
 #define R_68K_GLOB_DAT	20
 #define R_68K_JMP_SLOT	21
 #define R_68K_RELATIVE	22
-#define R_68K_NUM	23
+#define R_68K_TLS_GD32	25
+#define R_68K_TLS_GD16	26
+#define R_68K_TLS_GD8	27
+#define R_68K_TLS_LDM32	28
+#define R_68K_TLS_LDM16	29
+#define R_68K_TLS_LDM8	30
+#define R_68K_TLS_LDO32	31
+#define R_68K_TLS_LDO16	32
+#define R_68K_TLS_LDO8	33
+#define R_68K_TLS_IE32	34
+#define R_68K_TLS_IE16	35
+#define R_68K_TLS_IE8	36
+#define R_68K_TLS_LE32	37
+#define R_68K_TLS_LE16	38
+#define R_68K_TLS_LE8	39
+#define R_68K_TLS_DTPMOD32	40
+#define R_68K_TLS_DTPREL32	41
+#define R_68K_TLS_TPREL32	42
+#define R_68K_NUM	43
 
 #define R_386_NONE	   0
 #define R_386_32	   1
@@ -2233,6 +2283,7 @@ enum
 
 #define PPC64_OPT_TLS		1
 #define PPC64_OPT_MULTI_TOC	2
+#define PPC64_OPT_LOCALENTRY	4
 
 #define STO_PPC64_LOCAL_BIT	5
 #define STO_PPC64_LOCAL_MASK	0xe0

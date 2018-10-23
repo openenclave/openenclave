@@ -230,7 +230,7 @@ static void do_tzset()
 			dst_off = __timezone - 3600;
 	} else {
 		__daylight = 0;
-		dst_off = 0;
+		dst_off = __timezone;
 	}
 
 	if (*s == ',') s++, getrule(&s, r0);

@@ -82,6 +82,7 @@ void *memccpy (void *__restrict, const void *__restrict, int, size_t);
 char *strsep(char **, const char *);
 size_t strlcat (char *, const char *, size_t);
 size_t strlcpy (char *, const char *, size_t);
+void explicit_bzero (void *, size_t);
 #endif
 
 #ifdef _GNU_SOURCE

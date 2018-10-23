@@ -57,9 +57,9 @@ Note: While it's not shown in this sample, seal/unseal operations could be trigg
 
 - `enclave_a_v1` and `enclave_a_v2` were created and signed by the same private.pem file, which means they share the same signer.
 
-  Notice that in `enc2/Makefile`, instead of generating enc2's own private.mem, it copies the one from enc1, this is how enclave1 and enclave2 shares the same signer.
+  Notice that in `enc2/Makefile`, instead of generating enc2's own private.pem, it copies the one from enc1, this is how enclave1 and enclave2 shares the same signer.
 
-- `enclave_b` was signed by a newly created private.mem and has a different signer/product identity.
+- `enclave_b` was signed by a newly created private.pem and has a different signer/product identity.
 
 ### Seal and unseal data with OE_SEAL_POLICY_UNIQUE in different enclaves
 
@@ -83,7 +83,7 @@ Note: While it's not shown in this sample, seal/unseal operations could be trigg
 
 ## Enclave library
 
-All three enclaves are almost identical except signed by two different private.mem files.
+All three enclaves are almost identical except signed by two different private.pem files.
 
 ### ECALLs
 

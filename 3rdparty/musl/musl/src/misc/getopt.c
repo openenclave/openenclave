@@ -77,25 +77,25 @@ int getopt(int argc, char * const argv[], const char *optstring)
 		if (l>0) i+=l; else i++;
 	} while (l && d != c);
 
-	if (d != c) {
+	if (d != c || c == ':') {
 		optopt = c;
 		if (optstring[0] != ':' && opterr)
 			__getopt_msg(argv[0], ": unrecognized option: ", optchar, k);
 		return '?';
 	}
 	if (optstring[i] == ':') {
-		if (optstring[i+1] == ':') optarg = 0;
-		else if (optind >= argc) {
+		optarg = 0;
+		if (optstring[i+1] != ':' || optpos) {
+			optarg = argv[optind++] + optpos;
+			optpos = 0;
+		}
+		if (optind > argc) {
 			optopt = c;
 			if (optstring[0] == ':') return ':';
 			if (opterr) __getopt_msg(argv[0],
 				": option requires an argument: ",
 				optchar, k);
 			return '?';
-		}
-		if (optstring[i+1] != ':' || optpos) {
-			optarg = argv[optind++] + optpos;
-			optpos = 0;
 		}
 	}
 	return c;

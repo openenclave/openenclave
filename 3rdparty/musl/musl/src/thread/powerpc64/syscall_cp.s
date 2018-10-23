@@ -34,4 +34,11 @@ __cp_end:
 	blr
 
 __cp_cancel:
+	mflr 0
+	bl 1f
+	.long .TOC.-.
+1:	mflr 3
+	lwa 2, 0(3)
+	add 2, 2, 3
+	mtlr 0
 	b __cancel
