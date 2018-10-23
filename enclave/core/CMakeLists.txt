@@ -45,6 +45,10 @@ target_include_directories(oecore SYSTEM PRIVATE ${OE_C_COMPILER_INCDIR})
 # This directory contains dummy C headers needed by dlmalloc:
 target_include_directories(oecore PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dlmalloc)
 
+if (CMAKE_C_COMPILER_ID MATCHES GNU)
+    target_compile_options(oecore PRIVATE -Wjump-misses-init)
+endif ()
+
 target_compile_options(oecore PUBLIC
     -m64
     -fPIC

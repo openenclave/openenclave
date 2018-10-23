@@ -80,11 +80,6 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
 
   add_compile_options(-fno-strict-aliasing)
 
-  check_c_compiler_flag(-Wjump-misses-init WARN_JUMP_MISSES_INIT_SUPPORTED)
-  if (WARN_JUMP_MISSES_INIT_SUPPORTED)
-    add_compile_options($<$<COMPILE_LANGUAGE:C>:-Wjump-misses-init>)
-  endif ()
-
   # Enables XSAVE intrinsics.
   add_compile_options(-mxsave)
 
