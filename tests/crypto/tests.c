@@ -9,6 +9,7 @@ void TestAll()
     TestCRL();
     TestEC();
     TestRandom();
+    TestRdrand();
     TestRSA();
     TestSHA();
 }
