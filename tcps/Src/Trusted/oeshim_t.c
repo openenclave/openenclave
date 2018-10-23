@@ -49,22 +49,6 @@ const char* oe_result_str(oe_result_t result)
     return message;
 }
 
-/* TODO: delete once callers are updated */
-int Tcps_FillRandom(
-    _Out_writes_bytes_all_(len) void* ptr,
-    _In_ size_t len)
-{
-    return oe_random(ptr, len);
-}
-
-/* TODO: delete once callers are updated */
-int FillRandom(
-    _Out_writes_bytes_all_(len) void* ptr,
-    _In_ size_t len)
-{
-    return oe_random(ptr, len);
-}
-
 oe_result_t oe_random(void* data, size_t size)
 {
     sgx_status_t sgxStatus = sgx_read_rand((unsigned char *)data, size);
