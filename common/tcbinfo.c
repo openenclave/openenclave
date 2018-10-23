@@ -213,6 +213,18 @@ done:
     return result;
 }
 
+static oe_result_t _my_trace_json_string(const uint8_t* str, size_t str_length)
+{
+    oe_result_t result = OE_OK;
+    char buffer[str_length + 1];
+    OE_CHECK(oe_memcpy_s(buffer, sizeof(buffer), str, str_length));
+    buffer[str_length] = 0;
+    printf("value = %s\n", buffer);
+
+done:
+    return result;
+}
+
 /**
  * Type: tcb
  * Schema:
@@ -506,6 +518,239 @@ oe_result_t oe_parse_tcb_info_json(
         result = OE_OK;
     }
 done:
+    return result;
+}
+
+
+/**
+ * type = qe_identity
+ * Schema:
+ * {
+ *     "version" : integer,
+ *    "issueDate" : string,
+ *    "nextDate" : string,
+ *    "miscselect" : string,
+ *    "miscselectMask" : string,
+ *    "attributes" : string,
+ *    "attributesMask" : string,
+ *    "mrsigner" : hex string,
+ *    "isvprodid" : string,
+ *    "isvsvn" : integer,
+ * }
+ */
+static oe_result_t _read_qe_identity_info(
+    const uint8_t** itr,
+    const uint8_t* end,
+    oe_parsed_qe_identity_info_t* parsed_info)
+{
+    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
+    uint64_t value = 0;
+    const uint8_t* date_str = NULL;
+    size_t date_size = 0;
+
+    parsed_info->info_start = *itr;
+    OE_CHECK(_read('{', itr, end));
+
+    printf("Reading version:");
+    OE_TRACE_INFO("Reading version\n");
+    OE_CHECK(_read_property_name_and_colon("version", itr, end));
+    OE_CHECK(_read_integer(itr, end, &value));
+    parsed_info->version = (uint32_t)value;
+    OE_CHECK(_read(',', itr, end));
+    printf("[%d]\n",parsed_info->version);
+
+    printf("Reading issueDate:");
+    OE_TRACE_INFO("Reading issueDate\n");
+    OE_CHECK(_read_property_name_and_colon("issueDate", itr, end));
+    OE_CHECK(_read_string(itr, end, &date_str, &date_size));
+    _my_trace_json_string(date_str, date_size);
+    if (oe_datetime_from_string(
+            (const char*)date_str, date_size, &parsed_info->issue_date) !=
+        OE_OK)
+        OE_RAISE(OE_TCB_INFO_PARSE_ERROR);
+    OE_CHECK(_read(',', itr, end));
+
+    // nextUpdate is treated as an optional property.
+    printf("Reading nextUpdate:");
+    OE_TRACE_INFO("Reading nextUpdate\n");
+    if (_read_property_name_and_colon("nextUpdate", itr, end) == OE_OK)
+    {
+        OE_CHECK(_read_string(itr, end, &date_str, &date_size));
+        _my_trace_json_string(date_str, date_size);
+        if (oe_datetime_from_string(
+                (const char*)date_str, date_size, &parsed_info->next_update) !=
+            OE_OK)
+            OE_RAISE(OE_TCB_INFO_PARSE_ERROR);
+        OE_CHECK(_read(',', itr, end));
+    }
+    else
+    {
+        memset(&parsed_info->next_update, 0, sizeof(parsed_info->next_update));
+    }
+
+    printf("Reading miscselect:");
+    OE_TRACE_INFO("Reading miscselect\n");
+    OE_CHECK(_read_property_name_and_colon("miscselect", itr, end));
+    OE_CHECK(_read_hex_string(itr, end, parsed_info->miscselect, sizeof(parsed_info->miscselect)));
+    for (int i=0; i<sizeof(parsed_info->miscselect); i++)
+    {
+        printf("miscselect[%d]=%d\n", i, parsed_info->miscselect[i]);
+    }
+    OE_CHECK(_read(',', itr, end));
+
+// need to convert misc_select from string to uint32_t
+
+
+    printf("Reading miscselectMask:");
+    OE_TRACE_INFO("Reading miscselectMask\n");
+    OE_CHECK(_read_property_name_and_colon("miscselectMask", itr, end));
+    OE_CHECK(_read_hex_string(itr, end, parsed_info->miscselectMask, sizeof(parsed_info->miscselectMask)));
+    for (int i=0; i<sizeof(parsed_info->miscselectMask); i++)
+    {
+        printf("miscselectMask[%d]=%d\n", i, parsed_info->miscselectMask[i]);
+    }
+    OE_CHECK(_read(',', itr, end));
+
+// TODO: need to handle attributes.flags and attributes.xfrm
+// sigstruct->attributes.flags = SGX_ATTRIBUTES_DEFAULT_FLAGS;
+// sigstruct->attributes.xfrm = SGX_ATTRIBUTES_DEFAULT_XFRM;
+
+    printf("Reading attributes:");
+    OE_TRACE_INFO("Reading attributes\n");
+    OE_CHECK(_read_property_name_and_colon("attributes", itr, end));
+    OE_CHECK(_read_hex_string(itr, end, parsed_info->attributes, sizeof(parsed_info->attributes)));
+    for (int i=0; i<sizeof(parsed_info->attributes); i++)
+    {
+        printf("attributes[%d]=%d\n", i, parsed_info->attributes[i]);
+    }
+    OE_CHECK(_read(',', itr, end));
+
+
+    printf("Reading attributesMask:");
+    OE_TRACE_INFO("Reading attributesMask\n");
+    OE_CHECK(_read_property_name_and_colon("attributesMask", itr, end));
+    OE_CHECK(_read_hex_string(itr, end, parsed_info->attributesMask, sizeof(parsed_info->attributesMask)));
+    for (int i=0; i<sizeof(parsed_info->attributesMask); i++)
+    {
+        printf("attributesMask[%d]=%d\n", i, parsed_info->attributesMask[i]);
+    }
+    OE_CHECK(_read(',', itr, end));
+
+    printf("Reading mrsigner:");
+    OE_TRACE_INFO("Reading mrsigner\n");
+    OE_CHECK(_read_property_name_and_colon("mrsigner", itr, end));
+    OE_CHECK(
+        _read_hex_string(
+            itr, end, parsed_info->mrsigner, sizeof(parsed_info->mrsigner)));
+    _my_trace_json_string(parsed_info->mrsigner, sizeof(parsed_info->mrsigner));
+    OE_CHECK(_read(',', itr, end));
+
+    printf("parsed_info->mrsigner = %lu\n", sizeof(parsed_info->mrsigner));
+    for (int i=0; i<sizeof(parsed_info->mrsigner); i++)
+    {
+        printf("[%d]", parsed_info->mrsigner[i]);
+    }
+
+    printf("Reading isvprodid\n");
+    OE_TRACE_INFO("Reading isvprodid\n");
+    OE_CHECK(_read_property_name_and_colon("isvprodid", itr, end));
+    // OE_CHECK(_read_hex_string(itr, end, parsed_info->isvprodid, sizeof(parsed_info->isvprodid)));
+    OE_CHECK(_read_integer(itr, end, &value));
+    parsed_info->isvprodid = (uint32_t)value;
+    printf("%d\n", parsed_info->isvprodid);
+    OE_CHECK(_read(',', itr, end));
+
+    printf("Reading isvsvn:");
+    OE_TRACE_INFO("Reading isvsvn\n");
+    OE_CHECK(_read_property_name_and_colon("isvsvn", itr, end));
+    OE_CHECK(_read_integer(itr, end, &value));
+    printf("%lu\n", value);
+    parsed_info->isvsvn = (uint16_t)value;
+
+    // itr is expected to point to the '}' that denotes the end of the tcb
+    // object. The signature is generated over the entire object including the
+    // '}'.
+    parsed_info->info_size = *itr - parsed_info->info_start + 1;
+    OE_CHECK(_read('}', itr, end));
+    OE_TRACE_INFO("Done with last read\n");
+    result = OE_OK;
+done:
+    printf("Reading _read_qe_identity_info ended with [%s]\n", oe_result_str(result));
+    return result;
+}
+
+/**
+ * type = qe_identity_info
+ * 
+ * Schema:
+ * {
+ *    "qeIdentity" : object of type qe_identity,
+ *    "signature" : "hex string"
+ * }
+ */
+//  [
+//      {
+//         "qeIdentity":{
+//                         "version":1,
+//                         "issueDate":"2018-10-25T00:37:06Z",
+//                         "nextUpdate":"2018-11-24T00:37:06Z",
+//                         "miscselect":"00000000",
+//                         "miscselectMask":"FFFFFFFF",
+//                         "attributes":"11000000000000000000000000000000",
+//                         "attributesMask":"FBFFFFFFFFFFFFFF0000000000000000",
+//                         "mrsigner":"8C4F5775D796503E96137F77C68A829A0056AC8DED70140B081B094490C57BFF",
+//                         "isvprodid":1,
+//                         "isvsvn":1
+//                     },
+//         "signature":"6f353d76e331cd1ec9162e672e7191b072972f8e169628c67404438cf68cf1167c4c9407e0bc8044bec1aff153a4732a4c08485eccc90d35e763870b93925fae"
+//     }
+// ]
+oe_result_t oe_parse_qe_identity_info_json(
+    const uint8_t* info_json,
+    size_t info_json_size,
+    oe_parsed_qe_identity_info_t* parsed_info)
+{
+    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
+
+    const uint8_t* itr = info_json;
+    const uint8_t* end = info_json + info_json_size;
+
+    if (info_json == NULL || info_json_size == 0 || parsed_info == NULL)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    // Pointer wrapping.
+    if (end <= itr)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    itr = _skip_ws(itr, end);
+    OE_CHECK(_read('{', &itr, end));
+
+    printf("oe_parse_qe_identity_info_json\n");
+    printf("Reading qeIdentity\n");
+
+    OE_TRACE_INFO("Reading qeIdentity\n");
+    OE_CHECK(_read_property_name_and_colon("qeIdentity", &itr, end));
+    OE_CHECK(_read_qe_identity_info(&itr, end, parsed_info));
+    OE_CHECK(_read(',', &itr, end));
+
+    printf("Reading signature\n");
+    OE_TRACE_INFO("Reading signature\n");
+    OE_CHECK(_read_property_name_and_colon("signature", &itr, end));
+    OE_CHECK(_read_hex_string(&itr, end, parsed_info->signature, sizeof(parsed_info->signature)));
+    for (int i=0; i<sizeof(parsed_info->signature); i++)
+    {
+        printf("*");
+        printf("%02x", parsed_info->signature[i]);
+    }
+
+    OE_CHECK(_read('}', &itr, end));
+    if (itr == end)
+    {
+        OE_TRACE_INFO("qe identity Info json parsing successful.\n");
+        result = OE_OK;
+    }
+
+  done:
     return result;
 }
 

@@ -41,6 +41,7 @@ endif()
 
 add_library(oehost STATIC
     ../common/datetime.c
+    ../common/qeidentity.c
     ../common/quote.c
     ../common/report.c
     ../common/revocation.c

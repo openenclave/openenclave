@@ -8,6 +8,7 @@
 #include <openenclave/bits/result.h>
 #include <openenclave/internal/report.h>
 #include "../common/revocation.h"
+#include "../common/qeidentity.h"
 
 OE_EXTERNC_BEGIN
 
