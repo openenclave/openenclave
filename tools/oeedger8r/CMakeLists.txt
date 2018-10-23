@@ -3,7 +3,7 @@
 
 if (WIN32)
     set(BINARY ${OE_BINDIR}/oeedger8r.exe)
-    set(BUILD_COMMAND ocaml-env exec -- cmd.exe /c make)
+    set(BUILD_COMMAND ocamlbuild -I intel -no-links -libs str,unix main.native )
 else()
     set(BINARY ${OE_BINDIR}/oeedger8r)
     set(BUILD_COMMAND make)
