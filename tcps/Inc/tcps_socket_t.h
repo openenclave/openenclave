@@ -10,42 +10,42 @@
 extern "C" {
 #endif
 
-typedef void* TCPS_SOCKET;
+typedef void* oe_socket_t;
 
 #ifndef FD_SETSIZE
 #define FD_SETSIZE      64
 #endif /* FD_SETSIZE */
 
-typedef struct Tcps_fd_set {
+typedef struct oe_fd_set {
     unsigned int fd_count;             /* how many are SET? */
-    TCPS_SOCKET  fd_array[FD_SETSIZE]; /* an array of SOCKETs */
-} Tcps_fd_set;
+    oe_socket_t fd_array[FD_SETSIZE]; /* an array of SOCKETs */
+} oe_fd_set;
 
-typedef uint16_t Tcps_sa_family_t;
+typedef uint16_t oe_sa_family_t;
 
-typedef int Tcps_socklen_t;
+typedef int oe_socklen_t;
 
-typedef struct Tcps_addrinfo {
-    int                   ai_flags;
-    int                   ai_family;
-    int                   ai_socktype;
-    int                   ai_protocol;
-    size_t                ai_addrlen;
-    char*                 ai_canonname;
-    struct Tcps_sockaddr* ai_addr;
-    struct Tcps_addrinfo* ai_next;
-} Tcps_addrinfo;
+typedef struct oe_addrinfo {
+    int                 ai_flags;
+    int                 ai_family;
+    int                 ai_socktype;
+    int                 ai_protocol;
+    size_t              ai_addrlen;
+    char*               ai_canonname;
+    struct oe_sockaddr* ai_addr;
+    struct oe_addrinfo* ai_next;
+} oe_addrinfo;
 
-typedef struct Tcps_sockaddr {
-    Tcps_sa_family_t sa_family;
-    char             sa_data[14];
-} Tcps_sockaddr;
+typedef struct oe_sockaddr {
+    oe_sa_family_t sa_family;
+    char           sa_data[14];
+} oe_sockaddr;
 
 #ifndef _SS_MAXSIZE
 # define _SS_MAXSIZE   128
 # define _SS_ALIGNSIZE (sizeof(int64_t))
-# define _SS_PAD1SIZE  (_SS_ALIGNSIZE - sizeof(Tcps_sa_family_t))
-# define _SS_PAD2SIZE  (_SS_MAXSIZE - (sizeof(Tcps_sa_family_t) + _SS_PAD1SIZE + _SS_ALIGNSIZE))
+# define _SS_PAD1SIZE  (_SS_ALIGNSIZE - sizeof(oe_sa_family_t))
+# define _SS_PAD2SIZE  (_SS_MAXSIZE - (sizeof(oe_sa_family_t) + _SS_PAD1SIZE + _SS_ALIGNSIZE))
 #endif
 #ifndef INET_ADDRSTRLEN
 # define INET_ADDRSTRLEN  22
@@ -54,16 +54,16 @@ typedef struct Tcps_sockaddr {
 # define INET6_ADDRSTRLEN 65
 #endif
 
-typedef struct Tcps_sockaddr_storage {
-    Tcps_sa_family_t ss_family;
-    char             __ss_pad1[_SS_PAD1SIZE];
-    int64_t          __ss_align;
-    char             __ss_pad2[_SS_PAD2SIZE];
-} Tcps_sockaddr_storage;
+typedef struct oe_sockaddr_storage {
+    oe_sa_family_t ss_family;
+    char           __ss_pad1[_SS_PAD1SIZE];
+    int64_t        __ss_align;
+    char           __ss_pad2[_SS_PAD2SIZE];
+} oe_sockaddr_storage;
 
-typedef struct Tcps_in_addr {
+typedef struct oe_in_addr {
     uint32_t    s_addr;
-} Tcps_in_addr;
+} oe_in_addr;
 
 #ifndef INADDR_ANY
 # define INADDR_ANY  0x00000000
@@ -81,18 +81,18 @@ typedef struct Tcps_in_addr {
      ((a)->s6_words[5] == 0xffff))
 #endif
 
-typedef struct Tcps_sockaddr_in {
-    Tcps_sa_family_t sin_family;
-    uint16_t         sin_port;
-    Tcps_in_addr     sin_addr;
-} Tcps_sockaddr_in;
+typedef struct oe_sockaddr_in {
+    oe_sa_family_t sin_family;
+    uint16_t       sin_port;
+    oe_in_addr     sin_addr;
+} oe_sockaddr_in;
 
-typedef struct Tcps_in6_addr {
+typedef struct oe_in6_addr {
     union {
         uint8_t  Byte[16];
         uint16_t Word[8];
     } u;
-} Tcps_in6_addr;
+} oe_in6_addr;
 
 #ifndef s6_addr
 # define s6_addr u.Byte
@@ -105,178 +105,178 @@ typedef struct Tcps_in6_addr {
 # define IN6ADDR_LOOPBACK_INIT { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 }
 #endif
 
-typedef struct Tcps_sockaddr_in6 {
-    Tcps_sa_family_t sin6_family;
-    uint16_t         sin6_port;
-    uint32_t         sin6_flowinfo;
-    Tcps_in6_addr    sin6_addr;
-    uint32_t         sin6_scope_id;
-} Tcps_sockaddr_in6;
+typedef struct oe_sockaddr_in6 {
+    oe_sa_family_t sin6_family;
+    uint16_t       sin6_port;
+    uint32_t       sin6_flowinfo;
+    oe_in6_addr    sin6_addr;
+    uint32_t       sin6_scope_id;
+} oe_sockaddr_in6;
 
 #include "TcpsTls.h"
 
-int Tcps_FDIsSet(_In_ TCPS_SOCKET fd, _In_ Tcps_fd_set* set);
+int oe_fd_isset(_In_ oe_socket_t fd, _In_ oe_fd_set* set);
 
-#define TCPS_SOCKET_ERROR -1
-#define TCPS_INVALID_SOCKET  (TCPS_SOCKET)(~0)
-#define TCPS_IPV6_V6ONLY      27
-#define TCPS_IPPROTO_IPV6     41
-#define TCPS_IPPROTO_TCP       6
-#define TCPS_MSG_WAITALL     0x8
-#define TCPS_SOL_SOCKET   0xffff
-#define TCPS_SO_SNDBUF    0x1001
-#define TCPS_SO_RCVBUF    0x1002
-#define TCPS_SO_KEEPALIVE 0x0008
-#define TCPS_SO_ERROR     0x1007
-#define TCPS_TCP_NODELAY       1
-#define TCPS_TCP_KEEPALIVE     3
-#define TCPS_SOMAXCONN    0x7fffffff
+#define OE_SOCKET_ERROR -1
+#define OE_INVALID_SOCKET   (oe_socket_t)(~0)
+#define OE_IPV6_V6ONLY      27
+#define OE_IPPROTO_IPV6     41
+#define OE_IPPROTO_TCP       6
+#define OE_MSG_WAITALL     0x8
+#define OE_SOL_SOCKET   0xffff
+#define OE_SO_SNDBUF    0x1001
+#define OE_SO_RCVBUF    0x1002
+#define OE_SO_KEEPALIVE 0x0008
+#define OE_SO_ERROR     0x1007
+#define OE_TCP_NODELAY       1
+#define OE_TCP_KEEPALIVE     3
+#define OE_SOMAXCONN    0x7fffffff
 
-#define TCPS_IOCPARM_MASK   0x7f
-#define TCPS_IOC_IN       0x80000000
-#define TCPS_IOW(x,y,t)   (TCPS_IOC_IN|(((long)sizeof(t)&TCPS_IOCPARM_MASK)<<16)|((x)<<8)|(y))
-#define TCPS_FIONBIO      TCPS_IOW('f', 126, u_long)
+#define OE_IOCPARM_MASK   0x7f
+#define OE_IOC_IN       0x80000000
+#define OE_IOW(x,y,t)   (OE_IOC_IN|(((long)sizeof(t)&OE_IOCPARM_MASK)<<16)|((x)<<8)|(y))
+#define OE_FIONBIO      OE_IOW('f', 126, u_long)
 
-#define TCPS_AI_PASSIVE      0x00000001
-#define TCPS_AI_CANONNAME    0x00000002
-#define TCPS_AI_NUMERICHOST  0x00000004
-#define TCPS_AI_ALL          0x00000100
-#define TCPS_AI_ADDRCONFIG   0x00000400
-#define TCPS_AI_V4MAPPED     0x00000800
+#define OE_AI_PASSIVE      0x00000001
+#define OE_AI_CANONNAME    0x00000002
+#define OE_AI_NUMERICHOST  0x00000004
+#define OE_AI_ALL          0x00000100
+#define OE_AI_ADDRCONFIG   0x00000400
+#define OE_AI_V4MAPPED     0x00000800
 
-#define TCPS_NI_NOFQDN       0x01
-#define TCPS_NI_NUMERICHOST  0x02
-#define TCPS_NI_NAMEREQD     0x04
-#define TCPS_NI_NUMERICSERV  0x08
-#define TCPS_NI_DGRAM        0x10
-#define TCPS_NI_MAXHOST      1025
-#define TCPS_NI_MAXSERV      32
+#define OE_NI_NOFQDN       0x01
+#define OE_NI_NUMERICHOST  0x02
+#define OE_NI_NAMEREQD     0x04
+#define OE_NI_NUMERICSERV  0x08
+#define OE_NI_DGRAM        0x10
+#define OE_NI_MAXHOST      1025
+#define OE_NI_MAXSERV      32
 
 #ifndef NO_EXPOSE_STANDARD_SOCKET_APIS
-/* Map standard socket API names to the TCPS equivalents. */
-# define accept            Tcps_accept
-# define addrinfo          Tcps_addrinfo
-# define AI_PASSIVE        TCPS_AI_PASSIVE
-# define AI_CANONNAME      TCPS_AI_CANONNAME
-# define AI_NUMERICHOST    TCPS_AI_NUMERICHOST
-# define AI_ALL            TCPS_AI_ALL
-# define AI_ADDRCONFIG     TCPS_AI_ADDRCONFIG
-# define AI_V4MAPPED       TCPS_AI_V4MAPPED
-# define AF_INET           TCPS_AF_INET
-# define AF_INET6          TCPS_AF_INET6
-# define bind              Tcps_bind
-# define connect           Tcps_connect
-# define FD_ISSET(fd, set) Tcps_FDIsSet((TCPS_SOCKET)(fd), (Tcps_fd_set*)(set))
-# define fd_set            Tcps_fd_set
-# define FIONBIO           TCPS_FIONBIO
-# define freeaddrinfo      Tcps_freeaddrinfo
-# define getaddrinfo       Tcps_getaddrinfo
-# define gethostname       Tcps_gethostname
-# define getnameinfo       Tcps_getnameinfo
-# define getpeername       Tcps_getpeername
-# define getsockname       Tcps_getsockname
-# define getsockopt        Tcps_getsockopt
-# define htonl             Tcps_htonl
-# define htons             Tcps_htons
-# define in_addr           Tcps_in_addr
-# define in6_addr          Tcps_in6_addr
-# define inet_addr         Tcps_inet_addr
-# define INVALID_SOCKET    TCPS_INVALID_SOCKET
-# define IPV6_V6ONLY       TCPS_IPV6_V6ONLY
-# define IPPROTO_IPV6      TCPS_IPPROTO_IPV6
-# define IPPROTO_TCP       TCPS_IPPROTO_TCP
-# define listen            Tcps_listen
-# define MSG_WAITALL       TCPS_MSG_WAITALL
-# define NI_NOFQDN         TCPS_NI_NOFQDN
-# define NI_NUMERICHOST    TCPS_NI_NUMERICHOST
-# define NI_NAMEREQD       TCPS_NI_NAMEREQD
-# define NI_NUMERICSERV    TCPS_NI_NUMERICSERV
-# define NI_DGRAM          TCPS_NI_DGRAM
-# define NI_MAXHOST        TCPS_NI_MAXHOST
-# define NI_MAXSERV        TCPS_NI_MAXSERV
-# define ntohl             Tcps_ntohl
-# define ntohs             Tcps_ntohs
-# define recv              Tcps_recv
-# define select            Tcps_select
-# define send              Tcps_send
-# define setsockopt        Tcps_setsockopt
-# define shutdown          Tcps_shutdown
-# define SOCK_STREAM       TCPS_SOCK_STREAM
-# define sockaddr          Tcps_sockaddr
-# define sockaddr_in       Tcps_sockaddr_in
-# define sockaddr_in6      Tcps_sockaddr_in6
-# define sockaddr_storage  Tcps_sockaddr_storage
-# define socket            Tcps_socket
-# define socklen_t         Tcps_socklen_t
-# define SOCKET            TCPS_SOCKET
-# define SOL_SOCKET        TCPS_SOL_SOCKET
-# define SO_ERROR          TCPS_SO_ERROR
-# define SO_KEEPALIVE      TCPS_SO_KEEPALIVE
-# define SO_RCVBUF         TCPS_SO_RCVBUF
-# define SO_SNDBUF         TCPS_SO_SNDBUF
-# define SOMAXCONN         TCPS_SOMAXCONN
-# define TCP_KEEPALIVE     TCPS_TCP_KEEPALIVE
-# define TCP_NODELAY       TCPS_TCP_NODELAY
+/* Map standard socket API names to the OE equivalents. */
+# define accept            oe_accept
+# define addrinfo          oe_addrinfo
+# define AI_PASSIVE        OE_AI_PASSIVE
+# define AI_CANONNAME      OE_AI_CANONNAME
+# define AI_NUMERICHOST    OE_AI_NUMERICHOST
+# define AI_ALL            OE_AI_ALL
+# define AI_ADDRCONFIG     OE_AI_ADDRCONFIG
+# define AI_V4MAPPED       OE_AI_V4MAPPED
+# define AF_INET           OE_AF_INET
+# define AF_INET6          OE_AF_INET6
+# define bind              oe_bind
+# define connect           oe_connect
+# define FD_ISSET(fd, set) oe_fd_isset((oe_socket_t)(fd), (oe_fd_set*)(set))
+# define fd_set            oe_fd_set
+# define FIONBIO           OE_FIONBIO
+# define freeaddrinfo      oe_freeaddrinfo
+# define getaddrinfo       oe_getaddrinfo
+# define gethostname       oe_gethostname
+# define getnameinfo       oe_getnameinfo
+# define getpeername       oe_getpeername
+# define getsockname       oe_getsockname
+# define getsockopt        oe_getsockopt
+# define htonl             oe_htonl
+# define htons             oe_htons
+# define in_addr           oe_in_addr
+# define in6_addr          oe_in6_addr
+# define inet_addr         oe_inet_addr
+# define INVALID_SOCKET    OE_INVALID_SOCKET
+# define IPV6_V6ONLY       OE_IPV6_V6ONLY
+# define IPPROTO_IPV6      OE_IPPROTO_IPV6
+# define IPPROTO_TCP       OE_IPPROTO_TCP
+# define listen            oe_listen
+# define MSG_WAITALL       OE_MSG_WAITALL
+# define NI_NOFQDN         OE_NI_NOFQDN
+# define NI_NUMERICHOST    OE_NI_NUMERICHOST
+# define NI_NAMEREQD       OE_NI_NAMEREQD
+# define NI_NUMERICSERV    OE_NI_NUMERICSERV
+# define NI_DGRAM          OE_NI_DGRAM
+# define NI_MAXHOST        OE_NI_MAXHOST
+# define NI_MAXSERV        OE_NI_MAXSERV
+# define ntohl             oe_ntohl
+# define ntohs             oe_ntohs
+# define recv              oe_recv
+# define select            oe_select
+# define send              oe_send
+# define setsockopt        oe_setsockopt
+# define shutdown          oe_shutdown
+# define SOCK_STREAM       OE_SOCK_STREAM
+# define sockaddr          oe_sockaddr
+# define sockaddr_in       oe_sockaddr_in
+# define sockaddr_in6      oe_sockaddr_in6
+# define sockaddr_storage  oe_sockaddr_storage
+# define socket            oe_socket
+# define socklen_t         oe_socklen_t
+# define SOCKET            oe_socket_t
+# define SOL_SOCKET        OE_SOL_SOCKET
+# define SO_ERROR          OE_SO_ERROR
+# define SO_KEEPALIVE      OE_SO_KEEPALIVE
+# define SO_RCVBUF         OE_SO_RCVBUF
+# define SO_SNDBUF         OE_SO_SNDBUF
+# define SOMAXCONN         OE_SOMAXCONN
+# define TCP_KEEPALIVE     OE_TCP_KEEPALIVE
+# define TCP_NODELAY       OE_TCP_NODELAY
 #endif
 
 #ifndef NO_EXPOSE_WINSOCK_APIS
-/* Map Winsock APIs to the TCPS equivalents. */
-# define closesocket       Tcps_closesocket
-# define ioctlsocket       Tcps_ioctlsocket
-# define SOCKET_ERROR      TCPS_SOCKET_ERROR
-# define WSADATA           TCPS_WSADATA
-# define WSAECONNABORTED   TCPS_WSAECONNABORTED
-# define WSAECONNRESET     TCPS_WSAECONNRESET
-# define WSAEINPROGRESS    TCPS_WSAEINPROGRESS
-# define WSAEWOULDBLOCK    TCPS_WSAEWOULDBLOCK
-# define WSACleanup        Tcps_WSACleanup
-# define WSAGetLastError   Tcps_WSAGetLastError
-# define WSASetLastError   Tcps_WSASetLastError
-# define WSAStartup        Tcps_WSAStartup
+/* Map Winsock APIs to the OE equivalents. */
+# define closesocket       oe_closesocket
+# define ioctlsocket       oe_ioctlsocket
+# define SOCKET_ERROR      OE_SOCKET_ERROR
+# define WSADATA           oe_wsa_data_t
+# define WSAECONNABORTED   OE_WSAECONNABORTED
+# define WSAECONNRESET     OE_WSAECONNRESET
+# define WSAEINPROGRESS    OE_WSAEINPROGRESS
+# define WSAEWOULDBLOCK    OE_WSAEWOULDBLOCK
+# define WSACleanup        oe_wsa_cleanup
+# define WSAGetLastError   oe_wsa_get_last_error
+# define WSASetLastError   oe_wsa_set_last_error
+# define WSAStartup        oe_wsa_startup
 #endif
 
-TCPS_SOCKET
-Tcps_accept(
-    _In_ TCPS_SOCKET s,
-    _Out_writes_bytes_(*addrlen) struct Tcps_sockaddr* addr,
+oe_socket_t
+oe_accept(
+    _In_ oe_socket_t s,
+    _Out_writes_bytes_(*addrlen) struct oe_sockaddr* addr,
     _Inout_ int *addrlen);
 
 int
-Tcps_bind(
-    _In_ TCPS_SOCKET s,
-    _In_reads_bytes_(namelen) const Tcps_sockaddr* name,
+oe_bind(
+    _In_ oe_socket_t s,
+    _In_reads_bytes_(namelen) const oe_sockaddr* name,
     _In_ int namelen);
 
 int
-Tcps_closesocket(
-    _In_ TCPS_SOCKET s);
+oe_closesocket(
+    _In_ oe_socket_t s);
 
 int
-Tcps_connect(
-    _In_ TCPS_SOCKET s,
-    _In_reads_bytes_(namelen) const Tcps_sockaddr* name,
+oe_connect(
+    _In_ oe_socket_t s,
+    _In_reads_bytes_(namelen) const oe_sockaddr* name,
     _In_ int namelen);
 
 void
-Tcps_freeaddrinfo(
-    _In_ Tcps_addrinfo* ailist);
+oe_freeaddrinfo(
+    _In_ oe_addrinfo* ailist);
 
 int
-Tcps_getaddrinfo(
+oe_getaddrinfo(
     _In_z_ const char* pNodeName,
     _In_z_ const char* pServiceName,
-    _In_ const Tcps_addrinfo* pHints,
-    _Out_ Tcps_addrinfo** ppResult);
+    _In_ const oe_addrinfo* pHints,
+    _Out_ oe_addrinfo** ppResult);
 
 int
-Tcps_gethostname(
+oe_gethostname(
     _Out_writes_(len) char* name,
     _In_ size_t len);
 
 int
-Tcps_getnameinfo(
-    _In_ const struct Tcps_sockaddr *sa,
-    _In_ Tcps_socklen_t salen,
+oe_getnameinfo(
+    _In_ const struct oe_sockaddr *sa,
+    _In_ oe_socklen_t salen,
     _Out_writes_opt_z_(hostlen) char* host,
     _In_ size_t hostlen,
     _Out_writes_opt_z_(servlen) char* serv,
@@ -284,147 +284,109 @@ Tcps_getnameinfo(
     _In_ int flags);
 
 int
-Tcps_getpeername(
-    _In_ TCPS_SOCKET s,
-    _Out_writes_bytes_(*addrlen) struct Tcps_sockaddr* addr,
+oe_getpeername(
+    _In_ oe_socket_t s,
+    _Out_writes_bytes_(*addrlen) struct oe_sockaddr* addr,
     _Inout_ int *addrlen);
 
 int
-Tcps_getsockname(
-    _In_ TCPS_SOCKET s,
-    _Out_writes_bytes_(*addrlen) struct Tcps_sockaddr* addr,
+oe_getsockname(
+    _In_ oe_socket_t s,
+    _Out_writes_bytes_(*addrlen) struct oe_sockaddr* addr,
     _Inout_ int *addrlen);
 
 int
-Tcps_getsockopt(
-    _In_ TCPS_SOCKET s,
+oe_getsockopt(
+    _In_ oe_socket_t s,
     _In_ int level,
     _In_ int optname,
     _Out_writes_(*optlen) char* optval,
     _Inout_ int* optlen);
 
 uint32_t
-Tcps_htonl(
+oe_htonl(
     _In_ uint32_t hostLong);
 
 uint16_t
-Tcps_htons(
+oe_htons(
     _In_ uint16_t hostShort);
 
 uint32_t
-Tcps_inet_addr(
+oe_inet_addr(
     _In_z_ const char* cp);
 
 int
-Tcps_ioctlsocket(
-    _In_ TCPS_SOCKET s,
+oe_ioctlsocket(
+    _In_ oe_socket_t s,
     _In_ long cmd,
     _Inout_ u_long *argp);
 
 int
-Tcps_listen(
-    _In_ TCPS_SOCKET s,
+oe_listen(
+    _In_ oe_socket_t s,
     _In_ int backlog);
 
 uint32_t
-Tcps_ntohl(
+oe_ntohl(
     _In_ uint32_t netLong);
 
 uint16_t
-Tcps_ntohs(
+oe_ntohs(
     _In_ uint16_t netShort);
 
 int
-Tcps_recv(
-    _In_ TCPS_SOCKET s,
+oe_recv(
+    _In_ oe_socket_t s,
     _Out_writes_(len) char* buf,
     _In_ int len,
     _In_ int flags);
 
 int
-Tcps_select(
+oe_select(
     _In_ int nfds,
-    _Inout_opt_ Tcps_fd_set* readfds,
-    _Inout_opt_ Tcps_fd_set* writefds,
-    _Inout_opt_ Tcps_fd_set* exceptfds,
+    _Inout_opt_ oe_fd_set* readfds,
+    _Inout_opt_ oe_fd_set* writefds,
+    _Inout_opt_ oe_fd_set* exceptfds,
     _In_opt_ const struct timeval* timeout);
 
 int
-Tcps_send(
-    _In_ TCPS_SOCKET s,
+oe_send(
+    _In_ oe_socket_t s,
     _In_reads_bytes_(len) const char* buf,
     _In_ int len,
     _In_ int flags);
 
 int
-Tcps_setsockopt(
-    _In_ TCPS_SOCKET s,
+oe_setsockopt(
+    _In_ oe_socket_t s,
     _In_ int level,
     _In_ int optname,
     _In_reads_bytes_(optlen) const char* optval,
     _In_ int optlen);
 
 int
-Tcps_shutdown(
-    _In_ TCPS_SOCKET s,
+oe_shutdown(
+    _In_ oe_socket_t s,
     _In_ int how);
 
-TCPS_SOCKET
-Tcps_socket(
-    _In_ Tcps_sa_family_t af,
+oe_socket_t
+oe_socket(
+    _In_ oe_sa_family_t af,
     _In_ int type,
     _In_ int protocol);
 
-typedef struct _TCPS_WSADATA {
+typedef struct {
     int unused;
-} TCPS_WSADATA;
+} oe_wsa_data_t;
 
-int Tcps_WSACleanup(void);
+int oe_wsa_cleanup(void);
 
-int Tcps_WSAGetLastError(void);
+int oe_wsa_get_last_error(void);
 
-void Tcps_WSASetLastError(_In_ int iError);
+void oe_wsa_set_last_error(_In_ int iError);
 
-int Tcps_WSAStartup(_In_ uint16_t wVersionRequired,
-                    _Out_ TCPS_WSADATA* lpWSAData);
-
-int
-ServerConnectTransport(
-    const char* HostName,
-    unsigned short ServiceName,
-    unsigned int Timeout,
-    void** Context);
-
-int
-ClientConnectTransport(
-    const char* HostName,
-    unsigned short ServiceName,
-    unsigned int Timeout,
-    void** Context);
-
-int
-SendDataOverTransport(
-    const uint8_t* Buffer,
-    unsigned int Size,
-    unsigned int Timeout,
-    unsigned int* Sent,
-    void* Context);
-
-int
-ReceiveDataOverTransport(
-    uint8_t* Buffer,
-    unsigned int Size,
-    unsigned int Timeout,
-    unsigned int* Recvd,
-    void* Context);
-
-void
-ServerDisconnectTransport(
-    void** Context);
-
-void
-ClientDisconnectTransport(
-    void** Context);
+int oe_wsa_startup(_In_ uint16_t wVersionRequired,
+                   _Out_ oe_wsa_data_t* lpWSAData);
 
 #ifdef __cplusplus
 }

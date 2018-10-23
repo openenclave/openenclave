@@ -16,7 +16,6 @@
     <ClCompile Include="teehost-sgx.c">
       <Filter>SGX</Filter>
     </ClCompile>
-    <ClCompile Include="uio.c" />
     <ClCompile Include="teehost-optee.c">
       <Filter>OPTEE</Filter>
     </ClCompile>

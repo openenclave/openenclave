@@ -89,7 +89,6 @@
     </ClCompile>
     <ClCompile Include="ufiles.c" />
     <ClCompile Include="uhelper.c" />
-    <ClCompile Include="uio.c" />
     <ClCompile Include="uProtectedFs-optee.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>

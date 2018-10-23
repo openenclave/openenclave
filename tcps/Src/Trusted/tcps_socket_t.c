@@ -6,40 +6,40 @@
 #include <errno.h>
 
 static void
-CopyInputFds(Tcps_FdSet* dest, fd_set* src)
+CopyInputFds(oe_fd_set_internal* dest, oe_fd_set* src)
 {
     unsigned int i;
-    dest->count = src->fd_count;
+    dest->fd_count = src->fd_count;
     for (i = 0; i < src->fd_count; i++) {
-        dest->fdArray[i] = (void*)src->fd_array[i];
+        dest->fd_array[i] = (void*)src->fd_array[i];
     }
     for (; i < FD_SETSIZE; i++) {
-        dest->fdArray[i] = NULL;
+        dest->fd_array[i] = NULL;
     }
 }
 
 static void
-CopyOutputFds(fd_set* dest, Tcps_FdSet* src)
+CopyOutputFds(oe_fd_set* dest, oe_fd_set_internal* src)
 {
     unsigned int i;
-    dest->fd_count = src->count;
-    for (i = 0; i < src->count; i++) {
-        dest->fd_array[i] = (TCPS_SOCKET)src->fdArray[i];
+    dest->fd_count = src->fd_count;
+    for (i = 0; i < src->fd_count; i++) {
+        dest->fd_array[i] = (oe_socket_t)src->fd_array[i];
     }
 }
 
 int
-Tcps_select(
+oe_select(
     _In_ int a_nFds,
-    _Inout_opt_ Tcps_fd_set* a_readfds,
-    _Inout_opt_ Tcps_fd_set* a_writefds,
-    _Inout_opt_ Tcps_fd_set* a_exceptfds,
+    _Inout_opt_ oe_fd_set* a_readfds,
+    _Inout_opt_ oe_fd_set* a_writefds,
+    _Inout_opt_ oe_fd_set* a_exceptfds,
     _In_opt_ const struct timeval* a_Timeout)
 {
     select_Result result = { 0 };
-    Tcps_FdSet readFds = { 0 };
-    Tcps_FdSet writeFds = { 0 };
-    Tcps_FdSet exceptFds = { 0 };
+    oe_fd_set_internal readFds = { 0 };
+    oe_fd_set_internal writeFds = { 0 };
+    oe_fd_set_internal exceptFds = { 0 };
     if (a_readfds != NULL) {
         CopyInputFds(&readFds, a_readfds);
     }
@@ -49,7 +49,7 @@ Tcps_select(
     if (a_exceptfds != NULL) {
         CopyInputFds(&exceptFds, a_exceptfds);
     }
-    sgx_status_t sgxStatus = ocall_select(&result, a_nFds, readFds, writeFds, exceptFds, *(Tcps_Timeval*)a_Timeout);
+    sgx_status_t sgxStatus = ocall_select(&result, a_nFds, readFds, writeFds, exceptFds, *(oe_timeval*)a_Timeout);
     if (sgxStatus != SGX_SUCCESS) {
         return 0;
     }
@@ -70,7 +70,7 @@ Tcps_select(
     return result.socketsSet;
 }
 
-int Tcps_FDIsSet(_In_ TCPS_SOCKET fd, _In_ fd_set* set)
+int oe_fd_isset(_In_ oe_socket_t fd, _In_ fd_set* set)
 {
     unsigned int i;
     for (i = 0; i < set->fd_count; i++) {
@@ -82,7 +82,7 @@ int Tcps_FDIsSet(_In_ TCPS_SOCKET fd, _In_ fd_set* set)
 }
 
 int
-Tcps_gethostname(
+oe_gethostname(
     _Out_writes_(a_uiBufferLength) char* a_pBuffer,
     _In_ size_t a_uiBufferLength)
 {
@@ -91,99 +91,99 @@ Tcps_gethostname(
 
     sgxStatus = ocall_gethostname(&result);
     if (sgxStatus != SGX_SUCCESS) {
-        result.error = TCPS_WSAENETDOWN;
+        result.error = OE_WSAENETDOWN;
     }
     if (result.error == 0) {
         strncpy(a_pBuffer, result.name, a_uiBufferLength);
     }
-    Tcps_WSASetLastError(result.error);
-    return (result.error == 0) ? 0 : TCPS_SOCKET_ERROR;
+    oe_wsa_set_last_error(result.error);
+    return (result.error == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
 int
-Tcps_WSAStartup(
+oe_wsa_startup(
     _In_ uint16_t wVersionRequired,
-    _Out_ TCPS_WSADATA* lpWSAData)
+    _Out_ oe_wsa_data_t* lpWSAData)
 {
-    Tcps_SocketError apiResult;
+    oe_socket_error_t apiResult;
     sgx_status_t sgxStatus = ocall_WSAStartup(&apiResult);
     if (sgxStatus == SGX_SUCCESS && apiResult == 0) {
         return 0;
     }
-    return TCPS_WSASYSNOTREADY;
+    return OE_WSASYSNOTREADY;
 }
 
 int
-Tcps_WSACleanup(void)
+oe_wsa_cleanup(void)
 {
-    Tcps_SocketError error;
+    oe_socket_error_t error;
     sgx_status_t sgxStatus = ocall_WSACleanup(&error);
     if (sgxStatus != SGX_SUCCESS) {
-        error = TCPS_WSAENETDOWN;
+        error = OE_WSAENETDOWN;
     }
-    Tcps_WSASetLastError(error);
-    return (error == 0) ? 0 : TCPS_SOCKET_ERROR;
+    oe_wsa_set_last_error(error);
+    return (error == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
 /* We use a simple global variable since we're single threaded. */
-static Tcps_SocketError g_WSALastError = 0;
+static oe_socket_error_t g_WSALastError = 0;
 
 void
-Tcps_WSASetLastError(_In_ int iError)
+oe_wsa_set_last_error(_In_ int iError)
 {
     g_WSALastError = iError;
 }
 
 int
-Tcps_WSAGetLastError(void)
+oe_wsa_get_last_error(void)
 {
     return g_WSALastError;
 }
 
 int
-Tcps_shutdown(
-    _In_ TCPS_SOCKET s,
+oe_shutdown(
+    _In_ oe_socket_t s,
     _In_ int how)
 {
-    Tcps_SocketError socketError = 0;
+    oe_socket_error_t socketError = 0;
     sgx_status_t sgxStatus = ocall_shutdown(&socketError, s, how);
     if (sgxStatus != SGX_SUCCESS) {
-        socketError = TCPS_WSAENETDOWN;
+        socketError = OE_WSAENETDOWN;
     }
-    Tcps_WSASetLastError(socketError);
-    return (socketError == 0) ? 0 : TCPS_SOCKET_ERROR;
+    oe_wsa_set_last_error(socketError);
+    return (socketError == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
 int 
-Tcps_closesocket(
-    _In_ TCPS_SOCKET s)
+oe_closesocket(
+    _In_ oe_socket_t s)
 {
-    Tcps_SocketError socketError = 0;
+    oe_socket_error_t socketError = 0;
     sgx_status_t sgxStatus = ocall_closesocket(&socketError, s);
     if (sgxStatus != SGX_SUCCESS) {
-        socketError = TCPS_WSAENETDOWN;
+        socketError = OE_WSAENETDOWN;
     }
-    Tcps_WSASetLastError(socketError);
-    return (socketError == 0) ? 0 : TCPS_SOCKET_ERROR;
+    oe_wsa_set_last_error(socketError);
+    return (socketError == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
 int
-Tcps_listen(
-    _In_ TCPS_SOCKET s,
+oe_listen(
+    _In_ oe_socket_t s,
     _In_ int backlog)
 {
-    Tcps_SocketError socketError = 0;
+    oe_socket_error_t socketError = 0;
     sgx_status_t sgxStatus = ocall_listen(&socketError, s, backlog);
     if (sgxStatus != SGX_SUCCESS) {
-        socketError = TCPS_WSAENETDOWN;
+        socketError = OE_WSAENETDOWN;
     }
-    Tcps_WSASetLastError(socketError);
-    return (socketError == 0) ? 0 : TCPS_SOCKET_ERROR;
+    oe_wsa_set_last_error(socketError);
+    return (socketError == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
 int
-Tcps_getsockopt(
-    _In_ TCPS_SOCKET s,
+oe_getsockopt(
+    _In_ oe_socket_t s,
     _In_ int level,
     _In_ int optname,
     _Out_writes_(*optlen) char *optval,
@@ -191,45 +191,45 @@ Tcps_getsockopt(
 {
     getsockopt_Result result = { 0 };
     if (*optlen > sizeof(result.buffer)) {
-        Tcps_WSASetLastError(TCPS_WSAEINVAL);
-        return TCPS_SOCKET_ERROR;
+        oe_wsa_set_last_error(OE_WSAEINVAL);
+        return OE_SOCKET_ERROR;
     }
     sgx_status_t sgxStatus = ocall_getsockopt(&result, s, level, optname, *optlen);
     if ((sgxStatus != SGX_SUCCESS) || (result.len > *optlen)) {
-        result.error = TCPS_WSAENETDOWN;
+        result.error = OE_WSAENETDOWN;
         *optlen = 0;
     } else {
         *optlen = result.len;
         memcpy(optval, result.buffer, result.len);
     }
-    Tcps_WSASetLastError(result.error);
-    return (result.error == 0) ? 0 : TCPS_SOCKET_ERROR;
+    oe_wsa_set_last_error(result.error);
+    return (result.error == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
-TCPS_SOCKET
-Tcps_socket(
-    _In_ Tcps_sa_family_t af,
+oe_socket_t
+oe_socket(
+    _In_ oe_sa_family_t af,
     _In_ int type,
     _In_ int protocol)
 {
     socket_Result result;
     sgx_status_t sgxStatus = ocall_socket(&result, af, type, protocol);
     if (sgxStatus != SGX_SUCCESS) {
-        result.error = TCPS_WSAENETDOWN;
-        result.hSocket = TCPS_INVALID_SOCKET;
+        result.error = OE_WSAENETDOWN;
+        result.hSocket = OE_INVALID_SOCKET;
     }
-    Tcps_WSASetLastError(result.error);
+    oe_wsa_set_last_error(result.error);
     return result.hSocket;
 }
 
 int
-Tcps_recv(
-    _In_ TCPS_SOCKET s,
+oe_recv(
+    _In_ oe_socket_t s,
     _Out_writes_(len) char *buf,
     _In_ int len,
     _In_ int flags)
 {
-    int bytesReceived = TCPS_SOCKET_ERROR;
+    int bytesReceived = OE_SOCKET_ERROR;
     sgx_status_t sgxStatus;
     recv_Result result;
 
@@ -238,7 +238,7 @@ Tcps_recv(
     sgxStatus = ocall_recv(&result, s, len, flags);
     if ((sgxStatus != SGX_SUCCESS) || (result.bytesReceived > len))
     {
-        result.error = TCPS_WSAENETDOWN;
+        result.error = OE_WSAENETDOWN;
     }
     else if (result.bytesReceived > 0)
     {
@@ -251,17 +251,17 @@ Tcps_recv(
 
         if (Tcps_IsBad(uStatus))
         {
-            result.error = TCPS_WSAENETDOWN;
+            result.error = OE_WSAENETDOWN;
         }
     }
-    WSASetLastError(result.error);
-    bytesReceived = (result.error != 0) ? TCPS_SOCKET_ERROR : result.bytesReceived;
+    oe_wsa_set_last_error(result.error);
+    bytesReceived = (result.error != 0) ? OE_SOCKET_ERROR : result.bytesReceived;
     return bytesReceived;
 }
 
 int
-Tcps_send(
-    _In_ TCPS_SOCKET s,
+oe_send(
+    _In_ oe_socket_t s,
     _In_reads_bytes_(len) const char *buf,
     _In_ int len,
     _In_ int flags)
@@ -273,7 +273,7 @@ Tcps_send(
     Tcps_StatusCode uStatus = TcpsPushDataToReeBuffer(buf, len, &hReeBuffer);
     if (Tcps_IsBad(uStatus))
     {
-        result.error = TCPS_WSAENETDOWN;
+        result.error = OE_WSAENETDOWN;
         result.bytesSent = 0;
     }
     else
@@ -284,12 +284,12 @@ Tcps_send(
 
         if (sgxStatus != SGX_SUCCESS)
         {
-            result.error = TCPS_WSAENETDOWN;
+            result.error = OE_WSAENETDOWN;
             result.bytesSent = 0;
         }
     }
-    WSASetLastError(result.error);
-    return (result.error != 0) ? TCPS_SOCKET_ERROR : result.bytesSent;
+    oe_wsa_set_last_error(result.error);
+    return (result.error != 0) ? OE_SOCKET_ERROR : result.bytesSent;
 }
 
 static uint32_t swap_uint32(uint32_t const net)
@@ -313,42 +313,42 @@ static uint32_t swap_uint16(uint16_t const net)
 }
 
 uint32_t
-Tcps_ntohl(
+oe_ntohl(
     _In_ uint32_t netLong)
 {
     return swap_uint32(netLong);
 }
 
 uint16_t
-Tcps_ntohs(
+oe_ntohs(
     _In_ uint16_t netShort)
 {
     return swap_uint16(netShort);
 }
 
 uint32_t
-Tcps_htonl(
+oe_htonl(
     _In_ uint32_t hostLong)
 {
     return swap_uint32(hostLong);
 }
 
 uint16_t
-Tcps_htons(
+oe_htons(
     _In_ uint16_t hostShort)
 {
     return swap_uint16(hostShort);
 }
 
 int
-Tcps_setsockopt(
-    _In_ TCPS_SOCKET s,
+oe_setsockopt(
+    _In_ oe_socket_t s,
     _In_ int level,
     _In_ int optname,
     _In_reads_bytes_(optlen) const char* optval,
     _In_ int optlen)
 {
-    Tcps_SocketError socketError = 0;
+    oe_socket_error_t socketError = 0;
     buffer256 optBuffer;
     sgx_status_t sgxStatus;
 
@@ -356,15 +356,15 @@ Tcps_setsockopt(
 
     sgxStatus = ocall_setsockopt(&socketError, s, level, optname, optBuffer, optlen);
     if (sgxStatus != SGX_SUCCESS) {
-        socketError = TCPS_WSAENETDOWN;
+        socketError = OE_WSAENETDOWN;
     }
-    Tcps_WSASetLastError(socketError);
-    return (socketError == 0) ? 0 : TCPS_SOCKET_ERROR;
+    oe_wsa_set_last_error(socketError);
+    return (socketError == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
 int
-Tcps_ioctlsocket(
-    _In_ TCPS_SOCKET s,
+oe_ioctlsocket(
+    _In_ oe_socket_t s,
     _In_ long cmd,
     _Inout_ u_long *argp)
 {
@@ -373,20 +373,20 @@ Tcps_ioctlsocket(
 
     sgxStatus = ocall_ioctlsocket(&result, s, cmd, *argp);
     if (sgxStatus != SGX_SUCCESS) {
-        result.error = TCPS_WSAENETDOWN;
+        result.error = OE_WSAENETDOWN;
     }
-    Tcps_WSASetLastError(result.error);
+    oe_wsa_set_last_error(result.error);
     *argp = result.outputValue;
-    return (result.error == 0) ? 0 : TCPS_SOCKET_ERROR;
+    return (result.error == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
 int
-Tcps_connect(
-    _In_ TCPS_SOCKET s,
-    _In_reads_bytes_(namelen) const Tcps_sockaddr *name,
+oe_connect(
+    _In_ oe_socket_t s,
+    _In_reads_bytes_(namelen) const oe_sockaddr *name,
     _In_ int namelen)
 {
-    Tcps_SocketError socketError = 0;
+    oe_socket_error_t socketError = 0;
     buffer256 nameBuffer;
     sgx_status_t sgxStatus;
 
@@ -394,15 +394,15 @@ Tcps_connect(
 
     sgxStatus = ocall_connect(&socketError, s, nameBuffer, namelen);
     if (sgxStatus != SGX_SUCCESS) {
-        socketError = TCPS_WSAENETDOWN;
+        socketError = OE_WSAENETDOWN;
     }
-    Tcps_WSASetLastError(socketError);
-    return (socketError == 0) ? 0 : TCPS_SOCKET_ERROR;
+    oe_wsa_set_last_error(socketError);
+    return (socketError == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
-TCPS_SOCKET
-Tcps_accept(
-    _In_ TCPS_SOCKET a_Socket,
+oe_socket_t
+oe_accept(
+    _In_ oe_socket_t a_Socket,
     _Out_writes_bytes_(*addrlen) struct sockaddr* a_SockAddr,
     _Inout_ int *a_pAddrLen)
 {
@@ -410,64 +410,64 @@ Tcps_accept(
     int addrlen = (a_pAddrLen != NULL) ? *a_pAddrLen : 0;
     sgx_status_t sgxStatus = ocall_accept(&result, a_Socket, addrlen);
     if ((sgxStatus != SGX_SUCCESS) || (result.addrlen > addrlen)) {
-        result.error = TCPS_WSAENETDOWN;
+        result.error = OE_WSAENETDOWN;
         addrlen = 0;
     } else {
         memcpy(a_SockAddr, result.addr, result.addrlen);
         addrlen = result.addrlen;
     }
-    Tcps_WSASetLastError(result.error);
+    oe_wsa_set_last_error(result.error);
     if (a_pAddrLen != NULL) {
         *a_pAddrLen = addrlen;
     }
-    return (result.error == 0) ? result.hNewSocket : TCPS_INVALID_SOCKET;
+    return (result.error == 0) ? result.hNewSocket : OE_INVALID_SOCKET;
 }
 
 int
-Tcps_getpeername(
-    _In_ TCPS_SOCKET s,
+oe_getpeername(
+    _In_ oe_socket_t s,
     _Out_writes_bytes_(*addrlen) struct sockaddr* addr,
     _Inout_ int *addrlen)
 {
     GetSockName_Result result;
     sgx_status_t sgxStatus = ocall_getpeername(&result, s, *addrlen);
     if ((sgxStatus != SGX_SUCCESS) || (result.addrlen > *addrlen)) {
-        result.error = TCPS_WSAENETDOWN;
+        result.error = OE_WSAENETDOWN;
         *addrlen = 0;
     } else {
         memcpy(addr, result.addr, result.addrlen);
         *addrlen = result.addrlen;
     }
-    Tcps_WSASetLastError(result.error);
-    return (result.error == 0) ? 0 : TCPS_SOCKET_ERROR;
+    oe_wsa_set_last_error(result.error);
+    return (result.error == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
 int
-Tcps_getsockname(
-    _In_ TCPS_SOCKET s,
+oe_getsockname(
+    _In_ oe_socket_t s,
     _Out_writes_bytes_(*addrlen) struct sockaddr* addr,
     _Inout_ int *addrlen)
 {
     GetSockName_Result result;
     sgx_status_t sgxStatus = ocall_getsockname(&result, s, *addrlen);
     if ((sgxStatus != SGX_SUCCESS) || (result.addrlen > *addrlen)) {
-        result.error = TCPS_WSAENETDOWN;
+        result.error = OE_WSAENETDOWN;
         *addrlen = 0;
     } else {
         memcpy(addr, result.addr, result.addrlen);
         *addrlen = result.addrlen;
     }
-    Tcps_WSASetLastError(result.error);
-    return (result.error == 0) ? 0 : TCPS_SOCKET_ERROR;
+    oe_wsa_set_last_error(result.error);
+    return (result.error == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
 int
-Tcps_bind(
-    _In_ TCPS_SOCKET s,
-    _In_reads_bytes_(namelen) const Tcps_sockaddr *name,
+oe_bind(
+    _In_ oe_socket_t s,
+    _In_reads_bytes_(namelen) const oe_sockaddr *name,
     _In_ int namelen)
 {
-    Tcps_SocketError socketError = 0;
+    oe_socket_error_t socketError = 0;
     buffer256 nameBuffer;
     sgx_status_t sgxStatus;
 
@@ -475,14 +475,14 @@ Tcps_bind(
 
     sgxStatus = ocall_bind(&socketError, s, nameBuffer, namelen);
     if (sgxStatus != SGX_SUCCESS) {
-        socketError = TCPS_WSAENETDOWN;
+        socketError = OE_WSAENETDOWN;
     }
-    Tcps_WSASetLastError(socketError);
-    return (socketError == 0) ? 0 : TCPS_SOCKET_ERROR;
+    oe_wsa_set_last_error(socketError);
+    return (socketError == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
 uint32_t
-Tcps_inet_addr(
+oe_inet_addr(
     _In_z_ const char *cp)
 {
     /* We only support dotted decimal. */
@@ -503,11 +503,11 @@ Tcps_inet_addr(
 }
 
 void
-Tcps_freeaddrinfo(
-    _In_ Tcps_addrinfo* ailist)
+oe_freeaddrinfo(
+    _In_ oe_addrinfo* ailist)
 {
-    Tcps_addrinfo* ai;
-    Tcps_addrinfo* next;
+    oe_addrinfo* ai;
+    oe_addrinfo* next;
 
     for (ai = ailist; ai != NULL; ai = next) {
         next = ai->ai_next;
@@ -523,18 +523,18 @@ Tcps_freeaddrinfo(
 }
 
 int
-Tcps_getaddrinfo(
+oe_getaddrinfo(
     _In_z_ const char* pNodeName,
     _In_z_ const char* pServiceName,
-    _In_ const Tcps_addrinfo* pHints,
-    _Out_ Tcps_addrinfo** ppResult)
+    _In_ const oe_addrinfo* pHints,
+    _Out_ oe_addrinfo** ppResult)
 {
-    int bytesReceived = TCPS_SOCKET_ERROR;
+    int bytesReceived = OE_SOCKET_ERROR;
     sgx_status_t sgxStatus;
     getaddrinfo_Result result;
-    Tcps_addrinfo* ailist = NULL;
-    Tcps_addrinfo* ai;
-    Tcps_addrinfo** pNext = &ailist;
+    oe_addrinfo* ailist = NULL;
+    oe_addrinfo* ai;
+    oe_addrinfo** pNext = &ailist;
     buffer256 nodeName;
     buffer256 serviceName;
     Tcps_StatusCode uStatus = Tcps_Good;
@@ -553,7 +553,7 @@ Tcps_getaddrinfo(
         (pHints != NULL) ? pHints->ai_socktype : 0,
         (pHints != NULL) ? pHints->ai_protocol : 0);
     if (sgxStatus != SGX_SUCCESS) {
-        result.error = TCPS_WSANO_RECOVERY;
+        result.error = OE_WSANO_RECOVERY;
     }
 
     if (result.addressCount > 0) {
@@ -561,7 +561,7 @@ Tcps_getaddrinfo(
         char* buf = malloc(bytesReceived);
         if (buf == NULL) {
             uStatus = Tcps_BadOutOfMemory;
-            result.error = TCPS_WSA_NOT_ENOUGH_MEMORY;
+            result.error = OE_WSA_NOT_ENOUGH_MEMORY;
         } else {
             uStatus = TcpsPullDataFromReeBuffer(
                 result.hMessage,
@@ -569,7 +569,7 @@ Tcps_getaddrinfo(
                 bytesReceived);
             if (Tcps_IsBad(uStatus))
             {
-                result.error = TCPS_WSANO_RECOVERY;
+                result.error = OE_WSANO_RECOVERY;
             }
         }
 
@@ -579,20 +579,20 @@ Tcps_getaddrinfo(
 
         /* We now have a response to deserialize. */
         for (int i = 0; i < result.addressCount; i++) {
-            if (response[i].ai_addrlen > sizeof(Tcps_sockaddr_storage) ||
+            if (response[i].ai_addrlen > sizeof(oe_sockaddr_storage) ||
                 response[i].ai_addrlen > sizeof(response[i].ai_addr)) {
-                result.error = TCPS_WSA_NOT_ENOUGH_MEMORY;
+                result.error = OE_WSA_NOT_ENOUGH_MEMORY;
                 break;
             }
             ai = malloc(sizeof(*ai));
             if (ai == NULL) {
-                result.error = TCPS_WSA_NOT_ENOUGH_MEMORY;
+                result.error = OE_WSA_NOT_ENOUGH_MEMORY;
                 break;
             }
             ai->ai_addr = malloc(response[i].ai_addrlen);
             if (ai->ai_addr == NULL) {
                 free(ai);
-                result.error = TCPS_WSA_NOT_ENOUGH_MEMORY;
+                result.error = OE_WSA_NOT_ENOUGH_MEMORY;
                 break;
             }
             memcpy(ai->ai_addr, response[i].ai_addr.buffer, response[i].ai_addrlen);
@@ -606,7 +606,7 @@ Tcps_getaddrinfo(
                 ai->ai_canonname = malloc(sizeof(response[i].ai_canonname) + 1);
                 if (ai->ai_canonname == NULL) {
                     free(ai);
-                    result.error = TCPS_WSA_NOT_ENOUGH_MEMORY;
+                    result.error = OE_WSA_NOT_ENOUGH_MEMORY;
                     break;
                 }
                 strncpy(ai->ai_canonname, response[i].ai_canonname.buffer,
@@ -633,9 +633,9 @@ Tcps_getaddrinfo(
 }
 
 int
-Tcps_getnameinfo(
-    _In_ const struct Tcps_sockaddr *sa,
-    _In_ Tcps_socklen_t salen,
+oe_getnameinfo(
+    _In_ const struct oe_sockaddr *sa,
+    _In_ oe_socklen_t salen,
     _Out_writes_opt_z_(hostlen) char* host,
     _In_ size_t hostlen,
     _Out_writes_opt_z_(servlen) char* serv,
@@ -650,7 +650,7 @@ Tcps_getnameinfo(
 
     sgxStatus = ocall_getnameinfo(&result, addrBuffer, salen, flags);
     if (sgxStatus != SGX_SUCCESS) {
-        result.error = TCPS_WSANO_RECOVERY;
+        result.error = OE_WSANO_RECOVERY;
     }
 
     if (host != NULL) {

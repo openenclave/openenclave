@@ -2,37 +2,37 @@
 /* Licensed under the MIT License. */
 enclave {
 
-    enum Tcps_SocketError {
-        TCPS_WSA_NOT_ENOUGH_MEMORY = 8,
-        TCPS_WSAEFAULT       = 10014,
-        TCPS_WSAEINVAL       = 10022,
-        TCPS_WSAEWOULDBLOCK  = 10035,
-        TCPS_WSAEINPROGRESS  = 10036,
-        TCPS_WSAENOPROTOOPT  = 10042,
-        TCPS_WSAENETDOWN     = 10050,
-        TCPS_WSAECONNABORTED = 10053,
-        TCPS_WSAECONNRESET   = 10054,
-        TCPS_WSASYSNOTREADY  = 10091,
-        TCPS_WSANO_RECOVERY  = 11003
+    enum oe_socket_error_t {
+        OE_WSA_NOT_ENOUGH_MEMORY = 8,
+        OE_WSAEFAULT       = 10014,
+        OE_WSAEINVAL       = 10022,
+        OE_WSAEWOULDBLOCK  = 10035,
+        OE_WSAEINPROGRESS  = 10036,
+        OE_WSAENOPROTOOPT  = 10042,
+        OE_WSAENETDOWN     = 10050,
+        OE_WSAECONNABORTED = 10053,
+        OE_WSAECONNRESET   = 10054,
+        OE_WSASYSNOTREADY  = 10091,
+        OE_WSANO_RECOVERY  = 11003
     };
 
-    enum Tcps_SocketAddressFamily {
-        TCPS_AF_INET = 2,
-        TCPS_AF_INET6 = 23
+    enum oe_socket_address_family_t {
+        OE_AF_INET = 2,
+        OE_AF_INET6 = 23
     };
 
-    enum Tcps_SocketType {
-        TCPS_SOCK_STREAM = 1
+    enum oe_socket_type_t {
+        OE_SOCK_STREAM = 1
     };
 
-    enum Tcps_ShutdownHow {
-        TCPS_SD_RECEIVE = 0,
-        TCPS_SD_SEND = 1,
-        TCPS_SD_BOTH = 2
+    enum oe_shutdown_how_t {
+        OE_SD_RECEIVE = 0,
+        OE_SD_SEND = 1,
+        OE_SD_BOTH = 2
     };
 
     struct accept_Result {
-        Tcps_SocketError error;
+        oe_socket_error_t error;
         void* hNewSocket;
         int addrlen;
         char addr[256];
@@ -50,87 +50,71 @@ enclave {
     };
 
     struct getaddrinfo_Result {
-        Tcps_SocketError error;
+        oe_socket_error_t error;
         int addressCount;
         void* hMessage; /* Handle to pass to TcpsImportBuffer() */
     };
 
     struct gethostname_Result {
-        Tcps_SocketError error;
+        oe_socket_error_t error;
         char name[256];
     };
 
     struct getnameinfo_Result {
-        Tcps_SocketError error;
+        oe_socket_error_t error;
         buffer256 host;
         buffer256 serv;
     };
 
     struct GetSockName_Result {
-        Tcps_SocketError error;
+        oe_socket_error_t error;
         int addrlen;
         char addr[256];
     };
 
     struct getsockopt_Result {
-        Tcps_SocketError error;
+        oe_socket_error_t error;
         char buffer[256];
         int len;
     };
 
     struct ioctlsocket_Result {
-        Tcps_SocketError error;
+        oe_socket_error_t error;
         unsigned int outputValue;
     };
 
-    struct Tcps_Timeval {
+    struct oe_timeval {
         int tv_sec;
         int tv_usec;
     };
 
-    struct Tcps_FdSet {
-        unsigned int count;
-        void* fdArray[64];
+    struct oe_fd_set_internal {
+        unsigned int fd_count;
+        void* fd_array[64];
     };
 
     struct select_Result {
-        Tcps_SocketError error;
+        oe_socket_error_t error;
         int socketsSet;
-        Tcps_FdSet readFds;
-        Tcps_FdSet writeFds;
-        Tcps_FdSet exceptFds;
+        oe_fd_set_internal readFds;
+        oe_fd_set_internal writeFds;
+        oe_fd_set_internal exceptFds;
     };
 
     struct send_Result {
-        Tcps_SocketError error;
+        oe_socket_error_t error;
         int bytesSent;
     };
 
     struct socket_Result {
-        Tcps_SocketError error;
+        oe_socket_error_t error;
         void* hSocket;
     };
 
     struct recv_Result {
-        Tcps_SocketError error;
+        oe_socket_error_t error;
         int bytesReceived;
         void* hMessage; /* Handle to pass to TcpsImportBuffer() */
-    };
-
-    struct TCPConnect_Result {
-        Tcps_StatusCode status;
-        uint32_t connectionHandle;
-    };
-
-    struct TCPSend_Result {
-        Tcps_StatusCode status;
-        uint32_t sizeSent;
-    };
-
-    struct TCPReceive_Result {
-        Tcps_StatusCode status;
-        char buffer[4096];
-        uint32_t sizeReceived;
     };
 
     trusted {
@@ -141,15 +125,15 @@ enclave {
             [user_check] void* a_hSocket,
             int a_nAddrLen);
 
-        [cdecl] Tcps_SocketError ocall_bind(
+        [cdecl] oe_socket_error_t ocall_bind(
             [user_check] void* a_hSocket,
             buffer256 a_Name,
             int a_nNameLen);
 
-        [cdecl] Tcps_SocketError ocall_closesocket(
+        [cdecl] oe_socket_error_t ocall_closesocket(
             [user_check] void* a_hSocket);
 
-        [cdecl] Tcps_SocketError ocall_connect(
+        [cdecl] oe_socket_error_t ocall_connect(
             [user_check] void* a_hSocket,
             buffer256 a_Name,
             int a_nNameLen);
@@ -188,7 +172,7 @@ enclave {
             int a_nCommand,
             unsigned int a_uInputValue);
 
-        [cdecl] Tcps_SocketError ocall_listen(
+        [cdecl] oe_socket_error_t ocall_listen(
             [user_check] void* a_hSocket,
             int a_nMaxConnections);
 
@@ -199,59 +183,34 @@ enclave {
 
         [cdecl] select_Result ocall_select(
             int a_nFds,
-            Tcps_FdSet a_ReadFds,
-            Tcps_FdSet a_WriteFds,
-            Tcps_FdSet a_ExceptFds,
-            Tcps_Timeval a_Timeval);
+            oe_fd_set_internal a_ReadFds,
+            oe_fd_set_internal a_WriteFds,
+            oe_fd_set_internal a_ExceptFds,
+            oe_timeval a_Timeval);
 
         [cdecl] send_Result ocall_send(
             [user_check] void* a_hSocket,
             [user_check] void* a_hMessage,
             int a_Flags);
 
-        [cdecl] Tcps_SocketError ocall_setsockopt(
+        [cdecl] oe_socket_error_t ocall_setsockopt(
             [user_check] void* a_hSocket,
             int a_nLevel,
             int a_nOptName,
             buffer256 a_OptVal,
             int a_nOptLen);
 
-        [cdecl] Tcps_SocketError ocall_shutdown(
+        [cdecl] oe_socket_error_t ocall_shutdown(
             [user_check] void* a_hSocket,
-            Tcps_ShutdownHow a_How);
+            oe_shutdown_how_t a_How);
 
         [cdecl] socket_Result ocall_socket(
-            Tcps_SocketAddressFamily a_AddressFamily,
-            Tcps_SocketType a_Type,
+            oe_socket_address_family_t a_AddressFamily,
+            oe_socket_type_t a_Type,
             int a_Protocol);
 
-        [cdecl] Tcps_SocketError ocall_WSACleanup(void);
+        [cdecl] oe_socket_error_t ocall_WSACleanup(void);
 
-        [cdecl] Tcps_SocketError ocall_WSAStartup(void);
-
-        /* TCPSClient transport. All of these ocalls return Tcps_StatusCode. */
-        /* TODO: remove and combine TCPConnect into connect() */
-        TCPConnect_Result
-        ocall_TCPConnect(
-            buffer256 serverName,
-            uint16_t port);
-
-        /* TODO: remove and combine TCPSend into send() */
-        TCPSend_Result
-        ocall_TCPSend(
-            uint32_t connectionHandle,
-            buffer4096 buffer,
-            uint32_t sizeToSend);
-
-        /* TODO: remove and combine TCPReceive into recv() */
-        TCPReceive_Result
-        ocall_TCPReceive(
-            uint32_t connectionHandle,
-            uint32_t sizeToReceive);
-
-        /* TODO: remove and combine TCPClose into closesocket() */
-        unsigned int
-        ocall_TCPClose(
-            uint32_t connectionHandle);
+        [cdecl] oe_socket_error_t ocall_WSAStartup(void);
     };
 };
