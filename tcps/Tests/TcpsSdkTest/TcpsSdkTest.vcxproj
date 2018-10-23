@@ -606,7 +606,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="TeeHostTest.cpp" />
     <ClCompile Include="BufferTest.cpp" />
     <ClCompile Include="TrustedAppTest.cpp" />
   </ItemGroup>

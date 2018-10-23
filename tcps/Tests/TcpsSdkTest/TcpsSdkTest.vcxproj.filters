@@ -27,9 +27,6 @@
     <ClCompile Include="BufferTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TeeHostTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SocketsTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

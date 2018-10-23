@@ -17,9 +17,6 @@ extern "C" {
 
 #include <sgx_eid.h>
 
-#define TcpsAcquireTAMutex(eid) oe_acquire_enclave_mutex((oe_enclave_t*)eid)
-#define TcpsReleaseTAMutex(eid) oe_release_enclave_mutex((oe_enclave_t*)eid)
-
 /* The caller is responsible for freeing the buffer after calling this. */
 void* TcpsCreateReeBuffer(_In_ int a_BufferSize);
 
@@ -38,22 +35,6 @@ TcpsPushDataToTeeBuffer(
     _In_ size_t a_BufferSize,
     _Out_ void** a_phTeeBuffer);
 void TcpsFreeTeeBuffer(_In_ void* a_hTeeBuffer);
-
-#if !defined(NDEBUG) || defined(EDEBUG)
-#define TCPS_ENCLAVE_FLAG_DEBUG ((int)1)
-#else
-#define TCPS_ENCLAVE_FLAG_DEBUG ((int)0)
-#endif
-
-TCPS_DEPRECATED(Tcps_StatusCode Tcps_CreateTA(
-    _In_z_ const char* a_TaIdString,
-    _In_ uint32_t a_Flags,
-    _Out_ sgx_enclave_id_t* a_pId),
-    "Tcps_CreateTA is deprecated. Use oe_create_enclave instead.");
-
-TCPS_DEPRECATED(Tcps_StatusCode Tcps_DestroyTA(
-    _In_ sgx_enclave_id_t a_Id),
-    "Tcps_DestroyTA is deprecated. Use oe_terminate_enclave instead.");
 
 #ifdef __cplusplus
 }

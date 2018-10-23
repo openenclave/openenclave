@@ -18,29 +18,6 @@ ocall_table_v2_t g_ocall_table_v2 = { 0 };
 /* TODO: this flag should be per enclave */
 int g_serialize_ecalls = FALSE;
 
-/* TODO: this API is deprecated.  Remove once callers are changed. */
-Tcps_StatusCode Tcps_CreateTA(
-    _In_z_ const char* a_TaIdString,
-    _In_ uint32_t a_Flags,
-    _Out_ sgx_enclave_id_t* a_pId)
-{
-    *a_pId = 0;
-    oe_enclave_t* enclave;
-    oe_result_t result = oe_create_enclave(a_TaIdString,
-                                           0,
-                                           a_Flags,
-                                           NULL,
-                                           0,
-                                           NULL,
-                                           0,
-                                           &enclave);
-    if (result != OE_OK) {
-        return Tcps_Bad;
-    }
-    *a_pId = (sgx_enclave_id_t)enclave;
-    return Tcps_Good;
-}
-
 Tcps_StatusCode Tcps_CreateTAInternal(
     _In_z_ const char* a_TaIdString,
     _In_ uint32_t a_Flags,
@@ -93,15 +70,6 @@ oe_result_t oe_ecall(oe_enclave_t* enclave, uint16_t func, uint64_t argIn, uint6
 {
     // This API is deprecated.
     return OE_FAILURE;
-}
-
-/* TODO: delete this API once callers are updated to call oe_terminate_enclave */
-Tcps_StatusCode Tcps_DestroyTA(
-    _In_ sgx_enclave_id_t a_Id)
-{
-    oe_enclave_t* enclave = (oe_enclave_t*)a_Id;
-    oe_result_t result = oe_terminate_enclave(enclave);
-    return (result != OE_OK) ? Tcps_Bad : Tcps_Good;
 }
 
 const char* oe_result_str(_In_ oe_result_t result)

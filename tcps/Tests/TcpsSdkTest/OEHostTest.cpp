@@ -6,7 +6,13 @@
 #include <TcpsSdkTestTA_u.h>
 #include "TrustedAppTest.h"
 #include <openenclave/host.h>
-extern const char* TA_ID;
+
+#ifdef USE_SGX
+const char* TA_ID = "TcpsSdkTestTA"; /* DLL will be TcpsSdkTestTA.signed.dll */
+#endif
+#ifdef USE_OPTEE
+const char* TA_ID = "3156152a-19d1-423c-96ea-5adf5675798f";
+#endif
 
 TEST(TeeHost, create_enclave_BadId)
 {
