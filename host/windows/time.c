@@ -4,6 +4,7 @@
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/time.h>
 #include <windows.h>
+#include <limits.h>
 
 /*
 **==============================================================================
@@ -48,7 +49,13 @@ static uint64_t _time()
 void oe_handle_sleep(uint64_t arg_in)
 {
     const uint64_t milliseconds = arg_in;
-    Sleep((DWORD)milliseconds);
+    const uint64_t div = milliseconds / (uint64_t)UINT_MAX;
+    const uint64_t mod = milliseconds % (uint64_t)UINT_MAX;
+
+    for (uint64_t i = 0; i < div; i++)
+        Sleep(UINT_MAX);
+
+    Sleep((DWORD)mod);
 }
 
 void oe_handle_get_time(uint64_t arg_in, uint64_t* arg_out)

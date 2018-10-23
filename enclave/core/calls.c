@@ -10,12 +10,10 @@
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
-#include <openenclave/internal/hostalloc.h>
 #include <openenclave/internal/jump.h>
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/internal/reloc.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/utils.h>
@@ -554,7 +552,7 @@ oe_result_t oe_call_host(const char* func, void* args_in)
             oe_safe_add_sizet(
                 len, 1 + sizeof(oe_call_host_args_t), &total_len));
 
-        if (!(args = oe_host_alloc_for_call_host(total_len)))
+        if (!(args = oe_host_calloc(1,total_len)))
         {
             /* If the enclave is in crashing/crashed status, new OCALL should
              * fail immediately. */
@@ -577,7 +575,7 @@ oe_result_t oe_call_host(const char* func, void* args_in)
     result = OE_OK;
 
 done:
-    oe_host_free_for_call_host(args);
+    oe_host_free(args);
     return result;
 }
 
@@ -606,7 +604,7 @@ oe_result_t oe_call_host_by_address(
 
     /* Initialize the arguments */
     {
-        if (!(args = oe_host_alloc_for_call_host(sizeof(*args))))
+        if (!(args = oe_host_calloc(1,sizeof(*args))))
         {
             /* Fail if the enclave is crashing. */
             OE_CHECK(__oe_enclave_status);
@@ -628,7 +626,7 @@ oe_result_t oe_call_host_by_address(
 
 done:
 
-    oe_host_free_for_call_host(args);
+    oe_host_free(args);
 
     return result;
 }
@@ -659,7 +657,7 @@ oe_result_t oe_call_host_function(
 
     /* Initialize the arguments */
     {
-        if (!(args = oe_host_alloc_for_call_host(sizeof(*args))))
+        if (!(args = oe_host_calloc(1,sizeof(*args))))
         {
             /* Fail if the enclave is crashing. */
             OE_CHECK(__oe_enclave_status);
@@ -684,7 +682,7 @@ oe_result_t oe_call_host_function(
 
 done:
 
-    oe_host_free_for_call_host(args);
+    oe_host_free(args);
 
     return result;
 }
