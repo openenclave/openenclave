@@ -28,7 +28,7 @@ all:
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../fileencryptor.edl --trusted
-	$(CXX) -c $(CXXFLAGS) ecalls.cpp encryptor.cpp keys.cpp
+	$(CXX) -c $(CXXFLAGS) -std=c++11 ecalls.cpp encryptor.cpp keys.cpp
 	$(CC) -c $(CFLAGS) fileencryptor_t.c -o fileencryptor_t.o
 	$(CXX) -o file-encryptorenc.so ecalls.o encryptor.o keys.o fileencryptor_t.o $(LDFLAGS)
 
