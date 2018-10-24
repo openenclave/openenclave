@@ -27,7 +27,6 @@ add_executable(edl_host
     testbasic.cpp
     testenum.cpp
     testforeign.cpp
-    testmisc.cpp
     testpointer.cpp
     teststring.cpp
     teststruct.cpp

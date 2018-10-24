@@ -38,7 +38,6 @@ add_executable(edl_enc
     testbasic.cpp 
     testenum.cpp 
     testforeign.cpp
-    testmisc.cpp
     testpointer.cpp
     teststring.cpp
     teststruct.cpp
