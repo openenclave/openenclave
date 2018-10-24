@@ -24,6 +24,10 @@ add_library(oeenclave STATIC
     sha.c
     start.S)
 
+if(CMAKE_C_COMPILER_ID MATCHES GNU)
+target_compile_options(oeenclave PRIVATE -Wjump-misses-init)
+endif()
+
 if(USE_LIBSGX)
 target_compile_definitions(oeenclave PUBLIC OE_USE_LIBSGX)
 endif()    

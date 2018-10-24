@@ -3,7 +3,6 @@
 
 # create a binary for each testcase listed in ../tests.supported
 
-include(add_compile_flags_if_supported)
 include(add_enclave_executable)
 include(${CMAKE_CURRENT_LIST_DIR}/../../../cmake/get_testcase_name.cmake)
 
@@ -13,25 +12,27 @@ add_library(libcxxthrdtest-support
     fuzzing.cpp
     memory_resource.cpp
     )
-target_compile_options(libcxxthrdtest-support PRIVATE
-    $<$<COMPILE_LANGUAGE:CXX>:-std=c++14>
-    )
 
-add_target_compile_flags_if_supported(libcxxthrdtest-support PRIVATE CXX
+target_compile_options(libcxxthrdtest-support PRIVATE
+    -std=c++14
     -Wno-error=attributes
-    -Wno-error=maybe-uninitialized
     -Wno-error=strict-overflow
-    -Wno-error=unused-but-set-variable
     -Wno-error=unused-local-typedefs
     -Wno-error=unused-variable
     )
+
+if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
+    target_compile_options(libcxxthrdtest-support PRIVATE
+      -Wno-error=maybe-uninitialized
+      -Wno-error=unused-but-set-variable
+      )
+endif ()
 
 target_link_libraries(libcxxthrdtest-support PUBLIC oelibcxx oeenclave)
 target_link_libraries(libcxxthrdtest-support INTERFACE -Wl,--undefined=Test)
 
 # helper function to create enclave binary
 function(add_libcxxthrd_test_enc NAME CXXFILE)
-    #message("libcxxthrd-test NAME=${NAME} CXXFILE=${CXXFILE}")
     add_executable(libcxxthrdtest-${NAME}_enc main.cpp)
 
     target_include_directories(libcxxthrdtest-${NAME}_enc PRIVATE
@@ -41,14 +42,21 @@ function(add_libcxxthrd_test_enc NAME CXXFILE)
         ${PROJECT_SOURCE_DIR}/3rdparty/libcxx/libcxx/fuzzing
         )
 
-    # Remove NDEBUG to enable the libcxx testsuite assertions in Release
-    target_compile_options(libcxxthrdtest-${NAME}_enc PRIVATE -Wno-error --std=c++14 -UNDEBUG)
+    target_compile_options(libcxxthrdtest-${NAME}_enc PRIVATE
+        -std=c++14
+        # These are third-party tests, so we don't care about their warnings.
+        -Wno-error
+        # Remove NDEBUG to enable the libcxxthrd testsuite assertions in Release
+        -UNDEBUG
+        )
 
     # Clang does not support variants of operator delete[] taking size_t in C++14 unless
     # -fsized-deallocation is passed explicity. (Note, gcc 4.7/4.8/4.9 do not support this either.)
-    if ("${NAME}" MATCHES "sized_delete_array14")
-        add_target_compile_flags_if_supported(libcxxthrdtest-${NAME}_enc PRIVATE CXX -fsized-deallocation)
+    # NOTE: This only matters when `ENABLE_FULL_LIBCXX_TESTS=ON`.
+    if (NAME MATCHES "sized_delete_array14")
+        target_compile_options(libcxxthrdtest-${NAME}_enc PRIVATE -fsized-deallocation)
     endif()
+
     target_compile_definitions(libcxxthrdtest-${NAME}_enc PRIVATE -DWITH_MAIN -D__TEST__="${CXXFILE}")
     target_link_libraries(libcxxthrdtest-${NAME}_enc libcxxthrdtest-support oeenclave)
 endfunction(add_libcxxthrd_test_enc)
