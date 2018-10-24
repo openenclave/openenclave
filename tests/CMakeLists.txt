@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 option(ENABLE_FULL_LIBC_TESTS "Build all libc tests and include in test list" OFF)
-option(ENABLE_FULL_LIBCXX_TESTS "Build all libcxx and libcxxthrd tests and include in test list" OFF)
+option(ENABLE_FULL_LIBCXX_TESTS "Build all libcxx tests and include in test list" OFF)
 
 if(ENABLE_FULL_LIBC_TESTS)
     message("ENABLE_FULL_LIBC_TESTS set - building all libc tests")
@@ -11,9 +11,9 @@ else()
 endif()
 
 if(ENABLE_FULL_LIBCXX_TESTS)
-    message("ENABLE_FULL_LIBCXX_TESTS set - building all libcxx and libcxxthrd tests")
+    message("ENABLE_FULL_LIBCXX_TESTS set - building all libcxx tests")
 else()
-    message("ENABLE_FULL_LIBCXX_TESTS not set - building some libcxx and libcxxthrd tests")
+    message("ENABLE_FULL_LIBCXX_TESTS not set - building some libcxx tests")
 endif()
 
 add_subdirectory(aesm)
@@ -45,7 +45,6 @@ add_subdirectory(initializers)
 add_subdirectory(libc)
 add_subdirectory(libcxx)
 add_subdirectory(libcxxrt)
-add_subdirectory(libcxxthrd)
 add_subdirectory(memory)
 add_subdirectory(ocall)
 add_subdirectory(ocall-alloc)
