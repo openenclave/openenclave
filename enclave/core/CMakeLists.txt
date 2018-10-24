@@ -1,9 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-include(add_compile_flags_if_supported)
-include(add_compile_defs)
-
 add_library(oecore STATIC
     ../../common/safecrt.c
     assert.c
@@ -48,7 +45,11 @@ target_include_directories(oecore SYSTEM PRIVATE ${OE_C_COMPILER_INCDIR})
 # This directory contains dummy C headers needed by dlmalloc:
 target_include_directories(oecore PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dlmalloc)
 
-add_target_compile_flags(oecore PUBLIC "C;CXX"
+if (CMAKE_C_COMPILER_ID MATCHES GNU)
+    target_compile_options(oecore PRIVATE -Wjump-misses-init)
+endif ()
+
+target_compile_options(oecore PUBLIC
     -m64
     -fPIC
     -nostdinc
@@ -56,12 +57,10 @@ add_target_compile_flags(oecore PUBLIC "C;CXX"
     -fvisibility=hidden
     )
 
-add_target_compile_flags(oecore PUBLIC CXX
-    -nostdinc++
-    )
+target_compile_options(oecore INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>)
 
 if(USE_LIBSGX)
-    add_target_compile_defs(oecore PUBLIC "C;CXX" OE_USE_LIBSGX)
+    target_compile_definitions(oecore PUBLIC OE_USE_LIBSGX)
 endif()
 
 if(OE_TRACE_LEVEL)
@@ -69,11 +68,11 @@ if(OE_TRACE_LEVEL)
 endif()
 
 if(USE_DEBUG_MALLOC)
-    add_target_compile_defs(oecore PRIVATE "C;CXX" OE_USE_DEBUG_MALLOC)
+    target_compile_definitions(oecore PRIVATE OE_USE_DEBUG_MALLOC)
     message("USE_DEBUG_MALLOC is set, building oecore with memory leak detection.")
 endif()
 
-add_target_compile_defs(oecore PUBLIC "C;CXX" OE_BUILD_ENCLAVE)
+target_compile_definitions(oecore PUBLIC OE_BUILD_ENCLAVE)
 
 # addl link-options for enclave apps
 target_link_libraries(oecore INTERFACE

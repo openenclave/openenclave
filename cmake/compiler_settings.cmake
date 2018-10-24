@@ -11,8 +11,6 @@ if (CMAKE_C_COMPILER_ID MATCHES Clang)
   endif ()
 endif ()
 
-include(add_compile_flags_if_supported)
-
 if (NOT CMAKE_C_COMPILER_ID STREQUAL CMAKE_CXX_COMPILER_ID)
   message(FATAL_ERROR "Your C and C++ compilers have different vendors: "
     "${CMAKE_C_COMPILER_ID} != ${CMAKE_CXX_COMPILER_ID}")
@@ -49,19 +47,23 @@ else ()
   message("ccache not found")
 endif (CCACHE_FOUND)
 
+# Check for compiler flags
+include(CheckCCompilerFlag)
+include(CheckCXXCompilerFlag)
+
 # Apply Spectre mitigations if available.
-set(SPECTRE_1_LLVM_MITIGATION_FLAG "-mllvm -x86-speculative-load-hardening")
-add_compile_flag_if_supported("C;CXX" "${SPECTRE_1_LLVM_MITIGATION_FLAG}" SPECTRE_1_LLVM_MITIGATION_FLAG_SUPPORTED)
-
-if (SPECTRE_1_LLVM_MITIGATION_FLAG_SUPPORTED)
-  message("C/C++ compiler is Clang 7.0+, applying Spectre 1 mitigations")
+set(SPECTRE_MITIGATION_FLAGS "-mllvm;-x86-speculative-load-hardening")
+check_c_compiler_flag("${SPECTRE_MITIGATION_FLAGS}" SPECTRE_MITIGATION_C_FLAGS_SUPPORTED)
+check_cxx_compiler_flag("${SPECTRE_MITIGATION_FLAGS}" SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
+if (SPECTRE_MITIGATION_C_FLAGS_SUPPORTED AND SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
+  message(STATUS "Spectre 1 mitigations supported")
+  add_compile_options(${SPECTRE_MITIGATION_FLAGS})
+  # Allows reuse in cases where ExternalProject is used and global compile flags wouldn't propagate.
+  string(REPLACE ";" "  " SPECTRE_MITIGATION_FLAGS "${SPECTRE_MITIGATION_FLAGS}")
 else ()
-  set(SPECTRE_1_LLVM_MITIGATION_FLAG "")
-  message("C/C++ compiler is not Clang 7.0+, NOT applying Spectre 1 mitigations")
+  message(WARNING "Spectre 1 mitigations NOT supported")
+  set(SPECTRE_MITIGATION_FLAGS "")
 endif ()
-
-# Allows reuse in cases where ExternalProject is used and global compile flags wouldn't propagate.
-set(SPECTRE_MITIGATION_FLAGS "${SPECTRE_1_LLVM_MITIGATION_FLAG}")
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   # Disable this particular warning because `-isystem` is being to
@@ -76,9 +78,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
   # to fix warnings as they arise, so they don't accumulate "to be fixed later".
   add_compile_options(-Wall -Werror)
 
-  add_compile_flags("C;CXX" -fno-strict-aliasing)
-
-  add_compile_flags_if_supported(C -Wjump-misses-init)
+  add_compile_options(-fno-strict-aliasing)
 
   # Enables XSAVE intrinsics.
   add_compile_options(-mxsave)
@@ -95,7 +95,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
 
   # We should only need this for in-enclave code but it's easier
   # and conservative to specify everywhere
-  add_compile_flags("C;CXX" -fno-builtin-malloc -fno-builtin-calloc)
+  add_compile_options(-fno-builtin-malloc -fno-builtin-calloc)
 elseif (MSVC)
   # MSVC options go here
 endif ()
