@@ -206,7 +206,11 @@ let oe_get_param_size (ptype, decl, argstruct) =
  * Optionally add an oe_enclave_t* first parameter.
  *)
 let oe_gen_prototype (fd: Ast.func_decl) =
-  sprintf "%s %s(%s)" (get_ret_tystr fd) fd.Ast.fname (get_plist_str fd)
+  let params_str = 
+      if List.length fd.Ast.plist = 0 then
+        "void"
+      else get_plist_str fd in
+  sprintf "%s %s(%s)" (get_ret_tystr fd) fd.Ast.fname params_str
 
 let oe_gen_wrapper_prototype (fd: Ast.func_decl) (is_ecall:bool) =
   let plist_str = get_plist_str fd in  
@@ -792,14 +796,49 @@ let oe_gen_ocall_host_wrapper (os:out_channel) (fd:Ast.func_decl) =
   fprintf os "        pargs_out->_result = _result;\n";
   fprintf os "}\n\n"
 
-let rec is_wchar_t_type = function
-| Ast.WChar -> true
-| Ptr ty -> is_wchar_t_type ty
-| _ -> false
+(* 
+  Check if any of the parameters or the return type
+  has the given root type.
+*)  
+let uses_type (root_type:Ast.atype) (fd:Ast.func_decl) =
+  let param_match = 
+    List.exists (fun (pt, decl) -> 
+      root_type =  (Ast.get_param_atype pt)
+    ) fd.Ast.plist in
+  if param_match then
+    param_match 
+  else
+    root_type = fd.Ast.rtype
 
-(* check if function has wstring parameters *)
-let uses_wchar_t_params (fd:Ast.func_decl) =
-    List.exists (fun (pt, decl) -> is_wchar_t_type (Ast.get_param_atype pt)) fd.Ast.plist
+
+let warn_non_portable_types (fd:Ast.func_decl) =
+    let print_portability_warning ty =
+        printf "Warning: Function '%s': %s has different sizes on Windows and Linux. \
+                This enclave cannot be built in Linux and then safely loaded in Windows.\n"
+                fd.fname ty
+    in
+    let print_portability_warning_with_recommendation ty recommendation =
+        printf "Warning: Function '%s': %s has different sizes on Windows and Linux. \
+        This enclave cannot be built in Linux and then safely loaded in Windows. \
+        Consider using %s instead.\n"        
+        fd.fname ty recommendation                     
+    in
+    (* longs are represented as an Ast.Int type *)
+    let long_t = Ast.Int { Ast.ia_signedness = Ast.Signed; Ast.ia_shortness = Ast.ILong} in
+    let ulong_t = Ast.Int { Ast.ia_signedness = Ast.Unsigned; Ast.ia_shortness = Ast.ILong} in
+    
+    (if uses_type Ast.WChar fd then
+      print_portability_warning "wchar_t");
+    (if uses_type Ast.LDouble fd then
+      print_portability_warning "long double");
+
+    (* Handle long type *)
+    (if uses_type (Ast.Long Ast.Signed) fd || uses_type long_t fd then
+      print_portability_warning_with_recommendation "long" "int64_t or int32_t");
+    
+    (* Handle unsigned long type *)
+    (if uses_type (Ast.Long Ast.Unsigned) fd || uses_type ulong_t fd then
+      print_portability_warning_with_recommendation "unsigned long" "uint64_t or uint32_t")
 
 (* Valid oe support *)
 let validate_oe_support (ec: enclave_content) (ep: edger8r_params) =
@@ -811,8 +850,7 @@ let validate_oe_support (ec: enclave_content) (ep: edger8r_params) =
         failwithf "Function '%s': 'private' specifier is not supported by oeedger8r" f.Ast.tf_fdecl.fname);
     (if f.Ast.tf_is_switchless then
         failwithf "Function '%s': switchless ecalls and ocalls are not yet supported by Open Enclave SDK." f.Ast.tf_fdecl.fname);  
-    (if uses_wchar_t_params f.Ast.tf_fdecl then
-        printf "Warning: Function '%s': wchar_t has different sizes on windows and linux.\n" f.Ast.tf_fdecl.fname);     
+    warn_non_portable_types f.Ast.tf_fdecl;   
   ) ec.tfunc_decls;
   List.iter (fun f -> 
     (if f.Ast.uf_fattr.fa_convention <> Ast.CC_NONE then
@@ -824,8 +862,7 @@ let validate_oe_support (ec: enclave_content) (ep: edger8r_params) =
         printf "Warning: Function '%s': Reentrant ocalls are not supported by Open Enclave. Allow list ignored.\n" f.Ast.uf_fdecl.fname);
     (if f.Ast.uf_is_switchless then
         failwithf "Function '%s': switchless ecalls and ocalls are not yet supported by Open Enclave SDK." f.Ast.uf_fdecl.fname);
-    (if uses_wchar_t_params f.Ast.uf_fdecl then
-        printf "Warning: Function '%s': wchar_t has different sizes on windows and linux.\n" f.Ast.uf_fdecl.fname);          
+    warn_non_portable_types f.Ast.uf_fdecl;          
   ) ec.ufunc_decls
 
   (*

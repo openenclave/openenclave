@@ -145,6 +145,11 @@ void test_basic_edl_ocalls()
         OE_TEST(ocall_ret_long_double(&ret) == OE_OK);
         OE_TEST(ret == 0.191919);
     }
+
+    {
+        OE_TEST(ocall_ret_void() == OE_OK);
+    }
+
     printf("=== test_basic_edl_ocalls passed\n");
 }
 
@@ -324,4 +329,8 @@ long double ecall_ret_long_double()
 {
     check_return_type<ecall_ret_long_double_args_t, long double>();
     return 0.191919;
+}
+
+void ecall_ret_void()
+{
 }

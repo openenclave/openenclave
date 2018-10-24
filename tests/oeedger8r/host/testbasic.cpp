@@ -147,6 +147,10 @@ void test_basic_edl_ecalls(oe_enclave_t* enclave)
         OE_TEST(ret == 0.191919);
     }
 
+    {
+        OE_TEST(ecall_ret_void(enclave) == OE_OK);
+    }
+
     printf("=== test_basic_edl_ecalls passed\n");
 }
 
@@ -328,4 +332,8 @@ long double ocall_ret_long_double()
 {
     check_return_type<ocall_ret_long_double_args_t, long double>();
     return 0.191919;
+}
+
+void ocall_ret_void()
+{
 }
