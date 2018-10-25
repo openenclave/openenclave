@@ -48,7 +48,7 @@ static oe_result_t _oe_free_elf_image(oe_enclave_image_t* image)
     return OE_OK;
 }
 
-static int __cdecl _compare_segments(const void* s1, const void* s2)
+static int _compare_segments(const void* s1, const void* s2)
 {
     const oe_elf_segment_t* seg1 = (const oe_elf_segment_t*)s1;
     const oe_elf_segment_t* seg2 = (const oe_elf_segment_t*)s2;
