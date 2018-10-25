@@ -3,7 +3,6 @@
 
 if (WIN32)
     set(BINARY ${OE_BINDIR}/oeedger8r.exe)
-    set(BUILD_COMMAND ocamlbuild -I intel -no-links -libs str,unix main.native )
 else()
     set(BINARY ${OE_BINDIR}/oeedger8r)
     set(BUILD_COMMAND make)
@@ -37,13 +36,23 @@ add_custom_command(
     DEPENDS ${OEEDGER8R_SRC}
 )
 
+if (WIN32)
 add_custom_command(
     OUTPUT ${BINARY}
-    COMMAND ${BUILD_COMMAND}
+    COMMAND C:\\windows\\system32\\WindowsPowerShell\\v1.0\\powershell -command ${CMAKE_CURRENT_SOURCE_DIR}/build.ps1 ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} 
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/src/_build/main.native ${BINARY}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/src
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/src
 )
+else()
+ add_custom_command(
+     OUTPUT ${BINARY}
+     COMMAND ${BUILD_COMMAND}
+     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/src/_build/main.native ${BINARY}
+     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/src
+     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/src
+ )
+endif()
 
 add_custom_target(oeedger8r ALL
     DEPENDS ${BINARY}
