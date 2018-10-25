@@ -20,9 +20,9 @@ build/tests/echo$ make
 ```
 
 
-This builds and runs all the tests. For libcxx & libcxxthrd a small subset is
-the default, the complete one is very slow to build and run. To enable the full
-set, set the ENABLE_FULL_LIBCXX_TESTS cmake variable as follows:
+This builds and runs all the tests. For libcxx a small subset is the default,
+the complete one is very slow to build and run. To enable the full set,
+set the ENABLE_FULL_LIBCXX_TESTS cmake variable as follows:
 
 ```
 build$ cmake .. -DENABLE_FULL_LIBCXX_TESTS=1
