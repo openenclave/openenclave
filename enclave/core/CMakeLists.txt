@@ -1,9 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-include(add_compile_flags_if_supported)
-include(add_compile_defs)
-
 if (UNIX)
 set(PLATFORM_SRC
     linux/reloc.c
