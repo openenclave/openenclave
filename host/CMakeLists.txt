@@ -35,6 +35,7 @@ set(PLATFORM_SRC
     windows/exception.c
     windows/hostthread.c
     windows/time.c
+    ../3rdparty/mbedtls/mbedtls/library/bignum.c
     )
 endif()
 
@@ -89,7 +90,7 @@ if(UNIX)
 target_link_libraries(oehost PRIVATE ${CRYPTO_LIB} ${DL_LIB} Threads::Threads)
 elseif(WIN32)
 target_include_directories(oehost PRIVATE ${CMAKE_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
-target_link_libraries(oehost PRIVATE bcrypt Crypt32 mbedcryptohost)
+target_link_libraries(oehost PRIVATE bcrypt Crypt32)
 endif()
 
 if(UNIX)
