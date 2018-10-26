@@ -5,14 +5,14 @@ if (UNIX)
 set(PLATFORM_SRC
     ../common/asn1.c
     ../common/cert.c
-    crypto/asn1.c
-    crypto/cert.c
-    crypto/crl.c
-    crypto/ec.c
-    crypto/init.c
-    crypto/key.c
-    crypto/random.c
-    crypto/linux/rsa.c
+    crypto/openssl/asn1.c
+    crypto/openssl/cert.c
+    crypto/openssl/crl.c
+    crypto/openssl/ec.c
+    crypto/openssl/init.c
+    crypto/openssl/key.c
+    crypto/openssl/random.c
+    crypto/openssl/rsa.c
     linux/aep.S
     linux/aesm.c
     linux/cpuid.c
@@ -26,7 +26,7 @@ set(PLATFORM_SRC
     )
 elseif (WIN32)
 set(PLATFORM_SRC
-    crypto/windows/rsa.c
+    crypto/bcrypt/rsa.c
     windows/aep.asm
     windows/aesm.c
     windows/cpuid.c
