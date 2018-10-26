@@ -10,7 +10,7 @@
 
 typedef struct {
     size_t nr_ocall;
-    oe_call_t* call_addr;
+    const oe_ocall_func_t* call_addr;
 } ocall_table_v2_t;
 
 ocall_table_v2_t g_ocall_table_v2 = { 0 };
@@ -40,7 +40,7 @@ oe_result_t oe_create_enclave(
     TCPS_UNUSED(configSize);
 
     g_ocall_table_v2.nr_ocall = ocall_table_size;
-    g_ocall_table_v2.call_addr = (oe_call_t*)ocall_table;
+    g_ocall_table_v2.call_addr = ocall_table;
 
     if (flags & OE_ENCLAVE_FLAG_SERIALIZE_ECALLS) {
         g_serialize_ecalls = TRUE;
@@ -52,6 +52,16 @@ oe_result_t oe_create_enclave(
     // Load the enclave.
     sgx_enclave_id_t eid;
     Tcps_StatusCode uStatus = Tcps_CreateTAInternal(path, flags, &eid);
+    if (Tcps_IsBad(uStatus)) {
+        return OE_FAILURE;
+    }
+
+    // Make sure we can call into the enclave.  This also registers the
+    // OCALL handler, which OP-TEE needs.
+    sgx_status_t sgxStatus = ecall_InitializeEnclave(eid, &uStatus);
+    if (sgxStatus != SGX_SUCCESS) {
+        return OE_FAILURE;
+    }
     if (Tcps_IsBad(uStatus)) {
         return OE_FAILURE;
     }
@@ -185,63 +195,30 @@ callV2_Result ocall_v2(uint32_t func, buffer4096 inBuffer, size_t inBufferSize)
 {
     callV2_Result result;
 
-    if (func > g_ocall_table_v2.nr_ocall) {
+    if (func >= g_ocall_table_v2.nr_ocall) {
         result.outBufferSize = 0;
         return result;
     }
 
-    oe_call_t call = g_ocall_table_v2.call_addr[func];
+    oe_ocall_func_t call = g_ocall_table_v2.call_addr[func];
     call(inBuffer.buffer,
-        inBufferSize,
+         inBufferSize,
         result.outBuffer,
         sizeof(result.outBuffer),
         &result.outBufferSize);
-
     return result;
 }
 
-oe_result_t oe_call_enclave_function( 
-    _In_ oe_enclave_t* enclave,
-    _In_ uint32_t function_id,
-    _In_reads_bytes_(input_buffer_size) void* input_buffer,
-    _In_ size_t input_buffer_size,
-    _Out_writes_bytes_to_(output_buffer_size, *output_bytes_written) void* output_buffer,
-    _In_ size_t output_buffer_size,
-    _Out_ size_t* output_bytes_written)
-{
-    int serialize_ecall = g_serialize_ecalls;
+#if 1
+#else
+typedef struct ms_ecall_v2_t {
+    callV2_Result ms_retval;
+    uint32_t ms_func;
+    buffer4096 ms_inBuffer;
+    size_t ms_inBufferSize;
+} ms_ecall_v2_t;
+#endif
 
-    if (output_buffer_size > 4096) {
-        return OE_INVALID_PARAMETER;
-    }
-
-    callV2_Result* result = malloc(sizeof(*result));
-    if (result == NULL) {
-        return OE_OUT_OF_MEMORY;
-    }
-
-    sgx_enclave_id_t eid = (sgx_enclave_id_t)enclave;
-    buffer4096 inBufferStruct;
-    COPY_BUFFER(inBufferStruct, input_buffer, input_buffer_size);
-
-    if (serialize_ecall) {
-        oe_acquire_enclave_mutex(enclave);
-    }
-
-    sgx_status_t sgxStatus = ecall_v2(eid, result, function_id, inBufferStruct, input_buffer_size);
-
-    if (serialize_ecall) {
-        oe_release_enclave_mutex(enclave);
-    }
-
-    if (sgxStatus == SGX_SUCCESS) {
-        memcpy(output_buffer, result->outBuffer, result->outBufferSize);
-        *output_bytes_written = result->outBufferSize;
-    }
-    oe_result_t oeResult = GetOEResultFromSgxStatus(sgxStatus);
-    free(result);
-    return oeResult;
-}
 
 /**
  * Gets the public key of an enclave.

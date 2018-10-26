@@ -67,11 +67,13 @@ enclave {
 
     struct callV2_Result {
         char outBuffer[4096];
-        size_t outBufferSize; 
+        size_t outBufferSize;
     };
 
     /* define ECALLs here. */
     trusted {
+        public Tcps_StatusCode ecall_InitializeEnclave();
+
         public CreateBuffer_Result ecall_CreateTeeBuffer(BufferChunk chunk);
 
         public Tcps_StatusCode ecall_AppendToTeeBuffer(

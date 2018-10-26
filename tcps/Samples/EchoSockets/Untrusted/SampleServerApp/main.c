@@ -41,7 +41,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    buffer256 serv;
+    oe_buffer256 serv;
     COPY_BUFFER_FROM_STRING(serv, port);
 
     /* TrustZone only allows one thread per TA at a time.

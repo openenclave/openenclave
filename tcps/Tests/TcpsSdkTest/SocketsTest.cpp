@@ -167,8 +167,8 @@ public:
 
 protected:
     sgx_enclave_id_t taid;
-    buffer256 server;
-    buffer256 port;
+    oe_buffer256 server;
+    oe_buffer256 port;
     HANDLE readyEvent;
 };
 
@@ -201,10 +201,8 @@ TEST_F(SocketsTest, EchoClient_Success)
     WaitForSingleObject(this->readyEvent, INFINITE);
     CloseHandle(readyEvent);
 
-    AcquireTAMutex();
-    sgx_status_t sgxStatus = ecall_RunClient(GetTAId(), &uStatus, this->server, this->port);
-    ReleaseTAMutex();
-    ASSERT_EQ(SGX_SUCCESS, sgxStatus);
+    oe_result_t oeResult = ecall_RunClient(GetOEEnclave(), &uStatus, this->server, this->port);
+    ASSERT_EQ(OE_OK, oeResult);
     ASSERT_EQ(Tcps_Good, uStatus);
 
     // Clean up test server.
@@ -220,10 +218,8 @@ TEST_F(SocketsTest, EchoServer_Success)
     COPY_BUFFER_FROM_STRING(this->server, "localhost");
     COPY_BUFFER_FROM_STRING(this->port, "12345");
 
-    AcquireTAMutex();
-    sgx_status_t sgxStatus = ecall_StartServer(GetTAId(), &uStatus, this->port);
-    ReleaseTAMutex();
-    ASSERT_EQ(SGX_SUCCESS, sgxStatus);
+    oe_result_t oeResult = ecall_StartServer(GetOEEnclave(), &uStatus, this->port);
+    ASSERT_EQ(OE_OK, oeResult);
     ASSERT_EQ(Tcps_Good, uStatus);
 
     // Run a test client.
@@ -231,10 +227,8 @@ TEST_F(SocketsTest, EchoServer_Success)
     ASSERT_TRUE(hClientThread != NULL);
 
     // Clean up test server.
-    AcquireTAMutex();
-    sgxStatus = ecall_FinishServer(GetTAId(), &uStatus);
-    ReleaseTAMutex();
-    ASSERT_EQ(SGX_SUCCESS, sgxStatus);
+    oeResult = ecall_FinishServer(GetOEEnclave(), &uStatus);
+    ASSERT_EQ(OE_OK, oeResult);
     ASSERT_EQ(Tcps_Good, uStatus);
 
     // Clean up test client.

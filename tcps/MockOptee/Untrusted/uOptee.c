@@ -65,7 +65,9 @@ TEE_Result InvokeREECallback(
 
     int sizeWritten;
     BOOL ok = g_RpcCallback(g_RpcCallbackContext, rpcType, in_buffer, in_buffer_size, out_buffer, out_buffer_size, &sizeWritten);
-    return (ok && sizeWritten == out_buffer_size) ? TEE_SUCCESS : TEE_ERROR_GENERIC;
+
+    params[2].memref.size = sizeWritten;
+    return (ok && sizeWritten <= out_buffer_size) ? TEE_SUCCESS : TEE_ERROR_GENERIC;
 }
 
 HANDLE __stdcall Tcps_CreateFileW(
@@ -241,6 +243,8 @@ CallOpteeCommand(
         TEE_PARAM_TYPE_NONE);
 
     TEE_Result result = session->InvokeTACommand(session->hSession, 0, FunctionCode, exp_param_types, params, NULL);
+
+    *CommandOutputSizeWritten = params[2].memref.size;
 
     if (inputHeader != NULL)
     {

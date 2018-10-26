@@ -76,6 +76,25 @@ else
 fi
 sgxSdkPath=$(dirname "${binPath}")
 
+# Next, install oeedger8r
+oeedgepath=`which oeedger8r`
+if [ -z "$oeedgepath" ]; then
+    oeedgepath=`which oeedger8r.exe`
+fi
+if [ -z "$oeedgepath" ]; then
+   if [ -e oeedger8r ]; then
+      oeedgepath=$PWD/oeedger8r
+   fi
+fi
+if [ ! -z "$oeedgepath" ]; then
+    export OEEDGER8R=$oeedgepath
+else
+    wget https://oedownload.blob.core.windows.net/binaries/oeedger8r
+    chmod 755 oeedger8r
+    export OEEDGER8R=$PWD/oeedger8r
+fi
+echo Found $OEEDGER8R
+
 # The linaro tools have problems with spaces in include paths,
 # so create a link we can use without spaces.
 if [ ! -e ../3rdparty/SGXSDK ]; then

@@ -82,7 +82,14 @@ TEE_Result TEE_InvokeTACommand(
     uint32_t *returnOrigin)
 {
     if (session == MOCK_PTA_SESSION) {
+        /* Handle an OCALL, which is implemented in OP-TEE by
+         * a TA-to-TA "ECALL" to OP-TEE's pseudo-TA.  Here, we
+         * take a shortcut and just call the REE handler, like
+         * the pseudo-TA would do.
+         */
         return g_InvokeREECallback(commandID, paramTypes, params);
     }
+
+    /* Handle an ECALL. */
     return TA_InvokeCommandEntryPoint(session, commandID, paramTypes, params);
 }

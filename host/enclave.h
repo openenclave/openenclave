@@ -135,9 +135,10 @@ struct _oe_enclave
 
 // Static asserts for consistency with
 // debugger/pythonExtension/gdb_sgx_plugin.py
+#if defined(__linux__)
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_t, magic) == 0);
 
-// Python plugin seems to code this as just 2.
+// Python plugin only needs the field number which is 2
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_t, addr) == 2 * sizeof(void*));
 
 // The fields up to binding correspond to 'ENCLAVE_HEADER'
@@ -147,6 +148,7 @@ OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_t, debug) == 0x598);
 OE_STATIC_ASSERT(
     OE_OFFSETOF(oe_enclave_t, debug) + 1 ==
     OE_OFFSETOF(oe_enclave_t, simulate));
+#endif
 
 /* Get the event for the given TCS */
 EnclaveEvent* GetEnclaveEvent(oe_enclave_t* enclave, uint64_t tcs);

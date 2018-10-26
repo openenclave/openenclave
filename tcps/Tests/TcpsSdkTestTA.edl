@@ -1,15 +1,16 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
 enclave {
-    /* Import TcpsCalls to get support for all TCPS-SDK APIs. */
-    from "TcpsCalls.edl" import *;
+    /* Import oebuffer.edl to get support for all buffer types. */
+    from "oebuffer.edl" import *;
 
     trusted {
         /* define ECALLs here. */
         public Tcps_StatusCode ecall_DoNothing();
-        public CreateBuffer_Result ecall_CreateReeBufferFromTeeBuffer([user_check] void* hTeeBuffer);
-        public Tcps_StatusCode ecall_RunClient(buffer256 server, buffer256 port);
-        public Tcps_StatusCode ecall_StartServer(buffer256 port);
+		public Tcps_StatusCode ecall_TestOcall();
+        public oe_CreateBuffer_Result ecall_CreateReeBufferFromTeeBuffer([user_check] void* hTeeBuffer);
+        public Tcps_StatusCode ecall_RunClient(oe_buffer256 server, oe_buffer256 port);
+        public Tcps_StatusCode ecall_StartServer(oe_buffer256 port);
         public Tcps_StatusCode ecall_FinishServer();
         public Tcps_StatusCode ecall_TestSgxIsWithinEnclave([user_check] void* outside, int size);
         public Tcps_StatusCode ecall_TestSgxIsOutsideEnclave([user_check] void* outside, int size);
@@ -21,18 +22,17 @@ enclave {
         public Tcps_StatusCode ecall_TestOEGetTargetInfoV1(uint32_t flags);
         public Tcps_StatusCode ecall_TestOEGetTargetInfoV2(uint32_t flags);
         public Tcps_StatusCode ecall_TestOEExceptions();
-        public Tcps_StatusCode ecall_TestOEEcall();
         public Tcps_StatusCode ecall_TestOEGetSealKeyV1(int policy);
         public Tcps_StatusCode ecall_TestOEGetSealKeyV2(int policy);
         public void* ecall_OEHostMalloc(int size);
         public void* ecall_OEHostCalloc(int nmemb, int size);
         public void* ecall_OEHostRealloc([user_check] void* ptr, int size);
-        public char* ecall_OEHostStrndup(buffer256 str, int size);
+        public char* ecall_OEHostStrndup(oe_buffer256 str, int size);
         public void ecall_OEHostFree([user_check] void* ptr);
     };
 
     untrusted {
         /* define OCALLs here. */
-    
+        int ocall_ReturnInputArgument(int input);
     };
 };

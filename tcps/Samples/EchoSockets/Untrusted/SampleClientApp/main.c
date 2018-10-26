@@ -42,8 +42,8 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    buffer256 serv;
-    buffer256 server;
+    oe_buffer256 serv;
+    oe_buffer256 server;
     COPY_BUFFER_FROM_STRING(server, servername);
     COPY_BUFFER_FROM_STRING(serv, port);
 

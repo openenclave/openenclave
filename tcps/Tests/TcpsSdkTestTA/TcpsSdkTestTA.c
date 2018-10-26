@@ -3,6 +3,7 @@
 #include "TcpsSdkTestTA_t.h"
 #include "sgx_trts.h"
 #include "tcps_socket_t.h"
+#include "TcpsCalls_t.h" // for OE_AF_INET
 #include <string.h>
 
 Tcps_StatusCode ecall_DoNothing()
@@ -10,9 +11,9 @@ Tcps_StatusCode ecall_DoNothing()
     return Tcps_Good;
 }
 
-CreateBuffer_Result ecall_CreateReeBufferFromTeeBuffer(_In_ void* hTeeBuffer)
+oe_CreateBuffer_Result ecall_CreateReeBufferFromTeeBuffer(_In_ void* hTeeBuffer)
 {
-    CreateBuffer_Result result = { 0 };
+    oe_CreateBuffer_Result result = { 0 };
     char* data;
     int size;
 
@@ -28,7 +29,7 @@ CreateBuffer_Result ecall_CreateReeBufferFromTeeBuffer(_In_ void* hTeeBuffer)
 /* This client connects to an echo server, sends a text message,
 * and outputs the text reply.
 */
-Tcps_StatusCode ecall_RunClient(buffer256 server, buffer256 serv)
+Tcps_StatusCode ecall_RunClient(oe_buffer256 server, oe_buffer256 serv)
 {
     Tcps_StatusCode uStatus = Tcps_BadCommunicationError;
     struct addrinfo* ai = NULL;
@@ -98,7 +99,7 @@ Done:
 
 SOCKET g_TestListener = INVALID_SOCKET;
 
-Tcps_StatusCode ecall_StartServer(buffer256 serv)
+Tcps_StatusCode ecall_StartServer(oe_buffer256 serv)
 {
     Tcps_StatusCode uStatus = Tcps_BadCommunicationError;
     struct addrinfo* ai = NULL;

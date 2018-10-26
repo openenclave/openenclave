@@ -2,9 +2,6 @@
 // Licensed under the MIT License.
 
 enclave {
-	/* Import TcpsCalls to get support for all TCPS-SDK APIs. */
-	from "TcpsCalls.edl" import *;
-
     trusted {
         /* define ECALLs here. */
         public int enclave_helloworld();

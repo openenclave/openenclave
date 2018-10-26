@@ -70,6 +70,11 @@ void* oe_host_realloc(void* ptr, size_t size)
     return (sgxStatus == SGX_SUCCESS) ? newptr : NULL;
 }
 
+Tcps_StatusCode ecall_InitializeEnclave(void)
+{
+    return Tcps_Good;
+}
+
 void* oe_host_calloc(size_t nmemb, size_t size)
 {
     void* ptr;
@@ -174,7 +179,7 @@ oe_result_t oe_get_report_v2(
     sgx_report_data_t* sgxReportData = NULL;
     sgx_target_info_t* sgxTargetInfo = NULL;
     sgx_status_t sgxStatus = SGX_SUCCESS;
-    
+
     if (report_data_size > 0) {
         sgxReportData = (sgx_report_data_t*)report_data;
     }
@@ -273,7 +278,7 @@ int ecall_verify_report(buffer1024 report, size_t report_size)
 typedef struct _oe_over_sgx_exception_handler_entry {
     struct _oe_over_sgx_exception_handler_entry* next;
     struct _oe_over_sgx_exception_handler_entry* prev;
-    oe_vectored_exception_handler_t handler; 
+    oe_vectored_exception_handler_t handler;
 } oe_over_sgx_exception_handler_entry;
 
 void* g_OEOverSgxExceptionHandle = NULL;
@@ -384,8 +389,8 @@ oe_over_sgx_exception_handler_entry* FindExceptionEntry(
 }
 
 /* Note that the Intel SGX SDK docs explain:
- *  "Custom exception handling is only supported in hardware mode. 
- *   Although the exception handlers can be registered in simulation mode, 
+ *  "Custom exception handling is only supported in hardware mode.
+ *   Although the exception handlers can be registered in simulation mode,
  *   the exceptions cannot be caught and handled within the enclave."
  */
 oe_result_t oe_add_vectored_exception_handler(
@@ -623,56 +628,32 @@ oe_result_t oe_get_seal_key_v1(
     return OE_OK;
 }
 
-typedef struct {
-    size_t nr_ecall;
-    struct { oe_call_t call_addr; uint8_t is_priv; } ecall_table[1];
-} ecall_table_v2_t;
+typedef void(*oe_ecall_func_t)(
+    const uint8_t* input_buffer,
+    size_t input_buffer_size,
+    uint8_t* output_buffer,
+    size_t output_buffer_size,
+    size_t* output_bytes_written);
 
-ecall_table_v2_t* g_ecall_table_v2 = NULL;
+extern oe_ecall_func_t __oe_ecalls_table[];
+extern size_t __oe_ecalls_table_size;
 
 callV2_Result ecall_v2(uint32_t func, buffer4096 inBuffer, size_t inBufferSize)
 {
     callV2_Result result;
 
-    if (g_ecall_table_v2 == NULL || func > g_ecall_table_v2->nr_ecall) {
+    if (__oe_ecalls_table == NULL || func >= __oe_ecalls_table_size) {
         result.outBufferSize = 0;
         return result;
     }
 
-    oe_call_t call = g_ecall_table_v2->ecall_table[func].call_addr;
-    call(inBuffer.buffer,
-         inBufferSize,
-         result.outBuffer,
-         sizeof(result.outBuffer),
-         &result.outBufferSize);
+    __oe_ecalls_table[func](
+        inBuffer.buffer,
+        inBufferSize,
+        result.outBuffer,
+        sizeof(result.outBuffer),
+        &result.outBufferSize);
 
     return result;
 }
 
-oe_result_t oe_call_host_function(
-    size_t function_id,
-    void* input_buffer,
-    size_t input_buffer_size,
-    void* output_buffer,
-    size_t output_buffer_size,
-    size_t* output_bytes_written)
-{
-    callV2_Result result;
-    buffer4096 inBufferStruct;
-    if (input_buffer_size > sizeof(inBufferStruct)) {
-        return OE_INVALID_PARAMETER;
-    }
-    COPY_BUFFER(inBufferStruct, input_buffer, input_buffer_size);
-    sgx_status_t sgxStatus = ocall_v2(&result,
-                                      function_id,
-                                      inBufferStruct,
-                                      input_buffer_size);
-    if (sgxStatus == SGX_SUCCESS) {
-        if (result.outBufferSize > output_buffer_size) {
-            return OE_BUFFER_TOO_SMALL;
-        }
-        memcpy(output_buffer, result.outBuffer, result.outBufferSize);
-        *output_bytes_written = result.outBufferSize;
-    }
-    return GetOEResultFromSgxStatus(sgxStatus);
-}

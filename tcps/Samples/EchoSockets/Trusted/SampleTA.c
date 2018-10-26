@@ -5,11 +5,12 @@
 #include "SampleTA_t.h"
 #include "tcps_socket_t.h"
 #include "tcps_string_t.h"
+#include "TcpsCalls_t.h"
 
 /* This client connects to an echo server, sends a text message,
  * and outputs the text reply.
  */
-int ecall_RunClient(buffer256 server, buffer256 serv)
+int ecall_RunClient(oe_buffer256 server, oe_buffer256 serv)
 {
     int status = OE_FAILURE;
     struct addrinfo* ai = NULL;
@@ -86,7 +87,7 @@ Done:
 /* This server acts as an echo server.  It accepts a connection,
  * receives messages, and echoes them back.
  */
-int ecall_RunServer(buffer256 serv)
+int ecall_RunServer(oe_buffer256 serv)
 {
     int status = OE_FAILURE;
     struct addrinfo* ai = NULL;

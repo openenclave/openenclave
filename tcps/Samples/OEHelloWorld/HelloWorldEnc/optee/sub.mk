@@ -8,14 +8,21 @@ global-incdirs-y += optee
 # Add any additional include directories here
 #global-incdirs-y += ...
 
-helloworld_t.c: ../../helloworld.edl
-	$(SGX_EDGER8R) --trusted --search-path "$(TCPS_SDK_ROOT_PATH)Inc$(SGX_PATHSEP)$(TCPS_SDK_ROOT_PATH)$(SGX_RELATIVE_PATH)include" ../../helloworld.edl
+../helloworld_t.c: ../../helloworld.edl
+	$(OEEDGER8R) --trusted --trusted-dir .. --search-path "$(TCPS_SDK_ROOT_PATH)Inc$(SGX_PATHSEP)$(TCPS_SDK_ROOT_PATH)$(SGX_RELATIVE_PATH)include" ../../helloworld.edl
 
-helloworld_t.h: ../../helloworld.edl
-	$(SGX_EDGER8R) --trusted --search-path "$(TCPS_SDK_ROOT_PATH)Inc$(SGX_PATHSEP)$(TCPS_SDK_ROOT_PATH)$(SGX_RELATIVE_PATH)include" ../../helloworld.edl
+../helloworld_t.h: ../../helloworld.edl
+	$(OEEDGER8R) --trusted --trusted-dir .. --search-path "$(TCPS_SDK_ROOT_PATH)Inc$(SGX_PATHSEP)$(TCPS_SDK_ROOT_PATH)$(SGX_RELATIVE_PATH)include" ../../helloworld.edl
+
+../TcpsCalls_t.c: $(TCPS_SDK_ROOT_PATH)Inc/TcpsCalls.edl
+	$(SGX_EDGER8R) --trusted --trusted-dir .. --search-path "$(TCPS_SDK_ROOT_PATH)Inc$(SGX_PATHSEP)$(TCPS_SDK_ROOT_PATH)$(SGX_RELATIVE_PATH)include" $(TCPS_SDK_ROOT_PATH)Inc/TcpsCalls.edl
+
+../TcpsCalls_t.h: $(TCPS_SDK_ROOT_PATH)Inc/TcpsCalls.edl
+	$(SGX_EDGER8R) --trusted --trusted-dir .. --search-path "$(TCPS_SDK_ROOT_PATH)Inc$(SGX_PATHSEP)$(TCPS_SDK_ROOT_PATH)$(SGX_RELATIVE_PATH)include" $(TCPS_SDK_ROOT_PATH)Inc/TcpsCalls.edl
 
 # Add the c file generated from your EDL file here
-srcs-y             += helloworld_t.c
+srcs-y             += ../helloworld_t.c
+srcs-y             += ../TcpsCalls_t.c
 
 # Add additional sources here
 srcs-y             += ../enc.c

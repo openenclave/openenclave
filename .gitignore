@@ -24,3 +24,7 @@ prereqs/sgx-driver/*.bin
 tcps/packages/
 helloworld_t.*
 helloworld_u.*
+helloworld_args.h
+TcpsSdkTestTA_args.h
+SampleTA_args.h
+oeedger8r.exe

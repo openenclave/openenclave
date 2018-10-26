@@ -96,6 +96,9 @@
     <ClCompile Include="optee\except-optee.c">
       <Filter>optee</Filter>
     </ClCompile>
+    <ClCompile Include="sgx\trpc-sgx.c">
+      <Filter>sgx</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="optee\linux_gcc.mak">

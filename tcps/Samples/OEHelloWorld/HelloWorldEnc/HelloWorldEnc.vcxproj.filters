@@ -24,6 +24,9 @@
     <ClCompile Include="helloworld_t.c">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="TcpsCalls_t.c">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="HelloWorldEnc_private.pem">
@@ -39,9 +42,15 @@
     <CustomBuild Include="..\helloworld.edl">
       <Filter>Source Files</Filter>
     </CustomBuild>
+    <CustomBuild Include="..\..\..\Inc\TcpsCalls.edl">
+      <Filter>Source Files</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="helloworld_t.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TcpsCalls_t.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>

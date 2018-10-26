@@ -44,4 +44,5 @@ mklink /d /j ..\3rdparty\SGXSDK "%SGXSDKInstallPath%" > NUL
 
 :Done
 echo VerifySgxSdkinstalled: SGXSDKInstallPath is %SGXSDKInstallPath%
+VerifyOeedger8rInstalled.bat
 popd

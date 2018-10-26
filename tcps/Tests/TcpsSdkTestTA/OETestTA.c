@@ -2,7 +2,6 @@
 /* Licensed under the MIT License. */
 #include "TcpsSdkTestTA_t.h"
 #include "openenclave/enclave.h"
-#include "openenclave/edger8r/enclave.h"
 #include "openenclave/internal/random.h"
 #include "TcpsCallbacks_t.h"
 #include <stdlib.h>
@@ -406,7 +405,7 @@ void* ecall_OEHostRealloc(void* ptr, int size)
     return oe_host_realloc(ptr, size);
 }
 
-char* ecall_OEHostStrndup(buffer256 buff, int size)
+char* ecall_OEHostStrndup(oe_buffer256 buff, int size)
 {
     return oe_host_strndup(buff.buffer, size);
 }
@@ -457,45 +456,21 @@ Tcps_StatusCode ecall_TestOEExceptions()
     return Tcps_Good;
 }
 
-typedef void(*call_addr_t)(
-    void* inBuffer,
-    size_t inBufferSize,
-    void* outBuffer,
-    size_t outBufferSize,
-    size_t* outBufferSizeWritten);
+typedef void(*oe_ecall_func_t)(
+    const uint8_t* input_buffer,
+    size_t input_buffer_size,
+    uint8_t* output_buffer,
+    size_t output_buffer_size,
+    size_t* output_bytes_written);
 
-typedef struct {
-    size_t nr_ecall;
-    struct { call_addr_t* call_addr; uint8_t is_priv; } ecall_table[1];
-} ecall_table_v2_t;
-
-extern ecall_table_v2_t* g_ecall_table_v2;
-
-void TestEcall(
-    void* inBuffer,
-    size_t inBufferSize,
-    void* outBuffer,
-    size_t outBufferSize,
-    size_t* outBufferSizeWritten)
-{
-    if (inBufferSize > outBufferSize) {
-        *outBufferSizeWritten = 0;
-        return;
-    }
-    memcpy(outBuffer, inBuffer, inBufferSize);
-    *outBufferSizeWritten = inBufferSize;
-}
+extern oe_ecall_func_t _oe_ecalls_table[];
 
 Tcps_StatusCode TestOcallHandler()
 {
     int input = 1;
     int output = 0;
-    size_t outBufferSizeWritten = 0;
-    oe_result_t oeResult = oe_call_host_function(0, &input, sizeof(input), &output, sizeof(output), &outBufferSizeWritten);
+    oe_result_t oeResult = ocall_ReturnInputArgument(&output, input);
     if (oeResult != OE_OK) {
-        return Tcps_Bad;
-    }
-    if (outBufferSizeWritten != sizeof(output)) {
         return Tcps_Bad;
     }
     if (input != output) {
@@ -504,23 +479,12 @@ Tcps_StatusCode TestOcallHandler()
     return Tcps_Good;
 }
 
-void TestOcall(
-    void* inBuffer,
-    size_t inBufferSize,
-    void* outBuffer,
-    size_t outBufferSize,
-    size_t* outBufferSizeWritten)
+Tcps_StatusCode ecall_TestOcall(void)
 {
-    oe_result_t oeResult = OE_OK;
-    Tcps_StatusCode* uStatus = (Tcps_StatusCode*)outBuffer;
-    if (inBufferSize > 0 || outBufferSize < sizeof(*uStatus)) {
-        *outBufferSizeWritten = 0;
-        return;
-    }
-    *uStatus = TestOcallHandler();
-    *outBufferSizeWritten = sizeof(*uStatus);
+    return TestOcallHandler();
 }
 
+#if 0
 struct {
     size_t nr_ecall;
     struct { call_addr_t* call_addr; uint8_t is_priv; } ecall_table[2];
@@ -531,9 +495,4 @@ struct {
         { (void*)(uintptr_t)TestOcall, 0 },
     }
 };
-
-Tcps_StatusCode ecall_TestOEEcall()
-{
-    g_ecall_table_v2 = (ecall_table_v2_t*)&g_TestECallTableV2;
-    return Tcps_Good;
-}
+#endif

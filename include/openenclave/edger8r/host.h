@@ -20,13 +20,10 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/edger8r/common.h>
+#include <openenclave/host.h> // for oe_ocall_func_t
 
 OE_EXTERNC_BEGIN
-
-/**
- * The type of a function in ocall function table.
- */
-typedef void (*oe_ocall_func_t)(void*);
 
 /**
  * Perform a high-level enclave function call (ECALL).
@@ -59,7 +56,7 @@ typedef void (*oe_ocall_func_t)(void*);
 oe_result_t oe_call_enclave_function(
     oe_enclave_t* enclave,
     uint32_t function_id,
-    void* input_buffer,
+    const void* input_buffer,
     size_t input_buffer_size,
     void* output_buffer,
     size_t output_buffer_size,

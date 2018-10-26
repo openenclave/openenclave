@@ -51,20 +51,17 @@ TEST(TeeHost, create_enclave_Success)
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
 
-    result = oe_create_enclave(
+    result = oe_create_TcpsSdkTestTA_enclave(
         TA_ID,
         OE_ENCLAVE_TYPE_UNDEFINED,
         OE_ENCLAVE_FLAG_DEBUG,
-        NULL,
-        0,
         NULL,
         0,
         &enclave);
     ASSERT_EQ(OE_OK, result);
     EXPECT_TRUE(enclave != NULL);
 
-    // Unlike C, C++ requires casts below.  (C just generates warnings.)
-    result = (oe_result_t)ecall_DoNothing((sgx_enclave_id_t)enclave, &uStatus);
+    result = ecall_DoNothing(enclave, &uStatus);
     EXPECT_EQ(OE_OK, result);
     EXPECT_EQ(Tcps_Good, uStatus);
 
@@ -214,24 +211,8 @@ TEST_F(OEHostTest, get_target_info_v2_Success)
 
 TEST_F(OEHostTest, ecall_Success)
 {
-    /* First signal the enclave to register its ecall(s). */
     Tcps_StatusCode uStatus;
-    sgx_status_t sgxStatus = ecall_TestOEEcall(GetTAId(), &uStatus);
-    ASSERT_EQ(SGX_SUCCESS, sgxStatus);
-    ASSERT_EQ(Tcps_Good, uStatus);
-
-    int input = 1;
-    int output = 0;
-    size_t outputSize = 0;
-    oe_result_t oeResult = oe_call_enclave_function(
-        GetOEEnclave(),
-        0,
-        &input,
-        sizeof(input),
-        &output,
-        sizeof(output),
-        &outputSize);
+    oe_result_t oeResult = ecall_DoNothing(GetOEEnclave(), &uStatus);
     EXPECT_EQ(OE_OK, oeResult);
-    EXPECT_EQ(sizeof(output), outputSize);
-    EXPECT_EQ(input, output);
+    EXPECT_EQ(Tcps_Good, 0);
 }

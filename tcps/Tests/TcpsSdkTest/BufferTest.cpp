@@ -4,6 +4,7 @@
 #include <TcpsSdkTestTA_u.h>
 #include "gtest/gtest.h"
 #include "TrustedAppTest.h"
+#include "TcpsCalls_u.h" // for buffer APIs
 
 TEST(Buffer, CreateReeBuffer_Success)
 {
@@ -28,11 +29,11 @@ public:
 
 void BufferTest::VerifyTeeBufferContents(void* hTeeBuffer, int expectedSize, char* expectedData)
 {
-    CreateBuffer_Result reeBufferResult = {};
+    oe_CreateBuffer_Result reeBufferResult = {};
     AcquireTAMutex();
-    sgx_status_t sgxStatus = ecall_CreateReeBufferFromTeeBuffer(GetTAId(), &reeBufferResult, hTeeBuffer);
+    oe_result_t oeResult = ecall_CreateReeBufferFromTeeBuffer(GetOEEnclave(), &reeBufferResult, hTeeBuffer);
     ReleaseTAMutex();
-    ASSERT_EQ(SGX_SUCCESS, sgxStatus);
+    ASSERT_EQ(OE_OK, oeResult);
     ASSERT_EQ(Tcps_Good, reeBufferResult.uStatus);
 
     char* actualData;

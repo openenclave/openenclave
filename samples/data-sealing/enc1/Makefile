@@ -28,7 +28,7 @@ all:
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../datasealing.edl --trusted  --trusted-dir ../common
-	$(CXX) -c $(CXXFLAGS) $(INCLUDES) ecalls.cpp ../common/dispatcher.cpp ../common/keys.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCLUDES) -std=c++11 ecalls.cpp ../common/dispatcher.cpp ../common/keys.cpp
 	$(CC) -c $(CFLAGS) $(CINCLUDES) ../common/datasealing_t.c
 	$(CXX) -o enclave_a_v1.so ecalls.o dispatcher.o keys.o datasealing_t.o $(LDFLAGS)
 

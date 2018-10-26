@@ -4,17 +4,16 @@
 #include "TrustedAppTest.h"
 #include <tcps_u.h>
 #include <openenclave/host.h>
+#include "TcpsSdkTestTA_u.h"
 
 void TrustedAppTest::SetUp()
 {
-    oe_result_t result = oe_create_enclave(
+    oe_result_t result = oe_create_TcpsSdkTestTA_enclave(
         TA_ID,
         OE_ENCLAVE_TYPE_UNDEFINED,
         OE_ENCLAVE_FLAG_DEBUG,
         NULL,
         0,
-        (void(__cdecl **)(void *))GetOcallArray(),
-        GetOcallArraySize(),
         &enclave);
     ASSERT_EQ(OE_OK, result);
     EXPECT_TRUE(enclave != NULL);
