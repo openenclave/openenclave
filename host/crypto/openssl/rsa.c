@@ -10,8 +10,9 @@
 #include <openssl/evp.h>
 #include <openssl/pem.h>
 #include <string.h>
-#include "../init.h"
-#include "../key.h"
+#include "init.h"
+#include "key.h"
+#include "rsa.h"
 
 /* Magic numbers for the RSA key implementation structures */
 static const uint64_t _PRIVATE_KEY_MAGIC = 0x7bf635929a714b2c;
