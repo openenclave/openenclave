@@ -178,7 +178,8 @@ static oe_result_t _calc_q1_q2_bignum(
      * which is normally calculated as S^3 mod M. We see that we can
      * derive these Q1 & Q2 values:
      *  - S^3 mod M
-     *    -> (S * (S^2 mod M)) mod M
+     *    -> ((S mod M) * (S^2 mod M)) mod M
+     *    -> (S * (S^2 mod M)) mod M since S < M
      *  - S^2 mod M
      *    -> S^2 = FLOOR(S^2 / M) * M + R1
      *    -> R1 = S^2 - Q1 * M

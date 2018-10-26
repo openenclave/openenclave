@@ -2,11 +2,18 @@
 // Licensed under the MIT License.
 
 #include "../rsa.h"
+
+/*
+ * Need to define WIN32_NO_STATUS before including Windows, because some macros
+ * are defined in both Windows.h and ntstatus.h. The WIN32_NO_STATUS will
+ * prevent these redefinitions.
+ */
+#include <ntstatus.h>
 #define WIN32_NO_STATUS
 #include <Windows.h>
 #undef WIN32_NO_STATUS
+
 #include <bcrypt.h>
-#include <ntstatus.h>
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/rsa.h>
@@ -14,7 +21,7 @@
 #include <wincrypt.h>
 
 /*
- * Note that these structures were copied from the crypto/keys.c file.
+ * Note that these structures were copied from the linux crypto/key.h file.
  * They can be consolidated once more crypto code is ported to Windows.
  */
 typedef struct oe_private_key_t
@@ -29,13 +36,21 @@ typedef struct oe_public_key_t
     BCRYPT_KEY_HANDLE pkey;
 } oe_public_key_t;
 
-/* Magic numbers for the RSA key implementation structures */
+/*
+ * Magic numbers for the RSA key implementation structures. These values
+ * were copied from the linux rsa.c file. These can be consolidated once
+ * more crypto code is ported to Windows.
+ */
 static const uint64_t _PRIVATE_KEY_MAGIC = 0x7bf635929a714b2c;
 static const uint64_t _PUBLIC_KEY_MAGIC = 0x8f8f72170025426d;
 
 OE_STATIC_ASSERT(sizeof(oe_public_key_t) <= sizeof(oe_rsa_public_key_t));
 OE_STATIC_ASSERT(sizeof(oe_private_key_t) <= sizeof(oe_rsa_private_key_t));
 
+/*
+ * These *key_is_valid functions are copied from the linux crypto/key.c. These
+ * can be consolidated once more crypto code is ported to Windows.
+ */
 bool oe_private_key_is_valid(const oe_private_key_t* impl)
 {
     return impl && impl->magic == _PRIVATE_KEY_MAGIC && impl->pkey;
@@ -231,7 +246,6 @@ oe_result_t oe_rsa_private_key_sign(
 {
     oe_result_t result = OE_UNEXPECTED;
     const oe_private_key_t* impl = (const oe_private_key_t*)private_key;
-    uint8_t* hash_data_copy = NULL;
 
     /* Check for null parameters and invalid sizes. */
     if (!oe_private_key_is_valid(impl) || !hash_data || !hash_size ||
@@ -254,12 +268,12 @@ oe_result_t oe_rsa_private_key_sign(
         switch (hash_type)
         {
             case OE_HASH_TYPE_SHA256:
-                if (hash_size > 32)
+                if (hash_size != 32)
                     OE_RAISE(OE_INVALID_PARAMETER);
                 info.pszAlgId = BCRYPT_SHA256_ALGORITHM;
                 break;
             case OE_HASH_TYPE_SHA512:
-                if (hash_size > 64)
+                if (hash_size != 64)
                     OE_RAISE(OE_INVALID_PARAMETER);
                 info.pszAlgId = BCRYPT_SHA512_ALGORITHM;
                 break;
@@ -326,6 +340,7 @@ static oe_result_t _get_public_rsa_blob_info(
     NTSTATUS status;
     uint8_t* buffer_local = NULL;
     ULONG buffer_local_size = 0;
+    BCRYPT_RSAKEY_BLOB* key_header;
 
     if (!key || !buffer || !buffer_size)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -352,6 +367,11 @@ static oe_result_t _get_public_rsa_blob_info(
     if (status != STATUS_SUCCESS)
         OE_RAISE(OE_FAILURE);
 
+    /* Sanity check to ensure we get modulus and public exponent. */
+    key_header = (BCRYPT_RSAKEY_BLOB*)buffer_local;
+    if (key_header->cbPublicExp == 0 || key_header->cbModulus == 0)
+        OE_RAISE(OE_FAILURE);
+
     *buffer = buffer_local;
     *buffer_size = buffer_local_size;
     buffer_local = NULL;
@@ -376,17 +396,11 @@ oe_result_t oe_rsa_get_public_key_from_private(
     oe_private_key_t* impl = (oe_private_key_t*)private_key;
     uint8_t* keybuf = NULL;
     ULONG keybuf_size;
-    BCRYPT_RSAKEY_BLOB* key_header;
 
     if (!oe_private_key_is_valid(impl) || !public_key)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     OE_CHECK(_get_public_rsa_blob_info(impl->pkey, &keybuf, &keybuf_size));
-
-    /* Sanity check to ensure we get modulus and public exponent. */
-    key_header = (BCRYPT_RSAKEY_BLOB*)keybuf;
-    if (key_header->cbPublicExp == 0 || key_header->cbModulus == 0)
-        OE_RAISE(OE_FAILURE);
 
     /*
      * Export the key blob to a public key. Note that the private key blob has
@@ -457,6 +471,13 @@ oe_result_t oe_rsa_public_key_get_modulus(
         OE_RAISE(OE_BUFFER_TOO_SMALL);
     }
 
+    /*
+     * A RSA public key BCrypt blob has the following format in contiguous
+     * memory:
+     *   BCRYPT_RSAKEY_BLOB struct
+     *   PublicExponent[cbPublicExp] in big endian
+     *   Modulus[cbModulus] in big endian
+     */
     OE_CHECK(
         oe_memcpy_s(
             buffer,
@@ -509,6 +530,13 @@ oe_result_t oe_rsa_public_key_get_exponent(
         OE_RAISE(OE_BUFFER_TOO_SMALL);
     }
 
+    /*
+     * A RSA public key BCrypt blob has the following format in contiguous
+     * memory:
+     *   BCRYPT_RSAKEY_BLOB struct
+     *   PublicExponent[cbPublicExp] in big endian
+     *   Modulus[cbModulus] in big endian
+     */
     OE_CHECK(
         oe_memcpy_s(
             buffer,
