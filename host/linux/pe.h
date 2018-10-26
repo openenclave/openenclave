@@ -250,7 +250,7 @@ typedef struct _IMAGE_ROM_HEADERS
 
 #define IMAGE_FIRST_SECTION(ntheader)                                       \
     ((PIMAGE_SECTION_HEADER)(                                               \
-        (UINT64)ntheader + FIELD_OFFSET(IMAGE_NT_HEADERS, OptionalHeader) + \
+        (UINT32)ntheader + FIELD_OFFSET(IMAGE_NT_HEADERS, OptionalHeader) + \
         ((PIMAGE_NT_HEADERS)(ntheader))->FileHeader.SizeOfOptionalHeader))
 
 // Subsystem Values
