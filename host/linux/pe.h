@@ -35,6 +35,17 @@ TO CHANGE WITHOUT NOTICE.
 ** This file is part of the gnu-efi project, obtained from
 ** https://github.com/geneC/gnu-efi.
 **
+** PLEASE DO NOT MODIFY THIS FILE.
+** PLEASE DO NOT MODIFY THIS FILE.
+** PLEASE DO NOT MODIFY THIS FILE.
+** PLEASE DO NOT MODIFY THIS FILE.
+** PLEASE DO NOT MODIFY THIS FILE.
+** PLEASE DO NOT MODIFY THIS FILE.
+** PLEASE DO NOT MODIFY THIS FILE.
+** PLEASE DO NOT MODIFY THIS FILE.
+** PLEASE DO NOT MODIFY THIS FILE.
+** PLEASE DO NOT MODIFY THIS FILE.
+**
 **==============================================================================
 */
 
