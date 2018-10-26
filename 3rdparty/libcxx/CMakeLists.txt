@@ -66,8 +66,8 @@ target_compile_definitions(oelibcxx_cxx PRIVATE
 add_dependencies(oelibcxx_cxx oelibcxx_cxx_includes)
 # this project and its dependents require include/libcxx in the include path
 target_include_directories(oelibcxx_cxx PUBLIC
-    $<BUILD_INTERFACE:${OE_INCDIR}/openenclave/libcxx>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/libcxx>
+    $<BUILD_INTERFACE:$<$<COMPILE_LANGUAGE:CXX>:${OE_INCDIR}/openenclave/libcxx>>
+    $<INSTALL_INTERFACE:$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/libcxx>>
     )
 
 # this project (and is dependents) require the LIBC includes
