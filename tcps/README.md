@@ -10,7 +10,7 @@ developing
 for TrustZone, since it requires using the sgx\_edger8r.exe utility that comes
 with that SDK, and various header files.
 
-The SDK can be downloaded for free at
+The Intel SGX SDK can be downloaded for free at
 [https://software.intel.com/en-us/sgx-sdk/download](https://software.intel.com/en-us/sgx-sdk/download).
 
 Compiling for SGX currently requires Visual Studio 2015 (_not_ 2017) because
@@ -30,9 +30,11 @@ a bash shell.
 
 To use this library, you must define your own
 [EDL](https://software.intel.com/en-us/sgx-sdk-dev-reference-enclave-definition-language-file-syntax)
-file that imports **TcpsCalls.edl** and defines any other APIs you want to
-use, and use **sgx\_edger8r** to generate code from it.  The generated code
-will include the generated code for TcpsCalls.edl APIs.
+file that defines any APIs you want to
+use, and use **oeedger8r** to generate code from it.
+
+(Separately, **sgx\_edger8r** will generate code from TcpsCalls.edl for
+functionality exposed by this SDK.)
 
 The EDL APIs must adhere to the following constraints to be able to work for
 OP-TEE:
@@ -45,12 +47,11 @@ pointers to them, as input. The struct members must all be value types
 however).  Instead, use a struct as the return type, and put all output
 parameters in the struct.  Again, all struct members must be value types
 (scalars or arrays) not pointers.
-3. Do not use variable-size buffer pointers.   (This constraint is actually
+3. Do not use variable-size buffer pointers.  (This constraint is actually
 redundant with the first two, since EDL requires such buffers to have either
 **[in]**, **[out]**, or both.)  For example, **buffer256**, **buffer1024**,
-and **buffer4096** types are provided by **TcpsCalls.edl**
-(actually defined in TcpsFile.edl which is included by TcpsCalls.edl) for
-buffers of the corresponding sizes.   The compiler will still optimize the
+and **buffer4096** types are provided by **oebuffer.edl** which can be 
+imported by the application's EDL file.  The compiler will still optimize the
 code to actually pass pointers but the generated code will use struct copies
 rather than passing embedded pointers between the trusted and untrusted
 sides, which is the key.  For strings passed from trusted to untrusted
@@ -85,8 +86,8 @@ sgxStatus = ecall_MyEcall(enclave, ...);
 oe_acquire_enclave_mutex(enclave);
 ```
 
-In the future, once we use oeedger8r instead of sgx\_edger8r, this will
-not be needed, but one can pass the OE\_ENCLAVE\_FLAG\_SERIALIZE\_ECALLS
+In the future, this will not be needed, but one can pass the 
+OE\_ENCLAVE\_FLAG\_SERIALIZE\_ECALLS
 flag when creating an enclave to automatically get this behavior.
 
 ## Include paths, preprocessor defines, and libraries
@@ -129,9 +130,9 @@ additional include paths, in any order:
 * TCPS-SDK\Inc\optee
 * TCPS-SDK\Inc\optee\Untrusted
 
-## TCPS-SDK Library APIs
+## TCPS Library APIs
 
-The TCPS SDK library provides support for a number of APIs that are not
+The TCPS library provides support for a number of APIs that are not
 available in SGX and/or OP-TEE.  For APIs that would normally be in some
 standard C header (e.g., "stdio.h"), the convention is that instead of
 including *token*.h, one would include (instead or in addition to the
@@ -173,15 +174,16 @@ Make sure the Project Type is "Enclave" and the EDL File checkbox is checked.
 2. Edit the _YourProjectName_.edl file, and add at least one public ecall
 in the trusted{} section.  E.g., "public Tcps\_StatusCode ecall\_DoWork();"
 Also, above (outside) the trusted{} section, add the following line:
-* from "TcpsCalls.edl" import *;
-3. Update the search path for your EDL to include the path to TcpsCalls.edl.
+* from "oebuffer.edl" import \*;
+2. \[Temporary step, will go away before end of October 2018\] Add the existing
+TcpsCalls.edl file to the list of files in your enclave DLL project, and change
+the file properties to copy all values from your _YourProjectName_.edl file.
+3. Update the command line for your EDL to use oeedger8r.
 To do this, right click on the EDL file in the Solution Explorer window,
 select "Properties"->"Configuration Properties"->"Custom Build Tool"->"General"
 and edit the "Command Line" value for All Configurations and All Platforms.
-Change the **search-path** parameter from
-"$(SGXSDKInstallPath)include" to
-"$(TcpsSdkDir)Inc;$(SGXSDKInstallPath)include" where $(TcpsSdkDir)
-is the path to the TCPS-SDK.
+Change it to "$(TcpsSdkDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(TcpsSdkDir)Inc;$(SGXSDKInstallPath)include" 
+where $(TcpsSdkDir) is the path to the tcps subdirectory of this SDK.
 4. In Visual Studio 2015, add a new or existing Visual C++ project that will
 build a normal application that will call the enclave.
 5. Right click on the application project, select
@@ -191,8 +193,13 @@ and change the "Debugger to launch" to "Intel(R) SGX Debugger".  You may
 also want to change the Working Directory to the Output Directory of the
 enclave project, where the enclave DLL will be placed.
 7. Find the EDL file in the application project in the Solution Explorer window
-and repeat step 3 here.
-8. In the enclave project, add implementations of the ecall(s) you added
+and repeat step 3 here to update the command line to use oeedger8r.
+7. \[Temporary step, will go away before end of October 2018\] Copy the TcpsCalls.edl node in the Solution Explorer window to your application project. Then
+edit the project properties to update the "Command Line" value to have
+--untrusted instead of --trusted.
+8. In the enclave project, add implementations of the ecall(s) you added.
+You will need to include <openenclave/enclave.h> and 
+<_YourEDLFileName_\_t.h> for your ecalls.
 9. In the "Configuration Properties"->"C/C++"->"Preprocessor", add
 **TRUSTED\_CODE;USE\_SGX** to the enclave project, and
 **UNTRUSTED\_CODE;USE\_SGX** to the application project, for
@@ -201,13 +208,14 @@ All Configurations and All Platforms
 tcps\_u.lib;ws2\_32.lib;shell32.lib to the Additional Dependencies
 (All Configurations, All Platforms).  Make sure you configure the
 additional library directory as appropriate under
-"Linker"->General"->"Additional Library Directories".
-11. If you want access to the full set of TCPS-SDK APIs from in the enclave,
+"Linker"->"General"->"Additional Library Directories".
+11. If you want access to the full set of TCPS APIs from in the enclave,
 in the enclave project properties, add tcps\_t.lib;sgx\_tstdc.lib to the
 Additional Dependencies, and the path to tcps\_t.lib to the Additional
 Library Directories.
-12. Add code in the app to call Tcps\_CreateTA(), any ecalls you added, and
-Tcps\_DestroyTA().  You will need to #include <tcps\_u.h> for the Tcps calls,
+12. Add code in the app to call oe\_create\__YourEDLFileName_\_enclave(),
+any ecalls you added, and
+oe\_terminate\_enclave().  You will need to #include <openenclave/host.h> 
 and <_YourEDLFileName_\_u.h> for your ecalls.  Make sure you configure the
 additional include directories as appropriate in your application project
 Properties->"C/C++"->"General"->"Additional Include Directories".  Usually
@@ -255,12 +263,12 @@ in filenames to the name used with your .edl file.
 
 ## Debugging
 
-You can use Visual Studio for debugging with SGX, including the SGX
+For SGX: You can use Visual Studio for debugging, including the SGX
 simulator, that comes with the Intel SGX SDK.  Simply use the Debug
 configuration in Visual Studio if you have SGX-capable hardware, or
 the DebugSimulation configuration in Visual Studio for software emulation.
 
-You can also use a basic software emulation environment with OP-TEE
+For TrustZone: You can use a basic software emulation environment with OP-TEE
 by creating and using a DebugMockOptee configuration in Visual Studio,
 as follows...
 
