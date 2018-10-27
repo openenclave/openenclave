@@ -28,14 +28,12 @@ int main(int argc, char** argv)
 #ifdef _DEBUG
     enclave_flags |= OE_ENCLAVE_FLAG_DEBUG;
 #endif
-    oe_result_t result = oe_create_enclave(TA_ID, 
-                                           0,
-                                           enclave_flags,
-                                           NULL,
-                                           0,
-                                           NULL,
-                                           0,
-                                           &enclave);
+    oe_result_t result = oe_create_SampleTA_enclave(TA_ID, 
+                                                    0,
+                                                    enclave_flags,
+                                                    NULL,
+                                                    0,
+                                                    &enclave);
     if (result != OE_OK) {
         printf("Error %u creating TA\n", result);
         return 1;

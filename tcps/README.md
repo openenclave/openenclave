@@ -66,8 +66,6 @@ passed from trusted to untrusted space, be sure to zero the rest of the
 buffer to avoid leaking uninitialized data.  The macro
 COPY\_BUFFER\_FROM\_STRING(*buffer*, *string*) is provided by **tcps.h**
 to do this.
-5. All ocalls must either have non-void parameters or a non-void return.
-For example, "void Foo(void);" will not compile.
 
 If the above is done, the generated code will work equally with both SGX
 and OP-TEE, as long as the EXE and TA use the right include paths and libs,

@@ -5,6 +5,10 @@
 #include "TrustedAppTest.h"
 #include "TcpsSdkTestTA_u.h"
 
+void ocall_DoNothing(void)
+{
+}
+
 int ocall_ReturnInputArgument(int input)
 {
     return input;

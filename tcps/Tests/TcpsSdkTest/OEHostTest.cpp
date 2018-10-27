@@ -61,7 +61,10 @@ TEST(TeeHost, create_enclave_Success)
     ASSERT_EQ(OE_OK, result);
     EXPECT_TRUE(enclave != NULL);
 
-    result = ecall_DoNothing(enclave, &uStatus);
+    result = ecall_DoNothing(enclave);
+    EXPECT_EQ(OE_OK, result);
+
+    result = ecall_ReturnOk(enclave, &uStatus);
     EXPECT_EQ(OE_OK, result);
     EXPECT_EQ(Tcps_Good, uStatus);
 
@@ -211,8 +214,6 @@ TEST_F(OEHostTest, get_target_info_v2_Success)
 
 TEST_F(OEHostTest, ecall_Success)
 {
-    Tcps_StatusCode uStatus;
-    oe_result_t oeResult = ecall_DoNothing(GetOEEnclave(), &uStatus);
+    oe_result_t oeResult = ecall_DoNothing(GetOEEnclave());
     EXPECT_EQ(OE_OK, oeResult);
-    EXPECT_EQ(Tcps_Good, 0);
 }

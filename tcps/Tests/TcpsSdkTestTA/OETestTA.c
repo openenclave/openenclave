@@ -465,11 +465,16 @@ typedef void(*oe_ecall_func_t)(
 
 extern oe_ecall_func_t _oe_ecalls_table[];
 
-Tcps_StatusCode TestOcallHandler()
+Tcps_StatusCode ecall_TestOcall(void)
 {
+    oe_result_t oeResult = ocall_DoNothing();
+    if (oeResult != OE_OK) {
+        return Tcps_Bad;
+    }
+
     int input = 1;
     int output = 0;
-    oe_result_t oeResult = ocall_ReturnInputArgument(&output, input);
+    oeResult = ocall_ReturnInputArgument(&output, input);
     if (oeResult != OE_OK) {
         return Tcps_Bad;
     }
@@ -478,21 +483,3 @@ Tcps_StatusCode TestOcallHandler()
     }
     return Tcps_Good;
 }
-
-Tcps_StatusCode ecall_TestOcall(void)
-{
-    return TestOcallHandler();
-}
-
-#if 0
-struct {
-    size_t nr_ecall;
-    struct { call_addr_t* call_addr; uint8_t is_priv; } ecall_table[2];
-} g_TestECallTableV2 = {
-    2,
-    {
-        { (void*)(uintptr_t)TestEcall, 0 },
-        { (void*)(uintptr_t)TestOcall, 0 },
-    }
-};
-#endif

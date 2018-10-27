@@ -6,8 +6,9 @@ enclave {
 
     trusted {
         /* define ECALLs here. */
-        public Tcps_StatusCode ecall_DoNothing();
-		public Tcps_StatusCode ecall_TestOcall();
+        public void ecall_DoNothing();
+        public Tcps_StatusCode ecall_ReturnOk();
+        public Tcps_StatusCode ecall_TestOcall();
         public oe_CreateBuffer_Result ecall_CreateReeBufferFromTeeBuffer([user_check] void* hTeeBuffer);
         public Tcps_StatusCode ecall_RunClient(oe_buffer256 server, oe_buffer256 port);
         public Tcps_StatusCode ecall_StartServer(oe_buffer256 port);
@@ -33,6 +34,7 @@ enclave {
 
     untrusted {
         /* define OCALLs here. */
+        void ocall_DoNothing();
         int ocall_ReturnInputArgument(int input);
     };
 };

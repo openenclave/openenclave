@@ -6,7 +6,11 @@
 #include "TcpsCalls_t.h" // for OE_AF_INET
 #include <string.h>
 
-Tcps_StatusCode ecall_DoNothing()
+void ecall_DoNothing()
+{
+}
+
+Tcps_StatusCode ecall_ReturnOk()
 {
     return Tcps_Good;
 }
