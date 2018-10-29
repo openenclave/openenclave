@@ -21,9 +21,6 @@
     <ClInclude Include="SampleTA_u.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="TcpsCalls_u.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SampleTA_u.c">
@@ -32,15 +29,9 @@
     <ClCompile Include="main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TcpsCalls_u.c">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\SampleTA.edl">
-      <Filter>Source Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\..\Inc\TcpsCalls.edl">
       <Filter>Source Files</Filter>
     </CustomBuild>
   </ItemGroup>

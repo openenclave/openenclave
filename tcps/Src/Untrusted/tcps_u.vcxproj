@@ -69,10 +69,9 @@
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|ARM'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|x64'">true</ExcludedFromBuild>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|Win32'">$(TcpsSdkDir)Inc;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|ARM'">$(TcpsSdkDir)Inc;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|x64'">$(TcpsSdkDir)Inc;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
     </ClCompile>
     <ClCompile Include="oeshim_u.c" />
     <ClCompile Include="teehost-optee.c">
@@ -117,24 +116,24 @@
     <ClInclude Include="TcpsCalls_u.h" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\..\Inc\TcpsCalls.edl">
+    <CustomBuild Include="..\TcpsCalls.edl">
       <Command>"$(SGXSDKInstallPath)\bin\win32\Release\sgx_edger8r.exe" --untrusted ".\..\TcpsCalls.edl" --search-path ".\..\;$(SGXSDKInstallPath)\include"</Command>
       <Message>Creating untrusted proxy/bridge routines</Message>
       <Outputs>$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --untrusted ".\..\..\Inc\TcpsCalls.edl" --search-path "..\..\Inc;$(SGXSDKInstallPath)\include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|Win32'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --untrusted ".\..\..\Inc\TcpsCalls.edl" --search-path "..\..\Inc;$(SGXSDKInstallPath)\include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --untrusted ".\..\..\Inc\TcpsCalls.edl" --search-path "..\..\Inc;$(SGXSDKInstallPath)\include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --untrusted ".\..\..\Inc\TcpsCalls.edl" --search-path "..\..\Inc;$(SGXSDKInstallPath)\include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|ARM'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --untrusted ".\..\..\Inc\TcpsCalls.edl" --search-path "..\..\Inc;$(SGXSDKInstallPath)\include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --untrusted ".\..\..\Inc\TcpsCalls.edl" --search-path "..\..\Inc;$(SGXSDKInstallPath)\include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --untrusted ".\..\..\Inc\TcpsCalls.edl" --search-path "..\..\Inc;$(SGXSDKInstallPath)\include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|x64'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --untrusted ".\..\..\Inc\TcpsCalls.edl" --search-path "..\..\Inc;$(SGXSDKInstallPath)\include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --untrusted ".\..\..\Inc\TcpsCalls.edl" --search-path "..\..\Inc;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|Win32'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|ARM'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|x64'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(SGXSDKInstallPath)\include"</Command>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\Inc\TcpsFile.edl" />
-    <None Include="..\..\Inc\TcpsSockets.edl" />
+    <None Include="..\TcpsFile.edl" />
+    <None Include="..\TcpsSockets.edl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B7AE03E4-CF5A-49DC-AB3D-2D8F485472B4}</ProjectGuid>
@@ -291,7 +290,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>UNTRUSTED_CODE;USE_OPTEE;WIN32;_DEBUG;_LIB;_ARM_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(WinARMSDKInstallPath);$(TcpsSdkDir)Inc;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(SolutionDir)Stack\Core;$(SolutionDir)Stack\StackCore;$(SolutionDir)Stack\transport\tcp;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SolutionDir)Stack\Platforms/Win32_untrusted;$(SGXSDKInstallPath)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(WinARMSDKInstallPath);$(TcpsSdkDir)Inc\optee\Untrusted;$(TcpsSdkDir)Inc\optee;$(TcpsSdkDir)Inc;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(SolutionDir)Stack\Core;$(SolutionDir)Stack\StackCore;$(SolutionDir)Stack\transport\tcp;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SolutionDir)Stack\Platforms/Win32_untrusted;$(SGXSDKInstallPath)\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -309,7 +308,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>UNTRUSTED_CODE;USE_OPTEE;SIMULATE_TEE;WIN32;_DEBUG;_LIB;_ARM_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(TcpsSdkDir)Inc;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TcpsSdkDir)Inc\optee\Untrusted;$(TcpsSdkDir)Inc\optee;$(TcpsSdkDir)Inc;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -349,7 +348,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>UNTRUSTED_CODE;USE_OPTEE;SIMULATE_TEE;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(TcpsSdkDir)Inc;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TcpsSdkDir)Inc\optee\Untrusted;$(TcpsSdkDir)Inc\optee;$(TcpsSdkDir)Inc;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
@@ -392,7 +391,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>UNTRUSTED_CODE;USE_OPTEE;SIMULATE_TEE;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(TcpsSdkDir)Inc;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TcpsSdkDir)Inc\optee\Untrusted;$(TcpsSdkDir)Inc\optee;$(TcpsSdkDir)Inc;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>

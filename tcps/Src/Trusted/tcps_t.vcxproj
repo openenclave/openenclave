@@ -86,6 +86,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="TcpsCalls_t.c" />
     <ClCompile Include="TcpsLogOcallFile.c" />
     <ClCompile Include="tcps_socket_t.c">
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|Win32'">AssemblyAndSourceCode</AssemblerOutput>
@@ -212,25 +213,34 @@
     <ClInclude Include="TrustedWolfssl.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\Inc\TcpsFile.edl" />
-    <None Include="..\..\Inc\TcpsSockets.edl" />
+    <None Include="..\TcpsFile.edl" />
+    <None Include="..\TcpsSockets.edl" />
     <None Include="optee\linux_gcc.mak" />
     <None Include="optee\sub.mk" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\..\Inc\TcpsCalls.edl">
+    <CustomBuild Include="..\TcpsCalls.edl">
       <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --trusted "%(FullPath)" --search-path "$(ProjectDir)..;$(SGXSDKInstallPath)include"</Command>
       <Message>Creating proxy/bridge routines</Message>
       <Outputs>%(Filename)_t.h;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --trusted "%(FullPath)" --search-path "$(ProjectDir)..\..\Inc;$(SGXSDKInstallPath)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --trusted "%(FullPath)" --search-path "$(ProjectDir)..\..\Inc;$(SGXSDKInstallPath)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|Win32'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --trusted "%(FullPath)" --search-path "$(ProjectDir)..\..\Inc;$(SGXSDKInstallPath)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|ARM'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --trusted "%(FullPath)" --search-path "$(ProjectDir)..\..\Inc;$(SGXSDKInstallPath)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --trusted "%(FullPath)" --search-path "$(ProjectDir)..\..\Inc;$(SGXSDKInstallPath)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --trusted "%(FullPath)" --search-path "$(ProjectDir)..\..\Inc;$(SGXSDKInstallPath)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --trusted "%(FullPath)" --search-path "$(ProjectDir)..\..\Inc;$(SGXSDKInstallPath)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|x64'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --trusted "%(FullPath)" --search-path "$(ProjectDir)..\..\Inc;$(SGXSDKInstallPath)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --trusted "%(FullPath)" --search-path "$(ProjectDir)..\..\Inc;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --trusted "%(FullPath)" --search-path "$(ProjectDir)..;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --trusted "%(FullPath)" --search-path "$(ProjectDir)..;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|Win32'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --trusted "%(FullPath)" --search-path "$(ProjectDir)..;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|ARM'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --trusted "%(FullPath)" --search-path "$(ProjectDir)..;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --trusted "%(FullPath)" --search-path "$(ProjectDir)..;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --trusted "%(FullPath)" --search-path "$(ProjectDir)..;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --trusted "%(FullPath)" --search-path "$(ProjectDir)..;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|x64'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --trusted "%(FullPath)" --search-path "$(ProjectDir)..;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --trusted "%(FullPath)" --search-path "$(ProjectDir)..;$(SGXSDKInstallPath)include"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename)_t.h;%(Filename)_t.c;$(TcpsSdkDir)Inc\%(Filename)_t.h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|Win32'">%(Filename)_t.h;%(Filename)_t.c;$(TcpsSdkDir)Inc\%(Filename)_t.h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename)_t.h;%(Filename)_t.c;$(TcpsSdkDir)Inc\%(Filename)_t.h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">%(Filename)_t.h;%(Filename)_t.c;$(TcpsSdkDir)Inc\%(Filename)_t.h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|ARM'">%(Filename)_t.h;%(Filename)_t.c;$(TcpsSdkDir)Inc\%(Filename)_t.h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">%(Filename)_t.h;%(Filename)_t.c;$(TcpsSdkDir)Inc\%(Filename)_t.h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Filename)_t.h;%(Filename)_t.c;$(TcpsSdkDir)Inc\%(Filename)_t.h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|x64'">%(Filename)_t.h;%(Filename)_t.c;$(TcpsSdkDir)Inc\%(Filename)_t.h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Filename)_t.h;%(Filename)_t.c;$(TcpsSdkDir)Inc\%(Filename)_t.h;%(Outputs)</Outputs>
     </CustomBuild>
   </ItemGroup>
   <PropertyGroup Label="Globals">

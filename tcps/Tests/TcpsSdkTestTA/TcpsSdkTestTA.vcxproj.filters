@@ -27,15 +27,9 @@
     <ClCompile Include="OETestTA.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TcpsCalls_t.c">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TcpsSdkTestTA_t.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TcpsCalls_t.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -51,9 +45,6 @@
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\TcpsSdkTestTA.edl">
-      <Filter>Source Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\Inc\TcpsCalls.edl">
       <Filter>Source Files</Filter>
     </CustomBuild>
   </ItemGroup>

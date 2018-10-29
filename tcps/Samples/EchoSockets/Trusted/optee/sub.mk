@@ -12,15 +12,8 @@ global-incdirs-y += optee
 ../SampleTA_t.h: ../../SampleTA.edl
 	$(OEEDGER8R) --trusted --trusted-dir .. --search-path "$(TCPS_SDK_ROOT_PATH)Inc$(SGX_PATHSEP)$(TCPS_SDK_ROOT_PATH)$(SGX_RELATIVE_PATH)include" ../../SampleTA.edl
 
-../TcpsCalls_t.c: $(TCPS_SDK_ROOT_PATH)Inc/TcpsCalls.edl
-	$(SGX_EDGER8R) --trusted --trusted-dir .. --search-path "$(TCPS_SDK_ROOT_PATH)Inc$(SGX_PATHSEP)$(TCPS_SDK_ROOT_PATH)$(SGX_RELATIVE_PATH)include" $(TCPS_SDK_ROOT_PATH)Inc/TcpsCalls.edl
-
-../TcpsCalls_t.h: $(TCPS_SDK_ROOT_PATH)Inc/TcpsCalls.edl
-	$(SGX_EDGER8R) --trusted --trusted-dir .. --search-path "$(TCPS_SDK_ROOT_PATH)Inc$(SGX_PATHSEP)$(TCPS_SDK_ROOT_PATH)$(SGX_RELATIVE_PATH)include" $(TCPS_SDK_ROOT_PATH)Inc/TcpsCalls.edl
-
 # Add the c file generated from your EDL file here
 srcs-y             += ../SampleTA_t.c
-srcs-y             += ../TcpsCalls_t.c
 
 # Add additional sources here
 srcs-y             += ../SampleTA.c

@@ -3,9 +3,6 @@
   <ItemGroup>
     <ClCompile Include="ufiles.c" />
     <ClCompile Include="uhelper.c" />
-    <ClCompile Include="TcpsCalls_u.c">
-      <Filter>SGX</Filter>
-    </ClCompile>
     <ClCompile Include="uTcpsFileOcalls.c" />
     <ClCompile Include="$(ProjectKaylaDir)driver\TrEE\OpteeCalls\OpteeCalls.c" />
     <ClCompile Include="urpc-optee.c">
@@ -34,6 +31,9 @@
     <ClCompile Include="urpc-sgx.c">
       <Filter>SGX</Filter>
     </ClCompile>
+    <ClCompile Include="TcpsCalls_u.c">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TcpsCalls_u.h">
@@ -56,10 +56,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\..\Inc\TcpsCalls.edl" />
+    <None Include="..\TcpsFile.edl" />
+    <None Include="..\TcpsSockets.edl" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\Inc\TcpsFile.edl" />
-    <None Include="..\..\Inc\TcpsSockets.edl" />
+    <CustomBuild Include="..\TcpsCalls.edl" />
   </ItemGroup>
 </Project>

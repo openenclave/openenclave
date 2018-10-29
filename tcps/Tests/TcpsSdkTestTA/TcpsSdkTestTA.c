@@ -3,7 +3,7 @@
 #include "TcpsSdkTestTA_t.h"
 #include "sgx_trts.h"
 #include "tcps_socket_t.h"
-#include "TcpsCalls_t.h" // for OE_AF_INET
+#include "oesocket.h"
 #include <string.h>
 
 void ecall_DoNothing()

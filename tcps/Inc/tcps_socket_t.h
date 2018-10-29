@@ -5,6 +5,7 @@
 # error tcps_socket_t.h should only be included with TRUSTED_CODE
 #endif
 #include "tcps_time_t.h"
+#include "oesocket.h"
 
 #ifdef __cplusplus
 extern "C" {

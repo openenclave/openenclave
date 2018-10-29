@@ -16,6 +16,11 @@ The Intel SGX SDK can be downloaded for free at
 Compiling for SGX currently requires Visual Studio 2015 (_not_ 2017) because
 of current limitations in the Intel SGX SDK.
 
+This library also requires oeedger8r, which is part of the Open Enclave SDK.
+However, a pre-built binary can also be directly downloaded:
+* [Windows binary](https://oedownload.blob.core.windows.net/binaries/oeedger8r.exe)
+* [Linux binary](https://oedownload.blob.core.windows.net/binaries/oeedger8r)
+
 ## Building the SDK itself
 
 To build for Windows, open TCPS-SDK.sln with Visual Studio 2015, and build
@@ -32,9 +37,6 @@ To use this library, you must define your own
 [EDL](https://software.intel.com/en-us/sgx-sdk-dev-reference-enclave-definition-language-file-syntax)
 file that defines any APIs you want to
 use, and use **oeedger8r** to generate code from it.
-
-(Separately, **sgx\_edger8r** will generate code from TcpsCalls.edl for
-functionality exposed by this SDK.)
 
 The EDL APIs must adhere to the following constraints to be able to work for
 OP-TEE:
@@ -173,9 +175,6 @@ Make sure the Project Type is "Enclave" and the EDL File checkbox is checked.
 in the trusted{} section.  E.g., "public Tcps\_StatusCode ecall\_DoWork();"
 Also, above (outside) the trusted{} section, add the following line:
 * from "oebuffer.edl" import \*;
-2. \[Temporary step, will go away before end of October 2018\] Add the existing
-TcpsCalls.edl file to the list of files in your enclave DLL project, and change
-the file properties to copy all values from your _YourProjectName_.edl file.
 3. Update the command line for your EDL to use oeedger8r.
 To do this, right click on the EDL file in the Solution Explorer window,
 select "Properties"->"Configuration Properties"->"Custom Build Tool"->"General"
@@ -192,9 +191,6 @@ also want to change the Working Directory to the Output Directory of the
 enclave project, where the enclave DLL will be placed.
 7. Find the EDL file in the application project in the Solution Explorer window
 and repeat step 3 here to update the command line to use oeedger8r.
-7. \[Temporary step, will go away before end of October 2018\] Copy the TcpsCalls.edl node in the Solution Explorer window to your application project. Then
-edit the project properties to update the "Command Line" value to have
---untrusted instead of --trusted.
 8. In the enclave project, add implementations of the ecall(s) you added.
 You will need to include <openenclave/enclave.h> and 
 <_YourEDLFileName_\_t.h> for your ecalls.

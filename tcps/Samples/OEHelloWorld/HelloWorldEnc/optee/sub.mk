@@ -14,15 +14,8 @@ global-incdirs-y += optee
 ../helloworld_t.h: ../../helloworld.edl
 	$(OEEDGER8R) --trusted --trusted-dir .. --search-path "$(TCPS_SDK_ROOT_PATH)Inc$(SGX_PATHSEP)$(TCPS_SDK_ROOT_PATH)$(SGX_RELATIVE_PATH)include" ../../helloworld.edl
 
-../TcpsCalls_t.c: $(TCPS_SDK_ROOT_PATH)Inc/TcpsCalls.edl
-	$(SGX_EDGER8R) --trusted --trusted-dir .. --search-path "$(TCPS_SDK_ROOT_PATH)Inc$(SGX_PATHSEP)$(TCPS_SDK_ROOT_PATH)$(SGX_RELATIVE_PATH)include" $(TCPS_SDK_ROOT_PATH)Inc/TcpsCalls.edl
-
-../TcpsCalls_t.h: $(TCPS_SDK_ROOT_PATH)Inc/TcpsCalls.edl
-	$(SGX_EDGER8R) --trusted --trusted-dir .. --search-path "$(TCPS_SDK_ROOT_PATH)Inc$(SGX_PATHSEP)$(TCPS_SDK_ROOT_PATH)$(SGX_RELATIVE_PATH)include" $(TCPS_SDK_ROOT_PATH)Inc/TcpsCalls.edl
-
 # Add the c file generated from your EDL file here
 srcs-y             += ../helloworld_t.c
-srcs-y             += ../TcpsCalls_t.c
 
 # Add additional sources here
 srcs-y             += ../enc.c

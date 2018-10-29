@@ -99,6 +99,9 @@
     <ClCompile Include="sgx\trpc-sgx.c">
       <Filter>sgx</Filter>
     </ClCompile>
+    <ClCompile Include="TcpsCalls_t.c">
+      <Filter>GeneratedFiles</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="optee\linux_gcc.mak">
@@ -107,10 +110,10 @@
     <None Include="optee\sub.mk">
       <Filter>optee</Filter>
     </None>
-    <None Include="..\..\Inc\TcpsFile.edl">
+    <None Include="..\TcpsFile.edl">
       <Filter>common</Filter>
     </None>
-    <None Include="..\..\Inc\TcpsSockets.edl">
+    <None Include="..\TcpsSockets.edl">
       <Filter>common</Filter>
     </None>
   </ItemGroup>
@@ -174,7 +177,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\..\Inc\TcpsCalls.edl">
+    <CustomBuild Include="..\TcpsCalls.edl">
       <Filter>common</Filter>
     </CustomBuild>
   </ItemGroup>

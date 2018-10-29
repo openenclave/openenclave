@@ -4,7 +4,7 @@
 #include <TcpsSdkTestTA_u.h>
 #include "gtest/gtest.h"
 #include "TrustedAppTest.h"
-#include "TcpsCalls_u.h" // for buffer APIs
+#include "../../Src/Untrusted/TcpsCalls_u.h" // for buffer APIs
 
 TEST(Buffer, CreateReeBuffer_Success)
 {
