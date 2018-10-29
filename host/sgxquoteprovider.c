@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-#define OE_TRACE_LEVEL 2
+
 #include <dlfcn.h>
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/hexdump.h>
@@ -35,8 +35,7 @@ static sgx_free_qe_identity_info_t _free_qe_identity_info = 0;
 
 static void _unload_quote_provider()
 {
-    OE_TRACE_INFO(
-    "_unload_quote_provider libdcap_quoteprov.so\n");
+    OE_TRACE_INFO("_unload_quote_provider libdcap_quoteprov.so\n");
     if (_lib_handle)
     {
         dlclose(_lib_handle);
@@ -53,7 +52,7 @@ static void _quote_provider_log(sgx_ql_log_level_t level, const char* message)
 
     formatted[sizeof(formatted) - 1] = 0;
 
-    printf("libdcap_quoteprov.so: %s", formatted);
+    OE_TRACE_INFO("libdcap_quoteprov.so: %s", formatted);
 }
 
 static void _load_quote_provider()
@@ -102,10 +101,10 @@ static void _load_quote_provider()
                 dlsym(_lib_handle, "sgx_free_qe_identity_info");
 
             OE_TRACE_INFO(
-                "sgxquoteprovider: _get_revocation_info = 0x%lx\n",
+                "sgxquoteprovider: _get_qe_identity_info = 0x%lx\n",
                 (uint64_t)_get_qe_identity_info);
             OE_TRACE_INFO(
-                "sgxquoteprovider: _free_revocation_info = 0x%lx\n",
+                "sgxquoteprovider: _free_qe_identity_info = 0x%lx\n",
                 (uint64_t)_free_qe_identity_info);
 
             atexit(_unload_quote_provider);
@@ -324,15 +323,19 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args)
 {
     oe_result_t result = OE_FAILURE;
     sgx_plat_error_t r = SGX_PLAT_ERROR_OUT_OF_MEMORY;
-    sgx_qe_identity_info_t *identity = NULL;
+    sgx_qe_identity_info_t* identity = NULL;
     uint32_t host_buffer_size = 0;
     uint8_t* p = 0;
     uint8_t* p_end = 0;
-
     OE_TRACE_INFO("Calling %s\n", __PRETTY_FUNCTION__);
 
     if (!_get_qe_identity_info || !_free_qe_identity_info)
-        OE_RAISE(OE_QUOTE_PROVIDER_LOAD_ERROR);
+    {
+        OE_TRACE_ERROR(
+            "Warning: QE Identity was not supported by quote provider\n");
+        result = OE_QUOTE_PROVIDER_CALL_ERROR;
+        goto done;
+    }
 
     // fetch qe identity information
     r = _get_qe_identity_info(&identity);
@@ -341,19 +344,17 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args)
         OE_RAISE(OE_QUOTE_PROVIDER_CALL_ERROR);
     }
 
-    if (identity->qe_id_info == NULL ||
-        identity->qe_id_info_size == 0)
+    if (identity->qe_id_info == NULL || identity->qe_id_info_size == 0)
     {
         OE_TRACE_INFO("qe_id_info is NULL.\n");
-        OE_RAISE(OE_INVALID_REVOCATION_INFO);
+        OE_RAISE(OE_INVALID_QE_IDENTITY_INFO);
     }
     host_buffer_size += identity->qe_id_info_size + 1;
 
-    if (identity->issuer_chain == NULL ||
-        identity->issuer_chain_size == 0)
+    if (identity->issuer_chain == NULL || identity->issuer_chain_size == 0)
     {
         OE_TRACE_INFO("issuer_chain is NULL.\n");
-        OE_RAISE(OE_INVALID_REVOCATION_INFO);
+        OE_RAISE(OE_INVALID_QE_IDENTITY_INFO);
     }
 
     OE_TRACE_INFO("sgx_ql_get_qe_identity_info succeeded.\n");
@@ -396,9 +397,7 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args)
         // Add null terminator
         args->issuer_chain[args->issuer_chain_size++] = 0;
         p += args->issuer_chain_size;
-        OE_TRACE_INFO(
-            "issuer_chain_size = %ld\n",
-            args->issuer_chain_size);
+        OE_TRACE_INFO("issuer_chain_size = %ld\n", args->issuer_chain_size);
     }
 
     if (p != p_end)
@@ -408,9 +407,7 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args)
 done:
     if (identity != NULL)
     {
-        OE_TRACE_INFO("Freeing identity info. \n");
         _free_qe_identity_info(identity);
-        OE_TRACE_INFO("Freed revocation info.\n");
     }
     return result;
 }

@@ -45,7 +45,6 @@ void load_and_verify_report()
     std::vector<uint8_t> report = FileToBytes("./data/generated_report.bytes");
     OE_TEST(
         oe_verify_report(NULL, &report[0], report.size() - 1, NULL) == OE_OK);
-    printf("Attested report without creating an enclave\n");
 #endif
 }
 
@@ -154,8 +153,5 @@ int main(int argc, const char* argv[])
     {
         oe_put_err("oe_terminate_enclave(): result=%u", result);
     }
-
-    printf("=== passed all tests (%s)\n", argv[0]);
-
     return 0;
 }

@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#define OE_TRACE_LEVEL 2
-
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/host.h>
@@ -13,9 +11,6 @@
 #include <openenclave/internal/utils.h>
 #include "../common/quote.h"
 #include "quote.h"
-
-#define TRACE_ATTESTATION(fmt, ...) \
-    OE_PRINTF("Report: ***%s(%d): " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__)
 
 #if defined(OE_USE_LIBSGX)
 #include "sgxquoteprovider.h"
@@ -243,10 +238,7 @@ oe_result_t oe_verify_report(
     oe_verify_report_args_t arg = {0};
     oe_report_header_t* header = (oe_report_header_t*)report;
 
-    TRACE_ATTESTATION("Calling oe_verify_report");
-
 #if defined(OE_USE_LIBSGX)
-    TRACE_ATTESTATION("Calling oe_initialize_quote_provider");
     // The two host side attestation API's are oe_get_report and
     // oe_verify_report. Initialize the quote provider in both these APIs.
     OE_CHECK(oe_initialize_quote_provider());

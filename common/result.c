@@ -81,8 +81,8 @@ const char* oe_result_str(oe_result_t result)
             return "OE_MEMORY_LEAK";
         case OE_BAD_ALIGNMENT:
             return "OE_BAD_ALIGNMENT";
-        case OE_TCB_INFO_PARSE_ERROR:
-            return "OE_TCB_INFO_PARSE_ERROR";
+        case OE_JSON_INFO_PARSE_ERROR:
+            return "OE_JSON_INFO_PARSE_ERROR";
         case OE_TCB_LEVEL_INVALID:
             return "OE_TCB_LEVEL_INVALID";
         case OE_QUOTE_PROVIDER_LOAD_ERROR:
@@ -93,6 +93,8 @@ const char* oe_result_str(oe_result_t result)
             return "OE_INVALID_REVOCATION_INFO";
         case OE_INVALID_UTC_DATE_TIME:
             return "OE_INVALID_UTC_DATE_TIME";
+        case OE_INVALID_QE_IDENTITY_INFO:
+            return "OE_INVALID_QE_IDENTITY_INFO";
         case __OE_RESULT_MAX:
             break;
     }

@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "../common/qeidentity.h"
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/raise.h>
+#include "../common/qeidentity.h"
 
 #include <stdio.h>
 /**
@@ -47,12 +47,10 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args)
     oe_get_qe_identity_info_args_t* host_args = NULL;
     oe_get_qe_identity_info_args_t tmp_args = {0};
 
-    printf("Enclave: Calling %s\n", __PRETTY_FUNCTION__);
-
     if (args == NULL)
         OE_RAISE(OE_FAILURE);
 
-    // allocate host memory to hold enclave arguments before calling into host 
+    // allocate host memory to hold enclave arguments before calling into host
     // for getting qe identity info
     host_args_buffer = oe_host_malloc(host_args_buffer_size);
     if (host_args_buffer == NULL)
@@ -62,7 +60,8 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args)
     host_args = (oe_get_qe_identity_info_args_t*)host_args_buffer;
     *host_args = *args;
 
-    OE_CHECK(oe_ocall(OE_OCALL_GET_QE_ID_INFO, (uint64_t)host_args, NULL));
+    result = oe_ocall(OE_OCALL_GET_QE_ID_INFO, (uint64_t)host_args, NULL);
+    OE_CHECK(result);
 
     // Copy args to prevent TOCTOU issues.
     tmp_args = *host_args;
@@ -73,7 +72,7 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args)
         !oe_is_outside_enclave(tmp_args.host_out_buffer, sizeof(uint8_t)))
         OE_RAISE(OE_UNEXPECTED);
 
-    // Copy thr return data back into enclave address space
+    // Copy the return data back into enclave address space
     // Ensure that all required outputs exist.
     OE_CHECK(
         _copy_buffer_to_enclave(

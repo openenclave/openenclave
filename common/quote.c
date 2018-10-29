@@ -9,13 +9,9 @@
 #include <openenclave/internal/sha.h>
 #include <openenclave/internal/utils.h>
 #include "common.h"
-#include "revocation.h"
-<<<<<<< HEAD
 #include "qeidentity.h"
+#include "revocation.h"
 
-=======
-#define  OE_USE_LIBSGX 1
->>>>>>> b7ab80e... added QE ID support
 #ifdef OE_USE_LIBSGX
 
 // Public key of Intel's root certificate.
@@ -24,18 +20,6 @@ static const char* g_expected_root_certificate_key =
     "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEC6nEwMDIYZOj/iPWsCzaEKi71OiO\n"
     "SLRFhWGjbnBVJfVnkY4u3IjkDYYL0MxO4mqsyYjlBalTVYxFP2sJBK5zlA==\n"
     "-----END PUBLIC KEY-----\n";
-
-// The mrsigner value of Intel's Production quoting enclave.
-static const uint8_t g_qe_mrsigner[32] = {
-    0x8c, 0x4f, 0x57, 0x75, 0xd7, 0x96, 0x50, 0x3e, 0x96, 0x13, 0x7f,
-    0x77, 0xc6, 0x8a, 0x82, 0x9a, 0x00, 0x56, 0xac, 0x8d, 0xed, 0x70,
-    0x14, 0x0b, 0x08, 0x1b, 0x09, 0x44, 0x90, 0xc5, 0x7b, 0xff};
-
-// The isvprodid value of Intel's Production quoting enclave.
-static const uint32_t g_qe_isvprodid = 1;
-
-// The isvsvn value of Intel's Production quoting enclave.
-static const uint32_t g_qeisvsvn = 1;
 
 OE_INLINE uint16_t ReadUint16(const uint8_t* p)
 {
@@ -114,94 +98,6 @@ static oe_result_t _read_public_key(
         key->y,
         sizeof(key->y));
 }
-
-typedef struct _oe_parsed_qe_identity_info
-{
-    uint32_t version;
-    oe_datetime_t issue_date;
-    oe_datetime_t next_update;
-
-    uint32_t miscselect;        // The MISCSELECT that must be set
-    uint32_t miscselectMask;    // Mask of MISCSELECT to enforce
-
-    // TODO: find out what attributes are!
-
-    sgx_attributes_t attributes; // ATTRIBUTES Flags Field 
-    uint32_t         attributesMask; // string
-
-    uint8_t mrsigner[OE_SHA256_SIZE]; // MRSIGNER of the enclave
-
-    uint16_t isvprodid; // ISV assigned Product ID
-    uint16_t isvsvn; // ISV assigned SVN
-
-    uint8_t signature[64];
-} oe_parsed_qe_identity_info_t;
-
-
-oe_result_t oe_parse_qe_identity_info_json(
-    const uint8_t* info_json,
-    size_t info_json_size,
-    oe_parsed_qe_identity_info_t* parsed_info)
-{
-    oe_result_t result = OE_OK;
-    return result;
-}
-
-// uint32_t qe_id_info_size;   // size of qe identity
-// char* qe_id_info;           // qe identity info structure (JSON)
-// uint32_t issuer_chain_size; // size of issuer chain for qe identity info
-// char* issuer_chain;     
-
-oe_result_t oe_enforce_qe_identity()
-{
-    oe_result_t result = OE_FAILURE;
-    sgx_qe_identity_info_t *identity = NULL;
-    oe_parsed_qe_identity_info_t parsed_info = {0};
-    oe_cert_chain_t pck_cert_chain = {0};
-    const uint8_t* pem_pck_certificate = NULL;
-    size_t pem_pck_certificate_size = 0;
-
-    printf("===========qe_identity ========\n");
-    OE_TRACE_INFO("Calling %s\n", __PRETTY_FUNCTION__);
-
-    // fetch qe identity information
-    _get_qe_identity_info(&identity);
-
-    pem_pck_certificate = identity.issuer_chain;
-    pem_pck_certificate_size = identity.issuer_chain_size;
-
-
-    // validate the cert chain.
-    OE_CHECK(
-            oe_cert_chain_read_pem(
-                &pck_cert_chain,
-                pem_pck_certificate,
-                pem_pck_certificate_size));
-
-    // verify qe identity signature
-    printf("qe_identity.issuer_chain:[%s]\n", test->issuer_chain);
-    OE_CHECK(oe_verify_tcb_signature(
-                identity.qe_id_info,
-                identity.qe_id_info_size,
-                (sgx_ecdsa256_signature_t*)identity.signature,
-                &tcb_issuer_chain));
-
-    // parse identity info json blob
-    printf("qe_identity.qe_id_info:[%s]\n", test->qe_id_info);
-    OE_CHECK(oe_parse_qe_identity_info_json(
-                                    identity->qe_id_info,
-                                    identity->qe_id_info_size,
-                                    &parsed_info));    
-
-    // check identity
-
-    _free_qe_identity_info(identity);
-    printf("===========qe_identity ========\n");
-
-    result = OE_OK;
-    return result;
-}
-
 
 static oe_result_t _ecdsa_verify(
     oe_ec_public_key_t* public_key,
@@ -383,47 +279,7 @@ oe_result_t VerifyQuoteImpl(
     }
 
     // Quoting Enclave validations.
-    {
-        // Assert that the qe report's MRSIGNER matches Intel's quoting
-        // enclave's mrsigner.
-        if (!oe_constant_time_mem_equal(
-                quote_auth_data->qe_report_body.mrsigner,
-                g_qe_mrsigner,
-                sizeof(g_qe_mrsigner)))
-            OE_RAISE(OE_VERIFY_FAILED);
-
-        if (quote_auth_data->qe_report_body.isvprodid != g_qe_isvprodid)
-            OE_RAISE(OE_VERIFY_FAILED);
-
-        if (quote_auth_data->qe_report_body.isvsvn != g_qeisvsvn)
-            OE_RAISE(OE_VERIFY_FAILED);
-
-        // Ensure that the QE is not a debug supporting enclave.
-        if (quote_auth_data->qe_report_body.attributes.flags & SGX_FLAGS_DEBUG)
-            OE_RAISE(OE_VERIFY_FAILED);
-
-<<<<<<< HEAD
-=======
-        // enforce the QE revocation certificate
-        OE_CHECK(
-            oe_enforce_qe_revocation(
-                &leaf_cert, &intermediate_cert, &pck_cert_chain));
-
->>>>>>> b7ab80e... added QE ID support
-        // check QE Identify
-        OE_CHECK(oe_enforce_qe_identity());
-
-            // version
-            // issueDate
-            //nextUpdate
-            //miscselect
-            //attributes
-            //attributesMask
-            //mrsigner
-            //isvprodif
-            //isvsvn
-            //signature validation
-    }
+    OE_CHECK(oe_enforce_qe_identity(&quote_auth_data->qe_report_body));
     result = OE_OK;
 
 done:
@@ -461,96 +317,4 @@ oe_result_t VerifyQuoteImpl(
 
     return OE_UNSUPPORTED;
 }
-
-
-
-/**
- * type = tcbInfo
- * Schema:
- * {
- *    "version" : integer,
- *    "issueDate" : string,
- *    "fmspc" : "hex string"
- *    "tcbLevels" : [ objects of type tcbLevel ]
- * }
- */
-/*
-static oe_result_t _read_qe_identity_info(
-    const uint8_t** itr,
-    const uint8_t* end,
-    oe_tcb_level_t* platform_tcb_level,
-    oe_parsed_tcb_info_t* parsed_info)
-{
-    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
-    uint64_t value = 0;
-    const uint8_t* date_str = NULL;
-    size_t date_size = 0;
-
-    parsed_info->tcb_info_start = *itr;
-    OE_CHECK(_read('{', itr, end));
-
-    OE_TRACE_INFO("Reading version\n");
-    OE_CHECK(_read_property_name_and_colon("version", itr, end));
-    OE_CHECK(_read_integer(itr, end, &value));
-    parsed_info->version = (uint32_t)value;
-    OE_CHECK(_read(',', itr, end));
-
-    OE_TRACE_INFO("Reading issueDate\n");
-    OE_CHECK(_read_property_name_and_colon("issueDate", itr, end));
-    OE_CHECK(_read_string(itr, end, &date_str, &date_size));
-    if (oe_datetime_from_string(
-            (const char*)date_str, date_size, &parsed_info->issue_date) !=
-        OE_OK)
-        OE_RAISE(OE_TCB_INFO_PARSE_ERROR);
-    OE_CHECK(_read(',', itr, end));
-
-    // nextUpdate is treated as an optional property.
-    OE_TRACE_INFO("Reading nextUpdate\n");
-    if (_read_property_name_and_colon("nextUpdate", itr, end) == OE_OK)
-    {
-        OE_CHECK(_read_string(itr, end, &date_str, &date_size));
-        if (oe_datetime_from_string(
-                (const char*)date_str, date_size, &parsed_info->next_update) !=
-            OE_OK)
-            OE_RAISE(OE_TCB_INFO_PARSE_ERROR);
-        OE_CHECK(_read(',', itr, end));
-    }
-    else
-    {
-        memset(&parsed_info->next_update, 0, sizeof(parsed_info->next_update));
-    }
-
-    OE_TRACE_INFO("Reading fmspc\n");
-    OE_CHECK(_read_property_name_and_colon("fmspc", itr, end));
-    OE_CHECK(
-        _read_hex_string(
-            itr, end, parsed_info->fmspc, sizeof(parsed_info->fmspc)));
-    OE_CHECK(_read(',', itr, end));
-
-    OE_TRACE_INFO("Reading tcbLevels\n");
-    OE_CHECK(_read_property_name_and_colon("tcbLevels", itr, end));
-    OE_CHECK(_read('[', itr, end));
-    while (*itr < end)
-    {
-        OE_CHECK(_read_tcb_level(itr, end, platform_tcb_level, parsed_info));
-        // Read end of array or comma separator.
-        if (*itr < end && **itr == ']')
-            break;
-
-        OE_CHECK(_read(',', itr, end));
-    }
-    OE_CHECK(_read(']', itr, end));
-
-    // itr is expected to point to the '}' that denotes the end of the tcb
-    // object. The signature is generated over the entire object including the
-    // '}'.
-    parsed_info->tcb_info_size = *itr - parsed_info->tcb_info_start + 1;
-    OE_CHECK(_read('}', itr, end));
-
-    result = OE_OK;
-done:
-    return result;
-}
-*/
-
 #endif

@@ -69,8 +69,9 @@ typedef void (*sgx_ql_free_revocation_info_t)(
     sgx_ql_revocation_info_t* p_revocation_info);
 
 /*****************************************************************************
- * Data types and interfaces for getting qe identity info 
+ * Data types and interfaces for getting qe identity info
  ****************************************************************************/
+
 typedef struct _sgx_qe_identity_info_t
 {
     uint32_t qe_id_info_size;   // size of qe identity
