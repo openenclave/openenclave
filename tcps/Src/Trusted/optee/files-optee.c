@@ -127,6 +127,12 @@ FILE* fopen(
     return fp;
 }
 
+#ifdef _MSC_VER
+#define SIZET_FMT "Iu"
+#else
+#define SIZET_FMT "zu"
+#endif
+
 size_t fread(
     void* buffer,
     size_t size,
@@ -137,7 +143,7 @@ size_t fread(
     uint32_t uBytesRead;
 
     if ((size * count) > UINT32_MAX) {
-        EMSG("fread size %d too large\n", size * count);
+        EMSG("fread size %" SIZET_FMT " too large\n", size * count);
         return 0;
     }
 

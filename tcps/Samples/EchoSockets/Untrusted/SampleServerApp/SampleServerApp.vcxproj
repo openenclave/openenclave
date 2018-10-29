@@ -649,7 +649,7 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Src\Untrusted\tcps_u.vcxproj">
+    <ProjectReference Include="..\..\..\..\Src\Untrusted\win32\tcps_u.vcxproj">
       <Project>{b7ae03e4-cf5a-49dc-ab3d-2d8f485472b4}</Project>
     </ProjectReference>
   </ItemGroup>

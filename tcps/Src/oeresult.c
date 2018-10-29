@@ -1,5 +1,11 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
+#ifdef LINUX
+#include "sal_unsup.h"
+#endif
+
+#include <stddef.h>
+
 #ifdef TRUSTED_CODE
 # include <openenclave/enclave.h>
 #else

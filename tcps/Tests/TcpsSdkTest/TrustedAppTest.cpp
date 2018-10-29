@@ -1,5 +1,9 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
+#ifdef LINUX
+#include "sal_unsup.h"
+#define __cdecl
+#endif
 #include "gtest/gtest.h"
 #include "TrustedAppTest.h"
 #include <tcps_u.h>

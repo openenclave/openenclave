@@ -1,7 +1,13 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
+#ifdef LINUX
+#include "sal_unsup.h"
+#include "stdext.h"
+#endif
+#include <stddef.h>
+#include <string.h>
 #include <tcps_u.h>
-#include <TcpsSdkTestTA_u.h>
+#include "TcpsSdkTestTA_u.h"
 #include "gtest/gtest.h"
 #include "TrustedAppTest.h"
 #include "../../Src/Untrusted/TcpsCalls_u.h" // for buffer APIs

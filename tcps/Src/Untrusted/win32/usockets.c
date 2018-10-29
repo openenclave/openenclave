@@ -4,8 +4,8 @@
 #include <ws2tcpip.h>
 #include <stdio.h>
 #include <tcps_u.h>
-#include "TcpsCalls_u.h"
-#include "buffer.h"
+#include "../TcpsCalls_u.h"
+#include "../../buffer.h"
 
 oe_socket_error_t ocall_WSAStartup(void)
 {

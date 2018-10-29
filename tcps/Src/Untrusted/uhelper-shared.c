@@ -1,65 +1,19 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
 #include <stdio.h>
-#include <time.h>
-#include <windows.h> // for LARGE_INTEGER
-#include <openenclave/host.h>
+#include <stddef.h>
+
+#ifdef LINUX
+#include "sal_unsup.h"
+#endif
+
+#include <tcps.h>
+
+#include "tcps_u.h"
 #include "TcpsCalls_u.h"
-#include "buffer.h"
+#include "../buffer.h"
 
 #define MIN(a,b) (((a) < b) ? (a) : (b))
-
-typedef unsigned __int64 uint64_t;
-typedef unsigned __int32 uint32_t;
-
-/* Time-related APIs */
-
-QueryPerformanceCounter_Result ocall_QueryPerformanceCounter(void)
-{
-    QueryPerformanceCounter_Result result;
-
-    if (!QueryPerformanceCounter((LARGE_INTEGER*)&result.count)) {
-        result.status = Tcps_Bad;
-    } else {
-        result.status = Tcps_Good;
-    }
-
-    return result;
-}
-
-unsigned int ocall_GetTickCount(void)
-{
-    return GetTickCount();
-}
-
-uint64_t ocall_time64(void)
-{
-    uint64_t t;
-    _time64((__time64_t*)&t);
-    return t;
-}
-
-GetTm_Result ocall_localtime64(uint64_t timer)
-{
-    GetTm_Result result;
-    result.err = _localtime64_s((struct tm*)&result.tm, (const __time64_t*)&timer);
-    return result;
-}
-
-GetTm_Result ocall_gmtime64(uint64_t timer)
-{
-    GetTm_Result result;
-    result.err = _gmtime64_s((struct tm*)&result.tm, (const __time64_t*)&timer);
-    return result;
-}
-
-/* Process/thread-related APIs */
-
-Tcps_StatusCode ocall_exit(int result)
-{
-    _exit(result);
-    return Tcps_Good;
-}
 
 /* I/O related APIs */
 
@@ -80,53 +34,6 @@ Tcps_StatusCode ocall_puts(buffer1024 str, int bNewline)
     return Tcps_Good;
 }
 
-/* We currently use a global mutex.  In the future, this should
- * be changed to a per-TA mutex.
- */
-int g_GlobalMutexInitialized = 0;
-CRITICAL_SECTION g_GlobalMutex;
-
-oe_result_t oe_acquire_enclave_mutex(_In_ oe_enclave_t* enclave)
-{
-    oe_result_t result = OE_OK;
-
-    TCPS_UNUSED(enclave);
-
-    if (!g_GlobalMutexInitialized) {
-        InitializeCriticalSection(&g_GlobalMutex);
-        g_GlobalMutexInitialized++;
-    }
-    //printf("+ecall: %x\n", GetCurrentThreadId());
-    
-    for(;;) {
-        if (TryEnterCriticalSection(&g_GlobalMutex)) {
-            /* Mutex acquired successfully */
-            break;
-        }
-
-        /* Check if another thread requested this thread to terminate. */
-        if (Tcps_P_Thread_WasTerminationRequested()) {
-            Tcps_Trace(
-                Tcps_TraceLevelWarning,
-                "%s: abandoning!\n", 
-                __FUNCTION__);
-            result = OE_ENCLAVE_ABORTING;
-            break;
-        }
-
-        Sleep(100);
-    }
-
-    return result;
-}
-
-void oe_release_enclave_mutex(_In_ oe_enclave_t* enclave)
-{
-    TCPS_UNUSED(enclave);
-    LeaveCriticalSection(&g_GlobalMutex);
-    //printf("-ecall: %x\n", GetCurrentThreadId());
-}
-
 /* Send a buffer into the TEE, one chunk at a time if needed. */
 Tcps_StatusCode
 TcpsPushDataToTeeBuffer(
@@ -144,8 +51,8 @@ TcpsPushDataToTeeBuffer(
 Tcps_InitializeStatus(Tcps_Module_Helper_u, "TcpsPushDataToTeeBuffer"); 
 
     while (bytesCopied < a_BufferSize) {
-        size_t bytesRemaining = a_BufferSize - bytesCopied;
-        chunk.size = (int)MIN(sizeof(chunk.buffer), bytesRemaining);
+        int bytesRemaining = a_BufferSize - bytesCopied;
+        chunk.size = MIN(sizeof(chunk.buffer), bytesRemaining);
 
         COPY_BUFFER(chunk, a_Buffer + bytesCopied, chunk.size);
 

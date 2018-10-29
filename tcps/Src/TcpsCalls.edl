@@ -35,7 +35,7 @@ enclave {
     struct FindFirstUntrustedFile_Result {
         uint32_t status;
         char matchingFileName[256];
-        uint32_t findNextHandle;
+        uintptr_t findNextHandle;
     };
 
     struct FindNextUntrustedFile_Result {
@@ -108,7 +108,7 @@ enclave {
             [user_check] void* hReeBuffer,
             int offset);
 
-        unsigned int ocall_ExportPublicCertificate(buffer256 location, buffer4096 ptr, size_t len);
+        Tcps_StatusCode ocall_ExportPublicCertificate(buffer256 location, buffer4096 ptr, size_t len);
         
         /* Time APIs. */
         unsigned int ocall_GetTickCount(void);
@@ -117,8 +117,8 @@ enclave {
         GetTm_Result ocall_gmtime64(uint64_t timer);
         QueryPerformanceCounter_Result ocall_QueryPerformanceCounter(void);
 
-        unsigned int ocall_exit(int result);
-        unsigned int ocall_puts(buffer1024 str, int bNewline);
+        Tcps_StatusCode ocall_exit(int result);
+        Tcps_StatusCode ocall_puts(buffer1024 str, int bNewline);
 
         FindFirstUntrustedFile_Result
         ocall_FindFirstUntrustedFile(
@@ -130,7 +130,7 @@ enclave {
             uint32_t findNextHandle,
             uint32_t matchingFileNameSize);
 
-        uint32_t
+        Tcps_StatusCode
         ocall_FindNextUntrustedFileClose(
             uint32_t findNextHandle);
 

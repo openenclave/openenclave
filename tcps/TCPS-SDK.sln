@@ -5,7 +5,7 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tcps_t", "Src\Trusted\tcps_t.vcxproj", "{CD46F388-593F-442C-8751-BC5F206979BA}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tcps_u", "Src\Untrusted\tcps_u.vcxproj", "{B7AE03E4-CF5A-49DC-AB3D-2D8F485472B4}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tcps_u", "Src\Untrusted\win32\tcps_u.vcxproj", "{B7AE03E4-CF5A-49DC-AB3D-2D8F485472B4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1260B1F5-4602-4539-84BF-0AEE297EA252}"
 	ProjectSection(SolutionItems) = preProject
@@ -416,8 +416,8 @@ Global
 		{4A43FD9B-A9D5-4B3B-BD06-2E87597476B5}.DebugMockOptee|x86.Build.0 = DebugMockOptee|Win32
 		{4A43FD9B-A9D5-4B3B-BD06-2E87597476B5}.DebugSimulation|ARM.ActiveCfg = DebugMockOptee|ARM
 		{4A43FD9B-A9D5-4B3B-BD06-2E87597476B5}.DebugSimulation|ARM.Build.0 = DebugMockOptee|ARM
-		{4A43FD9B-A9D5-4B3B-BD06-2E87597476B5}.DebugSimulation|x64.ActiveCfg = Debug|x64
-		{4A43FD9B-A9D5-4B3B-BD06-2E87597476B5}.DebugSimulation|x64.Build.0 = Debug|x64
+		{4A43FD9B-A9D5-4B3B-BD06-2E87597476B5}.DebugSimulation|x64.ActiveCfg = Simulation|x64
+		{4A43FD9B-A9D5-4B3B-BD06-2E87597476B5}.DebugSimulation|x64.Build.0 = Simulation|x64
 		{4A43FD9B-A9D5-4B3B-BD06-2E87597476B5}.DebugSimulation|x86.ActiveCfg = Simulation|Win32
 		{4A43FD9B-A9D5-4B3B-BD06-2E87597476B5}.DebugSimulation|x86.Build.0 = Simulation|Win32
 		{4A43FD9B-A9D5-4B3B-BD06-2E87597476B5}.Prerelease|ARM.ActiveCfg = Prerelease|x64

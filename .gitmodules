@@ -9,7 +9,11 @@
 [submodule "3rdparty/optee_os"]
 	path = 3rdparty/optee_os
 	url = https://github.com/ms-iot/optee_os.git
-	branch = ms-iot
+	branch = user/hegatta/add-optee-ocall-support
 [submodule "3rdparty/googletest"]
 	path = 3rdparty/googletest
 	url = https://github.com/google/googletest.git
+[submodule "3rdparty/optee_client"]
+	path = 3rdparty/optee_client
+	url = https://github.com/ms-iot/optee_client_private
+	branch = ocall-support

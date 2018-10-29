@@ -5,17 +5,17 @@ enclave {
     from "sgx_tprotected_fs.edl" import *;
 
     struct ocall_struct_stat64i32 {
-        unsigned int   st_dev;  
-        unsigned short st_ino;  
-        unsigned short st_mode;  
-        short          st_nlink;  
-        short          st_uid;  
-        short          st_gid;  
-        unsigned int   st_rdev;  
-        long           st_size;  
-        uint64_t       st_atime;  
-        uint64_t       st_mtime;  
-        uint64_t       st_ctime; 
+        unsigned int   _st_dev;
+        unsigned short _st_ino;
+        unsigned short _st_mode;
+        short          _st_nlink;
+        short          _st_uid;
+        short          _st_gid;
+        unsigned int   _st_rdev;
+        long           _st_size;
+        uint64_t       _st_atime;
+        uint64_t       _st_mtime;
+        uint64_t       _st_ctime;
     };
 
     struct buffer256 {

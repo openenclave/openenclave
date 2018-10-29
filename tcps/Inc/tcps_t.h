@@ -24,22 +24,7 @@ typedef uint64_t __uint64_t;
 typedef uint32_t __uint32_t;
 
 #ifndef __in_ecount
-/* Support various SAL annotations as no-ops */
-#define __in_ecount(x)
-#define _In_z_
-#define _In_
-#define _Outptr_
-#define _Outptr_opt_
-#define _Out_
-#define _In_reads_bytes_(x)
-#define _Inout_
-#define _Out_writes_(x)
-#define _Out_writes_opt_z_(x)
-#define _Out_writes_bytes_(x)
-#define _In_opt_
-#define _Inout_opt_
-#define _Out_writes_bytes_to_(a, b)
-#define _Out_writes_bytes_all_(a)
+#include "sal_unsup.h"
 #endif
 
 /* Support various SGX types, even for OP-TEE, so we can reuse the automatic
@@ -64,8 +49,13 @@ typedef uint32_t DWORD;
 typedef unsigned long u_long;
 #endif
 
+#ifndef TRUE
 #define TRUE 1
+#endif
+
+#ifndef FALSE
 #define FALSE 0
+#endif
 
 struct _stat {
     unsigned int   st_dev;

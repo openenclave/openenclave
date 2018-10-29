@@ -1,12 +1,15 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
+#ifdef LINUX
+#include "sal_unsup.h"
+#endif
 #include <stdlib.h>
 #include <string.h>
 #ifdef TRUSTED_CODE
-# include "TcpsCalls_t.h"
+# include "Trusted/TcpsCalls_t.h"
 # include "tcps_t.h"
 #else
-# include "TcpsCalls_u.h"
+# include "Untrusted/TcpsCalls_u.h"
 # include "tcps_u.h"
 #endif
 #include "buffer.h"

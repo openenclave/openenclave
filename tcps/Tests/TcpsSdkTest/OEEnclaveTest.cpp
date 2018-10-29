@@ -1,5 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+#ifdef LINUX
+#include "sal_unsup.h"
+#include "stdext.h"
+#endif
 #include "gtest/gtest.h"
 #include <openenclave/edger8r/host.h>
 #include "TrustedAppTest.h"

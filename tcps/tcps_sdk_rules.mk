@@ -1,4 +1,8 @@
+# TA_DEV_KIT_DIR may be overridden if the user wishes to use a version of
+# OP-TEE outside of the OE tree.
+ifeq ($(TA_DEV_KIT_DIR),)
 export TA_DEV_KIT_DIR            = $(OE_SDK_ROOT_PATH)/3rdparty/optee_os/out/arm-plat-imx/export-ta_arm32
+endif
 export TCPS_SDK_OPTEE_BIN_PATH   = $(TCPS_SDK_ROOT_PATH)/bin/optee
 export TCPS_TRUSTED_LIB_NAME     = tcps_t
 export TCPS_TRUSTED_OUTPUT_PATH  = $(TCPS_SDK_OPTEE_BIN_PATH)/tcps

@@ -47,3 +47,4 @@ srcs-y += report-optee.c
 srcs-y += strings-optee.c
 srcs-y += time-optee.c
 srcs-y += trpc-optee.c
+srcs-y += helper-optee.c

@@ -63,7 +63,7 @@ TEE_Result InvokeREECallback(
     uint8_t* out_buffer = (uint8_t*)params[2].memref.buffer;
     uint32_t out_buffer_size = params[2].memref.size;
 
-    int sizeWritten;
+    uint32_t sizeWritten;
     BOOL ok = g_RpcCallback(g_RpcCallbackContext, rpcType, in_buffer, in_buffer_size, out_buffer, out_buffer_size, &sizeWritten);
 
     params[2].memref.size = sizeWritten;

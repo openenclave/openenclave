@@ -1,6 +1,6 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -13,14 +13,23 @@ int GetFilePath(char* path, int size)
         return bytes;
 }
 #else
+#define MAX_PATH 256
+#define _chdir chdir
 int GetFilePath(char* path, int size)
 {
-    char szTmp[32];
-    sprintf(szTmp, "/proc/%d/exe", getpid());
-    int bytes = MIN(readlink(szTmp, pBuf, len), len - 1);
-    if (bytes >= 0)
-    pBuf[bytes] = '\0';
-    return bytes;
+    int length;
+    length = readlink("/proc/self/exe", path, size);
+    if (length < 0) {
+        perror("resolving symlink /proc/self/exe.");
+        exit(1);
+    }
+    if (length >= size) {
+        fprintf(stderr, "Path too long.\n");
+        exit(1);
+    }
+
+    path[length] = '\0';
+    return length;
 }
 #endif
 

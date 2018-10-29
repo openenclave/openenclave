@@ -1,6 +1,8 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
 
+#include <stdlib.h>
+#include <stddef.h>
 #include <sgx.h>
 
 /* Provide a dummy implementation of the APIs called by sgx_tprotectedfs.lib.

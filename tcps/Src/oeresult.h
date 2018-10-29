@@ -1,6 +1,7 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
 #pragma once
+#include <openenclave/bits/result.h>
 
 #define V2_FUNCTION_ID_OFFSET 0x10000
 

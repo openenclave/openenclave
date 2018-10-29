@@ -30,8 +30,4 @@
         TEE_Free(ms); \
     }
 
-/* In SGX, sgx_ocall does not take the buffer length.  In OP-TEE, we need
- * the buffer length so we assume that the generated code has the size in
- * the "ocalloc_size" variable.
- */
-#define sgx_ocall(id, ptr)  sgx_optee_ocall((id), (ptr), ocalloc_size)
+#define sgx_ocall(id, ptr)  sgx_optee_ocall((id), (ptr), sizeof(*(ptr)))

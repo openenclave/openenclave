@@ -40,7 +40,7 @@ TEE_P_ExportPublicCertificate(
     _In_ size_t len)
 {
     sgx_status_t sgxStatus;
-    unsigned int retval;
+    Tcps_StatusCode retval;
     buffer256 certificateFileNameExportedBuffer;
     buffer4096* contents = NULL;
 

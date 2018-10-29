@@ -1,9 +1,13 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
+#ifdef LINUX
+#include "sal_unsup.h"
+#endif
+
 #include "gtest/gtest.h"
 #include <openenclave/host.h>
 #include <openenclave/edger8r/host.h>
-#include <TcpsSdkTestTA_u.h>
+#include "TcpsSdkTestTA_u.h"
 #include "TrustedAppTest.h"
 #include <openenclave/host.h>
 

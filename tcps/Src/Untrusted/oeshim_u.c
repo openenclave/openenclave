@@ -1,17 +1,19 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
-#include <openenclave/bits/types.h>
-#include <openenclave/host.h>
-#include <tcps_u.h>
-#include <sgx.h>
+#ifdef LINUX
+#include "sal_unsup.h"
+#include "stdext.h"
+#else
 #include <Windows.h>
+#endif
+#include <stddef.h>
+#include <stdbool.h>
+#include <openenclave/bits/types.h>
+#include <openenclave/bits/result.h>
+#include <tcps_u.h>
 #include "TcpsCalls_u.h"
 #include "../oeresult.h"
-
-typedef struct {
-    size_t nr_ocall;
-    const oe_ocall_func_t* call_addr;
-} ocall_table_v2_t;
+#include "../optee-shared.h"
 
 ocall_table_v2_t g_ocall_table_v2 = { 0 };
 

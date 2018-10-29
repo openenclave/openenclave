@@ -12,7 +12,7 @@
 
 #include <tcps.h>
 
-#include "TcpsCalls_u.h"
+#include "../TcpsCalls_u.h"
 
 Tcps_StatusCode 
 ocall_ExportPublicCertificate(
