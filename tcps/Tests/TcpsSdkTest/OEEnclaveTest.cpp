@@ -14,6 +14,11 @@ int ocall_ReturnInputArgument(int input)
     return input;
 }
 
+void ocall_PrintString(char* fmt, char* arg)
+{
+    printf(fmt, arg);
+}
+
 class OEEnclaveTest : public TrustedAppTest {
 public:
     void* GetEnclave() {
@@ -169,9 +174,7 @@ TEST_F(OEEnclaveTest, calloc_Success)
 TEST_F(OEEnclaveTest, strndup_Success)
 {
     char* ptr;
-    oe_buffer256 str;
-    COPY_BUFFER_FROM_STRING(str, "hello world");
-    oe_result_t oeResult = ecall_OEHostStrndup(GetOEEnclave(), &ptr, str, 5);
+    oe_result_t oeResult = ecall_OEHostStrndup(GetOEEnclave(), &ptr, "hello world", 5);
     EXPECT_EQ(OE_OK, oeResult);
     EXPECT_TRUE(ptr != NULL);
     EXPECT_EQ(0, strcmp(ptr, "hello"));
@@ -187,4 +190,22 @@ TEST_F(OEEnclaveTest, ocall_Success)
     oe_result_t oeResult = ecall_TestOcall(GetOEEnclave(), &uStatus);
     EXPECT_EQ(OE_OK, oeResult);
     EXPECT_EQ(Tcps_Good, uStatus);
+}
+
+TEST_F(OEEnclaveTest, string_calls_Success)
+{
+    int result;
+    oe_result_t oeResult = ecall_PrintString(GetOEEnclave(), &result, "%s", "Hello World\n");
+    EXPECT_EQ(OE_OK, oeResult);
+    EXPECT_EQ(OE_OK, result);
+}
+
+TEST_F(OEEnclaveTest, inout_calls_Success)
+{
+    int input = 42;
+    int output = 0;
+    oe_result_t oeResult = ecall_CopyInt(GetOEEnclave(), &input, &output);
+    EXPECT_EQ(OE_OK, oeResult);
+    EXPECT_EQ(42, input);
+    EXPECT_EQ(42, output);
 }

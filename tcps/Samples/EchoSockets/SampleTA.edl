@@ -1,13 +1,10 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
 enclave {
-    /* Import oebuffer.edl to get support for all buffer types. */
-    from "oebuffer.edl" import *;
-
     trusted {
         /* define ECALLs here. */
-        public int ecall_RunClient(oe_buffer256 server, oe_buffer256 port);
-        public int ecall_RunServer(oe_buffer256 port);
+        public int ecall_RunClient([in, string] char* server, [in, string] char* port);
+        public int ecall_RunServer([in, string] char* port);
     };
 
     untrusted {

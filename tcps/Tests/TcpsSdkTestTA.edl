@@ -8,10 +8,12 @@ enclave {
         /* define ECALLs here. */
         public void ecall_DoNothing();
         public Tcps_StatusCode ecall_ReturnOk();
+        public int ecall_PrintString([in, string] char* fmt, [in, string] char* arg);
         public Tcps_StatusCode ecall_TestOcall();
+        public void ecall_CopyInt([in] int* input, [out] int* output);
         public oe_CreateBuffer_Result ecall_CreateReeBufferFromTeeBuffer([user_check] void* hTeeBuffer);
-        public Tcps_StatusCode ecall_RunClient(oe_buffer256 server, oe_buffer256 port);
-        public Tcps_StatusCode ecall_StartServer(oe_buffer256 port);
+        public Tcps_StatusCode ecall_RunClient([in, string] char* server, [in, string] char* port);
+        public Tcps_StatusCode ecall_StartServer([in, string] char* port);
         public Tcps_StatusCode ecall_FinishServer();
         public Tcps_StatusCode ecall_TestSgxIsWithinEnclave([user_check] void* outside, int size);
         public Tcps_StatusCode ecall_TestSgxIsOutsideEnclave([user_check] void* outside, int size);
@@ -28,13 +30,14 @@ enclave {
         public void* ecall_OEHostMalloc(int size);
         public void* ecall_OEHostCalloc(int nmemb, int size);
         public void* ecall_OEHostRealloc([user_check] void* ptr, int size);
-        public char* ecall_OEHostStrndup(oe_buffer256 str, int size);
+        public char* ecall_OEHostStrndup([in, string] char* str, int size);
         public void ecall_OEHostFree([user_check] void* ptr);
     };
 
     untrusted {
         /* define OCALLs here. */
         void ocall_DoNothing();
+        void ocall_PrintString([in, string] char* fmt, [in, string] char* arg);
         int ocall_ReturnInputArgument(int input);
     };
 };

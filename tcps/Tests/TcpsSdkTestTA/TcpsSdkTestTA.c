@@ -15,6 +15,16 @@ Tcps_StatusCode ecall_ReturnOk()
     return Tcps_Good;
 }
 
+int ecall_PrintString(char* fmt, char* arg)
+{
+    return (int)ocall_PrintString(fmt, arg);
+}
+
+void ecall_CopyInt(int* input, int* output)
+{
+    *output = *input;
+}
+
 oe_CreateBuffer_Result ecall_CreateReeBufferFromTeeBuffer(_In_ void* hTeeBuffer)
 {
     oe_CreateBuffer_Result result = { 0 };
@@ -33,7 +43,7 @@ oe_CreateBuffer_Result ecall_CreateReeBufferFromTeeBuffer(_In_ void* hTeeBuffer)
 /* This client connects to an echo server, sends a text message,
 * and outputs the text reply.
 */
-Tcps_StatusCode ecall_RunClient(oe_buffer256 server, oe_buffer256 serv)
+Tcps_StatusCode ecall_RunClient(char* server, char* serv)
 {
     Tcps_StatusCode uStatus = Tcps_BadCommunicationError;
     struct addrinfo* ai = NULL;
@@ -43,7 +53,7 @@ Tcps_StatusCode ecall_RunClient(oe_buffer256 server, oe_buffer256 serv)
     struct addrinfo hints = { 0 };
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
-    int err = getaddrinfo(server.buffer, serv.buffer, &hints, &ai);
+    int err = getaddrinfo(server, serv, &hints, &ai);
     if (err != 0) {
         goto Done;
     }
@@ -103,7 +113,7 @@ Done:
 
 SOCKET g_TestListener = INVALID_SOCKET;
 
-Tcps_StatusCode ecall_StartServer(oe_buffer256 serv)
+Tcps_StatusCode ecall_StartServer(char* serv)
 {
     Tcps_StatusCode uStatus = Tcps_BadCommunicationError;
     struct addrinfo* ai = NULL;
@@ -114,7 +124,7 @@ Tcps_StatusCode ecall_StartServer(oe_buffer256 serv)
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
-    int err = getaddrinfo(NULL, serv.buffer, &hints, &ai);
+    int err = getaddrinfo(NULL, serv, &hints, &ai);
     if (err != 0) {
         return Tcps_BadCommunicationError;
     }

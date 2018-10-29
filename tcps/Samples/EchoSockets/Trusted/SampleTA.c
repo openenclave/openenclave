@@ -10,19 +10,19 @@
 /* This client connects to an echo server, sends a text message,
  * and outputs the text reply.
  */
-int ecall_RunClient(oe_buffer256 server, oe_buffer256 serv)
+int ecall_RunClient(char* server, char* serv)
 {
     int status = OE_FAILURE;
     struct addrinfo* ai = NULL;
     SOCKET s = INVALID_SOCKET;
 
-    printf("Connecting to %s %s...\n", server.buffer, serv.buffer);
+    printf("Connecting to %s %s...\n", server, serv);
 
     /* Resolve server name. */
     struct addrinfo hints = { 0 };
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
-    int err = getaddrinfo(server.buffer, serv.buffer, &hints, &ai);
+    int err = getaddrinfo(server, serv, &hints, &ai);
     if (err != 0) {
         goto Done;
     }
@@ -87,7 +87,7 @@ Done:
 /* This server acts as an echo server.  It accepts a connection,
  * receives messages, and echoes them back.
  */
-int ecall_RunServer(oe_buffer256 serv)
+int ecall_RunServer(char* serv)
 {
     int status = OE_FAILURE;
     struct addrinfo* ai = NULL;
@@ -99,7 +99,7 @@ int ecall_RunServer(oe_buffer256 serv)
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
-    int err = getaddrinfo(NULL, serv.buffer, &hints, &ai);
+    int err = getaddrinfo(NULL, serv, &hints, &ai);
     if (err != 0) {
         goto Done;
     }
@@ -115,7 +115,7 @@ int ecall_RunServer(oe_buffer256 serv)
     if (listen(listener, SOMAXCONN) == SOCKET_ERROR) {
         goto Done;
     }
-    printf("Listening on %s...\n", serv.buffer);
+    printf("Listening on %s...\n", serv);
 
     /* Accept a client connection. */
     struct sockaddr_storage addr;

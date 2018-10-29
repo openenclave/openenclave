@@ -39,8 +39,8 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    oe_buffer256 serv;
-    COPY_BUFFER_FROM_STRING(serv, port);
+    char serv[256];
+    strcpy_s(serv, sizeof(serv), port);
 
     /* TrustZone only allows one thread per TA at a time.
      * To simulate that behavior for SGX as well, we take a mutex.

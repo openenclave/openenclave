@@ -19,7 +19,7 @@ public:
         struct addrinfo hints = { 0 };
         hints.ai_family = AF_INET;
         hints.ai_socktype = SOCK_STREAM;
-        int err = getaddrinfo(this->server.buffer, this->port.buffer, &hints, &ai);
+        int err = getaddrinfo(this->server, this->port, &hints, &ai);
         if (err != 0) {
             goto Done;
         }
@@ -84,14 +84,14 @@ public:
         SOCKET listener = INVALID_SOCKET;
         SOCKET s = INVALID_SOCKET;
 
-        COPY_BUFFER_FROM_STRING(this->port, "12345");
+        strcpy_s(this->port, sizeof(this->port), "12345");
 
         /* Resolve service name. */
         struct addrinfo hints = { 0 };
         hints.ai_family = AF_INET;
         hints.ai_socktype = SOCK_STREAM;
         hints.ai_flags = AI_PASSIVE;
-        int err = getaddrinfo(NULL, this->port.buffer, &hints, &ai);
+        int err = getaddrinfo(NULL, this->port, &hints, &ai);
         if (err != 0) {
             return Tcps_BadCommunicationError;
         }
@@ -167,8 +167,8 @@ public:
 
 protected:
     sgx_enclave_id_t taid;
-    oe_buffer256 server;
-    oe_buffer256 port;
+    char server[256];
+    char port[256];
     HANDLE readyEvent;
 };
 
@@ -189,7 +189,7 @@ TEST_F(SocketsTest, EchoClient_Success)
     Tcps_StatusCode uStatus;
     HANDLE hServerThread;
 
-    COPY_BUFFER_FROM_STRING(this->server, "localhost");
+    strcpy_s(this->server, sizeof(this->server), "localhost");
 
     // Create a test server.
     this->readyEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -215,8 +215,8 @@ TEST_F(SocketsTest, EchoServer_Success)
     Tcps_StatusCode uStatus;
     HANDLE hClientThread;
 
-    COPY_BUFFER_FROM_STRING(this->server, "localhost");
-    COPY_BUFFER_FROM_STRING(this->port, "12345");
+    strcpy_s(this->server, sizeof(this->server), "localhost");
+    strcpy_s(this->port, sizeof(this->port), "12345");
 
     oe_result_t oeResult = ecall_StartServer(GetOEEnclave(), &uStatus, this->port);
     ASSERT_EQ(OE_OK, oeResult);

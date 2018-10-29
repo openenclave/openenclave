@@ -405,9 +405,9 @@ void* ecall_OEHostRealloc(void* ptr, int size)
     return oe_host_realloc(ptr, size);
 }
 
-char* ecall_OEHostStrndup(oe_buffer256 buff, int size)
+char* ecall_OEHostStrndup(char* buff, int size)
 {
-    return oe_host_strndup(buff.buffer, size);
+    return oe_host_strndup(buff, size);
 }
 
 void ecall_OEHostFree(void* ptr)

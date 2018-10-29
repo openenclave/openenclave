@@ -37,39 +37,7 @@ To use this library, you must define your own
 [EDL](https://software.intel.com/en-us/sgx-sdk-dev-reference-enclave-definition-language-file-syntax)
 file that defines any APIs you want to
 use, and use **oeedger8r** to generate code from it.
-
-The EDL APIs must adhere to the following constraints to be able to work for
-OP-TEE:
-
-1. Do not use **[in]** (using **[user\_check]** for "handles" is fine,
-however).  Instead, use structs with embedded arrays, and pass them, not
-pointers to them, as input. The struct members must all be value types
-(scalars or arrays), not pointers.
-2. Do not use **[out]** (using **[user\_check]** for "handles" is fine,
-however).  Instead, use a struct as the return type, and put all output
-parameters in the struct.  Again, all struct members must be value types
-(scalars or arrays) not pointers.
-3. Do not use variable-size buffer pointers.  (This constraint is actually
-redundant with the first two, since EDL requires such buffers to have either
-**[in]**, **[out]**, or both.)  For example, **buffer256**, **buffer1024**,
-and **buffer4096** types are provided by **oebuffer.edl** which can be 
-imported by the application's EDL file.  The compiler will still optimize the
-code to actually pass pointers but the generated code will use struct copies
-rather than passing embedded pointers between the trusted and untrusted
-sides, which is the key.  For strings passed from trusted to untrusted
-space, be sure to zero the rest of the buffer to avoid leaking uninitialized
-data.  The macro COPY\_BUFFER(*dest*, *src*, *len*) is provided by
-**tcps.h** to do this.
-4. Do not use **[string]**.  (This constraint is actually redundant with
-the first two, since EDL requires such strings to have either **[in]**,
-**[out]**, or both.)  Instead use a character array of the maximum legal
-size of the string (e.g., use the **buffer256** struct).  For strings
-passed from trusted to untrusted space, be sure to zero the rest of the
-buffer to avoid leaking uninitialized data.  The macro
-COPY\_BUFFER\_FROM\_STRING(*buffer*, *string*) is provided by **tcps.h**
-to do this.
-
-If the above is done, the generated code will work equally with both SGX
+The same generated code will work equally with both SGX
 and OP-TEE, as long as the EXE and TA use the right include paths and libs,
 and the following additional code constraint is met:
 
