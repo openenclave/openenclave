@@ -1,5 +1,8 @@
 pipeline {
   agent any
+  options {
+    timeout(time: 3, unit: 'HOURS')
+  }
   stages {
     stage('Build and Run libcxx Tests') {
       parallel {
