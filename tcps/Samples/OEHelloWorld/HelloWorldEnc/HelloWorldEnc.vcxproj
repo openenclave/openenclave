@@ -285,7 +285,7 @@
       <PreprocessorDefinitions>TRUSTED_CODE;USE_SGX;_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>tcps_t.lib;sgx_tcxx.lib;sgx_tprotected_fs.lib;sgx_tstdc.lib;sgx_tstdcxx.lib;sgx_tcrypto.lib;sgx_trts.lib;sgx_tservice.lib</AdditionalDependencies>
+      <AdditionalDependencies>tcps_t.lib;sgx_tcxx.lib;sgx_tprotected_fs.lib;sgx_tstdc.lib;sgx_tcrypto.lib;sgx_trts.lib;sgx_tservice.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir);$(SGXSDKInstallPath)bin\$(Platform)\$(Configuration)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <EntryPointSymbol />
@@ -307,7 +307,7 @@
       <PreprocessorDefinitions>TRUSTED_CODE;USE_SGX;_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>tcps_t.lib;sgx_tcxx.lib;sgx_tprotected_fs.lib;sgx_tstdc.lib;sgx_tstdcxx.lib;sgx_tcrypto.lib;sgx_trts.lib;sgx_tservice.lib</AdditionalDependencies>
+      <AdditionalDependencies>tcps_t.lib;sgx_tcxx.lib;sgx_tprotected_fs.lib;sgx_tstdc.lib;sgx_tcrypto.lib;sgx_trts.lib;sgx_tservice.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir);$(SGXSDKInstallPath)bin\$(Platform)\$(Configuration)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <EntryPointSymbol>
@@ -374,7 +374,7 @@
       <PreprocessorDefinitions>TRUSTED_CODE;USE_SGX;_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>tcps_t.lib;sgx_tcxx.lib;sgx_tprotected_fs.lib;sgx_tstdc.lib;sgx_tstdcxx.lib;sgx_tcrypto.lib;sgx_trts.lib;sgx_tservice.lib</AdditionalDependencies>
+      <AdditionalDependencies>tcps_t.lib;sgx_tcxx.lib;sgx_tprotected_fs.lib;sgx_tstdc.lib;sgx_tcrypto.lib;sgx_trts.lib;sgx_tservice.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)bin\$(Platform)\Debug;$(SGXSDKInstallPath)bin\$(Platform)\Debug</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <EntryPointSymbol>
@@ -397,7 +397,7 @@
       <PreprocessorDefinitions>TRUSTED_CODE;USE_SGX;_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>tcps_t.lib;sgx_tcxx.lib;sgx_tprotected_fs.lib;sgx_tstdc.lib;sgx_tstdcxx.lib;sgx_tcrypto.lib;sgx_trts.lib;sgx_tservice.lib</AdditionalDependencies>
+      <AdditionalDependencies>tcps_t.lib;sgx_tcxx.lib;sgx_tprotected_fs.lib;sgx_tstdc.lib;sgx_tcrypto.lib;sgx_trts.lib;sgx_tservice.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)bin\$(Platform)\Debug;$(SGXSDKInstallPath)bin\$(Platform)\Debug</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <EntryPointSymbol>
@@ -519,7 +519,7 @@
       <PreprocessorDefinitions>TRUSTED_CODE;USE_SGX;_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>tcps_t.lib;sgx_tcxx.lib;sgx_tprotected_fs.lib;sgx_tstdc.lib;sgx_tstdcxx.lib;sgx_tcrypto.lib;sgx_trts.lib;sgx_tservice.lib</AdditionalDependencies>
+      <AdditionalDependencies>tcps_t.lib;sgx_tcxx.lib;sgx_tprotected_fs.lib;sgx_tstdc.lib;sgx_tcrypto.lib;sgx_trts.lib;sgx_tservice.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir);$(SGXSDKInstallPath)bin\$(Platform)\$(Configuration)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <EntryPointSymbol />
@@ -563,7 +563,7 @@
       <PreprocessorDefinitions>TRUSTED_CODE;USE_SGX;_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>tcps_t.lib;sgx_tcxx.lib;sgx_tprotected_fs.lib;sgx_tstdc.lib;sgx_tstdcxx.lib;sgx_tcrypto.lib;sgx_trts.lib;sgx_tservice.lib</AdditionalDependencies>
+      <AdditionalDependencies>tcps_t.lib;sgx_tcxx.lib;sgx_tprotected_fs.lib;sgx_tstdc.lib;sgx_tcrypto.lib;sgx_trts.lib;sgx_tservice.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)bin\$(Platform)\Debug;$(SGXSDKInstallPath)bin\$(Platform)\Debug</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <EntryPointSymbol>

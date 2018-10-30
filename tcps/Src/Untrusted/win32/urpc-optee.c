@@ -60,7 +60,7 @@ _oe_OcallDemux(
         return FALSE;
     }
 
-    uint32_t bytes_written = 0;
+    size_t bytes_written = 0;
     g_ocall_table_v2.call_addr[rpcType](
         rpcInputBuffer,
         rpcInputSize,

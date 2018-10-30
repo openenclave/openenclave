@@ -52,17 +52,17 @@
 #include <unistd.h>
 
 void* Tcps_memcpy(
-   void* dest,
-   const void* src,
-   size_t count);
+    _Out_writes_bytes_(count) void* dest,
+    _In_reads_bytes_(count) const void* src,
+    _In_ size_t count);
 
 void *Tcps_malloc(size_t size);
 
 void Tcps_free(void *memblock); 
 
 void* Tcps_realloc(  
-   void *memblock,  
-   size_t size);  
+    void *memblock,  
+    size_t size);  
 
 int snprintf(
     char *buffer,

@@ -15,6 +15,7 @@
 
 #ifdef SIMULATE_TEE
 # include "optee/Trusted/Simulator/tcps_t.h"
+# include <sal.h>
 #endif
 
 #include "tcps.h"
