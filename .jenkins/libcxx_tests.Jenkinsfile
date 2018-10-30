@@ -11,7 +11,7 @@ pipeline {
 
           }
           steps {
-            timeout(3) {
+            timeout(180) {
               sh 'bash ./scripts/test-build-config -p SGX1FLC -b Debug -d --enable_full_libcxx_tests --compiler=clang-7'
             }
           }
@@ -24,7 +24,7 @@ pipeline {
 
           }
           steps {
-            timeout(3) {
+            timeout(180) {
               sh 'bash ./scripts/test-build-config -p SGX1FLC -b Release -d --enable_full_libcxx_tests --compiler=clang-7'
             }
           }
@@ -37,7 +37,7 @@ pipeline {
 
           }
           steps {
-            timeout(3) {
+            timeout(180) {
               sh 'bash ./scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d --enable_full_libcxx_tests --compiler=clang-7'
             }
           }
@@ -50,7 +50,7 @@ pipeline {
 
           }
           steps {
-            timeout(3) {
+            timeout(180) {
               sh 'bash ./scripts/test-build-config -p SGX1FLC -b Debug -d --enable_full_libcxx_tests --compiler=gcc'
             }
           }
@@ -63,7 +63,7 @@ pipeline {
 
           }
           steps {
-            timeout(3) {
+            timeout(180) {
               sh 'bash ./scripts/test-build-config -p SGX1FLC -b Release -d --enable_full_libcxx_tests --compiler=gcc'
             }
           }
@@ -76,7 +76,7 @@ pipeline {
 
           }
           steps {
-            timeout(3) {
+            timeout(180) {
               sh 'bash ./scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d --enable_full_libcxx_tests --compiler=gcc'
             }
           }
