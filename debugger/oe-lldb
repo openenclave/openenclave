@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/openenclave/debugger/lldb-sgx-plugin
+LD_PRELOAD=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/openenclave/debugger/liboe_ptrace.so lldb-7 -o "command script import ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/openenclave/debugger/lldb-sgx-plugin/lldb_sgx_plugin.py" "$@"

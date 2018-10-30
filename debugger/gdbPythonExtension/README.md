@@ -1,4 +1,4 @@
-pythonExtension
+gdbPythonExtension
 ====
 
 This directory contains the sources for the GDB python extension. That 
