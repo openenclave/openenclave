@@ -13,9 +13,6 @@ with that SDK, and various header files.
 The Intel SGX SDK can be downloaded for free at
 [https://software.intel.com/en-us/sgx-sdk/download](https://software.intel.com/en-us/sgx-sdk/download).
 
-Compiling for SGX currently requires Visual Studio 2015 (_not_ 2017) because
-of current limitations in the Intel SGX SDK.
-
 This library also requires oeedger8r, which is part of the Open Enclave SDK.
 However, a pre-built binary can also be directly downloaded:
 * [Windows binary](https://oedownload.blob.core.windows.net/binaries/oeedger8r.exe)
@@ -23,7 +20,7 @@ However, a pre-built binary can also be directly downloaded:
 
 ## Building the SDK itself
 
-To build for Windows, open TCPS-SDK.sln with Visual Studio 2015, and build
+To build for Windows, open TCPS-SDK.sln with Visual Studio, and build
 for the chosen platform (x86, x86, or ARM) and configuration.  This will
 build any relevant binaries except for Trusted Applications that need to
 run in OP-TEE (i.e., in TrustZone).
@@ -137,7 +134,7 @@ do the following.
 
 For SGX:
 
-1. In Visual Studio 2015, add a new Visual C++ "Intel(R) SGX Enclave Project".
+1. In Visual Studio, add a new Visual C++ "Intel(R) SGX Enclave Project".
 Make sure the Project Type is "Enclave" and the EDL File checkbox is checked.
 2. Edit the _YourProjectName_.edl file, and add at least one public ecall
 in the trusted{} section.  E.g., "public Tcps\_StatusCode ecall\_DoWork();"
@@ -149,7 +146,7 @@ select "Properties"->"Configuration Properties"->"Custom Build Tool"->"General"
 and edit the "Command Line" value for All Configurations and All Platforms.
 Change it to "$(TcpsSdkDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(TcpsSdkDir)Inc;$(SGXSDKInstallPath)include" 
 where $(TcpsSdkDir) is the path to the tcps subdirectory of this SDK.
-4. In Visual Studio 2015, add a new or existing Visual C++ project that will
+4. In Visual Studio, add a new or existing Visual C++ project that will
 build a normal application that will call the enclave.
 5. Right click on the application project, select
 "Intel(R) SGX Configuration"->"Import Enclave", and import the EDL
@@ -198,7 +195,7 @@ rather than in Visual Studio.
 "Configuration Properties"->"C/C++"->"Preprocessor" properties of the ARM 
 platform for All Configurations, change **USE\_SGX** to **USE\_OPTEE**
 3. Manually edit the application .vcxproj file to add the ability to
-compile for ARM, since VS2015 cannot do it from the UI.  To do so, add the
+compile for ARM, since VS cannot do it from the UI.  To do so, add the
 line "<WindowsSDKDesktopARMSupport\>true</WindowsSDKDesktopARMSupport\>"
 to each ARM configuration property group.  (See the sample apps'
 vcxproj file for examples.)
