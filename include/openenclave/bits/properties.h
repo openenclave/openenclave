@@ -96,7 +96,8 @@ typedef struct _oe_sgx_enclave_properties
     uint64_t end_marker;
 } oe_sgx_enclave_properties_t;
 
-#define OE_INFO_SECTION_BEGIN __attribute__((section(OE_INFO_SECTION_NAME)))
+#define OE_INFO_SECTION_BEGIN \
+    OE_EXTERNC __attribute__((section(OE_INFO_SECTION_NAME)))
 #define OE_INFO_SECTION_END
 
 #define OE_MAKE_ATTRIBUTES(ALLOW_DEBUG) \

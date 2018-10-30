@@ -753,14 +753,12 @@ oe_result_t oe_create_enclave(
     _oe_notify_gdb_enclave_creation(
         enclave, enclave->path, (uint32_t)strlen(enclave->path));
 
-<<<<<<< 510d1f143f4ea63fbec26540a2bfcfa602ba4cf9
+#endif /* defined(__linux__) */
+
     /* Enclave initialization invokes global constructors which could make
      * ocalls. Therefore setup ocall table prior to initialization. */
     enclave->ocalls = (const oe_ocall_func_t*)ocall_table;
     enclave->num_ocalls = ocall_table_size;
-=======
-#endif /* defined(__linux__) */
->>>>>>> Fix Windows Build
 
     /* Invoke enclave initialization. */
     OE_CHECK(_initialize_enclave(enclave));
