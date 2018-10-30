@@ -11,7 +11,9 @@ pipeline {
 
           }
           steps {
-            sh 'bash ./scripts/test-build-config -p SGX1FLC -b Debug -d --enable_full_libc_tests --compiler=clang-7'
+            timeout(15) {
+              sh 'bash ./scripts/test-build-config -p SGX1FLC -b Debug -d --enable_full_libc_tests --compiler=clang-7'
+            }
           }
         }
         stage('libc clang-7 Release') {
@@ -22,7 +24,9 @@ pipeline {
 
           }
           steps {
-            sh 'bash ./scripts/test-build-config -p SGX1FLC -b Release -d --enable_full_libc_tests --compiler=clang-7'
+            timeout(15) {
+              sh 'bash ./scripts/test-build-config -p SGX1FLC -b Release -d --enable_full_libc_tests --compiler=clang-7'
+            }
           }
         }
         stage('libc clang-7 RelWithDebInfo') {
@@ -33,7 +37,9 @@ pipeline {
 
           }
           steps {
-            sh 'bash ./scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d --enable_full_libc_tests --compiler=clang-7'
+            timeout(15) {
+              sh 'bash ./scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d --enable_full_libc_tests --compiler=clang-7'
+            }
           }
         }
         stage('libc gcc Debug') {
@@ -44,7 +50,9 @@ pipeline {
 
           }
           steps {
-            sh 'bash ./scripts/test-build-config -p SGX1FLC -b Debug -d --enable_full_libc_tests --compiler=gcc'
+            timeout(15) {
+              sh 'bash ./scripts/test-build-config -p SGX1FLC -b Debug -d --enable_full_libc_tests --compiler=gcc'
+            }
           }
         }
         stage('libc gcc Release') {
@@ -55,7 +63,9 @@ pipeline {
 
           }
           steps {
-            sh 'bash ./scripts/test-build-config -p SGX1FLC -b Release -d --enable_full_libc_tests --compiler=gcc'
+            timeout(15) {
+              sh 'bash ./scripts/test-build-config -p SGX1FLC -b Release -d --enable_full_libc_tests --compiler=gcc'
+            }
           }
         }
         stage('libc gcc RelWithDebInfo') {
@@ -66,7 +76,9 @@ pipeline {
 
           }
           steps {
-            sh 'bash ./scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d --enable_full_libc_tests --compiler=gcc'
+            timeout(15) {
+              sh 'bash ./scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d --enable_full_libc_tests --compiler=gcc'
+            }
           }
         }
       }
