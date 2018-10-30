@@ -2,7 +2,7 @@
     musl libc
 
 musl, pronounced like the word "mussel", is an MIT-licensed
-implementation of the standard C library targetting the Linux syscall
+implementation of the standard C library targeting the Linux syscall
 API, suitable for use in a wide range of deployment environments. musl
 offers efficient static and dynamic linking support, lightweight code
 and low runtime overhead, strong fail-safe guarantees under correct
