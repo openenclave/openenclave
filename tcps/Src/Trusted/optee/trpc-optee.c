@@ -351,11 +351,32 @@ _oe_EcallDemux(
 
     OpteeSetRpcKey(rpcKey);
 
-    /* Now invoke the ecall handler on the output buffer. */
-    size_t bytes_written = 0;
-    __oe_ecalls_table[cmd_id](in_buffer, in_buffer_size, out_buffer, out_buffer_size, &bytes_written);
+    /* Copy the input buffer into enclave memory. */
+    uint8_t* enclave_in_buffer = malloc(in_buffer_size);
+    if (enclave_in_buffer == NULL) {
+        return TEE_ERROR_OUT_OF_MEMORY;
+    }
+    memcpy(enclave_in_buffer, in_buffer, in_buffer_size);
 
+    uint8_t* enclave_out_buffer = malloc(out_buffer_size);
+    if (enclave_out_buffer == NULL) {
+        free(enclave_in_buffer);
+        return TEE_ERROR_OUT_OF_MEMORY;
+    }
+
+    /* Now invoke the ecall handler on the enclave buffers. */
+    size_t bytes_written = 0;
+    __oe_ecalls_table[cmd_id](
+        enclave_in_buffer,
+        in_buffer_size,
+        enclave_out_buffer,
+        out_buffer_size,
+        &bytes_written);
+
+    memcpy(out_buffer, enclave_out_buffer, bytes_written);
     *bytes_written_ptr = bytes_written;
+    free(enclave_in_buffer);
+    free(enclave_out_buffer);
 
     return TEE_SUCCESS;
 }
