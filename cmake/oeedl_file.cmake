@@ -65,12 +65,10 @@ function(oeedl_file EDL_FILE TYPE OUT_FILES_VAR)
 
 	add_custom_command(
 		OUTPUT ${h_file} ${c_file}
-		# Temorary workaround:
-		# Add explict dependency to oeedger8r binary.
-		# oeedger8r custom target cannot declare its output binary.
-		# Without the explicity dependecy to the binary below, running make on a test
-		# will rebuild the edger8r if it is out of date, but will not invoke the newly build edger8r
-		# on the edl file.
+		# NOTE: Because `OEEDGER8R_COMMAND` is not a CMake
+		# executable, we need an explicit dependency on it in
+		# order to cause files to be regenerated if the
+		# oeedger8r is rebuilt.
 		DEPENDS ${EDL_FILE} oeedger8r ${OE_BINDIR}/${OEEDGER8R_COMMAND}
 		COMMAND ${OE_BINDIR}/${OEEDGER8R_COMMAND} ${type_opt} ${headers_only} ${dir_opt} ${CMAKE_CURRENT_BINARY_DIR} ${EDL_FILE} --search-path ${in_path} ${edl_search_path}
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
