@@ -11,6 +11,10 @@ enclave  {
     from "string.edl"  import *;
     from "struct.edl"  import *;
     
+    from "foo.edl" import 
+        enc_foo1,
+        host_foo1;
+    
     trusted {};
 
     untrusted {};
