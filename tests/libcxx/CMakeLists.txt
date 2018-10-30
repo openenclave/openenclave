@@ -28,5 +28,12 @@ foreach(testcase ${alltests})
         endif()
     endif()
 
+# few functions invoked in these tests are not considered const expression in gnu
+    if ("${name}" MATCHES "convert_file_time.sh" OR "${name}" MATCHES "sequences_array_at.pass")
+	if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
+	    continue()
+        endif()
+    endif()
+
     add_enclave_test(tests/libcxxtest-${name} ./host libcxx_host ./enc libcxxtest-${name}_enc)
 endforeach(testcase)
