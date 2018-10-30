@@ -76,9 +76,9 @@ void test_array_edl_ocalls()
     test_ocall_array_fun<uint16_t>(ocall_array_uint16_t);
     test_ocall_array_fun<uint32_t>(ocall_array_uint32_t);
     test_ocall_array_fun<uint64_t>(ocall_array_uint64_t);
+    test_ocall_array_fun<long long>(ocall_array_long_long);
     if (g_enabled[TYPE_LONG_DOUBLE])
-        test_ocall_array_fun<long long>(ocall_array_long_long);
-    test_ocall_array_fun<long double>(ocall_array_long_double);
+        test_ocall_array_fun<long double>(ocall_array_long_double);
 
     OE_TEST(ocall_array_assert_all_called() == OE_OK);
     printf("=== test_array_edl_ocalls passed\n");

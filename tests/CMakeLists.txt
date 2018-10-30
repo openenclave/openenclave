@@ -27,6 +27,7 @@ add_subdirectory(bigmalloc)
 add_subdirectory(create-errors)
 add_subdirectory(debug-mode)
 add_subdirectory(ecall)
+add_subdirectory(oeedger8r)
 add_subdirectory(props)
 endif()
 
@@ -75,6 +76,4 @@ add_subdirectory(file)
 add_subdirectory(pingpong)
 add_subdirectory(pingpong-shared)
 
-# oeedger8r runs only on Linux
-add_subdirectory(oeedger8r)
 endif()
