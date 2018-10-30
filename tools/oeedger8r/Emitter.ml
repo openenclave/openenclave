@@ -698,8 +698,8 @@ let oe_gen_ocall_enclave_wrapper (os:out_channel) (fd:Ast.func_decl) =
   fprintf os "    /* Fill marshaling struct */\n";
   fprintf os "    memset(&_args, 0, sizeof(_args));\n";
   gen_fill_marshal_struct os fd "_args";
-  oe_prepare_input_buffer os fd "oe_host_malloc";
-  fprintf os "    /* Call enclave function */\n";
+  oe_prepare_input_buffer os fd "oe_allocate_ocall_buffer";
+  fprintf os "    /* Call host function */\n";
   fprintf os "    if((_result = oe_call_host_function(\n";
   fprintf os "                        %s,\n" (get_function_id fd);
   fprintf os "                        _input_buffer, _input_buffer_size,\n";
@@ -710,7 +710,7 @@ let oe_gen_ocall_enclave_wrapper (os:out_channel) (fd:Ast.func_decl) =
   fprintf os "    _result = OE_OK;\n";
   fprintf os "done:    \n";
   fprintf os "    if (_buffer)\n";
-  fprintf os "        oe_host_free(_buffer);\n";
+  fprintf os "        oe_free_ocall_buffer(_buffer);\n";
   fprintf os "    return _result;\n";
   fprintf os "}\n\n"
 
