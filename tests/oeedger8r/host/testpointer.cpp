@@ -19,7 +19,7 @@ static void test_ecall_pointer_fun(oe_enclave_t* enclave, F ecall_pointer_fun)
     // 16 element arrays.
     static T p4[16], p5[16], p6[16];
     for (size_t i = 0; i < 16; ++i)
-        p4[i] = p5[i] = p6[i] = i + 1;
+        p4[i] = p5[i] = p6[i] = static_cast<T>(i + 1);
 
     static_assert((80 / sizeof(T)) * sizeof(T) == 80, "invalid size");
     // arrays with size = 80 bytes.
@@ -27,23 +27,23 @@ static void test_ecall_pointer_fun(oe_enclave_t* enclave, F ecall_pointer_fun)
     T p7[count], p8[count], p9[count];
 
     for (size_t i = 0; i < count; ++i)
-        p7[i] = p8[i] = p9[i] = i + 1;
+        p7[i] = p8[i] = p9[i] = static_cast<T>(i + 1);
 
     static T p10[16];
     for (size_t i = 0; i < 16; ++i)
-        p10[i] = i + 1;
+        p10[i] = static_cast<T>(i + 1);
 
     static T p11[16];
     static T p12[16];
     static T p13[16];
     for (size_t i = 0; i < 16; ++i)
-        p11[i] = p12[i] = p13[i] = i + 1;
+        p11[i] = p12[i] = p13[i] = static_cast<T>(i + 1);
 
     static T p14[count];
     static T p15[count];
     static T p16[count];
     for (size_t i = 0; i < count; ++i)
-        p14[i] = p15[i] = p16[i] = i + 1;
+        p14[i] = p15[i] = p16[i] = static_cast<T>(i + 1);
 
     int pcount = 16;
     int psize = 80;
@@ -163,12 +163,14 @@ static void test_ecall_pointer_fun(oe_enclave_t* enclave, F ecall_pointer_fun)
 void test_pointer_edl_ecalls(oe_enclave_t* enclave)
 {
     test_ecall_pointer_fun<char>(enclave, ecall_pointer_char);
-    test_ecall_pointer_fun<wchar_t>(enclave, ecall_pointer_wchar_t);
+    if (g_enabled[TYPE_WCHAR_T])
+        test_ecall_pointer_fun<wchar_t>(enclave, ecall_pointer_wchar_t);
     test_ecall_pointer_fun<short>(enclave, ecall_pointer_short);
     test_ecall_pointer_fun<int>(enclave, ecall_pointer_int);
     test_ecall_pointer_fun<float>(enclave, ecall_pointer_float);
     test_ecall_pointer_fun<double>(enclave, ecall_pointer_double);
-    test_ecall_pointer_fun<long>(enclave, ecall_pointer_long);
+    if (g_enabled[TYPE_LONG])
+        test_ecall_pointer_fun<long>(enclave, ecall_pointer_long);
     test_ecall_pointer_fun<size_t>(enclave, ecall_pointer_size_t);
     test_ecall_pointer_fun<unsigned>(enclave, ecall_pointer_unsigned);
     test_ecall_pointer_fun<int8_t>(enclave, ecall_pointer_int8_t);
@@ -180,7 +182,8 @@ void test_pointer_edl_ecalls(oe_enclave_t* enclave)
     test_ecall_pointer_fun<uint32_t>(enclave, ecall_pointer_uint32_t);
     test_ecall_pointer_fun<uint64_t>(enclave, ecall_pointer_uint64_t);
     test_ecall_pointer_fun<long long>(enclave, ecall_pointer_long_long);
-    test_ecall_pointer_fun<long double>(enclave, ecall_pointer_long_double);
+    if (g_enabled[TYPE_LONG_DOUBLE])
+        test_ecall_pointer_fun<long double>(enclave, ecall_pointer_long_double);
 
     OE_TEST(ecall_pointer_assert_all_called(enclave) == OE_OK);
     printf("=== test_pointer_edl_ecalls passed\n");
@@ -276,7 +279,7 @@ static T* ocall_pointer_fun_impl(
         const size_t count = 80 / sizeof(T);
         T exp[count];
         for (size_t i = 0; i < count; ++i)
-            exp[i] = i + 1;
+            exp[i] = static_cast<T>(i + 1);
 
         if (p7)
         {
@@ -334,7 +337,7 @@ static T* ocall_pointer_fun_impl(
         if (p13)
         {
             for (int i = 0; i < pcount; ++i)
-                p13[i] = pcount;
+                p13[i] = static_cast<T>(pcount);
         }
     }
 
@@ -362,7 +365,7 @@ static T* ocall_pointer_fun_impl(
         if (p16)
         {
             for (size_t i = 0; i < count; ++i)
-                p16[i] = psize;
+                p16[i] = static_cast<T>(psize);
         }
     }
 
@@ -1157,10 +1160,18 @@ long double* ocall_pointer_long_double(
 
 void ocall_pointer_assert_all_called()
 {
-    // Each of the 19 functions above is called twice.
+    // Each of the 16 functions above is called twice.
     // Once with arrays and then with nulls.
-    OE_TEST(num_ocalls == 38);
-    OE_TEST(num_null_ocalls == 19);
+    int expected_num_calls = 16 * 2;
+
+    // Account for enabled non-portable types.
+    for (size_t i = 0; i < OE_COUNTOF(g_enabled); ++i)
+    {
+        if (g_enabled[i])
+            expected_num_calls += 2;
+    }
+
+    OE_TEST(num_ocalls == expected_num_calls);
 }
 
 // The following functions exists to make sure there are no

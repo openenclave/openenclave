@@ -18,6 +18,7 @@ oeedl_file(
 
 add_executable(edl_enc
     bar.cpp
+    config.cpp
     foo.cpp
     testarray.cpp
     testbasic.cpp 
@@ -31,6 +32,9 @@ add_executable(edl_enc
     )
 
 target_include_directories(edl_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)
-target_compile_options(edl_enc PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-std=c++11>)
+set_property(
+    TARGET edl_enc 
+    PROPERTY CXX_STANDARD 11
+)
 
 target_link_libraries(edl_enc oelibcxx oeenclave)
