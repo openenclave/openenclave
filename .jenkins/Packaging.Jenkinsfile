@@ -78,6 +78,7 @@ pipeline {
               sh 'bash ./scripts/test-build-config -p SGX1 -b Release --build_package'
               azureUpload(storageCredentialId: 'oejenkinsciartifacts_storageaccount', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: 'master/${BUILD_NUMBER}/Release/SGX1/', containerName: 'oejenkins')
               azureUpload(storageCredentialId: 'oejenkinsciartifacts_storageaccount', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: 'master/latest/Release/SGX1/', containerName: 'oejenkins')
+              azureUpload(storageCredentialId: 'oedownload_id', filesPath: 'build/output/bin/oeedger8r', storageType: 'blobstorage', virtualPath: 'master/${BUILD_NUMBER}/oeedger8r/', containerName: 'binaries')
             }
           }
         }
@@ -93,6 +94,20 @@ pipeline {
               sh 'bash ./scripts/test-build-config -p SGX1 -b RelWithDebInfo --build_package'
               azureUpload(storageCredentialId: 'oejenkinsciartifacts_storageaccount', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: 'master/${BUILD_NUMBER}/RelWithDebInfo/SGX1/', containerName: 'oejenkins')
               azureUpload(storageCredentialId: 'oejenkinsciartifacts_storageaccount', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: 'master/latest/RelWithDebInfo/SGX1/', containerName: 'oejenkins')
+            }
+          }
+        }
+        stage('Windows Release') {
+          agent {
+            node {
+              label 'SGXFLC-Windows'
+            }
+          }
+
+          steps {
+            timeout(10) {
+              bat '''mkdir build && cd build && cmake -G "Visual Studio 15 2017 Win64" .. && pushd . && "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\Common7\\Tools\\LaunchDevCmd.bat" && popd && cmake --build . --config Debug && ctest -C Debug'''
+              azureUpload(storageCredentialId: 'oedownload_id', filesPath: 'build/output/bin/oeedger8r.exe', storageType: 'blobstorage', virtualPath: 'master/${BUILD_NUMBER}/oeedger8r/', containerName: 'binaries')
             }
           }
         }
