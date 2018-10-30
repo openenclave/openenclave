@@ -94,7 +94,13 @@ static int _pthread_create_hook(
     // Send the enclave id so that host can maintain the map between
     // enclave and host id
     if (oe_call_host("host_create_pthread", (void*)(uint64_t)enc_key) != OE_OK)
+    {
+        printf(
+            "pthread_create_hook(): Error in call to host host_create_pthread "
+            "for enc_key=%d\n",
+            enc_key);
         oe_abort();
+    }
 
     // Block until the enclave pthread_id becomes available in the map
     while (*enc_thread == 0)
@@ -150,7 +156,13 @@ static int _pthread_join_hook(pthread_t enc_thread, void** value_ptr)
         enc_thread,
         join_enc_key);
     if (oe_call_host("host_join_pthread", (void*)thrd_join_args) != OE_OK)
+    {
+        printf(
+            "pthread_join_hook(): Error in call to host host_join_pthread for "
+            "enc_key=%d\n",
+            join_enc_key);
         oe_abort();
+    }
 
     int join_ret;
     _acquire_lock(&_enc_lock);
@@ -180,7 +192,7 @@ static int _pthread_detach_hook(pthread_t enc_thread)
     {
         _release_lock(&_enc_lock);
         printf(
-            "_pthread_detachhook(): Error enc_key for thread ID 0x%lu not "
+            "_pthread_detach_hook(): Error enc_key for thread ID 0x%lu not "
             "found\n",
             enc_thread);
         oe_abort();
@@ -201,7 +213,13 @@ static int _pthread_detach_hook(pthread_t enc_thread)
         enc_thread,
         det_enc_key);
     if (oe_call_host("host_detach_pthread", (void*)thrd_det_args) != OE_OK)
+    {
+        printf(
+            "_pthread_detach_hook(): Error in call to host host_detach_pthread "
+            "for enc_key=%d\n",
+            det_enc_key);
         oe_abort();
+    }
 
     // Since detach succeeded, delete the _key_to_thread_id_map
     _acquire_lock(&_enc_lock);
