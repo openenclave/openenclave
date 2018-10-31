@@ -8,3 +8,4 @@ add_executable(pingpong_host host.cpp ${gen})
 
 target_include_directories(pingpong_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(pingpong_host oehostapp)
+target_compile_options(pingpong_host PRIVATE -Wconversion -Wpointer-arith)

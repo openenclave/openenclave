@@ -13,3 +13,4 @@ add_executable(safecrt_host
 
 target_include_directories(safecrt_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(safecrt_host oehostapp)
+set_property(SOURCE ../common/test.cpp host.cpp APPEND_STRING PROPERTY "-Wconversion -Wpointer-arith")

@@ -9,6 +9,7 @@ add_executable(report_host host.cpp tcbinfo.cpp ${gen})
 
 target_compile_options(report_host PRIVATE
     -Wconversion
+    -Wpointer-arith
     )
 
 if(USE_LIBSGX)

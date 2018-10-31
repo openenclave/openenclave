@@ -17,26 +17,32 @@ oeedl_file(
 )
 
 
-add_executable(edl_host 
+set(edl_src
     main.cpp
     bar.cpp
     foo.cpp
     testarray.cpp
-    testbasic.cpp
-    testenum.cpp
+    testbasic.cpp 
+    testenum.cpp 
     testforeign.cpp
     testpointer.cpp
     teststring.cpp
     teststruct.cpp
+)
+
+add_executable(edl_host
+    ${edl_src}
     ${all_u}
     ${bar_u}
 )
 
 target_include_directories(edl_host PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)
+
+set_property(SOURCE ${edl_src} APPEND_STRING PROPERTY COMPILE_FLAGS "-Wconversion -Wpointer-arith")
+
 set_property(
     TARGET edl_host
     PROPERTY CXX_STANDARD 11
 )
-target_compile_options(edl_host PRIVATE -Wno-conversion -Wno-pointer-arith $<$<COMPILE_LANGUAGE:CXX>:-std=c++11>)
 
 target_link_libraries(edl_host oehostapp)

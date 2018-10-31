@@ -13,3 +13,5 @@ add_enclave_executable(debug_enc sign-debug.conf
 
 target_link_libraries(no_debug_enc oeenclave)
 target_link_libraries(debug_enc oeenclave)
+target_compile_options(no_debug_enc PRIVATE -Wconversion -Wpointer-arith)
+target_compile_options(debug_enc PRIVATE -Wconversion -Wpointer-arith)

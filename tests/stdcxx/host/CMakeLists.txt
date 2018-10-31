@@ -3,3 +3,4 @@
 
 add_executable(stdcxx_host host.cpp)
 target_link_libraries(stdcxx_host oehostapp)
+target_compile_options(stdcxx_host PRIVATE -Wconversion -Wpointer-arith)

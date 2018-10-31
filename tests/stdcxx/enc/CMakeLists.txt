@@ -12,6 +12,8 @@ target_compile_options(stdcxx_enc PRIVATE
     -fno-builtin-fprintf
     -fno-builtin-printf
     -std=c++14
+    -Wconversion
+    -Wpointer-arith
     )
 
 target_link_libraries(stdcxx_enc oelibcxx oeenclave)

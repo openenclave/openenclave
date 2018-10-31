@@ -17,6 +17,8 @@ add_library(libctest-support
     )
 target_compile_options(libctest-support PRIVATE
     -Wno-error
+    -Wconversion
+    -Wpointer-arith
     )
 target_link_libraries(libctest-support PUBLIC oelibc oeenclave oecore)
 

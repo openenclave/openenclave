@@ -14,3 +14,4 @@ add_executable(safecrt_enc
 
 target_include_directories(safecrt_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(safecrt_enc oelibcxx oeenclave)
+set_property(SOURCE ../common/test.cpp enc.cpp APPEND_STRING PROPERTY "-Wconversion -Wpointer-arith")

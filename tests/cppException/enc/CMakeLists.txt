@@ -14,3 +14,4 @@ if (CMAKE_CXX_COMPILER_ID MATCHES Clang)
 endif ()
 
 target_link_libraries(cppException_enc oelibcxx oeenclave)
+target_compile_options(cppException_enc PRIVATE -Wconversion -Wpointer-arith)

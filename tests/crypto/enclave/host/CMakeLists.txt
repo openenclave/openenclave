@@ -9,3 +9,4 @@ add_executable(cryptohost host.c ${gen})
 
 target_include_directories(cryptohost PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(cryptohost oehostapp)
+target_compile_options(cryptohost PRIVATE -Wconversion -Wpointer-arith)

@@ -12,5 +12,5 @@ endif()
 target_link_libraries(backtrace_enc oelibcxx oeenclave)
 target_compile_options(backtrace_enc PRIVATE
     -Wconversion
-    )
+    -Wpointer-arith)
 
