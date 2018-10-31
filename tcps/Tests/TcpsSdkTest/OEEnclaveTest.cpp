@@ -23,6 +23,16 @@ void ocall_PrintString(char* fmt, char* arg)
     printf(fmt, arg);
 }
 
+int ocall_BufferToInt(void* buffer, size_t size)
+{
+    int output;
+    if (size != sizeof(int)) {
+        return -1;
+    }
+    memcpy(&output, buffer, size);
+    return output;
+}
+
 class OEEnclaveTest : public TrustedAppTest {
 public:
     void* GetEnclave() {
@@ -202,6 +212,17 @@ TEST_F(OEEnclaveTest, string_calls_Success)
     oe_result_t oeResult = ecall_PrintString(GetOEEnclave(), &result, "%s", "Hello World\n");
     EXPECT_EQ(OE_OK, oeResult);
     EXPECT_EQ(OE_OK, result);
+}
+
+TEST_F(OEEnclaveTest, buffer_calls_Success)
+{
+    int input = 0x01020304;
+    int output = 0;
+    int result;
+    oe_result_t oeResult = ecall_BufferToInt(GetOEEnclave(), &result, &output, &input, sizeof(input));
+    EXPECT_EQ(OE_OK, oeResult);
+    EXPECT_EQ(OE_OK, result);
+    EXPECT_EQ(0x01020304, output);
 }
 
 TEST_F(OEEnclaveTest, inout_calls_Success)

@@ -2,12 +2,14 @@
 /* Licensed under the MIT License. */
 enclave {
     from "openenclave/socket.edl" import *;
+	include "openenclave/bits/oebuffer.h"
 
     trusted {
         /* define ECALLs here. */
         public void ecall_DoNothing();
         public Tcps_StatusCode ecall_ReturnOk();
         public int ecall_PrintString([in, string] char* fmt, [in, string] char* arg);
+        public int ecall_BufferToInt([out] int* output, [in, size=size] void* buffer, size_t size);
         public Tcps_StatusCode ecall_TestOcall();
         public void ecall_CopyInt([in] int* input, [out] int* output);
         public oe_CreateBuffer_Result ecall_CreateReeBufferFromTeeBuffer([user_check] void* hTeeBuffer);
@@ -37,6 +39,7 @@ enclave {
         /* define OCALLs here. */
         void ocall_DoNothing();
         void ocall_PrintString([in, string] char* fmt, [in, string] char* arg);
+        int ocall_BufferToInt([in, size=size] void* buffer, size_t size);
         int ocall_ReturnInputArgument(int input);
     };
 };

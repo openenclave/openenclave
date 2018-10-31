@@ -352,12 +352,9 @@ oe_setsockopt(
     _In_ int optlen)
 {
     oe_socket_error_t socketError = 0;
-    oe_buffer256 optBuffer;
     sgx_status_t sgxStatus;
 
-    COPY_BUFFER(optBuffer, optval, optlen);
-
-    sgxStatus = ocall_setsockopt(&socketError, s, level, optname, optBuffer, optlen);
+    sgxStatus = ocall_setsockopt(&socketError, s, level, optname, optval, optlen);
     if (sgxStatus != SGX_SUCCESS) {
         socketError = OE_ENETDOWN;
     }
@@ -390,12 +387,9 @@ oe_connect(
     _In_ int namelen)
 {
     oe_socket_error_t socketError = 0;
-    oe_buffer256 nameBuffer;
     sgx_status_t sgxStatus;
 
-    COPY_BUFFER(nameBuffer, (const char*)name, namelen);
-
-    sgxStatus = ocall_connect(&socketError, s, nameBuffer, namelen);
+    sgxStatus = ocall_connect(&socketError, s, name, namelen);
     if (sgxStatus != SGX_SUCCESS) {
         socketError = OE_ENETDOWN;
     }
@@ -471,12 +465,9 @@ oe_bind(
     _In_ int namelen)
 {
     oe_socket_error_t socketError = 0;
-    oe_buffer256 nameBuffer;
     sgx_status_t sgxStatus;
 
-    COPY_BUFFER(nameBuffer, (const char*)name, namelen);
-
-    sgxStatus = ocall_bind(&socketError, s, nameBuffer, namelen);
+    sgxStatus = ocall_bind(&socketError, s, name, namelen);
     if (sgxStatus != SGX_SUCCESS) {
         socketError = OE_ENETDOWN;
     }
@@ -641,12 +632,9 @@ oe_getnameinfo(
     _In_ int flags)
 {
     getnameinfo_Result result = { 0 };
-    oe_buffer256 addrBuffer;
     sgx_status_t sgxStatus;
 
-    COPY_BUFFER(addrBuffer, (const char*)sa, salen);
-
-    sgxStatus = ocall_getnameinfo(&result, addrBuffer, salen, flags);
+    sgxStatus = ocall_getnameinfo(&result, sa, salen, flags);
     if (sgxStatus != SGX_SUCCESS) {
         result.error = OE_ENOTRECOVERABLE;
     }

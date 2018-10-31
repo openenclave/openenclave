@@ -1,7 +1,6 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
 enclave {
-    include "openenclave/bits/oebuffer.h"
     include "openenclave/bits/sockettypes.h"
     include "openenclave/bits/timetypes.h"
 
@@ -97,7 +96,7 @@ enclave {
 
         oe_socket_error_t ocall_bind(
             [user_check] void* a_hSocket,
-            oe_buffer256 a_Name,
+            [in, size=a_nNameLen] const void* a_Name,
             int a_nNameLen);
 
         oe_socket_error_t ocall_closesocket(
@@ -105,12 +104,12 @@ enclave {
 
         oe_socket_error_t ocall_connect(
             [user_check] void* a_hSocket,
-            oe_buffer256 a_Name,
+            [in, size=a_nNameLen] const void* a_Name,
             int a_nNameLen);
 
         getaddrinfo_Result ocall_getaddrinfo(
-            [in, string] char* a_NodeName,
-            [in, string] char* a_ServiceName,
+            [in, string] const char* a_NodeName,
+            [in, string] const char* a_ServiceName,
             int a_Flags,
             int a_Family,
             int a_SockType,
@@ -119,7 +118,7 @@ enclave {
         gethostname_Result ocall_gethostname(void);
 
         getnameinfo_Result ocall_getnameinfo(
-            oe_buffer256 a_Addr,
+            [in, size=a_AddrLen] const void* a_Addr,
             int a_AddrLen,
             int a_Flags);
 
@@ -167,7 +166,7 @@ enclave {
             [user_check] void* a_hSocket,
             int a_nLevel,
             int a_nOptName,
-            oe_buffer256 a_OptVal,
+            [in, size=a_nOptLen] const void* a_OptVal,
             int a_nOptLen);
 
         oe_socket_error_t ocall_shutdown(
