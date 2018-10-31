@@ -2,14 +2,15 @@
 OBJECTS = TcpsCalls_u.o teehost-optee.o urpc-optee.o ufiles.o \
           uTcpsFileOcalls.o usockets.o buffer.o uhelper-shared.o \
           uhelper.o oeshim_u.o uProtectedFs-optee.o oeresult.o \
-          oeshim-common.o stdext.o uTcpsFileOcalls-shared.o
+          oeshim-common.o stdext.o uTcpsFileOcalls-shared.o socket_u.o
+
+# Path to where OpenEnclave resides.
+OE_PATH = ../../../..
 
 # Path where the TCPS SDK's EDK files are.
 EDL_PATH = ../..
 EDL_INC_PATH = ../../../Inc
-
-# Path to where OpenEnclave resides.
-OE_PATH = ../../../..
+OE_EDL_PATH = $(OE_PATH)/include/openenclave
 
 # Path to where the OP-TEE Client API resides.
 OPTEE_CLIENT = ../../../../3rdparty/optee_client
@@ -45,18 +46,22 @@ tcps_u.a: $(OBJECTS)
 	@echo " [AR]\ttcps_u.a"
 	@$(AR) rcs $(LIB_NAME) $(OBJECTS)
 
-TcpsCalls_u.h TcpsCalls_u.c: $(EDL_PATH)/TcpsCalls.edl   \
-                             $(EDL_PATH)/TcpsFile.edl    \
-                             $(EDL_PATH)/TcpsSockets.edl
-	@echo " [EDGE]\tTcpsCalls.edl"
+../TcpsCalls_u.h ../TcpsCalls_u.c: $(EDL_PATH)/TcpsCalls.edl \
+								   $(EDL_PATH)/TcpsFile.edl
+	@echo " [EDGE]\TcpsCalls.edl"
 	@sgx_edger8r --untrusted --untrusted-dir .. --search-path "$(EDL_PATH):$(EDL_INC_PATH):$(SGX_SDK)/include" \
 	                                                          "$(EDL_PATH)/TcpsCalls.edl"
 
-buffer.o: ../../buffer.c TcpsCalls_u.h
+../socket_u.h ../socket_u.c: $(OE_EDL_PATH)/socket.edl
+	@echo " [EDGE]\socket.edl"
+	@$(OEEDGER8R) --untrusted --untrusted-dir .. --search-path "$(OE_PATH)/include" \
+	                                                           "$(OE_EDL_PATH)/socket.edl"
+
+buffer.o: ../../buffer.c ../TcpsCalls_u.h
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -std=c99 -c -o $@ $<
 
-uhelper-shared.o: ../uhelper-shared.c TcpsCalls_u.h
+uhelper-shared.o: ../uhelper-shared.c ../TcpsCalls_u.h
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 
@@ -64,7 +69,7 @@ oeshim-common.o: ../../oeshim-common.c
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 
-oeshim_u.o: ../oeshim_u.c TcpsCalls_u.h
+oeshim_u.o: ../oeshim_u.c ../TcpsCalls_u.h
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 
@@ -72,19 +77,23 @@ oeresult.o: ../../oeresult.c
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 
-uProtectedFs-optee.o: ../uProtectedFs-optee.c TcpsCalls_u.h
+uProtectedFs-optee.o: ../uProtectedFs-optee.c ../TcpsCalls_u.h
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 
-uTcpsFileOcalls-shared.o: ../uTcpsFileOcalls-shared.c TcpsCalls_u.h
+uTcpsFileOcalls-shared.o: ../uTcpsFileOcalls-shared.c ../TcpsCalls_u.h
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 
-TcpsCalls_u.o: ../TcpsCalls_u.c TcpsCalls_u.h
+TcpsCalls_u.o: ../TcpsCalls_u.c ../TcpsCalls_u.h
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 
-%.o: %.c TcpsCalls_u.h TcpsCalls_u.c
+socket_u.o: ../socket_u.c ../socket_u.h
+	@echo " [CC]\t$@"
+	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -include "sal_unsup.h" -c -o $@ $<
+
+%.o: %.c ../TcpsCalls_u.h ../TcpsCalls_u.c ../socket_u.c ../socket_u.h
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) -c -o $@ $<
 

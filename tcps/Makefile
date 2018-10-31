@@ -51,11 +51,11 @@ usdk-tests: gtest usdk
 
 .PHONY: tsdk
 tsdk:
-	SGX_RELATIVE_PATH=../3rdparty/SGXSDK/ SGX_PATHSEP=: SGX_EDGER8R=$(shell which sgx_edger8r) CROSS_COMPILE=$(TRUSTED_CROSS_COMPILE) make -C Src/Trusted/optee -f linux_gcc.mak BUILD_TARGET=debug
+	SGX_RELATIVE_PATH=../3rdparty/SGXSDK/ SGX_PATHSEP=: SGX_EDGER8R=$(shell which sgx_edger8r) OEPATHSEP=: CROSS_COMPILE=$(TRUSTED_CROSS_COMPILE) make -C Src/Trusted/optee -f linux_gcc.mak BUILD_TARGET=debug
 
 .PHONY: tsdk-tests
 tsdk-tests: tsdk
-	SGX_RELATIVE_PATH=../3rdparty/SGXSDK/ SGX_PATHSEP=: SGX_EDGER8R=$(shell which sgx_edger8r) CROSS_COMPILE=$(TRUSTED_CROSS_COMPILE) make -C Tests/TcpsSdkTestTA/optee -f linux_gcc.mak BUILD_TARGET=debug
+	SGX_RELATIVE_PATH=../3rdparty/SGXSDK/ SGX_PATHSEP=: SGX_EDGER8R=$(shell which sgx_edger8r) OEPATHSEP=: CROSS_COMPILE=$(TRUSTED_CROSS_COMPILE) make -C Tests/TcpsSdkTestTA/optee -f linux_gcc.mak BUILD_TARGET=debug
 
 # Clean Targets
 # -------------
