@@ -8,11 +8,11 @@ sudo apt-get -y install build-essential
 
 echo Installing arm toolchain
 
-GCCPREFIX=gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi
+GCCPREFIX=gcc-linaro-6.2.1-2016.11-x86_64_arm-linux-gnueabihf
 
 if [ ! -d $GCCPREFIX ]; then
     if [ ! -f $GCCPREFIX.tar.xz ]; then
-        wget https://releases.linaro.org/components/toolchain/binaries/4.9-2017.01/arm-linux-gnueabi/$GCCPREFIX.tar.xz
+        wget https://releases.linaro.org/components/toolchain/binaries/6.2-2016.11/arm-linux-gnueabihf/$GCCPREFIX.tar.xz
     fi
     tar xvf $GCCPREFIX.tar.xz
 fi
@@ -110,29 +110,38 @@ if [ ! -e ../3rdparty/SGXSDK ]; then
 fi
 export SGX_RELATIVE_PATH=../3rdparty/SGXSDK/
 export SGX_PATH=$PWD${SGX_RELATIVE_PATH}
+export SGX_SDK=$PWD/../3rdparty/SGXSDK
+
+export CROSS_COMPILE=$PWD/$GCCPREFIX/bin/arm-linux-gnueabihf-
+export PROC_COUNT=$(eval "cat /proc/cpuinfo | awk '/^processor/{print $3}' | wc -l")
 
 echo Building OP-TEE OS
 
 pushd ../3rdparty/optee_os/
 
-export CROSS_COMPILE=../../tcps/$GCCPREFIX/bin/arm-linux-gnueabi-
 export ARCH=arm
 
 # TODO: change imx-mx6qmbbedge to imx-mx6qgeneric below once we find a branch
 # that supports both it and PTA_CYREP_GET_CERT_CHAIN_SIZE
-make PLATFORM=imx-mx6qhmbedge CFG_PSCI_ARM32=y CFG_RPMB_FS=y CFG_REE_FS=n CFG_RPMB_TESTKEY=y CFG_RPMB_WRITE_KEY=n CFG_RPMB_RESET_FAT=n CFG_WITH_USER_TA=y CFG_PAGED_USER_TA=n CFG_WITH_PAGER=n CFG_CRYPTO_SIZE_OPTIMIZATION=y platform-cflags-optimization=-Os CFG_UNWIND=n CFG_TEE_CORE_DEBUG=y CFG_BOOT_SECONDARY_REQUEST=y CFG_NS_ENTRY_ADDR=0x10820000 CFG_TEE_TA_LOG_LEVEL=4 CFG_TEE_CORE_LOG_LEVEL=2 CFG_TZ_SPI_CONTROLLERS=0x2 CFG_TA_RPC=y CFG_CONSOLE_UART=UART3_BASE
+make -j ${PROC_COUNT} PLATFORM=imx-mx6qhmbedge CFG_PSCI_ARM32=y CFG_RPMB_FS=y CFG_REE_FS=n \
+                      CFG_RPMB_TESTKEY=y CFG_RPMB_WRITE_KEY=n CFG_RPMB_RESET_FAT=n CFG_WITH_USER_TA=y \
+                      CFG_PAGED_USER_TA=n CFG_WITH_PAGER=n CFG_CRYPTO_SIZE_OPTIMIZATION=y \
+                      platform-cflags-optimization=-Os CFG_UNWIND=n CFG_TEE_CORE_DEBUG=y \
+                      CFG_BOOT_SECONDARY_REQUEST=y CFG_NS_ENTRY_ADDR=0x10820000 CFG_TEE_TA_LOG_LEVEL=4 \
+                      CFG_TEE_CORE_LOG_LEVEL=2 CFG_TZ_SPI_CONTROLLERS=0x2 CFG_TA_RPC=y \
+                      CFG_CONSOLE_UART=UART3_BASE
 
 popd
 
 echo Building TCPS-SDK
 
-export CROSS_COMPILE=/usr/bin/arm-linux-gnueabi-
 export TA_DEV_KIT_DIR=$PWD/../3rdparty/optee_os/out/arm-plat-imx/export-ta_arm32
+export ARCH=aarch32
 
-make -C Src/Trusted/optee -f linux_gcc.mak BUILD_TARGET=debug $*
+make -j ${PROC_COUNT}
 
-make -C Samples/EchoSockets/Trusted/optee -f linux_gcc.mak BUILD_TARGET=debug $*
+export CROSS_COMPILE=/usr/bin/arm-linux-gnueabi-
+export ARCH=arm
 
-make -C Samples/OEHelloWorld/HelloWorldEnc/optee -f linux_gcc.mak BUILD_TARGET=debug $*
-
-make -C Tests/TcpsSdkTestTA/optee -f linux_gcc.mak BUILD_TARGET=debug $*
+make -j ${PROC_COUNT} -C Samples/EchoSockets/Trusted/optee -f linux_gcc.mak BUILD_TARGET=debug $*
+make -j ${PROC_COUNT} -C Samples/OEHelloWorld/HelloWorldEnc/optee -f linux_gcc.mak BUILD_TARGET=debug $*
