@@ -35,7 +35,6 @@ set(PLATFORM_SRC
     windows/entersim.asm
     windows/exception.c
     windows/hostthread.c
-    windows/sgxsign.c
     windows/time.c
     ../3rdparty/mbedtls/mbedtls/library/bignum.c
     )
