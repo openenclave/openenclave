@@ -182,9 +182,9 @@ void test_pointer_edl_ocalls()
     test_ocall_pointer_fun<uint16_t>(ocall_pointer_uint16_t);
     test_ocall_pointer_fun<uint32_t>(ocall_pointer_uint32_t);
     test_ocall_pointer_fun<uint64_t>(ocall_pointer_uint64_t);
+    test_ocall_pointer_fun<long long>(ocall_pointer_long_long);
     if (g_enabled[TYPE_LONG_DOUBLE])
-        test_ocall_pointer_fun<long long>(ocall_pointer_long_long);
-    test_ocall_pointer_fun<long double>(ocall_pointer_long_double);
+        test_ocall_pointer_fun<long double>(ocall_pointer_long_double);
 
     OE_TEST(ocall_pointer_assert_all_called() == OE_OK);
     printf("=== test_pointer_edl_ocalls passed\n");

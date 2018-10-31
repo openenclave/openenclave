@@ -33,7 +33,7 @@ add_executable(edl_enc
 
 target_include_directories(edl_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)
 set_property(
-    TARGET edl_enc 
+    TARGET edl_enc
     PROPERTY CXX_STANDARD 11
 )
 

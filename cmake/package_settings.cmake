@@ -23,6 +23,9 @@ set(OE_DOCDIR ${OE_OUTPUT_DIR}/share/doc CACHE INTERNAL "Doc collector root")
 set(OE_INCDIR ${OE_OUTPUT_DIR}/include CACHE INTERNAL "Include collector")
 set(OE_LIBDIR ${OE_OUTPUT_DIR}/lib CACHE INTERNAL "Library collector")
 
+# Make directories for build systems (NMake) that don't automatically make them.
+file(MAKE_DIRECTORY ${OE_BINDIR} ${OE_DATADIR} ${OE_DOCDIR} ${OE_DOCDIR} ${OE_INCDIR} ${OE_LIBDIR})
+
 # Generate and install CMake export file for consumers using Cmake
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
