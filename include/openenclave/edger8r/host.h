@@ -60,7 +60,7 @@ OE_EXTERNC_BEGIN
 oe_result_t oe_call_enclave_function(
     oe_enclave_t* enclave,
     uint32_t function_id,
-    void* input_buffer,
+    const void* input_buffer,
     size_t input_buffer_size,
     void* output_buffer,
     size_t output_buffer_size,

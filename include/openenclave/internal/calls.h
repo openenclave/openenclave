@@ -212,7 +212,7 @@ typedef struct _oe_call_enclave_args
 typedef struct _oe_call_enclave_function_args
 {
     uint64_t function_id;
-    void* input_buffer;
+    const void* input_buffer;
     size_t input_buffer_size;
     void* output_buffer;
     size_t output_buffer_size;
@@ -231,7 +231,7 @@ typedef struct _oe_call_enclave_function_args
 typedef struct _oe_call_host_function_args
 {
     uint64_t function_id;
-    void* input_buffer;
+    const void* input_buffer;
     size_t input_buffer_size;
     void* output_buffer;
     size_t output_buffer_size;
