@@ -19,6 +19,11 @@ int ecall_PrintString(char* fmt, char* arg)
     return (int)ocall_PrintString(fmt, arg);
 }
 
+int ecall_BufferToInt(int* output, void* buffer, size_t size)
+{
+    return (int)ocall_BufferToInt(output, buffer, size);
+}
+
 void ecall_CopyInt(int* input, int* output)
 {
     *output = *input;
@@ -39,14 +44,16 @@ oe_CreateBuffer_Result ecall_CreateReeBufferFromTeeBuffer(_In_ void* hTeeBuffer)
     return result;
 }
 
-/* This client connects to an echo server, sends a text message,
-* and outputs the text reply.
+/* This client connects to an echo server, sends a large buffer,
+* and verifies that the response matches the input.
 */
 Tcps_StatusCode ecall_RunClient(char* server, char* serv)
 {
     Tcps_StatusCode uStatus = Tcps_BadCommunicationError;
     struct addrinfo* ai = NULL;
     SOCKET s = INVALID_SOCKET;
+    char* message = NULL;
+    char* reply = NULL;
 
     /* Resolve server name. */
     struct addrinfo hints = { 0 };
@@ -66,9 +73,16 @@ Tcps_StatusCode ecall_RunClient(char* server, char* serv)
         goto Done;
     }
 
-    /* Send a message, prefixed by its size. */
-    const char *message = "Hello, world!";
-    int messageLength = strlen(message);
+    /* Send a large message, prefixed by its size. */
+    int messageLength = 8096;
+    message = malloc(messageLength);
+    if (message == NULL) {
+        uStatus = Tcps_BadOutOfMemory;
+        goto Done;
+    }
+    for (int i = 0; i < messageLength; i++) {
+        message[i] = (i & 0xFF);
+    }
     int netMessageLength = htonl(messageLength);
     int bytesSent = send(s, (char*)&netMessageLength, sizeof(netMessageLength), 0);
     if (bytesSent == SOCKET_ERROR) {
@@ -79,15 +93,21 @@ Tcps_StatusCode ecall_RunClient(char* server, char* serv)
         goto Done;
     }
 
-    /* Receive a text reply, prefixed by its size. */
+    /* Receive the reply size. */
     int replyLength;
-    char reply[80];
     int bytesReceived = recv(s, (char*)&replyLength, sizeof(replyLength), MSG_WAITALL);
     if (bytesReceived == SOCKET_ERROR) {
         goto Done;
     }
     replyLength = ntohl(replyLength);
-    if (replyLength > sizeof(reply) - 1) {
+    if (replyLength != messageLength) {
+        goto Done;
+    }
+
+    /* Receive the reply. */
+    reply = malloc(replyLength);
+    if (reply == NULL) {
+        uStatus = Tcps_BadOutOfMemory;
         goto Done;
     }
     bytesReceived = recv(s, reply, replyLength, MSG_WAITALL);
@@ -95,12 +115,16 @@ Tcps_StatusCode ecall_RunClient(char* server, char* serv)
         goto Done;
     }
 
-    /* Add null termination. */
-    reply[replyLength] = 0;
+    /* Verify that the reply matches the original message. */
+    if (memcmp(message, reply, messageLength) != 0) {
+        goto Done;
+    }
 
     uStatus = Tcps_Good;
 
 Done:
+    free(message);
+    free(reply);
     if (s != INVALID_SOCKET) {
         closesocket(s);
     }

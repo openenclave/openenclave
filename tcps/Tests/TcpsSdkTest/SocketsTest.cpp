@@ -119,7 +119,7 @@ public:
         socklen_t addrlen;
         int netMessageLength;
         int messageLength;
-        char message[80];
+        char* message = NULL;
         int bytesReceived;
         int bytesSent;
 
@@ -161,15 +161,21 @@ public:
             goto Done;
         }
 
-        /* Receive a text message, prefixed by its size. */
+        /* Receive message size. */
         bytesReceived = recv(s, (char*)&netMessageLength, sizeof(netMessageLength), MSG_WAITALL);
         if (bytesReceived == SOCKET_ERROR) {
             goto Done;
         }
         messageLength = ntohl(netMessageLength);
-        if (messageLength > sizeof(message)) {
+        if (messageLength > 8096) {
             goto Done;
         }
+        message = (char*)malloc(messageLength);
+        if (message == NULL) {
+            goto Done;
+        }
+
+        /* Receive the message. */
         bytesReceived = recv(s, message, messageLength, MSG_WAITALL);
         if (bytesReceived != messageLength) {
             goto Done;
@@ -187,6 +193,7 @@ public:
         uStatus = Tcps_Good;
 
     Done:
+        free(message);
         if (s != INVALID_SOCKET) {
             closesocket(s);
         }

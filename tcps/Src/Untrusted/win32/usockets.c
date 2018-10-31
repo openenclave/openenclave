@@ -108,8 +108,8 @@ recv_Result ocall_recv(void* a_hSocket, int a_nBufferSize, int a_Flags)
 }
 
 getaddrinfo_Result ocall_getaddrinfo(
-    _In_z_ char* a_NodeName,
-    _In_z_ char* a_ServiceName,
+    _In_z_ const char* a_NodeName,
+    _In_z_ const char* a_ServiceName,
     _In_ int a_Flags,
     _In_ int a_Family,
     _In_ int a_SockType,
@@ -182,11 +182,11 @@ oe_socket_error_t ocall_setsockopt(
     void* a_hSocket,
     int a_nLevel,
     int a_nOptName,
-    oe_buffer256 a_OptVal,
+    const void* a_OptVal,
     int a_nOptLen)
 {
     SOCKET s = (SOCKET)a_hSocket;
-    int err = setsockopt(s, a_nLevel, a_nOptName, a_OptVal.buffer, a_nOptLen);
+    int err = setsockopt(s, a_nLevel, a_nOptName, a_OptVal, a_nOptLen);
     return (err == SOCKET_ERROR) ? (oe_socket_error_t)WSAGetLastError() : 0;
 }
 
@@ -270,20 +270,20 @@ oe_socket_error_t ocall_closesocket(void* a_hSocket)
     return (err == SOCKET_ERROR) ? (oe_socket_error_t)WSAGetLastError() : 0;
 }
 
-oe_socket_error_t ocall_bind(void* a_hSocket, oe_buffer256 a_Name, int a_nNameLen)
+oe_socket_error_t ocall_bind(void* a_hSocket, const void* a_Name, int a_nNameLen)
 {
     SOCKET s = (SOCKET)a_hSocket;
-    int err = bind(s, (const SOCKADDR*)a_Name.buffer, a_nNameLen);
+    int err = bind(s, (const SOCKADDR*)a_Name, a_nNameLen);
     return (err == SOCKET_ERROR) ? (oe_socket_error_t)WSAGetLastError() : 0;
 }
 
 oe_socket_error_t ocall_connect(
     void* a_hSocket,
-    oe_buffer256 a_Name,
+    const void* a_Name,
     int a_nNameLen)
 {
     SOCKET s = (SOCKET)a_hSocket;
-    int err = connect(s, (const SOCKADDR*)a_Name.buffer, a_nNameLen);
+    int err = connect(s, (const SOCKADDR*)a_Name, a_nNameLen);
     return (err == SOCKET_ERROR) ? (oe_socket_error_t)WSAGetLastError() : 0;
 }
 
@@ -300,12 +300,12 @@ accept_Result ocall_accept(void* a_hSocket, int a_nAddrLen)
 }
 
 getnameinfo_Result ocall_getnameinfo(
-    oe_buffer256 a_Addr,
+    const void* a_Addr,
     int a_AddrLen,
     int a_Flags)
 {
     getnameinfo_Result result = { 0 };
-    result.error = getnameinfo((const SOCKADDR*)a_Addr.buffer,
+    result.error = getnameinfo((const SOCKADDR*)a_Addr,
                                a_AddrLen,
                                result.host,
                                sizeof(result.host),
