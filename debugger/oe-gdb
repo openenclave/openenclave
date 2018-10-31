@@ -4,4 +4,4 @@
 # Licensed under the MIT License.
 
 export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/openenclave/debugger/sgx-plugins:${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/openenclave/debugger/sgx-plugins/gdb
-LD_PRELOAD=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/openenclave/debugger/liboe_ptrace.so gdb -iex "directory ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/openenclave/debugger/sgx_plugins/gdb" -iex "source ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/openenclave/debugger/sgx-plugins/gdb/gdb_sgx_plugin.py" -iex "set environment LD_PRELOAD" -iex "add-auto-load-safe-path /usr/lib" "$@"
+LD_PRELOAD=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/openenclave/debugger/liboe_ptrace.so gdb -iex "directory ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/openenclave/debugger/sgx-plugins/gdb" -iex "source ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/openenclave/debugger/sgx-plugins/gdb/gdb_sgx_plugin.py" -iex "set environment LD_PRELOAD" -iex "add-auto-load-safe-path /usr/lib" "$@"

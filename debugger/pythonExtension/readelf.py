@@ -30,7 +30,7 @@
 #
 #
 
-import gdb, subprocess
+import subprocess
 def ReadElf(EnclaveFile):
     #prefix = gdb.execute("get_tc_prefix", False, True)
     readelf_cmd = 'readelf'
