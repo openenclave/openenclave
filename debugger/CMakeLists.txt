@@ -2,8 +2,7 @@
 # Licensed under the MIT License.
 
 add_subdirectory(ptraceLib)
-add_subdirectory(gdbPythonExtension)
-add_subdirectory(lldbPythonExtension)
+add_subdirectory(pythonExtension)
 
 # Patch oe-gdb and oe-lldb scripts based on install location.
 configure_file(oe-gdb oe-gdb)

@@ -1,4 +1,4 @@
-lldbPythonExtension
+lldb
 ====
 
 This directory contains the sources for the LLDB python extension. That 
