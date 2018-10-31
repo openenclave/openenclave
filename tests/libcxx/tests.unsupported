@@ -4,9 +4,10 @@
 ../../3rdparty/libcxx/libcxx/test/libcxx/debug/containers/db_sequence_container_iterators.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/debug/containers/db_string.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/debug/containers/db_unord_container_tests.pass.cpp
+../../3rdparty/libcxx/libcxx/test/libcxx/debug/debug_abort.pass.cpp
+../../3rdparty/libcxx/libcxx/test/libcxx/diagnostics/nodiscard.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/experimental/language.support/support.coroutines/dialect_support.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/input.output/filesystems/class.path/path.itr/iterator_db.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/input.output/filesystems/convert_file_time.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/language.support/has_c11_features.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/language.support/support.dynamic/new_faligned_allocation.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/memory/aligned_allocation_macro.pass.cpp
@@ -250,6 +251,9 @@
 ../../3rdparty/libcxx/libcxx/test/std/input.output/stream.buffers/streambuf/streambuf.members/streambuf.locales/locales.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/input.output/stream.buffers/streambuf/streambuf.protected/streambuf.assign/assign.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/input.output/stream.buffers/streambuf/streambuf.protected/streambuf.assign/swap.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/iterators/iterator.container/data.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/iterators/iterator.container/empty.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/iterators/iterator.container/size.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/cmp/cmp.common/common_comparison_category.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/cmp/cmp.partialord/partialord.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/cmp/cmp.strongeq/cmp.strongeq.pass.cpp
@@ -277,6 +281,7 @@
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.single/new_size_align_nothrow.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.single/new_size_align.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.single/sized_delete11.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/ptr.launder/launder.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.limits/version.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.types/byteops/and.assign.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.types/byteops/and.pass.cpp
@@ -385,6 +390,7 @@
 ../../3rdparty/libcxx/libcxx/test/std/numerics/numeric.ops/transform.reduce/transform_reduce_iter_iter_init_bop_uop.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/numerics/numeric.ops/transform.reduce/transform_reduce_iter_iter_iter_init_op_op.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/numerics/numeric.ops/transform.reduce/transform_reduce_iter_iter_iter_init.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/numerics/rand/rand.device/ctor.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.match/basic.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.match/ecma.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.match/extended.pass.cpp
@@ -398,6 +404,7 @@
 ../../3rdparty/libcxx/libcxx/test/std/re/re.traits/getloc.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.traits/imbue.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.traits/isctype.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/re/re.traits/lookup_classname.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.traits/lookup_collatename.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.traits/transform.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.traits/transform_primary.pass.cpp
@@ -527,8 +534,11 @@
 ../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.logical/conjunction.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.logical/disjunction.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.logical/negation.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.rel/is_invocable.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.rel/is_nothrow_invocable.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.trans/meta.trans.other/remove_cvref.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.type.synop/endian.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.unary/meta.unary.prop/has_unique_object_representations.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.unary/meta.unary.prop/is_aggregate.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.unary/meta.unary.prop/is_nothrow_swappable.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.unary/meta.unary.prop/is_nothrow_swappable_with.pass.cpp

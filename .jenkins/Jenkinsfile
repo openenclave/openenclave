@@ -9,7 +9,9 @@ pipeline {
 
       }
       steps {
-        sh './scripts/check-precommit-reqs'
+        timeout(2) {
+          sh './scripts/check-precommit-reqs'
+        }
       }
     }
     stage('Build and Test') {
@@ -24,22 +26,24 @@ pipeline {
             }
           }
           steps {
-            // This is run to test that it works with the dependencies
-            // installed by our install-prereqs script.
-            sh './scripts/check-precommit-reqs'
+            timeout(15) {
+              // This is run to test that it works with the dependencies
+              // installed by our install-prereqs script.
+              sh './scripts/check-precommit-reqs'
 
-            // We actually expect `ctest` to fail because it is an
-            // older version that emits a failure if any tests are
-            // skipped. In other stages, we explicitly install an
-            // updated version of CMake.
-            dir('build') {
-              sh '''
+              // We actually expect `ctest` to fail because it is an
+              // older version that emits a failure if any tests are
+              // skipped. In other stages, we explicitly install an
+              // updated version of CMake.
+              dir('build') {
+                sh '''
                 cmake ..
                 make
                 OE_SIMULATION=1 ctest --verbose --output-on-failure || true
               '''
-              // Note that `make package` is not expected to work
-              // without extra configuration.
+                // Note that `make package` is not expected to work
+                // without extra configuration.
+              }
             }
           }
         }
@@ -51,7 +55,9 @@ pipeline {
 
           }
           steps {
-            sh './scripts/test-build-config -b Debug --compiler=clang-7'
+            timeout(15) {
+              sh './scripts/test-build-config -b Debug --compiler=clang-7'
+            }
           }
         }
         stage('Simulation clang-7 SGX1 Release') {
@@ -62,7 +68,9 @@ pipeline {
 
           }
           steps {
-            sh './scripts/test-build-config -p SGX1 -b Release --compiler=clang-7'
+            timeout(15) {
+              sh './scripts/test-build-config -p SGX1 -b Release --compiler=clang-7'
+            }
           }
         }
         stage('Simulation clang-7 SGX1 RelWithDebInfo') {
@@ -73,7 +81,9 @@ pipeline {
 
           }
           steps {
-            sh './scripts/test-build-config -p SGX1 -b RelWithDebInfo --compiler=clang-7'
+            timeout(15) {
+              sh './scripts/test-build-config -p SGX1 -b RelWithDebInfo --compiler=clang-7'
+            }
           }
         }
         stage('Simulation clang-7 SGX1-FLC Debug') {
@@ -84,7 +94,9 @@ pipeline {
 
           }
           steps {
-            sh './scripts/test-build-config -p SGX1FLC -b Debug --compiler=clang-7'
+            timeout(15) {
+              sh './scripts/test-build-config -p SGX1FLC -b Debug --compiler=clang-7'
+            }
           }
         }
         stage('Simulation clang-7 SGX1-FLC Release') {
@@ -95,7 +107,9 @@ pipeline {
 
           }
           steps {
-            sh './scripts/test-build-config -p SGX1FLC -b Release --compiler=clang-7'
+            timeout(15) {
+              sh './scripts/test-build-config -p SGX1FLC -b Release --compiler=clang-7'
+            }
           }
         }
         stage('Simulation clang-7 SGX1-FLC RelWithDebInfo') {
@@ -106,7 +120,9 @@ pipeline {
 
           }
           steps {
-            sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo --compiler=clang-7'
+            timeout(15) {
+              sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo --compiler=clang-7'
+            }
           }
         }
         stage('Coffeelake clang-7 SGX1-FLC Debug') {
@@ -117,7 +133,9 @@ pipeline {
 
           }
           steps {
-            sh './scripts/test-build-config -p SGX1FLC -b Debug -d --compiler=clang-7'
+            timeout(15) {
+              sh './scripts/test-build-config -p SGX1FLC -b Debug -d --compiler=clang-7'
+            }
           }
         }
         stage('Coffeelake clang-7 SGX1-FLC Release') {
@@ -128,7 +146,9 @@ pipeline {
 
           }
           steps {
-            sh './scripts/test-build-config -p SGX1FLC -b Release -d --compiler=clang-7'
+            timeout(15) {
+              sh './scripts/test-build-config -p SGX1FLC -b Release -d --compiler=clang-7'
+            }
           }
         }
         stage('Coffeelake clang-7 SGX1-FLC RelWithDebInfo') {
@@ -139,7 +159,9 @@ pipeline {
 
           }
           steps {
-            sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d --compiler=clang-7'
+            timeout(15) {
+              sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d --compiler=clang-7'
+            }
           }
         }
         stage('Coffeelake gcc SGX1-FLC Debug') {
@@ -150,7 +172,9 @@ pipeline {
 
           }
           steps {
-            sh './scripts/test-build-config -p SGX1FLC -b Debug -d --compiler=gcc'
+            timeout(15) {
+              sh './scripts/test-build-config -p SGX1FLC -b Debug -d --compiler=gcc'
+            }
           }
         }
         stage('Coffeelake gcc SGX1-FLC Release') {
@@ -161,7 +185,9 @@ pipeline {
 
           }
           steps {
-            sh './scripts/test-build-config -p SGX1FLC -b Release -d --compiler=gcc'
+            timeout(15) {
+              sh './scripts/test-build-config -p SGX1FLC -b Release -d --compiler=gcc'
+            }
           }
         }
         stage('Coffeelake gcc SGX1-FLC RelWithDebInfo') {
@@ -172,8 +198,21 @@ pipeline {
 
           }
           steps {
-            sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d --compiler=gcc'
+            timeout(15) {
+              sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d --compiler=gcc'
+            }
           }
+        }
+        stage('Windows Debug') {
+           agent {
+             node {
+               label 'SGXFLC-Windows'
+             }
+
+           }
+           steps {
+             bat '''mkdir build && cd build && cmake -G "Visual Studio 15 2017 Win64" .. && pushd . && "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\Common7\\Tools\\LaunchDevCmd.bat" && popd && cmake --build . --config Debug && ctest -C Debug'''
+           }
         }
       }
     }

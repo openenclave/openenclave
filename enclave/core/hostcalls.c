@@ -3,6 +3,7 @@
 
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
+#include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
@@ -194,4 +195,16 @@ int oe_host_fprintf(int device, const char* fmt, ...)
     oe_va_end(ap);
 
     return n;
+}
+
+// Function used by oeedger8r for allocating ocall buffers.
+void* oe_allocate_ocall_buffer(size_t size)
+{
+    return oe_host_malloc(size);
+}
+
+// Function used by oeedger8r for freeing ocall buffers.
+void oe_free_ocall_buffer(void* buffer)
+{
+    oe_host_free(buffer);
 }

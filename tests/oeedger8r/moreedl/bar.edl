@@ -1,0 +1,14 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+// This edl is compiled only in header only mode.
+// Hence there is no need to provide any implementation.
+enclave {
+    trusted {
+        public void enc_bar();
+    };
+
+    untrusted {
+        void host_bar();
+    };
+};

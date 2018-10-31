@@ -28,12 +28,13 @@ if (NOT DEFINED CMAKE_C_FLAGS_${CMAKE_BUILD_TYPE_SUFFIX})
   message(FATAL_ERROR "Unknown CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE_SUFFIX}")
 endif ()
 
-# TODO: See #758: Fix this to check 64-bit correctly with
-# `CMAKE_SIZEOF_VOID_P EQUAL 8` (on all platforms).
-if (DEFINED CMAKE_VS_PLATFORM_NAME)
-  if (NOT ${CMAKE_VS_PLATFORM_NAME} STREQUAL "x64")
-    message(FATAL_ERROR "With Visual Studio, configure Win64 build generator explicitly.")
+# TODO: When ARM support is added, we will need to exclude the check
+# as it will be 64-bit.
+if (NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
+  if (MSVC)
+    message(WARNING "Use '-T host=x64' to set the toolchain to 64-bit!")
   endif ()
+  message(FATAL_ERROR "Only 64-bit builds are supported!")
 endif ()
 
 # Use ccache if available.

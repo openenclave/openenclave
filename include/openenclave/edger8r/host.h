@@ -31,7 +31,11 @@ OE_EXTERNC_BEGIN
  * Call the enclave function that matches the given function-id.
  * The enclave function is expected to have the following signature:
  *
- *     void (*)(void* args);
+ *     void (const uint8_t* input_buffer,
+ *           size_t input_buffer_size,
+ *           uint8_t* output_buffer,
+ *           size_t output_buffer_size,
+ *           size_t* output_bytes_written);
  *
  * Note that the return value of this function only indicates the success of
  * the call and not of the underlying function. The ECALL implementation must

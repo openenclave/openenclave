@@ -6,6 +6,11 @@
 #include <wchar.h>
 #include "all_u.h"
 
+// The types wchar_t, long and long double have different sizes in Linux and
+// Windows. Therefore enclaves built in Linux cannot be safely loaded if they
+// use any of these types.
+uint8_t g_enabled[3] = {true, true, true};
+
 void test_basic_edl_ecalls(oe_enclave_t* enclave);
 void test_string_edl_ecalls(oe_enclave_t* enclave);
 void test_wstring_edl_ecalls(oe_enclave_t* enclave);
@@ -35,6 +40,8 @@ int main(int argc, const char* argv[])
         fprintf(stderr, "%s: cannot create enclave: %u\n", argv[0], result);
         return 1;
     }
+
+    OE_TEST(configure(enclave, g_enabled) == OE_OK);
 
     test_basic_edl_ecalls(enclave);
     OE_TEST(test_basic_edl_ocalls(enclave) == OE_OK);

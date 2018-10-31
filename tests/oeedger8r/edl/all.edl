@@ -11,7 +11,17 @@ enclave  {
     from "string.edl"  import *;
     from "struct.edl"  import *;
     
-    trusted {};
+    from "foo.edl" import 
+        enc_foo1,
+        host_foo1;
 
-    untrusted {};
+    trusted { 
+        // Configure tests.
+        // Note: Keep the size of enabled consistent with number of
+        // types in type_enum_t in basic.edl
+        public void configure([out] uint8_t enabled[3]);            
+    };
+
+    untrusted {
+    };
 };

@@ -737,7 +737,7 @@ oe_result_t oe_sgx_initialize_enclave(
                 &info.EInitToken,
                 sizeof(info.EInitToken),
                 (void*)&launch_token,
-                sizeof(launch_token)));
+                sizeof(info.EInitToken)));
 
         if (!InitializeEnclave(
                 GetCurrentProcess(),
