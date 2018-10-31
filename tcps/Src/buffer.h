@@ -1,6 +1,7 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
 #pragma once
+#include <openenclave/bits/oebuffer.h>
 
 typedef struct InternalBuffer_t {
     void* handle;
@@ -16,7 +17,7 @@ void* CreateBuffer(_In_ int a_BufferSize);
 
 Tcps_StatusCode AppendToBuffer(
     _In_ void* a_hBuffer,
-    _In_ BufferChunk* a_Chunk);
+    _In_ oe_BufferChunk* a_Chunk);
 
 Tcps_StatusCode
 GetBuffer(

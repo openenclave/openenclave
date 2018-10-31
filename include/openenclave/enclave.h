@@ -24,6 +24,7 @@
 #include "bits/properties.h"
 #include "bits/report.h"
 #include "bits/result.h"
+#include "bits/socket.h"
 #include "bits/types.h"
 
 /**

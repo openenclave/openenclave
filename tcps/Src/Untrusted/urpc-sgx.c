@@ -27,7 +27,7 @@ oe_result_t oe_call_enclave_function(
     }
 
     sgx_enclave_id_t eid = (sgx_enclave_id_t)enclave;
-    buffer4096 inBufferStruct;
+    oe_buffer4096 inBufferStruct;
     COPY_BUFFER(inBufferStruct, input_buffer, input_buffer_size);
 
     if (serialize_ecall) {

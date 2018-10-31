@@ -14,3 +14,10 @@ typedef __time64_t time_t;
 # endif
 # define _TIME_T_DEFINED_
 #endif
+
+#if !defined(_WINSOCKAPI_) && !defined(__timeval_defined)
+struct timeval {
+    long tv_sec;
+    long tv_usec;
+};
+#endif

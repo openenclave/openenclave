@@ -4,7 +4,7 @@
 #include <ws2tcpip.h>
 #include <stdio.h>
 #include <tcps_u.h>
-#include "../TcpsCalls_u.h"
+#include "../socket_u.h"
 #include "../../buffer.h"
 
 oe_socket_error_t ocall_WSAStartup(void)
@@ -108,18 +108,16 @@ recv_Result ocall_recv(void* a_hSocket, int a_nBufferSize, int a_Flags)
 }
 
 getaddrinfo_Result ocall_getaddrinfo(
-    buffer256 a_NodeName,
-    buffer256 a_ServiceName,
-    int a_Flags,
-    int a_Family,
-    int a_SockType,
-    int a_Protocol)
+    _In_z_ char* a_NodeName,
+    _In_z_ char* a_ServiceName,
+    _In_ int a_Flags,
+    _In_ int a_Family,
+    _In_ int a_SockType,
+    _In_ int a_Protocol)
 {
     getaddrinfo_Result result = { 0 };
     ADDRINFO* ailist = NULL;
     ADDRINFO* ai;
-    char* pNodeName = (a_NodeName.buffer[0] != 0) ? a_NodeName.buffer : NULL;
-    char* pServiceName = (a_ServiceName.buffer[0] != 0) ? a_ServiceName.buffer : NULL;
     ADDRINFO hints = { 0 };
     void* hBuffer = NULL;
 
@@ -128,7 +126,7 @@ getaddrinfo_Result ocall_getaddrinfo(
     hints.ai_socktype = a_SockType;
     hints.ai_protocol = a_Protocol;
 
-    result.error = getaddrinfo(pNodeName, pServiceName, &hints, &ailist);
+    result.error = getaddrinfo(a_NodeName, a_ServiceName, &hints, &ailist);
     if (ailist == NULL) {
         return result;
     }
@@ -158,8 +156,8 @@ getaddrinfo_Result ocall_getaddrinfo(
         aib->ai_socktype = ai->ai_socktype; 
         aib->ai_protocol = ai->ai_protocol; 
         aib->ai_addrlen = (int)ai->ai_addrlen; 
-        COPY_BUFFER_FROM_STRING(aib->ai_canonname, (ai->ai_canonname != NULL) ? ai->ai_canonname : "");
-        COPY_BUFFER(aib->ai_addr, ai->ai_addr, ai->ai_addrlen);
+        COPY_MEMORY_BUFFER_FROM_STRING(aib->ai_canonname, (ai->ai_canonname != NULL) ? ai->ai_canonname : "");
+        COPY_MEMORY_BUFFER(aib->ai_addr, ai->ai_addr, ai->ai_addrlen);
     }
 
     result.hMessage = hBuffer;
@@ -184,7 +182,7 @@ oe_socket_error_t ocall_setsockopt(
     void* a_hSocket,
     int a_nLevel,
     int a_nOptName,
-    buffer256 a_OptVal,
+    oe_buffer256 a_OptVal,
     int a_nOptLen)
 {
     SOCKET s = (SOCKET)a_hSocket;
@@ -238,7 +236,7 @@ select_Result ocall_select(
     oe_fd_set_internal a_ReadFds,
     oe_fd_set_internal a_WriteFds,
     oe_fd_set_internal a_ExceptFds,
-    oe_timeval a_Timeout)
+    struct timeval a_Timeout)
 {
     select_Result result = { 0 };
     fd_set readfds;
@@ -272,7 +270,7 @@ oe_socket_error_t ocall_closesocket(void* a_hSocket)
     return (err == SOCKET_ERROR) ? (oe_socket_error_t)WSAGetLastError() : 0;
 }
 
-oe_socket_error_t ocall_bind(void* a_hSocket, buffer256 a_Name, int a_nNameLen)
+oe_socket_error_t ocall_bind(void* a_hSocket, oe_buffer256 a_Name, int a_nNameLen)
 {
     SOCKET s = (SOCKET)a_hSocket;
     int err = bind(s, (const SOCKADDR*)a_Name.buffer, a_nNameLen);
@@ -281,7 +279,7 @@ oe_socket_error_t ocall_bind(void* a_hSocket, buffer256 a_Name, int a_nNameLen)
 
 oe_socket_error_t ocall_connect(
     void* a_hSocket,
-    buffer256 a_Name,
+    oe_buffer256 a_Name,
     int a_nNameLen)
 {
     SOCKET s = (SOCKET)a_hSocket;
@@ -302,17 +300,17 @@ accept_Result ocall_accept(void* a_hSocket, int a_nAddrLen)
 }
 
 getnameinfo_Result ocall_getnameinfo(
-    buffer256 a_Addr,
+    oe_buffer256 a_Addr,
     int a_AddrLen,
     int a_Flags)
 {
     getnameinfo_Result result = { 0 };
     result.error = getnameinfo((const SOCKADDR*)a_Addr.buffer,
                                a_AddrLen,
-                               result.host.buffer,
-                               sizeof(result.host.buffer),
-                               result.serv.buffer,
-                               sizeof(result.serv.buffer),
+                               result.host,
+                               sizeof(result.host),
+                               result.serv,
+                               sizeof(result.serv),
                                a_Flags);
     return result;
 }

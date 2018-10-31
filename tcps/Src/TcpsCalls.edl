@@ -2,9 +2,9 @@
 /* Licensed under the MIT License. */
 enclave {
     from "TcpsFile.edl" import *;
-    from "TcpsSockets.edl" import *;
 
     include "tcps.h"
+    include "openenclave/bits/oebuffer.h"
 
     struct ocall_tm {
         int tm_sec;
@@ -43,11 +43,6 @@ enclave {
         char matchingFileName[256];
     };
 
-    struct BufferChunk {
-        char buffer[1024];
-        int size;
-    };
-
     struct CreateBuffer_Result {
         Tcps_StatusCode uStatus;
         void* hBuffer;
@@ -74,33 +69,33 @@ enclave {
     trusted {
         public Tcps_StatusCode ecall_InitializeEnclave();
 
-        public CreateBuffer_Result ecall_CreateTeeBuffer(BufferChunk chunk);
+        public CreateBuffer_Result ecall_CreateTeeBuffer(oe_BufferChunk chunk);
 
         public Tcps_StatusCode ecall_AppendToTeeBuffer(
             [user_check] void* hTeeBuffer,
-            BufferChunk chunk);
+            oe_BufferChunk chunk);
 
         public void ecall_FreeTeeBuffer([user_check] void* hTeeBuffer);
 
         public GetReport_Result ecall_get_report(uint32_t flags,
-                                                 buffer1024 opt_params,
+                                                 oe_buffer1024 opt_params,
                                                  size_t opt_params_size);
-        public int ecall_verify_report(buffer1024 report,
+        public int ecall_verify_report(oe_buffer1024 report,
                                        size_t report_size);
 
         public callV2_Result ecall_v2(uint32_t func,
-                                      buffer4096 inBuffer,
+                                      oe_buffer4096 inBuffer,
                                       size_t inBufferSize);
     };
 
     untrusted {
         /* define OCALLs here. */
 
-        CreateBuffer_Result ocall_CreateReeBuffer(BufferChunk chunk);
+        CreateBuffer_Result ocall_CreateReeBuffer(oe_BufferChunk chunk);
 
         Tcps_StatusCode ocall_AppendToReeBuffer(
             [user_check] void* hReeBuffer,
-            BufferChunk chunk);
+            oe_BufferChunk chunk);
 
         void ocall_FreeReeBuffer([user_check] void* hBuffer);
 
@@ -108,7 +103,7 @@ enclave {
             [user_check] void* hReeBuffer,
             int offset);
 
-        Tcps_StatusCode ocall_ExportPublicCertificate(buffer256 location, buffer4096 ptr, size_t len);
+        Tcps_StatusCode ocall_ExportPublicCertificate(oe_buffer256 location, oe_buffer4096 ptr, size_t len);
         
         /* Time APIs. */
         unsigned int ocall_GetTickCount(void);
@@ -118,11 +113,11 @@ enclave {
         QueryPerformanceCounter_Result ocall_QueryPerformanceCounter(void);
 
         Tcps_StatusCode ocall_exit(int result);
-        Tcps_StatusCode ocall_puts(buffer1024 str, int bNewline);
+        Tcps_StatusCode ocall_puts(oe_buffer1024 str, int bNewline);
 
         FindFirstUntrustedFile_Result
         ocall_FindFirstUntrustedFile(
-            buffer256 filePathWithWildcards,
+            oe_buffer256 filePathWithWildcards,
             uint32_t matchingFileNameSize);
 
         FindNextUntrustedFile_Result
@@ -140,10 +135,10 @@ enclave {
         void ocall_free([user_check] void* ptr);
         void ocall_CopyReeMemoryFromBufferChunk(
             [user_check] void* ptr,
-            BufferChunk chunk);
+            oe_BufferChunk chunk);
 
         callV2_Result ocall_v2(uint32_t func,
-                               buffer4096 inBuffer,
+                               oe_buffer4096 inBuffer,
                                size_t inBufferSize);
     };
 };

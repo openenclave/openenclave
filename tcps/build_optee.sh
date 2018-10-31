@@ -78,20 +78,28 @@ sgxSdkPath=$(dirname "${binPath}")
 
 # Next, install oeedger8r
 oeedgepath=`which oeedger8r`
-if [ -z "$oeedgepath" ]; then
+if [ ! -z "$oeedgepath" ]; then
+    export OEEDGER8R=$oeedgepath
+    export OEPATHSEP=:
+else
     oeedgepath=`which oeedger8r.exe`
+    if [ ! -z "$oeedgepath" ]; then
+        export OEEDGER8R=$oeedgepath
+        export OEPATHSEP=;
+    fi
 fi
 if [ -z "$oeedgepath" ]; then
    if [ -e oeedger8r ]; then
       oeedgepath=$PWD/oeedger8r
+      export OEEDGER8R=$oeedgepath
+      export OEPATHSEP=:
    fi
 fi
-if [ ! -z "$oeedgepath" ]; then
-    export OEEDGER8R=$oeedgepath
-else
+if [ -z "$oeedgepath" ]; then
     wget https://oedownload.blob.core.windows.net/binaries/oeedger8r
     chmod 755 oeedger8r
     export OEEDGER8R=$PWD/oeedger8r
+    export OEPATHSEP=:
 fi
 echo Found $OEEDGER8R
 

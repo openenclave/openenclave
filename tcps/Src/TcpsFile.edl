@@ -3,6 +3,7 @@
 enclave {
     /* For SGX, we need ocalls to support fopen etc. */
     from "sgx_tprotected_fs.edl" import *;
+    include "openenclave/bits/oebuffer.h"
 
     struct ocall_struct_stat64i32 {
         unsigned int   _st_dev;
@@ -16,18 +17,6 @@ enclave {
         uint64_t       _st_atime;
         uint64_t       _st_mtime;
         uint64_t       _st_ctime;
-    };
-
-    struct buffer256 {
-        char buffer[256];
-    };
-
-    struct buffer1024 {
-        char buffer[1024];
-    };
-    
-    struct buffer4096 {
-        char buffer[4096];
     };
 
     struct GetUntrustedFileSize_Result {
@@ -51,23 +40,23 @@ enclave {
     untrusted {
         // File APIs
 
-        [cdecl] int ocall_mkdir(buffer256 dirname);
+        [cdecl] int ocall_mkdir(oe_buffer256 dirname);
         
         [cdecl] GetUntrustedFileSize_Result ocall_GetUntrustedFileSize(
-            buffer256 filename);
+            oe_buffer256 filename);
 
         [cdecl] GetUntrustedFileContent_Result ocall_GetUntrustedFileContent(
-            buffer256 location,
+            oe_buffer256 location,
             size_t len);
 
         [cdecl] unsigned int ocall_ExportFile(
-            buffer256 filename,
+            oe_buffer256 filename,
             unsigned int appendToExistingFile,
-            buffer4096 content,
+            oe_buffer4096 content,
             size_t len);
 
-        [cdecl] stat64i32_Result ocall_stat64i32(buffer256 path);
+        [cdecl] stat64i32_Result ocall_stat64i32(oe_buffer256 path);
 
-        [cdecl] int ocallTcpsFileDelete(buffer256 filename);
+        [cdecl] int ocallTcpsFileDelete(oe_buffer256 filename);
     };
 };

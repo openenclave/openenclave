@@ -50,6 +50,7 @@
     <ClCompile Include="..\..\buffer.c" />
     <ClCompile Include="..\..\oeresult.c" />
     <ClCompile Include="..\..\oeshim-common.c" />
+    <ClCompile Include="..\socket_u.c" />
     <ClCompile Include="..\TcpsCalls_u.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
@@ -116,6 +117,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(ProjectKaylaDir)driver\TrEE\OpteeCalls\targetver.h" />
+    <ClInclude Include="..\socket_args.h" />
+    <ClInclude Include="..\socket_u.h" />
     <ClInclude Include="..\TcpsCalls_u.h" />
   </ItemGroup>
   <ItemGroup>
@@ -136,7 +139,36 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\TcpsFile.edl" />
-    <None Include="..\..\TcpsSockets.edl" />
+    <CustomBuild Include="..\..\..\..\include\openenclave\socket.edl">
+      <FileType>Document</FileType>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Creating untrusted proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|Win32'">Creating untrusted proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Creating untrusted proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Creating untrusted proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|ARM'">Creating untrusted proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Creating untrusted proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Creating untrusted proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|x64'">Creating untrusted proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Creating untrusted proxy/bridge routines</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|Win32'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|ARM'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|x64'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|Win32'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|ARM'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|x64'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
+    </CustomBuild>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B7AE03E4-CF5A-49DC-AB3D-2D8F485472B4}</ProjectGuid>

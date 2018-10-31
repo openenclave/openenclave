@@ -10,10 +10,10 @@ global-incdirs-y += optee
 global-incdirs-y += $(OE_SDK_ROOT_PATH)include
 
 ../TcpsSdkTestTA_t.c: ../../TcpsSdkTestTA.edl
-	$(OEEDGER8R) --trusted --trusted-dir .. --search-path "$(TCPS_SDK_ROOT_PATH)Inc$(SGX_PATHSEP)$(TCPS_SDK_ROOT_PATH)$(SGX_RELATIVE_PATH)include" ../../TcpsSdkTestTA.edl
+	$(OEEDGER8R) --trusted --trusted-dir .. --search-path "$(TCPS_SDK_ROOT_PATH)Inc$(OEPATHSEP)$(OE_SDK_ROOT_PATH)include" ../../TcpsSdkTestTA.edl
 
 ../TcpsSdkTestTA_t.h: ../../TcpsSdkTestTA.edl
-	$(OEEDGER8R) --trusted --trusted-dir .. --search-path "$(TCPS_SDK_ROOT_PATH)Inc$(SGX_PATHSEP)$(TCPS_SDK_ROOT_PATH)$(SGX_RELATIVE_PATH)include" ../../TcpsSdkTestTA.edl
+	$(OEEDGER8R) --trusted --trusted-dir .. --search-path "$(TCPS_SDK_ROOT_PATH)Inc$(OEPATHSEP)$(OE_SDK_ROOT_PATH)include" ../../TcpsSdkTestTA.edl
 
 # Add the c file generated from your EDL file here
 srcs-y             += ../TcpsSdkTestTA_t.c

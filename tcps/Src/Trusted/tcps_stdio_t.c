@@ -299,8 +299,8 @@ Tcps_StatusCode TEE_P_ExportFile(
     size_t currentWriteSize;
     sgx_status_t sgxStatus;
     unsigned int retval;
-    buffer256 untrustedLocationBuffer;
-    buffer4096* contents = NULL;
+    oe_buffer256 untrustedLocationBuffer;
+    oe_buffer4096* contents = NULL;
 
 Tcps_InitializeStatus(Tcps_Module_Helper_t, "TEE_P_ExportFile");
 
@@ -319,7 +319,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "TEE_P_ExportFile");
 
         COPY_BUFFER_FROM_STRING(untrustedLocationBuffer, untrustedLocation);
 
-        contents = (buffer4096*)malloc(sizeof(*contents));
+        contents = (oe_buffer4096*)malloc(sizeof(*contents));
         Tcps_GotoErrorIfAllocFailed(contents);
 
         COPY_BUFFER(*contents, ptr, currentWriteSize);
@@ -358,7 +358,7 @@ TEE_P_ImportFile(
     int addToManifest)
 {
     sgx_status_t sgxStatus;
-    buffer256 sourceLocationBuffer;
+    oe_buffer256 sourceLocationBuffer;
     GetUntrustedFileSize_Result sizeResult;
     GetUntrustedFileContent_Result contentResult;
 
@@ -401,7 +401,7 @@ int _mkdir(const char *dirname)
 {
     int crtError = 0;
     sgx_status_t sgxStatus;
-    buffer256 dirnameBuffer;
+    oe_buffer256 dirnameBuffer;
 
 Tcps_InitializeStatus(Tcps_Module_Helper_t, "_mkdir");
 

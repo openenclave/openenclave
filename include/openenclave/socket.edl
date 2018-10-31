@@ -1,7 +1,9 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
 enclave {
-    include "oesocket.h"
+    include "openenclave/bits/oebuffer.h"
+    include "openenclave/bits/sockettypes.h"
+    include "openenclave/bits/timetypes.h"
 
     struct accept_Result {
         oe_socket_error_t error;
@@ -17,8 +19,8 @@ enclave {
         int ai_socktype;
         int ai_protocol;
         int ai_addrlen;
-        buffer256 ai_canonname;
-        buffer256 ai_addr;
+        char ai_canonname[256];
+        char ai_addr[256];
     };
 
     struct getaddrinfo_Result {
@@ -34,8 +36,8 @@ enclave {
 
     struct getnameinfo_Result {
         oe_socket_error_t error;
-        buffer256 host;
-        buffer256 serv;
+        char host[256];
+        char serv[256];
     };
 
     struct GetSockName_Result {
@@ -53,11 +55,6 @@ enclave {
     struct ioctlsocket_Result {
         oe_socket_error_t error;
         unsigned int outputValue;
-    };
-
-    struct oe_timeval {
-        int tv_sec;
-        int tv_usec;
     };
 
     struct oe_fd_set_internal {
@@ -90,99 +87,100 @@ enclave {
     };
 
     trusted {
+        public void ecall_InitializeSockets();
     };
 
     untrusted {
-        [cdecl] accept_Result ocall_accept(
+        accept_Result ocall_accept(
             [user_check] void* a_hSocket,
             int a_nAddrLen);
 
-        [cdecl] oe_socket_error_t ocall_bind(
+        oe_socket_error_t ocall_bind(
             [user_check] void* a_hSocket,
-            buffer256 a_Name,
+            oe_buffer256 a_Name,
             int a_nNameLen);
 
-        [cdecl] oe_socket_error_t ocall_closesocket(
+        oe_socket_error_t ocall_closesocket(
             [user_check] void* a_hSocket);
 
-        [cdecl] oe_socket_error_t ocall_connect(
+        oe_socket_error_t ocall_connect(
             [user_check] void* a_hSocket,
-            buffer256 a_Name,
+            oe_buffer256 a_Name,
             int a_nNameLen);
 
-        [cdecl] getaddrinfo_Result ocall_getaddrinfo(
-            buffer256 a_NodeName,
-            buffer256 a_ServiceName,
+        getaddrinfo_Result ocall_getaddrinfo(
+            [in, string] char* a_NodeName,
+            [in, string] char* a_ServiceName,
             int a_Flags,
             int a_Family,
             int a_SockType,
             int a_Protocol);
 
-        [cdecl] gethostname_Result ocall_gethostname(void);
+        gethostname_Result ocall_gethostname(void);
 
-        [cdecl] getnameinfo_Result ocall_getnameinfo(
-            buffer256 a_Addr,
+        getnameinfo_Result ocall_getnameinfo(
+            oe_buffer256 a_Addr,
             int a_AddrLen,
             int a_Flags);
 
-        [cdecl] GetSockName_Result ocall_getpeername(
+        GetSockName_Result ocall_getpeername(
             [user_check] void* a_hSocket,
             int a_nNameLen);
 
-        [cdecl] GetSockName_Result ocall_getsockname(
+        GetSockName_Result ocall_getsockname(
             [user_check] void* a_hSocket,
             int a_nNameLen);
 
-        [cdecl] getsockopt_Result ocall_getsockopt(
+        getsockopt_Result ocall_getsockopt(
             [user_check] void* a_hSocket,
             int a_nLevel,
             int a_nOptName,
             int a_nOptLen);
 
-        [cdecl] ioctlsocket_Result ocall_ioctlsocket(
+        ioctlsocket_Result ocall_ioctlsocket(
             [user_check] void* a_hSocket,
             int a_nCommand,
             unsigned int a_uInputValue);
 
-        [cdecl] oe_socket_error_t ocall_listen(
+        oe_socket_error_t ocall_listen(
             [user_check] void* a_hSocket,
             int a_nMaxConnections);
 
-        [cdecl] recv_Result ocall_recv(
+        recv_Result ocall_recv(
             [user_check] void* a_hSocket,
             int a_nBufferSize,
             int a_Flags);
 
-        [cdecl] select_Result ocall_select(
+        select_Result ocall_select(
             int a_nFds,
             oe_fd_set_internal a_ReadFds,
             oe_fd_set_internal a_WriteFds,
             oe_fd_set_internal a_ExceptFds,
-            oe_timeval a_Timeval);
+            struct timeval a_Timeval);
 
-        [cdecl] send_Result ocall_send(
+        send_Result ocall_send(
             [user_check] void* a_hSocket,
             [user_check] void* a_hMessage,
             int a_Flags);
 
-        [cdecl] oe_socket_error_t ocall_setsockopt(
+        oe_socket_error_t ocall_setsockopt(
             [user_check] void* a_hSocket,
             int a_nLevel,
             int a_nOptName,
-            buffer256 a_OptVal,
+            oe_buffer256 a_OptVal,
             int a_nOptLen);
 
-        [cdecl] oe_socket_error_t ocall_shutdown(
+        oe_socket_error_t ocall_shutdown(
             [user_check] void* a_hSocket,
             oe_shutdown_how_t a_How);
 
-        [cdecl] socket_Result ocall_socket(
+        socket_Result ocall_socket(
             oe_socket_address_family_t a_AddressFamily,
             oe_socket_type_t a_Type,
             int a_Protocol);
 
-        [cdecl] oe_socket_error_t ocall_WSACleanup(void);
+        oe_socket_error_t ocall_WSACleanup(void);
 
-        [cdecl] oe_socket_error_t ocall_WSAStartup(void);
+        oe_socket_error_t ocall_WSAStartup(void);
     };
 };

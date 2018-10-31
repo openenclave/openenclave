@@ -1,6 +1,8 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
 enclave {
+    from "openenclave/socket.edl" import *;
+
     trusted {
         /* define ECALLs here. */
         public int ecall_RunClient([in, string] char* server, [in, string] char* port);

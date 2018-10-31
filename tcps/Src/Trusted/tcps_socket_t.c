@@ -1,9 +1,12 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
-#include "tcps_socket_t.h"
+#include <openenclave/enclave.h>
 #include "tcps_string_t.h"
 #include "TcpsCalls_t.h"
+#include "socket_t.h"
 #include <errno.h>
+
+void ecall_InitializeSockets() {}
 
 static void
 CopyInputFds(oe_fd_set_internal* dest, oe_fd_set* src)
@@ -49,7 +52,7 @@ oe_select(
     if (a_exceptfds != NULL) {
         CopyInputFds(&exceptFds, a_exceptfds);
     }
-    sgx_status_t sgxStatus = ocall_select(&result, a_nFds, readFds, writeFds, exceptFds, *(oe_timeval*)a_Timeout);
+    sgx_status_t sgxStatus = ocall_select(&result, a_nFds, readFds, writeFds, exceptFds, *(struct timeval*)a_Timeout);
     if (sgxStatus != SGX_SUCCESS) {
         return 0;
     }
@@ -349,7 +352,7 @@ oe_setsockopt(
     _In_ int optlen)
 {
     oe_socket_error_t socketError = 0;
-    buffer256 optBuffer;
+    oe_buffer256 optBuffer;
     sgx_status_t sgxStatus;
 
     COPY_BUFFER(optBuffer, optval, optlen);
@@ -387,7 +390,7 @@ oe_connect(
     _In_ int namelen)
 {
     oe_socket_error_t socketError = 0;
-    buffer256 nameBuffer;
+    oe_buffer256 nameBuffer;
     sgx_status_t sgxStatus;
 
     COPY_BUFFER(nameBuffer, (const char*)name, namelen);
@@ -468,7 +471,7 @@ oe_bind(
     _In_ int namelen)
 {
     oe_socket_error_t socketError = 0;
-    buffer256 nameBuffer;
+    oe_buffer256 nameBuffer;
     sgx_status_t sgxStatus;
 
     COPY_BUFFER(nameBuffer, (const char*)name, namelen);
@@ -535,19 +538,14 @@ oe_getaddrinfo(
     oe_addrinfo* ailist = NULL;
     oe_addrinfo* ai;
     oe_addrinfo** pNext = &ailist;
-    buffer256 nodeName;
-    buffer256 serviceName;
     Tcps_StatusCode uStatus = Tcps_Good;
 
     result.addressCount = 0;
 
-    COPY_BUFFER_FROM_STRING(nodeName, (pNodeName != NULL) ? pNodeName : "");
-    COPY_BUFFER_FROM_STRING(serviceName, (pServiceName != NULL) ? pServiceName : "");
-
     sgxStatus = ocall_getaddrinfo(
         &result,
-        nodeName,
-        serviceName,
+        (char*)pNodeName,
+        (char*)pServiceName,
         (pHints != NULL) ? pHints->ai_flags : 0,
         (pHints != NULL) ? pHints->ai_family : 0,
         (pHints != NULL) ? pHints->ai_socktype : 0,
@@ -595,21 +593,21 @@ oe_getaddrinfo(
                 result.error = OE_ENOMEM;
                 break;
             }
-            memcpy(ai->ai_addr, response[i].ai_addr.buffer, response[i].ai_addrlen);
+            memcpy(ai->ai_addr, response[i].ai_addr, response[i].ai_addrlen);
 
             ai->ai_flags = response[i].ai_flags;
             ai->ai_family = response[i].ai_family;
             ai->ai_socktype = response[i].ai_socktype;
             ai->ai_protocol = response[i].ai_protocol;
             ai->ai_addrlen = response[i].ai_addrlen;
-            if (response[i].ai_canonname.buffer[0] != 0) {
+            if (response[i].ai_canonname[0] != 0) {
                 ai->ai_canonname = malloc(sizeof(response[i].ai_canonname) + 1);
                 if (ai->ai_canonname == NULL) {
                     free(ai);
                     result.error = OE_ENOMEM;
                     break;
                 }
-                strncpy(ai->ai_canonname, response[i].ai_canonname.buffer,
+                strncpy(ai->ai_canonname, response[i].ai_canonname,
                         sizeof(response[i].ai_canonname));
                 ai->ai_canonname[sizeof(response[i].ai_canonname)] = 0;
             } else {
@@ -643,7 +641,7 @@ oe_getnameinfo(
     _In_ int flags)
 {
     getnameinfo_Result result = { 0 };
-    buffer256 addrBuffer;
+    oe_buffer256 addrBuffer;
     sgx_status_t sgxStatus;
 
     COPY_BUFFER(addrBuffer, (const char*)sa, salen);
@@ -654,12 +652,12 @@ oe_getnameinfo(
     }
 
     if (host != NULL) {
-        strncpy(host, result.host.buffer, hostlen);
+        strncpy(host, result.host, hostlen);
         host[hostlen - 1] = 0;
     }
 
     if (serv != NULL) {
-        strncpy(serv, result.serv.buffer, servlen);
+        strncpy(serv, result.serv, servlen);
         serv[servlen - 1] = 0;
     }
 

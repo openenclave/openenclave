@@ -11,8 +11,8 @@
 
 Tcps_StatusCode 
 ocall_ExportPublicCertificate(
-    buffer256 certificateFileNameExported, 
-    buffer4096 ptr, 
+    oe_buffer256 certificateFileNameExported, 
+    oe_buffer4096 ptr, 
     size_t len)
 {
     Tcps_Trace(Tcps_TraceLevelDebug, "ocall_ExportPublicCertificate: export to (%s)\n", certificateFileNameExported);
@@ -22,7 +22,7 @@ ocall_ExportPublicCertificate(
 
 FindFirstUntrustedFile_Result
 ocall_FindFirstUntrustedFile(
-    buffer256 filePathWithWildcards,
+    oe_buffer256 filePathWithWildcards,
     uint32_t matchingFileNameSize)
 {
     FindFirstUntrustedFile_Result result = { 0 };

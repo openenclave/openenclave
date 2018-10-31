@@ -3,9 +3,7 @@
 #include <openenclave/enclave.h>
 #include "tcps_stdio_t.h"
 #include "SampleTA_t.h"
-#include "tcps_socket_t.h"
 #include "tcps_string_t.h"
-#include "oesocket.h"
 
 /* This client connects to an echo server, sends a text message,
  * and outputs the text reply.

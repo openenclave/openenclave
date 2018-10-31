@@ -41,8 +41,8 @@ TEE_P_ExportPublicCertificate(
 {
     sgx_status_t sgxStatus;
     Tcps_StatusCode retval;
-    buffer256 certificateFileNameExportedBuffer;
-    buffer4096* contents = NULL;
+    oe_buffer256 certificateFileNameExportedBuffer;
+    oe_buffer4096* contents = NULL;
 
 Tcps_InitializeStatus(Tcps_Module_Helper_t, "TEE_P_ExportPublicCertificate");
 
@@ -52,7 +52,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "TEE_P_ExportPublicCertificate");
 
     Tcps_GotoErrorIfTrue(len > sizeof(*contents), Tcps_BadRequestTooLarge);
 
-    contents = (buffer4096*)malloc(sizeof(*contents));
+    contents = (oe_buffer4096*)malloc(sizeof(*contents));
     Tcps_GotoErrorIfAllocFailed(contents);
 
     COPY_BUFFER(*contents, ptr, len);

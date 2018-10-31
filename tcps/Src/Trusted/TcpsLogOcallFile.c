@@ -63,8 +63,8 @@ TcpsLogFileWriteOcall(
     bool Append,
     const TCPS_IDENTITY_LOG LogIdentityLabel)
 {
-    buffer256 filenameBuffer;
-    buffer4096* content;
+    oe_buffer256 filenameBuffer;
+    oe_buffer4096* content;
 
 Tcps_InitializeStatus(Tcps_Module_Helper_t, "TcpsLogFileWriteOcall");
 
@@ -79,7 +79,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "TcpsLogFileWriteOcall");
 
     COPY_BUFFER_FROM_STRING(filenameBuffer, filename);
 
-    content = (buffer4096*)malloc(sizeof(*content));
+    content = (oe_buffer4096*)malloc(sizeof(*content));
     Tcps_GotoErrorIfAllocFailed(content);
 
     COPY_BUFFER(*content, Buffer, BufferSize);
@@ -127,7 +127,7 @@ TcpsLogFileReadOcall(
     const TCPS_LOG_FILE_TYPE FileType,
     const TCPS_IDENTITY_LOG LogIdentityLabel)
 {
-    buffer256 filenameBuffer;
+    oe_buffer256 filenameBuffer;
 
     if (Buffer == NULL ||
         BufferSize == NULL ||
@@ -215,7 +215,7 @@ TcpsLogFileClearOcall(
     {
         return Tcps_Bad;
     }
-    buffer256 filenameBuffer;
+    oe_buffer256 filenameBuffer;
     COPY_BUFFER_FROM_STRING(filenameBuffer, filename);
 
     sgx_status_t sgxstatus =

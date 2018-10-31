@@ -14,7 +14,7 @@ oe_result_t oe_call_host_function(
     size_t* output_bytes_written)
 {
     callV2_Result result;
-    buffer4096 inBufferStruct;
+    oe_buffer4096 inBufferStruct;
     if (input_buffer_size > sizeof(inBufferStruct)) {
         return OE_INVALID_PARAMETER;
     }

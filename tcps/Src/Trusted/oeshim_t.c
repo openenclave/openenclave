@@ -94,7 +94,7 @@ char* oe_host_strndup(const char* str, size_t n)
     int len = (ptr == NULL) ? n : (ptr - str);
     char* hostBuffer = (char*)oe_host_malloc(len + 1);
 
-    BufferChunk teeChunk;
+    oe_BufferChunk teeChunk;
     memcpy(teeChunk.buffer, str, len);
     teeChunk.buffer[len] = 0;
     teeChunk.size = len + 1;
@@ -254,7 +254,7 @@ oe_result_t oe_verify_report(
 
 GetReport_Result ecall_get_report(
     uint32_t flags,
-    buffer1024 opt_params,
+    oe_buffer1024 opt_params,
     size_t opt_params_size)
 {
     GetReport_Result result = { 0 };
@@ -269,7 +269,7 @@ GetReport_Result ecall_get_report(
     return result;
 }
 
-int ecall_verify_report(buffer1024 report, size_t report_size)
+int ecall_verify_report(oe_buffer1024 report, size_t report_size)
 {
     oe_result_t result = oe_verify_report(report.buffer, report_size, NULL);
     return result;
@@ -638,7 +638,7 @@ typedef void(*oe_ecall_func_t)(
 extern oe_ecall_func_t __oe_ecalls_table[];
 extern size_t __oe_ecalls_table_size;
 
-callV2_Result ecall_v2(uint32_t func, buffer4096 inBuffer, size_t inBufferSize)
+callV2_Result ecall_v2(uint32_t func, oe_buffer4096 inBuffer, size_t inBufferSize)
 {
     callV2_Result result;
 

@@ -12,7 +12,7 @@
 stat64i32_Result
 SGX_CDECL
 ocall_stat64i32(
-    buffer256 path)
+    oe_buffer256 path)
 {
     stat64i32_Result result;
     Tcps_StatusCode uStatus = Tcps_Good;

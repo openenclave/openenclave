@@ -6,7 +6,7 @@
 #include "tcps.h"
 #include "TcpsLogCodes.h"
 #include "ICryptUtil.h"
-#include "tcps_time.h"
+#include <openenclave/bits/timetypes.h>
 
 #ifdef __cplusplus
 extern "C"

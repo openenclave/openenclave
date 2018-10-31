@@ -254,7 +254,7 @@ _stat(
     struct _stat *buffer)
 {
     sgx_status_t sgxStatus;
-    buffer256 pathBuffer;
+    oe_buffer256 pathBuffer;
     stat64i32_Result result;
 
 Tcps_InitializeStatus(Tcps_Module_Helper_t, "_stat");

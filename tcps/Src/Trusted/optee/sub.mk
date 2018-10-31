@@ -11,6 +11,11 @@ ROOT_RELATIVE_PATH = ../../../
 ../TcpsCalls_t.h: ../../TcpsCalls.edl
 	$(SGX_EDGER8R) --trusted --search-path "../..$(SGX_PATHSEP)$(ROOT_RELATIVE_PATH)$(SGX_RELATIVE_PATH)include" --trusted-dir ".."  ../../TcpsCalls.edl
 
+../socket_t.h: $(OE_SDK_ROOT_PATH)include/openenclave/socket.edl
+	$(OEEDGER8R) --trusted --search-path "../..$(OEPATHSEP)$(OE_SDK_ROOT_PATH)include" --trusted-dir ".."  $(OE_SDK_ROOT_PATH)include/openenclave/socket.edl
+
+../tcps_socket_t.c: ../socket_t.h
+
 CFLAGS += -DTRUSTED_CODE -DUSE_OPTEE
 
 global-incdirs-y += ..

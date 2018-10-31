@@ -6,18 +6,18 @@
 #include <stdio.h>
 #include <direct.h>
 #include <string.h>
-#include <sys/types.h>  
-#include <sys/stat.h>  
+#include <sys/types.h> 
+#include <sys/stat.h> 
 #include <assert.h>
 
 #include <tcps.h>
 
 #include "../TcpsCalls_u.h"
 
-Tcps_StatusCode 
+Tcps_StatusCode
 ocall_ExportPublicCertificate(
-    buffer256 certificateFileNameExported, 
-    buffer4096 ptr, 
+    oe_buffer256 certificateFileNameExported,
+    oe_buffer4096 ptr,
     size_t len)
 {
     Tcps_Trace(Tcps_TraceLevelDebug, "ocall_ExportPublicCertificate: export to (%s)\n", certificateFileNameExported);
@@ -26,9 +26,9 @@ ocall_ExportPublicCertificate(
 }
 
 static
-Tcps_StatusCode 
+Tcps_StatusCode
 internal_FindFirstUntrustedFile(
-    buffer256 filePathWithWildcards,
+    oe_buffer256 filePathWithWildcards,
     char* matchingFileName,
     uint32_t matchingFileNameSize,
     uint32_t *findNextHandle)
@@ -67,7 +67,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_u, "ocall_FindFirstUntrustedFile");
     /* Return the first file path. */
     memcpy(matchingFileName, findData.cFileName, fileNameLength + 1);
     *findNextHandle = (uint32_t)findHandle;
-    
+   
 Tcps_ReturnStatusCode;
 Tcps_BeginErrorHandling;
     *findNextHandle = (uint32_t)INVALID_HANDLE_VALUE;
@@ -81,13 +81,13 @@ Tcps_FinishErrorHandling;
 
 FindFirstUntrustedFile_Result
 ocall_FindFirstUntrustedFile(
-    buffer256 filePathWithWildcards,
+    oe_buffer256 filePathWithWildcards,
     uint32_t matchingFileNameSize)
 {
     FindFirstUntrustedFile_Result result;
 
     result.status = internal_FindFirstUntrustedFile(
-        filePathWithWildcards, 
+        filePathWithWildcards,
         result.matchingFileName,
         matchingFileNameSize,
         &result.findNextHandle);
@@ -96,7 +96,7 @@ ocall_FindFirstUntrustedFile(
 }
 
 static
-Tcps_StatusCode 
+Tcps_StatusCode
 internal_FindNextUntrustedFile(
     uint32_t findNextHandle,
     char* matchingFileName,
@@ -125,7 +125,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_u, "ocall_FindNextUntrustedFile");
     Tcps_GotoErrorIfTrue(fileNameLength >= matchingFileNameSize, Tcps_BadRequestTooLarge);
 
     memcpy(matchingFileName, findData.cFileName, fileNameLength + 1);
-    
+   
 Tcps_ReturnStatusCode;
 Tcps_BeginErrorHandling;
 Tcps_FinishErrorHandling;
@@ -141,7 +141,7 @@ ocall_FindNextUntrustedFile(
     return result;
 }
 
-Tcps_StatusCode 
+Tcps_StatusCode
 ocall_FindNextUntrustedFileClose(
     uint32_t findNextHandle)
 {
@@ -150,15 +150,15 @@ ocall_FindNextUntrustedFileClose(
 Tcps_InitializeStatus(Tcps_Module_Helper_u, "ocall_FindNextUntrustedFileClose");
 
     TCPS_ASSERT((HANDLE)findNextHandle != INVALID_HANDLE_VALUE);
-   
+  
     success = FindClose((HANDLE)findNextHandle);
-    
+   
     if (!success)
     {
         TCPS_ASSERT(FALSE);
         Tcps_GotoErrorWithStatus(Tcps_BadInvalidArgument);
     }
-    
+   
 Tcps_ReturnStatusCode;
 Tcps_BeginErrorHandling;
 Tcps_FinishErrorHandling;

@@ -122,8 +122,8 @@ recv_Result ocall_recv(void* a_hSocket, int a_nBufferSize, int a_Flags)
 }
 
 getaddrinfo_Result ocall_getaddrinfo(
-    buffer256 a_NodeName,
-    buffer256 a_ServiceName,
+    char* a_NodeName,
+    char* a_ServiceName,
     int a_Flags,
     int a_Family,
     int a_SockType,
@@ -146,15 +146,12 @@ getaddrinfo_Result ocall_getaddrinfo(
     addrinfo_Buffer *aib;
     addrinfo_Buffer *aibuf;
 
-    node_name = (a_NodeName.buffer[0] != 0) ? a_NodeName.buffer : NULL;
-    service_name  = (a_ServiceName.buffer[0]) ? a_ServiceName.buffer : NULL;
-
     hints.ai_flags = a_Flags;
     hints.ai_family = a_Family;
     hints.ai_socktype = a_SockType;
     hints.ai_protocol = a_Protocol;
 
-    s = getaddrinfo(node_name, service_name, &hints, &ailist);
+    s = getaddrinfo(a_NodeName, a_ServiceName, &hints, &ailist);
     if (s) {
         result.error = (oe_socket_error_t)s;
         return result;
@@ -214,7 +211,7 @@ oe_socket_error_t ocall_setsockopt(
     void* a_hSocket,
     int a_nLevel,
     int a_nOptName,
-    buffer256 a_OptVal,
+    oe_buffer256 a_OptVal,
     int a_nOptLen)
 {
     int fd = (int)a_hSocket;
@@ -304,7 +301,7 @@ oe_socket_error_t ocall_closesocket(void* a_hSocket)
     return s == -1 ? (oe_socket_error_t)errno : 0;
 }
 
-oe_socket_error_t ocall_bind(void* a_hSocket, buffer256 a_Name, int a_nNameLen)
+oe_socket_error_t ocall_bind(void* a_hSocket, oe_buffer256 a_Name, int a_nNameLen)
 {
     int fd = (int)a_hSocket;
     int s = bind(fd, (const struct sockaddr *)a_Name.buffer, a_nNameLen);
@@ -313,7 +310,7 @@ oe_socket_error_t ocall_bind(void* a_hSocket, buffer256 a_Name, int a_nNameLen)
 
 oe_socket_error_t ocall_connect(
     void* a_hSocket,
-    buffer256 a_Name,
+    oe_buffer256 a_Name,
     int a_nNameLen)
 {
     int fd = (int)a_hSocket;
@@ -334,7 +331,7 @@ accept_Result ocall_accept(void* a_hSocket, int a_nAddrLen)
 }
 
 getnameinfo_Result ocall_getnameinfo(
-    buffer256 a_Addr,
+    oe_buffer256 a_Addr,
     int a_AddrLen,
     int a_Flags)
 {

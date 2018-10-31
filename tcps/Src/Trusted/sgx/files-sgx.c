@@ -111,7 +111,7 @@ int _stat64i32(
     _In_z_ const char *path,
     _Out_ struct _stat64i32 *buffer)
 {
-    buffer256 pathBuffer;
+    oe_buffer256 pathBuffer;
     stat64i32_Result result;
 
     COPY_BUFFER_FROM_STRING(pathBuffer, path);
@@ -129,7 +129,7 @@ int _stat(
     _Out_ struct _stat *buffer)
 {
     stat64i32_Result result;
-    buffer256 pathBuffer;
+    oe_buffer256 pathBuffer;
 
     if (sizeof(*buffer) != sizeof(ocall_struct_stat64i32)) {
         return -1;

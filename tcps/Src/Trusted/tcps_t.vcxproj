@@ -202,6 +202,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|ARM'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|x64'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="socket_args.h" />
+    <ClInclude Include="socket_t.h" />
     <ClInclude Include="tcps_string_t.h" />
     <ClInclude Include="TcpsLogApp.h" />
     <ClInclude Include="tcps_stdio_t.h" />
@@ -214,7 +216,36 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\TcpsFile.edl" />
-    <None Include="..\TcpsSockets.edl" />
+    <CustomBuild Include="..\..\..\include\openenclave\socket.edl">
+      <FileType>Document</FileType>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Creating proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|Win32'">Creating proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Creating proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Creating proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|ARM'">Creating proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Creating proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Creating proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|x64'">Creating proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Creating proxy/bridge routines</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename)_t.h;%(Filename)_t.c;$(TcpsSdkDir)Inc\%(Filename)_t.h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|Win32'">%(Filename)_t.h;%(Filename)_t.c;$(TcpsSdkDir)Inc\%(Filename)_t.h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename)_t.h;%(Filename)_t.c;$(TcpsSdkDir)Inc\%(Filename)_t.h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">%(Filename)_t.h;%(Filename)_t.c;$(TcpsSdkDir)Inc\%(Filename)_t.h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|ARM'">%(Filename)_t.h;%(Filename)_t.c;$(TcpsSdkDir)Inc\%(Filename)_t.h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">%(Filename)_t.h;%(Filename)_t.c;$(TcpsSdkDir)Inc\%(Filename)_t.h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Filename)_t.h;%(Filename)_t.c;$(TcpsSdkDir)Inc\%(Filename)_t.h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|x64'">%(Filename)_t.h;%(Filename)_t.c;$(TcpsSdkDir)Inc\%(Filename)_t.h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Filename)_t.h;%(Filename)_t.c;$(TcpsSdkDir)Inc\%(Filename)_t.h;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(TcpsSdkDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(ProjectDir)..;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|Win32'">"$(TcpsSdkDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(ProjectDir)..;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(TcpsSdkDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(ProjectDir)..;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">"$(TcpsSdkDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(ProjectDir)..;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|ARM'">"$(TcpsSdkDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(ProjectDir)..;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">"$(TcpsSdkDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(ProjectDir)..;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(TcpsSdkDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(ProjectDir)..;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|x64'">"$(TcpsSdkDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(ProjectDir)..;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(TcpsSdkDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(ProjectDir)..;$(OESdkDir)include"</Command>
+    </CustomBuild>
     <None Include="optee\linux_gcc.mak" />
     <None Include="optee\sub.mk" />
   </ItemGroup>
@@ -361,7 +392,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>TRUSTED_CODE;OPENSSL_NO_SOCK;USE_SGX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(TcpsSdkDir)Inc;$(ProjectDir)..;$(SolutionDir)\openssl\include;$(OESdkDir)include;$(ProjectDir);$(SolutionDir)\Stack\platforms\sgx_trusted;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(ProjectDir)sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TcpsSdkDir)Inc;$(ProjectDir)..;$(OESdkDir)include;$(ProjectDir);$(SolutionDir)\Stack\platforms\sgx_trusted;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(ProjectDir)sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
       <ShowIncludes>false</ShowIncludes>
@@ -381,7 +412,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>TRUSTED_CODE;OPENSSL_NO_SOCK;USE_SGX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(TcpsSdkDir)Inc;$(ProjectDir)..;$(SolutionDir)\openssl\include;$(OESdkDir)include;$(ProjectDir);$(SolutionDir)\Stack\platforms\sgx_trusted;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(ProjectDir)sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TcpsSdkDir)Inc;$(ProjectDir)..;$(OESdkDir)include;$(ProjectDir);$(SolutionDir)\Stack\platforms\sgx_trusted;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(ProjectDir)sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
       <ShowIncludes>false</ShowIncludes>
@@ -401,7 +432,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>TRUSTED_CODE;OPENSSL_NO_SOCK;USE_OPTEE;SIMULATE_TEE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)..;$(ProjectDir);$(TcpsSdkDir)Inc\optee\Trusted\Simulator;$(TcpsSdkDir)Inc\optee\Trusted;$(TcpsSdkDir)Inc\optee;$(TcpsSdkDir)Inc;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(SGXSDKInstallPath)include;$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..;$(ProjectDir);$(TcpsSdkDir)Inc\optee\Trusted\Simulator;$(TcpsSdkDir)Inc\optee\Trusted;$(TcpsSdkDir)Inc\optee;$(TcpsSdkDir)Inc;$(OESdkDir)include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(SGXSDKInstallPath)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
       <ShowIncludes>false</ShowIncludes>
@@ -421,7 +452,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>TRUSTED_CODE;OPENSSL_NO_SOCK;USE_OPTEE;SIMULATE_TEE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)..;$(ProjectDir);$(TcpsSdkDir)Inc\optee\Trusted\Simulator;$(TcpsSdkDir)Inc\optee\Trusted;$(TcpsSdkDir)Inc\optee;$(TcpsSdkDir)Inc;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(SGXSDKInstallPath)include;$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..;$(ProjectDir);$(TcpsSdkDir)Inc\optee\Trusted\Simulator;$(TcpsSdkDir)Inc\optee\Trusted;$(TcpsSdkDir)Inc\optee;$(TcpsSdkDir)Inc;$(OESdkDir)include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(SGXSDKInstallPath)include;$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
       <ShowIncludes>false</ShowIncludes>
@@ -443,7 +474,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>USE_SGX;TRUSTED_CODE;OPENSSL_NO_SOCK;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(TcpsSdkDir)Inc;$(ProjectDir)..;$(SolutionDir)\openssl\include;$(OESdkDir)include;$(ProjectDir);$(SolutionDir)\Stack\platforms\sgx_trusted;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(ProjectDir)sgx;$(ProjectDir)sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TcpsSdkDir)Inc;$(ProjectDir)..;$(OESdkDir)include;$(ProjectDir);$(SolutionDir)\Stack\platforms\sgx_trusted;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(ProjectDir)sgx;$(ProjectDir)sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Lib>
       <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
@@ -462,7 +493,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>TRUSTED_CODE;OPENSSL_NO_SOCK;USE_OPTEE;SIMULATE_TEE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)..;$(ProjectDir);$(TcpsSdkDir)Inc\optee\Trusted\Simulator;$(TcpsSdkDir)Inc\optee\Trusted;$(TcpsSdkDir)Inc\optee;$(TcpsSdkDir)Inc;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(SGXSDKInstallPath)include;$(OESdkDir)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\libc++;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..;$(ProjectDir);$(TcpsSdkDir)Inc\optee\Trusted\Simulator;$(TcpsSdkDir)Inc\optee\Trusted;$(TcpsSdkDir)Inc\optee;$(TcpsSdkDir)Inc;$(OESdkDir)include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(SGXSDKInstallPath)include;$(OESdkDir)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\libc++;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Lib>
       <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>

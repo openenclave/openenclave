@@ -1,11 +1,11 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
 #pragma once
-#ifndef TRUSTED_CODE
-# error tcps_socket_t.h should only be included with TRUSTED_CODE
+#ifndef _OE_ENCLAVE_H
+# error openenclave/bits/socket.h should only be included with enclave.h
 #endif
-#include "tcps_time_t.h"
-#include "oesocket.h"
+#include <openenclave/bits/sockettypes.h>
+#include <openenclave/bits/timetypes.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -113,8 +113,6 @@ typedef struct oe_sockaddr_in6 {
     oe_in6_addr    sin6_addr;
     uint32_t       sin6_scope_id;
 } oe_sockaddr_in6;
-
-#include "TcpsTls.h"
 
 int oe_fd_isset(_In_ oe_socket_t fd, _In_ oe_fd_set* set);
 

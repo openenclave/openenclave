@@ -55,7 +55,7 @@ InternalBuffer_t* FindInternalBufferByHandle(_In_ void* hBuffer)
 
 Tcps_StatusCode AppendToBuffer(
     _In_ void* a_hBuffer,
-    _In_ BufferChunk* a_Chunk)
+    _In_ oe_BufferChunk* a_Chunk)
 {
     InternalBuffer_t* buffer = FindInternalBufferByHandle(a_hBuffer);
     if (buffer == NULL) {

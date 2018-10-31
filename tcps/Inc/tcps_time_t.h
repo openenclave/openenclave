@@ -6,12 +6,7 @@
 #endif
 #include "tcps_t.h"
 
-typedef struct timeval {
-    long tv_sec;
-    long tv_usec;
-} timeval;
-
-#include "tcps_time.h"
+#include <openenclave/bits/timetypes.h>
 
 #ifndef _INC_TIME
 /* Only include these definitions if not already included by time.h */

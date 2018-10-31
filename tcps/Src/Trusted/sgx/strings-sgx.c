@@ -10,7 +10,7 @@
 static int vprintf(const char *format, __va_list argptr)
 {
     int s;
-    buffer1024 buf;
+    oe_buffer1024 buf;
 
     memset(buf.buffer, 0, sizeof(buf.buffer));
     s = vsnprintf(buf.buffer, BUFSIZ, format, argptr);

@@ -185,6 +185,16 @@ typedef enum {
 /* Copy a string into a fixed size buffer.  Zero the buffer to prevent
  * leaking any extra data out of the TEE.
  */
+#define COPY_MEMORY_BUFFER_FROM_STRING(buff, str) \
+    memset((buff), 0, sizeof(buff)); \
+    strcpy_s((buff), sizeof(buff), (str));
+
+#define COPY_MEMORY_BUFFER(dest, src, srcLen) \
+    if ((srcLen) < sizeof((dest))) { \
+        memset((dest) + (srcLen), 0, sizeof(dest) - (srcLen)); \
+    } \
+    memcpy((dest), (src), (srcLen));
+
 #define COPY_BUFFER_FROM_STRING(buff, str) \
     memset((buff).buffer, 0, sizeof((buff).buffer)); \
     strcpy_s((buff).buffer, sizeof((buff).buffer), (str));

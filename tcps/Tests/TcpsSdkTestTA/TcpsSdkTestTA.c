@@ -2,8 +2,7 @@
 /* Licensed under the MIT License. */
 #include "TcpsSdkTestTA_t.h"
 #include "sgx_trts.h"
-#include "tcps_socket_t.h"
-#include "oesocket.h"
+#include <openenclave/enclave.h>
 #include <string.h>
 
 void ecall_DoNothing()

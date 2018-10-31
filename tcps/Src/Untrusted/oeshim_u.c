@@ -113,7 +113,7 @@ void ocall_free(_In_ void* ptr)
 
 void ocall_CopyReeMemoryFromBufferChunk(
     _In_ void* ptr,
-    _In_ BufferChunk chunk)
+    _In_ oe_BufferChunk chunk)
 {
     memcpy(ptr, chunk.buffer, chunk.size);
 }
@@ -127,7 +127,7 @@ oe_result_t oe_get_report_v1(
     _Out_ size_t* report_buffer_size)
 {
     GetReport_Result result;
-    buffer1024 optParamsBuffer;
+    oe_buffer1024 optParamsBuffer;
     sgx_enclave_id_t eid = (sgx_enclave_id_t)enclave;
     COPY_BUFFER(optParamsBuffer, opt_params, opt_params_size);
     sgx_status_t sgxStatus = ecall_get_report(eid, &result, flags, optParamsBuffer, opt_params_size);
@@ -148,7 +148,7 @@ oe_result_t oe_get_report_v2(
     _Out_ size_t* report_buffer_size)
 {
     GetReport_Result result;
-    buffer1024 optParamsBuffer;
+    oe_buffer1024 optParamsBuffer;
     sgx_enclave_id_t eid = (sgx_enclave_id_t)enclave;
     COPY_BUFFER(optParamsBuffer, opt_params, opt_params_size);
     sgx_status_t sgxStatus = ecall_get_report(eid, &result, flags, optParamsBuffer, opt_params_size);
@@ -175,7 +175,7 @@ oe_result_t oe_verify_report(
     _In_ size_t report_size,
     _Out_opt_ oe_report_t* parsed_report)
 {
-    buffer1024 reportBuffer;
+    oe_buffer1024 reportBuffer;
     oe_result_t oeResult;
     sgx_enclave_id_t eid = (sgx_enclave_id_t)enclave;
     if (parsed_report != NULL) {
@@ -193,7 +193,7 @@ oe_result_t oe_verify_report(
     return oeResult;
 }
 
-callV2_Result ocall_v2(uint32_t func, buffer4096 inBuffer, size_t inBufferSize)
+callV2_Result ocall_v2(uint32_t func, oe_buffer4096 inBuffer, size_t inBufferSize)
 {
     callV2_Result result;
 
@@ -210,17 +210,6 @@ callV2_Result ocall_v2(uint32_t func, buffer4096 inBuffer, size_t inBufferSize)
         &result.outBufferSize);
     return result;
 }
-
-#if 1
-#else
-typedef struct ms_ecall_v2_t {
-    callV2_Result ms_retval;
-    uint32_t ms_func;
-    buffer4096 ms_inBuffer;
-    size_t ms_inBufferSize;
-} ms_ecall_v2_t;
-#endif
-
 
 /**
  * Gets the public key of an enclave.

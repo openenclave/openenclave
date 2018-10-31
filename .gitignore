@@ -25,6 +25,9 @@ tcps/packages/
 helloworld_t.*
 helloworld_u.*
 helloworld_args.h
+socket_t.*
+socket_u.*
+socket_args.h
 TcpsSdkTestTA_args.h
 SampleTA_args.h
 oeedger8r.exe

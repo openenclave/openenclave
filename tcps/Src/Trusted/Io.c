@@ -1,10 +1,11 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
-#include <tcps_socket_t.h>
+#include <openenclave/enclave.h>
 #include <tcps_string_t.h>
 #include "TcpsCalls_t.h"
 #include "tcps.h"
 #include "buffer.h"
+#include "TcpsTls.h"
 
 Tcps_StatusCode
 TcpsPushDataToReeBuffer(
@@ -15,7 +16,7 @@ TcpsPushDataToReeBuffer(
     size_t bytesCopied = 0;
     void* hReeBuffer = NULL;
     sgx_status_t sgxStatus = SGX_SUCCESS;
-    BufferChunk chunk;
+    oe_BufferChunk chunk;
     CreateBuffer_Result result;
 
 Tcps_InitializeStatus(Tcps_Module_Helper_t, "TcpsPushDataToReeBuffer"); 
@@ -60,7 +61,7 @@ TcpsPullDataFromReeBuffer(
 {
     size_t bytesCopied = 0;
     sgx_status_t sgxStatus = SGX_SUCCESS;
-    BufferChunk chunk;
+    oe_BufferChunk chunk;
     GetChunk_Result result;
 
 Tcps_InitializeStatus(Tcps_Module_Helper_t, "TcpsPullDataFromReeBuffer"); 
@@ -89,7 +90,7 @@ void TcpsFreeReeBuffer(_In_ void* a_hReeBuffer)
 }
 
 CreateBuffer_Result ecall_CreateTeeBuffer(
-    _In_ BufferChunk chunk)
+    _In_ oe_BufferChunk chunk)
 {
     CreateBuffer_Result result = { 0 };
     InternalBuffer_t* buffer = CreateInternalBuffer(chunk.size);
@@ -112,7 +113,7 @@ Tcps_StatusCode TcpsGetTeeBuffer(
 
 Tcps_StatusCode ecall_AppendToTeeBuffer(
     _In_ void* a_hTeeBuffer,
-    _In_ BufferChunk a_Chunk)
+    _In_ oe_BufferChunk a_Chunk)
 {
     return AppendToBuffer(a_hTeeBuffer, &a_Chunk);
 }

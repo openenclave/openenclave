@@ -17,7 +17,7 @@
 
 /* I/O related APIs */
 
-Tcps_StatusCode ocall_puts(buffer1024 str, int bNewline)
+Tcps_StatusCode ocall_puts(oe_buffer1024 str, int bNewline)
 {
     uint32_t error;
 
@@ -45,7 +45,7 @@ TcpsPushDataToTeeBuffer(
     size_t bytesCopied = 0;
     void* hTeeBuffer = NULL;
     sgx_status_t sgxStatus = SGX_SUCCESS;
-    BufferChunk chunk;
+    oe_BufferChunk chunk;
     CreateBuffer_Result result;
 
 Tcps_InitializeStatus(Tcps_Module_Helper_u, "TcpsPushDataToTeeBuffer"); 
@@ -106,7 +106,7 @@ void TcpsFreeReeBuffer(_In_ void* a_hReeBuffer)
     FreeBuffer(a_hReeBuffer);
 }
 
-CreateBuffer_Result ocall_CreateReeBuffer(BufferChunk chunk)
+CreateBuffer_Result ocall_CreateReeBuffer(oe_BufferChunk chunk)
 {
     CreateBuffer_Result result = {0};
     if (chunk.size > sizeof(chunk.buffer)) {
@@ -123,7 +123,7 @@ CreateBuffer_Result ocall_CreateReeBuffer(BufferChunk chunk)
     return result;
 }
 
-Tcps_StatusCode ocall_AppendToReeBuffer(void* a_hReeBuffer, BufferChunk a_Chunk)
+Tcps_StatusCode ocall_AppendToReeBuffer(void* a_hReeBuffer, oe_BufferChunk a_Chunk)
 {
     return AppendToBuffer(a_hReeBuffer, &a_Chunk);
 }

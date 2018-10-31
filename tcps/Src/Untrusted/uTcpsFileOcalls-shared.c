@@ -21,9 +21,9 @@
 #include "tcps_u.h"
 #include "TcpsCalls_u.h"
 
-int 
+int
 SGX_CDECL
-ocall_mkdir(buffer256 dirname)
+ocall_mkdir(oe_buffer256 dirname)
 {
     int crtError;
     char *separator;
@@ -95,9 +95,9 @@ Tcps_BeginErrorHandling
 unsigned int
 SGX_CDECL
 ocall_ExportFile(
-    buffer256 filename, 
-    unsigned int appendToExistingFile, 
-    buffer4096 ptr, 
+    oe_buffer256 filename,
+    unsigned int appendToExistingFile,
+    oe_buffer4096 ptr,
     size_t len)
 {
     FILE *fp = NULL;
@@ -105,8 +105,8 @@ ocall_ExportFile(
     Tcps_InitializeStatus(Tcps_Module_Helper_u, "ExportFile");
 
     Tcps_Trace(
-        Tcps_TraceLevelDebug, 
-        "ExportFile: append = %u, size = %#x, file %s\n", 
+        Tcps_TraceLevelDebug,
+        "ExportFile: append = %u, size = %#x, file %s\n",
         appendToExistingFile,
         len,
         filename.buffer);
@@ -137,7 +137,7 @@ Tcps_FinishErrorHandling
 GetUntrustedFileSize_Result
 SGX_CDECL
 ocall_GetUntrustedFileSize(
-    buffer256 filename)
+    oe_buffer256 filename)
 {
     GetUntrustedFileSize_Result result;
     struct _stat st;
@@ -159,7 +159,7 @@ ocall_GetUntrustedFileSize(
 GetUntrustedFileContent_Result
 SGX_CDECL
 ocall_GetUntrustedFileContent(
-    buffer256 filename, 
+    oe_buffer256 filename,
     size_t len)
 {
     GetUntrustedFileContent_Result result;
@@ -195,7 +195,7 @@ Error:
 int
 SGX_CDECL
 ocallTcpsFileDelete(
-    buffer256 a_filename)
+    oe_buffer256 a_filename)
 {
     Tcps_InitializeStatus(Tcps_Module_Helper_u, "ocallTcpsFileDelete");
 

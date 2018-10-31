@@ -28,10 +28,19 @@
     <ClCompile Include="..\urpc-sgx.c">
       <Filter>SGX</Filter>
     </ClCompile>
+    <ClCompile Include="..\socket_u.c">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(ProjectKaylaDir)driver\TrEE\OpteeCalls\targetver.h" />
     <ClInclude Include="..\TcpsCalls_u.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\socket_args.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\socket_u.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -51,9 +60,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\TcpsFile.edl" />
-    <None Include="..\..\TcpsSockets.edl" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\TcpsCalls.edl" />
+    <CustomBuild Include="..\..\..\..\include\openenclave\socket.edl" />
   </ItemGroup>
 </Project>

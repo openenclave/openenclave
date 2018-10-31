@@ -56,7 +56,7 @@ void BufferTest::VerifyTeeBufferContents(void* hTeeBuffer, int expectedSize, cha
 TEST_F(BufferTest, CreateTeeBuffer_Success)
 {
     // Create a 5 byte buffer.
-    BufferChunk chunk;
+    oe_BufferChunk chunk;
     chunk.size = 5;
     strcpy_s(chunk.buffer, "Test");
     CreateBuffer_Result result;
@@ -77,7 +77,7 @@ TEST_F(BufferTest, CreateTeeBuffer_Success)
 TEST_F(BufferTest, AppendToTeeBuffer_Success)
 {
     // Create a 0 byte buffer.
-    BufferChunk chunk = { 0 };
+    oe_BufferChunk chunk = { 0 };
     CreateBuffer_Result result;
     AcquireTAMutex();
     sgx_status_t sgxStatus = ecall_CreateTeeBuffer(GetTAId(), &result, chunk);

@@ -113,9 +113,6 @@
     <None Include="..\TcpsFile.edl">
       <Filter>common</Filter>
     </None>
-    <None Include="..\TcpsSockets.edl">
-      <Filter>common</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rand_optee.h">
@@ -175,9 +172,18 @@
     <ClInclude Include="sgx\TcpsLogSgx.h">
       <Filter>sgx</Filter>
     </ClInclude>
+    <ClInclude Include="socket_args.h">
+      <Filter>GeneratedFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="socket_t.h">
+      <Filter>GeneratedFiles</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\TcpsCalls.edl">
+      <Filter>common</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\include\openenclave\socket.edl">
       <Filter>common</Filter>
     </CustomBuild>
   </ItemGroup>
