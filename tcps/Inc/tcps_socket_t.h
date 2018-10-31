@@ -226,10 +226,10 @@ int oe_fd_isset(_In_ oe_socket_t fd, _In_ oe_fd_set* set);
 # define ioctlsocket       oe_ioctlsocket
 # define SOCKET_ERROR      OE_SOCKET_ERROR
 # define WSADATA           oe_wsa_data_t
-# define WSAECONNABORTED   OE_WSAECONNABORTED
-# define WSAECONNRESET     OE_WSAECONNRESET
-# define WSAEINPROGRESS    OE_WSAEINPROGRESS
-# define WSAEWOULDBLOCK    OE_WSAEWOULDBLOCK
+# define WSAECONNABORTED   OE_ECONNABORTED
+# define WSAECONNRESET     OE_ECONNRESET
+# define WSAEINPROGRESS    OE_EINPROGRESS
+# define WSAEWOULDBLOCK    OE_EAGAIN
 # define WSACleanup        oe_wsa_cleanup
 # define WSAGetLastError   oe_wsa_get_last_error
 # define WSASetLastError   oe_wsa_set_last_error

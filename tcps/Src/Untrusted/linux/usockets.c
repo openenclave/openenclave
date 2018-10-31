@@ -19,71 +19,6 @@
 
 #define MAX(x,y) ((x) > (y) ? (x) : (y))
 
-static int err_bsd_to_wsa(int bsd)
-{
-    switch (bsd) {
-    case EACCES:
-        return OE_WSAEACCES;
-    case EAFNOSUPPORT:
-        return OE_WSAEAFNOSUPPORT;
-    case EINVAL:
-        return OE_WSAEINVAL;
-    case EMFILE:
-        return OE_WSAEMFILE;
-    case ENOBUFS:
-        return OE_WSAENOBUFS;
-    case ENOMEM:
-        return OE_WSA_NOT_ENOUGH_MEMORY;
-    case EPROTONOSUPPORT:
-        return OE_WSAEPROTONOSUPPORT;
-    case EFAULT:
-        return OE_WSAEFAULT;
-    case EAGAIN:  // = EWOULDBLOCK
-        return OE_WSAEWOULDBLOCK;
-    case EINPROGRESS:
-        return OE_WSAEINPROGRESS;
-    case ENOPROTOOPT:
-        return OE_WSAENOPROTOOPT;
-    case ENETDOWN:
-        return OE_WSAENETDOWN;
-    case ECONNABORTED:
-        return OE_WSAECONNABORTED;
-    case ECONNRESET:
-        return OE_WSAECONNRESET;
-    case ENOTRECOVERABLE:
-        return OE_WSANO_RECOVERY;
-
-    default:
-        return OE_WSAEINVAL;
-    }
-}
-
-static int af_bsd_to_wsa(int bsd)
-{
-    switch (bsd) {
-    case AF_INET:
-        return OE_AF_INET;
-    case AF_INET6:
-        return OE_AF_INET6;
-
-    default:
-        return -1;
-    }
-}
-
-static int af_wsa_to_bsd(int wsa)
-{
-    switch (wsa) {
-    case OE_AF_INET:
-        return AF_INET;
-    case OE_AF_INET6:
-        return AF_INET6;
-
-    default:
-        return -1;
-    }
-}
-
 oe_socket_error_t ocall_WSAStartup(void)
 {
     return 0;
@@ -98,7 +33,7 @@ gethostname_Result ocall_gethostname(void)
 {
     gethostname_Result result;
     int err = gethostname(result.name, sizeof(result.name));
-    result.error = (err == -1) ? (oe_socket_error_t)err_bsd_to_wsa(errno) : 0;
+    result.error = (err == -1) ? (oe_socket_error_t)errno : 0;
     return result;
 }
 
@@ -108,17 +43,9 @@ socket_Result ocall_socket(
     int a_Protocol)
 {
     socket_Result result = { 0 };
-
-    int domain = af_wsa_to_bsd((int)a_AddressFamily);
-    if (domain == -1) {
-        result.error = Tcps_BadInvalidArgument;
-        return result;
-    }
-
-    int fd = socket(domain, (int)a_Type, a_Protocol);
+    int fd = socket(a_AddressFamily, (int)a_Type, a_Protocol);
     result.hSocket = (void *)fd;
-    result.error = (fd == -1) ? err_bsd_to_wsa(errno) : 0;
-
+    result.error = (fd == -1) ? (oe_socket_error_t)errno : 0;
     return result;
 }
 
@@ -127,7 +54,7 @@ oe_socket_error_t ocall_listen(void* a_hSocket, int a_nMaxConnections)
     oe_socket_error_t result;
     int fd = (int)a_hSocket;
     int s = listen(fd, a_nMaxConnections);
-    return s == -1 ? err_bsd_to_wsa(s) : 0;    
+    return s == -1 ? (oe_socket_error_t)s : 0;    
 }
 
 GetSockName_Result ocall_getsockname(void* a_hSocket, int a_nNameLen)
@@ -136,7 +63,7 @@ GetSockName_Result ocall_getsockname(void* a_hSocket, int a_nNameLen)
     int fd = (int)a_hSocket;
     result.addrlen = a_nNameLen;
     int err = getsockname(fd, (struct sockaddr *)result.addr, &result.addrlen);
-    result.error = (err == -1) ? (oe_socket_error_t)err_bsd_to_wsa(errno) : 0;
+    result.error = (err == -1) ? (oe_socket_error_t)errno : 0;
     return result;
 }
 
@@ -146,7 +73,7 @@ GetSockName_Result ocall_getpeername(void* a_hSocket, int a_nNameLen)
     int fd = (int)a_hSocket;
     result.addrlen = a_nNameLen;
     int err = getpeername(fd, (struct sockaddr *)result.addr, &result.addrlen);
-    result.error = (err == -1) ? (oe_socket_error_t)err_bsd_to_wsa(errno) : 0;
+    result.error = (err == -1) ? (oe_socket_error_t)errno : 0;
     return result;
 }
 
@@ -158,12 +85,12 @@ send_Result ocall_send(void* a_hSocket, void* a_hReeMessage, int a_Flags)
     int size = 0;
     Tcps_StatusCode uStatus = GetBuffer(a_hReeMessage, &ptr, &size);
     if (Tcps_IsBad(uStatus)) {
-        result.error = OE_WSAEFAULT;
+        result.error = OE_EFAULT;
         return result;
     }
     result.bytesSent = send(fd, ptr, size, a_Flags);
     if (result.bytesSent == -1) {
-        result.error = (oe_socket_error_t)err_bsd_to_wsa(errno);
+        result.error = (oe_socket_error_t)errno;
     }
 
     return result;
@@ -175,7 +102,7 @@ recv_Result ocall_recv(void* a_hSocket, int a_nBufferSize, int a_Flags)
     int fd = (int)a_hSocket;
     void* hBuffer = CreateBuffer(a_nBufferSize);
     if (hBuffer == NULL) {
-        result.error = OE_WSAENOBUFS;
+        result.error = OE_ENOBUFS;
         return result;
     }
     
@@ -185,7 +112,7 @@ recv_Result ocall_recv(void* a_hSocket, int a_nBufferSize, int a_Flags)
     /* TODO: handle uStatus failure */
     result.bytesReceived = recv(fd, ptr, size, a_Flags);
     if (result.bytesReceived == -1) {
-        result.error = (oe_socket_error_t)err_bsd_to_wsa(errno);
+        result.error = (oe_socket_error_t)errno;
         FreeBuffer(hBuffer);
     } else {
         result.hMessage = hBuffer;
@@ -223,13 +150,13 @@ getaddrinfo_Result ocall_getaddrinfo(
     service_name  = (a_ServiceName.buffer[0]) ? a_ServiceName.buffer : NULL;
 
     hints.ai_flags = a_Flags;
-    hints.ai_family = af_wsa_to_bsd(a_Family);
+    hints.ai_family = a_Family;
     hints.ai_socktype = a_SockType;
     hints.ai_protocol = a_Protocol;
 
     s = getaddrinfo(node_name, service_name, &hints, &ailist);
     if (s) {
-        result.error = err_bsd_to_wsa(s);
+        result.error = (oe_socket_error_t)s;
         return result;
     }
 
@@ -239,7 +166,7 @@ getaddrinfo_Result ocall_getaddrinfo(
     aibufhandle = CreateBuffer(result.addressCount * sizeof(*aibuf));
     if (!aibufhandle) {
         freeaddrinfo(ailist);
-        result.error = OE_WSAENOBUFS;
+        result.error = OE_ENOBUFS;
         return result;
     }
 
@@ -247,14 +174,14 @@ getaddrinfo_Result ocall_getaddrinfo(
     if (Tcps_IsBad(status)) {
         FreeBuffer(aibufhandle);
         freeaddrinfo(ailist);
-        result.error = OE_WSAEFAULT;
+        result.error = OE_EFAULT;
         return result;
     }
 
     for (i = 0, ai = ailist; ai != NULL; ai = ai->ai_next, i++) {
         aib = &aibuf[i];
         aib->ai_flags = ai->ai_flags;
-        aib->ai_family = af_bsd_to_wsa(ai->ai_family);
+        aib->ai_family = ai->ai_family;
         aib->ai_socktype = ai->ai_socktype;
         aib->ai_protocol = ai->ai_protocol;
         aib->ai_addrlen = ai->ai_addrlen;
@@ -279,7 +206,7 @@ getsockopt_Result ocall_getsockopt(
     int fd = (int)a_hSocket;
     result.len = a_nOptLen;
     int err = getsockopt(fd, a_nLevel, a_nOptName, result.buffer, &result.len);
-    result.error = (err == -1) ? (oe_socket_error_t)err_bsd_to_wsa(errno) : 0;
+    result.error = (err == -1) ? (oe_socket_error_t)errno : 0;
     return result;
 }
 
@@ -292,7 +219,7 @@ oe_socket_error_t ocall_setsockopt(
 {
     int fd = (int)a_hSocket;
     int err = setsockopt(fd, a_nLevel, a_nOptName, a_OptVal.buffer, a_nOptLen);
-    return (err == -1) ? (oe_socket_error_t)err_bsd_to_wsa(errno) : 0;
+    return (err == -1) ? (oe_socket_error_t)errno : 0;
 }
 
 ioctlsocket_Result ocall_ioctlsocket(
@@ -304,7 +231,7 @@ ioctlsocket_Result ocall_ioctlsocket(
     int fd = (int)a_hSocket;
     result.outputValue = a_uInputValue;
     int err = fcntl(fd, a_nCommand, result.outputValue);
-    result.error = (err == -1) ? (oe_socket_error_t)err_bsd_to_wsa(errno) : 0;
+    result.error = (err == -1) ? (oe_socket_error_t)errno : 0;
     return result;
 }
 
@@ -353,7 +280,7 @@ select_Result ocall_select(
 
     result.socketsSet = select(nfds + 1, &readfds, &writefds, &exceptfds, (struct timeval *)&a_Timeout);
     if (result.socketsSet == -1) {
-        result.error = err_bsd_to_wsa(errno);
+        result.error = (oe_socket_error_t)errno;
     } else {
         CopyOutputFds(&result.readFds, &readfds, &a_ReadFds);
         CopyOutputFds(&result.writeFds, &writefds, &a_WriteFds);
@@ -367,21 +294,21 @@ oe_socket_error_t ocall_shutdown(void* a_hSocket, oe_shutdown_how_t a_How)
 {
     int fd = (int)a_hSocket;
     int err = shutdown(fd, a_How);
-    return (err == -1) ? (oe_socket_error_t)err_bsd_to_wsa(errno) : 0;
+    return (err == -1) ? (oe_socket_error_t)errno : 0;
 }
 
 oe_socket_error_t ocall_closesocket(void* a_hSocket)
 {
     int fd = (int)a_hSocket;
     int s = close(fd);
-    return s == -1 ? err_bsd_to_wsa(errno) : 0;
+    return s == -1 ? (oe_socket_error_t)errno : 0;
 }
 
 oe_socket_error_t ocall_bind(void* a_hSocket, buffer256 a_Name, int a_nNameLen)
 {
     int fd = (int)a_hSocket;
     int s = bind(fd, (const struct sockaddr *)a_Name.buffer, a_nNameLen);
-    return s == -1 ? (oe_socket_error_t)err_bsd_to_wsa(errno) : 0;
+    return s == -1 ? (oe_socket_error_t)errno : 0;
 }
 
 oe_socket_error_t ocall_connect(
@@ -391,7 +318,7 @@ oe_socket_error_t ocall_connect(
 {
     int fd = (int)a_hSocket;
     int s = connect(fd, (const struct sockaddr *)a_Name.buffer, a_nNameLen);
-    return s == -1 ? (oe_socket_error_t)err_bsd_to_wsa(errno) : 0;
+    return s == -1 ? (oe_socket_error_t)errno : 0;
 }
 
 accept_Result ocall_accept(void* a_hSocket, int a_nAddrLen)
@@ -402,7 +329,7 @@ accept_Result ocall_accept(void* a_hSocket, int a_nAddrLen)
     result.hNewSocket = (void*)accept(fd, 
                                       ((a_nAddrLen > 0) ? (struct sockaddr *)result.addr : NULL),
                                       ((a_nAddrLen > 0) ? &result.addrlen : NULL));
-    result.error = (result.hNewSocket == (void*)-1) ? (oe_socket_error_t)err_bsd_to_wsa(errno) : 0;
+    result.error = (result.hNewSocket == (void *)(-1)) ? (oe_socket_error_t)errno : 0;
     return result;
 }
 

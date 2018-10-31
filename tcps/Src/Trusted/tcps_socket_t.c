@@ -91,7 +91,7 @@ oe_gethostname(
 
     sgxStatus = ocall_gethostname(&result);
     if (sgxStatus != SGX_SUCCESS) {
-        result.error = OE_WSAENETDOWN;
+        result.error = OE_ENETDOWN;
     }
     if (result.error == 0) {
         strncpy(a_pBuffer, result.name, a_uiBufferLength);
@@ -110,7 +110,7 @@ oe_wsa_startup(
     if (sgxStatus == SGX_SUCCESS && apiResult == 0) {
         return 0;
     }
-    return OE_WSASYSNOTREADY;
+    return OE_SYSNOTREADY;
 }
 
 int
@@ -119,7 +119,7 @@ oe_wsa_cleanup(void)
     oe_socket_error_t error;
     sgx_status_t sgxStatus = ocall_WSACleanup(&error);
     if (sgxStatus != SGX_SUCCESS) {
-        error = OE_WSAENETDOWN;
+        error = OE_ENETDOWN;
     }
     oe_wsa_set_last_error(error);
     return (error == 0) ? 0 : OE_SOCKET_ERROR;
@@ -148,7 +148,7 @@ oe_shutdown(
     oe_socket_error_t socketError = 0;
     sgx_status_t sgxStatus = ocall_shutdown(&socketError, s, how);
     if (sgxStatus != SGX_SUCCESS) {
-        socketError = OE_WSAENETDOWN;
+        socketError = OE_ENETDOWN;
     }
     oe_wsa_set_last_error(socketError);
     return (socketError == 0) ? 0 : OE_SOCKET_ERROR;
@@ -161,7 +161,7 @@ oe_closesocket(
     oe_socket_error_t socketError = 0;
     sgx_status_t sgxStatus = ocall_closesocket(&socketError, s);
     if (sgxStatus != SGX_SUCCESS) {
-        socketError = OE_WSAENETDOWN;
+        socketError = OE_ENETDOWN;
     }
     oe_wsa_set_last_error(socketError);
     return (socketError == 0) ? 0 : OE_SOCKET_ERROR;
@@ -175,7 +175,7 @@ oe_listen(
     oe_socket_error_t socketError = 0;
     sgx_status_t sgxStatus = ocall_listen(&socketError, s, backlog);
     if (sgxStatus != SGX_SUCCESS) {
-        socketError = OE_WSAENETDOWN;
+        socketError = OE_ENETDOWN;
     }
     oe_wsa_set_last_error(socketError);
     return (socketError == 0) ? 0 : OE_SOCKET_ERROR;
@@ -191,12 +191,12 @@ oe_getsockopt(
 {
     getsockopt_Result result = { 0 };
     if (*optlen > sizeof(result.buffer)) {
-        oe_wsa_set_last_error(OE_WSAEINVAL);
+        oe_wsa_set_last_error(OE_EINVAL);
         return OE_SOCKET_ERROR;
     }
     sgx_status_t sgxStatus = ocall_getsockopt(&result, s, level, optname, *optlen);
     if ((sgxStatus != SGX_SUCCESS) || (result.len > *optlen)) {
-        result.error = OE_WSAENETDOWN;
+        result.error = OE_ENETDOWN;
         *optlen = 0;
     } else {
         *optlen = result.len;
@@ -215,7 +215,7 @@ oe_socket(
     socket_Result result;
     sgx_status_t sgxStatus = ocall_socket(&result, af, type, protocol);
     if (sgxStatus != SGX_SUCCESS) {
-        result.error = OE_WSAENETDOWN;
+        result.error = OE_ENETDOWN;
         result.hSocket = OE_INVALID_SOCKET;
     }
     oe_wsa_set_last_error(result.error);
@@ -238,7 +238,7 @@ oe_recv(
     sgxStatus = ocall_recv(&result, s, len, flags);
     if ((sgxStatus != SGX_SUCCESS) || (result.bytesReceived > len))
     {
-        result.error = OE_WSAENETDOWN;
+        result.error = OE_ENETDOWN;
     }
     else if (result.bytesReceived > 0)
     {
@@ -251,7 +251,7 @@ oe_recv(
 
         if (Tcps_IsBad(uStatus))
         {
-            result.error = OE_WSAENETDOWN;
+            result.error = OE_ENETDOWN;
         }
     }
     oe_wsa_set_last_error(result.error);
@@ -273,7 +273,7 @@ oe_send(
     Tcps_StatusCode uStatus = TcpsPushDataToReeBuffer(buf, len, &hReeBuffer);
     if (Tcps_IsBad(uStatus))
     {
-        result.error = OE_WSAENETDOWN;
+        result.error = OE_ENETDOWN;
         result.bytesSent = 0;
     }
     else
@@ -284,7 +284,7 @@ oe_send(
 
         if (sgxStatus != SGX_SUCCESS)
         {
-            result.error = OE_WSAENETDOWN;
+            result.error = OE_ENETDOWN;
             result.bytesSent = 0;
         }
     }
@@ -356,7 +356,7 @@ oe_setsockopt(
 
     sgxStatus = ocall_setsockopt(&socketError, s, level, optname, optBuffer, optlen);
     if (sgxStatus != SGX_SUCCESS) {
-        socketError = OE_WSAENETDOWN;
+        socketError = OE_ENETDOWN;
     }
     oe_wsa_set_last_error(socketError);
     return (socketError == 0) ? 0 : OE_SOCKET_ERROR;
@@ -373,7 +373,7 @@ oe_ioctlsocket(
 
     sgxStatus = ocall_ioctlsocket(&result, s, cmd, *argp);
     if (sgxStatus != SGX_SUCCESS) {
-        result.error = OE_WSAENETDOWN;
+        result.error = OE_ENETDOWN;
     }
     oe_wsa_set_last_error(result.error);
     *argp = result.outputValue;
@@ -394,7 +394,7 @@ oe_connect(
 
     sgxStatus = ocall_connect(&socketError, s, nameBuffer, namelen);
     if (sgxStatus != SGX_SUCCESS) {
-        socketError = OE_WSAENETDOWN;
+        socketError = OE_ENETDOWN;
     }
     oe_wsa_set_last_error(socketError);
     return (socketError == 0) ? 0 : OE_SOCKET_ERROR;
@@ -410,7 +410,7 @@ oe_accept(
     int addrlen = (a_pAddrLen != NULL) ? *a_pAddrLen : 0;
     sgx_status_t sgxStatus = ocall_accept(&result, a_Socket, addrlen);
     if ((sgxStatus != SGX_SUCCESS) || (result.addrlen > addrlen)) {
-        result.error = OE_WSAENETDOWN;
+        result.error = OE_ENETDOWN;
         addrlen = 0;
     } else {
         memcpy(a_SockAddr, result.addr, result.addrlen);
@@ -432,7 +432,7 @@ oe_getpeername(
     GetSockName_Result result;
     sgx_status_t sgxStatus = ocall_getpeername(&result, s, *addrlen);
     if ((sgxStatus != SGX_SUCCESS) || (result.addrlen > *addrlen)) {
-        result.error = OE_WSAENETDOWN;
+        result.error = OE_ENETDOWN;
         *addrlen = 0;
     } else {
         memcpy(addr, result.addr, result.addrlen);
@@ -451,7 +451,7 @@ oe_getsockname(
     GetSockName_Result result;
     sgx_status_t sgxStatus = ocall_getsockname(&result, s, *addrlen);
     if ((sgxStatus != SGX_SUCCESS) || (result.addrlen > *addrlen)) {
-        result.error = OE_WSAENETDOWN;
+        result.error = OE_ENETDOWN;
         *addrlen = 0;
     } else {
         memcpy(addr, result.addr, result.addrlen);
@@ -475,7 +475,7 @@ oe_bind(
 
     sgxStatus = ocall_bind(&socketError, s, nameBuffer, namelen);
     if (sgxStatus != SGX_SUCCESS) {
-        socketError = OE_WSAENETDOWN;
+        socketError = OE_ENETDOWN;
     }
     oe_wsa_set_last_error(socketError);
     return (socketError == 0) ? 0 : OE_SOCKET_ERROR;
@@ -553,7 +553,7 @@ oe_getaddrinfo(
         (pHints != NULL) ? pHints->ai_socktype : 0,
         (pHints != NULL) ? pHints->ai_protocol : 0);
     if (sgxStatus != SGX_SUCCESS) {
-        result.error = OE_WSANO_RECOVERY;
+        result.error = OE_ENOTRECOVERABLE;
     }
 
     if (result.addressCount > 0) {
@@ -561,7 +561,7 @@ oe_getaddrinfo(
         char* buf = malloc(bytesReceived);
         if (buf == NULL) {
             uStatus = Tcps_BadOutOfMemory;
-            result.error = OE_WSA_NOT_ENOUGH_MEMORY;
+            result.error = OE_ENOMEM;
         } else {
             uStatus = TcpsPullDataFromReeBuffer(
                 result.hMessage,
@@ -569,7 +569,7 @@ oe_getaddrinfo(
                 bytesReceived);
             if (Tcps_IsBad(uStatus))
             {
-                result.error = OE_WSANO_RECOVERY;
+                result.error = OE_ENOTRECOVERABLE;
             }
         }
 
@@ -581,18 +581,18 @@ oe_getaddrinfo(
         for (int i = 0; i < result.addressCount; i++) {
             if (response[i].ai_addrlen > sizeof(oe_sockaddr_storage) ||
                 response[i].ai_addrlen > sizeof(response[i].ai_addr)) {
-                result.error = OE_WSA_NOT_ENOUGH_MEMORY;
+                result.error = OE_ENOMEM;
                 break;
             }
             ai = malloc(sizeof(*ai));
             if (ai == NULL) {
-                result.error = OE_WSA_NOT_ENOUGH_MEMORY;
+                result.error = OE_ENOMEM;
                 break;
             }
             ai->ai_addr = malloc(response[i].ai_addrlen);
             if (ai->ai_addr == NULL) {
                 free(ai);
-                result.error = OE_WSA_NOT_ENOUGH_MEMORY;
+                result.error = OE_ENOMEM;
                 break;
             }
             memcpy(ai->ai_addr, response[i].ai_addr.buffer, response[i].ai_addrlen);
@@ -606,7 +606,7 @@ oe_getaddrinfo(
                 ai->ai_canonname = malloc(sizeof(response[i].ai_canonname) + 1);
                 if (ai->ai_canonname == NULL) {
                     free(ai);
-                    result.error = OE_WSA_NOT_ENOUGH_MEMORY;
+                    result.error = OE_ENOMEM;
                     break;
                 }
                 strncpy(ai->ai_canonname, response[i].ai_canonname.buffer,
@@ -650,7 +650,7 @@ oe_getnameinfo(
 
     sgxStatus = ocall_getnameinfo(&result, addrBuffer, salen, flags);
     if (sgxStatus != SGX_SUCCESS) {
-        result.error = OE_WSANO_RECOVERY;
+        result.error = OE_ENOTRECOVERABLE;
     }
 
     if (host != NULL) {
