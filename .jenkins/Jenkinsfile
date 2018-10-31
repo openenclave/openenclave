@@ -1,21 +1,21 @@
 pipeline {
   agent any
   stages {
-    stage('Precommit-checking') {
-      agent {
-        docker {
-          image 'oetools-azure:1.6'
-        }
-
-      }
-      steps {
-        timeout(2) {
-          sh './scripts/check-precommit-reqs'
-        }
-      }
-    }
     stage('Build and Test') {
+      failFast true
       parallel {
+        stage('Check pre-commit requirements') {
+          agent {
+            docker {
+              image 'oetools-azure:1.6'
+            }
+          }
+          steps {
+            timeout(2) {
+              sh './scripts/check-precommit-reqs'
+            }
+          }
+        }
         stage('Simulation default compiler') {
           // This particular test asserts that everything (at least
           // for simulation) can be built after using our
@@ -52,7 +52,6 @@ pipeline {
             docker {
               image 'oetools-azure:1.6'
             }
-
           }
           steps {
             timeout(15) {
@@ -65,7 +64,6 @@ pipeline {
             docker {
               image 'oetools-azure:1.6'
             }
-
           }
           steps {
             timeout(15) {
@@ -78,7 +76,6 @@ pipeline {
             docker {
               image 'oetools-azure:1.6'
             }
-
           }
           steps {
             timeout(15) {
@@ -91,7 +88,6 @@ pipeline {
             docker {
               image 'oetools-azure:1.6'
             }
-
           }
           steps {
             timeout(15) {
@@ -104,7 +100,6 @@ pipeline {
             docker {
               image 'oetools-azure:1.6'
             }
-
           }
           steps {
             timeout(15) {
@@ -117,7 +112,6 @@ pipeline {
             docker {
               image 'oetools-azure:1.6'
             }
-
           }
           steps {
             timeout(15) {
@@ -130,7 +124,6 @@ pipeline {
             node {
               label 'hardware'
             }
-
           }
           steps {
             timeout(15) {
@@ -143,7 +136,6 @@ pipeline {
             node {
               label 'hardware'
             }
-
           }
           steps {
             timeout(15) {
@@ -156,7 +148,6 @@ pipeline {
             node {
               label 'hardware'
             }
-
           }
           steps {
             timeout(15) {
@@ -169,7 +160,6 @@ pipeline {
             node {
               label 'hardware'
             }
-
           }
           steps {
             timeout(15) {
@@ -182,7 +172,6 @@ pipeline {
             node {
               label 'hardware'
             }
-
           }
           steps {
             timeout(15) {
@@ -195,7 +184,6 @@ pipeline {
             node {
               label 'hardware'
             }
-
           }
           steps {
             timeout(15) {
@@ -203,14 +191,13 @@ pipeline {
             }
           }
         }
-        stage('Windows Debug Crossplat') {
+        stage('Windows Debug Cross-platform') {
           stages {
             stage('Linux SGX1 Debug') {
               agent {
                 docker {
                   image 'oetools-azure:1.6'
                 }
-
               }
               steps {
                 timeout(15) {
@@ -219,14 +206,12 @@ pipeline {
                 }
               }
             }
-
             stage('Windows Debug') {
               agent {
                 node {
                   label 'SGXFLC-Windows'
                 }
               }
-
               steps {
                 unstash 'linuxdebug'
                 bat 'move build linuxbin'
@@ -235,14 +220,13 @@ pipeline {
             }
           }
         }
-        stage('Windows Release Crossplat') {
+        stage('Windows Release Cross-platform') {
           stages {
             stage('Linux SGX1 Release') {
               agent {
                 docker {
                   image 'oetools-azure:1.6'
                 }
-
               }
               steps {
                 timeout(15) {
@@ -251,14 +235,12 @@ pipeline {
                 }
               }
             }
-
             stage('Windows Release') {
               agent {
                 node {
                   label 'SGXFLC-Windows'
                 }
               }
-
               steps {
                 unstash 'linuxrelease'
                 bat 'move build linuxbin'
