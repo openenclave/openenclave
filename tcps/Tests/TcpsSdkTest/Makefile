@@ -1,7 +1,8 @@
-OBJECTS = main.o BufferTest.o TrustedAppTest.o OEEnclaveTest.o OEHostTest.o  SocketsTest.o TcpsSdkTestTA_u.o
+OBJECTS = main.o BufferTest.o TrustedAppTest.o OEEnclaveTest.o OEHostTest.o SocketsTest.o TcpsSdkTestTA_u.o
 
 EDL_PATH = ../../Src
 EDL_INC_PATH = ../../Inc
+OE_EDL_PATH = $(OE_PATH)/openenclave
 
 GTEST_PATH = ../../../3rdparty/googletest/googletest
 OE_PATH = ../../../include
@@ -37,11 +38,12 @@ TcpsSdkTest: $(OBJECTS)
 	@echo " [LD]\tTcpsSdkTest"
 	@$(CX) -o $(APP_NAME) $(OBJECTS) $(LDFLAGS)
 
-TcpsSdkTestTA_u.h TcpsSdkTestTA_u.c: $(EDL_PATH)/TcpsCalls.edl   \
-                                     $(EDL_PATH)/TcpsFile.edl    \
-                                     $(EDL_PATH)/TcpsSockets.edl
+TcpsSdkTestTA_u.h TcpsSdkTestTA_u.c: $(EDL_PATH)/TcpsCalls.edl \
+                                     $(EDL_PATH)/TcpsFile.edl  \
+                                     $(OE_EDL_PATH)/socket.edl \
+									 ../TcpsSdkTestTA.edl
 	@echo " [EDGE]\tTcpsSdkTestTA.edl"
-	@$(OEEDGER8R) --untrusted --search-path "$(EDL_PATH):$(EDL_INC_PATH):$(SGX_SDK)/include" \
+	@$(OEEDGER8R) --untrusted --search-path "$(EDL_INC_PATH):$(OE_PATH)" \
 	                                        "../TcpsSdkTestTA.edl"
 
 main.o: main.cpp

@@ -1,14 +1,7 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
-#include <stddef.h>
-
-#include "sal_unsup.h"
-#include "stdext.h"
-#include "tcps_u.h"
-#include "TcpsCalls_u.h"
-#include "buffer.h"
-
 #include <stdio.h>
+#include <stddef.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -16,6 +9,16 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <fcntl.h>
+#ifdef __timeval_defined
+#error OMG
+#endif
+
+#include "sal_unsup.h"
+#include "stdext.h"
+#include "tcps_u.h"
+#include "TcpsCalls_u.h"
+#include "buffer.h"
+#include "socket_u.h"
 
 #define MAX(x,y) ((x) > (y) ? (x) : (y))
 
@@ -182,8 +185,8 @@ getaddrinfo_Result ocall_getaddrinfo(
         aib->ai_socktype = ai->ai_socktype;
         aib->ai_protocol = ai->ai_protocol;
         aib->ai_addrlen = ai->ai_addrlen;
-        COPY_BUFFER_FROM_STRING(aib->ai_canonname, (ai->ai_canonname != NULL) ? ai->ai_canonname : "");
-        COPY_BUFFER(aib->ai_addr, ai->ai_addr, ai->ai_addrlen);
+        COPY_MEMORY_BUFFER_FROM_STRING(aib->ai_canonname, (ai->ai_canonname != NULL) ? ai->ai_canonname : "");
+        COPY_MEMORY_BUFFER(aib->ai_addr, ai->ai_addr, ai->ai_addrlen);
     }
 
     freeaddrinfo(ailist);
@@ -262,7 +265,7 @@ select_Result ocall_select(
     oe_fd_set_internal a_ReadFds,
     oe_fd_set_internal a_WriteFds,
     oe_fd_set_internal a_ExceptFds,
-    oe_timeval a_Timeout)
+    struct timeval a_Timeout)
 {
     select_Result result = { 0 };
 
@@ -338,10 +341,10 @@ getnameinfo_Result ocall_getnameinfo(
     getnameinfo_Result result = { 0 };
     result.error = getnameinfo((const struct sockaddr *)a_Addr,
                                a_AddrLen,
-                               result.host.buffer,
-                               sizeof(result.host.buffer),
-                               result.serv.buffer,
-                               sizeof(result.serv.buffer),
+                               result.host,
+                               sizeof(result.host),
+                               result.serv,
+                               sizeof(result.serv),
                                a_Flags);
     return result;
 }

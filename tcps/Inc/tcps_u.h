@@ -17,6 +17,9 @@ extern "C" {
 
 #include <sgx_eid.h>
 
+#include <stddef.h>
+
+
 /* The caller is responsible for freeing the buffer after calling this. */
 void* TcpsCreateReeBuffer(_In_ int a_BufferSize);
 
