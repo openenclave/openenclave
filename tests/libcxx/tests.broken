@@ -1,1 +1,3 @@
 # Add broken files here
+# Following test segfaults after upgrade to libcxx 7.0 and merge to libcxx to use larger heap page count of 12K
+../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.unique_future/get.pass.cpp
