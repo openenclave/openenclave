@@ -8,6 +8,7 @@ add_library(oeenclave STATIC
     ../common/quote.c
     ../common/report.c
     ../common/revocation.c
+    ../common/safecrt.c
     ../common/sgxcertextensions.c
     ../common/tcbinfo.c
     asn1.c
