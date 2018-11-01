@@ -44,9 +44,10 @@ srcs-y += ../tcps_stdio_t.c
 srcs-y += ../tcps_string_t.c
 
 srcs-y += ctype-optee.c
-srcs-y += cyrep-optee.c
+srcs-y += cyres-optee.c
 srcs-y += except-optee.c
 srcs-y += files-optee.c
+srcs-y += keygen-optee.c
 srcs-y += rand_optee.c
 srcs-y += report-optee.c
 srcs-y += strings-optee.c

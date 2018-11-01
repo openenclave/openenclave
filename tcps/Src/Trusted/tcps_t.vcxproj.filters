@@ -16,6 +16,9 @@
     <Filter Include="OpenEnclave">
       <UniqueIdentifier>{b1dca1a0-1bb8-40e1-b53a-ce849a9f9459}</UniqueIdentifier>
     </Filter>
+    <Filter Include="common\riot">
+      <UniqueIdentifier>{85dba034-dc61-4193-8477-d4d02d426361}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="optee\ctype-optee.c">
@@ -35,9 +38,6 @@
     </ClCompile>
     <ClCompile Include="sgx\time-sgx.c">
       <Filter>sgx</Filter>
-    </ClCompile>
-    <ClCompile Include="optee\cyrep-optee.c">
-      <Filter>optee</Filter>
     </ClCompile>
     <ClCompile Include="CallbackHelper.c">
       <Filter>common</Filter>
@@ -102,6 +102,45 @@
     <ClCompile Include="TcpsCalls_t.c">
       <Filter>GeneratedFiles</Filter>
     </ClCompile>
+    <ClCompile Include="sgx\keygen-sgx.c">
+      <Filter>sgx</Filter>
+    </ClCompile>
+    <ClCompile Include="optee\keygen-optee.c">
+      <Filter>optee</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotAes128.c">
+      <Filter>common\riot</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotAesTables.c">
+      <Filter>common\riot</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotBase64.c">
+      <Filter>common\riot</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotCrypt.c">
+      <Filter>common\riot</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotEcc.c">
+      <Filter>common\riot</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotHmac.c">
+      <Filter>common\riot</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotKdf.c">
+      <Filter>common\riot</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotSha256.c">
+      <Filter>common\riot</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotX509Bldr.c">
+      <Filter>common\riot</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotDerEnc.c">
+      <Filter>common\riot</Filter>
+    </ClCompile>
+    <ClCompile Include="optee\cyres-optee.c">
+      <Filter>optee</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="optee\linux_gcc.mak">
@@ -120,12 +159,6 @@
     </ClInclude>
     <ClInclude Include="TcpsCalls_t.h">
       <Filter>GeneratedFiles</Filter>
-    </ClInclude>
-    <ClInclude Include="optee\cyrep-optee.h">
-      <Filter>optee</Filter>
-    </ClInclude>
-    <ClInclude Include="optee\ctype-optee.h">
-      <Filter>optee</Filter>
     </ClInclude>
     <ClInclude Include="errno.h">
       <Filter>common</Filter>
@@ -151,9 +184,6 @@
     <ClInclude Include="tcps_time_t.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="optee\strings-optee.h">
-      <Filter>optee</Filter>
-    </ClInclude>
     <ClInclude Include="TrustedSslCommon.h">
       <Filter>common</Filter>
     </ClInclude>
@@ -172,12 +202,22 @@
     <ClInclude Include="sgx\TcpsLogSgx.h">
       <Filter>sgx</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Inc\optee\tcps_ctype_optee_t.h">
+      <Filter>optee</Filter>
+    </ClInclude>
     <ClInclude Include="socket_args.h">
       <Filter>GeneratedFiles</Filter>
     </ClInclude>
     <ClInclude Include="socket_t.h">
       <Filter>GeneratedFiles</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Inc\optee\tcps_string_optee_t.h">
+      <Filter>optee</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Inc\optee\tcps_time_optee_t.h">
+      <Filter>optee</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Inc\optee\cyrep-optee.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\TcpsCalls.edl">

@@ -1,10 +1,5 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
-#include <stdint.h>
-#include <assert.h>
-#include <string.h>
-#include <malloc.h>
-
 #ifdef HAVE_CYREP
 #include <pta_cyrep.h>
 #endif
@@ -16,7 +11,7 @@
 #include <tcps_t.h>
 #include <sgx_utils.h>
 
-#include "cyrep-optee.h"
+#include "cyres-optee.h"
 
 #define CYREP_MAX_RETRIES   10
 
@@ -225,13 +220,4 @@ FreeCyrepKey(
 {
     TCPS_ASSERT(keyPEM != NULL);
     TCPS_FREE(keyPEM);
-}
-
-sgx_status_t sgx_get_key(
-    const sgx_key_request_t *key_request,
-    sgx_key_128bit_t *key)
-{
-    // TODO: use a cyrep-derived key
-    memcpy(key, &key_request->key_id, sizeof(*key));
-    return SGX_SUCCESS;
 }

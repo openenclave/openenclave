@@ -458,63 +458,6 @@ oe_result_t oe_remove_vectored_exception_handler(
     return OE_OK;
 }
 
-oe_result_t oe_get_seal_key_by_policy_v2(
-    _In_ oe_seal_policy_t seal_policy,
-    _Outptr_ uint8_t** key_buffer,
-    _Out_ size_t* key_buffer_size,
-    _Outptr_opt_ uint8_t** key_info,
-    _Out_ size_t* key_info_size)
-{
-    sgx_report_t sgxReport = { 0 };
-    sgx_status_t sgxStatus = sgx_create_report(NULL, NULL, &sgxReport);
-    if (sgxStatus != SGX_SUCCESS) {
-        return GetOEResultFromSgxStatus(sgxStatus);
-    }
-
-    sgx_key_request_t key_request = { 0 };
-    key_request.key_name = SGX_KEYSELECT_SEAL;
-    switch (seal_policy) {
-    case OE_SEAL_POLICY_UNIQUE:
-        key_request.key_policy = SGX_KEYPOLICY_MRENCLAVE;
-        break;
-    case OE_SEAL_POLICY_PRODUCT:
-        key_request.key_policy = SGX_KEYPOLICY_MRSIGNER;
-        break;
-    default:
-        return OE_INVALID_PARAMETER;
-    }
-    key_request.isv_svn = sgxReport.body.isv_svn;
-    key_request.cpu_svn = sgxReport.body.cpu_svn;
-    key_request.attribute_mask = sgxReport.body.attributes;
-    oe_result_t oeResult = oe_random(&key_request.key_id, sizeof(key_request.key_id));
-    if (oeResult != OE_OK) {
-        return oeResult;
-    }
-
-    uint8_t* info = NULL;
-    if (key_info != NULL) {
-        info = malloc(sizeof(key_request));
-        if (info == NULL) {
-            return OE_OUT_OF_MEMORY;
-        }
-        memcpy(info, &key_request, sizeof(key_request));
-    }
-
-    oeResult = oe_get_seal_key_v2((uint8_t*)&key_request, sizeof(key_request), key_buffer, key_buffer_size);
-    if (oeResult != OE_OK) {
-        oe_free_key(NULL, info);
-        return oeResult;
-    }
-
-    *key_info_size = sizeof(key_request);
-    if (key_info != NULL) {
-        *key_info = info;
-    } else {
-        oe_free_key(NULL, info);
-    }
-    return OE_OK;
-}
-
 /* Get a symmetric encryption key derived from the specified policy and coupled
  * to the enclave platform.
  */
@@ -564,47 +507,12 @@ void oe_free_key(
     free(info);
 }
 
-/* Get a symmetric encryption key from the enclave platform using existing key information. */
-oe_result_t oe_get_seal_key_v2(
-    const uint8_t* key_info,
-    size_t key_info_size,
-    uint8_t** key_buffer,
-    size_t* key_buffer_size)
-{
-    if (key_info_size < sizeof(sgx_key_request_t)) {
-        key_info_size = sizeof(sgx_key_request_t);
-        return OE_INVALID_PARAMETER;
-    }
-    sgx_key_request_t* key_request = (sgx_key_request_t*)key_info;
-
-    uint8_t* key = malloc(sizeof(sgx_key_128bit_t));
-    if (key == NULL) {
-        return OE_OUT_OF_MEMORY;
-    }
-
-    sgx_status_t sgxStatus = sgx_get_key(key_request, (sgx_key_128bit_t*)key);
-    oe_result_t oeResult = GetOEResultFromSgxStatus(sgxStatus);
-    if (oeResult != OE_OK) {
-        free(key);
-        return oeResult;
-    }
-
-    *key_buffer = key;
-    *key_buffer_size = sizeof(sgx_key_128bit_t);
-    return OE_OK;
-}
-
 oe_result_t oe_get_seal_key_v1(
     _In_reads_bytes_(key_info_size) const uint8_t* key_info,
     _In_ size_t key_info_size,
     _Out_writes_bytes_(*key_buffer_size) uint8_t* key_buffer,
     _Inout_ size_t* key_buffer_size)
 {
-    if (key_info_size < sizeof(sgx_key_request_t)) {
-        key_info_size = sizeof(sgx_key_request_t);
-        return OE_INVALID_PARAMETER;
-    }
-
     size_t key_size = 0;
     uint8_t* key = NULL;
     oe_result_t result = oe_get_seal_key_v2(key_info,

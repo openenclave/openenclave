@@ -40,6 +40,16 @@
   </ItemGroup>
   <Import Project="$(SolutionDir)\TcpsVsSettings.props" />
   <ItemGroup>
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotAes128.c" />
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotAesTables.c" />
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotBase64.c" />
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotCrypt.c" />
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotDerEnc.c" />
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotEcc.c" />
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotHmac.c" />
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotKdf.c" />
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotSha256.c" />
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotX509Bldr.c" />
     <ClCompile Include="..\buffer.c" />
     <ClCompile Include="..\oeresult.c" />
     <ClCompile Include="..\oeshim-common.c" />
@@ -50,6 +60,11 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|ARM'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="cborhelper.c" />
+    <ClCompile Include="optee\cyres-optee.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="oeshim_t.c" />
     <ClCompile Include="optee\except-optee.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -78,6 +93,11 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="sgx\keygen-sgx.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|ARM'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="sgx\trpc-sgx.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</ExcludedFromBuild>
@@ -115,7 +135,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|x64'">false</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="optee\cyrep-optee.c">
+    <ClCompile Include="optee\keygen-optee.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|Win32'">false</ExcludedFromBuild>
@@ -184,13 +204,14 @@
     <ClCompile Include="TcpsLogApp.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Inc\optee\tcps_ctype_optee_t.h" />
+    <ClInclude Include="..\..\Inc\optee\tcps_string_optee_t.h" />
+    <ClInclude Include="..\..\Inc\optee\tcps_time_optee_t.h" />
+    <ClInclude Include="..\..\Inc\optee\cyrep-optee.h" />
     <ClInclude Include="cborhelper.h" />
     <ClInclude Include="errno.h" />
     <ClInclude Include="math.h" />
     <ClInclude Include="netdb.h" />
-    <ClInclude Include="optee\ctype-optee.h" />
-    <ClInclude Include="optee\cyrep-optee.h" />
-    <ClInclude Include="optee\strings-optee.h" />
     <ClInclude Include="rand_optee.h" />
     <ClInclude Include="sgx\TcpsLogSgx.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugMockOptee|Win32'">true</ExcludedFromBuild>
@@ -391,7 +412,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>TRUSTED_CODE;OPENSSL_NO_SOCK;USE_SGX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CONFIG_CYREP_SGX_BUILD;TRUSTED_CODE;OPENSSL_NO_SOCK;USE_SGX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(TcpsSdkDir)Inc;$(ProjectDir)..;$(OESdkDir)include;$(ProjectDir);$(SolutionDir)\Stack\platforms\sgx_trusted;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(ProjectDir)sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
@@ -473,7 +494,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>USE_SGX;TRUSTED_CODE;OPENSSL_NO_SOCK;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CONFIG_CYREP_SGX_BUILD;USE_SGX;TRUSTED_CODE;OPENSSL_NO_SOCK;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(TcpsSdkDir)Inc;$(ProjectDir)..;$(OESdkDir)include;$(ProjectDir);$(SolutionDir)\Stack\platforms\sgx_trusted;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(ProjectDir)sgx;$(ProjectDir)sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Lib>

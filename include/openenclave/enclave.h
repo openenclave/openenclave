@@ -645,7 +645,7 @@ OE_DEPRECATED(oe_enclave_t* oe_get_enclave(void),
  *
  * @param[in] seal_policy The policy for the identity properties used to derive the
  * key.
- * @param[out] key_buffer On success, contains a pointer to the key, which should be freed with oe_free_key().
+ * @param[out] key_buffer On success, contains a pointer to the PEM encoded key, which should be freed with oe_free_key().
  * @param[out] key_buffer_size On success, contains the size in bytes of the key buffer.
  * @param[out] key_info If non-NULL, then on success this points to the enclave-specific key information which
  * can be used to retrieve the same key later, on a newer security version.
@@ -665,7 +665,7 @@ oe_result_t oe_get_public_key_by_policy(
  * @param key_info The enclave-specific key information to derive the public key
  * with.
  * @param key_info_size The size of the **key_info** buffer.
- * @param key_buffer Upon success, this points to the resulting public key, which should be freed with oe_free_key().
+ * @param key_buffer Upon success, this points to the resulting PEM encoded public key, which should be freed with oe_free_key().
  * @param key_buffer_size Upon success, this contains the size of the **key_buffer** buffer, which should be freed with oe_free_key().
  *
  * @retval OE_OK The seal key was successfully requested.
@@ -686,7 +686,7 @@ oe_result_t oe_get_public_key(
  *
  * @param[in] seal_policy The policy for the identity properties used to derive the
  * key.
- * @param[out] key_buffer On success, contains a pointer to the key, which should be freed with oe_free_key().
+ * @param[out] key_buffer On success, contains a pointer to the PEM encoded key, which should be freed with oe_free_key().
  * @param[out] key_buffer_size On success, contains the size in bytes of the key buffer.
  * @param[out] key_info If non-NULL, then on success this points to the enclave-specific key information which
  * can be used to retrieve the same key later, on a newer security version.
@@ -706,7 +706,7 @@ oe_result_t oe_get_private_key_by_policy(
  * @param key_info The enclave-specific key information to derive the private key
  * with.
  * @param key_info_size The size of the **key_info** buffer.
- * @param key_buffer Upon success, this points to the resulting private key, which should be freed with oe_free_key().
+ * @param key_buffer Upon success, this points to the resulting the PEM encoded private key, which should be freed with oe_free_key().
  * @param key_buffer_size Upon success, this contains the size of the **key_buffer** buffer, which should be freed with oe_free_key().
  *
  * @retval OE_OK The seal key was successfully requested.

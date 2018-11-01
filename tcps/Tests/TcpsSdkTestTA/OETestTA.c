@@ -297,10 +297,11 @@ Tcps_StatusCode ecall_TestOEGetSealKeyV1(int policy)
     if (oeResult != OE_BUFFER_TOO_SMALL) {
         return Tcps_Bad;
     }
-    if (keySize < sizeof(key)) {
+    /* Size required is platform specific. Make sure the test can handle it. */
+    if (keySize > sizeof(key) || keySize == 0) {
         return Tcps_Bad;
     }
-    if (keyInfoSize < sizeof(keyInfo)) {
+    if (keyInfoSize > sizeof(keyInfo) || keyInfoSize == 0) {
         return Tcps_Bad;
     }
 
@@ -388,6 +389,118 @@ Tcps_StatusCode ecall_TestOEGetSealKeyV2(int policy)
     }
 
     return Tcps_Good;
+}
+
+Tcps_StatusCode ecall_TestOEGetPublicKey(int policy)
+{
+    oe_result_t oeResult;
+    size_t keySize = 0;
+    size_t keySize2 = 0;
+    size_t keyInfoSize = 0;
+    uint8_t* key;
+    uint8_t* key2;
+    uint8_t* keyInfo;
+    Tcps_StatusCode tcpsResult;
+
+    /* Test getting key without getting key info. */
+    oeResult = oe_get_public_key_by_policy(
+        (oe_seal_policy_t)policy,
+        &key,
+        &keySize,
+        NULL,
+        &keyInfoSize);
+    if (oeResult != OE_OK) {
+        return Tcps_Bad;
+    }
+    oe_free_key(key, NULL);
+    if (keySize == 0) {
+        return Tcps_Bad;
+    }
+
+    /* Test getting key and key info. */
+    oeResult = oe_get_public_key_by_policy(
+        (oe_seal_policy_t)policy,
+        &key,
+        &keySize,
+        &keyInfo,
+        &keyInfoSize);
+    if (oeResult != OE_OK) {      
+        return Tcps_Bad;
+    }
+
+    /* Test getting same key by key info. */
+    tcpsResult = Tcps_Good;
+    oeResult = oe_get_public_key(keyInfo, keyInfoSize, &key2, &keySize2);
+    if (oeResult != OE_OK) {
+        oe_free_key(key, keyInfo);
+        return Tcps_Bad;
+    }
+
+    /* Test that the keys are the same. */
+    if (keySize != keySize2 ||
+        memcmp(key, key2, keySize) != 0) {
+        tcpsResult = Tcps_Bad;
+    }
+
+    oe_free_key(key, NULL);
+    oe_free_key(key2, keyInfo);
+    return tcpsResult;
+}
+
+Tcps_StatusCode ecall_TestOEGetPrivateKey(int policy)
+{
+    oe_result_t oeResult;
+    size_t keySize = 0;
+    size_t keySize2 = 0;
+    size_t keyInfoSize = 0;
+    uint8_t* key;
+    uint8_t* key2;
+    uint8_t* keyInfo;
+    Tcps_StatusCode tcpsResult;
+
+    /* Test getting key without getting key info. */
+    oeResult = oe_get_private_key_by_policy(
+        (oe_seal_policy_t)policy,
+        &key,
+        &keySize,
+        NULL,
+        &keyInfoSize);
+    if (oeResult != OE_OK) {
+        return Tcps_Bad;
+    }
+    oe_free_key(key, NULL);
+    if (keySize == 0) {
+        return Tcps_Bad;
+    }
+
+    /* Test getting key and key info. */
+    oeResult = oe_get_private_key_by_policy(
+        (oe_seal_policy_t)policy,
+        &key,
+        &keySize,
+        &keyInfo,
+        &keyInfoSize);
+    if (oeResult != OE_OK) {      
+        return Tcps_Bad;
+    }
+
+    /* Test getting same key by key info. */
+    tcpsResult = Tcps_Good;
+    oeResult = oe_get_private_key(keyInfo, keyInfoSize, &key2, &keySize2);
+    if (oeResult != OE_OK) {
+        oe_free_key(key, keyInfo);
+        return Tcps_Bad;
+    }
+
+    /* Test that the keys are the same. */
+    if (keySize != keySize2 ||
+        memcmp(key, key2, keySize) != 0) {
+        tcpsResult = Tcps_Bad;
+    }
+
+    oe_free_key(key, NULL);
+    oe_free_key(key2, keyInfo);
+    return tcpsResult;
 }
 
 void* ecall_OEHostMalloc(int size)
