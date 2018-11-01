@@ -19,4 +19,23 @@ OE_CHECK_SIZE(sizeof(oe_enclave_properties_header_t), 32);
 
 OE_CHECK_SIZE(sizeof(oe_sgx_enclave_config_t), 16);
 
-OE_CHECK_SIZE(sizeof(oe_sgx_enclave_properties_t), 1856);
+OE_CHECK_SIZE(OE_OFFSETOF(oe_sgx_enclave_properties_t, header), 0);
+OE_CHECK_SIZE(OE_OFFSETOF(oe_sgx_enclave_properties_t, config), 32);
+OE_CHECK_SIZE(OE_OFFSETOF(oe_sgx_enclave_properties_t, image_info), 48);
+OE_CHECK_SIZE(OE_OFFSETOF(oe_sgx_enclave_properties_t, sigstruct), 112);
+OE_CHECK_SIZE(sizeof(oe_sgx_enclave_properties_t), 1928);
+
+//
+// Declare an invalid oeinfo to ensure .oeinfo section exists
+// - This object won't be linked if enclave has the macro defined.
+// - If enclave does't have the macro defined, it must go through
+//   oesign to update the stucture, which would override the value.
+//
+
+OE_SET_ENCLAVE_SGX(
+    OE_UINT16_MAX,
+    OE_UINT16_MAX,
+    false,
+    OE_UINT16_MAX,
+    OE_UINT16_MAX,
+    OE_UINT16_MAX);

@@ -529,6 +529,110 @@ done:
     return result;
 }
 
+#if defined(OE_TRACE_MEASURE)
+
+const char* hex_map = "0123456789abcdef";
+
+#define hexof(x) hex_map[((x) >> 4) & 0xf], hex_map[(x)&0xf]
+static void _dump_page(uint64_t src)
+
+{
+    uint8_t* ptr = (uint8_t*)src;
+    for (int i = 0; i < OE_PAGE_SIZE;)
+    {
+        printf(
+            "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%"
+            "c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c",
+            hexof(ptr[i + 0x00]),
+            hexof(ptr[i + 0x01]),
+            hexof(ptr[i + 0x02]),
+            hexof(ptr[i + 0x03]),
+            hexof(ptr[i + 0x04]),
+            hexof(ptr[i + 0x05]),
+            hexof(ptr[i + 0x06]),
+            hexof(ptr[i + 0x07]),
+            hexof(ptr[i + 0x08]),
+            hexof(ptr[i + 0x09]),
+            hexof(ptr[i + 0x0a]),
+            hexof(ptr[i + 0x0b]),
+            hexof(ptr[i + 0x0c]),
+            hexof(ptr[i + 0x0d]),
+            hexof(ptr[i + 0x0e]),
+            hexof(ptr[i + 0x0f]),
+            hexof(ptr[i + 0x10]),
+            hexof(ptr[i + 0x11]),
+            hexof(ptr[i + 0x12]),
+            hexof(ptr[i + 0x13]),
+            hexof(ptr[i + 0x14]),
+            hexof(ptr[i + 0x15]),
+            hexof(ptr[i + 0x16]),
+            hexof(ptr[i + 0x17]),
+            hexof(ptr[i + 0x18]),
+            hexof(ptr[i + 0x19]),
+            hexof(ptr[i + 0x1a]),
+            hexof(ptr[i + 0x1b]),
+            hexof(ptr[i + 0x1c]),
+            hexof(ptr[i + 0x1d]),
+            hexof(ptr[i + 0x1e]),
+            hexof(ptr[i + 0x1f]));
+        i += 0x20;
+        printf(
+            "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%"
+            "c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",
+            hexof(ptr[i + 0x00]),
+            hexof(ptr[i + 0x01]),
+            hexof(ptr[i + 0x02]),
+            hexof(ptr[i + 0x03]),
+            hexof(ptr[i + 0x04]),
+            hexof(ptr[i + 0x05]),
+            hexof(ptr[i + 0x06]),
+            hexof(ptr[i + 0x07]),
+            hexof(ptr[i + 0x08]),
+            hexof(ptr[i + 0x09]),
+            hexof(ptr[i + 0x0a]),
+            hexof(ptr[i + 0x0b]),
+            hexof(ptr[i + 0x0c]),
+            hexof(ptr[i + 0x0d]),
+            hexof(ptr[i + 0x0e]),
+            hexof(ptr[i + 0x0f]),
+            hexof(ptr[i + 0x10]),
+            hexof(ptr[i + 0x11]),
+            hexof(ptr[i + 0x12]),
+            hexof(ptr[i + 0x13]),
+            hexof(ptr[i + 0x14]),
+            hexof(ptr[i + 0x15]),
+            hexof(ptr[i + 0x16]),
+            hexof(ptr[i + 0x17]),
+            hexof(ptr[i + 0x18]),
+            hexof(ptr[i + 0x19]),
+            hexof(ptr[i + 0x1a]),
+            hexof(ptr[i + 0x1b]),
+            hexof(ptr[i + 0x1c]),
+            hexof(ptr[i + 0x1d]),
+            hexof(ptr[i + 0x1e]),
+            hexof(ptr[i + 0x1f]));
+        i += 0x20;
+    }
+}
+
+static void _dump_load_enclave_data(
+    uint64_t offset,
+    uint64_t flags,
+    uint64_t src,
+    bool extend)
+
+{
+    printf(
+        "========== load_enclave_data offset=%x, flags=%x, extend=%d "
+        "============\n",
+        (uint32_t)offset,
+        (uint32_t)flags,
+        extend);
+    _dump_page(src);
+}
+
+#endif /* defined(OE_TRACE_MEASURE) */
+
 oe_result_t oe_sgx_load_enclave_data(
     oe_sgx_load_context_t* context,
     uint64_t base,
@@ -548,6 +652,12 @@ oe_result_t oe_sgx_load_enclave_data(
     /* ADDR must be page aligned */
     if (addr % OE_PAGE_SIZE)
         OE_RAISE(OE_INVALID_PARAMETER);
+
+#if defined(OE_TRACE_MEASURE)
+
+    _dump_load_enclave_data(addr - base, flags, src, extend);
+
+#endif /* defined(OE_TRACE_MEASURE) */
 
     /* Measure this operation */
     OE_CHECK(

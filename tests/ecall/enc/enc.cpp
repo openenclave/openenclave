@@ -48,10 +48,10 @@ OE_ECALL void Test(void* args_)
     }
 
     /* Get enclave offsets and bases */
-    args->base_heap_page = oe_base_heap_page;
-    args->num_heap_pages = oe_num_heap_pages;
-    args->num_pages = oe_num_pages;
     args->base = __oe_get_enclave_base();
+    args->base_heap_page = oe_get_base_heap_page();
+    args->num_heap_pages = oe_get_num_heap_pages();
+    args->num_pages = oe_get_num_pages();
 
     /* Test the oe_setjmp/oe_longjmp functions */
     args->setjmp_result = TestSetjmp();

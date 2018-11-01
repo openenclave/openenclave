@@ -1,6 +1,16 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+if (UNIX)
+set(PLATFORM_SRC
+    linux/reloc.c
+    )
+elseif (WIN32)
+set(PLATFORM_SRC
+    windows/reloc.c
+    )
+endif()
+
 add_library(oecore STATIC
     ../../common/safecrt.c
     assert.c
@@ -13,7 +23,6 @@ add_library(oecore STATIC
     exception.c
     globals.c
     hostcalls.c
-    hoststack.c
     hexdump.c
     init.c
     jump.c
@@ -34,6 +43,7 @@ add_library(oecore STATIC
     enter.S
     exit.S
     getkey.S
+    ${PLATFORM_SRC}
     )
 
 target_link_libraries(oecore PUBLIC oe_includes)

@@ -48,63 +48,22 @@ static int _update_and_write_shared_lib(
     const oe_sgx_enclave_properties_t* properties)
 {
     int rc = -1;
-    elf64_t elf;
+    oe_enclave_image_t oeimage;
     FILE* os = NULL;
 
     /* Open ELF file */
-    if (elf64_load(path, &elf) != 0)
+    if (oe_load_enclave_image(path, &oeimage) != OE_OK)
     {
         Err("cannot load ELF file: %s", path);
         goto done;
     }
 
-    /* Verify that this enclave contains required symbols */
-    {
-        elf64_sym_t sym;
-
-        if (elf64_find_symbol_by_name(&elf, "_start", &sym) != 0)
-        {
-            Err("entry point not found: _start()");
-            goto done;
-        }
-
-        if (elf64_find_symbol_by_name(&elf, "oe_num_pages", &sym) != 0)
-        {
-            Err("oe_num_pages() undefined");
-            goto done;
-        }
-
-        if (elf64_find_symbol_by_name(&elf, "oe_base_heap_page", &sym) != 0)
-        {
-            Err("oe_base_heap_page() undefined");
-            goto done;
-        }
-
-        if (elf64_find_symbol_by_name(&elf, "oe_num_heap_pages", &sym) != 0)
-        {
-            Err("oe_num_heap_pages() undefined");
-            goto done;
-        }
-
-        if (elf64_find_symbol_by_name(&elf, "oe_virtual_base_addr", &sym) != 0)
-        {
-            Err("oe_virtual_base_addr() undefined");
-            goto done;
-        }
-    }
-
     // Update or create a new .oeinfo section.
     if (oe_sgx_update_enclave_properties(
-            &elf, OE_INFO_SECTION_NAME, properties) != OE_OK)
+            &oeimage, OE_INFO_SECTION_NAME, properties) != OE_OK)
     {
-        if (elf64_add_section(
-                &elf,
-                OE_INFO_SECTION_NAME,
-                SHT_PROGBITS,
-                properties,
-                sizeof(oe_sgx_enclave_properties_t)) != 0)
         {
-            Err("failed to add section: %s", OE_INFO_SECTION_NAME);
+            Err("section doesn't exist: %s", OE_INFO_SECTION_NAME);
             goto done;
         }
     }
@@ -125,7 +84,8 @@ static int _update_and_write_shared_lib(
             goto done;
         }
 
-        if (fwrite(elf.data, 1, elf.size, os) != elf.size)
+        if (fwrite(oeimage.u.elf.elf.data, 1, oeimage.u.elf.elf.size, os) !=
+            oeimage.u.elf.elf.size)
         {
             Err("failed to write: %s", p);
             goto done;
@@ -146,7 +106,7 @@ done:
     if (os)
         fclose(os);
 
-    elf64_unload(&elf);
+    oeimage.unload(&oeimage);
 
     return rc;
 }
@@ -419,7 +379,10 @@ static oe_result_t _sgx_load_enclave_properties(
     oe_sgx_enclave_properties_t* properties)
 {
     oe_result_t result = OE_UNEXPECTED;
-    elf64_t elf = ELF64_INIT;
+    oe_enclave_image_t oeimage;
+
+    /* clear ELF magic */
+    oeimage.u.elf.elf.magic = 0;
 
     if (properties)
         memset(properties, 0, sizeof(oe_sgx_enclave_properties_t));
@@ -429,21 +392,19 @@ static oe_result_t _sgx_load_enclave_properties(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Load the ELF image */
-    if (elf64_load(path, &elf) != 0)
-        OE_RAISE(OE_FAILURE);
+    OE_CHECK(oe_load_enclave_image(path, &oeimage));
 
     /* Load the SGX enclave properties */
-    if (oe_sgx_load_properties(&elf, OE_INFO_SECTION_NAME, properties) != OE_OK)
-    {
-        OE_RAISE(OE_NOT_FOUND);
-    }
+    OE_CHECK(
+        oe_sgx_load_enclave_properties(
+            &oeimage, OE_INFO_SECTION_NAME, properties));
 
     result = OE_OK;
 
 done:
 
-    if (elf.magic == ELF_MAGIC)
-        elf64_unload(&elf);
+    if (oeimage.u.elf.elf.magic == ELF_MAGIC)
+        oeimage.unload(&oeimage);
 
     return result;
 }

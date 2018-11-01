@@ -13,4 +13,6 @@ void oe_call_init_functions(void);
 
 void oe_call_fini_functions(void);
 
+bool oe_apply_relocations(void);
+
 #endif /* OE_INIT_H */
