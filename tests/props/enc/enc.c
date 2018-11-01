@@ -4,12 +4,10 @@
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
-#include "../args.h"
+#include "props_t.h"
 
-OE_ECALL void Test(void* args_)
+int enc_props(int* out_param)
 {
-    Args* args = (Args*)args_;
-    args->ret = 0;
+    *out_param = 0;
+    return 0;
 }
-
-OE_DEFINE_EMPTY_ECALL_TABLE();
