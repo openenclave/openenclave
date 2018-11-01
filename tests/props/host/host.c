@@ -8,7 +8,7 @@
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include "../../../host/enclave.h"
-#include "../args.h"
+#include "props_u.h"
 
 static void _check_properties(
     oe_sgx_enclave_properties_t* props,
@@ -66,9 +66,7 @@ static oe_result_t _sgx_load_enclave_properties(
 
     /* Load the SGX enclave properties */
     if (oe_sgx_load_properties(&elf, OE_INFO_SECTION_NAME, properties) != OE_OK)
-    {
         OE_RAISE(OE_NOT_FOUND);
-    }
 
     result = OE_OK;
 
@@ -115,16 +113,9 @@ int main(int argc, const char* argv[])
     }
 
     const uint32_t flags = oe_get_create_flags();
-
-    if ((result = oe_create_enclave(
-             argv[1],
-             OE_ENCLAVE_TYPE_SGX,
-             flags,
-             NULL,
-             0,
-             NULL,
-             0,
-             &enclave)) != OE_OK)
+    result = oe_create_props_enclave(
+        argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
+    if (result != OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);
 
     /* Check expected enclave property values */
@@ -153,19 +144,23 @@ int main(int argc, const char* argv[])
             4);                                          /* num_tcs */
     }
 
-    Args args;
-    memset(&args, 0, sizeof(args));
-    args.ret = -1;
+    int out_param = -1;
+    int return_val;
 
-    if ((result = oe_call_enclave(enclave, "Test", &args)) != OE_OK)
-        oe_put_err("oe_call_enclave() failed: result=%u", result);
+    result = enc_props(enclave, &return_val, &out_param);
 
-    if (args.ret != 0)
-        oe_put_err("ECALL failed args.result=%d", args.ret);
+    if (OE_OK != result)
+        oe_put_err("call enclave failed: result=%u", result);
+
+    if (return_val != 0)
+        oe_put_err("ECALL failed args.result=%d", return_val);
+
+    if (out_param != 0)
+        oe_put_err("ECALL failed out_param=%d", out_param);
 
     oe_terminate_enclave(enclave);
 
-    printf("=== passed all tests (echo)\n");
+    printf("=== passed all tests (props)\n");
 
     return 0;
 }
