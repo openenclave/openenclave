@@ -164,12 +164,14 @@ static void test_ocall_pointer_fun(F ocall_pointer_fun)
 void test_pointer_edl_ocalls()
 {
     test_ocall_pointer_fun<char>(ocall_pointer_char);
-    test_ocall_pointer_fun<wchar_t>(ocall_pointer_wchar_t);
+    if (g_enabled[TYPE_WCHAR_T])
+        test_ocall_pointer_fun<wchar_t>(ocall_pointer_wchar_t);
     test_ocall_pointer_fun<short>(ocall_pointer_short);
     test_ocall_pointer_fun<int>(ocall_pointer_int);
     test_ocall_pointer_fun<float>(ocall_pointer_float);
     test_ocall_pointer_fun<double>(ocall_pointer_double);
-    test_ocall_pointer_fun<long>(ocall_pointer_long);
+    if (g_enabled[TYPE_LONG])
+        test_ocall_pointer_fun<long>(ocall_pointer_long);
     test_ocall_pointer_fun<size_t>(ocall_pointer_size_t);
     test_ocall_pointer_fun<unsigned>(ocall_pointer_unsigned);
     test_ocall_pointer_fun<int8_t>(ocall_pointer_int8_t);
@@ -181,7 +183,8 @@ void test_pointer_edl_ocalls()
     test_ocall_pointer_fun<uint32_t>(ocall_pointer_uint32_t);
     test_ocall_pointer_fun<uint64_t>(ocall_pointer_uint64_t);
     test_ocall_pointer_fun<long long>(ocall_pointer_long_long);
-    test_ocall_pointer_fun<long double>(ocall_pointer_long_double);
+    if (g_enabled[TYPE_LONG_DOUBLE])
+        test_ocall_pointer_fun<long double>(ocall_pointer_long_double);
 
     OE_TEST(ocall_pointer_assert_all_called() == OE_OK);
     printf("=== test_pointer_edl_ocalls passed\n");
@@ -1164,10 +1167,18 @@ long double* ecall_pointer_long_double(
 
 void ecall_pointer_assert_all_called()
 {
-    // Each of the 19 functions above is called twice.
+    // Each of the 16 functions above is called twice.
     // Once with arrays and then with nulls.
-    OE_TEST(num_ecalls == 38);
-    OE_TEST(num_null_ecalls == 19);
+    int expected_num_calls = 16 * 2;
+
+    // Account for enabled non-portable types.
+    for (size_t i = 0; i < OE_COUNTOF(g_enabled); ++i)
+    {
+        if (g_enabled[i])
+            expected_num_calls += 2;
+    }
+
+    OE_TEST(num_ecalls == expected_num_calls);
 }
 
 // The following functions exists to make sure there are no

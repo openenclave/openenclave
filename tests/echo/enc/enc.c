@@ -3,7 +3,6 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
-#include <openenclave/internal/hostalloc.h>
 #include <openenclave/internal/print.h>
 #include "echo_t.h"
 
@@ -11,7 +10,7 @@ char* oe_host_strdup(const char* str)
 {
     size_t n = oe_strlen(str);
 
-    char* dup = (char*)oe_host_alloc_for_call_host(n + 1);
+    char* dup = (char*)oe_host_calloc(1, n + 1);
 
     if (dup)
         oe_memcpy(dup, str, n + 1);
@@ -56,7 +55,7 @@ int enc_echo(char* in, char out[100])
 
     oe_host_printf("Hello from Echo function!\n");
 
-    oe_host_free_for_call_host(host_allocated_str);
+    oe_host_free(host_allocated_str);
 
     return 0;
 }

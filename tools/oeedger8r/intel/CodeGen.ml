@@ -823,7 +823,7 @@ let gen_ptr_size (ty: Ast.atype) (pattr: Ast.ptr_attr) (name: string) (get_parm:
           Ast.Ptr ty  -> 
             sprintf "sizeof(%s)" (Ast.get_tystr ty)
         | _ -> 
-          if pattr.pa_isptr then
+          if pattr.Ast.pa_isptr then
             sprintf "sizeof(*%s)" parm_name
           else
             sprintf "sizeof(%s)"  (Ast.get_tystr ty)

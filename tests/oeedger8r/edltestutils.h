@@ -3,7 +3,9 @@
 
 #pragma once
 
+#include <stdint.h>
 #include <wchar.h>
+#include <limits>
 
 // Assert that given arguments are of specified types.
 // Results in compile error on type mismatch.
@@ -59,4 +61,11 @@ inline int array_compare(const T (&a1)[N], U u)
     return 0;
 }
 
-const wchar_t ohm = L'\u2126';
+const wchar_t wchar_t_value = L'\u2126';
+
+extern uint8_t g_enabled[3];
+
+const long long_value = std::numeric_limits<long>::max();
+const unsigned long ulong_value = std::numeric_limits<unsigned long>::max();
+const long double long_double_value =
+    std::numeric_limits<long double>::epsilon();

@@ -177,7 +177,7 @@ static void _register_signal_handlers(void)
 }
 
 // The exception only need to be initialized once per process.
-void _oe_initialize_host_exception()
+void oe_initialize_host_exception()
 {
     _register_signal_handlers();
 }

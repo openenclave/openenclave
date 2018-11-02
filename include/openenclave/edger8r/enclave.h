@@ -28,7 +28,7 @@ OE_EXTERNC_BEGIN
  * The type of a function in ecall function table
  */
 typedef void (*oe_ecall_func_t)(
-    uint8_t* input_buffer,
+    const uint8_t* input_buffer,
     size_t input_buffer_size,
     uint8_t* output_buffer,
     size_t output_buffer_size,
@@ -40,7 +40,11 @@ typedef void (*oe_ecall_func_t)(
  * Call the host function whose matching the given function_id.
  * The host function is expected to have the following signature:
  *
- *     void (*)(void* args);
+ *     void (const uint8_t* input_buffer,
+ *           size_t input_buffer_size,
+ *           uint8_t* output_buffer,
+ *           size_t output_buffer_size,
+ *           size_t* output_bytes_written);
  *
  * Note that the return value of this function only indicates the success of
  * the call and not of the underlying function. The OCALL implementation must
@@ -63,11 +67,30 @@ typedef void (*oe_ecall_func_t)(
  */
 oe_result_t oe_call_host_function(
     size_t function_id,
-    void* input_buffer,
+    const void* input_buffer,
     size_t input_buffer_size,
     void* output_buffer,
     size_t output_buffer_size,
     size_t* output_bytes_written);
+
+/**
+ * Allocate a buffer of given size for doing an ocall.
+ *
+ * The buffer may or may not be allocated in host memory.
+ * The buffer should be treated as untrusted.
+ *
+ * @param size The size in bytes of the buffer.
+ * @returns pointer to the allocated buffer.
+ * @return NULL if allocation failed.
+ */
+void* oe_allocate_ocall_buffer(size_t size);
+
+/**
+ * Free the buffer allocated for ocalls.
+ *
+ * @param buffer The buffer allocated via oe_allocate_ocall_buffer.
+ */
+void oe_free_ocall_buffer(void* buffer);
 
 /**
  * For hand-written enclaves, that use the older calling mechanism, define empty

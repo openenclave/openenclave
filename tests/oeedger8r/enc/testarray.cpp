@@ -58,12 +58,14 @@ static void test_ocall_array_fun(F ocall_array_fun)
 void test_array_edl_ocalls()
 {
     test_ocall_array_fun<char>(ocall_array_char);
-    test_ocall_array_fun<wchar_t>(ocall_array_wchar_t);
+    if (g_enabled[TYPE_WCHAR_T])
+        test_ocall_array_fun<wchar_t>(ocall_array_wchar_t);
     test_ocall_array_fun<short>(ocall_array_short);
     test_ocall_array_fun<int>(ocall_array_int);
     test_ocall_array_fun<float>(ocall_array_float);
     test_ocall_array_fun<double>(ocall_array_double);
-    test_ocall_array_fun<long>(ocall_array_long);
+    if (g_enabled[TYPE_LONG])
+        test_ocall_array_fun<long>(ocall_array_long);
     test_ocall_array_fun<size_t>(ocall_array_size_t);
     test_ocall_array_fun<unsigned>(ocall_array_unsigned);
     test_ocall_array_fun<int8_t>(ocall_array_int8_t);
@@ -75,7 +77,8 @@ void test_array_edl_ocalls()
     test_ocall_array_fun<uint32_t>(ocall_array_uint32_t);
     test_ocall_array_fun<uint64_t>(ocall_array_uint64_t);
     test_ocall_array_fun<long long>(ocall_array_long_long);
-    test_ocall_array_fun<long double>(ocall_array_long_double);
+    if (g_enabled[TYPE_LONG_DOUBLE])
+        test_ocall_array_fun<long double>(ocall_array_long_double);
 
     OE_TEST(ocall_array_assert_all_called() == OE_OK);
     printf("=== test_array_edl_ocalls passed\n");
@@ -290,7 +293,16 @@ void ecall_array_long_double(
 
 void ecall_array_assert_all_called()
 {
-    // Each of the 19 functions above is called twice.
+    // Each of the 16 functions above is called twice.
     // Once with arrays and then with nulls.
-    OE_TEST(num_ecalls == 38);
+    int expected_num_calls = 16 * 2;
+
+    // Account for enabled non-portable types.
+    for (size_t i = 0; i < OE_COUNTOF(g_enabled); ++i)
+    {
+        if (g_enabled[i])
+            expected_num_calls += 2;
+    }
+
+    OE_TEST(num_ecalls == expected_num_calls);
 }

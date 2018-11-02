@@ -57,7 +57,7 @@ OE_EXTERNC_BEGIN
  * Type of each function in an ocall-table.
  */
 typedef void (*oe_ocall_func_t)(
-    uint8_t* input_buffer,
+    const uint8_t* input_buffer,
     size_t input_buffer_size,
     uint8_t* output_buffer,
     size_t output_buffer_size,
