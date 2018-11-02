@@ -92,7 +92,7 @@ ThreadBinding* GetThreadBinding(void);
 
 /**
  *  This structure must be kept in sync with the defines in
- *  debugger/pythonExtension/gdb_sgx_plugin.py.
+ *  debugger/pythonExtension/oe_constants.py.
  */
 struct _oe_enclave
 {
