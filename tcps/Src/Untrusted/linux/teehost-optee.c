@@ -36,11 +36,12 @@ static TEEC_Result handle_generic_rpc(
         
         sgxStatus = optee->ocall_table->func_addr[type](output_buffer);
     } else {
+        type = type - V2_FUNCTION_ID_OFFSET;
+
         if (type >= g_ocall_table_v2.nr_ocall)
             return TEEC_ERROR_BAD_PARAMETERS;
 
         uint32_t bytes_written = 0;
-        type = type - V2_FUNCTION_ID_OFFSET;
         g_ocall_table_v2.call_addr[type](
             input_buffer,
             input_buffer_size,

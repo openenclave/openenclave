@@ -9,9 +9,6 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <fcntl.h>
-#ifdef __timeval_defined
-#error OMG
-#endif
 
 #include "sal_unsup.h"
 #include "stdext.h"
