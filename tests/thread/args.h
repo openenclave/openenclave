@@ -36,4 +36,14 @@ typedef struct _test_rwlock_args
     bool readers_and_writers;
 } TestRWLockArgs;
 
+typedef struct _test_tcs_args
+{
+    // The number of threads
+    size_t num_threads;
+    // Number of TCSes
+    size_t tcs_count;
+    // Number of times oe_call_enclave returned OE_OUT_OF_THREADS
+    size_t num_out_threads;
+} TestTCSArgs;
+
 #endif /* _stdc_args_h */
