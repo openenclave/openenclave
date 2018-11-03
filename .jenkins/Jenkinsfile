@@ -7,7 +7,7 @@ pipeline {
         stage('Check pre-commit requirements') {
           agent {
             docker {
-              image 'oetools-azure:1.6'
+              image 'oetools-azure:1.7'
             }
           }
           steps {
@@ -50,7 +50,7 @@ pipeline {
         stage('Simulation clang-7 SGX1 Debug') {
           agent {
             docker {
-              image 'oetools-azure:1.6'
+              image 'oetools-azure:1.7'
             }
           }
           steps {
@@ -62,7 +62,7 @@ pipeline {
         stage('Simulation clang-7 SGX1 Release') {
           agent {
             docker {
-              image 'oetools-azure:1.6'
+              image 'oetools-azure:1.7'
             }
           }
           steps {
@@ -74,7 +74,7 @@ pipeline {
         stage('Simulation clang-7 SGX1 RelWithDebInfo') {
           agent {
             docker {
-              image 'oetools-azure:1.6'
+              image 'oetools-azure:1.7'
             }
           }
           steps {
@@ -86,7 +86,7 @@ pipeline {
         stage('Simulation clang-7 SGX1-FLC Debug') {
           agent {
             docker {
-              image 'oetools-azure:1.6'
+              image 'oetools-azure:1.7'
             }
           }
           steps {
@@ -98,7 +98,7 @@ pipeline {
         stage('Simulation clang-7 SGX1-FLC Release') {
           agent {
             docker {
-              image 'oetools-azure:1.6'
+              image 'oetools-azure:1.7'
             }
           }
           steps {
@@ -110,7 +110,7 @@ pipeline {
         stage('Simulation clang-7 SGX1-FLC RelWithDebInfo') {
           agent {
             docker {
-              image 'oetools-azure:1.6'
+              image 'oetools-azure:1.7'
             }
           }
           steps {
@@ -196,7 +196,7 @@ pipeline {
             stage('Linux SGX1 Debug') {
               agent {
                 docker {
-                  image 'oetools-azure:1.6'
+                  image 'oetools-azure:1.7'
                 }
               }
               steps {
@@ -225,7 +225,7 @@ pipeline {
             stage('Linux SGX1 Release') {
               agent {
                 docker {
-                  image 'oetools-azure:1.6'
+                  image 'oetools-azure:1.7'
                 }
               }
               steps {
@@ -249,7 +249,24 @@ pipeline {
             }
           }
         }
+        stage('Non-Simulation Container SGX1-FLC RelWithDebInfo') {
+          agent {
+            docker {
+              image 'oetools-azure:1.7'
+              label 'hardware'
+              args '--privileged -v /dev/sgx:/dev/sgx'
+            }
+          }
+
+          steps {
+            timeout(15) {
+              sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d'
+            }
+          }
+        }
       }
     }
   }
 }
+
+
