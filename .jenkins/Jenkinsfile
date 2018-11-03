@@ -249,7 +249,7 @@ pipeline {
             }
           }
         }
-        stage('Coffeelake Container SGX1-FLC RelWithDebInfo') {
+        stage('Non-Simulation Container SGX1-FLC RelWithDebInfo') {
           agent {
             docker {
               image 'oetools-azure:1.7'
@@ -260,7 +260,6 @@ pipeline {
 
           steps {
             timeout(15) {
-              sh 'ls -l /dev'
               sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d'
             }
           }
