@@ -19,7 +19,7 @@ fi
 
 echo Installing prerequisites
 
-sudo apt-get -y install android-tools-adb android-tools-fastboot autoconf automake bc bison build-essential cscope curl device-tree-compiler flex ftp-upload gdisk iasl libattr1-dev libcap-dev libfdt-dev libftdi-dev libglib2.0-dev libhidapi-dev libncurses5-dev libpixman-1-dev libssl-dev libtool make mtools netcat python-crypto python-serial python-wand unzip uuid-dev xdg-utils xterm xz-utils zlib1g-dev gcc-arm-linux-gnueabi
+sudo apt-get -y install android-tools-adb android-tools-fastboot autoconf automake bc bison build-essential cscope curl device-tree-compiler doxygen flex ftp-upload gdisk iasl libattr1-dev libcap-dev libfdt-dev libftdi-dev libglib2.0-dev libhidapi-dev libncurses5-dev libpixman-1-dev libssl-dev libtool make mtools netcat python-crypto python-serial python-wand unzip uuid-dev xdg-utils xterm xz-utils zlib1g-dev gcc-arm-linux-gnueabi
 
 echo Checking for Intel SGX SDK
 
@@ -145,3 +145,5 @@ export ARCH=arm
 
 make -j ${PROC_COUNT} -C Samples/EchoSockets/Trusted/optee -f linux_gcc.mak BUILD_TARGET=debug $*
 make -j ${PROC_COUNT} -C Samples/OEHelloWorld/HelloWorldEnc/optee -f linux_gcc.mak BUILD_TARGET=debug $*
+
+doxygen Doxyfile
