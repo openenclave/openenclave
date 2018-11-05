@@ -7,11 +7,10 @@
 #include "sal_unsup.h"
 #endif
 
-#include <tcps.h>
-
-#include "tcps_u.h"
+#include <openenclave/host.h>
 #include "TcpsCalls_u.h"
 #include "../buffer.h"
+extern int g_serialize_ecalls;
 
 #define MIN(a,b) (((a) < b) ? (a) : (b))
 
@@ -47,6 +46,7 @@ TcpsPushDataToTeeBuffer(
     sgx_status_t sgxStatus = SGX_SUCCESS;
     oe_BufferChunk chunk;
     CreateBuffer_Result result;
+    int serialize_ecall = g_serialize_ecalls;
 
 Tcps_InitializeStatus(Tcps_Module_Helper_u, "TcpsPushDataToTeeBuffer"); 
 
@@ -57,12 +57,26 @@ Tcps_InitializeStatus(Tcps_Module_Helper_u, "TcpsPushDataToTeeBuffer");
         COPY_BUFFER(chunk, a_Buffer + bytesCopied, chunk.size);
 
         if (hTeeBuffer == NULL) {
+            if (serialize_ecall) {
+                oe_acquire_enclave_mutex((oe_enclave_t*)eid);
+            }
             sgxStatus = ecall_CreateTeeBuffer(eid, &result, chunk);
+            if (serialize_ecall) {
+                oe_release_enclave_mutex((oe_enclave_t*)eid);
+            }
+
             Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, Tcps_Bad);
             uStatus = result.uStatus;
             hTeeBuffer = result.hBuffer;
         } else {
+            if (serialize_ecall) {
+                oe_acquire_enclave_mutex((oe_enclave_t*)eid);
+            }
             sgxStatus = ecall_AppendToTeeBuffer(eid, &uStatus, hTeeBuffer, chunk);
+            if (serialize_ecall) {
+                oe_release_enclave_mutex((oe_enclave_t*)eid);
+            }
+
             Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, Tcps_Bad);
         }
         Tcps_GotoErrorIfBad(uStatus);
@@ -76,7 +90,13 @@ Tcps_ReturnStatusCode;
 Tcps_BeginErrorHandling;
 
     if (hTeeBuffer != NULL) {
+        if (serialize_ecall) {
+            oe_acquire_enclave_mutex((oe_enclave_t*)eid);
+        }
         (void)ecall_FreeTeeBuffer(eid, hTeeBuffer);
+        if (serialize_ecall) {
+            oe_release_enclave_mutex((oe_enclave_t*)eid);
+        }
     }
     *a_phTeeBuffer = NULL;
 

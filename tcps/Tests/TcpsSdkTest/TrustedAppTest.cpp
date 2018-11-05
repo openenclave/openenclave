@@ -15,7 +15,7 @@ void TrustedAppTest::SetUp()
     oe_result_t result = oe_create_TcpsSdkTestTA_enclave(
         TA_ID,
         OE_ENCLAVE_TYPE_UNDEFINED,
-        OE_ENCLAVE_FLAG_DEBUG,
+        OE_ENCLAVE_FLAG_DEBUG | OE_ENCLAVE_FLAG_SERIALIZE_ECALLS,
         NULL,
         0,
         &enclave);
@@ -38,14 +38,6 @@ void TrustedAppTest::TearDown()
     oe_result_t result = oe_terminate_enclave(enclave);
     EXPECT_EQ(OE_OK, result);
     enclave = NULL;
-}
-
-void TrustedAppTest::AcquireTAMutex() {
-    oe_acquire_enclave_mutex(enclave);
-}
-
-void TrustedAppTest::ReleaseTAMutex() {
-    oe_release_enclave_mutex(enclave);
 }
 
 sgx_enclave_id_t TrustedAppTest::GetTAId()

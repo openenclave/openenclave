@@ -36,9 +36,7 @@ public:
 void BufferTest::VerifyTeeBufferContents(void* hTeeBuffer, int expectedSize, char* expectedData)
 {
     oe_CreateBuffer_Result reeBufferResult = {};
-    AcquireTAMutex();
     oe_result_t oeResult = ecall_CreateReeBufferFromTeeBuffer(GetOEEnclave(), &reeBufferResult, hTeeBuffer);
-    ReleaseTAMutex();
     ASSERT_EQ(OE_OK, oeResult);
     ASSERT_EQ(Tcps_Good, reeBufferResult.uStatus);
 
@@ -60,9 +58,9 @@ TEST_F(BufferTest, CreateTeeBuffer_Success)
     chunk.size = 5;
     strcpy_s(chunk.buffer, "Test");
     CreateBuffer_Result result;
-    AcquireTAMutex();
+    oe_acquire_enclave_mutex(GetOEEnclave());
     sgx_status_t sgxStatus = ecall_CreateTeeBuffer(GetTAId(), &result, chunk);
-    ReleaseTAMutex();
+    oe_release_enclave_mutex(GetOEEnclave());
     ASSERT_EQ(SGX_SUCCESS, sgxStatus);
     ASSERT_EQ(Tcps_Good, result.uStatus);
     ASSERT_FALSE(result.hBuffer == NULL);
@@ -70,7 +68,9 @@ TEST_F(BufferTest, CreateTeeBuffer_Success)
     // Read it back to verify the contents.
     VerifyTeeBufferContents(result.hBuffer, chunk.size, chunk.buffer);
     
+    oe_acquire_enclave_mutex(GetOEEnclave());
     sgxStatus = ecall_FreeTeeBuffer(GetTAId(), result.hBuffer);
+    oe_release_enclave_mutex(GetOEEnclave());
     ASSERT_EQ(SGX_SUCCESS, sgxStatus);
 }
 
@@ -79,9 +79,9 @@ TEST_F(BufferTest, AppendToTeeBuffer_Success)
     // Create a 0 byte buffer.
     oe_BufferChunk chunk = { 0 };
     CreateBuffer_Result result;
-    AcquireTAMutex();
+    oe_acquire_enclave_mutex(GetOEEnclave());
     sgx_status_t sgxStatus = ecall_CreateTeeBuffer(GetTAId(), &result, chunk);
-    ReleaseTAMutex();
+    oe_release_enclave_mutex(GetOEEnclave());
     ASSERT_EQ(SGX_SUCCESS, sgxStatus);
     ASSERT_EQ(Tcps_Good, result.uStatus);
     ASSERT_FALSE(result.hBuffer == NULL);
@@ -90,15 +90,18 @@ TEST_F(BufferTest, AppendToTeeBuffer_Success)
     chunk.size = 5;
     strcpy_s(chunk.buffer, "Test");
     Tcps_StatusCode uStatus;
-    AcquireTAMutex();
+    oe_acquire_enclave_mutex(GetOEEnclave());
     sgxStatus = ecall_AppendToTeeBuffer(GetTAId(), &uStatus, result.hBuffer, chunk);
-    ReleaseTAMutex();
+    oe_release_enclave_mutex(GetOEEnclave());
     ASSERT_EQ(SGX_SUCCESS, sgxStatus);
     ASSERT_EQ(Tcps_Good, uStatus);
 
     // Read it back to verify the contents.
     VerifyTeeBufferContents(result.hBuffer, chunk.size, chunk.buffer);
 
+    oe_acquire_enclave_mutex(GetOEEnclave());
     sgxStatus = ecall_FreeTeeBuffer(GetTAId(), result.hBuffer);
+    oe_release_enclave_mutex(GetOEEnclave());
+
     ASSERT_EQ(SGX_SUCCESS, sgxStatus);
 }

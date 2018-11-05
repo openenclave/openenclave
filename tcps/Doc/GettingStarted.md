@@ -43,17 +43,9 @@ a TA from a regular app).  Even if it has an OCALL (i.e., an out-call
 back into the regular app) in progress, the ECALL must complete before
 another ECALL can enter the TA.  SGX, on the other hand, would allow a
 second ECALL to enter.  So if you want them to function identically, apps
-should wrap ECALLs in the following mutex Acquire/Release calls:
-
-```
-oe_acquire_enclave_mutex(enclave);
-sgxStatus = ecall_MyEcall(enclave, ...);
-oe_acquire_enclave_mutex(enclave);
-```
-
-In the future, this will not be needed, but one can pass the 
-OE\_ENCLAVE\_FLAG\_SERIALIZE\_ECALLS
-flag when creating an enclave to automatically get this behavior.
+should pass the OE\_ENCLAVE\_FLAG\_SERIALIZE\_ECALLS
+flag when creating an enclave to automatically get the OP-TEE like behavior
+for both SGX and TrustZone.
 
 ## Include paths, preprocessor defines, and libraries
 

@@ -50,6 +50,7 @@ oe_result_t oe_create_enclave(
     } else {
         g_serialize_ecalls = FALSE;
     }
+    int serialize_ecall = g_serialize_ecalls;
 
     // Load the enclave.
     sgx_enclave_id_t eid;
@@ -60,7 +61,14 @@ oe_result_t oe_create_enclave(
 
     // Make sure we can call into the enclave.  This also registers the
     // OCALL handler, which OP-TEE needs.
+    if (serialize_ecall) {
+        oe_acquire_enclave_mutex((oe_enclave_t*)eid);
+    }
     sgx_status_t sgxStatus = ecall_InitializeEnclave(eid, &uStatus);
+    if (serialize_ecall) {
+        oe_release_enclave_mutex((oe_enclave_t*)eid);
+    }
+
     if (sgxStatus != SGX_SUCCESS) {
         return OE_FAILURE;
     }
@@ -129,8 +137,17 @@ oe_result_t oe_get_report_v1(
     GetReport_Result result;
     oe_buffer1024 optParamsBuffer;
     sgx_enclave_id_t eid = (sgx_enclave_id_t)enclave;
+    int serialize_ecall = g_serialize_ecalls;
     COPY_BUFFER(optParamsBuffer, opt_params, opt_params_size);
+
+    if (serialize_ecall) {
+        oe_acquire_enclave_mutex((oe_enclave_t*)eid);
+    }
     sgx_status_t sgxStatus = ecall_get_report(eid, &result, flags, optParamsBuffer, opt_params_size);
+    if (serialize_ecall) {
+        oe_release_enclave_mutex((oe_enclave_t*)eid);
+    }
+
     oe_result_t oeResult = GetOEResultFromSgxStatus(sgxStatus);
     if (oeResult == OE_OK) {
         *report_buffer_size = result.report_buffer_size;
@@ -150,8 +167,17 @@ oe_result_t oe_get_report_v2(
     GetReport_Result result;
     oe_buffer1024 optParamsBuffer;
     sgx_enclave_id_t eid = (sgx_enclave_id_t)enclave;
+    int serialize_ecall = g_serialize_ecalls;
     COPY_BUFFER(optParamsBuffer, opt_params, opt_params_size);
+
+    if (serialize_ecall) {
+        oe_acquire_enclave_mutex((oe_enclave_t*)eid);
+    }
     sgx_status_t sgxStatus = ecall_get_report(eid, &result, flags, optParamsBuffer, opt_params_size);
+    if (serialize_ecall) {
+        oe_release_enclave_mutex((oe_enclave_t*)eid);
+    }
+
     oe_result_t oeResult = GetOEResultFromSgxStatus(sgxStatus);
     if (oeResult == OE_OK) {
         *report_buffer = malloc(result.report_buffer_size);
@@ -178,6 +204,8 @@ oe_result_t oe_verify_report(
     oe_buffer1024 reportBuffer;
     oe_result_t oeResult;
     sgx_enclave_id_t eid = (sgx_enclave_id_t)enclave;
+    int serialize_ecall = g_serialize_ecalls;
+
     if (parsed_report != NULL) {
         oeResult = oe_parse_report(report, report_size, parsed_report);
         if (oeResult != OE_OK) {
@@ -186,7 +214,15 @@ oe_result_t oe_verify_report(
     }
 
     COPY_BUFFER(reportBuffer, report, report_size);
+
+    if (serialize_ecall) {
+        oe_acquire_enclave_mutex(enclave);
+    }
     sgx_status_t sgxStatus = ecall_verify_report(eid, (int*)&oeResult, reportBuffer, report_size);
+    if (serialize_ecall) {
+        oe_release_enclave_mutex(enclave);
+    }
+
     if (sgxStatus != SGX_SUCCESS) {
         return GetOEResultFromSgxStatus(sgxStatus);
     }

@@ -9,8 +9,6 @@ class TrustedAppTest : public ::testing::Test {
     protected:
         void SetUp(void) override;
         void TearDown(void) override;
-        void AcquireTAMutex(void);
-        void ReleaseTAMutex(void);
         sgx_enclave_id_t GetTAId(void);
         oe_enclave_t* GetOEEnclave(void);
         virtual oe_call_t* GetOcallArray(void);

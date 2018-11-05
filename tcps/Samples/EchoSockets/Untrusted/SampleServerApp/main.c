@@ -16,7 +16,7 @@
 int main(int argc, char** argv)
 {
     oe_enclave_t* enclave = NULL;
-    uint32_t enclave_flags = 0;
+    uint32_t enclave_flags = OE_ENCLAVE_FLAG_SERIALIZE_ECALLS;
 
     if (argc > 2 || (argc == 2 && strcmp(argv[1], "/?") == 0)) {
         printf("Usage: SampleServerApp port\n\n");

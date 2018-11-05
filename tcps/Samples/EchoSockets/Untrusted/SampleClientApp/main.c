@@ -16,7 +16,7 @@
 int main(int argc, char** argv)
 {
     oe_enclave_t* enclave = NULL;
-    uint32_t enclave_flags = 0;
+    uint32_t enclave_flags = OE_ENCLAVE_FLAG_SERIALIZE_ECALLS;
 
     if (argc != 3 && argc != 1) {
         printf("Usage: SampleClientApp servername port\n\n");
