@@ -19,7 +19,7 @@ However, a pre-built binary can also be directly downloaded:
 
 ## Building the SDK itself
 
-To build for Windows, open TCPS-SDK.sln with Visual Studio, and build
+To build for Windows, open OpenEnclave.sln with Visual Studio, and build
 for the chosen platform (x86, x86, or ARM) and configuration.  This will
 build any relevant binaries except for Trusted Applications that need to
 run on OP-TEE (i.e., in TrustZone).
@@ -52,40 +52,40 @@ for both SGX and TrustZone.
 ### SGX Enclave DLL
 
 The SGX Enclave DLL should define **TRUSTED\_CODE** and **USE\_SGX** as
-preprocessor symbols, link with **tcps\_t.lib** and have the following
+preprocessor symbols, link with **oeenclave.lib** and have the following
 additional include path:
 
-* TCPS-SDK/Inc
+* TCPS-SDK/include
 
 ### SGX Rich Application
 
 The EXE should define **UNTRUSTED\_CODE** and **USE\_SGX** as preprocessor
-symbols, link with **tcps\_u.lib** and have the following additional
+symbols, link with **oehost.lib** and have the following additional
 include path:
 
-* TCPS-SDK/Inc
+* TCPS-SDK/include
 
 ### OP-TEE TA
 
 The OP-TEE TA should define **TRUSTED\_CODE** and **USE\_OPTEE** as
-preprocessor symbols, link with **tcps\_t.lib** and have the following
+preprocessor symbols, link with **oeenclave.lib** and have the following
 additional include paths, in this order (the order is important because
 files in a deeper directory override files at higher levels with the
 same filename):
 
-* TCPS-SDK/Inc/optee/Trusted
-* TCPS-SDK/Inc/optee
-* TCPS-SDK/Inc
+* TCPS-SDK/include/optee/Trusted
+* TCPS-SDK/include/optee
+* TCPS-SDK/include
 
 ### OP-TEE Rich Application
 
 The EXE should define **UNTRUSTED\_CODE** and **USE\_OPTEE** as
-preprocessor symbols, link with **tcps\_u.lib** and have the following
+preprocessor symbols, link with **oehost.lib** and have the following
 additional include paths, in any order:
 
-* TCPS-SDK\Inc
-* TCPS-SDK\Inc\optee
-* TCPS-SDK\Inc\optee\Untrusted
+* TCPS-SDK\include
+* TCPS-SDK\include\optee
+* TCPS-SDK\include\optee\Untrusted
 
 ## Open Enclave APIs
 
@@ -139,7 +139,7 @@ Also, above (outside) the trusted{} section, add the following line:
 To do this, right click on the EDL file in the Solution Explorer window,
 select "Properties"->"Configuration Properties"->"Custom Build Tool"->"General"
 and edit the "Command Line" value for All Configurations and All Platforms.
-Change it to "$(TcpsSdkDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(TcpsSdkDir)Inc;$(SGXSDKInstallPath)include" 
+Change it to "$(TcpsSdkDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(TcpsSdkDir)include;$(SGXSDKInstallPath)include" 
 where $(TcpsSdkDir) is the path to the tcps subdirectory of this SDK.
 4. In Visual Studio, add a new or existing Visual C++ project that will
 build a normal application that will make ECALLs into your enclave.
@@ -158,13 +158,13 @@ You will need to #include <openenclave/enclave.h> and <_YourEDLFileName_\_t.h> f
 **UNTRUSTED\_CODE;USE\_SGX** to your application project, for
 All Configurations and All Platforms
 10. In your application project properties, under "Linker"->"Input", add
-tcps\_u.lib;ws2\_32.lib;shell32.lib to the Additional Dependencies
+oehost.lib;ws2\_32.lib;shell32.lib to the Additional Dependencies
 (All Configurations, All Platforms).  Make sure you configure the
 additional library directory as appropriate under
 "Linker"->"General"->"Additional Library Directories".
 11. If you want access to the full set of Open Enclave APIs from within your enclave,
-in your enclave project properties, add tcps\_t.lib;sgx\_tstdc.lib to the
-Additional Dependencies, and the path to tcps\_t.lib to the Additional
+in your enclave project properties, add oeenclave.lib;sgx\_tstdc.lib to the
+Additional Dependencies, and the path to oeenclave.lib to the Additional
 Library Directories.
 12. Add code in your app to call oe\_create\__YourEDLFileName_\_enclave(),
 any ECALLs you added, and
@@ -172,7 +172,7 @@ oe\_terminate\_enclave().  You will need to #include <openenclave/host.h>
 and <_YourEDLFileName_\_u.h> for your ECALLs.  Make sure you configure the
 additional include directories as appropriate in your application project
 Properties->"C/C++"->"General"->"Additional Include Directories".  Usually
-this means you need to insert $(TcpsSdkDir)Inc path at the beginning.  See
+this means you need to insert $(TcpsSdkDir)include path at the beginning.  See
 the sample apps for an example.
 13. In your enclave project, update the Additional Include Directories to
 include $(TcpsSdkDir)External\RIoT\CyReP\cyrep
@@ -206,8 +206,8 @@ Visual Studio, also add them to the sub.mk file in your optee subdirectory
 rpcrt4.lib to the Additional Dependencies (All Configurations, ARM platform)
 which is required for string-to-UUID conversion, and remove any sgx libs.
 8. In your application project properties, update the Additional Include
-Directories to insert the $(TcpsSdkDir)Inc\optee\Untrusted and
-$(TcpsSdkDir)Inc\optee paths before the $(TcpsSdkDir)Inc path that you
+Directories to insert the $(TcpsSdkDir)include\optee\Untrusted and
+$(TcpsSdkDir)include\optee paths before the $(TcpsSdkDir)include path that you
 added earlier.
 8. Edit the sub.mk file in your optee subdirectory to change the "SampleTA"
 in filenames to the name used with your .edl file.
@@ -222,63 +222,63 @@ configuration in Visual Studio if you have SGX-capable hardware, or
 the DebugSimulation configuration in Visual Studio for software emulation.
 
 **For TrustZone:** You can use a basic software emulation environment with OP-TEE
-by creating and using a DebugMockOptee configuration in Visual Studio,
+by creating and using a DebugOpteeSimulation configuration in Visual Studio,
 as follows...
 
-1. Create a new configuration (say, for x86 and called DebugMockOptee)
+1. Create a new configuration (say, for x86 and called DebugOpteeSimulation)
 based on the Debug configuration. A new configuration can be created
 inside Visual Studio by right clicking on the solution, and accessing
 the "Configuration Manager" screen.
 2. Go to your application project properties.  In the
 "Configuration Properties"->"C/C++"->"Preprocessor" for All Platforms
-and for the DebugMockOptee configuration, change **USE\_SGX** to
+and for the DebugOpteeSimulation configuration, change **USE\_SGX** to
 **USE\_OPTEE;SIMULATE\_TEE**
-3. Add mockoptee\_u.lib to the Additional Dependencies of your app and
-remove any sgx libraries, for All Platforms for the DebugMockOptee
+3. Add oehost\_opteesim.lib to the Additional Dependencies of your app and
+remove any sgx libraries, for All Platforms for the DebugOpteeSimulation
 configuration. Your libs might look like this:
-"tcps\_u.lib;ws2\_32.lib;rpcrt4.lib;shell32.lib;mockoptee\_u.lib"
-4. Your app Additional Include Directories for DebugMockOptee
+"oehost.lib;ws2\_32.lib;rpcrt4.lib;shell32.lib;oehost\_opteesim.lib"
+4. Your app Additional Include Directories for DebugOpteeSimulation
 should include at least:
-* $(TcpsSdkDir)Inc\optee\Untrusted
-* $(TcpsSdkDir)Inc\optee
-* $(TcpsSdkDir)Inc
+* $(TcpsSdkDir)include\optee\Untrusted
+* $(TcpsSdkDir)include\optee
+* $(TcpsSdkDir)include
 * $(SGXSDKInstallPath)\include
 5. In the "Configuration Properties->"Debugging", change Debugger to launch
 back to Local Windows Debugger, and make the working directory be the
 directory your enclave is built in (usually "$(OutDir)").
 6. The same files that you build for OP-TEE should be built for
-DebugMockOptee, so if you have files selectively built (e.g., if you
+DebugOpteeSimulation, so if you have files selectively built (e.g., if you
 have C files marked as Exclude From Build for certain configurations),
 update your configuration so that the same files get built, not any
 SGX-specific ones.
 7. Go to your TA project properties.  In the
 "Configuration Properties"->"C/C++"->"Preprocessor" properties of the 
-DebugMockOptee configuration for All Platforms, change **USE\_SGX** to
+DebugOpteeSimulation configuration for All Platforms, change **USE\_SGX** to
 **USE\_OPTEE;SIMULATE\_TEE**
 8. In your TA's "Configuration Properties"->"C/C++"->"General" properties of the
-DebugMockOptee configuration for All Platforms, the Additional Include
+DebugOpteeSimulation configuration for All Platforms, the Additional Include
 Directories should NOT include $(SGXSDKInstallPath)include\tlibc or
 $(SGXSDKInstallPath)include\libc++, and should include at least:
 * $(TcpsSdkDir)External\RIoT\CyReP\cyrep
-* $(TcpsSdkDir)Inc\optee\Trusted\Simulator
-* $(TcpsSdkDir)Inc\optee\Trusted
-* $(TcpsSdkDir)Inc\optee
-* $(TcpsSdkDir)Inc
+* $(TcpsSdkDir)include\optee\Trusted\Simulator
+* $(TcpsSdkDir)include\optee\Trusted
+* $(TcpsSdkDir)include\optee
+* $(TcpsSdkDir)include
 * $(SGXSDKInstallPath)include
 * $(TcpsSdkDir)External\optee\_os\lib\libutee\include
 * $(TcpsSdkDir)External\optee\_os\lib\libutils\ext\include
 9. In your TA's "Configuration Properties"->"VC++ Directories" properties of the
-DebugMockOptee configuration for All Platforms, change the Include Directories
+DebugOpteeSimulation configuration for All Platforms, change the Include Directories
 and Library Directories from $(NoInherit) back to \<inherit from parent or
 project defaults\>.
 10. In your TA's "Configuration Properties"->"Linker"->"Input" in the
-DebugMockOptee configuration for All Platforms, clear "Ignore All Default
-Libraries", and add mockoptee\_t.lib to the Additional Dependencies of
+DebugOpteeSimulation configuration for All Platforms, clear "Ignore All Default
+Libraries", and add oeenclave\_opteesim.lib to the Additional Dependencies of
 your TA, and remove any sgx libs.  Your libs might look like this:
-"tcps\_t.lib;mockoptee\_t.lib;kernel32.lib;vcruntime.lib;ucrtd.lib"
+"oeenclave.lib;oeenclave\_opteesim.lib;kernel32.lib;vcruntime.lib;ucrtd.lib"
 11. In your TA's "Configuration Properties"->"Build Events"->"Post-Build Event",
-change the "Use in Build" to No for the DebugMockOptee configuration for all
+change the "Use in Build" to No for the DebugOpteeSimulation configuration for all
 Platforms.
 12. In your TA's "Configuration Properties"->"General" section in the
-DebugMockOptee configuration for All Platforms, change the Target Name
+DebugOpteeSimulation configuration for All Platforms, change the Target Name
 to be your TA's UUID (without curly braces).

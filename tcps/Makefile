@@ -33,29 +33,29 @@ optee-client:
 
 .PHONY: gtest
 gtest:
-	make -C Tests/gtest
+	make -C tests/gtest
 
 # Untrusted SDK
 # -------------
 
 .PHONY: usdk
 usdk: optee-client
-	make -C Src/Untrusted/linux
+	make -C src/Untrusted/linux
 
 .PHONY: usdk-tests
 usdk-tests: gtest usdk
-	make -C Tests/TcpsSdkTest
+	make -C tests/oetests_host
 	
 # Trusted SDK
 # -----------
 
 .PHONY: tsdk
 tsdk:
-	SGX_RELATIVE_PATH=../3rdparty/SGXSDK/ SGX_PATHSEP=: SGX_EDGER8R=$(shell which sgx_edger8r) OEPATHSEP=: CROSS_COMPILE=$(TRUSTED_CROSS_COMPILE) make -C Src/Trusted/optee -f linux_gcc.mak BUILD_TARGET=debug
+	SGX_RELATIVE_PATH=../3rdparty/SGXSDK/ SGX_PATHSEP=: SGX_EDGER8R=$(shell which sgx_edger8r) OEPATHSEP=: CROSS_COMPILE=$(TRUSTED_CROSS_COMPILE) make -C src/Trusted/optee -f linux_gcc.mak BUILD_TARGET=debug
 
 .PHONY: tsdk-tests
 tsdk-tests: tsdk
-	SGX_RELATIVE_PATH=../3rdparty/SGXSDK/ SGX_PATHSEP=: SGX_EDGER8R=$(shell which sgx_edger8r) OEPATHSEP=: CROSS_COMPILE=$(TRUSTED_CROSS_COMPILE) make -C Tests/TcpsSdkTestTA/optee -f linux_gcc.mak BUILD_TARGET=debug
+	SGX_RELATIVE_PATH=../3rdparty/SGXSDK/ SGX_PATHSEP=: SGX_EDGER8R=$(shell which sgx_edger8r) OEPATHSEP=: CROSS_COMPILE=$(TRUSTED_CROSS_COMPILE) make -C tests/oetests_enclave/optee -f linux_gcc.mak BUILD_TARGET=debug
 
 # Clean Targets
 # -------------
@@ -69,21 +69,21 @@ optee-client-clean:
 
 .PHONY: gtest-clean
 gtest-clean:
-	make -C Tests/gtest clean
+	make -C tests/gtest clean
 
 .PHONY: usdk-clean
 usdk-clean:
-	make -C Src/Untrusted/linux clean
+	make -C src/Untrusted/linux clean
 
 .PHONY: usdk-tests-clean
 usdk-tests-clean:
-	make -C Tests/TcpsSdkTest clean
+	make -C tests/oetests_host clean
 
 .PHONY: tsdk-clean
 tsdk-clean:
-	make -C Src/Trusted/optee -f linux_gcc.mak BUILD_TARGET=debug clean
+	make -C src/Trusted/optee -f linux_gcc.mak BUILD_TARGET=debug clean
 
 .PHONY: tsdk-tests-clean
 tsdk-tests-clean:
-	make -C Tests/TcpsSdkTestTA/optee -f linux_gcc.mak BUILD_TARGET=debug clean
+	make -C tests/oetests_enclave/optee -f linux_gcc.mak BUILD_TARGET=debug clean
 

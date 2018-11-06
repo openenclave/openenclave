@@ -13,8 +13,9 @@ SampleTA_t.*
 SampleTA_u.*
 TcpsCalls_t.*
 TcpsCalls_u.*
-TcpsSdkTestTA_t.*
-TcpsSdkTestTA_u.*
+oetests_t.*
+oetests_u.*
+oetests_args.h
 HelloWorldEnc_t.*
 HelloWorldEnc_u.*
 
@@ -29,8 +30,8 @@ HelloWorldEnc_u.*
 *.dmp
 *.map
 
-gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/
-gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi.tar.xz
+gcc-linaro-6.2.1-2016.11-x86_64_arm-linux-gnueabihf/
+gcc-linaro-6.2.1-2016.11-x86_64_arm-linux-gnueabihf.tar.xz
 
 # External SGX SDK
 /External/SGXSDK/

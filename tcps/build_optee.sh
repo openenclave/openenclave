@@ -143,7 +143,7 @@ make -j ${PROC_COUNT}
 export CROSS_COMPILE=/usr/bin/arm-linux-gnueabi-
 export ARCH=arm
 
-make -j ${PROC_COUNT} -C Samples/EchoSockets/Trusted/optee -f linux_gcc.mak BUILD_TARGET=debug $*
-make -j ${PROC_COUNT} -C Samples/OEHelloWorld/HelloWorldEnc/optee -f linux_gcc.mak BUILD_TARGET=debug $*
+make -j ${PROC_COUNT} -C samples/sockets/Trusted/optee -f linux_gcc.mak BUILD_TARGET=debug $*
+make -j ${PROC_COUNT} -C samples/helloworld/HelloWorldEnc/optee -f linux_gcc.mak BUILD_TARGET=debug $*
 
 doxygen Doxyfile

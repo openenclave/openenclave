@@ -15,7 +15,7 @@
 #endif
 
 #ifdef TRUSTED_CODE
-#include <tcps_t.h>
+#include <oeenclave.h>
 #include <stdbool.h>
 #endif
 

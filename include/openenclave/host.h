@@ -15,7 +15,7 @@
 #endif
 
 #ifdef UNTRUSTED_CODE
-#include <tcps_u.h>
+#include <oehost.h>
 #endif
 
 #include <stdarg.h>

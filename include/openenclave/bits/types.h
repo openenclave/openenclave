@@ -9,10 +9,10 @@
 #if defined(TRUSTED_CODE) || defined(UNTRUSTED_CODE)
 #pragma once
 #ifdef TRUSTED_CODE
-#include <tcps_t.h>
+#include <oeenclave.h>
 #endif
 #ifdef UNTRUSTED_CODE
-#include <tcps_u.h>
+#include <oehost.h>
 #endif
 
 typedef void (*oe_call_t)(
