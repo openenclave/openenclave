@@ -4,6 +4,7 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/tests.h>
+#include <atomic>
 #include <cassert>
 #include <chrono>
 #include <cstdio>
@@ -16,8 +17,20 @@
 
 static TestMutexArgs _args;
 static TestTCSArgs _tcsargs;
+static std::atomic_flag _host_tcs_lock = ATOMIC_FLAG_INIT;
 
 const size_t NUM_THREADS = 8;
+
+static inline void _acquire_lock(std::atomic_flag* lock)
+{
+    while (lock->test_and_set(std::memory_order_acquire))
+        ;
+}
+
+static inline void _release_lock(std::atomic_flag* lock)
+{
+    lock->clear(std::memory_order_release);
+}
 
 void* Thread(void* args)
 {
@@ -244,7 +257,11 @@ void* ThreadTCS(void* args)
     oe_result_t result =
         oe_call_enclave(enclave, "TestTCSExhaustion", &_tcsargs);
     if (result == OE_OUT_OF_THREADS)
+    {
+        _acquire_lock(&_host_tcs_lock);
         _tcsargs.num_out_threads++;
+        _release_lock(&_host_tcs_lock);
+    }
     else
         OE_TEST(result == OE_OK);
 
@@ -259,7 +276,7 @@ void TestTCSExhaustion(oe_enclave_t* enclave)
 {
     std::vector<std::thread> threads;
     // Set the test_tcs_count to a value greater than the enclave TCSCount
-    size_t test_tcs_count = enclave->num_bindings * 3;
+    size_t test_tcs_count = enclave->num_bindings * 2;
     printf(
         "TestTCSExhaust() - Number of TCS bindings in enclave=%zu\n",
         enclave->num_bindings);
@@ -328,7 +345,7 @@ int main(int argc, const char* argv[])
         oe_put_err("oe_create_enclave(): result=%u", result);
     }
 
-    TestMutex(enclave);
+    /* TestMutex(enclave);
 
     TestCond(enclave);
 
@@ -338,7 +355,7 @@ int main(int argc, const char* argv[])
 
     TestThreadLockingPatterns(enclave);
 
-    TestReadersWriterLock(enclave);
+    TestReadersWriterLock(enclave); */
 
     TestTCSExhaustion(enclave);
 
