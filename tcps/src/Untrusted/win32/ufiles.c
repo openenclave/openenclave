@@ -113,7 +113,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_u, "ocall_FindNextUntrustedFile");
 
     if (findHandle == INVALID_HANDLE_VALUE)
     {
-        TCPS_ASSERT(FALSE);
+        assert(FALSE);
         Tcps_GotoErrorWithStatus(Tcps_BadInvalidArgument);
     }
 
@@ -148,13 +148,13 @@ ocall_FindNextUntrustedFileClose(
 
 Tcps_InitializeStatus(Tcps_Module_Helper_u, "ocall_FindNextUntrustedFileClose");
 
-    TCPS_ASSERT((HANDLE)findNextHandle != INVALID_HANDLE_VALUE);
+    assert((HANDLE)findNextHandle != INVALID_HANDLE_VALUE);
   
     success = FindClose((HANDLE)findNextHandle);
    
     if (!success)
     {
-        TCPS_ASSERT(FALSE);
+        assert(FALSE);
         Tcps_GotoErrorWithStatus(Tcps_BadInvalidArgument);
     }
    

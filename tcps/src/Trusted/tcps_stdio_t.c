@@ -182,7 +182,7 @@ int AppendFilenameToManifest(const char* fullPathName)
     const char* p = strrchr(fullPathName, '\\');
     const char *p2 = strrchr(fullPathName, '/');
     if ((p == NULL) && (p2 == NULL)) {
-        TCPS_ASSERT(FALSE);
+        oe_assert(FALSE);
         return 1;
     }
     if ((p == NULL) || (p < p2)) {

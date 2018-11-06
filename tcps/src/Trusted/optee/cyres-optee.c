@@ -42,7 +42,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "CallCyrepPTA");
     return result;
 
 Tcps_BeginErrorHandling;
-    TCPS_ASSERT(result != TEE_SUCCESS);
+    oe_assert(result != TEE_SUCCESS);
     return result;
 }
 
@@ -92,7 +92,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "ExportCyrepCertChain");
     /* Get the chain size */
     uStatus = GetCyrepCertChainSize(&certChainBufferSize);
     Tcps_GotoErrorIfBad(uStatus);
-    TCPS_ASSERT(certChainBufferSize != 0);
+    oe_assert(certChainBufferSize != 0);
 
     /* Allocate memory and request the cert chain */
     certChainBufferPEM = TCPS_ALLOC(certChainBufferSize);
@@ -113,7 +113,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "ExportCyrepCertChain");
     Tcps_GotoErrorIfTrue(teeResult != TEE_SUCCESS, Tcps_Bad);
 
     /* PEM format, should have a zero terminator */
-    TCPS_ASSERT(certChainBufferPEM[certChainBufferSize - 1] == 0);
+    oe_assert(certChainBufferPEM[certChainBufferSize - 1] == 0);
 
     /* Export the cert chain into an untrusted-world file */
     uStatus = TEE_P_ExportFile(exportFilePath, certChainBufferPEM, certChainBufferSize);
@@ -180,7 +180,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "GetCyrepKey");
     /* Get the key size */
     uStatus = GetCyrepKeySize(&keySize);
     Tcps_GotoErrorIfBad(uStatus);
-    TCPS_ASSERT(keySize != 0);
+    oe_assert(keySize != 0);
 
     /* Allocate memory and request the key */
     *keyPEM = TCPS_ALLOC(keySize);
@@ -201,7 +201,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "GetCyrepKey");
     Tcps_GotoErrorIfTrue(teeResult != TEE_SUCCESS, Tcps_Bad);
 
     /* PEM format, should have a zero terminator */
-    TCPS_ASSERT((*keyPEM)[keySize - 1] == 0);
+    oe_assert((*keyPEM)[keySize - 1] == 0);
 
 Tcps_ReturnStatusCode;
 Tcps_BeginErrorHandling;
@@ -218,6 +218,6 @@ Tcps_Void
 FreeCyrepKey(
     char *keyPEM)
 {
-    TCPS_ASSERT(keyPEM != NULL);
+    oe_assert(keyPEM != NULL);
     TCPS_FREE(keyPEM);
 }

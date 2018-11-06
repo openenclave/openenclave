@@ -170,12 +170,9 @@ typedef enum {
 # define Tcps_Module_Helper_t           0x00000404
 #endif
 
-#ifndef TCPS_ASSERT
-# define TCPS_ASSERT                    assert
-#endif
 #ifndef TCPS_VERIFY
 # if !defined(NDEBUG)
-#  define TCPS_VERIFY                   TCPS_ASSERT
+#  define TCPS_VERIFY                   assert
 # else
 #  define TCPS_VERIFY(_exp)             ((_exp) ? Tcps_True : Tcps_False)
 # endif
@@ -213,9 +210,8 @@ typedef enum {
 #define TCPS_DEPRECATED(FUNC, MSG) FUNC
 #endif
 
-#ifdef USE_SGX
-# define OE_ENCLAVE_TYPE_DEFAULT OE_ENCLAVE_TYPE_SGX
-#endif
-#ifdef USE_OPTEE
+#if defined(USE_OPTEE) || defined(_ARM_)
 # define OE_ENCLAVE_TYPE_DEFAULT OE_ENCLAVE_TYPE_TRUSTZONE
+#else
+# define OE_ENCLAVE_TYPE_DEFAULT OE_ENCLAVE_TYPE_SGX
 #endif

@@ -136,7 +136,7 @@ char *strcat(
 #define CRT_CHK(_Expr) do { \
     if (!(_Expr)) \
     { \
-        TCPS_ASSERT(__FILE__ ":" _STRIZE(__LINE__) " " #_Expr); \
+        oe_assert(__FILE__ ":" _STRIZE(__LINE__) " " #_Expr); \
     } \
 } while(0)
 
@@ -207,7 +207,7 @@ ConvertStringToIPv4Integers(
      * This function gets called just from openssl's ipv4_from_asc(),
      * using the following sscanf format string.
      */
-    TCPS_ASSERT(strcmp(addressSscanfFormat, "%d.%d.%d.%d") == 0);
+    oe_assert(strcmp(addressSscanfFormat, "%d.%d.%d.%d") == 0);
 
     /* Implement inet_addr for SGX/OPTEE */
     for (currentPart = p = addressString; ; p++) {

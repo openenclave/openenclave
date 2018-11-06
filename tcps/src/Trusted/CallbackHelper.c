@@ -53,7 +53,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "GetSecureCallbackId");
     Tcps_GotoErrorWithStatus(Tcps_BadInternalError);
 
 Tcps_BeginErrorHandling;
-    TCPS_ASSERT(0);
+    oe_assert(0);
     return -1;
 Tcps_FinishErrorHandling;
 }
@@ -73,8 +73,8 @@ void FreeSecureCallbackContext(int a_CallbackId)
 
     int i = a_CallbackId - ID_OFFSET;
 
-    TCPS_ASSERT(i >= 0);
-    TCPS_ASSERT(i < MAX_CALLBACK_CONTEXT);
+    oe_assert(i >= 0);
+    oe_assert(i < MAX_CALLBACK_CONTEXT);
 
     g_SecureCallbackContext[i].CallbackFnId = 0;
     g_SecureCallbackContext[i].CallbackFn = NULL;

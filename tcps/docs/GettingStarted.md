@@ -51,16 +51,14 @@ for both SGX and TrustZone.
 
 ### SGX Enclave DLL
 
-The SGX Enclave DLL should define **USE\_SGX** as a
-preprocessor symbol, link with **oeenclave.lib** and have the following
+The SGX Enclave DLL should link with **oeenclave.lib** and have the following
 additional include path:
 
 * $(OESdkDir)tcps/include
 
 ### SGX Rich Application
 
-The EXE should define **USE\_SGX** as a preprocessor
-symbol, link with **oehost.lib** and have the following additional
+The EXE should link with **oehost.lib** and have the following additional
 include path:
 
 * $(OESdkDir)tcps/include
@@ -153,19 +151,16 @@ enclave project, where your enclave DLL will be placed.
 and repeat step 3 here to update the command line to use oeedger8r.
 8. In your enclave project, add implementations of the ECALL(s) you added.
 You will need to #include <openenclave/enclave.h> and <_YourEDLFileName_\_t.h> for your ECALLs.
-9. In the "Configuration Properties"->"C/C++"->"Preprocessor", add
-**USE\_SGX** to your enclave project and your application project, for
-All Configurations and All Platforms
-10. In your application project properties, under "Linker"->"Input", add
+9. In your application project properties, under "Linker"->"Input", add
 oehost.lib;ws2\_32.lib;shell32.lib to the Additional Dependencies
 (All Configurations, All Platforms).  Make sure you configure the
 additional library directory as appropriate under
 "Linker"->"General"->"Additional Library Directories".
-11. If you want access to the full set of Open Enclave APIs from within your enclave,
+10. If you want access to the full set of Open Enclave APIs from within your enclave,
 in your enclave project properties, add oeenclave.lib;sgx\_tstdc.lib to the
 Additional Dependencies, and the path to oeenclave.lib to the Additional
 Library Directories.
-12. Add code in your app to call oe\_create\__YourEDLFileName_\_enclave(),
+11. Add code in your app to call oe\_create\__YourEDLFileName_\_enclave(),
 any ECALLs you added, and
 oe\_terminate\_enclave().  You will need to #include <openenclave/host.h> 
 and <_YourEDLFileName_\_u.h> for your ECALLs.  Make sure you configure the
@@ -173,7 +168,7 @@ additional include directories as appropriate in your application project
 Properties->"C/C++"->"General"->"Additional Include Directories".  Usually
 this means you need to insert $(TcpsDir)include path at the beginning.  See
 the sample apps for an example.
-13. In your enclave project, update the Additional Include Directories to
+12. In your enclave project, update the Additional Include Directories to
 include $(TcpsDir)External\RIoT\CyReP\cyrep
 
 **Then to build for OP-TEE:**
@@ -186,7 +181,9 @@ this for your enclave project, as that needs to be built from a bash shell
 rather than in Visual Studio.
 2. Go back to your application project properties.  In the
 "Configuration Properties"->"C/C++"->"Preprocessor" properties of the ARM 
-platform for All Configurations, change **USE\_SGX** to **USE\_OPTEE**
+platform for All Configurations, add **USE\_OPTEE** 
+to your enclave project and your application project, for
+All Configurations and All Platforms.
 3. Manually edit your application .vcxproj file to add the ability to
 compile for ARM, since Visual Studio cannot do it from the UI.  To do so, add the
 line "<WindowsSDKDesktopARMSupport\>true</WindowsSDKDesktopARMSupport\>"
@@ -229,9 +226,9 @@ based on the Debug configuration. A new configuration can be created
 inside Visual Studio by right clicking on the solution, and accessing
 the "Configuration Manager" screen.
 2. Go to your application project properties.  In the
-"Configuration Properties"->"C/C++"->"Preprocessor" for All Platforms
-and for the DebugOpteeSimulation configuration, change **USE\_SGX** to
-**USE\_OPTEE;SIMULATE\_TEE**
+"Configuration Properties"->"C/C++"->"Preprocessor" properties for All Platforms
+for the DebugOpteeSimulation configuration, add
+**USE\_OPTEE;SIMULATE\_TEE**.  Then do the same for your enclave project.
 3. Add oehost\_opteesim.lib to the Additional Dependencies of your app and
 remove any sgx libraries, for All Platforms for the DebugOpteeSimulation
 configuration. Your libs might look like this:
@@ -250,11 +247,7 @@ DebugOpteeSimulation, so if you have files selectively built (e.g., if you
 have C files marked as Exclude From Build for certain configurations),
 update your configuration so that the same files get built, not any
 SGX-specific ones.
-7. Go to your TA project properties.  In the
-"Configuration Properties"->"C/C++"->"Preprocessor" properties of the 
-DebugOpteeSimulation configuration for All Platforms, change **USE\_SGX** to
-**USE\_OPTEE;SIMULATE\_TEE**
-8. In your TA's "Configuration Properties"->"C/C++"->"General" properties of the
+7. In your TA's "Configuration Properties"->"C/C++"->"General" properties of the
 DebugOpteeSimulation configuration for All Platforms, the Additional Include
 Directories should NOT include $(SGXSDKInstallPath)include\tlibc or
 $(SGXSDKInstallPath)include\libc++, and should include at least:
@@ -266,18 +259,18 @@ $(SGXSDKInstallPath)include\libc++, and should include at least:
 * $(SGXSDKInstallPath)include
 * $(TcpsDir)External\optee\_os\lib\libutee\include
 * $(TcpsDir)External\optee\_os\lib\libutils\ext\include
-9. In your TA's "Configuration Properties"->"VC++ Directories" properties of the
+8. In your TA's "Configuration Properties"->"VC++ Directories" properties of the
 DebugOpteeSimulation configuration for All Platforms, change the Include Directories
 and Library Directories from $(NoInherit) back to \<inherit from parent or
 project defaults\>.
-10. In your TA's "Configuration Properties"->"Linker"->"Input" in the
+9. In your TA's "Configuration Properties"->"Linker"->"Input" in the
 DebugOpteeSimulation configuration for All Platforms, clear "Ignore All Default
 Libraries", and add oeenclave\_opteesim.lib to the Additional Dependencies of
 your TA, and remove any sgx libs.  Your libs might look like this:
 "oeenclave.lib;oeenclave\_opteesim.lib;kernel32.lib;vcruntime.lib;ucrtd.lib"
-11. In your TA's "Configuration Properties"->"Build Events"->"Post-Build Event",
+10. In your TA's "Configuration Properties"->"Build Events"->"Post-Build Event",
 change the "Use in Build" to No for the DebugOpteeSimulation configuration for all
 Platforms.
-12. In your TA's "Configuration Properties"->"General" section in the
+11. In your TA's "Configuration Properties"->"General" section in the
 DebugOpteeSimulation configuration for All Platforms, change the Target Name
 to be your TA's UUID (without curly braces).

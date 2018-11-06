@@ -13,6 +13,13 @@
 #ifdef _OE_ENCLAVE_H
 #error "enclave.h and host.h must not be included in the same compilation unit."
 #endif
+#ifndef USE_OPTEE
+# ifdef _ARM_
+#  define USE_OPTEE
+# else
+#  define USE_SGX
+# endif
+#endif
 
 #include <oehost.h>
 

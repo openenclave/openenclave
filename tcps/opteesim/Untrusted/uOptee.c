@@ -57,7 +57,7 @@ TEE_Result InvokeREECallback(
 {
     uint32_t rpcType = params[0].value.a;
     uint32_t rpcKey = params[0].value.b;
-    TCPS_ASSERT(rpcKey == MOCK_RPC_KEY);
+    assert(rpcKey == MOCK_RPC_KEY);
     const uint8_t* in_buffer = (const uint8_t*)params[1].memref.buffer;
     uint32_t in_buffer_size = params[1].memref.size;
     uint8_t* out_buffer = (uint8_t*)params[2].memref.buffer;
@@ -190,7 +190,7 @@ CallOpteeCommand(
     OpteeRpcCallbackType    RpcCallback,
     void *                  RpcCallbackContext)
 {
-    TCPS_ASSERT(TreeServiceHandle != INVALID_HANDLE_VALUE);
+    assert(TreeServiceHandle != INVALID_HANDLE_VALUE);
 
     TASession* session = (TASession*)TreeServiceHandle;
     TEE_Param params[4] = { 0 };

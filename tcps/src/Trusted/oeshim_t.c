@@ -565,3 +565,12 @@ callV2_Result ecall_v2(uint32_t func, oe_buffer4096 inBuffer, size_t inBufferSiz
     return result;
 }
 
+void __oe_assert_fail(
+    const char* expr,
+    const char* file,
+    int line,
+    const char* function)
+{
+    printf("Assertion failed: %s (%s: %s: %d)\n", expr, file, function, line);
+    oe_abort();
+}

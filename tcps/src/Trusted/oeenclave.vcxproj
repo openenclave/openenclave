@@ -412,7 +412,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>CONFIG_CYREP_SGX_BUILD;OPENSSL_NO_SOCK;USE_SGX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CONFIG_CYREP_SGX_BUILD;OPENSSL_NO_SOCK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(TcpsDir)include;$(ProjectDir)..;$(OESdkDir)include;$(ProjectDir);$(SolutionDir)\Stack\platforms\sgx_trusted;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(ProjectDir)sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
@@ -431,7 +431,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>OPENSSL_NO_SOCK;USE_SGX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>OPENSSL_NO_SOCK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(TcpsDir)include;$(ProjectDir)..;$(OESdkDir)include;$(ProjectDir);$(SolutionDir)\Stack\platforms\sgx_trusted;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(ProjectDir)sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
@@ -490,7 +490,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>CONFIG_CYREP_SGX_BUILD;USE_SGX;OPENSSL_NO_SOCK;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CONFIG_CYREP_SGX_BUILD;OPENSSL_NO_SOCK;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(TcpsDir)include;$(ProjectDir)..;$(OESdkDir)include;$(ProjectDir);$(SolutionDir)\Stack\platforms\sgx_trusted;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(ProjectDir)sgx;$(ProjectDir)sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Lib>
@@ -530,7 +530,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>OPENSSL_NO_SOCK;USE_SGX;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>OPENSSL_NO_SOCK;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(TcpsDir)include;$(ProjectDir)..;$(SolutionDir)\openssl\include;$(OESdkDir)include;$(ProjectDir);$(SolutionDir)\Stack\platforms\sgx_trusted;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(ProjectDir)sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
     </ClCompile>
@@ -552,7 +552,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>OPENSSL_NO_SOCK;USE_SGX;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>OPENSSL_NO_SOCK;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(TcpsDir)include;$(ProjectDir)..;$(SolutionDir)\openssl\include;$(ProjectDir);$(SolutionDir)\Stack\platforms\sgx_trusted;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\libc++;$(ProjectDir)sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
     </ClCompile>
@@ -574,7 +574,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>USE_SGX;OPENSSL_NO_SOCK;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>OPENSSL_NO_SOCK;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(TcpsDir)include;$(ProjectDir)..;$(ProjectDir)..;$(SGXSDKInstallPath)\include;$(ProjectDir);$(SolutionDir)openssl/include;$(SolutionDir)Stack/core;$(SolutionDir)Stack/stackcore;$(SolutionDir)Stack/proxystub/clientproxy;$(SolutionDir)Stack/proxystub/serverstub;$(SolutionDir)Stack/platforms/win32sgx_u;$(SolutionDir)Stack/securechannel;$(SolutionDir)Stack/transport/tcp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Lib>

@@ -114,7 +114,7 @@ FILE* fopen(
             DMSG("TEE_CreatePersistentObject returned error %x\n", result);
         }
     } else {
-        TCPS_ASSERT(FALSE);
+        oe_assert(FALSE);
     }
     
     Tcps_Trace(Tcps_TraceLevelDebug, "fopen returning result %x hObject %p\n", result, (fp) ? fp->hObject : NULL);
@@ -271,7 +271,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "_stat");
     return 0;
 
 Tcps_BeginErrorHandling;
-    TCPS_ASSERT(FALSE);
+    oe_assert(FALSE);
     return -1;
 }
 
@@ -312,7 +312,7 @@ int FindFirstFileInternal(
         wildcard = strchr(dirSpec, '*');
         if (wildcard == NULL) {
             /* Not implemented, not used by the demo. */
-            TCPS_ASSERT(FALSE); 
+            oe_assert(FALSE); 
             return -1;
         }
 

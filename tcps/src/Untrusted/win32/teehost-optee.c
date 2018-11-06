@@ -90,7 +90,7 @@ Tcps_StatusCode Tcps_CreateTAInternal(
     if (hService == INVALID_HANDLE_VALUE) {
         return Tcps_Bad;
     }
-    TCPS_ASSERT(*a_pId != (sgx_enclave_id_t)-1);
+    assert(*a_pId != (sgx_enclave_id_t)-1);
 
     /* Proactively initialize sockets so the enclave isn't required to. */
     WSADATA wsaData;
