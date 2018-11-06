@@ -4,7 +4,6 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/tests.h>
-#include <atomic>
 #include <cassert>
 #include <chrono>
 #include <cstdio>
@@ -12,6 +11,7 @@
 #include <cstring>
 #include <thread>
 #include <vector>
+#include <atomic>
 #include "../../../host/enclave.h"
 #include "../args.h"
 
@@ -345,7 +345,7 @@ int main(int argc, const char* argv[])
         oe_put_err("oe_create_enclave(): result=%u", result);
     }
 
-    /* TestMutex(enclave);
+    TestMutex(enclave);
 
     TestCond(enclave);
 
@@ -355,7 +355,7 @@ int main(int argc, const char* argv[])
 
     TestThreadLockingPatterns(enclave);
 
-    TestReadersWriterLock(enclave); */
+    TestReadersWriterLock(enclave); 
 
     TestTCSExhaustion(enclave);
 
