@@ -6,8 +6,8 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/queue.h>
 
-static OE_LIST_HEAD(EnclaveListHead, _enclave_entry) g_enclave_list_head;
-static oe_mutex g_enclave_list_lock = OE_H_MUTEX_INITIALIZER;
+static OE_LIST_HEAD(EnclaveListHead, _enclave_entry) oe_enclave_list_head;
+static oe_mutex oe_enclave_list_lock = OE_H_MUTEX_INITIALIZER;
 
 typedef struct _enclave_entry
 {
@@ -33,7 +33,7 @@ uint32_t _oe_push_enclave_instance(oe_enclave_t* enclave)
     EnclaveEntry* new_entry = NULL;
 
     // Take the lock.
-    if (oe_mutex_lock(&g_enclave_list_lock) != 0)
+    if (oe_mutex_lock(&oe_enclave_list_lock) != 0)
     {
         goto cleanup;
     }
@@ -43,7 +43,7 @@ uint32_t _oe_push_enclave_instance(oe_enclave_t* enclave)
     // Return error if the enclave is already in global list.
     {
         EnclaveEntry* tmp;
-        OE_LIST_FOREACH(tmp, &g_enclave_list_head, next_entry)
+        OE_LIST_FOREACH(tmp, &oe_enclave_list_head, next_entry)
         {
             if (tmp->enclave == enclave)
             {
@@ -62,7 +62,7 @@ uint32_t _oe_push_enclave_instance(oe_enclave_t* enclave)
     new_entry->enclave = enclave;
 
     // Insert to the beginning of the list.
-    OE_LIST_INSERT_HEAD(&g_enclave_list_head, new_entry, next_entry);
+    OE_LIST_INSERT_HEAD(&oe_enclave_list_head, new_entry, next_entry);
 
     // Return success.
     ret = 0;
@@ -71,7 +71,7 @@ cleanup:
     if (locked)
     {
         // Release the lock if it is taken.
-        if (oe_mutex_unlock(&g_enclave_list_lock) != 0)
+        if (oe_mutex_unlock(&oe_enclave_list_lock) != 0)
         {
             abort();
         }
@@ -97,7 +97,7 @@ uint32_t _oe_remove_enclave_instance(oe_enclave_t* enclave)
     bool locked = false;
 
     // Take the lock.
-    if (oe_mutex_lock(&g_enclave_list_lock) != 0)
+    if (oe_mutex_lock(&oe_enclave_list_lock) != 0)
     {
         goto cleanup;
     }
@@ -107,7 +107,7 @@ uint32_t _oe_remove_enclave_instance(oe_enclave_t* enclave)
     // Enumerate the enclave list, remove the target entry if find it.
     {
         EnclaveEntry* tmp;
-        OE_LIST_FOREACH(tmp, &g_enclave_list_head, next_entry)
+        OE_LIST_FOREACH(tmp, &oe_enclave_list_head, next_entry)
         {
             if (tmp->enclave == enclave)
             {
@@ -123,7 +123,7 @@ cleanup:
     if (locked)
     {
         // Release the lock if it is taken.
-        if (oe_mutex_unlock(&g_enclave_list_lock) != 0)
+        if (oe_mutex_unlock(&oe_enclave_list_lock) != 0)
         {
             abort();
         }
@@ -149,7 +149,7 @@ oe_enclave_t* _oe_query_enclave_instance(void* tcs)
     bool locked = false;
 
     // Take the lock.
-    if (oe_mutex_lock(&g_enclave_list_lock) != 0)
+    if (oe_mutex_lock(&oe_enclave_list_lock) != 0)
     {
         goto cleanup;
     }
@@ -159,7 +159,7 @@ oe_enclave_t* _oe_query_enclave_instance(void* tcs)
     // Enumerate the enclave list, find which enclave owns the TCS.
     {
         EnclaveEntry* tmp;
-        OE_LIST_FOREACH(tmp, &g_enclave_list_head, next_entry)
+        OE_LIST_FOREACH(tmp, &oe_enclave_list_head, next_entry)
         {
             oe_enclave_t* enclave = tmp->enclave;
             for (uint32_t i = 0; i < OE_COUNTOF(enclave->bindings); i++)
@@ -177,7 +177,7 @@ cleanup:
     if (locked)
     {
         // Release the lock if it is taken.
-        if (oe_mutex_unlock(&g_enclave_list_lock) != 0)
+        if (oe_mutex_unlock(&oe_enclave_list_lock) != 0)
         {
             abort();
         }

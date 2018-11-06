@@ -6,8 +6,29 @@
 #if defined(__linux__)
 #include <errno.h>
 #include <sys/mman.h>
+
+#define get_fullpath(path) realpath(path, NULL)
+
 #elif defined(_WIN32)
 #include <windows.h>
+
+static const char* get_fullpath(const char* path)
+{
+    char* fullpath = (char*)calloc(1, MAX_PATH);
+    if (fullpath)
+    {
+        DWORD length = GetFullPathName(path, MAX_PATH, fullpath, NULL);
+
+        // If function failed, deallocate and return zero.
+        if (length == 0)
+        {
+            free(fullpath);
+            fullpath = NULL;
+        }
+    }
+    return fullpath;
+}
+
 #endif
 
 #include <assert.h>
@@ -635,8 +656,10 @@ oe_result_t oe_sgx_build_enclave(
         oe_sgx_initialize_enclave(
             context, enclave_addr, &props, &enclave->hash));
 
-    /* Save path of this enclave */
-    if (!(enclave->path = oe_strdup(path)))
+    /* Save full path of this enclave. When a debugger attaches to the host
+     * process, it needs the fullpath so that it can load the image binary and
+     * extract the debugging symbols. */
+    if (!(enclave->path = get_fullpath(path)))
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* Set the magic number only if we have actually created an enclave */

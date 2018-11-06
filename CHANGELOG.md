@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    - oeedger8r generates ecall tables and ocall tables
    - Dispatching based on function-id (index into table)
    - oeedger8r generates oe_create_foo_enclave function for foo.edl
+   - oe-gdb allows attaching to a host that is already running
 
 ### Changed
 
