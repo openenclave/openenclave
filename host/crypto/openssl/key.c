@@ -134,7 +134,7 @@ oe_result_t oe_public_key_read_pem(
         OE_RAISE(OE_FAILURE);
 
     /* Verify that it is the right key type */
-    if (EVP_PKEY_id(pkey)!= key_type)
+    if (EVP_PKEY_id(pkey) != key_type)
         OE_RAISE(OE_FAILURE);
 
     /* Initialize the key */

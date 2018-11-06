@@ -13,6 +13,20 @@
 #include "init.h"
 #include "key.h"
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+/* Needed for compatibility with ssl1.1 */
+static int ECDSA_SIG_set0(ECDSA_SIG* sig, BIGNUM* r, BIGNUM* s)
+{
+    if (r == NULL || s == NULL)
+        return 0;
+    BN_clear_free(sig->r);
+    BN_clear_free(sig->s);
+    sig->r = r;
+    sig->s = s;
+    return 1;
+}
+
+#endif
 /* Magic numbers for the EC key implementation structures */
 static const uint64_t _PRIVATE_KEY_MAGIC = 0x19a751419ae04bbc;
 static const uint64_t _PUBLIC_KEY_MAGIC = 0xb1d39580c1f14c02;
@@ -581,6 +595,8 @@ oe_result_t oe_ecdsa_signature_write_der(
     oe_result_t result = OE_UNEXPECTED;
     ECDSA_SIG* sig = NULL;
     int sig_len;
+    BIGNUM* sig_r = NULL;
+    BIGNUM* sig_s = NULL;
 
     /* Reject invalid parameters */
     if (!signature_size || !data || !size || size > OE_INT_MAX || !s_data ||
@@ -595,16 +611,17 @@ oe_result_t oe_ecdsa_signature_write_der(
     if (!(sig = ECDSA_SIG_new()))
         OE_RAISE(OE_FAILURE);
 
-    const BIGNUM *sig_r;
-    const BIGNUM *sig_s;
-    ECDSA_SIG_get0(sig, &sig_r, &sig_s);
+    sig_r = BN_new();
+    sig_s = BN_new();
     /* Convert R to big number object */
     if (!(BN_bin2bn(data, (int)size, (BIGNUM*)sig_r)))
         OE_RAISE(OE_FAILURE);
 
     /* Convert S to big number object */
-    if (!(BN_bin2bn(s_data, (int)s_size, (BIGNUM*)sig_r)))
+    if (!(BN_bin2bn(s_data, (int)s_size, (BIGNUM*)sig_s)))
         OE_RAISE(OE_FAILURE);
+
+    ECDSA_SIG_set0(sig, sig_r, sig_s);
 
     /* Determine the size of the binary signature */
     if ((sig_len = i2d_ECDSA_SIG(sig, NULL)) <= 0)

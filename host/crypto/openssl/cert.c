@@ -221,7 +221,7 @@ done:
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
 /* Needed because some versions of OpenSSL do not support X509_up_ref() */
-static int _X509_up_ref(X509* x509)
+static int X509_up_ref(X509* x509)
 {
     if (!x509)
         return 0;
@@ -231,13 +231,22 @@ static int _X509_up_ref(X509* x509)
 }
 
 /* Needed because some versions of OpenSSL do not support X509_CRL_up_ref() */
-static int _X509_CRL_up_ref(X509_CRL* x509_crl)
+static int X509_CRL_up_ref(X509_CRL* x509_crl)
 {
     if (!x509_crl)
         return 0;
 
     CRYPTO_add(&x509_crl->references, 1, CRYPTO_LOCK_X509_CRL);
     return 1;
+}
+
+static const STACK_OF(X509_EXTENSION) * X509_get0_extensions(const X509* x)
+{
+    if (!x->cert_info)
+    {
+        return NULL;
+    }
+    return x->cert_info->extensions;
 }
 
 #endif
@@ -698,7 +707,9 @@ oe_result_t oe_cert_verify(
     {
         int errorno;
         if (error)
-            _set_err(error, X509_verify_cert_error_string(X509_STORE_CTX_get_error(ctx)));
+            _set_err(
+                error,
+                X509_verify_cert_error_string(X509_STORE_CTX_get_error(ctx)));
 
         errorno = X509_STORE_CTX_get_error(ctx);
         OE_RAISE_MSG(
