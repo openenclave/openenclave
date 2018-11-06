@@ -12,7 +12,7 @@
 
 #include <oeenclave.h>
 #include "TcpsRpcOptee.h"
-#include "../TcpsCalls_t.h"
+#include "../oeoverintelsgx_t.h"
 #include <openenclave/enclave.h>
 #include "oeresult.h"
 

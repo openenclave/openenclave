@@ -6,7 +6,7 @@
 #include <errno.h>
 
 #include "tcps_string_t.h"
-#include "TcpsCalls_t.h"
+#include "oeoverintelsgx_t.h"
 
 #if defined(USE_SGX)
 #define DMSG printf

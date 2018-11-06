@@ -6,13 +6,13 @@ lib
 # Visual Studio generated files 
 .vs
 Debug
-DebugMockOptee
+DebugOpteeSimulation
 *.vcxproj.user
-TCPS-SDK.VC.*
+OpenEnclave.VC.*
 SampleTA_t.*
 SampleTA_u.*
-TcpsCalls_t.*
-TcpsCalls_u.*
+oeoverintelsgx_t.*
+oeoverintelsgx_u.*
 oetests_t.*
 oetests_u.*
 oetests_args.h

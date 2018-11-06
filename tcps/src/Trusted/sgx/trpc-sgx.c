@@ -1,7 +1,7 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
 #include <openenclave/enclave.h>
-#include "TcpsCalls_t.h"
+#include "oeoverintelsgx_t.h"
 #include "oeresult.h"
 #include <string.h>
 

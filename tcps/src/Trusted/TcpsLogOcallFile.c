@@ -5,10 +5,10 @@
 #ifdef USE_OPTEE
 #include "tcps_time_t.h"
 #include "tcps_string_t.h"
-#include "TcpsCalls_t.h"
+#include "oeoverintelsgx_t.h"
 #include <optee/tcps_string_optee_t.h>
 #else
-#include "TcpsCalls_t.h"
+#include "oeoverintelsgx_t.h"
 #endif
 
 #include "TcpsLog.h"

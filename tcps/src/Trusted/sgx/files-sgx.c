@@ -13,7 +13,7 @@
 
 #include <tcps_stdio_t.h>
 #include <tcps_string_t.h>
-#include <TcpsCalls_t.h>
+#include <oeoverintelsgx_t.h>
 
 #define DMSG printf
 

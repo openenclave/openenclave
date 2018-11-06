@@ -3,7 +3,7 @@
 #include <openenclave/enclave.h>
 #include <sgx_trts.h>
 #include <stdlib.h>
-#include "TcpsCalls_t.h"
+#include "oeoverintelsgx_t.h"
 #include <string.h>
 #include "../oeresult.h"
 #include <sgx_utils.h>

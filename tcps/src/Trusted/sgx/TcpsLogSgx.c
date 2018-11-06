@@ -8,7 +8,7 @@
 #include "tcps_stdio_t.h"
 #include <cbor.h>
 #include "cborhelper.h"
-#include "TcpsCalls_t.h"
+#include "oeoverintelsgx_t.h"
 #include "ICertUtil.h"
 #include "tcps.h"
 

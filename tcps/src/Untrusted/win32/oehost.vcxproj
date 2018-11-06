@@ -51,7 +51,7 @@
     <ClCompile Include="..\..\oeresult.c" />
     <ClCompile Include="..\..\oeshim-common.c" />
     <ClCompile Include="..\socket_u.c" />
-    <ClCompile Include="..\TcpsCalls_u.c">
+    <ClCompile Include="..\oeoverintelsgx_u.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">
@@ -70,9 +70,9 @@
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">$(TcpsSdkDir)include;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">$(TcpsSdkDir)include;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">$(TcpsSdkDir)include;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">$(TcpsDir)include;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">$(TcpsDir)include;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">$(TcpsDir)include;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
     </ClCompile>
     <ClCompile Include="..\oeshim_u.c" />
     <ClCompile Include="teehost-optee.c">
@@ -119,11 +119,11 @@
     <ClInclude Include="$(ProjectKaylaDir)driver\TrEE\OpteeCalls\targetver.h" />
     <ClInclude Include="..\socket_args.h" />
     <ClInclude Include="..\socket_u.h" />
-    <ClInclude Include="..\TcpsCalls_u.h" />
+    <ClInclude Include="..\oeoverintelsgx_u.h" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\..\TcpsCalls.edl">
-      <Command>"$(SGXSDKInstallPath)\bin\win32\Release\sgx_edger8r.exe" --untrusted ".\..\..\..\include\TcpsCalls.edl" --search-path ".\..\..\..\include;$(SGXSDKInstallPath)\include"</Command>
+    <CustomBuild Include="..\..\oeoverintelsgx.edl">
+      <Command>"$(SGXSDKInstallPath)\bin\win32\Release\sgx_edger8r.exe" --untrusted ".\..\..\..\include\oeoverintelsgx.edl" --search-path ".\..\..\..\include;$(SGXSDKInstallPath)\include"</Command>
       <Message>Creating untrusted proxy/bridge routines</Message>
       <Outputs>$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(SGXSDKInstallPath)bin\win32\release\sgx_edger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path ".\..\..;$(SGXSDKInstallPath)\include"</Command>
@@ -159,15 +159,15 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
     </CustomBuild>
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -176,7 +176,7 @@
     <RootNamespace>oehost</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
     <ProjectName>oehost</ProjectName>
-    <TcpsSdkDir>..\..\</TcpsSdkDir>
+    <TcpsDir>..\..\</TcpsDir>
     <UrchinDir>$(OESdkDir)3rdparty\Urchin\</UrchinDir>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -246,7 +246,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>UNTRUSTED_CODE;USE_OPTEE;WIN32;_DEBUG;_LIB;_ARM_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(WinARMSDKInstallPath);$(TcpsSdkDir)include\optee\Untrusted;$(TcpsSdkDir)include\optee;$(TcpsSdkDir)include;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(SolutionDir)Stack\Core;$(SolutionDir)Stack\StackCore;$(SolutionDir)Stack\transport\tcp;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SolutionDir)Stack\Platforms/Win32_untrusted;$(SGXSDKInstallPath)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(WinARMSDKInstallPath);$(TcpsDir)include\optee\Untrusted;$(TcpsDir)include\optee;$(TcpsDir)include;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(SolutionDir)Stack\Core;$(SolutionDir)Stack\StackCore;$(SolutionDir)Stack\transport\tcp;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SolutionDir)Stack\Platforms/Win32_untrusted;$(SGXSDKInstallPath)\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -264,7 +264,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>UNTRUSTED_CODE;USE_OPTEE;SIMULATE_TEE;WIN32;_DEBUG;_LIB;_ARM_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(TcpsSdkDir)include\optee\Untrusted;$(TcpsSdkDir)include\optee;$(TcpsSdkDir)include;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TcpsDir)include\optee\Untrusted;$(TcpsDir)include\optee;$(TcpsDir)include;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -282,7 +282,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>UNTRUSTED_CODE;USE_SGX;USE_VCOM;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(TcpsSdkDir)include;$(OESdkDir)include;$(ProjectDir)..\..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(SolutionDir)Stack\Core;$(SolutionDir)Stack\StackCore;$(SolutionDir)Stack\Platforms/Win32_untrusted;$(ProjectKaylaDir)/driver/TrEE/inc;$(SolutionDir)Stack\transport\tcp;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TcpsDir)include;$(OESdkDir)include;$(ProjectDir)..\..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(SolutionDir)Stack\Core;$(SolutionDir)Stack\StackCore;$(SolutionDir)Stack\Platforms/Win32_untrusted;$(ProjectKaylaDir)/driver/TrEE/inc;$(SolutionDir)Stack\transport\tcp;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
@@ -304,7 +304,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>UNTRUSTED_CODE;USE_OPTEE;SIMULATE_TEE;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(TcpsSdkDir)include\optee\Untrusted;$(TcpsSdkDir)include\optee;$(TcpsSdkDir)include;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TcpsDir)include\optee\Untrusted;$(TcpsDir)include\optee;$(TcpsDir)include;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
@@ -326,7 +326,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>UNTRUSTED_CODE;USE_SGX;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(TcpsSdkDir)include;$(OESdkDir)include;$(ProjectDir)..\..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(SGXSDKInstallPath)\include;../../Stack/Core;../../Stack/StackCore;../../Stack/Platforms/Win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TcpsDir)include;$(OESdkDir)include;$(ProjectDir)..\..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(SGXSDKInstallPath)\include;../../Stack/Core;../../Stack/StackCore;../../Stack/Platforms/Win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
@@ -347,7 +347,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>UNTRUSTED_CODE;USE_OPTEE;SIMULATE_TEE;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(TcpsSdkDir)include\optee\Untrusted;$(TcpsSdkDir)include\optee;$(TcpsSdkDir)include;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TcpsDir)include\optee\Untrusted;$(TcpsDir)include\optee;$(TcpsDir)include;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
@@ -370,7 +370,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>UNTRUSTED_CODE;USE_OPTEE;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(WinARMSDKInstallPath);$(TcpsSdkDir)include;$(OESdkDir)include;$(ProjectDir)..\..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(SolutionDir)Stack\Core;$(SolutionDir)Stack\StackCore;$(SolutionDir)Stack\transport\tcp;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SolutionDir)Stack\Platforms/Win32_untrusted;$(SGXSDKInstallPath)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(WinARMSDKInstallPath);$(TcpsDir)include;$(OESdkDir)include;$(ProjectDir)..\..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(SolutionDir)Stack\Core;$(SolutionDir)Stack\StackCore;$(SolutionDir)Stack\transport\tcp;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SolutionDir)Stack\Platforms/Win32_untrusted;$(SGXSDKInstallPath)\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -391,7 +391,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>UNTRUSTED_CODE;USE_SGX;USE_VCOM;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(TcpsSdkDir)include;$(OESdkDir)include;$(ProjectDir)..\..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(SolutionDir)Stack\Core;$(SolutionDir)Stack\StackCore;$(SolutionDir)Stack\Platforms/Win32_untrusted;$(ProjectKaylaDir)/driver/TrEE/inc;$(SolutionDir)Stack\transport\tcp;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TcpsDir)include;$(OESdkDir)include;$(ProjectDir)..\..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(SolutionDir)Stack\Core;$(SolutionDir)Stack\StackCore;$(SolutionDir)Stack\Platforms/Win32_untrusted;$(ProjectKaylaDir)/driver/TrEE/inc;$(SolutionDir)Stack\transport\tcp;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -414,7 +414,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>UNTRUSTED_CODE;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(TcpsSdkDir)include;$(OESdkDir)include;$(ProjectDir)..\..;$(ProjectDir);$(SGXSDKInstallPath)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TcpsDir)include;$(OESdkDir)include;$(ProjectDir)..\..;$(ProjectDir);$(SGXSDKInstallPath)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

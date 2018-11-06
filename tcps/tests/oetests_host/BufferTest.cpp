@@ -10,7 +10,7 @@
 #include "oetests_u.h"
 #include "gtest/gtest.h"
 #include "TrustedAppTest.h"
-#include "../../src/Untrusted/TcpsCalls_u.h" // for buffer APIs
+#include "../../src/Untrusted/oeoverintelsgx_u.h" // for buffer APIs
 
 TEST(Buffer, CreateReeBuffer_Success)
 {

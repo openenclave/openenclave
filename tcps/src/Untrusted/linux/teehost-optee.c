@@ -8,7 +8,7 @@
 #include "oehost.h"
 #include <sgx_edger8r.h>
 #include <openenclave/host.h>
-#include "TcpsCalls_u.h"
+#include "oeoverintelsgx.h"
 #include "optee.h"
 #include "oeresult.h"
 

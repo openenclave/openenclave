@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "oeenclave.h"
-#include <TcpsCalls_t.h>
+#include <oeoverintelsgx_t.h>
 
 #define FALSE 0
 

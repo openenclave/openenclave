@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #include "tcps_string_t.h"
-#include "TcpsCalls_t.h"
+#include "oeoverintelsgx_t.h"
 
 int ExportPublicCertificate(const char* sourceLocation, const char* destinationPath)
 {

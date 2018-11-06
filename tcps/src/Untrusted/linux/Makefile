@@ -1,5 +1,5 @@
 # All objects we build and store in our shared library.
-OBJECTS = TcpsCalls_u.o teehost-optee.o urpc-optee.o ufiles.o \
+OBJECTS = oeoverintelsgx_u.o teehost-optee.o urpc-optee.o ufiles.o \
           uTcpsFileOcalls.o usockets.o buffer.o uhelper-shared.o \
           uhelper.o oeshim_u.o uProtectedFs-optee.o oeresult.o \
           oeshim-common.o stdext.o uTcpsFileOcalls-shared.o socket_u.o
@@ -46,22 +46,22 @@ oehost.a: $(OBJECTS)
 	@echo " [AR]\toehost.a"
 	@$(AR) rcs $(LIB_NAME) $(OBJECTS)
 
-../TcpsCalls_u.h ../TcpsCalls_u.c: $(EDL_PATH)/TcpsCalls.edl \
+../oeoverintelsgx_u.h ../oeoverintelsgx_u.c: $(EDL_PATH)/oeoverintelsgx.edl \
 								   $(EDL_PATH)/TcpsFile.edl
-	@echo " [EDGE]\TcpsCalls.edl"
+	@echo " [EDGE]\oeoverintelsgx.edl"
 	@sgx_edger8r --untrusted --untrusted-dir .. --search-path "$(EDL_PATH):$(EDL_INC_PATH):$(SGX_SDK)/include" \
-	                                                          "$(EDL_PATH)/TcpsCalls.edl"
+	                                                          "$(EDL_PATH)/oeoverintelsgx.edl"
 
 ../socket_u.h ../socket_u.c: $(OE_EDL_PATH)/socket.edl
 	@echo " [EDGE]\socket.edl"
 	@$(OEEDGER8R) --untrusted --untrusted-dir .. --search-path "$(OE_PATH)/include" \
 	                                                           "$(OE_EDL_PATH)/socket.edl"
 
-buffer.o: ../../buffer.c ../TcpsCalls_u.h
+buffer.o: ../../buffer.c ../oeoverintelsgx_u.h
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -std=c99 -c -o $@ $<
 
-uhelper-shared.o: ../uhelper-shared.c ../TcpsCalls_u.h
+uhelper-shared.o: ../uhelper-shared.c ../oeoverintelsgx_u.h
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 
@@ -69,7 +69,7 @@ oeshim-common.o: ../../oeshim-common.c
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 
-oeshim_u.o: ../oeshim_u.c ../TcpsCalls_u.h
+oeshim_u.o: ../oeshim_u.c ../oeoverintelsgx_u.h
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 
@@ -77,15 +77,15 @@ oeresult.o: ../../oeresult.c
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 
-uProtectedFs-optee.o: ../uProtectedFs-optee.c ../TcpsCalls_u.h
+uProtectedFs-optee.o: ../uProtectedFs-optee.c ../oeoverintelsgx_u.h
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 
-uTcpsFileOcalls-shared.o: ../uTcpsFileOcalls-shared.c ../TcpsCalls_u.h
+uTcpsFileOcalls-shared.o: ../uTcpsFileOcalls-shared.c ../oeoverintelsgx_u.h
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 
-TcpsCalls_u.o: ../TcpsCalls_u.c ../TcpsCalls_u.h
+oeoverintelsgx_u.o: ../oeoverintelsgx_u.c ../oeoverintelsgx_u.h
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 
@@ -93,11 +93,11 @@ socket_u.o: ../socket_u.c ../socket_u.h
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -include "sal_unsup.h" -c -o $@ $<
 
-%.o: %.c ../TcpsCalls_u.h ../TcpsCalls_u.c ../socket_u.c ../socket_u.h
+%.o: %.c ../oeoverintelsgx_u.h ../oeoverintelsgx_u.c ../socket_u.c ../socket_u.h
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) -c -o $@ $<
 
 .PHONY: clean
 clean:
-	@rm -f $(LIB_NAME) TcpsCalls_u.h TcpsCalls_u.c $(OBJECTS)
+	@rm -f $(LIB_NAME) oeoverintelsgx_u.h oeoverintelsgx_u.c $(OBJECTS)
 	@echo "Done."

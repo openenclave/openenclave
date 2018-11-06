@@ -8,7 +8,7 @@
 
 #include "optee.h"
 #include <openenclave/host.h>
-#include "TcpsCalls_u.h"
+#include "oeoverintelsgx_u.h"
 
 /* Time-related APIs */
 

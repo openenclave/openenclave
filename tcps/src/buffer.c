@@ -6,10 +6,10 @@
 #include <stdlib.h>
 #include <string.h>
 #ifdef TRUSTED_CODE
-# include "Trusted/TcpsCalls_t.h"
+# include "Trusted/oeoverintelsgx_t.h"
 # include "oeenclave.h"
 #else
-# include "Untrusted/TcpsCalls_u.h"
+# include "Untrusted/oeoverintelsgx_u.h"
 # include "oehost.h"
 #endif
 #include "buffer.h"

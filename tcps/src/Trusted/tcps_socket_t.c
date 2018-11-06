@@ -2,7 +2,7 @@
 /* Licensed under the MIT License. */
 #include <openenclave/enclave.h>
 #include "tcps_string_t.h"
-#include "TcpsCalls_t.h"
+#include "oeoverintelsgx_t.h"
 #include "socket_t.h"
 #include <errno.h>
 

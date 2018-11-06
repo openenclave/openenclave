@@ -8,7 +8,7 @@
 #endif
 
 #include <openenclave/host.h>
-#include "TcpsCalls_u.h"
+#include "oeoverintelsgx_u.h"
 #include "../buffer.h"
 extern int g_serialize_ecalls;
 

@@ -19,7 +19,7 @@
 #include <stdint.h>
 #include <errno.h>
 #include "oehost.h"
-#include "TcpsCalls_u.h"
+#include "oeoverintelsgx_u.h"
 
 int
 SGX_CDECL

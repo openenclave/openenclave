@@ -3,7 +3,7 @@
 #include <time.h>
 #include <windows.h> // for LARGE_INTEGER
 #include <openenclave/host.h>
-#include "../TcpsCalls_u.h"
+#include "../oeoverintelsgx_u.h"
 
 #define MIN(a,b) (((a) < b) ? (a) : (b))
 

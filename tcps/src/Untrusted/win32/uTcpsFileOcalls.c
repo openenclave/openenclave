@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <errno.h>
 #include "oehost.h"
-#include "../TcpsCalls_u.h"
+#include "../oeoverintelsgx_u.h"
 
 stat64i32_Result
 SGX_CDECL

@@ -9,7 +9,7 @@
 #include <strsafe.h>
 #include <rpc.h>
 #include <openenclave/host.h>
-#include "TcpsCalls_u.h"
+#include "oeoverintelsgx_u.h"
 
 static HANDLE OpenServiceHandleByFilename(_In_ LPCGUID ServiceGuid)
 {

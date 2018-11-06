@@ -13,7 +13,7 @@
 #include "sal_unsup.h"
 #include "stdext.h"
 #include "oehost.h"
-#include "TcpsCalls_u.h"
+#include "oeoverintelsgx_u.h"
 #include "buffer.h"
 #include "socket_u.h"
 

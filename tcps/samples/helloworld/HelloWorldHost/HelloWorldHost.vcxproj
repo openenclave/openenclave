@@ -304,7 +304,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>UNTRUSTED_CODE;USE_SGX;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(TcpsSdkDir)include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(TcpsDir)include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -320,7 +320,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>UNTRUSTED_CODE;_ARM;USE_OPTEE;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(TcpsSdkDir)include\optee\Untrusted;$(TcpsSdkDir)include\optee;$(TcpsSdkDir)include;$(SGXSDKInstallPath)\include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TcpsDir)include\optee\Untrusted;$(TcpsDir)include\optee;$(TcpsDir)include;$(SGXSDKInstallPath)\include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -336,7 +336,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>UNTRUSTED_CODE;USE_OPTEE;SIMULATE_TEE;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(TcpsSdkDir)include\optee\Untrusted;$(TcpsSdkDir)include\optee;$(TcpsSdkDir)include;$(SGXSDKInstallPath)\include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TcpsDir)include\optee\Untrusted;$(TcpsDir)include\optee;$(TcpsDir)include;$(SGXSDKInstallPath)\include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -352,7 +352,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>UNTRUSTED_CODE;USE_OPTEE;SIMULATE_TEE;_ARM;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(TcpsSdkDir)include\optee\Untrusted;$(TcpsSdkDir)include\optee;$(TcpsSdkDir)include;$(SGXSDKInstallPath)\include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TcpsDir)include\optee\Untrusted;$(TcpsDir)include\optee;$(TcpsDir)include;$(SGXSDKInstallPath)\include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -368,7 +368,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>UNTRUSTED_CODE;USE_SGX;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(TcpsSdkDir)include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(TcpsDir)include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -384,7 +384,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>UNTRUSTED_CODE;_ARM;USE_OPTEE;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(TcpsSdkDir)include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(TcpsDir)include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -400,7 +400,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>UNTRUSTED_CODE;USE_SGX;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(TcpsSdkDir)include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(TcpsDir)include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -416,7 +416,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>UNTRUSTED_CODE;USE_OPTEE;SIMULATE_TEE;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(TcpsSdkDir)include\optee\Untrusted;$(TcpsSdkDir)include\optee;$(TcpsSdkDir)include;$(SGXSDKInstallPath)\include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TcpsDir)include\optee\Untrusted;$(TcpsDir)include\optee;$(TcpsDir)include;$(SGXSDKInstallPath)\include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -432,7 +432,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>UNTRUSTED_CODE;USE_SGX;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(TcpsSdkDir)include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(TcpsDir)include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -450,7 +450,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>UNTRUSTED_CODE;USE_SGX;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(TcpsSdkDir)include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(TcpsDir)include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -470,7 +470,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>UNTRUSTED_CODE;_ARM;USE_OPTEE;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(TcpsSdkDir)include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(TcpsDir)include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -490,7 +490,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>UNTRUSTED_CODE;USE_SGX;EDEBUG;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(TcpsSdkDir)include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(TcpsDir)include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -510,7 +510,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>UNTRUSTED_CODE;_ARM;USE_OPTEE;EDEBUG;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(TcpsSdkDir)include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(TcpsDir)include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -530,7 +530,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>UNTRUSTED_CODE;USE_SGX;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(TcpsSdkDir)include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(TcpsDir)include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -550,7 +550,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>UNTRUSTED_CODE;USE_SGX;EDEBUG;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(TcpsSdkDir)include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(TcpsDir)include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -606,28 +606,28 @@
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\helloworld.edl">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsSdkDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">"$(TcpsDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(SGXSDKInstallPath)\include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">Creating untrusted proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsSdkDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">"$(TcpsDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(SGXSDKInstallPath)\include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">Creating untrusted proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsSdkDir)include;$(SGXSDKInstallPath)\include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|ARM'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsSdkDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">"$(TcpsDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|ARM'">"$(TcpsDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(SGXSDKInstallPath)\include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">Creating untrusted proxy/bridge routines</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Simulation|ARM'">Creating untrusted proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Simulation|ARM'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsSdkDir)include;$(SGXSDKInstallPath)\include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsSdkDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">"$(TcpsDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'">"$(TcpsDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(SGXSDKInstallPath)\include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">Creating untrusted proxy/bridge routines</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'">Creating untrusted proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsSdkDir)include;$(SGXSDKInstallPath)\include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsSdkDir)include;$(SGXSDKInstallPath)\include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsSdkDir)include;$(SGXSDKInstallPath)\include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsSdkDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(TcpsDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">"$(TcpsDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">"$(TcpsDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">"$(TcpsDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(SGXSDKInstallPath)\include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Creating untrusted proxy/bridge routines</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Creating untrusted proxy/bridge routines</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">Creating untrusted proxy/bridge routines</Message>
@@ -636,19 +636,19 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsSdkDir)include;$(SGXSDKInstallPath)\include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsSdkDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(TcpsDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">"$(TcpsDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(SGXSDKInstallPath)\include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Creating untrusted proxy/bridge routines</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">Creating untrusted proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsSdkDir)include;$(SGXSDKInstallPath)\include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsSdkDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(TcpsDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">"$(TcpsDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(SGXSDKInstallPath)\include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Creating untrusted proxy/bridge routines</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Creating untrusted proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(TcpsSdkDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsSdkDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(TcpsDir)oeedger8r.exe" --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(SGXSDKInstallPath)\include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Creating untrusted proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
     </CustomBuild>

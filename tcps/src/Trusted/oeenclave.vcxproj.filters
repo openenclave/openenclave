@@ -99,7 +99,7 @@
     <ClCompile Include="sgx\trpc-sgx.c">
       <Filter>sgx</Filter>
     </ClCompile>
-    <ClCompile Include="TcpsCalls_t.c">
+    <ClCompile Include="oeoverintelsgx_t.c">
       <Filter>GeneratedFiles</Filter>
     </ClCompile>
     <ClCompile Include="sgx\keygen-sgx.c">
@@ -157,7 +157,7 @@
     <ClInclude Include="rand_optee.h">
       <Filter>optee</Filter>
     </ClInclude>
-    <ClInclude Include="TcpsCalls_t.h">
+    <ClInclude Include="oeoverintelsgx_t.h">
       <Filter>GeneratedFiles</Filter>
     </ClInclude>
     <ClInclude Include="errno.h">
@@ -220,7 +220,7 @@
     <ClInclude Include="..\..\Inc\optee\cyrep-optee.h" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\TcpsCalls.edl">
+    <CustomBuild Include="..\oeoverintelsgx.edl">
       <Filter>common</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\..\include\openenclave\socket.edl">

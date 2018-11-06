@@ -25,7 +25,7 @@ Getting Started
 ---------------
 
 If you would like to start developing apps with the Open Enclave SDK,
-start here for instructions on [getting started](Doc/GettingStarted.md).
+start here for instructions on [getting started](docs/GettingStarted.md).
 
 
 Contributing

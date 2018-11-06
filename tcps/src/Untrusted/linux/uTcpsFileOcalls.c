@@ -1,7 +1,7 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
 #include <stddef.h>
-#include "TcpsCalls_u.h"
+#include "oeoverintelsgx_u.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>

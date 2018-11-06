@@ -1,15 +1,15 @@
 include ../../../tcps_sub.mk
 
-# Workaround for TcpsCalls_t.h:53:1: error: function declaration isn't a prototype [-Werror=strict-prototypes]
+# Workaround for oeoverintelsgx_t.h:53:1: error: function declaration isn't a prototype [-Werror=strict-prototypes]
 WARNS=0
 
 ROOT_RELATIVE_PATH = ../../../
 
-../TcpsCalls_t.c: ../../TcpsCalls.edl
-	$(SGX_EDGER8R) --trusted --search-path "../..$(SGX_PATHSEP)$(ROOT_RELATIVE_PATH)$(SGX_RELATIVE_PATH)include" --trusted-dir ".."  ../../TcpsCalls.edl
+../oeoverintelsgx_t.c: ../../oeoverintelsgx.edl
+	$(SGX_EDGER8R) --trusted --search-path "../..$(SGX_PATHSEP)$(ROOT_RELATIVE_PATH)$(SGX_RELATIVE_PATH)include" --trusted-dir ".."  ../../oeoverintelsgx.edl
 
-../TcpsCalls_t.h: ../../TcpsCalls.edl
-	$(SGX_EDGER8R) --trusted --search-path "../..$(SGX_PATHSEP)$(ROOT_RELATIVE_PATH)$(SGX_RELATIVE_PATH)include" --trusted-dir ".."  ../../TcpsCalls.edl
+../oeoverintelsgx_t.h: ../../oeoverintelsgx.edl
+	$(SGX_EDGER8R) --trusted --search-path "../..$(SGX_PATHSEP)$(ROOT_RELATIVE_PATH)$(SGX_RELATIVE_PATH)include" --trusted-dir ".."  ../../oeoverintelsgx.edl
 
 ../socket_t.h: $(OE_SDK_ROOT_PATH)include/openenclave/socket.edl
 	$(OEEDGER8R) --trusted --search-path "../..$(OEPATHSEP)$(OE_SDK_ROOT_PATH)include" --trusted-dir ".."  $(OE_SDK_ROOT_PATH)include/openenclave/socket.edl
@@ -28,7 +28,7 @@ global-incdirs-y += $(RIoTDir)CyReP/cyrep
 global-incdirs-y += $(RIoTDir)External/tinycbor/src
 global-incdirs-y += $(OE_SDK_ROOT_PATH)include
 
-srcs-y += ../TcpsCalls_t.c
+srcs-y += ../oeoverintelsgx_t.c
 srcs-y += ../../buffer.c
 srcs-y += ../CallbackHelper.c
 srcs-y += ../cborhelper.c

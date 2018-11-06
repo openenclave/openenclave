@@ -7,7 +7,7 @@
 #include <string.h>
 
 #include <tcps_string_t.h>
-#include <TcpsCalls_t.h>
+#include <oeoverintelsgx_t.h>
 #undef errno
 
 /* We currently use a manifest in a persistent object rather than just enumerating all persistent objects,

@@ -22,7 +22,7 @@
     <ClCompile Include="..\uhelper-shared.c" />
     <ClCompile Include="..\uProtectedFs-optee.c" />
     <ClCompile Include="..\uTcpsFileOcalls-shared.c" />
-    <ClCompile Include="..\TcpsCalls_u.c">
+    <ClCompile Include="..\oeoverintelsgx_u.c">
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="..\urpc-sgx.c">
@@ -34,7 +34,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(ProjectKaylaDir)driver\TrEE\OpteeCalls\targetver.h" />
-    <ClInclude Include="..\TcpsCalls_u.h">
+    <ClInclude Include="..\oeoverintelsgx_u.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="..\socket_args.h">
@@ -62,7 +62,7 @@
     <None Include="..\..\TcpsFile.edl" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\..\TcpsCalls.edl" />
+    <CustomBuild Include="..\..\oeoverintelsgx.edl" />
     <CustomBuild Include="..\..\..\..\include\openenclave\socket.edl" />
   </ItemGroup>
 </Project>
