@@ -248,14 +248,12 @@ OE_ECALL void LockAndUnlockMutexes(void* arg)
 // Keep the enclave busy until we get TCS exhaustion
 OE_ECALL void TestTCSExhaustion(void* args_)
 {
-    TestTCSArgs* args = (TestTCSArgs*)args_;
+    TestTCSArgs* volatile args = (TestTCSArgs*)args_;
     static oe_spinlock_t _tcs_lock = OE_SPINLOCK_INITIALIZER;
 
     // Increment the number of threads only on getting the _tcs_lock
     oe_spin_lock(&_tcs_lock);
     args->num_threads++;
-    // oe_host_printf("Enclave TestTCSExhaust(): %lld num_threads=%zu\n",
-    // OE_LLU(oe_thread_self()), args->num_threads);
     oe_spin_unlock(&_tcs_lock);
     while (args->num_threads + args->num_out_threads < args->tcs_count)
         ;
