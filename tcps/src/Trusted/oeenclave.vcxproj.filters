@@ -13,9 +13,6 @@
     <Filter Include="common">
       <UniqueIdentifier>{743ac63d-2f85-49d4-ac67-53d172f7c58e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="OpenEnclave">
-      <UniqueIdentifier>{b1dca1a0-1bb8-40e1-b53a-ce849a9f9459}</UniqueIdentifier>
-    </Filter>
     <Filter Include="common\riot">
       <UniqueIdentifier>{85dba034-dc61-4193-8477-d4d02d426361}</UniqueIdentifier>
     </Filter>
@@ -81,17 +78,8 @@
     <ClCompile Include="TcpsLogOcallFile.c">
       <Filter>common</Filter>
     </ClCompile>
-    <ClCompile Include="oeshim_t.c">
-      <Filter>OpenEnclave</Filter>
-    </ClCompile>
-    <ClCompile Include="..\oeresult.c">
-      <Filter>OpenEnclave</Filter>
-    </ClCompile>
     <ClCompile Include="optee\report-optee.c">
       <Filter>optee</Filter>
-    </ClCompile>
-    <ClCompile Include="..\oeshim-common.c">
-      <Filter>OpenEnclave</Filter>
     </ClCompile>
     <ClCompile Include="optee\except-optee.c">
       <Filter>optee</Filter>
@@ -140,6 +128,15 @@
     </ClCompile>
     <ClCompile Include="optee\cyres-optee.c">
       <Filter>optee</Filter>
+    </ClCompile>
+    <ClCompile Include="..\oeresult.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="oeshim_t.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\oeshim-common.c">
+      <Filter>common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -202,22 +199,24 @@
     <ClInclude Include="sgx\TcpsLogSgx.h">
       <Filter>sgx</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Inc\optee\tcps_ctype_optee_t.h">
-      <Filter>optee</Filter>
-    </ClInclude>
     <ClInclude Include="socket_args.h">
       <Filter>GeneratedFiles</Filter>
     </ClInclude>
     <ClInclude Include="socket_t.h">
       <Filter>GeneratedFiles</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Inc\optee\tcps_string_optee_t.h">
+    <ClInclude Include="..\..\include\optee\cyrep-optee.h">
       <Filter>optee</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Inc\optee\tcps_time_optee_t.h">
+    <ClInclude Include="..\..\include\optee\tcps_ctype_optee_t.h">
       <Filter>optee</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Inc\optee\cyrep-optee.h" />
+    <ClInclude Include="..\..\include\optee\tcps_string_optee_t.h">
+      <Filter>optee</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\optee\tcps_time_optee_t.h">
+      <Filter>optee</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\oeoverintelsgx.edl">

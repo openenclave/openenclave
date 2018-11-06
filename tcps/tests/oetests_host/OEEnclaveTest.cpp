@@ -5,7 +5,7 @@
 #include "stdext.h"
 #endif
 #include "gtest/gtest.h"
-#include <openenclave/edger8r/host.h>
+#include <openenclave/host.h>
 #include "TrustedAppTest.h"
 #include "oetests_u.h"
 

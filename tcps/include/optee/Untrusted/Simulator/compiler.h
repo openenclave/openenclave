@@ -1,8 +1,8 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
 #pragma once
-#ifndef UNTRUSTED_CODE
-# error TCPS-SDK\include\optee\Untrusted headers should only be included with UNTRUSTED_CODE
+#ifndef _OE_HOST_H
+# error include <openenclave/host.h> instead of including compiler.h directly
 #endif
 
 #define __extension__

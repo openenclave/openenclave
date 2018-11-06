@@ -16,7 +16,6 @@ Abstract:
 #pragma once
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// Common for UNTRUSTED_CODE + TRUSTED_CODE.
 #include <stdint.h>
 #include "tcps.h"
 
@@ -27,7 +26,7 @@ int32_t     TcpsInitializePlatformLibrary(void);    // Returns 0 for success, an
 void        TcpsShutdownPlatformLibrary(void);
 
 /////////////////////////////////////////////////////////////////////////////////////////
-#ifdef UNTRUSTED_CODE
+#ifdef _OE_HOST_H
 
 #include <time.h>
 #include <OpteeCalls.h>
@@ -38,7 +37,6 @@ void        TcpsShutdownPlatformLibrary(void);
 
 /////////////////////////////////////////////////////////////////////////////////////////
 #else
-// TRUSTED_CODE
 
 #include <trace.h>
 #include <assert.h>
@@ -61,5 +59,5 @@ void        TcpsShutdownPlatformLibrary(void);
 #include "tcps_time_t.h"
 #include "optee/tcps_string_optee_t.h"
 
-#endif /* #ifdef UNTRUSTED_CODE */
+#endif /* #ifdef _OE_HOST_H */
 /////////////////////////////////////////////////////////////////////////////////////////

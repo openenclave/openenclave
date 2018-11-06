@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdint.h>
+typedef size_t ssize_t;
 typedef unsigned short wchar_t;
 #define _NO_CRT_STDIO_INLINE
 #include <strsafe.h>
@@ -102,7 +104,7 @@ int trace_level = TRACE_LEVEL;
 
 typedef long long intmax_t;
 typedef unsigned long long uintmax_t;
-#include "oeenclave.h"
+#include <openenclave/enclave.h>
 #define __ILP32__ 1
 #include "../../../3rdparty/optee_os/lib/libutils/ext/trace.c"
 #pragma warning( disable : 4146 )

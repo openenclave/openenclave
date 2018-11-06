@@ -2,7 +2,7 @@
 /* Licensed under the MIT License. */
 #include <stdio.h>
 #include <string.h>
-#include "oeenclave.h"
+#include <openenclave/enclave.h>
 #include <oeoverintelsgx_t.h>
 
 #define FALSE 0

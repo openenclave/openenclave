@@ -2,13 +2,13 @@
 #include <windows.h>
 #include <wincrypt.h>
 #include <tee_api.h>
-#include <oeenclave.h>
+#include <assert.h>
 
 void TEE_GenerateRandom(
     _Out_writes_bytes_(randomBufferLen) void* randomBuffer,
     _In_ size_t randomBufferLen)
 {
-    HCRYPTPROV hCryptProv = NULL;
+    HCRYPTPROV hCryptProv = (HCRYPTPROV)NULL;
 
     if (!CryptAcquireContextW(&hCryptProv,
                               NULL,
@@ -16,12 +16,12 @@ void TEE_GenerateRandom(
                               PROV_RSA_FULL,
                               CRYPT_VERIFYCONTEXT))
     {
-        TCPS_ASSERT(FALSE);
+        assert(FALSE);
     }
 
     if (!CryptGenRandom(hCryptProv, randomBufferLen, randomBuffer))
     {
-        TCPS_ASSERT(FALSE);
+        assert(FALSE);
     }
 
     CryptReleaseContext(hCryptProv, 0);

@@ -21,10 +21,10 @@
     <ClCompile Include="oetests_t.c">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="oetests.c">
+    <ClCompile Include="OETestTA.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="OETestTA.c">
+    <ClCompile Include="oetests_enclave.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

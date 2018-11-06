@@ -245,7 +245,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>UNTRUSTED_CODE;USE_OPTEE;WIN32;_DEBUG;_LIB;_ARM_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_OPTEE;WIN32;_DEBUG;_LIB;_ARM_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(WinARMSDKInstallPath);$(TcpsDir)include\optee\Untrusted;$(TcpsDir)include\optee;$(TcpsDir)include;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(SolutionDir)Stack\Core;$(SolutionDir)Stack\StackCore;$(SolutionDir)Stack\transport\tcp;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SolutionDir)Stack\Platforms/Win32_untrusted;$(SGXSDKInstallPath)\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
@@ -263,7 +263,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>UNTRUSTED_CODE;USE_OPTEE;SIMULATE_TEE;WIN32;_DEBUG;_LIB;_ARM_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_OPTEE;SIMULATE_TEE;WIN32;_DEBUG;_LIB;_ARM_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(TcpsDir)include\optee\Untrusted;$(TcpsDir)include\optee;$(TcpsDir)include;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
@@ -281,7 +281,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>UNTRUSTED_CODE;USE_SGX;USE_VCOM;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_SGX;USE_VCOM;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(TcpsDir)include;$(OESdkDir)include;$(ProjectDir)..\..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(SolutionDir)Stack\Core;$(SolutionDir)Stack\StackCore;$(SolutionDir)Stack\Platforms/Win32_untrusted;$(ProjectKaylaDir)/driver/TrEE/inc;$(SolutionDir)Stack\transport\tcp;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -303,7 +303,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>UNTRUSTED_CODE;USE_OPTEE;SIMULATE_TEE;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_OPTEE;SIMULATE_TEE;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(TcpsDir)include\optee\Untrusted;$(TcpsDir)include\optee;$(TcpsDir)include;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -325,7 +325,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>UNTRUSTED_CODE;USE_SGX;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_SGX;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(TcpsDir)include;$(OESdkDir)include;$(ProjectDir)..\..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(SGXSDKInstallPath)\include;../../Stack/Core;../../Stack/StackCore;../../Stack/Platforms/Win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -346,7 +346,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>UNTRUSTED_CODE;USE_OPTEE;SIMULATE_TEE;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_OPTEE;SIMULATE_TEE;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(TcpsDir)include\optee\Untrusted;$(TcpsDir)include\optee;$(TcpsDir)include;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -369,7 +369,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>UNTRUSTED_CODE;USE_OPTEE;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_OPTEE;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(WinARMSDKInstallPath);$(TcpsDir)include;$(OESdkDir)include;$(ProjectDir)..\..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(SolutionDir)Stack\Core;$(SolutionDir)Stack\StackCore;$(SolutionDir)Stack\transport\tcp;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SolutionDir)Stack\Platforms/Win32_untrusted;$(SGXSDKInstallPath)\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -390,7 +390,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>UNTRUSTED_CODE;USE_SGX;USE_VCOM;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_SGX;USE_VCOM;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(TcpsDir)include;$(OESdkDir)include;$(ProjectDir)..\..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(SolutionDir)Stack\Core;$(SolutionDir)Stack\StackCore;$(SolutionDir)Stack\Platforms/Win32_untrusted;$(ProjectKaylaDir)/driver/TrEE/inc;$(SolutionDir)Stack\transport\tcp;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -413,7 +413,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>UNTRUSTED_CODE;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(TcpsDir)include;$(OESdkDir)include;$(ProjectDir)..\..;$(ProjectDir);$(SGXSDKInstallPath)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>

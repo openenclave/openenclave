@@ -259,13 +259,13 @@ GetReport_Result ecall_get_report(
 {
     GetReport_Result result = { 0 };
     result.report_buffer_size = sizeof(result.report_buffer);
-    result.result = oe_get_report(flags,
-                                  NULL,
-                                  0,
-                                  opt_params.buffer,
-                                  opt_params_size,
-                                  result.report_buffer,
-                                  &result.report_buffer_size);
+    result.result = oe_get_report_v1(flags,
+                                     NULL,
+                                     0,
+                                     opt_params.buffer,
+                                     opt_params_size,
+                                     result.report_buffer,
+                                     &result.report_buffer_size);
     return result;
 }
 

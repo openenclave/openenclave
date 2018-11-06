@@ -6,7 +6,7 @@
 #include <sys/stat.h>
 #include <stdint.h>
 #include <errno.h>
-#include "oehost.h"
+#include <openenclave/host.h>
 #include "../oeoverintelsgx_u.h"
 
 stat64i32_Result

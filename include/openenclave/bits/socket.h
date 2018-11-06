@@ -318,7 +318,7 @@ int
 oe_ioctlsocket(
     _In_ oe_socket_t s,
     _In_ long cmd,
-    _Inout_ u_long *argp);
+    _Inout_ unsigned long *argp);
 
 int
 oe_listen(

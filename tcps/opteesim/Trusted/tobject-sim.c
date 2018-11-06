@@ -1,7 +1,7 @@
 /* Copyright (c) Microsoft Corporation.  All Rights Reserved. */
 #include <windows.h>
+#include <assert.h>
 #include <tee_api.h>
-#include <oeenclave.h>
 
 TEE_Result TEE_OpenPersistentObject(
     _In_ uint32_t storageID,
@@ -64,8 +64,8 @@ TEE_Result TEE_CreatePersistentObject(
     _Out_ TEE_ObjectHandle* object)
 {
     /* Support for InitialData is not implemented. */
-    TCPS_ASSERT(initialData == NULL);
-    TCPS_ASSERT(initialDataLen == 0);
+    assert(initialData == NULL);
+    assert(initialDataLen == 0);
 
     *object = (TEE_ObjectHandle)INVALID_HANDLE_VALUE;
 

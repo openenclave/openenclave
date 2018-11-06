@@ -2,9 +2,8 @@
 /* Licensed under the MIT License. */
 #include <stdlib.h>
 #include <time.h>
-#ifdef TRUSTED_CODE
+#include <openenclave/enclave.h>
 #include "tcps_stdio_t.h"
-#endif
 #include <cbor.h>
 
 #include "tcpsTypes.h"

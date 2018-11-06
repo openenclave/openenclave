@@ -1,16 +1,10 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
-#ifdef LINUX
-#include "sal_unsup.h"
-#endif
 #include <stdlib.h>
 #include <string.h>
-#ifdef TRUSTED_CODE
-# include "Trusted/oeoverintelsgx_t.h"
-# include "oeenclave.h"
-#else
-# include "Untrusted/oeoverintelsgx_u.h"
-# include "oehost.h"
+#include <tcps.h>
+#ifndef _In_
+#include "sal_unsup.h"
 #endif
 #include "buffer.h"
 

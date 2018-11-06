@@ -6,10 +6,10 @@
 
 #include "gtest/gtest.h"
 #include <openenclave/host.h>
-#include <openenclave/edger8r/host.h>
 #include "oetests_u.h"
 #include "TrustedAppTest.h"
-#include <openenclave/host.h>
+
+#include <sgx_report.h> // For sgx_report_t.  TODO: remove this dependency.
 
 #ifdef USE_SGX
 const char* TA_ID = "oetests_enclave"; /* DLL will be oetests_enclave.signed.dll */

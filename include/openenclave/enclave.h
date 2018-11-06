@@ -14,11 +14,9 @@
 #error "enclave.h and host.h must not be included in the same compilation unit."
 #endif
 
-#ifdef TRUSTED_CODE
 #include <oeenclave.h>
-#include <stdbool.h>
-#endif
 
+#include <stdbool.h>
 #include "bits/defs.h"
 #include "bits/exception.h"
 #include "bits/properties.h"
@@ -780,7 +778,7 @@ void oe_free_handle(ptrdiff_t handle);
  */
 oe_result_t oe_random(void* data, size_t size);
 
-#ifdef TRUSTED_CODE
+/* Additions to allow working over TrustZone and the Intel SGX SDK. */
 #define _UINTPTR_T_DEFINED_
 #define _UINTPTR_T_DEFINED
 #define _SIZE_T_DEFINED_
@@ -791,7 +789,6 @@ oe_result_t oe_random(void* data, size_t size);
 #include <sgx.h>
 #undef OE_ECALL
 #define OE_ECALL
-#endif /* TRUSTED_CODE */
 
 OE_EXTERNC_END
 

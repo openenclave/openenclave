@@ -10,10 +10,9 @@
 #include <tee_internal_api.h>
 #include <tee_internal_api_extensions.h>
 
-#include <oeenclave.h>
+#include <openenclave/enclave.h>
 #include "TcpsRpcOptee.h"
 #include "../oeoverintelsgx_t.h"
-#include <openenclave/enclave.h>
 #include "oeresult.h"
 
 // g_ocallRpcKey relies on the fact that a second thread calling into

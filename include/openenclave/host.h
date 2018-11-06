@@ -14,9 +14,7 @@
 #error "enclave.h and host.h must not be included in the same compilation unit."
 #endif
 
-#ifdef UNTRUSTED_CODE
 #include <oehost.h>
-#endif
 
 #include <stdarg.h>
 #include <stddef.h>
@@ -394,21 +392,6 @@ oe_result_t oe_get_public_key_by_policy(
 void oe_free_public_key(
     uint8_t* key_buffer,
     uint8_t* key_info);
-
-#ifdef UNTRUSTED_CODE
-#include <sgx.h>
-
-/* OP-TEE only allows one thread per TA to be in an ecall.  Even if it has
- * an ocall in progress, that ecall must complete before another ecall
- * can enter the TA.  SGX, on the other hand, would allow a second ecall
- * to enter.  So to allow them to function identically, apps should wrap
- * ecalls in the following mutex Acquire/Release calls.  In the future,
- * if we have our own code generator instead of sgx_edger8r, these could
- * be automatic instead of requiring manual coding effort to call.
- */
-oe_result_t oe_acquire_enclave_mutex(_In_ oe_enclave_t* enclave);
-void oe_release_enclave_mutex(_In_ oe_enclave_t* enclave);
-#endif
 
 OE_EXTERNC_END
 

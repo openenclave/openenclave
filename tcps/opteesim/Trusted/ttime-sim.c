@@ -1,7 +1,6 @@
 /* Copyright (c) Microsoft Corporation.  All Rights Reserved. */
 #include <windows.h>
 #include <tee_api.h>
-#include <oeenclave.h>
 
 void TEE_GetREETime(_Out_ TEE_Time* time)
 {

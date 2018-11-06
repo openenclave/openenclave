@@ -15,7 +15,7 @@ OE_EDL_PATH = $(OE_PATH)/include/openenclave
 # Path to where the OP-TEE Client API resides.
 OPTEE_CLIENT = ../../../../3rdparty/optee_client
 
-DEFINES = -DUNTRUSTED_CODE -DUSE_OPTEE -D_DEBUG
+DEFINES = -DUSE_OPTEE -D_DEBUG
 INCLUDES =                         \
     -I../../../Inc/optee/Untrusted \
     -I../../../Inc/                \

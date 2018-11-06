@@ -1,8 +1,8 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
 #pragma once
-#ifndef TRUSTED_CODE
-# error oeenclave.h should only be included with TRUSTED_CODE
+#ifndef _OE_ENCLAVE_H
+# error include <openenclave/enclave.h> instead of including oeenclave.h directly
 #endif
 
 #ifndef SIMULATE_TEE
@@ -45,8 +45,9 @@ typedef void* HANDLE;
 
 #if !defined(DWORD) && !defined(_TCHAR_DEFINED)
 typedef char TCHAR;
+#define _TCHAR_DEFINED
 typedef int BOOL;
-typedef uint32_t DWORD;
+typedef unsigned long DWORD;
 typedef unsigned long u_long;
 #endif
 
@@ -76,7 +77,7 @@ int _stat(
     _In_z_ const char *path,
     _Out_ struct _stat *buffer);
 
-#ifndef _SYSINFOAPI_H_
+#if !defined(_SYSINFOAPI_H_)
 __uint32_t GetTickCount(void);
 
 __uint32_t GetCurrentThreadId(void);

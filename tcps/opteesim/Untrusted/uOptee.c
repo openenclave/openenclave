@@ -2,12 +2,12 @@
 /* Licensed under the MIT License. */
 #include <windows.h>
 #include <stdint.h>
+#include <openenclave/host.h>
 #include <OpteeCalls.h>
 #include <stdio.h>
 #include <assert.h>
 #include <TrEEGenService.h>
 #include "tee_api.h"
-#include "oehost.h"
 
 #define ARRAY_SIZE(x)  (sizeof(x) / sizeof(*(x)))
 #define TA_PREFIX L"\\\\.\\WindowsTrustedRT\\"

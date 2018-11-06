@@ -3,7 +3,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <stdio.h>
-#include <oehost.h>
+#include <openenclave/host.h>
 #include "../socket_u.h"
 #include "../../buffer.h"
 

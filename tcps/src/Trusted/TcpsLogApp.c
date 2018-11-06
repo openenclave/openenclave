@@ -1,10 +1,9 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
 #include <stdio.h>
-#ifdef TRUSTED_CODE
-# include "tcps_stdio_t.h"
-# include "tcps_time_t.h"
-#endif
+#include <openenclave/enclave.h>
+#include "tcps_stdio_t.h"
+#include "tcps_time_t.h"
 #include <string.h>
 #include <cbor.h>
 #include "cborhelper.h"
@@ -402,7 +401,7 @@ TcpsLogAppEventId(
     const int a_Id)
 {
     Tcps_StatusCode status = Tcps_BadNotImplemented;
-#ifdef TRUSTED_CODE
+#ifdef _OE_ENCLAVE_H
     if (g_TcpsLogPlatHandle)
 #ifdef USE_SGX
         status = TcpsLogEventSgxId(g_TcpsLogPlatHandle, a_Id, a_Id < 0);
@@ -427,7 +426,7 @@ TcpsLogAppEvent(
     const size_t a_BufferSize)
 {
     Tcps_StatusCode status = Tcps_BadNotImplemented;
-#ifdef TRUSTED_CODE
+#ifdef _OE_ENCLAVE_H
     if (g_TcpsLogPlatHandle)
 #ifdef USE_SGX
         status = TcpsLogEventSgx(g_TcpsLogPlatHandle, a_Buffer, a_BufferSize, false);

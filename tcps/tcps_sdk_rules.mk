@@ -4,7 +4,7 @@ ifeq ($(TA_DEV_KIT_DIR),)
 export TA_DEV_KIT_DIR            = $(OE_SDK_ROOT_PATH)/3rdparty/optee_os/out/arm-plat-imx/export-ta_arm32
 endif
 export TCPS_SDK_OPTEE_BIN_PATH   = $(TCPS_SDK_ROOT_PATH)/bin/optee
-export TCPS_TRUSTED_LIB_NAME     = tcps_t
+export TCPS_TRUSTED_LIB_NAME     = oeenclave
 export TCPS_TRUSTED_OUTPUT_PATH  = $(TCPS_SDK_OPTEE_BIN_PATH)/tcps
 export TCPS_TRUSTED_LIB_PATH     = $(TCPS_TRUSTED_OUTPUT_PATH)/lib$(TCPS_TRUSTED_LIB_NAME).a
 export CYREP_CYREP_PATH          = $(OE_SDK_ROOT_PATH)/3rdparty/RIoT/CyReP/cyrep

@@ -6,14 +6,7 @@
 
 #include "defs.h"
 
-#if defined(TRUSTED_CODE) || defined(UNTRUSTED_CODE)
-#pragma once
-#ifdef TRUSTED_CODE
-#include <oeenclave.h>
-#endif
-#ifdef UNTRUSTED_CODE
-#include <oehost.h>
-#endif
+#if 1
 
 typedef void (*oe_call_t)(
     void* inBuffer,
@@ -95,8 +88,7 @@ typedef long long ptrdiff_t;
 #define OE_UINT64_MAX (0xffffffffffffffffu)
 #define OE_SIZE_MAX OE_UINT64_MAX
 
-#endif /* !TRUSTED_CODE && !UNTRUSTED_CODE */
-
+#endif
 
 /**
  * This enumeration defines values for the **enclave_type** parameter

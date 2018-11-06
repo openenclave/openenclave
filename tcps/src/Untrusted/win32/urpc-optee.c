@@ -3,7 +3,7 @@
 #include <windows.h>
 #include <stdint.h>
 #include <OpteeCalls.h>
-#include <tcps.h>
+#include <openenclave/host.h>
 #include "../optee-shared.h"
 
 optee_ocall_table_t* g_OpteeOcallTable = NULL;

@@ -5,7 +5,7 @@
 
 #include <string.h>
 
-#include "oeenclave.h"
+#include <openenclave/enclave.h>
 
 #include <errno.h>
 

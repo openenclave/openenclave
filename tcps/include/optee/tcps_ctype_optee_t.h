@@ -1,13 +1,12 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
 #pragma once
-#ifndef TRUSTED_CODE
-# error tcps_ctype_optee_t.h should only be included with TRUSTED_CODE
+#ifndef _OE_ENCLAVE_H
+# include <openenclave/enclave.h>
 #endif
 #ifndef USE_OPTEE
 # error tcps_ctype_optee_t.h should only be included with USE_OPTEE
 #endif
-#include "oeenclave.h"
 
 int tolower(int c);
 int toupper(int const c);

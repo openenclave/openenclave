@@ -6,11 +6,7 @@
 
 #include <stddef.h>
 
-#ifdef TRUSTED_CODE
-# include <openenclave/enclave.h>
-#else
-# include <openenclave/host.h>
-#endif
+#include <openenclave/bits/result.h>
 #include <sgx.h>
 
 oe_result_t GetOEResultFromSgxStatus(sgx_status_t status)

@@ -91,13 +91,16 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">enclave.h File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &quot;bits/defs.h&quot;</code><br />
+<div class="textblock"><code>#include &lt;oeenclave.h&gt;</code><br />
+<code>#include &lt;stdbool.h&gt;</code><br />
+<code>#include &quot;bits/defs.h&quot;</code><br />
 <code>#include &quot;bits/exception.h&quot;</code><br />
 <code>#include &quot;bits/properties.h&quot;</code><br />
 <code>#include &quot;bits/report.h&quot;</code><br />
 <code>#include &quot;bits/result.h&quot;</code><br />
 <code>#include &quot;bits/socket.h&quot;</code><br />
 <code>#include &quot;bits/types.h&quot;</code><br />
+<code>#include &lt;sgx.h&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for enclave.h:</div>
 <div class="dyncontent">
@@ -124,6 +127,30 @@ Macros</h2></td></tr>
 <tr class="memitem:a3b3aaa1073a97d264e34f9ab31639dba"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3b3aaa1073a97d264e34f9ab31639dba"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>oe_get_seal_key</b>&#160;&#160;&#160;oe_get_seal_key_v1</td></tr>
 <tr class="separator:a3b3aaa1073a97d264e34f9ab31639dba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a28ff9df0bdfc8730d774ee325c7ebc96"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a28ff9df0bdfc8730d774ee325c7ebc96"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>_UINTPTR_T_DEFINED_</b></td></tr>
+<tr class="separator:a28ff9df0bdfc8730d774ee325c7ebc96"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a106239fcf6108905a1beb6837f7343c8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a106239fcf6108905a1beb6837f7343c8"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>_UINTPTR_T_DEFINED</b></td></tr>
+<tr class="separator:a106239fcf6108905a1beb6837f7343c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afe4fa9f8c4b45b2490a7f02ca464a338"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afe4fa9f8c4b45b2490a7f02ca464a338"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>_SIZE_T_DEFINED_</b></td></tr>
+<tr class="separator:afe4fa9f8c4b45b2490a7f02ca464a338"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af8a396943fba96ccd06ef88ee8f790ba"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af8a396943fba96ccd06ef88ee8f790ba"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>_SIZE_T_DEFINED</b></td></tr>
+<tr class="separator:af8a396943fba96ccd06ef88ee8f790ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a40ce3b3db9f80808c94f4e39ff895c46"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a40ce3b3db9f80808c94f4e39ff895c46"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>_PTRDIFF_T_DEFINED_</b></td></tr>
+<tr class="separator:a40ce3b3db9f80808c94f4e39ff895c46"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a54bd20b818e5c78e53e6e56acf5fe946"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a54bd20b818e5c78e53e6e56acf5fe946"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>_PTRDIFF_T_DEFINED</b></td></tr>
+<tr class="separator:a54bd20b818e5c78e53e6e56acf5fe946"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2513cf6587b8de5c7d62e53537fd28b0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2513cf6587b8de5c7d62e53537fd28b0"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>_SSIZE_T_DEFINED_</b></td></tr>
+<tr class="separator:a2513cf6587b8de5c7d62e53537fd28b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a17442f9c583fe8a12b684c9e4146b9e5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a17442f9c583fe8a12b684c9e4146b9e5"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>OE_ECALL</b></td></tr>
+<tr class="separator:a17442f9c583fe8a12b684c9e4146b9e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>

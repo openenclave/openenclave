@@ -10,8 +10,7 @@
 #include <sys/stat.h> 
 #include <assert.h>
 
-#include <tcps.h>
-
+#include <openenclave/host.h>
 #include "../oeoverintelsgx_u.h"
 
 Tcps_StatusCode

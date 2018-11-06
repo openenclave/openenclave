@@ -8,9 +8,7 @@
 #endif
 #include <stddef.h>
 #include <stdbool.h>
-#include <openenclave/bits/types.h>
-#include <openenclave/bits/result.h>
-#include <oehost.h>
+#include <openenclave/host.h>
 #include "oeoverintelsgx_u.h"
 #include "../oeresult.h"
 #include "../optee-shared.h"

@@ -8,7 +8,7 @@
 
 #include <tcps.h>
 
-#include <oeenclave.h>
+#include <openenclave/enclave.h>
 #include <sgx_utils.h>
 
 #include "cyres-optee.h"

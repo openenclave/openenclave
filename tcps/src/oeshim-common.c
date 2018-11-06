@@ -1,19 +1,16 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
-#ifdef LINUX
-#include "sal_unsup.h"
-#endif
-
 #include <stdlib.h>
 #include <stddef.h>
 
-#ifdef TRUSTED_CODE
-# include <openenclave/enclave.h>
-#else
-# include <openenclave/host.h>
-#endif
 #include <string.h>
 #include <sgx_utils.h>
+#include <openenclave/bits/result.h>
+#include <openenclave/bits/report.h>
+#include <tcps.h>
+#ifndef _In_
+#include "sal_unsup.h"
+#endif
 
 static void fill_sgx_target_info(
     _In_ const sgx_report_t* sgx_report,

@@ -51,24 +51,24 @@ for both SGX and TrustZone.
 
 ### SGX Enclave DLL
 
-The SGX Enclave DLL should define **TRUSTED\_CODE** and **USE\_SGX** as
-preprocessor symbols, link with **oeenclave.lib** and have the following
+The SGX Enclave DLL should define **USE\_SGX** as a
+preprocessor symbol, link with **oeenclave.lib** and have the following
 additional include path:
 
 * $(OESdkDir)tcps/include
 
 ### SGX Rich Application
 
-The EXE should define **UNTRUSTED\_CODE** and **USE\_SGX** as preprocessor
-symbols, link with **oehost.lib** and have the following additional
+The EXE should define **USE\_SGX** as a preprocessor
+symbol, link with **oehost.lib** and have the following additional
 include path:
 
 * $(OESdkDir)tcps/include
 
 ### OP-TEE TA
 
-The OP-TEE TA should define **TRUSTED\_CODE** and **USE\_OPTEE** as
-preprocessor symbols, link with **oeenclave.lib** and have the following
+The OP-TEE TA should define **USE\_OPTEE** as a
+preprocessor symbol, link with **oeenclave.lib** and have the following
 additional include paths, in this order (the order is important because
 files in a deeper directory override files at higher levels with the
 same filename):
@@ -79,8 +79,8 @@ same filename):
 
 ### OP-TEE Rich Application
 
-The EXE should define **UNTRUSTED\_CODE** and **USE\_OPTEE** as
-preprocessor symbols, link with **oehost.lib** and have the following
+The EXE should define **USE\_OPTEE** as a
+preprocessor symbol, link with **oehost.lib** and have the following
 additional include paths, in any order:
 
 * $(OESdkDir)tcps\include
@@ -154,8 +154,7 @@ and repeat step 3 here to update the command line to use oeedger8r.
 8. In your enclave project, add implementations of the ECALL(s) you added.
 You will need to #include <openenclave/enclave.h> and <_YourEDLFileName_\_t.h> for your ECALLs.
 9. In the "Configuration Properties"->"C/C++"->"Preprocessor", add
-**TRUSTED\_CODE;USE\_SGX** to your enclave project, and
-**UNTRUSTED\_CODE;USE\_SGX** to your application project, for
+**USE\_SGX** to your enclave project and your application project, for
 All Configurations and All Platforms
 10. In your application project properties, under "Linker"->"Input", add
 oehost.lib;ws2\_32.lib;shell32.lib to the Additional Dependencies

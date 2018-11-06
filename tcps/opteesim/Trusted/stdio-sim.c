@@ -1,6 +1,8 @@
 /* Copyright (c) Microsoft Corporation.  All Rights Reserved. */
 #include <stdarg.h>
 
+int vprintf(const char *format, va_list vargs);
+
 int printf(
     const char *format,
     ...)
