@@ -72,8 +72,8 @@ send_Result ocall_send(void* a_hSocket, void* a_hReeMessage, int a_Flags)
     SOCKET s = (SOCKET)a_hSocket;
     char* ptr = NULL;
     int size = 0;
-    Tcps_StatusCode uStatus = GetBuffer(a_hReeMessage, &ptr, &size);
-    if (Tcps_IsBad(uStatus)) {
+    oe_result_t uStatus = GetBuffer(a_hReeMessage, &ptr, &size);
+    if (uStatus != OE_OK) {
         result.error = WSAEFAULT;
         return result;
     }
@@ -95,7 +95,7 @@ recv_Result ocall_recv(void* a_hSocket, int a_nBufferSize, int a_Flags)
     }
     char* ptr = NULL;
     int size = 0;
-    Tcps_StatusCode uStatus = GetBuffer(hBuffer, &ptr, &size);
+    oe_result_t uStatus = GetBuffer(hBuffer, &ptr, &size);
     /* TODO: handle uStatus failure */
     result.bytesReceived = recv(s, ptr, size, a_Flags);
     if (result.bytesReceived == SOCKET_ERROR) {
@@ -146,7 +146,7 @@ getaddrinfo_Result ocall_getaddrinfo(
     /* Serialize ailist. */
     addrinfo_Buffer* aibuffer = NULL;
     int size = 0;
-    Tcps_StatusCode uStatus = GetBuffer(hBuffer, (char**)&aibuffer, &size);
+    oe_result_t uStatus = GetBuffer(hBuffer, (char**)&aibuffer, &size);
     /* TODO: handle uStatus failure */
     int i;
     for (i = 0, ai = ailist; ai != NULL; ai = ai->ai_next, i++) {

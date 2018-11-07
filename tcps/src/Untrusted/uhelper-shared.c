@@ -16,7 +16,7 @@ extern int g_serialize_ecalls;
 
 /* I/O related APIs */
 
-Tcps_StatusCode ocall_puts(oe_buffer1024 str, int bNewline)
+oe_result_t ocall_puts(oe_buffer1024 str, int bNewline)
 {
     uint32_t error;
 
@@ -27,14 +27,14 @@ Tcps_StatusCode ocall_puts(oe_buffer1024 str, int bNewline)
     }
 
     if (error) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
-    return Tcps_Good;
+    return OE_OK;
 }
 
 /* Send a buffer into the TEE, one chunk at a time if needed. */
-Tcps_StatusCode
+oe_result_t
 TcpsPushDataToTeeBuffer(
     _In_ sgx_enclave_id_t eid,
     _In_reads_(a_BufferSize) uint8_t* a_Buffer,
@@ -65,7 +65,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_u, "TcpsPushDataToTeeBuffer");
                 oe_release_enclave_mutex((oe_enclave_t*)eid);
             }
 
-            Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, Tcps_Bad);
+            Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, OE_FAILURE);
             uStatus = result.uStatus;
             hTeeBuffer = result.hBuffer;
         } else {
@@ -77,7 +77,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_u, "TcpsPushDataToTeeBuffer");
                 oe_release_enclave_mutex((oe_enclave_t*)eid);
             }
 
-            Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, Tcps_Bad);
+            Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, OE_FAILURE);
         }
         Tcps_GotoErrorIfBad(uStatus);
 
@@ -113,7 +113,7 @@ void* TcpsCreateReeBuffer(_In_ int a_BufferSize)
     }
 }
 
-Tcps_StatusCode TcpsGetReeBuffer(
+oe_result_t TcpsGetReeBuffer(
     _In_ void* a_hReeBuffer,
     _Outptr_ char** a_pBuffer,
     _Out_ int* a_BufferSize)
@@ -130,12 +130,12 @@ CreateBuffer_Result ocall_CreateReeBuffer(oe_BufferChunk chunk)
 {
     CreateBuffer_Result result = {0};
     if (chunk.size > sizeof(chunk.buffer)) {
-        result.uStatus = Tcps_BadInvalidArgument;
+        result.uStatus = OE_INVALID_PARAMETER;
         return result;
     }
     InternalBuffer_t* buffer = CreateInternalBuffer(chunk.size);
     if (buffer == NULL) {
-        result.uStatus = Tcps_BadOutOfMemory;
+        result.uStatus = OE_OUT_OF_MEMORY;
     } else {
         memcpy(buffer->ptr, chunk.buffer, buffer->size);
         result.hBuffer = buffer->handle;
@@ -143,7 +143,7 @@ CreateBuffer_Result ocall_CreateReeBuffer(oe_BufferChunk chunk)
     return result;
 }
 
-Tcps_StatusCode ocall_AppendToReeBuffer(void* a_hReeBuffer, oe_BufferChunk a_Chunk)
+oe_result_t ocall_AppendToReeBuffer(void* a_hReeBuffer, oe_BufferChunk a_Chunk)
 {
     return AppendToBuffer(a_hReeBuffer, &a_Chunk);
 }
@@ -158,13 +158,13 @@ GetChunk_Result ocall_GetReeBufferChunk(void* a_hReeBuffer, int a_Offset)
     GetChunk_Result result = {0};
     InternalBuffer_t* buffer = FindInternalBufferByHandle(a_hReeBuffer);
     if (buffer == NULL) {
-        result.uStatus = Tcps_Bad;
+        result.uStatus = OE_FAILURE;
         return result;
     }
 
     int bytesLeft = buffer->size - a_Offset;
     if (bytesLeft < 1) {
-        result.uStatus = Tcps_BadInvalidArgument;
+        result.uStatus = OE_INVALID_PARAMETER;
         return result;
     }
 

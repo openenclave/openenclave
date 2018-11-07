@@ -43,7 +43,7 @@ typedef struct {
     PTCPS_LOG_TIME TimeFunc;
 } TCPS_LOG_SGX_CONFIGURATION;
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogEventSgxPeerId(
     void* Handle,
     const TCPS_LOG_ID EventId,
@@ -51,7 +51,7 @@ TcpsLogEventSgxPeerId(
     const bool Flush
 );
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogEventSgx(
     void* Handle,
     const uint8_t* const Buffer,
@@ -59,14 +59,14 @@ TcpsLogEventSgx(
     const bool Flush
 );
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogEventSgxId(
     void* Handle,
     const TCPS_LOG_ID EventId,
     const bool Flush
 );
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogEventExistingSgx(
     void* Handle,
     const uint8_t* const Buffer,
@@ -74,7 +74,7 @@ TcpsLogEventExistingSgx(
     TCPS_LOG_VALIDATION_STATE* const ValidationState
 );
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogInitSgx(
     const TCPS_SHA256_DIGEST Seed,
     struct _TCPS_TA_ID_INFO* const IDData,
@@ -89,7 +89,7 @@ TcpsLogCloseSgx(
 );
 
 #ifdef ENABLE_REMOTE_LOGGING
-Tcps_StatusCode
+oe_result_t
 TcpsGetPeerIdentityLabel(
     TCPS_TLS_HANDLE TlsHandle,
     TCPS_IDENTITY_LOG IdentityLabel

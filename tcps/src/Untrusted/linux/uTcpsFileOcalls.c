@@ -18,7 +18,7 @@ ocall_stat64i32(
 
     struct stat buf;
     if (stat(path.buffer, &buf) != 0) {
-        result.status = Tcps_Bad;
+        result.status = OE_FAILURE;
         return result;
     }
 
@@ -34,6 +34,6 @@ ocall_stat64i32(
     result.buffer._st_mtime = buf.st_mtime;
     result.buffer._st_ctime = buf.st_ctime;
 
-    result.status = Tcps_Good;
+    result.status = OE_OK;
     return result;
 }

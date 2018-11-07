@@ -5,7 +5,7 @@
 # include <openenclave/enclave.h>
 #endif
 
-Tcps_StatusCode
+oe_result_t
 TcpsCreateThread(
     _Out_ HANDLE* threadHandle,
     _In_ int contextId);

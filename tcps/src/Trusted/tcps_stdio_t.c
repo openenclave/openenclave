@@ -87,12 +87,12 @@ BOOL FindClose(HANDLE hFindFile)
     return result;
 }
 
-Tcps_StatusCode GetTrustedFileInBuffer(const char* trustedFilePath, char** pBuffer, size_t* pLen)
+oe_result_t GetTrustedFileInBuffer(const char* trustedFilePath, char** pBuffer, size_t* pLen)
 {
     int sizeRead;
     char* ptr;
     int64_t fileSize;
-    Tcps_StatusCode tcpsStatus;
+    oe_result_t tcpsStatus;
     FILE* fp = NULL;
 
     *pBuffer = NULL;
@@ -100,18 +100,18 @@ Tcps_StatusCode GetTrustedFileInBuffer(const char* trustedFilePath, char** pBuff
 
     // Get the file size.
     tcpsStatus = GetTrustedFileSize(trustedFilePath, &fileSize);
-    if (Tcps_IsBad(tcpsStatus)) {
+    if (tcpsStatus != OE_OK) {
         return tcpsStatus;
     }
     if (fileSize <= 0) {
         EMSG("Trusted file %s is empty", trustedFilePath);
-        return Tcps_BadDataLost;
+        return OE_FAILURE;
     }
 
     // Allocate the output buffer.
     ptr = oe_malloc((size_t)fileSize);
     if (ptr == NULL) {
-        return Tcps_BadOutOfMemory;
+        return OE_OUT_OF_MEMORY;
     }
 
     // Read file into the buffer.
@@ -120,7 +120,7 @@ Tcps_StatusCode GetTrustedFileInBuffer(const char* trustedFilePath, char** pBuff
         extern errno_t errno;
         EMSG("fopen failed, errno = %u", errno);
         FreeTrustedFileBuffer(ptr);
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
     sizeRead = fread(ptr, 1, (size_t)fileSize, fp);
     fclose(fp);
@@ -128,12 +128,12 @@ Tcps_StatusCode GetTrustedFileInBuffer(const char* trustedFilePath, char** pBuff
         // Truncated.
         EMSG("fileSize = %llu, sizeRead = %d", fileSize, sizeRead);
         FreeTrustedFileBuffer(ptr);
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     *pBuffer = ptr;
     *pLen = (size_t)fileSize; 
-    return Tcps_Good;
+    return OE_OK;
 }
 
 void FreeTrustedFileBuffer(char* buffer)
@@ -205,10 +205,10 @@ int ExportFile(const char* trustedLocation, const char* untrustedLocation)
     char* ptr;
     size_t len;
     int err;
-    Tcps_StatusCode uStatus;
+    oe_result_t uStatus;
 
     uStatus = GetTrustedFileInBuffer(trustedLocation, &ptr, &len);
-    if (Tcps_IsBad(uStatus)) {
+    if (uStatus != OE_OK) {
         return uStatus;
     }
 
@@ -220,7 +220,7 @@ int ExportFile(const char* trustedLocation, const char* untrustedLocation)
     return err;
 }
 
-Tcps_StatusCode
+oe_result_t
 SaveBufferToFile(
     _In_z_ const char* destinationLocation, 
     _In_reads_bytes_(len) const void* ptr, 
@@ -291,7 +291,7 @@ Tcps_FinishErrorHandling;
 /* OpteeCalls from project-kayla supports less than 4k RPC input size */
 #define MAXIMUM_OPTEE_CALLS_RPC_INPUT_SIZE      ((4 * 1024) - 512)
 
-Tcps_StatusCode TEE_P_ExportFile(
+oe_result_t TEE_P_ExportFile(
     _In_z_ const char* untrustedLocation,
     _In_reads_bytes_(len) const char* ptr,
     _In_ size_t len)
@@ -336,7 +336,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "TEE_P_ExportFile");
 
         uStatus = retval;
 
-        Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, Tcps_Bad);
+        Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, OE_FAILURE);
         Tcps_GotoErrorIfBad(uStatus);
 
         len -= currentWriteSize;
@@ -352,7 +352,7 @@ Tcps_FinishErrorHandling;
 /*===========================================================================================*/
 /** @brief Imports a file into a secure location.                                            */
 /*===========================================================================================*/
-Tcps_StatusCode 
+oe_result_t 
 TEE_P_ImportFile(
     const char* destinationLocation, 
     const char* sourceLocation, 
@@ -372,10 +372,10 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "TEE_P_ImportFile");
     sgxStatus = ocall_GetUntrustedFileSize(&sizeResult, sourceLocationBuffer);
     uStatus = sizeResult.status;
     DMSG("TEE_P_ImportFile: ocall_GetUntrustedFileSize returned sgxStatus = %#x, uStatus = %#x\n", sgxStatus, uStatus);
-    Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, Tcps_Bad);
+    Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, OE_FAILURE);
     Tcps_GotoErrorIfBad(uStatus);
-    Tcps_GotoErrorIfTrue(sizeResult.fileSize <= 0, Tcps_Bad);
-    Tcps_GotoErrorIfTrue(sizeResult.fileSize > sizeof(contentResult.content), Tcps_BadRequestTooLarge);
+    Tcps_GotoErrorIfTrue(sizeResult.fileSize <= 0, OE_FAILURE);
+    Tcps_GotoErrorIfTrue(sizeResult.fileSize > sizeof(contentResult.content), OE_FAILURE);
 
     sgxStatus = ocall_GetUntrustedFileContent(
         &contentResult,
@@ -383,7 +383,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "TEE_P_ImportFile");
         sizeResult.fileSize);
     uStatus = contentResult.status;
     DMSG("TEE_P_ImportFile: ocall_GetUntrustedFileContent returned sgxStatus = %#x, uStatus = %#x\n", sgxStatus, uStatus);
-    Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, Tcps_Bad);
+    Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, OE_FAILURE);
     Tcps_GotoErrorIfBad(uStatus);
 
     uStatus = SaveBufferToFile(destinationLocation, contentResult.content, sizeResult.fileSize, addToManifest);
@@ -409,7 +409,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "_mkdir");
     COPY_BUFFER_FROM_STRING(dirnameBuffer, dirname);
     
     sgxStatus = ocall_mkdir(&crtError, dirnameBuffer);
-    Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, Tcps_Bad);
+    Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, OE_FAILURE);
 
     return crtError;
 

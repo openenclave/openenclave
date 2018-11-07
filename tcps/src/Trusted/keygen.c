@@ -12,10 +12,10 @@ int ExportPublicCertificate(const char* sourceLocation, const char* destinationP
     char* ptr;
     size_t len;
     int err;
-    Tcps_StatusCode uStatus;
+    oe_result_t uStatus;
 
     uStatus = GetTrustedFileInBuffer(sourceLocation, &ptr, &len);
-    if (Tcps_IsBad(uStatus)) {
+    if (uStatus != OE_OK) {
         return uStatus;
     }
 
@@ -28,20 +28,20 @@ int ExportPublicCertificate(const char* sourceLocation, const char* destinationP
 }
 
 /* Returns 0 on success, non-zero on error */
-Tcps_StatusCode Provision_Certificate(const char* destinationLocation, const char* sourceLocation)
+oe_result_t Provision_Certificate(const char* destinationLocation, const char* sourceLocation)
 {
     /* Import the file and add it to the manifest. */
     return TEE_P_ImportFile(destinationLocation, sourceLocation, TRUE);
 }
 
-Tcps_StatusCode
+oe_result_t
 TEE_P_ExportPublicCertificate(
     _In_z_ const char* certificateFileNameExported,
     _Out_writes_(len) char* ptr,
     _In_ size_t len)
 {
     sgx_status_t sgxStatus;
-    Tcps_StatusCode retval;
+    oe_result_t retval;
     oe_buffer256 certificateFileNameExportedBuffer;
     oe_buffer4096* contents = NULL;
 
@@ -51,7 +51,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "TEE_P_ExportPublicCertificate");
 
     COPY_BUFFER_FROM_STRING(certificateFileNameExportedBuffer, certificateFileNameExported);
 
-    Tcps_GotoErrorIfTrue(len > sizeof(*contents), Tcps_BadRequestTooLarge);
+    Tcps_GotoErrorIfTrue(len > sizeof(*contents), OE_FAILURE);
 
     contents = (oe_buffer4096*)oe_malloc(sizeof(*contents));
     Tcps_GotoErrorIfAllocFailed(contents);
@@ -68,7 +68,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "TEE_P_ExportPublicCertificate");
 
     uStatus = retval;
 
-    Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, Tcps_Bad);
+    Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, OE_FAILURE);
     Tcps_GotoErrorIfBad(uStatus);
 
 Tcps_ReturnStatusCode;

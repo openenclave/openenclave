@@ -56,7 +56,7 @@ TcpsLogFilenameFormatOcall(
     return path;
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogFileWriteOcall(
     TCPS_LOG_OCALL_OBJECT* Context,
     const uint8_t* const Buffer,
@@ -77,7 +77,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "TcpsLogFileWriteOcall");
     unsigned int result = 1;
     const char* filename = TcpsLogFilenameFormatOcall(
         Context->LogPathPrefix, FileType, LogIdentityLabel);
-    Tcps_ReturnErrorIfTrue(filename == NULL, Tcps_Bad);
+    Tcps_ReturnErrorIfTrue(filename == NULL, OE_FAILURE);
 
     COPY_BUFFER_FROM_STRING(filenameBuffer, filename);
 
@@ -90,15 +90,15 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "TcpsLogFileWriteOcall");
 
     oe_free(content);
 
-    Tcps_GotoErrorIfTrue(sgxResult != SGX_SUCCESS, Tcps_Bad);
-    Tcps_GotoErrorIfTrue(result != 0, Tcps_Bad);
+    Tcps_GotoErrorIfTrue(sgxResult != SGX_SUCCESS, OE_FAILURE);
+    Tcps_GotoErrorIfTrue(result != 0, OE_FAILURE);
 
 Tcps_ReturnStatusCode;
 Tcps_BeginErrorHandling;
 Tcps_FinishErrorHandling;
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogFileWriteEntryOcall(
     TCPS_LOG_OCALL_OBJECT* Context,
     const uint8_t* const Buffer,
@@ -109,7 +109,7 @@ TcpsLogFileWriteEntryOcall(
         Buffer == NULL ||
         LogIdentityLabel == NULL)
     {
-        return Tcps_BadInvalidArgument;
+        return OE_INVALID_PARAMETER;
     }
 
     return TcpsLogFileWriteOcall(
@@ -121,7 +121,7 @@ TcpsLogFileWriteEntryOcall(
         LogIdentityLabel);
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogFileReadOcall(
     TCPS_LOG_OCALL_OBJECT* Context,
     uint8_t** const Buffer,
@@ -136,13 +136,13 @@ TcpsLogFileReadOcall(
         Context == NULL ||
         LogIdentityLabel == NULL)
     {
-        return Tcps_BadInvalidArgument;
+        return OE_INVALID_PARAMETER;
     }
 
     *Buffer = NULL;
     *BufferSize = 0;
 
-    Tcps_StatusCode uStatus = Tcps_Good;
+    oe_result_t uStatus = OE_OK;
     GetUntrustedFileSize_Result sizeResult;
     GetUntrustedFileContent_Result contentResult;
 
@@ -152,14 +152,14 @@ TcpsLogFileReadOcall(
         LogIdentityLabel);
     if (!filename)
     {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     COPY_BUFFER_FROM_STRING(filenameBuffer, filename);
 
     sgx_status_t sgxstatus = ocall_GetUntrustedFileSize(&sizeResult, filenameBuffer);
 
-    Tcps_GotoErrorIfTrue(sgxstatus != SGX_SUCCESS, Tcps_Bad);
+    Tcps_GotoErrorIfTrue(sgxstatus != SGX_SUCCESS, OE_FAILURE);
 
     if (sizeResult.status)
     {
@@ -169,14 +169,14 @@ TcpsLogFileReadOcall(
 
     if (sizeResult.fileSize != 0)
     {
-        Tcps_GotoErrorIfTrue(sizeResult.fileSize > sizeof(contentResult.content), Tcps_BadRequestTooLarge);
+        Tcps_GotoErrorIfTrue(sizeResult.fileSize > sizeof(contentResult.content), OE_FAILURE);
 
         sgxstatus = ocall_GetUntrustedFileContent(
             &contentResult,
             filenameBuffer,
             sizeResult.fileSize);
 
-        Tcps_GotoErrorIfTrue(sgxstatus != SGX_SUCCESS || contentResult.status, Tcps_Bad);
+        Tcps_GotoErrorIfTrue(sgxstatus != SGX_SUCCESS || contentResult.status, OE_FAILURE);
 
         *Buffer = oe_malloc(sizeof(sizeResult.fileSize));
         Tcps_GotoErrorIfAllocFailed(*Buffer);
@@ -185,7 +185,7 @@ TcpsLogFileReadOcall(
     *BufferSize = sizeResult.fileSize;
 
 Error:
-    if (uStatus != Tcps_Good)
+    if (uStatus != OE_OK)
     {
         if (*Buffer != NULL)
         {
@@ -196,17 +196,17 @@ Error:
     return uStatus;
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogFileClearOcall(
     TCPS_LOG_OCALL_OBJECT* Context,
     const TCPS_IDENTITY_LOG LogIdentityLabel)
 {
-    Tcps_StatusCode status = Tcps_Good;
+    oe_result_t status = OE_OK;
     int retVal = 1;
 
     if (Context == NULL)
     {
-        return Tcps_BadInvalidArgument;
+        return OE_INVALID_PARAMETER;
     }
 
     const char* filename = TcpsLogFilenameFormatOcall(
@@ -215,7 +215,7 @@ TcpsLogFileClearOcall(
         LogIdentityLabel);
     if (!filename)
     {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
     oe_buffer256 filenameBuffer;
     COPY_BUFFER_FROM_STRING(filenameBuffer, filename);
@@ -229,7 +229,7 @@ TcpsLogFileClearOcall(
 
     if (sgxstatus != SGX_SUCCESS || retVal)
     {
-        status = Tcps_Bad;
+        status = OE_FAILURE;
         goto Exit;
     }
 

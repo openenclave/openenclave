@@ -18,9 +18,9 @@ QueryPerformanceCounter_Result ocall_QueryPerformanceCounter(void)
 
     result.count = ocall_GetTickCount();
     if (result.count)
-        result.status = Tcps_Good;
+        result.status = OE_OK;
     else
-        result.status = Tcps_Bad;
+        result.status = OE_FAILURE;
 
     return result;
 }
@@ -62,10 +62,10 @@ GetTm_Result ocall_gmtime64(uint64_t timer)
 
 /* Process/thread-related APIs */
 
-Tcps_StatusCode ocall_exit(int result)
+oe_result_t ocall_exit(int result)
 {
     exit(result);
-    return Tcps_Good;
+    return OE_OK;
 }
 
 oe_result_t oe_acquire_enclave_mutex(_In_ oe_enclave_t *enclave)

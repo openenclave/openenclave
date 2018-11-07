@@ -4,6 +4,7 @@ enclave {
     from "TcpsFile.edl" import *;
 
     include "tcps.h"
+    include "openenclave/bits/result.h"
     include "openenclave/bits/oebuffer.h"
 
     struct ocall_tm {
@@ -44,12 +45,12 @@ enclave {
     };
 
     struct CreateBuffer_Result {
-        Tcps_StatusCode uStatus;
+        oe_result_t uStatus;
         void* hBuffer;
     };
 
     struct GetChunk_Result {
-        Tcps_StatusCode uStatus;
+        oe_result_t uStatus;
         char buffer[1024];
         int size;
     };
@@ -67,11 +68,11 @@ enclave {
 
     /* define ECALLs here. */
     trusted {
-        public Tcps_StatusCode ecall_InitializeEnclave();
+        public oe_result_t ecall_InitializeEnclave();
 
         public CreateBuffer_Result ecall_CreateTeeBuffer(oe_BufferChunk chunk);
 
-        public Tcps_StatusCode ecall_AppendToTeeBuffer(
+        public oe_result_t ecall_AppendToTeeBuffer(
             [user_check] void* hTeeBuffer,
             oe_BufferChunk chunk);
 
@@ -93,7 +94,7 @@ enclave {
 
         CreateBuffer_Result ocall_CreateReeBuffer(oe_BufferChunk chunk);
 
-        Tcps_StatusCode ocall_AppendToReeBuffer(
+        oe_result_t ocall_AppendToReeBuffer(
             [user_check] void* hReeBuffer,
             oe_BufferChunk chunk);
 
@@ -103,7 +104,7 @@ enclave {
             [user_check] void* hReeBuffer,
             int offset);
 
-        Tcps_StatusCode ocall_ExportPublicCertificate(oe_buffer256 location, oe_buffer4096 ptr, size_t len);
+        oe_result_t ocall_ExportPublicCertificate(oe_buffer256 location, oe_buffer4096 ptr, size_t len);
         
         /* Time APIs. */
         unsigned int ocall_GetTickCount(void);
@@ -112,8 +113,8 @@ enclave {
         GetTm_Result ocall_gmtime64(uint64_t timer);
         QueryPerformanceCounter_Result ocall_QueryPerformanceCounter(void);
 
-        Tcps_StatusCode ocall_exit(int result);
-        Tcps_StatusCode ocall_puts(oe_buffer1024 str, int bNewline);
+        oe_result_t ocall_exit(int result);
+        oe_result_t ocall_puts(oe_buffer1024 str, int bNewline);
 
         FindFirstUntrustedFile_Result
         ocall_FindFirstUntrustedFile(
@@ -125,7 +126,7 @@ enclave {
             uint32_t findNextHandle,
             uint32_t matchingFileNameSize);
 
-        Tcps_StatusCode
+        oe_result_t
         ocall_FindNextUntrustedFileClose(
             uint32_t findNextHandle);
 

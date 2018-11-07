@@ -32,12 +32,12 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "CallCyrepPTA");
 	{
 		result = TEE_OpenTASession(&pta_uuid, 0, 0, NULL, &sess, NULL);
         DMSG("TEE_OpenTASession(PTA_CYREP) returned %#x", result);
-        Tcps_GotoErrorIfTrue(result != TEE_SUCCESS, Tcps_Bad);
+        Tcps_GotoErrorIfTrue(result != TEE_SUCCESS, OE_FAILURE);
 	}
 
 	result = TEE_InvokeTACommand(sess, 0, cmd_id, param_types, params, NULL);
     FMSG("PTA_CYREP command %u returned %#x", cmd_id, result);
-    Tcps_GotoErrorIfTrue(result != TEE_SUCCESS, Tcps_Bad);
+    Tcps_GotoErrorIfTrue(result != TEE_SUCCESS, OE_FAILURE);
 
     return result;
 
@@ -47,7 +47,7 @@ Tcps_BeginErrorHandling;
 }
 
 static
-Tcps_StatusCode
+oe_result_t
 GetCyrepCertChainSize(
     Tcps_UInt32 *certChainBufferSize)
 {
@@ -67,7 +67,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "GetCyrepCertChainSize");
 	memset(params, 0, sizeof(params));
 
     teeResult = CallCyrepPTA(PTA_CYREP_GET_CERT_CHAIN_SIZE, pt, params);
-    Tcps_GotoErrorIfTrue(teeResult != TEE_SUCCESS, Tcps_Bad);
+    Tcps_GotoErrorIfTrue(teeResult != TEE_SUCCESS, OE_FAILURE);
 
     *certChainBufferSize = params[0].value.a;
     DMSG("Cyrep cert chain size = %u", *certChainBufferSize);
@@ -77,7 +77,7 @@ Tcps_BeginErrorHandling;
 Tcps_FinishErrorHandling;
 }
 
-Tcps_StatusCode 
+oe_result_t 
 ExportCyrepCertChain(
     Tcps_ConstStringA exportFilePath)
 {
@@ -110,7 +110,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "ExportCyrepCertChain");
     params[0].memref.size = certChainBufferSize;
 
     teeResult = CallCyrepPTA(PTA_CYREP_GET_CERT_CHAIN, pt, params);
-    Tcps_GotoErrorIfTrue(teeResult != TEE_SUCCESS, Tcps_Bad);
+    Tcps_GotoErrorIfTrue(teeResult != TEE_SUCCESS, OE_FAILURE);
 
     /* PEM format, should have a zero terminator */
     oe_assert(certChainBufferPEM[certChainBufferSize - 1] == 0);
@@ -134,7 +134,7 @@ Tcps_FinishErrorHandling;
 }
 
 static
-Tcps_StatusCode
+oe_result_t
 GetCyrepKeySize(
     Tcps_UInt32 *keySize)
 {
@@ -154,7 +154,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "GetCyrepKeySize");
 	memset(params, 0, sizeof(params));
 
     teeResult = CallCyrepPTA(PTA_CYREP_GET_PRIVATE_KEY_SIZE, pt, params);
-    Tcps_GotoErrorIfTrue(teeResult != TEE_SUCCESS, Tcps_Bad);
+    Tcps_GotoErrorIfTrue(teeResult != TEE_SUCCESS, OE_FAILURE);
 
     *keySize = params[0].value.a;
     DMSG("Cyrep private key size = %u", *keySize);
@@ -164,7 +164,7 @@ Tcps_BeginErrorHandling;
 Tcps_FinishErrorHandling;
 }
 
-Tcps_StatusCode 
+oe_result_t 
 GetCyrepKey(
     char **keyPEM)
 {
@@ -198,7 +198,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "GetCyrepKey");
     params[0].memref.size = keySize;
 
     teeResult = CallCyrepPTA(PTA_CYREP_GET_PRIVATE_KEY, pt, params);
-    Tcps_GotoErrorIfTrue(teeResult != TEE_SUCCESS, Tcps_Bad);
+    Tcps_GotoErrorIfTrue(teeResult != TEE_SUCCESS, OE_FAILURE);
 
     /* PEM format, should have a zero terminator */
     oe_assert((*keyPEM)[keySize - 1] == 0);

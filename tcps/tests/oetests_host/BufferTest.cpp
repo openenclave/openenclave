@@ -20,8 +20,8 @@ TEST(Buffer, CreateReeBuffer_Success)
 
     char* data;
     int size;
-    Tcps_StatusCode uStatus = TcpsGetReeBuffer(hReeBuffer, &data, &size);
-    EXPECT_EQ(Tcps_Good, uStatus);
+    oe_result_t uStatus = TcpsGetReeBuffer(hReeBuffer, &data, &size);
+    EXPECT_EQ(OE_OK, uStatus);
     EXPECT_EQ(originalSize, size);
     ASSERT_FALSE(data == NULL);
 
@@ -38,12 +38,12 @@ void BufferTest::VerifyTeeBufferContents(void* hTeeBuffer, int expectedSize, cha
     oe_CreateBuffer_Result reeBufferResult = {};
     oe_result_t oeResult = ecall_CreateReeBufferFromTeeBuffer(GetOEEnclave(), &reeBufferResult, hTeeBuffer);
     ASSERT_EQ(OE_OK, oeResult);
-    ASSERT_EQ(Tcps_Good, reeBufferResult.uStatus);
+    ASSERT_EQ(OE_OK, reeBufferResult.uStatus);
 
     char* actualData;
     int actualSize;
-    Tcps_StatusCode uStatus = TcpsGetReeBuffer(reeBufferResult.hBuffer, &actualData, &actualSize);
-    EXPECT_EQ(Tcps_Good, uStatus);
+    oe_result_t uStatus = TcpsGetReeBuffer(reeBufferResult.hBuffer, &actualData, &actualSize);
+    EXPECT_EQ(OE_OK, uStatus);
     EXPECT_EQ(expectedSize, actualSize);
     ASSERT_FALSE(actualData == NULL);
     ASSERT_EQ(0, memcmp(expectedData, actualData, expectedSize));
@@ -62,7 +62,7 @@ TEST_F(BufferTest, CreateTeeBuffer_Success)
     sgx_status_t sgxStatus = ecall_CreateTeeBuffer(GetTAId(), &result, chunk);
     oe_release_enclave_mutex(GetOEEnclave());
     ASSERT_EQ(SGX_SUCCESS, sgxStatus);
-    ASSERT_EQ(Tcps_Good, result.uStatus);
+    ASSERT_EQ(OE_OK, result.uStatus);
     ASSERT_FALSE(result.hBuffer == NULL);
 
     // Read it back to verify the contents.
@@ -83,18 +83,18 @@ TEST_F(BufferTest, AppendToTeeBuffer_Success)
     sgx_status_t sgxStatus = ecall_CreateTeeBuffer(GetTAId(), &result, chunk);
     oe_release_enclave_mutex(GetOEEnclave());
     ASSERT_EQ(SGX_SUCCESS, sgxStatus);
-    ASSERT_EQ(Tcps_Good, result.uStatus);
+    ASSERT_EQ(OE_OK, result.uStatus);
     ASSERT_FALSE(result.hBuffer == NULL);
 
     // Append a 5 byte chunk.
     chunk.size = 5;
     strcpy_s(chunk.buffer, "Test");
-    Tcps_StatusCode uStatus;
+    oe_result_t uStatus;
     oe_acquire_enclave_mutex(GetOEEnclave());
     sgxStatus = ecall_AppendToTeeBuffer(GetTAId(), &uStatus, result.hBuffer, chunk);
     oe_release_enclave_mutex(GetOEEnclave());
     ASSERT_EQ(SGX_SUCCESS, sgxStatus);
-    ASSERT_EQ(Tcps_Good, uStatus);
+    ASSERT_EQ(OE_OK, uStatus);
 
     // Read it back to verify the contents.
     VerifyTeeBufferContents(result.hBuffer, chunk.size, chunk.buffer);

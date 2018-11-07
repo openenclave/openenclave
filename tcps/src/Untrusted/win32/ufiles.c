@@ -13,7 +13,7 @@
 #include <openenclave/host.h>
 #include "../oeoverintelsgx_u.h"
 
-Tcps_StatusCode
+oe_result_t
 ocall_ExportPublicCertificate(
     oe_buffer256 certificateFileNameExported,
     oe_buffer4096 ptr,
@@ -25,7 +25,7 @@ ocall_ExportPublicCertificate(
 }
 
 static
-Tcps_StatusCode
+oe_result_t
 internal_FindFirstUntrustedFile(
     oe_buffer256 filePathWithWildcards,
     char* matchingFileName,
@@ -40,12 +40,12 @@ internal_FindFirstUntrustedFile(
 
 Tcps_InitializeStatus(Tcps_Module_Helper_u, "ocall_FindFirstUntrustedFile");
 
-    Tcps_GotoErrorIfTrue(matchingFileNameSize == 0, Tcps_BadInvalidArgument);
+    Tcps_GotoErrorIfTrue(matchingFileNameSize == 0, OE_INVALID_PARAMETER);
     matchingFileName[0] = '\0';
 
     /* Make a copy of the input path, and change '/' separators to '\\' */
     fileNameLength = strlen(filePathWithWildcards.buffer);
-    Tcps_GotoErrorIfTrue(fileNameLength >= sizeof(pathWindowsFormat), Tcps_BadRequestTooLarge);
+    Tcps_GotoErrorIfTrue(fileNameLength >= sizeof(pathWindowsFormat), OE_FAILURE);
     memcpy(pathWindowsFormat, filePathWithWildcards.buffer, fileNameLength + 1);
 
     for (characterIndex = 0; characterIndex < fileNameLength; characterIndex++)
@@ -58,10 +58,10 @@ Tcps_InitializeStatus(Tcps_Module_Helper_u, "ocall_FindFirstUntrustedFile");
 
     /* Find first file. */
     findHandle = FindFirstFile(pathWindowsFormat, &findData);
-    Tcps_GotoErrorIfTrue(findHandle == INVALID_HANDLE_VALUE, Tcps_BadNoMatch);
+    Tcps_GotoErrorIfTrue(findHandle == INVALID_HANDLE_VALUE, OE_NOT_FOUND);
 
     fileNameLength = strlen(findData.cFileName);
-    Tcps_GotoErrorIfTrue(fileNameLength >= matchingFileNameSize, Tcps_BadRequestTooLarge);
+    Tcps_GotoErrorIfTrue(fileNameLength >= matchingFileNameSize, OE_FAILURE);
 
     /* Return the first file path. */
     memcpy(matchingFileName, findData.cFileName, fileNameLength + 1);
@@ -95,7 +95,7 @@ ocall_FindFirstUntrustedFile(
 }
 
 static
-Tcps_StatusCode
+oe_result_t
 internal_FindNextUntrustedFile(
     uint32_t findNextHandle,
     char* matchingFileName,
@@ -108,20 +108,20 @@ internal_FindNextUntrustedFile(
 
 Tcps_InitializeStatus(Tcps_Module_Helper_u, "ocall_FindNextUntrustedFile");
 
-    Tcps_GotoErrorIfTrue(matchingFileNameSize == 0, Tcps_BadInvalidArgument);
+    Tcps_GotoErrorIfTrue(matchingFileNameSize == 0, OE_INVALID_PARAMETER);
     matchingFileName[0] = '\0';
 
     if (findHandle == INVALID_HANDLE_VALUE)
     {
         assert(FALSE);
-        Tcps_GotoErrorWithStatus(Tcps_BadInvalidArgument);
+        Tcps_GotoErrorWithStatus(OE_INVALID_PARAMETER);
     }
 
     found = FindNextFile(findHandle, &findData);
-    Tcps_GotoErrorIfTrue(!found, Tcps_BadNoMatch);
+    Tcps_GotoErrorIfTrue(!found, OE_NOT_FOUND);
 
     fileNameLength = strlen(findData.cFileName);
-    Tcps_GotoErrorIfTrue(fileNameLength >= matchingFileNameSize, Tcps_BadRequestTooLarge);
+    Tcps_GotoErrorIfTrue(fileNameLength >= matchingFileNameSize, OE_FAILURE);
 
     memcpy(matchingFileName, findData.cFileName, fileNameLength + 1);
    
@@ -140,7 +140,7 @@ ocall_FindNextUntrustedFile(
     return result;
 }
 
-Tcps_StatusCode
+oe_result_t
 ocall_FindNextUntrustedFileClose(
     uint32_t findNextHandle)
 {
@@ -155,7 +155,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_u, "ocall_FindNextUntrustedFileClose");
     if (!success)
     {
         assert(FALSE);
-        Tcps_GotoErrorWithStatus(Tcps_BadInvalidArgument);
+        Tcps_GotoErrorWithStatus(OE_INVALID_PARAMETER);
     }
    
 Tcps_ReturnStatusCode;

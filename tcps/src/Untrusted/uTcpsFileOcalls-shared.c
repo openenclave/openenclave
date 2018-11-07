@@ -69,7 +69,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_u, "ocall_mkdir");
                 if ((crtError != EEXIST) && (crtError != EACCES)) {
                     Tcps_Trace(Tcps_TraceLevelDebug, "ocall_mkdir(%s): unexpected CRT error %d\n", localPath, errno);
 
-                    Tcps_GotoErrorWithStatus(Tcps_Bad);
+                    Tcps_GotoErrorWithStatus(OE_FAILURE);
                 }
 
                 crtError = 0;
@@ -118,8 +118,8 @@ ocall_ExportFile(
     }
 
 
-    Tcps_GotoErrorIfTrue(fp == NULL, Tcps_BadInvalidArgument);
-    Tcps_GotoErrorIfTrue(fwrite(ptr.buffer, 1, len, fp) != len, Tcps_Bad);
+    Tcps_GotoErrorIfTrue(fp == NULL, OE_INVALID_PARAMETER);
+    Tcps_GotoErrorIfTrue(fwrite(ptr.buffer, 1, len, fp) != len, OE_FAILURE);
 
     fclose(fp);
 
@@ -141,12 +141,12 @@ ocall_GetUntrustedFileSize(
 {
     GetUntrustedFileSize_Result result;
     struct _stat st;
-    Tcps_StatusCode uStatus = Tcps_Good;
+    oe_result_t uStatus = OE_OK;
 
     Tcps_Trace(Tcps_TraceLevelDebug, "file (%s)\n", filename.buffer);
 
     if (_stat(filename.buffer, &st) < 0) {
-        result.status = Tcps_BadInvalidArgument;
+        result.status = OE_INVALID_PARAMETER;
     } else {
         result.fileSize = st.st_size;
 
@@ -164,11 +164,11 @@ ocall_GetUntrustedFileContent(
 {
     GetUntrustedFileContent_Result result;
     FILE *fp = NULL;
-    Tcps_StatusCode uStatus = Tcps_Good;
+    oe_result_t uStatus = OE_OK;
 
     fopen_s(&fp, filename.buffer, "rb");
 
-    Tcps_GotoErrorIfTrue(fp == NULL, Tcps_BadInvalidArgument);
+    Tcps_GotoErrorIfTrue(fp == NULL, OE_INVALID_PARAMETER);
 
     size_t cumul = 0;
     size_t current = 0;
@@ -182,7 +182,7 @@ ocall_GetUntrustedFileContent(
         cumul += current;
     }
 
-    Tcps_GotoErrorIfTrue(cumul != len, Tcps_BadInvalidArgument);
+    Tcps_GotoErrorIfTrue(cumul != len, OE_INVALID_PARAMETER);
 
 Error:
     if (fp != NULL) {
@@ -199,7 +199,7 @@ ocallTcpsFileDelete(
 {
     Tcps_InitializeStatus(Tcps_Module_Helper_u, "ocallTcpsFileDelete");
 
-    Tcps_GotoErrorIfTrue((remove(a_filename.buffer) != 0), Tcps_Bad);
+    Tcps_GotoErrorIfTrue((remove(a_filename.buffer) != 0), OE_FAILURE);
 
 Tcps_BeginErrorHandling
 

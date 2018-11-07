@@ -55,7 +55,7 @@ TcpsLogCloseOptee(
 }
 
 static
-Tcps_StatusCode
+oe_result_t
 TcpsLogCounterValidateOptee(
     Tcps_Void* a_Handle,
     const uint8_t* const a_CounterIdBuffer,
@@ -68,11 +68,11 @@ TcpsLogCounterValidateOptee(
     OE_UNUSED(a_CounterIdBufferSize);
     OE_UNUSED(a_CounterValueBuffer);
     OE_UNUSED(a_CounterValueBufferSize);
-    return Tcps_Good;
+    return OE_OK;
 }
 
 static
-Tcps_StatusCode
+oe_result_t
 TcpsLogCounterCreateOptee(
     Tcps_Void* a_Handle,
     uint8_t** const a_CounterIdBuffer,
@@ -86,7 +86,7 @@ TcpsLogCounterCreateOptee(
         a_CounterValueBuffer == NULL ||
         a_CounterValueBufferSize == NULL)
     {
-        return Tcps_BadInvalidArgument;
+        return OE_INVALID_PARAMETER;
     }
 
     *a_CounterIdBuffer = NULL;
@@ -94,11 +94,11 @@ TcpsLogCounterCreateOptee(
     *a_CounterValueBuffer = NULL;
     *a_CounterValueBufferSize = 0;
 
-    return Tcps_Good;
+    return OE_OK;
 }
 
 static
-Tcps_StatusCode
+oe_result_t
 TcpsLogCounterIncrementGetOptee(
     Tcps_Void* a_Handle,
     const uint8_t* const a_CounterIdBuffer,
@@ -113,24 +113,24 @@ TcpsLogCounterIncrementGetOptee(
         a_CounterValueBuffer == NULL ||
         a_CounterValueBufferSize == NULL)
     {
-        return Tcps_BadInvalidArgument;
+        return OE_INVALID_PARAMETER;
     }
 
     *a_CounterValueBuffer = NULL;
     *a_CounterValueBufferSize = 0;
 
-    return Tcps_Good;
+    return OE_OK;
 }
 
 static
-Tcps_StatusCode
+oe_result_t
 TcpsLogCounterRecoverOptee(
     Tcps_Void* a_Handle,
     uint8_t** const a_CounterBuffer,
     size_t* const a_CounterBufferSize,
     const TCPS_IDENTITY_LOG a_LogIdentityLabel)
 {
-    Tcps_StatusCode status = Tcps_Good;
+    oe_result_t status = OE_OK;
     FILE* counterFile;
     long int counterFileSize;
 
@@ -139,7 +139,7 @@ TcpsLogCounterRecoverOptee(
         a_Handle == NULL ||
         a_LogIdentityLabel == NULL)
     {
-        return Tcps_BadInvalidArgument;
+        return OE_INVALID_PARAMETER;
     }
 
     *a_CounterBuffer = NULL;
@@ -152,39 +152,39 @@ TcpsLogCounterRecoverOptee(
 
     if (fseek(counterFile, 0, SEEK_END))
     {
-        status = Tcps_Bad;
+        status = OE_FAILURE;
         goto Exit;
     }
 
     counterFileSize = ftell(counterFile);
     if (counterFileSize == -1)
     {
-        status = Tcps_Bad;
+        status = OE_FAILURE;
         goto Exit;
     }
 
     if (fseek(counterFile, 0, SEEK_SET))
     {
-        status = Tcps_Bad;
+        status = OE_FAILURE;
         goto Exit;
     }
 
     *a_CounterBuffer = oe_malloc(counterFileSize);
     if (*a_CounterBuffer == NULL)
     {
-        status = Tcps_BadOutOfMemory;
+        status = OE_OUT_OF_MEMORY;
         goto Exit;
     }
 
     *a_CounterBufferSize = fread(*a_CounterBuffer, 1, counterFileSize, counterFile);
     if (*a_CounterBufferSize != (size_t)counterFileSize)
     {
-        status = Tcps_Bad;
+        status = OE_FAILURE;
         goto Exit;
     }
 
 Exit:
-    if (status != Tcps_Good)
+    if (status != OE_OK)
     {
         if (*a_CounterBuffer != NULL)
         {
@@ -201,7 +201,7 @@ Exit:
 }
 
 static
-Tcps_StatusCode
+oe_result_t
 TcpsLogCounterWriteOptee(
     Tcps_Void* a_Handle,
     const uint8_t* const a_CounterBuffer,
@@ -210,25 +210,25 @@ TcpsLogCounterWriteOptee(
 {
     size_t written;
     FILE* counterFile;
-    Tcps_StatusCode status = Tcps_Good;
+    oe_result_t status = OE_OK;
 
     if (a_Handle == NULL ||
         a_LogIdentityLabel == NULL ||
         a_CounterBuffer == NULL)
     {
-        return Tcps_BadInvalidArgument;
+        return OE_INVALID_PARAMETER;
     }
 
     counterFile = fopen(COOKIE_FILE, "w");
     if (counterFile == NULL)
     {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     written = fwrite(a_CounterBuffer, 1, a_CounterBufferSize, counterFile);
     if (written != a_CounterBufferSize)
     {
-        status = Tcps_Bad;
+        status = OE_FAILURE;
         goto Exit;
     }
 
@@ -241,7 +241,7 @@ Exit:
 }
 
 static
-Tcps_StatusCode
+oe_result_t
 TcpsLogInitOptee(
     const TCPS_SHA256_DIGEST a_Seed,
     const TCPS_TA_ID_INFO* const a_IDData,
@@ -249,7 +249,7 @@ TcpsLogInitOptee(
     Tcps_Void** a_Handle)
 {
     size_t logPathPrefixSize;
-    Tcps_StatusCode status = Tcps_Good;
+    oe_result_t status = OE_OK;
 
     if (a_IDData == NULL ||
         a_LogPathPrefix == NULL ||
@@ -257,7 +257,7 @@ TcpsLogInitOptee(
         a_Handle == NULL ||
         g_TcpsLogLogObjectOptee != NULL)
     {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     *a_Handle = NULL;
@@ -265,7 +265,7 @@ TcpsLogInitOptee(
     g_TcpsLogLogObjectOptee = oe_malloc(sizeof(TCPS_LOG_OCALL_OBJECT));
     if (g_TcpsLogLogObjectOptee == NULL)
     {
-        status = Tcps_BadOutOfMemory;
+        status = OE_OUT_OF_MEMORY;
         goto Exit;
     }
     TCPS_ZERO(g_TcpsLogLogObjectOptee, sizeof(TCPS_LOG_OCALL_OBJECT));
@@ -274,7 +274,7 @@ TcpsLogInitOptee(
     g_TcpsLogLogObjectOptee->LogPathPrefix = oe_malloc(logPathPrefixSize);
     if (g_TcpsLogLogObjectOptee->LogPathPrefix == NULL)
     {
-        status = Tcps_BadOutOfMemory;
+        status = OE_OUT_OF_MEMORY;
         goto Exit;
     }
     strncpy(g_TcpsLogLogObjectOptee->LogPathPrefix, a_LogPathPrefix, logPathPrefixSize);
@@ -297,13 +297,13 @@ TcpsLogInitOptee(
         a_Seed,
         g_TcpsLogLogObjectOptee,
         a_Handle);
-    if (status != Tcps_Good)
+    if (status != OE_OK)
     {
         goto Exit;
     }
 
 Exit:
-    if (status != Tcps_Good)
+    if (status != OE_OK)
     {
         TcpsLogCloseOptee(*a_Handle);
     }
@@ -312,7 +312,7 @@ Exit:
 }
 
 static
-Tcps_StatusCode
+oe_result_t
 TcpsLogEventOpteeId(
     Tcps_Void* a_Handle,
     uint32_t a_EventId,
@@ -322,7 +322,7 @@ TcpsLogEventOpteeId(
 }
 
 static
-Tcps_StatusCode
+oe_result_t
 TcpsLogEventOptee(
     Tcps_Void* a_Handle,
     const uint8_t* const a_Buffer,
@@ -333,7 +333,7 @@ TcpsLogEventOptee(
 }
 #endif
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogAppInit(
     const char* const a_sLogPrefix)
 {
@@ -343,7 +343,7 @@ TcpsLogAppInit(
     OE_UNUSED(a_sLogPrefix);
 #endif
 
-    Tcps_StatusCode status = Tcps_BadNotImplemented;
+    oe_result_t status = OE_UNSUPPORTED;
     
 #ifdef USE_SGX
     TCPS_LOG_SGX_CONFIGURATION configuration;
@@ -375,12 +375,7 @@ TcpsLogAppInit(
         &g_TcpsLogPlatHandle);
 #endif
 
-    if (status != Tcps_Good)
-    {
-        return Tcps_BadInvalidState;
-    }
-
-    return Tcps_Good;
+    return status;
 }
 
 Tcps_Void
@@ -397,11 +392,11 @@ TcpsLogAppClose(void)
     }
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogAppEventId(
     const int a_Id)
 {
-    Tcps_StatusCode status = Tcps_BadNotImplemented;
+    oe_result_t status = OE_UNSUPPORTED;
 #ifdef _OE_ENCLAVE_H
     if (g_TcpsLogPlatHandle)
 #ifdef USE_SGX
@@ -410,23 +405,21 @@ TcpsLogAppEventId(
         status = TcpsLogEventOpteeId(g_TcpsLogPlatHandle, a_Id, a_Id < 0);
 #endif
     else
-        status = Tcps_Bad;
+        status = OE_FAILURE;
 #else
     OE_UNUSED(a_Id);
 #endif
 
-    return status == Tcps_Good ?
-        Tcps_Good :
-        Tcps_BadInvalidState;
+    return status;
 }
 
 static
-Tcps_StatusCode
+oe_result_t
 TcpsLogAppEvent(
     const uint8_t* const a_Buffer,
     const size_t a_BufferSize)
 {
-    Tcps_StatusCode status = Tcps_BadNotImplemented;
+    oe_result_t status = OE_UNSUPPORTED;
 #ifdef _OE_ENCLAVE_H
     if (g_TcpsLogPlatHandle)
 #ifdef USE_SGX
@@ -435,15 +428,13 @@ TcpsLogAppEvent(
         status = TcpsLogEventOptee(g_TcpsLogPlatHandle, a_Buffer, a_BufferSize, false);
 #endif
     else
-        status = Tcps_Bad;
+        status = OE_FAILURE;
 #else
     OE_UNUSED(a_Buffer);
     OE_UNUSED(a_BufferSize);
 #endif
 
-    return status == Tcps_Good ?
-        Tcps_Good :
-        Tcps_BadInvalidState;
+    return status;
 }
 
 #ifndef __GNUC__
@@ -792,11 +783,11 @@ Parameters:
 #endif
 
 static
-Tcps_StatusCode
+oe_result_t
 TcpsLogAppEventInternal(
     const TCPS_LOG_APP_EVENT_DATA* const Payload)
 {
-    Tcps_StatusCode uStatus = Tcps_Good;
+    oe_result_t uStatus = OE_OK;
     size_t bufferSize = 0;
     uint8_t* buffer = NULL;
     CborError err = TcpsCborEncodeAppEvent(Payload, &bufferSize, buffer);
@@ -811,7 +802,7 @@ TcpsLogAppEventInternal(
 
     if (err != CborNoError)
     {
-        uStatus = Tcps_Bad;
+        uStatus = OE_FAILURE;
         goto Exit;
     }
 
@@ -826,12 +817,12 @@ Exit:
     return uStatus;
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogAppEventResponse(
     const TCPS_LOG_APP_EVENT_RESPONSE_DATA* const Payload)
 {
     TCPS_LOG_APP_EVENT_DATA eventData = { 0 };
-    Tcps_StatusCode uStatus = Tcps_Good;
+    oe_result_t uStatus = OE_OK;
     size_t bufferSize = 0;
     uint8_t* buffer = NULL;
     CborError err = TcpsCborEncodeAppEventResponse(Payload, &bufferSize, buffer);
@@ -846,7 +837,7 @@ TcpsLogAppEventResponse(
 
     if (err != CborNoError)
     {
-        uStatus = Tcps_Bad;
+        uStatus = OE_FAILURE;
         goto Exit;
     }
 
@@ -865,12 +856,12 @@ Exit:
     return uStatus;
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogAppEventResponseFailed(
     const TCPS_LOG_APP_EVENT_RESPONSE_FAILED_DATA* const Payload)
 {
     TCPS_LOG_APP_EVENT_DATA eventData = { 0 };
-    Tcps_StatusCode uStatus = Tcps_Good;
+    oe_result_t uStatus = OE_OK;
     size_t bufferSize = 0;
     uint8_t* buffer = NULL;
     CborError err = TcpsCborEncodeAppEventResponseFailed(Payload, &bufferSize, buffer);
@@ -885,7 +876,7 @@ TcpsLogAppEventResponseFailed(
 
     if (err != CborNoError)
     {
-        uStatus = Tcps_Bad;
+        uStatus = OE_FAILURE;
         goto Exit;
     }
 
@@ -904,12 +895,12 @@ Exit:
     return uStatus;
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogAppEventAutoApproved(
     const TCPS_LOG_APP_EVENT_AUTO_APPROVED_DATA* const Payload)
 {
     TCPS_LOG_APP_EVENT_DATA eventData = { 0 };
-    Tcps_StatusCode uStatus = Tcps_Good;
+    oe_result_t uStatus = OE_OK;
     size_t bufferSize = 0;
     uint8_t* buffer = NULL;
     CborError err = TcpsCborEncodeAppEventAutoApproved(Payload, &bufferSize, buffer);
@@ -924,7 +915,7 @@ TcpsLogAppEventAutoApproved(
 
     if (err != CborNoError)
     {
-        uStatus = Tcps_Bad;
+        uStatus = OE_FAILURE;
         goto Exit;
     }
 
@@ -943,10 +934,10 @@ Exit:
     return uStatus;
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogAppEventInitialized(void)
 {
-    Tcps_StatusCode uStatus = Tcps_Good;
+    oe_result_t uStatus = OE_OK;
 
     TCPS_LOG_APP_EVENT_DATA eventData = { 0 };
     eventData.EventId = TCPS_LOG_APP_EVENT_INITIALIZED;
@@ -958,12 +949,12 @@ TcpsLogAppEventInitialized(void)
     return uStatus;
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogAppEventManualApproved(
     const TCPS_LOG_APP_EVENT_MANUAL_APPROVED_DATA* const Payload)
 {
     TCPS_LOG_APP_EVENT_DATA eventData = { 0 };
-    Tcps_StatusCode uStatus = Tcps_Good;
+    oe_result_t uStatus = OE_OK;
     size_t bufferSize = 0;
     uint8_t* buffer = NULL;
     CborError err = TcpsCborEncodeAppEventManualApproved(Payload, &bufferSize, buffer);
@@ -978,7 +969,7 @@ TcpsLogAppEventManualApproved(
 
     if (err != CborNoError)
     {
-        uStatus = Tcps_Bad;
+        uStatus = OE_FAILURE;
         goto Exit;
     }
 
@@ -997,12 +988,12 @@ Exit:
     return uStatus;
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogAppEventManualRejected(
     const TCPS_LOG_APP_EVENT_MANUAL_REJECTED_DATA* const Payload)
 {
     TCPS_LOG_APP_EVENT_DATA eventData = { 0 };
-    Tcps_StatusCode uStatus = Tcps_Good;
+    oe_result_t uStatus = OE_OK;
     size_t bufferSize = 0;
     uint8_t* buffer = NULL;
     CborError err = TcpsCborEncodeAppEventManualRejected(Payload, &bufferSize, buffer);
@@ -1017,7 +1008,7 @@ TcpsLogAppEventManualRejected(
 
     if (err != CborNoError)
     {
-        uStatus = Tcps_Bad;
+        uStatus = OE_FAILURE;
         goto Exit;
     }
 

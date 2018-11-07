@@ -18,12 +18,12 @@ static int vprintf(const char *format, __va_list argptr)
         return s;
     }
 
-    Tcps_StatusCode result;
+    oe_result_t result;
     sgx_status_t status = ocall_puts(&result, buf, FALSE);
     if (status != SGX_SUCCESS) {
         return -1;
     }
-    return Tcps_IsBad(result) ? -1 : s;
+    return (result != OE_OK) ? -1 : s;
 }
 
 int printf(const char *fmt, ...)

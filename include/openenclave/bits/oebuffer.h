@@ -1,6 +1,7 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
 #pragma once
+#include <openenclave/bits/result.h>
 
 typedef struct oe_BufferChunk {
     char buffer[1024];
@@ -8,7 +9,7 @@ typedef struct oe_BufferChunk {
 } oe_BufferChunk;
 
 typedef struct oe_CreateBuffer_Result {
-    Tcps_StatusCode uStatus;
+    oe_result_t uStatus;
     void* hBuffer;
 } oe_CreateBuffer_Result;
 

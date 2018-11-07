@@ -12,7 +12,7 @@
 
 #include <openenclave/enclave.h>
 #include "enclavelibc.h"
-#include "TcpsRpcOptee.h"
+#include "sgxoveroptee.h"
 #include "../oeoverintelsgx_t.h"
 #include "oeresult.h"
 
@@ -93,7 +93,7 @@ TcpsExecuteRPC(
     if (rpcKey == 0)
     {
         EMSG("rpcKey is 0");
-        result = Tcps_Bad;
+        result = OE_FAILURE;
         goto Done;
     }
 

@@ -260,12 +260,12 @@ _stat(
 
 Tcps_InitializeStatus(Tcps_Module_Helper_t, "_stat");
 
-    Tcps_GotoErrorIfTrue(sizeof(*buffer) != sizeof(ocall_struct_stat64i32), Tcps_Bad);
+    Tcps_GotoErrorIfTrue(sizeof(*buffer) != sizeof(ocall_struct_stat64i32), OE_FAILURE);
 
     COPY_BUFFER_FROM_STRING(pathBuffer, path);
 
     sgxStatus = ocall_stat64i32(&result, pathBuffer);
-    Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, Tcps_Bad);
+    Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, OE_FAILURE);
     Tcps_GotoErrorIfBad(result.status != 0);
     memcpy(buffer, &result.buffer, sizeof(*buffer));
 
@@ -432,12 +432,12 @@ int FindCloseInternal(HANDLE hFindFile)
 }
 #endif
 
-Tcps_StatusCode GetTrustedFileSize(const char* trustedFilePath, int64_t *fileSize)
+oe_result_t GetTrustedFileSize(const char* trustedFilePath, int64_t *fileSize)
 {
     TEE_Result result;
     TEE_ObjectHandle handle;
     TEE_ObjectInfo info;
-    Tcps_StatusCode tcpsStatus = Tcps_Good;
+    oe_result_t tcpsStatus = OE_OK;
 
     *fileSize = 0;
 
@@ -452,7 +452,7 @@ Tcps_StatusCode GetTrustedFileSize(const char* trustedFilePath, int64_t *fileSiz
 
     if (result != TEE_SUCCESS) {
         EMSG("TEE_OpenPersistentObject(%s) returned error %#x\n", trustedFilePath, result);
-        tcpsStatus = Tcps_Bad;
+        tcpsStatus = OE_FAILURE;
         goto Done;
     }
 
@@ -461,7 +461,7 @@ Tcps_StatusCode GetTrustedFileSize(const char* trustedFilePath, int64_t *fileSiz
 
     if (result != TEE_SUCCESS) {
         EMSG("TEE_GetObjectInfo1(%s) returned error %#x\n", trustedFilePath, result);
-        tcpsStatus = Tcps_Bad;
+        tcpsStatus = OE_FAILURE;
         goto Done;
     }
 
@@ -503,7 +503,7 @@ int AppendToFile(
     return 0;
 }
 
-Tcps_StatusCode TEE_P_SaveBufferToFile(
+oe_result_t TEE_P_SaveBufferToFile(
     _In_z_ const char* destinationLocation,
     _In_reads_bytes_(len) const void* ptr,
     _In_ size_t len)
@@ -514,10 +514,10 @@ Tcps_StatusCode TEE_P_SaveBufferToFile(
 Tcps_InitializeStatus(Tcps_Module_Helper_t, "TEE_P_SaveBufferToFile");
 
     fp = fopen(destinationLocation, "w");
-    Tcps_GotoErrorIfTrue(fp == NULL, Tcps_BadUnexpectedError);
+    Tcps_GotoErrorIfTrue(fp == NULL, OE_FAILURE);
 
     writelen = fwrite(ptr, 1, len, fp);
-    Tcps_GotoErrorIfTrue(writelen != len, Tcps_BadUnexpectedError);
+    Tcps_GotoErrorIfTrue(writelen != len, OE_FAILURE);
 
     fclose(fp);
 
@@ -530,7 +530,7 @@ Tcps_BeginErrorHandling;
 Tcps_FinishErrorHandling;
 }
 
-Tcps_StatusCode DeleteFile(const char* filename)
+oe_result_t DeleteFile(const char* filename)
 {
     TEE_Result result;
     TEE_ObjectHandle hObject;
@@ -548,10 +548,10 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "DeleteFile");
         Tcps_Trace(Tcps_TraceLevelDebug, "DeleteFile: file doesn't exist: %s\n", filename);
         Tcps_ReturnStatusCode;
     }
-    Tcps_GotoErrorIfTrue(result != TEE_SUCCESS, Tcps_Bad);
+    Tcps_GotoErrorIfTrue(result != TEE_SUCCESS, OE_FAILURE);
 
     result = TEE_CloseAndDeletePersistentObject1(hObject); 
-    Tcps_GotoErrorIfTrue(result != TEE_SUCCESS, Tcps_Bad);
+    Tcps_GotoErrorIfTrue(result != TEE_SUCCESS, OE_FAILURE);
 
 Tcps_ReturnStatusCode;
 Tcps_BeginErrorHandling;

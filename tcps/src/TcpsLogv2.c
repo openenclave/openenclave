@@ -205,7 +205,7 @@ Cleanup:
     return err;
 }
 
-static Tcps_StatusCode
+static oe_result_t
 TcpsSignLogPayload(
     TCPS_LOG_SIGNED_PAYLOAD *SignedPayload,
     const uint8_t *Payload,
@@ -213,7 +213,7 @@ TcpsSignLogPayload(
     const TCPS_IDENTITY_PUBLIC *ValidationIdentity,
     const TCPS_IDENTITY_PRIVATE *SigningIdentity)
 {
-    Tcps_StatusCode status = Tcps_Good;
+    oe_result_t status = OE_OK;
     TCPS_SHA256_DIGEST digest;
     RIOT_STATUS signStatus;
 
@@ -222,7 +222,7 @@ TcpsSignLogPayload(
         ValidationIdentity == NULL ||
         SigningIdentity == NULL)
     {
-        status = Tcps_BadInvalidArgument;
+        status = OE_INVALID_PARAMETER;
         goto Exit;
     }
 
@@ -236,7 +236,7 @@ TcpsSignLogPayload(
         &SignedPayload->Signature);
     if (signStatus != RIOT_SUCCESS)
     {
-        status = Tcps_Bad;
+        status = OE_FAILURE;
         goto Exit;
     }
 
@@ -251,18 +251,18 @@ Exit:
     return status;
 }
 
-static Tcps_StatusCode
+static oe_result_t
 TcpsValidateSignedLogPayload(
     const TCPS_LOG_SIGNED_PAYLOAD *SignedPayload)
 {
-    Tcps_StatusCode status = Tcps_Good;
+    oe_result_t status = OE_OK;
     TCPS_SHA256_DIGEST digest;
     TCPS_IDENTITY_PUBLIC validationIdentity;
     RIOT_STATUS signStatus;
 
     if (SignedPayload == NULL)
     {
-        status = Tcps_BadInvalidArgument;
+        status = OE_INVALID_PARAMETER;
         goto Exit;
     }
 
@@ -272,7 +272,7 @@ TcpsValidateSignedLogPayload(
             sizeof(SignedPayload->SerializedValidationIdentity),
             &validationIdentity) != RIOT_SUCCESS)
     {
-        status = Tcps_Bad;
+        status = OE_FAILURE;
         goto Exit;
     }
 
@@ -286,7 +286,7 @@ TcpsValidateSignedLogPayload(
         &validationIdentity);
     if (signStatus != RIOT_SUCCESS)
     {
-        status = Tcps_Bad;
+        status = OE_FAILURE;
         goto Exit;
     }
 
@@ -804,7 +804,7 @@ Cleanup:
     return err;
 }
 
-static Tcps_StatusCode
+static oe_result_t
 TcpsPersistCategoryWithCounter(
     TCPS_LOG_CATEGORY *Category,
     const uint8_t *CounterValue,
@@ -812,7 +812,7 @@ TcpsPersistCategoryWithCounter(
     const TCPS_IDENTITY_PUBLIC *ValidationIdentity,
     const TCPS_IDENTITY_PRIVATE *SigningIdentity)
 {
-    Tcps_StatusCode status = Tcps_Good;
+    oe_result_t status = OE_OK;
     CborError err;
     const uint8_t *selectedCounterValue;
     uint8_t *retrievedCounterValue = NULL, *encodedCategory = NULL, *encodedSignedPayload = NULL;
@@ -823,7 +823,7 @@ TcpsPersistCategoryWithCounter(
         ValidationIdentity == NULL ||
         SigningIdentity == NULL)
     {
-        status = Tcps_BadInvalidArgument;
+        status = OE_INVALID_PARAMETER;
         goto Exit;
     }
 
@@ -855,7 +855,7 @@ TcpsPersistCategoryWithCounter(
         encodedCategory = malloc(encodedCategorySize);
         if (encodedCategory == NULL)
         {
-            status = Tcps_BadOutOfMemory;
+            status = OE_OUT_OF_MEMORY;
             goto Exit;
         }
         err = TcpsEncodeCategoryWithCounter(
@@ -867,7 +867,7 @@ TcpsPersistCategoryWithCounter(
     }
     if (err != CborNoError)
     {
-        status = Tcps_Bad;
+        status = OE_FAILURE;
         goto Exit;
     }
 
@@ -878,7 +878,7 @@ TcpsPersistCategoryWithCounter(
         encodedCategorySize,
         ValidationIdentity,
         SigningIdentity);
-    if (Tcps_IsBad(status))
+    if (status != OE_OK)
     {
         goto Exit;
     }
@@ -895,7 +895,7 @@ TcpsPersistCategoryWithCounter(
         encodedSignedPayload = malloc(encodedSignedPayloadSize);
         if (encodedSignedPayload == NULL)
         {
-            status = Tcps_BadOutOfMemory;
+            status = OE_OUT_OF_MEMORY;
             goto Exit;
         }
         err = TcpsEncodeSignedLogPayload(
@@ -905,7 +905,7 @@ TcpsPersistCategoryWithCounter(
     }
     if (err != CborNoError)
     {
-        status = Tcps_Bad;
+        status = OE_FAILURE;
         goto Exit;
     }
 
@@ -915,7 +915,7 @@ TcpsPersistCategoryWithCounter(
         Category->Label,
         encodedSignedPayload,
         encodedSignedPayloadSize);
-    if (status != Tcps_Good)
+    if (status != OE_OK)
     {
         goto Exit;
     }
@@ -934,10 +934,10 @@ Exit:
         free(encodedSignedPayload);
     }
 
-    return Tcps_Good;
+    return OE_OK;
 }
 
-static Tcps_StatusCode
+static oe_result_t
 TcpsGetCategory(
     TCPS_LOG_ATTRIBUTES *LogAttributes,
     const char *Label,
@@ -954,7 +954,7 @@ TcpsGetCategory(
         }
     }
 
-    return Tcps_Good;
+    return OE_OK;
 }
 
 #pragma endregion Category
@@ -1122,14 +1122,14 @@ Cleanup:
     return err;
 }
 
-static Tcps_StatusCode
+static oe_result_t
 TcpsLogWriteBlock(
     TCPS_LOG_ATTRIBUTES *LogAttributes,
     TCPS_LOG_CATEGORY *Category,
     const uint8_t *BlockPayload,
     size_t BlockPayloadSize)
 {
-    Tcps_StatusCode status = Tcps_Good;
+    oe_result_t status = OE_OK;
     CborError err;
     TCPS_LOG_VALIDATION_STATE validationState = TCPS_LOG_VALIDATION_STATE_OK;
     uint8_t *encodedBlock;
@@ -1140,7 +1140,7 @@ TcpsLogWriteBlock(
         BlockPayload == NULL ||
         LogAttributes->RemoteTransport == NULL)
     {
-        status = Tcps_BadInvalidArgument;
+        status = OE_INVALID_PARAMETER;
         goto Exit;
     }
 
@@ -1159,7 +1159,7 @@ TcpsLogWriteBlock(
         encodedBlock = (uint8_t *)malloc(encodedBlockSize);
         if (encodedBlock == NULL)
         {
-            status = Tcps_BadOutOfMemory;
+            status = OE_OUT_OF_MEMORY;
             goto Exit;
         }
         err = TcpsEncodeBlock(
@@ -1172,7 +1172,7 @@ TcpsLogWriteBlock(
     }
     if (err != CborNoError)
     {
-        status = Tcps_Bad;
+        status = OE_FAILURE;
         goto Exit;
     }
 
@@ -1182,7 +1182,7 @@ TcpsLogWriteBlock(
         Category->Label,
         encodedBlock,
         encodedBlockSize);
-    if (Tcps_IsBad(status))
+    if (status != OE_OK)
     {
         goto Exit;
     }
@@ -1200,28 +1200,28 @@ Exit:
 
 #pragma region Public
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogOpen(
     _Outptr_ TCPS_LOG_ATTRIBUTES **LogAttributes,
     _In_ const TCPS_IDENTITY_PRIVATE *SigningIdentity,
     _In_ const TCPS_IDENTITY_PUBLIC *ValidationIdentity,
     _In_ PTCPS_LOG_TIME GetTimeHandler)
 {
-    Tcps_StatusCode status = Tcps_Good;
+    oe_result_t status = OE_OK;
 
     if (LogAttributes == NULL ||
         SigningIdentity == NULL ||
         ValidationIdentity == NULL ||
         GetTimeHandler == NULL)
     {
-        status = Tcps_BadInvalidArgument;
+        status = OE_INVALID_PARAMETER;
         goto Exit;
     }
 
     *LogAttributes = malloc(sizeof(TCPS_LOG_ATTRIBUTES));
     if (*LogAttributes == NULL)
     {
-        status = Tcps_BadOutOfMemory;
+        status = OE_OUT_OF_MEMORY;
         goto Exit;
     }
     memset(*LogAttributes, 0, sizeof(TCPS_LOG_ATTRIBUTES));
@@ -1231,7 +1231,7 @@ TcpsLogOpen(
     (*LogAttributes)->GetTimeHandler = GetTimeHandler;
 
 Exit:
-    if (Tcps_IsBad(status) && *LogAttributes != NULL)
+    if (status != OE_OK && *LogAttributes != NULL)
     {
         TcpsLogClose(*LogAttributes);
         *LogAttributes = NULL;
@@ -1240,7 +1240,7 @@ Exit:
     return status;
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogAddCategory(
     _Inout_ TCPS_LOG_ATTRIBUTES *LogAttributes,
     _In_ const char *Label,
@@ -1252,7 +1252,7 @@ TcpsLogAddCategory(
     _In_ PTCPS_LOG_COUNTER_INCREMENTGET IncrementGetCounterHandler,
     _In_ void *HandlerContext)
 {
-    Tcps_StatusCode status = Tcps_Good;
+    oe_result_t status = OE_OK;
     CborError err;
     TCPS_LOG_CATEGORY *existing = NULL, *categories = NULL;
     TCPS_LOG_SIGNED_PAYLOAD signedEncodedCategory;
@@ -1274,21 +1274,21 @@ TcpsLogAddCategory(
            ValidateCounterHandler != NULL &&
            IncrementGetCounterHandler != NULL)))
     {
-        status = Tcps_BadInvalidArgument;
+        status = OE_INVALID_PARAMETER;
         goto Exit;
     }
 
     TcpsGetCategory(LogAttributes, Label, &existing);
     if (existing != NULL)
     {
-        status = Tcps_Bad;
+        status = OE_FAILURE;
         goto Exit;
     }
 
     categories = malloc(sizeof(TCPS_LOG_CATEGORY) * (LogAttributes->CategoryCount + 1));
     if (categories == NULL)
     {
-        status = Tcps_BadOutOfMemory;
+        status = OE_OUT_OF_MEMORY;
         goto Exit;
     }
     memcpy(categories, LogAttributes->Categories, sizeof(TCPS_LOG_CATEGORY) * LogAttributes->CategoryCount);
@@ -1308,7 +1308,7 @@ TcpsLogAddCategory(
             Label,
             &encodedSignedPayload,
             &encodedSignedPayloadSize);
-        if (Tcps_IsBad(status))
+        if (status != OE_OK)
         {
             goto Exit;
         }
@@ -1327,7 +1327,7 @@ TcpsLogAddCategory(
                 &counterIdSize,
                 &counterValue,
                 &counterValueSize);
-            if (Tcps_IsBad(status))
+            if (status != OE_OK)
             {
                 goto Exit;
             }
@@ -1342,7 +1342,7 @@ TcpsLogAddCategory(
                 counterValueSize,
                 LogAttributes->ValidationIdentity,
                 LogAttributes->SigningIdentity);
-            if (Tcps_IsBad(status))
+            if (status != OE_OK)
             {
                 goto Exit;
             }
@@ -1357,12 +1357,12 @@ TcpsLogAddCategory(
             &encodedSignedPayloadSize);
         if (err != CborNoError)
         {
-            status = Tcps_Bad;
+            status = OE_FAILURE;
             goto Exit;
         }
 
         status = TcpsValidateSignedLogPayload(&signedEncodedCategory);
-        if (Tcps_IsBad(status))
+        if (status != OE_OK)
         {
             goto Exit;
         }
@@ -1375,7 +1375,7 @@ TcpsLogAddCategory(
             signedEncodedCategory.PayloadSize);
         if (err != CborNoError)
         {
-            status = Tcps_Bad;
+            status = OE_FAILURE;
             goto Exit;
         }
 
@@ -1385,7 +1385,7 @@ TcpsLogAddCategory(
             categories[LogAttributes->CategoryCount].CounterIdSize,
             counterValue,
             counterValueSize);
-        if (Tcps_IsBad(status))
+        if (status != OE_OK)
         {
             // TODO: handle this better - something malicious is probably happening
             goto Exit;
@@ -1400,7 +1400,7 @@ TcpsLogAddCategory(
     LogAttributes->CategoryCount += 1;
 
 Exit:
-    if (Tcps_IsBad(status) && categories != NULL)
+    if (status != OE_OK && categories != NULL)
     {
         free(categories);
     }
@@ -1416,7 +1416,7 @@ Exit:
     return status;
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogSetLocalTransport(
     _Inout_ TCPS_LOG_ATTRIBUTES *LogAttributes,
     _In_ PTCPS_LOG_LOCAL_WRITE WriteLocalEventHandler,
@@ -1424,7 +1424,7 @@ TcpsLogSetLocalTransport(
     _In_ PTCPS_LOG_LOCAL_CLEAR ClearLocalBlockHandler,
     _In_ void *HandlerContext)
 {
-    Tcps_StatusCode status = Tcps_Good;
+    oe_result_t status = OE_OK;
     TCPS_LOG_LOCAL_TRANSPORT *localTransport = NULL;
 
     if (LogAttributes == NULL ||
@@ -1432,14 +1432,14 @@ TcpsLogSetLocalTransport(
         ReadLocalBlockHandler == NULL ||
         ClearLocalBlockHandler == NULL)
     {
-        status = Tcps_BadInvalidArgument;
+        status = OE_INVALID_PARAMETER;
         goto Exit;
     }
 
     localTransport = malloc(sizeof(TCPS_LOG_LOCAL_TRANSPORT));
     if (localTransport == NULL)
     {
-        status = Tcps_BadOutOfMemory;
+        status = OE_OUT_OF_MEMORY;
         goto Exit;
     }
 
@@ -1451,7 +1451,7 @@ TcpsLogSetLocalTransport(
     LogAttributes->LocalTransport = localTransport;
 
 Exit:
-    if (Tcps_IsBad(status) && localTransport != NULL)
+    if (status != OE_OK && localTransport != NULL)
     {
         free(localTransport);
     }
@@ -1459,26 +1459,26 @@ Exit:
     return status;
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogSetRemoteTransport(
     _Inout_ TCPS_LOG_ATTRIBUTES *LogAttributes,
     _In_ PTCPS_LOG_REMOTE_WRITE WriteRemoteBlockHandler,
     _In_ void *HandlerContext)
 {
-    Tcps_StatusCode status = Tcps_Good;
+    oe_result_t status = OE_OK;
     TCPS_LOG_REMOTE_TRANSPORT *remoteTransport = NULL;
 
     if (LogAttributes == NULL ||
         WriteRemoteBlockHandler == NULL)
     {
-        status = Tcps_BadInvalidArgument;
+        status = OE_INVALID_PARAMETER;
         goto Exit;
     }
 
     remoteTransport = malloc(sizeof(TCPS_LOG_REMOTE_TRANSPORT));
     if (remoteTransport == NULL)
     {
-        status = Tcps_BadOutOfMemory;
+        status = OE_OUT_OF_MEMORY;
         goto Exit;
     }
 
@@ -1488,7 +1488,7 @@ TcpsLogSetRemoteTransport(
     LogAttributes->RemoteTransport = remoteTransport;
 
 Exit:
-    if (Tcps_IsBad(status) && remoteTransport != NULL)
+    if (status != OE_OK && remoteTransport != NULL)
     {
         free(remoteTransport);
     }
@@ -1496,14 +1496,14 @@ Exit:
     return status;
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogWrite(
     _Inout_ TCPS_LOG_ATTRIBUTES *LogAttributes,
     _In_ const char *CategoryLabel,
     _In_ const uint8_t *Payload,
     _In_ size_t PayloadSize)
 {
-    Tcps_StatusCode status = Tcps_Good;
+    oe_result_t status = OE_OK;
     CborError err;
     TCPS_LOG_CATEGORY *category;
     TCPS_LOG_EVENT event;
@@ -1516,7 +1516,7 @@ TcpsLogWrite(
         Payload == NULL ||
         (LogAttributes->LocalTransport == NULL && LogAttributes->RemoteTransport == NULL))
     {
-        status = Tcps_BadInvalidArgument;
+        status = OE_INVALID_PARAMETER;
         goto Exit;
     }
 
@@ -1524,7 +1524,7 @@ TcpsLogWrite(
     TcpsGetCategory(LogAttributes, CategoryLabel, &category);
     if (category == NULL)
     {
-        status = Tcps_Bad;
+        status = OE_FAILURE;
         goto Exit;
     }
 
@@ -1545,14 +1545,14 @@ TcpsLogWrite(
         encodedEvent = (uint8_t *)malloc(encodedEventSize);
         if (encodedEvent == NULL)
         {
-            status = Tcps_BadOutOfMemory;
+            status = OE_OUT_OF_MEMORY;
             goto Exit;
         }
         err = TcpsEncodeLogEvent(&event, encodedEvent, &encodedEventSize);
     }
     if (err != CborNoError)
     {
-        status = Tcps_Bad;
+        status = OE_FAILURE;
         goto Exit;
     }
 
@@ -1563,7 +1563,7 @@ TcpsLogWrite(
         encodedEventSize,
         LogAttributes->ValidationIdentity,
         LogAttributes->SigningIdentity);
-    if (Tcps_IsBad(status))
+    if (status != OE_OK)
     {
         goto Exit;
     }
@@ -1574,14 +1574,14 @@ TcpsLogWrite(
         encodedSignedEvent = (uint8_t *)malloc(encodedSignedEventSize);
         if (encodedSignedEvent == NULL)
         {
-            status = Tcps_BadOutOfMemory;
+            status = OE_OUT_OF_MEMORY;
             goto Exit;
         }
         err = TcpsEncodeSignedLogPayload(&signedEvent, encodedSignedEvent, &encodedSignedEventSize);
     }
     if (err != CborNoError)
     {
-        status = Tcps_Bad;
+        status = OE_FAILURE;
         goto Exit;
     }
 
@@ -1596,7 +1596,7 @@ TcpsLogWrite(
         encodedVersionedEvent = (uint8_t *)malloc(encodedVersionedEventSize);
         if (encodedVersionedEvent == NULL)
         {
-            status = Tcps_BadOutOfMemory;
+            status = OE_OUT_OF_MEMORY;
             goto Exit;
         }
         err = TcpsEncodeVersionedPayload(
@@ -1607,7 +1607,7 @@ TcpsLogWrite(
     }
     if (err != CborNoError)
     {
-        status = Tcps_Bad;
+        status = OE_FAILURE;
         goto Exit;
     }
 
@@ -1624,7 +1624,7 @@ TcpsLogWrite(
             0,
             LogAttributes->ValidationIdentity,
             LogAttributes->SigningIdentity);
-        if (Tcps_IsBad(status))
+        if (status != OE_OK)
         {
             goto Exit;
         }
@@ -1648,7 +1648,7 @@ TcpsLogWrite(
             encodedVersionedEvent,
             encodedVersionedEventSize);
     }
-    if (Tcps_IsBad(status))
+    if (status != OE_OK)
     {
         goto Exit;
     }
@@ -1670,12 +1670,12 @@ Exit:
     return status;
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogFlush(
     _Inout_ TCPS_LOG_ATTRIBUTES *LogAttributes,
     _In_ const char *CategoryLabel)
 {
-    Tcps_StatusCode status = Tcps_Good;
+    oe_result_t status = OE_OK;
     TCPS_LOG_CATEGORY *category;
     uint8_t *encodedEvents;
     size_t encodedEventsSize;
@@ -1685,7 +1685,7 @@ TcpsLogFlush(
         LogAttributes->RemoteTransport == NULL ||
         LogAttributes->LocalTransport == NULL)
     {
-        status = Tcps_BadInvalidArgument;
+        status = OE_INVALID_PARAMETER;
         goto Exit;
     }
 
@@ -1693,7 +1693,7 @@ TcpsLogFlush(
     TcpsGetCategory(LogAttributes, CategoryLabel, &category);
     if (category == NULL)
     {
-        status = Tcps_Bad;
+        status = OE_FAILURE;
         goto Exit;
     }
 
@@ -1703,7 +1703,7 @@ TcpsLogFlush(
         CategoryLabel,
         &encodedEvents,
         &encodedEventsSize);
-    if (Tcps_IsBad(status))
+    if (status != OE_OK)
     {
         goto Exit;
     }
@@ -1714,7 +1714,7 @@ TcpsLogFlush(
         category,
         encodedEvents,
         encodedEventsSize);
-    if (Tcps_IsBad(status))
+    if (status != OE_OK)
     {
         goto Exit;
     }
@@ -1723,7 +1723,7 @@ TcpsLogFlush(
     status = LogAttributes->LocalTransport->ClearLocalBlockHandler(
         LogAttributes->LocalTransport->HandlerContext,
         CategoryLabel);
-    if (Tcps_IsBad(status))
+    if (status != OE_OK)
     {
         goto Exit;
     }
@@ -1737,14 +1737,14 @@ Exit:
     return status;
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogClose(
     _Inout_ TCPS_LOG_ATTRIBUTES *LogAttributes)
 {
-    Tcps_StatusCode status = Tcps_Good;
+    oe_result_t status = OE_OK;
     if (LogAttributes == NULL)
     {
-        status = Tcps_BadInvalidArgument;
+        status = OE_INVALID_PARAMETER;
         goto Exit;
     }
 
@@ -1753,15 +1753,15 @@ TcpsLogClose(
 #ifndef TCPS_FREQUENT_COUNTERS
         if (LogAttributes->Categories[i].PersistCategoryHandler != NULL)
         {
-            status = (!Tcps_IsBad(TcpsPersistCategoryWithCounter(
+            status = (TcpsPersistCategoryWithCounter(
                           &LogAttributes->Categories[i],
                           NULL,
                           0,
                           LogAttributes->ValidationIdentity,
-                          LogAttributes->SigningIdentity)) &&
-                      !Tcps_IsBad(status))
-                         ? Tcps_Good
-                         : Tcps_Bad;
+                          LogAttributes->SigningIdentity) == OE_OK &&
+                      (status == OE_OK))
+                         ? OE_OK
+                         : OE_FAILURE;
         }
 #endif
 

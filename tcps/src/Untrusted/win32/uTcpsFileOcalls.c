@@ -15,9 +15,9 @@ ocall_stat64i32(
     oe_buffer256 path)
 {
     stat64i32_Result result;
-    Tcps_StatusCode uStatus = Tcps_Good;
+    oe_result_t uStatus = OE_OK;
     if (_stat64i32(path.buffer, (struct _stat64i32*)&result.buffer) != 0) {
-        result.status = Tcps_Bad;
+        result.status = OE_FAILURE;
     }
     result.status = uStatus;
     return result;

@@ -68,7 +68,7 @@ static HANDLE OpenServiceHandleByFilename(_In_ LPCGUID ServiceGuid)
     return serviceHandle;
 }
 
-Tcps_StatusCode Tcps_CreateTAInternal(
+oe_result_t Tcps_CreateTAInternal(
     _In_z_ const char* a_TaIdString,
     _In_ uint32_t a_Flags,
     _Out_ sgx_enclave_id_t* a_pId)
@@ -81,14 +81,14 @@ Tcps_StatusCode Tcps_CreateTAInternal(
     UUID uuid;
     HRESULT hr = UuidFromString((RPC_CSTR)a_TaIdString, &uuid);
     if (hr != S_OK) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     /* Open a session to the TA. */
     HANDLE hService = OpenServiceHandleByFilename(&uuid);
     *a_pId = (sgx_enclave_id_t)hService;
     if (hService == INVALID_HANDLE_VALUE) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
     assert(*a_pId != (sgx_enclave_id_t)-1);
 
@@ -96,7 +96,7 @@ Tcps_StatusCode Tcps_CreateTAInternal(
     WSADATA wsaData;
     (void)WSAStartup(0x202, &wsaData);
 
-    return Tcps_Good;
+    return OE_OK;
 }
 
 oe_result_t oe_terminate_enclave(_In_ oe_enclave_t* enclave)

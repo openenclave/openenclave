@@ -50,7 +50,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "GetSecureCallbackId");
         }
     }
 
-    Tcps_GotoErrorWithStatus(Tcps_BadInternalError);
+    Tcps_GotoErrorWithStatus(OE_FAILURE);
 
 Tcps_BeginErrorHandling;
     oe_assert(0);

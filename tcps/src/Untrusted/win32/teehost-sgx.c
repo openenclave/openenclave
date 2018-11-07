@@ -314,7 +314,7 @@ static int initialize_enclave(
     return 0;
 }
 
-Tcps_StatusCode Tcps_CreateTAInternal(
+oe_result_t Tcps_CreateTAInternal(
     _In_z_ const char* a_TaIdString,
     _In_ uint32_t a_Flags,
     _Out_ sgx_enclave_id_t* a_pId)
@@ -332,20 +332,20 @@ Tcps_StatusCode Tcps_CreateTAInternal(
     if (query_sgx_status() < 0)
     {
         /* Either SGX is disabled, or a reboot is required to enable SGX. */
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     /* Initialize the enclave. */
     if (initialize_enclave(tokenFilename, enclaveFilename, a_Flags, a_pId) < 0)
     {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     /* Proactively initialize sockets so the enclave isn't required to. */
     WSADATA wsaData;
     (void)WSAStartup(0x202, &wsaData);
 
-    return Tcps_Good;
+    return OE_OK;
 }
 
 oe_result_t oe_terminate_enclave(_In_ oe_enclave_t* enclave)

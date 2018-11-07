@@ -18,12 +18,13 @@ extern "C" {
 #include <sgx_eid.h>
 
 #include <stddef.h>
+#include <openenclave/bits/result.h>
 
 
 /* The caller is responsible for freeing the buffer after calling this. */
 void* TcpsCreateReeBuffer(_In_ int a_BufferSize);
 
-Tcps_StatusCode TcpsGetReeBuffer(
+oe_result_t TcpsGetReeBuffer(
     _In_ void* a_hReeBuffer,
     _Outptr_ char** a_pBuffer,
     _Out_ int* a_BufferSize);
@@ -31,7 +32,7 @@ Tcps_StatusCode TcpsGetReeBuffer(
 void TcpsFreeReeBuffer(_In_ void* a_hReeBuffer);
 
 /* The caller is responsible for freeing the buffer after calling this. */
-Tcps_StatusCode
+oe_result_t
 TcpsPushDataToTeeBuffer(
     _In_ sgx_enclave_id_t eid,
     _In_reads_(a_BufferSize) uint8_t* a_Buffer,

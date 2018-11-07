@@ -83,8 +83,8 @@ send_Result ocall_send(void* a_hSocket, void* a_hReeMessage, int a_Flags)
     int fd = (int)a_hSocket;
     char* ptr = NULL;
     int size = 0;
-    Tcps_StatusCode uStatus = GetBuffer(a_hReeMessage, &ptr, &size);
-    if (Tcps_IsBad(uStatus)) {
+    oe_result_t uStatus = GetBuffer(a_hReeMessage, &ptr, &size);
+    if (uStatus != OE_OK) {
         result.error = OE_EFAULT;
         return result;
     }
@@ -108,7 +108,7 @@ recv_Result ocall_recv(void* a_hSocket, int a_nBufferSize, int a_Flags)
     
     char* ptr = NULL;
     int size = 0;
-    Tcps_StatusCode uStatus = GetBuffer(hBuffer, &ptr, &size);
+    oe_result_t uStatus = GetBuffer(hBuffer, &ptr, &size);
     /* TODO: handle uStatus failure */
     result.bytesReceived = recv(fd, ptr, size, a_Flags);
     if (result.bytesReceived == -1) {
@@ -129,7 +129,7 @@ getaddrinfo_Result ocall_getaddrinfo(
     int a_SockType,
     int a_Protocol)
 {
-    Tcps_StatusCode status;
+    oe_result_t status;
     getaddrinfo_Result result = { 0 };
 
     struct addrinfo *ai;
@@ -168,7 +168,7 @@ getaddrinfo_Result ocall_getaddrinfo(
     }
 
     status = GetBuffer(aibufhandle, (char **)&aibuf, &size);
-    if (Tcps_IsBad(status)) {
+    if (status != OE_OK) {
         FreeBuffer(aibufhandle);
         freeaddrinfo(ailist);
         result.error = OE_EFAULT;

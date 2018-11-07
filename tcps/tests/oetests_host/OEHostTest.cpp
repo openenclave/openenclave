@@ -54,7 +54,7 @@ TEST(TeeHost, create_enclave_BadId)
 
 TEST(TeeHost, create_enclave_Success)
 {
-    Tcps_StatusCode uStatus = Tcps_Good;
+    oe_result_t uStatus = OE_OK;
     oe_result_t result = OE_OK;
     oe_enclave_t* enclave = NULL;
 
@@ -73,7 +73,7 @@ TEST(TeeHost, create_enclave_Success)
 
     result = ecall_ReturnOk(enclave, &uStatus);
     EXPECT_EQ(OE_OK, result);
-    EXPECT_EQ(Tcps_Good, uStatus);
+    EXPECT_EQ(OE_OK, uStatus);
 
     result = oe_terminate_enclave(enclave);
     EXPECT_EQ(OE_OK, result);

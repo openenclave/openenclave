@@ -1,4 +1,4 @@
-include ../../../tcps_sub.mk
+include ../../../oe_sub.mk
 
 # Workaround for oeoverintelsgx_t.h:53:1: error: function declaration isn't a prototype [-Werror=strict-prototypes]
 WARNS=0

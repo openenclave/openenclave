@@ -47,163 +47,163 @@ public:
 TEST_F(OEEnclaveTest, is_within_enclave_Success)
 {
     int foo;
-    Tcps_StatusCode uStatus;
+    oe_result_t uStatus;
     oe_result_t oeResult = ecall_TestOEIsWithinEnclave(GetOEEnclave(), &uStatus, &foo, sizeof(foo));
     EXPECT_EQ(OE_OK, oeResult);
-    EXPECT_EQ(Tcps_Good, uStatus);
+    EXPECT_EQ(OE_OK, uStatus);
 }
 
 TEST_F(OEEnclaveTest, is_outside_enclave_Success)
 {
     int foo;
-    Tcps_StatusCode uStatus;
+    oe_result_t uStatus;
     oe_result_t oeResult = ecall_TestOEIsOutsideEnclave(GetOEEnclave(), &uStatus, &foo, sizeof(foo));
     EXPECT_EQ(OE_OK, oeResult);
-    EXPECT_EQ(Tcps_Good, uStatus);
+    EXPECT_EQ(OE_OK, uStatus);
 }
 
 TEST_F(OEEnclaveTest, random_Success)
 {
-    Tcps_StatusCode uStatus;
+    oe_result_t uStatus;
     oe_result_t oeResult = ecall_TestOERandom(GetOEEnclave(), &uStatus);
     EXPECT_EQ(OE_OK, oeResult);
-    EXPECT_EQ(Tcps_Good, uStatus);
+    EXPECT_EQ(OE_OK, uStatus);
 }
 
 TEST_F(OEEnclaveTest, exceptions_Success)
 {
-    Tcps_StatusCode uStatus;
+    oe_result_t uStatus;
     oe_result_t oeResult = ecall_TestOEExceptions(GetOEEnclave(), &uStatus);
     EXPECT_EQ(OE_OK, oeResult);
-    EXPECT_EQ(Tcps_Good, uStatus);
+    EXPECT_EQ(OE_OK, uStatus);
 }
 
 TEST_F(OEEnclaveTest, get_report_v1_Success)
 {
-    Tcps_StatusCode uStatus;
+    oe_result_t uStatus;
     oe_result_t oeResult = ecall_TestOEGetReportV1(GetOEEnclave(), &uStatus, 0);
     EXPECT_EQ(OE_OK, oeResult);
-    EXPECT_EQ(Tcps_Good, uStatus);
+    EXPECT_EQ(OE_OK, uStatus);
 }
 
 TEST_F(OEEnclaveTest, get_report_v2_Success)
 {
-    Tcps_StatusCode uStatus;
+    oe_result_t uStatus;
     oe_result_t oeResult = ecall_TestOEGetReportV2(GetOEEnclave(), &uStatus, 0);
     EXPECT_EQ(OE_OK, oeResult);
-    EXPECT_EQ(Tcps_Good, uStatus);
+    EXPECT_EQ(OE_OK, uStatus);
 }
 
 TEST_F(OEEnclaveTest, get_target_info_v1_Success)
 {
-    Tcps_StatusCode uStatus;
+    oe_result_t uStatus;
     oe_result_t oeResult = ecall_TestOEGetTargetInfoV1(GetOEEnclave(), &uStatus, 0);
     EXPECT_EQ(OE_OK, oeResult);
-    EXPECT_EQ(Tcps_Good, uStatus);
+    EXPECT_EQ(OE_OK, uStatus);
 }
 
 TEST_F(OEEnclaveTest, get_target_info_v2_Success)
 {
-    Tcps_StatusCode uStatus;
+    oe_result_t uStatus;
     oe_result_t oeResult = ecall_TestOEGetTargetInfoV2(GetOEEnclave(), &uStatus, 0);
     EXPECT_EQ(OE_OK, oeResult);
-    EXPECT_EQ(Tcps_Good, uStatus);
+    EXPECT_EQ(OE_OK, uStatus);
 }
 
 TEST_F(OEEnclaveTest, get_seal_key_v1_Unique_Success)
 {
-    Tcps_StatusCode uStatus;
+    oe_result_t uStatus;
     oe_result_t oeResult = ecall_TestOEGetSealKeyV1(GetOEEnclave(), &uStatus, 1);
     EXPECT_EQ(OE_OK, oeResult);
-    EXPECT_EQ(Tcps_Good, uStatus);
+    EXPECT_EQ(OE_OK, uStatus);
 }
 
 TEST_F(OEEnclaveTest, get_seal_key_v2_Unique_Success)
 {
-    Tcps_StatusCode uStatus;
+    oe_result_t uStatus;
     oe_result_t oeResult = ecall_TestOEGetSealKeyV2(GetOEEnclave(), &uStatus, 1);
     EXPECT_EQ(OE_OK, oeResult);
-    EXPECT_EQ(Tcps_Good, uStatus);
+    EXPECT_EQ(OE_OK, uStatus);
 }
 
 TEST_F(OEEnclaveTest, get_seal_key_v1_Product_Success)
 {
-    Tcps_StatusCode uStatus;
+    oe_result_t uStatus;
     oe_result_t oeResult = ecall_TestOEGetSealKeyV1(GetOEEnclave(), &uStatus, 2);
     EXPECT_EQ(OE_OK, oeResult);
-    EXPECT_EQ(Tcps_Good, uStatus);
+    EXPECT_EQ(OE_OK, uStatus);
 }
 
 TEST_F(OEEnclaveTest, get_seal_key_v2_Product_Success)
 {
-    Tcps_StatusCode uStatus;
+    oe_result_t uStatus;
     oe_result_t oeResult = ecall_TestOEGetSealKeyV2(GetOEEnclave(), &uStatus, 2);
     EXPECT_EQ(OE_OK, oeResult);
-    EXPECT_EQ(Tcps_Good, uStatus);
+    EXPECT_EQ(OE_OK, uStatus);
 }
 
 TEST_F(OEEnclaveTest, get_seal_key_v1_BadPolicy_InvalidParameter)
 {
-    Tcps_StatusCode uStatus;
+    oe_result_t uStatus;
     oe_result_t oeResult = ecall_TestOEGetSealKeyV1(GetOEEnclave(), &uStatus, 0);
     EXPECT_EQ(OE_OK, oeResult);
-    EXPECT_EQ(Tcps_Bad, uStatus);
+    EXPECT_EQ(OE_FAILURE, uStatus);
 }
 
 TEST_F(OEEnclaveTest, get_seal_key_v2_BadPolicy_InvalidParameter)
 {
-    Tcps_StatusCode uStatus;
+    oe_result_t uStatus;
     oe_result_t oeResult = ecall_TestOEGetSealKeyV2(GetOEEnclave(), &uStatus, 0);
     EXPECT_EQ(OE_OK, oeResult);
-    EXPECT_EQ(Tcps_Bad, uStatus);
+    EXPECT_EQ(OE_FAILURE, uStatus);
 }
 
 TEST_F(OEEnclaveTest, get_public_key_Unique_Success)
 {
-    Tcps_StatusCode uStatus;
+    oe_result_t uStatus;
     oe_result_t oeResult = ecall_TestOEGetPublicKey(GetOEEnclave(), &uStatus, 1);
     EXPECT_EQ(OE_OK, oeResult);
-    EXPECT_EQ(Tcps_Good, uStatus);
+    EXPECT_EQ(OE_OK, uStatus);
 }
 
 TEST_F(OEEnclaveTest, get_public_key_Product_Success)
 {
-    Tcps_StatusCode uStatus;
+    oe_result_t uStatus;
     oe_result_t oeResult = ecall_TestOEGetPublicKey(GetOEEnclave(), &uStatus, 2);
     EXPECT_EQ(OE_OK, oeResult);
-    EXPECT_EQ(Tcps_Good, uStatus);
+    EXPECT_EQ(OE_OK, uStatus);
 }
 
 TEST_F(OEEnclaveTest, get_public_key_BadPolicy_InvalidParameter)
 {
-    Tcps_StatusCode uStatus;
+    oe_result_t uStatus;
     oe_result_t oeResult = ecall_TestOEGetPublicKey(GetOEEnclave(), &uStatus, 0);
     EXPECT_EQ(OE_OK, oeResult);
-    EXPECT_EQ(Tcps_Bad, uStatus);
+    EXPECT_EQ(OE_FAILURE, uStatus);
 }
 
 TEST_F(OEEnclaveTest, get_private_key_Unique_Success)
 {
-    Tcps_StatusCode uStatus;
+    oe_result_t uStatus;
     oe_result_t oeResult = ecall_TestOEGetPrivateKey(GetOEEnclave(), &uStatus, 1);
     EXPECT_EQ(OE_OK, oeResult);
-    EXPECT_EQ(Tcps_Good, uStatus);
+    EXPECT_EQ(OE_OK, uStatus);
 }
 
 TEST_F(OEEnclaveTest, get_private_key_Product_Success)
 {
-    Tcps_StatusCode uStatus;
+    oe_result_t uStatus;
     oe_result_t oeResult = ecall_TestOEGetPrivateKey(GetOEEnclave(), &uStatus, 2);
     EXPECT_EQ(OE_OK, oeResult);
-    EXPECT_EQ(Tcps_Good, uStatus);
+    EXPECT_EQ(OE_OK, uStatus);
 }
 
 TEST_F(OEEnclaveTest, get_private_key_v2_BadPolicy_InvalidParameter)
 {
-    Tcps_StatusCode uStatus;
+    oe_result_t uStatus;
     oe_result_t oeResult = ecall_TestOEGetPrivateKey(GetOEEnclave(), &uStatus, 0);
     EXPECT_EQ(OE_OK, oeResult);
-    EXPECT_EQ(Tcps_Bad, uStatus);
+    EXPECT_EQ(OE_FAILURE, uStatus);
 }
 
 TEST_F(OEEnclaveTest, malloc_Success)
@@ -247,11 +247,11 @@ TEST_F(OEEnclaveTest, strndup_Success)
 
 TEST_F(OEEnclaveTest, ocall_Success)
 {
-    Tcps_StatusCode uStatus = Tcps_BadNotImplemented;
+    oe_result_t uStatus = OE_UNSUPPORTED;
     size_t outputSize = 0;
     oe_result_t oeResult = ecall_TestOcall(GetOEEnclave(), &uStatus);
     EXPECT_EQ(OE_OK, oeResult);
-    EXPECT_EQ(Tcps_Good, uStatus);
+    EXPECT_EQ(OE_OK, uStatus);
 }
 
 TEST_F(OEEnclaveTest, string_calls_Success)

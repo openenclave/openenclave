@@ -5,7 +5,7 @@ TCPS_SDK_ROOT_PATH = $(OE_SDK_ROOT_PATH)tcps/
 
 BINARY=aac3129e-c244-4e09-9e61-d4efcf31bca3
 
-include $(TCPS_SDK_ROOT_PATH)/tcps_sdk_rules.mk
+include $(TCPS_SDK_ROOT_PATH)/oe_sdk_rules.mk
 
 CFG_TEE_TA_LOG_LEVEL=4
 

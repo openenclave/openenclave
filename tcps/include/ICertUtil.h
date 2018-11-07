@@ -59,7 +59,7 @@ TcpsBufferToHexString(
     char* const String
 );
 
-Tcps_StatusCode
+oe_result_t
 TcpsPemToDer(
     char *PemCert,
     uint8_t *DerBuf,
@@ -67,7 +67,7 @@ TcpsPemToDer(
     uint32_t *SizeNeeded
 );
 
-Tcps_StatusCode
+oe_result_t
 TcpsExtractOIDExtension(
     uint8_t *DerBuf,
     uint32_t DerBufSize,
@@ -77,7 +77,7 @@ TcpsExtractOIDExtension(
     uint32_t *OidDataSize
 );
 
-Tcps_StatusCode
+oe_result_t
 TcpsLoadCertChain(
     const char *PemCertChain,
     PTCPS_DER_CERT_CHAIN DerCertArray
@@ -88,14 +88,14 @@ TcpsFreeCertChain(
     PTCPS_DER_CERT_CHAIN DerCertArray
 );
 
-Tcps_StatusCode
+oe_result_t
 TcpsGetDeviceIdStrFromPem(
     const char* const CertBuffer,
     char* const DeviceIDStr,
     const uint32_t DeviceIDStrSize
 );
 
-Tcps_StatusCode
+oe_result_t
 TcpsGetDeviceIdStr(
     const char* const PemCertChain,
     char* const DeviceIDStr,
@@ -103,14 +103,14 @@ TcpsGetDeviceIdStr(
     uint32_t* const RequiredSize
 );
 
-Tcps_StatusCode
+oe_result_t
 TcpsGetDeviceIdStrFromPublic(
     const RIOT_ECC_PUBLIC* const PublicKey,
     char* const DeviceIDStr,
     const uint32_t DeviceIDStrSize
 );
 
-Tcps_StatusCode
+oe_result_t
 TcpsGetDeviceIdBinary(
     const char* const PemCertChain,
     uint8_t* const DeviceID,
@@ -118,7 +118,7 @@ TcpsGetDeviceIdBinary(
     uint32_t* const RequiredSize
 );
 
-Tcps_StatusCode
+oe_result_t
 TcpsGetDeviceIdBinaryFromDerCertChain(
     const TCPS_DER_CERT_CHAIN* const DerCertChain,
     uint8_t* const DeviceID,
@@ -126,7 +126,7 @@ TcpsGetDeviceIdBinaryFromDerCertChain(
     uint32_t* const RequiredSize
 );
 
-Tcps_StatusCode
+oe_result_t
 TcpsGetDeviceIdBinaryFromPubKeyBuffer(
     const uint8_t* const PubKeyBuffer,
     const uint32_t PubKeyBufferSize,
@@ -135,7 +135,7 @@ TcpsGetDeviceIdBinaryFromPubKeyBuffer(
     uint32_t* const RequiredSize
 );
 
-Tcps_StatusCode
+oe_result_t
 TcpsGetCertChainFromStore(
     const void *Store,
     TCPS_DER_CERT_CHAIN *CertChain

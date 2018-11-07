@@ -246,14 +246,14 @@ oe_recv(
     }
     else if (result.bytesReceived > 0)
     {
-        Tcps_StatusCode uStatus = TcpsPullDataFromReeBuffer(
+        oe_result_t uStatus = TcpsPullDataFromReeBuffer(
             result.hMessage,
             buf,
             result.bytesReceived);
 
         TcpsFreeReeBuffer(result.hMessage);
 
-        if (Tcps_IsBad(uStatus))
+        if (uStatus != OE_OK)
         {
             result.error = OE_ENETDOWN;
         }
@@ -274,8 +274,8 @@ oe_send(
     send_Result result;
     void* hReeBuffer; /* Handle to REE buffer. */
 
-    Tcps_StatusCode uStatus = TcpsPushDataToReeBuffer(buf, len, &hReeBuffer);
-    if (Tcps_IsBad(uStatus))
+    oe_result_t uStatus = TcpsPushDataToReeBuffer(buf, len, &hReeBuffer);
+    if (uStatus != OE_OK)
     {
         result.error = OE_ENETDOWN;
         result.bytesSent = 0;
@@ -530,7 +530,7 @@ oe_getaddrinfo(
     oe_addrinfo* ailist = NULL;
     oe_addrinfo* ai;
     oe_addrinfo** pNext = &ailist;
-    Tcps_StatusCode uStatus = Tcps_Good;
+    oe_result_t uStatus = OE_OK;
 
     result.addressCount = 0;
 
@@ -550,14 +550,14 @@ oe_getaddrinfo(
         int bytesReceived = result.addressCount * sizeof(addrinfo_Buffer);
         char* buf = oe_malloc(bytesReceived);
         if (buf == NULL) {
-            uStatus = Tcps_BadOutOfMemory;
+            uStatus = OE_OUT_OF_MEMORY;
             result.error = OE_ENOMEM;
         } else {
             uStatus = TcpsPullDataFromReeBuffer(
                 result.hMessage,
                 buf,
                 bytesReceived);
-            if (Tcps_IsBad(uStatus))
+            if (uStatus != OE_OK)
             {
                 result.error = OE_ENOTRECOVERABLE;
             }

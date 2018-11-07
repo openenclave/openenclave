@@ -67,7 +67,7 @@ static void *generic_rpc_thread_procedure(void *param)
     return (void *)(uintptr_t)res;
 }
 
-static Tcps_StatusCode uuid_from_string(
+static oe_result_t uuid_from_string(
     char *a_TaIdString,
     TEEC_UUID *a_Uuid)
 {
@@ -77,7 +77,7 @@ static Tcps_StatusCode uuid_from_string(
     const char *current_token;
 
     if (strlen(a_TaIdString) != 36)
-        return Tcps_BadInvalidArgument;
+        return OE_INVALID_PARAMETER;
 
     id_copy = strdup(a_TaIdString);
 
@@ -91,7 +91,7 @@ static Tcps_StatusCode uuid_from_string(
     free(id_copy);
 
     if (i != 0)
-        return Tcps_BadInvalidArgument;
+        return OE_INVALID_PARAMETER;
 
     a_Uuid->timeLow            = (uint32_t)uuid_parts[4];
     a_Uuid->timeMid            = (uint16_t)uuid_parts[3];
@@ -105,15 +105,15 @@ static Tcps_StatusCode uuid_from_string(
     a_Uuid->clockSeqAndNode[6] = (uint8_t)(uuid_parts[0] >> (8 * 1));
     a_Uuid->clockSeqAndNode[7] = (uint8_t)(uuid_parts[0] >> (8 * 0));
 
-    return Tcps_Good;
+    return OE_OK;
 }
 
-Tcps_StatusCode Tcps_CreateTAInternal(
+oe_result_t Tcps_CreateTAInternal(
     _In_z_ const char* a_TaIdString,
     _In_ uint32_t a_Flags,
     _Out_ sgx_enclave_id_t* a_pId)
 {
-    Tcps_StatusCode status;
+    oe_result_t status;
     
     TEEC_Result res;
     TEEC_UUID uuid;
@@ -123,45 +123,47 @@ Tcps_StatusCode Tcps_CreateTAInternal(
    
     OE_UNUSED(a_Flags);
 
-    if (!a_TaIdString || !a_pId)
-        return Tcps_BadInvalidArgument;
+    if (!a_TaIdString || !a_pId) {
+        return OE_INVALID_PARAMETER;
+    }
 
     status = uuid_from_string((char *)a_TaIdString, &uuid);
-    if (Tcps_IsBad(status))
+    if (status != OE_OK) {
         return status;
+    }
 
     optee = malloc(sizeof(*optee));
     if (!optee) {
-        return Tcps_BadOutOfMemory;
+        return OE_OUT_OF_MEMORY;
     }
 
     s = pthread_mutex_init(&optee->mutex, NULL);
     if (s) {
-        status = Tcps_Bad;
+        status = OE_FAILURE;
         goto out_optee_alloc;
     }
 
     res = TEEC_InitializeContext(NULL, &optee->ctx);
     if (res != TEEC_SUCCESS) {
-        status = Tcps_Bad;
+        status = OE_FAILURE;
         goto out_mutex;
     }
 
     res = TEEC_OpenSession(&optee->ctx, &optee->session, &uuid, TEEC_LOGIN_PUBLIC, NULL, NULL, &err_origin);
     if (res != TEEC_SUCCESS) {
-        status = Tcps_BadCommunicationError;
+        status = OE_FAILURE;
         goto out_ctx;
     }
 
     s = pthread_create(&optee->rpc_thread, NULL, generic_rpc_thread_procedure, optee);
     if (s) {
-        status = Tcps_Bad;
+        status = OE_FAILURE;
         goto out_sess;
     }
 
     *a_pId = (sgx_enclave_id_t)optee;
 
-    return Tcps_Good;
+    return OE_OK;
 
 out_sess:
     TEEC_CloseSession(&optee->session);

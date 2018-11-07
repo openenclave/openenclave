@@ -19,6 +19,7 @@
 #endif
 
 #include "tcps.h"
+#include <openenclave/bits/result.h>
 
 typedef int64_t __int64_t;
 typedef uint64_t __uint64_t;
@@ -33,7 +34,7 @@ typedef uint32_t __uint32_t;
  */
 # include <sgx.h>
 #if defined(USE_OPTEE)
-# include "optee/TcpsRpcOptee.h"
+# include "optee/sgxoveroptee.h"
 #endif
 
 #define STRUNCATE 80 
@@ -116,14 +117,14 @@ BOOL DeleteFile(_In_z_ const char* filename);
 void SetLastError(_In_ DWORD dwErrCode);
 #endif /* !_ERRHANDLING_H_ */
 
-Tcps_StatusCode
+oe_result_t
 SaveBufferToFile(
     _In_z_ const char* destinationLocation, 
     _In_reads_bytes_(len) const void* ptr, 
     _In_ size_t len, 
     _In_ int addToManifest);
 
-Tcps_StatusCode
+oe_result_t
 GenerateKeyAndCertificate(
     _In_z_ const char* commonName,
     _In_z_ const char* certificateUri,
@@ -133,11 +134,11 @@ GenerateKeyAndCertificate(
     _In_z_ const char* certificateFileNameExported,
     _In_ unsigned char isRsa);
 
-Tcps_StatusCode GetTrustedFileSize(
+oe_result_t GetTrustedFileSize(
     _In_z_ const char* trustedFilePath,
     _Out_ int64_t *fileSize);
 
-Tcps_StatusCode GetTrustedFileInBuffer(
+oe_result_t GetTrustedFileInBuffer(
     _In_z_ const char* trustedLocation, 
     _Outptr_ char** pBuffer,
     _Out_ size_t* pLen);
@@ -171,46 +172,46 @@ int ExportFile(
     _In_z_ const char* trustedLocation,
     _In_z_ const char* untrustedLocation);
 
-Tcps_StatusCode Provision_Certificate(
+oe_result_t Provision_Certificate(
     _In_z_ const char* destinationLocation, 
     _In_z_ const char* sourceLocation);
 
 /*************************************************************/
 
 /* Prototypes that must be implemented by files specific to each TEE. */
-Tcps_StatusCode TEE_P_SaveBufferToFile(
+oe_result_t TEE_P_SaveBufferToFile(
     _In_z_ const char* destinationLocation,
     _In_reads_bytes_(len) const void* ptr,
     _In_ size_t len);
-Tcps_StatusCode TEE_P_ExportPublicCertificate(
+oe_result_t TEE_P_ExportPublicCertificate(
     _In_z_ const char* destinationPath,
     _Out_writes_(len) char* ptr,
     _In_ size_t len);
-Tcps_StatusCode TEE_P_ExportFile(
+oe_result_t TEE_P_ExportFile(
     _In_z_ const char* untrustedLocation,
     _In_reads_bytes_(len) const char* ptr,
     _In_ size_t len);
-Tcps_StatusCode TEE_P_ImportFile(
+oe_result_t TEE_P_ImportFile(
     _In_z_ const char* destinationLocation,
     _In_z_ const char *sourceLocation,
     _In_ int addToManifest);
 
 /* The caller is responsible for freeing the buffer after calling this. */
 void* TcpsCreateTeeBuffer(_In_ int a_BufferSize);
-Tcps_StatusCode TcpsGetTeeBuffer(
+oe_result_t TcpsGetTeeBuffer(
     _In_ void* a_hTeeBuffer,
     _Outptr_ char** a_pBuffer,
     _Out_ int* a_BufferSize);
 void TcpsFreeTeeBuffer(_In_ void* a_hTeeBuffer);
 
 /* The caller is responsible for freeing the buffer after calling this. */
-Tcps_StatusCode
+oe_result_t
 TcpsPushDataToReeBuffer(
     _In_reads_bytes_(a_BufferSize) const uint8_t* a_Buffer,
     _In_ size_t a_BufferSize,
     _Out_ void** a_phReeBuffer);
 
-Tcps_StatusCode
+oe_result_t
 TcpsPullDataFromReeBuffer(
     _In_ void* a_hReeBuffer,
     _Out_writes_bytes_all_(a_BufferSize) uint8_t* a_Buffer,

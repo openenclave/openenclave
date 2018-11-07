@@ -200,11 +200,11 @@ int FindCloseInternal(HANDLE hFindFile)
     return (result == 0);
 }
 
-Tcps_StatusCode GetTrustedFileSize(const char* trustedFilePath, int64_t *fileSize)
+oe_result_t GetTrustedFileSize(const char* trustedFilePath, int64_t *fileSize)
 {
     SGX_FILE* fp = sgx_fopen_auto_key(trustedFilePath, "r");
     if (fp == NULL) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     // fseek using SEEK_END doesn't seem to work, so we have to read a block at a time
@@ -217,7 +217,7 @@ Tcps_StatusCode GetTrustedFileSize(const char* trustedFilePath, int64_t *fileSiz
         if (len <= 0) {
             sgx_fclose(fp);
             *fileSize = cumul;
-            return Tcps_Good;
+            return OE_OK;
         }
         cumul += len;
     }
@@ -225,7 +225,7 @@ Tcps_StatusCode GetTrustedFileSize(const char* trustedFilePath, int64_t *fileSiz
     sgx_fclose(fp);
 
     *fileSize = cumul;
-    return Tcps_Good;
+    return OE_OK;
 }
 
 int AppendToFile(
@@ -256,7 +256,7 @@ int AppendToFile(
     return 0;
 }
 
-Tcps_StatusCode TEE_P_SaveBufferToFile(
+oe_result_t TEE_P_SaveBufferToFile(
     _In_z_ const char* destinationLocation,
     _In_reads_bytes_(len) const void* ptr,
     _In_ size_t len)
@@ -272,11 +272,11 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "TEE_P_SaveBufferToFile");
 
     fp = sgx_fopen_auto_key(destinationLocation, "w");
     DMSG("TEE_P_SaveBufferToFile: sgx_fopen_auto_key(%s) returned fp = %p\n", destinationLocation, fp);
-    Tcps_GotoErrorIfTrue(fp == NULL, Tcps_BadUnexpectedError);
+    Tcps_GotoErrorIfTrue(fp == NULL, OE_FAILURE);
 
     size_t writelen = sgx_fwrite(ptr, 1, len, fp);
     DMSG("TEE_P_SaveBufferToFile: sgx_fwrite(len = %u) returned writelen = %u\n", len, writelen);
-    Tcps_GotoErrorIfTrue(writelen != len, Tcps_BadUnexpectedError);
+    Tcps_GotoErrorIfTrue(writelen != len, OE_FAILURE);
 
     sgx_fclose(fp);
 
@@ -289,14 +289,14 @@ Tcps_BeginErrorHandling;
 Tcps_FinishErrorHandling;
 }
 
-Tcps_StatusCode DeleteFile(const char* filename)
+oe_result_t DeleteFile(const char* filename)
 {
 Tcps_InitializeStatus(Tcps_Module_Helper_t, "DeleteFile");
 
     int result = sgx_remove(filename);
 
     if (errno != ENOENT) {
-        Tcps_GotoErrorIfTrue(result != 0, Tcps_BadUnexpectedError);
+        Tcps_GotoErrorIfTrue(result != 0, OE_FAILURE);
     }
    
 Tcps_ReturnStatusCode;

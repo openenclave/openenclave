@@ -34,9 +34,9 @@
 
 class SocketsTest : public TrustedAppTest {
 public:
-    Tcps_StatusCode RunTestClient(void)
+    oe_result_t RunTestClient(void)
     {
-        Tcps_StatusCode uStatus = Tcps_BadCommunicationError;
+        oe_result_t uStatus = OE_FAILURE;
         struct addrinfo* ai = NULL;
         SOCKET s = INVALID_SOCKET;
         struct addrinfo hints = { 0 };
@@ -95,7 +95,7 @@ public:
         /* Add null termination. */
         reply[replyLength] = 0;
 
-        uStatus = Tcps_Good;
+        uStatus = OE_OK;
 
     Done:
         if (s != INVALID_SOCKET) {
@@ -107,9 +107,9 @@ public:
         return uStatus;
     }
 
-    Tcps_StatusCode StartTestServer(void)
+    oe_result_t StartTestServer(void)
     {
-        Tcps_StatusCode uStatus = Tcps_BadCommunicationError;
+        oe_result_t uStatus = OE_FAILURE;
         struct addrinfo* ai = NULL;
         SOCKET listener = INVALID_SOCKET;
         SOCKET s = INVALID_SOCKET;
@@ -131,24 +131,24 @@ public:
         hints.ai_flags = AI_PASSIVE;
         err = getaddrinfo(NULL, this->port, &hints, &ai);
         if (err != 0) {
-            return Tcps_BadCommunicationError;
+            return OE_FAILURE;
         }
 
         /* Create listener socket. */
         listener = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
         if (listener == INVALID_SOCKET) {
             freeaddrinfo(ai);
-            return Tcps_BadCommunicationError;
+            return OE_FAILURE;
         }
         if (bind(listener, ai->ai_addr, ai->ai_addrlen) == SOCKET_ERROR) {
             closesocket(listener);
             freeaddrinfo(ai);
-            return Tcps_BadCommunicationError;
+            return OE_FAILURE;
         }
 
         if (listen(listener, SOMAXCONN) == SOCKET_ERROR) {
             closesocket(listener);
-            return Tcps_BadCommunicationError;
+            return OE_FAILURE;
         }
 
         /* Signal client thread that we're ready to accept connections. */
@@ -190,7 +190,7 @@ public:
         if (bytesSent == SOCKET_ERROR) {
             goto Done;
         }
-        uStatus = Tcps_Good;
+        uStatus = OE_OK;
 
     Done:
         free(message);
@@ -253,7 +253,7 @@ WINAPI RunTestClient(_In_ LPVOID lpParameter)
 
 TEST_F(SocketsTest, EchoClient_Success)
 {
-    Tcps_StatusCode uStatus;
+    oe_result_t uStatus;
 #ifdef LINUX
     pthread_t hServerThread;
 #else
@@ -285,7 +285,7 @@ TEST_F(SocketsTest, EchoClient_Success)
 
     oe_result_t oeResult = ecall_RunClient(GetOEEnclave(), &uStatus, this->server, this->port);
     ASSERT_EQ(OE_OK, oeResult);
-    ASSERT_EQ(Tcps_Good, uStatus);
+    ASSERT_EQ(OE_OK, uStatus);
 
     // Clean up test server.
 #ifdef LINUX
@@ -298,7 +298,7 @@ TEST_F(SocketsTest, EchoClient_Success)
 
 TEST_F(SocketsTest, EchoServer_Success)
 {
-    Tcps_StatusCode uStatus;
+    oe_result_t uStatus;
 #ifdef LINUX
     pthread_t hClientThread;
 #else
@@ -310,7 +310,7 @@ TEST_F(SocketsTest, EchoServer_Success)
 
     oe_result_t oeResult = ecall_StartServer(GetOEEnclave(), &uStatus, this->port);
     ASSERT_EQ(OE_OK, oeResult);
-    ASSERT_EQ(Tcps_Good, uStatus);
+    ASSERT_EQ(OE_OK, uStatus);
 
     // Run a test client.
 #ifdef LINUX
@@ -323,7 +323,7 @@ TEST_F(SocketsTest, EchoServer_Success)
     // Clean up test server.
     oeResult = ecall_FinishServer(GetOEEnclave(), &uStatus);
     ASSERT_EQ(OE_OK, oeResult);
-    ASSERT_EQ(Tcps_Good, uStatus);
+    ASSERT_EQ(OE_OK, uStatus);
 
     // Clean up test client.
 #ifdef LINUX

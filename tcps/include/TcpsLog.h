@@ -36,7 +36,7 @@ typedef struct _TCPS_LOG_EVENT {
 //
 
 // local/remote logging, any writing
-typedef Tcps_StatusCode (*PTCPS_LOG_WRITE)(
+typedef oe_result_t (*PTCPS_LOG_WRITE)(
     void* CallbackHandle,
     const uint8_t* const Buffer, 
     const size_t BufferSize,
@@ -44,19 +44,19 @@ typedef Tcps_StatusCode (*PTCPS_LOG_WRITE)(
 );
 
 // reading of local log, any reading
-typedef Tcps_StatusCode (*PTCPS_LOG_READ)(
+typedef oe_result_t (*PTCPS_LOG_READ)(
     void* CallbackHandle,
     uint8_t** const Buffer, 
     size_t* const BufferSize, 
     const TCPS_IDENTITY_LOG Identity
 );
 
-typedef Tcps_StatusCode (*PTCPS_LOG_IDENTITY)(
+typedef oe_result_t (*PTCPS_LOG_IDENTITY)(
     void* CallbackHandle,
     const TCPS_IDENTITY_LOG Identity
 );
 
-typedef Tcps_StatusCode (*PTCPS_LOG_VALIDATE)(
+typedef oe_result_t (*PTCPS_LOG_VALIDATE)(
     const TCPS_LOG_EVENT* const Entry,
     const bool LogChainBroken,
     const TCPS_IDENTITY_PUBLIC* const SignedIdentities,
@@ -72,7 +72,7 @@ typedef __time64_t(*PTCPS_LOG_TIME)(
 // Signature specific callbacks
 //
 
-typedef Tcps_StatusCode (*PTCPS_LOG_COUNTER_VALIDATE)(
+typedef oe_result_t (*PTCPS_LOG_COUNTER_VALIDATE)(
     void* CallbackHandle,
     const uint8_t* const CounterIdBuffer,
     const size_t CounterIdBufferSize,
@@ -80,7 +80,7 @@ typedef Tcps_StatusCode (*PTCPS_LOG_COUNTER_VALIDATE)(
     const size_t CounterValueBufferSize
 );
 
-typedef Tcps_StatusCode (*PTCPS_LOG_COUNTER_CREATE)(
+typedef oe_result_t (*PTCPS_LOG_COUNTER_CREATE)(
     void* CallbackHandle,
     uint8_t** const CounterIdBuffer,
     size_t* const CounterIdBufferSize,
@@ -88,7 +88,7 @@ typedef Tcps_StatusCode (*PTCPS_LOG_COUNTER_CREATE)(
     size_t* const CounterValueBufferSize
 );
 
-typedef Tcps_StatusCode (*PTCPS_LOG_COUNTER_INCREMENTGET)(
+typedef oe_result_t (*PTCPS_LOG_COUNTER_INCREMENTGET)(
     void* CallbackHandle,
     const uint8_t* const CounterIdBuffer,
     const size_t CounterIdBufferSize,
@@ -131,7 +131,7 @@ Parameters:
     Handle - Handle for logging; needs to be released with TcpsLogClose
 
 --*/
-Tcps_StatusCode
+oe_result_t
 TcpsLogInit(
     const TCPS_IDENTITY_PRIVATE* const SignIdentity,
     const TCPS_IDENTITY_PUBLIC* const ValidateIdentity,
@@ -185,7 +185,7 @@ Parameters:
     Flush - Block until the event is logged all the way to the last link in the chain
 
 --*/
-Tcps_StatusCode
+oe_result_t
 TcpsLogEvent(
     void* Handle,
     const uint8_t* const Payload,
@@ -210,7 +210,7 @@ Parameters:
     ValidationState - State of log validation
 
 --*/
-Tcps_StatusCode
+oe_result_t
 TcpsLogEventExisting(
     void* Handle,
     const uint8_t* const Buffer,
@@ -241,7 +241,7 @@ Parameters:
     LastEntryDigest - 
 
 --*/
-Tcps_StatusCode
+oe_result_t
 TcpsLogValidate(
     const uint8_t* const Buffer,
     const size_t BufferSize,
@@ -252,7 +252,7 @@ TcpsLogValidate(
     TCPS_SHA256_DIGEST LastEntryDigest
 );
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogRemoteFlushCreate(
     const TCPS_IDENTITY_LOG Identity,
     uint8_t** const Buffer,

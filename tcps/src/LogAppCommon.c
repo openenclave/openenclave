@@ -9,7 +9,7 @@
 
 #pragma region Decode TCPS_LOG_APP_EVENT
 
-Tcps_StatusCode
+oe_result_t
 TcpsCborDecodeAppEvent(
     const uint8_t* const Buffer,
     const size_t BufferSize,
@@ -31,7 +31,7 @@ Parameters:
     if (Buffer == NULL ||
         Payload == NULL)
     {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     CLEANUP_DECODER_ERR(cbor_parser_init(Buffer, BufferSize, 0, &parser, &it));
@@ -92,7 +92,7 @@ Parameters:
     }
 
 Cleanup:
-    return err == CborNoError ? Tcps_Good : Tcps_Bad;
+    return err == CborNoError ? OE_OK : OE_FAILURE;
 }
 
 #pragma endregion
@@ -125,7 +125,7 @@ TcpsCborFreeAppEventResponse(
     }
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsCborDecodeAppEventResponse(
     const uint8_t* const Buffer,
     const size_t BufferSize,
@@ -147,7 +147,7 @@ Parameters:
     if (Buffer == NULL ||
         Payload == NULL)
     {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     Payload->Policies = NULL;
@@ -247,7 +247,7 @@ Parameters:
 
     // Results
 
-    Payload->Results = TCPSALLOC(sizeof(Tcps_StatusCode) * Payload->ResultsCount);
+    Payload->Results = TCPSALLOC(sizeof(oe_result_t) * Payload->ResultsCount);
     if (Payload->Results == NULL)
     {
         err = CborErrorOutOfMemory;
@@ -290,14 +290,14 @@ Cleanup:
         TcpsCborFreeAppEventResponse(Payload);
     }
 
-    return err == CborNoError ? Tcps_Good : Tcps_Bad;
+    return err == CborNoError ? OE_OK : OE_FAILURE;
 }
 
 #pragma endregion
 
 #pragma region Decode TCPS_LOG_APP_EVENT_RESPONSE_FAILED
 
-Tcps_StatusCode
+oe_result_t
 TcpsCborDecodeAppEventResponseFailed(
     const uint8_t* const Buffer,
     const size_t BufferSize,
@@ -318,7 +318,7 @@ Parameters:
     if (Buffer == NULL ||
         Payload == NULL)
     {
-        return Tcps_BadInvalidArgument;
+        return OE_INVALID_PARAMETER;
     }
 
     CLEANUP_DECODER_ERR(cbor_parser_init(Buffer, BufferSize, 0, &parser, &it));
@@ -359,14 +359,14 @@ Parameters:
     }
 
 Cleanup:
-    return err == CborNoError ? Tcps_Good : Tcps_Bad;
+    return err == CborNoError ? OE_OK : OE_FAILURE;
 }
 
 #pragma endregion
 
 #pragma region Decode TCPS_LOG_APP_EVENT_AUTO_APPROVED
 
-Tcps_StatusCode
+oe_result_t
 TcpsCborDecodeAppEventAutoApproved(
     const uint8_t* const Buffer,
     const size_t BufferSize,
@@ -388,7 +388,7 @@ Parameters:
     if (Buffer == NULL ||
         Payload == NULL)
     {
-        return Tcps_BadInvalidArgument;
+        return OE_INVALID_PARAMETER;
     }
 
     CLEANUP_DECODER_ERR(cbor_parser_init(Buffer, BufferSize, 0, &parser, &it));
@@ -446,14 +446,14 @@ Parameters:
     }
 
 Cleanup:
-    return err == CborNoError ? Tcps_Good : Tcps_Bad;
+    return err == CborNoError ? OE_OK : OE_FAILURE;
 }
 
 #pragma endregion
 
 #pragma region Decode TCPS_LOG_APP_EVENT_MANUAL_APPROVED
 
-Tcps_StatusCode
+oe_result_t
 TcpsCborDecodeAppEventManualApproved(
     const uint8_t* const Buffer,
     const size_t BufferSize,
@@ -475,7 +475,7 @@ Parameters:
     if (Buffer == NULL ||
         Payload == NULL)
     {
-        return Tcps_BadInvalidArgument;
+        return OE_INVALID_PARAMETER;
     }
 
     CLEANUP_DECODER_ERR(cbor_parser_init(Buffer, BufferSize, 0, &parser, &it));
@@ -544,14 +544,14 @@ Parameters:
     }
 
 Cleanup:
-    return err == CborNoError ? Tcps_Good : Tcps_Bad;
+    return err == CborNoError ? OE_OK : OE_FAILURE;
 }
 
 #pragma endregion
 
 #pragma region Decode TCPS_LOG_APP_EVENT_MANUAL_REJECTED
 
-Tcps_StatusCode
+oe_result_t
 TcpsCborDecodeAppEventManualRejected(
     const uint8_t* const Buffer,
     const size_t BufferSize,

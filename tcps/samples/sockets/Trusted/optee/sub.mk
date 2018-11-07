@@ -1,4 +1,4 @@
-include $(TCPS_SDK_ROOT_PATH)tcps_sub.mk
+include $(TCPS_SDK_ROOT_PATH)oe_sub.mk
 
 global-incdirs-y += $(TCPS_SDK_ROOT_PATH)Inc
 global-incdirs-y += optee

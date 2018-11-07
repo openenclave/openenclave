@@ -55,7 +55,7 @@ struct tm* _localtime64(const __time64_t *timer)
 Tcps_InitializeStatus(Tcps_Module_Helper_t, "_localtime64");
 
     sgxStatus = ocall_localtime64(&result, *timer);
-    Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, Tcps_Bad);
+    Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, OE_FAILURE);
     uStatus = result.err;
     Tcps_GotoErrorIfBad(uStatus);
     memcpy(&tm, &result.tm, sizeof(tm));
@@ -75,7 +75,7 @@ struct tm* _gmtime64(const __time64_t *timer)
 Tcps_InitializeStatus(Tcps_Module_Helper_t, "_gmtime64");
 
     sgxStatus = ocall_gmtime64(&result, *timer);
-    Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, Tcps_Bad);
+    Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, OE_FAILURE);
     uStatus = result.err;
     Tcps_GotoErrorIfBad(uStatus);
     memcpy(&tm, &result.tm, sizeof(tm));

@@ -14,9 +14,9 @@ QueryPerformanceCounter_Result ocall_QueryPerformanceCounter(void)
     QueryPerformanceCounter_Result result;
 
     if (!QueryPerformanceCounter((LARGE_INTEGER*)&result.count)) {
-        result.status = Tcps_Bad;
+        result.status = OE_FAILURE;
     } else {
-        result.status = Tcps_Good;
+        result.status = OE_OK;
     }
 
     return result;
@@ -50,10 +50,10 @@ GetTm_Result ocall_gmtime64(uint64_t timer)
 
 /* Process/thread-related APIs */
 
-Tcps_StatusCode ocall_exit(int result)
+oe_result_t ocall_exit(int result)
 {
     _exit(result);
-    return Tcps_Good;
+    return OE_OK;
 }
 
 /* We currently use a global mutex.  In the future, this should

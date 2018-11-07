@@ -8,11 +8,11 @@
 # error cyres-optee.h should only be included with USE_OPTEE
 #endif
 
-Tcps_StatusCode 
+oe_result_t 
 ExportCyrepCertChain(
-    Tcps_ConstStringA exportFilePath);
+    const char* exportFilePath);
 
-Tcps_StatusCode 
+oe_result_t 
 GetCyrepKey(
     char **keyPEM);
 

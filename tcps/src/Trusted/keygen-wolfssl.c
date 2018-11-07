@@ -41,7 +41,7 @@
 #include <openssl/x509v3.h>
 
 /* Returns 0 on success, errno on error. */
-static Tcps_StatusCode GenerateKeyPairRsa(EVP_PKEY **pKeyPair)
+static oe_result_t GenerateKeyPairRsa(EVP_PKEY **pKeyPair)
 {
     EVP_PKEY_CTX *genctx = NULL;
 
@@ -51,14 +51,14 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "GenerateKeyPairRsa");
     RAND_screen();
 #endif
 
-    Tcps_GotoErrorIfTrue((genctx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, NULL)) == NULL, Tcps_Bad);
-    Tcps_GotoErrorIfTrue(EVP_PKEY_keygen_init(genctx) <= 0, Tcps_Bad);
+    Tcps_GotoErrorIfTrue((genctx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, NULL)) == NULL, OE_FAILURE);
+    Tcps_GotoErrorIfTrue(EVP_PKEY_keygen_init(genctx) <= 0, OE_FAILURE);
 
     // Set the key length to 1024 bits.
-    Tcps_GotoErrorIfTrue(EVP_PKEY_CTX_set_rsa_keygen_bits(genctx, 1024) <= 0, Tcps_Bad);
+    Tcps_GotoErrorIfTrue(EVP_PKEY_CTX_set_rsa_keygen_bits(genctx, 1024) <= 0, OE_FAILURE);
 
     // Generate the key.
-    Tcps_GotoErrorIfTrue(EVP_PKEY_keygen(genctx, pKeyPair) <= 0, Tcps_Bad);
+    Tcps_GotoErrorIfTrue(EVP_PKEY_keygen(genctx, pKeyPair) <= 0, OE_FAILURE);
 
     EVP_PKEY_CTX_free(genctx);
 
@@ -72,7 +72,7 @@ Tcps_BeginErrorHandling;
 Tcps_FinishErrorHandling;
 }
 
-static Tcps_StatusCode GenerateKeyPairEc(EVP_PKEY **pKeyPair)
+static oe_result_t GenerateKeyPairEc(EVP_PKEY **pKeyPair)
 {
     EVP_PKEY_CTX *genctx = NULL;
     EVP_PKEY_CTX *paramctx = NULL;
@@ -84,17 +84,17 @@ static Tcps_StatusCode GenerateKeyPairEc(EVP_PKEY **pKeyPair)
     RAND_screen();
 #endif
 
-    Tcps_GotoErrorIfTrue((paramctx = EVP_PKEY_CTX_new_id(EVP_PKEY_EC, NULL)) == NULL, Tcps_Bad);
-    Tcps_GotoErrorIfTrue(!EVP_PKEY_paramgen_init(paramctx), Tcps_Bad);
+    Tcps_GotoErrorIfTrue((paramctx = EVP_PKEY_CTX_new_id(EVP_PKEY_EC, NULL)) == NULL, OE_FAILURE);
+    Tcps_GotoErrorIfTrue(!EVP_PKEY_paramgen_init(paramctx), OE_FAILURE);
 
-    Tcps_GotoErrorIfTrue((!EVP_PKEY_CTX_set_ec_paramgen_curve_nid(paramctx, NID_X9_62_prime256v1)), Tcps_Bad);
-    Tcps_GotoErrorIfTrue (!EVP_PKEY_paramgen(paramctx, &params), Tcps_Bad);
-    Tcps_GotoErrorIfTrue(params == NULL, Tcps_Bad);
+    Tcps_GotoErrorIfTrue((!EVP_PKEY_CTX_set_ec_paramgen_curve_nid(paramctx, NID_X9_62_prime256v1)), OE_FAILURE);
+    Tcps_GotoErrorIfTrue (!EVP_PKEY_paramgen(paramctx, &params), OE_FAILURE);
+    Tcps_GotoErrorIfTrue(params == NULL, OE_FAILURE);
 
     // Generate the key.
-    Tcps_GotoErrorIfTrue((genctx = EVP_PKEY_CTX_new(params, NULL)) == NULL, Tcps_Bad);
-    Tcps_GotoErrorIfTrue(!EVP_PKEY_keygen_init(genctx), Tcps_Bad);
-    Tcps_GotoErrorIfTrue(!EVP_PKEY_keygen(genctx, pKeyPair), Tcps_Bad);
+    Tcps_GotoErrorIfTrue((genctx = EVP_PKEY_CTX_new(params, NULL)) == NULL, OE_FAILURE);
+    Tcps_GotoErrorIfTrue(!EVP_PKEY_keygen_init(genctx), OE_FAILURE);
+    Tcps_GotoErrorIfTrue(!EVP_PKEY_keygen(genctx, pKeyPair), OE_FAILURE);
 
     EVP_PKEY_CTX_free(genctx);
     EVP_PKEY_CTX_free(paramctx);
@@ -188,7 +188,7 @@ static int add_ext(X509 *cert, int nid, const char *value)
 }
 
 /* Returns 0 on success, errno on error. */
-static Tcps_StatusCode
+static oe_result_t
 GenerateCertificate(
     const char* commonName,
     const char* certificateUri,
@@ -207,8 +207,8 @@ GenerateCertificate(
 Tcps_InitializeStatus(Tcps_Module_Helper_t, "GenerateCertificate");
 
     // Create a certificate request.
-    Tcps_GotoErrorIfTrue((req = X509_REQ_new()) == NULL, Tcps_Bad);
-    Tcps_GotoErrorIfTrue(!X509_REQ_set_version(req, 0L), Tcps_Bad);
+    Tcps_GotoErrorIfTrue((req = X509_REQ_new()) == NULL, OE_FAILURE);
+    Tcps_GotoErrorIfTrue(!X509_REQ_set_version(req, 0L), OE_FAILURE);
 
     subjectName = X509_REQ_get_subject_name(req);
     Tcps_GotoErrorIfTrue(!X509_NAME_add_entry_by_NID(
@@ -216,43 +216,43 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "GenerateCertificate");
         NID_commonName, 
         MBSTRING_ASC,
         (unsigned char*)commonName, 
-        -1, -1, 0), Tcps_Bad);
+        -1, -1, 0), OE_FAILURE);
 
-    Tcps_GotoErrorIfTrue(!X509_REQ_set_pubkey(req, keyPair), Tcps_Bad);
-    Tcps_GotoErrorIfTrue((publicKey = X509_REQ_get_pubkey(req)) == NULL, Tcps_Bad);
+    Tcps_GotoErrorIfTrue(!X509_REQ_set_pubkey(req, keyPair), OE_FAILURE);
+    Tcps_GotoErrorIfTrue((publicKey = X509_REQ_get_pubkey(req)) == NULL, OE_FAILURE);
 
     // Create a certificate.
     x509ss = X509_new();
-    Tcps_GotoErrorIfTrue(x509ss == NULL, Tcps_Bad);
+    Tcps_GotoErrorIfTrue(x509ss == NULL, OE_FAILURE);
 
-    Tcps_GotoErrorIfTrue(!rand_serial(NULL, X509_get_serialNumber(x509ss)), Tcps_Bad);
-    Tcps_GotoErrorIfTrue(!X509_set_issuer_name(x509ss, subjectName), Tcps_Bad);
-    Tcps_GotoErrorIfTrue(!X509_gmtime_adj(X509_get_notBefore(x509ss), 0), Tcps_Bad);
-    Tcps_GotoErrorIfTrue(!X509_time_adj_ex(X509_get_notAfter(x509ss), days, 0, NULL), Tcps_Bad);
-    Tcps_GotoErrorIfTrue(!X509_set_subject_name(x509ss, subjectName), Tcps_Bad);
-    Tcps_GotoErrorIfTrue(!X509_set_pubkey(x509ss, publicKey), Tcps_Bad);
+    Tcps_GotoErrorIfTrue(!rand_serial(NULL, X509_get_serialNumber(x509ss)), OE_FAILURE);
+    Tcps_GotoErrorIfTrue(!X509_set_issuer_name(x509ss, subjectName), OE_FAILURE);
+    Tcps_GotoErrorIfTrue(!X509_gmtime_adj(X509_get_notBefore(x509ss), 0), OE_FAILURE);
+    Tcps_GotoErrorIfTrue(!X509_time_adj_ex(X509_get_notAfter(x509ss), days, 0, NULL), OE_FAILURE);
+    Tcps_GotoErrorIfTrue(!X509_set_subject_name(x509ss, subjectName), OE_FAILURE);
+    Tcps_GotoErrorIfTrue(!X509_set_pubkey(x509ss, publicKey), OE_FAILURE);
 
     // Add subjectKeyIdentifier.
-    Tcps_GotoErrorIfTrue(!add_ext(x509ss, NID_subject_key_identifier, "hash"), Tcps_Bad);
+    Tcps_GotoErrorIfTrue(!add_ext(x509ss, NID_subject_key_identifier, "hash"), OE_FAILURE);
 
     // Add authorityKeyIdentifier.
-    Tcps_GotoErrorIfTrue(!add_ext(x509ss, NID_authority_key_identifier, "keyid:always,issuer:always"), Tcps_Bad);
+    Tcps_GotoErrorIfTrue(!add_ext(x509ss, NID_authority_key_identifier, "keyid:always,issuer:always"), OE_FAILURE);
 
     // Add basicConstraints.
-    Tcps_GotoErrorIfTrue(!add_ext(x509ss, NID_basic_constraints, "critical,CA:FALSE"), Tcps_Bad);
+    Tcps_GotoErrorIfTrue(!add_ext(x509ss, NID_basic_constraints, "critical,CA:FALSE"), OE_FAILURE);
 
     // Add keyUsage.
-    Tcps_GotoErrorIfTrue(!add_ext(x509ss, NID_key_usage, "critical,digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment,keyCertSign"), Tcps_Bad);
+    Tcps_GotoErrorIfTrue(!add_ext(x509ss, NID_key_usage, "critical,digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment,keyCertSign"), OE_FAILURE);
 
     // Add extendedKeyUsage.
-    Tcps_GotoErrorIfTrue(!add_ext(x509ss, NID_ext_key_usage, "critical,serverAuth,clientAuth"), Tcps_Bad);
+    Tcps_GotoErrorIfTrue(!add_ext(x509ss, NID_ext_key_usage, "critical,serverAuth,clientAuth"), OE_FAILURE);
 
     // Add subjectAltName.
     strcpy_s(extBuffer, sizeof(extBuffer), "URI:");
     strcat_s(extBuffer, sizeof(extBuffer), certificateUri);
     strcat_s(extBuffer, sizeof(extBuffer), ", DNS:");
     strcat_s(extBuffer, sizeof(extBuffer), hostName);
-    Tcps_GotoErrorIfTrue(!add_ext(x509ss, NID_subject_alt_name, extBuffer), Tcps_Bad);
+    Tcps_GotoErrorIfTrue(!add_ext(x509ss, NID_subject_alt_name, extBuffer), OE_FAILURE);
 
     // Sign the certificate.
     EVP_MD_CTX mctx;
@@ -260,8 +260,8 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "GenerateCertificate");
     cleanupContext = 1;
     EVP_PKEY_CTX *pkctx = NULL;
     const EVP_MD *digest = EVP_sha256();
-    Tcps_GotoErrorIfTrue(!EVP_DigestSignInit(&mctx, &pkctx, digest, NULL, keyPair), Tcps_Bad);
-    Tcps_GotoErrorIfTrue(!X509_sign_ctx(x509ss, &mctx), Tcps_Bad);
+    Tcps_GotoErrorIfTrue(!EVP_DigestSignInit(&mctx, &pkctx, digest, NULL, keyPair), OE_FAILURE);
+    Tcps_GotoErrorIfTrue(!X509_sign_ctx(x509ss, &mctx), OE_FAILURE);
 
     *pCertificate = x509ss;
 
@@ -300,12 +300,12 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "SaveDerCertificate");
 
     Tcps_Trace(Tcps_TraceLevelDebug, "cert path = %s\n", certificateFileName);
 
-    Tcps_GotoErrorIfTrue((out = BIO_new(BIO_s_file())) == NULL, Tcps_Bad);
-    Tcps_GotoErrorIfTrue(BIO_write_filename(out, (char*)certificateFileName) <= 0, Tcps_Bad);
-    Tcps_GotoErrorIfTrue(!i2d_X509_bio(out, certificate), Tcps_Bad);
+    Tcps_GotoErrorIfTrue((out = BIO_new(BIO_s_file())) == NULL, OE_FAILURE);
+    Tcps_GotoErrorIfTrue(BIO_write_filename(out, (char*)certificateFileName) <= 0, OE_FAILURE);
+    Tcps_GotoErrorIfTrue(!i2d_X509_bio(out, certificate), OE_FAILURE);
 
     // Compose manifest filename.
-    Tcps_GotoErrorIfTrue(AppendFilenameToManifest(certificateFileName) != 0, Tcps_Bad);
+    Tcps_GotoErrorIfTrue(AppendFilenameToManifest(certificateFileName) != 0, OE_FAILURE);
 
     BIO_free_all(out);
     return 0;
@@ -357,7 +357,7 @@ Done:
     return err;
 }
 
-Tcps_StatusCode
+oe_result_t
 GenerateKeyAndCertificate(
     const char* commonName,
     const char* certificateUri,
@@ -394,13 +394,13 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "GenerateKeyAndCertificate");
         Tcps_GotoErrorIfBad(uStatus);
 
         // Save the certificate in DER format.
-        Tcps_GotoErrorIfTrue(SaveDerCertificate(certificate, certificateFileName) != 0, Tcps_Bad);
+        Tcps_GotoErrorIfTrue(SaveDerCertificate(certificate, certificateFileName) != 0, OE_FAILURE);
 
-        Tcps_GotoErrorIfTrue(GeneratePkcs12(&p12, keyPair, certificate) != 0, Tcps_Bad);
-        Tcps_GotoErrorIfTrue(SavePkcs12(p12, keyFileName) != 0, Tcps_Bad);
+        Tcps_GotoErrorIfTrue(GeneratePkcs12(&p12, keyPair, certificate) != 0, OE_FAILURE);
+        Tcps_GotoErrorIfTrue(SavePkcs12(p12, keyFileName) != 0, OE_FAILURE);
     }
 
-    Tcps_GotoErrorIfTrue(ExportPublicCertificate(certificateFileName, certificateFileNameExported) != 0, Tcps_Bad);
+    Tcps_GotoErrorIfTrue(ExportPublicCertificate(certificateFileName, certificateFileNameExported) != 0, OE_FAILURE);
 
     X509_free(certificate);
     EVP_PKEY_free(keyPair);

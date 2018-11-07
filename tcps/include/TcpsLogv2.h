@@ -20,7 +20,7 @@ extern "C"
     typedef __time64_t (*PTCPS_LOG_TIME)(
         __time64_t *const seconds);
 
-    Tcps_StatusCode
+    oe_result_t
     TcpsLogOpen(
         _Outptr_ TCPS_LOG_ATTRIBUTES **LogAttributes,
         _In_ const TCPS_IDENTITY_PRIVATE *SigningIdentity,
@@ -31,40 +31,40 @@ extern "C"
 
 #pragma region TcpsLogAddCategory
 
-    typedef Tcps_StatusCode (*PTCPS_LOG_CATEGORY_PERSIST)(
+    typedef oe_result_t (*PTCPS_LOG_CATEGORY_PERSIST)(
         void *Context,
         const char *Label,
         const uint8_t *EncodedCategory,
         size_t EncodedCategorySize);
 
-    typedef Tcps_StatusCode (*PTCPS_LOG_CATEGORY_RECOVER)(
+    typedef oe_result_t (*PTCPS_LOG_CATEGORY_RECOVER)(
         void *Context,
         const char *Label,
         uint8_t **EncodedCategory,
         size_t *EncodedCategorySize);
 
-    typedef Tcps_StatusCode (*PTCPS_LOG_COUNTER_CREATE)(
+    typedef oe_result_t (*PTCPS_LOG_COUNTER_CREATE)(
         void *Context,
         uint8_t **CounterId,
         size_t *CounterIdSize,
         uint8_t **CounterValue,
         size_t *CounterValueSize);
 
-    typedef Tcps_StatusCode (*PTCPS_LOG_COUNTER_VALIDATE)(
+    typedef oe_result_t (*PTCPS_LOG_COUNTER_VALIDATE)(
         void *Context,
         const uint8_t *CounterId,
         size_t CounterIdSize,
         const uint8_t *CounterValue,
         size_t CounterValueSize);
 
-    typedef Tcps_StatusCode (*PTCPS_LOG_COUNTER_INCREMENTGET)(
+    typedef oe_result_t (*PTCPS_LOG_COUNTER_INCREMENTGET)(
         void *Context,
         const uint8_t *CounterId,
         size_t CounterIdSize,
         uint8_t **CounterValue,
         size_t *CounterValueSize);
 
-    Tcps_StatusCode
+    oe_result_t
     TcpsLogAddCategory(
         _Inout_ TCPS_LOG_ATTRIBUTES *LogAttributes,
         _In_ const char *Label,
@@ -80,23 +80,23 @@ extern "C"
 
 #pragma region TcpsLogSetLocalTransport
 
-    typedef Tcps_StatusCode (*PTCPS_LOG_LOCAL_WRITE)(
+    typedef oe_result_t (*PTCPS_LOG_LOCAL_WRITE)(
         void *Context,
         const char *CategoryLabel,
         const uint8_t *EncodedEvent,
         size_t EncodedEventSize);
 
-    typedef Tcps_StatusCode (*PTCPS_LOG_LOCAL_READ)(
+    typedef oe_result_t (*PTCPS_LOG_LOCAL_READ)(
         void *Context,
         const char *CategoryLabel,
         uint8_t **EncodedEvent,
         size_t *EncodedEventSize);
 
-    typedef Tcps_StatusCode (*PTCPS_LOG_LOCAL_CLEAR)(
+    typedef oe_result_t (*PTCPS_LOG_LOCAL_CLEAR)(
         void *Context,
         const char *CategoryLabel);
 
-    Tcps_StatusCode
+    oe_result_t
     TcpsLogSetLocalTransport(
         _Inout_ TCPS_LOG_ATTRIBUTES *LogAttributes,
         _In_ PTCPS_LOG_LOCAL_WRITE WriteLocalEventHandler,
@@ -108,13 +108,13 @@ extern "C"
 
 #pragma region TcpsLogSetRemoteTransport
 
-    typedef Tcps_StatusCode (*PTCPS_LOG_REMOTE_WRITE)(
+    typedef oe_result_t (*PTCPS_LOG_REMOTE_WRITE)(
         void *Context,
         const char *CategoryLabel,
         const uint8_t *EncodedBlock,
         size_t EncodedBlockSize);
 
-    Tcps_StatusCode
+    oe_result_t
     TcpsLogSetRemoteTransport(
         _Inout_ TCPS_LOG_ATTRIBUTES *LogAttributes,
         _In_ PTCPS_LOG_REMOTE_WRITE WriteRemoteBlockHandler,
@@ -124,7 +124,7 @@ extern "C"
 
 #pragma region TcpsLogWrite
 
-    Tcps_StatusCode
+    oe_result_t
     TcpsLogWrite(
         _Inout_ TCPS_LOG_ATTRIBUTES *LogAttributes,
         _In_ const char *CategoryLabel,
@@ -135,7 +135,7 @@ extern "C"
 
 #pragma region TcpsLogFlush
 
-    Tcps_StatusCode
+    oe_result_t
     TcpsLogFlush(
         _Inout_ TCPS_LOG_ATTRIBUTES *LogAttributes,
         _In_ const char *CategoryLabel);
@@ -144,7 +144,7 @@ extern "C"
 
 #pragma region TcpsLogClose
 
-    Tcps_StatusCode
+    oe_result_t
     TcpsLogClose(
         _Inout_ TCPS_LOG_ATTRIBUTES *LogAttributes);
 

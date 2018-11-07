@@ -47,20 +47,20 @@ InternalBuffer_t* FindInternalBufferByHandle(_In_ void* hBuffer)
     return NULL;
 }
 
-Tcps_StatusCode AppendToBuffer(
+oe_result_t AppendToBuffer(
     _In_ void* a_hBuffer,
     _In_ oe_BufferChunk* a_Chunk)
 {
     InternalBuffer_t* buffer = FindInternalBufferByHandle(a_hBuffer);
     if (buffer == NULL) {
-        return Tcps_BadInvalidArgument;
+        return OE_INVALID_PARAMETER;
     }
 
     // Resize buffer.
     size_t newSize = buffer->size + a_Chunk->size;
     char* newPtr = realloc(buffer->ptr, newSize);
     if (newPtr == NULL) {
-        return Tcps_BadOutOfMemory;
+        return OE_OUT_OF_MEMORY;
     }
 
     // Append chunk to buffer.
@@ -68,7 +68,7 @@ Tcps_StatusCode AppendToBuffer(
     buffer->size = newSize;
     buffer->ptr = newPtr;
 
-    return Tcps_Good;
+    return OE_OK;
 }
 
 void FreeInternalBuffer(_In_ InternalBuffer_t* buffer)
@@ -79,7 +79,7 @@ void FreeInternalBuffer(_In_ InternalBuffer_t* buffer)
     buffer->handle = NULL;
 }
 
-Tcps_StatusCode
+oe_result_t
 GetBuffer(
     _In_ void* a_hBuffer,
     _Outptr_ char** a_pBuffer,
@@ -89,11 +89,11 @@ GetBuffer(
     if (buffer == NULL) {
         *a_BufferSize = 0;
         *a_pBuffer = NULL;
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
     *a_pBuffer = buffer->ptr;
     *a_BufferSize = buffer->size;
-    return Tcps_Good;
+    return OE_OK;
 }
 
 void FreeBuffer(_In_ void* a_hBuffer)

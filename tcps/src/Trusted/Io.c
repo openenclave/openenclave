@@ -7,7 +7,7 @@
 #include "buffer.h"
 #include "TcpsTls.h"
 
-Tcps_StatusCode
+oe_result_t
 TcpsPushDataToReeBuffer(
     _In_reads_bytes_(a_BufferSize) const uint8_t* a_Buffer,
     _In_ size_t a_BufferSize,
@@ -29,12 +29,12 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "TcpsPushDataToReeBuffer");
 
         if (hReeBuffer == NULL) {
             sgxStatus = ocall_CreateReeBuffer(&result, chunk);
-            Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, Tcps_Bad);
+            Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, OE_FAILURE);
             uStatus = result.uStatus;
             hReeBuffer = result.hBuffer;
         } else {
             sgxStatus = ocall_AppendToReeBuffer(&uStatus, hReeBuffer, chunk);
-            Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, Tcps_Bad);
+            Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, OE_FAILURE);
         }
         Tcps_GotoErrorIfBad(uStatus);
 
@@ -53,7 +53,7 @@ Tcps_BeginErrorHandling;
 Tcps_FinishErrorHandling;
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsPullDataFromReeBuffer(
     _In_ void* a_hReeBuffer,
     _Out_writes_bytes_all_(a_BufferSize) uint8_t* a_Buffer,
@@ -71,9 +71,9 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "TcpsPullDataFromReeBuffer");
         chunk.size = MIN(sizeof(chunk.buffer), bytesRemaining);
 
         sgxStatus = ocall_GetReeBufferChunk(&result, a_hReeBuffer, (int)bytesCopied);
-        Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, Tcps_BadInternalError);
+        Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, OE_FAILURE);
         Tcps_GotoErrorIfBad(result.uStatus);
-        Tcps_GotoErrorIfTrue(chunk.size != result.size, Tcps_BadInternalError);
+        Tcps_GotoErrorIfTrue(chunk.size != result.size, OE_FAILURE);
 
         memcpy(a_Buffer + bytesCopied, result.buffer, result.size);
         bytesCopied += chunk.size;
@@ -95,7 +95,7 @@ CreateBuffer_Result ecall_CreateTeeBuffer(
     CreateBuffer_Result result = { 0 };
     InternalBuffer_t* buffer = CreateInternalBuffer(chunk.size);
     if (buffer == NULL) {
-        result.uStatus = Tcps_BadOutOfMemory;
+        result.uStatus = OE_OUT_OF_MEMORY;
     } else {
         memcpy(buffer->ptr, chunk.buffer, buffer->size);
         result.hBuffer = buffer->handle;
@@ -103,7 +103,7 @@ CreateBuffer_Result ecall_CreateTeeBuffer(
     return result;
 }
 
-Tcps_StatusCode TcpsGetTeeBuffer(
+oe_result_t TcpsGetTeeBuffer(
     _In_ void* a_hTeeBuffer,
     _Outptr_ char** a_pBuffer,
     _Out_ int* a_BufferSize)
@@ -111,7 +111,7 @@ Tcps_StatusCode TcpsGetTeeBuffer(
     return GetBuffer(a_hTeeBuffer, a_pBuffer, a_BufferSize);
 }
 
-Tcps_StatusCode ecall_AppendToTeeBuffer(
+oe_result_t ecall_AppendToTeeBuffer(
     _In_ void* a_hTeeBuffer,
     _In_ oe_BufferChunk a_Chunk)
 {

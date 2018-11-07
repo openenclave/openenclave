@@ -11,22 +11,22 @@
 #include <stdlib.h>
 #include <string.h>
 
-Tcps_StatusCode ecall_TestOEIsWithinEnclave(void* outside, int size)
+oe_result_t ecall_TestOEIsWithinEnclave(void* outside, int size)
 {
     /* Generated code always calls is_within_enclave on secure memory,
      * when making OCALLs.
      */
     char inside[80];
     int result = oe_is_within_enclave(inside, size);
-    Tcps_ReturnErrorIfTrue(result == 0, Tcps_Bad);
+    Tcps_ReturnErrorIfTrue(result == 0, OE_FAILURE);
 
     int insideHandle = GetSecureCallbackId(0, NULL, NULL, NULL);
-    Tcps_ReturnErrorIfTrue(insideHandle <= 0, Tcps_Bad);
+    Tcps_ReturnErrorIfTrue(insideHandle <= 0, OE_FAILURE);
 
     /* Callback handles aren't the same as an address in the enclave. */
     result = oe_is_within_enclave((void*)insideHandle, 4);
     FreeSecureCallbackContext(insideHandle);
-    Tcps_ReturnErrorIfTrue(result != 0, Tcps_Bad);
+    Tcps_ReturnErrorIfTrue(result != 0, OE_FAILURE);
 
 #if !(defined(USE_OPTEE) && defined(SIMULATE_TEE))
     /* This test currently doesn't work in the OP-TEE simulator, but it's
@@ -34,27 +34,27 @@ Tcps_StatusCode ecall_TestOEIsWithinEnclave(void* outside, int size)
      * on actual OP-TEE.
      */
     result = oe_is_within_enclave(outside, size);
-    Tcps_ReturnErrorIfTrue(result != 0, Tcps_Bad);
+    Tcps_ReturnErrorIfTrue(result != 0, OE_FAILURE);
 #endif
 
-    return Tcps_Good;
+    return OE_OK;
 }
 
-Tcps_StatusCode ecall_TestOEIsOutsideEnclave(void* outside, int size)
+oe_result_t ecall_TestOEIsOutsideEnclave(void* outside, int size)
 {
     /* Generated code always calls is_outside_enclave on normal memory,
      * when handling ECALLs.
      */
     int result = oe_is_outside_enclave(outside, size);
-    Tcps_ReturnErrorIfTrue(result == 0, Tcps_Bad);
+    Tcps_ReturnErrorIfTrue(result == 0, OE_FAILURE);
 
     /* Callback handles aren't the same as an address in the enclave. */
     int insideHandle = GetSecureCallbackId(0, NULL, NULL, NULL);
-    Tcps_ReturnErrorIfTrue(insideHandle <= 0, Tcps_Bad);
+    Tcps_ReturnErrorIfTrue(insideHandle <= 0, OE_FAILURE);
 
     result = oe_is_outside_enclave((void*)insideHandle, 4);
     FreeSecureCallbackContext(insideHandle);
-    Tcps_ReturnErrorIfTrue(result == 0, Tcps_Bad);
+    Tcps_ReturnErrorIfTrue(result == 0, OE_FAILURE);
 
 #if !(defined(USE_OPTEE) && defined(SIMULATE_TEE))
     /* This test currently doesn't work in the OP-TEE simulator, but it's
@@ -63,13 +63,13 @@ Tcps_StatusCode ecall_TestOEIsOutsideEnclave(void* outside, int size)
     */
     char inside[80];
     result = oe_is_outside_enclave(inside, size);
-    Tcps_ReturnErrorIfTrue(result != 0, Tcps_Bad);
+    Tcps_ReturnErrorIfTrue(result != 0, OE_FAILURE);
 #endif
 
-    return Tcps_Good;
+    return OE_OK;
 }
 
-Tcps_StatusCode ecall_TestOERandom()
+oe_result_t ecall_TestOERandom()
 {
     oe_result_t result;
     int i;
@@ -99,10 +99,10 @@ Tcps_StatusCode ecall_TestOERandom()
         }
     }
 
-    return (count > 2) ? Tcps_Good : Tcps_Bad;
+    return (count > 2) ? OE_OK : OE_FAILURE;
 }
 
-Tcps_StatusCode ecall_TestOEGetReportV1(uint32_t flags)
+oe_result_t ecall_TestOEGetReportV1(uint32_t flags)
 {
     uint8_t report_buffer[1024];
     size_t report_buffer_size = sizeof(report_buffer);
@@ -117,26 +117,26 @@ Tcps_StatusCode ecall_TestOEGetReportV1(uint32_t flags)
                                             report_buffer,
                                             &report_buffer_size);
     if (oeResult != OE_OK) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     oe_report_t parsed_report;
     oeResult = oe_parse_report(report_buffer, report_buffer_size, &parsed_report);
     if (oeResult != OE_OK) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     oeResult = oe_verify_report(report_buffer,
         report_buffer_size,
         NULL);
     if (oeResult != OE_OK) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
-    return Tcps_Good;
+    return OE_OK;
 }
 
-Tcps_StatusCode ecall_TestOEGetReportV2(uint32_t flags)
+oe_result_t ecall_TestOEGetReportV2(uint32_t flags)
 {
     uint8_t* report_buffer = NULL;
     size_t report_buffer_size = sizeof(report_buffer);
@@ -151,14 +151,14 @@ Tcps_StatusCode ecall_TestOEGetReportV2(uint32_t flags)
                                             &report_buffer,
                                             &report_buffer_size);
     if (oeResult != OE_OK) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     oe_report_t parsed_report;
     oeResult = oe_parse_report(report_buffer, report_buffer_size, &parsed_report);
     if (oeResult != OE_OK) {
         oe_free_report(report_buffer);
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     oeResult = oe_verify_report(report_buffer,
@@ -166,13 +166,13 @@ Tcps_StatusCode ecall_TestOEGetReportV2(uint32_t flags)
         NULL);
     oe_free_report(report_buffer);
     if (oeResult != OE_OK) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
-    return Tcps_Good;
+    return OE_OK;
 }
 
-Tcps_StatusCode ecall_TestOEGetTargetInfoV1(uint32_t flags)
+oe_result_t ecall_TestOEGetTargetInfoV1(uint32_t flags)
 {
     uint8_t report_buffer[1024];
     size_t report_buffer_size = sizeof(report_buffer);
@@ -187,28 +187,28 @@ Tcps_StatusCode ecall_TestOEGetTargetInfoV1(uint32_t flags)
         report_buffer,
         &report_buffer_size);
     if (oeResult != OE_OK) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     /* Get target info size. */
     size_t targetInfoSize = 0;
     oeResult = oe_get_target_info_v1(report_buffer, report_buffer_size, NULL, &targetInfoSize);
     if (oeResult != OE_BUFFER_TOO_SMALL) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
     if (targetInfoSize == 0) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     uint8_t* targetInfo = (uint8_t*)malloc(targetInfoSize);
     if (targetInfo == NULL) {
-        return Tcps_BadOutOfMemory;
+        return OE_OUT_OF_MEMORY;
     }
     
     oeResult = oe_get_target_info_v1(report_buffer, report_buffer_size, targetInfo, &targetInfoSize);
     if (oeResult != OE_OK) {
         free(targetInfo);
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     oeResult = oe_get_report_v1(flags,
@@ -220,18 +220,18 @@ Tcps_StatusCode ecall_TestOEGetTargetInfoV1(uint32_t flags)
         &report_buffer_size);
     free(targetInfo);
     if (oeResult != OE_OK) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     oeResult = oe_verify_report(report_buffer, report_buffer_size, NULL);
     if (oeResult != OE_OK) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
-    return Tcps_Good;
+    return OE_OK;
 }
 
-Tcps_StatusCode ecall_TestOEGetTargetInfoV2(uint32_t flags)
+oe_result_t ecall_TestOEGetTargetInfoV2(uint32_t flags)
 {
     uint8_t* report_buffer = NULL;
     size_t report_buffer_size = sizeof(report_buffer);
@@ -246,7 +246,7 @@ Tcps_StatusCode ecall_TestOEGetTargetInfoV2(uint32_t flags)
         &report_buffer,
         &report_buffer_size);
     if (oeResult != OE_OK) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     size_t targetInfoSize = 0;
@@ -254,10 +254,10 @@ Tcps_StatusCode ecall_TestOEGetTargetInfoV2(uint32_t flags)
     oeResult = oe_get_target_info_v2(report_buffer, report_buffer_size, &targetInfo, &targetInfoSize);
     oe_free_report(report_buffer);
     if (oeResult != OE_OK) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
     if (targetInfoSize == 0) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     oeResult = oe_get_report_v2(flags,
@@ -270,19 +270,19 @@ Tcps_StatusCode ecall_TestOEGetTargetInfoV2(uint32_t flags)
     oe_free_target_info(targetInfo);
     if (oeResult != OE_OK) {
         oe_free_report(report_buffer);
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     oeResult = oe_verify_report(report_buffer, report_buffer_size, NULL);
     oe_free_report(report_buffer);
     if (oeResult != OE_OK) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
-    return Tcps_Good;
+    return OE_OK;
 }
 
-Tcps_StatusCode ecall_TestOEGetSealKeyV1(int policy)
+oe_result_t ecall_TestOEGetSealKeyV1(int policy)
 {
     oe_result_t oeResult;
     size_t keySize = 0;
@@ -299,14 +299,14 @@ Tcps_StatusCode ecall_TestOEGetSealKeyV1(int policy)
         NULL,
         &keyInfoSize);
     if (oeResult != OE_BUFFER_TOO_SMALL) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
     /* Size required is platform specific. Make sure the test can handle it. */
     if (keySize > sizeof(key) || keySize == 0) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
     if (keyInfoSize > sizeof(keyInfo) || keyInfoSize == 0) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     /* Test getting key without getting key info. */
@@ -317,7 +317,7 @@ Tcps_StatusCode ecall_TestOEGetSealKeyV1(int policy)
         NULL,
         &keyInfoSize);
     if (oeResult != OE_OK) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     /* Test getting key and key info. */
@@ -328,29 +328,29 @@ Tcps_StatusCode ecall_TestOEGetSealKeyV1(int policy)
         keyInfo,
         &keyInfoSize);
     if (oeResult != OE_OK) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     /* Test getting key size by key info. */
     keySize = 0;
     oeResult = oe_get_seal_key_v1(keyInfo, keyInfoSize, NULL, &keySize);
     if (oeResult != OE_BUFFER_TOO_SMALL) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
     if (keySize < sizeof(key)) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     /* Test getting key by key info. */
     oeResult = oe_get_seal_key_v1(keyInfo, keyInfoSize, key, &keySize);
     if (oeResult != OE_OK) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
-    return Tcps_Good;
+    return OE_OK;
 }
 
-Tcps_StatusCode ecall_TestOEGetSealKeyV2(int policy)
+oe_result_t ecall_TestOEGetSealKeyV2(int policy)
 {
     oe_result_t oeResult;
     size_t keySize = 0;
@@ -366,11 +366,11 @@ Tcps_StatusCode ecall_TestOEGetSealKeyV2(int policy)
         NULL,
         &keyInfoSize);
     if (oeResult != OE_OK) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
     oe_free_key(key, NULL);
     if (keySize == 0) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     /* Test getting key and key info. */
@@ -381,7 +381,7 @@ Tcps_StatusCode ecall_TestOEGetSealKeyV2(int policy)
         &keyInfo,
         &keyInfoSize);
     if (oeResult != OE_OK) {      
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
     oe_free_key(key, NULL);
 
@@ -389,13 +389,13 @@ Tcps_StatusCode ecall_TestOEGetSealKeyV2(int policy)
     oeResult = oe_get_seal_key_v2(keyInfo, keyInfoSize, &key, &keySize);
     oe_free_key(key, keyInfo);
     if (oeResult != OE_OK) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
-    return Tcps_Good;
+    return OE_OK;
 }
 
-Tcps_StatusCode ecall_TestOEGetPublicKey(int policy)
+oe_result_t ecall_TestOEGetPublicKey(int policy)
 {
     oe_result_t oeResult;
     size_t keySize = 0;
@@ -404,7 +404,7 @@ Tcps_StatusCode ecall_TestOEGetPublicKey(int policy)
     uint8_t* key;
     uint8_t* key2;
     uint8_t* keyInfo;
-    Tcps_StatusCode tcpsResult;
+    oe_result_t tcpsResult;
 
     /* Test getting key without getting key info. */
     oeResult = oe_get_public_key_by_policy(
@@ -414,11 +414,11 @@ Tcps_StatusCode ecall_TestOEGetPublicKey(int policy)
         NULL,
         &keyInfoSize);
     if (oeResult != OE_OK) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
     oe_free_key(key, NULL);
     if (keySize == 0) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     /* Test getting key and key info. */
@@ -429,21 +429,21 @@ Tcps_StatusCode ecall_TestOEGetPublicKey(int policy)
         &keyInfo,
         &keyInfoSize);
     if (oeResult != OE_OK) {      
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     /* Test getting same key by key info. */
-    tcpsResult = Tcps_Good;
+    tcpsResult = OE_OK;
     oeResult = oe_get_public_key(keyInfo, keyInfoSize, &key2, &keySize2);
     if (oeResult != OE_OK) {
         oe_free_key(key, keyInfo);
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     /* Test that the keys are the same. */
     if (keySize != keySize2 ||
         memcmp(key, key2, keySize) != 0) {
-        tcpsResult = Tcps_Bad;
+        tcpsResult = OE_FAILURE;
     }
 
     oe_free_key(key, NULL);
@@ -451,7 +451,7 @@ Tcps_StatusCode ecall_TestOEGetPublicKey(int policy)
     return tcpsResult;
 }
 
-Tcps_StatusCode ecall_TestOEGetPrivateKey(int policy)
+oe_result_t ecall_TestOEGetPrivateKey(int policy)
 {
     oe_result_t oeResult;
     size_t keySize = 0;
@@ -460,7 +460,7 @@ Tcps_StatusCode ecall_TestOEGetPrivateKey(int policy)
     uint8_t* key;
     uint8_t* key2;
     uint8_t* keyInfo;
-    Tcps_StatusCode tcpsResult;
+    oe_result_t tcpsResult;
 
     /* Test getting key without getting key info. */
     oeResult = oe_get_private_key_by_policy(
@@ -470,11 +470,11 @@ Tcps_StatusCode ecall_TestOEGetPrivateKey(int policy)
         NULL,
         &keyInfoSize);
     if (oeResult != OE_OK) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
     oe_free_key(key, NULL);
     if (keySize == 0) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     /* Test getting key and key info. */
@@ -485,21 +485,21 @@ Tcps_StatusCode ecall_TestOEGetPrivateKey(int policy)
         &keyInfo,
         &keyInfoSize);
     if (oeResult != OE_OK) {      
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     /* Test getting same key by key info. */
-    tcpsResult = Tcps_Good;
+    tcpsResult = OE_OK;
     oeResult = oe_get_private_key(keyInfo, keyInfoSize, &key2, &keySize2);
     if (oeResult != OE_OK) {
         oe_free_key(key, keyInfo);
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     /* Test that the keys are the same. */
     if (keySize != keySize2 ||
         memcmp(key, key2, keySize) != 0) {
-        tcpsResult = Tcps_Bad;
+        tcpsResult = OE_FAILURE;
     }
 
     oe_free_key(key, NULL);
@@ -538,7 +538,7 @@ uint64_t TestOEExceptionHandler(
     return 0xFFFFFFFF;
 }
 
-Tcps_StatusCode ecall_TestOEExceptions()
+oe_result_t ecall_TestOEExceptions()
 {
     oe_result_t result;
         
@@ -547,7 +547,7 @@ Tcps_StatusCode ecall_TestOEExceptions()
         TRUE,
         TestOEExceptionHandler);
     if (result != OE_OK) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     /* Verify that duplicates are not allowed. */
@@ -555,22 +555,22 @@ Tcps_StatusCode ecall_TestOEExceptions()
         TRUE,
         TestOEExceptionHandler);
     if (result != OE_INVALID_PARAMETER) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     /* Verify that we can remove an existing handler. */
     result = oe_remove_vectored_exception_handler(TestOEExceptionHandler);
     if (result != OE_OK) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     /* Verify that we correctly handle non-existant handlers. */
     result = oe_remove_vectored_exception_handler(TestOEExceptionHandler);
     if (result != OE_INVALID_PARAMETER) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
-    return Tcps_Good;
+    return OE_OK;
 }
 
 typedef void(*oe_ecall_func_t)(
@@ -582,21 +582,21 @@ typedef void(*oe_ecall_func_t)(
 
 extern oe_ecall_func_t _oe_ecalls_table[];
 
-Tcps_StatusCode ecall_TestOcall(void)
+oe_result_t ecall_TestOcall(void)
 {
     oe_result_t oeResult = ocall_DoNothing();
     if (oeResult != OE_OK) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     int input = 1;
     int output = 0;
     oeResult = ocall_ReturnInputArgument(&output, input);
     if (oeResult != OE_OK) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
     if (input != output) {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
-    return Tcps_Good;
+    return OE_OK;
 }

@@ -9,7 +9,7 @@
 
 #include "oeoverintelsgx.h"
 
-Tcps_StatusCode 
+oe_result_t 
 ocall_ExportPublicCertificate(
     oe_buffer256 certificateFileNameExported, 
     oe_buffer4096 ptr, 
@@ -42,9 +42,9 @@ ocall_FindNextUntrustedFile(
     return result;
 }
 
-Tcps_StatusCode 
+oe_result_t 
 ocall_FindNextUntrustedFileClose(
     uint32_t findNextHandle)
 {
-    return Tcps_BadNotImplemented;
+    return OE_UNSUPPORTED;
 }

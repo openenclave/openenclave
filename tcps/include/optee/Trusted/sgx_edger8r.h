@@ -11,7 +11,7 @@
 
 #include "../../../../3rdparty/SGXSDK/include/sgx_edger8r.h"  /* SGX API prototypes to map */
 #include <tee_api.h>         /* OP-TEE APIs to map them to */
-#include "TcpsRpcOptee.h"
+#include "sgxoveroptee.h"
 
 /* We currently assume the macros below are only used from generated code. */
 

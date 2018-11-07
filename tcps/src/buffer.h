@@ -2,6 +2,7 @@
 /* Licensed under the MIT License. */
 #pragma once
 #include <openenclave/bits/oebuffer.h>
+#include <openenclave/bits/result.h>
 
 typedef struct InternalBuffer_t {
     void* handle;
@@ -15,11 +16,11 @@ InternalBuffer_t* FindInternalBufferByHandle(_In_ void* hBuffer);
 
 void* CreateBuffer(_In_ int a_BufferSize);
 
-Tcps_StatusCode AppendToBuffer(
+oe_result_t AppendToBuffer(
     _In_ void* a_hBuffer,
     _In_ oe_BufferChunk* a_Chunk);
 
-Tcps_StatusCode
+oe_result_t
 GetBuffer(
     _In_ void* a_hBuffer,
     _Outptr_ char** a_pBuffer,

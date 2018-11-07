@@ -16,7 +16,7 @@ typedef struct _TCPS_LOG_OCALL_OBJECT {
     char* LogPathPrefix;
 } TCPS_LOG_OCALL_OBJECT;
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogFileWriteOcall(
     TCPS_LOG_OCALL_OBJECT* Context,
     const uint8_t* const Buffer,
@@ -26,7 +26,7 @@ TcpsLogFileWriteOcall(
     const TCPS_IDENTITY_LOG LogIdentityLabel
 );
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogFileReadOcall(
     TCPS_LOG_OCALL_OBJECT* Context,
     uint8_t** const Buffer,
@@ -35,13 +35,13 @@ TcpsLogFileReadOcall(
     const TCPS_IDENTITY_LOG LogIdentityLabel
 );
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogFileClearOcall(
     TCPS_LOG_OCALL_OBJECT* Context,
     const TCPS_IDENTITY_LOG LogIdentityLabel
 );
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogFileWriteEntryOcall(
     TCPS_LOG_OCALL_OBJECT* Context,
     const uint8_t* const Buffer,

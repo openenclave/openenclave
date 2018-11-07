@@ -5,7 +5,7 @@
 # include <openenclave/enclave.h>
 #endif
 #ifndef USE_OPTEE
-# error TcpsRpcOptee.h should only be included with USE_OPTEE
+# error sgxoveroptee.h should only be included with USE_OPTEE
 #endif
 
 #ifdef _MSC_VER
@@ -18,13 +18,6 @@
 #pragma warning( pop ) 
 #endif
 #include <sgx_error.h>
-
-TEE_Result
-TcpsEcallDemux(
-    void *sess_ctx,
-    uint32_t cmd_id,
-    uint32_t param_types,
-    TEE_Param params[4]);
 
 sgx_status_t
 sgx_optee_ocall(

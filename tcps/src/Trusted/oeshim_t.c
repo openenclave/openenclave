@@ -85,9 +85,9 @@ void oe_free_ocall_buffer(void* buffer)
     oe_free(buffer);
 }
 
-Tcps_StatusCode ecall_InitializeEnclave(void)
+oe_result_t ecall_InitializeEnclave(void)
 {
-    return Tcps_Good;
+    return OE_OK;
 }
 
 void* oe_host_calloc(size_t nmemb, size_t size)

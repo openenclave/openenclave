@@ -18,7 +18,7 @@ ocall_table_v2_t g_ocall_table_v2 = { 0 };
 /* TODO: this flag should be per enclave */
 int g_serialize_ecalls = FALSE;
 
-Tcps_StatusCode Tcps_CreateTAInternal(
+oe_result_t Tcps_CreateTAInternal(
     _In_z_ const char* a_TaIdString,
     _In_ uint32_t a_Flags,
     _Out_ sgx_enclave_id_t* a_pId);
@@ -52,9 +52,9 @@ oe_result_t oe_create_enclave(
 
     // Load the enclave.
     sgx_enclave_id_t eid;
-    Tcps_StatusCode uStatus = Tcps_CreateTAInternal(path, flags, &eid);
-    if (Tcps_IsBad(uStatus)) {
-        return OE_FAILURE;
+    oe_result_t uStatus = Tcps_CreateTAInternal(path, flags, &eid);
+    if (uStatus != OE_OK) {
+        return uStatus;
     }
 
     // Make sure we can call into the enclave.  This also registers the
@@ -70,8 +70,8 @@ oe_result_t oe_create_enclave(
     if (sgxStatus != SGX_SUCCESS) {
         return OE_FAILURE;
     }
-    if (Tcps_IsBad(uStatus)) {
-        return OE_FAILURE;
+    if (uStatus != OE_OK) {
+        return uStatus;
     }
 
     *enclave = (oe_enclave_t*)eid;

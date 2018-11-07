@@ -38,7 +38,7 @@ typedef ecc_signature TCPS_IDENTITY_SIGNATURE;
 extern "C" {
 #endif
 
-Tcps_StatusCode
+oe_result_t
 TcpsAESDecrypt(
     uint8_t *aes_key,
     uint8_t *ciphertext,
@@ -49,7 +49,7 @@ TcpsAESDecrypt(
 );
 
 
-Tcps_StatusCode
+oe_result_t
 TcpsAESEncryptWithIv(
     uint8_t *aes_key,
     const uint8_t *cleartext,

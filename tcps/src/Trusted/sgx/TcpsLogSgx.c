@@ -39,7 +39,7 @@ static __time64_t g_ProvisionedTime = 0;
 
 extern TRANSPORT_CALLBACKS g_TransportClientCallbacks;
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogFileWriteEntrySgx(
     void* Handle,
     const uint8_t* const Buffer,
@@ -51,7 +51,7 @@ TcpsLogFileWriteEntrySgx(
         Buffer == NULL ||
         LogIdentityLabel == NULL)
     {
-        return Tcps_BadInvalidArgument;
+        return OE_INVALID_PARAMETER;
     }
 
     TCPS_LOG_SGX_OBJECT* context = (TCPS_LOG_SGX_OBJECT*)Handle;
@@ -65,7 +65,7 @@ TcpsLogFileWriteEntrySgx(
         LogIdentityLabel);
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogNetworkWriteEntrySgx(
     void* Handle,
     const uint8_t* const Buffer,
@@ -75,19 +75,19 @@ TcpsLogNetworkWriteEntrySgx(
 {
     OE_UNUSED(Identity);
 
-    Tcps_StatusCode status = Tcps_Good;
+    oe_result_t status = OE_OK;
 
     if (Buffer == NULL ||
         Handle == NULL)
     {
-        return Tcps_BadInvalidArgument;
+        return OE_INVALID_PARAMETER;
     }
 
     TCPS_LOG_SGX_OBJECT* logObject = (TCPS_LOG_SGX_OBJECT*)Handle;
 
     if (logObject->LogConfiguration.RemoteType != TCPS_LOG_SGX_REMOTE_TYPE_LOGAGGREGATOR)
     {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     TCPS_TLS_HANDLE tls = NULL;
@@ -110,7 +110,7 @@ TcpsLogNetworkWriteEntrySgx(
         logObject->LogConfiguration.RemotePort, 
         0, 
         &tls);
-    if (status != Tcps_Good)
+    if (status != OE_OK)
     {
         goto Exit;
     }
@@ -121,7 +121,7 @@ TcpsLogNetworkWriteEntrySgx(
         BufferSize,
         0);
 
-    if (status != Tcps_Good)
+    if (status != OE_OK)
     {
         goto Exit;
     }
@@ -132,18 +132,18 @@ TcpsLogNetworkWriteEntrySgx(
         &laResponseBufferSize,
         0 /* TODO: support timeouts */);
 
-    if (status != Tcps_Good)
+    if (status != OE_OK)
     {
         goto Exit;
     }
 
     if (laResponseBufferSize != sizeof(status))
     {
-        status = Tcps_Bad;
+        status = OE_FAILURE;
         goto Exit;
     }
 
-    status = *(Tcps_StatusCode*)laResponseBuffer;
+    status = *(oe_result_t*)laResponseBuffer;
 
 Exit:
     if (tls != NULL)
@@ -159,7 +159,7 @@ Exit:
     return status;
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogFileReadSgx(
     void* Handle,
     uint8_t** const Buffer,
@@ -173,7 +173,7 @@ TcpsLogFileReadSgx(
         Handle == NULL ||
         LogIdentityLabel == NULL)
     {
-        return Tcps_BadInvalidArgument;
+        return OE_INVALID_PARAMETER;
     }
 
     TCPS_LOG_SGX_OBJECT* context = (TCPS_LOG_SGX_OBJECT*)Handle;
@@ -188,7 +188,7 @@ TcpsLogFileReadSgx(
         LogIdentityLabel);
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogFilePullSgx(
     void* Handle,
     uint8_t** const Buffer,
@@ -201,24 +201,24 @@ TcpsLogFilePullSgx(
         Handle == NULL ||
         LogIdentityLabel == NULL)
     {
-        return Tcps_BadInvalidArgument;
+        return OE_INVALID_PARAMETER;
     }
 
     *Buffer = NULL;
 
-    Tcps_StatusCode status = TcpsLogFileReadSgx(
+    oe_result_t status = TcpsLogFileReadSgx(
         Handle, 
         Buffer, 
         BufferSize, 
         TCPS_LOG_FILE_TYPE_LOG, 
         LogIdentityLabel);
-    if (status != Tcps_Good)
+    if (status != OE_OK)
     {
         goto Exit;
     }
 
 Exit:
-    if (status != Tcps_Good)
+    if (status != OE_OK)
     {
         if (*Buffer != NULL)
         {
@@ -229,7 +229,7 @@ Exit:
     return status;
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogFileClearSgx(
     void* Handle,
     const TCPS_IDENTITY_LOG LogIdentityLabel
@@ -237,7 +237,7 @@ TcpsLogFileClearSgx(
 {
     if (Handle == NULL)
     {
-        return Tcps_BadInvalidArgument;
+        return OE_INVALID_PARAMETER;
     }
 
     TCPS_LOG_SGX_OBJECT* context = (TCPS_LOG_SGX_OBJECT*)Handle;
@@ -249,7 +249,7 @@ TcpsLogFileClearSgx(
         LogIdentityLabel);
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogNetworkFlushSgx(
     void* Handle,
     const TCPS_IDENTITY_LOG LogIdentityLabel
@@ -257,16 +257,16 @@ TcpsLogNetworkFlushSgx(
 {
     uint8_t* buffer = NULL;
     size_t bufferSize;
-    Tcps_StatusCode status = Tcps_Good;
+    oe_result_t status = OE_OK;
 
     status = TcpsLogRemoteFlushCreate(LogIdentityLabel, &buffer, &bufferSize);
-    if (status != Tcps_Good)
+    if (status != OE_OK)
     {
         goto Exit;
     }
 
     status = TcpsLogNetworkWriteEntrySgx(Handle, buffer, bufferSize, NULL);
-    if (status != Tcps_Good)
+    if (status != OE_OK)
     {
         goto Exit;
     }
@@ -280,7 +280,7 @@ Exit:
     return status;
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogCounterRecoverSgx(
     void* Handle,
     uint8_t** const CounterBuffer,
@@ -293,24 +293,24 @@ TcpsLogCounterRecoverSgx(
         Handle == NULL ||
         LogIdentityLabel == NULL)
     {
-        return Tcps_BadInvalidArgument;
+        return OE_INVALID_PARAMETER;
     }
 
     *CounterBuffer = NULL;
 
-    Tcps_StatusCode status = TcpsLogFileReadSgx(
+    oe_result_t status = TcpsLogFileReadSgx(
         Handle, 
         CounterBuffer, 
         CounterBufferSize, 
         TCPS_LOG_FILE_TYPE_SIG, 
         LogIdentityLabel);
-    if (status != Tcps_Good)
+    if (status != OE_OK)
     {
         goto Exit;
     }
 
 Exit:
-    if (status != Tcps_Good)
+    if (status != OE_OK)
     {
         if (*CounterBuffer != NULL)
         {
@@ -321,7 +321,7 @@ Exit:
     return status;
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogCounterWriteSgx(
     void* Handle,
     const uint8_t* const CounterBuffer,
@@ -333,7 +333,7 @@ TcpsLogCounterWriteSgx(
         LogIdentityLabel == NULL ||
         CounterBuffer == NULL)
     {
-        return Tcps_BadInvalidArgument;
+        return OE_INVALID_PARAMETER;
     }
 
     TCPS_LOG_SGX_OBJECT* context = (TCPS_LOG_SGX_OBJECT*)Handle;
@@ -353,7 +353,7 @@ TcpsLogCounterWriteSgx(
 // TODO: rewrite TcpsLogSgxEstablishPSESession to not block a thread.
 #define ocallTcpsSleep(x)
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogSgxEstablishPSESession()
 {
     // Connect to platform service enclave
@@ -368,7 +368,7 @@ TcpsLogSgxEstablishPSESession()
         ret = sgx_create_pse_session();
     } while (ret == SGX_ERROR_BUSY && busy_retry_times--);
 
-    return ret == SGX_SUCCESS ? Tcps_Good : Tcps_Bad;
+    return ret == SGX_SUCCESS ? OE_OK : OE_FAILURE;
 }
 
 void
@@ -409,7 +409,7 @@ TcpsLogTrustedTimeSgx(
     __time64_t result = -1;
     sgx_status_t ret;
 
-    if (TcpsLogSgxEstablishPSESession() == Tcps_Bad)
+    if (TcpsLogSgxEstablishPSESession() == OE_FAILURE)
     {
         return TcpsLogUntrustedTimeSgx(NULL);
         //return g_ProvisionedTime;
@@ -460,7 +460,7 @@ Exit:
     return result;
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogCounterValidateSgx(
     void* Handle,
     const uint8_t* const CounterIdBuffer,
@@ -469,7 +469,7 @@ TcpsLogCounterValidateSgx(
     const size_t CounterValueBufferSize
 )
 {
-    Tcps_StatusCode status = Tcps_Good;
+    oe_result_t status = OE_OK;
 
     if (Handle == NULL ||
         CounterIdBuffer == NULL ||
@@ -477,7 +477,7 @@ TcpsLogCounterValidateSgx(
         sizeof(sgx_mc_uuid_t) != CounterIdBufferSize ||
         sizeof(uint32_t) != CounterValueBufferSize)
     {
-        return Tcps_BadInvalidArgument;
+        return OE_INVALID_PARAMETER;
     }
 
     sgx_mc_uuid_t* uuid = (sgx_mc_uuid_t*)CounterIdBuffer;
@@ -487,13 +487,13 @@ TcpsLogCounterValidateSgx(
     sgx_status_t ret = sgx_read_monotonic_counter(uuid, &actualCounterValue);
     if (ret != SGX_SUCCESS)
     {
-        status = Tcps_Bad; // TODO this can fail on replay
+        status = OE_FAILURE; // TODO this can fail on replay
         goto Exit;
     }
 
     if (actualCounterValue != *counterValue)
     {
-        status = Tcps_Bad; // TODO this can fail on replay or suffix delete
+        status = OE_FAILURE; // TODO this can fail on replay or suffix delete
         goto Exit;
     }
 
@@ -501,7 +501,7 @@ Exit:
     return status;
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogCounterCreateSgx(
     void* Handle,
     uint8_t** const CounterIdBuffer,
@@ -510,7 +510,7 @@ TcpsLogCounterCreateSgx(
     size_t* const CounterValueBufferSize
 )
 {
-    Tcps_StatusCode status = Tcps_Good;
+    oe_result_t status = OE_OK;
 
     if (Handle == NULL ||
         CounterIdBuffer == NULL ||
@@ -518,7 +518,7 @@ TcpsLogCounterCreateSgx(
         CounterValueBuffer == NULL ||
         CounterValueBufferSize == NULL)
     {
-        return Tcps_BadInvalidArgument;
+        return OE_INVALID_PARAMETER;
     }
 
     uint8_t* localCounterIdBuffer = NULL;
@@ -528,7 +528,7 @@ TcpsLogCounterCreateSgx(
     localCounterIdBuffer = oe_malloc(*CounterIdBufferSize);
     if (localCounterIdBuffer == NULL)
     {
-        status = Tcps_BadOutOfMemory;
+        status = OE_OUT_OF_MEMORY;
         goto Exit;
     }
 
@@ -536,7 +536,7 @@ TcpsLogCounterCreateSgx(
     localCounterValueBuffer = oe_malloc(*CounterValueBufferSize);
     if (localCounterValueBuffer == NULL)
     {
-        status = Tcps_BadOutOfMemory;
+        status = OE_OUT_OF_MEMORY;
         goto Exit;
     }
 
@@ -545,7 +545,7 @@ TcpsLogCounterCreateSgx(
         (uint32_t*)localCounterValueBuffer); // TODO consider more strict policy
     if (ret != SGX_SUCCESS)
     {
-        status = Tcps_Bad; // TODO this might fail if the number of counters have been exhausted
+        status = OE_FAILURE; // TODO this might fail if the number of counters have been exhausted
         goto Exit;
     }
 
@@ -568,7 +568,7 @@ Exit:
     return status;
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogCounterIncrementGetSgx(
     void* Handle,
     const uint8_t* const CounterIdBuffer,
@@ -577,7 +577,7 @@ TcpsLogCounterIncrementGetSgx(
     size_t* CounterValueBufferSize
 )
 {
-    Tcps_StatusCode status = Tcps_Good;
+    oe_result_t status = OE_OK;
 
     if (Handle == NULL ||
         CounterIdBuffer == NULL ||
@@ -585,7 +585,7 @@ TcpsLogCounterIncrementGetSgx(
         CounterValueBuffer == NULL ||
         CounterValueBufferSize == NULL)
     {
-        return Tcps_BadInvalidArgument;
+        return OE_INVALID_PARAMETER;
     }
 
     sgx_status_t ret = 0;
@@ -594,7 +594,7 @@ TcpsLogCounterIncrementGetSgx(
     localCounterValueBuffer = oe_malloc(sizeof(uint32_t));
     if (localCounterValueBuffer == NULL)
     {
-        status = Tcps_BadOutOfMemory;
+        status = OE_OUT_OF_MEMORY;
         goto Exit;
     }
 
@@ -604,7 +604,7 @@ TcpsLogCounterIncrementGetSgx(
     ret = sgx_increment_monotonic_counter(counterId, localCounterValue);
     if (ret != SGX_SUCCESS)
     {
-        status = Tcps_Bad; // TODO this can fail on replay
+        status = OE_FAILURE; // TODO this can fail on replay
         goto Exit;
     }
 
@@ -621,7 +621,7 @@ Exit:
     return status;
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogInitSgx(
     const TCPS_SHA256_DIGEST Seed,
     TCPS_TA_ID_INFO* const IDData,
@@ -630,7 +630,7 @@ TcpsLogInitSgx(
     void** Handle
 )
 {
-    Tcps_StatusCode status = Tcps_Good;
+    oe_result_t status = OE_OK;
     bool mutexInitialized = false;
     bool pseWorks = false;
 
@@ -639,13 +639,13 @@ TcpsLogInitSgx(
         Seed == NULL ||
         Handle == NULL)
     {
-        return Tcps_Bad;
+        return OE_FAILURE;
     }
 
     TCPS_LOG_SGX_OBJECT* logObject = oe_malloc(sizeof(TCPS_LOG_SGX_OBJECT));
     if (logObject == NULL)
     {
-        status = Tcps_BadOutOfMemory;
+        status = OE_OUT_OF_MEMORY;
         goto Exit;
     }
     memset(logObject, 0, sizeof(TCPS_LOG_SGX_OBJECT));
@@ -681,7 +681,7 @@ TcpsLogInitSgx(
     if (!enableRemote && EnableRollbackProtection)
     {
         // Connect to platform service enclave
-        pseWorks = TcpsLogSgxEstablishPSESession() == Tcps_Good;
+        pseWorks = TcpsLogSgxEstablishPSESession() == OE_OK;
     }
 
     status = TcpsLogInit(
@@ -702,7 +702,7 @@ TcpsLogInitSgx(
         Seed,
         logObject,
         &logObject->LogHandle);
-    if (status != Tcps_Good)
+    if (status != OE_OK)
     {
         goto Exit;
     }
@@ -711,7 +711,7 @@ TcpsLogInitSgx(
     int result = sgx_thread_mutex_init(&logObject->LockMutex, &dummy);
     if (result != 0)
     {
-        status = Tcps_Bad;
+        status = OE_FAILURE;
         goto Exit;
     }
     mutexInitialized = true;
@@ -753,7 +753,7 @@ TcpsLogCloseSgx(
     }
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogEventSgx(
     void* Handle,
     const uint8_t* const Buffer,
@@ -761,11 +761,11 @@ TcpsLogEventSgx(
     const bool Flush
 )
 {
-    Tcps_StatusCode status = Tcps_Good;
+    oe_result_t status = OE_OK;
 
     if (Handle == NULL)
     {
-        return Tcps_BadInvalidArgument;
+        return OE_INVALID_PARAMETER;
     }
 
     TCPS_LOG_SGX_OBJECT* logObject = (TCPS_LOG_SGX_OBJECT*)Handle;
@@ -773,7 +773,7 @@ TcpsLogEventSgx(
     int result = sgx_thread_mutex_lock(&logObject->LockMutex);
     if (result != 0)
     {
-        status = Tcps_Bad;
+        status = OE_FAILURE;
         goto Exit;
     }
 
@@ -782,7 +782,7 @@ TcpsLogEventSgx(
     result = sgx_thread_mutex_unlock(&logObject->LockMutex);
     if (result != 0)
     {
-        status = Tcps_Bad;
+        status = OE_FAILURE;
         goto Exit;
     }
 
@@ -790,7 +790,7 @@ Exit:
     return status;
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogEventExistingSgx(
     void* Handle,
     const uint8_t* const Buffer,
@@ -798,11 +798,11 @@ TcpsLogEventExistingSgx(
     TCPS_LOG_VALIDATION_STATE* const ValidationState
 )
 {
-    Tcps_StatusCode status = Tcps_Good;
+    oe_result_t status = OE_OK;
 
     if (Handle == NULL)
     {
-        return Tcps_BadInvalidArgument;
+        return OE_INVALID_PARAMETER;
     }
 
     TCPS_LOG_SGX_OBJECT* logObject = (TCPS_LOG_SGX_OBJECT*)Handle;
@@ -810,7 +810,7 @@ TcpsLogEventExistingSgx(
     int result = sgx_thread_mutex_lock(&logObject->LockMutex);
     if (result != 0)
     {
-        status = Tcps_Bad;
+        status = OE_FAILURE;
         goto Exit;
     }
 
@@ -819,7 +819,7 @@ TcpsLogEventExistingSgx(
     result = sgx_thread_mutex_unlock(&logObject->LockMutex);
     if (result != 0)
     {
-        status = Tcps_Bad;
+        status = OE_FAILURE;
         goto Exit;
     }
 
@@ -827,14 +827,14 @@ Exit:
     return status;
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogEventSgxId(
     void* Handle,
     const TCPS_LOG_ID EventId,
     const bool Flush
 )
 {
-    Tcps_StatusCode status = Tcps_Good;
+    oe_result_t status = OE_OK;
     TCPS_IDENTITY_LOG dummy = { 0 };
 
     status = TcpsLogEventSgxPeerId(Handle, EventId, dummy, Flush);
@@ -956,7 +956,7 @@ Cleanup:
     return err;
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsLogEventSgxPeerId(
     void* Handle,
     const TCPS_LOG_ID EventId,
@@ -964,7 +964,7 @@ TcpsLogEventSgxPeerId(
     const bool Flush
 )
 {
-    Tcps_StatusCode status = Tcps_Good;
+    oe_result_t status = OE_OK;
     TCPS_LOG_SGX_SERVICES_DATA eventData;
     uint8_t* payloadBuffer = NULL;
     size_t payloadBufferSize = 0;
@@ -981,7 +981,7 @@ TcpsLogEventSgxPeerId(
         payloadBuffer = (uint8_t*)oe_malloc(payloadBufferSize);
         if (payloadBuffer == NULL)
         {
-            status = Tcps_BadOutOfMemory;
+            status = OE_OUT_OF_MEMORY;
             goto Exit;
         }
 
@@ -993,7 +993,7 @@ TcpsLogEventSgxPeerId(
 
     if (err != CborNoError)
     {
-        status = Tcps_Bad;
+        status = OE_FAILURE;
         goto Exit;
     }
 
@@ -1008,17 +1008,17 @@ Exit:
     return status;
 }
 
-Tcps_StatusCode
+oe_result_t
 TcpsGetPeerIdentityLabel(
     TCPS_TLS_HANDLE TlsHandle,
     TCPS_IDENTITY_LOG IdentityLabel
 )
 {
-    Tcps_StatusCode status;
+    oe_result_t status;
     RIOT_ECC_PUBLIC peerPublicKey;
 
     status = TcpsTlsGetPublicKeyFromPeer(TlsHandle, &peerPublicKey);
-    if (status != Tcps_Good)
+    if (status != OE_OK)
     {
         goto Exit;
     }
@@ -1028,7 +1028,7 @@ TcpsGetPeerIdentityLabel(
         IdentityLabel,
         sizeof(TCPS_IDENTITY_LOG));
 
-    if (status != Tcps_Good)
+    if (status != OE_OK)
     {
         goto Exit;
     }

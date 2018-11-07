@@ -90,14 +90,14 @@ typedef void *TCPS_TLS_HANDLE;
 
 typedef int( *VerifyCertCallback )(int, void*);
 
-Tcps_StatusCode
+oe_result_t
 TcpsTlsCreateServerContext(
     const TCPS_TA_ID_INFO* const TAIdentityInfo,
     PTCPS_CONNECTION_CTX Connection,
     TCPS_TLS_HANDLE *TlsHandle
 );
 
-Tcps_StatusCode
+oe_result_t
 TcpsTlsCreateContext(
     const TCPS_TA_ID_INFO *TAIdentityInfo,
     PTCPS_CONNECTION_CTX Connection,
@@ -109,7 +109,7 @@ TcpsTlsCloseContext(
     TCPS_TLS_HANDLE Ctx
 );
 
-Tcps_StatusCode
+oe_result_t
 TcpsTlsAuthorizeAuthority(
     TCPS_TLS_HANDLE Handle,
     TcpsEncoding AuthorityEncoding,
@@ -117,7 +117,7 @@ TcpsTlsAuthorizeAuthority(
     uint32_t AuthoritySize
 );
 
-Tcps_StatusCode
+oe_result_t
 TcpsTlsAccept(
     TCPS_TLS_HANDLE Handle,
     VerifyCertCallback ValidatePeer,
@@ -125,7 +125,7 @@ TcpsTlsAccept(
     uint32_t Timeoutms
 );
 
-Tcps_StatusCode
+oe_result_t
 TcpsTlsConnect(
     TCPS_TLS_HANDLE Handle,
     const char *ServerUri,
@@ -133,7 +133,7 @@ TcpsTlsConnect(
     uint32_t Timeoutms
 );
 
-Tcps_StatusCode
+oe_result_t
 TcpsTlsConnectClient(
     const TCPS_TA_ID_INFO* const IdentityData,
     PTCPS_CONNECTION_CTX TcpsCntCtx,
@@ -145,7 +145,7 @@ TcpsTlsConnectClient(
     TCPS_TLS_HANDLE* const TlsHandle
 );
 
-Tcps_StatusCode
+oe_result_t
 TcpsTlsAcceptClient(
     const TCPS_TA_ID_INFO* const IdentityData,
     PTCPS_CONNECTION_CTX TcpsCntCtx,
@@ -167,7 +167,7 @@ TcpsTlsCloseHandle(
     TCPS_TLS_HANDLE TlsHandle
 );
 
-Tcps_StatusCode
+oe_result_t
 TcpsTlsWrite(
     TCPS_TLS_HANDLE Handle,
     const uint8_t* Data,
@@ -175,7 +175,7 @@ TcpsTlsWrite(
     uint32_t Timeoutms
 );
 
-Tcps_StatusCode
+oe_result_t
 TcpsTlsRead(
     TCPS_TLS_HANDLE Handle,
     uint8_t** Data,
@@ -183,13 +183,13 @@ TcpsTlsRead(
     uint32_t Timeoutms
 );
 
-Tcps_StatusCode
+oe_result_t
 TcpsTlsGetPublicKeyFromLeafPem(
     const char* PemCertChain,
     RIOT_ECC_PUBLIC* const PublicKey
 );
 
-Tcps_StatusCode
+oe_result_t
 TcpsTlsGetPublicKeyFromPeer(
     TCPS_TLS_HANDLE TlsHandle,
     RIOT_ECC_PUBLIC* const PublicKey
@@ -199,7 +199,7 @@ TcpsTlsGetPublicKeyFromPeer(
 // when wolfssl is configured to save the 
 // peer certificate for this session
 #ifdef SESSION_CERTS
-Tcps_StatusCode
+oe_result_t
 TcpsTlsGetPeerCertChain(
     TCPS_TLS_HANDLE TlsHandle,
     uint8_t *PemPeerCertChainBuf,
