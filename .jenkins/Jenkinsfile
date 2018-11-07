@@ -1,21 +1,21 @@
 pipeline {
   agent any
   stages {
-    stage('Precommit-checking') {
-      agent {
-        docker {
-          image 'oetools-azure:1.6'
-        }
-
-      }
-      steps {
-        timeout(2) {
-          sh './scripts/check-precommit-reqs'
-        }
-      }
-    }
     stage('Build and Test') {
+      failFast true
       parallel {
+        stage('Check pre-commit requirements') {
+          agent {
+            docker {
+              image 'oetools-azure:1.7'
+            }
+          }
+          steps {
+            timeout(2) {
+              sh './scripts/check-precommit-reqs'
+            }
+          }
+        }
         stage('Simulation default compiler') {
           // This particular test asserts that everything (at least
           // for simulation) can be built after using our
@@ -50,9 +50,8 @@ pipeline {
         stage('Simulation clang-7 SGX1 Debug') {
           agent {
             docker {
-              image 'oetools-azure:1.6'
+              image 'oetools-azure:1.7'
             }
-
           }
           steps {
             timeout(15) {
@@ -63,9 +62,8 @@ pipeline {
         stage('Simulation clang-7 SGX1 Release') {
           agent {
             docker {
-              image 'oetools-azure:1.6'
+              image 'oetools-azure:1.7'
             }
-
           }
           steps {
             timeout(15) {
@@ -76,9 +74,8 @@ pipeline {
         stage('Simulation clang-7 SGX1 RelWithDebInfo') {
           agent {
             docker {
-              image 'oetools-azure:1.6'
+              image 'oetools-azure:1.7'
             }
-
           }
           steps {
             timeout(15) {
@@ -89,9 +86,8 @@ pipeline {
         stage('Simulation clang-7 SGX1-FLC Debug') {
           agent {
             docker {
-              image 'oetools-azure:1.6'
+              image 'oetools-azure:1.7'
             }
-
           }
           steps {
             timeout(15) {
@@ -102,9 +98,8 @@ pipeline {
         stage('Simulation clang-7 SGX1-FLC Release') {
           agent {
             docker {
-              image 'oetools-azure:1.6'
+              image 'oetools-azure:1.7'
             }
-
           }
           steps {
             timeout(15) {
@@ -115,9 +110,8 @@ pipeline {
         stage('Simulation clang-7 SGX1-FLC RelWithDebInfo') {
           agent {
             docker {
-              image 'oetools-azure:1.6'
+              image 'oetools-azure:1.7'
             }
-
           }
           steps {
             timeout(15) {
@@ -130,7 +124,6 @@ pipeline {
             node {
               label 'hardware'
             }
-
           }
           steps {
             timeout(15) {
@@ -143,7 +136,6 @@ pipeline {
             node {
               label 'hardware'
             }
-
           }
           steps {
             timeout(15) {
@@ -156,7 +148,6 @@ pipeline {
             node {
               label 'hardware'
             }
-
           }
           steps {
             timeout(15) {
@@ -169,7 +160,6 @@ pipeline {
             node {
               label 'hardware'
             }
-
           }
           steps {
             timeout(15) {
@@ -182,7 +172,6 @@ pipeline {
             node {
               label 'hardware'
             }
-
           }
           steps {
             timeout(15) {
@@ -195,11 +184,83 @@ pipeline {
             node {
               label 'hardware'
             }
-
           }
           steps {
             timeout(15) {
               sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d --compiler=gcc'
+            }
+          }
+        }
+        stage('Windows Debug Cross-platform') {
+          stages {
+            stage('Linux SGX1 Debug') {
+              agent {
+                docker {
+                  image 'oetools-azure:1.7'
+                }
+              }
+              steps {
+                timeout(15) {
+                  sh './scripts/test-build-config -p SGX1FLC -b Debug --compiler=clang-7'
+                  stash includes: 'build/tests/**', name: 'linuxdebug'
+                }
+              }
+            }
+            stage('Windows Debug') {
+              agent {
+                node {
+                  label 'SGXFLC-Windows'
+                }
+              }
+              steps {
+                unstash 'linuxdebug'
+                bat 'move build linuxbin'
+                bat 'mkdir build && cd build && cmake -G "Visual Studio 15 2017 Win64" -DADD_WINDOWS_ENCLAVE_TESTS=1 -DLINUX_BIN_DIR=%cd%\\linuxbin\\tests .. && pushd . && "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\Common7\\Tools\\LaunchDevCmd.bat" && popd && cmake --build . --config Debug && ctest -V -C Debug'
+              }
+            }
+          }
+        }
+        stage('Windows Release Cross-platform') {
+          stages {
+            stage('Linux SGX1 Release') {
+              agent {
+                docker {
+                  image 'oetools-azure:1.7'
+                }
+              }
+              steps {
+                timeout(15) {
+                  sh './scripts/test-build-config -p SGX1FLC -b Release --compiler=clang-7'
+                  stash includes: 'build/tests/**', name: 'linuxrelease'
+                }
+              }
+            }
+            stage('Windows Release') {
+              agent {
+                node {
+                  label 'SGXFLC-Windows'
+                }
+              }
+              steps {
+                unstash 'linuxrelease'
+                bat 'move build linuxbin'
+                bat 'mkdir build && cd build && cmake -G "Visual Studio 15 2017 Win64" -DADD_WINDOWS_ENCLAVE_TESTS=1 -DLINUX_BIN_DIR=%cd%\\linuxbin\\tests .. && pushd . && "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\Common7\\Tools\\LaunchDevCmd.bat" && popd && cmake --build . --config Release && ctest -V -C Release'
+              }
+            }
+          }
+        }
+        stage('Non-Simulation Container SGX1-FLC RelWithDebInfo') {
+          agent {
+            docker {
+              image 'oetools-azure:1.7'
+              label 'hardware'
+              args '--privileged -v /dev/sgx:/dev/sgx'
+            }
+          }
+
+          steps {
+            timeout(15) {
+              sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d'
             }
           }
         }
@@ -218,3 +279,5 @@ pipeline {
     }
   }
 }
+
+

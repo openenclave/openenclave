@@ -128,15 +128,6 @@ void oe_free_ocall_buffer(void* buffer);
 
 #endif
 
-#if 1
-    /* Currently oeedger8r.exe generates code that assumes that the enclave
-     * can directly write to the space returned by oe_host_malloc, so we
-     * have to implement it as an enclave malloc until this is fixed.
-     */
-#define oe_host_malloc malloc
-#define oe_host_free free
-#endif
-
 OE_EXTERNC_END
 
 #endif // _OE_EDGER8R_ENCLAVE_H

@@ -228,57 +228,50 @@ done:
 #elif defined(_WIN32)
 
     /* Allocate enclave memory for simulated mode only */
-
     void* result = NULL;
-    void* base = NULL;
-    void* mptr = NULL;
 
     /* Allocate virtual memory for this enclave */
-    if (!(mptr = VirtualAlloc(
+    if (!(result = VirtualAlloc(
               NULL,
-              enclave_size * 2,
+              enclave_size,
               MEM_COMMIT | MEM_RESERVE,
               PAGE_EXECUTE_READWRITE)))
     {
         goto done;
     }
 
-    /* Align BASE on a boundary of SIZE */
-    {
-        uint64_t n = enclave_size;
-        uint64_t addr = ((uint64_t)mptr + (n - 1)) / n * n;
-        base = (void*)addr;
-    }
-
-    /* Release [MPTR...BASE] */
-    {
-        uint8_t* start = (uint8_t*)mptr;
-        uint8_t* end = (uint8_t*)base;
-
-        if (start != end && !VirtualFree(start, end - start, MEM_DECOMMIT))
-            goto done;
-    }
-
-    /* Release [BASE+SIZE...MPTR+SIZE*2] */
-    {
-        uint8_t* start = (uint8_t*)base + enclave_size;
-        uint8_t* end = (uint8_t*)mptr + enclave_size * 2;
-
-        if (start != end && !VirtualFree(start, end - start, MEM_DECOMMIT))
-            goto done;
-    }
-
-    result = base;
-
 done:
-
-    /* On failure, release the initial allocation. */
-    if (!result && mptr)
-        VirtualFree(mptr, 0, MEM_RELEASE);
 
     return result;
 
 #endif /* defined(_WIN32) */
+}
+
+static oe_result_t _sgx_free_enclave_memory(
+    void* addr,
+    size_t size,
+    bool is_simulation)
+{
+#if defined(__linux__)
+
+#if defined(OE_USE_LIBSGX)
+    if (!is_simulation)
+    {
+        uint32_t enclave_error = 0;
+        if (!enclave_delete(addr, &enclave_error) || enclave_error != 0)
+            return OE_PLATFORM_ERROR;
+    }
+    else /* FLC simulation mode needs to munmap. */
+#endif
+    {
+        munmap(addr, size);
+    }
+
+#elif defined(_WIN32)
+    VirtualFree(addr, 0, MEM_RELEASE);
+#endif
+
+    return OE_OK;
 }
 
 static oe_result_t _get_sig_struct(
@@ -522,17 +515,123 @@ oe_result_t oe_sgx_create_enclave(
 
 done:
 
-#if defined(__linux__)
-    if (result != OE_OK && context->type == OE_SGX_LOAD_TYPE_CREATE &&
-        base != NULL)
-        munmap(base, enclave_size);
-#endif
+    //  free enclave  memory
+    if (result != OE_OK && context != NULL &&
+        context->type == OE_SGX_LOAD_TYPE_CREATE && base != NULL)
+    {
+        _sgx_free_enclave_memory(
+            base, enclave_size, oe_sgx_is_simulation_load_context(context));
+    }
 
     if (secs)
         oe_memalign_free(secs);
 
     return result;
 }
+
+#if defined(OE_TRACE_MEASURE)
+
+const char* hex_map = "0123456789abcdef";
+
+#define hexof(x) hex_map[((x) >> 4) & 0xf], hex_map[(x)&0xf]
+static void _dump_page(uint64_t src)
+
+{
+    uint8_t* ptr = (uint8_t*)src;
+    for (int i = 0; i < OE_PAGE_SIZE;)
+    {
+        printf(
+            "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%"
+            "c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c",
+            hexof(ptr[i + 0x00]),
+            hexof(ptr[i + 0x01]),
+            hexof(ptr[i + 0x02]),
+            hexof(ptr[i + 0x03]),
+            hexof(ptr[i + 0x04]),
+            hexof(ptr[i + 0x05]),
+            hexof(ptr[i + 0x06]),
+            hexof(ptr[i + 0x07]),
+            hexof(ptr[i + 0x08]),
+            hexof(ptr[i + 0x09]),
+            hexof(ptr[i + 0x0a]),
+            hexof(ptr[i + 0x0b]),
+            hexof(ptr[i + 0x0c]),
+            hexof(ptr[i + 0x0d]),
+            hexof(ptr[i + 0x0e]),
+            hexof(ptr[i + 0x0f]),
+            hexof(ptr[i + 0x10]),
+            hexof(ptr[i + 0x11]),
+            hexof(ptr[i + 0x12]),
+            hexof(ptr[i + 0x13]),
+            hexof(ptr[i + 0x14]),
+            hexof(ptr[i + 0x15]),
+            hexof(ptr[i + 0x16]),
+            hexof(ptr[i + 0x17]),
+            hexof(ptr[i + 0x18]),
+            hexof(ptr[i + 0x19]),
+            hexof(ptr[i + 0x1a]),
+            hexof(ptr[i + 0x1b]),
+            hexof(ptr[i + 0x1c]),
+            hexof(ptr[i + 0x1d]),
+            hexof(ptr[i + 0x1e]),
+            hexof(ptr[i + 0x1f]));
+        i += 0x20;
+        printf(
+            "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%"
+            "c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",
+            hexof(ptr[i + 0x00]),
+            hexof(ptr[i + 0x01]),
+            hexof(ptr[i + 0x02]),
+            hexof(ptr[i + 0x03]),
+            hexof(ptr[i + 0x04]),
+            hexof(ptr[i + 0x05]),
+            hexof(ptr[i + 0x06]),
+            hexof(ptr[i + 0x07]),
+            hexof(ptr[i + 0x08]),
+            hexof(ptr[i + 0x09]),
+            hexof(ptr[i + 0x0a]),
+            hexof(ptr[i + 0x0b]),
+            hexof(ptr[i + 0x0c]),
+            hexof(ptr[i + 0x0d]),
+            hexof(ptr[i + 0x0e]),
+            hexof(ptr[i + 0x0f]),
+            hexof(ptr[i + 0x10]),
+            hexof(ptr[i + 0x11]),
+            hexof(ptr[i + 0x12]),
+            hexof(ptr[i + 0x13]),
+            hexof(ptr[i + 0x14]),
+            hexof(ptr[i + 0x15]),
+            hexof(ptr[i + 0x16]),
+            hexof(ptr[i + 0x17]),
+            hexof(ptr[i + 0x18]),
+            hexof(ptr[i + 0x19]),
+            hexof(ptr[i + 0x1a]),
+            hexof(ptr[i + 0x1b]),
+            hexof(ptr[i + 0x1c]),
+            hexof(ptr[i + 0x1d]),
+            hexof(ptr[i + 0x1e]),
+            hexof(ptr[i + 0x1f]));
+        i += 0x20;
+    }
+}
+
+static void _dump_load_enclave_data(
+    uint64_t offset,
+    uint64_t flags,
+    uint64_t src,
+    bool extend)
+
+{
+    printf(
+        "========== load_enclave_data offset=%x, flags=%x, extend=%d "
+        "============\n",
+        (uint32_t)offset,
+        (uint32_t)flags,
+        extend);
+    _dump_page(src);
+}
+
+#endif /* defined(OE_TRACE_MEASURE) */
 
 oe_result_t oe_sgx_load_enclave_data(
     oe_sgx_load_context_t* context,
@@ -553,6 +652,12 @@ oe_result_t oe_sgx_load_enclave_data(
     /* ADDR must be page aligned */
     if (addr % OE_PAGE_SIZE)
         OE_RAISE(OE_INVALID_PARAMETER);
+
+#if defined(OE_TRACE_MEASURE)
+
+    _dump_load_enclave_data(addr - base, flags, src, extend);
+
+#endif /* defined(OE_TRACE_MEASURE) */
 
     /* Measure this operation */
     OE_CHECK(
@@ -767,39 +872,9 @@ oe_result_t oe_sgx_delete_enclave(oe_enclave_t* enclave)
     if (!enclave)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-#if defined(__linux__)
-
-/* FLC Linux needs to call `enclave_delete` in SGX mode. */
-#if defined(OE_USE_LIBSGX)
-    if (!enclave->simulate)
-    {
-        uint32_t enclave_error = 0;
-        if (!enclave_delete((void*)enclave->addr, &enclave_error))
-            OE_RAISE(OE_PLATFORM_ERROR);
-        if (enclave_error != 0)
-            OE_RAISE(OE_PLATFORM_ERROR);
-    }
-    else /* FLC simulation mode needs to munmap. */
-#endif
-    {
-        /* Non-FLC Linux and simulation mode both allocate memory. */
-        munmap((void*)enclave->addr, enclave->size);
-    }
-
-#elif defined(_WIN32)
-    /* SGX enclaves can be freed with `VirtualFree` with the `MEM_RELEASE`
-     * flag. We can't do this for simulation mode because `MEM_RELEASE`
-     * requires `enclave->addr` to be the same one returned by `VirtualAlloc`,
-     * which is often not the case due to the enclave address alignment
-     * requirements. We use `MEM_DECOMMIT` instead. */
-    if (!enclave->simulate)
-        VirtualFree((void*)enclave->addr, 0, MEM_RELEASE);
-    else
-        VirtualFree((void*)enclave->addr, enclave->size, MEM_DECOMMIT);
-
-#endif
-
-    result = OE_OK;
+    /* free allocate memory. */
+    result = _sgx_free_enclave_memory(
+        (void*)enclave->addr, enclave->size, enclave->simulate);
 
 done:
 

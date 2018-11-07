@@ -45,15 +45,15 @@ add_custom_command(
     # Add dependency to generated Lexer and Parser, and all of the sources.
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Lexer.ml 
             ${CMAKE_CURRENT_BINARY_DIR}/Parser.ml
-    Emitter.ml
-    main.ml
-    intel/Ast.ml
-    intel/CodeGen.ml
-    intel/Edger8r.ml
-    intel/Plugin.ml
-    intel/Preprocessor.ml
-    intel/SimpleStack.ml
-    intel/Util.ml
+            Emitter.ml
+            main.ml
+            intel/Ast.ml
+            intel/CodeGen.ml
+            intel/Edger8r.ml
+            intel/Plugin.ml
+            intel/Preprocessor.ml
+            intel/SimpleStack.ml
+            intel/Util.ml
 )
 
 add_custom_target(oeedger8r ALL

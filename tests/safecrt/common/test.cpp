@@ -1,13 +1,18 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#if defined(OE_BUILD_ENCLAVE)
+#include <openenclave/enclave.h>
+#endif
+
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/tests.h>
-
 #include <stdio.h>
 #include <string.h>
+
+#include "test.h"
 
 #define TEST_BUFFER_SIZE 8
 
@@ -21,7 +26,7 @@ static bool buffer_is_set(unsigned char* buf, unsigned char value, size_t size)
     return true;
 }
 
-static void _test_memcpy_s()
+void test_memcpy_s()
 {
     unsigned char src[TEST_BUFFER_SIZE] = {0};
     unsigned char dst[TEST_BUFFER_SIZE] = {0};
@@ -74,7 +79,7 @@ static void _test_memcpy_s()
     OE_TEST(buffer_is_set(dst + 4, 2, sizeof(dst) - 4));
 }
 
-static void _test_memmove_s()
+void test_memmove_s()
 {
     unsigned char src[TEST_BUFFER_SIZE] = {0};
     unsigned char dst[TEST_BUFFER_SIZE] = {0};
@@ -130,7 +135,7 @@ static void _test_memmove_s()
     OE_TEST(buffer_is_set(dst + 4, 2, sizeof(dst) - 4));
 }
 
-static void _test_strncpy_s()
+void test_strncpy_s()
 {
     char src[TEST_BUFFER_SIZE] = {0};
     char dst[TEST_BUFFER_SIZE] = {0};
@@ -185,7 +190,7 @@ static void _test_strncpy_s()
     OE_TEST(strcmp(dst, "ccccc") == 0);
 }
 
-static void _test_strncat_s()
+void test_strncat_s()
 {
     char src[TEST_BUFFER_SIZE] = {0};
     char dst[TEST_BUFFER_SIZE] = {0};
@@ -246,7 +251,7 @@ static void _test_strncat_s()
     OE_TEST(strcmp(dst, "abbcccd") == 0);
 }
 
-static void _test_memset_s()
+void test_memset_s()
 {
     unsigned char buf[TEST_BUFFER_SIZE] = {0};
 
@@ -264,17 +269,4 @@ static void _test_memset_s()
     OE_TEST(oe_memset_s(buf, sizeof(buf), 3, 4) == OE_OK);
     OE_TEST(buffer_is_set(buf, 3, 4));
     OE_TEST(buffer_is_set(buf + 4, 2, sizeof(buf) - 4));
-}
-
-int main(int argc, const char* argv[])
-{
-    _test_memcpy_s();
-    _test_memmove_s();
-    _test_strncpy_s();
-    _test_strncat_s();
-    _test_memset_s();
-
-    printf("=== passed all tests (safecrt)\n");
-
-    return 0;
 }

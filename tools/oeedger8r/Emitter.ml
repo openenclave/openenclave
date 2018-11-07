@@ -989,13 +989,13 @@ let gen_enclave_code (ec: enclave_content) (ep: edger8r_params) =
     oe_gen_args_header ec ep.trusted_dir;
     gen_t_h ec ep;
     if not ep.header_only then
-    gen_t_c ec ep;
+      gen_t_c ec ep;
   );
   if ep.gen_untrusted then (
     oe_gen_args_header ec ep.untrusted_dir;
     gen_u_h ec ep;
     if not ep.header_only then
-    gen_u_c ec ep;
+      gen_u_c ec ep;
   );
   printf "Success.\n"
 

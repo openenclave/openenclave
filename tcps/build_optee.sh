@@ -96,7 +96,7 @@ if [ -z "$oeedgepath" ]; then
    fi
 fi
 if [ -z "$oeedgepath" ]; then
-    wget https://oedownload.blob.core.windows.net/binaries/oeedger8r
+    wget https://oedownload.blob.core.windows.net/binaries/master/85/oeedger8r/build/output/bin/oeedger8r
     chmod 755 oeedger8r
     export OEEDGER8R=$PWD/oeedger8r
     export OEPATHSEP=:

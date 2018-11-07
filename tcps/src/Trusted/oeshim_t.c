@@ -70,6 +70,16 @@ void* oe_host_realloc(void* ptr, size_t size)
     return (sgxStatus == SGX_SUCCESS) ? newptr : NULL;
 }
 
+void* oe_allocate_ocall_buffer(size_t size)
+{
+    return malloc(size);
+}
+
+void oe_free_ocall_buffer(void* buffer)
+{
+    free(buffer);
+}
+
 Tcps_StatusCode ecall_InitializeEnclave(void)
 {
     return Tcps_Good;

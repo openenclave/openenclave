@@ -63,12 +63,6 @@ function(oeedl_file EDL_FILE TYPE OUT_FILES_VAR)
 		set(OEEDGER8R_COMMAND oeedger8r.exe)
 	endif()
 
-	if (UNIX)
-		set(OEEDGER8R_COMMAND oeedger8r)
-	else()
-		set(OEEDGER8R_COMMAND oeedger8r.exe)
-	endif()
-
 	add_custom_command(
 		OUTPUT ${h_file} ${c_file}
 		# NOTE: Because `OEEDGER8R_COMMAND` is not a CMake
