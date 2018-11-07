@@ -276,47 +276,40 @@ void TestTCSExhaustion(oe_enclave_t* enclave)
 {
     std::vector<std::thread> threads;
     // Set the test_tcs_count to a value greater than the enclave TCSCount
-    size_t test_tcs_count = enclave->num_bindings * 2;
+    size_t test_tcs_req_count = enclave->num_bindings * 2;
     printf(
         "TestTCSExhaust() - Number of TCS bindings in enclave=%zu\n",
         enclave->num_bindings);
     // Initialization of the shared variables before creating threads/launching
     // enclaves
-    _tcsargs.num_threads = 0;
+    _tcsargs.num_tcs_used = 0;
     _tcsargs.num_out_threads = 0;
-    _tcsargs.tcs_count = test_tcs_count;
+    _tcsargs.tcs_req_count = test_tcs_req_count;
 
-    for (size_t i = 0; i < test_tcs_count; i++)
+    for (size_t i = 0; i < test_tcs_req_count; i++)
     {
         threads.push_back(std::thread(ThreadTCS, enclave));
     }
 
-    for (size_t i = 0; i < test_tcs_count; i++)
+    for (size_t i = 0; i < test_tcs_req_count; i++)
         threads[i].join();
 
     printf(
         "TestTCSExhaustion(): tcs_count=%d; num_threads=%d; "
         "num_out_threads=%d\n",
-        (int)test_tcs_count,
-        (int)_tcsargs.num_threads,
-        (int)(int)_tcsargs.num_out_threads);
-    if (!_tcsargs.num_out_threads)
-        printf(
-            "TestTCSExhaustion() FAILED as oe_call_enclave did not return "
-            "OE_OUT_OF_THREADS\n");
-    else
-        printf(
-            "TestTCSExhaustion() PASSED as oe_call_enclave returned "
-            "OE_OUT_OF_THREADS\n");
+        (int)test_tcs_req_count,
+        (int)_tcsargs.num_tcs_used,
+        (int)_tcsargs.num_out_threads);
 
     // Cleanup -- Removes all elements from the vector threads
     threads.clear();
     // Crux of the test is to get OE_OUT_OF_THREADS i.e. to exhaust the TCSes
     OE_TEST(_tcsargs.num_out_threads > 0);
     // Verifying that everything adds up fine
-    OE_TEST(_tcsargs.num_threads + _tcsargs.num_out_threads == test_tcs_count);
+    OE_TEST(
+        _tcsargs.num_tcs_used + _tcsargs.num_out_threads == test_tcs_req_count);
     // Sanity test that we are not reusing the bindings
-    OE_TEST(_tcsargs.num_threads <= enclave->num_bindings);
+    OE_TEST(_tcsargs.num_tcs_used <= enclave->num_bindings);
 }
 
 int main(int argc, const char* argv[])

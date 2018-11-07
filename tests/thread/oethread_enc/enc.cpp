@@ -253,9 +253,12 @@ OE_ECALL void TestTCSExhaustion(void* args_)
 
     // Increment the number of threads only on getting the _tcs_lock
     oe_spin_lock(&_tcs_lock);
-    args->num_threads++;
+    args->num_tcs_used++;
     oe_spin_unlock(&_tcs_lock);
-    while (args->num_threads + args->num_out_threads < args->tcs_count)
+    // Wait until all the threads have returned from oe_call_enclave from
+    // the host - these include those with unique TCSes and the ones
+    // which failed.
+    while (args->num_tcs_used + args->num_out_threads < args->tcs_req_count)
         ;
 }
 
