@@ -75,7 +75,7 @@ Tcps_StatusCode Tcps_CreateTAInternal(
 {
     *a_pId = (sgx_enclave_id_t)INVALID_HANDLE_VALUE;
 
-    TCPS_UNUSED(a_Flags);
+    OE_UNUSED(a_Flags);
 
     /* Convert string to GUID. */
     UUID uuid;

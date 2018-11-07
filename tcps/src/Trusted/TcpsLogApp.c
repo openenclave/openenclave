@@ -7,6 +7,7 @@
 #include <string.h>
 #include <cbor.h>
 #include "cborhelper.h"
+#include "enclavelibc.h"
 
 #ifdef USE_OPTEE
 #include <optee/tcps_string_optee_t.h>
@@ -45,10 +46,10 @@ TcpsLogCloseOptee(
     {
         if (g_TcpsLogLogObjectOptee->LogPathPrefix != NULL)
         {
-            TCPS_FREE(g_TcpsLogLogObjectOptee->LogPathPrefix);
+            oe_free(g_TcpsLogLogObjectOptee->LogPathPrefix);
         }
 
-        TCPS_FREE(g_TcpsLogLogObjectOptee);
+        oe_free(g_TcpsLogLogObjectOptee);
         g_TcpsLogLogObjectOptee = NULL;
     }
 }
@@ -62,11 +63,11 @@ TcpsLogCounterValidateOptee(
     const uint8_t* const a_CounterValueBuffer,
     const size_t a_CounterValueBufferSize)
 {
-    TCPS_UNUSED(a_Handle);
-    TCPS_UNUSED(a_CounterIdBuffer);
-    TCPS_UNUSED(a_CounterIdBufferSize);
-    TCPS_UNUSED(a_CounterValueBuffer);
-    TCPS_UNUSED(a_CounterValueBufferSize);
+    OE_UNUSED(a_Handle);
+    OE_UNUSED(a_CounterIdBuffer);
+    OE_UNUSED(a_CounterIdBufferSize);
+    OE_UNUSED(a_CounterValueBuffer);
+    OE_UNUSED(a_CounterValueBufferSize);
     return Tcps_Good;
 }
 
@@ -105,8 +106,8 @@ TcpsLogCounterIncrementGetOptee(
     uint8_t** const a_CounterValueBuffer,
     size_t* a_CounterValueBufferSize)
 {
-    TCPS_UNUSED(a_CounterIdBuffer);
-    TCPS_UNUSED(a_CounterIdBufferSize);
+    OE_UNUSED(a_CounterIdBuffer);
+    OE_UNUSED(a_CounterIdBufferSize);
 
     if (a_Handle == NULL ||
         a_CounterValueBuffer == NULL ||
@@ -168,7 +169,7 @@ TcpsLogCounterRecoverOptee(
         goto Exit;
     }
 
-    *a_CounterBuffer = TCPS_ALLOC(counterFileSize);
+    *a_CounterBuffer = oe_malloc(counterFileSize);
     if (*a_CounterBuffer == NULL)
     {
         status = Tcps_BadOutOfMemory;
@@ -187,7 +188,7 @@ Exit:
     {
         if (*a_CounterBuffer != NULL)
         {
-            TCPS_FREE(*a_CounterBuffer);
+            oe_free(*a_CounterBuffer);
         }
     }
 
@@ -261,7 +262,7 @@ TcpsLogInitOptee(
 
     *a_Handle = NULL;
 
-    g_TcpsLogLogObjectOptee = TCPS_ALLOC(sizeof(TCPS_LOG_OCALL_OBJECT));
+    g_TcpsLogLogObjectOptee = oe_malloc(sizeof(TCPS_LOG_OCALL_OBJECT));
     if (g_TcpsLogLogObjectOptee == NULL)
     {
         status = Tcps_BadOutOfMemory;
@@ -270,7 +271,7 @@ TcpsLogInitOptee(
     TCPS_ZERO(g_TcpsLogLogObjectOptee, sizeof(TCPS_LOG_OCALL_OBJECT));
 
     logPathPrefixSize = strlen(a_LogPathPrefix) + 1;
-    g_TcpsLogLogObjectOptee->LogPathPrefix = TCPS_ALLOC(logPathPrefixSize);
+    g_TcpsLogLogObjectOptee->LogPathPrefix = oe_malloc(logPathPrefixSize);
     if (g_TcpsLogLogObjectOptee->LogPathPrefix == NULL)
     {
         status = Tcps_BadOutOfMemory;
@@ -339,7 +340,7 @@ TcpsLogAppInit(
 #if defined(USE_SGX) || defined(USE_OPTEE)
     TCPS_SHA256_DIGEST seed = { 0 }; // TODO provision
 #else 
-    TCPS_UNUSED(a_sLogPrefix);
+    OE_UNUSED(a_sLogPrefix);
 #endif
 
     Tcps_StatusCode status = Tcps_BadNotImplemented;
@@ -411,7 +412,7 @@ TcpsLogAppEventId(
     else
         status = Tcps_Bad;
 #else
-    TCPS_UNUSED(a_Id);
+    OE_UNUSED(a_Id);
 #endif
 
     return status == Tcps_Good ?
@@ -436,8 +437,8 @@ TcpsLogAppEvent(
     else
         status = Tcps_Bad;
 #else
-    TCPS_UNUSED(a_Buffer);
-    TCPS_UNUSED(a_BufferSize);
+    OE_UNUSED(a_Buffer);
+    OE_UNUSED(a_BufferSize);
 #endif
 
     return status == Tcps_Good ?
@@ -801,7 +802,7 @@ TcpsLogAppEventInternal(
     CborError err = TcpsCborEncodeAppEvent(Payload, &bufferSize, buffer);
     if (err == CborErrorOutOfMemory)
     {
-        buffer = TCPS_ALLOC(bufferSize);
+        buffer = oe_malloc(bufferSize);
         if (buffer != NULL)
         {
             err = TcpsCborEncodeAppEvent(Payload, &bufferSize, buffer);
@@ -819,7 +820,7 @@ TcpsLogAppEventInternal(
 Exit:
     if (buffer != NULL)
     {
-        TCPS_FREE(buffer);
+        oe_free(buffer);
     }
 
     return uStatus;
@@ -836,7 +837,7 @@ TcpsLogAppEventResponse(
     CborError err = TcpsCborEncodeAppEventResponse(Payload, &bufferSize, buffer);
     if (err == CborErrorOutOfMemory)
     {
-        buffer = TCPS_ALLOC(bufferSize);
+        buffer = oe_malloc(bufferSize);
         if (buffer != NULL)
         {
             err = TcpsCborEncodeAppEventResponse(Payload, &bufferSize, buffer);
@@ -858,7 +859,7 @@ TcpsLogAppEventResponse(
 Exit:
     if (buffer != NULL)
     {
-        TCPS_FREE(buffer);
+        oe_free(buffer);
     }
 
     return uStatus;
@@ -875,7 +876,7 @@ TcpsLogAppEventResponseFailed(
     CborError err = TcpsCborEncodeAppEventResponseFailed(Payload, &bufferSize, buffer);
     if (err == CborErrorOutOfMemory)
     {
-        buffer = TCPS_ALLOC(bufferSize);
+        buffer = oe_malloc(bufferSize);
         if (buffer != NULL)
         {
             err = TcpsCborEncodeAppEventResponseFailed(Payload, &bufferSize, buffer);
@@ -897,7 +898,7 @@ TcpsLogAppEventResponseFailed(
 Exit:
     if (buffer != NULL)
     {
-        TCPS_FREE(buffer);
+        oe_free(buffer);
     }
 
     return uStatus;
@@ -914,7 +915,7 @@ TcpsLogAppEventAutoApproved(
     CborError err = TcpsCborEncodeAppEventAutoApproved(Payload, &bufferSize, buffer);
     if (err == CborErrorOutOfMemory)
     {
-        buffer = TCPS_ALLOC(bufferSize);
+        buffer = oe_malloc(bufferSize);
         if (buffer != NULL)
         {
             err = TcpsCborEncodeAppEventAutoApproved(Payload, &bufferSize, buffer);
@@ -936,7 +937,7 @@ TcpsLogAppEventAutoApproved(
 Exit:
     if (buffer != NULL)
     {
-        TCPS_FREE(buffer);
+        oe_free(buffer);
     }
 
     return uStatus;
@@ -968,7 +969,7 @@ TcpsLogAppEventManualApproved(
     CborError err = TcpsCborEncodeAppEventManualApproved(Payload, &bufferSize, buffer);
     if (err == CborErrorOutOfMemory)
     {
-        buffer = TCPS_ALLOC(bufferSize);
+        buffer = oe_malloc(bufferSize);
         if (buffer != NULL)
         {
             err = TcpsCborEncodeAppEventManualApproved(Payload, &bufferSize, buffer);
@@ -990,7 +991,7 @@ TcpsLogAppEventManualApproved(
 Exit:
     if (buffer != NULL)
     {
-        TCPS_FREE(buffer);
+        oe_free(buffer);
     }
 
     return uStatus;
@@ -1007,7 +1008,7 @@ TcpsLogAppEventManualRejected(
     CborError err = TcpsCborEncodeAppEventManualRejected(Payload, &bufferSize, buffer);
     if (err == CborErrorOutOfMemory)
     {
-        buffer = TCPS_ALLOC(bufferSize);
+        buffer = oe_malloc(bufferSize);
         if (buffer != NULL)
         {
             err = TcpsCborEncodeAppEventManualRejected(Payload, &bufferSize, buffer);
@@ -1029,7 +1030,7 @@ TcpsLogAppEventManualRejected(
 Exit:
     if (buffer != NULL)
     {
-        TCPS_FREE(buffer);
+        oe_free(buffer);
     }
 
     return uStatus;

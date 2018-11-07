@@ -1,6 +1,7 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
 #include <openenclave/enclave.h>
+#include "enclavelibc.h"
 #include "tcps_string_t.h"
 #include "oeoverintelsgx_t.h"
 #include "socket_t.h"
@@ -506,12 +507,12 @@ oe_freeaddrinfo(
     for (ai = ailist; ai != NULL; ai = next) {
         next = ai->ai_next;
         if (ai->ai_canonname != NULL) {
-            free(ai->ai_canonname);
+            oe_free(ai->ai_canonname);
         }
         if (ai->ai_addr != NULL) {
-            free(ai->ai_addr);
+            oe_free(ai->ai_addr);
         }
-        free(ai);
+        oe_free(ai);
         ailist = next;
     }
 }
@@ -547,7 +548,7 @@ oe_getaddrinfo(
 
     if (result.addressCount > 0) {
         int bytesReceived = result.addressCount * sizeof(addrinfo_Buffer);
-        char* buf = malloc(bytesReceived);
+        char* buf = oe_malloc(bytesReceived);
         if (buf == NULL) {
             uStatus = Tcps_BadOutOfMemory;
             result.error = OE_ENOMEM;
@@ -573,14 +574,14 @@ oe_getaddrinfo(
                 result.error = OE_ENOMEM;
                 break;
             }
-            ai = malloc(sizeof(*ai));
+            ai = oe_malloc(sizeof(*ai));
             if (ai == NULL) {
                 result.error = OE_ENOMEM;
                 break;
             }
-            ai->ai_addr = malloc(response[i].ai_addrlen);
+            ai->ai_addr = oe_malloc(response[i].ai_addrlen);
             if (ai->ai_addr == NULL) {
-                free(ai);
+                oe_free(ai);
                 result.error = OE_ENOMEM;
                 break;
             }
@@ -592,9 +593,9 @@ oe_getaddrinfo(
             ai->ai_protocol = response[i].ai_protocol;
             ai->ai_addrlen = response[i].ai_addrlen;
             if (response[i].ai_canonname[0] != 0) {
-                ai->ai_canonname = malloc(sizeof(response[i].ai_canonname) + 1);
+                ai->ai_canonname = oe_malloc(sizeof(response[i].ai_canonname) + 1);
                 if (ai->ai_canonname == NULL) {
-                    free(ai);
+                    oe_free(ai);
                     result.error = OE_ENOMEM;
                     break;
                 }

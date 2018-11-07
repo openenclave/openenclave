@@ -79,26 +79,26 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><dl class="reflist">
-<dt><a class="anchor" id="_deprecated000001"></a>Global <a class="el" href="enclave_8h.html#a449bbf32aaef7910e2a9d88407299a02">OE_DEPRECATED</a>  (oe_result_t oe_call_host(const char *func, void *args),"This function is deprecated. Use oeedger8r to generate code that will call oe_call_host_function() instead.")</dt>
-<dd>This function has been deprecated. Use oeedger8r to generate code that will call oe_call_host_function() instead. </dd>
-<dt><a class="anchor" id="_deprecated000009"></a>Global <a class="el" href="host_8h.html#a6d574cd65d6e93999b797b9d8c0aeac7">OE_DEPRECATED</a>  (oe_result_t oe_get_report_v1(oe_enclave_t *enclave, uint32_t flags, const void *opt_params, size_t opt_params_size, uint8_t *report_buffer, size_t *report_buffer_size),"This function is deprecated. Use oe_get_report_v2() instead.")</dt>
-<dd>This function is deprecated. Use <a class="el" href="enclave_8h.html#aefcb89c91a9078d595e255bd7901ac71">oe_get_report_v2()</a> instead. </dd>
-<dt><a class="anchor" id="_deprecated000008"></a>Global <a class="el" href="host_8h.html#a318cd8884fd785cd1aaa7d961b010ad6">OE_DEPRECATED</a>  (oe_result_t oe_call_enclave(oe_enclave_t *enclave, const char *func, void *args),"This function is deprecated. Use oeedger8r to generate code that will call oe_call_enclave_function() instead.")</dt>
+<dt><a class="anchor" id="_deprecated000008"></a>Global <a class="el" href="host_8h.html#a83caababc844437859b957090b06d174">oe_call_enclave</a>  (oe_enclave_t *enclave, const char *func, void *args)</dt>
 <dd>This function is deprecated. Use oeedger8r to generate code that will call oe_call_enclave_function() instead. </dd>
-<dt><a class="anchor" id="_deprecated000007"></a>Global <a class="el" href="enclave_8h.html#addad58eff449cde9cf082e8d5cbab85c">OE_DEPRECATED</a>  (oe_enclave_t *oe_get_enclave(void),"This function is deprecated. Host application code should use edger8r generated code instead.")</dt>
+<dt><a class="anchor" id="_deprecated000001"></a>Global <a class="el" href="enclave_8h.html#aa9a01301f36e483bb4fb9ba1a35dad5a">oe_call_host</a>  (const char *func, void *args)</dt>
+<dd>This function has been deprecated. Use oeedger8r to generate code that will call oe_call_host_function() instead. </dd>
+<dt><a class="anchor" id="_deprecated000002"></a>Global <a class="el" href="enclave_8h.html#af965ae7d77c8cf1a8db410bd35fb74a2">oe_call_host_by_address</a>  (void(*func)(void *, oe_enclave_t *), void *args)</dt>
+<dd>This function is deprecated. Use oeedger8r to generate code that will call oe_call_host_function() instead. </dd>
+<dt><a class="anchor" id="_deprecated000007"></a>Global <a class="el" href="enclave_8h.html#a63fd9cb689eadff33a3654bbc4b4fa57">oe_get_enclave</a>  (void)</dt>
 <dd>This function is deprecated. Host application code should use edger8r generated code instead. </dd>
-<dt><a class="anchor" id="_deprecated000006"></a>Global <a class="el" href="enclave_8h.html#aed92858f36a623423ed959dd1fb49cfd">OE_DEPRECATED</a>  (oe_result_t oe_get_seal_key_v1(const uint8_t *key_info, size_t key_info_size, uint8_t *key_buffer, size_t *key_buffer_size),"This function is deprecated. Use oe_get_seal_key_v2() instead.")</dt>
-<dd>This function is deprecated. Use <a class="el" href="enclave_8h.html#a84aa2783b0d66e8593507e028c3dc1c0">oe_get_seal_key_v2()</a> instead. </dd>
-<dt><a class="anchor" id="_deprecated000005"></a>Global <a class="el" href="enclave_8h.html#a949b79fb5cf8be087dd17a3923c88ce6">OE_DEPRECATED</a>  (oe_result_t oe_get_seal_key_by_policy_v1(oe_seal_policy_t seal_policy, uint8_t *key_buffer, size_t *key_buffer_size, uint8_t *key_info, size_t *key_info_size),"This function is deprecated. Use oe_get_seal_key_by_policy_v2() instead")</dt>
-<dd>This function is deprecated. Use <a class="el" href="enclave_8h.html#a5827825ee8dec2b3f725db3fd35adc9a">oe_get_seal_key_by_policy_v2()</a> instead. </dd>
-<dt><a class="anchor" id="_deprecated000004"></a>Global <a class="el" href="enclave_8h.html#a54708835136919399a7e71aad00037f1">OE_DEPRECATED</a>  (oe_result_t oe_get_target_info_v1(const uint8_t *report, size_t report_size, void *target_info_buffer, size_t *target_info_size),"This function is deprecated. Use oe_get_target_info_v2() instead.")</dt>
-<dd><p class="startdd">This function is deprecated. Use <a class="el" href="enclave_8h.html#adb1efb2eabdc5ad3c47947eb9ede5cd3">oe_get_target_info_v2()</a> instead.</p>
-<p class="enddd">This function is deprecated. Use <a class="el" href="enclave_8h.html#adb1efb2eabdc5ad3c47947eb9ede5cd3">oe_get_target_info_v2()</a> instead. </p>
-</dd>
-<dt><a class="anchor" id="_deprecated000003"></a>Global <a class="el" href="enclave_8h.html#a56d201a307296160b05c5023e9b13a48">OE_DEPRECATED</a>  (oe_result_t oe_get_report_v1(uint32_t flags, const uint8_t *report_data, size_t report_data_size, const void *opt_params, size_t opt_params_size, uint8_t *report_buffer, size_t *report_buffer_size),"This function is deprecated. Use oe_get_report_v2() instead.")</dt>
+<dt><a class="anchor" id="_deprecated000009"></a>Global <a class="el" href="host_8h.html#a4f6a267f8fbfee4074254cd6f9855063">oe_get_report_v1</a>  (oe_enclave_t *enclave, uint32_t flags, const void *opt_params, size_t opt_params_size, uint8_t *report_buffer, size_t *report_buffer_size)</dt>
 <dd>This function is deprecated. Use <a class="el" href="enclave_8h.html#aefcb89c91a9078d595e255bd7901ac71">oe_get_report_v2()</a> instead. </dd>
-<dt><a class="anchor" id="_deprecated000002"></a>Global <a class="el" href="enclave_8h.html#a21c63c6e68c24395f68e7835a36d3d39">OE_DEPRECATED</a>  (oe_result_t oe_call_host_by_address(void(*func)(void *, oe_enclave_t *), void *args),"This function is deprecated. Use oeedger8r to generate code that will call oe_call_host_function() instead.")</dt>
-<dd>This function is deprecated. Use oeedger8r to generate code that will call oe_call_host_function() instead.</dd>
+<dt><a class="anchor" id="_deprecated000003"></a>Global <a class="el" href="enclave_8h.html#acf4c88b0acdad58f3983875139d130d7">oe_get_report_v1</a>  (uint32_t flags, const uint8_t *report_data, size_t report_data_size, const void *opt_params, size_t opt_params_size, uint8_t *report_buffer, size_t *report_buffer_size)</dt>
+<dd>This function is deprecated. Use <a class="el" href="enclave_8h.html#aefcb89c91a9078d595e255bd7901ac71">oe_get_report_v2()</a> instead. </dd>
+<dt><a class="anchor" id="_deprecated000005"></a>Global <a class="el" href="enclave_8h.html#a899860cea8ec39af36e76c73087b48c1">oe_get_seal_key_by_policy_v1</a>  (oe_seal_policy_t seal_policy, uint8_t *key_buffer, size_t *key_buffer_size, uint8_t *key_info, size_t *key_info_size)</dt>
+<dd>This function is deprecated. Use <a class="el" href="enclave_8h.html#a5827825ee8dec2b3f725db3fd35adc9a">oe_get_seal_key_by_policy_v2()</a> instead. </dd>
+<dt><a class="anchor" id="_deprecated000006"></a>Global <a class="el" href="enclave_8h.html#ae6205cc02aca2ea6346d641c55e7e204">oe_get_seal_key_v1</a>  (const uint8_t *key_info, size_t key_info_size, uint8_t *key_buffer, size_t *key_buffer_size)</dt>
+<dd>This function is deprecated. Use <a class="el" href="enclave_8h.html#a84aa2783b0d66e8593507e028c3dc1c0">oe_get_seal_key_v2()</a> instead. </dd>
+<dt><a class="anchor" id="_deprecated000004"></a>Global <a class="el" href="enclave_8h.html#a2c58ec0106bad1b48f7c6a739357adc9">oe_get_target_info_v1</a>  (const uint8_t *report, size_t report_size, void *target_info_buffer, size_t *target_info_size)</dt>
+<dd><p class="startdd">This function is deprecated. Use <a class="el" href="enclave_8h.html#adb1efb2eabdc5ad3c47947eb9ede5cd3">oe_get_target_info_v2()</a> instead.</p>
+<p class="enddd">This function is deprecated. Use <a class="el" href="enclave_8h.html#adb1efb2eabdc5ad3c47947eb9ede5cd3">oe_get_target_info_v2()</a> instead.</p>
+</dd>
 </dl>
 </div></div><!-- contents -->
 <!-- start footer part -->

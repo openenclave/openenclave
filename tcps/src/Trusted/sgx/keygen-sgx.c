@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <openenclave/enclave.h>
+#include "enclavelibc.h"
 #include <sgx_trts.h>
 #include <sgx_utils.h>
 #include "../oeresult.h"
@@ -52,7 +53,7 @@ oe_result_t oe_get_seal_key_by_policy_v2(
 
     uint8_t* info = NULL;
     if (key_info != NULL) {
-        info = malloc(sizeof(key_request));
+        info = oe_malloc(sizeof(key_request));
         if (info == NULL) {
             return OE_OUT_OF_MEMORY;
         }
@@ -87,7 +88,7 @@ oe_result_t oe_get_seal_key_v2(
     }
     sgx_key_request_t* key_request = (sgx_key_request_t*)key_info;
 
-    uint8_t* key = (uint8_t*)malloc(sizeof(sgx_key_128bit_t));
+    uint8_t* key = (uint8_t*)oe_malloc(sizeof(sgx_key_128bit_t));
     if (key == NULL) {
         return OE_OUT_OF_MEMORY;
     }
@@ -95,7 +96,7 @@ oe_result_t oe_get_seal_key_v2(
     sgx_status_t sgxStatus = sgx_get_key(key_request, (sgx_key_128bit_t*)key);
     oe_result_t oeResult = GetOEResultFromSgxStatus(sgxStatus);
     if (oeResult != OE_OK) {
-        free(key);
+        oe_free(key);
         return oeResult;
     }
 
@@ -117,13 +118,13 @@ oe_result_t oe_export_pem(
     }
 
     char* pem = NULL;
-    pem = (char*)malloc(length);
+    pem = (char*)oe_malloc(length);
     if (pem == NULL) {
         return OE_OUT_OF_MEMORY;
     }
 
     if (DERtoPEM(der_builder, pem_type, pem, &length) < 0) {
-        free(pem);
+        oe_free(pem);
         return OE_FAILURE;
     }
 
@@ -183,7 +184,7 @@ oe_result_t oe_derive_key_pair(
         oeResult = oe_export_pem(&der_builder, R_ECC_PRIVATEKEY_TYPE, (char**)private_key, private_key_size);
         if (oeResult != OE_OK) {
             if (public_key != NULL && *public_key != NULL) {
-                free(public_key);
+                oe_free(public_key);
             }
             return oeResult;
         }
@@ -235,8 +236,8 @@ oe_result_t oe_get_key_pair_by_policy(
 
 cleanup:
 
-    free(local_key_info);
-    free(secret);
+    oe_free(local_key_info);
+    oe_free(secret);
 
     return oeResult;
 }
@@ -280,7 +281,7 @@ oe_result_t oe_get_public_key_by_policy(
                                   NULL,
                                   NULL);
 
-    free(seal_secret);
+    oe_free(seal_secret);
     return oeResult;
 }
 
@@ -322,6 +323,6 @@ oe_result_t oe_get_public_key_by_policy(
                                   NULL,
                                   key_buffer,
                                   key_buffer_size);
-    free(secret);
+    oe_free(secret);
     return oeResult;
 }

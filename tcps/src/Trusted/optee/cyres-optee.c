@@ -95,7 +95,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "ExportCyrepCertChain");
     oe_assert(certChainBufferSize != 0);
 
     /* Allocate memory and request the cert chain */
-    certChainBufferPEM = TCPS_ALLOC(certChainBufferSize);
+    certChainBufferPEM = oe_malloc(certChainBufferSize);
     Tcps_ReturnErrorIfAllocFailed(certChainBufferPEM);
     memset(certChainBufferPEM, 0, certChainBufferSize);
 
@@ -121,14 +121,14 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "ExportCyrepCertChain");
 
     if (certChainBufferPEM != NULL)
     {
-        TCPS_FREE(certChainBufferPEM);
+        oe_free(certChainBufferPEM);
     }
 
 Tcps_ReturnStatusCode;
 Tcps_BeginErrorHandling;
     if (certChainBufferPEM != NULL)
     {
-        TCPS_FREE(certChainBufferPEM);
+        oe_free(certChainBufferPEM);
     }
 Tcps_FinishErrorHandling;
 }
@@ -183,7 +183,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "GetCyrepKey");
     oe_assert(keySize != 0);
 
     /* Allocate memory and request the key */
-    *keyPEM = TCPS_ALLOC(keySize);
+    *keyPEM = oe_malloc(keySize);
     Tcps_ReturnErrorIfAllocFailed(*keyPEM);
     memset(*keyPEM, 0, keySize);
 
@@ -207,7 +207,7 @@ Tcps_ReturnStatusCode;
 Tcps_BeginErrorHandling;
     if (*keyPEM != NULL)
     {
-        TCPS_FREE(*keyPEM);
+        oe_free(*keyPEM);
         *keyPEM = NULL;
     }
 Tcps_FinishErrorHandling;
@@ -219,5 +219,5 @@ FreeCyrepKey(
     char *keyPEM)
 {
     oe_assert(keyPEM != NULL);
-    TCPS_FREE(keyPEM);
+    oe_free(keyPEM);
 }

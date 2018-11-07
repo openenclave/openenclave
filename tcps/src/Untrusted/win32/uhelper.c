@@ -66,7 +66,7 @@ oe_result_t oe_acquire_enclave_mutex(_In_ oe_enclave_t* enclave)
 {
     oe_result_t result = OE_OK;
 
-    TCPS_UNUSED(enclave);
+    OE_UNUSED(enclave);
 
     if (!g_GlobalMutexInitialized) {
         InitializeCriticalSection(&g_GlobalMutex);
@@ -98,7 +98,7 @@ oe_result_t oe_acquire_enclave_mutex(_In_ oe_enclave_t* enclave)
 
 void oe_release_enclave_mutex(_In_ oe_enclave_t* enclave)
 {
-    TCPS_UNUSED(enclave);
+    OE_UNUSED(enclave);
     LeaveCriticalSection(&g_GlobalMutex);
     //printf("-ecall: %x\n", GetCurrentThreadId());
 }

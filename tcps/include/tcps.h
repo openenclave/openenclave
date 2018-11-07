@@ -30,7 +30,7 @@
 # define Tcps_InitializeStatus(xModule, xMethod) \
     Tcps_StatusCode uStatus = Tcps_Good; \
     Tcps_UInt32 uModule = xModule; \
-    TCPS_UNUSED(uModule); \
+    OE_UNUSED(uModule); \
     Tcps_GotoErrorIfBad(uStatus);
 # define Tcps_BeginErrorHandling         Error:
 # define Tcps_FinishErrorHandling        return uStatus;
@@ -82,15 +82,6 @@
 # define Tcps_P_Thread_WasTerminationRequested() Tcps_False
 #endif
 
-#ifdef OpcUa_Alloc
-# define TCPS_ALLOC                      OpcUa_Alloc
-# define TCPS_FREE                       OpcUa_Free
-# define TCPS_REALLOC                    OpcUa_ReAlloc
-#else
-# define TCPS_ALLOC(s)                   malloc(s)
-# define TCPS_FREE(p)                    free(p)
-# define TCPS_REALLOC(p, s)              realloc(p, s)
-#endif
 #define TCPS_ZERO(_p, _s)                memset(_p, 0x00, _s);
 
 /* Types. */
@@ -177,7 +168,6 @@ typedef enum {
 #  define TCPS_VERIFY(_exp)             ((_exp) ? Tcps_True : Tcps_False)
 # endif
 #endif
-#define TCPS_UNUSED(xParameter)         (Tcps_Void)(xParameter)
 
 /* Copy a string into a fixed size buffer.  Zero the buffer to prevent
  * leaking any extra data out of the TEE.

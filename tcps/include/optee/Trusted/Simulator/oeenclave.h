@@ -8,40 +8,40 @@
 #include "compiler.h"
 
 /* Redefine APIs that are defined in Windows but not in OP-TEE.
- * This way, the "OP-TEE" calls will be mapped to Tcps_* and
+ * This way, the "OP-TEE" calls will be mapped to oe_* and
  * not result in a duplicate definition.
  */
 #include <stdlib.h>
-#define atoi        Tcps_atoi
-#define bsearch     Tcps_bsearch
-#define strtol      Tcps_strtol
-#define strtoul     Tcps_strtoul
+#define atoi        oe_atoi
+#define bsearch     oe_bsearch
+#define strtol      oe_strtol
+#define strtoul     oe_strtoul
 
 #include <string.h>
-#define strerror    Tcps_strerror
-#define _stricmp    Tcps__stricmp
-#define _strnicmp   Tcps__strnicmp
-#define strncat     Tcps_strncat
-#define strncpy     Tcps_strncpy
-#define strncpy_s   Tcps_strncpy_s
-#define strcpy_s    Tcps_strcpy_s
-#define strrchr     Tcps_strrchr
-#define strstr      Tcps_strstr
+#define strerror    oe_strerror
+#define _stricmp    oe__stricmp
+#define _strnicmp   oe__strnicmp
+#define strncat     oe_strncat
+#define strncpy     oe_strncpy
+#define strncpy_s   oe_strncpy_s
+#define strcpy_s    oe_strcpy_s
+#define strrchr     oe_strrchr
+#define strstr      oe_strstr
 
 #include <ctype.h>
-#define isalpha     Tcps_isalpha
-#define isspace     Tcps_isspace
-#define isupper     Tcps_isupper
-#define tolower     Tcps_tolower
-#define toupper     Tcps_toupper
+#define isalpha     oe_isalpha
+#define isspace     oe_isspace
+#define isupper     oe_isupper
+#define tolower     oe_tolower
+#define toupper     oe_toupper
 
 #define HAVE_VSNPRINTF
 #undef _CRT_FUNCTIONS_REQUIRED
 #define _CRT_FUNCTIONS_REQUIRED 0
-#define printf      Tcps_printf
-#define vprintf     Tcps_vprintf
-#define fprintf     Tcps_fprintf
-#define snprintf    Tcps_snprintf
+#define printf      oe_printf
+#define vprintf     oe_vprintf
+#define fprintf     oe_fprintf
+#define snprintf    oe_snprintf
 
 #define _INC_TIME_INL
 
@@ -51,16 +51,16 @@
 #include "..\..\..\oeenclave.h"
 #include <unistd.h>
 
-void* Tcps_memcpy(
+void* oe_memcpy(
     _Out_writes_bytes_(count) void* dest,
     _In_reads_bytes_(count) const void* src,
     _In_ size_t count);
 
-void *Tcps_malloc(size_t size);
+void *oe_malloc(size_t size);
 
-void Tcps_free(void *memblock); 
+void oe_free(void *memblock); 
 
-void* Tcps_realloc(  
+void* oe_realloc(  
     void *memblock,  
     size_t size);  
 

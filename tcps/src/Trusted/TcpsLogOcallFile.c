@@ -1,5 +1,6 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
+#include <openenclave/enclave.h>
 #include "sgx_edger8r.h" /* for sgx_status_t etc. */
 
 #ifdef USE_OPTEE
@@ -14,6 +15,7 @@
 #include "TcpsLog.h"
 #include "TcpsLogOcallFile.h"
 #include <stdio.h>
+#include "enclavelibc.h"
 
 static
 char*
@@ -79,14 +81,14 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "TcpsLogFileWriteOcall");
 
     COPY_BUFFER_FROM_STRING(filenameBuffer, filename);
 
-    content = (oe_buffer4096*)malloc(sizeof(*content));
+    content = (oe_buffer4096*)oe_malloc(sizeof(*content));
     Tcps_GotoErrorIfAllocFailed(content);
 
     COPY_BUFFER(*content, Buffer, BufferSize);
 
     sgx_status_t sgxResult = ocall_ExportFile(&result, filenameBuffer, Append, *content, BufferSize);
 
-    free(content);
+    oe_free(content);
 
     Tcps_GotoErrorIfTrue(sgxResult != SGX_SUCCESS, Tcps_Bad);
     Tcps_GotoErrorIfTrue(result != 0, Tcps_Bad);
@@ -176,7 +178,7 @@ TcpsLogFileReadOcall(
 
         Tcps_GotoErrorIfTrue(sgxstatus != SGX_SUCCESS || contentResult.status, Tcps_Bad);
 
-        *Buffer = TCPS_ALLOC(sizeof(sizeResult.fileSize));
+        *Buffer = oe_malloc(sizeof(sizeResult.fileSize));
         Tcps_GotoErrorIfAllocFailed(*Buffer);
         memcpy(*Buffer, contentResult.content, sizeResult.fileSize);
     }
@@ -187,7 +189,7 @@ Error:
     {
         if (*Buffer != NULL)
         {
-            TCPS_FREE(*Buffer);
+            oe_free(*Buffer);
         }
     }
 

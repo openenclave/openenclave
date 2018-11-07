@@ -5,6 +5,9 @@
 #endif
 
 #include "gtest/gtest.h"
+
+/* Allow deprecated APIs in this file, since we need to test them. */
+#define OE_ALLOW_DEPRECATED_APIS
 #include <openenclave/host.h>
 #include "oetests_u.h"
 #include "TrustedAppTest.h"

@@ -7,6 +7,7 @@
 
 #include "tcps_string_t.h"
 #include "oeoverintelsgx_t.h"
+#include "enclavelibc.h"
 
 #if defined(USE_SGX)
 #define DMSG printf
@@ -50,13 +51,13 @@ int vfprintf(
         return -1;
     }
 
-    buffer = TCPS_ALLOC(len + 1);
+    buffer = oe_malloc(len + 1);
     if (buffer == NULL) {
         return -1;
     }
     len = _vsnprintf(buffer, len, format, argptr);
     written = fwrite(buffer, 1, len, stream);
-    TCPS_FREE(buffer);
+    oe_free(buffer);
 
     return written;
 }
@@ -108,7 +109,7 @@ Tcps_StatusCode GetTrustedFileInBuffer(const char* trustedFilePath, char** pBuff
     }
 
     // Allocate the output buffer.
-    ptr = TCPS_ALLOC((size_t)fileSize);
+    ptr = oe_malloc((size_t)fileSize);
     if (ptr == NULL) {
         return Tcps_BadOutOfMemory;
     }
@@ -137,7 +138,7 @@ Tcps_StatusCode GetTrustedFileInBuffer(const char* trustedFilePath, char** pBuff
 
 void FreeTrustedFileBuffer(char* buffer)
 {
-    TCPS_FREE(buffer);
+    oe_free(buffer);
 }
 
 /* Returns TRUE if filename is in manifest, FALSE if not. */
@@ -214,7 +215,7 @@ int ExportFile(const char* trustedLocation, const char* untrustedLocation)
     err = TEE_P_ExportFile(untrustedLocation, ptr, len);
 
     // Free the buffer.
-    TCPS_FREE(ptr);
+    oe_free(ptr);
 
     return err;
 }
@@ -319,7 +320,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "TEE_P_ExportFile");
 
         COPY_BUFFER_FROM_STRING(untrustedLocationBuffer, untrustedLocation);
 
-        contents = (oe_buffer4096*)malloc(sizeof(*contents));
+        contents = (oe_buffer4096*)oe_malloc(sizeof(*contents));
         Tcps_GotoErrorIfAllocFailed(contents);
 
         COPY_BUFFER(*contents, ptr, currentWriteSize);
@@ -331,7 +332,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "TEE_P_ExportFile");
             *contents, 
             currentWriteSize);
 
-        free(contents);
+        oe_free(contents);
 
         uStatus = retval;
 

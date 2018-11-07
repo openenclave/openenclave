@@ -121,7 +121,7 @@ Tcps_StatusCode Tcps_CreateTAInternal(
     uint32_t err_origin;
     int s;
    
-    TCPS_UNUSED(a_Flags);
+    OE_UNUSED(a_Flags);
 
     if (!a_TaIdString || !a_pId)
         return Tcps_BadInvalidArgument;

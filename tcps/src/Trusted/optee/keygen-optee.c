@@ -5,6 +5,7 @@
 #include <string.h>
 #include <malloc.h>
 #include <openenclave/enclave.h>
+#include "enclavelibc.h"
 #include "../oeresult.h"
 
 /* TODO: use a cyrep-derived key and remove */
@@ -25,23 +26,23 @@ oe_result_t oe_get_seal_key_by_policy_v2(
         return OE_INVALID_PARAMETER;
     }
 
-    mock_key_info_t* info = malloc(sizeof(mock_key_info_t));
+    mock_key_info_t* info = oe_malloc(sizeof(mock_key_info_t));
     if (info == NULL) {
         return OE_OUT_OF_MEMORY;
     }
     /* TODO: use a cyrep-derived key */
     oe_result_t oeResult = oe_random(info->seed, sizeof(MOCK_KEY_SIZE));
     if (oeResult != OE_OK) {
-        free(info);
+        oe_free(info);
         return oeResult;
     }
 
     info->policy = seal_policy;
     if (key_info != NULL) {
-        *key_info = info;
+        *key_info = (uint8_t*)info;
         *key_info_size = sizeof(mock_key_info_t);
     }
-    return oe_get_seal_key_v2(info, sizeof(mock_key_info_t), key_buffer, key_buffer_size);
+    return oe_get_seal_key_v2((uint8_t*)info, sizeof(mock_key_info_t), key_buffer, key_buffer_size);
 }
 
 oe_result_t oe_get_seal_key_v2(
@@ -53,7 +54,7 @@ oe_result_t oe_get_seal_key_v2(
     if (key_info_size != sizeof(mock_key_info_t)) {
         return OE_INVALID_PARAMETER;
     }
-    *key_buffer = malloc(MOCK_KEY_SIZE);
+    *key_buffer = oe_malloc(MOCK_KEY_SIZE);
     if (*key_buffer == NULL) {
         return OE_OUT_OF_MEMORY;
     }

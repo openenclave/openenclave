@@ -852,7 +852,7 @@ TcpsPersistCategoryWithCounter(
         &encodedCategorySize);
     if (err == CborErrorOutOfMemory)
     {
-        encodedCategory = TCPS_ALLOC(encodedCategorySize);
+        encodedCategory = malloc(encodedCategorySize);
         if (encodedCategory == NULL)
         {
             status = Tcps_BadOutOfMemory;
@@ -892,7 +892,7 @@ TcpsPersistCategoryWithCounter(
         &encodedSignedPayloadSize);
     if (err == CborErrorOutOfMemory)
     {
-        encodedSignedPayload = TCPS_ALLOC(encodedSignedPayloadSize);
+        encodedSignedPayload = malloc(encodedSignedPayloadSize);
         if (encodedSignedPayload == NULL)
         {
             status = Tcps_BadOutOfMemory;
@@ -923,15 +923,15 @@ TcpsPersistCategoryWithCounter(
 Exit:
     if (retrievedCounterValue != NULL)
     {
-        TCPS_FREE(retrievedCounterValue);
+        free(retrievedCounterValue);
     }
     if (encodedCategory != NULL)
     {
-        TCPS_FREE(encodedCategory);
+        free(encodedCategory);
     }
     if (encodedSignedPayload != NULL)
     {
-        TCPS_FREE(encodedSignedPayload);
+        free(encodedSignedPayload);
     }
 
     return Tcps_Good;
@@ -1156,7 +1156,7 @@ TcpsLogWriteBlock(
         &encodedBlockSize);
     if (err == CborErrorOutOfMemory)
     {
-        encodedBlock = (uint8_t *)TCPS_ALLOC(encodedBlockSize);
+        encodedBlock = (uint8_t *)malloc(encodedBlockSize);
         if (encodedBlock == NULL)
         {
             status = Tcps_BadOutOfMemory;
@@ -1190,7 +1190,7 @@ TcpsLogWriteBlock(
 Exit:
     if (encodedBlock != NULL)
     {
-        TCPS_FREE(encodedBlock);
+        free(encodedBlock);
     }
 
     return status;
@@ -1218,7 +1218,7 @@ TcpsLogOpen(
         goto Exit;
     }
 
-    *LogAttributes = TCPS_ALLOC(sizeof(TCPS_LOG_ATTRIBUTES));
+    *LogAttributes = malloc(sizeof(TCPS_LOG_ATTRIBUTES));
     if (*LogAttributes == NULL)
     {
         status = Tcps_BadOutOfMemory;
@@ -1285,7 +1285,7 @@ TcpsLogAddCategory(
         goto Exit;
     }
 
-    categories = TCPS_ALLOC(sizeof(TCPS_LOG_CATEGORY) * (LogAttributes->CategoryCount + 1));
+    categories = malloc(sizeof(TCPS_LOG_CATEGORY) * (LogAttributes->CategoryCount + 1));
     if (categories == NULL)
     {
         status = Tcps_BadOutOfMemory;
@@ -1394,7 +1394,7 @@ TcpsLogAddCategory(
 
     if (LogAttributes->Categories != NULL)
     {
-        TCPS_FREE(LogAttributes->Categories);
+        free(LogAttributes->Categories);
     }
     LogAttributes->Categories = categories;
     LogAttributes->CategoryCount += 1;
@@ -1402,15 +1402,15 @@ TcpsLogAddCategory(
 Exit:
     if (Tcps_IsBad(status) && categories != NULL)
     {
-        TCPS_FREE(categories);
+        free(categories);
     }
     if (encodedSignedPayload != NULL)
     {
-        TCPS_FREE(encodedSignedPayload);
+        free(encodedSignedPayload);
     }
     if (counterValue != NULL)
     {
-        TCPS_FREE(counterValue);
+        free(counterValue);
     }
 
     return status;
@@ -1436,7 +1436,7 @@ TcpsLogSetLocalTransport(
         goto Exit;
     }
 
-    localTransport = TCPS_ALLOC(sizeof(TCPS_LOG_LOCAL_TRANSPORT));
+    localTransport = malloc(sizeof(TCPS_LOG_LOCAL_TRANSPORT));
     if (localTransport == NULL)
     {
         status = Tcps_BadOutOfMemory;
@@ -1453,7 +1453,7 @@ TcpsLogSetLocalTransport(
 Exit:
     if (Tcps_IsBad(status) && localTransport != NULL)
     {
-        TCPS_FREE(localTransport);
+        free(localTransport);
     }
 
     return status;
@@ -1475,7 +1475,7 @@ TcpsLogSetRemoteTransport(
         goto Exit;
     }
 
-    remoteTransport = TCPS_ALLOC(sizeof(TCPS_LOG_REMOTE_TRANSPORT));
+    remoteTransport = malloc(sizeof(TCPS_LOG_REMOTE_TRANSPORT));
     if (remoteTransport == NULL)
     {
         status = Tcps_BadOutOfMemory;
@@ -1490,7 +1490,7 @@ TcpsLogSetRemoteTransport(
 Exit:
     if (Tcps_IsBad(status) && remoteTransport != NULL)
     {
-        TCPS_FREE(remoteTransport);
+        free(remoteTransport);
     }
 
     return status;
@@ -1542,7 +1542,7 @@ TcpsLogWrite(
     err = TcpsEncodeLogEvent(&event, encodedEvent, &encodedEventSize);
     if (err == CborErrorOutOfMemory)
     {
-        encodedEvent = (uint8_t *)TCPS_ALLOC(encodedEventSize);
+        encodedEvent = (uint8_t *)malloc(encodedEventSize);
         if (encodedEvent == NULL)
         {
             status = Tcps_BadOutOfMemory;
@@ -1571,7 +1571,7 @@ TcpsLogWrite(
     err = TcpsEncodeSignedLogPayload(&signedEvent, encodedSignedEvent, &encodedSignedEventSize);
     if (err == CborErrorOutOfMemory)
     {
-        encodedSignedEvent = (uint8_t *)TCPS_ALLOC(encodedSignedEventSize);
+        encodedSignedEvent = (uint8_t *)malloc(encodedSignedEventSize);
         if (encodedSignedEvent == NULL)
         {
             status = Tcps_BadOutOfMemory;
@@ -1593,7 +1593,7 @@ TcpsLogWrite(
         &encodedVersionedEventSize);
     if (err == CborErrorOutOfMemory)
     {
-        encodedVersionedEvent = (uint8_t *)TCPS_ALLOC(encodedVersionedEventSize);
+        encodedVersionedEvent = (uint8_t *)malloc(encodedVersionedEventSize);
         if (encodedVersionedEvent == NULL)
         {
             status = Tcps_BadOutOfMemory;
@@ -1656,15 +1656,15 @@ TcpsLogWrite(
 Exit:
     if (encodedEvent != NULL)
     {
-        TCPS_FREE(encodedEvent);
+        free(encodedEvent);
     }
     if (encodedSignedEvent != NULL)
     {
-        TCPS_FREE(encodedSignedEvent);
+        free(encodedSignedEvent);
     }
     if (encodedVersionedEvent != NULL)
     {
-        TCPS_FREE(encodedVersionedEvent);
+        free(encodedVersionedEvent);
     }
 
     return status;
@@ -1731,7 +1731,7 @@ TcpsLogFlush(
 Exit:
     if (encodedEvents != NULL)
     {
-        TCPS_FREE(encodedEvents);
+        free(encodedEvents);
     }
 
     return status;
@@ -1767,23 +1767,23 @@ TcpsLogClose(
 
         if (LogAttributes->Categories[i].CounterId != NULL)
         {
-            TCPS_FREE(LogAttributes->Categories[i].CounterId);
+            free(LogAttributes->Categories[i].CounterId);
         }
     }
 
     if (LogAttributes->Categories != NULL)
     {
-        TCPS_FREE(LogAttributes->Categories);
+        free(LogAttributes->Categories);
     }
     if (LogAttributes->LocalTransport != NULL)
     {
-        TCPS_FREE(LogAttributes->LocalTransport);
+        free(LogAttributes->LocalTransport);
     }
     if (LogAttributes->RemoteTransport != NULL)
     {
-        TCPS_FREE(LogAttributes->RemoteTransport);
+        free(LogAttributes->RemoteTransport);
     }
-    TCPS_FREE(LogAttributes);
+    free(LogAttributes);
 
 Exit:
     return status;

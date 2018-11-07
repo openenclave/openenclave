@@ -11,6 +11,7 @@
 #include <tee_internal_api_extensions.h>
 
 #include <openenclave/enclave.h>
+#include "enclavelibc.h"
 #include "TcpsRpcOptee.h"
 #include "../oeoverintelsgx_t.h"
 #include "oeresult.h"
@@ -283,7 +284,7 @@ TcpsEcallDemux(
     TEE_Result result;
     sgx_status_t sgxStatus = SGX_SUCCESS;
 
-    TCPS_UNUSED(sess_ctx);
+    OE_UNUSED(sess_ctx);
 
     if (cmd_id >= g_ecall_table.nr_ecall) {
         return SGX_ERROR_INVALID_PARAMETER;
@@ -334,7 +335,7 @@ _oe_EcallDemux(
     uint32_t rpcKey;
     TEE_Result result;
 
-    TCPS_UNUSED(sess_ctx);
+    OE_UNUSED(sess_ctx);
 
     if (cmd_id >= __oe_ecalls_table_size)
     {
@@ -351,15 +352,15 @@ _oe_EcallDemux(
     OpteeSetRpcKey(rpcKey);
 
     /* Copy the input buffer into enclave memory. */
-    uint8_t* enclave_in_buffer = malloc(in_buffer_size);
+    uint8_t* enclave_in_buffer = oe_malloc(in_buffer_size);
     if (enclave_in_buffer == NULL) {
         return TEE_ERROR_OUT_OF_MEMORY;
     }
     memcpy(enclave_in_buffer, in_buffer, in_buffer_size);
 
-    uint8_t* enclave_out_buffer = malloc(out_buffer_size);
+    uint8_t* enclave_out_buffer = oe_malloc(out_buffer_size);
     if (enclave_out_buffer == NULL) {
-        free(enclave_in_buffer);
+        oe_free(enclave_in_buffer);
         return TEE_ERROR_OUT_OF_MEMORY;
     }
 
@@ -374,8 +375,8 @@ _oe_EcallDemux(
 
     memcpy(out_buffer, enclave_out_buffer, bytes_written);
     *bytes_written_ptr = bytes_written;
-    free(enclave_in_buffer);
-    free(enclave_out_buffer);
+    oe_free(enclave_in_buffer);
+    oe_free(enclave_out_buffer);
 
     return TEE_SUCCESS;
 }
@@ -410,7 +411,7 @@ TEE_Result TA_OpenSessionEntryPoint(
         return TEE_ERROR_BAD_PARAMETERS;
     }
 
-    TCPS_UNUSED(params);
+    OE_UNUSED(params);
 
     *sess_ctx = NULL;
 
@@ -444,7 +445,7 @@ TEE_Result TA_InvokeCommandEntryPoint(
  */
 void TA_CloseSessionEntryPoint(void *sess_ctx)
 {
-    TCPS_UNUSED(sess_ctx);
+    OE_UNUSED(sess_ctx);
     FMSG("session closed");
 }
 

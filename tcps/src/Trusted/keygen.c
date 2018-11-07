@@ -5,6 +5,7 @@
 
 #include "tcps_string_t.h"
 #include "oeoverintelsgx_t.h"
+#include "enclavelibc.h"
 
 int ExportPublicCertificate(const char* sourceLocation, const char* destinationPath)
 {
@@ -52,7 +53,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "TEE_P_ExportPublicCertificate");
 
     Tcps_GotoErrorIfTrue(len > sizeof(*contents), Tcps_BadRequestTooLarge);
 
-    contents = (oe_buffer4096*)malloc(sizeof(*contents));
+    contents = (oe_buffer4096*)oe_malloc(sizeof(*contents));
     Tcps_GotoErrorIfAllocFailed(contents);
 
     COPY_BUFFER(*contents, ptr, len);
@@ -63,7 +64,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "TEE_P_ExportPublicCertificate");
         *contents,
         len);
 
-    free(contents);
+    oe_free(contents);
 
     uStatus = retval;
 

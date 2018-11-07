@@ -1,5 +1,9 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
+
+/* Allow deprecated APIs in this file, since we need to test them. */
+#define OE_ALLOW_DEPRECATED_APIS
+
 #include <openenclave/enclave.h>
 #include <sgx_trts.h>
 #include <stdlib.h>
@@ -8,6 +12,7 @@
 #include "../oeresult.h"
 #include <sgx_utils.h>
 #include <sgx_trts_exception.h>
+#include "enclavelibc.h"
 
 oe_result_t oe_call_host(_In_z_ const char* func, _In_ void* args)
 {
@@ -72,12 +77,12 @@ void* oe_host_realloc(void* ptr, size_t size)
 
 void* oe_allocate_ocall_buffer(size_t size)
 {
-    return malloc(size);
+    return oe_malloc(size);
 }
 
 void oe_free_ocall_buffer(void* buffer)
 {
-    free(buffer);
+    oe_free(buffer);
 }
 
 Tcps_StatusCode ecall_InitializeEnclave(void)
@@ -227,7 +232,7 @@ oe_result_t oe_get_report_v2(
         }
     }
 
-    *report_buffer = malloc(sizeof(sgx_report_t));
+    *report_buffer = oe_malloc(sizeof(sgx_report_t));
     if (report_buffer == NULL) {
         return OE_OUT_OF_MEMORY;
     }
@@ -238,7 +243,7 @@ oe_result_t oe_get_report_v2(
 
 void oe_free_report(uint8_t* report_buffer)
 {
-    free(report_buffer);
+    oe_free(report_buffer);
 }
 
 oe_result_t oe_verify_report(
@@ -422,7 +427,7 @@ oe_result_t oe_add_vectored_exception_handler(
         return OE_INVALID_PARAMETER;
     }
 
-    entry = malloc(sizeof(oe_over_sgx_exception_handler_entry));
+    entry = oe_malloc(sizeof(oe_over_sgx_exception_handler_entry));
     if (entry == NULL) {
         return OE_OUT_OF_MEMORY;
     }
@@ -513,8 +518,8 @@ void oe_free_key(
     _In_ uint8_t* key,
     _In_ uint8_t* info)
 {
-    free(key);
-    free(info);
+    oe_free(key);
+    oe_free(info);
 }
 
 oe_result_t oe_get_seal_key_v1(

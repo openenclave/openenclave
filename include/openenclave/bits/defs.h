@@ -138,9 +138,9 @@
 #define OE_ENUM_MAX 0xffffffff
 
 /* OE_DEPRECATED */
-#if defined(__GNUC__)
+#if defined(__GNUC__) && !defined(OE_ALLOW_DEPRECATED_APIS)
 #define OE_DEPRECATED(FUNC, MSG) FUNC __attribute__((deprecated(MSG)))
-#elif defined(_MSC_VER)
+#elif defined(_MSC_VER) && !defined(OE_ALLOW_DEPRECATED_APIS)
 #define OE_DEPRECATED(FUNC, MSG) __declspec(deprecated(MSG)) FUNC
 #else
 #define OE_DEPRECATED(FUNC, MSG) FUNC

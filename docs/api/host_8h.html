@@ -125,10 +125,10 @@ Macros</h2></td></tr>
 <tr class="memitem:a86bd2198fbe5e2e04bb10500dbc66fdb"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="host_8h.html#a86bd2198fbe5e2e04bb10500dbc66fdb">OE_ENCLAVE_FLAG_SERIALIZE_ECALLS</a>&#160;&#160;&#160;0x00000004</td></tr>
 <tr class="separator:a86bd2198fbe5e2e04bb10500dbc66fdb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6bb6462e0d810a788431a835a1fcbbb5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6bb6462e0d810a788431a835a1fcbbb5"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>oe_get_report</b>&#160;&#160;&#160;oe_get_report_v1</td></tr>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>oe_get_report</b>&#160;&#160;&#160;<a class="el" href="host_8h.html#a4f6a267f8fbfee4074254cd6f9855063">oe_get_report_v1</a></td></tr>
 <tr class="separator:a6bb6462e0d810a788431a835a1fcbbb5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af32d957354a03f3e1b0d8407c25bc85a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af32d957354a03f3e1b0d8407c25bc85a"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>oe_get_target_info</b>&#160;&#160;&#160;oe_get_target_info_v1</td></tr>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>oe_get_target_info</b>&#160;&#160;&#160;<a class="el" href="host_8h.html#a2c58ec0106bad1b48f7c6a739357adc9">oe_get_target_info_v1</a></td></tr>
 <tr class="separator:af32d957354a03f3e1b0d8407c25bc85a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
@@ -142,16 +142,16 @@ Functions</h2></td></tr>
 <tr class="separator:add2e99e039cada79b7363777542a7b90"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a373a94cb9d2152c453a8c71e3d607e3f"><td class="memItemLeft" align="right" valign="top">oe_result_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="host_8h.html#a373a94cb9d2152c453a8c71e3d607e3f">oe_terminate_enclave</a> (oe_enclave_t *enclave)</td></tr>
 <tr class="separator:a373a94cb9d2152c453a8c71e3d607e3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a318cd8884fd785cd1aaa7d961b010ad6"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="host_8h.html#a318cd8884fd785cd1aaa7d961b010ad6">OE_DEPRECATED</a> (oe_result_t oe_call_enclave(oe_enclave_t *enclave, const char *func, void *args),&quot;This function is deprecated. Use oeedger8r to generate code that will call oe_call_enclave_function() instead.&quot;)</td></tr>
-<tr class="separator:a318cd8884fd785cd1aaa7d961b010ad6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6d574cd65d6e93999b797b9d8c0aeac7"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="host_8h.html#a6d574cd65d6e93999b797b9d8c0aeac7">OE_DEPRECATED</a> (oe_result_t oe_get_report_v1(oe_enclave_t *enclave, uint32_t flags, const void *opt_params, size_t opt_params_size, uint8_t *report_buffer, size_t *report_buffer_size),&quot;This function is deprecated. Use <a class="el" href="host_8h.html#a6574eb251480c271401e34c0757ff04f">oe_get_report_v2</a>() instead.&quot;)</td></tr>
-<tr class="separator:a6d574cd65d6e93999b797b9d8c0aeac7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a83caababc844437859b957090b06d174"><td class="memItemLeft" align="right" valign="top">oe_result_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="host_8h.html#a83caababc844437859b957090b06d174">oe_call_enclave</a> (oe_enclave_t *enclave, const char *func, void *args)</td></tr>
+<tr class="separator:a83caababc844437859b957090b06d174"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4f6a267f8fbfee4074254cd6f9855063"><td class="memItemLeft" align="right" valign="top">oe_result_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="host_8h.html#a4f6a267f8fbfee4074254cd6f9855063">oe_get_report_v1</a> (oe_enclave_t *enclave, uint32_t flags, const void *opt_params, size_t opt_params_size, uint8_t *report_buffer, size_t *report_buffer_size)</td></tr>
+<tr class="separator:a4f6a267f8fbfee4074254cd6f9855063"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6574eb251480c271401e34c0757ff04f"><td class="memItemLeft" align="right" valign="top">oe_result_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="host_8h.html#a6574eb251480c271401e34c0757ff04f">oe_get_report_v2</a> (oe_enclave_t *enclave, uint32_t flags, const void *opt_params, size_t opt_params_size, uint8_t **report_buffer, size_t *report_buffer_size)</td></tr>
 <tr class="separator:a6574eb251480c271401e34c0757ff04f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acd119f88c4005f9c130f6f78b9ae43e0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="host_8h.html#acd119f88c4005f9c130f6f78b9ae43e0">oe_free_report</a> (uint8_t *report_buffer)</td></tr>
 <tr class="separator:acd119f88c4005f9c130f6f78b9ae43e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a54708835136919399a7e71aad00037f1"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="host_8h.html#a54708835136919399a7e71aad00037f1">OE_DEPRECATED</a> (oe_result_t oe_get_target_info_v1(const uint8_t *report, size_t report_size, void *target_info_buffer, size_t *target_info_size),&quot;This function is deprecated. Use <a class="el" href="host_8h.html#adb1efb2eabdc5ad3c47947eb9ede5cd3">oe_get_target_info_v2</a>() instead.&quot;)</td></tr>
-<tr class="separator:a54708835136919399a7e71aad00037f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2c58ec0106bad1b48f7c6a739357adc9"><td class="memItemLeft" align="right" valign="top">oe_result_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="host_8h.html#a2c58ec0106bad1b48f7c6a739357adc9">oe_get_target_info_v1</a> (const uint8_t *report, size_t report_size, void *target_info_buffer, size_t *target_info_size)</td></tr>
+<tr class="separator:a2c58ec0106bad1b48f7c6a739357adc9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adb1efb2eabdc5ad3c47947eb9ede5cd3"><td class="memItemLeft" align="right" valign="top">oe_result_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="host_8h.html#adb1efb2eabdc5ad3c47947eb9ede5cd3">oe_get_target_info_v2</a> (const uint8_t *report, size_t report_size, void **target_info_buffer, size_t *target_info_size)</td></tr>
 <tr class="separator:adb1efb2eabdc5ad3c47947eb9ede5cd3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1b84be6ebcd25545523e6e601eaa31ac"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="host_8h.html#a1b84be6ebcd25545523e6e601eaa31ac">oe_free_target_info</a> (void *target_info_buffer)</td></tr>
@@ -222,6 +222,53 @@ Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
+<a class="anchor" id="a83caababc844437859b957090b06d174"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">oe_result_t oe_call_enclave </td>
+          <td>(</td>
+          <td class="paramtype">oe_enclave_t *&#160;</td>
+          <td class="paramname"><em>enclave</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>func</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>args</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Perform a high-level enclave function call (ECALL).</p>
+<p>Call the enclave function whose name is given by the <b>func</b> parameter. The enclave must define a corresponding function with the following prototype. </p><pre class="fragment">OE_ECALL void (*)(void* args);
+</pre><p>The meaning of the <b>args</b> parameter is defined by the implementer of the function and may be null.</p>
+<p>This function is implemented using the low-level oe_ecall() interface where the function number is given by the <b>OE_ECALL_CALL_ENCLAVE</b> constant.</p>
+<p>Note that the return value of this function only indicates the success of the call and not of the underlying function. The ECALL implementation must define its own error reporting scheme based on <b>args</b>.</p>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000008">Deprecated:</a></b></dt><dd>This function is deprecated. Use oeedger8r to generate code that will call oe_call_enclave_function() instead.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">enclave</td><td>The instance of the enclave to be called.</td></tr>
+    <tr><td class="paramname">func</td><td>The name of the enclave function that will be called.</td></tr>
+    <tr><td class="paramname">args</td><td>The arguments to be passed to the enclave function.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>This function return <b>OE_OK</b> on success. </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="add2e99e039cada79b7363777542a7b90"></a>
 <div class="memitem">
 <div class="memproto">
@@ -305,144 +352,6 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Returns OE_OK on success. </dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="a318cd8884fd785cd1aaa7d961b010ad6"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">OE_DEPRECATED </td>
-          <td>(</td>
-          <td class="paramtype">oe_result_t &#160;</td>
-          <td class="paramname"><em>oe_call_enclave</em>oe_enclave_t *enclave, const char *func, void *args, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&quot;This function is deprecated. Use oeedger8r to generate code that will call oe_call_enclave_function() instead.&quot;&#160;</td>
-          <td class="paramname">&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Perform a high-level enclave function call (ECALL).</p>
-<p>Call the enclave function whose name is given by the <b>func</b> parameter. The enclave must define a corresponding function with the following prototype. </p><pre class="fragment">OE_ECALL void (*)(void* args);
-</pre><p>The meaning of the <b>args</b> parameter is defined by the implementer of the function and may be null.</p>
-<p>This function is implemented using the low-level oe_ecall() interface where the function number is given by the <b>OE_ECALL_CALL_ENCLAVE</b> constant.</p>
-<p>Note that the return value of this function only indicates the success of the call and not of the underlying function. The ECALL implementation must define its own error reporting scheme based on <b>args</b>.</p>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000008">Deprecated:</a></b></dt><dd>This function is deprecated. Use oeedger8r to generate code that will call oe_call_enclave_function() instead.</dd></dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">enclave</td><td>The instance of the enclave to be called.</td></tr>
-    <tr><td class="paramname">func</td><td>The name of the enclave function that will be called.</td></tr>
-    <tr><td class="paramname">args</td><td>The arguments to be passed to the enclave function.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>This function return <b>OE_OK</b> on success. </dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="a6d574cd65d6e93999b797b9d8c0aeac7"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">OE_DEPRECATED </td>
-          <td>(</td>
-          <td class="paramtype">oe_result_t &#160;</td>
-          <td class="paramname"><em>oe_get_report_v1</em>oe_enclave_t *enclave, uint32_t flags, const void *opt_params, size_t opt_params_size, uint8_t *report_buffer, size_t *report_buffer_size, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&quot;This function is deprecated. Use <a class="el" href="host_8h.html#a6574eb251480c271401e34c0757ff04f">oe_get_report_v2</a>() instead.&quot;&#160;</td>
-          <td class="paramname">&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Get a report signed by the enclave platform for use in attestation.</p>
-<p>This function creates a report to be used in local or remote attestation.</p>
-<p>If the <em>report_buffer</em> is NULL or <em>report_size</em> parameter is too small, this function returns OE_BUFFER_TOO_SMALL.</p>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000009">Deprecated:</a></b></dt><dd>This function is deprecated. Use <a class="el" href="host_8h.html#a6574eb251480c271401e34c0757ff04f">oe_get_report_v2()</a> instead.</dd></dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">enclave</td><td>The instance of the enclave that will generate the report. </td></tr>
-    <tr><td class="paramname">flags</td><td>Specifying default value (0) generates a report for local attestation. Specifying OE_REPORT_FLAGS_REMOTE_ATTESTATION generates a report for remote attestation. </td></tr>
-    <tr><td class="paramname">opt_params</td><td>Optional additional parameters needed for the current enclave type. For SGX, this can be sgx_target_info_t for local attestation. </td></tr>
-    <tr><td class="paramname">opt_params_size</td><td>The size of the <b>opt_params</b> buffer. </td></tr>
-    <tr><td class="paramname">report_buffer</td><td>The buffer to where the resulting report will be copied. </td></tr>
-    <tr><td class="paramname">report_buffer_size</td><td>The size of the <b>report</b> buffer. This is set to the required size of the report buffer on return.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="retval"><dt>Return values</dt><dd>
-  <table class="retval">
-    <tr><td class="paramname">OE_OK</td><td>The report was successfully created. </td></tr>
-    <tr><td class="paramname">OE_INVALID_PARAMETER</td><td>At least one parameter is invalid. </td></tr>
-    <tr><td class="paramname">OE_BUFFER_TOO_SMALL</td><td>The <b>report_buffer</b> buffer is NULL or too small. </td></tr>
-    <tr><td class="paramname">OE_OUT_OF_MEMORY</td><td>Failed to allocate memory. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="a54708835136919399a7e71aad00037f1"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">OE_DEPRECATED </td>
-          <td>(</td>
-          <td class="paramtype">oe_result_t &#160;</td>
-          <td class="paramname"><em>oe_get_target_info_v1</em>const uint8_t *report, size_t report_size, void *target_info_buffer, size_t *target_info_size, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&quot;This function is deprecated. Use <a class="el" href="host_8h.html#adb1efb2eabdc5ad3c47947eb9ede5cd3">oe_get_target_info_v2</a>() instead.&quot;&#160;</td>
-          <td class="paramname">&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Extracts additional platform specific data from the report and writes it to <em>target_info_buffer</em>. After calling this function, the <em>target_info_buffer</em> can used for the <em>opt_params</em> field in <em>oe_get_report</em>.</p>
-<p>For example, on SGX, the <em>target_info_buffer</em> can be used as a sgx_target_info_t for local attestation.</p>
-<p>If the <em>target_info_buffer</em> is NULL or the <em>target_info_size</em> parameter is too small, this function returns OE_BUFFER_TOO_SMALL.</p>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000010">Deprecated:</a></b></dt><dd>This function is deprecated. Use <a class="el" href="host_8h.html#adb1efb2eabdc5ad3c47947eb9ede5cd3">oe_get_target_info_v2()</a> instead.</dd></dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">report</td><td>The report returned by <b>oe_get_report</b>. </td></tr>
-    <tr><td class="paramname">report_size</td><td>The size of <b>report</b> in bytes. </td></tr>
-    <tr><td class="paramname">target_info_buffer</td><td>The buffer to where the platform specific data will be placed. </td></tr>
-    <tr><td class="paramname">target_info_size</td><td>The size of <b>target_info_buffer</b>. This is set to the required size of <b>target_info_buffer</b> on return.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="retval"><dt>Return values</dt><dd>
-  <table class="retval">
-    <tr><td class="paramname">OE_OK</td><td>The platform specific data was successfully extracted. </td></tr>
-    <tr><td class="paramname">OE_INVALID_PARAMETER</td><td>At least one parameter is invalid. </td></tr>
-    <tr><td class="paramname">OE_BUFFER_TOO_SMALL</td><td><b>target_info_buffer</b> is NULL or too small. </td></tr>
-  </table>
-  </dd>
-</dl>
 
 </div>
 </div>
@@ -596,6 +505,80 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="a4f6a267f8fbfee4074254cd6f9855063"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">oe_result_t oe_get_report_v1 </td>
+          <td>(</td>
+          <td class="paramtype">oe_enclave_t *&#160;</td>
+          <td class="paramname"><em>enclave</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>flags</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const void *&#160;</td>
+          <td class="paramname"><em>opt_params</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>opt_params_size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t *&#160;</td>
+          <td class="paramname"><em>report_buffer</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t *&#160;</td>
+          <td class="paramname"><em>report_buffer_size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Get a report signed by the enclave platform for use in attestation.</p>
+<p>This function creates a report to be used in local or remote attestation.</p>
+<p>If the <em>report_buffer</em> is NULL or <em>report_size</em> parameter is too small, this function returns OE_BUFFER_TOO_SMALL.</p>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000009">Deprecated:</a></b></dt><dd>This function is deprecated. Use <a class="el" href="host_8h.html#a6574eb251480c271401e34c0757ff04f">oe_get_report_v2()</a> instead.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">enclave</td><td>The instance of the enclave that will generate the report. </td></tr>
+    <tr><td class="paramname">flags</td><td>Specifying default value (0) generates a report for local attestation. Specifying OE_REPORT_FLAGS_REMOTE_ATTESTATION generates a report for remote attestation. </td></tr>
+    <tr><td class="paramname">opt_params</td><td>Optional additional parameters needed for the current enclave type. For SGX, this can be sgx_target_info_t for local attestation. </td></tr>
+    <tr><td class="paramname">opt_params_size</td><td>The size of the <b>opt_params</b> buffer. </td></tr>
+    <tr><td class="paramname">report_buffer</td><td>The buffer to where the resulting report will be copied. </td></tr>
+    <tr><td class="paramname">report_buffer_size</td><td>The size of the <b>report</b> buffer. This is set to the required size of the report buffer on return.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">OE_OK</td><td>The report was successfully created. </td></tr>
+    <tr><td class="paramname">OE_INVALID_PARAMETER</td><td>At least one parameter is invalid. </td></tr>
+    <tr><td class="paramname">OE_BUFFER_TOO_SMALL</td><td>The <b>report_buffer</b> buffer is NULL or too small. </td></tr>
+    <tr><td class="paramname">OE_OUT_OF_MEMORY</td><td>Failed to allocate memory. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="a6574eb251480c271401e34c0757ff04f"></a>
 <div class="memitem">
 <div class="memproto">
@@ -661,6 +644,65 @@ Functions</h2></td></tr>
     <tr><td class="paramname">OE_OK</td><td>The report was successfully created. </td></tr>
     <tr><td class="paramname">OE_INVALID_PARAMETER</td><td>At least one parameter is invalid. </td></tr>
     <tr><td class="paramname">OE_OUT_OF_MEMORY</td><td>Failed to allocate memory. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="a2c58ec0106bad1b48f7c6a739357adc9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">oe_result_t oe_get_target_info_v1 </td>
+          <td>(</td>
+          <td class="paramtype">const uint8_t *&#160;</td>
+          <td class="paramname"><em>report</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>report_size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>target_info_buffer</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t *&#160;</td>
+          <td class="paramname"><em>target_info_size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Extracts additional platform specific data from the report and writes it to <em>target_info_buffer</em>. After calling this function, the <em>target_info_buffer</em> can used for the <em>opt_params</em> field in <em>oe_get_report</em>.</p>
+<p>For example, on SGX, the <em>target_info_buffer</em> can be used as a sgx_target_info_t for local attestation.</p>
+<p>If the <em>target_info_buffer</em> is NULL or the <em>target_info_size</em> parameter is too small, this function returns OE_BUFFER_TOO_SMALL.</p>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000010">Deprecated:</a></b></dt><dd>This function is deprecated. Use <a class="el" href="host_8h.html#adb1efb2eabdc5ad3c47947eb9ede5cd3">oe_get_target_info_v2()</a> instead.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">report</td><td>The report returned by <b>oe_get_report</b>. </td></tr>
+    <tr><td class="paramname">report_size</td><td>The size of <b>report</b> in bytes. </td></tr>
+    <tr><td class="paramname">target_info_buffer</td><td>The buffer to where the platform specific data will be placed. </td></tr>
+    <tr><td class="paramname">target_info_size</td><td>The size of <b>target_info_buffer</b>. This is set to the required size of <b>target_info_buffer</b> on return.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">OE_OK</td><td>The platform specific data was successfully extracted. </td></tr>
+    <tr><td class="paramname">OE_INVALID_PARAMETER</td><td>At least one parameter is invalid. </td></tr>
+    <tr><td class="paramname">OE_BUFFER_TOO_SMALL</td><td><b>target_info_buffer</b> is NULL or too small. </td></tr>
   </table>
   </dd>
 </dl>

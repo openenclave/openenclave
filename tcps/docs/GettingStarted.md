@@ -182,14 +182,13 @@ rather than in Visual Studio.
 2. Go back to your application project properties.  In the
 "Configuration Properties"->"C/C++"->"Preprocessor" properties of the ARM 
 platform for All Configurations, add **USE\_OPTEE** 
-to your enclave project and your application project, for
-All Configurations and All Platforms.
+to your enclave project and your application project.
 3. Manually edit your application .vcxproj file to add the ability to
 compile for ARM, since Visual Studio cannot do it from the UI.  To do so, add the
 line "<WindowsSDKDesktopARMSupport\>true</WindowsSDKDesktopARMSupport\>"
 to each ARM configuration property group.  (See the sample apps'
 vcxproj file for examples.)
-4. Copy the files from the Sample/Trusted/optee directory into your
+4. Copy the files from the samples/Trusted/optee directory into your
 enclave project, preferably into an "optee" subdirectory
 5. Create a new GUID for your TA and fill it in in your linux\_gcc.mak,
 user\_ta\_header\_defines.h, main.c, and uuids.reg files.  You can use the

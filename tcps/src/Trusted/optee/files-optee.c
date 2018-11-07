@@ -9,6 +9,7 @@
 #include <tcps_string_t.h>
 #include <oeoverintelsgx_t.h>
 #undef errno
+#include "enclavelibc.h"
 
 /* We currently use a manifest in a persistent object rather than just enumerating all persistent objects,
  * since it is similar to what we do for SGX, allows easily exporting the list of secured files, and allows
@@ -54,7 +55,7 @@ FILE* fopen(
     const char* mode)
 {
     TEE_Result result = TEE_SUCCESS;
-    FILE* fp = TCPS_ALLOC(sizeof(*fp));
+    FILE* fp = oe_malloc(sizeof(*fp));
     if (fp == NULL) {
         errno = ENOMEM;
         return NULL;
@@ -121,7 +122,7 @@ FILE* fopen(
     
     if (result != TEE_SUCCESS) {
         errno = EACCES;
-        TCPS_FREE(fp);
+        oe_free(fp);
         fp = NULL;
     }
     return fp;

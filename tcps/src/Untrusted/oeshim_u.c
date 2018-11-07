@@ -35,9 +35,9 @@ oe_result_t oe_create_enclave(
 {
     *enclave = NULL;
 
-    TCPS_UNUSED(type);
-    TCPS_UNUSED(config);
-    TCPS_UNUSED(configSize);
+    OE_UNUSED(type);
+    OE_UNUSED(config);
+    OE_UNUSED(configSize);
 
     g_ocall_table_v2.nr_ocall = ocall_table_size;
     g_ocall_table_v2.call_addr = ocall_table;

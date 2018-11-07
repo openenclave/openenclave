@@ -9,6 +9,7 @@
 #include <cbor.h>
 #include "cborhelper.h"
 #include "oeoverintelsgx_t.h"
+#include "enclavelibc.h"
 #include "ICertUtil.h"
 #include "tcps.h"
 
@@ -72,7 +73,7 @@ TcpsLogNetworkWriteEntrySgx(
     const TCPS_IDENTITY_LOG Identity
 )
 {
-    TCPS_UNUSED(Identity);
+    OE_UNUSED(Identity);
 
     Tcps_StatusCode status = Tcps_Good;
 
@@ -152,7 +153,7 @@ Exit:
 
     if (laResponseBuffer != NULL)
     {
-        TCPS_FREE(laResponseBuffer);
+        oe_free(laResponseBuffer);
     }
 
     return status;
@@ -221,7 +222,7 @@ Exit:
     {
         if (*Buffer != NULL)
         {
-            TCPS_FREE(*Buffer);
+            oe_free(*Buffer);
         }
     }
 
@@ -273,7 +274,7 @@ TcpsLogNetworkFlushSgx(
 Exit:
     if (buffer != NULL)
     {
-        TCPS_FREE(buffer);
+        oe_free(buffer);
     }
 
     return status;
@@ -313,7 +314,7 @@ Exit:
     {
         if (*CounterBuffer != NULL)
         {
-            TCPS_FREE(*CounterBuffer);
+            oe_free(*CounterBuffer);
         }
     }
 
@@ -524,7 +525,7 @@ TcpsLogCounterCreateSgx(
     uint8_t* localCounterValueBuffer = NULL;
 
     *CounterIdBufferSize = sizeof(sgx_mc_uuid_t);
-    localCounterIdBuffer = TCPS_ALLOC(*CounterIdBufferSize);
+    localCounterIdBuffer = oe_malloc(*CounterIdBufferSize);
     if (localCounterIdBuffer == NULL)
     {
         status = Tcps_BadOutOfMemory;
@@ -532,7 +533,7 @@ TcpsLogCounterCreateSgx(
     }
 
     *CounterValueBufferSize = sizeof(uint32_t);
-    localCounterValueBuffer = TCPS_ALLOC(*CounterValueBufferSize);
+    localCounterValueBuffer = oe_malloc(*CounterValueBufferSize);
     if (localCounterValueBuffer == NULL)
     {
         status = Tcps_BadOutOfMemory;
@@ -556,12 +557,12 @@ TcpsLogCounterCreateSgx(
 Exit:
     if (localCounterIdBuffer != NULL)
     {
-        TCPS_FREE(localCounterIdBuffer);
+        oe_free(localCounterIdBuffer);
     }
 
     if (localCounterValueBuffer != NULL)
     {
-        TCPS_FREE(localCounterValueBuffer);
+        oe_free(localCounterValueBuffer);
     }
 
     return status;
@@ -590,7 +591,7 @@ TcpsLogCounterIncrementGetSgx(
     sgx_status_t ret = 0;
     uint8_t* localCounterValueBuffer = NULL;
 
-    localCounterValueBuffer = TCPS_ALLOC(sizeof(uint32_t));
+    localCounterValueBuffer = oe_malloc(sizeof(uint32_t));
     if (localCounterValueBuffer == NULL)
     {
         status = Tcps_BadOutOfMemory;
@@ -614,7 +615,7 @@ TcpsLogCounterIncrementGetSgx(
 Exit:
     if (localCounterValueBuffer != NULL)
     {
-        TCPS_FREE(localCounterValueBuffer);
+        oe_free(localCounterValueBuffer);
     }
 
     return status;
@@ -641,7 +642,7 @@ TcpsLogInitSgx(
         return Tcps_Bad;
     }
 
-    TCPS_LOG_SGX_OBJECT* logObject = TCPS_ALLOC(sizeof(TCPS_LOG_SGX_OBJECT));
+    TCPS_LOG_SGX_OBJECT* logObject = oe_malloc(sizeof(TCPS_LOG_SGX_OBJECT));
     if (logObject == NULL)
     {
         status = Tcps_BadOutOfMemory;
@@ -726,7 +727,7 @@ Exit:
         {
             sgx_thread_mutex_destroy(&logObject->LockMutex);
         }
-        TCPS_FREE(logObject);
+        oe_free(logObject);
         if (pseWorks)
         {
             sgx_close_pse_session();
@@ -747,7 +748,7 @@ TcpsLogCloseSgx(
 
         sgx_thread_mutex_destroy(&logObject->LockMutex);
         TcpsLogClose(logObject->LogHandle);
-        TCPS_FREE(logObject);
+        oe_free(logObject);
         sgx_close_pse_session();
     }
 }
@@ -977,7 +978,7 @@ TcpsLogEventSgxPeerId(
         payloadBuffer);
     if (err == CborErrorOutOfMemory)
     {
-        payloadBuffer = (uint8_t*)TCPS_ALLOC(payloadBufferSize);
+        payloadBuffer = (uint8_t*)oe_malloc(payloadBufferSize);
         if (payloadBuffer == NULL)
         {
             status = Tcps_BadOutOfMemory;
@@ -1001,7 +1002,7 @@ TcpsLogEventSgxPeerId(
 Exit:
     if (payloadBuffer != NULL)
     {
-        TCPS_FREE(payloadBuffer);
+        oe_free(payloadBuffer);
     }
 
     return status;

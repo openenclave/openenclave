@@ -1,8 +1,12 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
+
+/* Allow deprecated APIs in this file, since we need to test them. */
+#define OE_ALLOW_DEPRECATED_APIS
+
 #include "oetests_t.h"
-#include "openenclave/enclave.h"
-#include "openenclave/internal/random.h"
+#include <openenclave/enclave.h>
+#include <openenclave/internal/random.h>
 #include "TcpsCallbacks_t.h"
 #include <stdlib.h>
 #include <string.h>

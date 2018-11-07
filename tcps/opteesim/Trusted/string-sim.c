@@ -65,10 +65,10 @@ int __cdecl strncasecmp(
     return _strnicmp(a, b, n);
 }
 
-int Tcps_snprintf(  
-    char *buffer,  
-    _In_ size_t count,  
-    _In_z_ const char *format, 
+int oe_snprintf(
+    char *buffer,
+    _In_ size_t count,
+    _In_z_ const char *format,
     ...)
 {
     int result;
@@ -80,8 +80,8 @@ int Tcps_snprintf(
 }
 
 #undef printf
-int Tcps_printf(  
-    _In_z_ const char *format, 
+int oe_printf(
+    _In_z_ const char *format,
     ...)
 {
     int result;
