@@ -64,6 +64,10 @@ if (USE_LIBSGX AND WIN32)
   message(FATAL_ERROR "USE_LIBSGX is not supported on Windows. Disable this when calling cmake with -DUSE_LIBSGX=OFF")
 endif ()
 
+if(USE_LIBSGX)
+add_definitions(-DOE_USE_LIBSGX)
+endif ()
+
 # TODO: See #756: Fix this because it is incompatible with
 # multi-configuration generators
 if (CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT WIN32)

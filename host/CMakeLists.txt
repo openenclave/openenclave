@@ -114,7 +114,6 @@ find_library(LIBSGX_COMMON NAMES sgx_enclave_common)
 find_library(LIBSGX_QE NAMES sgx_dcap_ql)
 find_library(LIBSGX_URTS NAMES sgx_urts)
 target_link_libraries(oehost PUBLIC ${LIBSGX_COMMON} ${LIBSGX_QE} ${LIBSGX_URTS})
-target_compile_definitions(oehost PRIVATE OE_USE_LIBSGX)
 endif()
 
 if(OE_TRACE_LEVEL)
