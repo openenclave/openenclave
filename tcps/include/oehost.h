@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-#ifdef SIMULATE_TEE
+#ifdef OE_SIMULATE_OPTEE
 # include "optee/Untrusted/Simulator/oehost.h"
 #endif
 

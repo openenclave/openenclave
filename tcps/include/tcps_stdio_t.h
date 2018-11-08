@@ -7,13 +7,13 @@
 # include <openenclave/enclave.h>
 #endif
 
-#if defined(USE_SGX)
+#if defined(OE_USE_SGX)
 
 # include <sgx_tprotected_fs.h>
 # include <stdarg.h>
 # define FILE SGX_FILE
 
-#elif defined(USE_OPTEE)
+#elif defined(OE_USE_OPTEE)
 
 # include <tee_api.h>
 # include <inttypes.h>
@@ -34,8 +34,8 @@ typedef struct _OPTEE_FILE {
 #endif
 
 #else
-# error define USE_SGX or USE_OPTEE
-#endif /* USE_OPTEE */
+# error define OE_USE_SGX or OE_USE_OPTEE
+#endif /* OE_USE_OPTEE */
 
 #define ENOENT     2
 #define ENOMEM    12

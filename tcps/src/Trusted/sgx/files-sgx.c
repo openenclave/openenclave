@@ -304,7 +304,7 @@ Tcps_BeginErrorHandling;
 Tcps_FinishErrorHandling;
 }
 
-#ifdef USE_OPTEE
+#ifdef OE_USE_OPTEE
 unsigned long _lrotl (unsigned long val, int shift)
 {
     shift &= 0x1f;

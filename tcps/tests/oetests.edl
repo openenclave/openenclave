@@ -8,13 +8,13 @@ enclave {
         /* define ECALLs here. */
         public void ecall_DoNothing();
         public oe_result_t ecall_ReturnOk();
-        public int ecall_PrintString([in, string] char* fmt, [in, string] char* arg);
-        public int ecall_BufferToInt([out] int* output, [in, size=size] void* buffer, size_t size);
+        public int ecall_PrintString([in, string] const char* fmt, [in, string] const char* arg);
+        public int ecall_BufferToInt([out] int* output, [in, size=size] const void* buffer, size_t size);
         public oe_result_t ecall_TestOcall();
-        public void ecall_CopyInt([in] int* input, [out] int* output);
+        public void ecall_CopyInt([in] const int* input, [out] int* output);
         public oe_CreateBuffer_Result ecall_CreateReeBufferFromTeeBuffer([user_check] void* hTeeBuffer);
-        public oe_result_t ecall_RunClient([in, string] char* server, [in, string] char* port);
-        public oe_result_t ecall_StartServer([in, string] char* port);
+        public oe_result_t ecall_RunClient([in, string] const char* server, [in, string] const char* port);
+        public oe_result_t ecall_StartServer([in, string] const char* port);
         public oe_result_t ecall_FinishServer();
         public oe_result_t ecall_TestSgxIsWithinEnclave([user_check] void* outside, int size);
         public oe_result_t ecall_TestSgxIsOutsideEnclave([user_check] void* outside, int size);
@@ -33,15 +33,15 @@ enclave {
         public void* ecall_OEHostMalloc(int size);
         public void* ecall_OEHostCalloc(int nmemb, int size);
         public void* ecall_OEHostRealloc([user_check] void* ptr, int size);
-        public char* ecall_OEHostStrndup([in, string] char* str, int size);
+        public char* ecall_OEHostStrndup([in, string] const char* str, int size);
         public void ecall_OEHostFree([user_check] void* ptr);
     };
 
     untrusted {
         /* define OCALLs here. */
         void ocall_DoNothing();
-        void ocall_PrintString([in, string] char* fmt, [in, string] char* arg);
-        int ocall_BufferToInt([in, size=size] void* buffer, size_t size);
+        void ocall_PrintString([in, string] const char* fmt, [in, string] const char* arg);
+        int ocall_BufferToInt([in, size=size] const void* buffer, size_t size);
         int ocall_ReturnInputArgument(int input);
     };
 };

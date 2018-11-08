@@ -4,8 +4,8 @@
 #ifndef _OE_ENCLAVE_H
 # include <openenclave/enclave.h>
 #endif
-#ifndef USE_OPTEE
-# error cyres-optee.h should only be included with USE_OPTEE
+#ifndef OE_USE_OPTEE
+# error cyres-optee.h should only be included with OE_USE_OPTEE
 #endif
 
 oe_result_t 

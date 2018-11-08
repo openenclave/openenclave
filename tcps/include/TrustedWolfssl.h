@@ -9,7 +9,7 @@
 #include <string.h>
 #include <time.h>
 
-#if defined(USE_OPTEE)
+#if defined(OE_USE_OPTEE)
 #include <tee_api.h>
 #include "optee/tcps_ctype_optee_t.h"
 #else

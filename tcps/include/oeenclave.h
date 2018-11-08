@@ -5,7 +5,7 @@
 # error include <openenclave/enclave.h> instead of including oeenclave.h directly
 #endif
 
-#ifndef SIMULATE_TEE
+#ifndef OE_SIMULATE_OPTEE
 #include <stdio.h>
 #endif
 #include <stddef.h>
@@ -13,7 +13,7 @@
 #include <assert.h>
 #include <stdint.h>
 
-#ifdef SIMULATE_TEE
+#ifdef OE_SIMULATE_OPTEE
 # include "optee/Trusted/Simulator/oeenclave.h"
 # include <sal.h>
 #endif
@@ -33,7 +33,7 @@ typedef uint32_t __uint32_t;
  * code generator from the SGX SDK.
  */
 # include <sgx.h>
-#if defined(USE_OPTEE)
+#if defined(OE_USE_OPTEE)
 # include "optee/sgxoveroptee.h"
 #endif
 

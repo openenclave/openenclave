@@ -9,14 +9,14 @@
 #include "cborhelper.h"
 #include "enclavelibc.h"
 
-#ifdef USE_OPTEE
+#ifdef OE_USE_OPTEE
 #include <optee/tcps_string_optee_t.h>
 #endif
 
 #include <TcpsLog.h>
 #include <TcpsTls.h>
 
-#ifdef USE_SGX
+#ifdef OE_USE_SGX
 #include <TcpsLogSgx.h>
 #endif
 
@@ -26,11 +26,11 @@ void* g_TcpsLogPlatHandle = NULL;
 
 #include "TcpsLogApp.h"
 
-#if defined(USE_OPTEE) || defined(USE_SGX)
+#if defined(OE_USE_OPTEE) || defined(OE_USE_SGX)
 #include "TcpsLogOcallFile.h" 
 #endif
 
-#ifdef USE_OPTEE
+#ifdef OE_USE_OPTEE
 TCPS_LOG_OCALL_OBJECT* g_TcpsLogLogObjectOptee = NULL;
 
 #define COOKIE_FILE "LogHash.dat"
@@ -268,7 +268,7 @@ TcpsLogInitOptee(
         status = OE_OUT_OF_MEMORY;
         goto Exit;
     }
-    TCPS_ZERO(g_TcpsLogLogObjectOptee, sizeof(TCPS_LOG_OCALL_OBJECT));
+    memset(g_TcpsLogLogObjectOptee, 0, sizeof(TCPS_LOG_OCALL_OBJECT));
 
     logPathPrefixSize = strlen(a_LogPathPrefix) + 1;
     g_TcpsLogLogObjectOptee->LogPathPrefix = oe_malloc(logPathPrefixSize);
@@ -337,7 +337,7 @@ oe_result_t
 TcpsLogAppInit(
     const char* const a_sLogPrefix)
 {
-#if defined(USE_SGX) || defined(USE_OPTEE)
+#if defined(OE_USE_SGX) || defined(OE_USE_OPTEE)
     TCPS_SHA256_DIGEST seed = { 0 }; // TODO provision
 #else 
     OE_UNUSED(a_sLogPrefix);
@@ -345,7 +345,7 @@ TcpsLogAppInit(
 
     oe_result_t status = OE_UNSUPPORTED;
     
-#ifdef USE_SGX
+#ifdef OE_USE_SGX
     TCPS_LOG_SGX_CONFIGURATION configuration;
     strncpy(configuration.LogPathPrefix, a_sLogPrefix, sizeof(configuration.LogPathPrefix));
     configuration.LogPathPrefix[sizeof(configuration.LogPathPrefix) - 1] = '\0';
@@ -367,7 +367,7 @@ TcpsLogAppInit(
         &configuration,
         true,
         &g_TcpsLogPlatHandle);
-#elif USE_OPTEE
+#elif defined(OE_USE_OPTEE)
     status = TcpsLogInitOptee(
         seed,
         &TestIdentityData,
@@ -383,9 +383,9 @@ TcpsLogAppClose(void)
 {
     if (g_TcpsLogPlatHandle != NULL)
     {
-#ifdef USE_SGX
+#ifdef OE_USE_SGX
         TcpsLogCloseSgx(g_TcpsLogPlatHandle);
-#elif USE_OPTEE
+#elif defined(OE_USE_OPTEE)
         TcpsLogCloseOptee(g_TcpsLogPlatHandle);
 #endif
         g_TcpsLogPlatHandle = NULL;
@@ -399,9 +399,9 @@ TcpsLogAppEventId(
     oe_result_t status = OE_UNSUPPORTED;
 #ifdef _OE_ENCLAVE_H
     if (g_TcpsLogPlatHandle)
-#ifdef USE_SGX
+#ifdef OE_USE_SGX
         status = TcpsLogEventSgxId(g_TcpsLogPlatHandle, a_Id, a_Id < 0);
-#elif USE_OPTEE
+#elif defined(OE_USE_OPTEE)
         status = TcpsLogEventOpteeId(g_TcpsLogPlatHandle, a_Id, a_Id < 0);
 #endif
     else
@@ -422,9 +422,9 @@ TcpsLogAppEvent(
     oe_result_t status = OE_UNSUPPORTED;
 #ifdef _OE_ENCLAVE_H
     if (g_TcpsLogPlatHandle)
-#ifdef USE_SGX
+#ifdef OE_USE_SGX
         status = TcpsLogEventSgx(g_TcpsLogPlatHandle, a_Buffer, a_BufferSize, false);
-#elif USE_OPTEE
+#elif defined(OE_USE_OPTEE)
         status = TcpsLogEventOptee(g_TcpsLogPlatHandle, a_Buffer, a_BufferSize, false);
 #endif
     else

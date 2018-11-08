@@ -14,17 +14,17 @@ oe_result_t ecall_ReturnOk()
     return OE_OK;
 }
 
-int ecall_PrintString(char* fmt, char* arg)
+int ecall_PrintString(const char* fmt, const char* arg)
 {
     return (int)ocall_PrintString(fmt, arg);
 }
 
-int ecall_BufferToInt(int* output, void* buffer, size_t size)
+int ecall_BufferToInt(int* output, const void* buffer, size_t size)
 {
     return (int)ocall_BufferToInt(output, buffer, size);
 }
 
-void ecall_CopyInt(int* input, int* output)
+void ecall_CopyInt(const int* input, int* output)
 {
     *output = *input;
 }
@@ -47,7 +47,7 @@ oe_CreateBuffer_Result ecall_CreateReeBufferFromTeeBuffer(_In_ void* hTeeBuffer)
 /* This client connects to an echo server, sends a large buffer,
 * and verifies that the response matches the input.
 */
-oe_result_t ecall_RunClient(char* server, char* serv)
+oe_result_t ecall_RunClient(_In_z_ const char* server, _In_z_ const char* serv)
 {
     oe_result_t uStatus = OE_FAILURE;
     struct addrinfo* ai = NULL;
@@ -136,7 +136,7 @@ Done:
 
 SOCKET g_TestListener = INVALID_SOCKET;
 
-oe_result_t ecall_StartServer(char* serv)
+oe_result_t ecall_StartServer(_In_z_ const char* serv)
 {
     oe_result_t uStatus = OE_FAILURE;
     struct addrinfo* ai = NULL;
@@ -235,7 +235,7 @@ oe_result_t ecall_TestSgxIsWithinEnclave(void* outside, int size)
     int result = sgx_is_within_enclave(&result, sizeof(result));
     Tcps_ReturnErrorIfTrue(result == 0, OE_FAILURE);
 
-#ifndef USE_OPTEE
+#ifndef OE_USE_OPTEE
     // TrustZone uses a separate address space and requires marshalling data.
     // As such, there is a (separate) address with the same numeric value,
     // and the following check currently doesn't work.  There's probably
@@ -252,7 +252,7 @@ oe_result_t ecall_TestSgxIsOutsideEnclave(void* outside, int size)
     int result = sgx_is_outside_enclave(outside, size);
     Tcps_ReturnErrorIfTrue(result == 0, OE_FAILURE);
 
-#ifndef USE_OPTEE
+#ifndef OE_USE_OPTEE
     // TrustZone uses a separate address space and requires marshalling data.
     // As such, there is a (separate) address with the same numeric value,
     // and the following check currently doesn't work.  There's probably

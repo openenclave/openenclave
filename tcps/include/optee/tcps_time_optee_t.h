@@ -4,8 +4,8 @@
 #ifndef _OE_ENCLAVE_H
 # include <openenclave/enclave.h>
 #endif
-#ifndef USE_OPTEE
-# error tcps_time_optee_t.h should only be included with USE_OPTEE
+#ifndef OE_USE_OPTEE
+# error tcps_time_optee_t.h should only be included with OE_USE_OPTEE
 #endif
 
 #ifndef _TM_DEFINED

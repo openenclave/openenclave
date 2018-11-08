@@ -9,11 +9,11 @@
 
 #include <errno.h>
 
-#ifdef USE_OPTEE
+#ifdef OE_USE_OPTEE
 #include <rand_optee.h>
 #endif
 #ifndef USE_OPENSSL
-# ifdef USE_SGX
+# ifdef OE_USE_SGX
 #  define WOLFSSL_SGX
 # endif
 # define WOLFCRYPT_ONLY
@@ -31,7 +31,7 @@
 #include <openssl/rand.h>
 
 #ifdef USE_OPENSSL
-#if defined(USE_OPTEE) && defined(OPENSSL_SYSNAME_WIN32)
+#if defined(OE_USE_OPTEE) && defined(OPENSSL_SYSNAME_WIN32)
 #  error "OPTEE is not compatible with OPENSSL_SYSNAME_WIN32, please update openssl/include/openssl/opensslconf.h"
 #endif
 
@@ -47,7 +47,7 @@ static oe_result_t GenerateKeyPairRsa(EVP_PKEY **pKeyPair)
 
 Tcps_InitializeStatus(Tcps_Module_Helper_t, "GenerateKeyPairRsa");
 
-#if defined(OPENSSL_SYS_WINDOWS) || defined(USE_OPTEE)
+#if defined(OPENSSL_SYS_WINDOWS) || defined(OE_USE_OPTEE)
     RAND_screen();
 #endif
 
@@ -80,7 +80,7 @@ static oe_result_t GenerateKeyPairEc(EVP_PKEY **pKeyPair)
 
     Tcps_InitializeStatus(Tcps_Module_Helper_t, "GenerateKeyPairEc");
 
-#if defined(OPENSSL_SYS_WINDOWS) || defined(USE_OPTEE)
+#if defined(OPENSSL_SYS_WINDOWS) || defined(OE_USE_OPTEE)
     RAND_screen();
 #endif
 

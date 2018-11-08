@@ -5,7 +5,7 @@
 # include <openenclave/enclave.h>
 #endif
 
-#ifdef SIMULATE_TEE
+#ifdef OE_SIMULATE_OPTEE
 # include "Simulator/oeenclave.h"
 #endif
 

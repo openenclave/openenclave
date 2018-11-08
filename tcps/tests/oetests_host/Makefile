@@ -7,7 +7,7 @@ OE_EDL_PATH = $(OE_PATH)/openenclave
 GTEST_PATH = ../../../3rdparty/googletest/googletest
 OE_PATH = ../../../include
 
-DEFINES = -DUSE_OPTEE -D_DEBUG -DLINUX
+DEFINES = -DOE_USE_OPTEE -D_DEBUG -DLINUX
 INCLUDES =                          \
     -I../../include/optee/Untrusted \
     -I../../include/                \

@@ -3,7 +3,7 @@
 #define _CRT_FUNCTIONS_REQUIRED 0
 #include <string.h>
 #include <trace.h>
-#ifdef SIMULATE_TEE
+#ifdef OE_SIMULATE_OPTEE
 #define sprintf_s Tcps_sprintf_s
 #endif
 

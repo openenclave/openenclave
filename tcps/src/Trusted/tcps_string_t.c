@@ -9,7 +9,7 @@
 
 #include "tcps_stdio_t.h"
 #include "tcps_string_t.h"
-#ifdef USE_OPTEE
+#ifdef OE_USE_OPTEE
 #include <optee/tcps_string_optee_t.h>
 #include <optee/tcps_ctype_optee_t.h>
 #endif
@@ -100,7 +100,7 @@ errno_t strcat_s(
     return strcpy_s(strDestination + len, sizeDestination - len, strSource);
 }
 
-#if defined(_DEBUG) || defined(USE_OPTEE)
+#if defined(_DEBUG) || defined(OE_USE_OPTEE)
 char *strcpy(
     char *strDestination,
     const char *strSource)

@@ -6,10 +6,10 @@
 #include <openenclave/host.h>
 #include "SampleTA_u.h"
 
-#ifdef USE_SGX
+#ifdef OE_USE_SGX
 # define TA_ID "SampleTA" /* DLL will be SampleTA.signed.dll */
 #endif
-#ifdef USE_OPTEE
+#ifdef OE_USE_OPTEE
 # define TA_ID "aac3129e-c244-4e09-9e61-d4efcf31bca3"
 #endif
 

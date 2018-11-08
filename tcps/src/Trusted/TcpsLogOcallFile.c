@@ -3,7 +3,7 @@
 #include <openenclave/enclave.h>
 #include "sgx_edger8r.h" /* for sgx_status_t etc. */
 
-#ifdef USE_OPTEE
+#ifdef OE_USE_OPTEE
 #include "tcps_time_t.h"
 #include "tcps_string_t.h"
 #include "oeoverintelsgx_t.h"
@@ -221,7 +221,7 @@ TcpsLogFileClearOcall(
     COPY_BUFFER_FROM_STRING(filenameBuffer, filename);
 
     sgx_status_t sgxstatus =
-#ifdef USE_OPTEE
+#ifdef OE_USE_OPTEE
         SGX_ERROR_UNEXPECTED;
 #else
         ocallTcpsFileDelete(&retVal, filenameBuffer);

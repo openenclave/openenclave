@@ -62,7 +62,7 @@ int _vsnprintf(
     size_t count,
     const char* format,
     va_list argptr)
-#ifdef USE_OPTEE
+#ifdef OE_USE_OPTEE
     __attribute__((format(printf, 3, 0)))
 #endif
     ;
@@ -81,6 +81,6 @@ ConvertStringToIPv4Integers(
 #define sscanf(addressString, addressSscanfFormat, addressByte0, addressByte1, addressByte2, addressByte3)  \
     ConvertStringToIPv4Integers(addressString, addressSscanfFormat, addressByte0, addressByte1, addressByte2, addressByte3)
 
-#ifdef USE_OPTEE
+#ifdef OE_USE_OPTEE
 # include <optee/tcps_string_optee_t.h>
 #endif

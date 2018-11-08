@@ -9,7 +9,7 @@
 #include "oeoverintelsgx_t.h"
 #include "enclavelibc.h"
 
-#if defined(USE_SGX)
+#if defined(OE_USE_SGX)
 #define DMSG printf
 #define EMSG printf
 #else
@@ -24,7 +24,7 @@ int fprintf(FILE* const _Stream, char const* const _Format, ...)
     return vfprintf(_Stream, _Format, _ArgList);
 }
 
-#ifdef USE_SGX
+#ifdef OE_USE_SGX
 int __cdecl __stdio_common_vfprintf(
     unsigned __int64 _Options,
     FILE*            _Stream,

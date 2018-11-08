@@ -1534,7 +1534,7 @@ TcpsLogWrite(
     event.Timestamp = LogAttributes->GetTimeHandler(NULL);
     memcpy(event.LogChainDigest, category->CurrentDigest, sizeof(TCPS_SHA256_DIGEST));
     // TODO: get rid of this check and use a platform agnostic mechanism
-#ifdef USE_OPTEE
+#ifdef OE_USE_OPTEE
     event.Timestamp &= 0xFFFFFFFF; // optee TEE_Time has 32bit for seconds, get the right bits
 #endif
 

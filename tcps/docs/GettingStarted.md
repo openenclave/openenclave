@@ -65,8 +65,7 @@ include path:
 
 ### OP-TEE TA
 
-The OP-TEE TA should define **USE\_OPTEE** as a
-preprocessor symbol, link with **oeenclave.lib** and have the following
+The OP-TEE TA should link with **oeenclave.lib** and have the following
 additional include paths, in this order (the order is important because
 files in a deeper directory override files at higher levels with the
 same filename):
@@ -77,8 +76,7 @@ same filename):
 
 ### OP-TEE Rich Application
 
-The EXE should define **USE\_OPTEE** as a
-preprocessor symbol, link with **oehost.lib** and have the following
+The EXE should link with **oehost.lib** and have the following
 additional include paths, in any order:
 
 * $(OESdkDir)tcps\include
@@ -179,28 +177,24 @@ configurations of your application project (and tcps\_u if you include that
 directly).  Copy the configuration from the existing Win32 one.  Don't do
 this for your enclave project, as that needs to be built from a bash shell
 rather than in Visual Studio.
-2. Go back to your application project properties.  In the
-"Configuration Properties"->"C/C++"->"Preprocessor" properties of the ARM 
-platform for All Configurations, add **USE\_OPTEE** 
-to your enclave project and your application project.
-3. Manually edit your application .vcxproj file to add the ability to
+2. Manually edit your application .vcxproj file to add the ability to
 compile for ARM, since Visual Studio cannot do it from the UI.  To do so, add the
 line "<WindowsSDKDesktopARMSupport\>true</WindowsSDKDesktopARMSupport\>"
 to each ARM configuration property group.  (See the sample apps'
 vcxproj file for examples.)
-4. Copy the files from the samples/Trusted/optee directory into your
+3. Copy the files from the samples/Trusted/optee directory into your
 enclave project, preferably into an "optee" subdirectory
-5. Create a new GUID for your TA and fill it in in your linux\_gcc.mak,
+4. Create a new GUID for your TA and fill it in in your linux\_gcc.mak,
 user\_ta\_header\_defines.h, main.c, and uuids.reg files.  You can use the
 guidgen.exe utility that comes with Visual Studio, or uuidgen (available
 in a bash window), or
 [https://www.uuidgenerator.net/](https://www.uuidgenerator.net/)
-6. For any new source files you add to your enclave project in
+5. For any new source files you add to your enclave project in
 Visual Studio, also add them to the sub.mk file in your optee subdirectory
-7. In your application project properties, under "Linker"->"Input", add
+6. In your application project properties, under "Linker"->"Input", add
 rpcrt4.lib to the Additional Dependencies (All Configurations, ARM platform)
 which is required for string-to-UUID conversion, and remove any sgx libs.
-8. In your application project properties, update the Additional Include
+7. In your application project properties, update the Additional Include
 Directories to insert the $(TcpsDir)include\optee\Untrusted and
 $(TcpsDir)include\optee paths before the $(TcpsDir)include path that you
 added earlier.
@@ -227,7 +221,7 @@ the "Configuration Manager" screen.
 2. Go to your application project properties.  In the
 "Configuration Properties"->"C/C++"->"Preprocessor" properties for All Platforms
 for the DebugOpteeSimulation configuration, add
-**USE\_OPTEE;SIMULATE\_TEE**.  Then do the same for your enclave project.
+**OE\_SIMULATE\_OPTEE**.  Then do the same for your enclave project.
 3. Add oehost\_opteesim.lib to the Additional Dependencies of your app and
 remove any sgx libraries, for All Platforms for the DebugOpteeSimulation
 configuration. Your libs might look like this:

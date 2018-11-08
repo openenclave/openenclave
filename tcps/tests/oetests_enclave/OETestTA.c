@@ -28,7 +28,7 @@ oe_result_t ecall_TestOEIsWithinEnclave(void* outside, int size)
     FreeSecureCallbackContext(insideHandle);
     Tcps_ReturnErrorIfTrue(result != 0, OE_FAILURE);
 
-#if !(defined(USE_OPTEE) && defined(SIMULATE_TEE))
+#ifndef OE_SIMULATE_OPTEE
     /* This test currently doesn't work in the OP-TEE simulator, but it's
      * a case never hit normally by generated code, and it should work
      * on actual OP-TEE.
@@ -56,7 +56,7 @@ oe_result_t ecall_TestOEIsOutsideEnclave(void* outside, int size)
     FreeSecureCallbackContext(insideHandle);
     Tcps_ReturnErrorIfTrue(result == 0, OE_FAILURE);
 
-#if !(defined(USE_OPTEE) && defined(SIMULATE_TEE))
+#ifndef OE_SIMULATE_OPTEE
     /* This test currently doesn't work in the OP-TEE simulator, but it's
     * a case never hit normally by generated code, and it should work
     * on actual OP-TEE.
@@ -522,7 +522,7 @@ void* ecall_OEHostRealloc(void* ptr, int size)
     return oe_host_realloc(ptr, size);
 }
 
-char* ecall_OEHostStrndup(char* buff, int size)
+char* ecall_OEHostStrndup(const char* buff, int size)
 {
     return oe_host_strndup(buff, size);
 }

@@ -237,7 +237,7 @@ int sgx_is_within_enclave(const void* addr, size_t size)
 
 int sgx_is_outside_enclave(const void* addr, size_t size)
 {
-#ifdef SIMULATE_TEE
+#ifdef OE_SIMULATE_OPTEE
     /* Temporary workaround. */
     return TRUE;
 #else

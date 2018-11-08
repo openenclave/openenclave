@@ -55,8 +55,6 @@
 #define Tcps_Trace(x,...) ((Tcps_Void)0)
 #define Tcps_P_Thread_WasTerminationRequested() Tcps_False
 
-#define TCPS_ZERO(_p, _s)                memset(_p, 0x00, _s);
-
 /* Types. */
 typedef unsigned char       Tcps_Boolean;
 typedef unsigned int        Tcps_UInt32;
@@ -117,7 +115,7 @@ typedef enum {
 #define TCPS_DEPRECATED(FUNC, MSG) FUNC
 #endif
 
-#if defined(USE_OPTEE) || defined(_ARM_)
+#if defined(OE_SIMULATE_OPTEE) || defined(_ARM_)
 # define OE_ENCLAVE_TYPE_DEFAULT OE_ENCLAVE_TYPE_TRUSTZONE
 #else
 # define OE_ENCLAVE_TYPE_DEFAULT OE_ENCLAVE_TYPE_SGX

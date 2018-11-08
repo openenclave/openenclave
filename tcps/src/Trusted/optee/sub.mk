@@ -16,7 +16,7 @@ ROOT_RELATIVE_PATH = ../../../
 
 ../tcps_socket_t.c: ../socket_t.h
 
-CFLAGS += -DUSE_OPTEE
+CFLAGS += -DOE_USE_OPTEE
 
 global-incdirs-y += ..
 global-incdirs-y += ../..

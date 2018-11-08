@@ -14,10 +14,10 @@
 
 #include <sgx_report.h> // For sgx_report_t.  TODO: remove this dependency.
 
-#ifdef USE_SGX
+#ifdef OE_USE_SGX
 const char* TA_ID = "oetests_enclave"; /* DLL will be oetests_enclave.signed.dll */
 #endif
-#ifdef USE_OPTEE
+#ifdef OE_USE_OPTEE
 const char* TA_ID = "3156152a-19d1-423c-96ea-5adf5675798f";
 #endif
 

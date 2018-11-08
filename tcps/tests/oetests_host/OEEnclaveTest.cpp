@@ -18,12 +18,12 @@ int ocall_ReturnInputArgument(int input)
     return input;
 }
 
-void ocall_PrintString(char* fmt, char* arg)
+void ocall_PrintString(const char* fmt, const char* arg)
 {
     printf(fmt, arg);
 }
 
-int ocall_BufferToInt(void* buffer, size_t size)
+int ocall_BufferToInt(const void* buffer, size_t size)
 {
     int output;
     if (size != sizeof(int)) {

@@ -5,12 +5,12 @@
 # include <openenclave/enclave.h>
 #endif
 
-#ifdef USE_OPTEE
+#ifdef OE_USE_OPTEE
 # ifdef BUFSIZ
 #  undef BUFSIZ
 # endif
 # define BUFSIZ 1024
-#ifdef SIMULATE_TEE
+#ifdef OE_SIMULATE_OPTEE
 __declspec(noreturn)
 #endif
 void exit(int status);
