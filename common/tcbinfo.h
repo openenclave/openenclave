@@ -70,12 +70,34 @@ oe_result_t oe_parse_tcb_info_json(
     oe_tcb_level_t* platform_tcb_level,
     oe_parsed_tcb_info_t* parsed_info);
 
-oe_result_t oe_verify_tcb_signature(
+oe_result_t oe_verify_ecdsa256_signature(
     const uint8_t* tcb_info_start,
     size_t tcb_info_size,
     sgx_ecdsa256_signature_t* signature,
     oe_cert_chain_t* tcb_cert_chain);
 
+typedef struct _oe_parsed_qe_identity_info
+{
+    uint32_t version;
+    oe_datetime_t issue_date;
+    oe_datetime_t next_update;
+    uint32_t miscselect;         // The MISCSELECT that must be set
+    uint32_t miscselect_mask;    // Mask of MISCSELECT to enforce
+    sgx_attributes_t attributes; // flags and xfrm (XSAVE-Feature Request Mask)
+    uint64_t attributes_flags_mask;   // mask for attributes.flags
+    uint64_t attributes_xfrm_mask;    // mask for attributes.xfrm
+    uint8_t mrsigner[OE_SHA256_SIZE]; // MRSIGNER of the enclave
+    uint16_t isvprodid;               // ISV assigned Product ID
+    uint16_t isvsvn;                  // ISV assigned SVN
+    uint8_t signature[64];
+    const uint8_t* info_start;
+    size_t info_size;
+} oe_parsed_qe_identity_info_t;
+
+oe_result_t oe_parse_qe_identity_info_json(
+    const uint8_t* info_json,
+    size_t info_json_size,
+    oe_parsed_qe_identity_info_t* parsed_info);
 #endif
 
 OE_EXTERNC_END

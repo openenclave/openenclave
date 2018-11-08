@@ -263,7 +263,7 @@ oe_result_t oe_enforce_revocation(
             &parsed_tcb_info));
 
     OE_CHECK(
-        oe_verify_tcb_signature(
+        oe_verify_ecdsa256_signature(
             parsed_tcb_info.tcb_info_start,
             parsed_tcb_info.tcb_info_size,
             (sgx_ecdsa256_signature_t*)parsed_tcb_info.signature,

@@ -30,9 +30,12 @@
 static void* _lib_handle = 0;
 static sgx_ql_get_revocation_info_t _get_revocation_info = 0;
 static sgx_ql_free_revocation_info_t _free_revocation_info = 0;
+static sgx_get_qe_identity_info_t _get_qe_identity_info = 0;
+static sgx_free_qe_identity_info_t _free_qe_identity_info = 0;
 
 static void _unload_quote_provider()
 {
+    OE_TRACE_INFO("_unload_quote_provider libdcap_quoteprov.so\n");
     if (_lib_handle)
     {
         dlclose(_lib_handle);
@@ -49,13 +52,14 @@ static void _quote_provider_log(sgx_ql_log_level_t level, const char* message)
 
     formatted[sizeof(formatted) - 1] = 0;
 
-    printf("%s", formatted);
+    OE_TRACE_INFO("libdcap_quoteprov.so: %s", formatted);
 }
 
 static void _load_quote_provider()
 {
     if (_lib_handle == 0)
     {
+        OE_TRACE_INFO("_load_quote_provider libdcap_quoteprov.so\n");
         _lib_handle = dlopen("libdcap_quoteprov.so", RTLD_LAZY | RTLD_LOCAL);
         if (_lib_handle != 0)
         {
@@ -90,6 +94,19 @@ static void _load_quote_provider()
                     "sgxquoteprovider: sgx_ql_set_logging_function "
                     "not found\n");
             }
+
+            _get_qe_identity_info =
+                dlsym(_lib_handle, "sgx_get_qe_identity_info");
+            _free_qe_identity_info =
+                dlsym(_lib_handle, "sgx_free_qe_identity_info");
+
+            OE_TRACE_INFO(
+                "sgxquoteprovider: _get_qe_identity_info = 0x%lx\n",
+                (uint64_t)_get_qe_identity_info);
+            OE_TRACE_INFO(
+                "sgxquoteprovider: _free_qe_identity_info = 0x%lx\n",
+                (uint64_t)_free_qe_identity_info);
+
             atexit(_unload_quote_provider);
         }
         else
@@ -302,4 +319,105 @@ void oe_cleanup_get_revocation_info_args(oe_get_revocation_info_args_t* args)
     }
 }
 
+oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args)
+{
+    oe_result_t result = OE_FAILURE;
+    sgx_plat_error_t r = SGX_PLAT_ERROR_OUT_OF_MEMORY;
+    sgx_qe_identity_info_t* identity = NULL;
+    uint32_t host_buffer_size = 0;
+    uint8_t* p = 0;
+    uint8_t* p_end = 0;
+    OE_TRACE_INFO("Calling %s\n", __PRETTY_FUNCTION__);
+
+    if (!_get_qe_identity_info || !_free_qe_identity_info)
+    {
+        OE_TRACE_ERROR(
+            "Warning: QE Identity was not supported by quote provider\n");
+        result = OE_QUOTE_PROVIDER_CALL_ERROR;
+        goto done;
+    }
+
+    // fetch qe identity information
+    r = _get_qe_identity_info(&identity);
+    if (r != SGX_PLAT_ERROR_OK || identity == NULL)
+    {
+        OE_RAISE(OE_QUOTE_PROVIDER_CALL_ERROR);
+    }
+
+    if (identity->qe_id_info == NULL || identity->qe_id_info_size == 0)
+    {
+        OE_TRACE_INFO("qe_id_info is NULL.\n");
+        OE_RAISE(OE_INVALID_QE_IDENTITY_INFO);
+    }
+    host_buffer_size += identity->qe_id_info_size + 1;
+
+    if (identity->issuer_chain == NULL || identity->issuer_chain_size == 0)
+    {
+        OE_TRACE_INFO("issuer_chain is NULL.\n");
+        OE_RAISE(OE_INVALID_QE_IDENTITY_INFO);
+    }
+
+    OE_TRACE_INFO("sgx_ql_get_qe_identity_info succeeded.\n");
+
+    host_buffer_size += identity->issuer_chain_size + 1;
+    p = (uint8_t*)calloc(1, host_buffer_size);
+    p_end = p + host_buffer_size;
+    if (p == NULL)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    args->host_out_buffer = p;
+
+    if (identity->qe_id_info != NULL)
+    {
+        args->qe_id_info = p;
+        args->qe_id_info_size = identity->qe_id_info_size;
+        OE_CHECK(
+            oe_memcpy_s(
+                args->qe_id_info,
+                args->qe_id_info_size,
+                identity->qe_id_info,
+                identity->qe_id_info_size));
+        // Add null terminator
+        args->qe_id_info[args->qe_id_info_size++] = 0;
+        p += args->qe_id_info_size;
+        OE_TRACE_INFO("qe_id_info_size = %ld\n", args->qe_id_info_size);
+        OE_TRACE_INFO("qe_id_info json = \n%s\n", args->qe_id_info);
+    }
+
+    if (identity->issuer_chain != NULL)
+    {
+        args->issuer_chain = p;
+        args->issuer_chain_size = identity->issuer_chain_size;
+        OE_CHECK(
+            oe_memcpy_s(
+                args->issuer_chain,
+                args->issuer_chain_size,
+                identity->issuer_chain,
+                identity->issuer_chain_size));
+        // Add null terminator
+        args->issuer_chain[args->issuer_chain_size++] = 0;
+        p += args->issuer_chain_size;
+        OE_TRACE_INFO("issuer_chain_size = %ld\n", args->issuer_chain_size);
+    }
+
+    if (p != p_end)
+        OE_RAISE(OE_UNEXPECTED);
+
+    result = OE_OK;
+done:
+    if (identity != NULL)
+    {
+        _free_qe_identity_info(identity);
+    }
+    return result;
+}
+
+void oe_cleanup_qe_identity_info_args(oe_get_qe_identity_info_args_t* args)
+{
+    if (args)
+    {
+        if (args->host_out_buffer)
+            free(args->host_out_buffer);
+    }
+}
 #endif

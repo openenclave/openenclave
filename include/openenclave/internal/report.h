@@ -111,6 +111,26 @@ typedef struct _oe_get_revocation_info_args
 /*
 **==============================================================================
 **
+** _oe_get_qe_identity_info_args
+**
+**==============================================================================
+*/
+typedef struct _oe_get_qe_identity_info_args
+{
+    oe_result_t result;       /* out */
+    uint8_t* qe_id_info;      /* out */
+    size_t qe_id_info_size;   /* out */
+    uint8_t* issuer_chain;    /* out */
+    size_t issuer_chain_size; /* out */
+
+    // Memory allocated by host to pass outputs back to the enclave. Enclave
+    // must free this memory via oe_host_free.
+    uint8_t* host_out_buffer; /* out */
+} oe_get_qe_identity_info_args_t;
+
+/*
+**==============================================================================
+**
 ** oe_report_type_t
 **
 **==============================================================================

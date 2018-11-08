@@ -5,6 +5,7 @@ add_library(oeenclave STATIC
     ../common/asn1.c
     ../common/cert.c
     ../common/datetime.c
+    ../common/qeidentity.c
     ../common/quote.c
     ../common/report.c
     ../common/revocation.c
@@ -17,6 +18,7 @@ add_library(oeenclave STATIC
     cmac.c
     key.c
     link.c
+    qeidinfo.c
     random.c
     report.c
     revocationinfo.c

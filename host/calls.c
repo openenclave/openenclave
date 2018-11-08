@@ -473,6 +473,9 @@ static oe_result_t _handle_ocall(
         case OE_OCALL_GET_REVOCATION_INFO:
             HandleGetQuoteRevocationInfo(arg_in);
             break;
+        case OE_OCALL_GET_QE_ID_INFO:
+            HandleGetQuoteEnclaveIdentityInfo(arg_in);
+            break;
 #endif
 
         case OE_OCALL_GET_QE_TARGET_INFO:
