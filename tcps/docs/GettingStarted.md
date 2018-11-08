@@ -52,16 +52,17 @@ for both SGX and TrustZone.
 ### SGX Enclave DLL
 
 The SGX Enclave DLL should link with **oeenclave.lib** and have the following
-additional include path:
+additional include paths:
 
-* $(OESdkDir)tcps/include
+* $(OESdkDir)tcps\include\sgx\Trusted
+* $(OESdkDir)tcps\include
 
 ### SGX Rich Application
 
 The EXE should link with **oehost.lib** and have the following additional
 include path:
 
-* $(OESdkDir)tcps/include
+* $(OESdkDir)tcps\include
 
 ### OP-TEE TA
 
@@ -164,8 +165,8 @@ oe\_terminate\_enclave().  You will need to #include <openenclave/host.h>
 and <_YourEDLFileName_\_u.h> for your ECALLs.  Make sure you configure the
 additional include directories as appropriate in your application project
 Properties->"C/C++"->"General"->"Additional Include Directories".  Usually
-this means you need to insert $(TcpsDir)include path at the beginning.  See
-the sample apps for an example.
+this means you need to insert "$(TcpsDir)include;$(TcpsDir)include\sgx\Trusted;"
+at the beginning.  See the sample apps for an example.
 12. In your enclave project, update the Additional Include Directories to
 include $(TcpsDir)External\RIoT\CyReP\cyrep
 
