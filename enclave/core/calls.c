@@ -928,6 +928,18 @@ void __oe_handle_main(
     }
 }
 
+/*
+**==============================================================================
+**
+** __oe_handle_main_wrap()
+**
+**     Wrapper to call __oe_handle_main.
+**
+**     N.B. Should modify Linux entry code to do the same as WIN32, passing a 
+**          single argument and change this function to __oe_handle_main.
+**
+**==============================================================================
+*/
 void __oe_handle_main_wrap(oe_ecall_enc_args_t* ecall_args)
 {
     __oe_handle_main(
