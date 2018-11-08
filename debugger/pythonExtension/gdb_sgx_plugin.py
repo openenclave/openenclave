@@ -47,6 +47,9 @@ OCALLCONTEXT_RET = 1
 # The set to store all loaded OE enclave base address.
 g_loaded_oe_enclave_addrs = set()
 
+# Global enclave list parsed flag
+g_enclave_list_parsed = False
+
 def get_inferior():
     """Get current inferior"""
     try:
@@ -246,9 +249,57 @@ class OCallStartBreakpoint(gdb.Breakpoint):
         update_untrusted_ocall_frame(frame_pointer, ocallcontext_tuple)
         return False
 
+def new_objfile_handler(event):
+    global g_enclave_list_parsed
+    if not g_enclave_list_parsed:
+        list_head = None        
+        try:
+            list_head = gdb.parse_and_eval("oe_enclave_list_head")            
+        except:
+            pass
+        enclaves = []
+        try:
+            if list_head != None:
+                print ("oe-gdb: Found global enclave list.")
+                node_ptr = list_head['lh_first']
+                while node_ptr != 0:
+                    node = node_ptr.dereference()
+                    enclave = node['enclave']
+                    enclave_addr = int(enclave)
+                    enclave_path = enclave.dereference()['path'].string('utf-8')
+                    enclaves.append((enclave_addr, enclave_path))
+                    node_ptr = node['next_entry']['le_next']
+                
+
+                # Set parsed to true. enable_oeenclave_debug loads the enclave
+                # binary and therefore would trigger a recursive call to 
+                # new_objfile_handler.Setting g_enclave_list_parsed breaks out 
+                # the potential infinite recursion.
+                g_enclave_list_parsed = True;
+
+                print ("oe-gdb: %d enclaves in global enclave list." % len(enclaves))
+                for (enclave_addr, enclave_path) in enclaves:
+                    print("oe-gdb: Reading symbols from %s ..." % enclave_path, end='')    
+                    enable_oeenclave_debug(enclave_addr, enclave_path)
+                    print("done.")
+        except:
+            print("oe-gdb: Global enclave list processing failed.")
+            g_enclave_list_parsed = True
+
+def exited_handler(event):
+    oe_debugger_cleanup()                
+
 def oe_debugger_init():
     #execute "set displaced-stepping off" to workaround the gdb 7.11 issue
     gdb.execute("set displaced-stepping off", False, True)
+    
+    # When the inferior quits, execute cleanup.
+    gdb.events.exited.connect(exited_handler)
+
+    # Add a handler for every time an object file is loaded.
+    # This is used when the debugger is attached to a running process.
+    gdb.events.new_objfile.connect(new_objfile_handler)
+
     bps = gdb.breakpoints()
     if bps != None:
         for bp in bps:
@@ -264,11 +315,13 @@ def oe_debugger_init():
 
 def oe_debugger_cleanup():
     """Remove all loaded enclave symbols"""
+    global g_enclave_list_parsed
     for oe_enclave_addr in g_loaded_oe_enclave_addrs:
         gdb_cmd = "remove-symbol-file -a %s" % (oe_enclave_addr)
         # print (gdb_cmd)
         gdb.execute("remove-symbol-file -a %s" % (oe_enclave_addr), False, True)
     g_loaded_oe_enclave_addrs.clear()
+    g_enclave_list_parsed = False
     return
 
 def exit_handler(event):
