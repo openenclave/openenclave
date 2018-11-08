@@ -3,7 +3,6 @@
 
 /* Ignore unused-variable warning in system header */
 #pragma GCC diagnostic ignored "-Wunused-variable"
-#include <immintrin.h>
 #include <stdlib.h>
 /*
  * Random implementation needed by libcxx as alternative to device oriented
@@ -14,7 +13,7 @@ unsigned int arc4random(void)
 {
     unsigned int r;
 
-    while (!_rdrand32_step(&r))
+    while (!__builtin_ia32_rdrand32_step(&r))
         ;
     return r;
 }

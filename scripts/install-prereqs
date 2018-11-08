@@ -25,9 +25,6 @@ PACKAGES+=('autoconf' 'libtool')
 # Needed to generate documentation during make
 PACKAGES+=('doxygen' 'graphviz')
 
-# Needed for cmake/get_c_compiler_dir.sh
-PACKAGES+=('gawk')
-
 # Needed for dox2md document generation
 PACKAGES+=('libexpat1-dev')
 

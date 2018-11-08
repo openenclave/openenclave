@@ -48,10 +48,6 @@ add_library(oecore STATIC
 
 target_link_libraries(oecore PUBLIC oe_includes)
 
-# we strip the default include containing the compiler-provided intrinsics
-# add it back in
-target_include_directories(oecore SYSTEM PRIVATE ${OE_C_COMPILER_INCDIR})
-
 # This directory contains dummy C headers needed by dlmalloc:
 target_include_directories(oecore PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dlmalloc)
 
