@@ -114,7 +114,7 @@ static bool _queue_contains(Queue* queue, oe_thread_data_t* thread)
     return false;
 }
 
-static __inline__ bool _queue_empty(Queue* queue)
+OE_INLINE bool _queue_empty(Queue* queue)
 {
     return queue->front ? false : true;
 }

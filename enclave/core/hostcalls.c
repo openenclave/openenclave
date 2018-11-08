@@ -158,7 +158,7 @@ int oe_host_vfprintf(int device, const char* fmt, oe_va_list ap_)
     /* If string was truncated, retry with correctly sized buffer */
     if (n >= sizeof(buf))
     {
-        if (!(p = oe_stack_alloc((uint32_t)n + 1)))
+        if (!(p = oe_malloc(n + 1)))
             return -1;
 
         oe_va_list ap;
@@ -168,7 +168,10 @@ int oe_host_vfprintf(int device, const char* fmt, oe_va_list ap_)
     }
 
     oe_host_write(device, p, (size_t)-1);
-
+    if (buf != p)
+    {
+        oe_free(p);
+    }
     return n;
 }
 

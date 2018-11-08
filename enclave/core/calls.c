@@ -928,6 +928,17 @@ void __oe_handle_main(
     }
 }
 
+void __oe_handle_main_wrap(oe_ecall_enc_args_t* ecall_args)
+{
+    __oe_handle_main(
+        ecall_args->arg1,
+        ecall_args->arg2,
+        ecall_args->cssa,
+        ecall_args->tcs,
+        &ecall_args->arg1_out,
+        &ecall_args->arg2_out);
+}
+
 /*
 **==============================================================================
 **

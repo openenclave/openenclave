@@ -135,6 +135,13 @@ static uint64_t _make_secinfo_flags(uint32_t Characteristics)
         r |= SGX_SECINFO_X;
     }
 
+    /* On Windows, sections must be r/w or r/w/x to be able to apply relocation
+     */
+    if (r)
+    {
+        r |= SGX_SECINFO_R | SGX_SECINFO_W;
+    }
+
     return r;
 }
 
@@ -467,8 +474,9 @@ oe_result_t oe_load_pe_enclave_image(
         }
     }
 
-    /* fail if no .text section */
-    if (image->text_rva == 0)
+    /* fail if no .text section (theoretically possible ot have no ECALL section
+     */
+    if (!image->text_rva || !image->oeinfo_rva)
     {
         OE_RAISE(OE_FAILURE);
     }

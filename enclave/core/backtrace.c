@@ -132,7 +132,7 @@ oe_result_t oe_print_backtrace(void)
 
     oe_host_printf("=== backtrace:\n");
 
-    for (size_t i = 0; i < size; i++)
+    for (int i = 0; i < size; i++)
         oe_host_printf("%s(): %p\n", syms[i], buffer[i]);
 
     oe_host_printf("\n");

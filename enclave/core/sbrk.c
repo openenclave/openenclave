@@ -20,7 +20,7 @@ void* oe_sbrk(ptrdiff_t increment)
 
         remaining = (size_t)((unsigned char*)__oe_get_heap_end() - _heap_next);
 
-        if (increment <= remaining)
+        if ((size_t)increment <= remaining)
         {
             ptr = _heap_next;
             _heap_next += increment;

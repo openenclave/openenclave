@@ -10,6 +10,7 @@
 #define EINVAL 22
 #define ENOMEM 12
 
+#undef errno
 #define errno *__errno_location()
 
 OE_INLINE int* __errno_location(void)

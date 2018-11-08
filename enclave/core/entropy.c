@@ -4,14 +4,7 @@
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
-
-uint64_t _rdrand(void)
-{
-    uint64_t r;
-    __asm__ volatile("rdrand %0\n\t" : "=r"(r));
-
-    return r;
-}
+#include <openenclave/internal/utils.h>
 
 /*
  * MBEDTLS links this function definition when MBEDTLS_ENTROPY_HARDWARE_ALT
@@ -39,7 +32,7 @@ int mbedtls_hardware_poll(
 
         while (n--)
         {
-            uint64_t x = _rdrand();
+            uint64_t x = oe_rand();
 
             if (oe_memcpy_s(p, sizeof(uint64_t), &x, sizeof(uint64_t)) != OE_OK)
                 goto done;
@@ -51,7 +44,7 @@ int mbedtls_hardware_poll(
     /* Copy remaining random bytes to output */
     {
         size_t r = len % sizeof(uint64_t);
-        uint64_t x = _rdrand();
+        uint64_t x = oe_rand();
         const unsigned char* q = (const unsigned char*)&x;
 
         while (r--)

@@ -4,6 +4,13 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
 
+#if defined(_WIN32)
+void* __cdecl memset(void* dest, int c, size_t n);
+void* __cdecl memcpy(void* dest, void const* src, size_t n);
+#define __builtin_memcpy memcpy
+#define __builtin_memset memset
+#endif /* defined(_WIN32) */
+
 /*
 **==============================================================================
 **

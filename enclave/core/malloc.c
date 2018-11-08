@@ -9,6 +9,7 @@
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/thread.h>
+#include <openenclave/internal/utils.h>
 #include "debugmalloc.h"
 
 #define HAVE_MMAP 0
@@ -33,6 +34,22 @@ typedef struct _FILE FILE;
 
 static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...);
 
+#if defined(_WIN32)
+
+typedef long LONG;
+typedef uint32_t DWORD;
+#define FALSE 0
+#define SleepEx(a, b) oe_pause()
+#undef _WIN32
+#undef WIN32
+#define OE_WIN32
+#define interlockedexchange oe_exchange_acquire
+#include "../../3rdparty/dlmalloc/dlmalloc/malloc.c"
+#define _WIN32
+#define WIN32
+
+#elif defined(__linux__)
+
 #pragma GCC diagnostic push
 #ifdef __clang__
 #pragma GCC diagnostic ignored "-Wparentheses-equality"
@@ -41,6 +58,16 @@ static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...);
 #include "../../3rdparty/dlmalloc/dlmalloc/malloc.c"
 
 #pragma GCC diagnostic pop
+
+#else
+
+#error("Unsupported")
+
+#endif /* defined(_WIN32) */
+
+/*
+ * DO NOT INCLUDE ANY HEADER/SOURCE past this point.
+ */
 
 /* Choose release mode or debug mode allocation functions */
 #if defined(OE_USE_DEBUG_MALLOC)

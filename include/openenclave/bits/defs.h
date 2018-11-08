@@ -88,7 +88,7 @@
  * to ensure extern linkage and prevent compiler warnings.
  */
 #if defined(__cplusplus)
-#define OE_EXPORT_CONST OE_EXPORT extern const
+#define OE_EXPORT_CONST extern "C" OE_EXPORT const
 #else
 #define OE_EXPORT_CONST OE_EXPORT const
 #endif
@@ -128,8 +128,25 @@
 #endif
 #endif
 
+#define OE_ECALL_SECTION_NAME ".ecall"
+
 /* OE_ECALL */
-#define OE_ECALL OE_EXTERNC OE_EXPORT __attribute__((section(".ecall")))
+
+#if defined(__linux__)
+
+#define OE_ECALL \
+    OE_EXTERNC OE_EXPORT __attribute__((section(OE_ECALL_SECTION_NAME)))
+
+#elif defined(_WIN32)
+
+#define OE_ECALL \
+    OE_EXTERNC OE_EXPORT __declspec(code_seg(OE_ECALL_SECTION_NAME))
+
+#else
+
+#error("Unsupported configuration!")
+
+#endif /* defined(__linux__) */
 
 /* OE_OCALL */
 #define OE_OCALL OE_EXTERNC OE_EXPORT

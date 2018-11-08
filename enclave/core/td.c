@@ -53,7 +53,13 @@ oe_thread_data_t* oe_get_thread_data()
 {
     oe_thread_data_t* td;
 
+#if defined(__linux__)
     asm("mov %%gs:0, %0" : "=r"(td));
+#elif defined(_WIN32)
+    td = (oe_thread_data_t*)__readgsqword(0);
+#else
+#error("unsupported");
+#endif /* defined(__linux__) */
 
     return td;
 }

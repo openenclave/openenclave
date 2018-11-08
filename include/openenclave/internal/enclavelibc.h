@@ -136,9 +136,22 @@ int oe_snprintf(char* str, size_t size, const char* fmt, ...);
  * @returns Returns the address of the allocated space.
  *
  */
+
+#if defined(__linux__)
+
 // __builtin_alloca is appropriate for both gcc and clang.
 // For MSVC, we will probably want _malloca from <malloc.h>.
 #define oe_stack_alloc(SIZE) __builtin_alloca(SIZE)
+
+#elif defined(_WIN32)
+
+#define oe_stack_alloc(SIZE) _alloca(SIZE)
+
+#else
+
+#error("unsupported");
+
+#endif /* defined(__linux__) */
 
 /**
  * Enclave implementation of the standard Unix sbrk() system call.

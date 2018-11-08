@@ -3,11 +3,18 @@
 
 if (UNIX)
 set(PLATFORM_SRC
+    linux/jump.c
     linux/reloc.c
+    linux/enter.S
+    linux/exit.S
+    linux/getkey.S
     )
 elseif (WIN32)
 set(PLATFORM_SRC
+    windows/crtstub.c
     windows/reloc.c
+    windows/dispatch.asm
+	windows/misc.asm
     )
 endif()
 
@@ -25,7 +32,6 @@ add_library(oecore STATIC
     hostcalls.c
     hexdump.c
     init.c
-    jump.c
     keys.c
     malloc.c
     memory.c
@@ -40,9 +46,6 @@ add_library(oecore STATIC
     td.c
     thread.c
     time.c
-    enter.S
-    exit.S
-    getkey.S
     ${PLATFORM_SRC}
     )
 
@@ -51,23 +54,25 @@ target_link_libraries(oecore PUBLIC oe_includes)
 # This directory contains dummy C headers needed by dlmalloc:
 target_include_directories(oecore PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dlmalloc)
 
-target_compile_options(oecore PRIVATE -Wconversion -Wpointer-arith)
+if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
+    target_compile_options(oecore PRIVATE -Wconversion -Wpointer-arith)
+    
+    if (CMAKE_C_COMPILER_ID MATCHES GNU)
+        target_compile_options(oecore PRIVATE -Wjump-misses-init)
+    endif ()
+    
+    set_source_files_properties(malloc.c PROPERTIES COMPILE_FLAGS -Wno-conversion)
+    
+    target_compile_options(oecore PUBLIC
+        -m64
+        -fPIC
+        -nostdinc
+        -fno-stack-protector
+        -fvisibility=hidden
+        )
 
-if (CMAKE_C_COMPILER_ID MATCHES GNU)
-    target_compile_options(oecore PRIVATE -Wjump-misses-init)
-endif ()
-
-set_source_files_properties(malloc.c PROPERTIES COMPILE_FLAGS -Wno-conversion)
-
-target_compile_options(oecore PUBLIC
-    -m64
-    -fPIC
-    -nostdinc
-    -fno-stack-protector
-    -fvisibility=hidden
-    )
-
-target_compile_options(oecore INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>)
+    target_compile_options(oecore INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>)
+endif()
 
 if(USE_LIBSGX)
     target_compile_definitions(oecore PUBLIC OE_USE_LIBSGX)
@@ -84,13 +89,16 @@ endif()
 
 target_compile_definitions(oecore PUBLIC OE_BUILD_ENCLAVE)
 
-# addl link-options for enclave apps
-target_link_libraries(oecore INTERFACE
-    -nostdlib -nodefaultlibs -nostartfiles
-    -Wl,--no-undefined,-Bstatic,-Bsymbolic,--export-dynamic,-pie)
+if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
 
-# jump.s must be optimized for the correct call-frame.
-set_source_files_properties(jump.c PROPERTIES COMPILE_FLAGS -O2)
+# addl link-options for enclave apps
+    target_link_libraries(oecore INTERFACE
+        -nostdlib -nodefaultlibs -nostartfiles
+        -Wl,--no-undefined,-Bstatic,-Bsymbolic,--export-dynamic,-pie)
+
+    # jump.s must be optimized for the correct call-frame.
+    set_source_files_properties(linux/jump.c PROPERTIES COMPILE_FLAGS -O2)
+endif()
 
 set_property(TARGET oecore PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 install (TARGETS oecore EXPORT openenclave-targets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)

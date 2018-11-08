@@ -37,6 +37,12 @@ typedef long long ptrdiff_t;
 #error "unknown compiler - please adapt basic types"
 #endif
 
+OE_ALIGNED(16) typedef struct _uint128_t
+{
+    uint64_t low_part;
+    uint64_t high_part;
+} uint128_t;
+
 /* bool type */
 #ifndef __cplusplus
 #define true 1

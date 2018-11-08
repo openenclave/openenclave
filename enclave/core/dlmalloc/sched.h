@@ -4,11 +4,11 @@
 #ifndef _OE_CORE_DLMALLOC_SCHED_H
 #define _OE_CORE_DLMALLOC_SCHED_H
 
-#include <openenclave/bits/defs.h>
+#include <openenclave/internal/utils.h>
 
 OE_INLINE int sched_yield(void)
 {
-    asm volatile("pause");
+    oe_pause();
     return 0;
 }
 

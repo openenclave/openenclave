@@ -4,8 +4,8 @@
 #ifndef _OE_JUMP_H
 #define _OE_JUMP_H
 
-#include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/internal/defs.h>
 
 OE_EXTERNC_BEGIN
 
@@ -24,7 +24,27 @@ typedef struct _oe_jmpbuf
     uint64_t r13;
     uint64_t r14;
     uint64_t r15;
+#if defined(_WIN32)
+    /* Addition registers preserved per Windows ABI */
+    uint64_t rdi;
+    uint64_t rsi;
+    uint64_t frame; /* Caller's frame pointer */
+    uint32_t MxCsr; /* Floating pointer control */
+    uint32_t spare;
+    uint128_t xmm6;
+    uint128_t xmm7;
+    uint128_t xmm8;
+    uint128_t xmm9;
+    uint128_t xmm10;
+    uint128_t xmm11;
+    uint128_t xmm12;
+    uint128_t xmm13;
+    uint128_t xmm14;
+    uint128_t xmm15;
+#endif /* defined(_WIN32) */
 } oe_jmpbuf_t;
+
+OE_STATIC_ASSERT((sizeof(oe_jmpbuf_t) & 0xf) == 0);
 
 int oe_setjmp(oe_jmpbuf_t* env);
 

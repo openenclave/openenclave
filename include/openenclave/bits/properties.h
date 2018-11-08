@@ -23,9 +23,6 @@ OE_EXTERNC_BEGIN
 /**
  * @cond DEV
  */
-/* Injected by OE_SET_ENCLAVE_SGX macro and by the signing tool (oesign) */
-#define OE_INFO_SECTION_NAME ".oeinfo"
-#define OE_ECALL_SECTION_NAME ".ecall"
 
 /* Max number of threads in an enclave supported */
 #define OE_SGX_MAX_TCS 32
@@ -96,8 +93,26 @@ typedef struct _oe_sgx_enclave_properties
     uint64_t end_marker;
 } oe_sgx_enclave_properties_t;
 
+/* Injected by OE_SET_ENCLAVE_SGX macro */
+#define OE_INFO_SECTION_NAME ".oeinfo"
+
+#if defined(__linux__)
+
 #define OE_INFO_SECTION_BEGIN \
     OE_EXTERNC __attribute__((section(OE_INFO_SECTION_NAME)))
+
+#elif defined(_WIN32)
+
+#pragma section(OE_INFO_SECTION_NAME, read)
+#define OE_INFO_SECTION_BEGIN \
+    OE_EXTERNC __declspec(allocate(OE_INFO_SECTION_NAME))
+
+#else
+
+#error("Unsupported configuration!")
+
+#endif
+
 #define OE_INFO_SECTION_END
 
 #define OE_MAKE_ATTRIBUTES(ALLOW_DEBUG) \
@@ -141,33 +156,33 @@ typedef struct _oe_sgx_enclave_properties
     OE_INFO_SECTION_BEGIN                                                 \
     volatile const oe_sgx_enclave_properties_t oe_enclave_properties_sgx = \
     {                                                                     \
-        .header =                                                         \
+        /*.header = */                                                    \
         {                                                                 \
-            .size = sizeof(oe_sgx_enclave_properties_t),                  \
-            .enclave_type = OE_ENCLAVE_TYPE_SGX,                          \
-            .size_settings =                                              \
+            /*.size = */ sizeof(oe_sgx_enclave_properties_t),             \
+            /* .enclave_type = */ OE_ENCLAVE_TYPE_SGX,                    \
+            /* .size_settings = */                                        \
             {                                                             \
-                .num_heap_pages = HEAP_PAGE_COUNT,                        \
-                .num_stack_pages = STACK_PAGE_COUNT,                      \
-                .num_tcs = TCS_COUNT                                      \
+                /* .num_heap_pages = */ HEAP_PAGE_COUNT,                  \
+                /* .num_stack_pages = */ STACK_PAGE_COUNT,                \
+                /* .num_tcs = */ TCS_COUNT                                \
             }                                                             \
         },                                                                \
-        .config =                                                         \
+        /*.config = */                                                    \
         {                                                                 \
-            .product_id = PRODUCT_ID,                                     \
-            .security_version = SECURITY_VERSION,                         \
-            .padding = 0,                                                 \
-            .attributes = OE_MAKE_ATTRIBUTES(ALLOW_DEBUG)                 \
+            /* .product_id = */ PRODUCT_ID,                               \
+            /* .security_version = */ SECURITY_VERSION,                   \
+            /* .padding = */ 0,                                           \
+            /* .attributes = */ OE_MAKE_ATTRIBUTES(ALLOW_DEBUG)           \
         },                                                                \
-        .image_info =                                                     \
-        {                                                                 \
-            0                                                             \
-        },                                                                \
-        .sigstruct =                                                      \
+        /* .image_info = */                                               \
         {                                                                 \
             0                                                             \
         },                                                                \
-        .end_marker = 0xecececececececec,                                 \
+        /* .sigstruct =  */                                               \
+        {                                                                 \
+            0                                                             \
+        },                                                                \
+        /*.end_marker = */ 0xecececececececec,                            \
     };                                                                    \
     OE_INFO_SECTION_END
 

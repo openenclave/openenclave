@@ -29,9 +29,9 @@ oe_result_t sgx_create_report(
     oe_result_t result = OE_UNEXPECTED;
 
     // Allocate aligned objects as required by EREPORT instruction.
-    sgx_target_info_t ti OE_ALIGNED(512) = {{0}};
-    sgx_report_data_t rd OE_ALIGNED(128) = {{0}};
-    sgx_report_t r OE_ALIGNED(512) = {{{0}}};
+    OE_ALIGNED(512) sgx_target_info_t ti = {{0}};
+    OE_ALIGNED(128) sgx_report_data_t rd = {{0}};
+    OE_ALIGNED(512) sgx_report_t r = {{{0}}};
 
     /*
      * Reject invalid parameters (report_data may be null).
@@ -55,11 +55,7 @@ oe_result_t sgx_create_report(
                 &rd, sizeof(sgx_report_data_t), report_data, report_data_size));
 
     /* Invoke EREPORT instruction */
-    asm volatile(
-        "ENCLU"
-        :
-        : "a"(ENCLU_EREPORT), "b"(&ti), "c"(&rd), "d"(&r)
-        : "memory");
+    oe_issue_sgx_ereport(&ti, &rd, &r);
 
     /* Copy REPORT to caller's buffer */
     OE_CHECK(

@@ -51,24 +51,24 @@ char* oe_hex_string(
     return str;
 }
 
+#define CHUNK_SIZE 1024
 void oe_hex_dump(const void* data, size_t size)
 {
     const uint8_t* p = (const uint8_t*)data;
     size_t n = size;
-    const size_t chunk_size = 1024;
-    char buf[2 * chunk_size + 1];
+    char buf[2 * CHUNK_SIZE + 1];
 
     /* Return if nothing to print */
     if (!data || !size)
         return;
 
     /* Print N-sized chunks first to reduce OCALLS */
-    while (n >= chunk_size)
+    while (n >= CHUNK_SIZE)
     {
-        oe_hex_string(buf, sizeof(buf), p, chunk_size);
+        oe_hex_string(buf, sizeof(buf), p, CHUNK_SIZE);
         oe_host_printf("%s", buf);
-        p += chunk_size;
-        n -= chunk_size;
+        p += CHUNK_SIZE;
+        n -= CHUNK_SIZE;
     }
 
     /* Print any remaining bytes */

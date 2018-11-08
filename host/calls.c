@@ -204,24 +204,62 @@ static oe_result_t _do_eenter(
 
     /* Call oe_enter() assembly function (enter.S) */
     {
-        uint64_t arg1 = oe_make_call_arg1(code_in, func_in, 0, OE_OK);
-        uint64_t arg2 = (uint64_t)arg_in;
-        uint64_t arg3 = 0;
-        uint64_t arg4 = 0;
+        oe_ecall_args_t ecall_args = {0};
+
+        ecall_args.arg1 = oe_make_call_arg1(code_in, func_in, 0, OE_OK);
+        ecall_args.arg2 = (uint64_t)arg_in;
+        ecall_args.tcs = tcs;
+        ecall_args.aep = aep;
+        ecall_args.enclave = enclave;
 
         if (enclave->simulate)
         {
-            OE_CHECK(_enter_sim(enclave, tcs, aep, arg1, arg2, &arg3, &arg4));
+            OE_CHECK(
+                _enter_sim(
+                    enclave,
+                    tcs,
+                    aep,
+                    ecall_args.arg1,
+                    ecall_args.arg2,
+                    &ecall_args.arg1_out,
+                    &ecall_args.arg2_out));
         }
         else
         {
-            oe_enter(tcs, aep, arg1, arg2, &arg3, &arg4, enclave);
+/*
+ * TODO: change Linux to use ecall_args directly so the same
+ *       implementation can be used.
+ *
+ * N.B. Need someone familiar with Linux assembly to
+ *      re-implement oe_enter.
+ */
+
+#if defined(__linux__)
+
+            oe_enter(
+                tcs,
+                aep,
+                ecall_args.arg1,
+                ecall_args.arg2,
+                &ecall_args.arg1_out,
+                &ecall_args.arg2_out,
+                enclave);
+
+#elif defined(_WIN32)
+
+            oe_enter(&ecall_args);
+
+#else
+
+#error("unsupported");
+
+#endif
         }
 
-        *code_out = oe_get_code_from_call_arg1(arg3);
-        *func_out = oe_get_func_from_call_arg1(arg3);
-        *result_out = oe_get_result_from_call_arg1(arg3);
-        *arg_out = arg4;
+        *code_out = oe_get_code_from_call_arg1(ecall_args.arg1_out);
+        *func_out = oe_get_func_from_call_arg1(ecall_args.arg1_out);
+        *result_out = oe_get_result_from_call_arg1(ecall_args.arg1_out);
+        *arg_out = ecall_args.arg2_out;
     }
 
     result = OE_OK;
@@ -510,6 +548,18 @@ done:
 
 /*
 **==============================================================================
+** TODO: change Linux to use ecall_args directly so the same implementation can
+**       be used.
+**
+** N.B. Need someone familiar with Linux assembly to
+**      re-implement oe_enter.
+**==============================================================================
+*/
+
+#if defined(__linux__)
+
+/*
+**==============================================================================
 **
 ** __oe_dispatch_ocall()
 **
@@ -556,6 +606,60 @@ int __oe_dispatch_ocall(
     /* Not an OCALL */
     return 1;
 }
+
+#elif defined(_WIN32)
+
+/*
+**==============================================================================
+**
+** __oe_dispatch_ocall()
+**
+**     This function is called by oe_enter() (see enter.S). It checks to
+**     to see if EENTER returned in order to perform an OCALL. If so it
+**     dispatches the OCALL.
+**
+** Parameters:
+**     ecall_args - ECALL argument.
+**
+**     N.B. The role of arg1 and arg1_out is reversed as "arg1_out" is the vlue
+**          coming from Enclave and "arg1" is the value we'll "return" to
+*Enclave.
+**
+**          Same applies to arg2 and arg2_out.
+**
+** Returns:
+**     0 - An OCALL was dispatched
+**     1 - No OCALL was dispatched
+**
+**==============================================================================
+*/
+int __oe_dispatch_ocall(oe_ecall_args_t* ecall_args)
+
+{
+    const oe_code_t code = oe_get_code_from_call_arg1(ecall_args->arg1_out);
+    if (code == OE_CODE_OCALL)
+    {
+        const uint16_t func = oe_get_func_from_call_arg1(ecall_args->arg1_out);
+        oe_result_t result = _handle_ocall(
+            ecall_args->enclave,
+            ecall_args->tcs,
+            func,
+            ecall_args->arg2_out,
+            &ecall_args->arg2);
+
+        ecall_args->arg1 = oe_make_call_arg1(OE_CODE_ORET, func, 0, result);
+        return 0;
+    }
+
+    /* Not an OCALL */
+    return 1;
+}
+
+#else
+
+#error("unsupported");
+
+#endif /* defined(__linux__) */
 
 /*
 **==============================================================================
