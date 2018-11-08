@@ -3,7 +3,7 @@
 
 #if defined(__linux__)
 #include <openssl/sha.h>
-#else defined(_WIN32)
+#elif defined(_WIN32)
 #include "bcrypt/bcrypt.h"
 #endif
 

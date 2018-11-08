@@ -16,6 +16,7 @@ add_library(oeenclave STATIC
     crl.c
     ec.c
     cmac.c
+    hmac.c
     key.c
     link.c
     qeidinfo.c
