@@ -935,7 +935,7 @@ void __oe_handle_main(
 **
 **     Wrapper to call __oe_handle_main.
 **
-**     N.B. Should modify Linux entry code to do the same as WIN32, passing a 
+**     N.B. Should modify Linux entry code to do the same as WIN32, passing a
 **          single argument and change this function to __oe_handle_main.
 **
 **==============================================================================
