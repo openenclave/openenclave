@@ -2,7 +2,6 @@ pipeline {
   agent any
   stages {
     stage('Build and Test') {
-      failFast true
       parallel {
         stage('Check pre-commit requirements') {
           agent {
