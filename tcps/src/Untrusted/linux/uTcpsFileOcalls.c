@@ -7,7 +7,7 @@
 #include <errno.h>
 
 #include "sal_unsup.h"
-#include "oehost.h"
+#include <openenclave/host.h>
 
 stat64i32_Result
 SGX_CDECL

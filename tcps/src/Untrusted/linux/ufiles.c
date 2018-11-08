@@ -7,7 +7,7 @@
 #include <tcps.h>
 #include <openenclave/bits/result.h>
 
-#include "oeoverintelsgx.h"
+#include "oeoverintelsgx_u.h"
 
 oe_result_t 
 ocall_ExportPublicCertificate(

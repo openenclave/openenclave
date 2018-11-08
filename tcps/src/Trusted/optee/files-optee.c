@@ -530,7 +530,7 @@ Tcps_BeginErrorHandling;
 Tcps_FinishErrorHandling;
 }
 
-oe_result_t DeleteFile(const char* filename)
+BOOL DeleteFile(const char* filename)
 {
     TEE_Result result;
     TEE_ObjectHandle hObject;
@@ -546,14 +546,14 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "DeleteFile");
 
     if (result == TEE_ERROR_ITEM_NOT_FOUND) {
         Tcps_Trace(Tcps_TraceLevelDebug, "DeleteFile: file doesn't exist: %s\n", filename);
-        Tcps_ReturnStatusCode;
+        return FALSE;
     }
-    Tcps_GotoErrorIfTrue(result != TEE_SUCCESS, OE_FAILURE);
+    if (result != TEE_SUCCESS) {
+        return FALSE;
+    }
 
-    result = TEE_CloseAndDeletePersistentObject1(hObject); 
-    Tcps_GotoErrorIfTrue(result != TEE_SUCCESS, OE_FAILURE);
+    result = TEE_CloseAndDeletePersistentObject1(hObject);
 
-Tcps_ReturnStatusCode;
 Tcps_BeginErrorHandling;
-Tcps_FinishErrorHandling;
+    return result != TEE_SUCCESS;
 }

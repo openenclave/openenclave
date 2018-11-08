@@ -12,14 +12,14 @@ GCCPREFIX=gcc-linaro-6.2.1-2016.11-x86_64_arm-linux-gnueabihf
 
 if [ ! -d $GCCPREFIX ]; then
     if [ ! -f $GCCPREFIX.tar.xz ]; then
-        wget https://releases.linaro.org/components/toolchain/binaries/6.2-2016.11/arm-linux-gnueabihf/$GCCPREFIX.tar.xz
+        wget https://releases.linaro.org/components/toolchain/binaries/6.2-2016.11/arm-linux-gnueabihf/$GCCPREFIX.tar.xz || exit 1
     fi
-    tar xvf $GCCPREFIX.tar.xz
+    tar xvf $GCCPREFIX.tar.xz || exit 1
 fi
 
 echo Installing prerequisites
 
-sudo apt-get -y install android-tools-adb android-tools-fastboot autoconf automake bc bison build-essential cscope curl device-tree-compiler doxygen flex ftp-upload gdisk iasl libattr1-dev libcap-dev libfdt-dev libftdi-dev libglib2.0-dev libhidapi-dev libncurses5-dev libpixman-1-dev libssl-dev libtool make mtools netcat python-crypto python-serial python-wand unzip uuid-dev xdg-utils xterm xz-utils zlib1g-dev gcc-arm-linux-gnueabi
+sudo apt-get -y install android-tools-adb android-tools-fastboot autoconf automake bc bison build-essential cscope curl device-tree-compiler doxygen flex ftp-upload gdisk iasl libattr1-dev libcap-dev libfdt-dev libftdi-dev libglib2.0-dev libhidapi-dev libncurses5-dev libpixman-1-dev libssl-dev libtool make mtools netcat python-crypto python-serial python-wand unzip uuid-dev xdg-utils xterm xz-utils zlib1g-dev gcc-arm-linux-gnueabi graphviz
 
 echo Checking for Intel SGX SDK
 
@@ -40,10 +40,10 @@ fi
 if [ -z "$edgepath" ]; then
     if [ ! -e ../3rdparty/SGXSDK ]; then
        if [ -n "${IntelSGXSDKInstallerURI}" ]; then
-           wget ${IntelSGXSDKInstallerURI}
+           wget ${IntelSGXSDKInstallerURI} || exit 1
        fi
        if [ -e SGXSDK.zip ]; then
-           unzip SGXSDK.zip -d ../3rdparty
+           unzip SGXSDK.zip -d ../3rdparty || exit 1
        fi
     fi
     if [ -e ../3rdparty/SGXSDK ]; then
@@ -96,7 +96,7 @@ if [ -z "$oeedgepath" ]; then
    fi
 fi
 if [ -z "$oeedgepath" ]; then
-    wget https://oedownload.blob.core.windows.net/binaries/master/85/oeedger8r/build/output/bin/oeedger8r
+    wget https://oedownload.blob.core.windows.net/binaries/master/85/oeedger8r/build/output/bin/oeedger8r || exit 1
     chmod 755 oeedger8r
     export OEEDGER8R=$PWD/oeedger8r
     export OEPATHSEP=:
@@ -129,7 +129,7 @@ make -j ${PROC_COUNT} PLATFORM=imx-mx6qhmbedge CFG_PSCI_ARM32=y CFG_RPMB_FS=y CF
                       platform-cflags-optimization=-Os CFG_UNWIND=n CFG_TEE_CORE_DEBUG=y \
                       CFG_BOOT_SECONDARY_REQUEST=y CFG_NS_ENTRY_ADDR=0x10820000 CFG_TEE_TA_LOG_LEVEL=4 \
                       CFG_TEE_CORE_LOG_LEVEL=2 CFG_TZ_SPI_CONTROLLERS=0x2 CFG_TA_RPC=y \
-                      CFG_CONSOLE_UART=UART3_BASE
+                      CFG_CONSOLE_UART=UART3_BASE || exit 1
 
 popd
 
@@ -138,12 +138,12 @@ echo Building TCPS-SDK
 export TA_DEV_KIT_DIR=$PWD/../3rdparty/optee_os/out/arm-plat-imx/export-ta_arm32
 export ARCH=aarch32
 
-make -j ${PROC_COUNT}
+make -j ${PROC_COUNT} || exit 1
 
 export CROSS_COMPILE=/usr/bin/arm-linux-gnueabi-
 export ARCH=arm
 
-make -j ${PROC_COUNT} -C samples/sockets/Trusted/optee -f linux_gcc.mak BUILD_TARGET=debug $*
-make -j ${PROC_COUNT} -C samples/helloworld/HelloWorldEnc/optee -f linux_gcc.mak BUILD_TARGET=debug $*
+make -j ${PROC_COUNT} -C samples/sockets/Trusted/optee -f linux_gcc.mak BUILD_TARGET=debug $* || exit 1
+make -j ${PROC_COUNT} -C samples/helloworld/HelloWorldEnc/optee -f linux_gcc.mak BUILD_TARGET=debug $* || exit 1
 
-doxygen Doxyfile
+doxygen Doxyfile || exit 1

@@ -16,14 +16,14 @@ OE_EDL_PATH = $(OE_PATH)/include/openenclave
 OPTEE_CLIENT = ../../../../3rdparty/optee_client
 
 DEFINES = -DUSE_OPTEE -D_DEBUG
-INCLUDES =                         \
-    -I../../../Inc/optee/Untrusted \
-    -I../../../Inc/                \
-    -I../../../Inc/linux           \
-    -I../../                       \
-    -I../                          \
-    -I$(SGX_SDK)/include           \
-    -I$(OE_PATH)/include           \
+INCLUDES =                             \
+    -I../../../include/optee/Untrusted \
+    -I../../../include/                \
+    -I../../../include/linux           \
+    -I../../                           \
+    -I../                              \
+    -I$(SGX_SDK)/include               \
+    -I$(OE_PATH)/include               \
     -I$(OPTEE_CLIENT)/public
 
 CFLAGS = $(DEFINES) $(INCLUDES) -g

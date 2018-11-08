@@ -5,10 +5,9 @@
 #include <assert.h>
 
 #include "sal_unsup.h"
-#include "oehost.h"
 #include <sgx_edger8r.h>
 #include <openenclave/host.h>
-#include "oeoverintelsgx.h"
+#include "oeoverintelsgx_u.h"
 #include "optee.h"
 #include "oeresult.h"
 
