@@ -11,7 +11,7 @@ void TestRandom(void);
 void TestRdrand(void);
 void TestRSA(void);
 void TestSHA(void);
-
+void TestHMAC(void);
 void TestAll();
 
 #endif /* _TESTS_CRYPTO_TESTS_H */

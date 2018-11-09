@@ -2,7 +2,9 @@
 # Licensed under the MIT License.
 
 set(DATA_DIR "../data")
-add_executable(hostcrypto 
+
+if (UNIX)
+add_executable(hostcrypto
     main.c
     ../../../common/rand.S
     ../read_file.c
@@ -10,11 +12,20 @@ add_executable(hostcrypto
     ../crl_tests.c
     ../ec_tests.c
     ../hash.c
+    ../hmac_test.c
     ../random_tests.c
     ../rdrand_test.c
     ../rsa_tests.c
     ../sha_tests.c
     ../tests.c)
+else()
+add_executable(hostcrypto
+    main.c
+    ../hash.c
+    ../hmac_tests.c
+    ../sha_tests.c
+    ../tests.c)
+endif()
 
 # ========================= TestCRL & TestASN1 ================================
 
