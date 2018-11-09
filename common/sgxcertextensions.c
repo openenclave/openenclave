@@ -100,7 +100,7 @@ static oe_result_t _read_asn1_length(
         }
         else if (*p > 0x80)
         {
-            bytes = *p++ - 0x80;
+            bytes = (uint8_t)(*p++ - 0x80);
             while (bytes > 0 && p < end)
             {
                 *length = (*length << 8) | *p;

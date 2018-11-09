@@ -155,7 +155,7 @@ OE_INLINE oe_code_t oe_get_code_from_call_arg1(uint64_t arg)
 
 OE_INLINE uint16_t oe_get_func_from_call_arg1(uint64_t arg)
 {
-    return (oe_func_t)((0x0000ffff00000000 & arg) >> 32);
+    return (uint16_t)((0x0000ffff00000000 & arg) >> 32);
 }
 
 /*

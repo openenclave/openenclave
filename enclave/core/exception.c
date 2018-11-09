@@ -37,7 +37,7 @@ oe_result_t oe_add_vectored_exception_handler(
     oe_vectored_exception_handler_t vectored_handler)
 {
     oe_result_t result = OE_UNEXPECTED;
-    int lock_ret = -1;
+    oe_result_t lock_ret = OE_UNEXPECTED;
 
     // Sanity check.
     if (vectored_handler == NULL ||
@@ -107,7 +107,7 @@ oe_result_t oe_remove_vectored_exception_handler(
     oe_vectored_exception_handler_t vectored_handler)
 {
     oe_result_t result = OE_FAILURE;
-    int lock_ret = -1;
+    oe_result_t lock_ret = OE_UNEXPECTED;
 
     // Sanity check.
     if (vectored_handler == NULL ||
@@ -406,7 +406,12 @@ void _oe_cleanup_xstates(void)
     OE_ALIGNED(XSAVE_ALIGNMENT)
     static uint8_t
         xsave_area[MINIMAL_XSTATE_AREA_LENGTH]; //#144 Making this static
+//__builtin_ia32_xrstor64 has different argument types in clang and gcc
+#ifdef __clang__
     uint64_t restore_mask = ~((uint64_t)0x0);
+#else
+    int64_t restore_mask = ~(0x0);
+#endif
 
     // The legacy registers(F87, SSE) values will be loaded from the
     // LEGACY_XSAVE_AREA that at beginning of xsave_area.The extended registers

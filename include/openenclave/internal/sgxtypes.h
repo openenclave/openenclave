@@ -1196,7 +1196,7 @@ typedef struct _sgx_key
      SGX_FLAGS_EINITTOKEN_KEY)
 
 /* bit[27:0]: have no security implications */
-#define SGX_MISC_NON_SECURITY_BITS 0x0FFFFFFF
+#define SGX_MISC_NON_SECURITY_BITS 0x0FFFFFFFU
 
 /* OE seal key default flag masks*/
 #define OE_SEALKEY_DEFAULT_FLAGSMASK (~SGX_FLAGS_NON_SECURITY_BITS)

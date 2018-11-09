@@ -23,12 +23,12 @@ static const char* g_expected_root_certificate_key =
 
 OE_INLINE uint16_t ReadUint16(const uint8_t* p)
 {
-    return p[0] | (p[1] << 8);
+    return (uint16_t)(p[0] | (p[1] << 8));
 }
 
 OE_INLINE uint32_t ReadUint32(const uint8_t* p)
 {
-    return p[0] | (p[1] << 8) | (p[2] << 16) | (p[3] << 24);
+    return (uint32_t)(p[0] | (p[1] << 8) | (p[2] << 16) | (p[3] << 24));
 }
 
 static oe_result_t _parse_quote(
