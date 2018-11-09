@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    - oeedger8r generates oe_create_foo_enclave function for foo.edl
    - oe-gdb allows attaching to a host that is already running
 
+- oe-gdb allows attaching to a host that is already running
+
+- Added Quote Enclave Identity validation into oe_verify_report implementation
+
 ### Changed
 
 - oe_create_enclave takes two additional parameters: ocall_table, ocall_table_size.
