@@ -124,6 +124,10 @@ if(USE_DEBUG_MALLOC)
 target_compile_definitions(oehost PRIVATE OE_USE_DEBUG_MALLOC)
 endif()
 
+if(USE_LIBSGX)
+    target_compile_definitions(oecore PUBLIC OE_USE_LIBSGX)
+endif ()
+
 # convenience library for creating a host-app (that needs the -rdynamic link flag)
 add_library(oehostapp INTERFACE)
 if(UNIX)
