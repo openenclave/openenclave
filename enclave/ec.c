@@ -206,6 +206,14 @@ oe_result_t oe_ec_public_key_init(
         (oe_public_key_t*)public_key, pk, _copy_key, _PUBLIC_KEY_MAGIC);
 }
 
+oe_result_t oe_ec_private_key_init(
+    oe_ec_private_key_t* private_key,
+    const mbedtls_pk_context* pk)
+{
+    return oe_private_key_init(
+        (oe_private_key_t*)private_key, pk, _copy_key, _PRIVATE_KEY_MAGIC);
+}
+
 oe_result_t oe_ec_private_key_read_pem(
     oe_ec_private_key_t* private_key,
     const uint8_t* pem_data,
@@ -310,6 +318,85 @@ oe_result_t oe_ec_generate_key_pair(
 {
     return _generate_key_pair(
         type, (oe_private_key_t*)private_key, (oe_public_key_t*)public_key);
+}
+
+oe_result_t oe_ec_generate_key_pair_from_private(
+    oe_ec_type_t curve,
+    const uint8_t* private_key_buf,
+    size_t private_key_buf_size,
+    oe_ec_private_key_t* private_key,
+    oe_ec_public_key_t* public_key)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    int mbedtls_result;
+    mbedtls_pk_context key;
+    mbedtls_ecp_keypair* keypair;
+    mbedtls_ctr_drbg_context* drbg;
+
+    mbedtls_pk_init(&key);
+
+    /* Reject invalid parameters */
+    if (!private_key_buf || !private_key || !public_key)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Load all the mbedtls variables. */
+    mbedtls_result = mbedtls_pk_setup(
+        &key, mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY));
+    if (mbedtls_result != 0)
+        OE_RAISE(OE_FAILURE);
+
+    keypair = mbedtls_pk_ec(key);
+    if (mbedtls_ecp_group_load(&keypair->grp, _get_group_id(curve)) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    mbedtls_result = mbedtls_mpi_read_binary(
+        &keypair->d,
+        private_key_buf,
+        private_key_buf_size);
+
+    if (mbedtls_result != 0)
+        OE_RAISE(OE_FAILURE);
+
+    if (mbedtls_ecp_check_privkey(&keypair->grp, &keypair->d) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    if (!(drbg = oe_mbedtls_get_drbg()))
+        OE_RAISE(OE_FAILURE);
+
+    /*
+     * To get the public key, we perform the elliptical curve point
+     * multiplication with the factors being the private key and the base
+     * generator point of the curve.
+     */
+    mbedtls_result = mbedtls_ecp_mul(
+        &keypair->grp,
+        &keypair->Q,
+        &keypair->d,
+        &keypair->grp.G,
+        mbedtls_ctr_drbg_random,
+        drbg);
+
+    if (mbedtls_result != 0)
+        OE_RAISE(OE_FAILURE);
+
+    if (mbedtls_ecp_check_pubkey(&keypair->grp, &keypair->Q) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Export to OE structs. */
+    OE_CHECK(oe_ec_public_key_init(public_key, &key));
+    result = oe_ec_private_key_init(private_key, &key);
+    if (result != OE_OK)
+    {
+        /* Need to free the public key before exiting. */
+        oe_ec_public_key_free(public_key);
+        OE_RAISE(result);
+    }
+
+    result = OE_OK;
+
+done:
+    mbedtls_pk_free(&key);
+    return result;
 }
 
 oe_result_t oe_ec_public_key_equal(
