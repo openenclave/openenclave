@@ -5,6 +5,7 @@ add_library(oeenclave STATIC
     ../common/asn1.c
     ../common/cert.c
     ../common/datetime.c
+    ../common/kdf.c
     ../common/qeidentity.c
     ../common/quote.c
     ../common/report.c
