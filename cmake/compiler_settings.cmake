@@ -84,16 +84,6 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
   # Enables XSAVE intrinsics.
   add_compile_options(-mxsave)
 
-  # Obtain default compiler include dir to gain access to intrinsics
-  execute_process(
-    COMMAND /bin/bash ${PROJECT_SOURCE_DIR}/cmake/get_c_compiler_dir.sh ${CMAKE_C_COMPILER}
-    OUTPUT_VARIABLE OE_C_COMPILER_INCDIR
-    ERROR_VARIABLE OE_ERR)
-
-  if (NOT OE_ERR STREQUAL "")
-    message(FATAL_ERROR ${OE_ERR})
-  endif ()
-
   # We should only need this for in-enclave code but it's easier
   # and conservative to specify everywhere
   add_compile_options(-fno-builtin-malloc -fno-builtin-calloc)
