@@ -13,6 +13,7 @@ void TestAll()
     TestRdrand();
     TestRSA();
 #endif
-    TestSHA();
     TestHMAC();
+    TestKDF();
+    TestSHA();
 }

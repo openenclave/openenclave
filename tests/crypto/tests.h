@@ -7,6 +7,7 @@
 void TestASN1(void);
 void TestCRL(void);
 void TestEC(void);
+void TestKDF(void);
 void TestRandom(void);
 void TestRdrand(void);
 void TestRSA(void);
