@@ -63,9 +63,6 @@
     <ClCompile Include="Io.c">
       <Filter>common</Filter>
     </ClCompile>
-    <ClCompile Include="tcps_socket_t.c">
-      <Filter>common</Filter>
-    </ClCompile>
     <ClCompile Include="..\buffer.c">
       <Filter>common</Filter>
     </ClCompile>
@@ -199,12 +196,6 @@
     <ClInclude Include="sgx\TcpsLogSgx.h">
       <Filter>sgx</Filter>
     </ClInclude>
-    <ClInclude Include="socket_args.h">
-      <Filter>GeneratedFiles</Filter>
-    </ClInclude>
-    <ClInclude Include="socket_t.h">
-      <Filter>GeneratedFiles</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\optee\cyrep-optee.h">
       <Filter>optee</Filter>
     </ClInclude>
@@ -220,9 +211,6 @@
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\oeoverintelsgx.edl">
-      <Filter>common</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\include\openenclave\socket.edl">
       <Filter>common</Filter>
     </CustomBuild>
   </ItemGroup>

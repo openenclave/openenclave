@@ -16,35 +16,18 @@ oe_result_t oe_call_enclave_function(
 {
     int serialize_ecall = g_serialize_ecalls;
     sgx_status_t sgxStatus = SGX_SUCCESS;
-
-    if (output_buffer_size > 4096) {
-        return OE_INVALID_PARAMETER;
-    }
-
-    callV2_Result* result = malloc(sizeof(*result));
-    if (result == NULL) {
-        return OE_OUT_OF_MEMORY;
-    }
-
     sgx_enclave_id_t eid = (sgx_enclave_id_t)enclave;
-    oe_buffer4096 inBufferStruct;
-    COPY_BUFFER(inBufferStruct, input_buffer, input_buffer_size);
 
     if (serialize_ecall) {
         oe_acquire_enclave_mutex(enclave);
     }
 
-    sgxStatus = ecall_v2(eid, result, function_id, inBufferStruct, input_buffer_size);
+    sgxStatus = ecall_v2(eid, output_bytes_written, function_id, input_buffer, input_buffer_size, output_buffer, output_buffer_size);
 
     if (serialize_ecall) {
         oe_release_enclave_mutex(enclave);
     }
 
-    if (sgxStatus == SGX_SUCCESS) {
-        memcpy(output_buffer, result->outBuffer, result->outBufferSize);
-        *output_bytes_written = result->outBufferSize;
-    }
     oe_result_t oeResult = GetOEResultFromSgxStatus(sgxStatus);
-    free(result);
     return oeResult;
 }

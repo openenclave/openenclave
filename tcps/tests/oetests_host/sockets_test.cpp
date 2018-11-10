@@ -167,7 +167,7 @@ public:
             goto Done;
         }
         messageLength = ntohl(netMessageLength);
-        if (messageLength > 8096) {
+        if (messageLength > 65536) {
             goto Done;
         }
         message = (char*)malloc(messageLength);

@@ -561,23 +561,27 @@ typedef void(*oe_ecall_func_t)(
 extern oe_ecall_func_t __oe_ecalls_table[];
 extern size_t __oe_ecalls_table_size;
 
-callV2_Result ecall_v2(uint32_t func, oe_buffer4096 inBuffer, size_t inBufferSize)
+size_t ecall_v2(
+    _In_ uint32_t func,
+    _In_reads_bytes_(inBufferSize) const void* in_buffer,
+    _In_ size_t in_buffer_size,
+    _Out_writes_bytes_(outBufferSize) void* out_buffer,
+    _In_ size_t out_buffer_size)
 {
-    callV2_Result result;
+    size_t outBytesWritten = 0;
 
     if (__oe_ecalls_table == NULL || func >= __oe_ecalls_table_size) {
-        result.outBufferSize = 0;
-        return result;
+        return 0;
     }
 
     __oe_ecalls_table[func](
-        inBuffer.buffer,
-        inBufferSize,
-        result.outBuffer,
-        sizeof(result.outBuffer),
-        &result.outBufferSize);
+        in_buffer,
+        in_buffer_size,
+        out_buffer,
+        out_buffer_size,
+        &outBytesWritten);
 
-    return result;
+    return outBytesWritten;
 }
 
 void __oe_assert_fail(

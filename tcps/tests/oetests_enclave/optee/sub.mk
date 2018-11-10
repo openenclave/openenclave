@@ -23,6 +23,6 @@ srcs-y             += ../OETestTA.c
 srcs-y             += ../oetests_enclave.c
 
 # Add additional libraries here
-# libnames         += ...
-# libdirs          += ...
-# libdeps          += ...
+libnames         += oesocket_enc
+libdirs          += $(TCPS_SDK_ROOT_PATH)bin/optee/tcps
+libdeps          += $(TCPS_SDK_ROOT_PATH)bin/optee/tcps/liboesocket_enc.a

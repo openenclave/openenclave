@@ -74,7 +74,7 @@ oe_result_t ecall_RunClient(_In_z_ const char* server, _In_z_ const char* serv)
     }
 
     /* Send a large message, prefixed by its size. */
-    int messageLength = 8096;
+    int messageLength = 32000;
     message = malloc(messageLength);
     if (message == NULL) {
         uStatus = OE_OUT_OF_MEMORY;

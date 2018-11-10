@@ -227,22 +227,25 @@ oe_result_t oe_verify_report(
     return oeResult;
 }
 
-callV2_Result ocall_v2(uint32_t func, oe_buffer4096 inBuffer, size_t inBufferSize)
+size_t ocall_v2(
+    _In_ uint32_t func,
+    _In_reads_bytes_(inBufferSize) const void* in_buffer,
+    _In_ size_t in_buffer_size,
+    _Out_writes_bytes_(outBufferSize) void* out_buffer,
+    _In_ size_t out_buffer_size)
 {
-    callV2_Result result;
-
     if (func >= g_ocall_table_v2.nr_ocall) {
-        result.outBufferSize = 0;
-        return result;
+        return 0;
     }
 
     oe_ocall_func_t call = g_ocall_table_v2.call_addr[func];
-    call(inBuffer.buffer,
-         inBufferSize,
-        result.outBuffer,
-        sizeof(result.outBuffer),
-        &result.outBufferSize);
-    return result;
+    size_t out_bytes_written = 0;
+    call(in_buffer,
+         in_buffer_size,
+         out_buffer,
+         out_buffer_size,
+         &out_bytes_written);
+    return out_bytes_written;
 }
 
 /**

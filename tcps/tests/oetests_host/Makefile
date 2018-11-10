@@ -1,4 +1,4 @@
-OBJECTS = main.o BufferTest.o TrustedAppTest.o OEEnclaveTest.o OEHostTest.o SocketsTest.o oetests_u.o
+OBJECTS = main.o buffer_test.o TrustedAppTest.o OEEnclaveTest.o OEHostTest.o sockets_test.o oetests_u.o
 
 EDL_PATH = ../../src
 EDL_INC_PATH = ../../include
@@ -22,9 +22,11 @@ CXFLAGS = $(CFLAGS) -std=c++11
 LDFLAGS =                                        \
     -L../gtest                                   \
     -L../../src/Untrusted/linux                  \
+    -L../../../libsocket/host/linux              \
     -L../../../3rdparty/optee_client/out/libteec \
     -l:libgtest.a                                \
     -l:oehost.a                                  \
+    -l:oesocket_host.a                           \
     -l:libteec.a                                 \
     -lpthread
 
@@ -50,7 +52,7 @@ main.o: main.cpp
 	@echo " [CC]\t$@"
 	@$(CX) $(CFLAGS) $(CXFLAGS) -c -o $@ $<
 
-BufferTest.o: BufferTest.cpp oetests_u.h
+buffer_test.o: buffer_test.cpp oetests_u.h
 	@echo " [CC]\t$@"
 	@$(CX) $(CFLAGS) $(CXFLAGS) -c -o $@ $<
 
@@ -66,7 +68,7 @@ OEHostTest.o: OEHostTest.cpp oetests_u.h
 	@echo " [CC]\t$@"
 	@$(CX) $(CFLAGS) $(CXFLAGS) -c -o $@ $<
 
-SocketsTest.o: SocketsTest.cpp oetests_u.h
+sockets_test.o: sockets_test.cpp oetests_u.h
 	@echo " [CC]\t$@"
 	@$(CX) $(CFLAGS) $(CXFLAGS) -c -o $@ $<
 

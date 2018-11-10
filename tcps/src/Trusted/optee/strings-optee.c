@@ -4,7 +4,7 @@
 #include <string.h>
 #include <trace.h>
 #ifdef OE_SIMULATE_OPTEE
-#define sprintf_s Tcps_sprintf_s
+#define sprintf_s oe_sprintf_s
 #endif
 
 #include <tcps_string_t.h>
@@ -68,7 +68,7 @@ long strtol(const char *nptr, char **endptr, int base)
         } else if ((n >= 'A') && (n <= 'F')) {
             digit = n - 'F';
         } else {
-            break; 
+            break;
         }
         if (digit > base) {
             break;
@@ -101,7 +101,7 @@ unsigned long strtoul(const char *nptr, char **endptr, int base)
         } else if ((n >= 'A') && (n <= 'F')) {
             digit = n - 'F';
         } else {
-            break; 
+            break;
         }
         if (digit > base) {
             break;
@@ -121,75 +121,76 @@ int atoi(const char * str)
     return value;
 }
 
-/* Code from Windows sources */
-char *strncat(char *front, const char* back, size_t count)  
+char *strncat(char *front, const char* back, size_t count)
 {
-    char *start = front;  
-  
-    while (*front++)  
-        ;  
-    front--;  
-  
-    while (count--) { 
+    char *start = front;
+
+    while (*front++)
+        ;
+    front--;
+
+    while (count--) {
         if (!(*front++ = *back++)) {
             return(start);
         }
     }
-  
+
     *front = '\0';
     return(start);
-}  
+}
 
+#ifdef OE_SIMULATE_OPTEE
 char* strncpy(char* destination, const char* source, size_t num)
 {
     (void)strncpy_s(destination, num + 1, source, num);
     return destination;
 }
+#endif
 
-char *strrchr (  
-    const char * string,  
-    int ch)  
-{  
-    char *start = (char *)string;  
-  
-    while (*string++)           /* find end of string */  
-        ;  
-                        /* search towards front */  
-    while (--string != start && *string != (char)ch)  
-        ;  
-  
-    if (*string == (char)ch)        /* char found ? */  
-        return( (char *)string );  
-  
-    return(NULL);  
+char *strrchr(
+    const char* string,
+    int ch)
+{
+    char *start = (char*)string;
+
+    while (*string++)           /* find end of string */
+        ;
+                        /* search towards front */
+    while (--string != start && *string != (char)ch)
+        ;
+
+    if (*string == (char)ch)        /* char found ? */
+        return( (char *)string );
+
+    return(NULL);
 }
 
-char* strstr(  
-    const char* str1,  
-    const char* str2)  
-{  
-    char *cp = (char *) str1;  
-    char *s1, *s2;  
-  
-    if ( !*str2 )  
-        return((char *)str1);  
-  
-    while (*cp)  
-    {  
-        s1 = cp;  
-        s2 = (char *) str2;  
-  
-        while ( *s1 && *s2 && !(*s1-*s2) )  
-            s1++, s2++;  
-  
-        if (!*s2)  
-            return(cp);  
-  
-        cp++;  
-    }  
-  
-    return(NULL);  
-}  
+char* strstr(
+    const char* str1,
+    const char* str2)
+{
+    char *cp = (char *) str1;
+    char *s1, *s2;
+
+    if (!*str2) {
+        return((char *)str1);
+    }
+
+    while (*cp) {
+        s1 = cp;
+        s2 = (char *) str2;
+
+        while (*s1 && *s2 && !(*s1-*s2))
+            s1++, s2++;
+
+        if (!*s2)
+            return(cp);
+
+        cp++;
+    }
+
+    return NULL;
+}
 
 char* strerror(int errorCode)
 {
@@ -197,11 +198,11 @@ char* strerror(int errorCode)
     return (char*)"placeholder error message";
 }
 
-#ifdef __USE_CONTEXT  
-#define __COMPARE(context, p1, p2) (*compare)(context, p1, p2)  
-#else  
-#define __COMPARE(context, p1, p2) (*compare)(p1, p2)  
-#endif  
+#ifdef __USE_CONTEXT
+#define __COMPARE(context, p1, p2) (*compare)(context, p1, p2)
+#else
+#define __COMPARE(context, p1, p2) (*compare)(p1, p2)
+#endif
 
 #define _VALIDATE_RETURN(cond, err, result) do { if (!(cond)) return result; } while (0)
 
@@ -213,50 +214,35 @@ bsearch(
     size_t width,
     int (*compare)(const void*, const void*))
 {
-    char *lo = (char *)base;  
-    char *hi = (char *)base + (num - 1) * width;  
-    char *mid;  
-    size_t half;  
-    int result;  
-  
-    /* validation section */  
-    _VALIDATE_RETURN(base != NULL || num == 0, EINVAL, NULL);  
-    _VALIDATE_RETURN(width > 0, EINVAL, NULL);  
-    _VALIDATE_RETURN(compare != NULL, EINVAL, NULL);  
-  
-    /* We allow a NULL key here because it breaks some older code and because we do not dereference  
-       this ourselves so we can't be sure that it's a problem for the comparison function  
-    */  
-  
-    while (lo <= hi)  
-    {  
-        if ((half = num / 2) != 0)  
-        {  
-            mid = lo + (num & 1 ? half : (half - 1)) * width;  
-            if (!(result = __COMPARE(context, key, mid)))  
-            {
-                return(mid);  
+    char *lo = (char *)base;
+    char *hi = (char *)base + (num - 1) * width;
+    char *mid;
+    size_t half;
+    int result;
+
+    /* validation section */
+    _VALIDATE_RETURN(base != NULL || num == 0, EINVAL, NULL);
+    _VALIDATE_RETURN(width > 0, EINVAL, NULL);
+    _VALIDATE_RETURN(compare != NULL, EINVAL, NULL);
+
+    while (lo <= hi) {
+        if ((half = num / 2) != 0) {
+            mid = lo + (num & 1 ? half : (half - 1)) * width;
+            if (!(result = __COMPARE(context, key, mid))) {
+                return(mid);
+            } else if (result < 0) {
+                hi = mid - width;
+                num = num & 1 ? half : half-1;
+            } else {
+                lo = mid + width;
+                num = half;
             }
-            else if (result < 0)  
-            {  
-                hi = mid - width;  
-                num = num & 1 ? half : half-1;  
-            }  
-            else  
-            {  
-                lo = mid + width;  
-                num = half;  
-            }  
-        }  
-        else if (num)  
-        {
-            return (__COMPARE(context, key, lo) ? NULL : lo);  
+        } else if (num) {
+            return (__COMPARE(context, key, lo) ? NULL : lo);
+        } else {
+            break;
         }
-        else  
-        {
-            break;  
-        }
-    }  
-  
+    }
+
     return NULL;
 }

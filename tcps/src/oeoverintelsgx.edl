@@ -84,9 +84,11 @@ enclave {
         public int ecall_verify_report(oe_buffer1024 report,
                                        size_t report_size);
 
-        public callV2_Result ecall_v2(uint32_t func,
-                                      oe_buffer4096 inBuffer,
-                                      size_t inBufferSize);
+        public size_t ecall_v2(uint32_t func,
+                               [in, size=inBufferSize] const void* inBuffer,
+                               size_t inBufferSize,
+                               [out, size=outBufferSize] void* outBuffer,
+                               size_t outBufferSize);
     };
 
     untrusted {
@@ -138,8 +140,10 @@ enclave {
             [user_check] void* ptr,
             oe_BufferChunk chunk);
 
-        callV2_Result ocall_v2(uint32_t func,
-                               oe_buffer4096 inBuffer,
-                               size_t inBufferSize);
+        size_t ocall_v2(uint32_t func,
+                        [in, size=inBufferSize] const void* inBuffer,
+                        size_t inBufferSize,
+                        [out, size=outBufferSize] void* outBuffer,
+                        size_t outBufferSize);
     };
 };

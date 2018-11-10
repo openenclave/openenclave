@@ -3,9 +3,10 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <stdio.h>
+#include <sal.h>
 #include <openenclave/host.h>
 #include "../socket_u.h"
-#include "../../buffer.h"
+#include "../../tcps/src/buffer.h"
 
 oe_socket_error_t ocall_WSAStartup(void)
 {
@@ -66,45 +67,49 @@ GetSockName_Result ocall_getpeername(void* a_hSocket, int a_nNameLen)
     return result;
 }
 
-send_Result ocall_send(void* a_hSocket, void* a_hReeMessage, int a_Flags)
+send_Result ocall_send(
+    void* a_hSocket,
+    const void* a_Message,
+    size_t a_nMessageLen,
+    int a_Flags)
 {
     send_Result result = { 0 };
     SOCKET s = (SOCKET)a_hSocket;
-    char* ptr = NULL;
-    int size = 0;
-    oe_result_t uStatus = GetBuffer(a_hReeMessage, &ptr, &size);
-    if (uStatus != OE_OK) {
+
+    if (a_nMessageLen > INT_MAX) {
         result.error = WSAEFAULT;
         return result;
     }
-    result.bytesSent = send(s, ptr, size, a_Flags);
+
+    result.bytesSent = send(s, a_Message, (int)a_nMessageLen, a_Flags);
     if (result.bytesSent == SOCKET_ERROR) {
         result.error = (oe_socket_error_t)WSAGetLastError();
     }
     return result;
 }
 
-recv_Result ocall_recv(void* a_hSocket, int a_nBufferSize, int a_Flags)
+ssize_t ocall_recv(
+    _In_ void* a_hSocket,
+    _Out_writes_bytes_(len) void* buf,
+    _In_ size_t len,
+    _In_ int flags,
+    _Out_ oe_socket_error_t* a_Error)
 {
-    recv_Result result = { 0 };
     SOCKET s = (SOCKET)a_hSocket;
-    void* hBuffer = CreateBuffer(a_nBufferSize);
-    if (hBuffer == NULL) {
-        result.error = WSAENOBUFS;
-        return result;
+
+    if (len > INT_MAX) {
+        *a_Error = WSAEFAULT;
+        return SOCKET_ERROR;
     }
-    char* ptr = NULL;
-    int size = 0;
-    oe_result_t uStatus = GetBuffer(hBuffer, &ptr, &size);
-    /* TODO: handle uStatus failure */
-    result.bytesReceived = recv(s, ptr, size, a_Flags);
-    if (result.bytesReceived == SOCKET_ERROR) {
-        result.error = (oe_socket_error_t)WSAGetLastError();
-        FreeBuffer(hBuffer);
+
+    int bytesReceived = recv(s, buf, len, flags);
+    if (bytesReceived == SOCKET_ERROR) {
+        *a_Error = (oe_socket_error_t)WSAGetLastError();
     } else {
-        result.hMessage = hBuffer;
+        *a_Error = 0;
     }
-    return result;
+
+    return bytesReceived;
 }
 
 getaddrinfo_Result ocall_getaddrinfo(
@@ -151,11 +156,11 @@ getaddrinfo_Result ocall_getaddrinfo(
     int i;
     for (i = 0, ai = ailist; ai != NULL; ai = ai->ai_next, i++) {
         addrinfo_Buffer* aib = &aibuffer[i];
-        aib->ai_flags = ai->ai_flags; 
-        aib->ai_family = ai->ai_family; 
-        aib->ai_socktype = ai->ai_socktype; 
-        aib->ai_protocol = ai->ai_protocol; 
-        aib->ai_addrlen = (int)ai->ai_addrlen; 
+        aib->ai_flags = ai->ai_flags;
+        aib->ai_family = ai->ai_family;
+        aib->ai_socktype = ai->ai_socktype;
+        aib->ai_protocol = ai->ai_protocol;
+        aib->ai_addrlen = (int)ai->ai_addrlen;
         COPY_MEMORY_BUFFER_FROM_STRING(aib->ai_canonname, (ai->ai_canonname != NULL) ? ai->ai_canonname : "");
         COPY_MEMORY_BUFFER(aib->ai_addr, ai->ai_addr, ai->ai_addrlen);
     }
@@ -292,7 +297,7 @@ accept_Result ocall_accept(void* a_hSocket, int a_nAddrLen)
     SOCKET s = (SOCKET)a_hSocket;
     accept_Result result = { 0 };
     result.addrlen = a_nAddrLen;
-    result.hNewSocket = (void*)accept(s, 
+    result.hNewSocket = (void*)accept(s,
                                       ((a_nAddrLen > 0) ? (SOCKADDR*)result.addr : NULL),
                                       ((a_nAddrLen > 0) ? &result.addrlen : NULL));
     result.error = (result.hNewSocket == (void*)INVALID_SOCKET) ? (oe_socket_error_t)WSAGetLastError() : 0;

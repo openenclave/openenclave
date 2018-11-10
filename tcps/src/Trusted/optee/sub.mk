@@ -11,11 +11,6 @@ ROOT_RELATIVE_PATH = ../../../
 ../oeoverintelsgx_t.h: ../../oeoverintelsgx.edl
 	$(SGX_EDGER8R) --trusted --search-path "../..$(SGX_PATHSEP)$(ROOT_RELATIVE_PATH)$(SGX_RELATIVE_PATH)include" --trusted-dir ".."  ../../oeoverintelsgx.edl
 
-../socket_t.h: $(OE_SDK_ROOT_PATH)include/openenclave/socket.edl
-	$(OEEDGER8R) --trusted --search-path "../..$(OEPATHSEP)$(OE_SDK_ROOT_PATH)include" --trusted-dir ".."  $(OE_SDK_ROOT_PATH)include/openenclave/socket.edl
-
-../tcps_socket_t.c: ../socket_t.h
-
 CFLAGS += -DOE_USE_OPTEE
 
 global-incdirs-y += ..
@@ -39,7 +34,6 @@ srcs-y += ../../oeshim-common.c
 srcs-y += ../oeshim_t.c
 srcs-y += ../TcpsLogApp.c
 srcs-y += ../TcpsLogOcallFile.c
-srcs-y += ../tcps_socket_t.c
 srcs-y += ../tcps_stdio_t.c
 srcs-y += ../tcps_string_t.c
 

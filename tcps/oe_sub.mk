@@ -14,6 +14,6 @@ global-incdirs-y += $(CYREP_CYREP_PATH)
 global-incdirs-y += $(SGXSDKInstallPath)/include
 global-incdirs-y += $(SGXSDKInstallPath)
 
-libnames    += $(TCPS_TRUSTED_LIB_NAME)
-libdirs     += $(TCPS_TRUSTED_OUTPUT_PATH)
-libdeps     += $(TCPS_TRUSTED_LIB_PATH)
+libnames    += $(OE_TRUSTED_LIB_NAME)
+libdirs     += $(OE_TRUSTED_OUTPUT_PATH)
+libdeps     += $(OE_TRUSTED_LIB_PATH)

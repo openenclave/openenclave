@@ -8,7 +8,6 @@
     <ClCompile Include="urpc-optee.c">
       <Filter>OP-TEE</Filter>
     </ClCompile>
-    <ClCompile Include="usockets.c" />
     <ClCompile Include="teehost-sgx.c">
       <Filter>SGX</Filter>
     </ClCompile>
@@ -28,19 +27,10 @@
     <ClCompile Include="..\urpc-sgx.c">
       <Filter>SGX</Filter>
     </ClCompile>
-    <ClCompile Include="..\socket_u.c">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(ProjectKaylaDir)driver\TrEE\OpteeCalls\targetver.h" />
     <ClInclude Include="..\oeoverintelsgx_u.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\socket_args.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\socket_u.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -63,6 +53,5 @@
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\oeoverintelsgx.edl" />
-    <CustomBuild Include="..\..\..\..\include\openenclave\socket.edl" />
   </ItemGroup>
 </Project>

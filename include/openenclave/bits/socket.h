@@ -11,6 +11,11 @@
 extern "C" {
 #endif
 
+typedef enum {
+    OE_NETWORK_UNTRUSTED = 0,
+    OE_NETWORK_SECURE_HARDWARE = 1
+} oe_network_security_t;
+
 typedef void* oe_socket_t;
 
 #ifndef FD_SETSIZE
@@ -151,7 +156,7 @@ int oe_fd_isset(_In_ oe_socket_t fd, _In_ oe_fd_set* set);
 #define OE_NI_MAXHOST      1025
 #define OE_NI_MAXSERV      32
 
-#ifndef NO_EXPOSE_STANDARD_SOCKET_APIS
+#ifndef OE_NO_POSIX_SOCKET_API
 /* Map standard socket API names to the OE equivalents. */
 # define accept            oe_accept
 # define addrinfo          oe_addrinfo
@@ -169,9 +174,6 @@ int oe_fd_isset(_In_ oe_socket_t fd, _In_ oe_fd_set* set);
 # define fd_set            oe_fd_set
 # define FIONBIO           OE_FIONBIO
 # define freeaddrinfo      oe_freeaddrinfo
-# define getaddrinfo       oe_getaddrinfo
-# define gethostname       oe_gethostname
-# define getnameinfo       oe_getnameinfo
 # define getpeername       oe_getpeername
 # define getsockname       oe_getsockname
 # define getsockopt        oe_getsockopt
@@ -205,7 +207,6 @@ int oe_fd_isset(_In_ oe_socket_t fd, _In_ oe_fd_set* set);
 # define sockaddr_in       oe_sockaddr_in
 # define sockaddr_in6      oe_sockaddr_in6
 # define sockaddr_storage  oe_sockaddr_storage
-# define socket            oe_socket
 # define socklen_t         oe_socklen_t
 # define SOCKET            oe_socket_t
 # define SOL_SOCKET        OE_SOL_SOCKET
@@ -218,7 +219,7 @@ int oe_fd_isset(_In_ oe_socket_t fd, _In_ oe_fd_set* set);
 # define TCP_NODELAY       OE_TCP_NODELAY
 #endif
 
-#ifndef NO_EXPOSE_WINSOCK_APIS
+#ifndef OE_NO_WINSOCK_API
 /* Map Winsock APIs to the OE equivalents. */
 # define closesocket       oe_closesocket
 # define ioctlsocket       oe_ioctlsocket
@@ -228,10 +229,6 @@ int oe_fd_isset(_In_ oe_socket_t fd, _In_ oe_fd_set* set);
 # define WSAECONNRESET     OE_ECONNRESET
 # define WSAEINPROGRESS    OE_EINPROGRESS
 # define WSAEWOULDBLOCK    OE_EAGAIN
-# define WSACleanup        oe_wsa_cleanup
-# define WSAGetLastError   oe_wsa_get_last_error
-# define WSASetLastError   oe_wsa_set_last_error
-# define WSAStartup        oe_wsa_startup
 #endif
 
 oe_socket_t
@@ -262,15 +259,33 @@ oe_freeaddrinfo(
 
 int
 oe_getaddrinfo(
-    _In_z_ const char* pNodeName,
-    _In_z_ const char* pServiceName,
-    _In_ const oe_addrinfo* pHints,
-    _Out_ oe_addrinfo** ppResult);
+    _In_ oe_network_security_t network_security,
+    _In_z_ const char* node,
+    _In_z_ const char* service,
+    _In_ const oe_addrinfo* hints,
+    _Out_ oe_addrinfo** res);
+
+#ifdef OE_SECURE_POSIX_NETWORK_API
+#define getaddrinfo(node, service, hints, res) \
+    oe_getaddrinfo(OE_NETWORK_SECURE_HARDWARE, node, service, hints, res)
+#elif !defined(OE_NO_POSIX_SOCKET_API)
+#define getaddrinfo(node, service, hints, res) \
+    oe_getaddrinfo(OE_NETWORK_UNTRUSTED, node, service, hints, res)
+#endif
 
 int
 oe_gethostname(
+    _In_ oe_network_security_t network_security,
     _Out_writes_(len) char* name,
     _In_ size_t len);
+
+#ifdef OE_SECURE_POSIX_NETWORK_API
+#define gethostname(name, len) \
+    oe_gethostname(OE_NETWORK_SECURE_HARDWARE, name, len)
+#elif !defined(OE_NO_POSIX_SOCKET_API)
+#define gethostname(name, len) \
+    oe_gethostname(OE_NETWORK_UNTRUSTED, name, len)
+#endif
 
 int
 oe_getnameinfo(
@@ -281,6 +296,14 @@ oe_getnameinfo(
     _Out_writes_opt_z_(servlen) char* serv,
     _In_ size_t servlen,
     _In_ int flags);
+
+#ifdef OE_SECURE_POSIX_NETWORK_API
+#define getnameinfo(sa, salen, host, hostlen, serv, servlen, flags) \
+    oe_getnameinfo(OE_NETWORK_SECURE_HARDWARE, sa, salen, host, hostlen, serv, servlen, flags)
+#elif !defined(OE_NO_POSIX_SOCKET_API)
+#define getnameinfo(sa, salen, host, hostlen, serv, servlen, flags) \
+    oe_getnameinfo(OE_NETWORK_UNTRUSTED, sa, salen, host, hostlen, serv, servlen, flags)
+#endif
 
 int
 oe_getpeername(
@@ -333,11 +356,11 @@ uint16_t
 oe_ntohs(
     _In_ uint16_t netShort);
 
-int
+ssize_t
 oe_recv(
     _In_ oe_socket_t s,
-    _Out_writes_(len) char* buf,
-    _In_ int len,
+    _Out_writes_bytes_(len) void* buf,
+    _In_ size_t len,
     _In_ int flags);
 
 int
@@ -370,22 +393,66 @@ oe_shutdown(
 
 oe_socket_t
 oe_socket(
-    _In_ oe_sa_family_t af,
+    _In_ oe_network_security_t network_security,
+    _In_ int domain,
     _In_ int type,
     _In_ int protocol);
+
+#ifdef OE_SECURE_POSIX_NETWORK_API
+#define socket(domain, type, protocol) \
+     oe_socket(OE_NETWORK_SECURE_HARDWARE, domain, type, protocol)
+#elif !defined(OE_NO_POSIX_SOCKET_API)
+#define socket(domain, type, protocol) \
+     oe_socket(OE_NETWORK_UNTRUSTED, domain, type, protocol)
+#endif
 
 typedef struct {
     int unused;
 } oe_wsa_data_t;
 
-int oe_wsa_cleanup(void);
+int oe_wsa_cleanup(_In_ oe_network_security_t network_security);
 
-int oe_wsa_get_last_error(void);
+#ifdef OE_SECURE_POSIX_NETWORK_API
+#define WSACleanup() \
+     oe_wsa_cleanup(OE_NETWORK_SECURE_HARDWARE)
+#elif !defined(OE_NO_POSIX_SOCKET_API)
+#define WSACleanup() \
+     oe_wsa_cleanup(OE_NETWORK_UNTRUSTED)
+#endif
 
-void oe_wsa_set_last_error(_In_ int iError);
+int oe_wsa_get_last_error(_In_ oe_network_security_t network_security);
 
-int oe_wsa_startup(_In_ uint16_t wVersionRequired,
-                   _Out_ oe_wsa_data_t* lpWSAData);
+#ifdef OE_SECURE_POSIX_NETWORK_API
+#define WSAGetLastError() \
+     oe_wsa_get_last_error(OE_NETWORK_SECURE_HARDWARE)
+#elif !defined(OE_NO_POSIX_SOCKET_API)
+#define WSAGetLastError() \
+     oe_wsa_get_last_error(OE_NETWORK_UNTRUSTED)
+#endif
+
+void oe_wsa_set_last_error(
+    _In_ oe_network_security_t network_security,
+    _In_ int iError);
+
+#ifdef OE_SECURE_POSIX_NETWORK_API
+#define WSASetLastError(error) \
+     oe_wsa_set_last_error(OE_NETWORK_SECURE_HARDWARE, error)
+#elif !defined(OE_NO_POSIX_SOCKET_API)
+#define WSASetLastError(error) \
+     oe_wsa_set_last_error(OE_NETWORK_UNTRUSTED, error)
+#endif
+
+int oe_wsa_startup(_In_ oe_network_security_t network_security,
+                   _In_ uint16_t version_required,
+                   _Out_ oe_wsa_data_t* wsa_data);
+
+#ifdef OE_SECURE_POSIX_NETWORK_API
+#define WSAStartup(version_required, wsa_data) \
+     oe_wsa_startup(OE_NETWORK_SECURE_HARDWARE, version_required, wsa_data)
+#elif !defined(OE_NO_POSIX_SOCKET_API)
+#define WSAStartup(version_required, wsa_data) \
+     oe_wsa_startup(OE_NETWORK_UNTRUSTED, version_required, wsa_data)
+#endif
 
 #ifdef __cplusplus
 }

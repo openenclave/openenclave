@@ -13,9 +13,8 @@
 #include "sal_unsup.h"
 #include "stdext.h"
 #include <openenclave/host.h> 
-#include "oeoverintelsgx_u.h"
-#include "buffer.h"
-#include "socket_u.h"
+#include "../socket_u.h"
+#include "../../tcps/src/buffer.h"
 
 #define MAX(x,y) ((x) > (y) ? (x) : (y))
 
@@ -77,18 +76,15 @@ GetSockName_Result ocall_getpeername(void* a_hSocket, int a_nNameLen)
     return result;
 }
 
-send_Result ocall_send(void* a_hSocket, void* a_hReeMessage, int a_Flags)
+send_Result ocall_send(
+    void* a_hSocket,
+    const void* a_Message,
+    size_t a_nMessageLen,
+    int a_Flags)
 {
     send_Result result = { 0 };
     int fd = (int)a_hSocket;
-    char* ptr = NULL;
-    int size = 0;
-    oe_result_t uStatus = GetBuffer(a_hReeMessage, &ptr, &size);
-    if (uStatus != OE_OK) {
-        result.error = OE_EFAULT;
-        return result;
-    }
-    result.bytesSent = send(fd, ptr, size, a_Flags);
+    result.bytesSent = send(fd, a_Message, a_nMessageLen, a_Flags);
     if (result.bytesSent == -1) {
         result.error = (oe_socket_error_t)errno;
     }
@@ -96,29 +92,16 @@ send_Result ocall_send(void* a_hSocket, void* a_hReeMessage, int a_Flags)
     return result;
 }
 
-recv_Result ocall_recv(void* a_hSocket, int a_nBufferSize, int a_Flags)
+ssize_t ocall_recv(void* a_hSocket, void* a_Buffer, size_t a_nBufferSize, int a_Flags, oe_socket_error_t* a_Error)
 {
-    recv_Result result = { 0 };
     int fd = (int)a_hSocket;
-    void* hBuffer = CreateBuffer(a_nBufferSize);
-    if (hBuffer == NULL) {
-        result.error = OE_ENOBUFS;
-        return result;
-    }
-    
-    char* ptr = NULL;
-    int size = 0;
-    oe_result_t uStatus = GetBuffer(hBuffer, &ptr, &size);
-    /* TODO: handle uStatus failure */
-    result.bytesReceived = recv(fd, ptr, size, a_Flags);
-    if (result.bytesReceived == -1) {
-        result.error = (oe_socket_error_t)errno;
-        FreeBuffer(hBuffer);
-    } else {
-        result.hMessage = hBuffer;
+
+    ssize_t bytesReceived = recv(fd, a_Buffer, a_nBufferSize, a_Flags);
+    if (bytesReceived == -1) {
+        *a_Error = (oe_socket_error_t)errno;
     }
 
-    return result;
+    return bytesReceived;
 }
 
 getaddrinfo_Result ocall_getaddrinfo(

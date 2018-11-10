@@ -24,6 +24,7 @@
 typedef int64_t __int64_t;
 typedef uint64_t __uint64_t;
 typedef uint32_t __uint32_t;
+#include <sys/types.h>
 
 #ifndef __in_ecount
 #include "sal_unsup.h"

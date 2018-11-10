@@ -18,6 +18,7 @@ extern "C" {
 #include <sgx_eid.h>
 
 #include <stddef.h>
+typedef intptr_t ssize_t;
 #include <openenclave/bits/result.h>
 
 

@@ -112,11 +112,11 @@ SGX include:
 * tcps\_string\_optee\_t.h
 
 If none of the above are needed, trusted code might need to #include
-tcps\_t.h (as well as the \*\_t.h file generated from your application's
+<openenclave/enclave.h> (as well as the \*\_t.h file generated from your application's
 EDL file) to get basic definitions, but it should be pulled in automatically
 if any of the above are included.
 
-Untrusted code might need to #include tcps\_u.h  (as well as the \*\_u.h
+Untrusted code might need to #include <openenclave/host.h>  (as well as the \*\_u.h
 file generated from your application's EDL file) to get basic definitions.
 
 ## Using this SDK from Windows
@@ -168,13 +168,13 @@ Properties->"C/C++"->"General"->"Additional Include Directories".  Usually
 this means you need to insert "$(TcpsDir)include;$(TcpsDir)include\sgx\Trusted;"
 at the beginning.  See the sample apps for an example.
 12. In your enclave project, update the Additional Include Directories to
-include $(TcpsDir)External\RIoT\CyReP\cyrep
+include $(OESdkDir)3rdparty\RIoT\CyReP\cyrep
 
 **Then to build for OP-TEE:**
 
 1. Right click the solution, select "Configuration Manager", create an ARM
 solution platform (if one doesn't already exist), and then create ARM
-configurations of your application project (and tcps\_u if you include that
+configurations of your application project (and oehost if you include that
 directly).  Copy the configuration from the existing Win32 one.  Don't do
 this for your enclave project, as that needs to be built from a bash shell
 rather than in Visual Studio.
@@ -245,14 +245,14 @@ SGX-specific ones.
 DebugOpteeSimulation configuration for All Platforms, the Additional Include
 Directories should NOT include $(SGXSDKInstallPath)include\tlibc or
 $(SGXSDKInstallPath)include\libc++, and should include at least:
-* $(TcpsDir)External\RIoT\CyReP\cyrep
+* $(OESdkDir)3rdparty\RIoT\CyReP\cyrep
 * $(TcpsDir)include\optee\Trusted\Simulator
 * $(TcpsDir)include\optee\Trusted
 * $(TcpsDir)include\optee
 * $(TcpsDir)include
 * $(SGXSDKInstallPath)include
-* $(TcpsDir)External\optee\_os\lib\libutee\include
-* $(TcpsDir)External\optee\_os\lib\libutils\ext\include
+* $(OESdkDir)3rdparty\optee\_os\lib\libutee\include
+* $(OESdkDir)3rdparty\optee\_os\lib\libutils\ext\include
 8. In your TA's "Configuration Properties"->"VC++ Directories" properties of the
 DebugOpteeSimulation configuration for All Platforms, change the Include Directories
 and Library Directories from $(NoInherit) back to \<inherit from parent or

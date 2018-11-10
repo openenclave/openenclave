@@ -1,8 +1,8 @@
 # All objects we build and store in our shared library.
 OBJECTS = oeoverintelsgx_u.o teehost-optee.o urpc-optee.o ufiles.o \
-          uTcpsFileOcalls.o usockets.o buffer.o uhelper-shared.o \
+          uTcpsFileOcalls.o buffer.o uhelper-shared.o \
           uhelper.o oeshim_u.o uProtectedFs-optee.o oeresult.o \
-          oeshim-common.o stdext.o uTcpsFileOcalls-shared.o socket_u.o
+          oeshim-common.o stdext.o uTcpsFileOcalls-shared.o
 
 # Path to where OpenEnclave resides.
 OE_PATH = ../../../..
@@ -52,11 +52,6 @@ oehost.a: $(OBJECTS)
 	@sgx_edger8r --untrusted --untrusted-dir .. --search-path "$(EDL_PATH):$(EDL_INC_PATH):$(SGX_SDK)/include" \
 	                                                          "$(EDL_PATH)/oeoverintelsgx.edl"
 
-../socket_u.h ../socket_u.c: $(OE_EDL_PATH)/socket.edl
-	@echo " [EDGE]\socket.edl"
-	@$(OEEDGER8R) --untrusted --untrusted-dir .. --search-path "$(OE_PATH)/include" \
-	                                                           "$(OE_EDL_PATH)/socket.edl"
-
 buffer.o: ../../buffer.c ../oeoverintelsgx_u.h
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -std=c99 -c -o $@ $<
@@ -89,11 +84,7 @@ oeoverintelsgx_u.o: ../oeoverintelsgx_u.c ../oeoverintelsgx_u.h
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 
-socket_u.o: ../socket_u.c ../socket_u.h
-	@echo " [CC]\t$@"
-	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -include "sal_unsup.h" -c -o $@ $<
-
-%.o: %.c ../oeoverintelsgx_u.h ../oeoverintelsgx_u.c ../socket_u.c ../socket_u.h
+%.o: %.c ../oeoverintelsgx_u.h ../oeoverintelsgx_u.c
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) -c -o $@ $<
 

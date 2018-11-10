@@ -79,12 +79,6 @@ enclave {
         void* hSocket;
     };
 
-    struct recv_Result {
-        oe_socket_error_t error;
-        int bytesReceived;
-        void* hMessage; /* Handle to pass to TcpsImportBuffer() */
-    };
-
     trusted {
         public void ecall_InitializeSockets();
     };
@@ -145,10 +139,12 @@ enclave {
             [user_check] void* a_hSocket,
             int a_nMaxConnections);
 
-        recv_Result ocall_recv(
-            [user_check] void* a_hSocket,
-            int a_nBufferSize,
-            int a_Flags);
+        ssize_t ocall_recv(
+            [user_check] void* s,
+            [out, size=len] void* buf,
+            size_t len,
+            int flags,
+            [out] oe_socket_error_t* error);
 
         select_Result ocall_select(
             int a_nFds,
@@ -159,7 +155,8 @@ enclave {
 
         send_Result ocall_send(
             [user_check] void* a_hSocket,
-            [user_check] void* a_hMessage,
+            [in, size=a_nMessageLen] const void* a_Message,
+            size_t a_nMessageLen,
             int a_Flags);
 
         oe_socket_error_t ocall_setsockopt(

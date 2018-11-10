@@ -312,7 +312,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(OutDir);$(SGXSDKInstallPath)\bin\$(Platform)\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>oehost.lib;ws2_32.lib;shell32.lib;sgx_urts.lib;sgx_uae_service.lib;sgx_uprotected_fs.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oesocket_host.lib;ws2_32.lib;shell32.lib;sgx_urts.lib;sgx_uae_service.lib;sgx_uprotected_fs.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
@@ -328,7 +328,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(OutDir);$(SGXSDKInstallPath)\bin\$(Platform)\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>oehost.lib;ws2_32.lib;shell32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oesocket_host.lib;ws2_32.lib;shell32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">
@@ -344,7 +344,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(OutDir);$(SGXSDKInstallPath)\bin\$(Platform)\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>oehost.lib;ws2_32.lib;rpcrt4.lib;shell32.lib;oehost_opteesim.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oesocket_host.lib;ws2_32.lib;rpcrt4.lib;shell32.lib;oehost_opteesim.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">
@@ -360,7 +360,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(OutDir);$(SGXSDKInstallPath)\bin\$(Platform)\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>oehost.lib;ws2_32.lib;rpcrt4.lib;shell32.lib;oehost_opteesim.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oesocket_host.lib;ws2_32.lib;rpcrt4.lib;shell32.lib;oehost_opteesim.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">
@@ -376,7 +376,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)bin\$(Platform)\Debug;$(SGXSDKInstallPath)\bin\$(Platform)\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>oehost.lib;ws2_32.lib;shell32.lib;sgx_urts_sim.lib;sgx_uae_service_sim.lib;sgx_uprotected_fs.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oesocket_host.lib;ws2_32.lib;shell32.lib;sgx_urts_sim.lib;sgx_uae_service_sim.lib;sgx_uprotected_fs.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent />
     <PostBuildEvent />
@@ -394,7 +394,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)bin\$(Platform)\Debug;$(SGXSDKInstallPath)\bin\$(Platform)\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>oehost.lib;ws2_32.lib;shell32.lib;sgx_urts_sim.lib;sgx_uae_service_sim.lib;sgx_uprotected_fs.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oesocket_host.lib;ws2_32.lib;shell32.lib;sgx_urts_sim.lib;sgx_uae_service_sim.lib;sgx_uprotected_fs.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent />
     <PostBuildEvent />
@@ -412,7 +412,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(OutDir);$(SGXSDKInstallPath)\bin\$(Platform)\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>oehost.lib;ws2_32.lib;shell32.lib;sgx_urts.lib;sgx_uae_service.lib;sgx_uprotected_fs.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oesocket_host.lib;ws2_32.lib;shell32.lib;sgx_urts.lib;sgx_uae_service.lib;sgx_uprotected_fs.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">
@@ -428,7 +428,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(OutDir);$(SGXSDKInstallPath)\bin\$(Platform)\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>oehost.lib;ws2_32.lib;rpcrt4.lib;shell32.lib;oehost_opteesim.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oesocket_host.lib;ws2_32.lib;rpcrt4.lib;shell32.lib;oehost_opteesim.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">
@@ -444,7 +444,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Platform)\Debug;$(OutDir);$(SGXSDKInstallPath)\bin\$(Platform)\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>oehost.lib;ws2_32.lib;shell32.lib;sgx_urts_sim.lib;sgx_uae_service_sim.lib;sgx_uprotected_fs.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oesocket_host.lib;ws2_32.lib;shell32.lib;sgx_urts_sim.lib;sgx_uae_service_sim.lib;sgx_uprotected_fs.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent />
     <PostBuildEvent />
@@ -466,7 +466,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(OutDir);$(SGXSDKInstallPath)\bin\$(Platform)\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>oehost.lib;ws2_32.lib;shell32.lib;sgx_urts.lib;sgx_uae_service.lib;sgx_uprotected_fs.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oesocket_host.lib;ws2_32.lib;shell32.lib;sgx_urts.lib;sgx_uae_service.lib;sgx_uprotected_fs.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
@@ -486,7 +486,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(OutDir);$(SGXSDKInstallPath)\bin\$(Platform)\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>oehost.lib;ws2_32.lib;shell32.lib;sgx_urts.lib;sgx_uae_service.lib;sgx_uprotected_fs.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oesocket_host.lib;ws2_32.lib;shell32.lib;sgx_urts.lib;sgx_uae_service.lib;sgx_uprotected_fs.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">
@@ -506,7 +506,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(OutDir);$(SGXSDKInstallPath)\bin\$(Platform)\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>oehost.lib;ws2_32.lib;shell32.lib;sgx_urts.lib;sgx_uae_service.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oesocket_host.lib;ws2_32.lib;shell32.lib;sgx_urts.lib;sgx_uae_service.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'">
@@ -526,7 +526,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(OutDir);$(SGXSDKInstallPath)\bin\$(Platform)\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>oehost.lib;ws2_32.lib;shell32.lib;sgx_urts.lib;sgx_uae_service.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oesocket_host.lib;ws2_32.lib;shell32.lib;sgx_urts.lib;sgx_uae_service.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -546,7 +546,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(OutDir);$(SGXSDKInstallPath)\bin\$(Platform)\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>oehost.lib;ws2_32.lib;shell32.lib;sgx_urts.lib;sgx_uae_service.lib;sgx_uprotected_fs.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oesocket_host.lib;ws2_32.lib;shell32.lib;sgx_urts.lib;sgx_uae_service.lib;sgx_uprotected_fs.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">
@@ -566,14 +566,14 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(OutDir);$(SGXSDKInstallPath)\bin\$(Platform)\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>oehost.lib;ws2_32.lib;shell32.lib;sgx_urts.lib;sgx_uae_service.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oesocket_host.lib;ws2_32.lib;shell32.lib;sgx_urts.lib;sgx_uae_service.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="OEEnclaveTest.cpp" />
     <ClCompile Include="OEHostTest.cpp" />
-    <ClCompile Include="SocketsTest.cpp" />
+    <ClCompile Include="sockets_test.cpp" />
     <ClCompile Include="oetests_u.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">
       </PrecompiledHeader>
@@ -606,10 +606,13 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="BufferTest.cpp" />
+    <ClCompile Include="buffer_test.cpp" />
     <ClCompile Include="TrustedAppTest.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\libsocket\host\win32\oesocket_host.vcxproj">
+      <Project>{12e2e2d6-830e-4b05-b657-c858c2de54e3}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Untrusted\win32\oehost.vcxproj">
       <Project>{b7ae03e4-cf5a-49dc-ab3d-2d8f485472b4}</Project>
     </ProjectReference>
