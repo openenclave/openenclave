@@ -9,7 +9,7 @@
 void ecall_InitializeSockets() {}
 
 static void
-CopyInputFds(oe_fd_set_internal* dest, oe_fd_set* src)
+copy_input_fds(oe_fd_set_internal* dest, oe_fd_set* src)
 {
     unsigned int i;
     dest->fd_count = src->fd_count;
@@ -22,7 +22,7 @@ CopyInputFds(oe_fd_set_internal* dest, oe_fd_set* src)
 }
 
 static void
-CopyOutputFds(oe_fd_set* dest, oe_fd_set_internal* src)
+copy_output_fds(oe_fd_set* dest, oe_fd_set_internal* src)
 {
     unsigned int i;
     dest->fd_count = src->fd_count;
@@ -44,13 +44,13 @@ oe_select(
     oe_fd_set_internal writeFds = { 0 };
     oe_fd_set_internal exceptFds = { 0 };
     if (a_readfds != NULL) {
-        CopyInputFds(&readFds, a_readfds);
+        copy_input_fds(&readFds, a_readfds);
     }
     if (a_writefds != NULL) {
-        CopyInputFds(&writeFds, a_writefds);
+        copy_input_fds(&writeFds, a_writefds);
     }
     if (a_exceptfds != NULL) {
-        CopyInputFds(&exceptFds, a_exceptfds);
+        copy_input_fds(&exceptFds, a_exceptfds);
     }
     oe_result_t oe_result = ocall_select(&result, a_nFds, readFds, writeFds, exceptFds, *(struct timeval*)a_Timeout);
     if (oe_result != OE_OK) {
@@ -62,13 +62,13 @@ oe_select(
     }
 
     if (a_readfds != NULL) {
-        CopyOutputFds(a_readfds, &result.readFds);
+        copy_output_fds(a_readfds, &result.readFds);
     }
     if (a_writefds != NULL) {
-        CopyOutputFds(a_writefds, &result.writeFds);
+        copy_output_fds(a_writefds, &result.writeFds);
     }
     if (a_exceptfds != NULL) {
-        CopyOutputFds(a_exceptfds, &result.exceptFds);
+        copy_output_fds(a_exceptfds, &result.exceptFds);
     }
     return result.socketsSet;
 }

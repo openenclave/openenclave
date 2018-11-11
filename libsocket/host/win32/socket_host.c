@@ -152,7 +152,12 @@ getaddrinfo_Result ocall_getaddrinfo(
     addrinfo_Buffer* aibuffer = NULL;
     int size = 0;
     oe_result_t uStatus = GetBuffer(hBuffer, (char**)&aibuffer, &size);
-    /* TODO: handle uStatus failure */
+    if (uStatus != OE_OK) {
+        FreeBuffer(hBuffer);
+        freeaddrinfo(ailist);
+        result.error = WSAENOBUFS;
+        return result;
+    }
     int i;
     for (i = 0, ai = ailist; ai != NULL; ai = ai->ai_next, i++) {
         addrinfo_Buffer* aib = &aibuffer[i];
@@ -165,6 +170,7 @@ getaddrinfo_Result ocall_getaddrinfo(
         COPY_MEMORY_BUFFER(aib->ai_addr, ai->ai_addr, ai->ai_addrlen);
     }
 
+    freeaddrinfo(ailist);
     result.hMessage = hBuffer;
     return result;
 }
@@ -209,7 +215,7 @@ ioctlsocket_Result ocall_ioctlsocket(
 }
 
 static void
-CopyOutputFds(
+copy_output_fds(
     _Out_ oe_fd_set_internal* dest,
     _In_ const fd_set* src)
 {
@@ -224,7 +230,7 @@ CopyOutputFds(
 }
 
 static void
-CopyInputFds(
+copy_input_fds(
     _Out_ fd_set* dest,
     _In_ const oe_fd_set_internal* src)
 {
@@ -247,16 +253,16 @@ select_Result ocall_select(
     fd_set readfds;
     fd_set writefds;
     fd_set exceptfds;
-    CopyInputFds(&readfds, &a_ReadFds);
-    CopyInputFds(&writefds, &a_WriteFds);
-    CopyInputFds(&exceptfds, &a_ExceptFds);
+    copy_input_fds(&readfds, &a_ReadFds);
+    copy_input_fds(&writefds, &a_WriteFds);
+    copy_input_fds(&exceptfds, &a_ExceptFds);
     result.socketsSet = select(a_nFds, &readfds, &writefds, &exceptfds, (struct timeval*)&a_Timeout);
     if (result.socketsSet == SOCKET_ERROR) {
         result.error = WSAGetLastError();
     } else {
-        CopyOutputFds(&result.readFds, &readfds);
-        CopyOutputFds(&result.writeFds, &writefds);
-        CopyOutputFds(&result.exceptFds, &exceptfds);
+        copy_output_fds(&result.readFds, &readfds);
+        copy_output_fds(&result.writeFds, &writefds);
+        copy_output_fds(&result.exceptFds, &exceptfds);
     }
     return result;
 }

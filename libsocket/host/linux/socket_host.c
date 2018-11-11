@@ -115,19 +115,18 @@ getaddrinfo_Result ocall_getaddrinfo(
     oe_result_t status;
     getaddrinfo_Result result = { 0 };
 
-    struct addrinfo *ai;
-    struct addrinfo *ailist = NULL;
+    struct addrinfo* ai;
+    struct addrinfo* ailist = NULL;
     struct addrinfo hints = { 0 };
 
-    char *node_name;
-    char *service_name;
+    char* node_name;
+    char* service_name;
 
     int i;
     int s;
     int size;
-    void *aibufhandle;
-    addrinfo_Buffer *aib;
-    addrinfo_Buffer *aibuf;
+    void* aibufhandle;
+    addrinfo_Buffer* aibuf;
 
     hints.ai_flags = a_Flags;
     hints.ai_family = a_Family;
@@ -135,21 +134,24 @@ getaddrinfo_Result ocall_getaddrinfo(
     hints.ai_protocol = a_Protocol;
 
     s = getaddrinfo(a_NodeName, a_ServiceName, &hints, &ailist);
-    if (s) {
+    if (s != 0) {
         result.error = (oe_socket_error_t)s;
         return result;
     }
 
-    for (ai = ailist; ai != NULL; ai = ai->ai_next)
-    result.addressCount++;
+    /* Count number of addresses. */
+    for (ai = ailist; ai != NULL; ai = ai->ai_next) {
+        result.addressCount++;
+    }
 
     aibufhandle = CreateBuffer(result.addressCount * sizeof(*aibuf));
-    if (!aibufhandle) {
+    if (aibufhandle == NULL) {
         freeaddrinfo(ailist);
         result.error = OE_ENOBUFS;
         return result;
     }
 
+    /* Serialize ailist. */
     status = GetBuffer(aibufhandle, (char **)&aibuf, &size);
     if (status != OE_OK) {
         FreeBuffer(aibufhandle);
@@ -159,7 +161,7 @@ getaddrinfo_Result ocall_getaddrinfo(
     }
 
     for (i = 0, ai = ailist; ai != NULL; ai = ai->ai_next, i++) {
-        aib = &aibuf[i];
+        addrinfo_Buffer* aib = &aibuf[i];
         aib->ai_flags = ai->ai_flags;
         aib->ai_family = ai->ai_family;
         aib->ai_socktype = ai->ai_socktype;
@@ -215,7 +217,7 @@ ioctlsocket_Result ocall_ioctlsocket(
     return result;
 }
 
-static void CopyOutputFds(oe_fd_set_internal *dest, const fd_set *src, const oe_fd_set_internal *orig)
+static void copy_output_fds(oe_fd_set_internal *dest, const fd_set *src, const oe_fd_set_internal *orig)
 {
     unsigned int i;
 
@@ -230,7 +232,7 @@ static void CopyOutputFds(oe_fd_set_internal *dest, const fd_set *src, const oe_
     }
 }
 
-static void CopyInputFds(fd_set *dest, const oe_fd_set_internal *src, int *nfds)
+static void copy_input_fds(fd_set *dest, const oe_fd_set_internal *src, int *nfds)
 {
     unsigned int i;
     FD_ZERO(dest);
@@ -254,17 +256,17 @@ select_Result ocall_select(
     fd_set exceptfds;
     int nfds = 0;
 
-    CopyInputFds(&readfds, &a_ReadFds, &nfds);
-    CopyInputFds(&writefds, &a_WriteFds, &nfds);
-    CopyInputFds(&exceptfds, &a_ExceptFds, &nfds);
+    copy_input_fds(&readfds, &a_ReadFds, &nfds);
+    copy_input_fds(&writefds, &a_WriteFds, &nfds);
+    copy_input_fds(&exceptfds, &a_ExceptFds, &nfds);
 
     result.socketsSet = select(nfds + 1, &readfds, &writefds, &exceptfds, (struct timeval *)&a_Timeout);
     if (result.socketsSet == -1) {
         result.error = (oe_socket_error_t)errno;
     } else {
-        CopyOutputFds(&result.readFds, &readfds, &a_ReadFds);
-        CopyOutputFds(&result.writeFds, &writefds, &a_WriteFds);
-        CopyOutputFds(&result.exceptFds, &exceptfds, &a_ExceptFds); 
+        copy_output_fds(&result.readFds, &readfds, &a_ReadFds);
+        copy_output_fds(&result.writeFds, &writefds, &a_WriteFds);
+        copy_output_fds(&result.exceptFds, &exceptfds, &a_ExceptFds); 
     }
 
     return result;

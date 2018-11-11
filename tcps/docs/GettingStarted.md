@@ -57,6 +57,9 @@ additional include paths:
 * $(OESdkDir)tcps\include\sgx\Trusted
 * $(OESdkDir)tcps\include
 
+To use socket APIs, the SGX Enclave DLL should link with **oesocket_enc.lib**.
+See the sockets sample for an example.
+
 ### SGX Rich Application
 
 The EXE should link with **oehost.lib** and have the following additional
@@ -64,9 +67,12 @@ include path:
 
 * $(OESdkDir)tcps\include
 
+To allow the SGX Enclave DLL to use socket APIs, the EXE should link with **oesocket_host.lib**.
+See the sockets sample for an example.
+
 ### OP-TEE TA
 
-The OP-TEE TA should link with **oeenclave.lib** and have the following
+The OP-TEE TA should link with **liboeenclave** and have the following
 additional include paths, in this order (the order is important because
 files in a deeper directory override files at higher levels with the
 same filename):
@@ -74,6 +80,9 @@ same filename):
 * $(OESdkDir)tcps/include/optee/Trusted
 * $(OESdkDir)tcps/include/optee
 * $(OESdkDir)tcps/include
+
+To use socket APIs, the OP-TEE TA should link with **liboesocket_enc**.
+See the sockets sample for an example.
 
 ### OP-TEE Rich Application
 
@@ -84,9 +93,12 @@ additional include paths, in any order:
 * $(OESdkDir)tcps\include\optee
 * $(OESdkDir)tcps\include\optee\Untrusted
 
+To allow the OP-TEE TA to use socket APIs, the EXE should link with **oesocket_host.lib**.
+See the sockets sample for an example.
+
 ## Open Enclave APIs
 
-This SDK includes Open Enclave APIs covered in
+This SDK implements the Open Enclave APIs covered in
 [API docs](https://ms-iot.github.io/openenclave/api/files.html).
 
 This SDK also provides support for a number of APIs that are not
