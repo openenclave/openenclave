@@ -185,6 +185,7 @@ static int64_t oe_get_reg_set_handler(pid_t pid, void* addr, void* data)
 
         // rbx has the TCS of enclave thread.
         struct iovec* iov = (struct iovec*)data;
+
         if (iov->iov_base && iov->iov_len &&
             (oe_get_enclave_thread_xstate(
                  pid, (void*)regs.rbx, (void*)iov->iov_base, iov->iov_len) ==
@@ -226,6 +227,7 @@ static int64_t oe_set_reg_set_handler(pid_t pid, void* addr, void* data)
 
         // rbx has the TCS of enclave thread.
         struct iovec* iov = (struct iovec*)data;
+
         if (iov->iov_base && iov->iov_len &&
             (oe_set_enclave_thread_xstate(
                  pid, (void*)regs.rbx, (void*)iov->iov_base, iov->iov_len) ==
@@ -359,7 +361,7 @@ pid_t waitpid(pid_t pid, int* status, int options)
 
         // Fix the register if it is a breakpoint inside enclave.
         struct user_regs_struct regs;
-        ret = g_system_ptrace(PTRACE_GETREGS, ret_pid, 0, &regs);
+        ret = (int)g_system_ptrace(PTRACE_GETREGS, ret_pid, 0, &regs);
         if (ret == 0 && oe_is_aep(ret_pid, &regs))
         {
             void* tcs = (void*)regs.rbx;

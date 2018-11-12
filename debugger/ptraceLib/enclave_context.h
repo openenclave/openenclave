@@ -49,12 +49,12 @@ int oe_get_enclave_thread_xstate(
     pid_t pid,
     void* tcs_addr,
     void* xstate,
-    int64_t xstate_size);
+    size_t xstate_size);
 
 int oe_set_enclave_thread_xstate(
     pid_t pid,
     void* tcs_addr,
     void* xstate,
-    int64_t xstate_size);
+    size_t xstate_size);
 
 #endif /* _OE_ENCLAVE_CONTEXT_H */

@@ -19,6 +19,8 @@
         MEM_NULL_INIT \
     }
 
+OE_STATIC_ASSERT(sizeof(size_t) == sizeof(char*));
+
 MEM_INLINE size_t __str_min(size_t x, size_t y)
 {
     return x < y ? x : y;
@@ -277,6 +279,10 @@ MEM_INLINE int str_printf(str_t* str, const char* format, ...)
     va_list ap;
     va_start(ap, format);
     r = vsnprintf(str_mutable_ptr(str), str_cap(str), format, ap);
+
+    if (r < 0)
+        return -1;
+
     va_end(ap);
 
     /* If buffer was not big enough and using dynamic memory */
@@ -290,6 +296,10 @@ MEM_INLINE int str_printf(str_t* str, const char* format, ...)
         va_list ap;
         va_start(ap, format);
         r = vsnprintf(str_mutable_ptr(str), str_cap(str), format, ap);
+
+        if (r < 0)
+            return -1;
+
         va_end(ap);
     }
 
