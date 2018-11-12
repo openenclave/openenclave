@@ -212,7 +212,7 @@ static void* _allocate_enclave_memory(size_t enclave_size, int fd)
         uint8_t* start = (uint8_t*)mptr;
         uint8_t* end = (uint8_t*)base;
 
-        if (start != end && munmap(start, end - start) != 0)
+        if (start != end && munmap(start, (size_t)(end - start)) != 0)
             goto done;
     }
 
@@ -221,7 +221,7 @@ static void* _allocate_enclave_memory(size_t enclave_size, int fd)
         uint8_t* start = (uint8_t*)base + enclave_size;
         uint8_t* end = (uint8_t*)mptr + enclave_size * 2;
 
-        if (start != end && munmap(start, end - start) != 0)
+        if (start != end && munmap(start, (size_t)(end - start)) != 0)
             goto done;
     }
 
@@ -702,8 +702,11 @@ oe_result_t oe_sgx_load_enclave_data(
             uint32_t prot =
                 _make_memory_protect_param(flags, true /*simulate*/);
 
+            if (prot > OE_INT_MAX)
+                OE_RAISE(OE_FAILURE);
+
 #if defined(__linux__)
-            if (mprotect((void*)addr, OE_PAGE_SIZE, prot) != 0)
+            if (mprotect((void*)addr, OE_PAGE_SIZE, (int)prot) != 0)
                 OE_RAISE(OE_FAILURE);
 #elif defined(_WIN32)
             DWORD old;

@@ -67,10 +67,10 @@ static oe_result_t _get_date(unsigned int* date)
             tm.tm_mday);
 
         for (i = 0; i < sizeof(b); i++)
-            b[i] = s[i] - '0';
+            b[i] = (unsigned char)(s[i] - '0');
 
-        *date = (b[0] << 28) | (b[1] << 24) | (b[2] << 20) | (b[3] << 16) |
-                (b[4] << 12) | (b[5] << 8) | (b[6] << 4) | b[7];
+        *date =
+            (unsigned int)((b[0] << 28) | (b[1] << 24) | (b[2] << 20) | (b[3] << 16) | (b[4] << 12) | (b[5] << 8) | (b[6] << 4) | b[7]);
     }
 
     result = OE_OK;
@@ -349,10 +349,10 @@ static oe_result_t _get_q1_and_q2(
 
     /* Create new objects */
     {
-        if (!(s = BN_bin2bn(sbuf, sizeof(sbuf), NULL)))
+        if (!(s = BN_bin2bn(sbuf, (int)sizeof(sbuf), NULL)))
             OE_RAISE(OE_OUT_OF_MEMORY);
 
-        if (!(m = BN_bin2bn(mbuf, sizeof(mbuf), NULL)))
+        if (!(m = BN_bin2bn(mbuf, (int)sizeof(mbuf), NULL)))
             OE_RAISE(OE_OUT_OF_MEMORY);
 
         if (!(q1 = BN_new()))
@@ -388,7 +388,7 @@ static oe_result_t _get_q1_and_q2(
 
     /* Copy Q1 to Q1OUT parameter */
     {
-        size_t n = BN_num_bytes(q1);
+        size_t n = (size_t)BN_num_bytes(q1);
 
         if (n > sizeof(q1buf))
             OE_RAISE(OE_FAILURE);
@@ -402,7 +402,7 @@ static oe_result_t _get_q1_and_q2(
 
     /* Copy Q2 to Q2OUT parameter */
     {
-        size_t n = BN_num_bytes(q2);
+        size_t n = (size_t)BN_num_bytes(q2);
 
         if (n > sizeof(q2buf))
             OE_RAISE(OE_FAILURE);
