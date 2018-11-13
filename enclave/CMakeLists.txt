@@ -13,6 +13,7 @@ add_library(oeenclave STATIC
     ../common/sgxcertextensions.c
     ../common/tcbinfo.c
     asn1.c
+    asym_keys.c
     cert.c
     crl.c
     ec.c
