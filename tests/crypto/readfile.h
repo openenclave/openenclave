@@ -46,6 +46,11 @@ oe_result_t read_key(char* filename, char* key);
 
 oe_result_t read_pem_key(char* filename, uint8_t* key, size_t* key_size);
 
-oe_result_t read_coordinates(char* filename, uint8_t* x, uint8_t* y);
+oe_result_t read_coordinates(
+    char* filename,
+    uint8_t* x,
+    uint8_t* y,
+    size_t* x_size,
+    size_t* y_size);
 
 #endif //_READFILE_H_

@@ -212,19 +212,26 @@ oe_result_t read_pem_key(char* filename, uint8_t* key, size_t* key_size)
     return OE_OK;
 }
 
-oe_result_t read_coordinates(char* filename, uint8_t* x, uint8_t* y)
+oe_result_t read_coordinates(
+    char* filename,
+    uint8_t* x,
+    uint8_t* y,
+    size_t* x_size,
+    size_t* y_size)
 {
+    size_t len_x, len_y;
     FILE* cfp = fopen(filename, "r");
     if (cfp != NULL)
     {
-        fread(x, sizeof(char), max_coordinates_size, cfp);
-        fread(y, sizeof(char), max_coordinates_size, cfp);
+        len_x = fread(x, sizeof(char), max_coordinates_size, cfp);
+        len_y = fread(y, sizeof(char), max_coordinates_size, cfp);
     }
     else
     {
         return OE_FAILURE;
     }
-
     fclose(cfp);
+    *x_size = len_x;
+    *y_size = len_y;
     return OE_OK;
 }

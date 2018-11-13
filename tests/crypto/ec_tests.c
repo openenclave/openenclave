@@ -50,6 +50,7 @@ uint8_t y_data[max_coordinates_size];
 size_t private_key_size;
 size_t public_key_size;
 size_t sign_size;
+size_t x_size, y_size;
 
 // Test EC signing operation over an ASCII alphabet string. Note that two
 // signatures over the same data produce different hex sequences, although
@@ -424,8 +425,6 @@ static void _test_key_from_bytes()
     oe_ec_private_key_t private_key = {0};
     oe_ec_public_key_t public_key = {0};
     oe_ec_public_key_t public_key2 = {0};
-    const size_t x_size = sizeof(x_data);
-    const size_t y_size = sizeof(y_data);
     uint8_t signature[1024];
     size_t signature_size = sizeof(signature);
 
@@ -751,7 +750,9 @@ void TestEC()
             "../data/Rootec.public.key", public_key_pem, &public_key_size) ==
         OE_OK);
     OE_TEST(
-        read_coordinates("../data/coordinates.bin", x_data, y_data) == OE_OK);
+        read_coordinates(
+            "../data/coordinates.bin", x_data, y_data, &x_size, &y_size) ==
+        OE_OK);
 
     _test_cert_with_extensions();
     _test_cert_without_extensions();

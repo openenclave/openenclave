@@ -18,7 +18,7 @@
 /* _CERT1 use as a Leaf cert
  * CHAIN1 consists Intermediate & Root cert.
  * CHAIN2 consists Intermediate2 & Root2 cert.
- * This chain is a concatenation of two unrelated chains: CHAIN1 and CHAIN2
+ * MIXED_CHAIN is a concatenation of two unrelated chains: CHAIN1 and CHAIN2
  * _PRIVATE_KEY use as a Leaf.key.pem
  * _PUBLIC_KEY use as a Leaf_public.key.pem
  * _SIGNATURE generates by Leaf.key.pem
