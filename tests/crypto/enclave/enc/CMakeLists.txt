@@ -20,7 +20,8 @@ add_executable(cryptoenc
     ../../rsa_tests.c
     ../../sha_tests.c
     ../../tests.c
-     ${gen})
+    ../../utils.c
+    ${gen})
 
 
 target_include_directories(cryptoenc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})

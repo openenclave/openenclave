@@ -12,6 +12,7 @@
 #include <string.h>
 #include "hash.h"
 #include "tests.h"
+#include "utils.h"
 
 // Custom test data
 #define KEY_SIZE 32
@@ -120,33 +121,6 @@ static key_test_data_t KEY_TESTS[] = {
     {NIST_KEY_8, NIST_FIXED_8, NIST_DERIVED_KEY_8, 40},
 };
 
-static inline unsigned char _to_num(char c)
-{
-    if (c >= '0' && c <= '9')
-        return c - '0';
-
-    if (c >= 'A' && c <= 'F')
-        return 10 + (c - 'A');
-
-    OE_TEST(c >= 'a' && c <= 'f');
-    return 10 + (c - 'a');
-}
-
-static void _hex_to_buf(const char* str, uint8_t* buf, size_t bufsize)
-{
-    size_t strsz;
-    OE_TEST(str != NULL && buf != NULL);
-
-    strsz = strlen(str);
-    OE_TEST(strsz % 2 == 0 && bufsize >= strsz / 2);
-
-    for (size_t i = 0; i < strsz; i += 2)
-    {
-        unsigned char v = 16 * _to_num(str[i]) + _to_num(str[i + 1]);
-        buf[i / 2] = v;
-    }
-}
-
 static void _test_create_fixed(void)
 {
     size_t iters = sizeof(FIXED_TESTS) / sizeof(FIXED_TESTS[0]);
@@ -158,7 +132,7 @@ static void _test_create_fixed(void)
         const char* label = FIXED_TESTS[i].label;
         const char* context = FIXED_TESTS[i].context;
 
-        _hex_to_buf(FIXED_TESTS[i].fixed, expected, sizeof(expected));
+        hex_to_buf(FIXED_TESTS[i].fixed, expected, sizeof(expected));
         OE_TEST(
             oe_kdf_create_fixed_data(
                 (const uint8_t*)label,
@@ -185,9 +159,9 @@ static void _test_key_gen(void)
 
     for (size_t i = 0; i < sizeof(KEY_TESTS) / sizeof(KEY_TESTS[0]); i++)
     {
-        _hex_to_buf(KEY_TESTS[i].key, key, sizeof(key));
-        _hex_to_buf(KEY_TESTS[i].data, fixed_data, sizeof(fixed_data));
-        _hex_to_buf(
+        hex_to_buf(KEY_TESTS[i].key, key, sizeof(key));
+        hex_to_buf(KEY_TESTS[i].data, fixed_data, sizeof(fixed_data));
+        hex_to_buf(
             KEY_TESTS[i].derived_key, key_expected, sizeof(key_expected));
 
         OE_TEST(
