@@ -25,13 +25,11 @@ COMMAND ${CMAKE_COMMAND} -E copy  ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/root.c
 COMMAND openssl genrsa -out ${DATA_DIR}/RootCA.key.pem
 COMMAND openssl req -new -x509 -key ${DATA_DIR}/RootCA.key.pem -out ${DATA_DIR}/RootCA.crt.pem -days 3650 -subj "/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=Root" 
 # Creating Intermediate certificates signed by the Root CA
-COMMAND sleep 1
 COMMAND echo 'Creating Intermediate certificates signed by the root CA....'
 COMMAND openssl genrsa -out ${DATA_DIR}/Intermediate.key.pem
 COMMAND openssl req -new -key ${DATA_DIR}/Intermediate.key.pem -out ${DATA_DIR}/Intermediate.csr -subj "/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=Intermediate"
 COMMAND openssl x509 -req -in ${DATA_DIR}/Intermediate.csr -CA ${DATA_DIR}/RootCA.crt.pem -CAkey ${DATA_DIR}/RootCA.key.pem -CAcreateserial -out ${DATA_DIR}/Intermediate.crt.pem -days 3650
 # Creating Leaf certificates signed by the Root CA
-COMMAND sleep 1
 COMMAND echo 'Creating Leaf certificates signed by the root CA....'
 COMMAND openssl genrsa -out ${DATA_DIR}/Leaf.key.pem
 COMMAND openssl req -new -key ${DATA_DIR}/Leaf.key.pem -out ${DATA_DIR}/Leaf.csr -subj "/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=Leaf"
@@ -59,8 +57,7 @@ COMMAND openssl crl -inform pem -outform der -in ${DATA_DIR}/intermediate_crl.pe
 COMMAND openssl crl -inform pem -outform der -in ${DATA_DIR}/root_crl.pem -out ${DATA_DIR}/root_crl.der
 
 # Take UTC date and time of intermediate_crl for _test_get_dates
-COMMAND sleep 1
-COMMAND date -u +%Y:%m:%d:%H:%M:%S -r ${DATA_DIR}/intermediate_crl.der > ${DATA_DIR}/time.txt
+COMMAND date -u +%Y:%m:%d:%H:%M:%S -r ${DATA_DIR}/intermediate_crl.pem > ${DATA_DIR}/time.txt
 
 # ========================= TestEC ================================
 
