@@ -58,7 +58,7 @@ enclave {
     struct GetReport_Result {
         int result;
         char report_buffer[1024];
-        int report_buffer_size;
+        size_t report_buffer_size;
     };
 
     struct callV2_Result {
