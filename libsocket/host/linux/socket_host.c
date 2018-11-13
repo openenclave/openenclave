@@ -99,6 +99,8 @@ ssize_t ocall_recv(void* a_hSocket, void* a_Buffer, size_t a_nBufferSize, int a_
     ssize_t bytesReceived = recv(fd, a_Buffer, a_nBufferSize, a_Flags);
     if (bytesReceived == -1) {
         *a_Error = (oe_socket_error_t)errno;
+    } else {
+        *a_Error = 0;
     }
 
     return bytesReceived;
