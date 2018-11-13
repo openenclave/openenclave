@@ -10,8 +10,8 @@
 #include "tcps_stdio_t.h"
 #include "tcps_string_t.h"
 #ifdef OE_USE_OPTEE
-#include <optee/tcps_string_optee_t.h>
-#include <optee/tcps_ctype_optee_t.h>
+#include <optee/string_optee_t.h>
+#include <optee/ctype_optee_t.h>
 #endif
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))

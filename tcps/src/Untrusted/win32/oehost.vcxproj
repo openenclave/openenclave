@@ -39,7 +39,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(ProjectKaylaDir)driver\TrEE\OpteeCalls\OpteeCalls.c">
+    <ClCompile Include="..\..\..\..\3rdparty\project-kayla\driver\TrEE\OpteeCalls\OpteeCalls.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -49,7 +49,7 @@
     </ClCompile>
     <ClCompile Include="..\..\buffer.c" />
     <ClCompile Include="..\..\oeresult.c" />
-    <ClCompile Include="..\..\oeshim-common.c" />
+    <ClCompile Include="..\..\oeshim_common.c" />
     <ClCompile Include="..\oeoverintelsgx_u.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
@@ -74,13 +74,13 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">$(TcpsDir)include;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(ProjectKaylaDir)driver/TrEE/inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
     </ClCompile>
     <ClCompile Include="..\oeshim_u.c" />
-    <ClCompile Include="teehost-optee.c">
+    <ClCompile Include="teehost_optee.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="teehost-sgx.c">
+    <ClCompile Include="teehost_sgx.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">true</ExcludedFromBuild>
@@ -90,20 +90,20 @@
     </ClCompile>
     <ClCompile Include="ufiles.c" />
     <ClCompile Include="uhelper.c" />
-    <ClCompile Include="..\uhelper-shared.c" />
-    <ClCompile Include="..\uProtectedFs-optee.c">
+    <ClCompile Include="..\uhelper_shared.c" />
+    <ClCompile Include="..\uProtectedFs_optee.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="urpc-optee.c">
+    <ClCompile Include="urpc_optee.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\urpc-sgx.c">
+    <ClCompile Include="..\urpc_sgx.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</ExcludedFromBuild>
@@ -111,7 +111,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="uTcpsFileOcalls.c" />
-    <ClCompile Include="..\uTcpsFileOcalls-shared.c" />
+    <ClCompile Include="..\uTcpsFileOcalls_shared.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(ProjectKaylaDir)driver\TrEE\OpteeCalls\targetver.h" />
@@ -134,7 +134,7 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\TcpsFile.edl" />
+    <None Include="..\..\stdio.edl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B7AE03E4-CF5A-49DC-AB3D-2D8F485472B4}</ProjectGuid>

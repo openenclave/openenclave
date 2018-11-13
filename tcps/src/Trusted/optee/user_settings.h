@@ -5,8 +5,8 @@
 #include "../wolf_config.h"
 
 #include <TrustedWolfssl.h>
-#include <optee/tcps_ctype_optee_t.h>
-#include <optee/tcps_string_optee_t.h>
+#include <optee/ctype_optee_t.h>
+#include <optee/string_optee_t.h>
 
 #define WOLFSSL_GENERAL_ALIGNMENT   4
 #define SINGLE_THREADED

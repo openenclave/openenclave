@@ -5,4 +5,4 @@
 # include <openenclave/enclave.h>
 #endif
 
-#include "tcps_time_optee_t.h"
+#include "time_optee_t.h"

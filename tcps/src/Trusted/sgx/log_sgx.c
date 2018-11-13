@@ -13,8 +13,8 @@
 #include "ICertUtil.h"
 #include "tcps.h"
 
-#include "TcpsLogSgx.h"
-#include "TcpsLogOcallFile.h"
+#include "log_sgx.h"
+#include "log_ocall_file.h"
 
 #ifdef TCPS_SERVICES_SDK
 #include "TcpsLogEthereum.h"

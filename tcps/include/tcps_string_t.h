@@ -82,5 +82,5 @@ ConvertStringToIPv4Integers(
     ConvertStringToIPv4Integers(addressString, addressSscanfFormat, addressByte0, addressByte1, addressByte2, addressByte3)
 
 #ifdef OE_USE_OPTEE
-# include <optee/tcps_string_optee_t.h>
+# include <optee/string_optee_t.h>
 #endif

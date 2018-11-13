@@ -18,37 +18,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="optee\ctype-optee.c">
-      <Filter>optee</Filter>
-    </ClCompile>
-    <ClCompile Include="optee\files-optee.c">
-      <Filter>optee</Filter>
-    </ClCompile>
-    <ClCompile Include="optee\strings-optee.c">
-      <Filter>optee</Filter>
-    </ClCompile>
-    <ClCompile Include="sgx\files-sgx.c">
-      <Filter>sgx</Filter>
-    </ClCompile>
-    <ClCompile Include="sgx\strings-sgx.c">
-      <Filter>sgx</Filter>
-    </ClCompile>
-    <ClCompile Include="sgx\time-sgx.c">
-      <Filter>sgx</Filter>
-    </ClCompile>
     <ClCompile Include="CallbackHelper.c">
       <Filter>common</Filter>
     </ClCompile>
-    <ClCompile Include="tcps_stdio_t.c">
-      <Filter>common</Filter>
-    </ClCompile>
     <ClCompile Include="keygen.c">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="tcps_string_t.c">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="TcpsLogApp.c">
       <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="optee\rand_optee.c">
@@ -57,41 +30,14 @@
     <ClCompile Include="cborhelper.c">
       <Filter>common</Filter>
     </ClCompile>
-    <ClCompile Include="sgx\TcpsLogSgx.c">
-      <Filter>sgx</Filter>
-    </ClCompile>
     <ClCompile Include="Io.c">
       <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="..\buffer.c">
       <Filter>common</Filter>
     </ClCompile>
-    <ClCompile Include="optee\time-optee.c">
-      <Filter>optee</Filter>
-    </ClCompile>
-    <ClCompile Include="optee\trpc-optee.c">
-      <Filter>optee</Filter>
-    </ClCompile>
-    <ClCompile Include="TcpsLogOcallFile.c">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="optee\report-optee.c">
-      <Filter>optee</Filter>
-    </ClCompile>
-    <ClCompile Include="optee\except-optee.c">
-      <Filter>optee</Filter>
-    </ClCompile>
-    <ClCompile Include="sgx\trpc-sgx.c">
-      <Filter>sgx</Filter>
-    </ClCompile>
     <ClCompile Include="oeoverintelsgx_t.c">
       <Filter>GeneratedFiles</Filter>
-    </ClCompile>
-    <ClCompile Include="sgx\keygen-sgx.c">
-      <Filter>sgx</Filter>
-    </ClCompile>
-    <ClCompile Include="optee\keygen-optee.c">
-      <Filter>optee</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotAes128.c">
       <Filter>common\riot</Filter>
@@ -123,16 +69,70 @@
     <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotDerEnc.c">
       <Filter>common\riot</Filter>
     </ClCompile>
-    <ClCompile Include="optee\cyres-optee.c">
-      <Filter>optee</Filter>
-    </ClCompile>
     <ClCompile Include="..\oeresult.c">
       <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="oeshim_t.c">
       <Filter>common</Filter>
     </ClCompile>
-    <ClCompile Include="..\oeshim-common.c">
+    <ClCompile Include="stdio_enc.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="optee\files_optee.c">
+      <Filter>optee</Filter>
+    </ClCompile>
+    <ClCompile Include="sgx\files_sgx.c">
+      <Filter>sgx</Filter>
+    </ClCompile>
+    <ClCompile Include="sgx\keygen_sgx.c">
+      <Filter>sgx</Filter>
+    </ClCompile>
+    <ClCompile Include="sgx\strings_sgx.c">
+      <Filter>sgx</Filter>
+    </ClCompile>
+    <ClCompile Include="sgx\time_sgx.c">
+      <Filter>sgx</Filter>
+    </ClCompile>
+    <ClCompile Include="sgx\trpc_sgx.c">
+      <Filter>sgx</Filter>
+    </ClCompile>
+    <ClCompile Include="sgx\log_sgx.c">
+      <Filter>sgx</Filter>
+    </ClCompile>
+    <ClCompile Include="optee\ctype_optee.c">
+      <Filter>optee</Filter>
+    </ClCompile>
+    <ClCompile Include="optee\except_optee.c">
+      <Filter>optee</Filter>
+    </ClCompile>
+    <ClCompile Include="optee\cyres_optee.c">
+      <Filter>optee</Filter>
+    </ClCompile>
+    <ClCompile Include="optee\keygen_optee.c">
+      <Filter>optee</Filter>
+    </ClCompile>
+    <ClCompile Include="optee\report_optee.c">
+      <Filter>optee</Filter>
+    </ClCompile>
+    <ClCompile Include="optee\strings_optee.c">
+      <Filter>optee</Filter>
+    </ClCompile>
+    <ClCompile Include="optee\time_optee.c">
+      <Filter>optee</Filter>
+    </ClCompile>
+    <ClCompile Include="optee\trpc_optee.c">
+      <Filter>optee</Filter>
+    </ClCompile>
+    <ClCompile Include="..\oeshim_common.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="string_t.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="logapp.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="log_ocall_file.c">
       <Filter>common</Filter>
     </ClCompile>
   </ItemGroup>
@@ -143,7 +143,7 @@
     <None Include="optee\sub.mk">
       <Filter>optee</Filter>
     </None>
-    <None Include="..\TcpsFile.edl">
+    <None Include="..\stdio.edl">
       <Filter>common</Filter>
     </None>
   </ItemGroup>
@@ -163,28 +163,7 @@
     <ClInclude Include="netdb.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="tcps_string_t.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="tcps_stdio_t.h">
-      <Filter>common</Filter>
-    </ClInclude>
     <ClInclude Include="oeenclave.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="TrustedMisc.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="tcps_time_t.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="TrustedSslCommon.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="TrustedWolfssl.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="TcpsLogApp.h">
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="cborhelper.h">
@@ -193,19 +172,19 @@
     <ClInclude Include="sgx\tcps_settings.h">
       <Filter>sgx</Filter>
     </ClInclude>
-    <ClInclude Include="sgx\TcpsLogSgx.h">
-      <Filter>sgx</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\optee\cyrep-optee.h">
       <Filter>optee</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\optee\tcps_ctype_optee_t.h">
+    <ClInclude Include="sgx\log_sgx.h">
+      <Filter>sgx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\optee\ctype_optee_t.h">
       <Filter>optee</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\optee\tcps_string_optee_t.h">
+    <ClInclude Include="..\..\include\optee\string_optee_t.h">
       <Filter>optee</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\optee\tcps_time_optee_t.h">
+    <ClInclude Include="..\..\include\optee\time_optee_t.h">
       <Filter>optee</Filter>
     </ClInclude>
   </ItemGroup>

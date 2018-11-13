@@ -29,5 +29,5 @@ struct tm *_localtime64(const __time64_t *timer);
 #endif
 
 #ifdef OE_USE_OPTEE
-# include <optee/tcps_time_optee_t.h>
+# include <optee/time_optee_t.h>
 #endif

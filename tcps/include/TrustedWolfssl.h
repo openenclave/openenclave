@@ -11,7 +11,7 @@
 
 #if defined(OE_USE_OPTEE)
 #include <tee_api.h>
-#include "optee/tcps_ctype_optee_t.h"
+#include "optee/ctype_optee_t.h"
 #else
 unsigned long _lrotl(unsigned long val, int shift);
 unsigned long _lrotr(unsigned long value, int shift);

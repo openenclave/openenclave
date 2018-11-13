@@ -7,13 +7,13 @@
 #include "tcps_time_t.h"
 #include "tcps_string_t.h"
 #include "oeoverintelsgx_t.h"
-#include <optee/tcps_string_optee_t.h>
+#include <optee/string_optee_t.h>
 #else
 #include "oeoverintelsgx_t.h"
 #endif
 
 #include "TcpsLog.h"
-#include "TcpsLogOcallFile.h"
+#include "log_ocall_file.h"
 #include <stdio.h>
 #include "enclavelibc.h"
 

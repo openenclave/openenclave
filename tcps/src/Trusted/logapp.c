@@ -10,14 +10,14 @@
 #include "enclavelibc.h"
 
 #ifdef OE_USE_OPTEE
-#include <optee/tcps_string_optee_t.h>
+#include <optee/string_optee_t.h>
 #endif
 
 #include <TcpsLog.h>
 #include <TcpsTls.h>
 
 #ifdef OE_USE_SGX
-#include <TcpsLogSgx.h>
+#include <log_sgx.h>
 #endif
 
 extern TCPS_TA_ID_INFO TestIdentityData;
@@ -27,7 +27,7 @@ void* g_TcpsLogPlatHandle = NULL;
 #include "TcpsLogApp.h"
 
 #if defined(OE_USE_OPTEE) || defined(OE_USE_SGX)
-#include "TcpsLogOcallFile.h" 
+#include "log_ocall_file.h" 
 #endif
 
 #ifdef OE_USE_OPTEE

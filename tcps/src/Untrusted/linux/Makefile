@@ -1,8 +1,8 @@
 # All objects we build and store in our shared library.
-OBJECTS = oeoverintelsgx_u.o teehost-optee.o urpc-optee.o ufiles.o \
-          uTcpsFileOcalls.o buffer.o uhelper-shared.o \
-          uhelper.o oeshim_u.o uProtectedFs-optee.o oeresult.o \
-          oeshim-common.o stdext.o uTcpsFileOcalls-shared.o
+OBJECTS = oeoverintelsgx_u.o teehost_optee.o urpc_optee.o ufiles.o \
+          uTcpsFileOcalls.o buffer.o uhelper_shared.o \
+          uhelper.o oeshim_u.o uProtectedFs_optee.o oeresult.o \
+          oeshim_common.o stdext.o uTcpsFileOcalls_shared.o
 
 # Path to where OpenEnclave resides.
 OE_PATH = ../../../..
@@ -47,7 +47,7 @@ oehost.a: $(OBJECTS)
 	@$(AR) rcs $(LIB_NAME) $(OBJECTS)
 
 ../oeoverintelsgx_u.h ../oeoverintelsgx_u.c: $(EDL_PATH)/oeoverintelsgx.edl \
-								   $(EDL_PATH)/TcpsFile.edl
+								   $(EDL_PATH)/stdio.edl
 	@echo " [EDGE]\oeoverintelsgx.edl"
 	@sgx_edger8r --untrusted --untrusted-dir .. --search-path "$(EDL_PATH):$(EDL_INC_PATH):$(SGX_SDK)/include" \
 	                                                          "$(EDL_PATH)/oeoverintelsgx.edl"
@@ -56,11 +56,11 @@ buffer.o: ../../buffer.c ../oeoverintelsgx_u.h
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -std=c99 -c -o $@ $<
 
-uhelper-shared.o: ../uhelper-shared.c ../oeoverintelsgx_u.h
+uhelper_shared.o: ../uhelper_shared.c ../oeoverintelsgx_u.h
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 
-oeshim-common.o: ../../oeshim-common.c
+oeshim_common.o: ../../oeshim_common.c
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 
@@ -72,11 +72,11 @@ oeresult.o: ../../oeresult.c
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 
-uProtectedFs-optee.o: ../uProtectedFs-optee.c ../oeoverintelsgx_u.h
+uProtectedFs_optee.o: ../uProtectedFs_optee.c ../oeoverintelsgx_u.h
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 
-uTcpsFileOcalls-shared.o: ../uTcpsFileOcalls-shared.c ../oeoverintelsgx_u.h
+uTcpsFileOcalls_shared.o: ../uTcpsFileOcalls_shared.c ../oeoverintelsgx_u.h
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 

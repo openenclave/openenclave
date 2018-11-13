@@ -1,6 +1,6 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
-#include "tcps_ctype_optee_t.h"
+#include "ctype_optee_t.h"
 
 int isspace(int c)
 {
