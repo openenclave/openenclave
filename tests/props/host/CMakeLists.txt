@@ -9,3 +9,4 @@ add_executable(props_host host.c ${gen})
 
 target_include_directories(props_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(props_host oehostapp)
+target_compile_options(props_host PRIVATE -Wconversion -Wpointer-arith)
