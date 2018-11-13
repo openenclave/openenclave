@@ -5,6 +5,7 @@
 
 .vs/
 .vscode/
+graphviz/
 build/
 winbuild/
 

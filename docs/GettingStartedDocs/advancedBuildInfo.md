@@ -63,3 +63,21 @@ Building from within a subtree of the build-tree builds all dependencies for tha
 A successful build only outputs the HTML API reference into the build-tree.
 To update the Doxygen-generated documentation published to https://microsoft.github.io/openenclave,
 please follow instructions [here](/docs/refman/doxygen-howto.md)
+
+## Visualizing the CMake Dependency Graph
+
+CMake comes with [built-in support for
+graphviz](https://cmake.org/cmake/help/latest/module/CMakeGraphVizOptions.html)
+which makes it easy to generate an image of the dependency graph for a CMake
+project. For example, to visualize the entire Open Enclave project from the
+CMake root:
+
+```bash
+mkdir graphviz && cd graphviz
+cmake --graphviz=graph ..
+dot graph -Tsvg -o graph.svg
+```
+
+Although other output image formats such as PNG are support, we recommend using
+SVG because it keeps the resulting file size reasonably small in spite of the
+huge number of nodes (targets) in the resulting graph.
