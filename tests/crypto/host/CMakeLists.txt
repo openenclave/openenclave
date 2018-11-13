@@ -86,9 +86,9 @@ COMMAND openssl ec -in ${DATA_DIR}/Rootec.key.pem -pubout -out ${DATA_DIR}/Roote
 COMMAND echo -n "abcdefghijklmnopqrstuvwxyz" > ${DATA_DIR}/test_sign_alphabet.txt
 COMMAND openssl dgst -sha256 -sign ${DATA_DIR}/Rootec.key.pem -out  ${DATA_DIR}/test_ec_signature ${DATA_DIR}/test_sign_alphabet.txt
 
-COMMAND openssl ec -in ${DATA_DIR}/Rootec.key.pem -text -noout > ${DATA_DIR}/pub_data
+COMMAND openssl ec -in ${DATA_DIR}/Rootec.key.pem -pubout -outform DER -out ${DATA_DIR}/Rootec.pubkey.der
 # Extract the coordinates from the ec public key
-COMMAND sed '7,11!d' ${DATA_DIR}/pub_data | sed 's/\t//' | sed s/://g | sed '0,/04/{s/04//}' | xxd -r -p > ${DATA_DIR}/coordinates.bin
+COMMAND tail -c 64 ${DATA_DIR}/Rootec.pubkey.der > ${DATA_DIR}/coordinates.bin
 
 # ========================= TestRSA  ================================
 
@@ -101,9 +101,8 @@ COMMAND openssl genrsa -out ${DATA_DIR}/Intermediate2.key.pem
 COMMAND openssl req -new -key ${DATA_DIR}/Intermediate2.key.pem -out ${DATA_DIR}/Intermediate2.csr -subj "/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=Intermediate2"
 COMMAND openssl x509 -req -in ${DATA_DIR}/Intermediate2.csr -CA ${DATA_DIR}/RootCA2.crt.pem -CAkey ${DATA_DIR}/RootCA2.key.pem -CAcreateserial -out ${DATA_DIR}/Intermediate2.crt.pem -days 3650
 
-# Extract Modules from Leaf Certificate & convert into hexdump form
-COMMAND openssl x509 -modulus -noout < ${DATA_DIR}/Leaf.crt.pem | sed s/Modulus=// > ${DATA_DIR}/Leaf_modules_hex
-COMMAND xxd -r -p ${DATA_DIR}/Leaf_modules_hex ${DATA_DIR}/Leaf_modules.bin
+# Extract Modules binary from Leaf Certificate
+COMMAND openssl x509 -inform PEM -in ${DATA_DIR}/Leaf.crt.pem -outform DER | tail -c+304 | head -c256 > ${DATA_DIR}/Leaf_modules.bin
 
 # Generate Public key from Private key
 COMMAND openssl rsa -in ${DATA_DIR}/Leaf.key.pem -pubout -out ${DATA_DIR}/Leaf_public.key.pem
