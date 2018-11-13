@@ -22,7 +22,6 @@
 ../../3rdparty/libcxx/libcxx/test/libcxx/thread/thread.threads/thread.thread.this/sleep_for.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/utilities/any/size_and_alignment.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/utilities/any/small_type.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/utilities/memory/util.smartptr/race_condition.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/utilities/optional/optional.object/optional.object.assign/copy.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/utilities/optional/optional.object/optional.object.assign/move.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/utilities/optional/optional.object/optional.object.ctor/copy.pass.cpp
