@@ -37,7 +37,8 @@ oe_result_t oe_send_log(const char* module, const char *fmt, ...)
     int n = oe_vsnprintf(args->message, OE_LOG_MESSAGE_LEN_MAX, fmt, ap);
     oe_va_end(ap);
 
-//TODO check n
+    if (n < 0)
+        goto done;
 
     if (oe_ocall(OE_OCALL_LOG, (uint64_t)args, NULL) != OE_OK)
         goto done;
@@ -49,37 +50,4 @@ done:
         oe_host_free(args);
     }
     return result;
-}
-
-char** oe_backtrace_symbols(void* const* buffer, int size)
-{
-    char** ret = NULL;
-    oe_backtrace_symbols_args_t* args = NULL;
-
-    if (!buffer || size > OE_BACKTRACE_MAX)
-        goto done;
-
-    if (!(args = oe_host_malloc(sizeof(oe_backtrace_symbols_args_t))))
-        goto done;
-
-    if (oe_memcpy_s(
-            args->buffer,
-            sizeof(void*) * OE_BACKTRACE_MAX,
-            buffer,
-            sizeof(void*) * size) != OE_OK)
-        goto done;
-    args->size = size;
-    args->ret = NULL;
-
-    if (oe_ocall(OE_OCALL_BACKTRACE_SYMBOLS, (uint64_t)args, NULL) != OE_OK)
-        goto done;
-
-    ret = args->ret;
-
-done:
-
-    if (args)
-        oe_host_free(args);
-
-    return ret;
 }

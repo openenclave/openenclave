@@ -283,10 +283,10 @@ void oe_handle_backtrace_symbols(oe_enclave_t* enclave, uint64_t arg)
 
 void oe_handle_log(oe_enclave_t* enclave, uint64_t arg)
 {
-    const char* msg = (const char*) arg;
+    oe_log_args_t* args = (oe_log_args_t*) arg;
 
-    if (msg)
+    if (args)
     {
-        printf("Enclave: %s Msg: %s\n", enclave->path, msg);
+        printf("->Enclave: %s\n->Module: %s\n->Message:%s", enclave->path, args->module, args->message);
     }
 }
