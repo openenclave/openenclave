@@ -5,6 +5,7 @@
 #include <openenclave/enclave.h>
 #endif
 
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/asn1.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/ec.h>
@@ -53,6 +54,12 @@ size_t private_key_size;
 size_t public_key_size;
 size_t sign_size;
 size_t x_size, y_size;
+
+static const uint8_t _P256_GROUP_ORDER[] = {
+    0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xBC, 0xE6, 0xFA, 0xAD, 0xA7, 0x17,
+    0x9E, 0x84, 0xF3, 0xB9, 0xCA, 0xC2, 0xFC, 0x63, 0x25, 0x51,
+};
 
 // Test EC signing operation over an ASCII alphabet string. Note that two
 // signatures over the same data produce different hex sequences, although
@@ -253,7 +260,107 @@ static void _test_generate_from_private()
     oe_ec_private_key_free(&private_key);
     oe_ec_public_key_free(&public_key);
 
+    /* Key limits are 1 <= key <= order. Test 0 key fails. */
+    OE_TEST(
+        oe_memset_s(private_raw, sizeof(private_raw), 0, sizeof(private_raw)) ==
+        OE_OK);
+
+    r = oe_ec_generate_key_pair_from_private(
+        OE_EC_TYPE_SECP256R1,
+        private_raw,
+        sizeof(private_raw),
+        &private_key,
+        &public_key);
+    OE_TEST(r != OE_OK);
+
+    /* Test key = order fails. */
+    OE_TEST(
+        oe_memcpy_s(
+            private_raw,
+            sizeof(private_raw),
+            _P256_GROUP_ORDER,
+            sizeof(_P256_GROUP_ORDER)) == OE_OK);
+
+    r = oe_ec_generate_key_pair_from_private(
+        OE_EC_TYPE_SECP256R1,
+        private_raw,
+        sizeof(private_raw),
+        &private_key,
+        &public_key);
+    OE_TEST(r != OE_OK);
+
+    /* Test key = 1 passes. */
+    OE_TEST(
+        oe_memset_s(private_raw, sizeof(private_raw), 0, sizeof(private_raw)) ==
+        OE_OK);
+
+    private_raw[sizeof(private_raw) - 1] |= 0x1;
+
+    r = oe_ec_generate_key_pair_from_private(
+        OE_EC_TYPE_SECP256R1,
+        private_raw,
+        sizeof(private_raw),
+        &private_key,
+        &public_key);
+    OE_TEST(r == OE_OK);
+
+    _test_generate_common(&private_key, &public_key);
+    oe_ec_private_key_free(&private_key);
+    oe_ec_public_key_free(&public_key);
+
+    /* Test key = order - 1 passes. */
+    OE_TEST(
+        oe_memcpy_s(
+            private_raw,
+            sizeof(private_raw),
+            _P256_GROUP_ORDER,
+            sizeof(_P256_GROUP_ORDER)) == OE_OK);
+
+    private_raw[sizeof(private_raw) - 1] &= 0xFE;
+
+    r = oe_ec_generate_key_pair_from_private(
+        OE_EC_TYPE_SECP256R1,
+        private_raw,
+        sizeof(private_raw),
+        &private_key,
+        &public_key);
+    OE_TEST(r == OE_OK);
+
+    _test_generate_common(&private_key, &public_key);
+    oe_ec_private_key_free(&private_key);
+    oe_ec_public_key_free(&public_key);
+
     printf("=== passed %s()\n", __FUNCTION__);
+}
+
+static void _test_private_key_limits()
+{
+    uint8_t key[32] = {0};
+    bool valid;
+
+    /* Limits are 1 <= key <= _P256_GROUP_ORDER. Try key = 0 first. */
+    valid = oe_ec_valid_raw_private_key(OE_EC_TYPE_SECP256R1, key, sizeof(key));
+    OE_TEST(!valid);
+
+    /* Try key = 1. */
+    key[sizeof(key) - 1] |= 0x01;
+    valid = oe_ec_valid_raw_private_key(OE_EC_TYPE_SECP256R1, key, sizeof(key));
+    OE_TEST(valid);
+
+    /* Try _P256_GROUP_ORDER - 1. */
+    OE_TEST(
+        oe_memcpy_s(
+            key, sizeof(key), _P256_GROUP_ORDER, sizeof(_P256_GROUP_ORDER)) ==
+        OE_OK);
+
+    key[sizeof(key) - 1] &= 0xFE;
+    valid = oe_ec_valid_raw_private_key(OE_EC_TYPE_SECP256R1, key, sizeof(key));
+    OE_TEST(valid);
+
+    /* Try key = _P256_GROUP_ORDER. */
+    key[sizeof(key) - 1] |= 0x01;
+    valid = oe_ec_valid_raw_private_key(OE_EC_TYPE_SECP256R1, key, sizeof(key));
+    OE_TEST(!valid);
 }
 
 static void _test_write_private()
@@ -805,6 +912,7 @@ void TestEC()
     _test_sign_and_verify();
     _test_generate();
     _test_generate_from_private();
+    _test_private_key_limits();
     _test_write_private();
     _test_write_public();
     _test_cert_methods();
