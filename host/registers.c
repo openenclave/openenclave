@@ -22,7 +22,7 @@ void oe_set_gs_register_base(const void* ptr)
    # if defined(_MSVC_VER)
       _writegsbase_u64((uint64_t)ptr);
    #else
-     // __builtin_ia32_wrgsbase64((uint64_t)ptr);
+     // __builtin_ia32_wrgsbase64((uint64_t)ptr);  // Need to figure out the needed feature to access fs/gs registers.
    #endif
 #endif
 }
