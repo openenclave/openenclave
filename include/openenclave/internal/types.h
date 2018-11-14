@@ -123,6 +123,7 @@ typedef char* oe_va_list;
 #define oe_va_arg(ap, type) \
     *((type*)((ap += sizeof(__int64)) - sizeof(__int64)))
 #define oe_va_end(ap) (ap = (va_list)0)
+#define oe_va_copy(ap1, ap2) (ap1 = ap2)
 
 #elif defined(__linux__)
 
