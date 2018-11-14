@@ -1,9 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="ufiles.c" />
     <ClCompile Include="uhelper.c" />
-    <ClCompile Include="uTcpsFileOcalls.c" />
     <ClCompile Include="..\..\buffer.c" />
     <ClCompile Include="..\..\oeresult.c" />
     <ClCompile Include="..\oeshim_u.c" />
@@ -23,9 +21,7 @@
       <Filter>SGX</Filter>
     </ClCompile>
     <ClCompile Include="..\uhelper_shared.c" />
-    <ClCompile Include="..\uProtectedFs_optee.c" />
     <ClCompile Include="..\..\oeshim_common.c" />
-    <ClCompile Include="..\uTcpsFileOcalls_shared.c" />
     <ClCompile Include="..\..\..\..\3rdparty\project-kayla\driver\TrEE\OpteeCalls\OpteeCalls.c">
       <Filter>OP-TEE</Filter>
     </ClCompile>
@@ -49,8 +45,6 @@
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\oeoverintelsgx.edl" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\..\..\include\openenclave\stdio.edl" />
+    <CustomBuild Include="..\..\..\..\include\openenclave\stdio.edl" />
   </ItemGroup>
 </Project>

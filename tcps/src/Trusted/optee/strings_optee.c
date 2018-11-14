@@ -165,7 +165,7 @@ char *strrchr(
     return(NULL);
 }
 
-char* strstr(
+char* oe_strstr(
     const char* str1,
     const char* str2)
 {

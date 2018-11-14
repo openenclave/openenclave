@@ -10,7 +10,7 @@ endif
 # --------------
 
 .PHONY: all
-all: optee-client gtest usdk oesocket_host usdk-tests tsdk oesocket_enc tsdk-tests
+all: optee-client gtest usdk oesocket_host oestdio_host usdk-tests tsdk oesocket_enc oestdio_enc tsdk-tests
 
 .PHONY: help
 help:
@@ -46,8 +46,12 @@ usdk: optee-client
 oesocket_host: usdk
 	make -C ../libsocket/host/linux
 
+.PHONY: oestdio_host
+oestdio_host: usdk
+	make -C ../libstdio/host/linux
+
 .PHONY: usdk-tests
-usdk-tests: gtest usdk oesocket_host
+usdk-tests: gtest usdk oesocket_host oestdio_host
 	make -C tests/oetests_host
 	
 # Trusted SDK
@@ -61,15 +65,19 @@ tsdk:
 oesocket_enc: tsdk
 	SGX_RELATIVE_PATH=../3rdparty/SGXSDK/ SGX_PATHSEP=: SGX_EDGER8R=$(shell which sgx_edger8r) OEPATHSEP=: CROSS_COMPILE=$(TRUSTED_CROSS_COMPILE) make -C ../libsocket/enc/optee -f linux_gcc.mak BUILD_TARGET=debug
 
+.PHONY: oestdio_enc
+oestdio_enc: tsdk
+	SGX_RELATIVE_PATH=../3rdparty/SGXSDK/ SGX_PATHSEP=: SGX_EDGER8R=$(shell which sgx_edger8r) OEPATHSEP=: CROSS_COMPILE=$(TRUSTED_CROSS_COMPILE) make -C ../libstdio/enc/optee -f linux_gcc.mak BUILD_TARGET=debug
+
 .PHONY: tsdk-tests
-tsdk-tests: tsdk oesocket_enc
+tsdk-tests: tsdk oesocket_enc oestdio_enc
 	SGX_RELATIVE_PATH=../3rdparty/SGXSDK/ SGX_PATHSEP=: SGX_EDGER8R=$(shell which sgx_edger8r) OEPATHSEP=: CROSS_COMPILE=$(TRUSTED_CROSS_COMPILE) make -C tests/oetests_enclave/optee -f linux_gcc.mak BUILD_TARGET=debug
 
 # Clean Targets
 # -------------
 
 .PHONY: clean
-clean: optee-client-clean gtest-clean usdk-clean oesocket_host-clean usdk-tests-clean tsdk-clean oesocket_enc-clean tsdk-tests-clean
+clean: optee-client-clean gtest-clean usdk-clean oesocket_host-clean oestdio_host-clean usdk-tests-clean tsdk-clean oesocket_enc-clean oestdio_enc-clean tsdk-tests-clean
 
 .PHONY: optee-client-clean
 optee-client-clean:
@@ -87,6 +95,10 @@ usdk-clean:
 oesocket_host-clean:
 	make -C ../libsocket/host/linux clean
 
+.PHONY: oestdio_host-clean
+oestdio_host-clean:
+	make -C ../libstdio/host/linux clean
+
 .PHONY: usdk-tests-clean
 usdk-tests-clean:
 	make -C tests/oetests_host clean
@@ -98,6 +110,10 @@ tsdk-clean:
 .PHONY: oesocket_enc-clean
 oesocket_enc-clean:
 	make -C ../libsocket/enc/optee -f linux_gcc.mak BUILD_TARGET=debug clean
+
+.PHONY: oestdio_enc-clean
+oestdio_enc-clean:
+	make -C ../libstdio/enc/optee -f linux_gcc.mak BUILD_TARGET=debug clean
 
 .PHONY: tsdk-tests-clean
 tsdk-tests-clean:

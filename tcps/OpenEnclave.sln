@@ -43,12 +43,16 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{186E2BC5-8D01-4A23-B973-7915BE896161}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "oetests_host", "tests\oetests_host\oetests_host.vcxproj", "{D3C52EDD-A230-4CF1-8279-D0D111ABACF9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D8830D23-CF49-497E-8883-832EC758DE98} = {D8830D23-CF49-497E-8883-832EC758DE98}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gtest", "tests\gtest\gtest.vcxproj", "{C2A86939-0961-4089-A706-0C1C27634186}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "oetests_enclave", "tests\oetests_enclave\oetests_enclave.vcxproj", "{E759EE7C-5BB2-4988-89D1-CE1C0FD623F3}"
 	ProjectSection(ProjectDependencies) = postProject
 		{AFF02E67-1671-4004-B169-9C3AAB5CD103} = {AFF02E67-1671-4004-B169-9C3AAB5CD103}
+		{C95D1877-86E1-47C0-A568-08859E619EC4} = {C95D1877-86E1-47C0-A568-08859E619EC4}
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sockets", "sockets", "{48808102-01B7-4963-89AC-6ACE5D705B3A}"
@@ -67,6 +71,12 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "oesocket_enc", "..\libsocket\enc\oesocket_enc.vcxproj", "{75DB709B-D5BF-452B-AFB9-F8F92EB8BBEC}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "oesocket_host", "..\libsocket\host\win32\oesocket_host.vcxproj", "{12E2E2D6-830E-4B05-B657-C858C2DE54E3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "libstdio", "libstdio", "{7C7356BB-1584-465D-92E8-82414B932870}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "oestdio_enc", "..\libstdio\enc\oestdio_enc.vcxproj", "{C95D1877-86E1-47C0-A568-08859E619EC4}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "oestdio_host", "..\libstdio\host\win32\oestdio_host.vcxproj", "{D8830D23-CF49-497E-8883-832EC758DE98}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -540,6 +550,73 @@ Global
 		{12E2E2D6-830E-4B05-B657-C858C2DE54E3}.Simulation|x64.Build.0 = Simulation|x64
 		{12E2E2D6-830E-4B05-B657-C858C2DE54E3}.Simulation|x86.ActiveCfg = Simulation|Win32
 		{12E2E2D6-830E-4B05-B657-C858C2DE54E3}.Simulation|x86.Build.0 = Simulation|Win32
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.Debug|ARM.ActiveCfg = Debug|Win32
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.Debug|x64.ActiveCfg = Debug|x64
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.Debug|x64.Build.0 = Debug|x64
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.Debug|x86.ActiveCfg = Debug|Win32
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.Debug|x86.Build.0 = Debug|Win32
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.DebugOpteeSimulation|ARM.ActiveCfg = DebugOpteeSimulation|ARM
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.DebugOpteeSimulation|ARM.Build.0 = DebugOpteeSimulation|ARM
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.DebugOpteeSimulation|x64.ActiveCfg = DebugOpteeSimulation|x64
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.DebugOpteeSimulation|x64.Build.0 = DebugOpteeSimulation|x64
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.DebugOpteeSimulation|x86.ActiveCfg = DebugOpteeSimulation|Win32
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.DebugOpteeSimulation|x86.Build.0 = DebugOpteeSimulation|Win32
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.DebugSimulation|ARM.ActiveCfg = Release|x64
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.DebugSimulation|ARM.Build.0 = Release|x64
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.DebugSimulation|x64.ActiveCfg = Simulation|x64
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.DebugSimulation|x64.Build.0 = Simulation|x64
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.DebugSimulation|x86.ActiveCfg = Simulation|Win32
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.DebugSimulation|x86.Build.0 = Simulation|Win32
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.Prerelease|ARM.ActiveCfg = Prerelease|Win32
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.Prerelease|x64.ActiveCfg = Prerelease|x64
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.Prerelease|x64.Build.0 = Prerelease|x64
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.Prerelease|x86.ActiveCfg = Prerelease|Win32
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.Prerelease|x86.Build.0 = Prerelease|Win32
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.Release|ARM.ActiveCfg = Release|Win32
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.Release|x64.ActiveCfg = Release|x64
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.Release|x64.Build.0 = Release|x64
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.Release|x86.ActiveCfg = Release|Win32
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.Release|x86.Build.0 = Release|Win32
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.Simulation|ARM.ActiveCfg = Simulation|Win32
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.Simulation|x64.ActiveCfg = Simulation|x64
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.Simulation|x64.Build.0 = Simulation|x64
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.Simulation|x86.ActiveCfg = Simulation|Win32
+		{C95D1877-86E1-47C0-A568-08859E619EC4}.Simulation|x86.Build.0 = Simulation|Win32
+		{D8830D23-CF49-497E-8883-832EC758DE98}.Debug|ARM.ActiveCfg = Debug|ARM
+		{D8830D23-CF49-497E-8883-832EC758DE98}.Debug|ARM.Build.0 = Debug|ARM
+		{D8830D23-CF49-497E-8883-832EC758DE98}.Debug|x64.ActiveCfg = Debug|x64
+		{D8830D23-CF49-497E-8883-832EC758DE98}.Debug|x64.Build.0 = Debug|x64
+		{D8830D23-CF49-497E-8883-832EC758DE98}.Debug|x86.ActiveCfg = Debug|Win32
+		{D8830D23-CF49-497E-8883-832EC758DE98}.Debug|x86.Build.0 = Debug|Win32
+		{D8830D23-CF49-497E-8883-832EC758DE98}.DebugOpteeSimulation|ARM.ActiveCfg = DebugOpteeSimulation|ARM
+		{D8830D23-CF49-497E-8883-832EC758DE98}.DebugOpteeSimulation|ARM.Build.0 = DebugOpteeSimulation|ARM
+		{D8830D23-CF49-497E-8883-832EC758DE98}.DebugOpteeSimulation|x64.ActiveCfg = DebugOpteeSimulation|x64
+		{D8830D23-CF49-497E-8883-832EC758DE98}.DebugOpteeSimulation|x64.Build.0 = DebugOpteeSimulation|x64
+		{D8830D23-CF49-497E-8883-832EC758DE98}.DebugOpteeSimulation|x86.ActiveCfg = DebugOpteeSimulation|Win32
+		{D8830D23-CF49-497E-8883-832EC758DE98}.DebugOpteeSimulation|x86.Build.0 = DebugOpteeSimulation|Win32
+		{D8830D23-CF49-497E-8883-832EC758DE98}.DebugSimulation|ARM.ActiveCfg = Release|x64
+		{D8830D23-CF49-497E-8883-832EC758DE98}.DebugSimulation|ARM.Build.0 = Release|x64
+		{D8830D23-CF49-497E-8883-832EC758DE98}.DebugSimulation|x64.ActiveCfg = Debug|x64
+		{D8830D23-CF49-497E-8883-832EC758DE98}.DebugSimulation|x64.Build.0 = Debug|x64
+		{D8830D23-CF49-497E-8883-832EC758DE98}.DebugSimulation|x86.ActiveCfg = Debug|Win32
+		{D8830D23-CF49-497E-8883-832EC758DE98}.DebugSimulation|x86.Build.0 = Debug|Win32
+		{D8830D23-CF49-497E-8883-832EC758DE98}.Prerelease|ARM.ActiveCfg = Prerelease|x64
+		{D8830D23-CF49-497E-8883-832EC758DE98}.Prerelease|ARM.Build.0 = Prerelease|x64
+		{D8830D23-CF49-497E-8883-832EC758DE98}.Prerelease|x64.ActiveCfg = Prerelease|x64
+		{D8830D23-CF49-497E-8883-832EC758DE98}.Prerelease|x64.Build.0 = Prerelease|x64
+		{D8830D23-CF49-497E-8883-832EC758DE98}.Prerelease|x86.ActiveCfg = Prerelease|Win32
+		{D8830D23-CF49-497E-8883-832EC758DE98}.Prerelease|x86.Build.0 = Prerelease|Win32
+		{D8830D23-CF49-497E-8883-832EC758DE98}.Release|ARM.ActiveCfg = Release|Win32
+		{D8830D23-CF49-497E-8883-832EC758DE98}.Release|x64.ActiveCfg = Release|x64
+		{D8830D23-CF49-497E-8883-832EC758DE98}.Release|x64.Build.0 = Release|x64
+		{D8830D23-CF49-497E-8883-832EC758DE98}.Release|x86.ActiveCfg = Release|Win32
+		{D8830D23-CF49-497E-8883-832EC758DE98}.Release|x86.Build.0 = Release|Win32
+		{D8830D23-CF49-497E-8883-832EC758DE98}.Simulation|ARM.ActiveCfg = Simulation|x64
+		{D8830D23-CF49-497E-8883-832EC758DE98}.Simulation|ARM.Build.0 = Simulation|x64
+		{D8830D23-CF49-497E-8883-832EC758DE98}.Simulation|x64.ActiveCfg = Simulation|x64
+		{D8830D23-CF49-497E-8883-832EC758DE98}.Simulation|x64.Build.0 = Simulation|x64
+		{D8830D23-CF49-497E-8883-832EC758DE98}.Simulation|x86.ActiveCfg = Simulation|Win32
+		{D8830D23-CF49-497E-8883-832EC758DE98}.Simulation|x86.Build.0 = Simulation|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -561,5 +638,7 @@ Global
 		{38AD85CB-7F69-4ADC-9835-BFD2A1A5D04E} = {E36FB220-0859-4C67-8B98-8206EFCB0B3B}
 		{75DB709B-D5BF-452B-AFB9-F8F92EB8BBEC} = {E87B5688-C78B-41EE-87BC-F8AF17346670}
 		{12E2E2D6-830E-4B05-B657-C858C2DE54E3} = {E87B5688-C78B-41EE-87BC-F8AF17346670}
+		{C95D1877-86E1-47C0-A568-08859E619EC4} = {7C7356BB-1584-465D-92E8-82414B932870}
+		{D8830D23-CF49-497E-8883-832EC758DE98} = {7C7356BB-1584-465D-92E8-82414B932870}
 	EndGlobalSection
 EndGlobal

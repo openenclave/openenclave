@@ -19,6 +19,10 @@ srcs-y             += ../SampleTA_t.c
 srcs-y             += ../SampleTA.c
 
 # Add additional libraries here
-libnames           += oesocket_enc
 libdirs            += $(TCPS_SDK_ROOT_PATH)bin/optee/tcps
+
+libnames           += oesocket_enc
 libdeps            += $(TCPS_SDK_ROOT_PATH)bin/optee/tcps/liboesocket_enc.a
+
+libnames           += oestdio_enc
+libdeps            += $(TCPS_SDK_ROOT_PATH)bin/optee/tcps/liboestdio_enc.a

@@ -11,14 +11,6 @@ ROOT_RELATIVE_PATH = ../../../
 ../oeoverintelsgx_t.h: ../../oeoverintelsgx.edl
 	$(SGX_EDGER8R) --trusted --search-path "../..$(SGX_PATHSEP)$(ROOT_RELATIVE_PATH)$(SGX_RELATIVE_PATH)include" --trusted-dir ".."  ../../oeoverintelsgx.edl
 
-../stdio_t.c: $(OE_EDL_PATH)/stdio.edl
-	$(OEEDGER8R) --trusted --search-path "../..$(SGX_PATHSEP)$(ROOT_RELATIVE_PATH)$(SGX_RELATIVE_PATH)include" --trusted-dir ".."  $(OE_EDL_PATH)/stdio.edl
-
-../stdio_t.h: $(OE_EDL_PATH)/stdio.edl
-	$(OEEDGER8R) --trusted --search-path "../..$(SGX_PATHSEP)$(ROOT_RELATIVE_PATH)$(SGX_RELATIVE_PATH)include" --trusted-dir ".."  $(OE_EDL_PATH)/stdio.edl
-
-../keygen.c: ../stdio_t.h
-
 CFLAGS += -DOE_USE_OPTEE
 
 global-incdirs-y += ..
@@ -42,13 +34,11 @@ srcs-y += ../../oeshim_common.c
 srcs-y += ../oeshim_t.c
 srcs-y += ../logapp.c
 srcs-y += ../log_ocall_file.c
-srcs-y += ../stdio_enc.c
 srcs-y += ../string_t.c
 
 srcs-y += ctype_optee.c
 srcs-y += cyres_optee.c
 srcs-y += except_optee.c
-srcs-y += files_optee.c
 srcs-y += keygen_optee.c
 srcs-y += rand_optee.c
 srcs-y += report_optee.c

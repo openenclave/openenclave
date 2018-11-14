@@ -21,6 +21,10 @@ srcs-y             += ../helloworld_t.c
 srcs-y             += ../enc.c
 
 # Add additional libraries here
+libdirs            += $(TCPS_SDK_ROOT_PATH)bin/optee/tcps
+libnames           += oestdio_enc
+libdeps            += $(TCPS_SDK_ROOT_PATH)bin/optee/tcps/liboestdio_enc.a
+#
 # libnames         += ...
 # libdirs          += ...
 # libdeps          += ...

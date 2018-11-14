@@ -26,3 +26,7 @@ srcs-y             += ../oetests_enclave.c
 libnames         += oesocket_enc
 libdirs          += $(TCPS_SDK_ROOT_PATH)bin/optee/tcps
 libdeps          += $(TCPS_SDK_ROOT_PATH)bin/optee/tcps/liboesocket_enc.a
+
+libnames         += oestdio_enc
+libdirs          += $(TCPS_SDK_ROOT_PATH)bin/optee/tcps
+libdeps          += $(TCPS_SDK_ROOT_PATH)bin/optee/tcps/liboestdio_enc.a

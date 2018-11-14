@@ -6,7 +6,6 @@
 #include "tcps_string_t.h"
 #include "oeoverintelsgx_t.h"
 #include "enclavelibc.h"
-#include "stdio_t.h"
 
 int ExportPublicCertificate(const char* sourceLocation, const char* destinationPath)
 {
@@ -35,6 +34,7 @@ oe_result_t Provision_Certificate(const char* destinationLocation, const char* s
     return TEE_P_ImportFile(destinationLocation, sourceLocation, TRUE);
 }
 
+#if 0
 oe_result_t
 TEE_P_ExportPublicCertificate(
     _In_z_ const char* certificateFileNameExported,
@@ -64,3 +64,4 @@ Tcps_BeginErrorHandling;
     Tcps_Trace(Tcps_TraceLevelError, "sgxStatus = %#x\n", sgxStatus);
 Tcps_FinishErrorHandling;
 }
+#endif

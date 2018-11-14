@@ -23,10 +23,12 @@ LDFLAGS =                                        \
     -L../gtest                                   \
     -L../../src/Untrusted/linux                  \
     -L../../../libsocket/host/linux              \
+    -L../../../libstdio/host/linux               \
     -L../../../3rdparty/optee_client/out/libteec \
     -l:libgtest.a                                \
     -l:oehost.a                                  \
     -l:oesocket_host.a                           \
+    -l:oestdio_host.a                            \
     -l:libteec.a                                 \
     -lpthread
 

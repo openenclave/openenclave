@@ -88,15 +88,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="ufiles.c" />
     <ClCompile Include="uhelper.c" />
     <ClCompile Include="..\uhelper_shared.c" />
-    <ClCompile Include="..\uProtectedFs_optee.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="urpc_optee.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -110,8 +103,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="uTcpsFileOcalls.c" />
-    <ClCompile Include="..\uTcpsFileOcalls_shared.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(ProjectKaylaDir)driver\TrEE\OpteeCalls\targetver.h" />

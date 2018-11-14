@@ -83,6 +83,7 @@ int _vsnprintf(
     return ret;
 }
 
+#ifdef OE_USE_OPTEE
 errno_t strcpy_s(
     char* strDestination,
     size_t sizeDestination,
@@ -92,6 +93,7 @@ errno_t strcpy_s(
 );
 }
 
+#ifndef _WIN32
 errno_t strcat_s(
     char* strDestination,
     size_t sizeDestination,
@@ -100,6 +102,8 @@ errno_t strcat_s(
     int len = strlen(strDestination);
     return strcpy_s(strDestination + len, sizeDestination - len, strSource);
 }
+#endif
+#endif
 
 #if defined(_DEBUG) || defined(OE_USE_OPTEE)
 char *strcpy(
@@ -141,6 +145,7 @@ char *strcat(
     } \
 } while(0)
 
+#ifdef OE_USE_OPTEE
 errno_t strncpy_s(
     char *Dest,
     size_t SizeInBytes,
@@ -176,6 +181,7 @@ errno_t strncpy_s(
   
     return res;
 }
+#endif
 
 errno_t strncat_s(
     char *strDest,

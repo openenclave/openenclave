@@ -14,7 +14,6 @@
 #include <openenclave/enclave.h>
 #include <openenclave/bits/stdio.h>
 #include <tcps_string_t.h>
-#include <oeoverintelsgx_t.h>
 #include <stdio_t.h>
 
 #define DMSG printf

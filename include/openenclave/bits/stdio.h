@@ -28,11 +28,14 @@ size_t oe_fread(void *ptr, size_t size, size_t nmemb, OE_FILE *stream);
 int oe_fseek(OE_FILE *stream, long offset, int whence);
 long oe_ftell(OE_FILE *stream);
 size_t oe_fwrite(const void *ptr, size_t size, size_t nmemb, OE_FILE *stream);
+int oe_remove(oe_file_security_t file_security, const char *pathname);
 
 #ifdef OE_SECURE_POSIX_FILE_API
 #define fopen(path, mode) oe_fopen(OE_FILE_SECURE_BEST_EFFORT, path, mode)
+#define remove(pathname) oe_remove(OE_FILE_SECURE_BEST_EFFORT, pathname)
 #elif !defined(OE_NO_POSIX_FILE_API)
 #define fopen(path, mode) oe_fopen(OE_FILE_INSECURE, path, mode)
+#define remove(pathname) oe_remove(OE_FILE_INSECURE, pathname)
 #endif
 
 #ifndef OE_NO_POSIX_FILE_API

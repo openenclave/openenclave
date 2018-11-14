@@ -1,14 +1,12 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
 #include <openenclave/enclave.h>
-#include "sgx_edger8r.h" /* for sgx_status_t etc. */
-#include "stdio_t.h"
+#include <openenclave/bits/stdio.h>
 
 #ifdef OE_USE_OPTEE
 #include "tcps_time_t.h"
 #include "tcps_string_t.h"
 #include <optee/string_optee_t.h>
-#else
 #endif
 
 #include "TcpsLog.h"
@@ -55,6 +53,7 @@ TcpsLogFilenameFormatOcall(
     return path;
 }
 
+#if 0
 oe_result_t
 TcpsLogFileWriteOcall(
     TCPS_LOG_OCALL_OBJECT* Context,
@@ -84,6 +83,7 @@ Tcps_ReturnStatusCode;
 Tcps_BeginErrorHandling;
 Tcps_FinishErrorHandling;
 }
+#endif
 
 oe_result_t
 TcpsLogFileWriteEntryOcall(
@@ -108,6 +108,7 @@ TcpsLogFileWriteEntryOcall(
         LogIdentityLabel);
 }
 
+#if 0
 oe_result_t
 TcpsLogFileReadOcall(
     TCPS_LOG_OCALL_OBJECT* Context,
@@ -178,6 +179,7 @@ Error:
 
     return uStatus;
 }
+#endif
 
 oe_result_t
 TcpsLogFileClearOcall(
@@ -201,18 +203,16 @@ TcpsLogFileClearOcall(
         return OE_FAILURE;
     }
 
-    sgx_status_t sgxstatus =
 #ifdef OE_USE_OPTEE
-        SGX_ERROR_UNEXPECTED;
+    status = OE_FAILURE;
+    goto Exit;
 #else
-        ocall_remove(&retVal, filename);
-#endif
-
-    if (sgxstatus != SGX_SUCCESS || retVal)
-    {
+    retVal = oe_remove(OE_FILE_SECURE_BEST_EFFORT, filename);
+    if (retVal) {
         status = OE_FAILURE;
         goto Exit;
     }
+#endif
 
 Exit:
     return status;

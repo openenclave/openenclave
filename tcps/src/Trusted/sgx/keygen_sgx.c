@@ -53,7 +53,7 @@ oe_result_t oe_get_seal_key_by_policy_v2(
 
     uint8_t* info = NULL;
     if (key_info != NULL) {
-        info = oe_malloc(sizeof(key_request));
+        info = (uint8_t*)oe_malloc(sizeof(key_request));
         if (info == NULL) {
             return OE_OUT_OF_MEMORY;
         }

@@ -75,15 +75,6 @@
     <ClCompile Include="oeshim_t.c">
       <Filter>common</Filter>
     </ClCompile>
-    <ClCompile Include="stdio_enc.c">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="optee\files_optee.c">
-      <Filter>optee</Filter>
-    </ClCompile>
-    <ClCompile Include="sgx\files_sgx.c">
-      <Filter>sgx</Filter>
-    </ClCompile>
     <ClCompile Include="sgx\keygen_sgx.c">
       <Filter>sgx</Filter>
     </ClCompile>
@@ -187,9 +178,6 @@
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\oeoverintelsgx.edl">
-      <Filter>common</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\include\openenclave\stdio.edl">
       <Filter>common</Filter>
     </CustomBuild>
   </ItemGroup>

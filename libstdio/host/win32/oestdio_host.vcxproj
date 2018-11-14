@@ -62,106 +62,51 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="socket_u.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="socket_host.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="..\..\..\include\openenclave\socket.edl">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">Creating untrusted proxy/bridge routines</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">Creating untrusted proxy/bridge routines</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|ARM'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">Creating untrusted proxy/bridge routines</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Simulation|ARM'">Creating untrusted proxy/bridge routines</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Simulation|ARM'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">Creating untrusted proxy/bridge routines</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'">Creating untrusted proxy/bridge routines</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Creating untrusted proxy/bridge routines</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">Creating untrusted proxy/bridge routines</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Creating untrusted proxy/bridge routines</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">Creating untrusted proxy/bridge routines</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Creating untrusted proxy/bridge routines</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">Creating untrusted proxy/bridge routines</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Creating untrusted proxy/bridge routines</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Creating untrusted proxy/bridge routines</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(OESdkDir)include"</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Creating untrusted proxy/bridge routines</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-    </CustomBuild>
-  </ItemGroup>
+  <Import Project="$(SolutionDir)\vssettings.props" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{12E2E2D6-830E-4B05-B657-C858C2DE54E3}</ProjectGuid>
+    <ProjectGuid>{D8830D23-CF49-497E-8883-832EC758DE98}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>oesocket_host</RootNamespace>
+    <RootNamespace>oestdio_host</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <Import Project="$(SolutionDir)\vssettings.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
     <WindowsSDKDesktopARMSupport>true</WindowsSDKDesktopARMSupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
     <WindowsSDKDesktopARMSupport>true</WindowsSDKDesktopARMSupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Simulation|ARM'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
     <WindowsSDKDesktopARMSupport>true</WindowsSDKDesktopARMSupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -169,14 +114,14 @@
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
     <WindowsSDKDesktopARMSupport>true</WindowsSDKDesktopARMSupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'" Label="Configuration">
@@ -184,47 +129,47 @@
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
     <WindowsSDKDesktopARMSupport>true</WindowsSDKDesktopARMSupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -388,7 +333,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_ARM_;OE_SIMULATE_OPTEE;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>OE_SIMULATE_OPTEE;_ARM_;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(TcpsDir)include\optee\Untrusted;$(TcpsDir)include\optee;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -586,6 +531,74 @@
       <AdditionalDependencies>sgx_urts.lib;sgx_uae_service.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\..\..\include\openenclave\stdio.edl">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">Creating untrusted proxy/bridge routines</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">Creating untrusted proxy/bridge routines</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|ARM'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">Creating untrusted proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Simulation|ARM'">Creating untrusted proxy/bridge routines</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Simulation|ARM'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">Creating untrusted proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'">Creating untrusted proxy/bridge routines</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Creating untrusted proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">Creating untrusted proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Creating untrusted proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">Creating untrusted proxy/bridge routines</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Creating untrusted proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">Creating untrusted proxy/bridge routines</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Creating untrusted proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Creating untrusted proxy/bridge routines</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(TcpsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)\include"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Creating untrusted proxy/bridge routines</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\uProtectedFs_optee.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\uTcpsFileOcalls_shared.c" />
+    <ClCompile Include="ufiles.c" />
+    <ClCompile Include="uTcpsFileOcalls.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\stdio_args.h" />
+    <ClInclude Include="..\stdio_u.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

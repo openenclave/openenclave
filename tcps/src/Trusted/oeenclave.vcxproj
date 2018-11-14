@@ -108,12 +108,6 @@
     </ClCompile>
     <ClCompile Include="oeoverintelsgx_t.c" />
     <ClCompile Include="log_ocall_file.c" />
-    <ClCompile Include="stdio_enc.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">false</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="Io.c" />
     <ClCompile Include="keygen.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
@@ -132,16 +126,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="optee\keygen_optee.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="optee\files_optee.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">false</ExcludedFromBuild>
@@ -170,11 +154,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="sgx\files_sgx.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="sgx\strings_sgx.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">true</ExcludedFromBuild>
@@ -223,36 +202,6 @@
     <ClInclude Include="oeoverintelsgx_t.h" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\..\..\include\openenclave\stdio.edl">
-      <FileType>Document</FileType>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Creating proxy/bridge routines</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Creating proxy/bridge routines</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">Creating proxy/bridge routines</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Creating proxy/bridge routines</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Creating proxy/bridge routines</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">Creating proxy/bridge routines</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Creating proxy/bridge routines</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Creating proxy/bridge routines</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">Creating proxy/bridge routines</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename)_t.h;%(Filename)_t.c;$(TcpsDir)include\%(Filename)_t.h;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename)_t.h;%(Filename)_t.c;$(TcpsDir)include\%(Filename)_t.h;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">%(Filename)_t.h;%(Filename)_t.c;$(TcpsDir)include\%(Filename)_t.h;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">%(Filename)_t.h;%(Filename)_t.c;$(TcpsDir)include\%(Filename)_t.h;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">%(Filename)_t.h;%(Filename)_t.c;$(TcpsDir)include\%(Filename)_t.h;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">%(Filename)_t.h;%(Filename)_t.c;$(TcpsDir)include\%(Filename)_t.h;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Filename)_t.h;%(Filename)_t.c;$(TcpsDir)include\%(Filename)_t.h;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Filename)_t.h;%(Filename)_t.c;$(TcpsDir)include\%(Filename)_t.h;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">%(Filename)_t.h;%(Filename)_t.c;$(TcpsDir)include\%(Filename)_t.h;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(TcpsDir)include;$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(TcpsDir)include;$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(TcpsDir)include;$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(TcpsDir)include;$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(TcpsDir)include;$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(TcpsDir)include;$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(TcpsDir)include;$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(TcpsDir)include;$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(TcpsDir)include;$(OESdkDir)include"</Command>
-    </CustomBuild>
     <None Include="optee\linux_gcc.mak" />
     <None Include="optee\sub.mk" />
   </ItemGroup>
@@ -417,7 +366,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>OPENSSL_NO_SOCK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>OPENSSL_NO_SOCK;_ARM_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(TcpsDir)include;$(ProjectDir)..;$(OESdkDir)include;$(ProjectDir);$(SolutionDir)\Stack\platforms\sgx_trusted;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(ProjectDir)sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
@@ -455,7 +404,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>OPENSSL_NO_SOCK;OE_SIMULATE_OPTEE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>OPENSSL_NO_SOCK;_ARM_;OE_SIMULATE_OPTEE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)..;$(ProjectDir);$(TcpsDir)include\optee\Trusted\Simulator;$(TcpsDir)include\optee\Trusted;$(TcpsDir)include\optee;$(TcpsDir)include;$(OESdkDir)include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(SGXSDKInstallPath)include;$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
@@ -538,7 +487,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>OPENSSL_NO_SOCK;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>OPENSSL_NO_SOCK;_ARM_;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(TcpsDir)include;$(ProjectDir)..;$(SolutionDir)\openssl\include;$(ProjectDir);$(SolutionDir)\Stack\platforms\sgx_trusted;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\libc++;$(ProjectDir)sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
     </ClCompile>

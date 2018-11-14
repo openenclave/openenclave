@@ -309,7 +309,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>oehost.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;sgx_urts.lib;sgx_uae_service.lib;sgx_uprotected_fs.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oestdio_host.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;sgx_urts.lib;sgx_uae_service.lib;sgx_uprotected_fs.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SGXSDKInstallPath)\bin\$(Platform)\Debug;$(OutDir);$(SGXSDKInstallPath)\bin\$(Platform)\$(Configuration);C:\Program Files (x86)\Visual Leak Detector\lib\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -325,7 +325,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>oehost.lib;ws2_32.lib;kernel32.lib;user32.lib;advapi32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oestdio_host.lib;ws2_32.lib;kernel32.lib;user32.lib;advapi32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SGXSDKInstallPath)\bin\$(Platform)\Debug;$(OutDir);$(SGXSDKInstallPath)\bin\$(Platform)\$(Configuration);C:\Program Files (x86)\Visual Leak Detector\lib\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -341,7 +341,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>oehost.lib;rpcrt4.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;oehost_opteesim.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oestdio_host.lib;rpcrt4.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;oehost_opteesim.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SGXSDKInstallPath)\bin\$(Platform)\Debug;$(OutDir);$(SGXSDKInstallPath)\bin\$(Platform)\$(Configuration);C:\Program Files (x86)\Visual Leak Detector\lib\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -357,7 +357,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>oehost.lib;rpcrt4.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;oehost_opteesim.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oestdio_host.lib;rpcrt4.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;oehost_opteesim.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SGXSDKInstallPath)\bin\$(Platform)\Debug;$(OutDir);$(SGXSDKInstallPath)\bin\$(Platform)\$(Configuration);C:\Program Files (x86)\Visual Leak Detector\lib\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -373,7 +373,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>oehost.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;sgx_urts_sim.lib;sgx_uae_service_sim.lib;sgx_uprotected_fs.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oestdio_host.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;sgx_urts_sim.lib;sgx_uae_service_sim.lib;sgx_uprotected_fs.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Platform)\Debug;$(OutDir);$(SGXSDKInstallPath)\bin\$(Platform)\Debug;$(SGXSDKInstallPath)\bin\$(Platform)\$(Configuration);C:\Program Files (x86)\Visual Leak Detector\lib\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -389,7 +389,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>oehost.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;sgx_urts_sim.lib;sgx_uae_service_sim.lib;sgx_uprotected_fs.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oestdio_host.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;sgx_urts_sim.lib;sgx_uae_service_sim.lib;sgx_uprotected_fs.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Platform)\Debug;$(OutDir);$(SGXSDKInstallPath)\bin\$(Platform)\Debug;$(SGXSDKInstallPath)\bin\$(Platform)\$(Configuration);C:\Program Files (x86)\Visual Leak Detector\lib\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -405,7 +405,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>oehost.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;sgx_urts.lib;sgx_uae_service.lib;sgx_uprotected_fs.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oestdio_host.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;sgx_urts.lib;sgx_uae_service.lib;sgx_uprotected_fs.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SGXSDKInstallPath)\bin\$(Platform)\Debug;$(OutDir);$(SGXSDKInstallPath)\bin\$(Platform)\$(Configuration);C:\Program Files (x86)\Visual Leak Detector\lib\Win64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -421,7 +421,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>oehost.lib;rpcrt4.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;oehost_opteesim.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oestdio_host.lib;rpcrt4.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;oehost_opteesim.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SGXSDKInstallPath)\bin\$(Platform)\Debug;$(OutDir);$(SGXSDKInstallPath)\bin\$(Platform)\$(Configuration);C:\Program Files (x86)\Visual Leak Detector\lib\Win64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -437,7 +437,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>oehost.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;sgx_urts_sim.lib;sgx_uae_service_sim.lib;sgx_uprotected_fs.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oestdio_host.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;sgx_urts_sim.lib;sgx_uae_service_sim.lib;sgx_uprotected_fs.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)bin\$(Platform)\Debug;$(SGXSDKInstallPath)\bin\$(Platform)\Debug;C:\Program Files (x86)\Visual Leak Detector\lib\Win64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -457,7 +457,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>oehost.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;sgx_urts.lib;sgx_uae_service.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oestdio_host.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;sgx_urts.lib;sgx_uae_service.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SGXSDKInstallPath)\bin\$(Platform)\Release;$(OutDir);$(SGXSDKInstallPath)\bin\$(Platform)\$(Configuration);C:\Program Files (x86)\Visual Leak Detector\lib\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -477,7 +477,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>oehost.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;sgx_urts.lib;sgx_uae_service.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oestdio_host.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;sgx_urts.lib;sgx_uae_service.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SGXSDKInstallPath)\bin\$(Platform)\Release;$(OutDir);$(SGXSDKInstallPath)\bin\$(Platform)\$(Configuration);C:\Program Files (x86)\Visual Leak Detector\lib\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -497,7 +497,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>oehost.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;sgx_urts.lib;sgx_uae_service.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oestdio_host.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;sgx_urts.lib;sgx_uae_service.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SGXSDKInstallPath)\bin\$(Platform)\Release;$(OutDir);$(SGXSDKInstallPath)\bin\$(Platform)\$(Configuration);C:\Program Files (x86)\Visual Leak Detector\lib\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -517,7 +517,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>oehost.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;sgx_urts.lib;sgx_uae_service.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oestdio_host.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;sgx_urts.lib;sgx_uae_service.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SGXSDKInstallPath)\bin\$(Platform)\Release;$(OutDir);$(SGXSDKInstallPath)\bin\$(Platform)\$(Configuration);C:\Program Files (x86)\Visual Leak Detector\lib\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -537,7 +537,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>oehost.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;sgx_urts.lib;sgx_uae_service.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oestdio_host.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;sgx_urts.lib;sgx_uae_service.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SGXSDKInstallPath)\bin\$(Platform)\Release;$(OutDir);$(SGXSDKInstallPath)\bin\$(Platform)\$(Configuration);C:\Program Files (x86)\Visual Leak Detector\lib\Win64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -557,11 +557,14 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>oehost.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;sgx_urts.lib;sgx_uae_service.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>oehost.lib;oestdio_host.lib;ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;sgx_urts.lib;sgx_uae_service.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SGXSDKInstallPath)\bin\$(Platform)\Release;$(OutDir);$(SGXSDKInstallPath)\bin\$(Platform)\$(Configuration);C:\Program Files (x86)\Visual Leak Detector\lib\Win64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\libstdio\host\win32\oestdio_host.vcxproj">
+      <Project>{d8830d23-cf49-497e-8883-832ec758de98}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\src\Untrusted\win32\oehost.vcxproj">
       <Project>{b7ae03e4-cf5a-49dc-ab3d-2d8f485472b4}</Project>
     </ProjectReference>

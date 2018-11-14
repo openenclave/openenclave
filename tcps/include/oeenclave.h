@@ -14,8 +14,8 @@
 #include <stdint.h>
 
 #ifdef OE_SIMULATE_OPTEE
-# include "optee/Trusted/Simulator/oeenclave.h"
 # include <sal.h>
+# include "optee/Trusted/Simulator/oeenclave.h"
 #endif
 
 #include "tcps.h"

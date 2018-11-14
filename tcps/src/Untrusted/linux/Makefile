@@ -1,8 +1,7 @@
 # All objects we build and store in our shared library.
-OBJECTS = oeoverintelsgx_u.o teehost_optee.o urpc_optee.o ufiles.o \
-          uTcpsFileOcalls.o buffer.o uhelper_shared.o \
-          uhelper.o oeshim_u.o uProtectedFs_optee.o oeresult.o \
-          oeshim_common.o stdext.o uTcpsFileOcalls_shared.o
+OBJECTS = oeoverintelsgx_u.o teehost_optee.o urpc_optee.o \
+          buffer.o uhelper_shared.o uhelper.o oeshim_u.o oeresult.o \
+          oeshim_common.o stdext.o
 
 # Path to where OpenEnclave resides.
 OE_PATH = ../../../..
@@ -73,22 +72,6 @@ oeshim_u.o: ../oeshim_u.c ../oeoverintelsgx_u.h
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 
 oeresult.o: ../../oeresult.c
-	@echo " [CC]\t$@"
-	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
-
-uProtectedFs_optee.o: ../uProtectedFs_optee.c ../oeoverintelsgx_u.h
-	@echo " [CC]\t$@"
-	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
-
-uTcpsFileOcalls.o: uTcpsFileOcalls.c ../stdio_u.h
-	@echo " [CC]\t$@"
-	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
-
-uTcpsFileOcalls_shared.o: ../uTcpsFileOcalls_shared.c ../stdio_u.h
-	@echo " [CC]\t$@"
-	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
-
-ufiles.o: ufiles.c ../stdio_u.h
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 
