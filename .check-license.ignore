@@ -15,6 +15,7 @@
 ./debugger/pythonExtension/readelf.py
 ./docs/DesignOverview.docx
 ./docs/DesignOverview.pdf
+./docs/GettingStartedDocs/DependencyGraph.svg
 ./docs/GettingStartedDocs/sampledocs/helloworld/helloworld.png
 ./docs/refman/html
 .exrc
