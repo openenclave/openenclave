@@ -300,6 +300,24 @@ oe_result_t oe_ecdsa_signature_write_der(
     const uint8_t* s_data,
     size_t s_size);
 
+/**
+ * Checks if the given key is a valid private key for the given curve.
+ *
+ * Checks if the given byte array interpretted as a bit endian number is a
+ * valid ECC private key on the given curve.
+ *
+ * @param type the ECC curve type
+ * @param key the buffer holding the key
+ * @param keysize the size of key in bytes
+ *
+ * @return true if the key is valid
+ * @return false if the key is not valid
+ */
+bool oe_ec_valid_raw_private_key(
+    oe_ec_type_t type,
+    const uint8_t* key,
+    size_t keysize);
+
 OE_EXTERNC_END
 
 #endif /* _OE_EC_H */

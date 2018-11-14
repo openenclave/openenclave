@@ -404,12 +404,7 @@ oe_result_t oe_ec_generate_key_pair_from_private(
      * generator point of the curve.
      */
     openssl_result = EC_POINT_mul(
-        EC_KEY_get0_group(key),
-        public_point,
-        private_bn,
-        NULL,
-        NULL,
-        NULL);
+        EC_KEY_get0_group(key), public_point, private_bn, NULL, NULL, NULL);
     if (openssl_result == 0)
         OE_RAISE(OE_FAILURE);
 
@@ -454,7 +449,6 @@ done:
         EVP_PKEY_free(private_pkey);
     return result;
 }
-
 
 oe_result_t oe_ec_public_key_equal(
     const oe_ec_public_key_t* public_key1,
@@ -643,4 +637,48 @@ done:
         ECDSA_SIG_free(sig);
 
     return result;
+}
+
+bool oe_ec_valid_raw_private_key(
+    oe_ec_type_t type,
+    const uint8_t* key,
+    size_t keysize)
+{
+    BIGNUM* bn = NULL;
+    EC_GROUP* group = NULL;
+    BIGNUM* order = NULL;
+    bool is_valid = false;
+
+    if (!key || keysize > OE_INT_MAX)
+        goto done;
+
+    bn = BN_bin2bn(key, (int)keysize, NULL);
+    if (bn == NULL)
+        goto done;
+
+    order = BN_new();
+    if (order == NULL)
+        goto done;
+
+    group = EC_GROUP_new_by_curve_name(_get_nid(type));
+    if (group == NULL)
+        goto done;
+
+    if (EC_GROUP_get_order(group, order, NULL) == 0)
+        goto done;
+
+    /* Constraint is 1 <= private_key <= order - 1. */
+    if (BN_is_zero(bn) || BN_cmp(bn, order) >= 0)
+        goto done;
+
+    is_valid = true;
+
+done:
+    if (bn != NULL)
+        BN_clear_free(bn);
+    if (group != NULL)
+        EC_GROUP_clear_free(group);
+    if (order != NULL)
+        BN_clear_free(order);
+    return is_valid;
 }
