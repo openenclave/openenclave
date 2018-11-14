@@ -57,7 +57,10 @@ additional include paths:
 * $(OESdkDir)tcps\include\sgx\Trusted
 * $(OESdkDir)tcps\include
 
-To use socket APIs, the SGX Enclave DLL should link with **oesocket_enc.lib**.
+To use stdio APIs, the SGX Enclave DLL should link with **oestdio\_enc.lib**.
+See the helloworld sample for an example.
+
+To use socket APIs, the SGX Enclave DLL should link with **oesocket\_enc.lib**.
 See the sockets sample for an example.
 
 ### SGX Rich Application
@@ -67,7 +70,10 @@ include path:
 
 * $(OESdkDir)tcps\include
 
-To allow the SGX Enclave DLL to use socket APIs, the EXE should link with **oesocket_host.lib**.
+To allow the SGX Enclave DLL to use stdio APIs, the EXE should link with **oestdio\_host.lib**.
+See the helloworld sample for an example.
+
+To allow the SGX Enclave DLL to use socket APIs, the EXE should link with **oesocket\_host.lib**.
 See the sockets sample for an example.
 
 ### OP-TEE TA
@@ -81,7 +87,10 @@ same filename):
 * $(OESdkDir)tcps/include/optee
 * $(OESdkDir)tcps/include
 
-To use socket APIs, the OP-TEE TA should link with **liboesocket_enc**.
+To use stdio APIs, the OP-TEE TA should link with **liboestdio\_enc**.
+See the helloworld sample for an example.
+
+To use socket APIs, the OP-TEE TA should link with **liboesocket\_enc**.
 See the sockets sample for an example.
 
 ### OP-TEE Rich Application
@@ -93,7 +102,10 @@ additional include paths, in any order:
 * $(OESdkDir)tcps\include\optee
 * $(OESdkDir)tcps\include\optee\Untrusted
 
-To allow the OP-TEE TA to use socket APIs, the EXE should link with **oesocket_host.lib**.
+To allow the OP-TEE TA to use stdio APIs, the EXE should link with **oestdio\_host.lib**.
+See the helloworld sample for an example.
+
+To allow the OP-TEE TA to use socket APIs, the EXE should link with **oesocket\_host.lib**.
 See the sockets sample for an example.
 
 ## Open Enclave APIs
