@@ -93,7 +93,7 @@ oe_gethostname(
     oe_result_t oe_result;
     gethostname_Result result;
 
-    if (network_security != OE_NETWORK_UNTRUSTED) {
+    if (network_security != OE_NETWORK_INSECURE) {
         return OE_SOCKET_ERROR;
     }
 
@@ -104,7 +104,7 @@ oe_gethostname(
     if (result.error == 0) {
         strncpy(a_pBuffer, result.name, a_uiBufferLength);
     }
-    oe_wsa_set_last_error(OE_NETWORK_UNTRUSTED, result.error);
+    oe_wsa_set_last_error(OE_NETWORK_INSECURE, result.error);
     return (result.error == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
@@ -114,7 +114,10 @@ oe_wsa_startup(
     _In_ uint16_t wVersionRequired,
     _Out_ oe_wsa_data_t* lpWSAData)
 {
-    if (network_security != OE_NETWORK_UNTRUSTED) {
+    OE_UNUSED(wVersionRequired);
+    OE_UNUSED(lpWSAData);
+
+    if (network_security != OE_NETWORK_INSECURE) {
         return OE_UNSUPPORTED;
     }
     oe_socket_error_t apiResult;
@@ -128,7 +131,7 @@ oe_wsa_startup(
 int
 oe_wsa_cleanup(_In_ oe_network_security_t network_security)
 {
-    if (network_security != OE_NETWORK_UNTRUSTED) {
+    if (network_security != OE_NETWORK_INSECURE) {
         return OE_UNSUPPORTED;
     }
     oe_socket_error_t error;
@@ -136,7 +139,7 @@ oe_wsa_cleanup(_In_ oe_network_security_t network_security)
     if (oe_result != OE_OK) {
         error = OE_ENETDOWN;
     }
-    oe_wsa_set_last_error(OE_NETWORK_UNTRUSTED, error);
+    oe_wsa_set_last_error(OE_NETWORK_INSECURE, error);
     return (error == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
@@ -146,7 +149,7 @@ static oe_socket_error_t g_WSALastError = 0;
 void
 oe_wsa_set_last_error(_In_ oe_network_security_t network_security, _In_ int iError)
 {
-    if (network_security != OE_NETWORK_UNTRUSTED) {
+    if (network_security != OE_NETWORK_INSECURE) {
         return;
     }
     g_WSALastError = iError;
@@ -155,7 +158,7 @@ oe_wsa_set_last_error(_In_ oe_network_security_t network_security, _In_ int iErr
 int
 oe_wsa_get_last_error(_In_ oe_network_security_t network_security)
 {
-    if (network_security != OE_NETWORK_UNTRUSTED) {
+    if (network_security != OE_NETWORK_INSECURE) {
         return OE_UNSUPPORTED;
     }
     return g_WSALastError;
@@ -171,7 +174,7 @@ oe_shutdown(
     if (oe_result != OE_OK) {
         socketError = OE_ENETDOWN;
     }
-    oe_wsa_set_last_error(OE_NETWORK_UNTRUSTED, socketError);
+    oe_wsa_set_last_error(OE_NETWORK_INSECURE, socketError);
     return (socketError == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
@@ -184,7 +187,7 @@ oe_closesocket(
     if (oe_result != OE_OK) {
         socketError = OE_ENETDOWN;
     }
-    oe_wsa_set_last_error(OE_NETWORK_UNTRUSTED, socketError);
+    oe_wsa_set_last_error(OE_NETWORK_INSECURE, socketError);
     return (socketError == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
@@ -198,7 +201,7 @@ oe_listen(
     if (oe_result != OE_OK) {
         socketError = OE_ENETDOWN;
     }
-    oe_wsa_set_last_error(OE_NETWORK_UNTRUSTED, socketError);
+    oe_wsa_set_last_error(OE_NETWORK_INSECURE, socketError);
     return (socketError == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
@@ -208,11 +211,11 @@ oe_getsockopt(
     _In_ int level,
     _In_ int optname,
     _Out_writes_(*optlen) char *optval,
-    _Inout_ int *optlen)
+    _Inout_ socklen_t *optlen)
 {
     getsockopt_Result result = { 0 };
     if (*optlen > sizeof(result.buffer)) {
-        oe_wsa_set_last_error(OE_NETWORK_UNTRUSTED, OE_EINVAL);
+        oe_wsa_set_last_error(OE_NETWORK_INSECURE, OE_EINVAL);
         return OE_SOCKET_ERROR;
     }
     oe_result_t oe_result = ocall_getsockopt(&result, s, level, optname, *optlen);
@@ -223,7 +226,7 @@ oe_getsockopt(
         *optlen = result.len;
         memcpy(optval, result.buffer, result.len);
     }
-    oe_wsa_set_last_error(OE_NETWORK_UNTRUSTED, result.error);
+    oe_wsa_set_last_error(OE_NETWORK_INSECURE, result.error);
     return (result.error == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
@@ -234,7 +237,7 @@ oe_socket(
     _In_ int type,
     _In_ int protocol)
 {
-    if (network_security != OE_NETWORK_UNTRUSTED) {
+    if (network_security != OE_NETWORK_INSECURE) {
         oe_wsa_set_last_error(network_security, OE_UNSUPPORTED);
         return OE_INVALID_SOCKET;
     }
@@ -244,7 +247,7 @@ oe_socket(
         result.error = OE_ENETDOWN;
         result.hSocket = OE_INVALID_SOCKET;
     }
-    oe_wsa_set_last_error(OE_NETWORK_UNTRUSTED, result.error);
+    oe_wsa_set_last_error(OE_NETWORK_INSECURE, result.error);
     return result.hSocket;
 }
 
@@ -264,7 +267,7 @@ oe_recv(
     {
         sock_error = OE_ENETDOWN;
     }
-    oe_wsa_set_last_error(OE_NETWORK_UNTRUSTED, sock_error);
+    oe_wsa_set_last_error(OE_NETWORK_INSECURE, sock_error);
     return (sock_error != 0) ? OE_SOCKET_ERROR : bytesReceived;
 }
 
@@ -284,7 +287,7 @@ oe_send(
         result.error = OE_ENETDOWN;
         result.bytesSent = 0;
     }
-    oe_wsa_set_last_error(OE_NETWORK_UNTRUSTED, result.error);
+    oe_wsa_set_last_error(OE_NETWORK_INSECURE, result.error);
     return (result.error != 0) ? OE_SOCKET_ERROR : result.bytesSent;
 }
 
@@ -342,7 +345,7 @@ oe_setsockopt(
     _In_ int level,
     _In_ int optname,
     _In_reads_bytes_(optlen) const char* optval,
-    _In_ int optlen)
+    _In_ socklen_t optlen)
 {
     oe_socket_error_t socketError = 0;
     oe_result_t oe_result;
@@ -351,7 +354,7 @@ oe_setsockopt(
     if (oe_result != OE_OK) {
         socketError = OE_ENETDOWN;
     }
-    oe_wsa_set_last_error(OE_NETWORK_UNTRUSTED, socketError);
+    oe_wsa_set_last_error(OE_NETWORK_INSECURE, socketError);
     return (socketError == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
@@ -368,7 +371,7 @@ oe_ioctlsocket(
     if (oe_result != OE_OK) {
         result.error = OE_ENETDOWN;
     }
-    oe_wsa_set_last_error(OE_NETWORK_UNTRUSTED, result.error);
+    oe_wsa_set_last_error(OE_NETWORK_INSECURE, result.error);
     *argp = result.outputValue;
     return (result.error == 0) ? 0 : OE_SOCKET_ERROR;
 }
@@ -386,7 +389,7 @@ oe_connect(
     if (oe_result != OE_OK) {
         socketError = OE_ENETDOWN;
     }
-    oe_wsa_set_last_error(OE_NETWORK_UNTRUSTED, socketError);
+    oe_wsa_set_last_error(OE_NETWORK_INSECURE, socketError);
     return (socketError == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
@@ -406,7 +409,7 @@ oe_accept(
         memcpy(a_SockAddr, result.addr, result.addrlen);
         addrlen = result.addrlen;
     }
-    oe_wsa_set_last_error(OE_NETWORK_UNTRUSTED, result.error);
+    oe_wsa_set_last_error(OE_NETWORK_INSECURE, result.error);
     if (a_pAddrLen != NULL) {
         *a_pAddrLen = addrlen;
     }
@@ -428,7 +431,7 @@ oe_getpeername(
         memcpy(addr, result.addr, result.addrlen);
         *addrlen = result.addrlen;
     }
-    oe_wsa_set_last_error(OE_NETWORK_UNTRUSTED, result.error);
+    oe_wsa_set_last_error(OE_NETWORK_INSECURE, result.error);
     return (result.error == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
@@ -447,7 +450,7 @@ oe_getsockname(
         memcpy(addr, result.addr, result.addrlen);
         *addrlen = result.addrlen;
     }
-    oe_wsa_set_last_error(OE_NETWORK_UNTRUSTED, result.error);
+    oe_wsa_set_last_error(OE_NETWORK_INSECURE, result.error);
     return (result.error == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
@@ -464,7 +467,7 @@ oe_bind(
     if (oe_result != OE_OK) {
         socketError = OE_ENETDOWN;
     }
-    oe_wsa_set_last_error(OE_NETWORK_UNTRUSTED, socketError);
+    oe_wsa_set_last_error(OE_NETWORK_INSECURE, socketError);
     return (socketError == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
@@ -473,7 +476,8 @@ oe_inet_addr(
     _In_z_ const char *cp)
 {
     /* We only support dotted decimal. */
-    uint8_t byte[4];
+    uint32_t value;
+    uint8_t* byte = (uint8_t*)&value;
     int field = 0;
     const char* next;
     const char* p = cp;
@@ -486,7 +490,7 @@ oe_inet_addr(
     if (*p != 0) {
         return INADDR_NONE;
     }
-    return *(uint32_t*)byte;
+    return value;
 }
 
 void
@@ -517,7 +521,7 @@ oe_getaddrinfo(
     _In_ const oe_addrinfo* pHints,
     _Out_ oe_addrinfo** ppResult)
 {
-    if (network_security != OE_NETWORK_UNTRUSTED) {
+    if (network_security != OE_NETWORK_INSECURE) {
         return OE_UNSUPPORTED;
     }
     oe_result_t oe_result;
@@ -543,14 +547,14 @@ oe_getaddrinfo(
 
     if (result.addressCount > 0) {
         int bytesReceived = result.addressCount * sizeof(addrinfo_Buffer);
-        char* buf = oe_malloc(bytesReceived);
-        if (buf == NULL) {
+        struct addrinfo_Buffer* response = (struct addrinfo_Buffer*)oe_malloc(bytesReceived);
+        if (response == NULL) {
             uStatus = OE_OUT_OF_MEMORY;
             result.error = OE_ENOMEM;
         } else {
             uStatus = TcpsPullDataFromReeBuffer(
                 result.hMessage,
-                buf,
+                (uint8_t*)response,
                 bytesReceived);
             if (uStatus != OE_OK)
             {
@@ -559,8 +563,6 @@ oe_getaddrinfo(
         }
 
         TcpsFreeReeBuffer(result.hMessage);
-
-        struct addrinfo_Buffer* response = (struct addrinfo_Buffer*)buf;
 
         /* We now have a response to deserialize. */
         for (int i = 0; i < result.addressCount; i++) {

@@ -2,7 +2,7 @@
 /* Licensed under the MIT License. */
 #include <stdio.h>
 #include <openenclave/enclave.h>
-#include "tcps_stdio_t.h"
+#include <openenclave/bits/stdio.h>
 #include "tcps_time_t.h"
 #include <string.h>
 #include <cbor.h>

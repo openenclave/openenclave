@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 
 enclave {
+    from "openenclave/stdio.edl" import *;
+
     trusted {
         /* define ECALLs here. */
         public int enclave_helloworld();

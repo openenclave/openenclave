@@ -5,6 +5,7 @@ export RIoTDir=$(OE_SDK_ROOT_PATH)3rdparty/RIoT/
 export OpteeDir=$(OE_SDK_ROOT_PATH)3rdparty/optee_os/
 export SGXSDKInstallPath=$(OE_SDK_ROOT_PATH)3rdparty/SGXSDK
 export CYREP_CYREP_PATH=$(RIoTDir)CyReP/cyrep
+export OE_EDL_PATH=$(OE_SDK_ROOT_PATH)include/openenclave
 
 global-incdirs-y += $(TCPS_SDK_ROOT_PATH)include/optee/Trusted
 global-incdirs-y += $(TCPS_SDK_ROOT_PATH)include/optee

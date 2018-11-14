@@ -46,11 +46,15 @@ oehost.a: $(OBJECTS)
 	@echo " [AR]\toehost.a"
 	@$(AR) rcs $(LIB_NAME) $(OBJECTS)
 
-../oeoverintelsgx_u.h ../oeoverintelsgx_u.c: $(EDL_PATH)/oeoverintelsgx.edl \
-								   $(EDL_PATH)/stdio.edl
+../oeoverintelsgx_u.h ../oeoverintelsgx_u.c: $(EDL_PATH)/oeoverintelsgx.edl
 	@echo " [EDGE]\oeoverintelsgx.edl"
 	@sgx_edger8r --untrusted --untrusted-dir .. --search-path "$(EDL_PATH):$(EDL_INC_PATH):$(SGX_SDK)/include" \
 	                                                          "$(EDL_PATH)/oeoverintelsgx.edl"
+
+../stdio_u.h ../stdio_u.c: $(OE_EDL_PATH)/stdio.edl
+	@echo " [EDGE]\stdio.edl"
+	@$(OEEDGER8R) --untrusted --untrusted-dir .. --search-path "$(EDL_PATH):$(EDL_INC_PATH):$(SGX_SDK)/include" \
+	                                                           "$(OE_EDL_PATH)/stdio.edl"
 
 buffer.o: ../../buffer.c ../oeoverintelsgx_u.h
 	@echo " [CC]\t$@"
@@ -76,7 +80,15 @@ uProtectedFs_optee.o: ../uProtectedFs_optee.c ../oeoverintelsgx_u.h
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 
-uTcpsFileOcalls_shared.o: ../uTcpsFileOcalls_shared.c ../oeoverintelsgx_u.h
+uTcpsFileOcalls.o: uTcpsFileOcalls.c ../stdio_u.h
+	@echo " [CC]\t$@"
+	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
+
+uTcpsFileOcalls_shared.o: ../uTcpsFileOcalls_shared.c ../stdio_u.h
+	@echo " [CC]\t$@"
+	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
+
+ufiles.o: ufiles.c ../stdio_u.h
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 

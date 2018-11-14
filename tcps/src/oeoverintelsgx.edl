@@ -1,7 +1,7 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
 enclave {
-    from "stdio.edl" import *;
+    from "sgx_tprotected_fs.edl" import *;
 
     include "tcps.h"
     include "openenclave/bits/result.h"
@@ -31,17 +31,6 @@ enclave {
     struct QueryPerformanceCounter_Result {
         unsigned int status;
         uint64_t count;
-    };
-
-    struct FindFirstUntrustedFile_Result {
-        uint32_t status;
-        char matchingFileName[256];
-        uintptr_t findNextHandle;
-    };
-
-    struct FindNextUntrustedFile_Result {
-        uint32_t result;
-        char matchingFileName[256];
     };
 
     struct CreateBuffer_Result {
@@ -106,8 +95,6 @@ enclave {
             [user_check] void* hReeBuffer,
             int offset);
 
-        oe_result_t ocall_ExportPublicCertificate(oe_buffer256 location, oe_buffer4096 ptr, size_t len);
-        
         /* Time APIs. */
         unsigned int ocall_GetTickCount(void);
         uint64_t ocall_time64(void);
@@ -117,20 +104,6 @@ enclave {
 
         oe_result_t ocall_exit(int result);
         oe_result_t ocall_puts(oe_buffer1024 str, int bNewline);
-
-        FindFirstUntrustedFile_Result
-        ocall_FindFirstUntrustedFile(
-            oe_buffer256 filePathWithWildcards,
-            uint32_t matchingFileNameSize);
-
-        FindNextUntrustedFile_Result
-        ocall_FindNextUntrustedFile(
-            uint32_t findNextHandle,
-            uint32_t matchingFileNameSize);
-
-        oe_result_t
-        ocall_FindNextUntrustedFileClose(
-            uint32_t findNextHandle);
 
         void* ocall_malloc(size_t size);
         void* ocall_realloc([user_check] void* ptr, size_t size);

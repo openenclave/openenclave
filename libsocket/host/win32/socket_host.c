@@ -102,7 +102,7 @@ ssize_t ocall_recv(
         return SOCKET_ERROR;
     }
 
-    int bytesReceived = recv(s, buf, len, flags);
+    int bytesReceived = recv(s, buf, (int)len, flags);
     if (bytesReceived == SOCKET_ERROR) {
         *a_Error = (oe_socket_error_t)WSAGetLastError();
     } else {

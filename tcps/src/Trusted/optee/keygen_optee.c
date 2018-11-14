@@ -59,7 +59,7 @@ oe_result_t oe_get_seal_key_v2(
         return OE_OUT_OF_MEMORY;
     }
 
-    mock_key_info_t* info = key_info;
+    mock_key_info_t* info = (mock_key_info_t*)key_info;
     *key_buffer_size = MOCK_KEY_SIZE;
     /* TODO: use a cyrep-derived key */
     memcpy(*key_buffer, info->seed, *key_buffer_size);

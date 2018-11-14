@@ -28,6 +28,9 @@ helloworld_args.h
 socket_t.*
 socket_u.*
 socket_args.h
+stdio_t.*
+stdio_u.*
+stdio_args.h
 TcpsSdkTestTA_args.h
 SampleTA_args.h
 oeedger8r.exe

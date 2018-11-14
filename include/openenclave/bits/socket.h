@@ -12,7 +12,7 @@ extern "C" {
 #endif
 
 typedef enum {
-    OE_NETWORK_UNTRUSTED = 0,
+    OE_NETWORK_INSECURE = 0,
     OE_NETWORK_SECURE_HARDWARE = 1
 } oe_network_security_t;
 
@@ -270,7 +270,7 @@ oe_getaddrinfo(
     oe_getaddrinfo(OE_NETWORK_SECURE_HARDWARE, node, service, hints, res)
 #elif !defined(OE_NO_POSIX_SOCKET_API)
 #define getaddrinfo(node, service, hints, res) \
-    oe_getaddrinfo(OE_NETWORK_UNTRUSTED, node, service, hints, res)
+    oe_getaddrinfo(OE_NETWORK_INSECURE, node, service, hints, res)
 #endif
 
 int
@@ -284,7 +284,7 @@ oe_gethostname(
     oe_gethostname(OE_NETWORK_SECURE_HARDWARE, name, len)
 #elif !defined(OE_NO_POSIX_SOCKET_API)
 #define gethostname(name, len) \
-    oe_gethostname(OE_NETWORK_UNTRUSTED, name, len)
+    oe_gethostname(OE_NETWORK_INSECURE, name, len)
 #endif
 
 int
@@ -302,7 +302,7 @@ oe_getnameinfo(
     oe_getnameinfo(OE_NETWORK_SECURE_HARDWARE, sa, salen, host, hostlen, serv, servlen, flags)
 #elif !defined(OE_NO_POSIX_SOCKET_API)
 #define getnameinfo(sa, salen, host, hostlen, serv, servlen, flags) \
-    oe_getnameinfo(OE_NETWORK_UNTRUSTED, sa, salen, host, hostlen, serv, servlen, flags)
+    oe_getnameinfo(OE_NETWORK_INSECURE, sa, salen, host, hostlen, serv, servlen, flags)
 #endif
 
 int
@@ -323,7 +323,7 @@ oe_getsockopt(
     _In_ int level,
     _In_ int optname,
     _Out_writes_(*optlen) char* optval,
-    _Inout_ int* optlen);
+    _Inout_ socklen_t* optlen);
 
 uint32_t
 oe_htonl(
@@ -384,7 +384,7 @@ oe_setsockopt(
     _In_ int level,
     _In_ int optname,
     _In_reads_bytes_(optlen) const char* optval,
-    _In_ int optlen);
+    _In_ socklen_t optlen);
 
 int
 oe_shutdown(
@@ -403,7 +403,7 @@ oe_socket(
      oe_socket(OE_NETWORK_SECURE_HARDWARE, domain, type, protocol)
 #elif !defined(OE_NO_POSIX_SOCKET_API)
 #define socket(domain, type, protocol) \
-     oe_socket(OE_NETWORK_UNTRUSTED, domain, type, protocol)
+     oe_socket(OE_NETWORK_INSECURE, domain, type, protocol)
 #endif
 
 typedef struct {
@@ -417,7 +417,7 @@ int oe_wsa_cleanup(_In_ oe_network_security_t network_security);
      oe_wsa_cleanup(OE_NETWORK_SECURE_HARDWARE)
 #elif !defined(OE_NO_POSIX_SOCKET_API)
 #define WSACleanup() \
-     oe_wsa_cleanup(OE_NETWORK_UNTRUSTED)
+     oe_wsa_cleanup(OE_NETWORK_INSECURE)
 #endif
 
 int oe_wsa_get_last_error(_In_ oe_network_security_t network_security);
@@ -427,7 +427,7 @@ int oe_wsa_get_last_error(_In_ oe_network_security_t network_security);
      oe_wsa_get_last_error(OE_NETWORK_SECURE_HARDWARE)
 #elif !defined(OE_NO_POSIX_SOCKET_API)
 #define WSAGetLastError() \
-     oe_wsa_get_last_error(OE_NETWORK_UNTRUSTED)
+     oe_wsa_get_last_error(OE_NETWORK_INSECURE)
 #endif
 
 void oe_wsa_set_last_error(
@@ -439,7 +439,7 @@ void oe_wsa_set_last_error(
      oe_wsa_set_last_error(OE_NETWORK_SECURE_HARDWARE, error)
 #elif !defined(OE_NO_POSIX_SOCKET_API)
 #define WSASetLastError(error) \
-     oe_wsa_set_last_error(OE_NETWORK_UNTRUSTED, error)
+     oe_wsa_set_last_error(OE_NETWORK_INSECURE, error)
 #endif
 
 int oe_wsa_startup(_In_ oe_network_security_t network_security,
@@ -451,7 +451,7 @@ int oe_wsa_startup(_In_ oe_network_security_t network_security,
      oe_wsa_startup(OE_NETWORK_SECURE_HARDWARE, version_required, wsa_data)
 #elif !defined(OE_NO_POSIX_SOCKET_API)
 #define WSAStartup(version_required, wsa_data) \
-     oe_wsa_startup(OE_NETWORK_UNTRUSTED, version_required, wsa_data)
+     oe_wsa_startup(OE_NETWORK_INSECURE, version_required, wsa_data)
 #endif
 
 #ifdef __cplusplus

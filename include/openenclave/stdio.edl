@@ -1,0 +1,86 @@
+/* Copyright (c) Microsoft Corporation. All rights reserved. */
+/* Licensed under the MIT License. */
+enclave {
+    struct ocall_struct_stat64i32 {
+        unsigned int   _st_dev;
+        unsigned short _st_ino;
+        unsigned short _st_mode;
+        short          _st_nlink;
+        short          _st_uid;
+        short          _st_gid;
+        unsigned int   _st_rdev;
+        long           _st_size;
+        uint64_t       _st_atime;
+        uint64_t       _st_mtime;
+        uint64_t       _st_ctime;
+    };
+
+    struct GetUntrustedFileSize_Result {
+        unsigned int status;
+        int32_t fileSize;
+    };
+
+    struct GetUntrustedFileContent_Result {
+        unsigned int status;
+        char content[4096];
+    };
+
+    struct FindFirstUntrustedFile_Result {
+        uint32_t status;
+        char d_name[256];
+        uintptr_t findNextHandle;
+    };
+
+    struct ocall_struct_dirent {
+        uint32_t status;
+        char d_name[256];
+    };
+    
+    trusted {
+        public void ecall_InitializeStdio();
+    };
+
+    untrusted {
+        // File APIs
+
+        int ocall_mkdir([in, string] const char* dirname);
+        
+        GetUntrustedFileSize_Result ocall_GetUntrustedFileSize(
+            [in, string] const char* filename);
+
+        GetUntrustedFileContent_Result ocall_GetUntrustedFileContent(
+            [in, string] const char* location,
+            size_t len);
+
+        unsigned int ocall_ExportFile(
+            [in, string] const char* filename,
+            unsigned int appendToExistingFile,
+            [in, size=len] const void* content,
+            size_t len);
+
+        oe_result_t ocall_ExportPublicCertificate(
+            [in, string] const char* location,
+            [in, size=len] const void* ptr,
+            size_t len);
+
+        int ocall_stat64i32(
+            [in, string] const char* path,
+            [out] struct ocall_struct_stat64i32* buf);
+
+        int ocall_remove([in, string] const char* filename);
+
+        FindFirstUntrustedFile_Result
+        ocall_opendir(
+            [in, string] const char* filePathWithWildcards,
+            uint32_t matchingFileNameSize);
+
+        ocall_struct_dirent
+        ocall_readdir(
+            uintptr_t findNextHandle,
+            uint32_t matchingFileNameSize);
+
+        oe_result_t
+        ocall_closedir(
+            uintptr_t findNextHandle);
+    };
+};

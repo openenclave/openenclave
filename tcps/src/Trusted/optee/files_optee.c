@@ -1,15 +1,24 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
+#include <openenclave/enclave.h>
 #define _CRT_FUNCTIONS_REQUIRED 0
-#include <tcps_stdio_t.h>
+#include <openenclave/bits/stdio.h>
 #include <stdlib.h>
 #include <trace.h>
 #include <string.h>
+#include <tee_api.h>
+#include <inttypes.h>
 
 #include <tcps_string_t.h>
-#include <oeoverintelsgx_t.h>
+#include <stdio_t.h>
 #undef errno
 #include "enclavelibc.h"
+
+typedef struct _OPTEE_FILE {
+    TEE_ObjectHandle hObject;
+    int iEof;
+    int iError;
+} OPTEE_FILE;
 
 /* We currently use a manifest in a persistent object rather than just enumerating all persistent objects,
  * since it is similar to what we do for SGX, allows easily exporting the list of secured files, and allows
@@ -19,30 +28,33 @@
 
 int errno = 0;
 
-int fclose(
-    OPTEE_FILE *stream)
+int oe_fclose(
+    OE_FILE* stream)
 {
-    Tcps_Trace(Tcps_TraceLevelDebug, "fclose(%p) called\n", (stream)? stream->hObject : NULL);
-    TEE_CloseObject(stream->hObject);
-    stream->hObject = NULL;
+    OPTEE_FILE* fp = (OPTEE_FILE*)stream;
+    Tcps_Trace(Tcps_TraceLevelDebug, "fclose(%p) called\n", (fp)? fp->hObject : NULL);
+    TEE_CloseObject(fp->hObject);
+    fp->hObject = NULL;
 
     return 0;
 }
 
-int feof(
-    FILE *stream)
+int oe_feof(
+    OE_FILE* stream)
 {
-    return stream->iEof;
+    OPTEE_FILE* fp = (OPTEE_FILE*)stream;
+    return fp->iEof;
 }
 
-int ferror(
-    FILE *stream)
+int oe_ferror(
+    OE_FILE* stream)
 {
-    return stream->iError;
+    OPTEE_FILE* fp = (OPTEE_FILE*)stream;
+    return fp->iError;
 }
 
-int fflush(
-    FILE *stream)
+int oe_fflush(
+    OE_FILE* stream)
 {
     /* Nothing to do.  OP-TEE has no flush function, so we assume data is automatically flushed. */
     (void)stream;
@@ -50,12 +62,17 @@ int fflush(
     return 0;
 }
 
-FILE* fopen(
+OE_FILE* oe_fopen(
+    oe_file_security_t file_security,
     const char* filename,
     const char* mode)
 {
+    if (file_security != OE_FILE_SECURE_BEST_EFFORT && file_security != OE_FILE_SECURE_ENCRYPTION) {
+        errno = EINVAL;
+        return NULL;
+    }
     TEE_Result result = TEE_SUCCESS;
-    FILE* fp = oe_malloc(sizeof(*fp));
+    OPTEE_FILE* fp = oe_malloc(sizeof(*fp));
     if (fp == NULL) {
         errno = ENOMEM;
         return NULL;
@@ -84,7 +101,7 @@ FILE* fopen(
             &fp->hObject);
         if (result == TEE_SUCCESS) {
             Tcps_Trace(Tcps_TraceLevelDebug, "TEE_OpenPersistentObject for write succeeded, seeking to end...\n");
-            result = fseek(fp, 0, TEE_DATA_SEEK_END); 
+            result = oe_fseek((OE_FILE*)fp, 0, TEE_DATA_SEEK_END); 
         } else {
             Tcps_Trace(Tcps_TraceLevelDebug, "TEE_OpenPersistentObject for write did not succeed, so trying to create a new file...\n");
 
@@ -125,7 +142,7 @@ FILE* fopen(
         oe_free(fp);
         fp = NULL;
     }
-    return fp;
+    return (OE_FILE*)fp;
 }
 
 #ifdef _MSC_VER
@@ -134,23 +151,24 @@ FILE* fopen(
 #define SIZET_FMT "zu"
 #endif
 
-size_t fread(
+size_t oe_fread(
     void* buffer,
     size_t size,
     size_t count,
-    FILE *stream)
+    OE_FILE* stream)
 {
     TEE_Result result;
     uint32_t uBytesRead;
+    OPTEE_FILE* fp = (OPTEE_FILE*)stream;
 
     if ((size * count) > UINT32_MAX) {
         EMSG("fread size %" SIZET_FMT " too large\n", size * count);
         return 0;
     }
 
-    Tcps_Trace(Tcps_TraceLevelDebug, "fread hObject %p size %u\n", stream->hObject, (uint32_t)(size * count));
+    Tcps_Trace(Tcps_TraceLevelDebug, "fread hObject %p size %u\n", fp->hObject, (uint32_t)(size * count));
 
-    result = TEE_ReadObjectData(stream->hObject,
+    result = TEE_ReadObjectData(fp->hObject,
                                 buffer,
                                 (uint32_t)(size * count),
                                 &uBytesRead);
@@ -160,39 +178,41 @@ size_t fread(
     }
 
     if (uBytesRead == 0) {
-        stream->iEof = TRUE;
+        fp->iEof = TRUE;
     }
 
     return uBytesRead / size;
 }
 
-int fseek(
-    FILE *stream,
+int oe_fseek(
+    OE_FILE* stream,
     long offset,
     int origin)
 {
     TEE_Result result;
+    OPTEE_FILE* fp = (OPTEE_FILE*)stream;
 
-    Tcps_Trace(Tcps_TraceLevelDebug, "fseek(%p, %ld, %d) called\n", (stream)? stream->hObject : NULL, offset, origin);
+    Tcps_Trace(Tcps_TraceLevelDebug, "fseek(%p, %ld, %d) called\n", (fp)? fp->hObject : NULL, offset, origin);
 
-    result = TEE_SeekObjectData(stream->hObject, offset, origin);
+    result = TEE_SeekObjectData(fp->hObject, offset, origin);
     if (result == TEE_SUCCESS) {
-        stream->iEof = FALSE;
+        fp->iEof = FALSE;
     } else {
         EMSG("TEE_SeekObjectData returned error %x\n", result);
     }
     return result;
 }
 
-long ftell(
-    FILE *stream)
+long oe_ftell(
+    OE_FILE* stream)
 {
     TEE_ObjectInfo info;
     TEE_Result result;
+    OPTEE_FILE* fp = (OPTEE_FILE*)stream;
 
-    Tcps_Trace(Tcps_TraceLevelDebug, "ftell(%p) called\n", (stream)? stream->hObject : NULL);
+    Tcps_Trace(Tcps_TraceLevelDebug, "ftell(%p) called\n", (fp)? fp->hObject : NULL);
 
-    result = TEE_GetObjectInfo1(stream->hObject, &info);
+    result = TEE_GetObjectInfo1(fp->hObject, &info);
     if (result != TEE_SUCCESS) {
         EMSG("TEE_GetObjectInfo1 returned error %x\n", result);
         errno = EINVAL;
@@ -201,17 +221,18 @@ long ftell(
     return info.dataPosition;
 }
 
-size_t fwrite(
-    const void *buffer,
+size_t oe_fwrite(
+    const void* buffer,
     size_t size,
     size_t count,
-    FILE *stream)
+    OE_FILE* stream)
 {
     TEE_Result result;
+    OPTEE_FILE* fp = (OPTEE_FILE*)stream;
 
-    Tcps_Trace(Tcps_TraceLevelDebug, "fwrite(%p, %d, %d) called\n", (stream)? stream->hObject : NULL, size, count);
+    Tcps_Trace(Tcps_TraceLevelDebug, "fwrite(%p, %d, %d) called\n", (fp)? fp->hObject : NULL, size, count);
 
-    result = TEE_WriteObjectData(stream->hObject, buffer, size * count);
+    result = TEE_WriteObjectData(fp->hObject, buffer, size * count);
     if (result != TEE_SUCCESS) {
         EMSG("TEE_WriteObjectData returned error %x\n", result);
         return 0;
@@ -219,10 +240,10 @@ size_t fwrite(
     return count;
 }
 
-int fputs(const char *str, FILE *stream)
+int oe_fputs(const char* str, OE_FILE* stream)
 {
     size_t bytesToWrite = strlen(str);
-    size_t bytesWritten = fwrite(str, 1, bytesToWrite, stream);
+    size_t bytesWritten = oe_fwrite(str, 1, bytesToWrite, stream);
     return (bytesWritten == bytesToWrite) ? 0 : -1;
 }
 
@@ -233,15 +254,13 @@ int fputs(const char *str, FILE *stream)
  * result stored in str is appended with a null character. The newline character, if read, is included 
  * in the string.
  */
-char* fgets(
+char* oe_fgets(
     char* str,
     int n,
-    FILE* stream)
+    OE_FILE* stream)
 {
-    /* TODO: stop reading when we see a newline.  The SGX code didn't do so and still worked so the demo
-     * should still work without doing this todo.
-     */
-    size_t sz = fread(str, 1, n, stream);
+    /* TODO: stop reading when we see a newline.  */
+    size_t sz = oe_fread(str, 1, n, stream);
     if (ferror(stream)) {
         return NULL;
     }
@@ -251,23 +270,19 @@ char* fgets(
 
 int 
 _stat(
-    const char *path,
-    struct _stat *buffer)
+    const char* path,
+    struct _stat* buffer)
 {
-    sgx_status_t sgxStatus;
-    oe_buffer256 pathBuffer;
-    stat64i32_Result result;
+    oe_result_t result;
+    int status;
 
 Tcps_InitializeStatus(Tcps_Module_Helper_t, "_stat");
 
     Tcps_GotoErrorIfTrue(sizeof(*buffer) != sizeof(ocall_struct_stat64i32), OE_FAILURE);
 
-    COPY_BUFFER_FROM_STRING(pathBuffer, path);
-
-    sgxStatus = ocall_stat64i32(&result, pathBuffer);
-    Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, OE_FAILURE);
-    Tcps_GotoErrorIfBad(result.status != 0);
-    memcpy(buffer, &result.buffer, sizeof(*buffer));
+    result = ocall_stat64i32(&status, path, (ocall_struct_stat64i32*)buffer);
+    Tcps_GotoErrorIfTrue(result != OE_OK, OE_FAILURE);
+    Tcps_GotoErrorIfBad(status != 0);
 
     return 0;
 
@@ -401,10 +416,10 @@ int FindNextFileInternal(HANDLE hFindFile, WIN32_FIND_DATA* findFileData)
 }
 #else
 {
-    FILE* fp = (FILE*) hFindFile;
+    OE_FILE* fp = (OE_FILE*) hFindFile;
 
     // Read the next record from the file.
-    size_t result = fread(findFileData, sizeof(*findFileData), 1, fp);
+    size_t result = oe_fread(findFileData, sizeof(*findFileData), 1, fp);
     if (result < 1) {
         return ERROR_NO_MORE_FILES;
     }
@@ -420,19 +435,19 @@ int FindCloseInternal(HANDLE hFindFile)
 }
 #else
 {
-    FILE* fp;
+    OE_FILE* stream;
     int32_t result;
 
     if (hFindFile == INVALID_HANDLE_VALUE) {
         return TRUE;
     }
-    fp = (FILE*) hFindFile;
-    result = fclose(fp);
+    stream = (OE_FILE*) hFindFile;
+    result = oe_fclose(stream);
     return (result == 0);
 }
 #endif
 
-oe_result_t GetTrustedFileSize(const char* trustedFilePath, int64_t *fileSize)
+oe_result_t GetTrustedFileSize(const char* trustedFilePath, int64_t* fileSize)
 {
     TEE_Result result;
     TEE_ObjectHandle handle;

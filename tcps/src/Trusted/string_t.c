@@ -7,7 +7,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "tcps_stdio_t.h"
+#include <openenclave/enclave.h>
+#include <openenclave/bits/stdio.h>
 #include "tcps_string_t.h"
 #ifdef OE_USE_OPTEE
 #include <optee/string_optee_t.h>

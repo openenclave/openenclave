@@ -6,7 +6,7 @@
 #include <errno.h>
 
 #include "tcps_string_t.h"
-#include "oeoverintelsgx_t.h"
+#include "stdio_t.h"
 #include "enclavelibc.h"
 
 #if defined(OE_USE_SGX)
@@ -15,6 +15,8 @@
 #else
 #include <trace.h>
 #endif
+
+void ecall_InitializeStdio() {}
 
 int fprintf(FILE* const _Stream, char const* const _Format, ...)
 {
@@ -93,7 +95,7 @@ oe_result_t GetTrustedFileInBuffer(const char* trustedFilePath, char** pBuffer, 
     char* ptr;
     int64_t fileSize;
     oe_result_t tcpsStatus;
-    FILE* fp = NULL;
+    OE_FILE* fp = NULL;
 
     *pBuffer = NULL;
     *pLen = 0;
@@ -115,15 +117,15 @@ oe_result_t GetTrustedFileInBuffer(const char* trustedFilePath, char** pBuffer, 
     }
 
     // Read file into the buffer.
-    fp = fopen(trustedFilePath, "rb");
+    fp = oe_fopen(OE_FILE_SECURE_BEST_EFFORT, trustedFilePath, "rb");
     if (fp == NULL) {
         extern errno_t errno;
         EMSG("fopen failed, errno = %u", errno);
         FreeTrustedFileBuffer(ptr);
         return OE_FAILURE;
     }
-    sizeRead = fread(ptr, 1, (size_t)fileSize, fp);
-    fclose(fp);
+    sizeRead = oe_fread(ptr, 1, (size_t)fileSize, fp);
+    oe_fclose(fp);
     if (sizeRead < fileSize) {
         // Truncated.
         EMSG("fileSize = %llu, sizeRead = %d", fileSize, sizeRead);
@@ -300,8 +302,6 @@ oe_result_t TEE_P_ExportFile(
     size_t currentWriteSize;
     sgx_status_t sgxStatus;
     unsigned int retval;
-    oe_buffer256 untrustedLocationBuffer;
-    oe_buffer4096* contents = NULL;
 
 Tcps_InitializeStatus(Tcps_Module_Helper_t, "TEE_P_ExportFile");
 
@@ -318,21 +318,12 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "TEE_P_ExportFile");
         currentWriteSize = ((len > MAXIMUM_OPTEE_CALLS_RPC_INPUT_SIZE) ? 
             MAXIMUM_OPTEE_CALLS_RPC_INPUT_SIZE : len);
 
-        COPY_BUFFER_FROM_STRING(untrustedLocationBuffer, untrustedLocation);
-
-        contents = (oe_buffer4096*)oe_malloc(sizeof(*contents));
-        Tcps_GotoErrorIfAllocFailed(contents);
-
-        COPY_BUFFER(*contents, ptr, currentWriteSize);
-
         sgxStatus = ocall_ExportFile(
             &retval,
-            untrustedLocationBuffer,
+            untrustedLocation,
             appendToExistingFile,
-            *contents, 
+            ptr, 
             currentWriteSize);
-
-        oe_free(contents);
 
         uStatus = retval;
 
@@ -359,7 +350,6 @@ TEE_P_ImportFile(
     int addToManifest)
 {
     sgx_status_t sgxStatus;
-    oe_buffer256 sourceLocationBuffer;
     GetUntrustedFileSize_Result sizeResult;
     GetUntrustedFileContent_Result contentResult;
 
@@ -367,9 +357,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "TEE_P_ImportFile");
 
     DMSG("TEE_P_ImportFile(%s -> %s, addToManifest = %d)\n", sourceLocation, destinationLocation, addToManifest);
 
-    COPY_BUFFER_FROM_STRING(sourceLocationBuffer, sourceLocation);
-
-    sgxStatus = ocall_GetUntrustedFileSize(&sizeResult, sourceLocationBuffer);
+    sgxStatus = ocall_GetUntrustedFileSize(&sizeResult, sourceLocation);
     uStatus = sizeResult.status;
     DMSG("TEE_P_ImportFile: ocall_GetUntrustedFileSize returned sgxStatus = %#x, uStatus = %#x\n", sgxStatus, uStatus);
     Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, OE_FAILURE);
@@ -379,7 +367,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "TEE_P_ImportFile");
 
     sgxStatus = ocall_GetUntrustedFileContent(
         &contentResult,
-        sourceLocationBuffer,
+        sourceLocation,
         sizeResult.fileSize);
     uStatus = contentResult.status;
     DMSG("TEE_P_ImportFile: ocall_GetUntrustedFileContent returned sgxStatus = %#x, uStatus = %#x\n", sgxStatus, uStatus);
@@ -402,13 +390,10 @@ int _mkdir(const char *dirname)
 {
     int crtError = 0;
     sgx_status_t sgxStatus;
-    oe_buffer256 dirnameBuffer;
 
 Tcps_InitializeStatus(Tcps_Module_Helper_t, "_mkdir");
 
-    COPY_BUFFER_FROM_STRING(dirnameBuffer, dirname);
-    
-    sgxStatus = ocall_mkdir(&crtError, dirnameBuffer);
+    sgxStatus = ocall_mkdir(&crtError, dirname);
     Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, OE_FAILURE);
 
     return crtError;

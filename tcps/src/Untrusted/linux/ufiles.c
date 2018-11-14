@@ -7,12 +7,12 @@
 #include <tcps.h>
 #include <openenclave/bits/result.h>
 
-#include "oeoverintelsgx_u.h"
+#include "stdio_u.h"
 
-oe_result_t 
+oe_result_t
 ocall_ExportPublicCertificate(
-    oe_buffer256 certificateFileNameExported, 
-    oe_buffer4096 ptr, 
+    const char* certificateFileNameExported,
+    const void* ptr,
     size_t len)
 {
     Tcps_Trace(Tcps_TraceLevelDebug, "ocall_ExportPublicCertificate: export to (%s)\n", certificateFileNameExported);
@@ -21,8 +21,8 @@ ocall_ExportPublicCertificate(
 }
 
 FindFirstUntrustedFile_Result
-ocall_FindFirstUntrustedFile(
-    oe_buffer256 filePathWithWildcards,
+ocall_opendir(
+    const char* filePathWithWildcards,
     uint32_t matchingFileNameSize)
 {
     FindFirstUntrustedFile_Result result = { 0 };
@@ -31,20 +31,20 @@ ocall_FindFirstUntrustedFile(
     return result;
 }
 
-FindNextUntrustedFile_Result
-ocall_FindNextUntrustedFile(
-    uint32_t findNextHandle,
+ocall_struct_dirent
+ocall_readdir(
+    uintptr_t findNextHandle,
     uint32_t matchingFileNameSize)
 {
-    FindNextUntrustedFile_Result result = { 0 };
-    result.result = OE_UNSUPPORTED;
-    
+    ocall_struct_dirent result = { 0 };
+    result.status = OE_UNSUPPORTED;
+   
     return result;
 }
 
-oe_result_t 
-ocall_FindNextUntrustedFileClose(
-    uint32_t findNextHandle)
+oe_result_t
+ocall_closedir(
+    uintptr_t findNextHandle)
 {
     return OE_UNSUPPORTED;
 }

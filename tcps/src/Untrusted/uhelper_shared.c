@@ -51,8 +51,8 @@ TcpsPushDataToTeeBuffer(
 Tcps_InitializeStatus(Tcps_Module_Helper_u, "TcpsPushDataToTeeBuffer"); 
 
     while (bytesCopied < a_BufferSize) {
-        int bytesRemaining = a_BufferSize - bytesCopied;
-        chunk.size = MIN(sizeof(chunk.buffer), bytesRemaining);
+        size_t bytesRemaining = a_BufferSize - bytesCopied;
+        chunk.size = (int)MIN(sizeof(chunk.buffer), bytesRemaining);
 
         COPY_BUFFER(chunk, a_Buffer + bytesCopied, chunk.size);
 

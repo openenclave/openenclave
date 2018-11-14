@@ -40,8 +40,7 @@ oetests_host: $(OBJECTS)
 	@echo " [LD]\toetests_host"
 	@$(CX) -o $(APP_NAME) $(OBJECTS) $(LDFLAGS)
 
-oetests_u.h oetests_u.c: $(EDL_PATH)/oeoverintelsgx.edl \
-                         $(EDL_PATH)/stdio.edl  \
+oetests_u.h oetests_u.c: $(OE_EDL_PATH)/stdio.edl  \
                          $(OE_EDL_PATH)/socket.edl \
                         ../oetests.edl
 	@echo " [EDGE]\oetests.edl"

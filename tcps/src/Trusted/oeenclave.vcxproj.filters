@@ -143,9 +143,6 @@
     <None Include="optee\sub.mk">
       <Filter>optee</Filter>
     </None>
-    <None Include="..\stdio.edl">
-      <Filter>common</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rand_optee.h">
@@ -190,6 +187,9 @@
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\oeoverintelsgx.edl">
+      <Filter>common</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\include\openenclave\stdio.edl">
       <Filter>common</Filter>
     </CustomBuild>
   </ItemGroup>

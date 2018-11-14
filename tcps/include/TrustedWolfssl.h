@@ -18,6 +18,6 @@ unsigned long _lrotr(unsigned long value, int shift);
 #endif
 
 #include "tcps_stdlib_t.h"
-#include "tcps_stdio_t.h"
+#include <openenclave/bits/stdio.h>
 #include <openenclave/bits/timetypes.h>
 #include "tcps_string_t.h"

@@ -142,8 +142,8 @@ do the following.
 Make sure the Project Type is "Enclave" and the EDL File checkbox is checked.
 2. Edit the _YourProjectName_.edl file, and add at least one public ECALL
 in the trusted{} section.  E.g., "public void ecall\_DoWork();"
-Also, above (outside) the trusted{} section, add the following line:
-* from "oebuffer.edl" import \*;
+Also, to use stdio APIs such as printf, above (outside) the trusted{} section, add the following line:
+* from "openenclave/stdio.edl" import *;
 3. Update the command line for your EDL to use oeedger8r.
 To do this, right click on the EDL file in the Solution Explorer window,
 select "Properties"->"Configuration Properties"->"Custom Build Tool"->"General"

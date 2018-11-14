@@ -6,7 +6,7 @@
 #endif
 
 #include <string.h>
-#include "tcps_stdio_t.h"
+#include <openenclave/bits/stdio.h>
 
 #ifndef ERRNO
 typedef int errno_t;

@@ -11,81 +11,87 @@
 #include <sgx_tprotected_fs.h>
 #include <sgx_thread.h>
 
-#include <tcps_stdio_t.h>
+#include <openenclave/enclave.h>
+#include <openenclave/bits/stdio.h>
 #include <tcps_string_t.h>
 #include <oeoverintelsgx_t.h>
+#include <stdio_t.h>
 
 #define DMSG printf
 
-int fclose(
-    FILE *stream)
+int oe_fclose(
+    OE_FILE *stream)
 {
     int result = sgx_fclose(stream);
     return result;
 }
 
-int feof(
-    FILE *stream)
+int oe_feof(
+    OE_FILE *stream)
 {
     int result = sgx_feof(stream);
     return result;
 }
 
-int ferror(
-    FILE *stream)
+int oe_ferror(
+    OE_FILE *stream)
 {
     int result = sgx_ferror(stream);
     return result;
 }
 
-int fflush(
-    FILE *stream)
+int oe_fflush(
+    OE_FILE *stream)
 {
     return sgx_fflush(stream);
 }
 
-FILE *fopen(
-    const char *filename,
-    const char *mode)
+OE_FILE *oe_fopen(
+    oe_file_security_t file_security,
+    const char* path,
+    const char* mode)
 {
-    FILE* result = sgx_fopen_auto_key(filename, mode);
+    if (file_security != OE_FILE_SECURE_BEST_EFFORT && file_security != OE_FILE_SECURE_ENCRYPTION) {
+        return NULL;
+    }
+    OE_FILE* result = (OE_FILE*)sgx_fopen_auto_key(path, mode);
     return result;
 }
 
-size_t fread(
+size_t oe_fread(
     void *buffer,
     size_t size,
     size_t count,
-    FILE *stream)
+    OE_FILE *stream)
 {
     size_t result = sgx_fread(buffer, size, count, stream);
     return result;
 }
 
-int fseek(
-    FILE *stream,
+int oe_fseek(
+    OE_FILE *stream,
     long offset,
     int origin)
 {
     return sgx_fseek(stream, offset, origin);
 }
 
-long ftell(
-    FILE *stream)
+long oe_ftell(
+    OE_FILE *stream)
 {
     return (long)sgx_ftell(stream);
 }
 
-size_t fwrite(
+size_t oe_fwrite(
     const void *buffer,
     size_t size,
     size_t count,
-    FILE *stream)
+    OE_FILE *stream)
 {
     return sgx_fwrite(buffer, size, count, stream);
 }
 
-int fputs(const char *str, FILE *stream)
+int oe_fputs(const char *str, OE_FILE *stream)
 {
     int len = strlen(str);
     int ret = sgx_fwrite(str, 1, len, stream);
@@ -95,10 +101,10 @@ int fputs(const char *str, FILE *stream)
     return ret;
 }
 
-char *fgets(
+char *oe_fgets(
     char *str,
     int n,
-    FILE *stream)
+    OE_FILE *stream)
 {
     size_t sz = sgx_fread(str, 1, n, stream);
     if (sgx_ferror(stream)) {
@@ -111,36 +117,28 @@ int _stat64i32(
     _In_z_ const char *path,
     _Out_ struct _stat64i32 *buffer)
 {
-    oe_buffer256 pathBuffer;
-    stat64i32_Result result;
-
-    COPY_BUFFER_FROM_STRING(pathBuffer, path);
-
-    sgx_status_t status = ocall_stat64i32(&result, pathBuffer);
+    int result;
+    sgx_status_t status = ocall_stat64i32(&result, path, (ocall_struct_stat64i32*)buffer);
     if (status != SGX_SUCCESS) {
         return -1;
     }
-    *buffer = *((struct _stat64i32*)&result.buffer);
-    return result.status;
+    return result;
 }
 
 int _stat(
     _In_z_ const char *path,
     _Out_ struct _stat *buffer)
 {
-    stat64i32_Result result;
-    oe_buffer256 pathBuffer;
+    int result;
 
     if (sizeof(*buffer) != sizeof(ocall_struct_stat64i32)) {
         return -1;
     }
-    COPY_BUFFER_FROM_STRING(pathBuffer, path);
-    sgx_status_t status = ocall_stat64i32(&result, pathBuffer);
+    sgx_status_t status = ocall_stat64i32(&result, path, (ocall_struct_stat64i32*)buffer);
     if (status != SGX_SUCCESS) {
         return -1;
     }
-    *buffer = *(struct _stat*)&result.buffer;
-    return result.status;
+    return result;
 }
 
 int FindFirstFileInternal(

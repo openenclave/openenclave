@@ -19,11 +19,10 @@
 #include <stdint.h>
 #include <errno.h>
 #include <openenclave/host.h>
-#include "oeoverintelsgx_u.h"
+#include "stdio_u.h"
 
 int
-SGX_CDECL
-ocall_mkdir(oe_buffer256 dirname)
+ocall_mkdir(const char* dirname)
 {
     int crtError;
     char *separator;
@@ -36,14 +35,14 @@ ocall_mkdir(oe_buffer256 dirname)
 
 Tcps_InitializeStatus(Tcps_Module_Helper_u, "ocall_mkdir");
 
-    length = strlen(dirname.buffer) + 1;
+    length = strlen(dirname) + 1;
 
     if (length > sizeof(localPath)) {
         crtError = ENAMETOOLONG;
         Tcps_GotoErrorWithStatus(crtError);
     }
 
-    memcpy(localPath, dirname.buffer, length);
+    memcpy(localPath, dirname, length);
     nullTerminator = &localPath[length - 1];
     currentName = localPath;
 
@@ -93,11 +92,10 @@ Tcps_BeginErrorHandling
 }
 
 unsigned int
-SGX_CDECL
 ocall_ExportFile(
-    oe_buffer256 filename,
+    const char* filename,
     unsigned int appendToExistingFile,
-    oe_buffer4096 ptr,
+    const void* ptr,
     size_t len)
 {
     FILE *fp = NULL;
@@ -112,14 +110,14 @@ ocall_ExportFile(
         filename.buffer);
 
     if (appendToExistingFile) {
-        fopen_s(&fp, filename.buffer, "ab");
+        fopen_s(&fp, filename, "ab");
     } else {
-        fopen_s(&fp, filename.buffer, "wb");
+        fopen_s(&fp, filename, "wb");
     }
 
 
     Tcps_GotoErrorIfTrue(fp == NULL, OE_INVALID_PARAMETER);
-    Tcps_GotoErrorIfTrue(fwrite(ptr.buffer, 1, len, fp) != len, OE_FAILURE);
+    Tcps_GotoErrorIfTrue(fwrite(ptr, 1, len, fp) != len, OE_FAILURE);
 
     fclose(fp);
 
@@ -135,38 +133,36 @@ Tcps_FinishErrorHandling
 }
 
 GetUntrustedFileSize_Result
-SGX_CDECL
 ocall_GetUntrustedFileSize(
-    oe_buffer256 filename)
+    const char* filename)
 {
     GetUntrustedFileSize_Result result;
     struct _stat st;
     oe_result_t uStatus = OE_OK;
 
-    Tcps_Trace(Tcps_TraceLevelDebug, "file (%s)\n", filename.buffer);
+    Tcps_Trace(Tcps_TraceLevelDebug, "file (%s)\n", filename);
 
-    if (_stat(filename.buffer, &st) < 0) {
+    if (_stat(filename, &st) < 0) {
         result.status = OE_INVALID_PARAMETER;
     } else {
         result.fileSize = st.st_size;
 
-        Tcps_Trace(Tcps_TraceLevelDebug, "file (%s) -> size = %d\n", filename.buffer, result.fileSize);
+        Tcps_Trace(Tcps_TraceLevelDebug, "file (%s) -> size = %d\n", filename, result.fileSize);
     }
     result.status = uStatus;
     return result;
 }
 
 GetUntrustedFileContent_Result
-SGX_CDECL
 ocall_GetUntrustedFileContent(
-    oe_buffer256 filename,
+    const char* filename,
     size_t len)
 {
     GetUntrustedFileContent_Result result;
     FILE *fp = NULL;
     oe_result_t uStatus = OE_OK;
 
-    fopen_s(&fp, filename.buffer, "rb");
+    fopen_s(&fp, filename, "rb");
 
     Tcps_GotoErrorIfTrue(fp == NULL, OE_INVALID_PARAMETER);
 
@@ -193,15 +189,7 @@ Error:
 }
 
 int
-SGX_CDECL
-ocallTcpsFileDelete(
-    oe_buffer256 a_filename)
+ocall_remove(const char* pathname)
 {
-    Tcps_InitializeStatus(Tcps_Module_Helper_u, "ocallTcpsFileDelete");
-
-    Tcps_GotoErrorIfTrue((remove(a_filename.buffer) != 0), OE_FAILURE);
-
-Tcps_BeginErrorHandling
-
-Tcps_FinishErrorHandling
+    return remove(pathname);
 }

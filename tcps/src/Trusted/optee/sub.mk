@@ -11,6 +11,14 @@ ROOT_RELATIVE_PATH = ../../../
 ../oeoverintelsgx_t.h: ../../oeoverintelsgx.edl
 	$(SGX_EDGER8R) --trusted --search-path "../..$(SGX_PATHSEP)$(ROOT_RELATIVE_PATH)$(SGX_RELATIVE_PATH)include" --trusted-dir ".."  ../../oeoverintelsgx.edl
 
+../stdio_t.c: $(OE_EDL_PATH)/stdio.edl
+	$(OEEDGER8R) --trusted --search-path "../..$(SGX_PATHSEP)$(ROOT_RELATIVE_PATH)$(SGX_RELATIVE_PATH)include" --trusted-dir ".."  $(OE_EDL_PATH)/stdio.edl
+
+../stdio_t.h: $(OE_EDL_PATH)/stdio.edl
+	$(OEEDGER8R) --trusted --search-path "../..$(SGX_PATHSEP)$(ROOT_RELATIVE_PATH)$(SGX_RELATIVE_PATH)include" --trusted-dir ".."  $(OE_EDL_PATH)/stdio.edl
+
+../keygen.c: ../stdio_t.h
+
 CFLAGS += -DOE_USE_OPTEE
 
 global-incdirs-y += ..

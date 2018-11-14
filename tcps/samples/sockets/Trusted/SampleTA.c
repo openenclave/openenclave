@@ -1,7 +1,7 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
 #include <openenclave/enclave.h>
-#include "tcps_stdio_t.h"
+#include <openenclave/bits/stdio.h>
 #include "SampleTA_t.h"
 #include "tcps_string_t.h"
 

@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <tcps.h>
+#include <stdint.h>
 #ifndef _In_
 #include "sal_unsup.h"
 #endif
@@ -27,7 +28,7 @@ InternalBuffer_t* CreateInternalBuffer(_In_ int size)
             }
             buffer->ptr = malloc(size);
             if (buffer->ptr != NULL) {
-                buffer->handle = (void*)g_BufferSequenceNumber;
+                buffer->handle = (void*)(intptr_t)g_BufferSequenceNumber;
                 buffer->size = size;
             }
             return buffer;
@@ -58,6 +59,9 @@ oe_result_t AppendToBuffer(
 
     // Resize buffer.
     size_t newSize = buffer->size + a_Chunk->size;
+    if (newSize > INT32_MAX) {
+        return OE_OUT_OF_MEMORY;
+    }
     char* newPtr = realloc(buffer->ptr, newSize);
     if (newPtr == NULL) {
         return OE_OUT_OF_MEMORY;
@@ -65,7 +69,7 @@ oe_result_t AppendToBuffer(
 
     // Append chunk to buffer.
     memcpy(newPtr + buffer->size, a_Chunk->buffer, a_Chunk->size);
-    buffer->size = newSize;
+    buffer->size = (int)newSize;
     buffer->ptr = newPtr;
 
     return OE_OK;

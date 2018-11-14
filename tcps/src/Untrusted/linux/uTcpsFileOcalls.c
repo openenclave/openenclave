@@ -1,39 +1,35 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
 #include <stddef.h>
-#include "oeoverintelsgx_u.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
 
-#include "sal_unsup.h"
 #include <openenclave/host.h>
+#include "stdio_u.h"
 
-stat64i32_Result
-SGX_CDECL
+int
 ocall_stat64i32(
-    oe_buffer256 path)
+    const char* path,
+    struct ocall_struct_stat64i32* buf64)
 {
-    stat64i32_Result result = { 0 };
-
     struct stat buf;
-    if (stat(path.buffer, &buf) != 0) {
-        result.status = OE_FAILURE;
+    int result = stat(path, &buf);
+    if (result != 0) {
         return result;
     }
 
-    result.buffer._st_dev = buf.st_dev;
-    result.buffer._st_ino = buf.st_ino;
-    result.buffer._st_mode = buf.st_mode;
-    result.buffer._st_nlink = buf.st_nlink;
-    result.buffer._st_uid = buf.st_uid;
-    result.buffer._st_gid = buf.st_gid;
-    result.buffer._st_rdev = buf.st_rdev;
-    result.buffer._st_size = buf.st_size;
-    result.buffer._st_atime = buf.st_atime;
-    result.buffer._st_mtime = buf.st_mtime;
-    result.buffer._st_ctime = buf.st_ctime;
+    buf64->_st_dev = buf.st_dev;
+    buf64->_st_ino = buf.st_ino;
+    buf64->_st_mode = buf.st_mode;
+    buf64->_st_nlink = buf.st_nlink;
+    buf64->_st_uid = buf.st_uid;
+    buf64->_st_gid = buf.st_gid;
+    buf64->_st_rdev = buf.st_rdev;
+    buf64->_st_size = buf.st_size;
+    buf64->_st_atime = buf.st_atime;
+    buf64->_st_mtime = buf.st_mtime;
+    buf64->_st_ctime = buf.st_ctime;
 
-    result.status = OE_OK;
     return result;
 }

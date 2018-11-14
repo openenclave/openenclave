@@ -5,7 +5,8 @@
 #include <sgx_tae_service.h>
 #include <string.h>
 #include <unistd.h>
-#include "tcps_stdio_t.h"
+#include <openenclave/enclave.h>
+#include <openenclave/bits/stdio.h>
 #include <cbor.h>
 #include "cborhelper.h"
 #include "oeoverintelsgx_t.h"

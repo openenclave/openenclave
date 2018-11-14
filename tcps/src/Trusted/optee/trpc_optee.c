@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <assert.h>
 #include <string.h>
+#include <stdlib.h>
 #include <sgx_trts.h>
 
 #include <pta_rpc.h>

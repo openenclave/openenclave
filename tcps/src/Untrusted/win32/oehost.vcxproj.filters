@@ -51,6 +51,6 @@
     <CustomBuild Include="..\..\oeoverintelsgx.edl" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\stdio.edl" />
+    <None Include="..\..\..\..\include\openenclave\stdio.edl" />
   </ItemGroup>
 </Project>

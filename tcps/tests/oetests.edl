@@ -2,6 +2,7 @@
 /* Licensed under the MIT License. */
 enclave {
     from "openenclave/socket.edl" import *;
+	from "openenclave/stdio.edl" import *;
 	include "openenclave/bits/oebuffer.h"
 
     trusted {

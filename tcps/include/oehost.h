@@ -21,6 +21,9 @@ extern "C" {
 typedef intptr_t ssize_t;
 #include <openenclave/bits/result.h>
 
+#ifndef __in_ecount
+#include "sal_unsup.h"
+#endif
 
 /* The caller is responsible for freeing the buffer after calling this. */
 void* TcpsCreateReeBuffer(_In_ int a_BufferSize);

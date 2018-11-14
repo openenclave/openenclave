@@ -634,30 +634,30 @@
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\helloworld.edl">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;;$(TcpsDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Creating proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">HelloWorldEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;;$(TcpsDir)include;$(SGXSDKInstallPath)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;;$(TcpsDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Creating proxy/bridge routines</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Creating proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">HelloWorldEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">HelloWorldEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;;$(TcpsDir)include;$(SGXSDKInstallPath)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;;$(TcpsDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Creating proxy/bridge routines</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">Creating proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">HelloWorldEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">HelloWorldEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;;$(TcpsDir)include;$(SGXSDKInstallPath)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;;$(TcpsDir)include;$(SGXSDKInstallPath)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;;$(TcpsDir)include;$(SGXSDKInstallPath)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;;$(TcpsDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Creating proxy/bridge routines</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Creating proxy/bridge routines</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">Creating proxy/bridge routines</Message>
@@ -670,27 +670,27 @@
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">HelloWorldEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">HelloWorldEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">HelloWorldEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;;$(TcpsDir)include;$(SGXSDKInstallPath)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;;$(TcpsDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">Creating proxy/bridge routines</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'">Creating proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">HelloWorldEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'">HelloWorldEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;;$(TcpsDir)include;$(SGXSDKInstallPath)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|ARM'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;;$(TcpsDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|ARM'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">Creating proxy/bridge routines</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Simulation|ARM'">Creating proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Simulation|ARM'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">HelloWorldEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Simulation|ARM'">HelloWorldEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;;$(TcpsDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">Creating proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">HelloWorldEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;;$(TcpsDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">"$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(TcpsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">Creating proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">HelloWorldEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>

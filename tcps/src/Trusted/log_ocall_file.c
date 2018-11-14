@@ -2,14 +2,13 @@
 /* Licensed under the MIT License. */
 #include <openenclave/enclave.h>
 #include "sgx_edger8r.h" /* for sgx_status_t etc. */
+#include "stdio_t.h"
 
 #ifdef OE_USE_OPTEE
 #include "tcps_time_t.h"
 #include "tcps_string_t.h"
-#include "oeoverintelsgx_t.h"
 #include <optee/string_optee_t.h>
 #else
-#include "oeoverintelsgx_t.h"
 #endif
 
 #include "TcpsLog.h"
@@ -65,9 +64,6 @@ TcpsLogFileWriteOcall(
     bool Append,
     const TCPS_IDENTITY_LOG LogIdentityLabel)
 {
-    oe_buffer256 filenameBuffer;
-    oe_buffer4096* content;
-
 Tcps_InitializeStatus(Tcps_Module_Helper_t, "TcpsLogFileWriteOcall");
 
     Tcps_ReturnErrorIfArgumentNull(Context);
@@ -79,16 +75,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "TcpsLogFileWriteOcall");
         Context->LogPathPrefix, FileType, LogIdentityLabel);
     Tcps_ReturnErrorIfTrue(filename == NULL, OE_FAILURE);
 
-    COPY_BUFFER_FROM_STRING(filenameBuffer, filename);
-
-    content = (oe_buffer4096*)oe_malloc(sizeof(*content));
-    Tcps_GotoErrorIfAllocFailed(content);
-
-    COPY_BUFFER(*content, Buffer, BufferSize);
-
-    sgx_status_t sgxResult = ocall_ExportFile(&result, filenameBuffer, Append, *content, BufferSize);
-
-    oe_free(content);
+    sgx_status_t sgxResult = ocall_ExportFile(&result, filename, Append, Buffer, BufferSize);
 
     Tcps_GotoErrorIfTrue(sgxResult != SGX_SUCCESS, OE_FAILURE);
     Tcps_GotoErrorIfTrue(result != 0, OE_FAILURE);
@@ -129,8 +116,6 @@ TcpsLogFileReadOcall(
     const TCPS_LOG_FILE_TYPE FileType,
     const TCPS_IDENTITY_LOG LogIdentityLabel)
 {
-    oe_buffer256 filenameBuffer;
-
     if (Buffer == NULL ||
         BufferSize == NULL ||
         Context == NULL ||
@@ -150,14 +135,12 @@ TcpsLogFileReadOcall(
         Context->LogPathPrefix,
         FileType,
         LogIdentityLabel);
-    if (!filename)
+    if (filename == NULL)
     {
         return OE_FAILURE;
     }
 
-    COPY_BUFFER_FROM_STRING(filenameBuffer, filename);
-
-    sgx_status_t sgxstatus = ocall_GetUntrustedFileSize(&sizeResult, filenameBuffer);
+    sgx_status_t sgxstatus = ocall_GetUntrustedFileSize(&sizeResult, filename);
 
     Tcps_GotoErrorIfTrue(sgxstatus != SGX_SUCCESS, OE_FAILURE);
 
@@ -173,7 +156,7 @@ TcpsLogFileReadOcall(
 
         sgxstatus = ocall_GetUntrustedFileContent(
             &contentResult,
-            filenameBuffer,
+            filename,
             sizeResult.fileSize);
 
         Tcps_GotoErrorIfTrue(sgxstatus != SGX_SUCCESS || contentResult.status, OE_FAILURE);
@@ -217,14 +200,12 @@ TcpsLogFileClearOcall(
     {
         return OE_FAILURE;
     }
-    oe_buffer256 filenameBuffer;
-    COPY_BUFFER_FROM_STRING(filenameBuffer, filename);
 
     sgx_status_t sgxstatus =
 #ifdef OE_USE_OPTEE
         SGX_ERROR_UNEXPECTED;
 #else
-        ocallTcpsFileDelete(&retVal, filenameBuffer);
+        ocall_remove(&retVal, filename);
 #endif
 
     if (sgxstatus != SGX_SUCCESS || retVal)
