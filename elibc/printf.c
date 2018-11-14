@@ -548,7 +548,7 @@ static int _vprintf(elibc_out_t* out, const char* fmt, elibc_va_list ap)
         }
     }
 
-    return n;
+    return (int)n;
 }
 
 typedef struct _elibc_out_str
