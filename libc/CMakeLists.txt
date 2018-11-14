@@ -3,17 +3,39 @@
 
 # Build the C library, using local sources and sources from MUSL
 
-# TODO: Fix this build so `-D` flags etc. are not used when assembling
-# `.S` sources. See #760.
-
 set(MUSLSRC ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
-add_library(oelibc STATIC
+add_library(oelibasm OBJECT
     abort.S
+    exp2l.S
+
+    ${MUSLSRC}/fenv/x86_64/fenv.s
+    ${MUSLSRC}/math/x86_64/acosl.s
+    ${MUSLSRC}/math/x86_64/asinl.s
+    ${MUSLSRC}/math/x86_64/log1pl.s
+    ${MUSLSRC}/math/x86_64/log2l.s
+    ${MUSLSRC}/math/x86_64/logl.s
+    #${MUSLSRC}/math/x86_64/exp2l.s
+    ${MUSLSRC}/math/x86_64/sqrt.s
+    ${MUSLSRC}/math/x86_64/sqrtl.s
+    ${MUSLSRC}/math/x86_64/sqrtf.s
+    ${MUSLSRC}/setjmp/x86_64/longjmp.s
+    ${MUSLSRC}/setjmp/x86_64/setjmp.s)
+
+# CMake unconditionally adds `-DNDEBUG` etc. as flags even when
+# assembling, and clang-7 errors because we treat warnings as errors.
+# So we move the assembly code into a fake library, turn off the
+# error, and then inject the objects into the actual library.
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    target_compile_options(oelibasm PRIVATE -Wno-error=unused-command-line-argument)
+endif ()
+
+add_library(oelibc STATIC
+    $<TARGET_OBJECTS:oelibasm>
+
     arc4random.c
     atexit.c
     dladdr.c
-    exp2l.S
     libunwind_stubs.c
     link.c
     locale.c
@@ -140,7 +162,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/fenv/fesetround.c
     ${MUSLSRC}/fenv/feupdateenv.c
     ${MUSLSRC}/fenv/__flt_rounds.c
-    ${MUSLSRC}/fenv/x86_64/fenv.s
     ${MUSLSRC}/internal/floatscan.c
     ${MUSLSRC}/internal/intscan.c
     ${MUSLSRC}/internal/libc.c
@@ -373,15 +394,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/math/trunc.c
     ${MUSLSRC}/math/truncf.c
     ${MUSLSRC}/math/truncl.c
-    ${MUSLSRC}/math/x86_64/acosl.s
-    ${MUSLSRC}/math/x86_64/asinl.s
-    ${MUSLSRC}/math/x86_64/log1pl.s
-    ${MUSLSRC}/math/x86_64/log2l.s
-    ${MUSLSRC}/math/x86_64/logl.s
-    #${MUSLSRC}/math/x86_64/exp2l.s
-    ${MUSLSRC}/math/x86_64/sqrt.s
-    ${MUSLSRC}/math/x86_64/sqrtl.s
-    ${MUSLSRC}/math/x86_64/sqrtf.s
     ${MUSLSRC}/misc/basename.c
     ${MUSLSRC}/misc/dirname.c
     ${MUSLSRC}/mman/mmap.c
@@ -427,8 +439,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/search/insque.c
     ${MUSLSRC}/search/lsearch.c
     ${MUSLSRC}/search/tsearch_avl.c
-    ${MUSLSRC}/setjmp/x86_64/longjmp.s
-    ${MUSLSRC}/setjmp/x86_64/setjmp.s
     ${MUSLSRC}/stat/stat.c
     ${MUSLSRC}/stdio/asprintf.c
     ${MUSLSRC}/stdio/asprintf.c
@@ -695,7 +705,7 @@ if (USE_DEBUG_MALLOC)
   target_compile_definitions(oelibc PRIVATE OE_USE_DEBUG_MALLOC)
 endif ()
 
-# This project (and is dependents) require the enclave headers and
+# This project (and its dependents) require the enclave headers and
 # library.
 target_link_libraries(oelibc PUBLIC oecore)
 
