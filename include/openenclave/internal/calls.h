@@ -9,6 +9,7 @@
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/defs.h>
 #include "backtrace.h"
+#include "log.h"
 #include "sgxtypes.h"
 
 OE_EXTERNC_BEGIN
@@ -96,7 +97,7 @@ typedef enum _oe_func {
     OE_OCALL_GET_TIME,
     OE_OCALL_BACKTRACE_SYMBOLS,
     /* Caution: always add new OCALL function numbers here */
-
+    OE_OCALL_LOG,
     __OE_FUNC_MAX = OE_ENUM_MAX,
 } oe_func_t;
 
@@ -370,6 +371,12 @@ typedef struct _oe_backtrace_symbols_args
     int size;
     char** ret;
 } oe_backtrace_symbols_args_t;
+
+typedef struct _oe_log_args
+{
+    char module[OE_LOG_MODULE_LEN_MAX];
+    char message[OE_LOG_MESSAGE_LEN_MAX];
+} oe_log_args_t;
 
 /**
  * Perform a low-level enclave function call (ECALL).
