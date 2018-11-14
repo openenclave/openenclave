@@ -62,15 +62,10 @@ int oe_fflush(
     return 0;
 }
 
-OE_FILE* oe_fopen(
-    oe_file_security_t file_security,
+OE_FILE* oe_fopen_OE_FILE_SECURE_HARDWARE(
     const char* filename,
     const char* mode)
 {
-    if (file_security != OE_FILE_SECURE_BEST_EFFORT && file_security != OE_FILE_SECURE_ENCRYPTION) {
-        errno = EINVAL;
-        return NULL;
-    }
     TEE_Result result = TEE_SUCCESS;
     OPTEE_FILE* fp = oe_malloc(sizeof(*fp));
     if (fp == NULL) {
@@ -373,7 +368,7 @@ int FindFirstFileInternal(
         strcat_s(filename, sizeof(filename), "manifest");
     }
 
-    fp = fopen(filename, "r");
+    fp = oe_fopen(OE_FILE_SECURE_HARDWARE, filename, "r");
     if (fp == NULL) {
         return -1;
     }
@@ -494,7 +489,7 @@ int AppendToFile(
 {
     size_t writelen;
     const char* filename = destinationLocation;
-    FILE* fp = fopen(filename, "a");
+    FILE* fp = oe_fopen(OE_FILE_SECURE_HARDWARE, filename, "a");
     if (fp == NULL)
     {
         return errno;
@@ -528,7 +523,7 @@ oe_result_t TEE_P_SaveBufferToFile(
 
 Tcps_InitializeStatus(Tcps_Module_Helper_t, "TEE_P_SaveBufferToFile");
 
-    fp = fopen(destinationLocation, "w");
+    fp = oe_fopen(OE_FILE_SECURE_HARDWARE, destinationLocation, "w");
     Tcps_GotoErrorIfTrue(fp == NULL, OE_FAILURE);
 
     writelen = fwrite(ptr, 1, len, fp);

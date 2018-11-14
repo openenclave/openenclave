@@ -9,10 +9,18 @@
 
 typedef enum {
     OE_FILE_INSECURE = 0,
-    OE_FILE_SECURE_HARDWARE = 1,
+    OE_FILE_SECURE_HARDWARE = 1,     /** Inaccessible from normal world. */
     OE_FILE_SECURE_ENCRYPTION = 2,
-    OE_FILE_SECURE_BEST_EFFORT = 3,  /** Hardware if it exists, else encryption. */
 } oe_file_security_t;
+
+#ifdef OE_USE_OPTEE
+# define OE_FILE_SECURE_BEST_EFFORT OE_FILE_SECURE_HARDWARE
+#else
+# define OE_FILE_SECURE_BEST_EFFORT OE_FILE_SECURE_ENCRYPTION
+#endif
+
+#define OE_CAT(a, ...) OE_PRIMITIVE_CAT(a, __VA_ARGS__)
+#define OE_PRIMITIVE_CAT(a, ...) a ## __VA_ARGS__
 
 typedef struct oe_file OE_FILE;
 typedef struct oe_dir OE_DIR;
@@ -22,13 +30,22 @@ int oe_feof(OE_FILE* stream);
 int oe_ferror(OE_FILE *stream);
 int oe_fflush(OE_FILE *stream);
 char *oe_fgets(char *s, int size, OE_FILE *stream);
-OE_FILE *oe_fopen(oe_file_security_t file_security, const char* path, const char* mode);
 int oe_fputs(const char *s, OE_FILE *stream);
 size_t oe_fread(void *ptr, size_t size, size_t nmemb, OE_FILE *stream);
 int oe_fseek(OE_FILE *stream, long offset, int whence);
 long oe_ftell(OE_FILE *stream);
 size_t oe_fwrite(const void *ptr, size_t size, size_t nmemb, OE_FILE *stream);
-int oe_remove(oe_file_security_t file_security, const char *pathname);
+
+OE_FILE *oe_fopen_OE_FILE_INSECURE(const char* path, const char* mode);
+OE_FILE *oe_fopen_OE_FILE_SECURE_HARDWARE(const char* path, const char* mode);
+OE_FILE *oe_fopen_OE_FILE_SECURE_ENCRYPTION(const char* path, const char* mode);
+
+int oe_remove_OE_FILE_INSECURE(const char *pathname);
+int oe_remove_OE_FILE_SECURE_HARDWARE(const char *pathname);
+int oe_remove_OE_FILE_SECURE_ENCRYPTION(const char *pathname);
+
+#define oe_fopen(file_security, path, mode)  OE_PRIMITIVE_CAT(oe_fopen_, file_security((path), (mode)))
+#define oe_remove(file_security, pathname)   OE_PRIMITIVE_CAT(oe_remove_, file_security(pathname))
 
 #ifdef OE_SECURE_POSIX_FILE_API
 #define fopen(path, mode) oe_fopen(OE_FILE_SECURE_BEST_EFFORT, path, mode)
@@ -53,7 +70,11 @@ int oe_remove(oe_file_security_t file_security, const char *pathname);
 # define FILE   OE_FILE
 #endif
 
-OE_DIR *oe_opendir(oe_file_security_t file_security, const char *name);
+OE_DIR *oe_opendir_FILE_INSECURE(const char *name);
+OE_DIR *oe_opendir_SECURE_HARDWARE(const char *name);
+OE_DIR *oe_opendir_SECURE_ENCRYPTION(const char *name);
+
+#define oe_opendir(file_security, name) oe_opendir_ ## file_security(name)
 
 #ifdef OE_SECURE_POSIX_FILE_API
 #define opendir(name) \

@@ -45,14 +45,10 @@ int oe_fflush(
     return sgx_fflush(stream);
 }
 
-OE_FILE *oe_fopen(
-    oe_file_security_t file_security,
+OE_FILE *oe_fopen_OE_FILE_SECURE_ENCRYPTION(
     const char* path,
     const char* mode)
 {
-    if (file_security != OE_FILE_SECURE_BEST_EFFORT && file_security != OE_FILE_SECURE_ENCRYPTION) {
-        return NULL;
-    }
     OE_FILE* result = (OE_FILE*)sgx_fopen_auto_key(path, mode);
     return result;
 }

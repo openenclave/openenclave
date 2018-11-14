@@ -5,6 +5,8 @@
 #include <string.h>
 #include <errno.h>
 
+#include <openenclave/enclave.h>
+#include <openenclave/bits/stdio.h>
 #include "tcps_string_t.h"
 #include "stdio_t.h"
 #include "enclavelibc.h"

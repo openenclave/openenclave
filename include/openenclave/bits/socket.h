@@ -258,12 +258,21 @@ oe_freeaddrinfo(
     _In_ oe_addrinfo* ailist);
 
 int
-oe_getaddrinfo(
-    _In_ oe_network_security_t network_security,
+oe_getaddrinfo_OE_NETWORK_INSECURE(
     _In_z_ const char* node,
     _In_z_ const char* service,
     _In_ const oe_addrinfo* hints,
     _Out_ oe_addrinfo** res);
+
+int
+oe_getaddrinfo_OE_SECURE_HARDWARE(
+    _In_z_ const char* node,
+    _In_z_ const char* service,
+    _In_ const oe_addrinfo* hints,
+    _Out_ oe_addrinfo** res);
+
+#define oe_getaddrinfo(network_security, node, service, hints, res) \
+    oe_getaddrinfo_ ## network_security((node), (service), (hints), (res))
 
 #ifdef OE_SECURE_POSIX_NETWORK_API
 #define getaddrinfo(node, service, hints, res) \
@@ -274,10 +283,17 @@ oe_getaddrinfo(
 #endif
 
 int
-oe_gethostname(
-    _In_ oe_network_security_t network_security,
+oe_gethostname_OE_NETWORK_INSECURE(
     _Out_writes_(len) char* name,
     _In_ size_t len);
+
+int
+oe_gethostname_OE_SECURE_HARDWARE(
+    _Out_writes_(len) char* name,
+    _In_ size_t len);
+
+#define oe_gethostname(network_security, name, len) \
+    oe_gethostname_ ## network_security((name), (len))
 
 #ifdef OE_SECURE_POSIX_NETWORK_API
 #define gethostname(name, len) \
@@ -392,11 +408,19 @@ oe_shutdown(
     _In_ int how);
 
 oe_socket_t
-oe_socket(
-    _In_ oe_network_security_t network_security,
+oe_socket_OE_NETWORK_INSECURE(
     _In_ int domain,
     _In_ int type,
     _In_ int protocol);
+
+oe_socket_t
+oe_socket_OE_NETWORK_SECURE_HARDWARE(
+    _In_ int domain,
+    _In_ int type,
+    _In_ int protocol);
+
+#define oe_socket(network_security, domain, type, protocol) \
+    oe_socket_ ## network_security((domain), (type), (protocol))
 
 #ifdef OE_SECURE_POSIX_NETWORK_API
 #define socket(domain, type, protocol) \
@@ -410,7 +434,10 @@ typedef struct {
     int unused;
 } oe_wsa_data_t;
 
-int oe_wsa_cleanup(_In_ oe_network_security_t network_security);
+int oe_wsa_cleanup_OE_NETWORK_INSECURE(void);
+int oe_wsa_cleanup_OE_NETWORK_SECURE_HARDWARE(void);
+
+#define oe_wsa_cleanup(network_security) oe_wsa_cleanup_ ## network_security()
 
 #ifdef OE_SECURE_POSIX_NETWORK_API
 #define WSACleanup() \
@@ -420,7 +447,10 @@ int oe_wsa_cleanup(_In_ oe_network_security_t network_security);
      oe_wsa_cleanup(OE_NETWORK_INSECURE)
 #endif
 
-int oe_wsa_get_last_error(_In_ oe_network_security_t network_security);
+int oe_wsa_get_last_error_OE_NETWORK_INSECURE(void);
+int oe_wsa_get_last_error_OE_NETWORK_SECURE_HARDWARE(void);
+
+#define oe_wsa_get_last_error(network_security) oe_wsa_get_last_error_ ## network_security()
 
 #ifdef OE_SECURE_POSIX_NETWORK_API
 #define WSAGetLastError() \
@@ -430,9 +460,10 @@ int oe_wsa_get_last_error(_In_ oe_network_security_t network_security);
      oe_wsa_get_last_error(OE_NETWORK_INSECURE)
 #endif
 
-void oe_wsa_set_last_error(
-    _In_ oe_network_security_t network_security,
-    _In_ int iError);
+void oe_wsa_set_last_error_OE_NETWORK_INSECURE(_In_ int error);
+void oe_wsa_set_last_error_OE_NETWORK_SECURE_HARDWARE(_In_ int error);
+
+#define oe_wsa_set_last_error(network_security, error) oe_wsa_set_last_error_ ## network_security(error)
 
 #ifdef OE_SECURE_POSIX_NETWORK_API
 #define WSASetLastError(error) \
@@ -442,9 +473,16 @@ void oe_wsa_set_last_error(
      oe_wsa_set_last_error(OE_NETWORK_INSECURE, error)
 #endif
 
-int oe_wsa_startup(_In_ oe_network_security_t network_security,
-                   _In_ uint16_t version_required,
-                   _Out_ oe_wsa_data_t* wsa_data);
+int oe_wsa_startup_OE_NETWORK_INSECURE(
+    _In_ uint16_t version_required,
+    _Out_ oe_wsa_data_t* wsa_data);
+
+int oe_wsa_startup_OE_NETWORK_SECURE_HARDWARE(
+    _In_ uint16_t version_required,
+    _Out_ oe_wsa_data_t* wsa_data);
+
+#define oe_wsa_startup(network_security, version_required, wsa_data) \
+    oe_wsa_startup_ ## network_security((version_required), (wsa_data))
 
 #ifdef OE_SECURE_POSIX_NETWORK_API
 #define WSAStartup(version_required, wsa_data) \

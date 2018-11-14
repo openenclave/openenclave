@@ -85,17 +85,12 @@ int oe_fd_isset(_In_ oe_socket_t fd, _In_ fd_set* set)
 }
 
 int
-oe_gethostname(
-    _In_ oe_network_security_t network_security,
+oe_gethostname_OE_NETWORK_INSECURE(
     _Out_writes_(a_uiBufferLength) char* a_pBuffer,
     _In_ size_t a_uiBufferLength)
 {
     oe_result_t oe_result;
     gethostname_Result result;
-
-    if (network_security != OE_NETWORK_INSECURE) {
-        return OE_SOCKET_ERROR;
-    }
 
     oe_result = ocall_gethostname(&result);
     if (oe_result != OE_OK) {
@@ -109,17 +104,13 @@ oe_gethostname(
 }
 
 int
-oe_wsa_startup(
-    _In_ oe_network_security_t network_security,
+oe_wsa_startup_OE_NETWORK_INSECURE(
     _In_ uint16_t wVersionRequired,
     _Out_ oe_wsa_data_t* lpWSAData)
 {
     OE_UNUSED(wVersionRequired);
     OE_UNUSED(lpWSAData);
 
-    if (network_security != OE_NETWORK_INSECURE) {
-        return OE_UNSUPPORTED;
-    }
     oe_socket_error_t apiResult;
     oe_result_t oe_result = ocall_WSAStartup(&apiResult);
     if (oe_result == OE_OK && apiResult == 0) {
@@ -129,11 +120,8 @@ oe_wsa_startup(
 }
 
 int
-oe_wsa_cleanup(_In_ oe_network_security_t network_security)
+oe_wsa_cleanup_OE_NETWORK_INSECURE(void)
 {
-    if (network_security != OE_NETWORK_INSECURE) {
-        return OE_UNSUPPORTED;
-    }
     oe_socket_error_t error;
     oe_result_t oe_result = ocall_WSACleanup(&error);
     if (oe_result != OE_OK) {
@@ -147,20 +135,14 @@ oe_wsa_cleanup(_In_ oe_network_security_t network_security)
 static oe_socket_error_t g_WSALastError = 0;
 
 void
-oe_wsa_set_last_error(_In_ oe_network_security_t network_security, _In_ int iError)
+oe_wsa_set_last_error_OE_NETWORK_INSECURE(_In_ int iError)
 {
-    if (network_security != OE_NETWORK_INSECURE) {
-        return;
-    }
     g_WSALastError = iError;
 }
 
 int
-oe_wsa_get_last_error(_In_ oe_network_security_t network_security)
+oe_wsa_get_last_error_OE_NETWORK_INSECURE(void)
 {
-    if (network_security != OE_NETWORK_INSECURE) {
-        return OE_UNSUPPORTED;
-    }
     return g_WSALastError;
 }
 
@@ -231,16 +213,11 @@ oe_getsockopt(
 }
 
 oe_socket_t
-oe_socket(
-    _In_ oe_network_security_t network_security,
+oe_socket_OE_NETWORK_INSECURE(
     _In_ int domain,
     _In_ int type,
     _In_ int protocol)
 {
-    if (network_security != OE_NETWORK_INSECURE) {
-        oe_wsa_set_last_error(network_security, OE_UNSUPPORTED);
-        return OE_INVALID_SOCKET;
-    }
     socket_Result result;
     oe_result_t oe_result = ocall_socket(&result, domain, type, protocol);
     if (oe_result != OE_OK) {
@@ -514,16 +491,12 @@ oe_freeaddrinfo(
 }
 
 int
-oe_getaddrinfo(
-    _In_ oe_network_security_t network_security,
+oe_getaddrinfo_OE_NETWORK_INSECURE(
     _In_z_ const char* pNodeName,
     _In_z_ const char* pServiceName,
     _In_ const oe_addrinfo* pHints,
     _Out_ oe_addrinfo** ppResult)
 {
-    if (network_security != OE_NETWORK_INSECURE) {
-        return OE_UNSUPPORTED;
-    }
     oe_result_t oe_result;
     getaddrinfo_Result result;
     oe_addrinfo* ailist = NULL;
