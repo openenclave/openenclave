@@ -151,7 +151,7 @@ OE_ECALL void EncCrossEnclaveCall(CrossEnclaveCallArg* arg)
     OE_TEST(oe_call_host("CrossEnclaveCall", arg) == OE_OK);
 
     // augment result with my result.
-    uint32_t my_result = my_input * Factor;
+    uint32_t my_result = my_input * (uint32_t)Factor;
     arg->output += my_result;
     printf(
         "enclave %u: Factor=%lu, myResult = %u, arg.output=%u\n",

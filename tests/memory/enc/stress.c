@@ -30,7 +30,7 @@ static inline size_t _randx(size_t x)
     /* Note that rand() % N is biased if RAND_MAX + 1 isn't divisible
      * by N. But, slight probability bias doesn't really matter in these
      * tests. */
-    return rand() % x;
+    return (size_t)rand() % x;
 }
 
 static inline size_t _min(size_t x, size_t y)
@@ -64,7 +64,7 @@ static void _handle_alloc(
     int* index_,
     size_t* max_size_)
 {
-    size_t index = *index_;
+    int index = *index_;
     size_t max_size = *max_size_;
     size_t to_alloc = _get_alloc_size(max_size);
 
@@ -130,7 +130,7 @@ static void _run_malloc_test(size_t size)
             case TEST_MALLOC:
             case TEST_CALLOC:
             case TEST_REALLOC:
-                if (size < original_size * 0.15)
+                if (size < original_size * (size_t)0.15)
                 {
                     /* Getting low on memory. Free all memory and do malloc. */
                     _free_buffers(array, index);
@@ -140,7 +140,7 @@ static void _run_malloc_test(size_t size)
                 }
                 else
                 {
-                    _handle_alloc(array, action, &index, &size);
+                    _handle_alloc(array, (int)action, &index, &size);
                 }
                 break;
             case TEST_FREE_0:
@@ -172,7 +172,7 @@ static void _run_malloc_test(size_t size)
 
 void init_malloc_stress_test()
 {
-    srand(time(NULL));
+    srand((unsigned)time(NULL));
 }
 
 void malloc_stress_test(int threads)
@@ -181,7 +181,7 @@ void malloc_stress_test(int threads)
     size_t size = __oe_get_heap_size();
 
     /* Use the heap divided by the number of threads. */
-    size = size / threads;
+    size = size / (size_t)threads;
 
     _run_malloc_test(size);
 }

@@ -30,10 +30,8 @@ OE_OCALL void f_read(void* syscall_args)
 {
     int ret;
     syscall_args_t* args = (syscall_args_t*)syscall_args;
-
-    ret = read(args->fd, (char*)args->ptr, args->len);
+    ret = (int)read(args->fd, (char*)args->ptr, (size_t)args->len);
     args->ret = ret;
-
     return;
 }
 
@@ -41,7 +39,7 @@ OE_OCALL void f_readv(void* syscall_args)
 {
     syscall_args_t* args = (syscall_args_t*)syscall_args;
 
-    args->ret = readv(args->fd, (const struct iovec*)args->ptr, args->len);
+    args->ret = (int)readv(args->fd, (const struct iovec*)args->ptr, args->len);
 
     return;
 }

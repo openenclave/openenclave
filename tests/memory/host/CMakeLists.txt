@@ -8,6 +8,8 @@ oeedl_file(../memory.edl host gen)
 add_executable(memory_host host.cpp ${gen})
 
 target_compile_options(memory_host PRIVATE
+    -Wconversion
+    -Wpointer-arith
     $<$<COMPILE_LANGUAGE:CXX>:-std=c++11>
     )
 

@@ -20,4 +20,5 @@ add_executable(cryptoenc
 
 
 target_include_directories(cryptoenc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+target_compile_options(cryptoenc PRIVATE -Wconversion -Wpointer-arith)
 target_link_libraries(cryptoenc oeenclave)

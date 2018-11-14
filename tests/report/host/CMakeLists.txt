@@ -7,6 +7,11 @@ include(add_enclave_executable)
 oeedl_file(../tests.edl host gen)
 add_executable(report_host host.cpp tcbinfo.cpp ${gen})
 
+target_compile_options(report_host PRIVATE
+    -Wconversion
+    -Wpointer-arith
+    )
+
 if(USE_LIBSGX)
     target_compile_definitions(report_host PRIVATE OE_USE_LIBSGX)
 endif()

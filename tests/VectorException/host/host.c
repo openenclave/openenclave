@@ -61,7 +61,7 @@ void TestSigillHandling(oe_enclave_t* enclave)
             (OE_CPUID_LEAF_COUNT - 1));
 
     // Check all values.
-    for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
+    for (uint32_t i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
         if (!oe_is_emulated_cpuid_leaf(i))
             continue;

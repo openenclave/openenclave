@@ -109,5 +109,5 @@ COMMAND openssl dgst -sha256 -sign ${DATA_DIR}/Leaf.key.pem -out ${DATA_DIR}/tes
 
 )
 target_link_libraries(hostcrypto oehost)
-
+target_compile_options(hostcrypto PRIVATE -Wconversion -Wpointer-arith )
 add_test(tests/crypto/host hostcrypto)

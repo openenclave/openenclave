@@ -28,7 +28,7 @@ struct EnclaveWrap
     {
         EncSetEnclaveIdArg args = {};
         oe_enclave_t* enclave;
-        oe_result_t result;
+        oe_result_t result = OE_UNEXPECTED;
 
         if ((result = oe_create_enclave(
                  enclave_path,
@@ -43,7 +43,11 @@ struct EnclaveWrap
             oe_put_err("oe_create_enclave(): result=%u", result);
             throw std::runtime_error("oe_create_enclave() failed");
         }
-        m_id = m_enclaves.size();
+
+        if (m_enclaves.size() > OE_UINT_MAX)
+            oe_put_err("m_enclaves.size(): invalid array size");
+
+        m_id = (unsigned int)m_enclaves.size();
 
         args.result = OE_FAILURE;
         args.id = m_id;
@@ -305,14 +309,16 @@ OE_OCALL void CrossEnclaveCall(CrossEnclaveCallArg* arg)
         {
             OE_TEST(
                 oe_call_enclave(
-                    EnclaveWrap::Get(i), "EncSetFactor", (void*)(i + 1)) ==
-                OE_REENTRANT_ECALL);
+                    EnclaveWrap::Get((uint32_t)i),
+                    "EncSetFactor",
+                    (void*)(i + 1)) == OE_REENTRANT_ECALL);
 
             std::thread t([i]() {
                 OE_TEST(
                     oe_call_enclave(
-                        EnclaveWrap::Get(i), "EncSetFactor", (void*)(i + 1)) ==
-                    OE_OK);
+                        EnclaveWrap::Get((uint32_t)i),
+                        "EncSetFactor",
+                        (void*)(i + 1)) == OE_OK);
             });
             t.join();
         }
@@ -338,9 +344,9 @@ static void TestCrossEnclaveCalls()
     };
 
     uint32_t expected_output = 0;
-    for (size_t i = 0; i < EnclaveWrap::Count(); ++i)
+    for (uint32_t i = 0; i < EnclaveWrap::Count(); ++i)
     {
-        expected_output += (arg.input + i) * (i + 1);
+        expected_output = expected_output + (arg.input + i) * (i + 1);
     }
 
     OE_TEST(

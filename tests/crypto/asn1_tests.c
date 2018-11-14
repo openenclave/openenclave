@@ -33,7 +33,7 @@ static int _printf(char** str, const char* format, ...)
     if (n >= sizeof(buf))
         return -1;
 
-    size_t size = n + 1;
+    size_t size = (size_t)(n + 1);
 
     if (*str)
     {

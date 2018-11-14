@@ -54,7 +54,7 @@ OE_ECALL void Test(void* args_)
     args->num_pages = oe_get_num_pages();
 
     /* Test the oe_setjmp/oe_longjmp functions */
-    args->setjmp_result = TestSetjmp();
+    args->setjmp_result = (uint32_t)TestSetjmp();
 
     /* Test snprintf() */
     {

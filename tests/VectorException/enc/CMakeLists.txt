@@ -9,3 +9,8 @@ add_executable(VectorException_enc
     )
 
 target_link_libraries(VectorException_enc oeenclave)
+target_compile_options(VectorException_enc PRIVATE -Wconversion -Wpointer-arith)
+
+target_include_directories(VectorException_enc SYSTEM PRIVATE
+    ${OE_C_COMPILER_INCDIR})
+

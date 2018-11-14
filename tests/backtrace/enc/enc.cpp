@@ -91,9 +91,11 @@ extern "C" bool test(size_t num_syms, const char** syms)
     OE_TEST(b.size > 0);
 
     char** _syms = oe_backtrace_symbols(b.buffer, b.size);
-    OE_TEST(_syms != NULL);
 
-    _print_backtrace(b.buffer, b.size, num_syms, syms);
+    OE_TEST(_syms != NULL);
+    OE_TEST(num_syms <= OE_INT_MAX);
+
+    _print_backtrace(b.buffer, b.size, (int)num_syms, syms);
 #endif
 
     return true;
@@ -112,9 +114,11 @@ extern "C" bool test_unwind(size_t num_syms, const char** syms)
 /* backtrace does not work in non-debug builds */
 #ifdef OE_USE_DEBUG_MALLOC
         char** _syms = oe_backtrace_symbols(b.buffer, b.size);
-        OE_TEST(_syms != NULL);
 
-        _print_backtrace(b.buffer, b.size, num_syms, syms);
+        OE_TEST(_syms != NULL);
+        OE_TEST(num_syms <= OE_INT_MAX);
+
+        _print_backtrace(b.buffer, b.size, (int)num_syms, syms);
 #endif
         return true;
     }

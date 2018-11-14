@@ -78,14 +78,14 @@ static oe_result_t _syscall_hook(
             syscall_args_t* args;
             args = (syscall_args_t*)oe_host_malloc(sizeof(syscall_args_t));
             char* enc_buf = (char*)arg2;
-            char* host_buf = (void*)oe_host_malloc(arg3);
+            char* host_buf = (void*)oe_host_malloc((size_t)arg3);
             args->ptr = (void*)host_buf;
             args->fd = (int)arg1;
             args->len = (int)arg3;
             oe_call_host("f_read", args);
 
             if ((args->ret) > 0)
-                oe_memcpy(enc_buf, host_buf, arg3);
+                oe_memcpy(enc_buf, host_buf, (size_t)arg3);
             *ret = args->ret;
             oe_host_free(host_buf);
 
@@ -99,8 +99,8 @@ static oe_result_t _syscall_hook(
             args = (syscall_args_t*)oe_host_malloc(sizeof(syscall_args_t));
             struct iovec* iov = (struct iovec*)arg2;
             int i;
-            struct iovec* iov_host =
-                (struct iovec*)oe_host_malloc(sizeof(struct iovec) * (int)arg3);
+            struct iovec* iov_host = (struct iovec*)oe_host_malloc(
+                sizeof(struct iovec) * (size_t)arg3);
             for (i = 0; i < (int)arg3; i++)
             {
                 iov_host[i].iov_base = (void*)oe_host_malloc(iov[i].iov_len);
