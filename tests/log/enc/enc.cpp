@@ -1,24 +1,16 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/edger8r/enclave.h>
-#include <openenclave/enclave.h>
-#include <openenclave/internal/log.h>
-#include <openenclave/internal/print.h>
 #include <openenclave/internal/tests.h>
+#include <openenclave/enclave/core/log.h>
 #include <string.h>
-
-extern "C" OE_NEVER_INLINE void GetLog()
-{
-    oe_result_t ret = oe_send_log("test", "this is %s%d", "test", 1);
-
-    /* Check for return code */
-    OE_TEST(ret == OE_OK);
-}
 
 OE_ECALL void Test(void* args_)
 {
-    GetLog();
+    oe_result_t ret = oe_log_trace("test", "this is %s%d", "test", 1);
+
+    /* Check for return code */
+    OE_TEST(ret == OE_OK);
 }
 
 OE_SET_ENCLAVE_SGX(

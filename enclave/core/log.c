@@ -12,7 +12,7 @@
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
 
-oe_result_t oe_send_log(const char* module, const char *fmt, ...)
+oe_result_t oe_log(uint8_t level, const char* module, const char *fmt, ...)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_log_args_t* args = NULL;
@@ -26,6 +26,7 @@ oe_result_t oe_send_log(const char* module, const char *fmt, ...)
         goto done;
     }
 
+    args->level = level;
     if (oe_strncpy_s(
             args->module,
             sizeof(char) * OE_LOG_MODULE_LEN_MAX,

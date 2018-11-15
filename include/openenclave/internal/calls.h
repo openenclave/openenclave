@@ -372,12 +372,6 @@ typedef struct _oe_backtrace_symbols_args
     char** ret;
 } oe_backtrace_symbols_args_t;
 
-typedef struct _oe_log_args
-{
-    char module[OE_LOG_MODULE_LEN_MAX];
-    char message[OE_LOG_MESSAGE_LEN_MAX];
-} oe_log_args_t;
-
 /**
  * Perform a low-level enclave function call (ECALL).
  *

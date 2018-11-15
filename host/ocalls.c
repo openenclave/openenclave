@@ -287,6 +287,6 @@ void oe_handle_log(oe_enclave_t* enclave, uint64_t arg)
 
     if (args)
     {
-        printf("->Enclave: %s\n->Module: %s\n->Message:%s", enclave->path, args->module, args->message);
+        log_log(enclave->path, args);
     }
 }
