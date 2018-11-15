@@ -159,8 +159,8 @@ Also, to use stdio APIs such as printf, above (outside) the trusted{} section, a
 To do this, right click on the EDL file in the Solution Explorer window,
 select "Properties"->"Configuration Properties"->"Custom Build Tool"->"General"
 and edit the "Command Line" value for All Configurations and All Platforms.
-Change it to "$(TcpsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(TcpsDir)include;$(SGXSDKInstallPath)include" 
-where $(TcpsDir) is the path to the new\_platforms subdirectory of this SDK.
+Change it to "$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(SGXSDKInstallPath)include" 
+where $(NewPlatformsDir) is the path to the new\_platforms subdirectory of this SDK.
 4. In Visual Studio, add a new or existing Visual C++ project that will
 build a normal application that will make ECALLs into your enclave.
 5. Right click on your application project, select
@@ -188,7 +188,7 @@ oe\_terminate\_enclave().  You will need to #include <openenclave/host.h>
 and <_YourEDLFileName_\_u.h> for your ECALLs.  Make sure you configure the
 additional include directories as appropriate in your application project
 Properties->"C/C++"->"General"->"Additional Include Directories".  Usually
-this means you need to insert "$(TcpsDir)include;$(TcpsDir)include\sgx\Trusted;"
+this means you need to insert "$(NewPlatformsDir)include;$(NewPlatformsDir)include\sgx\Trusted;"
 at the beginning.  See the sample apps for an example.
 12. In your enclave project, update the Additional Include Directories to
 include $(OESdkDir)3rdparty\RIoT\CyReP\cyrep
@@ -219,8 +219,8 @@ Visual Studio, also add them to the sub.mk file in your optee subdirectory
 rpcrt4.lib to the Additional Dependencies (All Configurations, ARM platform)
 which is required for string-to-UUID conversion, and remove any sgx libs.
 7. In your application project properties, update the Additional Include
-Directories to insert the $(TcpsDir)include\optee\Untrusted and
-$(TcpsDir)include\optee paths before the $(TcpsDir)include path that you
+Directories to insert the $(NewPlatformsDir)include\optee\Untrusted and
+$(NewPlatformsDir)include\optee paths before the $(NewPlatformsDir)include path that you
 added earlier.
 8. Edit the sub.mk file in your optee subdirectory to change the "SampleTA"
 in filenames to the name used with your .edl file.
@@ -252,9 +252,9 @@ configuration. Your libs might look like this:
 "oehost.lib;ws2\_32.lib;rpcrt4.lib;shell32.lib;oehost\_opteesim.lib"
 4. Your app Additional Include Directories for DebugOpteeSimulation
 should include at least:
-* $(TcpsDir)include\optee\Untrusted
-* $(TcpsDir)include\optee
-* $(TcpsDir)include
+* $(NewPlatformsDir)include\optee\Untrusted
+* $(NewPlatformsDir)include\optee
+* $(NewPlatformsDir)include
 * $(SGXSDKInstallPath)\include
 5. In the "Configuration Properties->"Debugging", change Debugger to launch
 back to Local Windows Debugger, and make the working directory be the
@@ -269,10 +269,10 @@ DebugOpteeSimulation configuration for All Platforms, the Additional Include
 Directories should NOT include $(SGXSDKInstallPath)include\tlibc or
 $(SGXSDKInstallPath)include\libc++, and should include at least:
 * $(OESdkDir)3rdparty\RIoT\CyReP\cyrep
-* $(TcpsDir)include\optee\Trusted\Simulator
-* $(TcpsDir)include\optee\Trusted
-* $(TcpsDir)include\optee
-* $(TcpsDir)include
+* $(NewPlatformsDir)include\optee\Trusted\Simulator
+* $(NewPlatformsDir)include\optee\Trusted
+* $(NewPlatformsDir)include\optee
+* $(NewPlatformsDir)include
 * $(SGXSDKInstallPath)include
 * $(OESdkDir)3rdparty\optee\_os\lib\libutee\include
 * $(OESdkDir)3rdparty\optee\_os\lib\libutils\ext\include
