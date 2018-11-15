@@ -9,22 +9,17 @@
 // sdk tool oeedger8r against the logs.edl file.
 #include "logs_t.h"
 
-OE_ECALL void Test(void* args_)
-{
-    oe_result_t ret = oe_log_trace("test", "this is %s%d", "test", 1);
-
-    /* Check for return code */
-    OE_TEST(ret == OE_OK);
-}
-// This is the function that the host calls. It prints
-// a message in the enclave before calling back out to
-// the host to print a message from there too.
+// This is the function that the host calls. It sends
+// log messages to the host to store in a log file.
 void enclave_logs()
 {
-    oe_log_info("sample", "entering enclave");
+    //oe_log_info("sample", "entering enclave");
+    oe_log(LOG_INFO, "sample", "entering enclave");
     for (int i=0; i<10; i++)
     {
-        oe_log_debug("sample", "loop %s #%d", "iteration", i+1)
+        //oe_log_debug("sample", "loop %s #%d", "iteration", i+1);
+        oe_log(LOG_DEBUG, "sample", "loop %s #%d", "iteration", i+1);
     }
-    oe_log_trace("sample", "end of loop")
+    //oe_log_trace("sample", "end of loop");
+    oe_log(LOG_TRACE, "sample", "end of loop");
 }

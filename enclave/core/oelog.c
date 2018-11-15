@@ -4,7 +4,7 @@
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/bits/enclog.h>
+#include <openenclave/bits/log-enc.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>

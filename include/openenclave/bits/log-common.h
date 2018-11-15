@@ -4,12 +4,6 @@
 #ifndef OE_LOG_COMMON_H
 #define OE_LOG_COMMON_H
 
-#include <openenclave/enclave.h>
-
-OE_EXTERNC_BEGIN
-
 enum { LOG_TRACE = 0, LOG_DEBUG, LOG_INFO, LOG_WARN, LOG_ERROR };
-
-OE_EXTERNC_END
 
 #endif /* OE_LOG_COMMON_H */
