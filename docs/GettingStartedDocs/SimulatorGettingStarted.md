@@ -39,7 +39,7 @@ cmake ..
 make
 ```
 
-Refer to the [Advanced Build Information](advancedBuildInfo.md) documentation for further information.
+Refer to the [Advanced Build Information](AdvancedBuildInfo.md) documentation for further information.
 
 ## Run unittests
 
