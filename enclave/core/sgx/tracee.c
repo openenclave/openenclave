@@ -53,14 +53,10 @@ bool is_enclave_debug_allowed()
         const sgx_report_t* sgx_report = NULL;
         oe_report_header_t* header = NULL;
 
-        report_buffer = (uint8_t*)oe_malloc(OE_MAX_REPORT_SIZE);
-        if (report_buffer == NULL)
-            goto done;
-
         // get a report on the enclave itself for enclave identity information
         report_buffer_size = OE_MAX_REPORT_SIZE;
         result = oe_get_report(
-            0, NULL, 0, NULL, 0, report_buffer, &report_buffer_size);
+            0, NULL, 0, NULL, 0, &report_buffer, &report_buffer_size);
         if (result != OE_OK)
             goto done;
 
@@ -70,7 +66,7 @@ bool is_enclave_debug_allowed()
     }
 done:
     if (report_buffer)
-        oe_free(report_buffer);
+        oe_free_report(report_buffer);
 #elif defined(_WIN32)
     // WIN32 support is still under development.
     // We will have to come back to handle this case

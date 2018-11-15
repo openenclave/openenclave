@@ -32,7 +32,6 @@ static oe_result_t _load_seal_key_by_policy(
     size_t* key_info_size)
 {
     oe_result_t result = OE_UNEXPECTED;
-    uint8_t temp;
     uint8_t* key_buffer_local = NULL;
     size_t key_buffer_size_local = 0;
     uint8_t* key_info_local = NULL;
@@ -41,45 +40,12 @@ static oe_result_t _load_seal_key_by_policy(
     if (!key_buffer || !key_buffer_size || (key_info && !key_info_size))
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Get size of key buffer. */
-    result = oe_get_seal_key_by_policy(
-        policy, &temp, &key_buffer_size_local, NULL, 0);
-
-    if (result == OE_OK)
-        OE_RAISE(OE_UNEXPECTED);
-    if (result != OE_BUFFER_TOO_SMALL)
-        OE_RAISE(result);
-
-    key_buffer_local = (uint8_t*)oe_malloc(key_buffer_size_local);
-    if (key_buffer_local == NULL)
-        OE_RAISE(OE_OUT_OF_MEMORY);
-
-    /* Get the size of key info if requested. */
-    if (key_info)
-    {
-        result = oe_get_seal_key_by_policy(
-            policy,
-            key_buffer_local,
-            &key_buffer_size_local,
-            &temp,
-            &key_info_size_local);
-
-        if (result == OE_OK)
-            OE_RAISE(OE_UNEXPECTED);
-        if (result != OE_BUFFER_TOO_SMALL)
-            OE_RAISE(result);
-
-        key_info_local = (uint8_t*)oe_malloc(key_info_size_local);
-        if (key_info_local == NULL)
-            OE_RAISE(OE_OUT_OF_MEMORY);
-    }
-
     /* Now, get the key buffers. */
     result = oe_get_seal_key_by_policy(
         policy,
-        key_buffer_local,
+        &key_buffer_local,
         &key_buffer_size_local,
-        key_info_local,
+        &key_info_local,
         &key_info_size_local);
 
     if (result != OE_OK)
@@ -93,21 +59,14 @@ static oe_result_t _load_seal_key_by_policy(
         *key_info = key_info_local;
         *key_info_size = key_info_size_local;
     }
+    else
+    {
+        oe_free_seal_key(NULL, key_info_local);
+    }
     key_buffer_local = NULL;
     key_info_local = NULL;
 
 done:
-    if (key_buffer_local != NULL)
-    {
-        oe_secure_zero_fill(key_buffer_local, key_buffer_size_local);
-        oe_free(key_buffer_local);
-    }
-
-    if (key_info_local != NULL)
-    {
-        oe_secure_zero_fill(key_info_local, key_info_size_local);
-        oe_free(key_info_local);
-    }
 
     return result;
 }
@@ -121,27 +80,12 @@ static oe_result_t _load_seal_key(
     oe_result_t result = OE_UNEXPECTED;
     uint8_t* key_buffer_local = NULL;
     size_t key_buffer_size_local = 0;
-    uint8_t temp;
 
     if (!key_info || !key_buffer || !key_buffer_size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Call once to get the size. */
-    result =
-        oe_get_seal_key(key_info, key_info_size, &temp, &key_buffer_size_local);
-
-    if (result == OE_OK)
-        OE_RAISE(OE_UNEXPECTED);
-    if (result != OE_BUFFER_TOO_SMALL)
-        OE_RAISE(result);
-
-    /* Allocate and call again. */
-    key_buffer_local = (uint8_t*)oe_malloc(key_buffer_size_local);
-    if (key_buffer_local == NULL)
-        OE_RAISE(OE_OUT_OF_MEMORY);
-
     result = oe_get_seal_key(
-        key_info, key_info_size, key_buffer_local, &key_buffer_size_local);
+        key_info, key_info_size, &key_buffer_local, &key_buffer_size_local);
 
     if (result != OE_OK)
         OE_RAISE(result);
@@ -152,12 +96,6 @@ static oe_result_t _load_seal_key(
     key_buffer_local = NULL;
 
 done:
-    if (key_buffer_local != NULL)
-    {
-        oe_secure_zero_fill(key_buffer_local, key_buffer_size_local);
-        oe_free(key_buffer_local);
-    }
-
     return result;
 }
 

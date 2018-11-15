@@ -153,7 +153,7 @@ done:
     return result;
 }
 
-oe_result_t oe_get_report(
+oe_result_t oe_get_report_v1(
     oe_enclave_t* enclave,
     uint32_t flags,
     const void* opt_params,
@@ -225,6 +225,70 @@ done:
     }
 
     return result;
+}
+
+oe_result_t oe_get_report_v2(
+    oe_enclave_t* enclave,
+    uint32_t flags,
+    const void* opt_params,
+    size_t opt_params_size,
+    uint8_t** report_buffer,
+    size_t* report_buffer_size)
+{
+    oe_result_t result;
+    uint8_t* tmp_report_buffer = NULL;
+    size_t tmp_report_buffer_size = 0;
+
+    if (!report_buffer || !report_buffer_size)
+        return OE_INVALID_PARAMETER;
+
+    *report_buffer = NULL;
+    *report_buffer_size = 0;
+
+    result = oe_get_report_v1(
+        enclave,
+        flags,
+        opt_params,
+        opt_params_size,
+        NULL,
+        &tmp_report_buffer_size);
+    if (result != OE_BUFFER_TOO_SMALL)
+    {
+        if (result == OE_OK)
+        {
+            result = OE_UNEXPECTED;
+        }
+        return result;
+    }
+
+    tmp_report_buffer = calloc(1, tmp_report_buffer_size);
+    if (tmp_report_buffer == NULL)
+    {
+        return OE_OUT_OF_MEMORY;
+    }
+
+    result = oe_get_report_v1(
+        enclave,
+        flags,
+        opt_params,
+        opt_params_size,
+        tmp_report_buffer,
+        &tmp_report_buffer_size);
+    if (result != OE_OK)
+    {
+        free(tmp_report_buffer);
+        return result;
+    }
+
+    *report_buffer = tmp_report_buffer;
+    *report_buffer_size = tmp_report_buffer_size;
+
+    return OE_OK;
+}
+
+void oe_free_report(uint8_t* report_buffer)
+{
+    free(report_buffer);
 }
 
 oe_result_t oe_verify_report(

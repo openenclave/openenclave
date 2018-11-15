@@ -22,20 +22,21 @@ extern std::vector<uint8_t> FileToBytes(const char* path);
 void generate_and_save_report(oe_enclave_t* enclave)
 {
 #ifdef OE_USE_LIBSGX
-    static uint8_t report[OE_MAX_REPORT_SIZE];
-    size_t report_size = sizeof(report);
+    static uint8_t* report;
+    size_t report_size;
     OE_TEST(
         oe_get_report(
             enclave,
             OE_REPORT_FLAGS_REMOTE_ATTESTATION,
             NULL,
             0,
-            report,
+            &report,
             &report_size) == OE_OK);
 
     FILE* file = fopen("./data/generated_report.bytes", "wb");
     fwrite(report, 1, report_size, file);
     fclose(file);
+    oe_free_report(report);
 #else
     OE_UNUSED(enclave);
 #endif

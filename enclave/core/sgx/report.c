@@ -261,7 +261,7 @@ done:
     return result;
 }
 
-oe_result_t oe_get_report(
+oe_result_t oe_get_report_v1(
     uint32_t flags,
     const uint8_t* report_data,
     size_t report_data_size,
@@ -327,6 +327,71 @@ done:
     }
 
     return result;
+}
+
+oe_result_t oe_get_report_v2(
+    uint32_t flags,
+    const uint8_t* report_data,
+    size_t report_data_size,
+    const void* opt_params,
+    size_t opt_params_size,
+    uint8_t** report_buffer,
+    size_t* report_buffer_size)
+{
+    oe_result_t result;
+    uint8_t* tmp_buffer = NULL;
+    size_t tmp_buffer_size = 0;
+
+    if ((report_buffer == NULL) || (report_buffer_size == NULL))
+    {
+        return OE_INVALID_PARAMETER;
+    }
+
+    *report_buffer = NULL;
+    *report_buffer_size = 0;
+
+    result = oe_get_report_v1(
+        flags,
+        report_data,
+        report_data_size,
+        opt_params,
+        opt_params_size,
+        NULL,
+        &tmp_buffer_size);
+    if (result != OE_BUFFER_TOO_SMALL)
+    {
+        return result;
+    }
+
+    tmp_buffer = oe_calloc(1, tmp_buffer_size);
+    if (tmp_buffer == NULL)
+    {
+        return OE_OUT_OF_MEMORY;
+    }
+
+    result = oe_get_report_v1(
+        flags,
+        report_data,
+        report_data_size,
+        opt_params,
+        opt_params_size,
+        tmp_buffer,
+        &tmp_buffer_size);
+    if (result != OE_OK)
+    {
+        oe_free(tmp_buffer);
+        return result;
+    }
+
+    *report_buffer = tmp_buffer;
+    *report_buffer_size = tmp_buffer_size;
+
+    return OE_OK;
+}
+
+void oe_free_report(uint8_t* report_buffer)
+{
+    oe_free(report_buffer);
 }
 
 oe_result_t _handle_get_sgx_report(uint64_t arg_in)

@@ -85,7 +85,7 @@ if (OE_SGX)
     set_source_files_properties(sgx/keys.c PROPERTIES COMPILE_FLAGS -Wno-type-limits)
 
     # -m64 is an x86_64 specific flag
-   target_compile_options(oecore PUBLIC -m64)
+    target_compile_options(oecore PUBLIC -m64)
 endif()
 
 if (CMAKE_C_COMPILER_ID MATCHES GNU)
@@ -100,6 +100,11 @@ target_compile_options(oecore PUBLIC
 
 target_compile_options(oecore INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>)
 
+target_compile_definitions(oecore
+    PUBLIC
+    OE_BUILD_ENCLAVE
+    OE_API_VERSION=2)
+
 if(USE_LIBSGX)
     target_compile_definitions(oecore PUBLIC OE_USE_LIBSGX)
 endif()
@@ -108,8 +113,6 @@ if(USE_DEBUG_MALLOC)
     target_compile_definitions(oecore PRIVATE OE_USE_DEBUG_MALLOC)
     message("USE_DEBUG_MALLOC is set, building oecore with memory leak detection.")
 endif()
-
-target_compile_definitions(oecore PUBLIC OE_BUILD_ENCLAVE)
 
 # addl link-options for enclave apps
 target_link_libraries(oecore INTERFACE
