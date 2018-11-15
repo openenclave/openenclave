@@ -35,7 +35,7 @@ int log_init(int level, const char *path)
   return 0;
 }
 
-void log_close() {
+void log_close(void) {
   if (LogFile != NULL)
   {
     fclose(LogFile);
@@ -54,6 +54,6 @@ void log_log(const char *enclave, oe_log_args_t *args) {
       log_level(args->level), enclave, args->module, args->message);
     fflush(LogFile);
   }
-  printf(LogFile, "%02d:%02d:%02d %-5s %s:%s:%s\n", lt->tm_hour, lt->tm_min, lt->tm_sec,
+  printf("%02d:%02d:%02d %-5s %s:%s:%s\n", lt->tm_hour, lt->tm_min, lt->tm_sec,
       log_level(args->level), enclave, args->module, args->message);
 }

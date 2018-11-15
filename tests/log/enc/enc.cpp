@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/edger8r/enclave.h>
 #include <openenclave/internal/tests.h>
-#include <openenclave/enclave/core/log.h>
-#include <string.h>
+#include <openenclave/internal/oelog.h>
 
 OE_ECALL void Test(void* args_)
 {

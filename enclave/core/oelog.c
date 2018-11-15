@@ -11,6 +11,7 @@
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
+#include <openenclave/internal/oelog.h>
 
 oe_result_t oe_log(uint8_t level, const char* module, const char *fmt, ...)
 {

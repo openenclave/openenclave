@@ -26,6 +26,7 @@
 #include "enclave.h"
 #include "ocalls.h"
 #include "quote.h"
+#include "log.h"
 #include "sgxquoteprovider.h"
 
 void HandleMalloc(uint64_t arg_in, uint64_t* arg_out)

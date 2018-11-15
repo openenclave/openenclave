@@ -17,7 +17,7 @@ add_library(oecore STATIC
     atexit.c
     backtrace.c
     calls.c
-    log.c
+    oelog.c
     cpuid.c
     debugmalloc.c
     entropy.c

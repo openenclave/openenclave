@@ -10,6 +10,6 @@
 
 int log_init(int level, const char *path);
 void log_log(const char *enclave, oe_log_args_t *args);
-void log_close();
+void log_close(void);
 
 #endif //_OE_HOST_LOG_H
