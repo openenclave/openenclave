@@ -80,12 +80,13 @@ foreach(testcase ${alltests})
     endif()
 
 # few functions invoked in these tests are not supported in gnu and excluded from GCC builds
-    if ("${name}" MATCHES "convert_file_time.sh" OR "${name}" MATCHES "sequences_array_at.pass" 
-        OR "${name}" MATCHES "libcxx_containers_unord_next_pow2.pass" 
-        OR "${name}" MATCHES "std_utilities_template.bitset_bitset.members_count.pass")
-	    if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
+    if ("${name}" MATCHES "convert_file_time.sh" 
+            OR "${name}" MATCHES "sequences_array_at.pass" 
+            OR "${name}" MATCHES "libcxx_containers_unord_next_pow2.pass" 
+            OR "${name}" MATCHES "std_utilities_template.bitset_bitset.members_count.pass")
+            if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
 	        continue()
-        endif()
+            endif()
     endif()
 
     add_libcxx_test_enc("${name}" "${testcase}")

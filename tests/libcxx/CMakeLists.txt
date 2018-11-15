@@ -29,7 +29,8 @@ foreach(testcase ${alltests})
     endif()
 
 # few functions invoked in these tests are not supported in gnu -- Skip running these tests
-    if ("${name}" MATCHES "convert_file_time.sh" OR "${name}" MATCHES "sequences_array_at.pass" 
+    if ("${name}" MATCHES "convert_file_time.sh" 
+            OR "${name}" MATCHES "sequences_array_at.pass" 
             OR "${name}" MATCHES "libcxx_containers_unord_next_pow2.pass" 
             OR "${name}" MATCHES "std_utilities_template.bitset_bitset.members_count.pass")
 	    if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
