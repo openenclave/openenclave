@@ -20,7 +20,7 @@ endif()
 foreach(testcase ${alltests})
     get_testcase_name(${testcase} name "../../3rdparty/libcxx/libcxx/test/")
 
-# the allocations are entirely optimized out by Clang in these tests and are excluded from Clang release builds
+# the allocations are entirely optimized out by Clang in these tests and are excluded from Clang release builds -- Skip running these tests
     if ("${name}" MATCHES "cons_default_throws_bad_alloc.pass" OR "${name}" MATCHES "allocator_allocator.members_construct.pass")
         string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE_UPPER)
         if (CMAKE_CXX_COMPILER_ID MATCHES Clang AND BUILD_TYPE_UPPER MATCHES REL)
@@ -28,10 +28,12 @@ foreach(testcase ${alltests})
         endif()
     endif()
 
-# few functions invoked in these tests are not considered const expression in gnu
-    if ("${name}" MATCHES "convert_file_time.sh" OR "${name}" MATCHES "sequences_array_at.pass")
-	if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
-	    continue()
+# few functions invoked in these tests are not supported in gnu -- Skip running these tests
+    if ("${name}" MATCHES "convert_file_time.sh" OR "${name}" MATCHES "sequences_array_at.pass" 
+            OR "${name}" MATCHES "libcxx_containers_unord_next_pow2.pass" 
+            OR "${name}" MATCHES "std_utilities_template.bitset_bitset.members_count.pass")
+	    if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
+	        continue()
         endif()
     endif()
 
