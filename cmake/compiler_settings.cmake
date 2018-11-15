@@ -66,13 +66,6 @@ else ()
   set(SPECTRE_MITIGATION_FLAGS "")
 endif ()
 
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  # Disable this particular warning because `-isystem` is being to
-  # sent to clang when assembling, and is at that point unrecognized.
-  # TODO: See #760: Fix this when errors are better propagated.
-  add_compile_options(-Wno-error=unused-command-line-argument)
-endif ()
-
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
   # Enables all the warnings about constructions that some users consider questionable,
   # and that are easy to avoid. Treat at warnings-as-errors, which forces developers
