@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef OELOG_H
-#define OELOG_H
+#ifndef LOG_ENC_H
+#define LOG_ENC_H
 
 #include <openenclave/enclave.h>
-#include <openenclave/internal/log.h>
+#include <openenclave/bits/log-common.h>
 
 OE_EXTERNC_BEGIN
 
@@ -19,4 +19,4 @@ oe_result_t oe_log(uint8_t level, const char* module, const char* fmt, ...);
 
 OE_EXTERNC_END
 
-#endif /* OELOG_H */
+#endif /* LOG_ENC_H */

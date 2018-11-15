@@ -7,7 +7,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "log.h"
+#include "oelog.h"
 
 static FILE *LogFile = NULL;
 static int LogLevel = LOG_TRACE;
@@ -24,7 +24,7 @@ static const char* log_level(uint8_t level)
   }
 }
 
-int log_init(int level, const char *path)
+int log_init(uint8_t level, const char *path)
 {
   if (path) {
     LogFile = fopen(path, "a");

@@ -3,7 +3,7 @@
 
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/internal/tests.h>
-#include <openenclave/internal/oelog.h>
+#include <openenclave/bits/enclog.h>
 
 OE_ECALL void Test(void* args_)
 {

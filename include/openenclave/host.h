@@ -24,6 +24,7 @@
 #include "bits/report.h"
 #include "bits/result.h"
 #include "bits/types.h"
+#include "bits/log-host.h"
 
 OE_EXTERNC_BEGIN
 

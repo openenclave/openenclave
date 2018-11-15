@@ -14,8 +14,6 @@ OE_EXTERNC_BEGIN
 #define OE_LOG_MODULE_LEN_MAX 32
 #define OE_LOG_MESSAGE_LEN_MAX 256
 
-enum { LOG_TRACE, LOG_DEBUG, LOG_INFO, LOG_WARN, LOG_ERROR };
-
 typedef struct _oe_log_args
 {
     char module[OE_LOG_MODULE_LEN_MAX];

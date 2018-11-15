@@ -62,7 +62,7 @@ add_library(oehost STATIC
     load.c
     loadelf.c
     loadpe.c
-    log.c
+    oelog.c
     memalign.c
     ocalls.c
     quote.c
