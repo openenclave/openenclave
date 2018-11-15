@@ -76,6 +76,7 @@ typedef enum _oe_func {
     OE_ECALL_VERIFY_REPORT,
     OE_ECALL_GET_SGX_REPORT,
     OE_ECALL_VIRTUAL_EXCEPTION_HANDLER,
+    OE_ECALL_LOG_INIT,
     /* Caution: always add new ECALL function numbers here */
 
     OE_OCALL_CALL_HOST = OE_OCALL_BASE,
@@ -95,6 +96,7 @@ typedef enum _oe_func {
     OE_OCALL_SLEEP,
     OE_OCALL_GET_TIME,
     OE_OCALL_BACKTRACE_SYMBOLS,
+    OE_OCALL_LOG,
     /* Caution: always add new OCALL function numbers here */
 
     __OE_FUNC_MAX = OE_ENUM_MAX,

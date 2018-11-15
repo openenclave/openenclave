@@ -5,7 +5,6 @@
 #include <openenclave/internal/ec.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxcertextensions.h>
 #include <openenclave/internal/trace.h>
 #include <string.h>
@@ -202,10 +201,11 @@ done:
 
 static void _trace_hex_dump(const char* tag, const uint8_t* data, size_t size)
 {
-#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
-    OE_TRACE_INFO("%s = ", tag);
-    oe_hex_dump(data, size);
-#endif
+    if (get_current_logging_level() >= OE_LOG_LEVEL_INFO)
+    {
+        OE_TRACE_INFO("%s = ", tag);
+        oe_hex_dump(data, size);
+    }
 }
 
 /**

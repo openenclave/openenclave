@@ -494,6 +494,10 @@ static oe_result_t _handle_ocall(
             oe_handle_backtrace_symbols(enclave, arg_in);
             break;
 
+        case OE_OCALL_LOG:
+            oe_handle_log(enclave, arg_in);
+            break;
+
         default:
         {
             /* No function found with the number */

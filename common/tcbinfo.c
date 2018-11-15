@@ -202,14 +202,23 @@ static bool _json_str_equal(
 static oe_result_t _trace_json_string(const uint8_t* str, size_t str_length)
 {
     oe_result_t result = OE_OK;
-#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
-    char buffer[str_length + 1];
-    OE_CHECK(oe_memcpy_s(buffer, sizeof(buffer), str, str_length));
-    buffer[str_length] = 0;
-    OE_TRACE_INFO("value = %s\n", buffer);
 
+    if (get_current_logging_level() >= OE_LOG_LEVEL_INFO)
+    {
+        char* buffer = (char*)malloc(str_length + 1);
+        if (buffer)
+        {
+            OE_CHECK(oe_memcpy_s(buffer, str_length + 1, str, str_length));
+            buffer[str_length] = 0;
+            OE_TRACE_INFO("value = %s\n", buffer);
+            free(buffer);
+        }
+        else
+        {
+            OE_RAISE(OE_OUT_OF_MEMORY);
+        }
+    }
 done:
-#endif
     return result;
 }
 

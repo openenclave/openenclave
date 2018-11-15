@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added Quote Enclave Identity validation into oe_verify_report implementation
 
+- Added OE SDK internal logging mechanism
+
 ### Changed
 
 - oe_create_enclave takes two additional parameters: ocall_table, ocall_table_size.
