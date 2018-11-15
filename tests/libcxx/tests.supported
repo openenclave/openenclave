@@ -59,6 +59,7 @@
 ../../3rdparty/libcxx/libcxx/test/libcxx/containers/sequences/vector/db_iterators_8.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/containers/sequences/vector/version.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/containers/unord/key_value_traits.pass.cpp
+../../3rdparty/libcxx/libcxx/test/libcxx/containers/unord/next_pow2.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/containers/unord/next_prime.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/containers/unord/unord.map/db_iterators_7.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/containers/unord/unord.map/db_iterators_8.pass.cpp
@@ -4440,6 +4441,7 @@
 ../../3rdparty/libcxx/libcxx/test/std/utilities/template.bitset/bitset.hash/enabled_hash.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/template.bitset/bitset.members/all.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/template.bitset/bitset.members/any.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/utilities/template.bitset/bitset.members/count.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/template.bitset/bitset.members/flip_all.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/template.bitset/bitset.members/flip_one.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/template.bitset/bitset.members/index_const.pass.cpp
