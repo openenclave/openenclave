@@ -7,4 +7,4 @@ if (UNIX)
 	add_subdirectory(enc)
 endif()
 
-add_enclave_test(tests/threadcxx ./host threadcxx_host ./enc threadcxx_enc)
+add_enclave_test(tests/threadcxx threadcxx_host threadcxx_enc)

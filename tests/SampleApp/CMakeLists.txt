@@ -7,4 +7,4 @@ if (UNIX)
 	add_subdirectory(SampleApp)
 endif()
 
-add_enclave_test(tests/SampleApp ./SampleAppHost SampleAppHost ./SampleApp SampleApp)
+add_enclave_test(tests/SampleApp SampleAppHost SampleApp)

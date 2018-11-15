@@ -7,5 +7,5 @@
 
 // clang-format off
 #include "thread.h"
-#include "../oethread_enc/rwlock_tests.cpp"
+#include "cond_tests_oethread.cpp"
 // clang-format on

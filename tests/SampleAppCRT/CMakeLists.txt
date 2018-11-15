@@ -7,4 +7,4 @@ if (UNIX)
 	add_subdirectory(SampleAppCRT)
 endif()
 
-add_enclave_test(tests/SampleAppCRT ./SampleAppCRTHost SampleAppCRTHost ./SampleAppCRT SampleAppCRT)
+add_enclave_test(tests/SampleAppCRT SampleAppCRTHost SampleAppCRT)

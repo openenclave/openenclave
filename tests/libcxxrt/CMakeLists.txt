@@ -19,7 +19,7 @@ if(UNIX)
 		get_testcase_name(${testcase} name "")
 
 		if("${name}" STREQUAL "test_foreign_exceptions")
-			add_enclave_test(tests/libcxxrt/${name} ./host libcxxrt_host ./enc libcxxrttest-${name}_enc)
+			add_enclave_test(tests/libcxxrt/${name} libcxxrt_host libcxxrttest-${name}_enc)
 		else()
 			add_executable(${name}
 				enc/${name}.cpp
