@@ -348,6 +348,23 @@ SDK's EDL files, included by yours. This code marshals the calls across the
 trust boundary which are captured by functions implemented in the corresponding
 libraries on the host. The same is true the other way around.
 
+## Build Artifacts
+
+The `sockets` sample generates three binaries under `new_platforms`:
+
+* `samples/sockets/Untrusted/SampleClientApp`
+* `samples/sockets/Untrusted/SampleServerApp`
+* `bin/optee/samples/sockets/aac3129e-c244-4e09-9e61-d4efcf31bca3.ta`
+
+In order to run the sample, you must copy these files to the target. The host
+apps may reside anywhere on the target's filesystem. However, the TA file must
+be placed in a specific folder where all the TA's are placed. For all
+architectures and machines currently supported, this location is:
+
+```
+/lib/optee_armtz
+```
+
 ## Next Steps
 
 The easiest way to get started with creating a new host and TA pair is by taking
