@@ -317,6 +317,11 @@ select "Properties"->"Configuration Properties"->"Custom Build Tool"->"General"
 and edit the "Command Line" value for All Configurations and All Platforms.
 Change it to "$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(SGXSDKInstallPath)include" 
 where $(NewPlatformsDir) is the path to the new\_platforms subdirectory of this SDK.
+The projects referenced by the OpenEnclave.sln file have the following line added
+which pulls in definitions for NewPlatformsDir and other macros:
+```
+<Import Project="$(SolutionDir)\vssettings.props" />
+```
 4. In Visual Studio, add a new or existing Visual C++ project that will
 build a normal application that will make ECALLs into your enclave.
 5. Right click on your application project, select

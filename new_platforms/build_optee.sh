@@ -231,10 +231,10 @@ if [ -z "$TA_DEV_KIT_DIR" ]; then
 fi
 
 # -------------------------------------
-# Build TCPS SDK
+# Build Open Enclave SDK
 # -------------------------------------
 
-echo Building TCPS SDK
+echo Building Open Enclave SDK
 
 make -j ${PROC_COUNT} $* || exit 1
 
