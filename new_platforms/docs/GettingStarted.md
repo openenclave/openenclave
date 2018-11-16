@@ -46,7 +46,7 @@ a bash shell (in Linux, or in
 
 For developing on a Windows Host, 
 the samples are built as part of the OpenEnclave.sln. For details on Linux Host development 
-see the [following documentation.]((Linux.md))
+see the [following documentation.](Linux.md)
 
 #### Note on configuration support
 
