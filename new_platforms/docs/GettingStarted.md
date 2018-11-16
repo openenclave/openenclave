@@ -18,6 +18,10 @@ However, a pre-built binary can also be directly downloaded:
 * [Windows binary](https://oedownload.blob.core.windows.net/binaries/oeedger8r.exe)
 * [Linux binary](https://oedownload.blob.core.windows.net/binaries/oeedger8r)
 
+This document provides steps for developing on Windows, and running SGX and OP-TEE simulated from Windows.
+
+For details on Linux Host development see the [following documentation.](Linux.md)
+
 ## Cloning the SDK
 
 This project uses submodules to keep track of external dependencies. 
@@ -45,8 +49,7 @@ a bash shell (in Linux, or in
 ## Building the Samples
 
 For developing on a Windows Host, 
-the samples are built as part of the OpenEnclave.sln. For details on Linux Host development 
-see the [following documentation.](Linux.md)
+the samples are built as part of the OpenEnclave.sln. 
 
 #### Note on configuration support
 
