@@ -10,7 +10,18 @@ endif
 # --------------
 
 .PHONY: all
-all: optee-client gtest usdk oesocket_host oestdio_host usdk-tests tsdk oesocket_enc oestdio_enc tsdk-tests
+all: optee-client  \
+     gtest         \
+     usdk          \
+     oesocket_host \
+     oestdio_host  \
+     usdk-tests    \
+     usdk-samples  \
+     tsdk          \
+     oesocket_enc  \
+     oestdio_enc   \
+     tsdk-tests    \
+     tsdk-samples
 
 .PHONY: help
 help:
@@ -53,31 +64,54 @@ oestdio_host: usdk
 .PHONY: usdk-tests
 usdk-tests: gtest usdk oesocket_host oestdio_host
 	make -C tests/oetests_host
-	
+
+.PHONY: usdk-samples
+usdk-samples: usdk oesocket_host oestdio_host
+	make -C samples/sockets/Untrusted/SampleClientApp
+	make -C samples/sockets/Untrusted/SampleServerApp
+
 # Trusted SDK
 # -----------
 
+TRUSTED_PARAMS=SGX_RELATIVE_PATH=../3rdparty/SGXSDK/ SGX_PATHSEP=: SGX_EDGER8R=$(shell which sgx_edger8r) OEPATHSEP=: CROSS_COMPILE=$(TRUSTED_CROSS_COMPILE)
+
 .PHONY: tsdk
 tsdk:
-	SGX_RELATIVE_PATH=../3rdparty/SGXSDK/ SGX_PATHSEP=: SGX_EDGER8R=$(shell which sgx_edger8r) OEPATHSEP=: CROSS_COMPILE=$(TRUSTED_CROSS_COMPILE) make -C src/Trusted/optee -f linux_gcc.mak BUILD_TARGET=debug
+	$(TRUSTED_PARAMS) make -C src/Trusted/optee -f linux_gcc.mak BUILD_TARGET=debug
 
 .PHONY: oesocket_enc
 oesocket_enc: tsdk
-	SGX_RELATIVE_PATH=../3rdparty/SGXSDK/ SGX_PATHSEP=: SGX_EDGER8R=$(shell which sgx_edger8r) OEPATHSEP=: CROSS_COMPILE=$(TRUSTED_CROSS_COMPILE) make -C libsocket/enc/optee -f linux_gcc.mak BUILD_TARGET=debug
+	$(TRUSTED_PARAMS) make -C libsocket/enc/optee -f linux_gcc.mak BUILD_TARGET=debug
 
 .PHONY: oestdio_enc
 oestdio_enc: tsdk
-	SGX_RELATIVE_PATH=../3rdparty/SGXSDK/ SGX_PATHSEP=: SGX_EDGER8R=$(shell which sgx_edger8r) OEPATHSEP=: CROSS_COMPILE=$(TRUSTED_CROSS_COMPILE) make -C libstdio/enc/optee -f linux_gcc.mak BUILD_TARGET=debug
+	$(TRUSTED_PARAMS) make -C libstdio/enc/optee -f linux_gcc.mak BUILD_TARGET=debug
 
 .PHONY: tsdk-tests
 tsdk-tests: tsdk oesocket_enc oestdio_enc
-	SGX_RELATIVE_PATH=../3rdparty/SGXSDK/ SGX_PATHSEP=: SGX_EDGER8R=$(shell which sgx_edger8r) OEPATHSEP=: CROSS_COMPILE=$(TRUSTED_CROSS_COMPILE) make -C tests/oetests_enclave/optee -f linux_gcc.mak BUILD_TARGET=debug
+	$(TRUSTED_PARAMS) make -C tests/oetests_enclave/optee -f linux_gcc.mak BUILD_TARGET=debug
+
+.PHONY: tsdk-samples
+tsdk-samples: tsdk oesocket_enc oestdio_enc
+	$(TRUSTED_PARAMS) make -C samples/sockets/Trusted/optee -f linux_gcc.mak BUILD_TARGET=debug
+	$(TRUSTED_PARAMS) make -C samples/helloworld/HelloWorldEnc/optee -f linux_gcc.mak BUILD_TARGET=debug
 
 # Clean Targets
 # -------------
 
 .PHONY: clean
-clean: optee-client-clean gtest-clean usdk-clean oesocket_host-clean oestdio_host-clean usdk-tests-clean tsdk-clean oesocket_enc-clean oestdio_enc-clean tsdk-tests-clean
+clean: optee-client-clean  \
+       gtest-clean         \
+       usdk-clean          \
+       oesocket_host-clean \
+       oestdio_host-clean  \
+       usdk-tests-clean    \
+       usdk-samples-clean  \
+       tsdk-clean          \
+       oesocket_enc-clean  \
+       oestdio_enc-clean   \
+       tsdk-tests-clean    \
+       tsdk-samples-clean
 
 .PHONY: optee-client-clean
 optee-client-clean:
@@ -103,6 +137,11 @@ oestdio_host-clean:
 usdk-tests-clean:
 	make -C tests/oetests_host clean
 
+.PHONY: usdk-samples-clean
+usdk-samples-clean:
+	make -C samples/sockets/Untrusted/SampleClientApp clean
+	make -C samples/sockets/Untrusted/SampleServerApp clean
+
 .PHONY: tsdk-clean
 tsdk-clean:
 	make -C src/Trusted/optee -f linux_gcc.mak BUILD_TARGET=debug clean
@@ -119,3 +158,7 @@ oestdio_enc-clean:
 tsdk-tests-clean:
 	make -C tests/oetests_enclave/optee -f linux_gcc.mak BUILD_TARGET=debug clean
 
+.PHONY: tsdk-samples-clean
+tsdk-samples-clean:
+	make -C samples/sockets/Trusted/optee -f linux_gcc.mak BUILD_TARGET=debug clean
+	make -C samples/helloworld/HelloWorldEnc/optee -f linux_gcc.mak BUILD_TARGET=debug clean

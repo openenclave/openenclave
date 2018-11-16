@@ -173,38 +173,61 @@ if [ -z "$TA_DEV_KIT_DIR" ]; then
 
     pushd ../3rdparty/optee_os/
 
-    OPTEE_FLAGS=platform-cflags-optimization=-Os \
-                CFG_CRYPTO_SIZE_OPTIMIZATION=y   \
-                CFG_PAGED_USER_TA=n              \
-                CFG_REE_FS=n                     \
-                CFG_RPMB_FS=y                    \
-                CFG_RPMB_TESTKEY=y               \
-                CFG_RPMB_WRITE_KEY=n             \
-                CFG_RPMB_RESET_FAT=n             \
-                CFG_TA_RPC=y                     \
-                CFG_TEE_CORE_DEBUG=y             \
-                CFG_TEE_CORE_LOG_LEVEL=2         \
-                CFG_TEE_TA_LOG_LEVEL=4           \
-                CFG_UNWIND=n                     \
-                CFG_WITH_PAGER=n                 \
-                CFG_WITH_USER_TA=y
+    OPTEE_VIRT_FLAGS=platform-cflags-optimization=-Os \
+                     CFG_CRYPTO_SIZE_OPTIMIZATION=y   \
+                     CFG_PAGED_USER_TA=n              \
+                     CFG_REE_FS=n                     \
+                     CFG_RPMB_FS=y                    \
+                     CFG_RPMB_TESTKEY=y               \
+                     CFG_RPMB_WRITE_KEY=n             \
+                     CFG_RPMB_RESET_FAT=n             \
+                     CFG_TA_RPC=y                     \
+                     CFG_TEE_CORE_DEBUG=y             \
+                     CFG_TEE_CORE_LOG_LEVEL=2         \
+                     CFG_TEE_TA_LOG_LEVEL=4           \
+                     CFG_UNWIND=n                     \
+                     CFG_WITH_PAGER=n                 \
+                     CFG_WITH_USER_TA=y
 
     if [ $ARCH = "aarch32" ]; then
-        ARCH=arm make -j $PROC_COUNT PLATFORM=vexpress-qemu_virt \
-                                    $OPTEE_FLAGS || exit 1
+        if [ -z "$MACHINE" ] || [ "$MACHINE" = "virt" ]; then
+            ARCH=arm make -j $PROC_COUNT PLATFORM=vexpress-qemu_virt \
+                                        $OPTEE_VIRT_FLAGS            \
+                                        $* || exit 1
+            TA_DEV_KIT_PLAT=vexpress
+        else
+            echo FAILED: For AARCH32, MACHINE must be either "virt" or empty, which implies "virt".
+            exit 1
+        fi
     elif [ $ARCH = "aarch64" ]; then
-        ARCH=arm make -j $PROC_COUNT PLATFORM=vexpress-qemu_armv8a               \
-                                    $OPTEE_FLAGS                                \
-                                    CROSS_COMPILE=$CROSS_COMPILE                \
-                                    CROSS_COMPILE_core=$CROSS_COMPILE           \
-                                    CROSS_COMPILE_ta_arm64=$TA_CROSS_COMPILE    \
-                                    CROSS_COMPILE_ta_arm32=$TA_CROSS_COMPILE_32 \
-                                    CFG_ARM64_core=y || exit 1
+        if [ -z "$MACHINE" ] || [ "$MACHINE" = "virt" ]; then
+            ARCH=arm make -j $PROC_COUNT PLATFORM=vexpress-qemu_armv8a              \
+                                        $OPTEE_VIRT_FLAGS                           \
+                                        CROSS_COMPILE=$CROSS_COMPILE                \
+                                        CROSS_COMPILE_core=$CROSS_COMPILE           \
+                                        CROSS_COMPILE_ta_arm64=$TA_CROSS_COMPILE    \
+                                        CROSS_COMPILE_ta_arm32=$TA_CROSS_COMPILE_32 \
+                                        CFG_ARM64_core=y                            \
+                                        $* || exit 1
+            TA_DEV_KIT_PLAT=vexpress
+        elif [ "$MACHINE" = "ls1012grapeboard" ]; then
+            ARCH=arm make -j $PROC_COUNT PLATFORM=ls-ls1012grapeboard                \
+                                         CROSS_COMPILE=$CROSS_COMPILE                \
+                                         CROSS_COMPILE_core=$CROSS_COMPILE           \
+                                         CROSS_COMPILE_ta_arm64=$TA_CROSS_COMPILE    \
+                                         CROSS_COMPILE_ta_arm32=$TA_CROSS_COMPILE_32 \
+                                         CFG_ARM64_core=y                            \
+                                         $* || exit 1
+            TA_DEV_KIT_PLAT=ls
+        else
+            echo FAILED: For AARCH64, MACHINE must be either "virt", "ls1012grapeboard" or empty, which implies "virt".
+            exit 1
+        fi
     fi
 
     popd
     
-    export TA_DEV_KIT_DIR=$PWD/../3rdparty/optee_os/out/arm-plat-vexpress/export-ta_arm$TA_DEV_KIT_BITS
+    export TA_DEV_KIT_DIR=$PWD/../3rdparty/optee_os/out/arm-plat-$TA_DEV_KIT_PLAT/export-ta_arm$TA_DEV_KIT_BITS
 fi
 
 # -------------------------------------
@@ -213,12 +236,12 @@ fi
 
 echo Building TCPS SDK
 
+make -j ${PROC_COUNT} $* || exit 1
 
-make -j ${PROC_COUNT} || exit 1
+# -------------------------------------
+# Documentation
+# -------------------------------------
 
-export CROSS_COMPILE=$TA_CROSS_COMPILE
-
-ARCH=arm make -j ${PROC_COUNT} -C samples/sockets/Trusted/optee -f linux_gcc.mak BUILD_TARGET=debug $* || exit 1
-ARCH=arm make -j ${PROC_COUNT} -C samples/helloworld/HelloWorldEnc/optee -f linux_gcc.mak BUILD_TARGET=debug $* || exit 1
+echo Building Documentation
 
 doxygen Doxyfile || exit 1

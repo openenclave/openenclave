@@ -115,40 +115,52 @@ int ecall_RunServer(char* serv)
     }
     printf("Listening on %s...\n", serv);
 
-    /* Accept a client connection. */
-    struct sockaddr_storage addr;
-    int addrlen = sizeof(addr);
-    s = accept(listener, (struct sockaddr*)&addr, &addrlen);
-    if (s == INVALID_SOCKET) {
-        goto Done;
+    while (true)
+    {
+        /* Accept a client connection. */
+        struct sockaddr_storage addr;
+        int addrlen = sizeof(addr);
+        s = accept(listener, (struct sockaddr*)&addr, &addrlen);
+        if (s == INVALID_SOCKET) {
+            continue;
+        }
+
+        while (true)
+        {
+            /* Receive a text message, prefixed by its size. */
+            int netMessageLength;
+            int messageLength;
+            char message[80];
+            int bytesReceived = recv(s, (char*)&netMessageLength, sizeof(netMessageLength), MSG_WAITALL);
+            if (bytesReceived == SOCKET_ERROR) {
+                goto Close;
+            }
+            messageLength = ntohl(netMessageLength);
+            if (messageLength > sizeof(message)) {
+                goto Close;
+            }
+            bytesReceived = recv(s, message, messageLength, MSG_WAITALL);
+            if (bytesReceived != messageLength) {
+                goto Close;
+            }
+
+            /* Send it back to the client, prefixed by its size. */
+            int bytesSent = send(s, (char*)&netMessageLength, sizeof(netMessageLength), 0);
+            if (bytesSent == SOCKET_ERROR) {
+                goto Close;
+            }
+            bytesSent = send(s, message, messageLength, 0);
+            if (bytesSent == SOCKET_ERROR) {
+                goto Close;
+            }
+        }
+    Close:
+        if (s != INVALID_SOCKET) {
+            closesocket(s);
+            s = INVALID_SOCKET;
+        }
     }
 
-    /* Receive a text message, prefixed by its size. */
-    int netMessageLength;
-    int messageLength;
-    char message[80];
-    int bytesReceived = recv(s, (char*)&netMessageLength, sizeof(netMessageLength), MSG_WAITALL);
-    if (bytesReceived == SOCKET_ERROR) {
-        goto Done;
-    }
-    messageLength = ntohl(netMessageLength);
-    if (messageLength > sizeof(message)) {
-        goto Done;
-    }
-    bytesReceived = recv(s, message, messageLength, MSG_WAITALL);
-    if (bytesReceived != messageLength) {
-        goto Done;
-    }
-
-    /* Send it back to the client, prefixed by its size. */
-    int bytesSent = send(s, (char*)&netMessageLength, sizeof(netMessageLength), 0);
-    if (bytesSent == SOCKET_ERROR) {
-        goto Done;
-    }
-    bytesSent = send(s, message, messageLength, 0);
-    if (bytesSent == SOCKET_ERROR) {
-        goto Done;
-    }
     status = OE_OK;
 
 Done:

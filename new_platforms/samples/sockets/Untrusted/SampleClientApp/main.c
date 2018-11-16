@@ -2,7 +2,12 @@
 /* Licensed under the MIT License. */
 #include <stdio.h>
 #include <assert.h>
+#ifdef LINUX
+#include <stdext.h>
+#include <unistd.h>
+#else
 #include <windows.h>
+#endif  // LINUX
 #include <openenclave/host.h>
 #include "SampleTA_u.h"
 
@@ -15,6 +20,7 @@
 
 int main(int argc, char** argv)
 {
+    char dummy[256];
     oe_enclave_t* enclave = NULL;
     uint32_t enclave_flags = OE_ENCLAVE_FLAG_SERIALIZE_ECALLS;
 
@@ -23,14 +29,14 @@ int main(int argc, char** argv)
         printf("    Acts as an echo client.\n");
         return 0;
     }
-    char* servername = (argc > 1) ? argv[1] : "localhost";
-    char* port = (argc > 2) ? argv[2] : "12345";
+    const char* servername = (argc > 1) ? argv[1] : "localhost";
+    const char* port = (argc > 2) ? argv[2] : "12345";
 
 #ifdef _DEBUG
     enclave_flags |= OE_ENCLAVE_FLAG_DEBUG;
 #endif
     oe_result_t result = oe_create_SampleTA_enclave(TA_ID, 
-                                                    0,
+                                                    OE_ENCLAVE_TYPE_DEFAULT,
                                                     enclave_flags,
                                                     NULL,
                                                     0,
@@ -52,7 +58,15 @@ int main(int argc, char** argv)
      */
     int status;
     oe_acquire_enclave_mutex(enclave);
-    result = ecall_RunClient(enclave, &status, server, serv);
+    do
+    {
+        result = ecall_RunClient(enclave, &status, server, serv);
+#ifdef WIN32
+        Sleep(1000);
+#else
+        usleep(1000000);
+#endif
+    } while (result == OE_OK && status == 0);
     oe_release_enclave_mutex(enclave);
 
     if (result != OE_OK)
@@ -72,6 +86,6 @@ int main(int argc, char** argv)
     }
 
     printf("Success, hit enter to quit:");
-    gets();
+    fgets(dummy, sizeof(dummy), stdin);
     return 0;
 }
