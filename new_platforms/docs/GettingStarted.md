@@ -6,7 +6,8 @@ Getting Started with the Open Enclave SDK
 This SDK currently relies on having the Intel SGX SDK installed even if
 developing
 for TrustZone, since it requires using the sgx\_edger8r.exe utility that comes
-with that SDK, and various header files.
+with that SDK, various header files, and provides Visual Studio integration.
+This dependency is temporary. 
 
 The Intel SGX SDK can be downloaded for free at
 [https://software.intel.com/en-us/sgx-sdk/download](https://software.intel.com/en-us/sgx-sdk/download).
@@ -17,10 +18,22 @@ However, a pre-built binary can also be directly downloaded:
 * [Windows binary](https://oedownload.blob.core.windows.net/binaries/oeedger8r.exe)
 * [Linux binary](https://oedownload.blob.core.windows.net/binaries/oeedger8r)
 
+## Cloning the SDK
+
+This project uses submodules to keep track of external dependencies. 
+Some of these recursively have submodules themselves. 
+When cloning, be sure to update all submodules reclusively.
+```
+git clone https://github.com/ms-iot/openenclave --recurse-submodules
+```
+
 ## Building the SDK itself
 
-To build for Windows, open OpenEnclave.sln with Visual Studio, and build
-for the chosen platform (x86, x86, or ARM) and configuration (Debug, DebugSimulation,
+To build for Windows open the following solution with Visual Studio 2015 or 2017.
+```
+ openenclave/new_platforms/OpenEnclave.sln
+ ```
+Build for the chosen platform (x86, x86, or ARM) and configuration (Debug, DebugSimulation,
 or DebugOpteeSimulation).  This will
 build any relevant binaries except for Trusted Applications that need to
 run on OP-TEE (i.e., in TrustZone).
@@ -28,6 +41,149 @@ run on OP-TEE (i.e., in TrustZone).
 To build OP-TEE Trusted Applications, run the build\_optee.sh script from
 a bash shell (in Linux, or in 
 [Ubuntu on Windows](https://docs.microsoft.com/en-us/windows/wsl/install-win10)).
+
+## Building the Samples
+
+For developing on a Windows Host, 
+the samples are built as part of the OpenEnclave.sln. For details on Linux Host development 
+see the [following documentation.]((Linux.md))
+
+#### Note on configuration support
+
+For this preview, the SDK does not fully support building Enclaves targeted for release.
+The configuration options supported allow for debug builds that can run on real hardware and
+debug simulated builds that can be used as part of your development cycle.
+
+*Windows Host on SGX, or OP-TEE simulation:*
+
+| Configuration | Platform | Usage |
+|---------------|----------|-------|
+| DebugSimulation | x86/x64 | Builds an SGX simulated enclave and x86/x64 host app |
+| DebugSimulation | ARM | Builds a OP-TEE simulated enclave and ARM host app |
+| DebugOpteeSimulation | x86/x64/ARM | Builds a OP-TEE simulated enclave and x86/x64/ARM host app |
+| Debug | x86/x64 | Builds an SGX enclave and x86/x64 host app |
+| Debug | ARM | An ARM Windows host app. A non-simulated OP-TEE enclave must be built from Linux |
+
+### Sample Echo Socket Enclave
+
+This sample demonstrates a simple application that allows two enclaves to communicate over a socket connection.
+The socket connection is established from the host app. This sample does not protect the data sent over the socket.
+If an enclave is extended to protect the data sent over the socket, for example using a standard TLS connection,
+it would have full protection of the channel (data encryption in flight and during execution).
+
+For this sample, we will assume you are developing on Windows, using the OpenEnclave.sln.
+We will build a client and server, and run one in SGX, and one in simulated OP-TEE.
+
+1. Build All, targeting SGX in Visual Studio. This will build our SampleServerApp and SampleTA.
+    * Configuration: Debug*
+    * Platform: x86
+2. Build All, targeting OP-TEE Simulation in Visual Studio. This willl build our SampleClientApp and SampleTA.
+    * Configuration: DebugOpteeSimulation 
+    * Platform: x86
+3. Start the server from the command line
+    ```
+    c:\openenclave\new_platforms\bin\Win32\Simulation>SampleServerApp.exe
+    Listening on 12345...
+    ```
+4. Start the client from the command line
+    ```
+    c:\openenclave\new_platforms\bin\Win32\DebugOpteeSimulation>SampleClientApp.exe
+    Connecting to localhost 12345...
+    Sending message: Hello, world!
+    Received reply: Hello, world!
+    ``` 
+5. Alternatively, start either client or server under the debugger in Visual Studio. 
+    * Set the desired project as the StartUp Project
+    * For SGX, you must build DebugSimulation in order to attach the debugger. 
+    * Verify you are using the _Local Windows Debugger_ for OpteeSimulation, Or _Intel SGX Debugger_ for SGX simulation. 
+    * Note: Running both as simulated SGX applications under the Intel Debugger at the same time has been known to cause issues.
+
+_*Requires Intel SGX capable hardware. Select DebugSimulation configuration if you want to run SGX in simulated mode ._
+
+The code for the Sample TA is the same for both the Client and Server applications. The EDL file declares two simple ECALLs:
+```
+trusted {
+        /* define ECALLs here. */
+        public int ecall_RunClient([in, string] char* server, [in, string] char* port);
+        public int ecall_RunServer([in, string] char* port);
+    };
+```
+
+In addition the EDL includes the socket.edl, included in this SDK, and defines standard socket calls as OCALLs. 
+This allows the enclave code to use standard socket APIs. 
+The actual socket is opened by the host app, but any encrypted data sent from the enclave will not be visible by the host.
+
+An important thing to note: the same enclave code runs on both SGX and OP-TEE.
+
+### Running Sample Echo Socket Enclave through Azure IoT Edge
+
+We will showcase end-to-end Secure Enclave promise. You will need to setup  Grapeboard device with instructions from here: [Grapeboard setup](https://github.com/ms-iot/lsdk/blob/master/docs/grapeboard.md).
+
+1. You can run a simulation of a cloud service on Windows SGX. You will need to add a firewall exception for port 12345 in order to be able to connect to the SampleServerApp from another machine as instructed in step 2. When Windows prompts you about the exception, please select Yes. If you do not get the prompt, you can run the following command to add the exception:
+```
+netsh advfirewall firewall add rule name=`"SampleServerApp 12345`" protocol=TCP dir=in localport=12345 profile=any action=allow
+```
+We will use the SampleServerApp.exe from the last example:
+    ```
+    c:\openenclave\new_platforms\bin\Win32\Simulation>SampleServerApp.exe
+    Listening on 12345...
+    ```
+    
+2. We will use a Grapeboard device (a TrustZone capable device) to connect to our secure cloud service. 
+    1. [Set up Azure Container Repository](https://docs.microsoft.com/en-us/azure/container-registry/container-registry-get-started-portal).
+    2. Set up passwordless login to the Grapeboard device:
+        1. On x64 Linux host run the following, unless already done in the past:
+        ```
+        ssh-keygen
+        ```
+        2. On the x64 Linux host run the following, replace placeholders with the IP address of the Grapeboard device:
+        ```
+        ssh-copy-id root@<ip-address-of-grapeboard>
+        ```
+    2. On x64 Linux host, build ``new\_platforms`` using ``build\_optee.sh``. Please follow the [Linux build instructions]((Linux.md)).
+    3. On x64 Linux host run the following to create docker image for SampleClientApp and push it into your Azure Container Repository (replace placeholders with the arguments first):
+    ```
+    cd new\_platforms/samples/sockets/Untrusted/SampleClientApp
+    ./build_container.sh <user@ip-address-of-grapeboard> <container-repository> <container-repository-username> <container-repository-password>
+    ```
+    4. To prevent container connectivity issues, run the following steps on the Grapeboard (and replace the hostname placeholder):
+    ```
+    HOSTNAME=<new-hostname-for-grapeboard>
+    echo $HOSTNAME > /etc/hostname
+    hostname $HOSTNAME
+
+    echo '{ "dns" : ["10.50.10.50", "10.50.50.50"] }' > /etc/docker/daemon.json
+    service docker restart
+    ```
+    5. On the Grapeboard device, start ``tee-supplicant`` in order in order for TAs to be able to run:
+    ```
+    tee-supplicant &
+    ```
+    6. [Deploy IoT Edge](https://blogs.msdn.microsoft.com/iotdev/2018/11/05/a-workaround-to-run-azure-iot-edge-on-arm64-devices/) onto the Grapeboard device. You can skip the Docker deployment step, your image already comes with Docker. If you wish, you can also use prebuilt binaries from the section ``Full Steps to Run the Simulated Temperature Sensor`` if you do not want to build yourself.
+    7. To validate against the secure cloud service, [add the following module into the deployment](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-deploy-modules-portal). You will need to use the image, name and createOptions from this snipped if you go through the Portal. Update the ``<sgx-host>`` placeholder with the IP address of the host where you started SampleServerApp.
+    ```
+    "sampleClient": {
+      "version": "1.0",
+      "type": "docker",
+      "status": "running",
+      "restartPolicy": "always",
+      "settings": {
+        "image": "<container-repositor>/sampleclient:latest",
+        "createOptions": "{\"Env\":[\"HOST=<sgx-host>\",\"PORT=12345\"],\"HostConfig\":{\"Binds\":[\"/lib/optee_armtz:/lib/optee_armtz\"],\"Devices\":[{\"PathOnHost\":\"/dev/tee0\",\"PathInContainer\":\"/dev/tee0\",\"CgroupPermissions\":\"rwm\"}]}}"
+      }
+    }
+    ```
+    8. OP-TEE console output should show the following repeating:
+
+    ```
+    Connecting to <sgx-host> 12345...
+    Sending message: Hello, world!
+    Received reply: Hello, world!
+    ```
+
+Behind the scenes, the Azure IoT Edge module is running the SampleClientApp, which executes a TA (Client TA).
+That TA connects to the TA hosted by the SecureServerApp (Server TA).
+The Client TA sends ``Hello, world!`` to the Server TA, which echoes it back. 
 
 ## Generating API calls between Trusted Apps and Untrusted Apps
 
