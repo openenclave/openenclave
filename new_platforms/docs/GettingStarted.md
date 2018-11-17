@@ -143,7 +143,7 @@ We will use the SampleServerApp.exe from the last example:
         ```
         ssh-copy-id root@<ip-address-of-grapeboard>
         ```
-    2. On x64 Linux host, build ``new\_platforms`` using ``build\_optee.sh``. Please follow the [Linux build instructions]((Linux.md)).
+    2. On x64 Linux host, build ``new\_platforms`` using ``build\_optee.sh``. Please follow the [Linux build instructions](Linux.md).
     3. On x64 Linux host run the following to create docker image for SampleClientApp and push it into your Azure Container Repository (replace placeholders with the arguments first):
     ```
     cd new\_platforms/samples/sockets/Untrusted/SampleClientApp
@@ -162,20 +162,59 @@ We will use the SampleServerApp.exe from the last example:
     ```
     tee-supplicant &
     ```
-    6. [Deploy IoT Edge](https://blogs.msdn.microsoft.com/iotdev/2018/11/05/a-workaround-to-run-azure-iot-edge-on-arm64-devices/) onto the Grapeboard device. You can skip the Docker deployment step, your image already comes with Docker. If you wish, you can also use prebuilt binaries from the section ``Full Steps to Run the Simulated Temperature Sensor`` if you do not want to build yourself.
-    7. To validate against the secure cloud service, [add the following module into the deployment](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-deploy-modules-portal). You will need to use the image, name and createOptions from this snipped if you go through the Portal. Update the ``<sgx-host>`` placeholder with the IP address of the host where you started SampleServerApp.
-    ```
-    "sampleClient": {
-      "version": "1.0",
-      "type": "docker",
-      "status": "running",
-      "restartPolicy": "always",
-      "settings": {
-        "image": "<container-repositor>/sampleclient:latest",
-        "createOptions": "{\"Env\":[\"HOST=<sgx-host>\",\"PORT=12345\"],\"HostConfig\":{\"Binds\":[\"/lib/optee_armtz:/lib/optee_armtz\"],\"Devices\":[{\"PathOnHost\":\"/dev/tee0\",\"PathInContainer\":\"/dev/tee0\",\"CgroupPermissions\":\"rwm\"}]}}"
-      }
-    }
-    ```
+    6. Deploy IoT Edge onto the Grapeboard device. You can skip the Docker deployment step, your image already comes with Docker.
+        1. Download and install Security Manager:
+        ```
+        wget https://github.com/vjrantal/iot-edge-darknet-module/files/2423742/iotedge-libiothsm-std-aarch64.zip
+        unzip iotedge-libiothsm-std-aarch64.zip
+        apt-get install ./libiothsm-std-1.0.2-aarch64.deb
+        apt-get install ./iotedge_1.0.2-1_aarch64.deb
+        ```
+        2. [Create IoT Hub](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-create-through-portal)
+        3. [Create IoT Edge Device](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-register-device-portal)
+        4. Using Portal, change ``Configure advanced Edge Runtime settings`` and set Edge Hub image name ``mcr.microsoft.com/azureiotedge-hub:1.0.4-linux-arm32v7`` and Edge Agent image name ``mcr.microsoft.com/azureiotedge-agent:1.0.4-linux-arm32v7``
+        4. Update IoT Edge Runtime configurations: ``vi /etc/iotedge/config.yaml``
+           Set ``provisioning`` -> ``device_connection_string`` with the device connection string retrieved in the last step
+           Set ``agent`` -> ``config`` -> ``image`` with ``mcr.microsoft.com/azureiotedge-agent:1.0.4-linux-arm32v7``
+        5. Restart IoT Edge runtime: ``systemctl restart iotedge`` 
+        6. Wait until ``docker ps`` shows both ``edgeHub`` and ``edgeAgent`` running
+    7. To validate against the secure cloud service, [add the following module into the deployment](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-deploy-modules-portal). Update the ``<sgx-host>`` placeholder with the IP address of the host where you started SampleServerApp. 
+        1. If you go through Portal, use ``sampleClient`` as a Name, ``<container-repositor>/sampleclient:latest`` as an Image URI and the following snippet as the Container Create Options:
+        ```
+        {
+          "Env": ["HOST=<sgx-host>", "PORT=12345"],
+          "HostConfig": {
+            "Binds": ["/lib/optee_armtz:/lib/optee_armtz"],
+            "Devices":[{"PathOnHost":"/dev/tee0","PathInContainer":"/dev/tee0","CgroupPermissions":"rwm"}]
+          }
+        }
+        ```
+        You will also need to specify your Azure Container Registry credentials in the Container Registry Settings.
+        
+        2. If you use deployment.json for the deployment, the snippet you need to use is this:
+        ```
+        "sampleClient": {
+          "version": "1.0",
+          "type": "docker",
+          "status": "running",
+          "restartPolicy": "always",
+          "settings": {
+            "image": "<container-repositor>/sampleclient:latest",
+            "createOptions": "{\"Env\":[\"HOST=<sgx-host>\",\"PORT=12345\"],\"HostConfig\":{\"Binds\":[\"/lib/optee_armtz:/lib/optee_armtz\"],\"Devices\":[{\"PathOnHost\":\"/dev/tee0\",\"PathInContainer\":\"/dev/tee0\",\"CgroupPermissions\":\"rwm\"}]}}"
+          }
+        }
+        ```
+        You will also need to specify your Azure Container Registry credentials using the following snippet:
+        ```
+            "registryCredentials": {
+              "jiriatest": {
+                "username": "<containre-repository-username>",
+                "password": "<container-repository-password>",
+                "address": "<container-repository>"
+              }
+            }
+
+        ```
     8. OP-TEE console output should show the following repeating:
 
     ```
