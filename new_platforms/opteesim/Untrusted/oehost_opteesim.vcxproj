@@ -127,7 +127,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>OE_SIMULATE_OPTEE;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(OESdkDir)include;$(ProjectDir)..\..\include\optee\Untrusted\Simulator;$(ProjectDir)..\..\include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(ProjectKaylaDir)driver\TrEE\TrEE\inc;$(ProjectKaylaDir)driver\TrEE\inc;$(SGXSDKInstallPath)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OESdkDir)include;$(ProjectDir)..\..\include\optee\Untrusted\Simulator;$(ProjectDir)..\..\include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(OpteeCallsDir)OpteeCalls\inc;$(SGXSDKInstallPath)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -141,7 +141,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>OE_SIMULATE_OPTEE;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(OESdkDir)include;$(ProjectDir)..\..\include\optee\Untrusted\Simulator;$(ProjectDir)..\..\include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(ProjectKaylaDir)driver\TrEE\TrEE\inc;$(ProjectKaylaDir)driver\TrEE\inc;$(SGXSDKInstallPath)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OESdkDir)include;$(ProjectDir)..\..\include\optee\Untrusted\Simulator;$(ProjectDir)..\..\include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(OpteeCallsDir)OpteeCalls\inc;$(SGXSDKInstallPath)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -155,7 +155,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>OE_SIMULATE_OPTEE;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(OESdkDir)include;$(ProjectDir)..\..\include\optee\Untrusted\Simulator;$(ProjectDir)..\..\include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(ProjectKaylaDir)driver\TrEE\TrEE\inc;$(ProjectKaylaDir)driver\TrEE\inc;$(SGXSDKInstallPath)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OESdkDir)include;$(ProjectDir)..\..\include\optee\Untrusted\Simulator;$(ProjectDir)..\..\include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(OpteeCallsDir)OpteeCalls\inc;$(SGXSDKInstallPath)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -171,7 +171,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(OESdkDir)include;$(ProjectKaylaDir)driver\TrEE\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OESdkDir)include;$(OpteeCallsDir)OpteeCalls\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -189,7 +189,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(OESdkDir)include;$(ProjectKaylaDir)driver\TrEE\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OESdkDir)include;$(OpteeCallsDir)OpteeCalls\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -207,7 +207,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(OESdkDir)include;$(ProjectKaylaDir)driver\TrEE\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OESdkDir)include;$(OpteeCallsDir)OpteeCalls\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

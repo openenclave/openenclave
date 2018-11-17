@@ -292,7 +292,7 @@ Tcps_BeginErrorHandling;
 Tcps_FinishErrorHandling;
 }
 
-/* OpteeCalls from project-kayla supports less than 4k RPC input size */
+/* OpteeCalls supports less than 4k RPC input size */
 #define MAXIMUM_OPTEE_CALLS_RPC_INPUT_SIZE      ((4 * 1024) - 512)
 
 oe_result_t TEE_P_ExportFile(

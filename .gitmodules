@@ -1,7 +1,3 @@
-[submodule "3rdparty/project-kayla"]
-	path = 3rdparty/project-kayla
-	url = https://github.com/ms-iot/project-kayla.git
-	branch = HMI
 [submodule "3rdparty/RIoT"]
 	path = 3rdparty/RIoT
 	url = https://github.com/Microsoft/RIoT.git
@@ -17,3 +13,7 @@
 	path = 3rdparty/optee_client
 	url = https://github.com/ms-iot/optee_client.git
 	branch = ms-optee-ocalls
+[submodule "3rdparty/OpteeCalls"]
+	path = 3rdparty/OpteeCalls
+	url = https://github.com/ms-iot/OpteeCalls.git
+	branch = master

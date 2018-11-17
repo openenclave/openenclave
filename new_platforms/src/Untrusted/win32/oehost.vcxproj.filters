@@ -22,12 +22,12 @@
     </ClCompile>
     <ClCompile Include="..\uhelper_shared.c" />
     <ClCompile Include="..\..\oeshim_common.c" />
-    <ClCompile Include="..\..\..\..\3rdparty\project-kayla\driver\TrEE\OpteeCalls\OpteeCalls.c">
+    <ClCompile Include="..\..\..\..\3rdparty\OpteeCalls\OpteeCalls\OpteeCalls.c">
       <Filter>OP-TEE</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(ProjectKaylaDir)driver\TrEE\OpteeCalls\targetver.h" />
+    <ClInclude Include="$(OpteeCallsDir)OpteeCalls\inc\targetver.h" />
     <ClInclude Include="..\oeoverintelsgx_u.h">
       <Filter>Generated Files</Filter>
     </ClInclude>

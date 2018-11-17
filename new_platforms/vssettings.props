@@ -9,7 +9,7 @@
     <NewPlatformsDir>$(ClientRoot)</NewPlatformsDir>
     <ExternalDir>$(OESdkDir)3rdparty\</ExternalDir>
     <OpteeDir>$(ExternalDir)optee_os\</OpteeDir>
-    <ProjectKaylaDir>$(ExternalDir)project-kayla\</ProjectKaylaDir>
+    <OpteeCallsDir>$(ExternalDir)OpteeCalls\</OpteeCallsDir>
     <RIoTDir>$(ExternalDir)RIoT\</RIoTDir>
     <TinyCborDir>$(RIoTDir)External\tinycbor\</TinyCborDir>
     <GTestDir>$(ExternalDir)googletest\googletest\</GTestDir>
