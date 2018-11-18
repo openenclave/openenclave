@@ -1,11 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "oeenclave", "src\Trusted\oeenclave.vcxproj", "{CD46F388-593F-442C-8751-BC5F206979BA}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "oehost", "src\Untrusted\win32\oehost.vcxproj", "{B7AE03E4-CF5A-49DC-AB3D-2D8F485472B4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{CD46F388-593F-442C-8751-BC5F206979BA} = {CD46F388-593F-442C-8751-BC5F206979BA}
+		{0FE6DBE2-2906-48D0-8D51-85007FC24777} = {0FE6DBE2-2906-48D0-8D51-85007FC24777}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1260B1F5-4602-4539-84BF-0AEE297EA252}"
 	ProjectSection(SolutionItems) = preProject
@@ -24,6 +28,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "opteesim", "opteesim", "{0DCD74BE-623C-4DD7-9A48-C0B35B9C6613}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "oeenclave_opteesim", "opteesim\Trusted\oeenclave_opteesim.vcxproj", "{AFF02E67-1671-4004-B169-9C3AAB5CD103}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C95D1877-86E1-47C0-A568-08859E619EC4} = {C95D1877-86E1-47C0-A568-08859E619EC4}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "oehost_opteesim", "opteesim\Untrusted\oehost_opteesim.vcxproj", "{0FE6DBE2-2906-48D0-8D51-85007FC24777}"
 EndProject
@@ -69,14 +76,26 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "libsocket", "libsocket", "{E87B5688-C78B-41EE-87BC-F8AF17346670}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "oesocket_enc", "libsocket\enc\oesocket_enc.vcxproj", "{75DB709B-D5BF-452B-AFB9-F8F92EB8BBEC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{CD46F388-593F-442C-8751-BC5F206979BA} = {CD46F388-593F-442C-8751-BC5F206979BA}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "oesocket_host", "libsocket\host\win32\oesocket_host.vcxproj", "{12E2E2D6-830E-4B05-B657-C858C2DE54E3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B7AE03E4-CF5A-49DC-AB3D-2D8F485472B4} = {B7AE03E4-CF5A-49DC-AB3D-2D8F485472B4}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "libstdio", "libstdio", "{7C7356BB-1584-465D-92E8-82414B932870}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "oestdio_enc", "libstdio\enc\oestdio_enc.vcxproj", "{C95D1877-86E1-47C0-A568-08859E619EC4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{CD46F388-593F-442C-8751-BC5F206979BA} = {CD46F388-593F-442C-8751-BC5F206979BA}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "oestdio_host", "libstdio\host\win32\oestdio_host.vcxproj", "{D8830D23-CF49-497E-8883-832EC758DE98}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B7AE03E4-CF5A-49DC-AB3D-2D8F485472B4} = {B7AE03E4-CF5A-49DC-AB3D-2D8F485472B4}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -640,5 +659,8 @@ Global
 		{12E2E2D6-830E-4B05-B657-C858C2DE54E3} = {E87B5688-C78B-41EE-87BC-F8AF17346670}
 		{C95D1877-86E1-47C0-A568-08859E619EC4} = {7C7356BB-1584-465D-92E8-82414B932870}
 		{D8830D23-CF49-497E-8883-832EC758DE98} = {7C7356BB-1584-465D-92E8-82414B932870}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8CF7576A-AF62-48A0-8727-4E0F32CCE866}
 	EndGlobalSection
 EndGlobal
