@@ -9,7 +9,6 @@
 
 OE_EXTERNC_BEGIN
 
-void oe_log_init(uint64_t level);
 oe_result_t oe_log(log_level_t level, const char* module, const char* fmt, ...);
 
 OE_EXTERNC_END

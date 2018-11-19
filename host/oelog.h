@@ -5,7 +5,7 @@
 #define _OE_HOST_LOG_H
 
 #include <stdio.h>
-#include <openenclave/internal/log-common.h>
+#include <openenclave/internal/oelog-common.h>
 
 void log_log(const char *enclave, oe_log_args_t *args);
 

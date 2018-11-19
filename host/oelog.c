@@ -57,14 +57,19 @@ cleanup:
   return ret;
 }
 
-int oe_log_enclave_init(oe_enclave_t* enclave, log_level_t level)
+oe_result_t oe_log_enclave_init(oe_enclave_t* enclave, log_level_t level)
 {
+  oe_result_t result = OE_UNEXPECTED;
   // Validate input
   if (level > OE_LOG_ERROR)
     return 1;
   // Call enclave
   OE_CHECK(oe_ecall(enclave, OE_ECALL_LOG_INIT, (uint64_t)level, NULL));
-  return 0;
+
+  result = OE_OK;
+
+done:
+  return result;
 }
 
 void oe_log_close(void) {

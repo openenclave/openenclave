@@ -31,8 +31,8 @@ int main(int argc, const char* argv[])
     OE_TEST(r == OE_OK);
 
     const char* logfile = "log.tmp";
-    OE_TEST(oe_log_init(OE_LOG_INFO, logfile) == 0);
-    OE_TEST(oe_log_enclave_init(enclave, OE_LOG_INFO) == 0);
+    OE_TEST(oe_log_init(logfile, OE_LOG_INFO) == 0);
+    OE_TEST(oe_log_enclave_init(enclave, OE_LOG_INFO) == OE_OK);
 
     /* Test() */
     {

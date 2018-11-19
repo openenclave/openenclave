@@ -12,6 +12,7 @@
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
 #include <openenclave/internal/oelog-enclave.h>
+#include "oelog.h"
 
 static uint8_t log_level = OE_LOG_NONE;
 
