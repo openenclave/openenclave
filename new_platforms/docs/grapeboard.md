@@ -8,11 +8,11 @@ The supported board for this preview of ARM TrustZone using the Open Enclave SDK
 ## Getting Started
 
 To use your Grapeboard, you first need to build all the components necessary to boot the device.
-This includes U-Boot, OP-TEE, Linux, and others. NXP provide the Layerscape SDK (LSDK) to automate this process.
+This includes U-Boot, OP-TEE, Linux, and others. NXP provides the Layerscape SDK (LSDK) to automate this process.
 
 To fullfil the Open Enclave SDK requirements, the device firmware must provide the necessary security guarantees.
-These include a cryptographic hardware protected identity, authenticated and measured boot among others.
-The reference firmware used is built on open standards, such as [TCG DICE architecture](https://trustedcomputinggroup.org/work-groups/dice-architectures/).
+These include a cryptographic hardware protected identity, authenticated and measured boot, among others.
+The reference firmware used is built on open standards, such as the [TCG DICE architecture](https://trustedcomputinggroup.org/work-groups/dice-architectures/).
 The reference firmware also enables OCALL-like functionality in OP-TEE and Linux, allowing a TA to support the SGX enclave-like ECALL/OCALL pattern.
 This reference design is available as part of the [ms-iot/LSDK](https://github.com/ms-iot/lsdk). 
 
@@ -27,7 +27,7 @@ Follow [these steps](https://github.com/ms-iot/lsdk/blob/master/docs/grapeboard.
 ## Building the Open Enclave SDK
 
 Once you have your Grapeboard up and running, you can now use it to run your ARM TrustZone TAs built with the Open Enclave SDK.
-If you haven't already, you need to build the Host and TAs on a Linux Host:
+If you haven't already, you need to build the host apps and TAs on a Linux Host:
 
 * [Building a Open Enclave TrustZone TA on Linux](linux_arm_dev.md)
 * [Running a SampleClient on the Grapeboard](sample_sockets.md#grapeboard)
