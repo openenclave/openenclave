@@ -110,7 +110,7 @@ else
     fi
 fi
 if [ -z "$edgepath" ]; then
-    echo FAILED: You need to first install the Intel SGX SDK from https://software.intel.com/en-us/sgx-sdk/download
+    echo FAILED: You need to first install the Intel SGX SDK from https://01.org/intel-softwareguard-extensions
     exit 1
 fi
 if [ "${SGX_EDGER8R}" = "sgx_edger8r.exe" ]; then
@@ -122,6 +122,7 @@ else
     binPath=$(dirname "${binX64Path}")
 fi
 sgxSdkPath=$(dirname "${binPath}")
+
 
 # -------------------------------------
 # Configure OE Edger8r
@@ -162,11 +163,15 @@ export SGX_RELATIVE_PATH=../3rdparty/SGXSDK/
 export SGX_PATH=$PWD${SGX_RELATIVE_PATH}
 export SGX_SDK=$PWD/../3rdparty/SGXSDK
 
-PROC_COUNT=$(eval "cat /proc/cpuinfo | awk '/^processor/{print $3}' | wc -l")
+echo Patching Intel SGX SDK
+
+sudo patch -N -i sgx_error.h.patch $SGX_SDK/include/sgx_error.h
 
 # -------------------------------------
 # Build OP-TEE
 # -------------------------------------
+
+PROC_COUNT=$(eval "cat /proc/cpuinfo | awk '/^processor/{print $3}' | wc -l")
 
 if [ -z "$TA_DEV_KIT_DIR" ]; then
     echo Building OP-TEE OS

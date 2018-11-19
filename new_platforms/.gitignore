@@ -36,3 +36,5 @@ gcc-linaro-6.2.1-2016.11-x86_64_arm-linux-gnueabihf.tar.xz
 # External SGX SDK
 /External/SGXSDK/
 SGXSDK.zip
+packages/*
+gcc-linaro-*
