@@ -1,14 +1,23 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_LOG_H
-#define _OE_LOG_H
+#ifndef _OELOG_COMMON_H
+#define _OELOG_COMMON_H
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
 
 OE_EXTERNC_BEGIN
+
+typedef enum LogLevel
+{
+  OE_LOG_NONE = 0, 
+  OE_LOG_DEBUG, 
+  OE_LOG_INFO, 
+  OE_LOG_WARN, 
+  OE_LOG_ERROR 
+} log_level_t;
 
 /* Maximum log length */
 #define OE_LOG_MODULE_LEN_MAX 32
@@ -23,4 +32,4 @@ typedef struct _oe_log_args
 
 OE_EXTERNC_END
 
-#endif /* _OE_LOG_H */
+#endif /* _OELOG_COMMON_H */

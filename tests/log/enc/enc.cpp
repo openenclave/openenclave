@@ -3,11 +3,11 @@
 
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/internal/tests.h>
-#include <openenclave/bits/log-enc.h>
+#include <openenclave/internal/oelog-enclave.h>
 
 OE_ECALL void Test(void* args_)
 {
-    oe_result_t ret = oe_log_trace("test", "this is %s%d", "test", 1);
+    oe_result_t ret = oe_log(OE_LOG_INFO,  "test", "this is %s%d", "test", 1);
 
     /* Check for return code */
     OE_TEST(ret == OE_OK);

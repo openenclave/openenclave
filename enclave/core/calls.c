@@ -17,6 +17,7 @@
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/utils.h>
+#include <openenclave/internal/oelog-enclave.h>
 #include "../report.h"
 #include "asmdefs.h"
 #include "cpuid.h"
@@ -470,6 +471,11 @@ static void _handle_ecall(
         case OE_ECALL_VERIFY_REPORT:
         {
             oe_handle_verify_report(arg_in, &arg_out);
+            break;
+        }
+        case OE_ECALL_LOG_INIT:
+        {
+            oe_log_init(arg_in);
             break;
         }
         default:

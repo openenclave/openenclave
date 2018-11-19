@@ -20,11 +20,6 @@ install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/helloworld
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
     )
 
-# Install the logs sample.
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/logs
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
-    )
-
 # Install the file-encryptor sample
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/file-encryptor
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples

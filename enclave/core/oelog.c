@@ -4,7 +4,6 @@
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/bits/log-enc.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
@@ -12,13 +11,23 @@
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
+#include <openenclave/internal/oelog-enclave.h>
 
-oe_result_t oe_log(uint8_t level, const char* module, const char *fmt, ...)
+static uint8_t log_level = OE_LOG_NONE;
+
+void oe_log_init(uint64_t level) {
+    log_level = (log_level_t)level;
+}
+
+oe_result_t oe_log(log_level_t level, const char* module, const char *fmt, ...)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_log_args_t* args = NULL;
 
     if (!module || !fmt)
+        goto done;
+
+    if (level < log_level)
         goto done;
 
     if (!(args = oe_host_malloc(sizeof(oe_log_args_t))))
