@@ -37,7 +37,7 @@ done:
 
 }
 
-oe_result_t oe_log(log_level_t level, uint64_t module, const char *fmt, ...)
+oe_result_t oe_log(uint64_t module, log_level_t level, const char *fmt, ...)
 {
     oe_result_t result = OE_FAILURE;
     oe_log_args_t* args = NULL;
