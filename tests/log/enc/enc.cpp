@@ -8,13 +8,13 @@
 OE_ECALL void Test(void* args_)
 {
     oe_result_t ret;
-    ret = oe_log(OE_LOG_INFO,  OE_LOG_FLAGS_ATTESTATION, "test%d: %s/%s is ON", 1, "OE_LOG_INFO", "OE_LOG_FLAGS_ATTESTATION");
+    ret = oe_log(OE_LOG_FLAGS_ATTESTATION, OE_LOG_INFO, "test%d: %s/%s is ON", 1, "OE_LOG_FLAGS_ATTESTATION", "OE_LOG_INFO");
     OE_TEST(ret == OE_OK);
-    ret = oe_log(OE_LOG_ERROR,  OE_LOG_FLAGS_COMMON, "test%d: %s/%s is ON", 2, "OE_LOG_ERROR", "OE_LOG_FLAGS_COMMON");
+    ret = oe_log(OE_LOG_FLAGS_COMMON, OE_LOG_ERROR, "test%d: %s/%s is ON", 2, "OE_LOG_FLAGS_COMMON", "OE_LOG_ERROR");
     OE_TEST(ret == OE_OK);
-    ret = oe_log(OE_LOG_INFO,  OE_LOG_FLAGS_TOOLS, "test%d: %s/%s is OFF", 3, "OE_LOG_INFO", "OE_LOG_FLAGS_TOOLS");
+    ret = oe_log(OE_LOG_FLAGS_TOOLS, OE_LOG_INFO, "test%d: %s/%s is OFF", 3, "OE_LOG_FLAGS_TOOLS", "OE_LOG_INFO");
     OE_TEST(ret == OE_OK);
-    ret = oe_log(OE_LOG_DEBUG,  OE_LOG_FLAGS_ATTESTATION, "test%d: %s/%s is OFF", 4, "OE_LOG_DEBUG", "OE_LOG_FLAGS_ATTESTATION");
+    ret = oe_log(OE_LOG_FLAGS_ATTESTATION, OE_LOG_DEBUG, "test%d: %s/%s is OFF", 4, "OE_LOG_FLAGS_ATTESTATION", "OE_LOG_DEBUG");
     OE_TEST(ret == OE_OK);
 }
 
