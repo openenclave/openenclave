@@ -235,10 +235,10 @@ int _emulate_illegal_instruction(sgx_ssa_gpr_t* ssa_gpr)
 **
 **  The real (second pass) exception dispatcher. It is called by
 **  oe_exception_dispatcher. This function composes the valid
-**  oe_exception_record_t and calls the registered exception handlers one by one. 
-**  If a handler returns OE_EXCEPTION_CONTINUE_EXECUTION, this function will 
-**  continue execution on the context. Otherwise the enclave will be aborted due 
-**  to an unhandled exception.
+**  oe_exception_record_t and calls the registered exception handlers one by
+**  one.  If a handler returns OE_EXCEPTION_CONTINUE_EXECUTION, this function
+**  will continue execution on the context. Otherwise the enclave will be
+**  aborted due to an unhandled exception.
 **
 **==============================================================================
 */
