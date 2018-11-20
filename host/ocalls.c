@@ -288,6 +288,6 @@ void oe_handle_log(oe_enclave_t* enclave, uint64_t arg)
 
     if (args)
     {
-        log_log(enclave->path, args);
+        _oe_log(true, args);
     }
 }

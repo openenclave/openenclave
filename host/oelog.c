@@ -15,6 +15,24 @@
 static oe_mutex oe_log_lock = OE_H_MUTEX_INITIALIZER;
 static FILE *LogFile = NULL;
 static log_level_t LogLevel = OE_LOG_NONE;
+static uint64_t LogModules = 0;
+
+static const char* log_module(uint64_t module)
+{
+  switch (module) {
+    case OE_LOG_FLAGS_ATTESTATION: return "FLAGS_ATTESTATION";
+    case OE_LOG_FLAGS_GET_REPORT: return "FLAGS_GET_REPORT";
+    case OE_LOG_FLAGS_VERIFY_REPORT: return "FLAGS_VERIFY_REPORT";
+    case OE_LOG_FLAGS_COMMON: return "FLAGS_COMMON";
+    case OE_LOG_FLAGS_CERT: return "FLAGS_CERT";
+    case OE_LOG_FLAGS_TOOLS: return "FLAGS_TOOLS";
+    case OE_LOG_FLAGS_CRYPTO: return "FLAGS_CRYPTO";
+    case OE_LOG_FLAGS_SGX_SPECIFIC: return "FLAGS_SGX_SPECIFIC";
+    case OE_LOG_FLAGS_IMAGE_LOADING: return "FLAGS_IMAGE_LOADING";
+    case OE_LOG_FLAGS_ALL: return "FLAGS_ALL";
+    default: return "N/A";
+  }
+}
 
 static const char* log_level(log_level_t level)
 {
@@ -47,6 +65,7 @@ int oe_log_host_init(const char *path, uint64_t modules, log_level_t level)
   if (LogFile == NULL)
     goto cleanup;
 
+  LogModules = modules;
   LogLevel = level;
   ret = 0;
 
@@ -82,7 +101,8 @@ done:
   return result;
 }
 
-void oe_log_close(void) {
+void oe_log_close(void)
+{
   // Take the lock.
   if (oe_mutex_lock(&oe_log_lock) != 0)
     return;
@@ -92,20 +112,39 @@ void oe_log_close(void) {
     fclose(LogFile);
     LogFile = NULL;
   }
+  LogModules = 0;
   LogLevel = OE_LOG_NONE;
   // Release the lock.
   if (oe_mutex_unlock(&oe_log_lock) != 0)
     abort();
 }
 
-void log_log(const char *enclave, oe_log_args_t *args) {
+void oe_log(uint64_t module, log_level_t level, const char* fmt, ...)
+{
+  if (level < LogLevel || ((module & LogModules) == 0))
+    return;
+  if (!fmt)
+    return;
+
+  oe_log_args_t args;
+  args.module = module;
+  args.level = level;
+  oe_va_list ap;
+  oe_va_start(ap, fmt);
+  oe_vsnprintf(args.message, OE_LOG_MESSAGE_LEN_MAX, fmt, ap);
+  oe_va_end(ap);
+  _oe_log(false, &args);
+}
+
+void _oe_log(bool enclave, oe_log_args_t *args)
+{
   time_t t = time(NULL);
   struct tm *lt = localtime(&t);
   if (LogFile) {
-    fprintf(LogFile, "%02d:%02d:%02d %-5s %s:%ld:%s\n", lt->tm_hour, lt->tm_min, lt->tm_sec,
-      log_level(args->level), enclave, args->module, args->message);
+    fprintf(LogFile, "%02d:%02d:%02d %s 0x%8x %-10s %-10s %s\n", lt->tm_hour, lt->tm_min, lt->tm_sec,
+      (enclave ? "E":"H"), args->module, log_module(args->module), log_level(args->level), args->message);
     fflush(LogFile);
   }
-  printf("%02d:%02d:%02d %-5s %s:%ld:%s\n", lt->tm_hour, lt->tm_min, lt->tm_sec,
-      log_level(args->level), enclave, args->module, args->message);
+  printf("%02d:%02d:%02d %s 0x%8x %-10s %-10s %s\n", lt->tm_hour, lt->tm_min, lt->tm_sec,
+      (enclave ? "E":"H"), args->module, log_module(args->module), log_level(args->level), args->message);
 }
