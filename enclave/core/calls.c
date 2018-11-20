@@ -17,11 +17,11 @@
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/utils.h>
-#include <openenclave/internal/oelog-enclave.h>
 #include "../report.h"
 #include "asmdefs.h"
 #include "cpuid.h"
 #include "init.h"
+#include "oelog.h"
 #include "report.h"
 #include "td.h"
 #include "thread.h"

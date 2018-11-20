@@ -8,8 +8,10 @@
 #include <time.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/oelog-host.h>
+#include <openenclave/internal/raise.h>
 #include "enclave.h"
 #include "hostthread.h"
+#include "oelog.h"
 
 static oe_mutex oe_log_lock = OE_H_MUTEX_INITIALIZER;
 static FILE *LogFile = NULL;
