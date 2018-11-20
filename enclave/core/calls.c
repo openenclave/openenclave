@@ -475,7 +475,7 @@ static void _handle_ecall(
         }
         case OE_ECALL_LOG_INIT:
         {
-            oe_log_init(arg_in);
+            _handle_oelog_init(arg_in);
             break;
         }
         default:

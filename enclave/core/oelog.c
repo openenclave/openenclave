@@ -7,30 +7,54 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/malloc.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
-#include <openenclave/internal/oelog-enclave.h>
+#include <openenclave/internal/oelog.h>
 #include "oelog.h"
 
-static uint8_t log_level = OE_LOG_NONE;
+static oe_log_filter_t *log_filter = NULL;
 
-void oe_log_init(uint64_t level) {
-    log_level = (log_level_t)level;
+oe_result_t _handle_oelog_init(uint64_t arg) {
+    oe_result_t result = OE_FAILURE;
+    if (log_filter != NULL) {
+        oe_free(log_filter);
+        log_filter = NULL;
+    }
+    log_filter = oe_malloc(sizeof(oe_log_filter_t));
+    if (log_filter == NULL)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    oe_log_filter_t *filter = (oe_log_filter_t *) arg;
+    log_filter->modules = filter->modules;
+    log_filter->level = filter->level;
+    result = OE_OK;
+
+done:
+    return result;
+
 }
 
-oe_result_t oe_log(log_level_t level, const char* module, const char *fmt, ...)
+oe_result_t oe_log(log_level_t level, uint64_t module, const char *fmt, ...)
 {
-    oe_result_t result = OE_UNEXPECTED;
+    oe_result_t result = OE_FAILURE;
     oe_log_args_t* args = NULL;
 
-    if (!module || !fmt)
+    // Check that log filter has been initialized
+    if (log_filter == NULL)
         goto done;
-
-    if (level < log_level)
+    // Check that this message should be logged
+    if (level < log_filter->level || ((module & log_filter->modules) == 0))
+    {
+        result = OE_OK;
         goto done;
-
+    }
+    // Validate input
+    if (!fmt)
+        goto done;
+    // Prepare the structure
     if (!(args = oe_host_malloc(sizeof(oe_log_args_t))))
     {
         result = OE_OUT_OF_MEMORY;
@@ -38,11 +62,7 @@ oe_result_t oe_log(log_level_t level, const char* module, const char *fmt, ...)
     }
 
     args->level = level;
-    if (oe_strncpy_s(
-            args->module,
-            sizeof(char) * OE_LOG_MODULE_LEN_MAX,
-            module, oe_strlen(module)) != OE_OK)
-        goto done;
+    args->module = module;
 
     oe_va_list ap;
     oe_va_start(ap, fmt);

@@ -4,7 +4,7 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/error.h>
-#include <openenclave/internal/oelog-host.h>
+#include <openenclave/internal/oelog.h>
 #include <openenclave/internal/tests.h>
 #include <cassert>
 #include <cstdio>
@@ -31,8 +31,10 @@ int main(int argc, const char* argv[])
     OE_TEST(r == OE_OK);
 
     const char* logfile = "log.tmp";
-    OE_TEST(oe_log_init(logfile, OE_LOG_INFO) == 0);
-    OE_TEST(oe_log_enclave_init(enclave, OE_LOG_INFO) == OE_OK);
+    uint64_t modules = OE_LOG_FLAGS_ATTESTATION | OE_LOG_FLAGS_COMMON;
+    OE_TEST(oe_log_host_init(logfile, modules, OE_LOG_INFO) == 0);
+    OE_TEST(oe_log_enclave_init(enclave, modules, OE_LOG_INFO) == OE_OK);
+
 
     /* Test() */
     {

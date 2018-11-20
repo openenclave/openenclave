@@ -7,7 +7,6 @@
 #include <string.h>
 #include <time.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/oelog-host.h>
 #include <openenclave/internal/raise.h>
 #include "enclave.h"
 #include "hostthread.h"
@@ -28,7 +27,7 @@ static const char* log_level(log_level_t level)
   }
 }
 
-int oe_log_init(const char *path, log_level_t level)
+int oe_log_host_init(const char *path, uint64_t modules, log_level_t level)
 {
    uint32_t ret = 1;
   // Validate input
@@ -59,14 +58,23 @@ cleanup:
   return ret;
 }
 
-oe_result_t oe_log_enclave_init(oe_enclave_t* enclave, log_level_t level)
+oe_result_t oe_log_enclave_init(oe_enclave_t* enclave, uint64_t modules, log_level_t level)
 {
   oe_result_t result = OE_UNEXPECTED;
   // Validate input
   if (level > OE_LOG_ERROR)
     return 1;
+
+  //Populate arg fields.
+  oe_log_filter_t *arg = calloc(1, sizeof(oe_log_filter_t));
+  if (arg == NULL)
+    OE_RAISE(OE_OUT_OF_MEMORY);
+
+  arg->modules = modules;
+  arg->level = level;
+
   // Call enclave
-  OE_CHECK(oe_ecall(enclave, OE_ECALL_LOG_INIT, (uint64_t)level, NULL));
+  OE_CHECK(oe_ecall(enclave, OE_ECALL_LOG_INIT, (uint64_t)arg, NULL));
 
   result = OE_OK;
 
@@ -94,10 +102,10 @@ void log_log(const char *enclave, oe_log_args_t *args) {
   time_t t = time(NULL);
   struct tm *lt = localtime(&t);
   if (LogFile) {
-    fprintf(LogFile, "%02d:%02d:%02d %-5s %s:%s:%s\n", lt->tm_hour, lt->tm_min, lt->tm_sec,
+    fprintf(LogFile, "%02d:%02d:%02d %-5s %s:%ld:%s\n", lt->tm_hour, lt->tm_min, lt->tm_sec,
       log_level(args->level), enclave, args->module, args->message);
     fflush(LogFile);
   }
-  printf("%02d:%02d:%02d %-5s %s:%s:%s\n", lt->tm_hour, lt->tm_min, lt->tm_sec,
+  printf("%02d:%02d:%02d %-5s %s:%ld:%s\n", lt->tm_hour, lt->tm_min, lt->tm_sec,
       log_level(args->level), enclave, args->module, args->message);
 }
