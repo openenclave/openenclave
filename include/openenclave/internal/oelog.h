@@ -64,6 +64,7 @@ OE_EXTERNC_BEGIN
 
 int oe_log_host_init(const char *path, uint64_t modules, log_level_t level);
 oe_result_t oe_log_enclave_init(oe_enclave_t* enclave, uint64_t modules, log_level_t level);
+void oe_log(uint64_t module, log_level_t level, const char* fmt, ...);
 void oe_log_close(void);
 
 OE_EXTERNC_END

@@ -35,7 +35,7 @@ int main(int argc, const char* argv[])
     OE_TEST(oe_log_host_init(logfile, modules, OE_LOG_INFO) == 0);
     OE_TEST(oe_log_enclave_init(enclave, modules, OE_LOG_INFO) == OE_OK);
 
-
+    oe_log(OE_LOG_FLAGS_COMMON, OE_LOG_INFO, "Starting the log %s", "now");
     /* Test() */
     {
         r = oe_call_enclave(enclave, "Test", NULL);

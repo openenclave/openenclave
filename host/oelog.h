@@ -7,6 +7,6 @@
 #include <stdio.h>
 #include <openenclave/internal/oelog.h>
 
-void log_log(const char *enclave, oe_log_args_t *args);
+void _oe_log(bool enclave, oe_log_args_t *args);
 
 #endif //_OE_HOST_LOG_H

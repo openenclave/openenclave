@@ -20,16 +20,16 @@ static uint64_t LogModules = 0;
 static const char* log_module(uint64_t module)
 {
   switch (module) {
-    case OE_LOG_FLAGS_ATTESTATION: return "FLAGS_ATTESTATION";
-    case OE_LOG_FLAGS_GET_REPORT: return "FLAGS_GET_REPORT";
-    case OE_LOG_FLAGS_VERIFY_REPORT: return "FLAGS_VERIFY_REPORT";
-    case OE_LOG_FLAGS_COMMON: return "FLAGS_COMMON";
-    case OE_LOG_FLAGS_CERT: return "FLAGS_CERT";
-    case OE_LOG_FLAGS_TOOLS: return "FLAGS_TOOLS";
-    case OE_LOG_FLAGS_CRYPTO: return "FLAGS_CRYPTO";
-    case OE_LOG_FLAGS_SGX_SPECIFIC: return "FLAGS_SGX_SPECIFIC";
-    case OE_LOG_FLAGS_IMAGE_LOADING: return "FLAGS_IMAGE_LOADING";
-    case OE_LOG_FLAGS_ALL: return "FLAGS_ALL";
+    case OE_LOG_FLAGS_ATTESTATION: return "ATTESTATION";
+    case OE_LOG_FLAGS_GET_REPORT: return "GET_REPORT";
+    case OE_LOG_FLAGS_VERIFY_REPORT: return "VERIFY_REPORT";
+    case OE_LOG_FLAGS_COMMON: return "COMMON";
+    case OE_LOG_FLAGS_CERT: return "CERT";
+    case OE_LOG_FLAGS_TOOLS: return "TOOLS";
+    case OE_LOG_FLAGS_CRYPTO: return "CRYPTO";
+    case OE_LOG_FLAGS_SGX_SPECIFIC: return "SGX_SPECIFIC";
+    case OE_LOG_FLAGS_IMAGE_LOADING: return "IMAGE_LOADING";
+    case OE_LOG_FLAGS_ALL: return "ALL";
     default: return "N/A";
   }
 }
@@ -129,10 +129,10 @@ void oe_log(uint64_t module, log_level_t level, const char* fmt, ...)
   oe_log_args_t args;
   args.module = module;
   args.level = level;
-  oe_va_list ap;
-  oe_va_start(ap, fmt);
-  oe_vsnprintf(args.message, OE_LOG_MESSAGE_LEN_MAX, fmt, ap);
-  oe_va_end(ap);
+  va_list ap;
+  va_start(ap, fmt);
+  vsnprintf(args.message, OE_LOG_MESSAGE_LEN_MAX, fmt, ap);
+  va_end(ap);
   _oe_log(false, &args);
 }
 
@@ -141,10 +141,10 @@ void _oe_log(bool enclave, oe_log_args_t *args)
   time_t t = time(NULL);
   struct tm *lt = localtime(&t);
   if (LogFile) {
-    fprintf(LogFile, "%02d:%02d:%02d %s 0x%8x %-10s %-10s %s\n", lt->tm_hour, lt->tm_min, lt->tm_sec,
+    fprintf(LogFile, "%02d:%02d:%02d %s 0x%08x (%-16s) %-10s %s\n", lt->tm_hour, lt->tm_min, lt->tm_sec,
       (enclave ? "E":"H"), args->module, log_module(args->module), log_level(args->level), args->message);
     fflush(LogFile);
   }
-  printf("%02d:%02d:%02d %s 0x%8x %-10s %-10s %s\n", lt->tm_hour, lt->tm_min, lt->tm_sec,
+  printf("%02d:%02d:%02d %s 0x%08x (%-16s) %-10s %s\n", lt->tm_hour, lt->tm_min, lt->tm_sec,
       (enclave ? "E":"H"), args->module, log_module(args->module), log_level(args->level), args->message);
 }
