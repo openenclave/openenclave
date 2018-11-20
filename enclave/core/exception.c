@@ -231,7 +231,7 @@ int _emulate_illegal_instruction(sgx_ssa_gpr_t* ssa_gpr)
 /*
 **==============================================================================
 **
-** _oe_exception_dispatcher(oe_context_t *oe_context)
+** oe_real_exception_dispatcher(oe_context_t *oe_context)
 **
 **  The real (second pass) exception dispatcher. It is called by
 **  oe_exception_dispatcher. This function composes the valid
@@ -242,7 +242,7 @@ int _emulate_illegal_instruction(sgx_ssa_gpr_t* ssa_gpr)
 **
 **==============================================================================
 */
-void _oe_exception_dispatcher(oe_context_t* oe_context)
+void oe_real_exception_dispatcher(oe_context_t* oe_context)
 {
     td_t* td = oe_get_td();
 

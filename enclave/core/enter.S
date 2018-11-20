@@ -321,9 +321,9 @@ oe_exception_dispatcher:
     movq ED_SAVED_RDI, %rax
     movq %rax, OE_CONTEXT_RDI(%rdi)
 
-    call _oe_exception_dispatcher
+    call oe_real_exception_dispatcher
 
-    // Should never reach here since _oe_exception_dispatcher will not return.
+    // Should never reach here since oe_real_exception_dispatcher will not return.
 
 .forever_loop:
     jmp .forever_loop
