@@ -223,10 +223,10 @@ __morestack:
 
 .globl __oe_host_stack_bridge
 .type __oe_host_stack_bridge, @function
-.type _oe_notify_ocall_start,@function
-.hidden _oe_notify_ocall_start
-.type _oe_notify_ocall_end,@function
-.hidden _oe_notify_ocall_end
+.type oe_notify_ocall_start,@function
+.hidden oe_notify_ocall_start
+.type oe_notify_ocall_end,@function
+.hidden oe_notify_ocall_end
 __oe_host_stack_bridge:
 .cfi_startproc
     push %rbp
@@ -254,10 +254,10 @@ __oe_host_stack_bridge:
     mov %rax, HB_SAVED_ENCLAVE
 
     // Notify that an ocall happens in current host thread.
-    // _oe_notify_ocall_start(rdi=host_frame_pointer, rsi=tcs)
+    // oe_notify_ocall_start(rdi=host_frame_pointer, rsi=tcs)
     mov %rbp, %rdi
     mov %r8,  %rsi
-    call _oe_notify_ocall_start@PLT
+    call oe_notify_ocall_start@PLT
 
     // Restore the parameters for __oe_dispatch_ocall.
     mov HB_SAVED_ARG1, %rdi
@@ -274,10 +274,10 @@ __oe_host_stack_bridge:
     mov %rax, HB_SAVED_OCALL_RETURN
 
     // Notify that an ocall is done in current host thread.
-    // _oe_notify_ocall_start(rdi=host_frame_pointer, rsi=tcs)
+    // oe_notify_ocall_start(rdi=host_frame_pointer, rsi=tcs)
     mov %rbp, %rdi
     mov HB_SAVED_TCS, %rsi
-    call _oe_notify_ocall_end@PLT
+    call oe_notify_ocall_end@PLT
 
     // Because of stack stitching, the return address might be overwritten by
     // gdb. Restore the current return address and frame point of

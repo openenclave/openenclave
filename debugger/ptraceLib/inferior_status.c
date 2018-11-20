@@ -18,7 +18,7 @@ typedef struct _oe_inferior_info
 static oe_inferior_info_t* g_inferior_info_head = NULL;
 static pthread_mutex_t inferior_info_lock;
 
-int _oe_track_inferior(pid_t pid)
+int oe_track_inferior(pid_t pid)
 {
     int ret = -1;
     pthread_mutex_lock(&inferior_info_lock);
@@ -54,7 +54,7 @@ cleanup:
     return ret;
 }
 
-int _oe_untrack_inferior(pid_t pid)
+int oe_untrack_inferior(pid_t pid)
 {
     int ret = -1;
     pthread_mutex_lock(&inferior_info_lock);
@@ -93,7 +93,7 @@ cleanup:
 /*
 **==============================================================================
 **
-** _oe_get_inferior_flags()
+** oe_get_inferior_flags()
 **
 **     This function is used to get the flags of a tracked inferior.
 **
@@ -108,7 +108,7 @@ cleanup:
 **==============================================================================
 */
 
-int _oe_get_inferior_flags(pid_t pid, int64_t* flags)
+int oe_get_inferior_flags(pid_t pid, int64_t* flags)
 {
     int ret = -1;
     pthread_mutex_lock(&inferior_info_lock);
@@ -134,7 +134,7 @@ cleanup:
 /*
 **==============================================================================
 **
-** _oe_set_inferior_flags()
+** oe_set_inferior_flags()
 **
 **     This function is used to set the flags of a tracked inferior.
 **
@@ -149,7 +149,7 @@ cleanup:
 **==============================================================================
 */
 
-int _oe_set_inferior_flags(pid_t pid, int64_t flags)
+int oe_set_inferior_flags(pid_t pid, int64_t flags)
 {
     int ret = -1;
     pthread_mutex_lock(&inferior_info_lock);

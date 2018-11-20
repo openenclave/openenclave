@@ -191,7 +191,7 @@ done:
     return result;
 }
 
-oe_result_t _oe_get_remote_report(
+oe_result_t oe_get_remote_report(
     const uint8_t* report_data,
     size_t report_data_size,
     const void* opt_params,
@@ -287,7 +287,7 @@ oe_result_t oe_get_report(
     if (flags & OE_REPORT_FLAGS_REMOTE_ATTESTATION)
     {
         OE_CHECK(
-            _oe_get_remote_report(
+            oe_get_remote_report(
                 report_data,
                 report_data_size,
                 opt_params,

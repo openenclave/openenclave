@@ -235,11 +235,10 @@ int _emulate_illegal_instruction(sgx_ssa_gpr_t* ssa_gpr)
 **
 **  The real (second pass) exception dispatcher. It is called by
 **  oe_exception_dispatcher. This function composes the valid
-*oe_exception_record_t
-**  and calls the registered exception handlers one by one. If a handler returns
-**  OE_EXCEPTION_CONTINUE_EXECUTION, this function will continue execution on
-**  the context. Otherwise the enclave will be aborted due to an unhandled
-**  exception.
+**  oe_exception_record_t and calls the registered exception handlers one by one. 
+**  If a handler returns OE_EXCEPTION_CONTINUE_EXECUTION, this function will 
+**  continue execution on the context. Otherwise the enclave will be aborted due 
+**  to an unhandled exception.
 **
 **==============================================================================
 */
@@ -302,7 +301,7 @@ void _oe_exception_dispatcher(oe_context_t* oe_context)
 /*
 **==============================================================================
 **
-** _oe_virtual_exception_dispatcher(td_t* td, uint64_t arg_in, uint64_t*
+** oe_virtual_exception_dispatcher(td_t* td, uint64_t arg_in, uint64_t*
 *arg_out)
 **
 **  The virtual (first pass) exception dispatcher. It checks whether or not
@@ -311,7 +310,7 @@ void _oe_exception_dispatcher(oe_context_t* oe_context)
 **
 **==============================================================================
 */
-void _oe_virtual_exception_dispatcher(
+void oe_virtual_exception_dispatcher(
     td_t* td,
     uint64_t arg_in,
     uint64_t* arg_out)
@@ -389,7 +388,7 @@ void _oe_virtual_exception_dispatcher(
 /*
 **==============================================================================
 **
-** void _oe_cleanup_xstates(void)
+** void oe_cleanup_xstates(void)
 **
 **  Cleanup all XSTATE registers that include both legacy registers and extended
 **  registers.
@@ -397,7 +396,7 @@ void _oe_virtual_exception_dispatcher(
 **==============================================================================
 */
 
-void _oe_cleanup_xstates(void)
+void oe_cleanup_xstates(void)
 {
     // Temporary workaround for #144 xrstor64 fault with optimized builds as
     // reserved guard pages

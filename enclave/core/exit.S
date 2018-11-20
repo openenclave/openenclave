@@ -81,9 +81,9 @@ _oe_exit:
     push %rsi
 
     // Notify a nested exit happens.
-    // _oe_notify_nested_exit_start(rdi=arg1, rsi=ocall_context)
+    // oe_notify_nested_exit_start(rdi=arg1, rsi=ocall_context)
     mov %r12, %rsi
-    call _oe_notify_nested_exit_start
+    call oe_notify_nested_exit_start
 
     // Restore the parameters of _oe_exit from stack.
     pop %rsi
@@ -104,7 +104,7 @@ _oe_exit:
 .clear_enclave_registers:
 
     // Clear these so information will not be leaked to host
-    _oe_cleanup_registers
+    oe_cleanup_registers
 
 .restore_host_registers:
 

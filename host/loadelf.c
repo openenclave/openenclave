@@ -785,7 +785,7 @@ done:
 
 OE_NO_OPTIMIZE_BEGIN
 
-OE_NEVER_INLINE void _oe_notify_gdb_enclave_termination(
+OE_NEVER_INLINE void oe_notify_gdb_enclave_termination(
     const oe_enclave_t* enclave,
     const char* enclavePath,
     uint32_t enclavePathLength)
@@ -797,7 +797,7 @@ OE_NEVER_INLINE void _oe_notify_gdb_enclave_termination(
     return;
 }
 
-OE_NEVER_INLINE void _oe_notify_gdb_enclave_creation(
+OE_NEVER_INLINE void oe_notify_gdb_enclave_creation(
     const oe_enclave_t* enclave,
     const char* enclavePath,
     uint32_t enclavePathLength)

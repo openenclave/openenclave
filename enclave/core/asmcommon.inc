@@ -16,7 +16,7 @@
 // 2. Legacy SSE.
 // 3. Extended XState components.
 //==============================================================================
-.macro _oe_cleanup_registers
+.macro oe_cleanup_registers
     // Scrub both Legacy SSE and extended XSTATEs.
     // Save the rax, rcx, rdi and rsi.
     mov %rax, %r12
@@ -24,7 +24,7 @@
     mov %rdi, %r14
     mov %rsi, %r15
 
-    call _oe_cleanup_xstates
+    call oe_cleanup_xstates
 
     // Restore the rax, rcx, rdi and rsi.
     mov %r12, %rax
