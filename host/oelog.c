@@ -141,10 +141,10 @@ void _oe_log(bool enclave, oe_log_args_t *args)
   time_t t = time(NULL);
   struct tm *lt = localtime(&t);
   if (LogFile) {
-    fprintf(LogFile, "%02d:%02d:%02d %s 0x%08x (%-16s) %-10s %s\n", lt->tm_hour, lt->tm_min, lt->tm_sec,
+    fprintf(LogFile, "%02d:%02d:%02d %s 0x%08lx (%-16s) %-10s %s\n", lt->tm_hour, lt->tm_min, lt->tm_sec,
       (enclave ? "E":"H"), args->module, log_module(args->module), log_level(args->level), args->message);
     fflush(LogFile);
   }
-  printf("%02d:%02d:%02d %s 0x%08x (%-16s) %-10s %s\n", lt->tm_hour, lt->tm_min, lt->tm_sec,
+  printf("%02d:%02d:%02d %s 0x%08lx (%-16s) %-10s %s\n", lt->tm_hour, lt->tm_min, lt->tm_sec,
       (enclave ? "E":"H"), args->module, log_module(args->module), log_level(args->level), args->message);
 }
