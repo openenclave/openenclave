@@ -35,7 +35,7 @@ typedef uint32_t __uint32_t;
  */
 # include <sgx.h>
 #if defined(OE_USE_OPTEE)
-# include "optee/sgxoveroptee.h"
+# include "optee/Trusted/sgxoveroptee_enclave.h"
 #endif
 
 #define STRUNCATE 80 

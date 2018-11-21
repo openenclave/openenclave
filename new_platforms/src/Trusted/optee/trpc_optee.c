@@ -13,7 +13,7 @@
 
 #include <openenclave/enclave.h>
 #include "enclavelibc.h"
-#include "sgxoveroptee.h"
+#include "sgxoveroptee_enclave.h"
 #include "../oeoverintelsgx_t.h"
 #include "oeresult.h"
 
