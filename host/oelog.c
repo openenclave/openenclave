@@ -179,7 +179,7 @@ void oe_log(uint64_t flag, log_level_t level, const char* fmt, ...)
     return;
 
   oe_log_args_t args;
-  args.flag = flag;
+  args.flags = flags;
   args.level = level;
   va_list ap;
   va_start(ap, fmt);
@@ -194,9 +194,9 @@ void _oe_log(bool enclave, oe_log_args_t *args)
   struct tm *lt = localtime(&t);
   if (LogFile) {
     fprintf(LogFile, "%02d:%02d:%02d %s 0x%08lx (%-16s) %-10s %s\n", lt->tm_hour, lt->tm_min, lt->tm_sec,
-      (enclave ? "E":"H"), args->flag, log_flag(args->flag), log_level(args->level), args->message);
+      (enclave ? "E":"H"), args->flags, log_flags(args->flags), log_level(args->level), args->message);
     fflush(LogFile);
   }
   printf("%02d:%02d:%02d %s 0x%08lx (%-16s) %-10s %s\n", lt->tm_hour, lt->tm_min, lt->tm_sec,
-      (enclave ? "E":"H"), args->flag, log_flag(args->flag), log_level(args->level), args->message);
+      (enclave ? "E":"H"), args->flags, log_flags(args->flags), log_level(args->level), args->message);
 }
