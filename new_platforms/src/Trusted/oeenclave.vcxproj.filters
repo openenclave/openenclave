@@ -102,9 +102,6 @@
     <ClCompile Include="optee\keygen_optee.c">
       <Filter>optee</Filter>
     </ClCompile>
-    <ClCompile Include="optee\report_optee.c">
-      <Filter>optee</Filter>
-    </ClCompile>
     <ClCompile Include="optee\strings_optee.c">
       <Filter>optee</Filter>
     </ClCompile>
@@ -114,9 +111,6 @@
     <ClCompile Include="optee\trpc_optee.c">
       <Filter>optee</Filter>
     </ClCompile>
-    <ClCompile Include="..\oeshim_common.c">
-      <Filter>common</Filter>
-    </ClCompile>
     <ClCompile Include="string_t.c">
       <Filter>common</Filter>
     </ClCompile>
@@ -125,6 +119,51 @@
     </ClCompile>
     <ClCompile Include="log_ocall_file.c">
       <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotAes128.c">
+      <Filter>common\riot</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotAesTables.c">
+      <Filter>common\riot</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotBase64.c">
+      <Filter>common\riot</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotCrypt.c">
+      <Filter>common\riot</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotEcc.c">
+      <Filter>common\riot</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotHmac.c">
+      <Filter>common\riot</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotKdf.c">
+      <Filter>common\riot</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotSha256.c">
+      <Filter>common\riot</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotX509Bldr.c">
+      <Filter>common\riot</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotDerEnc.c">
+      <Filter>common\riot</Filter>
+    </ClCompile>
+    <ClCompile Include="optee\oeresult_optee.c">
+      <Filter>optee</Filter>
+    </ClCompile>
+    <ClCompile Include="optee\report_optee.c">
+      <Filter>optee</Filter>
+    </ClCompile>
+    <ClCompile Include="sgx\report_sgx.c">
+      <Filter>sgx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sgx_common.c">
+      <Filter>sgx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\optee_common.c">
+      <Filter>optee</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

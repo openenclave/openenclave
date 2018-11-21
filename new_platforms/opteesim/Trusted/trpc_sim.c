@@ -3,6 +3,8 @@
 #include <tee_ta_api.h>
 #include <pta_rpc.h>
 #include <string.h>
+#include <pta_cyres.h>
+#include "cyres_sim.h"
 
 __declspec(dllexport)
 TEE_Result TEE_OpenTASession_Export(
@@ -30,6 +32,7 @@ void TEE_SetREECallback(InvokeREECallbackProc proc)
 }
 
 #define MOCK_PTA_SESSION ((TEE_TASessionHandle)0x87654321)
+#define MOCK_CYRES_PTA_SESSION ((TEE_TASessionHandle)((uint32_t)MOCK_PTA_SESSION+1))
 
 TEE_Result TEE_OpenTASession(
     _In_opt_ const TEE_UUID *destination,
@@ -40,14 +43,21 @@ TEE_Result TEE_OpenTASession(
     _Out_ uint32_t *returnOrigin)
 {
     static const TEE_UUID pta_uuid = PTA_RPC_UUID;
+    static const TEE_UUID pta_cyres_uuid = PTA_CYRES_UUID;
     TEE_Result res = TEE_SUCCESS;
     
     *session = NULL;
 
-    if ((destination != NULL) && (memcmp(&pta_uuid, destination, sizeof(pta_uuid)) == 0)) {
-        /* This is an OCALL session to the PTA. */
-        *session = MOCK_PTA_SESSION;
-        return TEE_SUCCESS;
+    if (destination != NULL) {
+        if (memcmp(&pta_uuid, destination, sizeof(pta_uuid)) == 0) {
+            /* This is an OCALL session to the PTA. */
+            *session = MOCK_PTA_SESSION;
+            return TEE_SUCCESS;
+        }
+        else if (memcmp(&pta_cyres_uuid, destination, sizeof(pta_uuid) ) == 0) {
+            *session = MOCK_CYRES_PTA_SESSION;
+            return TEE_SUCCESS;
+        }
     }
 
     // TODO: move this to DllMain
@@ -88,6 +98,11 @@ TEE_Result TEE_InvokeTACommand(
          * the pseudo-TA would do.
          */
         return g_InvokeREECallback(commandID, paramTypes, params);
+    }
+
+    if (session == MOCK_CYRES_PTA_SESSION) {
+        /* Handle an call to the CYRES PTA. */
+        return invoke_cyres_pta(commandID, paramTypes, params);
     }
 
     /* Handle an ECALL. */

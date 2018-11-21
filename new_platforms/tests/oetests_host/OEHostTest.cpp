@@ -16,9 +16,11 @@
 
 #ifdef OE_USE_SGX
 const char* TA_ID = "oetests_enclave"; /* DLL will be oetests_enclave.signed.dll */
+#define EXPECT_OPTEE_SGX_DIFFERENCE(sgx, optee, oeResult)   EXPECT_EQ(sgx, oeResult);
 #endif
 #ifdef OE_USE_OPTEE
 const char* TA_ID = "3156152a-19d1-423c-96ea-5adf5675798f";
+#define EXPECT_OPTEE_SGX_DIFFERENCE(sgx, optee, oeResult)   EXPECT_EQ(optee, oeResult);
 #endif
 
 TEST(TeeHost, create_enclave_BadId)
@@ -97,10 +99,10 @@ TEST_F(OEHostTest, get_report_v1_Success)
 
     oe_report_t parsed_report;
     oeResult = oe_parse_report(report_buffer, report_buffer_size, &parsed_report);
-    EXPECT_EQ(OE_OK, oeResult);
+    EXPECT_OPTEE_SGX_DIFFERENCE(OE_OK, OE_UNSUPPORTED, oeResult);
 
     oeResult = oe_verify_report(GetOEEnclave(), report_buffer, report_buffer_size, NULL);
-    EXPECT_EQ(OE_OK, oeResult);
+    EXPECT_OPTEE_SGX_DIFFERENCE(OE_OK, OE_UNSUPPORTED, oeResult);
 }
 
 TEST_F(OEHostTest, get_report_v2_Success)
@@ -118,10 +120,10 @@ TEST_F(OEHostTest, get_report_v2_Success)
 
     oe_report_t parsed_report;
     oeResult = oe_parse_report(report_buffer, report_buffer_size, &parsed_report);
-    EXPECT_EQ(OE_OK, oeResult);
+    EXPECT_OPTEE_SGX_DIFFERENCE(OE_OK, OE_UNSUPPORTED, oeResult);
 
     oeResult = oe_verify_report(GetOEEnclave(), report_buffer, report_buffer_size, NULL);
-    EXPECT_EQ(OE_OK, oeResult);
+    EXPECT_OPTEE_SGX_DIFFERENCE(OE_OK, OE_UNSUPPORTED, oeResult);
 
     oe_free_report(report_buffer);
 }
@@ -129,19 +131,23 @@ TEST_F(OEHostTest, get_report_v2_Success)
 TEST_F(OEHostTest, get_target_info_v1_Failed)
 {
     oe_result_t oeResult = oe_get_target_info_v1(NULL, 0, NULL, NULL);
-    EXPECT_EQ(OE_INVALID_PARAMETER, oeResult);
+    EXPECT_OPTEE_SGX_DIFFERENCE(OE_INVALID_PARAMETER, OE_UNSUPPORTED, oeResult);
 
     sgx_report_t sgx_report = { 0 };
     size_t size = 0;
     oeResult = oe_get_target_info_v1((uint8_t*)&sgx_report, sizeof(sgx_report), NULL, &size);
+#if defined(OE_USE_OPTEE)
+    EXPECT_EQ(OE_UNSUPPORTED, oeResult);
+#else
     EXPECT_EQ(OE_BUFFER_TOO_SMALL, oeResult);
     EXPECT_TRUE(size > 0);
+#endif
 }
 
 TEST_F(OEHostTest, get_target_info_v2_Failed)
 {
     oe_result_t oeResult = oe_get_target_info_v2(NULL, 0, NULL, NULL);
-    EXPECT_EQ(OE_INVALID_PARAMETER, oeResult);
+    EXPECT_OPTEE_SGX_DIFFERENCE(OE_INVALID_PARAMETER, OE_UNSUPPORTED, oeResult);
 }
 
 TEST_F(OEHostTest, get_target_info_v1_Success)
@@ -160,6 +166,9 @@ TEST_F(OEHostTest, get_target_info_v1_Success)
     /* Get target info size. */
     size_t targetInfoSize = 0;
     oeResult = oe_get_target_info_v1(report_buffer, report_buffer_size, NULL, &targetInfoSize);
+#if defined(OE_USE_OPTEE)
+    EXPECT_EQ(OE_UNSUPPORTED, oeResult);
+#else
     EXPECT_EQ(OE_BUFFER_TOO_SMALL, oeResult);
     EXPECT_TRUE(targetInfoSize > 0);
 
@@ -178,9 +187,10 @@ TEST_F(OEHostTest, get_target_info_v1_Success)
     EXPECT_EQ(OE_OK, oeResult);
 
     free(targetInfo);
+#endif
 
     oeResult = oe_verify_report(GetOEEnclave(), report_buffer, report_buffer_size, NULL);
-    EXPECT_EQ(OE_OK, oeResult);
+    EXPECT_OPTEE_SGX_DIFFERENCE(OE_OK, OE_UNSUPPORTED, oeResult);
 }
 
 TEST_F(OEHostTest, get_target_info_v2_Success)
@@ -199,6 +209,9 @@ TEST_F(OEHostTest, get_target_info_v2_Success)
     void* targetInfo = NULL;
     size_t targetInfoSize = 0;
     oeResult = oe_get_target_info_v2(report_buffer, report_buffer_size, &targetInfo, &targetInfoSize);
+#if defined(OE_USE_OPTEE)
+    EXPECT_EQ(OE_UNSUPPORTED, oeResult);
+#else
     EXPECT_EQ(OE_OK, oeResult);
     EXPECT_TRUE(targetInfoSize > 0);
     ASSERT_TRUE(targetInfo != NULL);
@@ -213,9 +226,10 @@ TEST_F(OEHostTest, get_target_info_v2_Success)
     EXPECT_EQ(OE_OK, oeResult);
 
     oe_free_target_info(targetInfo);
+#endif
 
     oeResult = oe_verify_report(GetOEEnclave(), report_buffer, report_buffer_size, NULL);
-    EXPECT_EQ(OE_OK, oeResult);
+    EXPECT_OPTEE_SGX_DIFFERENCE(OE_OK, OE_UNSUPPORTED, oeResult);
     oe_free_report(report_buffer);
 }
 

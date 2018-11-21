@@ -27,6 +27,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\tcps\TcpsId.c" />
+    <ClCompile Include="..\..\..\3rdparty\RIoT\External\tinycbor\src\cborencoder.c" />
+    <ClCompile Include="..\..\..\3rdparty\RIoT\External\tinycbor\src\cborparser.c" />
+    <ClCompile Include="cyres_sim.c" />
     <ClCompile Include="memory-sim.c">
       <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">false</IntrinsicFunctions>
     </ClCompile>
@@ -34,7 +38,7 @@
     <ClCompile Include="string-sim.c" />
     <ClCompile Include="tcrypto-sim.c" />
     <ClCompile Include="tobject-sim.c" />
-    <ClCompile Include="trpc-sim.c" />
+    <ClCompile Include="trpc_sim.c" />
     <ClCompile Include="ttime-sim.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

@@ -21,8 +21,13 @@
       <Filter>SGX</Filter>
     </ClCompile>
     <ClCompile Include="..\uhelper_shared.c" />
-    <ClCompile Include="..\..\oeshim_common.c" />
     <ClCompile Include="..\..\..\..\3rdparty\OpteeCalls\OpteeCalls\OpteeCalls.c">
+      <Filter>OP-TEE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sgx_common.c">
+      <Filter>SGX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\optee_common.c">
       <Filter>OP-TEE</Filter>
     </ClCompile>
   </ItemGroup>

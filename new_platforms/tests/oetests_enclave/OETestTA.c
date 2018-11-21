@@ -12,6 +12,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if defined(OE_USE_OPTEE)
+#define VERIFY_OPTEE_SGX(sgx, optee, oeResult)   (optee != oeResult)
+#else                                                       
+#define VERIFY_OPTEE_SGX(sgx, optee, oeResult)   (sgx != oeResult)
+#endif
+
 oe_result_t ecall_TestOEIsWithinEnclave(void* outside, int size)
 {
     /* Generated code always calls is_within_enclave on secure memory,
@@ -123,14 +129,14 @@ oe_result_t ecall_TestOEGetReportV1(uint32_t flags)
 
     oe_report_t parsed_report;
     oeResult = oe_parse_report(report_buffer, report_buffer_size, &parsed_report);
-    if (oeResult != OE_OK) {
+    if (VERIFY_OPTEE_SGX(OE_OK, OE_UNSUPPORTED, oeResult)) {
         return OE_FAILURE;
     }
 
     oeResult = oe_verify_report(report_buffer,
         report_buffer_size,
         NULL);
-    if (oeResult != OE_OK) {
+    if (VERIFY_OPTEE_SGX(OE_OK, OE_UNSUPPORTED, oeResult)) {
         return OE_FAILURE;
     }
 
@@ -157,7 +163,7 @@ oe_result_t ecall_TestOEGetReportV2(uint32_t flags)
 
     oe_report_t parsed_report;
     oeResult = oe_parse_report(report_buffer, report_buffer_size, &parsed_report);
-    if (oeResult != OE_OK) {
+    if (VERIFY_OPTEE_SGX(OE_OK, OE_UNSUPPORTED, oeResult)) {
         oe_free_report(report_buffer);
         return OE_FAILURE;
     }
@@ -166,7 +172,7 @@ oe_result_t ecall_TestOEGetReportV2(uint32_t flags)
         report_buffer_size,
         NULL);
     oe_free_report(report_buffer);
-    if (oeResult != OE_OK) {
+    if (VERIFY_OPTEE_SGX(OE_OK, OE_UNSUPPORTED, oeResult)) {
         return OE_FAILURE;
     }
 
@@ -191,6 +197,8 @@ oe_result_t ecall_TestOEGetTargetInfoV1(uint32_t flags)
         return OE_FAILURE;
     }
 
+    /* OP-TEE does not oe_get_target_info_v1 */
+#ifndef OE_USE_OPTEE
     /* Get target info size. */
     size_t targetInfoSize = 0;
     oeResult = oe_get_target_info_v1(report_buffer, report_buffer_size, NULL, &targetInfoSize);
@@ -228,6 +236,7 @@ oe_result_t ecall_TestOEGetTargetInfoV1(uint32_t flags)
     if (oeResult != OE_OK) {
         return OE_FAILURE;
     }
+#endif
 
     return OE_OK;
 }
@@ -250,6 +259,8 @@ oe_result_t ecall_TestOEGetTargetInfoV2(uint32_t flags)
         return OE_FAILURE;
     }
 
+    /* OP-TEE does support oe_get_target_info_v1 */
+#ifndef OE_USE_OPTEE
     size_t targetInfoSize = 0;
     void* targetInfo = NULL;
     oeResult = oe_get_target_info_v2(report_buffer, report_buffer_size, &targetInfo, &targetInfoSize);
@@ -279,6 +290,7 @@ oe_result_t ecall_TestOEGetTargetInfoV2(uint32_t flags)
     if (oeResult != OE_OK) {
         return OE_FAILURE;
     }
+#endif
 
     return OE_OK;
 }
@@ -287,10 +299,28 @@ oe_result_t ecall_TestOEGetSealKeyV1(int policy)
 {
     oe_result_t oeResult;
     size_t keySize = 0;
+    size_t keyVerifySize = 0;
     size_t keyInfoSize = 0;
-    uint8_t key[16];
+    uint8_t key[32];
     uint8_t keyInfo[512];
 
+#if defined(OE_USE_OPTEE)
+    if (policy == OE_SEAL_POLICY_PRODUCT) {
+         /* Policy not supported. */
+        keySize = 0;
+        oeResult = oe_get_seal_key_by_policy_v1(
+            (oe_seal_policy_t)policy,
+            NULL,
+            &keySize,
+            NULL,
+            &keyInfoSize);
+        if (oeResult != OE_UNSUPPORTED) {
+            return OE_FAILURE;
+        }
+        return OE_OK;
+    }
+    /* All other policy */
+#endif
     /* Test getting sizes. */
     keySize = 0;
     oeResult = oe_get_seal_key_by_policy_v1(
@@ -333,12 +363,13 @@ oe_result_t ecall_TestOEGetSealKeyV1(int policy)
     }
 
     /* Test getting key size by key info. */
+    keyVerifySize = keySize;
     keySize = 0;
     oeResult = oe_get_seal_key_v1(keyInfo, keyInfoSize, NULL, &keySize);
     if (oeResult != OE_BUFFER_TOO_SMALL) {
         return OE_FAILURE;
     }
-    if (keySize < sizeof(key)) {
+    if (keySize < keyVerifySize) {
         return OE_FAILURE;
     }
 
@@ -359,6 +390,23 @@ oe_result_t ecall_TestOEGetSealKeyV2(int policy)
     uint8_t* key;
     uint8_t* keyInfo;
 
+#if defined(OE_USE_OPTEE)
+    if (policy == OE_SEAL_POLICY_PRODUCT) {
+         /* Policy not supported. */
+        keySize = 0;
+        oeResult = oe_get_seal_key_by_policy_v1(
+            (oe_seal_policy_t)policy,
+            NULL,
+            &keySize,
+            NULL,
+            &keyInfoSize);
+        if (oeResult != OE_UNSUPPORTED) {
+            return OE_FAILURE;
+        }
+        return OE_OK;
+    }
+    /* All other policy */
+#endif
     /* Test getting key without getting key info. */
     oeResult = oe_get_seal_key_by_policy_v2(
         (oe_seal_policy_t)policy,
@@ -395,7 +443,6 @@ oe_result_t ecall_TestOEGetSealKeyV2(int policy)
 
     return OE_OK;
 }
-
 oe_result_t ecall_TestOEGetPublicKey(int policy)
 {
     oe_result_t oeResult;
@@ -405,8 +452,24 @@ oe_result_t ecall_TestOEGetPublicKey(int policy)
     uint8_t* key;
     uint8_t* key2;
     uint8_t* keyInfo;
-    oe_result_t tcpsResult;
 
+#if defined(OE_USE_OPTEE)
+    if (policy == OE_SEAL_POLICY_PRODUCT) {
+         /* Policy not supported. */
+        keySize = 0;
+        oeResult = oe_get_seal_key_by_policy_v1(
+            (oe_seal_policy_t)policy,
+            NULL,
+            &keySize,
+            NULL,
+            &keyInfoSize);
+        if (oeResult != OE_UNSUPPORTED) {
+            return OE_FAILURE;
+        }
+        return OE_OK;
+    }
+    /* All other policy */
+#endif
     /* Test getting key without getting key info. */
     oeResult = oe_get_public_key_by_policy(
         (oe_seal_policy_t)policy,
@@ -415,7 +478,7 @@ oe_result_t ecall_TestOEGetPublicKey(int policy)
         NULL,
         &keyInfoSize);
     if (oeResult != OE_OK) {
-        return OE_FAILURE;
+        return oeResult;
     }
     oe_free_key(key, NULL);
     if (keySize == 0) {
@@ -430,26 +493,25 @@ oe_result_t ecall_TestOEGetPublicKey(int policy)
         &keyInfo,
         &keyInfoSize);
     if (oeResult != OE_OK) {      
-        return OE_FAILURE;
+        return oeResult;
     }
 
     /* Test getting same key by key info. */
-    tcpsResult = OE_OK;
     oeResult = oe_get_public_key(keyInfo, keyInfoSize, &key2, &keySize2);
     if (oeResult != OE_OK) {
         oe_free_key(key, keyInfo);
-        return OE_FAILURE;
+        return oeResult;
     }
 
     /* Test that the keys are the same. */
-    if (keySize != keySize2 ||
-        memcmp(key, key2, keySize) != 0) {
-        tcpsResult = OE_FAILURE;
+    if( keySize != keySize2 ||
+        memcmp( key, key2, keySize ) != 0) {
+        oeResult = OE_FAILURE;
     }
 
     oe_free_key(key, NULL);
     oe_free_key(key2, keyInfo);
-    return tcpsResult;
+    return oeResult;
 }
 
 oe_result_t ecall_TestOEGetPrivateKey(int policy)
@@ -461,8 +523,24 @@ oe_result_t ecall_TestOEGetPrivateKey(int policy)
     uint8_t* key;
     uint8_t* key2;
     uint8_t* keyInfo;
-    oe_result_t tcpsResult;
 
+#if defined(OE_USE_OPTEE)
+    if (policy == OE_SEAL_POLICY_PRODUCT) {
+         /* Policy not supported. */
+        keySize = 0;
+        oeResult = oe_get_seal_key_by_policy_v1(
+            (oe_seal_policy_t)policy,
+            NULL,
+            &keySize,
+            NULL,
+            &keyInfoSize);
+        if (oeResult != OE_UNSUPPORTED) {
+            return OE_FAILURE;
+        }
+        return OE_OK;
+    }
+    /* All other policy */
+#endif
     /* Test getting key without getting key info. */
     oeResult = oe_get_private_key_by_policy(
         (oe_seal_policy_t)policy,
@@ -471,7 +549,7 @@ oe_result_t ecall_TestOEGetPrivateKey(int policy)
         NULL,
         &keyInfoSize);
     if (oeResult != OE_OK) {
-        return OE_FAILURE;
+        return oeResult;
     }
     oe_free_key(key, NULL);
     if (keySize == 0) {
@@ -486,26 +564,25 @@ oe_result_t ecall_TestOEGetPrivateKey(int policy)
         &keyInfo,
         &keyInfoSize);
     if (oeResult != OE_OK) {      
-        return OE_FAILURE;
+        return oeResult;
     }
 
     /* Test getting same key by key info. */
-    tcpsResult = OE_OK;
     oeResult = oe_get_private_key(keyInfo, keyInfoSize, &key2, &keySize2);
     if (oeResult != OE_OK) {
         oe_free_key(key, keyInfo);
-        return OE_FAILURE;
+        return oeResult;
     }
 
     /* Test that the keys are the same. */
-    if (keySize != keySize2 ||
-        memcmp(key, key2, keySize) != 0) {
-        tcpsResult = OE_FAILURE;
+    if( keySize != keySize2 ||
+        memcmp( key, key2, keySize ) != 0) {
+            oeResult = OE_FAILURE;
     }
 
     oe_free_key(key, NULL);
     oe_free_key(key2, keyInfo);
-    return tcpsResult;
+    return oeResult;
 }
 
 void* ecall_OEHostMalloc(int size)
