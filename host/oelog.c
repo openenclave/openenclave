@@ -38,7 +38,7 @@ static const char* log_flags(uint64_t flags)
   }
 }
 
-static str2flags(void)
+static uint64_t str2flags(void)
 {
   const char *flags_str = getenv("OE_LOG_FLAGS");
   if (strlen(flags_str) == 0)
@@ -54,7 +54,7 @@ static str2flags(void)
   }
   else
   {
-    err = sscanf(flags_str, "%llu", &flags);
+    err = sscanf(flags_str, "%lu", &flags);
   }
   if (err != 0)
   {
@@ -171,9 +171,9 @@ void oe_log_close(void)
     abort();
 }
 
-void oe_log(uint64_t flag, log_level_t level, const char* fmt, ...)
+void oe_log(uint64_t flags, log_level_t level, const char* fmt, ...)
 {
-  if (level < LogLevel || ((flag & LogFlags) == 0))
+  if (level < LogLevel || ((flags & LogFlags) == 0))
     return;
   if (!fmt)
     return;
