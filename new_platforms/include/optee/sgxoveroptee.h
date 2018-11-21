@@ -19,6 +19,11 @@
 #endif
 #include <sgx_error.h>
 
+/* The sgx_error.h in the Intel SGX SDK for Linux is missing the following value
+ * that appears in the Intel SGX SDK for Windows.
+ */
+#define SGX_ERROR_FEATURE_NOT_SUPPORTED SGX_MK_ERROR(0x0008)
+
 sgx_status_t
 sgx_optee_ocall(
     const unsigned int index,
