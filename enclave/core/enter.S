@@ -29,7 +29,7 @@
 //         (4) Calls __oe_handle_main()
 //
 //     Note: __oe_handle_main does not return. Instead it eventually
-//     calls oe_exit (see exit.S)
+//     calls oe_asm_exit (see exit.S)
 //
 //==============================================================================
 
@@ -184,7 +184,7 @@ oe_enter:
     push %rbp
     mov %rsp, %r12
 
-    // Save the parameters of _oe_exit into stack.
+    // Save the parameters of oe_asm_exit into stack.
     push %rdi
     push %rsi
 
@@ -193,7 +193,7 @@ oe_enter:
     mov %r12, %rsi
     call oe_notify_nested_exit_start
 
-    // Restore the parameters of _oe_exit from stack.
+    // Restore the parameters of oe_asm_exit from stack.
     pop %rsi
     pop %rdi
 

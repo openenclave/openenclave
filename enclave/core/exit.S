@@ -6,7 +6,7 @@
 
 //==============================================================================
 //
-// void _oe_exit(uint64_t arg1, uint64_t arg2)
+// void oe_asm_exit(uint64_t arg1, uint64_t arg2)
 //
 // Registers:
 //     RDI - arg1
@@ -45,10 +45,10 @@
 //
 //==============================================================================
 
-.globl _oe_exit
-.hidden _oe_exit
-.type _oe_exit, @function
-_oe_exit:
+.globl oe_asm_exit
+.hidden oe_asm_exit
+.type oe_asm_exit, @function
+oe_asm_exit:
 .cfi_startproc
 
 .determine_exit_type:
@@ -76,7 +76,7 @@ _oe_exit:
     push %rbp
     mov	%rsp, %r12
 
-    // Save the parameters of _oe_exit into stack.
+    // Save the parameters of oe_asm_exit into stack.
     push %rdi
     push %rsi
 
@@ -85,7 +85,7 @@ _oe_exit:
     mov %r12, %rsi
     call oe_notify_nested_exit_start
 
-    // Restore the parameters of _oe_exit from stack.
+    // Restore the parameters of oe_asm_exit from stack.
     pop %rsi
     pop %rdi
 
@@ -146,11 +146,11 @@ _oe_exit:
 
 .cfi_endproc
 
-.size _oe_exit, .-_oe_exit
+.size oe_asm_exit, .-oe_asm_exit
 
 //==============================================================================
 //
-// This function is wrapper of _oe_exit. It is needed to stitch the host
+// This function is wrapper of oe_asm_exit. It is needed to stitch the host
 // stack and enclave stack together.
 //
 // N.B: Don't change the function name, otherwise debugger can't work. GDB 
@@ -169,7 +169,7 @@ __morestack:
     mov %rsp, %rbp
 .cfi_def_cfa_register   rbp
 
-    call _oe_exit
+    call oe_asm_exit
 
     leave
     ret
