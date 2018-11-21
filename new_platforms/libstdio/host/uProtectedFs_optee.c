@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <sgx.h>
+#ifdef OE_USE_OPTEE
+# include <sgxoveroptee.h>
+#endif
 
 /* Provide a dummy implementation of the APIs called by sgx_tprotectedfs.lib.
  * These will never be called, however, since on SGX they are called by
