@@ -7,7 +7,7 @@ The Open Enclave SDK allows you to develop applications that take advantage of
 Trusted Execution Environments, or TEE's. Such applications are always composed
 of two components: an untrusted component and a trusted component. The trusted
 component contains the program logic that operates on sensitive data while the
-untrusted component acts as a facilitator which launches and performs actions on
+untrusted component acts as a facilitator that launches and performs actions on
 behalf of the trusted component. It is crucial to note that the untrusted
 component must never be exposed to sensitive data as it exists outside of the
 trust boundary.
@@ -17,7 +17,7 @@ Extensions (SGX) and ARM TrustZone (TZ). Due to the way these technologies were
 developed, the nomenclature used to refer to equivalent aspects of the two are
 different. The documentation at hand uses these different but otherwise
 synonymous words interchangeably, so it is worthwhile to briefly mention them.
-The untrusted component is usually referred to as the "host" for both SGX and
+The untrusted component is usually referred to as the "host" application for both SGX and
 TrustZone. The trusted component is referred to as an "enclave" in the world of
 SGX while it is referred to as a "trusted application" or "TA" for short in the
 realm of TrustZone.
@@ -36,7 +36,7 @@ parallel.
 In an SGX environment, a host application running in REE user-mode may launch
 one or more enclaves. These enclaves may be regarded as secure islands in an
 untrusted sea. Each island is isolated from one another and from the sea at
-large, which includes the host, all other user-mode programs, as well as the
+large, which includes the host application, all other user-mode programs, as well as the
 operating system, hypervisor (if any), and firmware:
 
 ```
@@ -101,7 +101,7 @@ This is because TEE's are enforced by hardware, not software. As such, any
 operating system with the appropriate support may fulfill that role. The host
 application however is dependent on the operating system, and the trusted
 component must adapt to the requirements of the backing TEE, either SGX or
-TrustZone. As a result, there are four possible combinations:
+TrustZone. As a result, there are four combinations:
 
 * A host application on Linux:
     * With SGX enclaves;

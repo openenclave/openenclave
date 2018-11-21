@@ -17,7 +17,7 @@ Simulation when working on Linux is coming soon.
 
 This SDK currently relies on having the Intel SGX SDK installed even if
 developing for TrustZone. This is because the Open Enclave SDK requires
-using the `sgx_edger8r.exe` utility that comes with that SDK as well as various header files.
+using the `sgx_edger8r` utility that comes with that SDK as well as various header files.
 
 **Note**: This dependency is temporary. 
 
