@@ -10,26 +10,28 @@
 #include <string.h>
 #include "oe_gdb_test_u.h"
 
-#define SKIP_RETURN_CODE 2
-
 int main(int argc, const char* argv[])
 {
     oe_result_t result;
     oe_enclave_t* enclave1 = NULL;
+    bool simulation_mode = false;
 
-    if (argc != 2)
+    if (argc < 2)
     {
-        fprintf(stderr, "Usage: %s ENCLAVE_PATH\n", argv[0]);
+        fprintf(
+            stderr, "Usage: %s ENCLAVE_PATH [--simulation-mode]\n", argv[0]);
         return 1;
     }
 
-    const uint32_t flags = oe_get_create_flags();
-    if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
+    uint32_t flags = oe_get_create_flags();
+
+    simulation_mode =
+        (argc == 3 && (strcmp(argv[2], "--simulation-mode") == 0));
+
+    if (simulation_mode)
     {
-        printf(
-            "=== Skipped unsupported test in simulation mode "
-            "(oe_gdb_test)\n");
-        return SKIP_RETURN_CODE;
+        // Force simulation mode if --simulation-mode is specified.
+        flags |= OE_ENCLAVE_FLAG_SIMULATE;
     }
 
     if ((result = oe_create_oe_gdb_test_enclave(
@@ -48,7 +50,9 @@ int main(int argc, const char* argv[])
     result = oe_terminate_enclave(enclave1);
     OE_TEST(result == OE_OK);
 
-    printf("=== passed all tests (oe-gdb)\n");
+    printf(
+        "=== passed all tests (oe-gdb-test%s)\n",
+        simulation_mode ? "-simulation-mode" : "");
 
     return 0;
 }
