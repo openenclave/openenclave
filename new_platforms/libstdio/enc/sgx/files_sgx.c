@@ -282,19 +282,9 @@ Tcps_BeginErrorHandling;
 Tcps_FinishErrorHandling;
 }
 
-oe_result_t DeleteFile(const char* filename)
+int oe_remove_OE_FILE_SECURE_ENCRYPTION(const char* filename)
 {
-Tcps_InitializeStatus(Tcps_Module_Helper_t, "DeleteFile");
-
-    int result = sgx_remove(filename);
-
-    if (errno != ENOENT) {
-        Tcps_GotoErrorIfTrue(result != 0, OE_FAILURE);
-    }
-   
-Tcps_ReturnStatusCode;
-Tcps_BeginErrorHandling;
-Tcps_FinishErrorHandling;
+    return sgx_remove(filename);
 }
 
 #ifdef OE_USE_OPTEE

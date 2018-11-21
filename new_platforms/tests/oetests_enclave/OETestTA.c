@@ -7,6 +7,7 @@
 #include "oetests_t.h"
 #include <openenclave/enclave.h>
 #include <openenclave/internal/random.h>
+#include <openenclave/bits/stdio.h>
 #include "TcpsCallbacks_t.h"
 #include <stdlib.h>
 #include <string.h>
@@ -675,5 +676,27 @@ oe_result_t ecall_TestOcall(void)
     if (input != output) {
         return OE_FAILURE;
     }
+    return OE_OK;
+}
+
+oe_result_t ecall_TestOEFopen(void)
+{
+    OE_FILE* fp = oe_fopen(OE_FILE_SECURE_BEST_EFFORT, "./TestOEFopen.tmp", "w");
+    if (fp == NULL) {
+        return OE_FAILURE;
+    }
+
+    if (oe_fputs("Hello", fp) < 0) {
+        return OE_FAILURE;
+    }
+
+    if (oe_fclose(fp) != 0) {
+        return OE_FAILURE;
+    }
+
+    if (oe_remove(OE_FILE_SECURE_BEST_EFFORT, "./TestOEFopen.tmp") != 0) {
+        return OE_FAILURE;
+    }
+
     return OE_OK;
 }

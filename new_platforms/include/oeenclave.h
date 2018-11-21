@@ -110,8 +110,6 @@ HANDLE FindFirstFile(
 int FindNextFile(HANDLE hFindFile, WIN32_FIND_DATA* findFileData);
 
 BOOL FindClose(_In_ HANDLE hFindFile);
-
-BOOL DeleteFile(_In_z_ const char* filename);
 #endif /* !_APISETFILE_ */
 
 #ifndef _ERRHANDLING_H_
