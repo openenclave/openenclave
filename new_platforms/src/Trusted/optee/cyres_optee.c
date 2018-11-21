@@ -99,11 +99,11 @@ static TEE_Result get_pta_allocated_buf(
     if (oe_result != OE_OK)
         goto done;
 
-    /* Remember to clear the local reference on success */
     oe_result = OE_OK;
-    *buf = local_buf;
-    local_buf = NULL;
     *buf_size = local_buf_size;
+    *buf = local_buf;
+    /* Remember to clear the local reference on success */
+    local_buf = NULL;
 
 done:
     oe_free(local_buf);
