@@ -1,5 +1,7 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
+#include <stdlib.h>
+#include <string.h>
 #include <pta_cyres.h>
 #include <tee_internal_api.h>
 #include <tee_internal_api_extensions.h>
@@ -139,7 +141,7 @@ oe_result_t get_cyres_seal_secret(
 
     params[0].memref.buffer = local_secret;
     params[0].memref.size = req_size;
-    params[1].memref.buffer = key_selector;
+    params[1].memref.buffer = (uint8_t*)key_selector;
     params[1].memref.size = key_selector_size;
 
     oeResult = call_cyres_pta(PTA_CYRES_GET_SEAL_KEY, pt, params);
