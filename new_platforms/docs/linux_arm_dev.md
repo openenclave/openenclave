@@ -9,7 +9,8 @@ This document provides steps for developing on Linux. For other environments,
 see [Windows Host and SGX](win_sgx_dev.md) or
 [Windows Host and SGX Simulation](win_sgx_dev.md#simulation).
 
-Simulation when working on Linux is coming soon.
+To work in a simulated ARM TrustZone environment, see [Debugging OP-TEE TAs with
+QEMU](ta_debugging_qemu.md).
 
 **Note**: The only currently supported build environment is Ubuntu 18.04.1.
 
