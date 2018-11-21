@@ -30,10 +30,18 @@ int main(int argc, const char* argv[])
     r = oe_create_enclave(argv[1], type, flags, NULL, 0, NULL, 0, &enclave);
     OE_TEST(r == OE_OK);
 
-    const char* logfile = "log.tmp";
-    uint64_t modules = OE_LOG_FLAGS_ATTESTATION | OE_LOG_FLAGS_COMMON;
-    OE_TEST(oe_log_host_init(logfile, modules, OE_LOG_INFO) == 0);
-    OE_TEST(oe_log_enclave_init(enclave, modules, OE_LOG_INFO) == OE_OK);
+    // set OE_LOG_PATH
+    setenv("OE_LOG_PATH", "log.tmp", 1);
+    // set OE_LOG_LEVEL
+    setenv("OE_LOG_LEVEL", "info", 1);
+    // set OE_LOG_FLAGS
+    uint64_t flags = OE_LOG_FLAGS_ATTESTATION | OE_LOG_FLAGS_COMMON;
+    char flags_str[20];
+    sprintf(flags_str, "0x%x", flags);
+    setenv("OE_LOG_FLAGS", flags_str, 1);
+
+    OE_TEST(oe_log_host_init() == 0);
+    OE_TEST(oe_log_enclave_init(enclave) == OE_OK);
 
     oe_log(OE_LOG_FLAGS_COMMON, OE_LOG_INFO, "Starting the log %s", "now");
     /* Test() */

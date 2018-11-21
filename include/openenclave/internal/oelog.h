@@ -36,13 +36,13 @@ typedef enum LogLevel
 
 typedef struct _oe_log_filter
 {
-  uint64_t modules;
+  uint64_t flags;
   log_level_t level;
 } oe_log_filter_t;
 
 typedef struct _oe_log_args
 {
-  uint64_t module;
+  uint64_t flags;
   log_level_t level;
   char message[OE_LOG_MESSAGE_LEN_MAX];
 } oe_log_args_t;
@@ -54,7 +54,7 @@ OE_EXTERNC_END
 
 OE_EXTERNC_BEGIN
 
-oe_result_t oe_log(uint64_t module, log_level_t level, const char* fmt, ...);
+oe_result_t oe_log(uint64_t flag, log_level_t level, const char* fmt, ...);
 
 OE_EXTERNC_END
 #else
@@ -62,9 +62,9 @@ OE_EXTERNC_END
 
 OE_EXTERNC_BEGIN
 
-int oe_log_host_init(const char *path, uint64_t modules, log_level_t level);
-oe_result_t oe_log_enclave_init(oe_enclave_t* enclave, uint64_t modules, log_level_t level);
-void oe_log(uint64_t module, log_level_t level, const char* fmt, ...);
+int oe_log_host_init(void);
+oe_result_t oe_log_enclave_init(oe_enclave_t* enclave);
+void oe_log(uint64_t flags, log_level_t level, const char* fmt, ...);
 void oe_log_close(void);
 
 OE_EXTERNC_END

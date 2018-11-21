@@ -28,7 +28,7 @@ oe_result_t _handle_oelog_init(uint64_t arg) {
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     oe_log_filter_t *filter = (oe_log_filter_t *) arg;
-    log_filter->modules = filter->modules;
+    log_filter->flags = filter->flags;
     log_filter->level = filter->level;
     result = OE_OK;
 
@@ -37,7 +37,7 @@ done:
 
 }
 
-oe_result_t oe_log(uint64_t module, log_level_t level, const char *fmt, ...)
+oe_result_t oe_log(uint64_t flags, log_level_t level, const char *fmt, ...)
 {
     oe_result_t result = OE_FAILURE;
     oe_log_args_t* args = NULL;
@@ -46,7 +46,7 @@ oe_result_t oe_log(uint64_t module, log_level_t level, const char *fmt, ...)
     if (log_filter == NULL)
         goto done;
     // Check that this message should be logged
-    if (level < log_filter->level || ((module & log_filter->modules) == 0))
+    if (level < log_filter->level || ((flags & log_filter->flags) == 0))
     {
         result = OE_OK;
         goto done;
@@ -62,7 +62,7 @@ oe_result_t oe_log(uint64_t module, log_level_t level, const char *fmt, ...)
     }
 
     args->level = level;
-    args->module = module;
+    args->flags = flags;
 
     oe_va_list ap;
     oe_va_start(ap, fmt);
