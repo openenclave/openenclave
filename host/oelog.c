@@ -158,7 +158,7 @@ done:
   return result;
 }
 
-void oe_log_close(void)
+void oe_log_host_close(void)
 {
   // Take the lock.
   if (oe_mutex_lock(&oe_log_lock) != 0)
@@ -174,6 +174,19 @@ void oe_log_close(void)
   // Release the lock.
   if (oe_mutex_unlock(&oe_log_lock) != 0)
     abort();
+}
+
+oe_result_t oe_log_enclave_close(oe_enclave_t* enclave)
+{
+  oe_result_t result = OE_UNEXPECTED;
+
+  // Call enclave
+  OE_CHECK(oe_ecall(enclave, OE_ECALL_LOG_CLOSE, 0L, NULL));
+
+  result = OE_OK;
+
+done:
+  return result;
 }
 
 void oe_log(uint64_t flags, log_level_t level, const char* fmt, ...)

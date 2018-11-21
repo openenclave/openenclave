@@ -37,6 +37,16 @@ done:
 
 }
 
+oe_result_t _handle_oelog_close(uint64_t arg)
+{
+    if (log_filter != NULL)
+    {
+        oe_free(log_filter);
+        log_filter = NULL;
+    }
+    return OE_OK;
+}
+
 oe_result_t oe_log(uint64_t flags, log_level_t level, const char *fmt, ...)
 {
     oe_result_t result = OE_FAILURE;

@@ -6,6 +6,7 @@
 
 #include <openenclave/enclave.h>
 
-oe_result_t _handle_oelog_init(uint64_t level);
+oe_result_t _handle_oelog_init(uint64_t arg);
+oe_result_t _handle_oelog_close(uint64_t arg);
 
 #endif /* _OE_ENCLAVE_LOG_H */

@@ -478,6 +478,11 @@ static void _handle_ecall(
             _handle_oelog_init(arg_in);
             break;
         }
+        case OE_ECALL_LOG_CLOSE:
+        {
+            _handle_oelog_close(arg_in);
+            break;
+        }
         default:
         {
             /* No function found with the number */

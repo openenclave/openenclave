@@ -50,6 +50,9 @@ int main(int argc, const char* argv[])
         OE_TEST(r == OE_OK);
     }
 
+    OE_TEST(oe_log_host_close() == 0);
+    OE_TEST(oe_log_enclave_close(enclave) == OE_OK);
+
     r = oe_terminate_enclave(enclave);
     OE_TEST(r == OE_OK);
 
