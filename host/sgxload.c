@@ -108,6 +108,17 @@ static uint32_t _make_memory_protect_param(uint64_t inflags, bool simulate)
 #endif
     }
 
+#if defined(__linux__)
+    if (simulate)
+    {
+        // GDB cannot set breakpoints in write protected pages.
+        // Therefore in simulation mode, enable write to pages so that GDB can
+        // insert breakpoints (int 3 instruction). Note: PROT_WRITE means enable
+        // page write.
+        outflags |= PROT_WRITE;
+    }
+#endif
+
     return outflags;
 }
 
