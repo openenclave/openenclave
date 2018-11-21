@@ -21,7 +21,6 @@ prereqs/packages/.packages
 prereqs/sgx-driver/*.bin
 
 3rdparty/SGXSDK/
-tcps/packages/
 helloworld_t.*
 helloworld_u.*
 helloworld_args.h

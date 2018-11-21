@@ -1,22 +1,36 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
-#include <sgx_utils.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
-sgx_status_t sgx_create_report(
-    const sgx_target_info_t *target_info, 
-    const sgx_report_data_t *report_data, 
-    sgx_report_t *report)
+#include <openenclave/enclave.h>
+#include <sgx_utils.h>
+
+#include "../oeresult.h"
+#include "cyres_optee.h"
+#include "enclavelibc.h"
+
+oe_result_t oe_get_report_v2(
+    uint32_t flags,
+    const uint8_t* report_data,
+    size_t report_data_size,
+    const void* opt_params,
+    size_t opt_params_size,
+    uint8_t** report_buffer,
+    size_t* report_buffer_size)
 {
-    memset(report, 0, sizeof(*report));
-#ifdef _DEBUG
-    report->body.attributes.flags |= SGX_FLAGS_DEBUG;
-#endif
-    return SGX_SUCCESS;
+    if (report_buffer == NULL || report_buffer_size == NULL)
+        return OE_INVALID_PARAMETER;
+
+    return get_cyres_cert_chain(report_buffer, report_buffer_size);
 }
 
-sgx_status_t sgx_verify_report(const sgx_report_t *report)
+oe_result_t oe_verify_report(
+    const uint8_t* report,
+    size_t report_size,
+    oe_report_t* parsed_report)
 {
-    // TODO: implement this for TrustZone.
-    return SGX_SUCCESS;
+    /* Not supported */
+    return OE_UNSUPPORTED;
 }

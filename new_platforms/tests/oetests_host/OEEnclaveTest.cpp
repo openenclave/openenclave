@@ -179,7 +179,7 @@ TEST_F(OEEnclaveTest, get_public_key_BadPolicy_InvalidParameter)
     oe_result_t uStatus;
     oe_result_t oeResult = ecall_TestOEGetPublicKey(GetOEEnclave(), &uStatus, 0);
     EXPECT_EQ(OE_OK, oeResult);
-    EXPECT_EQ(OE_FAILURE, uStatus);
+    EXPECT_EQ(OE_INVALID_PARAMETER, uStatus);
 }
 
 TEST_F(OEEnclaveTest, get_private_key_Unique_Success)
@@ -203,7 +203,7 @@ TEST_F(OEEnclaveTest, get_private_key_v2_BadPolicy_InvalidParameter)
     oe_result_t uStatus;
     oe_result_t oeResult = ecall_TestOEGetPrivateKey(GetOEEnclave(), &uStatus, 0);
     EXPECT_EQ(OE_OK, oeResult);
-    EXPECT_EQ(OE_FAILURE, uStatus);
+    EXPECT_EQ(OE_INVALID_PARAMETER, uStatus);
 }
 
 TEST_F(OEEnclaveTest, malloc_Success)

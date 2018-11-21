@@ -13,8 +13,6 @@
 #include <RiotDerEnc.h>
 #include <RiotX509Bldr.h>
 
-#define RIOT_P256_KEY_SIZE 65
-#define RIOT_P256_PRIVATE_SIZE ((BIGLEN - 1) * 4)
 /* DER buffer used for private / public key export */
 #define DER_MAX_SIZE 130
 

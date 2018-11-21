@@ -1,13 +1,16 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
-#include <stdlib.h>
 #include <stddef.h>
+#include <stdlib.h>
 
-#include <string.h>
 #include <sgx_utils.h>
-#include <openenclave/bits/result.h>
+#include <string.h>
+
 #include <openenclave/bits/report.h>
-#include <tcps.h>
+#include <openenclave/bits/result.h>
+
+#include "tcps.h"
+
 #ifndef _In_
 #include "sal_unsup.h"
 #endif
@@ -29,11 +32,12 @@ oe_result_t oe_get_target_info_v2(
     _Outptr_ void** target_info_buffer,
     _Out_ size_t* target_info_size)
 {
-    sgx_report_t* sgx_report = (sgx_report_t*)report; 
+    sgx_report_t* sgx_report = (sgx_report_t*)report;
     sgx_target_info_t* info;
 
     if (report == NULL || report_size < sizeof(*sgx_report) ||
-        target_info_size == NULL) {
+        target_info_size == NULL)
+    {
         return OE_INVALID_PARAMETER;
     }
 
@@ -50,8 +54,7 @@ oe_result_t oe_get_target_info_v2(
     return OE_OK;
 }
 
-void oe_free_target_info(
-    _In_ void* target_info_buffer)
+void oe_free_target_info(_In_ void* target_info_buffer)
 {
     free(target_info_buffer);
 }
@@ -62,11 +65,12 @@ oe_result_t oe_get_target_info_v1(
     _Out_writes_bytes_(*target_info_size) void* target_info_buffer,
     _Inout_ size_t* target_info_size)
 {
-    sgx_report_t* sgx_report = (sgx_report_t*)report; 
+    sgx_report_t* sgx_report = (sgx_report_t*)report;
     sgx_target_info_t* info = (sgx_target_info_t*)target_info_buffer;
 
     if (report == NULL || report_size < sizeof(*sgx_report) ||
-        target_info_size == NULL) {
+        target_info_size == NULL)
+    {
         return OE_INVALID_PARAMETER;
     }
 
@@ -87,7 +91,8 @@ oe_result_t oe_parse_report(
     _In_ size_t report_size,
     _Out_ oe_report_t* parsed_report)
 {
-    if (report_size != sizeof(sgx_report_t)) {
+    if (report_size != sizeof(sgx_report_t))
+    {
         return OE_INVALID_PARAMETER;
     }
 
@@ -105,24 +110,28 @@ oe_result_t oe_parse_report(
     parsed_report->identity.security_version = sgxReport->body.isv_svn;
 
     parsed_report->identity.attributes = 0;
-    if (sgxReport->body.attributes.flags & SGX_FLAGS_DEBUG) {
+    if (sgxReport->body.attributes.flags & SGX_FLAGS_DEBUG)
+    {
         parsed_report->identity.attributes |= OE_REPORT_ATTRIBUTES_DEBUG;
     }
 
     // TODO: add support for OE_REPORT_ATTRIBUTES_REMOTE
 
-    memcpy(parsed_report->identity.unique_id,
+    memcpy(
+        parsed_report->identity.unique_id,
         sgxReport->body.mr_enclave.m,
         OE_UNIQUE_ID_SIZE);
 
-    memcpy(parsed_report->identity.signer_id,
+    memcpy(
+        parsed_report->identity.signer_id,
         sgxReport->body.mr_signer.m,
         OE_SIGNER_ID_SIZE);
 
     // OE_PRODUCT_ID_SIZE is 16 bytes, but in the Intel SGX SDK,
     // isv_prod_id is only 16 bits.
     memset(parsed_report->identity.product_id, 0, OE_PRODUCT_ID_SIZE);
-    memcpy(parsed_report->identity.product_id,
+    memcpy(
+        parsed_report->identity.product_id,
         &sgxReport->body.isv_prod_id,
         sizeof(sgx_prod_id_t));
 
