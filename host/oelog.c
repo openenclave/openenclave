@@ -38,7 +38,7 @@ static const char* log_flags(uint64_t flags)
   }
 }
 
-static uint64_t str2flags(void)
+static uint64_t env2flags(void)
 {
   const char *flags_str = getenv("OE_LOG_FLAGS");
   if (strlen(flags_str) == 0)
@@ -75,7 +75,7 @@ static const char* log_level(log_level_t level)
   }
 }
 
-static log_level_t str2log_level(void)
+static log_level_t env2log_level(void)
 {
   const char *level_str = getenv("OE_LOG_LEVEL");
   if (strcasecmp(level_str, "DEBUG") == 0) return OE_LOG_DEBUG;
@@ -91,8 +91,8 @@ int oe_log_host_init()
 {
    uint32_t ret = 1;
    const char *path = getenv("OE_LOG_PATH");
-   uint64_t flags = str2flags();
-   log_level_t level = str2log_level();
+   uint64_t flags = env2flags();
+   log_level_t level = env2log_level();
 
   // Validate parameters
   if (path == NULL)
@@ -134,8 +134,8 @@ cleanup:
 oe_result_t oe_log_enclave_init(oe_enclave_t* enclave)
 {
   oe_result_t result = OE_UNEXPECTED;
-  uint64_t flags = str2flags();
-  log_level_t level = str2log_level();
+  uint64_t flags = env2flags();
+  log_level_t level = env2log_level();
 
   // Validate parameters
   if (level == OE_LOG_NONE || flags == 0)
