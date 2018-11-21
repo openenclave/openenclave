@@ -158,11 +158,11 @@ done:
   return result;
 }
 
-void oe_log_host_close(void)
+int oe_log_host_close(void)
 {
   // Take the lock.
   if (oe_mutex_lock(&oe_log_lock) != 0)
-    return;
+    return 1;
   // Close the log file
   if (LogFile != NULL)
   {
@@ -173,7 +173,8 @@ void oe_log_host_close(void)
   LogLevel = OE_LOG_NONE;
   // Release the lock.
   if (oe_mutex_unlock(&oe_log_lock) != 0)
-    abort();
+    return 1;
+  return 0;
 }
 
 oe_result_t oe_log_enclave_close(oe_enclave_t* enclave)
