@@ -35,9 +35,9 @@ int main(int argc, const char* argv[])
     // set OE_LOG_LEVEL
     setenv("OE_LOG_LEVEL", "info", 1);
     // set OE_LOG_FLAGS
-    uint64_t flags = OE_LOG_FLAGS_ATTESTATION | OE_LOG_FLAGS_COMMON;
+    uint64_t log_flags = OE_LOG_FLAGS_ATTESTATION | OE_LOG_FLAGS_COMMON;
     char flags_str[20];
-    sprintf(flags_str, "0x%x", flags);
+    sprintf(flags_str, "0x%x", log_flags);
     setenv("OE_LOG_FLAGS", flags_str, 1);
 
     OE_TEST(oe_log_host_init() == 0);
