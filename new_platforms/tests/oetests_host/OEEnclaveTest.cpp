@@ -282,3 +282,11 @@ TEST_F(OEEnclaveTest, inout_calls_Success)
     EXPECT_EQ(42, input);
     EXPECT_EQ(42, output);
 }
+
+TEST_F(OEEnclaveTest, fopen_Success)
+{
+    oe_result_t apiResult;
+    oe_result_t oeResult = ecall_TestOEFopen(GetOEEnclave(), &apiResult);
+    EXPECT_EQ(OE_OK, oeResult);
+    EXPECT_EQ(OE_OK, apiResult);
+}

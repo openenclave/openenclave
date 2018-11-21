@@ -182,7 +182,7 @@ TEE_Result TEE_CloseAndDeletePersistentObject1(
         return TEE_ERROR_GENERIC;
     }
 
-    // Delee the file.
+    // Delete the file.
     BOOL ok = DeleteFileA(fileName);
     return (ok) ? TEE_SUCCESS : TEE_ERROR_GENERIC;
 }

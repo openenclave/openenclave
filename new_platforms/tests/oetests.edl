@@ -31,6 +31,7 @@ enclave {
         public oe_result_t ecall_TestOEGetSealKeyV2(int policy);
         public oe_result_t ecall_TestOEGetPublicKey(int policy);
         public oe_result_t ecall_TestOEGetPrivateKey(int policy);
+        public oe_result_t ecall_TestOEFopen();
         public void* ecall_OEHostMalloc(int size);
         public void* ecall_OEHostCalloc(int nmemb, int size);
         public void* ecall_OEHostRealloc([user_check] void* ptr, int size);
