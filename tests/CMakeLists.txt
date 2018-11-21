@@ -21,6 +21,7 @@ add_subdirectory(mem)
 add_subdirectory(safecrt)
 add_subdirectory(safemath)
 add_subdirectory(str)
+add_subdirectory(debugger)
 
 if (UNIX OR ADD_WINDOWS_ENCLAVE_TESTS)
 add_subdirectory(bigmalloc)
