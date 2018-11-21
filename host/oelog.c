@@ -58,7 +58,7 @@ static uint64_t str2flags(void)
   }
   if (err != 0)
   {
-    fprintf(stderr, "Invalid OE_LOG_FLAGS value '%s'. Log is disabled\n");
+    fprintf(stderr, "Invalid OE_LOG_FLAGS value '%s'. Log is disabled\n", flags_str);
     return 0;
   }
   return flags;
@@ -83,7 +83,7 @@ static log_level_t str2log_level(void)
   if (strcasecmp(level_str, "WARN") == 0) return OE_LOG_WARN;
   if (strcasecmp(level_str, "ERROR") == 0) return OE_LOG_ERROR;
   if (strcasecmp(level_str, "NONE") == 0) return OE_LOG_NONE;
-  fprintf(stderr, "Invalid log level %s. Expected DEBUG/INFO/WARN/ERROR\n");
+  fprintf(stderr, "Invalid log level '%s'. Expected DEBUG/INFO/WARN/ERROR\n", level_str);
   return OE_LOG_NONE;
 }
 
@@ -96,6 +96,11 @@ int oe_log_host_init()
 
   // Validate parameters
   if (path == NULL || level == OE_LOG_NONE || flags == 0)
+  {
+    fprintf(stderr, "Environment variable OE_LOG_PATH is not set. Log is disabled\n");
+    return ret;
+  }
+  if (level == OE_LOG_NONE || flags == 0)
     return ret;
 
   // Take the lock.
@@ -111,7 +116,7 @@ int oe_log_host_init()
   LogFile = fopen(path, "w");
   if (LogFile == NULL)
   {
-    fprintf(stderr, "Failed to create logfile %s\n");
+    fprintf(stderr, "Failed to create logfile %s\n", path);
     goto cleanup;
   }
   LogFlags = flags;
