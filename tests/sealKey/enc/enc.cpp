@@ -1,3 +1,4 @@
+
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
@@ -7,7 +8,7 @@
 #include <openenclave/internal/keys.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/tests.h>
-#include "../args.h"
+#include "sealKey_t.h"
 
 // A regular enclave should not have access to SGX_KEYSELECT_EINITTOKEN,
 // SGX_KEYSELECT_PROVISION, and SGX_KEYSELECT_PROVISION_SEAL keys.
@@ -193,22 +194,15 @@ bool TestOEGetSealKey()
     return true;
 }
 
-OE_ECALL void TestSealKey(void* args_)
+int test_seal_key(int in)
 {
-    SealKeyArgs* args = (SealKeyArgs*)args_;
-
-    if (!oe_is_outside_enclave(args, sizeof(SealKeyArgs)))
-    {
-        return;
-    }
-
     if (TestOEGetPrivilegeKeys() && TestOEGetRegularKeys() &&
         TestOEGetSealKey())
     {
-        args->ret = 0;
+        return 0;
     }
 
-    return;
+    return in;
 }
 
 OE_SET_ENCLAVE_SGX(
@@ -218,5 +212,3 @@ OE_SET_ENCLAVE_SGX(
     1024, /* HeapPageCount */
     1024, /* StackPageCount */
     5);   /* TCSCount */
-
-OE_DEFINE_EMPTY_ECALL_TABLE();
