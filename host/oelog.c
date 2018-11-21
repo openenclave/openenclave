@@ -47,16 +47,16 @@ static uint64_t str2flags(void)
     return 0;
   }
   uint64_t flags;
-  int err;
+  int fields;
   if (strncasecmp(flags_str, "0x", 2) == 0)
   {
-    err = sscanf(flags_str, "0x%lx", &flags);
+    fields = sscanf(flags_str, "0x%lx", &flags);
   }
   else
   {
-    err = sscanf(flags_str, "%lu", &flags);
+    fields = sscanf(flags_str, "%lu", &flags);
   }
-  if (err != 0)
+  if (fields != 1)
   {
     fprintf(stderr, "Invalid OE_LOG_FLAGS value '%s'. Log is disabled\n", flags_str);
     return 0;
@@ -95,7 +95,7 @@ int oe_log_host_init()
    log_level_t level = str2log_level();
 
   // Validate parameters
-  if (path == NULL || level == OE_LOG_NONE || flags == 0)
+  if (path == NULL)
   {
     fprintf(stderr, "Environment variable OE_LOG_PATH is not set. Log is disabled\n");
     return ret;
