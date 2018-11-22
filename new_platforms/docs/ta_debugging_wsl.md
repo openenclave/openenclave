@@ -80,8 +80,8 @@ notification area.
 
 # Building & Debugging in WSL
 
-Before you are able to follow the steps in the guide debugging guide, execute
-the following command inside the Ubuntu 18.04 environment:
+Before you are able to follow the steps in the debugging guide, execute the
+following command inside the Ubuntu 18.04 environment:
 
 ```
 echo "export DISPLAY=:0" >> ~/.bashrc
