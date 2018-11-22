@@ -151,16 +151,16 @@ void test_basic_edl_ecalls(oe_enclave_t* enclave)
 
     if (g_enabled[TYPE_LONG])
     {
-        long double ret = 0;
-        OE_TEST(ecall_ret_long_double(enclave, &ret) == OE_OK);
-        OE_TEST(ret == 0.191919);
+        long ret = 0;
+        OE_TEST(ecall_ret_long(enclave, &ret) == OE_OK);
+        OE_TEST(ret == 777);
     }
 
     if (g_enabled[TYPE_LONG_DOUBLE])
     {
-        long ret = 0;
-        OE_TEST(ecall_ret_long(enclave, &ret) == OE_OK);
-        OE_TEST(ret == 777);
+        long double ret = 0;
+        OE_TEST(ecall_ret_long_double(enclave, &ret) == OE_OK);
+        OE_TEST(ret == 0.191919);
     }
 
     printf("=== test_basic_edl_ecalls passed\n");
@@ -249,6 +249,8 @@ uint64_t get_host_sizeof(type_enum_t t)
             return sizeof(wchar_t);
         case TYPE_LONG:
             return sizeof(long);
+        case TYPE_UNSIGNED_LONG:
+            return sizeof(unsigned long);
         case TYPE_LONG_DOUBLE:
             return sizeof(long double);
         default:

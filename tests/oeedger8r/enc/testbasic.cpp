@@ -245,6 +245,8 @@ uint64_t get_enclave_sizeof(type_enum_t t)
             return sizeof(wchar_t);
         case TYPE_LONG:
             return sizeof(long);
+        case TYPE_UNSIGNED_LONG:
+            return sizeof(unsigned long);
         case TYPE_LONG_DOUBLE:
             return sizeof(long double);
         default:
