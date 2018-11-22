@@ -100,9 +100,34 @@ on and `0` indicates the display number. You must exit and re-enter the Ubuntu
 You may now follow the [Debugging OP-TEE TAs with QEMU](ta_debugging_qemu.md)
 guide on WSL.
 
-After some time into the build process of the QEMU debugging environment, you
-will see an error suggesting that `fakeroot` failed. The next section shows you
-how to work around the problem.
+After some time into the build process of the QEMU debugging environment, it
+will stop suggesting that `fakeroot` failed.
 
 ## Fakeroot
 
+The build environment uses its own version of `fakeroot`. This version attempts
+to make use of SYS-V IPC, but this feature is not available on WSL. You will see
+an error that reads:
+
+```
+fakeroot, while creating message channels: Function not implemented
+This may be due to a lack of SYSV IPC support.
+fakeroot: error while starting the `faked' daemon.
+```
+
+To work around this issue, replace the `fakeroot` binary that the build system
+uses with the version of `fakeroot` that uses sockets for IPC instead. Ubuntu
+18.04 ships with both versions.
+
+Run the following command to replace `fakeroot` with its socket-based
+counterpart:
+
+```
+mv $HOME/openenclave_qemu/emulation/out-br/host/bin/fakeroot $HOME/openenclave_qemu/emulation/out-br/host/bin/fakeroot.bak
+cp /usr/bin/fakeroot-tcp $HOME/openenclave_qemu/emulation/out-br/host/bin/fakeroot
+```
+
+Resume the build with `make run` (and `-j`, as appropriate). If you ever clean
+and rebuild the Buildroot output, you will run into this issue again. However,
+that is never required for the purposes of debugging TAs. In general, therefore,
+this is a one-time fix.
