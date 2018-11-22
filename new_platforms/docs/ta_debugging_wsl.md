@@ -125,7 +125,7 @@ counterpart:
 
 ```
 mv $HOME/openenclave_qemu/emulation/out-br/host/bin/fakeroot $HOME/openenclave_qemu/emulation/out-br/host/bin/fakeroot.bak
-cp /usr/bin/fakeroot-tcp $HOME/openenclave_qemu/emulation/out-br/host/bin/fakeroot
+ln -s /usr/bin/fakeroot-tcp $HOME/openenclave_qemu/emulation/out-br/host/bin/fakeroot
 ```
 
 Resume the build with `make run` (and `-j`, as appropriate). If you ever clean
