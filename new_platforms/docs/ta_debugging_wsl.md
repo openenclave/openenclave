@@ -9,7 +9,7 @@ Linux (WSL) to use the guide on WSL.
 In this guide, you will learn how to:
 
 1. Install and configure a native X Server;
-2. Work around a UNIX feature used by `fakeroot` not yet implemented in WSL.
+2. Work around a UNIX feature used by `fakeroot` [not yet implemented in WSL](https://github.com/Microsoft/WSL/issues/1443).
 
 # Prerequisites
 
@@ -119,7 +119,7 @@ To work around this issue, replace the `fakeroot` binary that the build system
 uses with the version of `fakeroot` that uses sockets for IPC instead. Ubuntu
 18.04 ships with both versions.
 
-Run the following command to replace `fakeroot` with its socket-based
+Run the following commands to replace `fakeroot` with its socket-based
 counterpart:
 
 ```
