@@ -8,8 +8,7 @@ This getting started guide includes preview support for new Trusted Execution En
 
 Support for a Windows Host application on ARM TrustZone and native Open Enclave support for Windows SGX will be added in the future.
 
-In addition, this preview includes support for testing your enclave under simulation when developing on Windows. 
-Support for simulation when developing on Linux is coming soon.
+In addition, this preview includes support for testing your enclave under simulation when developing on Windows and Linux. 
 
 For a Linux Host application on SGX, see the Linux SGX Open Enclave [Getting Started](../../docs/GettingStartedDocs/GettingStarted.md) guide.
 
@@ -28,12 +27,13 @@ The selection of your development environment should be guided by the Rich Execu
 
 If you want to dive right in, use the table below.
 
-| REE     | TEE                                               |
-| ------- | :------------------------------------------------ |
-| Linux   | [ARM TrustZone](linux_arm_dev.md)                    |
-| Windows | [Intel SGX](win_sgx_dev.md)                          |
-| Windows | [Simulated SGX](win_sgx_dev.md#sgx-simulation)                  |
-| Windows | [Simulated TrustZone (OP-TEE)](win_sgx_dev.md#op-tee-simulation) |
+| REE     | TEE                                                                  |
+| ------- | :------------------------------------------------------------------- |
+| Linux   | [ARM TrustZone](linux_arm_dev.md)                                    |
+| Linux   | [Emulated ARM TrustZone (OP-TEE)](ta_debugging_qemu.md)              |
+| Windows | [Intel SGX](win_sgx_dev.md)                                          |
+| Windows | [Simulated SGX](win_sgx_dev.md#sgx-simulation)                       |
+| Windows | [Simulated ARM TrustZone (OP-TEE)](win_sgx_dev.md#op-tee-simulation) |
 
 ## Linux Host Application and ARM TrustZone TA
 
@@ -43,6 +43,12 @@ This reference platform runs OP-TEE to support ARM TrustZone TAs. For more detai
 * [Getting Started with the Grapeboard](grapeboard.md)
 * [Building an Open Enclave TrustZone TA on Linux](linux_arm_dev.md)
 * [Running the Sample Client on the Grapeboard](sample_sockets.md#building-for-grapeboard)
+
+## Linux Host Application and ARM TrustZone Emulation
+
+QEMU provides an emulated ARM TrustZone environment to debug your REE and TEE code that faithfully reproduces the dynamics of real ARM TrustZone-capable hardware. You can use GDB or any GDB-compatible GUI to debug your code.
+
+* [Debugging OP-TEE TAs with QEMU)(ta_debugging_qemu.md)
 
 ## Windows Host Application and SGX Enclave (Intel SDK Required)
 
