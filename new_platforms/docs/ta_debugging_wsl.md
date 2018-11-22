@@ -131,3 +131,9 @@ Resume the build with `make run` (and `-j`, as appropriate). If you ever clean
 and rebuild the Buildroot output, you will run into this issue again. However,
 that is never required for the purposes of debugging TAs. In general, therefore,
 this is a one-time fix.
+
+The Windows Defender Firewall might prompt for permission to allow incoming
+connections to various Linux programs as the build proceeds. None of these
+programs require accepting remote requests, so you can safely click "Cancel" to
+block all incoming connections. Just as with XMing, local connections are not
+affected.
