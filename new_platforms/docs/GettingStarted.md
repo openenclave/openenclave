@@ -46,7 +46,9 @@ This reference platform runs OP-TEE to support ARM TrustZone TAs. For more detai
 
 ## Linux Host Application and ARM TrustZone Emulation
 
-QEMU provides an emulated ARM TrustZone environment to debug your REE and TEE code that faithfully reproduces the dynamics of real ARM TrustZone-capable hardware. You can use GDB or any GDB-compatible GUI to debug your code.
+QEMU provides an emulated ARM TrustZone environment to debug your REE and TEE
+code that faithfully reproduces the dynamics of real ARM TrustZone-capable
+hardware. You can use GDB or any GDB-compatible GUI to debug your code.
 
 * [Debugging OP-TEE TAs with QEMU)(ta_debugging_qemu.md)
 
