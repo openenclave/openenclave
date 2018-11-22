@@ -9,7 +9,8 @@ Linux (WSL) to use the guide on WSL.
 In this guide, you will learn how to:
 
 1. Install and configure a native X Server;
-2. Work around a UNIX feature used by `fakeroot` [not yet implemented in WSL](https://github.com/Microsoft/WSL/issues/1443).
+2. Work around a UNIX feature used by `fakeroot`
+[not yet implemented in WSL](https://github.com/Microsoft/WSL/issues/1443).
 
 # Prerequisites
 
