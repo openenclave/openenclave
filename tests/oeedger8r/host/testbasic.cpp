@@ -133,25 +133,25 @@ void test_basic_edl_ecalls(oe_enclave_t* enclave)
     {
         unsigned char ret = 0;
         OE_TEST(ecall_ret_unsigned_char(enclave, &ret) == OE_OK);
-        OE_TEST(ret == 255); 
+        OE_TEST(ret == 255);
     }
 
     {
         unsigned short ret = 0;
         OE_TEST(ecall_ret_unsigned_short(enclave, &ret) == OE_OK);
-        OE_TEST(ret == 191); 
+        OE_TEST(ret == 191);
     }
 
     {
         unsigned int ret = 0;
         OE_TEST(ecall_ret_unsigned_int(enclave, &ret) == OE_OK);
-        OE_TEST(ret == 202); 
+        OE_TEST(ret == 202);
     }
 
     {
         unsigned long ret = 0;
         OE_TEST(ecall_ret_unsigned_long(enclave, &ret) == OE_OK);
-        OE_TEST(ret == 212121); 
+        OE_TEST(ret == 212121);
     }
 
     {

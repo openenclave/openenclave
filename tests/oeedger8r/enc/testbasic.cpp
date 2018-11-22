@@ -138,19 +138,19 @@ void test_basic_edl_ocalls()
     {
         unsigned short ret = 0;
         OE_TEST(ocall_ret_unsigned_short(&ret) == OE_OK);
-        OE_TEST(ret == 191); 
+        OE_TEST(ret == 191);
     }
 
     {
         unsigned int ret = 0;
         OE_TEST(ocall_ret_unsigned_int(&ret) == OE_OK);
-        OE_TEST(ret == 202); 
+        OE_TEST(ret == 202);
     }
 
     {
         unsigned long ret = 0;
         OE_TEST(ocall_ret_unsigned_long(&ret) == OE_OK);
-        OE_TEST(ret == 212121); 
+        OE_TEST(ret == 212121);
     }
 
     {
