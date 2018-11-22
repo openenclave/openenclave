@@ -26,8 +26,8 @@ Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-L
 
 Restart your computer when prompted.
 
-You are now ready to install a Linux distribution on WSL. To do so, launch the
-Microsoft Store and search for "Ubuntu 18.04", then click "Get".
+You are now ready to install [Ubuntu
+18.04](https://www.microsoft.com/en-us/p/ubuntu-1804-lts/9n9tngvndl3q) on WSL.
 
 For a visual guide to this process, see [Install the Windows Subsystem for
 Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10#install-the-windows-subsystem-for-linux).
