@@ -31,8 +31,10 @@ to render it more pertinent to this SDK.
 
 This guide presumes you have a Ubuntu 18.04.1 LTS environment available. You may
 install Ubuntu on bare-metal or in a virtual machine using your preferred
-hypervisor. Some commands launch GUIs, so a graphical environment is necessary
-for now.
+hypervisor. Some commands launch GUIs, so a graphical environment is necessary.
+
+**Note:** To use this guide with the Windows Subsystem for Linux (WSL), read
+through [Debugging OP-TEE TAs on WSL](ta_debugging_wsl.md) first.
 
 ## Required Packages
 
@@ -470,10 +472,10 @@ cgdb -d gdb-multiarch
 
 CGDB looks like the first layout in the GDB TUI, but with colors by default.
 Unlike the GDB TUI, however, you may switch focus from the bottom pane to the
-top pane with the `ESC` key. To move back, press the `i` key. When the top
-pane is in focus, you can navigate through source code using Vim-style commands.
-The GDB command-line pane behaves in the same way as the regular GDB
-command-line interface.
+top pane with the `ESC` key. To move back, press the `i` key. When the top pane
+is in focus, you can navigate through source code using Vim-style commands. The
+GDB command-line pane behaves in the same way as the regular GDB command-line
+interface.
 
 CGDB sports a wide array of commands, be sure to read through its
 [documentation](https://cgdb.github.io/docs/cgdb.html).
