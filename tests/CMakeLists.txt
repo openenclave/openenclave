@@ -38,6 +38,7 @@ add_subdirectory(getenclave)
 add_subdirectory(hexdump)
 add_subdirectory(hostcalls)
 add_subdirectory(libc)
+add_subdirectory(mixed_c_cpp)
 add_subdirectory(ocall)
 add_subdirectory(ocall-create)
 add_subdirectory(oeedger8r)
@@ -55,13 +56,10 @@ endif()
 
 # Windows test Broken Post #632 issue
 if ( UNIX )
-add_subdirectory(initializers)
-add_subdirectory(libcxx)
+add_subdirectory(initializers) 
+add_subdirectory(libcxx)	# some test exceeds the OS max path limit
 add_subdirectory(libcxxrt)
-add_subdirectory(memory)
-add_subdirectory(mixed_c_cpp)
-add_subdirectory(qeidentity)
-add_subdirectory(report)
+add_subdirectory(memory)	
 endif()
 
 if (UNIX)
@@ -70,8 +68,10 @@ add_subdirectory(crypto_crls_cert_chains)
 add_subdirectory(libunwind)
 add_subdirectory(mbed)
 add_subdirectory(VectorException)
-# Following five tests are UNIX only because they depend on the oegen tool
-# that is not supported on Windows.
-add_subdirectory(pingpong-shared)
-add_subdirectory(file)
+add_subdirectory(pingpong-shared) 
+add_subdirectory(file) 
+
+# attestation not available for windows This test Unix specific.
+add_subdirectory(qeidentity)	
+add_subdirectory(report)
 endif()
