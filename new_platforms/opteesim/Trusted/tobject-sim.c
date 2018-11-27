@@ -78,6 +78,7 @@ TEE_Result TEE_CreatePersistentObject(
 
     DWORD dwFlags = 0;
     DWORD dwSharing = 0;
+    DWORD dwCreationDisposition = (flags & TEE_DATA_FLAG_OVERWRITE) ? CREATE_ALWAYS : CREATE_NEW;
 
     if (flags & TEE_DATA_FLAG_ACCESS_READ) {
         dwFlags |= GENERIC_READ;
@@ -100,13 +101,18 @@ TEE_Result TEE_CreatePersistentObject(
         dwFlags,
         dwSharing,
         NULL,
-        CREATE_NEW,
+        dwCreationDisposition,
         FILE_ATTRIBUTE_NORMAL,
         NULL);
 
     *object = (TEE_ObjectHandle)hFile;
 
-    return (hFile == INVALID_HANDLE_VALUE) ? TEE_ERROR_ITEM_NOT_FOUND : TEE_SUCCESS;
+    if (hFile != INVALID_HANDLE_VALUE) {
+        return TEE_SUCCESS;
+    }
+
+    int err = GetLastError();
+    return (err == ERROR_FILE_EXISTS) ? TEE_ERROR_ACCESS_CONFLICT : TEE_ERROR_ITEM_NOT_FOUND;
 }
 
 TEE_Result TEE_SeekObjectData(
