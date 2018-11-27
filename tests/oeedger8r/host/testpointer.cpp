@@ -182,6 +182,9 @@ void test_pointer_edl_ecalls(oe_enclave_t* enclave)
     test_ecall_pointer_fun<uint32_t>(enclave, ecall_pointer_uint32_t);
     test_ecall_pointer_fun<uint64_t>(enclave, ecall_pointer_uint64_t);
     test_ecall_pointer_fun<long long>(enclave, ecall_pointer_long_long);
+    if (g_enabled[TYPE_UNSIGNED_LONG])
+        test_ecall_pointer_fun<unsigned long>(
+            enclave, ecall_pointer_unsigned_long);
     if (g_enabled[TYPE_LONG_DOUBLE])
         test_ecall_pointer_fun<long double>(enclave, ecall_pointer_long_double);
 
@@ -1093,6 +1096,47 @@ long long* ocall_pointer_long_long(
     long long* p14,
     long long* p15,
     long long* p16,
+    int pcount,
+    int psize)
+{
+    return ocall_pointer_fun_impl(
+        p1,
+        p2,
+        p3,
+        p4,
+        p5,
+        p6,
+        p7,
+        p8,
+        p9,
+        p10,
+        p11,
+        p12,
+        p13,
+        p14,
+        p15,
+        p16,
+        pcount,
+        psize);
+}
+
+unsigned long* ocall_pointer_unsigned_long(
+    unsigned long* p1,
+    unsigned long* p2,
+    unsigned long* p3,
+    unsigned long* p4,
+    unsigned long* p5,
+    unsigned long* p6,
+    unsigned long* p7,
+    unsigned long* p8,
+    unsigned long* p9,
+    unsigned long* p10,
+    unsigned long* p11,
+    unsigned long* p12,
+    unsigned long* p13,
+    unsigned long* p14,
+    unsigned long* p15,
+    unsigned long* p16,
     int pcount,
     int psize)
 {

@@ -1,0 +1,47 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+# The following tests need to be skipped when built with Clang using these cmake flags.
+#     -DCMAKE_BUILD_TYPE=Debug
+#     -DENABLE_FULL_LIBC_TESTS=1
+set(clang_debug_skipped_libc_tests
+"../../3rdparty/musl/libc-test/src/functional/tgmath.c"
+"../../3rdparty/musl/libc-test/src/math/fmax.c"
+"../../3rdparty/musl/libc-test/src/math/fmaxf.c"
+"../../3rdparty/musl/libc-test/src/math/fmin.c"
+"../../3rdparty/musl/libc-test/src/math/fminf.c"
+"../../3rdparty/musl/libc-test/src/math/ilogb.c"
+"../../3rdparty/musl/libc-test/src/math/ilogbf.c"
+"../../3rdparty/musl/libc-test/src/math/ilogbl.c"
+"../../3rdparty/musl/libc-test/src/math/pow.c"
+"../../3rdparty/musl/libc-test/src/math/powl.c"
+"../../3rdparty/musl/libc-test/src/math/tgammaf.c"
+"../../3rdparty/musl/libc-test/src/math/y1.c"
+"../../3rdparty/musl/libc-test/src/math/y1f.c"
+"../../3rdparty/musl/libc-test/src/math/yn.c")
+
+# The following tests need to be skipped when built with Clang using these cmake flags.
+#     -DCMAKE_BUILD_TYPE=RelWithDebInfo/Release
+#     -DENABLE_FULL_LIBC_TESTS=1
+set(clang_release_skipped_libc_tests
+"../../3rdparty/musl/libc-test/src/functional/tgmath.c"
+"../../3rdparty/musl/libc-test/src/math/fmax.c"
+"../../3rdparty/musl/libc-test/src/math/fmaxf.c"
+"../../3rdparty/musl/libc-test/src/math/fmin.c"
+"../../3rdparty/musl/libc-test/src/math/fminf.c"
+"../../3rdparty/musl/libc-test/src/math/ilogb.c"
+"../../3rdparty/musl/libc-test/src/math/ilogbf.c"
+"../../3rdparty/musl/libc-test/src/math/ilogbl.c"
+"../../3rdparty/musl/libc-test/src/math/pow.c"
+"../../3rdparty/musl/libc-test/src/math/powl.c"
+"../../3rdparty/musl/libc-test/src/math/tgammaf.c"
+"../../3rdparty/musl/libc-test/src/math/y1.c"
+"../../3rdparty/musl/libc-test/src/math/y1f.c"
+"../../3rdparty/musl/libc-test/src/math/yn.c"
+"../../3rdparty/musl/libc-test/src/math/fdim.c"
+"../../3rdparty/musl/libc-test/src/math/fdimf.c"
+"../../3rdparty/musl/libc-test/src/math/fdiml.c"
+"../../3rdparty/musl/libc-test/src/math/fmaf.c"
+"../../3rdparty/musl/libc-test/src/math/log1p.c"
+"../../3rdparty/musl/libc-test/src/math/log1pf.c"
+"../../3rdparty/musl/libc-test/src/math/powf.c")

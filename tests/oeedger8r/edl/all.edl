@@ -19,7 +19,7 @@ enclave  {
         // Configure tests.
         // Note: Keep the size of enabled consistent with number of
         // types in type_enum_t in basic.edl
-        public void configure([out] uint8_t enabled[3]);            
+        public void configure([out] uint8_t enabled[4]);            
     };
 
     untrusted {

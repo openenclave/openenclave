@@ -9,7 +9,7 @@
 // The types wchar_t, long and long double have different sizes in Linux and
 // Windows. Therefore enclaves built in Linux cannot be safely loaded if they
 // use any of these types.
-uint8_t g_enabled[3] = {true, true, true};
+uint8_t g_enabled[4] = {true, true, true, true};
 
 void test_basic_edl_ecalls(oe_enclave_t* enclave);
 void test_string_edl_ecalls(oe_enclave_t* enclave);

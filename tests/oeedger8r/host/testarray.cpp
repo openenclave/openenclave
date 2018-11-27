@@ -74,6 +74,8 @@ void test_array_edl_ecalls(oe_enclave_t* enclave)
     test_ecall_array_fun<uint32_t>(enclave, ecall_array_uint32_t);
     test_ecall_array_fun<uint64_t>(enclave, ecall_array_uint64_t);
     test_ecall_array_fun<long long>(enclave, ecall_array_long_long);
+    if (g_enabled[TYPE_UNSIGNED_LONG])
+        test_ecall_array_fun<unsigned long>(enclave, ecall_array_unsigned_long);
     if (g_enabled[TYPE_LONG_DOUBLE])
         test_ecall_array_fun<long double>(enclave, ecall_array_long_double);
 
@@ -271,6 +273,15 @@ void ocall_array_long_long(
     long long a2[2][2],
     long long a3[3][3],
     long long a4[4][4])
+{
+    ocall_array_fun_impl(a1, a2, a3, a4);
+}
+
+void ocall_array_unsigned_long(
+    unsigned long a1[2],
+    unsigned long a2[2][2],
+    unsigned long a3[3][3],
+    unsigned long a4[4][4])
 {
     ocall_array_fun_impl(a1, a2, a3, a4);
 }
