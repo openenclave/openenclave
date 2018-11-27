@@ -35,6 +35,7 @@ int oe_fclose(
     Tcps_Trace(Tcps_TraceLevelDebug, "fclose(%p) called\n", (fp)? fp->hObject : NULL);
     TEE_CloseObject(fp->hObject);
     fp->hObject = NULL;
+    free(fp);
 
     return 0;
 }
@@ -374,9 +375,9 @@ int FindFirstFileInternal(
     }
 
     // Read the first record from the file.
-    result = fread(findFileData, sizeof(*findFileData), 1, fp);
+    result = oe_fread(findFileData, sizeof(*findFileData), 1, fp);
     if (result < 1) {
-        fclose(fp);
+        oe_fclose(fp);
         return -1;
     }
 
@@ -494,9 +495,9 @@ int AppendToFile(
     {
         return errno;
     }
-    writelen = fwrite(ptr, 1, len, fp);
+    writelen = oe_fwrite(ptr, 1, len, fp);
 
-    fclose(fp);
+    oe_fclose(fp);
     if (writelen != len) {
         return 1;
     }
@@ -526,16 +527,16 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "TEE_P_SaveBufferToFile");
     fp = oe_fopen(OE_FILE_SECURE_HARDWARE, destinationLocation, "w");
     Tcps_GotoErrorIfTrue(fp == NULL, OE_FAILURE);
 
-    writelen = fwrite(ptr, 1, len, fp);
+    writelen = oe_fwrite(ptr, 1, len, fp);
     Tcps_GotoErrorIfTrue(writelen != len, OE_FAILURE);
 
-    fclose(fp);
+    oe_fclose(fp);
 
 Tcps_ReturnStatusCode;
 Tcps_BeginErrorHandling;
     if (fp != NULL)
     {
-        fclose(fp);
+        oe_fclose(fp);
     }
 Tcps_FinishErrorHandling;
 }
