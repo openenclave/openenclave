@@ -35,19 +35,19 @@ socket_Result ocall_socket(
 {
     socket_Result result = { 0 };
     SOCKET s = socket(a_AddressFamily, a_Type, a_Protocol);
-    result.hSocket = (void*)s;
+    result.hSocket = (intptr_t)s;
     result.error = (s == INVALID_SOCKET) ? (oe_socket_error_t)WSAGetLastError() : 0;
     return result;
 }
 
-oe_socket_error_t ocall_listen(void* a_hSocket, int a_nMaxConnections)
+oe_socket_error_t ocall_listen(intptr_t a_hSocket, int a_nMaxConnections)
 {
     SOCKET s = (SOCKET)a_hSocket;
     int err = listen(s, a_nMaxConnections);
     return (err == SOCKET_ERROR) ? (oe_socket_error_t)WSAGetLastError() : 0;
 }
 
-GetSockName_Result ocall_getsockname(void* a_hSocket, int a_nNameLen)
+GetSockName_Result ocall_getsockname(intptr_t a_hSocket, int a_nNameLen)
 {
     GetSockName_Result result = { 0 };
     SOCKET s = (SOCKET)a_hSocket;
@@ -57,7 +57,7 @@ GetSockName_Result ocall_getsockname(void* a_hSocket, int a_nNameLen)
     return result;
 }
 
-GetSockName_Result ocall_getpeername(void* a_hSocket, int a_nNameLen)
+GetSockName_Result ocall_getpeername(intptr_t a_hSocket, int a_nNameLen)
 {
     GetSockName_Result result = { 0 };
     SOCKET s = (SOCKET)a_hSocket;
@@ -68,7 +68,7 @@ GetSockName_Result ocall_getpeername(void* a_hSocket, int a_nNameLen)
 }
 
 send_Result ocall_send(
-    void* a_hSocket,
+    intptr_t a_hSocket,
     const void* a_Message,
     size_t a_nMessageLen,
     int a_Flags)
@@ -89,7 +89,7 @@ send_Result ocall_send(
 }
 
 ssize_t ocall_recv(
-    _In_ void* a_hSocket,
+    _In_ intptr_t a_hSocket,
     _Out_writes_bytes_(len) void* buf,
     _In_ size_t len,
     _In_ int flags,
@@ -176,7 +176,7 @@ getaddrinfo_Result ocall_getaddrinfo(
 }
 
 getsockopt_Result ocall_getsockopt(
-    void* a_hSocket,
+    intptr_t a_hSocket,
     int a_nLevel,
     int a_nOptName,
     int a_nOptLen)
@@ -190,7 +190,7 @@ getsockopt_Result ocall_getsockopt(
 }
 
 oe_socket_error_t ocall_setsockopt(
-    void* a_hSocket,
+    intptr_t a_hSocket,
     int a_nLevel,
     int a_nOptName,
     const void* a_OptVal,
@@ -202,7 +202,7 @@ oe_socket_error_t ocall_setsockopt(
 }
 
 ioctlsocket_Result ocall_ioctlsocket(
-    void* a_hSocket,
+    intptr_t a_hSocket,
     int a_nCommand,
     unsigned int a_uInputValue)
 {
@@ -222,10 +222,10 @@ copy_output_fds(
     unsigned int i;
     dest->fd_count = src->fd_count;
     for (i = 0; i < src->fd_count; i++) {
-        dest->fd_array[i] = (void*)src->fd_array[i];
+        dest->fd_array[i] = (intptr_t)src->fd_array[i];
     }
     for (; i < FD_SETSIZE; i++) {
-        dest->fd_array[i] = NULL;
+        dest->fd_array[i] = (intptr_t)NULL;
     }
 }
 
@@ -238,7 +238,7 @@ copy_input_fds(
     FD_ZERO(dest);
     dest->fd_count = src->fd_count;
     for (i = 0; i < src->fd_count; i++) {
-        (void*)dest->fd_array[i] = src->fd_array[i];
+        dest->fd_array[i] = src->fd_array[i];
     }
 }
 
@@ -267,21 +267,21 @@ select_Result ocall_select(
     return result;
 }
 
-oe_socket_error_t ocall_shutdown(void* a_hSocket, int a_How)
+oe_socket_error_t ocall_shutdown(intptr_t a_hSocket, int a_How)
 {
     SOCKET s = (SOCKET)a_hSocket;
     int err = shutdown(s, a_How);
     return (err == SOCKET_ERROR) ? (oe_socket_error_t)WSAGetLastError() : 0;
 }
 
-oe_socket_error_t ocall_closesocket(void* a_hSocket)
+oe_socket_error_t ocall_closesocket(intptr_t a_hSocket)
 {
     SOCKET s = (SOCKET)a_hSocket;
     int err = closesocket(s);
     return (err == SOCKET_ERROR) ? (oe_socket_error_t)WSAGetLastError() : 0;
 }
 
-oe_socket_error_t ocall_bind(void* a_hSocket, const void* a_Name, int a_nNameLen)
+oe_socket_error_t ocall_bind(intptr_t a_hSocket, const void* a_Name, int a_nNameLen)
 {
     SOCKET s = (SOCKET)a_hSocket;
     int err = bind(s, (const SOCKADDR*)a_Name, a_nNameLen);
@@ -289,7 +289,7 @@ oe_socket_error_t ocall_bind(void* a_hSocket, const void* a_Name, int a_nNameLen
 }
 
 oe_socket_error_t ocall_connect(
-    void* a_hSocket,
+    intptr_t a_hSocket,
     const void* a_Name,
     int a_nNameLen)
 {
@@ -298,15 +298,15 @@ oe_socket_error_t ocall_connect(
     return (err == SOCKET_ERROR) ? (oe_socket_error_t)WSAGetLastError() : 0;
 }
 
-accept_Result ocall_accept(void* a_hSocket, int a_nAddrLen)
+accept_Result ocall_accept(intptr_t a_hSocket, int a_nAddrLen)
 {
     SOCKET s = (SOCKET)a_hSocket;
     accept_Result result = { 0 };
     result.addrlen = a_nAddrLen;
-    result.hNewSocket = (void*)accept(s,
-                                      ((a_nAddrLen > 0) ? (SOCKADDR*)result.addr : NULL),
-                                      ((a_nAddrLen > 0) ? &result.addrlen : NULL));
-    result.error = (result.hNewSocket == (void*)INVALID_SOCKET) ? (oe_socket_error_t)WSAGetLastError() : 0;
+    result.hNewSocket = (intptr_t)accept(s,
+                                         ((a_nAddrLen > 0) ? (SOCKADDR*)result.addr : NULL),
+                                         ((a_nAddrLen > 0) ? &result.addrlen : NULL));
+    result.error = (result.hNewSocket == (intptr_t)INVALID_SOCKET) ? (oe_socket_error_t)WSAGetLastError() : 0;
     return result;
 }
 
