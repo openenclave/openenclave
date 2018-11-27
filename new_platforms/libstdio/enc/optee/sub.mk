@@ -11,7 +11,7 @@ files_optee.c: ../stdio_t.h
 
 CFLAGS += -DOE_USE_OPTEE
 
-global-incdirs-y += $(ROOT_RELATIVE_PATH)include/optee/Trusted
+global-incdirs-y += $(ROOT_RELATIVE_PATH)include/optee/enclave
 global-incdirs-y += $(ROOT_RELATIVE_PATH)include/optee
 global-incdirs-y += $(ROOT_RELATIVE_PATH)include
 global-incdirs-y += $(OpteeDir)lib/libutee/include

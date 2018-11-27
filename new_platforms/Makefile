@@ -67,8 +67,8 @@ usdk-tests: gtest usdk oesocket_host oestdio_host
 
 .PHONY: usdk-samples
 usdk-samples: usdk oesocket_host oestdio_host
-	make -C samples/sockets/Untrusted/SampleClientApp
-	make -C samples/sockets/Untrusted/SampleServerApp
+	make -C samples/sockets/host/SampleClientApp
+	make -C samples/sockets/host/SampleServerApp
 
 # Trusted SDK
 # -----------
@@ -93,7 +93,7 @@ tsdk-tests: tsdk oesocket_enc oestdio_enc
 
 .PHONY: tsdk-samples
 tsdk-samples: tsdk oesocket_enc oestdio_enc
-	$(TRUSTED_PARAMS) make -C samples/sockets/Trusted/optee -f linux_gcc.mak BUILD_TARGET=debug
+	$(TRUSTED_PARAMS) make -C samples/sockets/enclave/optee -f linux_gcc.mak BUILD_TARGET=debug
 	$(TRUSTED_PARAMS) make -C samples/helloworld/HelloWorldEnc/optee -f linux_gcc.mak BUILD_TARGET=debug
 
 # Clean Targets
@@ -139,8 +139,8 @@ usdk-tests-clean:
 
 .PHONY: usdk-samples-clean
 usdk-samples-clean:
-	make -C samples/sockets/Untrusted/SampleClientApp clean
-	make -C samples/sockets/Untrusted/SampleServerApp clean
+	make -C samples/sockets/host/SampleClientApp clean
+	make -C samples/sockets/host/SampleServerApp clean
 
 .PHONY: tsdk-clean
 tsdk-clean:
@@ -160,5 +160,5 @@ tsdk-tests-clean:
 
 .PHONY: tsdk-samples-clean
 tsdk-samples-clean:
-	make -C samples/sockets/Trusted/optee -f linux_gcc.mak BUILD_TARGET=debug clean
+	make -C samples/sockets/enclave/optee -f linux_gcc.mak BUILD_TARGET=debug clean
 	make -C samples/helloworld/HelloWorldEnc/optee -f linux_gcc.mak BUILD_TARGET=debug clean

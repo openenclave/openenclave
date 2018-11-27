@@ -12,7 +12,7 @@ OPTEE_CLIENT = $(OE_PATH)/3rdparty/optee_client
 
 DEFINES = -DOE_USE_OPTEE -D_DEBUG
 INCLUDES =                                             \
-    -I$(OE_PATH)/new_platforms/include/optee/Untrusted \
+    -I$(OE_PATH)/new_platforms/include/optee/host      \
     -I$(OE_PATH)/new_platforms/include/optee           \
     -I$(OE_PATH)/new_platforms/include/                \
     -I$(OE_PATH)/new_platforms/include/linux           \

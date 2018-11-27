@@ -15,7 +15,7 @@
 
 #ifdef OE_SIMULATE_OPTEE
 # include <sal.h>
-# include "optee/Trusted/Simulator/oeenclave.h"
+# include "optee/enclave/Simulator/oeenclave.h"
 #endif
 
 #include "tcps.h"
@@ -35,7 +35,7 @@ typedef uint32_t __uint32_t;
  */
 # include <sgx.h>
 #if defined(OE_USE_OPTEE)
-# include "optee/Trusted/sgxoveroptee_enclave.h"
+# include "optee/enclave/sgxoveroptee_enclave.h"
 #endif
 
 #define STRUNCATE 80 
