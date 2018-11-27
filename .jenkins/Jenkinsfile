@@ -102,9 +102,9 @@ def windowsDebugCrossPlatform() {
     }
     stage('Windows Debug') {
         node('SGXFLC-Windows') {
-           unstash 'linuxdebug'
-           bat 'move build linuxbin'
-           bat 'mkdir build && cd build && cmake -G "Visual Studio 15 2017 Win64" -DADD_WINDOWS_ENCLAVE_TESTS=1 -DLINUX_BIN_DIR=%cd%\\linuxbin\\tests .. && pushd . && "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\Common7\\Tools\\LaunchDevCmd.bat" && popd && cmake --build . --config Debug && ctest -V -C Debug'
+            unstash 'linuxdebug'
+            powershell 'mv build linuxbin'
+            powershell './scripts/test-build-config.ps1 -add_windows_enclave_tests -linux_bin_dir $ENV:WORKSPACE/linuxbin/tests -build_type Debug'
        }
     }
 
@@ -124,8 +124,8 @@ def windowsReleaseCrossPlatform() {
     stage('Windows Release') {
         node('SGXFLC-Windows') {
             unstash 'linuxrelease'
-            bat 'move build linuxbin'
-            bat 'mkdir build && cd build && cmake -G "Visual Studio 15 2017 Win64" -DADD_WINDOWS_ENCLAVE_TESTS=1 -DLINUX_BIN_DIR=%cd%\\linuxbin\\tests .. && pushd . && "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\Common7\\Tools\\LaunchDevCmd.bat" && popd && cmake --build . --config Release && ctest -V -C Release'
+            powershell 'mv build linuxbin'
+            powershell './scripts/test-build-config.ps1 -add_windows_enclave_tests -linux_bin_dir $ENV:WORKSPACE/linuxbin/tests -build_type Release'
         }
     }
 }
