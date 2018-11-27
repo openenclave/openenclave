@@ -29,7 +29,7 @@ for both SGX and TrustZone.
 The SGX Enclave DLL should link with **oeenclave.lib** and have the following
 additional include paths:
 
-* $(OESdkDir)new\_platforms\include\sgx\Trusted
+* $(OESdkDir)new\_platforms\include\sgx\enclave
 * $(OESdkDir)new\_platforms\include
 
 To use stdio APIs, the SGX Enclave DLL should link with **oestdio\_enc.lib**.
@@ -58,7 +58,7 @@ additional include paths, in this order (the order is important because
 files in a deeper directory override files at higher levels with the
 same filename):
 
-* $(OESdkDir)new\_platforms/include/optee/Trusted
+* $(OESdkDir)new\_platforms/include/optee/enclave
 * $(OESdkDir)new\_platforms/include/optee
 * $(OESdkDir)new\_platforms/include
 
@@ -75,7 +75,7 @@ additional include paths, in any order:
 
 * $(OESdkDir)new\_platforms\include
 * $(OESdkDir)new\_platforms\include\optee
-* $(OESdkDir)new\_platforms\include\optee\Untrusted
+* $(OESdkDir)new\_platforms\include\optee\host
 
 To allow the OP-TEE TA to use stdio APIs, the EXE should link with **oestdio\_host.lib**.
 See the helloworld sample for an example.
@@ -170,7 +170,7 @@ oe\_terminate\_enclave().  You will need to #include <openenclave/host.h>
 and <_YourEDLFileName_\_u.h> for your ECALLs.  Make sure you configure the
 additional include directories as appropriate in your application project
 Properties->"C/C++"->"General"->"Additional Include Directories".  Usually
-this means you need to insert "$(NewPlatformsDir)include;$(NewPlatformsDir)include\sgx\Trusted;"
+this means you need to insert "$(NewPlatformsDir)include;$(NewPlatformsDir)include\sgx\enclave;"
 at the beginning.  See the sample apps for an example.
 12. In your enclave project, update the Additional Include Directories to
 include $(OESdkDir)3rdparty\RIoT\CyReP\cyrep
@@ -188,7 +188,7 @@ compile for ARM, since Visual Studio cannot do it from the UI.  To do so, add th
 line "<WindowsSDKDesktopARMSupport\>true</WindowsSDKDesktopARMSupport\>"
 to each ARM configuration property group.  (See the sample apps'
 vcxproj file for examples.)
-3. Copy the files from the samples/Trusted/optee directory into your
+3. Copy the files from the samples/enclave/optee directory into your
 enclave project, preferably into an "optee" subdirectory
 4. Create a new GUID for your TA and fill it in in your linux\_gcc.mak,
 user\_ta\_header\_defines.h, main.c, and uuids.reg files.  You can use the
@@ -201,7 +201,7 @@ Visual Studio, also add them to the sub.mk file in your optee subdirectory
 rpcrt4.lib to the Additional Dependencies (All Configurations, ARM platform)
 which is required for string-to-UUID conversion, and remove any sgx libs.
 7. In your application project properties, update the Additional Include
-Directories to insert the $(NewPlatformsDir)include\optee\Untrusted and
+Directories to insert the $(NewPlatformsDir)include\optee\host and
 $(NewPlatformsDir)include\optee paths before the $(NewPlatformsDir)include path that you
 added earlier.
 8. Edit the sub.mk file in your optee subdirectory to change the "SampleTA"
@@ -234,7 +234,7 @@ configuration. Your libs might look like this:
 "oehost.lib;ws2\_32.lib;rpcrt4.lib;shell32.lib;oehost\_opteesim.lib"
 4. Your app Additional Include Directories for DebugOpteeSimulation
 should include at least:
-* $(NewPlatformsDir)include\optee\Untrusted
+* $(NewPlatformsDir)include\optee\host
 * $(NewPlatformsDir)include\optee
 * $(NewPlatformsDir)include
 * $(SGXSDKInstallPath)\include
@@ -251,8 +251,8 @@ DebugOpteeSimulation configuration for All Platforms, the Additional Include
 Directories should NOT include $(SGXSDKInstallPath)include\tlibc or
 $(SGXSDKInstallPath)include\libc++, and should include at least:
 * $(OESdkDir)3rdparty\RIoT\CyReP\cyrep
-* $(NewPlatformsDir)include\optee\Trusted\Simulator
-* $(NewPlatformsDir)include\optee\Trusted
+* $(NewPlatformsDir)include\optee\enclave\Simulator
+* $(NewPlatformsDir)include\optee\enclave
 * $(NewPlatformsDir)include\optee
 * $(NewPlatformsDir)include
 * $(SGXSDKInstallPath)include
@@ -293,13 +293,13 @@ This is the folder structure of the `sockets` sample:
 ```
 new_platforms/samples/sockets/
     | SampleTA.edl
-    | Trusted
+    | enclave
         | SampleTA.c
         | optee
             | linux_gcc.mak
             | sub.mak
             | user_ta_header_defines.h
-    | Untrusted
+    | host
         | ClientServerApp
             | main.c
             | Makefile      
@@ -318,7 +318,7 @@ app, talk with each other. The `oeedger8r` tool processes this file and
 generates code that may be called by either the trusted or the untrusted side to
 transparently communicate with the other side.
 
-Under the `Trusted` folder there is a single `SampleTA.c` file. This file
+Under the `enclave` folder there is a single `SampleTA.c` file. This file
 contains all the TA's functionality. Note how there is no TEE-specific code:
 nothing is specific to either Intel SGX or ARM TrustZone, these details are
 taken care of by the SDK.
@@ -336,7 +336,7 @@ with how you plan to use the TA. In this instance, you will need to understand
 how OP-TEE loads and manages sessions with TA's in order to configure yours
 properly. Each TA must have a unique UUID.
 
-Under the `Untrusted` folder there are two more folders: `ClientServerApp` and
+Under the `host` folder there are two more folders: `ClientServerApp` and
 `SampleServerApp`. These folders contain the client and server host programs,
 respectively.
 
@@ -372,7 +372,7 @@ The trusted component depends on the following Open Enclave-provided libraries:
     * This library marshals standard I/O calls out to the host app.
 
 You can see these libraries being listed in the `sub.mk` file under
-`Trusted/optee` and in the corresponding Visual Studio project file. The
+`enclave/optee` and in the corresponding Visual Studio project file. The
 sub-makefile includes `oe_sub.mk` which specifies `oeenclave`.
 
 **Note**: When using sockets or I/O APIs, or any other trusted-to-untrusted

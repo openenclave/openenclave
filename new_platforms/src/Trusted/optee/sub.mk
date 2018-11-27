@@ -15,7 +15,7 @@ CFLAGS += -DOE_USE_OPTEE
 
 global-incdirs-y += ..
 global-incdirs-y += ../..
-global-incdirs-y += ../../../include/optee/Trusted
+global-incdirs-y += ../../../include/optee/enclave
 global-incdirs-y += ../../../include/optee
 global-incdirs-y += ../../../include
 global-incdirs-y += $(OpteeDir)lib/libutee/include

@@ -9,7 +9,7 @@ OE_PATH = ../../../include
 
 DEFINES = -DOE_USE_OPTEE -D_DEBUG -DLINUX
 INCLUDES =                          \
-    -I../../include/optee/Untrusted \
+    -I../../include/optee/host      \
     -I../../include/                \
     -I../../include/linux           \
     -I$(SGX_SDK)/include            \
