@@ -597,6 +597,39 @@ enclave {
             int pcount,
             int psize             
         ); 
+	
+	public unsigned long* ecall_pointer_unsigned_long(
+            // No count or size, defaults to 1.
+            [in] unsigned long* p1,
+            [in,out] unsigned long* p2,
+            [out] unsigned long* p3,
+
+            // count specifies number of elements.
+            [in, count=16] unsigned long* p4,
+            [in,out, count=16] unsigned long* p5,
+            [out, count=16] unsigned long* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] unsigned long* p7,
+            [in, out, size=80] unsigned long* p8,
+            [in, size=80] unsigned long* p9,
+
+            // user handled.
+            [user_check] unsigned long* p10,
+
+            // count as parameter
+            [in, count=pcount] unsigned long* p11,
+            [in,out, count=pcount] unsigned long* p12,
+            [out, count=pcount] unsigned long* p13,
+
+            // size as parameter
+            [in, size=psize] unsigned long* p14,
+            [in,out, size=psize] unsigned long* p15,
+            [out, size=psize] unsigned long* p16,
+
+            int pcount,
+            int psize
+        );
 
         public long double* ecall_pointer_long_double(
             // No count or size, defaults to 1.
@@ -1314,6 +1347,39 @@ enclave {
             int pcount,
             int psize
         ); 
+
+	unsigned long* ocall_pointer_unsigned_long(
+            // No count or size, defaults to 1.
+            [in] unsigned long* p1,
+            [in,out] unsigned long* p2,
+            [out] unsigned long* p3,
+
+            // count specifies number of elements.
+            [in, count=16] unsigned long* p4,
+            [in,out, count=16] unsigned long* p5,
+            [out, count=16] unsigned long* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] unsigned long* p7,
+            [in, out, size=80] unsigned long* p8,
+            [in, size=80] unsigned long* p9,
+
+            // user handled.
+            [user_check] unsigned long* p10,
+
+            // count as parameter
+            [in, count=pcount] unsigned long* p11,
+            [in,out, count=pcount] unsigned long* p12,
+            [out, count=pcount] unsigned long* p13,
+
+            // size as parameter
+            [in, size=psize] unsigned long* p14,
+            [in,out, size=psize] unsigned long* p15,
+            [out, size=psize] unsigned long* p16,
+
+            int pcount,
+            int psize
+        );
 
         long double* ocall_pointer_long_double(
             // No count or size, defaults to 1.
