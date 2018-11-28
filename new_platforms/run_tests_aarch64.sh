@@ -8,7 +8,7 @@ chmod +x ./new_platforms/build_optee.sh
 
 echo [CI] Installing Prerequistes
 
-apt install sshpass -y
+sudo apt install sshpass -y
 
 echo [CI] Downloading Emulated Environment
 
