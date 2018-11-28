@@ -77,6 +77,12 @@ void test_array_edl_ocalls()
     test_ocall_array_fun<uint32_t>(ocall_array_uint32_t);
     test_ocall_array_fun<uint64_t>(ocall_array_uint64_t);
     test_ocall_array_fun<long long>(ocall_array_long_long);
+<<<<<<< 7b3bfca739e9f0b36c66474a083bfca5fdc2b5a6
+=======
+    if (g_enabled[TYPE_UNSIGNED_LONG])
+        test_ocall_array_fun<unsigned long>(ocall_array_unsigned_long);
+    test_ocall_array_fun<unsigned long long>(ocall_array_unsigned_long_long);
+>>>>>>> Add test for unsigned long long
     if (g_enabled[TYPE_LONG_DOUBLE])
         test_ocall_array_fun<long double>(ocall_array_long_double);
     test_ocall_array_fun<unsigned char>(ocall_array_unsigned_char);
@@ -287,6 +293,27 @@ void ecall_array_long_long(
     ecall_array_fun_impl(a1, a2, a3, a4);
 }
 
+<<<<<<< 7b3bfca739e9f0b36c66474a083bfca5fdc2b5a6
+=======
+void ecall_array_unsigned_long(
+    unsigned long a1[2],
+    unsigned long a2[2][2],
+    unsigned long a3[3][3],
+    unsigned long a4[4][4])
+{
+    ecall_array_fun_impl(a1, a2, a3, a4);
+}
+
+void ecall_array_unsigned_long_long(
+    unsigned long long a1[2],
+    unsigned long long a2[2][2],
+    unsigned long long a3[3][3],
+    unsigned long long a4[4][4])
+{
+    ecall_array_fun_impl(a1, a2, a3, a4);
+}
+
+>>>>>>> Add test for unsigned long long
 void ecall_array_long_double(
     long double a1[2],
     long double a2[2][2],
@@ -334,9 +361,15 @@ void ecall_array_unsigned_long(
 
 void ecall_array_assert_all_called()
 {
+<<<<<<< 7b3bfca739e9f0b36c66474a083bfca5fdc2b5a6
     // Each of the 19 functions above is called twice.
     // Once with arrays and then with nulls.
     int expected_num_calls = 19 * 2;
+=======
+    // Each of the 17 functions above is called twice.
+    // Once with arrays and then with nulls.
+    int expected_num_calls = 17 * 2;
+>>>>>>> Add test for unsigned long long
 
     // Account for enabled non-portable types.
     for (size_t i = 0; i < OE_COUNTOF(g_enabled); ++i)
