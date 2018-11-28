@@ -123,3 +123,20 @@ int printf(const char* fmt, ...);
 #endif
 
 int vprintf(const char* format, va_list argptr);
+
+typedef struct {
+    int (*f_fclose)(intptr_t stream);
+    int (*f_feof)(intptr_t stream);
+    int (*f_ferror)(intptr_t stream);
+    int (*f_fflush)(intptr_t stream);
+    char* (*f_fgets)(char* str, int n, intptr_t stream);
+    int (*f_fputs)(const char* str, intptr_t stream);
+    size_t (*f_fread)(void* buffer, size_t size, size_t count, intptr_t stream);
+    int (*f_fseek)(intptr_t stream, long offset, int origin);
+    long (*f_ftell)(intptr_t stream);
+    size_t (*f_fwrite)(const void* buffer, size_t size, size_t count, intptr_t stream);
+} oe_file_provider_t;
+
+OE_FILE* oe_register_stream(
+    const oe_file_provider_t* provider,
+    intptr_t stream);

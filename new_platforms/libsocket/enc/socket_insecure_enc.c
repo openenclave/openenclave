@@ -6,37 +6,35 @@
 #include "socket_t.h"
 #include <errno.h>
 
-void ecall_InitializeSockets() {}
-
 static void
-copy_input_fds(oe_fd_set_internal* dest, oe_fd_set* src)
+copy_input_fds(oe_fd_set_internal* dest, oe_provider_fd_set* src)
 {
     unsigned int i;
     dest->fd_count = src->fd_count;
     for (i = 0; i < src->fd_count; i++) {
-        dest->fd_array[i] = (void*)src->fd_array[i];
+        dest->fd_array[i] = src->fd_array[i];
     }
     for (; i < FD_SETSIZE; i++) {
-        dest->fd_array[i] = NULL;
+        dest->fd_array[i] = 0;
     }
 }
 
 static void
-copy_output_fds(oe_fd_set* dest, oe_fd_set_internal* src)
+copy_output_fds(oe_provider_fd_set* dest, oe_fd_set_internal* src)
 {
     unsigned int i;
     dest->fd_count = src->fd_count;
     for (i = 0; i < src->fd_count; i++) {
-        dest->fd_array[i] = (oe_socket_t)src->fd_array[i];
+        dest->fd_array[i] = src->fd_array[i];
     }
 }
 
-int
-oe_select(
-    _In_ int a_nFds,
-    _Inout_opt_ oe_fd_set* a_readfds,
-    _Inout_opt_ oe_fd_set* a_writefds,
-    _Inout_opt_ oe_fd_set* a_exceptfds,
+static int
+oe_insecure_select(
+    int a_nFds,
+    _Inout_opt_ oe_provider_fd_set* a_readfds,
+    _Inout_opt_ oe_provider_fd_set* a_writefds,
+    _Inout_opt_ oe_provider_fd_set* a_exceptfds,
     _In_opt_ const struct timeval* a_Timeout)
 {
     select_Result result = { 0 };
@@ -73,21 +71,10 @@ oe_select(
     return result.socketsSet;
 }
 
-int oe_fd_isset(_In_ oe_socket_t fd, _In_ fd_set* set)
-{
-    unsigned int i;
-    for (i = 0; i < set->fd_count; i++) {
-        if (fd == set->fd_array[i]) {
-            return TRUE;
-        }
-    }
-    return FALSE;
-}
-
 int
 oe_gethostname_OE_NETWORK_INSECURE(
     _Out_writes_(a_uiBufferLength) char* a_pBuffer,
-    _In_ size_t a_uiBufferLength)
+    size_t a_uiBufferLength)
 {
     oe_result_t oe_result;
     gethostname_Result result;
@@ -105,7 +92,7 @@ oe_gethostname_OE_NETWORK_INSECURE(
 
 int
 oe_wsa_startup_OE_NETWORK_INSECURE(
-    _In_ uint16_t wVersionRequired,
+    uint16_t wVersionRequired,
     _Out_ oe_wsa_data_t* lpWSAData)
 {
     OE_UNUSED(wVersionRequired);
@@ -146,10 +133,10 @@ oe_wsa_get_last_error_OE_NETWORK_INSECURE(void)
     return g_WSALastError;
 }
 
-int
-oe_shutdown(
-    _In_ oe_socket_t s,
-    _In_ int how)
+static int
+oe_insecure_shutdown(
+    _In_ intptr_t s,
+    int how)
 {
     oe_socket_error_t socketError = 0;
     oe_result_t oe_result = ocall_shutdown(&socketError, s, how);
@@ -160,9 +147,9 @@ oe_shutdown(
     return (socketError == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
-int 
-oe_closesocket(
-    _In_ oe_socket_t s)
+static int
+oe_insecure_close(
+    _In_ intptr_t s)
 {
     oe_socket_error_t socketError = 0;
     oe_result_t oe_result = ocall_closesocket(&socketError, s);
@@ -173,10 +160,10 @@ oe_closesocket(
     return (socketError == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
-int
-oe_listen(
-    _In_ oe_socket_t s,
-    _In_ int backlog)
+static int
+oe_insecure_listen(
+    _In_ intptr_t s,
+    int backlog)
 {
     oe_socket_error_t socketError = 0;
     oe_result_t oe_result = ocall_listen(&socketError, s, backlog);
@@ -187,11 +174,11 @@ oe_listen(
     return (socketError == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
-int
-oe_getsockopt(
-    _In_ oe_socket_t s,
-    _In_ int level,
-    _In_ int optname,
+static int
+oe_insecure_getsockopt(
+    _In_ intptr_t s,
+    int level,
+    int optname,
     _Out_writes_(*optlen) char *optval,
     _Inout_ socklen_t *optlen)
 {
@@ -212,28 +199,12 @@ oe_getsockopt(
     return (result.error == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
-oe_socket_t
-oe_socket_OE_NETWORK_INSECURE(
-    _In_ int domain,
-    _In_ int type,
-    _In_ int protocol)
-{
-    socket_Result result;
-    oe_result_t oe_result = ocall_socket(&result, domain, type, protocol);
-    if (oe_result != OE_OK) {
-        result.error = OE_ENETDOWN;
-        result.hSocket = OE_INVALID_SOCKET;
-    }
-    oe_wsa_set_last_error(OE_NETWORK_INSECURE, result.error);
-    return result.hSocket;
-}
-
-ssize_t
-oe_recv(
-    _In_ oe_socket_t s,
+static ssize_t
+oe_insecure_recv(
+    _In_ intptr_t s,
     _Out_writes_(len) void *buf,
-    _In_ size_t len,
-    _In_ int flags)
+    size_t len,
+    int flags)
 {
     ssize_t bytesReceived;
     oe_result_t oe_result;
@@ -248,12 +219,12 @@ oe_recv(
     return (sock_error != 0) ? OE_SOCKET_ERROR : bytesReceived;
 }
 
-int
-oe_send(
-    _In_ oe_socket_t s,
+static int
+oe_insecure_send(
+    _In_ intptr_t s,
     _In_reads_bytes_(len) const char *buf,
-    _In_ int len,
-    _In_ int flags)
+    int len,
+    int flags)
 {
     oe_result_t oeResult;
     send_Result result;
@@ -268,61 +239,13 @@ oe_send(
     return (result.error != 0) ? OE_SOCKET_ERROR : result.bytesSent;
 }
 
-static uint32_t swap_uint32(uint32_t const net)
-{
-    uint8_t data[4];
-    memcpy(&data, &net, sizeof(data));
-
-    return ((uint32_t)data[3] << 0)
-        | ((uint32_t)data[2] << 8)
-        | ((uint32_t)data[1] << 16)
-        | ((uint32_t)data[0] << 24);
-}
-
-static uint32_t swap_uint16(uint16_t const net)
-{
-    uint8_t data[2];
-    memcpy(&data, &net, sizeof(data));
-
-    return ((uint16_t)data[1] << 0)
-        | ((uint16_t)data[0] << 8);
-}
-
-uint32_t
-oe_ntohl(
-    _In_ uint32_t netLong)
-{
-    return swap_uint32(netLong);
-}
-
-uint16_t
-oe_ntohs(
-    _In_ uint16_t netShort)
-{
-    return swap_uint16(netShort);
-}
-
-uint32_t
-oe_htonl(
-    _In_ uint32_t hostLong)
-{
-    return swap_uint32(hostLong);
-}
-
-uint16_t
-oe_htons(
-    _In_ uint16_t hostShort)
-{
-    return swap_uint16(hostShort);
-}
-
-int
-oe_setsockopt(
-    _In_ oe_socket_t s,
-    _In_ int level,
-    _In_ int optname,
+static int
+oe_insecure_setsockopt(
+    _In_ intptr_t s,
+    int level,
+    int optname,
     _In_reads_bytes_(optlen) const char* optval,
-    _In_ socklen_t optlen)
+    socklen_t optlen)
 {
     oe_socket_error_t socketError = 0;
     oe_result_t oe_result;
@@ -335,10 +258,10 @@ oe_setsockopt(
     return (socketError == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
-int
-oe_ioctlsocket(
-    _In_ oe_socket_t s,
-    _In_ long cmd,
+static int
+oe_insecure_ioctl(
+    _In_ intptr_t s,
+    long cmd,
     _Inout_ u_long *argp)
 {
     ioctlsocket_Result result = {0};
@@ -353,11 +276,11 @@ oe_ioctlsocket(
     return (result.error == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
-int
-oe_connect(
-    _In_ oe_socket_t s,
+static int
+oe_insecure_connect(
+    _In_ intptr_t s,
     _In_reads_bytes_(namelen) const oe_sockaddr *name,
-    _In_ int namelen)
+    int namelen)
 {
     oe_socket_error_t socketError = 0;
     oe_result_t oe_result;
@@ -370,9 +293,9 @@ oe_connect(
     return (socketError == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
-oe_socket_t
-oe_accept(
-    _In_ oe_socket_t a_Socket,
+static intptr_t
+oe_insecure_accept(
+    _In_ intptr_t a_Socket,
     _Out_writes_bytes_(*addrlen) struct sockaddr* a_SockAddr,
     _Inout_ int *a_pAddrLen)
 {
@@ -390,12 +313,12 @@ oe_accept(
     if (a_pAddrLen != NULL) {
         *a_pAddrLen = addrlen;
     }
-    return (result.error == 0) ? result.hNewSocket : OE_INVALID_SOCKET;
+    return (result.error == 0) ? result.hNewSocket : (intptr_t)OE_INVALID_SOCKET;
 }
 
-int
-oe_getpeername(
-    _In_ oe_socket_t s,
+static int
+oe_insecure_getpeername(
+    _In_ intptr_t s,
     _Out_writes_bytes_(*addrlen) struct sockaddr* addr,
     _Inout_ int *addrlen)
 {
@@ -412,9 +335,9 @@ oe_getpeername(
     return (result.error == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
-int
-oe_getsockname(
-    _In_ oe_socket_t s,
+static int
+oe_insecure_getsockname(
+    _In_ intptr_t s,
     _Out_writes_bytes_(*addrlen) struct sockaddr* addr,
     _Inout_ int *addrlen)
 {
@@ -431,63 +354,21 @@ oe_getsockname(
     return (result.error == 0) ? 0 : OE_SOCKET_ERROR;
 }
 
-int
-oe_bind(
-    _In_ oe_socket_t s,
-    _In_reads_bytes_(namelen) const oe_sockaddr *name,
-    _In_ int namelen)
+static int
+oe_insecure_bind(
+    _In_ intptr_t s,
+    _In_reads_bytes_(addrlen) const oe_sockaddr *addr,
+    int addrlen)
 {
     oe_socket_error_t socketError = 0;
     oe_result_t oe_result;
 
-    oe_result = ocall_bind(&socketError, s, name, namelen);
+    oe_result = ocall_bind(&socketError, s, addr, addrlen);
     if (oe_result != OE_OK) {
         socketError = OE_ENETDOWN;
     }
     oe_wsa_set_last_error(OE_NETWORK_INSECURE, socketError);
     return (socketError == 0) ? 0 : OE_SOCKET_ERROR;
-}
-
-uint32_t
-oe_inet_addr(
-    _In_z_ const char *cp)
-{
-    /* We only support dotted decimal. */
-    uint32_t value;
-    uint8_t* byte = (uint8_t*)&value;
-    int field = 0;
-    const char* next;
-    const char* p = cp;
-
-    for (p = cp; field < 4; p = next) {
-        const char* dot = strchr(p, '.');
-        next = (dot != NULL) ? dot + 1 : p + strlen(p);
-        byte[field++] = (uint8_t)atoi(p);
-    }
-    if (*p != 0) {
-        return INADDR_NONE;
-    }
-    return value;
-}
-
-void
-oe_freeaddrinfo(
-    _In_ oe_addrinfo* ailist)
-{
-    oe_addrinfo* ai;
-    oe_addrinfo* next;
-
-    for (ai = ailist; ai != NULL; ai = next) {
-        next = ai->ai_next;
-        if (ai->ai_canonname != NULL) {
-            oe_free(ai->ai_canonname);
-        }
-        if (ai->ai_addr != NULL) {
-            oe_free(ai->ai_addr);
-        }
-        oe_free(ai);
-        ailist = next;
-    }
 }
 
 int
@@ -593,7 +474,7 @@ oe_getaddrinfo_OE_NETWORK_INSECURE(
 }
 
 int
-oe_getnameinfo(
+oe_getnameinfo_OE_NETWORK_INSECURE(
     _In_ const struct oe_sockaddr *sa,
     _In_ oe_socklen_t salen,
     _Out_writes_opt_z_(hostlen) char* host,
@@ -621,4 +502,44 @@ oe_getnameinfo(
     }
 
     return result.error;
+}
+
+static oe_socket_provider_t oe_insecure_socket_provider = {
+    oe_insecure_accept,
+    oe_insecure_bind,
+    oe_insecure_close,
+    oe_insecure_connect,
+    oe_insecure_getpeername,
+    oe_insecure_getsockname,
+    oe_insecure_getsockopt,
+    oe_insecure_ioctl,
+    oe_insecure_listen,
+    oe_insecure_recv,
+    oe_insecure_select,
+    oe_insecure_send,
+    oe_insecure_setsockopt,
+    oe_insecure_shutdown,
+};
+
+oe_socket_t
+oe_socket_OE_NETWORK_INSECURE(
+    _In_ int domain,
+    _In_ int type,
+    _In_ int protocol)
+{
+    oe_socket_t oesocket = OE_INVALID_SOCKET;
+    socket_Result result;
+    oe_result_t oe_result = ocall_socket(&result, domain, type, protocol);
+    if (oe_result != OE_OK) {
+        result.error = OE_ENETDOWN;
+    } else {
+        oesocket = oe_register_socket(&oe_insecure_socket_provider, result.hSocket);
+        if (oesocket == OE_INVALID_SOCKET) {
+            oe_socket_error_t retval;
+            (void)ocall_closesocket(&retval, result.hSocket);
+            result.error = OE_ENETDOWN;
+        }
+    }
+    oe_wsa_set_last_error(OE_NETWORK_INSECURE, result.error);
+    return oesocket;
 }

@@ -18,94 +18,117 @@
 
 #define DMSG printf
 
-int oe_fclose(
-    OE_FILE *stream)
+static int oe_sgx_fclose(
+    intptr_t stream)
 {
-    int result = sgx_fclose(stream);
+    int result = sgx_fclose((SGX_FILE*)stream);
     return result;
 }
 
-int oe_feof(
-    OE_FILE *stream)
+static int oe_sgx_feof(
+    intptr_t stream)
 {
-    int result = sgx_feof(stream);
+    int result = sgx_feof((SGX_FILE*)stream);
     return result;
 }
 
-int oe_ferror(
-    OE_FILE *stream)
+static int oe_sgx_ferror(
+    intptr_t stream)
 {
-    int result = sgx_ferror(stream);
+    int result = sgx_ferror((SGX_FILE*)stream);
     return result;
 }
 
-int oe_fflush(
-    OE_FILE *stream)
+static int oe_sgx_fflush(
+    intptr_t stream)
 {
-    return sgx_fflush(stream);
+    return sgx_fflush((SGX_FILE*)stream);
 }
 
-OE_FILE *oe_fopen_OE_FILE_SECURE_ENCRYPTION(
-    const char* path,
-    const char* mode)
-{
-    OE_FILE* result = (OE_FILE*)sgx_fopen_auto_key(path, mode);
-    return result;
-}
-
-size_t oe_fread(
-    void *buffer,
+static size_t oe_sgx_fread(
+    void* buffer,
     size_t size,
     size_t count,
-    OE_FILE *stream)
+    intptr_t stream)
 {
-    size_t result = sgx_fread(buffer, size, count, stream);
+    size_t result = sgx_fread(buffer, size, count, (SGX_FILE*)stream);
     return result;
 }
 
-int oe_fseek(
-    OE_FILE *stream,
+static int oe_sgx_fseek(
+    intptr_t stream,
     long offset,
     int origin)
 {
-    return sgx_fseek(stream, offset, origin);
+    return sgx_fseek((SGX_FILE*)stream, offset, origin);
 }
 
-long oe_ftell(
-    OE_FILE *stream)
+static long oe_sgx_ftell(
+    intptr_t stream)
 {
-    return (long)sgx_ftell(stream);
+    return (long)sgx_ftell((SGX_FILE*)stream);
 }
 
-size_t oe_fwrite(
-    const void *buffer,
+static size_t oe_sgx_fwrite(
+    const void* buffer,
     size_t size,
     size_t count,
-    OE_FILE *stream)
+    intptr_t stream)
 {
-    return sgx_fwrite(buffer, size, count, stream);
+    return sgx_fwrite(buffer, size, count, (SGX_FILE*)stream);
 }
 
-int oe_fputs(const char *str, OE_FILE *stream)
+static int oe_sgx_fputs(const char* str, intptr_t stream)
 {
     int len = strlen(str);
-    int ret = sgx_fwrite(str, 1, len, stream);
+    int ret = sgx_fwrite(str, 1, len, (SGX_FILE*)stream);
     if (ret < len) {
         return EOF;
     }
     return ret;
 }
 
-char *oe_fgets(
-    char *str,
+static char* oe_sgx_fgets(
+    char* str,
     int n,
-    OE_FILE *stream)
+    intptr_t stream)
 {
-    size_t sz = sgx_fread(str, 1, n, stream);
-    if (sgx_ferror(stream)) {
+    size_t sz = sgx_fread(str, 1, n, (SGX_FILE*)stream);
+    if (sgx_ferror((SGX_FILE*)stream)) {
         return NULL;
     }
     return str;
+}
+
+static oe_file_provider_t oe_sgx_file_provider = {
+    oe_sgx_fclose,
+    oe_sgx_feof,
+    oe_sgx_ferror,
+    oe_sgx_fflush,
+    oe_sgx_fgets,
+    oe_sgx_fputs,
+    oe_sgx_fread,
+    oe_sgx_fseek,
+    oe_sgx_ftell,
+    oe_sgx_fwrite,
+};
+
+OE_FILE *oe_fopen_OE_FILE_SECURE_ENCRYPTION(
+    const char* path,
+    const char* mode)
+{
+    SGX_FILE* fp = sgx_fopen_auto_key(path, mode);
+    if (fp == NULL) {
+        return NULL;
+    }
+
+    OE_FILE* result = oe_register_stream(&oe_sgx_file_provider, (intptr_t)fp);
+    if (result == NULL) {
+        sgx_fclose(fp);
+        return NULL;
+    }
+
+    return result;
 }
 
 int _stat64i32(

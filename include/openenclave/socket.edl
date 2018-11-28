@@ -6,7 +6,7 @@ enclave {
 
     struct accept_Result {
         oe_socket_error_t error;
-        void* hNewSocket;
+        intptr_t hNewSocket;
         int addrlen;
         char addr[256];
     };
@@ -58,7 +58,7 @@ enclave {
 
     struct oe_fd_set_internal {
         unsigned int fd_count;
-        void* fd_array[64];
+        intptr_t fd_array[64];
     };
 
     struct select_Result {
@@ -76,7 +76,7 @@ enclave {
 
     struct socket_Result {
         oe_socket_error_t error;
-        void* hSocket;
+        intptr_t hSocket;
     };
 
     trusted {
@@ -85,19 +85,19 @@ enclave {
 
     untrusted {
         accept_Result ocall_accept(
-            [user_check] void* a_hSocket,
+            intptr_t a_hSocket,
             int a_nAddrLen);
 
         oe_socket_error_t ocall_bind(
-            [user_check] void* a_hSocket,
+            intptr_t a_hSocket,
             [in, size=a_nNameLen] const void* a_Name,
             int a_nNameLen);
 
         oe_socket_error_t ocall_closesocket(
-            [user_check] void* a_hSocket);
+            intptr_t a_hSocket);
 
         oe_socket_error_t ocall_connect(
-            [user_check] void* a_hSocket,
+            intptr_t a_hSocket,
             [in, size=a_nNameLen] const void* a_Name,
             int a_nNameLen);
 
@@ -117,30 +117,30 @@ enclave {
             int a_Flags);
 
         GetSockName_Result ocall_getpeername(
-            [user_check] void* a_hSocket,
+            intptr_t a_hSocket,
             int a_nNameLen);
 
         GetSockName_Result ocall_getsockname(
-            [user_check] void* a_hSocket,
+            intptr_t a_hSocket,
             int a_nNameLen);
 
         getsockopt_Result ocall_getsockopt(
-            [user_check] void* a_hSocket,
+            intptr_t a_hSocket,
             int a_nLevel,
             int a_nOptName,
             int a_nOptLen);
 
         ioctlsocket_Result ocall_ioctlsocket(
-            [user_check] void* a_hSocket,
+            intptr_t a_hSocket,
             int a_nCommand,
             unsigned int a_uInputValue);
 
         oe_socket_error_t ocall_listen(
-            [user_check] void* a_hSocket,
+            intptr_t a_hSocket,
             int a_nMaxConnections);
 
         ssize_t ocall_recv(
-            [user_check] void* s,
+            intptr_t s,
             [out, size=len] void* buf,
             size_t len,
             int flags,
@@ -154,20 +154,20 @@ enclave {
             struct timeval a_Timeval);
 
         send_Result ocall_send(
-            [user_check] void* a_hSocket,
+            intptr_t a_hSocket,
             [in, size=a_nMessageLen] const void* a_Message,
             size_t a_nMessageLen,
             int a_Flags);
 
         oe_socket_error_t ocall_setsockopt(
-            [user_check] void* a_hSocket,
+            intptr_t a_hSocket,
             int a_nLevel,
             int a_nOptName,
             [in, size=a_nOptLen] const void* a_OptVal,
             int a_nOptLen);
 
         oe_socket_error_t ocall_shutdown(
-            [user_check] void* a_hSocket,
+            intptr_t a_hSocket,
             oe_shutdown_how_t a_How);
 
         socket_Result ocall_socket(

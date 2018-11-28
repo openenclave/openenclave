@@ -27,6 +27,7 @@ srcs-y += ../oeoverintelsgx_t.c
 srcs-y += ../../buffer.c
 srcs-y += ../CallbackHelper.c
 srcs-y += ../cborhelper.c
+srcs-y += ../files_enc.c
 srcs-y += ../Io.c
 srcs-y += ../keygen.c
 srcs-y += ../../oeresult.c
@@ -34,6 +35,7 @@ srcs-y += ../../optee_common.c
 srcs-y += ../oeshim_t.c
 srcs-y += ../logapp.c
 srcs-y += ../log_ocall_file.c
+srcs-y += ../socket_enc.c
 srcs-y += ../string_t.c
 
 srcs-y += ctype_optee.c
