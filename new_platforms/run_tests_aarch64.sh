@@ -1,26 +1,52 @@
+#!/bin/bash
+
+# -------------------------------------
+# Environment Configuration
+# -------------------------------------
+
+# Instruct build_optee.sh to build for an AARCH64 QEMU guest.
 export ARCH=aarch64
 export MACHINE=virt
+
+# -------------------------------------
+# Build Open Enclave SDK
+# -------------------------------------
 
 echo [CI] Building Open Enclave
 
 chmod +x ./new_platforms/build_optee.sh
 ./new_platforms/build_optee.sh || exit 1
 
-echo [CI] Installing Prerequistes
+# -------------------------------------
+# Install CI Prerequisites
+# -------------------------------------
 
-sudo apt install sshpass -y
+echo [CI] Installing Prerequisites
+
+# Needed to log in via SSH with password on command line.
+sudo apt install sshpass -y || exit 1
+
+# -------------------------------------
+# Download Test Environment
+# -------------------------------------
 
 echo [CI] Downloading Emulated Environment
 
 CI_DIR=ci
 CI_ENV=OE-CI-Ubuntu-16.04-AARCH64
 
+# The tarball contains QEMU, a root FS and guest firmware (i.e. ATF, OP-TEE,
+# etc.).
 if [ ! -d $CI_DIR ]; then
     if [ ! -f $CI_ENV.tar.xz ]; then
         wget https://tcpsbuild.blob.core.windows.net/tcsp-build/$CI_ENV.tar.xz || exit 1
     fi
     tar xvf $CI_ENV.tar.xz --no-same-owner || exit 1
 fi
+
+# -------------------------------------
+# Launch Test Environment
+# -------------------------------------
 
 echo [CI] Launching QEMU
 
@@ -42,19 +68,37 @@ nohup ./qemu-system-aarch64 \
         -virtfs local,id=sh0,path=$PWD/..,security_model=passthrough,readonly,mount_tag=sh0 &
 disown
 
-sleep 60
+sleep 30
+
+# -------------------------------------
+# Connect to Test Environment
+# -------------------------------------
 
 echo [CI] Connecting to QEMU Guest
-        
+
+# Ensure .ssh exists.
 mkdir $HOME/.ssh
-ssh-keygen -f $HOME/.ssh/known_hosts -R "[localhost]:5555"
 
-echo [CI] Retrieving Keys from QEMU Guest
-
-ssh-keyscan -T 400 -p 5555 localhost >> $HOME/.ssh/known_hosts
+# Retrieve guest SSH keys.
+ssh-keyscan -T 300 -p 5555 localhost >> $HOME/.ssh/known_hosts
 
 echo [CI] Running Test Suite in QEMU Guest
 
-sshpass -p test ssh test@localhost -p 5555 -vvv "su -c \"mkdir /mnt/oe && mount -t 9p -o trans=virtio sh0 /mnt/oe -oversion=9p2000.L && cp /mnt/oe/new_platforms/bin/optee/tests/3156152a-19d1-423c-96ea-5adf5675798f.ta /lib/optee_armtz && /mnt/oe/new_platforms/tests/oetests_host/oetests_host \"" || exit 2
+# Launch the test suite in the guest.
+CMD="su -c \""
+CMD="$CMD mkdir /mnt/oe &&"
+CMD="$CMD mount -t 9p -o trans=virtio sh0 /mnt/oe -oversion=9p2000.L &&"
+CMD="$CMD cp /mnt/oe/new_platforms/bin/optee/tests/3156152a-19d1-423c-96ea-5adf5675798f.ta /lib/optee_armtz &&"
+CMD="$CMD /mnt/oe/new_platforms/tests/oetests_host/oetests_host"
+CMD="$CMD \""
 
+sshpass -p test ssh test@localhost -p 5555 "$CMD" || exit 2
+
+# -------------------------------------
+# Epilogue
+# -------------------------------------
+
+echo [CI] Stopping QEMU
+
+# The process name is truncated.
 pkill -9 qemu-system-aar
