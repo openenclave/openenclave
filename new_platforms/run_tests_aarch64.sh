@@ -23,7 +23,7 @@ chmod +x ./new_platforms/build_optee.sh
 
 echo [CI] Installing Prerequisites
 
-# Needed to log in via SSH with password on command line.
+# Needed to log in via SSH with password on the command line.
 sudo apt install sshpass -y || exit 1
 
 # -------------------------------------

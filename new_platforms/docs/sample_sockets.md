@@ -9,12 +9,12 @@ If you want to jump right in, see [Building the Sample](sample_sockets.md#buildi
 
 This sample builds three components:
 
-* REE: Server Host
-* REE: Client Host
+* REE: Server host app
+* REE: Client host app
 * TEE: Sample TA
 
-The code for the Sample TA is the same for both the Client and Server Hosts.
-The EDL file declares two ECALLs:
+The same Sample TA includes both client and server code, and hence is used by both the client and server host apps.
+The EDL file declares two ECALLs (i.e., Enclave calls):
 
 ```
 trusted {
@@ -24,10 +24,10 @@ trusted {
     };
 ```
 
-In addition, the EDL includes `socket.edl` provided by the Open Enclave SDK which and defines standard socket APIs as OCALLs.
+In addition, the EDL includes `socket.edl` provided by the Open Enclave SDK which defines standard socket APIs as OCALLs (i.e., "outcalls" to the untrusted host app).
 This allows the enclave to use standard socket APIs as though it were a regular program even though it runs in a TEE.
 In turn, this allows a developer to take an existing networked REE application and turn it into a TA without needing to re-implement communication.
-Note that the actual socket is opened by the Host, but any encrypted data sent from and received into the enclave is not be readable by the host.
+Note that the actual socket is opened by the host app, but any encrypted data sent from and received into the enclave is not be readable by the host app.
 
 ```
 +--------------+                    +----------+
@@ -64,7 +64,7 @@ Note that the actual socket is opened by the Host, but any encrypted data sent f
 
 # Building the Sample
 
-To demonstrate the versatility of this sample it is assumed that you build the Sample Client for the Grapebord and the Sample Server for SGX.
+To demonstrate the versatility of this sample it is assumed that you build the Sample Client for the Grapeboard and the Sample Server for SGX.
 The idea is to simulate a scenario where there is a small edge-class device communicating with a large server-class device, 
 with the endpoints of the socket connection being protected by TEE's.
 
@@ -84,10 +84,10 @@ Get started with the Grapeboard [here](grapeboard.md).
     ```
     tee-supplicant &
     ```
- You are now ready to start the Host app.
+ You are now ready to start the host app.
  See [run your code](sample_sockets.md#running-the-sample) or start a Server App on SGX in the following section.
  
- *Note*: There is a known issue when running the Server and Client cannot run on the same board simultaneously.
+ *Note*: There is currently a known issue when running the Server and Client cannot run on the same board simultaneously.
  
 ## Intel SGX
 
@@ -119,9 +119,9 @@ For this sample, you build an SGX simulated Server, and an OP-TEE simulated Clie
 3) Build the solution, configuration `DebugOpteeSimulation\x86`.
 4) Copy the `OP-TEE Simulation` bits to your working Client directory:
    ```
-   openenclave\new_platforms\bin\Win32\Simulation\SampleClientApp.exe
-   openenclave\new_platforms\bin\Win32\Simulation\SampleServerApp.exe
-   openenclave\new_platforms\bin\Win32\Simulation\aac3129e-c244-4e09-9e61-d4efcf31bca3.dll
+   openenclave\new_platforms\bin\Win32\DebugOpteeSimulation\SampleClientApp.exe
+   openenclave\new_platforms\bin\Win32\DebugOpteeSimulation\SampleServerApp.exe
+   openenclave\new_platforms\bin\Win32\DebugOpteeSimulation\aac3129e-c244-4e09-9e61-d4efcf31bca3.dll
    ```
 Note that for OP-TEE the Sample TA is a UUID.
 This is an artifact of how OP-TEE interacts with and loads TA's.
@@ -150,12 +150,12 @@ For example, on Windows, using the default port, do:
     ``` 
 
 When both applications run, a text message is sent from one enclave to the other, which echoes it back. 
-Both Hosts start their Sample TA with an ECALL to indicating the to enclave to either run the client or server code.
-The enclaves then request a socket using standard socket APIs from the Host via OCALLs.
-They then use this socket to communicate with each other using the Hosts as proxies.
+Both host apps start their Sample TA with an ECALL to indicate to the enclave to either run the client or server code.
+The enclaves then request a socket using standard socket APIs from the host app via OCALLs.
+They then use this socket to communicate with each other using the host apps as proxies.
 
 If the enclaves add a layer of encryption atop the data being sent over the socket,
-for instance via TLS, the Hosts cannot snoop or modify the data.
+for instance via TLS (not shown in the sample), the host apps cannot snoop or modify the data.
 
 ## Debugging With Simulation
 
@@ -165,7 +165,7 @@ You can also run these samples under a debugger in Visual Studio.
 * SGX Simulation:
     * Build `DebugSimulation/x86`
     * Start the debugger using `Intel(R) SGX Debugger`
-    * Note: Running both as simulated SGX applications under the Intel Debugger at the same time has been known to cause issues.
+    * Note: Running both as simulated SGX applications under the Intel Debugger on the same machine at the same time has been known to cause issues.
 * OP-TEE Simulation:
     * Build `DebugOpteeSimulation/x86`
     * Start the debugger using `Local Windows Debugger`

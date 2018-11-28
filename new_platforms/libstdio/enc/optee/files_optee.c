@@ -35,6 +35,7 @@ int oe_fclose(
     Tcps_Trace(Tcps_TraceLevelDebug, "fclose(%p) called\n", (fp)? fp->hObject : NULL);
     TEE_CloseObject(fp->hObject);
     fp->hObject = NULL;
+    free(fp);
 
     return 0;
 }
@@ -374,9 +375,9 @@ int FindFirstFileInternal(
     }
 
     // Read the first record from the file.
-    result = fread(findFileData, sizeof(*findFileData), 1, fp);
+    result = oe_fread(findFileData, sizeof(*findFileData), 1, fp);
     if (result < 1) {
-        fclose(fp);
+        oe_fclose(fp);
         return -1;
     }
 
@@ -494,9 +495,9 @@ int AppendToFile(
     {
         return errno;
     }
-    writelen = fwrite(ptr, 1, len, fp);
+    writelen = oe_fwrite(ptr, 1, len, fp);
 
-    fclose(fp);
+    oe_fclose(fp);
     if (writelen != len) {
         return 1;
     }
@@ -526,26 +527,24 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "TEE_P_SaveBufferToFile");
     fp = oe_fopen(OE_FILE_SECURE_HARDWARE, destinationLocation, "w");
     Tcps_GotoErrorIfTrue(fp == NULL, OE_FAILURE);
 
-    writelen = fwrite(ptr, 1, len, fp);
+    writelen = oe_fwrite(ptr, 1, len, fp);
     Tcps_GotoErrorIfTrue(writelen != len, OE_FAILURE);
 
-    fclose(fp);
+    oe_fclose(fp);
 
 Tcps_ReturnStatusCode;
 Tcps_BeginErrorHandling;
     if (fp != NULL)
     {
-        fclose(fp);
+        oe_fclose(fp);
     }
 Tcps_FinishErrorHandling;
 }
 
-BOOL DeleteFile(const char* filename)
+int oe_remove_OE_FILE_SECURE_HARDWARE(const char* filename)
 {
     TEE_Result result;
     TEE_ObjectHandle hObject;
-
-Tcps_InitializeStatus(Tcps_Module_Helper_t, "DeleteFile");
 
     result = TEE_OpenPersistentObject(
         TEE_STORAGE_PRIVATE,
@@ -555,15 +554,14 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "DeleteFile");
         &hObject);
 
     if (result == TEE_ERROR_ITEM_NOT_FOUND) {
-        Tcps_Trace(Tcps_TraceLevelDebug, "DeleteFile: file doesn't exist: %s\n", filename);
-        return FALSE;
+        errno = ENOENT;
+        return -1;
     }
     if (result != TEE_SUCCESS) {
-        return FALSE;
+        return -1;
     }
 
     result = TEE_CloseAndDeletePersistentObject1(hObject);
 
-Tcps_BeginErrorHandling;
-    return result != TEE_SUCCESS;
+    return (result != TEE_SUCCESS) ? -1 : 0;
 }

@@ -1,9 +1,9 @@
-Using the new Platform
+Creating your own enclave and using it from a Windows host app
 =============
 
 This documentation will walk you through how the calls on the various platforms. This document is a work in progress.
 
-## Generating API calls between Trusted Apps and Untrusted Apps
+## Generating API calls between Trusted Apps ("Enclaves") and Untrusted ("Host") Apps
 
 To use this SDK, you must define your own
 [EDL](https://software.intel.com/en-us/sgx-sdk-dev-reference-enclave-definition-language-file-syntax)
@@ -14,11 +14,11 @@ and OP-TEE, as long as the Untrusted App and the Trusted App both use the right 
 and the following additional code constraint is met:
 
 OP-TEE only allows one thread per TA to be in an ECALL (i.e., a call into
-a TA from a regular app).  Even if it has an OCALL (i.e., an out-call
-back into the regular app) in progress, the ECALL must complete before
+a TA from a host app).  Even if it has an OCALL (i.e., an out-call
+back into the host app) in progress, the ECALL must complete before
 another ECALL can enter the TA.  SGX, on the other hand, would allow a
-second ECALL to enter.  So if you want them to function identically, apps
-should pass the OE\_ENCLAVE\_FLAG\_SERIALIZE\_ECALLS
+second ECALL to enter.  So if you want them to function identically, host apps
+can pass the OE\_ENCLAVE\_FLAG\_SERIALIZE\_ECALLS
 flag when creating an enclave to automatically get the OP-TEE like behavior
 for both SGX and TrustZone.
 
@@ -29,7 +29,7 @@ for both SGX and TrustZone.
 The SGX Enclave DLL should link with **oeenclave.lib** and have the following
 additional include paths:
 
-* $(OESdkDir)new\_platforms\include\sgx\Trusted
+* $(OESdkDir)new\_platforms\include\sgx\enclave
 * $(OESdkDir)new\_platforms\include
 
 To use stdio APIs, the SGX Enclave DLL should link with **oestdio\_enc.lib**.
@@ -58,7 +58,7 @@ additional include paths, in this order (the order is important because
 files in a deeper directory override files at higher levels with the
 same filename):
 
-* $(OESdkDir)new\_platforms/include/optee/Trusted
+* $(OESdkDir)new\_platforms/include/optee/enclave
 * $(OESdkDir)new\_platforms/include/optee
 * $(OESdkDir)new\_platforms/include
 
@@ -75,7 +75,7 @@ additional include paths, in any order:
 
 * $(OESdkDir)new\_platforms\include
 * $(OESdkDir)new\_platforms\include\optee
-* $(OESdkDir)new\_platforms\include\optee\Untrusted
+* $(OESdkDir)new\_platforms\include\optee\host
 
 To allow the OP-TEE TA to use stdio APIs, the EXE should link with **oestdio\_host.lib**.
 See the helloworld sample for an example.
@@ -128,7 +128,10 @@ Make sure the Project Type is "Enclave" and the EDL File checkbox is checked.
 2. Edit the _YourProjectName_.edl file, and add at least one public ECALL
 in the trusted{} section.  E.g., "public void ecall\_DoWork();"
 Also, to use stdio APIs such as printf, above (outside) the trusted{} section, add the following line:
-* from "openenclave/stdio.edl" import \*;
+
+```
+from "openenclave/stdio.edl" import *;
+```
 3. Update the command line for your EDL to use oeedger8r.
 To do this, right click on the EDL file in the Solution Explorer window,
 select "Properties"->"Configuration Properties"->"Custom Build Tool"->"General"
@@ -167,7 +170,7 @@ oe\_terminate\_enclave().  You will need to #include <openenclave/host.h>
 and <_YourEDLFileName_\_u.h> for your ECALLs.  Make sure you configure the
 additional include directories as appropriate in your application project
 Properties->"C/C++"->"General"->"Additional Include Directories".  Usually
-this means you need to insert "$(NewPlatformsDir)include;$(NewPlatformsDir)include\sgx\Trusted;"
+this means you need to insert "$(NewPlatformsDir)include;$(NewPlatformsDir)include\sgx\enclave;"
 at the beginning.  See the sample apps for an example.
 12. In your enclave project, update the Additional Include Directories to
 include $(OESdkDir)3rdparty\RIoT\CyReP\cyrep
@@ -185,7 +188,7 @@ compile for ARM, since Visual Studio cannot do it from the UI.  To do so, add th
 line "<WindowsSDKDesktopARMSupport\>true</WindowsSDKDesktopARMSupport\>"
 to each ARM configuration property group.  (See the sample apps'
 vcxproj file for examples.)
-3. Copy the files from the samples/Trusted/optee directory into your
+3. Copy the files from the samples/enclave/optee directory into your
 enclave project, preferably into an "optee" subdirectory
 4. Create a new GUID for your TA and fill it in in your linux\_gcc.mak,
 user\_ta\_header\_defines.h, main.c, and uuids.reg files.  You can use the
@@ -198,7 +201,7 @@ Visual Studio, also add them to the sub.mk file in your optee subdirectory
 rpcrt4.lib to the Additional Dependencies (All Configurations, ARM platform)
 which is required for string-to-UUID conversion, and remove any sgx libs.
 7. In your application project properties, update the Additional Include
-Directories to insert the $(NewPlatformsDir)include\optee\Untrusted and
+Directories to insert the $(NewPlatformsDir)include\optee\host and
 $(NewPlatformsDir)include\optee paths before the $(NewPlatformsDir)include path that you
 added earlier.
 8. Edit the sub.mk file in your optee subdirectory to change the "SampleTA"
@@ -231,7 +234,7 @@ configuration. Your libs might look like this:
 "oehost.lib;ws2\_32.lib;rpcrt4.lib;shell32.lib;oehost\_opteesim.lib"
 4. Your app Additional Include Directories for DebugOpteeSimulation
 should include at least:
-* $(NewPlatformsDir)include\optee\Untrusted
+* $(NewPlatformsDir)include\optee\host
 * $(NewPlatformsDir)include\optee
 * $(NewPlatformsDir)include
 * $(SGXSDKInstallPath)\include
@@ -248,8 +251,8 @@ DebugOpteeSimulation configuration for All Platforms, the Additional Include
 Directories should NOT include $(SGXSDKInstallPath)include\tlibc or
 $(SGXSDKInstallPath)include\libc++, and should include at least:
 * $(OESdkDir)3rdparty\RIoT\CyReP\cyrep
-* $(NewPlatformsDir)include\optee\Trusted\Simulator
-* $(NewPlatformsDir)include\optee\Trusted
+* $(NewPlatformsDir)include\optee\enclave\Simulator
+* $(NewPlatformsDir)include\optee\enclave
 * $(NewPlatformsDir)include\optee
 * $(NewPlatformsDir)include
 * $(SGXSDKInstallPath)include
@@ -273,14 +276,14 @@ to be your TA's UUID (without curly braces).
 
 # Understanding the SDK
 
-To understand how to build a host and TA, this section examines one of the
+To understand how to build a host app and TA, this section examines one of the
 samples included with the Open Enclave SDK. These samples are found under
 `new_platforms/samples`.
 
-This section examines the `sockets` sample. This sample consists of two hosts
+This section examines the `sockets` sample. This sample consists of two host apps
 and one TA. The TA contains both server and client functionality used by both
-hosts. The server host invokes the server functionality in the TA and the client
-host invokes the client functionality. Server and client exchange simple text
+host apps. The server host app invokes the server functionality in the TA and the client
+host app invokes the client functionality. Server and client exchange simple text
 messages over a TCP/IP socket.
 
 ##  Sample Structure
@@ -290,13 +293,13 @@ This is the folder structure of the `sockets` sample:
 ```
 new_platforms/samples/sockets/
     | SampleTA.edl
-    | Trusted
+    | enclave
         | SampleTA.c
         | optee
             | linux_gcc.mak
             | sub.mak
             | user_ta_header_defines.h
-    | Untrusted
+    | host
         | ClientServerApp
             | main.c
             | Makefile      
@@ -305,7 +308,7 @@ new_platforms/samples/sockets/
             | Makefile
 ```
 
-The `SampleTA.edl` file describes the interface via which the host and TA
+The `SampleTA.edl` file describes the interface via which the host app and TA
 communicate with one another. This EDL file contains only functionality that is
 specific to the sample. However, it references other EDL files provided by the
 Open Enclave SDK. These referenced EDL files specify the interface through which
@@ -315,7 +318,7 @@ app, talk with each other. The `oeedger8r` tool processes this file and
 generates code that may be called by either the trusted or the untrusted side to
 transparently communicate with the other side.
 
-Under the `Trusted` folder there is a single `SampleTA.c` file. This file
+Under the `enclave` folder there is a single `SampleTA.c` file. This file
 contains all the TA's functionality. Note how there is no TEE-specific code:
 nothing is specific to either Intel SGX or ARM TrustZone, these details are
 taken care of by the SDK.
@@ -328,18 +331,18 @@ Makefiles reference `SampleTA.c`.
 
 Lastly, there is a file called `user_ta_header_defines.h`. This file is also
 consumed by the OP-TEE TA Dev Kit and it specifies the UUID of the TA as well as
-other OP-TEE-specific parameters. You must fill these values in in accordance
+other OP-TEE-specific parameters. You must fill in these values in accordance
 with how you plan to use the TA. In this instance, you will need to understand
 how OP-TEE loads and manages sessions with TA's in order to configure yours
 properly. Each TA must have a unique UUID.
 
-Under the `Untrusted` folder there are two more folders: `ClientServerApp` and
+Under the `host` folder there are two more folders: `ClientServerApp` and
 `SampleServerApp`. These folders contain the client and server host programs,
 respectively.
 
 Under the first folder there is a `main.c` file. This file contains OS- and
 TEE-agnostic host code that loads the TA and invokes the client-related
-functionality. Note that the code that you write for your host need not know how
+functionality. Note that the code that you write for your host app need not know how
 to launch an enclave under Intel SGX or a TA under ARM TrustZone nor how to do
 so under both Windows and Linux. Again, the Open Enclave SDK deals with these
 details on your behalf. The `SampleServerApp` folder follows the same
@@ -348,7 +351,7 @@ principles.
 In general then, there is an EDL file that both the trusted and untrusted
 components consume that specifies how the pair communicate across the trust
 boundary. The EDL file only contains functions that are specific to your
-use-case. The trusted component need only be written once and targets the Open
+use case. The trusted component need only be written once and targets the Open
 Enclave SDK's API. This way it can be seamlessly compiled as an Intel SGX
 enclave and as an ARM TrustZone trusted application. Similarly, the host
 programs also need only be written once and, assuming you do not make use of
@@ -361,29 +364,29 @@ TrustZone trusted applications.
 The trusted component depends on the following Open Enclave-provided libraries:
 
 * oeenclave: Provides core Open Enclave functionality;
-* oesocket_enc: Provides sockets functionality inside the TA:
+* oesocket\_enc: Provides sockets functionality inside the TA:
     * Linking is necessary only if you use sockets;
-    * This library marshals socket calls out to the host.
-* oestdio_enc: Provides standard I/O functionality inside the TA:
+    * This library marshals socket calls out to the host app.
+* oestdio\_enc: Provides standard I/O functionality inside the TA:
     * Linking is necessary only if you use standard I/O;
-    * This library marshals standard I/O calls out to the host.
+    * This library marshals standard I/O calls out to the host app.
 
 You can see these libraries being listed in the `sub.mk` file under
-`Trusted/optee` and in the corresponding Visual Studio project file. The
+`enclave/optee` and in the corresponding Visual Studio project file. The
 sub-makefile includes `oe_sub.mk` which specifies `oeenclave`.
 
 **Note**: When using sockets or I/O APIs, or any other trusted-to-untrusted
-call, the data that you send into these APIs and out to the host is not
+call, the data that you send into these APIs and out to the host app is not
 automatically protected.
 
 The untrusted component depends on the following Open Enclave-provided
 libraries:
 
 * oehost: Provides core Open Enclave functionality;
-* oesocket_host: Provides the implementation of the socket calls that the
+* oesocket\_host: Provides the implementation of the socket calls that the
   trusted component makes:
     * Linking is necessary only if you use sockets inside the trusted component.
-* oestdio_host: Provides the implementation of the standard I/O calls that the
+* oestdio\_host: Provides the implementation of the standard I/O calls that the
   trusted component makes:
     * Linking is necessary only if you use standard I/O inside the trusted
       component.
@@ -393,4 +396,4 @@ Enclave-provided APIs inside the trusted component. When you call these APIs,
 they in turn invoke code generated by the `oeedger8r` tool as specified by the
 SDK's EDL files, included by yours. This code marshals the calls across the
 trust boundary which are captured by functions implemented in the corresponding
-libraries on the host. The same is true the other way around.
+libraries in the host app. The same is true the other way around.

@@ -20,7 +20,7 @@
 
 void ecall_InitializeStdio() {}
 
-int fprintf(FILE* const _Stream, char const* const _Format, ...)
+int oe_fprintf(OE_FILE* const _Stream, char const* const _Format, ...)
 {
     va_list _ArgList;
     va_start(_ArgList, _Format);
@@ -41,8 +41,8 @@ int __cdecl __stdio_common_vfprintf(
 }
 #endif
 
-int vfprintf(
-    FILE *stream,
+int oe_vfprintf(
+    OE_FILE *stream,
     const char *format,  
     va_list argptr)
 {
@@ -250,8 +250,7 @@ Tcps_FinishErrorHandling;
 
 int 
 DeleteManifest(
-    const char* manifestFilename
-)
+    const char* manifestFilename)
 {
     HANDLE hFindFile;
     WIN32_FIND_DATA data;
@@ -277,14 +276,18 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "DeleteManifest");
 
         strcat_s(fullname, sizeof(fullname), data.cFileName);
         
-        uStatus = DeleteFile(fullname);
-        Tcps_GotoErrorIfBad(uStatus);
+        if (oe_remove(OE_FILE_SECURE_BEST_EFFORT, fullname) == -1) {
+            uStatus = OE_FAILURE;
+            Tcps_GotoError;
+        }
     } while (FindNextFile(hFindFile, &data));
 
     FindClose(hFindFile);
 
-    uStatus = DeleteFile(manifestFilename);
-    Tcps_GotoErrorIfBad(uStatus);
+    if (oe_remove(OE_FILE_SECURE_BEST_EFFORT, manifestFilename) == -1) {
+        uStatus = OE_FAILURE;
+        Tcps_GotoError;
+    }
 
 Tcps_ReturnStatusCode;
 Tcps_BeginErrorHandling;

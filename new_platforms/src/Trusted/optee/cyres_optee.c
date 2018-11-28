@@ -1,5 +1,7 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
+#include <stdlib.h>
+#include <string.h>
 #include <pta_cyres.h>
 #include <tee_internal_api.h>
 #include <tee_internal_api_extensions.h>
@@ -99,11 +101,11 @@ static TEE_Result get_pta_allocated_buf(
     if (oe_result != OE_OK)
         goto done;
 
-    /* Remember to clear the local reference on success */
     oe_result = OE_OK;
-    *buf = local_buf;
-    local_buf = NULL;
     *buf_size = local_buf_size;
+    *buf = local_buf;
+    /* Remember to clear the local reference on success */
+    local_buf = NULL;
 
 done:
     oe_free(local_buf);
@@ -139,7 +141,7 @@ oe_result_t get_cyres_seal_secret(
 
     params[0].memref.buffer = local_secret;
     params[0].memref.size = req_size;
-    params[1].memref.buffer = key_selector;
+    params[1].memref.buffer = (uint8_t*)key_selector;
     params[1].memref.size = key_selector_size;
 
     oeResult = call_cyres_pta(PTA_CYRES_GET_SEAL_KEY, pt, params);

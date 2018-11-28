@@ -19,7 +19,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{DC407FAF-6C2F-4944-9AB2-83B2CB8B221C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SampleTA", "samples\sockets\Trusted\SampleTA.vcxproj", "{F0D6AA6E-904B-4746-A3B3-F231BADD3D27}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SampleTA", "samples\sockets\enclave\SampleTA.vcxproj", "{F0D6AA6E-904B-4746-A3B3-F231BADD3D27}"
 	ProjectSection(ProjectDependencies) = postProject
 		{AFF02E67-1671-4004-B169-9C3AAB5CD103} = {AFF02E67-1671-4004-B169-9C3AAB5CD103}
 		{CD46F388-593F-442C-8751-BC5F206979BA} = {CD46F388-593F-442C-8751-BC5F206979BA}
@@ -34,13 +34,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "oeenclave_opteesim", "optee
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "oehost_opteesim", "opteesim\Untrusted\oehost_opteesim.vcxproj", "{0FE6DBE2-2906-48D0-8D51-85007FC24777}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SampleClientApp", "samples\sockets\Untrusted\SampleClientApp\SampleClientApp.vcxproj", "{49C4946C-3A97-49F3-B1CF-A05C949A0F66}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SampleClientApp", "samples\sockets\host\SampleClientApp\SampleClientApp.vcxproj", "{49C4946C-3A97-49F3-B1CF-A05C949A0F66}"
 	ProjectSection(ProjectDependencies) = postProject
 		{0FE6DBE2-2906-48D0-8D51-85007FC24777} = {0FE6DBE2-2906-48D0-8D51-85007FC24777}
 		{B7AE03E4-CF5A-49DC-AB3D-2D8F485472B4} = {B7AE03E4-CF5A-49DC-AB3D-2D8F485472B4}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SampleServerApp", "samples\sockets\Untrusted\SampleServerApp\SampleServerApp.vcxproj", "{12AC9341-3749-4F9E-87F8-4901B66FAE08}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SampleServerApp", "samples\sockets\host\SampleServerApp\SampleServerApp.vcxproj", "{12AC9341-3749-4F9E-87F8-4901B66FAE08}"
 	ProjectSection(ProjectDependencies) = postProject
 		{0FE6DBE2-2906-48D0-8D51-85007FC24777} = {0FE6DBE2-2906-48D0-8D51-85007FC24777}
 	EndProjectSection

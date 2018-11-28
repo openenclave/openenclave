@@ -163,10 +163,6 @@ export SGX_RELATIVE_PATH=../3rdparty/SGXSDK/
 export SGX_PATH=$PWD${SGX_RELATIVE_PATH}
 export SGX_SDK=$PWD/../3rdparty/SGXSDK
 
-echo Patching Intel SGX SDK
-
-sudo patch -N -i sgx_error.h.patch $SGX_SDK/include/sgx_error.h
-
 # -------------------------------------
 # Build OP-TEE
 # -------------------------------------

@@ -410,7 +410,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>OPENSSL_NO_SOCK;OE_SIMULATE_OPTEE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)..;$(ProjectDir);$(NewPlatformsDir)include\optee\Trusted\Simulator;$(NewPlatformsDir)include\optee\Trusted;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OESdkDir)include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(SGXSDKInstallPath)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..;$(ProjectDir);$(NewPlatformsDir)include\optee\enclave\Simulator;$(NewPlatformsDir)include\optee\enclave;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OESdkDir)include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(SGXSDKInstallPath)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
     </ClCompile>
@@ -429,7 +429,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>OPENSSL_NO_SOCK;_ARM_;OE_SIMULATE_OPTEE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)..;$(ProjectDir);$(NewPlatformsDir)include\optee\Trusted\Simulator;$(NewPlatformsDir)include\optee\Trusted;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OESdkDir)include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(SGXSDKInstallPath)include;$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..;$(ProjectDir);$(NewPlatformsDir)include\optee\enclave\Simulator;$(NewPlatformsDir)include\optee\enclave;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OESdkDir)include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(SGXSDKInstallPath)include;$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
     </ClCompile>
@@ -469,7 +469,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>OPENSSL_NO_SOCK;OE_SIMULATE_OPTEE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)..;$(ProjectDir);$(NewPlatformsDir)include\optee\Trusted\Simulator;$(NewPlatformsDir)include\optee\Trusted;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OESdkDir)include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(SGXSDKInstallPath)include;$(OESdkDir)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\libc++;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..;$(ProjectDir);$(NewPlatformsDir)include\optee\enclave\Simulator;$(NewPlatformsDir)include\optee\enclave;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OESdkDir)include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(SGXSDKInstallPath)include;$(OESdkDir)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\libc++;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Lib>
       <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
