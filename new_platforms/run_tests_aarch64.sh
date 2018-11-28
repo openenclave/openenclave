@@ -68,8 +68,6 @@ nohup ./qemu-system-aarch64 \
         -virtfs local,id=sh0,path=$PWD/..,security_model=passthrough,readonly,mount_tag=sh0 &
 disown
 
-sleep 30
-
 # -------------------------------------
 # Connect to Test Environment
 # -------------------------------------
