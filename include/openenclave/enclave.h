@@ -639,6 +639,20 @@ oe_result_t oe_get_private_key(
     size_t* key_buffer_size);
 
 /**
+ * Frees the given key and/or key info.
+ *
+ * @param key_buffer If not NULL, the key buffer to free.
+ * @param key_buffer_size The size of key_buffer.
+ * @param key_info If not NULL, the key info to free.
+ * @param key_info_size The size of key_info.
+ */
+void oe_free_key(
+    uint8_t* key_buffer,
+    size_t key_buffer_size,
+    uint8_t* key_info,
+    size_t key_info_size);
+
+/**
  * Obtains the enclave handle.
  *
  * This function returns the enclave handle for the current enclave. The

@@ -356,8 +356,8 @@ bool TestAsymKeyCase(
         return false;
 
     // Now try the API using the key info as input.
-    free(pubkey2);
-    free(privkey2);
+    oe_free_key(pubkey2, pubkey2_size, NULL, 0);
+    oe_free_key(privkey2, privkey2_size, NULL, 0);
     ret = oe_get_public_key(
         params, keyinfo, keyinfo_size, &pubkey2, &pubkey2_size);
 
@@ -418,12 +418,10 @@ bool TestAsymKeyCase(
     if (ret != OE_INVALID_CPUSVN)
         return false;
 
-    free(pubkey);
-    free(privkey);
-    free(pubkey2);
-    free(privkey2);
-    free(keyinfo);
-    free(keyinfo2);
+    oe_free_key(pubkey, pubkey_size, NULL, 0);
+    oe_free_key(privkey, privkey_size, keyinfo, keyinfo_size);
+    oe_free_key(pubkey2, pubkey2_size, NULL, 0);
+    oe_free_key(privkey2, privkey2_size, keyinfo2, keyinfo2_size);
     return true;
 }
 

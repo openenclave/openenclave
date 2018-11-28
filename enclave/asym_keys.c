@@ -532,3 +532,22 @@ oe_result_t oe_get_private_key(
         key_buffer,
         key_buffer_size);
 }
+
+void oe_free_key(
+    uint8_t* key_buffer,
+    size_t key_buffer_size,
+    uint8_t* key_info,
+    size_t key_info_size)
+{
+    if (key_buffer)
+    {
+        oe_secure_zero_fill(key_buffer, key_buffer_size);
+        oe_free(key_buffer);
+    }
+
+    if (key_info)
+    {
+        oe_secure_zero_fill(key_info, key_buffer_size);
+        oe_free(key_info);
+    }
+}
