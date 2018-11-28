@@ -165,6 +165,12 @@
     <ClCompile Include="..\optee_common.c">
       <Filter>optee</Filter>
     </ClCompile>
+    <ClCompile Include="files_enc.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="socket_enc.c">
+      <Filter>common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="optee\linux_gcc.mak">

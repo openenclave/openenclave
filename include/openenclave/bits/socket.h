@@ -24,8 +24,14 @@ typedef void* oe_socket_t;
 
 typedef struct oe_fd_set {
     unsigned int fd_count;             /* how many are SET? */
-    oe_socket_t fd_array[FD_SETSIZE]; /* an array of SOCKETs */
+    oe_socket_t fd_array[FD_SETSIZE];  /* an array of SOCKETs */
 } oe_fd_set;
+
+typedef struct oe_provider_fd_set {
+    unsigned int fd_count;             /* how many are SET? */
+    intptr_t fd_array[FD_SETSIZE];     /* an array of SOCKETs */
+} oe_provider_fd_set;
+
 
 typedef uint16_t oe_sa_family_t;
 
@@ -241,7 +247,7 @@ int
 oe_bind(
     _In_ oe_socket_t s,
     _In_reads_bytes_(namelen) const oe_sockaddr* name,
-    _In_ int namelen);
+    int namelen);
 
 int
 oe_closesocket(
@@ -251,7 +257,7 @@ int
 oe_connect(
     _In_ oe_socket_t s,
     _In_reads_bytes_(namelen) const oe_sockaddr* name,
-    _In_ int namelen);
+    int namelen);
 
 void
 oe_freeaddrinfo(
@@ -491,6 +497,59 @@ int oe_wsa_startup_OE_NETWORK_SECURE_HARDWARE(
 #define WSAStartup(version_required, wsa_data) \
      oe_wsa_startup(OE_NETWORK_INSECURE, version_required, wsa_data)
 #endif
+
+typedef struct {
+    intptr_t (*s_accept)(_In_ intptr_t provider_socket,
+                      _Out_writes_bytes_(*addrlen) struct oe_sockaddr* addr,
+                      _Inout_ int *addrlen);
+    int (*s_bind)(_In_ intptr_t provider_socket,
+                  _In_reads_bytes_(namelen) const oe_sockaddr* name,
+                  int namelen);
+    int (*s_close)(_In_ intptr_t provider_socket);
+    int (*s_connect)(_In_ intptr_t provider_socket,
+                     _In_reads_bytes_(namelen) const oe_sockaddr* name,
+                     int namelen);
+    int (*s_getpeername)(_In_ intptr_t provider_socket,
+                         _Out_writes_bytes_(*addrlen) struct oe_sockaddr* addr,
+                        _Inout_ int *addrlen);
+    int (*s_getsockname)(_In_ intptr_t provider_socket,
+                         _Out_writes_bytes_(*addrlen) struct oe_sockaddr* addr,
+                         _Inout_ int *addrlen);
+    int (*s_getsockopt)(_In_ intptr_t provider_socket,
+                        int level,
+                        int optname,
+                        _Out_writes_(*optlen) char* optval,
+                        _Inout_ socklen_t* optlen);
+    int (*s_ioctl)(_In_ intptr_t provider_socket,
+                   long cmd,
+                   _Inout_ unsigned long *argp);
+    int (*s_listen)(_In_ intptr_t provider_socket,
+                    int backlog);
+    ssize_t (*s_recv)(_In_ intptr_t provider_socket,
+                      _Out_writes_bytes_(len) void* buf,
+                      size_t len,
+                      int flags);
+    int (*s_select)(_In_ int nfds,
+                    _Inout_opt_ oe_provider_fd_set* readfds,
+                    _Inout_opt_ oe_provider_fd_set* writefds,
+                    _Inout_opt_ oe_provider_fd_set* exceptfds,
+                    _In_opt_ const struct timeval* timeout);
+    int (*s_send)(_In_ intptr_t provider_socket,
+                  _In_reads_bytes_(len) const char* buf,
+                  int len,
+                  int flags);
+    int (*s_setsockopt)(_In_ intptr_t provider_socket,
+                        int level,
+                        int optname,
+                        _In_reads_bytes_(optlen) const char* optval,
+                        socklen_t optlen);
+    int (*s_shutdown)(_In_ intptr_t provider_socket,
+                      int how);
+} oe_socket_provider_t;
+
+oe_socket_t oe_register_socket(
+    _In_ const oe_socket_provider_t* provider,
+    intptr_t provider_socket);
 
 #ifdef __cplusplus
 }

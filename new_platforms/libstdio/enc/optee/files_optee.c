@@ -28,40 +28,169 @@ typedef struct _OPTEE_FILE {
 
 int errno = 0;
 
-int oe_fclose(
-    OE_FILE* stream)
+static int oe_optee_fclose(
+    intptr_t stream)
 {
     OPTEE_FILE* fp = (OPTEE_FILE*)stream;
     Tcps_Trace(Tcps_TraceLevelDebug, "fclose(%p) called\n", (fp)? fp->hObject : NULL);
     TEE_CloseObject(fp->hObject);
     fp->hObject = NULL;
-    free(fp);
+    oe_free(fp);
 
     return 0;
 }
 
-int oe_feof(
-    OE_FILE* stream)
+static int oe_optee_feof(
+    intptr_t stream)
 {
     OPTEE_FILE* fp = (OPTEE_FILE*)stream;
     return fp->iEof;
 }
 
-int oe_ferror(
-    OE_FILE* stream)
+static int oe_optee_ferror(
+    intptr_t stream)
 {
     OPTEE_FILE* fp = (OPTEE_FILE*)stream;
     return fp->iError;
 }
 
-int oe_fflush(
-    OE_FILE* stream)
+static int oe_optee_fflush(
+    intptr_t stream)
 {
     /* Nothing to do.  OP-TEE has no flush function, so we assume data is automatically flushed. */
     (void)stream;
 
     return 0;
 }
+
+#ifdef _MSC_VER
+#define SIZET_FMT "Iu"
+#else
+#define SIZET_FMT "zu"
+#endif
+
+static size_t oe_optee_fread(
+    void* buffer,
+    size_t size,
+    size_t count,
+    intptr_t stream)
+{
+    TEE_Result result;
+    uint32_t uBytesRead;
+    OPTEE_FILE* fp = (OPTEE_FILE*)stream;
+
+    if ((size * count) > UINT32_MAX) {
+        EMSG("fread size %" SIZET_FMT " too large\n", size * count);
+        return 0;
+    }
+
+    Tcps_Trace(Tcps_TraceLevelDebug, "fread hObject %p size %u\n", fp->hObject, (uint32_t)(size * count));
+
+    result = TEE_ReadObjectData(fp->hObject,
+                                buffer,
+                                (uint32_t)(size * count),
+                                &uBytesRead);
+    if (result != TEE_SUCCESS) {
+        EMSG("TEE_ReadObject returned error %x\n", result);
+        return 0;
+    }
+
+    if (uBytesRead == 0) {
+        fp->iEof = TRUE;
+    }
+
+    return uBytesRead / size;
+}
+
+static int oe_optee_fseek(
+    intptr_t stream,
+    long offset,
+    int origin)
+{
+    TEE_Result result;
+    OPTEE_FILE* fp = (OPTEE_FILE*)stream;
+
+    Tcps_Trace(Tcps_TraceLevelDebug, "fseek(%p, %ld, %d) called\n", (fp)? fp->hObject : NULL, offset, origin);
+
+    result = TEE_SeekObjectData(fp->hObject, offset, origin);
+    if (result == TEE_SUCCESS) {
+        fp->iEof = FALSE;
+    } else {
+        EMSG("TEE_SeekObjectData returned error %x\n", result);
+    }
+    return result;
+}
+
+static long oe_optee_ftell(
+    intptr_t stream)
+{
+    TEE_ObjectInfo info;
+    TEE_Result result;
+    OPTEE_FILE* fp = (OPTEE_FILE*)stream;
+
+    Tcps_Trace(Tcps_TraceLevelDebug, "ftell(%p) called\n", (fp)? fp->hObject : NULL);
+
+    result = TEE_GetObjectInfo1(fp->hObject, &info);
+    if (result != TEE_SUCCESS) {
+        EMSG("TEE_GetObjectInfo1 returned error %x\n", result);
+        errno = EINVAL;
+        return -1;
+    }
+    return info.dataPosition;
+}
+
+static size_t oe_optee_fwrite(
+    const void* buffer,
+    size_t size,
+    size_t count,
+    intptr_t stream)
+{
+    TEE_Result result;
+    OPTEE_FILE* fp = (OPTEE_FILE*)stream;
+
+    Tcps_Trace(Tcps_TraceLevelDebug, "fwrite(%p, %d, %d) called\n", (fp)? fp->hObject : NULL, size, count);
+
+    result = TEE_WriteObjectData(fp->hObject, buffer, size * count);
+    if (result != TEE_SUCCESS) {
+        EMSG("TEE_WriteObjectData returned error %x\n", result);
+        return 0;
+    }
+    return count;
+}
+
+/*
+ * The fgets function reads a string from the input stream argument and stores it in str. fgets reads 
+ * characters from the current stream position to and including the first newline character, to the end 
+ * of the stream, or until the number of characters read is equal to n - 1, whichever comes first. The 
+ * result stored in str is appended with a null character. The newline character, if read, is included 
+ * in the string.
+ */
+static char* oe_optee_fgets(
+    char* str,
+    int n,
+    intptr_t stream)
+{
+    /* TODO: stop reading when we see a newline.  */
+    size_t sz = oe_optee_fread(str, 1, n, stream);
+    if (oe_optee_ferror(stream)) {
+        return NULL;
+    }
+    (void)sz;
+    return str;
+}
+
+static oe_file_provider_t oe_optee_file_provider = {
+    oe_optee_fclose,
+    oe_optee_feof,
+    oe_optee_ferror,
+    oe_optee_fflush,
+    oe_optee_fgets,
+    NULL, // Use default fputs wrapper.
+    oe_optee_fread,
+    oe_optee_fseek,
+    oe_optee_ftell,
+    oe_optee_fwrite,
+};
 
 OE_FILE* oe_fopen_OE_FILE_SECURE_HARDWARE(
     const char* filename,
@@ -136,132 +265,16 @@ OE_FILE* oe_fopen_OE_FILE_SECURE_HARDWARE(
     if (result != TEE_SUCCESS) {
         errno = EACCES;
         oe_free(fp);
-        fp = NULL;
-    }
-    return (OE_FILE*)fp;
-}
-
-#ifdef _MSC_VER
-#define SIZET_FMT "Iu"
-#else
-#define SIZET_FMT "zu"
-#endif
-
-size_t oe_fread(
-    void* buffer,
-    size_t size,
-    size_t count,
-    OE_FILE* stream)
-{
-    TEE_Result result;
-    uint32_t uBytesRead;
-    OPTEE_FILE* fp = (OPTEE_FILE*)stream;
-
-    if ((size * count) > UINT32_MAX) {
-        EMSG("fread size %" SIZET_FMT " too large\n", size * count);
-        return 0;
-    }
-
-    Tcps_Trace(Tcps_TraceLevelDebug, "fread hObject %p size %u\n", fp->hObject, (uint32_t)(size * count));
-
-    result = TEE_ReadObjectData(fp->hObject,
-                                buffer,
-                                (uint32_t)(size * count),
-                                &uBytesRead);
-    if (result != TEE_SUCCESS) {
-        EMSG("TEE_ReadObject returned error %x\n", result);
-        return 0;
-    }
-
-    if (uBytesRead == 0) {
-        fp->iEof = TRUE;
-    }
-
-    return uBytesRead / size;
-}
-
-int oe_fseek(
-    OE_FILE* stream,
-    long offset,
-    int origin)
-{
-    TEE_Result result;
-    OPTEE_FILE* fp = (OPTEE_FILE*)stream;
-
-    Tcps_Trace(Tcps_TraceLevelDebug, "fseek(%p, %ld, %d) called\n", (fp)? fp->hObject : NULL, offset, origin);
-
-    result = TEE_SeekObjectData(fp->hObject, offset, origin);
-    if (result == TEE_SUCCESS) {
-        fp->iEof = FALSE;
-    } else {
-        EMSG("TEE_SeekObjectData returned error %x\n", result);
-    }
-    return result;
-}
-
-long oe_ftell(
-    OE_FILE* stream)
-{
-    TEE_ObjectInfo info;
-    TEE_Result result;
-    OPTEE_FILE* fp = (OPTEE_FILE*)stream;
-
-    Tcps_Trace(Tcps_TraceLevelDebug, "ftell(%p) called\n", (fp)? fp->hObject : NULL);
-
-    result = TEE_GetObjectInfo1(fp->hObject, &info);
-    if (result != TEE_SUCCESS) {
-        EMSG("TEE_GetObjectInfo1 returned error %x\n", result);
-        errno = EINVAL;
-        return -1;
-    }
-    return info.dataPosition;
-}
-
-size_t oe_fwrite(
-    const void* buffer,
-    size_t size,
-    size_t count,
-    OE_FILE* stream)
-{
-    TEE_Result result;
-    OPTEE_FILE* fp = (OPTEE_FILE*)stream;
-
-    Tcps_Trace(Tcps_TraceLevelDebug, "fwrite(%p, %d, %d) called\n", (fp)? fp->hObject : NULL, size, count);
-
-    result = TEE_WriteObjectData(fp->hObject, buffer, size * count);
-    if (result != TEE_SUCCESS) {
-        EMSG("TEE_WriteObjectData returned error %x\n", result);
-        return 0;
-    }
-    return count;
-}
-
-int oe_fputs(const char* str, OE_FILE* stream)
-{
-    size_t bytesToWrite = strlen(str);
-    size_t bytesWritten = oe_fwrite(str, 1, bytesToWrite, stream);
-    return (bytesWritten == bytesToWrite) ? 0 : -1;
-}
-
-/*
- * The fgets function reads a string from the input stream argument and stores it in str. fgets reads 
- * characters from the current stream position to and including the first newline character, to the end 
- * of the stream, or until the number of characters read is equal to n - 1, whichever comes first. The 
- * result stored in str is appended with a null character. The newline character, if read, is included 
- * in the string.
- */
-char* oe_fgets(
-    char* str,
-    int n,
-    OE_FILE* stream)
-{
-    /* TODO: stop reading when we see a newline.  */
-    size_t sz = oe_fread(str, 1, n, stream);
-    if (ferror(stream)) {
         return NULL;
     }
-    (void)sz;
-    return str;
+
+    OE_FILE* stream = oe_register_stream(&oe_optee_file_provider, (intptr_t)fp);
+    if (stream == NULL) {
+        oe_optee_fclose((intptr_t)fp);
+        return NULL;
+    }
+
+    return stream;
 }
 
 int 
