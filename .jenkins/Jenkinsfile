@@ -34,7 +34,7 @@ def nonSimulationTest() {
         node('hardware') {
             checkout scm
 
-            docker.image(OETOOLS_IMAGE).inside('--privileged -v /dev/sgx:/dev/sgx') {
+            docker.image(OETOOLS_IMAGE).inside('--device /dev/sgx:/dev/sgx') {
                 timeout(15) {
                     sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d'
                 }
