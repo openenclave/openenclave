@@ -9,7 +9,7 @@ export ARCH=aarch64
 export MACHINE=virt
 
 # -------------------------------------
-# Build Open Enclave SDK
+# Build the Open Enclave SDK
 # -------------------------------------
 
 echo [CI] Building Open Enclave
