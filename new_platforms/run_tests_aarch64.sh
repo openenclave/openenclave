@@ -90,7 +90,16 @@ CMD="$CMD cp /mnt/oe/new_platforms/bin/optee/tests/3156152a-19d1-423c-96ea-5adf5
 CMD="$CMD /mnt/oe/new_platforms/tests/oetests_host/oetests_host"
 CMD="$CMD \""
 
-sshpass -p test ssh test@localhost -p 5555 "$CMD" || exit 2
+sshpass -p test ssh test@localhost -p 5555 "$CMD"
+
+# If either SSH failed, or the command sent to the guest failed, which is
+# propagated, terminate QEMU and exit with a non-zero exit code.
+if [ $? -ne 0 ]; then
+    # The process name is truncated.
+    pkill -9 qemu-system-aar
+
+    exit 1
+fi
 
 # -------------------------------------
 # Epilogue
@@ -98,5 +107,5 @@ sshpass -p test ssh test@localhost -p 5555 "$CMD" || exit 2
 
 echo [CI] Stopping QEMU
 
-# The process name is truncated.
+# See previous invocation.
 pkill -9 qemu-system-aar
