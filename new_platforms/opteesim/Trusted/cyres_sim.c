@@ -116,8 +116,8 @@ static void gen_sim_id(
 
 /* Construct and sign a device certificate */
 static void build_device_cert(
-    DERBuilderContext* der_ctx,
-    simulated_cyres_identity_t* id,
+    const DERBuilderContext* der_ctx,
+    const simulated_cyres_identity_t* id,
     simulated_cyres_identity_t* signer,
     RIOT_ECC_PUBLIC* code_authority,
     RIOT_X509_TBS_DATA* tbs)
@@ -194,7 +194,7 @@ static void build_alias_cert(
 }
 
 /* Generate a PEM encoded certificate of the type specified for an identity.
-    The certificate will be issued by the provided signer identity. */
+ * The certificate will be issued by the provided signer identity. */
 static void gen_cert(
     simulated_cyres_identity_t* id,
     simulated_cyres_identity_t* signer,

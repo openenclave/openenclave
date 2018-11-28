@@ -27,22 +27,24 @@ typedef struct oe_dir OE_DIR;
 
 int oe_fclose(OE_FILE* stream);
 int oe_feof(OE_FILE* stream);
-int oe_ferror(OE_FILE *stream);
-int oe_fflush(OE_FILE *stream);
-char *oe_fgets(char *s, int size, OE_FILE *stream);
-int oe_fputs(const char *s, OE_FILE *stream);
-size_t oe_fread(void *ptr, size_t size, size_t nmemb, OE_FILE *stream);
-int oe_fseek(OE_FILE *stream, long offset, int whence);
-long oe_ftell(OE_FILE *stream);
-size_t oe_fwrite(const void *ptr, size_t size, size_t nmemb, OE_FILE *stream);
+int oe_ferror(OE_FILE* stream);
+int oe_fflush(OE_FILE* stream);
+char *oe_fgets(char* s, int size, OE_FILE* stream);
+int oe_fprintf(OE_FILE* const stream, char const* const format, ...);
+int oe_fputs(const char* s, OE_FILE* stream);
+size_t oe_fread(void* ptr, size_t size, size_t nmemb, OE_FILE* stream);
+int oe_fseek(OE_FILE* stream, long offset, int whence);
+long oe_ftell(OE_FILE* stream);
+int oe_vfprintf(OE_FILE* stream, const char* format, va_list argptr);
+size_t oe_fwrite(const void* ptr, size_t size, size_t nmemb, OE_FILE* stream);
 
-OE_FILE *oe_fopen_OE_FILE_INSECURE(const char* path, const char* mode);
-OE_FILE *oe_fopen_OE_FILE_SECURE_HARDWARE(const char* path, const char* mode);
-OE_FILE *oe_fopen_OE_FILE_SECURE_ENCRYPTION(const char* path, const char* mode);
+OE_FILE* oe_fopen_OE_FILE_INSECURE(const char* path, const char* mode);
+OE_FILE* oe_fopen_OE_FILE_SECURE_HARDWARE(const char* path, const char* mode);
+OE_FILE* oe_fopen_OE_FILE_SECURE_ENCRYPTION(const char* path, const char* mode);
 
-int oe_remove_OE_FILE_INSECURE(const char *pathname);
-int oe_remove_OE_FILE_SECURE_HARDWARE(const char *pathname);
-int oe_remove_OE_FILE_SECURE_ENCRYPTION(const char *pathname);
+int oe_remove_OE_FILE_INSECURE(const char* pathname);
+int oe_remove_OE_FILE_SECURE_HARDWARE(const char* pathname);
+int oe_remove_OE_FILE_SECURE_ENCRYPTION(const char* pathname);
 
 #define oe_fopen(file_security, path, mode)  OE_PRIMITIVE_CAT(oe_fopen_, file_security((path), (mode)))
 #define oe_remove(file_security, pathname)   OE_PRIMITIVE_CAT(oe_remove_, file_security(pathname))
@@ -57,17 +59,19 @@ int oe_remove_OE_FILE_SECURE_ENCRYPTION(const char *pathname);
 
 #ifndef OE_NO_POSIX_FILE_API
 /* Map POSIX API names to the OE equivalents. */
-# define fclose oe_fclose
-# define feof   oe_feof
-# define ferror oe_ferror
-# define fflush oe_fflush
-# define fread  oe_fread
-# define fseek  oe_fseek
-# define ftell  oe_ftell
-# define fwrite oe_fwrite
-# define fputs  oe_fputs
-# define fgets  oe_fgets
-# define FILE   OE_FILE
+# define fclose   oe_fclose
+# define feof     oe_feof
+# define ferror   oe_ferror
+# define fflush   oe_fflush
+# define fread    oe_fread
+# define fseek    oe_fseek
+# define ftell    oe_ftell
+# define fwrite   oe_fwrite
+# define fprintf  oe_fprintf
+# define fputs    oe_fputs
+# define fgets    oe_fgets
+# define vfprintf oe_vfprintf
+# define FILE     OE_FILE
 #endif
 
 OE_DIR *oe_opendir_FILE_INSECURE(const char *name);
@@ -110,13 +114,6 @@ struct oe_dirent *oe_readdir(OE_DIR *dirp);
 # define stdin ((void*)0)
 # define stdout ((void*)1)
 # define stderr ((void*)2)
-
-int fprintf(FILE* const _Stream, char const* const _Format, ...);
-
-int vfprintf(
-    FILE* stream,
-    const char* format,
-    va_list argptr);
 
 # define _FILE_DEFINED
 #endif

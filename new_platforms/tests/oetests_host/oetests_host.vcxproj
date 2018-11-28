@@ -322,7 +322,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_ARM;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;$(GTestDir)include;$(NewPlatformsDir)include;$(NewPlatformsDir)include\optee\Untrusted;$(NewPlatformsDir)include\optee;$(SGXSDKInstallPath)\include;$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;$(GTestDir)include;$(NewPlatformsDir)include;$(NewPlatformsDir)include\optee\host;$(NewPlatformsDir)include\optee;$(SGXSDKInstallPath)\include;$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -338,7 +338,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>OE_SIMULATE_OPTEE;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;$(GTestDir)include;$(NewPlatformsDir)include;$(OESdkDir)include;$(NewPlatformsDir)include\optee\Untrusted;$(NewPlatformsDir)include\optee;$(SGXSDKInstallPath)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;$(GTestDir)include;$(NewPlatformsDir)include;$(OESdkDir)include;$(NewPlatformsDir)include\optee\host;$(NewPlatformsDir)include\optee;$(SGXSDKInstallPath)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -354,7 +354,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>OE_SIMULATE_OPTEE;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;$(GTestDir)include;$(NewPlatformsDir)include;$(OESdkDir)include;$(NewPlatformsDir)include\optee\Untrusted;$(NewPlatformsDir)include\optee;$(SGXSDKInstallPath)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;$(GTestDir)include;$(NewPlatformsDir)include;$(OESdkDir)include;$(NewPlatformsDir)include\optee\host;$(NewPlatformsDir)include\optee;$(SGXSDKInstallPath)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -422,7 +422,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>OE_SIMULATE_OPTEE;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;$(GTestDir)include;$(NewPlatformsDir)include;$(OESdkDir)include;$(NewPlatformsDir)include\optee\Untrusted;$(NewPlatformsDir)include\optee;$(SGXSDKInstallPath)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;$(GTestDir)include;$(NewPlatformsDir)include;$(OESdkDir)include;$(NewPlatformsDir)include\optee\host;$(NewPlatformsDir)include\optee;$(SGXSDKInstallPath)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

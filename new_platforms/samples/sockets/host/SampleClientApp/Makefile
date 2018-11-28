@@ -8,7 +8,7 @@ OE_PATH = ../../../../../include
 
 DEFINES = -DOE_USE_OPTEE -D_DEBUG -DLINUX
 INCLUDES =                                \
-    -I../../../../include/optee/Untrusted \
+    -I../../../../include/optee/host      \
     -I../../../../include/                \
     -I../../../../include/linux           \
     -I$(SGX_SDK)/include                  \
@@ -32,7 +32,7 @@ CC = $(CROSS_COMPILE)gcc
 CX = $(CROSS_COMPILE)g++
 AR = $(CROSS_COMPILE)ar
 
-APP_NAME = sampleserverapp
+APP_NAME = sampleclientapp
 
 $(APP_NAME): $(OBJECTS)
 	@echo " [LD]\t$(APP_NAME)"

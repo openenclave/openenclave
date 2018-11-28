@@ -320,7 +320,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_ARM;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(NewPlatformsDir)include\optee\Untrusted;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(SGXSDKInstallPath)\include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(NewPlatformsDir)include\optee\host;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(SGXSDKInstallPath)\include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -336,7 +336,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>OE_SIMULATE_OPTEE;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(NewPlatformsDir)include\optee\Untrusted;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(SGXSDKInstallPath)\include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(NewPlatformsDir)include\optee\host;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(SGXSDKInstallPath)\include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -352,7 +352,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>OE_SIMULATE_OPTEE;_ARM;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(NewPlatformsDir)include\optee\Untrusted;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(SGXSDKInstallPath)\include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(NewPlatformsDir)include\optee\host;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(SGXSDKInstallPath)\include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -416,7 +416,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>OE_SIMULATE_OPTEE;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(NewPlatformsDir)include\optee\Untrusted;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(SGXSDKInstallPath)\include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(NewPlatformsDir)include\optee\host;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(SGXSDKInstallPath)\include;$(OESdkDir)include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

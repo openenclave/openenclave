@@ -11,3 +11,4 @@
  * Hence this file allows the generated code to build without hitting a
  * missing file error.
  */
+#include <string.h>

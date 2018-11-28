@@ -1,4 +1,5 @@
 /* Header order for RIoT is important. */
+/* Licensed under the MIT License. */
 #include <RiotTarget.h>
 #include <RiotStatus.h>
 #include <RiotSha256.h>

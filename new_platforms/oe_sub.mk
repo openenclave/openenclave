@@ -7,7 +7,7 @@ export SGXSDKInstallPath=$(OE_SDK_ROOT_PATH)3rdparty/SGXSDK
 export CYREP_CYREP_PATH=$(RIoTDir)CyReP/cyrep
 export OE_EDL_PATH=$(OE_SDK_ROOT_PATH)include/openenclave
 
-global-incdirs-y += $(NEW_PLATFORMS_PATH)include/optee/Trusted
+global-incdirs-y += $(NEW_PLATFORMS_PATH)include/optee/enclave
 global-incdirs-y += $(NEW_PLATFORMS_PATH)include/optee
 global-incdirs-y += $(NEW_PLATFORMS_PATH)include
 global-incdirs-y += $(OE_SDK_ROOT_PATH)include

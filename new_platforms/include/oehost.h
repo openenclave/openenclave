@@ -10,7 +10,7 @@ extern "C" {
 #endif
 
 #ifdef OE_SIMULATE_OPTEE
-# include "optee/Untrusted/Simulator/oehost.h"
+# include "optee/host/Simulator/oehost.h"
 #endif
 
 #include <tcps.h>

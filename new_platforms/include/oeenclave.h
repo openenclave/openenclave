@@ -15,7 +15,7 @@
 
 #ifdef OE_SIMULATE_OPTEE
 # include <sal.h>
-# include "optee/Trusted/Simulator/oeenclave.h"
+# include "optee/enclave/Simulator/oeenclave.h"
 #endif
 
 #include "tcps.h"
@@ -35,7 +35,7 @@ typedef uint32_t __uint32_t;
  */
 # include <sgx.h>
 #if defined(OE_USE_OPTEE)
-# include "optee/sgxoveroptee.h"
+# include "optee/enclave/sgxoveroptee_enclave.h"
 #endif
 
 #define STRUNCATE 80 
@@ -110,8 +110,6 @@ HANDLE FindFirstFile(
 int FindNextFile(HANDLE hFindFile, WIN32_FIND_DATA* findFileData);
 
 BOOL FindClose(_In_ HANDLE hFindFile);
-
-BOOL DeleteFile(_In_z_ const char* filename);
 #endif /* !_APISETFILE_ */
 
 #ifndef _ERRHANDLING_H_
