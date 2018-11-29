@@ -4,7 +4,6 @@
     <ClCompile Include="uhelper.c" />
     <ClCompile Include="..\..\buffer.c" />
     <ClCompile Include="..\..\oeresult.c" />
-    <ClCompile Include="..\oeshim_u.c" />
     <ClCompile Include="..\oeoverintelsgx_u.c">
       <Filter>Generated Files</Filter>
     </ClCompile>
@@ -30,6 +29,7 @@
     <ClCompile Include="..\..\optee_common.c">
       <Filter>OP-TEE</Filter>
     </ClCompile>
+    <ClCompile Include="..\oeshim_host.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(OpteeCallsDir)OpteeCalls\inc\targetver.h" />

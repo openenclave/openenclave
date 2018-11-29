@@ -14,6 +14,7 @@
 # include <pwd.h>
 # define MAX_PATH FILENAME_MAX
 #endif
+#include "oeresult.h"
 
 typedef struct _sgx_errlist_t {
     sgx_status_t err;
@@ -179,12 +180,21 @@ static int query_sgx_status()
 *   Step 2: call sgx_create_enclave to initialize an enclave instance
 *   Step 3: save the launch token if it is updated
 */
-static int initialize_enclave(
-    _In_z_ const char* token_filename, 
-    _In_z_ const char* enclave_filename, 
-    _In_ uint32_t flags,
+static oe_result_t initialize_enclave(
+    _In_z_ const char* token_prefix,
+    _In_z_ const char* enclave_prefix,
+    _In_opt_z_ const char* enclave_extension,
+    uint32_t flags,
     _Out_ sgx_enclave_id_t* peid)
 {
+    char enclave_filename[256];
+    sprintf_s(enclave_filename, sizeof(enclave_filename), "%s%s", 
+              enclave_prefix,
+              (enclave_extension != NULL) ? enclave_extension : "");
+
+    char token_filename[256];
+    sprintf_s(token_filename, sizeof(token_filename), "%s.token", token_prefix);
+
     char token_path[MAX_PATH] = { '\0' };
     sgx_launch_token_t token = { 0 };
     sgx_status_t ret = SGX_ERROR_UNEXPECTED;
@@ -202,7 +212,8 @@ static int initialize_enclave(
     */
 #ifdef _MSC_VER
     /* try to get the token saved in CSIDL_LOCAL_APPDATA */
-    if (S_OK != SHGetFolderPathA(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, token_path)) { strcpy_s(token_path, _countof(token_path), token_filename);
+    if (S_OK != SHGetFolderPathA(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, token_path)) {
+        strcpy_s(token_path, _countof(token_path), token_filename);
     } else {
         strcat_s(token_path, _countof(token_path), "\\");
         strcat_s(token_path, _countof(token_path), token_filename);
@@ -267,7 +278,7 @@ static int initialize_enclave(
             fclose(fp);
         }
 #endif
-        return -1;
+        return GetOEResultFromSgxStatus(ret);
     }
 
     /* Step 3: save the launch token if it is updated */
@@ -277,7 +288,7 @@ static int initialize_enclave(
         if (token_handler != INVALID_HANDLE_VALUE) {
             CloseHandle(token_handler);
         }
-        return 0;
+        return OE_OK;
     }
 
     /* flush the file cache */
@@ -298,36 +309,30 @@ static int initialize_enclave(
     {
         /* if the token is not updated, or file handler is invalid, do not perform saving */
         if (fp != NULL) fclose(fp);
-        return 0;
+        return OE_OK;
     }
 
     /* reopen the file with write capablity */
     fp = freopen(token_path, "wb", fp);
-    if (fp == NULL) return 0;
-    size_t write_num = fwrite(token, 1, sizeof(sgx_launch_token_t), fp);
-    if (write_num != sizeof(sgx_launch_token_t))
+    if (fp != NULL)
     {
-        printf("Warning: Failed to save launch token to \"%s\".\n", token_path);
+        size_t write_num = fwrite(token, 1, sizeof(sgx_launch_token_t), fp);
+        if (write_num != sizeof(sgx_launch_token_t))
+        {
+            printf("Warning: Failed to save launch token to \"%s\".\n", token_path);
+        }
+        fclose(fp);
     }
-    fclose(fp);
 #endif
-    return 0;
+    return OE_OK;
 }
 
-oe_result_t Tcps_CreateTAInternal(
+oe_result_t oe_create_enclave_internal(
     _In_z_ const char* a_TaIdString,
-    _In_ uint32_t a_Flags,
+    uint32_t a_Flags,
     _Out_ sgx_enclave_id_t* a_pId)
 {
-    char tokenFilename[256];
-    sprintf_s(tokenFilename, sizeof(tokenFilename), "%s.token", a_TaIdString);
-
-    char enclaveFilename[256];
-#if defined(_MSC_VER)
-    sprintf_s(enclaveFilename, sizeof(enclaveFilename), "%s.signed.dll", a_TaIdString);
-#elif defined(__GNUC__)
-    sprintf_s(enclaveFilename, sizeof(enclaveFilename), "%s.signed.so", a_TaIdString);
-#endif
+    oe_result_t result = OE_NOT_FOUND;
 
     if (query_sgx_status() < 0)
     {
@@ -335,10 +340,43 @@ oe_result_t Tcps_CreateTAInternal(
         return OE_FAILURE;
     }
 
-    /* Initialize the enclave. */
-    if (initialize_enclave(tokenFilename, enclaveFilename, a_Flags, a_pId) < 0)
+    // if string ends with ".dll" or ".elf", load it directly.
+    // Else, try looking for the file in this order:
+    // load directly, then try with extensions in this order:
+    // ".elf", ".dll", ".signed.dll".
+    // Else, fail with file not found.
+    size_t len = strlen(a_TaIdString);
+    if ((len > 4) &&
+        ((strcmp(&a_TaIdString[len - 4], ".dll") == 0) ||
+        (strcmp(&a_TaIdString[len - 4], ".elf") == 0)))
     {
-        return OE_FAILURE;
+        // Load the file directly.
+        result = initialize_enclave(a_TaIdString, a_TaIdString, NULL, a_Flags, a_pId);
+    }
+    else
+    {
+        const char* extension_search_list[] = {
+            NULL,
+            ".elf",
+#if defined(_MSC_VER)
+            ".dll",
+            ".signed.dll"
+#elif defined(__GNUC__)
+            ".so",
+            ".signed.so"
+#endif
+        };
+
+        for (int i = 0; i < sizeof(extension_search_list) / sizeof(*extension_search_list); i++) {
+            result = initialize_enclave(a_TaIdString, a_TaIdString, extension_search_list[i], a_Flags, a_pId);
+            if (result == OE_OK)
+            {
+                break;
+            }
+        }
+    }
+    if (result != OE_OK) {
+        return result;
     }
 
     /* Proactively initialize sockets so the enclave isn't required to. */

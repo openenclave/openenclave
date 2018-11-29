@@ -1,6 +1,6 @@
 # All objects we build and store in our shared library.
 OBJECTS = oeoverintelsgx_u.o teehost_optee.o urpc_optee.o \
-          buffer.o uhelper_shared.o uhelper.o oeshim_u.o oeresult.o \
+          buffer.o uhelper_shared.o uhelper.o oeshim_host.o oeresult.o \
           optee_common.o stdext.o
 
 # Path to where OpenEnclave resides.
@@ -68,7 +68,7 @@ optee_common.o: ../../optee_common.c
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 
-oeshim_u.o: ../oeshim_u.c ../oeoverintelsgx_u.h
+oeshim_host.o: ../oeshim_host.c ../oeoverintelsgx_u.h
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 

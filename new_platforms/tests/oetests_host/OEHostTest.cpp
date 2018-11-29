@@ -2,6 +2,7 @@
 /* Licensed under the MIT License. */
 #ifdef LINUX
 #include "sal_unsup.h"
+#define sprintf_s(str, sz, ...) sprintf(str, __VA_ARGS__)
 #endif
 
 #include "gtest/gtest.h"
@@ -54,7 +55,7 @@ TEST(TeeHost, create_enclave_BadId)
     EXPECT_TRUE(enclave == NULL);
 }
 
-TEST(TeeHost, create_enclave_Success)
+TEST(TeeHost, create_enclave_NoSuffix_Success)
 {
     oe_result_t uStatus = OE_OK;
     oe_result_t result = OE_OK;
@@ -62,6 +63,41 @@ TEST(TeeHost, create_enclave_Success)
 
     result = oe_create_oetests_enclave(
         TA_ID,
+        OE_ENCLAVE_TYPE_UNDEFINED,
+        OE_ENCLAVE_FLAG_DEBUG,
+        NULL,
+        0,
+        &enclave);
+    ASSERT_EQ(OE_OK, result);
+    EXPECT_TRUE(enclave != NULL);
+
+    result = ecall_DoNothing(enclave);
+    EXPECT_EQ(OE_OK, result);
+
+    result = ecall_ReturnOk(enclave, &uStatus);
+    EXPECT_EQ(OE_OK, result);
+    EXPECT_EQ(OE_OK, uStatus);
+
+    result = oe_terminate_enclave(enclave);
+    EXPECT_EQ(OE_OK, result);
+}
+
+TEST(TeeHost, create_enclave_Suffix_Success)
+{
+    oe_result_t uStatus = OE_OK;
+    oe_result_t result = OE_OK;
+    oe_enclave_t* enclave = NULL;
+    char ta_filename[256];
+    sprintf_s(ta_filename, sizeof(ta_filename),
+#ifdef OE_USE_OPTEE
+        "%s.ta",
+#else
+        "%s.signed.dll",
+#endif
+        TA_ID);
+
+    result = oe_create_oetests_enclave(
+        ta_filename,
         OE_ENCLAVE_TYPE_UNDEFINED,
         OE_ENCLAVE_FLAG_DEBUG,
         NULL,
