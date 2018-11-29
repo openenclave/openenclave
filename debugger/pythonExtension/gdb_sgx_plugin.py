@@ -194,7 +194,7 @@ def update_untrusted_ocall_frame(frame_pointer, ocallcontext_tuple):
 
 class EnclaveCreationBreakpoint(gdb.Breakpoint):
     def __init__(self):
-        gdb.Breakpoint.__init__ (self, spec="_oe_notify_gdb_enclave_creation", internal=1)
+        gdb.Breakpoint.__init__ (self, spec="oe_notify_gdb_enclave_creation", internal=1)
 
     def stop(self):
         # Get oe_enclave_t.
@@ -212,7 +212,7 @@ class EnclaveCreationBreakpoint(gdb.Breakpoint):
 
 class EnclaveTerminationBreakpoint(gdb.Breakpoint):
     def __init__(self):
-        gdb.Breakpoint.__init__ (self, spec="_oe_notify_gdb_enclave_termination", internal=1)
+        gdb.Breakpoint.__init__ (self, spec="oe_notify_gdb_enclave_termination", internal=1)
 
     def stop(self):
         # Get oe_enclave_t.
@@ -231,7 +231,7 @@ class EnclaveTerminationBreakpoint(gdb.Breakpoint):
 
 class OCallStartBreakpoint(gdb.Breakpoint):
     def __init__(self):
-        gdb.Breakpoint.__init__ (self, spec="_oe_notify_ocall_start", internal=1)
+        gdb.Breakpoint.__init__ (self, spec="oe_notify_ocall_start", internal=1)
 
     def stop(self):
         # Get untrusted stack frame pointer and corresponding TCS.
@@ -310,7 +310,7 @@ def oe_debugger_init():
     bps = gdb.breakpoints()
     if bps != None:
         for bp in bps:
-            if bp.location == "_oe_notify_gdb_enclave_creation" and bp.is_valid():
+            if bp.location == "oe_notify_gdb_enclave_creation" and bp.is_valid():
                 return
 
     # Cleanup and set breakpoints.

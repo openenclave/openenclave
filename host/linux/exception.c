@@ -48,7 +48,7 @@ static void _host_signal_handler(
         }
 
         // Call-in enclave to handle the exception.
-        oe_enclave_t* enclave = _oe_query_enclave_instance((void*)tcs_address);
+        oe_enclave_t* enclave = oe_query_enclave_instance((void*)tcs_address);
         if (enclave == NULL)
         {
             abort();

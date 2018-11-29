@@ -18,7 +18,7 @@ typedef struct _enclave_entry
 /*
 **==============================================================================
 **
-** _oe_push_enclave_instance()
+** oe_push_enclave_instance()
 **
 **     Push the enclave to the head of the global enclave list.
 **     Return 0 if success.
@@ -26,7 +26,7 @@ typedef struct _enclave_entry
 **==============================================================================
 */
 
-uint32_t _oe_push_enclave_instance(oe_enclave_t* enclave)
+uint32_t oe_push_enclave_instance(oe_enclave_t* enclave)
 {
     uint32_t ret = 1;
     bool locked = false;
@@ -83,7 +83,7 @@ cleanup:
 /*
 **==============================================================================
 **
-** _oe_remove_enclave_instance()
+** oe_remove_enclave_instance()
 **
 **     Remove the enclave from the global enclave list.
 **     Return 0 if success.
@@ -91,7 +91,7 @@ cleanup:
 **==============================================================================
 */
 
-uint32_t _oe_remove_enclave_instance(oe_enclave_t* enclave)
+uint32_t oe_remove_enclave_instance(oe_enclave_t* enclave)
 {
     uint32_t ret = 1;
     bool locked = false;
@@ -135,7 +135,7 @@ cleanup:
 /*
 **==============================================================================
 **
-** _oe_query_enclave_instance()
+** oe_query_enclave_instance()
 **
 **     Query the owner enclave for the given TCS.
 **     Return the owner enclave if success, otherwise return NULL.
@@ -143,7 +143,7 @@ cleanup:
 **==============================================================================
 */
 
-oe_enclave_t* _oe_query_enclave_instance(void* tcs)
+oe_enclave_t* oe_query_enclave_instance(void* tcs)
 {
     oe_enclave_t* ret = NULL;
     bool locked = false;

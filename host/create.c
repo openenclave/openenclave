@@ -765,7 +765,7 @@ oe_result_t oe_create_enclave(
     OE_CHECK(oe_sgx_build_enclave(&context, enclave_path, NULL, enclave));
 
     /* Push the new created enclave to the global list. */
-    if (_oe_push_enclave_instance(enclave) != 0)
+    if (oe_push_enclave_instance(enclave) != 0)
     {
         OE_RAISE(OE_FAILURE);
     }
@@ -773,7 +773,7 @@ oe_result_t oe_create_enclave(
 #if defined(__linux__)
 
     /* Notify GDB that a new enclave is created */
-    _oe_notify_gdb_enclave_creation(
+    oe_notify_gdb_enclave_creation(
         enclave, enclave->path, (uint32_t)strlen(enclave->path));
 
 #endif /* defined(__linux__) */
@@ -816,7 +816,7 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
 #if defined(__linux__)
 
     /* Notify GDB that this enclave is terminated */
-    _oe_notify_gdb_enclave_termination(
+    oe_notify_gdb_enclave_termination(
         enclave, enclave->path, (uint32_t)strlen(enclave->path));
 
 #endif /* defined(__linux__) */
@@ -825,7 +825,7 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
      * and data structures are freed on a best effort basis from here on */
 
     /* Remove this enclave from the global list. */
-    _oe_remove_enclave_instance(enclave);
+    oe_remove_enclave_instance(enclave);
 
     /* Clear the magic number */
     enclave->magic = 0;
