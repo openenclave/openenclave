@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/ec.h>
@@ -602,6 +603,100 @@ int test_seal_key(int in)
     }
 
     return in;
+}
+
+int enc_get_public_key_by_policy(
+    int policy,
+    const char* data,
+    uint8_t** keybuf,
+    size_t* keybuf_size,
+    uint8_t** keyinfo,
+    size_t* keyinfo_size)
+{
+    oe_asymmetric_key_params_t params;
+    oe_result_t ret;
+    uint8_t* pubkey = NULL;
+    size_t pubkey_size = 0;
+    uint8_t* pubkey_info = NULL;
+    size_t pubkey_info_size = 0;
+
+    params.type = OE_ASYMMETRIC_KEY_EC_SECP256P1;
+    params.format = OE_ASYMMETRIC_KEY_PEM;
+    params.user_data = (void*)data;
+    params.user_data_size = data ? strlen(data) : 0;
+
+    ret = oe_get_public_key_by_policy(
+        (oe_seal_policy_t)policy,
+        &params,
+        &pubkey,
+        &pubkey_size,
+        &pubkey_info,
+        &pubkey_info_size);
+
+    if (ret != OE_OK)
+        return -1;
+
+    // Copy to host memory.
+    *keybuf = (uint8_t*)oe_host_malloc(pubkey_size);
+    if (*keybuf == NULL)
+        return -1;
+
+    *keyinfo = (uint8_t*)oe_host_malloc(pubkey_info_size);
+    if (*keyinfo == NULL)
+        return -1;
+
+    ret = oe_memcpy_s(*keybuf, pubkey_size, pubkey, pubkey_size);
+    if (ret != OE_OK)
+        return -1;
+
+    ret =
+        oe_memcpy_s(*keyinfo, pubkey_info_size, pubkey_info, pubkey_info_size);
+    if (ret != OE_OK)
+        return -1;
+
+    *keybuf_size = pubkey_size;
+    *keyinfo_size = pubkey_info_size;
+
+    oe_free_key(pubkey, pubkey_size, pubkey_info, pubkey_info_size);
+    return 0;
+}
+
+int enc_get_public_key(
+    const char* data,
+    const uint8_t* keyinfo,
+    size_t keyinfo_size,
+    uint8_t** keybuf,
+    size_t* keybuf_size)
+{
+    oe_asymmetric_key_params_t params;
+    oe_result_t ret;
+    uint8_t* pubkey = NULL;
+    size_t pubkey_size = 0;
+
+    params.type = OE_ASYMMETRIC_KEY_EC_SECP256P1;
+    params.format = OE_ASYMMETRIC_KEY_PEM;
+    params.user_data = (void*)data;
+    params.user_data_size = data ? strlen(data) : 0;
+
+    ret = oe_get_public_key(
+        &params, keyinfo, keyinfo_size, &pubkey, &pubkey_size);
+
+    if (ret != OE_OK)
+        return -1;
+
+    // Copy to host memory.
+    *keybuf = (uint8_t*)oe_host_malloc(pubkey_size);
+    if (*keybuf == NULL)
+        return -1;
+
+    ret = oe_memcpy_s(*keybuf, pubkey_size, pubkey, pubkey_size);
+    if (ret != OE_OK)
+        return -1;
+
+    *keybuf_size = pubkey_size;
+
+    oe_free_key(pubkey, pubkey_size, NULL, 0);
+    return 0;
 }
 
 OE_SET_ENCLAVE_SGX(
