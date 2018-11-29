@@ -30,7 +30,11 @@ enclave  {
             uint16_t arg13, 
             uint32_t arg14, 
             uint64_t arg15,
-            long long arg16
+            long long arg16,
+            unsigned char arg17,
+            unsigned short arg18,
+            unsigned int arg19,
+            unsigned long arg20
         );
 
         public void ecall_basic_non_portable_types(
@@ -62,6 +66,10 @@ enclave  {
         public uint32_t ecall_ret_uint32_t();
         public uint64_t ecall_ret_uint64_t();   
         public long long ecall_ret_long_long();
+        public unsigned char ecall_ret_unsigned_char();
+        public unsigned short ecall_ret_unsigned_short();
+        public unsigned int ecall_ret_unsigned_int();
+        public unsigned long ecall_ret_unsigned_long();
         public long double ecall_ret_long_double();
         public void ecall_ret_void();
 
@@ -87,7 +95,11 @@ enclave  {
             uint16_t arg13, 
             uint32_t arg14, 
             uint64_t arg15,
-            long long arg16
+            long long arg16,
+            unsigned char arg17,
+            unsigned short arg18,
+            unsigned int arg19,
+            unsigned long arg20
         );
 
         void ocall_basic_non_portable_types(
@@ -119,6 +131,10 @@ enclave  {
         uint32_t ocall_ret_uint32_t();
         uint64_t ocall_ret_uint64_t();     
         long long ocall_ret_long_long();
+        unsigned char ocall_ret_unsigned_char();
+        unsigned short ocall_ret_unsigned_short();
+        unsigned int ocall_ret_unsigned_int();
+        unsigned long ocall_ret_unsigned_long();
         long double ocall_ret_long_double();     
         
         void ocall_ret_void();        
