@@ -160,7 +160,7 @@ enclave  {
             [user_check] unsigned int a4[4][4]
         );
 
-	    public void ecall_array_unsigned_long(
+        public void ecall_array_unsigned_long(
             [in] unsigned long a1[2],
             [in,out] unsigned long a2[2][2],
             [out] unsigned long a3[3][3],
@@ -321,7 +321,7 @@ enclave  {
             [user_check] unsigned int a4[4][4]
         );
 
-	    void ocall_array_unsigned_long(
+        void ocall_array_unsigned_long(
             [in] unsigned long a1[2],
             [in,out] unsigned long a2[2][2],
             [out] unsigned long a3[3][3],

@@ -334,7 +334,7 @@ void ecall_array_unsigned_long(
 
 void ecall_array_assert_all_called()
 {
-    // Each of the 16 functions above is called twice.
+    // Each of the 19 functions above is called twice.
     // Once with arrays and then with nulls.
     int expected_num_calls = 19 * 2;
 

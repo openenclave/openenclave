@@ -697,7 +697,7 @@ enclave {
             int psize             
         );
 
-	    public unsigned long* ecall_pointer_unsigned_long(
+        public unsigned long* ecall_pointer_unsigned_long(
             // No count or size, defaults to 1.
             [in] unsigned long* p1,
             [in,out] unsigned long* p2,
@@ -1562,7 +1562,7 @@ enclave {
             int psize   
         );
 
-	    unsigned long* ocall_pointer_unsigned_long(
+        unsigned long* ocall_pointer_unsigned_long(
             // No count or size, defaults to 1.
             [in] unsigned long* p1,
             [in,out] unsigned long* p2,
