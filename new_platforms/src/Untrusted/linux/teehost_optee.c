@@ -107,9 +107,9 @@ static oe_result_t uuid_from_string(
     return OE_OK;
 }
 
-oe_result_t Tcps_CreateTAInternal(
+oe_result_t oe_create_enclave_internal(
     _In_z_ const char* a_TaIdString,
-    _In_ uint32_t a_Flags,
+    uint32_t a_Flags,
     _Out_ sgx_enclave_id_t* a_pId)
 {
     oe_result_t status;
@@ -119,12 +119,17 @@ oe_result_t Tcps_CreateTAInternal(
     struct tcps_optee_context *optee;
     uint32_t err_origin;
     int s;
+
+    char uuidstring[80];
+    strcpy_s(uuidstring, sizeof(uuidstring), a_TaIdString);
+
+    /* Remove ".ta" extension, if one is present. */
+    size_t len = strlen(uuidstring);
+    if ((len > 3) && (strcmp(&uuidstring[len - 3], ".ta") == 0)) {
+        uuidstring[len - 3] = 0;
+    }
    
     OE_UNUSED(a_Flags);
-
-    if (!a_TaIdString || !a_pId) {
-        return OE_INVALID_PARAMETER;
-    }
 
     status = uuid_from_string((char *)a_TaIdString, &uuid);
     if (status != OE_OK) {

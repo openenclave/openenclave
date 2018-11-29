@@ -81,7 +81,7 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">$(NewPlatformsDir)include;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(OpteeCallsDir)OpteeCalls\inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">$(NewPlatformsDir)include;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(OpteeCallsDir)OpteeCalls\inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
     </ClCompile>
-    <ClCompile Include="..\oeshim_u.c" />
+    <ClCompile Include="..\oeshim_host.c" />
     <ClCompile Include="teehost_optee.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>

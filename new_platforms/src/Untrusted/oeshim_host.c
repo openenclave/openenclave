@@ -18,26 +18,26 @@ ocall_table_v2_t g_ocall_table_v2 = { 0 };
 /* TODO: this flag should be per enclave */
 int g_serialize_ecalls = FALSE;
 
-oe_result_t Tcps_CreateTAInternal(
+oe_result_t oe_create_enclave_internal(
     _In_z_ const char* a_TaIdString,
-    _In_ uint32_t a_Flags,
+    uint32_t a_Flags,
     _Out_ sgx_enclave_id_t* a_pId);
 
 oe_result_t oe_create_enclave(
     _In_z_ const char* path,
-    _In_ oe_enclave_type_t type,
-    _In_ uint32_t flags,
+    oe_enclave_type_t type,
+    uint32_t flags,
     _In_reads_bytes_(configSize) const void* config,
-    _In_ uint32_t configSize,
+    uint32_t config_size,
     _In_ const oe_ocall_func_t* ocall_table,
-    _In_ uint32_t ocall_table_size,
+    uint32_t ocall_table_size,
     _Out_ oe_enclave_t** enclave)
 {
     *enclave = NULL;
 
     OE_UNUSED(type);
     OE_UNUSED(config);
-    OE_UNUSED(configSize);
+    OE_UNUSED(config_size);
 
     g_ocall_table_v2.nr_ocall = ocall_table_size;
     g_ocall_table_v2.call_addr = ocall_table;
@@ -52,9 +52,9 @@ oe_result_t oe_create_enclave(
 
     // Load the enclave.
     sgx_enclave_id_t eid;
-    oe_result_t uStatus = Tcps_CreateTAInternal(path, flags, &eid);
-    if (uStatus != OE_OK) {
-        return uStatus;
+    oe_result_t result = oe_create_enclave_internal(path, flags, &eid);
+    if (result != OE_OK) {
+        return result;
     }
 
     // Make sure we can call into the enclave.  This also registers the
@@ -62,7 +62,7 @@ oe_result_t oe_create_enclave(
     if (serialize_ecall) {
         oe_acquire_enclave_mutex((oe_enclave_t*)eid);
     }
-    sgx_status_t sgxStatus = ecall_InitializeEnclave(eid, &uStatus);
+    sgx_status_t sgxStatus = ecall_InitializeEnclave(eid, &result);
     if (serialize_ecall) {
         oe_release_enclave_mutex((oe_enclave_t*)eid);
     }
@@ -70,8 +70,8 @@ oe_result_t oe_create_enclave(
     if (sgxStatus != SGX_SUCCESS) {
         return OE_FAILURE;
     }
-    if (uStatus != OE_OK) {
-        return uStatus;
+    if (result != OE_OK) {
+        return result;
     }
 
     *enclave = (oe_enclave_t*)eid;

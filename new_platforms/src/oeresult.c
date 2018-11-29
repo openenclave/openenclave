@@ -25,6 +25,7 @@ oe_result_t GetOEResultFromSgxStatus(sgx_status_t status)
     case SGX_ERROR_INVALID_ISVSVN:        return OE_INVALID_ISVSVN;
     case SGX_ERROR_INVALID_KEYNAME:       return OE_INVALID_KEYNAME;
     case SGX_ERROR_BUSY:                  return OE_BUSY;
+    case SGX_ERROR_ENCLAVE_FILE_ACCESS:   return OE_NOT_FOUND;
     default:                              return OE_FAILURE;
     }
 }
