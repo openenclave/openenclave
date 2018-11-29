@@ -220,12 +220,11 @@ install(FILES
 set(PREFIX "$OE_PREFIX")
 
 set(ENCLAVE_CINCLUDES
-    "-I\${includedir}/openenclave/3rdparty/libc -I\${includedir}/openenclave/3rdparty -I\${includedir} -I${PROJECT_SOURCE_DIR}/include")
+    "-I\${includedir}/openenclave/3rdparty/libc -I\${includedir}/openenclave/3rdparty -I\${includedir}")
 
 set(ENCLAVE_CXXINCLUDES
     "-I\${includedir}/openenclave/3rdparty/libcxx ${ENCLAVE_CINCLUDES}")
 
-set(HOST_INCLUDES "-I${PROJECT_SOURCE_DIR}/include")
 
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/oeenclave-gcc.pc
