@@ -132,13 +132,6 @@ enclave  {
             [user_check] long long a4[4][4]
         );
 	
-	public void ecall_array_unsigned_long(
-            [in] unsigned long a1[2],
-            [in,out] unsigned long a2[2][2],
-            [out] unsigned long a3[3][3],
-            [user_check] unsigned long a4[4][4]
-        );
-
         public void ecall_array_long_double(
             [in] long double a1[2],
             [in,out] long double a2[2][2],
@@ -146,6 +139,34 @@ enclave  {
             [user_check] long double a4[4][4]
         );
 	
+        public void ecall_array_unsigned_char(
+            [in] unsigned char a1[2],
+            [in,out] unsigned char a2[2][2],
+            [out] unsigned char a3[3][3],
+            [user_check] unsigned char a4[4][4]
+        );
+
+        public void ecall_array_unsigned_short(
+            [in] unsigned short a1[2],
+            [in,out] unsigned short a2[2][2],
+            [out] unsigned short a3[3][3],
+            [user_check] unsigned short a4[4][4]
+        );
+
+        public void ecall_array_unsigned_int(
+            [in] unsigned int a1[2],
+            [in,out] unsigned int a2[2][2],
+            [out] unsigned int a3[3][3],
+            [user_check] unsigned int a4[4][4]
+        );
+
+	    public void ecall_array_unsigned_long(
+            [in] unsigned long a1[2],
+            [in,out] unsigned long a2[2][2],
+            [out] unsigned long a3[3][3],
+            [user_check] unsigned long a4[4][4]
+        );
+
         public void test_array_edl_ocalls();
         public void ecall_array_assert_all_called();
     };
@@ -278,8 +299,29 @@ enclave  {
             [out] long long a3[3][3],
             [user_check] long long a4[4][4]
         );  
+
+        void ocall_array_unsigned_char(
+            [in] unsigned char a1[2],
+            [in,out] unsigned char a2[2][2],
+            [out] unsigned char a3[3][3],
+            [user_check] unsigned char a4[4][4]
+        );
 	
-	void ocall_array_unsigned_long(
+        void ocall_array_unsigned_short(
+            [in] unsigned short a1[2],
+            [in,out] unsigned short a2[2][2],
+            [out] unsigned short a3[3][3],
+            [user_check] unsigned short a4[4][4]
+        );
+
+        void ocall_array_unsigned_int(
+            [in] unsigned int a1[2],
+            [in,out] unsigned int a2[2][2],
+            [out] unsigned int a3[3][3],
+            [user_check] unsigned int a4[4][4]
+        );
+
+	    void ocall_array_unsigned_long(
             [in] unsigned long a1[2],
             [in,out] unsigned long a2[2][2],
             [out] unsigned long a3[3][3],

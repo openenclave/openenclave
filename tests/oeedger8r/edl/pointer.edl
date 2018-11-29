@@ -598,7 +598,106 @@ enclave {
             int psize             
         ); 
 	
-	public unsigned long* ecall_pointer_unsigned_long(
+        public unsigned char* ecall_pointer_unsigned_char(
+            // No count or size, defaults to 1.
+            [in] unsigned char* p1,
+            [in,out] unsigned char* p2,
+            [out] unsigned char* p3,          
+
+            // count specifies number of elements.
+            [in, count=16] unsigned char* p4,
+            [in,out, count=16] unsigned char* p5,
+            [out, count=16] unsigned char* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] unsigned char* p7,
+            [in, out, size=80] unsigned char* p8,
+            [in, size=80] unsigned char* p9,
+
+            // user handled.
+            [user_check] unsigned char* p10,
+
+            // count as parameter
+            [in, count=pcount] unsigned char* p11,
+            [in,out, count=pcount] unsigned char* p12,
+            [out, count=pcount] unsigned char* p13,
+
+            // size as parameter
+            [in, size=psize] unsigned char* p14,
+            [in,out, size=psize] unsigned char* p15,
+            [out, size=psize] unsigned char* p16,
+
+            int pcount,
+            int psize
+        );
+
+        public unsigned short* ecall_pointer_unsigned_short(
+            // No count or size, defaults to 1.
+            [in] unsigned short* p1,
+            [in,out] unsigned short* p2,
+            [out] unsigned short* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] unsigned short* p4,
+            [in,out, count=16] unsigned short* p5,
+            [out, count=16] unsigned short* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] unsigned short* p7,
+            [in, out, size=80] unsigned short* p8,
+            [in, size=80] unsigned short* p9,
+
+            // user handled.
+            [user_check] unsigned short* p10,
+
+            // count as parameter
+            [in, count=pcount] unsigned short* p11,
+            [in,out, count=pcount] unsigned short* p12,
+            [out, count=pcount] unsigned short* p13,
+
+            // size as parameter
+            [in, size=psize] unsigned short* p14,
+            [in,out, size=psize] unsigned short* p15,
+            [out, size=psize] unsigned short* p16,
+
+            int pcount,
+            int psize           
+        );
+
+        public unsigned int* ecall_pointer_unsigned_int(
+            // No count or size, defaults to 1.
+            [in] unsigned int* p1,
+            [in,out] unsigned int* p2,
+            [out] unsigned int* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] unsigned int* p4,
+            [in,out, count=16] unsigned int* p5,
+            [out, count=16] unsigned int* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] unsigned int* p7,
+            [in, out, size=80] unsigned int* p8,
+            [in, size=80] unsigned int* p9,
+
+            // user handled.
+            [user_check] unsigned int* p10,
+
+            // count as parameter
+            [in, count=pcount] unsigned int* p11,
+            [in,out, count=pcount] unsigned int* p12,
+            [out, count=pcount] unsigned int* p13,
+
+            // size as parameter
+            [in, size=psize] unsigned int* p14,
+            [in,out, size=psize] unsigned int* p15,
+            [out, size=psize] unsigned int* p16,
+
+            int pcount,
+            int psize             
+        );
+
+	    public unsigned long* ecall_pointer_unsigned_long(
             // No count or size, defaults to 1.
             [in] unsigned long* p1,
             [in,out] unsigned long* p2,
@@ -686,6 +785,10 @@ enclave {
             [in, count=wchar_t_count] int* b17,            
             [in, count=long_long_count] int* b18,            
             [in, count=long_double_count] int* b19,   
+            [in, count=unsigned_char_count] int* b20,
+            [in, count=unsigned_short_count] int* b21,
+            [in, count=unsigned_int_count] int* b22,
+            [in, count=unsigned_long_count] int* b23,
             char char_count,
             short short_count,
             int int_count,
@@ -704,7 +807,11 @@ enclave {
             uint64_t uint64_t_count,
             wchar_t wchar_t_count,
             long long long_long_count,
-            long double long_double_count
+            long double long_double_count,
+            unsigned char unsigned_char_count,
+            unsigned short unsigned_short_count,
+            unsigned int unsigned_int_count,
+            unsigned long unsigned_long_count
         );
 
         public void ecall_size_attribute_all_types(
@@ -726,7 +833,11 @@ enclave {
             [in, size=uint64_t_size] int* b16,        
             [in, size=wchar_t_size] int* b17,            
             [in, size=long_long_size] int* b18,            
-            [in, size=long_double_size] int* b19,                   
+            [in, size=long_double_size] int* b19,      
+            [in, size=unsigned_char_size] int* b20,
+            [in, size=unsigned_short_size] int* b21,
+            [in, size=unsigned_int_size] int* b22, 
+            [in, size=unsigned_long_size] int* b23,            
             char char_size,
             short short_size,
             int int_size,
@@ -745,7 +856,11 @@ enclave {
             uint64_t uint64_t_size,
             wchar_t wchar_t_size,
             long long long_long_size,
-            long double long_double_size            
+            long double long_double_size,
+            unsigned char unsigned_char_size,
+            unsigned short unsigned_short_size,
+            unsigned int unsigned_int_size,
+            unsigned long unsigned_long_size            
         );  
 
         public void test_pointer_edl_ocalls();
@@ -1348,7 +1463,106 @@ enclave {
             int psize
         ); 
 
-	unsigned long* ocall_pointer_unsigned_long(
+        unsigned char* ocall_pointer_unsigned_char(
+            // No count or size, defaults to 1.
+            [in] unsigned char* p1,
+            [in,out] unsigned char* p2,
+            [out] unsigned char* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] unsigned char* p4,
+            [in,out, count=16] unsigned char* p5,
+            [out, count=16] unsigned char* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] unsigned char* p7,
+            [in, out, size=80] unsigned char* p8,
+            [in, size=80] unsigned char* p9,
+
+            // user handled.
+            [user_check] unsigned char* p10,
+
+            // count as parameter
+            [in, count=pcount] unsigned char* p11,
+            [in,out, count=pcount] unsigned char* p12,
+            [out, count=pcount] unsigned char* p13,
+
+            // size as parameter
+            [in, size=psize] unsigned char* p14,
+            [in,out, size=psize] unsigned char* p15,
+            [out, size=psize] unsigned char* p16,
+
+            int pcount,
+            int psize            
+        );
+
+        unsigned short* ocall_pointer_unsigned_short(
+            // No count or size, defaults to 1.
+            [in] unsigned short* p1,
+            [in,out] unsigned short* p2,
+            [out] unsigned short* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] unsigned short* p4,
+            [in,out, count=16] unsigned short* p5,
+            [out, count=16] unsigned short* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] unsigned short* p7,
+            [in, out, size=80] unsigned short* p8,
+            [in, size=80] unsigned short* p9,
+
+            // user handled.
+            [user_check] unsigned short* p10,
+
+            // count as parameter
+            [in, count=pcount] unsigned short* p11,
+            [in,out, count=pcount] unsigned short* p12,
+            [out, count=pcount] unsigned short* p13,
+
+            // size as parameter
+            [in, size=psize] unsigned short* p14,
+            [in,out, size=psize] unsigned short* p15,
+            [out, size=psize] unsigned short* p16,
+
+            int pcount,
+            int psize              
+        );
+
+        unsigned int* ocall_pointer_unsigned_int(
+            // No count or size, defaults to 1.
+            [in] unsigned int* p1,
+            [in,out] unsigned int* p2,
+            [out] unsigned int* p3,            
+
+            // count specifies number of elements.
+            [in, count=16] unsigned int* p4,
+            [in,out, count=16] unsigned int* p5,
+            [out, count=16] unsigned int* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] unsigned int* p7,
+            [in, out, size=80] unsigned int* p8,
+            [in, size=80] unsigned int* p9,
+
+            // user handled.
+            [user_check] unsigned int* p10,
+
+            // count as parameter
+            [in, count=pcount] unsigned int* p11,
+            [in,out, count=pcount] unsigned int* p12,
+            [out, count=pcount] unsigned int* p13,
+
+            // size as parameter
+            [in, size=psize] unsigned int* p14,
+            [in,out, size=psize] unsigned int* p15,
+            [out, size=psize] unsigned int* p16,
+
+            int pcount,
+            int psize   
+        );
+
+	    unsigned long* ocall_pointer_unsigned_long(
             // No count or size, defaults to 1.
             [in] unsigned long* p1,
             [in,out] unsigned long* p2,
@@ -1435,7 +1649,11 @@ enclave {
             [in, count=uint64_t_count] int* b16,    
             [in, count=wchar_t_count] int* b17,            
             [in, count=long_long_count] int* b18,            
-            [in, count=long_double_count] int* b19,                     
+            [in, count=long_double_count] int* b19, 
+            [in, count=unsigned_char_count] int* b20,
+            [in, count=unsigned_short_count] int* b21,
+            [in, count=unsigned_int_count] int* b22,
+            [in, count=unsigned_long_count] int* b23,                    
             char char_count,
             short short_count,
             int int_count,
@@ -1454,7 +1672,11 @@ enclave {
             uint64_t uint64_t_count,
             wchar_t wchar_t_count,
             long long long_long_count,
-            long double long_double_count            
+            long double long_double_count,
+            unsigned char unsigned_char_count,
+            unsigned short unsigned_short_count,
+            unsigned int unsigned_int_count,
+            unsigned long unsigned_long_count         
         );
 
         void ocall_size_attribute_all_types(
@@ -1476,7 +1698,11 @@ enclave {
             [in, size=uint64_t_size] int* b16,           
             [in, size=wchar_t_size] int* b17,            
             [in, size=long_long_size] int* b18,            
-            [in, size=long_double_size] int* b19,               
+            [in, size=long_double_size] int* b19,  
+            [in, size=unsigned_char_size] int* b20,
+            [in, size=unsigned_short_size] int* b21,
+            [in, size=unsigned_int_size] int* b22,  
+            [in, size=unsigned_long_size] int* b23,       
             char char_size,
             short short_size,
             int int_size,
@@ -1495,7 +1721,11 @@ enclave {
             uint64_t uint64_t_size,
             wchar_t wchar_t_size,
             long long long_long_size,
-            long double long_double_size
+            long double long_double_size,
+            unsigned char unsigned_char_size,
+            unsigned short unsigned_short_size,
+            unsigned int unsigned_int_size,
+            unsigned long unsigned_long_size 
         );      
 
         void ocall_pointer_assert_all_called();                                                                                                                           

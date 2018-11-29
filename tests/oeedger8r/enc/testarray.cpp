@@ -77,10 +77,13 @@ void test_array_edl_ocalls()
     test_ocall_array_fun<uint32_t>(ocall_array_uint32_t);
     test_ocall_array_fun<uint64_t>(ocall_array_uint64_t);
     test_ocall_array_fun<long long>(ocall_array_long_long);
-    if (g_enabled[TYPE_UNSIGNED_LONG])
-        test_ocall_array_fun<unsigned long>(ocall_array_unsigned_long);
     if (g_enabled[TYPE_LONG_DOUBLE])
         test_ocall_array_fun<long double>(ocall_array_long_double);
+    test_ocall_array_fun<unsigned char>(ocall_array_unsigned_char);
+    test_ocall_array_fun<unsigned short>(ocall_array_unsigned_short);
+    test_ocall_array_fun<unsigned int>(ocall_array_unsigned_int);
+    if (g_enabled[TYPE_UNSIGNED_LONG])
+        test_ocall_array_fun<unsigned long>(ocall_array_unsigned_long);
 
     OE_TEST(ocall_array_assert_all_called() == OE_OK);
     printf("=== test_array_edl_ocalls passed\n");
@@ -284,15 +287,6 @@ void ecall_array_long_long(
     ecall_array_fun_impl(a1, a2, a3, a4);
 }
 
-void ecall_array_unsigned_long(
-    unsigned long a1[2],
-    unsigned long a2[2][2],
-    unsigned long a3[3][3],
-    unsigned long a4[4][4])
-{
-    ecall_array_fun_impl(a1, a2, a3, a4);
-}
-
 void ecall_array_long_double(
     long double a1[2],
     long double a2[2][2],
@@ -302,11 +296,47 @@ void ecall_array_long_double(
     ecall_array_fun_impl(a1, a2, a3, a4);
 }
 
+void ecall_array_unsigned_char(
+    unsigned char a1[2],
+    unsigned char a2[2][2],
+    unsigned char a3[3][3],
+    unsigned char a4[4][4])
+{
+    ecall_array_fun_impl(a1, a2, a3, a4);
+}
+
+void ecall_array_unsigned_short(
+    unsigned short a1[2],
+    unsigned short a2[2][2],
+    unsigned short a3[3][3],
+    unsigned short a4[4][4])
+{
+    ecall_array_fun_impl(a1, a2, a3, a4);
+}
+
+void ecall_array_unsigned_int(
+    unsigned int a1[2],
+    unsigned int a2[2][2],
+    unsigned int a3[3][3],
+    unsigned int a4[4][4])
+{
+    ecall_array_fun_impl(a1, a2, a3, a4);
+}
+
+void ecall_array_unsigned_long(
+    unsigned long a1[2],
+    unsigned long a2[2][2],
+    unsigned long a3[3][3],
+    unsigned long a4[4][4])
+{
+    ecall_array_fun_impl(a1, a2, a3, a4);
+}
+
 void ecall_array_assert_all_called()
 {
     // Each of the 16 functions above is called twice.
     // Once with arrays and then with nulls.
-    int expected_num_calls = 16 * 2;
+    int expected_num_calls = 19 * 2;
 
     // Account for enabled non-portable types.
     for (size_t i = 0; i < OE_COUNTOF(g_enabled); ++i)
