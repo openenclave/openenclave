@@ -10,9 +10,9 @@
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/sha.h>
 #include <openenclave/internal/tests.h>
-#include "sealKey_t.h"
 #include <stdlib.h>
 #include <string.h>
+#include "sealKey_t.h"
 
 // A regular enclave should not have access to SGX_KEYSELECT_EINITTOKEN,
 // SGX_KEYSELECT_PROVISION, and SGX_KEYSELECT_PROVISION_SEAL keys.
