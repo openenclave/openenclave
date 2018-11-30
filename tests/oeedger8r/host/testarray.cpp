@@ -74,10 +74,6 @@ void test_array_edl_ecalls(oe_enclave_t* enclave)
     test_ecall_array_fun<uint32_t>(enclave, ecall_array_uint32_t);
     test_ecall_array_fun<uint64_t>(enclave, ecall_array_uint64_t);
     test_ecall_array_fun<long long>(enclave, ecall_array_long_long);
-    if (g_enabled[TYPE_UNSIGNED_LONG])
-        test_ecall_array_fun<unsigned long>(enclave, ecall_array_unsigned_long);
-    test_ecall_array_fun<unsigned long long>(
-        enclave, ecall_array_unsigned_long_long);
     if (g_enabled[TYPE_LONG_DOUBLE])
         test_ecall_array_fun<long double>(enclave, ecall_array_long_double);
     test_ecall_array_fun<unsigned char>(enclave, ecall_array_unsigned_char);
@@ -85,6 +81,8 @@ void test_array_edl_ecalls(oe_enclave_t* enclave)
     test_ecall_array_fun<unsigned int>(enclave, ecall_array_unsigned_int);
     if (g_enabled[TYPE_UNSIGNED_LONG])
         test_ecall_array_fun<unsigned long>(enclave, ecall_array_unsigned_long);
+    test_ecall_array_fun<unsigned long long>(
+        enclave, ecall_array_unsigned_long_long);
 
     OE_TEST(ecall_array_assert_all_called(enclave) == OE_OK);
     printf("=== test_array_edl_ecalls passed\n");
@@ -280,24 +278,6 @@ void ocall_array_long_long(
     long long a2[2][2],
     long long a3[3][3],
     long long a4[4][4])
-{
-    ocall_array_fun_impl(a1, a2, a3, a4);
-}
-
-void ocall_array_unsigned_long(
-    unsigned long a1[2],
-    unsigned long a2[2][2],
-    unsigned long a3[3][3],
-    unsigned long a4[4][4])
-{
-    ocall_array_fun_impl(a1, a2, a3, a4);
-}
-
-void ocall_array_unsigned_long_long(
-    unsigned long long a1[2],
-    unsigned long long a2[2][2],
-    unsigned long long a3[3][3],
-    unsigned long long a4[4][4])
 {
     ocall_array_fun_impl(a1, a2, a3, a4);
 }

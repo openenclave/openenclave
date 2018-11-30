@@ -150,7 +150,7 @@ void test_basic_edl_ocalls()
     {
         unsigned long long ret = 0;
         OE_TEST(ocall_ret_unsigned_long_long(&ret) == OE_OK);
-        OE_TEST(ret == 22222222);
+        OE_TEST(ret == 2222222);
     }
 
     {
@@ -443,7 +443,7 @@ unsigned long long ecall_ret_unsigned_long_long()
 {
     check_return_type<ecall_ret_unsigned_long_long_args_t,
                       unsigned long long>();
-    return 22222222;
+    return 2222222;
 }
 
 void ecall_ret_void()

@@ -335,7 +335,7 @@ enclave  {
             [user_check] unsigned long a4[4][4]
         );
 
-	void ocall_array_unsigned_long_long(
+        void ocall_array_unsigned_long_long(
             [in] unsigned long long a1[2],
             [in,out] unsigned long long a2[2][2],
             [out] unsigned long long a3[3][3],

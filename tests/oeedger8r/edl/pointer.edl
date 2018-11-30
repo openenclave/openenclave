@@ -846,7 +846,7 @@ enclave {
             unsigned short unsigned_short_count,
             unsigned int unsigned_int_count,
             unsigned long unsigned_long_count,
-            unsigned long long unsigned_long_long_count,
+            unsigned long long unsigned_long_long_count
         );
 
         public void ecall_size_attribute_all_types(
@@ -1747,8 +1747,8 @@ enclave {
             unsigned char unsigned_char_count,
             unsigned short unsigned_short_count,
             unsigned int unsigned_int_count,
-            unsigned long unsigned_long_count         
-            unsigned long long unsigned_long_long_count,
+            unsigned long unsigned_long_count,         
+            unsigned long long unsigned_long_long_count
         );
 
         void ocall_size_attribute_all_types(
@@ -1799,7 +1799,7 @@ enclave {
             unsigned short unsigned_short_size,
             unsigned int unsigned_int_size,
             unsigned long unsigned_long_size, 
-            unsigned long long unsigned_long_long_size,
+            unsigned long long unsigned_long_long_size
         );      
 
         void ocall_pointer_assert_all_called();                                                                                                                           

@@ -11,8 +11,8 @@ enclave  {
         TYPE_LONG_DOUBLE
     };
 
-    trusted {
-        
+    trusted {        
+
         /* Test all basic type parameters */
         public void ecall_basic_types(
             char arg1, 

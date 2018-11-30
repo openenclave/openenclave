@@ -1362,7 +1362,7 @@ void ecall_count_attribute_all_types(
     unsigned short unsigned_short_count,
     unsigned int unsigned_int_count,
     unsigned long unsigned_long_count,
-    unsigned long long unsigned_long_count)
+    unsigned long long unsigned_long_long_count)
 {
 }
 
@@ -1384,7 +1384,7 @@ unsigned long* ecall_pointer_unsigned_long(
     unsigned long* p15,
     unsigned long* p16,
     int pcount,
-    int psize
+    int psize)
 {
     return ecall_pointer_fun_impl(
         p1,
@@ -1425,7 +1425,7 @@ unsigned long long* ecall_pointer_unsigned_long_long(
     unsigned long long* p15,
     unsigned long long* p16,
     int pcount,
-    int psize
+    int psize)
 {
     return ecall_pointer_fun_impl(
         p1,
@@ -1496,7 +1496,6 @@ void ecall_size_attribute_all_types(
     unsigned short unsigned_short_size,
     unsigned int unsigned_int_size,
     unsigned long unsigned_long_size,
-    unsigned long long unsigned_long_long_size,
-    long double long_double_size)
+    unsigned long long unsigned_long_long_size)
 {
 }

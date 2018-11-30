@@ -193,8 +193,6 @@ void test_pointer_edl_ecalls(oe_enclave_t* enclave)
             enclave, ecall_pointer_unsigned_long);
     test_ecall_pointer_fun<unsigned long long>(
         enclave, ecall_pointer_unsigned_long_long);
-    if (g_enabled[TYPE_LONG_DOUBLE])
-        test_ecall_pointer_fun<long double>(enclave, ecall_pointer_long_double);
 
     OE_TEST(ecall_pointer_assert_all_called(enclave) == OE_OK);
     printf("=== test_pointer_edl_ecalls passed\n");
@@ -1309,8 +1307,9 @@ unsigned long* ocall_pointer_unsigned_long(
     unsigned long* p14,
     unsigned long* p15,
     unsigned long* p16,
+    int pcount,
+    int psize)
 {
-
     return ocall_pointer_fun_impl(
         p1,
         p2,
@@ -1349,8 +1348,9 @@ unsigned long long* ocall_pointer_unsigned_long_long(
     unsigned long long* p14,
     unsigned long long* p15,
     unsigned long long* p16,
+    int pcount,
+    int psize)
 {
-
     return ocall_pointer_fun_impl(
         p1,
         p2,
@@ -1374,7 +1374,7 @@ unsigned long long* ocall_pointer_unsigned_long_long(
 
 void ocall_pointer_assert_all_called()
 {
-    // Each of the 19 functions above is called twice.
+    // Each of the 20 functions above is called twice.
     // Once with arrays and then with nulls.
     int expected_num_calls = 20 * 2;
     // Account for enabled non-portable types.
