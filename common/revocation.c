@@ -301,7 +301,7 @@ oe_result_t oe_enforce_revocation(
     result = OE_OK;
 
 done:
-    for (int32_t i = revocation_args.num_crl_urls - 1; i >= 0; --i)
+    for (int32_t i = (int32_t)revocation_args.num_crl_urls - 1; i >= 0; --i)
     {
         oe_crl_free(&crls[i]);
     }

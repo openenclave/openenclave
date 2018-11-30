@@ -30,7 +30,7 @@ OE_INLINE bool oe_asn1_is_valid(const oe_asn1_t* asn1)
 
 OE_INLINE size_t oe_asn1_remaining(const oe_asn1_t* asn1)
 {
-    return oe_asn1_end(asn1) - asn1->ptr;
+    return (size_t)(oe_asn1_end(asn1) - asn1->ptr);
 }
 
 oe_result_t oe_asn1_get_tag(

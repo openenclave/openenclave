@@ -8,7 +8,7 @@
 /* Convert a nibble to an ASCII character: Example 0xF => 'F' */
 OE_INLINE char _nibble_to_hex_char(uint8_t x)
 {
-    return (x < 10) ? ('0' + x) : ('A' + (x - 10));
+    return (char)((x < 10) ? ('0' + (char)x) : ('A' + ((char)x - 10)));
 }
 
 /* Convert high nibble to a hex character */

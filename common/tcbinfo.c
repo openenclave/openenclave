@@ -67,7 +67,7 @@ static oe_result_t _read_integer(
 
     if (p < end && _is_digit(*p))
     {
-        *value = *p - '0';
+        *value = (uint64_t)(*p - '0');
         ++p;
         while (p < end && _is_digit(*p))
         {
@@ -75,7 +75,7 @@ static oe_result_t _read_integer(
             if (*value >= OE_UINT64_MAX / 10)
                 OE_RAISE(OE_JSON_INFO_PARSE_ERROR);
 
-            *value = *value * 10 + (*p - '0');
+            *value = *value * 10 + (uint64_t)(*p - '0');
             ++p;
         }
 
@@ -113,7 +113,7 @@ static oe_result_t _read_string(
 
         if (p < end && *p == '"')
         {
-            *length = p - *str;
+            *length = (size_t)(p - *str);
             *itr = _skip_ws(++p, end);
             result = OE_OK;
         }
@@ -125,11 +125,11 @@ done:
 static uint32_t _hex_to_dec(uint8_t hex)
 {
     if (hex >= '0' && hex <= '9')
-        return hex - '0';
+        return (uint32_t)hex - '0';
     if (hex >= 'a' && hex <= 'f')
-        return (hex - 'a') + 10;
+        return (uint32_t)(hex - 'a') + 10;
     if (hex >= 'A' && hex <= 'F')
-        return (hex - 'A') + 10;
+        return (uint32_t)(hex - 'A') + 10;
     return 16;
 }
 
@@ -143,7 +143,7 @@ static oe_result_t _read_hex_string(
     oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
     const uint8_t* str = NULL;
     size_t str_length = 0;
-    uint16_t value = 0;
+    uint32_t value = 0;
 
     OE_CHECK(_read_string(itr, end, &str, &str_length));
     // Each byte takes up two hex digits.
@@ -438,7 +438,8 @@ static oe_result_t _read_tcb_info(
     // itr is expected to point to the '}' that denotes the end of the tcb
     // object. The signature is generated over the entire object including the
     // '}'.
-    parsed_info->tcb_info_size = *itr - parsed_info->tcb_info_start + 1;
+    parsed_info->tcb_info_size =
+        (size_t)(*itr - parsed_info->tcb_info_start + 1);
     OE_CHECK(_read('}', itr, end));
 
     result = OE_OK;
@@ -504,7 +505,7 @@ done:
 
 OE_INLINE uint32_t read_uint32(const uint8_t* p)
 {
-    return p[0] | (p[1] << 8) | (p[2] << 16) | (p[3] << 24);
+    return (uint32_t)(p[0] | (p[1] << 8) | (p[2] << 16) | (p[3] << 24));
 }
 
 OE_INLINE uint64_t read_uint64(const uint8_t* p)
@@ -615,7 +616,7 @@ static oe_result_t _read_qe_identity_info(
     OE_TRACE_INFO("Reading isvprodid\n");
     OE_CHECK(_read_property_name_and_colon("isvprodid", itr, end));
     OE_CHECK(_read_integer(itr, end, &value));
-    parsed_info->isvprodid = (uint32_t)value;
+    parsed_info->isvprodid = (uint16_t)value;
     OE_CHECK(_read(',', itr, end));
 
     OE_TRACE_INFO("Reading isvsvn\n");
@@ -626,7 +627,7 @@ static oe_result_t _read_qe_identity_info(
     // itr is expected to point to the '}' that denotes the end of the qe
     // identity object. The signature is generated over the entire object
     // including the '}'.
-    parsed_info->info_size = *itr - parsed_info->info_start + 1;
+    parsed_info->info_size = (size_t)(*itr - parsed_info->info_start + 1);
     OE_CHECK(_read('}', itr, end));
     OE_TRACE_INFO("Done with last read\n");
     result = OE_OK;
