@@ -30,6 +30,9 @@ socket_args.h
 stdio_t.*
 stdio_u.*
 stdio_args.h
+oeinternal_t.*
+oeinternal_u.*
+oeinternal_args.h
 TcpsSdkTestTA_args.h
 SampleTA_args.h
 oeedger8r.exe

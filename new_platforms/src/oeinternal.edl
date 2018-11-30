@@ -1,0 +1,24 @@
+/* Copyright (c) Microsoft Corporation. All rights reserved. */
+/* Licensed under the MIT License. */
+enclave {
+    include "tcps.h"
+    include "openenclave/bits/result.h"
+    include "openenclave/bits/oebuffer.h"
+
+    /* define ECALLs here. */
+    trusted {
+        public oe_result_t ecall_get_report(uint32_t flags,
+                                            [in, size=opt_params_size] void* opt_params,
+                                            size_t opt_params_size,
+                                            [out, size=report_buffer_size] void* report_buffer,
+                                            size_t report_buffer_size,
+                                            [out] size_t* report_buffer_size_needed);
+
+        public oe_result_t ecall_verify_report([in, size=report_size] void* report,
+                                               size_t report_size);
+    };
+
+    untrusted {
+        /* define OCALLs here. */
+    };
+};

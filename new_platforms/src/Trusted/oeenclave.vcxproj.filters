@@ -72,9 +72,6 @@
     <ClCompile Include="..\oeresult.c">
       <Filter>common</Filter>
     </ClCompile>
-    <ClCompile Include="oeshim_t.c">
-      <Filter>common</Filter>
-    </ClCompile>
     <ClCompile Include="sgx\keygen_sgx.c">
       <Filter>sgx</Filter>
     </ClCompile>
@@ -171,6 +168,12 @@
     <ClCompile Include="socket_enc.c">
       <Filter>common</Filter>
     </ClCompile>
+    <ClCompile Include="oeinternal_t.c">
+      <Filter>GeneratedFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="oeshim_enc.c">
+      <Filter>common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="optee\linux_gcc.mak">
@@ -220,9 +223,18 @@
     <ClInclude Include="..\..\include\optee\time_optee_t.h">
       <Filter>optee</Filter>
     </ClInclude>
+    <ClInclude Include="oeinternal_args.h">
+      <Filter>GeneratedFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="oeinternal_t.h">
+      <Filter>GeneratedFiles</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\oeoverintelsgx.edl">
+      <Filter>common</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\oeinternal.edl">
       <Filter>common</Filter>
     </CustomBuild>
   </ItemGroup>

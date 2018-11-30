@@ -5,6 +5,7 @@
 #include <OpteeCalls.h>
 #include <openenclave/host.h>
 #include "../optee-shared.h"
+#undef oe_call_enclave_function
 
 optee_ocall_table_t* g_OpteeOcallTable = NULL;
 
@@ -149,7 +150,7 @@ sgx_status_t sgx_optee_ecall(const sgx_enclave_id_t eid,
     g_OpteeOcallTable = (optee_ocall_table_t*)ocall_table;
 
     ret = CallTrEEService(serviceHandle,
-                          index,
+                          V1_FUNCTION_ID_OFFSET + index,
                           inOutBuffer,
                           inOutBufferLength,
                           inOutBuffer,
@@ -161,7 +162,7 @@ sgx_status_t sgx_optee_ecall(const sgx_enclave_id_t eid,
     return sgxStatus;
 }
 
-oe_result_t oe_call_enclave_function( 
+oe_result_t oe_call_internal_enclave_function(
     _In_ oe_enclave_t* enclave,
     _In_ uint32_t function_id,
     _In_reads_bytes_(input_buffer_size) void* input_buffer,
@@ -175,16 +176,34 @@ oe_result_t oe_call_enclave_function(
     size_t bytes_written = 0;
 
     ret = CallTrEEService(serviceHandle,
-                          V2_FUNCTION_ID_OFFSET + function_id,
-                          input_buffer,
-                          input_buffer_size,
-                          output_buffer,
-                          output_buffer_size,
-                          &bytes_written);
+        function_id,
+        input_buffer,
+        input_buffer_size,
+        output_buffer,
+        output_buffer_size,
+        &bytes_written);
 
     if (output_bytes_written != NULL) {
         *output_bytes_written = bytes_written;
     }
 
     return (ret) ? OE_OK : OE_UNEXPECTED;
+}
+
+oe_result_t oe_call_enclave_function( 
+    _In_ oe_enclave_t* enclave,
+    _In_ uint32_t function_id,
+    _In_reads_bytes_(input_buffer_size) void* input_buffer,
+    _In_ size_t input_buffer_size,
+    _Out_writes_bytes_to_(output_buffer_size, *output_bytes_written) void* output_buffer,
+    _In_ size_t output_buffer_size,
+    _Out_opt_ size_t* output_bytes_written)
+{
+    return oe_call_internal_enclave_function(enclave,
+                                             V2_FUNCTION_ID_OFFSET + function_id,
+                                             input_buffer,
+                                             input_buffer_size,
+                                             output_buffer,
+                                             output_buffer_size,
+                                             output_bytes_written);
 }

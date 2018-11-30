@@ -5,6 +5,7 @@
 #include <tcps.h>
 
 #include "optee.h"
+#undef oe_call_enclave_function
 
 sgx_status_t sgx_optee_ecall(const sgx_enclave_id_t eid,
                              const int index,
@@ -39,12 +40,12 @@ sgx_status_t sgx_optee_ecall(const sgx_enclave_id_t eid,
                                      TEEC_MEMREF_TEMP_INOUT,
                                      TEEC_NONE);
 
-    res = TEEC_InvokeCommand(&optee->session, (uint32_t)index, &op, &err_origin);
+    res = TEEC_InvokeCommand(&optee->session, (uint32_t)(V1_FUNCTION_ID_OFFSET + index), &op, &err_origin);
 
     return res == TEEC_SUCCESS ? SGX_SUCCESS : SGX_ERROR_UNEXPECTED;
 }
 
-oe_result_t oe_call_enclave_function( 
+oe_result_t oe_call_internal_enclave_function(
     _In_ oe_enclave_t* enclave,
     _In_ uint32_t function_id,
     _In_reads_bytes_(input_buffer_size) const void* input_buffer,
@@ -84,10 +85,28 @@ oe_result_t oe_call_enclave_function(
                                      TEEC_MEMREF_TEMP_INOUT,
                                      TEEC_NONE);
 
-    res = TEEC_InvokeCommand(&optee->session, (uint32_t)(function_id + V2_FUNCTION_ID_OFFSET), &op, &err_origin);
+    res = TEEC_InvokeCommand(&optee->session, function_id, &op, &err_origin);
 
     if (output_bytes_written)
         *output_bytes_written = output_buffer_size;
 
     return res == TEEC_SUCCESS ? OE_OK : OE_UNEXPECTED;
+}
+
+oe_result_t oe_call_enclave_function(
+    _In_ oe_enclave_t* enclave,
+    _In_ uint32_t function_id,
+    _In_reads_bytes_(input_buffer_size) const void* input_buffer,
+    _In_ size_t input_buffer_size,
+    _Out_writes_bytes_to_(output_buffer_size, *output_bytes_written) void* output_buffer,
+    _In_ size_t output_buffer_size,
+    _Out_opt_ size_t* output_bytes_written)
+{
+    return oe_call_internal_enclave_function(enclave,
+                                             (uint32_t)(V2_FUNCTION_ID_OFFSET + function_id),
+                                             input_buffer,
+                                             input_buffer_size,
+                                             output_buffer,
+                                             output_buffer_size,
+                                             output_bytes_written);
 }

@@ -73,13 +73,14 @@
     </ClCompile>
     <ClCompile Include="cborhelper.c" />
     <ClCompile Include="files_enc.c" />
+    <ClCompile Include="oeinternal_t.c" />
     <ClCompile Include="optee\cyres_optee.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="oeshim_t.c" />
+    <ClCompile Include="oeshim_enc.c" />
     <ClCompile Include="optee\except_optee.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -213,6 +214,8 @@
     <ClInclude Include="errno.h" />
     <ClInclude Include="math.h" />
     <ClInclude Include="netdb.h" />
+    <ClInclude Include="oeinternal_args.h" />
+    <ClInclude Include="oeinternal_t.h" />
     <ClInclude Include="rand_optee.h" />
     <ClInclude Include="sgx\log_sgx.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">true</ExcludedFromBuild>
@@ -228,6 +231,36 @@
     <ClInclude Include="oeoverintelsgx_t.h" />
   </ItemGroup>
   <ItemGroup>
+    <CustomBuild Include="..\oeinternal.edl">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">Creating proxy/bridge routines</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">%(Filename)_t.h;%(Filename)_args.h;%(Filename)_t.c;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Creating proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Creating proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Creating proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Creating proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">Creating proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Creating proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Creating proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">Creating proxy/bridge routines</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename)_t.h;%(Filename)_args.h;%(Filename)_t.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename)_t.h;%(Filename)_args.h;%(Filename)_t.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">%(Filename)_t.h;%(Filename)_args.h;%(Filename)_t.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">%(Filename)_t.h;%(Filename)_args.h;%(Filename)_t.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">%(Filename)_t.h;%(Filename)_args.h;%(Filename)_t.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Filename)_t.h;%(Filename)_args.h;%(Filename)_t.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Filename)_t.h;%(Filename)_args.h;%(Filename)_t.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">%(Filename)_t.h;%(Filename)_args.h;%(Filename)_t.c;%(Outputs)</Outputs>
+    </CustomBuild>
     <None Include="optee\linux_gcc.mak" />
     <None Include="optee\sub.mk" />
   </ItemGroup>
