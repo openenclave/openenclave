@@ -120,8 +120,14 @@ class OEHostTest : public TrustedAppTest {
 
 TEST_F(OEHostTest, get_report_v1_Success)
 {
-    uint8_t report_buffer[1024];
-    size_t report_buffer_size = sizeof(report_buffer);
+    uint8_t* report_buffer = NULL;
+    size_t report_buffer_size = 4096;
+
+    report_buffer = (uint8_t*)malloc(report_buffer_size);
+    EXPECT_TRUE(report_buffer != NULL);
+    if (report_buffer == NULL) {
+        return;
+    }
 
     oe_result_t oeResult = oe_get_report_v1(GetOEEnclave(),
                                             0,
@@ -133,16 +139,18 @@ TEST_F(OEHostTest, get_report_v1_Success)
 
     oe_report_t parsed_report;
     oeResult = oe_parse_report(report_buffer, report_buffer_size, &parsed_report);
-    EXPECT_OPTEE_SGX_DIFFERENCE(OE_OK, OE_UNSUPPORTED, oeResult);
+    EXPECT_EQ(OE_OK, oeResult);
 
     oeResult = oe_verify_report(GetOEEnclave(), report_buffer, report_buffer_size, NULL);
-    EXPECT_OPTEE_SGX_DIFFERENCE(OE_OK, OE_UNSUPPORTED, oeResult);
+    EXPECT_EQ(OE_OK, oeResult);
+
+    free(report_buffer);
 }
 
 TEST_F(OEHostTest, get_report_v2_Success)
 {
     uint8_t* report_buffer;
-    size_t report_buffer_size = sizeof(report_buffer);
+    size_t report_buffer_size = 0;
 
     oe_result_t oeResult = oe_get_report_v2(GetOEEnclave(),
                                             0,
@@ -154,10 +162,10 @@ TEST_F(OEHostTest, get_report_v2_Success)
 
     oe_report_t parsed_report;
     oeResult = oe_parse_report(report_buffer, report_buffer_size, &parsed_report);
-    EXPECT_OPTEE_SGX_DIFFERENCE(OE_OK, OE_UNSUPPORTED, oeResult);
+    EXPECT_EQ(OE_OK, oeResult);
 
     oeResult = oe_verify_report(GetOEEnclave(), report_buffer, report_buffer_size, NULL);
-    EXPECT_OPTEE_SGX_DIFFERENCE(OE_OK, OE_UNSUPPORTED, oeResult);
+    EXPECT_EQ(OE_OK, oeResult);
 
     oe_free_report(report_buffer);
 }
@@ -186,8 +194,14 @@ TEST_F(OEHostTest, get_target_info_v2_Failed)
 
 TEST_F(OEHostTest, get_target_info_v1_Success)
 {
-    uint8_t report_buffer[1024];
-    size_t report_buffer_size = sizeof(report_buffer);
+    uint8_t* report_buffer = NULL;
+    size_t report_buffer_size = 4096;
+
+    report_buffer = (uint8_t*)malloc(report_buffer_size);
+    EXPECT_TRUE(report_buffer != NULL);
+    if (report_buffer == NULL) {
+        return;
+    }
 
     oe_result_t oeResult = oe_get_report_v1(GetOEEnclave(),
         0,
@@ -224,13 +238,15 @@ TEST_F(OEHostTest, get_target_info_v1_Success)
 #endif
 
     oeResult = oe_verify_report(GetOEEnclave(), report_buffer, report_buffer_size, NULL);
-    EXPECT_OPTEE_SGX_DIFFERENCE(OE_OK, OE_UNSUPPORTED, oeResult);
+    EXPECT_EQ(OE_OK, oeResult);
+
+    free(report_buffer);
 }
 
 TEST_F(OEHostTest, get_target_info_v2_Success)
 {
     uint8_t* report_buffer;
-    size_t report_buffer_size = sizeof(report_buffer);
+    size_t report_buffer_size = 0;
 
     oe_result_t oeResult = oe_get_report_v2(GetOEEnclave(),
         0,
@@ -263,7 +279,7 @@ TEST_F(OEHostTest, get_target_info_v2_Success)
 #endif
 
     oeResult = oe_verify_report(GetOEEnclave(), report_buffer, report_buffer_size, NULL);
-    EXPECT_OPTEE_SGX_DIFFERENCE(OE_OK, OE_UNSUPPORTED, oeResult);
+    EXPECT_EQ(OE_OK, oeResult);
     oe_free_report(report_buffer);
 }
 

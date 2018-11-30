@@ -16,11 +16,13 @@
 #define DICE_UDS_LENGTH 0x20
 
 /* Estimate the buffer size needed, in bytes, for a TCPS ID. In our case
-   we will not have more then two PUBKEYs and a FW measurement. */
-#define CLAIM_BUFFER_LENGTH (TCPS_ID_PUBKEY_LENGTH * 2) + TCPS_ID_FWID_LENGTH
+   we will not have more then two PUBKEYs, a FW measurement and encoding overhead. */
+#define CLAIM_BUFFER_LENGTH \
+    ((CYRES_ID_PUBKEY_LENGTH * 2) + CYRES_ID_FWID_LENGTH + \
+     (CYRES_ID_EST_ENCODING * 3))
 
-#define SIM_CERT_SIZE 500
-#define DER_MAX_SIZE 300
+#define SIM_CERT_SIZE DER_MAX_PEM
+#define DER_MAX_SIZE DER_MAX_TBS
 
 #define CODE_AUTHORITY_SECRET "Authority Signer Secret"
 #define CODE_AUTHORITY_SECRET_SIZE lblSize(CODE_AUTHORITY_SECRET)
@@ -40,6 +42,8 @@ typedef struct simulated_cyres_identity_chain
 {
     uint8_t uds[DICE_DIGEST_LENGTH];
     simulated_cyres_identity_t root_id;
+    simulated_cyres_identity_t device_id;
+    simulated_cyres_identity_t loader_id;
     simulated_cyres_identity_t ta_id;
 } simulated_cyres_identity_chain_t;
 simulated_cyres_identity_chain_t g_sic;
@@ -47,7 +51,9 @@ simulated_cyres_identity_chain_t g_sic;
 typedef enum cert_type
 {
     ALIAS,
-    DEVICE
+    LOADER,
+    DEVICE,
+    ROOT
 } cert_type_t;
 
 typedef void(build_cert_fp_t)(
@@ -55,10 +61,22 @@ typedef void(build_cert_fp_t)(
     simulated_cyres_identity_t* id,
     simulated_cyres_identity_t* signer,
     RIOT_ECC_PUBLIC* code_authority,
-    RIOT_X509_TBS_DATA* tbs);
+    RIOT_X509_TBS_DATA* tbs,
+    int32_t path_len);
 
 /* The static data fields that make up the "root" Cert */
 RIOT_X509_TBS_DATA x509_root_tbs_data = {{0},
+                                         "OE OP-TEE SIM Root",
+                                         "SIM_TEST",
+                                         "US",
+                                         "170101000000Z",
+                                         "370101000000Z",
+                                         "OE OP-TEE SIM Root",
+                                         "SIM_TEST",
+                                         "US"};
+
+/* The static data fields that make up the "spl" Cert */
+RIOT_X509_TBS_DATA x509_device_tbs_data = {{0},
                                          "OE OP-TEE SIM Root",
                                          "SIM_TEST",
                                          "US",
@@ -68,9 +86,20 @@ RIOT_X509_TBS_DATA x509_root_tbs_data = {{0},
                                          "SIM_TEST",
                                          "US"};
 
+/* The static data fields that make up the "loader" Cert */
+RIOT_X509_TBS_DATA x509_loader_tbs_data = {{0},
+                                         "OP-TEE SIM Root",
+                                         "SIM_TEST",
+                                         "US",
+                                         "170101000000Z",
+                                         "370101000000Z",
+                                         "OP-TEE SIM Loader",
+                                         "SIM_TEST",
+                                         "US"};
+
 /* The static data fields that make up the "Trusted App" Cert */
 RIOT_X509_TBS_DATA x509_ta_tbs_data = {{0},
-                                       "OE Trusted Application",
+                                       "OP-TEE SIM Loader",
                                        "SIM_TEST",
                                        "US",
                                        "170101000000Z",
@@ -82,7 +111,7 @@ RIOT_X509_TBS_DATA x509_ta_tbs_data = {{0},
 /* Generate a simulated identity key pair, derived from a mock FW measurement.
  */
 static void gen_sim_id(
-    const uint8_t* digest,
+    uint8_t* digest,
     size_t digest_size,
     simulated_cyres_identity_t* id)
 {
@@ -92,35 +121,53 @@ static void gen_sim_id(
     TEE_GenerateRandom(dice_measurement, DICE_DIGEST_LENGTH);
 
     /* Derive code identity based on previous digest and the "measurement" */
-    RiotCrypt_Hash2(
+    RIOT_STATUS status = RiotCrypt_Hash2(
         id->fwid,
         DICE_DIGEST_LENGTH,
         digest,
         DICE_DIGEST_LENGTH,
         dice_measurement,
         DICE_DIGEST_LENGTH);
+    oe_assert(status == RIOT_SUCCESS);
 
     /* Don't use identity directly */
-    RiotCrypt_Hash(digest, RIOT_DIGEST_LENGTH, id->fwid, DICE_DIGEST_LENGTH);
+    status = RiotCrypt_Hash(digest, RIOT_DIGEST_LENGTH, id->fwid, DICE_DIGEST_LENGTH);
+    oe_assert(status == RIOT_SUCCESS);
 
     /* Derive ID key pair from identity hash */
-    RIOT_STATUS riotStatus = RiotCrypt_DeriveEccKey(
+    status = RiotCrypt_DeriveEccKey(
         &id->pub,
         &id->priv,
         digest,
         RIOT_DIGEST_LENGTH,
         RIOT_LABEL_IDENTITY,
         lblSize(RIOT_LABEL_IDENTITY));
-    oe_assert(riotStatus == RIOT_SUCCESS);
+    oe_assert(status == RIOT_SUCCESS);
+}
+
+/* Construct and sign a root certificate */
+static void build_root_cert(
+    DERBuilderContext* der_ctx,
+    const simulated_cyres_identity_t* id,
+    simulated_cyres_identity_t* signer,
+    RIOT_ECC_PUBLIC* code_authority,
+    RIOT_X509_TBS_DATA* tbs,
+    int32_t path_len)
+{
+    /* Create the device certificate */
+    const int result = X509GetRootCertTBS(
+        der_ctx, tbs, &id->pub, path_len);
+    oe_assert(result == 0);
 }
 
 /* Construct and sign a device certificate */
 static void build_device_cert(
-    const DERBuilderContext* der_ctx,
+    DERBuilderContext* der_ctx,
     const simulated_cyres_identity_t* id,
-    simulated_cyres_identity_t* signer,
-    RIOT_ECC_PUBLIC* code_authority,
-    RIOT_X509_TBS_DATA* tbs)
+    const simulated_cyres_identity_t* signer,
+    const RIOT_ECC_PUBLIC* code_authority,
+    RIOT_X509_TBS_DATA* tbs,
+    int32_t path_len)
 {
     /* Build the device identity */
     uint8_t device_id[CLAIM_BUFFER_LENGTH];
@@ -129,25 +176,27 @@ static void build_device_cert(
     uint32_t auth_size;
 
     RiotCrypt_ExportEccPub(code_authority, auth_buffer, &auth_size);
-    RIOT_STATUS status = BuildDeviceClaim(
+    const RIOT_STATUS status = BuildDeviceClaim(
         &id->pub,
         auth_buffer,
         auth_size,
-        NULL,
-        0,
+        id->fwid,
+        sizeof(id->fwid),
         device_id,
         CLAIM_BUFFER_LENGTH,
         &device_id_len);
     oe_assert(status == RIOT_SUCCESS);
 
     /* Create the device certificate */
-    X509GetDeviceCertTBS(
-        der_ctx, tbs, &id->pub, NULL, device_id, device_id_len, 1);
-
-    /* Sign the Certificate's TBS region and create the final DER cert */
-    RIOT_ECC_SIGNATURE tbs_sig = {0};
-    RiotCrypt_Sign(&tbs_sig, der_ctx->Buffer, der_ctx->Position, &signer->priv);
-    X509MakeAliasCert(der_ctx, &tbs_sig);
+    const int result = X509GetDeviceCertTBS(
+        der_ctx, 
+        tbs, 
+        &id->pub, 
+        &signer->pub, 
+        device_id, 
+        device_id_len, 
+        path_len);
+    oe_assert(result == 0);
 }
 
 /* Construct and sign an alias certificate */
@@ -156,7 +205,8 @@ static void build_alias_cert(
     simulated_cyres_identity_t* id,
     simulated_cyres_identity_t* signer,
     RIOT_ECC_PUBLIC* code_authority,
-    RIOT_X509_TBS_DATA* tbs)
+    RIOT_X509_TBS_DATA* tbs,
+    int32_t path_len)
 {
     /* Build the claim blob */
     uint8_t alias_claim[CLAIM_BUFFER_LENGTH];
@@ -165,7 +215,7 @@ static void build_alias_cert(
     uint32_t auth_size;
 
     RiotCrypt_ExportEccPub(code_authority, auth_buffer, &auth_size);
-    RIOT_STATUS status = BuildAliasClaim(
+    const RIOT_STATUS status = BuildAliasClaim(
         auth_buffer,
         auth_size,
         id->fwid,
@@ -176,7 +226,7 @@ static void build_alias_cert(
     oe_assert(status == RIOT_SUCCESS);
 
     /* Create the alias certificate */
-    X509GetAliasCertTBS(
+    const int result = X509GetAliasCertTBS(
         der_ctx,
         tbs,
         &id->pub,
@@ -185,12 +235,63 @@ static void build_alias_cert(
         sizeof(id->fwid),
         alias_claim,
         alias_claim_len,
-        0);
+        path_len);
+    oe_assert(result == 0);
+}
 
-    /* Sign the Certificate's TBS region */
-    RIOT_ECC_SIGNATURE tbs_sig = {0};
-    RiotCrypt_Sign(&tbs_sig, der_ctx->Buffer, der_ctx->Position, &signer->priv);
-    X509MakeAliasCert(der_ctx, &tbs_sig);
+static void generate_serial_num(
+    uint8_t* serial_num_buffer, 
+    size_t serial_num_buffer_size, 
+    RIOT_ECC_PUBLIC* public_key)
+{
+    /* Derive a serial number for the certificate */
+    uint8_t digest[DICE_DIGEST_LENGTH] = {0};
+    const RIOT_STATUS status = RiotCrypt_Kdf(
+        digest,
+        sizeof(digest),
+        (uint8_t*)public_key,
+        sizeof(*public_key),
+        NULL,
+        0,
+        (const uint8_t*)RIOT_LABEL_SERIAL,
+        lblSize(RIOT_LABEL_SERIAL),
+        sizeof(digest));
+    oe_assert(status == RIOT_SUCCESS);
+
+    digest[0] &= 0x7F; // Ensure that the serial number is positive
+    digest[0] |= 0x01; // Ensure that there is no leading zero
+    memcpy(serial_num_buffer, digest, serial_num_buffer_size);
+}
+
+static void tbs_to_cert_pem(
+    build_cert_fp_t* cert_fp,
+    simulated_cyres_identity_t* id, 
+    simulated_cyres_identity_t* signer, 
+    RIOT_ECC_PUBLIC* code_authority, 
+    RIOT_X509_TBS_DATA* tbs, 
+    int32_t path_len)
+{
+    DERBuilderContext der_ctx = {0};
+    uint8_t der_buffer[DER_MAX_SIZE] = {0};
+    DERInitContext(&der_ctx, der_buffer, DER_MAX_SIZE);
+
+    cert_fp(&der_ctx, id, signer, code_authority, tbs, path_len);
+
+    {
+        /* Sign the Certificate's TBS region and create the final DER cert */
+        RIOT_ECC_SIGNATURE tbs_sig = {0};
+        const RIOT_STATUS status = RiotCrypt_Sign(
+            &tbs_sig, der_ctx.Buffer, der_ctx.Position, &signer->priv);
+        oe_assert(status == RIOT_SUCCESS);
+
+        const int result = X509MakeAliasCert(&der_ctx, &tbs_sig);
+        oe_assert(result == 0);
+    }
+
+    id->cert_size = sizeof(id->cert);
+    const int result =
+        DERtoPEM(&der_ctx, R_CERT_TYPE, id->cert, &id->cert_size);
+    oe_assert(result == 0);
 }
 
 /* Generate a PEM encoded certificate of the type specified for an identity.
@@ -202,41 +303,32 @@ static void gen_cert(
     RIOT_X509_TBS_DATA* tbs,
     cert_type_t type)
 {
-    /* Derive a serial number for the certificate */
-    uint8_t digest[DICE_DIGEST_LENGTH] = {0};
-    RiotCrypt_Kdf(
-        digest,
-        sizeof(digest),
-        (uint8_t*)&id->pub,
-        sizeof(id->pub),
-        NULL,
-        0,
-        (const uint8_t*)RIOT_LABEL_SERIAL,
-        lblSize(RIOT_LABEL_SERIAL),
-        sizeof(digest));
-    digest[0] &= 0x7F; // Ensure that the serial number is positive
-    digest[0] |= 0x01; // Ensure that there is no leading zero
-    memcpy(tbs->SerialNum, digest, sizeof(tbs->SerialNum));
+    generate_serial_num(tbs->SerialNum, sizeof(tbs->SerialNum), &id->pub);
 
-    build_cert_fp_t* cert_fp;
+    build_cert_fp_t* cert_fp = NULL;
+    int32_t path_len = 0;
     switch (type)
     {
+        case LOADER:
+            path_len++;
+            // passthrough
         case ALIAS:
+            path_len++;
             cert_fp = build_alias_cert;
             break;
         case DEVICE:
+            path_len = 2;
             cert_fp = build_device_cert;
             break;
+        case ROOT:
+            path_len = 3;
+            cert_fp = build_root_cert;
+            break;
+        default:
+            oe_assert(false);
     }
 
-    DERBuilderContext der_ctx = {0};
-    uint8_t der_buffer[DER_MAX_SIZE] = {0};
-    DERInitContext(&der_ctx, der_buffer, DER_MAX_SIZE);
-
-    cert_fp(&der_ctx, id, signer, code_authority, tbs);
-
-    id->cert_size = sizeof(id->cert);
-    oe_assert(DERtoPEM(&der_ctx, R_CERT_TYPE, id->cert, &id->cert_size) == 0);
+    tbs_to_cert_pem(cert_fp, id, signer, code_authority, tbs, path_len);
 }
 
 /* Initialization of simulated identity */
@@ -254,18 +346,20 @@ static void init_sim()
 
     /* Generate the code authority. This simulates the authoritative signer of
      * each component in the chain */
-    RiotCrypt_DeriveEccKey(
+    RIOT_STATUS status = RiotCrypt_DeriveEccKey(
         &auth_key_pub,
         &auth_key_pri,
         (const uint8_t*)CODE_AUTHORITY_SECRET,
         CODE_AUTHORITY_SECRET_SIZE,
         (const uint8_t*)RIOT_LABEL_IDENTITY,
         lblSize(RIOT_LABEL_IDENTITY));
+    oe_assert(status == RIOT_SUCCESS);
 
     TEE_GenerateRandom(g_sic.uds, DICE_UDS_LENGTH);
 
     /* Do not use UDS directly */
-    RiotCrypt_Hash(digest, DICE_DIGEST_LENGTH, g_sic.uds, DICE_UDS_LENGTH);
+    status = RiotCrypt_Hash(digest, DICE_DIGEST_LENGTH, g_sic.uds, DICE_UDS_LENGTH);
+    oe_assert(status == RIOT_SUCCESS);
 
     /* Generate a simulated root identity */
     gen_sim_id(digest, DICE_DIGEST_LENGTH, &g_sic.root_id);
@@ -276,14 +370,36 @@ static void init_sim()
         &g_sic.root_id,
         &auth_key_pub,
         &x509_root_tbs_data,
+        ROOT);
+
+    gen_sim_id(digest, DICE_DIGEST_LENGTH, &g_sic.device_id);
+
+    gen_cert(
+        &g_sic.device_id,
+        &g_sic.root_id,
+        &auth_key_pub,
+        &x509_device_tbs_data,
         DEVICE);
+
+    gen_sim_id(digest, DICE_DIGEST_LENGTH, &g_sic.loader_id);
+
+    gen_cert(
+        &g_sic.loader_id,
+        &g_sic.device_id,
+        &auth_key_pub,
+        &x509_loader_tbs_data,
+        LOADER);
 
     /* Generate the TA identity with the rolling digest */
     gen_sim_id(digest, DICE_DIGEST_LENGTH, &g_sic.ta_id);
 
-    /* Issue a device certificate signed by the root */
+    /* Issue a TA certificate signed by the loader */
     gen_cert(
-        &g_sic.ta_id, &g_sic.root_id, &auth_key_pub, &x509_ta_tbs_data, ALIAS);
+        &g_sic.ta_id, 
+        &g_sic.loader_id, 
+        &auth_key_pub, 
+        &x509_ta_tbs_data, 
+        ALIAS);
 
     init = 1;
 }
@@ -308,11 +424,11 @@ static TEE_Result invoke_cyres_get_private_key(
     DERBuilderContext der_builder;
     uint8_t derBuffer[DER_MAX_SIZE] = {0};
     DERInitContext(&der_builder, derBuffer, DER_MAX_SIZE);
-    X509GetDEREccPub(&der_builder, g_sic.ta_id.pub);
+    X509GetDEREcc(&der_builder, g_sic.ta_id.pub, g_sic.ta_id.priv);
 
     /* Convert to PEM, returning size if buffer is not sufficient */
     uint32_t length = params[0].memref.size;
-    int res = DERtoPEM(
+    const int res = DERtoPEM(
         &der_builder, R_ECC_PRIVATEKEY_TYPE, params[0].memref.buffer, &length);
     if (res != 0)
     {
@@ -342,11 +458,11 @@ static TEE_Result invoke_cyres_get_public_key(
     DERBuilderContext der_builder;
     uint8_t derBuffer[DER_MAX_SIZE] = {0};
     DERInitContext(&der_builder, derBuffer, DER_MAX_SIZE);
-    X509GetDEREcc(&der_builder, g_sic.ta_id.pub, g_sic.ta_id.priv);
+    X509GetDEREccPub(&der_builder, g_sic.ta_id.pub);
 
     /* Convert to PEM, returning size if buffer is not sufficient */
     uint32_t length = params[0].memref.size;
-    int res = DERtoPEM(
+    const int res = DERtoPEM(
         &der_builder, R_PUBLICKEY_TYPE, params[0].memref.buffer, &length);
     if (res != 0)
     {
@@ -372,7 +488,8 @@ static TEE_Result invoke_cyres_get_cert_chain(
     if (exp_pt != param_types)
         return TEE_ERROR_BAD_PARAMETERS;
 
-    size_t cur = g_sic.root_id.cert_size + g_sic.ta_id.cert_size + 1;
+    size_t cur = g_sic.root_id.cert_size + g_sic.device_id.cert_size +
+                 g_sic.loader_id.cert_size + g_sic.ta_id.cert_size + 1;
     if (params[0].memref.size < cur)
     {
         params[0].memref.size = cur;
@@ -384,10 +501,16 @@ static TEE_Result invoke_cyres_get_cert_chain(
     memcpy(&cert_bag[cur], g_sic.ta_id.cert, g_sic.ta_id.cert_size);
     cur += g_sic.ta_id.cert_size;
 
-    memcpy(&cert_bag[cur], g_sic.root_id.cert, g_sic.root_id.cert_size);
-    cur++;
+    memcpy(&cert_bag[cur], g_sic.loader_id.cert, g_sic.loader_id.cert_size);
+    cur += g_sic.loader_id.cert_size;
 
-    cert_bag[cur] = (uint8_t)'/0';
+    memcpy(&cert_bag[cur], g_sic.device_id.cert, g_sic.device_id.cert_size);
+    cur += g_sic.device_id.cert_size;
+
+    memcpy(&cert_bag[cur], g_sic.root_id.cert, g_sic.root_id.cert_size);
+    cur += g_sic.root_id.cert_size;
+
+    cert_bag[cur] = (uint8_t)'\0';
 
     return TEE_SUCCESS;
 }

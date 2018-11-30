@@ -41,8 +41,11 @@ static TEE_Result get_pta_buf(uint32_t cmd_id, uint8_t* buf, uint32_t* buf_size)
     if (buf_size == NULL)
         return OE_INVALID_PARAMETER;
 
-    if (buf == NULL)
+    if (buf == NULL) 
+    {
         *buf_size = 0;
+        buf = TEE_Malloc(0, 0);
+    }
 
     pt = TEE_PARAM_TYPES(
         TEE_PARAM_TYPE_MEMREF_OUTPUT,
@@ -70,11 +73,11 @@ static TEE_Result get_pta_buf(uint32_t cmd_id, uint8_t* buf, uint32_t* buf_size)
     return OE_OK;
 }
 
-/* Common PTA routine for buffer retrival commands */
+/* Common PTA routine for buffer retrieval commands */
 static TEE_Result get_pta_allocated_buf(
     uint32_t cmd_id,
     uint8_t** buf,
-    uint32_t* buf_size)
+    size_t* buf_size)
 {
     oe_result_t oe_result;
     uint32_t local_buf_size;
@@ -164,7 +167,7 @@ oe_result_t get_cyres_private_key(uint8_t** pem, size_t* pem_size)
         return oe_result;
 
     /* PEM format, should have a zero terminator */
-    oe_assert((*pem)[(*pem_size) - 1] == '\0');
+    oe_assert(memchr(*pem, '\0', *pem_size) != NULL);
     return OE_OK;
 }
 
@@ -176,7 +179,7 @@ oe_result_t get_cyres_public_key(uint8_t** pem, size_t* pem_size)
         return oe_result;
 
     /* PEM format, should have a zero terminator */
-    oe_assert((*pem)[(*pem_size) - 1] == '\0');
+    oe_assert(memchr(*pem, '\0', *pem_size) != NULL);
     return OE_OK;
 }
 
@@ -188,7 +191,7 @@ oe_result_t get_cyres_cert_chain(uint8_t** pem, size_t* pem_size)
         return oe_result;
 
     /* PEM format, should have a zero terminator */
-    oe_assert((*pem)[(*pem_size) - 1] == '\0');
+    oe_assert(memchr(*pem, '\0', *pem_size) != NULL);
     return OE_OK;
 }
 
