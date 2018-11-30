@@ -269,8 +269,6 @@
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/new_size_nothrow.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/new_size.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array11.pass.cpp
-#See issue #830 for issue with clang
-../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array_calls_unsized_delete_array.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.single/delete_align_val_t_replace.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.single/new_align_val_t_nothrow.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.single/new_align_val_t_nothrow_replace.pass.cpp
