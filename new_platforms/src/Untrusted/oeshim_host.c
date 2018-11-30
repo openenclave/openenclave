@@ -12,6 +12,7 @@
 #include "oeoverintelsgx_u.h"
 #include "../oeresult.h"
 #include "../optee-shared.h"
+#include "oeinternal_u.h"
 
 ocall_table_v2_t g_ocall_table_v2 = { 0 };
 
@@ -130,28 +131,33 @@ oe_result_t oe_get_report_v1(
     _In_reads_opt_(opt_params_size) const void* opt_params,
     _In_ size_t opt_params_size,
     _Out_ uint8_t* report_buffer,
-    _Out_ size_t* report_buffer_size)
+    _Inout_ size_t* report_buffer_size)
 {
-    GetReport_Result result;
-    oe_buffer1024 optParamsBuffer;
-    sgx_enclave_id_t eid = (sgx_enclave_id_t)enclave;
     int serialize_ecall = g_serialize_ecalls;
-    COPY_BUFFER(optParamsBuffer, opt_params, opt_params_size);
 
     if (serialize_ecall) {
-        oe_acquire_enclave_mutex((oe_enclave_t*)eid);
-    }
-    sgx_status_t sgxStatus = ecall_get_report(eid, &result, flags, optParamsBuffer, opt_params_size);
-    if (serialize_ecall) {
-        oe_release_enclave_mutex((oe_enclave_t*)eid);
+        oe_acquire_enclave_mutex(enclave);
     }
 
-    oe_result_t oeResult = GetOEResultFromSgxStatus(sgxStatus);
-    if (oeResult == OE_OK) {
-        *report_buffer_size = result.report_buffer_size;
-        memcpy(report_buffer, result.report_buffer, result.report_buffer_size);
+    oe_result_t result;
+    oe_result_t error = ecall_get_report(
+        enclave,
+        &result,
+        flags,
+        (void*)opt_params,
+        opt_params_size,
+        report_buffer,
+        *report_buffer_size,
+        report_buffer_size);
+
+    if (serialize_ecall) {
+        oe_release_enclave_mutex(enclave);
     }
-    return oeResult;
+
+    if (error != OE_OK) {
+        return error;
+    }
+    return result;
 }
 
 oe_result_t oe_get_report_v2(
@@ -162,30 +168,45 @@ oe_result_t oe_get_report_v2(
     _Outptr_ uint8_t** report_buffer,
     _Out_ size_t* report_buffer_size)
 {
-    GetReport_Result result;
-    oe_buffer1024 optParamsBuffer;
-    sgx_enclave_id_t eid = (sgx_enclave_id_t)enclave;
+    *report_buffer = NULL;
+    *report_buffer_size = 0;
+
     int serialize_ecall = g_serialize_ecalls;
-    COPY_BUFFER(optParamsBuffer, opt_params, opt_params_size);
+    for (;;) {
+        if (serialize_ecall) {
+            oe_acquire_enclave_mutex(enclave);
+        }
 
-    if (serialize_ecall) {
-        oe_acquire_enclave_mutex((oe_enclave_t*)eid);
-    }
-    sgx_status_t sgxStatus = ecall_get_report(eid, &result, flags, optParamsBuffer, opt_params_size);
-    if (serialize_ecall) {
-        oe_release_enclave_mutex((oe_enclave_t*)eid);
-    }
+        oe_result_t result;
+        size_t size_needed;
+        oe_result_t error = ecall_get_report(
+            enclave,
+            &result,
+            flags,
+            (void*)opt_params,
+            opt_params_size,
+            *report_buffer,
+            *report_buffer_size,
+            &size_needed);
+        if (serialize_ecall) {
+            oe_release_enclave_mutex(enclave);
+        }
 
-    oe_result_t oeResult = GetOEResultFromSgxStatus(sgxStatus);
-    if (oeResult == OE_OK) {
-        *report_buffer = malloc(result.report_buffer_size);
+        if (error != OE_OK) {
+            return error;
+        }
+        if (result != OE_BUFFER_TOO_SMALL) {
+            return result;
+        }
+
+        // We don't have a big enough buffer, so get ready to call again.
+        free(*report_buffer);
+        *report_buffer = malloc(size_needed);
         if (*report_buffer == NULL) {
             return OE_OUT_OF_MEMORY;
         }
-        *report_buffer_size = result.report_buffer_size;
-        memcpy(*report_buffer, result.report_buffer, result.report_buffer_size);
+        *report_buffer_size = size_needed;
     }
-    return oeResult;
 }
 
 void oe_free_report(uint8_t* report_buffer)
@@ -199,9 +220,7 @@ oe_result_t oe_verify_report(
     _In_ size_t report_size,
     _Out_opt_ oe_report_t* parsed_report)
 {
-    oe_buffer1024 reportBuffer;
     oe_result_t oeResult;
-    sgx_enclave_id_t eid = (sgx_enclave_id_t)enclave;
     int serialize_ecall = g_serialize_ecalls;
 
     if (parsed_report != NULL) {
@@ -211,20 +230,19 @@ oe_result_t oe_verify_report(
         }
     }
 
-    COPY_BUFFER(reportBuffer, report, report_size);
-
     if (serialize_ecall) {
         oe_acquire_enclave_mutex(enclave);
     }
-    sgx_status_t sgxStatus = ecall_verify_report(eid, (int*)&oeResult, reportBuffer, report_size);
+    oe_result_t returned_result;
+    oeResult = ecall_verify_report(enclave, &returned_result, (void*)report, report_size);
     if (serialize_ecall) {
         oe_release_enclave_mutex(enclave);
     }
-
-    if (sgxStatus != SGX_SUCCESS) {
-        return GetOEResultFromSgxStatus(sgxStatus);
+    if (oeResult != OE_OK) {
+        return oeResult;
     }
-    return oeResult;
+
+    return returned_result;
 }
 
 size_t ocall_v2(

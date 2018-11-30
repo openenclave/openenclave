@@ -9,7 +9,7 @@
 #include <openenclave/bits/report.h>
 #include <openenclave/bits/result.h>
 
-#include "tcps.h"
+#include "../include/tcps.h"
 
 #ifndef _In_
 #include "sal_unsup.h"

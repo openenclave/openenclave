@@ -44,12 +44,6 @@ enclave {
         int size;
     };
 
-    struct GetReport_Result {
-        int result;
-        char report_buffer[1024];
-        size_t report_buffer_size;
-    };
-
     struct callV2_Result {
         char outBuffer[4096];
         size_t outBufferSize;
@@ -67,17 +61,17 @@ enclave {
 
         public void ecall_FreeTeeBuffer([user_check] void* hTeeBuffer);
 
-        public GetReport_Result ecall_get_report(uint32_t flags,
-                                                 oe_buffer1024 opt_params,
-                                                 size_t opt_params_size);
-        public int ecall_verify_report(oe_buffer1024 report,
-                                       size_t report_size);
-
         public size_t ecall_v2(uint32_t func,
                                [in, size=inBufferSize] const void* inBuffer,
                                size_t inBufferSize,
                                [out, size=outBufferSize] void* outBuffer,
                                size_t outBufferSize);
+
+        public size_t ecall_internal(uint32_t func,
+                                     [in, size=inBufferSize] const void* inBuffer,
+                                     size_t inBufferSize,
+                                     [out, size=outBufferSize] void* outBuffer,
+                                     size_t outBufferSize);
     };
 
     untrusted {

@@ -192,26 +192,39 @@ void oe_free_report(uint8_t* report_buffer)
     oe_free(report_buffer);
 }
 
-GetReport_Result ecall_get_report(
+oe_result_t ecall_get_report(
     uint32_t flags,
-    oe_buffer1024 opt_params,
-    size_t opt_params_size)
+    _In_ void* opt_params,
+    size_t opt_params_size,
+    _Out_writes_bytes_(report_buffer_size) void* report_buffer,
+    size_t report_buffer_size,
+    _Out_ size_t* report_buffer_size_needed)
 {
-    GetReport_Result result = { 0 };
-    result.report_buffer_size = sizeof(result.report_buffer);
-    result.result = oe_get_report_v1(flags,
-                                     NULL,
-                                     0,
-                                     opt_params.buffer,
-                                     opt_params_size,
-                                     result.report_buffer,
-                                     &result.report_buffer_size);
-    return result;
+    uint8_t* new_buffer;
+    memset(report_buffer, 0, report_buffer_size);
+    oe_result_t result = oe_get_report_v2(flags,
+                                          NULL,
+                                          0,
+                                          opt_params,
+                                          opt_params_size,
+                                          &new_buffer,
+                                          report_buffer_size_needed);
+    if (result != OE_OK) {
+        return result;
+    }
+    if (report_buffer_size < *report_buffer_size_needed) {
+        oe_free(new_buffer);
+        return OE_BUFFER_TOO_SMALL;
+    }
+
+    memcpy(report_buffer, new_buffer, *report_buffer_size_needed);
+    oe_free(new_buffer);
+    return OE_OK;
 }
 
-int ecall_verify_report(oe_buffer1024 report, size_t report_size)
+int ecall_verify_report(void* report, size_t report_size)
 {
-    oe_result_t result = oe_verify_report(report.buffer, report_size, NULL);
+    oe_result_t result = oe_verify_report(report, report_size, NULL);
     return result;
 }
 
@@ -483,6 +496,8 @@ typedef void(*oe_ecall_func_t)(
     size_t output_buffer_size,
     size_t* output_bytes_written);
 
+#undef __oe_ecalls_table
+#undef __oe_ecalls_table_size
 extern oe_ecall_func_t __oe_ecalls_table[];
 extern size_t __oe_ecalls_table_size;
 
@@ -500,6 +515,32 @@ size_t ecall_v2(
     }
 
     __oe_ecalls_table[func](
+        in_buffer,
+        in_buffer_size,
+        out_buffer,
+        out_buffer_size,
+        &outBytesWritten);
+
+    return outBytesWritten;
+}
+
+extern oe_ecall_func_t __oe_internal_ecalls_table[];
+extern size_t __oe_internal_ecalls_table_size;
+
+size_t ecall_internal(
+    _In_ uint32_t func,
+    _In_reads_bytes_(inBufferSize) const void* in_buffer,
+    _In_ size_t in_buffer_size,
+    _Out_writes_bytes_(outBufferSize) void* out_buffer,
+    _In_ size_t out_buffer_size)
+{
+    size_t outBytesWritten = 0;
+
+    if (__oe_internal_ecalls_table == NULL || func >= __oe_internal_ecalls_table_size) {
+        return 0;
+    }
+
+    __oe_internal_ecalls_table[func](
         in_buffer,
         in_buffer_size,
         out_buffer,
