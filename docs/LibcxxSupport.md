@@ -9,7 +9,7 @@ cassert | Yes | - |
 cctype | Partial | Unsupported functions: isalnum(), isaplha(), iscntrl(), isgraph(), isspace(), isblank(), isprint(), ispunct() |
 cfenv | No | - |
 charconv | No | - |
-chrono | Partial | - | All time functions implicitly call out to untrusted host for time values. The resulting time values should not be used for security purposes. Supported functions: time(), gettimeofday(), clock_gettime(), nanosleep(). Please note that clock_gettime() only supports CLOCK_REALTIME |
+chrono | Partial | All time functions implicitly call out to untrusted host for time values. The resulting time values should not be used for security purposes. Supported functions: time(), gettimeofday(), clock_gettime(), nanosleep(). Please note that clock_gettime() only supports CLOCK_REALTIME |
 clocale | Partial | Only basic support for C/POSIX locale |
 cmath | Partial | Supported functions: abs(), nan(), exp(), log(), sin(), tan(), asin(), erf(), trunc(), round(), rint(), modf() |
 codecvt | Yes | - |
