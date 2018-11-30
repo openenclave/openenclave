@@ -443,7 +443,7 @@ static oe_result_t _initialize_enclave(oe_enclave_t* enclave)
     unsigned int subleaf = 0; // pass sub-leaf of 0 - needed for leaf 4
 
     // Initialize enclave cache of CPUID info for emulation
-    for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
+    for (unsigned int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
         oe_get_cpuid(
             i,
