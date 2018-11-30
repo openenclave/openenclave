@@ -485,7 +485,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>CONFIG_CYREP_SGX_BUILD;OPENSSL_NO_SOCK;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(NewPlatformsDir)include;$(ProjectDir)..;$(OESdkDir)include;$(ProjectDir);$(SolutionDir)\Stack\platforms\sgx_trusted;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(ProjectDir)sgx;$(ProjectDir)sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)sgx;$(ProjectDir)..;$(NewPlatformsDir)include/sgx/enclave;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Lib>
       <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
@@ -569,7 +569,6 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>OPENSSL_NO_SOCK;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(NewPlatformsDir)include;$(ProjectDir)..;$(ProjectDir)..;$(SGXSDKInstallPath)\include;$(ProjectDir);$(SolutionDir)openssl/include;$(SolutionDir)Stack/core;$(SolutionDir)Stack/stackcore;$(SolutionDir)Stack/proxystub/clientproxy;$(SolutionDir)Stack/proxystub/serverstub;$(SolutionDir)Stack/platforms/win32sgx_u;$(SolutionDir)Stack/securechannel;$(SolutionDir)Stack/transport/tcp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Lib>
       <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
