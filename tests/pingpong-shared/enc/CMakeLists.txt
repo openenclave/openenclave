@@ -12,3 +12,4 @@ add_executable(pingpong-shared_enc
 
 target_include_directories(pingpong-shared_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(pingpong-shared_enc oelibc oeenclave)
+target_compile_options(pingpong-shared_enc PRIVATE -Wconversion -Wpointer-arith)

@@ -10,3 +10,4 @@ add_enclave_executable(props_enc sign.conf enc.c props.c ${gen})
 
 target_include_directories(props_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(props_enc oeenclave)
+target_compile_options(props_enc PRIVATE -Wconversion -Wpointer-arith)

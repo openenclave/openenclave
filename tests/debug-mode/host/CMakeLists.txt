@@ -4,3 +4,4 @@
 add_executable(debug_host host.c)
 
 target_link_libraries(debug_host oehostapp)
+target_compile_options(debug_host PRIVATE -Wconversion -Wpointer-arith)

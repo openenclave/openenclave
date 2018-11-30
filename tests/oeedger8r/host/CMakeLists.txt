@@ -33,6 +33,9 @@ add_executable(edl_host
 )
 
 target_include_directories(edl_host PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)
+
+set_property(SOURCE ${edl_src} APPEND_STRING PROPERTY COMPILE_FLAGS "-Wconversion -Wpointer-arith")
+
 set_property(
     TARGET edl_host
     PROPERTY CXX_STANDARD 11

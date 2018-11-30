@@ -8,3 +8,4 @@ add_executable(pthread_enc
     rwlock_tests.cpp)
 
 target_link_libraries(pthread_enc oelibcxx oeenclave)
+target_compile_options(pthread_enc PRIVATE -Wconversion -Wpointer-arith)
