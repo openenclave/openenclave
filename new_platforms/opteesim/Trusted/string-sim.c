@@ -1,10 +1,12 @@
 /* Copyright (c) Microsoft Corporation.  All Rights Reserved. */
+/* Licensed under the MIT License. */
 #include <string.h>
 #include <stdbool.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdint.h>
 typedef size_t ssize_t;
+#define _SSIZE_T_DEFINED_
 typedef unsigned short wchar_t;
 #define _NO_CRT_STDIO_INLINE
 #include <strsafe.h>

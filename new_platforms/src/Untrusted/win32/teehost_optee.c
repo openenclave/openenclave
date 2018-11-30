@@ -68,18 +68,27 @@ static HANDLE OpenServiceHandleByFilename(_In_ LPCGUID ServiceGuid)
     return serviceHandle;
 }
 
-oe_result_t Tcps_CreateTAInternal(
+oe_result_t oe_create_enclave_internal(
     _In_z_ const char* a_TaIdString,
-    _In_ uint32_t a_Flags,
+    uint32_t a_Flags,
     _Out_ sgx_enclave_id_t* a_pId)
 {
+    char uuidstring[80];
+    strcpy_s(uuidstring, sizeof(uuidstring), a_TaIdString);
+
+    /* Remove ".ta" extension, if one is present. */
+    size_t len = strlen(uuidstring);
+    if ((len > 3) && (strcmp(&uuidstring[len - 3], ".ta") == 0)) {
+        uuidstring[len - 3] = 0;
+    }
+
     *a_pId = (sgx_enclave_id_t)INVALID_HANDLE_VALUE;
 
     OE_UNUSED(a_Flags);
 
     /* Convert string to GUID. */
     UUID uuid;
-    HRESULT hr = UuidFromString((RPC_CSTR)a_TaIdString, &uuid);
+    HRESULT hr = UuidFromString((RPC_CSTR)uuidstring, &uuid);
     if (hr != S_OK) {
         return OE_FAILURE;
     }

@@ -1,6 +1,6 @@
 # All objects we build and store in our shared library.
-OBJECTS = oeoverintelsgx_u.o teehost_optee.o urpc_optee.o \
-          buffer.o uhelper_shared.o uhelper.o oeshim_u.o oeresult.o \
+OBJECTS = oeinternal_u.o oeoverintelsgx_u.o teehost_optee.o urpc_optee.o \
+          buffer.o uhelper_shared.o uhelper.o oeshim_host.o oeresult.o \
           optee_common.o stdext.o
 
 # Path to where OpenEnclave resides.
@@ -16,12 +16,12 @@ OPTEE_CLIENT = ../../../../3rdparty/optee_client
 
 DEFINES = -DOE_USE_OPTEE -D_DEBUG
 INCLUDES =                             \
+    -I../                              \
+    -I../../                           \
     -I../../../include/optee/host      \
     -I../../../include/optee           \
     -I../../../include/                \
     -I../../../include/linux           \
-    -I../../                           \
-    -I../                              \
     -I$(SGX_SDK)/include               \
     -I$(OE_PATH)/include               \
     -I$(OPTEE_CLIENT)/public
@@ -46,6 +46,11 @@ oehost.a: $(OBJECTS)
 	@echo " [AR]\toehost.a"
 	@$(AR) rcs $(LIB_NAME) $(OBJECTS)
 
+../oeinternal_u.h ../oeinternal_u.c: $(EDL_PATH)/oeinternal.edl
+	@echo " [EDGE]\oeinternal.edl"
+	@$(OEEDGER8R) --untrusted --untrusted-dir .. --search-path "$(EDL_PATH):$(EDL_INC_PATH):$(SGX_SDK)/include" \
+	                                                           "$(EDL_PATH)/oeinternal.edl"
+
 ../oeoverintelsgx_u.h ../oeoverintelsgx_u.c: $(EDL_PATH)/oeoverintelsgx.edl
 	@echo " [EDGE]\oeoverintelsgx.edl"
 	@sgx_edger8r --untrusted --untrusted-dir .. --search-path "$(EDL_PATH):$(EDL_INC_PATH):$(SGX_SDK)/include" \
@@ -68,7 +73,7 @@ optee_common.o: ../../optee_common.c
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 
-oeshim_u.o: ../oeshim_u.c ../oeoverintelsgx_u.h
+oeshim_host.o: ../oeshim_host.c ../oeoverintelsgx_u.h
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 
@@ -77,6 +82,10 @@ oeresult.o: ../../oeresult.c
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 
 oeoverintelsgx_u.o: ../oeoverintelsgx_u.c ../oeoverintelsgx_u.h
+	@echo " [CC]\t$@"
+	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
+
+oeinternal_u.o: ../oeinternal_u.c ../oeinternal_u.h
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 

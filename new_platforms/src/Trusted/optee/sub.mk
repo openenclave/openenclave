@@ -11,6 +11,12 @@ ROOT_RELATIVE_PATH = ../../../
 ../oeoverintelsgx_t.h: ../../oeoverintelsgx.edl
 	$(SGX_EDGER8R) --trusted --search-path "../..$(SGX_PATHSEP)$(ROOT_RELATIVE_PATH)$(SGX_RELATIVE_PATH)include" --trusted-dir ".."  ../../oeoverintelsgx.edl
 
+../oeinternal_t.c: ../../oeinternal.edl
+	$(OEEDGER8R) --trusted --search-path "../..$(OEPATHSEP)$(OE_SDK_ROOT_PATH)include" --trusted-dir ".."  ../../oeinternal.edl
+
+../oeinternal_t.h: ../../oeinternal.edl
+	$(OEEDGER8R) --trusted --search-path "../..$(OEPATHSEP)$(OE_SDK_ROOT_PATH)include" --trusted-dir ".."  ../../oeinternal.edl
+
 CFLAGS += -DOE_USE_OPTEE
 
 global-incdirs-y += ..
@@ -24,6 +30,7 @@ global-incdirs-y += $(RIoTDir)External/tinycbor/src
 global-incdirs-y += $(OE_SDK_ROOT_PATH)include
 
 srcs-y += ../oeoverintelsgx_t.c
+srcs-y += ../oeinternal_t.c
 srcs-y += ../../buffer.c
 srcs-y += ../CallbackHelper.c
 srcs-y += ../cborhelper.c
@@ -32,7 +39,7 @@ srcs-y += ../Io.c
 srcs-y += ../keygen.c
 srcs-y += ../../oeresult.c
 srcs-y += ../../optee_common.c
-srcs-y += ../oeshim_t.c
+srcs-y += ../oeshim_enc.c
 srcs-y += ../logapp.c
 srcs-y += ../log_ocall_file.c
 srcs-y += ../socket_enc.c

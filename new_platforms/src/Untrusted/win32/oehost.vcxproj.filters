@@ -4,7 +4,6 @@
     <ClCompile Include="uhelper.c" />
     <ClCompile Include="..\..\buffer.c" />
     <ClCompile Include="..\..\oeresult.c" />
-    <ClCompile Include="..\oeshim_u.c" />
     <ClCompile Include="..\oeoverintelsgx_u.c">
       <Filter>Generated Files</Filter>
     </ClCompile>
@@ -30,10 +29,20 @@
     <ClCompile Include="..\..\optee_common.c">
       <Filter>OP-TEE</Filter>
     </ClCompile>
+    <ClCompile Include="..\oeshim_host.c" />
+    <ClCompile Include="..\oeinternal_u.c">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(OpteeCallsDir)OpteeCalls\inc\targetver.h" />
     <ClInclude Include="..\oeoverintelsgx_u.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\oeinternal_args.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\oeinternal_u.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -51,5 +60,6 @@
   <ItemGroup>
     <CustomBuild Include="..\..\oeoverintelsgx.edl" />
     <CustomBuild Include="..\..\..\..\include\openenclave\stdio.edl" />
+    <CustomBuild Include="..\..\oeinternal.edl" />
   </ItemGroup>
 </Project>

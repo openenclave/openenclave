@@ -58,6 +58,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\oeinternal_u.c" />
     <ClCompile Include="..\oeoverintelsgx_u.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
@@ -81,7 +82,7 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">$(NewPlatformsDir)include;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(OpteeCallsDir)OpteeCalls\inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">$(NewPlatformsDir)include;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(OpteeCallsDir)OpteeCalls\inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
     </ClCompile>
-    <ClCompile Include="..\oeshim_u.c" />
+    <ClCompile Include="..\oeshim_host.c" />
     <ClCompile Include="teehost_optee.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -114,6 +115,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(OpteeCallsDir)OpteeCalls\inc\targetver.h" />
+    <ClInclude Include="..\oeinternal_args.h" />
+    <ClInclude Include="..\oeinternal_u.h" />
     <ClInclude Include="..\oeoverintelsgx_u.h" />
   </ItemGroup>
   <ItemGroup>
@@ -134,6 +137,38 @@
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\..\include\openenclave\stdio.edl">
+      <FileType>Document</FileType>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Creating untrusted proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Creating untrusted proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">Creating untrusted proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Creating untrusted proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Creating untrusted proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">Creating untrusted proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Creating untrusted proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Creating untrusted proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">Creating untrusted proxy/bridge routines</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(NewPlatformsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(NewPlatformsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">"$(NewPlatformsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">"$(NewPlatformsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">"$(NewPlatformsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">"$(NewPlatformsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(NewPlatformsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(NewPlatformsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">"$(NewPlatformsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\..\oeinternal.edl">
       <FileType>Document</FileType>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Creating untrusted proxy/bridge routines</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Creating untrusted proxy/bridge routines</Message>
@@ -240,7 +275,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_ARM_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(WinARMSDKInstallPath);$(NewPlatformsDir)include\optee\host;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(SolutionDir)Stack\Core;$(SolutionDir)Stack\StackCore;$(SolutionDir)Stack\transport\tcp;$(OpteeCallsDir)OpteeCalls\inc;%(AdditionalIncludeDirectories);$(SolutionDir)Stack\Platforms/Win32_untrusted;$(SGXSDKInstallPath)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..;$(WinARMSDKInstallPath);$(NewPlatformsDir)include\optee\host;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OESdkDir)include;$(OpteeCallsDir)OpteeCalls\inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -258,7 +293,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>OE_SIMULATE_OPTEE;WIN32;_DEBUG;_LIB;_ARM_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(NewPlatformsDir)include\optee\host;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(OpteeCallsDir)OpteeCalls\inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..;$(NewPlatformsDir)include\optee\host;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OESdkDir)include;$(OpteeCallsDir)OpteeCalls\inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -276,7 +311,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>USE_VCOM;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(NewPlatformsDir)include;$(OESdkDir)include;$(ProjectDir)..\..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(SolutionDir)Stack\Core;$(SolutionDir)Stack\StackCore;$(SolutionDir)Stack\Platforms/Win32_untrusted;$(OpteeCallsDir)OpteeCalls\inc;$(SolutionDir)Stack\transport\tcp;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..\..;$(NewPlatformsDir)include;$(OESdkDir)include;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
@@ -298,7 +333,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>OE_SIMULATE_OPTEE;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(NewPlatformsDir)include\optee\host;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(OpteeCallsDir)OpteeCalls\inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..;$(NewPlatformsDir)include\optee\host;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OESdkDir)include;$(OpteeCallsDir)OpteeCalls\inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
@@ -320,7 +355,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(NewPlatformsDir)include;$(OESdkDir)include;$(ProjectDir)..\..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(SGXSDKInstallPath)\include;../../Stack/Core;../../Stack/StackCore;../../Stack/Platforms/Win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..\..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
@@ -341,7 +376,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>OE_SIMULATE_OPTEE;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(NewPlatformsDir)include\optee\host;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OESdkDir)include;$(ProjectDir)..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(OpteeCallsDir)OpteeCalls\inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..;$(NewPlatformsDir)include\optee\host;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OESdkDir)include;$(OpteeCallsDir)OpteeCalls\inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
@@ -364,7 +399,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(WinARMSDKInstallPath);$(NewPlatformsDir)include;$(OESdkDir)include;$(ProjectDir)..\..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(SolutionDir)Stack\Core;$(SolutionDir)Stack\StackCore;$(SolutionDir)Stack\transport\tcp;$(OpteeCallsDir)OpteeCalls\inc;%(AdditionalIncludeDirectories);$(SolutionDir)Stack\Platforms/Win32_untrusted;$(SGXSDKInstallPath)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..\..;$(WinARMSDKInstallPath);$(NewPlatformsDir)include;$(OESdkDir)include;$(OpteeCallsDir)OpteeCalls\inc;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -385,7 +420,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>USE_VCOM;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(NewPlatformsDir)include;$(OESdkDir)include;$(ProjectDir)..\..;$(ProjectDir);$(UrchinDir)ScTrm\PuScTrmLib;$(SolutionDir)Stack\Core;$(SolutionDir)Stack\StackCore;$(SolutionDir)Stack\Platforms/Win32_untrusted;$(OpteeCallsDir)OpteeCalls\inc;$(SolutionDir)Stack\transport\tcp;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..\..;$(NewPlatformsDir)include;$(OESdkDir)include;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -408,7 +443,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(NewPlatformsDir)include;$(OESdkDir)include;$(ProjectDir)..\..;$(ProjectDir);$(SGXSDKInstallPath)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..\..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
