@@ -10,6 +10,7 @@
 #include "enclavelibc.h"
 
 #ifdef OE_USE_OPTEE
+#include <tee_api_types.h>
 #include <optee/string_optee_t.h>
 #endif
 

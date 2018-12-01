@@ -3,10 +3,23 @@
 enclave {
     include "tcps.h"
     include "openenclave/bits/result.h"
-    include "openenclave/bits/oebuffer.h"
+
+    struct ocall_tm {
+        int tm_sec;
+        int tm_min;
+        int tm_hour;
+        int tm_mday;
+        int tm_mon;
+        int tm_year;
+        int tm_wday;
+        int tm_yday;
+        int tm_isdst;
+    };
 
     /* define ECALLs here. */
     trusted {
+        public oe_result_t ecall_InitializeEnclave();
+
         public oe_result_t ecall_get_report(uint32_t flags,
                                             [in, size=opt_params_size] void* opt_params,
                                             size_t opt_params_size,
@@ -20,5 +33,20 @@ enclave {
 
     untrusted {
         /* define OCALLs here. */
+
+        unsigned int ocall_GetTickCount(void);
+        uint64_t ocall_time64(void);
+        int ocall_localtime64(uint64_t timer, [out] struct ocall_tm* tm);
+        int ocall_gmtime64(uint64_t timer, [out] struct ocall_tm* tm);
+        oe_result_t ocall_QueryPerformanceCounter([out] uint64_t* count);
+
+        oe_result_t ocall_exit(int result);
+        oe_result_t ocall_puts([in, string] char* str, int bNewline);
+
+        void* ocall_malloc(size_t size);
+        void* ocall_realloc([user_check] void* ptr, size_t size);
+        void* ocall_calloc(size_t nmemb, size_t size);
+        char* ocall_strndup([in, string] char* str, size_t n);
+        void ocall_free([user_check] void* ptr);
     };
 };

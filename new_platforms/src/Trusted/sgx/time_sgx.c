@@ -3,7 +3,9 @@
 #include <assert.h>
 #include <stddef.h>
 
-#include <tcps_time_t.h>
+#include <openenclave/enclave.h>
+//#include <tcps_time_t.h>
+#include "oeinternal_t.h"
 #include "../oeoverintelsgx_t.h"
 
 /*
@@ -47,34 +49,35 @@ __uint32_t GetTickCount()
 
 struct tm* _localtime64(const __time64_t *timer)
 {
-    static GetTm_Result result;
+    int host_result;
+    static struct ocall_tm tm;
 
-    sgx_status_t status = ocall_localtime64(&result, *timer);
-    if ((status != SGX_SUCCESS) || (result.err != 0)) {
+    oe_result_t result = ocall_localtime64(&host_result, *timer, &tm);
+    if ((result != OE_OK) || (host_result != 0)) {
         return NULL;
     }
 
-    return (struct tm*)&result.tm;
+    return (struct tm*)&tm;
 }
 
 struct tm* _gmtime64(const __time64_t *timer)
 {
-    static GetTm_Result result;
+    int host_result;
+    static struct ocall_tm tm;
 
-    sgx_status_t status = ocall_gmtime64(&result, *timer);
-    if ((status != SGX_SUCCESS) || (result.err != 0)) {
+    oe_result_t result = ocall_gmtime64(&host_result, *timer, &tm);
+    if ((result != OE_OK) || (host_result != 0)) {
         return NULL;
     }
-    return (struct tm*)&result.tm;
+    return (struct tm*)&tm;
 }
 
 int QueryPerformanceCounter(uint64_t *count)
 {
-    QueryPerformanceCounter_Result result;
-    sgx_status_t status = ocall_QueryPerformanceCounter(&result);
-    if (status != SGX_SUCCESS) {
+    oe_result_t host_result;
+    oe_result_t result = ocall_QueryPerformanceCounter(&host_result, count);
+    if (result != OE_OK) {
         return 0;
     }
-    *count = result.count;
-    return result.status;
+    return host_result;
 }

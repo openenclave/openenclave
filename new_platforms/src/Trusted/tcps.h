@@ -11,3 +11,4 @@
 #define __oe_ecalls_table       __oe_internal_ecalls_table
 #define __oe_ecalls_table_size  __oe_internal_ecalls_table_size
 #define _dummy_old_style_ecall_to_keep_loader_happy _internal_dummy_old_style_ecall_to_keep_loader_happy
+#define oe_call_host_function oe_call_internal_host_function

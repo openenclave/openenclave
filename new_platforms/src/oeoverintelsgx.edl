@@ -5,68 +5,17 @@ enclave {
 
     include "tcps.h"
     include "openenclave/bits/result.h"
-    include "openenclave/bits/oebuffer.h"
-
-    struct ocall_tm {
-        int tm_sec;
-        int tm_min;
-        int tm_hour;
-        int tm_mday;
-        int tm_mon;
-        int tm_year;
-        int tm_wday;
-        int tm_yday;
-        int tm_isdst;
-    };
-
-    /* define OCALL results here. We must pass arguments by value for OP-TEE, 
-     * and we cannot apply [out] to a value argument so we must define structs
-     * for the return value of each function with multiple out parameters.
-     */
-    struct GetTm_Result {
-        int err;
-        struct ocall_tm tm;
-    };
-
-    struct QueryPerformanceCounter_Result {
-        unsigned int status;
-        uint64_t count;
-    };
-
-    struct CreateBuffer_Result {
-        oe_result_t uStatus;
-        void* hBuffer;
-    };
-
-    struct GetChunk_Result {
-        oe_result_t uStatus;
-        char buffer[1024];
-        int size;
-    };
-
-    struct callV2_Result {
-        char outBuffer[4096];
-        size_t outBufferSize;
-    };
 
     /* define ECALLs here. */
     trusted {
-        public oe_result_t ecall_InitializeEnclave();
-
-        public CreateBuffer_Result ecall_CreateTeeBuffer(oe_BufferChunk chunk);
-
-        public oe_result_t ecall_AppendToTeeBuffer(
-            [user_check] void* hTeeBuffer,
-            oe_BufferChunk chunk);
-
-        public void ecall_FreeTeeBuffer([user_check] void* hTeeBuffer);
-
+        /* Call ECALL specified by application oeedger8r-processed EDL file. */
         public size_t ecall_v2(uint32_t func,
                                [in, size=inBufferSize] const void* inBuffer,
                                size_t inBufferSize,
                                [out, size=outBufferSize] void* outBuffer,
                                size_t outBufferSize);
 
+        /* Call ECALL specified by internal oeinternal.edl. */
         public size_t ecall_internal(uint32_t func,
                                      [in, size=inBufferSize] const void* inBuffer,
                                      size_t inBufferSize,
@@ -77,40 +26,20 @@ enclave {
     untrusted {
         /* define OCALLs here. */
 
-        CreateBuffer_Result ocall_CreateReeBuffer(oe_BufferChunk chunk);
+        /* Call OCALL specified by application oeedger8r-processed EDL file. */
+        oe_result_t ocall_v2(uint32_t func,
+                             [in, size=inBufferSize] const void* inBuffer,
+                             size_t inBufferSize,
+                             [out, size=outBufferSize] void* outBuffer,
+                             size_t outBufferSize,
+                             [out] size_t* out_bytes_written);
 
-        oe_result_t ocall_AppendToReeBuffer(
-            [user_check] void* hReeBuffer,
-            oe_BufferChunk chunk);
-
-        void ocall_FreeReeBuffer([user_check] void* hBuffer);
-
-        GetChunk_Result ocall_GetReeBufferChunk(
-            [user_check] void* hReeBuffer,
-            int offset);
-
-        /* Time APIs. */
-        unsigned int ocall_GetTickCount(void);
-        uint64_t ocall_time64(void);
-        GetTm_Result ocall_localtime64(uint64_t timer);
-        GetTm_Result ocall_gmtime64(uint64_t timer);
-        QueryPerformanceCounter_Result ocall_QueryPerformanceCounter(void);
-
-        oe_result_t ocall_exit(int result);
-        oe_result_t ocall_puts(oe_buffer1024 str, int bNewline);
-
-        void* ocall_malloc(size_t size);
-        void* ocall_realloc([user_check] void* ptr, size_t size);
-        void* ocall_calloc(size_t nmemb, size_t size);
-        void ocall_free([user_check] void* ptr);
-        void ocall_CopyReeMemoryFromBufferChunk(
-            [user_check] void* ptr,
-            oe_BufferChunk chunk);
-
-        size_t ocall_v2(uint32_t func,
-                        [in, size=inBufferSize] const void* inBuffer,
-                        size_t inBufferSize,
-                        [out, size=outBufferSize] void* outBuffer,
-                        size_t outBufferSize);
+        /* Call OCALL specified by internal oeinternal.edl. */
+        oe_result_t ocall_internal(uint32_t func,
+                                   [in, size=inBufferSize] const void* inBuffer,
+                                   size_t inBufferSize,
+                                   [out, size=outBufferSize] void* outBuffer,
+                                   size_t outBufferSize,
+                                   [out] size_t* out_bytes_written);
     };
 };

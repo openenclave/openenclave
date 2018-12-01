@@ -21,9 +21,6 @@
     <ClCompile Include="ufiles.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\uProtectedFs_optee.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="uTcpsFileOcalls.c">
       <Filter>Source Files</Filter>
     </ClCompile>

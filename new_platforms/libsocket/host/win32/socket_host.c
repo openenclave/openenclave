@@ -6,7 +6,6 @@
 #include <sal.h>
 #include <openenclave/host.h>
 #include "../socket_u.h"
-#include "../../../src/buffer.h"
 
 oe_socket_error_t ocall_WSAStartup(void)
 {
@@ -112,52 +111,48 @@ ssize_t ocall_recv(
     return bytesReceived;
 }
 
-getaddrinfo_Result ocall_getaddrinfo(
+int ocall_getaddrinfo(
     _In_z_ const char* a_NodeName,
     _In_z_ const char* a_ServiceName,
-    _In_ int a_Flags,
-    _In_ int a_Family,
-    _In_ int a_SockType,
-    _In_ int a_Protocol)
+    int a_Flags,
+    int a_Family,
+    int a_SockType,
+    int a_Protocol,
+    _Out_writes_bytes_(len) addrinfo_Buffer* aibuffer,
+    size_t len,
+    _Out_ size_t* length_needed)
 {
-    getaddrinfo_Result result = { 0 };
-    ADDRINFO* ailist = NULL;
-    ADDRINFO* ai;
-    ADDRINFO hints = { 0 };
-    void* hBuffer = NULL;
+    struct addrinfo* ailist = NULL;
+    struct addrinfo* ai;
+    struct addrinfo hints = { 0 };
+
+    int eai_error = 0;
+    *length_needed = 0;
+    memset(aibuffer, 0, len);
 
     hints.ai_flags = a_Flags;
     hints.ai_family = a_Family;
     hints.ai_socktype = a_SockType;
     hints.ai_protocol = a_Protocol;
 
-    result.error = getaddrinfo(a_NodeName, a_ServiceName, &hints, &ailist);
+    eai_error = getaddrinfo(a_NodeName, a_ServiceName, &hints, &ailist);
     if (ailist == NULL) {
-        return result;
+        return eai_error;
     }
 
     /* Count number of addresses. */
+    int count = 0;
     for (ai = ailist; ai != NULL; ai = ai->ai_next) {
-        result.addressCount++;
+        count++;
     }
 
-    hBuffer = CreateBuffer(result.addressCount * sizeof(struct addrinfo_Buffer));
-    if (hBuffer == NULL) {
+    *length_needed = count * sizeof(*aibuffer);
+    if (len < *length_needed) {
         freeaddrinfo(ailist);
-        result.error = WSAENOBUFS;
-        return result;
+        return EAI_AGAIN;
     }
 
     /* Serialize ailist. */
-    addrinfo_Buffer* aibuffer = NULL;
-    int size = 0;
-    oe_result_t uStatus = GetBuffer(hBuffer, (char**)&aibuffer, &size);
-    if (uStatus != OE_OK) {
-        FreeBuffer(hBuffer);
-        freeaddrinfo(ailist);
-        result.error = WSAENOBUFS;
-        return result;
-    }
     int i;
     for (i = 0, ai = ailist; ai != NULL; ai = ai->ai_next, i++) {
         addrinfo_Buffer* aib = &aibuffer[i];
@@ -165,14 +160,13 @@ getaddrinfo_Result ocall_getaddrinfo(
         aib->ai_family = ai->ai_family;
         aib->ai_socktype = ai->ai_socktype;
         aib->ai_protocol = ai->ai_protocol;
-        aib->ai_addrlen = (int)ai->ai_addrlen;
+        aib->ai_addrlen = ai->ai_addrlen;
         COPY_MEMORY_BUFFER_FROM_STRING(aib->ai_canonname, (ai->ai_canonname != NULL) ? ai->ai_canonname : "");
         COPY_MEMORY_BUFFER(aib->ai_addr, ai->ai_addr, ai->ai_addrlen);
     }
 
     freeaddrinfo(ailist);
-    result.hMessage = hBuffer;
-    return result;
+    return 0;
 }
 
 getsockopt_Result ocall_getsockopt(

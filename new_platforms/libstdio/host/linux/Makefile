@@ -1,5 +1,5 @@
 # All objects we build and store in our shared library.
-OBJECTS = uProtectedFs_optee.o uTcpsFileOcalls_shared.o stdio_u.o ufiles.o uTcpsFileOcalls.o
+OBJECTS = uTcpsFileOcalls_shared.o stdio_u.o ufiles.o uTcpsFileOcalls.o
 
 # Path to where OpenEnclave resides.
 OE_PATH = ../../../..
@@ -48,10 +48,6 @@ oestdio_host.a: $(OBJECTS)
 stdio_u.o: ../stdio_u.c ../stdio_u.h
 	@echo " [CC]\t$@"
 	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -include "sal_unsup.h" -c -o $@ $<
-
-uProtectedFs_optee.o: ../uProtectedFs_optee.c
-	@echo " [CC]\t$@"
-	@$(CC) $(CFLAGS) $(COMMON_CFLAGS) -c -o $@ $<
 
 uTcpsFileOcalls.o: uTcpsFileOcalls.c ../stdio_u.h
 	@echo " [CC]\t$@"

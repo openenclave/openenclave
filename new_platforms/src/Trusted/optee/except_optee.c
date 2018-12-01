@@ -1,15 +1,18 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
-#include <sgx_trts_exception.h>
+#include <openenclave/enclave.h>
+#include "oeshim_enc.h"
 
-void* sgx_register_exception_handler(
-    int is_first_handler, 
-    sgx_exception_handler_t exception_handler)
+#define DUMMY_HANDLE ((void*)0xffffffff)
+
+void* oe_register_exception_handler(void)
 {
-    return exception_handler;
+    /* TODO: need to implement this */
+    return DUMMY_HANDLE;
 }
 
-int sgx_unregister_exception_handler(void *handler)
+int oe_unregister_exception_handler(void* handle)
 {
-    return 1;
+    /* TODO: need to implement this */
+    return (handle == DUMMY_HANDLE) ? 1 : 0;
 }

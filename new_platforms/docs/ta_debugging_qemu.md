@@ -161,9 +161,6 @@ runs in the emulator. Then, you must copy your TAs into it.
 To build host applications and TAs in a manner compatible with the emulated
 environment, you need to:
 
-* Install the Intel SGX SDK:
-    * https://01.org/intel-softwareguard-extensions
-    * Make sure to `source` the environment script as the installer suggests.
 * Clone the Open Enclave SDK;
 * Set `ARCH` according to the manifest you picked above:
     * `oe_default.xml` = ARMv7, so ARCH => `aarch32`;

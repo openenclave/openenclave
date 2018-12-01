@@ -15,34 +15,18 @@ extern "C" {
 
 #include <tcps.h>
 
-#include <sgx_eid.h>
+#ifdef OE_USE_SGX
+# include <sgx_eid.h>
+#endif
 
 #include <stddef.h>
+#include <stdint.h>
 typedef intptr_t ssize_t;
 #include <openenclave/bits/result.h>
 
 #ifndef __in_ecount
 #include "sal_unsup.h"
 #endif
-
-/* The caller is responsible for freeing the buffer after calling this. */
-void* TcpsCreateReeBuffer(_In_ int a_BufferSize);
-
-oe_result_t TcpsGetReeBuffer(
-    _In_ void* a_hReeBuffer,
-    _Outptr_ char** a_pBuffer,
-    _Out_ int* a_BufferSize);
-
-void TcpsFreeReeBuffer(_In_ void* a_hReeBuffer);
-
-/* The caller is responsible for freeing the buffer after calling this. */
-oe_result_t
-TcpsPushDataToTeeBuffer(
-    _In_ sgx_enclave_id_t eid,
-    _In_reads_(a_BufferSize) uint8_t* a_Buffer,
-    _In_ size_t a_BufferSize,
-    _Out_ void** a_phTeeBuffer);
-void TcpsFreeTeeBuffer(_In_ void* a_hTeeBuffer);
 
 /* OP-TEE only allows one thread per TA to be in an ecall.  Even if it has
  * an ocall in progress, that ecall must complete before another ecall

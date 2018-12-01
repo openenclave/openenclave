@@ -8,21 +8,46 @@
 #endif
 #include <stddef.h>
 #include <stdbool.h>
+#include <string.h>
 #include <openenclave/host.h>
-#include "oeoverintelsgx_u.h"
-#include "../oeresult.h"
-#include "../optee-shared.h"
+#include "../oeshim_host.h"
 #include "oeinternal_u.h"
+#undef oe_create_enclave
 
 ocall_table_v2_t g_ocall_table_v2 = { 0 };
+ocall_table_v2_t g_internal_ocall_table_v2 = { 0 };
 
 /* TODO: this flag should be per enclave */
 int g_serialize_ecalls = FALSE;
 
-oe_result_t oe_create_enclave_internal(
-    _In_z_ const char* a_TaIdString,
-    uint32_t a_Flags,
-    _Out_ sgx_enclave_id_t* a_pId);
+oe_result_t oe_create_enclave_helper(
+    _In_z_ const char* path,
+    uint32_t flags,
+    _Outptr_ oe_enclave_t** enclave);
+
+oe_result_t oe_create_internal_enclave(
+    _In_z_ const char* path,
+    oe_enclave_type_t type,
+    uint32_t flags,
+    _In_reads_bytes_(config_size) const void* config,
+    uint32_t config_size,
+    _In_reads_(ocall_table_size) const oe_ocall_func_t* ocall_table,
+    uint32_t ocall_table_size,
+    _Outptr_ oe_enclave_t** enclave)
+{
+    OE_UNUSED(enclave);
+    OE_UNUSED(path);
+    OE_UNUSED(type);
+    OE_UNUSED(flags);
+    OE_UNUSED(config);
+    OE_UNUSED(config_size);
+
+    /* Just save the ocall table. */
+    g_internal_ocall_table_v2.nr_ocall = ocall_table_size;
+    g_internal_ocall_table_v2.call_addr = ocall_table;
+
+    return OE_OK;
+}
 
 oe_result_t oe_create_enclave(
     _In_z_ const char* path,
@@ -30,9 +55,9 @@ oe_result_t oe_create_enclave(
     uint32_t flags,
     _In_reads_bytes_(configSize) const void* config,
     uint32_t config_size,
-    _In_ const oe_ocall_func_t* ocall_table,
+    _In_reads_(ocall_table_size) const oe_ocall_func_t* ocall_table,
     uint32_t ocall_table_size,
-    _Out_ oe_enclave_t** enclave)
+    _Outptr_ oe_enclave_t** enclave)
 {
     *enclave = NULL;
 
@@ -52,8 +77,14 @@ oe_result_t oe_create_enclave(
     int serialize_ecall = g_serialize_ecalls;
 
     // Load the enclave.
-    sgx_enclave_id_t eid;
-    oe_result_t result = oe_create_enclave_internal(path, flags, &eid);
+    oe_enclave_t* eid;
+    oe_result_t result = oe_create_enclave_helper(path, flags, &eid);
+    if (result != OE_OK) {
+        return result;
+    }
+
+    // Initialize the internal OCALL table.
+    result = oe_create_oeinternal_enclave(NULL, 0, 0, NULL, 0, NULL);
     if (result != OE_OK) {
         return result;
     }
@@ -61,21 +92,19 @@ oe_result_t oe_create_enclave(
     // Make sure we can call into the enclave.  This also registers the
     // OCALL handler, which OP-TEE needs.
     if (serialize_ecall) {
-        oe_acquire_enclave_mutex((oe_enclave_t*)eid);
+        oe_acquire_enclave_mutex(eid);
     }
-    sgx_status_t sgxStatus = ecall_InitializeEnclave(eid, &result);
+    result = ecall_InitializeEnclave(eid, &result);
     if (serialize_ecall) {
-        oe_release_enclave_mutex((oe_enclave_t*)eid);
+        oe_release_enclave_mutex(eid);
     }
 
-    if (sgxStatus != SGX_SUCCESS) {
-        return OE_FAILURE;
-    }
     if (result != OE_OK) {
+        oe_terminate_enclave(eid);
         return result;
     }
 
-    *enclave = (oe_enclave_t*)eid;
+    *enclave = eid;
     return OE_OK;
 }
 
@@ -91,26 +120,44 @@ oe_result_t oe_ecall(oe_enclave_t* enclave, uint16_t func, uint64_t argIn, uint6
     return OE_FAILURE;
 }
 
-const char* oe_result_str(_In_ oe_result_t result)
+const char* oe_result_str(oe_result_t result)
 {
     static char message[80];
     sprintf_s(message, sizeof(message), "Error %d", result);
     return message;
 }
 
-void* ocall_malloc(_In_ size_t size)
+void* ocall_malloc(size_t size)
 {
     return malloc(size);
 }
 
-void* ocall_realloc(_In_ void* ptr, _In_ size_t size)
+void* ocall_realloc(_In_ void* ptr, size_t size)
 {
     return realloc(ptr, size);
 }
 
-void* ocall_calloc(_In_ size_t nmemb, _In_ size_t size)
+void* ocall_calloc(_In_ size_t nmemb, size_t size)
 {
     return calloc(nmemb, size);
+}
+
+#ifndef LINUX
+char* strndup(_In_ char* str, size_t n)
+{
+    n = strlen(str) > n ? n : strlen(str);
+    char* result = (char*)malloc(n + 1);
+    if (!result)
+        return NULL;
+    strncpy(result, str, n);
+    result[n] = '\0';
+    return result;
+}
+#endif
+
+char* ocall_strndup(_In_ char* str, size_t n)
+{
+    return strndup(str, n);
 }
 
 void ocall_free(_In_ void* ptr)
@@ -118,18 +165,11 @@ void ocall_free(_In_ void* ptr)
     free(ptr);
 }
 
-void ocall_CopyReeMemoryFromBufferChunk(
-    _In_ void* ptr,
-    _In_ oe_BufferChunk chunk)
-{
-    memcpy(ptr, chunk.buffer, chunk.size);
-}
-
 oe_result_t oe_get_report_v1(
     _In_ oe_enclave_t* enclave,
-    _In_ uint32_t flags,
+    uint32_t flags,
     _In_reads_opt_(opt_params_size) const void* opt_params,
-    _In_ size_t opt_params_size,
+    size_t opt_params_size,
     _Out_ uint8_t* report_buffer,
     _Inout_ size_t* report_buffer_size)
 {
@@ -162,9 +202,9 @@ oe_result_t oe_get_report_v1(
 
 oe_result_t oe_get_report_v2(
     _In_ oe_enclave_t* enclave,
-    _In_ uint32_t flags,
+    uint32_t flags,
     _In_reads_opt_(opt_params_size) const void* opt_params,
-    _In_ size_t opt_params_size,
+    size_t opt_params_size,
     _Outptr_ uint8_t** report_buffer,
     _Out_ size_t* report_buffer_size)
 {
@@ -209,7 +249,7 @@ oe_result_t oe_get_report_v2(
     }
 }
 
-void oe_free_report(uint8_t* report_buffer)
+void oe_free_report(_In_ uint8_t* report_buffer)
 {
     free(report_buffer);
 }
@@ -217,7 +257,7 @@ void oe_free_report(uint8_t* report_buffer)
 oe_result_t oe_verify_report(
     _In_ oe_enclave_t* enclave,
     _In_reads_(report_size) const uint8_t* report,
-    _In_ size_t report_size,
+    size_t report_size,
     _Out_opt_ oe_report_t* parsed_report)
 {
     oe_result_t oeResult;
@@ -243,27 +283,6 @@ oe_result_t oe_verify_report(
     }
 
     return returned_result;
-}
-
-size_t ocall_v2(
-    _In_ uint32_t func,
-    _In_reads_bytes_(inBufferSize) const void* in_buffer,
-    _In_ size_t in_buffer_size,
-    _Out_writes_bytes_(outBufferSize) void* out_buffer,
-    _In_ size_t out_buffer_size)
-{
-    if (func >= g_ocall_table_v2.nr_ocall) {
-        return 0;
-    }
-
-    oe_ocall_func_t call = g_ocall_table_v2.call_addr[func];
-    size_t out_bytes_written = 0;
-    call(in_buffer,
-         in_buffer_size,
-         out_buffer,
-         out_buffer_size,
-         &out_bytes_written);
-    return out_bytes_written;
 }
 
 /**
@@ -298,4 +317,28 @@ void oe_free_public_key(
 {
     free(key_buffer);
     free(key_info);
+}
+
+oe_result_t ocall_demux(
+    uint32_t func,
+    _In_reads_bytes_(inBufferSize) const void* in_buffer,
+    size_t in_buffer_size,
+    _Out_writes_bytes_(outBufferSize) void* out_buffer,
+    size_t out_buffer_size,
+    _Out_ size_t* out_bytes_written,
+    _In_ ocall_table_v2_t* ocall_table)
+{
+    if (func >= ocall_table->nr_ocall) {
+        return OE_INVALID_PARAMETER;
+    }
+
+    oe_ocall_func_t call = ocall_table->call_addr[func];
+
+    call(in_buffer,
+         in_buffer_size,
+         out_buffer,
+         out_buffer_size,
+         out_bytes_written);
+
+    return OE_OK;
 }

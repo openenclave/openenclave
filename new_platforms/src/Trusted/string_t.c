@@ -189,7 +189,7 @@ errno_t strncat_s(
     const char *strSource,
     size_t count)
 {
-    int len = strlen(strDest);
+    size_t len = strlen(strDest);
     errno_t err = strncpy_s(strDest + len, numberOfElements - len, strSource, count);
     return err;
 }

@@ -18,7 +18,6 @@ global-incdirs-y += $(OpteeDir)lib/libutee/include
 global-incdirs-y += $(RIoTDir)CyReP/cyrep
 global-incdirs-y += $(RIoTDir)External/tinycbor/src
 global-incdirs-y += $(ROOT_RELATIVE_PATH)../include
-global-incdirs-y += $(ROOT_RELATIVE_PATH)../3rdparty/SGXSDK/include
 global-incdirs-y += ..
 
 srcs-y += ../stdio_enc.c

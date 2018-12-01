@@ -7,7 +7,6 @@
 #include <tee_internal_api_extensions.h>
 
 #include <openenclave/enclave.h>
-#include <sgx_utils.h>
 
 #include "cyres_optee.h"
 #include "enclavelibc.h"

@@ -80,12 +80,12 @@ static size_t oe_sgx_fwrite(
 
 static int oe_sgx_fputs(const char* str, intptr_t stream)
 {
-    int len = strlen(str);
-    int ret = sgx_fwrite(str, 1, len, (SGX_FILE*)stream);
+    size_t len = strlen(str);
+    size_t ret = sgx_fwrite(str, 1, len, (SGX_FILE*)stream);
     if (ret < len) {
         return EOF;
     }
-    return ret;
+    return (int)ret;
 }
 
 static char* oe_sgx_fgets(
@@ -255,7 +255,7 @@ int AppendToFile(
     {
         return errno;
     }
-    int writelen = sgx_fwrite(ptr, 1, len, fp);
+    size_t writelen = sgx_fwrite(ptr, 1, len, fp);
 
     sgx_fclose(fp);
     if (writelen != len) {
@@ -291,7 +291,7 @@ Tcps_InitializeStatus(Tcps_Module_Helper_t, "TEE_P_SaveBufferToFile");
     Tcps_GotoErrorIfTrue(fp == NULL, OE_FAILURE);
 
     size_t writelen = sgx_fwrite(ptr, 1, len, fp);
-    DMSG("TEE_P_SaveBufferToFile: sgx_fwrite(len = %u) returned writelen = %u\n", len, writelen);
+    DMSG("TEE_P_SaveBufferToFile: sgx_fwrite(len = %zu) returned writelen = %zu\n", len, writelen);
     Tcps_GotoErrorIfTrue(writelen != len, OE_FAILURE);
 
     sgx_fclose(fp);
@@ -329,5 +329,5 @@ unsigned long _lrotr(unsigned long value, int shift)
 __uint32_t GetCurrentThreadId()
 {
     sgx_thread_t tid = sgx_thread_self();
-    return tid;
+    return (__uint32_t)tid;
 }

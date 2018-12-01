@@ -30,12 +30,6 @@
     <ClCompile Include="cborhelper.c">
       <Filter>common</Filter>
     </ClCompile>
-    <ClCompile Include="Io.c">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\buffer.c">
-      <Filter>common</Filter>
-    </ClCompile>
     <ClCompile Include="oeoverintelsgx_t.c">
       <Filter>GeneratedFiles</Filter>
     </ClCompile>
@@ -68,9 +62,6 @@
     </ClCompile>
     <ClCompile Include="..\..\..\3rdparty\RIoT\CyReP\RiotDerEnc.c">
       <Filter>common\riot</Filter>
-    </ClCompile>
-    <ClCompile Include="..\oeresult.c">
-      <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="sgx\keygen_sgx.c">
       <Filter>sgx</Filter>
@@ -174,6 +165,15 @@
     <ClCompile Include="oeshim_enc.c">
       <Filter>common</Filter>
     </ClCompile>
+    <ClCompile Include="sgx\rand_sgx.c">
+      <Filter>sgx</Filter>
+    </ClCompile>
+    <ClCompile Include="sgx\except_sgx.c">
+      <Filter>sgx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\oeresult.c">
+      <Filter>sgx</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="optee\linux_gcc.mak">
@@ -231,11 +231,11 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\oeoverintelsgx.edl">
-      <Filter>common</Filter>
-    </CustomBuild>
     <CustomBuild Include="..\oeinternal.edl">
       <Filter>common</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\oeoverintelsgx.edl">
+      <Filter>sgx</Filter>
     </CustomBuild>
   </ItemGroup>
 </Project>

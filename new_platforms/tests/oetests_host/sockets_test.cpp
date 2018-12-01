@@ -207,7 +207,6 @@ public:
     }
 
 protected:
-    sgx_enclave_id_t taid;
     char server[256];
     char port[256];
 #ifdef LINUX
