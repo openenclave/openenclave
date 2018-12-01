@@ -4,7 +4,5 @@
 include(add_enclave_executable)
 add_executable(threadcxx_enc enc.cpp cond_tests.cpp)
 target_compile_options(threadcxx_enc PRIVATE
-    -Wconversion
-    -Wpointer-arith
     --std=c++11)
 target_link_libraries(threadcxx_enc oelibcxx oeenclave)

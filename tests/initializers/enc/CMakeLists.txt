@@ -9,4 +9,3 @@ add_executable(initializers_enc enc.c ${gen})
 
 target_include_directories(initializers_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(initializers_enc oeenclave)
-target_compile_options(initializers_enc PRIVATE -Wconversion -Wpointer-arith)

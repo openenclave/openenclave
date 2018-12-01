@@ -10,4 +10,3 @@ add_executable(hexdump_enc enc.c ${gen})
 
 target_include_directories(hexdump_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(hexdump_enc oeenclave)
-target_compile_options(hexdump_enc PRIVATE -Wconversion -Wpointer-arith)

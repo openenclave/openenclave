@@ -81,8 +81,6 @@ add_custom_command(TARGET crypto-extra_host
             )
 
 target_compile_options(crypto-extra_host PRIVATE
-    -Wconversion
-    -Wpointer-arith
     -std=c++11
 )
 

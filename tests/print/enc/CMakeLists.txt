@@ -13,8 +13,6 @@ target_compile_options(print_enc PRIVATE
     -fno-builtin-strcat
     -fno-builtin-memcpy
     -fno-builtin-memset
-    -Wconversion
-    -Wpointer-arith
     )
 
 if (CMAKE_C_COMPILER_ID MATCHES GNU)

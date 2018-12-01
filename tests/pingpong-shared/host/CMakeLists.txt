@@ -11,5 +11,4 @@ target_link_libraries(pingpong-shared-lib oehostapp)
 
 add_executable(pingpong-shared_host main.cpp)
 target_link_libraries(pingpong-shared_host pingpong-shared-lib)
-target_compile_options(pingpong-shared_host PRIVATE -Wconversion -Wpointer-arith)
 

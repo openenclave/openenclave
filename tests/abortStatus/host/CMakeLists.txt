@@ -4,8 +4,6 @@
 add_executable(abortStatus_host host.cpp)
 
 target_compile_options(abortStatus_host PRIVATE
-    -Wconversion
-    -Wpointer-arith
     $<$<COMPILE_LANGUAGE:CXX>:-std=c++14>
     )
 

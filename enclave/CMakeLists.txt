@@ -26,8 +26,6 @@ add_library(oeenclave STATIC
     sha.c
     start.S)
 
-target_compile_options(oeenclave PRIVATE -Wconversion -Wpointer-arith)
-
 if(CMAKE_C_COMPILER_ID MATCHES GNU)
 target_compile_options(oeenclave PRIVATE -Wjump-misses-init)
 endif()
