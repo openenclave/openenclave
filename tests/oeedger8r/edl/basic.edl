@@ -33,8 +33,7 @@ enclave  {
             long long arg16,
             unsigned char arg17,
             unsigned short arg18,
-            unsigned int arg19,
-            unsigned long arg20
+            unsigned int arg19
         );
 
         public void ecall_basic_non_portable_types(
@@ -98,8 +97,7 @@ enclave  {
             long long arg16,
             unsigned char arg17,
             unsigned short arg18,
-            unsigned int arg19,
-            unsigned long arg20
+            unsigned int arg19
         );
 
         void ocall_basic_non_portable_types(

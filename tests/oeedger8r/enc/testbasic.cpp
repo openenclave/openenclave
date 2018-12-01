@@ -30,8 +30,7 @@ void test_basic_edl_ocalls()
             18,
             255,
             19,
-            20,
-            21) == OE_OK);
+            20) == OE_OK);
 
     {
         char ret = 0;
@@ -148,17 +147,11 @@ void test_basic_edl_ocalls()
     }
 
     {
-        unsigned long ret = 0;
-        OE_TEST(ocall_ret_unsigned_long(&ret) == OE_OK);
-        OE_TEST(ret == 212121);
-    }
-
-    {
         OE_TEST(ocall_ret_void() == OE_OK);
     }
 
     if (g_enabled[TYPE_WCHAR_T] && g_enabled[TYPE_LONG] &&
-        g_enabled[TYPE_LONG_DOUBLE])
+        g_enabled[TYPE_UNSIGNED_LONG] && g_enabled[TYPE_LONG_DOUBLE])
     {
         OE_TEST(
             ocall_basic_non_portable_types(
@@ -178,6 +171,13 @@ void test_basic_edl_ocalls()
         long ret = 0;
         OE_TEST(ocall_ret_long(&ret) == OE_OK);
         OE_TEST(ret == 777);
+    }
+
+    if (g_enabled[TYPE_UNSIGNED_LONG])
+    {
+        unsigned long ret = 0;
+        OE_TEST(ocall_ret_unsigned_long(&ret) == OE_OK);
+        OE_TEST(ret == 212121);
     }
 
     if (g_enabled[TYPE_LONG_DOUBLE])
@@ -209,8 +209,7 @@ void ecall_basic_types(
     long long arg16,
     unsigned char arg17,
     unsigned short arg18,
-    unsigned int arg19,
-    unsigned long arg20)
+    unsigned int arg19)
 {
     ecall_basic_types_args_t args;
 
@@ -234,7 +233,6 @@ void ecall_basic_types(
     check_type<unsigned char>(args.arg17);
     check_type<unsigned short>(args.arg18);
     check_type<unsigned int>(args.arg19);
-    check_type<unsigned long>(args.arg20);
 
     OE_TEST(arg1 == '?');
     OE_TEST(arg2 = 3);
@@ -255,7 +253,6 @@ void ecall_basic_types(
     OE_TEST(arg17 = 255);
     OE_TEST(arg18 = 19);
     OE_TEST(arg19 = 20);
-    OE_TEST(arg20 = 21);
 }
 
 void ecall_basic_non_portable_types(
