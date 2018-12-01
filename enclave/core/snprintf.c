@@ -217,12 +217,9 @@ int oe_vsnprintf(char* str, size_t size, const char* fmt, oe_va_list ap)
         }
     }
 
-<<<<<<< HEAD
     if (n > OE_INT_MAX)
         return OE_INT_MAX;
 
-=======
->>>>>>> WinOE work - oecore built/worked
     return (int)n;
 }
 
