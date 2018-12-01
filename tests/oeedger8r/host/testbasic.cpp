@@ -151,8 +151,8 @@ void test_basic_edl_ecalls(oe_enclave_t* enclave)
         OE_TEST(ecall_ret_void(enclave) == OE_OK);
     }
 
-    if (g_enabled[TYPE_WCHAR_T] && g_enabled[TYPE_LONG] &&  g_enabled[TYPE_UNSIGNED_LONG] &&
-        g_enabled[TYPE_LONG_DOUBLE])
+    if (g_enabled[TYPE_WCHAR_T] && g_enabled[TYPE_LONG] &&
+        g_enabled[TYPE_UNSIGNED_LONG] && g_enabled[TYPE_LONG_DOUBLE])
     {
         OE_TEST(
             ecall_basic_non_portable_types(

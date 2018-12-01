@@ -150,8 +150,8 @@ void test_basic_edl_ocalls()
         OE_TEST(ocall_ret_void() == OE_OK);
     }
 
-    if (g_enabled[TYPE_WCHAR_T] && g_enabled[TYPE_LONG] && g_enabled[TYPE_UNSIGNED_LONG] &&
-        g_enabled[TYPE_LONG_DOUBLE])
+    if (g_enabled[TYPE_WCHAR_T] && g_enabled[TYPE_LONG] &&
+        g_enabled[TYPE_UNSIGNED_LONG] && g_enabled[TYPE_LONG_DOUBLE])
     {
         OE_TEST(
             ocall_basic_non_portable_types(
