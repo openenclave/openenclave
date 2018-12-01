@@ -13,4 +13,3 @@ add_executable(mixed_c_cpp_enc
 
 target_include_directories(mixed_c_cpp_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(mixed_c_cpp_enc oelibcxx oeenclave)
-target_compile_options(mixed_c_cpp_enc PRIVATE -Wconversion -Wpointer-arith)
