@@ -190,6 +190,8 @@ void test_pointer_edl_ocalls()
     test_ocall_pointer_fun<unsigned int>(ocall_pointer_unsigned_int);
     if (g_enabled[TYPE_UNSIGNED_LONG])
         test_ocall_pointer_fun<unsigned long>(ocall_pointer_unsigned_long);
+    test_ocall_pointer_fun<unsigned long long>(
+        ocall_pointer_unsigned_long_long);
 
     OE_TEST(ocall_pointer_assert_all_called() == OE_OK);
     printf("=== test_pointer_edl_ocalls passed\n");
@@ -1295,9 +1297,9 @@ unsigned int* ecall_pointer_unsigned_int(
 
 void ecall_pointer_assert_all_called()
 {
-    // Each of the 19 functions above is called twice.
+    // Each of the 20 functions above is called twice.
     // Once with arrays and then with nulls.
-    int expected_num_calls = 19 * 2;
+    int expected_num_calls = 20 * 2;
 
     // Account for enabled non-portable types.
     for (size_t i = 0; i < OE_COUNTOF(g_enabled); ++i)
@@ -1336,6 +1338,7 @@ void ecall_count_attribute_all_types(
     int* b21,
     int* b22,
     int* b23,
+    int* b24,
     char char_count,
     short short_count,
     int int_count,
@@ -1358,7 +1361,8 @@ void ecall_count_attribute_all_types(
     unsigned char unsigned_char_count,
     unsigned short unsigned_short_count,
     unsigned int unsigned_int_count,
-    unsigned long unsigned_long_count)
+    unsigned long unsigned_long_count,
+    unsigned long long unsigned_long_long_count)
 {
 }
 
@@ -1379,6 +1383,47 @@ unsigned long* ecall_pointer_unsigned_long(
     unsigned long* p14,
     unsigned long* p15,
     unsigned long* p16,
+    int pcount,
+    int psize)
+{
+    return ecall_pointer_fun_impl(
+        p1,
+        p2,
+        p3,
+        p4,
+        p5,
+        p6,
+        p7,
+        p8,
+        p9,
+        p10,
+        p11,
+        p12,
+        p13,
+        p14,
+        p15,
+        p16,
+        pcount,
+        psize);
+}
+
+unsigned long long* ecall_pointer_unsigned_long_long(
+    unsigned long long* p1,
+    unsigned long long* p2,
+    unsigned long long* p3,
+    unsigned long long* p4,
+    unsigned long long* p5,
+    unsigned long long* p6,
+    unsigned long long* p7,
+    unsigned long long* p8,
+    unsigned long long* p9,
+    unsigned long long* p10,
+    unsigned long long* p11,
+    unsigned long long* p12,
+    unsigned long long* p13,
+    unsigned long long* p14,
+    unsigned long long* p15,
+    unsigned long long* p16,
     int pcount,
     int psize)
 {
@@ -1427,6 +1472,7 @@ void ecall_size_attribute_all_types(
     int* b21,
     int* b22,
     int* b23,
+    int* b24,
     char char_size,
     short short_size,
     int int_size,
@@ -1449,6 +1495,7 @@ void ecall_size_attribute_all_types(
     unsigned char unsigned_char_size,
     unsigned short unsigned_short_size,
     unsigned int unsigned_int_size,
-    unsigned long unsigned_long_size)
+    unsigned long unsigned_long_size,
+    unsigned long long unsigned_long_long_size)
 {
 }

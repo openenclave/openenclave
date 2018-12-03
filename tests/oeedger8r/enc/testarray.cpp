@@ -84,6 +84,7 @@ void test_array_edl_ocalls()
     test_ocall_array_fun<unsigned int>(ocall_array_unsigned_int);
     if (g_enabled[TYPE_UNSIGNED_LONG])
         test_ocall_array_fun<unsigned long>(ocall_array_unsigned_long);
+    test_ocall_array_fun<unsigned long long>(ocall_array_unsigned_long_long);
 
     OE_TEST(ocall_array_assert_all_called() == OE_OK);
     printf("=== test_array_edl_ocalls passed\n");
@@ -332,11 +333,20 @@ void ecall_array_unsigned_long(
     ecall_array_fun_impl(a1, a2, a3, a4);
 }
 
+void ecall_array_unsigned_long_long(
+    unsigned long long a1[2],
+    unsigned long long a2[2][2],
+    unsigned long long a3[3][3],
+    unsigned long long a4[4][4])
+{
+    ecall_array_fun_impl(a1, a2, a3, a4);
+}
+
 void ecall_array_assert_all_called()
 {
-    // Each of the 19 functions above is called twice.
+    // Each of the 20 functions above is called twice.
     // Once with arrays and then with nulls.
-    int expected_num_calls = 19 * 2;
+    int expected_num_calls = 20 * 2;
 
     // Account for enabled non-portable types.
     for (size_t i = 0; i < OE_COUNTOF(g_enabled); ++i)

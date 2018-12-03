@@ -81,6 +81,8 @@ void test_array_edl_ecalls(oe_enclave_t* enclave)
     test_ecall_array_fun<unsigned int>(enclave, ecall_array_unsigned_int);
     if (g_enabled[TYPE_UNSIGNED_LONG])
         test_ecall_array_fun<unsigned long>(enclave, ecall_array_unsigned_long);
+    test_ecall_array_fun<unsigned long long>(
+        enclave, ecall_array_unsigned_long_long);
 
     OE_TEST(ecall_array_assert_all_called(enclave) == OE_OK);
     printf("=== test_array_edl_ecalls passed\n");
@@ -325,11 +327,20 @@ void ocall_array_unsigned_long(
     ocall_array_fun_impl(a1, a2, a3, a4);
 }
 
+void ocall_array_unsigned_long_long(
+    unsigned long long a1[2],
+    unsigned long long a2[2][2],
+    unsigned long long a3[3][3],
+    unsigned long long a4[4][4])
+{
+    ocall_array_fun_impl(a1, a2, a3, a4);
+}
+
 void ocall_array_assert_all_called()
 {
-    // Each of the 19 functions above is called twice.
+    // Each of the 20 functions above is called twice.
     // Once with arrays and then with nulls.
-    int expected_num_calls = 19 * 2;
+    int expected_num_calls = 20 * 2;
 
     for (size_t i = 0; i < OE_COUNTOF(g_enabled); ++i)
     {

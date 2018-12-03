@@ -166,6 +166,13 @@ enclave  {
             [out] unsigned long a3[3][3],
             [user_check] unsigned long a4[4][4]
         );
+ 
+        public void ecall_array_unsigned_long_long(
+            [in] unsigned long long a1[2],
+            [in,out] unsigned long long a2[2][2],
+            [out] unsigned long long a3[3][3],
+            [user_check] unsigned long long a4[4][4]
+        );
 
         public void test_array_edl_ocalls();
         public void ecall_array_assert_all_called();
@@ -326,6 +333,13 @@ enclave  {
             [in,out] unsigned long a2[2][2],
             [out] unsigned long a3[3][3],
             [user_check] unsigned long a4[4][4]
+        );
+
+        void ocall_array_unsigned_long_long(
+            [in] unsigned long long a1[2],
+            [in,out] unsigned long long a2[2][2],
+            [out] unsigned long long a3[3][3],
+            [user_check] unsigned long long a4[4][4]
         );
 
         void ocall_array_long_double(
