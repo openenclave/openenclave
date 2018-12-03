@@ -15,7 +15,6 @@ ExternalProject_Add(oelibcxx_cxx_includes
         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/__config ${OE_INCDIR}/openenclave/libcxx/__config
     INSTALL_COMMAND ""
     )
-install (DIRECTORY ${OE_INCDIR}/openenclave/libcxx DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty)
 
 # build sources
 
@@ -83,3 +82,6 @@ target_include_directories(oelibcxx_cxx PRIVATE ${CMAKE_SOURCE_DIR}/3rdparty/lib
 
 # install target just to propagate include-location, but not the archive iself
 install(TARGETS oelibcxx_cxx EXPORT openenclave-targets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+
+install(DIRECTORY ${OE_INCDIR}/openenclave/libcxx
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty)
