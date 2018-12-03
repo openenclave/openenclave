@@ -469,7 +469,7 @@ static const char _usage_gen[] =
     "For help with a specific command, enter \"%s <command> -?\"\n";
 
 static const char _usage_sign[] =
-    "Usage: %s enclave_image sign config_file key_file\n"
+    "Usage: %s sign enclave_image config_file key_file\n"
     "\n"
     "Where:\n"
     "    enclave_image -- path of an enclave image file\n"
