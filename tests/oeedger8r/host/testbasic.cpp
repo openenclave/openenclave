@@ -33,6 +33,7 @@ void test_basic_edl_ecalls(oe_enclave_t* enclave)
             19,
             20,
             21) == OE_OK);
+
     {
         char ret = 0;
         OE_TEST(ecall_ret_char(enclave, &ret) == OE_OK);

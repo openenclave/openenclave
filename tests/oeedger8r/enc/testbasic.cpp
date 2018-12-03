@@ -31,7 +31,7 @@ void test_basic_edl_ocalls()
             255,
             19,
             20,
-            21 == OE_OK);
+            21) == OE_OK);
 
     {
         char ret = 0;

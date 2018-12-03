@@ -34,7 +34,7 @@ enclave  {
             unsigned char arg17,
             unsigned short arg18,
             unsigned int arg19,
-            unsigned long long arg20,
+            unsigned long long arg20
         );
 
         public void ecall_basic_non_portable_types(
