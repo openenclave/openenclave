@@ -6,7 +6,7 @@
 
 # Use an external project to place the headers in the collector-dir
 include (ExternalProject)
-ExternalProject_Add(oelibcxx_cxx_includes
+ExternalProject_Add(libcxx_includes
     DOWNLOAD_COMMAND ""
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ${CMAKE_COMMAND} -E copy_directory
@@ -18,7 +18,7 @@ ExternalProject_Add(oelibcxx_cxx_includes
 
 # build sources
 
-add_library(oelibcxx_cxx STATIC
+add_library(libcxx STATIC
     __dso_handle.cpp
 
     libcxx/src/algorithm.cpp
@@ -53,8 +53,8 @@ add_library(oelibcxx_cxx STATIC
     libcxx/src/vector.cpp
     )
 
-target_compile_options(oelibcxx_cxx PRIVATE -std=c++14)
-target_compile_definitions(oelibcxx_cxx PRIVATE
+target_compile_options(libcxx PRIVATE -std=c++14)
+target_compile_definitions(libcxx PRIVATE
     -DLIBCXXRT
     -D_LIBCPP_PROVIDES_DEFAULT_RUNE_TABLE
     -D_LIBCPP_BUILDING_LIBRARY
@@ -62,26 +62,26 @@ target_compile_definitions(oelibcxx_cxx PRIVATE
     )
 
 # need the LIBCXX_CXX headers placed
-add_dependencies(oelibcxx_cxx oelibcxx_cxx_includes)
+add_dependencies(libcxx libcxx_includes)
 # this project and its dependents require include/libcxx in the include path
-target_include_directories(oelibcxx_cxx PUBLIC
+target_include_directories(libcxx PUBLIC
     $<BUILD_INTERFACE:$<$<COMPILE_LANGUAGE:CXX>:${OE_INCDIR}/openenclave/libcxx>>
     $<INSTALL_INTERFACE:$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/libcxx>>
     )
 
 # this project (and is dependents) require the LIBC includes
-target_link_libraries(oelibcxx_cxx PUBLIC oelibc)
+target_link_libraries(libcxx PUBLIC oelibc)
 # If we built an OBJECT library, we would want to do the following, though CMake does not allow
 #  using target_link_libraries on an OBJECT lib (yet?):
-#add_dependencies(oelibcxx_cxx oelibc)
-#target_include_directories(oelibcxx_cxx PUBLIC ${OE_INCDIR}/libc)
+#add_dependencies(libcxx oelibc)
+#target_include_directories(libcxx PUBLIC ${OE_INCDIR}/libc)
 
 # when building this project, we also need a number of internal includes
-target_include_directories(oelibcxx_cxx PRIVATE libcxx/src)
-target_include_directories(oelibcxx_cxx PRIVATE ${CMAKE_SOURCE_DIR}/3rdparty/libcxxrt/libcxxrt/src)
+target_include_directories(libcxx PRIVATE libcxx/src)
+target_include_directories(libcxx PRIVATE ${CMAKE_SOURCE_DIR}/3rdparty/libcxxrt/libcxxrt/src)
 
 # install target just to propagate include-location, but not the archive iself
-install(TARGETS oelibcxx_cxx EXPORT openenclave-targets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+install(TARGETS libcxx EXPORT openenclave-targets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
 
 install(DIRECTORY ${OE_INCDIR}/openenclave/libcxx
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty)
