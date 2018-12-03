@@ -11,9 +11,10 @@ oeedl_file(../libcxxrt.edl enclave gen)
 
 # helper lib to contain file needed by some tests
 add_library(libcxxrttest-support
-  ${gen}
+    ${gen}
     )
-target_compile_options(libcxxrttest-support PRIVATE
+target_compile_options(libcxxrttest-support PUBLIC
+    $<$<COMPILE_LANGUAGE:CXX>:-std=c++14>
     -Wno-error
     )
 target_link_libraries(libcxxrttest-support PUBLIC oelibcxx oeenclave)
@@ -28,9 +29,8 @@ function(add_libcxxrt_test_enc NAME CXXFILE)
         ${PROJECT_SOURCE_DIR}/3rdparty/libcxxrt/libcxxrt/test
         ${CMAKE_CURRENT_BINARY_DIR}
         )
-    target_compile_options(libcxxrttest-${NAME}_enc PRIVATE -Wno-error $<$<COMPILE_LANGUAGE:CXX>:-std=c++14>)
     target_compile_definitions(libcxxrttest-${NAME}_enc PRIVATE -DWITH_MAIN -D__TEST__="${CXXFILE}")
-    target_link_libraries(libcxxrttest-${NAME}_enc libcxxrttest-support oelibcxx oelibc cxxrt-static)
+    target_link_libraries(libcxxrttest-${NAME}_enc libcxxrttest-support)
     if("${NAME}" STREQUAL "test_foreign_exceptions")
         target_link_libraries(libcxxrttest-${NAME}_enc -Wl,--wrap,_Unwind_RaiseException)
     endif()
