@@ -1,271 +1,160 @@
-pipeline {
-  agent any
-  stages {
-    stage('Build and Test') {
-      parallel {
-        stage('Check pre-commit requirements') {
-          agent {
-            docker {
-              image 'oetools-azure:1.8'
-            }
-          }
-          steps {
-            timeout(2) {
-              sh './scripts/check-precommit-reqs'
-            }
-          }
-        }
-        stage('Simulation default compiler') {
-          // This particular test asserts that everything (at least
-          // for simulation) can be built after using our
-          // install-prereqs script to bootstrap a machine.
-          agent {
-            dockerfile {
-              filename '.jenkins/Dockerfile.scripts'
-            }
-          }
-          steps {
-            timeout(15) {
-              // This is run to test that it works with the dependencies
-              // installed by our install-prereqs script.
-              sh './scripts/check-precommit-reqs'
+// oetools-image:tag  Docker image from OE Jenkins Registry
+OETOOLS_IMAGE = "oejenkinscidockerregistry.azurecr.io/oetools-azure:1.7"
 
-              // We actually expect `ctest` to fail because it is an
-              // older version that emits a failure if any tests are
-              // skipped. In other stages, we explicitly install an
-              // updated version of CMake.
-              dir('build') {
-                sh '''
-                cmake ..
-                make
-                OE_SIMULATION=1 ctest --verbose --output-on-failure || true
-              '''
-                // Note that `make package` is not expected to work
-                // without extra configuration.
-              }
-            }
-          }
-        }
-        stage('Simulation clang-7 SGX1 Debug') {
-          agent {
-            docker {
-              image 'oetools-azure:1.8'
-            }
-          }
-          steps {
-            timeout(15) {
-              sh './scripts/test-build-config -b Debug --compiler=clang-7'
-            }
-          }
-        }
-        stage('Simulation clang-7 SGX1 Release') {
-          agent {
-            docker {
-              image 'oetools-azure:1.8'
-            }
-          }
-          steps {
-            timeout(15) {
-              sh './scripts/test-build-config -p SGX1 -b Release --compiler=clang-7'
-            }
-          }
-        }
-        stage('Simulation clang-7 SGX1 RelWithDebInfo') {
-          agent {
-            docker {
-              image 'oetools-azure:1.8'
-            }
-          }
-          steps {
-            timeout(15) {
-              sh './scripts/test-build-config -p SGX1 -b RelWithDebInfo --compiler=clang-7'
-            }
-          }
-        }
-        stage('Simulation clang-7 SGX1-FLC Debug') {
-          agent {
-            docker {
-              image 'oetools-azure:1.8'
-            }
-          }
-          steps {
-            timeout(15) {
-              sh './scripts/test-build-config -p SGX1FLC -b Debug --compiler=clang-7'
-            }
-          }
-        }
-        stage('Simulation clang-7 SGX1-FLC Release') {
-          agent {
-            docker {
-              image 'oetools-azure:1.8'
-            }
-          }
-          steps {
-            timeout(15) {
-              sh './scripts/test-build-config -p SGX1FLC -b Release --compiler=clang-7'
-            }
-          }
-        }
-        stage('Simulation clang-7 SGX1-FLC RelWithDebInfo') {
-          agent {
-            docker {
-              image 'oetools-azure:1.8'
-            }
-          }
-          steps {
-            timeout(15) {
-              sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo --compiler=clang-7'
-            }
-          }
-        }
-        stage('Coffeelake clang-7 SGX1-FLC Debug') {
-          agent {
-            node {
-              label 'hardware'
-            }
-          }
-          steps {
-            timeout(15) {
-              sh './scripts/test-build-config -p SGX1FLC -b Debug -d --compiler=clang-7'
-            }
-          }
-        }
-        stage('Coffeelake clang-7 SGX1-FLC Release') {
-          agent {
-            node {
-              label 'hardware'
-            }
-          }
-          steps {
-            timeout(15) {
-              sh './scripts/test-build-config -p SGX1FLC -b Release -d --compiler=clang-7'
-            }
-          }
-        }
-        stage('Coffeelake clang-7 SGX1-FLC RelWithDebInfo') {
-          agent {
-            node {
-              label 'hardware'
-            }
-          }
-          steps {
-            timeout(15) {
-              sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d --compiler=clang-7'
-            }
-          }
-        }
-        stage('Coffeelake gcc SGX1-FLC Debug') {
-          agent {
-            node {
-              label 'hardware'
-            }
-          }
-          steps {
-            timeout(15) {
-              sh './scripts/test-build-config -p SGX1FLC -b Debug -d --compiler=gcc'
-            }
-          }
-        }
-        stage('Coffeelake gcc SGX1-FLC Release') {
-          agent {
-            node {
-              label 'hardware'
-            }
-          }
-          steps {
-            timeout(15) {
-              sh './scripts/test-build-config -p SGX1FLC -b Release -d --compiler=gcc'
-            }
-          }
-        }
-        stage('Coffeelake gcc SGX1-FLC RelWithDebInfo') {
-          agent {
-            node {
-              label 'hardware'
-            }
-          }
-          steps {
-            timeout(15) {
-              sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d --compiler=gcc'
-            }
-          }
-        }
-        stage('Windows Debug Cross-platform') {
-          stages {
-            stage('Linux SGX1 Debug') {
-              agent {
-                docker {
-                  image 'oetools-azure:1.8'
-                }
-              }
-              steps {
-                timeout(15) {
-                  sh './scripts/test-build-config -p SGX1FLC -b Debug --compiler=clang-7'
-                  stash includes: 'build/tests/**', name: 'linuxdebug'
-                }
-              }
-            }
-            stage('Windows Debug') {
-              agent {
-                node {
-                  label 'SGXFLC-Windows'
-                }
-              }
-              steps {
-                unstash 'linuxdebug'
-                bat 'move build linuxbin'
-                bat 'mkdir build && cd build && cmake -G "Visual Studio 15 2017 Win64" -DADD_WINDOWS_ENCLAVE_TESTS=1 -DLINUX_BIN_DIR=%cd%\\linuxbin\\tests .. && pushd . && "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\Common7\\Tools\\LaunchDevCmd.bat" && popd && cmake --build . --config Debug && ctest -V -C Debug'
-              }
-            }
-          }
-        }
-        stage('Windows Release Cross-platform') {
-          stages {
-            stage('Linux SGX1 Release') {
-              agent {
-                docker {
-                  image 'oetools-azure:1.8'
-                }
-              }
-              steps {
-                timeout(15) {
-                  sh './scripts/test-build-config -p SGX1FLC -b Release --compiler=clang-7'
-                  stash includes: 'build/tests/**', name: 'linuxrelease'
-                }
-              }
-            }
-            stage('Windows Release') {
-              agent {
-                node {
-                  label 'SGXFLC-Windows'
-                }
-              }
-              steps {
-                unstash 'linuxrelease'
-                bat 'move build linuxbin'
-                bat 'mkdir build && cd build && cmake -G "Visual Studio 15 2017 Win64" -DADD_WINDOWS_ENCLAVE_TESTS=1 -DLINUX_BIN_DIR=%cd%\\linuxbin\\tests .. && pushd . && "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\Common7\\Tools\\LaunchDevCmd.bat" && popd && cmake --build . --config Release && ctest -V -C Release'
-              }
-            }
-          }
-        }
-        stage('Non-Simulation Container SGX1-FLC RelWithDebInfo') {
-          agent {
-            docker {
-              image 'oetools-azure:1.8'
-              label 'hardware'
-              args '--device /dev/sgx:/dev/sgx'
-            }
-          }
 
-          steps {
+def coffeelakeTest(String compiler, String unit, String suite) {
+    stage("Coffeelake $compiler $unit $suite") {
+        node('hardware') {
+            cleanWs()
+            checkout scm
+
             timeout(15) {
-              sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d'
+                sh "./scripts/test-build-config -p $unit -b $suite --compiler=$compiler"
             }
-          }
+
         }
-      }
     }
-  }
 }
 
+def simulationTest(String compiler, String unit, String suite ) {
+    stage("Coffeelake $compiler $unit $suite") {
+        node {
+            cleanWs()
+            checkout scm
 
+            docker.image(OETOOLS_IMAGE).inside {
+                timeout(15) {
+                    sh "./scripts/test-build-config -p $unit -b $suite --compiler=$compiler"
+                }
+            }
+        }
+    }
+}
+
+def nonSimulationTest() {
+    stage('Non-Simulation Container SGX1-FLC RelWithDebInfo') {
+        node('hardware') {
+            cleanWs()
+            checkout scm
+
+            docker.image(OETOOLS_IMAGE).inside('--privileged -v /dev/sgx:/dev/sgx') {
+                timeout(15) {
+                    sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d'
+                }
+            }
+        }
+    }
+}
+
+def checkPreCommitRequirements() {
+    stage('Check pre-commit requirements') {
+        node {
+            cleanWs()
+            checkout scm
+
+            docker.image(OETOOLS_IMAGE).inside {
+                timeout(2) {
+                    sh './scripts/check-precommit-reqs'
+                }
+            }
+        }
+    }
+    stage('Simulation default compiler') {
+        // This particular test asserts that everything (at least
+        // for simulation) can be built after using our
+        // install-prereqs script to bootstrap a machine.
+        node {
+            cleanWs()
+            checkout scm
+
+            def buildImage = docker.build("oetools-base", '-f .jenkins/Dockerfile.scripts .')
+
+            buildImage.inside {
+                timeout(15) {
+                    // This is run to test that it works with the dependencies
+                    // installed by our install-prereqs script.
+                    sh './scripts/check-precommit-reqs'
+
+                    // We actually expect `ctest` to fail because it is an
+                    // older version that emits a failure if any tests are
+                    // skipped. In other stages, we explicitly install an
+                    // updated version of CMake.
+                    dir('build') {
+                        sh '''
+                        cmake ..
+                        make
+                        OE_SIMULATION=1 ctest --verbose --output-on-failure || true
+                    '''
+                        // Note that `make package` is not expected to work
+                        // without extra configuration.
+                    }
+                }
+            }
+        }
+    }
+}
+
+def windowsDebugCrossPlatform() {
+    stage('Linux SGX1 Debug') {
+        node {
+            cleanWs()
+            checkout scm
+            docker.image(OETOOLS_IMAGE).inside {
+                timeout(15) {
+                    sh './scripts/test-build-config -p SGX1FLC -b Debug --compiler=clang-7'
+                    stash includes: 'build/tests/**', name: 'linuxdebug'
+                }
+            }
+        }
+    }
+    stage('Windows Debug') {
+        node('SGXFLC-Windows') {
+           cleanWs()
+           checkout scm
+           unstash 'linuxdebug'
+           bat 'move build linuxbin'
+           bat 'mkdir build && cd build && cmake -G "Visual Studio 15 2017 Win64" -DADD_WINDOWS_ENCLAVE_TESTS=1 -DLINUX_BIN_DIR=%cd%\\linuxbin\\tests .. && pushd . && "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\Common7\\Tools\\LaunchDevCmd.bat" && popd && cmake --build . --config Debug && ctest -V -C Debug'
+       }
+    }
+}
+
+def windowsReleaseCrossPlatform() {
+    stage('Linux SGX1 Release') {
+        node {
+            cleanWs()
+            checkout scm
+            docker.image(OETOOLS_IMAGE).inside {
+                timeout(15) {
+                    sh './scripts/test-build-config -p SGX1FLC -b Release --compiler=clang-7'
+                    stash includes: 'build/tests/**', name: 'linuxrelease'
+                }
+            }
+        }
+    }
+    stage('Windows Release') {
+        node('SGXFLC-Windows') {
+            cleanWs()
+            checkout scm
+            unstash 'linuxrelease'
+            bat 'move build linuxbin'
+            bat 'mkdir build && cd build && cmake -G "Visual Studio 15 2017 Win64" -DADD_WINDOWS_ENCLAVE_TESTS=1 -DLINUX_BIN_DIR=%cd%\\linuxbin\\tests .. && pushd . && "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\Common7\\Tools\\LaunchDevCmd.bat" && popd && cmake --build . --config Release && ctest -V -C Release'
+        }
+    }
+}
+
+parallel "Check Pre-Commit Requirements" : { checkPreCommitRequirements() },
+        "Simulation clang-7 SGX1 Debug" : { simulationTest('clang-7', 'SGX1', 'Debug')},
+        "Simulation clang-7 SGX1 Release" : { simulationTest('clang-7', 'SGX1', 'Release')},
+        "Simulation clang-7 SGX1 RelWithDebInfo" : { simulationTest('clang-7', 'SGX1', 'RelWithDebInfo')},
+        "Simulation clang-7 SGX1-FLC Debug" : { simulationTest('clang-7', 'SGX1FLC', 'Debug')},
+        "Simulation clang-7 SGX1-FLC Release" : { simulationTest('clang-7', 'SGX1FLC', 'Release')},
+        "Simulation clang-7 SGX1-FLC RelWithDebInfo" : { simulationTest('clang-7', 'SGX1FLC', 'RelWithDebInfo')},
+        "Coffeelake clang-7 SGX1-FLC Debug" : { coffeelakeTest('clang-7', 'SGX1FLC', 'Debug') },
+        "Coffeelake clang-7 SGX1-FLC Release" : { coffeelakeTest('clang-7', 'SGX1FLC','Release') },
+        "Coffeelake clang-7 SGX1-FLC RelWithDebInfo" : { coffeelakeTest('clang-7', 'SGX1FLC', 'RelWithDebinfo') },
+        "Coffeelake gcc SGX1-FLC Debug" : { coffeelakeTest('gcc', 'SGX1FLC', 'Debug') },
+        "Coffeelake gcc SGX1-FLC Release" : { coffeelakeTest('gcc', 'SGX1FLC', 'Release') },
+        "Coffeelake gcc SGX1-FLC RelWithDebInfo" : { coffeelakeTest('gcc', 'SGX1FLC', 'RelWithDebInfo') },
+        "Windows Debug Cross-platform" : { windowsDebugCrossPlatform() },
+        "Windows Release Cross-platform" : { windowsReleaseCrossPlatform() },
+        "Non-Simulation Container SGX1-FLC RelWithDebInfo" : { nonSimulationTest() }
