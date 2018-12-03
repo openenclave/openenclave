@@ -52,7 +52,7 @@ build:
 	$(CXX) -o enclave2.so attestation.o crypto.o ecalls.o dispatcher.o localattestation_t.o $(LDFLAGS)
 
 sign:
-	oesign enclave2.so enc.conf private.pem
+	oesign sign enclave2.so enc.conf private.pem
 
 clean:
 	rm -f *.o *.so ../common/localattestation_t.* ../common/remoteattestation_args.h *.pem enc1_pubkey.h
