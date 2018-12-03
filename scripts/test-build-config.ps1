@@ -36,6 +36,7 @@ if ($h -or $help) {
      echo " simulator mode"
      echo ""
      exit 0
+}
 
 $ErrorActionPreference = "Stop"
 
