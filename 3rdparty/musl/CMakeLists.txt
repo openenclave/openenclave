@@ -10,49 +10,50 @@ set(MUSL_DIR ${CMAKE_CURRENT_BINARY_DIR}/musl)
 
 include (ExternalProject)
 ExternalProject_Add(musl_includes
-    DOWNLOAD_COMMAND
-        ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_CURRENT_LIST_DIR}/musl
-        ${CMAKE_CURRENT_BINARY_DIR}/musl
-    PATCH_COMMAND
-        COMMAND ${CMAKE_COMMAND} -E copy
-            ${MUSL_DIR}/arch/x86_64/syscall_arch.h
-            ${MUSL_DIR}/arch/x86_64/__syscall_arch.h
-        COMMAND ${CMAKE_COMMAND} -E copy
-            ${PATCHES_DIR}/syscall_arch.h
-            ${MUSL_DIR}/arch/x86_64/syscall_arch.h
-        COMMAND ${CMAKE_COMMAND} -E copy
-            ${PATCHES_DIR}/pthread_arch.h
-            ${MUSL_DIR}/arch/x86_64/pthread_arch.h
-    CONFIGURE_COMMAND
-        ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/musl
-        ./configure
-            --includedir=${OE_INCDIR}/openenclave/libc
-            CFLAGS=${CFLAGS}
-            CC=${CMAKE_C_COMPILER}
-            CXX=${CMAKE_CXX_COMPILER}
-    BUILD_COMMAND
-        ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/musl
-        make install-headers
-        COMMAND ${CMAKE_COMMAND} -E copy
-            ${OE_INCDIR}/openenclave/libc/endian.h
-            ${OE_INCDIR}/openenclave/libc/__endian.h
-        COMMAND ${CMAKE_COMMAND} -E copy
-            ${PATCHES_DIR}/endian.h
-            ${OE_INCDIR}/openenclave/libc/endian.h
+  DOWNLOAD_COMMAND
+    ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_CURRENT_LIST_DIR}/musl
+    ${CMAKE_CURRENT_BINARY_DIR}/musl
+  PATCH_COMMAND
+    COMMAND ${CMAKE_COMMAND} -E copy
+      ${MUSL_DIR}/arch/x86_64/syscall_arch.h
+      ${MUSL_DIR}/arch/x86_64/__syscall_arch.h
+    COMMAND ${CMAKE_COMMAND} -E copy
+      ${PATCHES_DIR}/syscall_arch.h
+      ${MUSL_DIR}/arch/x86_64/syscall_arch.h
+    COMMAND ${CMAKE_COMMAND} -E copy
+      ${PATCHES_DIR}/pthread_arch.h
+      ${MUSL_DIR}/arch/x86_64/pthread_arch.h
+  CONFIGURE_COMMAND
+    ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/musl
+    ./configure
+      --includedir=${OE_INCDIR}/openenclave/libc
+      CFLAGS=${CFLAGS}
+      CC=${CMAKE_C_COMPILER}
+      CXX=${CMAKE_CXX_COMPILER}
+  BUILD_COMMAND
+    ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/musl
+    make install-headers
+    COMMAND ${CMAKE_COMMAND} -E copy
+      ${OE_INCDIR}/openenclave/libc/endian.h
+      ${OE_INCDIR}/openenclave/libc/__endian.h
+    COMMAND ${CMAKE_COMMAND} -E copy
+      ${PATCHES_DIR}/endian.h
+      ${OE_INCDIR}/openenclave/libc/endian.h
 
-        # Append deprecations.h to all C header files.
-        COMMAND ${CMAKE_CURRENT_LIST_DIR}/append-deprecations
-            ${OE_INCDIR}/openenclave/libc
+    # Append deprecations.h to all C header files.
+    COMMAND ${CMAKE_CURRENT_LIST_DIR}/append-deprecations
+      ${OE_INCDIR}/openenclave/libc
 
-        # Copy local deprecations.h to include/bits/deprecated.h.
-        COMMAND ${CMAKE_COMMAND} -E copy
-            ${CMAKE_CURRENT_LIST_DIR}/deprecations.h
-            ${OE_INCDIR}/openenclave/libc/bits/deprecations.h
+    # Copy local deprecations.h to include/bits/deprecated.h.
+    COMMAND ${CMAKE_COMMAND} -E copy
+      ${CMAKE_CURRENT_LIST_DIR}/deprecations.h
+      ${OE_INCDIR}/openenclave/libc/bits/deprecations.h
 
-    BUILD_BYPRODUCTS
-        ${OE_INCDIR}/openenclave/libc ${CMAKE_CURRENT_BINARY_DIR}/musl
-    INSTALL_COMMAND "")
+  BUILD_BYPRODUCTS
+    ${OE_INCDIR}/openenclave/libc ${CMAKE_CURRENT_BINARY_DIR}/musl
+
+  INSTALL_COMMAND "")
 
 add_library(oelibc_includes INTERFACE)
 
