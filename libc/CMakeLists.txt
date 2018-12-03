@@ -30,8 +30,6 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif ()
 
 add_library(oelibc STATIC
-    $<TARGET_OBJECTS:oelibasm>
-
     arc4random.c
     atexit.c
     dladdr.c
@@ -707,7 +705,8 @@ endif ()
 # This project (and its dependents) require the enclave headers and
 # library, and the musl headers.
 target_link_libraries(oelibc
-  PUBLIC oecore oelibc_includes)
+  PUBLIC oecore oelibc_includes
+  PRIVATE oelibasm)
 
 target_include_directories(oelibc PRIVATE
   internal
@@ -717,6 +716,5 @@ target_include_directories(oelibc PRIVATE
 set_property(TARGET oelibc PROPERTY
   ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 
-# Install lib-archive upon install-time.
-install(TARGETS oelibc EXPORT openenclave-targets
+install(TARGETS oelibc oelibasm EXPORT openenclave-targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
