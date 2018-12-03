@@ -16,9 +16,8 @@ ExternalProject_Add(libcxx_includes
     INSTALL_COMMAND ""
     )
 
-# build sources
+add_library(libcxx OBJECT
 
-add_library(libcxx STATIC
     __dso_handle.cpp
 
     libcxx/src/algorithm.cpp
@@ -53,6 +52,9 @@ add_library(libcxx STATIC
     libcxx/src/vector.cpp
     )
 
+set_target_properties(libcxx PROPERTIES
+  POSITION_INDEPENDENT_CODE ON)
+
 target_compile_options(libcxx PRIVATE -std=c++14)
 target_compile_definitions(libcxx PRIVATE
     -DLIBCXXRT
@@ -66,10 +68,6 @@ add_dependencies(libcxx libcxx_includes)
 
 # this project (and is dependents) require the LIBC includes
 target_link_libraries(libcxx PUBLIC oelibc)
-# If we built an OBJECT library, we would want to do the following, though CMake does not allow
-#  using target_link_libraries on an OBJECT lib (yet?):
-#add_dependencies(libcxx oelibc)
-#target_include_directories(libcxx PUBLIC ${OE_INCDIR}/libc)
 
 target_include_directories(libcxx
   PUBLIC
