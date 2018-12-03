@@ -199,11 +199,16 @@ static oe_result_t _add_control_pages(
         /* The entry point for the program (from ELF) */
         tcs->oentry = entry;
 
-        /* FS segment: points to page following SSA slots (page[3]) */
-        tcs->fsbase = *vaddr + (4 * OE_PAGE_SIZE);
-
         /* GS segment: points to page following SSA slots (page[3]) */
         tcs->gsbase = *vaddr + (4 * OE_PAGE_SIZE);
+
+        /* FS segment: Used for thread-local variables.
+         * The reserved (unused) space in td_t is used for thread-local
+         * variables.
+         * Since negative offsets are used with FS, FS must point to end of the
+         * segment.
+        */
+        tcs->fsbase = *vaddr + (5 * OE_PAGE_SIZE);
 
         /* Set to maximum value */
         tcs->fslimit = 0xFFFFFFFF;

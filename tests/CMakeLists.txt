@@ -64,6 +64,7 @@ add_subdirectory(sealKey)
 add_subdirectory(stdcxx)
 add_subdirectory(thread)
 add_subdirectory(threadcxx)
+add_subdirectory(thread_local)
 endif()
 
 if (UNIX)
