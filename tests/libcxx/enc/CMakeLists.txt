@@ -47,6 +47,9 @@ function(add_libcxx_test_enc NAME CXXFILE)
         -std=c++14
         # These are third-party tests, so we don't care about their warnings.
         -Wno-error
+        -Wno-unused-function
+        -Wno-unused-local-typedef
+        -Wno-deprecated-declarations
         # Remove NDEBUG to enable the libcxx testsuite assertions in Release
         -UNDEBUG
         )
