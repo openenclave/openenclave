@@ -63,11 +63,6 @@ target_compile_definitions(libcxx PRIVATE
 
 # need the LIBCXX_CXX headers placed
 add_dependencies(libcxx libcxx_includes)
-# this project and its dependents require include/libcxx in the include path
-target_include_directories(libcxx PUBLIC
-    $<BUILD_INTERFACE:$<$<COMPILE_LANGUAGE:CXX>:${OE_INCDIR}/openenclave/libcxx>>
-    $<INSTALL_INTERFACE:$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/libcxx>>
-    )
 
 # this project (and is dependents) require the LIBC includes
 target_link_libraries(libcxx PUBLIC oelibc)
@@ -76,9 +71,13 @@ target_link_libraries(libcxx PUBLIC oelibc)
 #add_dependencies(libcxx oelibc)
 #target_include_directories(libcxx PUBLIC ${OE_INCDIR}/libc)
 
-# when building this project, we also need a number of internal includes
-target_include_directories(libcxx PRIVATE libcxx/src)
-target_include_directories(libcxx PRIVATE ${CMAKE_SOURCE_DIR}/3rdparty/libcxxrt/libcxxrt/src)
+target_include_directories(libcxx
+  PUBLIC
+  $<BUILD_INTERFACE:$<$<COMPILE_LANGUAGE:CXX>:${OE_INCDIR}/openenclave/libcxx>>
+  $<INSTALL_INTERFACE:$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/libcxx>>
+  PRIVATE
+  libcxx/src
+  ../libcxxrt/libcxxrt/src)
 
 # install target just to propagate include-location, but not the archive iself
 install(TARGETS libcxx EXPORT openenclave-targets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
