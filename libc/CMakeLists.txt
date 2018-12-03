@@ -1,8 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-# Build the C library, using local sources and sources from MUSL
-
+# Build the C library, using local sources and sources from musl.
 set(MUSLSRC ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
 add_library(oelibasm OBJECT
@@ -706,30 +705,15 @@ if (USE_DEBUG_MALLOC)
 endif ()
 
 # This project (and its dependents) require the enclave headers and
-# library.
-target_link_libraries(oelibc PUBLIC oecore)
-
-# As a pre-build step, place the musl LIBC headers.
-add_dependencies(oelibc oelibc_includes)
+# library, and the musl headers.
+target_link_libraries(oelibc
+  PUBLIC oecore oelibc_includes)
 
 target_include_directories(oelibc PRIVATE
+  internal
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/x86_64)
 
-# This project and its dependents require include/libc in the include path.
-#
-# Note the difference between build time (absolute in build tree) and
-# install time (relative to install prefix).
-target_include_directories(oelibc PUBLIC
-  $<BUILD_INTERFACE:${OE_INCDIR}/openenclave/libc>
-  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/libc>)
-
-# When building this project, we also need a number of internal includes:
-target_include_directories(oelibc PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}/internal
-  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal)
-
-# Assemble lib-archive into proper directory.
 set_property(TARGET oelibc PROPERTY
   ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 
