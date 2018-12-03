@@ -8,4 +8,5 @@ RUN \
   && apt-get install --no-install-recommends -y \
   lsb-release \
   wget ca-certificates \
+  git \
   && install-prereqs
