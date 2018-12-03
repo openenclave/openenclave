@@ -35,7 +35,7 @@ configure_file(
 
 file(COPY libunwind/include/tdep-x86_64/ DESTINATION tdep)
 
-add_library(libunwind STATIC
+add_library(libunwind OBJECT
   # Total 67 items
   libunwind/src/dwarf/global.c
   libunwind/src/dwarf/Lexpr.c
