@@ -32,7 +32,7 @@ void test_basic_edl_ecalls(oe_enclave_t* enclave)
             255,
             19,
             20,
-            21 == OE_OK);
+            21) == OE_OK);
     {
         char ret = 0;
         OE_TEST(ecall_ret_char(enclave, &ret) == OE_OK);
@@ -220,7 +220,7 @@ void ocall_basic_types(
     unsigned char arg17,
     unsigned short arg18,
     unsigned int arg19,
-    unsigned long long arg20
+    unsigned long long arg20)
 {
     ocall_basic_types_args_t args;
 
