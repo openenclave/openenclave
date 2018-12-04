@@ -3,15 +3,11 @@
 
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
+#include "create_errors_t.h"
 
-OE_ECALL void Test(void* args)
+int test(void)
 {
-    int* ret = (int*)args;
-
-    if (!ret)
-        return;
-
-    *ret = 0;
+    return 0;
 }
 
 OE_SET_ENCLAVE_SGX(
@@ -21,5 +17,3 @@ OE_SET_ENCLAVE_SGX(
     1024, /* HeapPageCount */
     1024, /* StackPageCount */
     2);   /* TCSCount */
-
-OE_DEFINE_EMPTY_ECALL_TABLE();
