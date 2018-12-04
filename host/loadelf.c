@@ -64,6 +64,7 @@ static oe_result_t _oe_load_elf_image(
     size_t i;
     const elf64_ehdr_t* eh;
     size_t num_segments;
+    bool has_build_id = false;
 
     assert(image && path);
 
@@ -135,6 +136,10 @@ static oe_result_t _oe_load_elf_image(
                     image->ecall_rva = sh->sh_addr;
                     image->ecall_section_size = sh->sh_size;
                 }
+                else if (strcmp(name, ".note.gnu.build-id") == 0)
+                {
+                    has_build_id = true;
+                }
             }
         }
 
@@ -143,6 +148,16 @@ static oe_result_t _oe_load_elf_image(
             (0 == image->oeinfo_rva))
         {
             OE_RAISE(OE_FAILURE);
+        }
+
+        /* It is now the default for linux shared libraries and executables to
+         * have the build-id note. GCC by default passes the --build-id option
+         * to linker, whereas clang does not. Build-id is also used as a key by
+         * debug symbol-servers. If no build-id is found emit a trace message.
+         * */
+        if (!has_build_id)
+        {
+            OE_TRACE_INFO("loadelf: enclave image does not have build-id.\n");
         }
     }
 
