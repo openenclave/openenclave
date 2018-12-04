@@ -1,4 +1,4 @@
-OBJECTS = main.o buffer_test.o TrustedAppTest.o OEEnclaveTest.o OEHostTest.o sockets_test.o oetests_u.o
+OBJECTS = main.o TrustedAppTest.o OEEnclaveTest.o OEHostTest.o sockets_test.o oetests_u.o
 
 EDL_PATH = ../../src
 EDL_INC_PATH = ../../include
@@ -50,10 +50,6 @@ oetests_u.h oetests_u.c: $(OE_EDL_PATH)/stdio.edl  \
 	                                        "../oetests.edl"
 
 main.o: main.cpp
-	@echo " [CC]\t$@"
-	@$(CX) $(CFLAGS) $(CXFLAGS) -c -o $@ $<
-
-buffer_test.o: buffer_test.cpp oetests_u.h
 	@echo " [CC]\t$@"
 	@$(CX) $(CFLAGS) $(CXFLAGS) -c -o $@ $<
 

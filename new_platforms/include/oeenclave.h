@@ -30,14 +30,6 @@ typedef uint32_t __uint32_t;
 #include "sal_unsup.h"
 #endif
 
-/* Support various SGX types, even for OP-TEE, so we can reuse the automatic
- * code generator from the SGX SDK.
- */
-# include <sgx.h>
-#if defined(OE_USE_OPTEE)
-# include "optee/enclave/sgxoveroptee_enclave.h"
-#endif
-
 #define STRUNCATE 80 
 
 #ifndef INVALID_HANDLE_VALUE

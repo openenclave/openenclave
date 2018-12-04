@@ -303,7 +303,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(NewPlatformsDir)include;$(NewPlatformsDir)include\sgx\enclave;$(OESdkDir)include;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\libc++;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(NewPlatformsDir)include;$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -326,7 +326,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(RIoTDir)CyReP\cyrep;$(NewPlatformsDir)include\optee\enclave\Simulator;$(NewPlatformsDir)include\optee\enclave;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(SGXSDKInstallPath)include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(RIoTDir)CyReP\cyrep;$(NewPlatformsDir)include\optee\enclave\Simulator;$(NewPlatformsDir)include\optee\enclave;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>OE_SIMULATE_OPTEE;_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -348,7 +348,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(RIoTDir)CyReP\cyrep;$(NewPlatformsDir)include\optee\enclave\Simulator;$(NewPlatformsDir)include\optee\enclave;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(SGXSDKInstallPath)include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(RIoTDir)CyReP\cyrep;$(NewPlatformsDir)include\optee\enclave\Simulator;$(NewPlatformsDir)include\optee\enclave;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>OE_SIMULATE_OPTEE;_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -393,7 +393,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(NewPlatformsDir)include;$(NewPlatformsDir)include\sgx\enclave;$(OESdkDir)include;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\libc++;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(NewPlatformsDir)include;$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -440,7 +440,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <Optimization>MaxSpeed</Optimization>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(NewPlatformsDir)include;$(NewPlatformsDir)include\sgx\enclave;$(OESdkDir)include;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\libc++;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(NewPlatformsDir)include;$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
@@ -490,7 +490,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <Optimization>MaxSpeed</Optimization>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(NewPlatformsDir)include;$(NewPlatformsDir)include\sgx\enclave;$(OESdkDir)include;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\libc++;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(NewPlatformsDir)include;$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
@@ -537,7 +537,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(RIoTDir)CyReP\cyrep;$(NewPlatformsDir)include\optee\enclave\Simulator;$(NewPlatformsDir)include\optee\enclave;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(SGXSDKInstallPath)include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(RIoTDir)CyReP\cyrep;$(NewPlatformsDir)include\optee\enclave\Simulator;$(NewPlatformsDir)include\optee\enclave;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>OE_SIMULATE_OPTEE;_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -634,30 +634,30 @@
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\helloworld.edl">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Creating proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">HelloWorldEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Creating proxy/bridge routines</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Creating proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">HelloWorldEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">HelloWorldEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Creating proxy/bridge routines</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">Creating proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">HelloWorldEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">HelloWorldEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Creating proxy/bridge routines</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Creating proxy/bridge routines</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">Creating proxy/bridge routines</Message>
@@ -670,27 +670,27 @@
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">HelloWorldEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">HelloWorldEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">HelloWorldEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">Creating proxy/bridge routines</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'">Creating proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">HelloWorldEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'">HelloWorldEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|ARM'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|ARM'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">Creating proxy/bridge routines</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Simulation|ARM'">Creating proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Simulation|ARM'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">HelloWorldEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Simulation|ARM'">HelloWorldEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">Creating proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">HelloWorldEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">Creating proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">HelloWorldEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>

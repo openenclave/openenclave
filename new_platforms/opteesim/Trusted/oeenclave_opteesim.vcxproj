@@ -147,7 +147,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>OE_SIMULATE_OPTEE;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(OESdkDir)include;$(ProjectDir)..\..\include\optee\enclave\Simulator;$(ProjectDir)..\..\include\optee\enclave;$(ProjectDir)..\..\include\optee;$(ProjectDir)..\..\include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(SGXSDKInstallPath)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OESdkDir)include;$(ProjectDir)..\..\include\optee\enclave\Simulator;$(ProjectDir)..\..\include\optee\enclave;$(ProjectDir)..\..\include\optee;$(ProjectDir)..\..\include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -161,7 +161,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>OE_SIMULATE_OPTEE;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(OESdkDir)include;$(ProjectDir)..\..\include\optee\enclave\Simulator;$(ProjectDir)..\..\include\optee\enclave;$(ProjectDir)..\..\include\optee;$(ProjectDir)..\..\include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(SGXSDKInstallPath)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OESdkDir)include;$(ProjectDir)..\..\include\optee\enclave\Simulator;$(ProjectDir)..\..\include\optee\enclave;$(ProjectDir)..\..\include\optee;$(ProjectDir)..\..\include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -175,7 +175,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>OE_SIMULATE_OPTEE;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(OESdkDir)include;$(ProjectDir)..\..\include\optee\enclave\Simulator;$(ProjectDir)..\..\include\optee\enclave;$(ProjectDir)..\..\include\optee;$(ProjectDir)..\..\include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(SGXSDKInstallPath)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OESdkDir)include;$(ProjectDir)..\..\include\optee\enclave\Simulator;$(ProjectDir)..\..\include\optee\enclave;$(ProjectDir)..\..\include\optee;$(ProjectDir)..\..\include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

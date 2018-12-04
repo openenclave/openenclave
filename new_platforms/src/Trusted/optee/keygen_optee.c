@@ -5,7 +5,6 @@
 #include <openenclave/enclave.h>
 #include <stdint.h>
 #include <string.h>
-#include "../oeresult.h"
 #include "cyres_optee.h"
 #include "enclavelibc.h"
 

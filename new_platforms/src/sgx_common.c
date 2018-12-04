@@ -15,6 +15,10 @@
 #include "sal_unsup.h"
 #endif
 
+#ifdef OE_USE_OPTEE
+# error sgx_common.c should only be included in an SGX compilation
+#endif
+
 static void fill_sgx_target_info(
     _In_ const sgx_report_t* sgx_report,
     _Out_ sgx_target_info_t* info)

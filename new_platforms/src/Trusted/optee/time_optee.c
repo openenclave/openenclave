@@ -2,9 +2,9 @@
 /* Licensed under the MIT License. */
 #include <stddef.h>
 
-#include <tcps_string_t.h>
+#include <tee_api.h>
 #include <tcps_time_t.h>
-#include <oeoverintelsgx_t.h>
+#include "oeinternal_t.h"
 
 __time64_t _time64(
     __time64_t *timer)
@@ -48,42 +48,26 @@ uint32_t GetTickCount(void)
 
 struct tm* _localtime64(const __time64_t *timer)
 {
-    GetTm_Result result;
+    int err;
     static struct tm tm;
-    sgx_status_t sgxStatus;
+    oe_result_t result = ocall_localtime64(&err, *timer, (ocall_tm*)&tm);
+    if (result != OE_OK) {
+        return NULL;
+    }
 
-Tcps_InitializeStatus(Tcps_Module_Helper_t, "_localtime64");
-
-    sgxStatus = ocall_localtime64(&result, *timer);
-    Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, OE_FAILURE);
-    uStatus = result.err;
-    Tcps_GotoErrorIfBad(uStatus);
-    memcpy(&tm, &result.tm, sizeof(tm));
-
-    return (struct tm*)&tm;
-
-Tcps_BeginErrorHandling;
-    return NULL;
+    return (err != 0) ? NULL : (struct tm*)&tm;
 }
 
 struct tm* _gmtime64(const __time64_t *timer)
 {
-    GetTm_Result result;
-    sgx_status_t sgxStatus;
+    int err;
     static struct tm tm;
+    oe_result_t result = ocall_gmtime64(&err, *timer, (ocall_tm*)&tm);
+    if (result != OE_OK) {
+        return NULL;
+    }
 
-Tcps_InitializeStatus(Tcps_Module_Helper_t, "_gmtime64");
-
-    sgxStatus = ocall_gmtime64(&result, *timer);
-    Tcps_GotoErrorIfTrue(sgxStatus != SGX_SUCCESS, OE_FAILURE);
-    uStatus = result.err;
-    Tcps_GotoErrorIfBad(uStatus);
-    memcpy(&tm, &result.tm, sizeof(tm));
-
-    return (struct tm*)&tm;
-
-Tcps_BeginErrorHandling;
-    return NULL;
+    return (err != 0) ? NULL : (struct tm*)&tm;
 }
 
 struct tm* gmtime(const time_t *timer)

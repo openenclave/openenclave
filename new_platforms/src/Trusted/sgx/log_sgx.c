@@ -9,7 +9,7 @@
 #include <openenclave/bits/stdio.h>
 #include <cbor.h>
 #include "cborhelper.h"
-#include "oeoverintelsgx_t.h"
+#include "oeinternal_t.h"
 #include "enclavelibc.h"
 #include "ICertUtil.h"
 #include "tcps.h"
@@ -94,7 +94,7 @@ TcpsLogNetworkWriteEntrySgx(
     TCPS_TLS_HANDLE tls = NULL;
     
     uint8_t* laResponseBuffer;
-    size_t laResponseBufferSize;
+    uint32_t laResponseBufferSize;
 
     laResponseBuffer = NULL;
 

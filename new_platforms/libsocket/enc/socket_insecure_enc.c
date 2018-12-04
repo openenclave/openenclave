@@ -379,98 +379,103 @@ oe_getaddrinfo_OE_NETWORK_INSECURE(
     _Out_ oe_addrinfo** ppResult)
 {
     oe_result_t oe_result;
-    getaddrinfo_Result result;
+    int eai_result;
     oe_addrinfo* ailist = NULL;
     oe_addrinfo* ai;
     oe_addrinfo** pNext = &ailist;
-    oe_result_t uStatus = OE_OK;
 
-    result.addressCount = 0;
+    size_t length_needed = 0;
+    struct addrinfo_Buffer* response = NULL;
+    size_t len = 0;
 
-    oe_result = ocall_getaddrinfo(
-        &result,
-        (char*)pNodeName,
-        (char*)pServiceName,
-        (pHints != NULL) ? pHints->ai_flags : 0,
-        (pHints != NULL) ? pHints->ai_family : 0,
-        (pHints != NULL) ? pHints->ai_socktype : 0,
-        (pHints != NULL) ? pHints->ai_protocol : 0);
-    if (oe_result != OE_OK) {
-        result.error = OE_ENOTRECOVERABLE;
-    }
+    *ppResult = NULL;
 
-    if (result.addressCount > 0) {
-        int bytesReceived = result.addressCount * sizeof(addrinfo_Buffer);
-        struct addrinfo_Buffer* response = (struct addrinfo_Buffer*)oe_malloc(bytesReceived);
-        if (response == NULL) {
-            uStatus = OE_OUT_OF_MEMORY;
-            result.error = OE_ENOMEM;
-        } else {
-            uStatus = TcpsPullDataFromReeBuffer(
-                result.hMessage,
-                (uint8_t*)response,
-                bytesReceived);
-            if (uStatus != OE_OK)
-            {
-                result.error = OE_ENOTRECOVERABLE;
+    for (;;) {
+        oe_result = ocall_getaddrinfo(
+            &eai_result,
+            (char*)pNodeName,
+            (char*)pServiceName,
+            (pHints != NULL) ? pHints->ai_flags : 0,
+            (pHints != NULL) ? pHints->ai_family : 0,
+            (pHints != NULL) ? pHints->ai_socktype : 0,
+            (pHints != NULL) ? pHints->ai_protocol : 0,
+            response,
+            len,
+            &length_needed);
+
+        if (len < length_needed) {
+            free(response);
+            response = (struct addrinfo_Buffer*)oe_malloc(length_needed);
+            if (response == NULL) {
+                return OE_ENOMEM; // TODO: EAI_MEMORY
             }
+            len = length_needed;
+            continue;
         }
 
-        TcpsFreeReeBuffer(result.hMessage);
+        if (oe_result != OE_OK) {
+            // TODO: we need EAI_* codes.
+            return OE_EFAULT; // TODO: EAI_FAIL
+        }
+        if (eai_result != 0) {
+            return eai_result;
+        }
+        break;
+    }
 
-        /* We now have a response to deserialize. */
-        for (int i = 0; i < result.addressCount; i++) {
-            if (response[i].ai_addrlen > sizeof(oe_sockaddr_storage) ||
-                response[i].ai_addrlen > sizeof(response[i].ai_addr)) {
-                result.error = OE_ENOMEM;
-                break;
-            }
-            ai = oe_malloc(sizeof(*ai));
-            if (ai == NULL) {
-                result.error = OE_ENOMEM;
-                break;
-            }
-            ai->ai_addr = oe_malloc(response[i].ai_addrlen);
-            if (ai->ai_addr == NULL) {
+    /* We now have a response to deserialize. */
+    int count = len / sizeof(addrinfo_Buffer);
+    for (int i = 0; i < count; i++) {
+        if (response[i].ai_addrlen > sizeof(oe_sockaddr_storage) ||
+            response[i].ai_addrlen > sizeof(response[i].ai_addr)) {
+            eai_result = OE_ENOMEM; // TODO: EAI_MEMORY
+            break;
+        }
+        ai = oe_malloc(sizeof(*ai));
+        if (ai == NULL) {
+            eai_result = OE_ENOMEM; // TODO: EAI_MEMORY
+            break;
+        }
+        ai->ai_addr = oe_malloc(response[i].ai_addrlen);
+        if (ai->ai_addr == NULL) {
+            oe_free(ai);
+            eai_result = OE_ENOMEM; // TODO: EAI_MEMORY
+            break;
+        }
+        memcpy(ai->ai_addr, response[i].ai_addr, response[i].ai_addrlen);
+
+        ai->ai_flags = response[i].ai_flags;
+        ai->ai_family = response[i].ai_family;
+        ai->ai_socktype = response[i].ai_socktype;
+        ai->ai_protocol = response[i].ai_protocol;
+        ai->ai_addrlen = response[i].ai_addrlen;
+        if (response[i].ai_canonname[0] != 0) {
+            ai->ai_canonname = oe_malloc(sizeof(response[i].ai_canonname) + 1);
+            if (ai->ai_canonname == NULL) {
                 oe_free(ai);
-                result.error = OE_ENOMEM;
+                eai_result = OE_ENOMEM; // TODO: EAI_MEMORY
                 break;
             }
-            memcpy(ai->ai_addr, response[i].ai_addr, response[i].ai_addrlen);
-
-            ai->ai_flags = response[i].ai_flags;
-            ai->ai_family = response[i].ai_family;
-            ai->ai_socktype = response[i].ai_socktype;
-            ai->ai_protocol = response[i].ai_protocol;
-            ai->ai_addrlen = response[i].ai_addrlen;
-            if (response[i].ai_canonname[0] != 0) {
-                ai->ai_canonname = oe_malloc(sizeof(response[i].ai_canonname) + 1);
-                if (ai->ai_canonname == NULL) {
-                    oe_free(ai);
-                    result.error = OE_ENOMEM;
-                    break;
-                }
-                strncpy(ai->ai_canonname, response[i].ai_canonname,
-                        sizeof(response[i].ai_canonname));
-                ai->ai_canonname[sizeof(response[i].ai_canonname)] = 0;
-            } else {
-                ai->ai_canonname = NULL;
-            }
-            ai->ai_next = NULL;
-
-            /* Insert at end of list. */
-            *pNext = ai;
-            pNext = &ai->ai_next;
+            strncpy(ai->ai_canonname, response[i].ai_canonname,
+                sizeof(response[i].ai_canonname));
+            ai->ai_canonname[sizeof(response[i].ai_canonname)] = 0;
+        } else {
+            ai->ai_canonname = NULL;
         }
-    }
-    WSASetLastError(result.error);
+        ai->ai_next = NULL;
 
-    if (result.error != 0 && ailist != NULL) {
+        /* Insert at end of list. */
+        *pNext = ai;
+        pNext = &ai->ai_next;
+    }
+    oe_wsa_set_last_error_OE_NETWORK_INSECURE(eai_result);
+
+    if (eai_result != 0 && ailist != NULL) {
         freeaddrinfo(ailist);
     } else {
         *ppResult = ailist;
     }
-    return result.error;
+    return eai_result;
 }
 
 int

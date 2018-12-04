@@ -27,8 +27,8 @@ unsigned int custom_rand_generate(void)
     return u;
 }
 
-sgx_status_t sgx_read_rand(unsigned char *ptr, size_t len)
+oe_result_t oe_random(void* ptr, size_t len)
 {
     TEE_GenerateRandom(ptr, len);
-    return SGX_SUCCESS;
+    return OE_OK;
 }

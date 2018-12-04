@@ -14,7 +14,7 @@
 #error "enclave.h and host.h must not be included in the same compilation unit."
 #endif
 #ifndef OE_USE_OPTEE
-# if defined(_ARM_) || defined(OE_SIMULATE_OPTEE)
+# if defined(_ARM_) || defined(_M_ARM) || defined(OE_SIMULATE_OPTEE)
 #  define OE_USE_OPTEE
 # else
 #  define OE_USE_SGX

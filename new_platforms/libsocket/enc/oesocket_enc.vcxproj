@@ -266,7 +266,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(NewPlatformsDir)include\optee\enclave\Simulator;$(NewPlatformsDir)include\optee\enclave;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include;$(OESdkDir)3rdparty\optee_os\lib\libutee\include;$(OESdkDir)3rdparty\optee_os\lib\libutils\ext\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(NewPlatformsDir)include\optee\enclave\Simulator;$(NewPlatformsDir)include\optee\enclave;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OESdkDir)include;$(OESdkDir)3rdparty\optee_os\lib\libutee\include;$(OESdkDir)3rdparty\optee_os\lib\libutils\ext\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>OE_SIMULATE_OPTEE;</PreprocessorDefinitions>
     </ClCompile>
     <Lib>
@@ -279,7 +279,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(OESdkDir)include;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\libc++;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_ARM_;_ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE=1;%(ClCompile.PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Lib>
@@ -292,7 +292,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(NewPlatformsDir)include\optee\enclave\Simulator;$(NewPlatformsDir)include\optee\enclave;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include;$(OESdkDir)3rdparty\optee_os\lib\libutee\include;$(OESdkDir)3rdparty\optee_os\lib\libutils\ext\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(NewPlatformsDir)include\optee\enclave\Simulator;$(NewPlatformsDir)include\optee\enclave;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OESdkDir)include;$(OESdkDir)3rdparty\optee_os\lib\libutee\include;$(OESdkDir)3rdparty\optee_os\lib\libutils\ext\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_ARM_;OE_SIMULATE_OPTEE;_ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE=1;%(ClCompile.PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Lib>
@@ -317,7 +317,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(OESdkDir)include;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\libc++;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_ARM_;_ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE=1;%(ClCompile.PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Lib>
@@ -343,7 +343,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <Optimization>MaxSpeed</Optimization>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(OESdkDir)include;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\libc++;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PreprocessorDefinitions>_ARM_;_ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE=1;%(ClCompile.PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
@@ -370,7 +370,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <Optimization>MaxSpeed</Optimization>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(OESdkDir)include;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\libc++;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PreprocessorDefinitions>_ARM_;_ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE=1;%(ClCompile.PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
@@ -396,7 +396,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(NewPlatformsDir)include\optee\enclave\Simulator;$(NewPlatformsDir)include\optee\enclave;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include;$(OESdkDir)3rdparty\optee_os\lib\libutee\include;$(OESdkDir)3rdparty\optee_os\lib\libutils\ext\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(NewPlatformsDir)include\optee\enclave\Simulator;$(NewPlatformsDir)include\optee\enclave;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OESdkDir)include;$(OESdkDir)3rdparty\optee_os\lib\libutee\include;$(OESdkDir)3rdparty\optee_os\lib\libutils\ext\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>OE_SIMULATE_OPTEE;</PreprocessorDefinitions>
     </ClCompile>
     <Lib>

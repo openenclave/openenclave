@@ -65,66 +65,6 @@ elif [ "$ARCH" = "aarch64" ]; then
 fi
 
 # -------------------------------------
-# Configure Intel SGX SDK
-# -------------------------------------
-
-echo Checking for Intel SGX SDK
-
-# Test whether Intel SGX SDK is installed.  If not, but the
-# IntelSGXSDKInstallerURI environment variable is set,
-# then fetch it from there, else tell the user to go get it.
-# This provides a mechanism usable by github-CI.
-if [ -e ../3rdparty/SGXSDK/bin/x64/sgx_edger8r ]; then
-    export PATH="$PATH:$PWD/../3rdparty/SGXSDK/bin/x64"
-fi
-if [ -e ../3rdparty/SGXSDK/bin/win32/Release/sgx_edger8r ]; then
-    export PATH="$PATH:$PWD/../3rdparty/SGXSDK/bin/win32/Release"
-fi
-edgepath=`which sgx_edger8r`
-if [ -z "$edgepath" ]; then
-    edgepath=`which sgx_edger8r.exe`
-fi
-if [ -z "$edgepath" ]; then
-    if [ ! -e ../3rdparty/SGXSDK ]; then
-        if [ -n "${IntelSGXSDKInstallerURI}" ]; then
-            wget ${IntelSGXSDKInstallerURI} || exit 1
-        fi
-        if [ -e SGXSDK.zip ]; then
-            unzip SGXSDK.zip -d ../3rdparty || exit 1
-        fi
-    fi
-    if [ -e ../3rdparty/SGXSDK ]; then
-        export PATH="$PATH:$PWD/../3rdparty/SGXSDK/bin/x64"
-        chmod 755 $PWD/../3rdparty/SGXSDK/bin/x64/sgx_edger8r
-    fi
-fi
-edgepath=`which sgx_edger8r`
-if [ ! -z "$edgepath" ]; then
-    export SGX_EDGER8R=sgx_edger8r
-    export SGX_PATHSEP=:
-else
-    edgepath=`which sgx_edger8r.exe`
-    if [ ! -z "$edgepath" ]; then
-        export SGX_EDGER8R=sgx_edger8r.exe
-        export SGX_PATHSEP=\;
-    fi
-fi
-if [ -z "$edgepath" ]; then
-    echo FAILED: You need to first install the Intel SGX SDK from https://01.org/intel-softwareguard-extensions
-    exit 1
-fi
-if [ "${SGX_EDGER8R}" = "sgx_edger8r.exe" ]; then
-    binWin32ReleasePath=$(dirname "${edgepath}")
-    binWin32Path=$(dirname "${binWin32ReleasePath}")
-    binPath=$(dirname "${binWin32Path}")
-else
-    binX64Path=$(dirname "${edgepath}")
-    binPath=$(dirname "${binX64Path}")
-fi
-sgxSdkPath=$(dirname "${binPath}")
-
-
-# -------------------------------------
 # Configure OE Edger8r
 # -------------------------------------
 
@@ -153,15 +93,6 @@ if [ -z "$oeedgepath" ]; then
     export OEPATHSEP=:
 fi
 echo Found $OEEDGER8R
-
-# The linaro tools have problems with spaces in include paths,
-# so create a link we can use without spaces.
-if [ ! -e ../3rdparty/SGXSDK ]; then
-    ln -s "${sgxSdkPath}" ../3rdparty/SGXSDK
-fi
-export SGX_RELATIVE_PATH=../3rdparty/SGXSDK/
-export SGX_PATH=$PWD${SGX_RELATIVE_PATH}
-export SGX_SDK=$PWD/../3rdparty/SGXSDK
 
 # -------------------------------------
 # Build OP-TEE

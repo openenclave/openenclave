@@ -310,7 +310,17 @@ oe_gethostname_OE_SECURE_HARDWARE(
 #endif
 
 int
-oe_getnameinfo(
+oe_getnameinfo_OE_NETWORK_INSECURE(
+    _In_ const struct oe_sockaddr *sa,
+    _In_ oe_socklen_t salen,
+    _Out_writes_opt_z_(hostlen) char* host,
+    _In_ size_t hostlen,
+    _Out_writes_opt_z_(servlen) char* serv,
+    _In_ size_t servlen,
+    _In_ int flags);
+
+int
+oe_getnameinfo_OE_NETWORK_SECURE_HARDWARE(
     _In_ const struct oe_sockaddr *sa,
     _In_ oe_socklen_t salen,
     _Out_writes_opt_z_(hostlen) char* host,

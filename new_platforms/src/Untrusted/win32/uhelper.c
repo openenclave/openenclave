@@ -3,23 +3,19 @@
 #include <time.h>
 #include <windows.h> // for LARGE_INTEGER
 #include <openenclave/host.h>
-#include "../oeoverintelsgx_u.h"
 
 #define MIN(a,b) (((a) < b) ? (a) : (b))
 
 /* Time-related APIs */
 
-QueryPerformanceCounter_Result ocall_QueryPerformanceCounter(void)
+oe_result_t ocall_QueryPerformanceCounter(_Out_ uint64_t* count)
 {
-    QueryPerformanceCounter_Result result;
 
-    if (!QueryPerformanceCounter((LARGE_INTEGER*)&result.count)) {
-        result.status = OE_FAILURE;
+    if (!QueryPerformanceCounter((LARGE_INTEGER*)count)) {
+        return OE_FAILURE;
     } else {
-        result.status = OE_OK;
+        return OE_OK;
     }
-
-    return result;
 }
 
 unsigned int ocall_GetTickCount(void)
@@ -34,18 +30,14 @@ uint64_t ocall_time64(void)
     return t;
 }
 
-GetTm_Result ocall_localtime64(uint64_t timer)
+int ocall_localtime64(uint64_t timer, _Out_ struct ocall_tm* tm)
 {
-    GetTm_Result result;
-    result.err = _localtime64_s((struct tm*)&result.tm, (const __time64_t*)&timer);
-    return result;
+    return _localtime64_s((struct tm*)tm, (const __time64_t*)&timer);
 }
 
-GetTm_Result ocall_gmtime64(uint64_t timer)
+int ocall_gmtime64(uint64_t timer, _Out_ struct ocall_tm* tm)
 {
-    GetTm_Result result;
-    result.err = _gmtime64_s((struct tm*)&result.tm, (const __time64_t*)&timer);
-    return result;
+    return _gmtime64_s((struct tm*)tm, (const __time64_t*)&timer);
 }
 
 /* Process/thread-related APIs */

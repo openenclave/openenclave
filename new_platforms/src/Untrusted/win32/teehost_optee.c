@@ -9,7 +9,6 @@
 #include <strsafe.h>
 #include <rpc.h>
 #include <openenclave/host.h>
-#include "oeoverintelsgx_u.h"
 
 static HANDLE OpenServiceHandleByFilename(_In_ LPCGUID ServiceGuid)
 {
@@ -68,10 +67,10 @@ static HANDLE OpenServiceHandleByFilename(_In_ LPCGUID ServiceGuid)
     return serviceHandle;
 }
 
-oe_result_t oe_create_enclave_internal(
+oe_result_t oe_create_enclave_helper(
     _In_z_ const char* a_TaIdString,
     uint32_t a_Flags,
-    _Out_ sgx_enclave_id_t* a_pId)
+    _Out_ oe_enclave_t** a_pId)
 {
     char uuidstring[80];
     strcpy_s(uuidstring, sizeof(uuidstring), a_TaIdString);
@@ -82,7 +81,7 @@ oe_result_t oe_create_enclave_internal(
         uuidstring[len - 3] = 0;
     }
 
-    *a_pId = (sgx_enclave_id_t)INVALID_HANDLE_VALUE;
+    *a_pId = NULL;
 
     OE_UNUSED(a_Flags);
 
@@ -95,11 +94,11 @@ oe_result_t oe_create_enclave_internal(
 
     /* Open a session to the TA. */
     HANDLE hService = OpenServiceHandleByFilename(&uuid);
-    *a_pId = (sgx_enclave_id_t)hService;
+    *a_pId = (oe_enclave_t*)hService;
     if (hService == INVALID_HANDLE_VALUE) {
         return OE_FAILURE;
     }
-    assert(*a_pId != (sgx_enclave_id_t)-1);
+    assert(*a_pId != NULL);
 
     /* Proactively initialize sockets so the enclave isn't required to. */
     WSADATA wsaData;
@@ -112,9 +111,8 @@ oe_result_t oe_terminate_enclave(_In_ oe_enclave_t* enclave)
 {
     WSACleanup();
 
-    if (enclave != (oe_enclave_t*)INVALID_HANDLE_VALUE) {
+    if (enclave != NULL) {
         CloseHandle((HANDLE)enclave);
-        enclave = (oe_enclave_t*)INVALID_HANDLE_VALUE;
     }
     return OE_OK;
 }

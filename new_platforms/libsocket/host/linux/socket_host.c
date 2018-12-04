@@ -14,7 +14,6 @@
 #include "stdext.h"
 #include <openenclave/host.h> 
 #include "../socket_u.h"
-#include "../../../src/buffer.h"
 
 #define MAX(x,y) ((x) > (y) ? (x) : (y))
 
@@ -106,64 +105,51 @@ ssize_t ocall_recv(intptr_t a_hSocket, void* a_Buffer, size_t a_nBufferSize, int
     return bytesReceived;
 }
 
-getaddrinfo_Result ocall_getaddrinfo(
-    const char* a_NodeName,
-    const char* a_ServiceName,
+int ocall_getaddrinfo(
+    _In_z_ const char* a_NodeName,
+    _In_z_ const char* a_ServiceName,
     int a_Flags,
     int a_Family,
     int a_SockType,
-    int a_Protocol)
+    int a_Protocol,
+    _Out_writes_bytes_(len) addrinfo_Buffer* aibuffer,
+    size_t len,
+    _Out_ size_t* length_needed)
 {
-    oe_result_t status;
-    getaddrinfo_Result result = { 0 };
-
-    struct addrinfo* ai;
     struct addrinfo* ailist = NULL;
+    struct addrinfo* ai;
     struct addrinfo hints = { 0 };
 
-    char* node_name;
-    char* service_name;
-
-    int i;
-    int s;
-    int size;
-    void* aibufhandle;
-    addrinfo_Buffer* aibuf;
+    int eai_error = 0;
+    *length_needed = 0;
+    memset(aibuffer, 0, len);
 
     hints.ai_flags = a_Flags;
     hints.ai_family = a_Family;
     hints.ai_socktype = a_SockType;
     hints.ai_protocol = a_Protocol;
 
-    s = getaddrinfo(a_NodeName, a_ServiceName, &hints, &ailist);
-    if (s != 0) {
-        result.error = (oe_socket_error_t)s;
-        return result;
+    eai_error = getaddrinfo(a_NodeName, a_ServiceName, &hints, &ailist);
+    if (ailist == NULL) {
+        return eai_error;
     }
 
     /* Count number of addresses. */
+    int count = 0;
     for (ai = ailist; ai != NULL; ai = ai->ai_next) {
-        result.addressCount++;
+        count++;
     }
 
-    aibufhandle = CreateBuffer(result.addressCount * sizeof(*aibuf));
-    if (aibufhandle == NULL) {
+    *length_needed = count * sizeof(*aibuffer);
+    if (len < *length_needed) {
         freeaddrinfo(ailist);
-        result.error = OE_ENOBUFS;
-        return result;
+	return EAI_AGAIN;
     }
 
     /* Serialize ailist. */
-    status = GetBuffer(aibufhandle, (char **)&aibuf, &size);
-    if (status != OE_OK) {
-        FreeBuffer(aibufhandle);
-        freeaddrinfo(ailist);
-        result.error = OE_EFAULT;
-        return result;
-    }
-
+    int i;
     for (i = 0, ai = ailist; ai != NULL; ai = ai->ai_next, i++) {
-        addrinfo_Buffer* aib = &aibuf[i];
+        addrinfo_Buffer* aib = &aibuffer[i];
         aib->ai_flags = ai->ai_flags;
         aib->ai_family = ai->ai_family;
         aib->ai_socktype = ai->ai_socktype;
@@ -175,9 +161,7 @@ getaddrinfo_Result ocall_getaddrinfo(
 
     freeaddrinfo(ailist);
 
-    result.hMessage = aibufhandle;
-    
-    return result;
+    return 0;
 }
 
 getsockopt_Result ocall_getsockopt(

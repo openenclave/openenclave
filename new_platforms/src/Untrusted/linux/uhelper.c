@@ -1,28 +1,24 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
 #include "sal_unsup.h"
+#include <openenclave/host.h>
 
 #include <stddef.h>
 #include <time.h>
 #include <errno.h>
 
 #include "optee.h"
-#include <openenclave/host.h>
-#include "oeoverintelsgx_u.h"
+#include "oeinternal_u.h"
 
 /* Time-related APIs */
 
-QueryPerformanceCounter_Result ocall_QueryPerformanceCounter(void)
+oe_result_t ocall_QueryPerformanceCounter(_Out_ uint64_t* count)
 {
-    QueryPerformanceCounter_Result result = { 0 };
-
-    result.count = ocall_GetTickCount();
-    if (result.count)
-        result.status = OE_OK;
+    *count = ocall_GetTickCount();
+    if (*count)
+        return OE_OK;
     else
-        result.status = OE_FAILURE;
-
-    return result;
+        return OE_FAILURE;
 }
 
 unsigned int ocall_GetTickCount(void)
@@ -42,22 +38,14 @@ uint64_t ocall_time64(void)
     return (uint64_t)time(NULL);
 }
 
-GetTm_Result ocall_localtime64(uint64_t timer)
+int ocall_localtime64(uint64_t timer, _Out_ struct ocall_tm* tm)
 {
-    GetTm_Result result = { 0 };
-
-    result.err = localtime_r((time_t *)&timer, (struct tm *)&result.tm) == NULL ? EINVAL : 0;
-
-    return result;
+    return localtime_r((time_t *)&timer, (struct tm *)tm) == NULL ? EINVAL : 0;
 }
 
-GetTm_Result ocall_gmtime64(uint64_t timer)
+int ocall_gmtime64(uint64_t timer, _Out_ struct ocall_tm* tm)
 {
-    GetTm_Result result = { 0 };
-    
-    result.err = gmtime_r((time_t *)&timer, (struct tm *)&result.tm) == NULL ? EINVAL : 0;
-
-    return result;
+    return gmtime_r((time_t *)&timer, (struct tm *)tm) == NULL ? EINVAL : 0;
 }
 
 /* Process/thread-related APIs */

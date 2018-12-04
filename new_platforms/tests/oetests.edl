@@ -3,7 +3,6 @@
 enclave {
     from "openenclave/socket.edl" import *;
 	from "openenclave/stdio.edl" import *;
-	include "openenclave/bits/oebuffer.h"
 
     trusted {
         /* define ECALLs here. */
@@ -13,12 +12,9 @@ enclave {
         public int ecall_BufferToInt([out] int* output, [in, size=size] const void* buffer, size_t size);
         public oe_result_t ecall_TestOcall();
         public void ecall_CopyInt([in] const int* input, [out] int* output);
-        public oe_CreateBuffer_Result ecall_CreateReeBufferFromTeeBuffer([user_check] void* hTeeBuffer);
         public oe_result_t ecall_RunClient([in, string] const char* server, [in, string] const char* port);
         public oe_result_t ecall_StartServer([in, string] const char* port);
         public oe_result_t ecall_FinishServer();
-        public oe_result_t ecall_TestSgxIsWithinEnclave([user_check] void* outside, int size);
-        public oe_result_t ecall_TestSgxIsOutsideEnclave([user_check] void* outside, int size);
         public oe_result_t ecall_TestOEIsWithinEnclave([user_check] void* outside, int size);
         public oe_result_t ecall_TestOEIsOutsideEnclave([user_check] void* outside, int size);
         public oe_result_t ecall_TestOERandom();

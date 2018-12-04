@@ -34,12 +34,6 @@ int ocall_BufferToInt(const void* buffer, size_t size)
 }
 
 class OEEnclaveTest : public TrustedAppTest {
-public:
-    void* GetEnclave() {
-        sgx_enclave_id_t eid = GetTAId();
-        void* enclave = (void*)eid;
-        return enclave;
-    }
 };
 
 #include <openenclave/host.h>

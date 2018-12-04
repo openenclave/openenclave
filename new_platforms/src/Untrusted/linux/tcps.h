@@ -9,3 +9,4 @@
  */
 #include "..\..\..\include\tcps.h"
 #define oe_call_enclave_function oe_call_internal_enclave_function
+#define oe_create_enclave oe_create_internal_enclave

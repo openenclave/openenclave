@@ -39,11 +39,6 @@ void TrustedAppTest::TearDown()
     enclave = NULL;
 }
 
-sgx_enclave_id_t TrustedAppTest::GetTAId()
-{
-    return (sgx_enclave_id_t)enclave;
-}
-
 oe_enclave_t* TrustedAppTest::GetOEEnclave()
 {
     return enclave;

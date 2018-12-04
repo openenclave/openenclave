@@ -1,7 +1,6 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
 #include "oetests_t.h"
-#include "sgx_trts.h"
 #include <openenclave/enclave.h>
 #include <string.h>
 
@@ -27,21 +26,6 @@ int ecall_BufferToInt(int* output, const void* buffer, size_t size)
 void ecall_CopyInt(const int* input, int* output)
 {
     *output = *input;
-}
-
-oe_CreateBuffer_Result ecall_CreateReeBufferFromTeeBuffer(_In_ void* hTeeBuffer)
-{
-    oe_CreateBuffer_Result result = { 0 };
-    char* data;
-    int size;
-
-    result.uStatus = TcpsGetTeeBuffer(hTeeBuffer, &data, &size);
-    if (result.uStatus != OE_OK) {
-        return result;
-    }
-
-    result.uStatus = TcpsPushDataToReeBuffer(data, size, &result.hBuffer);
-    return result;
 }
 
 /* This client connects to an echo server, sends a large buffer,
@@ -228,38 +212,4 @@ Done:
         closesocket(listener);
     }
     return uStatus;
-}
-
-oe_result_t ecall_TestSgxIsWithinEnclave(void* outside, int size)
-{
-    int result = sgx_is_within_enclave(&result, sizeof(result));
-    Tcps_ReturnErrorIfTrue(result == 0, OE_FAILURE);
-
-#ifndef OE_USE_OPTEE
-    // TrustZone uses a separate address space and requires marshalling data.
-    // As such, there is a (separate) address with the same numeric value,
-    // and the following check currently doesn't work.  There's probably
-    // some way to differentiate and make this work in the future.
-    result = sgx_is_within_enclave(outside, size);
-    Tcps_ReturnErrorIfTrue(result != 0, OE_FAILURE);
-#endif
-
-    return OE_OK;
-}
-
-oe_result_t ecall_TestSgxIsOutsideEnclave(void* outside, int size)
-{
-    int result = sgx_is_outside_enclave(outside, size);
-    Tcps_ReturnErrorIfTrue(result == 0, OE_FAILURE);
-
-#ifndef OE_USE_OPTEE
-    // TrustZone uses a separate address space and requires marshalling data.
-    // As such, there is a (separate) address with the same numeric value,
-    // and the following check currently doesn't work.  There's probably
-    // some way to differentiate and make this work in the future.
-    result = sgx_is_outside_enclave(&result, sizeof(result));
-    Tcps_ReturnErrorIfTrue(result != 0, OE_FAILURE);
-#endif
-
-    return OE_OK;
 }

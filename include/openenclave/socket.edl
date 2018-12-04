@@ -22,12 +22,6 @@ enclave {
         char ai_addr[256];
     };
 
-    struct getaddrinfo_Result {
-        oe_socket_error_t error;
-        int addressCount;
-        void* hMessage; /* Handle to pass to TcpsImportBuffer() */
-    };
-
     struct gethostname_Result {
         oe_socket_error_t error;
         char name[256];
@@ -101,13 +95,16 @@ enclave {
             [in, size=a_nNameLen] const void* a_Name,
             int a_nNameLen);
 
-        getaddrinfo_Result ocall_getaddrinfo(
+        int ocall_getaddrinfo(
             [in, string] const char* a_NodeName,
             [in, string] const char* a_ServiceName,
             int a_Flags,
             int a_Family,
             int a_SockType,
-            int a_Protocol);
+            int a_Protocol,
+            [out, size=len] addrinfo_Buffer* buf,
+            size_t len,
+            [out] size_t* length_needed);
 
         gethostname_Result ocall_gethostname(void);
 

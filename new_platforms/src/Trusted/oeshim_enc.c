@@ -1,18 +1,14 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
 
-/* Allow deprecated APIs in this file, since we need to test them. */
 #define OE_ALLOW_DEPRECATED_APIS
 
 #include <openenclave/enclave.h>
-#include <sgx_trts.h>
 #include <stdlib.h>
-#include "oeoverintelsgx_t.h"
+#include "oeinternal_t.h"
 #include <string.h>
-#include "../oeresult.h"
-#include <sgx_utils.h>
-#include <sgx_trts_exception.h>
 #include "enclavelibc.h"
+#include "oeshim_enc.h"
 
 oe_result_t oe_call_host(_In_z_ const char* func, _In_ void* args)
 {
@@ -32,16 +28,6 @@ oe_enclave_t* oe_get_enclave(void)
     return NULL;
 }
 
-bool oe_is_within_enclave(const void* ptr, size_t size)
-{
-    return sgx_is_within_enclave(ptr, size);
-}
-
-bool oe_is_outside_enclave(const void* ptr, size_t size)
-{
-    return sgx_is_outside_enclave(ptr, size);
-}
-
 void oe_abort(void)
 {
     abort();
@@ -54,25 +40,18 @@ const char* oe_result_str(oe_result_t result)
     return message;
 }
 
-oe_result_t oe_random(void* data, size_t size)
-{
-    sgx_status_t sgxStatus = sgx_read_rand((unsigned char *)data, size);
-    oe_result_t oeResult = GetOEResultFromSgxStatus(sgxStatus);
-    return oeResult;
-}
-
 void* oe_host_malloc(size_t size)
 {
     void* ptr;
-    sgx_status_t sgxStatus = ocall_malloc(&ptr, size);
-    return (sgxStatus == SGX_SUCCESS) ? ptr : NULL;
+    oe_result_t result = ocall_malloc(&ptr, size);
+    return (result == OE_OK) ? ptr : NULL;
 }
 
 void* oe_host_realloc(void* ptr, size_t size)
 {
     void* newptr;
-    sgx_status_t sgxStatus = ocall_realloc(&newptr, ptr, size);
-    return (sgxStatus == SGX_SUCCESS) ? newptr : NULL;
+    oe_result_t result = ocall_realloc(&newptr, ptr, size);
+    return (result == OE_OK) ? newptr : NULL;
 }
 
 void* oe_allocate_ocall_buffer(size_t size)
@@ -93,8 +72,8 @@ oe_result_t ecall_InitializeEnclave(void)
 void* oe_host_calloc(size_t nmemb, size_t size)
 {
     void* ptr;
-    sgx_status_t sgxStatus = ocall_calloc(&ptr, nmemb, size);
-    return (sgxStatus == SGX_SUCCESS) ? ptr : NULL;
+    oe_result_t result = ocall_calloc(&ptr, nmemb, size);
+    return (result == OE_OK) ? ptr : NULL;
 }
 
 void oe_host_free(void* ptr)
@@ -104,18 +83,9 @@ void oe_host_free(void* ptr)
 
 char* oe_host_strndup(const char* str, size_t n)
 {
-    // Find length using memchr in n bytes
-    char* ptr = memchr(str, 0, n);
-    int len = (ptr == NULL) ? n : (ptr - str);
-    char* hostBuffer = (char*)oe_host_malloc(len + 1);
-
-    oe_BufferChunk teeChunk;
-    memcpy(teeChunk.buffer, str, len);
-    teeChunk.buffer[len] = 0;
-    teeChunk.size = len + 1;
-
-    sgx_status_t sgxStatus = ocall_CopyReeMemoryFromBufferChunk(hostBuffer, teeChunk);
-    return hostBuffer;
+    char* ptr;
+    oe_result_t result = ocall_strndup(&ptr, (char*)str, n);
+    return (result == OE_OK) ? ptr : NULL;
 }
 
 /**
@@ -222,117 +192,22 @@ oe_result_t ecall_get_report(
     return OE_OK;
 }
 
-int ecall_verify_report(void* report, size_t report_size)
+oe_result_t ecall_verify_report(void* report, size_t report_size)
 {
     oe_result_t result = oe_verify_report(report, report_size, NULL);
     return result;
 }
 
-typedef struct _oe_over_sgx_exception_handler_entry {
-    struct _oe_over_sgx_exception_handler_entry* next;
-    struct _oe_over_sgx_exception_handler_entry* prev;
-    oe_vectored_exception_handler_t handler;
-} oe_over_sgx_exception_handler_entry;
+void* g_OEExceptionHandle = NULL;
+oe_exception_handler_entry g_OEExceptionHandlerHead;
 
-void* g_OEOverSgxExceptionHandle = NULL;
-oe_over_sgx_exception_handler_entry g_OEOverSgxExceptionHandlerHead;
-
-int oe_over_sgx_exception_handler(sgx_exception_info_t *info)
-{
-    oe_context_t context = { 0 };
-    oe_exception_record_t record = { 0 };
-    switch (info->exception_vector) {
-    case SGX_EXCEPTION_VECTOR_DE: /* DIV and DIV instructions */
-    case SGX_EXCEPTION_VECTOR_DB: /* For Intel use only */
-        record.code = OE_EXCEPTION_DIVIDE_BY_ZERO;
-        break;
-    case SGX_EXCEPTION_VECTOR_BP: /* INT 3 instruction */
-        record.code = OE_EXCEPTION_BREAKPOINT;
-        break;
-    case SGX_EXCEPTION_VECTOR_BR: /* BOUND instruction */
-        record.code = OE_EXCEPTION_BOUND_OUT_OF_RANGE;
-        break;
-    case SGX_EXCEPTION_VECTOR_UD: /* UD2 instruction or reserved opcode */
-        record.code = OE_EXCEPTION_ILLEGAL_INSTRUCTION;
-        break;
-    case SGX_EXCEPTION_VECTOR_MF: /* x87 FPU floating-point or WAIT/FWAIT instruction */
-        record.code = OE_EXCEPTION_X87_FLOAT_POINT;
-        break;
-    case SGX_EXCEPTION_VECTOR_AC: /* Any data reference in memory */
-        record.code = OE_EXCEPTION_ACCESS_VIOLATION;
-                   // OE_EXCEPTION_PAGE_FAULT
-                   // OE_EXCEPTION_MISALIGNMENT
-        break;
-    case SGX_EXCEPTION_VECTOR_XM: /* SSE/SSE2/SSE3 floating-point instruction */
-        record.code = OE_EXCEPTION_SIMD_FLOAT_POINT;
-        break;
-    default:
-        record.code = OE_EXCEPTION_UNKNOWN;
-        break;
-    }
-    if (info->exception_type == SGX_EXCEPTION_HARDWARE) {
-        record.flags |= OE_EXCEPTION_FLAGS_HARDWARE;
-    } else if (info->exception_type == SGX_EXCEPTION_SOFTWARE) {
-        record.flags |= OE_EXCEPTION_FLAGS_SOFTWARE;
-    }
-    record.context = &context;
-
-    context.flags = record.flags;
-#if defined (_M_X64) || defined (__x86_64__)
-    record.address = info->cpu_context.rip;
-    context.rax = info->cpu_context.rax;
-    context.rbx = info->cpu_context.rbx;
-    context.rcx = info->cpu_context.rcx;
-    context.rdx = info->cpu_context.rdx;
-    context.rbp = info->cpu_context.rbp;
-    context.rsp = info->cpu_context.rsp;
-    context.rdi = info->cpu_context.rdi;
-    context.rsi = info->cpu_context.rsi;
-    context.r8 = info->cpu_context.r8;
-    context.r9 = info->cpu_context.r9;
-    context.r10 = info->cpu_context.r10;
-    context.r11 = info->cpu_context.r11;
-    context.r12 = info->cpu_context.r12;
-    context.r13 = info->cpu_context.r13;
-    context.r14 = info->cpu_context.r14;
-    context.r15 = info->cpu_context.r15;
-    context.rip = info->cpu_context.rip;
-    context.mxcsr = info->cpu_context.rflags;
-    /* context.basic_xstate = ... */
-#else
-    record.address = info->cpu_context.eip;
-    context.rax = info->cpu_context.eax;
-    context.rbx = info->cpu_context.ebx;
-    context.rcx = info->cpu_context.ecx;
-    context.rdx = info->cpu_context.edx;
-    context.rbp = info->cpu_context.ebp;
-    context.rsp = info->cpu_context.esp;
-    context.rdi = info->cpu_context.edi;
-    context.rsi = info->cpu_context.esi;
-    context.rip = info->cpu_context.eip;
-    context.mxcsr = info->cpu_context.eflags;
-    /* context.basic_xstate = ... */
-#endif
-
-    oe_over_sgx_exception_handler_entry* entry;
-    for (entry = g_OEOverSgxExceptionHandlerHead.next;
-         entry != &g_OEOverSgxExceptionHandlerHead;
-         entry = entry->next) {
-        uint64_t result = entry->handler(&record);
-        if (result != 0) {
-            return (int)result;
-        }
-    }
-    return 0;
-}
-
-oe_over_sgx_exception_handler_entry* FindExceptionEntry(
+oe_exception_handler_entry* FindExceptionEntry(
     oe_vectored_exception_handler_t vectored_handler)
 {
     /* Find in doubly-linked list. */
-    oe_over_sgx_exception_handler_entry* entry;
-    for (entry = g_OEOverSgxExceptionHandlerHead.next;
-        entry != &g_OEOverSgxExceptionHandlerHead;
+    oe_exception_handler_entry* entry;
+    for (entry = g_OEExceptionHandlerHead.next;
+        entry != &g_OEExceptionHandlerHead;
         entry = entry->next) {
         if (entry->handler == vectored_handler) {
             return entry;
@@ -350,22 +225,20 @@ oe_result_t oe_add_vectored_exception_handler(
     bool is_first_handler,
     oe_vectored_exception_handler_t vectored_handler)
 {
-    if (g_OEOverSgxExceptionHandle == NULL) {
-        g_OEOverSgxExceptionHandle = sgx_register_exception_handler(
-            TRUE,
-            oe_over_sgx_exception_handler);
-        g_OEOverSgxExceptionHandlerHead.next = &g_OEOverSgxExceptionHandlerHead;
-        g_OEOverSgxExceptionHandlerHead.prev = &g_OEOverSgxExceptionHandlerHead;
-        g_OEOverSgxExceptionHandlerHead.handler = NULL;
+    if (g_OEExceptionHandle == NULL) {
+        g_OEExceptionHandle = oe_register_exception_handler();
+        g_OEExceptionHandlerHead.next = &g_OEExceptionHandlerHead;
+        g_OEExceptionHandlerHead.prev = &g_OEExceptionHandlerHead;
+        g_OEExceptionHandlerHead.handler = NULL;
     }
 
     /* Check for duplicate. */
-    oe_over_sgx_exception_handler_entry* entry = FindExceptionEntry(vectored_handler);
+    oe_exception_handler_entry* entry = FindExceptionEntry(vectored_handler);
     if (entry != NULL) {
         return OE_INVALID_PARAMETER;
     }
 
-    entry = oe_malloc(sizeof(oe_over_sgx_exception_handler_entry));
+    entry = oe_malloc(sizeof(oe_exception_handler_entry));
     if (entry == NULL) {
         return OE_OUT_OF_MEMORY;
     }
@@ -373,13 +246,13 @@ oe_result_t oe_add_vectored_exception_handler(
 
     /* Add to doubly-linked list. */
     if (is_first_handler) {
-        entry->next = g_OEOverSgxExceptionHandlerHead.next;
-        g_OEOverSgxExceptionHandlerHead.next = entry;
+        entry->next = g_OEExceptionHandlerHead.next;
+        g_OEExceptionHandlerHead.next = entry;
         entry->prev = entry->next->prev;
         entry->next->prev = entry;
     } else {
-        entry->prev = g_OEOverSgxExceptionHandlerHead.prev;
-        g_OEOverSgxExceptionHandlerHead.prev = entry;
+        entry->prev = g_OEExceptionHandlerHead.prev;
+        g_OEExceptionHandlerHead.prev = entry;
         entry->next = entry->prev->next;
         entry->prev->next = entry;
     }
@@ -391,7 +264,7 @@ oe_result_t oe_remove_vectored_exception_handler(
     oe_vectored_exception_handler_t vectored_handler)
 {
     /* Find in doubly-linked list. */
-    oe_over_sgx_exception_handler_entry* entry = FindExceptionEntry(vectored_handler);
+    oe_exception_handler_entry* entry = FindExceptionEntry(vectored_handler);
     if (entry == NULL) {
         return OE_INVALID_PARAMETER;
     }
@@ -400,13 +273,13 @@ oe_result_t oe_remove_vectored_exception_handler(
     entry->prev->next = entry->next;
     entry->next->prev = entry->prev;
 
-    if (g_OEOverSgxExceptionHandlerHead.next == &g_OEOverSgxExceptionHandlerHead) {
+    if (g_OEExceptionHandlerHead.next == &g_OEExceptionHandlerHead) {
         /* List is now empty. */
-        int result = sgx_unregister_exception_handler(g_OEOverSgxExceptionHandle);
+        int result = oe_unregister_exception_handler(g_OEExceptionHandle);
         if (result == 0) {
             return OE_FAILURE;
         }
-        g_OEOverSgxExceptionHandle = NULL;
+        g_OEExceptionHandle = NULL;
     }
     return OE_OK;
 }

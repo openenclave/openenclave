@@ -185,8 +185,10 @@ static oe_result_t initialize_enclave(
     _In_z_ const char* enclave_prefix,
     _In_opt_z_ const char* enclave_extension,
     uint32_t flags,
-    _Out_ sgx_enclave_id_t* peid)
+    _Outptr_ oe_enclave_t** peid)
 {
+    *peid = NULL;
+
     char enclave_filename[256];
     sprintf_s(enclave_filename, sizeof(enclave_filename), "%s%s", 
               enclave_prefix,
@@ -267,7 +269,8 @@ static oe_result_t initialize_enclave(
     /* Step 2: call sgx_create_enclave to initialize an enclave instance */
     /* Debug Support: set 2nd parameter to 1 */
     const char* filename = enclave_filename;
-    ret = sgx_create_enclave(filename, flags, &token, &updated, peid, NULL);
+    sgx_enclave_id_t eid;
+    ret = sgx_create_enclave(filename, flags, &token, &updated, &eid, NULL);
     if (ret != SGX_SUCCESS) {
 #ifdef _MSC_VER
         if (token_handler != INVALID_HANDLE_VALUE) {
@@ -280,6 +283,7 @@ static oe_result_t initialize_enclave(
 #endif
         return GetOEResultFromSgxStatus(ret);
     }
+    *peid = (oe_enclave_t*)eid;
 
     /* Step 3: save the launch token if it is updated */
 #ifdef _MSC_VER
@@ -327,10 +331,10 @@ static oe_result_t initialize_enclave(
     return OE_OK;
 }
 
-oe_result_t oe_create_enclave_internal(
+oe_result_t oe_create_enclave_helper(
     _In_z_ const char* a_TaIdString,
     uint32_t a_Flags,
-    _Out_ sgx_enclave_id_t* a_pId)
+    _Out_ oe_enclave_t** a_pId)
 {
     oe_result_t result = OE_NOT_FOUND;
 

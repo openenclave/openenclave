@@ -13,8 +13,6 @@
 #include "oetests_u.h"
 #include "TrustedAppTest.h"
 
-#include <sgx_report.h> // For sgx_report_t.  TODO: remove this dependency.
-
 #ifdef OE_USE_SGX
 const char* TA_ID = "oetests_enclave"; /* DLL will be oetests_enclave.signed.dll */
 #define EXPECT_OPTEE_SGX_DIFFERENCE(sgx, optee, oeResult)   EXPECT_EQ(sgx, oeResult);
@@ -169,9 +167,9 @@ TEST_F(OEHostTest, get_target_info_v1_Failed)
     oe_result_t oeResult = oe_get_target_info_v1(NULL, 0, NULL, NULL);
     EXPECT_OPTEE_SGX_DIFFERENCE(OE_INVALID_PARAMETER, OE_UNSUPPORTED, oeResult);
 
-    sgx_report_t sgx_report = { 0 };
+    uint8_t report[1024];
     size_t size = 0;
-    oeResult = oe_get_target_info_v1((uint8_t*)&sgx_report, sizeof(sgx_report), NULL, &size);
+    oeResult = oe_get_target_info_v1(report, sizeof(report), NULL, &size);
 #if defined(OE_USE_OPTEE)
     EXPECT_EQ(OE_UNSUPPORTED, oeResult);
 #else

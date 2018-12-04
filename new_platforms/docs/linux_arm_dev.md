@@ -16,32 +16,7 @@ QEMU](ta_debugging_qemu.md).
 
 # Prerequisites
 
-This SDK currently relies on having the Intel SGX SDK installed even if
-developing for TrustZone. This is because the Open Enclave SDK requires
-using the `sgx_edger8r` utility that comes with that SDK as well as various header files.
-
-**Note**: This dependency is temporary. 
-
-The Intel SGX SDK can be downloaded for free from
-[Intel's Open Source Center](https://01.org/intel-softwareguard-extensions).
-Once you have it, install it as follows:
-
-```
-sudo apt install build-essential
-
-chmod +x ./sgx_linux_x64_sdk_2.3.101.46683.bin
-./sgx_linux_x64_sdk_2.3.101.46683.bin
-```
-
-Each time that you want to build the Open Enclave SDK or your own TA's,
-always execute the following command prior to building to ensure that
-the Intel SGX SDK is in your `PATH`:
-
-```
-source /path/to/sgxsdk/environment
-```
-
-Building applications using this SDK also requires
+Building applications using this SDK requires
 [oeedger8r](https://github.com/Microsoft/openenclave/tree/master/docs/GettingStartedDocs/Edger8rGettingStarted.md),
 the source for
 which is part of this SDK. The build script downloads a pre-built binary for

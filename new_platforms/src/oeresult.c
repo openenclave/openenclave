@@ -8,9 +8,6 @@
 
 #include <openenclave/bits/result.h>
 #include <sgx.h>
-#ifdef OE_USE_OPTEE
-# include <sgxoveroptee.h>
-#endif
 
 oe_result_t GetOEResultFromSgxStatus(sgx_status_t status)
 {
