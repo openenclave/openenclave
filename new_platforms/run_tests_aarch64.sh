@@ -87,7 +87,11 @@ CMD="su -c \""
 CMD="$CMD mkdir /mnt/oe &&"
 CMD="$CMD mount -t 9p -o trans=virtio sh0 /mnt/oe -oversion=9p2000.L &&"
 CMD="$CMD cp /mnt/oe/new_platforms/bin/optee/tests/3156152a-19d1-423c-96ea-5adf5675798f.ta /lib/optee_armtz &&"
-CMD="$CMD /mnt/oe/new_platforms/tests/oetests_host/oetests_host"
+if [ -z "$TESTS_NOT_TO_RUN" ]; then
+    CMD="$CMD /mnt/oe/new_platforms/tests/oetests_host/oetests_host"
+else
+    CMD="$CMD /mnt/oe/new_platforms/tests/oetests_host/oetests_host --gtest_filter=-$TESTS_NOT_TO_RUN"
+fi
 CMD="$CMD \""
 
 sshpass -p test ssh test@localhost -p 5555 "$CMD"
