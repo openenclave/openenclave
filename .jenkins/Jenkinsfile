@@ -160,5 +160,6 @@ parallel "Check Pre-Commit Requirements" : { checkPreCommitRequirements() },
         "Coffeelake gcc SGX1-FLC Release" : { coffeelakeTest('gcc', 'SGX1FLC', 'Release') },
         "Coffeelake gcc SGX1-FLC RelWithDebInfo" : { coffeelakeTest('gcc', 'SGX1FLC', 'RelWithDebInfo') },
         "Windows Debug Cross-platform" : { windowsDebugCrossPlatform() },
-        "Windows Release Cross-platform" : { windowsReleaseCrossPlatform() },
-        "Non-Simulation Container SGX1-FLC RelWithDebInfo" : { nonSimulationTest() }
+        "Windows Release Cross-platform" : { windowsReleaseCrossPlatform() }
+        // TODO: Re-enable this once it is no longer flaky.
+        // "Non-Simulation Container SGX1-FLC RelWithDebInfo" : { nonSimulationTest() }
