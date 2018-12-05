@@ -73,7 +73,7 @@ static void *generic_rpc_thread_procedure(void *param)
 }
 
 static oe_result_t uuid_from_string(
-    char *a_TaIdString,
+    const char *a_TaIdString,
     TEEC_UUID *a_Uuid)
 {
     int i;
@@ -81,13 +81,19 @@ static oe_result_t uuid_from_string(
     char *id_copy;
     const char *current_token;
 
-    if (strlen(a_TaIdString) != 36)
-        return OE_INVALID_PARAMETER;
-
     id_copy = strdup(a_TaIdString);
 
+    /* Remove ".ta" extension, if one is present. */
+    size_t len = strlen(id_copy);
+    if ((len > 3) && (strcmp(&id_copy[len - 3], ".ta") == 0)) {
+        id_copy[len - 3] = 0;
+    }
+
+    if (strlen(id_copy) != 36)
+        return OE_INVALID_PARAMETER;
+
     i = 5;
-    current_token = strtok((char *)id_copy, "-");
+    current_token = strtok(id_copy, "-");
     while (current_token != NULL && i >= 0) {
         uuid_parts[--i] = strtoull(current_token, NULL, 16);
         current_token = strtok(NULL, "-");
@@ -126,18 +132,9 @@ oe_result_t oe_create_enclave_helper(
     uint32_t err_origin;
     int s;
 
-    char uuidstring[80];
-    strcpy_s(uuidstring, sizeof(uuidstring), a_TaIdString);
-
-    /* Remove ".ta" extension, if one is present. */
-    size_t len = strlen(uuidstring);
-    if ((len > 3) && (strcmp(&uuidstring[len - 3], ".ta") == 0)) {
-        uuidstring[len - 3] = 0;
-    }
-   
     OE_UNUSED(a_Flags);
 
-    status = uuid_from_string((char *)a_TaIdString, &uuid);
+    status = uuid_from_string(a_TaIdString, &uuid);
     if (status != OE_OK) {
         return status;
     }
