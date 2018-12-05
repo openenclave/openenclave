@@ -28,7 +28,7 @@ static TEEC_Result handle_generic_rpc(
         if (type >= g_internal_ocall_table_v2.nr_ocall)
             return TEEC_ERROR_BAD_PARAMETERS;
 
-        uint32_t bytes_written = 0;
+        size_t bytes_written = 0;
         g_internal_ocall_table_v2.call_addr[type](
             input_buffer,
             input_buffer_size,
@@ -46,7 +46,7 @@ static TEEC_Result handle_generic_rpc(
         if (type >= g_ocall_table_v2.nr_ocall)
             return TEEC_ERROR_BAD_PARAMETERS;
 
-        uint32_t bytes_written = 0;
+        size_t bytes_written = 0;
         g_ocall_table_v2.call_addr[type](
             input_buffer,
             input_buffer_size,
