@@ -29,6 +29,8 @@ function(add_libc_test_enc NAME CFILE)
         )
     target_compile_options(libctest-${NAME}_enc PRIVATE
         -Wno-error
+        -Wno-unknown-pragmas
+        -Wno-unused-function
         )
     target_compile_definitions(libctest-${NAME}_enc PRIVATE -D__TEST__="${CFILE}")
     target_link_libraries(libctest-${NAME}_enc libctest-support)
