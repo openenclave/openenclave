@@ -45,7 +45,7 @@ Linux and Windows binaries:
   - [Windows 10 SDK (10.0.16299)](
     https://developer.microsoft.com/en-US/windows/downloads/windows-10-sdk)
 - [Git for Windows 64-bit](https://git-scm.com/download/win)
-- [CMake 3.5.1+](https://cmake.org/download/)
+- [CMake 3.13.1+](https://cmake.org/download/)
 - [OCaml on Windows 64-bit](https://fdopen.github.io/opam-repository-mingw/installation/) (Note that this will install a Cygwin environment for OCaml.)
 
 Configuring OCaml for Windows
