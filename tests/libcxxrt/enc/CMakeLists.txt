@@ -1,30 +1,34 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-# create a binary for each testcase listed in ../tests.supported
+include(oeedl_file)
 include(add_enclave_executable)
+
+# create a binary for each testcase listed in ../tests.supported
 include(${CMAKE_CURRENT_LIST_DIR}/../../../cmake/get_testcase_name.cmake)
+
+oeedl_file(../libcxxrt.edl enclave gen)
 
 # helper lib to contain file needed by some tests
 add_library(libcxxrttest-support
-    enc.cpp
+  ${gen}
     )
 target_compile_options(libcxxrttest-support PRIVATE
-    $<$<COMPILE_LANGUAGE:CXX>:-std=c++14>
     -Wno-error
     )
 target_link_libraries(libcxxrttest-support PUBLIC oelibcxx oeenclave)
-target_link_libraries(libcxxrttest-support INTERFACE -Wl,--undefined=Test)
+target_link_libraries(libcxxrttest-support INTERFACE -Wl,--undefined=test)
 
 # helper function to create enclave binary
 function(add_libcxxrt_test_enc NAME CXXFILE)
-    add_executable(libcxxrttest-${NAME}_enc main.cpp)
+    add_executable(libcxxrttest-${NAME}_enc enc.cpp main.cpp)
     target_include_directories(libcxxrttest-${NAME}_enc PRIVATE
         ..
         ${PROJECT_SOURCE_DIR}/3rdparty/libcxxrt/libcxxrt/src
         ${PROJECT_SOURCE_DIR}/3rdparty/libcxxrt/libcxxrt/test
+        ${CMAKE_CURRENT_BINARY_DIR}
         )
-    target_compile_options(libcxxrttest-${NAME}_enc PRIVATE -Wno-error --std=c++14)
+    target_compile_options(libcxxrttest-${NAME}_enc PRIVATE -Wno-error $<$<COMPILE_LANGUAGE:CXX>:-std=c++14>)
     target_compile_definitions(libcxxrttest-${NAME}_enc PRIVATE -DWITH_MAIN -D__TEST__="${CXXFILE}")
     target_link_libraries(libcxxrttest-${NAME}_enc libcxxrttest-support oelibcxx oelibc cxxrt-static)
     if("${NAME}" STREQUAL "test_foreign_exceptions")
