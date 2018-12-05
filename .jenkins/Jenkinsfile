@@ -1,5 +1,5 @@
 // oetools-image:tag  Docker image from OE Jenkins Registry
-OETOOLS_IMAGE = "oejenkinscidockerregistry.azurecr.io/oetools-azure:1.7"
+OETOOLS_IMAGE = "oejenkinscidockerregistry.azurecr.io/oetools-azure:1.8"
 
 def PowerShellWrapper(psCmd) {
     psCmd = psCmd.replaceAll("\r", "").replaceAll("\n", "")
