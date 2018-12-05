@@ -16,6 +16,7 @@ OPTEE_CLIENT = ../../../../3rdparty/optee_client
 
 DEFINES = -DOE_USE_OPTEE -D_DEBUG
 INCLUDES =                             \
+    -I./                               \
     -I../                              \
     -I../../                           \
     -I../../../include/optee/host      \

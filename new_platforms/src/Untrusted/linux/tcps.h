@@ -7,6 +7,6 @@
  * would not be needed if oeedger8r had an option to do this
  * for us for internal APIs.
  */
-#include "..\..\..\include\tcps.h"
+#include "../../../include/tcps.h"
 #define oe_call_enclave_function oe_call_internal_enclave_function
 #define oe_create_enclave oe_create_internal_enclave
