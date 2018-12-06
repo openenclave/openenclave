@@ -7,9 +7,7 @@ include(add_enclave_executable)
 oeedl_file(../tests.edl enclave gen)
 add_executable(report_enc enc.cpp datetime.cpp ${gen})
 
-target_compile_options(report_enc PRIVATE
-    $<$<COMPILE_LANGUAGE:CXX>:-std=c++11>
-)
-
-target_include_directories(report_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../common)
+target_include_directories(report_enc PRIVATE
+  ${CMAKE_CURRENT_BINARY_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common)
 target_link_libraries(report_enc oeenclave)

@@ -10,13 +10,8 @@ include(${CMAKE_CURRENT_LIST_DIR}/../../../cmake/get_testcase_name.cmake)
 oeedl_file(../libcxxrt.edl enclave gen)
 
 # helper lib to contain file needed by some tests
-add_library(libcxxrttest-support
-    ${gen}
-    )
-target_compile_options(libcxxrttest-support PUBLIC
-    $<$<COMPILE_LANGUAGE:CXX>:-std=c++14>
-    -Wno-error
-    )
+add_library(libcxxrttest-support ${gen})
+target_compile_options(libcxxrttest-support PUBLIC -Wno-error)
 target_link_libraries(libcxxrttest-support PUBLIC oelibcxx oeenclave)
 target_link_libraries(libcxxrttest-support INTERFACE -Wl,--undefined=test)
 

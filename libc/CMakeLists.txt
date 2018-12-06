@@ -655,6 +655,7 @@ add_library(oelibc STATIC
     ${MUSLSRC}/unistd/dup.c
     ${MUSLSRC}/unistd/dup3.c)
 
+# NOTE: This is the minimum required for musl sources.
 set_property(TARGET oelibc PROPERTY C_STANDARD 99)
 
 target_compile_options(oelibc PRIVATE
