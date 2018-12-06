@@ -38,5 +38,12 @@ foreach(testcase ${alltests})
         endif()
     endif()
 
+# the following test fails when built with clang, see #830 -- Skipping this test in clang
+    if ("${name}" MATCHES "array_sized_delete_array_calls_unsized_delete_array.pass")
+        if (CMAKE_CXX_COMPILER_ID MATCHES Clang)
+	    continue()
+	endif()
+    endif()
+
     add_enclave_test(tests/libcxxtest-${name} ./host libcxx_host ./enc libcxxtest-${name}_enc)
 endforeach(testcase)
