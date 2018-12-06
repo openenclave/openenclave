@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#define OE_TRACE_LEVEL 1
-
 #include <assert.h>
 #include <errno.h>
 #include <openenclave/bits/defs.h>
@@ -771,7 +769,7 @@ oe_result_t oe_load_elf_enclave_image(
         OE_RAISE(OE_FAILURE);
 
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
-    _dump_relocations(image->reloc_data, image->reloc_size);
+    _dump_relocations(image->u.elf.reloc_data, image->reloc_size);
 #endif
 
     image->type = OE_IMAGE_TYPE_ELF;

@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#define OE_TRACE_LEVEL 1
-
 #include <assert.h>
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/safemath.h>
