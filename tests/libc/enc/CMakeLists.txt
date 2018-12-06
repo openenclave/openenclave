@@ -6,8 +6,11 @@
 # Disabling warning-as-errors for the specific warnings is painful across multiple different compilers.
 # It was agreed to, that it is best to just disable warnings-as-errors for these tests specifically.
 
+include(oeedl_file)
 include(add_enclave_executable)
 include(${CMAKE_CURRENT_LIST_DIR}/../../../cmake/get_testcase_name.cmake)
+
+oeedl_file(../libc.edl enclave gen)
 
 # helper lib to contain file needed by some tests
 add_library(libctest-support
@@ -21,11 +24,13 @@ target_compile_options(libctest-support PRIVATE
 target_link_libraries(libctest-support PUBLIC oelibc oeenclave oecore)
 
 function(add_libc_test_enc NAME CFILE)
-    add_executable(libctest-${NAME}_enc enc.c main.c)
+    add_executable(libctest-${NAME}_enc enc.c main.c ${gen})
 
     target_include_directories(libctest-${NAME}_enc PRIVATE
         ..
         ${PROJECT_SOURCE_DIR}/3rdparty/musl/libc-test/src/common
+        ${CMAKE_CURRENT_BINARY_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}
         )
     target_compile_options(libctest-${NAME}_enc PRIVATE
         -Wno-error

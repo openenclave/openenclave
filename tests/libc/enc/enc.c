@@ -11,8 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../host/args.h"
-#include "../host/ocalls.h"
+#include "libc_t.h"
 
 int main(int argc, const char* argv[]);
 
@@ -61,25 +60,24 @@ extern const char* __test__;
 
 extern bool oe_disable_debug_malloc_check;
 
-OE_ECALL void Test(Args* args)
+int test(char* test)
 {
-    if (args)
-    {
-        oe_disable_debug_malloc_check = true;
+    int rval = 0;
+    oe_disable_debug_malloc_check = true;
 
-        printf("RUNNING: %s\n", __TEST__);
+    printf("RUNNING: %s\n", __TEST__);
 
-        if (!(__environ = (char**)calloc(1, sizeof(char**))))
-            args->ret = 1;
+    if (!(__environ = (char**)calloc(1, sizeof(char**))))
+        rval = 1;
 
-        static const char* argv[] = {
-            "test", NULL,
-        };
+    static const char* argv[] = {
+        "test", NULL,
+    };
 
-        args->ret = main(1, argv);
-        args->test = oe_host_strndup(__TEST__, OE_SIZE_MAX);
-        free(__environ);
-    }
+    rval = main(1, argv);
+    strncpy(test, __TEST__, STRLEN_MAX);
+    free(__environ);
+    return rval;
 }
 
 OE_SET_ENCLAVE_SGX(
@@ -89,5 +87,3 @@ OE_SET_ENCLAVE_SGX(
     4096, /* HeapPageCount */
     1024, /* StackPageCount */
     8);   /* TCSCount */
-
-OE_DEFINE_EMPTY_ECALL_TABLE();
