@@ -49,8 +49,6 @@ add_dependencies(libcxx libcxx_includes)
 set_target_properties(libcxx PROPERTIES
   POSITION_INDEPENDENT_CODE ON)
 
-target_compile_options(libcxx PRIVATE -std=c++14)
-
 target_compile_definitions(libcxx
   PRIVATE
   -DLIBCXXRT

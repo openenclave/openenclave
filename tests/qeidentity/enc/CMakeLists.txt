@@ -7,10 +7,6 @@ include(add_enclave_executable)
 oeedl_file(../tests.edl enclave gen)
 add_executable(qeidentity_enc enc.cpp ${gen})
 
-target_compile_options(qeidentity_enc PRIVATE
-    $<$<COMPILE_LANGUAGE:CXX>:-std=c++11>
-)
-
 if(USE_LIBSGX)
     target_compile_definitions(qeidentity_enc PRIVATE OE_USE_LIBSGX)
 endif()    
