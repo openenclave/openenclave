@@ -767,9 +767,7 @@ oe_result_t oe_load_elf_enclave_image(
         OE_RAISE(OE_FAILURE);
 
     if (get_current_logging_level() >= OE_LOG_LEVEL_INFO)
-    {
         _dump_relocations(image->u.elf.reloc_data, image->reloc_size);
-    }
 
     image->type = OE_IMAGE_TYPE_ELF;
     image->calculate_size = _calculate_size;

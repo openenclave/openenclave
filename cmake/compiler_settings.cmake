@@ -16,6 +16,12 @@ if (NOT CMAKE_C_COMPILER_ID STREQUAL CMAKE_CXX_COMPILER_ID)
     "${CMAKE_C_COMPILER_ID} != ${CMAKE_CXX_COMPILER_ID}")
 endif ()
 
+# Set the default standard to C++14 for all targets.
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Do not use, for example, `-std=gnu++14`.
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 # Set default build type and sanitize.
 # TODO: See #756: Fix this since debug is the default.
 if (NOT CMAKE_BUILD_TYPE)
