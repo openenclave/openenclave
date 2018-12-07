@@ -11,9 +11,9 @@
 #include <fcntl.h>
 
 #include "sal_unsup.h"
-#include "stdext.h"
+#include "linux/stdext.h"
 #include <openenclave/host.h> 
-#include "../socket_u.h"
+#include "socket_u.h"
 
 #define MAX(x,y) ((x) > (y) ? (x) : (y))
 

@@ -37,3 +37,7 @@ TcpsSdkTestTA_args.h
 SampleTA_args.h
 oeedger8r.exe
 oeedger8r
+
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
