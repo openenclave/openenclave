@@ -260,21 +260,20 @@ static void TestExecutionParallel(
     // wait for all enclave-threads to have incremented the counter
     while (counter < enclave_ids.size() * thread_count)
     {
-#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
-
-        static unsigned old_val;
-        if (counter != old_val)
+        if (get_current_logging_level() >= OE_LOG_LEVEL_INFO)
         {
-            printf(
-                "%s(): Looking for counter=%u, have %u.\n",
-                __FUNCTION__,
-                (unsigned)enclave_ids.size() * thread_count,
-                counter);
-            old_val = counter;
+            static unsigned old_val;
+            if (counter != old_val)
+            {
+                printf(
+                    "%s(): Looking for counter=%u, have %u.\n",
+                    __FUNCTION__,
+                    (unsigned)enclave_ids.size() * thread_count,
+                    counter);
+                old_val = counter;
+            }
         }
-#endif
     }
-
     // all threads arrived and spin on the release
     release = 1;
 

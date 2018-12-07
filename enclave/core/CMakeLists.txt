@@ -17,6 +17,7 @@ add_library(oecore STATIC
     atexit.c
     backtrace.c
     calls.c
+    tracee.c
     cpuid.c
     debugmalloc.c
     entropy.c
@@ -69,10 +70,6 @@ target_compile_options(oecore INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>)
 
 if(USE_LIBSGX)
     target_compile_definitions(oecore PUBLIC OE_USE_LIBSGX)
-endif()
-
-if(OE_TRACE_LEVEL)
-    target_compile_definitions(oecore PUBLIC "OE_TRACE_LEVEL=${OE_TRACE_LEVEL}")
 endif()
 
 if(USE_DEBUG_MALLOC)

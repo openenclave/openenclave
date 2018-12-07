@@ -401,6 +401,7 @@ oe_result_t oe_public_key_verify(
 {
     oe_result_t result = OE_UNEXPECTED;
     mbedtls_md_type_t type = _map_hash_type(hash_type);
+    int ret = 0;
 
     /* Check for null parameters */
     if (!oe_public_key_is_valid(public_key, magic) || !hash_data ||
@@ -408,14 +409,16 @@ oe_result_t oe_public_key_verify(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Verify the signature */
-    if (mbedtls_pk_verify(
-            (mbedtls_pk_context*)&public_key->pk,
-            type,
-            hash_data,
-            hash_size,
-            signature,
-            signature_size) != 0)
+    ret = mbedtls_pk_verify(
+        (mbedtls_pk_context*)&public_key->pk,
+        type,
+        hash_data,
+        hash_size,
+        signature,
+        signature_size);
+    if (ret != 0)
     {
+        OE_TRACE_ERROR("mbedtls_pk_verify failed with %x\n", ret);
         OE_RAISE(OE_VERIFY_FAILED);
     }
 

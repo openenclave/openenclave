@@ -22,6 +22,7 @@
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/thread.h>
+#include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include "enclave.h"
 #include "ocalls.h"
@@ -279,5 +280,14 @@ void oe_handle_backtrace_symbols(oe_enclave_t* enclave, uint64_t arg)
     if (args)
     {
         args->ret = _backtrace_symbols(enclave, args->buffer, args->size);
+    }
+}
+
+void oe_handle_log(oe_enclave_t* enclave, uint64_t arg)
+{
+    oe_log_args_t* args = (oe_log_args_t*)arg;
+    if (args)
+    {
+        log_message(true, args);
     }
 }

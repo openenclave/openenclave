@@ -345,10 +345,11 @@ static oe_result_t _verify_whole_chain(mbedtls_x509_crt* chain)
         /* Verify the next certificate against its following predecessors */
         int r = mbedtls_x509_crt_verify(
             p, subchain, NULL, NULL, &flags, NULL, NULL);
-
-        /* Raise an error if any */
-        if (r != 0)
+        if (r != 0) /* Raise an error if any */
+        {
+            OE_TRACE_ERROR("mbedtls_x509_crt_verify failed with 0x%x\n", r);
             OE_RAISE(OE_FAILURE);
+        }
 
         /* If the final certificate is not the root */
         if (subchain->next == NULL && root != subchain)
@@ -550,6 +551,7 @@ oe_result_t oe_cert_read_pem(
     oe_result_t result = OE_UNEXPECTED;
     Cert* impl = (Cert*)cert;
     mbedtls_x509_crt* crt = NULL;
+    int r = 0;
 
     /* Clear the implementation */
     if (impl)
@@ -571,8 +573,12 @@ oe_result_t oe_cert_read_pem(
     mbedtls_x509_crt_init(crt);
 
     /* Read the PEM buffer into DER format */
-    if (mbedtls_x509_crt_parse(crt, (const uint8_t*)pem_data, pem_size) != 0)
+    r = mbedtls_x509_crt_parse(crt, (const uint8_t*)pem_data, pem_size);
+    if (r != 0)
+    {
+        OE_TRACE_ERROR("mbedtls_x509_crt_parse failed with 0x%x\n", r);
         OE_RAISE(OE_FAILURE);
+    }
 
     /* Initialize the implementation */
     _cert_init(impl, crt, NULL);
@@ -618,6 +624,7 @@ oe_result_t oe_cert_chain_read_pem(
     oe_result_t result = OE_UNEXPECTED;
     CertChain* impl = (CertChain*)chain;
     Referent* referent = NULL;
+    int r = 0;
 
     /* Clear the implementation (making it invalid) */
     if (impl)
@@ -636,9 +643,11 @@ oe_result_t oe_cert_chain_read_pem(
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* Read the PEM buffer into DER format */
-    if (mbedtls_x509_crt_parse(
-            referent->crt, (const uint8_t*)pem_data, pem_size) != 0)
+    r = mbedtls_x509_crt_parse(
+        referent->crt, (const uint8_t*)pem_data, pem_size);
+    if (r != 0)
     {
+        OE_TRACE_ERROR("mbedtls_x509_crt_parse failed with 0x%x\n", r);
         OE_RAISE(OE_FAILURE);
     }
 
@@ -765,8 +774,11 @@ oe_result_t oe_cert_verify(
         {
             mbedtls_x509_crt_verify_info(
                 error->buf, sizeof(error->buf), "", flags);
+            OE_TRACE_ERROR(
+                "mbedtls_x509_crt_verify failed with %s (flags=0x%x)\n",
+                error->buf,
+                flags);
         }
-
         OE_RAISE(OE_VERIFY_FAILED);
     }
 
@@ -787,8 +799,11 @@ oe_result_t oe_cert_verify(
             {
                 mbedtls_x509_crt_verify_info(
                     error->buf, sizeof(error->buf), "", flags);
+                OE_TRACE_ERROR(
+                    "mbedtls_x509_crt_verify failed with %s (flags=0x%x)\n",
+                    error->buf,
+                    flags);
             }
-
             OE_RAISE(OE_VERIFY_FAILED);
         }
 

@@ -16,6 +16,7 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/thread.h>
+#include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include "../report.h"
 #include "asmdefs.h"
@@ -472,6 +473,11 @@ static void _handle_ecall(
             oe_handle_verify_report(arg_in, &arg_out);
             break;
         }
+        case OE_ECALL_LOG_INIT:
+        {
+            _handle_oelog_init(arg_in);
+            break;
+        }
         default:
         {
             /* No function found with the number */
@@ -530,6 +536,11 @@ OE_INLINE void _handle_oret(
 **
 **     Initiate a call into the host (exiting the enclave).
 **
+** Remark: Given that the logging implementation relies on making an ocall to
+** host, any failures when handling oe_ocall should not invoke any oe_log
+** functions so as to avoid infinite recursion. OE_RAISE and OE_CHECK macros
+** call oe_log functions, and therefore the following code locations use
+** OE_RAISE_NO_TRACE and OE_CHECK_NO_TRACE macros.
 **==============================================================================
 */
 
@@ -542,15 +553,15 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
     /* If the enclave is in crashing/crashed status, new OCALL should fail
     immediately. */
     if (__oe_enclave_status != OE_OK)
-        OE_RAISE(__oe_enclave_status);
+        OE_RAISE_NO_TRACE((oe_result_t)__oe_enclave_status);
 
     /* Check for unexpected failures */
     if (!callsite)
-        OE_RAISE(OE_UNEXPECTED);
+        OE_RAISE_NO_TRACE(OE_UNEXPECTED);
 
     /* Check for unexpected failures */
     if (!td_initialized(td))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE_NO_TRACE(OE_FAILURE);
 
     /* Save call site where execution will resume after OCALL */
     if (oe_setjmp(&callsite->jmpbuf) == 0)
@@ -563,7 +574,7 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
     }
     else
     {
-        OE_CHECK(result = (oe_result_t)td->oret_result);
+        OE_CHECK_NO_TRACE(result = (oe_result_t)td->oret_result);
 
         if (arg_out)
             *arg_out = td->oret_arg;

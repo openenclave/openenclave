@@ -329,7 +329,6 @@ done:
     return result;
 }
 
-#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
 OE_INLINE void _dump_relocations(const void* data, size_t size)
 {
     const elf64_rela_t* p = (const elf64_rela_t*)data;
@@ -348,7 +347,6 @@ OE_INLINE void _dump_relocations(const void* data, size_t size)
             OE_LLD(p->r_addend));
     }
 }
-#endif
 
 static oe_result_t _calculate_size(
     const oe_enclave_image_t* image,
@@ -768,9 +766,8 @@ oe_result_t oe_load_elf_enclave_image(
         0)
         OE_RAISE(OE_FAILURE);
 
-#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
-    _dump_relocations(image->u.elf.reloc_data, image->reloc_size);
-#endif
+    if (get_current_logging_level() >= OE_LOG_LEVEL_INFO)
+        _dump_relocations(image->u.elf.reloc_data, image->reloc_size);
 
     image->type = OE_IMAGE_TYPE_ELF;
     image->calculate_size = _calculate_size;

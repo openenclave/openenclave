@@ -145,12 +145,13 @@ done:
 
 static void _trace_datetime(const char* msg, const oe_datetime_t* date)
 {
-#if (OE_TRACE_LEVEL == OE_TRACE_LEVEL_INFO)
-    char str[21];
-    size_t size = sizeof(str);
-    oe_datetime_to_string(date, str, &size);
-    OE_TRACE_INFO("%s%s\n", msg, str);
-#endif
+    if (get_current_logging_level() >= OE_LOG_LEVEL_INFO)
+    {
+        char str[21];
+        size_t size = sizeof(str);
+        oe_datetime_to_string(date, str, &size);
+        OE_TRACE_INFO("%s%s\n", msg, str);
+    }
 }
 
 oe_result_t oe_enforce_revocation(

@@ -459,7 +459,6 @@ static oe_result_t _initialize_enclave(oe_enclave_t* enclave)
 
     {
         uint64_t arg_out = 0;
-
         OE_CHECK(
             oe_ecall(
                 enclave, OE_ECALL_INIT_ENCLAVE, (uint64_t)&args, &arg_out));
@@ -789,6 +788,9 @@ oe_result_t oe_create_enclave(
      * ocalls. Therefore setup ocall table prior to initialization. */
     enclave->ocalls = (const oe_ocall_func_t*)ocall_table;
     enclave->num_ocalls = ocall_table_size;
+
+    /* Setup logging configuration */
+    oe_log_enclave_init(enclave);
 
     /* Invoke enclave initialization. */
     OE_CHECK(_initialize_enclave(enclave));

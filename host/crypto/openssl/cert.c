@@ -693,9 +693,17 @@ oe_result_t oe_cert_verify(
     /* Finally verify the certificate */
     if (!X509_verify_cert(ctx))
     {
+        int errorno;
         if (error)
             _set_err(error, X509_verify_cert_error_string(ctx->error));
 
+        errorno = X509_STORE_CTX_get_error(ctx);
+        OE_TRACE(
+            OE_LOG_LEVEL_ERROR,
+            "X509_verify_cert failed!\n"
+            " error: (%d) %s\n",
+            errorno,
+            X509_verify_cert_error_string(errorno));
         OE_RAISE(OE_VERIFY_FAILED);
     }
 
