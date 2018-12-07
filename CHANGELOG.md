@@ -15,26 +15,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Function table/id based ecall/ocall dispatching
    - oeedger8r generates ecall tables and ocall tables
    - Dispatching based on function-id (index into table)
-   - oeedger8r generates oe_create_foo_enclave function for foo.edl
+   - oeedger8r generates `oe_create_foo_enclave` function for `foo.edl`
    - oe-gdb allows attaching to a host that is already running
-
 - oe-gdb allows attaching to a host that is already running
-
 - Added Quote Enclave Identity validation into oe_verify_report implementation
 
 - Added OE SDK internal logging mechanism
 
 ### Changed
 
-- oe_create_enclave takes two additional parameters: ocall_table, ocall_table_size.
-- Update mbedTLS library to version 2.7.6.
-- Update MUSL libc to version 1.1.20.
+- `oe_create_enclave` takes two additional parameters: `ocall_table` and
+  `ocall_table_size`.
+- Update mbed TLS library to version 2.7.6.
+- Update musl libc to version 1.1.20.
 - Update LLVM libcxx to version 7.0.0.
-   - Some libcxx headers (e.g. string) now use c++11 template features and may require
-     compiling with the -std=c++11 option when building with GCC.
+   - Some libcxx headers (e.g. `<string>`) now use C++11 template features and
+     may require compiling with the `-std=c++11` option when building with GCC.
+- Update minimum required CMake version for building from source to 3.13.1.
+- Update minimum required C++ standard for building from source to C++14.
 
 ### Deprecated
-- String based ocalls/ecalls, OE_ECALL, OE_OCALL macros.
+
+- String based `ocalls`/`ecalls`, `OE_ECALL`, and `OE_OCALL` macros.
 
 [v0.4.0] - 2018-10-08
 ---------------------
