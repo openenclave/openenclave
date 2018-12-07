@@ -70,7 +70,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
   # Enables all the warnings about constructions that some users consider questionable,
   # and that are easy to avoid. Treat at warnings-as-errors, which forces developers
   # to fix warnings as they arise, so they don't accumulate "to be fixed later".
-  add_compile_options(-Wall -Werror)
+  add_compile_options(-Wall -Werror -Wpointer-arith)
 
   add_compile_options(-fno-strict-aliasing)
 

@@ -137,6 +137,9 @@ elseif (CMAKE_C_COMPILER_ID MATCHES Clang)
     -Wno-macro-redefined)
 endif ()
 
+# Allow arithmetic on void*
+set_source_files_properties(libunwind/src/elf64.c PROPERTIES COMPILE_FLAGS -Wno-pointer-arith)
+
 target_compile_definitions(libunwind PRIVATE
   HAVE_ELF_H
   HAVE_ENDIAN_H
