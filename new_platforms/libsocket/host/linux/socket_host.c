@@ -210,11 +210,11 @@ static void copy_output_fds(oe_fd_set_internal *dest, const fd_set *src, const o
     for (i = 0; i < orig->fd_count; i++) {
         dest->fd_array[i] = FD_ISSET((int)orig->fd_array[i], src)
             ? orig->fd_array[i]
-            : NULL;
+            : 0;
     }
     
     for (; i < sizeof(dest->fd_array); i++) {
-        dest->fd_array[i] = NULL;
+        dest->fd_array[i] = 0;
     }
 }
 
