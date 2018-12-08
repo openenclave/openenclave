@@ -43,6 +43,7 @@ oe_result_t oe_crl_read_der(
     oe_result_t result = OE_UNEXPECTED;
     crl_t* impl = (crl_t*)crl;
     mbedtls_x509_crl* x509_crl = NULL;
+    int rc = 0;
 
     /* Clear the implementation */
     if (impl)
@@ -60,8 +61,9 @@ oe_result_t oe_crl_read_der(
     mbedtls_x509_crl_init(x509_crl);
 
     /* Parse the DER data to populate the mbedtls_x509_crl struct */
-    if (mbedtls_x509_crl_parse_der(x509_crl, der_data, der_size) != 0)
-        OE_RAISE(OE_FAILURE);
+    rc = mbedtls_x509_crl_parse_der(x509_crl, der_data, der_size);
+    if (rc != 0)
+        OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x\n", rc);
 
     /* Initialize the implementation */
     _crl_init(impl, x509_crl);

@@ -58,17 +58,17 @@ oe_result_t oe_enforce_qe_identity(sgx_report_body_t* qe_report_body)
         // enclave's mrsigner.
         if (!oe_constant_time_mem_equal(
                 qe_report_body->mrsigner, g_qe_mrsigner, sizeof(g_qe_mrsigner)))
-            OE_RAISE(OE_VERIFY_FAILED);
+            OE_RAISE_MSG(OE_VERIFY_FAILED, "mrsigner mismatch");
 
         if (qe_report_body->isvprodid != g_qe_isvprodid)
-            OE_RAISE(OE_VERIFY_FAILED);
+            OE_RAISE_MSG(OE_VERIFY_FAILED, "isvprodid mismatch");
 
         if (qe_report_body->isvsvn < g_qeisvsvn)
-            OE_RAISE(OE_VERIFY_FAILED);
+            OE_RAISE_MSG(OE_VERIFY_FAILED, "isvsvn is out-of-date");
 
         // Ensure that the QE is not a debug supporting enclave.
         if (qe_report_body->attributes.flags & SGX_FLAGS_DEBUG)
-            OE_RAISE(OE_VERIFY_FAILED);
+            OE_RAISE_MSG(OE_VERIFY_FAILED, "QE has SGX_FLAGS_DEBUG set!!");
 
         result = OE_OK;
         goto done;
@@ -131,62 +131,51 @@ oe_result_t oe_enforce_qe_identity(sgx_report_body_t* qe_report_body)
     }
 
     if (qe_report_body->isvprodid != parsed_info.isvprodid)
-    {
-        OE_TRACE_INFO(
-            "qe_report_body->isvprodid = %x\n", qe_report_body->isvprodid);
-        OE_TRACE_INFO("parsed_info.isvprodid = %x\n", parsed_info.isvprodid);
-        OE_RAISE(OE_VERIFY_FAILED);
-    }
+        OE_RAISE_MSG(
+            OE_VERIFY_FAILED,
+            "qe_report_body->isvprodid = 0x%x isvprodid = 0x%x",
+            qe_report_body->isvprodid,
+            parsed_info.isvprodid);
 
     if (qe_report_body->isvsvn < parsed_info.isvsvn)
-    {
-        OE_TRACE_INFO("qe_report_body->isvsvn = %x\n", qe_report_body->isvsvn);
-        OE_TRACE_INFO("parsed_info.isvsvn = %x\n", parsed_info.isvsvn);
-        OE_RAISE(OE_VERIFY_FAILED);
-    }
+        OE_RAISE_MSG(
+            OE_VERIFY_FAILED,
+            "qe_report_body->isvsvn = 0x%x isvsvn = 0x%x",
+            qe_report_body->isvsvn,
+            parsed_info.isvsvn);
 
     if ((qe_report_body->miscselect & parsed_info.miscselect_mask) !=
         parsed_info.miscselect)
-    {
-        OE_TRACE_INFO(
-            "qe_report_body->miscselect = %x\n", qe_report_body->miscselect);
-        OE_TRACE_INFO(
-            "parsed_info.miscselect_mask = %x\n", parsed_info.miscselect_mask);
-        OE_TRACE_INFO("parsed_info.miscselect = %x\n", parsed_info.miscselect);
-        OE_RAISE(OE_VERIFY_FAILED);
-    }
+        OE_RAISE_MSG(
+            OE_VERIFY_FAILED,
+            "qe_report_body->miscselect = 0x%x miscselect_mask = 0x%x "
+            "miscselect = 0x%x",
+            qe_report_body->miscselect,
+            parsed_info.miscselect_mask,
+            parsed_info.miscselect);
 
     // validate attributes
     // validate attributes.flags
     if ((qe_report_body->attributes.flags &
          parsed_info.attributes_flags_mask) != parsed_info.attributes.flags)
-    {
-        OE_TRACE_INFO(
-            "qe_report_body->attributes.flags = %lx\n",
-            qe_report_body->attributes.flags);
-        OE_TRACE_INFO(
-            "parsed_info.attributes_flags_mask = %lx\n",
+        OE_RAISE_MSG(
+            OE_VERIFY_FAILED,
+            "qe_report_body->attributes.flags = 0x%lx attributes_flags_mask = "
+            "0x%lx attributes.flags = 0x%lx",
+            qe_report_body->attributes.flags,
+            parsed_info.attributes_flags_mask,
             parsed_info.attributes_flags_mask);
-        OE_TRACE_INFO(
-            "parsed_info.attributes.flags = %lx\n",
-            parsed_info.attributes.flags);
-        OE_RAISE(OE_VERIFY_FAILED);
-    }
 
     // validate attributes.xfrm
     if ((qe_report_body->attributes.xfrm & parsed_info.attributes_xfrm_mask) !=
         parsed_info.attributes.xfrm)
-    {
-        OE_TRACE_INFO(
-            "qe_report_body->attributes.xfrm = %lx\n",
-            qe_report_body->attributes.xfrm);
-        OE_TRACE_INFO(
-            "parsed_info.attributes_xfrm_mask = %lx\n",
-            parsed_info.attributes_xfrm_mask);
-        OE_TRACE_INFO(
-            "parsed_info.attributes.xfrm = %lx\n", parsed_info.attributes.xfrm);
-        OE_RAISE(OE_VERIFY_FAILED);
-    }
+        OE_RAISE_MSG(
+            OE_VERIFY_FAILED,
+            "qe_report_body->attributes.xfrm = 0x%lx attributes_xfrm_mask = "
+            "0x%lx attributes.xfrm = 0x%lx",
+            qe_report_body->attributes.xfrm,
+            parsed_info.attributes_xfrm_mask,
+            parsed_info.attributes.xfrm);
 
     oe_cleanup_qe_identity_info_args(&qe_id_args);
     result = OE_OK;

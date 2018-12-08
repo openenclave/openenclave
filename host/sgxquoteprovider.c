@@ -91,7 +91,7 @@ static void _load_quote_provider()
             }
             else
             {
-                OE_TRACE_INFO(
+                OE_TRACE_ERROR(
                     "sgxquoteprovider: sgx_ql_set_logging_function "
                     "not found\n");
             }
@@ -112,7 +112,7 @@ static void _load_quote_provider()
         }
         else
         {
-            OE_TRACE_INFO(
+            OE_TRACE_ERROR(
                 "sgxquoteprovider: libdcap_quoteprov.so not found \n");
         }
     }
@@ -120,9 +120,16 @@ static void _load_quote_provider()
 
 oe_result_t oe_initialize_quote_provider()
 {
+    oe_result_t result = OE_OK;
     static oe_once_type once = OE_H_ONCE_INITIALIZER;
     oe_once(&once, _load_quote_provider);
-    return _lib_handle ? OE_OK : OE_QUOTE_PROVIDER_LOAD_ERROR;
+
+    if (!_lib_handle)
+        OE_RAISE_MSG(
+            OE_QUOTE_PROVIDER_LOAD_ERROR,
+            "oe_initialize_quote_provider failed");
+done:
+    return result;
 }
 
 oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
@@ -165,26 +172,24 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
     if (revocation_info->tcb_info == NULL ||
         revocation_info->tcb_info_size == 0)
     {
-        OE_TRACE_INFO("tcb_info is NULL.\n");
-        OE_RAISE(OE_INVALID_REVOCATION_INFO);
+        OE_RAISE_MSG(OE_INVALID_REVOCATION_INFO, "tcb_info is NULL");
     }
     host_buffer_size += revocation_info->tcb_info_size + 1;
 
     if (revocation_info->tcb_issuer_chain == NULL ||
         revocation_info->tcb_issuer_chain_size == 0)
     {
-        OE_TRACE_INFO("tcb_issuer_chain is NULL.\n");
-        OE_RAISE(OE_INVALID_REVOCATION_INFO);
+        OE_RAISE_MSG(OE_INVALID_REVOCATION_INFO, "tcb_issuer_chain is NULL");
     }
     host_buffer_size += revocation_info->tcb_issuer_chain_size + 1;
 
     if (revocation_info->crl_count != args->num_crl_urls)
     {
-        OE_TRACE_INFO(
-            "crl_count mismatch: %d != %d.\n",
+        OE_RAISE_MSG(
+            OE_INVALID_REVOCATION_INFO,
+            "crl_count mismatch: %d != %d",
             revocation_info->crl_count,
             args->num_crl_urls);
-        OE_RAISE(OE_INVALID_REVOCATION_INFO);
     }
 
     for (uint32_t i = 0; i < revocation_info->crl_count; ++i)
@@ -192,8 +197,8 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
         if (revocation_info->crls[i].crl_data == NULL ||
             revocation_info->crls[i].crl_data_size == 0)
         {
-            OE_TRACE_INFO("crl[%d].crl_data is NULL.\n", i);
-            OE_RAISE(OE_INVALID_REVOCATION_INFO);
+            OE_RAISE_MSG(
+                OE_INVALID_REVOCATION_INFO, "crl[%d].crl_data is NULL.", i);
         }
         // CRL is in DER format. Null not added.
         host_buffer_size += revocation_info->crls[i].crl_data_size;
@@ -201,13 +206,13 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
         if (revocation_info->crls[i].crl_issuer_chain == NULL ||
             revocation_info->crls[i].crl_issuer_chain_size == 0)
         {
-            OE_TRACE_INFO("crl[%d].crl_issuer_chain is NULL.\n", i);
-            OE_RAISE(OE_INVALID_REVOCATION_INFO);
+            OE_RAISE_MSG(
+                OE_INVALID_REVOCATION_INFO,
+                "crl[%d].crl_issuer_chain is NULL.",
+                i);
         }
         host_buffer_size += revocation_info->crls[i].crl_issuer_chain_size + 1;
     }
-
-    OE_TRACE_INFO("sgx_ql_get_revocation_info succeeded.\n");
 
     p = (uint8_t*)calloc(1, host_buffer_size);
     p_end = p + host_buffer_size;
@@ -303,11 +308,7 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
     result = OE_OK;
 done:
     if (revocation_info != NULL)
-    {
-        OE_TRACE_INFO("Freeing revocation info. \n");
         _free_revocation_info(revocation_info);
-        OE_TRACE_INFO("Freed revocation info.\n");
-    }
 
     return result;
 }
@@ -348,18 +349,13 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args)
 
     if (identity->qe_id_info == NULL || identity->qe_id_info_size == 0)
     {
-        OE_TRACE_INFO("qe_id_info is NULL.\n");
+        OE_TRACE_ERROR("qe_id_info is NULL.\n");
         OE_RAISE(OE_INVALID_QE_IDENTITY_INFO);
     }
     host_buffer_size += identity->qe_id_info_size + 1;
 
     if (identity->issuer_chain == NULL || identity->issuer_chain_size == 0)
-    {
-        OE_TRACE_INFO("issuer_chain is NULL.\n");
-        OE_RAISE(OE_INVALID_QE_IDENTITY_INFO);
-    }
-
-    OE_TRACE_INFO("sgx_ql_get_qe_identity_info succeeded.\n");
+        OE_RAISE_MSG(OE_INVALID_QE_IDENTITY_INFO, "issuer_chain is NULL");
 
     host_buffer_size += identity->issuer_chain_size + 1;
     p = (uint8_t*)calloc(1, host_buffer_size);

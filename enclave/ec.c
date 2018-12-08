@@ -38,6 +38,7 @@ static oe_result_t _copy_key(
 {
     oe_result_t result = OE_UNEXPECTED;
     const mbedtls_pk_info_t* info;
+    int rc = 0;
 
     if (dest)
         mbedtls_pk_init(dest);
@@ -51,8 +52,9 @@ static oe_result_t _copy_key(
         OE_RAISE(OE_PUBLIC_KEY_NOT_FOUND);
 
     /* Setup the context for this key type */
-    if (mbedtls_pk_setup(dest, info) != 0)
-        OE_RAISE(OE_FAILURE);
+    rc = mbedtls_pk_setup(dest, info);
+    if (rc != 0)
+        OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x", rc);
 
     /* Copy all fields of the key structure */
     {
@@ -94,6 +96,7 @@ static oe_result_t _generate_key_pair(
     mbedtls_ctr_drbg_context* drbg;
     mbedtls_pk_context pk;
     mbedtls_ecp_group_id curve;
+    int rc = 0;
 
     /* Initialize structures */
     mbedtls_pk_init(&pk);
@@ -127,15 +130,15 @@ static oe_result_t _generate_key_pair(
         OE_RAISE(OE_FAILURE);
 
     /* Create key struct */
-    if (mbedtls_pk_setup(&pk, mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY)) != 0)
-        OE_RAISE(OE_FAILURE);
+    rc = mbedtls_pk_setup(&pk, mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY));
+    if (rc != 0)
+        OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x", rc);
 
     /* Generate the EC key */
-    if (mbedtls_ecp_gen_key(
-            curve, mbedtls_pk_ec(pk), mbedtls_ctr_drbg_random, drbg) != 0)
-    {
-        OE_RAISE(OE_FAILURE);
-    }
+    rc = mbedtls_ecp_gen_key(
+        curve, mbedtls_pk_ec(pk), mbedtls_ctr_drbg_random, drbg);
+    if (rc != 0)
+        OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x", rc);
 
     /* Initialize the private key parameter */
     OE_CHECK(
@@ -328,7 +331,8 @@ oe_result_t oe_ec_public_key_from_coordinates(
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_public_key_t* impl = (oe_public_key_t*)public_key;
-    const mbedtls_pk_info_t* info;
+    const mbedtls_pk_info_t* info = NULL;
+    int rc = 0;
 
     if (public_key)
         oe_secure_zero_fill(public_key, sizeof(oe_ec_public_key_t));
@@ -345,8 +349,9 @@ oe_result_t oe_ec_public_key_from_coordinates(
         OE_RAISE(OE_PUBLIC_KEY_NOT_FOUND);
 
     /* Setup the context for this key type */
-    if (mbedtls_pk_setup(&impl->pk, info) != 0)
-        OE_RAISE(OE_FAILURE);
+    rc = mbedtls_pk_setup(&impl->pk, info);
+    if (rc != 0)
+        OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x", rc);
 
     /* Initialize the key */
     {
@@ -440,7 +445,7 @@ oe_result_t oe_ecdsa_signature_write_der(
     /* Write the length to ASN.1 */
     {
         if ((n = mbedtls_asn1_write_len(&p, buf, len)) < 0)
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE_MSG(OE_FAILURE, "n = 0x%x\n", n);
 
         len += (size_t)n;
     }
@@ -450,7 +455,7 @@ oe_result_t oe_ecdsa_signature_write_der(
         unsigned char tag = MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE;
 
         if ((n = mbedtls_asn1_write_tag(&p, buf, tag)) < 0)
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE_MSG(OE_FAILURE, "n = 0x%x\n", n);
 
         len += (size_t)n;
     }

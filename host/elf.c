@@ -327,6 +327,9 @@ done:
         memset(elf, 0, sizeof(elf64_t));
     }
 
+    if (rc)
+        OE_TRACE_ERROR("path=%s\n", path);
+
     return rc;
 }
 
