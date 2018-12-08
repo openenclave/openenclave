@@ -17,4 +17,3 @@ target_include_directories(liboesocket_host PRIVATE ${PROJECT_SOURCE_DIR}/../inc
 if(WIN32)
     target_include_directories(liboesocket_host PRIVATE ${SGXSDKInstallPath}/include)
 endif()
-

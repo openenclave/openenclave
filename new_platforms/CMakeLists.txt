@@ -60,7 +60,7 @@ endif()
 # Propagate the environment variables into locals, if necessary.
 if(TZ AND (NOT "$ENV{TA_DEV_KIT_DIR}" STREQUAL "") AND ("${TA_DEV_KIT_DIR}" STREQUAL ""))
     set(TA_DEV_KIT_DIR $ENV{TA_DEV_KIT_DIR})
-elseif(WIN32 AND SGX AND (NOT "$ENV{SGXSDKInstallPath}" STREQUAL "") AND ("$SGXSDKInstallPath}" STREQUAL ""))
+elseif(WIN32 AND SGX AND (NOT "$ENV{SGXSDKInstallPath}" STREQUAL "") AND ("${SGXSDKInstallPath}" STREQUAL ""))
     set(SGXSDKInstallPath $ENV{SGXSDKInstallPath})
 endif()
 
@@ -75,7 +75,9 @@ else()
 endif()
 
 # 3rd-party components
-add_subdirectory(${PROJECT_SOURCE_DIR}/../3rdparty/optee_client ${PROJECT_SOURCE_DIR}/../3rdparty/optee_client/out)
+if(UNIX AND TZ)
+    add_subdirectory(${PROJECT_SOURCE_DIR}/../3rdparty/optee_client ${PROJECT_SOURCE_DIR}/../3rdparty/optee_client/out)
+endif()
 
 add_subdirectory(libsocket)
 

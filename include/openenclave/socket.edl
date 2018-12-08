@@ -17,7 +17,7 @@ enclave {
         int ai_family;
         int ai_socktype;
         int ai_protocol;
-        int ai_addrlen;
+        size_t ai_addrlen;
         char ai_canonname[256];
         char ai_addr[256];
     };
