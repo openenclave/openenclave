@@ -25,7 +25,7 @@ if("${OE_TEE}" STREQUAL "Intel SGX")
     set(TZ OFF)
 elseif("${OE_TEE}" STREQUAL "ARM TrustZone")
     set(SGX OFF)
-    set(TZ OFF)
+    set(TZ ON)
 else()
     message(FATAL_ERROR "OE_TEE must be one of 'Intel SGX' or 'ARM TrustZone'.")
 endif()
@@ -51,8 +51,8 @@ if(UNIX AND SGX)
 endif()
 
 # Assert a TA Dev Kit was specified
-if("${TA_DEV_KIT_DIR}" STREQUAL "")
-    message(FATAL_ERROR "You must provide TA_DEV_KIT_DIR.")
+if(TZ AND "${TA_DEV_KIT_DIR}" STREQUAL "")
+    message(FATAL_ERROR "TA_DEV_KIT_DIR must be specified when building for ARM TrustZone.")
 endif()
 
 # Add common compiler definitions
