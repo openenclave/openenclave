@@ -14,3 +14,7 @@ target_include_directories(liboesocket_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(liboesocket_host PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(liboesocket_host PRIVATE ${PROJECT_SOURCE_DIR}/../include)
 
+if(WIN32)
+    target_include_directories(liboesocket_host PRIVATE ${SGXSDKInstallPath}/include)
+endif()
+

@@ -50,9 +50,11 @@ if(UNIX AND SGX)
     message(FATAL_ERROR "Intel SGX is not supported on Linux in this preview.")
 endif()
 
-# Assert a TA Dev Kit was specified
+# Assert that the respective TEE SDK's are present.
 if(TZ AND "${TA_DEV_KIT_DIR}" STREQUAL "")
     message(FATAL_ERROR "TA_DEV_KIT_DIR must be specified when building for ARM TrustZone.")
+elseif(WIN32 AND SGX AND "${SGXSDKInstallPath}" STREQUAL "")
+    message(FATAL_ERROR "The Intel SGX SDK is required when building for Intel SGX on Windows.")
 endif()
 
 # Add common compiler definitions
