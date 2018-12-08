@@ -51,10 +51,17 @@ if(UNIX AND SGX)
 endif()
 
 # Assert that the respective TEE SDK's are present.
-if(TZ AND "${TA_DEV_KIT_DIR}" STREQUAL "")
+if(TZ AND ("$ENV{TA_DEV_KIT_DIR}" STREQUAL "") AND ("${TA_DEV_KIT_DIR}" STREQUAL ""))
     message(FATAL_ERROR "TA_DEV_KIT_DIR must be specified when building for ARM TrustZone.")
-elseif(WIN32 AND SGX AND "${SGXSDKInstallPath}" STREQUAL "")
+elseif(WIN32 AND SGX AND ("$ENV{SGXSDKInstallPath}" STREQUAL "") AND ("${SGXSDKInstallPath}" STREQUAL ""))
     message(FATAL_ERROR "The Intel SGX SDK is required when building for Intel SGX on Windows.")
+endif()
+
+# Propagate the environment variables into locals, if necessary.
+if(TZ AND (NOT "$ENV{TA_DEV_KIT_DIR}" STREQUAL "") AND ("${TA_DEV_KIT_DIR}" STREQUAL ""))
+    set(TA_DEV_KIT_DIR $ENV{TA_DEV_KIT_DIR})
+elseif(WIN32 AND SGX AND (NOT "$ENV{SGXSDKInstallPath}" STREQUAL "") AND ("$SGXSDKInstallPath}" STREQUAL ""))
+    set(SGXSDKInstallPath $ENV{SGXSDKInstallPath})
 endif()
 
 # Add common compiler definitions
