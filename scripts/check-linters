@@ -13,7 +13,13 @@ if ! hash shellcheck 2>/dev/null; then
     exit 1
 fi
 
-while IFS= read -r i; do
+if [[ $# -ne 0 ]]; then
+    filelist="$*"
+else
+    filelist=$(git ls-files)
+fi
+
+for i in $filelist; do
     if [[ $i =~ ^3rdparty/ ]]; then
         continue;
     fi
@@ -25,7 +31,7 @@ while IFS= read -r i; do
     if ! shellcheck "$i"; then
         failed=1;
     fi
-done < <(git ls-files)
+done
 
 if [[ $failed -eq 1 ]]; then
     exit 1

@@ -56,10 +56,14 @@ do
         userIncludeExts="${opt#*=}"
         ;;
 
+    --files=*)
+        files="${opt#*=}"
+        IFS=',' read -r -a files <<< "$files"
+        ;;
     *)
-      echo "$0: unknown option:  $opt"
-      exit 1
-      ;;
+        echo "$0: unknown option:  $opt"
+        exit 1
+        ;;
   esac
 done
 
@@ -76,7 +80,7 @@ OVERVIEW:
 
 Formats all C/C++ source files based on the .clang-format rules
 
-    $ format-code [-h] [-v] [-w] [--exclude-dirs="..."] [--include-exts="..."]
+    $ format-code [-h] [-v] [-w] [--exclude-dirs="..."] [--include-exts="..."] [--files=file1,file2]
 
 OPTIONS:
     -h, --help              Print this help message.
@@ -88,6 +92,8 @@ OPTIONS:
                             All subdirectories are relative to the current path.
     --include-exts          File extensions to include for formatting. If
                             unspecified, then *.h, *.c and *.cpp are included.
+    --files                 Only run the script against the specified files from
+                            the current directory.
 
 EXAMPLES:
 
@@ -101,6 +107,10 @@ can run from the tests folder:
 
     tests$ ../scripts/format-code --exclude-dirs="echo/host" \
       --include-exts="c cpp"
+
+To run only against a specified set of comma separated files in the current directory:
+
+    $ ./scripts/format-code -w --files=file1,file2
 
 EOF
     exit 0
@@ -221,7 +231,25 @@ if [[ ${whatif} -ne 1 ]]; then
     cfargs="${cfargs} -i"
 fi
 
-for file in $(eval "$findargs")
+if [[ $files ]]; then
+    file_list=""
+    list=$(eval "$findargs")
+    tempfile=$(mktemp)
+    echo $list | tr ' ' '\n' > $tempfile
+    
+    for f in ${files[@]}; do
+        new_file=$(grep -o "^\./${f}$" "${tempfile}")
+        if [[ $new_file ]]; then
+            file_list=$(echo $file_list $new_file)
+        fi
+    done
+
+    rm -rf "$tempfile"
+else
+    file_list=$(eval "$findargs")
+fi
+
+for file in $file_list
 do
     ((filecount+=1))
     cf="${cfargs} $file"
