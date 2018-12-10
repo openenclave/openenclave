@@ -1,0 +1,20 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+        // Clear any data maintained in enclave for testing.
+        public void clear_test_data();
+
+        // Launch a thread that tests thread-local variables.
+        public void enclave_thread(
+            int thread_num, 
+            int iters, 
+            int step);
+    };
+
+
+
+    untrusted {
+    };
+};

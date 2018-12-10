@@ -84,6 +84,15 @@ struct _oe_enclave_image
     /* size of relocation */
     size_t reloc_size;
 
+    /* Thread-local storage .tdata section */
+    uint64_t tdata_rva;
+    uint64_t tdata_size;
+    uint64_t tdata_align;
+
+    /* Thread-local storage .tbss section */
+    uint64_t tbss_size;
+    uint64_t tbss_align;
+
     oe_image_type type;
 
     union {

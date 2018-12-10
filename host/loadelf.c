@@ -138,6 +138,28 @@ static oe_result_t _oe_load_elf_image(
                 {
                     has_build_id = true;
                 }
+                else if (strcmp(name, ".tdata") == 0)
+                {
+                    // These items must match program header values.
+                    image->tdata_rva = sh->sh_addr;
+                    image->tdata_size = sh->sh_size;
+                    image->tdata_align = sh->sh_addralign;
+
+                    OE_TRACE_INFO(
+                        "loadelf: tdata { rva=%lx, size=%lx, align=%ld }\n",
+                        sh->sh_addr,
+                        sh->sh_size,
+                        sh->sh_addralign);
+                }
+                else if (strcmp(name, ".tbss") == 0)
+                {
+                    image->tbss_size = sh->sh_size;
+                    image->tbss_align = sh->sh_addralign;
+                    OE_TRACE_INFO(
+                        "loadelf: tbss { size=%ld, align=%ld }\n",
+                        sh->sh_size,
+                        sh->sh_addralign);
+                }
             }
         }
 
@@ -179,10 +201,6 @@ static oe_result_t _oe_load_elf_image(
 
             switch (ph->p_type)
             {
-                case PT_TLS:
-                    OE_RAISE(OE_UNSUPPORTED);
-                    break;
-
                 case PT_LOAD:
 
 /* kind of surprised that segments may not be page aligned */
@@ -251,7 +269,30 @@ static oe_result_t _oe_load_elf_image(
 
         assert(ph);
         assert(ph->p_filesz <= ph->p_memsz);
-        assert(ph->p_type != PT_TLS);
+        if (ph->p_type == PT_TLS)
+        {
+            if (image->tdata_rva != ph->p_vaddr)
+            {
+                OE_TRACE_ERROR(
+                    "loadelf: .tdata rva mismatch. Section value = %lx, "
+                    "Program "
+                    "header value = 0x%lx\n",
+                    image->tdata_rva,
+                    ph->p_vaddr);
+                OE_RAISE(OE_FAILURE);
+            }
+            if (image->tdata_size != ph->p_filesz)
+            {
+                OE_TRACE_ERROR(
+                    "loadelf: .tdata_size mismatch. Section value = %lx, "
+                    "Program "
+                    "header value = 0x%lx\n",
+                    image->tdata_size,
+                    ph->p_filesz);
+                OE_RAISE(OE_FAILURE);
+            }
+            continue;
+        }
 
         /* Skip non-loadable program segments */
         if (ph->p_type != PT_LOAD)
@@ -579,14 +620,12 @@ static oe_result_t _set_uint64_t_symbol_value(
     elf64_sym_t sym = {0};
     uint64_t* symbol_address = NULL;
 
-    if (!image || !name)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
     if (elf64_find_symbol_by_name(&image->u.elf.elf, name, &sym) != 0)
         goto done;
 
     symbol_address = (uint64_t*)(image->image_base + sym.st_value);
     *symbol_address = value;
+
     result = OE_OK;
 done:
     return result;
@@ -601,6 +640,7 @@ static oe_result_t _patch(
     oe_sgx_enclave_properties_t* oeprops;
     size_t i;
     uint64_t enclave_rva = 0;
+    uint64_t aligned_size = 0;
 
     oeprops =
         (oe_sgx_enclave_properties_t*)(image->image_base + image->oeinfo_rva);
@@ -647,6 +687,31 @@ static oe_result_t _patch(
 
     /* heap right after ecall */
     oeprops->image_info.heap_rva = oeprops->image_info.ecall_rva + ecall_size;
+
+    if (image->tdata_size)
+    {
+        _set_uint64_t_symbol_value(image, "_tdata_rva", image->tdata_rva);
+        _set_uint64_t_symbol_value(image, "_tdata_size", image->tdata_size);
+        _set_uint64_t_symbol_value(image, "_tdata_align", image->tdata_align);
+
+        aligned_size +=
+            oe_round_up_to_multiple(image->tdata_size, image->tdata_align);
+    }
+    if (image->tbss_size)
+    {
+        _set_uint64_t_symbol_value(image, "_tbss_size", image->tbss_size);
+        _set_uint64_t_symbol_value(image, "_tbss_align", image->tbss_align);
+
+        aligned_size +=
+            oe_round_up_to_multiple(image->tbss_size, image->tbss_size);
+    }
+
+    if (aligned_size > OE_THREAD_LOCAL_SPACE)
+    {
+        OE_TRACE_ERROR(
+            "Thread-local variables exceed available thread-local space.\n");
+        OE_RAISE(OE_FAILURE);
+    }
 
     /* Clear the hash when taking the measure */
     memset(oeprops->sigstruct, 0, sizeof(oeprops->sigstruct));

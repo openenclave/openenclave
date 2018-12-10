@@ -19,8 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    - oe-gdb allows attaching to a host that is already running
 - oe-gdb allows attaching to a host that is already running
 - Added Quote Enclave Identity validation into oe_verify_report implementation
-
 - Added OE SDK internal logging mechanism
+- Support for thread local variables (both GNU __thread and C++11 thread_local)
 
 ### Changed
 

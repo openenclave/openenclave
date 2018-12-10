@@ -24,7 +24,6 @@
 #include "init.h"
 #include "report.h"
 #include "td.h"
-#include "thread.h"
 
 oe_result_t __oe_enclave_status = OE_OK;
 uint8_t __oe_initialized = 0;
@@ -487,11 +486,6 @@ static void _handle_ecall(
     }
 
 done:
-
-    // Release any thread-specific-data for this thread if returning from
-    // a non-nested ECALL.
-    if (td->depth == 1)
-        oe_thread_destruct_specific();
 
     /* Remove ECALL context from front of td_t.ecalls list */
     td_pop_callsite(td);

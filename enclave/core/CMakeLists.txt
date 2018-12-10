@@ -4,6 +4,7 @@
 if (UNIX)
 set(PLATFORM_SRC
     linux/reloc.c
+    linux/threadlocal.c
     )
 elseif (WIN32)
 set(PLATFORM_SRC

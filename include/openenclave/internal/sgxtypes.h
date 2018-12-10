@@ -548,7 +548,16 @@ oe_thread_data_t* oe_get_thread_data(void);
 
 #define TD_MAGIC 0xc90afe906c5d19a3
 
+#define OE_THREAD_LOCAL_SPACE (3304)
+
 typedef struct _callsite Callsite;
+
+/* Thread specific TLS atexit call parameters */
+typedef struct _oe_tls_atexit
+{
+    void (*destructor)(void*);
+    void* object;
+} oe_tls_atexit_t;
 
 OE_PACK_BEGIN
 typedef struct _td
@@ -582,14 +591,19 @@ typedef struct _td
 
     /* Linux error number: from <errno.h> */
     int linux_errno;
+    int padding1;
 
     // The pthread implementation structure is overlaid here. This is only
     // used by oelibc to implement the pthread functions (see libc/pthread.c
     // for details).
     uint64_t pthread[64];
 
-    /* Reserved */
-    uint8_t reserved[3324];
+    // List of functions to call when the thread exits.
+    oe_tls_atexit_t* tls_atexit_functions;
+    uint64_t num_tls_atexit_functions;
+
+    /* Reserved for thread-local variables. */
+    uint8_t thread_local_data[OE_THREAD_LOCAL_SPACE];
 } td_t;
 OE_PACK_END
 
