@@ -56,21 +56,21 @@ extern "C" OE_NEVER_INLINE void func1(size_t num_syms, const char** syms)
 #ifdef OE_USE_DEBUG_MALLOC
 static void _print_backtrace(
     void* const* buffer,
-    int size,
-    int num_expected_symbols,
+    size_t size,
+    size_t num_expected_symbols,
     const char* expected_symbols[])
 {
-    char** symbols = oe_backtrace_symbols(buffer, size);
+    char** symbols = oe_backtrace_symbols(buffer, static_cast<int>(size));
     OE_TEST(symbols != NULL);
 
     oe_host_printf("=== backtrace:\n");
 
-    for (int i = 0; i < size; i++)
+    for (size_t i = 0; i < size; i++)
         oe_host_printf("%s(): (%p)\n", symbols[i], buffer[i]);
 
     OE_TEST(size == num_expected_symbols);
 
-    for (int i = 0; i < size; i++)
+    for (size_t i = 0; i < size; i++)
         OE_TEST(strcmp(expected_symbols[i], symbols[i]) == 0);
 
     oe_host_printf("\n");

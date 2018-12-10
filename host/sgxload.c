@@ -376,7 +376,7 @@ done:
 oe_result_t oe_sgx_initialize_load_context(
     oe_sgx_load_context_t* context,
     oe_sgx_load_type_t type,
-    uint32_t attributes)
+    uint64_t attributes)
 {
     oe_result_t result = OE_UNEXPECTED;
 

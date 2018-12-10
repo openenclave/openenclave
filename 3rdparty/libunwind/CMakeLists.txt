@@ -117,6 +117,7 @@ target_compile_options(libunwind PRIVATE
   -Wno-unused-function
   -Wno-unused-variable
   -Wno-cpp
+  -Wno-conversion
   -fno-builtin
   -include ${CMAKE_CURRENT_SOURCE_DIR}/stubs.h)
 

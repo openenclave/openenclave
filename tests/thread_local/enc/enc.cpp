@@ -38,7 +38,7 @@ struct thread_local_struct
 extern thread_local std::random_device g_rd;
 extern thread_local std::mt19937 g_mt;
 extern thread_local std::uniform_real_distribution<double> g_dist;
-thread_local volatile thread_local_struct g_s(g_dist(g_mt));
+thread_local volatile thread_local_struct g_s(static_cast<int>(g_dist(g_mt)));
 
 // This variable will be put in .tdata
 thread_local int thread_local_int = 5;

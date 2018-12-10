@@ -33,7 +33,7 @@ void Test(oe_enclave_t* enclave)
 
 OE_OCALL void ocall_exit(uint64_t arg)
 {
-    exit(arg);
+    exit(static_cast<int>(arg));
 }
 
 static int _get_opt(

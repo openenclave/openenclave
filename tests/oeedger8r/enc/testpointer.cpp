@@ -20,7 +20,7 @@ static void test_ocall_pointer_fun(F ocall_pointer_fun)
     // 16 element arrays.
     T p4[16], p5[16], p6[16];
     for (size_t i = 0; i < 16; ++i)
-        p4[i] = p5[i] = p6[i] = i + 1;
+        p4[i] = p5[i] = p6[i] = static_cast<T>(i + 1);
 
     static_assert((80 / sizeof(T)) * sizeof(T) == 80, "invalid size");
     // arrays with size = 80 bytes.
@@ -28,23 +28,23 @@ static void test_ocall_pointer_fun(F ocall_pointer_fun)
     T p7[count], p8[count], p9[count];
 
     for (size_t i = 0; i < count; ++i)
-        p7[i] = p8[i] = p9[i] = i + 1;
+        p7[i] = p8[i] = p9[i] = static_cast<T>(i + 1);
 
     T p10[16];
     for (size_t i = 0; i < 16; ++i)
-        p10[i] = i + 1;
+        p10[i] = static_cast<T>(i + 1);
 
     static T p11[16];
     static T p12[16];
     static T p13[16];
     for (size_t i = 0; i < 16; ++i)
-        p11[i] = p12[i] = p13[i] = i + 1;
+        p11[i] = p12[i] = p13[i] = static_cast<T>(i + 1);
 
     static T p14[count];
     static T p15[count];
     static T p16[count];
     for (size_t i = 0; i < count; ++i)
-        p14[i] = p15[i] = p16[i] = i + 1;
+        p14[i] = p15[i] = p16[i] = static_cast<T>(i + 1);
 
     int pcount = 16;
     int psize = 80;
@@ -293,7 +293,7 @@ static T* ecall_pointer_fun_impl(
         const size_t count = 80 / sizeof(T);
         T exp[count];
         for (size_t i = 0; i < count; ++i)
-            exp[i] = i + 1;
+            exp[i] = static_cast<T>(i + 1);
 
         //
         if (p7)
@@ -351,7 +351,7 @@ static T* ecall_pointer_fun_impl(
         if (p13)
         {
             for (int i = 0; i < pcount; ++i)
-                p13[i] = pcount;
+                p13[i] = static_cast<T>(pcount);
         }
     }
 
@@ -361,7 +361,7 @@ static T* ecall_pointer_fun_impl(
         if (p14)
         {
             for (size_t i = 0; i < count; ++i)
-                OE_TEST(p14[i] == (T)(i + 1));
+                OE_TEST(p14[i] == static_cast<T>(i + 1));
 
             // change p11. Should not have any effect on host.
             memset(p14, 0, sizeof(T) * count);
@@ -379,7 +379,7 @@ static T* ecall_pointer_fun_impl(
         if (p16)
         {
             for (size_t i = 0; i < count; ++i)
-                p16[i] = psize;
+                p16[i] = static_cast<T>(psize);
         }
     }
 

@@ -137,13 +137,13 @@ struct UnsignedTest
         OE_TEST(add(a, b, &c) == OE_INTEGER_OVERFLOW);
 
         /* Check overflow doesn't occur <= limit. */
-        a = limit - 1;
+        a = static_cast<T>(limit - 1);
         b = 1;
         OE_TEST(add(a, b, &c) == OE_OK);
         OE_TEST(c == limit);
 
         a = 1;
-        b = limit - 1;
+        b = static_cast<T>(limit - 1);
         OE_TEST(add(a, b, &c) == OE_OK);
         OE_TEST(c == limit);
 
@@ -197,7 +197,7 @@ struct UnsignedTest
         b = limit;
         OE_TEST(sub(a, b, &c) == OE_INTEGER_OVERFLOW);
 
-        a = limit - 1;
+        a = static_cast<T>(limit - 1);
         b = limit;
         OE_TEST(sub(a, b, &c) == OE_INTEGER_OVERFLOW);
 
@@ -213,7 +213,7 @@ struct UnsignedTest
         OE_TEST(c == limit / 2 + 1);
 
         a = limit;
-        b = limit - 1;
+        b = static_cast<T>(limit - 1);
         OE_TEST(sub(a, b, &c) == OE_OK);
         OE_TEST(c == 1);
 
@@ -274,7 +274,7 @@ struct UnsignedTest
         OE_TEST(mul(a, b, &c) == OE_INTEGER_OVERFLOW);
 
         /* Check if overflow occurs past limit. */
-        a = limit / 2 + 1;
+        a = static_cast<T>(limit / 2 + 1);
         b = 2;
         OE_TEST(mul(a, b, &c) == OE_INTEGER_OVERFLOW);
 
@@ -391,7 +391,7 @@ struct SignedTest
         OE_TEST(add(a, b, &c) == OE_INTEGER_OVERFLOW);
 
         /* Check if overflow doesn't occur at or before limits. */
-        a = max_limit - 1;
+        a = static_cast<T>(max_limit - 1);
         b = 1;
         OE_TEST(add(a, b, &c) == OE_OK);
         OE_TEST(c == max_limit);
@@ -401,7 +401,7 @@ struct SignedTest
         OE_TEST(add(a, b, &c) == OE_OK);
         OE_TEST(c == max_limit - 1);
 
-        a = min_limit + 1;
+        a = static_cast<T>(min_limit + 1);
         b = -1;
         OE_TEST(add(a, b, &c) == OE_OK);
         OE_TEST(c == min_limit);
@@ -512,7 +512,7 @@ struct SignedTest
         OE_TEST(c == 0);
 
         a = min_limit;
-        b = -max_limit;
+        b = static_cast<T>(-max_limit);
         OE_TEST(sub(a, b, &c) == OE_OK);
         OE_TEST(c == -1);
 
@@ -526,7 +526,7 @@ struct SignedTest
         OE_TEST(sub(a, b, &c) == OE_INTEGER_OVERFLOW);
 
         /* Check overflow doesn't occur at <= limits. */
-        a = max_limit - 1;
+        a = static_cast<T>(max_limit - 1);
         b = -1;
         OE_TEST(sub(a, b, &c) == OE_OK);
         OE_TEST(c == max_limit);
@@ -536,7 +536,7 @@ struct SignedTest
         OE_TEST(sub(a, b, &c) == OE_OK);
         OE_TEST(c == max_limit - 1);
 
-        a = min_limit + 1;
+        a = static_cast<T>(min_limit + 1);
         b = 1;
         OE_TEST(sub(a, b, &c) == OE_OK);
         OE_TEST(c == min_limit);
@@ -695,32 +695,32 @@ struct SignedTest
         OE_TEST(mul(a, b, &c) == OE_OK);
         OE_TEST(c == max_limit - 1);
 
-        a = max_limit / 2 + 1;
+        a = static_cast<T>(max_limit / 2 + 1);
         b = 2;
         OE_TEST(mul(a, b, &c) == OE_INTEGER_OVERFLOW);
 
         /* When b is negative, check if overflow happens past limit. */
-        a = max_limit / 2 + 1;
+        a = static_cast<T>(max_limit / 2 + 1);
         b = -2;
         OE_TEST(mul(a, b, &c) == OE_OK);
         OE_TEST(c == min_limit);
 
-        a = max_limit / 2 + 2;
+        a = static_cast<T>(max_limit / 2 + 2);
         b = -2;
         OE_TEST(mul(a, b, &c) == OE_INTEGER_OVERFLOW);
 
         /* When a is negative, check if overflow happens past limit. */
         a = -2;
-        b = max_limit / 2 + 1;
+        b = static_cast<T>(max_limit / 2 + 1);
         OE_TEST(mul(a, b, &c) == OE_OK);
         OE_TEST(c == min_limit);
 
         a = -2;
-        b = max_limit / 2 + 2;
+        b = static_cast<T>(max_limit / 2 + 2);
         OE_TEST(mul(a, b, &c) == OE_INTEGER_OVERFLOW);
 
         /* When both are negative, check if overflow happens past limit. */
-        a = min_limit / 2 + 1;
+        a = static_cast<T>(min_limit / 2 + 1);
         b = -2;
         OE_TEST(mul(a, b, &c) == OE_OK);
         OE_TEST(c == max_limit - 1);

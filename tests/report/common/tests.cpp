@@ -187,7 +187,7 @@ TEST_FCN void TestLocalReport(void* args_)
     size_t report_data_size = 0;
     uint8_t report_data[OE_REPORT_DATA_SIZE];
     for (uint32_t i = 0; i < OE_REPORT_DATA_SIZE; ++i)
-        report_data[i] = i;
+        report_data[i] = static_cast<uint8_t>(i);
 #endif
 
     const uint8_t zeros[OE_REPORT_DATA_SIZE] = {0};
@@ -447,7 +447,7 @@ TEST_FCN void TestRemoteReport(void* args_)
     size_t report_data_size = 0;
     uint8_t report_data[OE_REPORT_DATA_SIZE];
     for (uint32_t i = 0; i < OE_REPORT_DATA_SIZE; ++i)
-        report_data[i] = i;
+        report_data[i] = static_cast<uint8_t>(i);
     const uint8_t zeros[OE_REPORT_DATA_SIZE] = {0};
 #endif
 
@@ -695,7 +695,7 @@ TEST_FCN void TestLocalVerifyReport(void* args_)
     uint8_t report_data[sizeof(sgx_report_data_t)];
     for (uint32_t i = 0; i < sizeof(report_data); ++i)
     {
-        report_data[i] = i;
+        report_data[i] = static_cast<uint8_t>(i);
     }
 
     GetSGXTargetInfo((sgx_target_info_t*)target_info);
@@ -757,7 +757,7 @@ TEST_FCN void TestRemoteVerifyReport(void* args_)
 
     for (uint32_t i = 0; i < sizeof(report_data); ++i)
     {
-        report_data[i] = i;
+        report_data[i] = static_cast<uint8_t>(i);
     }
 #endif
 

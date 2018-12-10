@@ -66,6 +66,12 @@ target_include_directories(libcxx
   libcxx/src
   ../libcxxrt/libcxxrt/src)
 
+# Prevent warnings treated as error
+set_source_files_properties(
+  libcxx/src/locale.cpp
+  PROPERTIES COMPILE_FLAGS "-Wno-conversion"
+)
+
 install(TARGETS libcxx EXPORT openenclave-targets
   PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
 

@@ -15,8 +15,14 @@ add_library(libcxxrt OBJECT
   libcxxrt/src/auxhelper.cc
   libcxxrt/src/libelftc_dem_gnu3.c)
 
-set_source_files_properties(libcxxrt/src/exception.cc
-  PROPERTIES COMPILE_FLAGS -Wno-unused-variable)
+set_source_files_properties(
+  libcxxrt/src/exception.cc
+  PROPERTIES COMPILE_FLAGS "-Wno-unused-variable -Wno-conversion")
+
+set_source_files_properties(
+  libcxxrt/src/libelftc_dem_gnu3.c
+  PROPERTIES COMPILE_FLAGS "-Wno-conversion"
+)
 
 set_target_properties(libcxxrt PROPERTIES
   POSITION_INDEPENDENT_CODE ON)

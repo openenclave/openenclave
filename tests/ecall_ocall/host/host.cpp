@@ -43,7 +43,7 @@ struct EnclaveWrap
             oe_put_err("oe_create_enclave(): result=%u", result);
             throw std::runtime_error("oe_create_enclave() failed");
         }
-        m_id = m_enclaves.size();
+        m_id = static_cast<unsigned>(m_enclaves.size());
 
         args.result = OE_FAILURE;
         args.id = m_id;
@@ -87,7 +87,7 @@ struct EnclaveWrap
         return m_enclaves[m_id];
     }
 
-    static oe_enclave_t* Get(unsigned Id)
+    static oe_enclave_t* Get(uint64_t Id)
     {
         return m_enclaves[Id];
     }
@@ -336,7 +336,7 @@ static void TestCrossEnclaveCalls()
         0, // output value.
     };
 
-    uint32_t expected_output = 0;
+    size_t expected_output = 0;
     for (size_t i = 0; i < EnclaveWrap::Count(); ++i)
     {
         expected_output += (arg.input + i) * (i + 1);
@@ -345,7 +345,7 @@ static void TestCrossEnclaveCalls()
     OE_TEST(
         oe_call_enclave(EnclaveWrap::Get(0), "EncCrossEnclaveCall", &arg) ==
         OE_OK);
-    printf("arg.output=%u, expected_output=%u\n", arg.output, expected_output);
+    printf("arg.output=%u, expected_output=%lu\n", arg.output, expected_output);
     OE_TEST(arg.output == expected_output);
 
     printf("=== TestCrossEnclaveCalls passed\n");
