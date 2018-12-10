@@ -11,7 +11,11 @@
 ##==============================================================================
 
 ## Check whether source code has been formatted (diff outputs '@@'):
-if ./scripts/format-code --whatif | grep -q "@@"; then
+if [[ $# -ne 0 ]]; then
+    files="$*"
+fi
+
+if ./scripts/format-code --whatif $([[ "$files" ]] && echo "--files=${files// /,}") | grep -q "@@"; then
     echo ""
     echo "Commit failed: please run ./scripts/format-code"
     echo ""
@@ -19,7 +23,7 @@ if ./scripts/format-code --whatif | grep -q "@@"; then
 fi
 
 # Check whether all sources have the license header:
-if ! ./scripts/check-license; then
+if ! ./scripts/check-license "$files"; then
     echo ""
     echo "Commit failed: please add license headers to the above files"
     echo ""
@@ -27,7 +31,7 @@ if ! ./scripts/check-license; then
 fi
 
 # Check whether all scripts pass ShellCheck:
-if ! ./scripts/check-linters; then
+if ! ./scripts/check-linters "$files"; then
     echo ""
     echo "Commit failed: please run ./scripts/check-linters"
     echo ""

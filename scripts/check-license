@@ -18,24 +18,11 @@
 
 ##==============================================================================
 ##
-## Check command line arguments.
-##
-##==============================================================================
-
-if [[ $# -ne 0 ]]; then
-    echo "$0: too many parameters"
-    echo "Usage: $0"
-    exit 1
-fi
-
-##==============================================================================
-##
 ## expand_ignore_file():
 ##
 ##     Expand any wildcards in the .check-license.ignore file:
 ##
 ##==============================================================================
-
 # shellcheck disable=SC2155
 expand_ignore_file()
 {
@@ -83,11 +70,18 @@ ignorefile=$(expand_ignore_file)
 form_filelist()
 {
     local ignorefile=$1
+    shift
     local files=$(mktemp)
     local tmpfile=$(mktemp)
 
-    # Find all regular files:
-    find . -type f > "${files}"
+    if [[ $# -ne 0 ]]; then
+        for f in "$@"; do
+            find . -name "$f" -maxdepth 1 2>/dev/null >> "${files}"
+        done
+    else
+        # Find all regular files:
+        find . -type f > "${files}"
+    fi
 
     # Remove lines that match entries from ignore file:
     while IFS= read -r i
@@ -106,7 +100,12 @@ form_filelist()
     echo "${files}"
 }
 
-filelist=$(form_filelist "${ignorefile}")
+if [[ $# -ne 0 ]]; then
+    filelist=$(form_filelist "${ignorefile}" "$@")
+else
+    filelist=$(form_filelist "${ignorefile}")
+fi
+
 rm -rf "${ignorefile}"
 
 # Sanity check: make sure all files that require licenses exist
