@@ -12,7 +12,7 @@
 #include <sys/time.h>
 #endif
 #include <time.h>
-#include "enclave.h"
+#include "sgx/enclave.h"
 #include "hostthread.h"
 
 #define LOGGING_FORMAT_STRING "%02d:%02d:%02d:%06ld tid(0x%lx) (%s)[%s]%s"
