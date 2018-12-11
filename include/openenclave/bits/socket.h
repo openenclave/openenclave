@@ -35,7 +35,7 @@ typedef struct oe_provider_fd_set {
 
 typedef uint16_t oe_sa_family_t;
 
-typedef int oe_socklen_t;
+typedef size_t oe_socklen_t;
 
 typedef struct oe_addrinfo {
     int                 ai_flags;

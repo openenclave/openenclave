@@ -42,7 +42,7 @@ enclave {
     struct getsockopt_Result {
         oe_socket_error_t error;
         char buffer[256];
-        int len;
+        size_t len;
     };
 
     struct ioctlsocket_Result {

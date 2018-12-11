@@ -1,6 +1,6 @@
 include(oeedl_file)
 
-oeedl_file(../../../include/openenclave/socket.edl host GEN)
+oeedl_file(../../../include/openenclave/socket.edl host GEN C_GEN H_GEN)
 
 if(UNIX)
     set(SRCS linux/socket_host.c)

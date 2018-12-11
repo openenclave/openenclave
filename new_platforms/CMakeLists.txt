@@ -10,11 +10,6 @@ set(OE_TEE "" CACHE STRING
 set_property(CACHE OE_TEE PROPERTY STRINGS
     "Intel SGX" "ARM TrustZone")
 
-set(OE_WORD "" CACHE STRING
-    "Select whether binaries are built for x86/ARM or x64/AARCH64.")
-set_property(CACHE OE_WORD PROPERTY STRINGS
-    "32" "64")
-
 option(OE_USE_SIMULATION
     "If selected, logic to operate a hardware TEE is replaced with stubs which simulate it, but do not require any."
     OFF)
@@ -34,16 +29,6 @@ if(OE_USE_SIMULATION)
     set(SIM ON)
 else()
     set(SIM OFF)
-endif()
-
-if("${OE_WORD}" STREQUAL "32")
-    set(WS32 ON)
-    set(WS64 OFF)
-elseif("${OE_WORD}" STREQUAL "64")
-    set(WS32 OFF)
-    set(WS64 ON)
-else()
-    message(FATAL_ERROR "OE_WORD must be one of '32' or '64'.")
 endif()
 
 if(UNIX AND SGX)
@@ -80,4 +65,3 @@ if(UNIX AND TZ)
 endif()
 
 add_subdirectory(libsocket)
-

@@ -16,7 +16,7 @@
 # type - type of files to genreate ("enclave" or "host" or "enclave-headers" or "host-headers")
 # out_files_var - variable to get the generated files added to
 # --edl-search-dir dir - Additional folder relative to the source directory to look for imported edl files.
-function(oeedl_file EDL_FILE TYPE OUT_FILES_VAR)
+function(oeedl_file EDL_FILE TYPE OUT_FILES_VAR OUT_C_FILES_VAR OUT_H_FILES_VAR)
 	get_filename_component(idl_base ${EDL_FILE} NAME_WE)
 	get_filename_component(in_path ${EDL_FILE} PATH)
 
@@ -85,6 +85,12 @@ function(oeedl_file EDL_FILE TYPE OUT_FILES_VAR)
 	# append h_file,c_file to output var
 	list(APPEND ${OUT_FILES_VAR} ${h_file} ${c_file})
 	set(${OUT_FILES_VAR} ${${OUT_FILES_VAR}} PARENT_SCOPE)
+
+	list(APPEND ${OUT_C_FILES_VAR} ${c_file})
+	set(${OUT_C_FILES_VAR} ${${OUT_C_FILES_VAR}} PARENT_SCOPE)
+
+	list(APPEND ${OUT_H_FILES_VAR} ${h_file})
+	set(${OUT_H_FILES_VAR} ${${OUT_H_FILES_VAR}} PARENT_SCOPE)
 
 	#message("h_file=${h_file} c_file=${c_file} EDL_FILE=${EDL_FILE} OUT_FILES=${${OUT_FILES_VAR}}")
 endfunction(oeedl_file)

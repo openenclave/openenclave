@@ -4,7 +4,6 @@
 #include "enclavelibc.h"
 #include "tcps_string_t.h"
 #include "socket_t.h"
-#include <errno.h>
 
 static void
 copy_input_fds(oe_fd_set_internal* dest, oe_provider_fd_set* src)
@@ -457,7 +456,7 @@ oe_getaddrinfo_OE_NETWORK_INSECURE(
                 break;
             }
             strncpy(ai->ai_canonname, response[i].ai_canonname,
-                sizeof(response[i].ai_canonname));
+                sizeof(ai->ai_canonname));
             ai->ai_canonname[sizeof(response[i].ai_canonname)] = 0;
         } else {
             ai->ai_canonname = NULL;
