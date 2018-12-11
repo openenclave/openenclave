@@ -9,7 +9,7 @@
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
-#include "../common/quote.h"
+#include "../common/sgx/quote.h"
 #include "quote.h"
 
 #if defined(OE_USE_LIBSGX)

@@ -6,7 +6,7 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
-#include "common.h"
+#include "../common.h"
 
 #ifdef OE_USE_LIBSGX
 

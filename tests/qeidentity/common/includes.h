@@ -4,7 +4,7 @@
 #ifndef _COMMON_INCLUDES_H_
 #define _COMMON_INCLUDES_H_
 
-#include "../../../common/tcbinfo.h"
+#include "../../../common/sgx/tcbinfo.h"
 #include "../../../host/sgx/quote.h"
 
 #ifndef OE_USE_LIBSGX

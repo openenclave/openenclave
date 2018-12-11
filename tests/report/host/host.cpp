@@ -9,7 +9,7 @@
 #include <openenclave/internal/utils.h>
 #include <ctime>
 #include <vector>
-#include "../../../common/tcbinfo.h"
+#include "../../../common/sgx/tcbinfo.h"
 #include "../../../host/sgx/quote.h"
 #include "../common/tests.h"
 #include "tests_u.h"

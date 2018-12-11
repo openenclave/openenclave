@@ -7,7 +7,7 @@
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
-#include "common.h"
+#include "../common.h"
 
 static oe_result_t _oe_parse_sgx_report_body(
     const sgx_report_body_t* report_body,

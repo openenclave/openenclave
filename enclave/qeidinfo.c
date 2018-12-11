@@ -7,7 +7,7 @@
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/raise.h>
-#include "../common/qeidentity.h"
+#include "../common/sgx/qeidentity.h"
 
 #include <stdio.h>
 /**

@@ -13,7 +13,7 @@
 #include <fstream>
 #include <streambuf>
 #include <vector>
-#include "../../../common/tcbinfo.h"
+#include "../../../common/sgx/tcbinfo.h"
 #include "../../../host/sgx/quote.h"
 #include "tests_u.h"
 

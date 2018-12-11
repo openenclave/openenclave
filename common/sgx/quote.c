@@ -8,7 +8,7 @@
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/sha.h>
 #include <openenclave/internal/utils.h>
-#include "common.h"
+#include "../common.h"
 #include "qeidentity.h"
 #include "revocation.h"
 

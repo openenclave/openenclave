@@ -12,7 +12,7 @@
 #include <fstream>
 #include <streambuf>
 #include <vector>
-#include "../../../common/tcbinfo.h"
+#include "../../../common/sgx/tcbinfo.h"
 #include "tests_u.h"
 
 typedef struct

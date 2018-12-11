@@ -5,7 +5,7 @@
 #include "qeidentity.h"
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
-#include "common.h"
+#include "../common.h"
 #include "tcbinfo.h"
 
 // hardcoded property values used for validating quoting enclave when qe

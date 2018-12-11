@@ -27,11 +27,19 @@ elseif (WIN32)
         windows/hostthread.c
         windows/time.c
     )
+else()
+    message(FATAL_ERROR "Unknown OS. Only supported OSes are Linux and Windows")
 endif()
 
 # Arch specific files. Right now, don't distinguish Intel vs AMD.
 if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
-    list(APPEND PLATFORM_SRC    
+    list(APPEND PLATFORM_SRC
+        ../common/sgx/qeidentity.c
+        ../common/sgx/quote.c
+        ../common/sgx/report.c
+        ../common/sgx/revocation.c
+        ../common/sgx/sgxcertextensions.c
+        ../common/sgx/tcbinfo.c    
         sgx/calls.c
         sgx/create.c 
         sgx/elf.c
@@ -62,7 +70,7 @@ if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
             sgx/linux/entersim.S
             sgx/linux/exception.c
             sgx/linux/sgxioctl.c
-            )
+        )
     else()
         list(APPEND PLATFORM_SRC
             sgx/windows/aep.asm
@@ -71,7 +79,7 @@ if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
             sgx/windows/enter.asm
             sgx/windows/entersim.asm
             sgx/windows/exception.c
-            )
+        )
     endif()
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*|ARM.*|aarch64.*|AARCH64.*")
     message("TODO: ADD ARM files.")
@@ -83,13 +91,7 @@ endif()
 add_library(oehost STATIC
     ../common/datetime.c
     ../common/kdf.c
-    ../common/qeidentity.c
-    ../common/quote.c
-    ../common/report.c
-    ../common/revocation.c
     ../common/safecrt.c
-    ../common/sgxcertextensions.c
-    ../common/tcbinfo.c    
     dupenv.c
     error.c
     exception.c

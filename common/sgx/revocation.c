@@ -17,7 +17,7 @@
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
-#include "common.h"
+#include "../common.h"
 #include "tcbinfo.h"
 
 #ifdef OE_USE_LIBSGX
