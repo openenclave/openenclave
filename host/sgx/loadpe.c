@@ -14,14 +14,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include "enclave.h"
-#include "memalign.h"
+#include "../memalign.h"
 #include "sgxload.h"
-#include "strings.h"
+#include "../strings.h"
 
 #if defined(_WIN32)
 #include <windows.h>
 #elif defined(__linux__)
-#include "linux/windows.h"
+#include "../linux/windows.h"
 #endif
 
 /* Redefine IMAGE_FIRST_SECTION on Linux */

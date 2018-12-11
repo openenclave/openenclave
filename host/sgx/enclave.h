@@ -11,7 +11,7 @@
 #include <openenclave/internal/sgxcreate.h>
 #include <stdbool.h>
 #include "asmdefs.h"
-#include "hostthread.h"
+#include "../hostthread.h"
 
 #if defined(_WIN32)
 #include <windows.h>

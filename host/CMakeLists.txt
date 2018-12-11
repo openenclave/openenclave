@@ -24,7 +24,6 @@ set(PLATFORM_SRC
     linux/sgxioctl.c
     linux/time.c
     linux/windows.c
-    sgxquoteprovider.c
     )
 elseif (WIN32)
 set(PLATFORM_SRC
@@ -42,6 +41,27 @@ set(PLATFORM_SRC
     )
 endif()
 
+set(ARCH_SRC
+    sgx/calls.c
+    sgx/create.c 
+    sgx/elf.c
+    sgx/enclave.c
+    sgx/enclavemanager.c
+    sgx/load.c
+    sgx/loadelf.c
+    sgx/loadpe.c
+    sgx/ocalls.c
+    sgx/quote.c
+    sgx/registers.c
+    sgx/report.c
+    sgx/sgxload.c
+    sgx/sgxmeasure.c
+    sgx/sgxquote.c
+    sgx/sgxquoteprovider.c
+    sgx/sgxsign.c
+    sgx/sgxtypes.c
+)
+
 add_library(oehost STATIC
     ../common/datetime.c
     ../common/kdf.c
@@ -51,38 +71,23 @@ add_library(oehost STATIC
     ../common/revocation.c
     ../common/safecrt.c
     ../common/sgxcertextensions.c
-    ../common/tcbinfo.c
-    calls.c
-    create.c
+    ../common/tcbinfo.c    
     dupenv.c
-    elf.c
-    enclave.c
-    enclavemanager.c
     error.c
     exception.c
     files.c
     fopen.c
     hexdump.c
-    load.c
-    loadelf.c
-    loadpe.c
     memalign.c
     ocalls.c
     traceh.c
-    quote.c
-    registers.c
-    report.c
     result.c
-    sgxload.c
-    sgxmeasure.c
-    sgxquote.c
-    sgxsign.c
-    sgxtypes.c
     signkey.c
     strings.c
     tests.c
     crypto/sha.c
     ${PLATFORM_SRC}
+    ${ARCH_SRC}
     )
 
 # we and dependents need the OE includes to compile

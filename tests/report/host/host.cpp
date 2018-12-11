@@ -10,7 +10,7 @@
 #include <ctime>
 #include <vector>
 #include "../../../common/tcbinfo.h"
-#include "../../../host/quote.h"
+#include "../../../host/sgx/quote.h"
 #include "../common/tests.h"
 #include "tests_u.h"
 

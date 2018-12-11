@@ -5,7 +5,7 @@
 #define _COMMON_INCLUDES_H_
 
 #include "../../../common/tcbinfo.h"
-#include "../../../host/quote.h"
+#include "../../../host/sgx/quote.h"
 
 #ifndef OE_USE_LIBSGX
 

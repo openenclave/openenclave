@@ -10,7 +10,7 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
-#include "linux/sgxioctl.h"
+#include "../linux/sgxioctl.h"
 #elif defined(_WIN32)
 #include <Windows.h>
 #endif
@@ -26,9 +26,9 @@
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include "enclave.h"
-#include "memalign.h"
+#include "../memalign.h"
 #include "sgxmeasure.h"
-#include "signkey.h"
+#include "../signkey.h"
 
 static int _make_memory_protect_param(uint64_t inflags, bool simulate)
 {

@@ -15,7 +15,7 @@
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include <time.h>
-#include "crypto/rsa.h"
+#include "../crypto/rsa.h"
 #include "enclave.h"
 
 /* Use mbedtls/openssl for bignum math on Windows/Linux respectively. */

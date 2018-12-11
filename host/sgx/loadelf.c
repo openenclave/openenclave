@@ -20,9 +20,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "enclave.h"
-#include "memalign.h"
+#include "../memalign.h"
 #include "sgxload.h"
-#include "strings.h"
+#include "../strings.h"
 
 static oe_result_t _oe_free_elf_image(oe_enclave_image_t* image)
 {

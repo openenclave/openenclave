@@ -4,12 +4,12 @@
 #include <openenclave/internal/raise.h>
 #include <stdio.h>
 #include "enclave.h"
-#include "fopen.h"
+#include "../fopen.h"
 
 #if defined(_WIN32)
 #include <windows.h>
 #elif defined(__linux__)
-#include "linux/windows.h"
+#include "../linux/windows.h"
 #endif
 
 static oe_result_t _get_image_type(const char* path, oe_image_type* type)

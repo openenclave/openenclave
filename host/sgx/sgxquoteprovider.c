@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "hostthread.h"
+#include "../hostthread.h"
 #include "platformquoteprovider.h"
 #include "sgxquoteprovider.h"
 
