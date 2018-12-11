@@ -1,9 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "../ocalls.h"
 #include <errno.h>
 #include <openenclave/internal/time.h>
-#include "../sgx/ocalls.h"
+#include <time.h>
 
 static const uint64_t _SEC_TO_MSEC = 1000UL;
 static const uint64_t _MSEC_TO_NSEC = 1000000UL;

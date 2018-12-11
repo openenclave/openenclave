@@ -51,25 +51,6 @@ void HandleFree(uint64_t arg)
     free((void*)arg);
 }
 
-void HandlePrint(uint64_t arg_in)
-{
-    oe_print_args_t* args = (oe_print_args_t*)arg_in;
-
-    if (args)
-    {
-        if (args->device == 0)
-        {
-            fprintf(stdout, "%s", args->str);
-            fflush(stdout);
-        }
-        else if (args->device == 1)
-        {
-            fprintf(stderr, "%s", args->str);
-            fflush(stderr);
-        }
-    }
-}
-
 void HandleThreadWait(oe_enclave_t* enclave, uint64_t arg_in)
 {
     const uint64_t tcs = arg_in;
