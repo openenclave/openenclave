@@ -3,7 +3,7 @@
 
 #if defined(__GNUC__)
 
-#include "../sgx/cpuid.h"
+#include "../cpuid.h"
 #include <cpuid.h>
 
 /* Same as __get_cpuid, but sub-leaf can be specified.

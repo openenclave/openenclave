@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "../sgx/asmdefs.h"
+#include "../asmdefs.h"
 #include <openenclave/internal/constants_x64.h>
 
 //==============================================================================

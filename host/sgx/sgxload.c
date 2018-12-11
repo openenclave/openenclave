@@ -10,7 +10,7 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
-#include "../linux/sgxioctl.h"
+#include "linux/sgxioctl.h"
 #elif defined(_WIN32)
 #include <Windows.h>
 #endif

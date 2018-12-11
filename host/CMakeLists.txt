@@ -14,14 +14,7 @@ set(PLATFORM_SRC
     crypto/openssl/key.c
     crypto/openssl/random.c
     crypto/openssl/rsa.c
-    linux/aep.S
-    linux/aesm.c
-    linux/cpuid.c
-    linux/enter.S
-    linux/entersim.S
-    linux/exception.c
     linux/hostthread.c
-    linux/sgxioctl.c
     linux/time.c
     linux/windows.c
     )
@@ -29,12 +22,12 @@ elseif (WIN32)
 set(PLATFORM_SRC
     crypto/bcrypt/hmac.c
     crypto/bcrypt/rsa.c
-    windows/aep.asm
-    windows/aesm.c
-    windows/cpuid.c
-    windows/enter.asm
-    windows/entersim.asm
-    windows/exception.c
+    sgx/windows/aep.asm
+    sgx/windows/aesm.c
+    sgx/windows/cpuid.c
+    sgx/windows/enter.asm
+    sgx/windows/entersim.asm
+    sgx/windows/exception.c
     windows/hostthread.c
     windows/time.c
     ../3rdparty/mbedtls/mbedtls/library/bignum.c
@@ -60,7 +53,15 @@ set(ARCH_SRC
     sgx/sgxquoteprovider.c
     sgx/sgxsign.c
     sgx/sgxtypes.c
-)
+    sgx/linux
+    sgx/linux/aep.S
+    sgx/linux/aesm.c
+    sgx/linux/cpuid.c
+    sgx/linux/enter.S
+    sgx/linux/entersim.S
+    sgx/linux/exception.c
+    sgx/linux/sgxioctl.c
+    )
 
 add_library(oehost STATIC
     ../common/datetime.c
