@@ -1,68 +1,85 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+# OS specific but arch agnostic files.
 if (UNIX)
-set(PLATFORM_SRC
-    ../common/asn1.c
-    ../common/cert.c
-    crypto/openssl/asn1.c
-    crypto/openssl/cert.c
-    crypto/openssl/crl.c
-    crypto/openssl/ec.c
-    crypto/openssl/hmac.c
-    crypto/openssl/init.c
-    crypto/openssl/key.c
-    crypto/openssl/random.c
-    crypto/openssl/rsa.c
-    linux/hostthread.c
-    linux/time.c
-    linux/windows.c
+    set(PLATFORM_SRC
+        ../common/asn1.c
+        ../common/cert.c
+        crypto/openssl/asn1.c
+        crypto/openssl/cert.c
+        crypto/openssl/crl.c
+        crypto/openssl/ec.c
+        crypto/openssl/hmac.c
+        crypto/openssl/init.c
+        crypto/openssl/key.c
+        crypto/openssl/random.c
+        crypto/openssl/rsa.c
+        linux/hostthread.c
+        linux/time.c
+        linux/windows.c
     )
 elseif (WIN32)
-set(PLATFORM_SRC
-    crypto/bcrypt/hmac.c
-    crypto/bcrypt/rsa.c
-    sgx/windows/aep.asm
-    sgx/windows/aesm.c
-    sgx/windows/cpuid.c
-    sgx/windows/enter.asm
-    sgx/windows/entersim.asm
-    sgx/windows/exception.c
-    windows/hostthread.c
-    windows/time.c
-    ../3rdparty/mbedtls/mbedtls/library/bignum.c
+    set(PLATFORM_SRC
+        ../3rdparty/mbedtls/mbedtls/library/bignum.c
+        crypto/bcrypt/hmac.c
+        crypto/bcrypt/rsa.c
+        windows/hostthread.c
+        windows/time.c
     )
 endif()
 
-set(ARCH_SRC
-    sgx/calls.c
-    sgx/create.c 
-    sgx/elf.c
-    sgx/enclave.c
-    sgx/enclavemanager.c
-    sgx/load.c
-    sgx/loadelf.c
-    sgx/loadpe.c
-    sgx/ocalls.c
-    sgx/quote.c
-    sgx/registers.c
-    sgx/report.c
-    sgx/sgxload.c
-    sgx/sgxmeasure.c
-    sgx/sgxquote.c
-    sgx/sgxquoteprovider.c
-    sgx/sgxsign.c
-    sgx/sgxtypes.c
-    sgx/linux
-    sgx/linux/aep.S
-    sgx/linux/aesm.c
-    sgx/linux/cpuid.c
-    sgx/linux/enter.S
-    sgx/linux/entersim.S
-    sgx/linux/exception.c
-    sgx/linux/sgxioctl.c
+# Arch specific files. Right now, don't distinguish Intel vs AMD.
+if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
+    list(APPEND PLATFORM_SRC    
+        sgx/calls.c
+        sgx/create.c 
+        sgx/elf.c
+        sgx/enclave.c
+        sgx/enclavemanager.c
+        sgx/load.c
+        sgx/loadelf.c
+        sgx/loadpe.c
+        sgx/ocalls.c
+        sgx/quote.c
+        sgx/registers.c
+        sgx/report.c
+        sgx/sgxload.c
+        sgx/sgxmeasure.c
+        sgx/sgxquote.c
+        sgx/sgxquoteprovider.c
+        sgx/sgxsign.c
+        sgx/sgxtypes.c
     )
 
+    # OS specific as well.
+    if (UNIX)
+        list(APPEND PLATFORM_SRC
+            sgx/linux/aep.S
+            sgx/linux/aesm.c
+            sgx/linux/cpuid.c
+            sgx/linux/enter.S
+            sgx/linux/entersim.S
+            sgx/linux/exception.c
+            sgx/linux/sgxioctl.c
+            )
+    else()
+        list(APPEND PLATFORM_SRC
+            sgx/windows/aep.asm
+            sgx/windows/aesm.c
+            sgx/windows/cpuid.c
+            sgx/windows/enter.asm
+            sgx/windows/entersim.asm
+            sgx/windows/exception.c
+            )
+    endif()
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*|ARM.*|aarch64.*|AARCH64.*")
+    message("TODO: ADD ARM files.")
+else()
+    message(FATAL_ERROR "Unknown architecture. Only Intel and ARM are supported.")
+endif()    
+
+# Combine with all other non platform dependent files.
 add_library(oehost STATIC
     ../common/datetime.c
     ../common/kdf.c
@@ -88,7 +105,6 @@ add_library(oehost STATIC
     tests.c
     crypto/sha.c
     ${PLATFORM_SRC}
-    ${ARCH_SRC}
     )
 
 # we and dependents need the OE includes to compile
