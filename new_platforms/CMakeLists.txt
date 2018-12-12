@@ -49,6 +49,12 @@ elseif(WIN32 AND SGX AND (NOT "$ENV{SGXSDKInstallPath}" STREQUAL "") AND ("${SGX
     set(SGXSDKInstallPath $ENV{SGXSDKInstallPath})
 endif()
 
+# Save the path to Open Enclave proper as well as to where the new platform
+# support is located. The latter will make it easier to remove all references
+# to it once we merge into master.
+set(OE_PATH ${PROJECT_SOURCE_DIR}/..)
+set(NP_PATH ${PROJECT_SOURCE_DIR})
+
 # Add common compiler definitions
 if(SGX)
     add_definitions(-DOE_USE_SGX)
@@ -65,3 +71,4 @@ if(UNIX AND TZ)
 endif()
 
 add_subdirectory(libsocket)
+add_subdirectory(libstdio)

@@ -3,7 +3,6 @@
 #define _NO_CRT_STDIO_INLINE
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
 
 #include <openenclave/enclave.h>
 #include <openenclave/bits/stdio.h>

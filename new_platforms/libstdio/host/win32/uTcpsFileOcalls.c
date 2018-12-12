@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <errno.h>
 #include <openenclave/host.h>
-#include "../stdio_u.h"
+#include "stdio_u.h"
 
 int
 ocall_stat64i32(
