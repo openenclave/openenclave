@@ -81,6 +81,31 @@ void test_minimum_issue_date(oe_datetime_t now)
 #endif
 }
 
+void enclave_test_local_report(sgx_target_info_t* target_info)
+{
+    test_local_report(target_info);
+}
+
+void enclave_test_remote_report()
+{
+    test_remote_report();
+}
+
+void enclave_test_parse_report_negative()
+{
+    test_parse_report_negative();
+}
+
+void enclave_test_local_verify_report()
+{
+    test_local_verify_report();
+}
+
+void enclave_test_remote_verify_report()
+{
+    test_remote_verify_report();
+}
+
 OE_SET_ENCLAVE_SGX(
     0,    /* ProductID */
     0,    /* SecurityVersion */
