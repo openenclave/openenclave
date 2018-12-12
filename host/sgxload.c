@@ -183,13 +183,20 @@ static void* _allocate_enclave_memory(size_t enclave_size, int fd)
         {
             mflags |= MAP_ANONYMOUS;
             if (oe_safe_mul_u64(mmap_size, 2, &mmap_size) != OE_OK)
+            {
+                OE_TRACE_ERROR(
+                    "oe_safe_mul_u64 failed mmap_size = %ld\n", mmap_size);
                 goto done;
+            }
         }
 
         mptr = mmap(NULL, mmap_size, mprot, mflags, fd, 0);
-
         if (mptr == MAP_FAILED)
+        {
+            OE_TRACE_ERROR(
+                "mmap failed mmap_size=%ld mflags=0x%x\n", mmap_size, mflags);
             goto done;
+        }
 
         /* Exit early in hardware backed enclaves, since it's aligned. */
         if (fd > -1)
@@ -213,7 +220,11 @@ static void* _allocate_enclave_memory(size_t enclave_size, int fd)
         uint8_t* end = (uint8_t*)base;
 
         if (start != end && munmap(start, (size_t)(end - start)) != 0)
+        {
+            OE_TRACE_ERROR(
+                "Unmap [MPTR...BASE] failed start=0x%p end=0x%p\n", start, end);
             goto done;
+        }
     }
 
     /* Unmap [BASE+SIZE...MPTR+SIZE*2] */
@@ -222,7 +233,13 @@ static void* _allocate_enclave_memory(size_t enclave_size, int fd)
         uint8_t* end = (uint8_t*)mptr + enclave_size * 2;
 
         if (start != end && munmap(start, (size_t)(end - start)) != 0)
+        {
+            OE_TRACE_ERROR(
+                "Unmap [BASE+SIZE...MPTR+SIZE*2] failed start=0x%p end=0x%p\n",
+                start,
+                end);
             goto done;
+        }
     }
 
     result = base;
@@ -248,6 +265,8 @@ done:
               MEM_COMMIT | MEM_RESERVE,
               PAGE_EXECUTE_READWRITE)))
     {
+        OE_TRACE_ERROR(
+            "VirtualAlloc failed enclave_size=0x%lx\n", enclave_size);
         goto done;
     }
 
@@ -270,7 +289,11 @@ static oe_result_t _sgx_free_enclave_memory(
     {
         uint32_t enclave_error = 0;
         if (!enclave_delete(addr, &enclave_error) || enclave_error != 0)
+        {
+            OE_TRACE_ERROR(
+                "enclave_delete failed with enclave_error=%d\n", enclave_error);
             return OE_PLATFORM_ERROR;
+        }
     }
     else /* FLC simulation mode needs to munmap. */
 #endif
@@ -302,7 +325,10 @@ static oe_result_t _get_sig_struct(
     {
         /* Only debug-sign unsigned enclaves in debug mode, fail otherwise */
         if (!(properties->config.attributes & SGX_FLAGS_DEBUG))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE_MSG(
+                OE_FAILURE,
+                "Failed enclave was not signed with debug flag",
+                NULL);
 
         /* Perform debug-signing with well-known debug-signing key */
         OE_CHECK(
@@ -395,7 +421,7 @@ oe_result_t oe_sgx_initialize_load_context(
     {
         context->dev = open("/dev/isgx", O_RDWR);
         if (context->dev == OE_SGX_NO_DEVICE_HANDLE)
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE_MSG(OE_FAILURE, "open /dev/isgx device file failed");
     }
 #endif
 
@@ -488,7 +514,9 @@ oe_result_t oe_sgx_create_enclave(
             &enclave_error);
 
         if (!base)
-            OE_RAISE(OE_PLATFORM_ERROR);
+            OE_RAISE_MSG(
+                OE_PLATFORM_ERROR,
+                "enclave_create with ENCLAVE_TYPE_SGX1 type failed");
 
         secs->base = (uint64_t)base;
 
@@ -513,7 +541,7 @@ oe_result_t oe_sgx_create_enclave(
             &enclave_error);
 
         if (!base)
-            OE_RAISE(OE_PLATFORM_ERROR);
+            OE_RAISE_MSG(OE_PLATFORM_ERROR, "Win32: CreateEnclave", NULL);
 
         secs->base = (uint64_t)base;
 
@@ -688,9 +716,8 @@ oe_result_t oe_sgx_load_enclave_data(
         if ((void*)addr < context->sim.addr ||
             (uint8_t*)addr >
                 (uint8_t*)context->sim.addr + context->sim.size - OE_PAGE_SIZE)
-        {
-            OE_RAISE(OE_FAILURE);
-        }
+            OE_RAISE_MSG(
+                OE_FAILURE, "Page is NOT within enclave boundaries", NULL);
 
         /* Copy page contents onto memory-mapped region */
         OE_CHECK(
@@ -706,12 +733,13 @@ oe_result_t oe_sgx_load_enclave_data(
                 OE_RAISE(OE_FAILURE);
 
 #if defined(__linux__)
-            if (mprotect((void*)addr, OE_PAGE_SIZE, (int)prot) != 0)
-                OE_RAISE(OE_FAILURE);
+            if (mprotect((void*)addr, OE_PAGE_SIZE, prot) != 0)
+                OE_RAISE_MSG(OE_FAILURE, "mprotect failed (addr=0x%x)", addr);
 #elif defined(_WIN32)
             DWORD old;
             if (!VirtualProtect((LPVOID)addr, OE_PAGE_SIZE, prot, &old))
-                OE_RAISE(OE_FAILURE);
+                OE_RAISE_MSG(
+                    OE_FAILURE, "VirtualProtect failed (addr=0x%x)", addr);
 #endif
         }
     }
@@ -731,9 +759,10 @@ oe_result_t oe_sgx_load_enclave_data(
                 (const void*)src,
                 protect,
                 &enclave_error) != OE_PAGE_SIZE)
-        {
-            OE_RAISE(OE_PLATFORM_ERROR);
-        }
+            OE_RAISE_MSG(
+                OE_PLATFORM_ERROR,
+                "enclave_load_data failed (addr=0x%x)",
+                addr);
 
 #elif defined(__linux__)
 
@@ -764,7 +793,7 @@ oe_result_t oe_sgx_load_enclave_data(
                 &num_bytes,
                 &enclave_error))
         {
-            OE_RAISE(OE_PLATFORM_ERROR);
+            OE_RAISE_MSG(OE_PLATFORM_ERROR, "LoadEnclaveData failed", NULL);
         }
 
 #endif
@@ -773,7 +802,6 @@ oe_result_t oe_sgx_load_enclave_data(
     result = OE_OK;
 
 done:
-
     return result;
 }
 
@@ -814,9 +842,11 @@ oe_result_t oe_sgx_initialize_enclave(
                 (const void*)&sigstruct,
                 sizeof(sgx_sigstruct_t),
                 &enclave_error))
-            OE_RAISE(OE_PLATFORM_ERROR);
+            OE_RAISE_MSG(OE_PLATFORM_ERROR, "enclave_initialize failed");
+
         if (enclave_error != 0)
-            OE_RAISE(OE_PLATFORM_ERROR);
+            OE_RAISE_MSG(
+                OE_PLATFORM_ERROR, "enclave_error = 0x%x", enclave_error);
 #else
         /* If not using libsgx, get a launch token from the AESM service */
         sgx_launch_token_t launch_token;
@@ -831,7 +861,6 @@ oe_result_t oe_sgx_initialize_enclave(
                 (uint64_t)&sigstruct,
                 (uint64_t)&launch_token) != 0)
             OE_RAISE(OE_IOCTL_FAILED);
-
 #elif defined(_WIN32)
 
         OE_STATIC_ASSERT(
@@ -864,9 +893,7 @@ oe_result_t oe_sgx_initialize_enclave(
                 &info,
                 sizeof(info),
                 &enclave_error))
-        {
-            OE_RAISE(OE_PLATFORM_ERROR);
-        }
+            OE_RAISE_MSG(OE_PLATFORM_ERROR, "InitializeEnclave failed", NULL);
 #endif
 #endif
     }
@@ -875,7 +902,6 @@ oe_result_t oe_sgx_initialize_enclave(
     result = OE_OK;
 
 done:
-
     return result;
 }
 
@@ -887,10 +913,10 @@ oe_result_t oe_sgx_delete_enclave(oe_enclave_t* enclave)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* free allocate memory. */
-    result = _sgx_free_enclave_memory(
-        (void*)enclave->addr, enclave->size, enclave->simulate);
-
+    OE_CHECK(
+        _sgx_free_enclave_memory(
+            (void*)enclave->addr, enclave->size, enclave->simulate));
+    result = OE_OK;
 done:
-
     return result;
 }

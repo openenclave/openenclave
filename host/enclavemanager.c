@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/queue.h>
+#include <openenclave/internal/trace.h>
 
 static OE_LIST_HEAD(EnclaveListHead, _enclave_entry) oe_enclave_list_head;
 static oe_mutex oe_enclave_list_lock = OE_H_MUTEX_INITIALIZER;
@@ -47,6 +48,7 @@ uint32_t oe_push_enclave_instance(oe_enclave_t* enclave)
         {
             if (tmp->enclave == enclave)
             {
+                OE_TRACE_ERROR("The enclave is already in global list\n");
                 goto cleanup;
             }
         }
@@ -56,6 +58,7 @@ uint32_t oe_push_enclave_instance(oe_enclave_t* enclave)
     new_entry = (EnclaveEntry*)calloc(1, sizeof(EnclaveEntry));
     if (new_entry == NULL)
     {
+        OE_TRACE_ERROR("calloc for EnclaveEntry failed\n");
         goto cleanup;
     }
 
@@ -76,6 +79,8 @@ cleanup:
             abort();
         }
     }
+    if (ret)
+        OE_TRACE_ERROR("enclave=0x%x\n", enclave);
 
     return ret;
 }
@@ -99,6 +104,7 @@ uint32_t oe_remove_enclave_instance(oe_enclave_t* enclave)
     // Take the lock.
     if (oe_mutex_lock(&oe_enclave_list_lock) != 0)
     {
+        OE_TRACE_ERROR("oe_mutex_lock failed\n");
         goto cleanup;
     }
 
@@ -125,9 +131,13 @@ cleanup:
         // Release the lock if it is taken.
         if (oe_mutex_unlock(&oe_enclave_list_lock) != 0)
         {
+            OE_TRACE_ERROR("oe_mutex_unlock failed and calling abort...\n");
             abort();
         }
     }
+
+    if (ret)
+        OE_TRACE_ERROR("enclave=0x%x\n", enclave);
 
     return ret;
 }
@@ -151,6 +161,7 @@ oe_enclave_t* oe_query_enclave_instance(void* tcs)
     // Take the lock.
     if (oe_mutex_lock(&oe_enclave_list_lock) != 0)
     {
+        OE_TRACE_ERROR("oe_mutex_lock failed\n");
         goto cleanup;
     }
 
@@ -179,9 +190,13 @@ cleanup:
         // Release the lock if it is taken.
         if (oe_mutex_unlock(&oe_enclave_list_lock) != 0)
         {
+            OE_TRACE_ERROR("oe_mutex_unlock failed\n");
             abort();
         }
     }
+
+    if (!ret)
+        OE_TRACE_ERROR("tcs=0x%x\n", tcs);
 
     return ret;
 }

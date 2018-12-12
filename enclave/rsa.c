@@ -22,8 +22,9 @@ static oe_result_t _copy_key(
     bool copy_private_fields)
 {
     oe_result_t result = OE_UNEXPECTED;
-    const mbedtls_pk_info_t* info;
-    mbedtls_rsa_context* rsa;
+    const mbedtls_pk_info_t* info = NULL;
+    mbedtls_rsa_context* rsa = NULL;
+    int rc = 0;
 
     if (dest)
         mbedtls_pk_init(dest);
@@ -41,8 +42,9 @@ static oe_result_t _copy_key(
         OE_RAISE(OE_FAILURE);
 
     /* Setup the context for this key type */
-    if (mbedtls_pk_setup(dest, info) != 0)
-        OE_RAISE(OE_FAILURE);
+    rc = mbedtls_pk_setup(dest, info);
+    if (rc != 0)
+        OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x\n", rc);
 
     /* Get the context for this key type */
     if (!(rsa = dest->pk_ctx))
@@ -135,8 +137,9 @@ static oe_result_t _generate_key_pair(
     oe_public_key_t* public_key)
 {
     oe_result_t result = OE_UNEXPECTED;
-    mbedtls_ctr_drbg_context* drbg;
+    mbedtls_ctr_drbg_context* drbg = NULL;
     mbedtls_pk_context pk;
+    int rc = 0;
 
     /* Initialize structures */
     mbedtls_pk_init(&pk);
@@ -160,19 +163,19 @@ static oe_result_t _generate_key_pair(
         OE_RAISE(OE_FAILURE);
 
     /* Create key struct */
-    if (mbedtls_pk_setup(&pk, mbedtls_pk_info_from_type(MBEDTLS_PK_RSA)) != 0)
-        OE_RAISE(OE_FAILURE);
+    rc = mbedtls_pk_setup(&pk, mbedtls_pk_info_from_type(MBEDTLS_PK_RSA));
+    if (rc != 0)
+        OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x\n", rc);
 
     /* Generate the RSA key */
-    if (mbedtls_rsa_gen_key(
-            mbedtls_pk_rsa(pk),
-            mbedtls_ctr_drbg_random,
-            drbg,
-            (unsigned int)bits,
-            (int)exponent) != 0)
-    {
-        OE_RAISE(OE_FAILURE);
-    }
+    rc = mbedtls_rsa_gen_key(
+        mbedtls_pk_rsa(pk),
+        mbedtls_ctr_drbg_random,
+        drbg,
+        (unsigned int)bits,
+        (int)exponent);
+    if (rc != 0)
+        OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x\n", rc);
 
     /* Initialize the private key parameter */
     OE_CHECK(

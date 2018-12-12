@@ -225,7 +225,7 @@ static bool _x509_buf_equal(
 // self-signed certificate (a root certificate).
 static mbedtls_x509_crt* _find_root_cert(mbedtls_x509_crt* chain)
 {
-    mbedtls_x509_crt* p;
+    mbedtls_x509_crt* p = NULL;
 
     /* Find the last certificate in the list */
     for (p = chain; p->next; p = p->next)
@@ -234,6 +234,9 @@ static mbedtls_x509_crt* _find_root_cert(mbedtls_x509_crt* chain)
     /* If the last certificate is not self-signed, then fail */
     if (!_x509_buf_equal(&p->subject_raw, &p->issuer_raw))
         return NULL;
+
+    if (p == NULL)
+        OE_TRACE_ERROR("root cert was not found\n");
 
     return p;
 }
@@ -248,7 +251,7 @@ static mbedtls_x509_crl* _crl_list_find_issuer_for_cert(
         if (_x509_buf_equal(&p->issuer_raw, &crt->subject_raw))
             return p;
     }
-
+    OE_TRACE_ERROR("CRL list does not contains a CRL for this CA\n");
     return NULL;
 }
 
@@ -343,17 +346,23 @@ static oe_result_t _verify_whole_chain(mbedtls_x509_crt* chain)
         mbedtls_x509_crt* subchain = p->next;
 
         /* Verify the next certificate against its following predecessors */
-        int r = mbedtls_x509_crt_verify(
-            p, subchain, NULL, NULL, &flags, NULL, NULL);
-        if (r != 0) /* Raise an error if any */
+        if (mbedtls_x509_crt_verify(
+                p, subchain, NULL, NULL, &flags, NULL, NULL) != 0)
         {
-            OE_TRACE_ERROR("mbedtls_x509_crt_verify failed with 0x%x\n", r);
-            OE_RAISE(OE_FAILURE);
+            oe_verify_cert_error_t error;
+            mbedtls_x509_crt_verify_info(
+                error.buf, sizeof(error.buf), "", flags);
+            OE_RAISE_MSG(
+                OE_FAILURE,
+                "mbedtls_x509_crt_verify failed with %s (flags=0x%x)",
+                error.buf,
+                flags);
         }
 
         /* If the final certificate is not the root */
         if (subchain->next == NULL && root != subchain)
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE_MSG(
+                OE_FAILURE, "Last certificate in the chain is not Root");
     }
 
     result = OE_OK;
@@ -446,19 +455,25 @@ static int _parse_extensions(
     uint8_t* p = crt->v3_ext.p;
     uint8_t* end = p + crt->v3_ext.len;
     size_t len;
-    int r;
+    int rc;
     size_t index = 0;
 
     if (!p)
-        return 0;
-
+    {
+        ret = 0;
+        goto done;
+    }
     /* Parse tag that introduces the extensions */
     {
         int tag = MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE;
 
         /* Get the tag and length of the entire packet */
-        if (mbedtls_asn1_get_tag(&p, end, &len, tag) != 0)
+        rc = mbedtls_asn1_get_tag(&p, end, &len, tag);
+        if (rc != 0)
+        {
+            OE_TRACE_ERROR("mbedtls_asn1_get_tag rc= 0x%x\n", rc);
             goto done;
+        }
     }
 
     /* Parse each extension of the form: [OID | CRITICAL | OCTETS] */
@@ -477,16 +492,24 @@ static int _parse_extensions(
             {
                 int tag = MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE;
 
-                if (mbedtls_asn1_get_tag(&p, end, &len, tag) != 0)
+                rc = mbedtls_asn1_get_tag(&p, end, &len, tag);
+                if (rc != 0)
+                {
+                    OE_TRACE_ERROR("mbedtls_asn1_get_tag rc= 0x%x\n", rc);
                     goto done;
+                }
 
                 oid.tag = p[0];
             }
 
             /* Parse the OID length */
             {
-                if (mbedtls_asn1_get_tag(&p, end, &len, MBEDTLS_ASN1_OID) != 0)
+                rc = mbedtls_asn1_get_tag(&p, end, &len, MBEDTLS_ASN1_OID);
+                if (rc != 0)
+                {
+                    OE_TRACE_ERROR("mbedtls_asn1_get_tag rc= 0x%x\n", rc);
                     goto done;
+                }
 
                 oid.len = len;
                 oid.p = p;
@@ -494,24 +517,34 @@ static int _parse_extensions(
             }
 
             /* Convert OID to a string */
-            r = mbedtls_oid_get_numeric_string(
+            rc = mbedtls_oid_get_numeric_string(
                 oidstr.buf, sizeof(oidstr.buf), &oid);
-            if (r < 0)
+            if (rc < 0)
+            {
+                OE_TRACE_ERROR("mbedtls_oid_get_numeric_string rc= 0x%x\n", rc);
                 goto done;
+            }
         }
 
         /* Parse the critical flag */
         {
-            r = (mbedtls_asn1_get_bool(&p, end, &is_critical));
-            if (r != 0 && r != MBEDTLS_ERR_ASN1_UNEXPECTED_TAG)
+            rc = (mbedtls_asn1_get_bool(&p, end, &is_critical));
+            if (rc != 0 && rc != MBEDTLS_ERR_ASN1_UNEXPECTED_TAG)
+            {
+                OE_TRACE_ERROR("mbedtls_asn1_get_bool rc= 0x%x\n", rc);
                 goto done;
+            }
         }
 
         /* Parse the octet string */
         {
             const int tag = MBEDTLS_ASN1_OCTET_STRING;
-            if (mbedtls_asn1_get_tag(&p, end, &len, tag) != 0)
+            rc = mbedtls_asn1_get_tag(&p, end, &len, tag);
+            if (rc != 0)
+            {
+                OE_TRACE_ERROR("mbedtls_asn1_get_tag rc= 0x%x\n", rc);
                 goto done;
+            }
 
             octets = p;
             octets_size = len;
@@ -551,7 +584,7 @@ oe_result_t oe_cert_read_pem(
     oe_result_t result = OE_UNEXPECTED;
     Cert* impl = (Cert*)cert;
     mbedtls_x509_crt* crt = NULL;
-    int r = 0;
+    int rc = 0;
 
     /* Clear the implementation */
     if (impl)
@@ -573,12 +606,9 @@ oe_result_t oe_cert_read_pem(
     mbedtls_x509_crt_init(crt);
 
     /* Read the PEM buffer into DER format */
-    r = mbedtls_x509_crt_parse(crt, (const uint8_t*)pem_data, pem_size);
-    if (r != 0)
-    {
-        OE_TRACE_ERROR("mbedtls_x509_crt_parse failed with 0x%x\n", r);
-        OE_RAISE(OE_FAILURE);
-    }
+    rc = mbedtls_x509_crt_parse(crt, (const uint8_t*)pem_data, pem_size);
+    if (rc != 0)
+        OE_RAISE(OE_FAILURE, "mbedtls_x509_crt_parse rc= 0x%x\n", rc);
 
     /* Initialize the implementation */
     _cert_init(impl, crt, NULL);
@@ -624,7 +654,7 @@ oe_result_t oe_cert_chain_read_pem(
     oe_result_t result = OE_UNEXPECTED;
     CertChain* impl = (CertChain*)chain;
     Referent* referent = NULL;
-    int r = 0;
+    int rc = 0;
 
     /* Clear the implementation (making it invalid) */
     if (impl)
@@ -643,13 +673,10 @@ oe_result_t oe_cert_chain_read_pem(
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* Read the PEM buffer into DER format */
-    r = mbedtls_x509_crt_parse(
+    rc = mbedtls_x509_crt_parse(
         referent->crt, (const uint8_t*)pem_data, pem_size);
-    if (r != 0)
-    {
-        OE_TRACE_ERROR("mbedtls_x509_crt_parse failed with 0x%x\n", r);
-        OE_RAISE(OE_FAILURE);
-    }
+    if (rc != 0)
+        OE_RAISE(OE_FAILURE, "mbedtls_x509_crt_parse rc= 0x%x\n", rc);
 
     /* Reorder certs in the chain to preferred order */
     referent->crt = _sort_certs_by_issue_date(referent->crt);

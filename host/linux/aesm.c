@@ -433,7 +433,7 @@ aesm_t* aesm_connect()
 
     /* Create a socket for connecting to the AESM service */
     if ((sock = socket(AF_UNIX, SOCK_STREAM, 0)) < 0)
-        return NULL;
+        goto done;
 
     /* Initialize the address */
     memset(&addr, 0, sizeof(struct sockaddr_un));
@@ -445,7 +445,7 @@ aesm_t* aesm_connect()
     if (connect(sock, (struct sockaddr*)&addr, sizeof(addr)) != 0)
     {
         close(sock);
-        return NULL;
+        goto done;
     }
 
     /* Allocate and initialize the AESM struct */
@@ -453,12 +453,17 @@ aesm_t* aesm_connect()
         if (!(aesm = (aesm_t*)malloc(sizeof(aesm_t))))
         {
             close(sock);
-            return NULL;
+            goto done;
         }
 
         aesm->magic = AESM_MAGIC;
         aesm->sock = sock;
     }
+
+done:
+
+    if (aesm == NULL)
+        OE_TRACE_ERROR("aesm_connect failed");
 
     return aesm;
 }
@@ -524,7 +529,7 @@ oe_result_t aesm_get_launch_token(
             OE_CHECK(_unpack_var_int(&response, &pos, 1, &errcode));
 
             if (errcode != 0)
-                OE_RAISE(OE_FAILURE);
+                OE_RAISE_MSG(OE_FAILURE, "errcode=0x%x", errcode);
         }
 
         /* Unpack the launch token */
@@ -581,7 +586,7 @@ oe_result_t aesm_init_quote(
             OE_CHECK(_unpack_var_int(&response, &pos, 1, &errcode));
 
             if (errcode != 0)
-                OE_RAISE(OE_FAILURE);
+                OE_RAISE_MSG(OE_FAILURE, "errcode=0x%x", errcode);
         }
 
         /* Unpack target_info */
@@ -686,7 +691,7 @@ oe_result_t aesm_get_quote(
             OE_CHECK(_unpack_var_int(&response, &pos, 1, &errcode));
 
             if (errcode != 0)
-                OE_RAISE(OE_FAILURE);
+                OE_RAISE_MSG(OE_FAILURE, "errcode=0x%x", errcode);
         }
 
         /* Unpack quote */

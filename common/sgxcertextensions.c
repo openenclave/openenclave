@@ -380,8 +380,6 @@ static oe_result_t _read_boolean_extension(
     if (data_length != 1)
         OE_RAISE(OE_FAILURE);
 
-    OE_TRACE_INFO("%s = %d\n", tag, *value);
-
     *value = *data;
     result = OE_OK;
 done:

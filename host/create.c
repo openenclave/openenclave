@@ -168,7 +168,8 @@ static oe_result_t _add_control_pages(
     /* Save the address of new TCS page into enclave object */
     {
         if (enclave->num_bindings == OE_SGX_MAX_TCS)
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE_MSG(
+                OE_FAILURE, "OE_SGX_MAX_TCS (%d) hit\n", OE_SGX_MAX_TCS);
 
         enclave->bindings[enclave->num_bindings++].tcs = enclave_addr + *vaddr;
     }
@@ -383,7 +384,6 @@ static oe_result_t _build_ecall_data(
     result = OE_OK;
 
 done:
-
     return result;
 }
 
@@ -496,6 +496,9 @@ oe_result_t oe_sgx_validate_enclave_properties(
     {
         if (field_name)
             *field_name = "config.attributes";
+        OE_TRACE_ERROR(
+            "oe_sgx_is_valid_attributes failed: attributes = %lx\n",
+            properties->config.attributes);
         result = OE_FAILURE;
         goto done;
     }
@@ -505,6 +508,9 @@ oe_result_t oe_sgx_validate_enclave_properties(
     {
         if (field_name)
             *field_name = "header.size_settings.num_heap_pages";
+        OE_TRACE_ERROR(
+            "oe_sgx_is_valid_num_heap_pages failed: num_heap_pages = %lx\n",
+            properties->header.size_settings.num_heap_pages);
         result = OE_FAILURE;
         goto done;
     }
@@ -514,6 +520,10 @@ oe_result_t oe_sgx_validate_enclave_properties(
     {
         if (field_name)
             *field_name = "header.size_settings.num_stack_pages";
+        OE_TRACE_ERROR(
+            "oe_sgx_is_valid_num_stack_pages failed: "
+            "num_heap_pnum_stack_pagesages = %lx\n",
+            properties->header.size_settings.num_stack_pages);
         result = OE_FAILURE;
         goto done;
     }
@@ -522,6 +532,9 @@ oe_result_t oe_sgx_validate_enclave_properties(
     {
         if (field_name)
             *field_name = "header.size_settings.num_tcs";
+        OE_TRACE_ERROR(
+            "oe_sgx_is_valid_num_tcs failed: num_tcs = %lx\n",
+            properties->header.size_settings.num_tcs);
         result = OE_FAILURE;
         goto done;
     }
@@ -530,6 +543,9 @@ oe_result_t oe_sgx_validate_enclave_properties(
     {
         if (field_name)
             *field_name = "config.product_id";
+        OE_TRACE_ERROR(
+            "oe_sgx_is_valid_product_id failed: num_tcs = %x\n",
+            properties->config.product_id);
         result = OE_FAILURE;
         goto done;
     }
@@ -538,6 +554,9 @@ oe_result_t oe_sgx_validate_enclave_properties(
     {
         if (field_name)
             *field_name = "config.security_version";
+        OE_TRACE_ERROR(
+            "oe_sgx_is_valid_security_version failed: security_version = %x\n",
+            properties->config.product_id);
         result = OE_FAILURE;
         goto done;
     }
@@ -620,7 +639,12 @@ oe_result_t oe_sgx_build_enclave(
         if (enclave->debug)
         {
             /* Attempted to downgrade to debug mode */
-            OE_RAISE(OE_DEBUG_DOWNGRADE);
+            OE_RAISE_MSG(
+                OE_DEBUG_DOWNGRADE,
+                "Enclave image was signed without debug flag but is being "
+                "loaded with OE_ENCLAVE_FLAG_DEBUG set in oe_create_enclave "
+                "call\n",
+                NULL);
         }
     }
 
@@ -761,7 +785,7 @@ oe_result_t oe_create_enclave(
                             upon creation */
                   0)))   /* No name */
         {
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE_MSG(OE_FAILURE, "CreateEvent failed", NULL);
         }
     }
 
@@ -780,7 +804,6 @@ oe_result_t oe_create_enclave(
     {
         OE_RAISE(OE_FAILURE);
     }
-
 #if defined(__linux__)
 
     /* Notify GDB that a new enclave is created */
@@ -879,6 +902,5 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
     free(enclave);
 
 done:
-
     return result;
 }

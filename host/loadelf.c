@@ -84,11 +84,11 @@ static oe_result_t _oe_load_elf_image(
 
     /* Fail if not Intel X86 64-bit */
     if (eh->e_machine != EM_X86_64)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE_MSG(OE_FAILURE, "elf image is not Intel X86 64-bit", NULL);
 
     /* Fail if image is relocatable */
     if (eh->e_type == ET_REL)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE_MSG(OE_FAILURE, "elf image is relocatable", NULL);
 
     /* Save entry point address */
     image->entry_rva = eh->e_entry;
@@ -177,7 +177,7 @@ static oe_result_t _oe_load_elf_image(
          * */
         if (!has_build_id)
         {
-            OE_TRACE_INFO("loadelf: enclave image does not have build-id.\n");
+            OE_TRACE_ERROR("loadelf: enclave image does not have build-id.\n");
         }
     }
 
@@ -777,6 +777,9 @@ static int _visit_sym(const elf64_sym_t* sym, void* data_)
     rc = 0;
 
 done:
+    if (rc != 0)
+        OE_TRACE_ERROR("rc=0x%x sym=0x%x\n", rc, sym);
+
     return rc;
 }
 

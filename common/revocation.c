@@ -242,9 +242,8 @@ oe_result_t oe_enforce_revocation(
         leaf_cert, &crl_issuer_chain[0], crl_ptrs, 2, &cert_verify_error);
     if (r != OE_OK)
     {
-        OE_TRACE_INFO(
-            "oe_cer_verify failed with error = %s\n", cert_verify_error.buf);
-        OE_RAISE(r);
+        OE_RAISE_MSG(
+            r, "oe_cer_verify failed with error = %s\n", cert_verify_error.buf);
     }
 
     for (uint32_t i = 0; i < OE_COUNTOF(platform_tcb_level.sgx_tcb_comp_svn);
