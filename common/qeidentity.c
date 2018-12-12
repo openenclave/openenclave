@@ -162,13 +162,13 @@ oe_result_t oe_enforce_qe_identity(sgx_report_body_t* qe_report_body)
          parsed_info.attributes_flags_mask) != parsed_info.attributes.flags)
     {
         OE_TRACE_INFO(
-            "qe_report_body->attributes.flags = %x\n",
+            "qe_report_body->attributes.flags = %lx\n",
             qe_report_body->attributes.flags);
         OE_TRACE_INFO(
-            "parsed_info.attributes_flags_mask = %x\n",
+            "parsed_info.attributes_flags_mask = %lx\n",
             parsed_info.attributes_flags_mask);
         OE_TRACE_INFO(
-            "parsed_info.attributes.flags = %x\n",
+            "parsed_info.attributes.flags = %lx\n",
             parsed_info.attributes.flags);
         OE_RAISE(OE_VERIFY_FAILED);
     }
@@ -178,13 +178,13 @@ oe_result_t oe_enforce_qe_identity(sgx_report_body_t* qe_report_body)
         parsed_info.attributes.xfrm)
     {
         OE_TRACE_INFO(
-            "qe_report_body->attributes.xfrm = %x\n",
+            "qe_report_body->attributes.xfrm = %lx\n",
             qe_report_body->attributes.xfrm);
         OE_TRACE_INFO(
-            "parsed_info.attributes_xfrm_mask = %x\n",
+            "parsed_info.attributes_xfrm_mask = %lx\n",
             parsed_info.attributes_xfrm_mask);
         OE_TRACE_INFO(
-            "parsed_info.attributes.xfrm = %x\n", parsed_info.attributes.xfrm);
+            "parsed_info.attributes.xfrm = %lx\n", parsed_info.attributes.xfrm);
         OE_RAISE(OE_VERIFY_FAILED);
     }
 

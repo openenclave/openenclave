@@ -20,10 +20,10 @@ target_compile_options(oe_ptrace PRIVATE
     -Wall -Werror -Wno-attributes -Wmissing-prototypes
     -m64
     )
-target_compile_definitions(oe_ptrace PRIVATE -DOE_BUILD_UNTRUSTED)
+target_compile_definitions(oe_ptrace PRIVATE -DOE_BUILD_UNTRUSTED -D_GNU_SOURCE)
 
-# assemble lib-archive into proper dir
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_GNU_SOURCE")
+set_property(TARGET oe_ptrace PROPERTY LIBRARY_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/debugger)
 
 # install lib-archive upon install-time
 install (TARGETS oe_ptrace LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/debugger)
+

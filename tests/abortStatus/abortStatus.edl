@@ -1,0 +1,19 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+        public int regular_abort();
+
+        public int generate_unhandled_hardware_exception();
+
+        public int test_ocall_after_abort(
+            [user_check] void* thread_ready_count,
+            [user_check] void* is_enclave_crashed);
+
+        public int normal_ecall();
+    };
+    untrusted {
+        void foobar();
+    };
+};

@@ -1,3 +1,5 @@
+../../3rdparty/libcxx/libcxx/test/libcxx/containers/unord/next_pow2.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/utilities/template.bitset/bitset.members/count.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/depr/depr.c.headers/complex.h.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/input.output/file.streams/c.files/version_ccstdio.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/input.output/file.streams/fstreams/version.pass.cpp

@@ -153,9 +153,16 @@ def enable_oeenclave_debug(oe_enclave_addr, enclave_path):
     # Check if it's SGX debug mode enclave.
     flags_blob = read_from_memory(oe_enclave_addr + OE_ENCLAVE_FLAGS_OFFSET, OE_ENCLAVE_FLAGS_LENGTH)
     flags_tuple = struct.unpack(OE_ENCLAVE_FLAGS_FORMAT, flags_blob)
-    # Debug == 1 and simulation == 0
-    if flags_tuple[0] == 0 or flags_tuple[1] != 0:
+
+    # Check if debugging is enabled.
+    if flags_tuple[0] == 0:
+        print ("oe-gdb: Debugging not enabled for enclave %s" % enclave_path)
         return False
+
+    # Check if the enclave is loaded in simulation mode.
+    if flags_tuple[1] != 0:
+        print ("oe-gdb: Enclave %s loaded in simulation mode" % enclave_path)
+
     # Load symbol.
     if load_enclave_symbol(enclave_path, enclave_tuple[OE_ENCLAVE_ADDR_FIELD]) != 1:
         return False
@@ -168,7 +175,7 @@ def enable_oeenclave_debug(oe_enclave_addr, enclave_path):
         set_tcs_debug_flag(thread_binding_tuple[0])
         # Iterate the array
         thread_binding_addr = thread_binding_addr + THREAD_BINDING_SIZE
-        thread_binding_blob = read_from_memory(thread_binding_addr, THREAD_BINDING_HEADER_LENGTH);
+        thread_binding_blob = read_from_memory(thread_binding_addr, THREAD_BINDING_HEADER_LENGTH)
         thread_binding_tuple = struct.unpack(THREAD_BINDING_HEADER_FORMAT, thread_binding_blob)
     return True
 
@@ -187,7 +194,7 @@ def update_untrusted_ocall_frame(frame_pointer, ocallcontext_tuple):
 
 class EnclaveCreationBreakpoint(gdb.Breakpoint):
     def __init__(self):
-        gdb.Breakpoint.__init__ (self, spec="_oe_notify_gdb_enclave_creation", internal=1)
+        gdb.Breakpoint.__init__ (self, spec="oe_notify_gdb_enclave_creation", internal=1)
 
     def stop(self):
         # Get oe_enclave_t.
@@ -205,7 +212,7 @@ class EnclaveCreationBreakpoint(gdb.Breakpoint):
 
 class EnclaveTerminationBreakpoint(gdb.Breakpoint):
     def __init__(self):
-        gdb.Breakpoint.__init__ (self, spec="_oe_notify_gdb_enclave_termination", internal=1)
+        gdb.Breakpoint.__init__ (self, spec="oe_notify_gdb_enclave_termination", internal=1)
 
     def stop(self):
         # Get oe_enclave_t.
@@ -224,7 +231,7 @@ class EnclaveTerminationBreakpoint(gdb.Breakpoint):
 
 class OCallStartBreakpoint(gdb.Breakpoint):
     def __init__(self):
-        gdb.Breakpoint.__init__ (self, spec="_oe_notify_ocall_start", internal=1)
+        gdb.Breakpoint.__init__ (self, spec="oe_notify_ocall_start", internal=1)
 
     def stop(self):
         # Get untrusted stack frame pointer and corresponding TCS.
@@ -303,7 +310,7 @@ def oe_debugger_init():
     bps = gdb.breakpoints()
     if bps != None:
         for bp in bps:
-            if bp.location == "_oe_notify_gdb_enclave_creation" and bp.is_valid():
+            if bp.location == "oe_notify_gdb_enclave_creation" and bp.is_valid():
                 return
 
     # Cleanup and set breakpoints.

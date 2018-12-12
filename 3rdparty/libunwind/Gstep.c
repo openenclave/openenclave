@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <libunwind.h>
 #include "unwind_i.h"
 #include <openenclave/enclave.h>
 

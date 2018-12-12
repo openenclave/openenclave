@@ -16,144 +16,41 @@
 #include <stdlib.h>
 #include <string.h>
 #include "hash.h"
+#include "readfile.h"
 #include "tests.h"
 
+/* _CERT use as a ec_cert_with_ext.pem
+ * _SGX_CERT use as a ec_cert_crl_distribution.pem
+ * _CERT_WITHOUT_EXTENSIONS use as a Leafec.crt.pem
+ * _CHAIN use as a Certificate chain organized from leaf-to-root
+ * _PRIVATE_KEY use as a Rootec.key.pem
+ * _PUBLIC_KEY use as a Rootec.public.key
+ * _SIGNATURE use as a test_ec_signature
+ * private_key_pem use as a Rootec.key.pem
+ * public_key_pem use as a Rootec.public.key
+ */
+
 /* Certificate with an EC key */
-static const char _CERT[] =
-    "-----BEGIN CERTIFICATE-----\n"
-    "MIIEejCCBB+gAwIBAgIUTGfXttY4C5zE0xHxH007UM4Y3kgwCgYIKoZIzj0EAwIw\n"
-    "cTEjMCEGA1UEAwwaSW50ZWwgU0dYIFBDSyBQcm9jZXNzb3IgQ0ExGjAYBgNVBAoM\n"
-    "EUludGVsIENvcnBvcmF0aW9uMRQwEgYDVQQHDAtTYW50YSBDbGFyYTELMAkGA1UE\n"
-    "CAwCQ0ExCzAJBgNVBAYTAlVTMB4XDTE4MDUzMDExMzMwNloXDTI1MDUzMDExMzMw\n"
-    "NlowcDEiMCAGA1UEAwwZSW50ZWwgU0dYIFBDSyBDZXJ0aWZpY2F0ZTEaMBgGA1UE\n"
-    "CgwRSW50ZWwgQ29ycG9yYXRpb24xFDASBgNVBAcMC1NhbnRhIENsYXJhMQswCQYD\n"
-    "VQQIDAJDQTELMAkGA1UEBhMCVVMwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAAQU\n"
-    "3aaljg61+9EgoyaGXwB/ZIpqG13NZ1a22vUai97XhJ8jmUt3s+AFDo6qNOp25gRK\n"
-    "Y4IBDTuCa/+/Ig/T9Kxjo4IClDCCApAwHwYDVR0jBBgwFoAU5btSj4D54zOuGaz6\n"
-    "Y0Z4EfNhu6QwWAYDVR0fBFEwTzBNoEugSYZHaHR0cHM6Ly9jZXJ0aWZpY2F0ZXMu\n"
-    "dHJ1c3RlZHNlcnZpY2VzLmludGVsLmNvbS9JbnRlbFNHWFBDS1Byb2Nlc3Nvci5j\n"
-    "cmwwHQYDVR0OBBYEFM4p6V7/4ZeJ5G1IO7Hy3sY7pOUfMA4GA1UdDwEB/wQEAwIG\n"
-    "wDAMBgNVHRMBAf8EAjAAMIIB1AYJKoZIhvhNAQ0BBIIBxTCCAcEwHgYKKoZIhvhN\n"
-    "AQ0BAQQQaciN4lbIWCU3XnuF4BDJmjCCAWQGCiqGSIb4TQENAQIwggFUMBAGCyqG\n"
-    "SIb4TQENAQIBAgEEMBAGCyqGSIb4TQENAQICAgEEMBAGCyqGSIb4TQENAQIDAgEC\n"
-    "MBAGCyqGSIb4TQENAQIEAgEEMBAGCyqGSIb4TQENAQIFAgEBMBEGCyqGSIb4TQEN\n"
-    "AQIGAgIAgDAQBgsqhkiG+E0BDQECBwIBADAQBgsqhkiG+E0BDQECCAIBADAQBgsq\n"
-    "hkiG+E0BDQECCQIBADAQBgsqhkiG+E0BDQECCgIBADAQBgsqhkiG+E0BDQECCwIB\n"
-    "ADAQBgsqhkiG+E0BDQECDAIBADAQBgsqhkiG+E0BDQECDQIBADAQBgsqhkiG+E0B\n"
-    "DQECDgIBADAQBgsqhkiG+E0BDQECDwIBADAQBgsqhkiG+E0BDQECEAIBADAQBgsq\n"
-    "hkiG+E0BDQECEQIBBTAfBgsqhkiG+E0BDQECEgQQBAQCBAGAAAAAAAAAAAAAADAQ\n"
-    "BgoqhkiG+E0BDQEDBAIAADAUBgoqhkiG+E0BDQEEBAYAkG6hAAAwDwYKKoZIhvhN\n"
-    "AQ0BBQoBADAKBggqhkjOPQQDAgNJADBGAiEAotlBtfttGxWyJvPbn0T8AWb+ufVW\n"
-    "o3vzHFohuwnCQLsCIQCwpr+07Uc1I7XQx8R3gKfxy+KPxQvacmp/s/0NQjEDMA==\n"
-    "-----END CERTIFICATE-----\n";
+static char _CERT[max_cert_size];
+static char _SGX_CERT[max_cert_size];
 
 /* A certificate without any extensions */
-static const char _CERT_WITHOUT_EXTENSIONS[] =
-    "-----BEGIN CERTIFICATE-----\n"
-    "MIIDMzCCAhsCAhABMA0GCSqGSIb3DQEBCwUAMGMxGjAYBgNVBAMMEVRlc3QgSW50\n"
-    "ZXJtZWRpYXRlMQ4wDAYDVQQIDAVUZXhhczELMAkGA1UEBhMCVVMxEjAQBgNVBAoM\n"
-    "CU1pY3Jvc29mdDEUMBIGA1UECwwLT3BlbkVuY2xhdmUwHhcNMTgwMjEzMTc1MjUz\n"
-    "WhcNMTkwMjEzMTc1MjUzWjBbMRIwEAYDVQQDDAlUZXN0IExlYWYxDjAMBgNVBAgM\n"
-    "BVRleGFzMQswCQYDVQQGEwJVUzESMBAGA1UECgwJTWljcm9zb2Z0MRQwEgYDVQQL\n"
-    "DAtPcGVuRW5jbGF2ZTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAOjL\n"
-    "A0tUP/Sw+L9KowKL94PJe2Bk9u0YeeRa0z1PyIoLVE3KCeOLQueo7gQwah0s/ZA1\n"
-    "53lggkyt3VjMOUC5FBS5hy79VcoInrrS9DG8PtZBk3AobDcUBNipWIJ5lofijppi\n"
-    "uRFfr4HtMN9TYJhfWnau7puep5X/HeW0k3/Hox8+R6Gdu74QkTILVrDh6EcXzLUv\n"
-    "XXFu0bi/pDhoBeW+HGxK8ot+wjKt/NjnYc3KlrNQVDzBDEpXx5enWFbow37O6Rab\n"
-    "+iHCkvOYvJe1tgJTpI65Qi688Xc3/NFzZ3lA3PET+xKjjzBS1wHrumCu9L3ugJJ3\n"
-    "ZVHwHlDQ9u9qTRHlGYcCAwEAATANBgkqhkiG9w0BAQsFAAOCAQEAlP9O97ydoazt\n"
-    "w4oGluwo3Wef9O2Nx6OhNqY+lrCx/KkdBHVqGLaveo6UDlkRQLydyx55ekrMdatG\n"
-    "UyzFm6JTAh29R7ocTWdERmNLQNR1yQFCr0JJ1yPHucikY7ubD0iIxlAliPKPsH/S\n"
-    "t4pff8GRRrv5+jCON6zT2lX+ZVOCwyolu5oZWFI6iWy6JldYdaHhmiy3gP/F2abr\n"
-    "NASwM79RRO+JGskwgswboXp8Tg83jzdbSe6DL6LfK0UgpeEr3QtNhDMkw7KY1oXs\n"
-    "7WxpjlnJCyCkAW0c5+Hh2WgZLwYXcfRXer6WuugAz6WPayLDsHf0ZqiuiVjkbS1l\n"
-    "ln6O0i8HeQ==\n"
-    "-----END CERTIFICATE-----\n";
+static char _CERT_WITHOUT_EXTENSIONS[max_cert_size];
 
 /* Certificate chain organized from leaf-to-root */
-static const char _CHAIN[] =
-    "-----BEGIN CERTIFICATE-----\n"
-    "MIIEeTCCBB+gAwIBAgIUCLZOGlkHY7MDrT4wyodHxMlDpSowCgYIKoZIzj0EAwIw\n"
-    "cTEjMCEGA1UEAwwaSW50ZWwgU0dYIFBDSyBQcm9jZXNzb3IgQ0ExGjAYBgNVBAoM\n"
-    "EUludGVsIENvcnBvcmF0aW9uMRQwEgYDVQQHDAtTYW50YSBDbGFyYTELMAkGA1UE\n"
-    "CAwCQ0ExCzAJBgNVBAYTAlVTMB4XDTE4MDUzMDExMzMwNVoXDTI1MDUzMDExMzMw\n"
-    "NVowcDEiMCAGA1UEAwwZSW50ZWwgU0dYIFBDSyBDZXJ0aWZpY2F0ZTEaMBgGA1UE\n"
-    "CgwRSW50ZWwgQ29ycG9yYXRpb24xFDASBgNVBAcMC1NhbnRhIENsYXJhMQswCQYD\n"
-    "VQQIDAJDQTELMAkGA1UEBhMCVVMwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAATW\n"
-    "xmGk363GUJ+JrxRwGC9lRLyIarJntKUP5lqgQjFSj6u+zK8w+JXLhSmOctWqG29T\n"
-    "3eItOqjX9zeLbIJ1bhbwo4IClDCCApAwHwYDVR0jBBgwFoAU5btSj4D54zOuGaz6\n"
-    "Y0Z4EfNhu6QwWAYDVR0fBFEwTzBNoEugSYZHaHR0cHM6Ly9jZXJ0aWZpY2F0ZXMu\n"
-    "dHJ1c3RlZHNlcnZpY2VzLmludGVsLmNvbS9JbnRlbFNHWFBDS1Byb2Nlc3Nvci5j\n"
-    "cmwwHQYDVR0OBBYEFKGnZhYL+u0LdXb3Q4gVmfhWgirlMA4GA1UdDwEB/wQEAwIG\n"
-    "wDAMBgNVHRMBAf8EAjAAMIIB1AYJKoZIhvhNAQ0BBIIBxTCCAcEwHgYKKoZIhvhN\n"
-    "AQ0BAQQQoOhb4fIWDhGRy2yRyuyGgzCCAWQGCiqGSIb4TQENAQIwggFUMBAGCyqG\n"
-    "SIb4TQENAQIBAgEEMBAGCyqGSIb4TQENAQICAgEEMBAGCyqGSIb4TQENAQIDAgEC\n"
-    "MBAGCyqGSIb4TQENAQIEAgEEMBAGCyqGSIb4TQENAQIFAgEBMBEGCyqGSIb4TQEN\n"
-    "AQIGAgIAgDAQBgsqhkiG+E0BDQECBwIBADAQBgsqhkiG+E0BDQECCAIBADAQBgsq\n"
-    "hkiG+E0BDQECCQIBADAQBgsqhkiG+E0BDQECCgIBADAQBgsqhkiG+E0BDQECCwIB\n"
-    "ADAQBgsqhkiG+E0BDQECDAIBADAQBgsqhkiG+E0BDQECDQIBADAQBgsqhkiG+E0B\n"
-    "DQECDgIBADAQBgsqhkiG+E0BDQECDwIBADAQBgsqhkiG+E0BDQECEAIBADAQBgsq\n"
-    "hkiG+E0BDQECEQIBBTAfBgsqhkiG+E0BDQECEgQQBAQCBAGAAAAAAAAAAAAAADAQ\n"
-    "BgoqhkiG+E0BDQEDBAIAADAUBgoqhkiG+E0BDQEEBAYAkG6hAAAwDwYKKoZIhvhN\n"
-    "AQ0BBQoBADAKBggqhkjOPQQDAgNIADBFAiEA9im3EzMQDdJrWbQoML/pTFuhjUuk\n"
-    "8yainoRd1tJ/tgUCIGgo6SHqeEw0h2lRw4sZGWjEHLosoPIme3t+Gw9QosI5\n"
-    "-----END CERTIFICATE-----\n"
-    "-----BEGIN CERTIFICATE-----\n"
-    "MIICmDCCAj6gAwIBAgIVAOW7Uo+A+eMzrhms+mNGeBHzYbukMAoGCCqGSM49BAMC\n"
-    "MGgxGjAYBgNVBAMMEUludGVsIFNHWCBSb290IENBMRowGAYDVQQKDBFJbnRlbCBD\n"
-    "b3Jwb3JhdGlvbjEUMBIGA1UEBwwLU2FudGEgQ2xhcmExCzAJBgNVBAgMAkNBMQsw\n"
-    "CQYDVQQGEwJVUzAeFw0xODA1MjUxMzQzNDFaFw0zMzA1MjUxMzQzNDFaMHExIzAh\n"
-    "BgNVBAMMGkludGVsIFNHWCBQQ0sgUHJvY2Vzc29yIENBMRowGAYDVQQKDBFJbnRl\n"
-    "bCBDb3Jwb3JhdGlvbjEUMBIGA1UEBwwLU2FudGEgQ2xhcmExCzAJBgNVBAgMAkNB\n"
-    "MQswCQYDVQQGEwJVUzBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABMB0yW2PyWpf\n"
-    "6odNPzGnE503t30mxdRm6zKRy86UoBpGMSHUEat/8/V3bIN+QYR21tpLUtzuTx2m\n"
-    "HSLi7MCO6byjgbswgbgwHwYDVR0jBBgwFoAUImUM1lqdNInzg7SVUr9QGzknBqww\n"
-    "UgYDVR0fBEswSTBHoEWgQ4ZBaHR0cHM6Ly9jZXJ0aWZpY2F0ZXMudHJ1c3RlZHNl\n"
-    "cnZpY2VzLmludGVsLmNvbS9JbnRlbFNHWFJvb3RDQS5jcmwwHQYDVR0OBBYEFOW7\n"
-    "Uo+A+eMzrhms+mNGeBHzYbukMA4GA1UdDwEB/wQEAwIBBjASBgNVHRMBAf8ECDAG\n"
-    "AQH/AgEAMAoGCCqGSM49BAMCA0gAMEUCIQDkybHzpTP7oBIm3iBwO28eAlsyJuQn\n"
-    "ayD1LxMurMKCuQIgQkgfZl8ElCe+H2nzmG/pKlcox3jHyJwj8w8CH9w7pIE=\n"
-    "-----END CERTIFICATE-----\n"
-    "-----BEGIN CERTIFICATE-----\n"
-    "MIICjzCCAjSgAwIBAgIUImUM1lqdNInzg7SVUr9QGzknBqwwCgYIKoZIzj0EAwIw\n"
-    "aDEaMBgGA1UEAwwRSW50ZWwgU0dYIFJvb3QgQ0ExGjAYBgNVBAoMEUludGVsIENv\n"
-    "cnBvcmF0aW9uMRQwEgYDVQQHDAtTYW50YSBDbGFyYTELMAkGA1UECAwCQ0ExCzAJ\n"
-    "BgNVBAYTAlVTMB4XDTE4MDUyMTEwNDExMVoXDTMzMDUyMTEwNDExMFowaDEaMBgG\n"
-    "A1UEAwwRSW50ZWwgU0dYIFJvb3QgQ0ExGjAYBgNVBAoMEUludGVsIENvcnBvcmF0\n"
-    "aW9uMRQwEgYDVQQHDAtTYW50YSBDbGFyYTELMAkGA1UECAwCQ0ExCzAJBgNVBAYT\n"
-    "AlVTMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEC6nEwMDIYZOj/iPWsCzaEKi7\n"
-    "1OiOSLRFhWGjbnBVJfVnkY4u3IjkDYYL0MxO4mqsyYjlBalTVYxFP2sJBK5zlKOB\n"
-    "uzCBuDAfBgNVHSMEGDAWgBQiZQzWWp00ifODtJVSv1AbOScGrDBSBgNVHR8ESzBJ\n"
-    "MEegRaBDhkFodHRwczovL2NlcnRpZmljYXRlcy50cnVzdGVkc2VydmljZXMuaW50\n"
-    "ZWwuY29tL0ludGVsU0dYUm9vdENBLmNybDAdBgNVHQ4EFgQUImUM1lqdNInzg7SV\n"
-    "Ur9QGzknBqwwDgYDVR0PAQH/BAQDAgEGMBIGA1UdEwEB/wQIMAYBAf8CAQAwCgYI\n"
-    "KoZIzj0EAwIDSQAwRgIhAIpQ/KlO1XE4hH8cw5Ol/E0yzs8PToJe9Pclt+bhfLUg\n"
-    "AiEAss0qf7FlMmAMet+gbpLD97ldYy/wqjjmwN7yHRVr2AM=\n"
-    "-----END CERTIFICATE-----\n";
+static char _CHAIN[max_cert_chains_size];
+static char _PRIVATE_KEY[max_key_size];
+static char _PUBLIC_KEY[max_key_size];
+static uint8_t _SIGNATURE[max_sign_size];
+uint8_t private_key_pem[max_key_size];
+uint8_t public_key_pem[max_key_size];
+uint8_t x_data[max_coordinates_size];
+uint8_t y_data[max_coordinates_size];
 
-static const char _PRIVATE_KEY[] =
-    "-----BEGIN EC PRIVATE KEY-----\n"
-    "MHQCAQEEIKVVUe1F/MxIp6jmrZ24/8iI6WTj1QDamxZLHQ8ZbL4woAcGBSuBBAAK\n"
-    "oUQDQgAEmAxYbaM1rpk+d1KX5pHn0GuuaL5wgEA8xoLzHqVcX1dCOyN1rnZP9axj\n"
-    "h8t36IjqPhnxNvCPruzBq/KRbbpIZA==\n"
-    "-----END EC PRIVATE KEY-----\n";
-
-static const char _PUBLIC_KEY[] =
-    "-----BEGIN PUBLIC KEY-----\n"
-    "MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEmAxYbaM1rpk+d1KX5pHn0GuuaL5wgEA8\n"
-    "xoLzHqVcX1dCOyN1rnZP9axjh8t36IjqPhnxNvCPruzBq/KRbbpIZA==\n"
-    "-----END PUBLIC KEY-----\n";
-
-static const uint8_t _SIGNATURE[] = {
-    0x30, 0x45, 0x02, 0x21, 0x00, 0x89, 0x3a, 0xf7, 0xe5, 0xf2, 0x21, 0xe1,
-    0xf9, 0xdc, 0xe0, 0x92, 0x82, 0xe6, 0xe4, 0xec, 0xcc, 0x68, 0x6d, 0x00,
-    0x5d, 0x0e, 0x9c, 0xd5, 0x08, 0x48, 0x8b, 0x09, 0x5f, 0x20, 0xee, 0xbe,
-    0x95, 0x02, 0x20, 0x6e, 0xaa, 0xd2, 0x15, 0xf9, 0xf3, 0xaa, 0xc2, 0x19,
-    0xc5, 0x4c, 0x44, 0x0b, 0xa7, 0x2c, 0x3e, 0xe9, 0xc3, 0xb6, 0xf3, 0xb4,
-    0x04, 0x51, 0xc6, 0xe9, 0xf1, 0x69, 0x46, 0xb0, 0x3e, 0x22, 0xe6,
-};
-
-static size_t _SIGNATURE_SIZE = sizeof(_SIGNATURE);
+size_t private_key_size;
+size_t public_key_size;
+size_t sign_size;
+size_t x_size, y_size;
 
 // Test EC signing operation over an ASCII alphabet string. Note that two
 // signatures over the same data produce different hex sequences, although
@@ -170,7 +67,7 @@ static void _test_sign_and_verify()
         oe_ec_private_key_t key = {0};
 
         r = oe_ec_private_key_read_pem(
-            &key, (const uint8_t*)_PRIVATE_KEY, sizeof(_PRIVATE_KEY));
+            &key, (const uint8_t*)_PRIVATE_KEY, strlen(_PRIVATE_KEY) + 1);
         OE_TEST(r == OE_OK);
 
         r = oe_ec_private_key_sign(
@@ -203,7 +100,7 @@ static void _test_sign_and_verify()
         oe_ec_public_key_t key = {0};
 
         r = oe_ec_public_key_read_pem(
-            &key, (const uint8_t*)_PUBLIC_KEY, sizeof(_PUBLIC_KEY));
+            &key, (const uint8_t*)_PUBLIC_KEY, strlen(_PUBLIC_KEY) + 1);
         OE_TEST(r == OE_OK);
 
         r = oe_ec_public_key_verify(
@@ -221,7 +118,7 @@ static void _test_sign_and_verify()
             &ALPHABET_HASH,
             sizeof(ALPHABET_HASH),
             _SIGNATURE,
-            _SIGNATURE_SIZE);
+            sign_size);
         OE_TEST(r == OE_OK);
 
         oe_ec_public_key_free(&key);
@@ -379,7 +276,7 @@ static void _test_write_public()
     size_t pem_size = 0;
 
     r = oe_ec_public_key_read_pem(
-        &key, (const uint8_t*)_PUBLIC_KEY, sizeof(_PUBLIC_KEY));
+        &key, (const uint8_t*)_PUBLIC_KEY, strlen(_PUBLIC_KEY) + 1);
     OE_TEST(r == OE_OK);
 
     {
@@ -392,7 +289,7 @@ static void _test_write_public()
         OE_TEST(r == OE_OK);
     }
 
-    OE_TEST(sizeof(_PUBLIC_KEY) == pem_size);
+    OE_TEST((strlen(_PUBLIC_KEY) + 1) == pem_size);
     OE_TEST(memcmp(_PUBLIC_KEY, pem_data, pem_size) == 0);
 
     free(pem_data);
@@ -412,7 +309,7 @@ static void _test_cert_methods()
         oe_cert_t cert = {0};
         oe_ec_public_key_t key = {0};
 
-        r = oe_cert_read_pem(&cert, _CERT, sizeof(_CERT));
+        r = oe_cert_read_pem(&cert, _CERT, strlen(_CERT) + 1);
         OE_TEST(r == OE_OK);
 
         r = oe_cert_get_ec_public_key(&cert, &key);
@@ -434,7 +331,7 @@ static void _test_cert_methods()
         oe_cert_chain_t chain;
 
         /* Load the chain from PEM format */
-        r = oe_cert_chain_read_pem(&chain, _CHAIN, sizeof(_CHAIN));
+        r = oe_cert_chain_read_pem(&chain, _CHAIN, strlen(_CHAIN) + 1);
         OE_TEST(r == OE_OK);
 
         /* Get the length of the chain */
@@ -470,7 +367,7 @@ static void _test_cert_methods()
         oe_cert_t leaf;
 
         /* Load the chain from PEM format */
-        r = oe_cert_chain_read_pem(&chain, _CHAIN, sizeof(_CHAIN));
+        r = oe_cert_chain_read_pem(&chain, _CHAIN, strlen(_CHAIN) + 1);
         OE_TEST(r == OE_OK);
 
         /* Get the root certificate */
@@ -525,108 +422,50 @@ static void _test_key_from_bytes()
     oe_ec_type_t ec_type = OE_EC_TYPE_SECP256R1;
 
     /* Test generating a key and then re-creating it from its bytes */
-    {
-        const uint8_t private_key_pem[] = {
-            0x2D, 0x2D, 0x2D, 0x2D, 0x2D, 0x42, 0x45, 0x47, 0x49, 0x4E, 0x20,
-            0x45, 0x43, 0x20, 0x50, 0x52, 0x49, 0x56, 0x41, 0x54, 0x45, 0x20,
-            0x4B, 0x45, 0x59, 0x2D, 0x2D, 0x2D, 0x2D, 0x2D, 0x0A, 0x4D, 0x48,
-            0x63, 0x43, 0x41, 0x51, 0x45, 0x45, 0x49, 0x4C, 0x72, 0x33, 0x33,
-            0x4A, 0x45, 0x4F, 0x6E, 0x45, 0x33, 0x30, 0x6B, 0x55, 0x4D, 0x7A,
-            0x32, 0x55, 0x6E, 0x48, 0x4E, 0x37, 0x4D, 0x75, 0x76, 0x38, 0x53,
-            0x36, 0x75, 0x55, 0x58, 0x50, 0x4B, 0x4F, 0x30, 0x75, 0x2F, 0x4E,
-            0x6D, 0x4D, 0x75, 0x79, 0x65, 0x2F, 0x6F, 0x41, 0x6F, 0x47, 0x43,
-            0x43, 0x71, 0x47, 0x53, 0x4D, 0x34, 0x39, 0x0A, 0x41, 0x77, 0x45,
-            0x48, 0x6F, 0x55, 0x51, 0x44, 0x51, 0x67, 0x41, 0x45, 0x75, 0x62,
-            0x52, 0x48, 0x70, 0x32, 0x44, 0x4C, 0x59, 0x46, 0x58, 0x57, 0x66,
-            0x42, 0x31, 0x45, 0x46, 0x62, 0x69, 0x45, 0x52, 0x66, 0x4D, 0x41,
-            0x61, 0x56, 0x46, 0x7A, 0x75, 0x6B, 0x54, 0x59, 0x6C, 0x5A, 0x2B,
-            0x43, 0x44, 0x55, 0x74, 0x4A, 0x56, 0x6C, 0x6E, 0x33, 0x44, 0x63,
-            0x69, 0x6B, 0x35, 0x2F, 0x59, 0x7A, 0x0A, 0x59, 0x44, 0x77, 0x68,
-            0x56, 0x37, 0x30, 0x55, 0x68, 0x6F, 0x57, 0x6F, 0x59, 0x62, 0x7A,
-            0x38, 0x37, 0x36, 0x4D, 0x77, 0x4C, 0x5A, 0x7A, 0x4F, 0x43, 0x6F,
-            0x71, 0x5A, 0x4F, 0x56, 0x49, 0x57, 0x42, 0x41, 0x3D, 0x3D, 0x0A,
-            0x2D, 0x2D, 0x2D, 0x2D, 0x2D, 0x45, 0x4E, 0x44, 0x20, 0x45, 0x43,
-            0x20, 0x50, 0x52, 0x49, 0x56, 0x41, 0x54, 0x45, 0x20, 0x4B, 0x45,
-            0x59, 0x2D, 0x2D, 0x2D, 0x2D, 0x2D, 0x0A, 0x00,
-        };
-        const uint8_t public_key_pem[] = {
-            0x2D, 0x2D, 0x2D, 0x2D, 0x2D, 0x42, 0x45, 0x47, 0x49, 0x4E, 0x20,
-            0x50, 0x55, 0x42, 0x4C, 0x49, 0x43, 0x20, 0x4B, 0x45, 0x59, 0x2D,
-            0x2D, 0x2D, 0x2D, 0x2D, 0x0A, 0x4D, 0x46, 0x6B, 0x77, 0x45, 0x77,
-            0x59, 0x48, 0x4B, 0x6F, 0x5A, 0x49, 0x7A, 0x6A, 0x30, 0x43, 0x41,
-            0x51, 0x59, 0x49, 0x4B, 0x6F, 0x5A, 0x49, 0x7A, 0x6A, 0x30, 0x44,
-            0x41, 0x51, 0x63, 0x44, 0x51, 0x67, 0x41, 0x45, 0x75, 0x62, 0x52,
-            0x48, 0x70, 0x32, 0x44, 0x4C, 0x59, 0x46, 0x58, 0x57, 0x66, 0x42,
-            0x31, 0x45, 0x46, 0x62, 0x69, 0x45, 0x52, 0x66, 0x4D, 0x41, 0x61,
-            0x56, 0x46, 0x7A, 0x0A, 0x75, 0x6B, 0x54, 0x59, 0x6C, 0x5A, 0x2B,
-            0x43, 0x44, 0x55, 0x74, 0x4A, 0x56, 0x6C, 0x6E, 0x33, 0x44, 0x63,
-            0x69, 0x6B, 0x35, 0x2F, 0x59, 0x7A, 0x59, 0x44, 0x77, 0x68, 0x56,
-            0x37, 0x30, 0x55, 0x68, 0x6F, 0x57, 0x6F, 0x59, 0x62, 0x7A, 0x38,
-            0x37, 0x36, 0x4D, 0x77, 0x4C, 0x5A, 0x7A, 0x4F, 0x43, 0x6F, 0x71,
-            0x5A, 0x4F, 0x56, 0x49, 0x57, 0x42, 0x41, 0x3D, 0x3D, 0x0A, 0x2D,
-            0x2D, 0x2D, 0x2D, 0x2D, 0x45, 0x4E, 0x44, 0x20, 0x50, 0x55, 0x42,
-            0x4C, 0x49, 0x43, 0x20, 0x4B, 0x45, 0x59, 0x2D, 0x2D, 0x2D, 0x2D,
-            0x2D, 0x0A, 0x00,
-        };
-        const uint8_t x_data[] = {
-            0xB9, 0xB4, 0x47, 0xA7, 0x60, 0xCB, 0x60, 0x55, 0xD6, 0x7C, 0x1D,
-            0x44, 0x15, 0xB8, 0x84, 0x45, 0xF3, 0x00, 0x69, 0x51, 0x73, 0xBA,
-            0x44, 0xD8, 0x95, 0x9F, 0x82, 0x0D, 0x4B, 0x49, 0x56, 0x59,
-        };
-        const size_t x_size = sizeof(x_data);
+    oe_ec_private_key_t private_key = {0};
+    oe_ec_public_key_t public_key = {0};
+    oe_ec_public_key_t public_key2 = {0};
+    uint8_t signature[1024];
+    size_t signature_size = sizeof(signature);
 
-        const uint8_t y_data[] = {
-            0xF7, 0x0D, 0xC8, 0xA4, 0xE7, 0xF6, 0x33, 0x60, 0x3C, 0x21, 0x57,
-            0xBD, 0x14, 0x86, 0x85, 0xA8, 0x61, 0xBC, 0xFC, 0xEF, 0xA3, 0x30,
-            0x2D, 0x9C, 0xCE, 0x0A, 0x8A, 0x99, 0x39, 0x52, 0x16, 0x04,
-        };
-        const size_t y_size = sizeof(y_data);
+    /* Load private key */
+    r = oe_ec_private_key_read_pem(
+        &private_key, private_key_pem, private_key_size + 1);
+    OE_TEST(r == OE_OK);
 
-        oe_ec_private_key_t private_key = {0};
-        oe_ec_public_key_t public_key = {0};
-        oe_ec_public_key_t public_key2 = {0};
-        uint8_t signature[1024];
-        size_t signature_size = sizeof(signature);
+    /* Load public key */
+    r = oe_ec_public_key_read_pem(
+        &public_key, public_key_pem, public_key_size + 1);
+    OE_TEST(r == OE_OK);
 
-        /* Load private key */
-        r = oe_ec_private_key_read_pem(
-            &private_key, private_key_pem, sizeof(private_key_pem));
-        OE_TEST(r == OE_OK);
+    /* Create a second public key from the key bytes */
+    r = oe_ec_public_key_from_coordinates(
+        &public_key2, ec_type, x_data, x_size, y_data, y_size);
+    OE_TEST(r == OE_OK);
 
-        /* Load public key */
-        r = oe_ec_public_key_read_pem(
-            &public_key, public_key_pem, sizeof(public_key_pem));
-        OE_TEST(r == OE_OK);
+    /* Sign data with private key */
+    r = oe_ec_private_key_sign(
+        &private_key,
+        OE_HASH_TYPE_SHA256,
+        &ALPHABET_HASH,
+        sizeof(ALPHABET_HASH),
+        signature,
+        &signature_size);
+    OE_TEST(r == OE_OK);
 
-        /* Create a second public key from the key bytes */
-        r = oe_ec_public_key_from_coordinates(
-            &public_key2, ec_type, x_data, x_size, y_data, y_size);
-        OE_TEST(r == OE_OK);
+    /* Verify data with key created from bytes of original public key */
+    r = oe_ec_public_key_verify(
+        &public_key2,
+        OE_HASH_TYPE_SHA256,
+        &ALPHABET_HASH,
+        sizeof(ALPHABET_HASH),
+        signature,
+        signature_size);
+    OE_TEST(r == OE_OK);
 
-        /* Sign data with private key */
-        r = oe_ec_private_key_sign(
-            &private_key,
-            OE_HASH_TYPE_SHA256,
-            &ALPHABET_HASH,
-            sizeof(ALPHABET_HASH),
-            signature,
-            &signature_size);
-        OE_TEST(r == OE_OK);
-
-        /* Verify data with key created from bytes of original public key */
-        r = oe_ec_public_key_verify(
-            &public_key2,
-            OE_HASH_TYPE_SHA256,
-            &ALPHABET_HASH,
-            sizeof(ALPHABET_HASH),
-            signature,
-            signature_size);
-        OE_TEST(r == OE_OK);
-
-        oe_ec_private_key_free(&private_key);
-        oe_ec_public_key_free(&public_key);
-        oe_ec_public_key_free(&public_key2);
-    }
+    oe_ec_private_key_free(&private_key);
+    oe_ec_public_key_free(&public_key);
+    oe_ec_public_key_free(&public_key2);
 
     printf("=== passed %s()\n", __FUNCTION__);
 }
@@ -638,7 +477,7 @@ static void _test_cert_chain_read()
     oe_result_t r;
     oe_cert_chain_t chain;
 
-    r = oe_cert_chain_read_pem(&chain, _CHAIN, sizeof(_CHAIN));
+    r = oe_cert_chain_read_pem(&chain, _CHAIN, strlen(_CHAIN) + 1);
     OE_TEST(r == OE_OK);
 
     oe_cert_chain_free(&chain);
@@ -825,7 +664,7 @@ static void _test_cert_with_extensions()
     /* Test a certificate with extensions */
     _test_cert_extensions(
         _CERT,
-        sizeof(_CERT),
+        strlen(_CERT) + 1,
         _eccert_extensions,
         OE_COUNTOF(_eccert_extensions),
         "1.2.840.113741.1.13.1");
@@ -836,39 +675,11 @@ static void _test_cert_without_extensions()
     /* Test a certificate without extensions */
     _test_cert_extensions(
         _CERT_WITHOUT_EXTENSIONS,
-        sizeof(_CERT_WITHOUT_EXTENSIONS),
+        strlen(_CERT_WITHOUT_EXTENSIONS) + 1,
         NULL,
         0,
         "2.5.29.35");
 }
-
-static const char _SGX_CERT[] =
-    "-----BEGIN CERTIFICATE-----\n"
-    "MIIEejCCBCCgAwIBAgIVAIRhkz/I2bp4OHxNAneNMrWoyuVBMAoGCCqGSM49BAMC\n"
-    "MHExIzAhBgNVBAMMGkludGVsIFNHWCBQQ0sgUHJvY2Vzc29yIENBMRowGAYDVQQK\n"
-    "DBFJbnRlbCBDb3Jwb3JhdGlvbjEUMBIGA1UEBwwLU2FudGEgQ2xhcmExCzAJBgNV\n"
-    "BAgMAkNBMQswCQYDVQQGEwJVUzAeFw0xODA1MzAxMTMzMDVaFw0yNTA1MzAxMTMz\n"
-    "MDVaMHAxIjAgBgNVBAMMGUludGVsIFNHWCBQQ0sgQ2VydGlmaWNhdGUxGjAYBgNV\n"
-    "BAoMEUludGVsIENvcnBvcmF0aW9uMRQwEgYDVQQHDAtTYW50YSBDbGFyYTELMAkG\n"
-    "A1UECAwCQ0ExCzAJBgNVBAYTAlVTMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE\n"
-    "Ej9Bl3EbeGMpTB8k4jeXrzNXWR7lT1PcpBOX6GQx49jmsqSGGPcUxPm91wU/RlMR\n"
-    "rv5GyfrrZ908wDaXTtfezKOCApQwggKQMB8GA1UdIwQYMBaAFOW7Uo+A+eMzrhms\n"
-    "+mNGeBHzYbukMFgGA1UdHwRRME8wTaBLoEmGR2h0dHBzOi8vY2VydGlmaWNhdGVz\n"
-    "LnRydXN0ZWRzZXJ2aWNlcy5pbnRlbC5jb20vSW50ZWxTR1hQQ0tQcm9jZXNzb3Iu\n"
-    "Y3JsMB0GA1UdDgQWBBQcmM3b/dX0Stal0ynHbWpCzwvs8TAOBgNVHQ8BAf8EBAMC\n"
-    "BsAwDAYDVR0TAQH/BAIwADCCAdQGCSqGSIb4TQENAQSCAcUwggHBMB4GCiqGSIb4\n"
-    "TQENAQEEEB+MHnumvRB9hCTdNWSdzXIwggFkBgoqhkiG+E0BDQECMIIBVDAQBgsq\n"
-    "hkiG+E0BDQECAQIBBDAQBgsqhkiG+E0BDQECAgIBBDAQBgsqhkiG+E0BDQECAwIB\n"
-    "AjAQBgsqhkiG+E0BDQECBAIBBDAQBgsqhkiG+E0BDQECBQIBATARBgsqhkiG+E0B\n"
-    "DQECBgICAIAwEAYLKoZIhvhNAQ0BAgcCAQAwEAYLKoZIhvhNAQ0BAggCAQAwEAYL\n"
-    "KoZIhvhNAQ0BAgkCAQAwEAYLKoZIhvhNAQ0BAgoCAQAwEAYLKoZIhvhNAQ0BAgsC\n"
-    "AQAwEAYLKoZIhvhNAQ0BAgwCAQAwEAYLKoZIhvhNAQ0BAg0CAQAwEAYLKoZIhvhN\n"
-    "AQ0BAg4CAQAwEAYLKoZIhvhNAQ0BAg8CAQAwEAYLKoZIhvhNAQ0BAhACAQAwEAYL\n"
-    "KoZIhvhNAQ0BAhECAQUwHwYLKoZIhvhNAQ0BAhIEEAQEAgQBgAAAAAAAAAAAAAAw\n"
-    "EAYKKoZIhvhNAQ0BAwQCAAAwFAYKKoZIhvhNAQ0BBAQGAJBuoQAAMA8GCiqGSIb4\n"
-    "TQENAQUKAQAwCgYIKoZIzj0EAwIDSAAwRQIgPAfNJa59vmzOLdW5yWPo+OShrN7A\n"
-    "sdbXaGu2gpAEqy8CIQCvie4k/cstz6V5A4T4Ks6fkDn22tWDTxtV+wepBReC2g==\n"
-    "-----END CERTIFICATE-----\n";
 
 static const char _URL[] =
     "https://certificates.trustedservices.intel.com/IntelSGXPCKProcessor.crl";
@@ -883,7 +694,7 @@ static void _test_crl_distribution_points(void)
 
     printf("=== begin %s()\n", __FUNCTION__);
 
-    r = oe_cert_read_pem(&cert, _SGX_CERT, sizeof(_SGX_CERT));
+    r = oe_cert_read_pem(&cert, _SGX_CERT, strlen(_SGX_CERT) + 1);
     OE_TEST(r == OE_OK);
 
     r = oe_get_crl_distribution_points(
@@ -914,6 +725,35 @@ static void _test_crl_distribution_points(void)
 
 void TestEC()
 {
+    OE_TEST(read_cert("../data/ec_cert_with_ext.pem", _CERT) == OE_OK);
+    OE_TEST(
+        read_cert("../data/Leafec.crt.pem", _CERT_WITHOUT_EXTENSIONS) == OE_OK);
+    OE_TEST(
+        read_cert("../data/ec_cert_crl_distribution.pem", _SGX_CERT) == OE_OK);
+    OE_TEST(
+        read_chains(
+            "../data/Leafec.crt.pem",
+            "../data/Intermediateec.crt.pem",
+            "../data/Rootec.crt.pem",
+            _CHAIN) == OE_OK);
+    OE_TEST(read_key("../data/Rootec.key.pem", _PRIVATE_KEY) == OE_OK);
+    OE_TEST(read_key("../data/Rootec.public.key", _PUBLIC_KEY) == OE_OK);
+    OE_TEST(
+        read_sign("../data/test_ec_signature", _SIGNATURE, &sign_size) ==
+        OE_OK);
+    OE_TEST(
+        read_pem_key(
+            "../data/Rootec.key.pem", private_key_pem, &private_key_size) ==
+        OE_OK);
+    OE_TEST(
+        read_pem_key(
+            "../data/Rootec.public.key", public_key_pem, &public_key_size) ==
+        OE_OK);
+    OE_TEST(
+        read_coordinates(
+            "../data/coordinates.bin", x_data, y_data, &x_size, &y_size) ==
+        OE_OK);
+
     _test_cert_with_extensions();
     _test_cert_without_extensions();
     _test_crl_distribution_points();

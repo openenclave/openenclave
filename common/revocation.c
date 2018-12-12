@@ -145,12 +145,13 @@ done:
 
 static void _trace_datetime(const char* msg, const oe_datetime_t* date)
 {
-#if (OE_TRACE_LEVEL == OE_TRACE_LEVEL_INFO)
-    char str[21];
-    size_t size = sizeof(str);
-    oe_datetime_to_string(date, str, &size);
-    OE_TRACE_INFO("%s%s\n", msg, str);
-#endif
+    if (get_current_logging_level() >= OE_LOG_LEVEL_INFO)
+    {
+        char str[21];
+        size_t size = sizeof(str);
+        oe_datetime_to_string(date, str, &size);
+        OE_TRACE_INFO("%s%s\n", msg, str);
+    }
 }
 
 oe_result_t oe_enforce_revocation(
@@ -301,7 +302,7 @@ oe_result_t oe_enforce_revocation(
     result = OE_OK;
 
 done:
-    for (int32_t i = revocation_args.num_crl_urls - 1; i >= 0; --i)
+    for (int32_t i = (int32_t)revocation_args.num_crl_urls - 1; i >= 0; --i)
     {
         oe_crl_free(&crls[i]);
     }

@@ -5,7 +5,7 @@
 #include <string.h>
 #include "all_t.h"
 
-uint8_t g_enabled[3] = {true, true, true};
+uint8_t g_enabled[4] = {true, true, true, true};
 
 void configure_type(const char* type_name, type_enum_t t)
 {
@@ -29,6 +29,7 @@ void configure(uint8_t enabled[3])
 {
     configure_type("wchar_t", TYPE_WCHAR_T);
     configure_type("long", TYPE_LONG);
+    configure_type("unsigned long", TYPE_UNSIGNED_LONG);
     configure_type("long double", TYPE_LONG_DOUBLE);
     memcpy(enabled, g_enabled, sizeof(g_enabled));
 }

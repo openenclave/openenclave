@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#define OE_TRACE_LEVEL 1
-
 #include <assert.h>
 #include <errno.h>
 #include <openenclave/bits/defs.h>
@@ -64,6 +62,7 @@ static oe_result_t _oe_load_elf_image(
     size_t i;
     const elf64_ehdr_t* eh;
     size_t num_segments;
+    bool has_build_id = false;
 
     assert(image && path);
 
@@ -135,6 +134,32 @@ static oe_result_t _oe_load_elf_image(
                     image->ecall_rva = sh->sh_addr;
                     image->ecall_section_size = sh->sh_size;
                 }
+                else if (strcmp(name, ".note.gnu.build-id") == 0)
+                {
+                    has_build_id = true;
+                }
+                else if (strcmp(name, ".tdata") == 0)
+                {
+                    // These items must match program header values.
+                    image->tdata_rva = sh->sh_addr;
+                    image->tdata_size = sh->sh_size;
+                    image->tdata_align = sh->sh_addralign;
+
+                    OE_TRACE_INFO(
+                        "loadelf: tdata { rva=%lx, size=%lx, align=%ld }\n",
+                        sh->sh_addr,
+                        sh->sh_size,
+                        sh->sh_addralign);
+                }
+                else if (strcmp(name, ".tbss") == 0)
+                {
+                    image->tbss_size = sh->sh_size;
+                    image->tbss_align = sh->sh_addralign;
+                    OE_TRACE_INFO(
+                        "loadelf: tbss { size=%ld, align=%ld }\n",
+                        sh->sh_size,
+                        sh->sh_addralign);
+                }
             }
         }
 
@@ -143,6 +168,16 @@ static oe_result_t _oe_load_elf_image(
             (0 == image->oeinfo_rva))
         {
             OE_RAISE(OE_FAILURE);
+        }
+
+        /* It is now the default for linux shared libraries and executables to
+         * have the build-id note. GCC by default passes the --build-id option
+         * to linker, whereas clang does not. Build-id is also used as a key by
+         * debug symbol-servers. If no build-id is found emit a trace message.
+         * */
+        if (!has_build_id)
+        {
+            OE_TRACE_INFO("loadelf: enclave image does not have build-id.\n");
         }
     }
 
@@ -166,10 +201,6 @@ static oe_result_t _oe_load_elf_image(
 
             switch (ph->p_type)
             {
-                case PT_TLS:
-                    OE_RAISE(OE_UNSUPPORTED);
-                    break;
-
                 case PT_LOAD:
 
 /* kind of surprised that segments may not be page aligned */
@@ -238,7 +269,30 @@ static oe_result_t _oe_load_elf_image(
 
         assert(ph);
         assert(ph->p_filesz <= ph->p_memsz);
-        assert(ph->p_type != PT_TLS);
+        if (ph->p_type == PT_TLS)
+        {
+            if (image->tdata_rva != ph->p_vaddr)
+            {
+                OE_TRACE_ERROR(
+                    "loadelf: .tdata rva mismatch. Section value = %lx, "
+                    "Program "
+                    "header value = 0x%lx\n",
+                    image->tdata_rva,
+                    ph->p_vaddr);
+                OE_RAISE(OE_FAILURE);
+            }
+            if (image->tdata_size != ph->p_filesz)
+            {
+                OE_TRACE_ERROR(
+                    "loadelf: .tdata_size mismatch. Section value = %lx, "
+                    "Program "
+                    "header value = 0x%lx\n",
+                    image->tdata_size,
+                    ph->p_filesz);
+                OE_RAISE(OE_FAILURE);
+            }
+            continue;
+        }
 
         /* Skip non-loadable program segments */
         if (ph->p_type != PT_LOAD)
@@ -316,7 +370,6 @@ done:
     return result;
 }
 
-#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
 OE_INLINE void _dump_relocations(const void* data, size_t size)
 {
     const elf64_rela_t* p = (const elf64_rela_t*)data;
@@ -335,7 +388,6 @@ OE_INLINE void _dump_relocations(const void* data, size_t size)
             OE_LLD(p->r_addend));
     }
 }
-#endif
 
 static oe_result_t _calculate_size(
     const oe_enclave_image_t* image,
@@ -539,6 +591,46 @@ done:
     return result;
 }
 
+static oe_result_t _get_symbol_rva(
+    oe_enclave_image_t* image,
+    const char* name,
+    uint64_t* rva)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    elf64_sym_t sym = {0};
+
+    if (!image || !name || !rva)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (elf64_find_symbol_by_name(&image->u.elf.elf, name, &sym) != 0)
+        goto done;
+
+    *rva = sym.st_value;
+    result = OE_OK;
+done:
+    return result;
+}
+
+static oe_result_t _set_uint64_t_symbol_value(
+    oe_enclave_image_t* image,
+    const char* name,
+    uint64_t value)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    elf64_sym_t sym = {0};
+    uint64_t* symbol_address = NULL;
+
+    if (elf64_find_symbol_by_name(&image->u.elf.elf, name, &sym) != 0)
+        goto done;
+
+    symbol_address = (uint64_t*)(image->image_base + sym.st_value);
+    *symbol_address = value;
+
+    result = OE_OK;
+done:
+    return result;
+}
+
 static oe_result_t _patch(
     oe_enclave_image_t* image,
     size_t ecall_size,
@@ -547,6 +639,8 @@ static oe_result_t _patch(
     oe_result_t result = OE_UNEXPECTED;
     oe_sgx_enclave_properties_t* oeprops;
     size_t i;
+    uint64_t enclave_rva = 0;
+    uint64_t aligned_size = 0;
 
     oeprops =
         (oe_sgx_enclave_properties_t*)(image->image_base + image->oeinfo_rva);
@@ -575,9 +669,17 @@ static oe_result_t _patch(
     oeprops->image_info.oeinfo_rva = image->oeinfo_rva;
     oeprops->image_info.oeinfo_size = sizeof(oe_sgx_enclave_properties_t);
 
+    /* Set _enclave_rva to its own rva offset*/
+    OE_CHECK(_get_symbol_rva(image, "_enclave_rva", &enclave_rva));
+    OE_CHECK(_set_uint64_t_symbol_value(image, "_enclave_rva", enclave_rva));
+
     /* reloc right after image */
     oeprops->image_info.reloc_rva = image->image_size;
     oeprops->image_info.reloc_size = image->reloc_size;
+    OE_CHECK(
+        _set_uint64_t_symbol_value(image, "_reloc_rva", image->image_size));
+    OE_CHECK(
+        _set_uint64_t_symbol_value(image, "_reloc_size", image->reloc_size));
 
     /* ecal right after reloc */
     oeprops->image_info.ecall_rva = image->image_size + image->reloc_size;
@@ -586,10 +688,36 @@ static oe_result_t _patch(
     /* heap right after ecall */
     oeprops->image_info.heap_rva = oeprops->image_info.ecall_rva + ecall_size;
 
+    if (image->tdata_size)
+    {
+        _set_uint64_t_symbol_value(image, "_tdata_rva", image->tdata_rva);
+        _set_uint64_t_symbol_value(image, "_tdata_size", image->tdata_size);
+        _set_uint64_t_symbol_value(image, "_tdata_align", image->tdata_align);
+
+        aligned_size +=
+            oe_round_up_to_multiple(image->tdata_size, image->tdata_align);
+    }
+    if (image->tbss_size)
+    {
+        _set_uint64_t_symbol_value(image, "_tbss_size", image->tbss_size);
+        _set_uint64_t_symbol_value(image, "_tbss_align", image->tbss_align);
+
+        aligned_size +=
+            oe_round_up_to_multiple(image->tbss_size, image->tbss_size);
+    }
+
+    if (aligned_size > OE_THREAD_LOCAL_SPACE)
+    {
+        OE_TRACE_ERROR(
+            "Thread-local variables exceed available thread-local space.\n");
+        OE_RAISE(OE_FAILURE);
+    }
+
     /* Clear the hash when taking the measure */
     memset(oeprops->sigstruct, 0, sizeof(oeprops->sigstruct));
 
     result = OE_OK;
+done:
     return result;
 }
 
@@ -755,9 +883,8 @@ oe_result_t oe_load_elf_enclave_image(
         0)
         OE_RAISE(OE_FAILURE);
 
-#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
-    _dump_relocations(image->reloc_data, image->reloc_size);
-#endif
+    if (get_current_logging_level() >= OE_LOG_LEVEL_INFO)
+        _dump_relocations(image->u.elf.reloc_data, image->reloc_size);
 
     image->type = OE_IMAGE_TYPE_ELF;
     image->calculate_size = _calculate_size;
@@ -785,7 +912,7 @@ done:
 
 OE_NO_OPTIMIZE_BEGIN
 
-OE_NEVER_INLINE void _oe_notify_gdb_enclave_termination(
+OE_NEVER_INLINE void oe_notify_gdb_enclave_termination(
     const oe_enclave_t* enclave,
     const char* enclavePath,
     uint32_t enclavePathLength)
@@ -797,7 +924,7 @@ OE_NEVER_INLINE void _oe_notify_gdb_enclave_termination(
     return;
 }
 
-OE_NEVER_INLINE void _oe_notify_gdb_enclave_creation(
+OE_NEVER_INLINE void oe_notify_gdb_enclave_creation(
     const oe_enclave_t* enclave,
     const char* enclavePath,
     uint32_t enclavePathLength)

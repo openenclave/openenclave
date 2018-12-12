@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../../../host/strings.h"
-#include "../args.h"
+#include "sealKey_u.h"
 
 #define SKIP_RETURN_CODE 2
 
@@ -33,25 +33,18 @@ int main(int argc, const char* argv[])
 
     printf("=== This program is used to test enclave seal key functions.\n");
 
-    if ((result = oe_create_enclave(
-             argv[1],
-             OE_ENCLAVE_TYPE_SGX,
-             flags,
-             NULL,
-             0,
-             NULL,
-             0,
-             &enclave)) != OE_OK)
+    result = oe_create_sealKey_enclave(
+        argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
+    if (result != OE_OK)
     {
-        oe_put_err("oe_create_enclave(): result=%u", result);
+        oe_put_err("oe_create_sealKey_enclave(): result=%u", result);
         return 1;
     }
 
-    SealKeyArgs args;
-    args.ret = -1;
-    result = oe_call_enclave(enclave, "TestSealKey", &args);
+    int retval = -1;
+    result = test_seal_key(enclave, &retval, retval);
     OE_TEST(result == OE_OK);
-    OE_TEST(args.ret == 0);
+    OE_TEST(retval == 0);
 
     if ((result = oe_terminate_enclave(enclave)) != OE_OK)
     {

@@ -29,7 +29,7 @@
 //         (4) Calls __oe_handle_main()
 //
 //     Note: __oe_handle_main does not return. Instead it eventually
-//     calls oe_exit (see exit.S)
+//     calls oe_asm_exit (see exit.S)
 //
 //==============================================================================
 
@@ -184,16 +184,16 @@ oe_enter:
     push %rbp
     mov %rsp, %r12
 
-    // Save the parameters of _oe_exit into stack.
+    // Save the parameters of oe_asm_exit into stack.
     push %rdi
     push %rsi
 
     // Notify a nested exit happens.
-    // _oe_notify_nested_exit_start(rdi=arg1, rsi=ocall_context)
+    // oe_notify_nested_exit_start(rdi=arg1, rsi=ocall_context)
     mov %r12, %rsi
-    call _oe_notify_nested_exit_start
+    call oe_notify_nested_exit_start
 
-    // Restore the parameters of _oe_exit from stack.
+    // Restore the parameters of oe_asm_exit from stack.
     pop %rsi
     pop %rdi
 
@@ -216,7 +216,7 @@ oe_enter:
 .clear_enclave_registers:
 
     // Clear these so information will not be leaked to host
-    _oe_cleanup_registers
+    oe_cleanup_registers
 
 .restore_host_registers:
 
@@ -321,9 +321,9 @@ oe_exception_dispatcher:
     movq ED_SAVED_RDI, %rax
     movq %rax, OE_CONTEXT_RDI(%rdi)
 
-    call _oe_exception_dispatcher
+    call oe_real_exception_dispatcher
 
-    // Should never reach here since _oe_exception_dispatcher will not return.
+    // Should never reach here since oe_real_exception_dispatcher will not return.
 
 .forever_loop:
     jmp .forever_loop

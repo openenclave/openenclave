@@ -33,8 +33,4 @@ add_executable(edl_host
 )
 
 target_include_directories(edl_host PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)
-set_property(
-    TARGET edl_host
-    PROPERTY CXX_STANDARD 11
-)
 target_link_libraries(edl_host oehostapp)

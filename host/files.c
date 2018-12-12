@@ -48,7 +48,7 @@ oe_result_t __oe_load_file(
         if (stat(path, &st) != 0)
             OE_RAISE(OE_NOT_FOUND);
 
-        *size = st.st_size;
+        *size = (size_t)st.st_size;
     }
 
     /* Check for integer overflow */

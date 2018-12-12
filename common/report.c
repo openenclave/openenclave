@@ -54,9 +54,12 @@ static oe_result_t _oe_parse_sgx_report_body(
             report_body->mrsigner,
             sizeof(report_body->mrsigner)));
 
-    parsed_report->identity.product_id[0] = report_body->isvprodid & 0xFF;
+    if (report_body->isvprodid > OE_INT8_MAX)
+        goto done;
+    parsed_report->identity.product_id[0] =
+        (uint8_t)report_body->isvprodid & 0xFF;
     parsed_report->identity.product_id[1] =
-        (report_body->isvprodid >> 8) & 0xFF;
+        (uint8_t)((report_body->isvprodid >> 8) & 0xFF);
 
     /*
      * Set pointer fields.
