@@ -35,6 +35,21 @@ if(UNIX AND SGX)
     message(FATAL_ERROR "Intel SGX is not supported on Linux in this preview.")
 endif()
 
+# Validate target, TEE and toolchain combinations.
+if(UNIX AND TZ AND NOT(
+    "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm" OR
+    "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64"))
+    message(FATAL_ERROR "Building for ARM TrustZone requires one of the cross-compiler toolchain failes in the cmake directory; use -DCMAKE_TOOLCHAIN_FILE to specify it.")
+endif()
+
+if(WIN32 AND SGX AND ${CMAKE_GENERATOR} MATCHES "ARM")
+    message(FATAL_ERROR "Building for Intel SGX is not supported with an ARM generator see (cmake --help).")
+endif()
+
+if(WIN32 AND TZ AND NOT ${CMAKE_GENERATOR} MATCHES "ARM")
+    message(FATAL_ERROR "Building for ARM TrustZone requires an ARM generator (see cmake --help).")
+endif()
+
 # Assert that the respective TEE SDK's are present.
 if(TZ AND ("$ENV{TA_DEV_KIT_DIR}" STREQUAL "") AND ("${TA_DEV_KIT_DIR}" STREQUAL ""))
     message(FATAL_ERROR "TA_DEV_KIT_DIR must be specified when building for ARM TrustZone.")
