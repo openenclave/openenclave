@@ -1,0 +1,7 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+jenkins_master: "JENKINS_MASTER_URL"
+jenkins_slave_secret: "SECRET" #The secret must be taken from when the node is created
+jenkins_slave_user: jenkins
+jenkins_slave_group: jenkins
