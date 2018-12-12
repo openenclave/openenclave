@@ -4,7 +4,7 @@ oeedl_file(../../../include/openenclave/socket.edl enclave GEN C_GEN H_GEN)
 
 if(UNIX)
     set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
-        "liboesocket_enc.a;../socket_insecure_enc.o")
+        "liboesocket_enc.a;socket_insecure_enc.o")
 
     add_custom_target(liboesocket_enc ALL
         COMMAND make -C ${CMAKE_CURRENT_SOURCE_DIR}/optee
