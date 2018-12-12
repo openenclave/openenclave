@@ -38,7 +38,7 @@ static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...);
 #pragma GCC diagnostic ignored "-Wparentheses-equality"
 #endif
 
-#include "../../3rdparty/dlmalloc/dlmalloc/malloc.c"
+#include "../../../3rdparty/dlmalloc/dlmalloc/malloc.c"
 
 #pragma GCC diagnostic pop
 

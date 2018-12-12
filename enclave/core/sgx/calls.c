@@ -18,7 +18,7 @@
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
-#include "../report.h"
+#include "../../sgx/report.h"
 #include "asmdefs.h"
 #include "cpuid.h"
 #include "init.h"
