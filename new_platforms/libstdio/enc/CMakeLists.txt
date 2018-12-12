@@ -4,7 +4,7 @@ oeedl_file(${OE_PATH}/include/openenclave/stdio.edl enclave GEN C_GEN H_GEN)
 
 if(UNIX AND TZ)
     set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
-        "liboestdio_enc.a;stdio_enc.o;optee/files_optee.c")
+        "liboestdio_enc.a;stdio_enc.o;optee/files_optee.o")
 
     add_custom_target(liboestdio_enc ALL
         COMMAND make -C ${CMAKE_CURRENT_SOURCE_DIR}/optee
