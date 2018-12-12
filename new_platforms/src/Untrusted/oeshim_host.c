@@ -10,7 +10,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <openenclave/host.h>
-#include "../oeshim_host.h"
+#include "oeshim_host.h"
 #include "oeinternal_u.h"
 #undef oe_create_enclave
 

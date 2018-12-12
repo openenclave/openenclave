@@ -22,8 +22,6 @@ elseif(WIN32 AND SGX)
 
     add_library(oesocket_enc ${SRCS} ${GEN})
 
-    target_compile_definitions(oesocket_enc PRIVATE OE_USE_SGX)
-
     target_include_directories(oesocket_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
     target_include_directories(oesocket_enc PRIVATE ${OE_PATH}/include)
     target_include_directories(oesocket_enc PRIVATE ${NP_PATH}/include)

@@ -62,6 +62,11 @@ if(TZ AND (NOT "$ENV{TA_DEV_KIT_DIR}" STREQUAL "") AND ("${TA_DEV_KIT_DIR}" STRE
     set(TA_DEV_KIT_DIR $ENV{TA_DEV_KIT_DIR})
 elseif(WIN32 AND SGX AND (NOT "$ENV{SGXSDKInstallPath}" STREQUAL "") AND ("${SGXSDKInstallPath}" STREQUAL ""))
     set(SGXSDKInstallPath $ENV{SGXSDKInstallPath})
+
+    # As of this writing, the environment variable contains a trailing backlash.
+    # Get rid of it to avoid piling slashes on top later.
+    string(REGEX REPLACE "\\\\$" "" SGXSDKInstallPath ${SGXSDKInstallPath})
+    string(REPLACE "\\" "/" SGXSDKInstallPath ${SGXSDKInstallPath})
 endif()
 
 # Save the path to Open Enclave proper as well as to where the new platform
@@ -82,8 +87,10 @@ endif()
 
 # 3rd-party components
 if(UNIX AND TZ)
-    add_subdirectory(${PROJECT_SOURCE_DIR}/../3rdparty/optee_client ${PROJECT_SOURCE_DIR}/../3rdparty/optee_client/out)
+    set(OPTEE_CLIENT_PATH ${OE_PATH}/3rdparty/optee_client)
+    add_subdirectory(${OPTEE_CLIENT_PATH} ${OPTEE_CLIENT_PATH}/out)
 endif()
 
 add_subdirectory(libsocket)
 add_subdirectory(libstdio)
+add_subdirectory(src)

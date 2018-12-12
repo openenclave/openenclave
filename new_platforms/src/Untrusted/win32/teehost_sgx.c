@@ -2,7 +2,7 @@
 /* Licensed under the MIT License. */
 #include <stdio.h>
 #include <openenclave/host.h>
-#include "../oeoverintelsgx_u.h"
+#include "oeoverintelsgx_u.h"
 #include <sgx.h>
 #include <sgx_urts.h>
 #include <sgx_uae_service.h>

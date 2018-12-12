@@ -22,8 +22,6 @@ elseif(WIN32 AND SGX)
 
     add_library(oestdio_enc ${SRCS} ${GEN})
 
-    target_compile_definitions(oestdio_enc PRIVATE OE_USE_SGX)
-
     target_include_directories(oestdio_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
     target_include_directories(oestdio_enc PRIVATE ${OE_PATH}/include)
     target_include_directories(oestdio_enc PRIVATE ${NP_PATH}/include)

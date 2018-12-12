@@ -1,22 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
-#
-# Helper function to handle EDL (gen) files
-#
-# Create custom-command to generate .c/.h-file for a given EDL-file
-# into CMAKE_CURRENT_BINARY_DIR and set misc properties on files.
-#
-# Usage:
-#
-#       oeedl_file(
-#               <edl_file> <type> <out_files_var> [--edl-search-dir dir]
-#
-# Arguments:
-# edl_file - name of the EDL file
-# type - type of files to genreate ("enclave" or "host" or "enclave-headers" or "host-headers")
-# out_files_var - variable to get the generated files added to
-# --edl-search-dir dir - Additional folder relative to the source directory to look for imported edl files.
-function(oeedl_file EDL_FILE TYPE OUT_FILES_VAR OUT_C_FILES_VAR OUT_H_FILES_VAR)
+
+macro(edl_file TOOL EDL_FILE TYPE OUT_FILES_VAR OUT_C_FILES_VAR OUT_H_FILES_VAR EDL_SEARCH_PATHS)
 	get_filename_component(idl_base ${EDL_FILE} NAME_WE)
 	get_filename_component(in_path ${EDL_FILE} PATH)
 
@@ -48,39 +33,56 @@ function(oeedl_file EDL_FILE TYPE OUT_FILES_VAR OUT_C_FILES_VAR OUT_H_FILES_VAR)
 		message(FATAL_ERROR "unknown EDL generation type ${TYPE} - must be \"enclave\" or \"host\"")
 	endif()
 
-	if(${ARGC} EQUAL 5)
-		if (${ARGV3} STREQUAL "--edl-search-dir")
-			set(edl_search_path --search-path ${CMAKE_CURRENT_SOURCE_DIR}/${ARGV4})
+	if("${EDL_SEARCH_PATHS}" STREQUAL "")
+		set(edl_search_path ${in_path})
+	else()
+		set(edl_search_path ${in_path} ${EDL_SEARCH_PATHS})
+		if(UNIX)
+			string(REPLACE ";" ":" edl_search_path "${edl_search_path}")
 		endif()
+		set(edl_search_path "\"${edl_search_path}\"")
 	endif()
-
 
 	set(h_file ${CMAKE_CURRENT_BINARY_DIR}/${idl_base}_${type_id}.h)
 
-	if (UNIX)
-		set(OEEDGER8R_COMMAND oeedger8r)
-	else()
-		set(OEEDGER8R_COMMAND oeedger8r.exe)
+	if(WIN32)
+		if("${TOOL}" STREQUAL "SGX")
+			set(TOOL_COMMAND ${SGXSDKInstallPath}/bin/win32/release/sgx_edger8r.exe)
+		elseif("${TOOL}" STREQUAL "OE")
+			set(TOOL_COMMAND ${PROJECT_SOURCE_DIR}/oeedger8r.exe)
+		else()
+			message(FATAL_ERROR "Invalid generator tool ${TOOL} - must be \"SGX\" or \"OE\"")
+		endif()
+	elseif(UNIX)
+		if("${TOOL}" STREQUAL "SGX")
+			message(FATAL_ERROR "Intel's generator tool is not supported on Linux")
+		elseif("${TOOL}" STREQUAL "OE")
+			set(TOOL_COMMAND ${PROJECT_SOURCE_DIR}/oeedger8r)
+		else()
+			message(FATAL_ERROR "Invalid generator tool ${TOOL} - must be \"OE\" on Linux")
+		endif()
 	endif()
 
 	add_custom_command(
 		OUTPUT ${h_file} ${c_file}
-		# NOTE: Because `OEEDGER8R_COMMAND` is not a CMake
+		# NOTE: Because `TOOL_COMMAND` is not a CMake
 		# executable, we need an explicit dependency on it in
 		# order to cause files to be regenerated if the
-		# oeedger8r is rebuilt.
-		COMMAND ${PROJECT_SOURCE_DIR}/${OEEDGER8R_COMMAND} ${type_opt} ${headers_only} ${dir_opt} ${CMAKE_CURRENT_BINARY_DIR} ${EDL_FILE} --search-path ${in_path} ${edl_search_path}
+		# edger8r tool is rebuilt.
+		COMMAND ${TOOL_COMMAND} ${type_opt} ${headers_only} ${dir_opt} ${CMAKE_CURRENT_BINARY_DIR} ${EDL_FILE} --search-path "${edl_search_path}"
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-		)
+	)
+
+	message(STATUS "${TOOL_COMMAND} ${type_opt} ${headers_only} ${dir_opt} ${CMAKE_CURRENT_BINARY_DIR} ${EDL_FILE} --search-path ${edl_search_path}")
 
 	set_source_files_properties(
 		${h_file} ${c_file}
 		PROPERTIES GENERATED TRUE
-		)
+	)
 	set_source_files_properties(
 		${EDL_FILE}
 		PROPERTIES HEADER_FILE_ONLY TRUE
-		)
+	)
 
 	# append h_file,c_file to output var
 	list(APPEND ${OUT_FILES_VAR} ${h_file} ${c_file})
@@ -91,7 +93,12 @@ function(oeedl_file EDL_FILE TYPE OUT_FILES_VAR OUT_C_FILES_VAR OUT_H_FILES_VAR)
 
 	list(APPEND ${OUT_H_FILES_VAR} ${h_file})
 	set(${OUT_H_FILES_VAR} ${${OUT_H_FILES_VAR}} PARENT_SCOPE)
+endmacro(edl_file)
 
-	#message("h_file=${h_file} c_file=${c_file} EDL_FILE=${EDL_FILE} OUT_FILES=${${OUT_FILES_VAR}}")
+function(oeedl_file EDL_FILE TYPE OUT_FILES_VAR OUT_C_FILES_VAR OUT_H_FILES_VAR)
+	edl_file(OE ${EDL_FILE} ${TYPE} ${OUT_FILES_VAR} ${OUT_C_FILES_VAR} ${OUT_H_FILES_VAR} "${ARGV5}")
 endfunction(oeedl_file)
 
+function(sgxedl_file EDL_FILE TYPE OUT_FILES_VAR OUT_C_FILES_VAR OUT_H_FILES_VAR)
+	edl_file(SGX ${EDL_FILE} ${TYPE} ${OUT_FILES_VAR} ${OUT_C_FILES_VAR} ${OUT_H_FILES_VAR} "${ARGV5}")
+endfunction(sgxedl_file)

@@ -192,7 +192,7 @@ oe_result_t oe_terminate_enclave(
     if (!enclave)
         return OE_INVALID_PARAMETER;
 
-    optee = (struct tpcs_optee_context *)enclave;
+    optee = (void *)enclave;
 
     TEEC_CloseSession(&optee->session);
     TEEC_FinalizeContext(&optee->ctx);
