@@ -9,7 +9,7 @@ int HostUnsecureStrPatching(const char* src, char* dst, int dst_length);
 
 int SecureStrPatching(const char* src, char* dst, int dst_length)
 {
-    if (!oe_is_outside_enclave(dst, dst_length))
+    if (!oe_is_outside_enclave(dst, static_cast<size_t>(dst_length)))
     {
         return -1;
     }

@@ -30,9 +30,9 @@
 #include "sgxmeasure.h"
 #include "signkey.h"
 
-static uint32_t _make_memory_protect_param(uint64_t inflags, bool simulate)
+static int _make_memory_protect_param(uint64_t inflags, bool simulate)
 {
-    uint32_t outflags = 0;
+    int outflags = 0;
 
     if (inflags & SGX_SECINFO_TCS)
     {
@@ -726,8 +726,7 @@ oe_result_t oe_sgx_load_enclave_data(
 
         /* Set page access permissions */
         {
-            uint32_t prot =
-                _make_memory_protect_param(flags, true /*simulate*/);
+            int prot = _make_memory_protect_param(flags, true /*simulate*/);
 
             if (prot > OE_INT_MAX)
                 OE_RAISE(OE_FAILURE);
@@ -747,8 +746,7 @@ oe_result_t oe_sgx_load_enclave_data(
     {
 #if defined(OE_USE_LIBSGX)
 
-        uint32_t protect =
-            _make_memory_protect_param(flags, false /*not simulate*/);
+        int protect = _make_memory_protect_param(flags, false /*not simulate*/);
         if (!extend)
             protect |= ENCLAVE_PAGE_UNVALIDATED;
 
@@ -757,7 +755,7 @@ oe_result_t oe_sgx_load_enclave_data(
                 (void*)addr,
                 OE_PAGE_SIZE,
                 (const void*)src,
-                protect,
+                (uint32_t)protect,
                 &enclave_error) != OE_PAGE_SIZE)
             OE_RAISE_MSG(
                 OE_PLATFORM_ERROR,

@@ -24,7 +24,7 @@ static void test_ocall_pointer_fun(F ocall_pointer_fun)
 
     static_assert((80 / sizeof(T)) * sizeof(T) == 80, "invalid size");
     // arrays with size = 80 bytes.
-    const size_t count = 80 / sizeof(T);
+    const int count = 80 / sizeof(T);
     T p7[count], p8[count], p9[count];
 
     for (size_t i = 0; i < count; ++i)
@@ -109,32 +109,32 @@ static void test_ocall_pointer_fun(F ocall_pointer_fun)
         // p11, p12, p13 specify pcount as the EDL 'count' attribute.
 
         // p11 is input and should be untouched.
-        for (size_t i = 0; i < (size_t)pcount; ++i)
-            OE_TEST(p11[i] == (T)(i + 1));
+        for (int i = 0; i < pcount; ++i)
+            OE_TEST(p11[i] == static_cast<T>(i + 1));
 
         // p12 is in-out and should be reversed.
-        for (size_t i = 0; i < (size_t)pcount; ++i)
-            OE_TEST(p12[i] == (T)(pcount - i));
+        for (int i = 0; i < pcount; ++i)
+            OE_TEST(p12[i] == static_cast<T>(pcount - i));
 
         // p13 is out and should have value pcount.
-        for (size_t i = 0; i < (size_t)pcount; ++i)
-            OE_TEST(p13[i] == (T)pcount);
+        for (int i = 0; i < pcount; ++i)
+            OE_TEST(p13[i] == static_cast<T>(pcount));
     }
 
     {
         // p14, p15, p16 specify psize as the EDL 'size' attribute.
 
         // p14 is input and should be untouched.
-        for (size_t i = 0; i < (size_t)count; ++i)
-            OE_TEST(p14[i] == (T)(i + 1));
+        for (int i = 0; i < count; ++i)
+            OE_TEST(p14[i] == static_cast<T>(i + 1));
 
         // p15 is in-out and should be reversed.
-        for (size_t i = 0; i < (size_t)count; ++i)
-            OE_TEST(p15[i] == (T)(count - i));
+        for (int i = 0; i < count; ++i)
+            OE_TEST(p15[i] == static_cast<T>(count - i));
 
         // p16 is out and should have value pcount.
-        for (size_t i = 0; i < (size_t)count; ++i)
-            OE_TEST(p16[i] == (T)psize);
+        for (int i = 0; i < count; ++i)
+            OE_TEST(p16[i] == static_cast<T>(psize));
     }
 
     // Call with nulls.
@@ -225,8 +225,8 @@ static T* ecall_pointer_fun_impl(
     T* p14,
     T* p15,
     T* p16,
-    int pcount,
-    int psize)
+    size_t pcount,
+    size_t psize)
 {
     ++num_ecalls;
 
@@ -332,7 +332,7 @@ static T* ecall_pointer_fun_impl(
         // in
         if (p11)
         {
-            for (int i = 0; i < pcount; ++i)
+            for (size_t i = 0; i < pcount; ++i)
                 OE_TEST(p11[i] == (T)(i + 1));
 
             // change p11. Should not have any effect on host.
@@ -342,7 +342,7 @@ static T* ecall_pointer_fun_impl(
         // in-out
         if (p12)
         {
-            for (int i = 0; i < pcount; ++i)
+            for (size_t i = 0; i < pcount; ++i)
                 OE_TEST(p12[i] == (T)(i + 1));
             reverse(p12, pcount);
         }
@@ -350,7 +350,7 @@ static T* ecall_pointer_fun_impl(
         // out
         if (p13)
         {
-            for (int i = 0; i < pcount; ++i)
+            for (size_t i = 0; i < pcount; ++i)
                 p13[i] = static_cast<T>(pcount);
         }
     }
@@ -391,6 +391,48 @@ static T* ecall_pointer_fun_impl(
     }
 
     return p10;
+}
+
+template <typename T>
+static T* ecall_pointer_fun_impl(
+    T* p1,
+    T* p2,
+    T* p3,
+    T* p4,
+    T* p5,
+    T* p6,
+    T* p7,
+    T* p8,
+    T* p9,
+    T* p10,
+    T* p11,
+    T* p12,
+    T* p13,
+    T* p14,
+    T* p15,
+    T* p16,
+    int pcount,
+    int psize)
+{
+    return ecall_pointer_fun_impl(
+        p1,
+        p2,
+        p3,
+        p4,
+        p5,
+        p6,
+        p7,
+        p8,
+        p9,
+        p10,
+        p11,
+        p12,
+        p13,
+        p14,
+        p15,
+        p16,
+        static_cast<size_t>(pcount),
+        static_cast<size_t>(psize));
 }
 
 char* ecall_pointer_char(

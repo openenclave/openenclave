@@ -50,7 +50,9 @@ static int _get_opt(
             if (!arg)
             {
                 memmove(
-                    (void*)&argv[i], &argv[i + 1], (argc - i) * sizeof(char*));
+                    (void*)&argv[i],
+                    &argv[i + 1],
+                    static_cast<size_t>(argc - i) * sizeof(char*));
                 argc--;
                 return 1;
             }
@@ -60,7 +62,9 @@ static int _get_opt(
 
             *arg = argv[i + 1];
             memmove(
-                (char**)&argv[i], &argv[i + 2], (argc - i - 1) * sizeof(char*));
+                (char**)&argv[i],
+                &argv[i + 2],
+                static_cast<size_t>(argc - i - 1) * sizeof(char*));
             argc -= 2;
             return 1;
         }
@@ -101,7 +105,7 @@ int main(int argc, const char* argv[])
              0,
              &enclave)) != OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);
-    uint32_t pid = getpid();
+    uint32_t pid = static_cast<uint32_t>(getpid());
 
     // Invoke "Test()" in the enclave.
     Test(enclave, pid);

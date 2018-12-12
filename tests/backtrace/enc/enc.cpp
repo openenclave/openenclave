@@ -93,7 +93,7 @@ extern "C" bool test(size_t num_syms, const char** syms)
     char** _syms = oe_backtrace_symbols(b.buffer, b.size);
     OE_TEST(_syms != NULL);
 
-    _print_backtrace(b.buffer, b.size, num_syms, syms);
+    _print_backtrace(b.buffer, (size_t)b.size, num_syms, syms);
 #endif
 
     return true;
@@ -114,7 +114,7 @@ extern "C" bool test_unwind(size_t num_syms, const char** syms)
         char** _syms = oe_backtrace_symbols(b.buffer, b.size);
         OE_TEST(_syms != NULL);
 
-        _print_backtrace(b.buffer, b.size, num_syms, syms);
+        _print_backtrace(b.buffer, (size_t)b.size, num_syms, syms);
 #endif
         return true;
     }

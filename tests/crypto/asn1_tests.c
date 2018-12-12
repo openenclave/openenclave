@@ -27,7 +27,7 @@ static int _printf(char** str, const char* format, ...)
 
     va_list ap;
     va_start(ap, format);
-    int n = vsnprintf(buf, sizeof(buf), format, ap);
+    size_t n = (size_t)vsnprintf(buf, sizeof(buf), format, ap);
     va_end(ap);
 
     if (n >= sizeof(buf))

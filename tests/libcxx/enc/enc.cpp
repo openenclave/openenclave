@@ -57,7 +57,7 @@ extern "C" int close(int fd)
 }
 
 static std::vector<std::function<void*()>> _thread_functions;
-static int _next_enc_thread_id = 0;
+static uint64_t _next_enc_thread_id = 0;
 uint64_t enc_key = 0; // Monotonically increasing enclave key
 
 // Map of enc_key to thread_id returned by pthread_self()

@@ -188,7 +188,7 @@ oe_result_t oe_log(log_level_t level, const char* fmt, ...)
     oe_va_start(ap, fmt);
     n = oe_vsnprintf(
         &args->message[bytes_written],
-        OE_LOG_MESSAGE_LEN_MAX - bytes_written,
+        (size_t)(OE_LOG_MESSAGE_LEN_MAX - bytes_written),
         fmt,
         ap);
     oe_va_end(ap);

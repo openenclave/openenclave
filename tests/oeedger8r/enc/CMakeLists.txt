@@ -37,7 +37,7 @@ add_executable(edl_enc
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
     set_source_files_properties(
         ${all_t}
-        PROPERTIES COMPILE_FLAGS "-Wno-float-conversion"
+        PROPERTIES COMPILE_FLAGS "-Wno-conversion"
     )
 endif()
 

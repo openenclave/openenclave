@@ -11,7 +11,7 @@
 
 #define OE_OCALL_FAILED -1
 
-static uint32_t func()
+static int func()
 {
     static int state = 0;
 
@@ -24,7 +24,7 @@ static uint32_t func()
 int global_static = 1;
 int global_dynamic = func();
 uint32_t thread_local_static = 2;
-uint32_t thread_local_dynamic = func();
+int32_t thread_local_dynamic = func();
 char asciistring[] = "HelloWorld";
 wchar_t wcstring[] = L"HelloWorld";
 

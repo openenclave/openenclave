@@ -217,7 +217,7 @@ oe_result_t oe_thread_local_init(td_t* td)
         // Set the self pointer.
         *(void**)fs = fs;
 
-        uint64_t tls_data_size = fs - tls_start;
+        uint64_t tls_data_size = (uint64_t)(fs - tls_start);
 
         // Initialize the tls data to zero.
         oe_memset_s(tls_start, tls_data_size, 0, tls_data_size);
@@ -277,7 +277,7 @@ oe_result_t oe_thread_local_cleanup(td_t* td)
     /* Clear tls section */
     uint8_t* fs = _get_fs_from_td(td);
     uint8_t* tls_start = _get_thread_local_data_start(td);
-    oe_memset_s(tls_start, fs - tls_start, 0, 0);
+    oe_memset_s(tls_start, (uint64_t)(fs - tls_start), 0, 0);
 
     return OE_OK;
 }
