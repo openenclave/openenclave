@@ -3,11 +3,13 @@
 
 if (UNIX)
 set(PLATFORM_SRC
+    ../../common/rand.S
     linux/reloc.c
     linux/threadlocal.c
     )
 elseif (WIN32)
 set(PLATFORM_SRC
+    ../../common/rand.asm
     windows/reloc.c
     )
 endif()

@@ -4,14 +4,7 @@
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
-
-uint64_t _rdrand(void)
-{
-    uint64_t r;
-    __asm__ volatile("rdrand %0\n\t" : "=r"(r));
-
-    return r;
-}
+#include "../../common/common.h"
 
 /*
  * MBEDTLS links this function definition when MBEDTLS_ENTROPY_HARDWARE_ALT

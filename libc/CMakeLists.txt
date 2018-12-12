@@ -29,6 +29,17 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_compile_options(oelibasm PRIVATE -Wno-error=unused-command-line-argument)
 endif ()
 
+if (UNIX)
+set(PLATFORM_SRC
+    ../common/rand.S
+)
+elseif (WIN32)
+set(PLATFORM_SRC
+    ../common/rand.asm
+)
+endif()
+
+
 add_library(oelibc STATIC
     arc4random.c
     atexit.c
@@ -653,7 +664,8 @@ add_library(oelibc STATIC
     ${MUSLSRC}/time/__year_to_secs.c
     ${MUSLSRC}/unistd/close.c
     ${MUSLSRC}/unistd/dup.c
-    ${MUSLSRC}/unistd/dup3.c)
+    ${MUSLSRC}/unistd/dup3.c
+    ${PLATFORM_SRC})
 
 # NOTE: This is the minimum required for musl sources.
 set_property(TARGET oelibc PROPERTY C_STANDARD 99)
