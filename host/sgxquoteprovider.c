@@ -83,10 +83,11 @@ static void _load_quote_provider()
                 OE_UNUSED(_quote_provider_log);
 
                 OE_TRACE_INFO("sgxquoteprovider: Installed log function\n");
-#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
-                // If info tracing is enabled, install the logging function.
-                set_log_fcn(_quote_provider_log);
-#endif
+                if (get_current_logging_level() >= OE_LOG_LEVEL_INFO)
+                {
+                    // If info tracing is enabled, install the logging function.
+                    set_log_fcn(_quote_provider_log);
+                }
             }
             else
             {
@@ -143,15 +144,16 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
     params.crl_urls = args->crl_urls;
     params.crl_url_count = args->num_crl_urls;
 
-#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
-    // If info tracing is enabled, install the logging function.
-    OE_TRACE_INFO("input: fmspc = \n");
-    oe_hex_dump(params.fmspc, params.fmspc_size);
-    for (uint32_t i = 0; i < params.crl_url_count; ++i)
+    if (get_current_logging_level() >= OE_LOG_LEVEL_INFO)
     {
-        OE_TRACE_INFO("input: crl_url[%d] = %s\n", i, params.crl_urls[i]);
+        // If info tracing is enabled, install the logging function.
+        OE_TRACE_INFO("input: fmspc = \n");
+        oe_hex_dump(params.fmspc, params.fmspc_size);
+        for (uint32_t i = 0; i < params.crl_url_count; ++i)
+        {
+            OE_TRACE_INFO("input: crl_url[%d] = %s\n", i, params.crl_urls[i]);
+        }
     }
-#endif
 
     r = _get_revocation_info(&params, &revocation_info);
 

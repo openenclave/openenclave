@@ -30,7 +30,7 @@ build:
 	$(CC) -o helloworldenc.so helloworld_t.o enc.o $(LDFLAGS)
 
 sign:
-	oesign helloworldenc.so helloworld.conf private.pem
+	oesign sign helloworldenc.so helloworld.conf private.pem
 
 clean:
 	rm -f enc.o helloworldenc.so helloworldenc.signed.so private.pem public.pem helloworld_t.o helloworld_t.h helloworld_t.c helloworld_args.h

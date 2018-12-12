@@ -24,17 +24,17 @@ size_t oe_strlen(const char* s)
         p += 6;
 
     if (!p[0])
-        return p - s;
+        return (size_t)(p - s);
     if (!p[1])
-        return p - s + 1;
+        return (size_t)(p - s + 1);
     if (!p[2])
-        return p - s + 2;
+        return (size_t)(p - s + 2);
     if (!p[3])
-        return p - s + 3;
+        return (size_t)(p - s + 3);
     if (!p[4])
-        return p - s + 4;
+        return (size_t)(p - s + 4);
     if (!p[5])
-        return p - s + 5;
+        return (size_t)(p - s + 5);
 
     /* Unreachable */
     return 0;
@@ -47,7 +47,7 @@ size_t oe_strnlen(const char* s, size_t n)
     while (n-- && *p)
         p++;
 
-    return p - s;
+    return (size_t)(p - s);
 }
 
 int oe_strcmp(const char* s1, const char* s2)
@@ -96,7 +96,7 @@ size_t oe_strlcpy(char* dest, const char* src, size_t size)
     while (*src)
         src++;
 
-    return src - start;
+    return (size_t)(src - start);
 }
 
 size_t oe_strlcat(char* dest, const char* src, size_t size)
@@ -217,7 +217,7 @@ void* oe_memset(void* s, int c, size_t n)
     }
 
     while (n--)
-        *p++ = c;
+        *p++ = (unsigned char)c;
 
     return s;
 }

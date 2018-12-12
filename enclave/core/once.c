@@ -11,7 +11,7 @@ oe_result_t oe_once(oe_once_t* once, void (*func)(void))
         return OE_INVALID_PARAMETER;
 
     /* Double checked locking (DCLP). */
-    int o = *once;
+    oe_once_t o = *once;
 
     /* DCLP Acquire barrier. */
     OE_ATOMIC_MEMORY_BARRIER_ACQUIRE();

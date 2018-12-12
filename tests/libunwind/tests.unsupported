@@ -18,5 +18,7 @@
 3rdparty/libunwind/libunwind/tests/run-ptrace-mapper
 3rdparty/libunwind/libunwind/tests/run-ptrace-misc
 3rdparty/libunwind/libunwind/tests/test-async-sig.c
+3rdparty/libunwind/libunwind/tests/test-init-remote.c
+3rdparty/libunwind/libunwind/tests/test-proc-info.c
 3rdparty/libunwind/libunwind/tests/test-ptrace.c
 3rdparty/libunwind/libunwind/tests/test-setjmp.c

@@ -31,7 +31,7 @@ void Pong(const char* in, char* out)
 
 static char buf[128];
 
-int main_shared(int argc, const char* argv[])
+OE_EXPORT int main_shared(int argc, const char* argv[])
 {
     oe_result_t result;
     oe_enclave_t* enclave = NULL;

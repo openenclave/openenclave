@@ -8,6 +8,7 @@ void TestASN1(void);
 void TestCRL(void);
 void TestEC(void);
 void TestRandom(void);
+void TestRdrand(void);
 void TestRSA(void);
 void TestSHA(void);
 

@@ -91,12 +91,12 @@ RUN \
 
 # Install packages not available in repositories.
 RUN \
-  # Install CMake 3.12 so that skipped tests are not marked as failures.
-  wget https://cmake.org/files/v3.12/cmake-3.12.2-Linux-x86_64.tar.gz \
-  && tar xf cmake-3.12.2-Linux-x86_64.tar.gz \
-  && rm cmake-3.12.2-Linux-x86_64.tar.gz 
+  # Install CMake 3.13.1
+  wget https://cmake.org/files/v3.13/cmake-3.13.1-Linux-x86_64.tar.gz \
+  && tar xf cmake-3.13.1-Linux-x86_64.tar.gz \
+  && rm cmake-3.13.1-Linux-x86_64.tar.gz 
 
-ENV PATH="/cmake-3.12.2-Linux-x86_64/bin:${PATH}"
+ENV PATH="/cmake-3.13.1-Linux-x86_64/bin:${PATH}"
 
 # Configure Git in target image to enable merge/rebase actions.
 RUN git config --global user.email "oeciteam@microsoft.com"

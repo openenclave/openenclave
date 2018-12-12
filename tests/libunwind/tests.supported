@@ -4,8 +4,6 @@
 3rdparty/libunwind/libunwind/tests/Ltest-init.cxx
 3rdparty/libunwind/libunwind/tests/Ltest-varargs.c
 3rdparty/libunwind/libunwind/tests/test-flush-cache.c
-3rdparty/libunwind/libunwind/tests/test-init-remote.c
 3rdparty/libunwind/libunwind/tests/test-mem.c
-3rdparty/libunwind/libunwind/tests/test-proc-info.c
 3rdparty/libunwind/libunwind/tests/test-static-link-loc.c
 3rdparty/libunwind/libunwind/tests/test-strerror.c

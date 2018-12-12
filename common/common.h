@@ -32,10 +32,13 @@
 #else
 
 #include <openenclave/host.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #endif
+
+uint64_t _rdrand(void);
 
 #endif // _OE_COMMON_COMMON_H

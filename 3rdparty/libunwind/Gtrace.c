@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <libunwind.h>
 #include <pthread.h>
 #include <openenclave/internal/sgxtypes.h>
 

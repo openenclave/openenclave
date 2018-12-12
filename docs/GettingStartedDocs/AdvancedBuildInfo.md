@@ -1,5 +1,15 @@
 # Advanced Build Information
 
+## Installing CMake
+
+This project requires at least [CMake 3.13.1](https://cmake.org/download/). This
+is probably not available in your package manager's repositories, but we use the
+`OBJECT` library feature extensively, so you need to install it either manually
+from their website, or with our [install-prereqs](../../scripts/install-prereqs)
+script.
+
+## CMake Configuration
+
 In addition to the standard CMake variables, the following CMake variables
 control the behavior of the Linux make generator for Open Enclave:
 
@@ -32,7 +42,9 @@ during enclave termination.
 
 Multiple variables can be defined in the cmake call with multiple "-D*Var*=*Value*" arguments.
 
-Once cmake has run and the build is configured, build with:
+## Building
+
+Once CMake has run and the build is configured, build with:
 
 ```bash
 make

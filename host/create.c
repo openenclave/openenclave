@@ -199,11 +199,16 @@ static oe_result_t _add_control_pages(
         /* The entry point for the program (from ELF) */
         tcs->oentry = entry;
 
-        /* FS segment: points to page following SSA slots (page[3]) */
-        tcs->fsbase = *vaddr + (4 * OE_PAGE_SIZE);
-
         /* GS segment: points to page following SSA slots (page[3]) */
         tcs->gsbase = *vaddr + (4 * OE_PAGE_SIZE);
+
+        /* FS segment: Used for thread-local variables.
+         * The reserved (unused) space in td_t is used for thread-local
+         * variables.
+         * Since negative offsets are used with FS, FS must point to end of the
+         * segment.
+        */
+        tcs->fsbase = *vaddr + (5 * OE_PAGE_SIZE);
 
         /* Set to maximum value */
         tcs->fslimit = 0xFFFFFFFF;
@@ -443,7 +448,7 @@ static oe_result_t _initialize_enclave(oe_enclave_t* enclave)
     unsigned int subleaf = 0; // pass sub-leaf of 0 - needed for leaf 4
 
     // Initialize enclave cache of CPUID info for emulation
-    for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
+    for (unsigned int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
         oe_get_cpuid(
             i,
@@ -457,7 +462,13 @@ static oe_result_t _initialize_enclave(oe_enclave_t* enclave)
     // Pass the enclave handle to the enclave.
     args.enclave = enclave;
 
-    OE_CHECK(oe_ecall(enclave, OE_ECALL_INIT_ENCLAVE, (uint64_t)&args, NULL));
+    {
+        uint64_t arg_out = 0;
+        OE_CHECK(
+            oe_ecall(
+                enclave, OE_ECALL_INIT_ENCLAVE, (uint64_t)&args, &arg_out));
+        OE_CHECK(arg_out);
+    }
 
     result = OE_OK;
 
@@ -765,7 +776,7 @@ oe_result_t oe_create_enclave(
     OE_CHECK(oe_sgx_build_enclave(&context, enclave_path, NULL, enclave));
 
     /* Push the new created enclave to the global list. */
-    if (_oe_push_enclave_instance(enclave) != 0)
+    if (oe_push_enclave_instance(enclave) != 0)
     {
         OE_RAISE(OE_FAILURE);
     }
@@ -773,7 +784,7 @@ oe_result_t oe_create_enclave(
 #if defined(__linux__)
 
     /* Notify GDB that a new enclave is created */
-    _oe_notify_gdb_enclave_creation(
+    oe_notify_gdb_enclave_creation(
         enclave, enclave->path, (uint32_t)strlen(enclave->path));
 
 #endif /* defined(__linux__) */
@@ -782,6 +793,9 @@ oe_result_t oe_create_enclave(
      * ocalls. Therefore setup ocall table prior to initialization. */
     enclave->ocalls = (const oe_ocall_func_t*)ocall_table;
     enclave->num_ocalls = ocall_table_size;
+
+    /* Setup logging configuration */
+    oe_log_enclave_init(enclave);
 
     /* Invoke enclave initialization. */
     OE_CHECK(_initialize_enclave(enclave));
@@ -816,7 +830,7 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
 #if defined(__linux__)
 
     /* Notify GDB that this enclave is terminated */
-    _oe_notify_gdb_enclave_termination(
+    oe_notify_gdb_enclave_termination(
         enclave, enclave->path, (uint32_t)strlen(enclave->path));
 
 #endif /* defined(__linux__) */
@@ -825,7 +839,7 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
      * and data structures are freed on a best effort basis from here on */
 
     /* Remove this enclave from the global list. */
-    _oe_remove_enclave_instance(enclave);
+    oe_remove_enclave_instance(enclave);
 
     /* Clear the magic number */
     enclave->magic = 0;

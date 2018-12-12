@@ -15,7 +15,7 @@ static void _globals_test(oe_enclave_t* enclave)
     float global_float = 2.0;
     int* global_ptr = (int*)0x2;
     dummy_struct global_struct = {2, 2};
-    dummy_union global_union = {.y = 2};
+    dummy_union global_union = {{0}};
     int global_array[4] = {2, 2, 2, 2};
 
     OE_TEST(

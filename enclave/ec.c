@@ -93,7 +93,7 @@ static oe_result_t _generate_key_pair(
     oe_result_t result = OE_UNEXPECTED;
     mbedtls_ctr_drbg_context* drbg;
     mbedtls_pk_context pk;
-    int curve;
+    mbedtls_ecp_group_id curve;
 
     /* Initialize structures */
     mbedtls_pk_init(&pk);
@@ -426,7 +426,7 @@ oe_result_t oe_ecdsa_signature_write_der(
         if ((n = mbedtls_asn1_write_mpi(&p, buf, &s)) < 0)
             OE_RAISE(OE_FAILURE);
 
-        len += n;
+        len += (size_t)n;
     }
 
     /* Write R to ASN.1 */
@@ -434,7 +434,7 @@ oe_result_t oe_ecdsa_signature_write_der(
         if ((n = mbedtls_asn1_write_mpi(&p, buf, &r)) < 0)
             OE_RAISE(OE_FAILURE);
 
-        len += n;
+        len += (size_t)n;
     }
 
     /* Write the length to ASN.1 */
@@ -442,7 +442,7 @@ oe_result_t oe_ecdsa_signature_write_der(
         if ((n = mbedtls_asn1_write_len(&p, buf, len)) < 0)
             OE_RAISE(OE_FAILURE);
 
-        len += n;
+        len += (size_t)n;
     }
 
     /* Write the tag to ASN.1 */
@@ -452,7 +452,7 @@ oe_result_t oe_ecdsa_signature_write_der(
         if ((n = mbedtls_asn1_write_tag(&p, buf, tag)) < 0)
             OE_RAISE(OE_FAILURE);
 
-        len += n;
+        len += (size_t)n;
     }
 
     /* Check that buffer is big enough */
