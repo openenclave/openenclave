@@ -181,6 +181,8 @@ void oe_handle_verify_report(uint64_t arg_in, uint64_t* arg_out)
     oe_verify_report_args_t arg;
     uint8_t* buffer = NULL;
 
+    OE_UNUSED(arg_out);
+
     OE_CHECK(_safe_copy_verify_report_args(arg_in, &arg, &buffer));
 
     OE_CHECK(oe_verify_report(arg.report, arg.report_size, NULL));

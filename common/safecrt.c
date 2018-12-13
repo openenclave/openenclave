@@ -97,6 +97,8 @@ OE_INLINE oe_result_t _oe_validate_string(char* str, size_t size)
 
 OE_INLINE void _oe_fill_string(char* str, size_t size)
 {
+    OE_UNUSED(str);
+    OE_UNUSED(size);
 #ifndef NDEBUG
     // Fill memory with pattern.
     memset(str, 0xFD, size);

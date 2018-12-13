@@ -36,6 +36,8 @@ void generate_and_save_report(oe_enclave_t* enclave)
     FILE* file = fopen("./data/generated_report.bytes", "wb");
     fwrite(report, 1, report_size, file);
     fclose(file);
+#else
+    OE_UNUSED(enclave);
 #endif
 }
 

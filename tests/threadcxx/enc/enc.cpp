@@ -158,6 +158,8 @@ static std::condition_variable exclusive;
 
 OE_ECALL void WaitForExclusiveAccessCxx(void* args_)
 {
+    OE_UNUSED(args_);
+
     std::stringstream ss;
     std::unique_lock<std::mutex> lock(ex_mutex);
 
@@ -177,6 +179,8 @@ OE_ECALL void WaitForExclusiveAccessCxx(void* args_)
 
 OE_ECALL void RelinquishExclusiveAccessCxx(void* args_)
 {
+    OE_UNUSED(args_);
+
     std::stringstream ss;
 
     std::lock_guard<std::mutex> lg_lock(ex_mutex);

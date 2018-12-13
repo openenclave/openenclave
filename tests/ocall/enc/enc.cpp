@@ -23,6 +23,7 @@ OE_ECALL void Test2(void* args_)
 OE_ECALL void Test4(void* args)
 {
     unsigned char buf[32];
+    OE_UNUSED(args);
 
     /* Call into host with enclave memory */
     oe_memset(buf, 0xAA, sizeof(buf));
@@ -128,6 +129,7 @@ OE_ECALL void TestMyOCall(void* args_)
 OE_ECALL void TestOCallEdgeCases(void* args_)
 {
     oe_result_t result;
+    OE_UNUSED(args_);
 
     /* Null OCALL. */
     result = oe_call_host(NULL, NULL);
@@ -161,6 +163,7 @@ OE_ECALL void test_callback(void* arg)
 OE_ECALL void TestReentrancy(void* args)
 {
     oe_result_t result;
+    OE_UNUSED(args);
 
     result = oe_call_host("TestReentrancy", NULL);
     OE_TEST(result == OE_OK);

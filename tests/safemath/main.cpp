@@ -817,7 +817,7 @@ void _test_signed()
     s64.Run();
 }
 
-int main(int argc, const char* argv[])
+int main()
 {
     /* For 8-bit math, we can quickly exhaust all combinations. */
     _test_8_bit();

@@ -44,7 +44,7 @@ extern "C" void exit(int status)
 
 typedef void (*Handler)(int signal);
 
-Handler signal(int signal, Handler)
+Handler signal(int, Handler)
 {
     /* Ignore! */
     return NULL;
@@ -52,6 +52,7 @@ Handler signal(int signal, Handler)
 
 extern "C" int close(int fd)
 {
+    OE_UNUSED(fd);
     OE_TEST("close() panic" == NULL);
     return 0;
 }
@@ -74,6 +75,8 @@ static int _pthread_create_hook(
     void* (*start_routine)(void*),
     void* arg)
 {
+    OE_UNUSED(attr);
+
     *enc_thread = 0;
     _acquire_lock(&_enc_lock);
     _thread_functions.push_back(

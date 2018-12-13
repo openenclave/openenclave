@@ -970,7 +970,7 @@ oe_result_t oe_cert_find_extension(
                 OE_RAISE(OE_FAILURE);
 
             /* If the caller's buffer is too small, raise error */
-            if (str->length > *size)
+            if ((size_t)str->length > *size)
             {
                 *size = (size_t)str->length;
                 OE_RAISE(OE_BUFFER_TOO_SMALL);

@@ -59,7 +59,13 @@ if (CMAKE_C_COMPILER_ID MATCHES GNU)
     target_compile_options(oecore PRIVATE -Wjump-misses-init)
 endif ()
 
-set_source_files_properties(malloc.c PROPERTIES COMPILE_FLAGS -Wno-conversion)
+# Unfortunately dlmalloc uses GNU extension that allows arithmetic
+# null pointers.
+set_source_files_properties(
+    malloc.c 
+    PROPERTIES COMPILE_FLAGS "-Wno-conversion -Wno-null-pointer-arithmetic")
+
+set_source_files_properties(keys.c PROPERTIES COMPILE_FLAGS -Wno-type-limits)
 
 target_compile_options(oecore PUBLIC
     -m64

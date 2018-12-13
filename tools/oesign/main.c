@@ -418,6 +418,7 @@ void _merge_config_file_options(
     const ConfigFileOptions* options)
 {
     bool initialized = false;
+    OE_UNUSED(path);
 
     /* Determine whether the properties are already initialized */
     if (properties->header.size == sizeof(oe_sgx_enclave_properties_t))

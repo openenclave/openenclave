@@ -688,7 +688,9 @@ if (CMAKE_C_COMPILER_ID MATCHES GNU OR CMAKE_C_COMPILER_ID MATCHES Clang)
     -Wno-missing-braces
     -Wno-parentheses
     -Wno-unknown-pragmas
-    -Wno-conversion)
+    -Wno-conversion
+    -Wno-unused-parameter
+    -Wno-sign-compare)
 endif ()
 # Second: compiler-specific warnings:
 if (CMAKE_C_COMPILER_ID MATCHES GNU)

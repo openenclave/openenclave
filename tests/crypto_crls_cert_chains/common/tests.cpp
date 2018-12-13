@@ -102,6 +102,7 @@ void test_cert_chain_negative(
     const char* leaf2)
 {
     oe_cert_chain_t chain = {0};
+    OE_UNUSED(leaf2);
 
     // Missing cert in chain.
     OE_TEST(

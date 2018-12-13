@@ -39,6 +39,11 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
         ${all_u}
         PROPERTIES COMPILE_FLAGS "-Wno-conversion"
     )
+    set_source_files_properties(
+        testpointer.cpp
+        teststring.cpp
+        PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter"
+    )    
 endif()
 
 target_include_directories(edl_host PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)

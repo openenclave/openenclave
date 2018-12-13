@@ -47,6 +47,10 @@ static oe_result_t _syscall_hook(
 {
     oe_result_t result = OE_UNEXPECTED;
 
+    OE_UNUSED(arg4);
+    OE_UNUSED(arg5);
+    OE_UNUSED(arg6);
+
     if (ret)
         *ret = -1;
 

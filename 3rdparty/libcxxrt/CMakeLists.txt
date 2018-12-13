@@ -17,17 +17,24 @@ add_library(libcxxrt OBJECT
 
 set_source_files_properties(
   libcxxrt/src/dynamic_cast.cc
-  PROPERTIES COMPILE_FLAGS "-Wno-sign-conversion"
+  PROPERTIES COMPILE_FLAGS "-Wno-sign-conversion -Wno-unused-parameter"
 )
 
 set_source_files_properties(
   libcxxrt/src/exception.cc
-  PROPERTIES COMPILE_FLAGS "-Wno-unused-variable -Wno-conversion")
+  PROPERTIES COMPILE_FLAGS "-Wno-unused-variable -Wno-conversion -Wno-unused-parameter")
 
 set_source_files_properties(
   libcxxrt/src/libelftc_dem_gnu3.c
-  PROPERTIES COMPILE_FLAGS "-Wno-conversion"
-)
+  PROPERTIES COMPILE_FLAGS "-Wno-conversion")
+
+set_source_files_properties(
+  libcxxrt/src/stdexcept.cc
+  PROPERTIES COMPILE_FLAGS "-Wno-extra")
+
+set_source_files_properties(
+  libcxxrt/src/typeinfo.cc
+  PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
 
 set_target_properties(libcxxrt PROPERTIES
   POSITION_INDEPENDENT_CODE ON)

@@ -128,6 +128,8 @@ static oe_cond_t exclusive = OE_COND_INITIALIZER;
 
 OE_ECALL void WaitForExclusiveAccess(void* args_)
 {
+    OE_UNUSED(args_);
+
     oe_mutex_lock(&ex_mutex);
 
     // Wait for other threads to finish
@@ -147,6 +149,8 @@ OE_ECALL void WaitForExclusiveAccess(void* args_)
 
 OE_ECALL void RelinquishExclusiveAccess(void* args_)
 {
+    OE_UNUSED(args_);
+
     oe_mutex_lock(&ex_mutex);
 
     // Mark thread as done

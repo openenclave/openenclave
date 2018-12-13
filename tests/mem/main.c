@@ -79,7 +79,7 @@ void TestMem(mem_t* m)
     printf("=== passed TestMem()\n");
 }
 
-int main(int argc, const char* argv[])
+int main()
 {
     /* TestMem dynamic */
     {

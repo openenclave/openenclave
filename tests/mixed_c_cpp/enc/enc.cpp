@@ -7,6 +7,7 @@
 
 void foo_cpp(int a)
 {
+    OE_UNUSED(a);
 }
 
 OE_SET_ENCLAVE_SGX(

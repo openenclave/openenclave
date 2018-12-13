@@ -450,6 +450,7 @@ TEST_FCN void TestRemoteReport(void* args_)
         report_data[i] = static_cast<uint8_t>(i);
     const uint8_t zeros[OE_REPORT_DATA_SIZE] = {0};
 #endif
+    OE_UNUSED(args_);
 
     uint8_t report_buffer[OE_MAX_REPORT_SIZE];
     size_t report_size = sizeof(report_buffer);
@@ -597,6 +598,8 @@ TEST_FCN void TestRemoteReport(void* args_)
 
 TEST_FCN void TestParseReportNegative(void* args_)
 {
+    OE_UNUSED(args_);
+
     uint8_t report_buffer[OE_MAX_REPORT_SIZE] = {0};
     oe_report_t parsed_report = {0};
 
@@ -685,6 +688,8 @@ static void GetSGXTargetInfo(sgx_target_info_t* sgx_target_info)
 
 TEST_FCN void TestLocalVerifyReport(void* args_)
 {
+    OE_UNUSED(args_);
+
     uint8_t target_info[sizeof(sgx_target_info_t)];
     size_t target_info_size = sizeof(target_info);
 
@@ -748,6 +753,8 @@ TEST_FCN void TestLocalVerifyReport(void* args_)
 
 TEST_FCN void TestRemoteVerifyReport(void* args_)
 {
+    OE_UNUSED(args_);
+
     uint8_t report_buffer[OE_MAX_REPORT_SIZE] = {0};
     size_t report_size = sizeof(report_buffer);
 

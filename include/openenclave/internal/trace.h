@@ -18,8 +18,8 @@ typedef enum _log_level_ {
 } log_level_t;
 
 /* Maximum log length */
-#define OE_LOG_MESSAGE_LEN_MAX 2048
-#define MAX_FILENAME_LEN 256
+#define OE_LOG_MESSAGE_LEN_MAX 2048U
+#define MAX_FILENAME_LEN 256U
 
 typedef struct _oe_log_filter
 {

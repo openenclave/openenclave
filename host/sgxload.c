@@ -298,6 +298,7 @@ static oe_result_t _sgx_free_enclave_memory(
     else /* FLC simulation mode needs to munmap. */
 #endif
     {
+        OE_UNUSED(is_simulation);
         munmap(addr, size);
     }
 

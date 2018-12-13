@@ -3,6 +3,7 @@
 
 #include <libc.h>
 #include <locale.h>
+#include <openenclave/enclave.h>
 #include <string.h>
 
 /* ATTN: should these assert? */
@@ -39,6 +40,7 @@ static const struct __locale_struct c_locale = {0};
 
 locale_t uselocale(locale_t newloc)
 {
+    OE_UNUSED(newloc);
     return 0;
 }
 
@@ -49,16 +51,20 @@ struct lconv* localeconv(void)
 
 void freelocale(locale_t loc)
 {
+    OE_UNUSED(loc);
 }
 
 char* setlocale(int category, const char* locale)
 {
+    OE_UNUSED(category);
+    OE_UNUSED(locale);
     return NULL;
 }
 
 locale_t newlocale(int mask, const char* locale, locale_t loc)
 {
     int builtin;
+    OE_UNUSED(mask);
 
     /* Currently we will support basic C/POSIX locale */
     builtin = (locale[0] == 'C' && !locale[1]) || !strcmp(locale, "POSIX");

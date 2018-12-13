@@ -373,6 +373,7 @@ static oe_result_t _read_boolean_extension(
     oe_result_t result = OE_INVALID_SGX_CERTIFICATE_EXTENSIONS;
     uint8_t* data = NULL;
     size_t data_length = 0;
+    OE_UNUSED(tag);
 
     OE_CHECK(
         _read_extension(itr, end, oid, SGX_BOOLEAN_TAG, &data, &data_length));
