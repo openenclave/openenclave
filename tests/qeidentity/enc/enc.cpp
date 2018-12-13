@@ -20,6 +20,8 @@ oe_result_t test_verify_qe_identity_info(
     return oe_parse_qe_identity_info_json(
         (const uint8_t*)info_json, strlen(info_json) + 1, parsed_info);
 #else
+    OE_UNUSED(info_json);
+    OE_UNUSED(parsed_info);
     return OE_OK;
 #endif
 }

@@ -21,6 +21,8 @@ static volatile bool exit_thread = false;
 
 OE_ECALL void CBTestWaiterThreadImpl(void* args)
 {
+    OE_UNUSED(args);
+
     oe_mutex_lock(&mutex);
 
     while (!exit_thread)
@@ -42,6 +44,8 @@ OE_ECALL void CBTestWaiterThreadImpl(void* args)
 
 OE_ECALL void CBTestSignalThreadImpl(void* args)
 {
+    OE_UNUSED(args);
+
     // Iterate for enough number of times to
     // detect any sporadic behavior.
     // Note: The original issue that the accompanying fix

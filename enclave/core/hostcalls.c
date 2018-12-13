@@ -156,7 +156,7 @@ int oe_host_vfprintf(int device, const char* fmt, oe_va_list ap_)
     }
 
     /* If string was truncated, retry with correctly sized buffer */
-    if (n >= sizeof(buf))
+    if (n >= (int)sizeof(buf))
     {
         if (!(p = oe_stack_alloc((uint32_t)n + 1)))
             return -1;

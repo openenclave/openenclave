@@ -258,7 +258,7 @@ static void _malloc_dump(size_t size, void* addrs[], int num_addrs)
 
     oe_host_printf("%llu bytes\n", OE_LLX(size));
 
-    for (size_t i = 0; i < num_addrs; i++)
+    for (int i = 0; i < num_addrs; i++)
         oe_host_printf("%s(): %p\n", syms[i], addrs[i]);
 
     oe_host_printf("\n");

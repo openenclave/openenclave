@@ -165,6 +165,11 @@ oe_result_t VerifyQuoteImpl(
     oe_ec_public_key_t expected_root_public_key = {0};
     bool key_equal = false;
 
+    OE_UNUSED(pck_crl);
+    OE_UNUSED(pck_crl_size);
+    OE_UNUSED(tcb_info_json);
+    OE_UNUSED(tcb_info_json_size);
+
     OE_CHECK(
         _parse_quote(
             quote,

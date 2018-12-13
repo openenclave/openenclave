@@ -505,7 +505,7 @@ oe_result_t oe_ecdsa_signature_write_der(
         OE_RAISE(OE_FAILURE);
 
     /* Copy binary signature to output buffer */
-    if (signature && sig_len <= *signature_size)
+    if (signature && ((size_t)sig_len <= *signature_size))
     {
         uint8_t* p = signature;
 
@@ -517,7 +517,7 @@ oe_result_t oe_ecdsa_signature_write_der(
     }
 
     /* Check whether buffer is too small */
-    if (sig_len > *signature_size)
+    if ((size_t)sig_len > *signature_size)
     {
         *signature_size = (size_t)sig_len;
         OE_RAISE(OE_BUFFER_TOO_SMALL);

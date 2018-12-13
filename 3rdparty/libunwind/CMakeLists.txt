@@ -135,7 +135,8 @@ elseif (CMAKE_C_COMPILER_ID MATCHES Clang)
     -Wno-header-guard
     -Wno-uninitialized
     -Wno-unused-variable
-    -Wno-macro-redefined)
+    -Wno-macro-redefined
+    -Wno-unused-parameter)
 endif ()
 
 # Allow arithmetic on void*

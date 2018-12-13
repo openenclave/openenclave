@@ -11,4 +11,5 @@
 
 void foo_c(int a)
 {
+    OE_UNUSED(a);
 }

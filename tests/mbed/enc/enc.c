@@ -81,6 +81,9 @@ static oe_result_t _syscall_hook(
     long* ret)
 {
     oe_result_t result = OE_UNEXPECTED;
+    OE_UNUSED(arg4);
+    OE_UNUSED(arg5);
+    OE_UNUSED(arg6);
 
     if (ret)
         *ret = -1;
@@ -166,14 +169,14 @@ static oe_result_t _syscall_hook(
             const struct iovec* iov = (const struct iovec*)arg2;
             unsigned long iovcnt = (unsigned long)arg3;
             // Calculating  buffer length
-            for (int i = 0; i < iovcnt; i++)
+            for (size_t i = 0; i < iovcnt; i++)
             {
                 total_buff_len = total_buff_len + iov[i].iov_len;
             }
             // Considering string terminating character
             total_buff_len += 1;
             str_full = (char*)calloc(total_buff_len, sizeof(char));
-            for (int i = 0; i < iovcnt; i++)
+            for (size_t i = 0; i < iovcnt; i++)
             {
                 strncat(str_full, iov[i].iov_base, iov[i].iov_len);
             }
@@ -255,6 +258,8 @@ int test(const char* in_testname, char** out_testname, struct mbed_args* args)
 
 void oe_handle_verify_report(uint64_t arg_in, uint64_t* arg_out)
 {
+    OE_UNUSED(arg_in);
+    OE_UNUSED(arg_out);
     assert("oe_handle_verify_report()" == NULL);
     abort();
 }

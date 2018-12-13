@@ -72,6 +72,11 @@ set_source_files_properties(
   PROPERTIES COMPILE_FLAGS "-Wno-conversion"
 )
 
+set_source_files_properties(
+  libcxx/src/system_error.cpp
+  PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter"
+)
+
 install(TARGETS libcxx EXPORT openenclave-targets
   PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
 

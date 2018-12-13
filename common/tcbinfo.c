@@ -342,6 +342,8 @@ static oe_result_t _read_tcb_level(
     const uint8_t* status = NULL;
     size_t status_length = 0;
 
+    OE_UNUSED(parsed_info);
+
     OE_CHECK(_read('{', itr, end));
 
     OE_TRACE_INFO("Reading tcb\n");

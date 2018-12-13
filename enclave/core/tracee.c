@@ -19,15 +19,11 @@ const char* get_filename_from_path(const char* path)
 {
     if (path)
     {
-        for (size_t i = oe_strlen(path) - 1; i >= 0; i--)
+        for (size_t i = oe_strlen(path); i > 0; i--)
         {
-            if ((path[i] == '/') || (path[i] == '\\'))
+            if ((path[i - 1] == '/') || (path[i - 1] == '\\'))
             {
-                return &path[i + 1];
-            }
-            else if (i == 0)
-            {
-                break;
+                return &path[i];
             }
         }
     }
@@ -188,7 +184,7 @@ oe_result_t oe_log(log_level_t level, const char* fmt, ...)
     oe_va_start(ap, fmt);
     n = oe_vsnprintf(
         &args->message[bytes_written],
-        (size_t)(OE_LOG_MESSAGE_LEN_MAX - bytes_written),
+        OE_LOG_MESSAGE_LEN_MAX - (size_t)bytes_written,
         fmt,
         ap);
     oe_va_end(ap);

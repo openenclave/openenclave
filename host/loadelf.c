@@ -826,6 +826,7 @@ static oe_result_t _sgx_load_enclave_properties(
     oe_sgx_enclave_properties_t* properties)
 {
     oe_result_t result = OE_UNEXPECTED;
+    OE_UNUSED(section_name);
 
     /* Copy from the image at oeinfo_rva. */
     OE_CHECK(
@@ -847,6 +848,7 @@ static oe_result_t _sgx_update_enclave_properties(
     const oe_sgx_enclave_properties_t* properties)
 {
     oe_result_t result = OE_UNEXPECTED;
+    OE_UNUSED(section_name);
 
     /* Copy to both the image and ELF file*/
     OE_CHECK(

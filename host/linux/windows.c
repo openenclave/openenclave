@@ -59,6 +59,10 @@ BOOL VirtualProtect(
     DWORD flNewProtect,
     PDWORD lpflOldProtect)
 {
+    OE_UNUSED(lpAddress);
+    OE_UNUSED(dwSize);
+    OE_UNUSED(flNewProtect);
+    OE_UNUSED(lpflOldProtect);
     /* Nothing to do. */
     return true;
 }

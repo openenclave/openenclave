@@ -35,6 +35,8 @@ const void* _check_address(const void* ptr)
  */
 int oe_backtrace(void** buffer, int size)
 {
+    OE_UNUSED(buffer);
+    OE_UNUSED(size);
 #ifdef OE_USE_DEBUG_MALLOC
     // Fetch the frame-pointer of the current function.
     // The current function oe_backtrace is not expected to be inlined.
@@ -132,7 +134,7 @@ oe_result_t oe_print_backtrace(void)
 
     oe_host_printf("=== backtrace:\n");
 
-    for (size_t i = 0; i < size; i++)
+    for (int i = 0; i < size; i++)
         oe_host_printf("%s(): %p\n", syms[i], buffer[i]);
 
     oe_host_printf("\n");

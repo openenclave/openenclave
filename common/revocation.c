@@ -175,6 +175,8 @@ oe_result_t oe_enforce_revocation(
     oe_datetime_t crl_this_update_date = {0};
     oe_datetime_t crl_next_update_date = {0};
 
+    OE_UNUSED(pck_cert_chain);
+
     if (intermediate_cert == NULL || leaf_cert == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 

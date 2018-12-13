@@ -280,7 +280,7 @@ MEM_INLINE int str_printf(str_t* str, const char* format, ...)
     va_end(ap);
 
     /* If buffer was not big enough and using dynamic memory */
-    if (r + 1 > str_cap(str))
+    if ((size_t)r + 1 > str_cap(str))
     {
         /* Expand memory allocation to required size */
         if (str_reserve(str, (size_t)r + 1) != 0)

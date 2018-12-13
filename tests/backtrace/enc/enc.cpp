@@ -29,6 +29,9 @@ extern "C" OE_NEVER_INLINE void func4(size_t num_syms, const char** syms)
 {
     Backtrace b;
 
+    OE_UNUSED(num_syms);
+    OE_UNUSED(syms);
+
     b.size = oe_backtrace(b.buffer, OE_COUNTOF(b.buffer));
 
     /* Check for truncation */
@@ -85,6 +88,9 @@ extern "C" bool test(size_t num_syms, const char** syms)
 
     Backtrace b;
     GetBacktrace(&b);
+
+    OE_UNUSED(num_syms);
+    OE_UNUSED(syms);
 
 /* Backtrace does not work in non-debug builds */
 #ifdef OE_USE_DEBUG_MALLOC
