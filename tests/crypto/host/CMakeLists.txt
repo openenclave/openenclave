@@ -20,16 +20,6 @@ add_executable(hostcrypto
     ../sha_tests.c
     ../tests.c
     ../utils.c)
-else()
-add_executable(hostcrypto
-    main.c
-    ../hash.c
-    ../hmac_tests.c
-    ../kdf_tests.c
-    ../sha_tests.c
-    ../tests.c
-    ../utils.c)
-endif()
 
 # ========================= TestCRL & TestASN1 ================================
 
@@ -124,7 +114,17 @@ COMMAND openssl rsa -in ${DATA_DIR}/Leaf.key.pem -pubout -out ${DATA_DIR}/Leaf_p
 
 # Generate the hash Signature from Private key
 COMMAND openssl dgst -sha256 -sign ${DATA_DIR}/Leaf.key.pem -out ${DATA_DIR}/test_rsa_signature ${DATA_DIR}/test_sign_alphabet.txt
-
 )
+else()
+add_executable(hostcrypto
+    main.c
+    ../hash.c
+    ../hmac_tests.c
+    ../kdf_tests.c
+    ../sha_tests.c
+    ../tests.c
+    ../utils.c)
+endif()
+
 target_link_libraries(hostcrypto oehost)
 add_test(tests/crypto/host hostcrypto)
