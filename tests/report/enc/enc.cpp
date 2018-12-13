@@ -10,7 +10,7 @@
 #include <string.h>
 #include "../../../common/quote.h"
 #include "../../../common/tcbinfo.h"
-#include "../common/tests.cpp"
+#include "../common/tests.h"
 #include "tests_t.h"
 
 oe_result_t test_verify_tcb_info(

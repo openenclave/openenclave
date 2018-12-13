@@ -1,7 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#ifdef OE_BUILD_ENCLAVE
+#include <openenclave/internal/enclavelibc.h>
+#endif
 #include <openenclave/internal/report.h>
+#include <openenclave/internal/tests.h>
+#include "../common/tests.h"
 
 #ifdef OE_BUILD_ENCLAVE
 
@@ -12,8 +17,6 @@
 #define GetReport oe_get_report
 
 #define VerifyReport oe_verify_report
-
-#define TEST_FCN OE_ECALL
 
 #else
 
@@ -52,8 +55,6 @@ oe_result_t VerifyReport(
     // Local attestation requires enclave.
     return oe_verify_report(g_enclave, report, report_size, parsed_report);
 }
-
-#define TEST_FCN
 
 #endif
 
@@ -448,7 +449,6 @@ void test_remote_report()
         report_data[i] = static_cast<uint8_t>(i);
     const uint8_t zeros[OE_REPORT_DATA_SIZE] = {0};
 #endif
-    OE_UNUSED(args_);
 
     uint8_t report_buffer[OE_MAX_REPORT_SIZE];
     size_t report_size = sizeof(report_buffer);
@@ -596,8 +596,6 @@ void test_remote_report()
 
 void test_parse_report_negative()
 {
-    OE_UNUSED(args_);
-
     uint8_t report_buffer[OE_MAX_REPORT_SIZE] = {0};
     oe_report_t parsed_report = {0};
 
@@ -686,8 +684,6 @@ static void GetSGXTargetInfo(sgx_target_info_t* sgx_target_info)
 
 void test_local_verify_report()
 {
-    OE_UNUSED(args_);
-
     uint8_t target_info[sizeof(sgx_target_info_t)];
     size_t target_info_size = sizeof(target_info);
 
@@ -751,8 +747,6 @@ void test_local_verify_report()
 
 void test_remote_verify_report()
 {
-    OE_UNUSED(args_);
-
     uint8_t report_buffer[OE_MAX_REPORT_SIZE] = {0};
     size_t report_size = sizeof(report_buffer);
 
