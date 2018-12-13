@@ -12,13 +12,13 @@
 static unsigned char to_num(char c)
 {
     if (c >= '0' && c <= '9')
-        return c - '0';
+        return (unsigned char)(c - '0');
 
     if (c >= 'A' && c <= 'F')
-        return 10 + (c - 'A');
+        return (unsigned char)(10 + (c - 'A'));
 
     OE_TEST(c >= 'a' && c <= 'f');
-    return 10 + (c - 'a');
+    return (unsigned char)(10 + (c - 'a'));
 }
 
 void hex_to_buf(const char* str, uint8_t* buf, size_t bufsize)

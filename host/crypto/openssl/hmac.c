@@ -80,7 +80,7 @@ oe_result_t oe_hmac_sha256_update(
     if (!context || !data || size > OE_INT_MAX)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (HMAC_Update(impl->ctx, (const uint8_t*)data, (int)size) == 0)
+    if (HMAC_Update(impl->ctx, (const uint8_t*)data, size) == 0)
         OE_RAISE(OE_FAILURE);
 
     result = OE_OK;
