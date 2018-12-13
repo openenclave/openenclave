@@ -238,6 +238,9 @@ static void _test_generate_from_private()
     uint8_t private_raw[32];
     oe_ec_private_key_t private_key = {0};
     oe_ec_public_key_t public_key = {0};
+    oe_ec_private_key_t private_key2 = {0};
+    oe_ec_public_key_t public_key2 = {0};
+    bool equal = false;
 
     /* Generate a random 256 bit key. */
     r = oe_random_internal(private_raw, sizeof(private_raw));
@@ -257,8 +260,25 @@ static void _test_generate_from_private()
     /* Test that signing works with ECC key. */
     _test_generate_common(&private_key, &public_key);
 
+    /* Test that the key generation is deterministic. */
+    r = oe_ec_generate_key_pair_from_private(
+        OE_EC_TYPE_SECP256R1,
+        private_raw,
+        sizeof(private_raw),
+        &private_key2,
+        &public_key2);
+    OE_TEST(r == OE_OK);
+
+    _test_generate_common(&private_key2, &public_key2);
+
+    r = oe_ec_public_key_equal(&public_key, &public_key2, &equal);
+    OE_TEST(r == OE_OK);
+    OE_TEST(equal);
+
     oe_ec_private_key_free(&private_key);
     oe_ec_public_key_free(&public_key);
+    oe_ec_private_key_free(&private_key2);
+    oe_ec_public_key_free(&public_key2);
 
     /* Key limits are 1 <= key <= order. Test 0 key fails. */
     OE_TEST(
