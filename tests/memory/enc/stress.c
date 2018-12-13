@@ -25,7 +25,7 @@
 #define TEST_GET_VAL 6
 #define NUM_TESTS 7
 
-static inline size_t _randx(size_t x)
+static inline int _randx(int x)
 {
     /* Note that rand() % N is biased if RAND_MAX + 1 isn't divisible
      * by N. But, slight probability bias doesn't really matter in these
@@ -99,7 +99,7 @@ static void _handle_alloc(
             oe_abort();
     }
 
-    *index_ = index;
+    *index_ = (int)index;
     *max_size_ = max_size;
 }
 
@@ -119,18 +119,22 @@ static void _run_malloc_test(size_t size)
     int index = 0;
     size_t original_size = size;
 
+    // Make sure that the value can fit within a double since we use
+    // double arithmetic below.
+    OE_TEST(original_size == (double)original_size);
+
     for (int i = 0; i < ITERS; i++)
     {
         /* Malloc if our array is empty. Otherwise, pick a random
          * fuction to execute. */
-        size_t action = index == 0 ? TEST_MALLOC : _randx(NUM_TESTS);
+        int action = index == 0 ? TEST_MALLOC : _randx(NUM_TESTS);
 
         switch (action)
         {
             case TEST_MALLOC:
             case TEST_CALLOC:
             case TEST_REALLOC:
-                if (size < original_size * 0.15)
+                if (size < (size_t)((double)original_size * 0.15))
                 {
                     /* Getting low on memory. Free all memory and do malloc. */
                     _free_buffers(array, index);
@@ -172,7 +176,7 @@ static void _run_malloc_test(size_t size)
 
 void init_malloc_stress_test()
 {
-    srand(time(NULL));
+    srand((int)time(NULL));
 }
 
 void malloc_stress_test(int threads)

@@ -248,25 +248,25 @@ void ocall_basic_types(
     check_type<unsigned long long>(args.arg20);
 
     OE_TEST(arg1 == '?');
-    OE_TEST(arg2 = 3);
-    OE_TEST(arg3 = 4);
-    OE_TEST(arg4 = 3.1415f);
-    OE_TEST(arg5 = 1.0 / 3.0);
-    OE_TEST(arg6 = 8);
-    OE_TEST(arg7 = 9);
-    OE_TEST(arg8 = 10);
-    OE_TEST(arg9 = 11);
-    OE_TEST(arg10 = 12);
-    OE_TEST(arg11 = 13);
-    OE_TEST(arg12 = 14);
-    OE_TEST(arg13 = 15);
-    OE_TEST(arg14 = 16);
-    OE_TEST(arg15 = 17);
-    OE_TEST(arg16 = 18);
-    OE_TEST(arg17 = 255);
-    OE_TEST(arg18 = 19);
-    OE_TEST(arg19 = 20);
-    OE_TEST(arg20 = 21);
+    OE_TEST(arg2 == 3);
+    OE_TEST(arg3 == 4);
+    OE_TEST(arg4 == 3.1415f);
+    OE_TEST(arg5 == 1.0 / 3.0);
+    OE_TEST(arg6 == 8);
+    OE_TEST(arg7 == 9);
+    OE_TEST(arg8 == 10);
+    OE_TEST(arg9 == 11);
+    OE_TEST(arg10 == 12);
+    OE_TEST(arg11 == 13);
+    OE_TEST(arg12 == 14);
+    OE_TEST(arg13 == 15);
+    OE_TEST(arg14 == 16);
+    OE_TEST(arg15 == 17);
+    OE_TEST(arg16 == 18);
+    OE_TEST(arg17 == 255);
+    OE_TEST(arg18 == 19);
+    OE_TEST(arg19 == 20);
+    OE_TEST(arg20 == 21);
 }
 
 void ocall_basic_non_portable_types(

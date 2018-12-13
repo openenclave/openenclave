@@ -32,9 +32,9 @@ void Test(oe_enclave_t* enclave, uint32_t pid)
     }
 }
 
-OE_OCALL void ExitOCall(void* arg)
+OE_OCALL void ExitOCall(uint64_t arg)
 {
-    exit((uint64_t)arg);
+    exit(static_cast<int>(arg));
 }
 
 static int _get_opt(

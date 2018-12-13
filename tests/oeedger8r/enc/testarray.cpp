@@ -13,16 +13,16 @@ template <typename T>
 static void init_arrays(T (&a1)[2], T (&a2)[2][2], T (&a3)[3][3], T (&a4)[4][4])
 {
     for (size_t i = 0; i < 2; ++i)
-        ((T*)a1)[i] = i + 1;
+        ((T*)a1)[i] = static_cast<T>(i + 1);
 
     for (size_t i = 0; i < 4; ++i)
-        ((T*)a2)[i] = i + 1;
+        ((T*)a2)[i] = static_cast<T>(i + 1);
 
     for (size_t i = 0; i < 9; ++i)
-        ((T*)a3)[i] = i + 1;
+        ((T*)a3)[i] = static_cast<T>(i + 1);
 
     for (size_t i = 0; i < 16; ++i)
-        ((T*)a4)[i] = i + 1;
+        ((T*)a4)[i] = static_cast<T>(i + 1);
 }
 
 template <typename T, typename F>
@@ -126,7 +126,7 @@ static void ecall_array_fun_impl(T a1[2], T a2[2][2], T a3[3][3], T a4[4][4])
         OE_TEST(oe_is_within_enclave(a3, sizeof(T) * 3 * 3));
         for (int i = 0; i < 9; ++i)
         {
-            ((T*)a3)[i] = i;
+            ((T*)a3)[i] = static_cast<T>(i);
         }
     }
 

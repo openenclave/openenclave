@@ -24,7 +24,7 @@ int DivideByZeroExceptionFunction(void)
     volatile float f = 0;
     volatile double d = 0;
 
-    f = 0.31;
+    f = 0.31f;
     d = 0.32;
 
     // Using inline assembly for idiv to prevent it being optimized out
@@ -125,14 +125,13 @@ static oe_vectored_exception_handler_t g_test_div_by_zero_handler;
 
 int VectorExceptionSetup()
 {
-    uint64_t ret = -1;
     oe_result_t result;
 
     // Add one exception handler.
     result = oe_add_vectored_exception_handler(false, TestDivideByZeroHandler);
     if (result != OE_OK)
     {
-        return ret;
+        return -1;
     }
 
     // Remove the exception handler.
@@ -145,7 +144,7 @@ int VectorExceptionSetup()
     result = oe_add_vectored_exception_handler(true, TestDivideByZeroHandler);
     if (result != OE_OK)
     {
-        return ret;
+        return -1;
     }
 
     // Remove the exception handler.
@@ -161,7 +160,7 @@ int VectorExceptionSetup()
             false, g_test_pass_through_handlers[i]);
         if (result != OE_OK)
         {
-            return ret;
+            return -1;
         }
     }
 
@@ -169,7 +168,7 @@ int VectorExceptionSetup()
     result = oe_add_vectored_exception_handler(false, TestDivideByZeroHandler);
     if (result == OE_OK)
     {
-        return ret;
+        return -1;
     }
 
     // Remove all registered handlers.
@@ -189,7 +188,7 @@ int VectorExceptionSetup()
             true, g_test_pass_through_handlers[i]);
         if (result != OE_OK)
         {
-            return ret;
+            return -1;
         }
     }
 
@@ -197,7 +196,7 @@ int VectorExceptionSetup()
     result = oe_add_vectored_exception_handler(true, TestDivideByZeroHandler);
     if (result == OE_OK)
     {
-        return ret;
+        return -1;
     }
 
     // Remove all registered handlers.
@@ -217,7 +216,7 @@ int VectorExceptionSetup()
             false, g_test_pass_through_handlers[i]);
         if (result != OE_OK)
         {
-            return ret;
+            return -1;
         }
     }
 
@@ -226,11 +225,10 @@ int VectorExceptionSetup()
     result = oe_add_vectored_exception_handler(false, TestDivideByZeroHandler);
     if (result != OE_OK)
     {
-        return ret;
+        return -1;
     }
 
-    ret = 0;
-    return ret;
+    return 0;
 }
 
 int VectorExceptionCleanup()

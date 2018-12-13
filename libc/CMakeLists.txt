@@ -687,7 +687,8 @@ if (CMAKE_C_COMPILER_ID MATCHES GNU OR CMAKE_C_COMPILER_ID MATCHES Clang)
   target_compile_options(oelibc PRIVATE
     -Wno-missing-braces
     -Wno-parentheses
-    -Wno-unknown-pragmas)
+    -Wno-unknown-pragmas
+    -Wno-conversion)
 endif ()
 # Second: compiler-specific warnings:
 if (CMAKE_C_COMPILER_ID MATCHES GNU)

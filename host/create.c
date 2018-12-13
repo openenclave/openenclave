@@ -467,7 +467,7 @@ static oe_result_t _initialize_enclave(oe_enclave_t* enclave)
         OE_CHECK(
             oe_ecall(
                 enclave, OE_ECALL_INIT_ENCLAVE, (uint64_t)&args, &arg_out));
-        OE_CHECK(arg_out);
+        OE_CHECK((oe_result_t)arg_out);
     }
 
     result = OE_OK;

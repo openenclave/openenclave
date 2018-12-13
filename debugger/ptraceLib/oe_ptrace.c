@@ -347,7 +347,7 @@ pid_t waitpid(pid_t pid, int* status, int options)
     // Handle the traps.
     if (WIFSTOPPED(*status) && WSTOPSIG(*status) == SIGTRAP)
     {
-        int ret;
+        long ret;
         int64_t flags;
 
         // Cleanup the single step flag.
