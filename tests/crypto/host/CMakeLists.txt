@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
-
 set(DATA_DIR "../data")
 add_executable(hostcrypto 
     main.c
@@ -27,16 +26,27 @@ COMMAND ${CMAKE_COMMAND} -E copy  ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/interm
 COMMAND ${CMAKE_COMMAND} -E copy  ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/root.cnf ${CMAKE_CURRENT_BINARY_DIR}/${DATA_DIR}/root.cnf
 COMMAND openssl genrsa -out ${DATA_DIR}/RootCA.key.pem
 COMMAND openssl req -new -x509 -key ${DATA_DIR}/RootCA.key.pem -out ${DATA_DIR}/RootCA.crt.pem -days 3650 -subj "/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=Root" 
-# Creating Intermediate certificates signed by the Root CA
-COMMAND echo 'Creating Intermediate certificates signed by the root CA....'
+# We want to generate certificates used in this tests with at least one second apart to make it possible to sort those certificate by time
+# "Not Before" of a x509 certificate, which has time resolution up to second
+# Creating Intermediate CA certificate, signed by the Intermediate CA
+COMMAND sleep 1
 COMMAND openssl genrsa -out ${DATA_DIR}/Intermediate.key.pem
 COMMAND openssl req -new -key ${DATA_DIR}/Intermediate.key.pem -out ${DATA_DIR}/Intermediate.csr -subj "/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=Intermediate"
 COMMAND openssl x509 -req -in ${DATA_DIR}/Intermediate.csr -CA ${DATA_DIR}/RootCA.crt.pem -CAkey ${DATA_DIR}/RootCA.key.pem -CAcreateserial -out ${DATA_DIR}/Intermediate.crt.pem -days 3650
-# Creating Leaf certificates signed by the Root CA
-COMMAND echo 'Creating Leaf certificates signed by the root CA....'
+
+# Creating Leaf certificates signed by the Intermediate CA
+COMMAND sleep 1
+COMMAND echo 'Creating Leaf certificates signed by the Intermediate CA....'
 COMMAND openssl genrsa -out ${DATA_DIR}/Leaf.key.pem
 COMMAND openssl req -new -key ${DATA_DIR}/Leaf.key.pem -out ${DATA_DIR}/Leaf.csr -subj "/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=Leaf"
-COMMAND openssl x509 -req -in ${DATA_DIR}/Leaf.csr -CA ${DATA_DIR}/RootCA.crt.pem -CAkey ${DATA_DIR}/RootCA.key.pem -CAcreateserial -out ${DATA_DIR}/Leaf.crt.pem -days 3650
+COMMAND openssl x509 -req -in ${DATA_DIR}/Leaf.csr -CA ${DATA_DIR}/Intermediate.crt.pem -CAkey ${DATA_DIR}/Intermediate.key.pem -CAcreateserial -out ${DATA_DIR}/Leaf.crt.pem -days 3650
+
+# Creating Leaf certificates signed by the Root CA
+COMMAND sleep 1
+COMMAND echo 'Creating Leaf certificates signed by the Root CA....'
+COMMAND openssl genrsa -out ${DATA_DIR}/Leaf2.key.pem
+COMMAND openssl req -new -key ${DATA_DIR}/Leaf2.key.pem -out ${DATA_DIR}/Leaf2.csr -subj "/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=Leaf"
+COMMAND openssl x509 -req -in ${DATA_DIR}/Leaf2.csr -CA ${DATA_DIR}/RootCA.crt.pem -CAkey ${DATA_DIR}/RootCA.key.pem -CAcreateserial -out ${DATA_DIR}/Leaf2.crt.pem -days 3650
 
 #  Setup Certificate Revocation lists for the following test cases
 #  intermediade_crl is issued by Intermediate which revokes leaf cert
@@ -50,8 +60,8 @@ COMMAND echo "00" > root_crl_number
 COMMAND openssl ca -gencrl -config ${DATA_DIR}/intermediate.cnf -out ${DATA_DIR}/intermediate_crl.pem
 COMMAND openssl ca -gencrl -config ${DATA_DIR}/root.cnf -out ${DATA_DIR}/root_crl.pem
 
-COMMAND openssl ca -revoke ${DATA_DIR}/Leaf.crt.pem -keyfile ${DATA_DIR}/Intermediate.key.pem -cert ${DATA_DIR}/Intermediate.crt.pem -config ${DATA_DIR}/intermediate.cnf
-COMMAND openssl ca -revoke ${DATA_DIR}/Leaf.crt.pem -keyfile ${DATA_DIR}/RootCA.key.pem -cert ${DATA_DIR}/RootCA.crt.pem -config ${DATA_DIR}/root.cnf
+COMMAND openssl ca -revoke ${DATA_DIR}/Leaf2.crt.pem -keyfile ${DATA_DIR}/Intermediate.key.pem -cert ${DATA_DIR}/Intermediate.crt.pem -config ${DATA_DIR}/intermediate.cnf
+COMMAND openssl ca -revoke ${DATA_DIR}/Leaf2.crt.pem -keyfile ${DATA_DIR}/RootCA.key.pem -cert ${DATA_DIR}/RootCA.crt.pem -config ${DATA_DIR}/root.cnf
 
 COMMAND openssl ca -gencrl -config ${DATA_DIR}/intermediate.cnf -out ${DATA_DIR}/intermediate_crl.pem
 COMMAND openssl ca -gencrl -config ${DATA_DIR}/root.cnf -out ${DATA_DIR}/root_crl.pem
@@ -112,4 +122,5 @@ COMMAND openssl dgst -sha256 -sign ${DATA_DIR}/Leaf.key.pem -out ${DATA_DIR}/tes
 
 )
 target_link_libraries(hostcrypto oehost)
+
 add_test(tests/crypto/host hostcrypto)

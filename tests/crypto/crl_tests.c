@@ -141,12 +141,7 @@ static void _test_get_dates(void)
     OE_TEST(last.day == _time.day);
     OE_TEST(last.hours == _time.hours);
     OE_TEST(last.minutes == _time.minutes);
-    // TEMPORARY FIX: _time is the certificate file's timestamp
-    // whereas last.seconds is the actual issue time of the certificate.
-    // Sometimes they can be off by 1 depending upon when the file
-    // write operation completes.
-    OE_TEST(
-        last.seconds == _time.seconds || (last.seconds + 1U == _time.seconds));
+    OE_TEST(last.seconds == _time.seconds);
 
     OE_TEST(next.year == _time.year + 1);
     OE_TEST(next.month == _time.month);
@@ -189,10 +184,10 @@ static void _test_verify_with_two_crls(
 void TestCRL(void)
 {
     OE_TEST(read_cert("../data/Intermediate.crt.pem", _CERT1) == OE_OK);
-    OE_TEST(read_cert("../data/Leaf.crt.pem", _CERT2) == OE_OK);
+    OE_TEST(read_cert("../data/Leaf2.crt.pem", _CERT2) == OE_OK);
 
     OE_TEST(
-        read_chain("../data/Leaf.crt.pem", "../data/RootCA.crt.pem", _CHAIN1) ==
+        read_chain("../data/Leaf2.crt.pem", "../data/RootCA.crt.pem", _CHAIN1) ==
         OE_OK);
     OE_TEST(
         read_chain(
