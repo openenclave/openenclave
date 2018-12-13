@@ -343,20 +343,23 @@ oe_result_t oe_ec_generate_key_pair_from_private(
     mbedtls_result =
         mbedtls_pk_setup(&key, mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY));
     if (mbedtls_result != 0)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE_MSG(OE_FAILURE, "mbedtls error: 0x%x", mbedtls_result);
 
     keypair = mbedtls_pk_ec(key);
-    if (mbedtls_ecp_group_load(&keypair->grp, _get_group_id(curve)) != 0)
-        OE_RAISE(OE_FAILURE);
+    mbedtls_result =
+        mbedtls_ecp_group_load(&keypair->grp, _get_group_id(curve));
+    if (mbedtls_result != 0)
+        OE_RAISE_MSG(OE_FAILURE, "mbedtls error: 0x%x", mbedtls_result);
 
     mbedtls_result = mbedtls_mpi_read_binary(
         &keypair->d, private_key_buf, private_key_buf_size);
 
     if (mbedtls_result != 0)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE_MSG(OE_FAILURE, "mbedtls error: 0x%x", mbedtls_result);
 
-    if (mbedtls_ecp_check_privkey(&keypair->grp, &keypair->d) != 0)
-        OE_RAISE(OE_FAILURE);
+    mbedtls_result = mbedtls_ecp_check_privkey(&keypair->grp, &keypair->d);
+    if (mbedtls_result != 0)
+        OE_RAISE_MSG(OE_FAILURE, "mbedtls error: 0x%x", mbedtls_result);
 
     if (!(drbg = oe_mbedtls_get_drbg()))
         OE_RAISE(OE_FAILURE);
@@ -375,10 +378,11 @@ oe_result_t oe_ec_generate_key_pair_from_private(
         drbg);
 
     if (mbedtls_result != 0)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE_MSG(OE_FAILURE, "mbedtls error: 0x%x", mbedtls_result);
 
-    if (mbedtls_ecp_check_pubkey(&keypair->grp, &keypair->Q) != 0)
-        OE_RAISE(OE_FAILURE);
+    mbedtls_result = mbedtls_ecp_check_pubkey(&keypair->grp, &keypair->Q);
+    if (mbedtls_result != 0)
+        OE_RAISE_MSG(OE_FAILURE, "mbedtls error: 0x%x", mbedtls_result);
 
     /* Export to OE structs. */
     OE_CHECK(oe_ec_public_key_init(public_key, &key));
@@ -573,6 +577,7 @@ bool oe_ec_valid_raw_private_key(
     mbedtls_mpi num;
     mbedtls_ecp_group group;
     bool is_valid = false;
+    int res;
 
     mbedtls_mpi_init(&num);
     mbedtls_ecp_group_init(&group);
@@ -580,14 +585,26 @@ bool oe_ec_valid_raw_private_key(
     if (!key)
         goto done;
 
-    if (mbedtls_mpi_read_binary(&num, key, keysize) != 0)
+    res = mbedtls_mpi_read_binary(&num, key, keysize);
+    if (res != 0)
+    {
+        OE_TRACE_ERROR("mbedtls_error = 0x%x", res);
         goto done;
+    }
 
-    if (mbedtls_ecp_group_load(&group, _get_group_id(type)) != 0)
+    res = mbedtls_ecp_group_load(&group, _get_group_id(type));
+    if (res != 0)
+    {
+        OE_TRACE_ERROR("mbedtls_error = 0x%x", res);
         goto done;
+    }
 
-    if (mbedtls_ecp_check_privkey(&group, &num) != 0)
+    res = mbedtls_ecp_check_privkey(&group, &num);
+    if (res != 0)
+    {
+        OE_TRACE_ERROR("mbedtls_error = 0x%x", res);
         goto done;
+    }
 
     is_valid = true;
 
