@@ -29,6 +29,7 @@
 #include "asmdefs.h"
 #include "enclave.h"
 #include "ocalls.h"
+#include "../ocalls.h"
 
 /*
 **==============================================================================

@@ -31,11 +31,11 @@ endif ()
 
 if (UNIX)
 set(PLATFORM_SRC
-    ../common/rand.S
+    ../common/sgx/rand.S
 )
 elseif (WIN32)
 set(PLATFORM_SRC
-    ../common/rand.asm
+    ../common/sgx/rand.asm
 )
 endif()
 

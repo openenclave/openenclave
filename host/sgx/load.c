@@ -3,8 +3,8 @@
 
 #include <openenclave/internal/raise.h>
 #include <stdio.h>
-#include "enclave.h"
 #include "../fopen.h"
+#include "enclave.h"
 
 #if defined(_WIN32)
 #include <windows.h>

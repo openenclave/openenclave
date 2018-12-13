@@ -28,6 +28,7 @@
 #include "ocalls.h"
 #include "quote.h"
 #include "sgxquoteprovider.h"
+#include "../ocalls.h"
 
 void HandleMalloc(uint64_t arg_in, uint64_t* arg_out)
 {

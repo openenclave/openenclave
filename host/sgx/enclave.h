@@ -10,8 +10,8 @@
 #include <openenclave/internal/load.h>
 #include <openenclave/internal/sgxcreate.h>
 #include <stdbool.h>
-#include "asmdefs.h"
 #include "../hostthread.h"
+#include "asmdefs.h"
 
 #if defined(_WIN32)
 #include <windows.h>

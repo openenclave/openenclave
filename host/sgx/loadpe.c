@@ -13,10 +13,10 @@
 #include <openenclave/internal/utils.h>
 #include <stdlib.h>
 #include <string.h>
-#include "enclave.h"
 #include "../memalign.h"
-#include "sgxload.h"
 #include "../strings.h"
+#include "enclave.h"
+#include "sgxload.h"
 
 #if defined(_WIN32)
 #include <windows.h>
