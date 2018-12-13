@@ -17,7 +17,7 @@
 typedef struct _ssa_info
 {
     void* base_address;
-    int64_t frame_byte_size;
+    uint64_t frame_byte_size;
 } SSA_Info;
 
 /*
@@ -163,7 +163,7 @@ cleanup:
 static int _get_enclave_ssa_frame_size(
     pid_t pid,
     void* tcs_addr,
-    int64_t* ssa_frame_size)
+    uint64_t* ssa_frame_size)
 {
     int ret;
     oe_thread_data_t oe_thread_data;
@@ -204,7 +204,7 @@ static int _get_enclave_thread_current_ssa_info(
 {
     int ret;
     size_t read_byte_length;
-    int64_t ssa_frame_size = 0;
+    uint64_t ssa_frame_size = 0;
     sgx_tcs_t tcs;
 
     // Read TCS header.
@@ -576,7 +576,7 @@ int oe_get_enclave_thread_xstate(
     pid_t pid,
     void* tcs_addr,
     void* xstate,
-    int64_t xstate_size)
+    uint64_t xstate_size)
 {
     int ret;
     size_t read_byte_length;
@@ -639,7 +639,7 @@ int oe_set_enclave_thread_xstate(
     pid_t pid,
     void* tcs_addr,
     void* xstate,
-    int64_t xstate_size)
+    uint64_t xstate_size)
 {
     int ret;
     size_t write_byte_length;

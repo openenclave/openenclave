@@ -180,7 +180,7 @@ static void _test_time_functions(void)
 
     /* Test time(): this test will fail if run after Jan 1, 2050 */
     {
-        now = time(NULL) * SEC_TO_USEC;
+        now = static_cast<uint64_t>(time(NULL)) * SEC_TO_USEC;
         OE_TEST(now != 0);
         OE_TEST(now >= JAN_1_2018 && now <= JAN_1_2050);
     }
@@ -190,7 +190,7 @@ static void _test_time_functions(void)
         struct timeval tv = {0, 0};
         OE_TEST(gettimeofday(&tv, NULL) == 0);
 
-        const uint64_t tmp = tv.tv_sec * SEC_TO_USEC;
+        const uint64_t tmp = static_cast<uint64_t>(tv.tv_sec) * SEC_TO_USEC;
 
         /* Check for accuracy within a second */
         OE_TEST(now >= tmp - SEC_TO_USEC);
@@ -202,7 +202,7 @@ static void _test_time_functions(void)
         struct timespec ts;
         OE_TEST(clock_gettime(0, &ts) == 0);
 
-        uint64_t tmp = ts.tv_sec * SEC_TO_USEC;
+        uint64_t tmp = static_cast<uint64_t>(ts.tv_sec) * SEC_TO_USEC;
 
         /* Check for accuracy within a second */
         OE_TEST(tmp >= now - SEC_TO_USEC);

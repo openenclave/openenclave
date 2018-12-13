@@ -16,6 +16,11 @@ add_library(libcxxrt OBJECT
   libcxxrt/src/libelftc_dem_gnu3.c)
 
 set_source_files_properties(
+  libcxxrt/src/dynamic_cast.cc
+  PROPERTIES COMPILE_FLAGS "-Wno-sign-conversion"
+)
+
+set_source_files_properties(
   libcxxrt/src/exception.cc
   PROPERTIES COMPILE_FLAGS "-Wno-unused-variable -Wno-conversion")
 

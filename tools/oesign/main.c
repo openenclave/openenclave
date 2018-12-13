@@ -39,17 +39,17 @@ static char* _make_signed_lib_name(const char* path)
     if ((!(p = strrchr(path, '.'))) || (strcmp(p, ".so") != 0))
         p = path + strlen(path);
 
-    mem_append(&buf, path, p - path);
+    mem_append(&buf, path, (size_t)(p - path));
     mem_append(&buf, ".signed.so", 11);
 
     return (char*)mem_steal(&buf);
 }
 
-static int _update_and_write_shared_lib(
+static oe_result_t _update_and_write_shared_lib(
     const char* path,
     const oe_sgx_enclave_properties_t* properties)
 {
-    int rc = -1;
+    oe_result_t rc = OE_FAILURE;
     oe_enclave_image_t oeimage;
     FILE* os = NULL;
 
@@ -101,7 +101,7 @@ static int _update_and_write_shared_lib(
         free(p);
     }
 
-    rc = 0;
+    rc = OE_OK;
 
 done:
 
@@ -327,7 +327,7 @@ static int _load_pem_file(const char* path, void** data, size_t* size)
         if (stat(path, &st) != 0)
             goto done;
 
-        *size = st.st_size;
+        *size = (size_t)st.st_size;
     }
 
     /* Allocate memory. We add 1 to null terimate the file since the crypto

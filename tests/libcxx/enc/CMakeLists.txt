@@ -18,6 +18,7 @@ target_compile_options(libcxxtest-support PRIVATE
     -Wno-error=strict-overflow
     -Wno-error=unused-local-typedefs
     -Wno-error=unused-variable
+    -Wno-sign-conversion
     )
 
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU)

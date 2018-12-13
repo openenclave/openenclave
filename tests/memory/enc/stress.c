@@ -25,12 +25,12 @@
 #define TEST_GET_VAL 6
 #define NUM_TESTS 7
 
-static inline int _randx(int x)
+static inline size_t _randx(size_t x)
 {
     /* Note that rand() % N is biased if RAND_MAX + 1 isn't divisible
      * by N. But, slight probability bias doesn't really matter in these
      * tests. */
-    return rand() % x;
+    return (size_t)rand() % x;
 }
 
 static inline size_t _min(size_t x, size_t y)
@@ -64,7 +64,7 @@ static void _handle_alloc(
     int* index_,
     size_t* max_size_)
 {
-    size_t index = *index_;
+    size_t index = (size_t)*index_;
     size_t max_size = *max_size_;
     size_t to_alloc = _get_alloc_size(max_size);
 
@@ -127,7 +127,7 @@ static void _run_malloc_test(size_t size)
     {
         /* Malloc if our array is empty. Otherwise, pick a random
          * fuction to execute. */
-        int action = index == 0 ? TEST_MALLOC : _randx(NUM_TESTS);
+        int action = index == 0 ? TEST_MALLOC : (int)_randx(NUM_TESTS);
 
         switch (action)
         {
@@ -176,7 +176,7 @@ static void _run_malloc_test(size_t size)
 
 void init_malloc_stress_test()
 {
-    srand((int)time(NULL));
+    srand((unsigned int)time(NULL));
 }
 
 void malloc_stress_test(int threads)
@@ -185,7 +185,7 @@ void malloc_stress_test(int threads)
     size_t size = __oe_get_heap_size();
 
     /* Use the heap divided by the number of threads. */
-    size = size / threads;
+    size = size / (size_t)threads;
 
     _run_malloc_test(size);
 }

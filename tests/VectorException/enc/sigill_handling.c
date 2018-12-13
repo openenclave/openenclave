@@ -185,7 +185,7 @@ OE_ECALL void TestSigillHandling(void* args_)
     }
 
     // Return enclave-cached CPUID leaves to host for further validation
-    for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
+    for (uint32_t i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
         if (oe_is_emulated_cpuid_leaf(i))
         {
