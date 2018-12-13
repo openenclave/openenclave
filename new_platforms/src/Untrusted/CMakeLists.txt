@@ -1,7 +1,7 @@
 include(oeedl_file)
 
 oeedl_file(../oeinternal.edl host GEN C_GEN H_GEN)
-if(WIN32)
+if(WIN32 AND SGX)
     sgxedl_file(../oeoverintelsgx.edl host GEN C_GEN H_GEN "${NP_PATH}/src;${SGXSDKInstallPath}/include")
 endif()
 
@@ -24,19 +24,21 @@ endif()
 # By OS, by TEE
 if(UNIX)
     list(APPEND SRCS linux/stdext.c linux/uhelper.c)
+    list(APPEND INCS PRIVATE ${NP_PATH}/include/linux)
 
     if(TZ)
         list(APPEND SRCS linux/teehost_optee.c linux/urpc_optee.c)
         list(APPEND INCS PRIVATE ${OPTEE_CLIENT_PATH}/public)
     endif()
-
 elseif(WIN32)
     list(APPEND SRCS win32/uhelper.c)
 
     if(TZ)
-        list(APPEND SRCS win32/teehost_optee.c urpc_optee.c)
+        list(APPEND SRCS win32/teehost_optee.c win32/urpc_optee.c)
+        list(APPEND INCS PRIVATE ${OE_PATH}/3rdparty/OpteeCalls/OpteeCalls/inc)
     elseif(SGX)
         list(APPEND SRCS win32/teehost_sgx.c)
+        list(APPEND INCS PRIVATE ${SGXSDKInstallPath}/include)
     endif()
 endif()
 
@@ -46,7 +48,4 @@ target_include_directories(oehost ${INCS})
 
 if(UNIX)
     target_compile_definitions(oehost PRIVATE LINUX)
-    target_include_directories(oehost PRIVATE ${NP_PATH}/include/linux)
-elseif(WIN32)
-    target_include_directories(oehost PRIVATE ${SGXSDKInstallPath}/include)
 endif()
