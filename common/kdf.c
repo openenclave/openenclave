@@ -28,7 +28,7 @@ static oe_result_t kdf_hmac_sha256_ctr(
     const uint8_t* key,
     size_t key_size,
     const uint8_t* fixed_data,
-    uint8_t fixed_data_size,
+    size_t fixed_data_size,
     uint8_t* derived_key,
     size_t derived_key_size)
 {
@@ -164,7 +164,7 @@ oe_result_t oe_kdf_derive_key(
     const uint8_t* key,
     size_t key_size,
     const uint8_t* fixed_data,
-    uint8_t fixed_data_size,
+    size_t fixed_data_size,
     uint8_t* derived_key,
     size_t derived_key_size)
 {
