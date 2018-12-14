@@ -141,19 +141,18 @@ static void _test_get_dates(void)
     OE_TEST(last.day == _time.day);
     OE_TEST(last.hours == _time.hours);
     OE_TEST(last.minutes == _time.minutes);
-    // TEMPORARY FIX: _time is the certificate file's timestamp
+    // TEMPORARILY Disabled: _time is the certificate file's timestamp
     // whereas last.seconds is the actual issue time of the certificate.
-    // Sometimes they can be off by 1 depending upon when the file
-    // write operation completes.
-    OE_TEST(
-        last.seconds == _time.seconds || (last.seconds + 1U == _time.seconds));
+    // The two values are not guaranteed to be equal.
+    // OE_TEST(last.seconds == _time.seconds);
 
     OE_TEST(next.year == _time.year + 1);
     OE_TEST(next.month == _time.month);
     OE_TEST(next.day == _time.day);
     OE_TEST(next.hours == _time.hours);
     OE_TEST(next.minutes == _time.minutes);
-    OE_TEST(next.seconds == _time.seconds);
+    // TEMPORARILY Disabled: see above.
+    // OE_TEST(next.seconds == _time.seconds);
 
     OE_TEST(oe_crl_free(&crl) == OE_OK);
 
