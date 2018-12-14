@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5.1 FATAL_ERROR)
 
-project("Open Enclave SDK (New Platforms)" VERSION 0.1 LANGUAGES C)
+project("Open Enclave SDK (New Platforms)" VERSION 0.1 LANGUAGES C CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
@@ -75,6 +75,15 @@ endif()
 set(OE_PATH ${PROJECT_SOURCE_DIR}/..)
 set(NP_PATH ${PROJECT_SOURCE_DIR})
 
+# Add 3rd-party path shorthands
+set(GTEST_PATH        ${OE_PATH}/3rdparty/googletest)
+set(OPTEE_CLIENT_PATH ${OE_PATH}/3rdparty/optee_client)
+set(OPTEE_OS_PATH     ${OE_PATH}/3rdparty/optee_os)
+set(OPTEE_CALLS_PATH  ${OE_PATH}/3rdparty/OpteeCalls)
+set(RIOT_PATH         ${OE_PATH}/3rdparty/RIoT)
+set(CYREP_PATH        ${RIOT_PATH}/CyReP)
+set(TINYCBOR_PATH     ${RIOT_PATH}/External/tinycbor)
+
 # Add common compiler definitions
 if(SGX)
     add_definitions(-DOE_USE_SGX)
@@ -85,14 +94,6 @@ else()
     endif()
 endif()
 
-# Add path shorthands
-set(OPTEE_CLIENT_PATH ${OE_PATH}/3rdparty/optee_client)
-set(OPTEE_OS_PATH     ${OE_PATH}/3rdparty/optee_os)
-set(OPTEE_CALLS_PATH  ${OE_PATH}/3rdparty/OpteeCalls)
-set(RIOT_PATH         ${OE_PATH}/3rdparty/RIoT)
-set(CYREP_PATH        ${RIOT_PATH}/CyReP)
-set(TINYCBOR_PATH     ${RIOT_PATH}/External/tinycbor)
-
 # 3rd-party components
 if(UNIX AND TZ)
     add_subdirectory(${OPTEE_CLIENT_PATH} ${OPTEE_CLIENT_PATH}/out)
@@ -101,3 +102,4 @@ endif()
 add_subdirectory(libsocket)
 add_subdirectory(libstdio)
 add_subdirectory(src)
+add_subdirectory(tests)
