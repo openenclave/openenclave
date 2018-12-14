@@ -34,10 +34,13 @@ elseif(WIN32)
     list(APPEND SRCS win32/uhelper.c)
 
     if(TZ)
-        list(APPEND SRCS win32/teehost_optee.c win32/urpc_optee.c)
+        list(APPEND SRCS
+            win32/teehost_optee.c
+            win32/urpc_optee.c
+            ${OPTEE_CALLS_PATH}/OpteeCalls/OpteeCalls.c)
         list(APPEND INCS PRIVATE ${OE_PATH}/3rdparty/OpteeCalls/OpteeCalls/inc)
     elseif(SGX)
-        list(APPEND SRCS win32/teehost_sgx.c)
+        list(APPEND SRCS ../oeresult.c win32/teehost_sgx.c)
         list(APPEND INCS PRIVATE ${SGXSDKInstallPath}/include)
     endif()
 endif()

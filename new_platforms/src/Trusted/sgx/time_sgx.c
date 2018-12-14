@@ -6,7 +6,7 @@
 #include <openenclave/enclave.h>
 //#include <tcps_time_t.h>
 #include "oeinternal_t.h"
-#include "../oeoverintelsgx_t.h"
+#include "oeoverintelsgx_t.h"
 
 /*
 __time64_t _time64(  

@@ -51,7 +51,7 @@ if(WIN32 AND TZ AND NOT ${CMAKE_GENERATOR} MATCHES "ARM")
 endif()
 
 # Assert that the respective TEE SDK's are present.
-if(TZ AND ("$ENV{TA_DEV_KIT_DIR}" STREQUAL "") AND ("${TA_DEV_KIT_DIR}" STREQUAL ""))
+if(UNIX AND TZ AND ("$ENV{TA_DEV_KIT_DIR}" STREQUAL "") AND ("${TA_DEV_KIT_DIR}" STREQUAL ""))
     message(FATAL_ERROR "TA_DEV_KIT_DIR must be specified when building for ARM TrustZone.")
 elseif(WIN32 AND SGX AND ("$ENV{SGXSDKInstallPath}" STREQUAL "") AND ("${SGXSDKInstallPath}" STREQUAL ""))
     message(FATAL_ERROR "The Intel SGX SDK is required when building for Intel SGX on Windows.")
@@ -85,13 +85,16 @@ else()
     endif()
 endif()
 
+# Add path shorthands
+set(OPTEE_CLIENT_PATH ${OE_PATH}/3rdparty/optee_client)
+set(OPTEE_OS_PATH     ${OE_PATH}/3rdparty/optee_os)
+set(OPTEE_CALLS_PATH  ${OE_PATH}/3rdparty/OpteeCalls)
+set(RIOT_PATH         ${OE_PATH}/3rdparty/RIoT)
+set(CYREP_PATH        ${RIOT_PATH}/CyReP)
+set(TINYCBOR_PATH     ${RIOT_PATH}/External/tinycbor)
+
 # 3rd-party components
 if(UNIX AND TZ)
-    set(OPTEE_CLIENT_PATH ${OE_PATH}/3rdparty/optee_client)
-    set(OPTEE_OS_PATH ${OE_PATH}/3rdparty/optee_os)
-    set(RIOT_PATH ${OE_PATH}/3rdparty/RIoT)
-    set(TINYCBOR_PATH ${RIOT_PATH}/External/tinycbor)
-
     add_subdirectory(${OPTEE_CLIENT_PATH} ${OPTEE_CLIENT_PATH}/out)
 endif()
 

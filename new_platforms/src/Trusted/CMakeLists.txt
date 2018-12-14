@@ -20,4 +20,59 @@ if(UNIX AND TZ)
             GEN=${C_GEN}
         DEPENDS ${GEN})
 elseif(WIN32 AND SGX)
+    set(CYREP_SRCS
+        ${CYREP_PATH}/RiotAes128.c
+        ${CYREP_PATH}/RiotAesTables.c
+        ${CYREP_PATH}/RiotBase64.c
+        ${CYREP_PATH}/RiotCrypt.c
+        ${CYREP_PATH}/RiotDerEnc.c
+        ${CYREP_PATH}/RiotEcc.c
+        ${CYREP_PATH}/RiotHmac.c
+        ${CYREP_PATH}/RiotKdf.c
+        ${CYREP_PATH}/RiotSha256.c
+        ${CYREP_PATH}/RiotX509Bldr.c)
+
+    set(COMMON_SRCS
+        CallbackHelper.c
+        cborhelper.c
+        files_enc.c
+        keygen.c
+        log_ocall_file.c
+        logapp.c
+        oeshim_enc.c
+        socket_enc.c
+        string_t.c)
+
+    set(SGX_SRCS
+        ../oeresult.c
+        ../sgx_common.c
+        sgx/except_sgx.c
+        sgx/keygen_sgx.c
+        sgx/log_sgx.c
+        sgx/rand_sgx.c
+        sgx/report_sgx.c
+        sgx/strings_sgx.c
+        sgx/time_sgx.c
+        sgx/trpc_sgx.c)
+
+    set(SRCS ${CYREP_SRCS} ${COMMON_SRCS} ${SGX_SRCS} ${GEN})
+    set(INCS
+        PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
+        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..
+        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/sgx
+        PRIVATE ${NP_PATH}/include
+        PRIVATE ${OE_PATH}/include
+        PRIVATE ${SGXSDKInstallPath}/include
+        PRIVATE ${SGXSDKInstallPath}/include/tlibc
+        PRIVATE ${TINYCBOR_PATH}/src
+        PRIVATE ${CYREP_PATH}/cyrep
+        PRIVATE ${CYREP_PATH}/tcps)
+
+    add_library(oeenclave STATIC ${SRCS} ${GEN})
+
+    target_include_directories(oeenclave ${INCS})
+
+    target_compile_definitions(oeenclave PRIVATE CONFIG_CYREP_SGX_BUILD)
+    target_compile_definitions(oeenclave PRIVATE OPENSSL_NO_SOCK)
 endif()
