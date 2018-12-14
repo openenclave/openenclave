@@ -35,7 +35,7 @@ static uint8_t _SIGNATURE[max_sign_size];
 /* RSA exponent of CERT */
 static const char _CERT_RSA_EXPONENT[] = {0x01, 0x00, 0x01};
 
-size_t rsa_modules_size;
+size_t rsa_modulus_size;
 size_t sign_size;
 
 // Test RSA signing operation over an ASCII alphabet string.
@@ -312,7 +312,7 @@ static void _test_cert_methods()
             /* Determine required buffer size */
             r = oe_rsa_public_key_get_modulus(&key, NULL, &size);
             OE_TEST(r == OE_BUFFER_TOO_SMALL);
-            OE_TEST(size == rsa_modules_size);
+            OE_TEST(size == rsa_modulus_size);
 
             /* Fetch the key bytes */
             OE_TEST(data = (uint8_t*)malloc(size));
@@ -320,7 +320,7 @@ static void _test_cert_methods()
             OE_TEST(r == OE_OK);
 
             /* Does it match expected modulus? */
-            OE_TEST(size == rsa_modules_size);
+            OE_TEST(size == rsa_modulus_size);
             OE_TEST(memcmp(data, _CERT1_RSA_MODULUS, size) == 0);
             free(data);
         }
@@ -459,9 +459,9 @@ void TestRSA(void)
             CHAIN2) == OE_OK);
     OE_TEST(
         read_mod(
-            "../data/Leaf_modules.bin",
+            "../data/Leaf_modulus.hex",
             _CERT1_RSA_MODULUS,
-            &rsa_modules_size) == OE_OK);
+            &rsa_modulus_size) == OE_OK);
     OE_TEST(read_key("../data/Leaf.key.pem", _PRIVATE_KEY) == OE_OK);
     OE_TEST(read_key("../data/Leaf_public.key.pem", _PUBLIC_KEY) == OE_OK);
     OE_TEST(

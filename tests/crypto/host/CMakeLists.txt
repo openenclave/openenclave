@@ -30,18 +30,28 @@ COMMAND openssl ecparam -name prime256v1 -genkey -noout -out prime256v1-key.pem
 COMMAND openssl req -config ${DATA_DIR}/sample.cnf  -new -x509 -key prime256v1-key.pem -out ${DATA_DIR}/asn1_cert.pem -subj "/CN=Intel SGX PCK Processor CA/O=Intel Corporation/L=Santa Clara/ST=CA/C=US" -sha256 -extensions v3_req
 COMMAND ${CMAKE_COMMAND} -E copy  ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/intermediate.cnf ${CMAKE_CURRENT_BINARY_DIR}/${DATA_DIR}/intermediate.cnf
 COMMAND ${CMAKE_COMMAND} -E copy  ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/root.cnf ${CMAKE_CURRENT_BINARY_DIR}/${DATA_DIR}/root.cnf
+COMMAND sleep 1
 COMMAND openssl genrsa -out ${DATA_DIR}/RootCA.key.pem
 COMMAND openssl req -new -x509 -key ${DATA_DIR}/RootCA.key.pem -out ${DATA_DIR}/RootCA.crt.pem -days 3650 -subj "/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=Root" 
 # Creating Intermediate certificates signed by the Root CA
 COMMAND echo 'Creating Intermediate certificates signed by the root CA....'
+COMMAND sleep 1
 COMMAND openssl genrsa -out ${DATA_DIR}/Intermediate.key.pem
 COMMAND openssl req -new -key ${DATA_DIR}/Intermediate.key.pem -out ${DATA_DIR}/Intermediate.csr -subj "/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=Intermediate"
 COMMAND openssl x509 -req -in ${DATA_DIR}/Intermediate.csr -CA ${DATA_DIR}/RootCA.crt.pem -CAkey ${DATA_DIR}/RootCA.key.pem -CAcreateserial -out ${DATA_DIR}/Intermediate.crt.pem -days 3650
 # Creating Leaf certificates signed by the Root CA
 COMMAND echo 'Creating Leaf certificates signed by the root CA....'
+COMMAND sleep 1
 COMMAND openssl genrsa -out ${DATA_DIR}/Leaf.key.pem
 COMMAND openssl req -new -key ${DATA_DIR}/Leaf.key.pem -out ${DATA_DIR}/Leaf.csr -subj "/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=Leaf"
 COMMAND openssl x509 -req -in ${DATA_DIR}/Leaf.csr -CA ${DATA_DIR}/RootCA.crt.pem -CAkey ${DATA_DIR}/RootCA.key.pem -CAcreateserial -out ${DATA_DIR}/Leaf.crt.pem -days 3650
+# Creating Leaf certificates signed by the Intermediate CA
+COMMAND sleep 1
+COMMAND echo 'Creating Leaf certificates signed by the Intermediate CA....'
+COMMAND openssl genrsa -out ${DATA_DIR}/Leaf2.key.pem
+COMMAND openssl req -new -key ${DATA_DIR}/Leaf2.key.pem -out ${DATA_DIR}/Leaf2.csr -subj "/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=Leaf"
+COMMAND openssl x509 -req -in ${DATA_DIR}/Leaf2.csr -CA ${DATA_DIR}/Intermediate.crt.pem -CAkey ${DATA_DIR}/Intermediate.key.pem -CAcreateserial -out ${DATA_DIR}/Leaf2.crt.pem -days 3650
+
 
 #  Setup Certificate Revocation lists for the following test cases
 #  intermediade_crl is issued by Intermediate which revokes leaf cert
@@ -107,7 +117,9 @@ COMMAND openssl req -new -key ${DATA_DIR}/Intermediate2.key.pem -out ${DATA_DIR}
 COMMAND openssl x509 -req -in ${DATA_DIR}/Intermediate2.csr -CA ${DATA_DIR}/RootCA2.crt.pem -CAkey ${DATA_DIR}/RootCA2.key.pem -CAcreateserial -out ${DATA_DIR}/Intermediate2.crt.pem -days 3650
 
 # Extract Modules binary from Leaf Certificate
-COMMAND openssl x509 -inform PEM -in ${DATA_DIR}/Leaf.crt.pem -outform DER | tail -c+304 | head -c256 > ${DATA_DIR}/Leaf_modules.bin
+COMMAND openssl x509 -inform PEM -in ${DATA_DIR}/Leaf.crt.pem -outform DER | tail -c+315 | head -c256 > ${DATA_DIR}/Leaf_modulus.bin
+COMMAND openssl x509 -inform PEM -in ${DATA_DIR}/Leaf.crt.pem -noout -modulus | awk -F'=' '{ print $2}' > ${DATA_DIR}/Leaf_modulus.hex1
+COMMAND awk -F'=' '{ print $2}' > ${DATA_DIR}/Leaf_modulus.hex <${DATA_DIR}/Leaf_modulus.hex1
 
 # Generate Public key from Private key
 COMMAND openssl rsa -in ${DATA_DIR}/Leaf.key.pem -pubout -out ${DATA_DIR}/Leaf_public.key.pem

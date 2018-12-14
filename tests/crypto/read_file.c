@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <ctype.h>
 #include "readfile.h"
 
 oe_result_t read_cert(char* filename, char* cert)
@@ -128,20 +129,98 @@ oe_result_t read_dates(char* filename, oe_datetime_t* time)
     return OE_OK;
 }
 
+static uint8_t hexval(char c)
+
+{
+    switch (c)
+    {
+        case 'A':
+            return 10;
+        case 'B':
+            return 11;
+        case 'C':
+            return 12;
+        case 'D':
+            return 13;
+        case 'E':
+            return 14;
+        case 'F':
+            return 15;
+        case 'a':
+            return 10;
+        case 'b':
+            return 11;
+        case 'c':
+            return 12;
+        case 'd':
+            return 13;
+        case 'e':
+            return 14;
+        case 'f':
+            return 15;
+
+        case '0':
+            return 0;
+        case '1':
+            return 1;
+        case '2':
+            return 2;
+        case '3':
+            return 3;
+        case '4':
+            return 4;
+        case '5':
+            return 5;
+        case '6':
+            return 6;
+        case '7':
+            return 7;
+        case '8':
+            return 8;
+        case '9':
+            return 9;
+
+        default:
+            return 0xff;
+    }
+}
+
+// Assume a series of hex digits in the file.
 oe_result_t read_mod(char* filename, uint8_t* mod, size_t* mod_size)
 {
     size_t len_mod;
+    size_t numchars = 0;
+    char buffer[(max_mod_size * 2) + 1];
+    char* bufp = buffer;
+
     FILE* mfp = fopen(filename, "r");
     if (mfp != NULL)
     {
-        len_mod = fread(mod, sizeof(char), max_mod_size, mfp);
+        numchars = fread(buffer, sizeof(char), max_mod_size * 2, mfp);
+        // Skip leading non-digits ("Modulus=" for example).
+        len_mod = numchars;
+
+        for (size_t i = 0; i < numchars; i++)
+        {
+            if ((isdigit(*bufp) || (*bufp >= 'A' && *bufp <= 'F')))
+                break;
+            bufp++;
+            len_mod--;
+        }
     }
     else
     {
         return OE_FAILURE;
     }
 
-    mod[len_mod] = '\0';
+    len_mod >>= 1;
+    memset(mod, 0, len_mod + 1);
+    for (size_t i = 0; i < len_mod; i++)
+    {
+        mod[i] = (uint8_t)(hexval(bufp[1]) + (hexval(bufp[0]) << 4));
+        bufp += 2;
+    }
+
     *mod_size = len_mod;
     fclose(mfp);
     return OE_OK;

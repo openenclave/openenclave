@@ -97,7 +97,7 @@ static oe_result_t _generate_key_pair(
 {
     oe_result_t result = OE_UNEXPECTED;
     RSA* rsa_private = RSA_new();
-    RSA* rsa_public  = RSA_new();
+    RSA* rsa_public = RSA_new();
     EVP_PKEY* pkey_private = NULL;
     EVP_PKEY* pkey_public = NULL;
 
@@ -151,7 +151,7 @@ static oe_result_t _generate_key_pair(
         oe_private_key_init(private_key, pkey_private, _PRIVATE_KEY_MAGIC);
 
         /* Keep these from being freed below */
-        rsa_private  = NULL;
+        rsa_private = NULL;
         pkey_private = NULL;
     }
 
@@ -169,7 +169,7 @@ static oe_result_t _generate_key_pair(
         oe_public_key_init(public_key, pkey_public, _PUBLIC_KEY_MAGIC);
 
         /* Keep these from being freed below */
-        rsa_public  = NULL;
+        rsa_public = NULL;
         pkey_public = NULL;
     }
 
