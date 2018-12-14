@@ -4,6 +4,7 @@
 #define OE_NO_POSIX_FILE_API
 #include <openenclave/bits/stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 typedef struct {
     intptr_t provider_stream;

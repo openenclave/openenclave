@@ -1,28 +1,19 @@
-include ../../../oe_sub.mk
+CFLAGS += $(EXTRA_CFLAGS)
 
-WARNS=0
-
-ROOT_RELATIVE_PATH = ../../../
-
-../oeinternal_t.c: ../../oeinternal.edl
-	$(OEEDGER8R) --trusted --search-path "../..$(OEPATHSEP)$(OE_SDK_ROOT_PATH)include" --trusted-dir ".."  ../../oeinternal.edl
-
-../oeinternal_t.h: ../../oeinternal.edl
-	$(OEEDGER8R) --trusted --search-path "../..$(OEPATHSEP)$(OE_SDK_ROOT_PATH)include" --trusted-dir ".."  ../../oeinternal.edl
+CFLAGS +=                                  \
+	-I$(O)                                 \
+	-I..                                   \
+	-I../..                                \
+	-I$(NP_INC)/optee/enclave              \
+	-I$(NP_INC)/optee                      \
+	-I$(NP_INC)                            \
+	-I$(OPTEE_OS_PATH)/lib/libutee/include \
+	-I$(RIOT_PATH)/CyReP/cyrep             \
+	-I$(TINYCBOR_PATH)/src                 \
+	-I$(OE_INC)
 
 CFLAGS += -DOE_USE_OPTEE
 
-global-incdirs-y += ..
-global-incdirs-y += ../..
-global-incdirs-y += ../../../include/optee/enclave
-global-incdirs-y += ../../../include/optee
-global-incdirs-y += ../../../include
-global-incdirs-y += $(OpteeDir)lib/libutee/include
-global-incdirs-y += $(RIoTDir)CyReP/cyrep
-global-incdirs-y += $(RIoTDir)External/tinycbor/src
-global-incdirs-y += $(OE_SDK_ROOT_PATH)include
-
-srcs-y += ../oeinternal_t.c
 srcs-y += ../CallbackHelper.c
 srcs-y += ../cborhelper.c
 srcs-y += ../files_enc.c
@@ -45,3 +36,5 @@ srcs-y += time_optee.c
 srcs-y += trpc_optee.c
 srcs-y += helper_optee.c
 srcs-y += oeresult_optee.c
+
+srcs-y += $(GEN)

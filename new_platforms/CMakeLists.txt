@@ -88,6 +88,10 @@ endif()
 # 3rd-party components
 if(UNIX AND TZ)
     set(OPTEE_CLIENT_PATH ${OE_PATH}/3rdparty/optee_client)
+    set(OPTEE_OS_PATH ${OE_PATH}/3rdparty/optee_os)
+    set(RIOT_PATH ${OE_PATH}/3rdparty/RIoT)
+    set(TINYCBOR_PATH ${RIOT_PATH}/External/tinycbor)
+
     add_subdirectory(${OPTEE_CLIENT_PATH} ${OPTEE_CLIENT_PATH}/out)
 endif()
 

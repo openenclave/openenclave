@@ -3,7 +3,6 @@
 #include <openenclave/enclave.h>
 #include "enclavelibc.h"
 #include "tcps_string_t.h"
-#include <errno.h>
 #include <stdlib.h>
 
 typedef struct {
