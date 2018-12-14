@@ -16,7 +16,6 @@ control the behavior of the Linux make generator for Open Enclave:
 | Variable                 | Description                                          |
 |--------------------------|------------------------------------------------------|
 | CMAKE_BUILD_TYPE         | Build configuration (*Debug*, *Release*, *RelWithDebInfo*). Default is *Debug*. |
-| ENABLE_FULL_LIBC_TESTS   | Enable full Libc tests. Default is disabled, enable with setting to "On", "1", ... |
 | ENABLE_FULL_LIBCXX_TESTS | Enable full Libc++ tests. Default is disabled, enable with setting to "On", "1", ... |
 | ENABLE_REFMAN            | Enable building of reference manual. Requires Doxygen to be installed. Default is enabled, disable with setting to "Off", "No", "0", ... |
 
