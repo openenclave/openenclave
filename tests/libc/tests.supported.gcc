@@ -3,7 +3,6 @@
 
 # The following tests need to be skipped when built with Clang using these cmake flags.
 #     -DCMAKE_BUILD_TYPE=Debug
-#     -DENABLE_FULL_LIBC_TESTS=1
 set(clang_debug_skipped_libc_tests
 "../../3rdparty/musl/libc-test/src/functional/tgmath.c"
 "../../3rdparty/musl/libc-test/src/math/fmax.c"
@@ -22,7 +21,6 @@ set(clang_debug_skipped_libc_tests
 
 # The following tests need to be skipped when built with Clang using these cmake flags.
 #     -DCMAKE_BUILD_TYPE=RelWithDebInfo/Release
-#     -DENABLE_FULL_LIBC_TESTS=1
 set(clang_release_skipped_libc_tests
 "../../3rdparty/musl/libc-test/src/functional/tgmath.c"
 "../../3rdparty/musl/libc-test/src/math/fmax.c"

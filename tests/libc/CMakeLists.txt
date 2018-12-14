@@ -6,11 +6,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/get_testcase_name.cmake)
 include(tests.supported.gcc)
 
 # read tests.supported, sanitize the c-file, and create the test-case
-if (ENABLE_FULL_LIBC_TESTS)
-    file(STRINGS "tests.supported" alltests)
-else()
-    file(STRINGS "tests.supported.default" alltests)
-endif()
+file(STRINGS "tests.supported" alltests)
 
 add_subdirectory(host)
 
@@ -32,5 +28,5 @@ foreach(testcase ${alltests})
         endif()
     endif()
     get_testcase_name(${testcase} name "../../3rdparty/musl/libc-test/src/")
-	add_enclave_test(tests/libc/${name} ./host libc_host ./enc libctest-${name}_enc)
+    add_enclave_test(tests/libc/${name} ./host libc_host ./enc libctest-${name}_enc)
 endforeach(testcase)
