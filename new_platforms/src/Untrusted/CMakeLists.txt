@@ -38,6 +38,8 @@ elseif(WIN32)
             win32/teehost_optee.c
             win32/urpc_optee.c
             ${OPTEE_CALLS_PATH}/OpteeCalls/OpteeCalls.c)
+
+        list(APPEND INCS PRIVATE ${WDK_PATH}/km)
         list(APPEND INCS PRIVATE ${OE_PATH}/3rdparty/OpteeCalls/OpteeCalls/inc)
     elseif(SGX)
         list(APPEND SRCS ../oeresult.c win32/teehost_sgx.c)

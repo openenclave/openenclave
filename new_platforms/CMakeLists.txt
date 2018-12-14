@@ -63,10 +63,10 @@ if(TZ AND (NOT "$ENV{TA_DEV_KIT_DIR}" STREQUAL "") AND ("${TA_DEV_KIT_DIR}" STRE
 elseif(WIN32 AND SGX AND (NOT "$ENV{SGXSDKInstallPath}" STREQUAL "") AND ("${SGXSDKInstallPath}" STREQUAL ""))
     set(SGXSDKInstallPath $ENV{SGXSDKInstallPath})
 
-    # As of this writing, the environment variable contains a trailing backlash.
-    # Get rid of it to avoid piling slashes on top later.
-    string(REGEX REPLACE "\\\\$" "" SGXSDKInstallPath ${SGXSDKInstallPath})
     string(REPLACE "\\" "/" SGXSDKInstallPath ${SGXSDKInstallPath})
+    string(REGEX REPLACE "/$" "" SGXSDKInstallPath ${SGXSDKInstallPath})
+elseif(WIN32 AND TZ)
+    find_package(WDK REQUIRED)
 endif()
 
 # Save the path to Open Enclave proper as well as to where the new platform
