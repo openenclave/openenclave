@@ -10,7 +10,7 @@
 #include <string.h>
 #include "../../../common/quote.h"
 #include "../../../common/tcbinfo.h"
-#include "../common/tests.cpp"
+#include "../common/tests.h"
 #include "tests_t.h"
 
 oe_result_t test_verify_tcb_info(
@@ -79,6 +79,31 @@ void test_minimum_issue_date(oe_datetime_t now)
 #else
     OE_UNUSED(now);
 #endif
+}
+
+void enclave_test_local_report(sgx_target_info_t* target_info)
+{
+    test_local_report(target_info);
+}
+
+void enclave_test_remote_report()
+{
+    test_remote_report();
+}
+
+void enclave_test_parse_report_negative()
+{
+    test_parse_report_negative();
+}
+
+void enclave_test_local_verify_report()
+{
+    test_local_verify_report();
+}
+
+void enclave_test_remote_verify_report()
+{
+    test_remote_verify_report();
 }
 
 OE_SET_ENCLAVE_SGX(
