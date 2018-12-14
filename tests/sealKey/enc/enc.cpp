@@ -4,10 +4,14 @@
 
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/ec.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/keys.h>
 #include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/sha.h>
 #include <openenclave/internal/tests.h>
+#include <stdlib.h>
+#include <string.h>
 #include "sealKey_t.h"
 
 // A regular enclave should not have access to SGX_KEYSELECT_EINITTOKEN,
@@ -194,10 +198,278 @@ bool TestOEGetSealKey()
     return true;
 }
 
+bool TestPubPrivKey(
+    const uint8_t* pubkey,
+    size_t pubkey_size,
+    const uint8_t* privkey,
+    size_t privkey_size)
+{
+    oe_ec_public_key_t oe_pubkey;
+    oe_ec_private_key_t oe_privkey;
+    oe_result_t result;
+    uint8_t data[32] = {
+        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A,
+        0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15,
+        0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F,
+    };
+    uint8_t* signature = NULL;
+    size_t signature_size = 0;
+
+    result = oe_ec_public_key_read_pem(&oe_pubkey, pubkey, pubkey_size);
+    if (result != OE_OK)
+        return false;
+
+    result = oe_ec_private_key_read_pem(&oe_privkey, privkey, privkey_size);
+    if (result != OE_OK)
+        return false;
+
+    result = oe_ec_private_key_sign(
+        &oe_privkey,
+        OE_HASH_TYPE_SHA256,
+        data,
+        sizeof(data),
+        signature,
+        &signature_size);
+
+    if (result != OE_BUFFER_TOO_SMALL)
+        return false;
+
+    signature = (uint8_t*)malloc(signature_size);
+    if (signature == NULL)
+        return false;
+
+    result = oe_ec_private_key_sign(
+        &oe_privkey,
+        OE_HASH_TYPE_SHA256,
+        data,
+        sizeof(data),
+        signature,
+        &signature_size);
+
+    if (result != OE_OK)
+        return false;
+
+    result = oe_ec_public_key_verify(
+        &oe_pubkey,
+        OE_HASH_TYPE_SHA256,
+        data,
+        sizeof(data),
+        signature,
+        signature_size);
+
+    if (result != OE_OK)
+        return false;
+
+    free(signature);
+    oe_ec_public_key_free(&oe_pubkey);
+    oe_ec_private_key_free(&oe_privkey);
+    return true;
+}
+
+bool TestAsymKeyCase(
+    oe_seal_policy_t seal_policy,
+    const oe_asymmetric_key_params_t* params)
+{
+    uint8_t* pubkey = NULL;
+    size_t pubkey_size = 0;
+    uint8_t* privkey = NULL;
+    size_t privkey_size = 0;
+    uint8_t* pubkey2 = NULL;
+    size_t pubkey2_size = 0;
+    uint8_t* privkey2 = NULL;
+    size_t privkey2_size = 0;
+    uint8_t* keyinfo = NULL;
+    size_t keyinfo_size = 0;
+    uint8_t* keyinfo2 = NULL;
+    size_t keyinfo2_size = 0;
+    sgx_key_request_t* key_request;
+    oe_result_t ret;
+
+    // Try out the policy one first, we should get the right public/private
+    // pair
+    ret = oe_get_public_key_by_policy(
+        (oe_seal_policy_t)seal_policy,
+        params,
+        &pubkey,
+        &pubkey_size,
+        NULL,
+        NULL);
+
+    if (ret != OE_OK)
+        return false;
+
+    ret = oe_get_private_key_by_policy(
+        (oe_seal_policy_t)seal_policy,
+        params,
+        &privkey,
+        &privkey_size,
+        NULL,
+        NULL);
+
+    if (ret != OE_OK)
+        return false;
+
+    if (!TestPubPrivKey(pubkey, pubkey_size, privkey, privkey_size))
+        return false;
+
+    // Now try with the key info structs.
+    ret = oe_get_public_key_by_policy(
+        (oe_seal_policy_t)seal_policy,
+        params,
+        &pubkey2,
+        &pubkey2_size,
+        &keyinfo,
+        &keyinfo_size);
+
+    if (ret != OE_OK)
+        return false;
+
+    ret = oe_get_private_key_by_policy(
+        (oe_seal_policy_t)seal_policy,
+        params,
+        &privkey2,
+        &privkey2_size,
+        &keyinfo2,
+        &keyinfo2_size);
+
+    if (ret != OE_OK)
+        return false;
+
+    // The keys should have not changed.
+    if (pubkey_size != pubkey2_size || privkey_size != privkey2_size)
+        return false;
+
+    if (memcmp(pubkey, pubkey2, pubkey_size) != 0 ||
+        memcmp(privkey, privkey2, privkey_size) != 0)
+    {
+        return false;
+    }
+
+    // The key infos should be the same.
+    if (keyinfo_size != keyinfo2_size ||
+        memcmp(keyinfo, keyinfo2, keyinfo_size) != 0)
+    {
+        return false;
+    }
+
+    if (!TestPubPrivKey(pubkey2, pubkey2_size, privkey2, privkey2_size))
+        return false;
+
+    // Now try the API using the key info as input.
+    oe_free_key(pubkey2, pubkey2_size, NULL, 0);
+    oe_free_key(privkey2, privkey2_size, NULL, 0);
+    ret = oe_get_public_key(
+        params, keyinfo, keyinfo_size, &pubkey2, &pubkey2_size);
+
+    if (ret != OE_OK)
+        return false;
+
+    ret = oe_get_private_key(
+        params, keyinfo, keyinfo_size, &privkey2, &privkey2_size);
+
+    if (ret != OE_OK)
+        return false;
+
+    // The keys should have not changed.
+    if (pubkey_size != pubkey2_size || privkey_size != privkey2_size)
+        return false;
+
+    if (memcmp(pubkey, pubkey2, pubkey_size) != 0 ||
+        memcmp(privkey, privkey2, privkey_size) != 0)
+    {
+        return false;
+    }
+
+    if (!TestPubPrivKey(pubkey2, pubkey2_size, privkey2, privkey2_size))
+        return false;
+
+    // Modify the isv_svn of key request to invalid and verify the function
+    // can't get seal key.
+    key_request = (sgx_key_request_t*)keyinfo;
+    uint16_t cur_isv_svn = key_request->isv_svn;
+    key_request->isv_svn = 0XFFFF;
+    ret = oe_get_public_key(
+        params, keyinfo, keyinfo_size, &pubkey2, &pubkey2_size);
+
+    if (ret != OE_INVALID_ISVSVN)
+        return false;
+
+    ret = oe_get_private_key(
+        params, keyinfo, keyinfo_size, &privkey2, &privkey2_size);
+
+    if (ret != OE_INVALID_ISVSVN)
+        return false;
+
+    // Modify the cpu_svn of key request to invalid and verify the function
+    // can't get seal key.
+    key_request->isv_svn = cur_isv_svn;
+    oe_memset(
+        key_request->cpu_svn, 0XFF, OE_FIELD_SIZE(sgx_key_request_t, cpu_svn));
+
+    ret = oe_get_public_key(
+        params, keyinfo, keyinfo_size, &pubkey2, &pubkey2_size);
+
+    if (ret != OE_INVALID_CPUSVN)
+        return false;
+
+    ret = oe_get_private_key(
+        params, keyinfo, keyinfo_size, &privkey2, &privkey2_size);
+
+    if (ret != OE_INVALID_CPUSVN)
+        return false;
+
+    oe_free_key(pubkey, pubkey_size, NULL, 0);
+    oe_free_key(privkey, privkey_size, keyinfo, keyinfo_size);
+    oe_free_key(pubkey2, pubkey2_size, NULL, 0);
+    oe_free_key(privkey2, privkey2_size, keyinfo2, keyinfo2_size);
+    return true;
+}
+
+// Test high level APIs for getting asymmetric keys that are derived based off
+// the seal key (oe_get_[public|private][_by_policy]).
+bool TestAsymKey()
+{
+    for (uint32_t seal_policy = OE_SEAL_POLICY_UNIQUE;
+         seal_policy <= OE_SEAL_POLICY_PRODUCT;
+         seal_policy++)
+    {
+        oe_asymmetric_key_params_t params;
+        char data[] = "Hello World!";
+        size_t datalen = sizeof(data) - 1;
+
+        // First, generate the key with a null user data.
+        params.type = OE_ASYMMETRIC_KEY_EC_SECP256P1;
+        params.format = OE_ASYMMETRIC_KEY_PEM;
+        params.user_data = NULL;
+        params.user_data_size = 0;
+        if (!TestAsymKeyCase((oe_seal_policy_t)seal_policy, &params))
+            return false;
+
+        // Second, generate the key with some user data.
+        params.user_data = data;
+        params.user_data_size = datalen;
+        if (!TestAsymKeyCase((oe_seal_policy_t)seal_policy, &params))
+            return false;
+
+        // Lastly, try invalid params.
+        params.type = _OE_ASYMMETRIC_KEY_TYPE_MAX;
+        params.format = OE_ASYMMETRIC_KEY_PEM;
+        if (TestAsymKeyCase((oe_seal_policy_t)seal_policy, &params))
+            return false;
+
+        params.type = OE_ASYMMETRIC_KEY_EC_SECP256P1;
+        params.format = _OE_ASYMMETRIC_KEY_FORMAT_MAX;
+        if (TestAsymKeyCase((oe_seal_policy_t)seal_policy, &params))
+            return false;
+    }
+
+    return true;
+}
+
 int test_seal_key(int in)
 {
     if (TestOEGetPrivilegeKeys() && TestOEGetRegularKeys() &&
-        TestOEGetSealKey())
+        TestOEGetSealKey() && TestAsymKey())
     {
         return 0;
     }

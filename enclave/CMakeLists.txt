@@ -5,6 +5,7 @@ add_library(oeenclave STATIC
     ../common/asn1.c
     ../common/cert.c
     ../common/datetime.c
+    ../common/kdf.c
     ../common/qeidentity.c
     ../common/quote.c
     ../common/report.c
@@ -12,10 +13,12 @@ add_library(oeenclave STATIC
     ../common/sgxcertextensions.c
     ../common/tcbinfo.c
     asn1.c
+    asym_keys.c
     cert.c
     crl.c
     ec.c
     cmac.c
+    hmac.c
     key.c
     link.c
     qeidinfo.c
