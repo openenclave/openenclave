@@ -6,7 +6,3 @@ endif()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(WDK REQUIRED_VARS WDK_PATH)
-
-if (NOT WDK_PATH)
-    return()
-endif()
