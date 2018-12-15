@@ -81,6 +81,16 @@ set(RIOT_PATH         ${OE_PATH}/3rdparty/RIoT)
 set(CYREP_PATH        ${RIOT_PATH}/CyReP)
 set(TINYCBOR_PATH     ${RIOT_PATH}/External/tinycbor)
 
+# Place binaries in predictable locations.
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out/bin)
+if(UNIX)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out/ar)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out/lib)
+elseif(WIN32)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out/lib)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out/dll)
+endif()
+
 # Add common compiler definitions
 if(SGX)
     add_definitions(-DOE_USE_SGX)

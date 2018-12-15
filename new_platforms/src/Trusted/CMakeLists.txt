@@ -17,6 +17,7 @@ if(UNIX AND TZ)
             TA_DEV_KIT_DIR=${TA_DEV_KIT_DIR}
             CROSS_COMPILE=${OE_TA_TOOLCHAIN_PREFIX}
             O=${CMAKE_CURRENT_BINARY_DIR}
+            LIB_O=${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
             GEN=${C_GEN}
         DEPENDS ${GEN})
 elseif(WIN32 AND SGX)

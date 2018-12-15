@@ -1,6 +1,3 @@
-../stdio_enc.c: $(O)/stdio_t.h
-files_optee.c: $(O)/stdio_t.h
-
 CFLAGS += $(EXTRA_CFLAGS)
 
 CFLAGS += -I$(O) -I$(OE_INC) -I$(NP_INC)
