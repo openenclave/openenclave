@@ -406,6 +406,8 @@ static bool _find_extension(
     void* args_)
 {
     FindExtensionArgs* args = (FindExtensionArgs*)args_;
+    OE_UNUSED(index);
+    OE_UNUSED(critical);
 
     if (oe_strcmp(oid, args->oid) == 0)
     {

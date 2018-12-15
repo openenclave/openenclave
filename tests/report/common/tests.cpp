@@ -1,7 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#ifdef OE_BUILD_ENCLAVE
+#include <openenclave/internal/enclavelibc.h>
+#endif
 #include <openenclave/internal/report.h>
+#include <openenclave/internal/tests.h>
+#include "../common/tests.h"
 
 #ifdef OE_BUILD_ENCLAVE
 
@@ -12,8 +17,6 @@
 #define GetReport oe_get_report
 
 #define VerifyReport oe_verify_report
-
-#define TEST_FCN OE_ECALL
 
 #else
 
@@ -52,8 +55,6 @@ oe_result_t VerifyReport(
     // Local attestation requires enclave.
     return oe_verify_report(g_enclave, report, report_size, parsed_report);
 }
-
-#define TEST_FCN
 
 #endif
 
@@ -179,10 +180,8 @@ static void ValidateReport(
             sizeof(parsed_report.identity.product_id)) == 0);
 }
 
-TEST_FCN void TestLocalReport(void* args_)
+void test_local_report(sgx_target_info_t* target_info)
 {
-    sgx_target_info_t* target_info = (sgx_target_info_t*)args_;
-
 #ifdef OE_BUILD_ENCLAVE
     size_t report_data_size = 0;
     uint8_t report_data[OE_REPORT_DATA_SIZE];
@@ -441,7 +440,7 @@ TEST_FCN void TestLocalReport(void* args_)
     }
 }
 
-TEST_FCN void TestRemoteReport(void* args_)
+void test_remote_report()
 {
 #ifdef OE_BUILD_ENCLAVE
     size_t report_data_size = 0;
@@ -595,7 +594,7 @@ TEST_FCN void TestRemoteReport(void* args_)
     }
 }
 
-TEST_FCN void TestParseReportNegative(void* args_)
+void test_parse_report_negative()
 {
     uint8_t report_buffer[OE_MAX_REPORT_SIZE] = {0};
     oe_report_t parsed_report = {0};
@@ -683,7 +682,7 @@ static void GetSGXTargetInfo(sgx_target_info_t* sgx_target_info)
         sizeof(sgx_target_info->attributes));
 }
 
-TEST_FCN void TestLocalVerifyReport(void* args_)
+void test_local_verify_report()
 {
     uint8_t target_info[sizeof(sgx_target_info_t)];
     size_t target_info_size = sizeof(target_info);
@@ -746,7 +745,7 @@ TEST_FCN void TestLocalVerifyReport(void* args_)
     OE_TEST(VerifyReport(report, report_size, NULL) == OE_VERIFY_FAILED);
 }
 
-TEST_FCN void TestRemoteVerifyReport(void* args_)
+void test_remote_verify_report()
 {
     uint8_t report_buffer[OE_MAX_REPORT_SIZE] = {0};
     size_t report_size = sizeof(report_buffer);

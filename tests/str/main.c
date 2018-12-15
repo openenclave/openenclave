@@ -196,7 +196,7 @@ void TestStr(str_t* s)
     printf("=== passed TestStr()\n");
 }
 
-int main(int argc, const char* argv[])
+int main()
 {
     /* TestStr dynamic */
     {

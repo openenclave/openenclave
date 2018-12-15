@@ -120,6 +120,8 @@ OE_OCALL void host_join_pthread(void* args, oe_enclave_t* enclave)
     int join_ret = -1;
     void* value_ptr;
 
+    OE_UNUSED(enclave);
+
     // Find the host_thread_id from the enclave_host_id_map using the enc_key
 
     // Using atomic locks to protect the enclave_host_id_map
@@ -165,6 +167,8 @@ OE_OCALL void host_detach_pthread(void* args, oe_enclave_t* enclave)
 {
     pthread_t host_thread_id = 0;
     ThreadArgs* thrd_detach_args = (ThreadArgs*)args;
+
+    OE_UNUSED(enclave);
 
     printf(
         "host_detach_pthread():enclave key=%lu\n", thrd_detach_args->enc_key);

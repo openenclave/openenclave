@@ -27,7 +27,7 @@
 #include <unistd.h>
 #include <wchar.h>
 #include <wctype.h>
-#include "../args.h"
+#include "stdc_t.h"
 
 /* ATTN: implement these! */
 #if 0
@@ -228,31 +228,29 @@ static void _test_time_functions(void)
     }
 }
 
-OE_ECALL void Test(void* args_)
+int test(char buf1[BUFSIZE], char buf2[BUFSIZE])
 {
-    TestArgs* args = (TestArgs*)args_;
+    int rval = 0;
 
     oe_set_allocation_failure_callback(_allocation_failure_callback);
 
-    strcpy(args->buf1, "AAA");
-    strcat(args->buf1, "BBB");
-    strcat(args->buf1, "CCC");
+    strcpy(buf1, "AAA");
+    strcat(buf1, "BBB");
+    strcat(buf1, "CCC");
 
     {
         char* s = strdup("strdup");
 
-        if (s && strcmp(s, "strdup") == 0 && strlen(s) == 6)
+        if (s && strcmp(s, "strdup") == 0 && strlen(s) == 6 &&
+            memcmp(s, "strdup", 6) == 0)
         {
-            if (memcmp(s, "strdup", 6) == 0)
-                args->strdup_ok = 1;
+            rval = 1;
         }
-        else
-            args->strdup_ok = 0;
 
         free(s);
     }
 
-    snprintf(args->buf2, sizeof(args->buf2), "%s=%d", "value", 100);
+    snprintf(buf2, BUFSIZE, "%s=%d", "value", 100);
 
     Test_strtol();
     Test_strtoll();
@@ -279,6 +277,8 @@ OE_ECALL void Test(void* args_)
     void* p = malloc(1024 * 1024 * 1024);
     OE_TEST(p == NULL);
     OE_TEST(_called_allocation_failure_callback);
+
+    return rval;
 }
 
 OE_SET_ENCLAVE_SGX(
@@ -288,5 +288,3 @@ OE_SET_ENCLAVE_SGX(
     1024, /* HeapPageCount */
     1024, /* StackPageCount */
     2);   /* TCSCount */
-
-OE_DEFINE_EMPTY_ECALL_TABLE();

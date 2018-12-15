@@ -1,14 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-option(ENABLE_FULL_LIBC_TESTS "Build all libc tests and include in test list" OFF)
 option(ENABLE_FULL_LIBCXX_TESTS "Build all libcxx tests and include in test list" OFF)
-
-if(ENABLE_FULL_LIBC_TESTS)
-    message("ENABLE_FULL_LIBC_TESTS set - building all libc tests")
-else()
-    message("ENABLE_FULL_LIBC_TESTS not set - building some libc tests")
-endif()
 
 if(ENABLE_FULL_LIBCXX_TESTS)
     message("ENABLE_FULL_LIBCXX_TESTS set - building all libcxx tests")
@@ -27,6 +20,7 @@ if (UNIX OR ADD_WINDOWS_ENCLAVE_TESTS)
 add_subdirectory(bigmalloc)
 add_subdirectory(backtrace)
 add_subdirectory(create-errors)
+add_subdirectory(crypto)
 add_subdirectory(debug-mode)
 add_subdirectory(ecall)
 add_subdirectory(ecall_ocall)
@@ -67,7 +61,6 @@ add_subdirectory(memory)
 endif()
 
 if (UNIX)
-add_subdirectory(crypto)
 add_subdirectory(crypto_crls_cert_chains)
 add_subdirectory(libunwind)
 add_subdirectory(mbed)

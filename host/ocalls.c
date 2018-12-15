@@ -94,7 +94,7 @@ void HandleThreadWait(oe_enclave_t* enclave, uint64_t arg_in)
             // Spurious-wakes are ignored by going back to FUTEX_WAIT.
             // Since FUTEX_WAIT uses atomic instructions to load event->value,
             // it is safe to use a non-atomic operation here.
-        } while (event->value == -1);
+        } while (event->value == (uint32_t)-1);
     }
 
 #elif defined(_WIN32)
@@ -286,6 +286,7 @@ void oe_handle_backtrace_symbols(oe_enclave_t* enclave, uint64_t arg)
 void oe_handle_log(oe_enclave_t* enclave, uint64_t arg)
 {
     oe_log_args_t* args = (oe_log_args_t*)arg;
+    OE_UNUSED(enclave);
     if (args)
     {
         log_message(true, args);

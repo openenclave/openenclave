@@ -9,6 +9,7 @@ set(PLATFORM_SRC
     crypto/openssl/cert.c
     crypto/openssl/crl.c
     crypto/openssl/ec.c
+    crypto/openssl/hmac.c
     crypto/openssl/init.c
     crypto/openssl/key.c
     crypto/openssl/random.c
@@ -27,6 +28,7 @@ set(PLATFORM_SRC
     )
 elseif (WIN32)
 set(PLATFORM_SRC
+    crypto/bcrypt/hmac.c
     crypto/bcrypt/rsa.c
     windows/aep.asm
     windows/aesm.c
@@ -42,13 +44,14 @@ endif()
 
 add_library(oehost STATIC
     ../common/datetime.c
+    ../common/kdf.c
     ../common/qeidentity.c
     ../common/quote.c
     ../common/report.c
     ../common/revocation.c
     ../common/safecrt.c
     ../common/sgxcertextensions.c
-    ../common/tcbinfo.c    
+    ../common/tcbinfo.c
     calls.c
     create.c
     dupenv.c

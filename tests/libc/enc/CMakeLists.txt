@@ -41,11 +41,7 @@ function(add_libc_test_enc NAME CFILE)
     target_link_libraries(libctest-${NAME}_enc libctest-support)
 endfunction(add_libc_test_enc)
 
-if (ENABLE_FULL_LIBC_TESTS)
-    file(STRINGS "../tests.supported" alltests)
-else()
-    file(STRINGS "../tests.supported.default" alltests)
-endif()
+file(STRINGS "../tests.supported" alltests)
 
 string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE_UPPER)
 foreach(testcase ${alltests})

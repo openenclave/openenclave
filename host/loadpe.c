@@ -71,6 +71,7 @@ static oe_result_t _sgx_load_enclave_properties(
     const char* sectionName, // unused
     oe_sgx_enclave_properties_t* properties)
 {
+    OE_UNUSED(sectionName);
     assert(image);
     assert(image->oeinfo_rva);
     assert(properties);
@@ -85,6 +86,7 @@ static oe_result_t _sgx_update_enclave_properties(
     const char* sectionName, // unused
     const oe_sgx_enclave_properties_t* properties)
 {
+    OE_UNUSED(sectionName);
     assert(image);
     assert(image->oeinfo_rva);
     assert(properties);

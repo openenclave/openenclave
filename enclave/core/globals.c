@@ -182,7 +182,7 @@ const void* __oe_get_reloc_end()
     return (const uint8_t*)__oe_get_reloc_base() + __oe_get_reloc_size();
 }
 
-const size_t __oe_get_reloc_size()
+size_t __oe_get_reloc_size()
 {
 #if defined(__linux__)
     return _reloc_size;
@@ -211,7 +211,7 @@ const void* __oe_get_ecall_end()
     return (const uint8_t*)__oe_get_ecall_base() + __oe_get_ecall_size();
 }
 
-const size_t __oe_get_ecall_size()
+size_t __oe_get_ecall_size()
 {
     return oe_enclave_properties_sgx.image_info.ecall_size;
 }
@@ -231,7 +231,7 @@ const void* __oe_get_heap_base()
     return base + oe_enclave_properties_sgx.image_info.heap_rva;
 }
 
-const size_t __oe_get_heap_size()
+size_t __oe_get_heap_size()
 {
     return oe_enclave_properties_sgx.header.size_settings.num_heap_pages *
            OE_PAGE_SIZE;

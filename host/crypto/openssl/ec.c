@@ -240,6 +240,12 @@ void oe_ec_public_key_init(oe_ec_public_key_t* public_key, EVP_PKEY* pkey)
         (oe_public_key_t*)public_key, pkey, _PUBLIC_KEY_MAGIC);
 }
 
+void oe_ec_private_key_init(oe_ec_private_key_t* private_key, EVP_PKEY* pkey)
+{
+    return oe_private_key_init(
+        (oe_private_key_t*)private_key, pkey, _PRIVATE_KEY_MAGIC);
+}
+
 oe_result_t oe_ec_private_key_read_pem(
     oe_ec_private_key_t* private_key,
     const uint8_t* pem_data,
@@ -345,6 +351,103 @@ oe_result_t oe_ec_generate_key_pair(
 {
     return _generate_key_pair(
         type, (oe_private_key_t*)private_key, (oe_public_key_t*)public_key);
+}
+
+oe_result_t oe_ec_generate_key_pair_from_private(
+    oe_ec_type_t curve,
+    const uint8_t* private_key_buf,
+    size_t private_key_buf_size,
+    oe_ec_private_key_t* private_key,
+    oe_ec_public_key_t* public_key)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    int openssl_result;
+    EC_KEY* key = NULL;
+    BIGNUM* private_bn = NULL;
+    EC_POINT* public_point = NULL;
+    EVP_PKEY* public_pkey = NULL;
+    EVP_PKEY* private_pkey = NULL;
+
+    if (!private_key_buf || !private_key || !public_key ||
+        private_key_buf_size > OE_INT_MAX)
+    {
+        OE_RAISE(OE_INVALID_PARAMETER);
+    }
+
+    /* Initialize OpenSSL. */
+    oe_initialize_openssl();
+
+    /* Initialize the EC key. */
+    key = EC_KEY_new_by_curve_name(_get_nid(curve));
+    if (key == NULL)
+        OE_RAISE(OE_FAILURE);
+
+    /* Set the EC named-curve flag. */
+    EC_KEY_set_asn1_flag(key, OPENSSL_EC_NAMED_CURVE);
+
+    /* Load private key into the EC key. */
+    private_bn = BN_bin2bn(private_key_buf, (int)private_key_buf_size, NULL);
+
+    if (private_bn == NULL)
+        OE_RAISE(OE_FAILURE);
+
+    if (EC_KEY_set_private_key(key, private_bn) == 0)
+        OE_RAISE(OE_FAILURE);
+
+    public_point = EC_POINT_new(EC_KEY_get0_group(key));
+    if (public_point == NULL)
+        OE_RAISE(OE_FAILURE);
+
+    /*
+     * To get the public key, we perform the elliptical curve point
+     * multiplication with the factors being the private key and the base
+     * generator point of the curve.
+     */
+    openssl_result = EC_POINT_mul(
+        EC_KEY_get0_group(key), public_point, private_bn, NULL, NULL, NULL);
+    if (openssl_result == 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Sanity check the params. */
+    if (EC_KEY_set_public_key(key, public_point) == 0)
+        OE_RAISE(OE_FAILURE);
+
+    if (EC_KEY_check_key(key) == 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Map the key to the EVP_PKEY wrapper. */
+    public_pkey = EVP_PKEY_new();
+    if (public_pkey == NULL)
+        OE_RAISE(OE_FAILURE);
+
+    if (EVP_PKEY_set1_EC_KEY(public_pkey, key) == 0)
+        OE_RAISE(OE_FAILURE);
+
+    private_pkey = EVP_PKEY_new();
+    if (private_pkey == NULL)
+        OE_RAISE(OE_FAILURE);
+
+    if (EVP_PKEY_set1_EC_KEY(private_pkey, key) == 0)
+        OE_RAISE(OE_FAILURE);
+
+    oe_ec_public_key_init(public_key, public_pkey);
+    oe_ec_private_key_init(private_key, private_pkey);
+    public_pkey = NULL;
+    private_pkey = NULL;
+    result = OE_OK;
+
+done:
+    if (key != NULL)
+        EC_KEY_free(key);
+    if (private_bn != NULL)
+        BN_clear_free(private_bn);
+    if (public_point != NULL)
+        EC_POINT_clear_free(public_point);
+    if (public_pkey != NULL)
+        EVP_PKEY_free(public_pkey);
+    if (private_pkey != NULL)
+        EVP_PKEY_free(private_pkey);
+    return result;
 }
 
 oe_result_t oe_ec_public_key_equal(
@@ -505,7 +608,7 @@ oe_result_t oe_ecdsa_signature_write_der(
         OE_RAISE(OE_FAILURE);
 
     /* Copy binary signature to output buffer */
-    if (signature && sig_len <= *signature_size)
+    if (signature && ((size_t)sig_len <= *signature_size))
     {
         uint8_t* p = signature;
 
@@ -517,7 +620,7 @@ oe_result_t oe_ecdsa_signature_write_der(
     }
 
     /* Check whether buffer is too small */
-    if (sig_len > *signature_size)
+    if ((size_t)sig_len > *signature_size)
     {
         *signature_size = (size_t)sig_len;
         OE_RAISE(OE_BUFFER_TOO_SMALL);
@@ -534,4 +637,48 @@ done:
         ECDSA_SIG_free(sig);
 
     return result;
+}
+
+bool oe_ec_valid_raw_private_key(
+    oe_ec_type_t type,
+    const uint8_t* key,
+    size_t keysize)
+{
+    BIGNUM* bn = NULL;
+    EC_GROUP* group = NULL;
+    BIGNUM* order = NULL;
+    bool is_valid = false;
+
+    if (!key || keysize > OE_INT_MAX)
+        goto done;
+
+    bn = BN_bin2bn(key, (int)keysize, NULL);
+    if (bn == NULL)
+        goto done;
+
+    order = BN_new();
+    if (order == NULL)
+        goto done;
+
+    group = EC_GROUP_new_by_curve_name(_get_nid(type));
+    if (group == NULL)
+        goto done;
+
+    if (EC_GROUP_get_order(group, order, NULL) == 0)
+        goto done;
+
+    /* Constraint is 1 <= private_key <= order - 1. */
+    if (BN_is_zero(bn) || BN_cmp(bn, order) >= 0)
+        goto done;
+
+    is_valid = true;
+
+done:
+    if (bn != NULL)
+        BN_clear_free(bn);
+    if (group != NULL)
+        EC_GROUP_clear_free(group);
+    if (order != NULL)
+        BN_clear_free(order);
+    return is_valid;
 }

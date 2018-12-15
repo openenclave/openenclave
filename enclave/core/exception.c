@@ -316,6 +316,7 @@ void oe_virtual_exception_dispatcher(
     uint64_t* arg_out)
 {
     SSA_Info ssa_info = {0};
+    OE_UNUSED(arg_in);
 
     // Verify if the first SSA has valid exception info.
     if (_get_enclave_thread_first_ssa_info(td, &ssa_info) != 0)

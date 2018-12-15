@@ -206,6 +206,14 @@ oe_result_t oe_ec_public_key_init(
         (oe_public_key_t*)public_key, pk, _copy_key, _PUBLIC_KEY_MAGIC);
 }
 
+oe_result_t oe_ec_private_key_init(
+    oe_ec_private_key_t* private_key,
+    const mbedtls_pk_context* pk)
+{
+    return oe_private_key_init(
+        (oe_private_key_t*)private_key, pk, _copy_key, _PRIVATE_KEY_MAGIC);
+}
+
 oe_result_t oe_ec_private_key_read_pem(
     oe_ec_private_key_t* private_key,
     const uint8_t* pem_data,
@@ -310,6 +318,87 @@ oe_result_t oe_ec_generate_key_pair(
 {
     return _generate_key_pair(
         type, (oe_private_key_t*)private_key, (oe_public_key_t*)public_key);
+}
+
+oe_result_t oe_ec_generate_key_pair_from_private(
+    oe_ec_type_t curve,
+    const uint8_t* private_key_buf,
+    size_t private_key_buf_size,
+    oe_ec_private_key_t* private_key,
+    oe_ec_public_key_t* public_key)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    int mbedtls_result;
+    mbedtls_pk_context key;
+    mbedtls_ecp_keypair* keypair;
+    mbedtls_ctr_drbg_context* drbg;
+
+    mbedtls_pk_init(&key);
+
+    /* Reject invalid parameters */
+    if (!private_key_buf || !private_key || !public_key)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Load all the mbedtls variables. */
+    mbedtls_result =
+        mbedtls_pk_setup(&key, mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY));
+    if (mbedtls_result != 0)
+        OE_RAISE_MSG(OE_FAILURE, "mbedtls error: 0x%x", mbedtls_result);
+
+    keypair = mbedtls_pk_ec(key);
+    mbedtls_result =
+        mbedtls_ecp_group_load(&keypair->grp, _get_group_id(curve));
+    if (mbedtls_result != 0)
+        OE_RAISE_MSG(OE_FAILURE, "mbedtls error: 0x%x", mbedtls_result);
+
+    mbedtls_result = mbedtls_mpi_read_binary(
+        &keypair->d, private_key_buf, private_key_buf_size);
+
+    if (mbedtls_result != 0)
+        OE_RAISE_MSG(OE_FAILURE, "mbedtls error: 0x%x", mbedtls_result);
+
+    mbedtls_result = mbedtls_ecp_check_privkey(&keypair->grp, &keypair->d);
+    if (mbedtls_result != 0)
+        OE_RAISE_MSG(OE_FAILURE, "mbedtls error: 0x%x", mbedtls_result);
+
+    if (!(drbg = oe_mbedtls_get_drbg()))
+        OE_RAISE(OE_FAILURE);
+
+    /*
+     * To get the public key, we perform the elliptical curve point
+     * multiplication with the factors being the private key and the base
+     * generator point of the curve.
+     */
+    mbedtls_result = mbedtls_ecp_mul(
+        &keypair->grp,
+        &keypair->Q,
+        &keypair->d,
+        &keypair->grp.G,
+        mbedtls_ctr_drbg_random,
+        drbg);
+
+    if (mbedtls_result != 0)
+        OE_RAISE_MSG(OE_FAILURE, "mbedtls error: 0x%x", mbedtls_result);
+
+    mbedtls_result = mbedtls_ecp_check_pubkey(&keypair->grp, &keypair->Q);
+    if (mbedtls_result != 0)
+        OE_RAISE_MSG(OE_FAILURE, "mbedtls error: 0x%x", mbedtls_result);
+
+    /* Export to OE structs. */
+    OE_CHECK(oe_ec_public_key_init(public_key, &key));
+    result = oe_ec_private_key_init(private_key, &key);
+    if (result != OE_OK)
+    {
+        /* Need to free the public key before exiting. */
+        oe_ec_public_key_free(public_key);
+        OE_RAISE(result);
+    }
+
+    result = OE_OK;
+
+done:
+    mbedtls_pk_free(&key);
+    return result;
 }
 
 oe_result_t oe_ec_public_key_equal(
@@ -478,4 +567,49 @@ done:
     mbedtls_mpi_free(&s);
 
     return result;
+}
+
+bool oe_ec_valid_raw_private_key(
+    oe_ec_type_t type,
+    const uint8_t* key,
+    size_t keysize)
+{
+    mbedtls_mpi num;
+    mbedtls_ecp_group group;
+    bool is_valid = false;
+    int res;
+
+    mbedtls_mpi_init(&num);
+    mbedtls_ecp_group_init(&group);
+
+    if (!key)
+        goto done;
+
+    res = mbedtls_mpi_read_binary(&num, key, keysize);
+    if (res != 0)
+    {
+        OE_TRACE_ERROR("mbedtls_error = 0x%x", res);
+        goto done;
+    }
+
+    res = mbedtls_ecp_group_load(&group, _get_group_id(type));
+    if (res != 0)
+    {
+        OE_TRACE_ERROR("mbedtls_error = 0x%x", res);
+        goto done;
+    }
+
+    res = mbedtls_ecp_check_privkey(&group, &num);
+    if (res != 0)
+    {
+        OE_TRACE_ERROR("mbedtls_error = 0x%x", res);
+        goto done;
+    }
+
+    is_valid = true;
+
+done:
+    mbedtls_ecp_group_free(&group);
+    mbedtls_mpi_free(&num);
+    return is_valid;
 }

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/enclave.h>
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -11,6 +12,8 @@
 int __printf_chk(int flag, const char* format, ...)
 {
     va_list ap;
+
+    OE_UNUSED(flag);
 
     va_start(ap, format);
     int ret = vfprintf(stdout, format, ap);

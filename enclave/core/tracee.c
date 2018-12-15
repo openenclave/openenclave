@@ -11,23 +11,19 @@
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 
-static oe_log_filter_t _active_log_filter = {0};
+static log_level_t _active_log_level = OE_LOG_LEVEL_ERROR;
 static char _enclave_filename[MAX_FILENAME_LEN];
 static bool _debug_allowed_enclave = false;
 
-const char* get_filename_from_path(const char* path)
+const char* get_filename_from_path(const char* path, size_t path_len)
 {
     if (path)
     {
-        for (size_t i = oe_strlen(path) - 1; i >= 0; i--)
+        for (size_t i = path_len; i > 0; i--)
         {
-            if ((path[i] == '/') || (path[i] == '\\'))
+            if ((path[i - 1] == '/') || (path[i - 1] == '\\'))
             {
-                return &path[i + 1];
-            }
-            else if (i == 0)
-            {
-                break;
+                return &path[i];
             }
         }
     }
@@ -126,8 +122,8 @@ oe_result_t _handle_oelog_init(uint64_t arg)
         goto done;
     }
 
-    oe_secure_memcpy(&_active_log_filter, &local, sizeof(oe_log_filter_t));
-    filename = get_filename_from_path(_active_log_filter.path);
+    _active_log_level = local.level;
+    filename = get_filename_from_path(local.path, local.path_len);
     if (filename)
     {
         oe_strlcpy(_enclave_filename, filename, sizeof(_enclave_filename));
@@ -159,7 +155,7 @@ oe_result_t oe_log(log_level_t level, const char* fmt, ...)
     }
 
     // Check if this message should be skipped
-    if (level > _active_log_filter.level)
+    if (level > _active_log_level)
     {
         result = OE_OK;
         goto done;
@@ -188,7 +184,7 @@ oe_result_t oe_log(log_level_t level, const char* fmt, ...)
     oe_va_start(ap, fmt);
     n = oe_vsnprintf(
         &args->message[bytes_written],
-        (size_t)(OE_LOG_MESSAGE_LEN_MAX - bytes_written),
+        OE_LOG_MESSAGE_LEN_MAX - (size_t)bytes_written,
         fmt,
         ap);
     oe_va_end(ap);
@@ -211,5 +207,5 @@ done:
 
 log_level_t get_current_logging_level(void)
 {
-    return _active_log_filter.level;
+    return _active_log_level;
 }

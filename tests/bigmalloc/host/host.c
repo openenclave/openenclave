@@ -28,6 +28,8 @@ uint64_t get_free_system_memory(void)
 
 int main(int argc, const char* argv[])
 {
+    OE_UNUSED(argc);
+    OE_UNUSED(argv);
 #if !defined(OE_USE_LIBSGX)
 
     oe_result_t result;

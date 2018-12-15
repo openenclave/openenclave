@@ -164,6 +164,7 @@ int pthread_once(pthread_once_t* once, void (*func)(void))
 
 int pthread_spin_init(pthread_spinlock_t* spinlock, int pshared)
 {
+    OE_UNUSED(pshared);
     return _to_errno(oe_spin_init((oe_spinlock_t*)spinlock));
 }
 
@@ -192,21 +193,26 @@ int pthread_spin_destroy(pthread_spinlock_t* spinlock)
 
 int pthread_mutexattr_init(pthread_mutexattr_t* attr)
 {
+    OE_UNUSED(attr);
     return 0;
 }
 
 int pthread_mutexattr_settype(pthread_mutexattr_t* attr, int type)
 {
+    OE_UNUSED(attr);
+    OE_UNUSED(type);
     return 0;
 }
 
 int pthread_mutexattr_destroy(pthread_mutexattr_t* attr)
 {
+    OE_UNUSED(attr);
     return 0;
 }
 
 int pthread_mutex_init(pthread_mutex_t* m, const pthread_mutexattr_t* attr)
 {
+    OE_UNUSED(attr);
     return _to_errno(oe_mutex_init((oe_mutex_t*)m));
 }
 
@@ -242,6 +248,7 @@ int pthread_rwlock_init(
     pthread_rwlock_t* rwlock,
     const pthread_rwlockattr_t* attr)
 {
+    OE_UNUSED(attr);
     return _to_errno(oe_rwlock_init((oe_rwlock_t*)rwlock));
 }
 
@@ -275,6 +282,7 @@ int pthread_rwlock_destroy(pthread_rwlock_t* rwlock)
 
 int pthread_cond_init(pthread_cond_t* cond, const pthread_condattr_t* attr)
 {
+    OE_UNUSED(attr);
     return _to_errno(oe_cond_init((oe_cond_t*)cond));
 }
 
@@ -288,6 +296,9 @@ int pthread_cond_timedwait(
     pthread_mutex_t* mutex,
     const struct timespec* ts)
 {
+    OE_UNUSED(cond);
+    OE_UNUSED(mutex);
+    OE_UNUSED(ts);
     assert("pthread_cond_timedwait(): panic" == NULL);
     return -1;
 }

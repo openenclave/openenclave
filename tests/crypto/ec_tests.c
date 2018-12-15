@@ -5,11 +5,13 @@
 #include <openenclave/enclave.h>
 #endif
 
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/asn1.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/ec.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/random.h>
 #include <openenclave/internal/tests.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -18,6 +20,7 @@
 #include "hash.h"
 #include "readfile.h"
 #include "tests.h"
+#include "utils.h"
 
 /* _CERT use as a ec_cert_with_ext.pem
  * _SGX_CERT use as a ec_cert_crl_distribution.pem
@@ -51,6 +54,12 @@ size_t private_key_size;
 size_t public_key_size;
 size_t sign_size;
 size_t x_size, y_size;
+
+static const uint8_t _P256_GROUP_ORDER[] = {
+    0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xBC, 0xE6, 0xFA, 0xAD, 0xA7, 0x17,
+    0x9E, 0x84, 0xF3, 0xB9, 0xCA, 0xC2, 0xFC, 0x63, 0x25, 0x51,
+};
 
 // Test EC signing operation over an ASCII alphabet string. Note that two
 // signatures over the same data produce different hex sequences, although
@@ -161,22 +170,16 @@ static void _test_sign_and_verify()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
-static void _test_generate()
+static void _test_generate_common(
+    const oe_ec_private_key_t* private_key,
+    const oe_ec_public_key_t* public_key)
 {
-    printf("=== begin %s()\n", __FUNCTION__);
-
     oe_result_t r;
-    oe_ec_private_key_t private_key = {0};
-    oe_ec_public_key_t public_key = {0};
     uint8_t* signature = NULL;
     size_t signature_size = 0;
 
-    r = oe_ec_generate_key_pair(
-        OE_EC_TYPE_SECP256R1, &private_key, &public_key);
-    OE_TEST(r == OE_OK);
-
     r = oe_ec_private_key_sign(
-        &private_key,
+        private_key,
         OE_HASH_TYPE_SHA256,
         &ALPHABET_HASH,
         sizeof(ALPHABET_HASH),
@@ -187,7 +190,7 @@ static void _test_generate()
     OE_TEST(signature = (uint8_t*)malloc(signature_size));
 
     r = oe_ec_private_key_sign(
-        &private_key,
+        private_key,
         OE_HASH_TYPE_SHA256,
         &ALPHABET_HASH,
         sizeof(ALPHABET_HASH),
@@ -196,7 +199,7 @@ static void _test_generate()
     OE_TEST(r == OE_OK);
 
     r = oe_ec_public_key_verify(
-        &public_key,
+        public_key,
         OE_HASH_TYPE_SHA256,
         &ALPHABET_HASH,
         sizeof(ALPHABET_HASH),
@@ -205,10 +208,179 @@ static void _test_generate()
     OE_TEST(r == OE_OK);
 
     free(signature);
+}
+
+static void _test_generate()
+{
+    printf("=== begin %s()\n", __FUNCTION__);
+
+    oe_result_t r;
+    oe_ec_private_key_t private_key = {0};
+    oe_ec_public_key_t public_key = {0};
+
+    r = oe_ec_generate_key_pair(
+        OE_EC_TYPE_SECP256R1, &private_key, &public_key);
+    OE_TEST(r == OE_OK);
+
+    _test_generate_common(&private_key, &public_key);
+
     oe_ec_private_key_free(&private_key);
     oe_ec_public_key_free(&public_key);
 
     printf("=== passed %s()\n", __FUNCTION__);
+}
+
+static void _test_generate_from_private()
+{
+    printf("=== begin %s()\n", __FUNCTION__);
+
+    oe_result_t r;
+    uint8_t private_raw[32];
+    oe_ec_private_key_t private_key = {0};
+    oe_ec_public_key_t public_key = {0};
+    oe_ec_private_key_t private_key2 = {0};
+    oe_ec_public_key_t public_key2 = {0};
+    bool equal = false;
+
+    /* Generate a random 256 bit key. */
+    r = oe_random_internal(private_raw, sizeof(private_raw));
+    OE_TEST(r == OE_OK);
+
+    /* Set the MSB to 0 so we always have a valid NIST 256P key. */
+    private_raw[0] = private_raw[0] & 0x7F;
+
+    r = oe_ec_generate_key_pair_from_private(
+        OE_EC_TYPE_SECP256R1,
+        private_raw,
+        sizeof(private_raw),
+        &private_key,
+        &public_key);
+    OE_TEST(r == OE_OK);
+
+    /* Test that signing works with ECC key. */
+    _test_generate_common(&private_key, &public_key);
+
+    /* Test that the key generation is deterministic. */
+    r = oe_ec_generate_key_pair_from_private(
+        OE_EC_TYPE_SECP256R1,
+        private_raw,
+        sizeof(private_raw),
+        &private_key2,
+        &public_key2);
+    OE_TEST(r == OE_OK);
+
+    _test_generate_common(&private_key2, &public_key2);
+
+    r = oe_ec_public_key_equal(&public_key, &public_key2, &equal);
+    OE_TEST(r == OE_OK);
+    OE_TEST(equal);
+
+    oe_ec_private_key_free(&private_key);
+    oe_ec_public_key_free(&public_key);
+    oe_ec_private_key_free(&private_key2);
+    oe_ec_public_key_free(&public_key2);
+
+    /* Key limits are 1 <= key <= order. Test 0 key fails. */
+    OE_TEST(
+        oe_memset_s(private_raw, sizeof(private_raw), 0, sizeof(private_raw)) ==
+        OE_OK);
+
+    r = oe_ec_generate_key_pair_from_private(
+        OE_EC_TYPE_SECP256R1,
+        private_raw,
+        sizeof(private_raw),
+        &private_key,
+        &public_key);
+    OE_TEST(r != OE_OK);
+
+    /* Test key = order fails. */
+    OE_TEST(
+        oe_memcpy_s(
+            private_raw,
+            sizeof(private_raw),
+            _P256_GROUP_ORDER,
+            sizeof(_P256_GROUP_ORDER)) == OE_OK);
+
+    r = oe_ec_generate_key_pair_from_private(
+        OE_EC_TYPE_SECP256R1,
+        private_raw,
+        sizeof(private_raw),
+        &private_key,
+        &public_key);
+    OE_TEST(r != OE_OK);
+
+    /* Test key = 1 passes. */
+    OE_TEST(
+        oe_memset_s(private_raw, sizeof(private_raw), 0, sizeof(private_raw)) ==
+        OE_OK);
+
+    private_raw[sizeof(private_raw) - 1] |= 0x1;
+
+    r = oe_ec_generate_key_pair_from_private(
+        OE_EC_TYPE_SECP256R1,
+        private_raw,
+        sizeof(private_raw),
+        &private_key,
+        &public_key);
+    OE_TEST(r == OE_OK);
+
+    _test_generate_common(&private_key, &public_key);
+    oe_ec_private_key_free(&private_key);
+    oe_ec_public_key_free(&public_key);
+
+    /* Test key = order - 1 passes. */
+    OE_TEST(
+        oe_memcpy_s(
+            private_raw,
+            sizeof(private_raw),
+            _P256_GROUP_ORDER,
+            sizeof(_P256_GROUP_ORDER)) == OE_OK);
+
+    private_raw[sizeof(private_raw) - 1] &= 0xFE;
+
+    r = oe_ec_generate_key_pair_from_private(
+        OE_EC_TYPE_SECP256R1,
+        private_raw,
+        sizeof(private_raw),
+        &private_key,
+        &public_key);
+    OE_TEST(r == OE_OK);
+
+    _test_generate_common(&private_key, &public_key);
+    oe_ec_private_key_free(&private_key);
+    oe_ec_public_key_free(&public_key);
+
+    printf("=== passed %s()\n", __FUNCTION__);
+}
+
+static void _test_private_key_limits()
+{
+    uint8_t key[32] = {0};
+    bool valid;
+
+    /* Limits are 1 <= key <= _P256_GROUP_ORDER. Try key = 0 first. */
+    valid = oe_ec_valid_raw_private_key(OE_EC_TYPE_SECP256R1, key, sizeof(key));
+    OE_TEST(!valid);
+
+    /* Try key = 1. */
+    key[sizeof(key) - 1] |= 0x01;
+    valid = oe_ec_valid_raw_private_key(OE_EC_TYPE_SECP256R1, key, sizeof(key));
+    OE_TEST(valid);
+
+    /* Try _P256_GROUP_ORDER - 1. */
+    OE_TEST(
+        oe_memcpy_s(
+            key, sizeof(key), _P256_GROUP_ORDER, sizeof(_P256_GROUP_ORDER)) ==
+        OE_OK);
+
+    key[sizeof(key) - 1] &= 0xFE;
+    valid = oe_ec_valid_raw_private_key(OE_EC_TYPE_SECP256R1, key, sizeof(key));
+    OE_TEST(valid);
+
+    /* Try key = _P256_GROUP_ORDER. */
+    key[sizeof(key) - 1] |= 0x01;
+    valid = oe_ec_valid_raw_private_key(OE_EC_TYPE_SECP256R1, key, sizeof(key));
+    OE_TEST(!valid);
 }
 
 static void _test_write_private()
@@ -759,6 +931,8 @@ void TestEC()
     _test_crl_distribution_points();
     _test_sign_and_verify();
     _test_generate();
+    _test_generate_from_private();
+    _test_private_key_limits();
     _test_write_private();
     _test_write_public();
     _test_cert_methods();

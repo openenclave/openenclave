@@ -68,6 +68,7 @@ uint64_t TestDivideByZeroHandler(oe_exception_record_t* exception_record)
     uint64_t __exception_handler_name_(                          \
         oe_exception_record_t* exception_record)                 \
     {                                                            \
+        OE_UNUSED(exception_record);                             \
         return OE_EXCEPTION_CONTINUE_SEARCH;                     \
     }
 

@@ -17,6 +17,13 @@ enclave {
         );
 
         public void test_minimum_issue_date(oe_datetime_t now);
+
+        public void enclave_test_local_report(
+            [in, out]sgx_target_info_t* target_info);
+        public void enclave_test_remote_report();
+        public void enclave_test_parse_report_negative();
+        public void enclave_test_local_verify_report();
+        public void enclave_test_remote_verify_report();
     };
 
     untrusted {

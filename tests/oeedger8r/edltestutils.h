@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <openenclave/bits/defs.h>
 #include <stdint.h>
 #include <wchar.h>
 #include <limits>
@@ -27,6 +28,7 @@ struct unused
 {
     unused(int i = 0)
     {
+        OE_UNUSED(i);
     }
 };
 
@@ -39,6 +41,7 @@ struct unused
     template <typename S>                                        \
     void assert_no_field_##fname(unused<sizeof(S::fname)> u = 0) \
     {                                                            \
+        OE_UNUSED(u);                                            \
     }                                                            \
     template <typename S>                                        \
     void assert_no_field_##fname()                               \

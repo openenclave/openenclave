@@ -14,7 +14,7 @@
 
 #define SKIP_RETURN_CODE 2
 
-int main(int argc, const char* argv[])
+int main()
 {
     const uint32_t flags = oe_get_create_flags();
     if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
@@ -37,12 +37,12 @@ int main(int argc, const char* argv[])
     aesm_t* aesm;
     if (!(aesm = aesm_connect()))
     {
-        fprintf(stderr, "%s: failed to connect\n", argv[0]);
+        fprintf(stderr, "aesm: failed to connect\n");
         exit(1);
     }
     aesm_disconnect(aesm);
 #endif
 
-    printf("=== passed all tests (%s)\n", argv[0]);
+    printf("=== passed all tests (aesm)\n");
     return 0;
 }

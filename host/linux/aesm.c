@@ -289,7 +289,7 @@ static int _read(int sock, void* data, size_t size)
 {
     ssize_t n;
 
-    if ((n = read(sock, data, size)) != size)
+    if ((n = read(sock, data, size)) != (ssize_t)size)
         return -1;
 
     return 0;
@@ -299,7 +299,7 @@ static int _write(int sock, const void* data, size_t size)
 {
     ssize_t n;
 
-    if ((n = write(sock, data, size)) != size)
+    if ((n = write(sock, data, size)) != (ssize_t)size)
         return -1;
 
     return 0;
