@@ -46,12 +46,12 @@ add_subdirectory(print)
 add_subdirectory(SampleApp)
 add_subdirectory(SampleAppCRT)
 add_subdirectory(stdc)
+add_subdirectory(ecall_ocall)
 endif()
 
 # Windows test Broken Post #632 issue
 if ( UNIX )
 add_subdirectory(abortStatus)
-add_subdirectory(ecall_ocall)
 add_subdirectory(cppException)
 add_subdirectory(create-rapid)
 add_subdirectory(libc)
