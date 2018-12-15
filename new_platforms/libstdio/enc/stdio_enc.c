@@ -120,8 +120,6 @@ oe_result_t GetTrustedFileInBuffer(const char* trustedFilePath, char** pBuffer, 
     // Read file into the buffer.
     fp = oe_fopen(OE_FILE_SECURE_BEST_EFFORT, trustedFilePath, "rb");
     if (fp == NULL) {
-        extern errno_t errno;
-        EMSG("fopen failed, errno = %u", errno);
         FreeTrustedFileBuffer(ptr);
         return OE_FAILURE;
     }

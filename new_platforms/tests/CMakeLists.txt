@@ -1,2 +1,3 @@
 add_subdirectory(gtest)
 add_subdirectory(oetests_host)
+add_subdirectory(oetests_enclave)

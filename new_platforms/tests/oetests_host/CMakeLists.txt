@@ -8,7 +8,7 @@ set(SRCS
     sockets_test.cpp)
 
 add_executable(oetests_host ${SRCS} ${GEN})
-target_include_directories(oetests_host PRIVATE )
+target_include_directories(oetests_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(oetests_host gtest oehost oesocket_host oestdio_host)
 
 if(UNIX)

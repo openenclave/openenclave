@@ -57,18 +57,28 @@ elseif(WIN32 AND SGX)
         sgx/trpc_sgx.c)
 
     set(SRCS ${CYREP_SRCS} ${COMMON_SRCS} ${SGX_SRCS} ${GEN})
+
     set(INCS
         PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/sgx
-        PRIVATE ${NP_PATH}/include
-        PRIVATE ${OE_PATH}/include
-        PRIVATE ${SGXSDKInstallPath}/include
-        PRIVATE ${SGXSDKInstallPath}/include/tlibc
+        PUBLIC  ${NP_PATH}/include
+        PUBLIC  ${OE_PATH}/include
+        PUBLIC  ${SGXSDKInstallPath}/include
+        PUBLIC  ${SGXSDKInstallPath}/include/tlibc
         PRIVATE ${TINYCBOR_PATH}/src
         PRIVATE ${CYREP_PATH}/cyrep
         PRIVATE ${CYREP_PATH}/tcps)
+
+    set(PREFIX ${SGX_SDK_LIBRARIES_PREFIX}/$<CONFIG>)
+    set(LIBS
+        PUBLIC ${PREFIX}/sgx_tstdc.lib
+        PUBLIC ${PREFIX}/sgx_tprotected_fs.lib
+        PUBLIC ${PREFIX}/sgx_tcxx.lib
+        PUBLIC ${PREFIX}/sgx_trts.lib
+        PUBLIC ${PREFIX}/sgx_tservice.lib
+        PUBLIC ${PREFIX}/sgx_tcrypto.lib)
 
     add_library(oeenclave STATIC ${SRCS} ${GEN})
 
@@ -76,4 +86,7 @@ elseif(WIN32 AND SGX)
 
     target_compile_definitions(oeenclave PRIVATE CONFIG_CYREP_SGX_BUILD)
     target_compile_definitions(oeenclave PRIVATE OPENSSL_NO_SOCK)
+    target_link_libraries(oeenclave ${LIBS})
+
+    string(REPLACE "/RTC1" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
 endif()

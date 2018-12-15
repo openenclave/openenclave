@@ -28,4 +28,6 @@ elseif(WIN32 AND SGX)
     target_include_directories(oestdio_enc PRIVATE ${NP_PATH}/include)
     target_include_directories(oestdio_enc PRIVATE ${SGXSDKInstallPath}/include)
     target_include_directories(oestdio_enc PRIVATE ${SGXSDKInstallPath}/include/tlibc)
+
+    string(REPLACE "/RTC1" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
 endif()
