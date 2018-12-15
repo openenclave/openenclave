@@ -11,13 +11,13 @@ else()
     message("ENABLE_FULL_LIBCXX_TESTS not set - building some libcxx tests")
 endif()
 
+add_subdirectory(mem)
 add_subdirectory(safemath)
+add_subdirectory(safecrt)
+add_subdirectory(str)
 
 if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
 add_subdirectory(aesm)
-add_subdirectory(mem)
-add_subdirectory(safecrt)
-add_subdirectory(str)
 add_subdirectory(debugger)
 
 if (UNIX OR ADD_WINDOWS_ENCLAVE_TESTS)
