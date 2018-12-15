@@ -60,11 +60,8 @@ endif()
 # Propagate the environment variables into locals, if necessary.
 if(TZ AND (NOT "$ENV{TA_DEV_KIT_DIR}" STREQUAL "") AND ("${TA_DEV_KIT_DIR}" STREQUAL ""))
     set(TA_DEV_KIT_DIR $ENV{TA_DEV_KIT_DIR})
-elseif(WIN32 AND SGX AND (NOT "$ENV{SGXSDKInstallPath}" STREQUAL "") AND ("${SGXSDKInstallPath}" STREQUAL ""))
-    set(SGXSDKInstallPath $ENV{SGXSDKInstallPath})
-
-    string(REPLACE "\\" "/" SGXSDKInstallPath ${SGXSDKInstallPath})
-    string(REGEX REPLACE "/$" "" SGXSDKInstallPath ${SGXSDKInstallPath})
+elseif(WIN32 AND SGX)
+    find_package(SGXSDK REQUIRED)
 elseif(WIN32 AND TZ)
     find_package(WDK REQUIRED)
 endif()

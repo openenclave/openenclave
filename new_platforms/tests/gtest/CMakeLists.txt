@@ -3,8 +3,8 @@ add_library(gtest STATIC
     ${GTEST_PATH}/googletest/src/gtest_main.cc)
 
 target_include_directories(gtest PRIVATE ${GTEST_PATH}/googletest)
-target_include_directories(gtest PRIVATE ${GTEST_PATH}/googletest/include)
+target_include_directories(gtest PUBLIC ${GTEST_PATH}/googletest/include)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-    target_compile_options(gtest PRIVATE "/EHsc")
+    target_compile_options(gtest PUBLIC "/EHsc")
 endif()

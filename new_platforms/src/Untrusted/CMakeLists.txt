@@ -11,8 +11,8 @@ set(INCS
     PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..
-    PRIVATE ${NP_PATH}/include
-    PRIVATE ${OE_PATH}/include)
+    PUBLIC ${NP_PATH}/include
+    PUBLIC ${OE_PATH}/include)
 
 # By TEE
 if(TZ)
@@ -24,7 +24,7 @@ endif()
 # By OS, by TEE
 if(UNIX)
     list(APPEND SRCS linux/stdext.c linux/uhelper.c)
-    list(APPEND INCS PRIVATE ${NP_PATH}/include/linux)
+    list(APPEND INCS PUBLIC ${NP_PATH}/include/linux)
 
     if(TZ)
         list(APPEND SRCS linux/teehost_optee.c linux/urpc_optee.c)
@@ -41,9 +41,18 @@ elseif(WIN32)
 
         list(APPEND INCS PRIVATE ${WDK_PATH}/km)
         list(APPEND INCS PRIVATE ${OE_PATH}/3rdparty/OpteeCalls/OpteeCalls/inc)
+        
+        set(LIBS PUBLIC Rpcrt4)
     elseif(SGX)
         list(APPEND SRCS ../oeresult.c win32/teehost_sgx.c)
-        list(APPEND INCS PRIVATE ${SGXSDKInstallPath}/include)
+        list(APPEND INCS PUBLIC ${SGXSDKInstallPath}/include)
+        
+        set(PREFIX ${SGX_SDK_LIBRARIES_PREFIX}/$<CONFIG>)
+        set(LIBS
+            PUBLIC ${PREFIX}/sgx_urts.lib
+            PUBLIC ${PREFIX}/sgx_uae_service.lib
+            PUBLIC ${PREFIX}/sgx_uprotected_fs.lib
+            PUBLIC ${PREFIX}/sgx_urts.lib)
     endif()
 endif()
 
@@ -53,4 +62,6 @@ target_include_directories(oehost ${INCS})
 
 if(UNIX)
     target_compile_definitions(oehost PRIVATE LINUX)
+elseif(WIN32)
+    target_link_libraries(oehost ${LIBS})
 endif()
