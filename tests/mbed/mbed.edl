@@ -2,14 +2,47 @@
 // Licensed under the MIT License.
 
 enclave {
-     struct mbed_args {
+    include "fcntl.h"
+    include "sys/types.h"
+    include "sys/stat.h"
+    include "sys/uio.h"
+
+    struct mbed_args {
         int skipped;
         int total;
     };
+
+    enum string_limit {
+        STRLEN = 1024
+    };
+
     trusted {
         public int test(
             [in, string] const char* in_testname,
-            [user_check] char** out_testname,
-            [out] mbed_args* args );
+            [out, size=1024] char* out_testname,
+            [out] mbed_args* args);
+    };
+
+    untrusted {
+        int mbed_test_open(
+            [in, string] const char* path,
+            int flags,
+            mode_t mode);
+
+        ssize_t mbed_test_read(
+            int fd,
+            [out, size=buf_len] char* buf,
+            size_t buf_len);
+
+        ssize_t mbed_test_readv(
+            int fd,
+            [in, size=iovcnt] const struct iovec* iov,
+            int iovcnt);
+
+        int mbed_test_close(
+            int fd);
+
+        void ocall_exit(
+            int arg);
     };
 };

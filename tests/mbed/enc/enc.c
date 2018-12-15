@@ -19,7 +19,6 @@
 #include <sys/syscall.h>
 #include <sys/uio.h>
 #include <unistd.h>
-#include "../syscall_args.h"
 #include "mbed_t.h"
 
 int main(int argc, const char* argv[]);
@@ -27,7 +26,7 @@ struct mbed_args gmbed_args;
 
 void _exit(int status)
 {
-    oe_call_host("ocall_exit", (void*)(long)status);
+    ocall_exit(status);
     abort();
 }
 
@@ -98,85 +97,73 @@ static oe_result_t _syscall_hook(
             const int flags = (const int)arg2;
             if (flags == O_RDONLY)
             {
-                syscall_args_t* args;
-                args = (syscall_args_t*)oe_host_malloc(sizeof(syscall_args_t));
-                args->path = oe_host_strdup((const char*)arg1);
-                args->flags = (int)arg2;
-                args->mode = (int)arg3;
-                oe_call_host("mbed_test_open", args);
-                *ret = args->fd;
-                oe_host_free(args->path);
-                oe_host_free(args);
-                result = OE_OK;
+                int rval = 0;
+                result =
+                    mbed_test_open(&rval, (char*)arg1, (int)arg2, (mode_t)arg3);
+                *ret = rval;
             }
             break;
         }
         case SYS_read:
         {
-            syscall_args_t* args;
-            args = (syscall_args_t*)oe_host_malloc(sizeof(syscall_args_t));
-            char* enc_buf = (char*)arg2;
-            char* host_buf = (void*)oe_host_malloc(arg3);
-            args->ptr = (void*)host_buf;
-            args->fd = (int)arg1;
-            args->len = (int)arg3;
-            oe_call_host("mbed_test_read", args);
-
-            if ((args->ret) > 0)
-                oe_memcpy(enc_buf, host_buf, arg3);
-            *ret = args->ret;
+            ssize_t rval = 0;
+            const size_t buf_len = (size_t)arg3;
+            char* host_buf = (char*)oe_host_malloc(buf_len);
+            result = mbed_test_read(&rval, (int)arg1, host_buf, buf_len);
+            if (rval > 0)
+            {
+                char* enc_buf = (char*)arg2;
+                oe_memcpy(enc_buf, host_buf, buf_len);
+            }
+            *ret = (int)rval;
             oe_host_free(host_buf);
-
-            oe_host_free(args);
-            result = OE_OK;
             break;
         }
         case SYS_readv:
         {
-            syscall_args_t* args;
-            args = (syscall_args_t*)oe_host_malloc(sizeof(syscall_args_t));
-            struct iovec* iov = (struct iovec*)arg2;
             int i;
-            struct iovec* iov_host =
-                (struct iovec*)oe_host_malloc(sizeof(struct iovec) * (int)arg3);
-            for (i = 0; i < (int)arg3; i++)
+            struct iovec* iov = (struct iovec*)arg2;
+            const int iovcnt = (int)arg3;
+            struct iovec* host_iov = (struct iovec*)oe_host_malloc(
+                sizeof(struct iovec) * (unsigned long)iovcnt);
+
+            for (i = 0; i < iovcnt; ++i)
             {
-                iov_host[i].iov_base = (void*)oe_host_malloc(iov[i].iov_len);
-                iov_host[i].iov_len = (size_t)iov[i].iov_len;
+                host_iov[i].iov_base = (void*)oe_host_malloc(iov[i].iov_len);
+                host_iov[i].iov_len = iov[i].iov_len;
             }
-            args->ptr = (void*)iov_host;
-            args->fd = (int)arg1;
-            args->len = (int)arg3;
-            oe_call_host("mbed_test_readv", args);
 
-            if ((args->ret) > 0)
-                for (i = 0; i < (int)arg3; i++)
+            ssize_t rval = 0;
+            result = mbed_test_readv(&rval, (int)arg1, host_iov, iovcnt);
+            *ret = rval;
+
+            for (i = 0; i < iovcnt; ++i)
+            {
+                if (rval > 0)
+                {
                     oe_memcpy(
-                        iov[i].iov_base, iov_host[i].iov_base, iov[i].iov_len);
-            *ret = args->ret;
-            for (i = 0; i < (int)arg3; i++)
-                oe_host_free(iov_host[i].iov_base);
-
-            oe_host_free(iov_host);
-            oe_host_free(args);
-            result = OE_OK;
+                        iov[i].iov_base, host_iov[i].iov_base, iov[i].iov_len);
+                }
+                oe_host_free(host_iov[i].iov_base);
+            }
+            oe_host_free(host_iov);
             break;
         }
         case SYS_writev:
         {
             char* str_full;
-            int total_buff_len = 0;
+            size_t total_buff_len = 0;
             const struct iovec* iov = (const struct iovec*)arg2;
-            unsigned long iovcnt = (unsigned long)arg3;
+            int iovcnt = (int)arg3;
             // Calculating  buffer length
-            for (size_t i = 0; i < iovcnt; i++)
+            for (int i = 0; i < iovcnt; i++)
             {
-                total_buff_len = total_buff_len + iov[i].iov_len;
+                total_buff_len += iov[i].iov_len;
             }
             // Considering string terminating character
             total_buff_len += 1;
             str_full = (char*)calloc(total_buff_len, sizeof(char));
-            for (size_t i = 0; i < iovcnt; i++)
+            for (int i = 0; i < iovcnt; i++)
             {
                 strncat(str_full, iov[i].iov_base, iov[i].iov_len);
             }
@@ -189,13 +176,8 @@ static oe_result_t _syscall_hook(
         }
         case SYS_close:
         {
-            syscall_args_t* args;
-            args = (syscall_args_t*)oe_host_malloc(sizeof(syscall_args_t));
-            args->fd = (int)arg1;
-            oe_call_host("mbed_test_close", args);
-            *ret = args->ret;
-            oe_host_free(args);
-            result = OE_OK;
+            int rval = 0;
+            result = mbed_test_close(&rval, (int)arg1);
             break;
         }
         default:
@@ -208,7 +190,10 @@ done:
     return result;
 }
 
-int test(const char* in_testname, char** out_testname, struct mbed_args* args)
+int test(
+    const char* in_testname,
+    char out_testname[STRLEN],
+    struct mbed_args* args)
 {
     int return_value = -1;
     printf("RUNNING: %s\n", __TEST__);
@@ -239,7 +224,8 @@ int test(const char* in_testname, char** out_testname, struct mbed_args* args)
         args->skipped = gmbed_args.skipped;
         args->total = gmbed_args.total;
     }
-    *out_testname = oe_host_strndup(__TEST__, OE_SIZE_MAX);
+    strncpy(out_testname, __TEST__, STRLEN);
+    out_testname[STRLEN - 1] = '\0';
 
     return return_value;
 }
