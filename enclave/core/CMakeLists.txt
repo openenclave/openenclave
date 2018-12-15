@@ -45,6 +45,11 @@ if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
     endif()
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*|ARM.*|aarch64.*|AARCH64.*")
     message("TODO: ADD ARM files.")
+    list(APPEND PLATFORM_SRC
+        optee/abort.c
+        optee/bounds.c
+        optee/printf.c
+        )
 else()
     message(FATAL_ERROR "Unknown architecture. Only Intel and ARM are supported.")
 endif()
