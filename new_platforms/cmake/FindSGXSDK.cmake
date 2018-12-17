@@ -8,12 +8,16 @@ if(WIN32 AND (DEFINED SGXSDKInstallPath OR DEFINED ENV{SGXSDKInstallPath}))
 
     set(SGX_SDK_INCLUDE_DIRS ${SGXSDKInstallPath}/include)
     set(SGX_SDK_LIBRARIES_PREFIX "${SGXSDKInstallPath}/bin/${CMAKE_VS_PLATFORM_NAME}")
+    set(SGX_SDK_SIGN_TOOL "${SGXSDKInstallPath}/bin/${CMAKE_VS_PLATFORM_NAME}/release/sgx_sign.exe")
 
-    if(NOT EXISTS ${SGX_SDK_INCLUDE_DIRS})
+    if(NOT EXISTS ${SGX_SDK_INCLUDE_DIRS} OR
+       NOT EXISTS ${SGX_SDK_LIBRARIES_PREFIX} OR
+       NOT EXISTS ${SGX_SDK_SIGN_TOOL})
         unset(SGX_SDK_INCLUDE_DIRS)
         unset(SGX_SDK_LIBRARIES_PREFIX)
+        unset(SGX_SDK_SIGN_TOOL)
     endif()
 endif()
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(SDGSDK REQUIRED_VARS SGX_SDK_INCLUDE_DIRS SGX_SDK_LIBRARIES_PREFIX)
+find_package_handle_standard_args(SGXSDK REQUIRED_VARS SGX_SDK_INCLUDE_DIRS SGX_SDK_LIBRARIES_PREFIX SGX_SDK_SIGN_TOOL)
