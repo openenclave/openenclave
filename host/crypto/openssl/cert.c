@@ -219,8 +219,9 @@ done:
     return ret;
 }
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 /* Needed because some versions of OpenSSL do not support X509_up_ref() */
-static int _X509_up_ref(X509* x509)
+static int X509_up_ref(X509* x509)
 {
     if (!x509)
         return 0;
@@ -230,7 +231,7 @@ static int _X509_up_ref(X509* x509)
 }
 
 /* Needed because some versions of OpenSSL do not support X509_CRL_up_ref() */
-static int _X509_CRL_up_ref(X509_CRL* x509_crl)
+static int X509_CRL_up_ref(X509_CRL* x509_crl)
 {
     if (!x509_crl)
         return 0;
@@ -238,6 +239,17 @@ static int _X509_CRL_up_ref(X509_CRL* x509_crl)
     CRYPTO_add(&x509_crl->references, 1, CRYPTO_LOCK_X509_CRL);
     return 1;
 }
+
+static const STACK_OF(X509_EXTENSION) * X509_get0_extensions(const X509* x)
+{
+    if (!x->cert_info)
+    {
+        return NULL;
+    }
+    return x->cert_info->extensions;
+}
+
+#endif
 
 static oe_result_t _cert_chain_get_length(const CertChain* impl, int* length)
 {
@@ -383,7 +395,7 @@ static oe_result_t _verify_whole_chain(STACK_OF(X509) * chain)
 
     /* Add the root certificate to the subchain */
     {
-        _X509_up_ref(root);
+        X509_up_ref(root);
 
         if (!sk_X509_push(subchain, root))
             OE_RAISE(OE_FAILURE);
@@ -401,7 +413,7 @@ static oe_result_t _verify_whole_chain(STACK_OF(X509) * chain)
 
         /* Add this certificate to the subchain */
         {
-            _X509_up_ref(cert);
+            X509_up_ref(cert);
 
             if (!sk_X509_push(subchain, cert))
                 OE_RAISE(OE_FAILURE);
@@ -676,7 +688,7 @@ oe_result_t oe_cert_verify(
         {
             crl_t* crl_impl = (crl_t*)crls[i];
 
-            _X509_CRL_up_ref(crl_impl->crl);
+            X509_CRL_up_ref(crl_impl->crl);
 
             if (!X509_STORE_add_crl(store, crl_impl->crl))
                 OE_RAISE(OE_FAILURE);
@@ -695,7 +707,9 @@ oe_result_t oe_cert_verify(
     {
         int errorno;
         if (error)
-            _set_err(error, X509_verify_cert_error_string(ctx->error));
+            _set_err(
+                error,
+                X509_verify_cert_error_string(X509_STORE_CTX_get_error(ctx)));
 
         errorno = X509_STORE_CTX_get_error(ctx);
         OE_RAISE_MSG(
@@ -878,7 +892,7 @@ oe_result_t oe_cert_chain_get_cert(
         OE_RAISE(OE_FAILURE);
 
     /* Increment the reference count and initialize the output certificate */
-    if (!_X509_up_ref(x509))
+    if (!X509_up_ref(x509))
         OE_RAISE(OE_FAILURE);
     _cert_init((Cert*)cert, x509);
 
@@ -935,7 +949,7 @@ oe_result_t oe_cert_find_extension(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Set a pointer to the stack of extensions (possibly NULL) */
-    if (!(extensions = impl->x509->cert_info->extensions))
+    if (!(extensions = X509_get0_extensions(impl->x509)))
         OE_RAISE(OE_NOT_FOUND);
 
     /* Get the number of extensions (possibly zero) */
