@@ -1,0 +1,20 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+---
+- name: Install docker prerequisite packages
+  apt:
+    name: [
+      automake,
+      dh-exec,
+      dpkg-dev,
+      gawk,
+      git,
+      libcurl3,
+      libmbedtls10,
+      libprotobuf9v5,
+      sudo
+    ]
+    state: present
+    update_cache: yes
+    install_recommends: no

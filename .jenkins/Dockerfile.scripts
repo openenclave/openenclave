@@ -2,11 +2,17 @@
 # Licensed under the MIT License.
 FROM ubuntu:16.04
 
-COPY scripts/install-prereqs /bin
-RUN \
-  apt-get update \
-  && apt-get install --no-install-recommends -y \
-  lsb-release \
-  wget ca-certificates \
-  git \
-  && install-prereqs
+COPY ansible /ansible
+
+RUN /ansible/install-ansible.sh \
+    && ansible-playbook /ansible/ansible-dockerfile-scripts.yml --extra-vars "target=localhost" \
+    && /ansible/remove-ansible.sh \
+    && rm -rf /ansible \
+    && apt-get install --no-install-recommends -y \
+      lsb-release \
+      wget \
+      ca-certificates \
+      git 
+
+# Add CMake folder to path (PATH from /etc/environment doesn't appear to be working in docker container)
+ENV PATH="/cmake/bin:${PATH}"

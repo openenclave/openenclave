@@ -71,7 +71,7 @@ def checkPreCommitRequirements() {
             cleanWs()
             checkout scm
 
-            def buildImage = docker.build("oetools-base", '-f .jenkins/Dockerfile.scripts .')
+            def buildImage = docker.build("oetools-base", '-f .jenkins/Dockerfile.scripts .jenkins')
 
             buildImage.inside {
                 timeout(15) {
