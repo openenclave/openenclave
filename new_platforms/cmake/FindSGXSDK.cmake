@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 if(WIN32 AND (DEFINED SGXSDKInstallPath OR DEFINED ENV{SGXSDKInstallPath}))
     if(NOT DEFINED SGXSDKInstallPath AND DEFINED ENV{SGXSDKInstallPath})
         set(SGXSDKInstallPath $ENV{SGXSDKInstallPath})

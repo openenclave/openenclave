@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 O := $(O)
 LIBNAME = ${LIB_O}/liboesocket_enc
 

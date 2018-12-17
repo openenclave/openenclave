@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 oeedl_file(../oetests.edl host GEN C_GEN H_GEN ${OE_PATH}/include)
 
 set(SRCS

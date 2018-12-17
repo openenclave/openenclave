@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 include(oeedl_file)
 
 oeedl_file(${OE_PATH}/include/openenclave/stdio.edl host GEN C_GEN H_GEN)

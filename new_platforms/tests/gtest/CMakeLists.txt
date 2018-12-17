@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 add_library(gtest STATIC
     ${GTEST_PATH}/googletest/src/gtest-all.cc
     ${GTEST_PATH}/googletest/src/gtest_main.cc)

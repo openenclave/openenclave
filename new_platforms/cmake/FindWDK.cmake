@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 if(DEFINED ENV{WDKContentRoot})
     file(GLOB WDK_PATH "$ENV{WDKContentRoot}/Include/${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}/km")
 else()
