@@ -163,3 +163,5 @@ target_include_directories(libunwind PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/libunwind/src
   ${CMAKE_CURRENT_BINARY_DIR}/tdep
   ${CMAKE_CURRENT_BINARY_DIR})
+
+install(TARGETS libunwind EXPORT openenclave-targets)

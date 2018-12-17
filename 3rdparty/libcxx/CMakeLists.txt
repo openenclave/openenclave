@@ -1,14 +1,16 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+set(LIBCXX_INCLUDES ${OE_INCDIR}/openenclave/libcxx)
+
 include (ExternalProject)
 ExternalProject_Add(libcxx_includes
   DOWNLOAD_COMMAND ""
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_CURRENT_LIST_DIR}/libcxx/include ${OE_INCDIR}/openenclave/libcxx
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/libcxx/include/__config ${OE_INCDIR}/openenclave/libcxx/__config_original
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/__config ${OE_INCDIR}/openenclave/libcxx/__config
+    ${CMAKE_CURRENT_LIST_DIR}/libcxx/include ${LIBCXX_INCLUDES}
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/libcxx/include/__config ${LIBCXX_INCLUDES}/__config_original
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/__config ${LIBCXX_INCLUDES}/__config
   INSTALL_COMMAND "")
 
 add_library(libcxx OBJECT
@@ -60,7 +62,7 @@ target_link_libraries(libcxx PUBLIC oelibc)
 
 target_include_directories(libcxx
   PUBLIC
-  $<BUILD_INTERFACE:$<$<COMPILE_LANGUAGE:CXX>:${OE_INCDIR}/openenclave/libcxx>>
+  $<BUILD_INTERFACE:$<$<COMPILE_LANGUAGE:CXX>:${LIBCXX_INCLUDES}>>
   $<INSTALL_INTERFACE:$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/libcxx>>
   PRIVATE
   libcxx/src
@@ -69,16 +71,14 @@ target_include_directories(libcxx
 # Prevent warnings treated as error
 set_source_files_properties(
   libcxx/src/locale.cpp
-  PROPERTIES COMPILE_FLAGS "-Wno-conversion"
-)
+  PROPERTIES COMPILE_FLAGS "-Wno-conversion")
 
 set_source_files_properties(
   libcxx/src/system_error.cpp
-  PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter"
-)
+  PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
 
-install(TARGETS libcxx EXPORT openenclave-targets
-  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+install(TARGETS libcxx EXPORT openenclave-targets)
 
-install(DIRECTORY ${OE_INCDIR}/openenclave/libcxx
+install(DIRECTORY ${LIBCXX_INCLUDES}
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty)
+

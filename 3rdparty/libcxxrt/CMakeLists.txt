@@ -44,3 +44,5 @@ target_compile_options(libcxxrt PRIVATE -Wno-tautological-compare)
 target_compile_definitions(libcxxrt PRIVATE -D_GNU_SOURCE)
 
 target_link_libraries(libcxxrt PUBLIC oelibc)
+
+install(TARGETS libcxxrt EXPORT openenclave-targets)
