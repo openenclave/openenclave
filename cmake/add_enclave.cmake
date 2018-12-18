@@ -16,6 +16,7 @@
 # TODO: (1) Replace the name guessing logic.
 # TODO: (2) Setup the dependency using `${BIN}_signed` instead of the
 # default custom target.
+# TODO: (3) Validate arguments into this function
 function(add_enclave)
 
    set(options)
