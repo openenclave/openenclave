@@ -13,8 +13,8 @@ including:
 - XML (xml directory)
 
 The generated HTML files are the only ones that are checked
-into the Github repository. This allows one to browse the documentation from
-Github Pages.
+into the GitHub repository. This allows one to browse the documentation from
+GitHub Pages.
 
 To update the generated documentation, create the cmake build tree by using
 the instructions in [Getting Started with Open Enclave](/docs/GettingStartedDocs/GettingStarted.md).
@@ -34,7 +34,7 @@ build/docs/refman
 
 Open Enclave SDK API documentation resides on the gh-pages branch
 To update the generated html files in the source tree for commit into
-Github, you will need to do the following from the source tree root:
+GitHub, you will need to do the following from the source tree root:
 ```bash
 ./scripts/deploy-docs
 ```
