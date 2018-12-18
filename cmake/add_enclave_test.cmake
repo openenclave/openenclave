@@ -37,7 +37,7 @@ if (ADD_WINDOWS_ENCLAVE_TESTS)
         # This hack can be removed when CMake on Windows produces ELF enclaves.
         set(TEST_ENCFILE ${ENC_FILE})
 	if(ENC_FILE MATCHES ".*_signed")
-           string(REGEX REPLACE "_signed" ".signed.so" TEST_ENCFILE ${ENC_FILE})
+           string(REGEX REPLACE "_signed" ".signed" TEST_ENCFILE ${ENC_FILE})
         endif()
 
 	# custom rule to copy binary from linux

@@ -5,13 +5,11 @@
 #
 # Usage:
 #
-#	add_enclave(<TARGET target> <SOURCES sources> <CONFIG config>)
+#	add_enclave(<TARGET target> <SOURCES sources> <CONFIG config> <KEY key>)
 #
-# The target must already exist and should be a shared object (an
-# enclave).
-#
-# Given <target> and <signconffile>, this function adds custom
-# commands to generate a signing key and call `oesign` to sign the
+# Given <target> and <CONFIG>, this function adds custom
+# commands to generate a signing key if key is not specified
+# and call `oesign` to sign the
 # target, resulting in `<target>.signed.so`. It also adds
 # `<target>_signed` as an imported target so that it can be referenced
 # later in the CMake graph.
@@ -40,12 +38,12 @@ function(add_enclave)
 
   # TODO: Get this name intelligently (somehow use $<TARGET_FILE> with
   # `.signed` injected).
-  set(SIGNED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/${ENCLAVE_TARGET}.signed.so)
+  set(SIGNED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/${ENCLAVE_TARGET}.signed)
 
   # Sign the enclave using `oesign`.
   if(ENCLAVE_CONFIG)
     add_custom_command(OUTPUT ${SIGNED_LOCATION}
-      COMMAND oesign $<TARGET_FILE:${ENCLAVE_TARGET}> ${ENCLAVE_CONFIG} ${ENCLAVE_KEY} 
+      COMMAND oesign sign $<TARGET_FILE:${ENCLAVE_TARGET}> ${ENCLAVE_CONFIG} ${ENCLAVE_KEY} 
       DEPENDS oesign ${ENCLAVE_TARGET} ${ENCLAVE_CONFIG} ${ENCLAVE_KEY}
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
   endif()

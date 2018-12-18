@@ -36,11 +36,11 @@ static char* _make_signed_lib_name(const char* path)
     const char* p;
     mem_t buf = MEM_DYNAMIC_INIT;
 
-    if ((!(p = strrchr(path, '.'))) || (strcmp(p, ".so") != 0))
+    if ((!(p = strrchr(path, '.'))) )
         p = path + strlen(path);
 
     mem_append(&buf, path, (size_t)(p - path));
-    mem_append(&buf, ".signed.so", 11);
+    mem_append(&buf, ".signed", 11);
 
     return (char*)mem_steal(&buf);
 }
