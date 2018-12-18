@@ -11,34 +11,30 @@
 OE_EXTERNC_BEGIN
 
 /* Enclave */
-extern uint64_t oe_num_pages;
-extern uint64_t oe_virtual_base_addr;
 const void* __oe_get_enclave_base(void);
 size_t __oe_get_enclave_size(void);
 
 /* Reloc */
-extern uint64_t oe_base_reloc_page;
-extern uint64_t oe_num_reloc_pages;
 const void* __oe_get_reloc_base(void);
 const void* __oe_get_reloc_end(void);
-const size_t __oe_get_reloc_size(void);
+size_t __oe_get_reloc_size(void);
 
 /* ECall */
-extern uint64_t oe_base_ecall_page;
-extern uint64_t oe_num_ecall_pages;
 const void* __oe_get_ecall_base(void);
 const void* __oe_get_ecall_end(void);
-const size_t __oe_get_ecall_size(void);
+size_t __oe_get_ecall_size(void);
 
 /* Heap */
-extern uint64_t oe_base_heap_page;
-extern uint64_t oe_num_heap_pages;
 const void* __oe_get_heap_base(void);
 const void* __oe_get_heap_end(void);
-const size_t __oe_get_heap_size(void);
+size_t __oe_get_heap_size(void);
 
 /* The enclave handle passed by host during initialization */
 extern oe_enclave_t* oe_enclave;
+
+uint64_t oe_get_base_heap_page(void);
+uint64_t oe_get_num_heap_pages(void);
+uint64_t oe_get_num_pages(void);
 
 OE_EXTERNC_END
 

@@ -24,19 +24,19 @@ static oe_result_t _sgx_init_quote_with_aesm(sgx_target_info_t* target_info)
     oe_result_t result = OE_UNEXPECTED;
     sgx_epid_group_id_t epid_group_id = {{0}};
 
-    AESM* aesm = NULL;
+    aesm_t* aesm = NULL;
 
-    if (!(aesm = AESMConnect()))
+    if (!(aesm = aesm_connect()))
         OE_RAISE(OE_FAILURE);
 
-    OE_CHECK(AESMInitQuote(aesm, target_info, &epid_group_id));
+    OE_CHECK(aesm_init_quote(aesm, target_info, &epid_group_id));
 
     result = OE_OK;
 
 done:
 
     if (aesm)
-        AESMDisconnect(aesm);
+        aesm_disconnect(aesm);
 
     return result;
 }
@@ -109,16 +109,16 @@ static oe_result_t _sgx_get_quote_from_aesm(
     }};
 
     oe_result_t result = OE_UNEXPECTED;
-    AESM* aesm = NULL;
+    aesm_t* aesm = NULL;
 
     if (!report || !quote || !quote_size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (!(aesm = AESMConnect()))
+    if (!(aesm = aesm_connect()))
         OE_RAISE(OE_SERVICE_UNAVAILABLE);
 
     OE_CHECK(
-        AESMGetQuote(
+        aesm_get_quote(
             aesm,
             report,
             quote_type,
@@ -135,7 +135,7 @@ static oe_result_t _sgx_get_quote_from_aesm(
 done:
 
     if (aesm)
-        AESMDisconnect(aesm);
+        aesm_disconnect(aesm);
 
     return result;
 }
@@ -176,13 +176,9 @@ oe_result_t sgx_get_quote_size(size_t* quote_size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
 #if defined(OE_USE_LIBSGX)
-
     result = oe_sgx_qe_get_quote_size(quote_size);
-
 #else
-
     result = _sgx_get_quote_size_from_aesm(NULL, quote_size);
-
 #endif
 
 done:

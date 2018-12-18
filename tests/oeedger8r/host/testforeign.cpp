@@ -6,14 +6,14 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/tests.h>
 #include <algorithm>
-#include "foreign_u.c"
+#include "all_u.h"
 
 template <typename F>
 static void test_ecall(oe_enclave_t* enclave, F f, size_t count)
 {
-    my_type1 a1[count];
-    my_type1 a2[count];
-    my_type1 a3[count];
+    my_type1* a1 = new my_type1[count];
+    my_type1* a2 = new my_type1[count];
+    my_type1* a3 = new my_type1[count];
 
     for (size_t i = 0; i < count; ++i)
     {
@@ -46,6 +46,10 @@ static void test_ecall(oe_enclave_t* enclave, F f, size_t count)
 
     // Call with nulls.
     OE_TEST(f(enclave, NULL, NULL, NULL) == OE_OK);
+
+    delete[] a3;
+    delete[] a2;
+    delete[] a1;
 }
 
 void test_foreign_edl_ecalls(oe_enclave_t* enclave)

@@ -4,8 +4,11 @@
 #ifndef _OE_SAFECRT_H
 #define _OE_SAFECRT_H
 
+#include <openenclave/bits/defs.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
+
+OE_EXTERNC_BEGIN
 
 oe_result_t oe_memcpy_s(
     void* dst,
@@ -36,5 +39,7 @@ oe_result_t oe_strncpy_s(
     size_t dst_size,
     const char* src,
     size_t num_bytes);
+
+OE_EXTERNC_END
 
 #endif // _OE_SAFECRT_H

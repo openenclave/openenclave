@@ -14,6 +14,7 @@ static bool _func1_called = false;
 
 OE_OCALL void Func1(void* args)
 {
+    OE_UNUSED(args);
     _func1_called = true;
 }
 
@@ -29,7 +30,7 @@ static bool _func2_ok = false;
 
 OE_OCALL void Func2(void* args)
 {
-    // unsigned char* buf = (unsigned char*)args;
+    OE_UNUSED(args);
     _func2_ok = true;
 }
 
@@ -37,6 +38,7 @@ static bool _func_a_called = false;
 
 OE_OCALL void A(void* args)
 {
+    OE_UNUSED(args);
     _func_a_called = true;
 }
 
@@ -44,6 +46,7 @@ OE_OCALL void A(void* args)
 OE_OCALL void callback(void* arg, oe_enclave_t* enclave)
 {
     test_callback_args_t* args = (test_callback_args_t*)arg;
+    OE_UNUSED(enclave);
 
     if (args)
         args->out = args->in;
@@ -82,7 +85,14 @@ int main(int argc, const char* argv[])
     const uint32_t flags = oe_get_create_flags();
 
     if ((result = oe_create_enclave(
-             argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
+             argv[1],
+             OE_ENCLAVE_TYPE_SGX,
+             flags,
+             NULL,
+             0,
+             NULL,
+             0,
+             &enclave)) != OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);
 
     /* Call Test2() */

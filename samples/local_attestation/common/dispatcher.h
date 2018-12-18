@@ -12,7 +12,8 @@ using namespace std;
 typedef struct _enclave_config_data
 {
     uint8_t* enclave_secret_data;
-    uint8_t* enclave_mrsigner;
+    const char* other_enclave_pubkey_pem;
+    size_t other_enclave_pubkey_pem_size;
 } enclave_config_data_t;
 
 class ecall_dispatcher
@@ -23,6 +24,7 @@ class ecall_dispatcher
     Attestation* m_attestation;
     string m_name;
     enclave_config_data_t* m_enclave_config;
+    unsigned char m_other_enclave_mrsigner[32];
 
   public:
     ecall_dispatcher(const char* name, enclave_config_data_t* enclave_config);

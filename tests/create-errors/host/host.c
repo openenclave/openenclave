@@ -7,43 +7,45 @@
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "create_errors_u.h"
 
 static void _test_invalid_param(const char* path, uint32_t flags)
 {
     oe_enclave_t* enclave = NULL;
 
     /* Null path. */
-    oe_result_t result =
-        oe_create_enclave(NULL, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
+    oe_result_t result = oe_create_create_errors_enclave(
+        NULL, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
 
     OE_TEST(result == OE_INVALID_PARAMETER);
 
     /* Invalid enclave type. */
-    result = oe_create_enclave(
+    result = oe_create_create_errors_enclave(
         path, OE_ENCLAVE_TYPE_UNDEFINED, flags, NULL, 0, &enclave);
 
     OE_TEST(result == OE_INVALID_PARAMETER);
 
     /* Invalid flags. */
-    result = oe_create_enclave(
+    result = oe_create_create_errors_enclave(
         path, OE_ENCLAVE_TYPE_SGX, OE_ENCLAVE_FLAG_RESERVED, NULL, 0, &enclave);
 
     OE_TEST(result == OE_INVALID_PARAMETER);
 
     /* Content field filled. */
-    result = oe_create_enclave(
+    result = oe_create_create_errors_enclave(
         path, OE_ENCLAVE_TYPE_SGX, flags, &enclave, 0, &enclave);
 
     OE_TEST(result == OE_INVALID_PARAMETER);
 
     /* Content size non-zero. */
-    result =
-        oe_create_enclave(path, OE_ENCLAVE_TYPE_SGX, flags, NULL, 1, &enclave);
+    result = oe_create_create_errors_enclave(
+        path, OE_ENCLAVE_TYPE_SGX, flags, NULL, 1, &enclave);
 
     OE_TEST(result == OE_INVALID_PARAMETER);
 
     /* NULL enclave. */
-    result = oe_create_enclave(path, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, NULL);
+    result = oe_create_create_errors_enclave(
+        path, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, NULL);
 
     OE_TEST(result == OE_INVALID_PARAMETER);
 }
@@ -54,13 +56,13 @@ static void _test_enclave_path(uint32_t flags)
     oe_result_t result;
 
     /* Test empty path. */
-    result =
-        oe_create_enclave("", OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
+    result = oe_create_create_errors_enclave(
+        "", OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
 
     OE_TEST(result == OE_FAILURE);
 
     /* Test nonexistent path. */
-    result = oe_create_enclave(
+    result = oe_create_create_errors_enclave(
         "/as2/1/fv/invalid", OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
 
     OE_TEST(result == OE_FAILURE);

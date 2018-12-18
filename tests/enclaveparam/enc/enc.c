@@ -3,7 +3,6 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
-#include <openenclave/internal/hostalloc.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/tests.h>
 #include <string.h>
@@ -36,6 +35,6 @@ OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
     true, /* AllowDebug */
-    1024, /* HeapPageCount */
-    1024, /* StackPageCount */
+    128,  /* HeapPageCount */
+    64,   /* StackPageCount */
     4);   /* TCSCount */

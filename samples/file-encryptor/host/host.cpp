@@ -90,8 +90,8 @@ int compare_2_files(const char* first_file, const char* second_file)
         std::istreambuf_iterator<char>(f1), std::istreambuf_iterator<char>());
     std::vector<uint8_t> f2_data_bytes = std::vector<uint8_t>(
         std::istreambuf_iterator<char>(f2), std::istreambuf_iterator<char>());
-    auto f1iterator = f1_data_bytes.begin();
-    auto f2iterator = f2_data_bytes.begin();
+    std::vector<uint8_t>::iterator f1iterator = f1_data_bytes.begin();
+    std::vector<uint8_t>::iterator f2iterator = f2_data_bytes.begin();
 
     // compare files
     for (; f1iterator != f1_data_bytes.end() - 1; ++f1iterator, ++f2iterator)
@@ -219,16 +219,24 @@ int encrypt_file(
 
     leftover_bytes = src_data_size % CIPHER_BLOCK_SIZE;
 
+    cout << "Host: leftover_bytes " << leftover_bytes << endl;
+
     // Encrypt each block in the source file and write to the dest_file. Process
     // all the blocks except the last one if its size is not a multiple of
-    // CIPHER_BLOCK_SIZE
+    // CIPHER_BLOCK_SIZE when padding is needed
     bytes_left = src_data_size;
+
     if (leftover_bytes)
     {
         bytes_left = src_data_size - leftover_bytes;
     }
     requested_read_size = DATA_BLOCK_SIZE;
     cout << "Host: start " << (encrypt ? "encrypting" : "decrypting") << endl;
+
+    // It loops through DATA_BLOCK_SIZE blocks one at a time then followed by
+    // processing the last remaining multiple of CIPHER_BLOCK_SIZE blocks. This
+    // loop makes sure all the data is processed except leftover_bytes bytes in
+    // the end.
     while (
         (bytes_read = fread(
              r_buffer, sizeof(unsigned char), requested_read_size, src_file)) &&
@@ -269,104 +277,67 @@ int encrypt_file(
         }
     }
 
-    // The CBC mode for AES assumes that we provide data in blocks of
-    // CIPHER_BLOCK_SIZE bytes. If the file size is not a multiple of
-    // CIPHER_BLOCK_SIZE-byte blocks, PKCS5 Padding was used to make it exactly
-    // a CIPHER_BLOCK_SIZE-byte block
-    if (leftover_bytes)
+    if (encrypt)
     {
-        unsigned char paddingtest[CIPHER_BLOCK_SIZE];
-        unsigned char paddingtest_ciphertext[CIPHER_BLOCK_SIZE];
-        cout << "Host: Working the last block" << endl;
-        cout << "Host: Input file size if not multiples of "
-             << CIPHER_BLOCK_SIZE << "-byte blocks "
-             << "(leftover_bytes = " << leftover_bytes << endl;
+        // The CBC mode for AES assumes that we provide data in blocks of
+        // CIPHER_BLOCK_SIZE bytes. This sample uses PKCS#5 padding. Pad the
+        // whole CIPHER_BLOCK_SIZE block if leftover_bytes is zero. Pad the
+        // (CIPHER_BLOCK_SIZE - leftover_bytes) bytes if leftover_bytes is
+        // non-zero.
+        size_t padded_byte_count = 0;
+        unsigned char plaintext_padding_buf[CIPHER_BLOCK_SIZE];
+        unsigned char ciphertext_padding_buf[CIPHER_BLOCK_SIZE];
 
-        memset(paddingtest_ciphertext, 0, CIPHER_BLOCK_SIZE);
-        memset(paddingtest, 0, CIPHER_BLOCK_SIZE);
-        if (encrypt)
-        {
-            bytes_read = fread(
-                paddingtest, sizeof(unsigned char), leftover_bytes, src_file);
-            if (bytes_read != leftover_bytes)
-                goto exit;
+        memset(ciphertext_padding_buf, 0, CIPHER_BLOCK_SIZE);
+        memset(plaintext_padding_buf, 0, CIPHER_BLOCK_SIZE);
 
-            // PKCS5 Padding
-            for (int i = leftover_bytes; i < CIPHER_BLOCK_SIZE; i++)
-            {
-                paddingtest[i] = CIPHER_BLOCK_SIZE - leftover_bytes;
-            }
-
-            result = encrypt_block(
-                enclave,
-                &ret,
-                encrypt,
-                paddingtest,
-                paddingtest_ciphertext,
-                CIPHER_BLOCK_SIZE);
-            if (result != OE_OK)
-            {
-                ret = 1;
-                goto exit;
-            }
-            if (ret != 0)
-            {
-                goto exit;
-            }
-
-            bytes_written = fwrite(
-                paddingtest_ciphertext,
-                sizeof(unsigned char),
-                CIPHER_BLOCK_SIZE,
-                dest_file);
-            if (bytes_written != CIPHER_BLOCK_SIZE)
-                goto exit;
-        }
+        if (leftover_bytes == 0)
+            padded_byte_count = CIPHER_BLOCK_SIZE;
         else
+            padded_byte_count = CIPHER_BLOCK_SIZE - leftover_bytes;
+
+        cout << "Host: Working the last block" << endl;
+        cout << "Host: padded_byte_count " << padded_byte_count << endl;
+        cout << "Host: leftover_bytes " << leftover_bytes << endl;
+
+        bytes_read = fread(
+            plaintext_padding_buf,
+            sizeof(unsigned char),
+            leftover_bytes,
+            src_file);
+        if (bytes_read != leftover_bytes)
+            goto exit;
+
+        // PKCS5 Padding
+        memset(
+            (void*)(plaintext_padding_buf + leftover_bytes),
+            padded_byte_count,
+            padded_byte_count);
+
+        result = encrypt_block(
+            enclave,
+            &ret,
+            encrypt,
+            plaintext_padding_buf,
+            ciphertext_padding_buf,
+            CIPHER_BLOCK_SIZE);
+        if (result != OE_OK)
         {
-            bytes_read = fread(
-                paddingtest_ciphertext,
-                sizeof(unsigned char),
-                CIPHER_BLOCK_SIZE,
-                src_file);
-            if (bytes_read != CIPHER_BLOCK_SIZE)
-                goto exit;
-
-            result = encrypt_block(
-                enclave,
-                &ret,
-                encrypt,
-                paddingtest_ciphertext,
-                paddingtest,
-                CIPHER_BLOCK_SIZE);
-            if (result != OE_OK)
-            {
-                ret = 1;
-                goto exit;
-            }
-            if (ret != 0)
-            {
-                goto exit;
-            }
-
-            // validating decrypted message's PKCS5 Padding
-            for (int i = leftover_bytes; i < CIPHER_BLOCK_SIZE; i++)
-            {
-                if (paddingtest[i] != (CIPHER_BLOCK_SIZE - leftover_bytes))
-                {
-                    cout << "PKCS5 Padding validation failed: "
-                         << (unsigned int)paddingtest[i] << " vs "
-                         << (unsigned int)(CIPHER_BLOCK_SIZE - leftover_bytes)
-                         << endl;
-                    if (paddingtest[i] != (CIPHER_BLOCK_SIZE - leftover_bytes))
-                        goto exit;
-                }
-            }
-            bytes_written = fwrite(
-                paddingtest, sizeof(unsigned char), leftover_bytes, dest_file);
-            if (bytes_written != leftover_bytes)
-                goto exit;
+            ret = 1;
+            goto exit;
         }
+        if (ret != 0)
+        {
+            goto exit;
+        }
+
+        bytes_written = fwrite(
+            ciphertext_padding_buf,
+            sizeof(unsigned char),
+            CIPHER_BLOCK_SIZE,
+            dest_file);
+        if (bytes_written != CIPHER_BLOCK_SIZE)
+            goto exit;
     }
 
     cout << "Host: done  " << (encrypt ? "encrypting" : "decrypting") << endl;
@@ -376,8 +347,8 @@ int encrypt_file(
     fclose(dest_file);
 
 exit:
-    free(r_buffer);
-    free(w_buffer);
+    delete[] r_buffer;
+    delete[] w_buffer;
     cout << "Host: called close_encryptor" << endl;
 
     result = close_encryptor(enclave);
@@ -411,12 +382,12 @@ int main(int argc, const char* argv[])
     }
 
     cout << "Host: create enclave for image:" << argv[2] << endl;
-    result = oe_create_enclave(
+    result = oe_create_fileencryptor_enclave(
         argv[2], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
     if (result != OE_OK)
     {
-        cerr << "oe_create_enclave() failed with " << argv[0] << " " << result
-             << endl;
+        cerr << "oe_create_fileencryptor_enclave() failed with " << argv[0]
+             << " " << result << endl;
         ret = 1;
         goto exit;
     }

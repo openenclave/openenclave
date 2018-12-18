@@ -3,6 +3,7 @@
 #include <openenclave/enclave.h>
 #include "../common/dispatcher.h"
 #include "../common/remoteattestation_t.h"
+#include "enc2_pubkey.h"
 
 // For this purpose of this example: demonstrating how to do remote attestation
 // g_enclave_secret_data is hardcoded as part of the enclave. In this sample,
@@ -20,18 +21,9 @@
 uint8_t g_enclave_secret_data[ENCLAVE_SECRET_DATA_SIZE] =
     {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
 
-// The SHA-256 hash of the public key in the private.pem file used to sign the
-// enclave. This value is populated in the signer_id sub-field of a parsed
-// oe_report_t's identity field.
-// Note: if the private key (private.pem) used to sign the enclave is changed,
-// the following hash must be updated.
-uint8_t g_enclave2_mrsigner[] = {
-    0x21, 0x80, 0x00, 0xc2, 0xa2, 0xc6, 0x83, 0x21, 0xe2, 0xf3, 0x97,
-    0x06, 0x31, 0xc6, 0xf8, 0x7e, 0x0b, 0x94, 0x29, 0xa5, 0xbb, 0x7a,
-    0x64, 0x05, 0x82, 0x9e, 0xb5, 0xf0, 0x50, 0xe6, 0x06, 0x32};
-
 enclave_config_data_t config_data = {g_enclave_secret_data,
-                                     g_enclave2_mrsigner};
+                                     OTHER_ENCLAVE_PUBLIC_KEY,
+                                     sizeof(OTHER_ENCLAVE_PUBLIC_KEY)};
 
 // Declare a static dispatcher object for enabling
 // for better organizing enclave-wise global variables

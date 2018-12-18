@@ -8,26 +8,11 @@
 #include "libc.h"
 #include "atomic.h"
 #include "pthread_impl.h"
+#include "malloc_impl.h"
 
 #if defined(__GNUC__) && defined(__PIC__)
 #define inline inline __attribute__((always_inline))
 #endif
-
-void *__mmap(void *, size_t, int, int, int, off_t);
-int __munmap(void *, size_t);
-void *__mremap(void *, size_t, size_t, int, ...);
-int __madvise(void *, size_t, int);
-
-struct chunk {
-	size_t psize, csize;
-	struct chunk *next, *prev;
-};
-
-struct bin {
-	volatile int lock[2];
-	struct chunk *head;
-	struct chunk *tail;
-};
 
 static struct {
 	volatile uint64_t binmap;
@@ -35,26 +20,7 @@ static struct {
 	volatile int free_lock[2];
 } mal;
 
-
-#define SIZE_ALIGN (4*sizeof(size_t))
-#define SIZE_MASK (-SIZE_ALIGN)
-#define OVERHEAD (2*sizeof(size_t))
-#define MMAP_THRESHOLD (0x1c00*SIZE_ALIGN)
-#define DONTCARE 16
-#define RECLAIM 163840
-
-#define CHUNK_SIZE(c) ((c)->csize & -2)
-#define CHUNK_PSIZE(c) ((c)->psize & -2)
-#define PREV_CHUNK(c) ((struct chunk *)((char *)(c) - CHUNK_PSIZE(c)))
-#define NEXT_CHUNK(c) ((struct chunk *)((char *)(c) + CHUNK_SIZE(c)))
-#define MEM_TO_CHUNK(p) (struct chunk *)((char *)(p) - OVERHEAD)
-#define CHUNK_TO_MEM(c) (void *)((char *)(c) + OVERHEAD)
-#define BIN_TO_CHUNK(i) (MEM_TO_CHUNK(&mal.bins[i].head))
-
-#define C_INUSE  ((size_t)1)
-
-#define IS_MMAPPED(c) !((c)->csize & (C_INUSE))
-
+int __malloc_replaced;
 
 /* Synchronization tools */
 
@@ -314,7 +280,7 @@ static void trim(struct chunk *self, size_t n)
 	next->psize = n1-n | C_INUSE;
 	self->csize = n | C_INUSE;
 
-	free(CHUNK_TO_MEM(split));
+	__bin_chunk(split);
 }
 
 void *malloc(size_t n)
@@ -366,15 +332,40 @@ void *malloc(size_t n)
 	return CHUNK_TO_MEM(c);
 }
 
-void *__malloc0(size_t n)
+static size_t mal0_clear(char *p, size_t pagesz, size_t n)
 {
-	void *p = malloc(n);
-	if (p && !IS_MMAPPED(MEM_TO_CHUNK(p))) {
-		size_t *z;
-		n = (n + sizeof *z - 1)/sizeof *z;
-		for (z=p; n; n--, z++) if (*z) *z=0;
+#ifdef __GNUC__
+	typedef uint64_t __attribute__((__may_alias__)) T;
+#else
+	typedef unsigned char T;
+#endif
+	char *pp = p + n;
+	size_t i = (uintptr_t)pp & (pagesz - 1);
+	for (;;) {
+		pp = memset(pp - i, 0, i);
+		if (pp - p < pagesz) return pp - p;
+		for (i = pagesz; i; i -= 2*sizeof(T), pp -= 2*sizeof(T))
+		        if (((T *)pp)[-1] | ((T *)pp)[-2])
+				break;
 	}
-	return p;
+}
+
+void *calloc(size_t m, size_t n)
+{
+	if (n && m > (size_t)-1/n) {
+		errno = ENOMEM;
+		return 0;
+	}
+	n *= m;
+	void *p = malloc(n);
+	if (!p) return p;
+	if (!__malloc_replaced) {
+		if (IS_MMAPPED(MEM_TO_CHUNK(p)))
+			return p;
+		if (n >= PAGE_SIZE)
+			n = mal0_clear(p, PAGE_SIZE, n);
+	}
+	return memset(p, 0, n);
 }
 
 void *realloc(void *p, size_t n)
@@ -397,10 +388,9 @@ void *realloc(void *p, size_t n)
 		size_t newlen = n + extra;
 		/* Crash on realloc of freed chunk */
 		if (extra & 1) a_crash();
-		if (newlen < PAGE_SIZE && (new = malloc(n))) {
-			memcpy(new, p, n-OVERHEAD);
-			free(p);
-			return new;
+		if (newlen < PAGE_SIZE && (new = malloc(n-OVERHEAD))) {
+			n0 = n;
+			goto copy_free_ret;
 		}
 		newlen = (newlen + PAGE_SIZE-1) & -PAGE_SIZE;
 		if (oldlen == newlen) return p;
@@ -443,34 +433,20 @@ copy_realloc:
 	/* As a last resort, allocate a new chunk and copy to it. */
 	new = malloc(n-OVERHEAD);
 	if (!new) return 0;
+copy_free_ret:
 	memcpy(new, p, n0-OVERHEAD);
 	free(CHUNK_TO_MEM(self));
 	return new;
 }
 
-void free(void *p)
+void __bin_chunk(struct chunk *self)
 {
-	struct chunk *self, *next;
+	struct chunk *next = NEXT_CHUNK(self);
 	size_t final_size, new_size, size;
 	int reclaim=0;
 	int i;
 
-	if (!p) return;
-
-	self = MEM_TO_CHUNK(p);
-
-	if (IS_MMAPPED(self)) {
-		size_t extra = self->psize;
-		char *base = (char *)self - extra;
-		size_t len = CHUNK_SIZE(self) + extra;
-		/* Crash on double free */
-		if (extra & 1) a_crash();
-		__munmap(base, len);
-		return;
-	}
-
 	final_size = new_size = CHUNK_SIZE(self);
-	next = NEXT_CHUNK(self);
 
 	/* Crash on corrupted footer (likely from buffer overflow) */
 	if (next->psize != self->csize) a_crash();
@@ -530,4 +506,45 @@ void free(void *p)
 	}
 
 	unlock_bin(i);
+}
+
+static void unmap_chunk(struct chunk *self)
+{
+	size_t extra = self->psize;
+	char *base = (char *)self - extra;
+	size_t len = CHUNK_SIZE(self) + extra;
+	/* Crash on double free */
+	if (extra & 1) a_crash();
+	__munmap(base, len);
+}
+
+void free(void *p)
+{
+	if (!p) return;
+
+	struct chunk *self = MEM_TO_CHUNK(p);
+
+	if (IS_MMAPPED(self))
+		unmap_chunk(self);
+	else
+		__bin_chunk(self);
+}
+
+void __malloc_donate(char *start, char *end)
+{
+	size_t align_start_up = (SIZE_ALIGN-1) & (-(uintptr_t)start - OVERHEAD);
+	size_t align_end_down = (SIZE_ALIGN-1) & (uintptr_t)end;
+
+	/* Getting past this condition ensures that the padding for alignment
+	 * and header overhead will not overflow and will leave a nonzero
+	 * multiple of SIZE_ALIGN bytes between start and end. */
+	if (end - start <= OVERHEAD + align_start_up + align_end_down)
+		return;
+	start += align_start_up + OVERHEAD;
+	end   -= align_end_down;
+
+	struct chunk *c = MEM_TO_CHUNK(start), *n = MEM_TO_CHUNK(end);
+	c->psize = n->csize = C_INUSE;
+	c->csize = n->psize = C_INUSE | (end-start);
+	__bin_chunk(c);
 }

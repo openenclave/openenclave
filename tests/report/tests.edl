@@ -13,10 +13,17 @@ enclave {
         public oe_result_t test_verify_tcb_info(
             [in, string] const char* tcb_info,
             [user_check] oe_tcb_level_t* platform_tcb_level,
-            [user_check] oe_parsed_tcb_info_t* parsed_tcb_info
+            [out] oe_parsed_tcb_info_t* parsed_tcb_info
         );
 
         public void test_minimum_issue_date(oe_datetime_t now);
+
+        public void enclave_test_local_report(
+            [in, out]sgx_target_info_t* target_info);
+        public void enclave_test_remote_report();
+        public void enclave_test_parse_report_negative();
+        public void enclave_test_local_verify_report();
+        public void enclave_test_remote_verify_report();
     };
 
     untrusted {

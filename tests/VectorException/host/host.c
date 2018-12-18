@@ -61,8 +61,11 @@ void TestSigillHandling(oe_enclave_t* enclave)
             (OE_CPUID_LEAF_COUNT - 1));
 
     // Check all values.
-    for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
+    for (uint32_t i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
+        if (!oe_is_emulated_cpuid_leaf(i))
+            continue;
+
         uint32_t cpuid_info[OE_CPUID_REG_COUNT];
         memset(cpuid_info, 0, sizeof(cpuid_info));
         oe_get_cpuid(
@@ -73,9 +76,26 @@ void TestSigillHandling(oe_enclave_t* enclave)
             &cpuid_info[OE_CPUID_RCX],
             &cpuid_info[OE_CPUID_RDX]);
 
-        for (int j = 0; j < OE_CPUID_REG_COUNT; j++)
+        for (uint32_t j = 0; j < OE_CPUID_REG_COUNT; j++)
         {
-            OE_TEST(cpuid_info[j] == args.cpuid_table[i][j]);
+            if (i == 1 && j == 1)
+            {
+                // Leaf 1. EBX register.
+                // The highest 8 bits indicates the current executing processor
+                // id.
+                // There is no guarantee that the value is the same across
+                // multiple cpu-id calles since the thread could be scheduled to
+                // different processors for different calls.
+                // Additionally, the enclave returns a cached value which has
+                // lesser chance of matching up with the current value.
+                OE_TEST(
+                    (cpuid_info[j] & 0x00FFFFFF) ==
+                    (args.cpuid_table[i][j] & 0x00FFFFFF));
+            }
+            else
+            {
+                OE_TEST(cpuid_info[j] == args.cpuid_table[i][j]);
+            }
         }
     }
 }
@@ -105,7 +125,14 @@ int main(int argc, const char* argv[])
     }
 
     if ((result = oe_create_enclave(
-             argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
+             argv[1],
+             OE_ENCLAVE_TYPE_SGX,
+             flags,
+             NULL,
+             0,
+             NULL,
+             0,
+             &enclave)) != OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);
 
     OE_TEST(

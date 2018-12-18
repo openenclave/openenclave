@@ -210,7 +210,7 @@ int sigpending(sigset_t *);
 int sigwait(const sigset_t *__restrict, int *__restrict);
 int sigwaitinfo(const sigset_t *__restrict, siginfo_t *__restrict);
 int sigtimedwait(const sigset_t *__restrict, siginfo_t *__restrict, const struct timespec *__restrict);
-int sigqueue(pid_t, int, const union sigval);
+int sigqueue(pid_t, int, union sigval);
 
 int pthread_sigmask(int, const sigset_t *__restrict, sigset_t *__restrict);
 int pthread_kill(pthread_t, int);
@@ -231,6 +231,8 @@ int sigrelse(int);
 void (*sigset(int, void (*)(int)))(int);
 #define TRAP_BRKPT 1
 #define TRAP_TRACE 2
+#define TRAP_BRANCH 3
+#define TRAP_HWBKPT 4
 #define POLL_IN 1
 #define POLL_OUT 2
 #define POLL_MSG 3

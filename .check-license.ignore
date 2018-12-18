@@ -15,8 +15,8 @@
 ./debugger/pythonExtension/readelf.py
 ./docs/DesignOverview.docx
 ./docs/DesignOverview.pdf
+./docs/GettingStartedDocs/DependencyGraph.svg
 ./docs/GettingStartedDocs/sampledocs/helloworld/helloworld.png
-./docs/GettingStartedDocs/sampledocs/sampledirstructure.png
 ./docs/refman/html
 .exrc
 ./.git
@@ -40,6 +40,7 @@ LICENSE
 ./prereqs/isgx/linux-sgx-driver
 ./prereqs/dcap/libsgx
 ./prereqs/sgx-driver/sgx-driver
+./samples/sampledirstructure.png
 ./samples/file-encryptor/diagram.png
 ./samples/local_attestation/images/localattestation_sample_datails.png
 ./samples/remote_attestation/images/attestationsample.png
@@ -53,7 +54,6 @@ LICENSE
 ./tests/hashstr/dead.txt
 ./tests/libcxx/tests.*
 ./tests/libcxxrt/tests.*
-./tests/libcxxthrd/tests.*
 ./tests/load/dead.txt
 ./tests/measure/dead.txt
 ./tests/measure/log.txt
@@ -85,3 +85,5 @@ VERSION
 ./tests/libunwind/tests.supported
 ./tests/libunwind/tests.unsupported
 *Jenkinsfile
+.gitattributes
+./host/linux/pe.h

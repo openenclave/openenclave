@@ -5,7 +5,7 @@
 #define _OE_SGXCREATE_H
 
 #include <openenclave/bits/result.h>
-#include "elf.h"
+#include "load.h"
 #include "sgxtypes.h"
 #include "sha.h"
 
@@ -32,13 +32,15 @@ typedef enum _oe_sgx_load_state {
 
 OE_STATIC_ASSERT(sizeof(oe_sgx_load_state_t) == sizeof(unsigned int));
 
-typedef struct _oe_sgx_load_context
+typedef struct _oe_sgx_load_context oe_sgx_load_context_t;
+
+struct _oe_sgx_load_context
 {
     oe_sgx_load_type_t type;
     oe_sgx_load_state_t state;
 
     /* OE_FLAG bits to be applied to the enclave such as debug */
-    uint32_t attributes;
+    uint64_t attributes;
 
     /* Fields used when attributes contain OE_FLAG_SIMULATION */
     struct
@@ -55,12 +57,12 @@ typedef struct _oe_sgx_load_context
 
     /* Hash context used to measure enclave as it is loaded */
     oe_sha256_context_t hash_context;
-} oe_sgx_load_context_t;
+};
 
 oe_result_t oe_sgx_initialize_load_context(
     oe_sgx_load_context_t* context,
     oe_sgx_load_type_t type,
-    uint32_t attributes);
+    uint64_t attributes);
 
 void oe_sgx_cleanup_load_context(oe_sgx_load_context_t* context);
 
@@ -69,50 +71,6 @@ oe_result_t oe_sgx_build_enclave(
     const char* path,
     const oe_sgx_enclave_properties_t* properties,
     oe_enclave_t* enclave);
-
-/**
- * Find the oe_sgx_enclave_properties_t struct within the given section
- *
- * This function attempts to find the **oe_sgx_enclave_properties_t** struct
- * within
- * the specified section of the ELF binary.
- *
- * @param elf ELF instance
- * @param section_name name of section to search for enclave properties
- * @param properties pointer where enclave properties are copied
- *
- * @returns OE_OK
- * @returns OE_INVALID_PARAMETER null parameter
- * @returns OE_FAILURE section was not found
- * @returns OE_NOT_FOUND enclave properties struct not found
- *
- */
-oe_result_t oe_sgx_load_properties(
-    const elf64_t* elf,
-    const char* section_name,
-    oe_sgx_enclave_properties_t* properties);
-
-/**
- * Update the oe_sgx_enclave_properties_t struct within the given section
- *
- * This function attempts to update the **oe_sgx_enclave_properties_t** struct
- * within the specified section of the ELF binary. If found, the section is
- * updated with the value of the **properties** parameter.
- *
- * @param elf ELF instance
- * @param section_name name of section to search for enclave properties
- * @param properties new value of enclave properties
- *
- * @returns OE_OK
- * @returns OE_INVALID_PARAMETER null parameter
- * @returns OE_FAILURE section was not found
- * @returns OE_NOT_FOUND enclave properties struct not found
- *
- */
-oe_result_t oe_sgx_update_enclave_properties(
-    const elf64_t* elf,
-    const char* section_name,
-    const oe_sgx_enclave_properties_t* properties);
 
 /**
  * Validate certain fields of an SGX enclave properties structure.

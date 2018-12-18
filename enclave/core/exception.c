@@ -12,7 +12,6 @@
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/jump.h>
-#include <openenclave/internal/reloc.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
@@ -38,7 +37,7 @@ oe_result_t oe_add_vectored_exception_handler(
     oe_vectored_exception_handler_t vectored_handler)
 {
     oe_result_t result = OE_UNEXPECTED;
-    int lock_ret = -1;
+    oe_result_t lock_ret = OE_UNEXPECTED;
 
     // Sanity check.
     if (vectored_handler == NULL ||
@@ -108,7 +107,7 @@ oe_result_t oe_remove_vectored_exception_handler(
     oe_vectored_exception_handler_t vectored_handler)
 {
     oe_result_t result = OE_FAILURE;
-    int lock_ret = -1;
+    oe_result_t lock_ret = OE_UNEXPECTED;
 
     // Sanity check.
     if (vectored_handler == NULL ||
@@ -232,19 +231,18 @@ int _emulate_illegal_instruction(sgx_ssa_gpr_t* ssa_gpr)
 /*
 **==============================================================================
 **
-** _oe_exception_dispatcher(oe_context_t *oe_context)
+** oe_real_exception_dispatcher(oe_context_t *oe_context)
 **
 **  The real (second pass) exception dispatcher. It is called by
 **  oe_exception_dispatcher. This function composes the valid
-*oe_exception_record_t
-**  and calls the registered exception handlers one by one. If a handler returns
-**  OE_EXCEPTION_CONTINUE_EXECUTION, this function will continue execution on
-**  the context. Otherwise the enclave will be aborted due to an unhandled
-**  exception.
+**  oe_exception_record_t and calls the registered exception handlers one by
+**  one.  If a handler returns OE_EXCEPTION_CONTINUE_EXECUTION, this function
+**  will continue execution on the context. Otherwise the enclave will be
+**  aborted due to an unhandled exception.
 **
 **==============================================================================
 */
-void _oe_exception_dispatcher(oe_context_t* oe_context)
+void oe_real_exception_dispatcher(oe_context_t* oe_context)
 {
     td_t* td = oe_get_td();
 
@@ -303,7 +301,7 @@ void _oe_exception_dispatcher(oe_context_t* oe_context)
 /*
 **==============================================================================
 **
-** _oe_virtual_exception_dispatcher(td_t* td, uint64_t arg_in, uint64_t*
+** oe_virtual_exception_dispatcher(td_t* td, uint64_t arg_in, uint64_t*
 *arg_out)
 **
 **  The virtual (first pass) exception dispatcher. It checks whether or not
@@ -312,12 +310,13 @@ void _oe_exception_dispatcher(oe_context_t* oe_context)
 **
 **==============================================================================
 */
-void _oe_virtual_exception_dispatcher(
+void oe_virtual_exception_dispatcher(
     td_t* td,
     uint64_t arg_in,
     uint64_t* arg_out)
 {
     SSA_Info ssa_info = {0};
+    OE_UNUSED(arg_in);
 
     // Verify if the first SSA has valid exception info.
     if (_get_enclave_thread_first_ssa_info(td, &ssa_info) != 0)
@@ -390,7 +389,7 @@ void _oe_virtual_exception_dispatcher(
 /*
 **==============================================================================
 **
-** void _oe_cleanup_xstates(void)
+** void oe_cleanup_xstates(void)
 **
 **  Cleanup all XSTATE registers that include both legacy registers and extended
 **  registers.
@@ -398,7 +397,7 @@ void _oe_virtual_exception_dispatcher(
 **==============================================================================
 */
 
-void _oe_cleanup_xstates(void)
+void oe_cleanup_xstates(void)
 {
     // Temporary workaround for #144 xrstor64 fault with optimized builds as
     // reserved guard pages
@@ -407,7 +406,12 @@ void _oe_cleanup_xstates(void)
     OE_ALIGNED(XSAVE_ALIGNMENT)
     static uint8_t
         xsave_area[MINIMAL_XSTATE_AREA_LENGTH]; //#144 Making this static
+//__builtin_ia32_xrstor64 has different argument types in clang and gcc
+#ifdef __clang__
     uint64_t restore_mask = ~((uint64_t)0x0);
+#else
+    int64_t restore_mask = ~(0x0);
+#endif
 
     // The legacy registers(F87, SSE) values will be loaded from the
     // LEGACY_XSAVE_AREA that at beginning of xsave_area.The extended registers

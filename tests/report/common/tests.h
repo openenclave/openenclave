@@ -1,0 +1,27 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+#ifndef _TESTS_H_
+#define _TESTS_H_
+
+#ifdef OE_BUILD_ENCLAVE
+#include <openenclave/enclave.h>
+#else
+#include <openenclave/host.h>
+#endif
+
+#ifndef OE_BUILD_ENCLAVE
+
+// The host side API requires the enclave to be passed in.
+
+extern oe_enclave_t* g_enclave;
+
+#endif
+
+void test_local_report(sgx_target_info_t* target_info);
+void test_remote_report();
+void test_parse_report_negative();
+void test_local_verify_report();
+void test_remote_verify_report();
+
+#endif

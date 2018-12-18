@@ -15,7 +15,8 @@ int __init_tp(void *p)
 	int r = __set_thread_area(TP_ADJ(p));
 	if (r < 0) return -1;
 	if (!r) libc.can_do_threads = 1;
-	td->tid = __syscall(SYS_set_tid_address, &td->tid);
+	td->detach_state = DT_JOINABLE;
+	td->tid = __syscall(SYS_set_tid_address, &td->detach_state);
 	td->locale = &libc.global_locale;
 	td->robust_list.head = &td->robust_list.head;
 	return 0;
@@ -103,13 +104,19 @@ static void static_init_tls(size_t *aux)
 
 	main_tls.size += (-main_tls.size - (uintptr_t)main_tls.image)
 		& (main_tls.align-1);
-	if (main_tls.align < MIN_TLS_ALIGN) main_tls.align = MIN_TLS_ALIGN;
-#ifndef TLS_ABOVE_TP
+#ifdef TLS_ABOVE_TP
+	main_tls.offset = GAP_ABOVE_TP;
+	main_tls.offset += -GAP_ABOVE_TP & (main_tls.align-1);
+#else
 	main_tls.offset = main_tls.size;
 #endif
+	if (main_tls.align < MIN_TLS_ALIGN) main_tls.align = MIN_TLS_ALIGN;
 
 	libc.tls_align = main_tls.align;
 	libc.tls_size = 2*sizeof(void *) + sizeof(struct pthread)
+#ifdef TLS_ABOVE_TP
+		+ main_tls.offset
+#endif
 		+ main_tls.size + main_tls.align
 		+ MIN_TLS_ALIGN-1 & -MIN_TLS_ALIGN;
 

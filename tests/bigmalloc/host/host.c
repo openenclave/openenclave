@@ -28,6 +28,8 @@ uint64_t get_free_system_memory(void)
 
 int main(int argc, const char* argv[])
 {
+    OE_UNUSED(argc);
+    OE_UNUSED(argv);
 #if !defined(OE_USE_LIBSGX)
 
     oe_result_t result;
@@ -60,7 +62,8 @@ int main(int argc, const char* argv[])
         }
     }
 
-    result = oe_create_enclave(argv[1], type, flags, NULL, 0, &enclave);
+    result =
+        oe_create_bigmalloc_enclave(argv[1], type, flags, NULL, 0, &enclave);
     OE_TEST(result == OE_OK);
 
     oe_result_t return_value;

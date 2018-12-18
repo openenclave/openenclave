@@ -3,18 +3,18 @@
 
 include(add_enclave_executable)
 
-# Include the libc tests wrappers:
-include(../tests.cmake)
-
 # Generate wrappers for libc tests.
 execute_process(
     COMMAND ${CMAKE_CURRENT_LIST_DIR}/wrap_tests.sh
-        ${PROJECT_SOURCE_DIR}
-        ${CMAKE_CURRENT_BINARY_DIR}
-        "${LIBC_TESTS}")
+        ${CMAKE_CURRENT_LIST_DIR}/../tests.supported
+        ${CMAKE_CURRENT_BINARY_DIR})
+
+# Include the libc tests wrappers:
+set(ROOT ${CMAKE_CURRENT_BINARY_DIR})
+include(../tests.supported)
 
 add_executable(
-    libc_enc 
+    libc_enc
     enc.c
     ${CMAKE_CURRENT_BINARY_DIR}/tests.c
     ../../../3rdparty/musl/libc-test/src/common/mtest.c
@@ -22,7 +22,7 @@ add_executable(
     ../../../3rdparty/musl/libc-test/src/functional/tls_align_dso.c
     ${LIBC_TESTS})
 
-target_compile_options(libc_enc PRIVATE 
+target_compile_options(libc_enc PRIVATE
     -Wno-error
     -Wno-unknown-pragmas
     -Wno-unused-function

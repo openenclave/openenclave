@@ -8,6 +8,11 @@
 #error "Unsupported platform"
 #endif
 
+/* OE_API_VERSION */
+#ifndef OE_API_VERSION
+#define OE_API_VERSION 1
+#endif
+
 /* OE_PRINTF_FORMAT */
 #if defined(__GNUC__) && (__GNUC__ >= 4)
 #define OE_PRINTF_FORMAT(N, M) __attribute__((format(printf, N, M)))
@@ -131,5 +136,14 @@
 
 /* The maxiumum value for a four-byte enum tag */
 #define OE_ENUM_MAX 0xffffffff
+
+/* OE_DEPRECATED */
+#if defined(__GNUC__)
+#define OE_DEPRECATED(FUNC, MSG) FUNC __attribute__((deprecated(MSG)))
+#elif defined(_MSC_VER)
+#define OE_DEPRECATED(FUNC, MSG) __declspec(deprecated(MSG)) FUNC
+#else
+#define OE_DEPRECATED(FUNC, MSG) FUNC
+#endif
 
 #endif /* _OE_BITS_DEFS_H */

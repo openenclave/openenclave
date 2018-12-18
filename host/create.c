@@ -6,8 +6,29 @@
 #if defined(__linux__)
 #include <errno.h>
 #include <sys/mman.h>
+
+#define get_fullpath(path) realpath(path, NULL)
+
 #elif defined(_WIN32)
 #include <windows.h>
+
+static const char* get_fullpath(const char* path)
+{
+    char* fullpath = (char*)calloc(1, MAX_PATH);
+    if (fullpath)
+    {
+        DWORD length = GetFullPathName(path, MAX_PATH, fullpath, NULL);
+
+        // If function failed, deallocate and return zero.
+        if (length == 0)
+        {
+            free(fullpath);
+            fullpath = NULL;
+        }
+    }
+    return fullpath;
+}
+
 #endif
 
 #include <assert.h>
@@ -17,7 +38,6 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/debug.h>
-#include <openenclave/internal/elf.h>
 #include <openenclave/internal/load.h>
 #include <openenclave/internal/mem.h>
 #include <openenclave/internal/properties.h>
@@ -37,7 +57,7 @@ static oe_once_type _enclave_init_once;
 
 static void _initialize_exception_handling(void)
 {
-    _oe_initialize_host_exception();
+    oe_initialize_host_exception();
 }
 
 /*
@@ -51,139 +71,6 @@ static void _initialize_exception_handling(void)
 static void _initialize_enclave_host()
 {
     oe_once(&_enclave_init_once, _initialize_exception_handling);
-}
-
-/*
-**==============================================================================
-**
-** Image layout:
-**
-**     NHEAP = number of heap pages
-**     NSTACK = number of stack pages
-**     NTCS = number of TCS objects
-**     GUARD = an unmapped guard page
-**
-**     [PAGES]:
-**         [PROGRAM-PAGES]
-**         [HEAP-PAGE]*NHEAP
-**         ( [GUARD] [STACK-PAGE]*NSTACK [TCS-PAGES]*1 ) * NTCS
-**
-**     [PROGRAM-PAGES]:
-**         [CODE-PAGES]: flags=reg|x|r content=(ELF segment)
-**         [DATA-PAGES]: flags=reg|w|r content=(ELF segment)
-**
-**     [RELOCATION-PAGES]:
-**
-**     [HEAP-PAGES]: flags=reg|w|r content=0x00000000
-**
-**     [THREAD-PAGES]:
-**         [GUARD-PAGE]
-**         [STACK-PAGES]: flags=reg|w|r content=0xCCCCCCCC
-**         [GUARD-PAGE]
-**         [TCS-PAGE]
-**         [SSA1-PAGE1]: flags=reg|w|r content=0x00000000 SSA-slot 0
-**         [SSA2-PAGE2]: flags=reg|w|r content=0x00000000 SSA-slot 1
-**         [GUARD-PAGE]
-**         [SEG1-PAGE]: flags=reg|w|r content=0x00000000 FS or GS segment
-**         [SEG2-PAGE]: flags=reg|w|r content=0x00000000 FS or GS segment
-**
-**==============================================================================
-*/
-
-static uint64_t _make_secinfo_flags(uint32_t flags)
-{
-    uint64_t r = 0;
-
-    if (flags & OE_SEGMENT_FLAG_READ)
-        r |= SGX_SECINFO_R;
-
-    if (flags & OE_SEGMENT_FLAG_WRITE)
-        r |= SGX_SECINFO_W;
-
-    if (flags & OE_SEGMENT_FLAG_EXEC)
-        r |= SGX_SECINFO_X;
-
-    return r;
-}
-
-static void _resolve_flags(
-    const oe_segment_t segments[],
-    size_t nsegments,
-    uint64_t addr,
-    uint64_t* flags)
-{
-    *flags = 0;
-    uint64_t last = addr + OE_PAGE_SIZE - 1; /* last address in page */
-
-    /* See if any part of this page falls within a segment */
-    for (size_t i = 0; i < nsegments; i++)
-    {
-        const oe_segment_t* seg = &segments[i];
-
-        if ((addr >= seg->vaddr && addr < seg->vaddr + seg->memsz) ||
-            (last >= seg->vaddr && last < seg->vaddr + seg->memsz))
-        {
-            *flags = _make_secinfo_flags(seg->flags);
-            return;
-        }
-    }
-}
-
-static oe_result_t _add_segment_pages(
-    oe_sgx_load_context_t* context,
-    uint64_t enclave_addr,
-    uint64_t enclave_size,
-    const oe_segment_t segments[],
-    size_t nsegments,
-    const oe_page_t* pages,
-    size_t npages,
-    uint64_t* vaddr)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    size_t i;
-
-    if (!context || !enclave_addr || !enclave_size || !segments || !nsegments ||
-        !pages || !npages || !vaddr)
-    {
-        OE_RAISE(OE_INVALID_PARAMETER);
-    }
-
-    /* Add each page to the enclave */
-    for (i = 0; i < npages; i++)
-    {
-        const oe_page_t* page = &pages[i];
-        uint64_t addr = enclave_addr + (i * OE_PAGE_SIZE);
-        uint64_t src = (uint64_t)page;
-        uint64_t flags;
-        bool extend = true;
-
-        /* Get the memory protection flags for this page address */
-        _resolve_flags(segments, nsegments, src - (uint64_t)pages, &flags);
-
-        /* If page not with segments ranges, then skip! */
-        if (flags == 0)
-            continue;
-
-        flags |= SGX_SECINFO_REG;
-
-        /* Fail if ADDR is not between BASEADDR and BASEADDR+SIZE */
-        if (addr < enclave_addr ||
-            addr > enclave_addr + enclave_size - OE_PAGE_SIZE)
-        {
-            OE_RAISE(OE_FAILURE);
-        }
-
-        OE_CHECK(
-            oe_sgx_load_enclave_data(
-                context, enclave_addr, addr, src, flags, extend));
-
-        (*vaddr) = (addr - enclave_addr) + OE_PAGE_SIZE;
-    }
-
-    result = OE_OK;
-
-done:
-    return result;
 }
 
 static oe_result_t _add_filled_pages(
@@ -281,7 +168,8 @@ static oe_result_t _add_control_pages(
     /* Save the address of new TCS page into enclave object */
     {
         if (enclave->num_bindings == OE_SGX_MAX_TCS)
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE_MSG(
+                OE_FAILURE, "OE_SGX_MAX_TCS (%d) hit\n", OE_SGX_MAX_TCS);
 
         enclave->bindings[enclave->num_bindings++].tcs = enclave_addr + *vaddr;
     }
@@ -312,11 +200,16 @@ static oe_result_t _add_control_pages(
         /* The entry point for the program (from ELF) */
         tcs->oentry = entry;
 
-        /* FS segment: points to page following SSA slots (page[3]) */
-        tcs->fsbase = *vaddr + (4 * OE_PAGE_SIZE);
-
         /* GS segment: points to page following SSA slots (page[3]) */
         tcs->gsbase = *vaddr + (4 * OE_PAGE_SIZE);
+
+        /* FS segment: Used for thread-local variables.
+         * The reserved (unused) space in td_t is used for thread-local
+         * variables.
+         * Since negative offsets are used with FS, FS must point to end of the
+         * segment.
+        */
+        tcs->fsbase = *vaddr + (5 * OE_PAGE_SIZE);
 
         /* Set to maximum value */
         tcs->fslimit = 0xFFFFFFFF;
@@ -359,90 +252,43 @@ done:
 }
 
 static oe_result_t _calculate_enclave_size(
-    const oe_segment_t* segments,
-    size_t nsegments,
-    size_t reloc_size,
+    size_t image_size,
     size_t ecall_size,
-    size_t nheappages,
-    size_t nstackpages,
-    size_t num_bindings,
+    const oe_sgx_enclave_properties_t* props,
     size_t* enclave_end, /* end may be less than size due to rounding */
     size_t* enclave_size)
+
 {
     oe_result_t result = OE_UNEXPECTED;
-    size_t segments_size;
     size_t heap_size;
     size_t stack_size;
     size_t control_size;
+    const oe_enclave_size_settings_t* size_settings;
 
-    if (enclave_size)
-        *enclave_size = 0;
+    size_settings = &props->header.size_settings;
 
-    if (!segments || !nsegments || !nheappages || !nstackpages ||
-        !num_bindings || !enclave_size)
-    {
-        OE_RAISE(OE_INVALID_PARAMETER);
-    }
-
-    /* Compute size in bytes of segments */
-    OE_CHECK(__oe_calculate_segments_size(segments, nsegments, &segments_size));
+    *enclave_size = 0;
+    *enclave_end = 0;
 
     /* Compute size in bytes of the heap */
-    heap_size = nheappages * OE_PAGE_SIZE;
+    heap_size = size_settings->num_heap_pages * OE_PAGE_SIZE;
 
     /* Compute size of the stack (one per TCS; include guard pages) */
-    stack_size = OE_PAGE_SIZE + (nstackpages * OE_PAGE_SIZE) + OE_PAGE_SIZE;
+    stack_size = OE_PAGE_SIZE // guard page
+                 + (size_settings->num_stack_pages * OE_PAGE_SIZE) +
+                 OE_PAGE_SIZE; // guard page
 
     /* Compute the control size in bytes (6 pages total) */
     control_size = 6 * OE_PAGE_SIZE;
 
     /* Compute end of the enclave */
-    *enclave_end = segments_size + reloc_size + ecall_size + heap_size +
-                   (num_bindings * (stack_size + control_size));
+    *enclave_end = image_size + ecall_size + heap_size +
+                   (size_settings->num_tcs * (stack_size + control_size));
 
     /* Calculate the total size of the enclave */
     *enclave_size = oe_round_u64_to_pow2(*enclave_end);
 
     result = OE_OK;
-
-done:
-    return result;
-}
-
-static oe_result_t _add_relocation_pages(
-    oe_sgx_load_context_t* context,
-    uint64_t enclave_addr,
-    const void* reloc_data,
-    const size_t reloc_size,
-    uint64_t* vaddr)
-{
-    oe_result_t result = OE_UNEXPECTED;
-
-    if (!context || !vaddr)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    if (reloc_data && reloc_size)
-    {
-        const oe_page_t* pages = (const oe_page_t*)reloc_data;
-        size_t npages = reloc_size / sizeof(oe_page_t);
-
-        for (size_t i = 0; i < npages; i++)
-        {
-            uint64_t addr = enclave_addr + *vaddr;
-            uint64_t src = (uint64_t)&pages[i];
-            uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R;
-            bool extend = true;
-
-            OE_CHECK(
-                oe_sgx_load_enclave_data(
-                    context, enclave_addr, addr, src, flags, extend));
-            (*vaddr) += sizeof(oe_page_t);
-        }
-    }
-
-    result = OE_OK;
-
-done:
     return result;
 }
 
@@ -482,374 +328,6 @@ done:
     return result;
 }
 
-static oe_result_t _patch_page(
-    oe_page_t* segpages,
-    size_t nsegpages,
-    uint64_t offset,
-    uint64_t value)
-{
-    uint8_t* pagebuf = (uint8_t*)segpages;
-
-    /* Get the total size. */
-    size_t size;
-    oe_result_t ret = oe_safe_mul_sizet(nsegpages, sizeof(oe_page_t), &size);
-    if (ret != OE_OK)
-        return ret;
-
-    /* Check for buffer overflow. */
-    if (offset >= size)
-        return OE_OUT_OF_BOUNDS;
-
-    /* Ensure 8 byte alignment. */
-    uint64_t page;
-    ret = oe_safe_add_u64((uint64_t)pagebuf, offset, &page);
-    if (ret != OE_OK)
-        return ret;
-
-    if (page % sizeof(uint64_t) != 0)
-        return OE_BAD_ALIGNMENT;
-
-    /* Patch the page. */
-    *((uint64_t*)page) = value;
-
-    return OE_OK;
-}
-
-static oe_result_t _add_pages(
-    oe_sgx_load_context_t* context,
-    elf64_t* elf,
-    uint64_t enclave_addr,
-    size_t enclave_end,
-    size_t enclave_size,
-    const oe_segment_t segments[],
-    size_t nsegments,
-    const void* reloc_data,
-    size_t reloc_size,
-    void* ecall_data,
-    size_t ecall_size,
-    uint64_t entry, /* entry point address */
-    size_t nheappages,
-    size_t nstackpages,
-    size_t num_bindings,
-    oe_enclave_t* enclave)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    uint64_t vaddr = 0;
-    size_t i;
-    oe_page_t* segpages = NULL;
-    size_t nsegpages;
-    size_t base_reloc_page;
-    size_t base_ecall_page;
-    size_t base_heap_page;
-
-    /* Reject invalid parameters */
-    if (!context || !enclave_addr || !enclave_size || !segments || !nsegments ||
-        !num_bindings || !nstackpages || !nheappages || !enclave)
-    {
-        OE_RAISE(OE_INVALID_PARAMETER);
-    }
-
-    /* ATTN: Eliminate this step to save memory! */
-    OE_CHECK(__oe_combine_segments(segments, nsegments, &segpages, &nsegpages));
-
-    /* The relocation pages follow the segments */
-    base_reloc_page = nsegpages;
-
-    /* The ecall pages follow the relocation pages */
-    base_ecall_page = base_reloc_page + (reloc_size / OE_PAGE_SIZE);
-
-    /* The heap follows the ecall pages */
-    base_heap_page = base_ecall_page + (ecall_size / OE_PAGE_SIZE);
-
-    /* Patch the "oe_base_reloc_page" */
-    {
-        elf64_sym_t sym;
-
-        if (elf64_find_dynamic_symbol_by_name(
-                elf, "oe_base_reloc_page", &sym) != 0)
-            OE_RAISE(OE_FAILURE);
-
-        OE_CHECK(
-            _patch_page(segpages, nsegpages, sym.st_value, base_reloc_page));
-    }
-
-    /* Patch the "oe_num_reloc_pages" */
-    {
-        elf64_sym_t sym;
-
-        if (elf64_find_dynamic_symbol_by_name(
-                elf, "oe_num_reloc_pages", &sym) != 0)
-            OE_RAISE(OE_FAILURE);
-
-        OE_CHECK(
-            _patch_page(
-                segpages, nsegpages, sym.st_value, reloc_size / OE_PAGE_SIZE));
-    }
-
-    /* Patch the "oe_base_ecall_page" */
-    {
-        elf64_sym_t sym;
-
-        if (elf64_find_dynamic_symbol_by_name(
-                elf, "oe_base_ecall_page", &sym) != 0)
-            OE_RAISE(OE_FAILURE);
-
-        OE_CHECK(
-            _patch_page(segpages, nsegpages, sym.st_value, base_ecall_page));
-    }
-
-    /* Patch the "oe_num_ecall_pages" */
-    {
-        elf64_sym_t sym;
-
-        if (elf64_find_dynamic_symbol_by_name(
-                elf, "oe_num_ecall_pages", &sym) != 0)
-            OE_RAISE(OE_FAILURE);
-
-        OE_CHECK(
-            _patch_page(
-                segpages, nsegpages, sym.st_value, ecall_size / OE_PAGE_SIZE));
-    }
-
-    /* Patch the "oe_base_heap_page" */
-    {
-        elf64_sym_t sym;
-
-        if (elf64_find_dynamic_symbol_by_name(elf, "oe_base_heap_page", &sym) !=
-            0)
-            OE_RAISE(OE_FAILURE);
-
-        OE_CHECK(
-            _patch_page(segpages, nsegpages, sym.st_value, base_heap_page));
-    }
-
-    /* Patch the "oe_num_heap_pages" */
-    {
-        elf64_sym_t sym;
-
-        if (elf64_find_dynamic_symbol_by_name(elf, "oe_num_heap_pages", &sym) !=
-            0)
-            OE_RAISE(OE_FAILURE);
-
-        OE_CHECK(_patch_page(segpages, nsegpages, sym.st_value, nheappages));
-    }
-
-    /* Patch the "oe_num_pages" */
-    {
-        elf64_sym_t sym;
-        uint64_t npages = enclave_end / OE_PAGE_SIZE;
-
-        if (elf64_find_dynamic_symbol_by_name(elf, "oe_num_pages", &sym) != 0)
-            OE_RAISE(OE_FAILURE);
-
-        OE_CHECK(_patch_page(segpages, nsegpages, sym.st_value, npages));
-    }
-
-    /* Patch the "oe_virtual_base_addr" */
-    {
-        elf64_sym_t sym;
-
-        if (elf64_find_dynamic_symbol_by_name(
-                elf, "oe_virtual_base_addr", &sym) != 0)
-        {
-            OE_RAISE(OE_FAILURE);
-        }
-
-        OE_CHECK(_patch_page(segpages, nsegpages, sym.st_value, sym.st_value));
-    }
-
-    /* Add the program segments first */
-    OE_CHECK(
-        _add_segment_pages(
-            context,
-            enclave_addr,
-            enclave_size,
-            segments,
-            nsegments,
-            segpages,
-            nsegpages,
-            &vaddr));
-
-    /* Add the relocation pages (contain relocation entries) */
-    OE_CHECK(
-        _add_relocation_pages(
-            context, enclave_addr, reloc_data, reloc_size, &vaddr));
-
-    /* Add the ECALL pages */
-    OE_CHECK(
-        _add_ecall_pages(
-            context, enclave_addr, ecall_data, ecall_size, &vaddr));
-
-    /* Create the heap */
-    OE_CHECK(_add_heap_pages(context, enclave_addr, &vaddr, nheappages));
-
-    for (i = 0; i < num_bindings; i++)
-    {
-        /* Add guard page */
-        vaddr += OE_PAGE_SIZE;
-
-        /* Create the stack for this thread control structure */
-        OE_CHECK(_add_stack_pages(context, enclave_addr, &vaddr, nstackpages));
-
-        /* Add guard page */
-        vaddr += OE_PAGE_SIZE;
-
-        /* Add the "control" pages */
-        OE_CHECK(
-            _add_control_pages(
-                context, enclave_addr, enclave_size, entry, &vaddr, enclave));
-    }
-
-    if (vaddr != enclave_end)
-        OE_RAISE(OE_FAILURE);
-
-    result = OE_OK;
-
-done:
-
-    if (segpages)
-        oe_memalign_free(segpages);
-
-    return result;
-}
-
-typedef struct _visit_sym_data
-{
-    const elf64_t* elf;
-    const elf64_shdr_t* shdr;
-    mem_t* mem;
-    oe_result_t result;
-} VisitSymData;
-
-static int _visit_sym(const elf64_sym_t* sym, void* data_)
-{
-    int rc = -1;
-    VisitSymData* data = (VisitSymData*)data_;
-    const elf64_shdr_t* shdr = data->shdr;
-    const char* name;
-
-    data->result = OE_UNEXPECTED;
-
-    /* Skip symbol if not a function */
-    if ((sym->st_info & 0x0F) != STT_FUNC)
-    {
-        rc = 0;
-        goto done;
-    }
-
-    /* Skip symbol if not in the ".ecall" section */
-    if (sym->st_value < shdr->sh_addr ||
-        sym->st_value + sym->st_size > shdr->sh_addr + shdr->sh_size)
-    {
-        rc = 0;
-        goto done;
-    }
-
-    /* Skip null names */
-    if (!(name = elf64_get_string_from_dynstr(data->elf, sym->st_name)))
-    {
-        rc = 0;
-        goto done;
-    }
-
-    /* Add to array of ECALLS */
-    {
-        ECallNameAddr tmp;
-
-        if (!(tmp.name = oe_strdup(name)))
-            goto done;
-
-        tmp.code = StrCode(name, strlen(name));
-        tmp.vaddr = sym->st_value;
-
-        if (mem_cat(data->mem, &tmp, sizeof(tmp)) != 0)
-            goto done;
-    }
-
-    rc = 0;
-
-done:
-    return rc;
-}
-
-static oe_result_t _build_ecall_array(oe_enclave_t* enclave, elf64_t* elf)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    elf64_shdr_t shdr;
-
-    /* Reject invalid parameters */
-    if (!enclave || !elf)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Find the ".ecalls" section */
-    if (elf64_find_section_header(elf, ".ecall", &shdr) != 0)
-        OE_RAISE(OE_FAILURE);
-
-    /* Find all functions that reside in the ".ecalls" section */
-    {
-        VisitSymData data;
-        mem_t mem = MEM_DYNAMIC_INIT;
-
-        data.elf = elf;
-        data.shdr = &shdr;
-        data.mem = &mem;
-
-        if (elf64_visit_symbols(elf, _visit_sym, &data) != 0)
-            OE_RAISE(OE_FAILURE);
-
-        enclave->ecalls = (ECallNameAddr*)mem_ptr(&mem);
-        enclave->num_ecalls = mem_size(&mem) / sizeof(ECallNameAddr);
-    }
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
-static oe_result_t _save_text_address(oe_enclave_t* enclave, elf64_t* elf)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    elf64_shdr_t shdr;
-
-    /* Reject invalid parameters */
-    if (!enclave || !elf)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Find the ".text" section header */
-    if (elf64_find_section_header(elf, ".text", &shdr) != 0)
-        OE_RAISE(OE_FAILURE);
-
-    /* Save the offset of the text section */
-    enclave->text = enclave->addr + shdr.sh_addr;
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
-#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
-OE_INLINE void _dump_relocations(const void* data, size_t size)
-{
-    const elf64_rela_t* p = (const elf64_rela_t*)data;
-    size_t n = size / sizeof(elf64_rela_t);
-
-    printf("=== Relocations:\n");
-
-    for (size_t i = 0; i < n; i++, p++)
-    {
-        if (p->r_offset == 0)
-            break;
-
-        printf(
-            "offset=%llu addend=%lld\n",
-            OE_LLU(p->r_offset),
-            OE_LLD(p->r_addend));
-    }
-}
-#endif
-
 /*
 **==============================================================================
 **
@@ -883,7 +361,7 @@ static oe_result_t _build_ecall_data(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Calculate size needed for the ECALL pages */
-    size = __oe_round_up_to_page_size(
+    size = oe_round_up_to_page_size(
         sizeof(oe_ecall_pages_t) + (enclave->num_ecalls * sizeof(uint64_t)));
 
     /* Allocate the pages */
@@ -906,7 +384,49 @@ static oe_result_t _build_ecall_data(
     result = OE_OK;
 
 done:
+    return result;
+}
 
+static oe_result_t _oe_add_data_pages(
+    oe_sgx_load_context_t* context,
+    oe_enclave_t* enclave,
+    const oe_sgx_enclave_properties_t* props,
+    uint64_t entry,
+    uint64_t* vaddr)
+
+{
+    oe_result_t result = OE_UNEXPECTED;
+    const oe_enclave_size_settings_t* size_settings =
+        &props->header.size_settings;
+    size_t i;
+
+    /* Add the heap pages */
+    OE_CHECK(
+        _add_heap_pages(
+            context, enclave->addr, vaddr, size_settings->num_heap_pages));
+
+    for (i = 0; i < size_settings->num_tcs; i++)
+    {
+        /* Add guard page */
+        *vaddr += OE_PAGE_SIZE;
+
+        /* Add the stack for this thread control structure */
+        OE_CHECK(
+            _add_stack_pages(
+                context, enclave->addr, vaddr, size_settings->num_stack_pages));
+
+        /* Add guard page */
+        *vaddr += OE_PAGE_SIZE;
+
+        /* Add the "control" pages */
+        OE_CHECK(
+            _add_control_pages(
+                context, enclave->addr, enclave->size, entry, vaddr, enclave));
+    }
+
+    result = OE_OK;
+
+done:
     return result;
 }
 
@@ -928,7 +448,7 @@ static oe_result_t _initialize_enclave(oe_enclave_t* enclave)
     unsigned int subleaf = 0; // pass sub-leaf of 0 - needed for leaf 4
 
     // Initialize enclave cache of CPUID info for emulation
-    for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
+    for (unsigned int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
         oe_get_cpuid(
             i,
@@ -942,161 +462,12 @@ static oe_result_t _initialize_enclave(oe_enclave_t* enclave)
     // Pass the enclave handle to the enclave.
     args.enclave = enclave;
 
-    OE_CHECK(oe_ecall(enclave, OE_ECALL_INIT_ENCLAVE, (uint64_t)&args, NULL));
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
-/* Find enclave property struct within an .oeinfo section */
-static oe_result_t _find_enclave_properties_header(
-    uint8_t* section_data,
-    size_t section_size,
-    oe_enclave_type_t enclave_type,
-    size_t struct_size,
-    oe_enclave_properties_header_t** header)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    uint8_t* ptr = section_data;
-    size_t bytes_remaining = section_size;
-
-    *header = NULL;
-
-    /* While there are more enclave property structures */
-    while (bytes_remaining >= struct_size)
     {
-        oe_enclave_properties_header_t* h =
-            (oe_enclave_properties_header_t*)ptr;
-
-        if (h->enclave_type == enclave_type)
-        {
-            if (h->size != struct_size)
-            {
-                result = OE_FAILURE;
-                goto done;
-            }
-
-            /* Found it! */
-            *header = h;
-            break;
-        }
-
-        /* If size of structure extends beyond end of section */
-        if (h->size > bytes_remaining)
-            break;
-
-        ptr += h->size;
-        bytes_remaining -= h->size;
-    }
-
-    if (*header == NULL)
-    {
-        result = OE_NOT_FOUND;
-        goto done;
-    }
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
-oe_result_t oe_sgx_load_properties(
-    const elf64_t* elf,
-    const char* section_name,
-    oe_sgx_enclave_properties_t* properties)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    uint8_t* section_data;
-    size_t section_size;
-
-    if (properties)
-        memset(properties, 0, sizeof(*properties));
-
-    /* Check for null parameter */
-    if (!elf || !section_name || !properties)
-    {
-        result = OE_INVALID_PARAMETER;
-        goto done;
-    }
-
-    /* Get pointer to and size of the given section */
-    if (elf64_find_section(elf, section_name, &section_data, &section_size) !=
-        0)
-    {
-        result = OE_NOT_FOUND;
-        goto done;
-    }
-
-    /* Find SGX enclave property struct */
-    {
-        oe_enclave_properties_header_t* header;
-
-        if ((result = _find_enclave_properties_header(
-                 section_data,
-                 section_size,
-                 OE_ENCLAVE_TYPE_SGX,
-                 sizeof(oe_sgx_enclave_properties_t),
-                 &header)) != OE_OK)
-        {
-            result = OE_NOT_FOUND;
-            goto done;
-        }
-
+        uint64_t arg_out = 0;
         OE_CHECK(
-            oe_memcpy_s(
-                properties, sizeof(*properties), header, sizeof(*properties)));
-    }
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
-oe_result_t oe_sgx_update_enclave_properties(
-    const elf64_t* elf,
-    const char* section_name,
-    const oe_sgx_enclave_properties_t* properties)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    uint8_t* section_data;
-    size_t section_size;
-
-    /* Check for null parameter */
-    if (!elf || !section_name || !properties)
-    {
-        result = OE_INVALID_PARAMETER;
-        goto done;
-    }
-
-    /* Get pointer to and size of the given section */
-    if (elf64_find_section(elf, section_name, &section_data, &section_size) !=
-        0)
-    {
-        result = OE_FAILURE;
-        goto done;
-    }
-
-    /* Find SGX enclave property struct */
-    {
-        oe_enclave_properties_header_t* header;
-
-        if ((result = _find_enclave_properties_header(
-                 section_data,
-                 section_size,
-                 OE_ENCLAVE_TYPE_SGX,
-                 sizeof(oe_sgx_enclave_properties_t),
-                 &header)) != OE_OK)
-        {
-            goto done;
-        }
-
-        OE_CHECK(
-            oe_memcpy_s(
-                header, sizeof(*properties), properties, sizeof(*properties)));
+            oe_ecall(
+                enclave, OE_ECALL_INIT_ENCLAVE, (uint64_t)&args, &arg_out));
+        OE_CHECK((oe_result_t)arg_out);
     }
 
     result = OE_OK;
@@ -1125,6 +496,9 @@ oe_result_t oe_sgx_validate_enclave_properties(
     {
         if (field_name)
             *field_name = "config.attributes";
+        OE_TRACE_ERROR(
+            "oe_sgx_is_valid_attributes failed: attributes = %lx\n",
+            properties->config.attributes);
         result = OE_FAILURE;
         goto done;
     }
@@ -1134,6 +508,9 @@ oe_result_t oe_sgx_validate_enclave_properties(
     {
         if (field_name)
             *field_name = "header.size_settings.num_heap_pages";
+        OE_TRACE_ERROR(
+            "oe_sgx_is_valid_num_heap_pages failed: num_heap_pages = %lx\n",
+            properties->header.size_settings.num_heap_pages);
         result = OE_FAILURE;
         goto done;
     }
@@ -1143,6 +520,10 @@ oe_result_t oe_sgx_validate_enclave_properties(
     {
         if (field_name)
             *field_name = "header.size_settings.num_stack_pages";
+        OE_TRACE_ERROR(
+            "oe_sgx_is_valid_num_stack_pages failed: "
+            "num_heap_pnum_stack_pagesages = %lx\n",
+            properties->header.size_settings.num_stack_pages);
         result = OE_FAILURE;
         goto done;
     }
@@ -1151,6 +532,9 @@ oe_result_t oe_sgx_validate_enclave_properties(
     {
         if (field_name)
             *field_name = "header.size_settings.num_tcs";
+        OE_TRACE_ERROR(
+            "oe_sgx_is_valid_num_tcs failed: num_tcs = %lx\n",
+            properties->header.size_settings.num_tcs);
         result = OE_FAILURE;
         goto done;
     }
@@ -1159,6 +543,9 @@ oe_result_t oe_sgx_validate_enclave_properties(
     {
         if (field_name)
             *field_name = "config.product_id";
+        OE_TRACE_ERROR(
+            "oe_sgx_is_valid_product_id failed: num_tcs = %x\n",
+            properties->config.product_id);
         result = OE_FAILURE;
         goto done;
     }
@@ -1167,6 +554,9 @@ oe_result_t oe_sgx_validate_enclave_properties(
     {
         if (field_name)
             *field_name = "config.security_version";
+        OE_TRACE_ERROR(
+            "oe_sgx_is_valid_security_version failed: security_version = %x\n",
+            properties->config.product_id);
         result = OE_FAILURE;
         goto done;
     }
@@ -1184,22 +574,17 @@ oe_result_t oe_sgx_build_enclave(
     oe_enclave_t* enclave)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_segment_t segments[OE_MAX_SEGMENTS];
-    size_t num_segments = 0;
-    uint64_t entry_addr = 0;
-    uint64_t start_addr = 0; /* ATTN: not used */
     size_t enclave_end = 0;
     size_t enclave_size = 0;
     uint64_t enclave_addr = 0;
-    size_t i;
-    elf64_t elf;
-    void* reloc_data = NULL;
-    size_t reloc_size;
+    oe_enclave_image_t oeimage;
     void* ecall_data = NULL;
     size_t ecall_size;
+    size_t image_size;
+    uint64_t vaddr = 0;
     oe_sgx_enclave_properties_t props;
 
-    memset(&elf, 0, sizeof(elf64_t));
+    memset(&oeimage, 0, sizeof(oeimage));
 
     /* Clear and initialize enclave structure */
     {
@@ -1219,7 +604,7 @@ oe_result_t oe_sgx_build_enclave(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Load the elf object */
-    if (elf64_load(path, &elf) != 0)
+    if (oe_load_enclave_image(path, &oeimage) != OE_OK)
         OE_RAISE(OE_FAILURE);
 
     // If the **properties** parameter is non-null, use those properties.
@@ -1227,13 +612,17 @@ oe_result_t oe_sgx_build_enclave(
     if (properties)
     {
         props = *properties;
+
+        /* Update image to the properties passed in */
+        memcpy(oeimage.image_base + oeimage.oeinfo_rva, &props, sizeof(props));
     }
     else
     {
-        OE_CHECK(oe_sgx_load_properties(&elf, OE_INFO_SECTION_NAME, &props));
+        /* Copy the properties from the image */
+        memcpy(&props, oeimage.image_base + oeimage.oeinfo_rva, sizeof(props));
     }
 
-    /* Validate the enclave properties structure */
+    /* Validate the enclave prop_override structure */
     OE_CHECK(oe_sgx_validate_enclave_properties(&props, NULL));
 
     /* Consolidate enclave-debug-flag with create-debug-flag */
@@ -1250,25 +639,20 @@ oe_result_t oe_sgx_build_enclave(
         if (enclave->debug)
         {
             /* Attempted to downgrade to debug mode */
-            OE_RAISE(OE_DEBUG_DOWNGRADE);
+            OE_RAISE_MSG(
+                OE_DEBUG_DOWNGRADE,
+                "Enclave image was signed without debug flag but is being "
+                "loaded with OE_ENCLAVE_FLAG_DEBUG set in oe_create_enclave "
+                "call\n",
+                NULL);
         }
     }
 
-    /* Load the program segments into memory */
-    OE_CHECK(
-        __oe_load_segments(
-            path, segments, &num_segments, &entry_addr, &start_addr));
-
-    /* Load the relocations into memory (zero-padded to next page size) */
-    if (elf64_load_relocations(&elf, &reloc_data, &reloc_size) != OE_OK)
-        OE_RAISE(OE_FAILURE);
-
-#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
-    _dump_relocations(reloc_data, reloc_size);
-#endif
+    /* Calculate the size of image */
+    OE_CHECK(oeimage.calculate_size(&oeimage, &image_size));
 
     /* Build an array of all the ECALL functions in the .ecalls section */
-    OE_CHECK(_build_ecall_array(enclave, &elf));
+    OE_CHECK(oeimage.build_ecall_array(&oeimage, enclave));
 
     /* Build ECALL pages for enclave (list of addresses) */
     OE_CHECK(_build_ecall_data(enclave, &ecall_data, &ecall_size));
@@ -1276,68 +660,41 @@ oe_result_t oe_sgx_build_enclave(
     /* Calculate the size of this enclave in memory */
     OE_CHECK(
         _calculate_enclave_size(
-            segments,
-            num_segments,
-            reloc_size,
-            ecall_size,
-            props.header.size_settings.num_heap_pages,
-            props.header.size_settings.num_stack_pages,
-            props.header.size_settings.num_tcs,
-            &enclave_end,
-            &enclave_size));
+            image_size, ecall_size, &props, &enclave_end, &enclave_size));
 
     /* Perform the ECREATE operation */
     OE_CHECK(oe_sgx_create_enclave(context, enclave_size, &enclave_addr));
 
-    /* Save the enclave base address and size */
+    /* Save the enclave base address, size, and text address */
     enclave->addr = enclave_addr;
     enclave->size = enclave_size;
+    enclave->text = enclave_addr + oeimage.text_rva;
 
-    /* Clear certain ELF header fields */
-    for (i = 0; i < num_segments; i++)
-    {
-        const oe_segment_t* seg = &segments[i];
-        elf64_ehdr_t* ehdr = (elf64_ehdr_t*)seg->filedata;
+    /* Patch image */
+    OE_CHECK(oeimage.patch(&oeimage, ecall_size, enclave_end));
 
-        if (elf64_test_header(ehdr) == 0)
-        {
-            ehdr->e_shoff = 0;
-            ehdr->e_shnum = 0;
-            ehdr->e_shstrndx = 0;
-            break;
-        }
-    }
+    /* Add image to enclave */
+    OE_CHECK(oeimage.add_pages(&oeimage, context, enclave, &vaddr));
 
-    /* Add pages to enclave page cache (EPC) */
+    /* Add ecall pages */
     OE_CHECK(
-        _add_pages(
-            context,
-            &elf,
-            enclave_addr,
-            enclave_end,
-            enclave_size,
-            segments,
-            num_segments,
-            reloc_data,
-            reloc_size,
-            ecall_data,
-            ecall_size,
-            entry_addr,
-            props.header.size_settings.num_heap_pages,
-            props.header.size_settings.num_stack_pages,
-            props.header.size_settings.num_tcs,
-            enclave));
+        _add_ecall_pages(
+            context, enclave->addr, ecall_data, ecall_size, &vaddr));
+
+    /* Add data pages */
+    OE_CHECK(
+        _oe_add_data_pages(
+            context, enclave, &props, oeimage.entry_rva, &vaddr));
 
     /* Ask the platform to initialize the enclave and finalize the hash */
     OE_CHECK(
         oe_sgx_initialize_enclave(
             context, enclave_addr, &props, &enclave->hash));
 
-    /* Save the offset of the .text section */
-    OE_CHECK(_save_text_address(enclave, &elf));
-
-    /* Save path of this enclave */
-    if (!(enclave->path = oe_strdup(path)))
+    /* Save full path of this enclave. When a debugger attaches to the host
+     * process, it needs the fullpath so that it can load the image binary and
+     * extract the debugging symbols. */
+    if (!(enclave->path = get_fullpath(path)))
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* Set the magic number only if we have actually created an enclave */
@@ -1348,52 +705,24 @@ oe_result_t oe_sgx_build_enclave(
 
 done:
 
-    for (i = 0; i < num_segments; i++)
-        free(segments[i].filedata);
-
-    if (reloc_data)
-        free(reloc_data);
-
     if (ecall_data)
         free(ecall_data);
 
-    elf64_unload(&elf);
+    oe_unload_enclave_image(&oeimage);
 
     return result;
 }
 
-/*
-** These functions are needed to notify the debugger. They should not be
-** optimized out even though they don't do anything in here.
-*/
-
-OE_NO_OPTIMIZE_BEGIN
-
-OE_NEVER_INLINE void _oe_notify_gdb_enclave_termination(
-    const oe_enclave_t* enclave,
-    const char* enclave_path,
-    uint32_t enclave_path_length)
+void oe_free_enclave_ecalls(oe_enclave_t* enclave)
 {
-    OE_UNUSED(enclave);
-    OE_UNUSED(enclave_path);
-    OE_UNUSED(enclave_path_length);
+    if (enclave->ecalls)
+    {
+        for (size_t i = 0; i < enclave->num_ecalls; i++)
+            free(enclave->ecalls[i].name);
 
-    return;
+        free(enclave->ecalls);
+    }
 }
-
-OE_NEVER_INLINE void _oe_notify_gdb_enclave_creation(
-    const oe_enclave_t* enclave,
-    const char* enclave_path,
-    uint32_t enclave_path_length)
-{
-    OE_UNUSED(enclave);
-    OE_UNUSED(enclave_path);
-    OE_UNUSED(enclave_path_length);
-
-    return;
-}
-
-OE_NO_OPTIMIZE_END
 
 /*
 ** This method encapsulates all steps of the enclave creation process:
@@ -1416,6 +745,8 @@ oe_result_t oe_create_enclave(
     uint32_t flags,
     const void* config,
     uint32_t config_size,
+    const oe_ocall_func_t* ocall_table,
+    uint32_t ocall_table_size,
     oe_enclave_t** enclave_out)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -1454,7 +785,7 @@ oe_result_t oe_create_enclave(
                             upon creation */
                   0)))   /* No name */
         {
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE_MSG(OE_FAILURE, "CreateEvent failed", NULL);
         }
     }
 
@@ -1469,14 +800,25 @@ oe_result_t oe_create_enclave(
     OE_CHECK(oe_sgx_build_enclave(&context, enclave_path, NULL, enclave));
 
     /* Push the new created enclave to the global list. */
-    if (_oe_push_enclave_instance(enclave) != 0)
+    if (oe_push_enclave_instance(enclave) != 0)
     {
         OE_RAISE(OE_FAILURE);
     }
+#if defined(__linux__)
 
     /* Notify GDB that a new enclave is created */
-    _oe_notify_gdb_enclave_creation(
+    oe_notify_gdb_enclave_creation(
         enclave, enclave->path, (uint32_t)strlen(enclave->path));
+
+#endif /* defined(__linux__) */
+
+    /* Enclave initialization invokes global constructors which could make
+     * ocalls. Therefore setup ocall table prior to initialization. */
+    enclave->ocalls = (const oe_ocall_func_t*)ocall_table;
+    enclave->num_ocalls = ocall_table_size;
+
+    /* Setup logging configuration */
+    oe_log_enclave_init(enclave);
 
     /* Invoke enclave initialization. */
     OE_CHECK(_initialize_enclave(enclave));
@@ -1488,10 +830,7 @@ done:
 
     if (result != OE_OK && enclave)
     {
-        for (size_t i = 0; i < enclave->num_ecalls; i++)
-            free(enclave->ecalls[i].name);
-
-        free(enclave->ecalls);
+        oe_free_enclave_ecalls(enclave);
         free(enclave);
     }
 
@@ -1511,15 +850,19 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
     /* Call the enclave destructor */
     OE_CHECK(oe_ecall(enclave, OE_ECALL_DESTRUCTOR, 0, NULL));
 
+#if defined(__linux__)
+
     /* Notify GDB that this enclave is terminated */
-    _oe_notify_gdb_enclave_termination(
+    oe_notify_gdb_enclave_termination(
         enclave, enclave->path, (uint32_t)strlen(enclave->path));
+
+#endif /* defined(__linux__) */
 
     /* Once the enclave destructor has been invoked, the enclave memory
      * and data structures are freed on a best effort basis from here on */
 
     /* Remove this enclave from the global list. */
-    _oe_remove_enclave_instance(enclave);
+    oe_remove_enclave_instance(enclave);
 
     /* Clear the magic number */
     enclave->magic = 0;
@@ -1531,12 +874,7 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
         result = oe_sgx_delete_enclave(enclave);
 
         /* Release the enclave->ecalls[] array */
-        {
-            for (size_t i = 0; i < enclave->num_ecalls; i++)
-                free(enclave->ecalls[i].name);
-
-            free(enclave->ecalls);
-        }
+        oe_free_enclave_ecalls(enclave);
 
 #if defined(_WIN32)
 
@@ -1564,6 +902,5 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
     free(enclave);
 
 done:
-
     return result;
 }

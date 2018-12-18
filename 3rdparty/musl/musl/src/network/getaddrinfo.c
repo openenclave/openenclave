@@ -3,6 +3,10 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <string.h>
+#include <pthread.h>
+#include <unistd.h>
+#include <endian.h>
+#include <errno.h>
 #include "lookup.h"
 
 int getaddrinfo(const char *restrict host, const char *restrict serv, const struct addrinfo *restrict hint, struct addrinfo **restrict res)
@@ -40,6 +44,41 @@ int getaddrinfo(const char *restrict host, const char *restrict serv, const stru
 			break;
 		default:
 			return EAI_FAMILY;
+		}
+	}
+
+	if (flags & AI_ADDRCONFIG) {
+		/* Define the "an address is configured" condition for address
+		 * families via ability to create a socket for the family plus
+		 * routability of the loopback address for the family. */
+		static const struct sockaddr_in lo4 = {
+			.sin_family = AF_INET, .sin_port = 65535,
+			.sin_addr.s_addr = __BYTE_ORDER == __BIG_ENDIAN
+				? 0x7f000001 : 0x0100007f
+		};
+		static const struct sockaddr_in6 lo6 = {
+			.sin6_family = AF_INET6, .sin6_port = 65535,
+			.sin6_addr = IN6ADDR_LOOPBACK_INIT
+		};
+		int tf[2] = { AF_INET, AF_INET6 };
+		const void *ta[2] = { &lo4, &lo6 };
+		socklen_t tl[2] = { sizeof lo4, sizeof lo6 };
+		for (i=0; i<2; i++) {
+			if (family==tf[1-i]) continue;
+			int s = socket(tf[i], SOCK_CLOEXEC|SOCK_DGRAM,
+				IPPROTO_UDP);
+			if (s>=0) {
+				int cs;
+				pthread_setcancelstate(
+					PTHREAD_CANCEL_DISABLE, &cs);
+				int r = connect(s, ta[i], tl[i]);
+				pthread_setcancelstate(cs, 0);
+				close(s);
+				if (!r) continue;
+			}
+			if (errno != EAFNOSUPPORT) return EAI_SYSTEM;
+			if (family == tf[i]) return EAI_NONAME;
+			family = tf[1-i];
 		}
 	}
 

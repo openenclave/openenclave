@@ -61,6 +61,7 @@ function(add_libmbed_selftest_enc NAME SOURCE )
         PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
         )
 
+    target_compile_options(libmbedtest-${NAME}_enc PRIVATE -Wno-conversion -Wno-pointer-arith)
     target_compile_definitions(libmbedtest-${NAME}_enc PRIVATE -DWITH_MAIN -D__TEST__="${SOURCE}")
     target_link_libraries(libmbedtest-${NAME}_enc mbedcrypto oelibc oecore)
 

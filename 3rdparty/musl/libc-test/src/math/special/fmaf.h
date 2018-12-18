@@ -49,3 +49,7 @@ T(RN,       -0x1p-100,     0x1.001p-49,        0x1p-126, 0x1.fffffcp-127,       
 T(RU,       -0x1p-100,     0x1.001p-49,        0x1p-126, 0x1.fffffcp-127,         0x1p-12, INEXACT|UNDERFLOW)
 T(RD,       -0x1p-100,     0x1.001p-49,        0x1p-126, 0x1.fffff8p-127,     -0x1.ffep-1, INEXACT|UNDERFLOW)
 T(RZ,       -0x1p-100,     0x1.001p-49,        0x1p-126, 0x1.fffff8p-127,     -0x1.ffep-1, INEXACT|UNDERFLOW)
+T(RN, -0x1.26524ep-54, -0x1.cb7868p+11,  0x1.d10f5ep-29,  0x1.d1179ep-29,         -0x1p-1, INEXACT)
+T(RU, -0x1.26524ep-54, -0x1.cb7868p+11,  0x1.d10f5ep-29,   0x1.d117ap-29,          0x1p-1, INEXACT)
+T(RD, -0x1.26524ep-54, -0x1.cb7868p+11,  0x1.d10f5ep-29,  0x1.d1179ep-29,         -0x1p-1, INEXACT)
+T(RZ, -0x1.26524ep-54, -0x1.cb7868p+11,  0x1.d10f5ep-29,  0x1.d1179ep-29,         -0x1p-1, INEXACT)

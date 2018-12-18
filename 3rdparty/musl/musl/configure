@@ -320,6 +320,7 @@ i?86*) ARCH=i386 ;;
 x86_64-x32*|x32*|x86_64*x32) ARCH=x32 ;;
 x86_64-nt64*) ARCH=nt64 ;;
 x86_64*) ARCH=x86_64 ;;
+m68k*) ARCH=m68k ;;
 mips64*|mipsisa64*) ARCH=mips64 ;;
 mips*) ARCH=mips ;;
 microblaze*) ARCH=microblaze ;;
@@ -590,10 +591,12 @@ tryldflag LDFLAGS_AUTO -Wl,--no-undefined
 # versions built without shared library support and pcc are broken.
 tryldflag LDFLAGS_AUTO -Wl,--exclude-libs=ALL
 
-# Linking with -Bsymbolic-functions is no longer mandatory for
-# the dynamic linker to work, but enable it if it works as
-# a linking optimization.
-tryldflag LDFLAGS_AUTO -Wl,-Bsymbolic-functions
+# Public data symbols must be interposable to allow for copy
+# relocations, but otherwise we want to bind symbols at libc link
+# time to eliminate startup relocations and PLT overhead. Use
+# --dynamic-list rather than -Bsymbolic-functions for greater
+# control over what symbols are left unbound.
+tryldflag LDFLAGS_AUTO -Wl,--dynamic-list="$srcdir/dynamic.list"
 
 # Find compiler runtime library
 test -z "$LIBCC" && tryldflag LIBCC -lgcc && tryldflag LIBCC -lgcc_eh
@@ -637,6 +640,13 @@ fi
 
 if test "$ARCH" = "aarch64" ; then
 trycppif __AARCH64EB__ "$t" && SUBARCH=${SUBARCH}_be
+fi
+
+if test "$ARCH" = "m68k" ; then
+if trycppif "__HAVE_68881__" ; then : ;
+elif trycppif "__mcffpu__" ; then SUBARCH="-fp64"
+else SUBARCH="-sf"
+fi
 fi
 
 if test "$ARCH" = "mips" ; then

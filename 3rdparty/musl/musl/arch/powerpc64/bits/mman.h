@@ -4,6 +4,7 @@
 #define MAP_NORESERVE   0x40
 #undef MAP_LOCKED
 #define MAP_LOCKED	0x80
+#undef MAP_SYNC
 
 #undef MCL_CURRENT
 #define MCL_CURRENT     0x2000

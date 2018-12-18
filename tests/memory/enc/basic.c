@@ -13,16 +13,16 @@
 static void _set_buffer(int* buf, size_t start, size_t end)
 {
     for (size_t i = start; i < end; i++)
-        buf[i] = i;
+        buf[i] = (int)i;
 }
 
 static void _check_buffer(int* buf, size_t start, size_t end)
 {
     for (size_t i = start; i < end; i++)
-        OE_TEST(buf[i] == i);
+        OE_TEST(buf[i] == (int)i);
 }
 
-OE_ECALL void test_malloc(void* args_)
+void test_malloc(void)
 {
     /* malloc(0) is implementation defined, but we can always free it. */
     int* ptr = (int*)malloc(0);
@@ -40,7 +40,7 @@ OE_ECALL void test_malloc(void* args_)
     OE_TEST(ptr == NULL);
 }
 
-OE_ECALL void test_calloc(void* args_)
+void test_calloc(void)
 {
     /* calloc with 0 is implementation defined, but we can always free it. */
     int* ptr = (int*)calloc(0, 0);
@@ -58,7 +58,7 @@ OE_ECALL void test_calloc(void* args_)
     OE_TEST(ptr == NULL);
 }
 
-OE_ECALL void test_realloc(void* args_)
+void test_realloc(void)
 {
     /* Realloc with null pointer works like malloc. */
     int* ptr = (int*)realloc(NULL, 256 * sizeof(int));
@@ -101,7 +101,7 @@ OE_ECALL void test_realloc(void* args_)
     free(ptr);
 }
 
-OE_ECALL void test_memalign(void* args_)
+void test_memalign(void)
 {
     /* Get an aligned pointer below malloc's alignment. */
     int* ptr = (int*)memalign(8, 256 * sizeof(int));
@@ -127,7 +127,7 @@ OE_ECALL void test_memalign(void* args_)
     OE_TEST(memalign(max, 64) == NULL);
 }
 
-OE_ECALL void test_posix_memalign(void* args_)
+void test_posix_memalign(void)
 {
     void* ptr = NULL;
 

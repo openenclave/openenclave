@@ -78,7 +78,8 @@ int oe_emulate_cpuid(uint64_t* rax, uint64_t* rbx, uint64_t* rcx, uint64_t* rdx)
     uint32_t cpuid_leaf = (*rax) & 0xFFFFFFFF;
     uint32_t cpuid_sub_leaf = (*rcx) & 0xFFFFFFFF;
 
-    if (cpuid_leaf < OE_CPUID_LEAF_COUNT)
+    if (cpuid_leaf < OE_CPUID_LEAF_COUNT &&
+        oe_is_emulated_cpuid_leaf(cpuid_leaf))
     {
         // For leaf 4 of cpuid, only subleaf of 0 is emulated
         if ((cpuid_leaf == 4) && (cpuid_sub_leaf != 0))

@@ -14,7 +14,7 @@ int system(const char *cmd)
 	pid_t pid;
 	sigset_t old, reset;
 	struct sigaction sa = { .sa_handler = SIG_IGN }, oldint, oldquit;
-	int status = 0x7f00, ret;
+	int status = -1, ret;
 	posix_spawnattr_t attr;
 
 	pthread_testcancel();

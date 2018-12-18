@@ -18,15 +18,21 @@
 # - the resulting binary name is not reflected by the target
 #   (complicating install rules)
 #
-function(add_enclave_executable BIN SIGNCONF KEYFILE)
+function(add_enclave_executable BIN SIGNCONF)
 	add_executable(${BIN} ${ARGN})
+
+	# custom rule to generate signing key
+	add_custom_command(OUTPUT ${BIN}-private.pem
+		COMMAND openssl genrsa -out ${BIN}-private.pem -3 3072
+		)
 
 	# custom rule to sign the binary
 	add_custom_command(OUTPUT ${BIN}.signed.so
-		COMMAND oesign $<TARGET_FILE:${BIN}> ${SIGNCONF} ${KEYFILE}
-		DEPENDS oesign ${BIN} ${SIGNCONF} ${KEYFILE}
+		COMMAND oesign "sign" $<TARGET_FILE:${BIN}> ${SIGNCONF} ${CMAKE_CURRENT_BINARY_DIR}/${BIN}-private.pem
+		DEPENDS oesign ${BIN} ${SIGNCONF} ${BIN}-private.pem
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		)
+
 	# signed binary is a default target
 	add_custom_target(${BIN}-signed ALL
 		DEPENDS ${BIN}.signed.so

@@ -22,16 +22,17 @@ case $mode in
     ;;
     
     https)
-        echo "Pushing gh-pages via https, will prompt for username and personal access token"
+        echo "Pushing gh-pages via https"
+        username=$3
+        password=$4
     ;;
-    
     *)
-        echo "Usage: $0 builddir [ ssh | https ]";
+        echo "Usage: $0 builddir [ ssh | https username pat ]";
         echo "  builddir:  Build directory for OpenEnclave repo"
         echo "  ssh:   Pushes doxygen generated docs to OpenEnclave's gh-pages"
         echo "         via ssh, requires ssh keys to be set up"
         echo "  https: Pushes doxygen generated docs to OpenEnclave's gh-pages"
-        echo "         via https, prompts user for username and personal access token"
+        echo "         specify username and personal access token on cmd line"
         exit 1;
     ;;
 esac 
@@ -64,7 +65,7 @@ case $mode in
         git push -f git@github.com:Microsoft/openenclave.git $branch:$branch
     ;; 
     https)
-        git push -f https://github.com/Microsoft/openenclave.git $branch:$branch
+        git push  -f "https://${username}:${password}@github.com/Microsoft/openenclave.git" $branch:$branch
     ;;
     *)
         echo " Unexpected"

@@ -148,7 +148,7 @@ int main(int argc, const char* argv[])
     /* Create the enclave */
     const uint32_t flags = oe_get_create_flags();
     OE_TEST(
-        (result = oe_create_enclave(
+        (result = oe_create_hexdump_enclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) == OE_OK);
 
     /* Test enclave version of oe_hex_string() */

@@ -8,31 +8,26 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "../args.h"
+#include "cppException_u.h"
 
 void TestCppException(oe_enclave_t* enclave)
 {
-    oe_result_t result;
-    Args args;
-
     printf("=== %s() \n", __FUNCTION__);
-    result = oe_call_enclave(enclave, "Test", &args);
+    int rval = -1;
+    oe_result_t result = test(enclave, &rval);
     OE_TEST(result == OE_OK);
-    OE_TEST(args.ret == 0);
+    OE_TEST(rval == 0);
 }
 
 void TestUnhandledException(
     oe_enclave_t* enclave,
     unhandled_exception_func_num func_num)
 {
-    oe_result_t result;
-    Args args;
-    args.func_num = func_num;
-
     printf("=== %s(%d)  \n", __FUNCTION__, func_num);
-    result = oe_call_enclave(enclave, "TestUnhandledException", &args);
+    int rval = 0;
+    oe_result_t result = test_unhandled_exception(enclave, &rval, func_num);
     OE_TEST(result == OE_ENCLAVE_ABORTING);
-    OE_TEST(args.ret == 0);
+    OE_TEST(rval == 0);
 }
 
 int main(int argc, const char* argv[])
@@ -52,8 +47,9 @@ int main(int argc, const char* argv[])
 
     const uint32_t flags = oe_get_create_flags();
 
-    if ((result = oe_create_enclave(
-             argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
+    result = oe_create_cppException_enclave(
+        argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
+    if (result != OE_OK)
     {
         oe_put_err("oe_create_enclave(): result=%u", result);
     }
@@ -74,9 +70,9 @@ int main(int argc, const char* argv[])
 
     for (uint32_t i = 0; i < OE_COUNTOF(func_nums); i++)
     {
-        if ((result = oe_create_enclave(
-                 argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) !=
-            OE_OK)
+        result = oe_create_cppException_enclave(
+            argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
+        if (result != OE_OK)
         {
             oe_put_err("oe_create_enclave(): result=%u", result);
         }

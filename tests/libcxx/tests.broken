@@ -1,16 +1,3 @@
-../../3rdparty/libcxx/libcxx/test/libcxx/debug/debug_abort.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/diagnostics/nodiscard.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/containers/sequences/array/at.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/iterators/iterator.container/data.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/iterators/iterator.container/empty.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/iterators/iterator.container/size.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/ptr.launder/launder.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/wchar_t_encoding.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/wchar_t_max_length.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/numerics/rand/rand.device/ctor.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.match/exponential.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.search/exponential.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/re/re.traits/lookup_classname.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.rel/is_invocable.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.rel/is_nothrow_invocable.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.unary/meta.unary.prop/has_unique_object_representations.pass.cpp
+# Add broken files here
+# Following test segfaults after upgrade to libcxx 7.0 and merge to libcxx to use larger heap page count of 12K
+../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.unique_future/get.pass.cpp

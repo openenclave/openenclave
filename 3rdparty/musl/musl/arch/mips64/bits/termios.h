@@ -52,6 +52,7 @@ struct termios {
 #define ONLRET 0000040
 #define OFILL  0000100
 #define OFDEL  0000200
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE) || defined(_XOPEN_SOURCE)
 #define NLDLY  0000400
 #define NL0    0000000
 #define NL1    0000400
@@ -71,6 +72,7 @@ struct termios {
 #define FFDLY  0100000
 #define FF0    0000000
 #define FF1    0100000
+#endif
 
 #define VTDLY  0040000
 #define VT0    0000000
@@ -163,5 +165,5 @@ struct termios {
 #define EXTPROC 0200000
 
 #define XTABS  0014000
-#define TIOCSER_TEMT 1
+#define TIOCSER_TEMT 0x01
 #endif

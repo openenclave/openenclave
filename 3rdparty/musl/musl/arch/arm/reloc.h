@@ -16,7 +16,7 @@
 
 #define NO_LEGACY_INITFINI
 
-#define TPOFF_K 8
+#define TPOFF_K 0
 
 #define REL_SYMBOLIC    R_ARM_ABS32
 #define REL_GOT         R_ARM_GLOB_DAT

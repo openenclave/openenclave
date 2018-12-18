@@ -6,8 +6,22 @@
 #include <openenclave/internal/print.h>
 #include "../args.h"
 
-#include "../../../host/cpuid.h"
-#include "../../../host/linux/cpuid.c"
+// Wrapper over the CPUID instruction.
+void get_cpuid(
+    unsigned int leaf,
+    unsigned int subleaf,
+    unsigned int* eax,
+    unsigned int* ebx,
+    unsigned int* ecx,
+    unsigned int* edx)
+{
+    asm volatile(
+        "cpuid"
+        // CPU id instruction returns values in the following registers
+        : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
+        // __leaf is passed in eax (0) and __subleaf in ecx (2)
+        : "0"(leaf), "2"(subleaf));
+}
 
 #define OE_GETSEC_OPCODE 0x370F
 #define OE_GETSEC_CAPABILITIES 0x00
@@ -107,7 +121,7 @@ bool TestUnsupportedCpuidLeaf(uint32_t leaf)
     uint32_t ecx = 0;
     uint32_t edx = 0;
 
-    oe_get_cpuid(leaf, 0, &cpuid_rax, &ebx, &ecx, &edx);
+    get_cpuid(leaf, 0, &cpuid_rax, &ebx, &ecx, &edx);
 
     // Do something with the out param to prevent call from getting optimized
     // out
@@ -171,23 +185,17 @@ OE_ECALL void TestSigillHandling(void* args_)
     }
 
     // Return enclave-cached CPUID leaves to host for further validation
-    for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
+    for (uint32_t i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
-        oe_get_cpuid(
-            i,
-            0,
-            &args->cpuid_table[i][OE_CPUID_RAX],
-            &args->cpuid_table[i][OE_CPUID_RBX],
-            &args->cpuid_table[i][OE_CPUID_RCX],
-            &args->cpuid_table[i][OE_CPUID_RDX]);
-
-        // Do something with the out param to prevent call from getting
-        // optimized out
-        if (args->cpuid_table[i][OE_CPUID_RAX] != 0)
+        if (oe_is_emulated_cpuid_leaf(i))
         {
-            oe_host_printf(
-                "The value of cpuidRAX is now: %d\n.",
-                args->cpuid_table[i][OE_CPUID_RAX]);
+            get_cpuid(
+                i,
+                0,
+                &args->cpuid_table[i][OE_CPUID_RAX],
+                &args->cpuid_table[i][OE_CPUID_RBX],
+                &args->cpuid_table[i][OE_CPUID_RCX],
+                &args->cpuid_table[i][OE_CPUID_RDX]);
         }
     }
 

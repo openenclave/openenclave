@@ -9,36 +9,68 @@
 # Usage:
 #
 #       oeedl_file(
-#               <edl_file> <type> <out_files_var>
+#               <edl_file> <type> <out_files_var> [--edl-search-dir dir]
 #
 # Arguments:
 # edl_file - name of the EDL file
-# type - type of files to genreate ("enclave" or "host")
+# type - type of files to genreate ("enclave" or "host" or "enclave-headers" or "host-headers")
 # out_files_var - variable to get the generated files added to
-#
+# --edl-search-dir dir - Additional folder relative to the source directory to look for imported edl files.
 function(oeedl_file EDL_FILE TYPE OUT_FILES_VAR)
+	get_filename_component(idl_base ${EDL_FILE} NAME_WE)
+	get_filename_component(in_path ${EDL_FILE} PATH)
+
 	if(${TYPE} STREQUAL "enclave")
 		set(type_id "t")
 		set(type_opt "--trusted")
 		set(dir_opt  "--trusted-dir")
+		set(headers_only "")
+		set(c_file ${CMAKE_CURRENT_BINARY_DIR}/${idl_base}_${type_id}.c)
 	elseif(${TYPE} STREQUAL "host")
 		set(type_id "u")
 		set(type_opt "--untrusted")
 		set(dir_opt  "--untrusted-dir")
+		set(headers_only "")
+		set(c_file ${CMAKE_CURRENT_BINARY_DIR}/${idl_base}_${type_id}.c)
+	elseif(${TYPE} STREQUAL "enclave-headers")
+		set(type_id "t")
+		set(type_opt "--trusted")
+		set(dir_opt  "--trusted-dir")
+		set(headers_only "--header-only")
+		set(c_file "")
+	elseif(${TYPE} STREQUAL "host-headers")
+		set(type_id "u")
+		set(type_opt "--untrusted")
+		set(dir_opt  "--untrusted-dir")
+		set(headers_only "--header-only")
+		set(c_file "")
 	else()
 		message(FATAL_ERROR "unknown EDL generation type ${TYPE} - must be \"enclave\" or \"host\"")
 	endif()
 
-	get_filename_component(idl_base ${EDL_FILE} NAME_WE)
-	get_filename_component(in_path ${EDL_FILE} PATH)
+	if(${ARGC} EQUAL 5)
+		if (${ARGV3} STREQUAL "--edl-search-dir")
+			set(edl_search_path --search-path ${CMAKE_CURRENT_SOURCE_DIR}/${ARGV4})
+		endif()
+	endif()
+
 
 	set(h_file ${CMAKE_CURRENT_BINARY_DIR}/${idl_base}_${type_id}.h)
-	set(c_file ${CMAKE_CURRENT_BINARY_DIR}/${idl_base}_${type_id}.c)
+
+	if (UNIX)
+		set(OEEDGER8R_COMMAND oeedger8r)
+	else()
+		set(OEEDGER8R_COMMAND oeedger8r.exe)
+	endif()
 
 	add_custom_command(
 		OUTPUT ${h_file} ${c_file}
-		DEPENDS ${EDL_FILE} oeedger8r
-		COMMAND ${OE_BINDIR}/oeedger8r ${type_opt} ${dir_opt} ${CMAKE_CURRENT_BINARY_DIR} ${EDL_FILE}
+		# NOTE: Because `OEEDGER8R_COMMAND` is not a CMake
+		# executable, we need an explicit dependency on it in
+		# order to cause files to be regenerated if the
+		# oeedger8r is rebuilt.
+		DEPENDS ${EDL_FILE} oeedger8r ${OE_BINDIR}/${OEEDGER8R_COMMAND}
+		COMMAND ${OE_BINDIR}/${OEEDGER8R_COMMAND} ${type_opt} ${headers_only} ${dir_opt} ${CMAKE_CURRENT_BINARY_DIR} ${EDL_FILE} --search-path ${in_path} ${edl_search_path}
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		)
 

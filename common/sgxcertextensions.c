@@ -5,7 +5,6 @@
 #include <openenclave/internal/ec.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxcertextensions.h>
 #include <openenclave/internal/trace.h>
 #include <string.h>
@@ -100,7 +99,7 @@ static oe_result_t _read_asn1_length(
         }
         else if (*p > 0x80)
         {
-            bytes = *p++ - 0x80;
+            bytes = (uint8_t)(*p++ - 0x80);
             while (bytes > 0 && p < end)
             {
                 *length = (*length << 8) | *p;
@@ -202,10 +201,11 @@ done:
 
 static void _trace_hex_dump(const char* tag, const uint8_t* data, size_t size)
 {
-#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
-    OE_TRACE_INFO("%s = ", tag);
-    oe_hex_dump(data, size);
-#endif
+    if (get_current_logging_level() >= OE_LOG_LEVEL_INFO)
+    {
+        OE_TRACE_INFO("%s = ", tag);
+        oe_hex_dump(data, size);
+    }
 }
 
 /**
@@ -373,14 +373,13 @@ static oe_result_t _read_boolean_extension(
     oe_result_t result = OE_INVALID_SGX_CERTIFICATE_EXTENSIONS;
     uint8_t* data = NULL;
     size_t data_length = 0;
+    OE_UNUSED(tag);
 
     OE_CHECK(
         _read_extension(itr, end, oid, SGX_BOOLEAN_TAG, &data, &data_length));
 
     if (data_length != 1)
         OE_RAISE(OE_FAILURE);
-
-    OE_TRACE_INFO("%s = %d\n", tag, *value);
 
     *value = *data;
     result = OE_OK;

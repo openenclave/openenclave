@@ -10,7 +10,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "../args.h"
+#include "backtrace_u.h"
 
 const char* arg0;
 
@@ -28,27 +28,25 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
-    r = oe_create_enclave(argv[1], type, flags, NULL, 0, &enclave);
+    r = oe_create_backtrace_enclave(argv[1], type, flags, NULL, 0, &enclave);
     OE_TEST(r == OE_OK);
 
     /* Test() */
     {
         static const char* syms[] = {
             "GetBacktrace",
-            "Test",
-            "_handle_call_enclave",
+            "test",
+            "ecall_test",
+            "_handle_call_enclave_function",
             "_handle_ecall",
             "__oe_handle_main",
             "oe_enter",
         };
-        Args args;
-        args.syms = syms;
-        args.num_syms = OE_COUNTOF(syms);
-        args.okay = false;
-        r = oe_call_enclave(enclave, "Test", &args);
+        bool rval = false;
+        r = test(enclave, &rval, OE_COUNTOF(syms), syms);
         OE_TEST(r == OE_OK);
 
-        if (!args.okay)
+        if (!rval)
         {
             fprintf(stderr, "%s: backtrace failed: Test()\n", argv[0]);
             exit(1);
@@ -62,20 +60,18 @@ int main(int argc, const char* argv[])
             "func3",
             "func2",
             "func1",
-            "TestUnwind",
-            "_handle_call_enclave",
+            "test_unwind",
+            "ecall_test_unwind",
+            "_handle_call_enclave_function",
             "_handle_ecall",
             "__oe_handle_main",
             "oe_enter",
         };
-        Args args;
-        args.syms = syms;
-        args.num_syms = OE_COUNTOF(syms);
-        args.okay = false;
-        r = oe_call_enclave(enclave, "TestUnwind", &args);
+        bool rval = false;
+        r = test_unwind(enclave, &rval, OE_COUNTOF(syms), syms);
         OE_TEST(r == OE_OK);
 
-        if (!args.okay)
+        if (!rval)
         {
             fprintf(stderr, "%s: backtrace failed: TestUnwind()\n", argv[0]);
             exit(1);

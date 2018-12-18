@@ -6,7 +6,7 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/tests.h>
 #include <wchar.h>
-#include "string_u.c"
+#include "all_u.h"
 
 void test_string_edl_ecalls(oe_enclave_t* enclave)
 {
@@ -119,8 +119,11 @@ void ocall_string_fun7(char* s1, char* s2)
 void test_wstring_edl_ecalls(oe_enclave_t* enclave)
 {
     const wchar_t* str_value = L"Hello, World\n";
-
     wchar_t str[50];
+
+    if (!g_enabled[TYPE_WCHAR_T])
+        return;
+
     swprintf(str, 50, L"%S", str_value);
 
     // wchar_t*

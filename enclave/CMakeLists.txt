@@ -5,18 +5,23 @@ add_library(oeenclave STATIC
     ../common/asn1.c
     ../common/cert.c
     ../common/datetime.c
+    ../common/kdf.c
+    ../common/qeidentity.c
     ../common/quote.c
     ../common/report.c
     ../common/revocation.c
     ../common/sgxcertextensions.c
     ../common/tcbinfo.c
     asn1.c
+    asym_keys.c
     cert.c
     crl.c
     ec.c
     cmac.c
+    hmac.c
     key.c
     link.c
+    qeidinfo.c
     random.c
     report.c
     revocationinfo.c
@@ -24,9 +29,9 @@ add_library(oeenclave STATIC
     sha.c
     start.S)
 
-if(USE_LIBSGX)
-target_compile_definitions(oeenclave PUBLIC OE_USE_LIBSGX)
-endif()    
+if(CMAKE_C_COMPILER_ID MATCHES GNU)
+target_compile_options(oeenclave PRIVATE -Wjump-misses-init)
+endif()
 
 target_link_libraries(oeenclave PUBLIC
     mbedcrypto
@@ -34,4 +39,5 @@ target_link_libraries(oeenclave PUBLIC
 
 set_property(TARGET oeenclave PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 
-install(TARGETS oeenclave ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+install(TARGETS oeenclave EXPORT openenclave-targets
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)

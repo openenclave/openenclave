@@ -220,6 +220,7 @@ static int fmt_fp(FILE *f, long double y, int w, int p, int fl, int t)
 		else re=LDBL_MANT_DIG/4-1-p;
 
 		if (re) {
+			round *= 1<<(LDBL_MANT_DIG%4);
 			while (re--) round*=16;
 			if (*prefix=='-') {
 				y=-y;
@@ -673,11 +674,12 @@ int vfprintf(FILE *restrict f, const char *restrict fmt, va_list ap)
 	if (f->mode < 1) f->flags &= ~F_ERR;
 	if (!f->buf_size) {
 		saved_buf = f->buf;
-		f->wpos = f->wbase = f->buf = internal_buf;
+		f->buf = internal_buf;
 		f->buf_size = sizeof internal_buf;
-		f->wend = internal_buf + sizeof internal_buf;
+		f->wpos = f->wbase = f->wend = 0;
 	}
-	ret = printf_core(f, fmt, &ap2, nl_arg, nl_type);
+	if (!f->wend && __towrite(f)) ret = -1;
+	else ret = printf_core(f, fmt, &ap2, nl_arg, nl_type);
 	if (saved_buf) {
 		f->write(f, 0, 0);
 		if (!f->wpos) ret = -1;

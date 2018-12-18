@@ -7,7 +7,7 @@
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <algorithm>
-#include "struct_t.c"
+#include "all_t.h"
 
 void test_struct_edl_ocalls()
 {
@@ -19,13 +19,13 @@ void test_struct_edl_ocalls()
 
     static MyStruct1 a2[5];
     for (size_t i = 0; i < 5; ++i)
-        a2[i].s0.x = a2[i].y = i;
+        a2[i].s0.x = a2[i].y = static_cast<int>(i);
 
     static MyStruct1 a3[5][5];
     for (size_t i = 0; i < 5; ++i)
     {
         for (size_t j = 0; j < 5; ++j)
-            a3[i][j].s0.x = a3[i][j].y = i * j;
+            a3[i][j].s0.x = a3[i][j].y = static_cast<int>(i * j);
     }
 
     MyStruct1 a4[1][1][1];

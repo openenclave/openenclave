@@ -69,6 +69,7 @@ static oe_atexit_entry_t* _new_atexit_entry(void (*func)(void*), void* arg)
 int __cxa_atexit(void (*func)(void*), void* arg, void* dso_handle)
 {
     oe_atexit_entry_t* entry;
+    OE_UNUSED(dso_handle);
 
     if (!(entry = _new_atexit_entry(func, arg)))
         return -1;

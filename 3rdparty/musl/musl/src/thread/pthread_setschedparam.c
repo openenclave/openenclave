@@ -4,7 +4,7 @@ int pthread_setschedparam(pthread_t t, int policy, const struct sched_param *par
 {
 	int r;
 	LOCK(t->killlock);
-	r = t->dead ? ESRCH : -__syscall(SYS_sched_setscheduler, t->tid, policy, param);
+	r = !t->tid ? ESRCH : -__syscall(SYS_sched_setscheduler, t->tid, policy, param);
 	UNLOCK(t->killlock);
 	return r;
 }

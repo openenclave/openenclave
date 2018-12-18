@@ -9,7 +9,7 @@
 Use the following command to download the source code.
 
 ```bash
-git clone https://github.com/Microsoft/openenclave
+git clone https://github.com/Microsoft/openenclave.git
 ```
 
 This creates a source tree under the directory called openenclave.
@@ -39,7 +39,7 @@ cmake ..
 make
 ```
 
-Refer to the [Advanced Build Information](advancedBuildInfo.md) documentation for further information.
+Refer to the [Advanced Build Information](AdvancedBuildInfo.md) documentation for further information.
 
 ## Run unittests
 

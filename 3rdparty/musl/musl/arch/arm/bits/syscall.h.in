@@ -359,4 +359,5 @@
 #define __ARM_NR_usr26		0x0f0003
 #define __ARM_NR_usr32		0x0f0004
 #define __ARM_NR_set_tls	0x0f0005
+#define __ARM_NR_get_tls	0x0f0006
 

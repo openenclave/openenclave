@@ -16,7 +16,7 @@ enclave {
             [in, string] const char *modes);
 
         size_t Fread(
-            [in, out, count=size, isptr] void_ptr ptr,
+            [in, out, size=size, isptr] void_ptr ptr,
             size_t size,
             [user_check] MY_FILE *stream);
 

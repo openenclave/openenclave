@@ -1,0 +1,12 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+FROM ubuntu:16.04
+
+COPY scripts/install-prereqs /bin
+RUN \
+  apt-get update \
+  && apt-get install --no-install-recommends -y \
+  lsb-release \
+  wget ca-certificates \
+  git \
+  && install-prereqs

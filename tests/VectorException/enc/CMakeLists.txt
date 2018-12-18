@@ -9,6 +9,3 @@ add_executable(VectorException_enc
     )
 
 target_link_libraries(VectorException_enc oeenclave)
-
-target_include_directories(VectorException_enc SYSTEM PRIVATE
-    ${OE_C_COMPILER_INCDIR})

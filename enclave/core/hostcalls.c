@@ -3,10 +3,10 @@
 
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
+#include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
-#include <openenclave/internal/hostalloc.h>
 #include <openenclave/internal/print.h>
 #include "td.h"
 
@@ -45,8 +45,8 @@ void* oe_host_realloc(void* ptr, size_t size)
     oe_realloc_args_t* arg_in = NULL;
     uint64_t arg_out = 0;
 
-    if (!(arg_in = (oe_realloc_args_t*)oe_host_alloc_for_call_host(
-              sizeof(oe_realloc_args_t))))
+    if (!(arg_in =
+              (oe_realloc_args_t*)oe_host_calloc(1, sizeof(oe_realloc_args_t))))
         goto done;
 
     arg_in->ptr = ptr;
@@ -62,7 +62,7 @@ void* oe_host_realloc(void* ptr, size_t size)
         oe_abort();
 
 done:
-    oe_host_free_for_call_host(arg_in);
+    oe_host_free(arg_in);
     return (void*)arg_out;
 }
 
@@ -118,7 +118,7 @@ int oe_host_write(int device, const char* str, size_t len)
         OE_OK)
         goto done;
 
-    if (!(args = (oe_print_args_t*)oe_host_alloc_for_call_host(total_size)))
+    if (!(args = (oe_print_args_t*)oe_host_calloc(1, total_size)))
         goto done;
 
     /* Initialize the arguments */
@@ -137,7 +137,7 @@ int oe_host_write(int device, const char* str, size_t len)
     ret = 0;
 
 done:
-    oe_host_free_for_call_host(args);
+    oe_host_free(args);
     return ret;
 }
 
@@ -156,14 +156,14 @@ int oe_host_vfprintf(int device, const char* fmt, oe_va_list ap_)
     }
 
     /* If string was truncated, retry with correctly sized buffer */
-    if (n >= sizeof(buf))
+    if (n >= (int)sizeof(buf))
     {
-        if (!(p = oe_stack_alloc(n + 1)))
+        if (!(p = oe_stack_alloc((uint32_t)n + 1)))
             return -1;
 
         oe_va_list ap;
         oe_va_copy(ap, ap_);
-        n = oe_vsnprintf(p, n + 1, fmt, ap);
+        n = oe_vsnprintf(p, (size_t)n + 1, fmt, ap);
         oe_va_end(ap);
     }
 
@@ -194,4 +194,16 @@ int oe_host_fprintf(int device, const char* fmt, ...)
     oe_va_end(ap);
 
     return n;
+}
+
+// Function used by oeedger8r for allocating ocall buffers.
+void* oe_allocate_ocall_buffer(size_t size)
+{
+    return oe_host_malloc(size);
+}
+
+// Function used by oeedger8r for freeing ocall buffers.
+void oe_free_ocall_buffer(void* buffer)
+{
+    oe_host_free(buffer);
 }

@@ -3,7 +3,7 @@
 
 #include <windows.h>
 
-void _oe_initialize_host_exception()
+void oe_initialize_host_exception()
 {
     // NYI. No-op for Windows.
 }

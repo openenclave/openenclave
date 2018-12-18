@@ -5,8 +5,10 @@
 #define _OE_HOST_ENCLAVE_H
 
 #include <openenclave/bits/properties.h>
+#include <openenclave/edger8r/host.h>
 #include <openenclave/host.h>
-#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/load.h>
+#include <openenclave/internal/sgxcreate.h>
 #include <stdbool.h>
 #include "asmdefs.h"
 #include "hostthread.h"
@@ -88,6 +90,10 @@ OE_STATIC_ASSERT(OE_OFFSETOF(ThreadBinding, tcs) == ThreadBinding_tcs);
 /* Get thread data from thread-specific data (TSD) */
 ThreadBinding* GetThreadBinding(void);
 
+/**
+ *  This structure must be kept in sync with the defines in
+ *  debugger/pythonExtension/gdb_sgx_plugin.py.
+ */
 struct _oe_enclave
 {
     /* A "magic number" to validate structure */
@@ -117,6 +123,10 @@ struct _oe_enclave
     ECallNameAddr* ecalls;
     size_t num_ecalls;
 
+    /* Array of ocall functions */
+    const oe_ocall_func_t* ocalls;
+    size_t num_ocalls;
+
     /* Debug mode */
     bool debug;
 
@@ -124,10 +134,30 @@ struct _oe_enclave
     bool simulate;
 };
 
+// Static asserts for consistency with
+// debugger/pythonExtension/gdb_sgx_plugin.py
+#if defined(__linux__)
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_t, magic) == 0);
+
+// Python plugin only needs the field number which is 2
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_t, addr) == 2 * sizeof(void*));
+
+// The fields up to binding correspond to 'ENCLAVE_HEADER'
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_t, bindings) == 0x28);
+
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_t, debug) == 0x598);
+OE_STATIC_ASSERT(
+    OE_OFFSETOF(oe_enclave_t, debug) + 1 ==
+    OE_OFFSETOF(oe_enclave_t, simulate));
+#endif
+
 /* Get the event for the given TCS */
 EnclaveEvent* GetEnclaveEvent(oe_enclave_t* enclave, uint64_t tcs);
 
 /* Initialize the exception processing. */
-void _oe_initialize_host_exception(void);
+void oe_initialize_host_exception(void);
+
+/* Free enclave ecall allocation */
+void oe_free_enclave_ecalls(oe_enclave_t* enclave);
 
 #endif /* _OE_HOST_ENCLAVE_H */

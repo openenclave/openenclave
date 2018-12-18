@@ -26,5 +26,8 @@ __clone:
 	nop
 1:	ld	$25, 0($sp)	# function pointer
 	ld	$4, 8($sp)	# argument pointer
-	jr	$25		# call the user's function
+	jalr	$25		# call the user's function
 	nop
+	move 	$4, $2
+	li	$2, 5058
+	syscall

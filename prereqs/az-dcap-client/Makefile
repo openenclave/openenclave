@@ -1,38 +1,18 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-AZ_DCAP_PKG=az-dcap-client_1.0_amd64.deb
+all: 
 
-all: getdist
-
-getdist:
-	$(MAKE) -s distclean
-	$(MAKE) get-quote-provider
-
-distclean:
-	- rm -f $(AZ_DCAP_PKG)
-
-build:
+/etc/apt/sources.list.d/msprod.list:
+	echo "deb [arch=amd64] https://packages.microsoft.com/ubuntu/16.04/prod xenial main" | tee /etc/apt/sources.list.d/msprod.list
+	wget -qO - https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+	apt-get update
 
 clean:
 
-install:
-	$(MAKE) -s uninstall
-	dpkg -i $(AZ_DCAP_PKG)
+install: /etc/apt/sources.list.d/msprod.list
+	apt-get install -y az-dcap-client
 
 uninstall:
-	- dpkg -P az-dcap-client
+	apt-get --purge remove az-dcap-client
 
-##==============================================================================
-##
-## Helper subroutines
-##
-##==============================================================================
-
-get-quote-provider:
-ifdef USE_PKGS_IN
-	cp $(USE_PKGS_IN)/$(AZ_DCAP_PKG) .
-else
-	@ apt-get -y install wget
-	@ wget https://packages.microsoft.com/repos/microsoft-ubuntu-xenial-prod/pool/main/a/az-dcap-client/$(AZ_DCAP_PKG)
-endif

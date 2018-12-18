@@ -11,31 +11,24 @@
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <unistd.h>
-#include "../syscall_args.h"
+#include "mbed_u.h"
 
-OE_OCALL void mbed_test_open(void* syscall_args)
+int mbed_test_open(const char* path, int flags, mode_t mode)
 {
-    syscall_args_t* args = (syscall_args_t*)syscall_args;
-
-    args->fd = open(args->path, args->flags, args->mode);
-
-    return;
+    return open(path, flags, mode);
 }
 
-OE_OCALL void mbed_test_readv(void* syscall_args)
+ssize_t mbed_test_read(int fd, char* buf, size_t buf_len)
 {
-    syscall_args_t* args = (syscall_args_t*)syscall_args;
-
-    args->ret = readv(args->fd, (const struct iovec*)args->ptr, args->len);
-
-    return;
+    return read(fd, buf, buf_len);
 }
 
-OE_OCALL void mbed_test_close(void* syscall_args)
+ssize_t mbed_test_readv(int fd, const struct iovec* iov, int iovcnt)
 {
-    syscall_args_t* args = (syscall_args_t*)syscall_args;
+    return readv(fd, iov, iovcnt);
+}
 
-    args->ret = close(args->fd);
-
-    return;
+int mbed_test_close(int fd)
+{
+    return close(fd);
 }

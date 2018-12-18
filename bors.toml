@@ -2,6 +2,7 @@ status = [ "continuous-integration/jenkins/branch" ]
 pr_status = [ "license/cla" ]
 required_approvals = 1
 delete_merged_branches = true
+timeout_sec = 7200 # two hours
 
 [committer]
 name = "oe-bors[bot]"

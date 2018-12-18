@@ -7,22 +7,22 @@
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <algorithm>
-#include "array_t.c"
+#include "all_t.h"
 
 template <typename T>
 static void init_arrays(T (&a1)[2], T (&a2)[2][2], T (&a3)[3][3], T (&a4)[4][4])
 {
     for (size_t i = 0; i < 2; ++i)
-        ((T*)a1)[i] = i + 1;
+        ((T*)a1)[i] = static_cast<T>(i + 1);
 
     for (size_t i = 0; i < 4; ++i)
-        ((T*)a2)[i] = i + 1;
+        ((T*)a2)[i] = static_cast<T>(i + 1);
 
     for (size_t i = 0; i < 9; ++i)
-        ((T*)a3)[i] = i + 1;
+        ((T*)a3)[i] = static_cast<T>(i + 1);
 
     for (size_t i = 0; i < 16; ++i)
-        ((T*)a4)[i] = i + 1;
+        ((T*)a4)[i] = static_cast<T>(i + 1);
 }
 
 template <typename T, typename F>
@@ -58,12 +58,14 @@ static void test_ocall_array_fun(F ocall_array_fun)
 void test_array_edl_ocalls()
 {
     test_ocall_array_fun<char>(ocall_array_char);
-    test_ocall_array_fun<wchar_t>(ocall_array_wchar_t);
+    if (g_enabled[TYPE_WCHAR_T])
+        test_ocall_array_fun<wchar_t>(ocall_array_wchar_t);
     test_ocall_array_fun<short>(ocall_array_short);
     test_ocall_array_fun<int>(ocall_array_int);
     test_ocall_array_fun<float>(ocall_array_float);
     test_ocall_array_fun<double>(ocall_array_double);
-    test_ocall_array_fun<long>(ocall_array_long);
+    if (g_enabled[TYPE_LONG])
+        test_ocall_array_fun<long>(ocall_array_long);
     test_ocall_array_fun<size_t>(ocall_array_size_t);
     test_ocall_array_fun<unsigned>(ocall_array_unsigned);
     test_ocall_array_fun<int8_t>(ocall_array_int8_t);
@@ -75,7 +77,14 @@ void test_array_edl_ocalls()
     test_ocall_array_fun<uint32_t>(ocall_array_uint32_t);
     test_ocall_array_fun<uint64_t>(ocall_array_uint64_t);
     test_ocall_array_fun<long long>(ocall_array_long_long);
-    test_ocall_array_fun<long double>(ocall_array_long_double);
+    if (g_enabled[TYPE_LONG_DOUBLE])
+        test_ocall_array_fun<long double>(ocall_array_long_double);
+    test_ocall_array_fun<unsigned char>(ocall_array_unsigned_char);
+    test_ocall_array_fun<unsigned short>(ocall_array_unsigned_short);
+    test_ocall_array_fun<unsigned int>(ocall_array_unsigned_int);
+    if (g_enabled[TYPE_UNSIGNED_LONG])
+        test_ocall_array_fun<unsigned long>(ocall_array_unsigned_long);
+    test_ocall_array_fun<unsigned long long>(ocall_array_unsigned_long_long);
 
     OE_TEST(ocall_array_assert_all_called() == OE_OK);
     printf("=== test_array_edl_ocalls passed\n");
@@ -117,7 +126,7 @@ static void ecall_array_fun_impl(T a1[2], T a2[2][2], T a3[3][3], T a4[4][4])
         OE_TEST(oe_is_within_enclave(a3, sizeof(T) * 3 * 3));
         for (int i = 0; i < 9; ++i)
         {
-            ((T*)a3)[i] = i;
+            ((T*)a3)[i] = static_cast<T>(i);
         }
     }
 
@@ -288,9 +297,63 @@ void ecall_array_long_double(
     ecall_array_fun_impl(a1, a2, a3, a4);
 }
 
+void ecall_array_unsigned_char(
+    unsigned char a1[2],
+    unsigned char a2[2][2],
+    unsigned char a3[3][3],
+    unsigned char a4[4][4])
+{
+    ecall_array_fun_impl(a1, a2, a3, a4);
+}
+
+void ecall_array_unsigned_short(
+    unsigned short a1[2],
+    unsigned short a2[2][2],
+    unsigned short a3[3][3],
+    unsigned short a4[4][4])
+{
+    ecall_array_fun_impl(a1, a2, a3, a4);
+}
+
+void ecall_array_unsigned_int(
+    unsigned int a1[2],
+    unsigned int a2[2][2],
+    unsigned int a3[3][3],
+    unsigned int a4[4][4])
+{
+    ecall_array_fun_impl(a1, a2, a3, a4);
+}
+
+void ecall_array_unsigned_long(
+    unsigned long a1[2],
+    unsigned long a2[2][2],
+    unsigned long a3[3][3],
+    unsigned long a4[4][4])
+{
+    ecall_array_fun_impl(a1, a2, a3, a4);
+}
+
+void ecall_array_unsigned_long_long(
+    unsigned long long a1[2],
+    unsigned long long a2[2][2],
+    unsigned long long a3[3][3],
+    unsigned long long a4[4][4])
+{
+    ecall_array_fun_impl(a1, a2, a3, a4);
+}
+
 void ecall_array_assert_all_called()
 {
-    // Each of the 19 functions above is called twice.
+    // Each of the 20 functions above is called twice.
     // Once with arrays and then with nulls.
-    OE_TEST(num_ecalls == 38);
+    int expected_num_calls = 20 * 2;
+
+    // Account for enabled non-portable types.
+    for (size_t i = 0; i < OE_COUNTOF(g_enabled); ++i)
+    {
+        if (g_enabled[i])
+            expected_num_calls += 2;
+    }
+
+    OE_TEST(num_ecalls == expected_num_calls);
 }

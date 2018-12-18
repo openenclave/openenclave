@@ -4,13 +4,12 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/tests.h>
 #include <wchar.h>
-#include "array_u.h"
-#include "basic_u.h"
-#include "enum_u.h"
-#include "foreign_u.h"
-#include "pointer_u.h"
-#include "string_u.h"
-#include "struct_u.h"
+#include "all_u.h"
+
+// The types wchar_t, long, unsigned long and long double have different sizes
+// in Linux and Windows. Therefore enclaves built in Linux cannot be safely
+// loaded if they use any of these types.
+uint8_t g_enabled[4] = {true, true, true, true};
 
 void test_basic_edl_ecalls(oe_enclave_t* enclave);
 void test_string_edl_ecalls(oe_enclave_t* enclave);
@@ -20,7 +19,6 @@ void test_pointer_edl_ecalls(oe_enclave_t* enclave);
 void test_struct_edl_ecalls(oe_enclave_t* enclave);
 void test_enum_edl_ecalls(oe_enclave_t* enclave);
 void test_foreign_edl_ecalls(oe_enclave_t* enclave);
-void run_misc_tests(oe_enclave_t* enclave);
 
 int main(int argc, const char* argv[])
 {
@@ -35,13 +33,15 @@ int main(int argc, const char* argv[])
 
     const uint32_t flags = oe_get_create_flags();
 
-    result = oe_create_enclave(
+    result = oe_create_all_enclave(
         argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
     if (result != OE_OK)
     {
         fprintf(stderr, "%s: cannot create enclave: %u\n", argv[0], result);
         return 1;
     }
+
+    OE_TEST(configure(enclave, g_enabled) == OE_OK);
 
     test_basic_edl_ecalls(enclave);
     OE_TEST(test_basic_edl_ocalls(enclave) == OE_OK);
@@ -66,8 +66,6 @@ int main(int argc, const char* argv[])
 
     test_foreign_edl_ecalls(enclave);
     OE_TEST(test_foreign_edl_ocalls(enclave) == OE_OK);
-
-    run_misc_tests(enclave);
 
     oe_terminate_enclave(enclave);
 

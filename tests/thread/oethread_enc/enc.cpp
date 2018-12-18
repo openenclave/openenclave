@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+#include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/tests.h>
 #include <openenclave/internal/thread.h>
@@ -127,6 +128,8 @@ static oe_cond_t exclusive = OE_COND_INITIALIZER;
 
 OE_ECALL void WaitForExclusiveAccess(void* args_)
 {
+    OE_UNUSED(args_);
+
     oe_mutex_lock(&ex_mutex);
 
     // Wait for other threads to finish
@@ -146,6 +149,8 @@ OE_ECALL void WaitForExclusiveAccess(void* args_)
 
 OE_ECALL void RelinquishExclusiveAccess(void* args_)
 {
+    OE_UNUSED(args_);
+
     oe_mutex_lock(&ex_mutex);
 
     // Mark thread as done
@@ -244,6 +249,23 @@ OE_ECALL void LockAndUnlockMutexes(void* arg)
     }
 }
 
+// Keep the enclave busy until we get TCS exhaustion
+OE_ECALL void TestTCSExhaustion(void* args_)
+{
+    TestTCSArgs* volatile args = (TestTCSArgs*)args_;
+    static oe_spinlock_t _tcs_lock = OE_SPINLOCK_INITIALIZER;
+
+    // Increment the number of threads only on getting the _tcs_lock
+    oe_spin_lock(&_tcs_lock);
+    args->num_tcs_used++;
+    oe_spin_unlock(&_tcs_lock);
+    // Wait until all the threads have returned from oe_call_enclave from
+    // the host - these include those with unique TCSes and the ones
+    // which failed.
+    while (args->num_tcs_used + args->num_out_threads < args->tcs_req_count)
+        ;
+}
+
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
@@ -251,3 +273,5 @@ OE_SET_ENCLAVE_SGX(
     512,  /* HeapPageCount */
     512,  /* StackPageCount */
     16);  /* TCSCount */
+
+OE_DEFINE_EMPTY_ECALL_TABLE();

@@ -280,10 +280,10 @@ MEM_INLINE int str_printf(str_t* str, const char* format, ...)
     va_end(ap);
 
     /* If buffer was not big enough and using dynamic memory */
-    if (r + 1 > str_cap(str))
+    if ((size_t)r + 1 > str_cap(str))
     {
         /* Expand memory allocation to required size */
-        if (str_reserve(str, r + 1) != 0)
+        if (str_reserve(str, (size_t)r + 1) != 0)
             return -1;
 
         /* Retry the operation */
@@ -294,7 +294,7 @@ MEM_INLINE int str_printf(str_t* str, const char* format, ...)
     }
 
     /* Set the size */
-    str->__mem.__size = r + 1;
+    str->__mem.__size = (size_t)r + 1;
 
     return 0;
 }
@@ -346,7 +346,7 @@ MEM_INLINE int str_ltrim(str_t* str, const char* delim)
         p++;
 
     if (p != start)
-        return str_remove(str, 0, p - start);
+        return str_remove(str, 0, (size_t)(p - start));
 
     return 0;
 }
@@ -368,7 +368,7 @@ MEM_INLINE int str_rtrim(str_t* str, const char* delim)
         p--;
 
     if (p != end)
-        return str_remove(str, p - start, end - p);
+        return str_remove(str, (size_t)(p - start), (size_t)(end - p));
 
     return 0;
 }
@@ -406,7 +406,7 @@ MEM_INLINE int str_split(str_t* str, const char* delim, str_t* lhs, str_t* rhs)
             p++;
         }
 
-        str_ncpy(lhs, start, p - start);
+        str_ncpy(lhs, start, (size_t)(p - start));
     }
 
     /* Fail if no delimiter characters found */
@@ -419,7 +419,7 @@ MEM_INLINE int str_split(str_t* str, const char* delim, str_t* lhs, str_t* rhs)
 
     /* Get right-hand-side */
     if (p != end)
-        str_ncpy(rhs, p, end - p);
+        str_ncpy(rhs, p, (size_t)(end - p));
 
     return 0;
 }
@@ -454,7 +454,7 @@ MEM_INLINE int str_u32(str_t* str, unsigned int* u32)
     if (!end || *end || x > UINT_MAX)
         return -1;
 
-    *u32 = x;
+    *u32 = (unsigned int)x;
     return 0;
 }
 

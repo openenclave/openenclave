@@ -1,0 +1,18 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    enum string_limit {
+        STRLEN_MAX = 200
+    };
+    
+    trusted {
+        public int test(
+            [out]char test[201],
+            uint32_t pid);
+    };
+    untrusted {
+        void exit_ocall(
+            int val);
+    };
+};

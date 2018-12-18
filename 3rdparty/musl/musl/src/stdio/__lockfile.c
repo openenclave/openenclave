@@ -1,28 +1,25 @@
 #include "stdio_impl.h"
 #include "pthread_impl.h"
 
+#define MAYBE_WAITERS 0x40000000
+
 int __lockfile(FILE *f)
 {
-	int owner, tid = __pthread_self()->tid;
-	if (f->lock == tid)
+	int owner = f->lock, tid = __pthread_self()->tid;
+	if ((owner & ~MAYBE_WAITERS) == tid)
 		return 0;
-	while ((owner = a_cas(&f->lock, 0, tid)))
-		__wait(&f->lock, &f->waiters, owner, 1);
+	for (;;) {
+		owner = a_cas(&f->lock, 0, tid);
+		if (!owner) return 1;
+		if (a_cas(&f->lock, owner, owner|MAYBE_WAITERS)==owner) break;
+	}
+	while ((owner = a_cas(&f->lock, 0, tid|MAYBE_WAITERS)))
+		__futexwait(&f->lock, owner, 1);
 	return 1;
 }
 
 void __unlockfile(FILE *f)
 {
-	a_store(&f->lock, 0);
-
-	/* The following read is technically invalid under situations
-	 * of self-synchronized destruction. Another thread may have
-	 * called fclose as soon as the above store has completed.
-	 * Nonetheless, since FILE objects always live in memory
-	 * obtained by malloc from the heap, it's safe to assume
-	 * the dereferences below will not fault. In the worst case,
-	 * a spurious syscall will be made. If the implementation of
-	 * malloc changes, this assumption needs revisiting. */
-
-	if (f->waiters) __wake(&f->lock, 1, 1);
+	if (a_swap(&f->lock, 0) & MAYBE_WAITERS)
+		__wake(&f->lock, 1, 1);
 }

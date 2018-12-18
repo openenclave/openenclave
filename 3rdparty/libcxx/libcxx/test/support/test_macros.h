@@ -27,10 +27,8 @@
 #define TEST_HAS_FEATURE(X) 0
 #endif
 
-#ifdef __has_include
-#define TEST_HAS_INCLUDE(X) __has_include(X)
-#else
-#define TEST_HAS_INCLUDE(X) 0
+#ifndef __has_include
+#define __has_include(...) 0
 #endif
 
 #ifdef __has_extension
@@ -90,20 +88,10 @@
 #endif
 
 // Attempt to deduce GCC version
-#if defined(_LIBCPP_VERSION) && TEST_HAS_INCLUDE(<features.h>)
+#if defined(_LIBCPP_VERSION) && __has_include(<features.h>)
 #include <features.h>
 #define TEST_HAS_GLIBC
 #define TEST_GLIBC_PREREQ(major, minor) __GLIBC_PREREQ(major, minor)
-#endif
-
-/* Features that were introduced in C++14 */
-#if TEST_STD_VER >= 14
-#define TEST_HAS_EXTENDED_CONSTEXPR
-#define TEST_HAS_VARIABLE_TEMPLATES
-#endif
-
-/* Features that were introduced after C++14 */
-#if TEST_STD_VER > 14
 #endif
 
 #if TEST_STD_VER >= 11
@@ -134,6 +122,50 @@
 #define TEST_THROW_SPEC(...) throw(__VA_ARGS__)
 #endif
 
+// Sniff out to see if the underling C library has C11 features
+// Note that at this time (July 2018), MacOS X and iOS do NOT.
+// This is cribbed from __config; but lives here as well because we can't assume libc++
+#if __ISO_C_VISIBLE >= 2011 || TEST_STD_VER >= 11
+#  if defined(__FreeBSD__)
+//  Specifically, FreeBSD does NOT have timespec_get, even though they have all
+//  the rest of C11 - this is PR#38495
+#    define TEST_HAS_C11_FEATURES
+#  elif defined(__Fuchsia__)
+#    define TEST_HAS_C11_FEATURES
+#    define TEST_HAS_TIMESPEC_GET
+#  elif defined(__linux__)
+#    if !defined(_LIBCPP_HAS_MUSL_LIBC)
+#      if _LIBCPP_GLIBC_PREREQ(2, 17)
+#        define TEST_HAS_TIMESPEC_GET
+#        define TEST_HAS_C11_FEATURES
+#      endif
+#    else // defined(_LIBCPP_HAS_MUSL_LIBC)
+#      define TEST_HAS_C11_FEATURES
+#      define TEST_HAS_TIMESPEC_GET
+#    endif
+#  elif defined(_WIN32)
+#    if defined(_MSC_VER) && !defined(__MINGW32__)
+#      define TEST_HAS_C11_FEATURES // Using Microsoft's C Runtime library
+#      define TEST_HAS_TIMESPEC_GET
+#    endif
+#  endif
+#endif
+
+/* Features that were introduced in C++14 */
+#if TEST_STD_VER >= 14
+#define TEST_HAS_EXTENDED_CONSTEXPR
+#define TEST_HAS_VARIABLE_TEMPLATES
+#endif
+
+/* Features that were introduced in C++17 */
+#if TEST_STD_VER >= 17
+#endif
+
+/* Features that were introduced after C++17 */
+#if TEST_STD_VER > 17
+#endif
+
+
 #define TEST_ALIGNAS_TYPE(...) TEST_ALIGNAS(TEST_ALIGNOF(__VA_ARGS__))
 
 #if !TEST_HAS_FEATURE(cxx_rtti) && !defined(__cpp_rtti) \
@@ -157,11 +189,22 @@
 #define TEST_NORETURN [[noreturn]]
 #endif
 
+#if defined(_LIBCPP_HAS_NO_ALIGNED_ALLOCATION) || \
+  (!(TEST_STD_VER > 14 || \
+    (defined(__cpp_aligned_new) && __cpp_aligned_new >= 201606L)))
+#define TEST_HAS_NO_ALIGNED_ALLOCATION
+#endif
+
 #if defined(_LIBCPP_SAFE_STATIC)
 #define TEST_SAFE_STATIC _LIBCPP_SAFE_STATIC
 #else
 #define TEST_SAFE_STATIC
 #endif
+
+// FIXME: Fix this feature check when either (A) a compiler provides a complete
+// implementation, or (b) a feature check macro is specified
+#define TEST_HAS_NO_SPACESHIP_OPERATOR
+
 
 #if TEST_STD_VER < 11
 #define ASSERT_NOEXCEPT(...)
@@ -215,8 +258,18 @@ struct is_same<T, T> { enum {value = 1}; };
 
 #if defined(__GNUC__) || defined(__clang__)
 template <class Tp>
-inline void DoNotOptimize(Tp const& value) {
-  asm volatile("" : : "g"(value) : "memory");
+inline
+void DoNotOptimize(Tp const& value) {
+    asm volatile("" : : "r,m"(value) : "memory");
+}
+
+template <class Tp>
+inline void DoNotOptimize(Tp& value) {
+#if defined(__clang__)
+  asm volatile("" : "+r,m"(value) : : "memory");
+#else
+  asm volatile("" : "+m,r"(value) : : "memory");
+#endif
 }
 #else
 #include <intrin.h>
@@ -227,6 +280,7 @@ inline void DoNotOptimize(Tp const& value) {
   _ReadWriteBarrier();
 }
 #endif
+
 
 #if defined(__GNUC__)
 #pragma GCC diagnostic pop

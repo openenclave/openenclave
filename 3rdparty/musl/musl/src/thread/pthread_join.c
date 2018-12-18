@@ -7,13 +7,14 @@ int __pthread_setcancelstate(int, int *);
 
 int __pthread_timedjoin_np(pthread_t t, void **res, const struct timespec *at)
 {
-	int tmp, cs, r = 0;
+	int state, cs, r = 0;
 	__pthread_testcancel();
 	__pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
 	if (cs == PTHREAD_CANCEL_ENABLE) __pthread_setcancelstate(cs, 0);
-	if (t->detached) a_crash();
-	while ((tmp = t->tid) && r != ETIMEDOUT && r != EINVAL)
-		r = __timedwait_cp(&t->tid, tmp, CLOCK_REALTIME, at, 0);
+	while ((state = t->detach_state) && r != ETIMEDOUT && r != EINVAL) {
+		if (state >= DT_DETACHED) a_crash();
+		r = __timedwait_cp(&t->detach_state, state, CLOCK_REALTIME, at, 0);
+	}
 	__pthread_setcancelstate(cs, 0);
 	if (r == ETIMEDOUT || r == EINVAL) return r;
 	a_barrier();
@@ -29,7 +30,7 @@ int __pthread_join(pthread_t t, void **res)
 
 int __pthread_tryjoin_np(pthread_t t, void **res)
 {
-	return t->tid ? EBUSY : __pthread_join(t, res);
+	return t->detach_state==DT_JOINABLE ? EBUSY : __pthread_join(t, res);
 }
 
 weak_alias(__pthread_tryjoin_np, pthread_tryjoin_np);

@@ -20,9 +20,9 @@ build/tests/echo$ make
 ```
 
 
-This builds and runs all the tests. For libcxx & libcxxthrd a small subset is
-the default, the complete one is very slow to build and run. To enable the full
-set, set the ENABLE_FULL_LIBCXX_TESTS cmake variable as follows:
+This builds and runs all the tests. For libcxx a small subset is the default,
+the complete one is very slow to build and run. To enable the full set,
+set the ENABLE_FULL_LIBCXX_TESTS cmake variable as follows:
 
 ```
 build$ cmake .. -DENABLE_FULL_LIBCXX_TESTS=1
@@ -41,9 +41,9 @@ signalling a "did not run" state to ctest (rather than failing). To signal
 "did not run", such tests should return with an exit code of 2. ctest
 evaluates this specifically.
 
-# Testing on Windows
+# Testing on Windows [Work in progress]
 
-Refer to [Getting Started on Windows](../docs/GettingStarted.Windows.md) for
+Refer to [Getting Started on Windows](/docs/GettingStartedDocs/GettingStarted.Windows.md) for
 instructions on testing Linux-built enclaves with Windows-built host apps.
 
 

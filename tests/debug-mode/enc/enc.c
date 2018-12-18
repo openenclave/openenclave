@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
+#include "debug_mode_t.h"
 
-OE_ECALL void Test(void* args_)
+int test(void)
 {
-    int* args = (int*)args_;
-    *args = 0;
+    return 0;
 }

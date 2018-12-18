@@ -181,9 +181,8 @@ const char *__strftime_fmt_1(char (*s)[100], size_t *l, int f, const struct tm *
 			*l = 0;
 			return "";
 		}
-		*l = snprintf(*s, sizeof *s, "%+.2d%.2d",
-			(tm->__tm_gmtoff)/3600,
-			abs(tm->__tm_gmtoff%3600)/60);
+		*l = snprintf(*s, sizeof *s, "%+.4ld",
+			tm->__tm_gmtoff/3600*100 + tm->__tm_gmtoff%3600/60);
 		return *s;
 	case 'Z':
 		if (tm->tm_isdst < 0) {

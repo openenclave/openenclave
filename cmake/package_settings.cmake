@@ -23,7 +23,10 @@ set(OE_DOCDIR ${OE_OUTPUT_DIR}/share/doc CACHE INTERNAL "Doc collector root")
 set(OE_INCDIR ${OE_OUTPUT_DIR}/include CACHE INTERNAL "Include collector")
 set(OE_LIBDIR ${OE_OUTPUT_DIR}/lib CACHE INTERNAL "Library collector")
 
-# Generate and install CMake export file for consumers using Cmake
+# Make directories for build systems (NMake) that don't automatically make them.
+file(MAKE_DIRECTORY ${OE_BINDIR} ${OE_DATADIR} ${OE_DOCDIR} ${OE_DOCDIR} ${OE_INCDIR} ${OE_LIBDIR})
+
+# Generate and install CMake export file for consumers using CMake
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
   ${PROJECT_SOURCE_DIR}/cmake/openenclave-config.cmake.in
@@ -38,8 +41,13 @@ install(
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
 install(
   EXPORT openenclave-targets
+  NAMESPACE openenclave::
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
   FILE openenclave-targets.cmake)
+install(
+  FILES ${PROJECT_SOURCE_DIR}/cmake/sdk_cmake_targets_readme.md
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
+  RENAME README.md)
 
 # CPack package handling
 include(InstallRequiredSystemLibraries)
@@ -56,11 +64,11 @@ include(CPack)
 # Generate the openenclaverc script.
 configure_file(
     ${PROJECT_SOURCE_DIR}/cmake/openenclaverc.in
-    ${CMAKE_BINARY_DIR}/output/share/openenclaverc
+    ${CMAKE_BINARY_DIR}/output/share/openenclave/openenclaverc
     @ONLY)
 
 # Install the openenclaverc script.
 install(FILES
-    ${CMAKE_BINARY_DIR}/output/share/openenclaverc
+    ${CMAKE_BINARY_DIR}/output/share/openenclave/openenclaverc
     DESTINATION
-    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}")
+    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/openenclave")

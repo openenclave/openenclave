@@ -64,13 +64,16 @@ int main(int argc, const char* argv[])
 
     const uint32_t flags = oe_get_create_flags();
 
-    result = oe_create_enclave(argv[1], type, flags, NULL, 0, &enclave_1);
+    result = oe_create_enclaveparam_enclave(
+        argv[1], type, flags, NULL, 0, &enclave_1);
     OE_TEST(result == OE_OK);
 
-    result = oe_create_enclave(argv[1], type, flags, NULL, 0, &enclave_2);
+    result = oe_create_enclaveparam_enclave(
+        argv[1], type, flags, NULL, 0, &enclave_2);
     OE_TEST(result == OE_OK);
 
-    result = oe_create_enclave(argv[1], type, flags, NULL, 0, &enclave_3);
+    result = oe_create_enclaveparam_enclave(
+        argv[1], type, flags, NULL, 0, &enclave_3);
     OE_TEST(result == OE_OK);
 
     /* Call into enclave a, which calls callback_1 */

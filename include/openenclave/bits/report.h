@@ -4,7 +4,7 @@
 /**
  * @file report.h
  *
- * This file defines structures and options passed to GetReport functions.
+ * This file defines structures and options passed to oe_get_report functions.
  *
  */
 #ifndef _OE_BITS_REPORT_H
@@ -16,7 +16,7 @@
 OE_EXTERNC_BEGIN
 
 /**
- * Flags passed to GetReport functions on host and enclave.
+ * Flags passed to oe_get_report functions on host and enclave.
  * Default value (0) is local attestation.
  */
 #define OE_REPORT_FLAGS_REMOTE_ATTESTATION 0x00000001

@@ -130,6 +130,21 @@ struct prctl_mm_map {
 #define PR_CAP_AMBIENT_LOWER    3
 #define PR_CAP_AMBIENT_CLEAR_ALL 4
 
+#define PR_SVE_SET_VL           50
+#define PR_SVE_SET_VL_ONEXEC (1 << 18)
+#define PR_SVE_GET_VL           51
+#define PR_SVE_VL_LEN_MASK 0xffff
+#define PR_SVE_VL_INHERIT (1 << 17)
+
+#define PR_GET_SPECULATION_CTRL 52
+#define PR_SET_SPECULATION_CTRL 53
+#define PR_SPEC_STORE_BYPASS 0
+#define PR_SPEC_NOT_AFFECTED 0
+#define PR_SPEC_PRCTL (1UL << 0)
+#define PR_SPEC_ENABLE (1UL << 1)
+#define PR_SPEC_DISABLE (1UL << 2)
+#define PR_SPEC_FORCE_DISABLE (1UL << 3)
+
 int prctl (int, ...);
 
 #ifdef __cplusplus

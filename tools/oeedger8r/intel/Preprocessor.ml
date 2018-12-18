@@ -51,6 +51,12 @@ let read_process (command : string) : Unix.process_status * string =
 
 (*Return None if gcc not found, caller should handle it*)
 let processor_macro ( full_path : string) : string option=
+  None
+ (* 
+  Preprocessor is disabled because:
+    1. It causes edger8r to print incorrect line numbers in error messages.
+    2. It does not work in windows.
+
   let gcc_path = snd (read_process "which gcc") in
   if not (String.contains gcc_path  '/' ) then
     (eprintf "warning: preprocessor is not found\n"; None)
@@ -66,3 +72,4 @@ let processor_macro ( full_path : string) : string option=
         else
           Some(snd output)
       | _ -> failwithf "Preprocessor stopped by signal\n"  
+*)

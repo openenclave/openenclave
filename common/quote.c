@@ -9,6 +9,7 @@
 #include <openenclave/internal/sha.h>
 #include <openenclave/internal/utils.h>
 #include "common.h"
+#include "qeidentity.h"
 #include "revocation.h"
 
 #ifdef OE_USE_LIBSGX
@@ -20,26 +21,14 @@ static const char* g_expected_root_certificate_key =
     "SLRFhWGjbnBVJfVnkY4u3IjkDYYL0MxO4mqsyYjlBalTVYxFP2sJBK5zlA==\n"
     "-----END PUBLIC KEY-----\n";
 
-// The mrsigner value of Intel's Production quoting enclave.
-static const uint8_t g_qe_mrsigner[32] = {
-    0x8c, 0x4f, 0x57, 0x75, 0xd7, 0x96, 0x50, 0x3e, 0x96, 0x13, 0x7f,
-    0x77, 0xc6, 0x8a, 0x82, 0x9a, 0x00, 0x56, 0xac, 0x8d, 0xed, 0x70,
-    0x14, 0x0b, 0x08, 0x1b, 0x09, 0x44, 0x90, 0xc5, 0x7b, 0xff};
-
-// The isvprodid value of Intel's Production quoting enclave.
-static const uint32_t g_qe_isvprodid = 1;
-
-// The isvsvn value of Intel's Production quoting enclave.
-static const uint32_t g_qeisvsvn = 1;
-
 OE_INLINE uint16_t ReadUint16(const uint8_t* p)
 {
-    return p[0] | (p[1] << 8);
+    return (uint16_t)(p[0] | (p[1] << 8));
 }
 
 OE_INLINE uint32_t ReadUint32(const uint8_t* p)
 {
-    return p[0] | (p[1] << 8) | (p[2] << 16) | (p[3] << 24);
+    return (uint32_t)(p[0] | (p[1] << 8) | (p[2] << 16) | (p[3] << 24));
 }
 
 static oe_result_t _parse_quote(
@@ -176,6 +165,11 @@ oe_result_t VerifyQuoteImpl(
     oe_ec_public_key_t expected_root_public_key = {0};
     bool key_equal = false;
 
+    OE_UNUSED(pck_crl);
+    OE_UNUSED(pck_crl_size);
+    OE_UNUSED(tcb_info_json);
+    OE_UNUSED(tcb_info_json_size);
+
     OE_CHECK(
         _parse_quote(
             quote,
@@ -290,25 +284,7 @@ oe_result_t VerifyQuoteImpl(
     }
 
     // Quoting Enclave validations.
-    {
-        // Assert that the qe report's MRSIGNER matches Intel's quoting
-        // enclave's mrsigner.
-        if (!oe_constant_time_mem_equal(
-                quote_auth_data->qe_report_body.mrsigner,
-                g_qe_mrsigner,
-                sizeof(g_qe_mrsigner)))
-            OE_RAISE(OE_VERIFY_FAILED);
-
-        if (quote_auth_data->qe_report_body.isvprodid != g_qe_isvprodid)
-            OE_RAISE(OE_VERIFY_FAILED);
-
-        if (quote_auth_data->qe_report_body.isvsvn != g_qeisvsvn)
-            OE_RAISE(OE_VERIFY_FAILED);
-
-        // Ensure that the QE is not a debug supporting enclave.
-        if (quote_auth_data->qe_report_body.attributes.flags & SGX_FLAGS_DEBUG)
-            OE_RAISE(OE_VERIFY_FAILED);
-    }
+    OE_CHECK(oe_enforce_qe_identity(&quote_auth_data->qe_report_body));
     result = OE_OK;
 
 done:
@@ -346,5 +322,4 @@ oe_result_t VerifyQuoteImpl(
 
     return OE_UNSUPPORTED;
 }
-
 #endif

@@ -18,6 +18,7 @@
 #define MAP_STACK      0x40000
 #undef MAP_HUGETLB
 #define MAP_HUGETLB    0x80000
+#undef MAP_SYNC
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 #undef MADV_SOFT_OFFLINE

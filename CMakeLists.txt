@@ -5,7 +5,7 @@
 #
 # Please read The Ultimate Guide to CMake:
 # https://rix0r.nl/blog/2015/08/13/cmake-guide/
-cmake_minimum_required(VERSION 3.5.1 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
 
 # Read version from "VERSION" file.
 file(STRINGS "VERSION" OE_VERSION_WITH_V)
@@ -88,6 +88,7 @@ include(add_enclave_test)
 add_subdirectory(host)
 add_subdirectory(include)
 add_subdirectory(tests)
+add_subdirectory(tools)
 
 if (UNIX)
   add_subdirectory(3rdparty)
@@ -99,5 +100,4 @@ if (UNIX)
   add_subdirectory(libcxx)
   add_subdirectory(pkgconfig)
   add_subdirectory(samples)
-  add_subdirectory(tools)
 endif ()

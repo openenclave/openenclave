@@ -31,7 +31,7 @@ void Pong(const char* in, char* out)
 
 static char buf[128];
 
-int main_shared(int argc, const char* argv[])
+OE_EXPORT int main_shared(int argc, const char* argv[])
 {
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
@@ -44,7 +44,7 @@ int main_shared(int argc, const char* argv[])
 
     const uint32_t flags = oe_get_create_flags();
 
-    result = oe_create_enclave(
+    result = oe_create_pingpong_enclave(
         argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
     if (result != OE_OK)
     {

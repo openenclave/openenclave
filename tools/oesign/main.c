@@ -13,6 +13,8 @@
 #include "../host/enclave.h"
 
 static const char* arg0;
+int oedump(const char*);
+int oesign(const char*, const char*, const char*);
 
 OE_PRINTF_FORMAT(1, 2)
 void Err(const char* format, ...)
@@ -37,74 +39,33 @@ static char* _make_signed_lib_name(const char* path)
     if ((!(p = strrchr(path, '.'))) || (strcmp(p, ".so") != 0))
         p = path + strlen(path);
 
-    mem_append(&buf, path, p - path);
+    mem_append(&buf, path, (size_t)(p - path));
     mem_append(&buf, ".signed.so", 11);
 
     return (char*)mem_steal(&buf);
 }
 
-static int _update_and_write_shared_lib(
+static oe_result_t _update_and_write_shared_lib(
     const char* path,
     const oe_sgx_enclave_properties_t* properties)
 {
-    int rc = -1;
-    elf64_t elf;
+    oe_result_t rc = OE_FAILURE;
+    oe_enclave_image_t oeimage;
     FILE* os = NULL;
 
     /* Open ELF file */
-    if (elf64_load(path, &elf) != 0)
+    if (oe_load_enclave_image(path, &oeimage) != OE_OK)
     {
         Err("cannot load ELF file: %s", path);
         goto done;
     }
 
-    /* Verify that this enclave contains required symbols */
-    {
-        elf64_sym_t sym;
-
-        if (elf64_find_symbol_by_name(&elf, "_start", &sym) != 0)
-        {
-            Err("entry point not found: _start()");
-            goto done;
-        }
-
-        if (elf64_find_symbol_by_name(&elf, "oe_num_pages", &sym) != 0)
-        {
-            Err("oe_num_pages() undefined");
-            goto done;
-        }
-
-        if (elf64_find_symbol_by_name(&elf, "oe_base_heap_page", &sym) != 0)
-        {
-            Err("oe_base_heap_page() undefined");
-            goto done;
-        }
-
-        if (elf64_find_symbol_by_name(&elf, "oe_num_heap_pages", &sym) != 0)
-        {
-            Err("oe_num_heap_pages() undefined");
-            goto done;
-        }
-
-        if (elf64_find_symbol_by_name(&elf, "oe_virtual_base_addr", &sym) != 0)
-        {
-            Err("oe_virtual_base_addr() undefined");
-            goto done;
-        }
-    }
-
     // Update or create a new .oeinfo section.
     if (oe_sgx_update_enclave_properties(
-            &elf, OE_INFO_SECTION_NAME, properties) != OE_OK)
+            &oeimage, OE_INFO_SECTION_NAME, properties) != OE_OK)
     {
-        if (elf64_add_section(
-                &elf,
-                OE_INFO_SECTION_NAME,
-                SHT_PROGBITS,
-                properties,
-                sizeof(oe_sgx_enclave_properties_t)) != 0)
         {
-            Err("failed to add section: %s", OE_INFO_SECTION_NAME);
+            Err("section doesn't exist: %s", OE_INFO_SECTION_NAME);
             goto done;
         }
     }
@@ -125,7 +86,8 @@ static int _update_and_write_shared_lib(
             goto done;
         }
 
-        if (fwrite(elf.data, 1, elf.size, os) != elf.size)
+        if (fwrite(oeimage.u.elf.elf.data, 1, oeimage.u.elf.elf.size, os) !=
+            oeimage.u.elf.elf.size)
         {
             Err("failed to write: %s", p);
             goto done;
@@ -139,14 +101,14 @@ static int _update_and_write_shared_lib(
         free(p);
     }
 
-    rc = 0;
+    rc = OE_OK;
 
 done:
 
     if (os)
         fclose(os);
 
-    elf64_unload(&elf);
+    oeimage.unload(&oeimage);
 
     return rc;
 }
@@ -343,7 +305,7 @@ done:
     return rc;
 }
 
-static int _load_file(const char* path, void** data, size_t* size)
+static int _load_pem_file(const char* path, void** data, size_t* size)
 {
     int rc = -1;
     FILE* is = NULL;
@@ -365,11 +327,15 @@ static int _load_file(const char* path, void** data, size_t* size)
         if (stat(path, &st) != 0)
             goto done;
 
-        *size = st.st_size;
+        *size = (size_t)st.st_size;
     }
 
-    /* Allocate memory */
-    if (!(*data = (uint8_t*)malloc(*size)))
+    /* Allocate memory. We add 1 to null terimate the file since the crypto
+     * libraries require null terminated PEM data. */
+    if (*size == SIZE_MAX)
+        goto done;
+
+    if (!(*data = (uint8_t*)malloc(*size + 1)))
         goto done;
 
     /* Open the file */
@@ -379,6 +345,13 @@ static int _load_file(const char* path, void** data, size_t* size)
     /* Read file into memory */
     if (fread(*data, 1, *size, is) != *size)
         goto done;
+
+    /* Zero terminate the PEM data. */
+    {
+        uint8_t* data_tmp = (uint8_t*)*data;
+        data_tmp[*size] = 0;
+        *size += 1;
+    }
 
     rc = 0;
 
@@ -408,7 +381,10 @@ static oe_result_t _sgx_load_enclave_properties(
     oe_sgx_enclave_properties_t* properties)
 {
     oe_result_t result = OE_UNEXPECTED;
-    elf64_t elf = ELF64_INIT;
+    oe_enclave_image_t oeimage;
+
+    /* clear ELF magic */
+    oeimage.u.elf.elf.magic = 0;
 
     if (properties)
         memset(properties, 0, sizeof(oe_sgx_enclave_properties_t));
@@ -418,21 +394,19 @@ static oe_result_t _sgx_load_enclave_properties(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Load the ELF image */
-    if (elf64_load(path, &elf) != 0)
-        OE_RAISE(OE_FAILURE);
+    OE_CHECK(oe_load_enclave_image(path, &oeimage));
 
     /* Load the SGX enclave properties */
-    if (oe_sgx_load_properties(&elf, OE_INFO_SECTION_NAME, properties) != OE_OK)
-    {
-        OE_RAISE(OE_NOT_FOUND);
-    }
+    OE_CHECK(
+        oe_sgx_load_enclave_properties(
+            &oeimage, OE_INFO_SECTION_NAME, properties));
 
     result = OE_OK;
 
 done:
 
-    if (elf.magic == ELF_MAGIC)
-        elf64_unload(&elf);
+    if (oeimage.u.elf.elf.magic == ELF_MAGIC)
+        oeimage.unload(&oeimage);
 
     return result;
 }
@@ -444,6 +418,7 @@ void _merge_config_file_options(
     const ConfigFileOptions* options)
 {
     bool initialized = false;
+    OE_UNUSED(path);
 
     /* Determine whether the properties are already initialized */
     if (properties->header.size == sizeof(oe_sgx_enclave_properties_t))
@@ -484,13 +459,23 @@ void _merge_config_file_options(
         properties->header.size_settings.num_tcs = options->num_tcs;
 }
 
-static const char _usage[] =
-    "Usage: %s EnclaveImage ConfigFile KeyFile\n"
+static const char _usage_gen[] =
+    "Usage: %s <command> [options]\n"
+    "\n"
+    "Commands:\n"
+    "    sign  -  Sign the specified enclave.\n"
+    "    dump  -  Print out the Open Enclave metadata for the specified "
+    "enclave.\n"
+    "\n"
+    "For help with a specific command, enter \"%s <command> -?\"\n";
+
+static const char _usage_sign[] =
+    "Usage: %s sign enclave_image config_file key_file\n"
     "\n"
     "Where:\n"
-    "    EnclaveImage -- path of an enclave image file\n"
-    "    ConfigFile -- configuration file containing enclave properties\n"
-    "    KeyFile -- private key file used to digitally sign the image\n"
+    "    enclave_image -- path of an enclave image file\n"
+    "    config_file -- configuration file containing enclave properties\n"
+    "    key_file -- private key file used to digitally sign the image\n"
     "\n"
     "Description:\n"
     "    This utility (1) injects runtime properties into an enclave image "
@@ -525,32 +510,27 @@ static const char _usage[] =
     "    The resulting image is written to <EnclaveImage>.signed.so.\n"
     "\n";
 
-int main(int argc, const char* argv[])
+static const char _usage_dump[] =
+    "\n"
+    "Usage: %s dump enclave_image\n"
+    "\n"
+    "Where:\n"
+    "    enclave_image -- path of an enclave image file\n"
+    "\n"
+    "Description:\n"
+    "    This option dumps the oeinfo and signature information of an "
+    "enclave\n";
+
+int oesign(const char* enclave, const char* conffile, const char* keyfile)
 {
-    arg0 = argv[0];
     int ret = 1;
     oe_result_t result;
-    const char* enclave;
-    const char* conffile;
-    const char* keyfile;
     oe_enclave_t enc;
     void* pem_data = NULL;
     size_t pem_size;
     ConfigFileOptions options = CONFIG_FILE_OPTIONS_INITIALIZER;
     oe_sgx_enclave_properties_t props;
     oe_sgx_load_context_t context;
-
-    /* Check arguments */
-    if (argc != 4)
-    {
-        fprintf(stderr, _usage, arg0);
-        exit(1);
-    }
-
-    /* Collect arguments */
-    enclave = argv[1];
-    conffile = argv[2];
-    keyfile = argv[3];
 
     /* Load the configuration file */
     if (_load_config_file(conffile, &options) != 0)
@@ -614,7 +594,7 @@ int main(int argc, const char* argv[])
     }
 
     /* Load private key into memory */
-    if (_load_file(keyfile, &pem_data, &pem_size) != 0)
+    if (_load_pem_file(keyfile, &pem_data, &pem_size) != 0)
     {
         Err("Failed to load file: %s", keyfile);
         goto done;
@@ -654,5 +634,157 @@ done:
 
     oe_sgx_cleanup_load_context(&context);
 
+    return ret;
+}
+
+int dump_parser(const char* argv[])
+{
+    int ret = 1;
+    const char* enclave;
+
+    if (strcmp(argv[2], "-?") == 0)
+    {
+        fprintf(stderr, _usage_dump, argv[0]);
+        exit(1);
+    }
+    else
+    {
+        if (strstr(argv[2], "_enc") != NULL)
+        {
+            enclave = argv[2];
+            /* dump oeinfo and signature information */
+            ret = oedump(enclave);
+        }
+        else
+        {
+            fprintf(stderr, _usage_gen, argv[0], argv[0]);
+            exit(1);
+        }
+    }
+
+    return ret;
+}
+
+int sign_parser(int argc, const char* argv[])
+{
+    int ret = 1;
+    const char* enclave;
+    const char* conffile;
+    const char* keyfile;
+
+    if (strcmp(argv[2], "-?") == 0)
+    {
+        fprintf(stderr, _usage_sign, argv[0]);
+        exit(1);
+    }
+    else if (argc == 5)
+    {
+        if (strstr(argv[2], "enc") != NULL)
+        {
+            enclave = argv[2];
+            if (strstr(argv[3], "conf") != NULL)
+            {
+                /* Collect arguments for signing*/
+                conffile = argv[3];
+                keyfile = argv[4];
+            }
+            else if (strstr(argv[3], "pem") != NULL)
+            {
+                /* Collect arguments for signing*/
+                keyfile = argv[3];
+                conffile = argv[4];
+            }
+            else
+            {
+                fprintf(stderr, _usage_gen, argv[0], argv[0]);
+                exit(1);
+            }
+        }
+        else if (strstr(argv[3], "enc") != NULL)
+        {
+            enclave = argv[3];
+            if (strstr(argv[2], "conf") != NULL)
+            {
+                /* Collect arguments for signing*/
+                conffile = argv[2];
+                keyfile = argv[4];
+            }
+            else if (strstr(argv[2], "pem") != NULL)
+            {
+                /* Collect arguments for signing*/
+                keyfile = argv[2];
+                conffile = argv[4];
+            }
+            else
+            {
+                fprintf(stderr, _usage_gen, argv[0], argv[0]);
+                exit(1);
+            }
+        }
+        else if (strstr(argv[4], "enc") != NULL)
+        {
+            enclave = argv[4];
+            if (strstr(argv[2], "conf") != NULL)
+            {
+                /* Collect arguments for signing*/
+                conffile = argv[2];
+                keyfile = argv[3];
+            }
+            else if (strstr(argv[2], "pem") != NULL)
+            {
+                /* Collect arguments for signing*/
+                keyfile = argv[2];
+                conffile = argv[3];
+            }
+            else
+            {
+                fprintf(stderr, _usage_gen, argv[0], argv[0]);
+                exit(1);
+            }
+        }
+        else
+        {
+            fprintf(stderr, _usage_gen, argv[0], argv[0]);
+            exit(1);
+        }
+    }
+    else
+    {
+        fprintf(stderr, _usage_gen, argv[0], argv[0]);
+        exit(1);
+    }
+
+    ret = oesign(enclave, conffile, keyfile);
+
+    return ret;
+}
+
+int arg_handler(int argc, const char* argv[])
+{
+    int ret = 1;
+    if ((strcmp(argv[1], "dump") == 0))
+        ret = dump_parser(argv);
+    else if ((strcmp(argv[1], "sign") == 0))
+        ret = sign_parser(argc, argv);
+    else
+    {
+        fprintf(stderr, _usage_gen, argv[0], argv[0]);
+        exit(1);
+    }
+    return ret;
+}
+
+int main(int argc, const char* argv[])
+{
+    arg0 = argv[0];
+    int ret = 1;
+
+    if (argc <= 2)
+    {
+        fprintf(stderr, _usage_gen, argv[0], argv[0]);
+        exit(1);
+    }
+
+    ret = arg_handler(argc, argv);
     return ret;
 }

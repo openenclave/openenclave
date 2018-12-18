@@ -23,11 +23,11 @@ int main()
 	A(write(p[1], "\200", 1) == 1);
 	close(p[1]);
 
-	errno = 0;
 	wc = fgetwc(stdin);
 	if (wc != 0x800)
 		t_error("wanted 0x800, got 0x%x\n", (unsigned)wc);
 
+	errno = 0;
 	wc = fgetwc(stdin);
 	if (wc != WEOF)
 		t_error("wanted WEOF, got 0x%x\n", (unsigned)wc);

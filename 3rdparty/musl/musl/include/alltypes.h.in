@@ -7,10 +7,10 @@ TYPEDEF _Addr regoff_t;
 TYPEDEF _Reg register_t;
 
 TYPEDEF signed char     int8_t;
-TYPEDEF short           int16_t;
-TYPEDEF int             int32_t;
-TYPEDEF _Int64          int64_t;
-TYPEDEF _Int64          intmax_t;
+TYPEDEF signed short    int16_t;
+TYPEDEF signed int      int32_t;
+TYPEDEF signed _Int64   int64_t;
+TYPEDEF signed _Int64   intmax_t;
 TYPEDEF unsigned char   uint8_t;
 TYPEDEF unsigned short  uint16_t;
 TYPEDEF unsigned int    uint32_t;

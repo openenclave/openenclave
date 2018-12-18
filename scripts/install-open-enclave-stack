@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+# This function will call apt-key on the specified APT key if it matches a given fingerprint
+# $1 should be the URL to the key
+# $2 should be the file name of the key
+# $3 should be the fingerprint of the key
+verify_fingerprint_and_install_key() {
+    wget -q "$1"
+    # Verify fingerprint
+    if ! (gpg --homedir /dev/null --with-fingerprint "$2" 2> /dev/null \
+        | grep fingerprint | grep -E "$3"); then
+        echo "Error: $2 did not have expected fingerprint."
+        exit 1
+    fi
+    apt-key add "$2"
+    rm "$2"
+}
+
+echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu xenial main' | tee /etc/apt/sources.list.d/intel-sgx.list
+verify_fingerprint_and_install_key "https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key" "intel-sgx-deb.key" '9AD0 8BD9 3408 239D 1C69 +0A2A 72CD 667C A47F F1E5'
+
+echo "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" | tee /etc/apt/sources.list.d/llvm-toolchain-xenial-7.list
+verify_fingerprint_and_install_key "https://apt.llvm.org/llvm-snapshot.gpg.key" "llvm-snapshot.gpg.key" "6084 F3CF 814B 57C1 CF12 +EFD5 15CF 4D18 AF4F 7421"
+
+echo "deb [arch=amd64] https://packages.microsoft.com/ubuntu/16.04/prod xenial main" | tee /etc/apt/sources.list.d/msprod.list
+verify_fingerprint_and_install_key "https://packages.microsoft.com/keys/microsoft.asc" "microsoft.asc" "BC52 8686 B50D 79E3 39D3 +721C EB3E 94AD BE12 29CF"
+
+apt-get update
+apt-get -y install clang-7 libssl-dev make gcc gdb g++ pkg-config
+
+wget https://download.01.org/intel-sgx/dcap-1.0/sgx_linux_x64_driver_dcap_36594a7.bin -O sgx_linux_x64_driver.bin
+chmod +x sgx_linux_x64_driver.bin
+./sgx_linux_x64_driver.bin
+
+apt-get -y install libsgx-enclave-common libsgx-enclave-common-dev libsgx-dcap-ql libsgx-dcap-ql-dev az-dcap-client open-enclave

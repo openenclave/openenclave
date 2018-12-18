@@ -1,0 +1,16 @@
+{
+   "qeIdentity":  
+         {
+           "version":1,
+           "issueDate":"2018-10-18T01:26:20Z",
+           "nextUpdate":"2018-11-17T01:26:20Z",
+           "miscselect":"00000000",
+           "miscselectMask":"FFFFFFFF",
+           "attributes":"11000000000000000000000000000000",
+           "attributesMask":"FBFFFFFFFFFFFFFF0000000000000000",
+           "mrsigner":"8C4F5775D796503E96137F77C68A829A0056AC8DED70140B081B094490C57BFF",
+           "isvprodid":1,
+           "isvsvn":1
+           },
+
+}

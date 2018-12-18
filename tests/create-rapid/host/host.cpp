@@ -20,8 +20,8 @@ static void _launch_enclave(const char* path, uint32_t flags, bool call_enclave)
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
 
-    result =
-        oe_create_enclave(path, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
+    result = oe_create_create_rapid_enclave(
+        path, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
 
     if (result != OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);
@@ -65,7 +65,7 @@ static void _test_simultaneous(
     int num_enclaves = 0;
     for (; num_enclaves < MAX_SIMULTANEOUS_ENCLAVES; num_enclaves++)
     {
-        result = oe_create_enclave(
+        result = oe_create_create_rapid_enclave(
             path, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclaves[num_enclaves]);
 
         if (result != OE_OK)

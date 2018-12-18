@@ -43,14 +43,17 @@
 FROM ubuntu:16.04
 
 RUN \
-  apt-get update && apt-get install --no-install-recommends -y wget ca-certificates \
+  apt-get update && apt-get install --no-install-recommends -y wget ca-certificates apt-transport-https \
   # Install the LLVM 7 toolchain repo.
-  && echo "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" >> /etc/apt/sources.list.d/llvm-toolchain-xenial-7.list \
-  && echo "deb-src http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" >> /etc/apt/sources.list.d/llvm-toolchain-xenial-7.list \
-  && wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
+  && echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu xenial main' | tee /etc/apt/sources.list.d/intel-sgx.list \
+  && wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add - \
+  && echo "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" | tee /etc/apt/sources.list.d/llvm-toolchain-xenial-7.list \
+  && wget -qO - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
+  && echo "deb [arch=amd64] https://packages.microsoft.com/ubuntu/16.04/prod xenial main" | tee /etc/apt/sources.list.d/msprod.list \
+  && wget -qO - https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
   && apt-get update \
   # Install Clang 7 to build with Spectre mitigation.
-  && apt-get install --no-install-recommends -y clang-7 lldb-7 lld-7 \
+  && apt-get install --no-install-recommends -y clang-7 \
   # Install all the packages specified in install-prereqs except CMake.
   && apt-get install --no-install-recommends -y \
   # Please keep these sorted alphabetically.
@@ -79,38 +82,21 @@ RUN \
   shellcheck \
   subversion \
   sudo \
+  libsgx-enclave-common \
+  libsgx-enclave-common-dev \
+  libsgx-dcap-ql \
+  libsgx-dcap-ql-dev \
+  az-dcap-client \
   && rm -rf /var/lib/apt/lists/*
 
 # Install packages not available in repositories.
-ARG webserver=10.31.100.105
 RUN \
-  # Install CMake 3.12 so that skipped tests are not marked as failures.
-  wget https://cmake.org/files/v3.12/cmake-3.12.2-Linux-x86_64.tar.gz \
-  && tar xf cmake-3.12.2-Linux-x86_64.tar.gz \
-  && rm cmake-3.12.2-Linux-x86_64.tar.gz \
-  # Install the Intel DCAP dependencies.
-  && wget https://download.01.org/intel-sgx/dcap-1.0/SGX_installers/ubuntu16.04/libsgx-enclave-common_2.3.100.46354-1_amd64.deb \
-  && dpkg -i libsgx-enclave-common_2.3.100.46354-1_amd64.deb \
-  && rm      libsgx-enclave-common_2.3.100.46354-1_amd64.deb \
-  && wget https://download.01.org/intel-sgx/sgx_repo/ubuntu/pool/main/libs/libsgx-enclave-common-dev/libsgx-enclave-common-dev_2.3.100.0-1_amd64.deb \
-  && dpkg -i libsgx-enclave-common-dev_2.3.100.0-1_amd64.deb \
-  && rm      libsgx-enclave-common-dev_2.3.100.0-1_amd64.deb \
-  && wget https://download.01.org/intel-sgx/dcap-1.0/DCAP_installers/ubuntu16.04/libsgx-dcap-ql_1.0.100.46460-1.0_amd64.deb \
-  && dpkg -i libsgx-dcap-ql_1.0.100.46460-1.0_amd64.deb \
-  && rm      libsgx-dcap-ql_1.0.100.46460-1.0_amd64.deb \
-  && wget https://download.01.org/intel-sgx/dcap-1.0/DCAP_installers/ubuntu16.04/libsgx-dcap-ql-dev_1.0.100.46460-1.0_amd64.deb \
-  && dpkg -i libsgx-dcap-ql-dev_1.0.100.46460-1.0_amd64.deb \
-  && rm      libsgx-dcap-ql-dev_1.0.100.46460-1.0_amd64.deb \
-  && wget https://download.01.org/intel-sgx/dcap-1.0/sgx_linux_x64_driver_dcap_36594a7.bin -O sgx_linux_x64_driver.bin \
-  && chmod +x sgx_linux_x64_driver.bin \
-  && mkdir -p /opt/bits \
-  && mv       sgx_linux_x64_driver.bin /opt/bits \
-  # Install the Azure Quote Provider package.
-  && wget http://$webserver/azquotprov_0.3-1_amd64.deb \
-  && dpkg -i azquotprov_0.3-1_amd64.deb \
-  && rm      azquotprov_0.3-1_amd64.deb
+  # Install CMake 3.13.1
+  wget https://cmake.org/files/v3.13/cmake-3.13.1-Linux-x86_64.tar.gz \
+  && tar xf cmake-3.13.1-Linux-x86_64.tar.gz \
+  && rm cmake-3.13.1-Linux-x86_64.tar.gz 
 
-ENV PATH="/cmake-3.12.2-Linux-x86_64/bin:${PATH}"
+ENV PATH="/cmake-3.13.1-Linux-x86_64/bin:${PATH}"
 
 # Configure Git in target image to enable merge/rebase actions.
 RUN git config --global user.email "oeciteam@microsoft.com"

@@ -42,6 +42,7 @@ int fstatvfs (int, struct statvfs *);
 #define ST_IMMUTABLE   512
 #define ST_NOATIME     1024
 #define ST_NODIRATIME  2048
+#define ST_RELATIME    4096
 
 #if defined(_LARGEFILE64_SOURCE) || defined(_GNU_SOURCE)
 #define statvfs64 statvfs

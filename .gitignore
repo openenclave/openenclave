@@ -1,9 +1,11 @@
 *.a
 *.o
+*.pem
 *.so
 
 .vs/
 .vscode/
+graphviz/
 build/
 winbuild/
 

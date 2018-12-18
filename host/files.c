@@ -48,7 +48,7 @@ oe_result_t __oe_load_file(
         if (stat(path, &st) != 0)
             OE_RAISE(OE_NOT_FOUND);
 
-        *size = st.st_size;
+        *size = (size_t)st.st_size;
     }
 
     /* Check for integer overflow */
@@ -100,14 +100,14 @@ oe_result_t __oe_load_pages(const char* path, oe_page_t** pages, size_t* npages)
 
     /* Reject invalid parameters */
     if (!path || !pages || !npages)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Load the file into memory with zero extra bytes */
-    OE_TRY(__oe_load_file(path, 0, &data, &size));
+    OE_CHECK(__oe_load_file(path, 0, &data, &size));
 
     /* Fail if file size is not a multiple of the page size */
     if (size % OE_PAGE_SIZE)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Set the output parameters */
     *pages = ((oe_page_t*)data);
@@ -115,7 +115,7 @@ oe_result_t __oe_load_pages(const char* path, oe_page_t** pages, size_t* npages)
 
     result = OE_OK;
 
-OE_CATCH:
+done:
 
     if (result != OE_OK)
         free(data);

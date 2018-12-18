@@ -54,13 +54,40 @@ void test_cert_chain_positive(
             std::vector<const char*>{intermediate, root}, &chain) == OE_OK);
 
     // Two leaf certs in chain, but starts at intermediate.
-    // For successful validation, for each cert in the chain, its
-    // ancestor (i.e. its CA certificate) must occur at least once to
-    // its right.
+    // For successful validation, each cert's issuer must also be present in the
+    // chain. The order does not matter. The chain will be reordered internally
+    // to leaf->intermediate->root.
+    //
     OE_TEST(
         create_and_read_chain(
             std::vector<const char*>{
                 intermediate, leaf, leaf2, intermediate, root},
+            &chain) == OE_OK);
+
+    // Incorrect order. This is accepted and fixed internally.
+    OE_TEST(
+        create_and_read_chain(
+            std::vector<const char*>{intermediate, leaf, root}, &chain) ==
+        OE_OK);
+
+    // Reverse order. This is accepted and fixed internally.
+    OE_TEST(
+        create_and_read_chain(
+            std::vector<const char*>{root, intermediate, leaf}, &chain) ==
+        OE_OK);
+
+    // Order rotated 1 time.
+    // As a consequence, root is not last.
+    // This is accepted and fixed internally.
+    OE_TEST(
+        create_and_read_chain(
+            std::vector<const char*>{intermediate, root, leaf}, &chain) ==
+        OE_OK);
+
+    // Incorrect order. Leaf2 is not followed by intermediate.
+    OE_TEST(
+        create_and_read_chain(
+            std::vector<const char*>{leaf, intermediate, leaf2, root},
             &chain) == OE_OK);
 
     oe_cert_chain_free(&chain);
@@ -75,25 +102,7 @@ void test_cert_chain_negative(
     const char* leaf2)
 {
     oe_cert_chain_t chain = {0};
-
-    // Incorrect order.
-    OE_TEST(
-        create_and_read_chain(
-            std::vector<const char*>{intermediate, leaf, root}, &chain) ==
-        OE_FAILURE);
-
-    // Reverse order.
-    OE_TEST(
-        create_and_read_chain(
-            std::vector<const char*>{root, intermediate, leaf}, &chain) ==
-        OE_FAILURE);
-
-    // Order rotated 1 time.
-    // As a consequence, root is not last.
-    OE_TEST(
-        create_and_read_chain(
-            std::vector<const char*>{intermediate, root, leaf}, &chain) ==
-        OE_FAILURE);
+    OE_UNUSED(leaf2);
 
     // Missing cert in chain.
     OE_TEST(
@@ -106,12 +115,6 @@ void test_cert_chain_negative(
         create_and_read_chain(
             std::vector<const char*>{leaf, intermediate}, &chain) ==
         OE_FAILURE);
-
-    // Incorrect order. Leaf2 is not followed by intermediate.
-    OE_TEST(
-        create_and_read_chain(
-            std::vector<const char*>{leaf, intermediate, leaf2, root},
-            &chain) == OE_FAILURE);
 
     oe_cert_chain_free(&chain);
     printf("===test_cert_chain_negative passed\n");

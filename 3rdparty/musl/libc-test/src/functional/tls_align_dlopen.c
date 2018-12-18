@@ -18,8 +18,7 @@ int main()
 	t = dlsym(h, "t");
 	if (!t)
 		t_error("dlsym failed\n");
-
-	for (i = 0; i < 4; i++) {
+	else for (i = 0; i < 4; i++) {
 		if (!t[i].name)
 			t_error("name is not set for t[%d]\n", i);
 		if (t[i].addr & (t[i].align-1))

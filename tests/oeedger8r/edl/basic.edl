@@ -2,30 +2,50 @@
 // Licensed under the MIT License.
 
 enclave  {
-    trusted {
-        
+    // Enum for primitive types.
+    // Currently only supports non portable types.
+    enum type_enum_t {
+        TYPE_WCHAR_T,
+        TYPE_LONG,
+        TYPE_UNSIGNED_LONG,
+        TYPE_LONG_DOUBLE
+    };
+
+    trusted {        
+
         /* Test all basic type parameters */
         public void ecall_basic_types(
             char arg1, 
-            wchar_t arg2, 
-            short arg3, 
-            int arg4, 
-            float arg5, 
-            double arg6, 
-            long arg7, 
-            size_t arg8, 
-            unsigned arg9,
-            int8_t arg10, 
-            int16_t arg11, 
-            int32_t arg12, 
-            int64_t arg13,
-            uint8_t arg14, 
-            uint16_t arg15, 
-            uint32_t arg16, 
-            uint64_t arg17,
-            long long arg18,
-            long double arg19
+            short arg2, 
+            int arg3, 
+            float arg4, 
+            double arg5, 
+            size_t arg6, 
+            unsigned arg7,
+            int8_t arg8, 
+            int16_t arg9, 
+            int32_t arg10, 
+            int64_t arg11,
+            uint8_t arg12, 
+            uint16_t arg13, 
+            uint32_t arg14, 
+            uint64_t arg15,
+            long long arg16,
+            unsigned char arg17,
+            unsigned short arg18,
+            unsigned int arg19,
+            unsigned long long arg20
         );
+
+        public void ecall_basic_non_portable_types(
+            wchar_t arg1,
+            long arg2,
+            unsigned long arg3,
+            long double arg4
+        );
+
+        // Get the size of the given type.
+        public uint64_t get_enclave_sizeof(type_enum_t t);
 
         /* Test all basic types are return type */
         public char ecall_ret_char();
@@ -46,7 +66,14 @@ enclave  {
         public uint32_t ecall_ret_uint32_t();
         public uint64_t ecall_ret_uint64_t();   
         public long long ecall_ret_long_long();
+        public unsigned char ecall_ret_unsigned_char();
+        public unsigned short ecall_ret_unsigned_short();
+        public unsigned int ecall_ret_unsigned_int();
+        public unsigned long ecall_ret_unsigned_long();
         public long double ecall_ret_long_double();
+        public unsigned long long ecall_ret_unsigned_long_long();
+        public void ecall_ret_void();
+
 
         public void test_basic_edl_ocalls();             
     };
@@ -55,25 +82,36 @@ enclave  {
         /* Test all basic type parameters */
         void ocall_basic_types(
             char arg1, 
-            wchar_t arg2, 
-            short arg3, 
-            int arg4, 
-            float arg5, 
-            double arg6, 
-            long arg7, 
-            size_t arg8, 
-            unsigned arg9,
-            int8_t arg10, 
-            int16_t arg11, 
-            int32_t arg12, 
-            int64_t arg13,
-            uint8_t arg14, 
-            uint16_t arg15, 
-            uint32_t arg16, 
-            uint64_t arg17,
-            long long arg18,
-            long double arg19
+            short arg2, 
+            int arg3, 
+            float arg4, 
+            double arg5, 
+            size_t arg6, 
+            unsigned arg7,
+            int8_t arg8, 
+            int16_t arg9, 
+            int32_t arg10, 
+            int64_t arg11,
+            uint8_t arg12, 
+            uint16_t arg13, 
+            uint32_t arg14, 
+            uint64_t arg15,
+            long long arg16,
+            unsigned char arg17,
+            unsigned short arg18,
+            unsigned int arg19,
+            unsigned long long arg20
         );
+
+        void ocall_basic_non_portable_types(
+            wchar_t arg1,
+            long arg2,
+            unsigned long arg3,
+            long double arg4
+        );        
+
+        // Get the size of the given type.
+        uint64_t get_host_sizeof(type_enum_t t);        
 
         /* Test all basic types are return type */
         char ocall_ret_char();
@@ -94,6 +132,13 @@ enclave  {
         uint32_t ocall_ret_uint32_t();
         uint64_t ocall_ret_uint64_t();     
         long long ocall_ret_long_long();
-        long double ocall_ret_long_double();             
+        unsigned char ocall_ret_unsigned_char();
+        unsigned short ocall_ret_unsigned_short();
+        unsigned int ocall_ret_unsigned_int();
+        unsigned long ocall_ret_unsigned_long();
+        long double ocall_ret_long_double();     
+        unsigned long long ocall_ret_unsigned_long_long();     
+        
+        void ocall_ret_void();        
     }; 
 };

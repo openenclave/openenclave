@@ -1,0 +1,12 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave  {
+    trusted {
+        public void enc_test_memcpy_s();
+        public void enc_test_memmove_s();
+        public void enc_test_strncpy_s();
+        public void enc_test_strncat_s();
+        public void enc_test_memset_s();
+    };
+};

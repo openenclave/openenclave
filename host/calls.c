@@ -19,11 +19,12 @@
 #endif
 
 #include <openenclave/bits/safecrt.h>
+#include <openenclave/bits/safemath.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/raise.h>
 #include <openenclave/internal/registers.h>
 #include <openenclave/internal/sgxtypes.h>
-#include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include "asmdefs.h"
 #include "enclave.h"
@@ -113,12 +114,12 @@ static oe_result_t _enter_sim(
 
     /* Reject null parameters */
     if (!enclave || !enclave->addr || !tcs || !tcs->oentry || !tcs->gsbase)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     tcs->u.entry = (void (*)(void))(enclave->addr + tcs->oentry);
 
     if (!tcs->u.entry)
-        OE_THROW(OE_NOT_FOUND);
+        OE_RAISE(OE_NOT_FOUND);
 
     /* Save old GS register base, and set new one */
     const void* gsbase;
@@ -148,7 +149,7 @@ static oe_result_t _enter_sim(
 
     result = OE_OK;
 
-OE_CATCH:
+done:
 
     return result;
 }
@@ -191,7 +192,7 @@ static oe_result_t _do_eenter(
         *arg_out = 0;
 
     if (!code_out || !func_out || !result_out || !arg_out)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     OE_TRACE_INFO(
         "_do_eenter(tcs=%p aep=%p codeIn=%d, funcIn=%x argIn=%llx)\n",
@@ -210,7 +211,7 @@ static oe_result_t _do_eenter(
 
         if (enclave->simulate)
         {
-            OE_TRY(_enter_sim(enclave, tcs, aep, arg1, arg2, &arg3, &arg4));
+            OE_CHECK(_enter_sim(enclave, tcs, aep, arg1, arg2, &arg3, &arg4));
         }
         else
         {
@@ -225,7 +226,7 @@ static oe_result_t _do_eenter(
 
     result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
@@ -332,6 +333,73 @@ done:
 /*
 **==============================================================================
 **
+** _handle_call_host_function()
+**
+** Handle calls from the enclave.
+**
+**==============================================================================
+*/
+
+static oe_result_t _handle_call_host_function(
+    uint64_t arg,
+    oe_enclave_t* enclave)
+{
+    oe_call_host_function_args_t* args_ptr = NULL;
+    oe_result_t result = OE_OK;
+    oe_ocall_func_t func = NULL;
+    size_t buffer_size = 0;
+
+    args_ptr = (oe_call_host_function_args_t*)arg;
+    if (args_ptr == NULL)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    // Input and output buffers must not be NULL.
+    if (args_ptr->input_buffer == NULL || args_ptr->output_buffer == NULL)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    // Fetch matching function.
+    if (args_ptr->function_id >= enclave->num_ocalls)
+        OE_RAISE(OE_NOT_FOUND);
+
+    func = enclave->ocalls[args_ptr->function_id];
+    if (func == NULL)
+    {
+        result = OE_NOT_FOUND;
+        goto done;
+    }
+
+    OE_CHECK(
+        oe_safe_add_u64(
+            args_ptr->input_buffer_size,
+            args_ptr->output_buffer_size,
+            &buffer_size));
+
+    // Buffer sizes must be pointer aligned.
+    if ((args_ptr->input_buffer_size % OE_EDGER8R_BUFFER_ALIGNMENT) != 0)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if ((args_ptr->output_buffer_size % OE_EDGER8R_BUFFER_ALIGNMENT) != 0)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    // Call the function.
+    func(
+        args_ptr->input_buffer,
+        args_ptr->input_buffer_size,
+        args_ptr->output_buffer,
+        args_ptr->output_buffer_size,
+        &args_ptr->output_bytes_written);
+
+    // The ocall succeeded.
+    args_ptr->result = OE_OK;
+    result = OE_OK;
+done:
+
+    return result;
+}
+
+/*
+**==============================================================================
+**
 ** _handle_ocall()
 **
 **     Handle calls from the enclave (OCALL)
@@ -349,7 +417,7 @@ static oe_result_t _handle_ocall(
     oe_result_t result = OE_UNEXPECTED;
 
     if (!enclave || !tcs)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     if (arg_out)
         *arg_out = 0;
@@ -362,6 +430,10 @@ static oe_result_t _handle_ocall(
 
         case OE_OCALL_CALL_HOST_BY_ADDRESS:
             _handle_call_host_by_address(arg_in, enclave);
+            break;
+
+        case OE_OCALL_CALL_HOST_FUNCTION:
+            _handle_call_host_function(arg_in, enclave);
             break;
 
         case OE_OCALL_MALLOC:
@@ -401,6 +473,9 @@ static oe_result_t _handle_ocall(
         case OE_OCALL_GET_REVOCATION_INFO:
             HandleGetQuoteRevocationInfo(arg_in);
             break;
+        case OE_OCALL_GET_QE_ID_INFO:
+            HandleGetQuoteEnclaveIdentityInfo(arg_in);
+            break;
 #endif
 
         case OE_OCALL_GET_QE_TARGET_INFO:
@@ -419,16 +494,20 @@ static oe_result_t _handle_ocall(
             oe_handle_backtrace_symbols(enclave, arg_in);
             break;
 
+        case OE_OCALL_LOG:
+            oe_handle_log(enclave, arg_in);
+            break;
+
         default:
         {
             /* No function found with the number */
-            OE_THROW(OE_NOT_FOUND);
+            OE_RAISE(OE_NOT_FOUND);
         }
     }
 
     result = OE_OK;
 
-OE_CATCH:
+done:
 
     return result;
 }
@@ -615,14 +694,14 @@ oe_result_t oe_ecall(
     uint64_t arg_out = 0;
 
     if (!enclave)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Assign a td_t for this operation */
     if (!(tcs = _assign_tcs(enclave)))
-        OE_THROW(OE_OUT_OF_THREADS);
+        OE_RAISE(OE_OUT_OF_THREADS);
 
     /* Perform ECALL or ORET */
-    OE_TRY(
+    OE_CHECK(
         _do_eenter(
             enclave,
             tcs,
@@ -637,14 +716,14 @@ oe_result_t oe_ecall(
 
     /* Process OCALLS */
     if (code_out != OE_CODE_ERET)
-        OE_THROW(OE_UNEXPECTED);
+        OE_RAISE(OE_UNEXPECTED);
 
     if (arg_out_ptr)
         *arg_out_ptr = arg_out;
 
     result = (oe_result_t)result_out;
 
-OE_CATCH:
+done:
 
     if (enclave && tcs)
         _release_tcs(enclave, tcs);
@@ -716,14 +795,14 @@ oe_result_t oe_call_enclave(oe_enclave_t* enclave, const char* func, void* args)
 
     /* Reject invalid parameters */
     if (!enclave || !func)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize the call_enclave_args structure */
     {
         if (!(call_enclave_args.vaddr =
                   _find_enclave_func(enclave, func, &call_enclave_args.func)))
         {
-            OE_THROW(OE_NOT_FOUND);
+            OE_RAISE(OE_NOT_FOUND);
         }
 
         call_enclave_args.args = args;
@@ -734,21 +813,84 @@ oe_result_t oe_call_enclave(oe_enclave_t* enclave, const char* func, void* args)
     {
         uint64_t arg_out = 0;
 
-        OE_TRY(
+        OE_CHECK(
             oe_ecall(
                 enclave,
                 OE_ECALL_CALL_ENCLAVE,
                 (uint64_t)&call_enclave_args,
                 &arg_out));
-        OE_TRY(arg_out);
+
+        OE_CHECK((oe_result_t)arg_out);
     }
 
     /* Check the result */
-    OE_TRY(call_enclave_args.result);
+    OE_CHECK(call_enclave_args.result);
 
     result = OE_OK;
 
-OE_CATCH:
+done:
+    return result;
+}
+
+/*
+**==============================================================================
+**
+** oe_call_enclave_function()
+**
+** Call the enclave function specified by the given function-id.
+** Note: Currently only SGX style marshaling is supported. input_buffer contains
+** the marshaling args structure.
+**
+**==============================================================================
+*/
+
+oe_result_t oe_call_enclave_function(
+    oe_enclave_t* enclave,
+    uint32_t function_id,
+    const void* input_buffer,
+    size_t input_buffer_size,
+    void* output_buffer,
+    size_t output_buffer_size,
+    size_t* output_bytes_written)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_call_enclave_function_args_t args;
+
+    /* Reject invalid parameters */
+    if (!enclave)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Initialize the call_enclave_args structure */
+    {
+        args.function_id = function_id;
+        args.input_buffer = input_buffer;
+        args.input_buffer_size = input_buffer_size;
+        args.output_buffer = output_buffer;
+        args.output_buffer_size = output_buffer_size;
+        args.output_bytes_written = 0;
+        args.result = OE_UNEXPECTED;
+    }
+
+    /* Perform the ECALL */
+    {
+        uint64_t arg_out = 0;
+
+        OE_CHECK(
+            oe_ecall(
+                enclave,
+                OE_ECALL_CALL_ENCLAVE_FUNCTION,
+                (uint64_t)&args,
+                &arg_out));
+        OE_CHECK((oe_result_t)arg_out);
+    }
+
+    /* Check the result */
+    OE_CHECK(args.result);
+
+    *output_bytes_written = args.output_bytes_written;
+    result = OE_OK;
+
+done:
     return result;
 }
 
@@ -759,7 +901,7 @@ OE_CATCH:
 
 OE_NO_OPTIMIZE_BEGIN
 
-OE_NEVER_INLINE void _oe_notify_ocall_start(
+OE_NEVER_INLINE void oe_notify_ocall_start(
     oe_host_ocall_frame_t* frame_pointer,
     void* tcs)
 {
@@ -769,7 +911,7 @@ OE_NEVER_INLINE void _oe_notify_ocall_start(
     return;
 }
 
-OE_NEVER_INLINE void _oe_notify_ocall_end(
+OE_NEVER_INLINE void oe_notify_ocall_end(
     oe_host_ocall_frame_t* frame_pointer,
     void* tcs)
 {

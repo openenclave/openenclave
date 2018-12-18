@@ -1,73 +1,61 @@
 Basic Install
 =============
 
-You can locally install the SDK from the compiled Open Enclave tree by specifying the install-prefix to the cmake call before calling "make install". As of now, there is no real need to install the SDK system-wide, so you might use a tree in your home directory:
+You can locally install the SDK from the compiled Open Enclave tree by specifying
+the install-prefix to the cmake call before calling "make install". The SDK does
+not currently need to be installed system-wide, so you could choose to install it
+into your home directory. From the build subfolder in your source tree:
+
+```bash
+cmake -DCMAKE_INSTALL_PREFIX:PATH=~/openenclave-install ..
+make install
 ```
-build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=~/openenclave-install ..
-build$ make install
-```
 
-The following table shows where key components are installed.
-
-| Path                                     | Description                     |
-|------------------------------------------|---------------------------------|
-| <install_prefix>/bin                     | Programs/Tools                  |
-| <install_prefix>/include/openenclave     | Includes                        |
-| <install_prefix>/lib/openenclave/enclave | Enclave libraries               |
-| <install_prefix>/lib/openenclave/host    | Host libraries                  |
-| <install_prefix>/lib/openenclave/debugger| Debugger libraries              |
-| <install_prefix>/share/doc/openenclave   | Documentation                   |
-| <install_prefix>/share/openenclave       | `Samples` and make/cmake-includes |
-
-
-| Target           | Description                                                                         |
-|------------------|-------------------------------------------------------------------------------------|
-| oecore           | Enclave code: Open Enclave core features. Must be present in all enclave code. |
-| oeenclave        | Enclave code: Open Enclave features. These features may depend on the mbedcrypto and oelibc libraries. |
-| oelibc           | Enclave code: Open Enclave C library. Includes oecore.                            |
-| oelibcxx         | Enclave code: Open Enclave C++ library. Includes oelibc.                             |
-| oeidl            | Enclave code: Misc helpers required with IDL-compiled code. Includes oelibc.        |
-| oehost           | Host code: Open Enclave intrinsic functions.                                         |
-| oehostapp        | Host code: Must be present with host binary for proper linker flags.                |
-| oesign           | Build: shorthand for the signing tool executable.                                   |
-| oegen            | Build: shorthand for the IDL compiler executable.                                   |
-| oe-gdb           | Build: Open Enclave debug tool                                                      |
-| oesgx            | Build: utility for detect SGX capability on a system                                |
-
+This would install the [resulting SDK layout](/docs/GettingStartedDocs/using_oe_sdk.md#open-enclave-sdk-layout)
+under `~/openenclave-install` instead of the default `/opt/openenclave`.
 
 Optional Advanced Install
 =========================
 
-This section describes the contents of the SDK installation package, how to install the SDK globally 
+This section describes the contents of the SDK installation package, how to install the SDK globally
 and how to create a redistributable binary package (such as a .deb package)
 
-## Make the SDK tools to be available to all users
+## Install the SDK tools for all users
+
 If you want the SDK tools to be available to all users and headers/libs
 available from a system default location, you may opt to install system-wide.
-This naturally requires root privileges. Note that there is no uninstall
-script (we target an rpm/deb-based SDK install in the future), hence we
-recommend overwriting the default (/usr/local/) with a singular tree.
+This naturally requires root privileges.
 
-```
-build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=/opt/openenclave ..
-build$ sudo make install
-```
+Currently, there is no support for a `make uninstall` action, so we recommend
+explicitly installing to a path outside the standard `/usr/local/` location.
+From the build subfolder:
 
-On Linux, there is also the **DESTDIR** mechanism, prepending the install prefix
-with the given path:
-```
-build$ make install DESTDIR=foo
+```bash
+cmake -DCMAKE_INSTALL_PREFIX:PATH=/opt/openenclave ..
+sudo make install
 ```
 
-## Create Redistributable SDK pacakge
-----------------------------------
+On Linux, you can also use the **DESTDIR** mechanism to further modify the target
+path at install time, rather than during cmake:
 
-To create a redistributable package (deb, rpm, ...), use **cpack**. Specify
-the final installation prefix to cmake using the CMAKE_INSTALL_PREFIX variable
-as above. E.g., to create a Debian package that will install the SDK to
-/opt/openenclave, use:
+```bash
+make install DESTDIR=foo
+```
+
+If you also specified a `CMAKE_INSTALL_PREFIX`, this would install the SDK to
 
 ```
-build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=/opt/openenclave ..
-build$ cpack -G DEB
+/foo/opt/openenclave
+```
+
+## Create a redistributable SDK package
+
+To create a redistributable package (e.g. deb, rpm), use `cpack`. Specify
+the final installation prefix to cmake using the `CMAKE_INSTALL_PREFIX` variable
+as above. For example, to create a Debian package that will install the SDK to
+/opt/openenclave, run the following from your build subfolder:
+
+```bash
+cmake -DCMAKE_INSTALL_PREFIX:PATH=/opt/openenclave ..
+cpack -G DEB
 ```

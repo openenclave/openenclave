@@ -4,8 +4,8 @@
 /**
  * @file exception.h
  *
- * This file defines data structures to setup vectored exception handlers in the
- * enclave.
+ * This file defines data structures to set up vectored exception handlers in
+ * the enclave.
  *
  */
 #ifndef _OE_BITS_EXCEPTION_H
@@ -78,7 +78,7 @@ typedef struct _oe_basic_xstate
 /**< typedef struct _oe_basic_xstate oe_basic_xstate_t*/
 
 /**
- * Register state to  be saved before an exception and
+ * Register state to be saved before an exception and
  * restored after the exception has been handled in the enclave.
  */
 typedef struct _oe_context

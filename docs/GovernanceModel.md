@@ -60,12 +60,13 @@ breaking.
 Community Approval of Releases
 ------------------------------
 
-We want to ensure that the whole community agrees on a release. That means that
-before any release is finalized, a feedback solicitation period will happen. The
-release manager will open a GitHub issue announcing a Release Candidate (RC),
-with currently built and tested packages attached, and the suggested release
-notes in the description. The title should be "Release Candidate 1 for v0.4.0",
-with the candidate number and version updated as appropriate.
+We want to ensure that our releases go through a process of community feedback.
+That means that before any release is finalized, a feedback solicitation period
+will happen. The release manager will open a GitHub issue announcing a Release
+Candidate (RC), with currently built and tested packages attached, and the
+suggested release notes in the description. The title should be "Release
+Candidate 1 for v0.4.0", with the candidate number and version updated as
+appropriate.
 
 We are starting with a waiting period of about one week (in addition to the week
 between the initial announcement / version bump and the release candidate), but

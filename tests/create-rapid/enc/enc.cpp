@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
-#include <openenclave/internal/calls.h>
 #include "create_rapid_t.h"
 
 int test(int arg)

@@ -47,7 +47,7 @@ struct _callsite
     /* Enclave callsite stored here when exiting to make an OCALL */
     oe_jmpbuf_t jmpbuf;
 
-    /* Pointer ot the ocall context */
+    /* Pointer to the ocall context */
     oe_ocall_context_t* ocall_context;
 
     /* Pointer to next ECALL context */

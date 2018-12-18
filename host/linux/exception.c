@@ -32,9 +32,9 @@ static void _host_signal_handler(
     void* sig_data)
 {
     ucontext_t* context = (ucontext_t*)sig_data;
-    uint64_t exit_code = context->uc_mcontext.gregs[REG_RAX];
-    uint64_t tcs_address = context->uc_mcontext.gregs[REG_RBX];
-    uint64_t exit_address = context->uc_mcontext.gregs[REG_RIP];
+    uint64_t exit_code = (uint64_t)context->uc_mcontext.gregs[REG_RAX];
+    uint64_t tcs_address = (uint64_t)context->uc_mcontext.gregs[REG_RBX];
+    uint64_t exit_address = (uint64_t)context->uc_mcontext.gregs[REG_RIP];
 
     // Check if the signal happens inside the enclave.
     if ((exit_address == (uint64_t)OE_AEP) && (exit_code == ENCLU_ERESUME))
@@ -48,7 +48,7 @@ static void _host_signal_handler(
         }
 
         // Call-in enclave to handle the exception.
-        oe_enclave_t* enclave = _oe_query_enclave_instance((void*)tcs_address);
+        oe_enclave_t* enclave = oe_query_enclave_instance((void*)tcs_address);
         if (enclave == NULL)
         {
             abort();
@@ -112,7 +112,7 @@ static void _host_signal_handler(
         // which means g_previous_sigaction->next_old_sigact will not be called.
         // This signal handler is not responsible for that, it just follows what
         // the OS does on SA_RESETHAND.
-        if (g_previous_sigaction[sig_num].sa_flags & SA_RESETHAND)
+        if (g_previous_sigaction[sig_num].sa_flags & (int)SA_RESETHAND)
             g_previous_sigaction[sig_num].sa_handler = SIG_DFL;
     }
 
@@ -177,7 +177,7 @@ static void _register_signal_handlers(void)
 }
 
 // The exception only need to be initialized once per process.
-void _oe_initialize_host_exception()
+void oe_initialize_host_exception()
 {
     _register_signal_handlers();
 }

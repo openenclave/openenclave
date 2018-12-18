@@ -28,5 +28,8 @@ __clone:
 	nop
 1:	lw $25, 0($sp)
 	lw $4, 4($sp)
-	jr $25
+	jalr $25
 	nop
+	move $4, $2
+	li $2, 4001
+	syscall

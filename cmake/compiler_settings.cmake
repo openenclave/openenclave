@@ -11,12 +11,16 @@ if (CMAKE_C_COMPILER_ID MATCHES Clang)
   endif ()
 endif ()
 
-include(add_compile_flags_if_supported)
-
 if (NOT CMAKE_C_COMPILER_ID STREQUAL CMAKE_CXX_COMPILER_ID)
   message(FATAL_ERROR "Your C and C++ compilers have different vendors: "
     "${CMAKE_C_COMPILER_ID} != ${CMAKE_CXX_COMPILER_ID}")
 endif ()
+
+# Set the default standard to C++14 for all targets.
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Do not use, for example, `-std=gnu++14`.
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Set default build type and sanitize.
 # TODO: See #756: Fix this since debug is the default.
@@ -30,12 +34,13 @@ if (NOT DEFINED CMAKE_C_FLAGS_${CMAKE_BUILD_TYPE_SUFFIX})
   message(FATAL_ERROR "Unknown CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE_SUFFIX}")
 endif ()
 
-# TODO: See #758: Fix this to check 64-bit correctly with
-# `CMAKE_SIZEOF_VOID_P EQUAL 8` (on all platforms).
-if (DEFINED CMAKE_VS_PLATFORM_NAME)
-  if (NOT ${CMAKE_VS_PLATFORM_NAME} STREQUAL "x64")
-    message(FATAL_ERROR "With Visual Studio, configure Win64 build generator explicitly.")
+# TODO: When ARM support is added, we will need to exclude the check
+# as it will be 64-bit.
+if (NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
+  if (MSVC)
+    message(WARNING "Use '-T host=x64' to set the toolchain to 64-bit!")
   endif ()
+  message(FATAL_ERROR "Only 64-bit builds are supported!")
 endif ()
 
 # Use ccache if available.
@@ -49,53 +54,38 @@ else ()
   message("ccache not found")
 endif (CCACHE_FOUND)
 
+# Check for compiler flags
+include(CheckCCompilerFlag)
+include(CheckCXXCompilerFlag)
+
 # Apply Spectre mitigations if available.
-set(SPECTRE_1_LLVM_MITIGATION_FLAG "-mllvm -x86-speculative-load-hardening")
-add_compile_flag_if_supported("C;CXX" "${SPECTRE_1_LLVM_MITIGATION_FLAG}" SPECTRE_1_LLVM_MITIGATION_FLAG_SUPPORTED)
-
-if (SPECTRE_1_LLVM_MITIGATION_FLAG_SUPPORTED)
-  message("C/C++ compiler is Clang 7.0+, applying Spectre 1 mitigations")
+set(SPECTRE_MITIGATION_FLAGS "-mllvm;-x86-speculative-load-hardening")
+check_c_compiler_flag("${SPECTRE_MITIGATION_FLAGS}" SPECTRE_MITIGATION_C_FLAGS_SUPPORTED)
+check_cxx_compiler_flag("${SPECTRE_MITIGATION_FLAGS}" SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
+if (SPECTRE_MITIGATION_C_FLAGS_SUPPORTED AND SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
+  message(STATUS "Spectre 1 mitigations supported")
+  add_compile_options(${SPECTRE_MITIGATION_FLAGS})
+  # Allows reuse in cases where ExternalProject is used and global compile flags wouldn't propagate.
+  string(REPLACE ";" "  " SPECTRE_MITIGATION_FLAGS "${SPECTRE_MITIGATION_FLAGS}")
 else ()
-  set(SPECTRE_1_LLVM_MITIGATION_FLAG "")
-  message("C/C++ compiler is not Clang 7.0+, NOT applying Spectre 1 mitigations")
-endif ()
-
-# Allows reuse in cases where ExternalProject is used and global compile flags wouldn't propagate.
-set(SPECTRE_MITIGATION_FLAGS "${SPECTRE_1_LLVM_MITIGATION_FLAG}")
-
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  # Disable this particular warning because `-isystem` is being to
-  # sent to clang when assembling, and is at that point unrecognized.
-  # TODO: See #760: Fix this when errors are better propagated.
-  add_compile_options(-Wno-error=unused-command-line-argument)
+  message(WARNING "Spectre 1 mitigations NOT supported")
+  set(SPECTRE_MITIGATION_FLAGS "")
 endif ()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
   # Enables all the warnings about constructions that some users consider questionable,
   # and that are easy to avoid. Treat at warnings-as-errors, which forces developers
   # to fix warnings as they arise, so they don't accumulate "to be fixed later".
-  add_compile_options(-Wall -Werror)
+  add_compile_options(-Wall -Werror -Wpointer-arith -Wconversion -Wextra -Wno-missing-field-initializers)
 
-  add_compile_flags("C;CXX" -fno-strict-aliasing)
-
-  add_compile_flags_if_supported(C -Wjump-misses-init)
+  add_compile_options(-fno-strict-aliasing)
 
   # Enables XSAVE intrinsics.
   add_compile_options(-mxsave)
 
-  # Obtain default compiler include dir to gain access to intrinsics
-  execute_process(
-    COMMAND /bin/bash ${PROJECT_SOURCE_DIR}/cmake/get_c_compiler_dir.sh ${CMAKE_C_COMPILER}
-    OUTPUT_VARIABLE OE_C_COMPILER_INCDIR
-    ERROR_VARIABLE OE_ERR)
-
-  if (NOT OE_ERR STREQUAL "")
-    message(FATAL_ERROR ${OE_ERR})
-  endif ()
-
   # We should only need this for in-enclave code but it's easier
   # and conservative to specify everywhere
-  add_compile_flags("C;CXX" -fno-builtin-malloc -fno-builtin-calloc)
+  add_compile_options(-fno-builtin-malloc -fno-builtin-calloc)
 elseif (MSVC)
   # MSVC options go here
 endif ()

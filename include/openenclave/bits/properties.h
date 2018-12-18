@@ -25,6 +25,7 @@ OE_EXTERNC_BEGIN
  */
 /* Injected by OE_SET_ENCLAVE_SGX macro and by the signing tool (oesign) */
 #define OE_INFO_SECTION_NAME ".oeinfo"
+#define OE_ECALL_SECTION_NAME ".ecall"
 
 /* Max number of threads in an enclave supported */
 #define OE_SGX_MAX_TCS 32
@@ -46,6 +47,19 @@ typedef struct _oe_enclave_properties_header
     oe_enclave_size_settings_t size_settings; /**< (8) Enclave settings */
 } oe_enclave_properties_header_t;
 
+/* Image information */
+typedef struct _oe_enclave_image_info_t
+{
+    uint64_t oeinfo_rva;
+    uint64_t oeinfo_size;
+    uint64_t reloc_rva;
+    uint64_t reloc_size;
+    uint64_t ecall_rva;
+    uint64_t ecall_size;
+    uint64_t heap_rva; /* heap size is in header.sizesettings */
+    uint64_t enclave_size;
+} oe_enclave_image_info_t;
+
 // oe_sgx_enclave_properties_t SGX enclave properties derived type
 #define OE_SGX_FLAGS_DEBUG 0x0000000000000002ULL
 #define OE_SGX_FLAGS_MODE64BIT 0x0000000000000004ULL
@@ -64,7 +78,7 @@ typedef struct oe_sgx_enclave_config_t
 } oe_sgx_enclave_config_t;
 
 /* Extends oe_enclave_properties_header_t base type */
-typedef struct oe_sgx_enclave_properties_t
+typedef struct _oe_sgx_enclave_properties
 {
     /* (0) */
     oe_enclave_properties_header_t header;
@@ -73,10 +87,17 @@ typedef struct oe_sgx_enclave_properties_t
     oe_sgx_enclave_config_t config;
 
     /* (48) */
+    oe_enclave_image_info_t image_info;
+
+    /* (112)  */
     uint8_t sigstruct[OE_SGX_SIGSTRUCT_SIZE];
+
+    /* (1920) end-marker to make sure 0-filled signstruct doesn't get omitted */
+    uint64_t end_marker;
 } oe_sgx_enclave_properties_t;
 
-#define OE_INFO_SECTION_BEGIN __attribute__((section(".oeinfo")))
+#define OE_INFO_SECTION_BEGIN \
+    OE_EXTERNC __attribute__((section(OE_INFO_SECTION_NAME)))
 #define OE_INFO_SECTION_END
 
 #define OE_MAKE_ATTRIBUTES(ALLOW_DEBUG) \
@@ -111,14 +132,14 @@ typedef struct oe_sgx_enclave_properties_t
 // clang-format off
 
 #define OE_SET_ENCLAVE_SGX(                                               \
-    PRODUCT_ID,                                                          \
-    SECURITY_VERSION,                                                    \
-    ALLOW_DEBUG,                                                         \
+    PRODUCT_ID,                                                           \
+    SECURITY_VERSION,                                                     \
+    ALLOW_DEBUG,                                                          \
     HEAP_PAGE_COUNT,                                                      \
     STACK_PAGE_COUNT,                                                     \
-    TCS_COUNT)                                                           \
+    TCS_COUNT)                                                            \
     OE_INFO_SECTION_BEGIN                                                 \
-    OE_EXPORT_CONST oe_sgx_enclave_properties_t oe_enclave_properties_sgx = \
+    volatile const oe_sgx_enclave_properties_t oe_enclave_properties_sgx = \
     {                                                                     \
         .header =                                                         \
         {                                                                 \
@@ -128,20 +149,25 @@ typedef struct oe_sgx_enclave_properties_t
             {                                                             \
                 .num_heap_pages = HEAP_PAGE_COUNT,                        \
                 .num_stack_pages = STACK_PAGE_COUNT,                      \
-                .num_tcs = TCS_COUNT                                     \
+                .num_tcs = TCS_COUNT                                      \
             }                                                             \
         },                                                                \
         .config =                                                         \
         {                                                                 \
-            .product_id = PRODUCT_ID,                                    \
-            .security_version = SECURITY_VERSION,                        \
+            .product_id = PRODUCT_ID,                                     \
+            .security_version = SECURITY_VERSION,                         \
             .padding = 0,                                                 \
-            .attributes = OE_MAKE_ATTRIBUTES(ALLOW_DEBUG)                \
+            .attributes = OE_MAKE_ATTRIBUTES(ALLOW_DEBUG)                 \
+        },                                                                \
+        .image_info =                                                     \
+        {                                                                 \
+            0                                                             \
         },                                                                \
         .sigstruct =                                                      \
         {                                                                 \
             0                                                             \
-        }                                                                 \
+        },                                                                \
+        .end_marker = 0xecececececececec,                                 \
     };                                                                    \
     OE_INFO_SECTION_END
 

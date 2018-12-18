@@ -35,10 +35,24 @@ extern "C" {
 #define SHM_UNLOCK 12
 #define SHM_STAT 13
 #define SHM_INFO 14
+#define SHM_STAT_ANY 15
 #define SHM_DEST 01000
 #define SHM_LOCKED 02000
 #define SHM_HUGETLB 04000
 #define SHM_NORESERVE 010000
+
+#define SHM_HUGE_SHIFT 26
+#define SHM_HUGE_MASK  0x3f
+#define SHM_HUGE_64KB  (16 << 26)
+#define SHM_HUGE_512KB (19 << 26)
+#define SHM_HUGE_1MB   (20 << 26)
+#define SHM_HUGE_2MB   (21 << 26)
+#define SHM_HUGE_8MB   (23 << 26)
+#define SHM_HUGE_16MB  (24 << 26)
+#define SHM_HUGE_256MB (28 << 26)
+#define SHM_HUGE_1GB   (30 << 26)
+#define SHM_HUGE_2GB   (31 << 26)
+#define SHM_HUGE_16GB  (34U << 26)
 
 typedef unsigned long shmatt_t;
 

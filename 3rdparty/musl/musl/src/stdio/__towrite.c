@@ -3,7 +3,7 @@
 int __towrite(FILE *f)
 {
 	f->mode |= f->mode-1;
-	if (f->flags & (F_NOWR)) {
+	if (f->flags & F_NOWR) {
 		f->flags |= F_ERR;
 		return EOF;
 	}

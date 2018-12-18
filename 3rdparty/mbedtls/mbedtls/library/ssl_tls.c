@@ -1582,6 +1582,8 @@ static int ssl_encrypt_buf( mbedtls_ssl_context *ssl )
 #if defined(MBEDTLS_SSL_ENCRYPT_THEN_MAC)
         if( auth_done == 0 )
         {
+            unsigned char mac[MBEDTLS_SSL_MAC_ADD];
+
             /*
              * MAC(MAC_write_key, seq_num +
              *     TLSCipherText.type +
@@ -1604,9 +1606,11 @@ static int ssl_encrypt_buf( mbedtls_ssl_context *ssl )
             mbedtls_md_hmac_update( &ssl->transform_out->md_ctx_enc, pseudo_hdr, 13 );
             mbedtls_md_hmac_update( &ssl->transform_out->md_ctx_enc,
                              ssl->out_iv, ssl->out_msglen );
-            mbedtls_md_hmac_finish( &ssl->transform_out->md_ctx_enc,
-                             ssl->out_iv + ssl->out_msglen );
+            mbedtls_md_hmac_finish( &ssl->transform_out->md_ctx_enc, mac );
             mbedtls_md_hmac_reset( &ssl->transform_out->md_ctx_enc );
+
+            memcpy( ssl->out_iv + ssl->out_msglen, mac,
+                    ssl->transform_out->maclen );
 
             ssl->out_msglen += ssl->transform_out->maclen;
             auth_done++;
@@ -5807,13 +5811,14 @@ int mbedtls_ssl_setup( mbedtls_ssl_context *ssl,
     /*
      * Prepare base structures
      */
+    ssl->in_buf = NULL;
+    ssl->out_buf = NULL;
     if( ( ssl-> in_buf = mbedtls_calloc( 1, len ) ) == NULL ||
         ( ssl->out_buf = mbedtls_calloc( 1, len ) ) == NULL )
     {
         MBEDTLS_SSL_DEBUG_MSG( 1, ( "alloc(%d bytes) failed", len ) );
-        mbedtls_free( ssl->in_buf );
-        ssl->in_buf = NULL;
-        return( MBEDTLS_ERR_SSL_ALLOC_FAILED );
+        ret = MBEDTLS_ERR_SSL_ALLOC_FAILED;
+        goto error;
     }
 
 #if defined(MBEDTLS_SSL_PROTO_DTLS)
@@ -5848,9 +5853,32 @@ int mbedtls_ssl_setup( mbedtls_ssl_context *ssl,
     }
 
     if( ( ret = ssl_handshake_init( ssl ) ) != 0 )
-        return( ret );
+        goto error;
 
     return( 0 );
+
+error:
+    mbedtls_free( ssl->in_buf );
+    mbedtls_free( ssl->out_buf );
+
+    ssl->conf = NULL;
+
+    ssl->in_buf = NULL;
+    ssl->out_buf = NULL;
+
+    ssl->in_hdr = NULL;
+    ssl->in_ctr = NULL;
+    ssl->in_len = NULL;
+    ssl->in_iv = NULL;
+    ssl->in_msg = NULL;
+
+    ssl->out_hdr = NULL;
+    ssl->out_ctr = NULL;
+    ssl->out_len = NULL;
+    ssl->out_iv = NULL;
+    ssl->out_msg = NULL;
+
+    return( ret );
 }
 
 /*
@@ -5911,7 +5939,11 @@ static int ssl_session_reset_int( mbedtls_ssl_context *ssl, int partial )
     ssl->transform_in = NULL;
     ssl->transform_out = NULL;
 
+    ssl->session_in = NULL;
+    ssl->session_out = NULL;
+
     memset( ssl->out_buf, 0, MBEDTLS_SSL_BUFFER_LEN );
+
     if( partial == 0 )
         memset( ssl->in_buf, 0, MBEDTLS_SSL_BUFFER_LEN );
 
@@ -6684,16 +6716,17 @@ const char *mbedtls_ssl_get_version( const mbedtls_ssl_context *ssl )
 
 int mbedtls_ssl_get_record_expansion( const mbedtls_ssl_context *ssl )
 {
-    size_t transform_expansion;
+    size_t transform_expansion = 0;
     const mbedtls_ssl_transform *transform = ssl->transform_out;
+    unsigned block_size;
+
+    if( transform == NULL )
+        return( (int) mbedtls_ssl_hdr_len( ssl ) );
 
 #if defined(MBEDTLS_ZLIB_SUPPORT)
     if( ssl->session_out->compression != MBEDTLS_SSL_COMPRESS_NULL )
         return( MBEDTLS_ERR_SSL_FEATURE_UNAVAILABLE );
 #endif
-
-    if( transform == NULL )
-        return( (int) mbedtls_ssl_hdr_len( ssl ) );
 
     switch( mbedtls_cipher_get_cipher_mode( &transform->cipher_ctx_enc ) )
     {
@@ -6704,8 +6737,25 @@ int mbedtls_ssl_get_record_expansion( const mbedtls_ssl_context *ssl )
             break;
 
         case MBEDTLS_MODE_CBC:
-            transform_expansion = transform->maclen
-                      + mbedtls_cipher_get_block_size( &transform->cipher_ctx_enc );
+
+            block_size = mbedtls_cipher_get_block_size(
+                &transform->cipher_ctx_enc );
+
+            /* Expansion due to the addition of the MAC. */
+            transform_expansion += transform->maclen;
+
+            /* Expansion due to the addition of CBC padding;
+             * Theoretically up to 256 bytes, but we never use
+             * more than the block size of the underlying cipher. */
+            transform_expansion += block_size;
+
+            /* For TLS 1.1 or higher, an explicit IV is added
+             * after the record header. */
+#if defined(MBEDTLS_SSL_PROTO_TLS1_1) || defined(MBEDTLS_SSL_PROTO_TLS1_2)
+            if( ssl->minor_ver >= MBEDTLS_SSL_MINOR_VERSION_2 )
+                transform_expansion += block_size;
+#endif /* MBEDTLS_SSL_PROTO_TLS1_1 || MBEDTLS_SSL_PROTO_TLS1_2 */
+
             break;
 
         default:

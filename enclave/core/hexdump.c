@@ -3,12 +3,12 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/hexdump.h>
-#include <openenclave/internal/print.h>
+#include <openenclave/internal/trace.h>
 
 /* Convert a nibble to an ASCII character: Example 0xF => 'F' */
 OE_INLINE char _nibble_to_hex_char(uint8_t x)
 {
-    return (x < 10) ? ('0' + x) : ('A' + (x - 10));
+    return (char)((x < 10) ? ('0' + (char)x) : ('A' + ((char)x - 10)));
 }
 
 /* Convert high nibble to a hex character */
@@ -66,7 +66,7 @@ void oe_hex_dump(const void* data, size_t size)
     while (n >= chunk_size)
     {
         oe_hex_string(buf, sizeof(buf), p, chunk_size);
-        oe_host_printf("%s", buf);
+        OE_TRACE_INFO("%s = ", buf);
         p += chunk_size;
         n -= chunk_size;
     }
@@ -75,8 +75,7 @@ void oe_hex_dump(const void* data, size_t size)
     if (n)
     {
         oe_hex_string(buf, sizeof(buf), p, n);
-        oe_host_printf("%s", buf);
+        OE_TRACE_INFO("%s = ", buf);
     }
-
-    oe_host_printf("\n");
+    OE_TRACE_INFO("\n");
 }

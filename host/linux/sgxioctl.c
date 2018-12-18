@@ -4,6 +4,7 @@
 #include "sgxioctl.h"
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include <string.h>
 #include <sys/ioctl.h>
@@ -50,6 +51,7 @@ OE_PACK_END
 int sgx_ioctl_enclave_create(int dev, sgx_secs_t* secs)
 {
     SGXECreateParam param;
+    int rc = 0;
 
     if (dev == -1 || !secs)
         return -1;
@@ -57,7 +59,11 @@ int sgx_ioctl_enclave_create(int dev, sgx_secs_t* secs)
     memset(&param, 0, sizeof(param));
     param.secs = (uint64_t)secs;
 
-    return ioctl(dev, SGX_IOC_ENCLAVE_CREATE, &param);
+    rc = ioctl(dev, SGX_IOC_ENCLAVE_CREATE, &param);
+    if (rc)
+        OE_TRACE_ERROR("rc=0x%x\n", rc);
+
+    return rc;
 }
 
 int sgx_ioctl_enclave_add_page(
@@ -69,6 +75,7 @@ int sgx_ioctl_enclave_add_page(
 {
     SGXEAddParam param;
     sgx_secinfo_t secinfo;
+    int rc = 0;
 
     if (dev == -1 || !addr || !src || !flags)
         return -1;
@@ -85,7 +92,11 @@ int sgx_ioctl_enclave_add_page(
     if (extend)
         param.mrmask = 0xffff;
 
-    return ioctl(dev, SGX_IOC_ENCLAVE_ADD_PAGE, &param);
+    rc = ioctl(dev, SGX_IOC_ENCLAVE_ADD_PAGE, &param);
+    if (rc)
+        OE_TRACE_ERROR("rc=0x%x", rc);
+
+    return rc;
 }
 
 int sgx_ioctl_enclave_init(
@@ -95,6 +106,7 @@ int sgx_ioctl_enclave_init(
     uint64_t einittoken)
 {
     SGXEInitParam param;
+    int rc = 0;
 
     if (dev == -1 || !addr || !sigstruct || !einittoken)
         return -1;
@@ -104,5 +116,9 @@ int sgx_ioctl_enclave_init(
     param.sigstruct = sigstruct;
     param.einittoken = einittoken;
 
-    return ioctl(dev, SGX_IOC_ENCLAVE_INIT, &param);
+    rc = ioctl(dev, SGX_IOC_ENCLAVE_INIT, &param);
+    if (rc)
+        OE_TRACE_ERROR("rc=0x%x", rc);
+
+    return rc;
 }

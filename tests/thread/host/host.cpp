@@ -4,17 +4,33 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/tests.h>
+#include <atomic>
 #include <cassert>
 #include <chrono>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <thread>
+#include <vector>
+#include "../../../host/enclave.h"
 #include "../args.h"
 
 static TestMutexArgs _args;
+static TestTCSArgs _tcsargs;
+static std::atomic_flag _host_tcs_lock = ATOMIC_FLAG_INIT;
 
 const size_t NUM_THREADS = 8;
+
+static inline void _acquire_lock(std::atomic_flag* lock)
+{
+    while (lock->test_and_set(std::memory_order_acquire))
+        ;
+}
+
+static inline void _release_lock(std::atomic_flag* lock)
+{
+    lock->clear(std::memory_order_release);
+}
 
 void* Thread(void* args)
 {
@@ -45,9 +61,9 @@ void TestMutex(oe_enclave_t* enclave)
 void* WaiterThread(void* args)
 {
     oe_enclave_t* enclave = (oe_enclave_t*)args;
-    static WaitArgs _args = {NUM_THREADS};
+    static WaitArgs _waitargs = {NUM_THREADS};
 
-    oe_result_t result = oe_call_enclave(enclave, "Wait", &_args);
+    oe_result_t result = oe_call_enclave(enclave, "Wait", &_waitargs);
     OE_TEST(result == OE_OK);
 
     return NULL;
@@ -63,7 +79,9 @@ void TestCond(oe_enclave_t* enclave)
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
     for (size_t i = 0; i < NUM_THREADS; i++)
+    {
         OE_TEST(oe_call_enclave(enclave, "Signal", NULL) == OE_OK);
+    }
 
     for (size_t i = 0; i < NUM_THREADS; i++)
         threads[i].join();
@@ -232,6 +250,68 @@ void TestThreadLockingPatterns(oe_enclave_t* enclave)
 
 void TestReadersWriterLock(oe_enclave_t* enclave);
 
+void* ThreadTCS(void* args)
+{
+    oe_enclave_t* enclave = (oe_enclave_t*)args;
+
+    oe_result_t result =
+        oe_call_enclave(enclave, "TestTCSExhaustion", &_tcsargs);
+    if (result == OE_OUT_OF_THREADS)
+    {
+        _acquire_lock(&_host_tcs_lock);
+        _tcsargs.num_out_threads++;
+        _release_lock(&_host_tcs_lock);
+    }
+    else
+        OE_TEST(result == OE_OK);
+
+    return NULL;
+}
+
+// Thread binding test to verify TCS exhaustion i.e. enter on N threads when
+// there are M TCSes where N > M; oe_call should return OE_OUT_OF_THREADS when
+// M enclaves are in use.
+// Trick is to keep the M enclaves busy until we get TCS exhaustion
+void TestTCSExhaustion(oe_enclave_t* enclave)
+{
+    std::vector<std::thread> threads;
+    // Set the test_tcs_count to a value greater than the enclave TCSCount
+    size_t test_tcs_req_count = enclave->num_bindings * 2;
+    printf(
+        "TestTCSExhaust() - Number of TCS bindings in enclave=%zu\n",
+        enclave->num_bindings);
+    // Initialization of the shared variables before creating threads/launching
+    // enclaves
+    _tcsargs.num_tcs_used = 0;
+    _tcsargs.num_out_threads = 0;
+    _tcsargs.tcs_req_count = test_tcs_req_count;
+
+    for (size_t i = 0; i < test_tcs_req_count; i++)
+    {
+        threads.push_back(std::thread(ThreadTCS, enclave));
+    }
+
+    for (size_t i = 0; i < test_tcs_req_count; i++)
+        threads[i].join();
+
+    printf(
+        "TestTCSExhaustion(): tcs_count=%d; num_threads=%d; "
+        "num_out_threads=%d\n",
+        (int)test_tcs_req_count,
+        (int)_tcsargs.num_tcs_used,
+        (int)_tcsargs.num_out_threads);
+
+    // Cleanup -- Removes all elements from the vector threads
+    threads.clear();
+    // Crux of the test is to get OE_OUT_OF_THREADS i.e. to exhaust the TCSes
+    OE_TEST(_tcsargs.num_out_threads > 0);
+    // Verifying that everything adds up fine
+    OE_TEST(
+        _tcsargs.num_tcs_used + _tcsargs.num_out_threads == test_tcs_req_count);
+    // Sanity test that we are not reusing the bindings
+    OE_TEST(_tcsargs.num_tcs_used <= enclave->num_bindings);
+}
+
 int main(int argc, const char* argv[])
 {
     oe_result_t result;
@@ -246,7 +326,14 @@ int main(int argc, const char* argv[])
     const uint32_t flags = oe_get_create_flags();
 
     if ((result = oe_create_enclave(
-             argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
+             argv[1],
+             OE_ENCLAVE_TYPE_SGX,
+             flags,
+             NULL,
+             0,
+             NULL,
+             0,
+             &enclave)) != OE_OK)
     {
         oe_put_err("oe_create_enclave(): result=%u", result);
     }
@@ -262,6 +349,8 @@ int main(int argc, const char* argv[])
     TestThreadLockingPatterns(enclave);
 
     TestReadersWriterLock(enclave);
+
+    TestTCSExhaustion(enclave);
 
     if ((result = oe_terminate_enclave(enclave)) != OE_OK)
     {

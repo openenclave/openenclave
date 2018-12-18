@@ -8,7 +8,7 @@
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include "../../../host/enclave.h"
-#include "../args.h"
+#include "props_u.h"
 
 static void _check_properties(
     oe_sgx_enclave_properties_t* props,
@@ -51,7 +51,7 @@ static oe_result_t _sgx_load_enclave_properties(
     oe_sgx_enclave_properties_t* properties)
 {
     oe_result_t result = OE_UNEXPECTED;
-    elf64_t elf = ELF64_INIT;
+    oe_enclave_image_t oeimage = {0};
 
     if (properties)
         memset(properties, 0, sizeof(oe_sgx_enclave_properties_t));
@@ -61,21 +61,20 @@ static oe_result_t _sgx_load_enclave_properties(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Load the ELF image */
-    if (elf64_load(path, &elf) != 0)
+    if (oe_load_enclave_image(path, &oeimage) != 0)
         OE_RAISE(OE_FAILURE);
 
     /* Load the SGX enclave properties */
-    if (oe_sgx_load_properties(&elf, OE_INFO_SECTION_NAME, properties) != OE_OK)
-    {
+    if (oe_sgx_load_enclave_properties(
+            &oeimage, OE_INFO_SECTION_NAME, properties) != OE_OK)
         OE_RAISE(OE_NOT_FOUND);
-    }
 
     result = OE_OK;
 
 done:
 
-    if (elf.magic == ELF_MAGIC)
-        elf64_unload(&elf);
+    if (oeimage.u.elf.elf.magic == ELF_MAGIC)
+        oe_unload_enclave_image(&oeimage);
 
     return result;
 }
@@ -111,13 +110,13 @@ int main(int argc, const char* argv[])
     /* Load the enclave properties */
     if ((result = _sgx_load_enclave_properties(argv[1], &properties)) != OE_OK)
     {
-        oe_put_err("oe_sgx_load_properties(): result=%u", result);
+        oe_put_err("oe_sgx_load_enclave_properties(): result=%u", result);
     }
 
     const uint32_t flags = oe_get_create_flags();
-
-    if ((result = oe_create_enclave(
-             argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
+    result = oe_create_props_enclave(
+        argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
+    if (result != OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);
 
     /* Check expected enclave property values */
@@ -129,9 +128,9 @@ int main(int argc, const char* argv[])
             1111,                                        /* product_id */
             2222,                                        /* security_version */
             OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT, /* attributes */
-            2048,                                        /* num_heap_pages  */
-            1024,                                        /* num_stack_pages */
-            8);                                          /* num_tcs */
+            512,                                         /* num_heap_pages  */
+            512,                                         /* num_stack_pages */
+            4);                                          /* num_tcs */
     }
     else
     {
@@ -141,24 +140,28 @@ int main(int argc, const char* argv[])
             1234,                                        /* product_id */
             5678,                                        /* security_version */
             OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT, /* attributes */
-            1024,                                        /* num_heap_pages  */
+            512,                                         /* num_heap_pages  */
             512,                                         /* num_stack_pages */
             4);                                          /* num_tcs */
     }
 
-    Args args;
-    memset(&args, 0, sizeof(args));
-    args.ret = -1;
+    int out_param = -1;
+    int return_val;
 
-    if ((result = oe_call_enclave(enclave, "Test", &args)) != OE_OK)
-        oe_put_err("oe_call_enclave() failed: result=%u", result);
+    result = enc_props(enclave, &return_val, &out_param);
 
-    if (args.ret != 0)
-        oe_put_err("ECALL failed args.result=%d", args.ret);
+    if (OE_OK != result)
+        oe_put_err("call enclave failed: result=%u", result);
+
+    if (return_val != 0)
+        oe_put_err("ECALL failed args.result=%d", return_val);
+
+    if (out_param != 0)
+        oe_put_err("ECALL failed out_param=%d", out_param);
 
     oe_terminate_enclave(enclave);
 
-    printf("=== passed all tests (echo)\n");
+    printf("=== passed all tests (props)\n");
 
     return 0;
 }

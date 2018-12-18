@@ -10,7 +10,7 @@
 Use the following command to download the source code.
 
 ```bash
-git clone https://github.com/Microsoft/openenclave
+git clone https://github.com/Microsoft/openenclave.git
 ```
 
 This creates a source tree under the directory called openenclave.
@@ -22,6 +22,12 @@ The script [scripts/install-prereqs](/scripts/install-prereqs) was created to ma
 ```bash
 cd openenclave
 sudo ./scripts/install-prereqs
+```
+
+If you are running in an Azure Confidential Compute VM and would like to use the attestation features, you should also run the following command from the root of the source tree:
+
+```bash
+sudo make -C prereqs/az-dcap-client install
 ```
 
 ## Install Intel SGX FLC support software packages
@@ -55,16 +61,9 @@ cmake .. -DUSE_LIBSGX=1
 make
 ```
 
-If you are running in an Azure Confidential Compute VM and would like to use the attestation features, you should also run the following command from the root of the source tree:
-
-```bash
-sudo make -C prereqs/az-dcap-client
-sudo make -C prereqs/az-dcap-client install
-```
-
 Open Enclave will support attestation workflows outside of Azure using DCAP in an upcoming release.
 
-Refer to the [Advanced Build Information](advancedBuildInfo.md) documentation for further information.
+Refer to the [Advanced Build Information](AdvancedBuildInfo.md) documentation for further information.
 
 ## Run unittests
 

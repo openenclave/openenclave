@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
@@ -157,6 +158,8 @@ static std::condition_variable exclusive;
 
 OE_ECALL void WaitForExclusiveAccessCxx(void* args_)
 {
+    OE_UNUSED(args_);
+
     std::stringstream ss;
     std::unique_lock<std::mutex> lock(ex_mutex);
 
@@ -176,6 +179,8 @@ OE_ECALL void WaitForExclusiveAccessCxx(void* args_)
 
 OE_ECALL void RelinquishExclusiveAccessCxx(void* args_)
 {
+    OE_UNUSED(args_);
+
     std::stringstream ss;
 
     std::lock_guard<std::mutex> lg_lock(ex_mutex);
@@ -285,3 +290,5 @@ OE_SET_ENCLAVE_SGX(
     512,  /* HeapPageCount */
     512,  /* StackPageCount */
     16);  /* TCSCount */
+
+OE_DEFINE_EMPTY_ECALL_TABLE();

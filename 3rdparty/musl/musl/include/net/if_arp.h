@@ -59,6 +59,7 @@ struct arphdr {
 #define ARPHRD_LAPB	516
 #define ARPHRD_DDCMP	517
 #define	ARPHRD_RAWHDLC	518
+#define ARPHRD_RAWIP	519
 
 #define ARPHRD_TUNNEL	768
 #define ARPHRD_TUNNEL6	769

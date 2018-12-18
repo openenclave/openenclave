@@ -1907,3 +1907,80 @@ bugs fixed:
 arch-specfic bugs fixed:
 - x32 unistd.h wrongly reported LP64 instead of ILP32
 - aarch64 signal.h had wrong type for ucontext_t uc_link member
+
+
+1.1.20 release notes
+
+new features:
+- m68k port
+- replacement of malloc is now allowed/supported
+- setvbuf now accepts caller-provided buffers for stdio streams
+- getrandom syscall wrapper, getentropy function
+- mlock2 syscall wrapper
+- memfd_create syscall wrapper
+- explicit_bzero function
+- header-level support for new linux features through 4.18 ??
+- wcsftime now supports padding specifier extensions
+- dynamic linker's reclaim_gaps now works on fdpic archs
+- getaddrinfo now honors AI_ADDRCONFIG
+- pthread_attr_init now honors pthread_setattr_default_np defaults
+
+hardening:
+- prevent bypass of guarantee that suids start with fd 0/1/2 open
+- dlopen now rejects libraries with initial-exec refs to dynamic TLS
+
+compatibility:
+- elf.h: new flags, aux vector entry types, etc.
+- minor namespace issues in several headers
+- intNN_t types used in bitfields now safe against -funsigned-bitfields
+- complex arc trig/hyperbolic functions were badly broken
+- nice function returned wrong value
+- stdio locks no longer depend on read-after-free not faulting
+- avoid excessive stack usage in getcwd
+- inet_ntop no longer compresses single zeros in IPv6 (RFC 5952)
+- resolver routability probe for sorting results works on no-IPv6 systems
+- added missing ST_RELATIME definition to statvfs.h
+- uchar.h now works with old C++ profiles
+- added missing and arch-specific commands to ptrace.h
+- musl-gcc wrapper now works with default-pie host toolchains
+
+bugs fixed:
+- getopt wrongly treating colons in optstring as valid option chars
+- nl_langinfo_l(CODESET, loc) reported wrong locale's value
+- out-of-tree build produced broken crt files with stack protector enabled
+- fmaf produced wrong result for some corner cases
+- out of bounds write for zero length buffer passed to gethostname
+- getopt_long_only wrongly prefix-matched long-options over short ones
+- pthread_kill wrongly returned ESRCH for exited by valid pthread_t's
+- iconv buffer overflow converting to legacy JIS-based encodings
+- iconv conversion to "UTF-32" (no explicit endianness) failed (regression)
+- iconv mishandled big5-hkscs characters that map to two unicode chars
+- dynamic linker didn't map/clear bss for libraries with single LOAD segment
+- resolver wrongly duplicated trailing dot from query into canonical name
+- some futex waits omitted timeout arg to syscall, thereby spun on EFAULT
+- dladdr mishandled addresses not matching symbols
+- alignment of dirent structures from readdir was broken (regression)
+- strftime %z output wrong sign for offsets <1 hour west of UTC
+- limits.h, pathconf erroneously defined SYMLINK_MAX
+- FP_ILOGB0 and FP_ILOGBNAN definitions were not valid for use in #if
+- getopt failed to update optarg and optind correctly on missing argument
+- EMULTIHOP error lacked strerror text
+- mktime malfunctioned with tm_isdst>0 but no-DST POSIX-format time zone
+- async thread self-cancellation produced a deadlock condition
+- pthread_barrierattr_setpshared failed to produce EINVAL for bad argument
+- fileno failed to produce EBADF for non-fd-associated FILEs
+- fmemopen's w+ mode failed to truncate buffer at open
+- open_[w]memstream did not bind stream orientation at open time
+- system wrongly returned 0x7f00 instead of -1 on error
+- wide printf functions ignored field width for %c formats
+- fprintf failed to set stream orientation for unbuffered stream or no output
+- psignal, psiginfo, and perror wrongly set stream orientation for stderr
+- psignal, psiginfo potentially clobbered errno on success
+
+arch-specfic bugs fixed:
+- on arm/aarch64/sh, local-exec TLS layout mismatched ABI with large align
+- on arm/microblaze/sh, struct ipc_perm mismatched (buggy) kernel ABI
+- SO_PEERSEC definition was wrong on mips
+- on mips, return from start function passed to clone crashed (runaway exec)
+- printf %a precision specifier malfunctioned except on ld80 archs
+- async thread cancellation crashed on powerpc64 and sh-fdpic

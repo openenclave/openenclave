@@ -21,18 +21,38 @@ CXXFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --cflags)
 LDFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --libs)
 
 all:
+	$(MAKE) genkey
+	$(MAKE) -C ../enc1 genkey
 	$(MAKE) build
 	$(MAKE) sign
+
+private.pem:
+	openssl genrsa -out $@ -3 3072
+
+public.pem: private.pem
+	openssl rsa -in $< -out $@ -pubout
+
+# The enclaves in the sample will check if the other enclave is signed
+# with the expected key. Since this sample builds both enclaves, we can
+# inject the expected public keys at build time.
+#
+# If the other public key isn't known, then we would have to load the
+# public key from the host. We can't simply load the raw public key since
+# a malicious host might change it. So, we would need to load a certicate
+# that contains the expected public key that is signed by a trusted CA.
+genkey: public.pem
+	chmod u+x ../gen_pubkey_header.sh
+	../gen_pubkey_header.sh ../enc1/enc2_pubkey.h $<
 
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../localattestation.edl --trusted --trusted-dir ../common
-	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) ecalls.cpp ../common/attestation.cpp ../common/crypto.cpp ../common/dispatcher.cpp
-	$(CC) -c $(CFLAGS) $(CINCLUDES) ../common/localattestation_t.c	
+	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -std=c++11 ecalls.cpp ../common/attestation.cpp ../common/crypto.cpp ../common/dispatcher.cpp
+	$(CC) -c $(CFLAGS) $(CINCLUDES) ../common/localattestation_t.c
 	$(CXX) -o enclave2.so attestation.o crypto.o ecalls.o dispatcher.o localattestation_t.o $(LDFLAGS)
 
 sign:
-	oesign enclave2.so enc.conf private.pem
+	oesign sign enclave2.so enc.conf private.pem
 
 clean:
-	rm -f *.o *.so ../common/localattestation_t.* ../common/remoteattestation_args.h
+	rm -f *.o *.so ../common/localattestation_t.* ../common/remoteattestation_args.h *.pem enc1_pubkey.h

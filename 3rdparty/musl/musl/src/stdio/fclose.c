@@ -24,7 +24,7 @@ int fclose(FILE *f)
 	r = fflush(f);
 	r |= f->close(f);
 
-	if (f->getln_buf) free(f->getln_buf);
+	free(f->getln_buf);
 	if (!perm) free(f);
 	else FUNLOCK(f);
 

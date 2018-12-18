@@ -17,13 +17,13 @@ into the Github repository. This allows one to browse the documentation from
 Github Pages.
 
 To update the generated documentation, create the cmake build tree by using
-the instructions in [Getting Started with Open Enclave](../GettingStarted.md).
-Assuming that _/build_ is the root of the cmake build tree, a successful make
+the instructions in [Getting Started with Open Enclave](/docs/GettingStartedDocs/GettingStarted.md).
+Assuming that `/build` is the root of the cmake build tree, a successful make
 will build the HTML and XML reference documentation by default. You can
-also make the documentation directly:
+also make the documentation directly from the build folder:
 
-```
-build$ make refman
+```bash
+make refman
 ```
 
 The resulting documentation can be found in the cmake tree under:
@@ -34,30 +34,22 @@ build/docs/refman
 
 Open Enclave SDK API documentation resides on the gh-pages branch
 To update the generated html files in the source tree for commit into
-Github, you will need to do the following:
-```
-openenclave$ scripts/deploy-docs
+Github, you will need to do the following from the source tree root:
+```bash
+./scripts/deploy-docs
 ```
 ## Adding headers files to Doxygen
 
-To add new header files to be processed by Doxygen, edit this file (in the
-current directory).
-
-```
-doxygen.conf
-```
-
-Append new sources to the **INPUT** variable.
+To add new header files to be processed by Doxygen, edit the
+[doxygen.conf](/docs/refman/doxygen.conf) file and add new source files
+to be documented under to the `INPUT` list.
 
 ## Source-code documentation conventions
 
-Open Enclave uses the Doxygen Markdown style througout the sources. To learn
-more about Doyxgen Markdown, see:
-
-  [Doxygen Markdown Support](https://www.stack.nl/~dimitri/doxygen/manual/markdown.html)
+Open Enclave uses the Doxygen Markdown style throughout the sources. To learn
+more about Doxygen Markdown, refer to the [Doxygen Markdown Support](https://www.stack.nl/~dimitri/doxygen/manual/markdown.html).
 
 The sections below explain the basics.
-
 
 ### Comment blocks
 
@@ -108,7 +100,7 @@ Parameters should be introduced as follows.
 #### Return values
 
 Return values may be specified as a list of paragraphs (**@retval**) or
-as a single paragrah (**@returns**).
+as a single paragraph (**@returns**).
 
 Here's an example of a list of paragraphs:
 
@@ -191,11 +183,12 @@ For example.
  */
 ```
 
-### Disabling doxygen documentation from blocks of code
+### Disabling Doxygen documentation from blocks of code
 
-To disable doxygen documentation from blocks of code with #defines, #typedefs use
-the @cond command. Here is an example.
+To disable Doxygen documentation from blocks of code with `#defines` or
+`#typedefs` use the `@cond` command. For example:
 
+```
 /**
  * @cond DEV
  *
@@ -207,7 +200,7 @@ the @cond command. Here is an example.
  * @endcond
  *
  */
- 
-Doxygen will not document the code between @cond and @endcond unless DEV is specified
-in the ENABLED_SECTIONS of the doxygen.conf.
+```
 
+Doxygen will not document the code between `@cond` and `@endcond` unless `DEV`
+is specified in the `ENABLED_SECTIONS` of the doxygen.conf file.

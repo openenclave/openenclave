@@ -10,8 +10,11 @@ default_ca    = CA_default        # The default ca section
 ####################################################################
 [ CA_default ]
 database    = ./root_index.txt
-crlnumber   = ./root_crl_number
-private_key = ./RootCA1.key
+crlnumber   = ./root_crl_number  # For certificate revocation lists
+
+# The root key and root certificate.
+private_key       = ../data/RootCA1.key.pem
+certificate       = ../data/RootCA1.crt.pem
 
 default_days     = 365        # how long to certify for
 default_crl_days = 3650       # how long before next CRL

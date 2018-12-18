@@ -6,7 +6,6 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
-#include <openenclave/internal/hostalloc.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/thread.h>
@@ -45,8 +44,7 @@ static int _thread_wake_wait(oe_thread_data_t* waiter, oe_thread_data_t* self)
     int ret = -1;
     oe_thread_wake_wait_args_t* args = NULL;
 
-    if (!(args =
-              oe_host_alloc_for_call_host(sizeof(oe_thread_wake_wait_args_t))))
+    if (!(args = oe_host_calloc(1, sizeof(oe_thread_wake_wait_args_t))))
         goto done;
 
     args->waiter_tcs = td_to_tcs((td_t*)waiter);
@@ -58,7 +56,7 @@ static int _thread_wake_wait(oe_thread_data_t* waiter, oe_thread_data_t* self)
     ret = 0;
 
 done:
-    oe_host_free_for_call_host(args);
+    oe_host_free(args);
     return ret;
 }
 

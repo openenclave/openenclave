@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <errno.h>
+#include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
@@ -10,7 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../host/args.h"
+#include "libunwind_t.h"
 #include "pid.h"
 
 uint32_t g_pid;
@@ -19,7 +20,7 @@ int main(int argc, const char* argv[]);
 
 void _exit(int status)
 {
-    oe_call_host("ExitOCall", (void*)(uint64_t)status);
+    exit_ocall(status);
     abort();
 }
 
@@ -59,23 +60,25 @@ int t_setrlim(int r, int64_t lim)
 extern char** __environ;
 
 extern const char* __test__;
-OE_ECALL void Test(Args* args)
+
+int test(char test_name[201], uint32_t pid)
 {
-    g_pid = args->pid;
-    if (args)
+    int rval = 1;
+    g_pid = pid;
+    printf("RUNNING: %s\n", __TEST__);
+    if (!(__environ = (char**)calloc(1, sizeof(char**))))
     {
-        printf("RUNNING: %s\n", __TEST__);
-        if (!(__environ = (char**)calloc(1, sizeof(char**))))
-            args->ret = 1;
-
-        static const char* argv[] = {
-            "test", NULL,
-        };
-        args->ret = main(1, argv);
-        args->test = oe_host_strndup(__TEST__, OE_SIZE_MAX);
-
-        free(__environ);
+        rval = 1;
     }
+
+    static const char* argv[] = {
+        "test", NULL,
+    };
+    rval = main(1, argv);
+    strncpy(test_name, __TEST__, STRLEN_MAX);
+
+    free(__environ);
+    return rval;
 }
 
 OE_SET_ENCLAVE_SGX(

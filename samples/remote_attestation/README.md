@@ -6,14 +6,14 @@ It has the following properties:
 
 - Written in C++
 - Demonstrates an implementation of remote attestation
-- Use of mbedtls within the enclave
+- Use of mbedTLS within the enclave
 - Use Asymmetric / Public-Key Encryption to establish secure communications between two attesting enclaves
 - Enclave APIs used:
   - oe_get_report
   - oe_verify_report,
   - oe_is_within_enclave
-  
-Note: `Currently this sample only works on SGX-FLC systems`. The underlying SGX library support for end-to-end remote attestation is available only on SGX-FLC system. There is no plan to back port those libraries to either SGX1 system or software emulator.
+
+**Note: Currently this sample only works on SGX-FLC systems.** The underlying SGX library support for end-to-end remote attestation is available only on SGX-FLC system. There is no plan to back port those libraries to either SGX1 system or software emulator.
 
 ## Attestation primer
 
@@ -34,11 +34,11 @@ A successfully attested enclave proves:
 There are two types of attestation:
 
 - **Local Attestation** refers to two enclaves on the same TEE platform authenticating each other before exchanging information. In Open Enclave, this is done through the creation and validation of an enclave's `local report`.
-  
+
   ![Local Attestation](images/localattestation.png)
-  
-- **Remote Attestation** is the process of a [Trusted computing base (TCB)](https://en.wikipedia.org/wiki/Trusted_computing_base), a combination of HW and SW, gaining the trust of a remote enclave/provider. In Open Enclave, this is done through the creation and validation of an enclave's `remote report`.
-  
+
+- **Remote Attestation** is the process of a [trusted computing base (TCB)](https://en.wikipedia.org/wiki/Trusted_computing_base), a combination of HW and SW, gaining the trust of a remote enclave/provider. In Open Enclave, this is done through the creation and validation of an enclave's `remote report`.
+
   ![Remote Attestation Sample](images/remoteattestation_service.png)
 
 ### Secure Communication Channel
@@ -73,7 +73,7 @@ The host does the following in this sample:
    1. Create two enclaves for attesting each other, let's say they are enclave1 and enclave2
 
       ```c
-      oe_create_enclave( enclaveImagePath, OE_ENCLAVE_TYPE_SGX, OE_ENCLAVE_FLAG_DEBUG, NULL, 0, &enclave);
+      oe_create_remoteattestation_enclave( enclaveImagePath, OE_ENCLAVE_TYPE_SGX, OE_ENCLAVE_FLAG_DEBUG, NULL, 0, &enclave);
       ```
 
    2. Ask enclave1 for a remote report and a public key, which is returned in a `RemoteReportWithPKey` structure.
@@ -152,7 +152,7 @@ An important feature of `oe_get_report` is that you can pass in application spec
   - In this sample, the enclave signs the hash of an ephemeral public key into its report, which the challenger can then use to encrypt a response to it.
 
   - Other usage examples for `reportData` might be to include a nonce, or to initiate Diffie-Helman key exchange.
-  
+
 ##### 2) Verifying the integrity of the Enclave Report
 
 Once the report is generated and passed to the challenger, the challenger can call `oe_verify_report` to validate the report originated from an Trust Execution Environment (TEE, in the case it's a valid SGX platform).
@@ -211,14 +211,14 @@ As shown in the sample, the set of validations performed on these properties is 
 
 ## Using Cryptography in an Enclave
 
-The attestation remote_attestation/common/crypto.cpp file from the sample illustrates how to use `mbedtls` inside the enclave for cryptographic operations such as:
+The attestation remote_attestation/common/crypto.cpp file from the sample illustrates how to use mbedTLS inside the enclave for cryptographic operations such as:
 
 - RSA key generation, encryption and decryption
 - SHA256 hashing
 
-In general, the Open Enclave SDK provides default support for `mbedtls` layered on top of the Open Enclave core runtime with a small integration surface so that it can be switched out by open source developers in the future for your choice of crypto libraries.
+In general, the Open Enclave SDK provides default support for mbedTLS layered on top of the Open Enclave core runtime with a small integration surface so that it can be switched out by open source developers in the future for your choice of crypto libraries.
 
-See [here](/docs/MbedtlsSupport.md) for supported `mbedtls` functions
+See [here](https://github.com/Microsoft/openenclave/tree/master/docs/MbedtlsSupport.md) for supported mbedTLS functions
 
 ## Build and run
 
@@ -226,8 +226,8 @@ To build the sample, change into the remote_attestation directory and run `make 
 
 For example:
 
-     yourusername@yourVMname:~/openenclave/share/openenclave/samples$ cd remote_attestation
-     yourusername@yourVMname:~/openenclave/share/openenclave/samples/remote_attestation$ make build
-     yourusername@yourVMname:~/openenclave/share/openenclave/samples/remote_attestation$ make run
-
-     
+```c
+yourusername@yourVMname:~/openenclave/share/openenclave/samples$ cd remote_attestation
+yourusername@yourVMname:~/openenclave/share/openenclave/samples/remote_attestation$ make build
+yourusername@yourVMname:~/openenclave/share/openenclave/samples/remote_attestation$ make run
+```

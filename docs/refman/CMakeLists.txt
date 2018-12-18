@@ -28,6 +28,4 @@ else()
             html ${OE_DOCDIR}/openenclave/html
         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}
     )
-    install (DIRECTORY ${OE_DOCDIR}/openenclave/html DESTINATION ${CMAKE_INSTALL_DOCDIR})
-
 endif()

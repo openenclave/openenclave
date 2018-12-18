@@ -23,8 +23,8 @@ oe_result_t oe_memcpy_s(
     }
 
     /* Reject overlapping buffers. */
-    if ((dst >= src && (dst < src + num_bytes)) ||
-        (dst < src && (dst + dst_size > src)))
+    if ((dst >= src && ((uint8_t*)dst < (uint8_t*)src + num_bytes)) ||
+        (dst < src && ((uint8_t*)dst + dst_size > (uint8_t*)src)))
     {
         memset(dst, 0, dst_size);
         OE_RAISE(OE_OVERLAPPED_COPY);
@@ -97,6 +97,8 @@ OE_INLINE oe_result_t _oe_validate_string(char* str, size_t size)
 
 OE_INLINE void _oe_fill_string(char* str, size_t size)
 {
+    OE_UNUSED(str);
+    OE_UNUSED(size);
 #ifndef NDEBUG
     // Fill memory with pattern.
     memset(str, 0xFD, size);
