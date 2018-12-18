@@ -5,46 +5,46 @@ This short document explains how to use Doxygen within Open Enclave.
 
 ## Overview
 
-Doxygen is used to extract documentation from the Open Enclave source code.
-This directory contains a makefile for building all Doxygen output formats
-including:
-
-- HTML (html directory)
-- XML (xml directory)
+Doxygen is used to extract documentation from the Open Enclave source code. This
+directory contains a CMake target, `doxygen`, for building the HTML formatted
+documentation.
 
 The generated HTML files are the only ones that are checked
 into the GitHub repository. This allows one to browse the documentation from
 GitHub Pages.
 
-To update the generated documentation, create the cmake build tree by using
-the instructions in [Getting Started with Open Enclave](/docs/GettingStartedDocs/GettingStarted.md).
-Assuming that `/build` is the root of the cmake build tree, a successful make
-will build the HTML and XML reference documentation by default. You can
-also make the documentation directly from the build folder:
+To update the generated documentation, create the CMake build tree by using the
+instructions in [Getting Started with Open
+Enclave](/docs/GettingStartedDocs/GettingStarted.md). Assuming that `build` is
+the root of the CMake build tree, a successful `make` will build the HTML
+reference documentation by default. You can also make the documentation directly
+from the build folder:
 
 ```bash
-make refman
+make doxygen
 ```
 
-The resulting documentation can be found in the cmake tree under:
+The resulting documentation can be found in the CMake tree under:
 
 ```
-build/docs/refman
+build/output/share/doc/openenclave/html
 ```
 
-Open Enclave SDK API documentation resides on the gh-pages branch
-To update the generated html files in the source tree for commit into
-GitHub, you will need to do the following from the source tree root:
+Open Enclave SDK API documentation resides on the `gh-pages` branch. To update
+the generated html files in the source tree for commit into GitHub, you will
+need to do the following from the source tree root:
+
 ```bash
 ./scripts/deploy-docs
 ```
+
 ## Adding headers files to Doxygen
 
-To add new header files to be processed by Doxygen, edit the
-[doxygen.conf](/docs/refman/doxygen.conf) file and add new source files
-to be documented under to the `INPUT` list.
+To add new header files to be processed by Doxygen, add them to the list in the
+CMake command `doxygen_add_docs` in this [CMakeLists.txt](CMakeLists.txt). Note
+that it is relative to `./include/openenclave`, from the root of the repo.
 
-## Source-code documentation conventions
+## Source code documentation conventions
 
 Open Enclave uses the Doxygen Markdown style throughout the sources. To learn
 more about Doxygen Markdown, refer to the [Doxygen Markdown Support](https://www.stack.nl/~dimitri/doxygen/manual/markdown.html).
