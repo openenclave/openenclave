@@ -506,7 +506,7 @@ static const char _usage_sign[] =
     "\n"
     "        -----BEGIN RSA PRIVATE KEY-----\n"
     "\n"
-    "    The resulting image is written to <EnclaveImage>.signed.so.\n"
+    "    The resulting image is written to <EnclaveImage>.signed\n"
     "\n";
 
 static const char _usage_dump[] =

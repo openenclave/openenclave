@@ -257,7 +257,7 @@ sign:
 	oesign helloworldenc helloworld.conf private.pem
 
 clean:
-	rm -f enc.o helloworldenc helloworldenc.signed.so private.pem ...
+	rm -f enc.o helloworldenc helloworldenc.signed private.pem ...
 
 keys:
 	openssl genrsa -out private.pem -3 3072
