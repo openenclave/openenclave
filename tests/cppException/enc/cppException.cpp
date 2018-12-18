@@ -6,6 +6,12 @@
 #include <exception>
 #include <string>
 
+#if defined(__clang__)
+#pragma clang diagnostic ignored "-Wexceptions"
+#elif defined(__GNUC__)
+#pragma GCC diagnostic ignored "-Wterminate"
+#endif
+
 using namespace std;
 
 class BarClass01
