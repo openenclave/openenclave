@@ -1,15 +1,13 @@
 libc tests
 ==========
 
-This directory runs the MUSL libc unit tests. It reads **tests.supported** and 
-generates a wrapper (in the build directory) for each of these tests.
+This directory runs the MUSL libc unit tests. It reads **tests.cmake** and 
+generates a wrapper (in the build directory) for each of the tests in this file.
 
-The unit tests are partitioned into three files:
+All unit tests are all listed in **tests.cmake** in the following sections:
 
-* tests.all -- all unit tests.
-* tests.supported -- unit tests that work.
-* tests.broken -- unit tests that are broken.
-* tests.unsupported -- unit tests that are unsupported.
+* Supported -- unit tests that work.
+* Broken -- unit tests that are broken.
+* Unsupported -- unit tests that are unsupported.
 
-Tests determined to be unsupportable should be moved from tests.broken to
-tests.unsupportable.
+Tests determined to be unsupportable should be moved to the broken section.

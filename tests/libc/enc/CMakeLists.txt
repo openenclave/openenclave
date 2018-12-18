@@ -3,15 +3,15 @@
 
 include(add_enclave_executable)
 
+# Include the libc tests wrappers:
+include(../tests.cmake)
+
 # Generate wrappers for libc tests.
 execute_process(
     COMMAND ${CMAKE_CURRENT_LIST_DIR}/wrap_tests.sh
-        ${CMAKE_CURRENT_LIST_DIR}/../tests.supported
-        ${CMAKE_CURRENT_BINARY_DIR})
-
-# Include the libc tests wrappers:
-set(ROOT ${CMAKE_CURRENT_BINARY_DIR})
-include(../tests.supported)
+        ${PROJECT_SOURCE_DIR}
+        ${CMAKE_CURRENT_BINARY_DIR}
+        "${LIBC_TESTS}")
 
 add_executable(
     libc_enc 

@@ -18,26 +18,35 @@
 ##
 ##==============================================================================
 
-if [ "$#" != "2" ]; then
+if [ "$#" < "3" ]; then
     echo "Usage: $0 INPUT_FILE OUTPUT_DIRECTORY"
     exit 1
 fi
 
-input_file=$1
-output_directory=$2
+in_dir=$1
+out_dir=$2
+input_files=$3
 
-if [ ! -f "${input_file}" ]; then
-    echo "$0: not found: ${input_file}"
+if [ ! -d "${in_dir}" ]; then
+    echo "$0: not found: ${in_dir}"
     exit 1
 fi
 
-if [ ! -d "${output_directory}" ]; then
-    echo "$0: not found: ${output_directory}"
+if [ ! -d "${out_dir}" ]; then
+    echo "$0: not found: ${out_dir}"
     exit 1
 fi
 
-# Form the list of files while stripping the "${ROOT}/" prefix.
-files=$(grep "^[ \t]*\${ROOT}/" "${input_file}" | sed "s~[ \t]*\${ROOT}/~~g")
+files=$(/bin/echo ${input_files} | sed 's/;/ /g')
+
+for i in ${files}
+do
+    if [ ! -f "${in_dir}/${i}" ]; then
+        echo "$0: not found: ${in_dir}/${i}"
+        exit 1
+    fi
+    echo ${in_dir}/${i}
+done
 
 ##==============================================================================
 ##
@@ -45,10 +54,10 @@ files=$(grep "^[ \t]*\${ROOT}/" "${input_file}" | sed "s~[ \t]*\${ROOT}/~~g")
 ##
 ##==============================================================================
 
-tests_c=${output_directory}/tests.c
+tests_c=${out_dir}/tests.c
 
 rm -f "${tests_c}"
-rm -f "${output_directory}/test_*.c"
+rm -f "${out_dir}/test_*.c"
 
 ##==============================================================================
 ##
@@ -72,26 +81,26 @@ get_test_name()
 
 for i in ${files}
 do
-    name=$(get_test_name "${i}")
+    in_file=${in_dir}/${i}
+    test_name=$(get_test_name "${i}")
     dirname=$(dirname "${i}")
     basename=$(basename "${i}")
 
     # Create the directory for this source.
-    mkdir -p "${output_directory}/${dirname}"
-
+    mkdir -p "${out_dir}/${dirname}"
 
     # Form the full path of the source file.
-    source_file=${output_directory}/${dirname}/${basename}
+    out_file=${out_dir}/${dirname}/${basename}
 
     # Create the wrapper source file.
-cat > "${source_file}" <<END
+cat > "${out_file}" <<END
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#define main ${name}
-#include "../../../${i}"
+#define main ${test_name}
+#include "../../../${in_file}"
 END
-    echo "Created ${source_file}"
+    echo "Created ${out_file}"
 done
 
 ##==============================================================================
