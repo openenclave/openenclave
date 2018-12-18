@@ -27,6 +27,7 @@ endif()
 # By OS, by TEE
 if(UNIX)
     list(APPEND SRCS linux/stdext.c linux/uhelper.c)
+	list(INSERT INCS 0 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/linux)
     list(APPEND INCS PUBLIC ${NP_PATH}/include/linux)
 
     if(TZ)
@@ -35,6 +36,7 @@ if(UNIX)
     endif()
 elseif(WIN32)
     list(APPEND SRCS win32/uhelper.c)
+	list(INSERT INCS 0 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/win32)
 
     if(TZ)
         list(APPEND SRCS
