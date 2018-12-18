@@ -5,8 +5,6 @@ include(oeedl_file)
 
 oeedl_file(../libc.edl host gen)
 
-add_executable(libc_host host.cpp)
-
 add_executable(libc_host host.cpp ${gen})
 
 target_include_directories(libc_host PRIVATE

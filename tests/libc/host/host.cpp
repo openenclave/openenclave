@@ -13,17 +13,16 @@
 void Test(oe_enclave_t* enclave)
 {
     int rval = 1;
-    char test_name[STRLEN_MAX + 1];
-    oe_result_t result = test(enclave, &rval, test_name);
+    oe_result_t result = test(enclave, &rval);
     OE_TEST(result == OE_OK);
 
     if (rval == 0)
     {
-        printf("PASSED: %s\n", test_name);
+        printf("=== passed\n");
     }
     else
     {
-        printf("FAILED: %s (ret=%d)\n", test_name, rval);
+        printf("*** failed\n");
         abort();
     }
 }
@@ -33,46 +32,12 @@ void ocall_exit(uint64_t arg)
     exit(static_cast<int>(arg));
 }
 
-static int _get_opt(
-    int& argc,
-    const char* argv[],
-    const char* name,
-    const char** arg = NULL)
-{
-    for (int i = 0; i < argc; i++)
-    {
-        if (strcmp(argv[i], name) == 0)
-        {
-            if (!arg)
-            {
-                memmove(
-                    (void*)&argv[i],
-                    &argv[i + 1],
-                    static_cast<size_t>(argc - i) * sizeof(char*));
-                argc--;
-                return 1;
-            }
-
-            if (i + 1 == argc)
-                return -1;
-
-            *arg = argv[i + 1];
-            memmove(
-                (char**)&argv[i],
-                &argv[i + 2],
-                static_cast<size_t>(argc - i - 1) * sizeof(char*));
-            argc -= 2;
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
 int main(int argc, const char* argv[])
 {
     oe_result_t r;
     oe_enclave_t* enclave = NULL;
+    oe_result_t result;
+    const uint32_t flags = oe_get_create_flags();
 
     if (argc != 2)
     {

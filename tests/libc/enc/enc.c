@@ -2,8 +2,6 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
-#include "../args.h"
-
 #include <dirent.h>
 #include <errno.h>
 #include <libgen.h>
@@ -17,6 +15,7 @@
 #include <string.h>
 #include <time.h>
 #include "mtest.h"
+#include "libc_t.h"
 
 int t_status = 0;
 
@@ -86,10 +85,9 @@ done:
 
 extern int run_tests(void);
 
-OE_ECALL void Test(void* args_)
+int test()
 {
-    args_t* args = (args_t*)args_;
-    args->ret = run_tests();
+    return run_tests();
 }
 
 OE_SET_ENCLAVE_SGX(

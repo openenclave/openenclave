@@ -19,7 +19,7 @@
 ##==============================================================================
 
 if [ "$#" < "3" ]; then
-    echo "Usage: $0 INPUT_FILE OUTPUT_DIRECTORY"
+    echo "Usage: $0 IN_DIR OUT_DIR SOURCES"
     exit 1
 fi
 
@@ -45,7 +45,6 @@ do
         echo "$0: not found: ${in_dir}/${i}"
         exit 1
     fi
-    echo ${in_dir}/${i}
 done
 
 ##==============================================================================
