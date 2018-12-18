@@ -147,18 +147,5 @@ def windowsReleaseCrossPlatform() {
 }
 
 parallel "Check Pre-Commit Requirements" : { checkPreCommitRequirements() },
-        "Simulation clang-7 SGX1 Debug" : { simulationTest('clang-7', 'SGX1', 'Debug')},
-        "Simulation clang-7 SGX1 Release" : { simulationTest('clang-7', 'SGX1', 'Release')},
-        "Simulation clang-7 SGX1 RelWithDebInfo" : { simulationTest('clang-7', 'SGX1', 'RelWithDebInfo')},
-        "Simulation clang-7 SGX1-FLC Debug" : { simulationTest('clang-7', 'SGX1FLC', 'Debug')},
-        "Simulation clang-7 SGX1-FLC Release" : { simulationTest('clang-7', 'SGX1FLC', 'Release')},
-        "Simulation clang-7 SGX1-FLC RelWithDebInfo" : { simulationTest('clang-7', 'SGX1FLC', 'RelWithDebInfo')},
-        "Coffeelake clang-7 SGX1-FLC Debug" : { coffeelakeTest('clang-7', 'SGX1FLC', 'Debug') },
-        "Coffeelake clang-7 SGX1-FLC Release" : { coffeelakeTest('clang-7', 'SGX1FLC','Release') },
-        "Coffeelake clang-7 SGX1-FLC RelWithDebInfo" : { coffeelakeTest('clang-7', 'SGX1FLC', 'RelWithDebinfo') },
-        "Coffeelake gcc SGX1-FLC Debug" : { coffeelakeTest('gcc', 'SGX1FLC', 'Debug') },
-        "Coffeelake gcc SGX1-FLC Release" : { coffeelakeTest('gcc', 'SGX1FLC', 'Release') },
-        "Coffeelake gcc SGX1-FLC RelWithDebInfo" : { coffeelakeTest('gcc', 'SGX1FLC', 'RelWithDebInfo') },
         "Windows Debug Cross-platform" : { windowsDebugCrossPlatform() },
         "Windows Release Cross-platform" : { windowsReleaseCrossPlatform() },
-        "Non-Simulation Container SGX1-FLC RelWithDebInfo" : { nonSimulationTest() }
