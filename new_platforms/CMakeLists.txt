@@ -117,3 +117,7 @@ add_subdirectory(libsocket)
 add_subdirectory(libstdio)
 add_subdirectory(src)
 add_subdirectory(tests)
+
+if(WIN32 AND TZ)
+    add_subdirectory(opteesim)
+endif()
