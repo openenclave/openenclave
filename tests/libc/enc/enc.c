@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/enclave.h>
 #include <dirent.h>
 #include <errno.h>
 #include <libgen.h>
+#include <openenclave/enclave.h>
 #include <search.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -14,8 +14,8 @@
 #include <string.h>
 #include <string.h>
 #include <time.h>
-#include "mtest.h"
 #include "libc_t.h"
+#include "mtest.h"
 
 int t_status = 0;
 
