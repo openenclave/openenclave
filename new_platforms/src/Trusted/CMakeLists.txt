@@ -75,13 +75,23 @@ elseif(WIN32 AND SGX)
         PRIVATE ${CYREP_PATH}/tcps)
 
     set(PREFIX ${SGX_SDK_LIBRARIES_PREFIX}/$<CONFIG>)
-    set(LIBS
-        PUBLIC ${PREFIX}/sgx_tstdc.lib
-        PUBLIC ${PREFIX}/sgx_tprotected_fs.lib
-        PUBLIC ${PREFIX}/sgx_tcxx.lib
-        PUBLIC ${PREFIX}/sgx_trts.lib
-        PUBLIC ${PREFIX}/sgx_tservice.lib
-        PUBLIC ${PREFIX}/sgx_tcrypto.lib)
+    if(SIM)
+        set(LIBS
+                PUBLIC ${PREFIX}/sgx_tstdc.lib
+                PUBLIC ${PREFIX}/sgx_tprotected_fs.lib
+                PUBLIC ${PREFIX}/sgx_tcxx.lib
+                PUBLIC ${PREFIX}/sgx_trts_sim.lib
+                PUBLIC ${PREFIX}/sgx_tservice_sim.lib
+                PUBLIC ${PREFIX}/sgx_tcrypto.lib)
+    else()
+        set(LIBS
+                PUBLIC ${PREFIX}/sgx_tstdc.lib
+                PUBLIC ${PREFIX}/sgx_tprotected_fs.lib
+                PUBLIC ${PREFIX}/sgx_tcxx.lib
+                PUBLIC ${PREFIX}/sgx_trts.lib
+                PUBLIC ${PREFIX}/sgx_tservice.lib
+                PUBLIC ${PREFIX}/sgx_tcrypto.lib)
+    endif()
 
     add_library(oeenclave STATIC ${SRCS} ${GEN})
 

@@ -51,11 +51,17 @@ elseif(WIN32)
         list(APPEND INCS PUBLIC ${SGXSDKInstallPath}/include)
         
         set(PREFIX ${SGX_SDK_LIBRARIES_PREFIX}/$<CONFIG>)
-        set(LIBS
-            PUBLIC ${PREFIX}/sgx_urts.lib
-            PUBLIC ${PREFIX}/sgx_uae_service.lib
-            PUBLIC ${PREFIX}/sgx_uprotected_fs.lib
-            PUBLIC ${PREFIX}/sgx_urts.lib)
+        if(SIM)
+            set(LIBS
+                PUBLIC ${PREFIX}/sgx_urts_sim.lib
+                PUBLIC ${PREFIX}/sgx_uae_service_sim.lib
+                PUBLIC ${PREFIX}/sgx_uprotected_fs.lib)
+        else()
+            set(LIBS
+                PUBLIC ${PREFIX}/sgx_urts.lib
+                PUBLIC ${PREFIX}/sgx_uae_service.lib
+                PUBLIC ${PREFIX}/sgx_uprotected_fs.lib)
+        endif()
     endif()
 endif()
 
