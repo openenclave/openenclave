@@ -146,6 +146,5 @@ def windowsReleaseCrossPlatform() {
     }
 }
 
-parallel "Check Pre-Commit Requirements" : { checkPreCommitRequirements() },
-        "Windows Debug Cross-platform" : { windowsDebugCrossPlatform() },
-        "Windows Release Cross-platform" : { windowsReleaseCrossPlatform() },
+parallel "Windows Debug Cross-platform" : { windowsDebugCrossPlatform() },
+        "Windows Release Cross-platform" : { windowsReleaseCrossPlatform() }
