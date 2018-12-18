@@ -85,7 +85,7 @@ The Makefile in the root of this sample directory has three rules
 
 - build: Calls into the Makefiles in the host and enc directories to build
 - clean: Calls in to the Makefiles in the host and enc directories to clean all generated files
-- run: Runs the generated host executable, passing the signed enclave shared library as a parameter
+- run: Runs the generated host executable, passing the signed enclave executable as a parameter
 
 ```make
 build:
@@ -97,7 +97,7 @@ clean:
         $(MAKE) -C host clean
 
 run:
-        host/helloworldhost ./enc/helloworldenc.signed.so
+        host/helloworldhost ./enc/helloworldenc.signed
 ```
 
 Build the project with the following command:
@@ -209,16 +209,16 @@ The following files are generated during the build.
 | File | Description |
 | --- | --- |
 | enc.o | Compiled source file for enc.c |
-| helloworldenc.so | built and linked enclave shared library |
-| helloworldenc.signed.so | signed version of the enclave shared library |
+| helloworldenc | built and linked enclave executable |
+| helloworldenc.signed | signed version of the enclave executable |
 | helloworld_args.h | Defines the parameters that are passed to all functions defined in the edl file |
 | helloworld_t.c | Contains the `host_helloworld()` function with the marshaling code to call into the host version of the `host_helloworld()` function |
 | helloworld_t.h | function prototype for `host_helloworld()` function |
 | helloworld_t.o | compiled marshaling code for helloworld_t.c |
-| private.pem | generated signature used for signing the shared library |
-| public.pem | generated signature used for signing the shared library |
+| private.pem | generated signature used for signing the executable |
+| public.pem | generated signature used for signing the executable |
 
-Only the signed version of the enclave `helloworldenc.signed.so` is loadable on Linux as enclaves are required to be digitally signed.
+Only the signed version of the enclave `helloworldenc.signed` is loadable on Linux as enclaves are required to be digitally signed.
 
 #### Under the hood for the `make build` operation
 
@@ -251,13 +251,13 @@ build:
 	oeedger8r ../helloworld.edl --trusted
 	$(CC) -c $(CFLAGS) enc.c -o enc.o
 	$(CC) -c $(CFLAGS) helloworld_t.c -o helloworld_t.o
-	$(CC) -o helloworldenc.so helloworld_t.o enc.o $(LDFLAGS)
+	$(CC) -o helloworldenc helloworld_t.o enc.o $(LDFLAGS)
 
 sign:
-	oesign helloworldenc.so helloworld.conf private.pem
+	oesign helloworldenc helloworld.conf private.pem
 
 clean:
-	rm -f enc.o helloworldenc.so helloworldenc.signed.so private.pem ...
+	rm -f enc.o helloworldenc helloworldenc.signed.so private.pem ...
 
 keys:
 	openssl genrsa -out private.pem -3 3072
@@ -280,7 +280,7 @@ The Makefile's `build` target is for compiling enclave source code and linking i
 - oelibc
 - oecore
 
-`helloworldenc.so` is the resulting enclave library (unsigned)
+`helloworldenc is the resulting enclave executable (unsigned)
 
 ##### Sign
 
@@ -414,7 +414,7 @@ This function creates an enclave for use in the host process. This includes:
 
 The helloworld sample creates an enclave by calling `oe_create_helloworld_enclave` with the path to the signed enclave library file, which happens to be passed as the first parameter to the launching application. 
 
-The `OE_ENCLAVE_FLAG_DEBUG` flag allows the enclave to be created without the enclave binary being signed. It also gives a developer permission to debug the process and get access to enclave memory. What this means is ** DO NOT SHIP CODE WITH THE `OE_ENCLAVE_FLAG_DEBUG` ** because it is insecure. What it gives is the ability to develop your enclave more easily. Before you ship the code, you need to have a proper code signing story for the enclave shared library. Some newer Intel SGX platforms allow self-signed certificates to be used, but some of the older Intel SGX platforms require Intel to sign your library.
+The `OE_ENCLAVE_FLAG_DEBUG` flag allows the enclave to be created without the enclave binary being signed. It also gives a developer permission to debug the process and get access to enclave memory. What this means is ** DO NOT SHIP CODE WITH THE `OE_ENCLAVE_FLAG_DEBUG` ** because it is insecure. What it gives is the ability to develop your enclave more easily. Before you ship the code, you need to have a proper code signing story for the enclave executable. Some newer Intel SGX platforms allow self-signed certificates to be used, but some of the older Intel SGX platforms require Intel to sign your enclave executable.
 
 On a successful creation, the function returns an opaque enclave handle for any future operation on the enclave.
 
@@ -497,14 +497,14 @@ The following files are generated during the build.
 You can run the helloworld sample directly on the command line as follows:
 
 ```bash
-./host/helloworldhost ./enc/helloworldenc.signed.so
+./host/helloworldhost ./enc/helloworldenc.signed
 ```
 
 Or execute `make run` from the root of the sample:
 
 ```bash
 $ make run
-host/helloworldhost ./enc/helloworldenc.signed.so
+host/helloworldhost ./enc/helloworldenc.signed
 Hello world from the enclave
 Enclave called into host to print: Hello World!
 ```
@@ -514,5 +514,5 @@ helloworld sample can run under OE simulation mode.
 To run the helloworld sample in simulation mode from the command like, use the following:
 
 ```bash
-./host/helloworldhost ./enc/helloworldenc.signed.so --simulate
+./host/helloworldhost ./enc/helloworldenc.signed --simulate
 ```

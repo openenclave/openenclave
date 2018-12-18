@@ -10,7 +10,7 @@
 # Given <target> and <CONFIG>, this function adds custom
 # commands to generate a signing key if key is not specified
 # and call `oesign` to sign the
-# target, resulting in `<target>.signed.so`. It also adds
+# target, resulting in `<target>.signed`. It also adds
 # `<target>_signed` as an imported target so that it can be referenced
 # later in the CMake graph.
 # TODO: (1) Replace the name guessing logic.
