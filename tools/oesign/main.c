@@ -29,7 +29,7 @@ void Err(const char* format, ...)
     fprintf(stderr, "\n");
 }
 
-// Append .signed to the name of the executable to be signed. 
+// Append .signed to the name of the executable to be signed.
 static char* _make_signed_lib_name(const char* path)
 {
     const char* p;
