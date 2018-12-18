@@ -1,8 +1,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
-    set(PLATFORM_SRC
+set(PLATFORM_SRC "")
+
+if (OE_SGX)
+    list(APPEND PLATFORM_SRC
         sgx/atexit.c
         sgx/backtrace.c
         sgx/calls.c
@@ -43,7 +45,7 @@ if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
             sgx/windows/reloc.c
         )
     endif()
-elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*|ARM.*|aarch64.*|AARCH64.*")
+elseif(OE_TRUSTZONE)
     message("TODO: ADD ARM files.")
     list(APPEND PLATFORM_SRC
         optee/abort.c
@@ -51,8 +53,6 @@ elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*|ARM.*|aarch64.*|AARCH64.*")
         optee/printf.c
         optee/start.c
     )
-else()
-    message(FATAL_ERROR "Unknown architecture. Only Intel and ARM are supported.")
 endif()
 
 add_library(oecore STATIC
@@ -68,7 +68,11 @@ add_library(oecore STATIC
 
 target_link_libraries(oecore PUBLIC oe_includes)
 
-if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
+if (CMAKE_C_COMPILER_ID MATCHES GNU)
+    target_compile_options(oecore PRIVATE -Wjump-misses-init)
+endif()
+
+if (OE_SGX)
     # This directory contains dummy C headers needed by dlmalloc:
     target_include_directories(oecore PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/sgx/dlmalloc)
 
@@ -81,28 +85,21 @@ if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
     set_source_files_properties(sgx/jump.c PROPERTIES COMPILE_FLAGS -O2)
 
     set_source_files_properties(sgx/keys.c PROPERTIES COMPILE_FLAGS -Wno-type-limits)
+
+    # -m64 is an x86_64 specific flag
+   target_compile_options(oecore PUBLIC -m64)
 endif()
 
 if (CMAKE_C_COMPILER_ID MATCHES GNU)
     target_compile_options(oecore PRIVATE -Wjump-misses-init)
 endif ()
 
-if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
-target_compile_options(oecore PUBLIC
-    -m64
-    -fPIC
-    -nostdinc
-    -fno-stack-protector
-    -fvisibility=hidden
-    )
-else()
 target_compile_options(oecore PUBLIC
     -fPIC
     -nostdinc
     -fno-stack-protector
     -fvisibility=hidden
-    )
-endif()
+)
 
 target_compile_options(oecore INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>)
 

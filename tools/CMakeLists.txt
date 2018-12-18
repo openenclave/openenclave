@@ -3,7 +3,7 @@
 
 add_subdirectory(oeedger8r)
 
-if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
+if (OE_SGX)
 add_subdirectory(oesgx)
 add_subdirectory(oesign)
 endif()

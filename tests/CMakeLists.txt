@@ -13,12 +13,12 @@ endif()
 
 add_subdirectory(mem)
 add_subdirectory(safemath)
-add_subdirectory(safecrt)
 add_subdirectory(str)
 
-if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
+if (OE_SGX)
 add_subdirectory(aesm)
 add_subdirectory(debugger)
+add_subdirectory(safecrt)
 
 if (UNIX OR ADD_WINDOWS_ENCLAVE_TESTS)
 add_subdirectory(bigmalloc)

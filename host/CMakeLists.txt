@@ -31,8 +31,8 @@ else()
     message(FATAL_ERROR "Unknown OS. Only supported OSes are Linux and Windows")
 endif()
 
-# Arch specific files. Right now, don't distinguish Intel vs AMD.
-if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
+# SGX specific files
+if (OE_SGX)
     list(APPEND PLATFORM_SRC
         ../common/sgx/qeidentity.c
         ../common/sgx/quote.c
@@ -84,14 +84,12 @@ if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
     endif()
 
     set(PLATFORM_FLAGS "-m64")
-elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*|ARM.*|aarch64.*|AARCH64.*")
+elseif(OE_TRUSTZONE)
     list(APPEND PLATFORM_SRC
         optee/enclave.c
         optee/log.c)
     set(PLATFORM_FLAGS "")
-else()
-    message(FATAL_ERROR "Unknown architecture. Only Intel and ARM are supported.")
-endif()    
+endif()
 
 # Combine with all other non platform dependent files.
 add_library(oehost STATIC

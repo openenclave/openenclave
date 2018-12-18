@@ -4,7 +4,7 @@
 # Copy MUSL headers to collector dir and wrap
 # actual compilation and lib-generation happens in <ROOT>/libc/
 
-if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
+if (OE_SGX)
   set(ARCH "x86_64")
 else()
   set(ARCH "aarch64")

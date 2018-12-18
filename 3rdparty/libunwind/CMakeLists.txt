@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
+if (OE_SGX)
   set(ARCH "x86_64")
   set(PLATFORM_SRC
     libunwind/src/x86_64/Los-linux.c

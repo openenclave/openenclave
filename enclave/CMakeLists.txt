@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
+if (OE_SGX)
     set(PLATFORM_SRC
         ../common/sgx/qeidentity.c
         ../common/sgx/quote.c
@@ -15,12 +15,9 @@ if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
         sgx/revocationinfo.c
         sgx/start.S
     )
-elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*|ARM.*|aarch64.*|AARCH64.*")
+elseif(OE_TRUSTZONE)
     message("TODO: ADD ARM files.")
-else()
-    message(FATAL_ERROR "Unknown architecture. Only Intel and ARM are supported.")
 endif()
- 
 
 add_library(oeenclave STATIC
     ../common/asn1.c

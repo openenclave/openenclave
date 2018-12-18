@@ -4,7 +4,7 @@
 # Build the C library, using local sources and sources from musl.
 set(MUSLSRC ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
-if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
+if (OE_SGX)
 add_library(oelibasm OBJECT
     sgx/abort.S
     sgx/exp2l.S
@@ -21,7 +21,7 @@ add_library(oelibasm OBJECT
     ${MUSLSRC}/math/x86_64/sqrtf.s
     ${MUSLSRC}/setjmp/x86_64/longjmp.s
     ${MUSLSRC}/setjmp/x86_64/setjmp.s)
-else()
+elseif(OE_TRUSTZONE)
 add_library(oelibasm OBJECT
     ${MUSLSRC}/fenv/aarch64/fenv.s
     ${MUSLSRC}/setjmp/aarch64/longjmp.s
@@ -39,7 +39,7 @@ endif ()
 
 set (PLATFORM_SRC "")
 
-if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
+if (OE_SGX)
     list(APPEND PLATFORM_SRC
         sgx/syscalls.c
         sgx/sched_yield.c)
@@ -687,17 +687,13 @@ add_library(oelibc STATIC
 # NOTE: This is the minimum required for musl sources.
 set_property(TARGET oelibc PROPERTY C_STANDARD 99)
 
-if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
-target_compile_options(oelibc PRIVATE
-    -fno-builtin-memcpy
-    -fno-builtin-memset
-    -ffreestanding
-    -mrdrnd)
-else()
 target_compile_options(oelibc PRIVATE
     -fno-builtin-memcpy
     -fno-builtin-memset
     -ffreestanding)
+
+if (OE_SGX)
+    target_compile_options(oelibc PRIVATE -mrdrnd)
 endif()
 
 if (CMAKE_C_COMPILER_ID MATCHES GNU)
@@ -716,6 +712,7 @@ if (CMAKE_C_COMPILER_ID MATCHES GNU OR CMAKE_C_COMPILER_ID MATCHES Clang)
     -Wno-unused-parameter
     -Wno-sign-compare)
 endif ()
+
 # Second: compiler-specific warnings:
 if (CMAKE_C_COMPILER_ID MATCHES GNU)
   target_compile_options(oelibc PRIVATE
@@ -748,7 +745,7 @@ target_link_libraries(oelibc
   PUBLIC oecore oelibc_includes
   PRIVATE oelibasm)
 
-if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
+if (OE_SGX)
 target_include_directories(oelibc PRIVATE
   internal
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal
