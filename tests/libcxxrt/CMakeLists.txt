@@ -56,7 +56,7 @@ elseif (ADD_WINDOWS_ENCLAVE_TESTS)
 		get_testcase_name(${testcase} name "")
 
 		if("${name}" STREQUAL "test_foreign_exceptions")
-			add_enclave_test(tests/libcxxrt/${name} ./host libcxxrt_host ./enc libcxxrttest-${name}_enc)
+			add_enclave_test(tests/libcxxrt/${name} libcxxrt_host libcxxrttest-${name}_enc)
 		else()
 			# Logs Generation Path
 			 file(TO_NATIVE_PATH ${LINUX_BIN_DIR}/libcxxrt/exp_${name}_output.log linux_log_file_path) # source path
