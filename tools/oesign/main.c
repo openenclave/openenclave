@@ -36,7 +36,7 @@ static char* _make_signed_lib_name(const char* path)
     const char* p;
     mem_t buf = MEM_DYNAMIC_INIT;
 
-    if ((!(p = strrchr(path, '.'))) )
+    if ((!(p = strrchr(path, '.'))))
         p = path + strlen(path);
 
     mem_append(&buf, path, (size_t)(p - path));
