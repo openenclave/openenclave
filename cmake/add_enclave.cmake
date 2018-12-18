@@ -27,6 +27,7 @@ function(add_enclave)
    add_executable(${ENCLAVE_TARGET} ${ENCLAVE_SOURCES})
    
    if(NOT ENCLAVE_CONFIG)
+      #Since the config is not specified, the enclave wont be signed.
       return()
    endif()
 
