@@ -65,7 +65,7 @@ static void _set_thread_binding(ThreadBinding* binding)
     oe_once(&_thread_binding_once, _create_thread_binding_key);
     oe_thread_setspecific(_thread_binding_key, binding);
 #else
-    return (ThreadBinding*)oe_get_gs_register_base();
+    return oe_set_gs_register_base(binding);
 #endif
 }
 
