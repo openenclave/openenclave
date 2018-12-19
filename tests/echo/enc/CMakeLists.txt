@@ -2,7 +2,6 @@
 # Licensed under the MIT License.
 
 include(oeedl_file)
-include(add_enclave_executable)
 
 oeedl_file(../echo.edl enclave gen)
 

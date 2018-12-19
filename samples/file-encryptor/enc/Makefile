@@ -30,13 +30,13 @@ build:
 	oeedger8r ../fileencryptor.edl --trusted
 	$(CXX) -c $(CXXFLAGS) -std=c++11 ecalls.cpp encryptor.cpp keys.cpp
 	$(CC) -c $(CFLAGS) fileencryptor_t.c -o fileencryptor_t.o
-	$(CXX) -o file-encryptorenc.so ecalls.o encryptor.o keys.o fileencryptor_t.o $(LDFLAGS)
+	$(CXX) -o file-encryptorenc ecalls.o encryptor.o keys.o fileencryptor_t.o $(LDFLAGS)
 
 sign:
-	oesign sign file-encryptorenc.so file-encryptor.conf private.pem
+	oesign sign file-encryptorenc file-encryptor.conf private.pem
 
 clean:
-	rm -f *.so *.o fileencryptor_t.* fileencryptor_args.h private.pem public.pem
+	rm -f file-encryptorenc file-encryptorenc.signed *.o fileencryptor_t.* fileencryptor_args.h private.pem public.pem
 
 keys:
 	openssl genrsa -out private.pem -3 3072

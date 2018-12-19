@@ -29,13 +29,13 @@ build:
 	@ echo "Compilers used: $(CC), $(CXX)"
 	$(CXX) -c $(CXXFLAGS) $(INCLUDES) -std=c++11 ecalls.cpp ../common/dispatcher.cpp ../common/keys.cpp
 	$(CC) -c $(CFLAGS) $(CINCLUDES) ../common/datasealing_t.c
-	$(CXX) -o enclave_b.so ecalls.o dispatcher.o keys.o datasealing_t.o $(LDFLAGS)	
+	$(CXX) -o enclave_b ecalls.o dispatcher.o keys.o datasealing_t.o $(LDFLAGS)	
 
 sign:
-	oesign sign enclave_b.so data-sealing.conf private.pem
+	oesign sign enclave_b data-sealing.conf private.pem
 
 clean:
-	rm -f *.so *.o *.pem 
+	rm -f enclave_b enclave_b.signed *.o *.pem 
 
 keys:
 	openssl genrsa -out private.pem -3 3072

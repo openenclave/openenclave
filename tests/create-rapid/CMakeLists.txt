@@ -7,4 +7,4 @@ if (UNIX)
 	add_subdirectory(enc)
 endif()
 
-add_enclave_test(tests/create-rapid ./host create_rapid_host ./enc create_rapid_enc)
+add_enclave_test(tests/create-rapid create_rapid_host create_rapid_enc)

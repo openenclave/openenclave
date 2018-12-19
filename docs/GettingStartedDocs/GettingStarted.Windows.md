@@ -195,10 +195,10 @@ enclave from the Linux build location into the same folder as the host app in
 the Windows build folder. For example, to run `tests/ecall`:
 
 ```
-C:\> copy C:\openenclave\build\tests\ecall\enc\ecallenc.signed.so
+C:\> copy C:\openenclave\build\tests\ecall\enc\ecallenc.signed
       C:\Users\username\CMakeBuilds\build\x64-Debug\tests\ecall\host
 C:\> cd C:\Users\username\CMakeBuilds\build\x64-Debug\tests\ecall\host
-C:\> ecallhost ecallenc.signed.so
+C:\> ecallhost ecallenc.signed
 ```
 
 For the moment, only `tests/echo` and `tests/ecall` can be built and run on

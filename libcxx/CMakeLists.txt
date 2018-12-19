@@ -16,5 +16,5 @@ target_link_libraries(oelibcxx
 set_property(TARGET oelibcxx
   PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/enclave)
 
-install(TARGETS oelibcxx EXPORT openenclave
+install(TARGETS oelibcxx EXPORT openenclave-targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)

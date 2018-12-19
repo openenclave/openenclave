@@ -2,7 +2,6 @@
 # Licensed under the MIT License.
 
 include(oeedl_file)
-include(add_enclave_executable)
 
 oeedl_file(../tests.edl enclave gen)
 add_executable(qeidentity_enc enc.cpp ${gen})

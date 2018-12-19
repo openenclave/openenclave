@@ -5,6 +5,7 @@ include(oeedl_file)
 include(add_enclave_executable)
 
 # create a binary for each testcase listed in ../tests.supported
+
 include(${CMAKE_CURRENT_LIST_DIR}/../../../cmake/get_testcase_name.cmake)
 
 oeedl_file(../libcxxrt.edl enclave gen)

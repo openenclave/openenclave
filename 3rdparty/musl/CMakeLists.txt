@@ -7,6 +7,7 @@
 set(CFLAGS "-fPIC -DSYSCALL_NO_INLINE")
 set(PATCHES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/patches)
 set(MUSL_DIR ${CMAKE_CURRENT_BINARY_DIR}/musl)
+set(MUSL_INCLUDES ${OE_INCDIR}/openenclave/libc)
 
 include (ExternalProject)
 ExternalProject_Add(musl_includes
@@ -27,7 +28,7 @@ ExternalProject_Add(musl_includes
   CONFIGURE_COMMAND
     ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/musl
     ./configure
-      --includedir=${OE_INCDIR}/openenclave/libc
+      --includedir=${MUSL_INCLUDES}
       CFLAGS=${CFLAGS}
       CC=${CMAKE_C_COMPILER}
       CXX=${CMAKE_CXX_COMPILER}
@@ -35,23 +36,23 @@ ExternalProject_Add(musl_includes
     ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/musl
     make install-headers
     COMMAND ${CMAKE_COMMAND} -E copy
-      ${OE_INCDIR}/openenclave/libc/endian.h
-      ${OE_INCDIR}/openenclave/libc/__endian.h
+      ${MUSL_INCLUDES}/endian.h
+      ${MUSL_INCLUDES}/__endian.h
     COMMAND ${CMAKE_COMMAND} -E copy
       ${PATCHES_DIR}/endian.h
-      ${OE_INCDIR}/openenclave/libc/endian.h
+      ${MUSL_INCLUDES}/endian.h
 
     # Append deprecations.h to all C header files.
     COMMAND ${CMAKE_CURRENT_LIST_DIR}/append-deprecations
-      ${OE_INCDIR}/openenclave/libc
+      ${MUSL_INCLUDES}
 
     # Copy local deprecations.h to include/bits/deprecated.h.
     COMMAND ${CMAKE_COMMAND} -E copy
       ${CMAKE_CURRENT_LIST_DIR}/deprecations.h
-      ${OE_INCDIR}/openenclave/libc/bits/deprecations.h
+      ${MUSL_INCLUDES}/bits/deprecations.h
 
   BUILD_BYPRODUCTS
-    ${OE_INCDIR}/openenclave/libc ${CMAKE_CURRENT_BINARY_DIR}/musl
+    ${MUSL_INCLUDES} ${CMAKE_CURRENT_BINARY_DIR}/musl
 
   INSTALL_COMMAND "")
 
@@ -68,11 +69,10 @@ add_dependencies(oelibc_includes musl_includes)
 # include path.
 target_include_directories(oelibc_includes
   SYSTEM INTERFACE
-  $<BUILD_INTERFACE:${OE_INCDIR}/openenclave/libc>
+  $<BUILD_INTERFACE:${MUSL_INCLUDES}>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/libc>)
 
-install(TARGETS oelibc_includes EXPORT openenclave-targets
-  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+install(TARGETS oelibc_includes EXPORT openenclave-targets)
 
-install(DIRECTORY ${OE_INCDIR}/openenclave/libc
+install(DIRECTORY ${MUSL_INCLUDES}
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty)
