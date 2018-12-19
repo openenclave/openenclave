@@ -194,7 +194,7 @@ static oe_result_t _do_eenter(
     if (!code_out || !func_out || !result_out || !arg_out)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    OE_TRACE_INFO(
+    OE_TRACE_VERBOSE(
         "_do_eenter(tcs=%p aep=%p codeIn=%d, funcIn=%x argIn=%llx)\n",
         tcs,
         aep,

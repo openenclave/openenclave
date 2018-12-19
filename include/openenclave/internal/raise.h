@@ -67,15 +67,15 @@
 
 OE_EXTERNC_BEGIN
 
-#define OE_RAISE(RESULT, ...)                                    \
-    do                                                           \
-    {                                                            \
-        result = (RESULT);                                       \
-        if (result != OE_OK)                                     \
-        {                                                        \
-            OE_TRACE_ERROR("Failed::%s", oe_result_str(result)); \
-        }                                                        \
-        goto done;                                               \
+#define OE_RAISE(RESULT, ...)                             \
+    do                                                    \
+    {                                                     \
+        result = (RESULT);                                \
+        if (result != OE_OK)                              \
+        {                                                 \
+            OE_TRACE_ERROR(":%s", oe_result_str(result)); \
+        }                                                 \
+        goto done;                                        \
     } while (0)
 
 // Unlike gcc and clang, for pure C code, MSVC does not support ##__VA_ARGS__
@@ -120,6 +120,14 @@ OE_EXTERNC_BEGIN
         oe_result_t _result_ = (EXPRESSION); \
         if (_result_ != OE_OK)               \
             OE_RAISE_NO_TRACE(_result_);     \
+    } while (0)
+
+#define OE_CHECK_MSG(EXPRESSION, fmt, ...)              \
+    do                                                  \
+    {                                                   \
+        oe_result_t _result_ = (EXPRESSION);            \
+        if (_result_ != OE_OK)                          \
+            OE_RAISE_MSG(_result_, fmt, ##__VA_ARGS__); \
     } while (0)
 
 OE_EXTERNC_END

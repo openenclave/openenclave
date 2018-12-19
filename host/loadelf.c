@@ -124,7 +124,7 @@ static oe_result_t _oe_load_elf_image(
 #endif
                     image->oeinfo_rva = sh->sh_addr;
                     image->oeinfo_file_pos = sh->sh_offset;
-                    OE_TRACE_INFO(
+                    OE_TRACE_VERBOSE(
                         "Found properties block offset %lx size %lx",
                         sh->sh_offset,
                         sh->sh_size);
@@ -145,7 +145,7 @@ static oe_result_t _oe_load_elf_image(
                     image->tdata_size = sh->sh_size;
                     image->tdata_align = sh->sh_addralign;
 
-                    OE_TRACE_INFO(
+                    OE_TRACE_VERBOSE(
                         "loadelf: tdata { rva=%lx, size=%lx, align=%ld }\n",
                         sh->sh_addr,
                         sh->sh_size,
@@ -155,7 +155,7 @@ static oe_result_t _oe_load_elf_image(
                 {
                     image->tbss_size = sh->sh_size;
                     image->tbss_align = sh->sh_addralign;
-                    OE_TRACE_INFO(
+                    OE_TRACE_VERBOSE(
                         "loadelf: tbss { size=%ld, align=%ld }\n",
                         sh->sh_size,
                         sh->sh_addralign);
@@ -888,7 +888,7 @@ oe_result_t oe_load_elf_enclave_image(
         0)
         OE_RAISE(OE_FAILURE);
 
-    if (get_current_logging_level() >= OE_LOG_LEVEL_INFO)
+    if (get_current_logging_level() >= OE_LOG_LEVEL_VERBOSE)
         _dump_relocations(image->u.elf.reloc_data, image->reloc_size);
 
     image->type = OE_IMAGE_TYPE_ELF;

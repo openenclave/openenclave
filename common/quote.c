@@ -231,21 +231,26 @@ oe_result_t VerifyQuoteImpl(
         if (!key_equal)
             OE_RAISE(OE_VERIFY_FAILED);
 
-        OE_CHECK(
+        OE_CHECK_MSG(
             oe_enforce_revocation(
-                &leaf_cert, &intermediate_cert, &pck_cert_chain));
+                &leaf_cert, &intermediate_cert, &pck_cert_chain),
+            "enforcing CRL",
+            NULL);
     }
 
     // Quote validations.
     {
         // Verify SHA256 ECDSA (qe_report_body_signature, qe_report_body,
         // PckCertificate.pub_key)
-        OE_CHECK(
+        OE_CHECK_MSG(
             _ecdsa_verify(
                 &leaf_public_key,
                 &quote_auth_data->qe_report_body,
                 sizeof(quote_auth_data->qe_report_body),
-                &quote_auth_data->qe_report_body_signature));
+                &quote_auth_data->qe_report_body_signature),
+            "QE report signature validation using PCK public key + SHA256 "
+            "ECDSA",
+            NULL);
 
         // Assert SHA256 (attestation_key + qe_auth_data.data) ==
         // qe_report_body.report_data[0..32]
@@ -275,16 +280,21 @@ oe_result_t VerifyQuoteImpl(
             _read_public_key(
                 &quote_auth_data->attestation_key, &attestation_key));
 
-        OE_CHECK(
+        OE_CHECK_MSG(
             _ecdsa_verify(
                 &attestation_key,
                 sgx_quote,
                 SGX_QUOTE_SIGNED_DATA_SIZE,
-                &quote_auth_data->signature));
+                &quote_auth_data->signature),
+            "Report signature validation using attestation key + SHA256 ECDSA",
+            NULL);
     }
 
     // Quoting Enclave validations.
-    OE_CHECK(oe_enforce_qe_identity(&quote_auth_data->qe_report_body));
+    OE_CHECK_MSG(
+        oe_enforce_qe_identity(&quote_auth_data->qe_report_body),
+        "Quoting enclave identity checking",
+        NULL);
     result = OE_OK;
 
 done:

@@ -817,11 +817,11 @@ oe_result_t oe_create_enclave(
     enclave->ocalls = (const oe_ocall_func_t*)ocall_table;
     enclave->num_ocalls = ocall_table_size;
 
-    /* Setup logging configuration */
-    oe_log_enclave_init(enclave);
-
     /* Invoke enclave initialization. */
     OE_CHECK(_initialize_enclave(enclave));
+
+    /* Setup logging configuration */
+    oe_log_enclave_init(enclave);
 
     *enclave_out = enclave;
     result = OE_OK;

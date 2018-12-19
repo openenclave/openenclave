@@ -14,6 +14,7 @@ typedef enum _log_level_ {
     OE_LOG_LEVEL_ERROR,
     OE_LOG_LEVEL_WARNING,
     OE_LOG_LEVEL_INFO,
+    OE_LOG_LEVEL_VERBOSE,
     OE_LOG_LEVEL_MAX
 } log_level_t;
 
@@ -91,6 +92,15 @@ OE_EXTERNC_END
         ##__VA_ARGS__,          \
         __FILE__,               \
         __FUNCTION__,           \
+        __LINE__)
+
+#define OE_TRACE_VERBOSE(fmt, ...) \
+    OE_TRACE(                      \
+        OE_LOG_LEVEL_VERBOSE,      \
+        fmt "[%s %s:%d]\n",        \
+        ##__VA_ARGS__,             \
+        __FILE__,                  \
+        __FUNCTION__,              \
         __LINE__)
 
 #endif
