@@ -4,6 +4,12 @@
 # Copy MUSL headers to collector dir and wrap
 # actual compilation and lib-generation happens in <ROOT>/libc/
 
+if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
+  set(ARCH "x86_64")
+else()
+  set(ARCH "aarch64")
+endif()
+
 set(CFLAGS "-fPIC -DSYSCALL_NO_INLINE")
 set(PATCHES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/patches)
 set(MUSL_DIR ${CMAKE_CURRENT_BINARY_DIR}/musl)
@@ -17,14 +23,14 @@ ExternalProject_Add(musl_includes
     ${CMAKE_CURRENT_BINARY_DIR}/musl
   PATCH_COMMAND
     COMMAND ${CMAKE_COMMAND} -E copy
-      ${MUSL_DIR}/arch/x86_64/syscall_arch.h
-      ${MUSL_DIR}/arch/x86_64/__syscall_arch.h
+      ${MUSL_DIR}/arch/${ARCH}/syscall_arch.h
+      ${MUSL_DIR}/arch/${ARCH}/__syscall_arch.h
     COMMAND ${CMAKE_COMMAND} -E copy
       ${PATCHES_DIR}/syscall_arch.h
-      ${MUSL_DIR}/arch/x86_64/syscall_arch.h
+      ${MUSL_DIR}/arch/${ARCH}/syscall_arch.h
     COMMAND ${CMAKE_COMMAND} -E copy
       ${PATCHES_DIR}/pthread_arch.h
-      ${MUSL_DIR}/arch/x86_64/pthread_arch.h
+      ${MUSL_DIR}/arch/${ARCH}/pthread_arch.h
   CONFIGURE_COMMAND
     ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/musl
     ./configure

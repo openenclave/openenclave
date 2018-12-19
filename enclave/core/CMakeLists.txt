@@ -81,6 +81,7 @@ if (CMAKE_C_COMPILER_ID MATCHES GNU)
     target_compile_options(oecore PRIVATE -Wjump-misses-init)
 endif ()
 
+if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
 target_compile_options(oecore PUBLIC
     -m64
     -fPIC
@@ -88,6 +89,14 @@ target_compile_options(oecore PUBLIC
     -fno-stack-protector
     -fvisibility=hidden
     )
+else()
+target_compile_options(oecore PUBLIC
+    -fPIC
+    -nostdinc
+    -fno-stack-protector
+    -fvisibility=hidden
+    )
+endif()
 
 target_compile_options(oecore INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>)
 

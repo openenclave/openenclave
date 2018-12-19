@@ -4,6 +4,7 @@
 # Build the C library, using local sources and sources from musl.
 set(MUSLSRC ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
+if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
 add_library(oelibasm OBJECT
     abort.S
     exp2l.S
@@ -20,6 +21,13 @@ add_library(oelibasm OBJECT
     ${MUSLSRC}/math/x86_64/sqrtf.s
     ${MUSLSRC}/setjmp/x86_64/longjmp.s
     ${MUSLSRC}/setjmp/x86_64/setjmp.s)
+else()
+add_library(oelibasm OBJECT
+    ${MUSLSRC}/fenv/aarch64/fenv.s
+    ${MUSLSRC}/setjmp/aarch64/longjmp.s
+    ${MUSLSRC}/setjmp/aarch64/setjmp.s)
+endif()
+
 
 # CMake unconditionally adds `-DNDEBUG` etc. as flags even when
 # assembling, and clang-7 errors because we treat warnings as errors.
@@ -29,16 +37,20 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_compile_options(oelibasm PRIVATE -Wno-error=unused-command-line-argument)
 endif ()
 
-if (UNIX)
-set(PLATFORM_SRC
-    ../common/sgx/rand.S
-)
-elseif (WIN32)
-set(PLATFORM_SRC
-    ../common/sgx/rand.asm
-)
-endif()
+set (PLATFORM_SRC "")
 
+if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
+    list(APPEND PLATFORM_SRC
+        syscalls.c)
+
+    if (UNIX)
+        list(APPEND PLATFORM_SRC
+            ../common/sgx/rand.S)
+    elseif (WIN32)
+        set(APPEND PLATFORM_SRC
+            ../common/sgx/rand.asm) 
+    endif()
+endif()
 
 add_library(oelibc STATIC
     arc4random.c
@@ -52,7 +64,6 @@ add_library(oelibc STATIC
     sched_yield.c
     stdlib.c
     strerror.c
-    syscalls.c
     sysconf.c
     time.c
     __stack_chk_fail.c
@@ -670,11 +681,18 @@ add_library(oelibc STATIC
 # NOTE: This is the minimum required for musl sources.
 set_property(TARGET oelibc PROPERTY C_STANDARD 99)
 
+if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
 target_compile_options(oelibc PRIVATE
     -fno-builtin-memcpy
     -fno-builtin-memset
     -ffreestanding
     -mrdrnd)
+else()
+target_compile_options(oelibc PRIVATE
+    -fno-builtin-memcpy
+    -fno-builtin-memset
+    -ffreestanding)
+endif()
 
 if (CMAKE_C_COMPILER_ID MATCHES GNU)
   target_compile_options(oelibc PRIVATE
@@ -724,10 +742,17 @@ target_link_libraries(oelibc
   PUBLIC oecore oelibc_includes
   PRIVATE oelibasm)
 
+if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
 target_include_directories(oelibc PRIVATE
   internal
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/x86_64)
+else()
+target_include_directories(oelibc PRIVATE
+  internal
+  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal
+  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/aarch64)
+endif()
 
 set_property(TARGET oelibc PROPERTY
   ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
