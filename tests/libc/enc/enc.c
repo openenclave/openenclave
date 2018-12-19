@@ -1,37 +1,21 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <dirent.h>
 #include <errno.h>
-#include <openenclave/edger8r/enclave.h>
+#include <libgen.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/calls.h>
-#include <openenclave/internal/enclavelibc.h>
-#include <signal.h>
+#include <search.h>
 #include <stdarg.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <string.h>
+#include <time.h>
 #include "libc_t.h"
-
-int main(int argc, const char* argv[]);
-
-void _exit(int status)
-{
-    oe_call_host("ocall_exit", (void*)(uint64_t)status);
-    abort();
-}
-
-void _Exit(int status)
-{
-    _exit(status);
-    abort();
-}
-
-void exit(int status)
-{
-    _exit(status);
-    abort();
-}
+#include "mtest.h"
 
 int t_status = 0;
 
@@ -54,30 +38,56 @@ int t_setrlim(int r, int64_t lim)
     return 0;
 }
 
-extern char** __environ;
-
-extern const char* __test__;
-
-extern bool oe_disable_debug_malloc_check;
-
-int test(char* test)
+int run_test(const char* name, int (*main)(int argc, const char* argv[]))
 {
-    int rval = 0;
-    oe_disable_debug_malloc_check = true;
+    extern char** __environ;
+    char** environ = NULL;
+    int ret = 1;
 
-    printf("RUNNING: %s\n", __TEST__);
+    /* Print running message. */
+    printf("=== running: %s\n", name);
 
-    if (!(__environ = (char**)calloc(1, sizeof(char**))))
-        rval = 1;
+    /* Disable Open Enclave debug malloc checks. */
+    {
+        extern bool oe_disable_debug_malloc_check;
+        oe_disable_debug_malloc_check = true;
+    }
 
-    static const char* argv[] = {
-        "test", NULL,
-    };
+    /* Allocate an environment for invoking the test. */
+    {
+        if (!(environ = (char**)calloc(1, sizeof(char**))))
+            goto done;
 
-    rval = main(1, argv);
-    strncpy(test, __TEST__, STRLEN_MAX);
-    free(__environ);
-    return rval;
+        memset(environ, 0, sizeof(char**));
+        __environ = environ;
+    }
+
+    /* Run the test */
+    {
+        const char* argv[] = {"test", NULL};
+
+        if (main(1, argv) != 0)
+        {
+            fprintf(stderr, "*** failed: %s\n", name);
+            goto done;
+        }
+    }
+
+    ret = 0;
+
+done:
+
+    free(environ);
+    __environ = NULL;
+
+    return ret;
+}
+
+extern int run_tests(void);
+
+int test()
+{
+    return run_tests();
 }
 
 OE_SET_ENCLAVE_SGX(
@@ -86,4 +96,4 @@ OE_SET_ENCLAVE_SGX(
     true, /* AllowDebug */
     4096, /* HeapPageCount */
     1024, /* StackPageCount */
-    8);   /* TCSCount */
+    2);   /* TCSCount */

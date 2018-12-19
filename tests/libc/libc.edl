@@ -2,16 +2,7 @@
 // Licensed under the MIT License.
 
 enclave {
-    enum string_limit {
-        STRLEN_MAX = 200
-    };
-    
     trusted {
-        public int test(
-            [out]char test[201]);
-    };
-    untrusted {
-        void ocall_exit(
-            uint64_t arg);
+        public int test();
     };
 };
