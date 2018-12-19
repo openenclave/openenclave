@@ -7,4 +7,4 @@ if (UNIX)
 	add_subdirectory(enc)
 endif()
 
-add_enclave_test(tests/pingpong ./host pingpong_host ./enc pingpong_enc)
+add_enclave_test(tests/pingpong pingpong_host pingpong_enc)

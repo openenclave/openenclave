@@ -6,7 +6,6 @@ set(CXXTEST_SOURCES
     test_typeinfo.cc
    )
 
-
 add_executable(system-test ${CXXTEST_SOURCES})
 
 # Generating excpected output with system-test

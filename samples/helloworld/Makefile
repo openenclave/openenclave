@@ -10,8 +10,8 @@ clean:
 	$(MAKE) -C host clean
 
 run:
-	host/helloworldhost ./enc/helloworldenc.signed.so
+	host/helloworldhost ./enc/helloworldenc.signed
 
 simulate:
-	host/helloworldhost ./enc/helloworldenc.signed.so --simulate
+	host/helloworldhost ./enc/helloworldenc.signed --simulate
 

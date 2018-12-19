@@ -31,7 +31,11 @@ ExternalProject_Add(mbedtls-wrap
     -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 
   # This is a no-op to override the default.
-  INSTALL_COMMAND "")
+  INSTALL_COMMAND ""
+  BYPRODUCTS
+    <BINARY_DIR>/library/libmbedtls.a
+    <BINARY_DIR>/library/libmbedx509.a
+    <BINARY_DIR>/library/libmbedcrypto.a)
 
 ExternalProject_Get_property(mbedtls-wrap SOURCE_DIR)
 ExternalProject_Get_property(mbedtls-wrap BINARY_DIR)

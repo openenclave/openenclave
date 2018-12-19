@@ -287,8 +287,8 @@ OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
     true, /* AllowDebug */
-    512,  /* HeapPageCount */
-    512,  /* StackPageCount */
+    128,  /* HeapPageCount */
+    16,   /* StackPageCount */
     16);  /* TCSCount */
 
 OE_DEFINE_EMPTY_ECALL_TABLE();

@@ -7,5 +7,5 @@
 
 // clang-format off
 #include "thread.h"
-#include "../oethread_enc/enc.cpp"
+#include "enc_oethread.cpp"
 // clang-format on

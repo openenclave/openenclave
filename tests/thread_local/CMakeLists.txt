@@ -8,7 +8,7 @@ if (UNIX)
 endif()
 
 add_enclave_test(tests/thread_local 
-    ./host thread_local_host 
-	./enc thread_local_enc)
+     thread_local_host 
+     thread_local_enc)
 
 set_tests_properties(tests/thread_local PROPERTIES SKIP_RETURN_CODE 2)

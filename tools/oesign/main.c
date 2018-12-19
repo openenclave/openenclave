@@ -29,18 +29,17 @@ void Err(const char* format, ...)
     fprintf(stderr, "\n");
 }
 
-// Replace .so-extension with .signed.so. If there is no .so extension,
-// append .signed.so.
+// Append .signed to the name of the executable to be signed.
 static char* _make_signed_lib_name(const char* path)
 {
     const char* p;
     mem_t buf = MEM_DYNAMIC_INIT;
 
-    if ((!(p = strrchr(path, '.'))) || (strcmp(p, ".so") != 0))
+    if ((!(p = strrchr(path, '.'))))
         p = path + strlen(path);
 
     mem_append(&buf, path, (size_t)(p - path));
-    mem_append(&buf, ".signed.so", 11);
+    mem_append(&buf, ".signed", 11);
 
     return (char*)mem_steal(&buf);
 }
@@ -507,7 +506,7 @@ static const char _usage_sign[] =
     "\n"
     "        -----BEGIN RSA PRIVATE KEY-----\n"
     "\n"
-    "    The resulting image is written to <EnclaveImage>.signed.so.\n"
+    "    The resulting image is written to <EnclaveImage>.signed\n"
     "\n";
 
 static const char _usage_dump[] =

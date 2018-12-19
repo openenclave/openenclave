@@ -8,4 +8,4 @@ if (UNIX)
 endif()
 
 add_enclave_test(tests/enclaveparam 
-    ./host enclaveparam_host ./enc enclaveparam_enc)
+    enclaveparam_host enclaveparam_enc)

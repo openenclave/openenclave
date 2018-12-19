@@ -82,7 +82,7 @@ username@yourVMname:~/openenclave/share/openenclave/samples/helloworld$ ls enc  
 
 username@yourVMname:~/openenclave/share/openenclave/samples/helloworld$ make build
  ...
-username@yourVMname:~/openenclave/share/openenclave/samples/helloworld$ make run host/helloworldhost ./enc/helloworldenc.signed.so
+username@yourVMname:~/openenclave/share/openenclave/samples/helloworld$ make run host/helloworldhost ./enc/helloworldenc.signed
 Enclave called into host to print: Hello World!
 ```
 
