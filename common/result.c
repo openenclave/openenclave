@@ -95,6 +95,8 @@ const char* oe_result_str(oe_result_t result)
             return "OE_INVALID_UTC_DATE_TIME";
         case OE_INVALID_QE_IDENTITY_INFO:
             return "OE_INVALID_QE_IDENTITY_INFO";
+        case OE_UNSUPPORTED_ENCLAVE_IMAGE:
+            return "OE_UNSUPPORTED_ENCLAVE_IMAGE";
         case __OE_RESULT_MAX:
             break;
     }

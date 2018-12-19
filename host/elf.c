@@ -510,6 +510,54 @@ done:
     return rc;
 }
 
+int elf64_get_dynamic_symbol_table(
+    const elf64_t* elf,
+    const elf64_sym_t** symtab,
+    size_t* size)
+{
+    int rc = -1;
+    size_t index;
+    const elf64_shdr_t* sh;
+    const char* SECTIONNAME = ".dynsym";
+    const elf64_word_t SH_TYPE = SHT_DYNSYM;
+
+    if (!_is_valid_elf64(elf) || !symtab || !size)
+        goto done;
+
+    *symtab = NULL;
+    *size = 0;
+
+    /* Find the symbol table section header */
+    if ((index = _find_shdr(elf, SECTIONNAME)) == (size_t)-1)
+        goto done;
+
+    if (index == 0 || index >= _get_header(elf)->e_shnum)
+        goto done;
+
+    /* Set pointer to section header */
+    if (!(sh = _get_shdr(elf, index)))
+        goto done;
+
+    /* If this is not a symbol table */
+    if (sh->sh_type != SH_TYPE)
+        goto done;
+
+    /* Sanity check */
+    if (sh->sh_entsize != sizeof(elf64_sym_t))
+        goto done;
+
+    /* Set pointer to symbol table section */
+    if (!(*symtab = (const elf64_sym_t*)_get_section(elf, index)))
+        goto done;
+
+    /* Calculate number of symbol table entries */
+    *size = sh->sh_size / sh->sh_entsize;
+
+    rc = 0;
+done:
+    return rc;
+}
+
 const char* elf64_get_string_from_dynstr(
     const elf64_t* elf,
     elf64_word_t offset)
@@ -1812,8 +1860,10 @@ oe_result_t elf64_load_relocations(
     elf64_shdr_t* shdr;
     uint8_t* data;
     size_t size;
-    const elf64_rela_t* p;
-    const elf64_rela_t* end;
+    elf64_rela_t* p;
+    elf64_rela_t* end;
+    const elf64_sym_t* symtab = NULL;
+    size_t symtab_size = 0;
 
     if (data_out)
         *data_out = 0;
@@ -1852,17 +1902,26 @@ oe_result_t elf64_load_relocations(
     if (data == NULL)
         goto done;
 
+    /* Get pointer to symbol table */
+    if (elf64_get_dynamic_symbol_table(elf, &symtab, &symtab_size))
+        goto done;
+
     /* Set pointers to start and end of relocation table */
     p = (elf64_rela_t*)data;
-    end = (elf64_rela_t*)data + (size / sizeof(elf64_rela_t));
+    end = p + (size / sizeof(elf64_rela_t));
 
     /* Reject unsupported relocation types */
     for (; p != end; p++)
     {
-        if (ELF64_R_TYPE(p->r_info) != R_X86_64_RELATIVE)
+        uint64_t reloc_type = ELF64_R_TYPE(p->r_info);
+        if (reloc_type != R_X86_64_RELATIVE && reloc_type != R_X86_64_TPOFF64)
         {
-            /* Should these really be skipped? */
-            continue;
+            // Relocations are critical for correct code behavior.
+            // Error out for unsupported relocations
+            OE_RAISE_MSG(
+                OE_UNSUPPORTED_ENCLAVE_IMAGE,
+                "Unsupported elf relocation type %d\n",
+                (int)reloc_type);
         }
     }
 
@@ -1878,6 +1937,37 @@ oe_result_t elf64_load_relocations(
 
         memset(*data_out, 0, *size_out);
         OE_CHECK(oe_memcpy_s(*data_out, *size_out, data, size));
+
+        // Fix up thread-local relocations.
+        p = (elf64_rela_t*)*data_out;
+        end = p + (size / sizeof(elf64_rela_t));
+
+        for (; p != end; p++)
+        {
+            if (ELF64_R_TYPE(p->r_info) == R_X86_64_TPOFF64)
+            {
+                // The symbol value contains the offset from the tls segment
+                // end. To avoid having symbol lookup in the enclave, we store
+                // the offset in the addend field.
+                uint64_t sym_index = ELF64_R_SYM(p->r_info);
+                if (sym_index >= symtab_size)
+                {
+                    OE_RAISE_MSG(
+                        OE_UNSUPPORTED_ENCLAVE_IMAGE,
+                        "Invalid symtab index %d\n",
+                        (int)sym_index);
+                }
+                const elf64_sym_t* sym = &symtab[sym_index];
+                p->r_addend = (elf64_sxword_t)sym->st_value;
+
+                const char* sym_name =
+                    elf64_get_string_from_dynstr(elf, sym->st_name);
+                OE_TRACE_INFO(
+                    "Relocated thread-local variable %s with offset %d\n",
+                    sym_name ? sym_name : "",
+                    (int)p->r_addend);
+            }
+        }
     }
 
     result = 0;
