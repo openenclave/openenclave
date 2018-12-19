@@ -18,8 +18,8 @@
 ##
 ##==============================================================================
 
-if [ "$#" < "3" ]; then
-    echo "Usage: $0 IN_DIR OUT_DIR SOURCES"
+if [ "$#" -lt "3" ]; then
+    echo "Usage: $0 IN_DIR OUT_DIR SOURCES..."
     exit 1
 fi
 
@@ -37,7 +37,7 @@ if [ ! -d "${out_dir}" ]; then
     exit 1
 fi
 
-files=$(/bin/echo ${input_files} | sed 's/;/ /g')
+files=$(/bin/echo "${input_files}" | sed 's/;/ /g')
 
 for i in ${files}
 do
@@ -97,7 +97,7 @@ cat > "${out_file}" <<END
 // Licensed under the MIT License.
 
 #define main ${test_name}
-#include "../../../${in_file}"
+#include "${in_file}"
 END
     echo "Created ${out_file}"
 done

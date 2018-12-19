@@ -9,9 +9,9 @@ include(../tests.cmake)
 
 # Generate wrappers for libc tests.
 execute_process(
-    COMMAND ${CMAKE_CURRENT_LIST_DIR}/wrap_tests.sh
-        ${PROJECT_SOURCE_DIR}
-        ${CMAKE_CURRENT_BINARY_DIR}
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/wrap_tests.sh
+        "${PROJECT_SOURCE_DIR}"
+        "${CMAKE_CURRENT_BINARY_DIR}"
         "${LIBC_TESTS}")
 
 oeedl_file(../libc.edl enclave gen)
