@@ -7,9 +7,13 @@
 #include <string>
 
 #if defined(__clang__)
+#pragma clang diagnostic ignored "-Wpragmas"
 #pragma clang diagnostic ignored "-Wexceptions"
 #elif defined(__GNUC__)
+#if __GNUC__ > 5
+#pragma GCC diagnostic ignored "-Wunknown-pragmas"
 #pragma GCC diagnostic ignored "-Wterminate"
+#endif
 #endif
 
 using namespace std;
