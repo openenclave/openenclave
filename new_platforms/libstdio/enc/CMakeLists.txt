@@ -5,11 +5,13 @@ include(oeedl_file)
 
 oeedl_file(${OE_PATH}/include/openenclave/stdio.edl enclave GEN C_GEN H_GEN)
 
+set(TARGET oestdio_enc)
+
 if(UNIX AND TZ)
     set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
-        "liboestdio_enc.a;stdio_enc.o;optee/files_optee.o")
+        "lib${TARGET}.a;stdio_enc.o;optee/files_optee.o")
 
-    add_custom_target(liboestdio_enc ALL
+    add_custom_target(lib${TARGET} ALL
         COMMAND make -C ${CMAKE_CURRENT_SOURCE_DIR}/optee
             -f linux_gcc.mak
             OE_INC=${OE_PATH}/include
@@ -26,11 +28,22 @@ elseif(WIN32 AND SGX)
 
     add_library(oestdio_enc ${SRCS} ${GEN})
 
-    target_include_directories(oestdio_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-    target_include_directories(oestdio_enc PRIVATE ${OE_PATH}/include)
-    target_include_directories(oestdio_enc PRIVATE ${NP_PATH}/include)
-    target_include_directories(oestdio_enc PRIVATE ${SGXSDKInstallPath}/include)
-    target_include_directories(oestdio_enc PRIVATE ${SGXSDKInstallPath}/include/tlibc)
+    add_library(${TARGET} ${SRCS} ${GEN})
+
+    if(SGX)
+        target_include_directories(${TARGET} PRIVATE ${SGXSDKInstallPath}/include)
+        target_include_directories(${TARGET} PRIVATE ${SGXSDKInstallPath}/include/tlibc)
+    elseif(TZ AND SIM)
+        target_include_directories(${TARGET} PRIVATE ${NP_PATH}/include/optee/enclave/Simulator)
+        target_include_directories(${TARGET} PRIVATE ${NP_PATH}/include/optee/enclave)
+        target_include_directories(${TARGET} PRIVATE ${NP_PATH}/include/optee)
+        target_include_directories(${TARGET} PRIVATE ${OPTEE_OS_PATH}/lib/libutee/include)
+        target_include_directories(${TARGET} PRIVATE ${OPTEE_OS_PATH}/lib/libutils/ext/include)
+    endif()
+
+    target_include_directories(${TARGET} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+    target_include_directories(${TARGET} PRIVATE ${OE_PATH}/include)
+    target_include_directories(${TARGET} PRIVATE ${NP_PATH}/include)
 
     string(REPLACE "/RTC1" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
 endif()

@@ -20,6 +20,9 @@ target_include_directories(oesocket_host PRIVATE ${OE_PATH}/include)
 target_include_directories(oesocket_host PRIVATE ${NP_PATH}/include)
 
 if(WIN32)
-    target_include_directories(oesocket_host PRIVATE ${SGXSDKInstallPath}/include)
     target_link_libraries(oesocket_host PUBLIC ws2_32)
+
+    if(SGX)
+        target_include_directories(oesocket_host PRIVATE ${SGXSDKInstallPath}/include)
+    endif()
 endif()
