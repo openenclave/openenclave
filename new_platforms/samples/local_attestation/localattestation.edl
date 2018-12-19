@@ -1,0 +1,31 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+        // Attest and store the public key of another enclave
+        public int verify_report_and_store_certificate(
+            [in, count=report_size] uint8_t *report,
+            size_t report_size);
+
+        // Sign message for another enclave using the public key stored for it
+        public int generate_signed_message(
+            [out, size=data_size] uint8_t* data,
+            size_t data_size,
+            [out] size_t* data_size_needed,
+            [out, size=signature_size] uint8_t* signature,
+            size_t signature_size,
+            [out] size_t* signature_size_needed);
+
+        // Process signed message
+        public int process_signed_msg(
+            [in, count=data_size] uint8_t* data,
+            size_t data_size,
+            [in, count=signature_size] uint8_t* signature,
+            size_t signature_size);
+    };
+
+    //untrusted {
+    //    no untrusted functions in this sample
+    //};
+};

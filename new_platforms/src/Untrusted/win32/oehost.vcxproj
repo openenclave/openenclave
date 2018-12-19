@@ -54,6 +54,18 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\3rdparty\RIoT\CyReP\RiotAes128.c" />
+    <ClCompile Include="..\..\..\..\3rdparty\RIoT\CyReP\RiotBase64.c" />
+    <ClCompile Include="..\..\..\..\3rdparty\RIoT\CyReP\RiotCrypt.c" />
+    <ClCompile Include="..\..\..\..\3rdparty\RIoT\CyReP\RiotDerEnc.c" />
+    <ClCompile Include="..\..\..\..\3rdparty\RIoT\CyReP\RiotEcc.c" />
+    <ClCompile Include="..\..\..\..\3rdparty\RIoT\CyReP\RiotHmac.c" />
+    <ClCompile Include="..\..\..\..\3rdparty\RIoT\CyReP\RiotKdf.c" />
+    <ClCompile Include="..\..\..\..\3rdparty\RIoT\CyReP\RiotSha256.c" />
+    <ClCompile Include="..\..\..\..\3rdparty\RIoT\CyReP\tcps\cborhelper.c" />
+    <ClCompile Include="..\..\..\..\3rdparty\RIoT\CyReP\tcps\TcpsId.c" />
+    <ClCompile Include="..\..\..\..\3rdparty\RIoT\External\tinycbor\src\cborencoder.c" />
+    <ClCompile Include="..\..\..\..\3rdparty\RIoT\External\tinycbor\src\cborparser.c" />
     <ClCompile Include="..\..\optee_common.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -213,6 +225,11 @@
       <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">"$(NewPlatformsDir)oeedger8r.exe" --untrusted-dir .. --untrusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
     </CustomBuild>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\3rdparty\mbedtls\mbedtls\visualc\VS2010\mbedTLS.vcxproj">
+      <Project>{46cf2d25-6a36-4189-b59c-e4815388e554}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B7AE03E4-CF5A-49DC-AB3D-2D8F485472B4}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -221,6 +238,7 @@
     <ProjectName>oehost</ProjectName>
     <NewPlatformsDir>..\..\</NewPlatformsDir>
     <UrchinDir>$(OESdkDir)3rdparty\Urchin\</UrchinDir>
+    <MbedTlsDir>$(SolutionDir)\..\3rdparty\mbedtls\mbedtls\</MbedTlsDir>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="$(SolutionDir)\vssettings.props" />
@@ -289,7 +307,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_ARM_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..;$(WinARMSDKInstallPath);$(NewPlatformsDir)include\optee\host;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OESdkDir)include;$(OpteeCallsDir)OpteeCalls\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..;$(WinARMSDKInstallPath);$(NewPlatformsDir)include\optee\host;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OESdkDir)include;$(OpteeCallsDir)OpteeCalls\inc;$(MbedTlsDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -307,7 +325,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>OE_SIMULATE_OPTEE;WIN32;_DEBUG;_LIB;_ARM_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..;$(NewPlatformsDir)include\optee\host;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OESdkDir)include;$(OpteeCallsDir)OpteeCalls\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..;$(NewPlatformsDir)include\optee\host;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OESdkDir)include;$(OpteeCallsDir)OpteeCalls\inc;$(MbedTlsDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -347,7 +365,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>OE_SIMULATE_OPTEE;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..;$(NewPlatformsDir)include\optee\host;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OESdkDir)include;$(OpteeCallsDir)OpteeCalls\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..;$(NewPlatformsDir)include\optee\host;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OESdkDir)include;$(OpteeCallsDir)OpteeCalls\inc;$(MbedTlsDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
@@ -390,7 +408,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>OE_SIMULATE_OPTEE;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..;$(NewPlatformsDir)include\optee\host;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OESdkDir)include;$(OpteeCallsDir)OpteeCalls\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..;$(NewPlatformsDir)include\optee\host;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(OESdkDir)include;$(OpteeCallsDir)OpteeCalls\inc;$(MbedTlsDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
@@ -413,7 +431,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..\..;$(WinARMSDKInstallPath);$(NewPlatformsDir)include;$(OESdkDir)include;$(OpteeCallsDir)OpteeCalls\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..\..;$(WinARMSDKInstallPath);$(NewPlatformsDir)include;$(OESdkDir)include;$(OpteeCallsDir)OpteeCalls\inc;$(MbedTlsDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -434,7 +452,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>USE_VCOM;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..\..;$(NewPlatformsDir)include;$(OESdkDir)include;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..\..;$(NewPlatformsDir)include;$(OESdkDir)include;%(AdditionalIncludeDirectories);$(SGXSDKInstallPath)include;$(MbedTlsDir)\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

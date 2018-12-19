@@ -111,10 +111,15 @@ oe_result_t ecall_TestOERandom()
 
 oe_result_t ecall_TestOEGetReportV1(uint32_t flags)
 {
-    uint8_t report_buffer[1024];
-    size_t report_buffer_size = sizeof(report_buffer);
+    uint8_t* report_buffer = NULL;
+    size_t report_buffer_size = 4096;
     uint8_t report_data[OE_REPORT_DATA_SIZE] = { 0 };
     size_t report_data_size = OE_REPORT_DATA_SIZE;
+
+    report_buffer = malloc(report_buffer_size);
+    if (report_buffer == NULL) {
+        return OE_OUT_OF_MEMORY;
+    }
 
     oe_result_t oeResult = oe_get_report_v1(flags,
                                             report_data,
@@ -124,29 +129,37 @@ oe_result_t ecall_TestOEGetReportV1(uint32_t flags)
                                             report_buffer,
                                             &report_buffer_size);
     if (oeResult != OE_OK) {
-        return OE_FAILURE;
+        oeResult = OE_FAILURE;
+        goto Cleanup;
     }
 
     oe_report_t parsed_report;
     oeResult = oe_parse_report(report_buffer, report_buffer_size, &parsed_report);
-    if (VERIFY_OPTEE_SGX(OE_OK, OE_UNSUPPORTED, oeResult)) {
-        return OE_FAILURE;
+    if (oeResult != OE_OK) {
+        oeResult = OE_FAILURE;
+        goto Cleanup;
     }
 
     oeResult = oe_verify_report(report_buffer,
         report_buffer_size,
         NULL);
-    if (VERIFY_OPTEE_SGX(OE_OK, OE_UNSUPPORTED, oeResult)) {
-        return OE_FAILURE;
+    if (oeResult != OE_OK) {
+        oeResult = OE_FAILURE;
+        goto Cleanup;
     }
 
-    return OE_OK;
+Cleanup:
+    if (report_buffer) {
+        free(report_buffer);
+    }
+
+    return oeResult;
 }
 
 oe_result_t ecall_TestOEGetReportV2(uint32_t flags)
 {
     uint8_t* report_buffer = NULL;
-    size_t report_buffer_size = sizeof(report_buffer);
+    size_t report_buffer_size = 0;
     uint8_t report_data[OE_REPORT_DATA_SIZE] = { 0 };
     size_t report_data_size = OE_REPORT_DATA_SIZE;
 
@@ -163,7 +176,7 @@ oe_result_t ecall_TestOEGetReportV2(uint32_t flags)
 
     oe_report_t parsed_report;
     oeResult = oe_parse_report(report_buffer, report_buffer_size, &parsed_report);
-    if (VERIFY_OPTEE_SGX(OE_OK, OE_UNSUPPORTED, oeResult)) {
+    if (oeResult != OE_OK) {
         oe_free_report(report_buffer);
         return OE_FAILURE;
     }
@@ -172,7 +185,7 @@ oe_result_t ecall_TestOEGetReportV2(uint32_t flags)
         report_buffer_size,
         NULL);
     oe_free_report(report_buffer);
-    if (VERIFY_OPTEE_SGX(OE_OK, OE_UNSUPPORTED, oeResult)) {
+    if (oeResult != OE_OK) {
         return OE_FAILURE;
     }
 
@@ -181,10 +194,16 @@ oe_result_t ecall_TestOEGetReportV2(uint32_t flags)
 
 oe_result_t ecall_TestOEGetTargetInfoV1(uint32_t flags)
 {
-    uint8_t report_buffer[1024];
-    size_t report_buffer_size = sizeof(report_buffer);
+    uint8_t* targetInfo = NULL;
+    uint8_t* report_buffer = NULL;
+    size_t report_buffer_size = 4096;
     uint8_t report_data[OE_REPORT_DATA_SIZE] = { 0 };
     size_t report_data_size = OE_REPORT_DATA_SIZE;
+
+    report_buffer = malloc(report_buffer_size);
+    if (report_buffer == NULL) {
+        return OE_OUT_OF_MEMORY;
+    }
 
     oe_result_t oeResult = oe_get_report_v1(flags,
         report_data,
@@ -194,7 +213,8 @@ oe_result_t ecall_TestOEGetTargetInfoV1(uint32_t flags)
         report_buffer,
         &report_buffer_size);
     if (oeResult != OE_OK) {
-        return OE_FAILURE;
+        oeResult = OE_FAILURE;
+        goto Cleanup;
     }
 
     /* OP-TEE does not oe_get_target_info_v1 */
@@ -203,21 +223,24 @@ oe_result_t ecall_TestOEGetTargetInfoV1(uint32_t flags)
     size_t targetInfoSize = 0;
     oeResult = oe_get_target_info_v1(report_buffer, report_buffer_size, NULL, &targetInfoSize);
     if (oeResult != OE_BUFFER_TOO_SMALL) {
-        return OE_FAILURE;
+        oeResult = OE_FAILURE;
+        goto Cleanup;
     }
     if (targetInfoSize == 0) {
-        return OE_FAILURE;
+        oeResult = OE_FAILURE;
+        goto Cleanup;
     }
 
-    uint8_t* targetInfo = (uint8_t*)malloc(targetInfoSize);
+    targetInfo = (uint8_t*)malloc(targetInfoSize);
     if (targetInfo == NULL) {
-        return OE_OUT_OF_MEMORY;
+        oeResult = OE_OUT_OF_MEMORY;
+        goto Cleanup;
     }
-    
+
     oeResult = oe_get_target_info_v1(report_buffer, report_buffer_size, targetInfo, &targetInfoSize);
     if (oeResult != OE_OK) {
-        free(targetInfo);
-        return OE_FAILURE;
+        oeResult = OE_FAILURE;
+        goto Cleanup;
     }
 
     oeResult = oe_get_report_v1(flags,
@@ -228,17 +251,29 @@ oe_result_t ecall_TestOEGetTargetInfoV1(uint32_t flags)
         report_buffer,
         &report_buffer_size);
     free(targetInfo);
+    targetInfo = NULL;
     if (oeResult != OE_OK) {
-        return OE_FAILURE;
+        oeResult = OE_FAILURE;
+        goto Cleanup;
     }
 
     oeResult = oe_verify_report(report_buffer, report_buffer_size, NULL);
     if (oeResult != OE_OK) {
-        return OE_FAILURE;
+        oeResult = OE_FAILURE;
+        goto Cleanup;
     }
 #endif
 
-    return OE_OK;
+Cleanup:
+    if (report_buffer) {
+        free(report_buffer);
+    }
+
+    if (targetInfo) {
+        free(targetInfo);
+    }
+
+    return oeResult;
 }
 
 oe_result_t ecall_TestOEGetTargetInfoV2(uint32_t flags)

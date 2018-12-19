@@ -139,5 +139,15 @@ oe_result_t oe_parse_report(
         &sgxReport->body.isv_prod_id,
         sizeof(sgx_prod_id_t));
 
+    memset(
+        parsed_report->identity.device_signer_id,
+        0,
+        sizeof(parsed_report->identity.device_signer_id));
+
+    memset(
+        parsed_report->identity.device_unique_id,
+        0,
+        sizeof(parsed_report->identity.device_unique_id));
+
     return OE_OK;
 }

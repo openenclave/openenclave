@@ -63,7 +63,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{E759EE7C-5BB2-4988-89D1-CE1C0FD623F3}</ProjectGuid>
+    <ProjectGuid>{E70E9F5A-6661-4298-A91E-9A9DD4AC9017}</ProjectGuid>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -176,7 +176,7 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
     <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
-    <TargetName>3156152a-19d1-423c-96ea-5adf5675798f</TargetName>
+    <TargetName>97d140f4-5f59-4d1f-9735-cb21d49e7eb7</TargetName>
     <IntDir>$(SolutionDir)obj\$(Platform)\$(TargetName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">
@@ -184,7 +184,7 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
     <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
-    <TargetName>3156152a-19d1-423c-96ea-5adf5675798f</TargetName>
+    <TargetName>97d140f4-5f59-4d1f-9735-cb21d49e7eb7</TargetName>
     <IntDir>$(SolutionDir)obj\$(Platform)\$(TargetName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">
@@ -248,7 +248,7 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
     <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
-    <TargetName>3156152a-19d1-423c-96ea-5adf5675798f</TargetName>
+    <TargetName>97d140f4-5f59-4d1f-9735-cb21d49e7eb7</TargetName>
     <IntDir>$(SolutionDir)obj\$(Platform)\$(TargetName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">
@@ -285,7 +285,7 @@
       <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>oeenclave.lib;oesocket_enc.lib;oestdio_enc.lib;sgx_tstdc.lib;sgx_tprotected_fs.lib;sgx_tcxx.lib;sgx_trts.lib;sgx_tstdc.lib;sgx_tservice.lib;sgx_tcrypto.lib</AdditionalDependencies>
+      <AdditionalDependencies>oeenclave.lib;oestdio_enc.lib;sgx_tcxx.lib;sgx_tprotected_fs.lib;sgx_tstdc.lib;sgx_tcrypto.lib;sgx_trts.lib;sgx_tservice.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir);$(SGXSDKInstallPath)bin\$(Platform)\$(Configuration)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <EntryPointSymbol />
@@ -293,7 +293,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" sign -key "$(ProjectDir)oetests_enclave_private.pem" -enclave "$(OutDir)oetests_enclave.dll" -out "$(OutDir)oetests_enclave.signed.dll" -config "$(ProjectDir)oetests_enclave.config.xml"</Command>
+      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" sign -key "$(ProjectDir)HelloWorldEnc_private.pem" -enclave "$(OutDir)LocalAttestationEnc.dll" -out "$(OutDir)LocalAttestationEnc.signed.dll" -config "$(ProjectDir)LocalAttestationEnc.config.xml"</Command>
       <Message>sign the enclave</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -303,11 +303,11 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(NewPlatformsDir)include;$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(NewPlatformsDir)include;$(NewPlatformsDir)include\sgx\enclave;$(OESdkDir)include;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\libc++;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>oeenclave.lib;oesocket_enc.lib;oestdio_enc.lib;sgx_tstdc.lib;sgx_tprotected_fs.lib;sgx_tcxx.lib;sgx_trts.lib;sgx_tstdc.lib;sgx_tservice.lib;sgx_tcrypto.lib</AdditionalDependencies>
+      <AdditionalDependencies>oeenclave.lib;oestdio_enc.lib;sgx_tcxx.lib;sgx_tprotected_fs.lib;sgx_tstdc.lib;sgx_tcrypto.lib;sgx_trts.lib;sgx_tservice.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir);$(SGXSDKInstallPath)bin\$(Platform)\$(Configuration)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <EntryPointSymbol>
@@ -316,7 +316,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" sign -key "$(ProjectDir)oetests_enclave_private.pem" -enclave "$(OutDir)oetests_enclave.dll" -out "$(OutDir)oetests_enclave.signed.dll" -config "$(ProjectDir)oetests_enclave.config.xml"</Command>
+      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" sign -key "$(ProjectDir)HelloWorldEnc_private.pem" -enclave "$(OutDir)LocalAttestationEnc.dll" -out "$(OutDir)LocalAttestationEnc.signed.dll" -config "$(ProjectDir)LocalAttestationEnc.config.xml"</Command>
       <Message>sign the enclave</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -326,11 +326,11 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(NewPlatformsDir)include;$(RIoTDir)CyReP\cyrep;$(NewPlatformsDir)include\optee\enclave\Simulator;$(NewPlatformsDir)include\optee\enclave;$(NewPlatformsDir)include\optee;$(OESdkDir)include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(RIoTDir)CyReP\cyrep;$(NewPlatformsDir)include\optee\enclave\Simulator;$(NewPlatformsDir)include\optee\enclave;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(SGXSDKInstallPath)include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(OESdkDir)include;$(OESdkDir)3rdparty\mbedtls\mbedtls\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>OE_SIMULATE_OPTEE;_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>oeenclave.lib;oesocket_enc.lib;oestdio_enc.lib;oeenclave_opteesim.lib;kernel32.lib;vcruntime.lib;ucrtd.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalDependencies>oeenclave.lib;oestdio_enc.lib;oeenclave_opteesim.lib;kernel32.lib;vcruntime.lib;ucrtd.lib;advapi32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir);$(SGXSDKInstallPath)bin\$(Platform)\$(Configuration)</AdditionalLibraryDirectories>
       <EntryPointSymbol>
       </EntryPointSymbol>
@@ -338,7 +338,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" sign -key "$(ProjectDir)oetests_enclave_private.pem" -enclave "$(OutDir)oetests_enclave.dll" -out "$(OutDir)oetests_enclave.signed.dll" -config "$(ProjectDir)oetests_enclave.config.xml"</Command>
+      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" sign -key "$(ProjectDir)HelloWorldEnc_private.pem" -enclave "$(OutDir)LocalAttestationEnc.dll" -out "$(OutDir)LocalAttestationEnc.signed.dll" -config "$(ProjectDir)LocalAttestationEnc.config.xml"</Command>
       <Message>sign the enclave</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -348,11 +348,11 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(NewPlatformsDir)include;$(RIoTDir)CyReP\cyrep;$(NewPlatformsDir)include\optee\enclave\Simulator;$(NewPlatformsDir)include\optee\enclave;$(NewPlatformsDir)include\optee;$(OESdkDir)include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(RIoTDir)CyReP\cyrep;$(NewPlatformsDir)include\optee\enclave\Simulator;$(NewPlatformsDir)include\optee\enclave;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(SGXSDKInstallPath)include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>OE_SIMULATE_OPTEE;_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>oeenclave.lib;oesocket_enc.lib;oestdio_enc.lib;oeenclave_opteesim.lib;kernel32.lib;vcruntime.lib;ucrtd.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalDependencies>oeenclave.lib;oestdio_enc.lib;oeenclave_opteesim.lib;kernel32.lib;vcruntime.lib;ucrtd.lib;advapi32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir);$(SGXSDKInstallPath)bin\$(Platform)\$(Configuration)</AdditionalLibraryDirectories>
       <EntryPointSymbol>
       </EntryPointSymbol>
@@ -360,7 +360,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" sign -key "$(ProjectDir)oetests_enclave_private.pem" -enclave "$(OutDir)oetests_enclave.dll" -out "$(OutDir)oetests_enclave.signed.dll" -config "$(ProjectDir)oetests_enclave.config.xml"</Command>
+      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" sign -key "$(ProjectDir)HelloWorldEnc_private.pem" -enclave "$(OutDir)LocalAttestationEnc.dll" -out "$(OutDir)LocalAttestationEnc.signed.dll" -config "$(ProjectDir)LocalAttestationEnc.config.xml"</Command>
       <Message>sign the enclave</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -374,7 +374,7 @@
       <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>oeenclave.lib;oesocket_enc.lib;oestdio_enc.lib;sgx_tstdc.lib;sgx_tprotected_fs.lib;sgx_tcxx.lib;sgx_trts_sim.lib;sgx_tstdc.lib;sgx_tservice_sim.lib;sgx_tcrypto.lib</AdditionalDependencies>
+      <AdditionalDependencies>oeenclave.lib;oestdio_enc.lib;sgx_tcxx.lib;sgx_tprotected_fs.lib;sgx_tstdc.lib;sgx_tcrypto.lib;sgx_trts_sim.lib;sgx_tservice_sim.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)bin\$(Platform)\Debug;$(SGXSDKInstallPath)bin\$(Platform)\Debug</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <EntryPointSymbol>
@@ -383,7 +383,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" sign -key "$(ProjectDir)oetests_enclave_private.pem" -enclave "$(OutDir)oetests_enclave.dll" -out "$(OutDir)oetests_enclave.signed.dll" -config "$(ProjectDir)oetests_enclave.config.xml"</Command>
+      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" sign -key "$(ProjectDir)HelloWorldEnc_private.pem" -enclave "$(OutDir)LocalAttestationEnc.dll" -out "$(OutDir)LocalAttestationEnc.signed.dll" -config "$(ProjectDir)LocalAttestationEnc.config.xml"</Command>
       <Message>sign the enclave</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -393,11 +393,11 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(NewPlatformsDir)include;$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(NewPlatformsDir)include;$(NewPlatformsDir)include\sgx\enclave;$(OESdkDir)include;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\libc++;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>oeenclave.lib;oesocket_enc.lib;oestdio_enc.lib;sgx_tstdc.lib;sgx_tprotected_fs.lib;sgx_tcxx.lib;sgx_trts_sim.lib;sgx_tstdc.lib;sgx_tservice_sim.lib;sgx_tcrypto.lib</AdditionalDependencies>
+      <AdditionalDependencies>oeenclave.lib;oestdio_enc.lib;sgx_tcxx.lib;sgx_tprotected_fs.lib;sgx_tstdc.lib;sgx_tcrypto.lib;sgx_trts_sim.lib;sgx_tservice_sim.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)bin\$(Platform)\Debug;$(SGXSDKInstallPath)bin\$(Platform)\Debug</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <EntryPointSymbol>
@@ -406,7 +406,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" sign -key "$(ProjectDir)oetests_enclave_private.pem" -enclave "$(OutDir)oetests_enclave.dll" -out "$(OutDir)oetests_enclave.signed.dll" -config "$(ProjectDir)oetests_enclave.config.xml"</Command>
+      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" sign -key "$(ProjectDir)HelloWorldEnc_private.pem" -enclave "$(OutDir)LocalAttestationEnc.dll" -out "$(OutDir)LocalAttestationEnc.signed.dll" -config "$(ProjectDir)LocalAttestationEnc.config.xml"</Command>
       <Message>sign the enclave</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -421,7 +421,7 @@
       <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>oeenclave.lib;oesocket_enc.lib;oestdio_enc.lib;sgx_tstdc.lib;sgx_tprotected_fs.lib;sgx_tcxx.lib;sgx_trts.lib;sgx_tstdc.lib;sgx_tservice.lib;sgx_tcrypto.lib</AdditionalDependencies>
+      <AdditionalDependencies>oeenclave.lib;oestdio_enc.lib;sgx_trts.lib;sgx_tstdc.lib;sgx_tservice.lib;sgx_tcrypto.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir);$(SGXSDKInstallPath)bin\$(Platform)\$(Configuration)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <EntryPointSymbol />
@@ -430,7 +430,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
     <PostBuildEvent>
-      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" gendata -enclave "$(OutDir)oetests_enclave.dll" -out "$(OutDir)oetests_enclave.hex" -config "$(ProjectDir)oetests_enclave.config.xml"</Command>
+      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" gendata -enclave "$(OutDir)LocalAttestationEnc.dll" -out "$(OutDir)LocalAttestationEnc.hex" -config "$(ProjectDir)LocalAttestationEnc.config.xml"</Command>
       <Message>generate the enclave signing material</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -440,12 +440,12 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <Optimization>MaxSpeed</Optimization>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(NewPlatformsDir)include;$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(NewPlatformsDir)include;$(NewPlatformsDir)include\sgx\enclave;$(OESdkDir)include;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\libc++;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>oeenclave.lib;oesocket_enc.lib;oestdio_enc.lib;sgx_tstdc.lib;sgx_tprotected_fs.lib;sgx_tcxx.lib;sgx_trts.lib;sgx_tstdc.lib;sgx_tservice.lib;sgx_tcrypto.lib</AdditionalDependencies>
+      <AdditionalDependencies>oeenclave.lib;oestdio_enc.lib;sgx_trts.lib;sgx_tstdc.lib;sgx_tservice.lib;sgx_tcrypto.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir);$(SGXSDKInstallPath)bin\$(Platform)\$(Configuration)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <EntryPointSymbol>
@@ -455,7 +455,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
     <PostBuildEvent>
-      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" gendata -enclave "$(OutDir)oetests_enclave.dll" -out "$(OutDir)oetests_enclave.hex" -config "$(ProjectDir)oetests_enclave.config.xml"</Command>
+      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" gendata -enclave "$(OutDir)LocalAttestationEnc.dll" -out "$(OutDir)LocalAttestationEnc.hex" -config "$(ProjectDir)LocalAttestationEnc.config.xml"</Command>
       <Message>generate the enclave signing material</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -470,7 +470,7 @@
       <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>oeenclave.lib;oesocket_enc.lib;oestdio_enc.lib;sgx_tstdc.lib;sgx_tprotected_fs.lib;sgx_tcxx.lib;sgx_trts.lib;sgx_tstdc.lib;sgx_tservice.lib;sgx_tcrypto.lib</AdditionalDependencies>
+      <AdditionalDependencies>oeenclave.lib;oestdio_enc.lib;sgx_trts.lib;sgx_tstdc.lib;sgx_tservice.lib;sgx_tcrypto.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir);$(SGXSDKInstallPath)bin\$(Platform)\Release</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <EntryPointSymbol>
@@ -480,7 +480,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
     <PostBuildEvent>
-      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" sign -key "$(ProjectDir)oetests_enclave_private.pem" -enclave "$(OutDir)oetests_enclave.dll" -out "$(OutDir)oetests_enclave.signed.dll" -config "$(ProjectDir)oetests_enclave.config.xml"</Command>
+      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" sign -key "$(ProjectDir)HelloWorldEnc_private.pem" -enclave "$(OutDir)LocalAttestationEnc.dll" -out "$(OutDir)LocalAttestationEnc.signed.dll" -config "$(ProjectDir)LocalAttestationEnc.config.xml"</Command>
       <Message>sign the enclave</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -490,12 +490,12 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <Optimization>MaxSpeed</Optimization>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(NewPlatformsDir)include;$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(NewPlatformsDir)include;$(NewPlatformsDir)include\sgx\enclave;$(OESdkDir)include;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\libc++;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>oeenclave.lib;oesocket_enc.lib;oestdio_enc.lib;sgx_tstdc.lib;sgx_tprotected_fs.lib;sgx_tcxx.lib;sgx_trts.lib;sgx_tstdc.lib;sgx_tservice.lib;sgx_tcrypto.lib</AdditionalDependencies>
+      <AdditionalDependencies>oeenclave.lib;oestdio_enc.lib;sgx_trts.lib;sgx_tstdc.lib;sgx_tservice.lib;sgx_tcrypto.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir);$(SGXSDKInstallPath)bin\$(Platform)\Release</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <EntryPointSymbol>
@@ -505,7 +505,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
     <PostBuildEvent>
-      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" sign -key "$(ProjectDir)oetests_enclave_private.pem" -enclave "$(OutDir)oetests_enclave.dll" -out "$(OutDir)oetests_enclave.signed.dll" -config "$(ProjectDir)oetests_enclave.config.xml"</Command>
+      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" sign -key "$(ProjectDir)HelloWorldEnc_private.pem" -enclave "$(OutDir)LocalAttestationEnc.dll" -out "$(OutDir)LocalAttestationEnc.signed.dll" -config "$(ProjectDir)LocalAttestationEnc.config.xml"</Command>
       <Message>sign the enclave</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -519,7 +519,7 @@
       <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>oeenclave.lib;oesocket_enc.lib;oestdio_enc.lib;sgx_tstdc.lib;sgx_tprotected_fs.lib;sgx_tcxx.lib;sgx_trts.lib;sgx_tstdc.lib;sgx_tservice.lib;sgx_tcrypto.lib</AdditionalDependencies>
+      <AdditionalDependencies>oeenclave.lib;oestdio_enc.lib;sgx_tcxx.lib;sgx_tprotected_fs.lib;sgx_tstdc.lib;sgx_tcrypto.lib;sgx_trts.lib;sgx_tservice.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir);$(SGXSDKInstallPath)bin\$(Platform)\$(Configuration)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <EntryPointSymbol />
@@ -527,7 +527,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" sign -key "$(ProjectDir)oetests_enclave_private.pem" -enclave "$(OutDir)oetests_enclave.dll" -out "$(OutDir)oetests_enclave.signed.dll" -config "$(ProjectDir)oetests_enclave.config.xml"</Command>
+      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" sign -key "$(ProjectDir)HelloWorldEnc_private.pem" -enclave "$(OutDir)LocalAttestationEnc.dll" -out "$(OutDir)LocalAttestationEnc.signed.dll" -config "$(ProjectDir)LocalAttestationEnc.config.xml"</Command>
       <Message>sign the enclave</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -537,11 +537,11 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(NewPlatformsDir)include;$(RIoTDir)CyReP\cyrep;$(NewPlatformsDir)include\optee\enclave\Simulator;$(NewPlatformsDir)include\optee\enclave;$(NewPlatformsDir)include\optee;$(OESdkDir)include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(RIoTDir)CyReP\cyrep;$(NewPlatformsDir)include\optee\enclave\Simulator;$(NewPlatformsDir)include\optee\enclave;$(NewPlatformsDir)include\optee;$(NewPlatformsDir)include;$(SGXSDKInstallPath)include;$(OpteeDir)lib\libutee\include;$(OpteeDir)lib\libutils\ext\include;$(OESdkDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>OE_SIMULATE_OPTEE;_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>oeenclave.lib;oesocket_enc.lib;oestdio_enc.lib;oeenclave_opteesim.lib;kernel32.lib;vcruntime.lib;ucrtd.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalDependencies>oeenclave.lib;oestdio_enc.lib;oeenclave_opteesim.lib;kernel32.lib;vcruntime.lib;ucrtd.lib;advapi32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir);$(SGXSDKInstallPath)bin\$(Platform)\$(Configuration)</AdditionalLibraryDirectories>
       <EntryPointSymbol>
       </EntryPointSymbol>
@@ -549,7 +549,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" sign -key "$(ProjectDir)oetests_enclave_private.pem" -enclave "$(OutDir)oetests_enclave.dll" -out "$(OutDir)oetests_enclave.signed.dll" -config "$(ProjectDir)oetests_enclave.config.xml"</Command>
+      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" sign -key "$(ProjectDir)HelloWorldEnc_private.pem" -enclave "$(OutDir)LocalAttestationEnc.dll" -out "$(OutDir)LocalAttestationEnc.signed.dll" -config "$(ProjectDir)LocalAttestationEnc.config.xml"</Command>
       <Message>sign the enclave</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -563,8 +563,8 @@
       <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>oeenclave.lib;oesocket_enc.lib;oestdio_enc.lib;sgx_tstdc.lib;sgx_tprotected_fs.lib;sgx_tcxx.lib;sgx_trts_sim.lib;sgx_tstdc.lib;sgx_tservice_sim.lib;sgx_tcrypto.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Platform)\Debug;$(OutDir);$(SGXSDKInstallPath)bin\$(Platform)\Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>oeenclave.lib;oestdio_enc.lib;sgx_tcxx.lib;sgx_tprotected_fs.lib;sgx_tstdc.lib;sgx_tcrypto.lib;sgx_trts_sim.lib;sgx_tservice_sim.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)bin\$(Platform)\Debug;$(SGXSDKInstallPath)bin\$(Platform)\Debug</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <EntryPointSymbol>
       </EntryPointSymbol>
@@ -572,7 +572,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" sign -key "$(ProjectDir)oetests_enclave_private.pem" -enclave "$(OutDir)oetests_enclave.dll" -out "$(OutDir)oetests_enclave.signed.dll" -config "$(ProjectDir)oetests_enclave.config.xml"</Command>
+      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" sign -key "$(ProjectDir)HelloWorldEnc_private.pem" -enclave "$(OutDir)LocalAttestationEnc.dll" -out "$(OutDir)LocalAttestationEnc.signed.dll" -config "$(ProjectDir)LocalAttestationEnc.config.xml"</Command>
       <Message>sign the enclave</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -587,7 +587,7 @@
       <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>oeenclave.lib;oesocket_enc.lib;oestdio_enc.lib;sgx_tstdc.lib;sgx_tprotected_fs.lib;sgx_tcxx.lib;sgx_trts.lib;sgx_tstdc.lib;sgx_tservice.lib;sgx_tcrypto.lib</AdditionalDependencies>
+      <AdditionalDependencies>oeenclave.lib;oestdio_enc.lib;sgx_trts.lib;sgx_tstdc.lib;sgx_tservice.lib;sgx_tcrypto.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir);$(SGXSDKInstallPath)bin\$(Platform)\$(Configuration)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <EntryPointSymbol />
@@ -596,7 +596,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
     <PostBuildEvent>
-      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" gendata -enclave "$(OutDir)oetests_enclave.dll" -out "$(OutDir)oetests_enclave.hex" -config "$(ProjectDir)oetests_enclave.config.xml"</Command>
+      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" gendata -enclave "$(OutDir)LocalAttestationEnc.dll" -out "$(OutDir)LocalAttestationEnc.hex" -config "$(ProjectDir)LocalAttestationEnc.config.xml"</Command>
       <Message>generate the enclave signing material</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -611,7 +611,7 @@
       <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>oeenclave.lib;oesocket_enc.lib;oestdio_enc.lib;sgx_tstdc.lib;sgx_tprotected_fs.lib;sgx_tcxx.lib;sgx_trts.lib;sgx_tstdc.lib;sgx_tservice.lib;sgx_tcrypto.lib</AdditionalDependencies>
+      <AdditionalDependencies>oeenclave.lib;oestdio_enc.lib;sgx_trts.lib;sgx_tstdc.lib;sgx_tservice.lib;sgx_tcrypto.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir);$(SGXSDKInstallPath)bin\$(Platform)\Release</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <EntryPointSymbol>
@@ -621,44 +621,43 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
     <PostBuildEvent>
-      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" sign -key "$(ProjectDir)oetests_enclave_private.pem" -enclave "$(OutDir)oetests_enclave.dll" -out "$(OutDir)oetests_enclave.signed.dll" -config "$(ProjectDir)oetests_enclave.config.xml"</Command>
+      <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" sign -key "$(ProjectDir)HelloWorldEnc_private.pem" -enclave "$(OutDir)LocalAttestationEnc.dll" -out "$(OutDir)LocalAttestationEnc.signed.dll" -config "$(ProjectDir)LocalAttestationEnc.config.xml"</Command>
       <Message>sign the enclave</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="OETestTA.c" />
-    <ClCompile Include="oetests_enclave.c" />
-    <ClCompile Include="oetests_t.c" />
+    <ClCompile Include="enc.c" />
+    <ClCompile Include="localattestation_t.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="oetests_t.h" />
+    <ClInclude Include="localattestation_t.h" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\oetests.edl">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+    <CustomBuild Include="..\localattestation.edl">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Creating proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">oetests_enclave.config.xml;%(AdditionalInputs)</AdditionalInputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">LocalAttestationEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Creating proxy/bridge routines</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Creating proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">oetests_enclave.config.xml;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">oetests_enclave.config.xml;%(AdditionalInputs)</AdditionalInputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">LocalAttestationEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">LocalAttestationEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Creating proxy/bridge routines</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">Creating proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">oetests_enclave.config.xml;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">oetests_enclave.config.xml;%(AdditionalInputs)</AdditionalInputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">LocalAttestationEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|x64'">LocalAttestationEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Creating proxy/bridge routines</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Creating proxy/bridge routines</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">Creating proxy/bridge routines</Message>
@@ -667,51 +666,51 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">oetests_enclave.config.xml;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">oetests_enclave.config.xml;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">oetests_enclave.config.xml;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">oetests_enclave.config.xml;%(AdditionalInputs)</AdditionalInputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">LocalAttestationEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">LocalAttestationEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|Win32'">LocalAttestationEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='DebugOpteeSimulation|ARM'">LocalAttestationEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">Creating proxy/bridge routines</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'">Creating proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">oetests_enclave.config.xml;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'">oetests_enclave.config.xml;%(AdditionalInputs)</AdditionalInputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|ARM'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">LocalAttestationEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'">LocalAttestationEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|ARM'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">Creating proxy/bridge routines</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Simulation|ARM'">Creating proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Simulation|ARM'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">oetests_enclave.config.xml;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Simulation|ARM'">oetests_enclave.config.xml;%(AdditionalInputs)</AdditionalInputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">LocalAttestationEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Simulation|ARM'">LocalAttestationEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">Creating proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">oetests_enclave.config.xml;%(AdditionalInputs)</AdditionalInputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "$(NewPlatformsDir)include;$(OESdkDir)include"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">LocalAttestationEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">"$(NewPlatformsDir)oeedger8r.exe" --trusted "%(FullPath)" --search-path "..;$(NewPlatformsDir)include;$(OESdkDir)include;$(SGXSDKInstallPath)include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">Creating proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">oetests_enclave.config.xml;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">LocalAttestationEnc.config.xml;%(AdditionalInputs)</AdditionalInputs>
     </CustomBuild>
-    <None Include="oetests_enclave_private.pem" />
+    <None Include="LocalAttestationEnc_private.pem" />
   </ItemGroup>
   <ItemGroup>
-    <Xml Include="oetests_enclave.config.xml" />
+    <Xml Include="LocalAttestationEnc.config.xml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\3rdparty\mbedtls\mbedtls\visualc\VS2010\mbedTLS.vcxproj">
+    <ProjectReference Include="..\..\..\..\3rdparty\mbedtls\mbedtls\visualc\VS2010\mbedTLS.vcxproj">
       <Project>{46cf2d25-6a36-4189-b59c-e4815388e554}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\libsocket\enc\oesocket_enc.vcxproj">
-      <Project>{75db709b-d5bf-452b-afb9-f8f92eb8bbec}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\libstdio\enc\oestdio_enc.vcxproj">
+    <ProjectReference Include="..\..\..\libstdio\enc\oestdio_enc.vcxproj">
       <Project>{c95d1877-86e1-47c0-a568-08859e619ec4}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Trusted\oeenclave.vcxproj">
+    <ProjectReference Include="..\..\..\opteesim\Trusted\oeenclave_opteesim.vcxproj" Condition="'$(Configuration)'=='DebugOpteeSimulation'">
+      <Project>{aff02e67-1671-4004-b169-9c3aab5cd103}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\src\Trusted\oeenclave.vcxproj">
       <Project>{cd46f388-593f-442c-8751-bc5f206979ba}</Project>
     </ProjectReference>
   </ItemGroup>
