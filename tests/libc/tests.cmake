@@ -5,11 +5,11 @@ string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
 string(TOUPPER ${CMAKE_C_COMPILER_ID} MY_COMPILER)
 set(BUILD "${MY_COMPILER}:${BUILD_TYYPE}")
 
-##======================================================================================
+##==============================================================================
 ##
 ## Supported tests:
 ##
-##======================================================================================
+##==============================================================================
 
 # Include tests that work on all builds:
 set(LIBC_TESTS
@@ -255,21 +255,21 @@ endif()
 # Exclude tests that fail these Clang builds:
 if (NOT (BUILD MATCHES "CLANG:DEBUG" OR BUILD MATCHES "CLANG:RELWITHDEBINFO"))
     list(APPEND LIBC_TESTS 
-        3rdparty/musl/libc-test/src/math/fdim.c
-        3rdparty/musl/libc-test/src/math/fdimf.c
-        3rdparty/musl/libc-test/src/math/fdiml.c
-        3rdparty/musl/libc-test/src/math/fmaf.c
-        3rdparty/musl/libc-test/src/math/log1p.c
-        3rdparty/musl/libc-test/src/math/log1pf.c
-        3rdparty/musl/libc-test/src/math/powf.c
+        #3rdparty/musl/libc-test/src/math/fdim.c
+        #3rdparty/musl/libc-test/src/math/fdimf.c
+        #3rdparty/musl/libc-test/src/math/fdiml.c
+        #3rdparty/musl/libc-test/src/math/fmaf.c
+        #3rdparty/musl/libc-test/src/math/log1p.c
+        #3rdparty/musl/libc-test/src/math/log1pf.c
+        #3rdparty/musl/libc-test/src/math/powf.c
     )
 endif()
 
-##======================================================================================
+##==============================================================================
 ##
 ## Broken tests:
 ##
-##======================================================================================
+##==============================================================================
 
 if (FALSE)
     list(APPEND LIBC_TESTS 
@@ -278,11 +278,11 @@ if (FALSE)
     )
 endif()
 
-##======================================================================================
+##==============================================================================
 ##
 ## Unsupported tests:
 ##
-##======================================================================================
+##==============================================================================
 
 if (FALSE)
     list(APPEND LIBC_TESTS 
