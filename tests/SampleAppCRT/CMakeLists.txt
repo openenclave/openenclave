@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-add_subdirectory(SampleAppCRTHost)
+add_subdirectory(host)
 
 if (UNIX)
-	add_subdirectory(SampleAppCRT)
+	add_subdirectory(enc)
 endif()
 
 add_enclave_test(tests/SampleAppCRT SampleAppCRTHost SampleAppCRT)
