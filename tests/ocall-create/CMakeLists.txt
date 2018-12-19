@@ -7,4 +7,4 @@ if (UNIX)
 	add_subdirectory(enc)
 endif()
 
-add_enclave_test(tests/ocall-create ./host ocall_create_host ./enc ocall_create_enc)
+add_enclave_test(tests/ocall-create ocall_create_host ocall_create_enc)

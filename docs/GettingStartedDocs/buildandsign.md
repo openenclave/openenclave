@@ -27,7 +27,7 @@ CFLAGS=$(shell pkg-config oeenclave-clang --cflags)
 LDFLAGS=$(shell pkg-config oeenclave-clang --libs)
 
 $(CC) -c $(CFLAGS) my_enclave.c -o my_enclave.o
-$(CC) -o my_enclave.so my_enclave.o $(LDFLAGS)
+$(CC) -o my_enclave my_enclave.o $(LDFLAGS)
 ```
 
 You can also display in the shell what the options are with by runnin `pkg-config`

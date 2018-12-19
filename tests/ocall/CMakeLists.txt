@@ -7,4 +7,4 @@ if (UNIX)
 	add_subdirectory(enc)
 endif()
 
-add_enclave_test(tests/ocall ./host ocall_host ./enc ocall_enc)
+add_enclave_test(tests/ocall ocall_host ocall_enc)

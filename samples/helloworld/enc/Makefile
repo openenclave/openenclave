@@ -27,13 +27,13 @@ build:
 	oeedger8r ../helloworld.edl --trusted
 	$(CC) -c $(CFLAGS) enc.c -o enc.o
 	$(CC) -c $(CFLAGS) helloworld_t.c -o helloworld_t.o
-	$(CC) -o helloworldenc.so helloworld_t.o enc.o $(LDFLAGS)
+	$(CC) -o helloworldenc helloworld_t.o enc.o $(LDFLAGS)
 
 sign:
-	oesign sign helloworldenc.so helloworld.conf private.pem
+	oesign sign helloworldenc helloworld.conf private.pem
 
 clean:
-	rm -f enc.o helloworldenc.so helloworldenc.signed.so private.pem public.pem helloworld_t.o helloworld_t.h helloworld_t.c helloworld_args.h
+	rm -f enc.o helloworldenc helloworldenc.signed private.pem public.pem helloworld_t.o helloworld_t.h helloworld_t.c helloworld_args.h
 
 keys:
 	openssl genrsa -out private.pem -3 3072
