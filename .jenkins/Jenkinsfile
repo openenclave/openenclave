@@ -26,9 +26,11 @@ def simulationTest(String compiler, String unit, String suite ) {
             cleanWs()
             checkout scm
 
-            docker.image(OETOOLS_IMAGE).inside {
-                timeout(15) {
-                    sh "./scripts/test-build-config -p $unit -b $suite --compiler=$compiler"
+            docker.withRegistry('https://oejenkinscidockerregistry.azurecr.io', 'oejenkinscidockerregistry') {
+                docker.image(OETOOLS_IMAGE).inside {
+                    timeout(15) {
+                        sh "./scripts/test-build-config -p $unit -b $suite --compiler=$compiler"
+                    }
                 }
             }
         }
@@ -41,9 +43,11 @@ def nonSimulationTest() {
             cleanWs()
             checkout scm
 
-            docker.image(OETOOLS_IMAGE).inside('--privileged -v /dev/sgx:/dev/sgx') {
-                timeout(15) {
-                    sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d'
+            docker.withRegistry('https://oejenkinscidockerregistry.azurecr.io', 'oejenkinscidockerregistry') {
+                docker.image(OETOOLS_IMAGE).inside('--privileged -v /dev/sgx:/dev/sgx') {
+                    timeout(15) {
+                        sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d'
+                    }
                 }
             }
         }
@@ -56,9 +60,11 @@ def checkPreCommitRequirements() {
             cleanWs()
             checkout scm
 
-            docker.image(OETOOLS_IMAGE).inside {
-                timeout(2) {
-                    sh './scripts/check-precommit-reqs'
+            docker.withRegistry('https://oejenkinscidockerregistry.azurecr.io', 'oejenkinscidockerregistry') {
+                docker.image(OETOOLS_IMAGE).inside {
+                    timeout(2) {
+                        sh './scripts/check-precommit-reqs'
+                    }
                 }
             }
         }
@@ -103,10 +109,12 @@ def windowsDebugCrossPlatform() {
         node {
             cleanWs()
             checkout scm
-            docker.image(OETOOLS_IMAGE).inside {
-                timeout(15) {
-                    sh './scripts/test-build-config -p SGX1FLC -b Debug --compiler=clang-7'
-                    stash includes: 'build/tests/**', name: 'linuxdebug'
+            docker.withRegistry('https://oejenkinscidockerregistry.azurecr.io', 'oejenkinscidockerregistry') {
+                docker.image(OETOOLS_IMAGE).inside {
+                    timeout(15) {
+                        sh './scripts/test-build-config -p SGX1FLC -b Debug --compiler=clang-7'
+                        stash includes: 'build/tests/**', name: 'linuxdebug'
+                    }
                 }
             }
         }
@@ -127,10 +135,12 @@ def windowsReleaseCrossPlatform() {
         node {
             cleanWs()
             checkout scm
-            docker.image(OETOOLS_IMAGE).inside {
-                timeout(15) {
-                    sh './scripts/test-build-config -p SGX1FLC -b Release --compiler=clang-7'
-                    stash includes: 'build/tests/**', name: 'linuxrelease'
+            docker.withRegistry('https://oejenkinscidockerregistry.azurecr.io', 'oejenkinscidockerregistry') {
+                docker.image(OETOOLS_IMAGE).inside {
+                    timeout(15) {
+                        sh './scripts/test-build-config -p SGX1FLC -b Release --compiler=clang-7'
+                        stash includes: 'build/tests/**', name: 'linuxrelease'
+                    }
                 }
             }
         }
