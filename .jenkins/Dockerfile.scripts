@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 FROM ubuntu:16.04
 
-COPY ansible /ansible
+COPY scripts/ansible /ansible
 
 RUN /ansible/install-ansible.sh \
     && ansible-playbook /ansible/ansible-dockerfile-scripts.yml --extra-vars "target=localhost" \

@@ -13,10 +13,10 @@
 #
 # Once installed, build a docker image from .jenkins folder and
 # it will use this Dockerfile by default:
-#     .jenkins$ sudo docker build --no-cache=true -t oetools-azure:<version> .
+#     openenclave$ sudo docker build --no-cache=true -t oetools-azure:<version> -f .jenkins/Dockerfile .
 #
 # For example, for version 1.x:
-#     .jenkins$ sudo docker build --no-cache=true -t oetools-azure:1.x .
+#     openenclave$ sudo docker build --no-cache=true -t oetools-azure:1.x -f .jenkins/Dockerfile .
 #
 # Note that DNS forwarding in a VM can interfere with Docker
 # getting updates from Ubuntu apt-get repositories as part of the
@@ -42,7 +42,7 @@
 
 FROM ubuntu:16.04
 
-ADD ansible /ansible
+ADD scripts/ansible /ansible
 
 RUN /ansible/install-ansible.sh \
     && ansible-playbook /ansible/ansible-dockerfile.yml --extra-vars "target=localhost" \
