@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 # All objects we build and store in our shared library.
 OBJECTS = uTcpsFileOcalls_shared.o stdio_u.o ufiles.o uTcpsFileOcalls.o
 

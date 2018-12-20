@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 OBJECTS_RIOT = RiotAes128.o RiotBase64.o RiotCrypt.o RiotDerEnc.o \
                RiotEcc.o RiotHmac.o RiotKdf.o RiotSha256.o TcpsId.o
 

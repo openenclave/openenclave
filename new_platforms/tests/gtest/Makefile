@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 OBJECTS = gtest-all.o gtest_main.o
 
 GTEST_DIR = ../../../3rdparty/googletest/googletest

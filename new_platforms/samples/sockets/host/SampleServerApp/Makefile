@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 OBJECTS = main.o SampleTA_u.o
 
 EDL_PATH = ../../../../src
