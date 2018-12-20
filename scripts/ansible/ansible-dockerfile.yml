@@ -1,0 +1,13 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+- hosts: "{{ target }}"
+  become: yes
+  tasks:
+  - include_tasks: tasks/ansible-install-docker-packages.yml
+  - include_tasks: tasks/ansible-install-prereqs.yml
+  - include_tasks: tasks/ansible-install-openenclave-stack.yml
+  # Open-enclave package is installed by ansible-install-openenclave-stack.yml
+  - name: Remove open-enclave package if installed
+    apt:
+      name: open-enclave
+      state: absent

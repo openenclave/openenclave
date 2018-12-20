@@ -1,0 +1,55 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+---
+- name: Add LLVM repo keys
+  apt_key: url="https://apt.llvm.org/llvm-snapshot.gpg.key" state=present
+
+- name: Add LLVM repo for CLang 7 with Spectre mitigation
+  apt_repository: repo="deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" state=present update_cache=yes
+
+- name: Install Clang 7 to build with Spectre mitigation
+  apt:
+    name: clang-7
+    state: present
+    install_recommends: no
+- name: Install  prerequisite packages
+  apt:
+    name: [
+       autoconf,
+       clang-format-3.8,
+       doxygen,
+       gdb,
+       graphviz,
+       libexpat1-dev,
+       libssl-dev,
+       libtool,
+       make,
+       ocaml-native-compilers,
+       openssl,
+       pkg-config,
+       shellcheck,
+       subversion
+    ]
+    state: present
+    update_cache: yes
+
+# This will unpack the archive in / then rename the /cmake-3.13.1-Linux-x86_64 folder into /cmake
+- name: Install CMake 3.13.1
+  unarchive:
+    src: https://cmake.org/files/v3.13/cmake-3.13.1-Linux-x86_64.tar.gz
+    dest: /
+    remote_src: yes
+    extra_opts:
+    - --transform
+    - s/^cmake-3.13.1-Linux-x86_64/cmake/
+
+# Add cmake folder to system path
+- name: add CMake to path
+  lineinfile:
+    dest: /etc/environment
+    state: present
+    backrefs: yes
+    regexp: 'PATH=(["]*)((?!.*?{{cmake_path}}).*?)(["]*)$'
+    line: "PATH=\\1\\2:{{cmake_path}}\\3"
+  vars:
+    cmake_path: "/cmake/bin"

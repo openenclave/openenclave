@@ -1,0 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+- hosts: "{{ target }}"
+  become: yes
+  tasks:
+  - include_tasks: tasks/ansible-install-prereqs.yml
