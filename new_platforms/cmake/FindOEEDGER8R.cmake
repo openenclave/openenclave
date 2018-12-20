@@ -14,10 +14,19 @@ find_program(OEEDGER8R_PATH ${OEEDGER8R_NAME})
 
 if(NOT OEEDGER8R_PATH)
     set(OEEDGER8R_PATH ${CMAKE_BINARY_DIR}/${OEEDGER8R_NAME})
+    set(OEEDGER8R_TMP_PATH ${CMAKE_BINARY_DIR}/out/${OEEDGER8R_NAME})
 
     if(NOT EXISTS ${OEEDGER8R_PATH})
         message(STATUS "Downloading OEEDGER8R...")
-        file(DOWNLOAD ${OEEDGER8R_URI} ${OEEDGER8R_PATH})
+
+        file(DOWNLOAD ${OEEDGER8R_URI} ${OEEDGER8R_TMP_PATH})
+        file(COPY ${OEEDGER8R_TMP_PATH}
+            DESTINATION ${CMAKE_BINARY_DIR}
+            FILE_PERMISSIONS
+                OWNER_READ
+                OWNER_WRITE
+                OWNER_EXECUTE)
+
         message(STATUS "  OK")
     endif()
 endif()
