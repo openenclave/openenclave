@@ -302,7 +302,7 @@ oe_result_t VerifyQuoteImpl(
         if (quote_auth_data->qe_report_body.isvprodid != g_qe_isvprodid)
             OE_RAISE(OE_VERIFY_FAILED);
 
-        if (quote_auth_data->qe_report_body.isvsvn != g_qeisvsvn)
+        if (quote_auth_data->qe_report_body.isvsvn < g_qeisvsvn)
             OE_RAISE(OE_VERIFY_FAILED);
 
         // Ensure that the QE is not a debug supporting enclave.
