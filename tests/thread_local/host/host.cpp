@@ -12,8 +12,6 @@
 #include <thread>
 #include "thread_local_u.h"
 
-#define SKIP_RETURN_CODE 2
-
 void run_enclave_thread(
     oe_enclave_t* enclave,
     int thread_num,
@@ -65,14 +63,6 @@ int main(int argc, const char* argv[])
     }
 
     const uint32_t flags = oe_get_create_flags();
-    if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
-    {
-        printf(
-            "=== Skipped unsupported test in simulation mode "
-            "(thread-local)\n");
-        return SKIP_RETURN_CODE;
-    }
-
     if ((result = oe_create_thread_local_enclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);

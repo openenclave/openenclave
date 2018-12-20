@@ -110,7 +110,8 @@ static oe_result_t _enter_sim(
 {
     oe_result_t result = OE_UNEXPECTED;
     sgx_tcs_t* tcs = (sgx_tcs_t*)tcs_;
-    const void* saved_gsbase = NULL;
+    ThreadBinding* binding = GetThreadBinding();
+    td_t* td = NULL;
 
     /* Reject null parameters */
     if (!enclave || !enclave->addr || !tcs || !tcs->oentry || !tcs->gsbase)
@@ -121,31 +122,38 @@ static oe_result_t _enter_sim(
     if (!tcs->u.entry)
         OE_RAISE(OE_NOT_FOUND);
 
-    /* Save old GS register base, and set new one */
-    const void* gsbase;
-    {
-        gsbase = (void*)(enclave->addr + tcs->gsbase);
-        saved_gsbase = oe_get_gs_register_base();
+    /* Save old GS and FS register bases */
+    binding->host_gs = oe_get_gs_register_base();
+    binding->host_fs = oe_get_fs_register_base();
 
-        /* Set td_t.simulate flag */
-        {
-            td_t* td = (td_t*)gsbase;
-            td->simulate = true;
-        }
-    }
+    /* Change GS and FS registers to the values for the enclave thread. At this
+     * point thread-locals, pthread, libc etc won't work within the host thread
+     * since they depend on FS register.
+     * This means that when the enclave makes an ocall, the GS and FS registers
+     * must be immediately restored upon entry to host.
+     * See __oe_dispatch_ocall.
+     */
+    td = (td_t*)(enclave->addr + tcs->gsbase);
+    oe_set_gs_register_base(td);
+    oe_set_fs_register_base((void*)(enclave->addr + tcs->fsbase));
+
+    /* Set td_t.simulate flag */
+    td->simulate = true;
 
     /* Call into enclave */
-    {
-        if (arg3)
-            *arg3 = 0;
+    if (arg3)
+        *arg3 = 0;
 
-        if (arg4)
-            *arg4 = 0;
+    if (arg4)
+        *arg4 = 0;
 
-        oe_set_gs_register_base(gsbase);
-        oe_enter_sim(tcs, aep, arg1, arg2, arg3, arg4, enclave);
-        oe_set_gs_register_base(saved_gsbase);
-    }
+    oe_enter_sim(tcs, aep, arg1, arg2, arg3, arg4, enclave);
+
+    /* Restore GS and GS registers. After this, host side library calls can be
+     * safely called.
+     */
+    oe_set_fs_register_base(binding->host_fs);
+    oe_set_gs_register_base(binding->host_gs);
 
     result = OE_OK;
 
@@ -539,21 +547,67 @@ int __oe_dispatch_ocall(
     uint64_t arg2,
     uint64_t* arg1_out,
     uint64_t* arg2_out,
-    void* tcs,
+    void* tcs_,
     oe_enclave_t* enclave)
 {
     const oe_code_t code = oe_get_code_from_call_arg1(arg1);
     const uint16_t func = oe_get_func_from_call_arg1(arg1);
     const uint64_t arg = arg2;
+    sgx_tcs_t* tcs = (sgx_tcs_t*)tcs_;
 
     if (code == OE_CODE_OCALL)
     {
+        // Get the current thread-binding.
+        // Handling an OCALL can make ecalls to other enclaves, which
+        // may result in overriding the thread-binding. Therefore,
+        // upon return from the OCALL, the binding must be restored.
+        ThreadBinding* binding = NULL;
         uint64_t arg_out = 0;
+
+        if (enclave->simulate)
+        {
+            /**
+             * GetThreadBinding may not work since it uses pthread APIs.
+             * pthread depends on FS register being set correctly, which
+             * is what we are trying to do. So loop through the bindings
+             * to figure out the correct one for the given tcs.
+             */
+            for (size_t i = 0; i < OE_COUNTOF(enclave->bindings); ++i)
+            {
+                if (enclave->bindings[i].tcs == (uint64_t)tcs)
+                {
+                    binding = &enclave->bindings[i];
+                    break;
+                }
+            }
+
+            /**
+             * Restore FS and GS registers when making an OCALL.
+             * This makes sure that thread-locals, libc on host work.
+             */
+            oe_set_fs_register_base(binding->host_fs);
+            oe_set_gs_register_base(binding->host_gs);
+        }
+        else
+        {
+            // FS, GS registers are restored by the EEXIT instruction.
+            binding = GetThreadBinding();
+        }
 
         oe_result_t result = _handle_ocall(enclave, tcs, func, arg, &arg_out);
         *arg1_out = oe_make_call_arg1(OE_CODE_ORET, func, 0, result);
         *arg2_out = arg_out;
 
+        // Restore the binding.
+        _set_thread_binding(binding);
+
+        if (enclave->simulate)
+        {
+            // Prior to returning back to the enclave, set the GS and FS
+            // registers to their values for the enclave thread.
+            oe_set_fs_register_base((void*)(enclave->addr + tcs->fsbase));
+            oe_set_gs_register_base((void*)(enclave->addr + tcs->gsbase));
+        }
         return 0;
     }
 
