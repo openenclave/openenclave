@@ -1,5 +1,4 @@
 ../../3rdparty/libcxx/libcxx/test/libcxx/atomics/atomics.align/align.pass.sh.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/containers/unord/next_pow2.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/debug/containers/db_associative_container_tests.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/debug/containers/db_sequence_container_iterators.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/debug/containers/db_string.pass.cpp
@@ -22,7 +21,6 @@
 ../../3rdparty/libcxx/libcxx/test/libcxx/thread/thread.threads/thread.thread.this/sleep_for.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/utilities/any/size_and_alignment.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/utilities/any/small_type.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/utilities/memory/util.smartptr/race_condition.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/utilities/optional/optional.object/optional.object.assign/copy.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/utilities/optional/optional.object/optional.object.assign/move.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/utilities/optional/optional.object/optional.object.ctor/copy.pass.cpp
@@ -271,8 +269,6 @@
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/new_size_nothrow.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/new_size.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array11.pass.cpp
-#See issue #830 for issue with clang
-../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array_calls_unsized_delete_array.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.single/delete_align_val_t_replace.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.single/new_align_val_t_nothrow.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.single/new_align_val_t_nothrow_replace.pass.cpp
@@ -466,8 +462,10 @@
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.cons/mutex_try_to_lock.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.locking/try_lock_until.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.lock/thread.lock.unique/thread.lock.unique.cons/mutex_duration.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.lock/thread.lock.unique/thread.lock.unique.cons/mutex_try_to_lock.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.lock/thread.lock.unique/thread.lock.unique.cons/mutex_time_point.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.lock/thread.lock.unique/thread.lock.unique.locking/try_lock_until.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.mutex.requirements/thread.mutex.requirements.mutex/thread.mutex.class/try_lock.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.mutex.requirements/thread.shared_mutex.requirements/thread.shared_mutex.class/default.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.mutex.requirements/thread.shared_mutex.requirements/thread.shared_mutex.class/lock.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.mutex.requirements/thread.shared_mutex.requirements/thread.shared_mutex.class/lock_shared.pass.cpp
@@ -615,7 +613,6 @@
 ../../3rdparty/libcxx/libcxx/test/std/utilities/optional/optional.specalg/make_optional.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/optional/optional.specalg/swap.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/optional/optional.syn/optional_includes_initializer_list.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/utilities/template.bitset/bitset.members/count.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/time/time.clock/time.clock.hires/now.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/time/time.clock/time.clock.steady/now.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/time/time.duration/time.duration.alg/abs.pass.cpp

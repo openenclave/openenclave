@@ -1,0 +1,15 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    include "includes.h"
+    trusted {
+        // qe identity info tests.
+        public oe_result_t test_verify_qe_identity_info(
+           [in, string] const char* info_json,
+           [user_check] oe_parsed_qe_identity_info_t* parsed_info);
+    };
+    untrusted {
+    };
+};
+

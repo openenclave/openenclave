@@ -80,22 +80,22 @@ typedef struct _oe_host_ocall_frame
 #endif
 
 #ifndef __ASSEMBLER__
-void _oe_notify_ocall_start(oe_host_ocall_frame_t* frame_pointer, void* tcs);
+void oe_notify_ocall_start(oe_host_ocall_frame_t* frame_pointer, void* tcs);
 #endif
 
 #ifndef __ASSEMBLER__
-void _oe_notify_ocall_end(oe_host_ocall_frame_t* frame_pointer, void* tcs);
+void oe_notify_ocall_end(oe_host_ocall_frame_t* frame_pointer, void* tcs);
 #endif
 
 #ifndef __ASSEMBLER__
-uint32_t _oe_push_enclave_instance(oe_enclave_t* enclave);
+uint32_t oe_push_enclave_instance(oe_enclave_t* enclave);
 #endif
 
 #ifndef __ASSEMBLER__
-uint32_t _oe_remove_enclave_instance(oe_enclave_t* enclave);
+uint32_t oe_remove_enclave_instance(oe_enclave_t* enclave);
 #endif
 
 #ifndef __ASSEMBLER__
-oe_enclave_t* _oe_query_enclave_instance(void* tcs);
+oe_enclave_t* oe_query_enclave_instance(void* tcs);
 #endif
 #endif /* _ASMDEFS_H */

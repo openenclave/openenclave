@@ -40,7 +40,7 @@ struct _oe_sgx_load_context
     oe_sgx_load_state_t state;
 
     /* OE_FLAG bits to be applied to the enclave such as debug */
-    uint32_t attributes;
+    uint64_t attributes;
 
     /* Fields used when attributes contain OE_FLAG_SIMULATION */
     struct
@@ -62,7 +62,7 @@ struct _oe_sgx_load_context
 oe_result_t oe_sgx_initialize_load_context(
     oe_sgx_load_context_t* context,
     oe_sgx_load_type_t type,
-    uint32_t attributes);
+    uint64_t attributes);
 
 void oe_sgx_cleanup_load_context(oe_sgx_load_context_t* context);
 

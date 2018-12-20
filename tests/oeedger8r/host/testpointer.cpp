@@ -23,7 +23,7 @@ static void test_ecall_pointer_fun(oe_enclave_t* enclave, F ecall_pointer_fun)
 
     static_assert((80 / sizeof(T)) * sizeof(T) == 80, "invalid size");
     // arrays with size = 80 bytes.
-    const size_t count = 80 / sizeof(T);
+    const int count = 80 / sizeof(T);
     T p7[count], p8[count], p9[count];
 
     for (size_t i = 0; i < count; ++i)
@@ -107,32 +107,32 @@ static void test_ecall_pointer_fun(oe_enclave_t* enclave, F ecall_pointer_fun)
         // p11, p12, p13 specify pcount as the EDL 'count' attribute.
 
         // p11 is input and should be untouched.
-        for (size_t i = 0; i < (size_t)pcount; ++i)
-            OE_TEST(p11[i] == (T)(i + 1));
+        for (int i = 0; i < pcount; ++i)
+            OE_TEST(p11[i] == static_cast<T>(i + 1));
 
         // p12 is in-out and should be reversed.
-        for (size_t i = 0; i < (size_t)pcount; ++i)
-            OE_TEST(p12[i] == (T)(pcount - i));
+        for (int i = 0; i < pcount; ++i)
+            OE_TEST(p12[i] == static_cast<T>(pcount - i));
 
         // p13 is out and should have value pcount.
-        for (size_t i = 0; i < (size_t)pcount; ++i)
-            OE_TEST(p13[i] == (T)pcount);
+        for (int i = 0; i < pcount; ++i)
+            OE_TEST(p13[i] == static_cast<T>(pcount));
     }
 
     {
         // p14, p15, p16 specify psize as the EDL 'size' attribute.
 
         // p14 is input and should be untouched.
-        for (size_t i = 0; i < (size_t)count; ++i)
-            OE_TEST(p14[i] == (T)(i + 1));
+        for (int i = 0; i < count; ++i)
+            OE_TEST(p14[i] == static_cast<T>(i + 1));
 
         // p15 is in-out and should be reversed.
-        for (size_t i = 0; i < (size_t)count; ++i)
-            OE_TEST(p15[i] == (T)(count - i));
+        for (int i = 0; i < count; ++i)
+            OE_TEST(p15[i] == static_cast<T>(count - i));
 
         // p16 is out and should have value pcount.
-        for (size_t i = 0; i < (size_t)count; ++i)
-            OE_TEST(p16[i] == (T)psize);
+        for (int i = 0; i < count; ++i)
+            OE_TEST(p16[i] == static_cast<T>(psize));
     }
 
     // Call with nulls.
@@ -184,6 +184,15 @@ void test_pointer_edl_ecalls(oe_enclave_t* enclave)
     test_ecall_pointer_fun<long long>(enclave, ecall_pointer_long_long);
     if (g_enabled[TYPE_LONG_DOUBLE])
         test_ecall_pointer_fun<long double>(enclave, ecall_pointer_long_double);
+    test_ecall_pointer_fun<unsigned char>(enclave, ecall_pointer_unsigned_char);
+    test_ecall_pointer_fun<unsigned short>(
+        enclave, ecall_pointer_unsigned_short);
+    test_ecall_pointer_fun<unsigned int>(enclave, ecall_pointer_unsigned_int);
+    if (g_enabled[TYPE_UNSIGNED_LONG])
+        test_ecall_pointer_fun<unsigned long>(
+            enclave, ecall_pointer_unsigned_long);
+    test_ecall_pointer_fun<unsigned long long>(
+        enclave, ecall_pointer_unsigned_long_long);
 
     OE_TEST(ecall_pointer_assert_all_called(enclave) == OE_OK);
     printf("=== test_pointer_edl_ecalls passed\n");
@@ -217,8 +226,8 @@ static T* ocall_pointer_fun_impl(
     T* p14,
     T* p15,
     T* p16,
-    int pcount,
-    int psize)
+    size_t pcount,
+    size_t psize)
 {
     ++num_ocalls;
 
@@ -316,7 +325,7 @@ static T* ocall_pointer_fun_impl(
         // in
         if (p11)
         {
-            for (int i = 0; i < pcount; ++i)
+            for (size_t i = 0; i < pcount; ++i)
             {
                 OE_TEST(p11[i] == (T)(i + 1));
             }
@@ -328,7 +337,7 @@ static T* ocall_pointer_fun_impl(
         // in-out
         if (p12)
         {
-            for (int i = 0; i < pcount; ++i)
+            for (size_t i = 0; i < pcount; ++i)
                 OE_TEST(p12[i] == (T)(i + 1));
             reverse(p12, pcount);
         }
@@ -336,7 +345,7 @@ static T* ocall_pointer_fun_impl(
         // out
         if (p13)
         {
-            for (int i = 0; i < pcount; ++i)
+            for (size_t i = 0; i < pcount; ++i)
                 p13[i] = static_cast<T>(pcount);
         }
     }
@@ -377,6 +386,48 @@ static T* ocall_pointer_fun_impl(
     }
 
     return p10;
+}
+
+template <typename T>
+static T* ocall_pointer_fun_impl(
+    T* p1,
+    T* p2,
+    T* p3,
+    T* p4,
+    T* p5,
+    T* p6,
+    T* p7,
+    T* p8,
+    T* p9,
+    T* p10,
+    T* p11,
+    T* p12,
+    T* p13,
+    T* p14,
+    T* p15,
+    T* p16,
+    int pcount,
+    int psize)
+{
+    return ocall_pointer_fun_impl(
+        p1,
+        p2,
+        p3,
+        p4,
+        p5,
+        p6,
+        p7,
+        p8,
+        p9,
+        p10,
+        p11,
+        p12,
+        p13,
+        p14,
+        p15,
+        p16,
+        static_cast<size_t>(pcount),
+        static_cast<size_t>(psize));
 }
 
 char* ocall_pointer_char(
@@ -1158,12 +1209,216 @@ long double* ocall_pointer_long_double(
         psize);
 }
 
+unsigned char* ocall_pointer_unsigned_char(
+    unsigned char* p1,
+    unsigned char* p2,
+    unsigned char* p3,
+    unsigned char* p4,
+    unsigned char* p5,
+    unsigned char* p6,
+    unsigned char* p7,
+    unsigned char* p8,
+    unsigned char* p9,
+    unsigned char* p10,
+    unsigned char* p11,
+    unsigned char* p12,
+    unsigned char* p13,
+    unsigned char* p14,
+    unsigned char* p15,
+    unsigned char* p16,
+    int pcount,
+    int psize)
+{
+    return ocall_pointer_fun_impl(
+        p1,
+        p2,
+        p3,
+        p4,
+        p5,
+        p6,
+        p7,
+        p8,
+        p9,
+        p10,
+        p11,
+        p12,
+        p13,
+        p14,
+        p15,
+        p16,
+        pcount,
+        psize);
+}
+
+unsigned short* ocall_pointer_unsigned_short(
+    unsigned short* p1,
+    unsigned short* p2,
+    unsigned short* p3,
+    unsigned short* p4,
+    unsigned short* p5,
+    unsigned short* p6,
+    unsigned short* p7,
+    unsigned short* p8,
+    unsigned short* p9,
+    unsigned short* p10,
+    unsigned short* p11,
+    unsigned short* p12,
+    unsigned short* p13,
+    unsigned short* p14,
+    unsigned short* p15,
+    unsigned short* p16,
+    int pcount,
+    int psize)
+{
+    return ocall_pointer_fun_impl(
+        p1,
+        p2,
+        p3,
+        p4,
+        p5,
+        p6,
+        p7,
+        p8,
+        p9,
+        p10,
+        p11,
+        p12,
+        p13,
+        p14,
+        p15,
+        p16,
+        pcount,
+        psize);
+}
+
+unsigned int* ocall_pointer_unsigned_int(
+    unsigned int* p1,
+    unsigned int* p2,
+    unsigned int* p3,
+    unsigned int* p4,
+    unsigned int* p5,
+    unsigned int* p6,
+    unsigned int* p7,
+    unsigned int* p8,
+    unsigned int* p9,
+    unsigned int* p10,
+    unsigned int* p11,
+    unsigned int* p12,
+    unsigned int* p13,
+    unsigned int* p14,
+    unsigned int* p15,
+    unsigned int* p16,
+    int pcount,
+    int psize)
+{
+    return ocall_pointer_fun_impl(
+        p1,
+        p2,
+        p3,
+        p4,
+        p5,
+        p6,
+        p7,
+        p8,
+        p9,
+        p10,
+        p11,
+        p12,
+        p13,
+        p14,
+        p15,
+        p16,
+        pcount,
+        psize);
+}
+
+unsigned long* ocall_pointer_unsigned_long(
+    unsigned long* p1,
+    unsigned long* p2,
+    unsigned long* p3,
+    unsigned long* p4,
+    unsigned long* p5,
+    unsigned long* p6,
+    unsigned long* p7,
+    unsigned long* p8,
+    unsigned long* p9,
+    unsigned long* p10,
+    unsigned long* p11,
+    unsigned long* p12,
+    unsigned long* p13,
+    unsigned long* p14,
+    unsigned long* p15,
+    unsigned long* p16,
+    int pcount,
+    int psize)
+{
+    return ocall_pointer_fun_impl(
+        p1,
+        p2,
+        p3,
+        p4,
+        p5,
+        p6,
+        p7,
+        p8,
+        p9,
+        p10,
+        p11,
+        p12,
+        p13,
+        p14,
+        p15,
+        p16,
+        pcount,
+        psize);
+}
+
+unsigned long long* ocall_pointer_unsigned_long_long(
+    unsigned long long* p1,
+    unsigned long long* p2,
+    unsigned long long* p3,
+    unsigned long long* p4,
+    unsigned long long* p5,
+    unsigned long long* p6,
+    unsigned long long* p7,
+    unsigned long long* p8,
+    unsigned long long* p9,
+    unsigned long long* p10,
+    unsigned long long* p11,
+    unsigned long long* p12,
+    unsigned long long* p13,
+    unsigned long long* p14,
+    unsigned long long* p15,
+    unsigned long long* p16,
+    int pcount,
+    int psize)
+{
+    return ocall_pointer_fun_impl(
+        p1,
+        p2,
+        p3,
+        p4,
+        p5,
+        p6,
+        p7,
+        p8,
+        p9,
+        p10,
+        p11,
+        p12,
+        p13,
+        p14,
+        p15,
+        p16,
+        pcount,
+        psize);
+}
+
 void ocall_pointer_assert_all_called()
 {
-    // Each of the 16 functions above is called twice.
+    // Each of the 20 functions above is called twice.
     // Once with arrays and then with nulls.
-    int expected_num_calls = 16 * 2;
-
+    int expected_num_calls = 20 * 2;
     // Account for enabled non-portable types.
     for (size_t i = 0; i < OE_COUNTOF(g_enabled); ++i)
     {
@@ -1197,6 +1452,11 @@ void ocall_count_attribute_all_types(
     int* b17,
     int* b18,
     int* b19,
+    int* b20,
+    int* b21,
+    int* b22,
+    int* b23,
+    int* b24,
     char char_count,
     short short_count,
     int int_count,
@@ -1215,7 +1475,12 @@ void ocall_count_attribute_all_types(
     uint64_t uint64_t_count,
     wchar_t wchar_t_count,
     long long long_long_count,
-    long double long_double_count)
+    long double long_double_count,
+    unsigned char unsigned_char_count,
+    unsigned short unsigned_short_count,
+    unsigned int unsigned_int_count,
+    unsigned long unsigned_long_count,
+    unsigned long long unsigned_long_long_count)
 {
 }
 
@@ -1239,6 +1504,11 @@ void ocall_size_attribute_all_types(
     int* b17,
     int* b18,
     int* b19,
+    int* b20,
+    int* b21,
+    int* b22,
+    int* b23,
+    int* b24,
     char char_size,
     short short_size,
     int int_size,
@@ -1257,6 +1527,11 @@ void ocall_size_attribute_all_types(
     uint64_t uint64_t_size,
     wchar_t wchar_t_size,
     long long long_long_size,
-    long double long_double_size)
+    long double long_double_size,
+    unsigned char unsigned_char_size,
+    unsigned short unsigned_short_size,
+    unsigned int unsigned_int_size,
+    unsigned long unsigned_long_size,
+    unsigned long long unsigned_long_long_size)
 {
 }

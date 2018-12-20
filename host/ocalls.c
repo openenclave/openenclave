@@ -22,6 +22,7 @@
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/thread.h>
+#include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include "enclave.h"
 #include "ocalls.h"
@@ -77,7 +78,7 @@ void HandleThreadWait(oe_enclave_t* enclave, uint64_t arg_in)
 
 #if defined(__linux__)
 
-    if (__sync_fetch_and_add(&event->value, -1) == 0)
+    if (__sync_fetch_and_add(&event->value, (uint32_t)-1) == 0)
     {
         do
         {
@@ -93,7 +94,7 @@ void HandleThreadWait(oe_enclave_t* enclave, uint64_t arg_in)
             // Spurious-wakes are ignored by going back to FUTEX_WAIT.
             // Since FUTEX_WAIT uses atomic instructions to load event->value,
             // it is safe to use a non-atomic operation here.
-        } while (event->value == -1);
+        } while (event->value == (uint32_t)-1);
     }
 
 #elif defined(_WIN32)
@@ -164,6 +165,16 @@ void HandleGetQuoteRevocationInfo(uint64_t arg_in)
     args->result = oe_get_revocation_info(args);
 }
 
+void HandleGetQuoteEnclaveIdentityInfo(uint64_t arg_in)
+{
+    oe_get_qe_identity_info_args_t* args =
+        (oe_get_qe_identity_info_args_t*)arg_in;
+    if (!args)
+        return;
+
+    args->result = oe_get_qe_identity_info(args);
+}
+
 #endif
 
 void HandleGetQETargetInfo(uint64_t arg_in)
@@ -204,7 +215,8 @@ static char** _backtrace_symbols(
     /* Determine total memory requirements */
     {
         /* Calculate space for the array of string pointers */
-        if (oe_safe_mul_sizet(size, sizeof(char*), &malloc_size) != OE_OK)
+        if (oe_safe_mul_sizet((size_t)size, sizeof(char*), &malloc_size) !=
+            OE_OK)
             goto done;
 
         /* Calculate space for each string */
@@ -234,7 +246,7 @@ static char** _backtrace_symbols(
     ret = (char**)ptr;
 
     /* Skip over array of strings */
-    ptr += size * sizeof(char*);
+    ptr += (size_t)size * sizeof(char*);
 
     /* Copy strings into return buffer */
     for (int i = 0; i < size; i++)
@@ -268,5 +280,15 @@ void oe_handle_backtrace_symbols(oe_enclave_t* enclave, uint64_t arg)
     if (args)
     {
         args->ret = _backtrace_symbols(enclave, args->buffer, args->size);
+    }
+}
+
+void oe_handle_log(oe_enclave_t* enclave, uint64_t arg)
+{
+    oe_log_args_t* args = (oe_log_args_t*)arg;
+    OE_UNUSED(enclave);
+    if (args)
+    {
+        log_message(true, args);
     }
 }

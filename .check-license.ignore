@@ -15,6 +15,7 @@
 ./debugger/pythonExtension/readelf.py
 ./docs/DesignOverview.docx
 ./docs/DesignOverview.pdf
+./docs/GettingStartedDocs/DependencyGraph.svg
 ./docs/GettingStartedDocs/sampledocs/helloworld/helloworld.png
 ./docs/refman/html
 .exrc
@@ -51,11 +52,6 @@ LICENSE
 ./.check-license.ignore
 ./tests/eenter/dead.txt
 ./tests/hashstr/dead.txt
-./tests/libc/tests.*
-./tests/libc/tests.all
-./tests/libc/tests.broken
-./tests/libc/tests.supported
-./tests/libc/tests.unsupported
 ./tests/libcxx/tests.*
 ./tests/libcxxrt/tests.*
 ./tests/load/dead.txt

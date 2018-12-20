@@ -43,6 +43,7 @@ oe_result_t oe_crl_read_der(
     oe_result_t result = OE_UNEXPECTED;
     crl_t* impl = (crl_t*)crl;
     mbedtls_x509_crl* x509_crl = NULL;
+    int rc = 0;
 
     /* Clear the implementation */
     if (impl)
@@ -60,8 +61,9 @@ oe_result_t oe_crl_read_der(
     mbedtls_x509_crl_init(x509_crl);
 
     /* Parse the DER data to populate the mbedtls_x509_crl struct */
-    if (mbedtls_x509_crl_parse_der(x509_crl, der_data, der_size) != 0)
-        OE_RAISE(OE_FAILURE);
+    rc = mbedtls_x509_crl_parse_der(x509_crl, der_data, der_size);
+    if (rc != 0)
+        OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x\n", rc);
 
     /* Initialize the implementation */
     _crl_init(impl, x509_crl);
@@ -118,22 +120,22 @@ oe_result_t oe_crl_get_update_dates(
 
     if (last)
     {
-        last->year = impl->crl->this_update.year;
-        last->month = impl->crl->this_update.mon;
-        last->day = impl->crl->this_update.day;
-        last->hours = impl->crl->this_update.hour;
-        last->minutes = impl->crl->this_update.min;
-        last->seconds = impl->crl->this_update.sec;
+        last->year = (uint32_t)impl->crl->this_update.year;
+        last->month = (uint32_t)impl->crl->this_update.mon;
+        last->day = (uint32_t)impl->crl->this_update.day;
+        last->hours = (uint32_t)impl->crl->this_update.hour;
+        last->minutes = (uint32_t)impl->crl->this_update.min;
+        last->seconds = (uint32_t)impl->crl->this_update.sec;
     }
 
     if (next)
     {
-        next->year = impl->crl->next_update.year;
-        next->month = impl->crl->next_update.mon;
-        next->day = impl->crl->next_update.day;
-        next->hours = impl->crl->next_update.hour;
-        next->minutes = impl->crl->next_update.min;
-        next->seconds = impl->crl->next_update.sec;
+        next->year = (uint32_t)impl->crl->next_update.year;
+        next->month = (uint32_t)impl->crl->next_update.mon;
+        next->day = (uint32_t)impl->crl->next_update.day;
+        next->hours = (uint32_t)impl->crl->next_update.hour;
+        next->minutes = (uint32_t)impl->crl->next_update.min;
+        next->seconds = (uint32_t)impl->crl->next_update.sec;
     }
 
     result = OE_OK;

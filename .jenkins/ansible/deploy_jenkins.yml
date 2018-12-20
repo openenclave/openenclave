@@ -1,0 +1,76 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+    - hosts: linux-slaves
+      become: yes
+      vars_files:
+         - vars/variables.var
+      tasks:
+         - name: Add repo keys
+           apt_key: url={{item}} state=present
+           with_items:
+                   - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key
+                   - https://apt.llvm.org/llvm-snapshot.gpg.key
+                   - https://packages.microsoft.com/keys/microsoft.asc
+         - name: Add repositories for openenclave
+           apt_repository: repo={{item}} state=present update_cache=yes
+           with_items:
+                   - deb http://archive.canonical.com/ubuntu hardy partner
+                   - deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main
+                   - deb [arch=amd64] https://packages.microsoft.com/ubuntu/16.04/prod xenial main
+         - name: Install  prerequisite packages
+           apt: name{{item}} state=present update_cache=yes
+           with_items:
+                   - clang-7
+                   - libssl-dev
+                   - make
+                   - gcc
+                   - gdb
+                   - g++
+                   - pkg-config
+         - name: Download Intel SGX DCAP Driver
+           get_url:
+                   url: https://download.01.org/intel-sgx/dcap-1.0/sgx_linux_x64_driver_dcap_36594a7.bin
+                   dest: /tmp/sgx_linux_x64_driver_dcap_36594a7.bin
+                   mode: 0755 
+         - name: Install the Intel SGX DCAP Driver
+           command: /tmp/sgx_linux_x64_driver_dcap_36594a7.bin
+         - name: Install the Intel and Open Enclave packages
+           apt: name{{item}} state=present update_cache=yes
+           with_items:
+                   - libsgx-enclave-common
+                   - libsgx-enclave-common-dev
+                   - libsgx-dcap-ql 
+                   - libsgx-dcap-ql-dev
+                   - az-dcap-client
+                   - open-enclave 
+         - name: Install jre needed by Jenkins
+           apt: name{{item}} state=present update_cache=yes
+           with_items:
+                   - openjdk-8-jre
+         - name: Create the jenkins group
+           group:
+                   name: jenkins
+                   state: present
+         - name: Add the Jenkins user
+           user:
+                name: jenkins
+                group: jenkins
+         - name: Add repositories for docker
+           apt_repository: repo={{item}} state=present update_cache=yes
+           with_items:
+                   - deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
+         - name: Add docker repo keyy
+           apt_key: url={{item}} state=present
+           with_items:
+           - https://download.docker.com/linux/ubuntu/gpg
+         - name: Install  prerequisite packages
+           apt: name{{item}} state=present update_cache=yes
+           with_items:
+                   - docker-ce
+         - name: Add jenkins to the docker group
+           user:
+             name: jenkins
+             groups: docker
+         - import_role:
+                name: kobanyan.jenkins-jnlp-slave 

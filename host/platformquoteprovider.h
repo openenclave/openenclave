@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#pragma once
 #ifndef PLATFORM_QUOTE_PROVIDER_H
 #define PLATFORM_QUOTE_PROVIDER_H
 
@@ -41,7 +42,7 @@ typedef struct _sgx_ql_get_revocation_info_params_t
 typedef struct _sgx_ql_crl_data_t
 {
     uint32_t crl_data_size; // size of crl_data
-    char* crl_data;         // PEM-encoded, RFC 5280 CRL.
+    char* crl_data;         // DER-encoded.
 
     uint32_t crl_issuer_chain_size; // size of issuer chain for the CRL
     char* crl_issuer_chain;         // PEM-encoded certificate chain
@@ -66,6 +67,24 @@ typedef sgx_plat_error_t (*sgx_ql_get_revocation_info_t)(
 
 typedef void (*sgx_ql_free_revocation_info_t)(
     sgx_ql_revocation_info_t* p_revocation_info);
+
+/*****************************************************************************
+ * Data types and interfaces for getting qe identity info
+ ****************************************************************************/
+
+typedef struct _sgx_qe_identity_info_t
+{
+    uint32_t qe_id_info_size;   // size of qe identity
+    char* qe_id_info;           // qe identity info structure (JSON)
+    uint32_t issuer_chain_size; // size of issuer chain for qe identity info
+    char* issuer_chain;         // PEM-encoded certificate chain
+} sgx_qe_identity_info_t;
+
+typedef sgx_plat_error_t (*sgx_get_qe_identity_info_t)(
+    sgx_qe_identity_info_t** pp_qe_identity_info);
+
+typedef void (*sgx_free_qe_identity_info_t)(
+    sgx_qe_identity_info_t* p_qe_identity_info);
 
 /*****************************************************************************
  * Data types and interfaces for configuration the platform quote provider

@@ -15,7 +15,7 @@ char* find_data_file(char* str, size_t size)
 {
     char* tail = ".data";
     char* checker = "test_suite_";
-    char *token, *temp;
+    char* token;
 
     if (size < strlen(str) + strlen(tail) + 1)
     {
@@ -63,7 +63,7 @@ void Test(oe_enclave_t* enclave, int selftest, char* data_file_name)
     char path[1024];
     int return_value = 1;
     char* in_testname = NULL;
-    char* out_testname = NULL;
+    char out_testname[STRLEN];
     struct mbed_args args = {0};
     if (!selftest)
     {
@@ -72,7 +72,7 @@ void Test(oe_enclave_t* enclave, int selftest, char* data_file_name)
     }
 
     oe_result_t result =
-        test(enclave, &return_value, in_testname, &out_testname, &args);
+        test(enclave, &return_value, in_testname, out_testname, &args);
     OE_TEST(result == OE_OK);
     if (!selftest)
     {
@@ -91,7 +91,7 @@ void Test(oe_enclave_t* enclave, int selftest, char* data_file_name)
     }
 }
 
-OE_OCALL void ocall_exit(uint64_t arg)
+void ocall_exit(int arg)
 {
     exit(arg);
 }
@@ -103,7 +103,7 @@ int main(int argc, const char* argv[])
     oe_enclave_t* enclave = NULL;
     int selftest = 0;
     uint32_t flags = oe_get_create_flags();
-    char* data_file_name;
+    char* data_file_name = NULL;
     // Check argument count:
     if (argc != 2)
     {

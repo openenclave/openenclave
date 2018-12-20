@@ -63,7 +63,7 @@ make
 
 Open Enclave will support attestation workflows outside of Azure using DCAP in an upcoming release.
 
-Refer to the [Advanced Build Information](advancedBuildInfo.md) documentation for further information.
+Refer to the [Advanced Build Information](AdvancedBuildInfo.md) documentation for further information.
 
 ## Run unittests
 

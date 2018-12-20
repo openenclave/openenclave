@@ -6,8 +6,29 @@
 #if defined(__linux__)
 #include <errno.h>
 #include <sys/mman.h>
+
+#define get_fullpath(path) realpath(path, NULL)
+
 #elif defined(_WIN32)
 #include <windows.h>
+
+static const char* get_fullpath(const char* path)
+{
+    char* fullpath = (char*)calloc(1, MAX_PATH);
+    if (fullpath)
+    {
+        DWORD length = GetFullPathName(path, MAX_PATH, fullpath, NULL);
+
+        // If function failed, deallocate and return zero.
+        if (length == 0)
+        {
+            free(fullpath);
+            fullpath = NULL;
+        }
+    }
+    return fullpath;
+}
+
 #endif
 
 #include <assert.h>
@@ -147,7 +168,8 @@ static oe_result_t _add_control_pages(
     /* Save the address of new TCS page into enclave object */
     {
         if (enclave->num_bindings == OE_SGX_MAX_TCS)
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE_MSG(
+                OE_FAILURE, "OE_SGX_MAX_TCS (%d) hit\n", OE_SGX_MAX_TCS);
 
         enclave->bindings[enclave->num_bindings++].tcs = enclave_addr + *vaddr;
     }
@@ -178,11 +200,16 @@ static oe_result_t _add_control_pages(
         /* The entry point for the program (from ELF) */
         tcs->oentry = entry;
 
-        /* FS segment: points to page following SSA slots (page[3]) */
-        tcs->fsbase = *vaddr + (4 * OE_PAGE_SIZE);
-
         /* GS segment: points to page following SSA slots (page[3]) */
         tcs->gsbase = *vaddr + (4 * OE_PAGE_SIZE);
+
+        /* FS segment: Used for thread-local variables.
+         * The reserved (unused) space in td_t is used for thread-local
+         * variables.
+         * Since negative offsets are used with FS, FS must point to end of the
+         * segment.
+        */
+        tcs->fsbase = *vaddr + (5 * OE_PAGE_SIZE);
 
         /* Set to maximum value */
         tcs->fslimit = 0xFFFFFFFF;
@@ -357,7 +384,6 @@ static oe_result_t _build_ecall_data(
     result = OE_OK;
 
 done:
-
     return result;
 }
 
@@ -422,7 +448,7 @@ static oe_result_t _initialize_enclave(oe_enclave_t* enclave)
     unsigned int subleaf = 0; // pass sub-leaf of 0 - needed for leaf 4
 
     // Initialize enclave cache of CPUID info for emulation
-    for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
+    for (unsigned int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
         oe_get_cpuid(
             i,
@@ -436,7 +462,13 @@ static oe_result_t _initialize_enclave(oe_enclave_t* enclave)
     // Pass the enclave handle to the enclave.
     args.enclave = enclave;
 
-    OE_CHECK(oe_ecall(enclave, OE_ECALL_INIT_ENCLAVE, (uint64_t)&args, NULL));
+    {
+        uint64_t arg_out = 0;
+        OE_CHECK(
+            oe_ecall(
+                enclave, OE_ECALL_INIT_ENCLAVE, (uint64_t)&args, &arg_out));
+        OE_CHECK((oe_result_t)arg_out);
+    }
 
     result = OE_OK;
 
@@ -464,6 +496,9 @@ oe_result_t oe_sgx_validate_enclave_properties(
     {
         if (field_name)
             *field_name = "config.attributes";
+        OE_TRACE_ERROR(
+            "oe_sgx_is_valid_attributes failed: attributes = %lx\n",
+            properties->config.attributes);
         result = OE_FAILURE;
         goto done;
     }
@@ -473,6 +508,9 @@ oe_result_t oe_sgx_validate_enclave_properties(
     {
         if (field_name)
             *field_name = "header.size_settings.num_heap_pages";
+        OE_TRACE_ERROR(
+            "oe_sgx_is_valid_num_heap_pages failed: num_heap_pages = %lx\n",
+            properties->header.size_settings.num_heap_pages);
         result = OE_FAILURE;
         goto done;
     }
@@ -482,6 +520,10 @@ oe_result_t oe_sgx_validate_enclave_properties(
     {
         if (field_name)
             *field_name = "header.size_settings.num_stack_pages";
+        OE_TRACE_ERROR(
+            "oe_sgx_is_valid_num_stack_pages failed: "
+            "num_heap_pnum_stack_pagesages = %lx\n",
+            properties->header.size_settings.num_stack_pages);
         result = OE_FAILURE;
         goto done;
     }
@@ -490,6 +532,9 @@ oe_result_t oe_sgx_validate_enclave_properties(
     {
         if (field_name)
             *field_name = "header.size_settings.num_tcs";
+        OE_TRACE_ERROR(
+            "oe_sgx_is_valid_num_tcs failed: num_tcs = %lx\n",
+            properties->header.size_settings.num_tcs);
         result = OE_FAILURE;
         goto done;
     }
@@ -498,6 +543,9 @@ oe_result_t oe_sgx_validate_enclave_properties(
     {
         if (field_name)
             *field_name = "config.product_id";
+        OE_TRACE_ERROR(
+            "oe_sgx_is_valid_product_id failed: num_tcs = %x\n",
+            properties->config.product_id);
         result = OE_FAILURE;
         goto done;
     }
@@ -506,6 +554,9 @@ oe_result_t oe_sgx_validate_enclave_properties(
     {
         if (field_name)
             *field_name = "config.security_version";
+        OE_TRACE_ERROR(
+            "oe_sgx_is_valid_security_version failed: security_version = %x\n",
+            properties->config.product_id);
         result = OE_FAILURE;
         goto done;
     }
@@ -588,7 +639,12 @@ oe_result_t oe_sgx_build_enclave(
         if (enclave->debug)
         {
             /* Attempted to downgrade to debug mode */
-            OE_RAISE(OE_DEBUG_DOWNGRADE);
+            OE_RAISE_MSG(
+                OE_DEBUG_DOWNGRADE,
+                "Enclave image was signed without debug flag but is being "
+                "loaded with OE_ENCLAVE_FLAG_DEBUG set in oe_create_enclave "
+                "call\n",
+                NULL);
         }
     }
 
@@ -635,8 +691,10 @@ oe_result_t oe_sgx_build_enclave(
         oe_sgx_initialize_enclave(
             context, enclave_addr, &props, &enclave->hash));
 
-    /* Save path of this enclave */
-    if (!(enclave->path = oe_strdup(path)))
+    /* Save full path of this enclave. When a debugger attaches to the host
+     * process, it needs the fullpath so that it can load the image binary and
+     * extract the debugging symbols. */
+    if (!(enclave->path = get_fullpath(path)))
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* Set the magic number only if we have actually created an enclave */
@@ -727,7 +785,7 @@ oe_result_t oe_create_enclave(
                             upon creation */
                   0)))   /* No name */
         {
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE_MSG(OE_FAILURE, "CreateEvent failed", NULL);
         }
     }
 
@@ -742,15 +800,14 @@ oe_result_t oe_create_enclave(
     OE_CHECK(oe_sgx_build_enclave(&context, enclave_path, NULL, enclave));
 
     /* Push the new created enclave to the global list. */
-    if (_oe_push_enclave_instance(enclave) != 0)
+    if (oe_push_enclave_instance(enclave) != 0)
     {
         OE_RAISE(OE_FAILURE);
     }
-
 #if defined(__linux__)
 
     /* Notify GDB that a new enclave is created */
-    _oe_notify_gdb_enclave_creation(
+    oe_notify_gdb_enclave_creation(
         enclave, enclave->path, (uint32_t)strlen(enclave->path));
 
 #endif /* defined(__linux__) */
@@ -759,6 +816,9 @@ oe_result_t oe_create_enclave(
      * ocalls. Therefore setup ocall table prior to initialization. */
     enclave->ocalls = (const oe_ocall_func_t*)ocall_table;
     enclave->num_ocalls = ocall_table_size;
+
+    /* Setup logging configuration */
+    oe_log_enclave_init(enclave);
 
     /* Invoke enclave initialization. */
     OE_CHECK(_initialize_enclave(enclave));
@@ -793,7 +853,7 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
 #if defined(__linux__)
 
     /* Notify GDB that this enclave is terminated */
-    _oe_notify_gdb_enclave_termination(
+    oe_notify_gdb_enclave_termination(
         enclave, enclave->path, (uint32_t)strlen(enclave->path));
 
 #endif /* defined(__linux__) */
@@ -802,7 +862,7 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
      * and data structures are freed on a best effort basis from here on */
 
     /* Remove this enclave from the global list. */
-    _oe_remove_enclave_instance(enclave);
+    oe_remove_enclave_instance(enclave);
 
     /* Clear the magic number */
     enclave->magic = 0;
@@ -842,6 +902,5 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
     free(enclave);
 
 done:
-
     return result;
 }

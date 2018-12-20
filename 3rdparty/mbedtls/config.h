@@ -1859,8 +1859,8 @@
  *
  * This module is used for testing (ssl_client/server).
  */
-// Open Enclave: Disabled along with tests that don't run in enclaves
-//#define MBEDTLS_CERTS_C
+// Open Enclave: Enabled conditionally
+#cmakedefine MBEDTLS_CERTS_C
 
 /**
  * \def MBEDTLS_CIPHER_C
@@ -1914,7 +1914,8 @@
  *
  * This module provides debugging functions.
  */
-//#define MBEDTLS_DEBUG_C
+// Open Enclave: Enabled conditionally
+#cmakedefine MBEDTLS_DEBUG_C
 
 /**
  * \def MBEDTLS_DES_C

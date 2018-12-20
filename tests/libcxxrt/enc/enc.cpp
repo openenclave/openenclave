@@ -19,14 +19,13 @@
 #include <csignal>
 #include <cstdio>
 #include <cstdlib>
-#include "../host/args.h"
-#include "../host/ocalls.h"
+#include "libcxxrt_t.h"
 
 extern "C" int main(int argc, const char* argv[]);
 
 extern "C" void _exit(int status)
 {
-    oe_call_host("ocall_exit", (void*)(long)status);
+    ocall_exit(status);
     abort();
 }
 
@@ -56,18 +55,15 @@ extern "C" int close(int fd)
     return 0;
 }
 
-OE_ECALL void Test(Args* args)
+extern "C" int test(char** name)
 {
     extern const char* __TEST__NAME;
-    if (args)
-    {
-        static const char* argv[] = {
-            "test", NULL,
-        };
-        static int argc = sizeof(argv) / sizeof(argv[0]);
-        args->ret = main(argc, argv);
-        args->test = oe_host_strndup(__TEST__NAME, OE_SIZE_MAX);
-    }
+    static const char* argv[] = {
+        "test", NULL,
+    };
+    static int argc = sizeof(argv) / sizeof(argv[0]);
+    *name = oe_host_strndup(__TEST__NAME, OE_SIZE_MAX);
+    return main(argc, argv);
 }
 
 OE_SET_ENCLAVE_SGX(
@@ -77,5 +73,3 @@ OE_SET_ENCLAVE_SGX(
     1024, /* HeapPageCount */
     1024, /* StackPageCount */
     2);   /* TCSCount */
-
-OE_DEFINE_EMPTY_ECALL_TABLE();

@@ -9,6 +9,7 @@ set(PLATFORM_SRC
     crypto/openssl/cert.c
     crypto/openssl/crl.c
     crypto/openssl/ec.c
+    crypto/openssl/hmac.c
     crypto/openssl/init.c
     crypto/openssl/key.c
     crypto/openssl/random.c
@@ -27,6 +28,7 @@ set(PLATFORM_SRC
     )
 elseif (WIN32)
 set(PLATFORM_SRC
+    crypto/bcrypt/hmac.c
     crypto/bcrypt/rsa.c
     windows/aep.asm
     windows/aesm.c
@@ -42,12 +44,14 @@ endif()
 
 add_library(oehost STATIC
     ../common/datetime.c
+    ../common/kdf.c
+    ../common/qeidentity.c
     ../common/quote.c
     ../common/report.c
     ../common/revocation.c
     ../common/safecrt.c
     ../common/sgxcertextensions.c
-    ../common/tcbinfo.c    
+    ../common/tcbinfo.c
     calls.c
     create.c
     dupenv.c
@@ -63,6 +67,7 @@ add_library(oehost STATIC
     loadpe.c
     memalign.c
     ocalls.c
+    traceh.c
     quote.c
     registers.c
     report.c
@@ -81,6 +86,8 @@ add_library(oehost STATIC
 
 # we and dependents need the OE includes to compile
 target_link_libraries(oehost PUBLIC oe_includes)
+
+target_compile_definitions(oehost PRIVATE -DOE_REPO_BRANCH_NAME="${GIT_BRANCH}" -DOE_REPO_LAST_COMMIT="${GIT_COMMIT}")
 
 if(UNIX)
 find_library(CRYPTO_LIB NAMES crypto)
@@ -114,15 +121,14 @@ find_library(LIBSGX_COMMON NAMES sgx_enclave_common)
 find_library(LIBSGX_QE NAMES sgx_dcap_ql)
 find_library(LIBSGX_URTS NAMES sgx_urts)
 target_link_libraries(oehost PUBLIC ${LIBSGX_COMMON} ${LIBSGX_QE} ${LIBSGX_URTS})
-target_compile_definitions(oehost PRIVATE OE_USE_LIBSGX)
-endif()
-
-if(OE_TRACE_LEVEL)
-    target_compile_definitions(oehost PUBLIC "OE_TRACE_LEVEL=${OE_TRACE_LEVEL}")
 endif()
 
 if(USE_DEBUG_MALLOC)
 target_compile_definitions(oehost PRIVATE OE_USE_DEBUG_MALLOC)
+endif()
+
+if(USE_LIBSGX)
+    target_compile_definitions(oehost PUBLIC OE_USE_LIBSGX)
 endif()
 
 # convenience library for creating a host-app (that needs the -rdynamic link flag)

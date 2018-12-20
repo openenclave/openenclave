@@ -12,4 +12,11 @@ extern const char* ALPHABET;
 /* Hash of ALPHABET string above */
 extern OE_SHA256 ALPHABET_HASH;
 
+/* Key for the HMAC calculation. */
+extern unsigned char ALPHABET_KEY[];
+extern size_t ALPHABET_KEY_SIZE;
+
+/* HMAC value. */
+extern OE_SHA256 ALPHABET_HMAC;
+
 #endif /* _TESTS_CRYPTO_HASH_H */

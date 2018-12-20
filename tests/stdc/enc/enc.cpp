@@ -27,7 +27,7 @@
 #include <unistd.h>
 #include <wchar.h>
 #include <wctype.h>
-#include "../args.h"
+#include "stdc_t.h"
 
 /* ATTN: implement these! */
 #if 0
@@ -180,7 +180,7 @@ static void _test_time_functions(void)
 
     /* Test time(): this test will fail if run after Jan 1, 2050 */
     {
-        now = time(NULL) * SEC_TO_USEC;
+        now = static_cast<uint64_t>(time(NULL)) * SEC_TO_USEC;
         OE_TEST(now != 0);
         OE_TEST(now >= JAN_1_2018 && now <= JAN_1_2050);
     }
@@ -190,7 +190,7 @@ static void _test_time_functions(void)
         struct timeval tv = {0, 0};
         OE_TEST(gettimeofday(&tv, NULL) == 0);
 
-        const uint64_t tmp = tv.tv_sec * SEC_TO_USEC;
+        const uint64_t tmp = static_cast<uint64_t>(tv.tv_sec) * SEC_TO_USEC;
 
         /* Check for accuracy within a second */
         OE_TEST(now >= tmp - SEC_TO_USEC);
@@ -202,7 +202,7 @@ static void _test_time_functions(void)
         struct timespec ts;
         OE_TEST(clock_gettime(0, &ts) == 0);
 
-        uint64_t tmp = ts.tv_sec * SEC_TO_USEC;
+        uint64_t tmp = static_cast<uint64_t>(ts.tv_sec) * SEC_TO_USEC;
 
         /* Check for accuracy within a second */
         OE_TEST(tmp >= now - SEC_TO_USEC);
@@ -228,31 +228,29 @@ static void _test_time_functions(void)
     }
 }
 
-OE_ECALL void Test(void* args_)
+int test(char buf1[BUFSIZE], char buf2[BUFSIZE])
 {
-    TestArgs* args = (TestArgs*)args_;
+    int rval = 0;
 
     oe_set_allocation_failure_callback(_allocation_failure_callback);
 
-    strcpy(args->buf1, "AAA");
-    strcat(args->buf1, "BBB");
-    strcat(args->buf1, "CCC");
+    strcpy(buf1, "AAA");
+    strcat(buf1, "BBB");
+    strcat(buf1, "CCC");
 
     {
         char* s = strdup("strdup");
 
-        if (s && strcmp(s, "strdup") == 0 && strlen(s) == 6)
+        if (s && strcmp(s, "strdup") == 0 && strlen(s) == 6 &&
+            memcmp(s, "strdup", 6) == 0)
         {
-            if (memcmp(s, "strdup", 6) == 0)
-                args->strdup_ok = 1;
+            rval = 1;
         }
-        else
-            args->strdup_ok = 0;
 
         free(s);
     }
 
-    snprintf(args->buf2, sizeof(args->buf2), "%s=%d", "value", 100);
+    snprintf(buf2, BUFSIZE, "%s=%d", "value", 100);
 
     Test_strtol();
     Test_strtoll();
@@ -279,6 +277,8 @@ OE_ECALL void Test(void* args_)
     void* p = malloc(1024 * 1024 * 1024);
     OE_TEST(p == NULL);
     OE_TEST(_called_allocation_failure_callback);
+
+    return rval;
 }
 
 OE_SET_ENCLAVE_SGX(
@@ -288,5 +288,3 @@ OE_SET_ENCLAVE_SGX(
     1024, /* HeapPageCount */
     1024, /* StackPageCount */
     2);   /* TCSCount */
-
-OE_DEFINE_EMPTY_ECALL_TABLE();

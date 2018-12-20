@@ -212,6 +212,26 @@ oe_result_t oe_ec_generate_key_pair(
     oe_ec_private_key_t* private_key,
     oe_ec_public_key_t* public_key);
 
+/*
+ * Computes an EC private-public key from a given private key
+ *
+ * Given an elliptic curve and a byte array representing the private key as a
+ * big endian number, calculates the public key and exports both keys as
+ * oe_ec_*_key_t structs.
+ *
+ * @param curve type of elliptical curve to be generated
+ * @param private_key_buf the big endian number representing the private key
+ * @param private_key_buf_size size_t the size of private_buf
+ * @param private_key the output private key parameter
+ * @param public_key the output public key parameter
+ */
+oe_result_t oe_ec_generate_key_pair_from_private(
+    oe_ec_type_t curve,
+    const uint8_t* private_key_buf,
+    size_t private_key_buf_size,
+    oe_ec_private_key_t* private_key,
+    oe_ec_public_key_t* public_key);
+
 /**
  * Determine whether two EC public keys are identical.
  *
@@ -253,8 +273,6 @@ oe_result_t oe_ec_public_key_from_coordinates(
     const uint8_t* y_data,
     size_t y_size);
 
-OE_EXTERNC_END
-
 /**
  * Converts binary ECDSA signature values to an DER-encoded signature.
  *
@@ -281,5 +299,25 @@ oe_result_t oe_ecdsa_signature_write_der(
     size_t size,
     const uint8_t* s_data,
     size_t s_size);
+
+/**
+ * Checks if the given key is a valid private key for the given curve.
+ *
+ * Checks if the given byte array interpretted as a bit endian number is a
+ * valid ECC private key on the given curve.
+ *
+ * @param type the ECC curve type
+ * @param key the buffer holding the key
+ * @param keysize the size of key in bytes
+ *
+ * @return true if the key is valid
+ * @return false if the key is not valid
+ */
+bool oe_ec_valid_raw_private_key(
+    oe_ec_type_t type,
+    const uint8_t* key,
+    size_t keysize);
+
+OE_EXTERNC_END
 
 #endif /* _OE_EC_H */

@@ -3,6 +3,7 @@
 
 #include "fopen.h"
 #include <errno.h>
+#include <openenclave/internal/trace.h>
 #include <stdio.h>
 
 int oe_fopen(FILE** fp, const char* path, const char* mode)
@@ -13,7 +14,10 @@ int oe_fopen(FILE** fp, const char* path, const char* mode)
         return -1;
 
     if ((*fp = fopen(path, mode)) == NULL)
+    {
+        OE_TRACE_ERROR("oe_fopen failed path=%s mode=%s\n", path, mode);
         return -1;
+    }
 
     return 0;
 

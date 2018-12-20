@@ -29,11 +29,11 @@ oe_result_t test_malloc()
             goto done;
         }
 
-        heap_remaining = end - brk;
+        heap_remaining = (size_t)(end - brk);
     }
 
     /* Verify that at least 15.9 gigabytes of heap memory are available */
-    if (!(heap_remaining > (float)(15.9 * GIGABYTE)))
+    if (!(heap_remaining > (float)(15.9 * (double)GIGABYTE)))
     {
         return_value = OE_FAILURE;
         goto done;
@@ -41,7 +41,7 @@ oe_result_t test_malloc()
 
     /* Allocate 99% of remaining heap memory */
     {
-        const size_t allocation_size = (size_t)(0.99 * heap_remaining);
+        const size_t allocation_size = (size_t)(0.99 * (double)heap_remaining);
 
         if (!(ptr = (uint8_t*)dlmalloc(allocation_size)))
         {

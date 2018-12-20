@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <assert.h>
+#include <fcntl.h>
 #include <limits.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/error.h>
@@ -9,7 +10,50 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/uio.h>
+#include <unistd.h>
+#include "../syscall_args.h"
 #include "crypto_u.h"
+
+OE_OCALL void f_open(void* syscall_args)
+{
+    syscall_args_t* args = (syscall_args_t*)syscall_args;
+
+    args->fd = open(args->path, args->flags, args->mode);
+
+    return;
+}
+
+OE_OCALL void f_read(void* syscall_args)
+{
+    int ret;
+    syscall_args_t* args = (syscall_args_t*)syscall_args;
+
+    ret = (int)read(args->fd, (char*)args->ptr, (size_t)args->len);
+    args->ret = ret;
+
+    return;
+}
+
+OE_OCALL void f_readv(void* syscall_args)
+{
+    syscall_args_t* args = (syscall_args_t*)syscall_args;
+
+    args->ret = (int)readv(args->fd, (const struct iovec*)args->ptr, args->len);
+
+    return;
+}
+
+OE_OCALL void f_close(void* syscall_args)
+{
+    syscall_args_t* args = (syscall_args_t*)syscall_args;
+
+    args->ret = close(args->fd);
+
+    return;
+}
 
 int main(int argc, const char* argv[])
 {

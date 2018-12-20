@@ -18,4 +18,4 @@ clean:
 	$(MAKE) -C host clean
 
 run:
-	host/attestation_host ./enc1/enclave1.signed.so ./enc2/enclave2.signed.so
+	host/attestation_host ./enc1/enclave1.signed ./enc2/enclave2.signed

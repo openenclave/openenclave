@@ -12,12 +12,12 @@ typedef struct _oe_enclave oe_enclave_t;
 
 #if defined(__linux__)
 
-void _oe_notify_gdb_enclave_creation(
+void oe_notify_gdb_enclave_creation(
     const oe_enclave_t* enclave,
     const char* enclave_path,
     uint32_t enclave_path_length);
 
-void _oe_notify_gdb_enclave_termination(
+void oe_notify_gdb_enclave_termination(
     const oe_enclave_t* enclave,
     const char* enclave_path,
     uint32_t enclave_path_length);

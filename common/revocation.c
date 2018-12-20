@@ -145,12 +145,13 @@ done:
 
 static void _trace_datetime(const char* msg, const oe_datetime_t* date)
 {
-#if (OE_TRACE_LEVEL == OE_TRACE_LEVEL_INFO)
-    char str[21];
-    size_t size = sizeof(str);
-    oe_datetime_to_string(date, str, &size);
-    OE_TRACE_INFO("%s%s\n", msg, str);
-#endif
+    if (get_current_logging_level() >= OE_LOG_LEVEL_INFO)
+    {
+        char str[21];
+        size_t size = sizeof(str);
+        oe_datetime_to_string(date, str, &size);
+        OE_TRACE_INFO("%s%s\n", msg, str);
+    }
 }
 
 oe_result_t oe_enforce_revocation(
@@ -173,6 +174,8 @@ oe_result_t oe_enforce_revocation(
     const oe_crl_t* crl_ptrs[2] = {&crls[0], &crls[1]};
     oe_datetime_t crl_this_update_date = {0};
     oe_datetime_t crl_next_update_date = {0};
+
+    OE_UNUSED(pck_cert_chain);
 
     if (intermediate_cert == NULL || leaf_cert == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -241,9 +244,8 @@ oe_result_t oe_enforce_revocation(
         leaf_cert, &crl_issuer_chain[0], crl_ptrs, 2, &cert_verify_error);
     if (r != OE_OK)
     {
-        OE_TRACE_INFO(
-            "oe_cer_verify failed with error = %s\n", cert_verify_error.buf);
-        OE_RAISE(r);
+        OE_RAISE_MSG(
+            r, "oe_cer_verify failed with error = %s\n", cert_verify_error.buf);
     }
 
     for (uint32_t i = 0; i < OE_COUNTOF(platform_tcb_level.sgx_tcb_comp_svn);
@@ -263,7 +265,7 @@ oe_result_t oe_enforce_revocation(
             &parsed_tcb_info));
 
     OE_CHECK(
-        oe_verify_tcb_signature(
+        oe_verify_ecdsa256_signature(
             parsed_tcb_info.tcb_info_start,
             parsed_tcb_info.tcb_info_size,
             (sgx_ecdsa256_signature_t*)parsed_tcb_info.signature,
@@ -301,7 +303,7 @@ oe_result_t oe_enforce_revocation(
     result = OE_OK;
 
 done:
-    for (int32_t i = revocation_args.num_crl_urls - 1; i >= 0; --i)
+    for (int32_t i = (int32_t)revocation_args.num_crl_urls - 1; i >= 0; --i)
     {
         oe_crl_free(&crls[i]);
     }

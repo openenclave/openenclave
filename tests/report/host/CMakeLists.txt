@@ -2,10 +2,9 @@
 # Licensed under the MIT License.
 
 include(oeedl_file)
-include(add_enclave_executable)
 
 oeedl_file(../tests.edl host gen)
-add_executable(report_host host.cpp tcbinfo.cpp ${gen})
+add_executable(report_host host.cpp tcbinfo.cpp ../common/tests.cpp ${gen})
 
 if(USE_LIBSGX)
     target_compile_definitions(report_host PRIVATE OE_USE_LIBSGX)

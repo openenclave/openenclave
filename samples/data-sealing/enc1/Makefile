@@ -30,13 +30,13 @@ build:
 	oeedger8r ../datasealing.edl --trusted  --trusted-dir ../common
 	$(CXX) -c $(CXXFLAGS) $(INCLUDES) -std=c++11 ecalls.cpp ../common/dispatcher.cpp ../common/keys.cpp
 	$(CC) -c $(CFLAGS) $(CINCLUDES) ../common/datasealing_t.c
-	$(CXX) -o enclave_a_v1.so ecalls.o dispatcher.o keys.o datasealing_t.o $(LDFLAGS)
+	$(CXX) -o enclave_a_v1 ecalls.o dispatcher.o keys.o datasealing_t.o $(LDFLAGS)
 
 sign:
-	oesign enclave_a_v1.so data-sealing.conf private.pem
+	oesign sign enclave_a_v1 data-sealing.conf private.pem
 
 clean:
-	rm -f *.so *.o *.pem ../common/datasealing_t.* ../common/datasealing_args.h
+	rm -f enclave_a_v1 enclave_a_v1.signed *.o *.pem ../common/datasealing_t.* ../common/datasealing_args.h
 
 keys:
 	openssl genrsa -out private.pem -3 3072

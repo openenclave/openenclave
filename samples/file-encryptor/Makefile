@@ -10,8 +10,8 @@ clean:
 	$(MAKE) -C host clean
 
 run:
-	host/file-encryptorhost testfile ./enc/file-encryptorenc.signed.so
+	host/file-encryptorhost testfile ./enc/file-encryptorenc.signed
 
 simulate:
-	host/file-encryptorhost testfile ./enc/file-encryptorenc.signed.so --simulate
+	host/file-encryptorhost testfile ./enc/file-encryptorenc.signed --simulate
 
