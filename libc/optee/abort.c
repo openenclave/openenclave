@@ -3,5 +3,4 @@
 
 void abort(void)
 {
-
 }

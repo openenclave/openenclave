@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include <openenclave/bits/defs.h>
 #include <openenclave/edger8r/host.h>
 #include <stdint.h>
@@ -49,4 +52,3 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
     OE_UNUSED(enclave);
     return OE_UNSUPPORTED;
 }
-

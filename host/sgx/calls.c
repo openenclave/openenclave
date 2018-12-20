@@ -26,10 +26,10 @@
 #include <openenclave/internal/registers.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
+#include "../ocalls.h"
 #include "asmdefs.h"
 #include "enclave.h"
 #include "ocalls.h"
-#include "../ocalls.h"
 
 /*
 **==============================================================================

@@ -143,13 +143,13 @@ size_t oe_strlcat(char* dest, const char* src, size_t size)
 
 static inline void _oe_memcpy(void* dest, const void* src, size_t n)
 {
-    // TODO: Revisit this later. Looks like compilers might replace
-    // __builtin_X with the C library version of X.
+// TODO: Revisit this later. Looks like compilers might replace
+// __builtin_X with the C library version of X.
 #if defined(__x86_64__)
     __builtin_memcpy(dest, src, n);
 #else
-    unsigned char* d = (unsigned char*) dest;
-    unsigned char* s = (unsigned char*) src;
+    unsigned char* d = (unsigned char*)dest;
+    unsigned char* s = (unsigned char*)src;
     while (n--)
         *d++ = *s++;
 #endif
@@ -199,14 +199,14 @@ void* oe_memcpy(void* dest, const void* src, size_t n)
 
 static inline void _oe_memset(void* s, int c, size_t n)
 {
-    // TODO: Revisit this later. Looks like compilers might replace
-    // __builtin_X with the C library version of X.
+// TODO: Revisit this later. Looks like compilers might replace
+// __builtin_X with the C library version of X.
 #if defined(__x86_64__)
     __builtin_memset(s, c, n);
 #else
-    unsigned char* s_ = (unsigned char*) s;
+    unsigned char* s_ = (unsigned char*)s;
     while (n--)
-        *s_++ = (unsigned char) c;
+        *s_++ = (unsigned char)c;
 #endif
 }
 

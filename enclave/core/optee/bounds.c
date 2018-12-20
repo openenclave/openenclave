@@ -1,5 +1,8 @@
-#include <openenclave/enclave.h>
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include <openenclave/bits/defs.h>
+#include <openenclave/enclave.h>
 
 bool oe_is_within_enclave(const void* ptr, size_t sz)
 {
