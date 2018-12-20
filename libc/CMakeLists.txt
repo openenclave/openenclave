@@ -49,7 +49,7 @@ if (OE_SGX)
             ../common/sgx/rand.S)
     elseif (WIN32)
         set(APPEND PLATFORM_SRC
-            ../common/sgx/rand.asm) 
+            ../common/sgx/rand.asm)
     endif()
 else()
     list(APPEND PLATFORM_SRC

@@ -39,9 +39,9 @@ if (OE_SGX)
         ../common/sgx/report.c
         ../common/sgx/revocation.c
         ../common/sgx/sgxcertextensions.c
-        ../common/sgx/tcbinfo.c    
+        ../common/sgx/tcbinfo.c
         sgx/calls.c
-        sgx/create.c 
+        sgx/create.c
         sgx/elf.c
         sgx/enclave.c
         sgx/enclavemanager.c

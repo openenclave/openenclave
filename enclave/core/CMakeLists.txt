@@ -50,6 +50,7 @@ elseif(OE_TRUSTZONE)
     list(APPEND PLATFORM_SRC
         optee/abort.c
         optee/bounds.c
+        optee/host.c
         optee/printf.c
         optee/start.c
     )
@@ -80,7 +81,7 @@ if (OE_SGX)
     # null pointers.
     set_source_files_properties(sgx/malloc.c
         PROPERTIES COMPILE_FLAGS "-Wno-conversion -Wno-null-pointer-arithmetic")
-    
+
     # jump.s must be optimized for the correct call-frame.
     set_source_files_properties(sgx/jump.c PROPERTIES COMPILE_FLAGS -O2)
 
