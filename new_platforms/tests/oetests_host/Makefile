@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 OBJECTS = main.o TrustedAppTest.o OEEnclaveTest.o OEHostTest.o sockets_test.o oetests_u.o
 
 EDL_PATH = ../../src

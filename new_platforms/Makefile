@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 ifeq ($(ARCH),aarch32)
 TRUSTED_CROSS_COMPILE = /usr/bin/arm-linux-gnueabi-
 else ifeq ($(ARCH),aarch64)
