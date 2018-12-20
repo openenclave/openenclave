@@ -49,7 +49,8 @@ elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*|ARM.*|aarch64.*|AARCH64.*")
         optee/abort.c
         optee/bounds.c
         optee/printf.c
-        )
+        optee/start.c
+    )
 else()
     message(FATAL_ERROR "Unknown architecture. Only Intel and ARM are supported.")
 endif()

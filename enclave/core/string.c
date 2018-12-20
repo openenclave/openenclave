@@ -5,7 +5,7 @@
 #include <openenclave/internal/enclavelibc.h>
 
 /*
-**==============================================================================
+**=====/=========================================================================
 **
 ** oe_strlen()
 ** oe_strcmp()
@@ -141,6 +141,19 @@ size_t oe_strlcat(char* dest, const char* src, size_t size)
 **==============================================================================
 */
 
+static inline void _oe_memcpy(void* dest, const void* src, size_t n)
+{
+    // TODO: Revisit this later. Looks like compilers might replace
+    // __builtin_X with the C library version of X.
+#if defined(__x86_64__)
+    __builtin_memcpy(dest, src, n);
+#else
+    unsigned char* d = (unsigned char*) dest;
+    unsigned char* s = (unsigned char*) src;
+    while (n--)
+        *d++ = *s++;
+#endif
+}
 void* oe_memcpy(void* dest, const void* src, size_t n)
 {
     unsigned char* p = (unsigned char*)dest;
@@ -148,7 +161,7 @@ void* oe_memcpy(void* dest, const void* src, size_t n)
 
     while (n >= 1024)
     {
-        __builtin_memcpy(p, q, 1024);
+        _oe_memcpy(p, q, 1024);
         n -= 1024;
         p += 1024;
         q += 1024;
@@ -156,7 +169,7 @@ void* oe_memcpy(void* dest, const void* src, size_t n)
 
     while (n >= 256)
     {
-        __builtin_memcpy(p, q, 256);
+        _oe_memcpy(p, q, 256);
         n -= 256;
         p += 256;
         q += 256;
@@ -164,7 +177,7 @@ void* oe_memcpy(void* dest, const void* src, size_t n)
 
     while (n >= 64)
     {
-        __builtin_memcpy(p, q, 64);
+        _oe_memcpy(p, q, 64);
         n -= 64;
         p += 64;
         q += 64;
@@ -172,7 +185,7 @@ void* oe_memcpy(void* dest, const void* src, size_t n)
 
     while (n >= 16)
     {
-        __builtin_memcpy(p, q, 16);
+        _oe_memcpy(p, q, 16);
         n -= 16;
         p += 16;
         q += 16;
@@ -182,6 +195,19 @@ void* oe_memcpy(void* dest, const void* src, size_t n)
         *p++ = *q++;
 
     return dest;
+}
+
+static inline void _oe_memset(void* s, int c, size_t n)
+{
+    // TODO: Revisit this later. Looks like compilers might replace
+    // __builtin_X with the C library version of X.
+#if defined(__x86_64__)
+    __builtin_memset(s, c, n);
+#else
+    unsigned char* s_ = (unsigned char*) s;
+    while (n--)
+        *s_++ = (unsigned char) c;
+#endif
 }
 
 void* oe_memset(void* s, int c, size_t n)
