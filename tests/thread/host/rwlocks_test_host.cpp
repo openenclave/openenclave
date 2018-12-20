@@ -10,59 +10,76 @@
 #include <cstdlib>
 #include <cstring>
 #include <thread>
-#include "../args.h"
 #include "../rwlock_tests.h"
+#include "thread_u.h"
 
-static TestRWLockArgs _rw_args;
-
-OE_OCALL void host_usleep(void* args)
+void host_usleep(size_t microseconds)
 {
-    std::this_thread::sleep_for(std::chrono::microseconds((size_t)args));
+    std::this_thread::sleep_for(std::chrono::microseconds(microseconds));
 }
 
-void* ReaderThread(void* args)
+void* reader_thread(oe_enclave_t* enclave)
 {
-    oe_enclave_t* enclave = (oe_enclave_t*)args;
-    OE_TEST(oe_call_enclave(enclave, "ReaderThreadImpl", &_rw_args) == OE_OK);
+    OE_TEST(enc_reader_thread_impl(enclave) == OE_OK);
 
     return NULL;
 }
 
-void* WriterThread(void* args)
+void* writer_thread(oe_enclave_t* enclave)
 {
-    oe_enclave_t* enclave = (oe_enclave_t*)args;
-    OE_TEST(oe_call_enclave(enclave, "WriterThreadImpl", &_rw_args) == OE_OK);
+    OE_TEST(enc_writer_thread_impl(enclave) == OE_OK);
 
     return NULL;
 }
 
 // Launch multiple reader and writer threads and OE_TEST invariants.
-void TestReadersWriterLock(oe_enclave_t* enclave)
+void test_readers_writer_lock(oe_enclave_t* enclave)
 {
     std::thread threads[NUM_RW_TEST_THREADS];
 
-    memset(&_rw_args, 0, sizeof(_rw_args));
+    size_t readers = 0;
+    size_t writers = 0;
+    size_t max_readers = 0;
+    size_t max_writers = 0;
+    bool readers_and_writers = false;
 
     for (size_t i = 0; i < NUM_RW_TEST_THREADS; i++)
     {
-        threads[i] =
-            std::thread((i & 1) ? WriterThread : ReaderThread, enclave);
+        if (i & 1)
+        {
+            threads[i] = std::thread(writer_thread, enclave);
+        }
+        else
+        {
+            threads[i] = std::thread(reader_thread, enclave);
+        }
     }
 
     for (size_t i = 0; i < NUM_RW_TEST_THREADS; i++)
+    {
         threads[i].join();
+    }
+
+    OE_TEST(
+        enc_rw_results(
+            enclave,
+            &readers,
+            &writers,
+            &max_readers,
+            &max_writers,
+            &readers_and_writers) == OE_OK);
 
     // There can be at most 1 writer thread active.
-    OE_TEST(_rw_args.max_writers == 1);
+    OE_TEST(max_writers == 1);
 
     // There can be at most NUM_THREADS/2 reader threads active
     // and no thread was starved.
-    OE_TEST(_rw_args.max_readers <= NUM_READER_THREADS);
+    OE_TEST(max_readers <= NUM_READER_THREADS);
 
     // Readers and writer threads should never be simultaneously active.
-    OE_TEST(_rw_args.readers_and_writers == false);
+    OE_TEST(readers_and_writers == false);
 
     // Additionally, the test requires that all readers are
     // simultaneously active at least once.
-    OE_TEST(_rw_args.max_readers == NUM_READER_THREADS);
+    OE_TEST(max_readers == NUM_READER_THREADS);
 }

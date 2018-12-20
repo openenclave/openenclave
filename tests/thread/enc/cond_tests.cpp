@@ -1,12 +1,16 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#ifdef _PTHREAD_ENC_
+#include "thread.h"
+#endif
+
 #include <openenclave/enclave.h>
 #include <openenclave/internal/tests.h>
 #include <openenclave/internal/thread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "../args.h"
+#include "thread_t.h"
 
 static oe_mutex_t mutex = OE_MUTEX_INITIALIZER;
 static oe_cond_t cond = OE_COND_INITIALIZER;
@@ -19,10 +23,8 @@ static volatile int num_woken = 0;
 
 static volatile bool exit_thread = false;
 
-OE_ECALL void CBTestWaiterThreadImpl(void* args)
+void cb_test_waiter_thread_impl()
 {
-    OE_UNUSED(args);
-
     oe_mutex_lock(&mutex);
 
     while (!exit_thread)
@@ -42,10 +44,8 @@ OE_ECALL void CBTestWaiterThreadImpl(void* args)
     oe_mutex_unlock(&mutex);
 }
 
-OE_ECALL void CBTestSignalThreadImpl(void* args)
+void cb_test_signal_thread_impl()
 {
-    OE_UNUSED(args);
-
     // Iterate for enough number of times to
     // detect any sporadic behavior.
     // Note: The original issue that the accompanying fix
