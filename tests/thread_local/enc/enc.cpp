@@ -11,10 +11,11 @@
 #include <thread>
 
 #include "thread_local_t.h"
+#include "visibility.h"
 
 // These variables will be put in .tdata
-__thread volatile int __thread_int = 1;
-__thread volatile int g_x[10] = {8};
+VISIBILITY_SPEC __thread volatile int __thread_int = 1;
+VISIBILITY_SPEC __thread volatile int g_x[10] = {8};
 
 struct thread_local_struct
 {
@@ -35,13 +36,15 @@ struct thread_local_struct
 
 // These variables will be put in .tbss
 // Dynamic thread specific destructors for g_s and dist.
-extern thread_local std::random_device g_rd;
-extern thread_local std::mt19937 g_mt;
-extern thread_local std::uniform_real_distribution<double> g_dist;
-thread_local volatile thread_local_struct g_s(static_cast<int>(g_dist(g_mt)));
+VISIBILITY_SPEC extern thread_local std::random_device g_rd;
+VISIBILITY_SPEC extern thread_local std::mt19937 g_mt;
+VISIBILITY_SPEC extern thread_local std::uniform_real_distribution<double>
+    g_dist;
+VISIBILITY_SPEC thread_local volatile thread_local_struct g_s(
+    static_cast<int>(g_dist(g_mt)));
 
 // This variable will be put in .tdata
-thread_local int thread_local_int = 5;
+VISIBILITY_SPEC thread_local int thread_local_int = 5;
 
 // Helper function for debugging.
 // Gets the value of the FS segment.
@@ -142,6 +145,6 @@ OE_SET_ENCLAVE_SGX(
     0,    /* ProductID */
     0,    /* SecurityVersion */
     true, /* AllowDebug */
-    128,  /* HeapPageCount */
-    128,  /* StackPageCount */
-    2);   /* TCSCount */
+    64,   /* HeapPageCount */
+    16,   /* StackPageCount */
+    16);  /* TCSCount */

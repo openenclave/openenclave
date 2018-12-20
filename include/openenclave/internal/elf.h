@@ -6,9 +6,6 @@
 
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 #ifdef __cplusplus
 #define ELF_EXTERNC_BEGIN extern "C" {
@@ -139,6 +136,10 @@ ELF_EXTERNC_BEGIN
 
 /* elf64_rel.r_info */
 #define R_X86_64_RELATIVE 8
+
+/* Supported thread-local storage relocations */
+#define R_X86_64_TPOFF64 18 /* Offset in initial TLS block */
+
 #define ELF64_R_SYM(i) ((i) >> 32)
 #define ELF64_R_TYPE(i) ((i)&0xffffffffL)
 #define ELF64_R_INFO(s, t) (((s) << 32) + ((t)&0xffffffffL))
@@ -242,7 +243,10 @@ int elf64_load(const char* path, elf64_t* elf);
 
 int elf64_unload(elf64_t* elf);
 
-const void* elf64_get_symbol_table_section(const elf64_t* elf);
+int elf64_get_dynamic_symbol_table(
+    const elf64_t* elf,
+    const elf64_sym_t** symtab,
+    size_t* size);
 
 void elf64_dump_header(const elf64_ehdr_t* ehdr);
 
