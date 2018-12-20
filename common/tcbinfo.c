@@ -203,14 +203,14 @@ static oe_result_t _trace_json_string(const uint8_t* str, size_t str_length)
 {
     oe_result_t result = OE_OK;
 
-    if (get_current_logging_level() >= OE_LOG_LEVEL_INFO)
+    if (get_current_logging_level() >= OE_LOG_LEVEL_VERBOSE)
     {
         char* buffer = (char*)malloc(str_length + 1);
         if (buffer)
         {
             OE_CHECK(oe_memcpy_s(buffer, str_length + 1, str, str_length));
             buffer[str_length] = 0;
-            OE_TRACE_INFO("value = %s\n", buffer);
+            OE_TRACE_VERBOSE("value = %s\n", buffer);
             free(buffer);
         }
         else
@@ -264,20 +264,20 @@ static oe_result_t _read_tcb(
 
     for (uint32_t i = 0; i < OE_COUNTOF(_comp_names); ++i)
     {
-        OE_TRACE_INFO("Reading %s\n", _comp_names[i]);
+        OE_TRACE_VERBOSE("Reading %s", _comp_names[i]);
         OE_CHECK(_read_property_name_and_colon(_comp_names[i], itr, end));
         OE_CHECK(_read_integer(itr, end, &value));
-        OE_TRACE_INFO("value = %lu\n", value);
+        OE_TRACE_VERBOSE("value = %lu", value);
         OE_CHECK(_read(',', itr, end));
 
         if (value > OE_UCHAR_MAX)
             OE_RAISE(OE_JSON_INFO_PARSE_ERROR);
         tcb_level->sgx_tcb_comp_svn[i] = (uint8_t)value;
     }
-    OE_TRACE_INFO("Reading pcesvn\n");
+    OE_TRACE_VERBOSE("Reading pcesvn");
     OE_CHECK(_read_property_name_and_colon("pcesvn", itr, end));
     OE_CHECK(_read_integer(itr, end, &value));
-    OE_TRACE_INFO("value = %lu\n", value);
+    OE_TRACE_VERBOSE("value = %lu", value);
     OE_CHECK(_read('}', itr, end));
 
     if (value > OE_USHRT_MAX)
@@ -346,12 +346,12 @@ static oe_result_t _read_tcb_level(
 
     OE_CHECK(_read('{', itr, end));
 
-    OE_TRACE_INFO("Reading tcb\n");
+    OE_TRACE_VERBOSE("Reading tcb");
     OE_CHECK(_read_property_name_and_colon("tcb", itr, end));
     OE_CHECK(_read_tcb(itr, end, &tcb_level));
     OE_CHECK(_read(',', itr, end));
 
-    OE_TRACE_INFO("Reading status\n");
+    OE_TRACE_VERBOSE("Reading status");
     OE_CHECK(_read_property_name_and_colon("status", itr, end));
     OE_CHECK(_read_string(itr, end, &status, &status_length));
     OE_CHECK(_trace_json_string(status, status_length));
@@ -401,13 +401,13 @@ static oe_result_t _read_tcb_info(
     parsed_info->tcb_info_start = *itr;
     OE_CHECK(_read('{', itr, end));
 
-    OE_TRACE_INFO("Reading version\n");
+    OE_TRACE_VERBOSE("Reading version");
     OE_CHECK(_read_property_name_and_colon("version", itr, end));
     OE_CHECK(_read_integer(itr, end, &value));
     parsed_info->version = (uint32_t)value;
     OE_CHECK(_read(',', itr, end));
 
-    OE_TRACE_INFO("Reading issueDate\n");
+    OE_TRACE_VERBOSE("Reading issueDate");
     OE_CHECK(_read_property_name_and_colon("issueDate", itr, end));
     OE_CHECK(_read_string(itr, end, &date_str, &date_size));
     if (oe_datetime_from_string(
@@ -416,7 +416,7 @@ static oe_result_t _read_tcb_info(
         OE_RAISE(OE_JSON_INFO_PARSE_ERROR);
     OE_CHECK(_read(',', itr, end));
 
-    OE_TRACE_INFO("Reading nextUpdate\n");
+    OE_TRACE_VERBOSE("Reading nextUpdate");
     OE_CHECK(_read_property_name_and_colon("nextUpdate", itr, end));
     OE_CHECK(_read_string(itr, end, &date_str, &date_size));
     if (oe_datetime_from_string(
@@ -425,14 +425,14 @@ static oe_result_t _read_tcb_info(
         OE_RAISE(OE_JSON_INFO_PARSE_ERROR);
     OE_CHECK(_read(',', itr, end));
 
-    OE_TRACE_INFO("Reading fmspc\n");
+    OE_TRACE_VERBOSE("Reading fmspc");
     OE_CHECK(_read_property_name_and_colon("fmspc", itr, end));
     OE_CHECK(
         _read_hex_string(
             itr, end, parsed_info->fmspc, sizeof(parsed_info->fmspc)));
     OE_CHECK(_read(',', itr, end));
 
-    OE_TRACE_INFO("Reading tcbLevels\n");
+    OE_TRACE_VERBOSE("Reading tcbLevels");
     OE_CHECK(_read_property_name_and_colon("tcbLevels", itr, end));
     OE_CHECK(_read('[', itr, end));
     while (*itr < end)
@@ -489,12 +489,12 @@ oe_result_t oe_parse_tcb_info_json(
     itr = _skip_ws(itr, end);
     OE_CHECK(_read('{', &itr, end));
 
-    OE_TRACE_INFO("Reading tcbInfo\n");
+    OE_TRACE_VERBOSE("Reading tcbInfo");
     OE_CHECK(_read_property_name_and_colon("tcbInfo", &itr, end));
     OE_CHECK(_read_tcb_info(&itr, end, platform_tcb_level, parsed_info));
     OE_CHECK(_read(',', &itr, end));
 
-    OE_TRACE_INFO("Reading signature\n");
+    OE_TRACE_VERBOSE("Reading signature");
     OE_CHECK(_read_property_name_and_colon("signature", &itr, end));
     OE_CHECK(
         _read_hex_string(
@@ -507,7 +507,7 @@ oe_result_t oe_parse_tcb_info_json(
         if (platform_tcb_level->status != OE_TCB_LEVEL_STATUS_UP_TO_DATE)
             OE_RAISE(OE_TCB_LEVEL_INVALID);
 
-        OE_TRACE_INFO("TCB Info json parsing successful.\n");
+        OE_TRACE_VERBOSE("TCB Info json parsing successful.\n");
         result = OE_OK;
     }
 done:
@@ -561,13 +561,13 @@ static oe_result_t _read_qe_identity_info(
     parsed_info->info_start = *itr;
     OE_CHECK(_read('{', itr, end));
 
-    OE_TRACE_INFO("Reading version\n");
+    OE_TRACE_VERBOSE("Reading version");
     OE_CHECK(_read_property_name_and_colon("version", itr, end));
     OE_CHECK(_read_integer(itr, end, &value));
     parsed_info->version = (uint32_t)value;
     OE_CHECK(_read(',', itr, end));
 
-    OE_TRACE_INFO("Reading issueDate\n");
+    OE_TRACE_VERBOSE("Reading issueDate");
     OE_CHECK(_read_property_name_and_colon("issueDate", itr, end));
     OE_CHECK(_read_string(itr, end, &date_str, &date_size));
     if (oe_datetime_from_string(
@@ -576,7 +576,7 @@ static oe_result_t _read_qe_identity_info(
         OE_RAISE(OE_JSON_INFO_PARSE_ERROR);
     OE_CHECK(_read(',', itr, end));
 
-    OE_TRACE_INFO("Reading nextUpdate\n");
+    OE_TRACE_VERBOSE("Reading nextUpdate");
     OE_CHECK(_read_property_name_and_colon("nextUpdate", itr, end));
     OE_CHECK(_read_string(itr, end, &date_str, &date_size));
     if (oe_datetime_from_string(
@@ -585,21 +585,21 @@ static oe_result_t _read_qe_identity_info(
         OE_RAISE(OE_JSON_INFO_PARSE_ERROR);
     OE_CHECK(_read(',', itr, end));
 
-    OE_TRACE_INFO("Reading miscselect\n");
+    OE_TRACE_VERBOSE("Reading miscselect");
     OE_CHECK(_read_property_name_and_colon("miscselect", itr, end));
     OE_CHECK(
         _read_hex_string(itr, end, four_bytes_buf, sizeof(four_bytes_buf)));
     parsed_info->miscselect = read_uint32(four_bytes_buf);
     OE_CHECK(_read(',', itr, end));
 
-    OE_TRACE_INFO("Reading miscselectMask\n");
+    OE_TRACE_VERBOSE("Reading miscselectMask");
     OE_CHECK(_read_property_name_and_colon("miscselectMask", itr, end));
     OE_CHECK(
         _read_hex_string(itr, end, four_bytes_buf, sizeof(four_bytes_buf)));
     parsed_info->miscselect_mask = read_uint32(four_bytes_buf);
     OE_CHECK(_read(',', itr, end));
 
-    OE_TRACE_INFO("Reading attributes.flags\n");
+    OE_TRACE_VERBOSE("Reading attributes.flags");
     OE_CHECK(_read_property_name_and_colon("attributes", itr, end));
     OE_CHECK(
         _read_hex_string(
@@ -608,7 +608,7 @@ static oe_result_t _read_qe_identity_info(
     parsed_info->attributes.xfrm = read_uint64(sixteen_bytes_buf + 8);
     OE_CHECK(_read(',', itr, end));
 
-    OE_TRACE_INFO("Reading attributesMask\n");
+    OE_TRACE_VERBOSE("Reading attributesMask");
     OE_CHECK(_read_property_name_and_colon("attributesMask", itr, end));
     OE_CHECK(
         _read_hex_string(
@@ -617,20 +617,20 @@ static oe_result_t _read_qe_identity_info(
     parsed_info->attributes_xfrm_mask = read_uint64(sixteen_bytes_buf + 8);
     OE_CHECK(_read(',', itr, end));
 
-    OE_TRACE_INFO("Reading mrsigner\n");
+    OE_TRACE_VERBOSE("Reading mrsigner");
     OE_CHECK(_read_property_name_and_colon("mrsigner", itr, end));
     OE_CHECK(
         _read_hex_string(
             itr, end, parsed_info->mrsigner, sizeof(parsed_info->mrsigner)));
     OE_CHECK(_read(',', itr, end));
 
-    OE_TRACE_INFO("Reading isvprodid\n");
+    OE_TRACE_VERBOSE("Reading isvprodid");
     OE_CHECK(_read_property_name_and_colon("isvprodid", itr, end));
     OE_CHECK(_read_integer(itr, end, &value));
     parsed_info->isvprodid = (uint16_t)value;
     OE_CHECK(_read(',', itr, end));
 
-    OE_TRACE_INFO("Reading isvsvn\n");
+    OE_TRACE_VERBOSE("Reading isvsvn");
     OE_CHECK(_read_property_name_and_colon("isvsvn", itr, end));
     OE_CHECK(_read_integer(itr, end, &value));
     parsed_info->isvsvn = (uint16_t)value;
@@ -640,10 +640,10 @@ static oe_result_t _read_qe_identity_info(
     // including the '}'.
     parsed_info->info_size = (size_t)(*itr - parsed_info->info_start + 1);
     OE_CHECK(_read('}', itr, end));
-    OE_TRACE_INFO("Done with last read\n");
+    OE_TRACE_VERBOSE("Done with last read");
     result = OE_OK;
 done:
-    OE_TRACE_INFO(
+    OE_TRACE_VERBOSE(
         "Reading _read_qe_identity_info ended with [%s]\n",
         oe_result_str(result));
     return result;
@@ -678,12 +678,12 @@ oe_result_t oe_parse_qe_identity_info_json(
     itr = _skip_ws(itr, end);
     OE_CHECK(_read('{', &itr, end));
 
-    OE_TRACE_INFO("Reading qeIdentity\n");
+    OE_TRACE_VERBOSE("Reading qeIdentity");
     OE_CHECK(_read_property_name_and_colon("qeIdentity", &itr, end));
     OE_CHECK(_read_qe_identity_info(&itr, end, parsed_info));
     OE_CHECK(_read(',', &itr, end));
 
-    OE_TRACE_INFO("Reading signature\n");
+    OE_TRACE_VERBOSE("Reading signature");
     OE_CHECK(_read_property_name_and_colon("signature", &itr, end));
     OE_CHECK(
         _read_hex_string(
@@ -695,7 +695,7 @@ oe_result_t oe_parse_qe_identity_info_json(
     }
 
 done:
-    OE_TRACE_INFO(
+    OE_TRACE_VERBOSE(
         "oe_parse_qe_identity_info_json ended with [%s]\n",
         oe_result_str(result));
     return result;
@@ -784,7 +784,7 @@ oe_result_t oe_verify_ecdsa256_signature(
         OE_RAISE(OE_INVALID_REVOCATION_INFO);
     }
 
-    OE_TRACE_INFO("tcb info ecdsa attestation succeeded\n");
+    OE_TRACE_VERBOSE("tcb info ecdsa attestation succeeded");
 
     result = OE_OK;
 done:

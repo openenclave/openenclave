@@ -110,37 +110,13 @@ add_library(libunwind OBJECT
 
 set_target_properties(libunwind PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
+set_source_files_properties(Gstep.c PROPERTIES COMPILE_FLAGS "-Werror")
+set_source_files_properties(Gtrace.c PROPERTIES COMPILE_FLAGS "-Werror")
+set_source_files_properties(setcontext.S PROPERTIES COMPILE_FLAGS "-Werror")
+
 target_compile_options(libunwind PRIVATE
-  -Wall
-  -Werror
-  -Wno-pointer-to-int-cast
-  -Wno-unused-function
-  -Wno-unused-variable
-  -Wno-cpp
-  -Wno-conversion
-  -fno-builtin
+  -Wno-error
   -include ${CMAKE_CURRENT_SOURCE_DIR}/stubs.h)
-
-if (CMAKE_C_COMPILER_ID MATCHES GNU)
-  target_compile_options(libunwind PRIVATE
-    # TODO: GCC does not have the equivalent of -Wno-macro-redefined,
-    # and currently we define `UNW_LOCAL_ONLY` a bit more liberally
-    # than necessary. When this is cleaned up, we can go back to
-    # `-Werror`.
-    -Wno-error
-    -Wno-unused-but-set-variable
-    -Wno-maybe-uninitialized)
-elseif (CMAKE_C_COMPILER_ID MATCHES Clang)
-  target_compile_options(libunwind PRIVATE
-    -Wno-header-guard
-    -Wno-uninitialized
-    -Wno-unused-variable
-    -Wno-macro-redefined
-    -Wno-unused-parameter)
-endif ()
-
-# Allow arithmetic on void*
-set_source_files_properties(libunwind/src/elf64.c PROPERTIES COMPILE_FLAGS -Wno-pointer-arith)
 
 target_compile_definitions(libunwind PRIVATE
   HAVE_ELF_H

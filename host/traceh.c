@@ -16,11 +16,8 @@
 #include "hostthread.h"
 
 #define LOGGING_FORMAT_STRING "%02d:%02d:%02d:%06ld tid(0x%lx) (%s)[%s]%s"
-static char* _log_level_strings[OE_LOG_LEVEL_MAX] = {"NONE",
-                                                     "FATAL",
-                                                     "ERROR",
-                                                     "WARN",
-                                                     "INFO"};
+static char* _log_level_strings[OE_LOG_LEVEL_MAX] =
+    {"NONE", "FATAL", "ERROR", "WARN", "INFO", "VERBOSE"};
 static oe_mutex _log_lock = OE_H_MUTEX_INITIALIZER;
 static const char* _log_file_name = NULL;
 static bool _log_creation_failed_before = false;
@@ -35,6 +32,10 @@ static log_level_t _env2log_level(void)
     if (level_str == NULL)
     {
         goto done;
+    }
+    else if (strcmp(level_str, "VERBOSE") == 0)
+    {
+        level = OE_LOG_LEVEL_VERBOSE;
     }
     else if (strcmp(level_str, "INFO") == 0)
     {
