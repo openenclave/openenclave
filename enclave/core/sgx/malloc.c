@@ -38,6 +38,13 @@ static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...);
 #pragma GCC diagnostic ignored "-Wparentheses-equality"
 #endif
 
+/* Indirection to alloc other allocators */
+#define dlmalloc         _oe_malloc
+#define dlcalloc         _oe_calloc
+#define dlrealloc        _oe_realloc
+#define dlmemalign       _oe_memalign
+#define dlposix_memalign _oe_posix_memalign
+#define dlfree           _oe_free
 #include "../../../3rdparty/dlmalloc/dlmalloc/malloc.c"
 
 #pragma GCC diagnostic pop
@@ -51,12 +58,12 @@ static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...);
 #define POSIX_MEMALIGN oe_debug_posix_memalign
 #define FREE oe_debug_free
 #else
-#define MALLOC dlmalloc
-#define CALLOC dlcalloc
-#define REALLOC dlrealloc
-#define MEMALIGN dlmemalign
-#define POSIX_MEMALIGN dlposix_memalign
-#define FREE dlfree
+#define MALLOC _oe_malloc
+#define CALLOC _oe_calloc
+#define REALLOC _oe_realloc
+#define MEMALIGN _oe_memalign
+#define POSIX_MEMALIGN _oe_posix_memalign
+#define FREE _oe_free
 #endif
 
 static oe_allocation_failure_callback_t _failure_callback;

@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#define USE_DL_PREFIX
 #include "debugmalloc.h"
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/enclave.h>
@@ -13,8 +12,15 @@
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/utils.h>
-#include "../3rdparty/dlmalloc/dlmalloc/malloc.h"
 #include "dlmalloc/errno.h"
+
+
+void* _oe_malloc(size_t);
+void  _oe_free(void*);
+void* _oe_calloc(size_t, size_t);
+void* _oe_realloc(void*, size_t);
+void* _oe_memalign(size_t alignment, size_t size);
+int   _oe_posix_memalign(void** memptr, size_t alignment, size_t size);
 
 #if defined(OE_USE_DEBUG_MALLOC)
 
@@ -313,7 +319,7 @@ void* oe_debug_malloc(size_t size)
     void* block;
     const size_t block_size = _calculate_block_size(0, size);
 
-    if (!(block = dlmalloc(block_size)))
+    if (!(block = _oe_malloc(block_size)))
         return NULL;
 
     /* Fill block with 0xAA (Allocated) bytes */
@@ -340,7 +346,7 @@ void oe_debug_free(void* ptr)
         size_t block_size = _get_block_size(ptr);
         oe_memset_s(block, block_size, 0xDD, block_size);
 
-        dlfree(block);
+        _oe_free(block);
     }
 }
 
@@ -405,7 +411,7 @@ void* oe_debug_memalign(size_t alignment, size_t size)
     void* block;
     header_t* header;
 
-    if (!(block = dlmemalign(alignment, block_size)))
+    if (!(block = _oe_memalign(alignment, block_size)))
         return NULL;
 
     header = (header_t*)((uint8_t*)block + padding_size);
