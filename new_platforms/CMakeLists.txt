@@ -36,6 +36,8 @@ endif()
 
 if(UNIX AND SGX)
     message(FATAL_ERROR "Intel SGX is not supported on Linux in this preview.")
+elseif(UNIX AND TZ AND SIM)
+    message(FATAL_ERROR "ARM TrustZone simulation is not supported on Linux in this preview.")
 endif()
 
 # Validate target, TEE and toolchain combinations.
