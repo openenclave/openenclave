@@ -1,21 +1,27 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "../rwlock_tests.h"
+#ifdef _PTHREAD_ENC_
+#include "thread.h"
+#endif
+
 #include <openenclave/enclave.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/thread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "../args.h"
+#include <algorithm>
+#include "../rwlock_tests.h"
+#include "thread_t.h"
 
 static oe_rwlock_t rw_lock = OE_RWLOCK_INITIALIZER;
 static oe_spinlock_t rw_args_lock = OE_SPINLOCK_INITIALIZER;
 
-inline size_t max(size_t a, size_t b)
-{
-    return (a > b) ? a : b;
-}
+static size_t g_readers = 0;
+static size_t g_writers = 0;
+static size_t g_max_readers = 0;
+static size_t g_max_writers = 0;
+static bool g_readers_and_writers = false;
 
 class ScopedSpinLock
 {
@@ -48,10 +54,8 @@ class ScopedSpinLock
     oe_spinlock_t* slock;
 };
 
-OE_ECALL void ReaderThreadImpl(void* args_)
+void enc_reader_thread_impl()
 {
-    TestRWLockArgs* args = (TestRWLockArgs*)args_;
-
     for (size_t i = 0; i < RWLOCK_TEST_ITERS; ++i)
     {
         // Obtain read lock.
@@ -61,38 +65,38 @@ OE_ECALL void ReaderThreadImpl(void* args_)
             // Update test data.
             ScopedSpinLock lock(&rw_args_lock);
 
-            ++args->readers;
+            ++g_readers;
 
             // Maximum number of simultaneous readers.
-            args->max_readers = max(args->max_readers, args->readers);
+            g_max_readers = std::max(g_max_readers, g_readers);
 
             // Allow all reader threads to be simultaneously active
             // at least once.
-            while (args->max_readers < NUM_READER_THREADS)
+            while (g_max_readers < NUM_READER_THREADS)
             {
                 lock.Unlock();
-                oe_call_host("host_usleep", (void*)sleep_utime);
+                host_usleep(sleep_utime);
                 lock.Lock();
             }
 
             // Are readers and writers simultaneously active?
-            args->readers_and_writers =
-                args->readers_and_writers || (args->readers && args->writers);
+            g_readers_and_writers =
+                g_readers_and_writers || (g_readers && g_writers);
         }
 
         // Hold on to the lock for some time to test ownership constraints.
         // Multiple readers should be allowed.
-        oe_call_host("host_usleep", (void*)sleep_utime);
+        host_usleep(sleep_utime);
 
         {
             // Update test data.
             ScopedSpinLock lock(&rw_args_lock);
 
             // Are readers and writers simultaneously active?
-            args->readers_and_writers =
-                args->readers_and_writers || (args->readers && args->writers);
+            g_readers_and_writers =
+                g_readers_and_writers || (g_readers && g_writers);
 
-            --args->readers;
+            --g_readers;
         }
 
         // Release read lock
@@ -102,10 +106,8 @@ OE_ECALL void ReaderThreadImpl(void* args_)
     oe_host_printf("%llu: Reader Exiting\n", OE_LLU(oe_thread_self()));
 }
 
-OE_ECALL void WriterThreadImpl(void* args_)
+void enc_writer_thread_impl()
 {
-    TestRWLockArgs* args = (TestRWLockArgs*)args_;
-
     for (size_t i = 0; i < RWLOCK_TEST_ITERS; ++i)
     {
         // Obtain write lock
@@ -115,29 +117,29 @@ OE_ECALL void WriterThreadImpl(void* args_)
             // Update test data
             ScopedSpinLock lock(&rw_args_lock);
 
-            ++args->writers;
+            ++g_writers;
 
             // Maximum number of simultaneous writers
-            args->max_writers = max(args->max_writers, args->writers);
+            g_max_writers = std::max(g_max_writers, g_writers);
 
             // Are readers and writers simultaneously active?
-            args->readers_and_writers =
-                args->readers_and_writers || (args->readers && args->writers);
+            g_readers_and_writers =
+                g_readers_and_writers || (g_readers && g_writers);
         }
 
         // Hold on to the lock for some time to test ownership constraints.
         // Only one writer should be allowed.
-        oe_call_host("host_usleep", (void*)sleep_utime);
+        host_usleep(sleep_utime);
 
         {
             // Update test data
             ScopedSpinLock lock(&rw_args_lock);
 
             // Are readers and writers simultaneously active?
-            args->readers_and_writers =
-                args->readers_and_writers || (args->readers && args->writers);
+            g_readers_and_writers =
+                g_readers_and_writers || (g_readers && g_writers);
 
-            --args->writers;
+            --g_writers;
         }
 
         // Release write lock
@@ -145,4 +147,18 @@ OE_ECALL void WriterThreadImpl(void* args_)
     }
 
     oe_host_printf("%llu: Writer Exiting\n", OE_LLU(oe_thread_self()));
+}
+
+void enc_rw_results(
+    size_t* readers,
+    size_t* writers,
+    size_t* max_readers,
+    size_t* max_writers,
+    bool* readers_and_writers)
+{
+    *readers = g_readers;
+    *writers = g_writers;
+    *max_readers = g_max_readers;
+    *max_writers = g_max_writers;
+    *readers_and_writers = g_readers_and_writers;
 }
