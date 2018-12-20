@@ -41,8 +41,11 @@ elseif(WIN32)
     if(TZ)
         list(APPEND SRCS
             win32/teehost_optee.c
-            win32/urpc_optee.c
-            ${OPTEE_CALLS_PATH}/OpteeCalls/OpteeCalls.c)
+            win32/urpc_optee.c)
+
+        if(NOT SIM)
+            list(APPEND SRCS ${OPTEE_CALLS_PATH}/OpteeCalls/OpteeCalls.c)
+        endif()
 
         list(APPEND INCS PRIVATE ${WDK_PATH}/km)
         list(APPEND INCS PRIVATE ${OE_PATH}/3rdparty/OpteeCalls/OpteeCalls/inc)

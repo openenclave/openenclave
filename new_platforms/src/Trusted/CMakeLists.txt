@@ -23,7 +23,7 @@ if(UNIX AND TZ)
             LIB_O=${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
             GEN=${C_GEN}
         DEPENDS ${GEN})
-elseif(WIN32 AND SGX)
+elseif(WIN32)
     set(CYREP_SRCS
         ${CYREP_PATH}/RiotAes128.c
         ${CYREP_PATH}/RiotAesTables.c
@@ -41,65 +41,103 @@ elseif(WIN32 AND SGX)
         cborhelper.c
         files_enc.c
         keygen.c
-        log_ocall_file.c
-        logapp.c
         oeshim_enc.c
         socket_enc.c
         string_t.c)
 
-    set(SGX_SRCS
-        ../oeresult.c
-        ../sgx_common.c
-        sgx/except_sgx.c
-        sgx/keygen_sgx.c
-        sgx/log_sgx.c
-        sgx/rand_sgx.c
-        sgx/report_sgx.c
-        sgx/strings_sgx.c
-        sgx/time_sgx.c
-        sgx/trpc_sgx.c)
-
-    set(SRCS ${CYREP_SRCS} ${COMMON_SRCS} ${SGX_SRCS} ${GEN})
-
-    set(INCS
-        PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
-        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+    set(LOCAL_INCS
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..
-        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/sgx
+        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
+    set(COMMON_INCS
         PUBLIC  ${NP_PATH}/include
-        PUBLIC  ${OE_PATH}/include
-        PUBLIC  ${SGXSDKInstallPath}/include
-        PUBLIC  ${SGXSDKInstallPath}/include/tlibc
+        PUBLIC  ${OE_PATH}/include)
+
+    set(EXTERNAL_INCS
         PRIVATE ${TINYCBOR_PATH}/src
         PRIVATE ${CYREP_PATH}/cyrep
         PRIVATE ${CYREP_PATH}/tcps)
 
-    set(PREFIX ${SGX_SDK_LIBRARIES_PREFIX}/$<CONFIG>)
-    if(SIM)
-        set(LIBS
-                PUBLIC ${PREFIX}/sgx_tstdc.lib
-                PUBLIC ${PREFIX}/sgx_tprotected_fs.lib
-                PUBLIC ${PREFIX}/sgx_tcxx.lib
-                PUBLIC ${PREFIX}/sgx_trts_sim.lib
-                PUBLIC ${PREFIX}/sgx_tservice_sim.lib
-                PUBLIC ${PREFIX}/sgx_tcrypto.lib)
-    else()
-        set(LIBS
-                PUBLIC ${PREFIX}/sgx_tstdc.lib
-                PUBLIC ${PREFIX}/sgx_tprotected_fs.lib
-                PUBLIC ${PREFIX}/sgx_tcxx.lib
-                PUBLIC ${PREFIX}/sgx_trts.lib
-                PUBLIC ${PREFIX}/sgx_tservice.lib
-                PUBLIC ${PREFIX}/sgx_tcrypto.lib)
-    endif()
+    if(SGX)
+        set(SGX_SRCS
+            ../oeresult.c
+            ../sgx_common.c
+            sgx/except_sgx.c
+            sgx/keygen_sgx.c
+            sgx/log_sgx.c
+            sgx/rand_sgx.c
+            sgx/report_sgx.c
+            sgx/strings_sgx.c
+            sgx/time_sgx.c
+            sgx/trpc_sgx.c
+            #TODO: These two should be common but fail to compile under CMake.
+            log_ocall_file.c
+            logapp.c)
+
+        set(SGX_INCS
+            PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
+            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/sgx
+            PUBLIC  ${SGXSDKInstallPath}/include
+            PUBLIC  ${SGXSDKInstallPath}/include/tlibc)
+
+        set(SGX_LIBS_PREFIX ${SGX_SDK_LIBRARIES_PREFIX}/$<CONFIG>)
+        set(SGX_LIBS
+            PUBLIC ${SGX_LIBS_PREFIX}/sgx_tstdc.lib
+            PUBLIC ${SGX_LIBS_PREFIX}/sgx_tprotected_fs.lib
+            PUBLIC ${SGX_LIBS_PREFIX}/sgx_tcxx.lib
+            PUBLIC ${SGX_LIBS_PREFIX}/sgx_tcrypto.lib)
+
+        if(SIM)
+            list(APPEND SGX_LIBS
+                PUBLIC ${SGX_LIBS_PREFIX}/sgx_trts_sim.lib
+                PUBLIC ${SGX_LIBS_PREFIX}/sgx_tservice_sim.lib)
+        else()
+            list(APPEND SGX_LIBS
+                PUBLIC ${SGX_LIBS_PREFIX}/sgx_trts.lib
+                PUBLIC ${SGX_LIBS_PREFIX}/sgx_tservice.lib)
+        endif()
+
+        set(SRCS ${CYREP_SRCS} ${COMMON_SRCS} ${SGX_SRCS})
+        set(INCS ${LOCAL_INCS} ${COMMON_INCS} ${EXTERNAL_INCS} ${SGX_INCS})
+        set(LIBS ${SGX_LIBS})
+    elseif(TZ AND SIM)
+        set(TZ_SRCS
+            optee/ctype_optee.c
+            optee/cyres_optee.c
+            optee/except_optee.c
+            optee/keygen_optee.c
+            optee/oeresult_optee.c
+            ../optee_common.c
+            optee/rand_optee.c
+            optee/report_optee.c
+            optee/strings_optee.c
+            optee/time_optee.c
+            optee/trpc_optee.c)
+
+        set(TZ_INCS
+            PRIVATE ${NP_PATH}/include/optee/enclave/Simulator
+            PRIVATE ${NP_PATH}/include/optee/enclave
+            PRIVATE ${NP_PATH}/include/optee)
+        set(TZ_EXTERNAL_INCS
+            PRIVATE ${OPTEE_OS_PATH}/lib/libutee/include
+            PRIVATE ${OPTEE_OS_PATH}/lib/libutils/ext/include)
+        
+        set(SRCS ${CYREP_SRCS} ${COMMON_SRCS} ${TZ_SRCS})
+        set(INCS ${LOCAL_INCS} ${TZ_INCS} ${COMMON_INCS} ${TZ_EXTERNAL_INCS} ${EXTERNAL_INCS})
+    endif() 
 
     add_library(oeenclave STATIC ${SRCS} ${GEN})
 
     target_include_directories(oeenclave ${INCS})
 
-    target_compile_definitions(oeenclave PRIVATE CONFIG_CYREP_SGX_BUILD)
+    if(SGX)
+        target_compile_definitions(oeenclave PRIVATE CONFIG_CYREP_SGX_BUILD)
+    endif()
     target_compile_definitions(oeenclave PRIVATE OPENSSL_NO_SOCK)
+
     target_link_libraries(oeenclave ${LIBS})
 
+    string(REGEX REPLACE "(-D|/D)[^ ]* " "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+    string(REGEX REPLACE "(-D|/D)[^ ]* " "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     string(REPLACE "/RTC1" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
 endif()

@@ -2,4 +2,6 @@
 # Licensed under the MIT License.
 
 add_subdirectory(host)
-add_subdirectory(enc)
+if((UNIX AND TZ) OR (WIN32 AND SGX) OR (WIN32 AND TZ AND SIM))
+    add_subdirectory(enc)
+endif()

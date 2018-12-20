@@ -11,21 +11,21 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 set(OE_TEE "" CACHE STRING
     "Select a Trusted Execution Environment (TEE) implementation.")
 set_property(CACHE OE_TEE PROPERTY STRINGS
-    "Intel SGX" "ARM TrustZone")
+    "Intel SGX" "SGX" "ARM TrustZone" "TZ")
 
 option(OE_USE_SIMULATION
     "If selected, logic to operate a hardware TEE is replaced with stubs which simulate it, but do not require any."
     OFF)
 
 # Validate and create option shorthands
-if("${OE_TEE}" STREQUAL "Intel SGX")
+if("${OE_TEE}" STREQUAL "Intel SGX" OR "${OE_TEE}" STREQUAL "SGX")
     set(SGX ON)
     set(TZ OFF)
-elseif("${OE_TEE}" STREQUAL "ARM TrustZone")
+elseif("${OE_TEE}" STREQUAL "ARM TrustZone" OR "${OE_TEE}" STREQUAL "TZ")
     set(SGX OFF)
     set(TZ ON)
 else()
-    message(FATAL_ERROR "OE_TEE must be one of 'Intel SGX' or 'ARM TrustZone'.")
+    message(FATAL_ERROR "OE_TEE must be one of 'Intel SGX' (shorthand: 'SGX') or 'ARM TrustZone' (shorthand: 'TZ').")
 endif()
 
 if(OE_USE_SIMULATION)
@@ -69,6 +69,8 @@ elseif(WIN32 AND TZ)
     find_package(WDK REQUIRED)
 endif()
 
+find_package(OEEDGER8R REQUIRED)
+
 # Save the path to Open Enclave proper as well as to where the new platform
 # support is located. The latter will make it easier to remove all references
 # to it once we merge into master.
@@ -102,10 +104,15 @@ endif()
 if(SGX)
     add_definitions(-DOE_USE_SGX)
 else()
-    add_definitions(-DOE_USE_OPTEE)
     if(SIM)
         add_definitions(-DOE_SIMULATE_OPTEE)
+    else()
+        add_definitions(-DOE_USE_OPTEE)
     endif()
+endif()
+
+if(WIN32)
+    add_definitions(-D_UNICODE)
 endif()
 
 # 3rd-party components
