@@ -41,9 +41,10 @@ static oe_spinlock_t _spin = OE_SPINLOCK_INITIALIZER;
 
 static oe_atexit_entry_t* _new_atexit_entry(void (*func)(void*), void* arg)
 {
+    extern void* _oe_malloc(size_t);
     oe_atexit_entry_t* entry;
 
-    if ((entry = (oe_atexit_entry_t*)oe_sbrk(sizeof(oe_atexit_entry_t))) ==
+    if ((entry = (oe_atexit_entry_t*)_oe_malloc(sizeof(oe_atexit_entry_t))) ==
         (void*)-1)
         return NULL;
 
