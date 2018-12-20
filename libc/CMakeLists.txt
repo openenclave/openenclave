@@ -6,8 +6,8 @@ set(MUSLSRC ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
 if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
 add_library(oelibasm OBJECT
-    abort.S
-    exp2l.S
+    sgx/abort.S
+    sgx/exp2l.S
 
     ${MUSLSRC}/fenv/x86_64/fenv.s
     ${MUSLSRC}/math/x86_64/acosl.s
@@ -41,7 +41,8 @@ set (PLATFORM_SRC "")
 
 if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
     list(APPEND PLATFORM_SRC
-        syscalls.c)
+        sgx/syscalls.c
+        sgx/sched_yield.c)
 
     if (UNIX)
         list(APPEND PLATFORM_SRC
@@ -50,6 +51,12 @@ if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
         set(APPEND PLATFORM_SRC
             ../common/sgx/rand.asm) 
     endif()
+else()
+    list(APPEND PLATFORM_SRC
+        optee/syscalls.c
+        optee/abort.c
+        optee/exp2l.c
+        optee/sched_yield.c)
 endif()
 
 add_library(oelibc STATIC
@@ -61,7 +68,6 @@ add_library(oelibc STATIC
     locale.c
     malloc.c
     pthread.c
-    sched_yield.c
     stdlib.c
     strerror.c
     sysconf.c
