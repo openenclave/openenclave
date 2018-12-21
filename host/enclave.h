@@ -77,6 +77,10 @@ typedef struct _thread_binding
 
     /* Event signaling object for enclave threading implementation */
     EnclaveEvent event;
+
+    /* The host GS and FS values saved before making an ecall */
+    void* host_gs;
+    void* host_fs;
 } ThreadBinding;
 
 OE_STATIC_ASSERT(OE_OFFSETOF(ThreadBinding, tcs) == ThreadBinding_tcs);
@@ -145,7 +149,7 @@ OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_t, addr) == 2 * sizeof(void*));
 // The fields up to binding correspond to 'ENCLAVE_HEADER'
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_t, bindings) == 0x28);
 
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_t, debug) == 0x598);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_t, debug) == 0x798);
 OE_STATIC_ASSERT(
     OE_OFFSETOF(oe_enclave_t, debug) + 1 ==
     OE_OFFSETOF(oe_enclave_t, simulate));

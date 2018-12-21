@@ -13,6 +13,10 @@ void oe_set_gs_register_base(const void* ptr);
 
 void* oe_get_gs_register_base(void);
 
+void oe_set_fs_register_base(const void* ptr);
+
+void* oe_get_fs_register_base(void);
+
 OE_EXTERNC_END
 
 #endif /* _OE_ASM_H */
