@@ -9,9 +9,9 @@ def PowerShellWrapper(psCmd) {
     bat "powershell.exe -NonInteractive -ExecutionPolicy Bypass -Command \"\$ErrorActionPreference='Stop';[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;$psCmd;EXIT \$global:LastExitCode\""
 }
 
-def coffeelakeTest(String compiler, String unit, String suite) {
-    stage("Coffeelake $compiler $unit $suite") {
-        node('hardware') {
+def ACCTest(String label, String compiler, String unit, String suite) {
+    stage("$label $compiler $unit $suite") {
+        node("$label") {
             cleanWs()
             checkout scm
 
@@ -24,7 +24,7 @@ def coffeelakeTest(String compiler, String unit, String suite) {
 }
 
 def simulationTest(String compiler, String unit, String suite ) {
-    stage("Coffeelake $compiler $unit $suite") {
+    stage("Sim $compiler $unit $suite") {
         node {
             cleanWs()
             checkout scm
@@ -40,9 +40,9 @@ def simulationTest(String compiler, String unit, String suite ) {
     }
 }
 
-def nonSimulationTest() {
-    stage('Non-Simulation Container SGX1-FLC RelWithDebInfo') {
-        node('hardware') {
+def ACCContainerTest(String label) {
+    stage("$label Container RelWithDebInfo") {
+        node("$label") {
             cleanWs()
             checkout scm
 
@@ -72,7 +72,7 @@ def checkPreCommitRequirements() {
             }
         }
     }
-    stage('Simulation default compiler') {
+    stage('Sim default compiler') {
         // This particular test asserts that everything (at least
         // for simulation) can be built after using our
         // install-prereqs script to bootstrap a machine.
@@ -107,7 +107,7 @@ def checkPreCommitRequirements() {
     }
 }
 
-def windowsDebugCrossPlatform() {
+def win2016DebugCrossPlatform() {
     stage('Linux SGX1 Debug') {
         node {
             cleanWs()
@@ -133,7 +133,7 @@ def windowsDebugCrossPlatform() {
     }
 }
 
-def windowsReleaseCrossPlatform() {
+def win2016ReleaseCrossPlatform() {
     stage('Linux SGX1 Release') {
         node {
             cleanWs()
@@ -159,19 +159,21 @@ def windowsReleaseCrossPlatform() {
     }
 }
 
-parallel "Check Pre-Commit Requirements" : { checkPreCommitRequirements() },
-        "Simulation clang-7 SGX1 Debug" : { simulationTest('clang-7', 'SGX1', 'Debug')},
-        "Simulation clang-7 SGX1 Release" : { simulationTest('clang-7', 'SGX1', 'Release')},
-        "Simulation clang-7 SGX1 RelWithDebInfo" : { simulationTest('clang-7', 'SGX1', 'RelWithDebInfo')},
-        "Simulation clang-7 SGX1-FLC Debug" : { simulationTest('clang-7', 'SGX1FLC', 'Debug')},
-        "Simulation clang-7 SGX1-FLC Release" : { simulationTest('clang-7', 'SGX1FLC', 'Release')},
-        "Simulation clang-7 SGX1-FLC RelWithDebInfo" : { simulationTest('clang-7', 'SGX1FLC', 'RelWithDebInfo')},
-        "Coffeelake clang-7 SGX1-FLC Debug" : { coffeelakeTest('clang-7', 'SGX1FLC', 'Debug') },
-        "Coffeelake clang-7 SGX1-FLC Release" : { coffeelakeTest('clang-7', 'SGX1FLC','Release') },
-        "Coffeelake clang-7 SGX1-FLC RelWithDebInfo" : { coffeelakeTest('clang-7', 'SGX1FLC', 'RelWithDebinfo') },
-        "Coffeelake gcc SGX1-FLC Debug" : { coffeelakeTest('gcc', 'SGX1FLC', 'Debug') },
-        "Coffeelake gcc SGX1-FLC Release" : { coffeelakeTest('gcc', 'SGX1FLC', 'Release') },
-        "Coffeelake gcc SGX1-FLC RelWithDebInfo" : { coffeelakeTest('gcc', 'SGX1FLC', 'RelWithDebInfo') },
-        "Windows Debug Cross-platform" : { windowsDebugCrossPlatform() },
-        "Windows Release Cross-platform" : { windowsReleaseCrossPlatform() },
-        "Non-Simulation Container SGX1-FLC RelWithDebInfo" : { nonSimulationTest() }
+parallel "Check Pre-Commit Requirements" :      { checkPreCommitRequirements() },
+        "Sim clang-7 SGX1 Debug" :              { simulationTest('clang-7', 'SGX1', 'Debug')},
+        "Sim clang-7 SGX1 Release" :            { simulationTest('clang-7', 'SGX1', 'Release')},
+        "Sim clang-7 SGX1 RelWithDebInfo" :     { simulationTest('clang-7', 'SGX1', 'RelWithDebInfo')},
+        "Sim clang-7 SGX1-FLC Debug" :          { simulationTest('clang-7', 'SGX1FLC', 'Debug')},
+        "Sim clang-7 SGX1-FLC Release" :        { simulationTest('clang-7', 'SGX1FLC', 'Release')},
+        "Sim clang-7 SGX1-FLC RelWithDebInfo" : { simulationTest('clang-7', 'SGX1FLC', 'RelWithDebInfo')},
+        "ACC1604 clang-7 Debug" :               { ACCTest('ACC-1604', 'clang-7', 'SGX1FLC', 'Debug') },
+        "ACC1604 clang-7 Release" :             { ACCTest('ACC-1604', 'clang-7', 'SGX1FLC','Release') },
+        "ACC1604 clang-7 RelWithDebInfo" :      { ACCTest('ACC-1604', 'clang-7', 'SGX1FLC', 'RelWithDebinfo') },
+        "ACC1604 gcc Debug" :                   { ACCTest('ACC-1604', 'gcc', 'SGX1FLC', 'Debug') },
+        "ACC1604 gcc Release" :                 { ACCTest('ACC-1604', 'gcc', 'SGX1FLC', 'Release') },
+        "ACC1604 gcc RelWithDebInfo" :          { ACCTest('ACC-1604', 'gcc', 'SGX1FLC', 'RelWithDebInfo') },
+        "ACC1804 clang-7 Debug" :               { ACCTest('ACC-1804', 'clang-7', 'SGX1FLC', 'Debug') },
+        "ACC1804 clang-7 RelWithDebInfo" :      { ACCTest('ACC-1804', 'clang-7', 'SGX1FLC', 'RelWithDebinfo') },
+        "Win2016 Debug Cross-platform" :        { win2016DebugCrossPlatform() },
+        "Win2016 Release Cross-platform" :      { win2016ReleaseCrossPlatform() },
+        "ACC1604 Container RelWithDebInfo" :    { ACCContainerTest('ACC-1604') }
