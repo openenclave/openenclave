@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 #if defined(_MSC_VER)
 
-#include "../host/cpuid.h"
+#include "../cpuid.h"
 #include <intrin.h>
 #include <limits.h>
 

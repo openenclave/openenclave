@@ -55,7 +55,6 @@ if (OE_SGX)
         sgx/sgxload.c
         sgx/sgxmeasure.c
         sgx/sgxquote.c
-        sgx/sgxquoteprovider.c
         sgx/sgxsign.c
         sgx/sgxtypes.c
         sgx/traceh.c
@@ -71,6 +70,7 @@ if (OE_SGX)
             sgx/linux/entersim.S
             sgx/linux/exception.c
             sgx/linux/sgxioctl.c
+            sgx/linux/sgxquoteprovider.c
         )
     else()
         list(APPEND PLATFORM_SRC

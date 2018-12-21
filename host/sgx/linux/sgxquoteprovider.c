@@ -11,9 +11,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../hostthread.h"
-#include "platformquoteprovider.h"
-#include "sgxquoteprovider.h"
+#include "../../hostthread.h"
+#include "../platformquoteprovider.h"
+#include "../sgxquoteprovider.h"
 
 #ifdef OE_USE_LIBSGX
 
