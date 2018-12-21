@@ -12,6 +12,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 No current delta from v0.4.0.
 
+[v0.4.1] - 2018-12-21
+---------------------
+
+v0.4.1 contains a small fix to work with Intel's new ISV version bump.
+
+### Changed
+
+- This allows the OE SDK to continue to support reports signed by QE SVN=1,
+  and at the same time also allow a newer QE SVN (greater than 1) during the
+  oe_verify_report process.
+
 [v0.4.0] - 2018-10-08
 ---------------------
 
