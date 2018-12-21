@@ -235,12 +235,12 @@ if [[ $files ]]; then
     file_list=""
     list=$(eval "$findargs")
     tempfile=$(mktemp)
-    echo $list | tr ' ' '\n' > $tempfile
+    echo "$list" | tr ' ' '\n' > $tempfile
     
-    for f in ${files[@]}; do
+    for f in "${files[@]}"; do
         new_file=$(grep -o "^\./${f}$" "${tempfile}")
         if [[ $new_file ]]; then
-            file_list=$(echo $file_list $new_file)
+            file_list=$(echo "$file_list" "$new_file")
         fi
     done
 
