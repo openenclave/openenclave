@@ -2,8 +2,8 @@
 # Licensed under the MIT License.
 
 
-add_executable(stdcxx_enc enc.cpp f.cpp)
-add_executable(global_init_exception_enc global_init_exception.cpp)
+add_enclave(TARGET stdcxx_enc CXX SOURCES enc.cpp f.cpp)
+add_enclave(TARGET global_init_exception_enc CXX SOURCES global_init_exception.cpp)
 
 target_compile_options(stdcxx_enc PRIVATE
     -fno-builtin-strcpy
@@ -13,6 +13,3 @@ target_compile_options(stdcxx_enc PRIVATE
     -fno-builtin-fprintf
     -fno-builtin-printf
     )
-
-target_link_libraries(stdcxx_enc oelibcxx oeenclave)
-target_link_libraries(global_init_exception_enc oelibcxx oeenclave)

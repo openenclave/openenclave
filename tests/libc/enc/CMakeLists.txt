@@ -16,8 +16,8 @@ execute_process(
 
 oeedl_file(../libc.edl enclave gen)
 
-add_executable(
-    libc_enc
+add_enclave(TARGET libc_enc
+    SOURCES
     enc.c
     ${CMAKE_CURRENT_BINARY_DIR}/tests.c
     ../../../3rdparty/musl/libc-test/src/common/mtest.c
@@ -42,5 +42,3 @@ target_include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
     .
     ../../../3rdparty/musl/libc-test/src/common)
-
-target_link_libraries(libc_enc oelibc oeenclave)

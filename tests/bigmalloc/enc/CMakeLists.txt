@@ -12,4 +12,3 @@ oeedl_file(../bigmalloc.edl enclave gen)
 add_enclave(TARGET bigmalloc_enc CONFIG sign.conf SOURCES enc.c ${gen})
 
 target_include_directories(bigmalloc_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(bigmalloc_enc oeenclave)

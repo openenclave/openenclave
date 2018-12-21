@@ -28,12 +28,11 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
       )
 endif ()
 
-target_link_libraries(libcxxtest-support PUBLIC oelibcxx oeenclave)
 target_link_libraries(libcxxtest-support INTERFACE -Wl,--undefined=Test)
 
 # helper function to create enclave binary
 function(add_libcxx_test_enc NAME CXXFILE)
-    add_executable(libcxxtest-${NAME}_enc main.cpp)
+    add_enclave(TARGET libcxxtest-${NAME}_enc CXX SOURCES main.cpp)
 
     target_include_directories(libcxxtest-${NAME}_enc PRIVATE
         ..
@@ -62,7 +61,7 @@ function(add_libcxx_test_enc NAME CXXFILE)
     endif()
 
     target_compile_definitions(libcxxtest-${NAME}_enc PRIVATE -DWITH_MAIN -D__TEST__="${CXXFILE}")
-    target_link_libraries(libcxxtest-${NAME}_enc libcxxtest-support oeenclave)
+    target_link_libraries(libcxxtest-${NAME}_enc libcxxtest-support)
 endfunction(add_libcxx_test_enc)
 
 # iterate over the supported tests and create a binary for each.

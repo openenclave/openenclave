@@ -5,11 +5,7 @@ include(oeedl_file)
 
 oeedl_file(../safecrt.edl enclave gen)
 
-add_executable(safecrt_enc
-    ../common/test.cpp
-    enc.cpp
-    ${gen}
-)
+add_enclave(TARGET safecrt_enc CXX
+  SOURCES ../common/test.cpp enc.cpp ${gen})
 
 target_include_directories(safecrt_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(safecrt_enc oelibcxx oeenclave)

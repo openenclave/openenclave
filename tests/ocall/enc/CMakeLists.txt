@@ -1,5 +1,5 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-add_executable(ocall_enc enc.cpp)
-target_link_libraries(ocall_enc oeenclave)
+# TODO: Does this need CXX?
+add_enclave(TARGET ocall_enc SOURCES enc.cpp)

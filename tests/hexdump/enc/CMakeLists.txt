@@ -5,7 +5,6 @@ include(oeedl_file)
 
 oeedl_file(../hexdump.edl enclave gen)
 
-add_executable(hexdump_enc enc.c ${gen})
+add_enclave(TARGET hexdump_enc SOURCES enc.c ${gen})
 
 target_include_directories(hexdump_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(hexdump_enc oeenclave)

@@ -31,10 +31,3 @@ target_include_directories(no_debug_enc_unsigned PRIVATE
 target_include_directories(debug_enc_unsigned PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR})
-
-
-
-target_link_libraries(no_debug_enc oeenclave)
-target_link_libraries(debug_enc oeenclave)
-target_link_libraries(no_debug_enc_unsigned oeenclave)
-target_link_libraries(debug_enc_unsigned oeenclave)

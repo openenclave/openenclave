@@ -5,7 +5,6 @@ include(oeedl_file)
 
 oeedl_file(../echo.edl enclave gen)
 
-add_executable(echo_enc enc.c ${gen})
+add_enclave(TARGET echo_enc SOURCES enc.c ${gen})
 
 target_include_directories(echo_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(echo_enc oeenclave)

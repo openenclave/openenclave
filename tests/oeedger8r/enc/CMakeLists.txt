@@ -16,13 +16,14 @@ oeedl_file(
     bar_t
 )
 
-add_executable(edl_enc
+add_enclave(TARGET edl_enc CXX
+    SOURCES
     bar.cpp
     config.cpp
     foo.cpp
     testarray.cpp
-    testbasic.cpp 
-    testenum.cpp 
+    testbasic.cpp
+    testenum.cpp
     testforeign.cpp
     testpointer.cpp
     teststring.cpp
@@ -47,4 +48,3 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
 endif()
 
 target_include_directories(edl_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)
-target_link_libraries(edl_enc oelibcxx oeenclave)

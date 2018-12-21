@@ -2,7 +2,6 @@
 # Licensed under the MIT License.
 
 include(oeedl_file)
-include(add_enclave_executable)
 
 # create a binary for each testcase listed in ../tests.supported
 
@@ -13,12 +12,11 @@ oeedl_file(../libcxxrt.edl enclave gen)
 # helper lib to contain file needed by some tests
 add_library(libcxxrttest-support ${gen})
 target_compile_options(libcxxrttest-support PUBLIC -Wno-error)
-target_link_libraries(libcxxrttest-support PUBLIC oelibcxx oeenclave)
 target_link_libraries(libcxxrttest-support INTERFACE -Wl,--undefined=test)
 
 # helper function to create enclave binary
 function(add_libcxxrt_test_enc NAME CXXFILE)
-    add_executable(libcxxrttest-${NAME}_enc enc.cpp main.cpp)
+    add_enclave(TARGET libcxxrttest-${NAME}_enc CXX SOURCES enc.cpp main.cpp)
     target_include_directories(libcxxrttest-${NAME}_enc PRIVATE
         ..
         ${PROJECT_SOURCE_DIR}/3rdparty/libcxxrt/libcxxrt/src

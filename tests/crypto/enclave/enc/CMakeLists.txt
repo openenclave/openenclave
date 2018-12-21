@@ -4,7 +4,8 @@
 include(oeedl_file)
 oeedl_file(../crypto.edl enclave gen)
 
-add_executable(cryptoenc
+add_enclave(TARGET cryptoenc
+    SOURCES
     enc.c
     ../../../../common/rand.S
     ../../read_file.c
@@ -22,6 +23,4 @@ add_executable(cryptoenc
     ../../utils.c
     ${gen})
 
-
 target_include_directories(cryptoenc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(cryptoenc oeenclave)
