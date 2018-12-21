@@ -16,6 +16,21 @@
 /* DER buffer used for private / public key export */
 #define DER_MAX_SIZE 130
 
+static inline oe_result_t _check_sgx_asykey_support(
+    const oe_asymmetric_key_params_t* key_params)
+{
+    if (key_params == NULL)
+        return OE_INVALID_PARAMETER;
+
+    if (key_params->type != OE_ASYMMETRIC_KEY_EC_SECP256P1)
+        return OE_INVALID_PARAMETER;
+
+    if (key_params->format != OE_ASYMMETRIC_KEY_PEM)
+        return OE_INVALID_PARAMETER;
+
+    return OE_OK;
+}
+
 oe_result_t oe_get_seal_key_by_policy_v2(
     _In_ oe_seal_policy_t seal_policy,
     _Outptr_ uint8_t** key_buffer,
@@ -50,25 +65,26 @@ oe_result_t oe_get_seal_key_by_policy_v2(
     }
 
     uint8_t* info = NULL;
+    size_t info_size = sizeof(key_request);
     if (key_info != NULL) {
-        info = (uint8_t*)oe_malloc(sizeof(key_request));
+        info = (uint8_t*)oe_malloc(info_size);
         if (info == NULL) {
             return OE_OUT_OF_MEMORY;
         }
-        memcpy(info, &key_request, sizeof(key_request));
+        memcpy(info, &key_request, info_size);
     }
 
-    oeResult = oe_get_seal_key_v2((uint8_t*)&key_request, sizeof(key_request), key_buffer, key_buffer_size);
+    oeResult = oe_get_seal_key_v2((uint8_t*)&key_request, info_size, key_buffer, key_buffer_size);
     if (oeResult != OE_OK) {
-        oe_free_key(NULL, info);
+        oe_free_key(NULL, 0, info, info_size) ;
         return oeResult;
     }
 
-    *key_info_size = sizeof(key_request);
+    *key_info_size = info_size;
     if (key_info != NULL) {
         *key_info = info;
     } else {
-        oe_free_key(NULL, info);
+        oe_free_key(NULL, 0, info, info_size) ;
     }
     return OE_OK;
 }
@@ -193,6 +209,7 @@ oe_result_t oe_derive_key_pair(
 
 oe_result_t oe_get_key_pair_by_policy(
     _In_ oe_seal_policy_t seal_policy,
+    _In_ const oe_asymmetric_key_params_t* key_params,
     _Outptr_opt_ uint8_t** public_key,
     _Out_ size_t* public_key_size,
     _Outptr_opt_ uint8_t** private_key,
@@ -200,6 +217,9 @@ oe_result_t oe_get_key_pair_by_policy(
     _Outptr_opt_ uint8_t** key_info,
     _Out_ size_t* key_info_size)
 {
+    if (_check_sgx_asykey_support(key_params) != OE_OK)
+        return OE_INVALID_PARAMETER;
+
     /* Obtain a seal key based on policy to use as the derivation secret. */
     uint8_t* secret = NULL;
     size_t secret_size = 0;
@@ -242,12 +262,14 @@ cleanup:
 
 oe_result_t oe_get_public_key_by_policy(
     oe_seal_policy_t seal_policy,
+    const oe_asymmetric_key_params_t* key_params,
     uint8_t** key_buffer,
     size_t* key_buffer_size,
     uint8_t** key_info,
     size_t* key_info_size)
 {
     return  oe_get_key_pair_by_policy(seal_policy,
+                                      key_params,
                                       key_buffer,
                                       key_buffer_size,
                                       NULL,
@@ -285,12 +307,14 @@ oe_result_t oe_get_public_key_by_policy(
 
  oe_result_t oe_get_private_key_by_policy(
      oe_seal_policy_t seal_policy,
+    const oe_asymmetric_key_params_t* key_params,
      uint8_t** key_buffer,
      size_t* key_buffer_size,
      uint8_t** key_info,
      size_t* key_info_size)
 {
     return oe_get_key_pair_by_policy(seal_policy,
+                                     key_params,
                                      NULL,
                                      NULL,
                                      key_buffer,
