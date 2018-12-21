@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+include(oeedl_file)
+
 option(ENABLE_FULL_LIBCXX_TESTS "Build all libcxx tests and include in test list" OFF)
 
 if(ENABLE_FULL_LIBCXX_TESTS)
