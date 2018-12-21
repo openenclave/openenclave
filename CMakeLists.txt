@@ -58,6 +58,9 @@ include(compiler_settings)
 # See `cmake/package_settings.cmake` for all package settings
 include(package_settings)
 
+# See `cmake/add_enclave.cmake` for enclave creation logic
+include(add_enclave)
+
 # User configurable options
 option(USE_LIBSGX "Build oehost using SGX library requiring FLC" OFF)
 if (USE_LIBSGX AND WIN32)
