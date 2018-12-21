@@ -5,14 +5,19 @@
 #
 # Usage:
 #
-#	add_enclave(<TARGET target> <SOURCES sources> <CONFIG config> <KEY key>)
+#  add_enclave(<TARGET target>
+#              <SOURCES sources>
+#              [<CONFIG config>]
+#              [<KEY key>])
 #
-# Given <target> and <CONFIG>, this function adds custom
-# commands to generate a signing key if key is not specified
-# and call `oesign` to sign the
-# target, resulting in `<target>.signed`. It also adds
+# Given <target> and <config>, this function adds custom commands to
+# generate a signing key if key is not specified and call `oesign` to
+# sign the target, resulting in `<target>.signed`. It also adds
 # `<target>_signed` as an imported target so that it can be referenced
 # later in the CMake graph.
+#
+# The target is always linked to `oeenclave`.
+#
 # TODO: (1) Replace the name guessing logic.
 # TODO: (2) Setup the dependency using `${BIN}_signed` instead of the
 # default custom target.
@@ -22,14 +27,19 @@ function(add_enclave)
    set(options)
    set(oneValueArgs TARGET CONFIG KEY)
    set(multiValueArgs SOURCES)
-   cmake_parse_arguments(ENCLAVE "${options}" "${oneValueArgs}"
-                          "${multiValueArgs}" ${ARGN})
+   cmake_parse_arguments(ENCLAVE
+     "${options}"
+     "${oneValueArgs}"
+     "${multiValueArgs}"
+     ${ARGN})
+
    add_executable(${ENCLAVE_TARGET} ${ENCLAVE_SOURCES})
+   target_link_libraries(${ENCLAVE_TARGET} oeenclave)
    
-   if(NOT ENCLAVE_CONFIG)
-      #Since the config is not specified, the enclave wont be signed.
+   if (NOT ENCLAVE_CONFIG)
+      # Since the config is not specified, the enclave wont be signed.
       return()
-   endif()
+   endif ()
 
   # Generate the signing key.
   if(NOT ENCLAVE_KEY)
@@ -45,7 +55,7 @@ function(add_enclave)
   # Sign the enclave using `oesign`.
   if(ENCLAVE_CONFIG)
     add_custom_command(OUTPUT ${SIGNED_LOCATION}
-      COMMAND oesign sign $<TARGET_FILE:${ENCLAVE_TARGET}> ${ENCLAVE_CONFIG} ${ENCLAVE_KEY} 
+      COMMAND oesign sign $<TARGET_FILE:${ENCLAVE_TARGET}> ${ENCLAVE_CONFIG} ${ENCLAVE_KEY}
       DEPENDS oesign ${ENCLAVE_TARGET} ${ENCLAVE_CONFIG} ${ENCLAVE_KEY}
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
   endif()
@@ -58,5 +68,5 @@ function(add_enclave)
 
   # Add a custom target with `ALL` semantics so these targets are always built.
   add_custom_target(${ENCLAVE_TARGET}_signed_target ALL DEPENDS ${SIGNED_LOCATION})
-  
+
 endfunction()
