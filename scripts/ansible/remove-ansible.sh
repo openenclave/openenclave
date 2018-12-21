@@ -5,6 +5,4 @@
 
 apt-get purge --auto-remove -y \
     ansible \
-    python-pip \
-    apt-transport-https \
     software-properties-common

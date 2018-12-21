@@ -75,7 +75,7 @@ def checkPreCommitRequirements() {
     stage('Sim default compiler') {
         // This particular test asserts that everything (at least
         // for simulation) can be built after using our
-        // install-prereqs script to bootstrap a machine.
+        // install-prereqs ansible playbook to to bootstrap a machine.
         node {
             cleanWs()
             checkout scm
@@ -85,7 +85,7 @@ def checkPreCommitRequirements() {
             buildImage.inside {
                 timeout(15) {
                     // This is run to test that it works with the dependencies
-                    // installed by our install-prereqs script.
+                    // installed by our install-prereqs ansible playbook.
                     sh './scripts/check-precommit-reqs'
 
                     // We actually expect `ctest` to fail because it is an
