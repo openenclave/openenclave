@@ -6,6 +6,7 @@
 # Usage:
 #
 #  add_enclave(<TARGET target>
+#              [CXX]
 #              <SOURCES sources>
 #              [<CONFIG config>]
 #              [<KEY key>])
@@ -16,7 +17,8 @@
 # `<target>_signed` as an imported target so that it can be referenced
 # later in the CMake graph.
 #
-# The target is always linked to `oeenclave`.
+# The target is always linked to `oeenclave`, and if the optional flag
+# `CXX` is passed, it is also linked to `oelibcxx`
 #
 # TODO: (1) Replace the name guessing logic.
 # TODO: (2) Setup the dependency using `${BIN}_signed` instead of the
@@ -24,7 +26,7 @@
 # TODO: (3) Validate arguments into this function
 function(add_enclave)
 
-   set(options)
+   set(options CXX)
    set(oneValueArgs TARGET CONFIG KEY)
    set(multiValueArgs SOURCES)
    cmake_parse_arguments(ENCLAVE
@@ -35,7 +37,10 @@ function(add_enclave)
 
    add_executable(${ENCLAVE_TARGET} ${ENCLAVE_SOURCES})
    target_link_libraries(${ENCLAVE_TARGET} oeenclave)
-   
+   if (ENCLAVE_CXX)
+     target_link_libraries(${ENCLAVE_TARGET} oelibcxx)
+   endif ()
+
    if (NOT ENCLAVE_CONFIG)
       # Since the config is not specified, the enclave wont be signed.
       return()
