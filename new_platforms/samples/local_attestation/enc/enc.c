@@ -82,7 +82,13 @@ int generate_signed_message(
 
     memcpy(data, data_buf, *data_size_needed);
 
-    oe_result_t result = oe_get_private_key(NULL, 0, &key_buf, &key_buf_size);
+    oe_asymmetric_key_params_t key_params;
+    key_params.format = OE_ASYMMETRIC_KEY_PEM;
+    key_params.type = OE_ASYMMETRIC_KEY_EC_SECP256P1;
+    key_params.user_data = NULL;
+    key_params.user_data_size = 0;
+    oe_result_t result =
+        oe_get_private_key(&key_params, NULL, 0, &key_buf, &key_buf_size);
     if (result != OE_OK)
     {
         goto exit;
@@ -127,7 +133,7 @@ int generate_signed_message(
 exit: 
     if (key_buf)
     {
-        oe_free_key(key_buf, NULL);
+        oe_free_key(key_buf, key_buf_size, NULL, 0);
     }
 
     return result;
