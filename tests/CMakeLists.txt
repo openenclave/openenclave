@@ -46,6 +46,7 @@ add_subdirectory(stdcxx)
 add_subdirectory(thread)
 add_subdirectory(threadcxx)
 add_subdirectory(thread_local)
+add_subdirectory(VectorException)
 endif()
 
 # Windows test Broken Post #632 issue
@@ -64,7 +65,6 @@ if (UNIX)
 add_subdirectory(crypto_crls_cert_chains)
 add_subdirectory(libunwind)
 add_subdirectory(mbed)
-add_subdirectory(VectorException)
 
 #Attestation supported only on Linux
 add_subdirectory(qeidentity)

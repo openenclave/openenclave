@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "../exception.h"
 #include <assert.h>
 #include <dlfcn.h>
 #include <openenclave/bits/safecrt.h>
@@ -32,48 +33,18 @@ static void _host_signal_handler(
     void* sig_data)
 {
     ucontext_t* context = (ucontext_t*)sig_data;
-    uint64_t exit_code = (uint64_t)context->uc_mcontext.gregs[REG_RAX];
-    uint64_t tcs_address = (uint64_t)context->uc_mcontext.gregs[REG_RBX];
-    uint64_t exit_address = (uint64_t)context->uc_mcontext.gregs[REG_RIP];
+    oe_host_exception_context_t host_context = {0};
+    host_context.rax = (uint64_t)context->uc_mcontext.gregs[REG_RAX];
+    host_context.rbx = (uint64_t)context->uc_mcontext.gregs[REG_RBX];
+    host_context.rip = (uint64_t)context->uc_mcontext.gregs[REG_RIP];
 
-    // Check if the signal happens inside the enclave.
-    if ((exit_address == (uint64_t)OE_AEP) && (exit_code == ENCLU_ERESUME))
+    // Call platform neutral handler.
+    uint64_t action = oe_host_handle_exception(&host_context);
+
+    if (action == OE_EXCEPTION_CONTINUE_EXECUTION)
     {
-        // Check if the enclave exception happens inside the first pass
-        // exception handler.
-        ThreadBinding* thread_data = GetThreadBinding();
-        if (thread_data->flags & _OE_THREAD_HANDLING_EXCEPTION)
-        {
-            abort();
-        }
-
-        // Call-in enclave to handle the exception.
-        oe_enclave_t* enclave = oe_query_enclave_instance((void*)tcs_address);
-        if (enclave == NULL)
-        {
-            abort();
-        }
-
-        // Set the flag marks this thread is handling an enclave exception.
-        thread_data->flags |= _OE_THREAD_HANDLING_EXCEPTION;
-
-        // Call into enclave first pass exception handler.
-        uint64_t arg_out = 0;
-        oe_result_t result =
-            oe_ecall(enclave, OE_ECALL_VIRTUAL_EXCEPTION_HANDLER, 0, &arg_out);
-
-        // Reset the flag
-        thread_data->flags &= (~_OE_THREAD_HANDLING_EXCEPTION);
-        if (result == OE_OK && arg_out == OE_EXCEPTION_CONTINUE_EXECUTION)
-        {
-            // This exception has been handled by the enclave. Let's resume.
-            return;
-        }
-        else
-        {
-            // Un-handled enclave exception happened.
-            abort();
-        }
+        // Exception has been handled.
+        return;
     }
     else if (g_previous_sigaction[sig_num].sa_handler == SIG_DFL)
     {

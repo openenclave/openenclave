@@ -59,6 +59,7 @@ add_library(oehost STATIC
     enclave.c
     enclavemanager.c
     error.c
+    exception.c
     files.c
     fopen.c
     hexdump.c

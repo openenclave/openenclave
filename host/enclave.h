@@ -154,9 +154,6 @@ OE_STATIC_ASSERT(
 /* Get the event for the given TCS */
 EnclaveEvent* GetEnclaveEvent(oe_enclave_t* enclave, uint64_t tcs);
 
-/* Initialize the exception processing. */
-void oe_initialize_host_exception(void);
-
 /* Free enclave ecall allocation */
 void oe_free_enclave_ecalls(oe_enclave_t* enclave);
 
