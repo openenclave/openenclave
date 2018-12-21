@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-include(add_enclave_executable)
 
 # Include the libc tests wrappers:
 include(../tests.cmake)

@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-include(add_enclave_executable)
 
 oeedl_file(../oe_gdb_test.edl enclave oe_gdb_test_t)
 
