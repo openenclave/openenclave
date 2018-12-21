@@ -1,0 +1,10 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+# OpenSSL configuration for test CRL generation
+#
+####################################################################
+authorityKeyIdentifier = keyid:always, issuer:always
+subjectKeyIdentifier   = hash
+basicConstraints       = critical, CA:TRUE, pathlen:1
+keyUsage = critical, keyCertSign, cRLSign, digitalSignature
