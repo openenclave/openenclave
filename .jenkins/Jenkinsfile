@@ -1,5 +1,8 @@
 // oetools-image:tag  Docker image from OE Jenkins Registry
-OETOOLS_IMAGE = "oejenkinscidockerregistry.azurecr.io/oetools-azure:1.8"
+OETOOLS_REPO = "https://oejenkinscidockerregistry.azurecr.io"
+OETOOLS_REPO_CREDENTIAL_ID = "oejenkinscidockerregistry"
+OETOOLS_IMAGE = "oetools-azure:1.8"
+
 
 def PowerShellWrapper(psCmd) {
     psCmd = psCmd.replaceAll("\r", "").replaceAll("\n", "")
@@ -26,7 +29,7 @@ def simulationTest(String compiler, String unit, String suite ) {
             cleanWs()
             checkout scm
 
-            docker.withRegistry('https://oejenkinscidockerregistry.azurecr.io', 'oejenkinscidockerregistry') {
+            docker.withRegistry(OETOOLS_REPO, OETOOLS_REPO_CREDENTIAL_ID) {
                 docker.image(OETOOLS_IMAGE).inside {
                     timeout(15) {
                         sh "./scripts/test-build-config -p $unit -b $suite --compiler=$compiler"
@@ -43,7 +46,7 @@ def nonSimulationTest() {
             cleanWs()
             checkout scm
 
-            docker.withRegistry('https://oejenkinscidockerregistry.azurecr.io', 'oejenkinscidockerregistry') {
+            docker.withRegistry(OETOOLS_REPO, OETOOLS_REPO_CREDENTIAL_ID) {
                 docker.image(OETOOLS_IMAGE).inside('--privileged -v /dev/sgx:/dev/sgx') {
                     timeout(15) {
                         sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d'
@@ -60,7 +63,7 @@ def checkPreCommitRequirements() {
             cleanWs()
             checkout scm
 
-            docker.withRegistry('https://oejenkinscidockerregistry.azurecr.io', 'oejenkinscidockerregistry') {
+            docker.withRegistry(OETOOLS_REPO, OETOOLS_REPO_CREDENTIAL_ID) {
                 docker.image(OETOOLS_IMAGE).inside {
                     timeout(2) {
                         sh './scripts/check-precommit-reqs'
@@ -109,7 +112,7 @@ def windowsDebugCrossPlatform() {
         node {
             cleanWs()
             checkout scm
-            docker.withRegistry('https://oejenkinscidockerregistry.azurecr.io', 'oejenkinscidockerregistry') {
+            docker.withRegistry(OETOOLS_REPO, OETOOLS_REPO_CREDENTIAL_ID) {
                 docker.image(OETOOLS_IMAGE).inside {
                     timeout(15) {
                         sh './scripts/test-build-config -p SGX1FLC -b Debug --compiler=clang-7'
@@ -135,7 +138,7 @@ def windowsReleaseCrossPlatform() {
         node {
             cleanWs()
             checkout scm
-            docker.withRegistry('https://oejenkinscidockerregistry.azurecr.io', 'oejenkinscidockerregistry') {
+            docker.withRegistry(OETOOLS_REPO, OETOOLS_REPO_CREDENTIAL_ID) {
                 docker.image(OETOOLS_IMAGE).inside {
                     timeout(15) {
                         sh './scripts/test-build-config -p SGX1FLC -b Release --compiler=clang-7'
