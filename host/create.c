@@ -50,6 +50,7 @@ static const char* get_fullpath(const char* path)
 #include <string.h>
 #include "cpuid.h"
 #include "enclave.h"
+#include "exception.h"
 #include "memalign.h"
 #include "sgxload.h"
 
