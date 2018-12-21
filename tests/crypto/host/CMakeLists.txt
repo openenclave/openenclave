@@ -21,10 +21,17 @@ add_executable(hostcrypto
     ../tests.c
     ../utils.c)
 
+
 # ========================= TestCRL & TestASN1 ================================
 
 add_custom_command(TARGET hostcrypto
 COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/${DATA_DIR}
+
+# x509 V3 extensions required to be able to validate cert chains using a self signed root cert and intermediate cert signed by the root cert. 
+# SSL1.1 no longer allows signing certs without the necessary v3 extensions.
+COMMAND ${CMAKE_COMMAND} -E copy  ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/root_v3.ext ${CMAKE_CURRENT_BINARY_DIR}/${DATA_DIR}/root_v3.ext
+COMMAND ${CMAKE_COMMAND} -E copy  ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/intermediate_v3.ext ${CMAKE_CURRENT_BINARY_DIR}/${DATA_DIR}/intermediate_v3.ext
+
 COMMAND ${CMAKE_COMMAND} -E copy  ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/sample.cnf ${CMAKE_CURRENT_BINARY_DIR}/${DATA_DIR}/sample.cnf
 COMMAND openssl ecparam -name prime256v1 -genkey -noout -out prime256v1-key.pem
 COMMAND openssl req -config ${DATA_DIR}/sample.cnf  -new -x509 -key prime256v1-key.pem -out ${DATA_DIR}/asn1_cert.pem -subj "/CN=Intel SGX PCK Processor CA/O=Intel Corporation/L=Santa Clara/ST=CA/C=US" -sha256 -extensions v3_req
@@ -38,7 +45,7 @@ COMMAND echo 'Creating Intermediate certificates signed by the root CA....'
 COMMAND sleep 1
 COMMAND openssl genrsa -out ${DATA_DIR}/Intermediate.key.pem
 COMMAND openssl req -new -key ${DATA_DIR}/Intermediate.key.pem -out ${DATA_DIR}/Intermediate.csr -subj "/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=Intermediate"
-COMMAND openssl x509 -req -in ${DATA_DIR}/Intermediate.csr -CA ${DATA_DIR}/RootCA.crt.pem -CAkey ${DATA_DIR}/RootCA.key.pem -CAcreateserial -out ${DATA_DIR}/Intermediate.crt.pem -days 3650
+COMMAND openssl x509 -req -in ${DATA_DIR}/Intermediate.csr -CA ${DATA_DIR}/RootCA.crt.pem -CAkey ${DATA_DIR}/RootCA.key.pem -CAcreateserial -out ${DATA_DIR}/Intermediate.crt.pem -days 3650 -extfile ${DATA_DIR}/intermediate_v3.ext
 # Creating Leaf certificates signed by the Root CA
 COMMAND echo 'Creating Leaf certificates signed by the root CA....'
 COMMAND sleep 1
@@ -88,10 +95,11 @@ COMMAND openssl ecparam -name prime256v1 -genkey -noout -out ${DATA_DIR}/crl_dis
 COMMAND openssl req -config ${DATA_DIR}/crl_distribution.cnf  -new -x509 -key ${DATA_DIR}/crl_distribution-key.pem -out ${DATA_DIR}/ec_cert_crl_distribution.pem -subj "/CN=Intel SGX PCK Processor CA/O=Intel Corporation/L=Santa Clara/ST=CA/C=US" -sha256 -extensions v3_req
 
 COMMAND openssl ecparam -name prime256v1 -genkey -noout -out ${DATA_DIR}/Rootec.key.pem
-COMMAND openssl req -new -x509 -key ${DATA_DIR}/Rootec.key.pem -out ${DATA_DIR}/Rootec.crt.pem -subj "/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=Rootec"
+COMMAND openssl req -new -x509 -key ${DATA_DIR}/Rootec.key.pem -out ${DATA_DIR}/Rootec.crt.pem -subj "/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=Rootec" 
+
 COMMAND openssl ecparam -name prime256v1 -genkey -noout -out ${DATA_DIR}/Intermediate.ec.key.pem
 COMMAND openssl req -new -key ${DATA_DIR}/Intermediate.ec.key.pem -out ${DATA_DIR}/Intermediate.csr -subj "/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=Intermediateec"
-COMMAND openssl x509 -req -in ${DATA_DIR}/Intermediate.csr -CA ${DATA_DIR}/Rootec.crt.pem -CAkey ${DATA_DIR}/Rootec.key.pem -CAcreateserial -out ${DATA_DIR}/Intermediateec.crt.pem -days 3650
+COMMAND openssl x509 -req -in ${DATA_DIR}/Intermediate.csr -CA ${DATA_DIR}/Rootec.crt.pem -CAkey ${DATA_DIR}/Rootec.key.pem -CAcreateserial -out ${DATA_DIR}/Intermediateec.crt.pem -days 3650 -extfile ${DATA_DIR}/intermediate_v3.ext
 
 COMMAND openssl ecparam -name prime256v1 -genkey -noout -out ${DATA_DIR}/Leaf.ec.key.pem
 COMMAND openssl req -new -key ${DATA_DIR}/Leaf.ec.key.pem -out ${DATA_DIR}/Leaf.csr -subj "/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=Leafec"
