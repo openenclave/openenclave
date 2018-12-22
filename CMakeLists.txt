@@ -55,12 +55,12 @@ endif ()
 # Set the architecture. We do this before the compiler settings, since some
 # of them are arch specific.
 if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
-    # TODO: Right now assume it's Intel+SGX for x86_64 processors
-    set(OE_SGX 1)
+  # TODO: Right now assume it's Intel+SGX for x86_64 processors
+  set(OE_SGX 1)
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*|ARM.*|aarch64.*|AARCH64.*")
-    set(OE_TRUSTZONE 1)
+  set(OE_TRUSTZONE 1)
 else()
-    message(FATAL_ERROR "Unknown processor. Only Intel SGX and ARM TrustZone are supported")
+  message(FATAL_ERROR "Unknown processor. Only Intel SGX and ARM TrustZone are supported")
 endif()
 
 # See `cmake/compiler_settings.cmake` for all compiler settings
@@ -107,7 +107,7 @@ add_subdirectory(tools)
 if (UNIX)
   add_subdirectory(3rdparty)
   if (OE_SGX)
-      add_subdirectory(debugger)
+    add_subdirectory(debugger)
   endif()
   add_subdirectory(docs/refman)
   add_subdirectory(enclave)

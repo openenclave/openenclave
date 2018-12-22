@@ -29,21 +29,18 @@ if (OE_SGX)
         sgx/thread.c
         sgx/enter.S
         sgx/exit.S
-        sgx/getkey.S
-    )
+        sgx/getkey.S)
 
     # OS specific sources for SGX.
     if (UNIX)
         list(APPEND PLATFORM_SRC
             ../../common/sgx/rand.S
             sgx/linux/reloc.c
-            sgx/linux/threadlocal.c
-        )
+            sgx/linux/threadlocal.c)
     elseif (WIN32)
         list(APPEND PLATFORM_SRC
             ../../common/sgx/rand.asm
-            sgx/windows/reloc.c
-        )
+            sgx/windows/reloc.c)
     endif()
 elseif(OE_TRUSTZONE)
     message("TODO: ADD ARM files.")
@@ -52,8 +49,7 @@ elseif(OE_TRUSTZONE)
         optee/bounds.c
         optee/host.c
         optee/printf.c
-        optee/start.c
-    )
+        optee/start.c)
 endif()
 
 add_library(oecore STATIC
@@ -64,8 +60,7 @@ add_library(oecore STATIC
     snprintf.c
     string.c
     time.c
-    ${PLATFORM_SRC}
-)
+    ${PLATFORM_SRC})
 
 target_link_libraries(oecore PUBLIC oe_includes)
 
@@ -75,7 +70,7 @@ endif()
 
 if (OE_SGX)
     # This directory contains dummy C headers needed by dlmalloc:
-    target_include_directories(oecore PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/sgx/dlmalloc)
+    target_include_directories(oecore PRIVATE sgx/dlmalloc)
 
     # Unfortunately dlmalloc uses GNU extension that allows arithmetic
     # null pointers.
@@ -99,8 +94,7 @@ target_compile_options(oecore PUBLIC
     -fPIC
     -nostdinc
     -fno-stack-protector
-    -fvisibility=hidden
-)
+    -fvisibility=hidden)
 
 target_compile_options(oecore INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>)
 

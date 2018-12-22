@@ -5,27 +5,27 @@
 set(MUSLSRC ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
 if (OE_SGX)
-add_library(oelibasm OBJECT
-    sgx/abort.S
-    sgx/exp2l.S
+    add_library(oelibasm OBJECT
+        sgx/abort.S
+        sgx/exp2l.S
 
-    ${MUSLSRC}/fenv/x86_64/fenv.s
-    ${MUSLSRC}/math/x86_64/acosl.s
-    ${MUSLSRC}/math/x86_64/asinl.s
-    ${MUSLSRC}/math/x86_64/log1pl.s
-    ${MUSLSRC}/math/x86_64/log2l.s
-    ${MUSLSRC}/math/x86_64/logl.s
-    #${MUSLSRC}/math/x86_64/exp2l.s
-    ${MUSLSRC}/math/x86_64/sqrt.s
-    ${MUSLSRC}/math/x86_64/sqrtl.s
-    ${MUSLSRC}/math/x86_64/sqrtf.s
-    ${MUSLSRC}/setjmp/x86_64/longjmp.s
-    ${MUSLSRC}/setjmp/x86_64/setjmp.s)
+        ${MUSLSRC}/fenv/x86_64/fenv.s
+        ${MUSLSRC}/math/x86_64/acosl.s
+        ${MUSLSRC}/math/x86_64/asinl.s
+        ${MUSLSRC}/math/x86_64/log1pl.s
+        ${MUSLSRC}/math/x86_64/log2l.s
+        ${MUSLSRC}/math/x86_64/logl.s
+        #${MUSLSRC}/math/x86_64/exp2l.s
+        ${MUSLSRC}/math/x86_64/sqrt.s
+        ${MUSLSRC}/math/x86_64/sqrtl.s
+        ${MUSLSRC}/math/x86_64/sqrtf.s
+        ${MUSLSRC}/setjmp/x86_64/longjmp.s
+        ${MUSLSRC}/setjmp/x86_64/setjmp.s)
 elseif(OE_TRUSTZONE)
-add_library(oelibasm OBJECT
-    ${MUSLSRC}/fenv/aarch64/fenv.s
-    ${MUSLSRC}/setjmp/aarch64/longjmp.s
-    ${MUSLSRC}/setjmp/aarch64/setjmp.s)
+    add_library(oelibasm OBJECT
+        ${MUSLSRC}/fenv/aarch64/fenv.s
+        ${MUSLSRC}/setjmp/aarch64/longjmp.s
+        ${MUSLSRC}/setjmp/aarch64/setjmp.s)
 endif()
 
 
