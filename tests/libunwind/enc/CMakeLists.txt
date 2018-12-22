@@ -19,7 +19,8 @@ add_library(libunwindtest-support
         ${LIBUNWIND_TEST_DIR}/test-static-link-gen.c
         ${LIBUNWIND_TEST_DIR}/flush-cache.h
         test_support.c
-    )
+        )
+target_link_libraries(libunwindtest-support PRIVATE oeenclave)
 target_compile_options(libunwindtest-support PRIVATE -Wno-error -DUNW_LOCAL_ONLY=1)
 target_include_directories(libunwindtest-support PUBLIC
         ${PROJECT_SOURCE_DIR}/3rdparty/libunwind

@@ -28,6 +28,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
       )
 endif ()
 
+target_link_libraries(libcxxtest-support PRIVATE oelibcxx oeenclave)
 target_link_libraries(libcxxtest-support INTERFACE -Wl,--undefined=Test)
 
 # helper function to create enclave binary
