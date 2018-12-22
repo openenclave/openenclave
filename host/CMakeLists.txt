@@ -17,16 +17,14 @@ if (UNIX)
         crypto/openssl/rsa.c
         linux/hostthread.c
         linux/time.c
-        linux/windows.c
-    )
+        linux/windows.c)
 elseif (WIN32)
     set(PLATFORM_SRC
         ../3rdparty/mbedtls/mbedtls/library/bignum.c
         crypto/bcrypt/hmac.c
         crypto/bcrypt/rsa.c
         windows/hostthread.c
-        windows/time.c
-    )
+        windows/time.c)
 else()
     message(FATAL_ERROR "Unknown OS. Only supported OSes are Linux and Windows")
 endif()
@@ -45,6 +43,7 @@ if (OE_SGX)
         sgx/elf.c
         sgx/enclave.c
         sgx/enclavemanager.c
+        sgx/exception.c
         sgx/load.c
         sgx/loadelf.c
         sgx/loadpe.c
@@ -57,8 +56,7 @@ if (OE_SGX)
         sgx/sgxquote.c
         sgx/sgxsign.c
         sgx/sgxtypes.c
-        sgx/traceh.c
-    )
+        sgx/traceh.c)
 
     # OS specific as well.
     if (UNIX)
@@ -70,8 +68,7 @@ if (OE_SGX)
             sgx/linux/entersim.S
             sgx/linux/exception.c
             sgx/linux/sgxioctl.c
-            sgx/linux/sgxquoteprovider.c
-        )
+            sgx/linux/sgxquoteprovider.c)
     else()
         list(APPEND PLATFORM_SRC
             sgx/windows/aep.asm
@@ -79,8 +76,7 @@ if (OE_SGX)
             sgx/windows/cpuid.c
             sgx/windows/enter.asm
             sgx/windows/entersim.asm
-            sgx/windows/exception.c
-        )
+            sgx/windows/exception.c)
     endif()
 
     set(PLATFORM_FLAGS "-m64")
@@ -98,7 +94,6 @@ add_library(oehost STATIC
     ../common/safecrt.c
     dupenv.c
     error.c
-    exception.c
     files.c
     fopen.c
     hexdump.c
@@ -109,8 +104,7 @@ add_library(oehost STATIC
     strings.c
     tests.c
     crypto/sha.c
-    ${PLATFORM_SRC}
-    )
+    ${PLATFORM_SRC})
 
 # we and dependents need the OE includes to compile
 target_link_libraries(oehost PUBLIC oe_includes)
