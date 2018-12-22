@@ -12,6 +12,11 @@
 #include <thread>
 #include "thread_local_u.h"
 
+void host_usleep(int microseconds)
+{
+    std::this_thread::sleep_for(std::chrono::microseconds(microseconds));
+}
+
 void run_enclave_thread(
     oe_enclave_t* enclave,
     int thread_num,
@@ -70,10 +75,11 @@ int main(int argc, const char* argv[])
     // Run it twice to make sure the enclave thread is correctly reinitialized.
     for (int i = 0; i < 2; ++i)
     {
-        // Clear test data in the enclave.
-        OE_TEST(clear_test_data(enclave) == OE_OK);
-
         const int num_threads = 16;
+
+        // Clear test data in the enclave.
+        OE_TEST(prepare_for_test(enclave, num_threads) == OE_OK);
+
         std::thread threads[num_threads];
         for (int t = 0; t < num_threads; ++t)
         {
