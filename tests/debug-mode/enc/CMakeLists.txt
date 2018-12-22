@@ -1,8 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-include(oeedl_file)
-include(add_enclave_executable)
 
 oeedl_file(../debug_mode.edl enclave gen)
 
@@ -31,10 +29,3 @@ target_include_directories(no_debug_enc_unsigned PRIVATE
 target_include_directories(debug_enc_unsigned PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR})
-
-
-
-target_link_libraries(no_debug_enc oeenclave)
-target_link_libraries(debug_enc oeenclave)
-target_link_libraries(no_debug_enc_unsigned oeenclave)
-target_link_libraries(debug_enc_unsigned oeenclave)

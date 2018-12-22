@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-include(oeedl_file)
 oeedl_file(../thread.edl host gen)
 
 add_executable(thread_host host.cpp rwlocks_test_host.cpp ${gen})
