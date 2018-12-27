@@ -7,6 +7,10 @@
 set(MUSL_CFLAGS "-fPIC -DSYSCALL_NO_INLINE")
 set(MUSL_CC ${CMAKE_C_COMPILER})
 set(MUSL_CXX ${CMAKE_CXX_COMPILER})
+set(PATCHES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/patches)
+set(MUSL_DIR ${CMAKE_CURRENT_BINARY_DIR}/musl)
+set(MUSL_INCLUDES ${OE_INCDIR}/openenclave/libc)
+
 set(MUSL_APPEND_DEPRECATIONS
   "${CMAKE_CURRENT_LIST_DIR}/append-deprecations ${MUSL_INCLUDES}")
 if (USE_CLANGW)
@@ -15,9 +19,6 @@ if (USE_CLANGW)
   set(MUSL_CXX clang++)
   set(MUSL_APPEND_DEPRECATIONS "")
 endif ()
-set(PATCHES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/patches)
-set(MUSL_DIR ${CMAKE_CURRENT_BINARY_DIR}/musl)
-set(MUSL_INCLUDES ${OE_INCDIR}/openenclave/libc)
 
 include (ExternalProject)
 ExternalProject_Add(musl_includes
@@ -67,7 +68,7 @@ ExternalProject_Add(musl_includes
       ${PATCHES_DIR}/endian.h
       ${MUSL_INCLUDES}/endian.h
     # Append deprecations.h to all C header files.
-    COMMAND ${MUSL_APPEND_DEPRECATIONS}
+    COMMAND bash -c "${MUSL_APPEND_DEPRECATIONS}"
     # Copy local deprecations.h to include/bits/deprecated.h.
     COMMAND ${CMAKE_COMMAND} -E copy
       ${CMAKE_CURRENT_LIST_DIR}/deprecations.h
