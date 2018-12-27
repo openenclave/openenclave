@@ -70,8 +70,8 @@ function(maybe_build_using_clangw OE_TARGET)
         "\"${CMAKE_BINARY_DIR}/windows/clangw/clangw.exe\" -target x86_64-pc-linux <DEFINES> <INCLUDES> <FLAGS> -o <OBJECT> -c <SOURCE>"
         PARENT_SCOPE)
 
-    # Loop through assembley files in the list of sources in the
-    # target and mark them as ASM files so that they will be compiled.
+    # Loop through assembly files in the list of sources in the
+    # target and mark them as C files so that they will be compiled.
     # Otherwise .s and .S files will be ignored on Windows.
     get_target_property(SOURCES ${OE_TARGET} SOURCES)
     foreach(SRC IN LISTS SOURCES)
