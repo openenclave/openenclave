@@ -2,6 +2,10 @@
 #include <errno.h>
 #include <unistd.h>
 
+#ifdef _XOPEN_SOURCE
+hehe
+#endif
+
 int pclose(FILE *f)
 {
 	int status, r;

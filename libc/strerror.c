@@ -3,9 +3,9 @@
 
 #define __NEED_size_t
 #define __NEED_locale_t
+#include <bits/alltypes.h>
 #include <errno.h>
 #include <openenclave/enclave.h>
-#include <bits/alltypes.h>
 
 typedef struct _error_info
 {
