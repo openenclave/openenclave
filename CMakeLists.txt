@@ -52,6 +52,22 @@ if (NOT BUILD_NUMBER)
   set(BUILD_NUMBER "0")
 endif ()
 
+if (UNIX)
+  option(BUILD_ENCLAVES "Build Enclaves" ON)
+else()
+  # Building enclaves on windows is off by default
+  option(BUILD_ENCLAVES "Build ELF enclaves" OFF)
+endif()
+
+if (BUILD_ENCLAVES)
+  # Setup enclave building support on Windows.
+  if (WIN32)
+    add_subdirectory(windows/clangw)
+    include(build_using_clangw)
+    set(USE_CLANGW ON)
+  endif()
+endif()
+
 # See `cmake/compiler_settings.cmake` for all compiler settings
 include(compiler_settings)
 
@@ -94,13 +110,17 @@ add_subdirectory(tests)
 add_subdirectory(tools)
 
 if (UNIX)
-  add_subdirectory(3rdparty)
   add_subdirectory(debugger)
   add_subdirectory(docs/refman)
-  add_subdirectory(enclave)
-  add_subdirectory(enclave/core)
-  add_subdirectory(libc)
-  add_subdirectory(libcxx)
   add_subdirectory(pkgconfig)
   add_subdirectory(samples)
 endif ()
+
+# Add enclave directories
+if (BUILD_ENCLAVES)  
+  add_subdirectory(enclave/core)
+  add_subdirectory(3rdparty)
+  add_subdirectory(libc)
+  add_subdirectory(libcxx)
+  add_subdirectory(enclave)
+endif()

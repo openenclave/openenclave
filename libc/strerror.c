@@ -1,8 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#define __NEED_size_t
+#define __NEED_locale_t
 #include <errno.h>
 #include <openenclave/enclave.h>
+#include <bits/alltypes.h>
 
 typedef struct _error_info
 {

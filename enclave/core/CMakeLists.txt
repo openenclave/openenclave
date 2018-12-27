@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-if (UNIX)
+if (UNIX OR USE_CLANGW)
 set(PLATFORM_SRC
     ../../common/rand.S
     linux/reloc.c
@@ -98,3 +98,12 @@ set_source_files_properties(jump.c PROPERTIES COMPILE_FLAGS -O2)
 
 set_property(TARGET oecore PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 install (TARGETS oecore EXPORT openenclave-targets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+
+if (WIN32)
+    # Mark assembler files for compilation using clang.
+    set_source_files_properties(../../common/rand.S  PROPERTIES LANGUAGE C)
+    set_source_files_properties(enter.S PROPERTIES LANGUAGE C)
+    set_source_files_properties(exit.S PROPERTIES LANGUAGE C)
+    set_source_files_properties(getkey.S PROPERTIES LANGUAGE C)
+    build_using_clangw(oecore)
+endif()
