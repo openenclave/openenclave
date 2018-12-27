@@ -31,17 +31,17 @@ def ACCTest(String label, String compiler, String build_type) {
     }
 }
 
-def simulationTest(String platform_mode, String build_type) {
+def simulationTest(String version, String platform_mode, String build_type) {
     def use_libsgx = "OFF"
     if (platform_mode == "SGX1FLC") {
         use_libsgx = "ON"
     }
-    stage("Sim clang-7 ${platform_mode} ${build_type}") {
+    stage("Sim clang-7 Ubuntu${version} ${platform_mode} ${build_type}") {
         node {
             cleanWs()
             checkout scm
 
-            def oetoolsSim = docker.build("oetools-simulation", "-f .jenkins/Dockerfile .")
+            def oetoolsSim = docker.build("oetools-simulation-${version}", "--build-arg ubuntu_version=${version} -f .jenkins/Dockerfile .")
             oetoolsSim.inside {
                 timeout(15) {
                     dir('build') {
@@ -59,13 +59,13 @@ def simulationTest(String platform_mode, String build_type) {
     }
 }
 
-def ACCContainerTest(String label) {
-    stage("${label} Container RelWithDebInfo") {
-        node("${label}") {
+def ACCContainerTest(String label, String version) {
+    stage("$label Container RelWithDebInfo") {
+        node("$label") {
             cleanWs()
             checkout scm
 
-            def oetoolsContainer = docker.build("oetools-containertest", "-f .jenkins/Dockerfile .")
+            def oetoolsContainer = docker.build("oetools-containertest-${version}", "--build-arg ubuntu_version=${version} -f .jenkins/Dockerfile .")
             oetoolsContainer.inside('--device /dev/sgx:/dev/sgx') {
                 timeout(15) {
                     dir('build') {
@@ -83,13 +83,13 @@ def ACCContainerTest(String label) {
     }
 }
 
-def checkDevFlows() {
+def checkDevFlows(String version) {
     stage('Check dev flows') {
         node {
             cleanWs()
             checkout scm
 
-            def oetoolsCheck = docker.build("oetools-check", "-f .jenkins/Dockerfile .")
+            def oetoolsCheck = docker.build("oetools-check-${version}", "--build-arg ubuntu_version=${version} -f .jenkins/Dockerfile .")
             oetoolsCheck.inside {
                 timeout(2) {
                     sh './scripts/check-ci'
@@ -103,7 +103,7 @@ def checkDevFlows() {
             cleanWs()
             checkout scm
 
-            def buildImage = docker.build("oetools-base", '-f .jenkins/Dockerfile.scripts .')
+            def buildImage = docker.build("oetools-base-${version}", "--build-arg ubuntu_version=${version} -f .jenkins/Dockerfile.scripts .")
 
             buildImage.inside {
                 timeout(15) {
@@ -124,12 +124,12 @@ def checkDevFlows() {
     }
 }
 
-def win2016LinuxElfBuild(String build_type) {
-    stage("Linux SGX1 ${build_type}") {
+def win2016LinuxElfBuild(String version, String build_type) {
+    stage("Ubuntu ${version} SGX1 ${build_type}}") {
         node {
             cleanWs()
             checkout scm
-            def oetoolsWincp = docker.build("oetools-wincp", "-f .jenkins/Dockerfile .")
+            def oetoolsWincp = docker.build("oetools-wincp-${version}", "--build-arg ubuntu_version=${version} -f .jenkins/Dockerfile .")
             oetoolsWincp.inside {
                 timeout(15) {
                     dir('build') {
@@ -140,7 +140,7 @@ def win2016LinuxElfBuild(String build_type) {
                             """
                         }
                     }
-                    stash includes: 'build/tests/**', name: "linux${build_type}"
+                    stash includes: 'build/tests/**', name: "linux${build_type}${version}"
                 }
             }
         }
@@ -149,7 +149,7 @@ def win2016LinuxElfBuild(String build_type) {
         node('SGXFLC-Windows') {
             cleanWs()
             checkout scm
-            unstash "linux${build_type}"
+            unstash "linux${build_type}${version}"
             PowerShellWrapper('mv build linuxbin')
             PowerShellWrapper("./scripts/test-build-config.ps1 -add_windows_enclave_tests -build_type ${build_type} -linux_bin_dir ${WORKSPACE}/linuxbin/tests")
        }
@@ -166,23 +166,38 @@ def win2016CrossCompile(String build_type) {
     }
 }
 
-parallel "Check Developer Experience" :          { checkDevFlows() },
-         "Sim clang-7 SGX1 Debug" :              { simulationTest('SGX1', 'Debug')},
-         "Sim clang-7 SGX1 Release" :            { simulationTest('SGX1', 'Release')},
-         "Sim clang-7 SGX1 RelWithDebInfo" :     { simulationTest('SGX1', 'RelWithDebInfo')},
-         "Sim clang-7 SGX1-FLC Debug" :          { simulationTest('SGX1FLC', 'Debug')},
-         "Sim clang-7 SGX1-FLC Release" :        { simulationTest('SGX1FLC', 'Release')},
-         "Sim clang-7 SGX1-FLC RelWithDebInfo" : { simulationTest('SGX1FLC', 'RelWithDebInfo')},
-         "ACC1604 clang-7 Debug" :               { ACCTest('ACC-1604', 'clang-7', 'Debug') },
-         "ACC1604 clang-7 Release" :             { ACCTest('ACC-1604', 'clang-7', 'Release') },
-         "ACC1604 clang-7 RelWithDebInfo" :      { ACCTest('ACC-1604', 'clang-7', 'RelWithDebinfo') },
-         "ACC1604 gcc Debug" :                   { ACCTest('ACC-1604', 'gcc', 'Debug') },
-         "ACC1604 gcc Release" :                 { ACCTest('ACC-1604', 'gcc', 'Release') },
-         "ACC1604 gcc RelWithDebInfo" :          { ACCTest('ACC-1604', 'gcc', 'RelWithDebInfo') },
-         "ACC1804 clang-7 Debug" :               { ACCTest('ACC-1804', 'clang-7', 'Debug') },
-         "ACC1804 clang-7 RelWithDebInfo" :      { ACCTest('ACC-1804', 'clang-7', 'RelWithDebinfo') },
-         "Win2016 Debug Cross Compile" :         { win2016CrossCompile("Debug") },
-         "Win2016 Release Cross Compile" :       { win2016CrossCompile("Release") },
-         "Win2016 Debug Linux-Elf-build" :       { win2016LinuxElfBuild("Debug") },
-         "Win2016 Release Linux-Elf-build" :     { win2016LinuxElfBuild("Release") },
-         "ACC1604 Container RelWithDebInfo" :    { ACCContainerTest('ACC-1604') }
+
+parallel "Check Developer Experience Ubuntu 16.04" :    { checkDevFlows('16.04') },
+         "Check Developer Experience Ubuntu 18.04" :    { checkDevFlows('18.04') },
+         "ACC1604 clang-7 Debug" :                      { ACCTest('ACC-1604', 'clang-7', 'Debug') },
+         "ACC1604 clang-7 Release" :                    { ACCTest('ACC-1604', 'clang-7', 'Release') },
+         "ACC1604 clang-7 RelWithDebInfo" :             { ACCTest('ACC-1604', 'clang-7', 'RelWithDebinfo') },
+         "ACC1604 gcc Debug" :                          { ACCTest('ACC-1604', 'gcc', 'Debug') },
+         "ACC1604 gcc Release" :                        { ACCTest('ACC-1604', 'gcc', 'Release') },
+         "ACC1604 gcc RelWithDebInfo" :                 { ACCTest('ACC-1604', 'gcc', 'RelWithDebInfo') },
+         "ACC1604 Container RelWithDebInfo" :           { ACCContainerTest('ACC-1604', '16.04') },
+         "ACC1804 clang-7 Debug" :                      { ACCTest('ACC-1804', 'clang-7', 'Debug') },
+         "ACC1804 clang-7 Release" :                    { ACCTest('ACC-1804', 'clang-7', 'Release') },
+         "ACC1804 clang-7 RelWithDebInfo" :             { ACCTest('ACC-1804', 'clang-7', 'RelWithDebinfo') },
+         "ACC1804 gcc Debug" :                          { ACCTest('ACC-1804', 'gcc', 'Debug') },
+         "ACC1804 gcc Release" :                        { ACCTest('ACC-1804', 'gcc', 'Release') },
+         "ACC1804 gcc RelWithDebInfo" :                 { ACCTest('ACC-1804', 'gcc', 'RelWithDebInfo') },
+         "ACC1804 Container RelWithDebInfo" :           { ACCContainerTest('ACC-1804', '18.04') },
+         "Sim 1604 clang-7 SGX1 Debug" :                { simulationTest('16.04', 'SGX1', 'Debug')},
+         "Sim 1604 clang-7 SGX1 Release" :              { simulationTest('16.04', 'SGX1', 'Release')},
+         "Sim 1604 clang-7 SGX1 RelWithDebInfo" :       { simulationTest('16.04', 'SGX1', 'RelWithDebInfo')},
+         "Sim 1604 clang-7 SGX1-FLC Debug" :            { simulationTest('16.04', 'SGX1FLC', 'Debug')},
+         "Sim 1604 clang-7 SGX1-FLC Release" :          { simulationTest('16.04', 'SGX1FLC', 'Release')},
+         "Sim 1604 clang-7 SGX1-FLC RelWithDebInfo" :   { simulationTest('16.04', 'SGX1FLC', 'RelWithDebInfo')},
+         "Sim 1804 clang-7 SGX1 Debug" :                { simulationTest('18.04', 'SGX1', 'Debug')},
+         "Sim 1804 clang-7 SGX1 Release" :              { simulationTest('18.04', 'SGX1', 'Release')},
+         "Sim 1804 clang-7 SGX1 RelWithDebInfo" :       { simulationTest('18.04', 'SGX1', 'RelWithDebInfo')},
+         "Sim 1804 clang-7 SGX1-FLC Debug" :            { simulationTest('18.04', 'SGX1FLC', 'Debug')},
+         "Sim 1804 clang-7 SGX1-FLC Release" :          { simulationTest('18.04', 'SGX1FLC', 'Release')},
+         "Sim 1804 clang-7 SGX1-FLC RelWithDebInfo" :   { simulationTest('18.04', 'SGX1FLC', 'RelWithDebInfo')},
+         "Win2016 Ubuntu1604 Debug Linux-Elf-build" :   { win2016LinuxElfBuild('16.04', 'Debug') },
+         "Win2016 Ubuntu1604 Release Linux-Elf-build" : { win2016LinuxElfBuild('16.04', 'Release') },
+         "Win2016 Ubuntu1804 Debug Linux-Elf-build" :   { win2016LinuxElfBuild('18.04', 'Debug') },
+         "Win2016 Ubuntu1804 Release Linux-Elf-build" : { win2016LinuxElfBuild('18.04', 'Release') },
+         "Win2016 Debug Cross Compile" :                { win2016CrossCompile('Debug') },
+         "Win2016 Release Cross Compile" :              { win2016CrossCompile('Release') }
