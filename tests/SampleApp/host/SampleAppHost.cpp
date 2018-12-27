@@ -5,18 +5,13 @@
 #include <openenclave/internal/tests.h>
 #include <iostream>
 #include <vector>
-
-int EnclaveSecureStrPatching(
-    oe_enclave_t* Enclave,
-    const char* src,
-    char* dst,
-    int dst_length);
+#include "SampleApp_u.h"
 
 const char* Message = "Hello world from Host\n\0";
 
-int UnsecureStrPatching(const char* src, char* dst, int dst_length)
+int unsecure_str_patching(const char* src, char* dst, size_t dst_length)
 {
-    int running_length = dst_length;
+    size_t running_length = dst_length;
     while (running_length > 0 && *src != '\0')
     {
         *dst = *src;
@@ -56,8 +51,8 @@ int main(int argc, const char* argv[])
 
     const uint32_t flags = oe_get_create_flags();
 
-    result = oe_create_enclave(
-        argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, NULL, 0, &enclave);
+    result = oe_create_SampleApp_enclave(
+        argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
     if (result != OE_OK)
     {
         fprintf(stderr, "Could not create enclave, result=%d\n", result);
@@ -65,7 +60,9 @@ int main(int argc, const char* argv[])
     }
     char dst[1024];
     const char* src = "My First App\n";
-    int res = EnclaveSecureStrPatching(enclave, src, dst, OE_COUNTOF(dst));
+    int res = -1;
+    OE_TEST(
+        secure_str_patching(enclave, &res, src, dst, OE_COUNTOF(dst)) == OE_OK);
 
     if (res != 0)
     {
