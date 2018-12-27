@@ -18,6 +18,11 @@ add_library(libcxxrt OBJECT
 set_target_properties(libcxxrt PROPERTIES
   POSITION_INDEPENDENT_CODE ON)
 
+# Configure clangw before turning off warnings.
+if (USE_CLANGW)
+  build_using_clangw(libcxxrt)
+endif()
+
 target_compile_options(libcxxrt PRIVATE -Wno-error)
 
 target_compile_definitions(libcxxrt PRIVATE -D_GNU_SOURCE)

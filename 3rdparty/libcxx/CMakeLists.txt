@@ -51,6 +51,11 @@ add_dependencies(libcxx libcxx_includes)
 set_target_properties(libcxx PROPERTIES
   POSITION_INDEPENDENT_CODE ON)
 
+# Configure clangw before turning off warnings.
+if (USE_CLANGW)
+  build_using_clangw(libcxx)
+endif()
+
 target_compile_options(libcxx PRIVATE -Wno-error)
 
 target_compile_definitions(libcxx
@@ -74,4 +79,3 @@ install(TARGETS libcxx EXPORT openenclave-targets)
 
 install(DIRECTORY ${LIBCXX_INCLUDES}
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty)
-
