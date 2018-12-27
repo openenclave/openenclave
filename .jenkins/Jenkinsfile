@@ -159,6 +159,25 @@ def win2016ReleaseCrossPlatform() {
     }
 }
 
+def win2016Debug() {
+    stage('Windows Debug') {
+        node('SGXFLC-Windows') {
+            cleanWs()
+            checkout scm
+            PowerShellWrapper('./scripts/test-build-config.ps1 -add_windows_enclave_tests -linux_bin_dir $ENV:WORKSPACE/linuxbin/tests -build_type Debug -build_enclaves')
+       }
+    }
+}
+
+def win2016Release() {
+    stage('Windows Release') {
+        node('SGXFLC-Windows') {
+            cleanWs()
+            checkout scm
+            PowerShellWrapper('./scripts/test-build-config.ps1 -add_windows_enclave_tests -linux_bin_dir $ENV:WORKSPACE/linuxbin/tests -build_type Release -build_enclaves')
+        }
+    }
+}
 parallel "Check Pre-Commit Requirements" :      { checkPreCommitRequirements() },
         "Sim clang-7 SGX1 Debug" :              { simulationTest('clang-7', 'SGX1', 'Debug')},
         "Sim clang-7 SGX1 Release" :            { simulationTest('clang-7', 'SGX1', 'Release')},
@@ -176,4 +195,6 @@ parallel "Check Pre-Commit Requirements" :      { checkPreCommitRequirements() }
         "ACC1804 clang-7 RelWithDebInfo" :      { ACCTest('ACC-1804', 'clang-7', 'SGX1FLC', 'RelWithDebinfo') },
         "Win2016 Debug Cross-platform" :        { win2016DebugCrossPlatform() },
         "Win2016 Release Cross-platform" :      { win2016ReleaseCrossPlatform() },
+        "Win2016 Debug" :                       { win2016Debug() },
+        "Win2016 Release" :                     { win2016Release() },
         "ACC1604 Container RelWithDebInfo" :    { ACCContainerTest('ACC-1604') }
