@@ -1,9 +1,36 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
+#
+# Helper function to create ELF enclaves and libraries on Windows by 
+# cross-compiling using a clang-wrapper. Noop on non Win32.
+#
+# Usage:
+#
+#  maybe_build_using_clangw(<target>)
+#
+# Given <target>, this function overrides the necessary cmake variables
+# inorder to compile the given target using a clang-wrapper to produce
+# ELF libraries and enclaves.
+# In Windows, we use the "NMake Makefiles" or "Visual Studio 15 2017 Win64"
+# generators which results in all the targets to be configured for MSVC.
+# Calling maybe_build_using_clangw overides specific variables of the 
+# target so that it is cross-compiled using clang to produce ELF libraries
+# and enclaves. This approach is needed because there is no easy way
+# to tell cmake to use one toolchain (msvc) for the host and another
+# toolchain (clang cross-compiler) for enclaves. (It is possible in theory
+# using external-projects. However that would require a significant 
+# rewrite of the build system CMakeLists.)
+#
+function(maybe_build_using_clangw OE_TARGET)    
+    if (NOT WIN32)
+        # Noop on Linux.
+        return()
+    endif()
 
-# Build a given target using clang wrapper.
-# This function overrides variable in the caller scope.
-function(build_using_clangw OE_TARGET)
+    if (NOT USE_CLANGW)
+        return()
+    endif()
+
     # Add dependency to the clang wrapper
     add_dependencies(${OE_TARGET} clangw)
 
@@ -52,4 +79,4 @@ function(build_using_clangw OE_TARGET)
     # TODO: Change output extension to .o for enclaves.
     # The following does not work.
     # set(CMAKE_C_OUTPUT_EXTENSION ".o")
-endfunction(build_using_clangw)
+endfunction(maybe_build_using_clangw)

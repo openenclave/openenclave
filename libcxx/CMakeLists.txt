@@ -19,6 +19,4 @@ set_property(TARGET oelibcxx
 install(TARGETS oelibcxx EXPORT openenclave-targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
 
-if (USE_CLANGW)
-  build_using_clangw(oelibcxx)
-endif()
+maybe_build_using_clangw(oelibcxx)

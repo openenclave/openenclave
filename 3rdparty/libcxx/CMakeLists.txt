@@ -51,10 +51,7 @@ add_dependencies(libcxx libcxx_includes)
 set_target_properties(libcxx PROPERTIES
   POSITION_INDEPENDENT_CODE ON)
 
-# Configure clangw before turning off warnings.
-if (USE_CLANGW)
-  build_using_clangw(libcxx)
-endif()
+maybe_build_using_clangw(libcxx)
 
 target_compile_options(libcxx PRIVATE -Wno-error)
 

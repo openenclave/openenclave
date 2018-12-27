@@ -45,6 +45,6 @@ install(TARGETS oeenclave EXPORT openenclave-targets
 if (USE_CLANGW)
   # Mark assembler files for compilation using clang.
   set_source_files_properties(start.S  PROPERTIES LANGUAGE C)
-  build_using_clangw(oeenclave)
+  maybe_build_using_clangw(oeenclave)
 endif()
 

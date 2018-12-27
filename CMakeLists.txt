@@ -63,7 +63,7 @@ if (BUILD_ENCLAVES)
   # Setup enclave building support on Windows.
   if (WIN32)
     add_subdirectory(windows/clangw)
-    include(build_using_clangw)
+    include(maybe_build_using_clangw)
     set(USE_CLANGW ON)
   endif()
 endif()

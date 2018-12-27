@@ -667,6 +667,9 @@ add_library(oelibc STATIC
     ${MUSLSRC}/unistd/dup3.c
     ${PLATFORM_SRC})
 
+
+
+
 # build_using_clangw adds -Werror
 # There for it must come before specific warnings are disabled.
 if (USE_CLANGW)
@@ -688,8 +691,8 @@ if (USE_CLANGW)
     set_source_files_properties(${MUSLSRC}/setjmp/x86_64/setjmp.s PROPERTIES LANGUAGE C)
     set_source_files_properties(../common/rand.S PROPERTIES LANGUAGE C)
 
-    build_using_clangw(oelibasm)
-    build_using_clangw(oelibc)
+    maybe_build_using_clangw(oelibasm)
+    maybe_build_using_clangw(oelibc)
 endif ()
 
 # NOTE: This is the minimum required for musl sources.
