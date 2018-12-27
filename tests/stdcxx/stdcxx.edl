@@ -1,0 +1,11 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+        public int enc_test(
+            [out] bool* caught,
+            [out] bool* dynamic_cast_works,
+            [out] size_t* n_constructions);
+    };
+};

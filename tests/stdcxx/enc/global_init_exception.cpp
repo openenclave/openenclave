@@ -5,23 +5,25 @@
 #include <openenclave/enclave.h>
 #include <stdio.h>
 #include <stdexcept>
+#include "stdcxx_t.h"
 
-/* This test is to check that oe_create_enclave does not return success
+/* This test is to check that oe_create_stdcxx_enclave does not return success
    when enclave initialisation fails */
 
-class Foo
+class foo
 {
   public:
-    Foo()
+    foo()
     {
         throw std::runtime_error("Aborting..");
     }
 };
 
-Foo f;
+foo f;
 
-OE_ECALL void foo()
+int enc_test(bool*, bool*, size_t*)
 {
+    return -1;
 }
 
 OE_SET_ENCLAVE_SGX(
@@ -31,5 +33,3 @@ OE_SET_ENCLAVE_SGX(
     1024, /* HeapPageCount */
     1024, /* StackPageCount */
     2);   /* TCSCount */
-
-OE_DEFINE_EMPTY_ECALL_TABLE();
