@@ -17,7 +17,7 @@ if (USE_CLANGW)
   set(MUSL_CFLAGS "-target x86_64-pc-linux ${MUSL_CFLAGS}")
   set(MUSL_CC clang)
   set(MUSL_CXX clang++)
-  set(MUSL_APPEND_DEPRECATIONS "")
+  set(MUSL_APPEND_DEPRECATIONS "echo 'Deprecations not applied on Windows'")
 endif ()
 
 include (ExternalProject)
