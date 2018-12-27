@@ -25,11 +25,11 @@ add_library(oelibasm OBJECT
 # assembling, and clang-7 errors because we treat warnings as errors.
 # So we move the assembly code into a fake library, turn off the
 # error, and then inject the objects into the actual library.
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR USE_CLANGW)
     target_compile_options(oelibasm PRIVATE -Wno-error=unused-command-line-argument)
 endif ()
 
-if (UNIX)
+if (UNIX OR USE_CLANGW)
 set(PLATFORM_SRC
     ../common/rand.S
 )
@@ -667,6 +667,31 @@ add_library(oelibc STATIC
     ${MUSLSRC}/unistd/dup3.c
     ${PLATFORM_SRC})
 
+# build_using_clangw adds -Werror
+# There for it must come before specific warnings are disabled.
+if (USE_CLANGW)
+    # Treat .S files as C files to compile them
+    # TODO: Remove this hack.
+    set_source_files_properties(abort.S PROPERTIES LANGUAGE C)
+    set_source_files_properties(exp2l.S PROPERTIES LANGUAGE C)
+    set_source_files_properties(${MUSLSRC}/math/x86_64/acosl.s PROPERTIES LANGUAGE C)
+    set_source_files_properties(${MUSLSRC}/math/x86_64/asinl.s PROPERTIES LANGUAGE C)
+    set_source_files_properties(${MUSLSRC}/math/x86_64/log1pl.s PROPERTIES LANGUAGE C)
+    set_source_files_properties(${MUSLSRC}/math/x86_64/log2l.s PROPERTIES LANGUAGE C)
+    set_source_files_properties(${MUSLSRC}/math/x86_64/logl.s PROPERTIES LANGUAGE C)
+    set_source_files_properties(${MUSLSRC}/math/x86_64/exp2l.s PROPERTIES LANGUAGE C)
+    set_source_files_properties(${MUSLSRC}/math/x86_64/sqrt.s PROPERTIES LANGUAGE C)
+    set_source_files_properties(${MUSLSRC}/math/x86_64/sqrtl.s PROPERTIES LANGUAGE C)
+    set_source_files_properties(${MUSLSRC}/math/x86_64/sqrtf.s PROPERTIES LANGUAGE C)
+    set_source_files_properties(${MUSLSRC}/fenv/x86_64/fenv.s PROPERTIES LANGUAGE C)
+    set_source_files_properties(${MUSLSRC}/setjmp/x86_64/longjmp.s PROPERTIES LANGUAGE C)
+    set_source_files_properties(${MUSLSRC}/setjmp/x86_64/setjmp.s PROPERTIES LANGUAGE C)
+    set_source_files_properties(../common/rand.S PROPERTIES LANGUAGE C)
+
+    build_using_clangw(oelibasm)
+    build_using_clangw(oelibc)
+endif ()
+
 # NOTE: This is the minimum required for musl sources.
 set_property(TARGET oelibc PROPERTY C_STANDARD 99)
 
@@ -683,7 +708,7 @@ if (CMAKE_C_COMPILER_ID MATCHES GNU)
 endif ()
 
 # Ignore warnings from musl sources. First, shared warnings:
-if (CMAKE_C_COMPILER_ID MATCHES GNU OR CMAKE_C_COMPILER_ID MATCHES Clang)
+if (CMAKE_C_COMPILER_ID MATCHES GNU OR CMAKE_C_COMPILER_ID MATCHES Clang OR USE_CLANGW)
   target_compile_options(oelibc PRIVATE
     -Wno-missing-braces
     -Wno-parentheses
@@ -702,7 +727,7 @@ if (CMAKE_C_COMPILER_ID MATCHES GNU)
     -Wno-unused-function
     -Wno-unused-value
     -Wno-unused-variable)
-elseif (CMAKE_C_COMPILER_ID MATCHES Clang)
+elseif (CMAKE_C_COMPILER_ID MATCHES Clang OR USE_CLANGW)
   target_compile_options(oelibc PRIVATE
     -Wno-dangling-else
     -Wno-ignored-attributes
@@ -725,9 +750,9 @@ target_link_libraries(oelibc
   PRIVATE oelibasm)
 
 target_include_directories(oelibc PRIVATE
-  internal
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal
-  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/x86_64)
+  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/x86_64  
+  )
 
 set_property(TARGET oelibc PROPERTY
   ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
