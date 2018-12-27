@@ -21,6 +21,8 @@ Param
     # Valid BUILDTYPE values are Debug|Release
     [ValidateSet("Debug", "Release", IgnoreCase = $false)]
     [String]$BUILD_TYPE = "DEBUG",
+    [ValidateSet("1", "")]
+    [String]$BUILD_ENCLAVES = "",
     [Parameter(Mandatory = $true)][String]$LINUX_BIN_DIR
 )
 
@@ -40,7 +42,7 @@ if ($h -or $help) {
 
 $ErrorActionPreference = "Stop"
 
-$VS_PATH = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\2017\BuildTools\Common7\Tools\LaunchDevCmd.bat"
+$VS_PATH = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
 
 echo "linux_bin_dir: $LINUX_BIN_DIR"
 
@@ -55,10 +57,19 @@ if (Test-Path "./build" -PathType Container) {
 mkdir build
 cd build
 
+$BUILD_GENERATOR="Visual Studio 15 2017 Win64"
+if ($BUILD_ENCLAVES -eq "1") {
+    $BUILD_GENERATOR="NMake Makefiles"
+
+    # Currently disable Windows Enclave Tests for BUILD_ENCLAVE builds.
+    # This will be enabled in a later PR.
+    Remove-Variable ADD_WINDOWS_ENCLAVE_TESTS
+}
+
 if ($ADD_WINDOWS_ENCLAVE_TESTS) {
-    & cmake.exe -G "Visual Studio 15 2017 Win64" -DLINUX_BIN_DIR="$LINUX_BIN_DIR" -DADD_WINDOWS_ENCLAVE_TESTS=1 ..
+    & cmake.exe -G $BUILD_GENERATOR -DLINUX_BIN_DIR="$LINUX_BIN_DIR" -DADD_WINDOWS_ENCLAVE_TESTS=1 -DBUILD_ENCLAVES=$BUILD_ENCLAVES ..
 } else {
-    & cmake.exe -G "Visual Studio 15 2017 Win64" -DLINUX_BIN_DIR="$LINUX_BIN_DIR" ..
+    & cmake.exe -G $BUILD_GENERATOR -DLINUX_BIN_DIR="$LINUX_BIN_DIR" -DBUILD_ENCLAVES=$BUILD_ENCLAVES ..
 }
 if ($LASTEXITCODE) {
     echo ""
