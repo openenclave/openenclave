@@ -10,7 +10,7 @@
 #include <openenclave/internal/str.h>
 #include <stdarg.h>
 #include <sys/stat.h>
-#include "../host/enclave.h"
+#include "../host/sgx/enclave.h"
 
 static const char* arg0;
 int oedump(const char*);

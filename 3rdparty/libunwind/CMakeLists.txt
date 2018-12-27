@@ -1,13 +1,29 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+if (OE_SGX)
+  set(ARCH "x86_64")
+  set(PLATFORM_SRC
+    libunwind/src/x86_64/Los-linux.c
+    Gstep.c  # libunwind/src/x86_64/Lstep.c
+    Gtrace.c # libunwind/src/x86_64/Ltrace.c
+    setcontext.S # libunwind/src/x86_64/setcontext.c
+  )
+else()
+  set(ARCH "aarch64")
+  set(PLATFORM_SRC
+    libunwind/src/aarch64/Lstep.c
+    libunwind/src/aarch64/Ltrace.c
+  )
+endif()
+
 configure_file(
-  libunwind/include/libunwind-x86_64.h
+  libunwind/include/libunwind-${ARCH}.h
   libunwind.h
   COPYONLY)
 
 configure_file(
-  libunwind/src/x86_64/Gstep.c
+  libunwind/src/${ARCH}/Gstep.c
   Gstep.inc
   COPYONLY)
 
@@ -17,12 +33,12 @@ add_custom_command(
   # thread local storage (__thread). Once the PR for Thread Local
   # Storage goes in (#1157), we can remove this.
   COMMAND grep -v "^static __thread"
-    ${CMAKE_CURRENT_SOURCE_DIR}/libunwind/src/x86_64/Gtrace.c >
+    ${CMAKE_CURRENT_SOURCE_DIR}/libunwind/src/${ARCH}/Gtrace.c >
     ${CMAKE_CURRENT_BINARY_DIR}/Gtrace.inc
   COMMAND ${CMAKE_COMMAND} -E copy
     ${CMAKE_CURRENT_SOURCE_DIR}/Gtrace.c
     ${CMAKE_CURRENT_BINARY_DIR}/Gtrace.c
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/libunwind/src/x86_64/Gtrace.c)
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/libunwind/src/${ARCH}/Gtrace.c)
 
 file(GENERATE OUTPUT config.h CONTENT "/* Empty file */\n")
 
@@ -33,7 +49,7 @@ configure_file(
   ${CMAKE_CURRENT_BINARY_DIR}/libunwind-common.inc
   COPYONLY)
 
-file(COPY libunwind/include/tdep-x86_64/ DESTINATION tdep)
+file(COPY libunwind/include/tdep-${ARCH}/ DESTINATION tdep)
 
 add_library(libunwind OBJECT
   # Total 67 items
@@ -85,25 +101,22 @@ add_library(libunwind OBJECT
   libunwind/src/unwind/Resume_or_Rethrow.c
   libunwind/src/unwind/SetGR.c
   libunwind/src/unwind/SetIP.c
-  libunwind/src/x86_64/getcontext.S
-  libunwind/src/x86_64/is_fpreg.c
-  libunwind/src/x86_64/Los-linux.c
-  libunwind/src/x86_64/Lcreate_addr_space.c
-  libunwind/src/x86_64/Lget_save_loc.c
-  libunwind/src/x86_64/Lglobal.c
-  libunwind/src/x86_64/Linit.c
-  libunwind/src/x86_64/Linit_local.c
-  libunwind/src/x86_64/Linit_remote.c
-  libunwind/src/x86_64/Lget_proc_info.c
-  libunwind/src/x86_64/Lregs.c
-  libunwind/src/x86_64/Lresume.c
-  libunwind/src/x86_64/Lstash_frame.c
-  Gstep.c  # libunwind/src/x86_64/Lstep.c
-  Gtrace.c # libunwind/src/x86_64/Ltrace.c
-  libunwind/src/x86_64/regname.c
-  setcontext.S # libunwind/src/x86_64/setcontext.c
+  libunwind/src/${ARCH}/getcontext.S
+  libunwind/src/${ARCH}/is_fpreg.c
+  libunwind/src/${ARCH}/Lcreate_addr_space.c
+  libunwind/src/${ARCH}/Lget_save_loc.c
+  libunwind/src/${ARCH}/Lglobal.c
+  libunwind/src/${ARCH}/Linit.c
+  libunwind/src/${ARCH}/Linit_local.c
+  libunwind/src/${ARCH}/Linit_remote.c
+  libunwind/src/${ARCH}/Lget_proc_info.c
+  libunwind/src/${ARCH}/Lregs.c
+  libunwind/src/${ARCH}/Lresume.c
+  libunwind/src/${ARCH}/Lstash_frame.c
+  libunwind/src/${ARCH}/regname.c
   libunwind/src/os-linux.c
   libunwind/src/elf64.c
+  ${PLATFORM_SRC}
 
   # Add dependency to libunwind.h generation.
   ${CMAKE_CURRENT_BINARY_DIR}/libunwind.h)
@@ -135,7 +148,7 @@ target_include_directories(libunwind PRIVATE
   ${PROJECT_SOURCE_DIR}/include
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/libunwind/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/libunwind/src/x86_64
+  ${CMAKE_CURRENT_SOURCE_DIR}/libunwind/src/${ARCH}
   ${CMAKE_CURRENT_SOURCE_DIR}/libunwind/src
   ${CMAKE_CURRENT_BINARY_DIR}/tdep
   ${CMAKE_CURRENT_BINARY_DIR})
