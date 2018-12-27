@@ -15,10 +15,10 @@ add_library(libcxxrt OBJECT
   libcxxrt/src/auxhelper.cc
   libcxxrt/src/libelftc_dem_gnu3.c)
 
+maybe_build_using_clangw(libcxxrt)
+
 set_target_properties(libcxxrt PROPERTIES
   POSITION_INDEPENDENT_CODE ON)
-
-maybe_build_using_clangw(libcxxrt)
 
 target_compile_options(libcxxrt PRIVATE -Wno-error)
 

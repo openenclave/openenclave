@@ -50,6 +50,8 @@ add_library(oecore STATIC
     ${PLATFORM_SRC}
     )
 
+maybe_build_using_clangw(oecore)
+
 target_link_libraries(oecore PUBLIC oe_includes)
 
 # This directory contains dummy C headers needed by dlmalloc:
@@ -98,12 +100,3 @@ set_source_files_properties(jump.c PROPERTIES COMPILE_FLAGS -O2)
 
 set_property(TARGET oecore PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 install (TARGETS oecore EXPORT openenclave-targets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
-
-if (WIN32)
-    # Mark assembler files for compilation using clang.
-    set_source_files_properties(../../common/rand.S  PROPERTIES LANGUAGE C)
-    set_source_files_properties(enter.S PROPERTIES LANGUAGE C)
-    set_source_files_properties(exit.S PROPERTIES LANGUAGE C)
-    set_source_files_properties(getkey.S PROPERTIES LANGUAGE C)
-    maybe_build_using_clangw(oecore)
-endif()

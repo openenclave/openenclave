@@ -46,12 +46,12 @@ add_library(libcxx OBJECT
   libcxx/src/variant.cpp
   libcxx/src/vector.cpp)
 
+maybe_build_using_clangw(libcxx)
+
 add_dependencies(libcxx libcxx_includes)
 
 set_target_properties(libcxx PROPERTIES
   POSITION_INDEPENDENT_CODE ON)
-
-maybe_build_using_clangw(libcxx)
 
 target_compile_options(libcxx PRIVATE -Wno-error)
 

@@ -29,6 +29,8 @@ add_library(oeenclave STATIC
     sha.c
     start.S)
 
+maybe_build_using_clangw(oeenclave)
+
 if(CMAKE_C_COMPILER_ID MATCHES GNU)
 target_compile_options(oeenclave PRIVATE -Wjump-misses-init)
 endif()
@@ -41,10 +43,3 @@ set_property(TARGET oeenclave PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/ope
 
 install(TARGETS oeenclave EXPORT openenclave-targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
-
-if (USE_CLANGW)
-  # Mark assembler files for compilation using clang.
-  set_source_files_properties(start.S  PROPERTIES LANGUAGE C)
-  maybe_build_using_clangw(oeenclave)
-endif()
-

@@ -53,19 +53,18 @@ if (NOT BUILD_NUMBER)
 endif ()
 
 if (UNIX)
-  option(BUILD_ENCLAVES "Build Enclaves" ON)
+  # Enclaves are always built on Unix platforms.
+  Set(BUILD_ENCLAVES ON)
 else()
   # Building enclaves on windows is off by default
   option(BUILD_ENCLAVES "Build ELF enclaves" OFF)
 endif()
 
-if (BUILD_ENCLAVES)
-  # Setup enclave building support on Windows.
-  if (WIN32)
-    add_subdirectory(windows/clangw)
-    include(maybe_build_using_clangw)
-    set(USE_CLANGW ON)
-  endif()
+if (BUILD_ENCLAVES AND WIN32)
+  # Setup cross compiler (clangw)
+  add_subdirectory(windows/clangw)
+  include(maybe_build_using_clangw)
+  set(USE_CLANGW ON)
 endif()
 
 # See `cmake/compiler_settings.cmake` for all compiler settings

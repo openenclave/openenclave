@@ -70,13 +70,13 @@ function(maybe_build_using_clangw OE_TARGET)
         "\"${CMAKE_BINARY_DIR}/windows/clangw/clangw.exe\" -target x86_64-pc-linux <DEFINES> <INCLUDES> <FLAGS> -o <OBJECT> -c <SOURCE>"
         PARENT_SCOPE)
 
-    # Change ASM file extension.
-    # TODO: Do this very early so that this can be used instead of the
-    # hack where we set the language of these files to C every time.
-    #
-    # set(CMAKE_ASM_SOURCE_FILE_EXTENSIONS ".s,.S")
-    #
-    # TODO: Change output extension to .o for enclaves.
-    # The following does not work.
-    # set(CMAKE_C_OUTPUT_EXTENSION ".o")
+    # Loop through assembley files in the list of sources in the
+    # target and mark them as ASM files so that they will be compiled.
+    # Otherwise .s and .S files will be ignored on Windows.
+    get_target_property(SOURCES ${OE_TARGET} SOURCES)
+    foreach(SRC IN LISTS SOURCES)
+        if (${SRC} MATCHES ".S$" OR ${SRC} MATCHES ".s$")
+            set_source_files_properties(${SRC} PROPERTIES LANGUAGE C)
+        endif()
+    endforeach()
 endfunction(maybe_build_using_clangw)

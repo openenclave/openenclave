@@ -21,6 +21,8 @@ add_library(oelibasm OBJECT
     ${MUSLSRC}/setjmp/x86_64/longjmp.s
     ${MUSLSRC}/setjmp/x86_64/setjmp.s)
 
+maybe_build_using_clangw(oelibasm)
+
 # CMake unconditionally adds `-DNDEBUG` etc. as flags even when
 # assembling, and clang-7 errors because we treat warnings as errors.
 # So we move the assembly code into a fake library, turn off the
@@ -667,33 +669,7 @@ add_library(oelibc STATIC
     ${MUSLSRC}/unistd/dup3.c
     ${PLATFORM_SRC})
 
-
-
-
-# build_using_clangw adds -Werror
-# There for it must come before specific warnings are disabled.
-if (USE_CLANGW)
-    # Treat .S files as C files to compile them
-    # TODO: Remove this hack.
-    set_source_files_properties(abort.S PROPERTIES LANGUAGE C)
-    set_source_files_properties(exp2l.S PROPERTIES LANGUAGE C)
-    set_source_files_properties(${MUSLSRC}/math/x86_64/acosl.s PROPERTIES LANGUAGE C)
-    set_source_files_properties(${MUSLSRC}/math/x86_64/asinl.s PROPERTIES LANGUAGE C)
-    set_source_files_properties(${MUSLSRC}/math/x86_64/log1pl.s PROPERTIES LANGUAGE C)
-    set_source_files_properties(${MUSLSRC}/math/x86_64/log2l.s PROPERTIES LANGUAGE C)
-    set_source_files_properties(${MUSLSRC}/math/x86_64/logl.s PROPERTIES LANGUAGE C)
-    set_source_files_properties(${MUSLSRC}/math/x86_64/exp2l.s PROPERTIES LANGUAGE C)
-    set_source_files_properties(${MUSLSRC}/math/x86_64/sqrt.s PROPERTIES LANGUAGE C)
-    set_source_files_properties(${MUSLSRC}/math/x86_64/sqrtl.s PROPERTIES LANGUAGE C)
-    set_source_files_properties(${MUSLSRC}/math/x86_64/sqrtf.s PROPERTIES LANGUAGE C)
-    set_source_files_properties(${MUSLSRC}/fenv/x86_64/fenv.s PROPERTIES LANGUAGE C)
-    set_source_files_properties(${MUSLSRC}/setjmp/x86_64/longjmp.s PROPERTIES LANGUAGE C)
-    set_source_files_properties(${MUSLSRC}/setjmp/x86_64/setjmp.s PROPERTIES LANGUAGE C)
-    set_source_files_properties(../common/rand.S PROPERTIES LANGUAGE C)
-
-    maybe_build_using_clangw(oelibasm)
-    maybe_build_using_clangw(oelibc)
-endif ()
+maybe_build_using_clangw(oelibc)
 
 # NOTE: This is the minimum required for musl sources.
 set_property(TARGET oelibc PROPERTY C_STANDARD 99)
