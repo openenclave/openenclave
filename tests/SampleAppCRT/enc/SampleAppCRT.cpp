@@ -8,8 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <wchar.h>
-
-#define OE_OCALL_FAILED -1
+#include "SampleAppCRT_t.h"
 
 static int func()
 {
@@ -28,59 +27,48 @@ int32_t thread_local_dynamic = func();
 char asciistring[] = "HelloWorld";
 wchar_t wcstring[] = L"HelloWorld";
 
-OE_ECALL int Test(void* args)
+int enc_test()
 {
-    int* return_value_ptr = (int*)args;
-
-#if 1
-    if (!oe_is_outside_enclave(return_value_ptr, sizeof(int)))
-    {
-        return OE_OCALL_FAILED;
-    }
-#endif
-
 #if 0
     if (thread_local_static != GetCurrentThreadId())
     {
-        *return_value_ptr = -1;
-        return;
+        return -1;
     }
 #endif
 
     void* temp_region = malloc(1);
     if (temp_region == NULL)
     {
-        *return_value_ptr = -2;
-        return OE_OK;
+        return -2;
     }
+
     temp_region = realloc(temp_region, sizeof(asciistring));
     if (temp_region == NULL)
     {
-        *return_value_ptr = -3;
-        return OE_OK;
+        return -3;
     }
 
     wcstombs((char*)temp_region, wcstring, wcslen(wcstring));
     ((char*)temp_region)[wcslen(wcstring)] = '\0';
     if (strcmp(asciistring, (char*)temp_region) != 0)
     {
-        *return_value_ptr = -4;
-        return OE_OK;
+        free(temp_region);
+        return -4;
     }
 
     memset(temp_region, 0, sizeof(asciistring));
     snprintf((char*)temp_region, sizeof(asciistring), "%s", asciistring);
     if (strcmp(asciistring, (char*)temp_region) != 0)
     {
-        *return_value_ptr = -5;
-        return OE_OK;
+        free(temp_region);
+        return -5;
     }
 
     temp_region = realloc(temp_region, sizeof(wcstring));
     if (temp_region == NULL)
     {
-        *return_value_ptr = -6;
-        return OE_OK;
+        free(temp_region);
+        return -6;
     }
 
     mbstowcs((wchar_t*)temp_region, asciistring, strlen(asciistring));
@@ -90,15 +78,14 @@ OE_ECALL int Test(void* args)
     /* Broken in MUSL library */
     if (wcscmp(wcstring, (wchar_t*)temp_region) != 0)
     {
-        *return_value_ptr = -7;
-        return OE_OK;
+        free(temp_region);
+        return -7;
     }
 #endif
 
     free(temp_region);
 
-    *return_value_ptr = 0;
-    return OE_OK;
+    return 0;
 }
 
 OE_SET_ENCLAVE_SGX(
@@ -108,5 +95,3 @@ OE_SET_ENCLAVE_SGX(
     1024, /* HeapPageCount */
     256,  /* StackPageCount */
     4);   /* TCSCount */
-
-OE_DEFINE_EMPTY_ECALL_TABLE();
