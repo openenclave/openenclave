@@ -7,22 +7,22 @@
 extern size_t num_constructions;
 extern size_t num_destructions;
 
-class F
+class f
 {
   public:
-    F()
+    f()
     {
         num_constructions++;
-        printf("F::F()\n");
+        printf("f::f()\n");
     }
 
-    ~F()
+    ~f()
     {
         num_destructions++;
-        printf("F::~F()\n");
+        printf("f::~f()\n");
     }
 };
 
-F _f0;
-F _f1;
-F _f2;
+f _f0;
+f _f1;
+f _f2;
