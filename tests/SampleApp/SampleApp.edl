@@ -1,0 +1,18 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+        public int secure_str_patching(
+            [in, string] const char* src,
+            [out, size=dst_length] char* dst,
+            size_t dst_length);
+    };
+
+    untrusted {
+        int unsecure_str_patching(
+            [in, string] const char* src,
+            [in, out, size=dst_length] char* dst,
+            size_t dst_length);
+    };
+};
