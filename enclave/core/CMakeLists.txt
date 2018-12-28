@@ -32,7 +32,7 @@ if (OE_SGX)
         sgx/getkey.S)
 
     # OS specific sources for SGX.
-    if (UNIX)
+    if (UNIX OR USE_CLANGW)
         list(APPEND PLATFORM_SRC
             ../../common/sgx/rand.S
             sgx/linux/reloc.c
@@ -61,6 +61,8 @@ add_library(oecore STATIC
     string.c
     time.c
     ${PLATFORM_SRC})
+
+maybe_build_using_clangw(oecore)
 
 target_link_libraries(oecore PUBLIC oe_includes)
 

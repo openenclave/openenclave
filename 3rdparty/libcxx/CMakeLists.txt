@@ -46,6 +46,8 @@ add_library(libcxx OBJECT
   libcxx/src/variant.cpp
   libcxx/src/vector.cpp)
 
+maybe_build_using_clangw(libcxx)
+
 add_dependencies(libcxx libcxx_includes)
 
 set_target_properties(libcxx PROPERTIES
@@ -74,4 +76,3 @@ install(TARGETS libcxx EXPORT openenclave-targets)
 
 install(DIRECTORY ${LIBCXX_INCLUDES}
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty)
-
