@@ -21,13 +21,13 @@
 # using external-projects. However that would require a significant 
 # rewrite of the build system CMakeLists.)
 #
-function(maybe_build_using_clangw OE_TARGET)    
+function(maybe_build_using_clangw OE_TARGET)
     if (NOT WIN32)
         # Noop on Linux.
         return()
     endif()
 
-    if (NOT USE_CLANGW)
+    if (NOT OE_SGX OR NOT USE_CLANGW)
         return()
     endif()
 

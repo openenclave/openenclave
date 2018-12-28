@@ -8,8 +8,8 @@
 #include <openenclave/internal/utils.h>
 #include <stdio.h>
 #include <string.h>
-#include "../../../common/quote.h"
-#include "../../../common/tcbinfo.h"
+#include "../../../common/sgx/quote.h"
+#include "../../../common/sgx/tcbinfo.h"
 #include "../common/tests.h"
 #include "tests_t.h"
 

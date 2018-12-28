@@ -1,89 +1,110 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+# OS specific but arch agnostic files.
 if (UNIX)
-set(PLATFORM_SRC
-    ../common/asn1.c
-    ../common/cert.c
-    crypto/openssl/asn1.c
-    crypto/openssl/cert.c
-    crypto/openssl/crl.c
-    crypto/openssl/ec.c
-    crypto/openssl/hmac.c
-    crypto/openssl/init.c
-    crypto/openssl/key.c
-    crypto/openssl/random.c
-    crypto/openssl/rsa.c
-    linux/aep.S
-    linux/aesm.c
-    linux/cpuid.c
-    linux/enter.S
-    linux/entersim.S
-    linux/exception.c
-    linux/hostthread.c
-    linux/sgxioctl.c
-    linux/time.c
-    linux/windows.c
-    sgxquoteprovider.c
-    )
+    set(PLATFORM_SRC
+        ../common/asn1.c
+        ../common/cert.c
+        crypto/openssl/asn1.c
+        crypto/openssl/cert.c
+        crypto/openssl/crl.c
+        crypto/openssl/ec.c
+        crypto/openssl/hmac.c
+        crypto/openssl/init.c
+        crypto/openssl/key.c
+        crypto/openssl/random.c
+        crypto/openssl/rsa.c
+        linux/hostthread.c
+        linux/time.c
+        linux/windows.c)
 elseif (WIN32)
-set(PLATFORM_SRC
-    crypto/bcrypt/hmac.c
-    crypto/bcrypt/rsa.c
-    windows/aep.asm
-    windows/aesm.c
-    windows/cpuid.c
-    windows/enter.asm
-    windows/entersim.asm
-    windows/exception.c
-    windows/hostthread.c
-    windows/time.c
-    ../3rdparty/mbedtls/mbedtls/library/bignum.c
-    )
+    set(PLATFORM_SRC
+        ../3rdparty/mbedtls/mbedtls/library/bignum.c
+        crypto/bcrypt/hmac.c
+        crypto/bcrypt/rsa.c
+        windows/hostthread.c
+        windows/time.c)
+else()
+    message(FATAL_ERROR "Unknown OS. Only supported OSes are Linux and Windows")
 endif()
 
+# SGX specific files
+if (OE_SGX)
+    list(APPEND PLATFORM_SRC
+        ../common/sgx/qeidentity.c
+        ../common/sgx/quote.c
+        ../common/sgx/report.c
+        ../common/sgx/revocation.c
+        ../common/sgx/sgxcertextensions.c
+        ../common/sgx/tcbinfo.c
+        sgx/calls.c
+        sgx/create.c
+        sgx/elf.c
+        sgx/enclave.c
+        sgx/enclavemanager.c
+        sgx/exception.c
+        sgx/load.c
+        sgx/loadelf.c
+        sgx/loadpe.c
+        sgx/ocalls.c
+        sgx/quote.c
+        sgx/registers.c
+        sgx/report.c
+        sgx/sgxload.c
+        sgx/sgxmeasure.c
+        sgx/sgxquote.c
+        sgx/sgxsign.c
+        sgx/sgxtypes.c
+        sgx/traceh.c)
+
+    # OS specific as well.
+    if (UNIX)
+        list(APPEND PLATFORM_SRC
+            sgx/linux/aep.S
+            sgx/linux/aesm.c
+            sgx/linux/cpuid.c
+            sgx/linux/enter.S
+            sgx/linux/entersim.S
+            sgx/linux/exception.c
+            sgx/linux/sgxioctl.c
+            sgx/linux/sgxquoteprovider.c)
+    else()
+        list(APPEND PLATFORM_SRC
+            sgx/windows/aep.asm
+            sgx/windows/aesm.c
+            sgx/windows/cpuid.c
+            sgx/windows/enter.asm
+            sgx/windows/entersim.asm
+            sgx/windows/exception.c)
+    endif()
+
+    set(PLATFORM_FLAGS "-m64")
+elseif(OE_TRUSTZONE)
+    list(APPEND PLATFORM_SRC
+        optee/enclave.c
+        optee/log.c)
+    set(PLATFORM_FLAGS "")
+endif()
+
+# Combine with all other non platform dependent files.
 add_library(oehost STATIC
     ../common/datetime.c
     ../common/kdf.c
-    ../common/qeidentity.c
-    ../common/quote.c
-    ../common/report.c
-    ../common/revocation.c
     ../common/safecrt.c
-    ../common/sgxcertextensions.c
-    ../common/tcbinfo.c
-    calls.c
-    create.c
     dupenv.c
-    elf.c
-    enclave.c
-    enclavemanager.c
     error.c
-    exception.c
     files.c
     fopen.c
     hexdump.c
-    load.c
-    loadelf.c
-    loadpe.c
     memalign.c
     ocalls.c
-    traceh.c
-    quote.c
-    registers.c
-    report.c
     result.c
-    sgxload.c
-    sgxmeasure.c
-    sgxquote.c
-    sgxsign.c
-    sgxtypes.c
     signkey.c
     strings.c
     tests.c
     crypto/sha.c
-    ${PLATFORM_SRC}
-    )
+    ${PLATFORM_SRC})
 
 # we and dependents need the OE includes to compile
 target_link_libraries(oehost PUBLIC oe_includes)
@@ -105,7 +126,7 @@ target_link_libraries(oehost PRIVATE bcrypt Crypt32)
 endif()
 
 if(UNIX)
-target_compile_options(oehost PRIVATE -Wno-attributes -Wmissing-prototypes -fPIC -m64)
+target_compile_options(oehost PRIVATE -Wno-attributes -Wmissing-prototypes -fPIC ${PLATFORM_FLAGS})
 target_compile_definitions(oehost PRIVATE _GNU_SOURCE)
 endif(UNIX)
 

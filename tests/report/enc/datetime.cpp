@@ -6,7 +6,7 @@
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <string.h>
-#include "../../../common/quote.h"
+#include "../../../common/sgx/quote.h"
 #include "tests_t.h"
 
 void TestPositive(const oe_datetime_t& date_time, const char* expected)

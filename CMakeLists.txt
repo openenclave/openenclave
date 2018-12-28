@@ -52,17 +52,30 @@ if (NOT BUILD_NUMBER)
   set(BUILD_NUMBER "0")
 endif ()
 
-if (WIN32)
-  # Building enclaves on windows is off by default
-  option(BUILD_ENCLAVES "Build ELF enclaves" OFF)
+# Set the architecture. We do this before the compiler settings, since some
+# of them are arch specific.
+if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
+  # TODO: Right now assume it's Intel+SGX for x86_64 processors
+  set(OE_SGX 1)
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*|ARM.*|aarch64.*|AARCH64.*")
+  set(OE_TRUSTZONE 1)
 else()
-  set(BUILD_ENCLAVES ON)
+  message(FATAL_ERROR "Unknown processor. Only Intel SGX and ARM TrustZone are supported")
 endif()
 
-if (BUILD_ENCLAVES AND WIN32)
-  # Setup cross compiler (clangw)
-  add_subdirectory(windows/clangw)  
-  set(USE_CLANGW ON)
+if (OE_SGX)
+  if (WIN32)
+    # Building enclaves on windows is off by default
+    option(BUILD_ENCLAVES "Build ELF enclaves" OFF)
+  else()
+    set(BUILD_ENCLAVES ON)
+  endif()
+
+  if (BUILD_ENCLAVES AND WIN32)
+    # Setup cross compiler (clangw)
+    add_subdirectory(windows/clangw)  
+    set(USE_CLANGW ON)
+  endif()
 endif()
 
 # This is always included.
@@ -110,8 +123,7 @@ add_subdirectory(include)
 add_subdirectory(tests)
 add_subdirectory(tools)
 
-# Add enclave directories
-if (BUILD_ENCLAVES)  
+if (BUILD_ENCLAVES)
   add_subdirectory(enclave/core)
   add_subdirectory(3rdparty)
   add_subdirectory(libc)
@@ -120,8 +132,10 @@ if (BUILD_ENCLAVES)
 endif()
 
 if (UNIX)
-  add_subdirectory(debugger)
+  if (OE_SGX)
+    add_subdirectory(debugger)
+  endif()
   add_subdirectory(docs/refman)
   add_subdirectory(pkgconfig)
   add_subdirectory(samples)
-endif ()
+endif()

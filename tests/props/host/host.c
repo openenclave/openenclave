@@ -7,7 +7,7 @@
 #include <openenclave/internal/sgxcreate.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
-#include "../../../host/enclave.h"
+#include "../../../host/sgx/enclave.h"
 #include "props_u.h"
 
 static void _check_properties(
