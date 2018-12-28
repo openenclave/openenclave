@@ -76,6 +76,11 @@ if (OE_SGX)
     add_subdirectory(windows/clangw)  
     set(USE_CLANGW ON)
   endif()
+else()
+  # On non-sgx enclaves are built by default on Unix
+  if (UNIX)
+    set(BUILD_ENCLAVES ON)
+  endif()
 endif()
 
 # This is always included.
