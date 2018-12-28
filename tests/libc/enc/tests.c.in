@@ -1,0 +1,15 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+// This is a template used by CMake.
+
+extern int run_test(
+    const char* name,
+    int (*main)(int argc, const char* argv[]));
+
+int run_tests(void)
+{
+    int ret = 0;
+@run_test@
+    return ret;
+}
