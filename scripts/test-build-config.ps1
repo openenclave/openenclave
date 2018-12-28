@@ -58,8 +58,10 @@ mkdir build
 cd build
 
 $BUILD_GENERATOR="Visual Studio 15 2017 Win64"
+$LINUX_BIN_FLAG="-DLINUX_BIN_DIR=\"$LINUX_BIN_DIR\""
 if ($BUILD_ENCLAVES -eq "1") {
     $BUILD_GENERATOR="NMake Makefiles"
+    $LINUX_BIN_FLAG=""
 
     # Currently disable Windows Enclave Tests for BUILD_ENCLAVE builds.
     # This will be enabled in a later PR.
@@ -68,10 +70,12 @@ if ($BUILD_ENCLAVES -eq "1") {
 
 & $VS_PATH
 
+where cl
+
 if ($ADD_WINDOWS_ENCLAVE_TESTS) {
-    & cmake.exe -G $BUILD_GENERATOR -DLINUX_BIN_DIR="$LINUX_BIN_DIR" -DADD_WINDOWS_ENCLAVE_TESTS=1 -DBUILD_ENCLAVES=$BUILD_ENCLAVES ..
+    & cmake.exe -G $BUILD_GENERATOR $LINUX_BIN_FLAG -DADD_WINDOWS_ENCLAVE_TESTS=1 -DBUILD_ENCLAVES=$BUILD_ENCLAVES ..
 } else {
-    & cmake.exe -G $BUILD_GENERATOR -DLINUX_BIN_DIR="$LINUX_BIN_DIR" -DBUILD_ENCLAVES=$BUILD_ENCLAVES ..
+    & cmake.exe -G $BUILD_GENERATOR $LINUX_BIN_FLAG -DBUILD_ENCLAVES=$BUILD_ENCLAVES ..
 }
 if ($LASTEXITCODE) {
     echo ""
