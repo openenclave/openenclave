@@ -66,6 +66,8 @@ if ($BUILD_ENCLAVES -eq "1") {
     Remove-Variable ADD_WINDOWS_ENCLAVE_TESTS
 }
 
+& $VS_PATH
+
 if ($ADD_WINDOWS_ENCLAVE_TESTS) {
     & cmake.exe -G $BUILD_GENERATOR -DLINUX_BIN_DIR="$LINUX_BIN_DIR" -DADD_WINDOWS_ENCLAVE_TESTS=1 -DBUILD_ENCLAVES=$BUILD_ENCLAVES ..
 } else {
@@ -78,7 +80,6 @@ if ($LASTEXITCODE) {
     exit 1
 }
 
-& $VS_PATH
 if ($LASTEXITCODE) {
     echo ""
     echo "Visual Studio failed"
