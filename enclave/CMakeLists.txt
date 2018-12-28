@@ -37,6 +37,8 @@ add_library(oeenclave STATIC
     sha.c
     ${PLATFORM_SRC})
 
+maybe_build_using_clangw(oeenclave)
+
 if(CMAKE_C_COMPILER_ID MATCHES GNU)
 target_compile_options(oeenclave PRIVATE -Wjump-misses-init)
 endif()

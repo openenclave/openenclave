@@ -29,11 +29,13 @@ elseif(OE_TRUSTZONE)
 endif()
 
 
+maybe_build_using_clangw(oelibasm)
+
 # CMake unconditionally adds `-DNDEBUG` etc. as flags even when
 # assembling, and clang-7 errors because we treat warnings as errors.
 # So we move the assembly code into a fake library, turn off the
 # error, and then inject the objects into the actual library.
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR USE_CLANGW)
     target_compile_options(oelibasm PRIVATE -Wno-error=unused-command-line-argument)
 endif ()
 
@@ -44,7 +46,7 @@ if (OE_SGX)
         sgx/syscalls.c
         sgx/sched_yield.c)
 
-    if (UNIX)
+    if (UNIX OR USE_CLANGW)
         list(APPEND PLATFORM_SRC
             ../common/sgx/rand.S)
     elseif (WIN32)
@@ -684,6 +686,8 @@ add_library(oelibc STATIC
     ${MUSLSRC}/unistd/dup3.c
     ${PLATFORM_SRC})
 
+maybe_build_using_clangw(oelibc)
+
 # NOTE: This is the minimum required for musl sources.
 set_property(TARGET oelibc PROPERTY C_STANDARD 99)
 
@@ -703,7 +707,7 @@ if (CMAKE_C_COMPILER_ID MATCHES GNU)
 endif ()
 
 # Ignore warnings from musl sources. First, shared warnings:
-if (CMAKE_C_COMPILER_ID MATCHES GNU OR CMAKE_C_COMPILER_ID MATCHES Clang)
+if (CMAKE_C_COMPILER_ID MATCHES GNU OR CMAKE_C_COMPILER_ID MATCHES Clang OR USE_CLANGW)
   target_compile_options(oelibc PRIVATE
     -Wno-missing-braces
     -Wno-parentheses
@@ -723,7 +727,7 @@ if (CMAKE_C_COMPILER_ID MATCHES GNU)
     -Wno-unused-function
     -Wno-unused-value
     -Wno-unused-variable)
-elseif (CMAKE_C_COMPILER_ID MATCHES Clang)
+elseif (CMAKE_C_COMPILER_ID MATCHES Clang OR USE_CLANGW)
   target_compile_options(oelibc PRIVATE
     -Wno-dangling-else
     -Wno-ignored-attributes
@@ -747,12 +751,10 @@ target_link_libraries(oelibc
 
 if (OE_SGX)
 target_include_directories(oelibc PRIVATE
-  internal
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/x86_64)
 else()
 target_include_directories(oelibc PRIVATE
-  internal
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/aarch64)
 endif()
