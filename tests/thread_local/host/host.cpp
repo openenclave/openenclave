@@ -61,9 +61,17 @@ int main(int argc, const char* argv[])
                 ++num_thread_local_relocs;
         }
 
-        // There are 7 exported thread-local variables.
-        // 1 reloc for each exported variable.
+// There are 7 exported thread-local variables.
+// 1 reloc for each exported variable.
+#if __linux__
         OE_TEST(num_thread_local_relocs == 7);
+#else
+// If the host is Windows, we are locking down the case where
+// the enclave was created on Windows as well. LLVM's ld (ld.lld)
+// seems to be very agressive and eliminates R_X86_64_TPOFF64 relocations
+// for the exported scenario as well. Therefore we don't perform the
+// assertion.
+#endif
         free(relocs);
     }
 

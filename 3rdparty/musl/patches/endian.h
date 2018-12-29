@@ -7,6 +7,7 @@
 /* Suppress this warning in the MUSL endian.h header. */
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wparentheses"
+#pragma GCC diagnostic ignored "-Wconversion"
 #include "__endian.h"
 #pragma GCC diagnostic pop
 

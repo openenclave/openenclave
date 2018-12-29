@@ -34,7 +34,7 @@ add_enclave(TARGET edl_enc CXX
 
 # The tests intentionally use floats etc in size context.
 # Disable warnings.
-if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
+if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang OR USE_CLANGW)
     set_source_files_properties(
         ${all_t}
         PROPERTIES COMPILE_FLAGS "-Wno-conversion"

@@ -121,7 +121,7 @@ add_library(libunwind OBJECT
 
 set_target_properties(libunwind PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
-maybe_build_using_clangw(libcxx)
+maybe_build_using_clangw(libunwind)
 
 set_source_files_properties(Gstep.c PROPERTIES COMPILE_FLAGS "-Werror")
 set_source_files_properties(Gtrace.c PROPERTIES COMPILE_FLAGS "-Werror")
