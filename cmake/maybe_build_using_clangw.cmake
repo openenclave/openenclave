@@ -61,7 +61,7 @@ function(maybe_build_using_clangw OE_TARGET)
         "clang -target x86_64-pc-linux <OBJECTS> -o <TARGET>  <LINK_LIBRARIES> -fuse-ld=\"${LD_LLD}\""
         PARENT_SCOPE)
 
-    # Setup comiler variables.
+    # Setup compiler variables.
     set(CMAKE_C_COMPILE_OBJECT
         "\"${CMAKE_BINARY_DIR}/windows/clangw/clangw.exe\" -target x86_64-pc-linux <DEFINES> <INCLUDES> <FLAGS> -o <OBJECT> -c <SOURCE>"
         PARENT_SCOPE)

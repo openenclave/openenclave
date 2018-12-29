@@ -21,7 +21,7 @@ add_subdirectory(aesm)
 add_subdirectory(debugger)
 endif()
 
-if (UNIX OR ADD_WINDOWS_ENCLAVE_TESTS)
+if (UNIX OR ADD_WINDOWS_ENCLAVE_TESTS OR USE_CLANGW)
     if (OE_SGX)
         add_subdirectory(bigmalloc)
         add_subdirectory(backtrace)
