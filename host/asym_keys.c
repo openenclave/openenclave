@@ -91,7 +91,7 @@ void oe_free_key(
 
     if (key_info)
     {
-        oe_secure_zero_fill(key_info, key_buffer_size);
+        oe_secure_zero_fill(key_info, key_info_size);
         free(key_info);
     }
 }

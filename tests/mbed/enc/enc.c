@@ -219,12 +219,14 @@ void oe_handle_verify_report(uint64_t arg_in, uint64_t* arg_out)
 
 void oe_handle_get_public_key_by_policy(uint64_t arg_in)
 {
+    OE_UNUSED(arg_in);
     assert("oe_handle_get_public_key_by_policy()" == NULL);
     abort();
 }
 
 void oe_handle_get_public_key(uint64_t arg_in)
 {
+    OE_UNUSED(arg_in);
     assert("oe_handle_get_public_key()" == NULL);
     abort();
 }

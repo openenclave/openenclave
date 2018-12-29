@@ -3,7 +3,7 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/malloc.h>
-#include "asym_keys.h"
+#include "../asym_keys.h"
 #include "report.h"
 
 //
