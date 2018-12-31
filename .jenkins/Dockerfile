@@ -5,7 +5,7 @@
 # IMPORTANT- Please update the version number in the next sentence
 # when you create a new docker image.
 #
-# This Dockerfile script builds an image for tag oetools-azure:1.6
+# This Dockerfile script builds an image for tag oetools-azure:1.9
 
 # To use this Dockerfile, you will need to install docker-ce.
 # Instructions for installing it on Ubuntu 16.04 LTS are at:
