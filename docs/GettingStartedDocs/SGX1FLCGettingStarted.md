@@ -17,11 +17,12 @@ This creates a source tree under the directory called openenclave.
 
 ## Install project prerequisites
 
-The script [scripts/install-prereqs](/scripts/install-prereqs) was created to make installing the prerequisites less tedious. Execute the following commands from the root of the source tree:
+Ansible is required to install the project prerequisites. If not already installed, you can install it by running: `scripts/ansible/install-ansible.sh`
+The ansible-playbook [scripts/ansible/ansible-include_task.yml](/scripts/ansible/ansible-include_task.yml) was created to be able to run pre-defined ansible tasks on a target host. All the tasks required to install the prerequisites can be found in the following ansible task list : [scripts/ansible/tasks/ansible-install-prereqs.yml](/scripts/ansible/tasks/ansible-install-prereqs.yml) To make installing the prerequisites less tedious execute the following commands from the root of the source tree:
 
 ```bash
 cd openenclave
-sudo ./scripts/install-prereqs
+ansible-playbook scripts/ansible/ansible-include_task.yml --extra-vars "target=localhost included_task=tasks/ansible-install-prereqs.yml"
 ```
 
 If you are running in an Azure Confidential Compute VM and would like to use the attestation features, you should also run the following command from the root of the source tree:
