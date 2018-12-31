@@ -164,9 +164,6 @@ else
     SIMULATION_MODE_TEXT="hardware"
 fi
 
-#For testing...
-echo "DEBUG MSG --- Tests were run for ${PLATFORM_MODE} ${COMPILER_VALUE} ${BUILD_TYPE} in ${SIMULATION_MODE_TEXT} mode"
-
 if ! ctest --output-on-failure; then
     echo ""
     echo "Test failed for ${PLATFORM_MODE} ${COMPILER_VALUE} ${BUILD_TYPE} in ${SIMULATION_MODE_TEXT} mode"
