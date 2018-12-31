@@ -3,175 +3,80 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-##==============================================================================
-##
-## check-license:
-##
-##     This script checks for Open Enclave files that are missing the license
-##     header. It prints the names of files with missing headers to standard
-##     output.
-##
-##     To ignore certain files or directories, add them to:
-##         .check-license.ignore
-##
-##==============================================================================
+# This script accepts either a list of files relative to the current
+# working directory, or it will check all files tracked in Git. In
+# both cases, it ignores files matching any regular expression listed
+# in '.check-license.ignore'.
 
-##==============================================================================
-##
-## expand_ignore_file():
-##
-##     Expand any wildcards in the .check-license.ignore file:
-##
-##==============================================================================
-# shellcheck disable=SC2155
-expand_ignore_file()
-{
-    local filename=".check-license.ignore"
-    local tempfile=$(mktemp)
+set -o errexit
+set -o pipefail
 
-    # Create empty ignore file:
-    touch "${tempfile}"
+license=("Copyright (c) Microsoft Corporation. All rights reserved." "Licensed under the MIT License.")
 
-    # Fail if ignore file does not exist:
-    if [[ -f ${filename} ]]; then
-        # Expand each entry in the ignore file:
-        while IFS= read -r i
-        do
-            bn=$(basename "${i}")
-            if [[ ${bn} == "${i}" ]]; then
-                find . -name "${bn}" >> "${tempfile}"
-            else
-                if [[ -e ${i} ]]; then
-                    echo "${i}" >> "${tempfile}"
-                else
-                    # This relies on globbing.
-                    # shellcheck disable=SC2086
-                    ls -1 ${i} >> "${tempfile}" 2> /dev/null
-                fi
-            fi
-        done <"${filename}"
-    fi
+root=$(git rev-parse --show-toplevel)
 
-    echo "${tempfile}"
-}
-
-ignorefile=$(expand_ignore_file)
-
-##==============================================================================
-##
-## form_filelist(ignorefile):
-##
-##     Form the list of files by finding all regular files and then removing
-##     ignore files.
-##
-##==============================================================================
-
-# shellcheck disable=SC2155
-form_filelist()
-{
-    local ignorefile=$1
-    shift
-    local files=$(mktemp)
-    local tmpfile=$(mktemp)
-
-    if [[ $# -ne 0 ]]; then
-        for f in "$@"; do
-            find . -name "$f" -maxdepth 1 2>/dev/null >> "${files}"
-        done
-    else
-        # Find all regular files:
-        find . -type f > "${files}"
-    fi
-
-    # Remove lines that match entries from ignore file:
-    while IFS= read -r i
-    do
-        cp "${files}" "${tmpfile}"
-
-        if [[ -d ${i} ]]; then
-            grep -v "${i}/" "${tmpfile}" > "${files}"
-        else
-            grep -v "^${i}\$" "${tmpfile}" > "${files}"
-        fi
-    done <"${ignorefile}"
-
-    rm -f "${tmpfile}"
-
-    echo "${files}"
-}
-
-if [[ $# -ne 0 ]]; then
-    filelist=$(form_filelist "${ignorefile}" "$@")
-else
-    filelist=$(form_filelist "${ignorefile}")
-fi
-
-rm -rf "${ignorefile}"
-
-# Sanity check: make sure all files that require licenses exist
+ignore_res=()
 while IFS= read -r i; do
-    if [[ ! -s ${i} ]]; then
-        echo "Iterating through ${filelist}: file not found: ${i}"
-        failed=1
-    fi
-done <"${filelist}"
+      if [[ $i =~ ^# ]] || [[ -z $i ]]; then # ignore comments
+          continue
+      fi
+      ignore_res+=("$i")
+done <"$root/.check-license.ignore"
 
-if [[ $failed -eq 1 ]]; then
-   rm -f "${filelist}"
-   exit 1
-fi
 
-##==============================================================================
-##
-## Write the license header to a temporary file.
-##
-##==============================================================================
-
-license=$(mktemp)
-
-cat > "${license}" <<EOF
-Copyright (c) Microsoft Corporation. All rights reserved.
-Licensed under the MIT License.
-EOF
-
-##==============================================================================
-##
-## check_for_missing_license_headers(filelist, license)
-##
-##     Check each Open Enclave files that are missing the license header.
-##
-##==============================================================================
-
-# shellcheck disable=SC2155
-function check_for_missing_license_headers()
-{
-    local filelist=$1
-    local license=$2
-    local tmpfile=$(mktemp)
-    local ret=0
-
-    while IFS= read -r i; do
-        # Grep for first 'Copyright' line (-m1)
-        # Print the following line too (-A1)
-        # Use SED to strip leading '//' or leading '#':
-        grep -m1 -A1 "Copyright (c) Microsoft Corporation" "${i}" | \
-        sed 's~// ~~g' | \
-        sed 's~;; ~~g' | \
-        sed 's~:: ~~g' | \
-        sed 's~^# ~~g' \
-        > "${tmpfile}"
-
-        # Diff matching file with expected license text:
-        if ! diff -w "${tmpfile}" "${license}" > /dev/null 2> /dev/null; then
-            echo "${i}"
-            ret=1
+should_ignore() {
+    for re in "${ignore_res[@]}"; do
+        if [[ $1 =~ $re ]]; then
+            return
         fi
-    done <"${filelist}"
-
-    rm -rf "${tmpfile}"
-    rm -f "${filelist}"
-
-    return ${ret}
+    done
+    false
 }
 
-check_for_missing_license_headers "${filelist}" "${license}"
+# Create array of files to check, either from the given arguments or
+# all files in Git, ignore any that match a regex in the ignore file.
+files=()
+if [[ $# -ne 0 ]]; then
+    for f in "$@"; do
+        file=$(realpath "$f")
+
+        if [[ ! -f $file ]]; then # skip non-existent files
+            continue
+        fi
+
+        file=${file#$root/} # remove the prefix
+
+        if should_ignore "$file"; then
+            continue
+        fi
+
+        files+=("$file")
+    done
+else
+    # Find all files in Git. These are guaranteed to exist, to not be
+    # generated, and to not have the prefix.
+    cd "$root"
+    while IFS= read -r -d '' file; do
+        if should_ignore "$file"; then
+            continue
+        fi
+
+        files+=("$file")
+    done < <(git ls-files -z)
+fi
+
+failures=0
+for file in "${files[@]}"; do
+    for line in "${license[@]}"; do
+        # We check only the first four lines to avoid false positives
+        # (such as this script), but to allow for a shebang and empty
+        # line between it and the license.
+        if ! head -n4 "${root}/${file}" | grep --quiet --fixed-strings --max-count=1 "${line}"; then
+            echo "${file}"
+            failures=$((failures + 1))
+            break
+        fi
+    done
+done
+
+exit $failures
