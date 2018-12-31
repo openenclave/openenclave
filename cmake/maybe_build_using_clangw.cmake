@@ -33,6 +33,7 @@ function(maybe_build_using_clangw OE_TARGET)
 
     # Add dependency to the clang wrapper
     add_dependencies(${OE_TARGET} clangw)
+    add_dependencies(${OE_TARGET} llvm-arw)
 
     # Add compile options from compiler_settings.cmake
     target_compile_options(${OE_TARGET} PRIVATE
@@ -46,8 +47,12 @@ function(maybe_build_using_clangw OE_TARGET)
     set(CMAKE_STATIC_LIBRARY_SUFFIX ".a" PARENT_SCOPE)
 
     # Setup library tool variables
-    set(CMAKE_C_CREATE_STATIC_LIBRARY "llvm-ar qc <TARGET> <OBJECTS>" PARENT_SCOPE)
-    set(CMAKE_CXX_CREATE_STATIC_LIBRARY "llvm-ar qc <TARGET> <OBJECTS>" PARENT_SCOPE)
+    set(CMAKE_C_CREATE_STATIC_LIBRARY 
+        "\"${CMAKE_BINARY_DIR}/windows/clangw/llvm-arw.exe\" qc <TARGET> <OBJECTS>" 
+        PARENT_SCOPE)
+    set(CMAKE_CXX_CREATE_STATIC_LIBRARY 
+        "\"${CMAKE_BINARY_DIR}/windows/clangw/llvm-arw.exe\" qc <TARGET> <OBJECTS>" 
+        PARENT_SCOPE)
 
     # Setup linker variables.
     find_program(LD_LLD "ld.lld.exe")
