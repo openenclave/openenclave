@@ -18,16 +18,16 @@ static int _test_single_key(
     oe_enclave_t* enclave,
     const char* data)
 {
-    uint8_t* key = NULL;
-    size_t keysize = 0;
+    uint8_t key[1024];
+    size_t keysize = 1024;
     uint8_t* key2 = NULL;
     size_t key2size = 0;
-    uint8_t* key3 = NULL;
-    size_t key3size = 0;
+    uint8_t key3[1024];
+    size_t key3size = 1024;
     uint8_t* key4 = NULL;
     size_t key4size = 0;
-    uint8_t* keyinfo = NULL;
-    size_t keyinfo_size = 0;
+    uint8_t keyinfo[1024];
+    size_t keyinfo_size = 1024;
     uint8_t* keyinfo2 = NULL;
     size_t keyinfo2_size = 0;
     oe_result_t result;
@@ -45,9 +45,11 @@ static int _test_single_key(
         &ret,
         (int)policy,
         data,
-        &key,
+        key,
+        keysize,
         &keysize,
-        &keyinfo,
+        keyinfo,
+        keyinfo_size,
         &keyinfo_size);
 
     if (result != OE_OK)
@@ -87,7 +89,7 @@ static int _test_single_key(
 
     // Do the same test with the other API.
     result = enc_get_public_key(
-        enclave, &ret, data, keyinfo, keyinfo_size, &key3, &key3size);
+        enclave, &ret, data, keyinfo, keyinfo_size, key3, key3size, &key3size);
 
     if (result != OE_OK)
     {
@@ -118,9 +120,7 @@ static int _test_single_key(
         return -1;
     }
 
-    oe_free_key(key, keysize, keyinfo, keyinfo_size);
     oe_free_key(key2, key2size, keyinfo2, keyinfo2_size);
-    oe_free_key(key3, key3size, NULL, 0);
     oe_free_key(key4, key4size, NULL, 0);
     return 0;
 }

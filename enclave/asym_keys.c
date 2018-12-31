@@ -492,7 +492,8 @@ static oe_result_t _copy_to_from_host(
     if (data == NULL)
     {
         *out = NULL;
-        OE_RAISE(OE_OK);
+        result = OE_OK;
+        goto done;
     }
 
     if (to_host)

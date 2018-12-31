@@ -9,16 +9,19 @@ enclave {
         public int enc_get_public_key_by_policy(
             int policy,
             [string, in] const char* data,
-            [out] uint8_t** keybuf,
+            [out, count=keybuf_maxsize] uint8_t* keybuf,
+            size_t keybuf_maxsize,
             [out] size_t* keybuf_size,
-            [out] uint8_t** keyinfo,
+            [out, count=keyinfo_maxsize] uint8_t* keyinfo,
+            size_t keyinfo_maxsize,
             [out] size_t* keyinfo_size);
 
         public int enc_get_public_key(
             [string, in] const char* data,
             [in, count=keyinfo_size] const uint8_t* keyinfo,
             size_t keyinfo_size,
-            [out] uint8_t** keybuf,
+            [out, count=keybuf_maxsize] uint8_t* keybuf,
+            size_t keybuf_maxsize,
             [out] size_t* keybuf_size);
     };
 };

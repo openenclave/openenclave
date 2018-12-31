@@ -608,9 +608,11 @@ int test_seal_key(int in)
 int enc_get_public_key_by_policy(
     int policy,
     const char* data,
-    uint8_t** keybuf,
+    uint8_t* keybuf,
+    size_t keybuf_maxsize,
     size_t* keybuf_size,
-    uint8_t** keyinfo,
+    uint8_t* keyinfo,
+    size_t keyinfo_maxsize,
     size_t* keyinfo_size)
 {
     oe_asymmetric_key_params_t params;
@@ -637,20 +639,11 @@ int enc_get_public_key_by_policy(
         return -1;
 
     // Copy to host memory.
-    *keybuf = (uint8_t*)oe_host_malloc(pubkey_size);
-    if (*keybuf == NULL)
-        return -1;
-
-    *keyinfo = (uint8_t*)oe_host_malloc(pubkey_info_size);
-    if (*keyinfo == NULL)
-        return -1;
-
-    ret = oe_memcpy_s(*keybuf, pubkey_size, pubkey, pubkey_size);
+    ret = oe_memcpy_s(keybuf, keybuf_maxsize, pubkey, pubkey_size);
     if (ret != OE_OK)
         return -1;
 
-    ret =
-        oe_memcpy_s(*keyinfo, pubkey_info_size, pubkey_info, pubkey_info_size);
+    ret = oe_memcpy_s(keyinfo, keyinfo_maxsize, pubkey_info, pubkey_info_size);
     if (ret != OE_OK)
         return -1;
 
@@ -665,7 +658,8 @@ int enc_get_public_key(
     const char* data,
     const uint8_t* keyinfo,
     size_t keyinfo_size,
-    uint8_t** keybuf,
+    uint8_t* keybuf,
+    size_t keybuf_maxsize,
     size_t* keybuf_size)
 {
     oe_asymmetric_key_params_t params;
@@ -685,11 +679,7 @@ int enc_get_public_key(
         return -1;
 
     // Copy to host memory.
-    *keybuf = (uint8_t*)oe_host_malloc(pubkey_size);
-    if (*keybuf == NULL)
-        return -1;
-
-    ret = oe_memcpy_s(*keybuf, pubkey_size, pubkey, pubkey_size);
+    ret = oe_memcpy_s(keybuf, keybuf_maxsize, pubkey, pubkey_size);
     if (ret != OE_OK)
         return -1;
 
