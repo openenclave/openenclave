@@ -16,7 +16,7 @@ def ACCTest(String label, String compiler, String unit, String suite) {
             checkout scm
 
             timeout(15) {
-                sh "./scripts/test-build-config -p $unit -b $suite --compiler=$compiler"
+                sh "./scripts/test-build-config -p $unit -b $suite --compiler=$compiler -d"
             }
 
         }
