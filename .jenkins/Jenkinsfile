@@ -16,7 +16,7 @@ def ACCTest(String label, String compiler, String unit, String suite) {
             checkout scm
 
             timeout(15) {
-                sh "./scripts/test-build-config -p $unit -b $suite --compiler=$compiler"
+                sh "./scripts/test-build-config -p $unit -b $suite --compiler=$compiler --disable_sim"
             }
 
         }
@@ -49,7 +49,7 @@ def ACCContainerTest(String label) {
             docker.withRegistry(OETOOLS_REPO, OETOOLS_REPO_CREDENTIAL_ID) {
                 docker.image(OETOOLS_IMAGE).inside('--privileged -v /dev/sgx:/dev/sgx') {
                     timeout(15) {
-                        sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d'
+                        sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo --disable_sim'
                     }
                 }
             }
