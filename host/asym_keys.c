@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License
+// Licensed under the MIT License.
 
 #include <openenclave/bits/result.h>
 #include <openenclave/host.h>
