@@ -66,7 +66,7 @@ def checkPreCommitRequirements() {
             docker.withRegistry(OETOOLS_REPO, OETOOLS_REPO_CREDENTIAL_ID) {
                 docker.image(OETOOLS_IMAGE).inside {
                     timeout(2) {
-                        sh './scripts/check-precommit-reqs'
+                        sh './scripts/check-ci'
                     }
                 }
             }
@@ -86,7 +86,8 @@ def checkPreCommitRequirements() {
                 timeout(15) {
                     // This is run to test that it works with the dependencies
                     // installed by our install-prereqs ansible playbook.
-                    sh './scripts/check-precommit-reqs'
+                    sh './scripts/check-ci'
+                    // installed by our install-prereqs script.
 
                     // We actually expect `ctest` to fail because it is an
                     // older version that emits a failure if any tests are

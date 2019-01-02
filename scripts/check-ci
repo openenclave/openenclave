@@ -5,8 +5,7 @@
 
 ##==============================================================================
 ##
-## This script performs various checks on the source tree. If any of these fail
-## commits fail.
+## This script performs various checks on the source tree in CI.
 ##
 ##==============================================================================
 
