@@ -44,6 +44,11 @@ if (IS_DIRECTORY "${PROJECT_SOURCE_DIR}/.git")
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     ERROR_QUIET
     OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  # Install Git pre-commit hook
+  file(
+    COPY scripts/pre-commit
+    DESTINATION "${PROJECT_SOURCE_DIR}/.git/hooks")
 endif ()
 
 # Get Jenkins build number

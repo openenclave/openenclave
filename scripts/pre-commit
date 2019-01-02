@@ -9,6 +9,13 @@ set -o pipefail
 scripts=$(git rev-parse --show-toplevel)/scripts
 files=($(git diff --cached --name-only))
 
+info() {
+    echo "This hook can be skipped if needed with 'git commit --no-verify'"
+    echo "See '.git/hooks/pre-commit', installed from 'scripts/pre-commit'"
+}
+
+trap info EXIT
+
 if "$scripts/format-code" --whatif --files="${files[*]}" | grep -q "@@"; then
     echo "Commit failed: please run './scripts/format-code' to fix the formatting"
     exit 1
