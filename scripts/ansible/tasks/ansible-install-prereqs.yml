@@ -15,6 +15,7 @@
 - name: Install  prerequisite packages
   apt:
     name: [
+       apt-transport-https,
        autoconf,
        clang-format-3.8,
        doxygen,

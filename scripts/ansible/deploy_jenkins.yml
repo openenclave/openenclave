@@ -2,6 +2,7 @@
 # Licensed under the MIT License.
 
 - hosts: linux-slaves
+  any_errors_fatal: true
   become: yes
   vars_files:
      - vars/variables.var
