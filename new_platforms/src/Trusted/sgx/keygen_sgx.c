@@ -279,11 +279,15 @@ oe_result_t oe_get_public_key_by_policy(
 }
 
  oe_result_t oe_get_public_key(
-     const uint8_t* key_info,
-     size_t key_info_size,
-     uint8_t** key_buffer,
-     size_t* key_buffer_size)
+    const oe_asymmetric_key_params_t* key_params,
+    const uint8_t* key_info,
+    size_t key_info_size,
+    uint8_t** key_buffer,
+    size_t* key_buffer_size)
 {
+    if (_check_sgx_asykey_support(key_params) != OE_OK)
+        return OE_INVALID_PARAMETER;
+
     uint8_t* seal_secret = NULL;
     size_t seal_secret_size;
     oe_result_t oeResult = oe_get_seal_key_v2(key_info,
@@ -306,12 +310,12 @@ oe_result_t oe_get_public_key_by_policy(
 }
 
  oe_result_t oe_get_private_key_by_policy(
-     oe_seal_policy_t seal_policy,
+    oe_seal_policy_t seal_policy,
     const oe_asymmetric_key_params_t* key_params,
-     uint8_t** key_buffer,
-     size_t* key_buffer_size,
-     uint8_t** key_info,
-     size_t* key_info_size)
+    uint8_t** key_buffer,
+    size_t* key_buffer_size,
+    uint8_t** key_info,
+    size_t* key_info_size)
 {
     return oe_get_key_pair_by_policy(seal_policy,
                                      key_params,
@@ -324,11 +328,15 @@ oe_result_t oe_get_public_key_by_policy(
 }
 
  oe_result_t oe_get_private_key(
-     const uint8_t* key_info,
-     size_t key_info_size,
-     uint8_t** key_buffer,
-     size_t* key_buffer_size)
+    const oe_asymmetric_key_params_t* key_params,
+    const uint8_t* key_info,
+    size_t key_info_size,
+    uint8_t** key_buffer,
+    size_t* key_buffer_size)
 {
+    if (_check_sgx_asykey_support(key_params) != OE_OK)
+        return OE_INVALID_PARAMETER;
+
     uint8_t* secret = NULL;
     size_t secret_size;
     oe_result_t oeResult = oe_get_seal_key_v2(key_info,
