@@ -45,7 +45,6 @@ VERSION
 \.cspellignore
 \.gitattributes
 \.gitignore
-\.openenclaveroot
 debugger/pythonExtension/load_symbol_cmd\.py
 debugger/pythonExtension/readelf\.py
 host/linux/pe\.h
