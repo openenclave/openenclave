@@ -158,7 +158,7 @@ done:
     return result;
 }
 
-oe_result_t oe_get_target_info(
+oe_result_t oe_get_target_info_v1(
     const uint8_t* report,
     size_t report_size,
     void* target_info_buffer,
@@ -192,4 +192,57 @@ oe_result_t oe_get_target_info(
 
 done:
     return result;
+}
+
+oe_result_t oe_get_target_info_v2(
+    const uint8_t* report,
+    size_t report_size,
+    void** target_info_buffer,
+    size_t* target_info_size)
+{
+    oe_result_t result = OE_FAILURE;
+    size_t temp_size = 0;
+    void* temp_info = NULL;
+
+    if (!target_info_buffer || !target_info_size)
+    {
+        return OE_INVALID_PARAMETER;
+    }
+
+    *target_info_buffer = NULL;
+    *target_info_size = 0;
+
+    result = oe_get_target_info_v1(report, report_size, NULL, &temp_size);
+    if (result != OE_BUFFER_TOO_SMALL)
+    {
+        if (result == OE_OK)
+        {
+            /* Should not succeed! */
+            result = OE_UNEXPECTED;
+        }
+        return result;
+    }
+
+    temp_info = malloc(temp_size);
+    if (temp_info == NULL)
+    {
+        return OE_OUT_OF_MEMORY;
+    }
+
+    result = oe_get_target_info_v1(report, report_size, temp_info, &temp_size);
+    if (result != OE_OK)
+    {
+        free(temp_info);
+
+        return result;
+    }
+    *target_info_size = temp_size;
+    *target_info_buffer = temp_info;
+
+    return OE_OK;
+}
+
+void oe_free_target_info(void* target_info_buffer)
+{
+    free(target_info_buffer);
 }

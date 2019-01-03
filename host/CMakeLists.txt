@@ -153,10 +153,12 @@ if (USE_LIBSGX)
 endif ()
 
 # Compile definitions and options
-target_compile_definitions(oehost PRIVATE
-  -DOE_BUILD_UNTRUSTED
-  -DOE_REPO_BRANCH_NAME="${GIT_BRANCH}"
-  -DOE_REPO_LAST_COMMIT="${GIT_COMMIT}")
+target_compile_definitions(oehost
+  PUBLIC -DOE_API_VERSION=2
+  PRIVATE
+  OE_BUILD_UNTRUSTED
+  OE_REPO_BRANCH_NAME="${GIT_BRANCH}"
+  OE_REPO_LAST_COMMIT="${GIT_COMMIT}")
 
 if (USE_DEBUG_MALLOC)
   target_compile_definitions(oehost PRIVATE OE_USE_DEBUG_MALLOC)

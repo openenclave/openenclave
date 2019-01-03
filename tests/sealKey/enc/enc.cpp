@@ -87,19 +87,66 @@ bool TestOEGetSealKey()
          seal_policy++)
     {
         uint8_t key_buffer[sizeof(sgx_key_t)] = {0};
+        uint8_t* key_buffer_ptr = NULL;
         size_t key_buffer_size = 0;
+        size_t key_buffer_ptr_size = 0;
         oe_result_t ret;
 
         // Get the seal key should fail if the key_buffer is NULL.
-        ret = oe_get_seal_key_by_policy(
+        ret = oe_get_seal_key_by_policy_v1(
             (oe_seal_policy_t)seal_policy, NULL, NULL, NULL, NULL);
         if (ret != OE_INVALID_PARAMETER)
         {
             return false;
         }
 
-        // Get the seal key should fail if the buffer is too small.
+        ret = oe_get_seal_key_by_policy_v2(
+            (oe_seal_policy_t)seal_policy, NULL, NULL, NULL, NULL);
+        if (ret != OE_INVALID_PARAMETER)
+        {
+            return false;
+        }
         ret = oe_get_seal_key_by_policy(
+            (oe_seal_policy_t)seal_policy, NULL, NULL, NULL, NULL);
+        if (ret != OE_INVALID_PARAMETER)
+        {
+            return false;
+        }
+        ret = oe_get_seal_key_by_policy_v2(
+            (oe_seal_policy_t)seal_policy, &key_buffer_ptr, NULL, NULL, NULL);
+        if (ret != OE_INVALID_PARAMETER)
+        {
+            return false;
+        }
+        ret = oe_get_seal_key_by_policy(
+            (oe_seal_policy_t)seal_policy, &key_buffer_ptr, NULL, NULL, NULL);
+        if (ret != OE_INVALID_PARAMETER)
+        {
+            return false;
+        }
+        ret = oe_get_seal_key_by_policy_v2(
+            (oe_seal_policy_t)seal_policy,
+            NULL,
+            &key_buffer_ptr_size,
+            NULL,
+            NULL);
+        if (ret != OE_INVALID_PARAMETER)
+        {
+            return false;
+        }
+        ret = oe_get_seal_key_by_policy(
+            (oe_seal_policy_t)seal_policy,
+            NULL,
+            &key_buffer_ptr_size,
+            NULL,
+            NULL);
+        if (ret != OE_INVALID_PARAMETER)
+        {
+            return false;
+        }
+
+        // Get the seal key should fail if the buffer is too small.
+        ret = oe_get_seal_key_by_policy_v1(
             (oe_seal_policy_t)seal_policy,
             key_buffer,
             &key_buffer_size,
@@ -114,7 +161,7 @@ bool TestOEGetSealKey()
         OE_TEST(key_buffer_size == sizeof(sgx_key_t));
 
         // Get the seal key by policy and without output the key info.
-        ret = oe_get_seal_key_by_policy(
+        ret = oe_get_seal_key_by_policy_v1(
             (oe_seal_policy_t)seal_policy,
             key_buffer,
             &key_buffer_size,
@@ -127,13 +174,27 @@ bool TestOEGetSealKey()
 
         OE_TEST(key_buffer_size == sizeof(sgx_key_t));
 
+        ret = oe_get_seal_key_by_policy_v2(
+            (oe_seal_policy_t)seal_policy,
+            &key_buffer_ptr,
+            &key_buffer_ptr_size,
+            NULL,
+            NULL);
+        if (ret != OE_OK)
+        {
+            return false;
+        }
+        oe_free_seal_key(key_buffer_ptr, NULL);
+
+        OE_TEST(key_buffer_ptr_size == sizeof(sgx_key_t));
+
         uint8_t second_key_buffer[sizeof(sgx_key_t)] = {0};
         size_t second_key_buffer_size = sizeof(second_key_buffer);
         uint8_t key_info[sizeof(sgx_key_request_t)] = {0};
         size_t key_info_size = sizeof(key_info);
 
         // Get the seal key by policy and output the key info.
-        ret = oe_get_seal_key_by_policy(
+        ret = oe_get_seal_key_by_policy_v1(
             (oe_seal_policy_t)seal_policy,
             second_key_buffer,
             &second_key_buffer_size,
@@ -147,34 +208,96 @@ bool TestOEGetSealKey()
         OE_TEST(second_key_buffer_size == sizeof(sgx_key_t));
         OE_TEST(key_info_size == sizeof(sgx_key_request_t));
 
+        uint8_t* second_key_buffer_ptr = NULL;
+        size_t second_key_buffer_ptr_size = 0;
+        uint8_t* key_info_ptr = NULL;
+        size_t key_info_ptr_size = 0;
+
+        // Get the seal key by policy and output the key info.
+        ret = oe_get_seal_key_by_policy_v2(
+            (oe_seal_policy_t)seal_policy,
+            &second_key_buffer_ptr,
+            &second_key_buffer_ptr_size,
+            &key_info_ptr,
+            &key_info_ptr_size);
+        if (ret != OE_OK)
+        {
+            return false;
+        }
+
+        oe_free_seal_key(second_key_buffer_ptr, key_info_ptr);
+
+        OE_TEST(second_key_buffer_ptr_size == sizeof(sgx_key_t));
+        OE_TEST(key_info_ptr_size == sizeof(sgx_key_request_t));
+
+        second_key_buffer_ptr = NULL;
+        key_info_ptr = NULL;
+        second_key_buffer_size = 0;
+        key_info_ptr_size = NULL;
+
+        // Get the seal key by policy and output the key info.
+        ret = oe_get_seal_key_by_policy(
+            (oe_seal_policy_t)seal_policy,
+            &second_key_buffer_ptr,
+            &second_key_buffer_ptr_size,
+            &key_info_ptr,
+            &key_info_ptr_size);
+        if (ret != OE_OK)
+        {
+            return false;
+        }
+
+        oe_free_seal_key(second_key_buffer_ptr, key_info_ptr);
+
+        OE_TEST(second_key_buffer_ptr_size == sizeof(sgx_key_t));
+        OE_TEST(key_info_ptr_size == sizeof(sgx_key_request_t));
+
         uint8_t third_key_buffer[sizeof(sgx_key_t)] = {0};
+        uint8_t* third_key_ptr;
         size_t third_key_buffer_size = sizeof(third_key_buffer);
+        size_t third_key_ptr_size;
 
         // Get the seal key using saved key info.
-        ret = oe_get_seal_key(
+        ret = oe_get_seal_key_v1(
             key_info, key_info_size, third_key_buffer, &third_key_buffer_size);
+        if (ret != OE_OK)
+        {
+            return false;
+        }
+        ret = oe_get_seal_key_v2(
+            key_info, key_info_size, &third_key_ptr, &third_key_ptr_size);
         if (ret != OE_OK)
         {
             return false;
         }
 
         OE_TEST(third_key_buffer_size == sizeof(sgx_key_t));
+        OE_TEST(third_key_ptr_size == sizeof(sgx_key_t));
 
         // The seal keys should match.
         if ((oe_memcmp(key_buffer, second_key_buffer, sizeof(sgx_key_t)) !=
              0) ||
+            (oe_memcmp(key_buffer, third_key_ptr, sizeof(sgx_key_t)) != 0) ||
             (oe_memcmp(key_buffer, third_key_buffer, sizeof(sgx_key_t)) != 0))
         {
             return false;
         }
+
+        oe_free_seal_key(third_key_ptr, NULL);
 
         // Modify the isv_svn of key request to invalid and verify the function
         // can't get seal key.
         sgx_key_request_t* key_request = (sgx_key_request_t*)key_info;
         uint16_t cur_isv_svn = key_request->isv_svn;
         key_request->isv_svn = 0XFFFF;
-        ret = oe_get_seal_key(
+        ret = oe_get_seal_key_v1(
             key_info, key_info_size, third_key_buffer, &third_key_buffer_size);
+        if (ret != OE_INVALID_ISVSVN)
+        {
+            return false;
+        }
+        ret = oe_get_seal_key_v2(
+            key_info, key_info_size, &third_key_ptr, &third_key_ptr_size);
         if (ret != OE_INVALID_ISVSVN)
         {
             return false;
@@ -187,8 +310,14 @@ bool TestOEGetSealKey()
             key_request->cpu_svn,
             0XFF,
             OE_FIELD_SIZE(sgx_key_request_t, cpu_svn));
-        ret = oe_get_seal_key(
+        ret = oe_get_seal_key_v1(
             key_info, key_info_size, third_key_buffer, &third_key_buffer_size);
+        if (ret != OE_INVALID_CPUSVN)
+        {
+            return false;
+        }
+        ret = oe_get_seal_key_v2(
+            key_info, key_info_size, &third_key_ptr, &third_key_ptr_size);
         if (ret != OE_INVALID_CPUSVN)
         {
             return false;

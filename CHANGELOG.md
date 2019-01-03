@@ -24,6 +24,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    - Both GNU __thread and C++11 thread_local
    - Both hardware and simulation mode 
    - Local-Exec and Initial-Exec thread-local storage models
+- Added v2 versions of the following APIs that instead of passing in buffers now
+  return a buffer that needs to be freed via an associated free method. OE_API_VERSION
+  needs to be set to 2 to pick up the versions. The mentioned APIs have a *_V1 and *_V2
+  version that the below versions map to detending on the OE_API_VERSION.
+   - oe_get_report, free report buffer via oe_free_report
+   - oe_get_target_info, free target_info_buffer via oe_free_target_info
+   - oe_get_seal_key, free key_buffer and key_info via oe_free_seal_key
+   - oe_get_seal_key_by_policy, free key_buffer and key_info via oe_free_seal_key
 
 ### Changed
 
