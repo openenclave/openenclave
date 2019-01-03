@@ -111,19 +111,25 @@ target_link_libraries(oehost PUBLIC oe_includes)
 
 target_compile_definitions(oehost PRIVATE -DOE_REPO_BRANCH_NAME="${GIT_BRANCH}" -DOE_REPO_LAST_COMMIT="${GIT_COMMIT}")
 
-if(UNIX)
-find_library(CRYPTO_LIB NAMES crypto)
-find_library(DL_LIB NAMES dl)
-endif(UNIX)
+if (UNIX)
+  find_library(CRYPTO_LIB NAMES crypto)
+  add_library(crypto SHARED IMPORTED)
+  set_target_properties(crypto PROPERTIES IMPORTED_LOCATION ${CRYPTO_LIB})
+
+  find_library(DL_LIB NAMES dl)
+  add_library(dl SHARED IMPORTED)
+  set_target_properties(dl PROPERTIES IMPORTED_LOCATION ${DL_LIB})
+endif ()
+
 find_package(Threads REQUIRED)
 
 # linking also requires a number of libs on the host
-if(UNIX)
-target_link_libraries(oehost PRIVATE ${CRYPTO_LIB} ${DL_LIB} Threads::Threads)
-elseif(WIN32)
-target_include_directories(oehost PRIVATE ${CMAKE_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
-target_link_libraries(oehost PRIVATE bcrypt Crypt32)
-endif()
+if (UNIX)
+  target_link_libraries(oehost PRIVATE crypto dl Threads::Threads)
+elseif (WIN32)
+  target_include_directories(oehost PRIVATE ${CMAKE_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
+  target_link_libraries(oehost PRIVATE bcrypt Crypt32)
+endif ()
 
 if(UNIX)
 target_compile_options(oehost PRIVATE -Wno-attributes -Wmissing-prototypes -fPIC ${PLATFORM_FLAGS})
