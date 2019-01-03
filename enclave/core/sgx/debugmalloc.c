@@ -13,14 +13,7 @@
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/utils.h>
 #include "dlmalloc/errno.h"
-
-
-void* _oe_malloc(size_t);
-void  _oe_free(void*);
-void* _oe_calloc(size_t, size_t);
-void* _oe_realloc(void*, size_t);
-void* _oe_memalign(size_t alignment, size_t size);
-int   _oe_posix_memalign(void** memptr, size_t alignment, size_t size);
+#include "internalmalloc.h"
 
 #if defined(OE_USE_DEBUG_MALLOC)
 

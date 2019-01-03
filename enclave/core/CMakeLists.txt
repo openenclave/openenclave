@@ -19,6 +19,7 @@ if (OE_SGX)
         sgx/jump.c
         sgx/keys.c
         sgx/malloc.c
+        sgx/dlmalloc/dlmalloc_wrapper.c
         sgx/memory.c
         sgx/once.c
         sgx/properties.c
@@ -76,7 +77,7 @@ if (OE_SGX)
 
     # Unfortunately dlmalloc uses GNU extension that allows arithmetic
     # null pointers.
-    set_source_files_properties(sgx/malloc.c
+    set_source_files_properties(sgx/dlmalloc/dlmalloc_wrapper.c
         PROPERTIES COMPILE_FLAGS "-Wno-conversion -Wno-null-pointer-arithmetic")
 
     # jump.s must be optimized for the correct call-frame.
