@@ -97,17 +97,10 @@ Although other output image formats such as PNG are support, we recommend using
 SVG because it keeps the resulting file size reasonably small in spite of the
 huge number of nodes (targets) in the resulting graph.
 
-To generate a concise graph of just our libraries, write the following options
-to a file named `CMakeGraphVizOptions.cmake` at the root of the repo:
+To change the ignored targets, edit the file named `CMakeGraphVizOptions.cmake`
+at the root of the repo.
 
-```
-set(GRAPHVIZ_IGNORE_TARGETS "^cxxrt-" "^dl$")
-set(GRAPHVIZ_EXECUTABLES FALSE)
-```
-
-This disables all executables (mostly tests and samples) and a couple extra
-nodes, and leaves just the core libraries. At the time of this writing, it looks
-like this:
+As of 2019-01-02, it looks like this:
 
 ![CMake Dependency Graph](DependencyGraph.svg)
 
