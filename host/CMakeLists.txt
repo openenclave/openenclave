@@ -142,22 +142,33 @@ endif()
 
 target_compile_definitions(oehost PRIVATE OE_BUILD_UNTRUSTED)
 
-# Additional compilation and link options when using libsgx
-if(USE_LIBSGX)
-message("USE_LIBSGX is set, building oehost with FLC dependency")
-find_library(LIBSGX_COMMON NAMES sgx_enclave_common)
-find_library(LIBSGX_QE NAMES sgx_dcap_ql)
-find_library(LIBSGX_URTS NAMES sgx_urts)
-target_link_libraries(oehost PUBLIC ${LIBSGX_COMMON} ${LIBSGX_QE} ${LIBSGX_URTS})
-endif()
+# TODO: Handle Trust Zone etc.
 
-if(USE_DEBUG_MALLOC)
-target_compile_definitions(oehost PRIVATE OE_USE_DEBUG_MALLOC)
-endif()
+if (USE_LIBSGX)
+  find_library(LIBSGX_COMMON NAMES sgx_enclave_common)
+  find_library(LIBSGX_QE NAMES sgx_dcap_ql)
+  find_library(LIBSGX_URTS NAMES sgx_urts)
 
-if(USE_LIBSGX)
-    target_compile_definitions(oehost PUBLIC OE_USE_LIBSGX)
-endif()
+  if (NOT LIBSGX_COMMON OR NOT LIBSGX_QE OR NOT LIBSGX_URTS)
+    message(FATAL_ERROR "No SGX libraries found, aborting! Set -DUSE_LIBSGX=OFF to ignore.")
+  endif ()
+
+  add_library(sgx_enclave_common SHARED IMPORTED)
+  set_target_properties(sgx_enclave_common PROPERTIES IMPORTED_LOCATION ${LIBSGX_COMMON})
+
+  add_library(sgx_dcap_ql SHARED IMPORTED)
+  set_target_properties(sgx_dcap_ql PROPERTIES IMPORTED_LOCATION ${LIBSGX_QE})
+
+  add_library(sgx_urts SHARED IMPORTED)
+  set_target_properties(sgx_urts PROPERTIES IMPORTED_LOCATION ${LIBSGX_URTS})
+
+  target_link_libraries(oehost PUBLIC sgx_enclave_common sgx_dcap_ql sgx_urts)
+  target_compile_definitions(oehost PUBLIC OE_USE_LIBSGX)
+endif ()
+
+if (USE_DEBUG_MALLOC)
+  target_compile_definitions(oehost PRIVATE OE_USE_DEBUG_MALLOC)
+endif ()
 
 # convenience library for creating a host-app (that needs the -rdynamic link flag)
 add_library(oehostapp INTERFACE)
