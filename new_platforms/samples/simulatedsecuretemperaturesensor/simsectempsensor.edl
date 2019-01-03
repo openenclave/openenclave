@@ -1,0 +1,19 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    from "openenclave/stdio.edl" import *;
+
+    trusted {
+        /* define ECALLs here. */
+        public int enclave_readsensor(
+            [out] uint32_t* value, 
+            [out, size=signature_buffer_size] uint8_t* signature_buffer, 
+            size_t signature_buffer_size, 
+            [out] size_t* signature_buffer_used);
+    };
+
+    untrusted {
+        /* define OCALLs here. */
+    };
+};
