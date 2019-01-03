@@ -6,7 +6,7 @@ pipeline {
         stage('libcxx clang-7 Debug') {
           agent {
             node {
-              label 'hardware'
+              label 'ACC-1604'
           }
 
           }
@@ -19,7 +19,7 @@ pipeline {
         stage('libcxx clang-7 Release') {
           agent {
             node {
-              label 'hardware'
+              label 'ACC-1604'
           }
 
           }
@@ -32,7 +32,7 @@ pipeline {
         stage('libcxx clang-7 RelWithDebInfo') {
           agent {
             node {
-              label 'hardware'
+              label 'ACC-1604'
           }
 
           }
@@ -45,7 +45,7 @@ pipeline {
         stage('libcxx gcc Debug') {
           agent {
             node {
-              label 'hardware'
+              label 'ACC-1604'
           }
 
           }
@@ -58,7 +58,7 @@ pipeline {
         stage('libcxx gcc Release') {
           agent {
             node {
-              label 'hardware'
+              label 'ACC-1604'
           }
 
           }
@@ -71,7 +71,7 @@ pipeline {
         stage('libcxx gcc RelWithDebInfo') {
           agent {
             node {
-              label 'hardware'
+              label 'ACC-1604'
           }
 
           }
