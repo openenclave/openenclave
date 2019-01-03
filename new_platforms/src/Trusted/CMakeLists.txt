@@ -46,6 +46,7 @@ elseif(WIN32)
         string_t.c)
 
     set(LOCAL_INCS
+        PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -75,7 +76,6 @@ elseif(WIN32)
             logapp.c)
 
         set(SGX_INCS
-            PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/sgx
             PUBLIC  ${SGXSDKInstallPath}/include
             PUBLIC  ${SGXSDKInstallPath}/include/tlibc)
@@ -115,15 +115,17 @@ elseif(WIN32)
             optee/trpc_optee.c)
 
         set(TZ_INCS
-            PRIVATE ${NP_PATH}/include/optee/enclave/Simulator
-            PRIVATE ${NP_PATH}/include/optee/enclave
-            PRIVATE ${NP_PATH}/include/optee)
+            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/optee
+            PUBLIC ${NP_PATH}/include/optee/enclave/Simulator
+            PUBLIC ${NP_PATH}/include/optee/enclave
+            PUBLIC ${NP_PATH}/include/optee)
         set(TZ_EXTERNAL_INCS
-            PRIVATE ${OPTEE_OS_PATH}/lib/libutee/include
-            PRIVATE ${OPTEE_OS_PATH}/lib/libutils/ext/include)
-        
+            PUBLIC ${OPTEE_OS_PATH}/lib/libutee/include
+            PUBLIC ${OPTEE_OS_PATH}/lib/libutils/ext/include)
+
         set(SRCS ${CYREP_SRCS} ${COMMON_SRCS} ${TZ_SRCS})
         set(INCS ${LOCAL_INCS} ${TZ_INCS} ${COMMON_INCS} ${TZ_EXTERNAL_INCS} ${EXTERNAL_INCS})
+        set(LIBS oeenclave_opteesim)
     endif() 
 
     add_library(oeenclave STATIC ${SRCS} ${GEN})

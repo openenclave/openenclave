@@ -5,6 +5,7 @@ add_library(oeenclave_opteesim STATIC
     cyres_sim.c
     memory-sim.c
     stdio-sim.c
+    string-sim.c
     tcrypto-sim.c
     tobject-sim.c
     trpc_sim.c

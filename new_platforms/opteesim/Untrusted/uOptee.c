@@ -102,7 +102,7 @@ HANDLE __stdcall Tcps_CreateFileW(
 
         WCHAR fileName[256];
         swprintf_s(fileName, ARRAY_SIZE(fileName), L"%ls.dll", uuidString);
-        HMODULE hModule = LoadLibrary(fileName);
+        HMODULE hModule = LoadLibraryW(fileName);
         if (hModule == NULL) {
             return INVALID_HANDLE_VALUE;
         }

@@ -89,18 +89,9 @@ set(CYREP_PATH        ${RIOT_PATH}/CyReP)
 set(TINYCBOR_PATH     ${RIOT_PATH}/External/tinycbor)
 
 # Place binaries in predictable locations.
-if(SIM)
-    set(__PREFIX "/sim")
-endif()
-
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out${__PREFIX}/bin)
-if(UNIX)
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out${__PREFIX}/ar)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out${__PREFIX}/lib)
-elseif(WIN32)
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out${__PREFIX}/lib)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out${__PREFIX}/dll)
-endif()
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out${__PREFIX}/bin)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out${__PREFIX}/lib)
 
 # Add common compiler definitions
 if(SGX)
@@ -111,10 +102,6 @@ else()
     else()
         add_definitions(-DOE_USE_OPTEE)
     endif()
-endif()
-
-if(WIN32)
-    add_definitions(-D_UNICODE)
 endif()
 
 # 3rd-party components

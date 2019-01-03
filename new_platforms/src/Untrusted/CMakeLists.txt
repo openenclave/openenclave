@@ -51,6 +51,10 @@ elseif(WIN32)
         list(APPEND INCS PRIVATE ${OE_PATH}/3rdparty/OpteeCalls/OpteeCalls/inc)
         
         set(LIBS PUBLIC Rpcrt4)
+
+        if(SIM)
+            list(APPEND LIBS PUBLIC oehost_opteesim)
+        endif()
     elseif(SGX)
         list(APPEND SRCS ../oeresult.c win32/teehost_sgx.c)
         list(APPEND INCS PUBLIC ${SGXSDKInstallPath}/include)
