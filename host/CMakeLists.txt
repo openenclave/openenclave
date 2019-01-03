@@ -3,113 +3,111 @@
 
 # OS specific but arch agnostic files.
 if (UNIX)
-    set(PLATFORM_SRC
-        ../common/asn1.c
-        ../common/cert.c
-        crypto/openssl/asn1.c
-        crypto/openssl/cert.c
-        crypto/openssl/crl.c
-        crypto/openssl/ec.c
-        crypto/openssl/hmac.c
-        crypto/openssl/init.c
-        crypto/openssl/key.c
-        crypto/openssl/random.c
-        crypto/openssl/rsa.c
-        linux/hostthread.c
-        linux/time.c
-        linux/windows.c)
+  set(PLATFORM_SRC
+    ../common/asn1.c
+    ../common/cert.c
+    crypto/openssl/asn1.c
+    crypto/openssl/cert.c
+    crypto/openssl/crl.c
+    crypto/openssl/ec.c
+    crypto/openssl/hmac.c
+    crypto/openssl/init.c
+    crypto/openssl/key.c
+    crypto/openssl/random.c
+    crypto/openssl/rsa.c
+    linux/hostthread.c
+    linux/time.c
+    linux/windows.c)
 elseif (WIN32)
-    set(PLATFORM_SRC
-        ../3rdparty/mbedtls/mbedtls/library/bignum.c
-        crypto/bcrypt/hmac.c
-        crypto/bcrypt/rsa.c
-        windows/hostthread.c
-        windows/time.c)
+  set(PLATFORM_SRC
+    ../3rdparty/mbedtls/mbedtls/library/bignum.c
+    crypto/bcrypt/hmac.c
+    crypto/bcrypt/rsa.c
+    windows/hostthread.c
+    windows/time.c)
 else()
-    message(FATAL_ERROR "Unknown OS. Only supported OSes are Linux and Windows")
+  message(FATAL_ERROR "Unknown OS. Only supported OSes are Linux and Windows")
 endif()
 
 # SGX specific files
 if (OE_SGX)
+  list(APPEND PLATFORM_SRC
+    ../common/sgx/qeidentity.c
+    ../common/sgx/quote.c
+    ../common/sgx/report.c
+    ../common/sgx/revocation.c
+    ../common/sgx/sgxcertextensions.c
+    ../common/sgx/tcbinfo.c
+    sgx/calls.c
+    sgx/create.c
+    sgx/elf.c
+    sgx/enclave.c
+    sgx/enclavemanager.c
+    sgx/exception.c
+    sgx/load.c
+    sgx/loadelf.c
+    sgx/loadpe.c
+    sgx/ocalls.c
+    sgx/quote.c
+    sgx/registers.c
+    sgx/report.c
+    sgx/sgxload.c
+    sgx/sgxmeasure.c
+    sgx/sgxquote.c
+    sgx/sgxsign.c
+    sgx/sgxtypes.c
+    sgx/traceh.c)
+
+  # OS specific as well.
+  if (UNIX)
     list(APPEND PLATFORM_SRC
-        ../common/sgx/qeidentity.c
-        ../common/sgx/quote.c
-        ../common/sgx/report.c
-        ../common/sgx/revocation.c
-        ../common/sgx/sgxcertextensions.c
-        ../common/sgx/tcbinfo.c
-        sgx/calls.c
-        sgx/create.c
-        sgx/elf.c
-        sgx/enclave.c
-        sgx/enclavemanager.c
-        sgx/exception.c
-        sgx/load.c
-        sgx/loadelf.c
-        sgx/loadpe.c
-        sgx/ocalls.c
-        sgx/quote.c
-        sgx/registers.c
-        sgx/report.c
-        sgx/sgxload.c
-        sgx/sgxmeasure.c
-        sgx/sgxquote.c
-        sgx/sgxsign.c
-        sgx/sgxtypes.c
-        sgx/traceh.c)
+      sgx/linux/aep.S
+      sgx/linux/aesm.c
+      sgx/linux/cpuid.c
+      sgx/linux/enter.S
+      sgx/linux/entersim.S
+      sgx/linux/exception.c
+      sgx/linux/sgxioctl.c
+      sgx/linux/sgxquoteprovider.c)
+  else()
+    list(APPEND PLATFORM_SRC
+      sgx/windows/aep.asm
+      sgx/windows/aesm.c
+      sgx/windows/cpuid.c
+      sgx/windows/enter.asm
+      sgx/windows/entersim.asm
+      sgx/windows/exception.c)
+  endif()
 
-    # OS specific as well.
-    if (UNIX)
-        list(APPEND PLATFORM_SRC
-            sgx/linux/aep.S
-            sgx/linux/aesm.c
-            sgx/linux/cpuid.c
-            sgx/linux/enter.S
-            sgx/linux/entersim.S
-            sgx/linux/exception.c
-            sgx/linux/sgxioctl.c
-            sgx/linux/sgxquoteprovider.c)
-    else()
-        list(APPEND PLATFORM_SRC
-            sgx/windows/aep.asm
-            sgx/windows/aesm.c
-            sgx/windows/cpuid.c
-            sgx/windows/enter.asm
-            sgx/windows/entersim.asm
-            sgx/windows/exception.c)
-    endif()
-
-    set(PLATFORM_FLAGS "-m64")
+  set(PLATFORM_FLAGS "-m64")
 elseif(OE_TRUSTZONE)
-    list(APPEND PLATFORM_SRC
-        optee/enclave.c
-        optee/log.c)
-    set(PLATFORM_FLAGS "")
+  list(APPEND PLATFORM_SRC
+    optee/enclave.c
+    optee/log.c)
+  set(PLATFORM_FLAGS "")
 endif()
 
 # Combine with all other non platform dependent files.
 add_library(oehost STATIC
-    ../common/datetime.c
-    ../common/kdf.c
-    ../common/safecrt.c
-    dupenv.c
-    error.c
-    files.c
-    fopen.c
-    hexdump.c
-    memalign.c
-    ocalls.c
-    result.c
-    signkey.c
-    strings.c
-    tests.c
-    crypto/sha.c
-    ${PLATFORM_SRC})
+  ../common/datetime.c
+  ../common/kdf.c
+  ../common/safecrt.c
+  dupenv.c
+  error.c
+  files.c
+  fopen.c
+  hexdump.c
+  memalign.c
+  ocalls.c
+  result.c
+  signkey.c
+  strings.c
+  tests.c
+  crypto/sha.c
+  ${PLATFORM_SRC})
 
-# we and dependents need the OE includes to compile
+# Link libraries
 target_link_libraries(oehost PUBLIC oe_includes)
-
-target_compile_definitions(oehost PRIVATE -DOE_REPO_BRANCH_NAME="${GIT_BRANCH}" -DOE_REPO_LAST_COMMIT="${GIT_COMMIT}")
 
 if (UNIX)
   find_library(CRYPTO_LIB NAMES crypto)
@@ -123,27 +121,15 @@ endif ()
 
 find_package(Threads REQUIRED)
 
-# linking also requires a number of libs on the host
 if (UNIX)
   target_link_libraries(oehost PRIVATE crypto dl Threads::Threads)
 elseif (WIN32)
-  target_include_directories(oehost PRIVATE ${CMAKE_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
+  target_include_directories(oehost PRIVATE
+    ${CMAKE_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
   target_link_libraries(oehost PRIVATE bcrypt Crypt32)
 endif ()
 
-if(UNIX)
-target_compile_options(oehost PRIVATE -Wno-attributes -Wmissing-prototypes -fPIC ${PLATFORM_FLAGS})
-target_compile_definitions(oehost PRIVATE _GNU_SOURCE)
-endif(UNIX)
-
-if(CMAKE_C_COMPILER_ID MATCHES GNU)
-target_compile_options(oehost PRIVATE -Wjump-misses-init)
-endif()
-
-target_compile_definitions(oehost PRIVATE OE_BUILD_UNTRUSTED)
-
 # TODO: Handle Trust Zone etc.
-
 if (USE_LIBSGX)
   find_library(LIBSGX_COMMON NAMES sgx_enclave_common)
   find_library(LIBSGX_QE NAMES sgx_dcap_ql)
@@ -166,23 +152,42 @@ if (USE_LIBSGX)
   target_compile_definitions(oehost PUBLIC OE_USE_LIBSGX)
 endif ()
 
+# Compile definitions and options
+target_compile_definitions(oehost PRIVATE
+  -DOE_BUILD_UNTRUSTED
+  -DOE_REPO_BRANCH_NAME="${GIT_BRANCH}"
+  -DOE_REPO_LAST_COMMIT="${GIT_COMMIT}")
+
 if (USE_DEBUG_MALLOC)
   target_compile_definitions(oehost PRIVATE OE_USE_DEBUG_MALLOC)
 endif ()
 
-# convenience library for creating a host-app (that needs the -rdynamic link flag)
+if (UNIX)
+  target_compile_options(oehost PRIVATE
+    -Wno-attributes -Wmissing-prototypes -fPIC ${PLATFORM_FLAGS})
+  target_compile_definitions(oehost PRIVATE _GNU_SOURCE)
+endif ()
+
+if (CMAKE_C_COMPILER_ID MATCHES GNU)
+  target_compile_options(oehost PRIVATE -Wjump-misses-init)
+endif ()
+
+# TODO: Remove this hard coded output directory.
+set_property(TARGET oehost PROPERTY
+  ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/host)
+
+# Convenience library for creating a host-app (that needs the
+# -rdynamic link flag).
 add_library(oehostapp INTERFACE)
-if(UNIX)
-target_link_libraries(oehostapp INTERFACE oehost -rdynamic)
-elseif(WIN32)
+
 target_link_libraries(oehostapp INTERFACE oehost)
-endif()
 
-# assemble lib-archive into proper dir
-set_property(TARGET oehost PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/host)
+if (UNIX)
+  target_link_libraries(oehostapp INTERFACE -rdynamic)
+endif ()
 
-# install lib-archive upon install-time
-install(TARGETS oehost EXPORT openenclave-targets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host)
+# Install targets
+install(TARGETS oehost EXPORT openenclave-targets
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host)
 
-# provide oehostapp to install-base as well
 install(TARGETS oehostapp EXPORT openenclave-targets)
