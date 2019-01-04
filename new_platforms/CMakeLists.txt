@@ -113,6 +113,7 @@ endif()
 
 add_subdirectory(libsocket)
 add_subdirectory(libstdio)
+add_subdirectory(samples)
 add_subdirectory(src)
 add_subdirectory(tests)
 

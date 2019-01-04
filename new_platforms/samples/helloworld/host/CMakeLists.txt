@@ -3,20 +3,15 @@
 
 include(oeedl_file)
 
-set(TARGET oetests_host)
+set(TARGET helloworld_host)
 
-oeedl_file(../oetests.edl host GEN C_GEN H_GEN ${OE_PATH}/include)
+oeedl_file(../helloworld.edl host GEN C_GEN H_GEN ${OE_PATH}/include)
 
-set(SRCS
-    main.cpp
-    TrustedAppTest.cpp
-    OEEnclaveTest.cpp
-    OEHostTest.cpp
-    sockets_test.cpp)
+set(SRCS host.c)
 
 add_executable(${TARGET} ${SRCS} ${GEN})
 target_include_directories(${TARGET} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(${TARGET} gtest oehost oesocket_host oestdio_host)
+target_link_libraries(${TARGET} oehost oesocket_host oestdio_host)
 
 if(UNIX)
     target_compile_definitions(${TARGET} PRIVATE LINUX)
