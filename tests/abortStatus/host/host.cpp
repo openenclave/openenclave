@@ -126,11 +126,10 @@ static bool TestBasicAbort(const char* enclave_name)
             TestAbortStatus(enclave, functions[i].first, functions[i].second);
         }
 
-#if defined(OE_USE_DEBUG_MALLOC) || defined(_WIN32)
-        if ((result = oe_terminate_enclave(enclave)) != OE_MEMORY_LEAK)
-#else
-        if ((result = oe_terminate_enclave(enclave)) != OE_OK)
-#endif
+        // Enclave should be terminated correctly but there are no guarantees
+        // that all memory will be freed after enclave has been aborted
+        result = oe_terminate_enclave(enclave);
+        if ((result != OE_MEMORY_LEAK) && (result != OE_OK))
         {
             oe_put_err("oe_terminate_enclave(): result=%u", result);
             return false;
@@ -203,12 +202,10 @@ static bool TestMultipleThreadAbort(const char* enclave_name)
             t.join();
         }
 
-#if defined(OE_USE_DEBUG_MALLOC) || defined(_WIN32)
-        // Enclave should be terminated correctly.
-        if ((result = oe_terminate_enclave(enclave)) != OE_MEMORY_LEAK)
-#else
-        if ((result = oe_terminate_enclave(enclave)) != OE_OK)
-#endif
+        // Enclave should be terminated correctly but there are no guarantees
+        // that all memory will be freed after enclave has been aborted
+        result = oe_terminate_enclave(enclave);
+        if ((result != OE_MEMORY_LEAK) && (result != OE_OK))
         {
             oe_put_err("oe_terminate_enclave(): result=%u", result);
             return false;
