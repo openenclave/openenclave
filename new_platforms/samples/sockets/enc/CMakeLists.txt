@@ -29,12 +29,12 @@ elseif(WIN32 AND (SGX OR (TZ AND SIM)))
         set(TARGET aac3129e-c244-4e09-9e61-d4efcf31bca3)
     endif()
 
-    set(SRCS enc.c)
+    set(SRCS sockets.c)
 
     add_library(${TARGET} MODULE ${SRCS} ${GEN})
 
     target_include_directories(${TARGET} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-    target_link_libraries(${TARGET} oeenclave oestdio_enc)
+    target_link_libraries(${TARGET} oeenclave oestdio_enc oesocket_enc)
 
     string(REPLACE "/RTC1" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
 
