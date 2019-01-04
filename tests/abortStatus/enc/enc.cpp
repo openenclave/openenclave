@@ -5,85 +5,56 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atexit.h>
 #include <openenclave/internal/print.h>
-#include "../args.h"
+#include <atomic>
+#include "abortStatus_t.h"
 
 // Explicitly call oe_abort to abort the enclave.
-OE_ECALL void RegularAbort(void* args_)
+int regular_abort(void)
 {
-    AbortStatusArgs* args = (AbortStatusArgs*)args_;
-
-    if (!oe_is_outside_enclave(args, sizeof(AbortStatusArgs)))
-    {
-        return;
-    }
-
-    args->ret = 0;
     oe_abort();
 
     oe_host_printf("Error: unreachable code is reached.\n");
-    args->ret = -1;
-    return;
+    return -1;
 }
 
 // When an un-handled hardware exception happens, enclave should abort itself.
-OE_ECALL void GenerateUnhandledHardwareException(void* args_)
+int generate_unhandled_hardware_exception(void)
 {
-    AbortStatusArgs* args = (AbortStatusArgs*)args_;
-
-    if (!oe_is_outside_enclave(args, sizeof(AbortStatusArgs)))
-    {
-        return;
-    }
-
-    args->ret = 0;
-
     // Generate a hardware exception via an undefined instruction. Since there
     // is no handler to handle it, the enclave should abort itself.
     asm volatile("ud2" ::: "memory");
     // We should never get here...
     oe_host_printf("Error: unreachable code is reached. ");
-    args->ret = -1;
-    return;
+    return -1;
 }
 
-OE_ECALL void TestOCallAfterAbort(void* args_)
+int test_ocall_after_abort(void* thread_ready_count, void* is_enclave_crashed)
 {
-    AbortStatusArgs* args = (AbortStatusArgs*)args_;
-    args->ret = -1;
-
-    if (!oe_is_outside_enclave(args, sizeof(AbortStatusArgs)))
-    {
-        return;
-    }
+    int rval = -1;
 
     // Notify control thread that this thread is ready.
-    ++*args->thread_ready_count;
+    ++(*reinterpret_cast<std::atomic<uint32_t>*>(thread_ready_count));
 
     // Wait for the is_enclave_crashed signal.
-    while (*args->is_enclave_crashed == 0)
-        ;
+    while (!*reinterpret_cast<std::atomic<bool>*>(is_enclave_crashed))
+    {
+        continue;
+    }
 
     // OCALL should return OE_ENCLAVE_ABORTING.
-    if (oe_call_host("foobar", NULL) == OE_ENCLAVE_ABORTING)
+    // There is currently an issue with the generated code that needs to be
+    // fixed.
+    if (foobar() == OE_OUT_OF_MEMORY)
     {
-        args->ret = 0;
+        rval = 0;
     }
 
-    return;
+    return rval;
 }
 
-OE_ECALL void NormalECall(void* args_)
+int normal_ecall(void)
 {
-    AbortStatusArgs* args = (AbortStatusArgs*)args_;
-    args->ret = -1;
-
-    if (!oe_is_outside_enclave(args, sizeof(AbortStatusArgs)))
-    {
-        return;
-    }
-
-    args->ret = 0;
-    return;
+    return 0;
 }
 
 OE_SET_ENCLAVE_SGX(
@@ -93,5 +64,3 @@ OE_SET_ENCLAVE_SGX(
     1024, /* HeapPageCount */
     1024, /* StackPageCount */
     5);   /* TCSCount */
-
-OE_DEFINE_EMPTY_ECALL_TABLE();

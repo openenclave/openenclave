@@ -734,7 +734,8 @@ let oe_gen_ocall_host_wrapper (os:out_channel) (fd:Ast.func_decl) =
   fprintf os "        size_t* output_bytes_written)\n";
   (* Variable declarations *)
   fprintf os "{\n";
-  fprintf os "    oe_result_t _result = OE_FAILURE;\n\n";
+  fprintf os "    oe_result_t _result = OE_FAILURE;\n";
+  fprintf os "    OE_UNUSED(input_buffer_size);\n\n";
   fprintf os "    /* Prepare parameters */\n";
   fprintf os "    %s_args_t* pargs_in = (%s_args_t*) input_buffer;\n" fd.Ast.fname fd.Ast.fname;
   fprintf os "    %s_args_t* pargs_out = (%s_args_t*) output_buffer;\n\n" fd.Ast.fname fd.Ast.fname;
@@ -906,7 +907,10 @@ let gen_t_c (ec: enclave_content) (ep: edger8r_params) =
   if ec.ufunc_decls <> [] then (
     fprintf os "\n/* ocall wrappers */\n\n";
     List.iter (fun d -> oe_gen_ocall_enclave_wrapper os d.Ast.uf_fdecl)  ec.ufunc_decls);
-  fprintf os "\nOE_ECALL void _dummy_old_style_ecall_to_keep_loader_happy(void* arg){}\n\n";
+  fprintf os "\nOE_ECALL void _dummy_old_style_ecall_to_keep_loader_happy(void* arg)\n";
+  fprintf os "{\n";
+  fprintf os "    OE_UNUSED(arg);\n";
+  fprintf os "}\n\n";
   fprintf os "OE_EXTERNC_END\n";
   close_out os 
 

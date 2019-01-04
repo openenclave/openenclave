@@ -18,7 +18,6 @@ pipeline {
             }
           }
         }
-        }
         stage('SGX1FLC Package Release') {
           agent {
             node {
@@ -52,7 +51,6 @@ pipeline {
             }
           }
         }
-        }
         stage('SGX1 Package Debug') {
           agent {
             node {
@@ -67,7 +65,6 @@ pipeline {
               azureUpload(storageCredentialId: 'oejenkinsciartifacts_storageaccount', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: 'master/latest/Debug/SGX1/', containerName: 'oejenkins')
             }
           }
-        }
         }
         stage('SGX1 Package Release') {
           agent {
@@ -100,21 +97,6 @@ pipeline {
             }
           }
         }
-        stage('Windows Release') {
-          agent {
-            node {
-              label 'SGXFLC-Windows'
-            }
-          }
-
-          steps {
-            timeout(10) {
-              bat '''mkdir build && cd build && cmake -G "Visual Studio 15 2017 Win64" .. && pushd . && "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\Common7\\Tools\\LaunchDevCmd.bat" && popd && cmake --build . --config Debug && ctest -C Debug'''
-              azureUpload(storageCredentialId: 'oedownload_id', filesPath: 'build/output/bin/oeedger8r.exe', storageType: 'blobstorage', virtualPath: 'master/${BUILD_NUMBER}/oeedger8r/', containerName: 'binaries')
-            }
-          }
-        }
-      }
         stage('Windows Release') {
           agent {
             node {

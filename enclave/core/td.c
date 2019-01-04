@@ -11,6 +11,13 @@
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
 #include "asmdefs.h"
+#include "thread.h"
+
+#if __linux__
+#include "linux/threadlocal.h"
+#endif
+
+#define TD_FROM_TCS (4 * OE_PAGE_SIZE)
 
 #define TD_FROM_TCS (4 * OE_PAGE_SIZE)
 
@@ -92,10 +99,18 @@ void td_pop_callsite(td_t* td)
     if (!td->callsites)
         oe_abort();
 
-    td->callsites = td->callsites->next;
-
-    if (--td->depth == 0)
+    if (td->depth == 1)
+    {
+        // The outermost ecall is about to return.
+        // Clear the thread-local storage.
         td_clear(td);
+    }
+    else
+    {
+        // Nested ecall returning.
+        td->callsites = td->callsites->next;
+        --td->depth;
+    }
 }
 
 /*
@@ -245,6 +260,10 @@ void td_init(td_t* td)
 
         /* List of callsites is initially empty */
         td->callsites = NULL;
+
+#if __linux__
+        oe_thread_local_init(td);
+#endif
     }
 }
 
@@ -261,8 +280,25 @@ void td_init(td_t* td)
 
 void td_clear(td_t* td)
 {
-    /* Should not be called unless callsite list is empty */
-    if (td->depth != 0 || td->callsites)
+    if (td->depth != 1)
+        oe_abort();
+
+    // Release any pthread thread-local storage created using
+    // pthread_create_key.
+    oe_thread_destruct_specific();
+
+#if __linux__
+    oe_thread_local_cleanup(td);
+#endif
+
+    // The call sites and depth are cleaned up after the thread-local storage is
+    // cleaned up since thread-local dynamic destructors could make ocalls.
+    // For such ocalls to work depth and callsites must be cleaned up here.
+    td->callsites = td->callsites->next;
+    --td->depth;
+
+    /* Sanity checks */
+    if (td->depth != 0 || td->callsites != NULL)
         oe_abort();
 
     /* Clear base structure */

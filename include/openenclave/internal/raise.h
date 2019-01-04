@@ -67,52 +67,60 @@
 
 OE_EXTERNC_BEGIN
 
-// This macro sets the 'result' and jumps to the 'done' label.
-#define OE_RAISE(RESULT)        \
-    do                          \
-    {                           \
-        result = (RESULT);      \
-        OE_RAISE_TRACE(result); \
-        goto done;              \
+#define OE_RAISE(RESULT, ...)                                    \
+    do                                                           \
+    {                                                            \
+        result = (RESULT);                                       \
+        if (result != OE_OK)                                     \
+        {                                                        \
+            OE_TRACE_ERROR("Failed::%s", oe_result_str(result)); \
+        }                                                        \
+        goto done;                                               \
     } while (0)
 
-// This macro checks whether the expression argument evaluates to OE_OK. If not
-// it sets the 'result' to the evaluation of the expression and jumps to the
-// 'done' label.
+// Unlike gcc and clang, for pure C code, MSVC does not support ##__VA_ARGS__
+// extension for getting rid of the trailing comma when empty args for variadic
+// macros is detected. This will cause compilation error.
+// To make OE code work on MSVC, you need to add NULL as the last parameter if
+// variadic paramter is empty in OE_RAISE_MSG(RESULT, fmt, ...)
+// eg : OE_RAISE_MSG(OE_FAILURE, "your message", NULL);
+
+#define OE_RAISE_MSG(RESULT, fmt, ...)                                   \
+    do                                                                   \
+    {                                                                    \
+        result = (RESULT);                                               \
+        if (result != OE_OK)                                             \
+        {                                                                \
+            OE_TRACE_ERROR(                                              \
+                fmt "failed(%s)", ##__VA_ARGS__, oe_result_str(result)); \
+        }                                                                \
+        goto done;                                                       \
+    } while (0)
+
+#define OE_RAISE_NO_TRACE(RESULT) \
+    do                            \
+    {                             \
+        result = (RESULT);        \
+        goto done;                \
+    } while (0)
+
+// This macro checks whether the expression argument evaluates to OE_OK. If not,
+// call OE_RAISE
 #define OE_CHECK(EXPRESSION)                 \
     do                                       \
     {                                        \
         oe_result_t _result_ = (EXPRESSION); \
-                                             \
         if (_result_ != OE_OK)               \
             OE_RAISE(_result_);              \
     } while (0)
 
-#if !defined(OE_RAISE_TRACE)
-
-#if defined(OE_TRACE_LEVEL)
-
-// OE_CHECK failures are logged at OE_TRACE_LEVEL_ERROR.
-#define OE_RAISE_TRACE(RESULT)                                \
-    OE_TRACE_ERROR(                                           \
-        "OE_CHECK failed with %s in function %s at %s:%d \n", \
-        oe_result_str(RESULT),                                \
-        __FUNCTION__,                                         \
-        __FILE__,                                             \
-        __LINE__)
-
-#else
-
-// This macro is used to trace the OE_RAISE macro. It is empty by default but
-// may be defined prior to including this header file.
-#define OE_RAISE_TRACE(RESULT) \
-    do                         \
-    {                          \
+#define OE_CHECK_NO_TRACE(EXPRESSION)        \
+    do                                       \
+    {                                        \
+        oe_result_t _result_ = (EXPRESSION); \
+        if (_result_ != OE_OK)               \
+            OE_RAISE_NO_TRACE(_result_);     \
     } while (0)
-
-#endif
-
-#endif
 
 OE_EXTERNC_END
 

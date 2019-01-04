@@ -11,7 +11,7 @@
 #
 
 # Needed for Open Enclave build
-PACKAGES=('cmake' 'make' 'pkg-config')
+PACKAGES=('make' 'pkg-config')
 
 # Needed for Open Enclave scripts
 PACKAGES+=('clang-format-3.8' 'shellcheck')
@@ -24,9 +24,6 @@ PACKAGES+=('autoconf' 'libtool')
 
 # Needed to generate documentation during make
 PACKAGES+=('doxygen' 'graphviz')
-
-# Needed for cmake/get_c_compiler_dir.sh
-PACKAGES+=('gawk')
 
 # Needed for dox2md document generation
 PACKAGES+=('libexpat1-dev')
@@ -79,4 +76,20 @@ EOF
     fi
 
     apt-get -y install clang-7
+fi
+
+if ! command -v cmake; then
+    # Install cmake 3.13.1
+    wget -q https://github.com/Kitware/CMake/releases/download/v3.13.1/cmake-3.13.1-Linux-x86_64.sh
+    bash cmake-3.13.1-Linux-x86_64.sh --skip-license --prefix=/usr/local
+    if [[ $(cmake --version | grep -o "3.13.1") != "3.13.1" ]]; then 
+        echo Cmake 3.13.1 failed to install
+        exit 1
+    fi
+else
+    cmake_version=$(cmake --version | head -1 | awk '{print $3}')
+    if ! dpkg --compare-versions "$cmake_version" "le" "3.13.1"; then
+        echo CMake already installed with version: "$cmake_version"
+        exit 1
+    fi
 fi

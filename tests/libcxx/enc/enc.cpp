@@ -44,7 +44,7 @@ extern "C" void exit(int status)
 
 typedef void (*Handler)(int signal);
 
-Handler signal(int signal, Handler)
+Handler signal(int, Handler)
 {
     /* Ignore! */
     return NULL;
@@ -52,16 +52,17 @@ Handler signal(int signal, Handler)
 
 extern "C" int close(int fd)
 {
+    OE_UNUSED(fd);
     OE_TEST("close() panic" == NULL);
     return 0;
 }
 
 static std::vector<std::function<void*()>> _thread_functions;
-static int _next_enc_thread_id = 0;
-int enc_key = 0; // Monotonically increasing enclave key
-static std::map<int, pthread_t> _key_to_thread_id_map; // Map of enc_key to
-                                                       // thread_id returned by
-                                                       // pthread_self()
+static uint64_t _next_enc_thread_id = 0;
+uint64_t enc_key = 0; // Monotonically increasing enclave key
+
+// Map of enc_key to thread_id returned by pthread_self()
+static std::map<uint64_t, pthread_t> _key_to_thread_id_map;
 
 static std::atomic_flag _enc_lock = ATOMIC_FLAG_INIT;
 // Each new thread will point to memory created by the host after thread
@@ -74,12 +75,14 @@ static int _pthread_create_hook(
     void* (*start_routine)(void*),
     void* arg)
 {
+    OE_UNUSED(attr);
+
     *enc_thread = 0;
     _acquire_lock(&_enc_lock);
     _thread_functions.push_back(
         [start_routine, arg]() { return start_routine(arg); });
     enc_key = ++_next_enc_thread_id;
-    printf("pthread_create_hook(): enc_key is %d\n", enc_key);
+    printf("pthread_create_hook(): enc_key is %ld\n", enc_key);
     // Populate the enclave key to thread id map in advance
     _key_to_thread_id_map.emplace(enc_key, *enc_thread);
     _release_lock(&_enc_lock);
@@ -97,7 +100,7 @@ static int _pthread_create_hook(
     {
         printf(
             "pthread_create_hook(): Error in call to host host_create_pthread "
-            "for enc_key=%d\n",
+            "for enc_key=%ld\n",
             enc_key);
         oe_abort();
     }
@@ -115,7 +118,8 @@ static int _pthread_create_hook(
     }
 
     printf(
-        "_pthread_create_hook(): pthread_create success for enc_key=%d; thread "
+        "_pthread_create_hook(): pthread_create success for enc_key=%ld; "
+        "thread "
         "id=0x%lu\n",
         enc_key,
         *enc_thread);
@@ -140,7 +144,7 @@ static int _pthread_join_hook(pthread_t enc_thread, void** value_ptr)
             enc_thread);
         oe_abort();
     }
-    int join_enc_key = it->first;
+    uint64_t join_enc_key = it->first;
     ThreadArgs* thrd_join_args = thread_args[join_enc_key - 1];
     if (thrd_join_args == NULL)
     {
@@ -152,14 +156,14 @@ static int _pthread_join_hook(pthread_t enc_thread, void** value_ptr)
     _release_lock(&_enc_lock);
 
     printf(
-        "_pthread_join_hook(): enc_key for thread ID 0x%lu is %d\n",
+        "_pthread_join_hook(): enc_key for thread ID 0x%lu is %ld\n",
         enc_thread,
         join_enc_key);
     if (oe_call_host("host_join_pthread", (void*)thrd_join_args) != OE_OK)
     {
         printf(
             "pthread_join_hook(): Error in call to host host_join_pthread for "
-            "enc_key=%d\n",
+            "enc_key=%ld\n",
             join_enc_key);
         oe_abort();
     }
@@ -197,7 +201,7 @@ static int _pthread_detach_hook(pthread_t enc_thread)
             enc_thread);
         oe_abort();
     }
-    int det_enc_key = it->first;
+    uint64_t det_enc_key = it->first;
     ThreadArgs* thrd_det_args = thread_args[det_enc_key - 1];
     if (thrd_det_args == NULL)
     {
@@ -209,14 +213,14 @@ static int _pthread_detach_hook(pthread_t enc_thread)
     _release_lock(&_enc_lock);
 
     printf(
-        "_pthread_detach_hook(): Enclave Key for thread ID 0x%lu is %d\n",
+        "_pthread_detach_hook(): Enclave Key for thread ID 0x%lu is %ld\n",
         enc_thread,
         det_enc_key);
     if (oe_call_host("host_detach_pthread", (void*)thrd_det_args) != OE_OK)
     {
         printf(
             "_pthread_detach_hook(): Error in call to host host_detach_pthread "
-            "for enc_key=%d\n",
+            "for enc_key=%ld\n",
             det_enc_key);
         oe_abort();
     }

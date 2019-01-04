@@ -76,6 +76,7 @@ typedef enum _oe_func {
     OE_ECALL_VERIFY_REPORT,
     OE_ECALL_GET_SGX_REPORT,
     OE_ECALL_VIRTUAL_EXCEPTION_HANDLER,
+    OE_ECALL_LOG_INIT,
     /* Caution: always add new ECALL function numbers here */
 
     OE_OCALL_CALL_HOST = OE_OCALL_BASE,
@@ -84,6 +85,7 @@ typedef enum _oe_func {
     OE_OCALL_GET_QE_TARGET_INFO,
     OE_OCALL_GET_QUOTE,
     OE_OCALL_GET_REVOCATION_INFO,
+    OE_OCALL_GET_QE_ID_INFO,
     OE_OCALL_THREAD_WAKE,
     OE_OCALL_THREAD_WAIT,
     OE_OCALL_THREAD_WAKE_WAIT,
@@ -94,6 +96,7 @@ typedef enum _oe_func {
     OE_OCALL_SLEEP,
     OE_OCALL_GET_TIME,
     OE_OCALL_BACKTRACE_SYMBOLS,
+    OE_OCALL_LOG,
     /* Caution: always add new OCALL function numbers here */
 
     __OE_FUNC_MAX = OE_ENUM_MAX,
@@ -154,7 +157,7 @@ OE_INLINE oe_code_t oe_get_code_from_call_arg1(uint64_t arg)
 
 OE_INLINE uint16_t oe_get_func_from_call_arg1(uint64_t arg)
 {
-    return (oe_func_t)((0x0000ffff00000000 & arg) >> 32);
+    return (uint16_t)((0x0000ffff00000000 & arg) >> 32);
 }
 
 /*

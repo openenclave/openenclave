@@ -5,8 +5,14 @@
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/tests.h>
 
-#include "../../../host/cpuid.h"
-#include "../../../host/linux/cpuid.c"
+// Defined in sigill_handling.c
+extern "C" void get_cpuid(
+    unsigned int leaf,
+    unsigned int subleaf,
+    unsigned int* eax,
+    unsigned int* ebx,
+    unsigned int* ecx,
+    unsigned int* edx);
 
 static int done = 0;
 static unsigned int c = 0;
@@ -20,7 +26,7 @@ int test_cpuid_instruction(unsigned int what)
     if (!done)
     {
         unsigned int a, b, d;
-        oe_get_cpuid(1, 0, &a, &b, &c, &d);
+        get_cpuid(1, 0, &a, &b, &c, &d);
         // Do something with out param so call to cpuid is not optimized out.
         if (a == 0)
         {

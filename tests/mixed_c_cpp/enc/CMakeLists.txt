@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 include(oeedl_file)
-include(add_enclave_executable)
+
 
 oeedl_file(../mixed.edl enclave gen)
 add_executable(mixed_c_cpp_enc

@@ -49,10 +49,10 @@ build:
 	oeedger8r ../localattestation.edl --trusted --trusted-dir ../common
 	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -std=c++11 ecalls.cpp ../common/attestation.cpp ../common/crypto.cpp ../common/dispatcher.cpp
 	$(CC) -c $(CFLAGS) $(CINCLUDES) ../common/localattestation_t.c	
-	$(CXX) -o enclave1.so attestation.o crypto.o ecalls.o dispatcher.o localattestation_t.o $(LDFLAGS)
+	$(CXX) -o enclave1 attestation.o crypto.o ecalls.o dispatcher.o localattestation_t.o $(LDFLAGS)
 
 sign:
-	oesign enclave1.so enc.conf private.pem
+	oesign sign enclave1 enc.conf private.pem
 
 clean:
-	rm -f *.o *.so ../common/localattestation_t.* ../common/localattestation_args.h *.pem enc2_pubkey.h
+	rm -f *.o enclave1 enclave1.signed ../common/localattestation_t.* ../common/localattestation_args.h *.pem enc2_pubkey.h

@@ -175,6 +175,7 @@ static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...)
     int ret = 0;
     oe_va_list ap;
 
+    OE_UNUSED(stream);
     oe_va_start(ap, format);
 
     if (oe_strcmp(format, "max system bytes = %10lu\n") == 0)

@@ -176,13 +176,9 @@ oe_result_t sgx_get_quote_size(size_t* quote_size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
 #if defined(OE_USE_LIBSGX)
-
     result = oe_sgx_qe_get_quote_size(quote_size);
-
 #else
-
     result = _sgx_get_quote_size_from_aesm(NULL, quote_size);
-
 #endif
 
 done:

@@ -30,6 +30,8 @@
 **==============================================================================
 */
 
+#define OE_ERROR_UNPACK ((size_t)-1)
+
 #define AESM_SOCKET "/var/run/aesmd/aesm.socket"
 
 typedef enum _wire_type {
@@ -77,7 +79,7 @@ static int _make_tag(uint8_t field_num, wire_type_t wire_type, uint8_t* tag)
         goto done;
 
     /* Form the tag */
-    *tag = (field_num << 3) | (uint8_t)wire_type;
+    *tag = (uint8_t)((field_num << 3) | (uint8_t)wire_type);
 
     ret = 0;
 
@@ -105,7 +107,7 @@ static int _pack_variant_uint32(mem_t* buf, uint32_t x)
 
     *p++ = (uint8_t)(x);
 
-    return mem_cat(buf, data, p - data);
+    return mem_cat(buf, data, (size_t)(p - data));
 }
 
 static int _pack_tag(mem_t* buf, uint8_t field_num, wire_type_t wire_type)
@@ -128,14 +130,17 @@ static ssize_t _unpack_tag(const mem_t* buf, size_t pos, uint8_t* tag)
     if (oe_memcpy_s(tag, sizeof(*tag), mem_ptr_at(buf, pos), size) != OE_OK)
         return -1;
 
-    return pos + size;
+    if (pos + size > OE_SSIZE_MAX)
+        return -1;
+
+    return (ssize_t)(pos + size);
 }
 
 static ssize_t _unpack_variant_uint32(mem_t* buf, size_t pos, uint32_t* value)
 {
     const uint8_t* p;
     uint32_t result = 0;
-    int count = 0;
+    size_t count = 0;
     uint32_t b;
 
     if (value)
@@ -161,7 +166,10 @@ static ssize_t _unpack_variant_uint32(mem_t* buf, size_t pos, uint32_t* value)
 
     *value = result;
 
-    return pos + count;
+    if (pos + count > OE_SSIZE_MAX)
+        return -1;
+
+    return (ssize_t)(pos + count);
 }
 
 static oe_result_t _pack_bytes(
@@ -191,14 +199,17 @@ done:
     return result;
 }
 
-static int _pack_var_int(mem_t* buf, uint8_t field_num, uint64_t value)
+static oe_result_t _pack_var_int(mem_t* buf, uint8_t field_num, uint64_t value)
 {
     oe_result_t result = OE_UNEXPECTED;
 
     if (_pack_tag(buf, field_num, WIRE_TYPE_VARINT) != 0)
         OE_RAISE(OE_FAILURE);
 
-    if (_pack_variant_uint32(buf, value) != 0)
+    if (value > OE_UINT_MAX)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (_pack_variant_uint32(buf, (uint32_t)value) != 0)
         OE_RAISE(OE_FAILURE);
 
     result = OE_OK;
@@ -217,7 +228,7 @@ static oe_result_t _unpack_var_int(
     uint8_t tag;
     uint8_t tmp_tag;
 
-    if ((*pos = _unpack_tag(buf, *pos, &tag)) == -1)
+    if ((*pos = (size_t)_unpack_tag(buf, *pos, &tag)) == OE_ERROR_UNPACK)
         OE_RAISE(OE_FAILURE);
 
     if (_make_tag(field_num, WIRE_TYPE_VARINT, &tmp_tag) != 0)
@@ -226,7 +237,8 @@ static oe_result_t _unpack_var_int(
     if (tag != tmp_tag)
         OE_RAISE(OE_FAILURE);
 
-    if ((*pos = _unpack_variant_uint32(buf, *pos, value)) == -1)
+    if ((*pos = (size_t)_unpack_variant_uint32(buf, *pos, value)) ==
+        OE_ERROR_UNPACK)
         OE_RAISE(OE_FAILURE);
 
     result = OE_OK;
@@ -247,7 +259,7 @@ static oe_result_t _unpack_length_delimited(
     uint8_t tmp_tag = 0;
     uint32_t size;
 
-    if ((*pos = _unpack_tag(buf, *pos, &tag)) == -1)
+    if ((*pos = (size_t)_unpack_tag(buf, *pos, &tag)) == OE_ERROR_UNPACK)
         OE_RAISE(OE_FAILURE);
 
     if (_make_tag(field_num, WIRE_TYPE_LENGTH_DELIMITED, &tmp_tag) != 0)
@@ -256,7 +268,8 @@ static oe_result_t _unpack_length_delimited(
     if (tag != tmp_tag)
         OE_RAISE(OE_FAILURE);
 
-    if ((*pos = _unpack_variant_uint32(buf, *pos, &size)) == -1)
+    if ((*pos = (size_t)_unpack_variant_uint32(buf, *pos, &size)) ==
+        OE_ERROR_UNPACK)
         OE_RAISE(OE_FAILURE);
 
     if (size > data_size)
@@ -276,7 +289,7 @@ static int _read(int sock, void* data, size_t size)
 {
     ssize_t n;
 
-    if ((n = read(sock, data, size)) != size)
+    if ((n = read(sock, data, size)) != (ssize_t)size)
         return -1;
 
     return 0;
@@ -286,7 +299,7 @@ static int _write(int sock, const void* data, size_t size)
 {
     ssize_t n;
 
-    if ((n = write(sock, data, size)) != size)
+    if ((n = write(sock, data, size)) != (ssize_t)size)
         return -1;
 
     return 0;
@@ -300,15 +313,19 @@ static oe_result_t _write_request(
     oe_result_t result = OE_UNEXPECTED;
     mem_t envelope = MEM_DYNAMIC_INIT;
 
-#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
     OE_TRACE_INFO("=== _write_request:\n");
-    oe_hex_dump(mem_ptr(message), mem_size(message));
-#endif
+    if (get_current_logging_level() >= OE_LOG_LEVEL_INFO)
+    {
+        oe_hex_dump(mem_ptr(message), mem_size(message));
+    }
 
     /* Wrap message in envelope */
     OE_CHECK(
         _pack_bytes(
-            &envelope, message_type, mem_ptr(message), mem_size(message)));
+            &envelope,
+            (uint8_t)message_type,
+            mem_ptr(message),
+            (uint32_t)mem_size(message)));
 
     /* Send the envelope to the AESM service */
     {
@@ -366,31 +383,38 @@ static oe_result_t _read_response(
         uint32_t size;
 
         /* Get the tag of this payload */
-        if ((pos = _unpack_tag(&envelope, pos, &tag)) == (size_t)-1)
+        if ((pos = (size_t)_unpack_tag(&envelope, pos, &tag)) ==
+            OE_ERROR_UNPACK)
             OE_RAISE(OE_FAILURE);
 
-        if (_make_tag(message_type, WIRE_TYPE_LENGTH_DELIMITED, &tmp_tag) != 0)
+        if (_make_tag(
+                (uint8_t)message_type, WIRE_TYPE_LENGTH_DELIMITED, &tmp_tag) !=
+            0)
             OE_RAISE(OE_FAILURE);
 
         if (tag != tmp_tag)
             OE_RAISE(OE_FAILURE);
 
         /* Get the size of this payload */
-        if ((pos = _unpack_variant_uint32(&envelope, pos, &size)) == (size_t)-1)
+        if ((pos = (size_t)_unpack_variant_uint32(&envelope, pos, &size)) ==
+            OE_ERROR_UNPACK)
             OE_RAISE(OE_FAILURE);
 
         /* Check the size (must equal unread bytes in envelope) */
-        if (size != mem_size(&envelope) - pos)
+        if (size != mem_size(&envelope) - (size_t)pos)
             OE_RAISE(OE_FAILURE);
 
+        uint8_t* temp = (uint8_t*)mem_ptr(&envelope) + pos;
+
         /* Read the message from the envelope */
-        mem_cat(message, mem_ptr(&envelope) + pos, size);
+        mem_cat(message, (const void*)temp, (size_t)size);
     }
 
-#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
     OE_TRACE_INFO("=== _read_response():\n");
-    oe_hex_dump(mem_ptr(message), mem_size(message));
-#endif
+    if (get_current_logging_level() >= OE_LOG_LEVEL_INFO)
+    {
+        oe_hex_dump(mem_ptr(message), mem_size(message));
+    }
 
     result = OE_OK;
 
@@ -409,7 +433,7 @@ aesm_t* aesm_connect()
 
     /* Create a socket for connecting to the AESM service */
     if ((sock = socket(AF_UNIX, SOCK_STREAM, 0)) < 0)
-        return NULL;
+        goto done;
 
     /* Initialize the address */
     memset(&addr, 0, sizeof(struct sockaddr_un));
@@ -421,7 +445,7 @@ aesm_t* aesm_connect()
     if (connect(sock, (struct sockaddr*)&addr, sizeof(addr)) != 0)
     {
         close(sock);
-        return NULL;
+        goto done;
     }
 
     /* Allocate and initialize the AESM struct */
@@ -429,12 +453,17 @@ aesm_t* aesm_connect()
         if (!(aesm = (aesm_t*)malloc(sizeof(aesm_t))))
         {
             close(sock);
-            return NULL;
+            goto done;
         }
 
         aesm->magic = AESM_MAGIC;
         aesm->sock = sock;
     }
+
+done:
+
+    if (aesm == NULL)
+        OE_TRACE_ERROR("aesm_connect failed");
 
     return aesm;
 }
@@ -500,7 +529,7 @@ oe_result_t aesm_get_launch_token(
             OE_CHECK(_unpack_var_int(&response, &pos, 1, &errcode));
 
             if (errcode != 0)
-                OE_RAISE(OE_FAILURE);
+                OE_RAISE_MSG(OE_FAILURE, "errcode=0x%x", errcode);
         }
 
         /* Unpack the launch token */
@@ -557,7 +586,7 @@ oe_result_t aesm_init_quote(
             OE_CHECK(_unpack_var_int(&response, &pos, 1, &errcode));
 
             if (errcode != 0)
-                OE_RAISE(OE_FAILURE);
+                OE_RAISE_MSG(OE_FAILURE, "errcode=0x%x", errcode);
         }
 
         /* Unpack target_info */
@@ -662,7 +691,7 @@ oe_result_t aesm_get_quote(
             OE_CHECK(_unpack_var_int(&response, &pos, 1, &errcode));
 
             if (errcode != 0)
-                OE_RAISE(OE_FAILURE);
+                OE_RAISE_MSG(OE_FAILURE, "errcode=0x%x", errcode);
         }
 
         /* Unpack quote */

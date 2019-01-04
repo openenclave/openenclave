@@ -76,6 +76,13 @@ void test_array_edl_ecalls(oe_enclave_t* enclave)
     test_ecall_array_fun<long long>(enclave, ecall_array_long_long);
     if (g_enabled[TYPE_LONG_DOUBLE])
         test_ecall_array_fun<long double>(enclave, ecall_array_long_double);
+    test_ecall_array_fun<unsigned char>(enclave, ecall_array_unsigned_char);
+    test_ecall_array_fun<unsigned short>(enclave, ecall_array_unsigned_short);
+    test_ecall_array_fun<unsigned int>(enclave, ecall_array_unsigned_int);
+    if (g_enabled[TYPE_UNSIGNED_LONG])
+        test_ecall_array_fun<unsigned long>(enclave, ecall_array_unsigned_long);
+    test_ecall_array_fun<unsigned long long>(
+        enclave, ecall_array_unsigned_long_long);
 
     OE_TEST(ecall_array_assert_all_called(enclave) == OE_OK);
     printf("=== test_array_edl_ecalls passed\n");
@@ -284,11 +291,56 @@ void ocall_array_long_double(
     ocall_array_fun_impl(a1, a2, a3, a4);
 }
 
+void ocall_array_unsigned_char(
+    unsigned char a1[2],
+    unsigned char a2[2][2],
+    unsigned char a3[3][3],
+    unsigned char a4[4][4])
+{
+    ocall_array_fun_impl(a1, a2, a3, a4);
+}
+
+void ocall_array_unsigned_short(
+    unsigned short a1[2],
+    unsigned short a2[2][2],
+    unsigned short a3[3][3],
+    unsigned short a4[4][4])
+{
+    ocall_array_fun_impl(a1, a2, a3, a4);
+}
+
+void ocall_array_unsigned_int(
+    unsigned int a1[2],
+    unsigned int a2[2][2],
+    unsigned int a3[3][3],
+    unsigned int a4[4][4])
+{
+    ocall_array_fun_impl(a1, a2, a3, a4);
+}
+
+void ocall_array_unsigned_long(
+    unsigned long a1[2],
+    unsigned long a2[2][2],
+    unsigned long a3[3][3],
+    unsigned long a4[4][4])
+{
+    ocall_array_fun_impl(a1, a2, a3, a4);
+}
+
+void ocall_array_unsigned_long_long(
+    unsigned long long a1[2],
+    unsigned long long a2[2][2],
+    unsigned long long a3[3][3],
+    unsigned long long a4[4][4])
+{
+    ocall_array_fun_impl(a1, a2, a3, a4);
+}
+
 void ocall_array_assert_all_called()
 {
-    // Each of the 16 functions above is called twice.
+    // Each of the 20 functions above is called twice.
     // Once with arrays and then with nulls.
-    int expected_num_calls = 16 * 2;
+    int expected_num_calls = 20 * 2;
 
     for (size_t i = 0; i < OE_COUNTOF(g_enabled); ++i)
     {

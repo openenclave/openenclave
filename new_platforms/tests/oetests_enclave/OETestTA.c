@@ -18,6 +18,12 @@
 #define VERIFY_OPTEE_SGX(sgx, optee, oeResult)   (sgx != oeResult)
 #endif
 
+oe_asymmetric_key_params_t g_test_key_params= {
+    OE_ASYMMETRIC_KEY_EC_SECP256P1,
+    OE_ASYMMETRIC_KEY_PEM,
+    NULL
+    };
+
 oe_result_t ecall_TestOEIsWithinEnclave(void* outside, int size)
 {
     /* Generated code always calls is_within_enclave on secure memory,
@@ -452,7 +458,7 @@ oe_result_t ecall_TestOEGetSealKeyV2(int policy)
     if (oeResult != OE_OK) {
         return OE_FAILURE;
     }
-    oe_free_key(key, NULL);
+    oe_free_key(key, keySize, NULL, 0);
     if (keySize == 0) {
         return OE_FAILURE;
     }
@@ -467,11 +473,11 @@ oe_result_t ecall_TestOEGetSealKeyV2(int policy)
     if (oeResult != OE_OK) {      
         return OE_FAILURE;
     }
-    oe_free_key(key, NULL);
+    oe_free_key(key, keySize, NULL, 0);
 
     /* Test getting key by key info. */
     oeResult = oe_get_seal_key_v2(keyInfo, keyInfoSize, &key, &keySize);
-    oe_free_key(key, keyInfo);
+    oe_free_key(key, keySize, keyInfo, keyInfoSize);
     if (oeResult != OE_OK) {
         return OE_FAILURE;
     }
@@ -508,6 +514,7 @@ oe_result_t ecall_TestOEGetPublicKey(int policy)
     /* Test getting key without getting key info. */
     oeResult = oe_get_public_key_by_policy(
         (oe_seal_policy_t)policy,
+        &g_test_key_params,
         &key,
         &keySize,
         NULL,
@@ -515,7 +522,7 @@ oe_result_t ecall_TestOEGetPublicKey(int policy)
     if (oeResult != OE_OK) {
         return oeResult;
     }
-    oe_free_key(key, NULL);
+    oe_free_key(key, keySize, NULL, 0);
     if (keySize == 0) {
         return OE_FAILURE;
     }
@@ -523,6 +530,7 @@ oe_result_t ecall_TestOEGetPublicKey(int policy)
     /* Test getting key and key info. */
     oeResult = oe_get_public_key_by_policy(
         (oe_seal_policy_t)policy,
+        &g_test_key_params,
         &key,
         &keySize,
         &keyInfo,
@@ -532,9 +540,10 @@ oe_result_t ecall_TestOEGetPublicKey(int policy)
     }
 
     /* Test getting same key by key info. */
-    oeResult = oe_get_public_key(keyInfo, keyInfoSize, &key2, &keySize2);
+    oeResult = oe_get_public_key(
+        &g_test_key_params, keyInfo, keyInfoSize, &key2, &keySize2);
     if (oeResult != OE_OK) {
-        oe_free_key(key, keyInfo);
+        oe_free_key(key, keySize, keyInfo, keyInfoSize);
         return oeResult;
     }
 
@@ -544,8 +553,8 @@ oe_result_t ecall_TestOEGetPublicKey(int policy)
         oeResult = OE_FAILURE;
     }
 
-    oe_free_key(key, NULL);
-    oe_free_key(key2, keyInfo);
+    oe_free_key(key, keySize, NULL, 0);
+    oe_free_key(key2, keySize, keyInfo, keyInfoSize);
     return oeResult;
 }
 
@@ -579,6 +588,7 @@ oe_result_t ecall_TestOEGetPrivateKey(int policy)
     /* Test getting key without getting key info. */
     oeResult = oe_get_private_key_by_policy(
         (oe_seal_policy_t)policy,
+        &g_test_key_params,
         &key,
         &keySize,
         NULL,
@@ -586,7 +596,7 @@ oe_result_t ecall_TestOEGetPrivateKey(int policy)
     if (oeResult != OE_OK) {
         return oeResult;
     }
-    oe_free_key(key, NULL);
+    oe_free_key(key, keySize, NULL, 0);
     if (keySize == 0) {
         return OE_FAILURE;
     }
@@ -594,6 +604,7 @@ oe_result_t ecall_TestOEGetPrivateKey(int policy)
     /* Test getting key and key info. */
     oeResult = oe_get_private_key_by_policy(
         (oe_seal_policy_t)policy,
+        &g_test_key_params,
         &key,
         &keySize,
         &keyInfo,
@@ -603,9 +614,10 @@ oe_result_t ecall_TestOEGetPrivateKey(int policy)
     }
 
     /* Test getting same key by key info. */
-    oeResult = oe_get_private_key(keyInfo, keyInfoSize, &key2, &keySize2);
+    oeResult = oe_get_private_key(
+        &g_test_key_params, keyInfo, keyInfoSize, &key2, &keySize2);
     if (oeResult != OE_OK) {
-        oe_free_key(key, keyInfo);
+        oe_free_key(key2, keySize, keyInfo, keyInfoSize);
         return oeResult;
     }
 
@@ -615,8 +627,8 @@ oe_result_t ecall_TestOEGetPrivateKey(int policy)
             oeResult = OE_FAILURE;
     }
 
-    oe_free_key(key, NULL);
-    oe_free_key(key2, keyInfo);
+    oe_free_key(key, keySize, NULL, 0);
+    oe_free_key(key2, keySize, keyInfo, keyInfoSize);
     return oeResult;
 }
 

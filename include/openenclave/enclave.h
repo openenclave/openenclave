@@ -620,14 +620,177 @@ oe_result_t oe_get_seal_key_v2(
     uint8_t** key_buffer,
     size_t* key_buffer_size);
 
-/* Free a key and/or key info.
+/**
+ * This enumeration defines the type of a asymmetric key.
+ */
+typedef enum _oe_asymmetric_key_type {
+    /**
+     * A secp256r1/NIST P-256 elliptic curve key.
+     */
+    OE_ASYMMETRIC_KEY_EC_SECP256P1 = 1,
+
+    /**
+     * Unused.
+     */
+    _OE_ASYMMETRIC_KEY_TYPE_MAX = OE_ENUM_MAX,
+} oe_asymmetric_key_type_t;
+/**< typedef enum _oe_asymmetric_key_type oe_asymmetric_key_type_t*/
+
+/**
+ * This enumeration defines the format of the asymmetric key.
+ */
+typedef enum _oe_asymmetric_key_format {
+    /**
+     * The PEM format.
+     */
+    OE_ASYMMETRIC_KEY_PEM = 1,
+
+    /**
+     * Unused.
+     */
+    _OE_ASYMMETRIC_KEY_FORMAT_MAX = OE_ENUM_MAX,
+} oe_asymmetric_key_format_t;
+/**< typedef enum _oe_asymmetric_key_format oe_asymmetric_key_format_t*/
+
+typedef struct _oe_asymmetric_key_params
+{
+    /**
+     *  The type of asymmetric key.
+     */
+    oe_asymmetric_key_type_t type;
+
+    /**
+     * The exported format of the key.
+     */
+    oe_asymmetric_key_format_t format;
+
+    /**
+     * Optional user data to add to the key derivation.
+     */
+    void* user_data;
+
+    /**
+     * The size of user_data.
+     */
+    size_t user_data_size;
+} oe_asymmetric_key_params_t;
+/**< typedef enum _oe_asymmetric_key_params oe_asymmetric_key_params_t*/
+
+/**
+ * Returns a public key that is associated with the identity of the enclave
+ * and the specified policy.
  *
- * @param[in] key_buffer If non-NULL, the key buffer to free.
- * @param[in] key_info If non-NULL, the key info buffer to free.
+ * @param seal_policy The policy for the identity properties used to derive
+ * the key.
+ * @param key_params The parameters for the asymmetric key derivation.
+ * @param key_buffer A pointer to the buffer that on success contains the
+ * requested public key.
+ * @param key_buffer_size On success, this contains size of key_buffer.
+ * @param key_info Optional pointer to a buffer for the enclave-specific key
+ * information which can be used to retrieve the same key later on a newer
+ * security version.
+ * @param key_info_size On success, this contains the size of key_info.
+ *
+ * @retval OE_OK The key was successfully requested.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ * @retval OE_OUT_OF_MEMORY There is no memory available.
+ * @retval OE_UNEXPECTED An unexpected error happened.
+ */
+oe_result_t oe_get_public_key_by_policy(
+    oe_seal_policy_t seal_policy,
+    const oe_asymmetric_key_params_t* key_params,
+    uint8_t** key_buffer,
+    size_t* key_buffer_size,
+    uint8_t** key_info,
+    size_t* key_info_size);
+
+/**
+ * Returns a public key that is associated with the identity of the enclave.
+ *
+ * @param key_params The parameters for the asymmetric key derivation.
+ * @param key_info The enclave-specific key information to derive the key.
+ * @param key_info_size The size of the key_info buffer.
+ * @param key_buffer A pointer to the buffer that on success contains the
+ * requested public key.
+ * @param key_buffer_size On success, this contains size of key_buffer.
+ *
+ * @retval OE_OK The key was successfully requested.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ * @retval OE_INVALID_CPUSVN The platform specific data has an invalid CPUSVN.
+ * @retval OE_INVALID_ISVSVN The platform specific data has an invalid ISVSVN.
+ * @retval OE_INVALID_KEYNAME The platform specific data has an invalid KEYNAME.
+ */
+oe_result_t oe_get_public_key(
+    const oe_asymmetric_key_params_t* key_params,
+    const uint8_t* key_info,
+    size_t key_info_size,
+    uint8_t** key_buffer,
+    size_t* key_buffer_size);
+
+/**
+ * Returns a private key that is associated with the identity of the enclave
+ * and the specified policy.
+ *
+ * @param seal_policy The policy for the identity properties used to derive
+ * the asymmetric key.
+ * @param key_params The parameters for the asymmetric key derivation.
+ * @param key_buffer A pointer to the buffer that on success contains the
+ * requested private key.
+ * @param key_buffer_size On success, this contains size of key_buffer.
+ * @param key_info Optional pointer to a buffer for the enclave-specific key
+ * information which can be used to retrieve the same key later on a newer
+ * security version.
+ * @param key_info_size On success, this contains the size of key_info.
+ *
+ * @retval OE_OK The key was successfully requested.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ * @retval OE_OUT_OF_MEMORY There is no memory available.
+ * @retval OE_UNEXPECTED An unexpected error happened.
+ */
+oe_result_t oe_get_private_key_by_policy(
+    oe_seal_policy_t seal_policy,
+    const oe_asymmetric_key_params_t* key_params,
+    uint8_t** key_buffer,
+    size_t* key_buffer_size,
+    uint8_t** key_info,
+    size_t* key_info_size);
+
+/**
+ * Returns a private key that is associated with the identity of the enclave.
+ *
+ * @param key_params The parameters for the asymmetric key derivation.
+ * @param key_info The enclave-specific key information to derive the key.
+ * @param key_info_size The size of the key_info buffer.
+ * @param key_buffer A pointer to the buffer that on success contains the
+ * requested private key.
+ * @param key_buffer_size On success, this contains size of key_buffer.
+ *
+ * @retval OE_OK The key was successfully requested.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ * @retval OE_INVALID_CPUSVN The platform specific data has an invalid CPUSVN.
+ * @retval OE_INVALID_ISVSVN The platform specific data has an invalid ISVSVN.
+ * @retval OE_INVALID_KEYNAME The platform specific data has an invalid KEYNAME.
+ */
+oe_result_t oe_get_private_key(
+    const oe_asymmetric_key_params_t* key_params,
+    const uint8_t* key_info,
+    size_t key_info_size,
+    uint8_t** key_buffer,
+    size_t* key_buffer_size);
+
+/**
+ * Frees the given key and/or key info.
+ *
+ * @param key_buffer If not NULL, the key buffer to free.
+ * @param key_buffer_size The size of key_buffer.
+ * @param key_info If not NULL, the key info to free.
+ * @param key_info_size The size of key_info.
  */
 void oe_free_key(
     uint8_t* key_buffer,
-    uint8_t* key_info); 
+    size_t key_buffer_size,
+    uint8_t* key_info,
+    size_t key_info_size);
 
 /**
  * Obtains the enclave handle.
@@ -644,88 +807,6 @@ void oe_free_key(
  */
 OE_DEPRECATED(oe_enclave_t* oe_get_enclave(void),
     "This function is deprecated. Host application code should use edger8r generated code instead.");
-
-/**
- * Obtains the public key corresponding to the enclave's private key.
- *
- * @param[in] seal_policy The policy for the identity properties used to derive the
- * key.
- * @param[out] key_buffer On success, contains a pointer to the PEM encoded key, which should be freed with oe_free_key().
- * @param[out] key_buffer_size On success, contains the size in bytes of the key buffer.
- * @param[out] key_info If non-NULL, then on success this points to the enclave-specific key information which
- * can be used to retrieve the same key later, on a newer security version.
- * @param[out] key_info_size On success, this is the size of the **key_info** buffer.
- */
-oe_result_t oe_get_public_key_by_policy(
-    oe_seal_policy_t seal_policy,
-    uint8_t** key_buffer,
-    size_t* key_buffer_size,
-    uint8_t** key_info,
-    size_t* key_info_size);
-
-/**
- * Get a public key from the enclave platform using existing key
- * information.
- *
- * @param key_info The enclave-specific key information to derive the public key
- * with.
- * @param key_info_size The size of the **key_info** buffer.
- * @param key_buffer Upon success, this points to the resulting PEM encoded public key, which should be freed with oe_free_key().
- * @param key_buffer_size Upon success, this contains the size of the **key_buffer** buffer, which should be freed with oe_free_key().
- *
- * @retval OE_OK The seal key was successfully requested.
- * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
- * @retval OE_INVALID_CPUSVN **key_info** contains an invalid CPUSVN.
- * @retval OE_INVALID_ISVSVN **key_info** contains an invalid ISVSVN.
- * @retval OE_INVALID_KEYNAME **key_info** contains an invalid KEYNAME.
- * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
- */
-oe_result_t oe_get_public_key(
-    const uint8_t* key_info,
-    size_t key_info_size,
-    uint8_t** key_buffer,
-    size_t* key_buffer_size);
-
-/**
- * Obtains a private key specific to the enclave.
- *
- * @param[in] seal_policy The policy for the identity properties used to derive the
- * key.
- * @param[out] key_buffer On success, contains a pointer to the PEM encoded key, which should be freed with oe_free_key().
- * @param[out] key_buffer_size On success, contains the size in bytes of the key buffer.
- * @param[out] key_info If non-NULL, then on success this points to the enclave-specific key information which
- * can be used to retrieve the same key later, on a newer security version.
- * @param[out] key_info_size On success, this is the size of the **key_info** buffer.
- */
-oe_result_t oe_get_private_key_by_policy(
-    oe_seal_policy_t seal_policy,
-    uint8_t** key_buffer,
-    size_t* key_buffer_size,
-    uint8_t** key_info,
-    size_t* key_info_size);
-
-/**
- * Get a private key from the enclave platform using existing key
- * information.
- *
- * @param key_info The enclave-specific key information to derive the private key
- * with.
- * @param key_info_size The size of the **key_info** buffer.
- * @param key_buffer Upon success, this points to the resulting the PEM encoded private key, which should be freed with oe_free_key().
- * @param key_buffer_size Upon success, this contains the size of the **key_buffer** buffer, which should be freed with oe_free_key().
- *
- * @retval OE_OK The seal key was successfully requested.
- * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
- * @retval OE_INVALID_CPUSVN **key_info** contains an invalid CPUSVN.
- * @retval OE_INVALID_ISVSVN **key_info** contains an invalid ISVSVN.
- * @retval OE_INVALID_KEYNAME **key_info** contains an invalid KEYNAME.
- * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
- */
-oe_result_t oe_get_private_key(
-    const uint8_t* key_info,
-    size_t key_info_size,
-    uint8_t** key_buffer,
-    size_t* key_buffer_size);
 
 /**
  * Dereference another enclave and reclaim its resources if this was the last

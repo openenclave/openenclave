@@ -11,30 +11,29 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "args.h"
+#include "libunwind_u.h"
 
 void Test(oe_enclave_t* enclave, uint32_t pid)
 {
-    Args args;
-    args.ret = 1;
-    args.test = NULL;
-    args.pid = pid;
-    oe_result_t result = oe_call_enclave(enclave, "Test", &args);
+    int rval = 1;
+    char test_name[STRLEN_MAX + 1];
+
+    oe_result_t result = test(enclave, &rval, test_name, pid);
     OE_TEST(result == OE_OK);
-    if (args.ret == 0)
+    if (rval == 0)
     {
-        printf("PASSED: %s\n", args.test);
+        printf("PASSED: %s\n", test_name);
     }
     else
     {
-        printf("FAILED: %s (ret=%d)\n", args.test, args.ret);
+        printf("FAILED: %s (ret=%d)\n", test_name, rval);
         abort();
     }
 }
 
-OE_OCALL void ExitOCall(void* arg)
+void exit_ocall(int val)
 {
-    exit((uint64_t)arg);
+    exit(val);
 }
 
 static int _get_opt(
@@ -50,7 +49,9 @@ static int _get_opt(
             if (!arg)
             {
                 memmove(
-                    (void*)&argv[i], &argv[i + 1], (argc - i) * sizeof(char*));
+                    (void*)&argv[i],
+                    &argv[i + 1],
+                    static_cast<size_t>(argc - i) * sizeof(char*));
                 argc--;
                 return 1;
             }
@@ -60,7 +61,9 @@ static int _get_opt(
 
             *arg = argv[i + 1];
             memmove(
-                (char**)&argv[i], &argv[i + 2], (argc - i - 1) * sizeof(char*));
+                (char**)&argv[i],
+                &argv[i + 2],
+                static_cast<size_t>(argc - i - 1) * sizeof(char*));
             argc -= 2;
             return 1;
         }
@@ -91,17 +94,13 @@ int main(int argc, const char* argv[])
     printf("=== %s: %s\n", argv[0], argv[1]);
 
     // Create the enclave:
-    if ((result = oe_create_enclave(
-             argv[1],
-             OE_ENCLAVE_TYPE_SGX,
-             flags,
-             NULL,
-             0,
-             NULL,
-             0,
-             &enclave)) != OE_OK)
-        oe_put_err("oe_create_enclave(): result=%u", result);
-    uint32_t pid = getpid();
+    result = oe_create_libunwind_enclave(
+        argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
+    if (result != OE_OK)
+    {
+        oe_put_err("oe_create_libunwind_enclave(): result=%u", result);
+    }
+    uint32_t pid = (uint32_t)getpid();
 
     // Invoke "Test()" in the enclave.
     Test(enclave, pid);

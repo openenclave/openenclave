@@ -80,9 +80,4 @@ add_custom_command(TARGET crypto-extra_host
             COMMAND openssl crl -inform pem -outform der -in ${DATA_DIR}/intermediate_crl2.pem -out ${DATA_DIR}/intermediate_crl2.der
             )
 
-target_compile_options(crypto-extra_host PRIVATE
-    -std=c++11
-)
-
 target_link_libraries(crypto-extra_host oehostapp)
-

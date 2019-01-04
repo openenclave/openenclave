@@ -7,4 +7,4 @@ if (UNIX)
 	add_subdirectory(enc)
 endif()
 
-add_enclave_test(tests/safecrt ./host safecrt_host ./enc safecrt_enc)
+add_enclave_test(tests/safecrt safecrt_host safecrt_enc)

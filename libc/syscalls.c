@@ -39,9 +39,13 @@ _syscall_open(long n, long x1, long x2, long x3, long x4, long x5, long x6)
     int flags = (int)x2;
     int mode = (int)x3;
 
-    (void)filename;
-    (void)flags;
-    (void)mode;
+    OE_UNUSED(n);
+    OE_UNUSED(x4);
+    OE_UNUSED(x5);
+    OE_UNUSED(x6);
+    OE_UNUSED(filename);
+    OE_UNUSED(flags);
+    OE_UNUSED(mode);
 
     if (flags == O_WRONLY)
         return STDOUT_FILENO;
@@ -52,12 +56,14 @@ _syscall_open(long n, long x1, long x2, long x3, long x4, long x5, long x6)
 static long _syscall_close(long n, ...)
 {
     /* required by mbedtls */
+    OE_UNUSED(n);
     return 0;
 }
 
 static long _syscall_mmap(long n, ...)
 {
     /* Always fail */
+    OE_UNUSED(n);
     return EPERM;
 }
 
@@ -66,6 +72,7 @@ static long _syscall_readv(long n, ...)
     /* required by mbedtls */
 
     /* return zero-bytes read */
+    OE_UNUSED(n);
     return 0;
 }
 
@@ -73,6 +80,13 @@ static long
 _syscall_ioctl(long n, long x1, long x2, long x3, long x4, long x5, long x6)
 {
     int fd = (int)x1;
+
+    OE_UNUSED(n);
+    OE_UNUSED(x2);
+    OE_UNUSED(x3);
+    OE_UNUSED(x4);
+    OE_UNUSED(x5);
+    OE_UNUSED(x6);
 
     /* only allow ioctl() on these descriptors */
     if (fd != STDIN_FILENO && fd != STDOUT_FILENO && fd != STDERR_FILENO)
@@ -89,6 +103,11 @@ _syscall_writev(long n, long x1, long x2, long x3, long x4, long x5, long x6)
     unsigned long iovcnt = (unsigned long)x3;
     long ret = 0;
     int device;
+
+    OE_UNUSED(n);
+    OE_UNUSED(x4);
+    OE_UNUSED(x5);
+    OE_UNUSED(x6);
 
     /* Allow writing only to stdout and stderr */
     switch (fd)
@@ -125,6 +144,8 @@ static long _syscall_clock_gettime(long n, long x1, long x2)
     int ret = -1;
     uint64_t msec;
 
+    OE_UNUSED(n);
+
     if (!tp)
         goto done;
 
@@ -155,6 +176,8 @@ static long _syscall_gettimeofday(long n, long x1, long x2)
     int ret = -1;
     uint64_t msec;
 
+    OE_UNUSED(n);
+
     if (tv)
         oe_memset(tv, 0, sizeof(struct timeval));
 
@@ -182,6 +205,8 @@ static long _syscall_nanosleep(long n, long x1, long x2)
     struct timespec* rem = (struct timespec*)x2;
     size_t ret = -1;
     uint64_t milliseconds = 0;
+
+    OE_UNUSED(n);
 
     if (rem)
         oe_memset(rem, 0, sizeof(*rem));

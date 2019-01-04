@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#define OE_TRACE_LEVEL 1
-
 #include <assert.h>
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/safemath.h>
@@ -73,6 +71,7 @@ static oe_result_t _sgx_load_enclave_properties(
     const char* sectionName, // unused
     oe_sgx_enclave_properties_t* properties)
 {
+    OE_UNUSED(sectionName);
     assert(image);
     assert(image->oeinfo_rva);
     assert(properties);
@@ -87,6 +86,7 @@ static oe_result_t _sgx_update_enclave_properties(
     const char* sectionName, // unused
     const oe_sgx_enclave_properties_t* properties)
 {
+    OE_UNUSED(sectionName);
     assert(image);
     assert(image->oeinfo_rva);
     assert(properties);
@@ -340,8 +340,8 @@ static oe_result_t _patch(
     oeprops =
         (oe_sgx_enclave_properties_t*)(image->image_base + image->oeinfo_rva);
 
-    assert((image->image_size & (OE_PAGE_SIZE - 1)) == 0);
-    assert((image->oeinfo_rva & (OE_PAGE_SIZE - 1)) == 0);
+    assert((image->image_size & ((uint64_t)OE_PAGE_SIZE - 1)) == 0);
+    assert((image->oeinfo_rva & ((uint64_t)OE_PAGE_SIZE - 1)) == 0);
     assert((enclave_end & (OE_PAGE_SIZE - 1)) == 0);
     assert((ecall_size & (OE_PAGE_SIZE - 1)) == 0);
 
@@ -387,7 +387,8 @@ oe_result_t oe_load_pe_enclave_image(
     }
 
     /* get image base from module by zeroing out the bottom bits */
-    image->image_base = (char*)((uint64_t)image->u.pe.module & -OE_PAGE_SIZE);
+    image->image_base =
+        (char*)((uint64_t)image->u.pe.module & (uint64_t)-OE_PAGE_SIZE);
 
     /* get nt header */
     OE_CHECK(_oe_get_nt_header(image->image_base, &nt_header));
@@ -444,9 +445,10 @@ oe_result_t oe_load_pe_enclave_image(
         if ((uint64_t)section_hdr->VirtualAddress +
                 section_hdr->Misc.VirtualSize >
             next_section_start)
-        {
-            OE_RAISE(OE_FAILURE);
-        }
+            OE_RAISE_MSG(
+                OE_FAILURE,
+                "VirtualAddress expands over to the next section",
+                NULL);
 
         if (strcmp((const char*)section_hdr->Name, ".text") == 0)
         {

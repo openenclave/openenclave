@@ -35,35 +35,52 @@ int main(int argc, const char* argv[])
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
 
-    if (argc != 2)
+    if (argc != 3)
     {
-        fprintf(stderr, "Usage: %s ENCLAVE\n", argv[0]);
+        fprintf(
+            stderr,
+            "Usage: %s ENCLAVE_PATH OE_OK/OE_ENCLAVE_ABORTING\n",
+            argv[0]);
         exit(1);
     }
 
     const uint32_t flags = oe_get_create_flags();
 
-    if ((result = oe_create_enclave(
-             argv[1],
-             OE_ENCLAVE_TYPE_SGX,
-             flags,
-             NULL,
-             0,
-             NULL,
-             0,
-             &enclave)) != OE_OK)
+    result = oe_create_enclave(
+        argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, NULL, 0, &enclave);
+
+    if (strcmp(argv[2], oe_result_str(OE_ENCLAVE_ABORTING)) == 0)
     {
+        if (strcmp(oe_result_str(result), argv[2]) == 0)
+        {
+            printf(
+                "=== Passed: enclave not created, enclave status: (%s)\n",
+                oe_result_str(result));
+            goto done;
+        }
         oe_put_err("oe_create_enclave(): result=%u", result);
     }
-
-    TestStdcxx(enclave);
-
-    if ((result = oe_terminate_enclave(enclave)) != OE_OK)
+    else if (strcmp(argv[2], oe_result_str(OE_OK)) == 0)
     {
-        oe_put_err("oe_terminate_enclave(): result=%u", result);
+        if (strcmp(oe_result_str(result), argv[2]) == 0)
+        {
+            TestStdcxx(enclave);
+            printf("=== passed all tests (%s)\n", argv[0]);
+            goto done;
+        }
+        oe_put_err("oe_create_enclave(): result=%u", result);
     }
+    else
+        oe_put_err("Invalid argument: %s", argv[2]);
 
-    printf("=== passed all tests (%s)\n", argv[0]);
+done:
+    if (enclave)
+    {
+        if ((result = oe_terminate_enclave(enclave)) != OE_OK)
+        {
+            oe_put_err("oe_terminate_enclave(): result=%u", result);
+        }
+    }
 
     return 0;
 }

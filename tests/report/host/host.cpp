@@ -11,7 +11,7 @@
 #include <vector>
 #include "../../../common/tcbinfo.h"
 #include "../../../host/quote.h"
-#include "../common/tests.cpp"
+#include "../common/tests.h"
 #include "tests_u.h"
 
 #define SKIP_RETURN_CODE 2
@@ -36,6 +36,8 @@ void generate_and_save_report(oe_enclave_t* enclave)
     FILE* file = fopen("./data/generated_report.bytes", "wb");
     fwrite(report, 1, report_size, file);
     fclose(file);
+#else
+    OE_UNUSED(enclave);
 #endif
 }
 
@@ -45,7 +47,6 @@ void load_and_verify_report()
     std::vector<uint8_t> report = FileToBytes("./data/generated_report.bytes");
     OE_TEST(
         oe_verify_report(NULL, &report[0], report.size() - 1, NULL) == OE_OK);
-    printf("Attested report without creating an enclave\n");
 #endif
 }
 
@@ -82,7 +83,7 @@ int main(int argc, const char* argv[])
     if ((result = oe_create_tests_enclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
     {
-        oe_put_err("oe_create_enclave(): result=%u", result);
+        oe_put_err("oe_create_tests_enclave(): result=%u", result);
     }
 
     /* Initialize the target info */
@@ -97,13 +98,13 @@ int main(int argc, const char* argv[])
      * Host API tests.
      */
     g_enclave = enclave;
-    TestLocalReport(&target_info);
-    TestRemoteReport(NULL);
-    TestParseReportNegative(NULL);
-    TestLocalVerifyReport(NULL);
+    test_local_report(&target_info);
+    test_remote_report();
+    test_parse_report_negative();
+    test_local_verify_report();
 
 #ifdef OE_USE_LIBSGX
-    TestRemoteVerifyReport(NULL);
+    test_remote_verify_report();
 
     OE_TEST(test_iso8601_time(enclave) == OE_OK);
     OE_TEST(test_iso8601_time_negative(enclave) == OE_OK);
@@ -113,23 +114,16 @@ int main(int argc, const char* argv[])
      * Enclave API tests.
      */
 
-    OE_TEST(oe_call_enclave(enclave, "TestLocalReport", &target_info) == OE_OK);
+    OE_TEST(enclave_test_local_report(enclave, &target_info) == OE_OK);
 
-    OE_TEST(
-        oe_call_enclave(enclave, "TestRemoteReport", &target_info) == OE_OK);
+    OE_TEST(enclave_test_remote_report(enclave) == OE_OK);
 
-    OE_TEST(
-        oe_call_enclave(enclave, "TestParseReportNegative", &target_info) ==
-        OE_OK);
+    OE_TEST(enclave_test_parse_report_negative(enclave) == OE_OK);
 
-    OE_TEST(
-        oe_call_enclave(enclave, "TestLocalVerifyReport", &target_info) ==
-        OE_OK);
+    OE_TEST(enclave_test_local_verify_report(enclave) == OE_OK);
 
 #ifdef OE_USE_LIBSGX
-    OE_TEST(
-        oe_call_enclave(enclave, "TestRemoteVerifyReport", &target_info) ==
-        OE_OK);
+    OE_TEST(enclave_test_remote_verify_report(enclave) == OE_OK);
 
     TestVerifyTCBInfo(enclave);
 
@@ -154,8 +148,5 @@ int main(int argc, const char* argv[])
     {
         oe_put_err("oe_terminate_enclave(): result=%u", result);
     }
-
-    printf("=== passed all tests (%s)\n", argv[0]);
-
     return 0;
 }
