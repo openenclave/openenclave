@@ -3,9 +3,9 @@
 
 include(oeedl_file)
 
-oeedl_file(${OE_PATH}/include/openenclave/socket.edl enclave GEN C_GEN H_GEN)
-
 set(TARGET oesocket_enc)
+
+oeedl_file(${OE_PATH}/include/openenclave/socket.edl enclave GEN C_GEN H_GEN)
 
 if(UNIX AND TZ)
     set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES

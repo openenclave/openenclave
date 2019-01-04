@@ -3,6 +3,8 @@
 
 include(oeedl_file)
 
+set(TARGET oehost)
+
 oeedl_file(../oeinternal.edl host GEN C_GEN H_GEN)
 if(WIN32 AND SGX)
     sgxedl_file(../oeoverintelsgx.edl host GEN C_GEN H_GEN "${NP_PATH}/src;${SGXSDKInstallPath}/include")
@@ -95,12 +97,12 @@ elseif(WIN32)
     endif()
 endif()
 
-add_library(oehost STATIC ${SRCS} ${GEN})
+add_library(${TARGET} STATIC ${SRCS} ${GEN})
 
-target_include_directories(oehost ${INCS})
+target_include_directories(${TARGET} ${INCS})
 
 if(UNIX)
-    target_compile_definitions(oehost PRIVATE LINUX)
+    target_compile_definitions(${TARGET} PRIVATE LINUX)
 endif()
 
-target_link_libraries(oehost ${LIBS})
+target_link_libraries(${TARGET} ${LIBS})

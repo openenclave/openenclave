@@ -3,13 +3,15 @@
 
 include(oeedl_file)
 
+set(TARGET oeenclave)
+
 oeedl_file(../oeinternal.edl enclave GEN C_GEN H_GEN)
 if(WIN32 AND SGX)
     sgxedl_file(../oeoverintelsgx.edl enclave GEN C_GEN H_GEN "${NP_PATH}/src;${SGXSDKInstallPath}/include")
 endif()
 
 if(UNIX AND TZ)
-    add_custom_target(oeenclave ALL
+    add_custom_target(${TARGET} ALL
         COMMAND make -C ${CMAKE_CURRENT_SOURCE_DIR}/optee
             -f linux_gcc.mak
             OE_INC=${OE_PATH}/include
@@ -25,6 +27,11 @@ if(UNIX AND TZ)
             GEN=${C_GEN}
         DEPENDS ${GEN})
 elseif(WIN32)
+    # Source lists
+    set(COMMON_SRCS
+        CallbackHelper.c cborhelper.c files_enc.c
+        keygen.c oeshim_enc.c socket_enc.c string_t.c)
+
     set(CYREP_SRCS
         ${CYREP_PATH}/RiotAes128.c ${CYREP_PATH}/RiotAesTables.c
         ${CYREP_PATH}/RiotBase64.c ${CYREP_PATH}/RiotCrypt.c
@@ -33,10 +40,7 @@ elseif(WIN32)
         ${CYREP_PATH}/RiotSha256.c ${CYREP_PATH}/RiotX509Bldr.c
         ${CYREP_PATH}/tcps/TcpsId.c)
 
-    set(COMMON_SRCS
-        CallbackHelper.c cborhelper.c files_enc.c
-        keygen.c oeshim_enc.c socket_enc.c string_t.c)
-
+    # Include lists
     set(LOCAL_INCS
         PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..
@@ -52,11 +56,14 @@ elseif(WIN32)
         PRIVATE ${CYREP_PATH}/tcps
         PRIVATE ${MBEDTLS_PATH}/include)
 
+    # Library lists
     set(MBEDTLS_LIBS
         PUBLIC mbedx509
         PUBLIC mbedcrypto)
 
+    # By TEE ->
     if(SGX)
+        # Source lists
         set(SGX_SRCS
             ../oeresult.c ../sgx_common.c
             sgx/except_sgx.c sgx/keygen_sgx.c
@@ -66,17 +73,21 @@ elseif(WIN32)
             #TODO: These two should be common but fail to compile under CMake.
             log_ocall_file.c logapp.c)
 
+        # Include lists
         set(SGX_INCS
             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/sgx
             PUBLIC  ${SGXSDKInstallPath}/include
             PUBLIC  ${SGXSDKInstallPath}/include/tlibc)
 
+        # Library lists
         set(SGX_LIBS
             PUBLIC ${SGX_SDK_LIBRARIES_PREFIX}/$<CONFIG>/sgx_tstdc.lib
             PUBLIC ${SGX_SDK_LIBRARIES_PREFIX}/$<CONFIG>/sgx_tprotected_fs.lib
             PUBLIC ${SGX_SDK_LIBRARIES_PREFIX}/$<CONFIG>/sgx_tcxx.lib
             PUBLIC ${SGX_SDK_LIBRARIES_PREFIX}/$<CONFIG>/sgx_tcrypto.lib)
 
+        # Some libraries change depending on whether this is a simulation
+        # build.
         if(SIM)
             list(APPEND SGX_LIBS
                 PUBLIC ${SGX_SDK_LIBRARIES_PREFIX}/$<CONFIG>/sgx_trts_sim.lib
@@ -87,10 +98,12 @@ elseif(WIN32)
                 PUBLIC ${SGX_SDK_LIBRARIES_PREFIX}/$<CONFIG>/sgx_tservice.lib)
         endif()
 
+        # Compose the final source, include and libary lists.
         set(SRCS ${CYREP_SRCS} ${COMMON_SRCS} ${SGX_SRCS})
         set(INCS ${LOCAL_INCS} ${COMMON_INCS} ${EXTERNAL_INCS} ${SGX_INCS})
         set(LIBS ${SGX_LIBS} ${MBEDTLS_LIBS})
     elseif(TZ AND SIM)
+        # Source lists
         set(TZ_SRCS
             ../optee_common.c
             optee/ctype_optee.c optee/cyres_optee.c
@@ -99,6 +112,7 @@ elseif(WIN32)
             optee/report_optee.c optee/strings_optee.c
             optee/time_optee.c optee/trpc_optee.c)
 
+        # Include lists
         set(TZ_INCS
             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/optee
             PUBLIC ${NP_PATH}/include/optee/enclave/Simulator
@@ -109,23 +123,25 @@ elseif(WIN32)
             PUBLIC ${OPTEE_OS_PATH}/lib/libutee/include
             PUBLIC ${OPTEE_OS_PATH}/lib/libutils/ext/include)
 
-		set(TZ_LIBS PUBLIC oeenclave_opteesim)
+        # Library lists
+        set(TZ_LIBS
+            PUBLIC oeenclave_opteesim)
 
+        # Compose the final source, include and libary lists.
         set(SRCS ${CYREP_SRCS} ${COMMON_SRCS} ${TZ_SRCS})
         set(INCS ${LOCAL_INCS} ${TZ_INCS} ${COMMON_INCS} ${TZ_EXTERNAL_INCS} ${EXTERNAL_INCS})
         set(LIBS ${TZ_LIBS} ${MBEDTLS_LIBS})
     endif()
 
-    add_library(oeenclave STATIC ${SRCS} ${GEN})
+    add_library(${TARGET} STATIC ${SRCS} ${GEN})
 
-    target_include_directories(oeenclave ${INCS})
+    target_include_directories(${TARGET} ${INCS})
+    target_link_libraries(${TARGET} ${LIBS})
 
     if(SGX)
-        target_compile_definitions(oeenclave PRIVATE CONFIG_CYREP_SGX_BUILD)
+        target_compile_definitions(${TARGET} PRIVATE CONFIG_CYREP_SGX_BUILD)
     endif()
-    target_compile_definitions(oeenclave PRIVATE OPENSSL_NO_SOCK)
-
-    target_link_libraries(oeenclave ${LIBS})
+    target_compile_definitions(${TARGET} PRIVATE OPENSSL_NO_SOCK)
 
     string(REGEX REPLACE "(-D|/D)[^ ]* " "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
     string(REGEX REPLACE "(-D|/D)[^ ]* " "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")

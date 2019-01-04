@@ -3,9 +3,9 @@
 
 include(oeedl_file)
 
-oeedl_file(${OE_PATH}/include/openenclave/stdio.edl enclave GEN C_GEN H_GEN)
-
 set(TARGET oestdio_enc)
+
+oeedl_file(${OE_PATH}/include/openenclave/stdio.edl enclave GEN C_GEN H_GEN)
 
 if(UNIX AND TZ)
     set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
@@ -25,6 +25,7 @@ if(UNIX AND TZ)
         SOURCES stdio_enc.c optee/files_optee.c)
 elseif(WIN32)
     set(SRCS stdio_enc.c)
+
     if(SGX)
         list(APPEND SRCS sgx/files_sgx.c)
     elseif(TZ AND SIM)

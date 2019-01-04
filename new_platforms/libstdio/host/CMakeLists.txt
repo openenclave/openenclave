@@ -3,6 +3,8 @@
 
 include(oeedl_file)
 
+set(TARGET oestdio_host)
+
 oeedl_file(${OE_PATH}/include/openenclave/stdio.edl host GEN C_GEN H_GEN)
 
 if(UNIX)
@@ -13,15 +15,15 @@ endif()
 
 set(SRCS uTcpsFileOcalls_shared.c ${DIR}/ufiles.c ${DIR}/uTcpsFileOcalls.c)
 
-add_library(oestdio_host STATIC ${SRCS} ${GEN})
+add_library(${TARGET} STATIC ${SRCS} ${GEN})
 
-target_include_directories(oestdio_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_include_directories(oestdio_host PRIVATE ${OE_PATH}/include)
-target_include_directories(oestdio_host PRIVATE ${NP_PATH}/include)
+target_include_directories(${TARGET} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(${TARGET} PRIVATE ${OE_PATH}/include)
+target_include_directories(${TARGET} PRIVATE ${NP_PATH}/include)
 
 if(UNIX)
-    target_compile_definitions(oestdio_host PRIVATE LINUX)
-    target_include_directories(oestdio_host PRIVATE ${NP_PATH}/include/linux)
+    target_compile_definitions(${TARGET} PRIVATE LINUX)
+    target_include_directories(${TARGET} PRIVATE ${NP_PATH}/include/linux)
 elseif(WIN32 AND SGX)
-    target_include_directories(oestdio_host PRIVATE ${SGXSDKInstallPath}/include)
+    target_include_directories(${TARGET} PRIVATE ${SGXSDKInstallPath}/include)
 endif()

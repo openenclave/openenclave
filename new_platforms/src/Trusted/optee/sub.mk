@@ -19,16 +19,18 @@ CFLAGS +=                                  \
 
 CFLAGS += -DOE_USE_OPTEE -D__OPTEE__
 
+srcs-y += $(GEN)
+
 srcs-y += ../CallbackHelper.c
 srcs-y += ../cborhelper.c
 srcs-y += ../files_enc.c
 srcs-y += ../keygen.c
-srcs-y += ../../optee_common.c
 srcs-y += ../oeshim_enc.c
 srcs-y += ../logapp.c
 srcs-y += ../log_ocall_file.c
 srcs-y += ../socket_enc.c
 srcs-y += ../string_t.c
+srcs-y += ../../optee_common.c
 
 srcs-y += ctype_optee.c
 srcs-y += cyres_optee.c
@@ -41,6 +43,11 @@ srcs-y += time_optee.c
 srcs-y += trpc_optee.c
 srcs-y += helper_optee.c
 srcs-y += oeresult_optee.c
+
+srcs-y += $(CYREP_PATH)/tcps/TcpsId.c
+
+srcs-y += $(TINYCBOR_PATH)/src/cborencoder.c
+srcs-y += $(TINYCBOR_PATH)/src/cborparser.c
 
 srcs-y += $(CYREP_PATH)/RiotAes128.c
 srcs-y += $(CYREP_PATH)/RiotBase64.c
@@ -59,10 +66,3 @@ cflags-$(CYREP_PATH)/RiotEcc.c-y    := -Wno-implicit-function-declaration
 cflags-$(CYREP_PATH)/RiotHmac.c-y   := -Wno-implicit-function-declaration
 cflags-$(CYREP_PATH)/RiotKdf.c-y    := -Wno-implicit-function-declaration
 cflags-$(CYREP_PATH)/RiotSha256.c-y := -Wno-implicit-function-declaration
-
-srcs-y += $(CYREP_PATH)/tcps/TcpsId.c
-
-srcs-y += $(TINYCBOR_PATH)/src/cborencoder.c
-srcs-y += $(TINYCBOR_PATH)/src/cborparser.c
-
-srcs-y += $(GEN)
