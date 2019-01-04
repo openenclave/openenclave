@@ -15,21 +15,22 @@ The following are prerequisites for building and running Open Enclave on
 Windows.
 
 - Intel® X86-64bit architecture with SGX1 or SGX2
-- Windows 10 64-bit with Fall Creators Update (1709)
+- A version of Windows OS with native support for SGX features:
+   - For server: Windows Server 2016 (or newer)
+   - For client: Windows 10 64-bit with Fall Creators Update (1709) or newer
 - [Intel® SGX Platform Software for Windows (PSW)](
   https://software.intel.com/sites/default/files/managed/0f/c8/Intel-SGX-PSW-Release-Notes-for-Windows-OS.pdf)
 - [Microsoft Visual Studio 2017](https://www.visualstudio.com/downloads/)
 - [Git for Windows 64-bit](https://git-scm.com/download/win)
 - [clang (preferably version 7.0 or above)](http://releases.llvm.org/download.html)  
-- [OCaml on Windows 64-bit](https://fdopen.github.io/opam-repository-mingw/installation/) (Note that this will install a Mingw environment for OCaml.)
+- [OCaml on Windows 64-bit](https://fdopen.github.io/opam-repository-mingw/installation/) (Note that this will install a MinGW environment for OCaml.)
 
-
-Intel® SGX Platform Software for Windows (PSW) 
+Intel® SGX Platform Software for Windows (PSW)
 ---------------------------------
 
 The PSW should be installed automatically on Windows 10 with the Fall Creators
-Update installed. You can verify that is the case on the command line as
-follows:
+Update installed, or on a Windows Server 2016 image for an Azure Confidential
+Compute VM. You can verify that is the case on the command line as follows:
 
 ```cmd
 sc query aesmservice
@@ -50,7 +51,7 @@ Git for Windows 64-bit
 Install Git and add Git's bash to the path.
 Typically, Git's bash is located in C:\Program Files\Git\bin.
 Currently the Open Enclave SDK build system uses bash scripts to configure
-and process few 3rd-party libraries. 
+and process few 3rd-party libraries.
 
 Open a command prompt and ensure that bash is available in the path:
 ```cmd
@@ -73,14 +74,16 @@ C:\> where ld.lld
 C:\Program Files\LLVM\bin\ld.lld.exe
 ```
 
-Configuring OCaml for Windows
+OCaml
 ---------------------------------
-After installing OCaml, there are a few one-time OCaml configuration steps:
+Install [OCaml for Windows (64-bit)](https://fdopen.github.io/opam-repository-mingw/installation/).
+OCaml is used to build the oeedger8r tool as part of the OE SDK.
 
-1. Add `ocaml-env.exe` to the `PATH` environment variable. The default path of `ocaml-env.exe` is  `C:\OCaml64\usr\local\bin\ocaml-env.exe`.
-2. Open `cmd.exe` (or another shell) and run `ocaml-env exec -- cmd.exe`. This creates a OCaml environment in the shell.
-3. Install `ocamlbuild` by running `opam install ocamlbuild`.
-4. Exit out of the shell.
+Open up a command prompt and ensure that ocaml is available in the path:
+```cmd
+C:\> where ocaml
+C:\Program Files\ocpwin64\4.02.1+ocp1-msvc64-20160113\bin\ocaml.exe
+```
 
 Obtaining the source distribution
 ---------------------------------
@@ -96,7 +99,7 @@ Open Enclave is available from GitHub.
 
 ### In Git shell:
 ```
-C:\> git clone https://github.com/Microsoft/openenclave
+git clone https://github.com/Microsoft/openenclave
 ```
 
 This creates a source tree under the directory called openenclave.
@@ -114,7 +117,7 @@ https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studi
 3. The CMake menu option should appear when it detects a valid CMake project is
    loaded. VS2017 will then recursively walk the repo directory structure and
    generate a cache for the project to display Intellisense.
-4. Open Enclave is only supported for 64-bit, by default the `x64-Debug` configuration is 
+4. Open Enclave is only supported for 64-bit. By default the `x64-Debug` configuration is 
    selected.
 5. Once cache generation is complete, you can build the project via the CMake >
    Build All menu option.
@@ -157,9 +160,8 @@ Testing
 How to build the CMake project using Visual Studio 2017
 --------------------------------------------------------
 1. Open CMake project in Visual Studio from menu File > Open > CMake...
-	and select top level CMakeLists.txt file which is present in openenclave folder.
+   and select top level CMakeLists.txt file which is present in openenclave folder.
 2. Select menu CMake > Tests > Run Open Enclave SDK CTests.
-
 
 ### Running ctests on the command line
 At the x64 Native Tools command prompt do: 
