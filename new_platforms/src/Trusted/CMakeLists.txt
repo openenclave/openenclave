@@ -33,10 +33,6 @@ elseif(WIN32)
         ${CYREP_PATH}/RiotSha256.c ${CYREP_PATH}/RiotX509Bldr.c
         ${CYREP_PATH}/tcps/TcpsId.c)
 
-    set(TINYCBOR_SRCS
-        ${TINYCBOR_PATH}/src/cborencoder.c
-        ${TINYCBOR_PATH}/src/cborparser.c)
-
     set(COMMON_SRCS
         CallbackHelper.c cborhelper.c files_enc.c
         keygen.c oeshim_enc.c socket_enc.c string_t.c)
