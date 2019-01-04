@@ -2,7 +2,7 @@
 /* Licensed under the MIT License. */
 #include <openenclave/enclave.h>
 #include <openenclave/bits/stdio.h>
-#include "SampleTA_t.h"
+#include "sockets_t.h"
 #include "tcps_string_t.h"
 
 /* This client connects to an echo server, sends a text message,
