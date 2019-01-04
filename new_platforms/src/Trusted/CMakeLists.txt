@@ -54,7 +54,7 @@ elseif(WIN32)
         PRIVATE ${TINYCBOR_PATH}/src
         PRIVATE ${CYREP_PATH}/cyrep
         PRIVATE ${CYREP_PATH}/tcps
-        PRIVATE ${MBEDTLS_PATH}/include)
+        PUBLIC  ${MBEDTLS_PATH}/include)
 
     # Library lists
     set(MBEDTLS_LIBS
