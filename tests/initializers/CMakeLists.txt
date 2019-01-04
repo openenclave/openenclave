@@ -7,4 +7,4 @@ if (UNIX)
 	add_subdirectory(enc)
 endif()
 
-add_enclave_test(tests/initializers ./host initializers_host ./enc initializers_enc)
+add_enclave_test(tests/initializers initializers_host initializers_enc)

@@ -473,6 +473,9 @@ static oe_result_t _handle_ocall(
         case OE_OCALL_GET_REVOCATION_INFO:
             HandleGetQuoteRevocationInfo(arg_in);
             break;
+        case OE_OCALL_GET_QE_ID_INFO:
+            HandleGetQuoteEnclaveIdentityInfo(arg_in);
+            break;
 #endif
 
         case OE_OCALL_GET_QE_TARGET_INFO:
@@ -489,6 +492,10 @@ static oe_result_t _handle_ocall(
 
         case OE_OCALL_BACKTRACE_SYMBOLS:
             oe_handle_backtrace_symbols(enclave, arg_in);
+            break;
+
+        case OE_OCALL_LOG:
+            oe_handle_log(enclave, arg_in);
             break;
 
         default:
@@ -812,7 +819,8 @@ oe_result_t oe_call_enclave(oe_enclave_t* enclave, const char* func, void* args)
                 OE_ECALL_CALL_ENCLAVE,
                 (uint64_t)&call_enclave_args,
                 &arg_out));
-        OE_CHECK(arg_out);
+
+        OE_CHECK((oe_result_t)arg_out);
     }
 
     /* Check the result */
@@ -873,7 +881,7 @@ oe_result_t oe_call_enclave_function(
                 OE_ECALL_CALL_ENCLAVE_FUNCTION,
                 (uint64_t)&args,
                 &arg_out));
-        OE_CHECK(arg_out);
+        OE_CHECK((oe_result_t)arg_out);
     }
 
     /* Check the result */
@@ -893,7 +901,7 @@ done:
 
 OE_NO_OPTIMIZE_BEGIN
 
-OE_NEVER_INLINE void _oe_notify_ocall_start(
+OE_NEVER_INLINE void oe_notify_ocall_start(
     oe_host_ocall_frame_t* frame_pointer,
     void* tcs)
 {
@@ -903,7 +911,7 @@ OE_NEVER_INLINE void _oe_notify_ocall_start(
     return;
 }
 
-OE_NEVER_INLINE void _oe_notify_ocall_end(
+OE_NEVER_INLINE void oe_notify_ocall_end(
     oe_host_ocall_frame_t* frame_pointer,
     void* tcs)
 {

@@ -87,6 +87,7 @@ typedef long long ptrdiff_t;
 #define OE_INT64_MAX (0x7fffffffffffffff)
 #define OE_UINT64_MAX (0xffffffffffffffffu)
 #define OE_SIZE_MAX OE_UINT64_MAX
+#define OE_SSIZE_MAX OE_INT64_MAX
 
 #endif
 

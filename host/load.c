@@ -61,7 +61,6 @@ static oe_result_t _get_image_type(const char* path, oe_image_type* type)
     result = OE_OK;
 
 done:
-
     if (is)
         fclose(is);
 
@@ -81,17 +80,13 @@ oe_result_t oe_load_enclave_image(const char* path, oe_enclave_image_t* image)
     switch (type)
     {
         case OE_IMAGE_TYPE_NONE:
-            OE_RAISE(OE_FAILURE);
-
+            OE_RAISE_MSG(OE_FAILURE, "Bad image type:OE_IMAGE_TYPE_NONE", NULL);
         case OE_IMAGE_TYPE_ELF:
             OE_RAISE(oe_load_elf_enclave_image(path, image));
-
         case OE_IMAGE_TYPE_PE:
             OE_RAISE(oe_load_pe_enclave_image(path, image));
     }
-
 done:
-
     return result;
 }
 

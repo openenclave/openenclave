@@ -29,7 +29,7 @@ added to `PATH` by sourcing the `openenclaverc` file in the installed Open Encla
 For example, to debug the helloworld sample from the sample build folder:
 
 ```bash
-/opt/openenclave/bin/oe-gdb -arg ./host/helloworld_host ./enc/helloworld_enc.signed.so
+/opt/openenclave/bin/oe-gdb -arg ./host/helloworld_host ./enc/helloworld_enc.signed
 ```
 Once GDB is started, you can use standard GDB commands to debug through the enclave,
 include setting breakpoints, dumping memory addresses and back tracing the execution stack.

@@ -111,17 +111,18 @@ OE_INLINE footer_t* _get_footer(void* ptr)
 }
 
 /* Use a macro so the function name will not appear in the backtrace */
-#define INIT_BLOCK(HEADER, ALIGNMENT, SIZE)                                \
-    do                                                                     \
-    {                                                                      \
-        HEADER->magic1 = HEADER_MAGIC1;                                    \
-        HEADER->next = NULL;                                               \
-        HEADER->prev = NULL;                                               \
-        HEADER->alignment = ALIGNMENT;                                     \
-        HEADER->size = SIZE;                                               \
-        HEADER->num_addrs = oe_backtrace(HEADER->addrs, OE_BACKTRACE_MAX); \
-        HEADER->magic2 = HEADER_MAGIC2;                                    \
-        _get_footer(HEADER->data)->magic = FOOTER_MAGIC;                   \
+#define INIT_BLOCK(HEADER, ALIGNMENT, SIZE)                          \
+    do                                                               \
+    {                                                                \
+        HEADER->magic1 = HEADER_MAGIC1;                              \
+        HEADER->next = NULL;                                         \
+        HEADER->prev = NULL;                                         \
+        HEADER->alignment = ALIGNMENT;                               \
+        HEADER->size = SIZE;                                         \
+        HEADER->num_addrs =                                          \
+            (uint64_t)oe_backtrace(HEADER->addrs, OE_BACKTRACE_MAX); \
+        HEADER->magic2 = HEADER_MAGIC2;                              \
+        _get_footer(HEADER->data)->magic = FOOTER_MAGIC;             \
     } while (0)
 
 /* Assert and abort if magic numbers are wrong */
@@ -257,7 +258,7 @@ static void _malloc_dump(size_t size, void* addrs[], int num_addrs)
 
     oe_host_printf("%llu bytes\n", OE_LLX(size));
 
-    for (size_t i = 0; i < num_addrs; i++)
+    for (int i = 0; i < num_addrs; i++)
         oe_host_printf("%s(): %p\n", syms[i], addrs[i]);
 
     oe_host_printf("\n");
@@ -290,7 +291,7 @@ static void _dump(bool need_lock)
             "=== %s(): %zu bytes in %zu blocks\n", __FUNCTION__, bytes, blocks);
 
         for (header_t* p = list->head; p; p = p->next)
-            _malloc_dump(p->size, p->addrs, p->num_addrs);
+            _malloc_dump(p->size, p->addrs, (int)p->num_addrs);
 
         oe_host_printf("\n");
     }

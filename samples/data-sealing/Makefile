@@ -14,4 +14,4 @@ clean:
 	$(MAKE) -C host clean
 
 run:
-	host/data-sealing_host ./enc1/enclave_a_v1.signed.so  ./enc2/enclave_a_v2.signed.so  ./enc3/enclave_b.signed.so 
+	host/data-sealing_host ./enc1/enclave_a_v1.signed  ./enc2/enclave_a_v2.signed  ./enc3/enclave_b.signed 

@@ -83,7 +83,7 @@ done:
 #define OE_SET_IN_POINTER(argname, argsize)                                  \
     if (pargs_in->argname)                                                   \
     {                                                                        \
-        pargs_in->argname = (void *)(input_buffer + input_buffer_offset);    \
+        *(uint8_t**)&pargs_in->argname = input_buffer + input_buffer_offset; \
         OE_ADD_SIZE(input_buffer_offset, (size_t)(argsize));                 \
         if (input_buffer_offset > input_buffer_size)                         \
         {                                                                    \
@@ -101,7 +101,7 @@ done:
 #define OE_SET_OUT_POINTER(argname, argsize)                                   \
     if (pargs_in->argname)                                                     \
     {                                                                          \
-        pargs_in->argname = (void *)(output_buffer + output_buffer_offset);    \
+        *(uint8_t**)&pargs_in->argname = output_buffer + output_buffer_offset; \
         OE_ADD_SIZE(output_buffer_offset, (size_t)(argsize));                  \
         if (output_buffer_offset > output_buffer_size)                         \
         {                                                                      \
@@ -120,7 +120,7 @@ done:
     if (pargs_in->argname)                                                     \
     {                                                                          \
         uint8_t* _p_in = (uint8_t*)pargs_in->argname;                          \
-        pargs_in->argname = (void *)(output_buffer + output_buffer_offset);    \
+        *(uint8_t**)&pargs_in->argname = output_buffer + output_buffer_offset; \
         OE_ADD_SIZE(output_buffer_offset, (size_t)argsize);                    \
         if (output_buffer_offset > output_buffer_size)                         \
         {                                                                      \
@@ -136,7 +136,7 @@ done:
 #define OE_WRITE_IN_PARAM(argname, size)                                   \
     if (argname)                                                           \
     {                                                                      \
-        _args.argname = (void *)(_input_buffer + _input_buffer_offset);    \
+        *(uint8_t**)&_args.argname = _input_buffer + _input_buffer_offset; \
         OE_ADD_SIZE(_input_buffer_offset, (size_t)(size));                 \
         memcpy((void*)_args.argname, argname, (size_t)(size));             \
     }

@@ -3,7 +3,7 @@
 
 # create a binary for each testcase listed in ../tests.supported
 
-include(add_enclave_executable)
+
 include(${CMAKE_CURRENT_LIST_DIR}/../../../cmake/get_testcase_name.cmake)
 
 # helper lib to contain file needed by some tests
@@ -14,11 +14,11 @@ add_library(libcxxtest-support
     )
 
 target_compile_options(libcxxtest-support PRIVATE
-    -std=c++14
     -Wno-error=attributes
     -Wno-error=strict-overflow
     -Wno-error=unused-local-typedefs
     -Wno-error=unused-variable
+    -Wno-sign-conversion
     )
 
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
@@ -44,9 +44,12 @@ function(add_libcxx_test_enc NAME CXXFILE)
         )
 
       target_compile_options(libcxxtest-${NAME}_enc PRIVATE
-        -std=c++14
+
         # These are third-party tests, so we don't care about their warnings.
         -Wno-error
+        -Wno-unused-function
+        -Wno-unused-local-typedef
+        -Wno-deprecated-declarations
         # Remove NDEBUG to enable the libcxx testsuite assertions in Release
         -UNDEBUG
         )
@@ -79,11 +82,21 @@ foreach(testcase ${alltests})
 	endif()
     endif()
 
-# few functions invoked in these tests are not considered const expression in gnu
-    if ("${name}" MATCHES "convert_file_time.sh" OR "${name}" MATCHES "sequences_array_at.pass")
-	if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
+# few functions invoked in these tests are not supported in gnu and excluded from GCC builds
+    if ("${name}" MATCHES "convert_file_time.sh" 
+            OR "${name}" MATCHES "sequences_array_at.pass" 
+            OR "${name}" MATCHES "libcxx_containers_unord_next_pow2.pass" 
+            OR "${name}" MATCHES "std_utilities_template.bitset_bitset.members_count.pass")
+            if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
+	        continue()
+            endif()
+    endif()
+
+# the following test fails when built with clang, see #830 -- Skipping this test in clang
+    if ("${name}" MATCHES "array_sized_delete_array_calls_unsized_delete_array.pass")
+        if (CMAKE_CXX_COMPILER_ID MATCHES Clang)
 	    continue()
-        endif()
+	endif()
     endif()
 
     add_libcxx_test_enc("${name}" "${testcase}")

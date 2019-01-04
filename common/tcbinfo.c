@@ -41,7 +41,7 @@ OE_INLINE uint8_t _is_digit(uint8_t c)
 // Consume and skip trailing whitespace.
 static oe_result_t _read(char ch, const uint8_t** itr, const uint8_t* end)
 {
-    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
+    oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
     const uint8_t* p = *itr;
     if (p < end && *p == ch)
     {
@@ -61,21 +61,21 @@ static oe_result_t _read_integer(
     const uint8_t* end,
     uint64_t* value)
 {
-    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
+    oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
     const uint8_t* p = *itr;
     *value = 0;
 
     if (p < end && _is_digit(*p))
     {
-        *value = *p - '0';
+        *value = (uint64_t)(*p - '0');
         ++p;
         while (p < end && _is_digit(*p))
         {
             // Detect overflows.
             if (*value >= OE_UINT64_MAX / 10)
-                OE_RAISE(OE_TCB_INFO_PARSE_ERROR);
+                OE_RAISE(OE_JSON_INFO_PARSE_ERROR);
 
-            *value = *value * 10 + (*p - '0');
+            *value = *value * 10 + (uint64_t)(*p - '0');
             ++p;
         }
 
@@ -95,7 +95,7 @@ static oe_result_t _read_string(
     const uint8_t** str,
     size_t* length)
 {
-    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
+    oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
     const uint8_t* p = *itr;
     *length = 0;
 
@@ -106,14 +106,14 @@ static oe_result_t _read_string(
         while (p < end && *p != '"')
         {
             if (*p == '\\')
-                OE_RAISE(OE_TCB_INFO_PARSE_ERROR);
+                OE_RAISE(OE_JSON_INFO_PARSE_ERROR);
 
             ++p;
         }
 
         if (p < end && *p == '"')
         {
-            *length = p - *str;
+            *length = (size_t)(p - *str);
             *itr = _skip_ws(++p, end);
             result = OE_OK;
         }
@@ -125,11 +125,11 @@ done:
 static uint32_t _hex_to_dec(uint8_t hex)
 {
     if (hex >= '0' && hex <= '9')
-        return hex - '0';
+        return (uint32_t)hex - '0';
     if (hex >= 'a' && hex <= 'f')
-        return (hex - 'a') + 10;
+        return (uint32_t)(hex - 'a') + 10;
     if (hex >= 'A' && hex <= 'F')
-        return (hex - 'A') + 10;
+        return (uint32_t)(hex - 'A') + 10;
     return 16;
 }
 
@@ -140,10 +140,10 @@ static oe_result_t _read_hex_string(
     uint8_t* bytes,
     size_t length)
 {
-    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
+    oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
     const uint8_t* str = NULL;
     size_t str_length = 0;
-    uint16_t value = 0;
+    uint32_t value = 0;
 
     OE_CHECK(_read_string(itr, end, &str, &str_length));
     // Each byte takes up two hex digits.
@@ -154,7 +154,7 @@ static oe_result_t _read_hex_string(
             value =
                 (_hex_to_dec(str[i * 2]) << 4) | _hex_to_dec(str[i * 2 + 1]);
             if (value > OE_UCHAR_MAX)
-                OE_RAISE(OE_TCB_INFO_PARSE_ERROR);
+                OE_RAISE(OE_JSON_INFO_PARSE_ERROR);
             bytes[i] = (uint8_t)value;
         }
 
@@ -169,7 +169,7 @@ static oe_result_t _read_property_name_and_colon(
     const uint8_t** itr,
     const uint8_t* end)
 {
-    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
+    oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
     const uint8_t* name = NULL;
     size_t name_length = 0;
     const uint8_t* tmp_itr = *itr;
@@ -202,14 +202,23 @@ static bool _json_str_equal(
 static oe_result_t _trace_json_string(const uint8_t* str, size_t str_length)
 {
     oe_result_t result = OE_OK;
-#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
-    char buffer[str_length + 1];
-    OE_CHECK(oe_memcpy_s(buffer, sizeof(buffer), str, str_length));
-    buffer[str_length] = 0;
-    OE_TRACE_INFO("value = %s\n", buffer);
 
+    if (get_current_logging_level() >= OE_LOG_LEVEL_INFO)
+    {
+        char* buffer = (char*)malloc(str_length + 1);
+        if (buffer)
+        {
+            OE_CHECK(oe_memcpy_s(buffer, str_length + 1, str, str_length));
+            buffer[str_length] = 0;
+            OE_TRACE_INFO("value = %s\n", buffer);
+            free(buffer);
+        }
+        else
+        {
+            OE_RAISE(OE_OUT_OF_MEMORY);
+        }
+    }
 done:
-#endif
     return result;
 }
 
@@ -229,7 +238,7 @@ static oe_result_t _read_tcb(
     const uint8_t* end,
     oe_tcb_level_t* tcb_level)
 {
-    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
+    oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
     uint64_t value = 0;
 
     static const char* _comp_names[] = {"sgxtcbcomp01svn",
@@ -262,7 +271,7 @@ static oe_result_t _read_tcb(
         OE_CHECK(_read(',', itr, end));
 
         if (value > OE_UCHAR_MAX)
-            OE_RAISE(OE_TCB_INFO_PARSE_ERROR);
+            OE_RAISE(OE_JSON_INFO_PARSE_ERROR);
         tcb_level->sgx_tcb_comp_svn[i] = (uint8_t)value;
     }
     OE_TRACE_INFO("Reading pcesvn\n");
@@ -272,7 +281,7 @@ static oe_result_t _read_tcb(
     OE_CHECK(_read('}', itr, end));
 
     if (value > OE_USHRT_MAX)
-        OE_RAISE(OE_TCB_INFO_PARSE_ERROR);
+        OE_RAISE(OE_JSON_INFO_PARSE_ERROR);
 
     tcb_level->pce_svn = (uint16_t)value;
     result = OE_OK;
@@ -328,10 +337,12 @@ static oe_result_t _read_tcb_level(
     oe_tcb_level_t* platform_tcb_level,
     oe_parsed_tcb_info_t* parsed_info)
 {
-    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
+    oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
     oe_tcb_level_t tcb_level = {{0}};
     const uint8_t* status = NULL;
     size_t status_length = 0;
+
+    OE_UNUSED(parsed_info);
 
     OE_CHECK(_read('{', itr, end));
 
@@ -382,7 +393,7 @@ static oe_result_t _read_tcb_info(
     oe_tcb_level_t* platform_tcb_level,
     oe_parsed_tcb_info_t* parsed_info)
 {
-    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
+    oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
     uint64_t value = 0;
     const uint8_t* date_str = NULL;
     size_t date_size = 0;
@@ -402,24 +413,17 @@ static oe_result_t _read_tcb_info(
     if (oe_datetime_from_string(
             (const char*)date_str, date_size, &parsed_info->issue_date) !=
         OE_OK)
-        OE_RAISE(OE_TCB_INFO_PARSE_ERROR);
+        OE_RAISE(OE_JSON_INFO_PARSE_ERROR);
     OE_CHECK(_read(',', itr, end));
 
-    // nextUpdate is treated as an optional property.
     OE_TRACE_INFO("Reading nextUpdate\n");
-    if (_read_property_name_and_colon("nextUpdate", itr, end) == OE_OK)
-    {
-        OE_CHECK(_read_string(itr, end, &date_str, &date_size));
-        if (oe_datetime_from_string(
-                (const char*)date_str, date_size, &parsed_info->next_update) !=
-            OE_OK)
-            OE_RAISE(OE_TCB_INFO_PARSE_ERROR);
-        OE_CHECK(_read(',', itr, end));
-    }
-    else
-    {
-        memset(&parsed_info->next_update, 0, sizeof(parsed_info->next_update));
-    }
+    OE_CHECK(_read_property_name_and_colon("nextUpdate", itr, end));
+    OE_CHECK(_read_string(itr, end, &date_str, &date_size));
+    if (oe_datetime_from_string(
+            (const char*)date_str, date_size, &parsed_info->next_update) !=
+        OE_OK)
+        OE_RAISE(OE_JSON_INFO_PARSE_ERROR);
+    OE_CHECK(_read(',', itr, end));
 
     OE_TRACE_INFO("Reading fmspc\n");
     OE_CHECK(_read_property_name_and_colon("fmspc", itr, end));
@@ -445,7 +449,8 @@ static oe_result_t _read_tcb_info(
     // itr is expected to point to the '}' that denotes the end of the tcb
     // object. The signature is generated over the entire object including the
     // '}'.
-    parsed_info->tcb_info_size = *itr - parsed_info->tcb_info_start + 1;
+    parsed_info->tcb_info_size =
+        (size_t)(*itr - parsed_info->tcb_info_start + 1);
     OE_CHECK(_read('}', itr, end));
 
     result = OE_OK;
@@ -466,7 +471,7 @@ oe_result_t oe_parse_tcb_info_json(
     oe_tcb_level_t* platform_tcb_level,
     oe_parsed_tcb_info_t* parsed_info)
 {
-    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
+    oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
     const uint8_t* itr = tcb_info_json;
     const uint8_t* end = tcb_info_json + tcb_info_json_size;
 
@@ -509,6 +514,193 @@ done:
     return result;
 }
 
+OE_INLINE uint32_t read_uint32(const uint8_t* p)
+{
+    return (uint32_t)(p[0] | (p[1] << 8) | (p[2] << 16) | (p[3] << 24));
+}
+
+OE_INLINE uint64_t read_uint64(const uint8_t* p)
+{
+    uint64_t temp = 0;
+    uint64_t result = 0;
+    for (int i = 7; i >= 0; i--)
+    {
+        temp = p[i];
+        result = (result << 8) | temp;
+    }
+    return result;
+}
+/**
+ * type = qe_identity
+ * Schema:
+ * {
+ *     "version" : integer,
+ *    "issueDate" : string,
+ *    "nextDate" : string,
+ *    "miscselect" : hex string,
+ *    "miscselectMask" : hex string,
+ *    "attributes" : hex string,
+ *    "attributesMask" : hex string,
+ *    "mrsigner" : hex string,
+ *    "isvprodid" : integer,
+ *    "isvsvn" : integer,
+ * }
+ */
+static oe_result_t _read_qe_identity_info(
+    const uint8_t** itr,
+    const uint8_t* end,
+    oe_parsed_qe_identity_info_t* parsed_info)
+{
+    oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
+    uint64_t value = 0;
+    const uint8_t* date_str = NULL;
+    size_t date_size = 0;
+    uint8_t four_bytes_buf[4];
+    uint8_t sixteen_bytes_buf[16];
+
+    parsed_info->info_start = *itr;
+    OE_CHECK(_read('{', itr, end));
+
+    OE_TRACE_INFO("Reading version\n");
+    OE_CHECK(_read_property_name_and_colon("version", itr, end));
+    OE_CHECK(_read_integer(itr, end, &value));
+    parsed_info->version = (uint32_t)value;
+    OE_CHECK(_read(',', itr, end));
+
+    OE_TRACE_INFO("Reading issueDate\n");
+    OE_CHECK(_read_property_name_and_colon("issueDate", itr, end));
+    OE_CHECK(_read_string(itr, end, &date_str, &date_size));
+    if (oe_datetime_from_string(
+            (const char*)date_str, date_size, &parsed_info->issue_date) !=
+        OE_OK)
+        OE_RAISE(OE_JSON_INFO_PARSE_ERROR);
+    OE_CHECK(_read(',', itr, end));
+
+    OE_TRACE_INFO("Reading nextUpdate\n");
+    OE_CHECK(_read_property_name_and_colon("nextUpdate", itr, end));
+    OE_CHECK(_read_string(itr, end, &date_str, &date_size));
+    if (oe_datetime_from_string(
+            (const char*)date_str, date_size, &parsed_info->next_update) !=
+        OE_OK)
+        OE_RAISE(OE_JSON_INFO_PARSE_ERROR);
+    OE_CHECK(_read(',', itr, end));
+
+    OE_TRACE_INFO("Reading miscselect\n");
+    OE_CHECK(_read_property_name_and_colon("miscselect", itr, end));
+    OE_CHECK(
+        _read_hex_string(itr, end, four_bytes_buf, sizeof(four_bytes_buf)));
+    parsed_info->miscselect = read_uint32(four_bytes_buf);
+    OE_CHECK(_read(',', itr, end));
+
+    OE_TRACE_INFO("Reading miscselectMask\n");
+    OE_CHECK(_read_property_name_and_colon("miscselectMask", itr, end));
+    OE_CHECK(
+        _read_hex_string(itr, end, four_bytes_buf, sizeof(four_bytes_buf)));
+    parsed_info->miscselect_mask = read_uint32(four_bytes_buf);
+    OE_CHECK(_read(',', itr, end));
+
+    OE_TRACE_INFO("Reading attributes.flags\n");
+    OE_CHECK(_read_property_name_and_colon("attributes", itr, end));
+    OE_CHECK(
+        _read_hex_string(
+            itr, end, sixteen_bytes_buf, sizeof(sixteen_bytes_buf)));
+    parsed_info->attributes.flags = read_uint64(sixteen_bytes_buf);
+    parsed_info->attributes.xfrm = read_uint64(sixteen_bytes_buf + 8);
+    OE_CHECK(_read(',', itr, end));
+
+    OE_TRACE_INFO("Reading attributesMask\n");
+    OE_CHECK(_read_property_name_and_colon("attributesMask", itr, end));
+    OE_CHECK(
+        _read_hex_string(
+            itr, end, sixteen_bytes_buf, sizeof(sixteen_bytes_buf)));
+    parsed_info->attributes_flags_mask = read_uint64(sixteen_bytes_buf);
+    parsed_info->attributes_xfrm_mask = read_uint64(sixteen_bytes_buf + 8);
+    OE_CHECK(_read(',', itr, end));
+
+    OE_TRACE_INFO("Reading mrsigner\n");
+    OE_CHECK(_read_property_name_and_colon("mrsigner", itr, end));
+    OE_CHECK(
+        _read_hex_string(
+            itr, end, parsed_info->mrsigner, sizeof(parsed_info->mrsigner)));
+    OE_CHECK(_read(',', itr, end));
+
+    OE_TRACE_INFO("Reading isvprodid\n");
+    OE_CHECK(_read_property_name_and_colon("isvprodid", itr, end));
+    OE_CHECK(_read_integer(itr, end, &value));
+    parsed_info->isvprodid = (uint16_t)value;
+    OE_CHECK(_read(',', itr, end));
+
+    OE_TRACE_INFO("Reading isvsvn\n");
+    OE_CHECK(_read_property_name_and_colon("isvsvn", itr, end));
+    OE_CHECK(_read_integer(itr, end, &value));
+    parsed_info->isvsvn = (uint16_t)value;
+
+    // itr is expected to point to the '}' that denotes the end of the qe
+    // identity object. The signature is generated over the entire object
+    // including the '}'.
+    parsed_info->info_size = (size_t)(*itr - parsed_info->info_start + 1);
+    OE_CHECK(_read('}', itr, end));
+    OE_TRACE_INFO("Done with last read\n");
+    result = OE_OK;
+done:
+    OE_TRACE_INFO(
+        "Reading _read_qe_identity_info ended with [%s]\n",
+        oe_result_str(result));
+    return result;
+}
+
+/**
+ * type = qe_identity_info
+ *
+ * Schema:
+ * {
+ *    "qeIdentity" : object of type qe_identity,
+ *    "signature" : "hex string"
+ * }
+ */
+oe_result_t oe_parse_qe_identity_info_json(
+    const uint8_t* info_json,
+    size_t info_json_size,
+    oe_parsed_qe_identity_info_t* parsed_info)
+{
+    oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
+
+    const uint8_t* itr = info_json;
+    const uint8_t* end = info_json + info_json_size;
+
+    if (info_json == NULL || info_json_size == 0 || parsed_info == NULL)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    // Pointer wrapping.
+    if (end <= itr)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    itr = _skip_ws(itr, end);
+    OE_CHECK(_read('{', &itr, end));
+
+    OE_TRACE_INFO("Reading qeIdentity\n");
+    OE_CHECK(_read_property_name_and_colon("qeIdentity", &itr, end));
+    OE_CHECK(_read_qe_identity_info(&itr, end, parsed_info));
+    OE_CHECK(_read(',', &itr, end));
+
+    OE_TRACE_INFO("Reading signature\n");
+    OE_CHECK(_read_property_name_and_colon("signature", &itr, end));
+    OE_CHECK(
+        _read_hex_string(
+            &itr, end, parsed_info->signature, sizeof(parsed_info->signature)));
+    OE_CHECK(_read('}', &itr, end));
+    if (itr == end)
+    {
+        result = OE_OK;
+    }
+
+done:
+    OE_TRACE_INFO(
+        "oe_parse_qe_identity_info_json ended with [%s]\n",
+        oe_result_str(result));
+    return result;
+}
+
 static oe_result_t _ecdsa_verify(
     oe_ec_public_key_t* publicKey,
     const void* data,
@@ -548,7 +740,7 @@ done:
     return result;
 }
 
-oe_result_t oe_verify_tcb_signature(
+oe_result_t oe_verify_ecdsa256_signature(
     const uint8_t* tcb_info_start,
     size_t tcb_info_size,
     sgx_ecdsa256_signature_t* signature,

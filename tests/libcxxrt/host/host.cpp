@@ -19,27 +19,25 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "args.h"
-#include "ocalls.h"
+#include "libcxxrt_u.h"
 
 void Test(oe_enclave_t* enclave)
 {
-    Args args;
-    args.ret = 1;
-    args.test = NULL;
-    oe_result_t result = oe_call_enclave(enclave, "Test", &args);
+    int ret = 1;
+    char* name = NULL;
+    oe_result_t result = test(enclave, &ret, &name);
     OE_TEST(result == OE_OK);
 
-    if (args.ret != 0)
+    if (ret != 0)
     {
-        printf("FAILED: %s (ret=%d)\n", args.test, args.ret);
+        printf("FAILED: %s (ret=%d)\n", name, ret);
         abort();
     }
 }
 
-OE_OCALL void ocall_exit(uint64_t arg)
+void ocall_exit(uint64_t arg)
 {
-    exit(arg);
+    exit(static_cast<int>(arg));
 }
 
 static int _get_opt(
@@ -55,7 +53,9 @@ static int _get_opt(
             if (!arg)
             {
                 memmove(
-                    (void*)&argv[i], &argv[i + 1], (argc - i) * sizeof(char*));
+                    (void*)&argv[i],
+                    &argv[i + 1],
+                    static_cast<size_t>(argc - i) * sizeof(char*));
                 argc--;
                 return 1;
             }
@@ -65,7 +65,9 @@ static int _get_opt(
 
             *arg = argv[i + 1];
             memmove(
-                (char**)&argv[i], &argv[i + 2], (argc - i - 1) * sizeof(char*));
+                (char**)&argv[i],
+                &argv[i + 2],
+                static_cast<size_t>(argc - i - 1) * sizeof(char*));
             argc -= 2;
             return 1;
         }
@@ -94,16 +96,12 @@ int main(int argc, const char* argv[])
     }
 
     // Create the enclave:
-    if ((result = oe_create_enclave(
-             argv[1],
-             OE_ENCLAVE_TYPE_SGX,
-             flags,
-             NULL,
-             0,
-             NULL,
-             0,
-             &enclave)) != OE_OK)
+    result = oe_create_libcxxrt_enclave(
+        argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
+    if (result != OE_OK)
+    {
         oe_put_err("oe_create_enclave(): result=%u", result);
+    }
 
     // Invoke "Test()" in the enclave.
     Test(enclave);

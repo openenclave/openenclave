@@ -45,7 +45,7 @@ Linux and Windows binaries:
   - [Windows 10 SDK (10.0.16299)](
     https://developer.microsoft.com/en-US/windows/downloads/windows-10-sdk)
 - [Git for Windows 64-bit](https://git-scm.com/download/win)
-- [CMake 3.5.1+](https://cmake.org/download/)
+- [CMake 3.13.1+](https://cmake.org/download/)
 - [OCaml on Windows 64-bit](https://fdopen.github.io/opam-repository-mingw/installation/) (Note that this will install a Cygwin environment for OCaml.)
 
 Configuring OCaml for Windows
@@ -195,10 +195,10 @@ enclave from the Linux build location into the same folder as the host app in
 the Windows build folder. For example, to run `tests/ecall`:
 
 ```
-C:\> copy C:\openenclave\build\tests\ecall\enc\ecallenc.signed.so
+C:\> copy C:\openenclave\build\tests\ecall\enc\ecallenc.signed
       C:\Users\username\CMakeBuilds\build\x64-Debug\tests\ecall\host
 C:\> cd C:\Users\username\CMakeBuilds\build\x64-Debug\tests\ecall\host
-C:\> ecallhost ecallenc.signed.so
+C:\> ecallhost ecallenc.signed
 ```
 
 For the moment, only `tests/echo` and `tests/ecall` can be built and run on

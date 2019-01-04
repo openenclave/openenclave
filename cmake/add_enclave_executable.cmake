@@ -28,7 +28,7 @@ function(add_enclave_executable BIN SIGNCONF)
 
 	# custom rule to sign the binary
 	add_custom_command(OUTPUT ${BIN}.signed.so
-		COMMAND oesign $<TARGET_FILE:${BIN}> ${SIGNCONF} ${CMAKE_CURRENT_BINARY_DIR}/${BIN}-private.pem
+		COMMAND oesign "sign" $<TARGET_FILE:${BIN}> ${SIGNCONF} ${CMAKE_CURRENT_BINARY_DIR}/${BIN}-private.pem
 		DEPENDS oesign ${BIN} ${SIGNCONF} ${BIN}-private.pem
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		)

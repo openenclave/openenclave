@@ -31,10 +31,20 @@ add_executable(edl_enc
     ${bar_t}
     )
 
-target_include_directories(edl_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)
-set_property(
-    TARGET edl_enc 
-    PROPERTY CXX_STANDARD 11
-)
 
+# The tests intentionally use floats etc in size context.
+# Disable warnings.
+if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
+    set_source_files_properties(
+        ${all_t}
+        PROPERTIES COMPILE_FLAGS "-Wno-conversion"
+    )
+    set_source_files_properties(
+        testpointer.cpp
+        teststring.cpp
+        PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter"
+    )      
+endif()
+
+target_include_directories(edl_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(edl_enc oelibcxx oeenclave)

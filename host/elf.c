@@ -228,7 +228,7 @@ static void _adjust_section_header_offsets(
 
     /* Adjust section header offset */
     if (ehdr->e_shoff >= offset)
-        ehdr->e_shoff += adjustment;
+        ehdr->e_shoff += (uint64_t)adjustment;
 
     elf64_shdr_t* shdrs = (elf64_shdr_t*)((uint8_t*)elf->data + ehdr->e_shoff);
 
@@ -238,7 +238,7 @@ static void _adjust_section_header_offsets(
         elf64_shdr_t* sh = &shdrs[i];
 
         if (sh->sh_offset >= offset)
-            sh->sh_offset += adjustment;
+            sh->sh_offset += (uint64_t)adjustment;
     }
 }
 
@@ -297,7 +297,7 @@ int elf64_load(const char* path, elf64_t* elf)
 #endif
 
     /* Store the size of this file */
-    elf->size = statbuf.st_size;
+    elf->size = (size_t)statbuf.st_size;
 
     /* Allocate the data to hold this image */
     if (!(elf->data = malloc(elf->size)))
@@ -326,6 +326,9 @@ done:
         free(elf->data);
         memset(elf, 0, sizeof(elf64_t));
     }
+
+    if (rc)
+        OE_TRACE_ERROR("path=%s\n", path);
 
     return rc;
 }
@@ -1362,7 +1365,7 @@ static void _print_string_table(const char* buf, size_t size)
             printf(", ");
 
         printf("\"");
-        fwrite(start, 1, end - start, stdout);
+        fwrite(start, 1, (size_t)(end - start), stdout);
         printf("\"");
     }
     printf(" }\n");
@@ -1512,7 +1515,8 @@ int elf64_add_section(
     elf64_shdr_t sh;
 
     /* Reject invalid parameters */
-    if (!_is_valid_elf64(elf) || !name || !secdata || !secsize)
+    if (!_is_valid_elf64(elf) || !name || !secdata || !secsize ||
+        secsize > OE_SSIZE_MAX)
         GOTO(done);
 
     /* Fail if new section name is invalid */
@@ -1555,7 +1559,7 @@ int elf64_add_section(
             GOTO(done);
 
         /* Reset ELF object based on updated memory */
-        if (_reset_buffer(elf, &mem, sh.sh_offset, secsize) != 0)
+        if (_reset_buffer(elf, &mem, sh.sh_offset, (ssize_t)secsize) != 0)
             GOTO(done);
     }
 
@@ -1583,7 +1587,11 @@ int elf64_add_section(
         oe_strlcat((char*)elf->data + nameoffset, name, namesize);
 
         /* Reset ELF object based on updated memory */
-        if (_reset_buffer(elf, &mem, nameoffset, namesize) != 0)
+
+        if (namesize > OE_SSIZE_MAX)
+            GOTO(done);
+
+        if (_reset_buffer(elf, &mem, nameoffset, (ssize_t)namesize) != 0)
             GOTO(done);
 
         /* Initialize the section name */
@@ -1632,7 +1640,8 @@ int elf64_add_section(
 
     /* Verify that the section is exactly as expected */
     {
-        const void* section = _get_section(elf, _get_header(elf)->e_shnum - 1);
+        const void* section =
+            _get_section(elf, (size_t)(_get_header(elf)->e_shnum - 1));
         if (section == NULL)
             GOTO(done);
 
@@ -1707,7 +1716,9 @@ oe_result_t elf64_remove_section(elf64_t* elf, const char* name)
         const uint8_t* end = (const uint8_t*)elf->data + elf->size;
 
         /* Remove section from the memory image */
-        OE_CHECK(oe_memmove_s(first, end - first, last, end - last));
+        OE_CHECK(
+            oe_memmove_s(
+                first, (size_t)(end - first), last, (size_t)(end - last)));
 
         /* Adjust the size of the memory image */
         elf->size -= shdr->sh_size;
@@ -1775,9 +1786,9 @@ oe_result_t elf64_remove_section(elf64_t* elf, const char* name)
         OE_CHECK(
             oe_memmove_s(
                 first,
-                (end - first) * sizeof(elf64_shdr_t),
+                (size_t)(end - first) * sizeof(elf64_shdr_t),
                 last,
-                (end - last) * sizeof(elf64_shdr_t)));
+                (size_t)(end - last) * sizeof(elf64_shdr_t)));
 
         /* Adjust the number of headers */
         _get_header(elf)->e_shnum--;

@@ -26,7 +26,7 @@ oe_enclave_t* oe_get_enclave(void)
 {
     // This API is deprecated.
     return NULL;
-}
+} 
 
 void oe_abort(void)
 {
@@ -310,7 +310,7 @@ oe_result_t oe_get_seal_key_by_policy_v1(
     if (*key_info_size < info_size || *key_buffer_size < key_size) {
         *key_info_size = info_size;
         *key_buffer_size = key_size;
-        oe_free_key(key, info);
+        oe_free_key(key, key_size, info, info_size);
         return OE_BUFFER_TOO_SMALL;
     }
 
@@ -321,16 +321,18 @@ oe_result_t oe_get_seal_key_by_policy_v1(
     *key_info_size = info_size;
     *key_buffer_size = key_size;
 
-    oe_free_key(key, info);
+    oe_free_key(key, key_size, info, info_size);
     return OE_OK;
 }
 
 void oe_free_key(
-    _In_ uint8_t* key,
-    _In_ uint8_t* info)
+    _In_ uint8_t* key_buffer,
+    _In_ size_t key_buffer_size,
+    _In_ uint8_t* key_info,
+    _In_ size_t key_info_size)
 {
-    oe_free(key);
-    oe_free(info);
+    oe_free(key_buffer);
+    oe_free(key_info);
 }
 
 oe_result_t oe_get_seal_key_v1(
@@ -351,14 +353,14 @@ oe_result_t oe_get_seal_key_v1(
 
     if (*key_buffer_size < key_size) {
         *key_buffer_size = key_size;
-        oe_free_key(key, NULL);
+        oe_free_key(key, key_size, NULL, 0);
         return OE_BUFFER_TOO_SMALL;
     }
 
     *key_buffer_size = key_size;
     memcpy(key_buffer, key, key_size);
 
-    oe_free_key(key, NULL);
+    oe_free_key(key, key_size, NULL, 0);
     return OE_OK;
 }
 

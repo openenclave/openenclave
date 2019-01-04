@@ -20,6 +20,21 @@ typedef struct cyres_key_info_t
     oe_seal_policy_t policy;
 } seal_info_t;
 
+static inline oe_result_t _check_optee_asykey_support(
+    const oe_asymmetric_key_params_t* key_params)
+{
+    if (key_params == NULL)
+        return OE_INVALID_PARAMETER;
+
+    if (key_params->type != OE_ASYMMETRIC_KEY_EC_SECP256P1)
+        return OE_INVALID_PARAMETER;
+
+    if (key_params->format != OE_ASYMMETRIC_KEY_PEM)
+        return OE_INVALID_PARAMETER;
+
+    return OE_OK;
+}
+
 oe_result_t oe_get_seal_key_by_policy_v2(
     _In_ oe_seal_policy_t seal_policy,
     _Outptr_ uint8_t** key_buffer,
@@ -97,6 +112,7 @@ oe_result_t oe_get_seal_key_v2(
 
 oe_result_t oe_get_public_key_by_policy(
     oe_seal_policy_t seal_policy,
+    const oe_asymmetric_key_params_t* key_params,
     uint8_t** key_buffer,
     size_t* key_buffer_size,
     uint8_t** key_info,
@@ -107,6 +123,9 @@ oe_result_t oe_get_public_key_by_policy(
 
     if (seal_policy == OE_SEAL_POLICY_PRODUCT)
         return OE_UNSUPPORTED;
+
+    if (_check_optee_asykey_support(key_params) != OE_OK)
+        return OE_INVALID_PARAMETER;
 
     if (key_info != NULL)
     {
@@ -114,13 +133,14 @@ oe_result_t oe_get_public_key_by_policy(
         if (oe_result != OE_OK)
             return oe_result;
         return oe_get_public_key(
-            *key_info, *key_info_size, key_buffer, key_buffer_size);
+            key_params, *key_info, *key_info_size, key_buffer, key_buffer_size);
     }
 
-    return oe_get_public_key(NULL, 0, key_buffer, key_buffer_size);
+    return oe_get_public_key(key_params, NULL, 0, key_buffer, key_buffer_size);
 }
 
 oe_result_t oe_get_public_key(
+    const oe_asymmetric_key_params_t* key_params,
     const uint8_t* key_info,
     size_t key_info_size,
     uint8_t** key_buffer,
@@ -129,11 +149,15 @@ oe_result_t oe_get_public_key(
     if (key_buffer == NULL || key_buffer_size == NULL)
         return OE_INVALID_PARAMETER;
 
+    if (_check_optee_asykey_support(key_params) != OE_OK)
+        return OE_INVALID_PARAMETER;
+
     return get_cyres_public_key(key_buffer, key_buffer_size);
 }
 
 oe_result_t oe_get_private_key_by_policy(
     oe_seal_policy_t seal_policy,
+    const oe_asymmetric_key_params_t* key_params,
     uint8_t** key_buffer,
     size_t* key_buffer_size,
     uint8_t** key_info,
@@ -145,25 +169,32 @@ oe_result_t oe_get_private_key_by_policy(
     if (seal_policy == OE_SEAL_POLICY_PRODUCT)
         return OE_UNSUPPORTED;
 
+    if (_check_optee_asykey_support(key_params) != OE_OK)
+        return OE_INVALID_PARAMETER;
+
     if (key_info != NULL)
     {
         oe_result_t oe_result = get_cyres_cert_chain(key_info, key_info_size);
         if (oe_result != OE_OK)
             return oe_result;
         return oe_get_private_key(
-            *key_info, *key_info_size, key_buffer, key_buffer_size);
+            key_params, *key_info, *key_info_size, key_buffer, key_buffer_size);
     }
 
-    return oe_get_private_key(NULL, 0, key_buffer, key_buffer_size);
+    return oe_get_private_key(key_params, NULL, 0, key_buffer, key_buffer_size);
 }
 
 oe_result_t oe_get_private_key(
+    const oe_asymmetric_key_params_t* key_params,
     const uint8_t* key_info,
     size_t key_info_size,
     uint8_t** key_buffer,
     size_t* key_buffer_size)
 {
     if (key_buffer == NULL || key_buffer_size == NULL)
+        return OE_INVALID_PARAMETER;
+
+    if (_check_optee_asykey_support(key_params) != OE_OK)
         return OE_INVALID_PARAMETER;
 
     return get_cyres_private_key(key_buffer, key_buffer_size);

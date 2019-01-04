@@ -9,13 +9,13 @@ cassert | Yes | - |
 cctype | Partial | Unsupported functions: isalnum(), isaplha(), iscntrl(), isgraph(), isspace(), isblank(), isprint(), ispunct() |
 cfenv | No | - |
 charconv | No | - |
-chrono | Yes | - |
+chrono | Partial | All time functions implicitly call out to untrusted host for time values. The resulting time values should not be used for security purposes. Supported functions: time(), gettimeofday(), clock_gettime(), nanosleep(). Please note that clock_gettime() only supports CLOCK_REALTIME |
 clocale | Partial | Only basic support for C/POSIX locale |
 cmath | Partial | Supported functions: abs(), nan(), exp(), log(), sin(), tan(), asin(), erf(), trunc(), round(), rint(), modf() |
 codecvt | Yes | - |
 compare | No | - |
 complex | Yes | - |
-condtion_variable | Yes | - |
+condition_variable | Yes | - |
 csignal | Yes | - |
 cstdarg | No | - |
 cstddef | Yes | - |
@@ -23,7 +23,7 @@ cstdint | Yes | - |
 cstdio | Partial | All I/O functions implicitly call out to untrusted host. Unsupported functions: ferror(), vscanf() |
 cstdlib | Partial | Unsupported functions: at_quick_exit(), quick_exit() |
 cstring | Partial | Unsupported functions: strcpy(), strcat(), strncat(), strchr(), strcspn(), strspn() |
-ctime | Yes | All time functions implicitly call out to untrusted host for time values. The resulting time values should not be used for security purposes. |
+ctime | Yes | All time functions implicitly call out to untrusted host for time values. The resulting time values should not be used for security purposes. Supported functions: time(), gettimeofday(), clock_gettime(), nanosleep(). Please note that clock_gettime() only supports CLOCK_REALTIME |
 cwchar | Partial | Unsupported functions: wscanf(), wprintf() |
 cwctype | Yes | - |
 cuchar | No | - |

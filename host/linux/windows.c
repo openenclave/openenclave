@@ -20,7 +20,7 @@ HMODULE LoadLibraryExA(LPCSTR path, HANDLE file, DWORD flags)
         goto done;
 
     /* Allocate memory to hold the image (align on a page boundary). */
-    if (!(data = memalign(OE_PAGE_SIZE, st.st_size)))
+    if (!(data = memalign(OE_PAGE_SIZE, (size_t)st.st_size)))
         goto done;
 
     /* Open the PE file. */
@@ -28,7 +28,7 @@ HMODULE LoadLibraryExA(LPCSTR path, HANDLE file, DWORD flags)
         goto done;
 
     /* Read the image into memory */
-    if (fread(data, 1, st.st_size, is) != st.st_size)
+    if (fread(data, 1, (size_t)st.st_size, is) != (size_t)st.st_size)
         goto done;
 
     /* Check whether the header magic number is correct. */
@@ -59,6 +59,10 @@ BOOL VirtualProtect(
     DWORD flNewProtect,
     PDWORD lpflOldProtect)
 {
+    OE_UNUSED(lpAddress);
+    OE_UNUSED(dwSize);
+    OE_UNUSED(flNewProtect);
+    OE_UNUSED(lpflOldProtect);
     /* Nothing to do. */
     return true;
 }

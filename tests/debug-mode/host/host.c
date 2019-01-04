@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "debug_mode_u.h"
 
 #define SKIP_RETURN_CODE 2
 
@@ -28,15 +29,15 @@ static void _launch_enclave_success(const char* path, const uint32_t flags)
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
 
-    result = oe_create_enclave(
-        path, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, NULL, 0, &enclave);
+    result = oe_create_debug_mode_enclave(
+        path, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
 
     if (result != OE_OK)
-        oe_put_err("oe_create_enclave(): result=%u", result);
+        oe_put_err("oe_create_debug_mode_enclave(): result=%u", result);
 
     int ret;
-    if ((result = oe_call_enclave(enclave, "Test", &ret)) != OE_OK)
-        oe_put_err("oe_call_enclave(): result=%u", result);
+    if ((result = test(enclave, &ret)) != OE_OK)
+        oe_put_err("test: result=%u", result);
 
     if ((result = oe_terminate_enclave(enclave)) != OE_OK)
         oe_put_err("oe_terminate_enclave(): result=%u", result);
@@ -50,15 +51,15 @@ static void _launch_enclave_fail(
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
 
-    result = oe_create_enclave(
-        path, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, NULL, 0, &enclave);
+    result = oe_create_debug_mode_enclave(
+        path, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
 
     if (result == OE_OK)
         oe_terminate_enclave(enclave);
 
     if (result != expected_result)
         oe_put_err(
-            "oe_create_enclave(): got result=%u, expected=%u",
+            "oe_create_debug_mode_enclave(): got result=%u, expected=%u",
             result,
             expected_result);
 }

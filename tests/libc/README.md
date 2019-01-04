@@ -1,24 +1,13 @@
 libc tests
 ==========
 
-This directory runs each MUSL libc unit test from within an enclave. It does
-this by repeatedly building and runing the enclave located under the 'enc' 
-directory for each unit test found in tests.supported.
+This directory runs the MUSL libc unit tests. It reads **tests.cmake** and 
+generates a wrapper (in the build directory) for each of the tests in this file.
 
-The unit tests are partitioned into three files:
+All unit tests are all listed in **tests.cmake** in the following sections:
 
-* tests.supported -- unit tests that work
-* tests.broken -- unit tests that are broken
-* tests.unsupported -- unit tests that are not supported
+* Supported -- unit tests that work.
+* Broken -- unit tests that are broken.
+* Unsupported -- unit tests that are unsupported.
 
-To run all the tests, type the following command:
-
-```
-# make tests
-```
-
-As tests are fixed, they should be moved from tests.broken to tests.supported.
-
-As tests are determined to be unsupportable, they should be moved from
-tests.broken to tests.unsupported.
-
+Tests determined to be unsupportable should be moved to the broken section.

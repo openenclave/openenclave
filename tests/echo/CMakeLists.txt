@@ -7,4 +7,4 @@ if (UNIX)
 	add_subdirectory(enc)
 endif()
 
-add_enclave_test(tests/echo ./host echo_host ./enc echo_enc)
+add_enclave_test(tests/echo echo_host echo_enc)

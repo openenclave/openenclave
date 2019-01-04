@@ -23,7 +23,7 @@ typedef struct _test_args
     unsigned int mm;
     unsigned int dd;
     unsigned int yyyy;
-    unsigned int setjmp_result;
+    int setjmp_result;
     unsigned int magic2;
 } TestArgs;
 

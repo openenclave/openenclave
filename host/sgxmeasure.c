@@ -34,6 +34,7 @@ static void _measure_eextend(
 {
     uint64_t pgoff = 0;
     const uint64_t CHUNK_SIZE = 256;
+    OE_UNUSED(flags);
 
     /* Write this page one chunk at a time */
     for (pgoff = 0; pgoff < OE_PAGE_SIZE; pgoff += CHUNK_SIZE)

@@ -43,10 +43,10 @@ void test_between_enclave_boundaries(
     unsigned char* heapbuf = host_heap.buf;
 
     /* Verify host stack and heap pointers work. */
-    for (int i = 0; i < host_stack.size; i++)
+    for (size_t i = 0; i < host_stack.size; i++)
         OE_TEST(stackbuf[i] == 1);
 
-    for (int i = 0; i < host_heap.size; i++)
+    for (size_t i = 0; i < host_heap.size; i++)
         OE_TEST(heapbuf[i] == 2);
 
     /* Send two pointers. One from malloc (enclave memory) and
@@ -76,7 +76,7 @@ void try_input_enclave_pointer(buffer enclave_memory)
     OE_TEST(oe_is_within_enclave(enclave_memory.buf, enclave_memory.size));
 
     /* Verify enclave memory is unchanged. */
-    for (int i = 0; i < enclave_memory.size; i++)
+    for (size_t i = 0; i < enclave_memory.size; i++)
         OE_TEST(enclave_memory.buf[i] == 3);
 }
 

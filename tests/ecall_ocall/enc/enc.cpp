@@ -151,7 +151,7 @@ OE_ECALL void EncCrossEnclaveCall(CrossEnclaveCallArg* arg)
     OE_TEST(oe_call_host("CrossEnclaveCall", arg) == OE_OK);
 
     // augment result with my result.
-    uint32_t my_result = my_input * Factor;
+    uint32_t my_result = static_cast<uint32_t>(my_input * Factor);
     arg->output += my_result;
     printf(
         "enclave %u: Factor=%lu, myResult = %u, arg.output=%u\n",
@@ -170,8 +170,8 @@ OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
     true, /* AllowDebug */
-    1024, /* HeapPageCount */
-    1024, /* StackPageCount */
+    256,  /* HeapPageCount */
+    16,   /* StackPageCount */
     5);   /* TCSCount */
 
 OE_DEFINE_EMPTY_ECALL_TABLE();

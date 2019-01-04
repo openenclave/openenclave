@@ -16,6 +16,28 @@
 /* Randomly generated magic number */
 #define OE_CRL_MAGIC 0xe8c993b1cca24906
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+/* Needed for compatibility with ssl1.1 */
+static const ASN1_TIME* X509_CRL_get0_lastUpdate(const X509_CRL* crl)
+{
+    if (!crl->crl)
+    {
+        return NULL;
+    }
+    return crl->crl->lastUpdate;
+}
+
+static const ASN1_TIME* X509_CRL_get0_nextUpdate(const X509_CRL* crl)
+{
+    if (!crl->crl)
+    {
+        return NULL;
+    }
+    return crl->crl->nextUpdate;
+}
+
+#endif
+
 OE_STATIC_ASSERT(sizeof(crl_t) <= sizeof(oe_crl_t));
 
 OE_INLINE void _crl_init(crl_t* impl, X509_CRL* crl)
@@ -50,11 +72,11 @@ oe_result_t oe_crl_read_der(
         memset(impl, 0, sizeof(crl_t));
 
     /* Check for invalid parameters */
-    if (!der_data || !der_size || !crl)
+    if (!der_data || !der_size || der_size > OE_INT_MAX || !crl)
         OE_RAISE(OE_UNEXPECTED);
 
     /* Create a BIO for reading the DER-formatted data */
-    if (!(bio = BIO_new_mem_buf(der_data, der_size)))
+    if (!(bio = BIO_new_mem_buf(der_data, (int)der_size)))
         goto done;
 
     /* Read BIO into X509_CRL object */
@@ -208,9 +230,9 @@ oe_result_t oe_crl_get_update_dates(
 
     if (last)
     {
-        ASN1_TIME* time;
+        const ASN1_TIME* time;
 
-        if (!(time = X509_CRL_get_lastUpdate(impl->crl)))
+        if (!(time = X509_CRL_get0_lastUpdate(impl->crl)))
             OE_RAISE(OE_FAILURE);
 
         OE_CHECK(_asn1_time_to_date(time, last));
@@ -218,9 +240,9 @@ oe_result_t oe_crl_get_update_dates(
 
     if (next)
     {
-        ASN1_TIME* time;
+        const ASN1_TIME* time;
 
-        if (!(time = X509_CRL_get_nextUpdate(impl->crl)))
+        if (!(time = X509_CRL_get0_nextUpdate(impl->crl)))
             OE_RAISE(OE_FAILURE);
 
         OE_CHECK(_asn1_time_to_date(time, next));

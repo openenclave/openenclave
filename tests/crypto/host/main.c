@@ -20,6 +20,7 @@ const char* arg0;
 
 int main(int argc, const char* argv[])
 {
+    OE_UNUSED(argc);
     arg0 = argv[0];
 
     /* Run the tests */
