@@ -84,14 +84,15 @@ set(GTEST_PATH        ${OE_PATH}/3rdparty/googletest)
 set(OPTEE_CLIENT_PATH ${OE_PATH}/3rdparty/optee_client)
 set(OPTEE_OS_PATH     ${OE_PATH}/3rdparty/optee_os)
 set(OPTEE_CALLS_PATH  ${OE_PATH}/3rdparty/OpteeCalls)
+set(MBEDTLS_PATH      ${OE_PATH}/3rdparty/mbedtls/mbedtls)
 set(RIOT_PATH         ${OE_PATH}/3rdparty/RIoT)
 set(CYREP_PATH        ${RIOT_PATH}/CyReP)
 set(TINYCBOR_PATH     ${RIOT_PATH}/External/tinycbor)
 
 # Place binaries in predictable locations.
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out${__PREFIX}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out${__PREFIX}/bin)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out${__PREFIX}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out/bin)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out/lib)
 
 # Add common compiler definitions
 if(SGX)
@@ -105,8 +106,9 @@ else()
 endif()
 
 # 3rd-party components
+add_subdirectory(${MBEDTLS_PATH} ${CMAKE_BINARY_DIR}/out/mbedtls)
 if(UNIX AND TZ)
-    add_subdirectory(${OPTEE_CLIENT_PATH} ${OPTEE_CLIENT_PATH}/out)
+    add_subdirectory(${OPTEE_CLIENT_PATH} ${CMAKE_BINARY_DIR}/out/teec)
 endif()
 
 add_subdirectory(libsocket)

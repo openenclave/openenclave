@@ -14,8 +14,29 @@ set(INCS
     PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..
-    PUBLIC ${NP_PATH}/include
-    PUBLIC ${OE_PATH}/include)
+    PUBLIC  ${NP_PATH}/include
+    PUBLIC  ${OE_PATH}/include
+    PRIVATE ${MBEDTLS_PATH}/include
+    PRIVATE ${CYREP_PATH}/cyrep
+    PRIVATE ${CYREP_PATH}/tcps
+    PRIVATE ${TINYCBOR_PATH}/src)
+set(LIBS
+    PUBLIC mbedx509
+    PUBLIC mbedcrypto)
+
+set(CYREP_SRCS
+    ${CYREP_PATH}/RiotAes128.c  ${CYREP_PATH}/RiotAesTables.c
+    ${CYREP_PATH}/RiotBase64.c  ${CYREP_PATH}/RiotCrypt.c
+    ${CYREP_PATH}/RiotDerEnc.c  ${CYREP_PATH}/RiotEcc.c
+    ${CYREP_PATH}/RiotHmac.c    ${CYREP_PATH}/RiotKdf.c
+    ${CYREP_PATH}/RiotSha256.c  ${CYREP_PATH}/RiotX509Bldr.c
+    ${CYREP_PATH}/tcps/TcpsId.c ${CYREP_PATH}/tcps/cborhelper.c)
+
+set(TINYCBOR_SRCS
+    ${TINYCBOR_PATH}/src/cborencoder.c
+    ${TINYCBOR_PATH}/src/cborparser.c)
+
+list(APPEND SRCS ${CYREP_SRCS} ${TINYCBOR_SRCS})
 
 # By TEE
 if(TZ)
@@ -50,7 +71,7 @@ elseif(WIN32)
         list(APPEND INCS PRIVATE ${WDK_PATH}/km)
         list(APPEND INCS PRIVATE ${OE_PATH}/3rdparty/OpteeCalls/OpteeCalls/inc)
         
-        set(LIBS PUBLIC Rpcrt4)
+        list(APPEND LIBS PUBLIC Rpcrt4)
 
         if(SIM)
             list(APPEND LIBS PUBLIC oehost_opteesim)
@@ -61,12 +82,12 @@ elseif(WIN32)
         
         set(PREFIX ${SGX_SDK_LIBRARIES_PREFIX}/$<CONFIG>)
         if(SIM)
-            set(LIBS
+            list(APPEND LIBS
                 PUBLIC ${PREFIX}/sgx_urts_sim.lib
                 PUBLIC ${PREFIX}/sgx_uae_service_sim.lib
                 PUBLIC ${PREFIX}/sgx_uprotected_fs.lib)
         else()
-            set(LIBS
+            list(APPEND LIBS
                 PUBLIC ${PREFIX}/sgx_urts.lib
                 PUBLIC ${PREFIX}/sgx_uae_service.lib
                 PUBLIC ${PREFIX}/sgx_uprotected_fs.lib)
@@ -80,6 +101,6 @@ target_include_directories(oehost ${INCS})
 
 if(UNIX)
     target_compile_definitions(oehost PRIVATE LINUX)
-elseif(WIN32)
-    target_link_libraries(oehost ${LIBS})
 endif()
+
+target_link_libraries(oehost ${LIBS})

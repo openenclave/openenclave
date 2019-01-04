@@ -33,7 +33,8 @@ int main(int argc, const char* argv[])
 #ifdef _DEBUG
     enclave_flags |= OE_ENCLAVE_FLAG_DEBUG;
 #endif
-    result = oe_create_helloworld_enclave(argv[1], 0, enclave_flags, NULL, 0, &enclave);
+    result = oe_create_helloworld_enclave(
+        argv[1], OE_ENCLAVE_TYPE_UNDEFINED, enclave_flags, NULL, 0, &enclave);
     if (result != OE_OK)
     {
         fprintf(
@@ -58,7 +59,7 @@ int main(int argc, const char* argv[])
     }
     if (hostResult != OE_OK)
     {
-        fprintf(stderr, "OCALL failed: result=%u", hostResult);
+        fprintf(stderr, "OCALL failed: result=%u\n", hostResult);
         goto exit;
     }
 

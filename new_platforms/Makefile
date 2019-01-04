@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 ifeq ($(ARCH),aarch32)
 TRUSTED_CROSS_COMPILE = /usr/bin/arm-linux-gnueabi-
 else ifeq ($(ARCH),aarch64)
@@ -69,6 +72,8 @@ usdk-tests: gtest usdk oesocket_host oestdio_host
 usdk-samples: usdk oesocket_host oestdio_host
 	make -C samples/sockets/host/SampleClientApp
 	make -C samples/sockets/host/SampleServerApp
+	make -C samples/helloworld/HelloWorldHost
+	make -C samples/local_attestation/host
 
 # Trusted SDK
 # -----------
@@ -95,6 +100,7 @@ tsdk-tests: tsdk oesocket_enc oestdio_enc
 tsdk-samples: tsdk oesocket_enc oestdio_enc
 	$(TRUSTED_PARAMS) make -C samples/sockets/enclave/optee -f linux_gcc.mak BUILD_TARGET=debug
 	$(TRUSTED_PARAMS) make -C samples/helloworld/HelloWorldEnc/optee -f linux_gcc.mak BUILD_TARGET=debug
+	$(TRUSTED_PARAMS) make -C samples/local_attestation/enc/optee -f linux_gcc.mak BUILD_TARGET=debug
 
 # Clean Targets
 # -------------
@@ -141,6 +147,8 @@ usdk-tests-clean:
 usdk-samples-clean:
 	make -C samples/sockets/host/SampleClientApp clean
 	make -C samples/sockets/host/SampleServerApp clean
+	make -C samples/helloworld/HelloWorldHost clean
+	make -C samples/local_attestation/host clean
 
 .PHONY: tsdk-clean
 tsdk-clean:
@@ -162,3 +170,4 @@ tsdk-tests-clean:
 tsdk-samples-clean:
 	make -C samples/sockets/enclave/optee -f linux_gcc.mak BUILD_TARGET=debug clean
 	make -C samples/helloworld/HelloWorldEnc/optee -f linux_gcc.mak BUILD_TARGET=debug clean
+	make -C samples/local_attestation/enc/optee -f linux_gcc.mak BUILD_TARGET=debug clean

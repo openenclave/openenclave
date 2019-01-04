@@ -47,6 +47,10 @@ OE_EXTERNC_BEGIN
  * Size of the enclave's product ID in bytes.
  */
 #define OE_PRODUCT_ID_SIZE 16
+/**
+ * Size of an exported ECC public key in bytes.
+ */
+#define OE_ECC_PUBLIC_KEY_SIZE 65
 
 /**
  * Bit mask for a debug report.
@@ -93,16 +97,32 @@ typedef struct _oe_identity
     uint64_t attributes;
 
     /** The unique ID for the enclave.
-      * For SGX enclaves, this is the MRENCLAVE value */
+      * For SGX enclaves, this is the MRENCLAVE value.
+      * For CyReS TAs, this is a hash of the TA image. */
     uint8_t unique_id[OE_UNIQUE_ID_SIZE];
 
     /** The signer ID for the enclave.
-      * For SGX enclaves, this is the MRSIGNER value */
+      * For SGX enclaves, this is the MRSIGNER value.
+      * For CyReS TAs, this is a hash of the public key that signed the TA image. */
     uint8_t signer_id[OE_SIGNER_ID_SIZE];
 
     /** The Product ID for the enclave.
      * For SGX enclaves, this is the ISVPRODID value. */
     uint8_t product_id[OE_PRODUCT_ID_SIZE];
+
+    /** The unique ID for the device. 
+     *  For CyReS TAs, this is a U-Boot identifier. */
+    uint8_t device_unique_id[OE_UNIQUE_ID_SIZE];
+
+    /** The signer ID for the device. 
+     *  For CyReS TAs, this is a hash of the public key that signed the U-Boot image. */
+    uint8_t device_signer_id[OE_SIGNER_ID_SIZE];
+
+    /** The public key for the device.
+     *  For CyReS TAs, this is ECC public key which corresponding private key is held by U-Boot
+     * image. */
+    uint8_t device_public_key[OE_ECC_PUBLIC_KEY_SIZE];
+
 } oe_identity_t;
 /**< typedef struct _oe_identity oe_identity_t*/
 
