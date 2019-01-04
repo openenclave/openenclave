@@ -89,15 +89,11 @@ def checkPreCommitRequirements() {
                     sh './scripts/check-ci'
                     // installed by our install-prereqs script.
 
-                    // We actually expect `ctest` to fail because it is an
-                    // older version that emits a failure if any tests are
-                    // skipped. In other stages, we explicitly install an
-                    // updated version of CMake.
                     dir('build') {
                         sh '''
-                        cmake ..
+                        cmake .. -DUSE_LIBSGX=OFF
                         make
-                        OE_SIMULATION=1 ctest --verbose --output-on-failure || true
+                        OE_SIMULATION=1 ctest --verbose --output-on-failure
                     '''
                         // Note that `make package` is not expected to work
                         // without extra configuration.
