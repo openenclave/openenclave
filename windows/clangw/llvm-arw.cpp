@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-
 #include <stdio.h>
 #include <stdlib.h>
+#include <algorithm>
 #include <string>
 
 int main(int argc, char** argv)
@@ -12,11 +12,8 @@ int main(int argc, char** argv)
     for (int i = 1; i < argc; ++i)
     {
         std::string arg = argv[i];
-        for (size_t c = 0; c < arg.size(); ++c)
-        {
-            if (arg[c] == '\\')
-                arg[c] = '/';
-        }
+        std::replace(arg.begin(), arg.end(), '\\', '/');
+
         // If a response file is specified, transform slashes
         // within the response file.
         if (arg[0] == '@')
