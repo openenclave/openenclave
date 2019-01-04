@@ -126,7 +126,7 @@ static bool TestBasicAbort(const char* enclave_name)
             TestAbortStatus(enclave, functions[i].first, functions[i].second);
         }
 
-#ifdef OE_USE_DEBUG_MALLOC
+#if defined(OE_USE_DEBUG_MALLOC) || defined(_WIN32)
         if ((result = oe_terminate_enclave(enclave)) != OE_MEMORY_LEAK)
 #else
         if ((result = oe_terminate_enclave(enclave)) != OE_OK)
@@ -203,7 +203,7 @@ static bool TestMultipleThreadAbort(const char* enclave_name)
             t.join();
         }
 
-#ifdef OE_USE_DEBUG_MALLOC
+#if defined(OE_USE_DEBUG_MALLOC) || defined(_WIN32)
         // Enclave should be terminated correctly.
         if ((result = oe_terminate_enclave(enclave)) != OE_MEMORY_LEAK)
 #else
