@@ -5,7 +5,7 @@
 #
 # Please read The Ultimate Guide to CMake:
 # https://rix0r.nl/blog/2015/08/13/cmake-guide/
-cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
 # Read version from "VERSION" file.
 file(STRINGS "VERSION" OE_VERSION_WITH_V)

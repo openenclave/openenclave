@@ -38,7 +38,8 @@ static option_map _table[] = {{"/nologo", ""},
                               {"/FS", ""},
                               {"-std:c++11", "-std=c++11"},
                               {"-std:c++14", "-std=c++14"},
-                              {"-std:c++17", "-std=c++17"}};
+                              {"-std:c++17", "-std=c++17"},
+                              {"/showIncludes", ""}};
 
 static const size_t _table_size = sizeof(_table) / sizeof(_table[0]);
 

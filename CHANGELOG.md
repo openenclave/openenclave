@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Open Enclave SDK works in Windows
+   - Build using Visual Studio 2017's CMake Support
+   - Build in x64 Native Prompt using Ninja
 - Function table/id based ecall/ocall dispatching
    - oeedger8r generates ecall tables and ocall tables
    - Dispatching based on function-id (index into table)
