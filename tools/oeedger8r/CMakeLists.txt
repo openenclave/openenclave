@@ -74,3 +74,4 @@ add_custom_target(oeedger8r ALL DEPENDS ${BINARY})
 
 # install rule
 install (PROGRAMS ${BINARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../../include/openenclave/edger8r DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/)
