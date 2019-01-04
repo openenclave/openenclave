@@ -17,6 +17,7 @@ if(UNIX AND TZ)
             AR_O=${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
             GEN=${C_GEN}
         DEPENDS ${GEN})
+    add_dependencies(${TARGET_NAME} oeenclave liboesocket_enc liboestdio_enc)
     add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E
             copy ${CMAKE_CURRENT_BINARY_DIR}/*.ta ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
