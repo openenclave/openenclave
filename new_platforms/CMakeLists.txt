@@ -106,7 +106,6 @@ else()
 endif()
 
 # 3rd-party components
-add_subdirectory(${MBEDTLS_PATH} ${CMAKE_BINARY_DIR}/out/mbedtls)
 if(UNIX AND TZ)
     add_subdirectory(${OPTEE_CLIENT_PATH} ${CMAKE_BINARY_DIR}/out/teec)
 endif()
@@ -119,3 +118,12 @@ add_subdirectory(tests)
 if(WIN32 AND TZ AND SIM)
     add_subdirectory(opteesim)
 endif()
+
+# Import MBEDTLS
+#
+# The following four lines must remain together, at the end of the file so that
+# advapi32 only gets added to MBEDTLS targets.
+if(WIN32 AND TZ)
+    link_libraries(advapi32)
+endif()
+add_subdirectory(${MBEDTLS_PATH} ${CMAKE_BINARY_DIR}/out/mbedtls)

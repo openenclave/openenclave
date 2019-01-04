@@ -91,7 +91,7 @@ elseif(WIN32)
                 PUBLIC ${SGX_SDK_LIBRARIES_PREFIX}/$<CONFIG>/sgx_tservice.lib)
         endif()
 
-        set(SRCS ${CYREP_SRCS} ${TINYCBOR_SRCS} ${COMMON_SRCS} ${SGX_SRCS})
+        set(SRCS ${CYREP_SRCS} ${COMMON_SRCS} ${SGX_SRCS})
         set(INCS ${LOCAL_INCS} ${COMMON_INCS} ${EXTERNAL_INCS} ${SGX_INCS})
         set(LIBS ${SGX_LIBS} ${MBEDTLS_LIBS})
     elseif(TZ AND SIM)
@@ -113,9 +113,11 @@ elseif(WIN32)
             PUBLIC ${OPTEE_OS_PATH}/lib/libutee/include
             PUBLIC ${OPTEE_OS_PATH}/lib/libutils/ext/include)
 
-        set(SRCS ${CYREP_SRCS} ${TINYCBOR_SRCS} ${COMMON_SRCS} ${TZ_SRCS})
+		set(TZ_LIBS PUBLIC oeenclave_opteesim)
+
+        set(SRCS ${CYREP_SRCS} ${COMMON_SRCS} ${TZ_SRCS})
         set(INCS ${LOCAL_INCS} ${TZ_INCS} ${COMMON_INCS} ${TZ_EXTERNAL_INCS} ${EXTERNAL_INCS})
-        set(LIBS oeenclave_opteesim ${MBEDTLS_LIBS})
+        set(LIBS ${TZ_LIBS} ${MBEDTLS_LIBS})
     endif()
 
     add_library(oeenclave STATIC ${SRCS} ${GEN})
