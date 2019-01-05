@@ -52,6 +52,11 @@ nohup ./qemu-system-aarch64 \
         -virtfs local,id=sh0,path=$PWD/../build/aarch64/out/bin,security_model=passthrough,readonly,mount_tag=sh0 &
 disown
 
+# This isn't ideal, but we need to wait a bit until QEMU is up, otherwise the
+# commands below might fail depending on the speed and processor utilization of
+# the machine where we are running on.
+sleep 10
+
 # -------------------------------------
 # Connect to Test Environment
 # -------------------------------------
