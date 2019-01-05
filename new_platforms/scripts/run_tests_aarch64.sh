@@ -1,12 +1,5 @@
 #!/bin/bash
-
-# -------------------------------------
-# Environment Configuration
-# -------------------------------------
-
-# Instruct build_optee.sh to build for an AARCH64 QEMU guest.
-export ARCH=aarch64
-export MACHINE=virt
+cd "$( dirname "${BASH_SOURCE[0]}" )"
 
 # -------------------------------------
 # Build the Open Enclave SDK
@@ -14,17 +7,8 @@ export MACHINE=virt
 
 echo [CI] Building Open Enclave
 
-chmod +x ./new_platforms/build_optee.sh
-./new_platforms/build_optee.sh || exit 1
-
-# -------------------------------------
-# Install CI Prerequisites
-# -------------------------------------
-
-echo [CI] Installing Prerequisites
-
-# Needed to log in via SSH with password on the command line.
-sudo apt install sshpass -y || exit 1
+chmod +x ./build_optee.sh
+ARCH=aarch64 MACHINE=virt ./build_optee.sh || exit 1
 
 # -------------------------------------
 # Download Test Environment
@@ -32,7 +16,7 @@ sudo apt install sshpass -y || exit 1
 
 echo [CI] Downloading Emulated Environment
 
-CI_DIR=ci
+CI_DIR=ci  # Matches name inside tarball.
 CI_ENV=OE-CI-Ubuntu-16.04-AARCH64
 
 # The tarball contains QEMU, a root FS and guest firmware (i.e. ATF, OP-TEE,
@@ -65,7 +49,7 @@ nohup ./qemu-system-aarch64 \
         -no-acpi \
         -append 'console=ttyAMA0,38400 keep_bootcon root=/dev/vda2' \
         -netdev user,id=net0,hostfwd=tcp::5555-:22 -device virtio-net,netdev=net0 \
-        -virtfs local,id=sh0,path=$PWD/..,security_model=passthrough,readonly,mount_tag=sh0 &
+        -virtfs local,id=sh0,path=$PWD/../build/arm/out/bin,security_model=passthrough,readonly,mount_tag=sh0 &
 disown
 
 # -------------------------------------
@@ -86,11 +70,11 @@ echo [CI] Running Test Suite in QEMU Guest
 CMD="su -c \""
 CMD="$CMD mkdir /mnt/oe &&"
 CMD="$CMD mount -t 9p -o trans=virtio sh0 /mnt/oe -oversion=9p2000.L &&"
-CMD="$CMD cp /mnt/oe/new_platforms/bin/optee/tests/3156152a-19d1-423c-96ea-5adf5675798f.ta /lib/optee_armtz &&"
+CMD="$CMD cp /mnt/oe/3156152a-19d1-423c-96ea-5adf5675798f.ta /lib/optee_armtz &&"
 if [ -z "$TESTS_NOT_TO_RUN" ]; then
-    CMD="$CMD /mnt/oe/new_platforms/tests/oetests_host/oetests_host"
+    CMD="$CMD /mnt/oe/oetests_host"
 else
-    CMD="$CMD /mnt/oe/new_platforms/tests/oetests_host/oetests_host --gtest_filter=-$TESTS_NOT_TO_RUN"
+    CMD="$CMD /mnt/oe/oetests_host --gtest_filter=-$TESTS_NOT_TO_RUN"
 fi
 CMD="$CMD \""
 

@@ -6,8 +6,8 @@ set(CMAKE_SYSTEM_PROCESSOR arm)
 
 set(OE_TOOLCHAINS ${CMAKE_BINARY_DIR}/toolchains)
 
-set(CMAKE_C_COMPILER ${OE_TOOLCHAINS}/aarch32/bin/arm-linux-gnueabihf-gcc)
-set(CMAKE_CXX_COMPILER ${OE_TOOLCHAINS}/aarch32/bin/arm-linux-gnueabihf-g++)
+set(CMAKE_C_COMPILER ${OE_TOOLCHAINS}/arm/bin/arm-linux-gnueabihf-gcc)
+set(CMAKE_CXX_COMPILER ${OE_TOOLCHAINS}/arm/bin/arm-linux-gnueabihf-g++)
 
 set(OE_TA_TOOLCHAIN_PREFIX /usr/bin/arm-linux-gnueabi-)
 
