@@ -104,9 +104,14 @@ include(package_settings)
 include(add_enclave)
 
 # User configurable options
-option(USE_LIBSGX "Build oehost using SGX library requiring FLC" OFF)
+if (UNIX)
+  option(USE_LIBSGX "Build oehost using SGX library requiring FLC" ON)
+elseif (WIN32)
+  option(USE_LIBSGX "Build oehost using SGX library requiring FLC" OFF)
+endif ()
+
 if (USE_LIBSGX AND WIN32)
-  message(FATAL_ERROR "USE_LIBSGX is not supported on Windows. Disable this when calling cmake with -DUSE_LIBSGX=OFF")
+  message(FATAL_ERROR "USE_LIBSGX is not yet supported on Windows.")
 endif ()
 
 # TODO: See #756: Fix this because it is incompatible with
