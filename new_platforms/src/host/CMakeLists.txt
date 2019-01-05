@@ -70,7 +70,7 @@ elseif(WIN32)
             list(APPEND SRCS ${OPTEE_CALLS_PATH}/OpteeCalls/OpteeCalls.c)
         endif()
 
-        list(APPEND INCS PRIVATE ${WDK_PATH}/km)
+        list(APPEND INCS PRIVATE ${WDK_PATH})
         list(APPEND INCS PRIVATE ${OE_PATH}/3rdparty/OpteeCalls/OpteeCalls/inc)
         
         list(APPEND LIBS PUBLIC Rpcrt4)
