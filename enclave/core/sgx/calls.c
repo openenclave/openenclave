@@ -22,6 +22,7 @@
 #include "asmdefs.h"
 #include "cpuid.h"
 #include "init.h"
+#include "initializers.h"
 #include "report.h"
 #include "td.h"
 
@@ -171,6 +172,10 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
 
             /* Call all enclave state initialization functions */
             OE_CHECK(oe_initialize_cpuid(arg_in));
+
+            /* Once simulated instructions have been setup, call enclave
+             * initializers */
+            OE_CHECK(oe_call_enclave_initializers());
 
             /* Call global constructors. Now they can safely use simulated
              * instructions like CPUID. */

@@ -2,6 +2,9 @@
 *.o
 *.pem
 *.so
+*cquery*
+*.*~
+*#
 
 .vs/
 .vscode/

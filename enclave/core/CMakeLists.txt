@@ -16,6 +16,8 @@ if (OE_SGX)
         sgx/globals.c
         sgx/hostcalls.c
         sgx/init.c
+	sgx/initializers.c
+	sgx/interface.c
         sgx/jump.c
         sgx/keys.c
         sgx/malloc.c
