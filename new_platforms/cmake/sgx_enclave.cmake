@@ -10,7 +10,7 @@ function(sgx_enclave_configure_target TARGET)
     # target_link_options(${TARGET} BEFORE PRIVATE "/MANIFEST:NO")
     #
     # Workaround follows:
-    set_target_properties(${TARGET} PROPERTIES LINK_OPTIONS "/NODEFAULTLIB;/NOENTRY;/MANIFEST:NO")
+    set_target_properties(${TARGET} PROPERTIES LINK_FLAGS "/NODEFAULTLIB /NOENTRY /MANIFEST:NO")
 
     add_custom_command(TARGET ${TARGET} POST_BUILD
         COMMAND ${SGX_SDK_SIGN_TOOL} sign
