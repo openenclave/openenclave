@@ -15,7 +15,7 @@
 # are needed, which we do not.
 
 if(DEFINED ENV{WDKCIOverride})
-    set(WDK_PATH ENV{WDKCIOverride})
+    set(WDK_PATH $ENV{WDKCIOverride})
 elseif(DEFINED ENV{WDKContentRoot})
     set(WDK_PATH_TEST "$ENV{WDKContentRoot}/Include/${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}/km")
 else()
@@ -24,7 +24,7 @@ endif()
 
 if(DEFINED WDK_PATH_TEST)
     if(EXISTS ${WDK_PATH_TEST})
-        string(REPLACE "/km" "" WDK_PATH WDK_PATH_TEST)
+        string(REPLACE "/km" "" WDK_PATH ${WDK_PATH_TEST})
     endif()
 
     unset(WDK_PATH_TEST)
