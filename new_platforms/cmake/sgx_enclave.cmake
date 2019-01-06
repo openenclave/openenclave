@@ -2,9 +2,15 @@
 # Licensed under the MIT License.
 
 function(sgx_enclave_configure_target TARGET)
-    target_link_options(${TARGET} BEFORE PRIVATE "/NODEFAULTLIB")
-    target_link_options(${TARGET} BEFORE PRIVATE "/NOENTRY")
-    target_link_options(${TARGET} BEFORE PRIVATE "/MANIFEST:NO")
+    # NOTE: These three work for CMake 3.13+, but Azure DevOps currently has
+    # 3.12 installed:
+    #
+    # target_link_options(${TARGET} BEFORE PRIVATE "/NODEFAULTLIB")
+    # target_link_options(${TARGET} BEFORE PRIVATE "/NOENTRY")
+    # target_link_options(${TARGET} BEFORE PRIVATE "/MANIFEST:NO")
+    #
+    # Workaround follows:
+    set_target_properties(${TARGET} PROPERTIES LINK_OPTIONS "/NODEFAULTLIB;/NOENTRY;/MANIFEST:NO")
 
     add_custom_command(TARGET ${TARGET} POST_BUILD
         COMMAND ${SGX_SDK_SIGN_TOOL} sign
