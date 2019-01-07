@@ -12,6 +12,7 @@
 #include <openenclave/internal/utils.h>
 #include "asmdefs.h"
 #include "thread.h"
+#include "internalmalloc.h"
 
 #if __linux__
 #include "linux/threadlocal.h"
@@ -259,6 +260,8 @@ void td_init(td_t* td)
         /* List of callsites is initially empty */
         td->callsites = NULL;
 
+        _oe_alloc_thread_startup();
+
 #if __linux__
         oe_thread_local_init(td);
 #endif
@@ -288,6 +291,8 @@ void td_clear(td_t* td)
 #if __linux__
     oe_thread_local_cleanup(td);
 #endif
+
+    _oe_alloc_thread_teardown();
 
     // The call sites and depth are cleaned up after the thread-local storage is
     // cleaned up since thread-local dynamic destructors could make ocalls.

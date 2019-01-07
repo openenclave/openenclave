@@ -136,3 +136,9 @@ done:
     oe_mutex_unlock(&_mutex);
     return result;
 }
+
+void _oe_alloc_thread_startup()
+{}
+
+void _oe_alloc_thread_teardown()
+{}

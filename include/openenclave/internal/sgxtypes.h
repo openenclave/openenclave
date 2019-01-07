@@ -548,7 +548,7 @@ oe_thread_data_t* oe_get_thread_data(void);
 
 #define TD_MAGIC 0xc90afe906c5d19a3
 
-#define OE_THREAD_LOCAL_SPACE (3304)
+#define OE_THREAD_LOCAL_SPACE (3296)
 
 typedef struct _callsite Callsite;
 
@@ -601,6 +601,8 @@ typedef struct _td
     // List of functions to call when the thread exits.
     oe_tls_atexit_t* tls_atexit_functions;
     uint64_t num_tls_atexit_functions;
+
+    void* allocator_local;
 
     /* Reserved for thread-local variables. */
     uint8_t thread_local_data[OE_THREAD_LOCAL_SPACE];
