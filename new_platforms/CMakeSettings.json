@@ -31,36 +31,6 @@
       "ctestCommandArgs": ""
     },
     {
-      "name": "x64-SGX-Debug",
-      "generator": "Visual Studio 15 2017 Win64",
-      "configurationType": "Debug",
-      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "cmakeCommandArgs": "-Wno-dev -DOE_TEE=SGX",
-      "buildCommandArgs": "/m /p:CharacterSet=MBCS",
-      "ctestCommandArgs": ""
-    },
-    {
-      "name": "x64-SGX-Simulation-Debug",
-      "generator": "Visual Studio 15 2017 Win64",
-      "configurationType": "Debug",
-      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "cmakeCommandArgs": "-Wno-dev -DOE_TEE=SGX -DOE_USE_SIMULATION=ON",
-      "buildCommandArgs": "/m /p:CharacterSet=MBCS",
-      "ctestCommandArgs": ""
-    },
-    {
-      "name": "x64-SGX-Release",
-      "generator": "Visual Studio 15 2017 Win64",
-      "configurationType": "Release",
-      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "cmakeCommandArgs": "-Wno-dev -DOE_TEE=SGX",
-      "buildCommandArgs": "/m /p:CharacterSet=MBCS",
-      "ctestCommandArgs": ""
-    },
-    {
       "name": "arm-ARMTZ-Debug",
       "generator": "Visual Studio 15 2017 ARM",
       "configurationType": "Debug",
@@ -83,16 +53,6 @@
     {
       "name": "x86-ARMTZ-Simulation-Debug",
       "generator": "Visual Studio 15 2017",
-      "configurationType": "Debug",
-      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "cmakeCommandArgs": "-Wno-dev -DOE_TEE=TZ -DOE_USE_SIMULATION=ON",
-      "buildCommandArgs": "/m /p:CharacterSet=MBCS",
-      "ctestCommandArgs": ""
-    },
-    {
-      "name": "x64-ARMTZ-Simulation-Debug",
-      "generator": "Visual Studio 15 2017 Win64",
       "configurationType": "Debug",
       "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
       "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
