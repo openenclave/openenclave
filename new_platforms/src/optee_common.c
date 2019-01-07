@@ -15,7 +15,7 @@
 #include <RiotCrypt.h>
 #include <TcpsId.h>
 
-#ifndef _In_
+#ifdef LINUX
 #include "sal_unsup.h"
 #endif
 

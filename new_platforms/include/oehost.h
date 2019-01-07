@@ -24,7 +24,7 @@ extern "C" {
 typedef intptr_t ssize_t;
 #include <openenclave/bits/result.h>
 
-#ifndef __in_ecount
+#ifdef LINUX
 #include "sal_unsup.h"
 #endif
 

@@ -11,8 +11,10 @@
 
 #include "../include/tcps.h"
 
-#ifndef _In_
+#ifdef LINUX
 #include "sal_unsup.h"
+#else
+#include <sal.h>
 #endif
 
 #ifdef OE_USE_OPTEE
