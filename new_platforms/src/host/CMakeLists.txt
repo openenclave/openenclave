@@ -98,11 +98,5 @@ elseif(WIN32)
 endif()
 
 add_library(${TARGET} STATIC ${SRCS} ${GEN})
-
 target_include_directories(${TARGET} ${INCS})
-
-if(UNIX)
-    target_compile_definitions(${TARGET} PRIVATE LINUX)
-endif()
-
 target_link_libraries(${TARGET} ${LIBS})

@@ -95,13 +95,17 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out/lib)
 
 # Add common compiler definitions
+if(UNIX)
+    add_compile_definitions(LINUX)
+endif()
+
 if(SGX)
-    add_definitions(-DOE_USE_SGX)
+    add_compile_definitions(OE_USE_SGX)
 else()
     if(SIM)
-        add_definitions(-DOE_SIMULATE_OPTEE)
+        add_compile_definitions(OE_SIMULATE_OPTEE)
     else()
-        add_definitions(-DOE_USE_OPTEE)
+        add_compile_definitions(OE_USE_OPTEE)
     endif()
 endif()
 

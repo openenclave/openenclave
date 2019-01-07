@@ -22,7 +22,6 @@ target_include_directories(${TARGET} PRIVATE ${OE_PATH}/include)
 target_include_directories(${TARGET} PRIVATE ${NP_PATH}/include)
 
 if(UNIX)
-    target_compile_definitions(${TARGET} PRIVATE LINUX)
     target_include_directories(${TARGET} PRIVATE ${NP_PATH}/include/linux)
 elseif(WIN32 AND SGX)
     target_include_directories(${TARGET} PRIVATE ${SGXSDKInstallPath}/include)

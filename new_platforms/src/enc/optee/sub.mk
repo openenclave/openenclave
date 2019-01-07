@@ -17,7 +17,7 @@ CFLAGS +=                                  \
 	-I$(MBEDTLS_PATH)/include              \
 	-I$(OE_INC)
 
-CFLAGS += -DOE_USE_OPTEE -D__OPTEE__
+CFLAGS += -DLINUX -DOE_USE_OPTEE -D__OPTEE__
 
 srcs-y += $(GEN)
 
