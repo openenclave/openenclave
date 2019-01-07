@@ -573,30 +573,6 @@ oe_result_t oe_verify_report(
     oe_report_t* parsed_report);
 
 /**
- * This enumeration type defines the policy used to derive a seal key.
- */
-typedef enum _oe_seal_policy {
-    /**
-     * Key is derived from a measurement of the enclave. Under this policy,
-     * the sealed secret can only be unsealed by an instance of the exact
-     * enclave code that sealed it.
-     */
-    OE_SEAL_POLICY_UNIQUE = 1,
-    /**
-     * Key is derived from the signer of the enclave. Under this policy,
-     * the sealed secret can be unsealed by any enclave signed by the same
-     * signer as that of the sealing enclave.
-     */
-    OE_SEAL_POLICY_PRODUCT = 2,
-    /**
-     * Unused.
-     */
-    _OE_SEAL_POLICY_MAX = OE_ENUM_MAX,
-} oe_seal_policy_t;
-/**< typedef enum _oe_seal_policy oe_seal_policy_t*/
-
-
-/**
  * Get a symmetric encryption key derived from the specified policy and coupled
  * to the enclave platform.
  *
