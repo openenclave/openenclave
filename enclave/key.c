@@ -323,7 +323,7 @@ oe_result_t oe_public_key_free(oe_public_key_t* public_key, uint64_t magic)
     if (public_key)
     {
         if (!oe_public_key_is_valid(public_key, magic))
-            OE_RAISE(OE_INVALID_PARAMETER);
+            OE_RAISE_NO_TRACE(OE_INVALID_PARAMETER);
 
         oe_public_key_release(public_key, magic);
     }
@@ -420,7 +420,7 @@ oe_result_t oe_public_key_verify(
         signature,
         signature_size);
     if (rc != 0)
-        OE_RAISE_MSG(OE_VERIFY_FAILED, "rc = 0x%x\n", rc);
+        OE_RAISE_MSG(OE_VERIFY_FAILED, "rc = 0x%x", rc * (-1));
 
     result = OE_OK;
 

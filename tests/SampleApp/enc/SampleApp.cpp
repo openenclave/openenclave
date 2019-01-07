@@ -2,33 +2,21 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
+#include <openenclave/internal/tests.h>
+#include "SampleApp_t.h"
 
 const char* ProtectedMessage = "Hello world from Enclave\n\0";
 
-int HostUnsecureStrPatching(const char* src, char* dst, int dst_length);
-
-int SecureStrPatching(const char* src, char* dst, int dst_length)
+int secure_str_patching(const char* src, char* dst, size_t dst_length)
 {
-    if (!oe_is_outside_enclave(dst, static_cast<size_t>(dst_length)))
-    {
-        return -1;
-    }
-    if (!oe_is_outside_enclave(src, 1))
-    {
-        return -1;
-    }
     const char* running_src = src;
-    int running_length = dst_length;
+    size_t running_length = dst_length;
     while (running_length > 0 && *running_src != '\0')
     {
         *dst = *running_src;
         running_length--;
         running_src++;
         dst++;
-        if (!oe_is_outside_enclave(running_src, 1))
-        {
-            return -1;
-        }
     }
     const char* ptr = ProtectedMessage;
     while (running_length > 0 && *ptr != '\0')
@@ -43,5 +31,15 @@ int SecureStrPatching(const char* src, char* dst, int dst_length)
         return -1;
     }
     *dst = '\0';
-    return HostUnsecureStrPatching(src, dst, dst_length);
+    int rval = -1;
+    OE_TEST(unsecure_str_patching(&rval, src, dst, dst_length) == OE_OK);
+    return rval;
 }
+
+OE_SET_ENCLAVE_SGX(
+    1,    /* ProductID */
+    1,    /* SecurityVersion */
+    true, /* AllowDebug */
+    1024, /* HeapPageCount */
+    256,  /* StackPageCount */
+    4);   /* TCSCount */

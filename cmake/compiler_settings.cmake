@@ -80,8 +80,10 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
 
   add_compile_options(-fno-strict-aliasing)
 
-  # Enables XSAVE intrinsics.
-  add_compile_options(-mxsave)
+  # Enables XSAVE intrinsics
+  if (OE_SGX)
+      add_compile_options(-mxsave)
+  endif()
 
   # We should only need this for in-enclave code but it's easier
   # and conservative to specify everywhere

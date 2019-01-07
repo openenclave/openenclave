@@ -3,7 +3,7 @@
 
 add_subdirectory(host)
 
-if (UNIX)
+if (BUILD_ENCLAVES)
 	add_subdirectory(enc)
 	add_enclave_test(tests/debug-unsigned debug_host debug_enc debug unsigned)
 	set_tests_properties(tests/debug-unsigned PROPERTIES SKIP_RETURN_CODE 2)

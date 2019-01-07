@@ -394,11 +394,49 @@ oe_result_t oe_get_report_v2(
     size_t* report_buffer_size);
 
 /**
+ * Get a report signed by the enclave platform for use in attestation.
+ *
+ * This function creates a report to be used in local or remote attestation. The
+ * report shall contain the data given by the **report_data** parameter.
+ *
+ * @param[in] flags Specifying default value (0) generates a report for local
+ * attestation. Specifying OE_REPORT_FLAGS_REMOTE_ATTESTATION generates a
+ * report for remote attestation.
+ * @param[in] report_data The report data that will be included in the report.
+ * @param[in] report_data_size The size of the **report_data** in bytes.
+ * @param[in] opt_params Optional additional parameters needed for the current
+ * enclave type. For SGX, this can be sgx_target_info_t for local attestation.
+ * @param[in] opt_params_size The size of the **opt_params** buffer.
+ * @param[out] report_buffer This points to the resulting report upon success.
+ * @param[out] report_buffer_size This is set to the
+ * size of the report buffer on success.
+ *
+ * @retval OE_OK The report was successfully created.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
+ *
+ */
+oe_result_t oe_get_report_v2(
+    uint32_t flags,
+    const uint8_t* report_data,
+    size_t report_data_size,
+    const void* opt_params,
+    size_t opt_params_size,
+    uint8_t** report_buffer,
+    size_t* report_buffer_size);
+
+/**
  * Frees a report buffer obtained from oe_get_report.
  *
  * @param[in] report_buffer The report buffer to free.
  */
 void oe_free_report(uint8_t* report_buffer);
+
+#if (OE_API_VERSION < 2)
+#define oe_get_target_info oe_get_target_info_v1
+#else
+#define oe_get_target_info oe_get_target_info_v2
+#endif
 
 /**
  * Extracts additional platform specific data from the report and writes
@@ -431,6 +469,32 @@ OE_DEPRECATED(oe_result_t oe_get_target_info_v1(
     void* target_info_buffer,
     size_t* target_info_size),
     "This function is deprecated. Use oe_get_target_info_v2() instead.");
+
+/**
+ * Extracts additional platform specific data from the report and writes
+ * it to *target_info_buffer*. After calling this function, the
+ * *target_info_buffer* can used for the *opt_params* field in *oe_get_report*.
+ *
+ * For example, on SGX, the *target_info_buffer* can be used as a
+ * sgx_target_info_t for local attestation.
+ *
+ * @param[in] report The report returned by **oe_get_report**.
+ * @param[in] report_size The size of **report** in bytes.
+ * @param[out] target_info_buffer This points to the platform specific data
+ * upon success.
+ * @param[out] target_info_size This is set to
+ * the size of **target_info_buffer** on success.
+ *
+ * @retval OE_OK The platform specific data was successfully extracted.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
+ *
+ */
+oe_result_t oe_get_target_info_v2(
+    const uint8_t* report,
+    size_t report_size,
+    void** target_info_buffer,
+    size_t* target_info_size);
 
 /**
  * Extracts additional platform specific data from the report and writes
@@ -509,10 +573,35 @@ oe_result_t oe_verify_report(
     oe_report_t* parsed_report);
 
 /**
+ * This enumeration type defines the policy used to derive a seal key.
+ */
+typedef enum _oe_seal_policy {
+    /**
+     * Key is derived from a measurement of the enclave. Under this policy,
+     * the sealed secret can only be unsealed by an instance of the exact
+     * enclave code that sealed it.
+     */
+    OE_SEAL_POLICY_UNIQUE = 1,
+    /**
+     * Key is derived from the signer of the enclave. Under this policy,
+     * the sealed secret can be unsealed by any enclave signed by the same
+     * signer as that of the sealing enclave.
+     */
+    OE_SEAL_POLICY_PRODUCT = 2,
+    /**
+     * Unused.
+     */
+    _OE_SEAL_POLICY_MAX = OE_ENUM_MAX,
+} oe_seal_policy_t;
+/**< typedef enum _oe_seal_policy oe_seal_policy_t*/
+
+
+/**
  * Get a symmetric encryption key derived from the specified policy and coupled
  * to the enclave platform.
  *
- * @deprecated This function is deprecated. Use oe_get_seal_key_by_policy_v2() instead.
+ * @deprecated This function is deprecated. Use oe_get_seal_key_by_policy_v2()
+ instead.
  *
  * @param seal_policy The policy for the identity properties used to derive the
  * seal key.
@@ -521,7 +610,8 @@ oe_result_t oe_verify_report(
  * small, this function sets it to the required size and returns
  * OE_BUFFER_TOO_SMALL. When this function success, the number of bytes written
  * to key_buffer is set to it.
- * @param key_info Optional buffer for the enclave-specific key information which
+ * @param key_info Optional buffer for the enclave-specific key information
+ which
  * can be used to retrieve the same key later, on a newer security version.
  * @param key_info_size The size of the **key_info** buffer. If this is too
  small,
@@ -566,6 +656,42 @@ oe_result_t oe_get_seal_key_by_policy_v2(
     size_t* key_buffer_size,
     uint8_t** key_info,
     size_t* key_info_size);
+
+/**
+ * Get a symmetric encryption key derived from the specified policy and coupled
+ * to the enclave platform.
+ *
+ * @param[in] seal_policy The policy for the identity properties used to derive
+ * the
+ * seal key.
+ * @param[out] key_buffer This contains the resulting seal key upon success.
+ * Freed by calling oe_free_key().
+ * @param[out] key_buffer_size This contains the size of the **key_buffer**
+ * buffer upon success.
+ * @param[out] key_info If non-NULL, then on success this points to the
+ * enclave-specific key information which
+ * can be used to retrieve the same key later, on a newer security version.
+ * Freed by calling oe_free_key().
+ * @param[out] key_info_size On success, this is the size of the **key_info**
+ * buffer.
+ *
+ * @retval OE_OK The seal key was successfully requested.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ * @retval OE_UNEXPECTED An unexpected error happened.
+ * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
+ */
+oe_result_t oe_get_seal_key_by_policy_v2(
+    oe_seal_policy_t seal_policy,
+    uint8_t** key_buffer,
+    size_t* key_buffer_size,
+    uint8_t** key_info,
+    size_t* key_info_size);
+
+#if (OE_API_VERSION < 2)
+#define oe_get_seal_key oe_get_seal_key_v1
+#else
+#define oe_get_seal_key oe_get_seal_key_v2
+#endif
 
 /**
  * Get a symmetric encryption key from the enclave platform using existing key
@@ -791,6 +917,38 @@ void oe_free_key(
     size_t key_buffer_size,
     uint8_t* key_info,
     size_t key_info_size);
+
+/**
+ * Get a symmetric encryption key from the enclave platform using existing key
+ * information.
+ *
+ * @param key_info The enclave-specific key information to derive the seal key
+ * with.
+ * @param key_info_size The size of the **key_info** buffer.
+ * @param key_buffer Upon success, this points to the resulting seal key, which
+ * should be freed with oe_free_key().
+ * @param key_buffer_size Upon success, this contains the size of the
+ * **key_buffer** buffer, which should be freed with oe_free_key().
+ *
+ * @retval OE_OK The seal key was successfully requested.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ * @retval OE_INVALID_CPUSVN **key_info** contains an invalid CPUSVN.
+ * @retval OE_INVALID_ISVSVN **key_info** contains an invalid ISVSVN.
+ * @retval OE_INVALID_KEYNAME **key_info** contains an invalid KEYNAME.
+ * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
+ */
+oe_result_t oe_get_seal_key_v2(
+    const uint8_t* key_info,
+    size_t key_info_size,
+    uint8_t** key_buffer,
+    size_t* key_buffer_size);
+
+/* Free a key and/or key info.
+ *
+ * @param[in] key_buffer If non-NULL, the key buffer to free.
+ * @param[in] key_info If non-NULL, the key info buffer to free.
+ */
+void oe_free_seal_key(uint8_t* key_buffer, uint8_t* key_info);
 
 /**
  * Obtains the enclave handle.

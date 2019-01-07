@@ -9,7 +9,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "../args.h"
+#include "ecall_u.h"
 
 #if 0
 #define ECHO
@@ -20,11 +20,11 @@ uint64_t prev;
 void TestECall(oe_enclave_t* enclave)
 {
     oe_result_t result;
-    TestArgs args;
-    memset(&args, 0, sizeof(TestArgs));
+    test_args args;
+    memset(&args, 0, sizeof(test_args));
 
     {
-        result = oe_call_enclave(enclave, "Test", &args);
+        result = enc_test(enclave, &args);
         OE_TEST(result == OE_OK);
 
         OE_TEST(args.self = &args);
@@ -72,17 +72,11 @@ int main(int argc, const char* argv[])
 
     const uint32_t flags = oe_get_create_flags();
 
-    if ((result = oe_create_enclave(
-             argv[1],
-             OE_ENCLAVE_TYPE_SGX,
-             flags,
-             NULL,
-             0,
-             NULL,
-             0,
-             &enclave)) != OE_OK)
+    result = oe_create_ecall_enclave(
+        argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
+    if (result != OE_OK)
     {
-        oe_put_err("oe_create_enclave(): result=%u", result);
+        oe_put_err("oe_create_ecall_enclave(): result=%u", result);
     }
 
     const size_t N = 10000;

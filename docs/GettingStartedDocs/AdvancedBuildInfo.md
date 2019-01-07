@@ -5,8 +5,12 @@
 This project requires at least [CMake 3.13.1](https://cmake.org/download/). This
 is probably not available in your package manager's repositories, but we use the
 `OBJECT` library feature extensively, so you need to install it either manually
-from their website, or with our [install-prereqs](../../scripts/install-prereqs)
-script.
+from their website, or with ansible including our [scripts/ansible/tasks/ansible-install-prereqs.yml](/scripts/ansible/tasks/ansible-install-prereqs.yml) task list into a playbook.
+ex: Using our wrapper playbook [scripts/ansible/ansible-include_task.yml](/scripts/ansible/ansible-include_task.yml) you can execute the following command :
+```bash
+cd openenclave
+ansible-playbook scripts/ansible/ansible-include_task.yml --extra-vars "target=localhost included_task=tasks/ansible-install-prereqs.yml"
+```
 
 ## CMake Configuration
 
@@ -31,7 +35,7 @@ The following build types cause the C macro `NDEBUG` to be defined:
 - `CMAKE_BUILD_TYPE="Release"`
 - `CMAKE_BUILD_TYPE="RelWithDebInfo"`
 
-Whereas `CMAKE_BUILD_TYPE="Debug"` causes it to be undefined. Defining the 
+Whereas `CMAKE_BUILD_TYPE="Debug"` causes it to be undefined. Defining the
 `NDEBUG` macro affects the behavior of Open Enclave in three ways:
 
 - The `oe_assert()` and `assert()` macros become no-ops.
@@ -93,17 +97,10 @@ Although other output image formats such as PNG are support, we recommend using
 SVG because it keeps the resulting file size reasonably small in spite of the
 huge number of nodes (targets) in the resulting graph.
 
-To generate a concise graph of just our libraries, write the following options
-to a file named `CMakeGraphVizOptions.cmake` at the root of the repo:
+To change the ignored targets, edit the file named `CMakeGraphVizOptions.cmake`
+at the root of the repo.
 
-```
-set(GRAPHVIZ_IGNORE_TARGETS "^cxxrt-" "^dl$")
-set(GRAPHVIZ_EXECUTABLES FALSE)
-```
-
-This disables all executables (mostly tests and samples) and a couple extra
-nodes, and leaves just the core libraries. At the time of this writing, it looks
-like this:
+As of 2019-01-02, it looks like this:
 
 ![CMake Dependency Graph](DependencyGraph.svg)
 

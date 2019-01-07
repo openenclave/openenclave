@@ -40,6 +40,14 @@
 #define pipe2 __libunwind_pipe2
 #define syscall __libunwind_syscall
 
+#if defined(__clang__)
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#pragma clang diagnostic ignored "-Wsign-conversion"
+#elif defined(__GNUC__)
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#endif
+
 static __inline void __libunwind_setbuf(FILE* stream, char* buf)
 {
 }

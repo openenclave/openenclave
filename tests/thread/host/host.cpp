@@ -12,217 +12,175 @@
 #include <cstring>
 #include <thread>
 #include <vector>
-#include "../../../host/enclave.h"
-#include "../args.h"
-
-static TestMutexArgs _args;
-static TestTCSArgs _tcsargs;
-static std::atomic_flag _host_tcs_lock = ATOMIC_FLAG_INIT;
+#include "../../../host/sgx/enclave.h"
+#include "thread_u.h"
 
 const size_t NUM_THREADS = 8;
 
-static inline void _acquire_lock(std::atomic_flag* lock)
+void* test_mutex_thread(oe_enclave_t* enclave)
 {
-    while (lock->test_and_set(std::memory_order_acquire))
-        ;
-}
-
-static inline void _release_lock(std::atomic_flag* lock)
-{
-    lock->clear(std::memory_order_release);
-}
-
-void* Thread(void* args)
-{
-    oe_enclave_t* enclave = (oe_enclave_t*)args;
-
-    oe_result_t result = oe_call_enclave(enclave, "TestMutex", &_args);
+    oe_result_t result = enc_test_mutex(enclave);
     OE_TEST(result == OE_OK);
 
     return NULL;
 }
 
-void TestMutex(oe_enclave_t* enclave)
+void test_mutex(oe_enclave_t* enclave)
 {
     std::thread threads[NUM_THREADS];
 
     for (size_t i = 0; i < NUM_THREADS; i++)
     {
-        threads[i] = std::thread(Thread, enclave);
+        threads[i] = std::thread(test_mutex_thread, enclave);
     }
 
     for (size_t i = 0; i < NUM_THREADS; i++)
+    {
         threads[i].join();
+    }
 
-    OE_TEST(_args.count1 == NUM_THREADS);
-    OE_TEST(_args.count2 == NUM_THREADS);
+    size_t count1 = 0;
+    size_t count2 = 0;
+    OE_TEST(enc_test_mutex_counts(enclave, &count1, &count2) == OE_OK);
+
+    OE_TEST(count1 == NUM_THREADS);
+    OE_TEST(count2 == NUM_THREADS);
 }
 
-void* WaiterThread(void* args)
+void* waiter_thread(oe_enclave_t* enclave)
 {
-    oe_enclave_t* enclave = (oe_enclave_t*)args;
-    static WaitArgs _waitargs = {NUM_THREADS};
-
-    oe_result_t result = oe_call_enclave(enclave, "Wait", &_waitargs);
+    oe_result_t result = enc_wait(enclave, NUM_THREADS);
     OE_TEST(result == OE_OK);
 
     return NULL;
 }
 
-void TestCond(oe_enclave_t* enclave)
+void test_cond(oe_enclave_t* enclave)
 {
     std::thread threads[NUM_THREADS];
 
     for (size_t i = 0; i < NUM_THREADS; i++)
-        threads[i] = std::thread(WaiterThread, enclave);
+    {
+        threads[i] = std::thread(waiter_thread, enclave);
+    }
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
     for (size_t i = 0; i < NUM_THREADS; i++)
     {
-        OE_TEST(oe_call_enclave(enclave, "Signal", NULL) == OE_OK);
+        OE_TEST(enc_signal(enclave) == OE_OK);
     }
 
     for (size_t i = 0; i < NUM_THREADS; i++)
+    {
         threads[i].join();
+    }
 }
 
-void* CBTestWaiterThread(void* args)
+void* cb_test_waiter_thread(oe_enclave_t* enclave)
 {
-    oe_enclave_t* enclave = (oe_enclave_t*)args;
-
-    OE_TEST(oe_call_enclave(enclave, "CBTestWaiterThreadImpl", NULL) == OE_OK);
+    OE_TEST(cb_test_waiter_thread_impl(enclave) == OE_OK);
 
     return NULL;
 }
 
-void* CBTestSignalThread(void* args)
+void* cb_test_signal_thread(oe_enclave_t* enclave)
 {
-    oe_enclave_t* enclave = (oe_enclave_t*)args;
-
-    OE_TEST(oe_call_enclave(enclave, "CBTestSignalThreadImpl", NULL) == OE_OK);
+    OE_TEST(cb_test_signal_thread_impl(enclave) == OE_OK);
 
     return NULL;
 }
 
-void TestCondBroadcast(oe_enclave_t* enclave)
+void test_cond_broadcast(oe_enclave_t* enclave)
 {
     std::thread threads[NUM_THREADS];
     std::thread signal_thread;
 
-    printf("TestCondBroadcast Starting\n");
+    printf("test_cond_broadcast Starting\n");
 
     for (size_t i = 0; i < NUM_THREADS; i++)
     {
-        threads[i] = std::thread(CBTestWaiterThread, enclave);
+        threads[i] = std::thread(cb_test_waiter_thread, enclave);
     }
 
-    signal_thread = std::thread(CBTestSignalThread, enclave);
+    signal_thread = std::thread(cb_test_signal_thread, enclave);
 
     for (size_t i = 0; i < NUM_THREADS; i++)
+    {
         threads[i].join();
+    }
 
     signal_thread.join();
 
-    printf("TestCondBroadcast Complete\n");
+    printf("test_cond_broadcast Complete\n");
 }
 
-void* ExclusiveAccessThread(void* args)
+void* exclusive_access_thread(oe_enclave_t* enclave)
 {
     const size_t ITERS = 2;
-    oe_enclave_t* enclave = (oe_enclave_t*)args;
 
-    printf("Thread Starting\n");
+    printf("exclusive_access_thread Starting\n");
     for (size_t i = 0; i < ITERS; i++)
     {
-        OE_TEST(
-            oe_call_enclave(enclave, "WaitForExclusiveAccess", NULL) == OE_OK);
+        OE_TEST(enc_wait_for_exclusive_access(enclave) == OE_OK);
         std::this_thread::sleep_for(std::chrono::microseconds(20 * 1000));
 
-        OE_TEST(
-            oe_call_enclave(enclave, "RelinquishExclusiveAccess", NULL) ==
-            OE_OK);
+        OE_TEST(enc_relinquish_exclusive_access(enclave) == OE_OK);
         std::this_thread::sleep_for(std::chrono::microseconds(20 * 1000));
     }
-    printf("Thread Ending\n");
+    printf("exclusive_access_thread Ending\n");
     return NULL;
 }
 
-void TestThreadWakeWait(oe_enclave_t* enclave)
+void test_thread_wake_wait(oe_enclave_t* enclave)
 {
     std::thread threads[NUM_THREADS];
 
-    printf("TestThreadWakeWait Starting\n");
+    printf("test_thread_wake_wait Starting\n");
     for (size_t i = 0; i < NUM_THREADS; i++)
-        threads[i] = std::thread(ExclusiveAccessThread, enclave);
+    {
+        threads[i] = std::thread(exclusive_access_thread, enclave);
+    }
 
     for (size_t i = 0; i < NUM_THREADS; i++)
+    {
         threads[i].join();
+    }
 
     // The oe_calls in this test should succeed without any segv/double free.
-    printf("TestThreadWakeWait Complete\n");
+    printf("test_thread_wake_wait Complete\n");
 }
 
-void* LockAndUnlockThread1(void* args)
+void* lock_and_unlock_thread1(oe_enclave_t* enclave)
 {
-    oe_enclave_t* enclave = (oe_enclave_t*)args;
-
     const size_t ITERS = 20000;
 
     for (size_t i = 0; i < ITERS; ++i)
     {
-        OE_TEST(
-            oe_call_enclave(enclave, "LockAndUnlockMutexes", (void*)"ABC") ==
-            OE_OK);
-        OE_TEST(
-            oe_call_enclave(enclave, "LockAndUnlockMutexes", (void*)"AB") ==
-            OE_OK);
-        OE_TEST(
-            oe_call_enclave(enclave, "LockAndUnlockMutexes", (void*)"AC") ==
-            OE_OK);
-        OE_TEST(
-            oe_call_enclave(enclave, "LockAndUnlockMutexes", (void*)"BC") ==
-            OE_OK);
-        OE_TEST(
-            oe_call_enclave(enclave, "LockAndUnlockMutexes", (void*)"ABBC") ==
-            OE_OK);
-        OE_TEST(
-            oe_call_enclave(enclave, "LockAndUnlockMutexes", (void*)"ABAB") ==
-            OE_OK);
+        OE_TEST(enc_lock_and_unlock_mutexes(enclave, "ABC") == OE_OK);
+        OE_TEST(enc_lock_and_unlock_mutexes(enclave, "AB") == OE_OK);
+        OE_TEST(enc_lock_and_unlock_mutexes(enclave, "AC") == OE_OK);
+        OE_TEST(enc_lock_and_unlock_mutexes(enclave, "BC") == OE_OK);
+        OE_TEST(enc_lock_and_unlock_mutexes(enclave, "ABBC") == OE_OK);
+        OE_TEST(enc_lock_and_unlock_mutexes(enclave, "ABAB") == OE_OK);
     }
 
     return NULL;
 }
 
-void* LockAndUnlockThread2(void* args)
+void* lock_and_unlock_thread2(oe_enclave_t* enclave)
 {
-    oe_enclave_t* enclave = (oe_enclave_t*)args;
-
     const size_t ITERS = 20000;
 
     for (size_t i = 0; i < ITERS; ++i)
     {
-        OE_TEST(
-            oe_call_enclave(enclave, "LockAndUnlockMutexes", (void*)"BC") ==
-            OE_OK);
-        OE_TEST(
-            oe_call_enclave(enclave, "LockAndUnlockMutexes", (void*)"ABC") ==
-            OE_OK);
-        OE_TEST(
-            oe_call_enclave(enclave, "LockAndUnlockMutexes", (void*)"BBCC") ==
-            OE_OK);
-        OE_TEST(
-            oe_call_enclave(enclave, "LockAndUnlockMutexes", (void*)"BBC") ==
-            OE_OK);
-        OE_TEST(
-            oe_call_enclave(enclave, "LockAndUnlockMutexes", (void*)"ABAB") ==
-            OE_OK);
-        OE_TEST(
-            oe_call_enclave(enclave, "LockAndUnlockMutexes", (void*)"ABAC") ==
-            OE_OK);
-        OE_TEST(
-            oe_call_enclave(enclave, "LockAndUnlockMutexes", (void*)"ABAB") ==
-            OE_OK);
+        OE_TEST(enc_lock_and_unlock_mutexes(enclave, "BC") == OE_OK);
+        OE_TEST(enc_lock_and_unlock_mutexes(enclave, "ABC") == OE_OK);
+        OE_TEST(enc_lock_and_unlock_mutexes(enclave, "BBCC") == OE_OK);
+        OE_TEST(enc_lock_and_unlock_mutexes(enclave, "BBC") == OE_OK);
+        OE_TEST(enc_lock_and_unlock_mutexes(enclave, "ABAB") == OE_OK);
+        OE_TEST(enc_lock_and_unlock_mutexes(enclave, "ABAC") == OE_OK);
+        OE_TEST(enc_lock_and_unlock_mutexes(enclave, "ABAB") == OE_OK);
     }
 
     return NULL;
@@ -230,86 +188,102 @@ void* LockAndUnlockThread2(void* args)
 
 // Launch multiple threads and try out various locking patterns on 3 mutexes.
 // The locking patterns are chosen to not deadlock.
-void TestThreadLockingPatterns(oe_enclave_t* enclave)
+void test_thread_locking_patterns(oe_enclave_t* enclave)
 {
     std::thread threads[NUM_THREADS];
 
-    printf("TestThreadLockingPatterns Starting\n");
+    printf("test_thread_locking_patterns Starting\n");
     for (size_t i = 0; i < NUM_THREADS; i++)
     {
         threads[i] = std::thread(
-            (i & 1) ? LockAndUnlockThread2 : LockAndUnlockThread1, enclave);
+            (i & 1) ? lock_and_unlock_thread2 : lock_and_unlock_thread1,
+            enclave);
     }
 
     for (size_t i = 0; i < NUM_THREADS; i++)
+    {
         threads[i].join();
+    }
 
     // The oe_calls in this test should succeed without any OE_TEST() failures.
-    printf("TestThreadLockingPatterns Complete\n");
+    printf("test_thread_locking_patterns Complete\n");
 }
 
-void TestReadersWriterLock(oe_enclave_t* enclave);
+void test_readers_writer_lock(oe_enclave_t* enclave);
 
-void* ThreadTCS(void* args)
+// test_tcs_exhaustion
+static std::atomic<size_t> g_tcs_out_thread_count(0);
+
+// this is the test_tcs worker thread
+void* tcs_thread(oe_enclave_t* enclave, size_t tcs_req_count)
 {
-    oe_enclave_t* enclave = (oe_enclave_t*)args;
-
-    oe_result_t result =
-        oe_call_enclave(enclave, "TestTCSExhaustion", &_tcsargs);
+    oe_result_t result = enc_test_tcs_exhaustion(enclave, tcs_req_count);
     if (result == OE_OUT_OF_THREADS)
     {
-        _acquire_lock(&_host_tcs_lock);
-        _tcsargs.num_out_threads++;
-        _release_lock(&_host_tcs_lock);
+        // increment g_tcs_out_thread_count when thread exhaustion is reached
+        ++g_tcs_out_thread_count;
     }
     else
+    {
         OE_TEST(result == OE_OK);
+    }
 
     return NULL;
 }
 
-// Thread binding test to verify TCS exhaustion i.e. enter on N threads when
-// there are M TCSes where N > M; oe_call should return OE_OUT_OF_THREADS when
-// M enclaves are in use.
-// Trick is to keep the M enclaves busy until we get TCS exhaustion
-void TestTCSExhaustion(oe_enclave_t* enclave)
+// this test that calling an enclave fails with OE_OUT_OF_THREADS after reaching
+// TCS exhaustion
+// this test launches many threads which in turn make ecalls
+//   - successful ecalls increment a counter (tcs_used_thread_count) and wait
+//     for the total thread count to reach the test count (tcs_req_count)
+//   - unsuccessful ecalls increment a counter (tcs_out_thread_count)
+// tcs_used_thread_count is maintained in the enclave
+// tcs_out_thread_count is maintained in the host
+void test_tcs_exhaustion(oe_enclave_t* enclave)
 {
     std::vector<std::thread> threads;
     // Set the test_tcs_count to a value greater than the enclave TCSCount
-    size_t test_tcs_req_count = enclave->num_bindings * 2;
+    const size_t test_tcs_req_count = enclave->num_bindings * 2;
     printf(
-        "TestTCSExhaust() - Number of TCS bindings in enclave=%zu\n",
+        "test_tcs_exhaustion - Number of TCS bindings in enclave=%zu\n",
         enclave->num_bindings);
-    // Initialization of the shared variables before creating threads/launching
-    // enclaves
-    _tcsargs.num_tcs_used = 0;
-    _tcsargs.num_out_threads = 0;
-    _tcsargs.tcs_req_count = test_tcs_req_count;
 
     for (size_t i = 0; i < test_tcs_req_count; i++)
     {
-        threads.push_back(std::thread(ThreadTCS, enclave));
+        threads.push_back(std::thread(tcs_thread, enclave, test_tcs_req_count));
     }
 
     for (size_t i = 0; i < test_tcs_req_count; i++)
+    {
         threads[i].join();
+    }
+
+    // the local tcs_used_thread_count is a local copy of a value maintained on
+    // the enclave
+    size_t tcs_used_thread_count = 0;
+    // enc_tcs_used_thread_count retrieves the value from the enclave
+    OE_TEST(
+        enc_tcs_used_thread_count(enclave, &tcs_used_thread_count) == OE_OK);
 
     printf(
-        "TestTCSExhaustion(): tcs_count=%d; num_threads=%d; "
-        "num_out_threads=%d\n",
-        (int)test_tcs_req_count,
-        (int)_tcsargs.num_tcs_used,
-        (int)_tcsargs.num_out_threads);
+        "test_tcs_exhaustion: tcs_count=%zu; num_threads=%zu; "
+        "num_out_threads=%zu\n",
+        test_tcs_req_count,
+        tcs_used_thread_count,
+        g_tcs_out_thread_count.load());
 
-    // Cleanup -- Removes all elements from the vector threads
-    threads.clear();
     // Crux of the test is to get OE_OUT_OF_THREADS i.e. to exhaust the TCSes
-    OE_TEST(_tcsargs.num_out_threads > 0);
+    OE_TEST(g_tcs_out_thread_count > 0);
     // Verifying that everything adds up fine
     OE_TEST(
-        _tcsargs.num_tcs_used + _tcsargs.num_out_threads == test_tcs_req_count);
+        tcs_used_thread_count + g_tcs_out_thread_count == test_tcs_req_count);
     // Sanity test that we are not reusing the bindings
-    OE_TEST(_tcsargs.num_tcs_used <= enclave->num_bindings);
+    OE_TEST(tcs_used_thread_count <= enclave->num_bindings);
+}
+
+size_t host_tcs_out_thread_count()
+{
+    return g_tcs_out_thread_count;
 }
 
 int main(int argc, const char* argv[])
@@ -325,32 +299,26 @@ int main(int argc, const char* argv[])
 
     const uint32_t flags = oe_get_create_flags();
 
-    if ((result = oe_create_enclave(
-             argv[1],
-             OE_ENCLAVE_TYPE_SGX,
-             flags,
-             NULL,
-             0,
-             NULL,
-             0,
-             &enclave)) != OE_OK)
+    result = oe_create_thread_enclave(
+        argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
+    if (result != OE_OK)
     {
-        oe_put_err("oe_create_enclave(): result=%u", result);
+        oe_put_err("oe_create_thread_enclave(): result=%u", result);
     }
 
-    TestMutex(enclave);
+    test_mutex(enclave);
 
-    TestCond(enclave);
+    test_cond(enclave);
 
-    TestCondBroadcast(enclave);
+    test_cond_broadcast(enclave);
 
-    TestThreadWakeWait(enclave);
+    test_thread_wake_wait(enclave);
 
-    TestThreadLockingPatterns(enclave);
+    test_thread_locking_patterns(enclave);
 
-    TestReadersWriterLock(enclave);
+    test_readers_writer_lock(enclave);
 
-    TestTCSExhaustion(enclave);
+    test_tcs_exhaustion(enclave);
 
     if ((result = oe_terminate_enclave(enclave)) != OE_OK)
     {

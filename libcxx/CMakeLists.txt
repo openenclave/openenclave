@@ -3,6 +3,8 @@
 
 add_library(oelibcxx STATIC)
 
+maybe_build_using_clangw(oelibcxx)
+
 # NOTE: The three listed libraries are all `OBJECT` libraries, which
 # is just a collection of objects known to CMake. By "linking" them
 # here, we're actually combining all the objects into a single static
