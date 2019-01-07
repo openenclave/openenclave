@@ -36,6 +36,11 @@ elseif(WIN32 AND (SGX OR (TZ AND SIM)))
     target_include_directories(${TARGET} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
     target_link_libraries(${TARGET} oeenclave oestdio_enc)
 
+    if(NOT (TZ AND SIM))
+        target_compile_options(${TARGET} PUBLIC "/X")
+        target_compile_definitions(${TARGET} PUBLIC OE_NO_SAL)
+    endif()
+
     string(REPLACE "/RTC1" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
 
     if(SGX)

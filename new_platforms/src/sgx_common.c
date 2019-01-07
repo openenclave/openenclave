@@ -11,7 +11,7 @@
 
 #include "../include/tcps.h"
 
-#ifdef LINUX
+#if defined(LINUX) || defined(OE_NO_SAL)
 #include "sal_unsup.h"
 #else
 #include <sal.h>

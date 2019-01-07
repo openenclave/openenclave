@@ -26,7 +26,7 @@ typedef uint64_t __uint64_t;
 typedef uint32_t __uint32_t;
 #include <sys/types.h>
 
-#ifdef LINUX
+#if defined(LINUX) || defined(OE_NO_SAL)
 #include "sal_unsup.h"
 #else
 #include <sal.h>

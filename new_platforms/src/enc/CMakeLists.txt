@@ -77,7 +77,8 @@ elseif(WIN32)
         set(SGX_INCS
             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/sgx
             PUBLIC  ${SGXSDKInstallPath}/include
-            PUBLIC  ${SGXSDKInstallPath}/include/tlibc)
+            PUBLIC  ${SGXSDKInstallPath}/include/tlibc
+            PUBLIC  ${NP_PATH}/include/sgx/enclave)
 
         # Library lists
         set(SGX_LIBS
@@ -141,7 +142,13 @@ elseif(WIN32)
     if(SGX)
         target_compile_definitions(${TARGET} PRIVATE CONFIG_CYREP_SGX_BUILD)
     endif()
+
     target_compile_definitions(${TARGET} PRIVATE OPENSSL_NO_SOCK)
+
+    if(NOT (TZ AND SIM))
+        target_compile_options(${TARGET} PUBLIC "/X")
+        target_compile_definitions(${TARGET} PUBLIC  OE_NO_SAL)
+    endif()
 
     string(REGEX REPLACE "(-D|/D)[^ ]* " "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
     string(REGEX REPLACE "(-D|/D)[^ ]* " "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
