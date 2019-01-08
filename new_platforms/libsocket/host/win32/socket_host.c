@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <sal.h>
 #include <openenclave/host.h>
-#include "../socket_u.h"
+#include "socket_u.h"
 
 oe_socket_error_t ocall_WSAStartup(void)
 {

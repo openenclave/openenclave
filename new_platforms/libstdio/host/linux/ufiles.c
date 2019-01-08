@@ -7,7 +7,7 @@
 #include <tcps.h>
 #include <openenclave/bits/result.h>
 
-#include "../stdio_u.h"
+#include "stdio_u.h"
 
 oe_result_t
 ocall_ExportPublicCertificate(

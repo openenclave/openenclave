@@ -16,7 +16,7 @@
 #ifndef OE_USE_OPTEE
 # if defined(_ARM_) || defined(_M_ARM) || defined(OE_SIMULATE_OPTEE)
 #  define OE_USE_OPTEE
-# else
+# elif !defined(OE_USE_SGX)
 #  define OE_USE_SGX
 # endif
 #endif
