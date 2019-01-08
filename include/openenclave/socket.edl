@@ -17,7 +17,7 @@ enclave {
         int ai_family;
         int ai_socktype;
         int ai_protocol;
-        oe_socklen_t ai_addrlen;
+        int ai_addrlen;
         char ai_canonname[256];
         char ai_addr[256];
     };
@@ -42,7 +42,7 @@ enclave {
     struct getsockopt_Result {
         oe_socket_error_t error;
         char buffer[256];
-        oe_socklen_t len;
+        int len;
     };
 
     struct ioctlsocket_Result {

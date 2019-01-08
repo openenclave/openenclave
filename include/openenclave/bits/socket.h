@@ -35,18 +35,14 @@ typedef struct oe_provider_fd_set {
 
 typedef uint16_t oe_sa_family_t;
 
-#ifdef LINUX
-typedef size_t oe_socklen_t;
-#else
 typedef int oe_socklen_t;
-#endif
 
 typedef struct oe_addrinfo {
     int                 ai_flags;
     int                 ai_family;
     int                 ai_socktype;
     int                 ai_protocol;
-    oe_socklen_t        ai_addrlen;
+    size_t              ai_addrlen;
     char*               ai_canonname;
     struct oe_sockaddr* ai_addr;
     struct oe_addrinfo* ai_next;
