@@ -456,7 +456,7 @@ oe_getaddrinfo_OE_NETWORK_INSECURE(
                 break;
             }
             strncpy(ai->ai_canonname, response[i].ai_canonname,
-                sizeof(ai->ai_canonname));
+                sizeof(response[i].ai_canonname));
             ai->ai_canonname[sizeof(response[i].ai_canonname)] = 0;
         } else {
             ai->ai_canonname = NULL;
