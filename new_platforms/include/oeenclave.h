@@ -2,7 +2,7 @@
 /* Licensed under the MIT License. */
 #pragma once
 #ifndef _OE_ENCLAVE_H
-#error include <openenclave/enclave.h> instead of including oeenclave.h directly
+# error include <openenclave/enclave.h> instead of including oeenclave.h directly
 #endif
 
 #ifndef OE_SIMULATE_OPTEE
