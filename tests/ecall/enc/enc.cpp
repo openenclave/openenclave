@@ -8,7 +8,7 @@
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/jump.h>
 #include <openenclave/internal/tests.h>
-#include "../args.h"
+#include "ecall_t.h"
 
 int TestSetjmp()
 {
@@ -23,15 +23,10 @@ int TestSetjmp()
     return 0;
 }
 
-OE_ECALL void Test(void* args_)
+void enc_test(test_args* args)
 {
-    TestArgs* args = (TestArgs*)args_;
-
-    if (!args_)
-        return;
-
     /* Set output arguments */
-    oe_memset(args, 0xDD, sizeof(TestArgs));
+    oe_memset(args, 0xDD, sizeof(test_args));
     args->magic = NEW_MAGIC;
     args->self = args;
     args->mm = 12;
@@ -44,11 +39,11 @@ OE_ECALL void Test(void* args_)
     if ((td = oe_get_thread_data()))
     {
         args->thread_data = *td;
-        args->thread_data_addr = (uint64_t)td;
+        args->thread_data_addr = reinterpret_cast<uint64_t>(td);
     }
 
     /* Get enclave offsets and bases */
-    args->base = __oe_get_enclave_base();
+    args->base = const_cast<void*>(__oe_get_enclave_base());
     args->base_heap_page = oe_get_base_heap_page();
     args->num_heap_pages = oe_get_num_heap_pages();
     args->num_pages = oe_get_num_pages();
@@ -155,15 +150,6 @@ OE_ECALL void Test(void* args_)
     }
 }
 
-OE_ECALL void A(void* args_)
-{
-    if (args_)
-    {
-        int* args = (int*)args_;
-        *args = *args * 2;
-    }
-}
-
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
@@ -171,5 +157,3 @@ OE_SET_ENCLAVE_SGX(
     1024, /* HeapPageCount */
     1024, /* StackPageCount */
     2);   /* TCSCount */
-
-OE_DEFINE_EMPTY_ECALL_TABLE();

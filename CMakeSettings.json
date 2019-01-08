@@ -1,142 +1,61 @@
 {
-
   // Copyright (c) Microsoft Corporation. All rights reserved.
   // Licensed under the MIT License.
   //
-  // This file illustrates CMake settings to use for building and testing against
-  // WSL from Visual Studio 2017. It is based on the default CMakeSettings.json
-  // with the addition of two custom configurations: x64-Debug-tests and
-  // x64-Release-tests. These configurations allow a workflow for building a
-  // Windows OpenEnclave host app with a Linux enclave binary in 3 steps:
+  // This file illustrates CMake settings to use for building and testing
+  // Open Enclave SDK from Visual 2017. It is based on the default
+  // CMakeSettings.json.
+  // Prerequisites:
+  //  1. clang (preferable clang-7) must be installed on the machine
+  //     The following programs must be available in the path:
+  //         clang
+  //         llvm-ar
+  //         ld.lld
+  //  2. bash (Git's bash or WSL bash) must be available in the path.
   //
-  //  1. Build Windows host binaries using x64-Debug|Release configurations
-  //  2. Build Linux enclave binaries using Linux-Debug|Release configurations
-  //  3. Build Windows tests with Linux-built test enclaves from step 2 by
-  //     using x64-Debug|Release-tests configurations
-  //
-  // The test configurations specify the additional cmakeCommandArgs to enable
-  // retrieving the binaries built in WSL during the second step:
-  //
-  // ADD_WINDOWS_ENCLAVE_TESTS = 1
-  //   - This enables the CMake build option to only build Windows enclave tests
-  //
-  // LINUX_BIN_DIR = ${env.WSL_ROOTFS}/var/tmp/build/${workspaceHash}/build/Linux-Debug/tests
-  //   - This provides CMake with the Windows path to the WSL root file system
-  //   - You are expected to define the global environment variable WSL_ROOTFS,
-  //     which usually points to "C:\Users\username\AppData\Local\lxss\rootfs"
-  //   - The rest of the path should be defined exactly as in the Linux-Debug and
-  //     Linux-Release configurations respectively.
-  //
-  // These test configurations are otherwise identical to the x64-Debug and
-  // x64-Release configurations respectively. For more information on editing
-  // CMakeSettings.json, refer to https://go.microsoft.com//fwlink//?linkid=834763
+  // The following 3 configurations are available for building with
+  // Visual Studio 2017:
+  //    x64-Debug
+  //    x64-RelWithDebInfo
+  //    x64-Release
+  // Each configuration has its corresponding build folder under
+  //    ${workspaceRoot}/build/<configuration-name>
+  // For more information on editing CMakeSettings.json, refer to
+  // https://go.microsoft.com//fwlink//?linkid=834763
 
   "configurations": [
-    {
-      "name": "x86-Debug",
-      "generator": "Ninja",
-      "configurationType": "Debug",
-      "inheritEnvironments": [ "msvc_x86" ],
-      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "cmakeCommandArgs": "",
-      "buildCommandArgs": "-v",
-      "ctestCommandArgs": ""
-    },
-    {
-      "name": "x86-Release",
-      "generator": "Ninja",
-      "configurationType": "RelWithDebInfo",
-      "inheritEnvironments": [ "msvc_x86" ],
-      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "cmakeCommandArgs": "",
-      "buildCommandArgs": "-v",
-      "ctestCommandArgs": ""
-    },
     {
       "name": "x64-Debug",
       "generator": "Ninja",
       "configurationType": "Debug",
       "inheritEnvironments": [ "msvc_x64_x64" ],
-      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+      "buildRoot": "${workspaceRoot}\\build\\x64-Debug",
       "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "cmakeCommandArgs": "",
+      "cmakeCommandArgs": "-DBUILD_ENCLAVES=1",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
     },
     {
-      "name": "x64-Debug-tests",
-      "generator": "Visual Studio 15 2017 Win64",
-      "configurationType": "Debug",
+      "name": "x64-RelWithDebInfo",
+      "generator": "Ninja",
+      "configurationType": "RelWithDebInfo",
       "inheritEnvironments": [ "msvc_x64_x64" ],
-      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+      "buildRoot": "${workspaceRoot}\\build\\x64-RelWithDebInfo",
       "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "cmakeCommandArgs": "-DADD_WINDOWS_ENCLAVE_TESTS=1 -DLINUX_BIN_DIR=${env.WSL_ROOTFS}/var/tmp/build/${workspaceHash}/build/Linux-Debug/tests ",
-      "buildCommandArgs": "-p:Configuration=Debug",
-      "ctestCommandArgs": "-C Debug"
+      "cmakeCommandArgs": "-DBUILD_ENCLAVES=1",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": ""
     },
     {
       "name": "x64-Release",
       "generator": "Ninja",
-      "configurationType": "RelWithDebInfo",
-      "inheritEnvironments": [ "msvc_x64_x64" ],
-      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "cmakeCommandArgs": "",
-      "buildCommandArgs": "-v",
-      "ctestCommandArgs": ""
-    },
-    {
-      "name": "x64-Release-tests",
-      "generator": "Ninja",
-      "configurationType": "RelWithDebInfo",
-      "inheritEnvironments": [ "msvc_x64_x64" ],
-      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "cmakeCommandArgs": "-DADD_WINDOWS_ENCLAVE_TESTS=1 -DLINUX_BIN_DIR=${env.WSL_ROOTFS}/var/tmp/build/${workspaceHash}/build/Linux-Debug/tests ",
-      "buildCommandArgs": "-v",
-      "ctestCommandArgs": ""
-    },
-    {
-      "name": "Linux-Debug",
-      "generator": "Unix Makefiles",
-      "remoteMachineName": "${defaultRemoteMachineName}",
-      "configurationType": "Debug",
-      "remoteCMakeListsRoot": "/var/tmp/src/${workspaceHash}/${name}",
-      "cmakeExecutable": "/usr/local/bin/cmake",
-      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "remoteBuildRoot": "/var/tmp/build/${workspaceHash}/build/${name}",
-      "remoteInstallRoot": "/var/tmp/build/${workspaceHash}/install/${name}",
-      "remoteCopySources": true,
-      "remoteCopySourcesOutputVerbosity": "Normal",
-      "remoteCopySourcesConcurrentCopies": "10",
-      "remoteCopySourcesMethod": "sftp",
-      "cmakeCommandArgs": "",
-      "buildCommandArgs": "",
-      "ctestCommandArgs": "",
-      "inheritEnvironments": [ "linux-x64" ]
-    },
-    {
-      "name": "Linux-Release",
-      "generator": "Unix Makefiles",
-      "remoteMachineName": "${defaultRemoteMachineName}",
       "configurationType": "Release",
-      "remoteCMakeListsRoot": "/var/tmp/src/${workspaceHash}/${name}",
-      "cmakeExecutable": "/usr/local/bin/cmake",
-      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${workspaceRoot}\\build\\x64-Release",
       "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "remoteBuildRoot": "/var/tmp/build/${workspaceHash}/build/${name}",
-      "remoteInstallRoot": "/var/tmp/build/${workspaceHash}/install/${name}",
-      "remoteCopySources": true,
-      "remoteCopySourcesOutputVerbosity": "Normal",
-      "remoteCopySourcesConcurrentCopies": "10",
-      "remoteCopySourcesMethod": "sftp",
-      "cmakeCommandArgs": "",
-      "buildCommandArgs": "",
-      "ctestCommandArgs": "",
-      "inheritEnvironments": [ "linux-x64" ]
+      "cmakeCommandArgs": "-DBUILD_ENCLAVES=1",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": ""
     }
   ]
 }

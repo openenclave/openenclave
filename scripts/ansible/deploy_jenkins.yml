@@ -1,0 +1,43 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+- hosts: linux-slaves
+  any_errors_fatal: true
+  become: yes
+  vars_files:
+     - vars/variables.var
+  tasks:
+     - include_tasks: tasks/ansible-install-prereqs.yml
+     - include_tasks: tasks/ansible-install-openenclave-stack.yml
+     - include_tasks: tasks/ansible-install-sgx-driver.yml
+
+     - name: Install jre needed by Jenkins
+       apt: name{{item}} state=present update_cache=yes
+       with_items:
+               - openjdk-8-jre
+     - name: Create the jenkins group
+       group:
+               name: jenkins
+               state: present
+     - name: Add the Jenkins user
+       user:
+            name: jenkins
+            group: jenkins
+     - name: Add repositories for docker
+       apt_repository: repo={{item}} state=present update_cache=yes
+       with_items:
+               - deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
+     - name: Add docker repo keyy
+       apt_key: url={{item}} state=present
+       with_items:
+       - https://download.docker.com/linux/ubuntu/gpg
+     - name: Install  prerequisite packages
+       apt: name{{item}} state=present update_cache=yes
+       with_items:
+               - docker-ce
+     - name: Add jenkins to the docker group
+       user:
+         name: jenkins
+         groups: docker
+     - import_role:
+            name: kobanyan.jenkins-jnlp-slave

@@ -5,7 +5,7 @@
 # IMPORTANT- Please update the version number in the next sentence
 # when you create a new docker image.
 #
-# This Dockerfile script builds an image for tag oetools-azure:1.6
+# This Dockerfile script builds an image for tag oetools-azure:1.9
 
 # To use this Dockerfile, you will need to install docker-ce.
 # Instructions for installing it on Ubuntu 16.04 LTS are at:
@@ -13,10 +13,10 @@
 #
 # Once installed, build a docker image from .jenkins folder and
 # it will use this Dockerfile by default:
-#     .jenkins$ sudo docker build --no-cache=true -t oetools-azure:<version> .
+#     openenclave$ sudo docker build --no-cache=true -t oetools-azure:<version> -f .jenkins/Dockerfile .
 #
 # For example, for version 1.x:
-#     .jenkins$ sudo docker build --no-cache=true -t oetools-azure:1.x .
+#     openenclave$ sudo docker build --no-cache=true -t oetools-azure:1.x -f .jenkins/Dockerfile .
 #
 # Note that DNS forwarding in a VM can interfere with Docker
 # getting updates from Ubuntu apt-get repositories as part of the
@@ -42,62 +42,15 @@
 
 FROM ubuntu:16.04
 
-RUN \
-  apt-get update && apt-get install --no-install-recommends -y wget ca-certificates apt-transport-https \
-  # Install the LLVM 7 toolchain repo.
-  && echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu xenial main' | tee /etc/apt/sources.list.d/intel-sgx.list \
-  && wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add - \
-  && echo "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" | tee /etc/apt/sources.list.d/llvm-toolchain-xenial-7.list \
-  && wget -qO - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
-  && echo "deb [arch=amd64] https://packages.microsoft.com/ubuntu/16.04/prod xenial main" | tee /etc/apt/sources.list.d/msprod.list \
-  && wget -qO - https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
-  && apt-get update \
-  # Install Clang 7 to build with Spectre mitigation.
-  && apt-get install --no-install-recommends -y clang-7 \
-  # Install all the packages specified in install-prereqs except CMake.
-  && apt-get install --no-install-recommends -y \
-  # Please keep these sorted alphabetically.
-  autoconf \
-  automake \
-  clang-format \
-  dh-exec \
-  doxygen \
-  dpkg-dev \
-  g++ \
-  gawk \
-  gcc \
-  gdb \
-  git \
-  graphviz \
-  libcurl3 \
-  libexpat1-dev \
-  libmbedtls10 \
-  libprotobuf9v5 \
-  libssl-dev \
-  libtool \
-  make \
-  ocaml-native-compilers \
-  openssl \
-  pkg-config \
-  shellcheck \
-  subversion \
-  sudo \
-  libsgx-enclave-common \
-  libsgx-enclave-common-dev \
-  libsgx-dcap-ql \
-  libsgx-dcap-ql-dev \
-  az-dcap-client \
-  && rm -rf /var/lib/apt/lists/*
+ADD scripts/ansible /ansible
 
-# Install packages not available in repositories.
-RUN \
-  # Install CMake 3.13.1
-  wget https://cmake.org/files/v3.13/cmake-3.13.1-Linux-x86_64.tar.gz \
-  && tar xf cmake-3.13.1-Linux-x86_64.tar.gz \
-  && rm cmake-3.13.1-Linux-x86_64.tar.gz 
+RUN /ansible/install-ansible.sh \
+    && ansible-playbook /ansible/ansible-dockerfile.yml --extra-vars "target=localhost" \
+    && /ansible/remove-ansible.sh \
+    && rm -rf /ansible \
+    # Configure Git in target image to enable merge/rebase actions.
+    && git config --global user.email "oeciteam@microsoft.com" \
+    && git config --global user.name "OE CI Team" 
 
-ENV PATH="/cmake-3.13.1-Linux-x86_64/bin:${PATH}"
-
-# Configure Git in target image to enable merge/rebase actions.
-RUN git config --global user.email "oeciteam@microsoft.com"
-RUN git config --global user.name "OE CI Team"
+# Add CMake folder to path (PATH from /etc/environment doesn't appear to be working in docker container)
+ENV PATH="/cmake/bin:${PATH}"

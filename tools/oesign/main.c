@@ -10,7 +10,7 @@
 #include <openenclave/internal/str.h>
 #include <stdarg.h>
 #include <sys/stat.h>
-#include "../host/enclave.h"
+#include "../host/sgx/enclave.h"
 
 static const char* arg0;
 int oedump(const char*);
@@ -32,19 +32,15 @@ void Err(const char* format, ...)
 // Append .signed to the name of the executable to be signed.
 static char* _make_signed_lib_name(const char* path)
 {
-    const char* p;
     mem_t buf = MEM_DYNAMIC_INIT;
 
-    if ((!(p = strrchr(path, '.'))))
-        p = path + strlen(path);
-
-    mem_append(&buf, path, (size_t)(p - path));
-    mem_append(&buf, ".signed", 11);
+    mem_append(&buf, path, (size_t)strlen(path));
+    mem_append(&buf, ".signed", 8);
 
     return (char*)mem_steal(&buf);
 }
 
-static oe_result_t _update_and_write_shared_lib(
+static oe_result_t _update_and_write_signed_exe(
     const char* path,
     const oe_sgx_enclave_properties_t* properties)
 {
@@ -69,13 +65,13 @@ static oe_result_t _update_and_write_shared_lib(
         }
     }
 
-    /* Write new shared shared library */
+    /* Write new signed executable */
     {
         char* p = _make_signed_lib_name(path);
 
         if (!p)
         {
-            Err("bad shared library name: %s", path);
+            Err("bad executable name: %s", path);
             goto done;
         }
 
@@ -616,9 +612,9 @@ int oesign(const char* enclave, const char* conffile, const char* keyfile)
     }
 
     /* Create signature section and write out new file */
-    if ((result = _update_and_write_shared_lib(enclave, &props)) != OE_OK)
+    if ((result = _update_and_write_signed_exe(enclave, &props)) != OE_OK)
     {
-        Err("_update_and_write_shared_lib(): result=%s (%u)",
+        Err("_update_and_write_signed_exe(): result=%s (%u)",
             oe_result_str(result),
             result);
         goto done;

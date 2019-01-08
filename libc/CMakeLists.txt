@@ -4,41 +4,62 @@
 # Build the C library, using local sources and sources from musl.
 set(MUSLSRC ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
-add_library(oelibasm OBJECT
-    abort.S
-    exp2l.S
+if (OE_SGX)
+    add_library(oelibasm OBJECT
+        sgx/abort.S
+        sgx/exp2l.S
 
-    ${MUSLSRC}/fenv/x86_64/fenv.s
-    ${MUSLSRC}/math/x86_64/acosl.s
-    ${MUSLSRC}/math/x86_64/asinl.s
-    ${MUSLSRC}/math/x86_64/log1pl.s
-    ${MUSLSRC}/math/x86_64/log2l.s
-    ${MUSLSRC}/math/x86_64/logl.s
-    #${MUSLSRC}/math/x86_64/exp2l.s
-    ${MUSLSRC}/math/x86_64/sqrt.s
-    ${MUSLSRC}/math/x86_64/sqrtl.s
-    ${MUSLSRC}/math/x86_64/sqrtf.s
-    ${MUSLSRC}/setjmp/x86_64/longjmp.s
-    ${MUSLSRC}/setjmp/x86_64/setjmp.s)
+        ${MUSLSRC}/fenv/x86_64/fenv.s
+        ${MUSLSRC}/math/x86_64/acosl.s
+        ${MUSLSRC}/math/x86_64/asinl.s
+        ${MUSLSRC}/math/x86_64/log1pl.s
+        ${MUSLSRC}/math/x86_64/log2l.s
+        ${MUSLSRC}/math/x86_64/logl.s
+        #${MUSLSRC}/math/x86_64/exp2l.s
+        ${MUSLSRC}/math/x86_64/sqrt.s
+        ${MUSLSRC}/math/x86_64/sqrtl.s
+        ${MUSLSRC}/math/x86_64/sqrtf.s
+        ${MUSLSRC}/setjmp/x86_64/longjmp.s
+        ${MUSLSRC}/setjmp/x86_64/setjmp.s)
+elseif(OE_TRUSTZONE)
+    add_library(oelibasm OBJECT
+        ${MUSLSRC}/fenv/aarch64/fenv.s
+        ${MUSLSRC}/setjmp/aarch64/longjmp.s
+        ${MUSLSRC}/setjmp/aarch64/setjmp.s)
+endif()
+
+
+maybe_build_using_clangw(oelibasm)
 
 # CMake unconditionally adds `-DNDEBUG` etc. as flags even when
 # assembling, and clang-7 errors because we treat warnings as errors.
 # So we move the assembly code into a fake library, turn off the
 # error, and then inject the objects into the actual library.
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR USE_CLANGW)
     target_compile_options(oelibasm PRIVATE -Wno-error=unused-command-line-argument)
 endif ()
 
-if (UNIX)
-set(PLATFORM_SRC
-    ../common/rand.S
-)
-elseif (WIN32)
-set(PLATFORM_SRC
-    ../common/rand.asm
-)
-endif()
+set (PLATFORM_SRC "")
 
+if (OE_SGX)
+    list(APPEND PLATFORM_SRC
+        sgx/syscalls.c
+        sgx/sched_yield.c)
+
+    if (UNIX OR USE_CLANGW)
+        list(APPEND PLATFORM_SRC
+            ../common/sgx/rand.S)
+    elseif (WIN32)
+        set(APPEND PLATFORM_SRC
+            ../common/sgx/rand.asm)
+    endif()
+else()
+    list(APPEND PLATFORM_SRC
+        optee/syscalls.c
+        optee/abort.c
+        optee/exp2l.c
+        optee/sched_yield.c)
+endif()
 
 add_library(oelibc STATIC
     arc4random.c
@@ -49,10 +70,8 @@ add_library(oelibc STATIC
     locale.c
     malloc.c
     pthread.c
-    sched_yield.c
     stdlib.c
     strerror.c
-    syscalls.c
     sysconf.c
     time.c
     __stack_chk_fail.c
@@ -667,14 +686,19 @@ add_library(oelibc STATIC
     ${MUSLSRC}/unistd/dup3.c
     ${PLATFORM_SRC})
 
+maybe_build_using_clangw(oelibc)
+
 # NOTE: This is the minimum required for musl sources.
 set_property(TARGET oelibc PROPERTY C_STANDARD 99)
 
 target_compile_options(oelibc PRIVATE
     -fno-builtin-memcpy
     -fno-builtin-memset
-    -ffreestanding
-    -mrdrnd)
+    -ffreestanding)
+
+if (OE_SGX)
+    target_compile_options(oelibc PRIVATE -mrdrnd)
+endif()
 
 if (CMAKE_C_COMPILER_ID MATCHES GNU)
   target_compile_options(oelibc PRIVATE
@@ -683,7 +707,7 @@ if (CMAKE_C_COMPILER_ID MATCHES GNU)
 endif ()
 
 # Ignore warnings from musl sources. First, shared warnings:
-if (CMAKE_C_COMPILER_ID MATCHES GNU OR CMAKE_C_COMPILER_ID MATCHES Clang)
+if (CMAKE_C_COMPILER_ID MATCHES GNU OR CMAKE_C_COMPILER_ID MATCHES Clang OR USE_CLANGW)
   target_compile_options(oelibc PRIVATE
     -Wno-missing-braces
     -Wno-parentheses
@@ -692,6 +716,7 @@ if (CMAKE_C_COMPILER_ID MATCHES GNU OR CMAKE_C_COMPILER_ID MATCHES Clang)
     -Wno-unused-parameter
     -Wno-sign-compare)
 endif ()
+
 # Second: compiler-specific warnings:
 if (CMAKE_C_COMPILER_ID MATCHES GNU)
   target_compile_options(oelibc PRIVATE
@@ -702,7 +727,7 @@ if (CMAKE_C_COMPILER_ID MATCHES GNU)
     -Wno-unused-function
     -Wno-unused-value
     -Wno-unused-variable)
-elseif (CMAKE_C_COMPILER_ID MATCHES Clang)
+elseif (CMAKE_C_COMPILER_ID MATCHES Clang OR USE_CLANGW)
   target_compile_options(oelibc PRIVATE
     -Wno-dangling-else
     -Wno-ignored-attributes
@@ -724,10 +749,15 @@ target_link_libraries(oelibc
   PUBLIC oecore oelibc_includes
   PRIVATE oelibasm)
 
+if (OE_SGX)
 target_include_directories(oelibc PRIVATE
-  internal
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/x86_64)
+else()
+target_include_directories(oelibc PRIVATE
+  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal
+  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/aarch64)
+endif()
 
 set_property(TARGET oelibc PROPERTY
   ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)

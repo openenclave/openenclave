@@ -7,7 +7,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/get_testcase_name.cmake)
 # read tests.supported, sanitize the c-file, and create the test-case
 file(STRINGS "tests.supported" alltests)
 add_subdirectory(host)
-if (UNIX)
+if (BUILD_ENCLAVES)
 	add_subdirectory(enc)
 endif()
 

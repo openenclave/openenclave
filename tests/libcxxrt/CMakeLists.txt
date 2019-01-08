@@ -7,7 +7,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/get_testcase_name.cmake)
 
 add_subdirectory(host)
 
-if(UNIX)
+if(BUILD_ENCLAVES)
 	file(COPY ${PROJECT_SOURCE_DIR}/3rdparty/libcxxrt/libcxxrt/test/run_test.sh DESTINATION ${PROJECT_BINARY_DIR}/tests/libcxxrt/)
 	add_subdirectory(enc)
 

@@ -1,8 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-include(oeedl_file)
-include(add_enclave)
 
 
 oeedl_file(../bigmalloc.edl enclave gen)
@@ -12,4 +10,3 @@ oeedl_file(../bigmalloc.edl enclave gen)
 add_enclave(TARGET bigmalloc_enc CONFIG sign.conf SOURCES enc.c ${gen})
 
 target_include_directories(bigmalloc_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(bigmalloc_enc oeenclave)

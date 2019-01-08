@@ -166,7 +166,7 @@ fi
 
 if ! ctest --output-on-failure; then
     echo ""
-    echo "Test failed for ${PLATFORM_MODE} ${BUILD_TYPE} in ${SIMULATION_MODE_TEXT} mode"
+    echo "Test failed for ${PLATFORM_MODE} ${COMPILER_VALUE} ${BUILD_TYPE} in ${SIMULATION_MODE_TEXT} mode"
     echo ""
     exit 1
 fi

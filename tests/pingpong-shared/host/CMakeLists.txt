@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-include(oeedl_file)
 oeedl_file(../pingpong.edl host gen)
 
 add_library(pingpong-shared-lib SHARED host.cpp ${gen})

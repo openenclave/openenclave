@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Open Enclave SDK works in Windows
+   - Build using Visual Studio 2017's CMake Support
+   - Build in x64 Native Prompt using Ninja
 - Function table/id based ecall/ocall dispatching
    - oeedger8r generates ecall tables and ocall tables
    - Dispatching based on function-id (index into table)
@@ -20,7 +23,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - oe-gdb allows attaching to a host that is already running
 - Added Quote Enclave Identity validation into oe_verify_report implementation
 - Added OE SDK internal logging mechanism
-- Support for thread local variables (both GNU __thread and C++11 thread_local)
+- Support for thread local variables 
+   - Both GNU __thread and C++11 thread_local
+   - Both hardware and simulation mode 
+   - Local-Exec and Initial-Exec thread-local storage models
+- Added v2 versions of the following APIs that instead of passing in buffers now
+  return a buffer that needs to be freed via an associated free method. OE_API_VERSION
+  needs to be set to 2 to pick up the versions. The mentioned APIs have a *_V1 and *_V2
+  version that the below versions map to detending on the OE_API_VERSION.
+   - oe_get_report, free report buffer via oe_free_report
+   - oe_get_target_info, free target_info_buffer via oe_free_target_info
+   - oe_get_seal_key, free key_buffer and key_info via oe_free_seal_key
+   - oe_get_seal_key_by_policy, free key_buffer and key_info via oe_free_seal_key
 
 ### Changed
 
@@ -37,6 +51,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Deprecated
 
 - String based `ocalls`/`ecalls`, `OE_ECALL`, and `OE_OCALL` macros.
+
+[v0.4.1] - 2018-12-21
+---------------------
+
+v0.4.1 contains a small fix to work with Intel's new ISV version bump.
+
+### Changed
+
+- This allows the OE SDK to continue to support reports signed by QE SVN=1,
+  and at the same time also allow a newer QE SVN (greater than 1) during the
+  oe_verify_report process.
 
 [v0.4.0] - 2018-10-08
 ---------------------

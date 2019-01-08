@@ -46,10 +46,14 @@ add_library(libcxx OBJECT
   libcxx/src/variant.cpp
   libcxx/src/vector.cpp)
 
+maybe_build_using_clangw(libcxx)
+
 add_dependencies(libcxx libcxx_includes)
 
 set_target_properties(libcxx PROPERTIES
   POSITION_INDEPENDENT_CODE ON)
+
+target_compile_options(libcxx PRIVATE -Wno-error)
 
 target_compile_definitions(libcxx
   PRIVATE
@@ -68,17 +72,7 @@ target_include_directories(libcxx
   libcxx/src
   ../libcxxrt/libcxxrt/src)
 
-# Prevent warnings treated as error
-set_source_files_properties(
-  libcxx/src/locale.cpp
-  PROPERTIES COMPILE_FLAGS "-Wno-conversion")
-
-set_source_files_properties(
-  libcxx/src/system_error.cpp
-  PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
-
 install(TARGETS libcxx EXPORT openenclave-targets)
 
 install(DIRECTORY ${LIBCXX_INCLUDES}
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty)
-

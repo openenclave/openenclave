@@ -5,7 +5,7 @@
 #
 # Please read The Ultimate Guide to CMake:
 # https://rix0r.nl/blog/2015/08/13/cmake-guide/
-cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
 # Read version from "VERSION" file.
 file(STRINGS "VERSION" OE_VERSION_WITH_V)
@@ -44,6 +44,13 @@ if (IS_DIRECTORY "${PROJECT_SOURCE_DIR}/.git")
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     ERROR_QUIET
     OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  # Install Git pre-commit hook
+  if (NOT WIN32)
+    file(
+      COPY scripts/pre-commit
+      DESTINATION "${PROJECT_SOURCE_DIR}/.git/hooks")
+  endif ()
 endif ()
 
 # Get Jenkins build number
@@ -52,16 +59,59 @@ if (NOT BUILD_NUMBER)
   set(BUILD_NUMBER "0")
 endif ()
 
+# Set the architecture. We do this before the compiler settings, since some
+# of them are arch specific.
+if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
+  # TODO: Right now assume it's Intel+SGX for x86_64 processors
+  set(OE_SGX 1)
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*|ARM.*|aarch64.*|AARCH64.*")
+  set(OE_TRUSTZONE 1)
+else()
+  message(FATAL_ERROR "Unknown processor. Only Intel SGX and ARM TrustZone are supported")
+endif()
+
+if (OE_SGX)
+  if (WIN32)
+    # Building enclaves on windows is off by default
+    option(BUILD_ENCLAVES "Build ELF enclaves" OFF)
+  else()
+    set(BUILD_ENCLAVES ON)
+  endif()
+
+  if (BUILD_ENCLAVES AND WIN32)
+    # Setup cross compiler (clangw)
+    add_subdirectory(windows/clangw)  
+    set(USE_CLANGW ON)
+  endif()
+else()
+  # On non-sgx enclaves are built by default on Unix
+  if (UNIX)
+    set(BUILD_ENCLAVES ON)
+  endif()
+endif()
+
+# This is always included.
+# maybe_build_using_clangw will be a noop if USE_CLANGW is false.
+include(maybe_build_using_clangw)
+
 # See `cmake/compiler_settings.cmake` for all compiler settings
 include(compiler_settings)
 
 # See `cmake/package_settings.cmake` for all package settings
 include(package_settings)
 
+# See `cmake/add_enclave.cmake` for enclave creation logic
+include(add_enclave)
+
 # User configurable options
-option(USE_LIBSGX "Build oehost using SGX library requiring FLC" OFF)
+if (UNIX)
+  option(USE_LIBSGX "Build oehost using SGX library requiring FLC" ON)
+elseif (WIN32)
+  option(USE_LIBSGX "Build oehost using SGX library requiring FLC" OFF)
+endif ()
+
 if (USE_LIBSGX AND WIN32)
-  message(FATAL_ERROR "USE_LIBSGX is not supported on Windows. Disable this when calling cmake with -DUSE_LIBSGX=OFF")
+  message(FATAL_ERROR "USE_LIBSGX is not yet supported on Windows.")
 endif ()
 
 # TODO: See #756: Fix this because it is incompatible with
@@ -90,14 +140,19 @@ add_subdirectory(include)
 add_subdirectory(tests)
 add_subdirectory(tools)
 
-if (UNIX)
-  add_subdirectory(3rdparty)
-  add_subdirectory(debugger)
-  add_subdirectory(docs/refman)
-  add_subdirectory(enclave)
+if (BUILD_ENCLAVES)
   add_subdirectory(enclave/core)
+  add_subdirectory(3rdparty)
   add_subdirectory(libc)
   add_subdirectory(libcxx)
+  add_subdirectory(enclave)
+endif()
+
+if (UNIX)
+  if (OE_SGX)
+    add_subdirectory(debugger)
+  endif()
+  add_subdirectory(docs/refman)
   add_subdirectory(pkgconfig)
   add_subdirectory(samples)
-endif ()
+endif()

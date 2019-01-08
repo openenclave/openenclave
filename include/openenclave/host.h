@@ -200,8 +200,7 @@ OE_DEPRECATED(oe_result_t oe_call_enclave(
  * @param opt_params_size The size of the **opt_params** buffer.
  * @param report_buffer The buffer to where the resulting report will be copied.
  * @param report_buffer_size The size of the **report** buffer. This is set to
- * the
- * required size of the report buffer on return.
+ * the required size of the report buffer on return.
  *
  * @retval OE_OK The report was successfully created.
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
@@ -249,11 +248,46 @@ oe_result_t oe_get_report_v2(
     size_t* report_buffer_size);
 
 /**
+ * Get a report signed by the enclave platform for use in attestation.
+ *
+ * This function creates a report to be used in local or remote attestation.
+ *
+ * @param[in] enclave The instance of the enclave that will generate the report.
+ * @param[in] flags Specifying default value (0) generates a report for local
+ * attestation. Specifying OE_REPORT_FLAGS_REMOTE_ATTESTATION generates a
+ * report for remote attestation.
+ * @param[in] opt_params Optional additional parameters needed for the current
+ * enclave type. For SGX, this can be sgx_target_info_t for local attestation.
+ * @param[in] opt_params_size The size of the **opt_params** buffer.
+ * @param[out] report_buffer This points to the resulting report upon success.
+ * @param[out] report_buffer_size This is set to the size of the report buffer
+ * on success.
+ *
+ * @retval OE_OK The report was successfully created.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
+ *
+ */
+oe_result_t oe_get_report_v2(
+    oe_enclave_t* enclave,
+    uint32_t flags,
+    const void* opt_params,
+    size_t opt_params_size,
+    uint8_t** report_buffer,
+    size_t* report_buffer_size);
+
+/**
  * Frees a report buffer obtained from oe_get_report.
  *
  * @param[in] report_buffer The report buffer to free.
  */
 void oe_free_report(uint8_t* report_buffer);
+
+#if (OE_API_VERSION < 2)
+#define oe_get_target_info oe_get_target_info_v1
+#else
+#define oe_get_target_info oe_get_target_info_v2
+#endif
 
 /**
  * Extracts additional platform specific data from the report and writes
@@ -317,12 +351,37 @@ oe_result_t oe_get_target_info_v2(
     size_t* target_info_size);
 
 /**
+ * Extracts additional platform specific data from the report and writes
+ * it to *target_info_buffer*. After calling this function, the
+ * *target_info_buffer* can used for the *opt_params* field in *oe_get_report*.
+ *
+ * For example, on SGX, the *target_info_buffer* can be used as a
+ * sgx_target_info_t for local attestation.
+ *
+ * @param[in] report The report returned by **oe_get_report**.
+ * @param[in] report_size The size of **report** in bytes.
+ * @param[out] target_info_buffer This points to the platform specific data
+ * upon success.
+ * @param[out] target_info_size This is set to
+ * the size of **target_info_buffer** on success.
+ *
+ * @retval OE_OK The platform specific data was successfully extracted.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
+ *
+ */
+oe_result_t oe_get_target_info_v2(
+    const uint8_t* report,
+    size_t report_size,
+    void** target_info_buffer,
+    size_t* target_info_size);
+
+/**
  * Frees a target info obtained from oe_get_target_info.
  *
  * @param[in] target_info_buffer The target info to free.
  */
-void oe_free_target_info(
-    void* target_info_buffer);
+void oe_free_target_info(void* target_info_buffer);
 
 /**
  * Parse an enclave report into a standard format for reading.
