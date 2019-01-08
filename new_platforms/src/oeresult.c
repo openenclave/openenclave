@@ -1,6 +1,6 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
-#ifdef LINUX
+#ifndef _MSC_VER
 #include "sal_unsup.h"
 #endif
 

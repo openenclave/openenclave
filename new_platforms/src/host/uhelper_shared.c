@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stddef.h>
 
-#ifdef LINUX
+#ifndef _MSC_VER
 #include "sal_unsup.h"
 #endif
 

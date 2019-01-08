@@ -1,6 +1,6 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
-#ifdef LINUX
+#ifndef _MSC_VER
 #include "sal_unsup.h"
 #include "stdext.h"
 #else
@@ -142,7 +142,7 @@ void* ocall_calloc(_In_ size_t nmemb, size_t size)
     return calloc(nmemb, size);
 }
 
-#ifndef LINUX
+#ifdef _MSC_VER
 char* strndup(_In_ char* str, size_t n)
 {
     n = strlen(str) > n ? n : strlen(str);
@@ -153,7 +153,7 @@ char* strndup(_In_ char* str, size_t n)
     result[n] = '\0';
     return result;
 }
-#endif
+#endif  // _MSC_VER
 
 char* ocall_strndup(_In_ char* str, size_t n)
 {
