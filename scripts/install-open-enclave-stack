@@ -15,4 +15,4 @@ then
     exit 1
 fi
 
-ansible-playbook ansible/ansible-include_task.yml --extra-vars "target=localhost included_task=tasks/ansible-install-openenclave-stack.yml"
+ansible-playbook ansible/ansible-include_task.yml --extra-vars "target=localhost included_task=tasks/ansible-install-openenclave.yml"

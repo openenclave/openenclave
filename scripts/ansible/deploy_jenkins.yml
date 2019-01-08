@@ -8,7 +8,7 @@
      - vars/variables.var
   tasks:
      - include_tasks: tasks/ansible-install-prereqs.yml
-     - include_tasks: tasks/ansible-install-openenclave-stack.yml
+     - include_tasks: tasks/ansible-install-openenclave-deps.yml
      - include_tasks: tasks/ansible-install-sgx-driver.yml
 
      - name: Install jre needed by Jenkins

@@ -15,7 +15,7 @@
     - deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main
     - deb [arch=amd64] https://packages.microsoft.com/ubuntu/16.04/prod xenial main
 
-- name: Install  prerequisites and Intel and Open Enclave packages
+- name: Install packages
   apt:
     name: [
       clang-7,
@@ -29,8 +29,7 @@
       libsgx-enclave-common-dev,
       libsgx-dcap-ql,
       libsgx-dcap-ql-dev,
-      az-dcap-client,
-      open-enclave
+      az-dcap-client
     ]
     state: present
     update_cache: yes
