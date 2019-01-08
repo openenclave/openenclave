@@ -41,7 +41,7 @@ The state of the service should be "running" (4). Follow Intel's documentation f
 Microsoft Visual Studio 2017
 ---------------------------------
 Install the latest version of [Microsoft Visual Studio 2017](https://www.visualstudio.com/downloads/).
-Visual Studio 2017's cmake support is required for building the Open Enclave SDK.
+Visual Studio 2017's CMake support (ver 3.12 or above) is required for building the Open Enclave SDK.
 For more information about cmake support, refer to
 https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studio/
 
@@ -57,6 +57,11 @@ Open a command prompt and ensure that bash is available in the path:
 ```cmd
 C:\>where bash
 C:\Program Files\Git\bin\bash.exe
+```
+
+Special Note: If you have WSL installed on your platform, it will most likely show up as the first item as
+c:\Windows\System32\bash.exe and the build fails as the auto-generation of alltypes.h fails. This is being
+addressed with Issue #1302 .
 ```
 
 Clang
@@ -114,8 +119,8 @@ https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studi
 1. Under the File menu, select Open > CMake...
 2. Open the CMakeLists.txt at the root of your Open Enclave repo
    (e.g. C:\openenclave\CMakeLists.txt)
-3. The CMake menu option should appear when it detects a valid CMake project is
-   loaded. VS2017 will then recursively walk the repo directory structure and
+3. The CMake menu option should appear when it detects that a valid CMake project
+   is loaded. VS2017 will then recursively walk the repo directory structure and
    generate a cache for the project to display Intellisense.
 4. Open Enclave is only supported for 64-bit. By default the `x64-Debug` configuration is 
    selected.
@@ -125,7 +130,7 @@ https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studi
 The results of the build will be displayed in the Output window and any build
 errors or warnings collated in the Error List window.
 
-You can change the build settings by with the CMake > Change CMake Settings menu
+You can change the build settings with the CMake > Change CMake Settings menu
 option. This opens the [CMakeSettings.json](https://blogs.msdn.microsoft.com/vcblog/2017/08/14/cmake-support-in-visual-studio-customizing-your-environment/)
 file which you can edit and change settings such as the target build location.
 
