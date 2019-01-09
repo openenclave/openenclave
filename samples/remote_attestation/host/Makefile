@@ -25,8 +25,8 @@ all: build
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../remoteattestation.edl --untrusted
-	$(CC) -c $(CFLAGS) $(CINCLUDES) remoteattestation_u.c 
-	$(CXX) -c $(CXXFLAGS) $(INCLUDES) host.cpp
+	$(CC) -g -c $(CFLAGS) $(CINCLUDES) remoteattestation_u.c
+	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) host.cpp
 	$(CXX) -o attestation_host host.o remoteattestation_u.o $(LDFLAGS)
 
 clean:

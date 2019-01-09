@@ -26,8 +26,8 @@ all: build
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../datasealing.edl --untrusted
-	$(CXX) -c $(CXXFLAGS) $(INCLUDES) host.cpp
-	$(CC) -c $(CFLAGS) $(CINCLUDES) datasealing_u.c 
+	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) host.cpp
+	$(CC) -g -c $(CFLAGS) $(CINCLUDES) datasealing_u.c
 	$(CXX) -o data-sealing_host host.o datasealing_u.o $(LDFLAGS)
 
 clean:

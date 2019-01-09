@@ -20,8 +20,8 @@ LDFLAGS=$(shell pkg-config oehost-$(COMPILER) --libs)
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../helloworld.edl --untrusted
-	$(CC) -c $(CFLAGS) host.c
-	$(CC) -c $(CFLAGS) helloworld_u.c
+	$(CC) -g -c $(CFLAGS) host.c
+	$(CC) -g -c $(CFLAGS) helloworld_u.c
 	$(CC) -o helloworldhost helloworld_u.o host.o $(LDFLAGS)
 
 clean:
