@@ -188,7 +188,7 @@ compile for ARM, since Visual Studio cannot do it from the UI.  To do so, add th
 line "<WindowsSDKDesktopARMSupport\>true</WindowsSDKDesktopARMSupport\>"
 to each ARM configuration property group.  (See the sample apps'
 vcxproj file for examples.)
-3. Copy the files from the samples/enclave/optee directory into your
+3. Copy the files from the samples/helloworld/HelloWorldEnc/optee directory into your
 enclave project, preferably into an "optee" subdirectory
 4. Create a new GUID for your TA and fill it in in your linux\_gcc.mak,
 user\_ta\_header\_defines.h, main.c, and uuids.reg files.  You can use the

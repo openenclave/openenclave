@@ -1,0 +1,41 @@
+<VSTemplate Version="3.0.0" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005" Type="Project">
+  <TemplateData>
+    <Name>Open Enclave TEE Project</Name>
+    <Description>A project file for creating an Open Enclave enclave</Description>
+    <ProjectType>VC</ProjectType>
+    <SortOrder>1000</SortOrder>
+    <CreateNewFolder>true</CreateNewFolder>
+    <DefaultName>MyEnclave</DefaultName>
+    <ProvideDefaultName>true</ProvideDefaultName>
+    <LocationField>Enabled</LocationField>
+    <EnableLocationBrowseButton>true</EnableLocationBrowseButton>
+    <Icon>__TemplateIcon.ico</Icon>
+    <PromptForSaveOnCreation>true</PromptForSaveOnCreation>
+  </TemplateData>
+  <TemplateContent>
+    <Project TargetFileName="$projectname$.vcxproj" File="MyEnclave.vcxproj" ReplaceParameters="true">
+      <ProjectItem ReplaceParameters="true" TargetFileName="$projectname$.vcxproj.filters">MyEnclave.vcxproj.filters</ProjectItem>
+      <ProjectItem ReplaceParameters="true">ecalls.c</ProjectItem>
+      <ProjectItem ReplaceParameters="true" TargetFileName="$projectname$.edl">MyEnclave.edl</ProjectItem>
+      <ProjectItem ReplaceParameters="true" TargetFileName="$projectname$.config.xml">MyEnclave.config.xml</ProjectItem>
+      <ProjectItem ReplaceParameters="true" TargetFileName="$projectname$_private.pem">MyEnclave_private.pem</ProjectItem>
+      <ProjectItem ReplaceParameters="true" TargetFileName="optee/linux_gcc.mak">linux_gcc.mak</ProjectItem>
+      <ProjectItem ReplaceParameters="true" TargetFileName="optee/sub.mk">sub.mk</ProjectItem>
+      <ProjectItem ReplaceParameters="true" TargetFileName="optee/uuids.reg">uuids.reg</ProjectItem>
+      <ProjectItem ReplaceParameters="true" TargetFileName="optee/user_ta_header_defines.h">user_ta_header_defines.h</ProjectItem>
+    </Project>
+  </TemplateContent>
+  <WizardExtension>  
+    <Assembly>OpenEnclaveSDK, Version=1.0.0.0, Culture=Neutral, PublicKeyToken=6089df5bbfa28701</Assembly>  
+    <FullClassName>OpenEnclaveSDK.WizardImplementation</FullClassName>  
+  </WizardExtension>  
+  <WizardExtension>
+    <Assembly>NuGet.VisualStudio.Interop, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</Assembly>
+    <FullClassName>NuGet.VisualStudio.TemplateWizard</FullClassName>
+  </WizardExtension>
+  <WizardData>
+    <packages repository="extension" repositoryId="OpenEnclaveVisualStudioExtension-1">
+      <package id="openenclave" version="0.2.0-CI-20190117-032919" />
+    </packages>
+  </WizardData>
+</VSTemplate>
