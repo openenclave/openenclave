@@ -98,6 +98,7 @@ if (OE_SGX)
       sgx/linux/entersim.S
       sgx/linux/exception.c
       sgx/linux/sgxioctl.c
+      sgx/linux/sgxquoteproviderloader.c
       sgx/linux/xstate.c)
   else()
     list(APPEND PLATFORM_SRC
@@ -106,6 +107,7 @@ if (OE_SGX)
       sgx/windows/enter.asm
       sgx/windows/entersim.asm
       sgx/windows/exception.c
+      sgx/windows/sgxquoteproviderloader.c
       sgx/windows/xstate.c)
   endif()
 
