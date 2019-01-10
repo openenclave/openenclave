@@ -11,7 +11,10 @@
 OE_EXTERNC_BEGIN
 
 /* Key deriviation functions specified by NIST SP800-108 */
-typedef enum _oe_kdf_mode { OE_KDF_HMAC_SHA256_CTR } oe_kdf_mode_t;
+typedef enum _oe_kdf_mode
+{
+    OE_KDF_HMAC_SHA256_CTR
+} oe_kdf_mode_t;
 
 /**
  * Creates the fixed data as specified by NIST SP800-108.

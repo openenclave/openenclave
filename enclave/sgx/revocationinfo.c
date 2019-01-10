@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "../common/sgx/revocation.h"
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/raise.h>
+#include "../common/sgx/revocation.h"
 
 /**
  * Validate and copy buffer to enclave memory.
@@ -82,9 +82,8 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
     for (uint32_t i = 0; i < args->num_crl_urls; ++i)
     {
         host_args->crl_urls[i] = (const char*)p;
-        OE_CHECK(
-            oe_memcpy_s(
-                p, crl_url_sizes[i], args->crl_urls[i], crl_url_sizes[i]));
+        OE_CHECK(oe_memcpy_s(
+            p, crl_url_sizes[i], args->crl_urls[i], crl_url_sizes[i]));
         p += crl_url_sizes[i];
     }
 
@@ -100,33 +99,29 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
         OE_RAISE(OE_UNEXPECTED);
 
     // Ensure that all required outputs exist.
-    OE_CHECK(
-        _copy_buffer_to_enclave(
-            &args->tcb_info,
-            &args->tcb_info_size,
-            tmp_args.tcb_info,
-            tmp_args.tcb_info_size));
-    OE_CHECK(
-        _copy_buffer_to_enclave(
-            &args->tcb_issuer_chain,
-            &args->tcb_issuer_chain_size,
-            tmp_args.tcb_issuer_chain,
-            tmp_args.tcb_issuer_chain_size));
+    OE_CHECK(_copy_buffer_to_enclave(
+        &args->tcb_info,
+        &args->tcb_info_size,
+        tmp_args.tcb_info,
+        tmp_args.tcb_info_size));
+    OE_CHECK(_copy_buffer_to_enclave(
+        &args->tcb_issuer_chain,
+        &args->tcb_issuer_chain_size,
+        tmp_args.tcb_issuer_chain,
+        tmp_args.tcb_issuer_chain_size));
 
     for (uint32_t i = 0; i < args->num_crl_urls; ++i)
     {
-        OE_CHECK(
-            _copy_buffer_to_enclave(
-                &args->crl[i],
-                &args->crl_size[i],
-                tmp_args.crl[i],
-                tmp_args.crl_size[i]));
-        OE_CHECK(
-            _copy_buffer_to_enclave(
-                &args->crl_issuer_chain[i],
-                &args->crl_issuer_chain_size[i],
-                tmp_args.crl_issuer_chain[i],
-                tmp_args.crl_issuer_chain_size[i]));
+        OE_CHECK(_copy_buffer_to_enclave(
+            &args->crl[i],
+            &args->crl_size[i],
+            tmp_args.crl[i],
+            tmp_args.crl_size[i]));
+        OE_CHECK(_copy_buffer_to_enclave(
+            &args->crl_issuer_chain[i],
+            &args->crl_issuer_chain_size[i],
+            tmp_args.crl_issuer_chain[i],
+            tmp_args.crl_issuer_chain_size[i]));
     }
 
     // Check for null terminators.

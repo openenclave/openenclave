@@ -83,7 +83,7 @@ typedef struct _oe_identity
     uint32_t id_version;
 
     /** Security version of the enclave. For SGX enclaves, this is the
-      *  ISVN value */
+     *  ISVN value */
     uint32_t security_version;
 
     /** Values of the attributes flags for the enclave -
@@ -93,11 +93,11 @@ typedef struct _oe_identity
     uint64_t attributes;
 
     /** The unique ID for the enclave.
-      * For SGX enclaves, this is the MRENCLAVE value */
+     * For SGX enclaves, this is the MRENCLAVE value */
     uint8_t unique_id[OE_UNIQUE_ID_SIZE];
 
     /** The signer ID for the enclave.
-      * For SGX enclaves, this is the MRSIGNER value */
+     * For SGX enclaves, this is the MRSIGNER value */
     uint8_t signer_id[OE_SIGNER_ID_SIZE];
 
     /** The Product ID for the enclave.

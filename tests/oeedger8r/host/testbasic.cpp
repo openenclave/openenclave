@@ -445,8 +445,9 @@ long double ocall_ret_long_double()
 
 unsigned long long ocall_ret_unsigned_long_long()
 {
-    check_return_type<ocall_ret_unsigned_long_long_args_t,
-                      unsigned long long>();
+    check_return_type<
+        ocall_ret_unsigned_long_long_args_t,
+        unsigned long long>();
     return 2222222;
 }
 

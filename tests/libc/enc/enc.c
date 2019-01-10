@@ -12,7 +12,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <string.h>
 #include <time.h>
 #include "libc_t.h"
 #include "mtest.h"

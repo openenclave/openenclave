@@ -8,7 +8,9 @@
 #include <openenclave/bits/types.h>
 
 #ifdef __cplusplus
-#define ELF_EXTERNC_BEGIN extern "C" {
+#define ELF_EXTERNC_BEGIN \
+    extern "C"            \
+    {
 #define ELF_EXTERNC_END }
 #else
 #define ELF_EXTERNC_BEGIN

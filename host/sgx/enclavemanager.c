@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "enclave.h"
 #include <assert.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/queue.h>
 #include <openenclave/internal/trace.h>
+#include "enclave.h"
 
 static OE_LIST_HEAD(EnclaveListHead, _enclave_entry) oe_enclave_list_head;
 static oe_mutex oe_enclave_list_lock = OE_H_MUTEX_INITIALIZER;

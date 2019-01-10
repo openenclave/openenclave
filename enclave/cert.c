@@ -72,7 +72,7 @@ OE_INLINE mbedtls_x509_crt* _referent_get_cert(Referent* referent, size_t index)
 {
     size_t i = 0;
 
-    for (mbedtls_x509_crt *p = referent->crt; p; p = p->next, i++)
+    for (mbedtls_x509_crt* p = referent->crt; p; p = p->next, i++)
     {
         if (i == index)
             return p;
@@ -771,9 +771,8 @@ oe_result_t oe_cert_verify(
             if (!(p = oe_malloc(sizeof(mbedtls_x509_crl))))
                 OE_RAISE(OE_OUT_OF_MEMORY);
 
-            OE_CHECK(
-                oe_memcpy_s(
-                    p, sizeof(*p), crl_impl->crl, sizeof(mbedtls_x509_crl)));
+            OE_CHECK(oe_memcpy_s(
+                p, sizeof(*p), crl_impl->crl, sizeof(mbedtls_x509_crl)));
 
             /* Append to the linked-list */
             {

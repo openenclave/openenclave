@@ -186,12 +186,11 @@ oe_result_t oe_enforce_revocation(
 
     // Gather fmspc.
     OE_CHECK(_parse_sgx_extensions(leaf_cert, &parsed_extension_info));
-    OE_CHECK(
-        oe_memcpy_s(
-            revocation_args.fmspc,
-            sizeof(revocation_args.fmspc),
-            parsed_extension_info.fmspc,
-            sizeof(parsed_extension_info.fmspc)));
+    OE_CHECK(oe_memcpy_s(
+        revocation_args.fmspc,
+        sizeof(revocation_args.fmspc),
+        parsed_extension_info.fmspc,
+        sizeof(parsed_extension_info.fmspc)));
 
     // Gather CRL distribution point URLs from certs.
     OE_CHECK(
@@ -205,24 +204,21 @@ oe_result_t oe_enforce_revocation(
     OE_CHECK(oe_get_revocation_info(&revocation_args));
 
     // Apply revocation info.
-    OE_CHECK(
-        oe_cert_chain_read_pem(
-            &tcb_issuer_chain,
-            revocation_args.tcb_issuer_chain,
-            revocation_args.tcb_issuer_chain_size));
+    OE_CHECK(oe_cert_chain_read_pem(
+        &tcb_issuer_chain,
+        revocation_args.tcb_issuer_chain,
+        revocation_args.tcb_issuer_chain_size));
 
     // Read CRLs for each cert other than root. If any CRL is missing, the read
     // will error out.
     for (uint32_t i = 0; i < revocation_args.num_crl_urls; ++i)
     {
-        OE_CHECK(
-            oe_crl_read_der(
-                &crls[i], revocation_args.crl[i], revocation_args.crl_size[i]));
-        OE_CHECK(
-            oe_cert_chain_read_pem(
-                &crl_issuer_chain[i],
-                revocation_args.crl_issuer_chain[i],
-                revocation_args.crl_issuer_chain_size[i]));
+        OE_CHECK(oe_crl_read_der(
+            &crls[i], revocation_args.crl[i], revocation_args.crl_size[i]));
+        OE_CHECK(oe_cert_chain_read_pem(
+            &crl_issuer_chain[i],
+            revocation_args.crl_issuer_chain[i],
+            revocation_args.crl_issuer_chain_size[i]));
     }
 
     // Verify the leaf cert.
@@ -257,19 +253,17 @@ oe_result_t oe_enforce_revocation(
     platform_tcb_level.pce_svn = parsed_extension_info.pce_svn;
     platform_tcb_level.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
 
-    OE_CHECK(
-        oe_parse_tcb_info_json(
-            revocation_args.tcb_info,
-            revocation_args.tcb_info_size,
-            &platform_tcb_level,
-            &parsed_tcb_info));
+    OE_CHECK(oe_parse_tcb_info_json(
+        revocation_args.tcb_info,
+        revocation_args.tcb_info_size,
+        &platform_tcb_level,
+        &parsed_tcb_info));
 
-    OE_CHECK(
-        oe_verify_ecdsa256_signature(
-            parsed_tcb_info.tcb_info_start,
-            parsed_tcb_info.tcb_info_size,
-            (sgx_ecdsa256_signature_t*)parsed_tcb_info.signature,
-            &tcb_issuer_chain));
+    OE_CHECK(oe_verify_ecdsa256_signature(
+        parsed_tcb_info.tcb_info_start,
+        parsed_tcb_info.tcb_info_size,
+        (sgx_ecdsa256_signature_t*)parsed_tcb_info.signature,
+        &tcb_issuer_chain));
 
     // Check that the tcb has been issued after the earliest date that the
     // enclave accepts.
@@ -282,9 +276,8 @@ oe_result_t oe_enforce_revocation(
     // the enclave accepts.
     for (uint32_t i = 0; i < OE_COUNTOF(crls); ++i)
     {
-        OE_CHECK(
-            oe_crl_get_update_dates(
-                &crls[0], &crl_this_update_date, &crl_next_update_date));
+        OE_CHECK(oe_crl_get_update_dates(
+            &crls[0], &crl_this_update_date, &crl_next_update_date));
 
         _trace_datetime("crl this update date ", &crl_this_update_date);
         _trace_datetime("crl next update date ", &crl_next_update_date);

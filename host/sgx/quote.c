@@ -117,18 +117,17 @@ static oe_result_t _sgx_get_quote_from_aesm(
     if (!(aesm = aesm_connect()))
         OE_RAISE(OE_SERVICE_UNAVAILABLE);
 
-    OE_CHECK(
-        aesm_get_quote(
-            aesm,
-            report,
-            quote_type,
-            &spid,
-            NULL, /* nonce */
-            NULL, /* signature_revocation_list */
-            0,    /* signature_revocation_list_size */
-            NULL, /* report_out */
-            quote,
-            quote_size));
+    OE_CHECK(aesm_get_quote(
+        aesm,
+        report,
+        quote_type,
+        &spid,
+        NULL, /* nonce */
+        NULL, /* signature_revocation_list */
+        0,    /* signature_revocation_list_size */
+        NULL, /* report_out */
+        quote,
+        quote_size));
 
     result = OE_OK;
 
@@ -216,7 +215,7 @@ oe_result_t sgx_get_quote(
 
     memset(quote, 0, *quote_size);
 
-/* Get the quote from the AESM service */
+    /* Get the quote from the AESM service */
 
 #if defined(OE_USE_LIBSGX)
 

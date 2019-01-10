@@ -135,7 +135,8 @@ typedef struct _oe_get_qe_identity_info_args
 **
 **==============================================================================
 */
-typedef enum _oe_report_type {
+typedef enum _oe_report_type
+{
     OE_REPORT_TYPE_SGX_LOCAL = 1,
     OE_REPORT_TYPE_SGX_REMOTE = 2,
     __OE_REPORT_TYPE_MAX = OE_ENUM_MAX

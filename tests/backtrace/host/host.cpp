@@ -5,7 +5,6 @@
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/tests.h>
-#include <openenclave/internal/tests.h>
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>

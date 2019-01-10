@@ -286,7 +286,7 @@ oe_result_t oe_mutex_destroy(oe_mutex_t* mutex);
 
 /**
  * Condition variable representation
-*/
+ */
 typedef struct _oe_cond
 {
     uint64_t __impl[4]; /**< Internal private implementation */
