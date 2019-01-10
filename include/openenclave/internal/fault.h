@@ -25,9 +25,8 @@ OE_INLINE void oe_pause(void)
 
 OE_INLINE void oe_divide_by_zero(void)
 {
-    __asm__ volatile(
-        "mov $0, %eax\n\t"
-        "div %eax, %eax\n\t");
+    __asm__ volatile("mov $0, %eax\n\t"
+                     "div %eax, %eax\n\t");
 }
 
 OE_EXTERNC_END

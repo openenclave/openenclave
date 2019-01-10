@@ -121,12 +121,11 @@ static oe_result_t _get_exponent(
     _mem_reverse(exponent, buf, bufsize);
 
     /* We zero out the rest to get the right exponent in little endian. */
-    OE_CHECK(
-        oe_memset_s(
-            exponent + bufsize,
-            OE_EXPONENT_SIZE - bufsize,
-            0,
-            OE_EXPONENT_SIZE - bufsize));
+    OE_CHECK(oe_memset_s(
+        exponent + bufsize,
+        OE_EXPONENT_SIZE - bufsize,
+        0,
+        OE_EXPONENT_SIZE - bufsize));
 
     result = OE_OK;
 
@@ -455,12 +454,11 @@ static oe_result_t _init_sigstruct(
     memset(sigstruct, 0, sizeof(sgx_sigstruct_t));
 
     /* sgx_sigstruct_t.header */
-    OE_CHECK(
-        oe_memcpy_s(
-            sigstruct->header,
-            sizeof(sigstruct->header),
-            SGX_SIGSTRUCT_HEADER,
-            SGX_SIGSTRUCT_HEADER_SIZE));
+    OE_CHECK(oe_memcpy_s(
+        sigstruct->header,
+        sizeof(sigstruct->header),
+        SGX_SIGSTRUCT_HEADER,
+        SGX_SIGSTRUCT_HEADER_SIZE));
 
     /* sgx_sigstruct_t.type */
     sigstruct->type = 0;
@@ -472,12 +470,11 @@ static oe_result_t _init_sigstruct(
     OE_CHECK(_get_date(&sigstruct->date));
 
     /* sgx_sigstruct_t.header2 */
-    OE_CHECK(
-        oe_memcpy_s(
-            sigstruct->header2,
-            sizeof(sigstruct->header2),
-            SGX_SIGSTRUCT_HEADER2,
-            SGX_SIGSTRUCT_HEADER2_SIZE));
+    OE_CHECK(oe_memcpy_s(
+        sigstruct->header2,
+        sizeof(sigstruct->header2),
+        SGX_SIGSTRUCT_HEADER2,
+        SGX_SIGSTRUCT_HEADER2_SIZE));
 
     /* sgx_sigstruct_t.swdefined */
     sigstruct->swdefined = 0;
@@ -512,12 +509,11 @@ static oe_result_t _init_sigstruct(
         sigstruct->attributemask.flags &= ~SGX_FLAGS_DEBUG;
 
     /* sgx_sigstruct_t.enclavehash */
-    OE_CHECK(
-        oe_memcpy_s(
-            sigstruct->enclavehash,
-            sizeof(sigstruct->enclavehash),
-            mrenclave,
-            sizeof(*mrenclave)));
+    OE_CHECK(oe_memcpy_s(
+        sigstruct->enclavehash,
+        sizeof(sigstruct->enclavehash),
+        mrenclave,
+        sizeof(*mrenclave)));
 
     /* sgx_sigstruct_t.isvprodid */
     sigstruct->isvprodid = product_id;
@@ -530,19 +526,17 @@ static oe_result_t _init_sigstruct(
         unsigned char buf[sizeof(sgx_sigstruct_t)];
         size_t n = 0;
 
-        OE_CHECK(
-            oe_memcpy_s(
-                buf,
-                sizeof(buf),
-                sgx_sigstruct_header(sigstruct),
-                sgx_sigstruct_header_size()));
+        OE_CHECK(oe_memcpy_s(
+            buf,
+            sizeof(buf),
+            sgx_sigstruct_header(sigstruct),
+            sgx_sigstruct_header_size()));
         n += sgx_sigstruct_header_size();
-        OE_CHECK(
-            oe_memcpy_s(
-                &buf[n],
-                sizeof(buf) - n,
-                sgx_sigstruct_body(sigstruct),
-                sgx_sigstruct_body_size()));
+        OE_CHECK(oe_memcpy_s(
+            &buf[n],
+            sizeof(buf) - n,
+            sgx_sigstruct_body(sigstruct),
+            sgx_sigstruct_body_size()));
         n += sgx_sigstruct_body_size();
 
         {
@@ -555,14 +549,13 @@ static oe_result_t _init_sigstruct(
             oe_sha256_update(&context, buf, n);
             oe_sha256_final(&context, &sha256);
 
-            OE_CHECK(
-                oe_rsa_private_key_sign(
-                    rsa,
-                    OE_HASH_TYPE_SHA256,
-                    sha256.buf,
-                    sizeof(sha256),
-                    signature,
-                    &signature_size));
+            OE_CHECK(oe_rsa_private_key_sign(
+                rsa,
+                OE_HASH_TYPE_SHA256,
+                sha256.buf,
+                sizeof(sha256),
+                signature,
+                &signature_size));
 
             if (sizeof(sigstruct->signature) != signature_size)
                 OE_RAISE(OE_FAILURE);
@@ -572,16 +565,15 @@ static oe_result_t _init_sigstruct(
         }
     }
 
-    OE_CHECK(
-        _get_q1_and_q2(
-            sigstruct->signature,
-            sizeof(sigstruct->signature),
-            sigstruct->modulus,
-            sizeof(sigstruct->modulus),
-            sigstruct->q1,
-            sizeof(sigstruct->q1),
-            sigstruct->q2,
-            sizeof(sigstruct->q2)));
+    OE_CHECK(_get_q1_and_q2(
+        sigstruct->signature,
+        sizeof(sigstruct->signature),
+        sigstruct->modulus,
+        sizeof(sigstruct->modulus),
+        sigstruct->q1,
+        sizeof(sigstruct->q1),
+        sigstruct->q2,
+        sizeof(sigstruct->q2)));
 
     result = OE_OK;
 
@@ -617,14 +609,8 @@ oe_result_t oe_sgx_sign_enclave(
     rsa_initalized = true;
 
     /* Initialize the sigstruct */
-    OE_CHECK(
-        _init_sigstruct(
-            mrenclave,
-            attributes,
-            product_id,
-            security_version,
-            &rsa,
-            sigstruct));
+    OE_CHECK(_init_sigstruct(
+        mrenclave, attributes, product_id, security_version, &rsa, sigstruct));
 
     result = OE_OK;
 

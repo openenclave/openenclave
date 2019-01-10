@@ -74,18 +74,16 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args)
 
     // Copy the return data back into enclave address space
     // Ensure that all required outputs exist.
-    OE_CHECK(
-        _copy_buffer_to_enclave(
-            &args->qe_id_info,
-            &args->qe_id_info_size,
-            tmp_args.qe_id_info,
-            tmp_args.qe_id_info_size));
-    OE_CHECK(
-        _copy_buffer_to_enclave(
-            &args->issuer_chain,
-            &args->issuer_chain_size,
-            tmp_args.issuer_chain,
-            tmp_args.issuer_chain_size));
+    OE_CHECK(_copy_buffer_to_enclave(
+        &args->qe_id_info,
+        &args->qe_id_info_size,
+        tmp_args.qe_id_info,
+        tmp_args.qe_id_info_size));
+    OE_CHECK(_copy_buffer_to_enclave(
+        &args->issuer_chain,
+        &args->issuer_chain_size,
+        tmp_args.issuer_chain,
+        tmp_args.issuer_chain_size));
 
     // Check for null terminators.
     if (args->qe_id_info[args->qe_id_info_size - 1] != 0 ||

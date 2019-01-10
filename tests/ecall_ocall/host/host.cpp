@@ -251,9 +251,8 @@ static void TestExecutionParallel(
     {
         for (unsigned i = 0; i < thread_count; i++)
         {
-            threads.push_back(
-                std::thread(
-                    ParallelThread, enclave_id, i + 1, &counter, &release));
+            threads.push_back(std::thread(
+                ParallelThread, enclave_id, i + 1, &counter, &release));
         }
     }
 

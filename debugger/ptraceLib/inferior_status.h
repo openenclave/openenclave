@@ -7,7 +7,8 @@
 #include <openenclave/bits/types.h>
 #include <pthread.h>
 
-typedef enum _oe_inferior_flags {
+typedef enum _oe_inferior_flags
+{
     OE_INFERIOR_SINGLE_STEP = 0X1
 } oe_inferior_flags_t;
 

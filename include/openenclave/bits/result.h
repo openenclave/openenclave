@@ -20,7 +20,8 @@ OE_EXTERNC_BEGIN
  * These functions return **OE_OK** upon success and one of the other
  * enumeration values on failure.
  */
-typedef enum _oe_result {
+typedef enum _oe_result
+{
 
     /**
      * The function was successful.

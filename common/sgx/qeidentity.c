@@ -82,24 +82,21 @@ oe_result_t oe_enforce_qe_identity(sgx_report_body_t* qe_report_body)
     pem_pck_certificate_size = qe_id_args.issuer_chain_size;
 
     // validate the cert chain.
-    OE_CHECK(
-        oe_cert_chain_read_pem(
-            &pck_cert_chain, pem_pck_certificate, pem_pck_certificate_size));
+    OE_CHECK(oe_cert_chain_read_pem(
+        &pck_cert_chain, pem_pck_certificate, pem_pck_certificate_size));
 
     // parse identity info json blob
     OE_TRACE_INFO("*qe_identity.qe_id_info:[%s]\n", qe_id_args.qe_id_info);
-    OE_CHECK(
-        oe_parse_qe_identity_info_json(
-            qe_id_args.qe_id_info, qe_id_args.qe_id_info_size, &parsed_info));
+    OE_CHECK(oe_parse_qe_identity_info_json(
+        qe_id_args.qe_id_info, qe_id_args.qe_id_info_size, &parsed_info));
 
     // verify qe identity signature
     OE_TRACE_INFO("Calling oe_verify_ecdsa256_signature\n");
-    OE_CHECK(
-        oe_verify_ecdsa256_signature(
-            parsed_info.info_start,
-            parsed_info.info_size,
-            (sgx_ecdsa256_signature_t*)parsed_info.signature,
-            &pck_cert_chain));
+    OE_CHECK(oe_verify_ecdsa256_signature(
+        parsed_info.info_start,
+        parsed_info.info_size,
+        (sgx_ecdsa256_signature_t*)parsed_info.signature,
+        &pck_cert_chain));
     OE_TRACE_INFO("oe_verify_ecdsa256_signature succeeded\n");
 
     // Check that issue_date and next_update are after the earliest date that

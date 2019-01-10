@@ -144,10 +144,10 @@ const void* __oe_get_enclave_base()
     return (uint8_t*)&_enclave_rva - _enclave_rva;
 #else
     /*
-    * Note: In windows, the reference to &oe_image_info will be compiled
-    * IP-relative by the C-compiler on x86_64, and hence does not have a
-    * relocation entry. Thus it works both pre- and post-relocation.
-    */
+     * Note: In windows, the reference to &oe_image_info will be compiled
+     * IP-relative by the C-compiler on x86_64, and hence does not have a
+     * relocation entry. Thus it works both pre- and post-relocation.
+     */
     return (uint8_t*)&oe_enclave_properties_sgx -
            oe_enclave_properties_sgx.image_info.oeinfo_rva;
 #endif

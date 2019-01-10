@@ -50,21 +50,21 @@ OE_EXTERNC_BEGIN
  * @returns OE_OK successful
  * @returns OE_INVALID_PARAMETER a parameter is invalid
  * @returns OE_FAILURE failed to add handler
-*/
+ */
 oe_result_t oe_add_vectored_exception_handler(
     bool is_first_handler,
     oe_vectored_exception_handler_t vectored_handler);
 
 /**
-* Remove an existing vectored exception handler.
-*
-* @param vectored_handler The pointer to a registered exception handler returned
-* from a successful oe_add_vectored_exception_handler() call.
-*
-* @returns OE_OK success
-* @returns OE_INVALID_PARAMETER a parameter is invalid
-* @returns OE_FAILURE failed to remove handler
-*/
+ * Remove an existing vectored exception handler.
+ *
+ * @param vectored_handler The pointer to a registered exception handler
+ * returned from a successful oe_add_vectored_exception_handler() call.
+ *
+ * @returns OE_OK success
+ * @returns OE_INVALID_PARAMETER a parameter is invalid
+ * @returns OE_FAILURE failed to remove handler
+ */
 oe_result_t oe_remove_vectored_exception_handler(
     oe_vectored_exception_handler_t vectored_handler);
 
@@ -490,7 +490,8 @@ oe_result_t oe_verify_report(
 /**
  * This enumeration type defines the policy used to derive a seal key.
  */
-typedef enum _oe_seal_policy {
+typedef enum _oe_seal_policy
+{
     /**
      * Key is derived from a measurement of the enclave. Under this policy,
      * the sealed secret can only be unsealed by an instance of the exact
@@ -620,7 +621,8 @@ oe_result_t oe_get_seal_key_v1(
 /**
  * This enumeration defines the type of a asymmetric key.
  */
-typedef enum _oe_asymmetric_key_type {
+typedef enum _oe_asymmetric_key_type
+{
     /**
      * A secp256r1/NIST P-256 elliptic curve key.
      */
@@ -636,7 +638,8 @@ typedef enum _oe_asymmetric_key_type {
 /**
  * This enumeration defines the format of the asymmetric key.
  */
-typedef enum _oe_asymmetric_key_format {
+typedef enum _oe_asymmetric_key_format
+{
     /**
      * The PEM format.
      */

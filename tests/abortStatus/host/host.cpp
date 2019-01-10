@@ -174,27 +174,24 @@ static bool TestMultipleThreadAbort(const char* enclave_name)
         std::atomic<uint32_t> thread_ready_count(0);
         std::atomic<bool> is_enclave_crashed(false);
 
-        threads.push_back(
-            std::thread(
-                CrashEnclaveThread,
-                enclave,
-                &thread_ready_count,
-                &is_enclave_crashed,
-                *function));
+        threads.push_back(std::thread(
+            CrashEnclaveThread,
+            enclave,
+            &thread_ready_count,
+            &is_enclave_crashed,
+            *function));
 
-        threads.push_back(
-            std::thread(
-                EcallAfterCrashThread,
-                enclave,
-                &thread_ready_count,
-                &is_enclave_crashed));
+        threads.push_back(std::thread(
+            EcallAfterCrashThread,
+            enclave,
+            &thread_ready_count,
+            &is_enclave_crashed));
 
-        threads.push_back(
-            std::thread(
-                OcallAfterCrashThread,
-                enclave,
-                &thread_ready_count,
-                &is_enclave_crashed));
+        threads.push_back(std::thread(
+            OcallAfterCrashThread,
+            enclave,
+            &thread_ready_count,
+            &is_enclave_crashed));
 
         // All threads must exit gracefully.
         for (auto& t : threads)

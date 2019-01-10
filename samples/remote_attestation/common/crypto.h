@@ -42,7 +42,7 @@ class Crypto
     /**
      * Encrypt encrypts the given data using the given public key.
      * Used to encrypt data using the public key of another enclave.
-    */
+     */
     bool Encrypt(
         const uint8_t* pem_public_key,
         const uint8_t* data,

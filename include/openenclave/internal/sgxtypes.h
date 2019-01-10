@@ -57,7 +57,8 @@ OE_STATIC_ASSERT(SGX_FLAGS_MODE64BIT == OE_SGX_FLAGS_MODE64BIT);
 
 #define ENCLU_INSTRUCTION 0xd7010f
 
-typedef enum _sgx_enclu_leaf {
+typedef enum _sgx_enclu_leaf
+{
     ENCLU_EREPORT = 0x00,
     ENCLU_EGETKEY = 0x01,
     ENCLU_EENTER = 0x02,
@@ -879,7 +880,8 @@ typedef struct _sgx_qe_cert_data
 **
 **==============================================================================
 */
-typedef enum _oe_sgx_pckid {
+typedef enum _oe_sgx_pckid
+{
     OE_SGX_PCK_ID_PLAIN_PPID = 1,
     OE_SGX_PCK_ID_ENCRYPTED_PPID_2048 = 2,
     OE_SGX_PCK_ID_ENCRYPTED_PPID_3072 = 3,
@@ -980,7 +982,8 @@ OE_PACK_END
 **==============================================================================
 */
 
-typedef enum _sgx_quote_type {
+typedef enum _sgx_quote_type
+{
     SGX_QUOTE_TYPE_UNLINKABLE_SIGNATURE,
     SGX_QUOTE_TYPE_LINKABLE_SIGNATURE,
     __SGX_QUOTE_TYPE_MAX = OE_ENUM_MAX,
