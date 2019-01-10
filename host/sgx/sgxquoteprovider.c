@@ -1,7 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+//TODO: Separate out dynamic loading of quote provider for Windows
+#if defined(__linux__)
 #include <dlfcn.h>
+#elif defined(_WIN32)
+#include <Windows.h>
+#endif
+
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/raise.h>
@@ -11,9 +17,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../hostthread.h"
-#include "../platformquoteprovider.h"
-#include "../sgxquoteprovider.h"
+#include "../hostthread.h"
+#include "platformquoteprovider.h"
+#include "sgxquoteprovider.h"
 
 /**
  * This file manages the libdcap_quoteprov.so shared library.
@@ -33,12 +39,14 @@ static sgx_free_qe_identity_info_t _free_qe_identity_info = 0;
 
 static void _unload_quote_provider()
 {
+#if defined(__linux__)
     OE_TRACE_INFO("_unload_quote_provider libdcap_quoteprov.so\n");
     if (_lib_handle)
     {
         dlclose(_lib_handle);
         _lib_handle = 0;
     }
+#endif
 }
 
 static void _quote_provider_log(sgx_ql_log_level_t level, const char* message)
@@ -55,6 +63,7 @@ static void _quote_provider_log(sgx_ql_log_level_t level, const char* message)
 
 static void _load_quote_provider()
 {
+#if defined(__linux__)
     if (_lib_handle == 0)
     {
         OE_TRACE_INFO("_load_quote_provider libdcap_quoteprov.so\n");
@@ -113,6 +122,7 @@ static void _load_quote_provider()
                 "sgxquoteprovider: libdcap_quoteprov.so not found \n");
         }
     }
+#endif
 }
 
 oe_result_t oe_initialize_quote_provider()
@@ -124,7 +134,8 @@ oe_result_t oe_initialize_quote_provider()
     if (!_lib_handle)
         OE_RAISE_MSG(
             OE_QUOTE_PROVIDER_LOAD_ERROR,
-            "oe_initialize_quote_provider failed");
+            "oe_initialize_quote_provider failed",
+            NULL);
 done:
     return result;
 }
@@ -171,14 +182,15 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
     if (revocation_info->tcb_info == NULL ||
         revocation_info->tcb_info_size == 0)
     {
-        OE_RAISE_MSG(OE_INVALID_REVOCATION_INFO, "tcb_info is NULL");
+        OE_RAISE_MSG(OE_INVALID_REVOCATION_INFO, "tcb_info is NULL", NULL);
     }
     host_buffer_size += revocation_info->tcb_info_size + 1;
 
     if (revocation_info->tcb_issuer_chain == NULL ||
         revocation_info->tcb_issuer_chain_size == 0)
     {
-        OE_RAISE_MSG(OE_INVALID_REVOCATION_INFO, "tcb_issuer_chain is NULL");
+        OE_RAISE_MSG(
+            OE_INVALID_REVOCATION_INFO, "tcb_issuer_chain is NULL", NULL);
     }
     host_buffer_size += revocation_info->tcb_issuer_chain_size + 1;
 
@@ -327,7 +339,7 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args)
     uint32_t host_buffer_size = 0;
     uint8_t* p = 0;
     uint8_t* p_end = 0;
-    OE_TRACE_INFO("Calling %s\n", __PRETTY_FUNCTION__);
+    OE_TRACE_INFO("Calling %s\n", __FUNCTION__);
 
     OE_CHECK(oe_initialize_quote_provider());
 
@@ -354,7 +366,7 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args)
     host_buffer_size += identity->qe_id_info_size + 1;
 
     if (identity->issuer_chain == NULL || identity->issuer_chain_size == 0)
-        OE_RAISE_MSG(OE_INVALID_QE_IDENTITY_INFO, "issuer_chain is NULL");
+        OE_RAISE_MSG(OE_INVALID_QE_IDENTITY_INFO, "issuer_chain is NULL", NULL);
 
     host_buffer_size += identity->issuer_chain_size + 1;
     p = (uint8_t*)calloc(1, host_buffer_size);
