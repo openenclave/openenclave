@@ -4,6 +4,7 @@
 #define OE_ALLOW_DEPRECATED_APIS
 
 #include <openenclave/enclave.h>
+#include <openenclave/internal/utils.h>
 #include <stdlib.h>
 #include "oeinternal_t.h"
 #include <string.h>
