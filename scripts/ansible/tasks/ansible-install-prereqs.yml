@@ -39,19 +39,30 @@
 - name: Install CMake 3.13.1
   unarchive:
     src: https://cmake.org/files/v3.13/cmake-3.13.1-Linux-x86_64.tar.gz
-    dest: /
+    dest: /usr/local/
     remote_src: yes
-    extra_opts:
-    - --transform
-    - s/^cmake-3.13.1-Linux-x86_64/cmake/
 
 # Add cmake folder to system path
-- name: add CMake to path
-  lineinfile:
-    dest: /etc/environment
-    state: present
-    backrefs: yes
-    regexp: 'PATH=(["]*)((?!.*?{{cmake_path}}).*?)(["]*)$'
-    line: "PATH=\\1\\2:{{cmake_path}}\\3"
-  vars:
-    cmake_path: "/cmake/bin"
+- name: Create ccmake symbolic link
+  file:
+    src: "/usr/local/cmake-3.13.1-Linux-x86_64/bin/ccmake"
+    dest: "/usr/local/bin/ccmake"
+    state: link
+
+- name: Create cmake symbolic link
+  file:
+    src: "/usr/local/cmake-3.13.1-Linux-x86_64/bin/cmake"
+    dest: "/usr/local/bin/cmake"
+    state: link
+
+- name: Create cpack symbolic link
+  file:
+    src: "/usr/local/cmake-3.13.1-Linux-x86_64/bin/cpack"
+    dest: "/usr/local/bin/cpack"
+    state: link
+
+- name: Create ctest symbolic link
+  file:
+    src: "/usr/local/cmake-3.13.1-Linux-x86_64/bin/ctest"
+    dest: "/usr/local/bin/ctest"
+    state: link
