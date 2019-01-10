@@ -3,9 +3,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+set -o errexit
+
+DIR=$(dirname "$0")
+
 apt-get update
-apt-get install -y software-properties-common
-apt-add-repository ppa:ansible/ansible
-apt-get update
-apt-get install -y ansible
-apt-get clean
+apt-get install libssl-dev libffi-dev python3-pip -y
+pip3 install -U -r "$DIR/requirements.txt"
