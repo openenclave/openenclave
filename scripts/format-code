@@ -122,7 +122,9 @@ fi
 ##==============================================================================
 check_version()
 {
+    # shellcheck disable=SC2206
     v1=(${1//./ })
+    # shellcheck disable=SC2206
     v2=(${2//./ })
     if [[ ${#v1[@]} -ne ${#v2[@]} ]]; then
         echo "Cannot parse clang-format version number: $2"
@@ -147,12 +149,12 @@ check_version()
 check_clang-format()
 {
     # First check explicitly for the 3.8 executable.
-    cf=$(which clang-format-7 2> /dev/null)
+    cf=$(command -v clang-format-7 2> /dev/null)
 
     if [[ -x ${cf} ]]; then
         return
     else
-        cf=$(which clang-format 2> /dev/null)
+        cf=$(command -v clang-format 2> /dev/null)
         if [[ ! -x ${cf} ]]; then
             echo "clang-format is not installed. Please run scripts/install-prereqs first."
             exit 1
@@ -181,26 +183,26 @@ get_find_args()
     local defaultIncludeExts='h c cpp'
 
     if [[ -z ${userExcludeDirs} ]]; then
-        local excludeDirs=( ${defaultExcludeDirs} )
+        local excludeDirs=( "${defaultExcludeDirs}" )
     else
         log_verbose "Using user directory exclusions: ${userExcludeDirs}"
-        local excludeDirs=( ${userExcludeDirs} )
+        local excludeDirs=( "${userExcludeDirs}" )
     fi
 
     for exc in "${excludeDirs[@]}"
     do
-        findargs="${findargs} ! \( -path ./${exc} -prune \)"
+        findargs="${findargs} ! ( -path ./${exc} -prune )"
     done
 
     if [[ -z ${userIncludeExts} ]]; then
         # not local as this is used in get_file_list() too
-        includeExts=( ${defaultIncludeExts} )
+        includeExts=( "${defaultIncludeExts}" )
     else
         log_verbose "Using user extension inclusions: ${userIncludeExts}"
-        includeExts=( ${userIncludeExts} )
+        includeExts=( "${userIncludeExts}" )
     fi
 
-    findargs="${findargs} \("
+    findargs="${findargs} ("
     for ((i=0; i<${#includeExts[@]}; i++));
     do
         findargs="${findargs} -iname '*.${includeExts[$i]}'"
@@ -208,7 +210,7 @@ get_find_args()
             findargs="${findargs} -o"
         fi
     done
-    findargs="${findargs} \)"
+    findargs="${findargs} )"
 }
 
 get_find_args
@@ -234,15 +236,15 @@ fi
 get_file_list()
 {
     if [[ -z ${userFiles} ]]; then
-        file_list=( $(eval "$findargs") )
+        mapfile -t file_list < <("$findargs")
     else
         log_verbose "Using user files: ${userFiles}"
-        local user_file_list=( ${userFiles} )
+        local user_file_list=( "${userFiles}" )
         file_list=()
         for file in "${user_file_list[@]}"; do
             for ext in "${includeExts[@]}"; do
                 if [[ ${file##*\.} == "$ext" ]]; then
-                    file_list+=( $file )
+                    file_list+=( "$file" )
                     log_verbose "Checking user file: ${file}"
                     break
                 fi
