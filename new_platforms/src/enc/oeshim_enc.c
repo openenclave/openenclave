@@ -331,8 +331,17 @@ void oe_free_key(
     _In_ uint8_t* key_info,
     _In_ size_t key_info_size)
 {
-    oe_free(key_buffer);
-    oe_free(key_info);
+    if (key_buffer)
+    {
+        oe_secure_zero_fill(key_buffer, key_buffer_size);
+        oe_free(key_buffer);
+    }
+
+    if (key_info)
+    {
+        oe_secure_zero_fill(key_info, key_info_size);
+        oe_free(key_info);
+    }
 }
 
 oe_result_t oe_get_seal_key_v1(
