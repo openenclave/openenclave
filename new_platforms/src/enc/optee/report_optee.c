@@ -86,7 +86,7 @@ oe_result_t oe_verify_report(
         }
 
         mbedtls_x509_crt_init(&local_chain);
-        res = mbedtls_x509_crt_parse(&local_chain, local_report, report_size);
+        res = mbedtls_x509_crt_parse(&local_chain, local_report, local_report_size);
         if (res != 0)
         {
             result = OE_FAILURE;
