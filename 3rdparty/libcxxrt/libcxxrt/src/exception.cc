@@ -35,6 +35,9 @@
 #include "atomic.h"
 #include "cxxabi.h"
 
+// For accessing oe_thread_data_t
+#include <openenclave/internal/sgxtypes.h>
+
 #pragma weak pthread_key_create
 #pragma weak pthread_setspecific
 #pragma weak pthread_getspecific
@@ -331,6 +334,7 @@ static void free_exception_list(__cxa_exception *ex)
 	__cxa_free_exception(ex+1);
 }
 
+
 /**
  * Cleanup function called when a thread exists to make certain that all of the
  * per-thread data is deleted.
@@ -394,18 +398,8 @@ static void init_key(void)
  */
 static __cxa_thread_info *thread_info()
 {
-	if ((0 == pthread_once) || pthread_once(&once_control, init_key))
-	{
-		fakeTLS = true;
-	}
-	if (fakeTLS) { return &singleThreadInfo; }
-	__cxa_thread_info *info = static_cast<__cxa_thread_info*>(pthread_getspecific(eh_key));
-	if (0 == info)
-	{
-		info = static_cast<__cxa_thread_info*>(calloc(1, sizeof(__cxa_thread_info)));
-		pthread_setspecific(eh_key, info);
-	}
-	return info;
+    oe_thread_data_t* td = oe_get_thread_data();
+    return (__cxa_thread_info*) td->__cxx_thread_info;
 }
 /**
  * Fast version of thread_info().  May fail if thread_info() is not called on
@@ -413,8 +407,8 @@ static __cxa_thread_info *thread_info()
  */
 static __cxa_thread_info *thread_info_fast()
 {
-	if (fakeTLS) { return &singleThreadInfo; }
-	return static_cast<__cxa_thread_info*>(pthread_getspecific(eh_key));
+    oe_thread_data_t* td = oe_get_thread_data();
+    return (__cxa_thread_info*) td->__cxx_thread_info;
 }
 /**
  * ABI function returning the __cxa_eh_globals structure.

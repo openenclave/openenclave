@@ -193,6 +193,33 @@ int enc_test(bool* caught, bool* dynamic_cast_works, size_t* n_constructions)
 
     *n_constructions = num_constructions;
 
+    /* Test std::bad_alloc */
+    {
+        bool bad_alloc_caught = false;
+        std::vector<int*> ptrs;
+        while (true)
+        {
+            try
+            {
+                int* p = new int[64];
+                ptrs.push_back(p);
+            }
+            catch (std::bad_alloc)
+            {
+                bad_alloc_caught = true;
+                printf("std::bad_alloc caught\n");
+                break;
+            }
+        }
+        while (!ptrs.empty())
+        {
+            delete ptrs.back();
+            ptrs.pop_back();
+        }
+
+        OE_TEST(bad_alloc_caught == true);
+    }
+
     return 0;
 }
 
