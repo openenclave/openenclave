@@ -1,62 +1,60 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <assert.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/tests.h>
-#include <cassert>
+#include <atomic>
 #include <cassert>
 #include <chrono>
 #include <cstdio>
-#include <cstdio>
-#include <cstdlib>
 #include <cstdlib>
 #include <thread>
 #include <vector>
-#include "../args.h"
-
-using namespace std;
+#include "abortStatus_u.h"
 
 #define THREAD_COUNT 3
 
-void TestAbortStatus(oe_enclave_t* enclave, const char* function_name)
-{
-    oe_result_t result;
-    AbortStatusArgs args;
-    args.ret = -1;
+typedef oe_result_t (*enc_fn)(oe_enclave_t*, int*);
 
+void foobar()
+{
+    oe_put_err("Error: unreachable code is reached.\n");
+}
+
+void TestAbortStatus(
+    oe_enclave_t* enclave,
+    const char* function_name,
+    enc_fn function)
+{
     printf("=== %s(%s)  \n", __FUNCTION__, function_name);
-    result = oe_call_enclave(enclave, function_name, &args);
+    int rval = 0;
+    oe_result_t result = function(enclave, &rval);
+
     OE_TEST(result == OE_ENCLAVE_ABORTING);
-    OE_TEST(args.ret == 0);
+    OE_TEST(0 == rval);
 }
 
 static void CrashEnclaveThread(
     oe_enclave_t* enclave,
     std::atomic<uint32_t>* thread_ready_count,
     std::atomic<bool>* is_enclave_crashed,
-    const char* ecall_function)
+    enc_fn ecall_function)
 {
-    oe_result_t result;
-    AbortStatusArgs args;
-    args.ret = -1;
-    args.thread_ready_count = thread_ready_count;
-    args.is_enclave_crashed = is_enclave_crashed;
-
     // Wait all worker threads ready.
-    while (*args.thread_ready_count != THREAD_COUNT - 1)
+    while (thread_ready_count->load() != (THREAD_COUNT - 1))
     {
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
     // Crash the enclave to set enclave in abort status.
-    result = oe_call_enclave(enclave, ecall_function, &args);
+    int rval = 0;
+    oe_result_t result = ecall_function(enclave, &rval);
     OE_TEST(result == OE_ENCLAVE_ABORTING);
-    OE_TEST(args.ret == 0);
+    OE_TEST(0 == rval);
 
     // Release all worker threads.
-    *args.is_enclave_crashed = 1;
+    *is_enclave_crashed = true;
     return;
 }
 
@@ -65,24 +63,19 @@ static void EcallAfterCrashThread(
     std::atomic<uint32_t>* thread_ready_count,
     std::atomic<bool>* is_enclave_crashed)
 {
-    oe_result_t result;
-    AbortStatusArgs args;
-    args.ret = -1;
-    args.thread_ready_count = thread_ready_count;
-    args.is_enclave_crashed = is_enclave_crashed;
+    ++(*thread_ready_count);
 
-    ++*args.thread_ready_count;
-
-    // Wait the enclave is aborted.
-    while (*args.is_enclave_crashed == 0)
+    // Wait until the enclave is aborted.
+    while (!(*is_enclave_crashed))
     {
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
     // Try to ECALL into the enclave.
-    result = oe_call_enclave(enclave, "NormalECall", &args);
+    int rval = -1;
+    oe_result_t result = normal_ecall(enclave, &rval);
     OE_TEST(result == OE_ENCLAVE_ABORTING);
-    OE_TEST(args.ret == -1);
+    OE_TEST(-1 == rval);
     return;
 }
 
@@ -91,53 +84,52 @@ static void OcallAfterCrashThread(
     std::atomic<uint32_t>* thread_ready_count,
     std::atomic<bool>* is_enclave_crashed)
 {
-    oe_result_t result;
-    AbortStatusArgs args;
-    args.ret = -1;
-    args.thread_ready_count = thread_ready_count;
-    args.is_enclave_crashed = is_enclave_crashed;
-
-    result = oe_call_enclave(enclave, "TestOCallAfterAbort", &args);
+    int rval = 0;
+    void* _thread_ready_count = reinterpret_cast<void*>(thread_ready_count);
+    void* _is_enclave_crashed = reinterpret_cast<void*>(is_enclave_crashed);
+    oe_result_t result = test_ocall_after_abort(
+        enclave, &rval, _thread_ready_count, _is_enclave_crashed);
     OE_TEST(result == OE_OK);
-    OE_TEST(args.ret == 0);
+    OE_TEST(0 == rval);
 
     return;
 }
+
 // Test the regular abort case and un-handled hardware exception case in
 // single thread.
 static bool TestBasicAbort(const char* enclave_name)
 {
-    oe_result_t result;
-    oe_enclave_t* enclave = NULL;
-
     const uint32_t flags = oe_get_create_flags();
-    const char* function_names[] = {"RegularAbort",
-                                    "GenerateUnhandledHardwareException"};
 
-    for (uint32_t i = 0; i < OE_COUNTOF(function_names); i++)
+    std::pair<char const*, enc_fn> functions[] = {
+        std::make_pair("regular_abort", regular_abort),
+        std::make_pair(
+            "generate_unhandled_hardware_exception",
+            generate_unhandled_hardware_exception),
+    };
+
+    for (uint32_t i = 0; i < OE_COUNTOF(functions); ++i)
     {
-        if ((result = oe_create_enclave(
-                 enclave_name,
-                 OE_ENCLAVE_TYPE_SGX,
-                 flags,
-                 NULL,
-                 0,
-                 NULL,
-                 0,
-                 &enclave)) != OE_OK)
+        oe_enclave_t* enclave = NULL;
+        oe_result_t result = oe_create_abortStatus_enclave(
+            enclave_name, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
+        if (OE_OK != result)
         {
-            oe_put_err("oe_create_enclave(): result=%u", result);
+            oe_put_err("oe_create_abortStatus_enclave(): result=%u", result);
             return false;
         }
 
         // Skip the last test for simulation mode.
         if ((flags & OE_ENCLAVE_FLAG_SIMULATE) == 0 ||
-            (i != OE_COUNTOF(function_names) - 1))
+            (i != OE_COUNTOF(functions) - 1))
         {
-            TestAbortStatus(enclave, function_names[i]);
+            TestAbortStatus(enclave, functions[i].first, functions[i].second);
         }
 
-        if ((result = oe_terminate_enclave(enclave)) != OE_OK)
+        // Enclave should be terminated correctly but there are no guarantees
+        // that all memory will be freed after enclave has been aborted
+        result = oe_terminate_enclave(enclave);
+        if ((result != OE_MEMORY_LEAK) && (result != OE_OK))
         {
             oe_put_err("oe_terminate_enclave(): result=%u", result);
             return false;
@@ -155,39 +147,32 @@ static bool TestBasicAbort(const char* enclave_name)
 //  fail with abort status.
 static bool TestMultipleThreadAbort(const char* enclave_name)
 {
-    oe_result_t result;
-    oe_enclave_t* enclave = NULL;
-
     // Create the enclave.
     const uint32_t flags = oe_get_create_flags();
-    vector<string> function_names{"RegularAbort"};
+    std::vector<enc_fn> functions = {regular_abort};
 
     // Only run hardware exception test on non-simulated mode.
     if ((flags & OE_ENCLAVE_FLAG_SIMULATE) == 0)
     {
-        function_names.push_back("GenerateUnhandledHardwareException");
+        functions.push_back(generate_unhandled_hardware_exception);
     }
 
-    for (uint32_t i = 0; i < function_names.size(); i++)
+    for (enc_fn function : functions)
     {
-        if ((result = oe_create_enclave(
-                 enclave_name,
-                 OE_ENCLAVE_TYPE_SGX,
-                 flags,
-                 NULL,
-                 0,
-                 NULL,
-                 0,
-                 &enclave)) != OE_OK)
+        oe_enclave_t* enclave = nullptr;
+        oe_result_t result = oe_create_abortStatus_enclave(
+            enclave_name, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
+
+        if (OE_OK != result)
         {
-            oe_put_err("oe_create_enclave(): result=%u", result);
+            oe_put_err("oe_create_abortStatus_enclave(): result=%u", result);
             return false;
         }
 
         // Create threads.
         std::vector<std::thread> threads;
         std::atomic<uint32_t> thread_ready_count(0);
-        std::atomic<bool> is_enclave_crashed(0);
+        std::atomic<bool> is_enclave_crashed(false);
 
         threads.push_back(
             std::thread(
@@ -195,7 +180,7 @@ static bool TestMultipleThreadAbort(const char* enclave_name)
                 enclave,
                 &thread_ready_count,
                 &is_enclave_crashed,
-                function_names[i].c_str()));
+                *function));
 
         threads.push_back(
             std::thread(
@@ -217,8 +202,10 @@ static bool TestMultipleThreadAbort(const char* enclave_name)
             t.join();
         }
 
-        // Enclave should be terminated correctly.
-        if ((result = oe_terminate_enclave(enclave)) != OE_OK)
+        // Enclave should be terminated correctly but there are no guarantees
+        // that all memory will be freed after enclave has been aborted
+        result = oe_terminate_enclave(enclave);
+        if ((result != OE_MEMORY_LEAK) && (result != OE_OK))
         {
             oe_put_err("oe_terminate_enclave(): result=%u", result);
             return false;

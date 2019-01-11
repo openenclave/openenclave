@@ -136,6 +136,7 @@ oe_result_t oe_private_key_read_pem(
     uint64_t magic)
 {
     oe_result_t result = OE_UNEXPECTED;
+    int rc = 0;
 
     /* Initialize the key */
     if (private_key)
@@ -150,9 +151,9 @@ oe_result_t oe_private_key_read_pem(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Parse PEM format into key structure */
-    if (mbedtls_pk_parse_key(&private_key->pk, pem_data, pem_size, NULL, 0) !=
-        0)
-        OE_RAISE(OE_FAILURE);
+    rc = mbedtls_pk_parse_key(&private_key->pk, pem_data, pem_size, NULL, 0);
+    if (rc != 0)
+        OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x\n", rc);
 
     /* Fail if PEM data did not contain this type of key */
     if (private_key->pk.pk_info != mbedtls_pk_info_from_type(key_type))
@@ -176,6 +177,7 @@ oe_result_t oe_private_key_write_pem(
 {
     oe_result_t result = OE_UNEXPECTED;
     uint8_t buf[OE_PEM_MAX_BYTES];
+    int rc = 0;
 
     /* Check parameters */
     if (!oe_private_key_is_valid(private_key, magic) || !pem_size)
@@ -186,11 +188,10 @@ oe_result_t oe_private_key_write_pem(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Write the key (expand buffer size and retry if necessary) */
-    if (mbedtls_pk_write_key_pem(
-            (mbedtls_pk_context*)&private_key->pk, buf, sizeof(buf)) != 0)
-    {
-        OE_RAISE(OE_FAILURE);
-    }
+    rc = mbedtls_pk_write_key_pem(
+        (mbedtls_pk_context*)&private_key->pk, buf, sizeof(buf));
+    if (rc != 0)
+        OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x\n", rc);
 
     /* Handle case where caller's buffer is too small */
     {
@@ -220,6 +221,7 @@ oe_result_t oe_public_key_read_pem(
     uint64_t magic)
 {
     oe_result_t result = OE_UNEXPECTED;
+    int rc = 0;
 
     /* Initialize the key */
     if (public_key)
@@ -234,8 +236,9 @@ oe_result_t oe_public_key_read_pem(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Parse PEM format into key structure */
-    if (mbedtls_pk_parse_public_key(&public_key->pk, pem_data, pem_size) != 0)
-        OE_RAISE(OE_FAILURE);
+    rc = mbedtls_pk_parse_public_key(&public_key->pk, pem_data, pem_size);
+    if (rc != 0)
+        OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x\n", rc);
 
     /* Fail if PEM data did not contain an EC key */
     if (public_key->pk.pk_info != mbedtls_pk_info_from_type(key_type))
@@ -259,6 +262,7 @@ oe_result_t oe_public_key_write_pem(
 {
     oe_result_t result = OE_UNEXPECTED;
     uint8_t buf[OE_PEM_MAX_BYTES];
+    int rc = 0;
 
     /* Check parameters */
     if (!oe_public_key_is_valid(public_key, magic) || !pem_size)
@@ -269,11 +273,10 @@ oe_result_t oe_public_key_write_pem(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Write the key to PEM format */
-    if (mbedtls_pk_write_pubkey_pem(
-            (mbedtls_pk_context*)&public_key->pk, buf, sizeof(buf)) != 0)
-    {
-        OE_RAISE(OE_FAILURE);
-    }
+    rc = mbedtls_pk_write_pubkey_pem(
+        (mbedtls_pk_context*)&public_key->pk, buf, sizeof(buf));
+    if (rc != 0)
+        OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x\n", rc);
 
     /* Handle case where caller's buffer is too small */
     {
@@ -320,7 +323,7 @@ oe_result_t oe_public_key_free(oe_public_key_t* public_key, uint64_t magic)
     if (public_key)
     {
         if (!oe_public_key_is_valid(public_key, magic))
-            OE_RAISE(OE_INVALID_PARAMETER);
+            OE_RAISE_NO_TRACE(OE_INVALID_PARAMETER);
 
         oe_public_key_release(public_key, magic);
     }
@@ -344,6 +347,7 @@ oe_result_t oe_private_key_sign(
     uint8_t buffer[MBEDTLS_MPI_MAX_SIZE];
     size_t buffer_size = 0;
     mbedtls_md_type_t type = _map_hash_type(hash_type);
+    int rc = 0;
 
     if (type == MBEDTLS_MD_NONE)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -359,18 +363,17 @@ oe_result_t oe_private_key_sign(
 
     // Sign the message. Note that buffer_size is an output parameter only.
     // MEBEDTLS provides no way to determine the size of the buffer up front.
-    if (mbedtls_pk_sign(
-            (mbedtls_pk_context*)&private_key->pk,
-            type,
-            hash_data,
-            hash_size,
-            buffer,
-            &buffer_size,
-            NULL,
-            NULL) != 0)
-    {
-        OE_RAISE(OE_FAILURE);
-    }
+    rc = mbedtls_pk_sign(
+        (mbedtls_pk_context*)&private_key->pk,
+        type,
+        hash_data,
+        hash_size,
+        buffer,
+        &buffer_size,
+        NULL,
+        NULL);
+    if (rc != 0)
+        OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x\n", rc);
 
     // If signature buffer parameter is too small:
     if (*signature_size < buffer_size)
@@ -401,6 +404,7 @@ oe_result_t oe_public_key_verify(
 {
     oe_result_t result = OE_UNEXPECTED;
     mbedtls_md_type_t type = _map_hash_type(hash_type);
+    int rc = 0;
 
     /* Check for null parameters */
     if (!oe_public_key_is_valid(public_key, magic) || !hash_data ||
@@ -408,16 +412,15 @@ oe_result_t oe_public_key_verify(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Verify the signature */
-    if (mbedtls_pk_verify(
-            (mbedtls_pk_context*)&public_key->pk,
-            type,
-            hash_data,
-            hash_size,
-            signature,
-            signature_size) != 0)
-    {
-        OE_RAISE(OE_VERIFY_FAILED);
-    }
+    rc = mbedtls_pk_verify(
+        (mbedtls_pk_context*)&public_key->pk,
+        type,
+        hash_data,
+        hash_size,
+        signature,
+        signature_size);
+    if (rc != 0)
+        OE_RAISE_MSG(OE_VERIFY_FAILED, "rc = 0x%x", rc * (-1));
 
     result = OE_OK;
 

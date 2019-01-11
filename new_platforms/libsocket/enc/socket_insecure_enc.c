@@ -4,7 +4,6 @@
 #include "enclavelibc.h"
 #include "tcps_string_t.h"
 #include "socket_t.h"
-#include <errno.h>
 
 static void
 copy_input_fds(oe_fd_set_internal* dest, oe_provider_fd_set* src)

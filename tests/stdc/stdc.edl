@@ -1,0 +1,14 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    enum string_limit {
+        BUFSIZE = 1024
+    };
+    
+    trusted {
+        public int test(
+            [out]char buf1[1024],
+            [out]char buf2[1024]);
+    };
+};

@@ -1,50 +1,22 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
-#
-# CMake project for CXX lib - re-archive the objects from
-# external libcxx, libcxxrt, libunwind and wrap in easy-to-use CMake target
-#
-# Note: This approach might not work on Windows.
-# Solutions are either to convert to OBJECT libraries (see below), or
-# place/install all three libs (cxx, rt, unwind) and link against all
-# three.
 
-# Use intermediate project and add properties later using an interface library
-include (ExternalProject)
-ExternalProject_Add(oelibcxx_tmp
-    DEPENDS cxxrt-static oelibcxx_unwind oelibcxx_cxx
-    DOWNLOAD_COMMAND ""
-        CONFIGURE_COMMAND ""
-        BUILD_COMMAND sh -c "rm -f *.o ${OE_LIBDIR}/enclave/liboelibcxx.a"
-            COMMAND ar x $<TARGET_FILE:cxxrt-static>
-            COMMAND ar x ${PROJECT_BINARY_DIR}/3rdparty/libunwind/libunwind/src/.libs/libunwind.a
-            COMMAND ar x $<TARGET_FILE:oelibcxx_cxx>
-            COMMAND sh -c "ar qs ${OE_LIBDIR}/openenclave/enclave/liboelibcxx.a *.o"
-        INSTALL_COMMAND ""
-        )
+add_library(oelibcxx STATIC)
 
-# Interface lib to propagate includes&lib and install-rule
-add_library(oelibcxx INTERFACE)
-add_dependencies(oelibcxx oelibcxx_tmp)
-target_link_libraries(oelibcxx INTERFACE
-    $<BUILD_INTERFACE:${OE_LIBDIR}/openenclave/enclave/liboelibcxx.a>
-    $<INSTALL_INTERFACE:\${_IMPORT_PREFIX}/${CMAKE_INSTALL_LIBDIR}/openenclave/enclave/liboelibcxx.a>
-    )
-target_link_libraries(oelibcxx INTERFACE oelibcxx_cxx)
-install(FILES ${OE_LIBDIR}/openenclave/enclave/liboelibcxx.a DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
-install(TARGETS oelibcxx EXPORT openenclave-targets)
+maybe_build_using_clangw(oelibcxx)
 
-# At some point, we should convert the 3rdparty-libs into true CMake OBJECT libs,
-# so we could source the objects directly like this:
-#add_library(oelibcxx STATIC
-#   $<TARGET_OBJECTS:cxxrt-static>
-#   $<TARGET_OBJECTS:oelibcxx_unwind>
-#   $<TARGET_OBJECTS:oelibcxx_cxx>
-#   )
-#target_link_libraries(oelibcxx cxxrt-static)
-#target_link_libraries(oelibcxx oelibcxx_unwind)
-#target_link_libraries(oelibcxx oelibcxx_cxx)
-# assemble lib-archive into proper dir
-#set_property(TARGET oelibcxx PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/enclave)
-# install lib-archive upon install-time
-#install (TARGETS oelibcxx EXPORT openenclave ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/enclave)
+# NOTE: The three listed libraries are all `OBJECT` libraries, which
+# is just a collection of objects known to CMake. By "linking" them
+# here, we're actually combining all the objects into a single static
+# library using CMake, which is portable. This also transitively pulls
+# in all the public compile options, compile definitions, and include
+# directories of these targets and their dependencies (such as
+# `oelibc`). Hence this file has more comments than code.
+target_link_libraries(oelibcxx
+  PUBLIC libcxx libcxxrt libunwind)
+
+set_property(TARGET oelibcxx
+  PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/enclave)
+
+install(TARGETS oelibcxx EXPORT openenclave-targets
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)

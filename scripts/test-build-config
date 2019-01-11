@@ -44,8 +44,6 @@ BUILD_TYPE="DEBUG"
 # Build a package. Default is disabled
 BUILD_PACKAGE=0
 OE_INSTALL_DIR="/opt/openenclave"
-# Flag for enabling full libc tests.
-ENABLE_FULL_LIBC_TESTS=0
 # Flag for enabling full libcxx tests.
 ENABLE_FULL_LIBCXX_TESTS=0
 # Valid COMPILER_VALUE inputs are clang-7|gcc
@@ -88,9 +86,6 @@ while [[ $# -gt 0 ]]; do
         ;;
         --enable_full_libcxx_tests)
         ENABLE_FULL_LIBCXX_TESTS=1
-        ;;
-        --enable_full_libc_tests)
-        ENABLE_FULL_LIBC_TESTS=1
         ;;
         *)
         echo "Unknown option '${key}'"
@@ -136,9 +131,6 @@ fi
 if [[ ${ENABLE_FULL_LIBCXX_TESTS} -eq 1 ]]; then
     CMAKE+=" -DENABLE_FULL_LIBCXX_TESTS=1"
 fi
-if [[ ${ENABLE_FULL_LIBC_TESTS} -eq 1 ]]; then
-    CMAKE+=" -DENABLE_FULL_LIBC_TESTS=1"
-fi
 
 echo "CMake command is '${CMAKE}'"
 
@@ -174,7 +166,7 @@ fi
 
 if ! ctest --output-on-failure; then
     echo ""
-    echo "Test failed for ${PLATFORM_MODE} ${BUILD_TYPE} in ${SIMULATION_MODE_TEXT} mode"
+    echo "Test failed for ${PLATFORM_MODE} ${COMPILER_VALUE} ${BUILD_TYPE} in ${SIMULATION_MODE_TEXT} mode"
     echo ""
     exit 1
 fi

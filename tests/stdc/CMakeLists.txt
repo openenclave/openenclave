@@ -3,8 +3,8 @@
 
 add_subdirectory(host)
 
-if (UNIX)
+if (BUILD_ENCLAVES)
 	add_subdirectory(enc)
 endif()
 
-add_enclave_test(tests/stdc ./host stdc_host ./enc stdc_enc)
+add_enclave_test(tests/stdc stdc_host stdc_enc)

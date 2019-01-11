@@ -3,9 +3,9 @@
 
 add_subdirectory(host)
 
-if (UNIX)
+if (BUILD_ENCLAVES)
 	add_subdirectory(enc)
 endif()
 
 add_enclave_test(tests/backtrace 
-    ./host backtrace_host ./enc backtrace_enc)
+    backtrace_host backtrace_enc)

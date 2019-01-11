@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-include(oeedl_file)
 
 oeedl_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/../edl/all.edl 
@@ -15,7 +14,6 @@ oeedl_file(
     host-headers
     bar_u
 )
-
 
 add_executable(edl_host 
     main.cpp
@@ -32,9 +30,19 @@ add_executable(edl_host
     ${bar_u}
 )
 
+# The tests intentionally use floats etc in size context.
+# Disable warnings.
+if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
+    set_source_files_properties(
+        ${all_u}
+        PROPERTIES COMPILE_FLAGS "-Wno-conversion"
+    )
+    set_source_files_properties(
+        testpointer.cpp
+        teststring.cpp
+        PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter"
+    )    
+endif()
+
 target_include_directories(edl_host PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)
-set_property(
-    TARGET edl_host
-    PROPERTY CXX_STANDARD 11
-)
 target_link_libraries(edl_host oehostapp)

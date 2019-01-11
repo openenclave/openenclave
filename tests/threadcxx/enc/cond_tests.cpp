@@ -9,22 +9,22 @@
 #include <iostream>
 #include <mutex>
 #include <thread>
-#include "../args.h"
+#include "threadcxx_t.h"
 
 static std::mutex mutex;
 static std::condition_variable cond;
 
 // Number of waiting threads.
-static volatile int num_waiting = 0;
+static int num_waiting = 0;
 
 // Number of woken up threads.
-static volatile int num_woken = 0;
+static int num_woken = 0;
 
 static volatile bool exit_thread = false;
 
-OE_ECALL void CBTestWaiterThreadImplCxx(void* args)
+void enc_test_cb_cxx_waiter()
 {
-    std::unique_lock<std::mutex> lck(mutex);
+    std::unique_lock<std::mutex> lock(mutex);
 
     while (!exit_thread)
     {
@@ -32,7 +32,7 @@ OE_ECALL void CBTestWaiterThreadImplCxx(void* args)
         ++num_waiting;
 
         // Release mutex and wait.
-        cond.wait(lck);
+        cond.wait(lock);
 
         // This thread owns the mutex.
         // After waking up, update counters.
@@ -41,7 +41,7 @@ OE_ECALL void CBTestWaiterThreadImplCxx(void* args)
     }
 }
 
-OE_ECALL void CBTestSignalThreadImplCxx(void* args)
+void enc_test_cb_cxx_signal()
 {
     // Iterate for enough number of times to
     // detect any sporadic behavior.

@@ -3,8 +3,8 @@
 
 add_subdirectory(host)
 
-if (UNIX)
+if (BUILD_ENCLAVES)
 	add_subdirectory(enc)
 endif()
 
-add_enclave_test(tests/abortStatus ./host abortStatus_host ./enc abortStatus_enc)
+add_enclave_test(tests/abortStatus abortStatus_host abortStatus_enc)

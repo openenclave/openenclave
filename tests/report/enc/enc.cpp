@@ -8,9 +8,9 @@
 #include <openenclave/internal/utils.h>
 #include <stdio.h>
 #include <string.h>
-#include "../../../common/quote.h"
-#include "../../../common/tcbinfo.h"
-#include "../common/tests.cpp"
+#include "../../../common/sgx/quote.h"
+#include "../../../common/sgx/tcbinfo.h"
+#include "../common/tests.h"
 #include "tests_t.h"
 
 oe_result_t test_verify_tcb_info(
@@ -25,6 +25,9 @@ oe_result_t test_verify_tcb_info(
         platform_tcb_level,
         parsed_tcb_info);
 #else
+    OE_UNUSED(tcb_info);
+    OE_UNUSED(platform_tcb_level);
+    OE_UNUSED(parsed_tcb_info);
     return OE_OK;
 #endif
 }
@@ -32,8 +35,12 @@ oe_result_t test_verify_tcb_info(
 void test_minimum_issue_date(oe_datetime_t now)
 {
 #ifdef OE_USE_LIBSGX
-    static uint8_t report[OE_MAX_REPORT_SIZE];
-    size_t report_size = sizeof(report);
+    static uint8_t* report;
+    size_t report_size = 0;
+    static uint8_t report_v1[OE_MAX_REPORT_SIZE];
+    size_t report_v1_size = sizeof(report_v1);
+    static uint8_t* report_v2;
+    size_t report_v2_size = 0;
 
     // Generate reports.
     OE_TEST(
@@ -43,11 +50,39 @@ void test_minimum_issue_date(oe_datetime_t now)
             0,
             NULL,
             0,
-            report,
+            &report,
             &report_size) == OE_OK);
 
     // Verify the report.
     OE_TEST(oe_verify_report(report, report_size, NULL) == OE_OK);
+
+    // Generate reports.
+    OE_TEST(
+        oe_get_report_v1(
+            OE_REPORT_FLAGS_REMOTE_ATTESTATION,
+            NULL,
+            0,
+            NULL,
+            0,
+            report_v1,
+            &report_v1_size) == OE_OK);
+
+    // Verify the report.
+    OE_TEST(oe_verify_report(report_v1, report_v1_size, NULL) == OE_OK);
+
+    // Generate reports.
+    OE_TEST(
+        oe_get_report_v2(
+            OE_REPORT_FLAGS_REMOTE_ATTESTATION,
+            NULL,
+            0,
+            NULL,
+            0,
+            &report_v2,
+            &report_v2_size) == OE_OK);
+
+    // Verify the report.
+    OE_TEST(oe_verify_report(report_v2, report_v2_size, NULL) == OE_OK);
 
     // Set the minimum issue date to current time.
     char str[256];
@@ -72,8 +107,46 @@ void test_minimum_issue_date(oe_datetime_t now)
         oe_verify_report(report, report_size, NULL) ==
         OE_INVALID_REVOCATION_INFO);
 
+    OE_TEST(
+        oe_verify_report(report_v1, report_v1_size, NULL) ==
+        OE_INVALID_REVOCATION_INFO);
+
+    OE_TEST(
+        oe_verify_report(report_v2, report_v2_size, NULL) ==
+        OE_INVALID_REVOCATION_INFO);
+
+    oe_free_report(report);
+    oe_free_report(report_v2);
+
     printf("test_minimum_issue_date passed.\n");
+#else
+    OE_UNUSED(now);
 #endif
+}
+
+void enclave_test_local_report(sgx_target_info_t* target_info)
+{
+    test_local_report(target_info);
+}
+
+void enclave_test_remote_report()
+{
+    test_remote_report();
+}
+
+void enclave_test_parse_report_negative()
+{
+    test_parse_report_negative();
+}
+
+void enclave_test_local_verify_report()
+{
+    test_local_verify_report();
+}
+
+void enclave_test_remote_verify_report()
+{
+    test_remote_verify_report();
 }
 
 OE_SET_ENCLAVE_SGX(

@@ -47,18 +47,18 @@ binaries.
 
 #### Source the openenclaverc file (Required)
 
-Before building any samples, you need to source the `openenclaverc` file to setup environment variables for sample building. `openenclaverc` file can be found in  the `share` subdirectory of the package installation destination.
+Before building any samples, you need to source the `openenclaverc` file to setup environment variables for sample building. `openenclaverc` file can be found in  the `share/openenclave` subdirectory of the package installation destination.
 
 You can use `.` in Bash to `source`:
 
 ```bash
-. <package_installation_destination>/share/openenclaverc
+. <package_installation_destination>/share/openenclave/openenclaverc
 ```
 
 For example, if your package_installation_destination is /opt/openenclave:
 
 ```bash
-. /opt/openenclave/share/openenclaverc
+. /opt/openenclave/share/openenclave/openenclaverc
 ```
 
 Note: You will get error messages like the following if this sourcing step was skipped.
@@ -82,7 +82,7 @@ username@yourVMname:~/openenclave/share/openenclave/samples/helloworld$ ls enc  
 
 username@yourVMname:~/openenclave/share/openenclave/samples/helloworld$ make build
  ...
-username@yourVMname:~/openenclave/share/openenclave/samples/helloworld$ make run host/helloworldhost ./enc/helloworldenc.signed.so
+username@yourVMname:~/openenclave/share/openenclave/samples/helloworld$ make run host/helloworldhost ./enc/helloworldenc.signed
 Enclave called into host to print: Hello World!
 ```
 

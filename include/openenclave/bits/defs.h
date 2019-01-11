@@ -47,13 +47,13 @@
 #ifdef _MSC_VER
 #define OE_NO_OPTIMIZE_BEGIN __pragma(optimize("", off))
 #define OE_NO_OPTIMIZE_END __pragma(optimize("", on))
-#elif __clang__
-#define OE_NO_OPTIMIZE_BEGIN _Pragma("clang optimize off")
-#define OE_NO_OPTIMIZE_END _Pragma("clang optimize on")
 #elif __GNUC__
 #define OE_NO_OPTIMIZE_BEGIN \
     _Pragma("GCC push_options") _Pragma("GCC optimize(\"O0\")")
 #define OE_NO_OPTIMIZE_END _Pragma("GCC pop_options")
+#elif __clang__
+#define OE_NO_OPTIMIZE_BEGIN _Pragma("clang optimize off")
+#define OE_NO_OPTIMIZE_END _Pragma("clang optimize on")
 #else
 #error "OE_NO_OPTIMIZE_BEGIN and OE_NO_OPTIMIZE_END not implemented"
 #endif

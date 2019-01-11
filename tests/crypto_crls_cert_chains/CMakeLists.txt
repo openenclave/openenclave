@@ -3,8 +3,8 @@
 
 add_subdirectory(host)
 
-if (UNIX)
+if (BUILD_ENCLAVES)
 	add_subdirectory(enc)
 endif()
 
-add_enclave_test(tests/crypto_crls_cert_chains ./host crypto-extra_host ./enc crypto-extra_enc)
+add_enclave_test(tests/crypto_crls_cert_chains crypto-extra_host crypto-extra_enc)

@@ -24,7 +24,7 @@ static void _launch_enclave(const char* path, uint32_t flags, bool call_enclave)
         path, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
 
     if (result != OE_OK)
-        oe_put_err("oe_create_enclave(): result=%u", result);
+        oe_put_err("oe_create_create_rapid_enclave(): result=%u", result);
 
     if (call_enclave)
     {
@@ -33,7 +33,7 @@ static void _launch_enclave(const char* path, uint32_t flags, bool call_enclave)
         if ((result = test(enclave, &return_value, arg)) != OE_OK)
         {
             oe_terminate_enclave(enclave);
-            oe_put_err("oe_call_enclave(): result=%u", result);
+            oe_put_err("test(): result=%u", result);
         }
         OE_TEST(return_value == 246);
     }
@@ -72,7 +72,7 @@ static void _test_simultaneous(
         {
             fprintf(
                 stderr,
-                "oe_create_enclave(): result=%u, iter=%u",
+                "oe_create_create_rapid_enclave(): result=%u, iter=%u",
                 result,
                 num_enclaves);
 

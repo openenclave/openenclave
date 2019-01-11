@@ -3,16 +3,15 @@
 
 add_subdirectory(host)
 
-if (UNIX)
+if (BUILD_ENCLAVES)
 	add_subdirectory(enc)
-
-	add_enclave_test(tests/debug-unsigned ./host debug_host ./enc debug_enc debug unsigned)
+	add_enclave_test(tests/debug-unsigned debug_host debug_enc debug unsigned)
 	set_tests_properties(tests/debug-unsigned PROPERTIES SKIP_RETURN_CODE 2)
 endif()
 
-add_enclave_test(tests/debug-signed ./host debug_host ./enc debug_enc.signed.so debug signed)
-add_enclave_test(tests/nodebug-signed ./host debug_host ./enc no_debug_enc.signed.so nodebug signed)
-add_enclave_test(tests/nodebug-unsigned ./host debug_host ./enc no_debug_enc nodebug unsigned)
+add_enclave_test(tests/debug-signed  debug_host debug_enc_signed debug signed)
+add_enclave_test(tests/nodebug-signed debug_host no_debug_enc_signed nodebug signed)
+add_enclave_test(tests/nodebug-unsigned debug_host no_debug_enc_unsigned nodebug unsigned)
 
 set_tests_properties(tests/debug-signed PROPERTIES SKIP_RETURN_CODE 2)
 set_tests_properties(tests/nodebug-signed PROPERTIES SKIP_RETURN_CODE 2)

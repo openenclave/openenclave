@@ -219,9 +219,9 @@ typedef enum _oe_result {
 
     /**
      * Failed to parse the trusted computing base (TCB) revocation data
-     * for the enclave.
+     * or the QE Identity data for the enclave.
      */
-    OE_TCB_INFO_PARSE_ERROR,
+    OE_JSON_INFO_PARSE_ERROR,
 
     /**
      * The level of the trusted computing base (TCB) is not up to date for
@@ -252,6 +252,16 @@ typedef enum _oe_result {
      * seconds), or (2) the UTC date-time string is malformed.
      */
     OE_INVALID_UTC_DATE_TIME,
+
+    /**
+     * The QE identity data is invalid.
+     */
+    OE_INVALID_QE_IDENTITY_INFO,
+
+    /**
+     * The enclave image contains unsupported constructs.
+     */
+    OE_UNSUPPORTED_ENCLAVE_IMAGE,
 
     __OE_RESULT_MAX = OE_ENUM_MAX,
 } oe_result_t;

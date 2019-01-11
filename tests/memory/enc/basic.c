@@ -13,13 +13,13 @@
 static void _set_buffer(int* buf, size_t start, size_t end)
 {
     for (size_t i = start; i < end; i++)
-        buf[i] = i;
+        buf[i] = (int)i;
 }
 
 static void _check_buffer(int* buf, size_t start, size_t end)
 {
     for (size_t i = start; i < end; i++)
-        OE_TEST(buf[i] == i);
+        OE_TEST(buf[i] == (int)i);
 }
 
 void test_malloc(void)

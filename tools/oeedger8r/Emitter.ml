@@ -149,6 +149,13 @@ let struct_name = oe_mk_ms_struct_name fd.Ast.fname in
     | _ -> let rv_str = mk_ms_member_decl (Ast.PTVal fd.Ast.rtype) retval_declr isecall
            in oe_mk_struct_decl (rv_str ^ member_list_str) struct_name
 
+let oe_gen_ecall_marshal_struct (tf: Ast.trusted_func) =
+    oe_gen_marshal_struct_impl tf.Ast.tf_fdecl "" true
+
+let oe_gen_ocall_marshal_struct (uf: Ast.untrusted_func) =
+    let errno_decl = if uf.Ast.uf_propagate_errno then "\tint _ocall_errno;\n" else "" in
+    oe_gen_marshal_struct_impl uf.Ast.uf_fdecl errno_decl true
+
 (* This is the most complex function. 
  * For a parameter, get its size experssion.
 *)
@@ -289,10 +296,11 @@ let emit_function_ids (os:out_channel) (ec: enclave_content) =
 let oe_gen_args_header (ec: enclave_content) (dir:string)=  
   let structs = List.append
     (* For each ecall, generate its marshalling struct *)
-    (List.map (fun d -> oe_gen_marshal_struct_impl d.Ast.tf_fdecl "" true) ec.tfunc_decls)
+    (List.map oe_gen_ecall_marshal_struct ec.tfunc_decls)
     (* For each ocall, generate its marshalling struct *) 
-    (List.map (fun d -> oe_gen_marshal_struct_impl d.Ast.uf_fdecl "" true) ec.ufunc_decls)
+    (List.map oe_gen_ocall_marshal_struct ec.ufunc_decls)
   in  
+  let with_errno = List.exists (fun uf -> uf.Ast.uf_propagate_errno) ec.ufunc_decls in
   let header_fname = sprintf "%s_args.h" ec.file_shortnm in
   let guard_macro = sprintf "%s_ARGS_H" (String.uppercase ec.enclave_name) in
   let os = open_file header_fname dir in  
@@ -300,6 +308,7 @@ let oe_gen_args_header (ec: enclave_content) (dir:string)=
     fprintf os "#define %s\n\n" guard_macro;
     fprintf os "#include <stdint.h>\n";
     fprintf os "#include <stdlib.h> /* for wchar_t */ \n\n";
+    if with_errno then fprintf os "#include <errno.h>\n";
     fprintf os "#include <openenclave/bits/result.h>\n\n";
     List.iter (fun inc -> fprintf os "#include \"%s\"\n" inc) ec.include_list;    
     if ec.include_list <> [] then fprintf os "\n";
@@ -678,7 +687,9 @@ let iter_ptr_params f params =
   ) params
 
 (* Generate ocalls wrapper function *)
-let oe_gen_ocall_enclave_wrapper (os:out_channel) (fd:Ast.func_decl) =
+let oe_gen_ocall_enclave_wrapper (os:out_channel) (uf:Ast.untrusted_func) =
+  let propagate_errno = uf.Ast.uf_propagate_errno in
+  let fd = uf.Ast.uf_fdecl in
   fprintf os "%s" (oe_gen_wrapper_prototype fd false);
   fprintf os "\n";
   fprintf os "{\n";
@@ -707,6 +718,14 @@ let oe_gen_ocall_enclave_wrapper (os:out_channel) (fd:Ast.func_decl) =
   fprintf os "                         &_output_bytes_written)) != OE_OK)\n";
   fprintf os "        goto done;\n\n";
   oe_process_output_buffer os fd;
+
+  (* Propagate errno *)
+  (if propagate_errno then
+    begin
+    fprintf os "    /* Propagate errno */\n";
+    fprintf os "    errno = _pargs_out->_ocall_errno;\n\n";
+    end);
+
   fprintf os "    _result = OE_OK;\n";
   fprintf os "done:    \n";
   fprintf os "    if (_buffer)\n";
@@ -727,14 +746,17 @@ let oe_gen_ocall_table (os:out_channel) (ec:enclave_content) =
   fprintf os "};\n\n"
 
 (* Generate ocalls wrapper function *)
-let oe_gen_ocall_host_wrapper (os:out_channel) (fd:Ast.func_decl) =
+let oe_gen_ocall_host_wrapper (os:out_channel) (uf:Ast.untrusted_func) =
+  let propagate_errno = uf.Ast.uf_propagate_errno in
+  let fd = uf.Ast.uf_fdecl in
   fprintf os "void ocall_%s(\n" fd.Ast.fname;
   fprintf os "        uint8_t* input_buffer, size_t input_buffer_size,\n";
   fprintf os "        uint8_t* output_buffer, size_t output_buffer_size,\n";
   fprintf os "        size_t* output_bytes_written)\n";
   (* Variable declarations *)
   fprintf os "{\n";
-  fprintf os "    oe_result_t _result = OE_FAILURE;\n\n";
+  fprintf os "    oe_result_t _result = OE_FAILURE;\n";
+  fprintf os "    OE_UNUSED(input_buffer_size);\n\n";
   fprintf os "    /* Prepare parameters */\n";
   fprintf os "    %s_args_t* pargs_in = (%s_args_t*) input_buffer;\n" fd.Ast.fname fd.Ast.fname;
   fprintf os "    %s_args_t* pargs_out = (%s_args_t*) output_buffer;\n\n" fd.Ast.fname fd.Ast.fname;
@@ -784,6 +806,13 @@ let oe_gen_ocall_host_wrapper (os:out_channel) (fd:Ast.func_decl) =
 
   (* Call the host function *)
   oe_gen_call_function os fd;
+
+  (* Propagate errno *)
+  (if propagate_errno then
+    begin
+    fprintf os "\n    /* Propagate errno */\n";
+    fprintf os "    pargs_out->_ocall_errno = errno;\n";
+    end);
 
   (* Mark call as success *)
   fprintf os "\n    /* Success. */\n";
@@ -905,8 +934,11 @@ let gen_t_c (ec: enclave_content) (ep: edger8r_params) =
     oe_gen_ecall_table os ec);
   if ec.ufunc_decls <> [] then (
     fprintf os "\n/* ocall wrappers */\n\n";
-    List.iter (fun d -> oe_gen_ocall_enclave_wrapper os d.Ast.uf_fdecl)  ec.ufunc_decls);
-  fprintf os "\nOE_ECALL void _dummy_old_style_ecall_to_keep_loader_happy(void* arg){}\n\n";
+    List.iter (fun d -> oe_gen_ocall_enclave_wrapper os d)  ec.ufunc_decls);
+  fprintf os "\nOE_ECALL void _dummy_old_style_ecall_to_keep_loader_happy(void* arg)\n";
+  fprintf os "{\n";
+  fprintf os "    OE_UNUSED(arg);\n";
+  fprintf os "}\n\n";
   fprintf os "OE_EXTERNC_END\n";
   close_out os 
 
@@ -975,7 +1007,7 @@ let gen_u_c (ec: enclave_content) (ep: edger8r_params) =
     List.iter (fun d -> oe_get_host_ecall_function os d.Ast.tf_fdecl; fprintf os "\n\n")  ec.tfunc_decls);
   if ec.ufunc_decls <> [] then (
     fprintf os "\n/* ocall functions */\n\n";
-    List.iter (fun d -> oe_gen_ocall_host_wrapper os d.Ast.uf_fdecl)  ec.ufunc_decls);
+    List.iter (fun d -> oe_gen_ocall_host_wrapper os d) ec.ufunc_decls);
   oe_gen_ocall_table os ec;
   oe_emit_create_enclave_defn os ec;
   fprintf os "OE_EXTERNC_END\n";

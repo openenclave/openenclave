@@ -3,9 +3,9 @@
 
 add_subdirectory(host)
 
-if (UNIX)
+if (BUILD_ENCLAVES)
     add_subdirectory(enc)
 endif()
 
-add_enclave_test(tests/bigmalloc ./host bigmalloc_host ./enc bigmalloc_enc.signed.so)
+add_enclave_test(tests/bigmalloc bigmalloc_host bigmalloc_enc_signed)
 set_tests_properties(tests/bigmalloc PROPERTIES SKIP_RETURN_CODE 2)

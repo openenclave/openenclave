@@ -19,7 +19,7 @@ OE_ENCLAVE_MAGIC_VALUE = 0x20dc98463a5ad8b8
 
 # The following are the offset of the 'debug' and
 # 'simulate' flag fields which must lie one after the other.
-OE_ENCLAVE_FLAGS_OFFSET = 0x598
+OE_ENCLAVE_FLAGS_OFFSET = 0x798
 OE_ENCLAVE_FLAGS_LENGTH = 2
 OE_ENCLAVE_FLAGS_FORMAT = 'BB'
 OE_ENCLAVE_THREAD_BINDING_OFFSET = 0x28
@@ -46,6 +46,9 @@ OCALLCONTEXT_RET = 1
 
 # The set to store all loaded OE enclave base address.
 g_loaded_oe_enclave_addrs = set()
+
+# Global enclave list parsed flag
+g_enclave_list_parsed = False
 
 def get_inferior():
     """Get current inferior"""
@@ -150,9 +153,16 @@ def enable_oeenclave_debug(oe_enclave_addr, enclave_path):
     # Check if it's SGX debug mode enclave.
     flags_blob = read_from_memory(oe_enclave_addr + OE_ENCLAVE_FLAGS_OFFSET, OE_ENCLAVE_FLAGS_LENGTH)
     flags_tuple = struct.unpack(OE_ENCLAVE_FLAGS_FORMAT, flags_blob)
-    # Debug == 1 and simulation == 0
-    if flags_tuple[0] == 0 or flags_tuple[1] != 0:
+
+    # Check if debugging is enabled.
+    if flags_tuple[0] == 0:
+        print ("oe-gdb: Debugging not enabled for enclave %s" % enclave_path)
         return False
+
+    # Check if the enclave is loaded in simulation mode.
+    if flags_tuple[1] != 0:
+        print ("oe-gdb: Enclave %s loaded in simulation mode" % enclave_path)
+
     # Load symbol.
     if load_enclave_symbol(enclave_path, enclave_tuple[OE_ENCLAVE_ADDR_FIELD]) != 1:
         return False
@@ -165,7 +175,7 @@ def enable_oeenclave_debug(oe_enclave_addr, enclave_path):
         set_tcs_debug_flag(thread_binding_tuple[0])
         # Iterate the array
         thread_binding_addr = thread_binding_addr + THREAD_BINDING_SIZE
-        thread_binding_blob = read_from_memory(thread_binding_addr, THREAD_BINDING_HEADER_LENGTH);
+        thread_binding_blob = read_from_memory(thread_binding_addr, THREAD_BINDING_HEADER_LENGTH)
         thread_binding_tuple = struct.unpack(THREAD_BINDING_HEADER_FORMAT, thread_binding_blob)
     return True
 
@@ -184,7 +194,7 @@ def update_untrusted_ocall_frame(frame_pointer, ocallcontext_tuple):
 
 class EnclaveCreationBreakpoint(gdb.Breakpoint):
     def __init__(self):
-        gdb.Breakpoint.__init__ (self, spec="_oe_notify_gdb_enclave_creation", internal=1)
+        gdb.Breakpoint.__init__ (self, spec="oe_notify_gdb_enclave_creation", internal=1)
 
     def stop(self):
         # Get oe_enclave_t.
@@ -202,7 +212,7 @@ class EnclaveCreationBreakpoint(gdb.Breakpoint):
 
 class EnclaveTerminationBreakpoint(gdb.Breakpoint):
     def __init__(self):
-        gdb.Breakpoint.__init__ (self, spec="_oe_notify_gdb_enclave_termination", internal=1)
+        gdb.Breakpoint.__init__ (self, spec="oe_notify_gdb_enclave_termination", internal=1)
 
     def stop(self):
         # Get oe_enclave_t.
@@ -221,7 +231,7 @@ class EnclaveTerminationBreakpoint(gdb.Breakpoint):
 
 class OCallStartBreakpoint(gdb.Breakpoint):
     def __init__(self):
-        gdb.Breakpoint.__init__ (self, spec="_oe_notify_ocall_start", internal=1)
+        gdb.Breakpoint.__init__ (self, spec="oe_notify_ocall_start", internal=1)
 
     def stop(self):
         # Get untrusted stack frame pointer and corresponding TCS.
@@ -246,13 +256,61 @@ class OCallStartBreakpoint(gdb.Breakpoint):
         update_untrusted_ocall_frame(frame_pointer, ocallcontext_tuple)
         return False
 
+def new_objfile_handler(event):
+    global g_enclave_list_parsed
+    if not g_enclave_list_parsed:
+        list_head = None        
+        try:
+            list_head = gdb.parse_and_eval("oe_enclave_list_head")            
+        except:
+            pass
+        enclaves = []
+        try:
+            if list_head != None:
+                print ("oe-gdb: Found global enclave list.")
+                node_ptr = list_head['lh_first']
+                while node_ptr != 0:
+                    node = node_ptr.dereference()
+                    enclave = node['enclave']
+                    enclave_addr = int(enclave)
+                    enclave_path = enclave.dereference()['path'].string('utf-8')
+                    enclaves.append((enclave_addr, enclave_path))
+                    node_ptr = node['next_entry']['le_next']
+                
+
+                # Set parsed to true. enable_oeenclave_debug loads the enclave
+                # binary and therefore would trigger a recursive call to 
+                # new_objfile_handler.Setting g_enclave_list_parsed breaks out 
+                # the potential infinite recursion.
+                g_enclave_list_parsed = True;
+
+                print ("oe-gdb: %d enclaves in global enclave list." % len(enclaves))
+                for (enclave_addr, enclave_path) in enclaves:
+                    print("oe-gdb: Reading symbols from %s ..." % enclave_path, end='')    
+                    enable_oeenclave_debug(enclave_addr, enclave_path)
+                    print("done.")
+        except:
+            print("oe-gdb: Global enclave list processing failed.")
+            g_enclave_list_parsed = True
+
+def exited_handler(event):
+    oe_debugger_cleanup()                
+
 def oe_debugger_init():
     #execute "set displaced-stepping off" to workaround the gdb 7.11 issue
     gdb.execute("set displaced-stepping off", False, True)
+    
+    # When the inferior quits, execute cleanup.
+    gdb.events.exited.connect(exited_handler)
+
+    # Add a handler for every time an object file is loaded.
+    # This is used when the debugger is attached to a running process.
+    gdb.events.new_objfile.connect(new_objfile_handler)
+
     bps = gdb.breakpoints()
     if bps != None:
         for bp in bps:
-            if bp.location == "_oe_notify_gdb_enclave_creation" and bp.is_valid():
+            if bp.location == "oe_notify_gdb_enclave_creation" and bp.is_valid():
                 return
 
     # Cleanup and set breakpoints.
@@ -264,11 +322,13 @@ def oe_debugger_init():
 
 def oe_debugger_cleanup():
     """Remove all loaded enclave symbols"""
+    global g_enclave_list_parsed
     for oe_enclave_addr in g_loaded_oe_enclave_addrs:
         gdb_cmd = "remove-symbol-file -a %s" % (oe_enclave_addr)
         # print (gdb_cmd)
         gdb.execute("remove-symbol-file -a %s" % (oe_enclave_addr), False, True)
     g_loaded_oe_enclave_addrs.clear()
+    g_enclave_list_parsed = False
     return
 
 def exit_handler(event):

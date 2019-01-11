@@ -11,7 +11,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include "../args.h"
+#include "stdcxx_t.h"
 
 #define BROKEN
 
@@ -22,14 +22,14 @@ size_t num_destructions;
 
 static string _str;
 
-class X
+class x
 {
   public:
-    X()
+    x()
     {
     }
 
-    virtual ~X()
+    virtual ~x()
     {
     }
 
@@ -38,14 +38,14 @@ class X
     }
 };
 
-class Y : public X
+class y : public x
 {
   public:
-    Y() : X()
+    y() : x()
     {
     }
 
-    virtual ~Y()
+    virtual ~y()
     {
     }
 
@@ -54,42 +54,37 @@ class Y : public X
     }
 };
 
-class G
+class g
 {
   public:
-    G()
+    g()
     {
         num_constructions++;
-        printf("G::G()\n");
+        printf("g::g()\n");
     }
 
-    ~G()
+    ~g()
     {
         num_destructions++;
-        printf("G::~G()\n");
+        printf("g::~g()\n");
     }
 };
 
-G _g0;
-G _g1;
-G _g2;
+g _g0;
+g _g1;
+g _g2;
 
-void MyAtExit()
+void my_at_exit()
 {
     OE_TEST(num_constructions == 6);
     OE_TEST(num_destructions == 0);
-    oe_host_printf("MyAtExit()\n");
+    oe_host_printf("my_at_exit()\n");
 }
 
-OE_ECALL void Test(void* args_)
+int enc_test(bool* caught, bool* dynamic_cast_works, size_t* n_constructions)
 {
-    TestArgs* args = (TestArgs*)args_;
-
-    if (!args)
-        return;
-
     /* Register at-exit handler */
-    oe_atexit(MyAtExit);
+    oe_atexit(my_at_exit);
 
     /* Try strings */
     {
@@ -106,8 +101,7 @@ OE_ECALL void Test(void* args_)
 
         if (v.size() != 3 || v[2] != "blue")
         {
-            args->ret = -1;
-            return;
+            return -1;
         }
 
         v.clear();
@@ -122,8 +116,7 @@ OE_ECALL void Test(void* args_)
 
         if (m["blue"] != 2)
         {
-            args->ret = -1;
-            return;
+            return -1;
         }
     }
 
@@ -133,16 +126,14 @@ OE_ECALL void Test(void* args_)
 
         if (!p)
         {
-            args->ret = -1;
-            return;
+            return -1;
         }
 
         strcpy(p, "hello");
 
         if (strcmp(p, "hello") != 0)
         {
-            args->ret = -1;
-            return;
+            return -1;
         }
 
         delete[] p;
@@ -150,9 +141,9 @@ OE_ECALL void Test(void* args_)
 
     /* Test virtual destructors */
     {
-        X* x = new Y;
+        x* local_x = new y;
 
-        delete x;
+        delete local_x;
     }
 
     /* Test stringstream */
@@ -168,50 +159,52 @@ OE_ECALL void Test(void* args_)
 
     /* Test exceptions */
     {
-        struct E
+        struct e
         {
-            int x;
+            int val;
         };
 
         try
         {
-            args->caught = false;
-            throw E();
+            *caught = false;
+            throw e();
         }
-        catch (const E& e)
+        catch (const e&)
         {
-            args->caught = true;
+            *caught = true;
         }
     }
 
     /* Test RTTI */
     {
-        args->dynamic_cast_works = false;
+        *dynamic_cast_works = false;
 
-        X* x = new Y;
+        x* local_x = new y;
 
-        Y* y = dynamic_cast<Y*>(x);
+        y* local_y = dynamic_cast<y*>(local_x);
 
-        if (y)
-            args->dynamic_cast_works = true;
+        if (local_y)
+        {
+            *dynamic_cast_works = true;
+        }
 
-        delete x;
+        delete local_x;
     }
 
-    args->num_constructions = num_constructions;
+    *n_constructions = num_constructions;
 
-    args->ret = 0;
+    return 0;
 }
 
-__attribute__((constructor)) void Constructor(void)
+__attribute__((constructor)) void constructor(void)
 {
-    oe_host_printf("Constructor()\n");
+    oe_host_printf("constructor()\n");
     OE_TEST(num_constructions == 0);
 }
 
-__attribute__((destructor)) void Destructor(void)
+__attribute__((destructor)) void destructor(void)
 {
-    oe_host_printf("Destructor()\n");
+    oe_host_printf("destructor()\n");
     OE_TEST(num_constructions == 6);
     OE_TEST(num_destructions == 6);
 }
@@ -220,8 +213,6 @@ OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
     true, /* AllowDebug */
-    1024, /* HeapPageCount */
-    1024, /* StackPageCount */
+    512,  /* HeapPageCount */
+    512,  /* StackPageCount */
     2);   /* TCSCount */
-
-OE_DEFINE_EMPTY_ECALL_TABLE();

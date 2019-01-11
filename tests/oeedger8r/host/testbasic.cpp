@@ -28,7 +28,11 @@ void test_basic_edl_ecalls(oe_enclave_t* enclave)
             15,
             16,
             17,
-            18) == OE_OK);
+            18,
+            255,
+            19,
+            20,
+            21) == OE_OK);
 
     {
         char ret = 0;
@@ -127,11 +131,35 @@ void test_basic_edl_ecalls(oe_enclave_t* enclave)
     }
 
     {
+        unsigned char ret = 0;
+        OE_TEST(ecall_ret_unsigned_char(enclave, &ret) == OE_OK);
+        OE_TEST(ret == 255);
+    }
+
+    {
+        unsigned short ret = 0;
+        OE_TEST(ecall_ret_unsigned_short(enclave, &ret) == OE_OK);
+        OE_TEST(ret == 191);
+    }
+
+    {
+        unsigned int ret = 0;
+        OE_TEST(ecall_ret_unsigned_int(enclave, &ret) == OE_OK);
+        OE_TEST(ret == 202);
+    }
+
+    {
+        unsigned long long ret = 0;
+        OE_TEST(ecall_ret_unsigned_long_long(enclave, &ret) == OE_OK);
+        OE_TEST(ret == 2222222);
+    }
+
+    {
         OE_TEST(ecall_ret_void(enclave) == OE_OK);
     }
 
     if (g_enabled[TYPE_WCHAR_T] && g_enabled[TYPE_LONG] &&
-        g_enabled[TYPE_LONG_DOUBLE])
+        g_enabled[TYPE_UNSIGNED_LONG] && g_enabled[TYPE_LONG_DOUBLE])
     {
         OE_TEST(
             ecall_basic_non_portable_types(
@@ -151,16 +179,23 @@ void test_basic_edl_ecalls(oe_enclave_t* enclave)
 
     if (g_enabled[TYPE_LONG])
     {
-        long double ret = 0;
-        OE_TEST(ecall_ret_long_double(enclave, &ret) == OE_OK);
-        OE_TEST(ret == 0.191919);
+        long ret = 0;
+        OE_TEST(ecall_ret_long(enclave, &ret) == OE_OK);
+        OE_TEST(ret == 777);
+    }
+
+    if (g_enabled[TYPE_UNSIGNED_LONG])
+    {
+        unsigned long ret = 0;
+        OE_TEST(ecall_ret_unsigned_long(enclave, &ret) == OE_OK);
+        OE_TEST(ret == 212121);
     }
 
     if (g_enabled[TYPE_LONG_DOUBLE])
     {
-        long ret = 0;
-        OE_TEST(ecall_ret_long(enclave, &ret) == OE_OK);
-        OE_TEST(ret == 777);
+        long double ret = 0;
+        OE_TEST(ecall_ret_long_double(enclave, &ret) == OE_OK);
+        OE_TEST(ret == 0.191919);
     }
 
     printf("=== test_basic_edl_ecalls passed\n");
@@ -182,7 +217,11 @@ void ocall_basic_types(
     uint16_t arg13,
     uint32_t arg14,
     uint64_t arg15,
-    long long arg16)
+    long long arg16,
+    unsigned char arg17,
+    unsigned short arg18,
+    unsigned int arg19,
+    unsigned long long arg20)
 {
     ocall_basic_types_args_t args;
 
@@ -203,23 +242,31 @@ void ocall_basic_types(
     check_type<uint32_t>(args.arg14);
     check_type<uint64_t>(args.arg15);
     check_type<long long>(args.arg16);
+    check_type<unsigned char>(args.arg17);
+    check_type<unsigned short>(args.arg18);
+    check_type<unsigned int>(args.arg19);
+    check_type<unsigned long long>(args.arg20);
 
     OE_TEST(arg1 == '?');
-    OE_TEST(arg2 = 3);
-    OE_TEST(arg3 = 4);
-    OE_TEST(arg4 = 3.1415f);
-    OE_TEST(arg5 = 1.0 / 3.0);
-    OE_TEST(arg6 = 8);
-    OE_TEST(arg7 = 9);
-    OE_TEST(arg8 = 10);
-    OE_TEST(arg9 = 11);
-    OE_TEST(arg10 = 12);
-    OE_TEST(arg11 = 13);
-    OE_TEST(arg12 = 14);
-    OE_TEST(arg13 = 15);
-    OE_TEST(arg14 = 16);
-    OE_TEST(arg15 = 17);
-    OE_TEST(arg16 = 18);
+    OE_TEST(arg2 == 3);
+    OE_TEST(arg3 == 4);
+    OE_TEST(arg4 == 3.1415f);
+    OE_TEST(arg5 == 1.0 / 3.0);
+    OE_TEST(arg6 == 8);
+    OE_TEST(arg7 == 9);
+    OE_TEST(arg8 == 10);
+    OE_TEST(arg9 == 11);
+    OE_TEST(arg10 == 12);
+    OE_TEST(arg11 == 13);
+    OE_TEST(arg12 == 14);
+    OE_TEST(arg13 == 15);
+    OE_TEST(arg14 == 16);
+    OE_TEST(arg15 == 17);
+    OE_TEST(arg16 == 18);
+    OE_TEST(arg17 == 255);
+    OE_TEST(arg18 == 19);
+    OE_TEST(arg19 == 20);
+    OE_TEST(arg20 == 21);
 }
 
 void ocall_basic_non_portable_types(
@@ -249,6 +296,8 @@ uint64_t get_host_sizeof(type_enum_t t)
             return sizeof(wchar_t);
         case TYPE_LONG:
             return sizeof(long);
+        case TYPE_UNSIGNED_LONG:
+            return sizeof(unsigned long);
         case TYPE_LONG_DOUBLE:
             return sizeof(long double);
         default:
@@ -364,10 +413,41 @@ long long ocall_ret_long_long()
     return 181818;
 }
 
+unsigned char ocall_ret_unsigned_char()
+{
+    check_return_type<ocall_ret_unsigned_char_args_t, unsigned char>();
+    return 255;
+}
+
+unsigned short ocall_ret_unsigned_short()
+{
+    check_return_type<ocall_ret_unsigned_short_args_t, unsigned short>();
+    return 191;
+}
+
+unsigned int ocall_ret_unsigned_int()
+{
+    check_return_type<ocall_ret_unsigned_int_args_t, unsigned int>();
+    return 202;
+}
+
+unsigned long ocall_ret_unsigned_long()
+{
+    check_return_type<ocall_ret_unsigned_long_args_t, unsigned long>();
+    return 212121;
+}
+
 long double ocall_ret_long_double()
 {
     check_return_type<ocall_ret_long_double_args_t, long double>();
     return 0.191919;
+}
+
+unsigned long long ocall_ret_unsigned_long_long()
+{
+    check_return_type<ocall_ret_unsigned_long_long_args_t,
+                      unsigned long long>();
+    return 2222222;
 }
 
 void ocall_ret_void()

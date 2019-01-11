@@ -1,28 +1,77 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-# Build the C library, using local sources and sources from MUSL
-
-# TODO: Fix this build so `-D` flags etc. are not used when assembling
-# `.S` sources. See #760.
-
+# Build the C library, using local sources and sources from musl.
 set(MUSLSRC ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
+if (OE_SGX)
+    add_library(oelibasm OBJECT
+        sgx/abort.S
+        sgx/exp2l.S
+
+        ${MUSLSRC}/fenv/x86_64/fenv.s
+        ${MUSLSRC}/math/x86_64/acosl.s
+        ${MUSLSRC}/math/x86_64/asinl.s
+        ${MUSLSRC}/math/x86_64/log1pl.s
+        ${MUSLSRC}/math/x86_64/log2l.s
+        ${MUSLSRC}/math/x86_64/logl.s
+        #${MUSLSRC}/math/x86_64/exp2l.s
+        ${MUSLSRC}/math/x86_64/sqrt.s
+        ${MUSLSRC}/math/x86_64/sqrtl.s
+        ${MUSLSRC}/math/x86_64/sqrtf.s
+        ${MUSLSRC}/setjmp/x86_64/longjmp.s
+        ${MUSLSRC}/setjmp/x86_64/setjmp.s)
+elseif(OE_TRUSTZONE)
+    add_library(oelibasm OBJECT
+        ${MUSLSRC}/fenv/aarch64/fenv.s
+        ${MUSLSRC}/setjmp/aarch64/longjmp.s
+        ${MUSLSRC}/setjmp/aarch64/setjmp.s)
+endif()
+
+
+maybe_build_using_clangw(oelibasm)
+
+# CMake unconditionally adds `-DNDEBUG` etc. as flags even when
+# assembling, and clang-7 errors because we treat warnings as errors.
+# So we move the assembly code into a fake library, turn off the
+# error, and then inject the objects into the actual library.
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR USE_CLANGW)
+    target_compile_options(oelibasm PRIVATE -Wno-error=unused-command-line-argument)
+endif ()
+
+set (PLATFORM_SRC "")
+
+if (OE_SGX)
+    list(APPEND PLATFORM_SRC
+        sgx/syscalls.c
+        sgx/sched_yield.c)
+
+    if (UNIX OR USE_CLANGW)
+        list(APPEND PLATFORM_SRC
+            ../common/sgx/rand.S)
+    elseif (WIN32)
+        set(APPEND PLATFORM_SRC
+            ../common/sgx/rand.asm)
+    endif()
+else()
+    list(APPEND PLATFORM_SRC
+        optee/syscalls.c
+        optee/abort.c
+        optee/exp2l.c
+        optee/sched_yield.c)
+endif()
+
 add_library(oelibc STATIC
-    abort.S
     arc4random.c
     atexit.c
     dladdr.c
-    exp2l.S
     libunwind_stubs.c
     link.c
     locale.c
     malloc.c
     pthread.c
-    sched_yield.c
     stdlib.c
     strerror.c
-    syscalls.c
     sysconf.c
     time.c
     __stack_chk_fail.c
@@ -140,7 +189,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/fenv/fesetround.c
     ${MUSLSRC}/fenv/feupdateenv.c
     ${MUSLSRC}/fenv/__flt_rounds.c
-    ${MUSLSRC}/fenv/x86_64/fenv.s
     ${MUSLSRC}/internal/floatscan.c
     ${MUSLSRC}/internal/intscan.c
     ${MUSLSRC}/internal/libc.c
@@ -373,15 +421,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/math/trunc.c
     ${MUSLSRC}/math/truncf.c
     ${MUSLSRC}/math/truncl.c
-    ${MUSLSRC}/math/x86_64/acosl.s
-    ${MUSLSRC}/math/x86_64/asinl.s
-    ${MUSLSRC}/math/x86_64/log1pl.s
-    ${MUSLSRC}/math/x86_64/log2l.s
-    ${MUSLSRC}/math/x86_64/logl.s
-    #${MUSLSRC}/math/x86_64/exp2l.s
-    ${MUSLSRC}/math/x86_64/sqrt.s
-    ${MUSLSRC}/math/x86_64/sqrtl.s
-    ${MUSLSRC}/math/x86_64/sqrtf.s
     ${MUSLSRC}/misc/basename.c
     ${MUSLSRC}/misc/dirname.c
     ${MUSLSRC}/mman/mmap.c
@@ -427,8 +466,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/search/insque.c
     ${MUSLSRC}/search/lsearch.c
     ${MUSLSRC}/search/tsearch_avl.c
-    ${MUSLSRC}/setjmp/x86_64/longjmp.s
-    ${MUSLSRC}/setjmp/x86_64/setjmp.s
     ${MUSLSRC}/stat/stat.c
     ${MUSLSRC}/stdio/asprintf.c
     ${MUSLSRC}/stdio/asprintf.c
@@ -646,15 +683,22 @@ add_library(oelibc STATIC
     ${MUSLSRC}/time/__year_to_secs.c
     ${MUSLSRC}/unistd/close.c
     ${MUSLSRC}/unistd/dup.c
-    ${MUSLSRC}/unistd/dup3.c)
+    ${MUSLSRC}/unistd/dup3.c
+    ${PLATFORM_SRC})
 
+maybe_build_using_clangw(oelibc)
+
+# NOTE: This is the minimum required for musl sources.
 set_property(TARGET oelibc PROPERTY C_STANDARD 99)
 
 target_compile_options(oelibc PRIVATE
     -fno-builtin-memcpy
     -fno-builtin-memset
-    -ffreestanding
-    -mrdrnd)
+    -ffreestanding)
+
+if (OE_SGX)
+    target_compile_options(oelibc PRIVATE -mrdrnd)
+endif()
 
 if (CMAKE_C_COMPILER_ID MATCHES GNU)
   target_compile_options(oelibc PRIVATE
@@ -663,12 +707,16 @@ if (CMAKE_C_COMPILER_ID MATCHES GNU)
 endif ()
 
 # Ignore warnings from musl sources. First, shared warnings:
-if (CMAKE_C_COMPILER_ID MATCHES GNU OR CMAKE_C_COMPILER_ID MATCHES Clang)
+if (CMAKE_C_COMPILER_ID MATCHES GNU OR CMAKE_C_COMPILER_ID MATCHES Clang OR USE_CLANGW)
   target_compile_options(oelibc PRIVATE
     -Wno-missing-braces
     -Wno-parentheses
-    -Wno-unknown-pragmas)
+    -Wno-unknown-pragmas
+    -Wno-conversion
+    -Wno-unused-parameter
+    -Wno-sign-compare)
 endif ()
+
 # Second: compiler-specific warnings:
 if (CMAKE_C_COMPILER_ID MATCHES GNU)
   target_compile_options(oelibc PRIVATE
@@ -679,7 +727,7 @@ if (CMAKE_C_COMPILER_ID MATCHES GNU)
     -Wno-unused-function
     -Wno-unused-value
     -Wno-unused-variable)
-elseif (CMAKE_C_COMPILER_ID MATCHES Clang)
+elseif (CMAKE_C_COMPILER_ID MATCHES Clang OR USE_CLANGW)
   target_compile_options(oelibc PRIVATE
     -Wno-dangling-else
     -Wno-ignored-attributes
@@ -695,36 +743,24 @@ if (USE_DEBUG_MALLOC)
   target_compile_definitions(oelibc PRIVATE OE_USE_DEBUG_MALLOC)
 endif ()
 
-# This project (and is dependents) require the enclave headers and
-# library.
-target_link_libraries(oelibc PUBLIC oecore)
+# This project (and its dependents) require the enclave headers and
+# library, and the musl headers.
+target_link_libraries(oelibc
+  PUBLIC oecore oelibc_includes
+  PRIVATE oelibasm)
 
-# As a pre-build step, place the musl LIBC headers.
-add_dependencies(oelibc oelibc_includes)
-
+if (OE_SGX)
 target_include_directories(oelibc PRIVATE
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/x86_64)
-
-# This project and its dependents require include/libc in the include path.
-#
-# Note the difference between build time (absolute in build tree) and
-# install time (relative to install prefix).
-target_include_directories(oelibc PUBLIC
-  $<BUILD_INTERFACE:${OE_INCDIR}/openenclave/libc>
-  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/libc>)
-
-# When building this project, we also need a number of internal includes:
+else()
 target_include_directories(oelibc PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}/internal
-  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal)
+  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal
+  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/aarch64)
+endif()
 
-target_include_directories(oelibc SYSTEM PRIVATE ${OE_C_COMPILER_INCDIR})
-
-# Assemble lib-archive into proper directory.
 set_property(TARGET oelibc PROPERTY
   ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 
-# Install lib-archive upon install-time.
-install(TARGETS oelibc EXPORT openenclave-targets
+install(TARGETS oelibc oelibasm EXPORT openenclave-targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)

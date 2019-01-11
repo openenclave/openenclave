@@ -1,8 +1,11 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-include(add_enclave_executable)
-add_executable(stdc_enc enc.cpp)
+
+oeedl_file(../stdc.edl enclave gen)
+
+# TODO: Does this need CXX?
+add_enclave(TARGET stdc_enc SOURCES enc.cpp ${gen})
 
 target_compile_options(stdc_enc PRIVATE
     -fno-builtin-strcpy
@@ -11,4 +14,6 @@ target_compile_options(stdc_enc PRIVATE
     -fno-builtin-memset
     )
 
-target_link_libraries(stdc_enc oelibc oeenclave)
+target_include_directories(stdc_enc PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR})

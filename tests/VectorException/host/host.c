@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../args.h"
-#include "../host/cpuid.h"
+#include "../host/sgx/cpuid.h"
 
 #define SKIP_RETURN_CODE 2
 
@@ -61,7 +61,7 @@ void TestSigillHandling(oe_enclave_t* enclave)
             (OE_CPUID_LEAF_COUNT - 1));
 
     // Check all values.
-    for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
+    for (uint32_t i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
         if (!oe_is_emulated_cpuid_leaf(i))
             continue;
@@ -76,7 +76,7 @@ void TestSigillHandling(oe_enclave_t* enclave)
             &cpuid_info[OE_CPUID_RCX],
             &cpuid_info[OE_CPUID_RDX]);
 
-        for (int j = 0; j < OE_CPUID_REG_COUNT; j++)
+        for (uint32_t j = 0; j < OE_CPUID_REG_COUNT; j++)
         {
             if (i == 1 && j == 1)
             {

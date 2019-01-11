@@ -3,8 +3,8 @@
 
 add_subdirectory(host)
 
-if (UNIX)
+if (BUILD_ENCLAVES)
 	add_subdirectory(enc)
 endif()
 
-add_enclave_test(tests/memory ./host memory_host ./enc memory_enc)
+add_enclave_test(tests/memory memory_host memory_enc)

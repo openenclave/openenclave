@@ -3,8 +3,8 @@
 
 add_subdirectory(host)
 
-if (UNIX)
+if (BUILD_ENCLAVES)
 	add_subdirectory(enc)
 endif()
 
-add_enclave_test(tests/mixed_c_cpp ./host mixed_c_cpp_host ./enc mixed_c_cpp_enc)
+add_enclave_test(tests/mixed_c_cpp mixed_c_cpp_host mixed_c_cpp_enc)

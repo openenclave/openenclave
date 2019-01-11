@@ -4,4 +4,4 @@
 add_executable(safemath main.cpp)
 target_link_libraries(safemath oehost)
 
-add_test(NAME tests/safemath COMMAND ./safemath)
+add_test(NAME tests/safemath COMMAND safemath)

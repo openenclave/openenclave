@@ -13,35 +13,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "readfile.h"
 #include "tests.h"
 
-static const char _CERT[] =
-    "-----BEGIN CERTIFICATE-----\n"
-    "MIIEejCCBCCgAwIBAgIVAIRhkz/I2bp4OHxNAneNMrWoyuVBMAoGCCqGSM49BAMC\n"
-    "MHExIzAhBgNVBAMMGkludGVsIFNHWCBQQ0sgUHJvY2Vzc29yIENBMRowGAYDVQQK\n"
-    "DBFJbnRlbCBDb3Jwb3JhdGlvbjEUMBIGA1UEBwwLU2FudGEgQ2xhcmExCzAJBgNV\n"
-    "BAgMAkNBMQswCQYDVQQGEwJVUzAeFw0xODA1MzAxMTMzMDVaFw0yNTA1MzAxMTMz\n"
-    "MDVaMHAxIjAgBgNVBAMMGUludGVsIFNHWCBQQ0sgQ2VydGlmaWNhdGUxGjAYBgNV\n"
-    "BAoMEUludGVsIENvcnBvcmF0aW9uMRQwEgYDVQQHDAtTYW50YSBDbGFyYTELMAkG\n"
-    "A1UECAwCQ0ExCzAJBgNVBAYTAlVTMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE\n"
-    "Ej9Bl3EbeGMpTB8k4jeXrzNXWR7lT1PcpBOX6GQx49jmsqSGGPcUxPm91wU/RlMR\n"
-    "rv5GyfrrZ908wDaXTtfezKOCApQwggKQMB8GA1UdIwQYMBaAFOW7Uo+A+eMzrhms\n"
-    "+mNGeBHzYbukMFgGA1UdHwRRME8wTaBLoEmGR2h0dHBzOi8vY2VydGlmaWNhdGVz\n"
-    "LnRydXN0ZWRzZXJ2aWNlcy5pbnRlbC5jb20vSW50ZWxTR1hQQ0tQcm9jZXNzb3Iu\n"
-    "Y3JsMB0GA1UdDgQWBBQcmM3b/dX0Stal0ynHbWpCzwvs8TAOBgNVHQ8BAf8EBAMC\n"
-    "BsAwDAYDVR0TAQH/BAIwADCCAdQGCSqGSIb4TQENAQSCAcUwggHBMB4GCiqGSIb4\n"
-    "TQENAQEEEB+MHnumvRB9hCTdNWSdzXIwggFkBgoqhkiG+E0BDQECMIIBVDAQBgsq\n"
-    "hkiG+E0BDQECAQIBBDAQBgsqhkiG+E0BDQECAgIBBDAQBgsqhkiG+E0BDQECAwIB\n"
-    "AjAQBgsqhkiG+E0BDQECBAIBBDAQBgsqhkiG+E0BDQECBQIBATARBgsqhkiG+E0B\n"
-    "DQECBgICAIAwEAYLKoZIhvhNAQ0BAgcCAQAwEAYLKoZIhvhNAQ0BAggCAQAwEAYL\n"
-    "KoZIhvhNAQ0BAgkCAQAwEAYLKoZIhvhNAQ0BAgoCAQAwEAYLKoZIhvhNAQ0BAgsC\n"
-    "AQAwEAYLKoZIhvhNAQ0BAgwCAQAwEAYLKoZIhvhNAQ0BAg0CAQAwEAYLKoZIhvhN\n"
-    "AQ0BAg4CAQAwEAYLKoZIhvhNAQ0BAg8CAQAwEAYLKoZIhvhNAQ0BAhACAQAwEAYL\n"
-    "KoZIhvhNAQ0BAhECAQUwHwYLKoZIhvhNAQ0BAhIEEAQEAgQBgAAAAAAAAAAAAAAw\n"
-    "EAYKKoZIhvhNAQ0BAwQCAAAwFAYKKoZIhvhNAQ0BBAQGAJBuoQAAMA8GCiqGSIb4\n"
-    "TQENAQUKAQAwCgYIKoZIzj0EAwIDSAAwRQIgPAfNJa59vmzOLdW5yWPo+OShrN7A\n"
-    "sdbXaGu2gpAEqy8CIQCvie4k/cstz6V5A4T4Ks6fkDn22tWDTxtV+wepBReC2g==\n"
-    "-----END CERTIFICATE-----\n";
+static char _CERT[max_cert_size];
 
 static int _printf(char** str, const char* format, ...)
 {
@@ -52,7 +27,7 @@ static int _printf(char** str, const char* format, ...)
 
     va_list ap;
     va_start(ap, format);
-    int n = vsnprintf(buf, sizeof(buf), format, ap);
+    size_t n = (size_t)vsnprintf(buf, sizeof(buf), format, ap);
     va_end(ap);
 
     if (n >= sizeof(buf))
@@ -358,8 +333,8 @@ static void _test_asn1_parsing(void)
     oe_result_t r;
 
     printf("=== begin %s()\n", __FUNCTION__);
-
-    OE_TEST(oe_cert_read_pem(&cert, _CERT, sizeof(_CERT)) == OE_OK);
+    OE_TEST(read_cert("../data/asn1_cert.pem", _CERT) == OE_OK);
+    OE_TEST(oe_cert_read_pem(&cert, _CERT, strlen(_CERT) + 1) == OE_OK);
 
     /* Find the SGX_EXTENSION */
     r = oe_cert_find_extension(&cert, OID, data, &size);

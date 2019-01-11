@@ -13,8 +13,8 @@
 #include <fstream>
 #include <streambuf>
 #include <vector>
-#include "../../../common/tcbinfo.h"
-#include "../../../host/quote.h"
+#include "../../../common/sgx/tcbinfo.h"
+#include "../../../host/sgx/quote.h"
 #include "tests_u.h"
 
 #define SKIP_RETURN_CODE 2
@@ -72,23 +72,9 @@ void TestVerifyTCBInfo(
 {
     std::vector<uint8_t> tcbInfo = FileToBytes("./data/tcbInfo.json");
     oe_parsed_tcb_info_t parsed_info = {0};
-
     oe_result_t ecall_result = OE_FAILURE;
-    OE_TEST(
-        test_verify_tcb_info(
-            enclave,
-            &ecall_result,
-            (const char*)&tcbInfo[0],
-            platform_tcb_level,
-            &parsed_info) == OE_OK);
-    OE_TEST(ecall_result == expected);
-    AssertParsedValues(parsed_info);
-    OE_TEST(
-        oe_datetime_is_valid(&parsed_info.next_update) ==
-        OE_INVALID_UTC_DATE_TIME);
 
     // Contains nextUpdate field.
-    tcbInfo = FileToBytes("./data/tcbInfo1.json");
     memset(&parsed_info, 0, sizeof(parsed_info));
     platform_tcb_level->status = OE_TCB_LEVEL_STATUS_UNKNOWN;
 
@@ -194,6 +180,9 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
         // Invalid nextUpdate field.
         "./data/tcbInfoNegativeInvalidNextUpdate.json",
 
+        // Missing nextUpdate field.
+        "./data/tcbInfoNegativeMissingNextUpdate.json",
+
         // Signature != 64 bytes
         "./data/tcbInfoNegativeSignature.json",
 
@@ -218,7 +207,7 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
                 (const char*)&tcbInfo[0],
                 &platform_tcb_level,
                 &parsed_info) == OE_OK);
-        OE_TEST(ecall_result == OE_TCB_INFO_PARSE_ERROR);
+        OE_TEST(ecall_result == OE_JSON_INFO_PARSE_ERROR);
         printf(
             "TestVerifyTCBInfo: Negative Test %s passed\n", negative_files[i]);
     }

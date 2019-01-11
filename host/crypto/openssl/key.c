@@ -58,7 +58,7 @@ oe_result_t oe_private_key_read_pem(
         oe_secure_zero_fill(impl, sizeof(oe_private_key_t));
 
     /* Check parameters */
-    if (!pem_data || pem_size == 0 || !impl)
+    if (!pem_data || !pem_size || pem_size > OE_INT_MAX || !impl)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Must have pem_size-1 non-zero characters followed by zero-terminator */
@@ -69,7 +69,7 @@ oe_result_t oe_private_key_read_pem(
     oe_initialize_openssl();
 
     /* Create a BIO object for reading the PEM data */
-    if (!(bio = BIO_new_mem_buf(pem_data, pem_size)))
+    if (!(bio = BIO_new_mem_buf(pem_data, (int)pem_size)))
         OE_RAISE(OE_FAILURE);
 
     /* Read the key object */
@@ -77,7 +77,7 @@ oe_result_t oe_private_key_read_pem(
         OE_RAISE(OE_FAILURE);
 
     /* Verify that it is the right key type */
-    if (pkey->type != key_type)
+    if (EVP_PKEY_id(pkey) != key_type)
         OE_RAISE(OE_FAILURE);
 
     /* Initialize the key */
@@ -115,7 +115,7 @@ oe_result_t oe_public_key_read_pem(
         oe_secure_zero_fill(impl, sizeof(oe_public_key_t));
 
     /* Check parameters */
-    if (!pem_data || pem_size == 0 || !impl)
+    if (!pem_data || !pem_size || pem_size > OE_INT_MAX || !impl)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Must have pem_size-1 non-zero characters followed by zero-terminator */
@@ -126,7 +126,7 @@ oe_result_t oe_public_key_read_pem(
     oe_initialize_openssl();
 
     /* Create a BIO object for reading the PEM data */
-    if (!(bio = BIO_new_mem_buf(pem_data, pem_size)))
+    if (!(bio = BIO_new_mem_buf(pem_data, (int)pem_size)))
         OE_RAISE(OE_FAILURE);
 
     /* Read the key object */
@@ -134,7 +134,7 @@ oe_result_t oe_public_key_read_pem(
         OE_RAISE(OE_FAILURE);
 
     /* Verify that it is the right key type */
-    if (pkey->type != key_type)
+    if (EVP_PKEY_id(pkey) != key_type)
         OE_RAISE(OE_FAILURE);
 
     /* Initialize the key */

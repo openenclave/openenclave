@@ -9,6 +9,11 @@ add_custom_command(TARGET crypto-extra_host
             COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}/${DATA_DIR}
             COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/${DATA_DIR}
 
+            # x509 V3 extensions required to be able to validate cert chains using a self signed root cert and intermediate cert signed by the root cert. 
+            # SSL1.1 no longer allows signing certs without the necessary v3 extensions.
+            COMMAND ${CMAKE_COMMAND} -E copy  ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/root_v3.ext ${CMAKE_CURRENT_BINARY_DIR}/${DATA_DIR}/root_v3.ext
+            COMMAND ${CMAKE_COMMAND} -E copy  ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/intermediate_v3.ext ${CMAKE_CURRENT_BINARY_DIR}/${DATA_DIR}/intermediate_v3.ext
+
             COMMAND ${CMAKE_COMMAND} -E copy  ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/root.cnf ${CMAKE_CURRENT_BINARY_DIR}/${DATA_DIR}/root.cnf
             COMMAND ${CMAKE_COMMAND} -E copy  ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/root2.cnf ${CMAKE_CURRENT_BINARY_DIR}/${DATA_DIR}/root2.cnf
             COMMAND ${CMAKE_COMMAND} -E copy  ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/intermediate.cnf ${CMAKE_CURRENT_BINARY_DIR}/${DATA_DIR}/intermediate.cnf
@@ -27,7 +32,7 @@ add_custom_command(TARGET crypto-extra_host
             COMMAND sleep 1
             COMMAND openssl genrsa -out ${DATA_DIR}/IntermediateCA1.key.pem
             COMMAND openssl req -new -key ${DATA_DIR}/IntermediateCA1.key.pem -out ${DATA_DIR}/IntermediateCA1.csr -subj "/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=Intermediate"
-            COMMAND openssl x509 -req -in ${DATA_DIR}/IntermediateCA1.csr -CA ${DATA_DIR}/RootCA1.crt.pem -CAkey ${DATA_DIR}/RootCA1.key.pem -CAcreateserial -out ${DATA_DIR}/IntermediateCA1.crt.pem -days 3650
+            COMMAND openssl x509 -req -in ${DATA_DIR}/IntermediateCA1.csr -CA ${DATA_DIR}/RootCA1.crt.pem -CAkey ${DATA_DIR}/RootCA1.key.pem -CAcreateserial -out ${DATA_DIR}/IntermediateCA1.crt.pem -days 3650 -extfile ${DATA_DIR}/intermediate_v3.ext
 
             # Creating Leaf certificates signed by the Intermediate CA
             # Creating Leaf certificates signed by the Intermediate CA
@@ -80,9 +85,4 @@ add_custom_command(TARGET crypto-extra_host
             COMMAND openssl crl -inform pem -outform der -in ${DATA_DIR}/intermediate_crl2.pem -out ${DATA_DIR}/intermediate_crl2.der
             )
 
-target_compile_options(crypto-extra_host PRIVATE
-    -std=c++11
-)
-
 target_link_libraries(crypto-extra_host oehostapp)
-

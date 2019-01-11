@@ -12,22 +12,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Open Enclave SDK works in Windows
+   - Build using Visual Studio 2017's CMake Support
+   - Build in x64 Native Prompt using Ninja
 - Function table/id based ecall/ocall dispatching
    - oeedger8r generates ecall tables and ocall tables
    - Dispatching based on function-id (index into table)
-   - oeedger8r generates oe_create_foo_enclave function for foo.edl
+   - oeedger8r generates `oe_create_foo_enclave` function for `foo.edl`
+   - oe-gdb allows attaching to a host that is already running
+- oe-gdb allows attaching to a host that is already running
+- Added Quote Enclave Identity validation into oe_verify_report implementation
+- Added OE SDK internal logging mechanism
+- Support for thread local variables 
+   - Both GNU __thread and C++11 thread_local
+   - Both hardware and simulation mode 
+   - Local-Exec and Initial-Exec thread-local storage models
+- Added v2 versions of the following APIs that instead of passing in buffers now
+  return a buffer that needs to be freed via an associated free method. OE_API_VERSION
+  needs to be set to 2 to pick up the versions. The mentioned APIs have a *_V1 and *_V2
+  version that the below versions map to detending on the OE_API_VERSION.
+   - oe_get_report, free report buffer via oe_free_report
+   - oe_get_target_info, free target_info_buffer via oe_free_target_info
+   - oe_get_seal_key, free key_buffer and key_info via oe_free_seal_key
+   - oe_get_seal_key_by_policy, free key_buffer and key_info via oe_free_seal_key
 
 ### Changed
 
-- oe_create_enclave takes two additional parameters: ocall_table, ocall_table_size.
-- Update mbedTLS library to version 2.7.6.
-- Update MUSL libc to version 1.1.20.
+- `oe_create_enclave` takes two additional parameters: `ocall_table` and
+  `ocall_table_size`.
+- Update mbed TLS library to version 2.7.6.
+- Update musl libc to version 1.1.20.
 - Update LLVM libcxx to version 7.0.0.
-   - Some libcxx headers (e.g. string) now use c++11 template features and may require
-     compiling with the -std=c++11 option when building with GCC.
+   - Some libcxx headers (e.g. `<string>`) now use C++11 template features and
+     may require compiling with the `-std=c++11` option when building with GCC.
+- Update minimum required CMake version for building from source to 3.13.1.
+- Update minimum required C++ standard for building from source to C++14.
 
 ### Deprecated
-- String based ocalls/ecalls, OE_ECALL, OE_OCALL macros.
+
+- String based `ocalls`/`ecalls`, `OE_ECALL`, and `OE_OCALL` macros.
+
+[v0.4.1] - 2018-12-21
+---------------------
+
+v0.4.1 contains a small fix to work with Intel's new ISV version bump.
+
+### Changed
+
+- This allows the OE SDK to continue to support reports signed by QE SVN=1,
+  and at the same time also allow a newer QE SVN (greater than 1) during the
+  oe_verify_report process.
 
 [v0.4.0] - 2018-10-08
 ---------------------

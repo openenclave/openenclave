@@ -1,0 +1,24 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+        public void enc_test_mutex_cxx();
+        public void enc_test_mutex_cxx_counts(
+            [out] size_t* count1,
+            [out] size_t* count2);
+
+        public void enc_test_cond_cxx(
+            size_t num_threads);
+        public void enc_test_cond_cxx_signal();
+
+        public void enc_test_cb_cxx_waiter();
+        public void enc_test_cb_cxx_signal();
+
+        public void enc_wait_for_exclusive_access_cxx();
+        public void enc_relinquish_exclusive_access_cxx();
+
+        public void enc_lock_and_unlock_mutexes_cxx(
+            [in, string] const char* mutexes);
+    };
+};

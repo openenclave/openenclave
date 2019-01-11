@@ -1,16 +1,29 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-# Compile CXXRT
+# Compile libcxx for Open Enclave. Some of these build rules emulate
+# those found in the original sources, but instead this builds an
+# OBJECT library in our CMake graph.
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-tautological-compare")
+add_library(libcxxrt OBJECT
+  libcxxrt/src/dynamic_cast.cc
+  libcxxrt/src/exception.cc
+  libcxxrt/src/guard.cc
+  libcxxrt/src/stdexcept.cc
+  libcxxrt/src/typeinfo.cc
+  libcxxrt/src/memory.cc
+  libcxxrt/src/auxhelper.cc
+  libcxxrt/src/libelftc_dem_gnu3.c)
 
-# build cxxrt sources passing additional options
-add_subdirectory(libcxxrt/src)
-target_compile_options(cxxrt-static PRIVATE
-    -fPIC
-    # cannot use add_link_libraries on out-of-dir target
-    -nostdinc $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>
-    -I${OE_INCDIR}/openenclave/libc
-    )
-add_dependencies(cxxrt-static oelibc_includes)
+maybe_build_using_clangw(libcxxrt)
+
+set_target_properties(libcxxrt PROPERTIES
+  POSITION_INDEPENDENT_CODE ON)
+
+target_compile_options(libcxxrt PRIVATE -Wno-error)
+
+target_compile_definitions(libcxxrt PRIVATE -D_GNU_SOURCE)
+
+target_link_libraries(libcxxrt PUBLIC oelibc)
+
+install(TARGETS libcxxrt EXPORT openenclave-targets)

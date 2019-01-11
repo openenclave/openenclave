@@ -3,7 +3,7 @@
 
 add_subdirectory(oeedger8r)
 
-if (UNIX)
+if (OE_SGX)
 add_subdirectory(oesgx)
 add_subdirectory(oesign)
 endif()

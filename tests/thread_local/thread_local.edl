@@ -1,0 +1,21 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+        // Prepare enclave for testing.
+        public void prepare_for_test(int total_num_threads);
+
+        // Launch a thread that tests thread-local variables.
+        public void enclave_thread(
+            int thread_num, 
+            int iters, 
+            int step);
+    };
+
+
+
+    untrusted {
+        void host_usleep(int microseconds);
+    };
+};

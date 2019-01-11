@@ -1,11 +1,21 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#if defined(__clang__)
+#pragma clang diagnostic ignored "-Wshorten-64-to-32"
+#pragma clang diagnostic ignored "-Wsign-conversion"
+#elif defined(__GNUC__)
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#pragma GCC diagnostic ignored "-Wconversion"
+#endif
+
+#include <libunwind.h>
 #include "unwind_i.h"
 #include <openenclave/enclave.h>
 
 #undef unw_step
 #define unw_step _ULx86_64_step
+
 
 extern int _ULx86_64_step(unw_cursor_t* cursor);
 

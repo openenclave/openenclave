@@ -4,6 +4,7 @@
 #define _GNU_SOURCE
 #define USE_DL_PREFIX
 #include <assert.h>
+#include <openenclave/enclave.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
@@ -52,6 +53,9 @@ int __libunwind_munmap(void* addr, size_t length)
 
 int __libunwind_msync(void* addr, size_t length, int flags)
 {
+    OE_UNUSED(addr);
+    OE_UNUSED(length);
+    OE_UNUSED(flags);
     return 0;
 }
 

@@ -244,8 +244,8 @@ static int64_t oe_set_reg_set_handler(pid_t pid, void* addr, void* data)
 
 static int64_t oe_single_step_handler(pid_t pid, void* addr, void* data)
 {
-    _oe_track_inferior(pid);
-    _oe_set_inferior_flags(pid, OE_INFERIOR_SINGLE_STEP);
+    oe_track_inferior(pid);
+    oe_set_inferior_flags(pid, OE_INFERIOR_SINGLE_STEP);
 
     return g_system_ptrace(PTRACE_SINGLESTEP, pid, addr, data);
 }
@@ -341,20 +341,20 @@ pid_t waitpid(pid_t pid, int* status, int options)
     // Remove the inferior info if it is terminated.
     if (WIFEXITED(*status) || WIFSIGNALED(*status))
     {
-        _oe_untrack_inferior(ret_pid);
+        oe_untrack_inferior(ret_pid);
     }
 
     // Handle the traps.
     if (WIFSTOPPED(*status) && WSTOPSIG(*status) == SIGTRAP)
     {
-        int ret;
+        long ret;
         int64_t flags;
 
         // Cleanup the single step flag.
-        ret = _oe_get_inferior_flags(ret_pid, &flags);
+        ret = oe_get_inferior_flags(ret_pid, &flags);
         if ((ret == 0) && (flags & OE_INFERIOR_SINGLE_STEP))
         {
-            _oe_set_inferior_flags(ret_pid, (flags & ~OE_INFERIOR_SINGLE_STEP));
+            oe_set_inferior_flags(ret_pid, (flags & ~OE_INFERIOR_SINGLE_STEP));
         }
 
         // Fix the register if it is a breakpoint inside enclave.

@@ -1,23 +1,18 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <stdio.h>
-#include <string.h>
-
 #if defined(__linux__)
 #include <openssl/sha.h>
 #elif defined(_WIN32)
-#define WIN32_NO_STATUS
-#include <Windows.h>
-#undef WIN32_NO_STATUS
-#include <bcrypt.h>
-#include <ntstatus.h>
+#include "bcrypt/bcrypt.h"
 #endif
 
 #include <openenclave/host.h>
 #include <openenclave/internal/defs.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sha.h>
+#include <stdio.h>
+#include <string.h>
 
 typedef struct _oe_sha256_context_impl
 {

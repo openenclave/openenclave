@@ -5,8 +5,7 @@
 # >> In one of the test "ssl" we are using a variable called new which is a function in C++
 #    causes improper behaviour at compile time leads us to use C instead of C++
 
-include(oeedl_file)
-include(add_enclave_executable)
+
 include(${CMAKE_CURRENT_LIST_DIR}/../../../cmake/get_testcase_name.cmake)
 include_directories(${CMAKE_BINARY_DIR}/3rdparty/mbedtls/mbedtls-wrap-prefix/src/mbedtls-wrap/include/)
 # helper lib to contain file needed by some tests
@@ -61,6 +60,7 @@ function(add_libmbed_selftest_enc NAME SOURCE )
         PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
         )
 
+    target_compile_options(libmbedtest-${NAME}_enc PRIVATE -Wno-conversion -Wno-pointer-arith)
     target_compile_definitions(libmbedtest-${NAME}_enc PRIVATE -DWITH_MAIN -D__TEST__="${SOURCE}")
     target_link_libraries(libmbedtest-${NAME}_enc mbedcrypto oelibc oecore)
 

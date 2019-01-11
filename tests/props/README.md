@@ -16,7 +16,7 @@ the unsigned case and once for the signed case as follows.
 
 ```
 # ./host/propshost ./enc/propsenc unsigned
-# ./host/propshost ./enc/propsenc.signed.so signed
+# ./host/propshost ./enc/propsenc.signed signed
 ```
 
 These tests check that the enclave properties contain the expected values.

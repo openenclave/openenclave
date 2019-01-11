@@ -1,45 +1,48 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-# Create a binary for each testcase listed in ../tests.supported
-# These tests generate a large number of warnings, some of them specific to compiler versions.
-# Disabling warning-as-errors for the specific warnings is painful across multiple different compilers.
-# It was agreed to, that it is best to just disable warnings-as-errors for these tests specifically.
 
-include(add_enclave_executable)
-include(${CMAKE_CURRENT_LIST_DIR}/../../../cmake/get_testcase_name.cmake)
+# Include the libc tests wrappers:
+include(../tests.cmake)
 
-# helper lib to contain file needed by some tests
-add_library(libctest-support
-    mtest.c
-    rand.c
-    tls_align_dso.c
-    )
-target_compile_options(libctest-support PRIVATE
+# Generate wrappers for libc tests.
+foreach(test_file ${LIBC_TESTS})
+  string(MAKE_C_IDENTIFIER ${test_file} test_name)
+  list(APPEND test_dependencies ${CMAKE_CURRENT_BINARY_DIR}/${test_file})
+  configure_file(include.c.in ${test_file})
+  string(APPEND run_test "\
+    extern int ${test_name}(int argc, const char* argv[]);\n\
+    ret += run_test(\"${test_name}\", ${test_name});\n")
+endforeach()
+
+configure_file(tests.c.in tests.c)
+
+oeedl_file(../libc.edl enclave gen)
+
+add_enclave(TARGET libc_enc
+    SOURCES
+    enc.c
+    ${CMAKE_CURRENT_BINARY_DIR}/tests.c
+    ${test_dependencies}
+    ../../../3rdparty/musl/libc-test/src/common/mtest.c
+    ../../../3rdparty/musl/libc-test/src/common/rand.c
+    ../../../3rdparty/musl/libc-test/src/functional/tls_align_dso.c
+    ${LIBC_TESTS}
+    ${gen})
+
+target_compile_options(libc_enc PRIVATE
     -Wno-error
-    )
-target_link_libraries(libctest-support PUBLIC oelibc oeenclave oecore)
+    -Wno-unknown-pragmas
+    -Wno-unused-function
+    -Wno-return-type
+    -Wno-macro-redefined
+    -Wno-unused-variable
+    -Wno-literal-range
+    -Wno-missing-braces
+    -Wno-writable-strings)
 
-function(add_libc_test_enc NAME CFILE)
-    add_executable(libctest-${NAME}_enc enc.c main.c)
-
-    target_include_directories(libctest-${NAME}_enc PRIVATE
-        ..
-        ${PROJECT_SOURCE_DIR}/3rdparty/musl/libc-test/src/common
-        )
-    target_compile_options(libctest-${NAME}_enc PRIVATE
-        -Wno-error
-        )
-    target_compile_definitions(libctest-${NAME}_enc PRIVATE -D__TEST__="${CFILE}")
-    target_link_libraries(libctest-${NAME}_enc libctest-support)
-endfunction(add_libc_test_enc)
-
-if (ENABLE_FULL_LIBC_TESTS)
-    file(STRINGS "../tests.supported" alltests)
-else()
-    file(STRINGS "../tests.supported.default" alltests)
-endif()
-foreach(testcase ${alltests})
-    get_testcase_name(${testcase} name "../../3rdparty/musl/libc-test/src/")
-    add_libc_test_enc("${name}" "${testcase}")
-endforeach(testcase)
+target_include_directories(
+    libc_enc PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR}
+    .
+    ../../../3rdparty/musl/libc-test/src/common)

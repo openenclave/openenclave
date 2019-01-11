@@ -15,7 +15,7 @@
 #include <RiotCrypt.h>
 #include <TcpsId.h>
 
-#ifndef _In_
+#if !defined(_MSC_VER) || defined(OE_NO_SAL)
 #include "sal_unsup.h"
 #endif
 

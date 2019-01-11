@@ -1,110 +1,156 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-# Copy libunwind sources and build out-of-tree
-
-string(CONCAT CFLAGS
-    "-Wall "
-    "-Werror "
-    "-Wno-pointer-to-int-cast "
-    "-Wno-unused-function "
-    "-Wno-unused-variable "
-    "-Wno-cpp "
-    "-fno-builtin "
-    "-fPIC "
-    "-include ${CMAKE_CURRENT_SOURCE_DIR}/stubs.h "
-    "-I${PROJECT_SOURCE_DIR}/include "
-    "${SPECTRE_MITIGATION_FLAGS} ")
-
-if (CMAKE_C_COMPILER_ID MATCHES "GNU")
-    string(CONCAT CFLAGS
-        ${CFLAGS}
-        "-Wno-unused-but-set-variable "
-        "-Wno-maybe-uninitialized ")
-elseif (CMAKE_C_COMPILER_ID MATCHES "Clang")
-    string(CONCAT CFLAGS 
-        ${CFLAGS}
-        "-Wno-header-guard "
-        "-Wno-uninitialized "
-        "-Wno-unused-variable ")
-endif()
-
-set(OPTS
-    --enable-shared=no
-    --disable-block-signals
-    --enable-cxx-exceptions
-    # Note that the C compiler is used for ASM as well.
-    CC=${CMAKE_C_COMPILER}
-    CXX=${CMAKE_CXX_COMPILER}
-    )
-
-string(TOUPPER "${CMAKE_BUILD_TYPE}" BUILD_TYPE)
-
-if ((BUILD_TYPE STREQUAL "DEBUG") OR (BUILD_TYPE STREQUAL "RELWITHDEBINFO"))
-    list(APPEND OPTS "--enable-debug=yes" "--enable-debug-frame==yes")
-    set(CFLAGS "${CFLAGS} -g")
+if (OE_SGX)
+  set(ARCH "x86_64")
+  set(PLATFORM_SRC
+    libunwind/src/x86_64/Los-linux.c
+    Gstep.c  # libunwind/src/x86_64/Lstep.c
+    Gtrace.c # libunwind/src/x86_64/Ltrace.c
+    setcontext.S # libunwind/src/x86_64/setcontext.c
+  )
 else()
-    list (APPEND OPTS "--enable-debug=no" "--enable-debug-frame==no")
+  set(ARCH "aarch64")
+  set(PLATFORM_SRC
+    libunwind/src/aarch64/Lstep.c
+    libunwind/src/aarch64/Ltrace.c
+  )
 endif()
 
-include (ExternalProject)
+configure_file(
+  libunwind/include/libunwind-${ARCH}.h
+  libunwind.h
+  COPYONLY)
 
-ExternalProject_Add(oelibcxx_unwind
+configure_file(
+  libunwind/src/${ARCH}/Gstep.c
+  Gstep.inc
+  COPYONLY)
 
-    # Copy libunwind source tree to build directory.
-    DOWNLOAD_COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_CURRENT_LIST_DIR}/libunwind 
-        ${CMAKE_CURRENT_BINARY_DIR}/libunwind
+add_custom_command(
+  OUTPUT Gtrace.c
+  # TODO: We are doing this ugly workaround since we don't support
+  # thread local storage (__thread). Once the PR for Thread Local
+  # Storage goes in (#1157), we can remove this.
+  COMMAND bash -c \"grep -v '^static __thread' ${CMAKE_CURRENT_SOURCE_DIR}/libunwind/src/${ARCH}/Gtrace.c > ${CMAKE_CURRENT_BINARY_DIR}/Gtrace.inc\"
+  COMMAND ${CMAKE_COMMAND} -E copy
+    ${CMAKE_CURRENT_SOURCE_DIR}/Gtrace.c
+    ${CMAKE_CURRENT_BINARY_DIR}/Gtrace.c
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/libunwind/src/${ARCH}/Gtrace.c)
 
-    # Remove -Wall as this is applied too late and will override -Wno-* flags in Clang.
-    # Instead we apply it ourselves using CFLAGS (see above).
-    COMMAND sed -e "s/-Wall//g"
-        ${CMAKE_CURRENT_LIST_DIR}/libunwind/configure.ac >
-        ${CMAKE_CURRENT_BINARY_DIR}/libunwind/configure.ac
+file(GENERATE OUTPUT config.h CONTENT "/* Empty file */\n")
 
-    # Generate autoconf scripts and run configure.
-    CONFIGURE_COMMAND cd ${CMAKE_CURRENT_BINARY_DIR}/libunwind && 
-        ./autogen.sh "${OPTS}" "CFLAGS=${CFLAGS}"
+set(PKG_MAJOR 1)
+set(PKG_MINOR 3)
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/libunwind/include/libunwind-common.h.in
+  ${CMAKE_CURRENT_BINARY_DIR}/libunwind-common.inc
+  COPYONLY)
 
-    # Copy libunwind-common.h to libunwind-common.inc.
-    COMMAND ${CMAKE_COMMAND} -E copy
-        ${CMAKE_CURRENT_BINARY_DIR}/libunwind/include/libunwind-common.h
-        ${CMAKE_CURRENT_BINARY_DIR}/libunwind/include/libunwind-common.inc
+file(COPY libunwind/include/tdep-${ARCH}/ DESTINATION tdep)
 
-    # Copy libunwind-common.h to the build directory (this file includes
-    # libunwind-common.inc).
-    COMMAND ${CMAKE_COMMAND} -E copy
-        ${CMAKE_CURRENT_LIST_DIR}/libunwind-common.h
-        ${CMAKE_CURRENT_BINARY_DIR}/libunwind/include/libunwind-common.h
+add_library(libunwind OBJECT
+  # Total 67 items
+  libunwind/src/dwarf/global.c
+  libunwind/src/dwarf/Lexpr.c
+  libunwind/src/dwarf/Lfde.c
+  libunwind/src/dwarf/Lfind_proc_info-lsb.c
+  libunwind/src/dwarf/Lfind_unwind_table.c
+  libunwind/src/dwarf/Lparser.c
+  libunwind/src/dwarf/Lpe.c
+  libunwind/src/dwarf/Lstep.c
+  libunwind/src/mi/_ReadULEB.c
+  libunwind/src/mi/_ReadSLEB.c
+  libunwind/src/mi/backtrace.c
+  libunwind/src/mi/dyn-cancel.c
+  libunwind/src/mi/dyn-info-list.c
+  libunwind/src/mi/dyn-register.c
+  libunwind/src/mi/flush_cache.c
+  libunwind/src/mi/init.c
+  libunwind/src/mi/Ldestroy_addr_space.c
+  libunwind/src/mi/Ldyn-extract.c
+  libunwind/src/mi/Lfind_dynamic_proc_info.c
+  libunwind/src/mi/Lget_accessors.c
+  libunwind/src/mi/Lget_fpreg.c
+  libunwind/src/mi/Lget_proc_info_by_ip.c
+  libunwind/src/mi/Lget_proc_name.c
+  libunwind/src/mi/Lget_reg.c
+  libunwind/src/mi/Lput_dynamic_unwind_info.c
+  libunwind/src/mi/Lset_caching_policy.c
+  libunwind/src/mi/Lset_fpreg.c
+  libunwind/src/mi/Lset_reg.c
+  libunwind/src/mi/mempool.c
+  libunwind/src/mi/strerror.c
+  libunwind/src/unwind/Backtrace.c
+  libunwind/src/unwind/DeleteException.c
+  libunwind/src/unwind/FindEnclosingFunction.c
+  libunwind/src/unwind/ForcedUnwind.c
+  libunwind/src/unwind/GetBSP.c
+  libunwind/src/unwind/GetCFA.c
+  libunwind/src/unwind/GetDataRelBase.c
+  libunwind/src/unwind/GetGR.c
+  libunwind/src/unwind/GetIPInfo.c
+  libunwind/src/unwind/GetIP.c
+  libunwind/src/unwind/GetLanguageSpecificData.c
+  libunwind/src/unwind/GetRegionStart.c
+  libunwind/src/unwind/GetTextRelBase.c
+  libunwind/src/unwind/RaiseException.c
+  libunwind/src/unwind/Resume.c
+  libunwind/src/unwind/Resume_or_Rethrow.c
+  libunwind/src/unwind/SetGR.c
+  libunwind/src/unwind/SetIP.c
+  libunwind/src/${ARCH}/getcontext.S
+  libunwind/src/${ARCH}/is_fpreg.c
+  libunwind/src/${ARCH}/Lcreate_addr_space.c
+  libunwind/src/${ARCH}/Lget_save_loc.c
+  libunwind/src/${ARCH}/Lglobal.c
+  libunwind/src/${ARCH}/Linit.c
+  libunwind/src/${ARCH}/Linit_local.c
+  libunwind/src/${ARCH}/Linit_remote.c
+  libunwind/src/${ARCH}/Lget_proc_info.c
+  libunwind/src/${ARCH}/Lregs.c
+  libunwind/src/${ARCH}/Lresume.c
+  libunwind/src/${ARCH}/Lstash_frame.c
+  libunwind/src/${ARCH}/regname.c
+  libunwind/src/os-linux.c
+  libunwind/src/elf64.c
+  ${PLATFORM_SRC}
 
-    # Copy Gstep.c to Gstep.inc.
-    COMMAND ${CMAKE_COMMAND} -E copy
-        ${CMAKE_CURRENT_LIST_DIR}/libunwind/src/x86_64/Gstep.c
-        ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src/x86_64/Gstep.inc
+  # Add dependency to libunwind.h generation.
+  ${CMAKE_CURRENT_BINARY_DIR}/libunwind.h)
 
-    # Copy Gstep.c to the the build directory.
-    COMMAND ${CMAKE_COMMAND} -E copy
-        ${CMAKE_CURRENT_LIST_DIR}/Gstep.c
-        ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src/x86_64/Gstep.c
+set_target_properties(libunwind PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
-    # Copy Gtrace.c to Gtrace.inc while removing the line containing
-    # "static __thread".
-    COMMAND grep -v "^static __thread"
-        ${CMAKE_CURRENT_LIST_DIR}/libunwind/src/x86_64/Gtrace.c >
-        ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src/x86_64/Gtrace.inc
+maybe_build_using_clangw(libunwind)
 
-    # Copy Gtrace.c to the the build directory.
-    COMMAND ${CMAKE_COMMAND} -E copy
-        ${CMAKE_CURRENT_LIST_DIR}/Gtrace.c
-        ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src/x86_64/Gtrace.c
+set_source_files_properties(Gstep.c PROPERTIES COMPILE_FLAGS "-Werror")
+set_source_files_properties(Gtrace.c PROPERTIES COMPILE_FLAGS "-Werror")
+set_source_files_properties(setcontext.S PROPERTIES COMPILE_FLAGS "-Werror")
 
-    # Copy setcontext.S over the one in the build directory.
-    COMMAND ${CMAKE_COMMAND} -E copy
-        ${CMAKE_CURRENT_LIST_DIR}/setcontext.S
-        ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src/x86_64/setcontext.S
+target_compile_options(libunwind PRIVATE
+  -Wno-error
+  -include ${CMAKE_CURRENT_SOURCE_DIR}/stubs.h)
 
-    # Build libunwind.
-    BUILD_COMMAND $(MAKE) -C ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src
+target_compile_definitions(libunwind PRIVATE
+  HAVE_ELF_H
+  HAVE_ENDIAN_H
+  HAVE_LINK_H
+  _GNU_SOURCE
+  UNW_LOCAL_ONLY=1
+  #__x86_64__
+  HAVE_DL_ITERATE_PHDR
+  PACKAGE_STRING=\"libunwind-1.3\"
+  PACKAGE_BUGREPORT=\"unwind.org\")
 
-    # Empty install command.
-    INSTALL_COMMAND "")
+target_link_libraries(libunwind PUBLIC oelibc)
+
+target_include_directories(libunwind PRIVATE
+  ${PROJECT_SOURCE_DIR}/include
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/libunwind/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/libunwind/src/${ARCH}
+  ${CMAKE_CURRENT_SOURCE_DIR}/libunwind/src
+  ${CMAKE_CURRENT_BINARY_DIR}/tdep
+  ${CMAKE_CURRENT_BINARY_DIR})
+
+install(TARGETS libunwind EXPORT openenclave-targets)

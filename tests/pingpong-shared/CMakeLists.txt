@@ -3,8 +3,8 @@
 
 add_subdirectory(host)
 
-if (UNIX)
+if (BUILD_ENCLAVES)
 	add_subdirectory(enc)
 endif()
 
-add_enclave_test(tests/pingpong-shared ./host pingpong-shared_host ./enc pingpong-shared_enc)
+add_enclave_test(tests/pingpong-shared pingpong-shared_host pingpong-shared_enc)

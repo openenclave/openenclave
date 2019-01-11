@@ -10,9 +10,11 @@
 #include <openenclave/internal/str.h>
 #include <stdarg.h>
 #include <sys/stat.h>
-#include "../host/enclave.h"
+#include "../host/sgx/enclave.h"
 
 static const char* arg0;
+int oedump(const char*);
+int oesign(const char*, const char*, const char*);
 
 OE_PRINTF_FORMAT(1, 2)
 void Err(const char* format, ...)
@@ -27,27 +29,22 @@ void Err(const char* format, ...)
     fprintf(stderr, "\n");
 }
 
-// Replace .so-extension with .signed.so. If there is no .so extension,
-// append .signed.so.
+// Append .signed to the name of the executable to be signed.
 static char* _make_signed_lib_name(const char* path)
 {
-    const char* p;
     mem_t buf = MEM_DYNAMIC_INIT;
 
-    if ((!(p = strrchr(path, '.'))) || (strcmp(p, ".so") != 0))
-        p = path + strlen(path);
-
-    mem_append(&buf, path, p - path);
-    mem_append(&buf, ".signed.so", 11);
+    mem_append(&buf, path, (size_t)strlen(path));
+    mem_append(&buf, ".signed", 8);
 
     return (char*)mem_steal(&buf);
 }
 
-static int _update_and_write_shared_lib(
+static oe_result_t _update_and_write_signed_exe(
     const char* path,
     const oe_sgx_enclave_properties_t* properties)
 {
-    int rc = -1;
+    oe_result_t rc = OE_FAILURE;
     oe_enclave_image_t oeimage;
     FILE* os = NULL;
 
@@ -68,13 +65,13 @@ static int _update_and_write_shared_lib(
         }
     }
 
-    /* Write new shared shared library */
+    /* Write new signed executable */
     {
         char* p = _make_signed_lib_name(path);
 
         if (!p)
         {
-            Err("bad shared library name: %s", path);
+            Err("bad executable name: %s", path);
             goto done;
         }
 
@@ -99,7 +96,7 @@ static int _update_and_write_shared_lib(
         free(p);
     }
 
-    rc = 0;
+    rc = OE_OK;
 
 done:
 
@@ -325,7 +322,7 @@ static int _load_pem_file(const char* path, void** data, size_t* size)
         if (stat(path, &st) != 0)
             goto done;
 
-        *size = st.st_size;
+        *size = (size_t)st.st_size;
     }
 
     /* Allocate memory. We add 1 to null terimate the file since the crypto
@@ -416,6 +413,7 @@ void _merge_config_file_options(
     const ConfigFileOptions* options)
 {
     bool initialized = false;
+    OE_UNUSED(path);
 
     /* Determine whether the properties are already initialized */
     if (properties->header.size == sizeof(oe_sgx_enclave_properties_t))
@@ -456,13 +454,23 @@ void _merge_config_file_options(
         properties->header.size_settings.num_tcs = options->num_tcs;
 }
 
-static const char _usage[] =
-    "Usage: %s EnclaveImage ConfigFile KeyFile\n"
+static const char _usage_gen[] =
+    "Usage: %s <command> [options]\n"
+    "\n"
+    "Commands:\n"
+    "    sign  -  Sign the specified enclave.\n"
+    "    dump  -  Print out the Open Enclave metadata for the specified "
+    "enclave.\n"
+    "\n"
+    "For help with a specific command, enter \"%s <command> -?\"\n";
+
+static const char _usage_sign[] =
+    "Usage: %s sign enclave_image config_file key_file\n"
     "\n"
     "Where:\n"
-    "    EnclaveImage -- path of an enclave image file\n"
-    "    ConfigFile -- configuration file containing enclave properties\n"
-    "    KeyFile -- private key file used to digitally sign the image\n"
+    "    enclave_image -- path of an enclave image file\n"
+    "    config_file -- configuration file containing enclave properties\n"
+    "    key_file -- private key file used to digitally sign the image\n"
     "\n"
     "Description:\n"
     "    This utility (1) injects runtime properties into an enclave image "
@@ -494,35 +502,30 @@ static const char _usage[] =
     "\n"
     "        -----BEGIN RSA PRIVATE KEY-----\n"
     "\n"
-    "    The resulting image is written to <EnclaveImage>.signed.so.\n"
+    "    The resulting image is written to <EnclaveImage>.signed\n"
     "\n";
 
-int main(int argc, const char* argv[])
+static const char _usage_dump[] =
+    "\n"
+    "Usage: %s dump enclave_image\n"
+    "\n"
+    "Where:\n"
+    "    enclave_image -- path of an enclave image file\n"
+    "\n"
+    "Description:\n"
+    "    This option dumps the oeinfo and signature information of an "
+    "enclave\n";
+
+int oesign(const char* enclave, const char* conffile, const char* keyfile)
 {
-    arg0 = argv[0];
     int ret = 1;
     oe_result_t result;
-    const char* enclave;
-    const char* conffile;
-    const char* keyfile;
     oe_enclave_t enc;
     void* pem_data = NULL;
     size_t pem_size;
     ConfigFileOptions options = CONFIG_FILE_OPTIONS_INITIALIZER;
     oe_sgx_enclave_properties_t props;
     oe_sgx_load_context_t context;
-
-    /* Check arguments */
-    if (argc != 4)
-    {
-        fprintf(stderr, _usage, arg0);
-        exit(1);
-    }
-
-    /* Collect arguments */
-    enclave = argv[1];
-    conffile = argv[2];
-    keyfile = argv[3];
 
     /* Load the configuration file */
     if (_load_config_file(conffile, &options) != 0)
@@ -609,9 +612,9 @@ int main(int argc, const char* argv[])
     }
 
     /* Create signature section and write out new file */
-    if ((result = _update_and_write_shared_lib(enclave, &props)) != OE_OK)
+    if ((result = _update_and_write_signed_exe(enclave, &props)) != OE_OK)
     {
-        Err("_update_and_write_shared_lib(): result=%s (%u)",
+        Err("_update_and_write_signed_exe(): result=%s (%u)",
             oe_result_str(result),
             result);
         goto done;
@@ -626,5 +629,157 @@ done:
 
     oe_sgx_cleanup_load_context(&context);
 
+    return ret;
+}
+
+int dump_parser(const char* argv[])
+{
+    int ret = 1;
+    const char* enclave;
+
+    if (strcmp(argv[2], "-?") == 0)
+    {
+        fprintf(stderr, _usage_dump, argv[0]);
+        exit(1);
+    }
+    else
+    {
+        if (strstr(argv[2], "_enc") != NULL)
+        {
+            enclave = argv[2];
+            /* dump oeinfo and signature information */
+            ret = oedump(enclave);
+        }
+        else
+        {
+            fprintf(stderr, _usage_gen, argv[0], argv[0]);
+            exit(1);
+        }
+    }
+
+    return ret;
+}
+
+int sign_parser(int argc, const char* argv[])
+{
+    int ret = 1;
+    const char* enclave;
+    const char* conffile;
+    const char* keyfile;
+
+    if (strcmp(argv[2], "-?") == 0)
+    {
+        fprintf(stderr, _usage_sign, argv[0]);
+        exit(1);
+    }
+    else if (argc == 5)
+    {
+        if (strstr(argv[2], "enc") != NULL)
+        {
+            enclave = argv[2];
+            if (strstr(argv[3], "conf") != NULL)
+            {
+                /* Collect arguments for signing*/
+                conffile = argv[3];
+                keyfile = argv[4];
+            }
+            else if (strstr(argv[3], "pem") != NULL)
+            {
+                /* Collect arguments for signing*/
+                keyfile = argv[3];
+                conffile = argv[4];
+            }
+            else
+            {
+                fprintf(stderr, _usage_gen, argv[0], argv[0]);
+                exit(1);
+            }
+        }
+        else if (strstr(argv[3], "enc") != NULL)
+        {
+            enclave = argv[3];
+            if (strstr(argv[2], "conf") != NULL)
+            {
+                /* Collect arguments for signing*/
+                conffile = argv[2];
+                keyfile = argv[4];
+            }
+            else if (strstr(argv[2], "pem") != NULL)
+            {
+                /* Collect arguments for signing*/
+                keyfile = argv[2];
+                conffile = argv[4];
+            }
+            else
+            {
+                fprintf(stderr, _usage_gen, argv[0], argv[0]);
+                exit(1);
+            }
+        }
+        else if (strstr(argv[4], "enc") != NULL)
+        {
+            enclave = argv[4];
+            if (strstr(argv[2], "conf") != NULL)
+            {
+                /* Collect arguments for signing*/
+                conffile = argv[2];
+                keyfile = argv[3];
+            }
+            else if (strstr(argv[2], "pem") != NULL)
+            {
+                /* Collect arguments for signing*/
+                keyfile = argv[2];
+                conffile = argv[3];
+            }
+            else
+            {
+                fprintf(stderr, _usage_gen, argv[0], argv[0]);
+                exit(1);
+            }
+        }
+        else
+        {
+            fprintf(stderr, _usage_gen, argv[0], argv[0]);
+            exit(1);
+        }
+    }
+    else
+    {
+        fprintf(stderr, _usage_gen, argv[0], argv[0]);
+        exit(1);
+    }
+
+    ret = oesign(enclave, conffile, keyfile);
+
+    return ret;
+}
+
+int arg_handler(int argc, const char* argv[])
+{
+    int ret = 1;
+    if ((strcmp(argv[1], "dump") == 0))
+        ret = dump_parser(argv);
+    else if ((strcmp(argv[1], "sign") == 0))
+        ret = sign_parser(argc, argv);
+    else
+    {
+        fprintf(stderr, _usage_gen, argv[0], argv[0]);
+        exit(1);
+    }
+    return ret;
+}
+
+int main(int argc, const char* argv[])
+{
+    arg0 = argv[0];
+    int ret = 1;
+
+    if (argc <= 2)
+    {
+        fprintf(stderr, _usage_gen, argv[0], argv[0]);
+        exit(1);
+    }
+
+    ret = arg_handler(argc, argv);
     return ret;
 }

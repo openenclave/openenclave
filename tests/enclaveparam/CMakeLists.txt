@@ -3,9 +3,9 @@
 
 add_subdirectory(host)
 
-if (UNIX)
+if (BUILD_ENCLAVES)
     add_subdirectory(enc)
 endif()
 
 add_enclave_test(tests/enclaveparam 
-    ./host enclaveparam_host ./enc enclaveparam_enc)
+    enclaveparam_host enclaveparam_enc)

@@ -1,24 +1,13 @@
-include ../../../oe_sub.mk
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
 
-ROOT_RELATIVE_PATH = ../../../
+CFLAGS += $(EXTRA_CFLAGS)
 
-../stdio_t.h: $(OE_SDK_ROOT_PATH)include/openenclave/stdio.edl
-	$(OEEDGER8R) --trusted --search-path "../..$(OEPATHSEP)$(OE_SDK_ROOT_PATH)include" --trusted-dir ".."  $(OE_SDK_ROOT_PATH)include/openenclave/stdio.edl
+CFLAGS += -I$(O) -I$(OE_INC) -I$(NP_INC)
+CFLAGS += -I../
 
-../stdio_enc.c: ../stdio_t.h
-
-files_optee.c: ../stdio_t.h
-
-CFLAGS += -DOE_USE_OPTEE
-
-global-incdirs-y += $(ROOT_RELATIVE_PATH)include/optee/enclave
-global-incdirs-y += $(ROOT_RELATIVE_PATH)include/optee
-global-incdirs-y += $(ROOT_RELATIVE_PATH)include
-global-incdirs-y += $(OpteeDir)lib/libutee/include
-global-incdirs-y += $(RIoTDir)CyReP/cyrep
-global-incdirs-y += $(RIoTDir)External/tinycbor/src
-global-incdirs-y += $(ROOT_RELATIVE_PATH)../include
-global-incdirs-y += ..
+CFLAGS += -DLINUX -DOE_USE_OPTEE
 
 srcs-y += ../stdio_enc.c
 srcs-y += files_optee.c
+srcs-y += $(GEN)

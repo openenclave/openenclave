@@ -3,8 +3,8 @@
 
 add_subdirectory(host)
 
-if (UNIX)
+if (BUILD_ENCLAVES)
 	add_subdirectory(enc)
 endif()
 
-add_enclave_test(tests/cppException ./host cppException_host ./enc cppException_enc)
+add_enclave_test(tests/cppException cppException_host cppException_enc)

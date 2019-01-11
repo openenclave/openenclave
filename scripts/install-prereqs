@@ -3,80 +3,16 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-# Install required packages.
-#
-# When using new tools, obtain the corresponding package they come from with
-# dpkg -S <binary-name>
-# and add it to the list.
-#
+echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+echo "!!! WARNING THIS SCRIPT WILL BE DEPRECATED IN FAVOUR OF ANSIBLE-PLAYBOOK !!!"
+echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
-# Needed for Open Enclave build
-PACKAGES=('cmake' 'make' 'pkg-config')
-
-# Needed for Open Enclave scripts
-PACKAGES+=('clang-format-3.8' 'shellcheck')
-
-# Needed for using oedbg
-PACKAGES+=('gdb')
-
-# Needed for 3rdparty/libunwind
-PACKAGES+=('autoconf' 'libtool')
-
-# Needed to generate documentation during make
-PACKAGES+=('doxygen' 'graphviz')
-
-# Needed for cmake/get_c_compiler_dir.sh
-PACKAGES+=('gawk')
-
-# Needed for dox2md document generation
-PACKAGES+=('libexpat1-dev')
-
-# Needed for oesign
-PACKAGES+=('openssl')
-
-# Needed for oehost
-PACKAGES+=('libssl-dev')
-
-# Needed for 3rdparty/libcxx/update.make
-PACKAGES+=('subversion')
-
-# Needed for oeedger8r
-PACKAGES+=('ocaml-native-compilers')
-
-apt-get -y install "${PACKAGES[@]}"
-
-# Now install clang from LLVM private repo, this has the spectre mitigations
-# (unlike anything in Ubuntu 16.04).
-if (apt list --installed | grep clang-7 > /dev/null); then
-    echo clang-7 already installed.
-else
-    # These repositories are appropriate only for Ubuntu 16.04.
-    # Make sure we don't mess up anyone else's system
-    if ! (lsb_release -a 2>/dev/null | grep xenial > /dev/null); then
-        echo 'This script targets Ubuntu 16.04 (Xenial Xerus) only'
-        exit 1
-    fi
-
-    # First, apt.llvm.org public key
-    wget -q https://apt.llvm.org/llvm-snapshot.gpg.key
-    # Verify fingerprint
-    if ! (gpg --homedir /dev/null --with-fingerprint llvm-snapshot.gpg.key 2>/dev/null \
-        | grep fingerprint | grep -E '6084 F3CF 814B 57C1 CF12 +EFD5 15CF 4D18 AF4F 7421'); then
-        echo apt.llvm.org key did not have expected fingerprint; key left in llvm-snapshot.gpg.key
-        exit 1
-    fi
-    apt-key add llvm-snapshot.gpg.key
-
-    # Add repo
-    if [[ ! -f /etc/apt/sources.list.d/llvm-toolchain-xenial-7.list ]]; then
-        cat << EOF >> /etc/apt/sources.list.d/llvm-toolchain-xenial-7.list
-
-# LLVM/clang-7 (with spectre mitigations)
-deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main
-deb-src http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main
-EOF
-        apt-get update
-    fi
-
-    apt-get -y install clang-7
+command -v "ansible-playbook" > /dev/null
+if [[ $? != 0 ]] 
+then 
+    echo "Ansible is required to run this script but it is not installed on your system."
+    echo "You can install it by running ansible/install-ansible.sh script"
+    exit 1
 fi
+
+ansible-playbook ansible/ansible-include_task.yml --extra-vars "target=localhost included_task=tasks/ansible-install-prereqs.yml"

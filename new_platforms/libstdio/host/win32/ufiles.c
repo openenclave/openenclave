@@ -11,7 +11,7 @@
 #include <assert.h>
 
 #include <openenclave/host.h>
-#include "../stdio_u.h"
+#include "stdio_u.h"
 
 oe_result_t
 ocall_ExportPublicCertificate(
