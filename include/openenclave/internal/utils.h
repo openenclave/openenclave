@@ -113,7 +113,7 @@ OE_INLINE uint64_t StrCode(const char* s, uint64_t n)
  * http://en.cppreference.com/w/cpp/atomic/memory_order. For a deeper
  * understanding see "C++ and the Perils of Double-Checked Locking"
  * http://www.aristeia.com/Papers/DDJ_Jul_Aug_2004_revised.pdf.
-*/
+ */
 #define OE_ATOMIC_MEMORY_BARRIER_ACQUIRE() asm volatile("" ::: "memory")
 #define OE_ATOMIC_MEMORY_BARRIER_RELEASE() asm volatile("" ::: "memory")
 

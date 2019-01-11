@@ -47,7 +47,7 @@ genkey: public.pem
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
 	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -std=c++11 ecalls.cpp ../common/attestation.cpp ../common/crypto.cpp ../common/dispatcher.cpp
-	$(CC) -c $(CFLAGS) $(CINCLUDES) ../common/remoteattestation_t.c
+	$(CC) -g -c $(CFLAGS) $(CINCLUDES) ../common/remoteattestation_t.c
 	$(CXX) -o enclave2 attestation.o crypto.o ecalls.o dispatcher.o remoteattestation_t.o $(LDFLAGS) 
 
 sign:

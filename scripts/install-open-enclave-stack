@@ -7,12 +7,10 @@ echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 echo "!!! WARNING THIS SCRIPT WILL BE DEPRECATED IN FAVOUR OF ANSIBLE-PLAYBOOK !!!"
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
-command -v "ansible-playbook" > /dev/null
-if [[ $? != 0 ]]
-then
+if ! command -v "ansible-playbook" > /dev/null; then
     echo "Ansible is required to run this script but it is not installed on your system."
     echo "You can install it by running ansible/install-ansible.sh script"
     exit 1
 fi
 
-ansible-playbook ansible/ansible-include_task.yml --extra-vars "target=localhost included_task=tasks/ansible-install-openenclave-stack.yml"
+ansible-playbook ansible/ansible-include_task.yml --extra-vars "target=localhost included_task=tasks/ansible-install-openenclave.yml"

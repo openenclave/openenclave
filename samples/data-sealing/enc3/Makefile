@@ -27,8 +27,8 @@ all:
 
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
-	$(CXX) -c $(CXXFLAGS) $(INCLUDES) -std=c++11 ecalls.cpp ../common/dispatcher.cpp ../common/keys.cpp
-	$(CC) -c $(CFLAGS) $(CINCLUDES) ../common/datasealing_t.c
+	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -std=c++11 ecalls.cpp ../common/dispatcher.cpp ../common/keys.cpp
+	$(CC) -g -c $(CFLAGS) $(CINCLUDES) ../common/datasealing_t.c
 	$(CXX) -o enclave_b ecalls.o dispatcher.o keys.o datasealing_t.o $(LDFLAGS)	
 
 sign:

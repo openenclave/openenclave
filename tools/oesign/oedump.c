@@ -110,12 +110,11 @@ oe_result_t oe_sgx_load_properties(
             goto done;
         }
 
-        OE_CHECK(
-            oe_memcpy_s(
-                properties,
-                sizeof(*properties),
-                enclave_properties,
-                sizeof(*enclave_properties)));
+        OE_CHECK(oe_memcpy_s(
+            properties,
+            sizeof(*properties),
+            enclave_properties,
+            sizeof(*enclave_properties)));
     }
 
     result = OE_OK;

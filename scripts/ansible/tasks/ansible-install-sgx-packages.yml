@@ -1,0 +1,23 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+---
+- name: Add 01.org repo key
+  apt_key: url={{item}} state=present
+  with_items:
+    - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key
+
+- name: Add 01.org repository
+  apt_repository: repo={{item}} state=present update_cache=yes
+  with_items:
+    - deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu xenial main
+
+- name: Install libsgx packages
+  apt:
+    name: [
+      libsgx-enclave-common,
+      libsgx-enclave-common-dev,
+      libsgx-dcap-ql,
+      libsgx-dcap-ql-dev
+    ]
+    state: present
+    update_cache: yes

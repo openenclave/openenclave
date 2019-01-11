@@ -15,7 +15,8 @@ OE_EXTERNC_BEGIN
 
 #ifdef OE_USE_LIBSGX
 
-typedef enum _oe_tcb_level_status {
+typedef enum _oe_tcb_level_status
+{
     OE_TCB_LEVEL_STATUS_UNKNOWN,
     OE_TCB_LEVEL_STATUS_REVOKED,
     OE_TCB_LEVEL_STATUS_OUT_OF_DATE,

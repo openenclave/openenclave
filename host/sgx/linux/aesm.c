@@ -34,14 +34,16 @@
 
 #define AESM_SOCKET "/var/run/aesmd/aesm.socket"
 
-typedef enum _wire_type {
+typedef enum _wire_type
+{
     WIRE_TYPE_VARINT = 0,
     WIRE_TYPE_LENGTH_DELIMITED = 2
 } wire_type_t;
 
 #define AESM_MAGIC 0x4efaa2a3
 
-typedef enum _message_type {
+typedef enum _message_type
+{
     MESSAGE_TYPE_INIT_QUOTE = 1,
     MESSAGE_TYPE_GET_QUOTE = 2,
     MESSAGE_TYPE_GET_LAUNCH_TOKEN = 3
@@ -320,12 +322,11 @@ static oe_result_t _write_request(
     }
 
     /* Wrap message in envelope */
-    OE_CHECK(
-        _pack_bytes(
-            &envelope,
-            (uint8_t)message_type,
-            mem_ptr(message),
-            (uint32_t)mem_size(message)));
+    OE_CHECK(_pack_bytes(
+        &envelope,
+        (uint8_t)message_type,
+        mem_ptr(message),
+        (uint32_t)mem_size(message)));
 
     /* Send the envelope to the AESM service */
     {
@@ -533,9 +534,8 @@ oe_result_t aesm_get_launch_token(
         }
 
         /* Unpack the launch token */
-        OE_CHECK(
-            _unpack_length_delimited(
-                &response, &pos, 2, launch_token, sizeof(sgx_launch_token_t)));
+        OE_CHECK(_unpack_length_delimited(
+            &response, &pos, 2, launch_token, sizeof(sgx_launch_token_t)));
     }
 
     result = OE_OK;
@@ -590,18 +590,12 @@ oe_result_t aesm_init_quote(
         }
 
         /* Unpack target_info */
-        OE_CHECK(
-            _unpack_length_delimited(
-                &response, &pos, 2, target_info, sizeof(sgx_target_info_t)));
+        OE_CHECK(_unpack_length_delimited(
+            &response, &pos, 2, target_info, sizeof(sgx_target_info_t)));
 
         /* Unpack epid_group_id */
-        OE_CHECK(
-            _unpack_length_delimited(
-                &response,
-                &pos,
-                3,
-                epid_group_id,
-                sizeof(sgx_epid_group_id_t)));
+        OE_CHECK(_unpack_length_delimited(
+            &response, &pos, 3, epid_group_id, sizeof(sgx_epid_group_id_t)));
     }
 
     result = OE_OK;
@@ -656,12 +650,11 @@ oe_result_t aesm_get_quote(
         /* Pack SIGNATURE-REVOCATION-LIST */
         if (signature_revocation_list_size)
         {
-            OE_CHECK(
-                _pack_bytes(
-                    &request,
-                    5,
-                    signature_revocation_list,
-                    signature_revocation_list_size));
+            OE_CHECK(_pack_bytes(
+                &request,
+                5,
+                signature_revocation_list,
+                signature_revocation_list_size));
         }
 
         /* Pack QUOTE-SIZE */
@@ -701,9 +694,8 @@ oe_result_t aesm_get_quote(
         /* Unpack optional report_out */
         if (report_out)
         {
-            OE_CHECK(
-                _unpack_length_delimited(
-                    &response, &pos, 3, report_out, sizeof(sgx_report_t)));
+            OE_CHECK(_unpack_length_delimited(
+                &response, &pos, 3, report_out, sizeof(sgx_report_t)));
         }
     }
 

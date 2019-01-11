@@ -166,14 +166,13 @@ static oe_result_t _add_section_pages(
     for (i = 0; i < section_hdr->Misc.VirtualSize; i += OE_PAGE_SIZE)
     {
         uint64_t offset = section_hdr->VirtualAddress + i;
-        OE_CHECK(
-            oe_sgx_load_enclave_data(
-                context,
-                enclaveAddr,
-                enclaveAddr + offset,
-                (uint64_t)image + offset,
-                flags,
-                true));
+        OE_CHECK(oe_sgx_load_enclave_data(
+            context,
+            enclaveAddr,
+            enclaveAddr + offset,
+            (uint64_t)image + offset,
+            flags,
+            true));
     }
 
     result = OE_OK;
@@ -206,22 +205,20 @@ static oe_result_t _add_pages(
     /* Add image header as r/o pages */
     for (i = 0; i < section_hdr->VirtualAddress; i += OE_PAGE_SIZE)
     {
-        OE_CHECK(
-            oe_sgx_load_enclave_data(
-                context,
-                enclave->addr,
-                enclave->addr + i,
-                (uint64_t)image->image_base + i,
-                SGX_SECINFO_R | SGX_SECINFO_REG,
-                true));
+        OE_CHECK(oe_sgx_load_enclave_data(
+            context,
+            enclave->addr,
+            enclave->addr + i,
+            (uint64_t)image->image_base + i,
+            SGX_SECINFO_R | SGX_SECINFO_REG,
+            true));
     }
 
     /* Add all the sections. */
     for (i = 0; i < nt_header->FileHeader.NumberOfSections; i++, section_hdr++)
     {
-        OE_CHECK(
-            _add_section_pages(
-                context, enclave->addr, section_hdr, image->image_base));
+        OE_CHECK(_add_section_pages(
+            context, enclave->addr, section_hdr, image->image_base));
     }
 
     *vaddr = image->image_size;

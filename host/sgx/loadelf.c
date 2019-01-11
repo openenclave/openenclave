@@ -486,9 +486,8 @@ static oe_result_t _add_relocation_pages(
             uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R;
             bool extend = true;
 
-            OE_CHECK(
-                oe_sgx_load_enclave_data(
-                    context, enclave_addr, addr, src, flags, extend));
+            OE_CHECK(oe_sgx_load_enclave_data(
+                context, enclave_addr, addr, src, flags, extend));
             (*vaddr) += sizeof(oe_page_t);
         }
     }
@@ -530,14 +529,13 @@ static oe_result_t _add_segment_pages(
 
     for (; page_rva < segment_end; page_rva += OE_PAGE_SIZE)
     {
-        OE_CHECK(
-            oe_sgx_load_enclave_data(
-                context,
-                enclave_addr,
-                enclave_addr + page_rva,
-                (uint64_t)image + page_rva,
-                flags,
-                true));
+        OE_CHECK(oe_sgx_load_enclave_data(
+            context,
+            enclave_addr,
+            enclave_addr + page_rva,
+            (uint64_t)image + page_rva,
+            flags,
+            true));
     }
 
     result = OE_OK;
@@ -566,24 +564,22 @@ static oe_result_t _add_pages(
     /* Add the program segments first */
     for (i = 0; i < image->u.elf.num_segments; i++)
     {
-        OE_CHECK(
-            _add_segment_pages(
-                context,
-                enclave->addr,
-                &image->u.elf.segments[i],
-                image->image_base));
+        OE_CHECK(_add_segment_pages(
+            context,
+            enclave->addr,
+            &image->u.elf.segments[i],
+            image->image_base));
     }
 
     *vaddr = image->image_size;
 
     /* Add the relocation pages (contain relocation entries) */
-    OE_CHECK(
-        _add_relocation_pages(
-            context,
-            enclave->addr,
-            image->u.elf.reloc_data,
-            image->reloc_size,
-            vaddr));
+    OE_CHECK(_add_relocation_pages(
+        context,
+        enclave->addr,
+        image->u.elf.reloc_data,
+        image->reloc_size,
+        vaddr));
 
     result = OE_OK;
 
@@ -829,12 +825,11 @@ static oe_result_t _sgx_load_enclave_properties(
     OE_UNUSED(section_name);
 
     /* Copy from the image at oeinfo_rva. */
-    OE_CHECK(
-        oe_memcpy_s(
-            properties,
-            sizeof(*properties),
-            image->image_base + image->oeinfo_rva,
-            sizeof(*properties)));
+    OE_CHECK(oe_memcpy_s(
+        properties,
+        sizeof(*properties),
+        image->image_base + image->oeinfo_rva,
+        sizeof(*properties)));
 
     result = OE_OK;
 
@@ -851,19 +846,17 @@ static oe_result_t _sgx_update_enclave_properties(
     OE_UNUSED(section_name);
 
     /* Copy to both the image and ELF file*/
-    OE_CHECK(
-        oe_memcpy_s(
-            (uint8_t*)image->u.elf.elf.data + image->oeinfo_file_pos,
-            sizeof(*properties),
-            properties,
-            sizeof(*properties)));
+    OE_CHECK(oe_memcpy_s(
+        (uint8_t*)image->u.elf.elf.data + image->oeinfo_file_pos,
+        sizeof(*properties),
+        properties,
+        sizeof(*properties)));
 
-    OE_CHECK(
-        oe_memcpy_s(
-            image->image_base + image->oeinfo_rva,
-            sizeof(*properties),
-            properties,
-            sizeof(*properties)));
+    OE_CHECK(oe_memcpy_s(
+        image->image_base + image->oeinfo_rva,
+        sizeof(*properties),
+        properties,
+        sizeof(*properties)));
 
     result = OE_OK;
 

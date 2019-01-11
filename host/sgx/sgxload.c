@@ -332,25 +332,23 @@ static oe_result_t _get_sig_struct(
                 NULL);
 
         /* Perform debug-signing with well-known debug-signing key */
-        OE_CHECK(
-            oe_sgx_sign_enclave(
-                mrenclave,
-                properties->config.attributes,
-                properties->config.product_id,
-                properties->config.security_version,
-                OE_DEBUG_SIGN_KEY,
-                OE_DEBUG_SIGN_KEY_SIZE,
-                sigstruct));
+        OE_CHECK(oe_sgx_sign_enclave(
+            mrenclave,
+            properties->config.attributes,
+            properties->config.product_id,
+            properties->config.security_version,
+            OE_DEBUG_SIGN_KEY,
+            OE_DEBUG_SIGN_KEY_SIZE,
+            sigstruct));
     }
     else
     {
         /* Otherwise, treat enclave as signed and use its sigstruct */
-        OE_CHECK(
-            oe_memcpy_s(
-                sigstruct,
-                sizeof(sgx_sigstruct_t),
-                properties->sigstruct,
-                sizeof(sgx_sigstruct_t)));
+        OE_CHECK(oe_memcpy_s(
+            sigstruct,
+            sizeof(sgx_sigstruct_t),
+            properties->sigstruct,
+            sizeof(sgx_sigstruct_t)));
     }
 
     result = OE_OK;
@@ -381,13 +379,12 @@ static oe_result_t _get_launch_token(
     if (!(aesm = aesm_connect()))
         OE_RAISE(OE_FAILURE);
 
-    OE_CHECK(
-        aesm_get_launch_token(
-            aesm,
-            sigstruct->enclavehash,
-            sigstruct->modulus,
-            &attributes,
-            launch_token));
+    OE_CHECK(aesm_get_launch_token(
+        aesm,
+        sigstruct->enclavehash,
+        sigstruct->modulus,
+        &attributes,
+        launch_token));
 
     result = OE_OK;
 
@@ -700,9 +697,8 @@ oe_result_t oe_sgx_load_enclave_data(
 #endif /* defined(OE_TRACE_MEASURE) */
 
     /* Measure this operation */
-    OE_CHECK(
-        oe_sgx_measure_load_enclave_data(
-            &context->hash_context, base, addr, src, flags, extend));
+    OE_CHECK(oe_sgx_measure_load_enclave_data(
+        &context->hash_context, base, addr, src, flags, extend));
 
     if (context->type == OE_SGX_LOAD_TYPE_MEASURE)
     {
@@ -721,9 +717,8 @@ oe_result_t oe_sgx_load_enclave_data(
                 OE_FAILURE, "Page is NOT within enclave boundaries", NULL);
 
         /* Copy page contents onto memory-mapped region */
-        OE_CHECK(
-            oe_memcpy_s(
-                (uint8_t*)addr, OE_PAGE_SIZE, (uint8_t*)src, OE_PAGE_SIZE));
+        OE_CHECK(oe_memcpy_s(
+            (uint8_t*)addr, OE_PAGE_SIZE, (uint8_t*)src, OE_PAGE_SIZE));
 
         /* Set page access permissions */
         {
@@ -873,18 +868,16 @@ oe_result_t oe_sgx_initialize_enclave(
         DWORD enclave_error;
         ENCLAVE_INIT_INFO_SGX info = {{0}};
 
-        OE_CHECK(
-            oe_memcpy_s(
-                &info.SigStruct,
-                sizeof(info.SigStruct),
-                (void*)&sigstruct,
-                sizeof(sigstruct)));
-        OE_CHECK(
-            oe_memcpy_s(
-                &info.EInitToken,
-                sizeof(info.EInitToken),
-                (void*)&launch_token,
-                sizeof(info.EInitToken)));
+        OE_CHECK(oe_memcpy_s(
+            &info.SigStruct,
+            sizeof(info.SigStruct),
+            (void*)&sigstruct,
+            sizeof(sigstruct)));
+        OE_CHECK(oe_memcpy_s(
+            &info.EInitToken,
+            sizeof(info.EInitToken),
+            (void*)&launch_token,
+            sizeof(info.EInitToken)));
 
         if (!InitializeEnclave(
                 GetCurrentProcess(),
@@ -912,9 +905,8 @@ oe_result_t oe_sgx_delete_enclave(oe_enclave_t* enclave)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* free allocate memory. */
-    OE_CHECK(
-        _sgx_free_enclave_memory(
-            (void*)enclave->addr, enclave->size, enclave->simulate));
+    OE_CHECK(_sgx_free_enclave_memory(
+        (void*)enclave->addr, enclave->size, enclave->simulate));
     result = OE_OK;
 done:
     return result;

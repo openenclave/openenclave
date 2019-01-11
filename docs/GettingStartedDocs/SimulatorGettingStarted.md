@@ -6,22 +6,27 @@
 
 ## Clone Open Enclave SDK repo from GitHub
 
-Use the following command to download the source code.
+Use the following command to download the source code and set the current directory to it.
 
 ```bash
 git clone https://github.com/Microsoft/openenclave.git
+cd openenclave
 ```
 
 This creates a source tree under the directory called openenclave.
 
 ## Install project prerequisites
 
-Ansible is required to install the project prerequisites. If not already installed, you can install it by running: `scripts/ansible/install-ansible.sh`
-The ansible-playbook [scripts/ansible/ansible-include_task.yml](/scripts/ansible/ansible-include_task.yml) was created to be able to run pre-defined ansible tasks on a target host. All the tasks required to install the prerequisites can be found in the following ansible task list : [scripts/ansible/tasks/ansible-install-prereqs.yml](/scripts/ansible/tasks/ansible-install-prereqs.yml) To make installing the prerequisites less tedious execute the following commands from the root of the source tree:
+Ansible is required to install the project prerequisites. You can install it by running:
+```bash
+sudo ./scripts/ansible/install-ansible.sh
+```
+
+The ansible-playbook [scripts/ansible/ansible-include_task.yml](/scripts/ansible/ansible-include_task.yml) was created to be able to run pre-defined ansible tasks on a target host. To make installing the prerequisites less tedious execute the following commands from the root of the source tree:
 
 ```bash
-cd openenclave
 ansible-playbook scripts/ansible/ansible-include_task.yml --extra-vars "target=localhost included_task=tasks/ansible-install-prereqs.yml"
+ansible-playbook scripts/ansible/ansible-include_task.yml --extra-vars "target=localhost included_task=tasks/ansible-install-openenclave-deps.yml"
 ```
 
 ## Build
@@ -36,9 +41,11 @@ cd build/
 Then run `cmake` to configure the build and generate the make files and build:
 
 ```bash
-cmake ..
+cmake -DUSE_LIBSGX=OFF ..
 make
 ```
+
+If you want to compile in parallel you can use the -j argument for make (i.e. `make -j`).
 
 Refer to the [Advanced Build Information](AdvancedBuildInfo.md) documentation for further information.
 

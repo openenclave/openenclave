@@ -29,11 +29,11 @@ int DivideByZeroExceptionFunction(void)
 
     // Using inline assembly for idiv to prevent it being optimized out
     // completely
-    asm volatile(
-        "idiv %3"
-        : "=a"(ret)
-        : "a"(0), "d"(0), "r"(0) // Divisor of 0 is hard-coded
-        : "%2", "cc"); // cc indicates that flags will be clobbered by ASM
+    asm volatile("idiv %3"
+                 : "=a"(ret)
+                 : "a"(0), "d"(0), "r"(0) // Divisor of 0 is hard-coded
+                 : "%2",
+                   "cc"); // cc indicates that flags will be clobbered by ASM
 
     // Check if the float registers are recovered correctly after the exception
     // is handled.
@@ -268,9 +268,8 @@ OE_ECALL void TestVectorException(void* args_)
         return;
     }
 
-    oe_host_printf(
-        "TestVectorException: will generate a hardware exception "
-        "inside enclave!\n");
+    oe_host_printf("TestVectorException: will generate a hardware exception "
+                   "inside enclave!\n");
     if (DivideByZeroExceptionFunction() != 0)
     {
         args->ret = -1;

@@ -260,9 +260,8 @@ int ecall_dispatcher::process_encrypted_msg(
         TRACE_ENCLAVE("Enclave:ecall_dispatcher::process_encrypted_msg failed");
         goto exit;
     }
-    TRACE_ENCLAVE(
-        "Decrypted data matches with the enclave internal secret "
-        "data: descryption validation succeeded");
+    TRACE_ENCLAVE("Decrypted data matches with the enclave internal secret "
+                  "data: descryption validation succeeded");
     ret = 0;
 exit:
     return ret;

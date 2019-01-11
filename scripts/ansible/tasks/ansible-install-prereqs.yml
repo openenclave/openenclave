@@ -12,12 +12,13 @@
     name: clang-7
     state: present
     install_recommends: no
+
 - name: Install  prerequisite packages
   apt:
     name: [
        apt-transport-https,
        autoconf,
-       clang-format-3.8,
+       clang-format-7,
        doxygen,
        gdb,
        graphviz,

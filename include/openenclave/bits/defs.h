@@ -60,7 +60,9 @@
 
 #if defined(__cplusplus)
 #define OE_EXTERNC extern "C"
-#define OE_EXTERNC_BEGIN extern "C" {
+#define OE_EXTERNC_BEGIN \
+    extern "C"           \
+    {
 #define OE_EXTERNC_END }
 #else
 #define OE_EXTERNC

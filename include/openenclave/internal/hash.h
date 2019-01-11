@@ -9,7 +9,8 @@
 OE_EXTERNC_BEGIN
 
 /* Message digest types supported by RSA and EC digital signing */
-typedef enum _oe_hash_type {
+typedef enum _oe_hash_type
+{
     OE_HASH_TYPE_SHA256,
     OE_HASH_TYPE_SHA512,
     __OE_HASH_TYPE_MAX = OE_ENUM_MAX,

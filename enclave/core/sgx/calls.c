@@ -292,9 +292,8 @@ static oe_result_t _handle_call_enclave_function(uint64_t arg_in)
     if ((args.output_buffer_size % OE_EDGER8R_BUFFER_ALIGNMENT) != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    OE_CHECK(
-        oe_safe_add_u64(
-            args.input_buffer_size, args.output_buffer_size, &buffer_size));
+    OE_CHECK(oe_safe_add_u64(
+        args.input_buffer_size, args.output_buffer_size, &buffer_size));
 
     // Fetch matching function.
     if (args.function_id >= __oe_ecalls_table_size)
@@ -605,9 +604,8 @@ oe_result_t oe_call_host(const char* func, void* args_in)
         size_t total_len;
 
         OE_STATIC_ASSERT(sizeof(oe_call_host_args_t) < OE_SIZE_MAX);
-        OE_CHECK(
-            oe_safe_add_sizet(
-                len, 1 + sizeof(oe_call_host_args_t), &total_len));
+        OE_CHECK(oe_safe_add_sizet(
+            len, 1 + sizeof(oe_call_host_args_t), &total_len));
 
         if (!(args = oe_host_calloc(1, total_len)))
         {
@@ -912,7 +910,7 @@ void __oe_handle_main(
                 /* Eventually calls oe_exit() and never returns here if
                  * successful */
                 _handle_oret(td, func, arg1_result, arg_in);
-            // fallthrough
+                // fallthrough
 
             default:
                 /* Unexpected case */

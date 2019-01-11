@@ -59,7 +59,8 @@ extern "C" int test(char** name)
 {
     extern const char* __TEST__NAME;
     static const char* argv[] = {
-        "test", NULL,
+        "test",
+        NULL,
     };
     static int argc = sizeof(argv) / sizeof(argv[0]);
     *name = oe_host_strndup(__TEST__NAME, OE_SIZE_MAX);

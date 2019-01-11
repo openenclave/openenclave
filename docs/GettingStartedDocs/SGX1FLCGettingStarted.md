@@ -58,7 +58,7 @@ cd build/
 Then run `cmake` to configure the build and generate the make files and build:
 
 ```bash
-cmake .. -DUSE_LIBSGX=1
+cmake ..
 make
 ```
 

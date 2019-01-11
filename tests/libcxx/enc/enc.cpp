@@ -275,7 +275,8 @@ OE_ECALL void Test(Args* args)
     {
         printf("RUNNING: %s\n", __TEST__NAME);
         static const char* argv[] = {
-            "test", NULL,
+            "test",
+            NULL,
         };
         static int argc = sizeof(argv) / sizeof(argv[0]);
         args->ret = main(argc, argv);
