@@ -39,17 +39,17 @@ add_custom_command(
 # Compile
 add_custom_command(
     OUTPUT ${BINARY}
-    COMMAND ocamlopt -c -I . -o Ast.cmx          ${CMAKE_CURRENT_SOURCE_DIR}/intel/Ast.ml
-    COMMAND ocamlopt -c -I . -o Util.cmx         ${CMAKE_CURRENT_SOURCE_DIR}/intel/Util.ml
-    COMMAND ocamlopt -c -I . -o SimpleStack.cmx  ${CMAKE_CURRENT_SOURCE_DIR}/intel/SimpleStack.ml
-    COMMAND ocamlopt -c -I . -o Plugin.cmx       ${CMAKE_CURRENT_SOURCE_DIR}/intel/Plugin.ml
-    COMMAND ocamlopt -c -I . -o Preprocessor.cmx ${CMAKE_CURRENT_SOURCE_DIR}/intel/Preprocessor.ml
-    COMMAND ocamlopt -c -I . -o Parser.cmi       ${CMAKE_CURRENT_BINARY_DIR}/Parser.mli
-    COMMAND ocamlopt -c -I . -o Parser.cmx       ${CMAKE_CURRENT_BINARY_DIR}/Parser.ml
-    COMMAND ocamlopt -c -I . -o Lexer.cmx        ${CMAKE_CURRENT_BINARY_DIR}/Lexer.ml
-    COMMAND ocamlopt -c -I . -o CodeGen.cmx      ${CMAKE_CURRENT_SOURCE_DIR}/intel/CodeGen.ml
-    COMMAND ocamlopt -c -I . -o Emitter.cmx      ${CMAKE_CURRENT_SOURCE_DIR}/Emitter.ml
-    COMMAND ocamlopt -c -I . -o main.cmx         ${CMAKE_CURRENT_SOURCE_DIR}/main.ml
+    COMMAND ocamlopt -c -bin-annot -I . -o Ast.cmx          ${CMAKE_CURRENT_SOURCE_DIR}/intel/Ast.ml
+    COMMAND ocamlopt -c -bin-annot -I . -o Util.cmx         ${CMAKE_CURRENT_SOURCE_DIR}/intel/Util.ml
+    COMMAND ocamlopt -c -bin-annot -I . -o SimpleStack.cmx  ${CMAKE_CURRENT_SOURCE_DIR}/intel/SimpleStack.ml
+    COMMAND ocamlopt -c -bin-annot -I . -o Plugin.cmx       ${CMAKE_CURRENT_SOURCE_DIR}/intel/Plugin.ml
+    COMMAND ocamlopt -c -bin-annot -I . -o Preprocessor.cmx ${CMAKE_CURRENT_SOURCE_DIR}/intel/Preprocessor.ml
+    COMMAND ocamlopt -c -bin-annot -I . -o Parser.cmi       ${CMAKE_CURRENT_BINARY_DIR}/Parser.mli
+    COMMAND ocamlopt -c -bin-annot -I . -o Parser.cmx       ${CMAKE_CURRENT_BINARY_DIR}/Parser.ml
+    COMMAND ocamlopt -c -bin-annot -I . -o Lexer.cmx        ${CMAKE_CURRENT_BINARY_DIR}/Lexer.ml
+    COMMAND ocamlopt -c -bin-annot -I . -o CodeGen.cmx      ${CMAKE_CURRENT_SOURCE_DIR}/intel/CodeGen.ml
+    COMMAND ocamlopt -c -bin-annot -I . -o Emitter.cmx      ${CMAKE_CURRENT_SOURCE_DIR}/Emitter.ml
+    COMMAND ocamlopt -c -bin-annot -I . -o main.cmx         ${CMAKE_CURRENT_SOURCE_DIR}/main.ml
     COMMAND ocamlopt str.cmxa unix.cmxa Ast.cmx Util.cmx SimpleStack.cmx Plugin.cmx
                      Preprocessor.cmx Parser.cmx Lexer.cmx CodeGen.cmx Emitter.cmx main.cmx
                      -o ${BINARY}
