@@ -87,7 +87,7 @@ typedef struct _oe_identity
     uint32_t id_version;
 
     /** Security version of the enclave. For SGX enclaves, this is the
-      *  ISVN value */
+     *  ISVN value */
     uint32_t security_version;
 
     /** Values of the attributes flags for the enclave -

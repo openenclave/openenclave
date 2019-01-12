@@ -271,9 +271,8 @@ oe_result_t oe_rsa_private_key_sign(
         }
 
         /* Need to make a copy since BCryptSignHash's pbInput isn't const. */
-        OE_CHECK(
-            oe_memcpy_s(
-                hash_data_copy, sizeof(hash_data_copy), hash_data, hash_size));
+        OE_CHECK(oe_memcpy_s(
+            hash_data_copy, sizeof(hash_data_copy), hash_data, hash_size));
 
         /* Determine the size of the signature; fail if buffer is too small */
         status = BCryptSignHash(
@@ -467,12 +466,11 @@ oe_result_t oe_rsa_public_key_get_modulus(
      *   PublicExponent[cbPublicExp] in big endian
      *   Modulus[cbModulus] in big endian
      */
-    OE_CHECK(
-        oe_memcpy_s(
-            buffer,
-            *buffer_size,
-            keybuf + sizeof(*keyblob) + keyblob->cbPublicExp,
-            keyblob->cbModulus));
+    OE_CHECK(oe_memcpy_s(
+        buffer,
+        *buffer_size,
+        keybuf + sizeof(*keyblob) + keyblob->cbPublicExp,
+        keyblob->cbModulus));
 
     *buffer_size = keyblob->cbModulus;
     result = OE_OK;
@@ -526,12 +524,8 @@ oe_result_t oe_rsa_public_key_get_exponent(
      *   PublicExponent[cbPublicExp] in big endian
      *   Modulus[cbModulus] in big endian
      */
-    OE_CHECK(
-        oe_memcpy_s(
-            buffer,
-            *buffer_size,
-            keybuf + sizeof(*keyblob),
-            keyblob->cbPublicExp));
+    OE_CHECK(oe_memcpy_s(
+        buffer, *buffer_size, keybuf + sizeof(*keyblob), keyblob->cbPublicExp));
 
     *buffer_size = keyblob->cbPublicExp;
     result = OE_OK;

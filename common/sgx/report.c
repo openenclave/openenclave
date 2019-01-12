@@ -36,23 +36,21 @@ static oe_result_t _oe_parse_sgx_report_body(
     OE_STATIC_ASSERT(
         sizeof(parsed_report->identity.unique_id) >=
         sizeof(report_body->mrenclave));
-    OE_CHECK(
-        oe_memcpy_s(
-            parsed_report->identity.unique_id,
-            sizeof(parsed_report->identity.unique_id),
-            report_body->mrenclave,
-            sizeof(report_body->mrenclave)));
+    OE_CHECK(oe_memcpy_s(
+        parsed_report->identity.unique_id,
+        sizeof(parsed_report->identity.unique_id),
+        report_body->mrenclave,
+        sizeof(report_body->mrenclave)));
 
     OE_STATIC_ASSERT(
         sizeof(parsed_report->identity.signer_id) >=
         sizeof(report_body->mrsigner));
 
-    OE_CHECK(
-        oe_memcpy_s(
-            parsed_report->identity.signer_id,
-            sizeof(parsed_report->identity.signer_id),
-            report_body->mrsigner,
-            sizeof(report_body->mrsigner)));
+    OE_CHECK(oe_memcpy_s(
+        parsed_report->identity.signer_id,
+        sizeof(parsed_report->identity.signer_id),
+        report_body->mrsigner,
+        sizeof(report_body->mrsigner)));
 
     if (report_body->isvprodid > OE_INT8_MAX)
         goto done;
@@ -106,9 +104,8 @@ oe_result_t oe_parse_report(
     else if (header->report_type == OE_REPORT_TYPE_SGX_REMOTE)
     {
         sgx_quote = (const sgx_quote_t*)header->report;
-        OE_CHECK(
-            _oe_parse_sgx_report_body(
-                &sgx_quote->report_body, true, parsed_report));
+        OE_CHECK(_oe_parse_sgx_report_body(
+            &sgx_quote->report_body, true, parsed_report));
         result = OE_OK;
     }
     else
@@ -141,12 +138,11 @@ static oe_result_t _oe_sgx_get_target_info(
 
     OE_CHECK(oe_memset_s(info, sizeof(*info), 0, sizeof(*info)));
 
-    OE_CHECK(
-        oe_memcpy_s(
-            info->mrenclave,
-            sizeof(info->mrenclave),
-            sgx_report->body.mrenclave,
-            sizeof(sgx_report->body.mrenclave)));
+    OE_CHECK(oe_memcpy_s(
+        info->mrenclave,
+        sizeof(info->mrenclave),
+        sgx_report->body.mrenclave,
+        sizeof(sgx_report->body.mrenclave)));
 
     info->attributes = sgx_report->body.attributes;
     info->misc_select = sgx_report->body.miscselect;
@@ -180,9 +176,8 @@ oe_result_t oe_get_target_info_v1(
     {
         case OE_REPORT_TYPE_SGX_LOCAL:
         case OE_REPORT_TYPE_SGX_REMOTE:
-            OE_CHECK(
-                _oe_sgx_get_target_info(
-                    report, report_size, target_info_buffer, target_info_size));
+            OE_CHECK(_oe_sgx_get_target_info(
+                report, report_size, target_info_buffer, target_info_size));
             break;
         default:
             OE_RAISE(OE_INVALID_PARAMETER);

@@ -25,8 +25,8 @@ all: build
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../fileencryptor.edl --untrusted
-	$(CXX) -c $(CXXFLAGS) host.cpp
-	$(CC) -c $(CFLAGS) fileencryptor_u.c
+	$(CXX) -g -c $(CXXFLAGS) host.cpp
+	$(CC) -g -c $(CFLAGS) fileencryptor_u.c
 	$(CXX) -o file-encryptorhost host.o fileencryptor_u.o $(LDFLAGS)
 
 clean:

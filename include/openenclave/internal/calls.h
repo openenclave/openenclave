@@ -40,7 +40,8 @@ typedef void (*oe_ocall_function)(uint64_t arg_in, uint64_t* arg_out);
 **==============================================================================
 */
 
-typedef enum _oe_code {
+typedef enum _oe_code
+{
     OE_CODE_NONE = 0,
     OE_CODE_ECALL = 1,
     OE_CODE_ERET = 2,
@@ -68,7 +69,8 @@ OE_STATIC_ASSERT(sizeof(oe_code_t) == sizeof(unsigned int));
 #define OE_OCALL_BASE 0x8000
 
 /* Function numbers are 16 bit integers */
-typedef enum _oe_func {
+typedef enum _oe_func
+{
     OE_ECALL_DESTRUCTOR = OE_ECALL_BASE,
     OE_ECALL_INIT_ENCLAVE,
     OE_ECALL_CALL_ENCLAVE,

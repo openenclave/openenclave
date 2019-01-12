@@ -69,8 +69,8 @@ oe_result_t oe_add_vectored_exception_handler(
 /**
  * Remove an existing vectored exception handler.
  *
- * @param vectored_handler The pointer to a registered exception handler returned
- * from a successful oe_add_vectored_exception_handler() call.
+ * @param vectored_handler The pointer to a registered exception handler
+ * returned from a successful oe_add_vectored_exception_handler() call.
  *
  * @returns OE_OK success
  * @returns OE_INVALID_PARAMETER a parameter is invalid
@@ -725,7 +725,8 @@ oe_result_t oe_get_seal_key_v2(
 /**
  * This enumeration defines the type of a asymmetric key.
  */
-typedef enum _oe_asymmetric_key_type {
+typedef enum _oe_asymmetric_key_type
+{
     /**
      * A secp256r1/NIST P-256 elliptic curve key.
      */
@@ -741,7 +742,8 @@ typedef enum _oe_asymmetric_key_type {
 /**
  * This enumeration defines the format of the asymmetric key.
  */
-typedef enum _oe_asymmetric_key_format {
+typedef enum _oe_asymmetric_key_format
+{
     /**
      * The PEM format.
      */

@@ -47,9 +47,8 @@ static oe_result_t kdf_hmac_sha256_ctr(
      * i = 1 to CEIL(derived_key_size / hash_length), calculate
      * HMAC-SHA256(key, i || fixed_data) and concatenate the results.
      */
-    OE_CHECK(
-        oe_safe_add_sizet(
-            derived_key_size, OE_SHA256_SIZE - 1, &derived_key_size_rounded));
+    OE_CHECK(oe_safe_add_sizet(
+        derived_key_size, OE_SHA256_SIZE - 1, &derived_key_size_rounded));
 
     iters = derived_key_size_rounded / OE_SHA256_SIZE;
 
@@ -176,14 +175,13 @@ oe_result_t oe_kdf_derive_key(
     switch (mode)
     {
         case OE_KDF_HMAC_SHA256_CTR:
-            OE_CHECK(
-                kdf_hmac_sha256_ctr(
-                    key,
-                    key_size,
-                    fixed_data,
-                    fixed_data_size,
-                    derived_key,
-                    derived_key_size));
+            OE_CHECK(kdf_hmac_sha256_ctr(
+                key,
+                key_size,
+                fixed_data,
+                fixed_data_size,
+                derived_key,
+                derived_key_size));
             break;
         default:
             OE_RAISE(OE_INVALID_PARAMETER);

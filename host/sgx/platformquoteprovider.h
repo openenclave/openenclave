@@ -11,7 +11,8 @@
  * Data types and interfaces for getting platform revocation info. This
  * includes fetching CRLs as well as the Intel-defined TCB info.
  ****************************************************************************/
-typedef enum _sgx_plat_error_t {
+typedef enum _sgx_plat_error_t
+{
     SGX_PLAT_ERROR_OK,
     SGX_PLAT_ERROR_OUT_OF_MEMORY,
     SGX_PLAT_ERROR_INVALID_PARAMETER,
@@ -24,7 +25,8 @@ typedef enum _sgx_plat_error_t {
  * Data types and interfaces for getting platform revocation info. This
  * includes fetching CRLs as well as the Intel-defined TCB info.
  ****************************************************************************/
-typedef enum _sgx_ql_revocation_info_version_t {
+typedef enum _sgx_ql_revocation_info_version_t
+{
     SGX_QL_REVOCATION_INFO_VERSION_1 = 1
 } sgx_ql_revocation_info_version_t;
 
@@ -90,7 +92,8 @@ typedef void (*sgx_free_qe_identity_info_t)(
  * Data types and interfaces for configuration the platform quote provider
  * library.
  ****************************************************************************/
-typedef enum _sgx_ql_log_level_t {
+typedef enum _sgx_ql_log_level_t
+{
     SGX_QL_LOG_ERROR,
     SGX_QL_LOG_INFO
 } sgx_ql_log_level_t;

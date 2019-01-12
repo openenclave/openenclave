@@ -41,9 +41,8 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
-    printf(
-        "=== This program is used to test basic cpp exception "
-        "functionalities.\n");
+    printf("=== This program is used to test basic cpp exception "
+           "functionalities.\n");
 
     const uint32_t flags = oe_get_create_flags();
 
@@ -65,7 +64,9 @@ int main(int argc, const char* argv[])
 
     // Test the un-handled exceptions.
     unhandled_exception_func_num func_nums[] = {
-        EXCEPTION_SPECIFICATION, EXCEPTION_IN_UNWIND, UNHANDLED_EXCEPTION,
+        EXCEPTION_SPECIFICATION,
+        EXCEPTION_IN_UNWIND,
+        UNHANDLED_EXCEPTION,
     };
 
     for (uint32_t i = 0; i < OE_COUNTOF(func_nums); i++)

@@ -42,12 +42,11 @@ int oe_backtrace(void** buffer, int size)
     // The current function oe_backtrace is not expected to be inlined.
     // The rbp register contains the frame-pointer upon entry to the function.
     void** frame = NULL;
-    asm volatile(
-        "movq %%rbp, %0"
-        : "=r"(frame)
-        : /* no inputs */
-        : /* no clobbers */
-        );
+    asm volatile("movq %%rbp, %0"
+                 : "=r"(frame)
+                 : /* no inputs */
+                 : /* no clobbers */
+    );
 
     // Upon entry to a function, rsp + 0 contains the return address.
     // Generally, the first thing that a function does upong entry is

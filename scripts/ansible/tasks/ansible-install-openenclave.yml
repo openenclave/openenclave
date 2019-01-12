@@ -1,0 +1,11 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+---
+- include_tasks: ansible-install-prereqs.yml
+- include_tasks: ansible-install-openenclave-deps.yml
+
+- name: Install packages
+  apt:
+    name: open-enclave
+    state: present
+    update_cache: yes

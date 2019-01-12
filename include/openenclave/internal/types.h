@@ -51,7 +51,8 @@ OE_STATIC_ASSERT(__alignof(oe_page_t) == OE_PAGE_SIZE);
 **==============================================================================
 */
 
-typedef enum _oe_type {
+typedef enum _oe_type
+{
     OE_NONE_T,
     OE_CHAR_T,
     OE_UCHAR_T,

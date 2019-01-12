@@ -60,9 +60,8 @@ int main(int argc, const char* argv[])
     const uint32_t flags = oe_get_create_flags();
     if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
     {
-        printf(
-            "=== Skipped unsupported test in simulation mode "
-            "(report)\n");
+        printf("=== Skipped unsupported test in simulation mode "
+               "(report)\n");
         return SKIP_RETURN_CODE;
     }
 

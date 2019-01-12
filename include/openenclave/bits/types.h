@@ -95,7 +95,8 @@ typedef long long ptrdiff_t;
  * This enumeration defines values for the **enclave_type** parameter
  * passed to **oe_create_enclave()**.
  */
-typedef enum _oe_enclave_type {
+typedef enum _oe_enclave_type
+{
     OE_ENCLAVE_TYPE_UNDEFINED,
     OE_ENCLAVE_TYPE_SGX,
     OE_ENCLAVE_TYPE_TRUSTZONE,

@@ -59,7 +59,8 @@ typedef struct _oe_enclave_pe_image
     uint64_t reloc_rva;
 } oe_enclave_pe_image_t;
 
-typedef enum _oe_image_type {
+typedef enum _oe_image_type
+{
     OE_IMAGE_TYPE_NONE,
     OE_IMAGE_TYPE_ELF,
     OE_IMAGE_TYPE_PE,

@@ -8,7 +8,8 @@
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
 
-typedef enum _log_level_ {
+typedef enum _log_level_
+{
     OE_LOG_LEVEL_NONE = 0,
     OE_LOG_LEVEL_FATAL,
     OE_LOG_LEVEL_ERROR,

@@ -15,12 +15,11 @@ void get_cpuid(
     unsigned int* ecx,
     unsigned int* edx)
 {
-    asm volatile(
-        "cpuid"
-        // CPU id instruction returns values in the following registers
-        : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
-        // __leaf is passed in eax (0) and __subleaf in ecx (2)
-        : "0"(leaf), "2"(subleaf));
+    asm volatile("cpuid"
+                 // CPU id instruction returns values in the following registers
+                 : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
+                 // __leaf is passed in eax (0) and __subleaf in ecx (2)
+                 : "0"(leaf), "2"(subleaf));
 }
 
 #define OE_GETSEC_OPCODE 0x370F
@@ -70,14 +69,13 @@ bool TestGetsecInstruction()
     g_handled_sigill = HANDLED_SIGILL_NONE;
 
     // Invoke GETSEC instruction (illegal in SGX) on CAPABILITIES leaf
-    asm volatile(
-        "mov %0, %%rax\n\t" /* GETSEC */
-        "mov %1, %%rbx\n\t" /* reserved 1 */
-        "mov %2, %%rcx\n\t" /* reserved 2 */
-        "GETSEC\n\t"
-        :
-        : "i"(OE_GETSEC_CAPABILITIES), "m"(r1), "m"(r2)
-        : "rax", "rbx", "rcx");
+    asm volatile("mov %0, %%rax\n\t" /* GETSEC */
+                 "mov %1, %%rbx\n\t" /* reserved 1 */
+                 "mov %2, %%rcx\n\t" /* reserved 2 */
+                 "GETSEC\n\t"
+                 :
+                 : "i"(OE_GETSEC_CAPABILITIES), "m"(r1), "m"(r2)
+                 : "rax", "rbx", "rcx");
 
     // Verify that unused variables are untouched on continue
     if (r1 != c_r1 || r2 != c_r2)

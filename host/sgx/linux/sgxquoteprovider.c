@@ -91,9 +91,8 @@ static void _load_quote_provider()
             }
             else
             {
-                OE_TRACE_ERROR(
-                    "sgxquoteprovider: sgx_ql_set_logging_function "
-                    "not found\n");
+                OE_TRACE_ERROR("sgxquoteprovider: sgx_ql_set_logging_function "
+                               "not found\n");
             }
 
             _get_qe_identity_info =
@@ -225,12 +224,11 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
     {
         args->tcb_info = p;
         args->tcb_info_size = revocation_info->tcb_info_size;
-        OE_CHECK(
-            oe_memcpy_s(
-                args->tcb_info,
-                args->tcb_info_size,
-                revocation_info->tcb_info,
-                revocation_info->tcb_info_size));
+        OE_CHECK(oe_memcpy_s(
+            args->tcb_info,
+            args->tcb_info_size,
+            revocation_info->tcb_info,
+            revocation_info->tcb_info_size));
         // Add null terminator
         args->tcb_info[args->tcb_info_size++] = 0;
         p += args->tcb_info_size;
@@ -242,12 +240,11 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
     {
         args->tcb_issuer_chain = p;
         args->tcb_issuer_chain_size = revocation_info->tcb_issuer_chain_size;
-        OE_CHECK(
-            oe_memcpy_s(
-                args->tcb_issuer_chain,
-                args->tcb_issuer_chain_size,
-                revocation_info->tcb_issuer_chain,
-                revocation_info->tcb_issuer_chain_size));
+        OE_CHECK(oe_memcpy_s(
+            args->tcb_issuer_chain,
+            args->tcb_issuer_chain_size,
+            revocation_info->tcb_issuer_chain,
+            revocation_info->tcb_issuer_chain_size));
         // Add null terminator
         args->tcb_issuer_chain[args->tcb_issuer_chain_size++] = 0;
         p += args->tcb_issuer_chain_size;
@@ -262,12 +259,11 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
         {
             args->crl[i] = p;
             args->crl_size[i] = revocation_info->crls[i].crl_data_size;
-            OE_CHECK(
-                oe_memcpy_s(
-                    args->crl[i],
-                    args->crl_size[i],
-                    revocation_info->crls[i].crl_data,
-                    revocation_info->crls[i].crl_data_size));
+            OE_CHECK(oe_memcpy_s(
+                args->crl[i],
+                args->crl_size[i],
+                revocation_info->crls[i].crl_data,
+                revocation_info->crls[i].crl_data_size));
             // CRL is in DER format. Null not added.
             p += args->crl_size[i];
             OE_TRACE_INFO(
@@ -280,12 +276,11 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
             args->crl_issuer_chain[i] = p;
             args->crl_issuer_chain_size[i] =
                 revocation_info->crls[i].crl_issuer_chain_size;
-            OE_CHECK(
-                oe_memcpy_s(
-                    args->crl_issuer_chain[i],
-                    args->crl_issuer_chain_size[i],
-                    revocation_info->crls[i].crl_issuer_chain,
-                    revocation_info->crls[i].crl_issuer_chain_size));
+            OE_CHECK(oe_memcpy_s(
+                args->crl_issuer_chain[i],
+                args->crl_issuer_chain_size[i],
+                revocation_info->crls[i].crl_issuer_chain,
+                revocation_info->crls[i].crl_issuer_chain_size));
             // Add null terminator
             args->crl_issuer_chain[i][args->crl_issuer_chain_size[i]++] = 0;
             p += args->crl_issuer_chain_size[i];
@@ -369,12 +364,11 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args)
     {
         args->qe_id_info = p;
         args->qe_id_info_size = identity->qe_id_info_size;
-        OE_CHECK(
-            oe_memcpy_s(
-                args->qe_id_info,
-                args->qe_id_info_size,
-                identity->qe_id_info,
-                identity->qe_id_info_size));
+        OE_CHECK(oe_memcpy_s(
+            args->qe_id_info,
+            args->qe_id_info_size,
+            identity->qe_id_info,
+            identity->qe_id_info_size));
         // Add null terminator
         args->qe_id_info[args->qe_id_info_size++] = 0;
         p += args->qe_id_info_size;
@@ -386,12 +380,11 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args)
     {
         args->issuer_chain = p;
         args->issuer_chain_size = identity->issuer_chain_size;
-        OE_CHECK(
-            oe_memcpy_s(
-                args->issuer_chain,
-                args->issuer_chain_size,
-                identity->issuer_chain,
-                identity->issuer_chain_size));
+        OE_CHECK(oe_memcpy_s(
+            args->issuer_chain,
+            args->issuer_chain_size,
+            identity->issuer_chain,
+            identity->issuer_chain_size));
         // Add null terminator
         args->issuer_chain[args->issuer_chain_size++] = 0;
         p += args->issuer_chain_size;
