@@ -10,9 +10,16 @@ For details on Linux Host development see the [Linux ARM documentation.](linux_a
 
 You need to set up a development environment to build the Windows binaries:
 
-- [Microsoft Visual Studio 2017](https://www.visualstudio.com/downloads/)
-    - _Microsoft Visual Studio 2015 is also supported_
-- [Windows 10 SDK (10.0.16299)](https://developer.microsoft.com/en-us/windows/downloads/sdk-archive)
+- [Microsoft Visual Studio 2017](https://www.visualstudio.com/downloads/)  
+  In the Visual Studio Installer, the following is required:
+  - Workloads:
+    - Desktop development with C++
+  - Individual components:
+    - VC++ 2017 version 15.9 v14.19 Libs for Spectre (ARM)
+    - VC++ 2017 version 15.9 v14.19 Libs for Spectre (x86 and x64)
+    - Visual C++ tools for CMake
+    - Windows 10 SDK (10.0.16299 or later)
+  - The installer may automatically select dependent items.
 
 To support Intel SGX on Windows, the Open Enclave SDK currently relies on having the 
 [Intel® Software Guard Extensions (SGX) SDK](https://software.intel.com/sites/default/files/managed/d1/0a/Intel-SGX-SDK-Release-Notes-for-Windows-OS.pdf)
@@ -52,15 +59,14 @@ git clone https://github.com/Microsoft/openenclave --recurse-submodules -b featu
 
 ## Building
 
-To build for Windows open the following solution with Visual Studio 2015 or 2017.
+To build for Windows open the following CMakeLists.txt file with Visual Studio 2017 via File -> Open -> CMake...:
 
 ```
- openenclave\new_platforms\OpenEnclave.sln
+ openenclave\new_platforms\CMakeLists.txt
  ```
 
 The solution contains all libraries and samples needed to build the SDK. 
-Build for the chosen platform (x86, x64, or ARM) and configuration (Debug, DebugSimulation,
-or DebugOpteeSimulation).
+From the configuration drop-down in the top toolbar in Visual Studio, select the platform, TEE and configuration combination to build. The first time, this kicks off CMake in the background to configure the project. When done, select CMake -> Build All.
 
 ### Note on configuration support
 
@@ -68,25 +74,27 @@ For this preview, the SDK does not fully support building SGX enclaves targeted 
 The configuration options supported allow for debug builds that can run on real hardware and
 debug simulated builds that can be used as part of your development cycle.
 
-**Note:** The solution can build ARM Hosts for Windows running in the REE. This preview does not have complete support for this yet, but it is coming soon. Building for ARM requires the [Windows Driver Kit for ARM](https://docs.microsoft.com/en-us/windows-hardware/drivers/download-the-wdk).
+**Note:** The solution can build ARM Hosts for Windows running in the REE. This preview does not have complete support for this yet, but it is coming soon. Building for ARM requires the [Windows Driver Kit for ARM](https://docs.microsoft.com/en-us/windows-hardware/drivers/download-the-wdk) (note that the version of the WDK must be equal to the latest version of the Windows 10 SDK installed on the build system).
 
-| Configuration        | Platform    | Usage                                                                            |
-| -------------------- | ----------- | -------------------------------------------------------------------------------- |
-| DebugSimulation      | x86/x64     | Builds an SGX simulated enclave and x86 or x64 host app                             |
-| DebugSimulation      | ARM         | Builds a OP-TEE simulated enclave and ARM host app                               |
-| DebugOpteeSimulation | x86/x64/ARM | Builds a OP-TEE simulated enclave and x86, x64, or ARM host app                       |
-| Debug                | x86/x64     | Builds an SGX enclave and x86 or x64 host app                                       |
-| Debug                | ARM         | An ARM Windows host app. A non-simulated OP-TEE enclave must be built from Linux  (e.g., a bash on Ubuntu on Windows shell). |
+| Configuration              | Platform  | Usage                                                  |
+| -------------------------- | --------- | ------------------------------------------------------ |
+| x86-SGX-Debug              | x86       | Builds an x86 SGX enclave and an x86 host app          |
+| x86-SGX-Simulation-Debug   | x86       | Builds an x86 SGX simulated enclave and x86 host app   |
+| x64-SGX-Debug              | x64       | Builds an x64 SGX enclave and an x64 host app          |
+| x64-SGX-Simulation-Debug   | x64       | Builds an x64 SGX simulated enclave and x64 host app   |
+| arm-ARMTZ-Debug            | ARM       | An ARM Windows host app *                              |
+| arm-ARMTZ-Release          | ARM       | An ARM Windows host app (optimizations & no symbols) * |
+| x86-ARMTZ-Simulation-Debug | x86       | Builds an OP-TEE simulated enclave and an x86 host app |
+
+* A non-simulated OP-TEE enclave must be built on Linux or using Bash on Ubuntu on Windows via the Windows Subsystem for Linux (WSL).
 
 ### Build Artifacts
 
 All built binaries can be found under:
 
 ```
-openenclave\new_platforms\bin\<Platform>\<Configuration>
+%USERPROFILE%\<workspace hash>\<configuration>
 ```
-
-Note that DebugSimulation binaries are under `<Platform>\Simulation`.
 
 # Simulation
 The Open Enclave SDK adds two additional methods of simulated debugging with Windows as a Host.
@@ -97,14 +105,14 @@ This method uses the Intel SGX SDK for emulation support. Simulation mode does n
 
 The simulator implements a Visual Studio extension that allows you to debug your enclave using the Intel SGX Debugger. Both x86 and x64 platforms are supported.
 
-To build using SGX Simulation, build the solution against the `DebugSimulation` configuration.
+To build using SGX Simulation, build using one of the following configurations: `x86-SGX-Simulation-Debug` or `x64-SGX-Simulation-Debug`.
 
 ## OP-TEE Simulation
 
-OP-TEE Simulation Mode compiles your enclave against a set of in-process libraries that simulate the subset of the functionality that is required from OP-TEE, including ECALL and OCALL support.
+OP-TEE Simulation mode compiles your enclave against a set of in-process libraries that simulate the subset of the functionality that is required from OP-TEE, including ECALL and OCALL support.
 This is intended to serve as a quick verification of your code to decrease turn-around time. No hardware environment is emulated.
 
-To build using OP-TEE Simulation, build using the `DebugOpteeSimulation` configuration in the solution file.
+To build using OP-TEE Simulation, build using the `x86-ARMTZ-Simulation-Debug` configuration.
 
 # Next Steps
 
