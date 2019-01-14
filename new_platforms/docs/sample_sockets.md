@@ -76,9 +76,9 @@ Get started with the Grapeboard [here](grapeboard.md).
 1) Build the Open Enclave SDK, along with samples, according to the [Linux Development](linux_arm_dev.md#building-the-sdk) guide.
 2) Copy the following from your development machine to the Grapeboard:
     ```
-    scp samples/sockets/Untrusted/SampleClientApp/sampleclientapp root@<ip>:
-    scp samples/sockets/Untrusted/SampleServerApp/sampleserverapp root@<ip>:
-    scp bin/optee/samples/sockets/aac3129e-c244-4e09-9e61-d4efcf31bca3.ta root@<ip>:/lib/optee_armtz
+    scp scripts/build/aarch64/out/bin/sampleclientapp root@<ip>:
+    scp scripts/build/aarch64/out/bin/sampleserverapp root@<ip>:
+    scp scripts/build/aarch64/out/bin/aac3129e-c244-4e09-9e61-d4efcf31bca3.ta root@<ip>:/lib/optee_armtz
     ```
 3) On the target, start the TEE supplicant.
     ```

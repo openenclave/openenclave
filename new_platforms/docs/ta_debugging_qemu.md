@@ -234,15 +234,15 @@ do the following on the Normal World XTerm window:
 
 
 ```
-cp /mnt/home/openenclave_qemu/emu_v7/new_platforms/bin/optee/tests/3156152a-19d1-423c-96ea-5adf5675798f.ta /lib/optee_armtz
-/mnt/home/openenclave_qemu/emu_v7/new_platforms/tests/oetests_host/oetests_host
+cp /mnt/home/openenclave_qemu/emu_v7/new_platforms/scripts/build/arm/out/bin/3156152a-19d1-423c-96ea-5adf5675798f.ta /lib/optee_armtz
+/mnt/home/openenclave_qemu/emu_v7/new_platforms/scripts/build/arm/out/bin/oetests_host
 ```
 
 For ARMv8:
 
 ```
-cp /mnt/home/openenclave_qemu/emu_v8/new_platforms/bin/optee/tests/3156152a-19d1-423c-96ea-5adf5675798f.ta /lib/optee_armtz
-/mnt/home/openenclave_qemu/emu_v8/new_platforms/tests/oetests_host/oetests_host
+cp /mnt/home/openenclave_qemu/emu_v8/new_platforms/scripts/build/aarch64/out/bin/3156152a-19d1-423c-96ea-5adf5675798f.ta /lib/optee_armtz
+/mnt/home/openenclave_qemu/emu_v8/new_platforms/scripts/build/aarch64/out/bin/oetests_host
 ```
 
 Notice how it is not necessary to copy the host application into the emulator,
@@ -265,7 +265,7 @@ For ARMv7:
 gdb-multiarch
 
 target remote localhost:1234
-symbol-file ./emu_v7/new_platforms/tests/oetests_host/oetests_host
+symbol-file ./emu_v7/new_platforms/scripts/build/arm/out/bin/oetests_host
 
 b main
 c
@@ -279,7 +279,7 @@ And ARMv8:
 gdb-multiarch
 
 target remote localhost:1234
-symbol-file ./emu_v7/new_platforms/tests/oetests_host/oetests_host
+symbol-file ./emu_v8/new_platforms/scripts/build/aarch64/out/bin/oetests_host
 
 b main
 c
@@ -320,7 +320,7 @@ For ARMv7:
 cd $HOME/openenclave_qemu
 
 ./emulation/toolchains/aarch32/bin/arm-linux-gnueabihf-objdump -x \
-    ./emu_v7/new_platforms/bin/optee/tests/3156152a-19d1-423c-96ea-5adf5675798f.elf | less
+    ./emu_v7/new_platforms/scripts/build/arm/out/bin/3156152a-19d1-423c-96ea-5adf5675798f.elf | less
 ```
 And ARMv8:
 
@@ -330,7 +330,7 @@ And ARMv8:
 cd $HOME/openenclave_qemu
 
 ./emulation/toolchains/aarch64/bin/aarch64-linux-gnu-objdump -x \
-    ./emu_v8/new_platforms/bin/optee/tests/3156152a-19d1-423c-96ea-5adf5675798f.elf | less
+    ./emu_v8/new_platforms/scripts/build/aarch64/out/bin/3156152a-19d1-423c-96ea-5adf5675798f.elf | less
 ```
 
 In the `Sections` table, you will see output like this:
@@ -361,14 +361,14 @@ Switch back to `TERM 2` where GDB is running and type, for ARMv7:
 
 ```
 <CTRL-c>
-add-symbol-file ./emu_v7/new_platforms/bin/optee/tests/3156152a-19d1-423c-96ea-5adf5675798f.elf 0x109020
+add-symbol-file ./emu_v7/new_platforms/scripts/build/arm/out/bin/3156152a-19d1-423c-96ea-5adf5675798f.elf 0x109020
 ```
 
 And ARMv8:
 
 ```
 <CTRL-c>
-add-symbol-file ./emu_v8/new_platforms/bin/optee/tests/3156152a-19d1-423c-96ea-5adf5675798f.elf 0x40005020
+add-symbol-file ./emu_v8/new_platforms/scripts/build/aarch64/out/bin/3156152a-19d1-423c-96ea-5adf5675798f.elf 0x40005020
 ```
 
 **Note:** The different addresses in the command samples are intentional, the
