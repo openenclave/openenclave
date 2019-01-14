@@ -1,11 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-ifdef USE_LIBSGX
-	DIRS = sgx-driver dcap
-else
-	DIRS = packages isgx aesm
-endif
+DIRS = packages isgx aesm
 
 define NL
 
