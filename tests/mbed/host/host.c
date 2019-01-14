@@ -37,20 +37,14 @@ char* find_data_file(char* str, size_t size)
 void datafileloc(char* data_file_name, char* path)
 {
     char* tail = "3rdparty/mbedtls/mbedtls/tests/suites/";
-    char* seperator;
+    char* separator = getenv("PROJECT_SOURCE_DIR");
 
-    if (getcwd(path, 1024) != NULL)
+    if (separator != NULL)
         fprintf(stdout, "Current working dir: %s\n", path);
     else
-        perror("getcwd() error");
-    seperator = strstr(
-        path, "build"); /* Find address at which string to be separated */
-    if (seperator == NULL)
-    {
-        printf("\n seperator doesn't get the address\n");
-    }
+        perror("getenv() error");
 
-    *seperator = '\0'; /* separating string */
+    memcpy(path, separator, strlen(separator));
     strcat(path, tail);
     strcat(path, data_file_name);
 
