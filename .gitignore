@@ -21,6 +21,10 @@ prereqs/dcap/*.deb
 prereqs/packages/.packages
 prereqs/sgx-driver/*.bin
 
+new_platforms/scripts/build
+new_platforms/scripts/toolchains
+new_platforms/docs/api
+
 3rdparty/SGXSDK/
 helloworld_t.*
 helloworld_u.*

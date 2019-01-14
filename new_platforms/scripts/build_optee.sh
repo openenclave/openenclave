@@ -28,7 +28,7 @@ sudo apt-get -y install android-tools-adb android-tools-fastboot autoconf \
     libssl-dev libtool make mtools netcat python-crypto python-serial \
     python-wand unzip uuid-dev xdg-utils xterm xz-utils zlib1g-dev \
     gcc-arm-linux-gnueabi graphviz gcc-aarch64-linux-gnu \
-    g++-aarch64-linux-gnu sshpass
+    g++-aarch64-linux-gnu sshpass cmake
 
 # -------------------------------------
 # Download ARM Toolchain
