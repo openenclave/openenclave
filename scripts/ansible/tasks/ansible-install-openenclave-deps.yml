@@ -30,8 +30,7 @@
       gcc,
       gdb,
       g++,
-      pkg-config,
-      az-dcap-client
+      pkg-config
     ]
     state: present
     update_cache: yes

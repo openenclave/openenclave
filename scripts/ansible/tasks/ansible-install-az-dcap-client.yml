@@ -1,0 +1,20 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+---
+- name: Add Microsoft APT repo key
+  apt_key: url={{item}} state=present
+  with_items:
+    - https://packages.microsoft.com/keys/microsoft.asc
+
+- name: Add Microsoft APT repositories
+  apt_repository: repo={{item}} state=present update_cache=yes
+  with_items:
+    - deb [arch=amd64] https://packages.microsoft.com/ubuntu/16.04/prod xenial main
+
+- name: Install az-dcap-client
+  apt:
+    name: [
+      az-dcap-client
+    ]
+    state: present
+    update_cache: yes
