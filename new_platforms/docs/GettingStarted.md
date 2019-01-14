@@ -25,7 +25,9 @@ summary.
   - [Windows 10 WDK](https://docs.microsoft.com/en-us/windows-hardware/drivers/download-the-wdk)
   
 **Note**: The version of the Windows 10 WDK you install must match the version
-of the latest Windows 10 SDK installed on the system.
+of the latest Windows 10 SDK installed on the system. If you require a WDK
+version prior to the latest, these are available
+[here](https://docs.microsoft.com/en-us/windows-hardware/drivers/other-wdk-downloads).
 
 After cloning, open Visual Studio 2017 and use File -> Open -> CMake...,
 then select the `CMakeLists.txt` file under `new_platforms`.
