@@ -59,11 +59,6 @@ C:\>where bash
 C:\Program Files\Git\bin\bash.exe
 ```
 
-Special Note: If you have WSL installed on your platform, it will most likely show up as the first item as
-c:\Windows\System32\bash.exe and the build fails as the auto-generation of alltypes.h fails. This is being
-addressed with Issue #1302 .
-```
-
 Clang
 ---------------------------------
 Install the latest version of Clang and add the LLVM folder (typically C:\Program Files\LLVM\bin)
