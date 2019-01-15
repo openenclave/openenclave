@@ -24,6 +24,11 @@ $HostLibraries = @(
     "oestdio_host"
 )
 
+$OPTEESimLibraries = @(
+    "oeenclave_opteesim",
+    "oehost_opteesim"
+)
+
 $Extensions = @(
     "lib",
     "pdb"
@@ -40,14 +45,23 @@ Function Copy-LibsWorker($Libraries, $SourceLeafPath, $DestinationLeafPath)
     }
 }
 
-Function Copy-Libs($SourceLeafPath, $DestinationLeafPath, [Switch]$WithEnclaveLibraries, [Switch]$WithHostLibraries)
+Function Copy-Libs(
+    $SourceLeafPath,
+    $DestinationLeafPath,
+    [Switch]$WithEnclaveLibraries,
+    [Switch]$WithHostLibraries,
+    [Switch]$WithOPTEESimLibraries)
 {
     if ($WithEnclaveLibraries) {
-        Copy-LibsWorker $EnclaveLibraries $SourceLeafPath $DestinationLeafPath
+        Copy-LibsWorker $EnclaveLibraries  $SourceLeafPath $DestinationLeafPath
     }
 
     if ($WithHostLibraries) {
-        Copy-LibsWorker $HostLibraries $SourceLeafPath $DestinationLeafPath
+        Copy-LibsWorker $HostLibraries     $SourceLeafPath $DestinationLeafPath
+    }
+
+    if ($WithOPTEESimLibraries) {
+        Copy-LibsWorker $OPTEESimLibraries $SourceLeafPath $DestinationLeafPath
     }
 }
 
@@ -73,7 +87,7 @@ Copy-Libs build\x64\sgxsim\out\lib\Debug $Leaves[3] -WithEnclaveLibraries -WithH
 Copy-Libs build\arm\tz\out\lib\Debug     $Leaves[4] -WithHostLibraries
 
 # TrustZone Simulation
-Copy-Libs build\x86\tzsim\out\lib\Debug  $Leaves[5] -WithEnclaveLibraries -WithHostLibraries
+Copy-Libs build\x86\tzsim\out\lib\Debug  $Leaves[5] -WithEnclaveLibraries -WithHostLibraries -WithOPTEESimLibraries
 
 # Finally, copy the headers from the source tree.
 Copy-Item -Recurse -Path $ENV:SOURCES_PATH\include\openenclave -Destination $Leaves[6]
