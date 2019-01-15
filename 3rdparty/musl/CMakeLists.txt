@@ -45,7 +45,7 @@ ExternalProject_Add(musl_includes
       ${MUSL_DIR}/arch/${ARCH}/pthread_arch.h
   CONFIGURE_COMMAND
     ${CMAKE_COMMAND} -E chdir ${MUSL_DIR}
-    ${BASH}  -x ./configure
+    ${BASH} -x ./configure
       --includedir=${MUSL_INCLUDES}
       CFLAGS=${MUSL_CFLAGS}
       CC=${MUSL_CC}
