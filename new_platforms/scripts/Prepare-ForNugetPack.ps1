@@ -12,12 +12,15 @@ $Leaves = @(
     "nuget\build\native\include"
 )
 
-$Libraries = @(
+$EnclaveLibraries = @(
     "oeenclave",
-    "oehost",
     "oesocket_enc",
+    "oestdio_enc"
+)
+
+$HostLibraries = @(
+    "oehost",
     "oesocket_host",
-    "oestdio_enc",
     "oestdio_host"
 )
 
@@ -27,13 +30,24 @@ $Extensions = @(
 )
 
 # Helper Functions
-Function Copy-Libs($SourceLeafPath, $DestinationLeafPath)
+Function Copy-LibsWorker($Libraries, $SourceLeafPath, $DestinationLeafPath)
 {
     ForEach ($Library in $Libraries) {
         ForEach ($Extension in $Extensions) {
             $SourceFilePath = Join-Path $SourceLeafPath "$Library.$Extension"
             Copy-Item -Path $SourceFilePath -Destination $DestinationLeafPath
         }
+    }
+}
+
+Function Copy-Libs($SourceLeafPath, $DestinationLeafPath, [Switch]$WithEnclaveLibraries, [Switch]$WithHostLibraries)
+{
+    if ($WithEnclaveLibraries) {
+        Copy-LibsWorker $EnclaveLibraries $SourceLeafPath $DestinationLeafPath
+    }
+
+    if ($WithHostLibraries) {
+        Copy-LibsWorker $HostLibraries $SourceLeafPath $DestinationLeafPath
     }
 }
 
@@ -49,18 +63,18 @@ Copy-Item -Recurse -Path $ENV:SOURCES_PATH\new_platforms\nuget -Destination .\nu
 # Now fetch the build output for each platform/TEE/target combination.
 
 # SGX Hardware
-Copy-Libs build\x86\sgx\out\lib\Debug    $Leaves[0]
-Copy-Libs build\x64\sgx\out\lib\Debug    $Leaves[1]
+Copy-Libs build\x86\sgx\out\lib\Debug    $Leaves[0] -WithEnclaveLibraries -WithHostLibraries
+Copy-Libs build\x64\sgx\out\lib\Debug    $Leaves[1] -WithEnclaveLibraries -WithHostLibraries
 
 # SGX Simulation
-Copy-Libs build\x86\sgxsim\out\lib\Debug $Leaves[2]
-Copy-Libs build\x64\sgxsim\out\lib\Debug $Leaves[3]
+Copy-Libs build\x86\sgxsim\out\lib\Debug $Leaves[2] -WithEnclaveLibraries -WithHostLibraries
+Copy-Libs build\x64\sgxsim\out\lib\Debug $Leaves[3] -WithEnclaveLibraries -WithHostLibraries
 
 # TrustZone Hardware
-Copy-Libs build\arm\tz\out\lib\Debug     $Leaves[4]
+Copy-Libs build\arm\tz\out\lib\Debug     $Leaves[4] -WithHostLibraries
 
 # TrustZone Simulation
-Copy-Libs build\x86\tzsim\out\lib\Debug  $Leaves[5]
+Copy-Libs build\x86\tzsim\out\lib\Debug  $Leaves[5] -WithEnclaveLibraries -WithHostLibraries
 
 # Finally, copy the headers from the source tree.
 Copy-Item -Recurse -Path $ENV:SOURCES_PATH\include\openenclave -Destination $Leaves[6]
