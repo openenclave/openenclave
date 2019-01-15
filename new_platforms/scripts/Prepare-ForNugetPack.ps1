@@ -39,7 +39,7 @@ Function Copy-Libs($SourceLeafPath, $DestinationLeafPath)
 
 # Create Directory Structure
 ForEach ($Leaf in $Leaves) {
-    New-Item $Leaf -ItemType Directory
+    New-Item $Leaf -ItemType Directory | Out-Null
 }
 
 # Fetch the basic contents to be included in the NuGet package from the source
@@ -49,18 +49,18 @@ Copy-Item -Recurse -Path $ENV:SOURCES_PATH\new_platforms\nuget -Destination .\nu
 # Now fetch the build output for each platform/TEE/target combination.
 
 # SGX Hardware
-Copy-Libs build\x86\sgx\out\Debug\lib    $Leaves[0]
-Copy-Libs build\x64\sgx\out\Debug\lib    $Leaves[1]
+Copy-Libs build\x86\sgx\out\lib\Debug    $Leaves[0]
+Copy-Libs build\x64\sgx\out\lib\Debug    $Leaves[1]
 
 # SGX Simulation
-Copy-Libs build\x86\sgxsim\out\Debug\lib $Leaves[2]
-Copy-Libs build\x64\sgxsim\out\Debug\lib $Leaves[3]
+Copy-Libs build\x86\sgxsim\out\lib\Debug $Leaves[2]
+Copy-Libs build\x64\sgxsim\out\lib\Debug $Leaves[3]
 
 # TrustZone Hardware
-Copy-Libs build\arm\tz\out\Debug\lib     $Leaves[4]
+Copy-Libs build\arm\tz\out\lib\Debug     $Leaves[4]
 
 # TrustZone Simulation
-Copy-Libs build\x86\tzsim\out\Debug\lib  $Leaves[5]
+Copy-Libs build\x86\tzsim\out\lib\Debug  $Leaves[5]
 
 # Finally, copy the headers from the source tree.
 Copy-Item -Recurse -Path $ENV:SOURCES_PATH\include\openenclave -Destination $Leaves[6]
