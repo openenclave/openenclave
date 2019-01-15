@@ -121,7 +121,7 @@ hardware. You can use GDB or any GDB-compatible GUI to debug your code.
 ## Windows Host Application and SGX Enclave (Intel SDK Required)
 
 Windows SGX Enclave support works on any device with a SGX-capable processor.
-To find out if your processor supports SGX, consult [Intel ARK](https://ark.inte.com). An example device with such support is the NUC7i3BNK.
+To find out if your processor supports SGX, consult [Intel ARK](https://ark.intel.com). An example device with such support is the NUC7i3BNK.
 
 * [Building an Open Enclave SGX Enclave on Windows](win_sgx_dev.md)
 * [Running the Sample Server on SGX](sample_sockets.md#building-for-sgx)
