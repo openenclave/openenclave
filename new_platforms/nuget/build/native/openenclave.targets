@@ -1,0 +1,83 @@
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <!-- Relative paths to the Open Enclave SDK Libraries -->
+    <PropertyGroup>
+        <SgxHwX86Dbg>$(MSBuildThisFileDirectory)..\..\lib\native\v141\sgx\hw\x86\Debug</SgxHwX86Dbg>
+        <SgxHwX64Dbg>$(MSBuildThisFileDirectory)..\..\lib\native\v141\sgx\hw\x64\Debug</SgxHwX64Dbg>
+        <SgxSimX86Dbg>$(MSBuildThisFileDirectory)..\..\lib\native\v141\sgx\sim\x86\Debug</SgxSimX86Dbg>
+        <SgxSimX64Dbg>$(MSBuildThisFileDirectory)..\..\lib\native\v141\sgx\sim\x64\Debug</SgxSimX64Dbg>
+        <TzHwArmDbg>$(MSBuildThisFileDirectory)..\..\lib\native\v141\tz\hw\arm\Debug</TzHwArmDbg>
+        <TzSimX86Dbg>$(MSBuildThisFileDirectory)..\..\lib\native\v141\tz\sim\x86\Debug</TzSimX86Dbg>
+    </PropertyGroup>
+
+    <!-- Compilation Rules for Enclaves and Host Applications -->
+    <ClCompile>
+        <!-- Headers -->
+        <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+
+    <!-- Linking Rules for Enclaves -->
+    <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave'">
+        <Link>
+            <!-- x86-SGX-Debug -->
+            <AdditionalDependencies Condition="'$(Configuration)' == 'SGX-Debug' And ('$(Platform)' == 'Win32' Or '$(Platform)' == 'x86')">
+                $(SgxHwX86Dbg)\oeenclave.lib;$(SgxHwX86Dbg)\oesocket_enc.lib;$(SgxHwX86Dbg)\oestdio_enc.lib;%(AdditionalDependencies)
+            </AdditionalDependencies>
+
+            <!-- x64-SGX-Debug -->
+            <AdditionalDependencies Condition="'$(Configuration)' == 'SGX-Debug' And '$(Platform)' == 'x64'">
+                $(SgxHwX64Dbg)\oeenclave.lib;$(SgxHwX64Dbg)\oesocket_enc.lib;$(SgxHwX64Dbg)\oestdio_enc.lib;%(AdditionalDependencies)
+            </AdditionalDependencies>
+
+            <!-- x86-SGX-Simulation-Debug -->
+            <AdditionalDependencies Condition="'$(Configuration)' == 'SGX-Simulation-Debug' And ('$(Platform)' == 'Win32' Or '$(Platform)' == 'x86')">
+                $(SgxSimX86Dbg)\oeenclave.lib;$(SgxSimX86Dbg)\oesocket_enc.lib;$(SgxSimX86Dbg)\oestdio_enc.lib;%(AdditionalDependencies)
+            </AdditionalDependencies>
+
+            <!-- x64-SGX-Simulation-Debug -->
+            <AdditionalDependencies Condition="'$(Configuration)' == 'SGX-Simulation-Debug' And '$(Platform)' == 'x64'">
+                $(SgxSimX64Dbg)\oeenclave.lib;$(SgxSimX64Dbg)\oesocket_enc.lib;$(SgxSimX64Dbg)\oestdio_enc.lib;%(AdditionalDependencies)
+            </AdditionalDependencies>
+
+            <!-- x86-ARMTZ-Simulation-Debug -->
+            <AdditionalDependencies Condition="'$(Configuration)' == 'ARMTZ-Simulation-Debug' And ('$(Platform)' == 'Win32' Or '$(Platform)' == 'x86')">
+                $(TzSimX86Dbg)\oeenclave.lib;$(TzSimX86Dbg)\oesocket_enc.lib;$(TzSimX86Dbg)\oestdio_enc.lib;$(TzSimX86Dbg)\oeenclave_opteesim.lib;%(AdditionalDependencies)
+            </AdditionalDependencies>
+        </Link>
+    </ItemDefinitionGroup>
+
+    <!-- Linking Rules for Host Applications -->
+    <ItemDefinitionGroup Condition="'$(OEType)' == 'Host'">
+        <Link>
+            <!-- x86-SGX-Debug -->
+            <AdditionalDependencies Condition="'$(Configuration)' == 'SGX-Debug' And ('$(Platform)' == 'Win32' Or '$(Platform)' == 'x86')">
+                $(SgxHwX86Dbg)\oehost.lib;$(SgxHwX86Dbg)\oesocket_host.lib;$(SgxHwX86Dbg)\oestdio_host.lib;%(AdditionalDependencies)
+            </AdditionalDependencies>
+
+            <!-- x64-SGX-Debug -->
+            <AdditionalDependencies Condition="'$(Configuration)' == 'SGX-Debug' And '$(Platform)' == 'x64'">
+                $(SgxHwX64Dbg)\oehost.lib;$(SgxHwX64Dbg)\oesocket_host.lib;$(SgxHwX64Dbg)\oestdio_host.lib;%(AdditionalDependencies)
+            </AdditionalDependencies>
+
+            <!-- x86-SGX-Simulation-Debug -->
+            <AdditionalDependencies Condition="'$(Configuration)' == 'SGX-Simulation-Debug' And ('$(Platform)' == 'Win32' Or '$(Platform)' == 'x86')">
+                $(SgxSimX86Dbg)\oehost.lib;$(SgxSimX86Dbg)\oesocket_host.lib;$(SgxSimX86Dbg)\oestdio_host.lib;%(AdditionalDependencies)
+            </AdditionalDependencies>
+
+            <!-- x64-SGX-Simulation-Debug -->
+            <AdditionalDependencies Condition="'$(Configuration)' == 'SGX-Simulation-Debug' And '$(Platform)' == 'x64'">
+                $(SgxSimX64Dbg)\oehost.lib;$(SgxSimX64Dbg)\oesocket_host.lib;$(SgxSimX64Dbg)\oestdio_host.lib;%(AdditionalDependencies)
+            </AdditionalDependencies>
+
+            <!-- arm-ARMTZ-Debug -->
+            <AdditionalDependencies Condition="'$(Configuration)' == 'ARMTZ-Debug' And '$(Platform)' == 'ARM'">
+                $(TzHwArmDbg)\oehost.lib;$(TzHwArmDbg)\oesocket_host.lib;$(TzHwArmDbg)\oestdio_host.lib;%(AdditionalDependencies)
+            </AdditionalDependencies>
+
+            <!-- x86-ARMTZ-Simulation-Debug -->
+            <AdditionalDependencies Condition="'$(Configuration)' == 'ARMTZ-Simulation-Debug' And ('$(Platform)' == 'Win32' Or '$(Platform)' == 'x86')">
+                $(TzSimX86Dbg)\oehost.lib;$(TzSimX86Dbg)\oesocket_host.lib;$(TzSimX86Dbg)\oestdio_host.lib;$(TzSimX86Dbg)\oehost_opteesim.lib;%(AdditionalDependencies)
+            </AdditionalDependencies>
+        </Link>
+    </ItemDefinitionGroup>
+</Project>
