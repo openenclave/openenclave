@@ -8,4 +8,3 @@
      - include_tasks: tasks/ansible-install-openenclave-deps.yml
      - include_tasks: tasks/ansible-install-sgx-driver.yml
      - include_tasks: tasks/ansible-install-sgx-packages.yml
-     - include_tasks: tasks/ansible-install-openenclave.yml
