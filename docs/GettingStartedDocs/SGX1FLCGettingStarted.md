@@ -15,47 +15,40 @@ git clone https://github.com/Microsoft/openenclave.git
 
 This creates a source tree under the directory called openenclave.
 
-## Install project prerequisites
+## Install project requirements
 
-Ansible is required to install the project prerequisites. If not already installed, you can install it by running: `scripts/ansible/install-ansible.sh`
-The ansible-playbook [scripts/ansible/ansible-include_task.yml](/scripts/ansible/ansible-include_task.yml) was created to be able to run pre-defined ansible tasks on a target host. All the tasks required to install the prerequisites can be found in the following ansible task list : [scripts/ansible/tasks/ansible-install-prereqs.yml](/scripts/ansible/tasks/ansible-install-prereqs.yml) To make installing the prerequisites less tedious execute the following commands from the root of the source tree:
-
+First, change directory into the openenclave repository:
 ```bash
 cd openenclave
-ansible-playbook scripts/ansible/ansible-include_task.yml --extra-vars "target=localhost included_task=tasks/ansible-install-prereqs.yml"
 ```
 
-If you are running in an Azure Confidential Compute VM and would like to use the attestation features, you should also run the following command from the root of the source tree:
-
+Ansible is required to install the project requirements. If not already installed, you can install it by running:
 ```bash
-sudo make -C prereqs/az-dcap-client install
+sudo scripts/ansible/install-ansible.sh
 ```
 
-## Install Intel SGX FLC support software packages
-
-There are two Intel packages needed for SGX1-FLC:
-
-- Intel(R) SGX driver with FLC support
-- Intel(R) SGX DCAP SDK
-
-To install these prerequisites type the following commands from the root of
-the source distribution.
+If you are running in an Azure Confidential Compute (ACC) VM and would like to use the attestation features, you should also run the following command from the root of the source tree:
 
 ```bash
-sudo make -C prereqs USE_LIBSGX=1
-sudo make -C prereqs install USE_LIBSGX=1
+sudo ansible-playbook scripts/ansible/deploy_for_oe_contributors_acc.yml
+```
+
+If you are not running in an ACC VM, you should instead run:
+
+```bash
+sudo ansible-playbook scripts/ansible/deploy_for_oe_contributors.yml
 ```
 
 ## Build
 
-To build first create a build directory ("build/" in the example below) and change into it.
+To build, first create a build directory ("build" in the example below) and change directory into it.
 
 ```bash
-mkdir build/
-cd build/
+mkdir build
+cd build
 ```
 
-Then run `cmake` to configure the build and generate the make files and build:
+Then run `cmake` to configure the build and generate the Makefiles, and then build by running `make`:
 
 ```bash
 cmake ..
