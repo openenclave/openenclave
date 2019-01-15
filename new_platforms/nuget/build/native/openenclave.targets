@@ -1,6 +1,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-    <!-- Relative paths to the Open Enclave SDK Libraries -->
+    <!-- Relative paths to the Open Enclave SDK Libraries within the NuGet Package -->
     <PropertyGroup>
         <SgxHwX86Dbg>$(MSBuildThisFileDirectory)..\..\lib\native\v141\sgx\hw\x86\Debug</SgxHwX86Dbg>
         <SgxHwX64Dbg>$(MSBuildThisFileDirectory)..\..\lib\native\v141\sgx\hw\x64\Debug</SgxHwX64Dbg>
@@ -11,14 +11,57 @@
     </PropertyGroup>
 
     <!-- Compilation Rules for Enclaves and Host Applications -->
-    <ClCompile>
-        <!-- Headers -->
-        <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ClCompile>
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <AdditionalIncludeDirectories>
+                $(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories)
+            </AdditionalIncludeDirectories>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <!-- Compilation Rules for Enclaves Only -->
+    <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave'">
+        <ClCompile>
+            <!-- SGX Hardware and Simulation --> 
+            <PreprocessorDefinitions Condition="'$(Configuration)' == 'SGX-Debug' Or '$(Configuration)' == 'SGX-Simulation-Debug'">
+                OE_USE_SGX;OE_NO_SAL;%(PreprocessorDefinitions)
+            </PreprocessorDefinitions>
+
+            <!-- ARM TrustZone Simulation --> 
+            <PreprocessorDefinitions Condition="'$(Configuration)' == 'ARMTZ-Simulation-Debug'">
+                OE_SIMULATE_OPTEE;%(PreprocessorDefinitions)
+            </PreprocessorDefinitions>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <!-- Compilation Rules for Hosts Only -->
+    <ItemDefinitionGroup Condition="'$(OEType)' == 'Host'">
+        <ClCompile>
+            <!-- SGX Hardware and Simulation --> 
+            <PreprocessorDefinitions Condition="'$(Configuration)' == 'SGX-Debug' Or '$(Configuration)' == 'SGX-Simulation-Debug'">
+                OE_USE_SGX;%(PreprocessorDefinitions)
+            </PreprocessorDefinitions>
+
+            <!-- ARM TrustZone Hardware --> 
+            <PreprocessorDefinitions Condition="'$(Configuration)' == 'ARMTZ-Debug'">
+                OE_USE_OPTEE;%(PreprocessorDefinitions)
+            </PreprocessorDefinitions>
+
+            <!-- ARM TrustZone Simulation --> 
+            <PreprocessorDefinitions Condition="'$(Configuration)' == 'ARMTZ-Simulation-Debug'">
+                OE_SIMULATE_OPTEE;%(PreprocessorDefinitions)
+            </PreprocessorDefinitions>
+        </ClCompile>
+    </ItemDefinitionGroup>
 
     <!-- Linking Rules for Enclaves -->
     <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave'">
         <Link>
+            <!-- All, except ARM TrustZone Simulation -->
+            <IgnoreAllDefaultLibraries Condition="'$(Configuration)' != 'ARMTZ-Simulation-Debug'">
+                true
+            </IgnoreAllDefaultLibraries>
+
             <!-- x86-SGX-Debug -->
             <AdditionalDependencies Condition="'$(Configuration)' == 'SGX-Debug' And ('$(Platform)' == 'Win32' Or '$(Platform)' == 'x86')">
                 $(SgxHwX86Dbg)\oeenclave.lib;$(SgxHwX86Dbg)\oesocket_enc.lib;$(SgxHwX86Dbg)\oestdio_enc.lib;%(AdditionalDependencies)
