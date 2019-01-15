@@ -51,16 +51,15 @@ Function Copy-Libs($SourceLeafPath, $DestinationLeafPath, [Switch]$WithEnclaveLi
     }
 }
 
-# Create Directory Structure
+# Copy the basic contents of the NuGet package from the source tree.
+Copy-Item -Recurse -Path $ENV:SOURCES_PATH\new_platforms\nuget -Destination .
+
+# Create the directory structure for the build contents.
 ForEach ($Leaf in $Leaves) {
     New-Item $Leaf -ItemType Directory | Out-Null
 }
 
-# Fetch the basic contents to be included in the NuGet package from the source
-# tree.
-Copy-Item -Recurse -Path $ENV:SOURCES_PATH\new_platforms\nuget -Destination .\nuget
-
-# Now fetch the build output for each platform/TEE/target combination.
+# Fetch the relevant build artifacts from the build output.
 
 # SGX Hardware
 Copy-Libs build\x86\sgx\out\lib\Debug    $Leaves[0] -WithEnclaveLibraries -WithHostLibraries
