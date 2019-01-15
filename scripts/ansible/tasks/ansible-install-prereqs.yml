@@ -18,7 +18,7 @@
     state: present
     install_recommends: no
 
-- name: Install prerequisite packages
+- name: Install required packages
   apt:
     name: [
        apt-transport-https,

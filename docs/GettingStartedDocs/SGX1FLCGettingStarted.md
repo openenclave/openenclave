@@ -15,28 +15,28 @@ git clone https://github.com/Microsoft/openenclave.git
 
 This creates a source tree under the directory called openenclave.
 
-## Install project prerequisites
+## Install project requirements
 
 First, change directory into the openenclave repository:
 ```bash
 cd openenclave
 ```
 
-Ansible is required to install the project prerequisites. If not already installed, you can install it by running: 
+Ansible is required to install the project requirements. If not already installed, you can install it by running:
 ```bash
-scripts/ansible/install-ansible.sh
+sudo scripts/ansible/install-ansible.sh
 ```
 
 If you are running in an Azure Confidential Compute (ACC) VM and would like to use the attestation features, you should also run the following command from the root of the source tree:
 
 ```bash
-ansible-playbook scripts/ansible/deploy_for_oe_devs_acc.yml
+sudo ansible-playbook scripts/ansible/deploy_for_oe_devs_acc.yml
 ```
 
 If you are not running in an ACC VM, you should instead run:
 
 ```bash
-ansible-playbook scripts/ansible/deploy_for_oe_devs.yml
+sudo ansible-playbook scripts/ansible/deploy_for_oe_devs.yml
 ```
 
 ## Build
@@ -48,7 +48,7 @@ mkdir build
 cd build
 ```
 
-Then run `cmake` to configure the build and generate the make files, and then build by running `make`:
+Then run `cmake` to configure the build and generate the Makefiles, and then build by running `make`:
 
 ```bash
 cmake ..
