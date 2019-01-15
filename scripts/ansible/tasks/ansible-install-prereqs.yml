@@ -6,6 +6,11 @@
 
 - name: Add LLVM repo for CLang 7 with Spectre mitigation
   apt_repository: repo="deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" state=present update_cache=yes
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'xenial'
+
+- name: Add LLVM repo for CLan7 with Spectre mitigation
+  apt_repository: repo="deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main" state=present update_cache=yes
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'bionic'
 
 - name: Install Clang 7 to build with Spectre mitigation
   apt:
