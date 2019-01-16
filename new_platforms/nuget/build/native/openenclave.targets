@@ -9,7 +9,8 @@
         <SgxSimX64Dbg>$(MSBuildThisFileDirectory)..\..\lib\native\v141\sgx\sim\x64\Debug</SgxSimX64Dbg>
 
         <TzHwArmDbg>$(MSBuildThisFileDirectory)..\..\lib\native\v141\tz\hw\arm\Debug</TzHwArmDbg>
-        <TzSimX86Dbg>$(MSBuildThisFileDirectory)..\..\lib\native\v141\tz\sim\x86\Debug</TzSimX86Dbg>
+
+        <OpteeSimX86Dbg>$(MSBuildThisFileDirectory)..\..\lib\native\v141\tz\sim\x86\Debug</OpteeSimX86Dbg>
 
         <SgxLibsT>sgx_tstdc.lib;sgx_tprotected_fs.lib;sgx_tcxx.lib;sgx_tstdc.lib;sgx_tcrypto.lib</SgxLibsT>
         <SgxHwLibsT>$(SgxLibsT);sgx_trts.lib;sgx_tservice.lib</SgxHwLibsT>
@@ -37,8 +38,8 @@
                 OE_NO_SAL;%(PreprocessorDefinitions)
             </PreprocessorDefinitions>
 
-            <!-- ARM TrustZone Simulation --> 
-            <PreprocessorDefinitions Condition="'$(Configuration)' == 'ARMTZ-Simulation-Debug'">
+            <!-- OP-TEE Simulation --> 
+            <PreprocessorDefinitions Condition="'$(Configuration)' == 'OPTEE-Simulation-Debug'">
                 OE_SIMULATE_OPTEE;%(PreprocessorDefinitions)
             </PreprocessorDefinitions>
         </ClCompile>
@@ -47,8 +48,8 @@
     <!-- Preprocessor Definitions for Hosts Only -->
     <ItemDefinitionGroup Condition="'$(OEType)' != 'Enclave'">
         <ClCompile>
-            <!-- ARM TrustZone Simulation --> 
-            <PreprocessorDefinitions Condition="'$(Configuration)' == 'ARMTZ-Simulation-Debug'">
+            <!-- OP-TEE Simulation --> 
+            <PreprocessorDefinitions Condition="'$(Configuration)' == 'OPTEE-Simulation-Debug'">
                 OE_SIMULATE_OPTEE;%(PreprocessorDefinitions)
             </PreprocessorDefinitions>
         </ClCompile>
@@ -70,8 +71,8 @@
     <!-- Additional Dependencies for Enclaves -->
     <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave'">
         <Link>
-            <!-- All, except ARM TrustZone Simulation -->
-            <IgnoreAllDefaultLibraries Condition="'$(Configuration)' != 'ARMTZ-Simulation-Debug'">
+            <!-- All, except OP-TEE Simulation -->
+            <IgnoreAllDefaultLibraries Condition="'$(Configuration)' != 'OPTEE-Simulation-Debug'">OpteeSimX86
                 true
             </IgnoreAllDefaultLibraries>
 
@@ -95,9 +96,9 @@
                 $(SgxSimX64Dbg)\oeenclave.lib;$(SgxSimX64Dbg)\oesocket_enc.lib;$(SgxSimX64Dbg)\oestdio_enc.lib;$(SgxSimLibsT)
             </AdditionalDependencies>
 
-            <!-- x86-ARMTZ-Simulation-Debug -->
-            <AdditionalDependencies Condition="'$(Configuration)' == 'ARMTZ-Simulation-Debug' And ('$(Platform)' == 'Win32' Or '$(Platform)' == 'x86')">
-                $(TzSimX86Dbg)\oeenclave.lib;$(TzSimX86Dbg)\oesocket_enc.lib;$(TzSimX86Dbg)\oestdio_enc.lib;$(TzSimX86Dbg)\oeenclave_opteesim.lib;onecore.lib;%(AdditionalDependencies)
+            <!-- x86-OPTEE-Simulation-Debug -->
+            <AdditionalDependencies Condition="'$(Configuration)' == 'OPTEE-Simulation-Debug' And ('$(Platform)' == 'Win32' Or '$(Platform)' == 'x86')">
+                $(OpteeSimX86Dbg)\oeenclave.lib;$(OpteeSimX86Dbg)\oesocket_enc.lib;$(OpteeSimX86Dbg)\oestdio_enc.lib;$(OpteeSimX86Dbg)\oeenclave_opteesim.lib;onecore.lib;%(AdditionalDependencies)
             </AdditionalDependencies>
         </Link>
     </ItemDefinitionGroup>
@@ -125,14 +126,14 @@
                 $(SgxSimX64Dbg)\oehost.lib;$(SgxSimX64Dbg)\oesocket_host.lib;$(SgxSimX64Dbg)\oestdio_host.lib;onecore.lib;%(SgxSimLibsU);%(AdditionalDependencies)
             </AdditionalDependencies>
 
-            <!-- arm-ARMTZ-Debug -->
-            <AdditionalDependencies Condition="'$(Configuration)' == 'ARMTZ-Debug' And '$(Platform)' == 'ARM'">
+            <!-- arm-TZ-OPTEE-Debug -->
+            <AdditionalDependencies Condition="'$(Configuration)' == 'TZ-OPTEE-Debug' And '$(Platform)' == 'ARM'">
                 $(TzHwArmDbg)\oehost.lib;$(TzHwArmDbg)\oesocket_host.lib;$(TzHwArmDbg)\oestdio_host.lib;onecore.lib;%(AdditionalDependencies)
             </AdditionalDependencies>
 
-            <!-- x86-ARMTZ-Simulation-Debug -->
-            <AdditionalDependencies Condition="'$(Configuration)' == 'ARMTZ-Simulation-Debug' And ('$(Platform)' == 'Win32' Or '$(Platform)' == 'x86')">
-                $(TzSimX86Dbg)\oehost.lib;$(TzSimX86Dbg)\oesocket_host.lib;$(TzSimX86Dbg)\oestdio_host.lib;$(TzSimX86Dbg)\oehost_opteesim.lib;onecore.lib;%(AdditionalDependencies)
+            <!-- x86-OPTEE-Simulation-Debug -->
+            <AdditionalDependencies Condition="'$(Configuration)' == 'OPTEE-Simulation-Debug' And ('$(Platform)' == 'Win32' Or '$(Platform)' == 'x86')">
+                $(OpteeSimX86Dbg)\oehost.lib;$(OpteeSimX86Dbg)\oesocket_host.lib;$(OpteeSimX86Dbg)\oestdio_host.lib;$(OpteeSimX86Dbg)\oehost_opteesim.lib;onecore.lib;%(AdditionalDependencies)
             </AdditionalDependencies>
         </Link>
     </ItemDefinitionGroup>
