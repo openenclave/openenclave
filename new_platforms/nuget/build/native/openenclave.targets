@@ -49,11 +49,13 @@
 
     <!-- Additional Library Directories for Enclaves and Host Applications -->
     <ItemDefinitionGroup>
-        <!-- x86-SGX-Debug & x86-SGX-Simulation-Debug -->
-        <AdditionalLibraryDirectories Condition="('$(Configuration)' == 'SGX-Debug' Or '$(Configuration)' == 'SGX-Simulation-Debug') And ('$(Platform)' == 'Win32' Or '$(Platform)' == 'x86')">$(SGXSDKInstallPath)\bin\Win32\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+        <Link>
+            <!-- x86-SGX-Debug & x86-SGX-Simulation-Debug -->
+            <AdditionalLibraryDirectories Condition="('$(Configuration)' == 'SGX-Debug' Or '$(Configuration)' == 'SGX-Simulation-Debug') And ('$(Platform)' == 'Win32' Or '$(Platform)' == 'x86')">$(SGXSDKInstallPath)\bin\Win32\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
 
-        <!-- x64-SGX-Debug & x64-SGX-Simulation-Debug -->
-        <AdditionalLibraryDirectories Condition="('$(Configuration)' == 'SGX-Debug' Or '$(Configuration)' == 'SGX-Simulation-Debug') And '$(Platform)' == 'x64'">$(SGXSDKInstallPath)\bin\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+            <!-- x64-SGX-Debug & x64-SGX-Simulation-Debug -->
+            <AdditionalLibraryDirectories Condition="('$(Configuration)' == 'SGX-Debug' Or '$(Configuration)' == 'SGX-Simulation-Debug') And '$(Platform)' == 'x64'">$(SGXSDKInstallPath)\bin\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+        </Link>
     </ItemDefinitionGroup>
 
     <!-- Additional Dependencies for Enclaves -->
