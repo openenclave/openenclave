@@ -159,6 +159,7 @@ check_clang-format()
             echo "clang-format is not installed. Please run scripts/install-prereqs first."
             exit 1
         fi
+        cf="clang-format"
     fi
 
     local required_cfver='7.0.1'
