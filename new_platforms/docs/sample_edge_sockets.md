@@ -15,7 +15,7 @@ You will need to add a firewall exception for port 12345 in order to be able to 
    ```
    We will use the SampleServerApp. The path below assumes SGX simulation:
    ```
-   \openenclave\new_platforms\bin\Win32\Simulation>SampleServerApp.exe
+   openenclave\new_platforms\build\x86-SGX-Simulation-Debug\out\bin\Debug>SampleServerApp.exe
    Listening on 12345...
    ```
 
@@ -38,8 +38,8 @@ That's it for the server.
 3. On the x64 Linux host, build ``new_platforms`` using ``build_optee.sh``. Please follow the [Linux build instructions](linux_arm_dev.md).
 4. On the x64 Linux host run the following to create docker image for SampleClientApp and push it into your Azure Container Repository (replace placeholders with the arguments first):
     ```
-    cd new_platforms/samples/sockets/Untrusted/SampleClientApp
-    ./build_container.sh <user@ip-address-of-grapeboard> <container-repository> <container-repository-username> <container-repository-password>
+    cd new_platforms/scripts/build/aarch64/out/bin
+    ./../../../../build_container.sh <user@ip-address-of-grapeboard> <container-repository> <container-repository-username> <container-repository-password>
     ```
 5. To prevent container connectivity issues, run the following steps on the Grapeboard (and replace the hostname placeholder):
     ```
@@ -67,7 +67,7 @@ That's it for the server.
         * Set ``agent`` -> ``config`` -> ``image`` with ``mcr.microsoft.com/azureiotedge-agent:1.0.4-linux-arm32v7``
     6. Restart the IoT Edge runtime: ``systemctl restart iotedge`` 
     7. Wait until ``docker ps`` shows both ``edgeHub`` and ``edgeAgent`` running
-8. To validate against the secure cloud service, [add the following module into the deployment](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-deploy-modules-portal). Update the ``<sgx-host>`` placeholder with the IP address of the host where you started SampleServerApp. 
+    8. To validate against the secure cloud service, [add the following module into the deployment](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-deploy-modules-portal). Update the ``<sgx-host>`` placeholder with the IP address of the host where you started SampleServerApp. 
     1. If you go through Portal, use ``sampleClient`` as a Name, ``<container-repositor>/sampleclient:latest`` as an Image URI and the following snippet as the Container Create Options:
         ```
         {

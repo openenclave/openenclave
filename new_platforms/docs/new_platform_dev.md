@@ -222,34 +222,34 @@ paths, processor defines, compiler flags, and linker flags.
 
 ### SGX Enclave DLL
 
-The SGX Enclave DLL should link with **oeenclave.lib** and have the following
+The SGX Enclave DLL should link with `oeenclave.lib` and have the following
 additional include paths:
 
 * `new_platforms\include\sgx\enclave`
 * `new_platforms\include`
 
-To use stdio APIs, the SGX Enclave DLL should link with **oestdio\_enc.lib**.
+To use stdio APIs, the SGX Enclave DLL should link with `oestdio_enc.lib`.
 See the helloworld sample for an example.
 
-To use socket APIs, the SGX Enclave DLL should link with **oesocket\_enc.lib**.
+To use socket APIs, the SGX Enclave DLL should link with `oesocket_enc.lib`.
 See the sockets sample for an example.
 
 ### SGX Rich Application
 
-The EXE should link with **oehost.lib** and have the following additional
+The EXE should link with `oehost.lib` and have the following additional
 include path:
 
 * `new_platforms\include`
 
 To allow the SGX Enclave DLL to use stdio APIs, the EXE should link with
-**oestdio\_host.lib**. See the helloworld sample for an example.
+`oestdio_host.lib`. See the helloworld sample for an example.
 
 To allow the SGX Enclave DLL to use socket APIs, the EXE should link with
-**oesocket\_host.lib**. See the sockets sample for an example.
+`oesocket_host.lib`. See the sockets sample for an example.
 
 ### OP-TEE TA
 
-The OP-TEE TA should link with **liboeenclave** and have the following
+The OP-TEE TA should link with `liboeenclave` and have the following
 additional include paths, in this order (the order is important because files in
 a deeper directory override files at higher levels with the same filename):
 
@@ -257,15 +257,15 @@ a deeper directory override files at higher levels with the same filename):
 * `new_platforms/include/optee`
 * `new_platforms/include`
 
-To use stdio APIs, the OP-TEE TA should link with **liboestdio\_enc**. See the
+To use stdio APIs, the OP-TEE TA should link with `liboestdio_enc`. See the
 helloworld sample for an example.
 
-To use socket APIs, the OP-TEE TA should link with **liboesocket\_enc**. See the
+To use socket APIs, the OP-TEE TA should link with `liboesocket_enc`. See the
 sockets sample for an example.
 
 ### OP-TEE Rich Application
 
-The EXE should link with **oehost.lib** and have the following additional
+The EXE should link with `oehost.lib` and have the following additional
 include paths, in any order:
 
 * `new_platforms\include`

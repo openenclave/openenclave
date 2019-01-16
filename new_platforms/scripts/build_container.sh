@@ -14,7 +14,7 @@ DEST=/tmp/sample
 TAG=$REPO/sampleclient
 
 ssh $SSH "mkdir $DEST; cp /lib/libteec.so $DEST/"
-scp ../../../../bin/optee/samples/sockets/aac3129e-c244-4e09-9e61-d4efcf31bca3.ta $SSH:$DEST/
+scp ../build/aarch64/out/bin/aac3129e-c244-4e09-9e61-d4efcf31bca3.ta $SSH:$DEST/
 scp Dockerfile $SSH:$DEST/
 scp sampleclientapp $SSH:$DEST/
 ssh $SSH "docker build -t $TAG $DEST && docker login -u $USER -p $PWD $REPO && docker push $TAG && docker logout $REPO"

@@ -76,9 +76,9 @@ Get started with the Grapeboard [here](grapeboard.md).
 1) Build the Open Enclave SDK, along with samples, according to the [Linux Development](linux_arm_dev.md#building-the-sdk) guide.
 2) Copy the following from your development machine to the Grapeboard:
     ```
-    scp samples/sockets/Untrusted/SampleClientApp/sampleclientapp root@<ip>:
-    scp samples/sockets/Untrusted/SampleServerApp/sampleserverapp root@<ip>:
-    scp bin/optee/samples/sockets/aac3129e-c244-4e09-9e61-d4efcf31bca3.ta root@<ip>:/lib/optee_armtz
+    scp scripts/build/aarch64/out/bin/sampleclientapp root@<ip>:
+    scp scripts/build/aarch64/out/bin/sampleserverapp root@<ip>:
+    scp scripts/build/aarch64/out/bin/aac3129e-c244-4e09-9e61-d4efcf31bca3.ta root@<ip>:/lib/optee_armtz
     ```
 3) On the target, start the TEE supplicant.
     ```
@@ -96,9 +96,9 @@ Requirements: A Windows development environment and an SGX-capable Windows machi
 1) Build the solution, configuration `Debug\x86` according to the [Windows Development](win_sgx_dev.md) guide.
 2) After a successful build, copy the following bits to your SGX-capable machine:
    ```
-   openenclave\new_platforms\bin\Win32\Debug\SampleClientApp.exe
-   openenclave\new_platforms\bin\Win32\Debug\SampleServerApp.exe
-   openenclave\new_platforms\bin\Win32\Debug\SampleTA.signed.dll
+   openenclave\new_platforms\build\x86-SGX-Debug\out\bin\Debug\socketclient_host.exe
+   openenclave\new_platforms\build\x86-SGX-Debug\out\bin\Debug\socketserver_host.exe
+   openenclave\new_platforms\build\x86-SGX-Debug\out\bin\Debug\sockets_enclave.signed.dll
    ```
 
 Either continue building a simulation sample at the next step, or jump down to [run your code](sample_sockets.md#running-the-sample).
@@ -112,16 +112,16 @@ For this sample, you build an SGX simulated Server, and an OP-TEE simulated Clie
 1) Build the solution, configuration `DebugSimulation\x86` according to the [Windows Development](win_sgx_dev.md) guide.
 2) After a successful build, copy the `SGX Simulation` bits to your working Server directory:
    ```
-   openenclave\new_platforms\bin\Win32\Simulation\SampleClientApp.exe
-   openenclave\new_platforms\bin\Win32\Simulation\SampleServerApp.exe
-   openenclave\new_platforms\bin\Win32\Simulation\SampleTA.signed.dll
+   openenclave\new_platforms\build\x86-SGX-Simulation-Debug\out\bin\Debug\socketclient_host.exe
+   openenclave\new_platforms\build\x86-SGX-Simulation-Debug\out\bin\Debug\socketserver_host.exe
+   openenclave\new_platforms\build\x86-SGX-Simulation-Debug\out\bin\Debug\sockets_enclave.signed.dll
    ```
 3) Build the solution, configuration `DebugOpteeSimulation\x86`.
 4) Copy the `OP-TEE Simulation` bits to your working Client directory:
    ```
-   openenclave\new_platforms\bin\Win32\DebugOpteeSimulation\SampleClientApp.exe
-   openenclave\new_platforms\bin\Win32\DebugOpteeSimulation\SampleServerApp.exe
-   openenclave\new_platforms\bin\Win32\DebugOpteeSimulation\aac3129e-c244-4e09-9e61-d4efcf31bca3.dll
+   openenclave\new_platforms\build\x86-ARMTZ-Simulation-Debug\out\bin\Debug\socketclient_host.exe
+   openenclave\new_platforms\build\x86-ARMTZ-Simulation-Debug\out\bin\Debug\socketserver_host.exe
+   openenclave\new_platforms\build\x86-ARMTZ-Simulation-Debug\out\bin\Debug\aac3129e-c244-4e09-9e61-d4efcf31bca3.dll
    ```
 Note that for OP-TEE the Sample TA is a UUID.
 This is an artifact of how OP-TEE interacts with and loads TA's.
