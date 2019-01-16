@@ -23,7 +23,7 @@ Windows.
 - [Microsoft Visual Studio 2017](https://www.visualstudio.com/downloads/)
 - [Git for Windows 64-bit](https://git-scm.com/download/win)
 - [clang (preferably version 7.0 or above)](http://releases.llvm.org/download.html)  
-- [OCaml on Windows 64-bit](https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/) (Please download and install the mingw64 exe for OCaml)
+- [OCaml for Windows 64-bit](https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/) (Please download and install the mingw64 exe for OCaml)
 
 Intel® SGX Platform Software for Windows (PSW)
 ---------------------------------
@@ -78,7 +78,9 @@ OCaml
 ---------------------------------
 Install [OCaml for Windows (64-bit)](https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/).
 Please download and install the mingw64 exe for OCaml, for example, ocpwin64-20160113-4.02.1+ocp1-mingw64.exe.
+
 Alternate [OCaml Web-site] (https://fdopen.github.io/opam-repository-mingw/installation/)
+
 OCaml is used to build the oeedger8r tool as part of the OE SDK.
 
 Open up a command prompt and ensure that ocaml is available in the path:
