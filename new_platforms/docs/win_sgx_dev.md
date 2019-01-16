@@ -46,8 +46,8 @@ Downloads](https://software.intel.com/en-us/sgx-sdk/download) site.
 **Note:** The dependency on Intel's SGX SDK is temporary.
 
 You may need to restart your environment after installing the Intel SGX SDK. The
-PSW should be installed automatically on Windows 10 with the Fall Creators
-Update installed. See
+PSW should be installed automatically on Windows 10 Fall Creators Update and
+later. See
 [troubleshooting](../../docs/GettingStartedDocs/GettingStarted.Windows.md#troubleshooting).
 
 Building applications using the Open Enclave SDK also requires `oeedger8r`, the
@@ -92,7 +92,7 @@ openenclave\new_platforms\CMakeLists.txt
 The solution contains all libraries and samples needed to build the SDK. From
 the configurations drop-down in the top toolbar in Visual Studio, select the one
 you want to build. The first time a given configuration is selected, Visual
-Studio starts CMake in the background to set up the project for that
+Studio starts CMake in the background to set up the solution for that
 configuration. When that process is complete, select CMake -> Build All. Visual
 Studio's CMake integration pulls IntelliSense configuration information from
 CMake. As such, switching between configurations sets up IntelliSense
@@ -114,9 +114,9 @@ This preview does not have complete support for this yet, but it is coming soon.
 | x86-SGX-Simulation-Debug   | x86       | Builds an x86 SGX simulated enclave and x86 host app   |
 | x64-SGX-Debug              | x64       | Builds an x64 SGX enclave and an x64 host app          |
 | x64-SGX-Simulation-Debug   | x64       | Builds an x64 SGX simulated enclave and x64 host app   |
-| arm-ARMTZ-Debug            | ARM       | An ARM Windows host app *                              |
-| arm-ARMTZ-Release          | ARM       | An ARM Windows host app (optimizations & no symbols) * |
-| x86-ARMTZ-Simulation-Debug | x86       | Builds an OP-TEE simulated enclave and an x86 host app |
+| arm-TZ-OPTEE-Debug         | ARM       | An ARM Windows host app for OP-TEE TAs *               |
+| arm-TZ-OPTEE-Release       | ARM       | Same as above but without optimizations nor symbols *  |
+| x86-OPTEE-Simulation-Debug | x86       | Builds an OP-TEE simulated enclave and an x86 host app |
 
 * A non-simulated OP-TEE enclave must be built on Linux or using Bash on Ubuntu
   on Windows via the Windows Subsystem for Linux (WSL).
@@ -133,9 +133,8 @@ new_platforms\build\<configuration>\out\bin
 
 There are three overarching methods to debugging enclaves. The first allows for
 debugging SGX enclaves running in hardware. The second allows for debugging SGX
-enclaves in simulation mode. The third allows for debugging ARM TrustZone
-enclaves in simulation mode. Debugging ARM TrustZone enclaves running in
-hardware is not supported.
+enclaves in simulation mode. The third allows for debugging OP-TEE TAs in
+simulation mode. Debugging OP-TEE TAs running in hardware is not supported.
 
 ### SGX in Hardware
 
@@ -182,7 +181,7 @@ OP-TEE, including ECALL and OCALL support. This is intended to serve as a quick
 verification of your code to decrease turn-around time. No hardware environment
 is emulated.
 
-To build using OP-TEE Simulation, build using the `x86-ARMTZ-Simulation-Debug`
+To build using OP-TEE Simulation, build using the `x86-OPTEE-Simulation-Debug`
 configuration. To launch a host app associated with the enclave you wish to
 debug, pick it from the list of targets next to configuration drop-down in
 Visual Studio and click the run button. Alternately, use the options under the

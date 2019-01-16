@@ -20,17 +20,17 @@ Started](../../docs/GettingStartedDocs/GettingStarted.md) guide.
 
 The main goal of the Open Enclave SDK is to provide a single API surface that
 works across multiple platforms. With the addition of ARM TrustZone Trusted
-Applications (TA's) as a supported platform you can write a single Enclave and
-Host application, then build and run the Enclave as an SGX Enclave or a
-TrustZone TA. For under-the-cover details on the differences between SGX and ARM
-TrustZone, see [Understanding SGX and TrustZone](sgx_trustzone_arch.md).
+Applications (TAs) as a supported platform you can write a single enclave and
+host app, then build and run the enclave as an SGX enclave or a TrustZone TA.
+For under-the-cover details on the differences between SGX and ARM TrustZone,
+see [Understanding SGX and TrustZone](sgx_trustzone_arch.md).
 
 ## Development Environment
 
-This SDK supports developing your Enclave and Host application on either a
-Windows or a Linux development environment. The selection of your development
-environment should be guided by the Rich Execution Environment (REE) the host
-application will be running on. 
+This SDK supports developing your enclave and host app on either a Windows or a
+Linux development environment. The selection of your development environment
+should be guided by the Rich Execution Environment (REE) the host application
+will be running on. 
 
 If you want to dive right in, use the table below.
 
@@ -63,12 +63,12 @@ hardware. You can use GDB or any GDB-compatible GUI to debug your code.
 
 ## Windows Host Application and SGX Enclave (Intel SDK Required)
 
-Windows SGX Enclave support works on any device with a SGX-capable processor. To
+Windows SGX enclave support works on any device with a SGX-capable processor. To
 find out if your processor supports SGX, consult [Intel
 ARK](https://ark.intel.com). An example device with such support is the
 NUC7i3BNK.
 
-* [Building an Open Enclave SGX Enclave on Windows](win_sgx_dev.md)
+* [Building an Open Enclave SGX enclave on Windows](win_sgx_dev.md)
 * [Running the Sample Server on SGX](sample_sockets.md#building-for-sgx)
 
 ## Windows Host Application with SGX and OP-TEE Simulation

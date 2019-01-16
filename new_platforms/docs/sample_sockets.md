@@ -143,7 +143,7 @@ For example, on Windows, using the default port, do:
 3. Start the client from the command line: 
    If the Server is remote, pass in the IP and Port on the command line (localhost:12345 is default)
     ```
-    >SampleClientApp 10.10.10.1 12345
+    > SampleClientApp 10.10.10.1 12345
     Connecting to localhost 12345...
     Sending message: Hello, world!
     Received reply: Hello, world!

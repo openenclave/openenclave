@@ -15,8 +15,8 @@ Language](https://software.intel.com/en-us/sgx-sdk-dev-reference-enclave-definit
 or EDL. EDL files describe how a host app calls into an enclave to request a
 secure service (i.e. an Enclave CALL, or ECALL), and how an enclave calls into
 its host app to request an insecure service (i.e. an Out CALL, or OCALL). The
-same EDL file is used to define the interface between host and enclave
-regardless of whether the enclave is an Intel SGX enclave or ARM TrustZone
+same EDL file is used to define the interface between the host app and the
+enclave regardless of whether the enclave is an Intel SGX enclave or OP-TEE
 trusted application (TA). An EDL file may include other EDL files and is
 processed using the `oeedger8r` tool. This tool generates two sets of one source
 file and one header file. One set is included by the host app and the other is
@@ -95,7 +95,7 @@ Open the top-level `CMakeLists.txt` file and insert at the top:
 ```
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
-project("My Project" VERSION 0.1 LANGUAGES C CXX)
+project("My Project" VERSION 0.1 LANGUAGES C)
 
 set(OE_PATH ${PROJECT_SOURCE_DIR}/3rdparty/openenclave)
 
@@ -112,15 +112,15 @@ the name of host app target as well.
 To build on Windows for Intel SGX, launch Visual Studio 2017 and use File ->
 Open -> CMake... and open the file you just edited.
 
-On Linux for ARM TrustZone via OP-TEE, you first need a TA Dev Kit. If you are
-working on a specific board, you will need the TA Dev Kit that was produced as
-part of the build of OP-TEE that is flashed on it. See the documentation for the
+On Linux for OP-TEE, you first need a TA Dev Kit. If you are working on a
+specific board, you will need the TA Dev Kit that was produced as part of the
+build of OP-TEE that is flashed on it. See the documentation for the
 [Grapeboard](grapeboard.md) or for [building on Linux](linux_arm_dev.md). Both
 of these guides build OP-TEE as part of their instructions. If you are using a
 board someone else flashed, ask them to give you the TA Dev Kit that goes with
 the firmware.
 
-ARMv7:
+For ARMv7:
 
 ```
 pushd build/arm
@@ -131,7 +131,7 @@ cmake --build . -- -j
 popd
 ```
 
-ARMv8:
+And for ARMv8:
 
 ```
 pushd build/aarch64
@@ -144,13 +144,10 @@ popd
 
 # Using the SDK
 
-This guide assumes that your project uses Git for source control, but it is not
-strictly necessary. The purpose of using Git in this guide is to fetch the Open
-Enclave SDK as a submodule of your project, but you could pull the source using
-any other method that you choose. Additionally, the Open Enclave SDK uses
-[CMake](https://cmake.org) as its build system for cross-platform build support.
-The SDK exposes three CMake functions that enable you to create your own
-cross-platform host app and enclave and are described in this guide.
+The Open Enclave SDK uses [CMake](https://cmake.org) as its build system for
+cross-platform build support. The SDK exposes three CMake functions that enable
+you to create your own cross-platform host app and enclave and are described in
+this guide.
 
 ## Directory Structure
 
@@ -182,7 +179,8 @@ my_project
 ```
 
 The `3rdparty` directory collects external components to your project, including
-the Open Enclave SDK.
+the Open Enclave SDK. If you use Git for source control in your project, you can
+use Git submodules to pull the Open Enclave SDK into the `3rdparty` directory.
 
 The top-level `CMakeLists.txt` file sets up the CMake basics for your project,
 imports the Open Enclave SDK from the 3rdparty directory, and instructs CMake to
@@ -193,7 +191,9 @@ cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
 project("My Project" VERSION 0.1 LANGUAGES C CXX)
 
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/3rdparty/openenclave/new_platforms/cmake")
+set(OE_PATH ${PROJECT_SOURCE_DIR}/3rdparty/openenclave)
+
+list(APPEND CMAKE_MODULE_PATH ${OE_PATH}/new_platforms/cmake)
 
 add_subdirectory(3rdparty/openenclave/new_platforms)
 
@@ -213,42 +213,40 @@ transparently communicate with the other side.
 
 The `enc` directory holds the source code for your enclave, in this case a
 single `enc.c` file. Under the `optee` folder there are files that are used by
-the build process for ARM TrustZone via OP-TEE. Currently, OP-TEE requires
-building TAs with GNU Make and does not support CMake. The `sub.mk` file
-specifies the list of sources a second time as well as per-file compiler flags,
-where necessary. Similarly, the `linux_gcc.mak` file also contains a copy of the
-UUID value. The `user_ta_header_defines.h` header file contains configuration
-values required by OP-TEE, including the UUID as well in a C-structure format.
-The `uuids.reg` registry file contains registry keys and values to register an
-OP-TEE TA with the Windows Trusted Runtime.
+the build process for OP-TEE. Currently, OP-TEE requires building TAs with GNU
+Make and does not support CMake. The `sub.mk` file specifies the list of sources
+a second time as well as per-file compiler flags, where necessary. Similarly,
+the `linux_gcc.mak` file also contains a copy of the UUID value. The
+`user_ta_header_defines.h` header file contains configuration values required by
+OP-TEE, including the UUID as well in a C-structure format. The `uuids.reg`
+registry file contains registry keys and values to register an OP-TEE TA with
+the Windows Trusted Runtime via its UUID.
 
 The file `myproject_enclave_private.pem` holds the private key in PEM format
 with which to sign the enclave when the target TEE is Intel SGX. The file
 `myproject_enclave_config.xml` contains configuration values required by Intel
-SGX.
+SGX such as the max stack and heap sizes.
 
 Lastly, there is a `CMakeLists.txt` file that describes to CMake how to build
 the enclave.
 
 The `host` directory holds the code for your host app, in this case a single
 `main.c` file. This file contains OS- and TEE-agnostic host code that loads the
-TA and invokes the client-related functionality. Note that the code that you
-write for your host app need not know how to launch an enclave under Intel SGX
-or a TA under ARM TrustZone nor how to do so under both Windows and Linux.
-Again, the Open Enclave SDK deals with these details on your behalf. The `host`
-directory also has a `CMakeLists.txt` file that instructs CMake how to build the
-host app executable.
+TA. Note that the code that you write for your host app need not know how to
+launch an enclave under Intel SGX or a TA under OP-TEE nor how to do so under
+both Windows and Linux. The Open Enclave SDK deals with these details on your
+behalf. The `host` directory also has a `CMakeLists.txt` file that instructs
+CMake how to build the host app executable.
 
 In general then, there is an EDL file that both the trusted and untrusted
 components consume that specifies how the pair communicate across the trust
 boundary. The EDL file only contains functions that are specific to your use
 case. The trusted component need only be written once and targets the Open
 Enclave SDK's API. This way it can be seamlessly compiled as an Intel SGX
-enclave and as an ARM TrustZone trusted application. Similarly, the host
-programs also need only be written once and, assuming you do not make use of
-OS-specific functionality, they too can be compiled into Windows and Linux
-programs that can seamlessly launch and operate Intel SGX enclaves and ARM
-TrustZone trusted applications.
+enclave and as an OP-TEE TA. Similarly, the host programs also need only be
+written once and, assuming you do not make use of OS-specific functionality,
+they too can be compiled into Windows and Linux programs that can seamlessly
+launch and operate Intel SGX enclaves and OP-TEE TAs.
 
 ## Building the Enclave
 
@@ -273,7 +271,7 @@ The first two lines include the contents of two external CMake files provided by
 the OpenEnclave SDK. These files make available the `oeedl_file` and
 `add_enclave` functions, respectively.
 
-The third line invokes `oeedl_file`, specying the path to your project's EDL
+The third line invokes `oeedl_file`, specifying the path to your project's EDL
 file and signals that `oeedger8r` should generate the set of files to include in
 the enclave. After the call, the values `${GEN}`, `${C_GEN}` and `${H_GEN}`
 contain the absolute paths to source and header files, the absolute path to the
@@ -281,17 +279,18 @@ source file, and the absolute path to the header file, respectively. The last
 parameter indicates that `oeedger8r` should look for additional EDL files in the
 `include` directory of the Open Enclave SDK, which `interface.edl` imports.
 
-The fourth line invokes `add_enclave`. This function creates a libary target
+The fourth line invokes `add_enclave`. This function creates a library target
 named `myproject_enc` if the project is configured to use Intel SGX enclaves or
-`c5c9f16c-1981-11e9-ab14-d663bd873d93` if the project is configured to use ARM
-TrustZone (usage of a UUID is a requirement of OP-TEE). The function takes a
+`c5c9f16c-1981-11e9-ab14-d663bd873d93` if the project is configured to use
+OP-TEE TAs (usage of a UUID is a requirement of OP-TEE). The function takes a
 list of source files, including both the source and header files generated by
-the call to `oeedl_file` as well as just the path to the generated source file
-(also required by OP-TEE). `add_enclave` configures the target with the required
+the call to `oeedl_file` as well as the path to the generated source file (also
+required by OP-TEE). `add_enclave` configures the target with the required
 include paths, and compiler and linker flags.
 
-When building for ARM TrustZone, the `add_enclave` function invokes the
-underlying `linux_gcc.mak` Makefile against the TA Dev Kit that you specify. 
+When building for OP-TEE, the `add_enclave` function invokes the underlying
+`linux_gcc.mak` Makefile against the TA Dev Kit that you specify at
+configure-time.
 
 ## Building the Host
 
@@ -324,29 +323,28 @@ and linker flags.
 
 ## Generating Calls between Enclaves and Host Apps
 
-To use this SDK, you must define your own
-[EDL](https://software.intel.com/en-us/sgx-sdk-dev-reference-enclave-definition-language-file-syntax)
-file that defines any APIs you want to use, and use `oeedger8r` to generate code
-from it. The same generated code will work equally with both SGX and OP-TEE, as
-long as the Untrusted App and the Trusted App both use the right include paths
-and libs, and the following additional code constraint is met:
+To use this SDK, you must define your own EDL file that defines any APIs you
+want to use, and use `oeedger8r` to generate code from it. The same generated
+code will work equally with both SGX and OP-TEE, as long as the enclave and the
+host app both use the right include paths and libs, and the following additional
+code constraint is met:
 
 OP-TEE only allows one thread per TA to be in an ECALL (i.e., a call into a TA
-from a host app).  Even if it has an OCALL (i.e., an out-call back into the host
+from a host app). Even if it has an OCALL (i.e., an out-call back into the host
 app) in progress, the ECALL must complete before another ECALL can enter the TA.
-SGX, on the other hand, would allow a second ECALL to enter.  So if you want
+SGX, on the other hand, would allow a second ECALL to enter. So, if you want
 them to function identically, host apps can pass the
 `OE_ENCLAVE_FLAG_SERIALIZE_ECALLS` flag when creating an enclave to
-automatically get the OP-TEE like behavior for both SGX and TrustZone.
+automatically get the OP-TEE like behavior for both SGX and OP-TEE.
 
 ## Include paths, preprocessor defines, and libraries
 
 This section is informational only, CMake takes care of configuring include
 paths, processor defines, compiler flags, and linker flags.
 
-### SGX Enclave DLL
+### SGX Enclave
 
-The SGX Enclave DLL should link with `oeenclave.lib` and have the following
+The SGX enclave should link with `oeenclave.lib` and have the following
 additional include paths:
 
 * `new_platforms\include\sgx\enclave`
@@ -358,17 +356,17 @@ the helloworld sample for an example.
 To use socket APIs, the SGX Enclave DLL should link with `oesocket_enc.lib`. See
 the sockets sample for an example.
 
-### SGX Rich Application
+### SGX Host App
 
-The EXE should link with `oehost.lib` and have the following additional include
-path:
+The host app should link with `oehost.lib` and have the following additional
+include path:
 
 * `new_platforms\include`
 
-To allow the SGX Enclave DLL to use stdio APIs, the EXE should link with
+To allow the SGX enclave to use stdio APIs, the host app should link with
 `oestdio_host.lib`. See the helloworld sample for an example.
 
-To allow the SGX Enclave DLL to use socket APIs, the EXE should link with
+To allow the SGX enclave to use socket APIs, the host app should link with
 `oesocket_host.lib`. See the sockets sample for an example.
 
 ### OP-TEE TA
@@ -387,19 +385,19 @@ helloworld sample for an example.
 To use socket APIs, the OP-TEE TA should link with `liboesocket_enc`. See the
 sockets sample for an example.
 
-### OP-TEE Rich Application
+### OP-TEE Host App
 
-The EXE should link with `oehost.lib` and have the following additional include
-paths, in any order:
+The host app should link with `oehost.lib` and have the following additional
+include paths, in any order:
 
 * `new_platforms\include`
 * `new_platforms\include\optee`
 * `new_platforms\include\optee\host`
 
-To allow the OP-TEE TA to use stdio APIs, the EXE should link with
+To allow the OP-TEE TA to use stdio APIs, the host app should link with
 `oestdio_host.lib`. See the helloworld sample for an example.
 
-To allow the OP-TEE TA to use socket APIs, the EXE should link with
+To allow the OP-TEE TA to use socket APIs, the host app should link with
 `oesocket_host.lib`. See the sockets sample for an example.
 
 ## Open Enclave APIs
@@ -409,7 +407,7 @@ docs](https://ms-iot.github.io/openenclave/api/files.html).
 
 This SDK also provides support for a number of APIs that are not available in
 SGX and/or OP-TEE.  For APIs that would normally be in some standard C header
-(e.g., "stdio.h"), the convention is that instead of including *token*.h, one
+(e.g., "stdio.h"), the convention is that instead of including `*token*.h`, one
 would include (instead or in addition to the one provided by SGX or OP-TEE if
 any), `tcps_*token*_t.h` for defines common to both SGX and OP-TEE, or
 `tcps_*token*_optee_t.h` for defines unique to OP-TEE, since the Intel SGX SDK

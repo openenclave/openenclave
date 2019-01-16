@@ -15,7 +15,7 @@ You will need to add a firewall exception for port 12345 in order to be able to 
    ```
    We will use the SampleServerApp. The path below assumes SGX simulation:
    ```
-   openenclave\new_platforms\build\x86-SGX-Simulation-Debug\out\bin\Debug>SampleServerApp.exe
+   openenclave\new_platforms\build\x86-SGX-Simulation-Debug\out\bin\Debug> SampleServerApp.exe
    Listening on 12345...
    ```
 
