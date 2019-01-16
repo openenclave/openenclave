@@ -37,6 +37,9 @@ char* find_data_file(char* str, size_t size)
 void datafileloc(char* data_file_name, char* path)
 {
     char* tail = "3rdparty/mbedtls/mbedtls/tests/suites/";
+#ifdef PROJECT_DIR
+    strcpy(path, PROJECT_DIR);
+#else
     char* separator;
 
     if (getcwd(path, 1024) != NULL)
@@ -51,6 +54,7 @@ void datafileloc(char* data_file_name, char* path)
     }
 
     *separator = '\0'; /* separating string */
+#endif
     strcat(path, tail);
     strcat(path, data_file_name);
 
