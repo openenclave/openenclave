@@ -41,7 +41,7 @@
       "ctestCommandArgs": ""
     },
     {
-      "name": "arm-ARMTZ-Debug",
+      "name": "arm-TZ-OPTEE-Debug",
       "generator": "Visual Studio 15 2017 ARM",
       "configurationType": "Debug",
       "buildRoot": "${workspaceRoot}\\build\\${name}",
@@ -51,7 +51,7 @@
       "ctestCommandArgs": ""
     },
     {
-      "name": "arm-ARMTZ-Release",
+      "name": "arm-TZ-OPTEE-Release",
       "generator": "Visual Studio 15 2017 ARM",
       "configurationType": "Release",
       "buildRoot": "${workspaceRoot}\\build\\${name}",
@@ -61,7 +61,7 @@
       "ctestCommandArgs": ""
     },
     {
-      "name": "x86-ARMTZ-Simulation-Debug",
+      "name": "x86-OPTEE-Simulation-Debug",
       "generator": "Visual Studio 15 2017",
       "configurationType": "Debug",
       "buildRoot": "${workspaceRoot}\\build\\${name}",
