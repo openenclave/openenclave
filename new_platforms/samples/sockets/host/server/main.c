@@ -24,7 +24,7 @@ int main(int argc, char** argv)
     uint32_t enclave_flags = OE_ENCLAVE_FLAG_SERIALIZE_ECALLS;
 
     if (argc > 2 || (argc == 2 && strcmp(argv[1], "/?") == 0)) {
-        printf("Usage: SampleServerApp port\n\n");
+        printf("Usage: socketserver_host port\n\n");
         printf("    Acts as an echo server.\n");
         return 0;
     }

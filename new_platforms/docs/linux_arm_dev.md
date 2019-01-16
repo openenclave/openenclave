@@ -60,8 +60,8 @@ For details on the build process, and how to build other architectures, see [det
 
 The `sockets` sample generates three binaries:
 
-* `scripts/build/<arch>/out/bin/sampleclientapp`
-* `scripts/build/<arch>/out/bin/sampleserverapp`
+* `scripts/build/<arch>/out/bin/socketclient_host`
+* `scripts/build/<arch>/out/bin/socketserver_host`
 * `scripts/build/<arch>/out/bin/aac3129e-c244-4e09-9e61-d4efcf31bca3.ta`
 
 In order to run the sample, you must copy these files to the target. The host

@@ -76,8 +76,8 @@ Get started with the Grapeboard [here](grapeboard.md).
 1) Build the Open Enclave SDK, along with samples, according to the [Linux Development](linux_arm_dev.md#building-the-sdk) guide.
 2) Copy the following from your development machine to the Grapeboard:
     ```
-    scp scripts/build/aarch64/out/bin/sampleclientapp root@<ip>:
-    scp scripts/build/aarch64/out/bin/sampleserverapp root@<ip>:
+    scp scripts/build/aarch64/out/bin/socketclient_host root@<ip>:
+    scp scripts/build/aarch64/out/bin/socketserver_host root@<ip>:
     scp scripts/build/aarch64/out/bin/aac3129e-c244-4e09-9e61-d4efcf31bca3.ta root@<ip>:/lib/optee_armtz
     ```
 3) On the target, start the TEE supplicant.
@@ -133,17 +133,17 @@ Regardless of which platforms you decided to build, the sample is executed the s
 1. If the server and client run on different machines, ensure that the corresponding port is open in the firewall for testing.
 For example, on Windows, using the default port, do:
     ```
-    netsh advfirewall firewall add rule name=`"SampleServerApp 12345`" protocol=TCP dir=in localport=12345 profile=any action=allow
+    netsh advfirewall firewall add rule name=`"socketserver_host 12345`" protocol=TCP dir=in localport=12345 profile=any action=allow
     ```
 2. Start the server from the command line:
     ```
-    >SampleServerApp
+    > socketserver_host
     Listening on 12345...
     ```
 3. Start the client from the command line: 
    If the Server is remote, pass in the IP and Port on the command line (localhost:12345 is default)
     ```
-    > SampleClientApp 10.10.10.1 12345
+    > socketclient_host 10.10.10.1 12345
     Connecting to localhost 12345...
     Sending message: Hello, world!
     Received reply: Hello, world!
@@ -156,19 +156,6 @@ They then use this socket to communicate with each other using the host apps as 
 
 If the enclaves add a layer of encryption atop the data being sent over the socket,
 for instance via TLS (not shown in the sample), the host apps cannot snoop or modify the data.
-
-## Debugging With Simulation
-
-You can also run these samples under a debugger in Visual Studio.
-
-* Set the SampleClientApp or SampleServerApp (your debug target) as the 'StartUp Project' in Visual Studio.
-* SGX Simulation:
-    * Build `DebugSimulation/x86`
-    * Start the debugger using `Intel(R) SGX Debugger`
-    * Note: Running both as simulated SGX applications under the Intel Debugger on the same machine at the same time has been known to cause issues.
-* OP-TEE Simulation:
-    * Build `DebugOpteeSimulation/x86`
-    * Start the debugger using `Local Windows Debugger`
 
 # Next Steps
 
