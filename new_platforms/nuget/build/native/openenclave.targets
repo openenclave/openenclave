@@ -1,5 +1,10 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+    <!-- Expose oeedger8r.exe -->
+    <PropertyGroup>
+        <OEEdger8rPath>$(MSBuildThisFileDirectory)..\..\tools\oeedger8r.exe</OEEdger8rPath>
+    </PropertyGroup>
+
     <!-- Relative paths to the Open Enclave SDK Libraries within the NuGet Package -->
     <PropertyGroup>
         <SgxHwX86Dbg>$(MSBuildThisFileDirectory)..\..\lib\native\v141\sgx\hw\x86\Debug</SgxHwX86Dbg>
@@ -112,4 +117,5 @@
             <Message>Sign the enclave for Intel SGX.</Message>
         </PostBuildEvent>
     </ItemDefinitionGroup>
+
 </Project>
