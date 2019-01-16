@@ -41,6 +41,16 @@ function(add_enclave)
     elseif(WIN32 AND (SGX OR (TZ AND SIM)))
         add_library(${ENCLAVE_TARGET} MODULE ${ENCLAVE_SOURCES})
 
+        if(SGX)
+            target_compile_definitions(${ENCLAVE_TARGET} PUBLIC OE_USE_SGX)
+        else()
+            if(SIM)
+                target_compile_definitions(${ENCLAVE_TARGET} PUBLIC OE_SIMULATE_OPTEE)
+            else()
+                target_compile_definitions(${ENCLAVE_TARGET} PUBLIC OE_USE_OPTEE)
+            endif()
+        endif()
+        
         target_include_directories(${ENCLAVE_TARGET} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
         target_link_libraries(${ENCLAVE_TARGET} oeenclave oestdio_enc oesocket_enc)
 
