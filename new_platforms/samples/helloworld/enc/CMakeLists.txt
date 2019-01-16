@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 include(oeedl_file)
-include(sgx_enclave)
+include(add_enclave)
 
 oeedl_file(../helloworld.edl enclave GEN C_GEN H_GEN ${OE_PATH}/include)
 
@@ -29,21 +29,7 @@ elseif(WIN32 AND (SGX OR (TZ AND SIM)))
         set(TARGET 97d140f4-5f59-4d1f-9735-cb21d49e7eb6)
     endif()
 
-    set(SRCS enc.c)
+    set(SRCS enc.c ${GEN})
 
-    add_library(${TARGET} MODULE ${SRCS} ${GEN})
-
-    target_include_directories(${TARGET} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-    target_link_libraries(${TARGET} oeenclave oestdio_enc)
-
-    if(NOT (TZ AND SIM))
-        target_compile_options(${TARGET} PUBLIC "/X")
-        target_compile_definitions(${TARGET} PUBLIC OE_NO_SAL)
-    endif()
-
-    string(REPLACE "/RTC1" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
-
-    if(SGX)
-        sgx_enclave_configure_target(${TARGET})
-    endif()
+    add_enclave(${TARGET} ${SRCS})
 endif()
