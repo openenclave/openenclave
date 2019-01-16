@@ -2,19 +2,12 @@
 # Licensed under the MIT License.
 
 include(oeedl_file)
+include(add_host)
 
 set(TARGET localattestation_host)
 
 oeedl_file(../localattestation.edl host GEN C_GEN H_GEN ${OE_PATH}/include)
 
-set(SRCS host.c)
+set(SRCS host.c ${GEN})
 
-add_executable(${TARGET} ${SRCS} ${GEN})
-target_include_directories(${TARGET} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(${TARGET} oehost oesocket_host oestdio_host)
-
-if(UNIX)
-    target_link_libraries(${TARGET} teec)
-elseif(WIN32 AND TZ AND SIM)
-    target_link_libraries(${TARGET} oehost_opteesim)
-endif()
+add_host(${TARGET} ${SRCS})
