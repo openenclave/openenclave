@@ -24,6 +24,8 @@ Windows.
 - [Git for Windows 64-bit](https://git-scm.com/download/win)
 - [clang (preferably version 7.0 or above)](http://releases.llvm.org/download.html)  
 - [OCaml for Windows 64-bit](https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/) (Please download and install the mingw64 exe for OCaml)
+- [LLVM for Windows 64-bit](http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe)
+- [shellcheck for Windows](https://storage.googleapis.com/shellcheck/shellcheck-stable.zip)
 
 Intel® SGX Platform Software for Windows (PSW)
 ---------------------------------
