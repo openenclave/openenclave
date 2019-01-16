@@ -53,7 +53,8 @@ For details on the build process, and how to build other architectures, see [det
 2) Next, we can run a batch script that installs all dependencies and builds the Open Enclave SDK and samples. 
    This builds REE and TEE components:
     ```
-    ./build_optee.sh
+    cd new_platforms
+    ./scripts/build_optee.sh
     ```
 
 ## Build Artifacts
