@@ -6,18 +6,24 @@
 
 - name: Add LLVM repo for CLang 7 with Spectre mitigation
   apt_repository: repo="deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" state=present update_cache=yes
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'xenial'
+
+- name: Add LLVM repo for CLan7 with Spectre mitigation
+  apt_repository: repo="deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main" state=present update_cache=yes
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'bionic'
 
 - name: Install Clang 7 to build with Spectre mitigation
   apt:
     name: clang-7
     state: present
     install_recommends: no
-- name: Install  prerequisite packages
+
+- name: Install required packages
   apt:
     name: [
        apt-transport-https,
        autoconf,
-       clang-format-3.8,
+       clang-format-7,
        doxygen,
        gdb,
        graphviz,
@@ -38,19 +44,16 @@
 - name: Install CMake 3.13.1
   unarchive:
     src: https://cmake.org/files/v3.13/cmake-3.13.1-Linux-x86_64.tar.gz
-    dest: /
+    dest: /usr/local/
     remote_src: yes
-    extra_opts:
-    - --transform
-    - s/^cmake-3.13.1-Linux-x86_64/cmake/
 
-# Add cmake folder to system path
-- name: add CMake to path
-  lineinfile:
-    dest: /etc/environment
-    state: present
-    backrefs: yes
-    regexp: 'PATH=(["]*)((?!.*?{{cmake_path}}).*?)(["]*)$'
-    line: "PATH=\\1\\2:{{cmake_path}}\\3"
-  vars:
-    cmake_path: "/cmake/bin"
+- name: Create CMake symbolic links
+  file:
+    src: "/usr/local/cmake-3.13.1-Linux-x86_64/bin/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    state: link
+  with_items:
+  - ccmake
+  - cmake
+  - cpack
+  - ctest

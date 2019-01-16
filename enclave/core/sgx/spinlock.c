@@ -13,12 +13,11 @@ static unsigned int _spin_set_locked(oe_spinlock_t* spinlock)
 {
     unsigned int value = 1;
 
-    asm volatile(
-        "lock xchg %0, %1;"
-        : "=r"(value)     /* %0 */
-        : "m"(*spinlock), /* %1 */
-          "0"(value)      /* also %2 */
-        : "memory");
+    asm volatile("lock xchg %0, %1;"
+                 : "=r"(value)     /* %0 */
+                 : "m"(*spinlock), /* %1 */
+                   "0"(value)      /* also %2 */
+                 : "memory");
 
     return value;
 }
@@ -56,11 +55,10 @@ oe_result_t oe_spin_unlock(oe_spinlock_t* spinlock)
     if (!spinlock)
         return OE_INVALID_PARAMETER;
 
-    asm volatile(
-        "movl %0, %1;"
-        :
-        : "r"(OE_SPINLOCK_INITIALIZER), "m"(*spinlock) /* %1 */
-        : "memory");
+    asm volatile("movl %0, %1;"
+                 :
+                 : "r"(OE_SPINLOCK_INITIALIZER), "m"(*spinlock) /* %1 */
+                 : "memory");
 
     return OE_OK;
 }

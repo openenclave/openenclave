@@ -530,10 +530,10 @@ void test_local_report(sgx_target_info_t* target_info)
     }
 
     /* oe_get_target_info scenario.
-    *   a. Extract the target_info from the report and use that
-    *      as the opt_params field.
-    *   b. Ensure oe_get_target_info fails on improper inputs.
-    */
+     *   a. Extract the target_info from the report and use that
+     *      as the opt_params field.
+     *   b. Ensure oe_get_target_info fails on improper inputs.
+     */
     {
         sgx_target_info_t target;
         sgx_target_info_t* target_ptr;
@@ -649,10 +649,10 @@ void test_local_report(sgx_target_info_t* target_info)
     }
 
     /*
-    * OE_SMALL_BUFFER scenarios:
-    *     a. NULL buffer
-    *     b. Size too small.
-    */
+     * OE_SMALL_BUFFER scenarios:
+     *     a. NULL buffer
+     *     b. Size too small.
+     */
     {
         report_size = 1024 * 1204;
         OE_TEST(
@@ -690,19 +690,19 @@ void test_remote_report()
     uint32_t flags = OE_REPORT_FLAGS_REMOTE_ATTESTATION;
 
 /*
-* Post conditions:
-*     1. Report must contain specified report data or zeros as report data.
-*/
+ * Post conditions:
+ *     1. Report must contain specified report data or zeros as report data.
+ */
 
 /*
-* Report data parameters scenarios on enclave side:
-*      a. Report data can be NULL.
-*      b. Report data can be < OE_REPORT_DATA_SIZE
-*      c. Report data can be OE_REPORT_DATA_SIZE
-*      d. Report data cannot exceed OE_REPORT_DATA_SIZE
-*
-* Report data is not a parameter on the host side.
-*/
+ * Report data parameters scenarios on enclave side:
+ *      a. Report data can be NULL.
+ *      b. Report data can be < OE_REPORT_DATA_SIZE
+ *      c. Report data can be OE_REPORT_DATA_SIZE
+ *      d. Report data cannot exceed OE_REPORT_DATA_SIZE
+ *
+ * Report data is not a parameter on the host side.
+ */
 #ifdef OE_BUILD_ENCLAVE
     {
         oe_result_t expected_result = OE_OK;

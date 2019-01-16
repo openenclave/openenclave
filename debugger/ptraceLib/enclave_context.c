@@ -3,7 +3,6 @@
 
 #include "enclave_context.h"
 #include <fcntl.h>
-#include <fcntl.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>

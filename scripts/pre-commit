@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
@@ -7,7 +7,7 @@ set -o errexit
 set -o pipefail
 
 scripts=$(git rev-parse --show-toplevel)/scripts
-files=($(git diff --cached --name-only))
+mapfile -t files < <(git diff --cached --name-only)
 
 info() {
     echo "This hook can be skipped if needed with 'git commit --no-verify'"
@@ -16,6 +16,7 @@ info() {
 
 trap info EXIT
 
+# shellcheck disable=SC2154
 if "$scripts/format-code" --whatif --files="${files[*]}" | grep -q "@@"; then
     echo "Commit failed: please run './scripts/format-code' to fix the formatting"
     exit 1

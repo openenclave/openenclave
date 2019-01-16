@@ -11,7 +11,6 @@
 #include <openenclave/internal/sha.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "../tests.h"

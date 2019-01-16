@@ -83,7 +83,8 @@ typedef long long ptrdiff_t;
  * passed to **oe_create_enclave()**. Currently only **OE_ENCLAVE_TYPE_SGX**
  * is supported.
  */
-typedef enum _oe_enclave_type {
+typedef enum _oe_enclave_type
+{
     OE_ENCLAVE_TYPE_UNDEFINED,
     OE_ENCLAVE_TYPE_SGX,
     __OE_ENCLAVE_TYPE_MAX = OE_ENUM_MAX,

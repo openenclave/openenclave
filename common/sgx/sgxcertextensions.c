@@ -144,7 +144,7 @@ static int8_t _oid_equal(
  *                 (SGX_OBJECT_ID_TAG oid_length oid_bytes)
  *                 (data_tag data_length data_bytes)
  *              )
-*/
+ */
 static oe_result_t _read_extension(
     uint8_t** itr,
     uint8_t* end,
@@ -223,9 +223,8 @@ static oe_result_t _read_octet_extension(
     uint8_t* data = NULL;
     size_t data_length = 0;
 
-    OE_CHECK(
-        _read_extension(
-            itr, end, oid, SGX_OCTET_STRING_TAG, &data, &data_length));
+    OE_CHECK(_read_extension(
+        itr, end, oid, SGX_OCTET_STRING_TAG, &data, &data_length));
     if (data_length != length)
         OE_RAISE(OE_FAILURE);
 
@@ -345,9 +344,8 @@ static oe_result_t _read_enumeration_extension(
     uint8_t* data = NULL;
     size_t data_length = 0;
 
-    OE_CHECK(
-        _read_extension(
-            itr, end, oid, SGX_ENUMERATION_TAG, &data, &data_length));
+    OE_CHECK(_read_extension(
+        itr, end, oid, SGX_ENUMERATION_TAG, &data, &data_length));
 
     if (data_length != 1)
         OE_RAISE(OE_INVALID_SGX_CERTIFICATE_EXTENSIONS);
@@ -441,75 +439,63 @@ oe_result_t ParseSGXExtensions(
         OE_RAISE(OE_INVALID_SGX_CERTIFICATE_EXTENSIONS);
 
     // Read first extension.
-    OE_CHECK(
-        _read_octet_extension(
-            "ppid",
-            PPID_OID,
-            &itr,
-            end,
-            parsed_info->ppid,
-            sizeof(parsed_info->ppid)));
+    OE_CHECK(_read_octet_extension(
+        "ppid",
+        PPID_OID,
+        &itr,
+        end,
+        parsed_info->ppid,
+        sizeof(parsed_info->ppid)));
 
     // Read TCB extension and nested component extensions.
-    OE_CHECK(
-        _read_extension(
-            &itr, end, TCB_OID, SGX_SEQUENCE_TAG, &tcb_itr, &tcb_length));
+    OE_CHECK(_read_extension(
+        &itr, end, TCB_OID, SGX_SEQUENCE_TAG, &tcb_itr, &tcb_length));
     tcb_end = tcb_itr + tcb_length;
 
     for (uint32_t i = 0; i < OE_COUNTOF(_tcb_comp_svn_oids); ++i)
     {
-        OE_CHECK(
-            _read_integer_extension_as_uint8(
-                "tcb-comp-svn",
-                _tcb_comp_svn_oids[i],
-                &tcb_itr,
-                tcb_end,
-                &parsed_info->comp_svn[i]));
+        OE_CHECK(_read_integer_extension_as_uint8(
+            "tcb-comp-svn",
+            _tcb_comp_svn_oids[i],
+            &tcb_itr,
+            tcb_end,
+            &parsed_info->comp_svn[i]));
     }
 
-    OE_CHECK(
-        _read_integer_extension_as_uint16(
-            "pce-svn",
-            TCB_PCESVN_OID,
-            &tcb_itr,
-            tcb_end,
-            &parsed_info->pce_svn));
+    OE_CHECK(_read_integer_extension_as_uint16(
+        "pce-svn", TCB_PCESVN_OID, &tcb_itr, tcb_end, &parsed_info->pce_svn));
 
-    OE_CHECK(
-        _read_octet_extension(
-            "tcb-cpu-svn",
-            TCB_CPUSVN_OID,
-            &tcb_itr,
-            tcb_end,
-            parsed_info->cpu_svn,
-            sizeof(parsed_info->cpu_svn)));
+    OE_CHECK(_read_octet_extension(
+        "tcb-cpu-svn",
+        TCB_CPUSVN_OID,
+        &tcb_itr,
+        tcb_end,
+        parsed_info->cpu_svn,
+        sizeof(parsed_info->cpu_svn)));
 
     // Assert that all bytes of tcb extension have been read.
     if (tcb_itr != tcb_end)
         OE_RAISE(OE_FAILURE);
 
     // Read other first level extensions.
-    OE_CHECK(
-        _read_octet_extension(
-            "PCEID",
-            PCEID_OID,
-            &itr,
-            end,
-            parsed_info->pce_id,
-            sizeof(parsed_info->pce_id)));
+    OE_CHECK(_read_octet_extension(
+        "PCEID",
+        PCEID_OID,
+        &itr,
+        end,
+        parsed_info->pce_id,
+        sizeof(parsed_info->pce_id)));
 
-    OE_CHECK(
-        _read_octet_extension(
-            "FMSPC",
-            FMSPC_OID,
-            &itr,
-            end,
-            parsed_info->fmspc,
-            sizeof(parsed_info->fmspc)));
+    OE_CHECK(_read_octet_extension(
+        "FMSPC",
+        FMSPC_OID,
+        &itr,
+        end,
+        parsed_info->fmspc,
+        sizeof(parsed_info->fmspc)));
 
-    OE_CHECK(
-        _read_enumeration_extension(
-            "sgx-type", SGX_TYPE_OID, &itr, end, &parsed_info->sgx_type));
+    OE_CHECK(_read_enumeration_extension(
+        "sgx-type", SGX_TYPE_OID, &itr, end, &parsed_info->sgx_type));
 
     if (parsed_info->sgx_type >= 2)
         OE_RAISE(OE_FAILURE);

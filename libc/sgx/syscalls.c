@@ -19,9 +19,7 @@
 #include <string.h>
 #include <sys/syscall.h>
 #include <sys/time.h>
-#include <sys/time.h>
 #include <sys/uio.h>
-#include <time.h>
 #include <time.h>
 #include <unistd.h>
 

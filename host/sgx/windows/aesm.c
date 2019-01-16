@@ -192,13 +192,12 @@ static aesm_interface_t* _create_instance()
     }
 
     /* Create AESM interface object */
-    if (!SUCCEEDED(
-            CoCreateInstance(
-                &CLSID_AESMInterface,
-                NULL,
-                CLSCTX_ALL,
-                &IID_IAESMInterface,
-                &instance)))
+    if (!SUCCEEDED(CoCreateInstance(
+            &CLSID_AESMInterface,
+            NULL,
+            CLSCTX_ALL,
+            &IID_IAESMInterface,
+            &instance)))
     {
         CoUninitialize();
         goto done;

@@ -973,12 +973,10 @@ int elf64_dump_sections(const elf64_t* elf)
     if (elf64_test_header(_get_header(elf)) != 0)
         goto done;
 
-    puts(
-        "Num   Name                     Offset           Size             "
-        "Seg ");
-    puts(
-        "====================================================================="
-        "=");
+    puts("Num   Name                     Offset           Size             "
+         "Seg ");
+    puts("====================================================================="
+         "=");
 
     for (i = 0; i < _get_header(elf)->e_shnum; i++)
     {
@@ -1764,9 +1762,8 @@ oe_result_t elf64_remove_section(elf64_t* elf, const char* name)
         const uint8_t* end = (const uint8_t*)elf->data + elf->size;
 
         /* Remove section from the memory image */
-        OE_CHECK(
-            oe_memmove_s(
-                first, (size_t)(end - first), last, (size_t)(end - last)));
+        OE_CHECK(oe_memmove_s(
+            first, (size_t)(end - first), last, (size_t)(end - last)));
 
         /* Adjust the size of the memory image */
         elf->size -= shdr->sh_size;
@@ -1831,12 +1828,11 @@ oe_result_t elf64_remove_section(elf64_t* elf, const char* name)
         const elf64_shdr_t* end = first + _get_header(elf)->e_shnum;
 
         /* Remove the header */
-        OE_CHECK(
-            oe_memmove_s(
-                first,
-                (size_t)(end - first) * sizeof(elf64_shdr_t),
-                last,
-                (size_t)(end - last) * sizeof(elf64_shdr_t)));
+        OE_CHECK(oe_memmove_s(
+            first,
+            (size_t)(end - first) * sizeof(elf64_shdr_t),
+            last,
+            (size_t)(end - last) * sizeof(elf64_shdr_t)));
 
         /* Adjust the number of headers */
         _get_header(elf)->e_shnum--;

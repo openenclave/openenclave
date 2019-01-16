@@ -427,9 +427,8 @@ static oe_result_t _read_tcb_info(
 
     OE_TRACE_VERBOSE("Reading fmspc");
     OE_CHECK(_read_property_name_and_colon("fmspc", itr, end));
-    OE_CHECK(
-        _read_hex_string(
-            itr, end, parsed_info->fmspc, sizeof(parsed_info->fmspc)));
+    OE_CHECK(_read_hex_string(
+        itr, end, parsed_info->fmspc, sizeof(parsed_info->fmspc)));
     OE_CHECK(_read(',', itr, end));
 
     OE_TRACE_VERBOSE("Reading tcbLevels");
@@ -496,9 +495,8 @@ oe_result_t oe_parse_tcb_info_json(
 
     OE_TRACE_VERBOSE("Reading signature");
     OE_CHECK(_read_property_name_and_colon("signature", &itr, end));
-    OE_CHECK(
-        _read_hex_string(
-            &itr, end, parsed_info->signature, sizeof(parsed_info->signature)));
+    OE_CHECK(_read_hex_string(
+        &itr, end, parsed_info->signature, sizeof(parsed_info->signature)));
 
     OE_CHECK(_read('}', &itr, end));
 
@@ -601,27 +599,24 @@ static oe_result_t _read_qe_identity_info(
 
     OE_TRACE_VERBOSE("Reading attributes.flags");
     OE_CHECK(_read_property_name_and_colon("attributes", itr, end));
-    OE_CHECK(
-        _read_hex_string(
-            itr, end, sixteen_bytes_buf, sizeof(sixteen_bytes_buf)));
+    OE_CHECK(_read_hex_string(
+        itr, end, sixteen_bytes_buf, sizeof(sixteen_bytes_buf)));
     parsed_info->attributes.flags = read_uint64(sixteen_bytes_buf);
     parsed_info->attributes.xfrm = read_uint64(sixteen_bytes_buf + 8);
     OE_CHECK(_read(',', itr, end));
 
     OE_TRACE_VERBOSE("Reading attributesMask");
     OE_CHECK(_read_property_name_and_colon("attributesMask", itr, end));
-    OE_CHECK(
-        _read_hex_string(
-            itr, end, sixteen_bytes_buf, sizeof(sixteen_bytes_buf)));
+    OE_CHECK(_read_hex_string(
+        itr, end, sixteen_bytes_buf, sizeof(sixteen_bytes_buf)));
     parsed_info->attributes_flags_mask = read_uint64(sixteen_bytes_buf);
     parsed_info->attributes_xfrm_mask = read_uint64(sixteen_bytes_buf + 8);
     OE_CHECK(_read(',', itr, end));
 
     OE_TRACE_VERBOSE("Reading mrsigner");
     OE_CHECK(_read_property_name_and_colon("mrsigner", itr, end));
-    OE_CHECK(
-        _read_hex_string(
-            itr, end, parsed_info->mrsigner, sizeof(parsed_info->mrsigner)));
+    OE_CHECK(_read_hex_string(
+        itr, end, parsed_info->mrsigner, sizeof(parsed_info->mrsigner)));
     OE_CHECK(_read(',', itr, end));
 
     OE_TRACE_VERBOSE("Reading isvprodid");
@@ -685,9 +680,8 @@ oe_result_t oe_parse_qe_identity_info_json(
 
     OE_TRACE_VERBOSE("Reading signature");
     OE_CHECK(_read_property_name_and_colon("signature", &itr, end));
-    OE_CHECK(
-        _read_hex_string(
-            &itr, end, parsed_info->signature, sizeof(parsed_info->signature)));
+    OE_CHECK(_read_hex_string(
+        &itr, end, parsed_info->signature, sizeof(parsed_info->signature)));
     OE_CHECK(_read('}', &itr, end));
     if (itr == end)
     {
@@ -717,23 +711,21 @@ static oe_result_t _ecdsa_verify(
     OE_CHECK(oe_sha256_update(&sha256Ctx, data, dataSize));
     OE_CHECK(oe_sha256_final(&sha256Ctx, &sha256));
 
-    OE_CHECK(
-        oe_ecdsa_signature_write_der(
-            asn1Signature,
-            &asn1SignatureSize,
-            signature->r,
-            sizeof(signature->r),
-            signature->s,
-            sizeof(signature->s)));
+    OE_CHECK(oe_ecdsa_signature_write_der(
+        asn1Signature,
+        &asn1SignatureSize,
+        signature->r,
+        sizeof(signature->r),
+        signature->s,
+        sizeof(signature->s)));
 
-    OE_CHECK(
-        oe_ec_public_key_verify(
-            publicKey,
-            OE_HASH_TYPE_SHA256,
-            (uint8_t*)&sha256,
-            sizeof(sha256),
-            asn1Signature,
-            asn1SignatureSize));
+    OE_CHECK(oe_ec_public_key_verify(
+        publicKey,
+        OE_HASH_TYPE_SHA256,
+        (uint8_t*)&sha256,
+        sizeof(sha256),
+        asn1Signature,
+        asn1SignatureSize));
 
     result = OE_OK;
 done:
@@ -764,20 +756,17 @@ oe_result_t oe_verify_ecdsa256_signature(
     OE_CHECK(oe_cert_get_ec_public_key(&root_cert, &tcb_root_key));
     OE_CHECK(oe_cert_get_ec_public_key(&leaf_cert, &tcb_signing_key));
 
-    OE_CHECK(
-        _ecdsa_verify(
-            &tcb_signing_key, tcb_info_start, tcb_info_size, signature));
+    OE_CHECK(_ecdsa_verify(
+        &tcb_signing_key, tcb_info_start, tcb_info_size, signature));
 
     // Ensure that the root certificate matches root of trust.
-    OE_CHECK(
-        oe_ec_public_key_read_pem(
-            &trusted_root_key,
-            (const uint8_t*)_trusted_root_key_pem,
-            strlen(_trusted_root_key_pem) + 1));
+    OE_CHECK(oe_ec_public_key_read_pem(
+        &trusted_root_key,
+        (const uint8_t*)_trusted_root_key_pem,
+        strlen(_trusted_root_key_pem) + 1));
 
-    OE_CHECK(
-        oe_ec_public_key_equal(
-            &trusted_root_key, &tcb_root_key, &root_of_trust_match));
+    OE_CHECK(oe_ec_public_key_equal(
+        &trusted_root_key, &tcb_root_key, &root_of_trust_match));
 
     if (!root_of_trust_match)
     {

@@ -42,7 +42,6 @@ static const char* get_fullpath(const char* path)
 #include <openenclave/internal/mem.h>
 #include <openenclave/internal/properties.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxcreate.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
@@ -109,9 +108,8 @@ static oe_result_t _add_filled_pages(
         uint64_t src = (uint64_t)&page;
         uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R | SGX_SECINFO_W;
 
-        OE_CHECK(
-            oe_sgx_load_enclave_data(
-                context, enclave_addr, addr, src, flags, extend));
+        OE_CHECK(oe_sgx_load_enclave_data(
+            context, enclave_addr, addr, src, flags, extend));
         (*vaddr) += OE_PAGE_SIZE;
     }
 
@@ -209,7 +207,7 @@ static oe_result_t _add_control_pages(
          * variables.
          * Since negative offsets are used with FS, FS must point to end of the
          * segment.
-        */
+         */
         tcs->fsbase = *vaddr + (5 * OE_PAGE_SIZE);
 
         /* Set to maximum value */
@@ -225,9 +223,8 @@ static oe_result_t _add_control_pages(
             uint64_t flags = SGX_SECINFO_TCS;
             bool extend = true;
 
-            OE_CHECK(
-                oe_sgx_load_enclave_data(
-                    context, enclave_addr, addr, src, flags, extend));
+            OE_CHECK(oe_sgx_load_enclave_data(
+                context, enclave_addr, addr, src, flags, extend));
         }
 
         /* Increment the page size */
@@ -316,9 +313,8 @@ static oe_result_t _add_ecall_pages(
             uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R;
             bool extend = true;
 
-            OE_CHECK(
-                oe_sgx_load_enclave_data(
-                    context, enclave_addr, addr, src, flags, extend));
+            OE_CHECK(oe_sgx_load_enclave_data(
+                context, enclave_addr, addr, src, flags, extend));
             (*vaddr) += sizeof(oe_page_t);
         }
     }
@@ -402,9 +398,8 @@ static oe_result_t _oe_add_data_pages(
     size_t i;
 
     /* Add the heap pages */
-    OE_CHECK(
-        _add_heap_pages(
-            context, enclave->addr, vaddr, size_settings->num_heap_pages));
+    OE_CHECK(_add_heap_pages(
+        context, enclave->addr, vaddr, size_settings->num_heap_pages));
 
     for (i = 0; i < size_settings->num_tcs; i++)
     {
@@ -412,17 +407,15 @@ static oe_result_t _oe_add_data_pages(
         *vaddr += OE_PAGE_SIZE;
 
         /* Add the stack for this thread control structure */
-        OE_CHECK(
-            _add_stack_pages(
-                context, enclave->addr, vaddr, size_settings->num_stack_pages));
+        OE_CHECK(_add_stack_pages(
+            context, enclave->addr, vaddr, size_settings->num_stack_pages));
 
         /* Add guard page */
         *vaddr += OE_PAGE_SIZE;
 
         /* Add the "control" pages */
-        OE_CHECK(
-            _add_control_pages(
-                context, enclave->addr, enclave->size, entry, vaddr, enclave));
+        OE_CHECK(_add_control_pages(
+            context, enclave->addr, enclave->size, entry, vaddr, enclave));
     }
 
     result = OE_OK;
@@ -465,9 +458,8 @@ static oe_result_t _initialize_enclave(oe_enclave_t* enclave)
 
     {
         uint64_t arg_out = 0;
-        OE_CHECK(
-            oe_ecall(
-                enclave, OE_ECALL_INIT_ENCLAVE, (uint64_t)&args, &arg_out));
+        OE_CHECK(oe_ecall(
+            enclave, OE_ECALL_INIT_ENCLAVE, (uint64_t)&args, &arg_out));
         OE_CHECK((oe_result_t)arg_out);
     }
 
@@ -659,9 +651,8 @@ oe_result_t oe_sgx_build_enclave(
     OE_CHECK(_build_ecall_data(enclave, &ecall_data, &ecall_size));
 
     /* Calculate the size of this enclave in memory */
-    OE_CHECK(
-        _calculate_enclave_size(
-            image_size, ecall_size, &props, &enclave_end, &enclave_size));
+    OE_CHECK(_calculate_enclave_size(
+        image_size, ecall_size, &props, &enclave_end, &enclave_size));
 
     /* Perform the ECREATE operation */
     OE_CHECK(oe_sgx_create_enclave(context, enclave_size, &enclave_addr));
@@ -678,19 +669,16 @@ oe_result_t oe_sgx_build_enclave(
     OE_CHECK(oeimage.add_pages(&oeimage, context, enclave, &vaddr));
 
     /* Add ecall pages */
-    OE_CHECK(
-        _add_ecall_pages(
-            context, enclave->addr, ecall_data, ecall_size, &vaddr));
+    OE_CHECK(_add_ecall_pages(
+        context, enclave->addr, ecall_data, ecall_size, &vaddr));
 
     /* Add data pages */
-    OE_CHECK(
-        _oe_add_data_pages(
-            context, enclave, &props, oeimage.entry_rva, &vaddr));
+    OE_CHECK(_oe_add_data_pages(
+        context, enclave, &props, oeimage.entry_rva, &vaddr));
 
     /* Ask the platform to initialize the enclave and finalize the hash */
-    OE_CHECK(
-        oe_sgx_initialize_enclave(
-            context, enclave_addr, &props, &enclave->hash));
+    OE_CHECK(oe_sgx_initialize_enclave(
+        context, enclave_addr, &props, &enclave->hash));
 
     /* Save full path of this enclave. When a debugger attaches to the host
      * process, it needs the fullpath so that it can load the image binary and
@@ -793,9 +781,8 @@ oe_result_t oe_create_enclave(
 #endif
 
     /* Initialize the context parameter and any driver handles */
-    OE_CHECK(
-        oe_sgx_initialize_load_context(
-            &context, OE_SGX_LOAD_TYPE_CREATE, flags));
+    OE_CHECK(oe_sgx_initialize_load_context(
+        &context, OE_SGX_LOAD_TYPE_CREATE, flags));
 
     /* Build the enclave */
     OE_CHECK(oe_sgx_build_enclave(&context, enclave_path, NULL, enclave));

@@ -36,7 +36,7 @@ OE_EXTERNC_BEGIN
  *  it does give is the ability to develop your enclave more easily. Before
  *  you ship the code you need to have a proper code signing story for the
  *  enclave shared library.
-*/
+ */
 #define OE_ENCLAVE_FLAG_DEBUG 0x00000001u
 
 /**

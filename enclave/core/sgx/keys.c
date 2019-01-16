@@ -240,12 +240,11 @@ static oe_result_t _get_default_key_request_attributes(
 
     // Set key request attributes(isv svn, cpu svn, and attribute masks)
     sgx_key_request->isv_svn = sgx_report.body.isvsvn;
-    OE_CHECK(
-        oe_memcpy_s(
-            &sgx_key_request->cpu_svn,
-            sizeof(sgx_key_request->cpu_svn),
-            sgx_report.body.cpusvn,
-            sizeof(sgx_report.body.cpusvn)));
+    OE_CHECK(oe_memcpy_s(
+        &sgx_key_request->cpu_svn,
+        sizeof(sgx_key_request->cpu_svn),
+        sgx_report.body.cpusvn,
+        sizeof(sgx_report.body.cpusvn)));
     sgx_key_request->attribute_mask.flags = OE_SEALKEY_DEFAULT_FLAGSMASK;
     sgx_key_request->attribute_mask.xfrm = OE_SEALKEY_DEFAULT_XFRMMASK;
     sgx_key_request->misc_attribute_mask = OE_SEALKEY_DEFAULT_MISCMASK;
@@ -315,12 +314,11 @@ oe_result_t oe_get_seal_key_by_policy_v1(
 
         if (key_info != NULL)
         {
-            OE_CHECK(
-                oe_memcpy_s(
-                    key_info,
-                    *key_info_size,
-                    &sgx_key_request,
-                    sizeof(sgx_key_request_t)));
+            OE_CHECK(oe_memcpy_s(
+                key_info,
+                *key_info_size,
+                &sgx_key_request,
+                sizeof(sgx_key_request_t)));
             *key_info_size = sizeof(sgx_key_request_t);
         }
     }

@@ -72,7 +72,8 @@ int test(char test_name[201], uint32_t pid)
     }
 
     static const char* argv[] = {
-        "test", NULL,
+        "test",
+        NULL,
     };
     rval = main(1, argv);
     strncpy(test_name, __TEST__, STRLEN_MAX);

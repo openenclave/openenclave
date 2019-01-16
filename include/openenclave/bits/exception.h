@@ -84,9 +84,9 @@ typedef struct _oe_basic_xstate
 typedef struct _oe_context
 {
     /**
-      * Exception flags.
-      * OE_EXCEPTION_FLAGS_HARDWARE | OE_EXCEPTION_FLAGS_SOFTWARE
-      */
+     * Exception flags.
+     * OE_EXCEPTION_FLAGS_HARDWARE | OE_EXCEPTION_FLAGS_SOFTWARE
+     */
     uint64_t flags;
 
     uint64_t rax; /**< Integer register rax */

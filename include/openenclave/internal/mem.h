@@ -33,7 +33,8 @@
 #define MEM_NPOS ((size_t)-1)
 
 /* mem_t.__type */
-typedef enum _mem_type_t {
+typedef enum _mem_type_t
+{
     MEM_TYPE_NONE = 1,
     MEM_TYPE_DYNAMIC = 2,
     MEM_TYPE_STATIC = 4,

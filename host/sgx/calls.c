@@ -377,11 +377,10 @@ static oe_result_t _handle_call_host_function(
         goto done;
     }
 
-    OE_CHECK(
-        oe_safe_add_u64(
-            args_ptr->input_buffer_size,
-            args_ptr->output_buffer_size,
-            &buffer_size));
+    OE_CHECK(oe_safe_add_u64(
+        args_ptr->input_buffer_size,
+        args_ptr->output_buffer_size,
+        &buffer_size));
 
     // Buffer sizes must be pointer aligned.
     if ((args_ptr->input_buffer_size % OE_EDGER8R_BUFFER_ALIGNMENT) != 0)
@@ -756,18 +755,17 @@ oe_result_t oe_ecall(
         OE_RAISE(OE_OUT_OF_THREADS);
 
     /* Perform ECALL or ORET */
-    OE_CHECK(
-        _do_eenter(
-            enclave,
-            tcs,
-            OE_AEP,
-            code,
-            func,
-            arg,
-            &code_out,
-            &func_out,
-            &result_out,
-            &arg_out));
+    OE_CHECK(_do_eenter(
+        enclave,
+        tcs,
+        OE_AEP,
+        code,
+        func,
+        arg,
+        &code_out,
+        &func_out,
+        &result_out,
+        &arg_out));
 
     /* Process OCALLS */
     if (code_out != OE_CODE_ERET)
@@ -868,12 +866,11 @@ oe_result_t oe_call_enclave(oe_enclave_t* enclave, const char* func, void* args)
     {
         uint64_t arg_out = 0;
 
-        OE_CHECK(
-            oe_ecall(
-                enclave,
-                OE_ECALL_CALL_ENCLAVE,
-                (uint64_t)&call_enclave_args,
-                &arg_out));
+        OE_CHECK(oe_ecall(
+            enclave,
+            OE_ECALL_CALL_ENCLAVE,
+            (uint64_t)&call_enclave_args,
+            &arg_out));
 
         OE_CHECK((oe_result_t)arg_out);
     }
@@ -930,12 +927,11 @@ oe_result_t oe_call_enclave_function(
     {
         uint64_t arg_out = 0;
 
-        OE_CHECK(
-            oe_ecall(
-                enclave,
-                OE_ECALL_CALL_ENCLAVE_FUNCTION,
-                (uint64_t)&args,
-                &arg_out));
+        OE_CHECK(oe_ecall(
+            enclave,
+            OE_ECALL_CALL_ENCLAVE_FUNCTION,
+            (uint64_t)&args,
+            &arg_out));
         OE_CHECK((oe_result_t)arg_out);
     }
 

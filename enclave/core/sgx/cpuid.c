@@ -32,14 +32,13 @@ oe_result_t oe_initialize_cpuid(uint64_t arg_in)
         if (!(args->cpuid_table[1][OE_CPUID_RCX] & OE_CPUID_AESNI_FEATURE))
             oe_abort();
 
-        OE_CHECK(
-            oe_memcpy_s(
-                _oe_cpuid_table,
-                OE_CPUID_LEAF_COUNT * OE_CPUID_REG_COUNT *
-                    sizeof(_oe_cpuid_table[0][0]),
-                args->cpuid_table,
-                OE_CPUID_LEAF_COUNT * OE_CPUID_REG_COUNT *
-                    sizeof(args->cpuid_table[0][0])));
+        OE_CHECK(oe_memcpy_s(
+            _oe_cpuid_table,
+            OE_CPUID_LEAF_COUNT * OE_CPUID_REG_COUNT *
+                sizeof(_oe_cpuid_table[0][0]),
+            args->cpuid_table,
+            OE_CPUID_LEAF_COUNT * OE_CPUID_REG_COUNT *
+                sizeof(args->cpuid_table[0][0])));
 
         result = OE_OK;
     }

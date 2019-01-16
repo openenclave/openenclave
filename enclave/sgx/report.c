@@ -25,12 +25,11 @@ static oe_result_t _oe_get_report_key(
     sgx_key_request_t sgx_key_request = {0};
 
     sgx_key_request.key_name = SGX_KEYSELECT_REPORT;
-    OE_CHECK(
-        oe_memcpy_s(
-            sgx_key_request.key_id,
-            sizeof(sgx_key_request.key_id),
-            sgx_report->keyid,
-            sizeof(sgx_report->keyid)));
+    OE_CHECK(oe_memcpy_s(
+        sgx_key_request.key_id,
+        sizeof(sgx_key_request.key_id),
+        sgx_report->keyid,
+        sizeof(sgx_report->keyid)));
 
     OE_CHECK(oe_get_key(&sgx_key_request, sgx_key));
     result = OE_OK;
@@ -66,16 +65,8 @@ oe_result_t oe_verify_report(
 
     if (header->report_type == OE_REPORT_TYPE_SGX_REMOTE)
     {
-        OE_CHECK(
-            VerifyQuoteImpl(
-                header->report,
-                header->report_size,
-                NULL,
-                0,
-                NULL,
-                0,
-                NULL,
-                0));
+        OE_CHECK(VerifyQuoteImpl(
+            header->report, header->report_size, NULL, 0, NULL, 0, NULL, 0));
     }
     else if (header->report_type == OE_REPORT_TYPE_SGX_LOCAL)
     {
@@ -83,13 +74,12 @@ oe_result_t oe_verify_report(
 
         OE_CHECK(_oe_get_report_key(sgx_report, &sgx_key));
 
-        OE_CHECK(
-            oe_aes_cmac_sign(
-                (uint8_t*)&sgx_key,
-                sizeof(sgx_key),
-                (uint8_t*)&sgx_report->body,
-                sizeof(sgx_report->body),
-                &computed_aes_cmac));
+        OE_CHECK(oe_aes_cmac_sign(
+            (uint8_t*)&sgx_key,
+            sizeof(sgx_key),
+            (uint8_t*)&sgx_report->body,
+            sizeof(sgx_report->body),
+            &computed_aes_cmac));
 
         // Fetch cmac from sgx_report.
         // Note: sizeof(sgx_report->mac) <= sizeof(oe_aes_cmac_t).
