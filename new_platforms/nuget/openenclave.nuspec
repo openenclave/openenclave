@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>openenclave</id>
+    <version>0.2.0</version>
+    <title>Open Enclave</title>
+    <authors>openenclave</authors>
+    <owners>Microsoft, Open Enclave</owners>
+    <licenseUrl>https://github.com/Microsoft/openenclave/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/Microsoft/openenclave</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>The Open Enclave SDK enables developers to write cross-platform host applications and TEE-agnostic enclaves by abstracting platform- and TEE-specific behaviors behind a single, simple and consistent programming interface. Currently, it supports Windows and Linux hosts and Intel SGX and ARM TrustZone enclaves.</description>
+    <summary>The Open Enclave SDK is a Microsoft project for developing cross-platform applications that leverage Trusted Execution Environments (TEEs) through a single API surface.</summary>
+    <copyright>Copyright 2019</copyright>
+    <tags>openenclave tee sgx trustzone tz arm native C++ v141</tags>
+  </metadata>
+</package>
