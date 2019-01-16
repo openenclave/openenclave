@@ -97,7 +97,7 @@
 
             <!-- x86-ARMTZ-Simulation-Debug -->
             <AdditionalDependencies Condition="'$(Configuration)' == 'ARMTZ-Simulation-Debug' And ('$(Platform)' == 'Win32' Or '$(Platform)' == 'x86')">
-                $(TzSimX86Dbg)\oeenclave.lib;$(TzSimX86Dbg)\oesocket_enc.lib;$(TzSimX86Dbg)\oestdio_enc.lib;$(TzSimX86Dbg)\oeenclave_opteesim.lib;%(AdditionalDependencies)
+                $(TzSimX86Dbg)\oeenclave.lib;$(TzSimX86Dbg)\oesocket_enc.lib;$(TzSimX86Dbg)\oestdio_enc.lib;$(TzSimX86Dbg)\oeenclave_opteesim.lib;onecore.lib;%(AdditionalDependencies)
             </AdditionalDependencies>
         </Link>
     </ItemDefinitionGroup>

@@ -9,6 +9,8 @@ $Leaves = @(
     "nuget\lib\native\v141\tz\hw\arm\Debug",
     "nuget\lib\native\v141\tz\sim\x86\Debug",
 
+    "nuget\tools",
+
     "nuget\build\native\include"
 )
 
@@ -89,5 +91,8 @@ Copy-Libs build\arm\tz\out\lib\Debug     $Leaves[4] -WithHostLibraries
 # TrustZone Simulation
 Copy-Libs build\x86\tzsim\out\lib\Debug  $Leaves[5] -WithEnclaveLibraries -WithHostLibraries -WithOPTEESimLibraries
 
+# oeedger8r Tool
+Copy-Item build\oeedger8r.exe            $Leaves[6]
+
 # Finally, copy the headers from the source tree.
-Copy-Item -Recurse -Path $ENV:SOURCES_PATH\include\openenclave -Destination $Leaves[6]
+Copy-Item -Recurse -Path $ENV:SOURCES_PATH\include\openenclave -Destination $Leaves[7]
