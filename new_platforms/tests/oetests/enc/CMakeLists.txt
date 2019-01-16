@@ -29,7 +29,7 @@ elseif(WIN32 AND (SGX OR (TZ AND SIM)))
         set(TARGET 3156152a-19d1-423c-96ea-5adf5675798f)
     endif()
 
-    set(SRCS oetests_enclave.c OETestTA.c ${GEN})
-
-    add_enclave(${TARGET} ${SRCS})
+    add_enclave(
+        TARGET ${TARGET}
+        SOURCES oetests_enclave.c OETestTA.c ${GEN})
 endif()

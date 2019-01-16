@@ -1,15 +1,26 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function(add_enclave TARGET SOURCES)
-    add_library(${TARGET} MODULE ${SOURCES})
+function(add_enclave)
+    # Borrowed from ../cmake/add_enclave.cmake
+    # Using the same signature so that the functions are easier to merge.
+    set(options CXX)
+    set(oneValueArgs TARGET CONFIG KEY)
+    set(multiValueArgs SOURCES)
+    cmake_parse_arguments(ENCLAVE
+        "${options}"
+        "${oneValueArgs}"
+        "${multiValueArgs}"
+        ${ARGN})
 
-    target_include_directories(${TARGET} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-    target_link_libraries(${TARGET} oeenclave oestdio_enc oesocket_enc)
+    add_library(${ENCLAVE_TARGET} MODULE ${ENCLAVE_SOURCES})
+
+    target_include_directories(${ENCLAVE_TARGET} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+    target_link_libraries(${ENCLAVE_TARGET} oeenclave oestdio_enc oesocket_enc)
 
     if(NOT (TZ AND SIM))
-        target_compile_options(${TARGET} PUBLIC "/X")
-        target_compile_definitions(${TARGET} PUBLIC OE_NO_SAL)
+        target_compile_options(${ENCLAVE_TARGET} PUBLIC "/X")
+        target_compile_definitions(${ENCLAVE_TARGET} PUBLIC OE_NO_SAL)
     endif()
 
     string(REPLACE "/RTC1" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
@@ -19,18 +30,18 @@ function(add_enclave TARGET SOURCES)
         # NOTE: These three work for CMake 3.13+, but Azure DevOps currently has
         # 3.12 installed:
         #
-        # target_link_options(${TARGET} BEFORE PRIVATE "/NODEFAULTLIB")
-        # target_link_options(${TARGET} BEFORE PRIVATE "/NOENTRY")
-        # target_link_options(${TARGET} BEFORE PRIVATE "/MANIFEST:NO")
+        # target_link_options(${ENCLAVE_TARGET} BEFORE PRIVATE "/NODEFAULTLIB")
+        # target_link_options(${ENCLAVE_TARGET} BEFORE PRIVATE "/NOENTRY")
+        # target_link_options(${ENCLAVE_TARGET} BEFORE PRIVATE "/MANIFEST:NO")
         #
         # Workaround follows:
-        set_target_properties(${TARGET} PROPERTIES LINK_FLAGS "/NODEFAULTLIB /NOENTRY /MANIFEST:NO")
+        set_target_properties(${ENCLAVE_TARGET} PROPERTIES LINK_FLAGS "/NODEFAULTLIB /NOENTRY /MANIFEST:NO")
 
-        add_custom_command(TARGET ${TARGET} POST_BUILD
+        add_custom_command(TARGET ${ENCLAVE_TARGET} POST_BUILD
             COMMAND ${SGX_SDK_SIGN_TOOL} sign
-                -key ${CMAKE_CURRENT_SOURCE_DIR}/${TARGET}_private.pem
-                -enclave ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/$<CONFIG>/${TARGET}.dll
-                -out ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/$<CONFIG>/${TARGET}.signed.dll
-                -config ${CMAKE_CURRENT_SOURCE_DIR}/${TARGET}.config.xml)
+                -key ${CMAKE_CURRENT_SOURCE_DIR}/${ENCLAVE_TARGET}_private.pem
+                -enclave ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/$<CONFIG>/${ENCLAVE_TARGET}.dll
+                -out ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/$<CONFIG>/${ENCLAVE_TARGET}.signed.dll
+                -config ${CMAKE_CURRENT_SOURCE_DIR}/${ENCLAVE_TARGET}.config.xml)
     endif()
 endfunction()

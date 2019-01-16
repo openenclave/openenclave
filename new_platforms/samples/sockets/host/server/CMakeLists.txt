@@ -8,6 +8,6 @@ set(TARGET socketserver_host)
 
 oeedl_file(../sockets.edl host GEN C_GEN H_GEN ${OE_PATH}/include)
 
-set(SRCS main.c ${GEN})
-
-add_host(${TARGET} ${SRCS})
+add_host(
+    TARGET ${TARGET}
+    SOURCES main.c ${GEN})
