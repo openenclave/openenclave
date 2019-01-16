@@ -51,9 +51,9 @@ elseif(WIN32)
         PUBLIC  ${OE_PATH}/include)
 
     set(EXTERNAL_INCS
-        PRIVATE ${TINYCBOR_PATH}/src
-        PRIVATE ${CYREP_PATH}/cyrep
-        PRIVATE ${CYREP_PATH}/tcps
+        PUBLIC  ${TINYCBOR_PATH}/src
+        PUBLIC  ${CYREP_PATH}/cyrep
+        PUBLIC  ${CYREP_PATH}/tcps
         PUBLIC  ${MBEDTLS_PATH}/include)
 
     # Library lists
