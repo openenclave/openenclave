@@ -85,16 +85,18 @@ OE_EXTERNC_BEGIN
 // variadic paramter is empty in OE_RAISE_MSG(RESULT, fmt, ...)
 // eg : OE_RAISE_MSG(OE_FAILURE, "your message", NULL);
 
-#define OE_RAISE_MSG(RESULT, fmt, ...)                                   \
-    do                                                                   \
-    {                                                                    \
-        result = (RESULT);                                               \
-        if (result != OE_OK)                                             \
-        {                                                                \
-            OE_TRACE_ERROR(                                              \
-                fmt "failed(%s)", ##__VA_ARGS__, oe_result_str(result)); \
-        }                                                                \
-        goto done;                                                       \
+#define OE_RAISE_MSG(RESULT, fmt, ...)   \
+    do                                   \
+    {                                    \
+        result = (RESULT);               \
+        if (result != OE_OK)             \
+        {                                \
+            OE_TRACE_ERROR(              \
+                fmt " (oe_result_t=%s)", \
+                ##__VA_ARGS__,           \
+                oe_result_str(result));  \
+        }                                \
+        goto done;                       \
     } while (0)
 
 #define OE_RAISE_NO_TRACE(RESULT) \
