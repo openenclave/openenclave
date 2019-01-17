@@ -12,12 +12,12 @@
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
-#include "../args.h"
+#include "VectorException_t.h"
 
 // This function will generate the divide by zero function.
 // The handler will catch this exception and fix it, and continue execute.
 // It will return 0 if success.
-int DivideByZeroExceptionFunction(void)
+int divide_by_zero_exception_function(void)
 {
     // Making ret, f and d volatile to prevent optimization
     volatile int ret = 1;
@@ -48,7 +48,7 @@ int DivideByZeroExceptionFunction(void)
     return 0;
 }
 
-uint64_t TestDivideByZeroHandler(oe_exception_record_t* exception_record)
+uint64_t test_divide_by_zero_handler(oe_exception_record_t* exception_record)
 {
     if (exception_record->code != OE_EXCEPTION_DIVIDE_BY_ZERO)
     {
@@ -124,32 +124,36 @@ static oe_vectored_exception_handler_t
 
 static oe_vectored_exception_handler_t g_test_div_by_zero_handler;
 
-int VectorExceptionSetup()
+int vector_exception_setup()
 {
     oe_result_t result;
 
     // Add one exception handler.
-    result = oe_add_vectored_exception_handler(false, TestDivideByZeroHandler);
+    result =
+        oe_add_vectored_exception_handler(false, test_divide_by_zero_handler);
     if (result != OE_OK)
     {
         return -1;
     }
 
     // Remove the exception handler.
-    if (oe_remove_vectored_exception_handler(TestDivideByZeroHandler) != OE_OK)
+    if (oe_remove_vectored_exception_handler(test_divide_by_zero_handler) !=
+        OE_OK)
     {
         return -1;
     }
 
     // Insert the exception handler to the front.
-    result = oe_add_vectored_exception_handler(true, TestDivideByZeroHandler);
+    result =
+        oe_add_vectored_exception_handler(true, test_divide_by_zero_handler);
     if (result != OE_OK)
     {
         return -1;
     }
 
     // Remove the exception handler.
-    if (oe_remove_vectored_exception_handler(TestDivideByZeroHandler) != OE_OK)
+    if (oe_remove_vectored_exception_handler(test_divide_by_zero_handler) !=
+        OE_OK)
     {
         return -1;
     }
@@ -166,7 +170,8 @@ int VectorExceptionSetup()
     }
 
     // Can't add one more.
-    result = oe_add_vectored_exception_handler(false, TestDivideByZeroHandler);
+    result =
+        oe_add_vectored_exception_handler(false, test_divide_by_zero_handler);
     if (result == OE_OK)
     {
         return -1;
@@ -194,7 +199,8 @@ int VectorExceptionSetup()
     }
 
     // Can't add one more.
-    result = oe_add_vectored_exception_handler(true, TestDivideByZeroHandler);
+    result =
+        oe_add_vectored_exception_handler(true, test_divide_by_zero_handler);
     if (result == OE_OK)
     {
         return -1;
@@ -222,8 +228,9 @@ int VectorExceptionSetup()
     }
 
     // Add the real handler to the end.
-    g_test_div_by_zero_handler = TestDivideByZeroHandler;
-    result = oe_add_vectored_exception_handler(false, TestDivideByZeroHandler);
+    g_test_div_by_zero_handler = test_divide_by_zero_handler;
+    result =
+        oe_add_vectored_exception_handler(false, test_divide_by_zero_handler);
     if (result != OE_OK)
     {
         return -1;
@@ -232,7 +239,7 @@ int VectorExceptionSetup()
     return 0;
 }
 
-int VectorExceptionCleanup()
+int vector_exception_cleanup()
 {
     // Remove all handlers.
     if (oe_remove_vectored_exception_handler(g_test_div_by_zero_handler) !=
@@ -253,39 +260,31 @@ int VectorExceptionCleanup()
     return 0;
 }
 
-OE_ECALL void TestVectorException(void* args_)
+int enc_test_vector_exception()
 {
-    TestVectorExceptionArgs* args = (TestVectorExceptionArgs*)args_;
-    args->ret = -1;
-
-    if (!oe_is_outside_enclave(args, sizeof(TestVectorExceptionArgs)))
+    if (vector_exception_setup() != 0)
     {
-        return;
-    }
-
-    if (VectorExceptionSetup() != 0)
-    {
-        return;
-    }
-
-    oe_host_printf("TestVectorException: will generate a hardware exception "
-                   "inside enclave!\n");
-    if (DivideByZeroExceptionFunction() != 0)
-    {
-        args->ret = -1;
-        return;
+        return -1;
     }
 
     oe_host_printf(
-        "TestVectorException: hardware exception is handled correctly!\n");
+        "enc_test_vector_exception: will generate a hardware exception inside "
+        "enclave!\n");
 
-    if (VectorExceptionCleanup() != 0)
+    if (divide_by_zero_exception_function() != 0)
     {
-        return;
+        return -1;
     }
 
-    args->ret = 0;
-    return;
+    oe_host_printf(
+        "enc_test_vector_exception: hardware exception is handled correctly!\n");
+
+    if (vector_exception_cleanup() != 0)
+    {
+        return -1;
+    }
+
+    return 0;
 }
 
 OE_SET_ENCLAVE_SGX(
@@ -295,5 +294,3 @@ OE_SET_ENCLAVE_SGX(
     1024, /* HeapPageCount */
     1024, /* StackPageCount */
     2);   /* TCSCount */
-
-OE_DEFINE_EMPTY_ECALL_TABLE();
