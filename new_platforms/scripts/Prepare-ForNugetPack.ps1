@@ -101,4 +101,4 @@ Copy-Item -Recurse -Path $ENV:SOURCES_PATH\include\openenclave -Destination $Lea
 
 # New Platforms
 Copy-Item -Recurse -Path $ENV:SOURCES_PATH\new_platforms\include -Destination $Leaves[7]
-Rename-Item -Path $Leaves[7]\include -NewName $Leaves[7]\new_platforms
+Rename-Item -Path "$($Leaves[7])\include" -NewName "$($Leaves[7])\new_platforms"
