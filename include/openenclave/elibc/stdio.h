@@ -41,6 +41,14 @@ int vsnprintf(char* str, size_t size, const char* format, va_list ap)
     return elibc_vsnprintf(str, size, format, ap);
 }
 
+#ifdef _MSC_VER
+ELIBC_INLINE
+int _vsnprintf(char* str, size_t size, const char* format, va_list ap)
+{
+    return elibc_vsnprintf(str, size, format, ap);
+}
+#endif
+
 ELIBC_PRINTF_FORMAT(3, 4)
 ELIBC_INLINE
 int snprintf(char* str, size_t size, const char* format, ...)

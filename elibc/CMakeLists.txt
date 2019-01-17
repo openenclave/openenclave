@@ -4,7 +4,7 @@
 if(UNIX)
     set(SOURCES setjmp.S longjmp.S)
 elseif (WIN32)
-    # Put windows setjmp.asm and longjmp.asm here
+    set(SOURCES windows.c)
 endif()
 
 
