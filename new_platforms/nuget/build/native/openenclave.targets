@@ -87,13 +87,16 @@
         </When>
     </Choose>
     
-    <!-- Ignore Standard Include Paths and Default Libraries for Enclaves, except x86-OPTEE-Simulation-Debug -->
+    <!-- Configure SGX Enclave Compilation and Linking, except x86-OPTEE-Simulation-Debug -->
     <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave' And !($(IsTz) == True And $(IsSim) == True)">
         <ClCompile>
             <IgnoreStandardIncludePath>True</IgnoreStandardIncludePath>
+            <BasicRuntimeChecks>Default</BasicRuntimeChecks>
         </ClCompile>
         <Link>
-            <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+            <IgnoreAllDefaultLibraries>True</IgnoreAllDefaultLibraries>
+            <SubSystem>NotSet</SubSystem>
+            <NoEntryPoint>True</NoEntryPoint>
         </Link>
     </ItemDefinitionGroup>
 
