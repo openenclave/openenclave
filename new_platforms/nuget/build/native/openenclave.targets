@@ -16,7 +16,10 @@
         <TzHwArmDbg>$(MSBuildThisFileDirectory)..\..\lib\native\v141\tz\hw\arm\Debug</TzHwArmDbg>
 
         <OpteeSimX86Dbg>$(MSBuildThisFileDirectory)..\..\lib\native\v141\tz\sim\x86\Debug</OpteeSimX86Dbg>
+    </PropertyGroup>
 
+    <!-- List of SGX libraries for Enclaves and Hosts -->
+    <PropertyGroup>
         <SgxLibsT>sgx_tstdc.lib;sgx_tprotected_fs.lib;sgx_tcxx.lib;sgx_tstdc.lib;sgx_tcrypto.lib</SgxLibsT>
         <SgxHwLibsT>$(SgxLibsT);sgx_trts.lib;sgx_tservice.lib</SgxHwLibsT>
         <SgxSimLibsT>$(SgxLibsT);sgx_trts_sim.lib;sgx_tservice_sim.lib</SgxSimLibsT>
@@ -26,7 +29,64 @@
         <SgxSimLibsU>$(SgxLibsU);sgx_urts_sim.lib;sgx_uae_service_sim.lib</SgxSimLibsU>
     </PropertyGroup>
 
-    <!-- Additional Include Directories for Enclaves and Host Applications -->
+    <!-- Architecture Shorthands -->
+    <Choose>
+        <When Condition="'$(Platform)' == 'Win32' Or '$(Platform)' == 'x86'">
+            <PropertyGroup>
+                <IsX86>True</IsX86>
+                <IsX64>False</IsX64>
+                <IsARM>>False</IsARM>
+            </PropertyGroup>
+        </When>
+        <When Condition="'$(Platform)' == 'x64'">
+            <PropertyGroup>
+                <IsX86>False</IsX86>
+                <IsX64>True</IsX64>
+                <IsARM>>False</IsARM>
+            </PropertyGroup>
+        </When>
+        <When Condition="'$(Platform)' == 'ARM'">
+            <PropertyGroup>
+                <IsX86>False</IsX86>
+                <IsX64>False</IsX64>
+                <IsARM>>True</IsARM>
+            </PropertyGroup>
+        </When>
+    </Choose>
+
+    <!-- TEE Shorthands -->
+    <Choose>
+        <When Condition="('$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Release' Or '$(Configuration)' == 'SGX-Debug') And ($(IsX86) == True Or $(IsX64) == True)">
+            <PropertyGroup>
+                <IsSgx>True</IsSgx>
+                <IsTz>False</IsTz>
+                <IsSim>False</IsSim>
+            </PropertyGroup>
+        </When>
+        <When Condition="('$(Configuration)' == 'SGX-Simulation-Debug') And ($(IsX86) == True Or $(IsX64) == True)">
+            <PropertyGroup>
+                <IsSgx>True</IsSgx>
+                <IsTz>False</IsTz>
+                <IsSim>True</IsSim>
+            </PropertyGroup>
+        </When>
+        <When Condition="('$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Release' Or '$(Configuration)' == 'TZ-OPTEE-Debug') And ($(IsARM) == True)">
+            <PropertyGroup>
+                <IsSgx>False</IsSgx>
+                <IsTz>True</IsTz>
+                <IsSim>False</IsSim>
+            </PropertyGroup>
+        </When>
+        <When Condition="('$(Configuration)' == 'OPTEE-Simulation-Debug') And ($(IsX86) == True)">
+            <PropertyGroup>
+                <IsSgx>False</IsSgx>
+                <IsTz>True</IsTz>
+                <IsSim>True</IsSim>
+            </PropertyGroup>
+        </When>
+    </Choose>
+    
+    <!-- Additional Include Directories for Enclaves and Hosts -->
     <ItemDefinitionGroup>
         <ClCompile>
             <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -37,10 +97,10 @@
     <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave'">
         <ClCompile>
             <!-- SGX Hardware and Simulation --> 
-            <PreprocessorDefinitions Condition="'$(Configuration)' == 'SGX-Debug' Or '$(Configuration)' == 'SGX-Simulation-Debug'">OE_NO_SAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+            <PreprocessorDefinitions Condition="$(IsSgx) == True">OE_NO_SAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
             <!-- OP-TEE Simulation --> 
-            <PreprocessorDefinitions Condition="'$(Configuration)' == 'OPTEE-Simulation-Debug'">OE_SIMULATE_OPTEE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+            <PreprocessorDefinitions Condition="$(IsTz) == True And $(IsSim) == True">OE_SIMULATE_OPTEE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
         </ClCompile>
     </ItemDefinitionGroup>
 
@@ -48,18 +108,18 @@
     <ItemDefinitionGroup Condition="'$(OEType)' != 'Enclave'">
         <ClCompile>
             <!-- OP-TEE Simulation --> 
-            <PreprocessorDefinitions Condition="'$(Configuration)' == 'OPTEE-Simulation-Debug'">OE_SIMULATE_OPTEE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+            <PreprocessorDefinitions Condition="$(IsTz) == True And $(IsSim) == True">OE_SIMULATE_OPTEE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
         </ClCompile>
     </ItemDefinitionGroup>
 
-    <!-- Additional Library Directories for Enclaves and Host Applications -->
+    <!-- Additional Library Directories for Enclaves and Hosts -->
     <ItemDefinitionGroup>
         <Link>
             <!-- x86-SGX-Debug & x86-SGX-Simulation-Debug -->
-            <AdditionalLibraryDirectories Condition="('$(Configuration)' == 'SGX-Debug' Or '$(Configuration)' == 'SGX-Simulation-Debug') And ('$(Platform)' == 'Win32' Or '$(Platform)' == 'x86')">$(SGXSDKInstallPath)\bin\Win32\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+            <AdditionalLibraryDirectories Condition="$(IsSgx) == True And $(IsX86) == True">$(SGXSDKInstallPath)\bin\Win32\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
 
             <!-- x64-SGX-Debug & x64-SGX-Simulation-Debug -->
-            <AdditionalLibraryDirectories Condition="('$(Configuration)' == 'SGX-Debug' Or '$(Configuration)' == 'SGX-Simulation-Debug') And '$(Platform)' == 'x64'">$(SGXSDKInstallPath)\bin\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+            <AdditionalLibraryDirectories Condition="$(IsSgx) == True And $(IsX64) == True">$(SGXSDKInstallPath)\bin\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
         </Link>
     </ItemDefinitionGroup>
 
@@ -67,52 +127,52 @@
     <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave'">
         <Link>
             <!-- All, except OP-TEE Simulation -->
-            <IgnoreAllDefaultLibraries Condition="'$(Configuration)' != 'OPTEE-Simulation-Debug'">true</IgnoreAllDefaultLibraries>
+            <IgnoreAllDefaultLibraries Condition="!($(IsTz) == True And $(IsSim) == True)">True</IgnoreAllDefaultLibraries>
 
             <!-- x86-SGX-Debug -->
-            <AdditionalDependencies Condition="'$(Configuration)' == 'SGX-Debug' And ('$(Platform)' == 'Win32' Or '$(Platform)' == 'x86')">$(SgxHwX86Dbg)\oeenclave.lib;$(SgxHwX86Dbg)\oesocket_enc.lib;$(SgxHwX86Dbg)\oestdio_enc.lib;$(SgxHwLibsT)</AdditionalDependencies>
+            <AdditionalDependencies Condition="$(IsSgx) == True And $(IsX86) == True">$(SgxHwX86Dbg)\oeenclave.lib;$(SgxHwX86Dbg)\oesocket_enc.lib;$(SgxHwX86Dbg)\oestdio_enc.lib;$(SgxHwLibsT)</AdditionalDependencies>
 
             <!-- x64-SGX-Debug -->
-            <AdditionalDependencies Condition="'$(Configuration)' == 'SGX-Debug' And '$(Platform)' == 'x64'">$(SgxHwX64Dbg)\oeenclave.lib;$(SgxHwX64Dbg)\oesocket_enc.lib;$(SgxHwX64Dbg)\oestdio_enc.lib;$(SgxHwLibsT)</AdditionalDependencies>
+            <AdditionalDependencies Condition="$(IsSgx) == True And $(IsX64) == True">$(SgxHwX64Dbg)\oeenclave.lib;$(SgxHwX64Dbg)\oesocket_enc.lib;$(SgxHwX64Dbg)\oestdio_enc.lib;$(SgxHwLibsT)</AdditionalDependencies>
 
             <!-- x86-SGX-Simulation-Debug -->
-            <AdditionalDependencies Condition="'$(Configuration)' == 'SGX-Simulation-Debug' And ('$(Platform)' == 'Win32' Or '$(Platform)' == 'x86')">$(SgxSimX86Dbg)\oeenclave.lib;$(SgxSimX86Dbg)\oesocket_enc.lib;$(SgxSimX86Dbg)\oestdio_enc.lib;$(SgxSimLibsT)</AdditionalDependencies>
+            <AdditionalDependencies Condition="$(IsSgx) == True And $(IsX86) == True And $(IsSim) == True">$(SgxSimX86Dbg)\oeenclave.lib;$(SgxSimX86Dbg)\oesocket_enc.lib;$(SgxSimX86Dbg)\oestdio_enc.lib;$(SgxSimLibsT)</AdditionalDependencies>
 
             <!-- x64-SGX-Simulation-Debug -->
-            <AdditionalDependencies Condition="'$(Configuration)' == 'SGX-Simulation-Debug' And '$(Platform)' == 'x64'">$(SgxSimX64Dbg)\oeenclave.lib;$(SgxSimX64Dbg)\oesocket_enc.lib;$(SgxSimX64Dbg)\oestdio_enc.lib;$(SgxSimLibsT)</AdditionalDependencies>
+            <AdditionalDependencies Condition="$(IsSgx) == True And $(IsX64) == True And $(IsSim) == True">$(SgxSimX64Dbg)\oeenclave.lib;$(SgxSimX64Dbg)\oesocket_enc.lib;$(SgxSimX64Dbg)\oestdio_enc.lib;$(SgxSimLibsT)</AdditionalDependencies>
 
             <!-- x86-OPTEE-Simulation-Debug -->
-            <AdditionalDependencies Condition="'$(Configuration)' == 'OPTEE-Simulation-Debug' And ('$(Platform)' == 'Win32' Or '$(Platform)' == 'x86')">$(OpteeSimX86Dbg)\oeenclave.lib;$(OpteeSimX86Dbg)\oesocket_enc.lib;$(OpteeSimX86Dbg)\oestdio_enc.lib;$(OpteeSimX86Dbg)\oeenclave_opteesim.lib;onecore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies Condition="$(IsTz) == True And $(IsX86) == True And $(IsSim) == True">$(OpteeSimX86Dbg)\oeenclave.lib;$(OpteeSimX86Dbg)\oesocket_enc.lib;$(OpteeSimX86Dbg)\oestdio_enc.lib;$(OpteeSimX86Dbg)\oeenclave_opteesim.lib;onecore.lib;%(AdditionalDependencies)</AdditionalDependencies>
         </Link>
     </ItemDefinitionGroup>
 
-    <!-- Additional Dependencies for Host Applications -->
+    <!-- Additional Dependencies for Hosts -->
     <ItemDefinitionGroup Condition="'$(OEType)' != 'Enclave'">
         <Link>
             <!-- x86-SGX-Debug -->
-            <AdditionalDependencies Condition="'$(Configuration)' == 'SGX-Debug' And ('$(Platform)' == 'Win32' Or '$(Platform)' == 'x86')">$(SgxHwX86Dbg)\oehost.lib;$(SgxHwX86Dbg)\oesocket_host.lib;$(SgxHwX86Dbg)\oestdio_host.lib;onecore.lib;%(SgxHwLibsU);%(AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies Condition="$(IsSgx) == True And $(IsX86) == True">$(SgxHwX86Dbg)\oehost.lib;$(SgxHwX86Dbg)\oesocket_host.lib;$(SgxHwX86Dbg)\oestdio_host.lib;onecore.lib;%(SgxHwLibsU);%(AdditionalDependencies)</AdditionalDependencies>
 
             <!-- x64-SGX-Debug -->
-            <AdditionalDependencies Condition="'$(Configuration)' == 'SGX-Debug' And '$(Platform)' == 'x64'">$(SgxHwX64Dbg)\oehost.lib;$(SgxHwX64Dbg)\oesocket_host.lib;$(SgxHwX64Dbg)\oestdio_host.lib;onecore.lib;%(SgxHwLibsU);%(AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies Condition="$(IsSgx) == True And $(IsX64) == True">$(SgxHwX64Dbg)\oehost.lib;$(SgxHwX64Dbg)\oesocket_host.lib;$(SgxHwX64Dbg)\oestdio_host.lib;onecore.lib;%(SgxHwLibsU);%(AdditionalDependencies)</AdditionalDependencies>
 
             <!-- x86-SGX-Simulation-Debug -->
-            <AdditionalDependencies Condition="'$(Configuration)' == 'SGX-Simulation-Debug' And ('$(Platform)' == 'Win32' Or '$(Platform)' == 'x86')">$(SgxSimX86Dbg)\oehost.lib;$(SgxSimX86Dbg)\oesocket_host.lib;$(SgxSimX86Dbg)\oestdio_host.lib;onecore.lib;%(SgxSimLibsU);%(AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies Condition="$(IsSgx) == True And $(IsX86) == True And $(IsSim) == True">$(SgxSimX86Dbg)\oehost.lib;$(SgxSimX86Dbg)\oesocket_host.lib;$(SgxSimX86Dbg)\oestdio_host.lib;onecore.lib;%(SgxSimLibsU);%(AdditionalDependencies)</AdditionalDependencies>
 
             <!-- x64-SGX-Simulation-Debug -->
-            <AdditionalDependencies Condition="'$(Configuration)' == 'SGX-Simulation-Debug' And '$(Platform)' == 'x64'">$(SgxSimX64Dbg)\oehost.lib;$(SgxSimX64Dbg)\oesocket_host.lib;$(SgxSimX64Dbg)\oestdio_host.lib;onecore.lib;%(SgxSimLibsU);%(AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies Condition="$(IsSgx) == True And $(IsX64) == True And $(IsSim) == True">$(SgxSimX64Dbg)\oehost.lib;$(SgxSimX64Dbg)\oesocket_host.lib;$(SgxSimX64Dbg)\oestdio_host.lib;onecore.lib;%(SgxSimLibsU);%(AdditionalDependencies)</AdditionalDependencies>
 
             <!-- arm-TZ-OPTEE-Debug -->
-            <AdditionalDependencies Condition="'$(Configuration)' == 'TZ-OPTEE-Debug' And '$(Platform)' == 'ARM'">$(TzHwArmDbg)\oehost.lib;$(TzHwArmDbg)\oesocket_host.lib;$(TzHwArmDbg)\oestdio_host.lib;onecore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies Condition="$(IsTz) == True And $(IsARM) == True">$(TzHwArmDbg)\oehost.lib;$(TzHwArmDbg)\oesocket_host.lib;$(TzHwArmDbg)\oestdio_host.lib;onecore.lib;%(AdditionalDependencies)</AdditionalDependencies>
 
             <!-- x86-OPTEE-Simulation-Debug -->
-            <AdditionalDependencies Condition="'$(Configuration)' == 'OPTEE-Simulation-Debug' And ('$(Platform)' == 'Win32' Or '$(Platform)' == 'x86')">$(OpteeSimX86Dbg)\oehost.lib;$(OpteeSimX86Dbg)\oesocket_host.lib;$(OpteeSimX86Dbg)\oestdio_host.lib;$(OpteeSimX86Dbg)\oehost_opteesim.lib;onecore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies Condition="$(IsTz) == True And $(IsX86) == True And $(IsSim) == True">$(OpteeSimX86Dbg)\oehost.lib;$(OpteeSimX86Dbg)\oesocket_host.lib;$(OpteeSimX86Dbg)\oestdio_host.lib;$(OpteeSimX86Dbg)\oehost_opteesim.lib;onecore.lib;%(AdditionalDependencies)</AdditionalDependencies>
         </Link>
     </ItemDefinitionGroup>
 
     <!-- Post-Build Events for Enclaves -->
     <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave'">
-        <!-- x86-SGX-Debug & x86-SGX-Simulation-Debug -->
-        <PostBuildEvent Condition="'$(Configuration)' == 'SGX-Debug' Or '$(Configuration)' == 'SGX-Simulation-Debug'">
+        <!-- *-SGX-Debug & *-SGX-Simulation-Debug -->
+        <PostBuildEvent Condition="$(IsSgx) == True">
             <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" sign -key "$(ProjectDir)$(TargetName)_private.pem" -enclave "$(OutDir)$(TargetFileName)" -out "$(OutDir)$(TargetName).signed.dll" -config "$(ProjectDir)$(TargetName).config.xml"</Command>
             <Message>Sign the enclave for Intel SGX.</Message>
         </PostBuildEvent>
