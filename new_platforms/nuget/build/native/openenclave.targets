@@ -184,9 +184,7 @@
     <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave'">
         <Link>
             <!-- All, except OP-TEE Simulation -->
-            <IgnoreAllDefaultLibraries Condition="!($(IsTz) == True And $(IsSim) == True)">
-                True
-            </IgnoreAllDefaultLibraries>
+            <IgnoreAllDefaultLibraries Condition="!($(IsTz) == True And $(IsSim) == True)">True</IgnoreAllDefaultLibraries>
 
             <!-- x86-SGX-Debug -->
             <AdditionalDependencies Condition="$(IsSgx) == True And $(IsX86) == True">
