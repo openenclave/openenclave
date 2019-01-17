@@ -5,27 +5,29 @@
 #define _THREAD_ARGS_H
 
 #include <atomic>
+#include <mutex>
 
-const size_t MAX_ENC_KEYS = 16;
+const uint64_t MAX_ENC_KEYS = 16;
 
-typedef struct _thread_args
+class atomic_flag_lock
 {
-    oe_enclave_t* enclave;
-    uint64_t enc_key;
-    int join_ret;
-    void* join_value_ptr;
-    int detach_ret;
-} ThreadArgs;
+  public:
+    void lock()
+    {
+        while (_flag.test_and_set())
+        {
+            continue;
+        }
+    }
+    void unlock()
+    {
+        _flag.clear();
+    }
 
-static inline void _acquire_lock(std::atomic_flag* lock)
-{
-    while (lock->test_and_set(std::memory_order_acquire))
-        ;
-}
+  private:
+    std::atomic_flag _flag = ATOMIC_FLAG_INIT;
+};
 
-static inline void _release_lock(std::atomic_flag* lock)
-{
-    lock->clear(std::memory_order_release);
-}
+typedef std::unique_lock<atomic_flag_lock> atomic_lock;
 
 #endif /* _THREAD_ARGS_H */
