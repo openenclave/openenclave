@@ -94,5 +94,11 @@ Copy-Libs build\x86\tzsim\out\lib\Debug  $Leaves[5] -WithEnclaveLibraries -WithH
 # oeedger8r Tool
 Copy-Item build\oeedger8r.exe            $Leaves[6]
 
-# Finally, copy the headers from the source tree.
+# Copy the headers from the source tree.
+
+# Open Enclave
 Copy-Item -Recurse -Path $ENV:SOURCES_PATH\include\openenclave -Destination $Leaves[7]
+
+# New Platforms
+Copy-Item -Recurse -Path $ENV:SOURCES_PATH\new_platforms\include -Destination $Leaves[7]
+Rename-Item -Path $Leaves[7]\include -NewName $Leaves[7]\new_platforms
