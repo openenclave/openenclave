@@ -35,21 +35,21 @@
             <PropertyGroup>
                 <IsX86>True</IsX86>
                 <IsX64>False</IsX64>
-                <IsARM>>False</IsARM>
+                <IsARM>False</IsARM>
             </PropertyGroup>
         </When>
         <When Condition="'$(Platform)' == 'x64'">
             <PropertyGroup>
                 <IsX86>False</IsX86>
                 <IsX64>True</IsX64>
-                <IsARM>>False</IsARM>
+                <IsARM>False</IsARM>
             </PropertyGroup>
         </When>
         <When Condition="'$(Platform)' == 'ARM'">
             <PropertyGroup>
                 <IsX86>False</IsX86>
                 <IsX64>False</IsX64>
-                <IsARM>>True</IsARM>
+                <IsARM>True</IsARM>
             </PropertyGroup>
         </When>
     </Choose>
@@ -75,8 +75,7 @@
                 <IsSgx>False</IsSgx>
                 <IsTz>True</IsTz>
                 <IsSim>False</IsSim>
-            </Prop        </Link>
-    </ItemDefinitionGroup>ertyGroup>
+            </PropertyGroup>
         </When>
         <When Condition="('$(Configuration)' == 'OPTEE-Simulation-Debug') And ($(IsX86) == True)">
             <PropertyGroup>
@@ -86,12 +85,15 @@
             </PropertyGroup>
         </When>
     </Choose>
-
-    <!-- Ignore Standard Include Paths for Enclaves, except x86-OPTEE-Simulation-Debug -->
+    
+    <!-- Ignore Standard Include Paths and Default Libraries for Enclaves, except x86-OPTEE-Simulation-Debug -->
     <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave' And !($(IsTz) == True And $(IsSim) == True)">
         <ClCompile>
             <IgnoreStandardIncludePath>True</IgnoreStandardIncludePath>
         </ClCompile>
+        <Link>
+            <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+        </Link>
     </ItemDefinitionGroup>
 
     <!-- Additional Include Directories for Enclaves and Hosts -->
@@ -102,7 +104,7 @@
     </ItemDefinitionGroup>
 
     <!-- Additional Include Directories for Enclaves only -->
-    
+
     <!-- *-SGX-Debug and *-SGX-Simulation-Debug -->
     <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave' And $(IsSgx) == True">
         <ClCompile>
@@ -129,10 +131,10 @@
     <!-- Preprocessor Definitions for Enclaves Only -->
     <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave'">
         <ClCompile>
-            <!-- SGX Hardware and Simulation --> 
+            <!-- SGX Hardware and Simulation -->
             <PreprocessorDefinitions Condition="$(IsSgx) == True">OE_NO_SAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
-            <!-- OP-TEE Simulation --> 
+            <!-- OP-TEE Simulation -->
             <PreprocessorDefinitions Condition="$(IsTz) == True And $(IsSim) == True">OE_SIMULATE_OPTEE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
         </ClCompile>
     </ItemDefinitionGroup>
@@ -140,7 +142,7 @@
     <!-- Preprocessor Definitions for Hosts Only -->
     <ItemDefinitionGroup Condition="'$(OEType)' != 'Enclave'">
         <ClCompile>
-            <!-- OP-TEE Simulation --> 
+            <!-- OP-TEE Simulation -->
             <PreprocessorDefinitions Condition="$(IsTz) == True And $(IsSim) == True">OE_SIMULATE_OPTEE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
         </ClCompile>
     </ItemDefinitionGroup>
@@ -183,16 +185,16 @@
     <ItemDefinitionGroup Condition="'$(OEType)' != 'Enclave'">
         <Link>
             <!-- x86-SGX-Debug -->
-            <AdditionalDependencies Condition="$(IsSgx) == True And $(IsX86) == True">$(SgxHwX86Dbg)\oehost.lib;$(SgxHwX86Dbg)\oesocket_host.lib;$(SgxHwX86Dbg)\oestdio_host.lib;onecore.lib;%(SgxHwLibsU);%(AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies Condition="$(IsSgx) == True And $(IsX86) == True">$(SgxHwX86Dbg)\oehost.lib;$(SgxHwX86Dbg)\oesocket_host.lib;$(SgxHwX86Dbg)\oestdio_host.lib;onecore.lib;$(SgxHwLibsU);%(AdditionalDependencies)</AdditionalDependencies>
 
             <!-- x64-SGX-Debug -->
-            <AdditionalDependencies Condition="$(IsSgx) == True And $(IsX64) == True">$(SgxHwX64Dbg)\oehost.lib;$(SgxHwX64Dbg)\oesocket_host.lib;$(SgxHwX64Dbg)\oestdio_host.lib;onecore.lib;%(SgxHwLibsU);%(AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies Condition="$(IsSgx) == True And $(IsX64) == True">$(SgxHwX64Dbg)\oehost.lib;$(SgxHwX64Dbg)\oesocket_host.lib;$(SgxHwX64Dbg)\oestdio_host.lib;onecore.lib;$(SgxHwLibsU);%(AdditionalDependencies)</AdditionalDependencies>
 
             <!-- x86-SGX-Simulation-Debug -->
-            <AdditionalDependencies Condition="$(IsSgx) == True And $(IsX86) == True And $(IsSim) == True">$(SgxSimX86Dbg)\oehost.lib;$(SgxSimX86Dbg)\oesocket_host.lib;$(SgxSimX86Dbg)\oestdio_host.lib;onecore.lib;%(SgxSimLibsU);%(AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies Condition="$(IsSgx) == True And $(IsX86) == True And $(IsSim) == True">$(SgxSimX86Dbg)\oehost.lib;$(SgxSimX86Dbg)\oesocket_host.lib;$(SgxSimX86Dbg)\oestdio_host.lib;onecore.lib;$(SgxSimLibsU);%(AdditionalDependencies)</AdditionalDependencies>
 
             <!-- x64-SGX-Simulation-Debug -->
-            <AdditionalDependencies Condition="$(IsSgx) == True And $(IsX64) == True And $(IsSim) == True">$(SgxSimX64Dbg)\oehost.lib;$(SgxSimX64Dbg)\oesocket_host.lib;$(SgxSimX64Dbg)\oestdio_host.lib;onecore.lib;%(SgxSimLibsU);%(AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies Condition="$(IsSgx) == True And $(IsX64) == True And $(IsSim) == True">$(SgxSimX64Dbg)\oehost.lib;$(SgxSimX64Dbg)\oesocket_host.lib;$(SgxSimX64Dbg)\oestdio_host.lib;onecore.lib;$(SgxSimLibsU);%(AdditionalDependencies)</AdditionalDependencies>
 
             <!-- arm-TZ-OPTEE-Debug -->
             <AdditionalDependencies Condition="$(IsTz) == True And $(IsARM) == True">$(TzHwArmDbg)\oehost.lib;$(TzHwArmDbg)\oesocket_host.lib;$(TzHwArmDbg)\oestdio_host.lib;onecore.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -210,5 +212,5 @@
             <Message>Sign the enclave for Intel SGX.</Message>
         </PostBuildEvent>
     </ItemDefinitionGroup>
-
+    
 </Project>
