@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10.2 FATAL_ERROR)
 
 project("Open Enclave SDK (New Platforms)" VERSION 0.1 LANGUAGES C CXX)
 
@@ -96,16 +96,16 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out/lib)
 
 # Add common compiler definitions
 if(UNIX)
-    add_compile_definitions(LINUX)
+    add_definitions(-DLINUX)
 endif()
 
 if(SGX)
-    add_compile_definitions(OE_USE_SGX)
+    add_definitions(-DOE_USE_SGX)
 else()
     if(SIM)
-        add_compile_definitions(OE_SIMULATE_OPTEE)
+        add_definitions(-DOE_SIMULATE_OPTEE)
     else()
-        add_compile_definitions(OE_USE_OPTEE)
+        add_definitions(-DOE_USE_OPTEE)
     endif()
 endif()
 
