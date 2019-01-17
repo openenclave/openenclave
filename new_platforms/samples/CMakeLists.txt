@@ -3,6 +3,7 @@
 
 add_subdirectory(helloworld)
 add_subdirectory(sockets)
+add_subdirectory(simsectempsensor)
 
 # CyReS attestation is not available on SGX, so this sample is only valid for
 # ARM TrustZone.
