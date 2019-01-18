@@ -1,4 +1,4 @@
-../../3rdparty/mbedtls/mbedtls/programs/test/selftest.c
+selftest
 asn1write
 base64
 ccm

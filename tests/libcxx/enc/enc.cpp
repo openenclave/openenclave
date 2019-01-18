@@ -268,7 +268,8 @@ int enc_test(char test_name[STRLEN])
                                         .join = _pthread_join_hook,
                                         .detach = _pthread_detach_hook};
     static const char* argv[] = {
-        "test", NULL,
+        "test",
+        NULL,
     };
     static const int argc = sizeof(argv) / sizeof(argv[0]);
 
