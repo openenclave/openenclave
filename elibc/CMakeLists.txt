@@ -38,5 +38,5 @@ target_include_directories(oeelibc PRIVATE
 set_property(TARGET oeelibc
     PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 
-install(TARGETS oeelibc
+install(TARGETS oeelibc EXPORT openenclave-targets
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)

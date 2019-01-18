@@ -49,7 +49,7 @@ const char* elibc_uint64_to_octstr(elibc_intstr_buf_t* buf, uint64_t x, size_t* 
     } while (x /= 8);
 
     if (size)
-        *size = end - p;
+        *size = (size_t)(end - p);
 
     return p;
 }
@@ -68,7 +68,7 @@ const char* elibc_uint64_to_decstr(elibc_intstr_buf_t* buf, uint64_t x, size_t* 
     } while (x /= 10);
 
     if (size)
-        *size = end - p;
+        *size = (size_t)(end - p);
 
     return p;
 }
@@ -104,7 +104,7 @@ const char* elibc_int64_to_decstr(elibc_intstr_buf_t* buf, int64_t x, size_t* si
         *--p = '-';
 
     if (size)
-        *size = end - p;
+        *size = (size_t)(end - p);
 
     return p;
 }

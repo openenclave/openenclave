@@ -61,7 +61,7 @@ unsigned long int elibc_strtoul(const char* nptr, char** endptr, int base)
     if (endptr)
         *endptr = (char*)nptr;
 
-    if (!nptr)
+    if (!nptr || base < 0)
         return 0;
 
     /* Set scanning pointer to nptr */
@@ -106,7 +106,7 @@ unsigned long int elibc_strtoul(const char* nptr, char** endptr, int base)
         /* Multiply by base */
         {
             /* Check for overflow */
-            if (x > ELIBC_UINT64_MAX / base)
+            if (x > ELIBC_UINT64_MAX / (unsigned long)base)
             {
                 if (endptr)
                     *endptr = (char*)p;
@@ -114,7 +114,7 @@ unsigned long int elibc_strtoul(const char* nptr, char** endptr, int base)
                 return ELIBC_UINT64_MAX;
             }
 
-            x = x * base;
+            x = x * (unsigned long)base;
         }
 
         /* Add digit */
@@ -144,7 +144,14 @@ unsigned long int elibc_strtoul(const char* nptr, char** endptr, int base)
     /* Invert if negative */
     if (negative)
     {
-        x = -(int64_t)x;
+        if (x > ELIBC_LONG_MAX)
+        {
+            if (x == (unsigned long)ELIBC_LONG_MAX + 1)
+                return x;
+            else
+                return 0;
+        }
+        x = (unsigned long)-(long)x;
     }
 
     return x;

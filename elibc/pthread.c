@@ -24,18 +24,25 @@ int elibc_pthread_create(
     void* (*start_routine)(void*),
     void* arg)
 {
+    OE_UNUSED(thread);
+    OE_UNUSED(attr);
+    OE_UNUSED(start_routine);
+    OE_UNUSED(arg);
     assert("elibc_pthread_create(): panic" == NULL);
     return -1;
 }
 
 int elibc_pthread_join(elibc_pthread_t thread, void** retval)
 {
+    OE_UNUSED(thread);
+    OE_UNUSED(retval);
     assert("pthread_join(): panic" == NULL);
     return -1;
 }
 
 int elibc_pthread_detach(elibc_pthread_t thread)
 {
+    OE_UNUSED(thread);
     assert("pthread_detach(): panic" == NULL);
     return -1;
 }
@@ -83,6 +90,7 @@ int elibc_pthread_once(elibc_pthread_once_t* once, void (*func)(void))
 
 int elibc_pthread_spin_init(elibc_pthread_spinlock_t* spinlock, int pshared)
 {
+    OE_UNUSED(pshared);
     return _to_errno(oe_spin_init((oe_spinlock_t*)spinlock));
 }
 
@@ -111,6 +119,7 @@ int elibc_pthread_spin_destroy(elibc_pthread_spinlock_t* spinlock)
 
 int elibc_pthread_mutexattr_init(elibc_pthread_mutexattr_t* attr)
 {
+    OE_UNUSED(attr);
     return 0;
 }
 
@@ -118,11 +127,14 @@ int elibc_pthread_mutexattr_settype(
     elibc_pthread_mutexattr_t* attr,
     int type)
 {
+    OE_UNUSED(attr);
+    OE_UNUSED(type);
     return 0;
 }
 
 int elibc_pthread_mutexattr_destroy(elibc_pthread_mutexattr_t* attr)
 {
+    OE_UNUSED(attr);
     return 0;
 }
 
@@ -130,6 +142,7 @@ int elibc_pthread_mutex_init(
     elibc_pthread_mutex_t* m,
     const elibc_pthread_mutexattr_t* attr)
 {
+    OE_UNUSED(attr);
     return _to_errno(oe_mutex_init((oe_mutex_t*)m));
 }
 
@@ -165,6 +178,7 @@ int elibc_pthread_rwlock_init(
     elibc_pthread_rwlock_t* rwlock,
     const elibc_pthread_rwlockattr_t* attr)
 {
+    OE_UNUSED(attr);
     return _to_errno(oe_rwlock_init((oe_rwlock_t*)rwlock));
 }
 
@@ -200,6 +214,7 @@ int elibc_pthread_cond_init(
     elibc_pthread_cond_t* cond,
     const elibc_pthread_condattr_t* attr)
 {
+    OE_UNUSED(attr);
     return _to_errno(oe_cond_init((oe_cond_t*)cond));
 }
 
@@ -215,6 +230,9 @@ int elibc_pthread_cond_timedwait(
     elibc_pthread_mutex_t* mutex,
     const struct elibc_timespec* ts)
 {
+    OE_UNUSED(cond);
+    OE_UNUSED(mutex);
+    OE_UNUSED(ts);
     assert("pthread_cond_timedwait(): panic" == NULL);
     return -1;
 }

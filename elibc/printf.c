@@ -19,12 +19,12 @@
 **==============================================================================
 */
 
-#define FLAG_NONE (1 << 0)
-#define FLAG_MINUS (1 << 1)
-#define FLAG_PLUS (1 << 2)
-#define FLAG_SPACE (1 << 3)
-#define FLAG_POUND (1 << 4)
-#define FLAG_ZERO (1 << 5)
+#define FLAG_NONE (uint32_t)(1 << 0)
+#define FLAG_MINUS (uint32_t)(1 << 1)
+#define FLAG_PLUS (uint32_t)(1 << 2)
+#define FLAG_SPACE (uint32_t)(1 << 3)
+#define FLAG_POUND (uint32_t)(1 << 4)
+#define FLAG_ZERO (uint32_t)(1 << 5)
 
 #define ELIBC_STRLEN(STR) (sizeof(STR) - 1)
 #define ELIBC_STRLIT(STR) STR, ELIBC_STRLEN(STR)
@@ -33,7 +33,7 @@ typedef struct _elibc_out elibc_out_t;
 
 struct _elibc_out
 {
-    ssize_t (*write)(elibc_out_t* out, const void* buf, size_t count);
+    size_t (*write)(elibc_out_t* out, const void* buf, size_t count);
 };
 
 enum type
@@ -119,11 +119,11 @@ static const char* _parse_placeholder(
     if (elibc_isdigit(*p))
     {
         char* end = NULL;
-        ph->width = elibc_strtoul(p, &end, 10);
-
-        if (!end)
+        unsigned long int ul = elibc_strtoul(p, &end, 10);
+        if (!end || ul > ELIBC_INT_MAX)
             return NULL;
 
+        ph->width = (int)ul;
         p = end;
     }
     else if (*p == '*')
@@ -141,11 +141,11 @@ static const char* _parse_placeholder(
         if (elibc_isdigit(*p))
         {
             char* end = NULL;
-            ph->precision = elibc_strtoul(p, &end, 10);
-
-            if (!end)
+            unsigned long int ul = elibc_strtoul(p, &end, 10);
+            if (!end || ul > ELIBC_INT_MAX)
                 return NULL;
 
+            ph->precision = (int)ul;
             p = end;
         }
         else if (*p == '*')
@@ -303,7 +303,7 @@ static void _str_toupper(char* s)
 {
     while (*s)
     {
-        *s = elibc_toupper(*s);
+        *s = (char)elibc_toupper(*s);
         s++;
     }
 }
@@ -359,11 +359,11 @@ static size_t _format(
     char pad = ' ';
     size_t n = 0;
 
-    if (ph->width != ELIBC_INT_MAX && ph->width > len)
-        nwidth = ph->width - len;
+    if (ph->width != ELIBC_INT_MAX && (size_t)ph->width > len)
+        nwidth = (size_t)ph->width - len;
 
-    if (ph->precision != ELIBC_INT_MAX && ph->precision > len)
-        nprecision = ph->precision - len;
+    if (ph->precision != ELIBC_INT_MAX && (size_t)ph->precision > len)
+        nprecision = (size_t)ph->precision - len;
 
     if (nprecision > nwidth)
         nwidth = 0;
@@ -374,8 +374,8 @@ static size_t _format(
     if (ph->flags & FLAG_ZERO)
         pad = '0';
 
-    if (ph->type == TYPE_s && len > ph->precision)
-        len = ph->precision;
+    if (ph->type == TYPE_s && len > (size_t)ph->precision)
+        len = (size_t)ph->precision;
 
     /* Prepend space to positive numbers */
     if (ph->conversion == 'd' && (ph->flags & FLAG_SPACE) && buf[0] != '-')
@@ -449,7 +449,7 @@ static int _vprintf(elibc_out_t* out, const char* fmt, elibc_va_list ap)
                 }
                 case TYPE_c:
                 {
-                    buf[0] = elibc_va_arg(ap, int);
+                    buf[0] = (char)elibc_va_arg(ap, int);
                     buf[1] = '\0';
                     s = buf;
                     sn = sizeof(char);
@@ -559,7 +559,8 @@ typedef struct _elibc_out_str
     size_t off;
 } elibc_out_str_t;
 
-static ssize_t _write(elibc_out_t* out_, const void* buf, size_t count)
+/* Not POSIX compliant write since this method does not return errno */
+static size_t _write(elibc_out_t* out_, const void* buf, size_t count)
 {
     elibc_out_str_t* out = (elibc_out_str_t*)out_;
 
@@ -663,7 +664,10 @@ int elibc_vprintf(const char* fmt, elibc_va_list ap_)
         n = oe_vsnprintf(buf, sizeof(buf), fmt, ap);
         elibc_va_end(ap);
 
-        if (n < sizeof(buf))
+        if (n < 0)
+            goto done;
+
+        if ((size_t)n < sizeof(buf))
         {
             oe_host_write(0, p, (size_t)-1);
             goto done;
@@ -672,15 +676,18 @@ int elibc_vprintf(const char* fmt, elibc_va_list ap_)
 
     /* If string was truncated, retry with correctly sized buffer */
     {
-        if (!(new_buf = (char*)malloc(n + 1)))
+        if (!(new_buf = (char*)malloc((size_t)n + 1)))
             goto done;
 
         p = new_buf;
 
         elibc_va_list ap;
         elibc_va_copy(ap, ap_);
-        n = oe_vsnprintf(p, n + 1, fmt, ap);
+        n = oe_vsnprintf(p, (size_t)n + 1, fmt, ap);
         elibc_va_end(ap);
+
+        if (n < 0)
+            goto done;
 
         oe_host_write(0, p, (size_t)-1);
     }

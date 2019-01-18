@@ -93,13 +93,13 @@ int elibc_isxdigit(int c)
 ELIBC_INLINE
 int elibc_toupper(int c)
 {
-    return __elibc_ctype_toupper_loc[c];
+    return (int)__elibc_ctype_toupper_loc[c];
 }
 
 ELIBC_INLINE
 int elibc_tolower(int c)
 {
-    return __elibc_ctype_tolower_loc[c];
+    return (int)__elibc_ctype_tolower_loc[c];
 }
 
 #if defined(ELIBC_NEED_STDC_NAMES)
