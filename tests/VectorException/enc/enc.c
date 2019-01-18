@@ -276,8 +276,8 @@ int enc_test_vector_exception()
         return -1;
     }
 
-    oe_host_printf(
-        "enc_test_vector_exception: hardware exception is handled correctly!\n");
+    oe_host_printf("enc_test_vector_exception: hardware exception is handled "
+                   "correctly!\n");
 
     if (vector_exception_cleanup() != 0)
     {
