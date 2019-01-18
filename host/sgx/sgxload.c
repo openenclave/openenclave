@@ -265,8 +265,7 @@ done:
               MEM_COMMIT | MEM_RESERVE,
               PAGE_EXECUTE_READWRITE)))
     {
-        OE_TRACE_ERROR(
-            "VirtualAlloc failed enclave_size=0x%lx", enclave_size);
+        OE_TRACE_ERROR("VirtualAlloc failed enclave_size=0x%lx", enclave_size);
         goto done;
     }
 
@@ -731,9 +730,7 @@ oe_result_t oe_sgx_load_enclave_data(
 
             if ((uint32_t)prot > OE_INT_MAX)
                 OE_RAISE_MSG(
-                    OE_FAILURE,
-                    "Unexpected page protections: %#x",
-                    prot);
+                    OE_FAILURE, "Unexpected page protections: %#x", prot);
 
 #if defined(__linux__)
             if (mprotect((void*)addr, OE_PAGE_SIZE, prot) != 0)
