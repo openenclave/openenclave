@@ -2,7 +2,29 @@
 // Licensed under the MIT License.
 
 enclave {
+    include "sys/uio.h"
+
     trusted {
         public void test();
+    };
+
+    untrusted {
+        int f_open(
+            [in, string]char* path,
+            int flags,
+            int mode);
+
+        int f_read(
+            int fd,
+            [in, out, size=len] char* ptr,
+            size_t len);
+
+        int f_readv(
+            int fd,
+            [in, out, size=len] struct iovec* ptr,
+            size_t len);
+
+        int f_close(
+            int fd);
     };
 };

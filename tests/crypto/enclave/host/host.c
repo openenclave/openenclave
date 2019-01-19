@@ -14,45 +14,26 @@
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <unistd.h>
-#include "../syscall_args.h"
 #include "crypto_u.h"
 
-OE_OCALL void f_open(void* syscall_args)
+int f_open(char* path, int flags, int mode)
 {
-    syscall_args_t* args = (syscall_args_t*)syscall_args;
-
-    args->fd = open(args->path, args->flags, args->mode);
-
-    return;
+    return open(path, flags, mode);
 }
 
-OE_OCALL void f_read(void* syscall_args)
+int f_read(int fd, char* ptr, size_t len)
 {
-    int ret;
-    syscall_args_t* args = (syscall_args_t*)syscall_args;
-
-    ret = (int)read(args->fd, (char*)args->ptr, (size_t)args->len);
-    args->ret = ret;
-
-    return;
+    return (int)read(fd, ptr, len);
 }
 
-OE_OCALL void f_readv(void* syscall_args)
+int f_readv(int fd, struct iovec* ptr, size_t len)
 {
-    syscall_args_t* args = (syscall_args_t*)syscall_args;
-
-    args->ret = (int)readv(args->fd, (const struct iovec*)args->ptr, args->len);
-
-    return;
+    return (int)readv(fd, ptr, (int)len);
 }
 
-OE_OCALL void f_close(void* syscall_args)
+int f_close(int fd)
 {
-    syscall_args_t* args = (syscall_args_t*)syscall_args;
-
-    args->ret = close(args->fd);
-
-    return;
+    return close(fd);
 }
 
 int main(int argc, const char* argv[])
@@ -70,13 +51,19 @@ int main(int argc, const char* argv[])
 
     if ((result = oe_create_crypto_enclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
-        oe_put_err("oe_create_enclave(): result=%u", result);
+    {
+        oe_put_err("oe_create_crypto_enclave(): result=%u", result);
+    }
 
     if ((result = test(enclave)) != OE_OK)
+    {
         oe_put_err("test() failed: result=%u", result);
+    }
 
     if ((result = oe_terminate_enclave(enclave)) != OE_OK)
+    {
         oe_put_err("oe_terminate_enclave() failed: %u\n", result);
+    }
 
     printf("=== passed all tests (%s)\n", argv[0]);
 
