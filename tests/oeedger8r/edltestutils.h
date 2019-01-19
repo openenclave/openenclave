@@ -23,10 +23,10 @@ void check_return_type()
     check_type<R>(args._retval);
 }
 
-template <int N>
+template <std::size_t N>
 struct unused
 {
-    unused(int i = 0)
+    unused(std::size_t i = 0)
     {
         OE_UNUSED(i);
     }
@@ -50,11 +50,11 @@ struct unused
 
 DEFINE_ASSERT_NO_FIELD(s_len)
 
-template <typename T, int N, typename U>
+template <typename T, std::size_t N, typename U>
 inline int array_compare(const T (&a1)[N], U u)
 {
     const T* a2 = (const T*)u;
-    for (int i = 0; i < N; ++i)
+    for (std::size_t i = 0; i < N; ++i)
     {
         if (a1[i] < a2[i])
             return -1;
