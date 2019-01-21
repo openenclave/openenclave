@@ -27,7 +27,7 @@ For ease of development, we recommend adding:
 You can do this by sourcing the openenclaverc file that is distributed with the SDK:
 
 ```bash
-source /opt/openenclave/share/openenclave/openenclaverc
+source /opt/openenclave/share/openenclaverc
 ```
 
 ## Samples
