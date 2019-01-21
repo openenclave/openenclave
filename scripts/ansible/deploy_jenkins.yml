@@ -13,6 +13,23 @@
      - include_tasks: tasks/ansible-install-sgx-packages.yml
      - include_tasks: tasks/ansible-install-az-dcap-client.yml
 
+     - name: Provision new linux slave node
+       jenkins_script:
+         script: "{{ lookup('template', '../templates/linux_slave.groovy.j2') }}"
+         user: "{{ jenkins_master_user }}"
+         password: "{{ jenkins_master_password }}"
+         url: "{{ jenkins_master }}"
+
+     - name: Extract slave secret
+       jenkins_script:
+         script: jenkins.model.Jenkins.getInstance().getComputer("{{ jenkins_slave_name }}").getJnlpMac()
+         user: "{{ jenkins_master_user }}"
+         password: "{{ jenkins_master_password }}"
+         url: "{{ jenkins_master }}"
+       register: script_output
+
+     - set_fact: node_secret="{{script_output.output.lstrip('Result:') | trim}}"
+
      - name: Install jre needed by Jenkins
        apt: name{{item}} state=present update_cache=yes
        with_items:
@@ -29,11 +46,11 @@
        apt_repository: repo={{item}} state=present update_cache=yes
        with_items:
                - deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
-     - name: Add docker repo keyy
+     - name: Add docker repository key
        apt_key: url={{item}} state=present
        with_items:
        - https://download.docker.com/linux/ubuntu/gpg
-     - name: Install  prerequisite packages
+     - name: Install prerequisite packages
        apt: name{{item}} state=present update_cache=yes
        with_items:
                - docker-ce
@@ -41,5 +58,8 @@
        user:
          name: jenkins
          groups: docker
-     - import_role:
-            name: kobanyan.jenkins-jnlp-slave
+     - name: Setup JNLP Slave
+       import_role:
+         name: kobanyan.jenkins-jnlp-slave
+       vars:
+         jenkins_slave_secret: "{{ node_secret }}"
