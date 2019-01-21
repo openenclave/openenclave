@@ -60,8 +60,8 @@ def simulationTest(String version, String platform_mode, String build_type) {
 }
 
 def ACCContainerTest(String label, String version) {
-    stage("$label Container RelWithDebInfo") {
-        node("$label") {
+    stage("${label} Container RelWithDebInfo") {
+        node("${label}") {
             cleanWs()
             checkout scm
 
