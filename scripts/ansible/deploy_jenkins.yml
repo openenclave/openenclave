@@ -30,10 +30,8 @@
 
      - set_fact: node_secret="{{script_output.output.lstrip('Result:') | trim}}"
 
-     - name: Install jre needed by Jenkins
-       apt: name{{item}} state=present update_cache=yes
-       with_items:
-               - openjdk-8-jre
+     - name: Install JRE needed by Jenkins
+       apt: name=openjdk-8-jre state=present update_cache=yes
      - name: Create the jenkins group
        group:
                name: jenkins
@@ -42,18 +40,16 @@
        user:
             name: jenkins
             group: jenkins
+     - name: Add docker repository key
+       apt_key: url={{item}} state=present
+       with_items:
+               - https://download.docker.com/linux/ubuntu/gpg
      - name: Add repositories for docker
        apt_repository: repo={{item}} state=present update_cache=yes
        with_items:
                - deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ansible_distribution_release}} stable
-     - name: Add docker repository key
-       apt_key: url={{item}} state=present
-       with_items:
-       - https://download.docker.com/linux/ubuntu/gpg
-     - name: Install prerequisite packages
-       apt: name{{item}} state=present update_cache=yes
-       with_items:
-               - docker-ce
+     - name: Install Docker-CE and dependencies
+       apt: name=docker-ce state=present update_cache=yes
      - name: Add jenkins to the docker group
        user:
          name: jenkins
