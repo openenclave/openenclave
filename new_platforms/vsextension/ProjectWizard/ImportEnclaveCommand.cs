@@ -1,15 +1,11 @@
 ﻿using System;
 using System.ComponentModel.Design;
-using System.Globalization;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using EnvDTE;
 using Task = System.Threading.Tasks.Task;
 using NuGet.VisualStudio;
-using System.ComponentModel.Composition;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.VCProjectEngine;
@@ -191,9 +187,11 @@ namespace OpenEnclaveSDK
                     var vcProject = project.Object as VCProject;
                     foreach (var config in vcProject.Configurations)
                     {
-                        var rule = config.Rules.Item("DebuggerGeneralProperties") as IVCRulePropertyStorage;
-                        rule.SetPropertyValue("DebuggerFlavor", "SGXDebugLauncher");
-                        rule.SetPropertyValue("IntelSGXDebuggerWorkingDirectory", "$(OutDir)");
+                        var generalRule = config.Rules.Item("DebuggerGeneralProperties") as IVCRulePropertyStorage;
+                        generalRule.SetPropertyValue("DebuggerFlavor", "SGXDebugLauncher");
+
+                        var sgxRule = config.Rules.Item("SGXDebugLauncher") as IVCRulePropertyStorage;
+                        sgxRule.SetPropertyValue("IntelSGXDebuggerWorkingDirectory", "$(OutDir)");
                     }
                 }
             }
