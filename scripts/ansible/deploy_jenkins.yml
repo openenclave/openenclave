@@ -45,7 +45,7 @@
      - name: Add repositories for docker
        apt_repository: repo={{item}} state=present update_cache=yes
        with_items:
-               - deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
+               - deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ansible_distribution_release}} stable
      - name: Add docker repository key
        apt_key: url={{item}} state=present
        with_items:
