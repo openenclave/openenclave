@@ -16,7 +16,7 @@ on both SGX and OP-TEE, and use it from your own application.
 2. Edit the _YourProjectName_.edl file. Define any trusted APIs (called "ECALLs")
 you want to call from your application in the trusted{} section,
 and in the untrusted{} section, define any application APIs (called "OCALLs")
-that you want to call from your enclave. Definitions must be done using the
+that you want to call from your enclave. Definitions must be described using the
 [EDL file syntax](https://software.intel.com/en-us/sgx-sdk-dev-reference-enclave-definition-language-file-syntax).
 3. Edit the ecalls.c file, and fill in implementations of the ECALL(s) you added.
 
@@ -69,41 +69,21 @@ added earlier.
 
 ## Debugging
 
-(Note: the information about the DebugSimulation and DebugOpteeSimulation
+(Note: the information about the OPTEE-Simulation-Debug
 configuration is out of date and will be updated shortly.)
 
 **For SGX:** You can use Visual Studio for debugging, including the SGX
 simulator, that comes with the Intel SGX SDK.  Simply use the Debug
 configuration in Visual Studio if you have SGX-capable hardware, or
-the DebugSimulation configuration in Visual Studio for software emulation.
+the SGX-Simulation-Debug configuration in Visual Studio for software emulation.
 
 **For TrustZone:** You can use a basic software emulation environment with OP-TEE
-by creating and using a DebugOpteeSimulation configuration in Visual Studio,
+by creating and using a OPTEE-Simulation-Debug configuration in Visual Studio,
 as follows...
 
-1. Create a new configuration (say, for x86 and called DebugOpteeSimulation)
+1. Create a new configuration (say, for x86 and called OPTEE-Simulation-Debug)
 based on the Debug configuration. A new configuration can be created
 inside Visual Studio by right clicking on the solution, and accessing
 the "Configuration Manager" screen.
-2. Go to your application project properties.  In the
-"Configuration Properties"->"C/C++"->"Preprocessor" properties for All Platforms
-for the DebugOpteeSimulation configuration, add
-**OE\_SIMULATE\_OPTEE**.
-3. Add oehost\_opteesim.lib to the Additional Dependencies of your app and
-remove any sgx libraries, for All Platforms for the DebugOpteeSimulation
-configuration. Your libs might look like this:
-"oehost.lib;ws2\_32.lib;rpcrt4.lib;shell32.lib;oehost\_opteesim.lib"
-4. Your app Additional Include Directories for DebugOpteeSimulation
-should include at least:
-* $(NewPlatformsDir)include\optee\host
-* $(NewPlatformsDir)include\optee
-* $(NewPlatformsDir)include
-* $(SGXSDKInstallPath)\include
-5. In the "Configuration Properties->"Debugging", change Debugger to launch
-back to Local Windows Debugger, and make the working directory be the
-directory your enclave is built in (usually "$(OutDir)").
-6. The same files that you build for OP-TEE should be built for
-DebugOpteeSimulation, so if you have files selectively built (e.g., if you
-have C files marked as Exclude From Build for certain configurations),
-update your configuration so that the same files get built, not any
-SGX-specific ones.
+2. In the "Configuration Properties->"Debugging", make the working directory
+be the directory your enclave is built in (usually "$(OutDir)").

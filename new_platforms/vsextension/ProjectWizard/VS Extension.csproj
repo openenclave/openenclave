@@ -116,11 +116,9 @@
       <SubType>Designer</SubType>
     </VSCTCompile>
     <Content Include="host.c">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="Packages\openenclave.0.2.0-ci-20190117-032919.nupkg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <Content Include="Packages\openenclave.0.2.0-ci-20190122-200026.nupkg">
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <None Include="source.extension.vsixmanifest">
@@ -252,7 +250,6 @@
     <ItemGroup>
       <Content Include="..\ProjectTemplates\Built\OEEnclaveProject.zip">
         <Link>ProjectTemplates\VC\OEEnclaveProject.zip</Link>
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         <IncludeInVSIX>true</IncludeInVSIX>
       </Content>
     </ItemGroup>

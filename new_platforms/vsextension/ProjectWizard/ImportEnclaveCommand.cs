@@ -78,7 +78,7 @@ namespace OpenEnclaveSDK
             // the UI thread.
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(package.DisposalToken);
 
-            OleMenuCommandService commandService = await package.GetServiceAsync((typeof(IMenuCommandService))) as OleMenuCommandService;
+            var commandService = await package.GetServiceAsync((typeof(IMenuCommandService))) as OleMenuCommandService;
             Instance = new ImportEnclaveCommand(package, commandService);
         }
 
@@ -86,7 +86,7 @@ namespace OpenEnclaveSDK
         {
             Project activeProject = null;
 
-            Array activeSolutionProjects = dte.ActiveSolutionProjects as Array;
+            var activeSolutionProjects = dte.ActiveSolutionProjects as Array;
             if (activeSolutionProjects != null && activeSolutionProjects.Length > 0)
             {
                 activeProject = activeSolutionProjects.GetValue(0) as Project;
@@ -128,7 +128,7 @@ namespace OpenEnclaveSDK
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            DTE dte = Package.GetGlobalService(typeof(SDTE)) as DTE;
+            var dte = Package.GetGlobalService(typeof(SDTE)) as DTE;
             Project project = GetActiveProject(dte);
 
             var filePath = string.Empty;
@@ -172,7 +172,7 @@ namespace OpenEnclaveSDK
                     // Add nuget package to project.
                     // See https://stackoverflow.com/questions/41803738/how-to-programmatically-install-a-nuget-package/41895490#41895490
                     // and more particularly https://docs.microsoft.com/en-us/nuget/visual-studio-extensibility/nuget-api-in-visual-studio
-                    var packageVersions = new Dictionary<string, string>() { { "openenclave", "0.2.0-CI-20190117-032919" } };
+                    var packageVersions = new Dictionary<string, string>() { { "openenclave", "0.2.0-CI-20190122-200026" } };
                     var componentModel = (IComponentModel)(await this.ServiceProvider.GetServiceAsync(typeof(SComponentModel)));
                     var packageInstaller = componentModel.GetService<IVsPackageInstaller2>();
                     packageInstaller.InstallPackagesFromVSExtensionRepository(
@@ -183,10 +183,20 @@ namespace OpenEnclaveSDK
                         project,
                         packageVersions);
 
+                    // Add any configurations/platforms to the project.
+                    project.ConfigurationManager.AddConfigurationRow("OPTEE-Simulation-Debug", "Debug", true);
+                    project.ConfigurationManager.AddConfigurationRow("SGX-Simulation-Debug", "Debug", true);
+                    project.ConfigurationManager.AddPlatform("ARM", "Win32", true);
+
                     // Set the debugger.
                     var vcProject = project.Object as VCProject;
                     foreach (var config in vcProject.Configurations)
                     {
+                        string name = config.Name;
+                        if (name.Contains("OPTEE") || name.Contains("ARM"))
+                        {
+                            continue;
+                        }
                         var generalRule = config.Rules.Item("DebuggerGeneralProperties") as IVCRulePropertyStorage;
                         generalRule.SetPropertyValue("DebuggerFlavor", "SGXDebugLauncher");
 
