@@ -64,7 +64,7 @@
                 <IsSim>False</IsSim>
             </PropertyGroup>
         </When>
-        <When Condition="('$(Configuration)' == 'SGX-Simulation-Debug') And ($(IsX86) == True Or $(IsX64) == True)">
+        <When Condition="('$(Configuration)' == 'Simulation' Or '$(Configuration)' == 'SGX-Simulation-Debug') And ($(IsX86) == True Or $(IsX64) == True)">
             <PropertyGroup>
                 <IsSgx>True</IsSgx>
                 <IsTz>False</IsTz>
@@ -238,12 +238,12 @@
 
             <!-- arm-TZ-OPTEE-Debug -->
             <AdditionalDependencies Condition="$(IsTz) == True And $(IsARM) == True">
-                $(TzHwArmDbg)\oehost.lib;$(TzHwArmDbg)\oesocket_host.lib;$(TzHwArmDbg)\oestdio_host.lib;onecore.lib;%(AdditionalDependencies)
+                $(TzHwArmDbg)\oehost.lib;$(TzHwArmDbg)\oesocket_host.lib;$(TzHwArmDbg)\oestdio_host.lib;onecore.lib;rpcrt4.lib;%(AdditionalDependencies)
             </AdditionalDependencies>
 
             <!-- x86-OPTEE-Simulation-Debug -->
             <AdditionalDependencies Condition="$(IsTz) == True And $(IsX86) == True And $(IsSim) == True">
-                $(OpteeSimX86Dbg)\oehost.lib;$(OpteeSimX86Dbg)\oesocket_host.lib;$(OpteeSimX86Dbg)\oestdio_host.lib;$(OpteeSimX86Dbg)\oehost_opteesim.lib;onecore.lib;%(AdditionalDependencies)
+                $(OpteeSimX86Dbg)\oehost.lib;$(OpteeSimX86Dbg)\oesocket_host.lib;$(OpteeSimX86Dbg)\oestdio_host.lib;$(OpteeSimX86Dbg)\oehost_opteesim.lib;onecore.lib;rpcrt4.lib;%(AdditionalDependencies)
             </AdditionalDependencies>
         </Link>
     </ItemDefinitionGroup>
