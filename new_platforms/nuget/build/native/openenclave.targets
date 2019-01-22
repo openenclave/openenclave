@@ -124,7 +124,7 @@
     <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave' And $(IsTz) == True And $(IsSim) == True">
         <ClCompile>
             <AdditionalIncludeDirectories>
-                $(MSBuildThisFileDirectory)include\new_platforms\optee\enclave\Simulator;$(MSBuildThisFileDirectory)include\new_platforms\optee\enclave;$(MSBuildThisFileDirectory)include\new_platforms\optee;%(AdditionalIncludeDirectories)
+                $(MSBuildThisFileDirectory)include\new_platforms\optee\enclave\Simulator;$(MSBuildThisFileDirectory)include\new_platforms\optee\enclave;$(MSBuildThisFileDirectory)include\new_platforms\optee;$(MSBuildThisFileDirectory)include\cyrep;$(OETADevKitPath)\include;%(AdditionalIncludeDirectories)
             </AdditionalIncludeDirectories>
         </ClCompile>
     </ItemDefinitionGroup>
