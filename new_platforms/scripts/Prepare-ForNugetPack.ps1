@@ -100,7 +100,7 @@ Copy-Item build\oeedger8r.exe            $Leaves[6]
 Copy-Item -Recurse -Path $ENV:SOURCES_PATH\include\openenclave -Destination $Leaves[7]
 
 # New Platforms
-Copy-Item -Recurse -Path $ENV:SOURCES_PATH\new_platforms\include                   -Destination $Leaves[7]
-Copy-Item -Recurse -Path $ENV:SOURCES_PATH\new_platforms\3rdparty\RIoT\CyReP\cyrep -Destination $Leaves[7]
+Copy-Item -Recurse -Path $ENV:SOURCES_PATH\new_platforms\include     -Destination $Leaves[7]
+Copy-Item -Recurse -Path $ENV:SOURCES_PATH\3rdparty\RIoT\CyReP\cyrep -Destination $Leaves[7]
 
 Rename-Item -Path "$($Leaves[7])\include" -NewName new_platforms
