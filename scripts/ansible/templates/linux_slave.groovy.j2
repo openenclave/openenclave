@@ -1,0 +1,19 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+#!groovy
+
+import jenkins.model.*
+import hudson.model.*
+import hudson.slaves.*
+
+Jenkins.instance.addNode(
+  new DumbSlave(
+    "{{ jenkins_slave_name }}",
+    "",
+    "/home/jenkins/",
+    "{{ jenkins_slave_executors }}",
+    Node.Mode.NORMAL,
+    "{{ jenkins_slave_main_label }}",
+    new JNLPLauncher(),
+    new RetentionStrategy.Always(),
+    new LinkedList()))

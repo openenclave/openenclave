@@ -23,7 +23,7 @@ Windows.
 - [Microsoft Visual Studio 2017](https://www.visualstudio.com/downloads/)
 - [Git for Windows 64-bit](https://git-scm.com/download/win)
 - [clang (preferably version 7.0 or above)](http://releases.llvm.org/download.html)  
-- [OCaml on Windows 64-bit](https://fdopen.github.io/opam-repository-mingw/installation/) (Note that this will install a MinGW environment for OCaml.)
+- [OCaml for Windows 64-bit](https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/) (Please download and install the mingw64 exe for OCaml)
 
 Intel® SGX Platform Software for Windows (PSW)
 ---------------------------------
@@ -41,7 +41,7 @@ The state of the service should be "running" (4). Follow Intel's documentation f
 Microsoft Visual Studio 2017
 ---------------------------------
 Install the latest version of [Microsoft Visual Studio 2017](https://www.visualstudio.com/downloads/).
-Visual Studio 2017's cmake support is required for building the Open Enclave SDK.
+Visual Studio 2017's CMake support (ver 3.12 or above) is required for building the Open Enclave SDK.
 For more information about cmake support, refer to
 https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studio/
 
@@ -76,7 +76,11 @@ C:\Program Files\LLVM\bin\ld.lld.exe
 
 OCaml
 ---------------------------------
-Install [OCaml for Windows (64-bit)](https://fdopen.github.io/opam-repository-mingw/installation/).
+Install [OCaml for Windows (64-bit)](https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/).
+Please download and install the mingw64 exe for OCaml, for example, ocpwin64-20160113-4.02.1+ocp1-mingw64.exe.
+
+[Alternate OCaml Web-site](https://fdopen.github.io/opam-repository-mingw/installation/)
+
 OCaml is used to build the oeedger8r tool as part of the OE SDK.
 
 Open up a command prompt and ensure that ocaml is available in the path:
@@ -114,8 +118,8 @@ https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studi
 1. Under the File menu, select Open > CMake...
 2. Open the CMakeLists.txt at the root of your Open Enclave repo
    (e.g. C:\openenclave\CMakeLists.txt)
-3. The CMake menu option should appear when it detects a valid CMake project is
-   loaded. VS2017 will then recursively walk the repo directory structure and
+3. The CMake menu option should appear when it detects that a valid CMake project
+   is loaded. VS2017 will then recursively walk the repo directory structure and
    generate a cache for the project to display Intellisense.
 4. Open Enclave is only supported for 64-bit. By default the `x64-Debug` configuration is 
    selected.
@@ -125,7 +129,7 @@ https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studi
 The results of the build will be displayed in the Output window and any build
 errors or warnings collated in the Error List window.
 
-You can change the build settings by with the CMake > Change CMake Settings menu
+You can change the build settings with the CMake > Change CMake Settings menu
 option. This opens the [CMakeSettings.json](https://blogs.msdn.microsoft.com/vcblog/2017/08/14/cmake-support-in-visual-studio-customizing-your-environment/)
 file which you can edit and change settings such as the target build location.
 

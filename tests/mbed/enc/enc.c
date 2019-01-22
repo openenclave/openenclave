@@ -203,9 +203,7 @@ int test(
     // such as redirect output, restore output is trying to assign values to
     // stdout which in turn causes segmentation fault.  To avoid this we enabled
     // verbose options such that those function calls will be suppressed.
-    if (0 == strcmp(
-                 __TEST__,
-                 "../../3rdparty/mbedtls/mbedtls/programs/test/selftest.c"))
+    if (0 == strcmp(__TEST__, "selftest"))
     {
         // selftest treats the verbose flag "-v" as an invalid test suite name,
         // so drop all args when invoking the test, which will execute all

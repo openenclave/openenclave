@@ -10,6 +10,13 @@
   apt_repository: repo={{item}} state=present update_cache=yes
   with_items:
     - deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu xenial main
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'xenial'
+
+- name: Add 01.org repository
+  apt_repository: repo={{item}} state=present update_cache=yes
+  with_items:
+    - deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu bionic main
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'bionic'
 
 - name: Install libsgx packages
   apt:

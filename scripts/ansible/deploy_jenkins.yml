@@ -11,11 +11,27 @@
      - include_tasks: tasks/ansible-install-openenclave-deps.yml
      - include_tasks: tasks/ansible-install-sgx-driver.yml
      - include_tasks: tasks/ansible-install-sgx-packages.yml
+     - include_tasks: tasks/ansible-install-az-dcap-client.yml
 
-     - name: Install jre needed by Jenkins
-       apt: name{{item}} state=present update_cache=yes
-       with_items:
-               - openjdk-8-jre
+     - name: Provision new linux slave node
+       jenkins_script:
+         script: "{{ lookup('template', '../templates/linux_slave.groovy.j2') }}"
+         user: "{{ jenkins_master_user }}"
+         password: "{{ jenkins_master_password }}"
+         url: "{{ jenkins_master }}"
+
+     - name: Extract slave secret
+       jenkins_script:
+         script: jenkins.model.Jenkins.getInstance().getComputer("{{ jenkins_slave_name }}").getJnlpMac()
+         user: "{{ jenkins_master_user }}"
+         password: "{{ jenkins_master_password }}"
+         url: "{{ jenkins_master }}"
+       register: script_output
+
+     - set_fact: node_secret="{{script_output.output.lstrip('Result:') | trim}}"
+
+     - name: Install JRE needed by Jenkins
+       apt: name=openjdk-8-jre state=present update_cache=yes
      - name: Create the jenkins group
        group:
                name: jenkins
@@ -24,21 +40,22 @@
        user:
             name: jenkins
             group: jenkins
+     - name: Add docker repository key
+       apt_key: url={{item}} state=present
+       with_items:
+               - https://download.docker.com/linux/ubuntu/gpg
      - name: Add repositories for docker
        apt_repository: repo={{item}} state=present update_cache=yes
        with_items:
-               - deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
-     - name: Add docker repo keyy
-       apt_key: url={{item}} state=present
-       with_items:
-       - https://download.docker.com/linux/ubuntu/gpg
-     - name: Install  prerequisite packages
-       apt: name{{item}} state=present update_cache=yes
-       with_items:
-               - docker-ce
+               - deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ansible_distribution_release}} stable
+     - name: Install Docker-CE and dependencies
+       apt: name=docker-ce state=present update_cache=yes
      - name: Add jenkins to the docker group
        user:
          name: jenkins
          groups: docker
-     - import_role:
-            name: kobanyan.jenkins-jnlp-slave
+     - name: Setup JNLP Slave
+       import_role:
+         name: kobanyan.jenkins-jnlp-slave
+       vars:
+         jenkins_slave_secret: "{{ node_secret }}"
