@@ -46,3 +46,5 @@ target_include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
     .
     ../../../3rdparty/musl/libc-test/src/common)
+
+target_link_libraries(libc_enc oelibc)

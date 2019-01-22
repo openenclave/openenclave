@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-set(MBEDTLS_WRAP_CFLAGS "-nostdinc -I${OE_INCDIR}/openenclave/libc -fPIC -fno-builtin-udivti3 ${SPECTRE_MITIGATION_FLAGS}")
+set(MBEDTLS_WRAP_CFLAGS "-nostdinc -I${PROJECT_SOURCE_DIR}/include/openenclave/elibc -fPIC -fno-builtin-udivti3 ${SPECTRE_MITIGATION_FLAGS}")
 
 if (USE_CLANGW)
   set(MBEDTLS_WRAP_CFLAGS "-target x86_64-pc-linux ${MBEDTLS_WRAP_CFLAGS}")
@@ -30,7 +30,7 @@ configure_file(config.h config.h) # This copies from source to binary folders.
 
 include(ExternalProject)
 ExternalProject_Add(mbedtls-wrap
-  DEPENDS oelibc_includes
+  DEPENDS oeelibc
 
   DOWNLOAD_COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_CURRENT_LIST_DIR}/mbedtls <SOURCE_DIR>
@@ -57,22 +57,22 @@ ExternalProject_Add(mbedtls-wrap
 ExternalProject_Get_property(mbedtls-wrap SOURCE_DIR)
 ExternalProject_Get_property(mbedtls-wrap BINARY_DIR)
 
-# NOTE: These imported libraries must be specified before `oelibc`
+# NOTE: These imported libraries must be specified before `oeelibc`
 # when linking, hence their dependency on it.
 add_library(mbedtls_imported IMPORTED STATIC)
 set_target_properties(mbedtls_imported PROPERTIES
   IMPORTED_LOCATION ${BINARY_DIR}/library/libmbedtls.a)
-target_link_libraries(mbedtls_imported INTERFACE oelibc)
+target_link_libraries(mbedtls_imported INTERFACE oeelibc)
 
 add_library(mbedx509_imported IMPORTED STATIC)
 set_target_properties(mbedx509_imported PROPERTIES
   IMPORTED_LOCATION ${BINARY_DIR}/library/libmbedx509.a)
-target_link_libraries(mbedx509_imported INTERFACE oelibc)
+target_link_libraries(mbedx509_imported INTERFACE oeelibc)
 
 add_library(mbedcrypto_imported IMPORTED STATIC)
 set_target_properties(mbedcrypto_imported PROPERTIES
   IMPORTED_LOCATION ${BINARY_DIR}/library/libmbedcrypto.a)
-target_link_libraries(mbedcrypto_imported INTERFACE oelibc)
+target_link_libraries(mbedcrypto_imported INTERFACE oeelibc)
 
 # Convenience lib for use in target_link_libraries
 add_library(mbedcrypto INTERFACE)
@@ -93,7 +93,7 @@ target_link_libraries(mbedcrypto INTERFACE
   # NOTE: This dependency is repeated because during installation the
   # imported libraries are not part of the CMake dependency graph, so
   # this transitive dependency would be left out.
-  oelibc)
+  oeelibc)
 
 install(TARGETS mbedcrypto EXPORT openenclave-targets)
 

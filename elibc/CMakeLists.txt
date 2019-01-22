@@ -16,6 +16,8 @@ add_library(oeelibc STATIC
     gmtime.c
     intstr.c
     malloc.c
+    memcpy.c
+    memset.c
     printf.c
     pthread.c
     rand.c

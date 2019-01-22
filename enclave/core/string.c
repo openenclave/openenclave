@@ -145,7 +145,7 @@ static inline void _oe_memcpy(void* dest, const void* src, size_t n)
 {
 // TODO: Revisit this later. Looks like compilers might replace
 // __builtin_X with the C library version of X.
-#if defined(__x86_64__) || defined(_M_X64)
+#if !defined(__clang__) && (defined(__x86_64__) || defined(_M_X64))
     __builtin_memcpy(dest, src, n);
 #else
     unsigned char* d = (unsigned char*)dest;
@@ -201,7 +201,7 @@ static inline void _oe_memset(void* s, int c, size_t n)
 {
 // TODO: Revisit this later. Looks like compilers might replace
 // __builtin_X with the C library version of X.
-#if defined(__x86_64__) || defined(_M_X64)
+#if !defined(__clang__) && (defined(__x86_64__) || defined(_M_X64))
     __builtin_memset(s, c, n);
 #else
     unsigned char* s_ = (unsigned char*)s;

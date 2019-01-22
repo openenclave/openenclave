@@ -16,16 +16,19 @@ add_enclave(TARGET debug_enc_unsigned SOURCES enc.c props-debug.c ${gen})
 target_include_directories(no_debug_enc PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(no_debug_enc oelibc)
 
 target_include_directories(debug_enc PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR})
-
+target_link_libraries(debug_enc oelibc)
 
 target_include_directories(no_debug_enc_unsigned PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(no_debug_enc_unsigned oelibc)
 
 target_include_directories(debug_enc_unsigned PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(debug_enc_unsigned oelibc)
