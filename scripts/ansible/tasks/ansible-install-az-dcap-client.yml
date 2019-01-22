@@ -9,7 +9,7 @@
 - name: Add Microsoft APT repositories
   apt_repository: repo={{item}} state=present update_cache=yes
   with_items:
-    - deb [arch=amd64] https://packages.microsoft.com/ubuntu/16.04/prod xenial main
+    - deb [arch=amd64] https://packages.microsoft.com/ubuntu/{{ansible_distribution_version}}/prod {{ansible_distribution_release}} main
 
 - name: Install az-dcap-client
   apt:
