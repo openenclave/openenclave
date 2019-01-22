@@ -82,17 +82,16 @@ elseif(WIN32)
         list(APPEND SRCS ../oeresult.c win32/teehost_sgx.c)
         list(APPEND INCS PUBLIC ${SGXSDKInstallPath}/include)
         
-        set(PREFIX ${SGX_SDK_LIBRARIES_PREFIX}/$<CONFIG>)
         if(SIM)
             list(APPEND LIBS
-                PUBLIC ${PREFIX}/sgx_urts_sim.lib
-                PUBLIC ${PREFIX}/sgx_uae_service_sim.lib
-                PUBLIC ${PREFIX}/sgx_uprotected_fs.lib)
+                PUBLIC ${SGX_SDK_LIBRARIES_PREFIX}/sgx_urts_sim.lib
+                PUBLIC ${SGX_SDK_LIBRARIES_PREFIX}/sgx_uae_service_sim.lib
+                PUBLIC ${SGX_SDK_LIBRARIES_PREFIX}/sgx_uprotected_fs.lib)
         else()
             list(APPEND LIBS
-                PUBLIC ${PREFIX}/sgx_urts.lib
-                PUBLIC ${PREFIX}/sgx_uae_service.lib
-                PUBLIC ${PREFIX}/sgx_uprotected_fs.lib)
+                PUBLIC ${SGX_SDK_LIBRARIES_PREFIX}/sgx_urts.lib
+                PUBLIC ${SGX_SDK_LIBRARIES_PREFIX}/sgx_uae_service.lib
+                PUBLIC ${SGX_SDK_LIBRARIES_PREFIX}/sgx_uprotected_fs.lib)
         endif()
     endif()
 endif()
