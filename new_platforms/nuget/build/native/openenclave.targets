@@ -115,7 +115,7 @@
     <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave' And $(IsSgx) == True">
         <ClCompile>
             <AdditionalIncludeDirectories>
-                $(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(MSBuildThisFileDirectory)include\new_platforms\sgx\enclave;%(AdditionalIncludeDirectories)
+                $(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\libc++;$(MSBuildThisFileDirectory)include\new_platforms\sgx\enclave;%(AdditionalIncludeDirectories)
             </AdditionalIncludeDirectories>
         </ClCompile>
     </ItemDefinitionGroup>
