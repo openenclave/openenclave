@@ -1,9 +1,3 @@
-// oetools-image:tag  Docker image from OE Jenkins Registry
-OETOOLS_REPO = "https://oejenkinscidockerregistry.azurecr.io"
-OETOOLS_REPO_CREDENTIAL_ID = "oejenkinscidockerregistry"
-OETOOLS_IMAGE = "oetools-azure:1.10"
-
-
 def PowerShellWrapper(psCmd) {
     psCmd = psCmd.replaceAll("\r", "").replaceAll("\n", "")
     bat "powershell.exe -NonInteractive -ExecutionPolicy Bypass -Command \"\$ErrorActionPreference='Stop';[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;$psCmd;EXIT \$global:LastExitCode\""
@@ -29,11 +23,10 @@ def simulationTest(String compiler, String unit, String suite ) {
             cleanWs()
             checkout scm
 
-            docker.withRegistry(OETOOLS_REPO, OETOOLS_REPO_CREDENTIAL_ID) {
-                docker.image(OETOOLS_IMAGE).inside {
-                    timeout(15) {
-                        sh "./scripts/test-build-config -p $unit -b $suite --compiler=$compiler"
-                    }
+            def oetoolsSim = docker.build("oetools-simulation", "-f .jenkins/Dockerfile .")
+            oetoolsSim.inside {
+                timeout(15) {
+                    sh "./scripts/test-build-config -p $unit -b $suite --compiler=$compiler"
                 }
             }
         }
@@ -46,11 +39,10 @@ def ACCContainerTest(String label) {
             cleanWs()
             checkout scm
 
-            docker.withRegistry(OETOOLS_REPO, OETOOLS_REPO_CREDENTIAL_ID) {
-                docker.image(OETOOLS_IMAGE).inside('--privileged -v /dev/sgx:/dev/sgx') {
-                    timeout(15) {
-                        sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo --disable_sim'
-                    }
+            def oetoolsContainer = docker.build("oetools-containertest", "-f .jenkins/Dockerfile .")
+            oetoolsContainer.inside('--privileged -v /dev/sgx:/dev/sgx') {
+                timeout(15) {
+                    sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo --disable_sim'
                 }
             }
         }
@@ -63,11 +55,10 @@ def checkPreCommitRequirements() {
             cleanWs()
             checkout scm
 
-            docker.withRegistry(OETOOLS_REPO, OETOOLS_REPO_CREDENTIAL_ID) {
-                docker.image(OETOOLS_IMAGE).inside {
-                    timeout(2) {
-                        sh './scripts/check-ci'
-                    }
+            def oetoolsCheck = docker.build("oetools-check", "-f .jenkins/Dockerfile .")
+            oetoolsCheck.inside {
+                timeout(2) {
+                    sh './scripts/check-ci'
                 }
             }
         }
@@ -109,12 +100,11 @@ def win2016DebugCrossPlatform() {
         node {
             cleanWs()
             checkout scm
-            docker.withRegistry(OETOOLS_REPO, OETOOLS_REPO_CREDENTIAL_ID) {
-                docker.image(OETOOLS_IMAGE).inside {
-                    timeout(15) {
-                        sh './scripts/test-build-config -p SGX1FLC -b Debug --compiler=clang-7'
-                        stash includes: 'build/tests/**', name: 'linuxdebug'
-                    }
+            def oetoolsWincp = docker.build("oetools-wincp", "-f .jenkins/Dockerfile .")
+            oetoolsWincp.inside {
+                timeout(15) {
+                    sh './scripts/test-build-config -p SGX1FLC -b Debug --compiler=clang-7'
+                    stash includes: 'build/tests/**', name: 'linuxdebug'
                 }
             }
         }
@@ -135,12 +125,11 @@ def win2016ReleaseCrossPlatform() {
         node {
             cleanWs()
             checkout scm
-            docker.withRegistry(OETOOLS_REPO, OETOOLS_REPO_CREDENTIAL_ID) {
-                docker.image(OETOOLS_IMAGE).inside {
-                    timeout(15) {
-                        sh './scripts/test-build-config -p SGX1FLC -b Release --compiler=clang-7'
-                        stash includes: 'build/tests/**', name: 'linuxrelease'
-                    }
+            def oetoolsWin = docker.build("oetools-wincp", "-f .jenkins/Dockerfile .")
+            oetoolsWin.inside {
+                timeout(15) {
+                    sh './scripts/test-build-config -p SGX1FLC -b Release --compiler=clang-7'
+                    stash includes: 'build/tests/**', name: 'linuxrelease'
                 }
             }
         }

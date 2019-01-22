@@ -183,26 +183,26 @@ get_find_args()
     local defaultIncludeExts='h c cpp'
 
     if [[ -z ${userExcludeDirs} ]]; then
-        local excludeDirs=( "${defaultExcludeDirs}" )
+        local excludeDirs=( ${defaultExcludeDirs} )
     else
         log_verbose "Using user directory exclusions: ${userExcludeDirs}"
-        local excludeDirs=( "${userExcludeDirs}" )
+        local excludeDirs=( ${userExcludeDirs} )
     fi
 
     for exc in "${excludeDirs[@]}"
     do
-        findargs="${findargs} ! ( -path ./${exc} -prune )"
+        findargs="${findargs} ! \( -path ./${exc} -prune \)"
     done
 
     if [[ -z ${userIncludeExts} ]]; then
         # not local as this is used in get_file_list() too
-        includeExts=( "${defaultIncludeExts}" )
+        includeExts=( ${defaultIncludeExts} )
     else
         log_verbose "Using user extension inclusions: ${userIncludeExts}"
-        includeExts=( "${userIncludeExts}" )
+        includeExts=( ${userIncludeExts} )
     fi
 
-    findargs="${findargs} ("
+    findargs="${findargs} \("
     for ((i=0; i<${#includeExts[@]}; i++));
     do
         findargs="${findargs} -iname '*.${includeExts[$i]}'"
@@ -210,7 +210,7 @@ get_find_args()
             findargs="${findargs} -o"
         fi
     done
-    findargs="${findargs} )"
+    findargs="${findargs} \)"
 }
 
 get_find_args
@@ -236,10 +236,14 @@ fi
 get_file_list()
 {
     if [[ -z ${userFiles} ]]; then
-        mapfile -t file_list < <("$findargs")
+        mapfile -t file_list < <(eval "$findargs")
+        if [[ ${#file_list[@]} -eq 0 ]]; then
+            echo "No files were found to format!"
+            exit 1
+        fi
     else
         log_verbose "Using user files: ${userFiles}"
-        local user_file_list=( "${userFiles}" )
+        local user_file_list=( ${userFiles} )
         file_list=()
         for file in "${user_file_list[@]}"; do
             for ext in "${includeExts[@]}"; do

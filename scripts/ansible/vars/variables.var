@@ -1,7 +1,9 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-jenkins_master: "JENKINS_MASTER_URL"
-jenkins_slave_secret: "SECRET" #The secret must be taken from when the node is created
-jenkins_slave_user: jenkins
-jenkins_slave_group: jenkins
+jenkins_master: "JENKINS_MASTER_URL"			# example: https://jenkins
+jenkins_master_user: "JENKINS_MASTER_USER"		# example: admin
+jenkins_master_password: "JENKINS_MASTER_PASSWORD"	# example: Password#123
+jenkins_slave_name: "NEW_SLAVE_NAME"			# example: ACC-1604-5
+jenkins_slave_executors: "EXECUTORS"			# example: 1
+jenkins_slave_main_label: "MAIN_SLAVE_LABEL"		# example: ACC-1604
