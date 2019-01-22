@@ -49,8 +49,8 @@ def ACCContainerTest(String label) {
     }
 }
 
-def checkPreCommitRequirements() {
-    stage('Check pre-commit requirements') {
+def checkDevFlows() {
+    stage('Check dev flows') {
         node {
             cleanWs()
             checkout scm
@@ -63,10 +63,8 @@ def checkPreCommitRequirements() {
             }
         }
     }
-    stage('Sim default compiler') {
-        // This particular test asserts that everything (at least
-        // for simulation) can be built after using our
-        // install-prereqs ansible playbook to to bootstrap a machine.
+    stage('Default compiler') {
+        // This stage verifies developer flows after running ansible playbooks to bootstrap a machine.
         node {
             cleanWs()
             checkout scm
@@ -77,14 +75,11 @@ def checkPreCommitRequirements() {
                 timeout(15) {
                     // This is run to test that it works with the dependencies
                     // installed by our install-prereqs ansible playbook.
-                    sh './scripts/check-ci'
-                    // installed by our install-prereqs script.
 
                     dir('build') {
                         sh '''
                         cmake .. -DUSE_LIBSGX=OFF
                         make
-                        OE_SIMULATION=1 ctest --verbose --output-on-failure
                     '''
                         // Note that `make package` is not expected to work
                         // without extra configuration.
@@ -164,7 +159,7 @@ def win2016Release() {
         }
     }
 }
-parallel "Check Pre-Commit Requirements" :      { checkPreCommitRequirements() },
+parallel "Check Developer Experience" :         { checkDevFlows() },
         "Sim clang-7 SGX1 Debug" :              { simulationTest('clang-7', 'SGX1', 'Debug')},
         "Sim clang-7 SGX1 Release" :            { simulationTest('clang-7', 'SGX1', 'Release')},
         "Sim clang-7 SGX1 RelWithDebInfo" :     { simulationTest('clang-7', 'SGX1', 'RelWithDebInfo')},
