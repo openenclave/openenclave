@@ -32,7 +32,7 @@ add_custom_command(
   # TODO: We are doing this ugly workaround since we don't support
   # thread local storage (__thread). Once the PR for Thread Local
   # Storage goes in (#1157), we can remove this.
-  COMMAND bash -c \"grep -v '^static __thread' ${CMAKE_CURRENT_SOURCE_DIR}/libunwind/src/${ARCH}/Gtrace.c > ${CMAKE_CURRENT_BINARY_DIR}/Gtrace.inc\"
+  COMMAND ${BASH} -c \"grep -v '^static __thread' ${CMAKE_CURRENT_SOURCE_DIR}/libunwind/src/${ARCH}/Gtrace.c > ${CMAKE_CURRENT_BINARY_DIR}/Gtrace.inc\"
   COMMAND ${CMAKE_COMMAND} -E copy
     ${CMAKE_CURRENT_SOURCE_DIR}/Gtrace.c
     ${CMAKE_CURRENT_BINARY_DIR}/Gtrace.c
