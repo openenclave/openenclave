@@ -63,8 +63,8 @@ hardware. You can use GDB or any GDB-compatible GUI to debug your code.
 
 ## Windows Host Application and SGX Enclave (Intel SDK Required)
 
-Windows SGX enclave support works on any device with a SGX-capable processor. To
-find out if your processor supports SGX, consult [Intel
+Windows SGX enclave support works on any device with an SGX-capable processor.
+To find out if your processor supports SGX, consult [Intel
 ARK](https://ark.intel.com). An example device with such support is the
 NUC7i3BNK.
 
@@ -74,8 +74,8 @@ NUC7i3BNK.
 ## Windows Host Application with SGX and OP-TEE Simulation
 
 Simulation provides a development environment to quickly write, test, and debug
-your REE and TEE code. This SDK provides simulation support for SGX using Intel
-Simulation SDK and for TrustZone using OP-TEE simulation. Both environments can
+your REE and TEE code. This SDK provides simulation support for SGX using the
+Intel SGX SDK and for TrustZone using OP-TEE simulation. Both environments can
 be debugged using Visual Studio.
 
 * [Building an Open Enclave Simulation on Windows](win_sgx_dev.md#simulation)
@@ -84,9 +84,9 @@ be debugged using Visual Studio.
 
 ## Multi-Platform Sample
 
-Running through the steps above will produce enclaves for both SGX and ARM using
-the same Open Enclave sample code. To demonstrate how these samples can come
-together and provide TEE to TEE communication, see the [IoTEdge Socket
+Running through the steps above will produce enclaves for both SGX and OP-TEE
+using the same Open Enclave sample code. To demonstrate how these samples can
+come together and provide TEE to TEE communication, see the [IoTEdge Socket
 Sample](sample_edge_sockets.md).
 
 ## Beyond the Samples

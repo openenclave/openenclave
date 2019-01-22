@@ -165,7 +165,7 @@ not exercise hardware, but works similarly to a debug build. For more details,
 see [Intel SGX Simulation
 Mode](https://software.intel.com/en-us/blogs/2016/05/30/usage-of-simulation-mode-in-sgx-enhanced-application).
 
-To build and debugin SGX enclaves running in simulation mode, build the Open
+To build and debug SGX enclaves running in simulation mode, build the Open
 Enclave SDK using one of the following configurations:
 
 - `x86-SGX-Simulation-Debug`
