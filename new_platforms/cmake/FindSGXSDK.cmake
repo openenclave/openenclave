@@ -10,7 +10,7 @@ if(WIN32 AND (DEFINED SGXSDKInstallPath OR DEFINED ENV{SGXSDKInstallPath}))
     string(REGEX REPLACE "/$" "" SGXSDKInstallPath ${SGXSDKInstallPath})
 
     set(SGX_SDK_INCLUDE_DIRS ${SGXSDKInstallPath}/include)
-    set(SGX_SDK_LIBRARIES_PREFIX ${SGXSDKInstallPath}/bin/${CMAKE_VS_PLATFORM_NAME}/$<IF:$<CONFIG:RelWithDebInfo>,Release,$<CONFIG>>)
+    set(SGX_SDK_LIBRARIES_PREFIX ${SGXSDKInstallPath}/bin/${CMAKE_VS_PLATFORM_NAME})
     set(SGX_SDK_EDGER8R_TOOL ${SGXSDKInstallPath}/bin/win32/release/sgx_edger8r.exe)
     set(SGX_SDK_SIGN_TOOL ${SGXSDKInstallPath}/bin/${CMAKE_VS_PLATFORM_NAME}/release/sgx_sign.exe)
 

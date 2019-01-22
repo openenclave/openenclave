@@ -81,22 +81,23 @@ elseif(WIN32)
             PUBLIC  ${NP_PATH}/include/sgx/enclave)
 
         # Library lists
+        set(SGX_PREFIX ${SGX_SDK_LIBRARIES_PREFIX}/$<IF:$<CONFIG:RelWithDebInfo>,Release,$<CONFIG>>)
         set(SGX_LIBS
-            PUBLIC ${SGX_SDK_LIBRARIES_PREFIX}/sgx_tstdc.lib
-            PUBLIC ${SGX_SDK_LIBRARIES_PREFIX}/sgx_tprotected_fs.lib
-            PUBLIC ${SGX_SDK_LIBRARIES_PREFIX}/sgx_tcxx.lib
-            PUBLIC ${SGX_SDK_LIBRARIES_PREFIX}/sgx_tcrypto.lib)
+            PUBLIC ${SGX_PREFIX}/sgx_tstdc.lib
+            PUBLIC ${SGX_PREFIX}/sgx_tprotected_fs.lib
+            PUBLIC ${SGX_PREFIX}/sgx_tcxx.lib
+            PUBLIC ${SGX_PREFIX}/sgx_tcrypto.lib)
 
         # Some libraries change depending on whether this is a simulation
         # build.
         if(SIM)
             list(APPEND SGX_LIBS
-                PUBLIC ${SGX_SDK_LIBRARIES_PREFIX}/sgx_trts_sim.lib
-                PUBLIC ${SGX_SDK_LIBRARIES_PREFIX}/sgx_tservice_sim.lib)
+                PUBLIC ${SGX_PREFIX}/sgx_trts_sim.lib
+                PUBLIC ${SGX_PREFIX}/sgx_tservice_sim.lib)
         else()
             list(APPEND SGX_LIBS
-                PUBLIC ${SGX_SDK_LIBRARIES_PREFIX}/sgx_trts.lib
-                PUBLIC ${SGX_SDK_LIBRARIES_PREFIX}/sgx_tservice.lib)
+                PUBLIC ${SGX_PREFIX}/sgx_trts.lib
+                PUBLIC ${SGX_PREFIX}/sgx_tservice.lib)
         endif()
 
         # Compose the final source, include and libary lists.
