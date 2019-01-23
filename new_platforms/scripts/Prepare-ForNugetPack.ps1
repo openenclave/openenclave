@@ -16,11 +16,10 @@ $Leaves = @(
     "nuget\lib\native\v141\tz\hw\arm\Release",    # 09
 
     "nuget\lib\native\v141\tz\sim\x86\Debug",     # 10
-    "nuget\lib\native\v141\tz\sim\x86\Release",   # 11
 
-    "nuget\tools",                                # 12
+    "nuget\tools",                                # 11
 
-    "nuget\build\native\include"                  # 13
+    "nuget\build\native\include"                  # 12
 )
 
 $EnclaveLibraries = @(
@@ -40,19 +39,16 @@ $OPTEESimLibraries = @(
     "oehost_opteesim"
 )
 
-$Extensions = @(
-    "lib",
-    "pdb"
-)
-
 # Helper Functions
 Function Copy-LibsWorker($Libraries, $SourceLeafPath, $DestinationLeafPath)
 {
     ForEach ($Library in $Libraries) {
-        ForEach ($Extension in $Extensions) {
-            $SourceFilePath = Join-Path $SourceLeafPath "$Library.$Extension"
-            Copy-Item -Path $SourceFilePath -Destination $DestinationLeafPath
-        }
+        $SourceFilePath = Join-Path $SourceLeafPath "$Library.lib"
+        Copy-Item -Path $SourceFilePath -Destination $DestinationLeafPath
+
+        # TODO: CMake fails to place PDB files next to static libraries for RelWithDebInfo.
+        $SourceFilePath = Join-Path $SourceLeafPath "$Library.pdb"
+        Copy-Item -Path $SourceFilePath -Destination $DestinationLeafPath -ErrorAction SilentlyContinue
     }
 }
 
@@ -106,18 +102,17 @@ Copy-Libs build\arm\tz\out\lib\RelWithDebInfo     $Leaves[09] -WithHostLibraries
 
 # TrustZone Simulation
 Copy-Libs build\x86\tzsim\out\lib\Debug           $Leaves[10] -WithEnclaveLibraries -WithHostLibraries -WithOPTEESimLibraries
-Copy-Libs build\x86\tzsim\out\lib\RelWithDebInfo  $Leaves[11] -WithEnclaveLibraries -WithHostLibraries -WithOPTEESimLibraries
 
 # oeedger8r Tool
-Copy-Item build\oeedger8r.exe                     $Leaves[12]
+Copy-Item build\oeedger8r.exe                     $Leaves[11]
 
 # Copy the headers from the source tree.
 
 # Open Enclave
-Copy-Item -Recurse -Path $ENV:SOURCES_PATH\include\openenclave       -Destination $Leaves[13]
+Copy-Item -Recurse -Path $ENV:SOURCES_PATH\include\openenclave       -Destination $Leaves[12]
 
 # New Platforms
-Copy-Item -Recurse -Path $ENV:SOURCES_PATH\new_platforms\include     -Destination $Leaves[13]
-Copy-Item -Recurse -Path $ENV:SOURCES_PATH\3rdparty\RIoT\CyReP\cyrep -Destination $Leaves[13]
+Copy-Item -Recurse -Path $ENV:SOURCES_PATH\new_platforms\include     -Destination $Leaves[12]
+Copy-Item -Recurse -Path $ENV:SOURCES_PATH\3rdparty\RIoT\CyReP\cyrep -Destination $Leaves[12]
 
 Rename-Item -Path "$($Leaves[7])\include" -NewName new_platforms
