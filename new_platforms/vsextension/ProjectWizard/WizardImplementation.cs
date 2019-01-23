@@ -47,17 +47,19 @@ namespace OpenEnclaveSDK
                 string guid1struct = guid1binary.ToString("X");
                 replacementsDictionary.Add("$guid1struct$", guid1struct);
 
-                // Ask the user for the path to the TA Dev Kit.
-                using (var fbd = new FolderBrowserDialog())
+                using (OpenFileDialog openFileDialog = new OpenFileDialog())
                 {
-                    fbd.Description = "Select the ARM TA Dev Kit Path, or hit Cancel to skip ARM support";
-                    fbd.ShowNewFolderButton = false;
+                    openFileDialog.Title = "Select ta_dev_kit.mk in your ARM TA Dev Kit, or hit Cancel to skip ARM support";
+                    openFileDialog.InitialDirectory = ".";
+                    openFileDialog.Filter = "ta_dev_kit.mk|ta_dev_kit.mk";
+                    openFileDialog.RestoreDirectory = true;
 
-                    DialogResult result = fbd.ShowDialog();
-
-                    if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                    if (openFileDialog.ShowDialog() == DialogResult.OK)
                     {
-                        replacementsDictionary.Add("$OETADevKitPath$", fbd.SelectedPath);
+                        // Get the path of specified file.
+                        var filePath = openFileDialog.FileName;
+                        string folder = Path.GetFullPath(Path.Combine(filePath, "..\\.."));
+                        replacementsDictionary.Add("$OETADevKitPath$", folder);
                     }
                 }
             }
