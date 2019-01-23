@@ -193,6 +193,12 @@ namespace OpenEnclaveSDK
                     foreach (var config in vcProject.Configurations)
                     {
                         string name = config.Name;
+                        if (name.Contains("ARM"))
+                        {
+                            var clRule = config.Rules.Item("CL") as IVCRulePropertyStorage;
+                            string value = clRule.GetUnevaluatedPropertyValue("PreprocessorDefinitions");
+                            clRule.SetPropertyValue("PreprocessorDefinitions", "_ARM_;" + value);
+                        }
                         if (name.Contains("OPTEE") || name.Contains("ARM"))
                         {
                             continue;
