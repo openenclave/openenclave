@@ -157,7 +157,7 @@ check_clang-format()
     else
         cf=$(command -v clang-format 2> /dev/null)
         if [[ ! -x ${cf} ]]; then
-            echo "clang-format is not installed. Please run scripts/install-prereqs first."
+            echo "clang-format is not installed"
             exit 1
         fi
         cf="clang-format"
