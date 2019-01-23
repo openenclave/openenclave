@@ -145,6 +145,26 @@ namespace OpenEnclaveSDK
             }
         }
 
+        private void AddPlatform(Project project, string newName, string baseName)
+        {
+            // Add the platform to the project.
+            var dte = Package.GetGlobalService(typeof(SDTE)) as DTE;
+            project.ConfigurationManager.AddPlatform("ARM", "Win32", true);
+
+            // Now set the solution platform to build the project's platform.
+            foreach (SolutionConfiguration solutionConfig in dte.Solution.SolutionBuild.SolutionConfigurations)
+            {
+                foreach (SolutionContext context in solutionConfig.SolutionContexts)
+                {
+                    if (context.ProjectName == project.UniqueName)
+                    {
+                        context.ConfigurationName = context.ConfigurationName + "|" + newName;
+                        context.ShouldBuild = true;
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// This function is the callback used to execute the command when the menu item is clicked.
         /// See the constructor to see how the menu item is associated with this function using
@@ -214,7 +234,7 @@ namespace OpenEnclaveSDK
                     // Add any configurations/platforms to the project.
                     AddConfiguration(project, "OPTEE-Simulation-Debug", "Debug");
                     AddConfiguration(project, "SGX-Simulation-Debug", "Debug");
-                    project.ConfigurationManager.AddPlatform("ARM", "Win32", true);
+                    AddPlatform(project, "ARM", "Win32");
 
                     // Set the debugger.
                     var vcProject = project.Object as VCProject;
