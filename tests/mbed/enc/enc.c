@@ -117,7 +117,7 @@ static oe_result_t _syscall_hook(
             oe_host_free(host_buf);
             break;
         }
-        
+
         case SYS_writev:
         {
             char* str_full;
