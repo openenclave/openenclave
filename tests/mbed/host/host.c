@@ -8,7 +8,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
+#if defined(WIN32)
+    #include <io.h>
+    #include <process.h>
+    #include <direct.h>
+#else
+    #include <unistd.h>
+#endif
 #include "mbed_u.h"
 
 char* find_data_file(char* str, size_t size)

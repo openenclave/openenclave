@@ -14,7 +14,6 @@ string(REGEX MATCH "IAR" CMAKE_COMPILER_IS_IAR "${CMAKE_C_COMPILER_ID}")
 string(REGEX MATCH "MSVC" CMAKE_COMPILER_IS_MSVC "${CMAKE_C_COMPILER_ID}")
 
 # the test suites currently have compile errors with MSVC
-# ANITAG - Wonder if we need to change this
 if(CMAKE_COMPILER_IS_MSVC)
     option(ENABLE_TESTING "Build mbed TLS tests." OFF)
 else()
@@ -33,8 +32,6 @@ set(NULL_ENTROPY_WARNING "${WARNING_BORDER}"
                          "${NULL_ENTROPY_WARN_L3}"
                          "${WARNING_BORDER}")
 
-# ANITAG
-if (NOT WIN32)
 find_package(Perl)
 if(PERL_FOUND)
 
@@ -58,8 +55,6 @@ option: \n\
             return()
         endif()
     endif()
-endif()
-
 endif()
 
 set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE}

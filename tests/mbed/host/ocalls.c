@@ -9,8 +9,15 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/uio.h>
-#include <unistd.h>
+#if defined(_WIN32)
+    #include <io.h>
+    #include <process.h>
+    #include <direct.h>
+    typedef unsigned mode_t;
+#else
+    #include <sys/uio.h>
+    #include <unistd.h>
+#endif
 #include "mbed_u.h"
 
 int mbed_test_open(const char* path, int flags, mode_t mode)
@@ -21,11 +28,6 @@ int mbed_test_open(const char* path, int flags, mode_t mode)
 ssize_t mbed_test_read(int fd, char* buf, size_t buf_len)
 {
     return read(fd, buf, buf_len);
-}
-
-ssize_t mbed_test_readv(int fd, const struct iovec* iov, int iovcnt)
-{
-    return readv(fd, iov, iovcnt);
 }
 
 int mbed_test_close(int fd)
