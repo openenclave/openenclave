@@ -17,6 +17,7 @@ exit_() {
     exit 1
 }
 
+# shellcheck disable=SC2154
 if ! "$scripts/format-code" --quiet --whatif --files="${files[*]}"; then
     exit_ "Commit failed: please run './scripts/format-code' to fix the formatting"
 fi
