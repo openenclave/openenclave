@@ -118,7 +118,7 @@
     <Content Include="host.c">
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="Packages\openenclave.0.2.0-ci-20190122-200026.nupkg">
+    <Content Include="Packages\openenclave.0.2.0-ci-20190123-030613.nupkg">
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <None Include="source.extension.vsixmanifest">

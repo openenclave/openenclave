@@ -117,6 +117,34 @@ namespace OpenEnclaveSDK
             return folder;
         }
 
+        private void AddConfiguration(Project project, string newName, string baseName)
+        {
+            // Add the configuration to the project.
+            var dte = Package.GetGlobalService(typeof(SDTE)) as DTE;
+            project.ConfigurationManager.AddConfigurationRow(newName, baseName, true);
+
+            // Now set the solution's configuration to use the relevant project's configurations.
+            SolutionConfiguration solutionConfig = dte.Solution.SolutionBuild.SolutionConfigurations.Item(newName);
+            foreach (SolutionContext context in solutionConfig.SolutionContexts)
+            {
+                // Select newName if it exists for this project, else baseName.
+                try
+                {
+                    context.ConfigurationName = baseName;
+                }
+                catch (Exception ex)
+                {
+                }
+                try
+                {
+                    context.ConfigurationName = newName;
+                }
+                catch (Exception ex)
+                {
+                }
+            }
+        }
+
         /// <summary>
         /// This function is the callback used to execute the command when the menu item is clicked.
         /// See the constructor to see how the menu item is associated with this function using
@@ -172,7 +200,7 @@ namespace OpenEnclaveSDK
                     // Add nuget package to project.
                     // See https://stackoverflow.com/questions/41803738/how-to-programmatically-install-a-nuget-package/41895490#41895490
                     // and more particularly https://docs.microsoft.com/en-us/nuget/visual-studio-extensibility/nuget-api-in-visual-studio
-                    var packageVersions = new Dictionary<string, string>() { { "openenclave", "0.2.0-CI-20190122-200026" } };
+                    var packageVersions = new Dictionary<string, string>() { { "openenclave", "0.2.0-CI-20190123-030613" } };
                     var componentModel = (IComponentModel)(await this.ServiceProvider.GetServiceAsync(typeof(SComponentModel)));
                     var packageInstaller = componentModel.GetService<IVsPackageInstaller2>();
                     packageInstaller.InstallPackagesFromVSExtensionRepository(
@@ -184,8 +212,8 @@ namespace OpenEnclaveSDK
                         packageVersions);
 
                     // Add any configurations/platforms to the project.
-                    project.ConfigurationManager.AddConfigurationRow("OPTEE-Simulation-Debug", "Debug", true);
-                    project.ConfigurationManager.AddConfigurationRow("SGX-Simulation-Debug", "Debug", true);
+                    AddConfiguration(project, "OPTEE-Simulation-Debug", "Debug");
+                    AddConfiguration(project, "SGX-Simulation-Debug", "Debug");
                     project.ConfigurationManager.AddPlatform("ARM", "Win32", true);
 
                     // Set the debugger.
@@ -198,6 +226,10 @@ namespace OpenEnclaveSDK
                             var clRule = config.Rules.Item("CL") as IVCRulePropertyStorage;
                             string value = clRule.GetUnevaluatedPropertyValue("PreprocessorDefinitions");
                             clRule.SetPropertyValue("PreprocessorDefinitions", "_ARM_;" + value);
+
+                            var config3 = config as VCConfiguration3;
+                            config3.SetPropertyValue("Configuration", true, "WindowsSDKDesktopARMSupport", "true");
+                            config3.SetPropertyValue("Configuration", true, "WindowsSDKDesktopARM64Support", "true");
                         }
                         if (name.Contains("OPTEE") || name.Contains("ARM"))
                         {
