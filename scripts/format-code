@@ -186,7 +186,7 @@ findargs='find .'
 
 get_find_args()
 {
-    local defaultExcludeDirs='./3rdparty ./prereqs ./build *.cquery_cached_index'
+    local defaultExcludeDirs='./.git ./3rdparty ./prereqs ./build *.cquery_cached_index'
     local defaultIncludeExts='h c cpp'
 
     if [[ -z ${userExcludeDirs} ]]; then
