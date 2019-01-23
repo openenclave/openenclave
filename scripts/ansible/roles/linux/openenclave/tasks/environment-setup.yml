@@ -1,0 +1,56 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+---
+- name: Gather Ansible facts
+  setup:
+
+- import_role:
+    name: linux/common
+    tasks_from: apt-repo-microsoft.yml
+
+- import_role:
+    name: linux/common
+    tasks_from: apt-repo-llvm.yml
+
+- name: Install all the Open Enclave prerequisites APT packages for development
+  apt:
+    name:
+      - "clang-7"
+      - "clang-format-7"
+      - "libssl-dev"
+      - "make"
+      - "ocaml-native-compilers"
+      - "openssl"
+      - "pkg-config"
+      - "gcc"
+      - "gdb"
+      - "g++"
+      - "apt-transport-https"
+      - "autoconf"
+      - "doxygen"
+      - "graphviz"
+      - "libexpat1-dev"
+      - "libtool"
+      - "shellcheck"
+      - "subversion"
+    state: present
+    update_cache: yes
+    install_recommends: no
+
+- name: Install CMake 3.13.1
+  unarchive:
+    src: https://cmake.org/files/v3.13/cmake-3.13.1-Linux-x86_64.tar.gz
+    dest: /usr/local/
+    remote_src: yes
+
+- name: Create CMake symbolic links
+  file:
+    src: "/usr/local/cmake-3.13.1-Linux-x86_64/bin/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    state: link
+  with_items:
+    - ccmake
+    - cmake
+    - cpack
+    - ctest

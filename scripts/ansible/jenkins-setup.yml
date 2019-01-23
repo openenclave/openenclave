@@ -1,0 +1,27 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+---
+- hosts: linux-agents
+  any_errors_fatal: true
+  become: yes
+  tasks:
+    - import_role:
+        name: linux/openenclave
+        tasks_from: environment-setup.yml
+
+    - import_role:
+        name: linux/intel
+        tasks_from: sgx-driver.yml
+
+    - import_role:
+        name: linux/intel
+        tasks_from: sgx-packages.yml
+
+    - import_role:
+        name: linux/az-dcap-client
+        tasks_from: stable-install.yml
+
+    - import_role:
+        name: linux/jenkins
+        tasks_from: slave-setup.yml
