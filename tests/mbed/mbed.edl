@@ -27,7 +27,7 @@ enclave {
         int mbed_test_open(
             [in, string] const char* path,
             int flags,
-            unsigned mode);
+            mode_t mode);
 
         ssize_t mbed_test_read(
             int fd,

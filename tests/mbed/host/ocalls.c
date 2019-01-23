@@ -9,16 +9,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#if defined(_WIN32)
-    #include <io.h>
-    #include <process.h>
-    #include <direct.h>
-    typedef unsigned mode_t;
-#else
-    #include <sys/uio.h>
-    #include <unistd.h>
-#endif
-#include "mbed_u.h"
+#include "myfileio.h"
 
 int mbed_test_open(const char* path, int flags, mode_t mode)
 {
