@@ -181,7 +181,7 @@ findargs='find .'
 
 get_find_args()
 {
-    local defaultExcludeDirs='3rdparty prereqs build .cquery_cached_index'
+    local defaultExcludeDirs='./3rdparty ./prereqs ./build *.cquery_cached_index'
     local defaultIncludeExts='h c cpp'
 
     if [[ -z ${userExcludeDirs} ]]; then
@@ -193,7 +193,7 @@ get_find_args()
 
     for exc in "${excludeDirs[@]}"
     do
-        findargs="${findargs} ! \( -path ./${exc} -prune \)"
+        findargs="${findargs} ! \( -path '${exc}' -prune \)"
     done
 
     if [[ -z ${userIncludeExts} ]]; then
