@@ -57,11 +57,10 @@
 #error "The NET and TIMING modules are not available for mbed OS - please use the network and timing functions provided by mbed OS"
 #endif
 
-/* ANITAG - Comment this for now */
-/* #if defined(MBEDTLS_DEPRECATED_WARNING) && \
+#if defined(MBEDTLS_DEPRECATED_WARNING) && \
     !defined(__GNUC__) && !defined(__clang__)
 #error "MBEDTLS_DEPRECATED_WARNING only works with GCC and Clang"
-#endif */
+#endif
 
 #if defined(MBEDTLS_HAVE_TIME_DATE) && !defined(MBEDTLS_HAVE_TIME)
 #error "MBEDTLS_HAVE_TIME_DATE without MBEDTLS_HAVE_TIME does not make sense"
