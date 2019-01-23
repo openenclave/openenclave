@@ -115,4 +115,4 @@ Copy-Item -Recurse -Path $ENV:SOURCES_PATH\include\openenclave       -Destinatio
 Copy-Item -Recurse -Path $ENV:SOURCES_PATH\new_platforms\include     -Destination $Leaves[12]
 Copy-Item -Recurse -Path $ENV:SOURCES_PATH\3rdparty\RIoT\CyReP\cyrep -Destination $Leaves[12]
 
-Rename-Item -Path "$($Leaves[7])\include" -NewName new_platforms
+Rename-Item -Path "$($Leaves[12])\include" -NewName new_platforms
