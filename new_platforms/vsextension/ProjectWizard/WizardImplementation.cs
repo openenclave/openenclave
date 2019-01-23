@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.VisualStudio.TemplateWizard;
 using System.Windows.Forms;
 using EnvDTE;
+using System.IO;
 
 namespace OpenEnclaveSDK
 {
@@ -36,6 +37,8 @@ namespace OpenEnclaveSDK
         {
             try
             {
+                // Get the $guid$1 value that has already been generated, and
+                // create a struct version of it for use in code that needs it.
                 string guid1;
                 replacementsDictionary.TryGetValue("$guid1$", out guid1);
 
@@ -43,6 +46,20 @@ namespace OpenEnclaveSDK
                 Guid guid1binary = Guid.Parse(guid1);
                 string guid1struct = guid1binary.ToString("X");
                 replacementsDictionary.Add("$guid1struct$", guid1struct);
+
+                // Ask the user for the path to the TA Dev Kit.
+                using (var fbd = new FolderBrowserDialog())
+                {
+                    fbd.Description = "Select the ARM TA Dev Kit Path, or hit Cancel to skip ARM support";
+                    fbd.ShowNewFolderButton = false;
+
+                    DialogResult result = fbd.ShowDialog();
+
+                    if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                    {
+                        replacementsDictionary.Add("$OETADevKitPath$", fbd.SelectedPath);
+                    }
+                }
             }
             catch (Exception ex)
             {

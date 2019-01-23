@@ -5,6 +5,8 @@ NEW_PLATFORMS_PATH = $(OE_SDK_ROOT_PATH)new_platforms/
 
 BINARY=$guid1$
 
+TA_DEV_KIT_DIR=$OETADevKitPath$
+
 include $(NEW_PLATFORMS_PATH)/oe_sdk_rules.mk
 
 CFG_TEE_TA_LOG_LEVEL=4
