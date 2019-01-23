@@ -294,4 +294,6 @@ do
 done
 
 log_whatif "${filecount} files processed, ${changecount} changed."
-exit 0
+
+# If files are being edited, this count is zero so we exit with success.
+exit $changecount
