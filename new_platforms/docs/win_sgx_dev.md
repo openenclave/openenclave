@@ -111,4 +111,5 @@ To build using OP-TEE Simulation, build using the `DebugOpteeSimulation` configu
 Now that you have built the SDK and sample, you can either run the sample, try out simulation, or jump into creating your own enclave:
 
 * [Running the Sample EchoSockets](sample_sockets.md#sgx)
-* [Developing your own enclave](new_platform_dev.md)
+* [Developing your own enclave using Visual Studio](visualstudio_dev.md)
+* [Developing your own enclave using CMake](new_platform_dev.md)

@@ -1,0 +1,17 @@
+enclave {
+    /* Include the following line to use stdio APIs from inside an enclave. */
+    from "openenclave/stdio.edl" import *;
+
+    /* Include the following line to use socket APIs from inside an enclave. */
+    from "openenclave/socket.edl" import *;
+
+    trusted {
+        /* define ECALLs here. */
+        public void ecall_DoWorkInEnclave();
+    };
+
+    untrusted {
+        /* define any OCALLs here. */
+        /* void ocall_DoWorkInHost(); */
+    };
+};
