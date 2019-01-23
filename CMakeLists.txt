@@ -79,8 +79,6 @@ if (OE_SGX)
   endif()
 
   if (BUILD_ENCLAVES AND WIN32)
-    # Setup cross compiler (clangw)
-    add_subdirectory(windows/clangw)  
     set(USE_CLANGW ON)
   endif()
 else()
