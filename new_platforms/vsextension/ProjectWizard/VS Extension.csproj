@@ -67,6 +67,15 @@
     for zipping into packageable Zip files.
   -->
   <ItemGroup>
+    <OEHostItem_Content Include="..\ItemTemplates\oehost\host.c">
+      <Link>OEHost Template\host.c</Link>
+    </OEHostItem_Content>
+    <OEHostItem_Content Include="..\ItemTemplates\oehost\host.vstemplate">
+      <Link>OEHost Template\host.vstemplate</Link>
+    </OEHostItem_Content>
+    <OEHostItem_Content Include="..\ItemTemplates\oehost\__TemplateIcon.ico">
+      <Link>OEHost Template\__TemplateIcon.ico</Link>
+    </OEHostItem_Content>
     <OEEnclaveProject_Content Include="..\ProjectTemplates\oeenclave\ecalls.c">
       <Link>OEEnclave Template\ecalls.c</Link>
     </OEEnclaveProject_Content>
@@ -115,9 +124,6 @@
       <ResourceName>Menus.ctmenu</ResourceName>
       <SubType>Designer</SubType>
     </VSCTCompile>
-    <Content Include="host.c">
-      <IncludeInVSIX>true</IncludeInVSIX>
-    </Content>
     <Content Include="Packages\openenclave.0.2.0-ci-20190123-030613.nupkg">
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
@@ -138,6 +144,9 @@
     <Reference Include="EnvDTE, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <HintPath>..\packages\EnvDTE.8.0.2\lib\net10\EnvDTE.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="envdte80, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
@@ -233,6 +242,7 @@
   <Target Name="PlaceTemplates">
     <!-- Zip the Template files. -->
     <Zip Files="@(OEEnclaveProject_Content);" Flatten="True" ZipFileName="..\ProjectTemplates\Built\OEEnclaveProject.zip" />
+    <Zip Files="@(OEHostItem_Content);" Flatten="True" ZipFileName="..\ItemTemplates\Built\OEHostItem.zip" />
     <!--
       Mark the Templates for copying to the VSIX file.
 
@@ -242,7 +252,7 @@
 
         Tree target: Visual C++ > Open Enclave App
         Path: ProjectTemplates\VC\<Template File>.zip
-            (The <Name> node in the Template file is "Open Enclave App".)
+            (The <Name> node in the Template file is "OEEnclaveProject".)
 
         For reference, the names of language directories (CSharp, etc.) are under:
             <Program Files>\Microsoft Visual Studio 14.0\Common7\IDE\ProjectTemplates.
@@ -250,6 +260,12 @@
     <ItemGroup>
       <Content Include="..\ProjectTemplates\Built\OEEnclaveProject.zip">
         <Link>ProjectTemplates\VC\OEEnclaveProject.zip</Link>
+        <IncludeInVSIX>true</IncludeInVSIX>
+      </Content>
+    </ItemGroup>
+    <ItemGroup>
+      <Content Include="..\ItemTemplates\Built\OEHostItem.zip">
+        <Link>ItemTemplates\VC\OEHostItem.zip</Link>
         <IncludeInVSIX>true</IncludeInVSIX>
       </Content>
     </ItemGroup>

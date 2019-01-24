@@ -9,6 +9,7 @@ using NuGet.VisualStudio;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.VCProjectEngine;
+using EnvDTE80;
 
 namespace OpenEnclaveSDK
 {
@@ -152,8 +153,12 @@ namespace OpenEnclaveSDK
             project.ConfigurationManager.AddPlatform("ARM", "Win32", true);
 
             // Now set the solution platform to build the project's platform.
-            foreach (SolutionConfiguration solutionConfig in dte.Solution.SolutionBuild.SolutionConfigurations)
+            foreach (SolutionConfiguration2 solutionConfig in dte.Solution.SolutionBuild.SolutionConfigurations)
             {
+                if (solutionConfig.PlatformName != "ARM")
+                {
+                    continue;
+                }
                 foreach (SolutionContext context in solutionConfig.SolutionContexts)
                 {
                     if (context.ProjectName == project.UniqueName)
@@ -162,6 +167,29 @@ namespace OpenEnclaveSDK
                         context.ShouldBuild = true;
                     }
                 }
+            }
+        }
+
+        private void AddProjectItem(string zipName, string language, string fileName)
+        {
+            try
+            {
+                var dte = Package.GetGlobalService(typeof(SDTE)) as DTE;
+                var solution = dte.Solution as EnvDTE80.Solution2;
+                Project project = GetActiveProject(dte);
+
+                string filename = solution.GetProjectItemTemplate(zipName, language);
+                ProjectItem item = project.ProjectItems.AddFromTemplate(filename, fileName);
+                var file = item.Object as VCFile;
+                foreach (var config in file.FileConfigurations)
+                {
+                    var tool = config.Tool;
+                    tool.UsePrecompiledHeader = 0; // none
+                }
+            }
+            catch (Exception ex)
+            {
+
             }
         }
 
@@ -261,6 +289,9 @@ namespace OpenEnclaveSDK
                         var sgxRule = config.Rules.Item("SGXDebugLauncher") as IVCRulePropertyStorage;
                         sgxRule.SetPropertyValue("IntelSGXDebuggerWorkingDirectory", "$(OutDir)");
                     }
+
+                    // Add a host code item to the project.
+                    AddProjectItem("OEHostItem", "VC", baseName + "_host.c");
                 }
             }
         }

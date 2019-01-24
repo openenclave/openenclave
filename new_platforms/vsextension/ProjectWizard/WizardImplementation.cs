@@ -29,6 +29,52 @@ namespace OpenEnclaveSDK
         {
         }
 
+        private bool SetOETADevKitPath(Dictionary<string, string> replacementsDictionary)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Title = "Select ta_dev_kit.mk in your ARM TA Dev Kit, or hit Cancel to skip ARM support";
+                openFileDialog.InitialDirectory = ".";
+                openFileDialog.Filter = "ta_dev_kit.mk|ta_dev_kit.mk";
+                openFileDialog.RestoreDirectory = true;
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    // Get the path of specified file.
+                    var filePath = openFileDialog.FileName;
+                    string folder = Path.GetFullPath(Path.Combine(filePath, "..\\.."));
+                    replacementsDictionary.Add("$OETADevKitPath$", folder);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool SetEnclaveName(Dictionary<string, string> replacementsDictionary)
+        {
+            try
+            {
+                // Get the $guid$1 value that has already been generated, and
+                // create a struct version of it for use in code that needs it.
+                string safeitemname;
+                replacementsDictionary.TryGetValue("$safeitemname$", out safeitemname);
+
+                // Extract enclave name.
+                if (safeitemname.EndsWith("_host") && (safeitemname.Length > 5))
+                {
+                    string enclavename = safeitemname.Substring(0, safeitemname.Length - 5);
+
+                    // Add $enclavename$.
+                    replacementsDictionary.Add("$enclavename$", enclavename);
+                }
+                return true;
+            } catch (Exception ex)
+            {
+
+            }
+            return false;
+        }
+
         public void RunStarted(
             object automationObject,
             Dictionary<string, string> replacementsDictionary,
@@ -47,20 +93,13 @@ namespace OpenEnclaveSDK
                 string guid1struct = guid1binary.ToString("X");
                 replacementsDictionary.Add("$guid1struct$", guid1struct);
 
-                using (OpenFileDialog openFileDialog = new OpenFileDialog())
+                if (runKind == WizardRunKind.AsNewItem)
                 {
-                    openFileDialog.Title = "Select ta_dev_kit.mk in your ARM TA Dev Kit, or hit Cancel to skip ARM support";
-                    openFileDialog.InitialDirectory = ".";
-                    openFileDialog.Filter = "ta_dev_kit.mk|ta_dev_kit.mk";
-                    openFileDialog.RestoreDirectory = true;
-
-                    if (openFileDialog.ShowDialog() == DialogResult.OK)
-                    {
-                        // Get the path of specified file.
-                        var filePath = openFileDialog.FileName;
-                        string folder = Path.GetFullPath(Path.Combine(filePath, "..\\.."));
-                        replacementsDictionary.Add("$OETADevKitPath$", folder);
-                    }
+                    SetEnclaveName(replacementsDictionary);
+                }
+                else
+                {
+                    SetOETADevKitPath(replacementsDictionary);
                 }
             }
             catch (Exception ex)
