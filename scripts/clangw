@@ -64,7 +64,7 @@ function call_clang {
     done
 
     # Call clang with the transformed arguments arguments
-    if [ $linking == 1 ]; then
+    if [ $linking ]; then
         clang -target x86_64-pc-linux ${args[@]} -fuse-ld="`which ld.lld`"
     else
         clang -target x86_64-pc-linux ${args[@]}
