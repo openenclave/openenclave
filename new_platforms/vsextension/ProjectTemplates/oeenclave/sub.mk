@@ -17,10 +17,10 @@ CFLAGS += -DLINUX -DOE_USE_OPTEE
 libdirs += $(OE_SDK_PATH)/lib/native/gcc6/optee/v3.3.0/vsexpress-qemu_armv8
 
 ../$projectname$_t.c: ../$projectname$.edl
-	$(OEEDGER8R) --trusted --trusted-dir .. --search-path "$(OE_SDK_INC_PATH)/openenclave" ../$projectname$.edl
+	$(OEEDGER8R) --trusted --trusted-dir .. --search-path "$(OE_SDK_INC_PATH)" ../$projectname$.edl
 
 ../$projectname$_t.h: ../$projectname$.edl
-	$(OEEDGER8R) --trusted --trusted-dir .. --search-path "$(OE_SDK_INC_PATH)/openenclave" ../$projectname$.edl
+	$(OEEDGER8R) --trusted --trusted-dir .. --search-path "$(OE_SDK_INC_PATH)" ../$projectname$.edl
 
 # Add the c file generated from your EDL file here
 srcs-y             += ../$projectname$_t.c

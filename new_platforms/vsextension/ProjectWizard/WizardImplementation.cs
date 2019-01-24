@@ -34,7 +34,7 @@ namespace OpenEnclaveSDK
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
                 openFileDialog.Title = "Select ta_dev_kit.mk in your ARM TA Dev Kit, or hit Cancel to skip ARM support";
-                openFileDialog.InitialDirectory = ".";
+                openFileDialog.InitialDirectory = Directory.GetCurrentDirectory(); // Must be an absolute path.
                 openFileDialog.Filter = "ta_dev_kit.mk|ta_dev_kit.mk";
                 openFileDialog.RestoreDirectory = true;
 
@@ -43,7 +43,14 @@ namespace OpenEnclaveSDK
                     // Get the path of specified file.
                     var filePath = openFileDialog.FileName;
                     string folder = Path.GetFullPath(Path.Combine(filePath, "..\\.."));
-                    replacementsDictionary.Add("$OETADevKitPath$", folder);
+
+                    // We now have the full path in Windows format, but we need to convert it to Unix format.
+                    string root = Path.GetPathRoot(folder).ToLower();
+                    string relativeFolder = folder.Substring(root.Length).Replace('\\', '/');
+                    string drive = root.Substring(0, 1);
+                    string unixPath = "/mnt/" + drive + "/" + relativeFolder;
+
+                    replacementsDictionary.Add("$OETADevKitPath$", unixPath);
                     return true;
                 }
             }

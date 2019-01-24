@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.VCProjectEngine;
 using EnvDTE80;
+using System.IO;
 
 namespace OpenEnclaveSDK
 {
@@ -210,7 +211,8 @@ namespace OpenEnclaveSDK
             var filePath = string.Empty;
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
-                openFileDialog.InitialDirectory = ".";
+                // InitialDirectory must be an absolute, not relative, path.
+                openFileDialog.InitialDirectory = Path.GetDirectoryName(dte.Solution.FileName);
                 openFileDialog.Filter = "EDL files (*.EDL)|*.edl";
                 openFileDialog.RestoreDirectory = true;
 
@@ -283,11 +285,16 @@ namespace OpenEnclaveSDK
                         {
                             continue;
                         }
-                        var generalRule = config.Rules.Item("DebuggerGeneralProperties") as IVCRulePropertyStorage;
-                        generalRule.SetPropertyValue("DebuggerFlavor", "SGXDebugLauncher");
 
+                        // See if the Intel SGX SDK is installed.
                         var sgxRule = config.Rules.Item("SGXDebugLauncher") as IVCRulePropertyStorage;
-                        sgxRule.SetPropertyValue("IntelSGXDebuggerWorkingDirectory", "$(OutDir)");
+                        if (sgxRule != null)
+                        {
+                            // Configure SGX debugger settings.
+                            var generalRule = config.Rules.Item("DebuggerGeneralProperties") as IVCRulePropertyStorage;
+                            generalRule.SetPropertyValue("DebuggerFlavor", "SGXDebugLauncher");
+                            sgxRule.SetPropertyValue("IntelSGXDebuggerWorkingDirectory", "$(OutDir)");
+                        }
                     }
 
                     // Add a host code item to the project.
