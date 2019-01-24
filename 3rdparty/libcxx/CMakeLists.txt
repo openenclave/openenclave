@@ -67,7 +67,7 @@ target_link_libraries(libcxx PUBLIC oelibc)
 target_include_directories(libcxx
   PUBLIC
   $<BUILD_INTERFACE:$<$<COMPILE_LANGUAGE:CXX>:${LIBCXX_INCLUDES}>>
-  $<INSTALL_INTERFACE:$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/libcxx>>
+  $<INSTALL_INTERFACE:$<$<COMPILE_LANGUAGE:CXX>:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/libcxx>>
   PRIVATE
   libcxx/src
   ../libcxxrt/libcxxrt/src)

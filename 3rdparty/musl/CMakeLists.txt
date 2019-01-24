@@ -105,7 +105,7 @@ add_dependencies(oelibc_includes musl_includes)
 target_include_directories(oelibc_includes
   SYSTEM INTERFACE
   $<BUILD_INTERFACE:${MUSL_INCLUDES}>
-  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/libc>)
+  $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/libc>)
 
 if (CMAKE_C_COMPILER_ID MATCHES GNU AND
     CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL "7.1.0")
