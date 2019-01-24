@@ -44,30 +44,30 @@ function(maybe_build_using_clangw OE_TARGET)
 
     # Setup library tool variables
     set(CMAKE_C_CREATE_STATIC_LIBRARY 
-        "bash \"${PROJECT_SOURCE_DIR}/scripts/llvm-arw\" \"qc <TARGET> <OBJECTS>\"" 
+        "\"${BASH}\" \"${PROJECT_SOURCE_DIR}/scripts/llvm-arw\" \"qc <TARGET> <OBJECTS>\"" 
         PARENT_SCOPE)
     set(CMAKE_CXX_CREATE_STATIC_LIBRARY 
-        "bash \"${PROJECT_SOURCE_DIR}/scripts/llvm-arw\" \"qc <TARGET> <OBJECTS>\"" 
+        "\"${BASH}\" \"${PROJECT_SOURCE_DIR}/scripts/llvm-arw\" \"qc <TARGET> <OBJECTS>\"" 
         PARENT_SCOPE)
 
     # Setup linker variables.
     set(CMAKE_EXECUTABLE_SUFFIX "" PARENT_SCOPE)
     set(CMAKE_C_STANDARD_LIBRARIES "" PARENT_SCOPE)
     set(CMAKE_C_LINK_EXECUTABLE
-        "bash \"${PROJECT_SOURCE_DIR}/scripts/clangw\" \"link <OBJECTS> -o <TARGET>  <LINK_LIBRARIES>\""
+        "\"${BASH}\" \"${PROJECT_SOURCE_DIR}/scripts/clangw\" \"link <OBJECTS> -o <TARGET>  <LINK_LIBRARIES>\""
         PARENT_SCOPE)
     set(CMAKE_CXX_STANDARD_LIBRARIES "" PARENT_SCOPE)
     set(CMAKE_CXX_LINK_EXECUTABLE
-        "bash \"${PROJECT_SOURCE_DIR}/scripts/clangw\" \"link <OBJECTS> -o <TARGET>  <LINK_LIBRARIES>\""
+        "\"${BASH}\" \"${PROJECT_SOURCE_DIR}/scripts/clangw\" \"link <OBJECTS> -o <TARGET>  <LINK_LIBRARIES>\""
         PARENT_SCOPE)
 
     # Setup compiler variables.
     set(CMAKE_C_COMPILE_OBJECT
-        "bash \"${PROJECT_SOURCE_DIR}/scripts/clangw\" \"<DEFINES> <INCLUDES> <FLAGS> -o <OBJECT> -c <SOURCE>\""
+        "\"${BASH}\" \"${PROJECT_SOURCE_DIR}/scripts/clangw\" \"<DEFINES> <INCLUDES> <FLAGS> -o <OBJECT> -c <SOURCE>\""
         PARENT_SCOPE)
 
     set(CMAKE_CXX_COMPILE_OBJECT
-        "bash \"${PROJECT_SOURCE_DIR}/scripts/clangw\" \"<DEFINES> <INCLUDES> <FLAGS> -o <OBJECT> -c <SOURCE>\""
+        "\"${BASH}\" \"${PROJECT_SOURCE_DIR}/scripts/clangw\" \"<DEFINES> <INCLUDES> <FLAGS> -o <OBJECT> -c <SOURCE>\""
         PARENT_SCOPE)
 
     # Loop through assembly files in the list of sources in the
@@ -76,7 +76,10 @@ function(maybe_build_using_clangw OE_TARGET)
     get_target_property(SOURCES ${OE_TARGET} SOURCES)
     foreach(SRC IN LISTS SOURCES)
         if (${SRC} MATCHES ".S$" OR ${SRC} MATCHES ".s$")
-            set_source_files_properties(${SRC} PROPERTIES LANGUAGE C)
+            set_source_files_properties(${SRC} PROPERTIES 
+            LANGUAGE C
+            # Prevent warnings due to C options passed to .s files.
+            COMPILE_FLAGS -Wno-unused-command-line-argument)
         endif()
     endforeach()
 endfunction(maybe_build_using_clangw)
