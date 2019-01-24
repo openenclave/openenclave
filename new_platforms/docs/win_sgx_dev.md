@@ -193,4 +193,5 @@ Now that you have built the SDK and sample, you can either run the samples, or
 jump into creating your own enclave:
 
 * [Running the Sample EchoSockets](sample_sockets.md#sgx)
-* [Developing your own enclave](new_platform_dev.md)
+* [Developing your own enclave using Visual Studio](visualstudio_dev.md)
+* [Developing your own enclave using CMake](new_platform_dev.md)

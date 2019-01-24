@@ -91,6 +91,7 @@ Sample](sample_edge_sockets.md).
 
 ## Beyond the Samples
 * [Open Enclave API Documentation](openenclaveapi.md)
-* [Developing your own enclave](new_platform_dev.md)
+* [Developing your own enclave using Visual Studio](visualstudio_dev.md)
+* [Developing your own enclave using CMake](new_platform_dev.md)
 * [Understanding SGX and TrustZone](sgx_trustzone_arch.md)
 

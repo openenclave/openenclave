@@ -29,6 +29,10 @@ new_platforms/docs/api
 helloworld_t.*
 helloworld_u.*
 helloworld_args.h
+localattestation_t.*
+localattestation_u.*
+localattestation_args.*
+stdio_u.*
 socket_t.*
 socket_u.*
 socket_args.h
@@ -42,3 +46,4 @@ TcpsSdkTestTA_args.h
 SampleTA_args.h
 oeedger8r.exe
 oeedger8r
+*.zip
