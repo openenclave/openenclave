@@ -29,7 +29,9 @@ if (OE_SGX)
         sgx/thread.c
         sgx/enter.S
         sgx/exit.S
-        sgx/getkey.S)
+        sgx/getkey.S
+        sgx/longjmp.S
+        sgx/setjmp.S)
 
     # OS specific sources for SGX.
     if (UNIX OR USE_CLANGW)

@@ -1,10 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-if(UNIX)
-    set(SOURCES setjmp.S longjmp.S)
-endif()
-
 add_library(oeelibc STATIC
     assert.c
     atexit.c
