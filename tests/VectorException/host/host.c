@@ -32,7 +32,7 @@ void test_vector_exception(oe_enclave_t* enclave)
 
 void test_sigill_handling(oe_enclave_t* enclave)
 {
-    uint32_t cpuid_table[OE_CPUID_LEAF_COUNT * OE_CPUID_REG_COUNT];
+    uint32_t cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
     memset(&cpuid_table, 0, sizeof(cpuid_table));
     int ret = -1;
 
@@ -101,12 +101,11 @@ void test_sigill_handling(oe_enclave_t* enclave)
                 // lesser chance of matching up with the current value.
                 OE_TEST(
                     (cpuid_info[j] & 0x00FFFFFF) ==
-                    (cpuid_table[i * OE_CPUID_REG_COUNT + j] & 0x00FFFFFF));
+                    (cpuid_table[i][j] & 0x00FFFFFF));
             }
             else
             {
-                OE_TEST(
-                    cpuid_info[j] == cpuid_table[i * OE_CPUID_REG_COUNT + j]);
+                OE_TEST(cpuid_info[j] == cpuid_table[i][j]);
             }
         }
     }

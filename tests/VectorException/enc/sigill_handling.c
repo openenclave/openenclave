@@ -144,7 +144,8 @@ bool test_unsupported_cpuid_leaf(uint32_t leaf)
     }
 }
 
-int enc_test_sigill_handling(uint32_t* cpuid_table)
+int enc_test_sigill_handling(
+    uint32_t cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT])
 {
     oe_result_t result;
 
@@ -181,10 +182,10 @@ int enc_test_sigill_handling(uint32_t* cpuid_table)
             get_cpuid(
                 i,
                 0,
-                cpuid_table + (i * OE_CPUID_REG_COUNT + OE_CPUID_RAX),
-                cpuid_table + (i * OE_CPUID_REG_COUNT + OE_CPUID_RBX),
-                cpuid_table + (i * OE_CPUID_REG_COUNT + OE_CPUID_RCX),
-                cpuid_table + (i * OE_CPUID_REG_COUNT + OE_CPUID_RDX));
+                &(cpuid_table[i][OE_CPUID_RAX]),
+                &(cpuid_table[i][OE_CPUID_RBX]),
+                &(cpuid_table[i][OE_CPUID_RCX]),
+                &(cpuid_table[i][OE_CPUID_RDX]));
         }
     }
 
