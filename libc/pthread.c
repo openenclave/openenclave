@@ -69,7 +69,7 @@ static void _pthread_self_init()
     if (td)
     {
         struct __pthread* self = (struct __pthread*)td->pthread;
-        oe_memset(self, 0, sizeof(struct __pthread));
+        memset(self, 0, sizeof(struct __pthread));
         self->locale = C_LOCALE;
     }
 }

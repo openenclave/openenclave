@@ -245,7 +245,7 @@ void td_init(td_t* td)
         // oe_enter().
 
         /* Clear base structure */
-        oe_memset(&td->base, 0, sizeof(td->base));
+        memset(&td->base, 0, sizeof(td->base));
 
         /* Set pointer to self */
         td->base.self_addr = (uint64_t)td;
@@ -300,7 +300,7 @@ void td_clear(td_t* td)
         oe_abort();
 
     /* Clear base structure */
-    oe_memset(&td->base, 0, sizeof(td->base));
+    memset(&td->base, 0, sizeof(td->base));
 
     /* Clear the magic number */
     td->magic = 0;

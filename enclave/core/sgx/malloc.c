@@ -24,8 +24,6 @@
 #define USE_LOCKS 1
 #define size_t size_t
 #define ptrdiff_t ptrdiff_t
-#define memset oe_memset
-#define memcpy oe_memcpy
 #define sbrk oe_sbrk
 #define fprintf _dlmalloc_stats_fprintf
 
@@ -211,7 +209,7 @@ oe_result_t oe_get_malloc_stats(oe_malloc_stats_t* stats)
     static oe_mutex_t _mutex = OE_MUTEX_INITIALIZER;
 
     if (stats)
-        oe_memset(stats, 0, sizeof(oe_malloc_stats_t));
+        memset(stats, 0, sizeof(oe_malloc_stats_t));
 
     oe_mutex_lock(&_mutex);
 

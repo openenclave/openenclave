@@ -100,7 +100,7 @@ OE_INLINE void _referent_free(Referent* referent)
         mbedtls_free(referent->crt);
 
         /* Free the referent structure */
-        oe_memset(referent, 0, sizeof(Referent));
+        memset(referent, 0, sizeof(Referent));
         mbedtls_free(referent);
     }
 }
@@ -157,12 +157,12 @@ OE_INLINE void _cert_free(Cert* impl)
     {
         /* Release the MBEDTLS certificate */
         mbedtls_x509_crt_free(impl->cert);
-        oe_memset(impl->cert, 0, sizeof(mbedtls_x509_crt));
+        memset(impl->cert, 0, sizeof(mbedtls_x509_crt));
         mbedtls_free(impl->cert);
     }
 
     /* Clear the fields */
-    oe_memset(impl, 0, sizeof(Cert));
+    memset(impl, 0, sizeof(Cert));
 }
 
 /*
@@ -591,7 +591,7 @@ oe_result_t oe_cert_read_pem(
 
     /* Clear the implementation */
     if (impl)
-        oe_memset(impl, 0, sizeof(Cert));
+        memset(impl, 0, sizeof(Cert));
 
     /* Check parameters */
     if (!pem_data || !pem_size || !cert)
@@ -624,7 +624,7 @@ done:
     if (crt)
     {
         mbedtls_x509_crt_free(crt);
-        oe_memset(crt, 0, sizeof(mbedtls_x509_crt));
+        memset(crt, 0, sizeof(mbedtls_x509_crt));
         mbedtls_free(crt);
     }
 
@@ -661,7 +661,7 @@ oe_result_t oe_cert_chain_read_pem(
 
     /* Clear the implementation (making it invalid) */
     if (impl)
-        oe_memset(impl, 0, sizeof(CertChain));
+        memset(impl, 0, sizeof(CertChain));
 
     /* Check parameters */
     if (!pem_data || !pem_size || !chain)
@@ -716,7 +716,7 @@ oe_result_t oe_cert_chain_free(oe_cert_chain_t* chain)
     _referent_free(impl->referent);
 
     /* Clear the implementation (making it invalid) */
-    oe_memset(impl, 0, sizeof(CertChain));
+    memset(impl, 0, sizeof(CertChain));
 
     result = OE_OK;
 
@@ -962,7 +962,7 @@ oe_result_t oe_cert_chain_get_cert(
 
     /* Clear the output certificate for all error pathways */
     if (cert)
-        oe_memset(cert, 0, sizeof(oe_cert_t));
+        memset(cert, 0, sizeof(oe_cert_t));
 
     /* Reject invalid parameters */
     if (!_cert_chain_is_valid(impl) || !cert)

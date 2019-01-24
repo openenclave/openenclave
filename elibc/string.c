@@ -173,16 +173,6 @@ char* elibc_strstr(const char* haystack, const char* needle)
     return NULL;
 }
 
-void* elibc_memcpy(void* dest, const void* src, size_t n)
-{
-    return oe_memcpy(dest, src, n);
-}
-
-void* elibc_memset(void* s, int c, size_t n)
-{
-    return oe_memset(s, c, n);
-}
-
 int elibc_memcmp(const void* s1, const void* s2, size_t n)
 {
     return oe_memcmp(s1, s2, n);
@@ -209,7 +199,7 @@ char* elibc_strndup(const char* s, size_t n)
         if (!(p = (char*)oe_malloc(len + 1)))
             return NULL;
 
-        oe_memcpy(p, s, len);
+        memcpy(p, s, len);
         p[len] = '\0';
     }
 

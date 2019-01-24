@@ -38,10 +38,6 @@ char* elibc_rindex(const char* s, int c);
 
 char* elibc_strstr(const char* haystack, const char* needle);
 
-void* elibc_memset(void* s, int c, size_t n);
-
-void* elibc_memcpy(void* dest, const void* src, size_t n);
-
 int elibc_memcmp(const void* s1, const void* s2, size_t n);
 
 void* elibc_memmove(void* dest, const void* src, size_t n);
@@ -148,18 +144,6 @@ ELIBC_INLINE
 char* strstr(const char* haystack, const char* needle)
 {
     return elibc_strstr(haystack, needle);
-}
-
-ELIBC_INLINE
-void* memset(void* s, int c, size_t n)
-{
-    return elibc_memset(s, c, n);
-}
-
-ELIBC_INLINE
-void* memcpy(void* dest, const void* src, size_t n)
-{
-    return elibc_memcpy(dest, src, n);
 }
 
 ELIBC_INLINE

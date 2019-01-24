@@ -103,7 +103,7 @@ oe_result_t _handle_oelog_init(uint64_t arg)
     }
     else
     {
-        oe_memset(_enclave_filename, 0, sizeof(_enclave_filename));
+        memset(_enclave_filename, 0, sizeof(_enclave_filename));
     }
 
     _debug_allowed_enclave = is_enclave_debug_allowed();

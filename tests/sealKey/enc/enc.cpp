@@ -306,7 +306,7 @@ bool TestOEGetSealKey()
         // Modify the cpu_svn of key request to invalid and verify the function
         // can't get seal key.
         key_request->isv_svn = cur_isv_svn;
-        oe_memset(
+        memset(
             key_request->cpu_svn,
             0XFF,
             OE_FIELD_SIZE(sgx_key_request_t, cpu_svn));
@@ -532,7 +532,7 @@ bool TestAsymKeyCase(
     // Modify the cpu_svn of key request to invalid and verify the function
     // can't get seal key.
     key_request->isv_svn = cur_isv_svn;
-    oe_memset(
+    memset(
         key_request->cpu_svn, 0XFF, OE_FIELD_SIZE(sgx_key_request_t, cpu_svn));
 
     ret = oe_get_public_key(

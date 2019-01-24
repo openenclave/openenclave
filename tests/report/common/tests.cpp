@@ -10,8 +10,6 @@
 
 #ifdef OE_BUILD_ENCLAVE
 
-#define Memset oe_memset
-#define Memcpy oe_memcpy
 #define Memcmp oe_memcmp
 
 #define GetReport oe_get_report
@@ -22,8 +20,6 @@
 
 #else
 
-#define Memset memset
-#define Memcpy memcpy
 #define Memcmp memcmp
 
 // The host side API requires the enclave to be passed in.
@@ -154,7 +150,7 @@ static void ValidateReport(
 
     if (first_time)
     {
-        Memcpy(
+        memcpy(
             g_unique_id,
             parsed_report.identity.unique_id,
             sizeof(parsed_report.identity.unique_id));
@@ -956,16 +952,16 @@ static void GetSGXTargetInfo(sgx_target_info_t* sgx_target_info)
         GetReport_v1(0, NULL, 0, NULL, 0, report_buffer, &report_size) ==
         OE_OK);
 
-    Memset(sgx_target_info, 0, sizeof(*sgx_target_info));
-    Memcpy(
+    memset(sgx_target_info, 0, sizeof(*sgx_target_info));
+    memcpy(
         sgx_target_info->mrenclave,
         &sgx_report->body.mrenclave,
         sizeof(sgx_target_info->mrenclave));
-    Memcpy(
+    memcpy(
         &sgx_target_info->attributes,
         &sgx_report->body.attributes,
         sizeof(sgx_target_info->attributes));
-    Memcpy(
+    memcpy(
         &sgx_target_info->misc_select,
         &sgx_report->body.miscselect,
         sizeof(sgx_target_info->attributes));

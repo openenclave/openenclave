@@ -7,7 +7,17 @@
 #include <openenclave/internal/defs.h>
 #include <openenclave/internal/types.h>
 
+#if __STDC_VERSION__ >= 199901L
+#define OE_RESTRICT restrict
+#elif !defined(__GNUC__) || defined (__cplusplus)
+#define OE_RESTRICT
+#endif
+
 OE_EXTERNC_BEGIN
+
+/* Enclave implementations from MUSL compiled directly into oecore */
+void *memcpy(void *OE_RESTRICT dest, const void *OE_RESTRICT src, size_t n);
+void *memset(void *dest, int c, size_t n);
 
 /**
  * Enclave implementation of the standard strlen() function.
@@ -50,20 +60,6 @@ size_t oe_strlcpy(char* dest, const char* src, size_t size);
  * Refer to documentation for strlcat() function.
  */
 size_t oe_strlcat(char* dest, const char* src, size_t size);
-
-/**
- * Enclave implementation of the standard memcpy() function.
- *
- * Refer to documentation for memcpy() function.
- */
-void* oe_memcpy(void* dest, const void* src, size_t n);
-
-/**
- * Enclave implementation of the standard memset() function.
- *
- * Refer to documentation for memset() function.
- */
-void* oe_memset(void* s, int c, size_t n);
 
 /**
  * Enclave implementation of the standard memmove() function.

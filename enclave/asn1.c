@@ -91,7 +91,7 @@ oe_result_t oe_asn1_get_sequence(oe_asn1_t* asn1, oe_asn1_t* sequence)
     size_t length;
 
     if (sequence)
-        oe_memset(sequence, 0, sizeof(oe_asn1_t));
+        memset(sequence, 0, sizeof(oe_asn1_t));
 
     if (!_is_valid(asn1) || !sequence)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -142,7 +142,7 @@ oe_result_t oe_asn1_get_oid(oe_asn1_t* asn1, oe_oid_string_t* oid)
     int rc = 0;
 
     if (oid)
-        oe_memset(oid, 0, sizeof(oe_oid_string_t));
+        memset(oid, 0, sizeof(oe_oid_string_t));
 
     if (!_is_valid(asn1) || !oid)
         OE_RAISE(OE_INVALID_PARAMETER);

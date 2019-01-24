@@ -46,7 +46,7 @@ char* oe_host_strdup(const char* str)
     char* dup = (char*)oe_host_malloc(n + 1);
 
     if (dup)
-        oe_memcpy(dup, str, n + 1);
+        memcpy(dup, str, n + 1);
 
     return dup;
 }
@@ -111,13 +111,12 @@ static oe_result_t _syscall_hook(
             if (rval > 0)
             {
                 char* enc_buf = (char*)arg2;
-                oe_memcpy(enc_buf, host_buf, buf_len);
+                memcpy(enc_buf, host_buf, buf_len);
             }
             *ret = (int)rval;
             oe_host_free(host_buf);
             break;
         }
-
         case SYS_writev:
         {
             char* str_full;

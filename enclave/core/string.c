@@ -3,6 +3,7 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
+#include <openenclave/elibc/string.h>
 
 /*
 **=====/=========================================================================
@@ -134,119 +135,11 @@ size_t oe_strlcat(char* dest, const char* src, size_t size)
 /*
 **==============================================================================
 **
-** oe_memset()
-** oe_memcpy()
 ** oe_memcmp()
+** oe_memmove()
 **
 **==============================================================================
 */
-
-static inline void _oe_memcpy(void* dest, const void* src, size_t n)
-{
-// TODO: Revisit this later. Looks like compilers might replace
-// __builtin_X with the C library version of X.
-#if !defined(__clang__) && (defined(__x86_64__) || defined(_M_X64))
-    __builtin_memcpy(dest, src, n);
-#else
-    unsigned char* d = (unsigned char*)dest;
-    unsigned char* s = (unsigned char*)src;
-    while (n--)
-        *d++ = *s++;
-#endif
-}
-void* oe_memcpy(void* dest, const void* src, size_t n)
-{
-    unsigned char* p = (unsigned char*)dest;
-    const unsigned char* q = (const unsigned char*)src;
-
-    while (n >= 1024)
-    {
-        _oe_memcpy(p, q, 1024);
-        n -= 1024;
-        p += 1024;
-        q += 1024;
-    }
-
-    while (n >= 256)
-    {
-        _oe_memcpy(p, q, 256);
-        n -= 256;
-        p += 256;
-        q += 256;
-    }
-
-    while (n >= 64)
-    {
-        _oe_memcpy(p, q, 64);
-        n -= 64;
-        p += 64;
-        q += 64;
-    }
-
-    while (n >= 16)
-    {
-        _oe_memcpy(p, q, 16);
-        n -= 16;
-        p += 16;
-        q += 16;
-    }
-
-    while (n--)
-        *p++ = *q++;
-
-    return dest;
-}
-
-static inline void _oe_memset(void* s, int c, size_t n)
-{
-// TODO: Revisit this later. Looks like compilers might replace
-// __builtin_X with the C library version of X.
-#if !defined(__clang__) && (defined(__x86_64__) || defined(_M_X64))
-    __builtin_memset(s, c, n);
-#else
-    unsigned char* s_ = (unsigned char*)s;
-    while (n--)
-        *s_++ = (unsigned char)c;
-#endif
-}
-
-void* oe_memset(void* s, int c, size_t n)
-{
-    unsigned char* p = (unsigned char*)s;
-
-    while (n >= 1024)
-    {
-        _oe_memset(p, c, 1024);
-        n -= 1024;
-        p += 1024;
-    }
-
-    while (n >= 256)
-    {
-        _oe_memset(p, c, 256);
-        n -= 256;
-        p += 256;
-    }
-
-    while (n >= 64)
-    {
-        _oe_memset(p, c, 64);
-        n -= 64;
-        p += 64;
-    }
-
-    while (n >= 16)
-    {
-        _oe_memset(p, c, 16);
-        n -= 16;
-        p += 16;
-    }
-
-    while (n--)
-        *p++ = (unsigned char)c;
-
-    return s;
-}
 
 int oe_memcmp(const void* s1, const void* s2, size_t n)
 {
@@ -273,7 +166,7 @@ void* oe_memmove(void* dest, const void* src, size_t n)
     {
         if (p <= q)
         {
-            oe_memcpy(p, q, n);
+            memcpy(p, q, n);
         }
         else
         {

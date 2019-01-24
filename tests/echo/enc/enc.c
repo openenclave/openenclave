@@ -13,7 +13,7 @@ char* oe_host_strdup(const char* str)
     char* dup = (char*)oe_host_calloc(1, n + 1);
 
     if (dup)
-        oe_memcpy(dup, str, n + 1);
+        memcpy(dup, str, n + 1);
 
     return dup;
 }

@@ -2,9 +2,12 @@
 # Licensed under the MIT License.
 
 set(PLATFORM_SRC "")
+set(MUSLSRC ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
 if (OE_SGX)
     list(APPEND PLATFORM_SRC
+        ${MUSLSRC}/string/memcpy.c
+        ${MUSLSRC}/string/memset.c
         sgx/atexit.c
         sgx/backtrace.c
         sgx/calls.c
@@ -54,6 +57,12 @@ elseif(OE_TRUSTZONE)
         optee/start.c)
 endif()
 
+# Suppress type conversion warnings introduced by 3rdparty code
+set_source_files_properties(${MUSLSRC}/string/memcpy.c PROPERTIES
+    COMPILE_FLAGS -Wno-conversion)
+set_source_files_properties(${MUSLSRC}/string/memset.c PROPERTIES
+    COMPILE_FLAGS -Wno-conversion)
+
 add_library(oecore STATIC
     ../../common/safecrt.c
     assert.c
@@ -74,7 +83,9 @@ endif()
 
 if (OE_SGX)
     # This directory contains dummy C headers needed by dlmalloc:
-    target_include_directories(oecore PRIVATE sgx/dlmalloc)
+    target_include_directories(oecore PRIVATE
+        sgx/dlmalloc
+        ${PROJECT_SOURCE_DIR}/include/openenclave/elibc)
 
     # Unfortunately dlmalloc uses GNU extension that allows arithmetic
     # null pointers.

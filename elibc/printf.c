@@ -575,7 +575,7 @@ static size_t _write(elibc_out_t* out_, const void* buf, size_t count)
         else
             n = count;
 
-        elibc_memcpy(&out->str[out->off], buf, n);
+        memcpy(&out->str[out->off], buf, n);
         out->str[out->off + n] = '\0';
     }
 

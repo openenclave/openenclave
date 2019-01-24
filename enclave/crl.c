@@ -30,9 +30,9 @@ bool crl_is_valid(const crl_t* impl)
 OE_INLINE void _crl_free(crl_t* impl)
 {
     mbedtls_x509_crl_free(impl->crl);
-    oe_memset(impl->crl, 0, sizeof(mbedtls_x509_crl));
+    memset(impl->crl, 0, sizeof(mbedtls_x509_crl));
     mbedtls_free(impl->crl);
-    oe_memset(impl, 0, sizeof(crl_t));
+    memset(impl, 0, sizeof(crl_t));
 }
 
 oe_result_t oe_crl_read_der(
@@ -47,7 +47,7 @@ oe_result_t oe_crl_read_der(
 
     /* Clear the implementation */
     if (impl)
-        oe_memset(impl, 0, sizeof(crl_t));
+        memset(impl, 0, sizeof(crl_t));
 
     /* Check for invalid parameters */
     if (!der_data || !der_size || !crl)
@@ -76,7 +76,7 @@ done:
     if (x509_crl)
     {
         mbedtls_x509_crl_free(x509_crl);
-        oe_memset(x509_crl, 0, sizeof(mbedtls_x509_crl));
+        memset(x509_crl, 0, sizeof(mbedtls_x509_crl));
         mbedtls_free(x509_crl);
     }
 
@@ -110,10 +110,10 @@ oe_result_t oe_crl_get_update_dates(
     const crl_t* impl = (const crl_t*)crl;
 
     if (last)
-        oe_memset(last, 0, sizeof(oe_datetime_t));
+        memset(last, 0, sizeof(oe_datetime_t));
 
     if (next)
-        oe_memset(next, 0, sizeof(oe_datetime_t));
+        memset(next, 0, sizeof(oe_datetime_t));
 
     if (!crl_is_valid(impl))
         OE_RAISE(OE_INVALID_PARAMETER);

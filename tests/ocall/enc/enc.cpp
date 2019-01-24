@@ -26,7 +26,7 @@ OE_ECALL void Test4(void* args)
     OE_UNUSED(args);
 
     /* Call into host with enclave memory */
-    oe_memset(buf, 0xAA, sizeof(buf));
+    memset(buf, 0xAA, sizeof(buf));
 
     if (oe_call_host("Func2", buf) != OE_OK)
     {

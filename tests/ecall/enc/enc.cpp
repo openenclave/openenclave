@@ -26,7 +26,7 @@ int TestSetjmp()
 void enc_test(test_args* args)
 {
     /* Set output arguments */
-    oe_memset(args, 0xDD, sizeof(test_args));
+    memset(args, 0xDD, sizeof(test_args));
     args->magic = NEW_MAGIC;
     args->self = args;
     args->mm = 12;

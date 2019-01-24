@@ -177,10 +177,10 @@ static long _syscall_gettimeofday(long n, long x1, long x2)
     OE_UNUSED(n);
 
     if (tv)
-        oe_memset(tv, 0, sizeof(struct timeval));
+        memset(tv, 0, sizeof(struct timeval));
 
     if (tz)
-        oe_memset(tz, 0, sizeof(struct timezone));
+        memset(tz, 0, sizeof(struct timezone));
 
     if (!tv)
         goto done;
@@ -207,7 +207,7 @@ static long _syscall_nanosleep(long n, long x1, long x2)
     OE_UNUSED(n);
 
     if (rem)
-        oe_memset(rem, 0, sizeof(*rem));
+        memset(rem, 0, sizeof(*rem));
 
     if (!req)
         goto done;

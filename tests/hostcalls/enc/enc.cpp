@@ -49,12 +49,12 @@ void test_host_realloc(
     {
         if (!in_ptr)
         {
-            oe_memset(out_ptr, TEST_HOSTREALLOC_INIT_VALUE, new_size);
+            memset(out_ptr, TEST_HOSTREALLOC_INIT_VALUE, new_size);
         }
         else if (old_size < new_size)
         {
             void* ext_ptr = (void*)((uint64_t)out_ptr + old_size);
-            oe_memset(
+            memset(
                 ext_ptr, TEST_HOSTREALLOC_INIT_VALUE, new_size - old_size);
         }
     }
