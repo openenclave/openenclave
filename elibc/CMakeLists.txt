@@ -3,10 +3,7 @@
 
 if(UNIX)
     set(SOURCES setjmp.S longjmp.S)
-elseif (WIN32)
-    set(SOURCES windows.c)
 endif()
-
 
 add_library(oeelibc STATIC
     assert.c
@@ -28,6 +25,8 @@ add_library(oeelibc STATIC
     strtoul.c
     time.c
     ${SOURCES})
+
+maybe_build_using_clangw(oeelibc)
 
 target_link_libraries(oeelibc oecore)
 

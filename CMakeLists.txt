@@ -195,13 +195,13 @@ enable_testing()
 include(add_enclave_test)
 
 # Recurse through subdirectories
-add_subdirectory(elibc)
 add_subdirectory(host)
 add_subdirectory(include)
 add_subdirectory(tests)
 add_subdirectory(tools)
 
 if (BUILD_ENCLAVES)
+  add_subdirectory(elibc)
   add_subdirectory(enclave/core)
   add_subdirectory(3rdparty)
   add_subdirectory(libc)
