@@ -31,16 +31,20 @@
     <!-- Debug/Release Shorthands -->
     <Choose>
         <When Condition="'$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Simulation' Or '$(Configuration)' == 'SGX-Debug' Or '$(Configuration)' == 'SGX-Simulation-Debug' Or '$(Configuration)' == 'TZ-OPTEE-Debug' Or '$(Configuration)' == 'OPTEE-Simulation-Debug'">
-            <OEIsDebug>True</OEIsDebug>
-            <OEIsRelease>False</OEIsRelease>
+            <PropertyGroup>
+                <OEIsDebug>True</OEIsDebug>
+                <OEIsRelease>False</OEIsRelease>
 
-            <OELibSuffix>Debug</OELibSuffix>
+                <OELibSuffix>Debug</OELibSuffix>
+            </PropertyGroup>
         </When>
         <When Condition="'$(Configuration)' == 'Prerelease' Or '$(Configuration)' == 'Release' Or '$(Configuration)' == 'SGX-Release' Or '$(Configuration)' == 'SGX-Simulation-Release' Or '$(Configuration)' == 'TZ-OPTEE-Release'">
-            <OEIsDebug>False</OEIsDebug>
-            <OEIsRelease>True</OEIsRelease>
+            <PropertyGroup>
+                <OEIsDebug>False</OEIsDebug>
+                <OEIsRelease>True</OEIsRelease>
 
-            <OELibSuffix>Release</OELibSuffix>
+                <OELibSuffix>Release</OELibSuffix>
+            </PropertyGroup>
         </When>
     </Choose>
 
@@ -123,16 +127,16 @@
         ==================================================================================
 
         This section creates variables hold paths to libraries included in
-        this NuGet package as well as lof external libraries that enclaves
+        this NuGet package as well as to external libraries that enclaves
         and hosts may depend on.
     -->
 
     <!-- Relative paths to the Open EncSDK Libraries within the NuGet Package -->
     <PropertyGroup>
-        <OESgxHwX86>$(MSBuildThisFileDiry)..\..\lib\native\v141\sgx\hw\x86\$(OELibSuffix)</OESgxHwX86>
-        <OESgxHwX64>$(MSBuildThisFileDiry)..\..\lib\native\v141\sgx\hw\x64\$(OELibSuffix)</OESgxHwX64>
+        <OESgxHwX86>$(MSBuildThisFileDirectory)..\..\lib\native\v141\sgx\hw\x86\$(OELibSuffix)</OESgxHwX86>
+        <OESgxHwX64>$(MSBuildThisFileDirectory)..\..\lib\native\v141\sgx\hw\x64\$(OELibSuffix)</OESgxHwX64>
 
-        <OESgxSimX86>$(MSBuildThisFileDory)..\..\lib\native\v141\sgx\sim\x86\$(OELibSuffix)</OESgxSimX86>
+        <OESgxSimX86>$(MSBuildThisFileDirectory)..\..\lib\native\v141\sgx\sim\x86\$(OELibSuffix)</OESgxSimX86>
         <OESgxSimX64>$(MSBuildThisFileDirectory)..\..\lib\native\v141\sgx\sim\x64\$(OELibSuffix)</OESgxSimX64>
 
         <OETzHwArm>$(MSBuildThisFileDirectory)..\..\lib\native\v141\tz\hw\arm\$(OELibSuffix)</OETzHwArm>
