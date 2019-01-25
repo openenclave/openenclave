@@ -4,19 +4,7 @@
 #ifndef _OE_CORE_DLMALLOC_ERRNO_H
 #define _OE_CORE_DLMALLOC_ERRNO_H
 
-#include <openenclave/enclave.h>
-#include <openenclave/internal/sgxtypes.h>
-
-#define EINVAL 22
-#define ENOMEM 12
-
-#define errno *__errno_location()
-
-OE_INLINE int* __errno_location(void)
-{
-    td_t* td = (td_t*)oe_get_thread_data();
-    oe_assert(td);
-    return &td->linux_errno;
-}
+#define OE_NEED_STDC_NAMES
+#include <openenclave/elibc/errno.h>
 
 #endif /* _OE_CORE_DLMALLOC_ERRNO_H */

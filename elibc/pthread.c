@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <errno.h>
+#include <openenclave/elibc/errno.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/thread.h>
@@ -54,15 +54,15 @@ ELIBC_INLINE int _to_errno(oe_result_t result)
         case OE_OK:
             return 0;
         case OE_INVALID_PARAMETER:
-            return EINVAL;
+            return OE_EINVAL;
         case OE_BUSY:
-            return EBUSY;
+            return OE_EBUSY;
         case OE_NOT_OWNER:
-            return EPERM;
+            return OE_EPERM;
         case OE_OUT_OF_MEMORY:
-            return ENOMEM;
+            return OE_ENOMEM;
         default:
-            return EINVAL; /* unreachable */
+            return OE_EINVAL; /* unreachable */
     }
 }
 

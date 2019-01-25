@@ -13,10 +13,10 @@ if (OE_SGX)
         sgx/atexit.c
         sgx/backtrace.c
         sgx/calls.c
-        sgx/tracee.c
         sgx/cpuid.c
         sgx/debugmalloc.c
         sgx/entropy.c
+        sgx/errno.c
         sgx/exception.c
         sgx/globals.c
         sgx/hostcalls.c
@@ -32,6 +32,7 @@ if (OE_SGX)
         sgx/spinlock.c
         sgx/td.c
         sgx/thread.c
+        sgx/tracee.c
         sgx/enter.S
         sgx/exit.S
         sgx/getkey.S

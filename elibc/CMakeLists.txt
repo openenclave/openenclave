@@ -3,7 +3,6 @@
 
 add_library(oeelibc STATIC
     atexit.c
-    errno.c
     gmtime.c
     intstr.c
     malloc.c
