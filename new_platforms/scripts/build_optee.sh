@@ -128,7 +128,7 @@ if [ -z "$TA_DEV_KIT_DIR" ]; then
         if [ -z "$MACHINE" ] || [ "$MACHINE" = "virt" ]; then
             ARCH=arm make -j $PROC_COUNT PLATFORM=vexpress-qemu_virt       \
                                          $OPTEE_VIRT_FLAGS                 \
-                                         CROSS_COMPILE=$CROSS_COls1012grapeboardMPILE      \
+                                         CROSS_COMPILE=$CROSS_COMPILE      \
                                          CROSS_COMPILE_core=$CROSS_COMPILE \
                                          $* || exit 1
             TA_DEV_KIT_PLAT=vexpress
