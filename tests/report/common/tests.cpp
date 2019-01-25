@@ -10,8 +10,6 @@
 
 #ifdef OE_BUILD_ENCLAVE
 
-#define Memcmp oe_memcmp
-
 #define GetReport oe_get_report
 #define GetReport_v1 oe_get_report_v1
 #define GetReport_v2 oe_get_report_v2
@@ -19,8 +17,6 @@
 #define VerifyReport oe_verify_report
 
 #else
-
-#define Memcmp memcmp
 
 // The host side API requires the enclave to be passed in.
 
@@ -82,7 +78,7 @@ static bool CheckReportData(
         oe_parse_report(report_buffer, report_size, &parsed_report) == OE_OK);
 
     return (
-        Memcmp(parsed_report.report_data, report_data, report_data_size) == 0);
+        memcmp(parsed_report.report_data, report_data, report_data_size) == 0);
 }
 #endif
 
@@ -107,7 +103,7 @@ static void ValidateReport(
     /* Validate header. */
     OE_TEST(parsed_report.type == OE_ENCLAVE_TYPE_SGX);
     OE_TEST(
-        Memcmp(parsed_report.report_data, report_data, report_data_size) == 0);
+        memcmp(parsed_report.report_data, report_data, report_data_size) == 0);
 
     /* Validate pointer fields. */
     if (remote)
@@ -159,19 +155,19 @@ static void ValidateReport(
     }
 
     OE_TEST(
-        Memcmp(
+        memcmp(
             parsed_report.identity.unique_id,
             g_unique_id,
             sizeof(parsed_report.identity.unique_id)) == 0);
 
     OE_TEST(
-        Memcmp(
+        memcmp(
             parsed_report.identity.signer_id,
             g_signer_id,
             sizeof(parsed_report.identity.signer_id)) == 0);
 
     OE_TEST(
-        Memcmp(
+        memcmp(
             parsed_report.identity.product_id,
             g_product_id,
             sizeof(parsed_report.identity.product_id)) == 0);

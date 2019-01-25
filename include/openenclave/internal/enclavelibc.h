@@ -16,7 +16,9 @@
 OE_EXTERNC_BEGIN
 
 /* Enclave implementations from MUSL compiled directly into oecore */
+int memcmp(const void *vl, const void *vr, size_t n);
 void *memcpy(void *OE_RESTRICT dest, const void *OE_RESTRICT src, size_t n);
+void *memmove(void *dest, const void *src, size_t n);
 void *memset(void *dest, int c, size_t n);
 
 /**
@@ -60,20 +62,6 @@ size_t oe_strlcpy(char* dest, const char* src, size_t size);
  * Refer to documentation for strlcat() function.
  */
 size_t oe_strlcat(char* dest, const char* src, size_t size);
-
-/**
- * Enclave implementation of the standard memmove() function.
- *
- * Refer to documentation for memmove() function.
- */
-void* oe_memmove(void* dest, const void* src, size_t n);
-
-/**
- * Enclave implementation of the standard memcmp() function.
- *
- * Refer to documentation for memcmp() function.
- */
-int oe_memcmp(const void* s1, const void* s2, size_t n);
 
 /**
  * Produce output according to a given format string.

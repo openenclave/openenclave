@@ -20,9 +20,6 @@
 #define malloc oe_malloc
 #define free oe_free
 
-#define memcmp oe_memcmp
-#define memmove oe_memmove
-
 #define strlen oe_strlen
 
 #define printf oe_host_printf

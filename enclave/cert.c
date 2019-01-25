@@ -218,7 +218,7 @@ static bool _x509_buf_equal(
     const mbedtls_x509_buf* y)
 {
     return (x->tag == y->tag) && (x->len == y->len) &&
-           oe_memcmp(x->p, y->p, x->len) == 0;
+           memcmp(x->p, y->p, x->len) == 0;
 }
 
 // Find the last certificate in the chain and then verify that it's a

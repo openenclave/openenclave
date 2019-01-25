@@ -173,16 +173,6 @@ char* elibc_strstr(const char* haystack, const char* needle)
     return NULL;
 }
 
-int elibc_memcmp(const void* s1, const void* s2, size_t n)
-{
-    return oe_memcmp(s1, s2, n);
-}
-
-void* elibc_memmove(void* dest, const void* src, size_t n)
-{
-    return oe_memmove(dest, src, n);
-}
-
 char* elibc_strdup(const char* s)
 {
     return strndup(s, ELIBC_SIZE_MAX);

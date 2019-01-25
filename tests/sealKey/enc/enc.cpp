@@ -275,10 +275,9 @@ bool TestOEGetSealKey()
         OE_TEST(third_key_ptr_size == sizeof(sgx_key_t));
 
         // The seal keys should match.
-        if ((oe_memcmp(key_buffer, second_key_buffer, sizeof(sgx_key_t)) !=
-             0) ||
-            (oe_memcmp(key_buffer, third_key_ptr, sizeof(sgx_key_t)) != 0) ||
-            (oe_memcmp(key_buffer, third_key_buffer, sizeof(sgx_key_t)) != 0))
+        if ((memcmp(key_buffer, second_key_buffer, sizeof(sgx_key_t)) != 0) ||
+            (memcmp(key_buffer, third_key_ptr, sizeof(sgx_key_t)) != 0) ||
+            (memcmp(key_buffer, third_key_buffer, sizeof(sgx_key_t)) != 0))
         {
             return false;
         }

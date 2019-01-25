@@ -244,7 +244,7 @@ oe_result_t oe_get_remote_report(
     if (*report_buffer_size > OE_MAX_REPORT_SIZE)
         OE_RAISE(OE_UNEXPECTED);
 
-    if (oe_memcmp(
+    if (memcmp(
             &sgx_quote->report_body,
             &sgx_report.body,
             sizeof(sgx_report.body)) != 0)

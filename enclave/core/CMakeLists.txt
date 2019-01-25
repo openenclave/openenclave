@@ -2,12 +2,14 @@
 # Licensed under the MIT License.
 
 set(PLATFORM_SRC "")
-set(MUSLSRC ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
+set(MUSL_SRC_DIR ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
 if (OE_SGX)
     list(APPEND PLATFORM_SRC
-        ${MUSLSRC}/string/memcpy.c
-        ${MUSLSRC}/string/memset.c
+        ${MUSL_SRC_DIR}/string/memcmp.c
+        ${MUSL_SRC_DIR}/string/memcpy.c
+        ${MUSL_SRC_DIR}/string/memmove.c
+        ${MUSL_SRC_DIR}/string/memset.c
         sgx/atexit.c
         sgx/backtrace.c
         sgx/calls.c
@@ -58,9 +60,7 @@ elseif(OE_TRUSTZONE)
 endif()
 
 # Suppress type conversion warnings introduced by 3rdparty code
-set_source_files_properties(${MUSLSRC}/string/memcpy.c PROPERTIES
-    COMPILE_FLAGS -Wno-conversion)
-set_source_files_properties(${MUSLSRC}/string/memset.c PROPERTIES
+set_source_files_properties(${MUSL_SRC_DIR}/string/memset.c PROPERTIES
     COMPILE_FLAGS -Wno-conversion)
 
 add_library(oecore STATIC

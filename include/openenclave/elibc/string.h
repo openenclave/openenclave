@@ -8,6 +8,21 @@
 
 ELIBC_EXTERNC_BEGIN
 
+/* TODO: Duplicate definition of these functions in enclavelibc.h
+ * consider breaking enclavelibc.h up so that it can be included
+ * as <string.h> by MUSL source files */
+#if __STDC_VERSION__ >= 199901L
+#define OE_RESTRICT restrict
+#elif !defined(__GNUC__) || defined (__cplusplus)
+#define OE_RESTRICT
+#endif
+
+int memcmp(const void *vl, const void *vr, size_t n);
+void *memcpy(void *OE_RESTRICT dest, const void *OE_RESTRICT src, size_t n);
+void *memmove(void *dest, const void *src, size_t n);
+void *memset(void *dest, int c, size_t n);
+/* End TODO */
+
 size_t elibc_strlen(const char* s);
 
 size_t elibc_strnlen(const char* s, size_t n);
@@ -37,10 +52,6 @@ char* elibc_index(const char* s, int c);
 char* elibc_rindex(const char* s, int c);
 
 char* elibc_strstr(const char* haystack, const char* needle);
-
-int elibc_memcmp(const void* s1, const void* s2, size_t n);
-
-void* elibc_memmove(void* dest, const void* src, size_t n);
 
 size_t elibc_strlcpy(char* dest, const char* src, size_t size);
 
@@ -144,18 +155,6 @@ ELIBC_INLINE
 char* strstr(const char* haystack, const char* needle)
 {
     return elibc_strstr(haystack, needle);
-}
-
-ELIBC_INLINE
-int memcmp(const void* s1, const void* s2, size_t n)
-{
-    return elibc_memcmp(s1, s2, n);
-}
-
-ELIBC_INLINE
-void* memmove(void* dest, const void* src, size_t n)
-{
-    return elibc_memmove(dest, src, n);
 }
 
 ELIBC_INLINE
