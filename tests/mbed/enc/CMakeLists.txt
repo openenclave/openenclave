@@ -31,8 +31,7 @@ function(add_mbed_test_enclave NAME)
       find_program(GIT git)
       get_filename_component(GIT_DIR ${GIT} DIRECTORY)
       find_program(PERL perl
-         PATHS "C:/Program Files/Git/usr/bin" "${GIT_DIR}/../usr/bin"
-         NO_DEFAULT_PATH)
+         PATHS "C:/Program Files/Git/usr/bin" "${GIT_DIR}/../usr/bin")
       if (NOT PERL)
         message(FATAL_ERROR "Cannot build mbedtls Test Suites without Perl")
       endif()
