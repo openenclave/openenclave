@@ -42,7 +42,7 @@ nohup ./qemu-system-aarch64 \
         -no-acpi \
         -append 'console=ttyAMA0,38400 keep_bootcon root=/dev/vda2' \
         -netdev user,id=net0,hostfwd=tcp::5555-:22 -device virtio-net,netdev=net0 \
-        -virtfs local,id=sh0,path=$PWD/build/vexpress-qemu_armv8a/out/bin,security_model=passthrough,readonly,mount_tag=sh0 &
+        -virtfs local,id=sh0,path=$PWD/../build/vexpress-qemu_armv8a/out/bin,security_model=passthrough,readonly,mount_tag=sh0 &
 disown
 
 # This isn't ideal, but we need to wait a bit until QEMU is up, otherwise the
