@@ -3,17 +3,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-cd "$( dirname "${BASH_SOURCE[0]}" )"
-
-# -------------------------------------
-# Build the Open Enclave SDK
-# -------------------------------------
-
-echo [CI] Building Open Enclave
-
-chmod +x ./build_optee.sh
-ARCH=aarch64 MACHINE=virt ./build_optee.sh || exit 1
-
 # -------------------------------------
 # Download Test Environment
 # -------------------------------------
@@ -53,7 +42,7 @@ nohup ./qemu-system-aarch64 \
         -no-acpi \
         -append 'console=ttyAMA0,38400 keep_bootcon root=/dev/vda2' \
         -netdev user,id=net0,hostfwd=tcp::5555-:22 -device virtio-net,netdev=net0 \
-        -virtfs local,id=sh0,path=$PWD/../build/aarch64/out/bin,security_model=passthrough,readonly,mount_tag=sh0 &
+        -virtfs local,id=sh0,path=$PWD/build/vexpress-qemu_armv8a/out/bin,security_model=passthrough,readonly,mount_tag=sh0 &
 disown
 
 # This isn't ideal, but we need to wait a bit until QEMU is up, otherwise the
