@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <assert.h>
 #include <errno.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
@@ -28,7 +27,7 @@ int elibc_pthread_create(
     OE_UNUSED(attr);
     OE_UNUSED(start_routine);
     OE_UNUSED(arg);
-    assert("elibc_pthread_create(): panic" == NULL);
+    oe_assert("elibc_pthread_create(): panic" == NULL);
     return -1;
 }
 
@@ -36,14 +35,14 @@ int elibc_pthread_join(elibc_pthread_t thread, void** retval)
 {
     OE_UNUSED(thread);
     OE_UNUSED(retval);
-    assert("pthread_join(): panic" == NULL);
+    oe_assert("pthread_join(): panic" == NULL);
     return -1;
 }
 
 int elibc_pthread_detach(elibc_pthread_t thread)
 {
     OE_UNUSED(thread);
-    assert("pthread_detach(): panic" == NULL);
+    oe_assert("pthread_detach(): panic" == NULL);
     return -1;
 }
 
@@ -123,9 +122,7 @@ int elibc_pthread_mutexattr_init(elibc_pthread_mutexattr_t* attr)
     return 0;
 }
 
-int elibc_pthread_mutexattr_settype(
-    elibc_pthread_mutexattr_t* attr,
-    int type)
+int elibc_pthread_mutexattr_settype(elibc_pthread_mutexattr_t* attr, int type)
 {
     OE_UNUSED(attr);
     OE_UNUSED(type);
@@ -233,7 +230,7 @@ int elibc_pthread_cond_timedwait(
     OE_UNUSED(cond);
     OE_UNUSED(mutex);
     OE_UNUSED(ts);
-    assert("pthread_cond_timedwait(): panic" == NULL);
+    oe_assert("pthread_cond_timedwait(): panic" == NULL);
     return -1;
 }
 

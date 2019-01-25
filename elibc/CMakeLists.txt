@@ -2,7 +2,6 @@
 # Licensed under the MIT License.
 
 add_library(oeelibc STATIC
-    assert.c
     atexit.c
     errno.c
     gmtime.c
