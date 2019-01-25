@@ -282,7 +282,7 @@
             <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX64) == True And $(OEIsSim) == True">$(OESgxSimX64)\oeenclave.lib;$(OESgxSimX64)\oesocket_enc.lib;$(OESgxSimX64)\oestdio_enc.lib;$(OESgxSimLibsT)</AdditionalDependencies>
 
             <!-- x86-OPTEE-Simulation-Debug -->
-            <AdditionalDependencies Condition="$(OEIsTz) == True And $(OEIsX86) == True And $(OEIsSim) == True">$(OEOpteeSimX86)\oeenclave.lib;$(OEOpteeSimX86)\oesocket_enc.lib;$(OEOpteeSimX86)\oestdio_enc.lib;$(OEOpteeSimX86)\oeenclave_opteesim.lib;onecore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies Condition="$(OEIsTz) == True And $(OEIsX86) == True And $(OEIsSim) == True">$(OEOpteeSimX86)\oeenclave.lib;$(OEOpteeSimX86)\oesocket_enc.lib;$(OEOpteeSimX86)\oestdio_enc.lib;$(OEOpteeSimX86)\oeenclave_opteesim.lib;$(OEOpteeSimX86)\mbedcrypto.lib;$(OEOpteeSimX86)\mbedx509.lib;onecore.lib;%(AdditionalDependencies)</AdditionalDependencies>
         </Link>
     </ItemDefinitionGroup>
 
@@ -302,10 +302,10 @@
             <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX64) == True And $(OEIsSim) == True">$(OESgxSimX64)\oehost.lib;$(OESgxSimX64)\oesocket_host.lib;$(OESgxSimX64)\oestdio_host.lib;onecore.lib;$(OESgxSimLibsU);%(AdditionalDependencies)</AdditionalDependencies>
 
             <!-- arm-TZ-OPTEE-* -->
-            <AdditionalDependencies Condition="$(OEIsTz) == True And $(OEIsARM) == True">$(OETzHwArm)\oehost.lib;$(OETzHwArm)\oesocket_host.lib;$(OETzHwArm)\oestdio_host.lib;onecore.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies Condition="$(OEIsTz) == True And $(OEIsARM) == True">$(OETzHwArm)\oehost.lib;$(OETzHwArm)\oesocket_host.lib;$(OETzHwArm)\oestdio_host.lib;$(OETzHwArm)\mbedcrypto.lib;$(OETzHwArm)\mbedx509.lib;onecore.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
 
             <!-- x86-OPTEE-Simulation-Debug -->
-            <AdditionalDependencies Condition="$(OEIsTz) == True And $(OEIsX86) == True And $(OEIsSim) == True">$(OEOpteeSimX86)\oehost.lib;$(OEOpteeSimX86)\oesocket_host.lib;$(OEOpteeSimX86)\oestdio_host.lib;$(OEOpteeSimX86)\oehost_opteesim.lib;onecore.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies Condition="$(OEIsTz) == True And $(OEIsX86) == True And $(OEIsSim) == True">$(OEOpteeSimX86)\oehost.lib;$(OEOpteeSimX86)\oesocket_host.lib;$(OEOpteeSimX86)\oestdio_host.lib;$(OEOpteeSimX86)\oehost_opteesim.lib;$(OEOpteeSimX86)\mbedcrypto.lib;$(OEOpteeSimX86)\mbedx509.lib;onecore.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
         </Link>
     </ItemDefinitionGroup>
 
