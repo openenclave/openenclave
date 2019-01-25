@@ -15,7 +15,7 @@ on both SGX and OP-TEE, and use it from your own application.
 1. In Visual Studio, add a new Visual C++ "Open Enclave TEE Project".  If you want
 to build for OP-TEE (whether in addition to, or instead of, SGX) you will need
 to select the path to the ta_dev_kit.mk file in the output of an OP-TEE build.
-For example, this might be in a optee_os\out\arm-plat-vexpress\export-ta_arm32\mk
+For example, this might be in a optee_os\out\arm-plat-vexpress\export-ta_arm64\mk
 directory.
 2. Edit the _YourProjectName_.edl file. Define any trusted APIs (called "ECALLs")
 you want to call from your application in the trusted{} section,
@@ -52,8 +52,13 @@ for both SGX and TrustZone.
 cd to your enclave project's "optee" subdirectory.  If you added additional
 source files to your enclave project in Visual Studio, also add them to the 
 sub.mk in that directory.
-2. Do "make -f linux\_gcc.mak" to build the enclave.
-3. On the destination machine (if Windows), apply the uuids.reg file
+2. By default, the project is configured to build for the vexpress-qemu\_armv8a flavor of OP-TEE.
+If you want to build for vexpress-qemu\_virt or ls-ls1012grapeboard, edit the sub.mk
+file in the project's "optee" subdirectory, and change the 'libdirs' line accordingly.
+For vexpress-qemu\_virt, you will also need to change the CROSS_COMPILE line in linux\_gcc.mak
+to "CROSS\_COMPILE=arm-linux-gnueabihf-" since it is 32-bit not 64-bit.
+3. Do "make -f linux\_gcc.mak" to build the enclave.
+4. On the destination machine (if Windows), apply the uuids.reg file
 ("reg.exe import uuids.reg") and reboot.
 
 ## Debugging
@@ -63,5 +68,5 @@ simulator, that comes with the Intel SGX SDK.  Simply use the Debug
 configuration in Visual Studio if you have SGX-capable hardware, or
 the SGX-Simulation-Debug configuration in Visual Studio for software emulation.
 
-**For TrustZone:** You can use a basic software emulation environment with OP-TEE
-by creating and using the OPTEE-Simulation-Debug configuration in Visual Studio.
+**For TrustZone:** You can use a basic software emulation environment with OP-TEE.
+Simply use the OPTEE-Simulation-Debug configuration in Visual Studio.

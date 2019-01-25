@@ -107,6 +107,16 @@ namespace OpenEnclaveSDK
                 else
                 {
                     SetOETADevKitPath(replacementsDictionary);
+
+                    // In the future, we should prompt the user to select between:
+                    // "vexpress-qemu_virt", "vexpress-qemu_armv8a", and
+                    // ls-ls1012grapeboard.
+                    string opteeBuildFlavor = "vexpress-qemu_armv8a";
+                    replacementsDictionary.Add("$OpteeBuildFlavor$", opteeBuildFlavor);
+
+                    // In the future, this should be "arm-linux-gnueabihf-" for any 32-bit build flavor.
+                    string opteeCompilerFlavor = "aarch64-linux-gnu-";
+                    replacementsDictionary.Add("$OpteeCompilerFlavor$", opteeCompilerFlavor);
                 }
             }
             catch (Exception ex)

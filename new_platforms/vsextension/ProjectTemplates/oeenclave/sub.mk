@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-OE_SDK_PATH=../../packages/openenclave.0.2.0-CI-20190123-030613
+OE_SDK_PATH=../../packages/openenclave.0.2.0-CI-20190125-163502
 OE_SDK_INC_PATH=$(OE_SDK_PATH)/build/native/include
-OEEDGER8R=$(OE_SDK_PATH)/tools/oeedger8r.exe
+OEEDGER8R=$(OE_SDK_PATH)/tools/oeedger8r
 
 CFLAGS += $(EXTRA_CFLAGS)
 
@@ -14,7 +14,7 @@ CFLAGS +=                              \
 
 CFLAGS += -DLINUX -DOE_USE_OPTEE
 
-libdirs += $(OE_SDK_PATH)/lib/native/gcc6/optee/v3.3.0/vsexpress-qemu_armv8
+libdirs += $(OE_SDK_PATH)/lib/native/gcc6/optee/v3.3.0/$OpteeBuildFlavor$
 
 ../$projectname$_t.c: ../$projectname$.edl
 	$(OEEDGER8R) --trusted --trusted-dir .. --search-path "$(OE_SDK_INC_PATH)" ../$projectname$.edl
@@ -26,7 +26,7 @@ libdirs += $(OE_SDK_PATH)/lib/native/gcc6/optee/v3.3.0/vsexpress-qemu_armv8
 srcs-y             += ../$projectname$_t.c
 
 # Add additional sources here
-srcs-y             += ../enc.c
+srcs-y             += ../ecalls.c
 
 libnames           += oeenclave
 libnames           += oestdio_enc

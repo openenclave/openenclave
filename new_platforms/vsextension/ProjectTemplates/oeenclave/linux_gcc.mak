@@ -10,4 +10,6 @@ TA_DEV_KIT_DIR=$OETADevKitPath$
 # Where to place the compiled binaries.
 O := ../../bin/ARM/optee
 
+CROSS_COMPILE=$OpteeCompilerFlavor$
+
 include $(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk

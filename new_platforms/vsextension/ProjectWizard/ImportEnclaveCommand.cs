@@ -129,6 +129,10 @@ namespace OpenEnclaveSDK
             SolutionConfiguration solutionConfig = dte.Solution.SolutionBuild.SolutionConfigurations.Item(newName);
             foreach (SolutionContext context in solutionConfig.SolutionContexts)
             {
+                if (solutionConfig.Name != newName)
+                {
+                    continue;
+                }
                 // Select newName if it exists for this project, else baseName.
                 try
                 {
@@ -151,12 +155,12 @@ namespace OpenEnclaveSDK
         {
             // Add the platform to the project.
             var dte = Package.GetGlobalService(typeof(SDTE)) as DTE;
-            project.ConfigurationManager.AddPlatform("ARM", "Win32", true);
+            project.ConfigurationManager.AddPlatform(newName, baseName, true);
 
             // Now set the solution platform to build the project's platform.
             foreach (SolutionConfiguration2 solutionConfig in dte.Solution.SolutionBuild.SolutionConfigurations)
             {
-                if (solutionConfig.PlatformName != "ARM")
+                if (solutionConfig.PlatformName != newName)
                 {
                     continue;
                 }
@@ -250,7 +254,7 @@ namespace OpenEnclaveSDK
                     // Add nuget package to project.
                     // See https://stackoverflow.com/questions/41803738/how-to-programmatically-install-a-nuget-package/41895490#41895490
                     // and more particularly https://docs.microsoft.com/en-us/nuget/visual-studio-extensibility/nuget-api-in-visual-studio
-                    var packageVersions = new Dictionary<string, string>() { { "openenclave", "0.2.0-CI-20190123-030613" } };
+                    var packageVersions = new Dictionary<string, string>() { { "openenclave", "0.2.0-CI-20190125-163502" } };
                     var componentModel = (IComponentModel)(await this.ServiceProvider.GetServiceAsync(typeof(SComponentModel)));
                     var packageInstaller = componentModel.GetService<IVsPackageInstaller2>();
                     packageInstaller.InstallPackagesFromVSExtensionRepository(
