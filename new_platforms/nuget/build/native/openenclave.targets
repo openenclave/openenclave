@@ -188,9 +188,7 @@
     <!-- Additional Include Directories for Enclaves and Hosts -->
     <ItemDefinitionGroup>
         <ClCompile>
-            <AdditionalIncludeDirectories>
-                $(MSBuildThisFileDirectory)include;$(MSBuildThisFileDirectory)include\new_platforms;%(AdditionalIncludeDirectories)
-            </AdditionalIncludeDirectories>
+            <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;$(MSBuildThisFileDirectory)include\new_platforms;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
         </ClCompile>
     </ItemDefinitionGroup>
 
@@ -199,18 +197,14 @@
     <!-- *-SGX-Debug and *-SGX-Simulation-Debug -->
     <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave' And $(OEIsSgx) == True">
         <ClCompile>
-            <AdditionalIncludeDirectories>
-                $(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\libc++;$(MSBuildThisFileDirectory)include\new_platforms\sgx\enclave;%(AdditionalIncludeDirectories)
-            </AdditionalIncludeDirectories>
+            <AdditionalIncludeDirectories>$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\libc++;$(MSBuildThisFileDirectory)include\new_platforms\sgx\enclave;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
         </ClCompile>
     </ItemDefinitionGroup>
 
     <!-- x86-OPTEE-Simulation-Debug -->
     <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave' And $(OEIsTz) == True And $(OEIsSim) == True">
         <ClCompile>
-            <AdditionalIncludeDirectories>
-                $(MSBuildThisFileDirectory)include\new_platforms\optee\enclave\Simulator;$(MSBuildThisFileDirectory)include\new_platforms\optee\enclave;$(MSBuildThisFileDirectory)include\new_platforms\optee;$(MSBuildThisFileDirectory)include\cyrep;$(OETADevKitPath)\include;%(AdditionalIncludeDirectories)
-            </AdditionalIncludeDirectories>
+            <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include\new_platforms\optee\enclave\Simulator;$(MSBuildThisFileDirectory)include\new_platforms\optee\enclave;$(MSBuildThisFileDirectory)include\new_platforms\optee;$(MSBuildThisFileDirectory)include\cyrep;$(OETADevKitPath)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
         </ClCompile>
     </ItemDefinitionGroup>
 
@@ -219,9 +213,7 @@
     <!-- *-SGX-Debug and *-SGX-Simulation-Debug -->
     <ItemDefinitionGroup Condition="'$(OEType)' != 'Enclave' And $(OEIsSgx) == True">
         <ClCompile>
-            <AdditionalIncludeDirectories>
-                $(SGXSDKInstallPath)include;%(AdditionalIncludeDirectories)
-            </AdditionalIncludeDirectories>
+            <AdditionalIncludeDirectories>$(SGXSDKInstallPath)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
         </ClCompile>
     </ItemDefinitionGroup>
 
@@ -237,14 +229,10 @@
     <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave'">
         <ClCompile>
             <!-- SGX Hardware and Simulation -->
-            <PreprocessorDefinitions Condition="$(OEIsSgx) == True">
-                OE_NO_SAL;%(PreprocessorDefinitions)
-            </PreprocessorDefinitions>
+            <PreprocessorDefinitions Condition="$(OEIsSgx) == True">OE_NO_SAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
             <!-- OP-TEE Simulation -->
-            <PreprocessorDefinitions Condition="$(OEIsTz) == True And $(OEIsSim) == True">
-                OE_SIMULATE_OPTEE;%(PreprocessorDefinitions)
-            </PreprocessorDefinitions>
+            <PreprocessorDefinitions Condition="$(OEIsTz) == True And $(OEIsSim) == True">OE_SIMULATE_OPTEE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
         </ClCompile>
     </ItemDefinitionGroup>
 
@@ -252,9 +240,7 @@
     <ItemDefinitionGroup Condition="'$(OEType)' != 'Enclave'">
         <ClCompile>
             <!-- OP-TEE Simulation -->
-            <PreprocessorDefinitions Condition="$(OEIsTz) == True And $(OEIsSim) == True">
-                OE_SIMULATE_OPTEE;%(PreprocessorDefinitions)
-            </PreprocessorDefinitions>
+            <PreprocessorDefinitions Condition="$(OEIsTz) == True And $(OEIsSim) == True">OE_SIMULATE_OPTEE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
         </ClCompile>
     </ItemDefinitionGroup>
 
@@ -270,14 +256,10 @@
     <ItemDefinitionGroup>
         <Link>
             <!-- x86-SGX-Debug & x86-SGX-Simulation-Debug -->
-            <AdditionalLibraryDirectories Condition="$(OEIsSgx) == True And $(OEIsX86) == True">
-                $(SGXSDKInstallPath)bin\Win32\$(OELibSuffix);%(AdditionalLibraryDirectories)
-            </AdditionalLibraryDirectories>
+            <AdditionalLibraryDirectories Condition="$(OEIsSgx) == True And $(OEIsX86) == True">$(SGXSDKInstallPath)bin\Win32\$(OELibSuffix);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
 
             <!-- x64-SGX-Debug & x64-SGX-Simulation-Debug -->
-            <AdditionalLibraryDirectories Condition="$(OEIsSgx) == True And $(OEIsX64) == True">
-                $(SGXSDKInstallPath)bin\x64\$(OELibSuffix);%(AdditionalLibraryDirectories)
-            </AdditionalLibraryDirectories>
+            <AdditionalLibraryDirectories Condition="$(OEIsSgx) == True And $(OEIsX64) == True">$(SGXSDKInstallPath)bin\x64\$(OELibSuffix);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
         </Link>
     </ItemDefinitionGroup>
 
@@ -288,29 +270,19 @@
             <IgnoreAllDefaultLibraries Condition="!($(OEIsTz) == True And $(OEIsSim) == True)">True</IgnoreAllDefaultLibraries>
 
             <!-- x86-SGX-* -->
-            <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX86) == True">
-                $(OESgxHwX86)\oeenclave.lib;$(OESgxHwX86)\oesocket_enc.lib;$(OESgxHwX86)\oestdio_enc.lib;$(OESgxHwLibsT)
-            </AdditionalDependencies>
+            <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX86) == True">$(OESgxHwX86)\oeenclave.lib;$(OESgxHwX86)\oesocket_enc.lib;$(OESgxHwX86)\oestdio_enc.lib;$(OESgxHwLibsT)</AdditionalDependencies>
 
             <!-- x64-SGX-* -->
-            <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX64) == True">
-                $(OESgxHwX64)\oeenclave.lib;$(OESgxHwX64)\oesocket_enc.lib;$(OESgxHwX64)\oestdio_enc.lib;$(OESgxHwLibsT)
-            </AdditionalDependencies>
+            <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX64) == True">$(OESgxHwX64)\oeenclave.lib;$(OESgxHwX64)\oesocket_enc.lib;$(OESgxHwX64)\oestdio_enc.lib;$(OESgxHwLibsT)</AdditionalDependencies>
 
             <!-- x86-SGX-Simulation-* -->
-            <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX86) == True And $(OEIsSim) == True">
-                $(OESgxSimX86)\oeenclave.lib;$(OESgxSimX86)\oesocket_enc.lib;$(OESgxSimX86)\oestdio_enc.lib;$(OESgxSimLibsT)
-            </AdditionalDependencies>
+            <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX86) == True And $(OEIsSim) == True">$(OESgxSimX86)\oeenclave.lib;$(OESgxSimX86)\oesocket_enc.lib;$(OESgxSimX86)\oestdio_enc.lib;$(OESgxSimLibsT)</AdditionalDependencies>
 
             <!-- x64-SGX-Simulation-* -->
-            <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX64) == True And $(OEIsSim) == True">
-                $(OESgxSimX64)\oeenclave.lib;$(OESgxSimX64)\oesocket_enc.lib;$(OESgxSimX64)\oestdio_enc.lib;$(OESgxSimLibsT)
-            </AdditionalDependencies>
+            <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX64) == True And $(OEIsSim) == True">$(OESgxSimX64)\oeenclave.lib;$(OESgxSimX64)\oesocket_enc.lib;$(OESgxSimX64)\oestdio_enc.lib;$(OESgxSimLibsT)</AdditionalDependencies>
 
             <!-- x86-OPTEE-Simulation-Debug -->
-            <AdditionalDependencies Condition="$(OEIsTz) == True And $(OEIsX86) == True And $(OEIsSim) == True">
-                $(OEOpteeSimX86)\oeenclave.lib;$(OEOpteeSimX86)\oesocket_enc.lib;$(OEOpteeSimX86)\oestdio_enc.lib;$(OEOpteeSimX86)\oeenclave_opteesim.lib;onecore.lib;%(AdditionalDependencies)
-            </AdditionalDependencies>
+            <AdditionalDependencies Condition="$(OEIsTz) == True And $(OEIsX86) == True And $(OEIsSim) == True">$(OEOpteeSimX86)\oeenclave.lib;$(OEOpteeSimX86)\oesocket_enc.lib;$(OEOpteeSimX86)\oestdio_enc.lib;$(OEOpteeSimX86)\oeenclave_opteesim.lib;onecore.lib;%(AdditionalDependencies)</AdditionalDependencies>
         </Link>
     </ItemDefinitionGroup>
 
@@ -318,34 +290,22 @@
     <ItemDefinitionGroup Condition="'$(OEType)' != 'Enclave'">
         <Link>
             <!-- x86-SGX-* -->
-            <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX86) == True">
-                $(OESgxHwX86)\oehost.lib;$(OESgxHwX86)\oesocket_host.lib;$(OESgxHwX86)\oestdio_host.lib;onecore.lib;$(OESgxHwLibsU);%(AdditionalDependencies)
-            </AdditionalDependencies>
+            <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX86) == True">$(OESgxHwX86)\oehost.lib;$(OESgxHwX86)\oesocket_host.lib;$(OESgxHwX86)\oestdio_host.lib;onecore.lib;$(OESgxHwLibsU);%(AdditionalDependencies)</AdditionalDependencies>
 
             <!-- x64-SGX-* -->
-            <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX64) == True">
-                $(OESgxHwX64)\oehost.lib;$(OESgxHwX64)\oesocket_host.lib;$(OESgxHwX64)\oestdio_host.lib;onecore.lib;$(OESgxHwLibsU);%(AdditionalDependencies)
-            </AdditionalDependencies>
+            <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX64) == True">$(OESgxHwX64)\oehost.lib;$(OESgxHwX64)\oesocket_host.lib;$(OESgxHwX64)\oestdio_host.lib;onecore.lib;$(OESgxHwLibsU);%(AdditionalDependencies)</AdditionalDependencies>
 
             <!-- x86-SGX-Simulation-* -->
-            <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX86) == True And $(OEIsSim) == True">
-                $(OESgxSimX86)\oehost.lib;$(OESgxSimX86)\oesocket_host.lib;$(OESgxSimX86)\oestdio_host.lib;onecore.lib;$(OESgxSimLibsU);%(AdditionalDependencies)
-            </AdditionalDependencies>
+            <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX86) == True And $(OEIsSim) == True">$(OESgxSimX86)\oehost.lib;$(OESgxSimX86)\oesocket_host.lib;$(OESgxSimX86)\oestdio_host.lib;onecore.lib;$(OESgxSimLibsU);%(AdditionalDependencies)</AdditionalDependencies>
 
             <!-- x64-SGX-Simulation-* -->
-            <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX64) == True And $(OEIsSim) == True">
-                $(OESgxSimX64)\oehost.lib;$(OESgxSimX64)\oesocket_host.lib;$(OESgxSimX64)\oestdio_host.lib;onecore.lib;$(OESgxSimLibsU);%(AdditionalDependencies)
-            </AdditionalDependencies>
+            <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX64) == True And $(OEIsSim) == True">$(OESgxSimX64)\oehost.lib;$(OESgxSimX64)\oesocket_host.lib;$(OESgxSimX64)\oestdio_host.lib;onecore.lib;$(OESgxSimLibsU);%(AdditionalDependencies)</AdditionalDependencies>
 
             <!-- arm-TZ-OPTEE-* -->
-            <AdditionalDependencies Condition="$(OEIsTz) == True And $(OEIsARM) == True">
-                $(OETzHwArm)\oehost.lib;$(OETzHwArm)\oesocket_host.lib;$(OETzHwArm)\oestdio_host.lib;onecore.lib;rpcrt4.lib;%(AdditionalDependencies)
-            </AdditionalDependencies>
+            <AdditionalDependencies Condition="$(OEIsTz) == True And $(OEIsARM) == True">$(OETzHwArm)\oehost.lib;$(OETzHwArm)\oesocket_host.lib;$(OETzHwArm)\oestdio_host.lib;onecore.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
 
             <!-- x86-OPTEE-Simulation-Debug -->
-            <AdditionalDependencies Condition="$(OEIsTz) == True And $(OEIsX86) == True And $(OEIsSim) == True">
-                $(OEOpteeSimX86)\oehost.lib;$(OEOpteeSimX86)\oesocket_host.lib;$(OEOpteeSimX86)\oestdio_host.lib;$(OEOpteeSimX86)\oehost_opteesim.lib;onecore.lib;rpcrt4.lib;%(AdditionalDependencies)
-            </AdditionalDependencies>
+            <AdditionalDependencies Condition="$(OEIsTz) == True And $(OEIsX86) == True And $(OEIsSim) == True">$(OEOpteeSimX86)\oehost.lib;$(OEOpteeSimX86)\oesocket_host.lib;$(OEOpteeSimX86)\oestdio_host.lib;$(OEOpteeSimX86)\oehost_opteesim.lib;onecore.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
         </Link>
     </ItemDefinitionGroup>
 
@@ -361,22 +321,14 @@
     <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave'">
         <!-- *-SGX-* & *-SGX-Simulation-* -->
         <PostBuildEvent Condition="$(OEIsSgx) == True">
-            <Command>
-                "$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" sign -key "$(ProjectDir)$(TargetName)_private.pem" -enclave "$(OutDir)$(TargetFileName)" -out "$(OutDir)$(TargetName).signed.dll" -config "$(ProjectDir)$(TargetName).config.xml"
-            </Command>
-            <Message>
-                Sign the enclave for Intel SGX.
-            </Message>
+            <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" sign -key "$(ProjectDir)$(TargetName)_private.pem" -enclave "$(OutDir)$(TargetFileName)" -out "$(OutDir)$(TargetName).signed.dll" -config "$(ProjectDir)$(TargetName).config.xml"</Command>
+            <Message>Sign the enclave for Intel SGX.</Message>
         </PostBuildEvent>
 
         <!-- *-SGX-Release -->
         <PostBuildEvent Condition="$(OEIsSgx) == True And $(OEIsSim) == False And $(OEIsRelease) == True">
-            <Command>
-                "$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" gendata -enclave "$(OutDir)$(TargetFileName)" -out "$(OutDir)$(TargetName).hex" -config "$(ProjectDir)$(TargetName).config.xml"
-            </Command>
-            <Message>
-                Generate the enclave signing material for Intel SGX.
-            </Message>
+            <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" gendata -enclave "$(OutDir)$(TargetFileName)" -out "$(OutDir)$(TargetName).hex" -config "$(ProjectDir)$(TargetName).config.xml"</Command>
+            <Message>Generate the enclave signing material for Intel SGX.</Message>
         </PostBuildEvent>
     </ItemDefinitionGroup>
     
