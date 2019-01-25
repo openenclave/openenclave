@@ -3,7 +3,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-mkdir -p nuget/lib/native/gcc6/optee/v3.0.0
+mkdir -p nuget/lib/native/gcc6/optee/v3.3.0
 mkdir -p nuget/tools
 
 cp -R build/vexpress-qemu_virt/out/lib nuget/lib/native/gcc6/optee/v3.0.0/vexpress-qemu_virt
