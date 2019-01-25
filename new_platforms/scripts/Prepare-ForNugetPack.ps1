@@ -25,13 +25,32 @@ $Leaves = @(
     "nuget\build\native\include"                  # 12
 )
 
+$Libraries = @(
+    "oeenclave",
+    "oeenclave_opteesim",
+    
+    "oehost",
+    "oehost_opteesim",
+
+    "oestdio_enc",
+    "oestdio_host",
+
+    "oesocket_enc",
+    "oesocket_host",
+
+    "mbedcrypto",
+    "mbedx509"
+)
+
 # Helper Functions
 Function Copy-Libs(
     $SourceLeafPath,
     $DestinationLeafPath)
 {
-    Copy-Item $SourceLeafPath\*.lib $DestinationLeafPath
-    Copy-Item $SourceLeafPath\*.pdb $DestinationLeafPath -ErrorAction SilentlyContinue
+    ForEach ($Library in $Libraries) {
+        Copy-Item (Join-Path $SourceLeafPath "$Library.lib") $DestinationLeafPath -ErrorAction SilentlyContinue
+        Copy-Item (Join-Path $SourceLeafPath "$Library.pdb") $DestinationLeafPath -ErrorAction SilentlyContinue
+    }
 }
 
 # Copy the basic contents of the NuGet package from the source tree.
