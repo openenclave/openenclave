@@ -91,8 +91,16 @@ void test_realloc(void)
     OE_TEST(ptr != NULL);
     _check_buffer(ptr, 0, 16);
 
-    /* Ensure that realloc fails. */
+    /* Ensure that realloc fails. With GCC 7, this throws a
+       compilation error, which we ignore. */
+#if __GNUC__ > 7
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Walloc-size-larger-than="
+#endif
     void* ptr2 = realloc(ptr, ~((size_t)0));
+#if __GNUC__ > 7
+#pragma GCC diagnostic pop
+#endif
     OE_TEST(ptr2 == NULL);
 
     /* realloc(X, 0) is implementation defined, but we can always free it. */

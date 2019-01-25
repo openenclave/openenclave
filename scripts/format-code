@@ -5,7 +5,7 @@
 
 ##==============================================================================
 ##
-## Echo if verbose flag is specified
+## Echo if verbose flag (ignores quiet flag)
 ##
 ##==============================================================================
 log_verbose()
@@ -17,12 +17,12 @@ log_verbose()
 
 ##==============================================================================
 ##
-## Echo if whatif flag is specified
+## Echo if whatif flag is specified but not quiet flag
 ##
 ##==============================================================================
 log_whatif()
 {
-    if [[ ${whatif} -eq 1 ]]; then
+    if [[ ${whatif} -eq 1 && ${quiet} -ne 1 ]]; then
         echo "$1"
     fi
 }
@@ -42,6 +42,10 @@ do
 
     -v | --verbose)
         verbose=1
+        ;;
+
+    -q | --quiet)
+        quiet=1
         ;;
 
     -w | --whatif)
@@ -84,6 +88,7 @@ Formats all C/C++ source files based on the .clang-format rules
 OPTIONS:
     -h, --help              Print this help message.
     -v, --verbose           Display verbose output.
+    -v, --quiet             Display only clang-format output and errors.
     -w, --whatif            Run the script without actually modifying the files
                             and display the diff of expected changes, if any.
     --exclude-dirs          Subdirectories to exclude. If unspecified, then
@@ -148,17 +153,19 @@ check_version()
 ##==============================================================================
 check_clang-format()
 {
-    # First check explicitly for the 3.8 executable.
+    # First check explicitly for the clang-format-7 executable.
     cf=$(command -v clang-format-7 2> /dev/null)
 
     if [[ -x ${cf} ]]; then
+        cf="clang-format-7"
         return
     else
         cf=$(command -v clang-format 2> /dev/null)
         if [[ ! -x ${cf} ]]; then
-            echo "clang-format is not installed. Please run scripts/install-prereqs first."
+            echo "clang-format is not installed"
             exit 1
         fi
+        cf="clang-format"
     fi
 
     local required_cfver='7.0.1'
@@ -179,7 +186,7 @@ findargs='find .'
 
 get_find_args()
 {
-    local defaultExcludeDirs='3rdparty prereqs build .cquery_cached_index'
+    local defaultExcludeDirs='./.git ./3rdparty ./prereqs ./build *.cquery_cached_index'
     local defaultIncludeExts='h c cpp'
 
     if [[ -z ${userExcludeDirs} ]]; then
@@ -191,7 +198,7 @@ get_find_args()
 
     for exc in "${excludeDirs[@]}"
     do
-        findargs="${findargs} ! \( -path ./${exc} -prune \)"
+        findargs="${findargs} ! \( -path '${exc}' -prune \)"
     done
 
     if [[ -z ${userIncludeExts} ]]; then
@@ -287,4 +294,6 @@ do
 done
 
 log_whatif "${filecount} files processed, ${changecount} changed."
-exit 0
+
+# If files are being edited, this count is zero so we exit with success.
+exit $changecount
