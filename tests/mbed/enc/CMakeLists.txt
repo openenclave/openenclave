@@ -22,18 +22,23 @@ function(add_mbed_test_enclave NAME)
 
   set(MBEDTLS_TESTS_DIR "${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests")
 
-  if (WIN32)
-     find_program(GIT git)
-     get_filename_component(GIT_DIR ${GIT} DIRECTORY)
-     find_program(PERL perl
-        PATHS "C:/Program Files/Git/usr/bin" "${GIT_DIR}/../usr/bin"
-        NO_DEFAULT_PATH)
-  else()
-     find_package(Perl)
-     if (NOT PERL_FOUND)
-	    message(FATAL_ERROR "Cannot build mbedtls Test Suites without Perl")
-     endif()
-     set(PERL ${PERL_EXECUTABLE})
+  # Use Perl that is found in the Path
+  # If Perl is not found on Windows, use Perl from the Git/usr/bin directory
+  # and report error on Linux
+  find_program(PERL perl)
+  if (NOT PERL)
+    if (WIN32)
+      find_program(GIT git)
+      get_filename_component(GIT_DIR ${GIT} DIRECTORY)
+      find_program(PERL perl
+         PATHS "C:/Program Files/Git/usr/bin" "${GIT_DIR}/../usr/bin"
+         NO_DEFAULT_PATH)
+      if (NOT PERL)
+        message(FATAL_ERROR "Cannot build mbedtls Test Suites without Perl")
+      endif()
+    else()
+      message(FATAL_ERROR "Cannot build mbedtls Test Suites without Perl")
+    endif()
   endif()
 
   add_custom_command(
@@ -61,7 +66,7 @@ function(add_mbed_test_enclave NAME)
     ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/mbedtls-wrap-prefix/src/mbedtls-wrap/include/)
-  
+
   maybe_build_using_clangw(mbedtest_suite_${NAME})
 
   # maybe_build_using_clangw populates variables in its parent scope (ie current scope)
@@ -104,6 +109,7 @@ function(add_mbed_selftest_enclave)
     ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/mbedtls-wrap-prefix/src/mbedtls-wrap/include/)
+
   maybe_build_using_clangw(mbedtest_selftest)
 
   # maybe_build_using_clangw populates variables in its parent scope (ie current scope)
