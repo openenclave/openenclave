@@ -31,6 +31,8 @@ fi
 
 # Download oeedger8r.
 wget $OEEdger8rLinuxURI || exit 1
+chmod +x oeedger8r
+
 PATH=$PWD:$PATH
 
 # Build for QEMU ARM.
