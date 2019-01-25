@@ -3,11 +3,13 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-mkdir -p nuget/lib/native/gcc6/optee/v3.3.0
-mkdir -p nuget/tools
+TARGET=nuget/lib/native/gcc6/optee/v3.3.0
 
-cp -R build/vexpress-qemu_virt/out/lib nuget/lib/native/gcc6/optee/v3.0.0/vexpress-qemu_virt
-cp -R build/vexpress-qemu_armv8a/out/lib nuget/lib/native/gcc6/optee/v3.0.0/vexpress-qemu_armv8a
-cp -R build/ls-ls1012grapeboard/out/lib nuget/lib/native/gcc6/optee/v3.0.0/ls-ls1012grapeboard
+mkdir -p $TARGET || exit 1
+mkdir -p nuget/tools || exit 1
 
-cp build/oeedger8r nuget/tools
+cp -R build/vexpress-qemu_virt/out/lib $TARGET/vexpress-qemu_virt || exit 1
+cp -R build/vexpress-qemu_armv8a/out/lib $TARGET/vexpress-qemu_armv8a || exit 1
+cp -R build/ls-ls1012grapeboard/out/lib $TARGET/ls-ls1012grapeboard || exit 1
+
+cp build/oeedger8r nuget/tools || exit 1
