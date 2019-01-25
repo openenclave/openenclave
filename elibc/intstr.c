@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <bits/intstr.h>
-#include <string.h>
+#include <openenclave/elibc/string.h>
 #include <limits.h>
 #include <stdint.h>
 
@@ -30,7 +30,7 @@ const char* elibc_uint64_to_hexstr(elibc_intstr_buf_t* buf, uint64_t x, size_t* 
         p++;
 
     if (size)
-        *size = elibc_strlen(p);
+        *size = oe_strlen(p);
 
     return p;
 }

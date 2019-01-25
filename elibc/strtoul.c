@@ -68,7 +68,7 @@ unsigned long int elibc_strtoul(const char* nptr, char** endptr, int base)
     p = nptr;
 
     /* Skip any leading whitespace */
-    while (isspace(*p))
+    while (oe_isspace(*p))
         p++;
 
     /* Handle '+' and '-' */

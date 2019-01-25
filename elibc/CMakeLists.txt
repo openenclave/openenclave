@@ -4,7 +4,6 @@
 add_library(oeelibc STATIC
     assert.c
     atexit.c
-    ctype.c
     errno.c
     gmtime.c
     intstr.c
@@ -15,7 +14,6 @@ add_library(oeelibc STATIC
     sbrk.c
     stdio.c
     strerror.c
-    string.c
     strtoul.c
     time.c
     ${SOURCES})

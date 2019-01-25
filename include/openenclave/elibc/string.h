@@ -1,200 +1,198 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _ELIBC_STRING_H
-#define _ELIBC_STRING_H
+#ifndef _OE_STRING_H
+#define _OE_STRING_H
 
-#include "bits/common.h"
+#include <openenclave/bits/defs.h>
+#include <openenclave/bits/types.h>
 
-ELIBC_EXTERNC_BEGIN
+OE_EXTERNC_BEGIN
 
-/* TODO: Duplicate definition of these functions in enclavelibc.h
- * consider breaking enclavelibc.h up so that it can be included
- * as <string.h> by MUSL source files */
 #if __STDC_VERSION__ >= 199901L
 #define OE_RESTRICT restrict
-#elif !defined(__GNUC__) || defined (__cplusplus)
+#elif !defined(__GNUC__) || defined(__cplusplus)
 #define OE_RESTRICT
 #endif
 
-int memcmp(const void *vl, const void *vr, size_t n);
-void *memcpy(void *OE_RESTRICT dest, const void *OE_RESTRICT src, size_t n);
-void *memmove(void *dest, const void *src, size_t n);
-void *memset(void *dest, int c, size_t n);
-/* End TODO */
+/* The mem methods are always defined by their stdc names in oecore */
+int memcmp(const void* vl, const void* vr, size_t n);
+void* memcpy(void* OE_RESTRICT dest, const void* OE_RESTRICT src, size_t n);
+void* memmove(void* dest, const void* src, size_t n);
+void* memset(void* dest, int c, size_t n);
 
-size_t elibc_strlen(const char* s);
+size_t oe_strlen(const char* s);
 
-size_t elibc_strnlen(const char* s, size_t n);
+size_t oe_strnlen(const char* s, size_t n);
 
-int elibc_strcmp(const char* s1, const char* s2);
+int oe_strcmp(const char* s1, const char* s2);
 
-int elibc_strncmp(const char* s1, const char* s2, size_t n);
+int oe_strncmp(const char* s1, const char* s2, size_t n);
 
-int elibc_strcasecmp(const char* s1, const char* s2);
+int oe_strcasecmp(const char* s1, const char* s2);
 
-int elibc_strncasecmp(const char* s1, const char* s2, size_t n);
+int oe_strncasecmp(const char* s1, const char* s2, size_t n);
 
-char* elibc_strcpy(char* dest, const char* src);
+char* oe_strcpy(char* dest, const char* src);
 
-char* elibc_strncpy(char* dest, const char* src, size_t n);
+char* oe_strncpy(char* dest, const char* src, size_t n);
 
-char* elibc_strcat(char* dest, const char* src);
+char* oe_strcat(char* dest, const char* src);
 
-char* elibc_strncat(char* dest, const char* src, size_t n);
+char* oe_strncat(char* dest, const char* src, size_t n);
 
-char* elibc_strchr(const char* s, int c);
+char* oe_strchr(const char* s, int c);
 
-char* elibc_strrchr(const char* s, int c);
+char* oe_strrchr(const char* s, int c);
 
-char* elibc_index(const char* s, int c);
+char* oe_index(const char* s, int c);
 
-char* elibc_rindex(const char* s, int c);
+char* oe_rindex(const char* s, int c);
 
-char* elibc_strstr(const char* haystack, const char* needle);
+char* oe_strstr(const char* haystack, const char* needle);
 
-size_t elibc_strlcpy(char* dest, const char* src, size_t size);
+size_t oe_strlcpy(char* dest, const char* src, size_t size);
 
-size_t elibc_strlcat(char* dest, const char* src, size_t size);
+size_t oe_strlcat(char* dest, const char* src, size_t size);
 
-char* elibc_strdup(const char* s);
+char* oe_strdup(const char* s);
 
-char* elibc_strndup(const char* s, size_t n);
+char* oe_strndup(const char* s, size_t n);
 
-char* elibc_strerror(int errnum);
+char* oe_strerror(int errnum);
 
-int elibc_strerror_r(int errnum, char* buf, size_t buflen);
+int oe_strerror_r(int errnum, char* buf, size_t buflen);
 
-#if defined(ELIBC_NEED_STDC_NAMES)
+#if defined(OE_NEED_STDC_NAMES)
 
-ELIBC_INLINE
+OE_INLINE
 size_t strlen(const char* s)
 {
-    return elibc_strlen(s);
+    return oe_strlen(s);
 }
 
-ELIBC_INLINE
+OE_INLINE
 size_t strnlen(const char* s, size_t n)
 {
-    return elibc_strnlen(s, n);
+    return oe_strnlen(s, n);
 }
 
-ELIBC_INLINE
-int strcmp(const char* s1, const char* s2)
-{
-    return elibc_strcmp(s1, s2);
-}
-
-ELIBC_INLINE
+OE_INLINE
 int strcasecmp(const char* s1, const char* s2)
 {
-    return elibc_strcasecmp(s1, s2);
+    return oe_strcasecmp(s1, s2);
 }
 
-ELIBC_INLINE
+OE_INLINE
 int strncasecmp(const char* s1, const char* s2, size_t n)
 {
-    return elibc_strncasecmp(s1, s2, n);
+    return oe_strncasecmp(s1, s2, n);
 }
 
-ELIBC_INLINE
+OE_INLINE
+int strcmp(const char* s1, const char* s2)
+{
+    return oe_strcmp(s1, s2);
+}
+
+OE_INLINE
 int strncmp(const char* s1, const char* s2, size_t n)
 {
-    return elibc_strncmp(s1, s2, n);
+    return oe_strncmp(s1, s2, n);
 }
 
-ELIBC_INLINE
+OE_INLINE
 char* strcpy(char* dest, const char* src)
 {
-    return elibc_strcpy(dest, src);
+    return oe_strcpy(dest, src);
 }
 
-ELIBC_INLINE
+OE_INLINE
 char* strncpy(char* dest, const char* src, size_t n)
 {
-    return elibc_strncpy(dest, src, n);
+    return oe_strncpy(dest, src, n);
 }
 
-ELIBC_INLINE
+OE_INLINE
 char* strcat(char* dest, const char* src)
 {
-    return elibc_strcat(dest, src);
+    return oe_strcat(dest, src);
 }
 
-ELIBC_INLINE
+OE_INLINE
 char* strncat(char* dest, const char* src, size_t n)
 {
-    return elibc_strncat(dest, src, n);
+    return oe_strncat(dest, src, n);
 }
 
-ELIBC_INLINE
+OE_INLINE
 char* strchr(const char* s, int c)
 {
-    return elibc_strchr(s, c);
+    return oe_strchr(s, c);
 }
 
-ELIBC_INLINE
+OE_INLINE
 char* strrchr(const char* s, int c)
 {
-    return elibc_strrchr(s, c);
+    return oe_strrchr(s, c);
 }
 
-ELIBC_INLINE
+OE_INLINE
 char* index(const char* s, int c)
 {
-    return elibc_index(s, c);
+    return oe_index(s, c);
 }
 
-ELIBC_INLINE
+OE_INLINE
 char* rindex(const char* s, int c)
 {
-    return elibc_rindex(s, c);
+    return oe_rindex(s, c);
 }
 
-ELIBC_INLINE
+OE_INLINE
 char* strstr(const char* haystack, const char* needle)
 {
-    return elibc_strstr(haystack, needle);
+    return oe_strstr(haystack, needle);
 }
 
-ELIBC_INLINE
+OE_INLINE
 size_t strlcpy(char* dest, const char* src, size_t size)
 {
-    return elibc_strlcpy(dest, src, size);
+    return oe_strlcpy(dest, src, size);
 }
 
-ELIBC_INLINE
+OE_INLINE
 size_t strlcat(char* dest, const char* src, size_t size)
 {
-    return elibc_strlcat(dest, src, size);
+    return oe_strlcat(dest, src, size);
 }
 
-ELIBC_INLINE
+OE_INLINE
 char* strdup(const char* s)
 {
-    return elibc_strdup(s);
+    return oe_strdup(s);
 }
 
-ELIBC_INLINE
+OE_INLINE
 char* strndup(const char* s, size_t n)
 {
-    return elibc_strndup(s, n);
+    return oe_strndup(s, n);
 }
 
-ELIBC_INLINE
+OE_INLINE
 char* strerror(int errnum)
 {
-    return elibc_strerror(errnum);
+    return oe_strerror(errnum);
 }
 
-ELIBC_INLINE
+OE_INLINE
 int strerror_r(int errnum, char* buf, size_t buflen)
 {
-    return elibc_strerror_r(errnum, buf, buflen);
+    return oe_strerror_r(errnum, buf, buflen);
 }
 
-#endif /* defined(ELIBC_NEED_STDC_NAMES) */
+#endif /* defined(OE_NEED_STDC_NAMES) */
 
-ELIBC_EXTERNC_END
+OE_EXTERNC_END
 
-#endif /* _ELIBC_STRING_H */
+#endif /* _OE_STRING_H */

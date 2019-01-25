@@ -3,13 +3,11 @@
 
 #include <assert.h>
 #include <errno.h>
-#include <fcntl.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/syscall.h>
-#include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>

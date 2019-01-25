@@ -95,5 +95,5 @@ int elibc_strerror_r(int errnum, char* buf, size_t buflen)
     if (!str)
         str = _unknown;
 
-    return strlcpy(buf, str, buflen) >= buflen ? ELIBC_ERANGE : 0;
+    return oe_strlcpy(buf, str, buflen) >= buflen ? ELIBC_ERANGE : 0;
 }

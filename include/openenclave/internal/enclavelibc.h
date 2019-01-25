@@ -9,17 +9,17 @@
 
 #if __STDC_VERSION__ >= 199901L
 #define OE_RESTRICT restrict
-#elif !defined(__GNUC__) || defined (__cplusplus)
+#elif !defined(__GNUC__) || defined(__cplusplus)
 #define OE_RESTRICT
 #endif
 
 OE_EXTERNC_BEGIN
 
 /* Enclave implementations from MUSL compiled directly into oecore */
-int memcmp(const void *vl, const void *vr, size_t n);
-void *memcpy(void *OE_RESTRICT dest, const void *OE_RESTRICT src, size_t n);
-void *memmove(void *dest, const void *src, size_t n);
-void *memset(void *dest, int c, size_t n);
+int memcmp(const void* vl, const void* vr, size_t n);
+void* memcpy(void* OE_RESTRICT dest, const void* OE_RESTRICT src, size_t n);
+void* memmove(void* dest, const void* src, size_t n);
+void* memset(void* dest, int c, size_t n);
 
 /**
  * Enclave implementation of the standard strlen() function.

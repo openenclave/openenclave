@@ -66,6 +66,7 @@ set_source_files_properties(${MUSL_SRC_DIR}/string/memset.c PROPERTIES
 add_library(oecore STATIC
     ../../common/safecrt.c
     assert.c
+    ctype.c
     hexdump.c
     result.c
     snprintf.c

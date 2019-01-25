@@ -116,7 +116,7 @@ static const char* _parse_placeholder(
     }
 
     /* Parse the width */
-    if (elibc_isdigit(*p))
+    if (oe_isdigit(*p))
     {
         char* end = NULL;
         unsigned long int ul = elibc_strtoul(p, &end, 10);
@@ -138,7 +138,7 @@ static const char* _parse_placeholder(
         p++;
 
         /* Parse the precision */
-        if (elibc_isdigit(*p))
+        if (oe_isdigit(*p))
         {
             char* end = NULL;
             unsigned long int ul = elibc_strtoul(p, &end, 10);
@@ -303,7 +303,7 @@ static void _str_toupper(char* s)
 {
     while (*s)
     {
-        *s = (char)elibc_toupper(*s);
+        *s = (char)oe_toupper(*s);
         s++;
     }
 }
@@ -438,7 +438,7 @@ static int _vprintf(elibc_out_t* out, const char* fmt, elibc_va_list ap)
                 {
                     if ((s = elibc_va_arg(ap, const char*)))
                     {
-                        sn = elibc_strlen(s);
+                        sn = oe_strlen(s);
                     }
                     else
                     {

@@ -49,7 +49,7 @@ static const unsigned short _ctype_b[384] = {
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
 };
 
-const unsigned short* __elibc_ctype_b_loc = &_ctype_b[128];
+const unsigned short* __oe_ctype_b_loc = &_ctype_b[128];
 
 const unsigned int _ctype_toupper[384] = {
     0x00000080, 0x00000081, 0x00000082, 0x00000083, 0x00000084, 0x00000085,
@@ -118,7 +118,7 @@ const unsigned int _ctype_toupper[384] = {
     0x000000fa, 0x000000fb, 0x000000fc, 0x000000fd, 0x000000fe, 0x000000ff,
 };
 
-const unsigned int* __elibc_ctype_toupper_loc = &_ctype_toupper[128];
+const unsigned int* __oe_ctype_toupper_loc = &_ctype_toupper[128];
 
 const unsigned int _ctype_tolower[384] = {
     0x00000080, 0x00000081, 0x00000082, 0x00000083, 0x00000084, 0x00000085,
@@ -187,7 +187,7 @@ const unsigned int _ctype_tolower[384] = {
     0x000000fa, 0x000000fb, 0x000000fc, 0x000000fd, 0x000000fe, 0x000000ff,
 };
 
-const unsigned int* __elibc_ctype_tolower_loc = &_ctype_tolower[128];
+const unsigned int* __oe_ctype_tolower_loc = &_ctype_tolower[128];
 
 /*
 **==============================================================================
@@ -199,68 +199,68 @@ const unsigned int* __elibc_ctype_tolower_loc = &_ctype_tolower[128];
 
 #if defined(ENCLIB_NEED_CTYPE_GENERATORS)
 
-void __elibc_gen_ctype_b(void)
+void __oe_gen_ctype_b(void)
 {
-    elibc_printf("static const unsigned short __elibc_ctype_b[384] =\n");
-    elibc_printf("{\n");
+    oe_printf("static const unsigned short __elibc_ctype_b[384] =\n");
+    oe_printf("{\n");
 
     for (int c = -128; c <= 255; c++)
     {
         unsigned short x = 0;
 
-        if (elibc_isalnum(c))
+        if (oe_isalnum(c))
             x |= __ENCLIB_ISALNUM_BIT;
-        if (elibc_isalpha(c))
+        if (oe_isalpha(c))
             x |= __ENCLIB_ISALPHA_BIT;
-        if (elibc_iscntrl(c))
+        if (oe_iscntrl(c))
             x |= __ENCLIB_ISCNTRL_BIT;
-        if (elibc_isdigit(c))
+        if (oe_isdigit(c))
             x |= __ENCLIB_ISDIGIT_BIT;
-        if (elibc_isgraph(c))
+        if (oe_isgraph(c))
             x |= __ENCLIB_ISGRAPH_BIT;
-        if (elibc_islower(c))
+        if (oe_islower(c))
             x |= __ENCLIB_ISLOWER_BIT;
-        if (elibc_isprint(c))
+        if (oe_isprint(c))
             x |= __ENCLIB_ISPRINT_BIT;
-        if (elibc_ispunct(c))
+        if (oe_ispunct(c))
             x |= __ENCLIB_ISPUNCT_BIT;
-        if (elibc_isspace(c))
+        if (oe_isspace(c))
             x |= __ENCLIB_ISSPACE_BIT;
-        if (elibc_isupper(c))
+        if (oe_isupper(c))
             x |= __ENCLIB_ISUPPER_BIT;
-        if (elibc_isdigit(c))
+        if (oe_isdigit(c))
             x |= __ENCLIB_ISDIGIT_BIT;
 
-        elibc_printf("    0x%04x,\n", x);
+        oe_printf("    0x%04x,\n", x);
     }
 
-    elibc_printf("};\n");
+    oe_printf("};\n");
 }
 
-void __elibc_gen_ctype_toupper(void)
+void __oe_gen_ctype_toupper(void)
 {
-    elibc_printf("const unsigned int __elibc_ctype_toupper[384] =\n");
-    elibc_printf("{\n");
+    oe_printf("const unsigned int __oe_ctype_toupper[384] =\n");
+    oe_printf("{\n");
 
     for (int c = -128; c <= 255; c++)
     {
-        elibc_printf("    0x%08x,\n", elibc_toupper(c));
+        oe_printf("    0x%08x,\n", oe_toupper(c));
     }
 
-    elibc_printf("};\n");
+    oe_printf("};\n");
 }
 
-void __elibc_gen_ctype_tolower(void)
+void __oe_gen_ctype_tolower(void)
 {
-    elibc_printf("const unsigned int __elibc_ctype_tolower[384] =\n");
-    elibc_printf("{\n");
+    oe_printf("const unsigned int __oe_ctype_tolower[384] =\n");
+    oe_printf("{\n");
 
     for (int c = -128; c <= 255; c++)
     {
-        elibc_printf("    0x%08x,\n", elibc_tolower(c));
+        oe_printf("    0x%08x,\n", oe_tolower(c));
     }
 
-    elibc_printf("};\n");
+    oe_printf("};\n");
 }
 
 #endif /* defined(ENCLIB_NEED_CTYPE_GENERATORS) */

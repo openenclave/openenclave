@@ -1,21 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/elibc/ctype.h>
+#include <openenclave/elibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
-#include <openenclave/elibc/string.h>
-
-/*
-**=====/=========================================================================
-**
-** oe_strlen()
-** oe_strcmp()
-** oe_strcpy()
-** oe_strlcpy()
-** oe_strlcat()
-**
-**==============================================================================
-*/
 
 size_t oe_strlen(const char* s)
 {
@@ -131,3 +120,163 @@ size_t oe_strlcat(char* dest, const char* src, size_t size)
 
     return n;
 }
+
+int oe_strcasecmp(const char* s1, const char* s2)
+{
+    while ((*s1 && *s2) && (oe_toupper(*s1) == oe_toupper(*s2)))
+    {
+        s1++;
+        s2++;
+    }
+
+    return oe_toupper(*s1) - oe_toupper(*s2);
+}
+
+int oe_strncasecmp(const char* s1, const char* s2, size_t n)
+{
+    while (n && *s1 && *s2 && oe_toupper(*s1) == oe_toupper(*s2))
+    {
+        n--;
+        s1++;
+        s2++;
+    }
+
+    if (n == 0)
+        return 0;
+
+    if (!*s1)
+        return -1;
+
+    if (!*s2)
+        return 1;
+
+    return oe_toupper(*s1) - oe_toupper(*s2);
+}
+
+char* oe_strncpy(char* dest, const char* src, size_t n)
+{
+    char* p = dest;
+
+    while (n-- && *src)
+        *p++ = *src++;
+
+    while (n--)
+        *p++ = '\0';
+
+    return dest;
+}
+
+char* oe_strcpy(char* dest, const char* src)
+{
+    char* p = dest;
+
+    while (*src)
+        *p++ = *src++;
+
+    *p = '\0';
+
+    return dest;
+}
+
+char* oe_strcat(char* dest, const char* src)
+{
+    char* p = dest + oe_strlen(dest);
+
+    while (*src)
+        *p++ += *src++;
+
+    *p = '\0';
+
+    return dest;
+}
+
+char* oe_strncat(char* dest, const char* src, size_t n)
+{
+    char* p = dest + oe_strlen(dest);
+
+    while (n-- && *src)
+        *p++ = *src++;
+
+    *p = '\0';
+
+    return dest;
+}
+
+char* oe_strchr(const char* s, int c)
+{
+    while (*s && *s != c)
+        s++;
+
+    if (*s == c)
+        return (char*)s;
+
+    return NULL;
+}
+
+char* oe_index(const char* s, int c)
+{
+    return oe_strchr(s, c);
+}
+
+char* oe_strrchr(const char* s, int c)
+{
+    char* p = (char*)s + oe_strlen(s);
+
+    if (c == '\0')
+        return p;
+
+    while (p != s)
+    {
+        if (*--p == c)
+            return p;
+    }
+
+    return NULL;
+}
+
+char* oe_rindex(const char* s, int c)
+{
+    return oe_strrchr(s, c);
+}
+
+char* oe_strstr(const char* haystack, const char* needle)
+{
+    size_t hlen = oe_strlen(haystack);
+    size_t nlen = oe_strlen(needle);
+
+    if (nlen > hlen)
+        return NULL;
+
+    for (size_t i = 0; i < hlen - nlen + 1; i++)
+    {
+        if (memcmp(haystack + i, needle, nlen) == 0)
+            return (char*)haystack + i;
+    }
+
+    return NULL;
+}
+
+char* oe_strdup(const char* s)
+{
+    return oe_strndup(s, OE_SIZE_MAX);
+}
+
+char* oe_strndup(const char* s, size_t n)
+{
+    char* p = NULL;
+
+    if (s)
+    {
+        size_t len = oe_strnlen(s, n);
+
+        if (!(p = (char*)oe_malloc(len + 1)))
+            return NULL;
+
+        memcpy(p, s, len);
+        p[len] = '\0';
+    }
+
+    return p;
+}
+
+OE_WEAK_ALIAS(oe_strcmp, strcmp);
