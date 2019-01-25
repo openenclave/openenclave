@@ -126,27 +126,29 @@ namespace OpenEnclaveSDK
             project.ConfigurationManager.AddConfigurationRow(newName, baseName, true);
 
             // Now set the solution's configuration to use the relevant project's configurations.
-            SolutionConfiguration solutionConfig = dte.Solution.SolutionBuild.SolutionConfigurations.Item(newName);
-            foreach (SolutionContext context in solutionConfig.SolutionContexts)
+            foreach (SolutionConfiguration2 solutionConfig in dte.Solution.SolutionBuild.SolutionConfigurations)
             {
                 if (solutionConfig.Name != newName)
                 {
                     continue;
                 }
-                // Select newName if it exists for this project, else baseName.
-                try
+                foreach (SolutionContext context in solutionConfig.SolutionContexts)
                 {
-                    context.ConfigurationName = baseName;
-                }
-                catch (Exception ex)
-                {
-                }
-                try
-                {
-                    context.ConfigurationName = newName;
-                }
-                catch (Exception ex)
-                {
+                    // Select newName if it exists for this project, else baseName.
+                    try
+                    {
+                        context.ConfigurationName = baseName;
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+                    try
+                    {
+                        context.ConfigurationName = newName;
+                    }
+                    catch (Exception ex)
+                    {
+                    }
                 }
             }
         }
