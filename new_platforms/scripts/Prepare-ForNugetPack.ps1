@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 # Data
 $Leaves = @(
     "nuget\lib\native\v141\sgx\hw\x86\Debug",     # 00
