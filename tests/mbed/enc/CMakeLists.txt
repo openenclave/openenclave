@@ -22,9 +22,23 @@ function(add_mbed_test_enclave NAME)
 
   set(MBEDTLS_TESTS_DIR "${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests")
 
+  if (WIN32)
+     find_program(GIT git)
+     get_filename_component(GIT_DIR ${GIT} DIRECTORY)
+     find_program(PERL perl
+        PATHS "C:/Program Files/Git/usr/bin" "${GIT_DIR}/../usr/bin"
+        NO_DEFAULT_PATH)
+  else()
+     find_package(Perl)
+     if (NOT PERL_FOUND)
+	    message(FATAL_ERROR "Cannot build mbedtls Test Suites without Perl")
+     endif()
+     set(PERL ${PERL_EXECUTABLE})
+  endif()
+
   add_custom_command(
     OUTPUT test_suite_${NAME}.c
-    COMMAND ${PERL_EXECUTABLE} ${MBEDTLS_TESTS_DIR}/scripts/generate_code.pl ${MBEDTLS_TESTS_DIR}/suites test_suite_${suite_name} test_suite_${data_name}
+    COMMAND ${PERL} ${MBEDTLS_TESTS_DIR}/scripts/generate_code.pl ${MBEDTLS_TESTS_DIR}/suites test_suite_${suite_name} test_suite_${data_name}
     DEPENDS
     mbedcrypto
     ${MBEDTLS_TESTS_DIR}/scripts/generate_code.pl
