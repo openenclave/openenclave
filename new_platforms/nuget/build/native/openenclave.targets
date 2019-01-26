@@ -176,6 +176,16 @@
             <NoEntryPoint>True</NoEntryPoint>
         </Link>
     </ItemDefinitionGroup>
+    <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave' And $(OEIsDebug) == True And !($(OEIsTz) == True And $(OEIsSim) == True)">
+        <ClCompile>
+            <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+        </ClCompile>
+    </ItemDefinitionGroup>
+    <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave' And $(OEIsRelease) == True And !($(OEIsTz) == True And $(OEIsSim) == True)">
+        <ClCompile>
+            <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+        </ClCompile>
+    </ItemDefinitionGroup>
 
     <!--
         =======================================================================
