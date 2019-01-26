@@ -32,7 +32,7 @@ one, that will build a normal application that will call your enclave APIs.
 _YourProjectName_.edl file from your enclave project.
 3. Add code in your app to call oe\_create\__YourEDLFileName_\_enclave(),
 any ECALLs you added, and
-oe\_terminate\_enclave().  You will need to #include <openenclave/host.h> 
+oe\_terminate\_enclave().  You will need to #include <openenclave/host.h>
 and <_YourEDLFileName_\_u.h> for your ECALLs.
 See the sample apps for an example.
 
@@ -48,9 +48,9 @@ for both SGX and TrustZone.
 
 **Then to build the enclave for OP-TEE:**
 
-1. Using [Bash on Ubuntu on Windows](https://docs.microsoft.com/en-us/windows/wsl/about) shell, 
+1. Using the [Bash on Ubuntu on Windows](https://docs.microsoft.com/en-us/windows/wsl/about) shell,
 cd to your enclave project's "optee" subdirectory.  If you added additional
-source files to your enclave project in Visual Studio, also add them to the 
+source files to your enclave project in Visual Studio, also add them to the
 sub.mk in that directory.
 2. By default, the project is configured to build for the vexpress-qemu\_armv8a flavor of OP-TEE.
 If you want to build for vexpress-qemu\_virt or ls-ls1012grapeboard, edit the sub.mk
