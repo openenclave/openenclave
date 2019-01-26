@@ -1,33 +1,34 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _ELIBC_UNISTD_H
-#define _ELIBC_UNISTD_H
+#ifndef _OE_UNISTD_H
+#define _OE_UNISTD_H
 
-#include "bits/common.h"
+#include <openenclave/bits/defs.h>
+#include <openenclave/bits/types.h>
 
-ELIBC_EXTERNC_BEGIN
+OE_EXTERNC_BEGIN
 
-#define ELIBC_STDIN_FILENO 0
-#define ELIBC_STDOUT_FILENO 1
-#define ELIBC_STDERR_FILENO 2
+#define OE_STDIN_FILENO 0
+#define OE_STDOUT_FILENO 1
+#define OE_STDERR_FILENO 2
 
-void* elibc_sbrk(intptr_t increment);
+void* oe_sbrk(intptr_t increment);
 
-#if defined(ELIBC_NEED_STDC_NAMES)
+#if defined(OE_NEED_STDC_NAMES)
 
-#define STDIN_FILENO ELIBC_STDIN_FILENO
-#define STDOUT_FILENO ELIBC_STDOUT_FILENO
-#define STDERR_FILENO ELIBC_STDERR_FILENO
+#define STDIN_FILENO OE_STDIN_FILENO
+#define STDOUT_FILENO OE_STDOUT_FILENO
+#define STDERR_FILENO OE_STDERR_FILENO
 
-ELIBC_INLINE
+OE_INLINE
 void* sbrk(intptr_t increment)
 {
-    return elibc_sbrk(increment);
+    return oe_sbrk(increment);
 }
 
-#endif /* defined(ELIBC_NEED_STDC_NAMES) */
+#endif /* defined(OE_NEED_STDC_NAMES) */
 
-ELIBC_EXTERNC_END
+OE_EXTERNC_END
 
-#endif /* _ELIBC_UNISTD_H */
+#endif /* _OE_UNISTD_H */

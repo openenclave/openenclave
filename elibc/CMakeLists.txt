@@ -9,7 +9,6 @@ add_library(oeelibc STATIC
     printf.c
     pthread.c
     rand.c
-    sbrk.c
     stdio.c
     strtoul.c
     time.c
