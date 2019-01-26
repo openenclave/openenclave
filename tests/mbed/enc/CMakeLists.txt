@@ -31,7 +31,7 @@ function(add_mbed_test_enclave NAME)
     set(PERL_HINTS "C:/Program Files/Git/usr/bin" "${GIT_DIR}/../usr/bin")
   endif ()
 
-  find_program(PERL perl HINTS ${PERL_PATHS})
+  find_program(PERL perl HINTS ${PERL_HINTS})
   if (NOT PERL)
     message(FATAL_ERROR "Perl not found! Cannot build mbedtls Test Suites without Perl!")
   endif ()
