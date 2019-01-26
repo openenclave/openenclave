@@ -22,23 +22,19 @@ function(add_mbed_test_enclave NAME)
 
   set(MBEDTLS_TESTS_DIR "${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests")
 
-  # Use Perl that is found in the Path
-  # If Perl is not found on Windows, use Perl from the Git/usr/bin directory
-  # and report error on Linux
-  find_program(PERL perl)
+# Use Perl that is found in the Path
+# If Perl is not found on Windows, use Perl from the Git/usr/bin directory
+# and report error on Linux
+  if (WIN32)
+    find_program(GIT git)
+    get_filename_component(GIT_DIR ${GIT} DIRECTORY)
+    set(PERL_HINTS "C:/Program Files/Git/usr/bin" "${GIT_DIR}/../usr/bin")
+  endif ()
+
+  find_program(PERL perl HINTS ${PERL_PATHS})
   if (NOT PERL)
-    if (WIN32)
-      find_program(GIT git)
-      get_filename_component(GIT_DIR ${GIT} DIRECTORY)
-      find_program(PERL perl
-         PATHS "C:/Program Files/Git/usr/bin" "${GIT_DIR}/../usr/bin")
-      if (NOT PERL)
-        message(FATAL_ERROR "Cannot build mbedtls Test Suites without Perl")
-      endif()
-    else()
-      message(FATAL_ERROR "Cannot build mbedtls Test Suites without Perl")
-    endif()
-  endif()
+    message(FATAL_ERROR "Perl not found! Cannot build mbedtls Test Suites without Perl!")
+  endif ()
 
   add_custom_command(
     OUTPUT test_suite_${NAME}.c
