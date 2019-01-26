@@ -11,7 +11,6 @@ add_library(oeelibc STATIC
     rand.c
     sbrk.c
     stdio.c
-    strerror.c
     strtoul.c
     time.c
     ${SOURCES})

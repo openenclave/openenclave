@@ -71,6 +71,7 @@ add_library(oecore STATIC
     hexdump.c
     result.c
     snprintf.c
+    strerror.c
     string.c
     time.c
     ${PLATFORM_SRC})
