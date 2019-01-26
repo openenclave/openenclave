@@ -232,25 +232,37 @@ namespace OpenEnclaveSDK
 
                     // Add list of generated files to the project.
                     ProjectItem generatedFilesFolder = FindOrAddVirtualFolder(project, "Generated Files");
-                    generatedFilesFolder.ProjectItems.AddFromFile(baseName + "_u.h");
-                    ProjectItem ucItem = generatedFilesFolder.ProjectItems.AddFromFile(baseName + "_u.c");
-                    var ucFile = ucItem.Object as VCFile;
-                    foreach (var config in ucFile.FileConfigurations)
+                    try
                     {
-                        var tool = config.Tool;
-                        tool.UsePrecompiledHeader = 0; // none
+                        generatedFilesFolder.ProjectItems.AddFromFile(baseName + "_u.h");
+                        ProjectItem ucItem = generatedFilesFolder.ProjectItems.AddFromFile(baseName + "_u.c");
+                        var ucFile = ucItem.Object as VCFile;
+                        foreach (var config in ucFile.FileConfigurations)
+                        {
+                            var tool = config.Tool;
+                            tool.UsePrecompiledHeader = 0; // none
+                        }
+                    } catch (Exception ex)
+                    {
+                        // File couldn't be added, it may already exist.
                     }
 
                     // Add the EDL file to the project.
                     ProjectItem sourceFilesFolder = FindOrAddVirtualFolder(project, "Source Files");
-                    ProjectItem edlItem = sourceFilesFolder.ProjectItems.AddFromFile(filePath);
-                    var edlFile = edlItem.Object as VCFile;
-                    foreach (var config in edlFile.FileConfigurations)
+                    try
                     {
-                        var tool = config.Tool;
-                        tool.CommandLine = "\"$(OEEdger8rPath)\" --untrusted \"%(FullPath)\" --search-path \"$(OEIncludePath)\"";
-                        tool.Description = "Creating untrusted proxy/bridge routines";
-                        tool.Outputs = "%(Filename)_t.h;%(Filename)_t.c;%(Outputs)";
+                        ProjectItem edlItem = sourceFilesFolder.ProjectItems.AddFromFile(filePath);
+                        var edlFile = edlItem.Object as VCFile;
+                        foreach (var config in edlFile.FileConfigurations)
+                        {
+                            var tool = config.Tool;
+                            tool.CommandLine = "\"$(OEEdger8rPath)\" --untrusted \"%(FullPath)\" --search-path \"$(OEIncludePath)\"";
+                            tool.Description = "Creating untrusted proxy/bridge routines";
+                            tool.Outputs = "%(Filename)_t.h;%(Filename)_t.c;%(Outputs)";
+                        }
+                    } catch (Exception ex)
+                    {
+                        // File couldn't be added, it may already exist.
                     }
 
                     // Add nuget package to project.
