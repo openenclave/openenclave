@@ -14,8 +14,8 @@ on both SGX and OP-TEE, and use it from your own application.
 **To create your own enclave:**
 1. In Visual Studio, add a new Visual C++ "Open Enclave TEE Project".  If you want
 to build for OP-TEE (whether in addition to, or instead of, SGX) you will need
-to select the path to the ta_dev_kit.mk file in the output of an OP-TEE build.
-For example, this might be in a optee_os\out\arm-plat-vexpress\export-ta_arm64\mk
+to select the path to the ta\_dev\_kit.mk file in the output of an OP-TEE build.
+For example, this might be in a optee\_os\out\arm-plat-vexpress\export-ta\_arm64\mk
 directory.
 2. Edit the _YourProjectName_.edl file. Define any trusted APIs (called "ECALLs")
 you want to call from your application in the trusted{} section,
@@ -31,10 +31,8 @@ one, that will build a normal application that will call your enclave APIs.
 "Open Enclave Configuration"->"Import Enclave", and select the
 _YourProjectName_.edl file from your enclave project.
 3. Add code in your app to call oe\_create\__YourEDLFileName_\_enclave(),
-any ECALLs you added, and
-oe\_terminate\_enclave().  You will need to #include <openenclave/host.h>
-and <_YourEDLFileName_\_u.h> for your ECALLs.
-See the sample apps for an example.
+any ECALLs you added, and oe\_terminate\_enclave(). The file _YourEDLFileName_\_host.c
+will be added to your project with sample code to do this.
 
 OP-TEE only allows one thread per TA to be in an ECALL (i.e., a call into
 a TA from a host app).  Even if it has an OCALL (i.e., an out-call

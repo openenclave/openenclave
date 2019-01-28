@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.VCProjectEngine;
 using EnvDTE80;
 using System.IO;
+using Microsoft.VisualStudio.Threading;
 
 namespace OpenEnclaveSDK
 {
@@ -86,6 +87,7 @@ namespace OpenEnclaveSDK
 
         static Project GetActiveProject(DTE dte)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             Project activeProject = null;
 
             var activeSolutionProjects = dte.ActiveSolutionProjects as Array;
@@ -99,6 +101,7 @@ namespace OpenEnclaveSDK
 
         static ProjectItem FindProjectItem(Project project, string name)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             foreach (ProjectItem item in project.ProjectItems)
             {
                 if (item.Name == name)
@@ -111,6 +114,7 @@ namespace OpenEnclaveSDK
 
         private ProjectItem FindOrAddVirtualFolder(Project project, string name)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             ProjectItem folder = FindProjectItem(project, name);
             if (folder == null)
             {
@@ -121,6 +125,8 @@ namespace OpenEnclaveSDK
 
         private void AddConfiguration(Project project, string newName, string baseName)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             // Add the configuration to the project.
             var dte = Package.GetGlobalService(typeof(SDTE)) as DTE;
             project.ConfigurationManager.AddConfigurationRow(newName, baseName, true);
@@ -139,14 +145,15 @@ namespace OpenEnclaveSDK
                     {
                         context.ConfigurationName = baseName;
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                     }
+
                     try
                     {
                         context.ConfigurationName = newName;
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                     }
                 }
@@ -155,6 +162,8 @@ namespace OpenEnclaveSDK
 
         private void AddPlatform(Project project, string newName, string baseName)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             // Add the platform to the project.
             var dte = Package.GetGlobalService(typeof(SDTE)) as DTE;
             project.ConfigurationManager.AddPlatform(newName, baseName, true);
@@ -179,6 +188,8 @@ namespace OpenEnclaveSDK
 
         private void AddProjectItem(string zipName, string language, string fileName)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             try
             {
                 var dte = Package.GetGlobalService(typeof(SDTE)) as DTE;
@@ -194,7 +205,7 @@ namespace OpenEnclaveSDK
                     tool.UsePrecompiledHeader = 0; // none
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
             }
@@ -209,7 +220,7 @@ namespace OpenEnclaveSDK
         /// <param name="e">Event args.</param>
         private async void Execute(object sender, EventArgs e)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var dte = Package.GetGlobalService(typeof(SDTE)) as DTE;
             Project project = GetActiveProject(dte);
@@ -242,7 +253,7 @@ namespace OpenEnclaveSDK
                             var tool = config.Tool;
                             tool.UsePrecompiledHeader = 0; // none
                         }
-                    } catch (Exception ex)
+                    } catch (Exception)
                     {
                         // File couldn't be added, it may already exist.
                     }
@@ -260,7 +271,7 @@ namespace OpenEnclaveSDK
                             tool.Description = "Creating untrusted proxy/bridge routines";
                             tool.Outputs = "%(Filename)_t.h;%(Filename)_t.c;%(Outputs)";
                         }
-                    } catch (Exception ex)
+                    } catch (Exception)
                     {
                         // File couldn't be added, it may already exist.
                     }
