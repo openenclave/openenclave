@@ -21,7 +21,7 @@ enclave {
 
         int f_readv(
             int fd,
-            [in, out, size=len] struct iovec* ptr,
+            [in, out, count=len] struct iovec* iov,
             size_t len);
 
         int f_close(

@@ -26,9 +26,9 @@ int f_read(int fd, char* ptr, size_t len)
     return (int)read(fd, ptr, len);
 }
 
-int f_readv(int fd, struct iovec* ptr, size_t len)
+int f_readv(int fd, struct iovec* iov, size_t len)
 {
-    return (int)readv(fd, ptr, (int)len);
+    return (int)readv(fd, iov, (int)len);
 }
 
 int f_close(int fd)

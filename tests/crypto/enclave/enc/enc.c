@@ -89,22 +89,27 @@ static oe_result_t _syscall_hook(
         }
         case SYS_readv:
         {
-            // determine the size needed for the buffer
             struct iovec* iov = (struct iovec*)arg2;
-            size_t len = sizeof(struct iovec) * (size_t)arg3;
+
+            // determine the total buffer size
+            size_t buf_size = sizeof(struct iovec) * (size_t)arg3;
             for (size_t i = 0; i < (size_t)arg3; ++i)
             {
-                len += (size_t)iov[i].iov_len;
+                buf_size += iov[i].iov_len;
             }
 
-            // create the buffer and initialize it
-            struct iovec* iov_host = (struct iovec*)oe_host_malloc(len);
-            char* buff_pos = (char*)(iov_host + (size_t)arg3);
+            // create the buffer
+            char* buffer = (char*)oe_host_malloc(buf_size);
+
+            struct iovec* iov_host = (struct iovec*)buffer;
+            char* buf_pos = buffer + sizeof(struct iovec) * (size_t)arg3;
+
+            // initialize the buffers
             for (size_t i = 0; i < (size_t)arg3; ++i)
             {
-                iov_host[i].iov_base = buff_pos;
+                iov_host[i].iov_base = buf_pos;
                 iov_host[i].iov_len = iov[i].iov_len;
-                buff_pos += iov[i].iov_len;
+                buf_pos += iov[i].iov_len;
             }
 
             // make the host call
@@ -112,9 +117,9 @@ static oe_result_t _syscall_hook(
             OE_TEST(OE_OK == f_readv(&rval, (int)arg1, iov_host, (size_t)arg3));
             *ret = (long)rval;
 
-            // copy the data returned from the host
-            if (*ret > 0)
+            if (rval > 0)
             {
+                // copy the data returned from the host
                 for (size_t i = 0; i < (size_t)arg3; ++i)
                 {
                     oe_memcpy(
@@ -123,7 +128,7 @@ static oe_result_t _syscall_hook(
             }
 
             // release the buffer
-            oe_host_free(iov_host);
+            oe_host_free(buffer);
 
             result = OE_OK;
             break;
