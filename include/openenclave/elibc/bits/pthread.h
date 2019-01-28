@@ -1,10 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#define PTHREAD_MUTEX_INITIALIZER ELIBC_PTHREAD_MUTEX_INITIALIZER
-#define PTHREAD_RWLOCK_INITIALIZER ELIBC_PTHREAD_RWLOCK_INITIALIZER
-#define PTHREAD_COND_INITIALIZER ELIBC_PTHREAD_COND_INITIALIZER
-#define PTHREAD_ONCE_INIT ELIBC_PTHREAD_ONCE_INIT
+OE_EXTERNC_BEGIN
 
 typedef elibc_pthread_t pthread_t;
 
@@ -27,6 +24,13 @@ typedef elibc_pthread_cond_t pthread_cond_t;
 typedef elibc_pthread_rwlockattr_t pthread_rwlockattr_t;
 
 typedef elibc_pthread_rwlock_t pthread_rwlock_t;
+
+#if defined(OE_NEED_STDC_NAMES)
+
+#define PTHREAD_MUTEX_INITIALIZER ELIBC_PTHREAD_MUTEX_INITIALIZER
+#define PTHREAD_RWLOCK_INITIALIZER ELIBC_PTHREAD_RWLOCK_INITIALIZER
+#define PTHREAD_COND_INITIALIZER ELIBC_PTHREAD_COND_INITIALIZER
+#define PTHREAD_ONCE_INIT ELIBC_PTHREAD_ONCE_INIT
 
 ELIBC_INLINE
 pthread_t pthread_self()
@@ -205,7 +209,7 @@ int pthread_cond_timedwait(
     return elibc_pthread_cond_timedwait(
         (elibc_pthread_cond_t*)cond,
         (elibc_pthread_mutex_t*)mutex,
-        (const struct elibc_timespec*)ts);
+        (const struct oe_timespec*)ts);
 }
 
 ELIBC_INLINE
@@ -249,3 +253,7 @@ void* pthread_getspecific(pthread_key_t key)
 {
     return elibc_pthread_getspecific((elibc_pthread_key_t)key);
 }
+
+#endif /* defined(OE_NEED_STDC_NAMES) */
+
+OE_EXTERNC_END

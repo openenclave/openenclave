@@ -3,7 +3,6 @@
 
 add_library(oeelibc STATIC
     atexit.c
-    gmtime.c
     intstr.c
     malloc.c
     printf.c
@@ -11,7 +10,6 @@ add_library(oeelibc STATIC
     rand.c
     stdio.c
     strtoul.c
-    time.c
     ${SOURCES})
 
 maybe_build_using_clangw(oeelibc)

@@ -126,7 +126,7 @@ int elibc_pthread_cond_wait(
 int elibc_pthread_cond_timedwait(
     elibc_pthread_cond_t* cond,
     elibc_pthread_mutex_t* mutex,
-    const struct elibc_timespec* ts);
+    const struct oe_timespec* ts);
 
 int elibc_pthread_cond_signal(elibc_pthread_cond_t* cond);
 

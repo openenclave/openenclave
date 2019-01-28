@@ -60,14 +60,12 @@ elseif(OE_TRUSTZONE)
         optee/start.c)
 endif()
 
-# Suppress type conversion warnings introduced by 3rdparty code
-set_source_files_properties(${MUSL_SRC_DIR}/string/memset.c PROPERTIES
-    COMPILE_FLAGS -Wno-conversion)
-
 add_library(oecore STATIC
     ../../common/safecrt.c
+    __secs_to_tm.c
     assert.c
     ctype.c
+    gmtime.c
     hexdump.c
     result.c
     snprintf.c
@@ -75,6 +73,12 @@ add_library(oecore STATIC
     string.c
     time.c
     ${PLATFORM_SRC})
+
+# Suppress type conversion warnings introduced by 3rdparty code
+set_source_files_properties(${MUSL_SRC_DIR}/string/memset.c PROPERTIES
+    COMPILE_FLAGS -Wno-conversion)
+set_source_files_properties(__secs_to_tm.c PROPERTIES
+    COMPILE_FLAGS -Wno-conversion)
 
 maybe_build_using_clangw(oecore)
 

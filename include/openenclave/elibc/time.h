@@ -1,15 +1,16 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _ELIBC_TIME_H
-#define _ELIBC_TIME_H
+#ifndef _OE_TIME_H
+#define _OE_TIME_H
 
-#include "bits/common.h"
+#include <openenclave/bits/defs.h>
+#include <openenclave/bits/types.h>
 #include "sys/time.h"
 
-ELIBC_EXTERNC_BEGIN
+OE_EXTERNC_BEGIN
 
-struct elibc_tm
+struct oe_tm
 {
     int tm_sec;
     int tm_min;
@@ -22,21 +23,19 @@ struct elibc_tm
     int tm_isdst;
 };
 
-struct elibc_timespec
+struct oe_timespec
 {
     time_t tv_sec;
     long tv_nsec;
 };
 
-time_t elibc_time(time_t* tloc);
+time_t oe_time(time_t* tloc);
 
-struct elibc_tm* elibc_gmtime(const time_t* timep);
+struct oe_tm* oe_gmtime(const time_t* timep);
 
-struct elibc_tm* elibc_gmtime_r(
-    const time_t* timep,
-    struct elibc_tm* result);
+struct oe_tm* oe_gmtime_r(const time_t* timep, struct oe_tm* result);
 
-#if defined(ELIBC_NEED_STDC_NAMES)
+#if defined(OE_NEED_STDC_NAMES)
 
 struct tm
 {
@@ -57,26 +56,26 @@ struct timespec
     long tv_nsec;
 };
 
-ELIBC_INLINE
+OE_INLINE
 time_t time(time_t* tloc)
 {
-    return elibc_time(tloc);
+    return oe_time(tloc);
 }
 
-ELIBC_INLINE
+OE_INLINE
 struct tm* gmtime(const time_t* timep)
 {
-    return (struct tm*)elibc_gmtime(timep);
+    return (struct tm*)oe_gmtime(timep);
 }
 
-ELIBC_INLINE
+OE_INLINE
 struct tm* gmtime_r(const time_t* timep, struct tm* result)
 {
-    return (struct tm*)elibc_gmtime_r(timep, (struct elibc_tm*)result);
+    return (struct tm*)oe_gmtime_r(timep, (struct oe_tm*)result);
 }
 
-#endif /* defined(ELIBC_NEED_STDC_NAMES) */
+#endif /* defined(OE_NEED_STDC_NAMES) */
 
-ELIBC_EXTERNC_END
+OE_EXTERNC_END
 
-#endif /* _ELIBC_TIME_H */
+#endif /* _OE_TIME_H */
