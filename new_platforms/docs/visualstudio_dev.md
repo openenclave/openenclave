@@ -12,7 +12,11 @@ on both SGX and OP-TEE, and use it from your own application.
 2. To develop for OP-TEE, install the [Prerequisites for OP-TEE](ta_debugging_wsl.md)
 
 **To create your own enclave:**
-1. In Visual Studio, add a new Visual C++ "Open Enclave TEE Project".
+1. In Visual Studio, add a new Visual C++ "Open Enclave TEE Project".  If you want
+to build for OP-TEE (whether in addition to, or instead of, SGX) you will need
+to select the path to the ta\_dev\_kit.mk file in the output of an OP-TEE build.
+For example, this might be in a optee\_os\out\arm-plat-vexpress\export-ta\_arm64\mk
+directory.
 2. Edit the _YourProjectName_.edl file. Define any trusted APIs (called "ECALLs")
 you want to call from your application in the trusted{} section,
 and in the untrusted{} section, define any application APIs (called "OCALLs")
@@ -27,10 +31,8 @@ one, that will build a normal application that will call your enclave APIs.
 "Open Enclave Configuration"->"Import Enclave", and select the
 _YourProjectName_.edl file from your enclave project.
 3. Add code in your app to call oe\_create\__YourEDLFileName_\_enclave(),
-any ECALLs you added, and
-oe\_terminate\_enclave().  You will need to #include <openenclave/host.h> 
-and <_YourEDLFileName_\_u.h> for your ECALLs.
-See the sample apps for an example.
+any ECALLs you added, and oe\_terminate\_enclave(). The file _YourEDLFileName_\_host.c
+will be added to your project with sample code to do this.
 
 OP-TEE only allows one thread per TA to be in an ECALL (i.e., a call into
 a TA from a host app).  Even if it has an OCALL (i.e., an out-call
@@ -42,48 +44,27 @@ flag when creating an enclave to automatically get the OP-TEE like behavior
 for both SGX and TrustZone.
 
 
-**Then to build for OP-TEE:**
+**Then to build the enclave for OP-TEE:**
 
-1. Right click the solution, select "Configuration Manager", create an ARM
-solution platform (if one doesn't already exist), and then create ARM
-configurations of your application project (and oehost if you include that
-directly).  Copy the configuration from the existing Win32 one.  Don't do
-this for your enclave project, as that needs to be built from a bash shell
-rather than in Visual Studio.
-2. Manually edit your application .vcxproj file to add the ability to
-compile for ARM, since Visual Studio cannot do it from the UI.  To do so, add the
-line "<WindowsSDKDesktopARMSupport\>true</WindowsSDKDesktopARMSupport\>"
-to each ARM configuration property group.  (See the sample apps'
-vcxproj file for examples.)
-3. For any new source files you add to your enclave project in
-Visual Studio, also add them to the sub.mk file in your optee subdirectory
-4. In your application project properties, under "Linker"->"Input", add
-rpcrt4.lib to the Additional Dependencies (All Configurations, ARM platform)
-which is required for string-to-UUID conversion, and remove any sgx libs.
-5. In your application project properties, update the Additional Include
-Directories to insert the $(NewPlatformsDir)include\optee\host and
-$(NewPlatformsDir)include\optee paths before the $(NewPlatformsDir)include path that you
-added earlier.
-6. On the destination machine, apply the uuids.reg file
+1. Using the [Bash on Ubuntu on Windows](https://docs.microsoft.com/en-us/windows/wsl/about) shell,
+cd to your enclave project's "optee" subdirectory.  If you added additional
+source files to your enclave project in Visual Studio, also add them to the
+sub.mk in that directory.
+2. By default, the project is configured to build for the vexpress-qemu\_armv8a flavor of OP-TEE.
+If you want to build for vexpress-qemu\_virt or ls-ls1012grapeboard, edit the sub.mk
+file in the project's "optee" subdirectory, and change the 'libdirs' line accordingly.
+For vexpress-qemu\_virt, you will also need to change the CROSS_COMPILE line in linux\_gcc.mak
+to "CROSS\_COMPILE=arm-linux-gnueabihf-" since it is 32-bit not 64-bit.
+3. Do "make -f linux\_gcc.mak" to build the enclave.
+4. On the destination machine (if Windows), apply the uuids.reg file
 ("reg.exe import uuids.reg") and reboot.
 
 ## Debugging
-
-(Note: the information about the OPTEE-Simulation-Debug
-configuration is out of date and will be updated shortly.)
 
 **For SGX:** You can use Visual Studio for debugging, including the SGX
 simulator, that comes with the Intel SGX SDK.  Simply use the Debug
 configuration in Visual Studio if you have SGX-capable hardware, or
 the SGX-Simulation-Debug configuration in Visual Studio for software emulation.
 
-**For TrustZone:** You can use a basic software emulation environment with OP-TEE
-by creating and using a OPTEE-Simulation-Debug configuration in Visual Studio,
-as follows...
-
-1. Create a new configuration (say, for x86 and called OPTEE-Simulation-Debug)
-based on the Debug configuration. A new configuration can be created
-inside Visual Studio by right clicking on the solution, and accessing
-the "Configuration Manager" screen.
-2. In the "Configuration Properties->"Debugging", make the working directory
-be the directory your enclave is built in (usually "$(OutDir)").
+**For TrustZone:** You can use a basic software emulation environment with OP-TEE.
+Simply use the OPTEE-Simulation-Debug configuration in Visual Studio.

@@ -9,6 +9,9 @@ using NuGet.VisualStudio;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.VCProjectEngine;
+using EnvDTE80;
+using System.IO;
+using Microsoft.VisualStudio.Threading;
 
 namespace OpenEnclaveSDK
 {
@@ -84,6 +87,7 @@ namespace OpenEnclaveSDK
 
         static Project GetActiveProject(DTE dte)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             Project activeProject = null;
 
             var activeSolutionProjects = dte.ActiveSolutionProjects as Array;
@@ -97,6 +101,7 @@ namespace OpenEnclaveSDK
 
         static ProjectItem FindProjectItem(Project project, string name)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             foreach (ProjectItem item in project.ProjectItems)
             {
                 if (item.Name == name)
@@ -109,12 +114,101 @@ namespace OpenEnclaveSDK
 
         private ProjectItem FindOrAddVirtualFolder(Project project, string name)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             ProjectItem folder = FindProjectItem(project, name);
             if (folder == null)
             {
                 folder = project.ProjectItems.AddFolder(name, EnvDTE.Constants.vsProjectItemKindVirtualFolder);
             }
             return folder;
+        }
+
+        private void AddConfiguration(Project project, string newName, string baseName)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            // Add the configuration to the project.
+            var dte = Package.GetGlobalService(typeof(SDTE)) as DTE;
+            project.ConfigurationManager.AddConfigurationRow(newName, baseName, true);
+
+            // Now set the solution's configuration to use the relevant project's configurations.
+            foreach (SolutionConfiguration2 solutionConfig in dte.Solution.SolutionBuild.SolutionConfigurations)
+            {
+                if (solutionConfig.Name != newName)
+                {
+                    continue;
+                }
+                foreach (SolutionContext context in solutionConfig.SolutionContexts)
+                {
+                    // Select newName if it exists for this project, else baseName.
+                    try
+                    {
+                        context.ConfigurationName = baseName;
+                    }
+                    catch (Exception)
+                    {
+                    }
+
+                    try
+                    {
+                        context.ConfigurationName = newName;
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+            }
+        }
+
+        private void AddPlatform(Project project, string newName, string baseName)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            // Add the platform to the project.
+            var dte = Package.GetGlobalService(typeof(SDTE)) as DTE;
+            project.ConfigurationManager.AddPlatform(newName, baseName, true);
+
+            // Now set the solution platform to build the project's platform.
+            foreach (SolutionConfiguration2 solutionConfig in dte.Solution.SolutionBuild.SolutionConfigurations)
+            {
+                if (solutionConfig.PlatformName != newName)
+                {
+                    continue;
+                }
+                foreach (SolutionContext context in solutionConfig.SolutionContexts)
+                {
+                    if (context.ProjectName == project.UniqueName)
+                    {
+                        context.ConfigurationName = context.ConfigurationName + "|" + newName;
+                        context.ShouldBuild = true;
+                    }
+                }
+            }
+        }
+
+        private void AddProjectItem(string zipName, string language, string fileName)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            try
+            {
+                var dte = Package.GetGlobalService(typeof(SDTE)) as DTE;
+                var solution = dte.Solution as EnvDTE80.Solution2;
+                Project project = GetActiveProject(dte);
+
+                string filename = solution.GetProjectItemTemplate(zipName, language);
+                ProjectItem item = project.ProjectItems.AddFromTemplate(filename, fileName);
+                var file = item.Object as VCFile;
+                foreach (var config in file.FileConfigurations)
+                {
+                    var tool = config.Tool;
+                    tool.UsePrecompiledHeader = 0; // none
+                }
+            }
+            catch (Exception)
+            {
+
+            }
         }
 
         /// <summary>
@@ -126,7 +220,7 @@ namespace OpenEnclaveSDK
         /// <param name="e">Event args.</param>
         private async void Execute(object sender, EventArgs e)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var dte = Package.GetGlobalService(typeof(SDTE)) as DTE;
             Project project = GetActiveProject(dte);
@@ -134,7 +228,8 @@ namespace OpenEnclaveSDK
             var filePath = string.Empty;
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
-                openFileDialog.InitialDirectory = ".";
+                // InitialDirectory must be an absolute, not relative, path.
+                openFileDialog.InitialDirectory = Path.GetDirectoryName(dte.Solution.FileName);
                 openFileDialog.Filter = "EDL files (*.EDL)|*.edl";
                 openFileDialog.RestoreDirectory = true;
 
@@ -148,31 +243,43 @@ namespace OpenEnclaveSDK
 
                     // Add list of generated files to the project.
                     ProjectItem generatedFilesFolder = FindOrAddVirtualFolder(project, "Generated Files");
-                    generatedFilesFolder.ProjectItems.AddFromFile(baseName + "_u.h");
-                    ProjectItem ucItem = generatedFilesFolder.ProjectItems.AddFromFile(baseName + "_u.c");
-                    var ucFile = ucItem.Object as VCFile;
-                    foreach (var config in ucFile.FileConfigurations)
+                    try
                     {
-                        var tool = config.Tool;
-                        tool.UsePrecompiledHeader = 0; // none
+                        generatedFilesFolder.ProjectItems.AddFromFile(baseName + "_u.h");
+                        ProjectItem ucItem = generatedFilesFolder.ProjectItems.AddFromFile(baseName + "_u.c");
+                        var ucFile = ucItem.Object as VCFile;
+                        foreach (var config in ucFile.FileConfigurations)
+                        {
+                            var tool = config.Tool;
+                            tool.UsePrecompiledHeader = 0; // none
+                        }
+                    } catch (Exception)
+                    {
+                        // File couldn't be added, it may already exist.
                     }
 
                     // Add the EDL file to the project.
                     ProjectItem sourceFilesFolder = FindOrAddVirtualFolder(project, "Source Files");
-                    ProjectItem edlItem = sourceFilesFolder.ProjectItems.AddFromFile(filePath);
-                    var edlFile = edlItem.Object as VCFile;
-                    foreach (var config in edlFile.FileConfigurations)
+                    try
                     {
-                        var tool = config.Tool;
-                        tool.CommandLine = "\"$(OEEdger8rPath)\" --untrusted \"%(FullPath)\" --search-path \"$(OEIncludePath)\"";
-                        tool.Description = "Creating untrusted proxy/bridge routines";
-                        tool.Outputs = "%(Filename)_t.h;%(Filename)_t.c;%(Outputs)";
+                        ProjectItem edlItem = sourceFilesFolder.ProjectItems.AddFromFile(filePath);
+                        var edlFile = edlItem.Object as VCFile;
+                        foreach (var config in edlFile.FileConfigurations)
+                        {
+                            var tool = config.Tool;
+                            tool.CommandLine = "\"$(OEEdger8rPath)\" --untrusted \"%(FullPath)\" --search-path \"$(OEIncludePath)\"";
+                            tool.Description = "Creating untrusted proxy/bridge routines";
+                            tool.Outputs = "%(Filename)_t.h;%(Filename)_t.c;%(Outputs)";
+                        }
+                    } catch (Exception)
+                    {
+                        // File couldn't be added, it may already exist.
                     }
 
                     // Add nuget package to project.
                     // See https://stackoverflow.com/questions/41803738/how-to-programmatically-install-a-nuget-package/41895490#41895490
                     // and more particularly https://docs.microsoft.com/en-us/nuget/visual-studio-extensibility/nuget-api-in-visual-studio
-                    var packageVersions = new Dictionary<string, string>() { { "openenclave", "0.2.0-CI-20190122-200026" } };
+                    var packageVersions = new Dictionary<string, string>() { { "openenclave", "0.2.0-CI-20190129-011410" } };
                     var componentModel = (IComponentModel)(await this.ServiceProvider.GetServiceAsync(typeof(SComponentModel)));
                     var packageInstaller = componentModel.GetService<IVsPackageInstaller2>();
                     packageInstaller.InstallPackagesFromVSExtensionRepository(
@@ -184,25 +291,43 @@ namespace OpenEnclaveSDK
                         packageVersions);
 
                     // Add any configurations/platforms to the project.
-                    project.ConfigurationManager.AddConfigurationRow("OPTEE-Simulation-Debug", "Debug", true);
-                    project.ConfigurationManager.AddConfigurationRow("SGX-Simulation-Debug", "Debug", true);
-                    project.ConfigurationManager.AddPlatform("ARM", "Win32", true);
+                    AddConfiguration(project, "OPTEE-Simulation-Debug", "Debug");
+                    AddConfiguration(project, "SGX-Simulation-Debug", "Debug");
+                    AddPlatform(project, "ARM", "Win32");
 
                     // Set the debugger.
                     var vcProject = project.Object as VCProject;
                     foreach (var config in vcProject.Configurations)
                     {
                         string name = config.Name;
+                        if (name.Contains("ARM"))
+                        {
+                            var clRule = config.Rules.Item("CL") as IVCRulePropertyStorage;
+                            string value = clRule.GetUnevaluatedPropertyValue("PreprocessorDefinitions");
+                            clRule.SetPropertyValue("PreprocessorDefinitions", "_ARM_;" + value);
+
+                            var config3 = config as VCConfiguration3;
+                            config3.SetPropertyValue("Configuration", true, "WindowsSDKDesktopARMSupport", "true");
+                            config3.SetPropertyValue("Configuration", true, "WindowsSDKDesktopARM64Support", "true");
+                        }
                         if (name.Contains("OPTEE") || name.Contains("ARM"))
                         {
                             continue;
                         }
-                        var generalRule = config.Rules.Item("DebuggerGeneralProperties") as IVCRulePropertyStorage;
-                        generalRule.SetPropertyValue("DebuggerFlavor", "SGXDebugLauncher");
 
+                        // See if the Intel SGX SDK is installed.
                         var sgxRule = config.Rules.Item("SGXDebugLauncher") as IVCRulePropertyStorage;
-                        sgxRule.SetPropertyValue("IntelSGXDebuggerWorkingDirectory", "$(OutDir)");
+                        if (sgxRule != null)
+                        {
+                            // Configure SGX debugger settings.
+                            var generalRule = config.Rules.Item("DebuggerGeneralProperties") as IVCRulePropertyStorage;
+                            generalRule.SetPropertyValue("DebuggerFlavor", "SGXDebugLauncher");
+                            sgxRule.SetPropertyValue("IntelSGXDebuggerWorkingDirectory", "$(OutDir)");
+                        }
                     }
+
+                    // Add a host code item to the project.
+                    AddProjectItem("OEHostItem", "VC", baseName + "_host.c");
                 }
             }
         }
