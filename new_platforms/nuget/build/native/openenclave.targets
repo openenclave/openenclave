@@ -75,7 +75,7 @@
 
     <!-- TEE Shorthands -->
     <Choose>
-        <When Condition="('$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Release' Or '$(Configuration)' == 'SGX-Debug') And ($(OEIsX86) == True Or $(OEIsX64) == True)">
+        <When Condition="('$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Prerelease' Or '$(Configuration)' == 'Release' Or '$(Configuration)' == 'SGX-Debug') And ($(OEIsX86) == True Or $(OEIsX64) == True)">
             <PropertyGroup>
                 <OEIsSgx>True</OEIsSgx>
                 <OEIsTz>False</OEIsTz>
