@@ -40,7 +40,7 @@ def ACCContainerTest(String label) {
             checkout scm
 
             def oetoolsContainer = docker.build("oetools-containertest", "-f .jenkins/Dockerfile .")
-            oetoolsContainer.inside('--privileged -v /dev/sgx:/dev/sgx') {
+            oetoolsContainer.inside('--device /dev/sgx:/dev/sgx') {
                 timeout(15) {
                     sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo --disable_sim'
                 }

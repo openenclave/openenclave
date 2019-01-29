@@ -53,6 +53,11 @@ if (IS_DIRECTORY "${PROJECT_SOURCE_DIR}/.git")
   endif ()
 endif ()
 
+# Generates `compile_commands.json` used by some developers. Only
+# supported by Makefile and Ninja generators, but is otherwise
+# ignored.
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Get Jenkins build number
 set(BUILD_NUMBER $ENV{BUILD_NUMBER})
 if (NOT BUILD_NUMBER)
