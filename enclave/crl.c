@@ -3,7 +3,6 @@
 
 #include "crl.h"
 #include <mbedtls/platform.h>
-#include <mbedtls/x509_crl.h>
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/crl.h>
 #include <openenclave/internal/enclavelibc.h>

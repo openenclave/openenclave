@@ -4,7 +4,16 @@
 #ifndef _OE_ENCLAVE_RSA_H
 #define _OE_ENCLAVE_RSA_H
 
+#if !defined(OE_NEED_STDC_NAMES)
+#define OE_NEED_STDC_NAMES
+#define __UNDEF_OE_NEED_STDC_NAMES
+#endif
 #include <mbedtls/pk.h>
+#if defined(__UNDEF_OE_NEED_STDC_NAMES)
+#undef OE_NEED_STDC_NAMES
+#undef __UNDEF_OE_NEED_STDC_NAMES
+#endif
+
 #include <openenclave/internal/rsa.h>
 
 OE_INLINE bool oe_is_rsa_key(const mbedtls_pk_context* pk)

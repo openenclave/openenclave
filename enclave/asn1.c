@@ -2,8 +2,18 @@
 // Licensed under the MIT License.
 
 #include "../common/asn1.h"
+
+#if !defined(OE_NEED_STDC_NAMES)
+#define OE_NEED_STDC_NAMES
+#define __UNDEF_OE_NEED_STDC_NAMES
+#endif
 #include <mbedtls/asn1.h>
 #include <mbedtls/oid.h>
+#if defined(__UNDEF_OE_NEED_STDC_NAMES)
+#undef OE_NEED_STDC_NAMES
+#undef __UNDEF_OE_NEED_STDC_NAMES
+#endif
+
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/asn1.h>
 #include <openenclave/internal/enclavelibc.h>
