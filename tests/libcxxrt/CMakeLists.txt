@@ -1,10 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-# add a test-case for each file listed in tests.supported
-include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/get_testcase_name.cmake)
-
-
 add_subdirectory(host)
 
 if(BUILD_ENCLAVES)

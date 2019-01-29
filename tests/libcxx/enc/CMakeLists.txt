@@ -5,8 +5,6 @@
 
 oeedl_file(../libcxx.edl enclave gen)
 
-include(${CMAKE_CURRENT_LIST_DIR}/../../../cmake/get_testcase_name.cmake)
-
 # helper lib to contain file needed by some tests
 add_library(libcxxtest-support
     enc.cpp

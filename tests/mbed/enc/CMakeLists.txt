@@ -4,8 +4,6 @@
 # >> In one of the test "ssl" we are using a variable called new which is a function in C++
 #    causes improper behaviour at compile time leads us to use C instead of C++
 
-include(${CMAKE_CURRENT_LIST_DIR}/../../../cmake/get_testcase_name.cmake)
-
 oeedl_file(../mbed.edl enclave gen)
 
 # This function creates an enclave for a specific mbedTLS test.
