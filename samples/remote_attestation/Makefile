@@ -18,5 +18,4 @@ clean:
 	$(MAKE) -C host clean
 
 run:
-# TEST DISABLED TEMPORARILY UNTIL PCK SERVER ISSUE IS RESOLVED
-#	host/attestation_host ./enc1/enclave1.signed ./enc2/enclave2.signed
+	host/attestation_host ./enc1/enclave1.signed ./enc2/enclave2.signed
