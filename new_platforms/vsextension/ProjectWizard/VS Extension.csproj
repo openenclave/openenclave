@@ -124,7 +124,7 @@
       <ResourceName>Menus.ctmenu</ResourceName>
       <SubType>Designer</SubType>
     </VSCTCompile>
-    <Content Include="Packages\openenclave.0.2.0-ci-20190125-163502.nupkg">
+    <Content Include="Packages\openenclave.0.2.0-CI-20190129-011410.nupkg">
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <None Include="source.extension.vsixmanifest">

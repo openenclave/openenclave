@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-OE_SDK_PATH=../../packages/openenclave.0.2.0-CI-20190125-163502
+OE_SDK_PATH=../../packages/openenclave.0.2.0-CI-20190129-011410
 OE_SDK_INC_PATH=$(OE_SDK_PATH)/build/native/include
 OEEDGER8R=$(OE_SDK_PATH)/tools/oeedger8r
 
