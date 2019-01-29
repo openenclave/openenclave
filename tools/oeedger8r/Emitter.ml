@@ -157,7 +157,7 @@ let oe_gen_ocall_marshal_struct (uf: Ast.untrusted_func) =
     oe_gen_marshal_struct_impl uf.Ast.uf_fdecl errno_decl true
 
 (* This is the most complex function. 
- * For a parameter, get its size experssion.
+ * For a parameter, get its size expression.
 *)
 let oe_get_param_size (ptype, decl, argstruct) = 
   (* get the base type of the parameter *)
@@ -182,7 +182,7 @@ let oe_get_param_size (ptype, decl, argstruct) =
     match av with
     | None -> ""
     | Some (Ast.ANumber n) -> string_of_int n
-    | Some (Ast.AString s) -> sprintf "%s%s" argstruct s  (*another parameter name *)
+    | Some (Ast.AString s) -> sprintf "%s%s" argstruct s  (* another parameter name *)
   in 
   let pa_size_to_string pa = 
     let c = attr_value_to_string pa.Ast.ps_count in
@@ -199,7 +199,7 @@ let oe_get_param_size (ptype, decl, argstruct) =
           let pa_size = pa_size_to_string ptr_attr.Ast.pa_size in
           (* Compute declared size *)
           let decl_size = decl_size_to_string ptype decl in
-          if  ptr_attr.Ast.pa_isstr then
+          if ptr_attr.Ast.pa_isstr then
             argstruct ^ decl.Ast.identifier ^ "_len * sizeof(char)"
           else if ptr_attr.Ast.pa_iswstr then
             argstruct ^ decl.Ast.identifier ^ "_len * sizeof(wchar_t)" 
@@ -838,7 +838,6 @@ let uses_type (root_type:Ast.atype) (fd:Ast.func_decl) =
     param_match 
   else
     root_type = fd.Ast.rtype
-
 
 let warn_non_portable_types (fd:Ast.func_decl) =
     let print_portability_warning ty =
