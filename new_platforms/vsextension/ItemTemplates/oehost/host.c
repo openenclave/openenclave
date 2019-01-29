@@ -1,7 +1,7 @@
 #include <openenclave/host.h>
-#include "$projectname$_u.h"
+#include "$enclavename$_u.h"
 
-oe_result_t create_$safeprojectname$_enclave(const char* enclave_name, oe_enclave_t** out_enclave)
+oe_result_t create_$enclavename$_enclave(const char* enclave_name, oe_enclave_t** out_enclave)
 {
     oe_enclave_t* enclave = NULL;
     uint32_t enclave_flags = 0;
@@ -13,7 +13,7 @@ oe_result_t create_$safeprojectname$_enclave(const char* enclave_name, oe_enclav
 #ifdef _DEBUG
     enclave_flags |= OE_ENCLAVE_FLAG_DEBUG;
 #endif
-    result = oe_create_$safeprojectname$_enclave(
+    result = oe_create_$enclavename$_enclave(
         enclave_name,
         OE_ENCLAVE_TYPE_UNDEFINED,
         enclave_flags,
@@ -31,8 +31,8 @@ oe_result_t create_$safeprojectname$_enclave(const char* enclave_name, oe_enclav
 void sample_enclave_call(void)
 {
     oe_enclave_t* enclave = NULL;
-    oe_result_t result = create_$safeprojectname$_enclave(
-        "$projectname$.signed.dll",
+    oe_result_t result = create_$enclavename$_enclave(
+        "$enclavename$",
         &enclave);
     if (result != OE_OK)
     {

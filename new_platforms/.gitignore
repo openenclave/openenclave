@@ -18,6 +18,8 @@ oetests_u.*
 oetests_args.h
 HelloWorldEnc_t.*
 HelloWorldEnc_u.*
+vsextension/packages
+*.nupkg
 
 # Other generated files
 *.o

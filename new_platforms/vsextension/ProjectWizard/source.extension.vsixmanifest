@@ -11,11 +11,11 @@
     <Dependencies>
     </Dependencies>
     <Assets>
-        <Asset Type="Microsoft.VisualStudio.ProjectTemplate" d:Source="File" Path="ProjectTemplates" d:TargetPath="ProjectTemplates\Built/OEEnclaveProject.zip" />
+        <Asset Type="Microsoft.VisualStudio.ProjectTemplate" d:Source="File" Path="ProjectTemplates" d:TargetPath="ProjectTemplates\Built\OEEnclaveProject.zip" />
         <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" AssemblyName="|%CurrentProject%;AssemblyName|" />
-        <Asset Type="openenclave.0.2.0-ci-20190122-200026.nupkg" d:Source="File" Path="Packages\openenclave.0.2.0-ci-20190122-200026.nupkg" d:VsixSubPath="Packages" />
+        <Asset Type="openenclave.0.2.0-CI-20190129-011410.nupkg" d:Source="File" Path="Packages\openenclave.0.2.0-CI-20190129-011410.nupkg" d:VsixSubPath="Packages" />
         <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
-        <Asset d:Source="File" Path="host.c" Type="host.c" />
+        <Asset Type="Microsoft.VisualStudio.ItemTemplate" d:Source="File" Path="ItemTemplates" d:TargetPath="ItemTemplates\Built\OEHostItem.zip" />
     </Assets>
     <Prerequisites>
         <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,16.0)" DisplayName="Visual Studio core editor" />
