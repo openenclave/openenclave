@@ -116,7 +116,11 @@ if ($LASTEXITCODE) {
 }
 
 # Build
-msbuild .\ALL_BUILD.vcxproj $CONFIG_FLAG
+if ($BUILD_ENCLAVES) {
+    cmake.exe --build . --config $BUILD_TYPE
+} else {
+    msbuild .\ALL_BUILD.vcxproj $CONFIG_FLAG
+}
 if ($LASTEXITCODE) {
     echo ""
     echo "Build failed for $BUILD_TYPE on Windows"
