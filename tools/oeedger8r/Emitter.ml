@@ -877,7 +877,6 @@ let validate_oe_support (ec: enclave_content) (ep: edger8r_params) =
         failwithf "Function '%s': 'private' specifier is not supported by oeedger8r" f.Ast.tf_fdecl.fname);
     (if f.Ast.tf_is_switchless then
         failwithf "Function '%s': switchless ecalls and ocalls are not yet supported by Open Enclave SDK." f.Ast.tf_fdecl.fname);  
-    warn_non_portable_types f.Ast.tf_fdecl;   
   ) ec.tfunc_decls;
   List.iter (fun f -> 
     (if f.Ast.uf_fattr.fa_convention <> Ast.CC_NONE then
@@ -889,8 +888,15 @@ let validate_oe_support (ec: enclave_content) (ep: edger8r_params) =
         printf "Warning: Function '%s': Reentrant ocalls are not supported by Open Enclave. Allow list ignored.\n" f.Ast.uf_fdecl.fname);
     (if f.Ast.uf_is_switchless then
         failwithf "Function '%s': switchless ecalls and ocalls are not yet supported by Open Enclave SDK." f.Ast.uf_fdecl.fname);
-    warn_non_portable_types f.Ast.uf_fdecl;          
-  ) ec.ufunc_decls
+  ) ec.ufunc_decls;
+  (* Map warning functions over trusted and untrusted function
+     declarations *)
+  let ufuncs = List.map (fun f -> (f.Ast.uf_fdecl)) ec.ufunc_decls in
+  let tfuncs = List.map (fun f -> (f.Ast.tf_fdecl)) ec.tfunc_decls in
+  let funcs = List.append ufuncs tfuncs in
+  List.iter (fun f ->
+    warn_non_portable_types f;
+  ) funcs
 
   (*
     Includes are emitted in args.h.
