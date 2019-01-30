@@ -23,3 +23,38 @@ set_tests_properties(edger8r_switchless_trusted_warning PROPERTIES
 add_test(NAME edger8r_switchless_untrusted_warning COMMAND edger8r ${EDGER8R_ARGS} switchless_untrusted.edl)
 set_tests_properties(edger8r_switchless_untrusted_warning PROPERTIES
   PASS_REGULAR_EXPRESSION "error: Function 'switchless': switchless ecalls and ocalls are not yet supported by Open Enclave SDK.")
+
+# These need to be separate tests to ensure that each type, for both
+# trusted and untrusted functions, generate the appropriate warning,
+# but we can reuse the EDL file.
+add_test(NAME edger8r_portability_trusted_wchar_t_warning COMMAND edger8r ${EDGER8R_ARGS} portability.edl)
+set_tests_properties(edger8r_portability_trusted_wchar_t_warning PROPERTIES
+  PASS_REGULAR_EXPRESSION "Function 'ocall': wchar_t has different sizes")
+
+add_test(NAME edger8r_portability_trusted_long_double_warning COMMAND edger8r ${EDGER8R_ARGS} portability.edl)
+set_tests_properties(edger8r_portability_trusted_long_double_warning PROPERTIES
+  PASS_REGULAR_EXPRESSION "Function 'ocall': long double has different sizes")
+
+add_test(NAME edger8r_portability_trusted_long_warning COMMAND edger8r ${EDGER8R_ARGS} portability.edl)
+set_tests_properties(edger8r_portability_trusted_long_warning PROPERTIES
+  PASS_REGULAR_EXPRESSION "Function 'ocall': long has different sizes")
+
+add_test(NAME edger8r_portability_trusted_unsigned_long_warning COMMAND edger8r ${EDGER8R_ARGS} portability.edl)
+set_tests_properties(edger8r_portability_trusted_unsigned_long_warning PROPERTIES
+  PASS_REGULAR_EXPRESSION "Function 'ocall': unsigned long has different sizes")
+
+add_test(NAME edger8r_portability_untrusted_wchar_t_warning COMMAND edger8r ${EDGER8R_ARGS} portability.edl)
+set_tests_properties(edger8r_portability_untrusted_wchar_t_warning PROPERTIES
+  PASS_REGULAR_EXPRESSION "Function 'ecall': wchar_t has different sizes")
+
+add_test(NAME edger8r_portability_untrusted_long_double_warning COMMAND edger8r ${EDGER8R_ARGS} portability.edl)
+set_tests_properties(edger8r_portability_untrusted_long_double_warning PROPERTIES
+  PASS_REGULAR_EXPRESSION "Function 'ecall': long double has different sizes")
+
+add_test(NAME edger8r_portability_untrusted_long_warning COMMAND edger8r ${EDGER8R_ARGS} portability.edl)
+set_tests_properties(edger8r_portability_untrusted_long_warning PROPERTIES
+  PASS_REGULAR_EXPRESSION "Function 'ecall': long has different sizes")
+
+add_test(NAME edger8r_portability_untrusted_unsigned_long_warning COMMAND edger8r ${EDGER8R_ARGS} portability.edl)
+set_tests_properties(edger8r_portability_untrusted_unsigned_long_warning PROPERTIES
+  PASS_REGULAR_EXPRESSION "Function 'ecall': unsigned long has different sizes")

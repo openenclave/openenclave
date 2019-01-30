@@ -1,0 +1,12 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+      public void ecall(wchar_t w, long double ld, long l, unsigned long ul);
+    };
+
+    untrusted {
+      void ocall(wchar_t w, long double ld, long l, unsigned long ul);
+    };
+};
