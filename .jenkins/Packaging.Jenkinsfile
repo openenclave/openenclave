@@ -1,119 +1,80 @@
-pipeline {
-  agent any
-  stages {
-    stage('Build, Test, and Package') {
-      parallel {
-        stage('1604 SGX1FLC Package Debug') {
-          agent {
-            node {
-              label 'ACC-1604'
-          }
+def packageUpload(String version, String build_type) {
+    stage("Ubuntu${version} SGX1FLC Package ${build_type}") {
+        node("ACC-${version}") {
+            cleanWs()
+            checkout scm
 
-          }
-          steps {
-            timeout(10) {
-              sh 'bash ./scripts/test-build-config -p SGX1FLC -b Debug -d --build_package'
-              azureUpload(storageCredentialId: 'oejenkinsciartifacts_storageaccount', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: 'master/${BUILD_NUMBER}/1604/Debug/SGX1FLC/', containerName: 'oejenkins')
-              azureUpload(storageCredentialId: 'oejenkinsciartifacts_storageaccount', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: 'master/latest/1604/Debug/SGX1FLC/', containerName: 'oejenkins')
-            }
-          }
-        }
-        stage('1604 SGX1FLC Package Release') {
-          agent {
-            node {
-              label 'ACC-1604'
-          }
+            timeout(15) {
+                dir('build') {
+                    withEnv(["CC=clang-7","CXX=clang++-7"]) {
+                        sh """
+                        CMAKE="cmake .. -DCMAKE_BUILD_TYPE=${build_type} -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave' -DCPACK_GENERATOR=DEB"
+                        echo "CMake command is '\${CMAKE}'"
 
-          }
-          steps {
-            timeout(10) {
-              sh 'bash ./scripts/test-build-config -p SGX1FLC -b Release -d --build_package'
-              azureUpload(storageCredentialId: 'oejenkinsciartifacts_storageaccount', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: 'master/${BUILD_NUMBER}/1604/Release/SGX1FLC/', containerName: 'oejenkins')
-              azureUpload(storageCredentialId: 'oejenkinsciartifacts_storageaccount', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: 'master/latest/1604/Release/SGX1FLC/', containerName: 'oejenkins')
-              withCredentials([usernamePassword(credentialsId: 'https_gh_pages_push', passwordVariable: 'GHUSER_PASSWORD', usernameVariable: 'GHUSER_ID')]) {
-                sh 'bash ./scripts/deploy-docs build https $GHUSER_ID $GHUSER_PASSWORD'
-              }
+                        if ! \${CMAKE}; then
+                            echo ""
+                            echo "cmake failed for SGX1FLC"
+                            echo ""
+                            exit 1
+                        fi
+                        if ! make; then
+                            echo ""
+                            echo "Build failed for SGX1FLC"
+                            echo ""
+                            exit 1
+                        fi
+                        if ! ctest --output-on-failure; then
+                            echo ""
+                            echo "Test failed for SGX1FLC ${build_type} in ${version} hardware mode"
+                            echo ""
+                            exit 1
+                        fi
+                        echo "Building package"
+                        echo ""
+                        make package
+                        """
+                    }
+                }
+                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: "master/${BUILD_NUMBER}/ubuntu/${version}/${build_type}/SGX1FLC/", containerName: 'oejenkins')
+                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: "master/latest/ubuntu/${version}/${build_type}/SGX1FLC/", containerName: 'oejenkins')
+                if ( build_type == 'Release' ) {
+                  withCredentials([usernamePassword(credentialsId: 'https_gh_pages_push', passwordVariable: 'GHUSER_PASSWORD', usernameVariable: 'GHUSER_ID')]) {
+                    sh 'bash ./scripts/deploy-docs build https $GHUSER_ID $GHUSER_PASSWORD'
+                  }
+                }
             }
-          }
         }
-        stage('1604 SGX1FLC Package RelWithDebInfo') {
-          agent {
-            node {
-              label 'ACC-1604'
-          }
-
-          }
-          steps {
-            timeout(10) {
-              sh 'bash ./scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d --build_package'
-              azureUpload(storageCredentialId: 'oejenkinsciartifacts_storageaccount', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: 'master/${BUILD_NUMBER}/1604/RelWithDebInfo/SGX1FLC/', containerName: 'oejenkins')
-              azureUpload(storageCredentialId: 'oejenkinsciartifacts_storageaccount', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: 'master/latest/1604/RelWithDebInfo/SGX1FLC/', containerName: 'oejenkins')
-            }
-          }
-        }
-        stage('1804 SGX1FLC Package Debug') {
-          agent {
-            node {
-              label 'ACC-1804'
-          }
-
-          }
-          steps {
-            timeout(10) {
-              sh 'bash ./scripts/test-build-config -p SGX1FLC -b Debug -d --build_package'
-              azureUpload(storageCredentialId: 'oejenkinsciartifacts_storageaccount', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: 'master/${BUILD_NUMBER}/1804/Debug/SGX1FLC/', containerName: 'oejenkins')
-              azureUpload(storageCredentialId: 'oejenkinsciartifacts_storageaccount', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: 'master/latest/1804/Debug/SGX1FLC/', containerName: 'oejenkins')
-            }
-          }
-        }
-        stage('1804 SGX1FLC Package Release') {
-          agent {
-            node {
-              label 'ACC-1804'
-          }
-
-          }
-          steps {
-            timeout(10) {
-              sh 'bash ./scripts/test-build-config -p SGX1FLC -b Release -d --build_package'
-              azureUpload(storageCredentialId: 'oejenkinsciartifacts_storageaccount', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: 'master/${BUILD_NUMBER}/1804/Release/SGX1FLC/', containerName: 'oejenkins')
-              azureUpload(storageCredentialId: 'oejenkinsciartifacts_storageaccount', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: 'master/latest/1804/Release/SGX1FLC/', containerName: 'oejenkins')
-              withCredentials([usernamePassword(credentialsId: 'https_gh_pages_push', passwordVariable: 'GHUSER_PASSWORD', usernameVariable: 'GHUSER_ID')]) {
-                sh 'bash ./scripts/deploy-docs build https $GHUSER_ID $GHUSER_PASSWORD'
-              }
-            }
-          }
-        }
-        stage('1804 SGX1FLC Package RelWithDebInfo') {
-          agent {
-            node {
-              label 'ACC-1804'
-          }
-
-          }
-          steps {
-            timeout(10) {
-              sh 'bash ./scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d --build_package'
-              azureUpload(storageCredentialId: 'oejenkinsciartifacts_storageaccount', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: 'master/${BUILD_NUMBER}/1804/RelWithDebInfo/SGX1FLC/', containerName: 'oejenkins')
-              azureUpload(storageCredentialId: 'oejenkinsciartifacts_storageaccount', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: 'master/latest/1804/RelWithDebInfo/SGX1FLC/', containerName: 'oejenkins')
-            }
-          }
-        }
-        stage('Windows Release') {
-          agent {
-            node {
-              label 'SGXFLC-Windows'
-            }
-          }
-
-          steps {
-            timeout(10) {
-              bat '''mkdir build && cd build && cmake -G "Visual Studio 15 2017 Win64" .. && pushd . && "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\Common7\\Tools\\LaunchDevCmd.bat" && popd && cmake --build . --config Debug && ctest -C Debug'''
-              azureUpload(storageCredentialId: 'oedownload_id', filesPath: 'build/output/bin/oeedger8r.exe', storageType: 'blobstorage', virtualPath: 'master/${BUILD_NUMBER}/oeedger8r/', containerName: 'binaries')
-            }
-          }
-        }
-      }
     }
-  }
 }
+
+def WindowsUpload() {
+    stage('Windows Release') {
+        node('SGXFLC-Windows') {
+            cleanWs()
+            checkout scm
+
+            timeout(10) {
+                dir('build') {
+                    bat '''
+                        cmake -G "Visual Studio 15 2017 Win64" .. && \
+                        pushd . && \
+                        "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\Common7\\Tools\\LaunchDevCmd.bat" && \
+                        popd && \
+                        cmake --build . --config Debug && \
+                        ctest -C Debug
+                        '''
+                }
+                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/tools/oeedger8r/oeedger8r.exe', storageType: 'blobstorage', virtualPath: "master/${BUILD_NUMBER}/windows/", containerName: 'oejenkins')
+                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/tools/oeedger8r/oeedger8r.exe', storageType: 'blobstorage', virtualPath: "master/latest/windows/", containerName: 'oejenkins')
+            }
+        }
+    }
+}
+
+parallel "1604 SGX1FLC Package Debug" :          { packageUpload('1604', 'Debug') },
+         "1604 SGX1FLC Package Release" :        { packageUpload('1604', 'Release') },
+         "1604 SGX1FLC Package RelWithDebInfo" : { packageUpload('1604', 'RelWithDebInfo') },
+         "1804 SGX1FLC Package Debug" :          { packageUpload('1804', 'Debug') },
+         "1804 SGX1FLC Package Release" :        { packageUpload('1804', 'Release') },
+         "1804 SGX1FLC Package RelWithDebInfo" : { packageUpload('1804', 'RelWithDebInfo') },
+         "Windows Release" :                     { WindowsUpload() }
