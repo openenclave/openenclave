@@ -85,6 +85,8 @@ set(OE_PATH ${PROJECT_SOURCE_DIR}/3rdparty/openenclave)
 
 list(APPEND CMAKE_MODULE_PATH ${OE_PATH}/new_platforms/cmake)
 
+find_package(OEEDGER8R REQUIRED)
+
 add_subdirectory(${OE_PATH}/new_platforms)
 ```
 
@@ -160,6 +162,8 @@ project("My Project" VERSION 0.1 LANGUAGES C)
 set(OE_PATH ${PROJECT_SOURCE_DIR}/3rdparty/openenclave)
 
 list(APPEND CMAKE_MODULE_PATH ${OE_PATH}/new_platforms/cmake)
+
+find_package(OEEDGER8R REQUIRED)
 
 add_subdirectory(${OE_PATH}/new_platforms)
 ```
