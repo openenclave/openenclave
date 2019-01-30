@@ -1,11 +1,19 @@
 Windows Development
 =============
 
-This document provides steps for developing a Windows host app and enclave
-running on SGX hardware, simulated SGX or OP-TEE.
+This guide shows you how to obtain and build the SDK as well as the samples and
+test code that it includes with host apps on Windows and enclaves on either
+Intel SGX hardware, simulated SGX, or simulated ARM TrustZone.
 
-For details on Linux development, see the [Linux ARM
-documentation](linux_arm_dev.md).
+For details on developing a new Windows host app and enclave using the Open
+Enclave Visual Studio extension, see [Developing your own enclave using Visual
+Studio](visualstudio_dev.md).
+
+For details on how to do the same using Visual Studio or a text editor such as
+Visual Studio Code leveraging Open Enclave's CMake build system, see [Developing
+your own enclave using CMake](new_platform_dev.md).
+
+For details on Linux development, see the [Linux Development](linux_arm_dev.md).
 
 # Prerequisites
 

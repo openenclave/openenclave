@@ -1,8 +1,30 @@
-Development: Creating Your Own Enclave
+Developing your own enclave using CMake
 =============
 
 In this guide, you will learn how to create new applications that take advantage
-of enclaves using the Open Enclave SDK.
+of Trusted Execution Environments (TEEs) using the Open Enclave SDK.
+
+There are two ways to develop host apps and enclaves using the Open Enclave SDK.
+
+The first way is to use CMake as the build system and include the SDK in source
+form as a sub-project. You can then edit your host apps and enclaves using the
+text editor of your choice regardless of operating system. You can write host
+apps for both Windows and Linux and enclaves for both Intel SGX and ARM
+TrustZone, then easily build them in a cross-platform manner via CMake. If you
+use an IDE that has CMake support, you can also build your code directly from
+it. For example, Visual Studio 2017 supports CMake projects and there are
+extensions for Visual Studio Code.
+
+The second way is to use a Visual Studio extension that pulls in the Open
+Enclave SDK in binary form via a NuGet package. This allows you to write host
+apps for Windows and enclaves for both Intel SGX and ARM TrustZone using Visual
+Studio using the Visual Studio solution and projects paradigm. See [Developing
+your own enclave using Visual Studio](visualstudio_dev.md) for details. While
+there is nothing preventing the a host app written in this way from running on
+Linux, the Visual Studio extension only supports building it for Windows.
+
+This guide shows you how to work using the first way: using CMake as the build
+system and including the Open Enclave SDK as a sub-project.
 
 # Introduction
 
@@ -109,13 +131,13 @@ open `enc/optee/linux_gcc.mak` and `enc/optee/user_ta_header_defines.h` and
 replicate the UUID change there. Lastly, open `host/CMakeLists.txt` and change
 the name of host app target as well.
 
-To build on Windows for Intel SGX, launch Visual Studio 2017 and use File ->
-Open -> CMake... and open the file you just edited.
+To build on Windows, launch Visual Studio 2017 and use File -> Open -> CMake...
+and open the file you just edited.
 
 On Linux for OP-TEE, you first need a TA Dev Kit. If you are working on a
 specific board, you will need the TA Dev Kit that was produced as part of the
 build of OP-TEE that is flashed on it. See the documentation for the
-[Grapeboard](grapeboard.md) or for [building on Linux](linux_arm_dev.md). Both
+[Grapeboard](grapeboard.md) or [Linux Development](linux_arm_dev.md). Both
 of these guides build OP-TEE as part of their instructions. If you are using a
 board someone else flashed, ask them to give you the TA Dev Kit that goes with
 the firmware.

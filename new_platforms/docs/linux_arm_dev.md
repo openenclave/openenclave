@@ -1,13 +1,12 @@
-Development: Linux Host on ARM
+Linux Development
 =============
 
-This section shows you how to obtain and build the SDK as well as the samples
-and test code that it includes. For an architectural overview see
-[ARM TrustZone and SGX deep dive](sgx_trustzone_arch.md).
+This guide shows you how to obtain and build the SDK as well as the samples and
+test code that it includes with host apps on Linux and enclaves on ARM
+TrustZone. For an architectural overview see [ARM TrustZone and SGX deep
+dive](sgx_trustzone_arch.md).
 
-This document provides steps for developing on Linux. For other environments,
-see [Windows Host and SGX](win_sgx_dev.md) or
-[Windows Host and SGX Simulation](win_sgx_dev.md#simulation).
+For details on Windows development, see [Windows Development](win_sgx_dev.md).
 
 To work in a simulated ARM TrustZone environment, see [Debugging OP-TEE TAs with
 QEMU](ta_debugging_qemu.md).
@@ -18,9 +17,9 @@ QEMU](ta_debugging_qemu.md).
 
 Building applications using this SDK requires
 [oeedger8r](https://github.com/Microsoft/openenclave/tree/master/docs/GettingStartedDocs/Edger8rGettingStarted.md),
-the source for
-which is part of this SDK. The build script downloads a pre-built binary for
-you from [this location](https://oedownload.blob.core.windows.net/binaries/oeedger8r).
+the source for which is part of this SDK. The build script downloads a pre-built
+binary for you from [this
+location](https://oedownload.blob.core.windows.net/binaries/oeedger8r).
 
 # Getting the SDK
 
@@ -33,25 +32,28 @@ git clone https://github.com/Microsoft/openenclave --recurse-submodules -b featu
 
 # Building the SDK
 
-The Open Enclave SDK has a top-level CMake-based build system. Currently,
-that top-level CMakeLists.txt is disconnected from the one under `new_platforms`.
-A Bash script is also provided that automates the process of installing all
+The Open Enclave SDK has a top-level CMake-based build system. Currently, that
+top-level CMakeLists.txt is disconnected from the one under `new_platforms`. A
+Bash script is also provided that automates the process of installing all
 prerequisites and invoking the relevant CMake commands.
 
 ## Building for Scalys LS1012 Grapeboard
 
-These steps below assume you are targetting a [Scalys LS1012 Grapeboard](grapeboard.mc).
-For details on the build process, and how to build other architectures, see [detailed usage](linux_arm_dev.md#details).
+These steps below assume you are targetting a [Scalys LS1012
+Grapeboard](grapeboard.mc). For details on the build process, and how to build
+other architectures, see [detailed usage](linux_arm_dev.md#details).
 
 1) Start by setting the following exports:
-   * `ARCH` specifies the target architecture. The Grapeboard is ARMv8, so set this to `aarch64`.
-   *  `MACHINE` specifies the target board. For the Grapeboard, use `ls1012grapeboard`.
+   * `ARCH` specifies the target architecture. The Grapeboard is ARMv8, so set
+     this to `aarch64`.
+   *  `MACHINE` specifies the target board. For the Grapeboard, use
+      `ls1012grapeboard`.
     ```
     export ARCH=aarch64
     export MACHINE=ls1012grapeboard
     ```
-2) Next, we can run a batch script that installs all dependencies and builds the Open Enclave SDK and samples. 
-   This builds REE and TEE components:
+2) Next, we can run a batch script that installs all dependencies and builds the
+   Open Enclave SDK and samples. This builds REE and TEE components:
     ```
     ./new_platforms/scripts/build_optee.sh
     ```
@@ -75,7 +77,8 @@ architectures and machines currently supported, this location is:
 
 ## Running the Samples
 
-To run the `SampleClient` and `SampleServer` samples, see the [echo socket sample](sample_sockets.md#grapeboard).
+To run the `SampleClient` and `SampleServer` samples, see the [echo socket
+sample](sample_sockets.md#grapeboard).
 
 # Build Process Details
 

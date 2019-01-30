@@ -5,10 +5,10 @@ This getting started guide includes preview support for new Trusted Execution
 Environment (TEE) platforms:
 
 * ARM TrustZone with a Linux Host Application
-* Intel SGX with a Windows Host Application
+* Intel SGX with a Windows Host Application via the Intel SGX SDK
 
 Support for a Windows Host application on ARM TrustZone and native Open Enclave
-support for Windows SGX will be added in the future.
+support for a Windows Host application on Intel SGX will be added in the future.
 
 In addition, this preview includes support for testing your enclave under
 simulation when developing on Windows and Linux. 
@@ -21,9 +21,9 @@ Started](../../docs/GettingStartedDocs/GettingStarted.md) guide.
 The main goal of the Open Enclave SDK is to provide a single API surface that
 works across multiple platforms. With the addition of ARM TrustZone Trusted
 Applications (TAs) as a supported platform you can write a single enclave and
-host app, then build and run the enclave as an SGX enclave or a TrustZone TA.
-For under-the-cover details on the differences between SGX and ARM TrustZone,
-see [Understanding SGX and TrustZone](sgx_trustzone_arch.md).
+host app, then build and run the enclave as an Intel SGX enclave or an ARM
+TrustZone TA. For under-the-cover details on the differences between SGX and ARM
+TrustZone, see [Understanding SGX and TrustZone](sgx_trustzone_arch.md).
 
 ## Development Environment
 
@@ -61,7 +61,7 @@ hardware. You can use GDB or any GDB-compatible GUI to debug your code.
 
 * [Debugging OP-TEE TAs with QEMU](ta_debugging_qemu.md)
 
-## Windows Host Application and SGX Enclave (Intel SDK Required)
+## Windows Host Application and SGX Enclave (Intel SDK required)
 
 Windows SGX enclave support works on any device with an SGX-capable processor.
 To find out if your processor supports SGX, consult [Intel
@@ -94,4 +94,3 @@ Sample](sample_edge_sockets.md).
 * [Developing your own enclave using Visual Studio](visualstudio_dev.md)
 * [Developing your own enclave using CMake](new_platform_dev.md)
 * [Understanding SGX and TrustZone](sgx_trustzone_arch.md)
-
