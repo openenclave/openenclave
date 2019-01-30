@@ -19,19 +19,19 @@ option(OE_USE_SIMULATION
 
 # Validate and create option shorthands
 if("${OE_TEE}" STREQUAL "Intel SGX" OR "${OE_TEE}" STREQUAL "SGX")
-    set(SGX ON)
-    set(TZ OFF)
+    set(SGX ON PARENT_SCOPE)
+    set(TZ OFF PARENT_SCOPE)
 elseif("${OE_TEE}" STREQUAL "ARM TrustZone" OR "${OE_TEE}" STREQUAL "TZ")
-    set(SGX OFF)
-    set(TZ ON)
+    set(SGX OFF PARENT_SCOPE)
+    set(TZ ON PARENT_SCOPE)
 else()
     message(FATAL_ERROR "OE_TEE must be one of 'Intel SGX' (shorthand: 'SGX') or 'ARM TrustZone' (shorthand: 'TZ').")
 endif()
 
 if(OE_USE_SIMULATION)
-    set(SIM ON)
+    set(SIM ON PARENT_SCOPE)
 else()
-    set(SIM OFF)
+    set(SIM OFF PARENT_SCOPE)
 endif()
 
 if(UNIX AND SGX)
