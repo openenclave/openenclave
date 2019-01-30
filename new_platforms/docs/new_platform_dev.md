@@ -71,8 +71,10 @@ copy 3rdparty\openenclave\new_platforms\CMakeSettings.json .
 
 Open `enc/CMakeLists.txt` and change the name and UUID of the enclave. Then,
 open `enc/optee/linux_gcc.mak` and `enc/optee/user_ta_header_defines.h` and
-replicate the UUID change there. Lastly, open `host/CMakeLists.txt` and change
-the name of host app target as well.
+replicate the UUID change there. Additionally, open `host/CMakeLists.txt` and
+change the name of host app target as well. Lastly, rename
+`helloworld_enclave_private.pem` and `helloworld_enclave.config.xml` to match
+the new name that you chose.
 
 Open the top-level `CMakeLists.txt` file and insert at the top:
 
@@ -147,8 +149,10 @@ popd
 
 Open `enc/CMakeLists.txt` and change the name and UUID of the enclave. Then,
 open `enc/optee/linux_gcc.mak` and `enc/optee/user_ta_header_defines.h` and
-replicate the UUID change there. Lastly, open `host/CMakeLists.txt` and change
-the name of host app target as well.
+replicate the UUID change there. Additionally, open `host/CMakeLists.txt` and
+change the name of host app target as well. Lastly, rename
+`helloworld_enclave_private.pem` and `helloworld_enclave.config.xml` to match
+the new name that you chose.
 
 Open the top-level `CMakeLists.txt` file and insert at the top:
 
