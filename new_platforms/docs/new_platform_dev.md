@@ -85,9 +85,7 @@ set(OE_PATH ${PROJECT_SOURCE_DIR}/3rdparty/openenclave)
 
 list(APPEND CMAKE_MODULE_PATH ${OE_PATH}/new_platforms/cmake)
 
-find_package(OEEDGER8R REQUIRED)
-
-add_subdirectory(${OE_PATH}/new_platforms)
+add_subdirectory(${OE_PATH}/new_platforms EXCLUDE_FROM_ALL)
 ```
 
 Launch Visual Studio 2017 and use File -> Open -> CMake... to open the file you
@@ -163,9 +161,7 @@ set(OE_PATH ${PROJECT_SOURCE_DIR}/3rdparty/openenclave)
 
 list(APPEND CMAKE_MODULE_PATH ${OE_PATH}/new_platforms/cmake)
 
-find_package(OEEDGER8R REQUIRED)
-
-add_subdirectory(${OE_PATH}/new_platforms)
+add_subdirectory(${OE_PATH}/new_platforms EXCLUDE_FROM_ALL)
 ```
 
 On Linux for OP-TEE, you first need a TA Dev Kit. If you are working on a

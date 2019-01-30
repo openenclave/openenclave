@@ -25,6 +25,9 @@ if(WIN32 AND (DEFINED SGXSDKInstallPath OR DEFINED ENV{SGXSDKInstallPath}))
     endif()
 endif()
 
+set(SGX_SDK_EDGER8R_TOOL ${SGX_SDK_EDGER8R_TOOL} PARENT_SCOPE)
+set(SGX_SDK_SIGN_TOOL ${SGX_SDK_SIGN_TOOL} PARENT_SCOPE)
+
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(SGXSDK REQUIRED_VARS
     SGX_SDK_INCLUDE_DIRS
