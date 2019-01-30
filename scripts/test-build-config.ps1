@@ -89,7 +89,17 @@ if ($ADD_WINDOWS_ENCLAVE_TESTS) {
     $ADD_WINDOWS_ENCLAVE_TESTS_FLAG="-DADD_WINDOWS_ENCLAVE_TESTS=1"
 }
 
-& cmake.exe -G $BUILD_GENERATOR $LINUX_BIN_FLAG $ADD_WINDOWS_ENCLAVE_TESTS_FLAG $BUILD_ENCLAVES_FLAG ..
+# Create Build Type parameter
+if ($BUILD_TYPE -eq "Release") {
+    $BUILD_TYPE_FLAG="-DCMAKE_BUILD_TYPE=Release"
+    $CONFIG_FLAG="-p:Configuration=Release"
+}
+else {
+    $BUILD_TYPE_FLAG="-DCMAKE_BUILD_TYPE=Debug"
+    $CONFIG_FLAG="-p:Configuration=Debug"
+}
+
+& cmake.exe -G $BUILD_GENERATOR $LINUX_BIN_FLAG $BUILD_TYPE_FLAG $ADD_WINDOWS_ENCLAVE_TESTS_FLAG $BUILD_ENCLAVES_FLAG ..
 
 if ($LASTEXITCODE) {
     echo ""
@@ -106,10 +116,10 @@ if ($LASTEXITCODE) {
 }
 
 # Build
-cmake.exe --build . --config $BUILD_TYPE
+msbuild .\ALL_BUILD.vcxproj $CONFIG_FLAG
 if ($LASTEXITCODE) {
     echo ""
-    echo "Build failed"
+    echo "Build failed for $BUILD_TYPE on Windows"
     echo ""
     exit 1
 }
@@ -117,7 +127,7 @@ if ($LASTEXITCODE) {
 ctest.exe -V -C $BUILD_TYPE
 if ($LASTEXITCODE) {
     echo ""
-    echo "Test failed for $BUILD_TYPE"
+    echo "Test failed for $BUILD_TYPE on Windows"
     echo ""
     exit 1
 }
