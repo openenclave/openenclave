@@ -9,3 +9,17 @@ set(EDGER8R_ARGS --header-only --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 add_test(NAME edger8r_private_trusted_warning COMMAND edger8r ${EDGER8R_ARGS} private_trusted.edl)
 set_tests_properties(edger8r_private_trusted_warning PROPERTIES
   PASS_REGULAR_EXPRESSION "error: Function 'private': 'private' specifier is not supported by oeedger8r")
+
+add_test(NAME edger8r_allow_list_warning COMMAND edger8r ${EDGER8R_ARGS} allow_list.edl)
+set_tests_properties(edger8r_allow_list_warning PROPERTIES
+  PASS_REGULAR_EXPRESSION "Warning: Function 'ocall_allow': Reentrant ocalls are not supported by Open Enclave. Allow list ignored.")
+
+# NOTE: These are two separate tests because the edger8r exits as soon
+# as the first instance is found.
+add_test(NAME edger8r_switchless_trusted_warning COMMAND edger8r ${EDGER8R_ARGS} switchless_trusted.edl)
+set_tests_properties(edger8r_switchless_trusted_warning PROPERTIES
+  PASS_REGULAR_EXPRESSION "error: Function 'switchless': switchless ecalls and ocalls are not yet supported by Open Enclave SDK.")
+
+add_test(NAME edger8r_switchless_untrusted_warning COMMAND edger8r ${EDGER8R_ARGS} switchless_untrusted.edl)
+set_tests_properties(edger8r_switchless_untrusted_warning PROPERTIES
+  PASS_REGULAR_EXPRESSION "error: Function 'switchless': switchless ecalls and ocalls are not yet supported by Open Enclave SDK.")
