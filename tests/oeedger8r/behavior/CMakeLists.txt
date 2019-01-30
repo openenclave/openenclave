@@ -58,3 +58,8 @@ set_tests_properties(edger8r_portability_untrusted_long_warning PROPERTIES
 add_test(NAME edger8r_portability_untrusted_unsigned_long_warning COMMAND edger8r ${EDGER8R_ARGS} portability.edl)
 set_tests_properties(edger8r_portability_untrusted_unsigned_long_warning PROPERTIES
   PASS_REGULAR_EXPRESSION "Function 'ecall': unsigned long has different sizes")
+
+add_test(NAME edger8r_size_signedness_warning COMMAND edger8r ${EDGER8R_ARGS} size_signedness.edl)
+set_tests_properties(edger8r_size_signedness_warning PROPERTIES
+  PASS_REGULAR_EXPRESSION "Warning: Function 'signed_size': Size parameter 'size' should not be signed."
+  FAIL_REGULAR_EXPRESSION "Warning: Function 'unsigned_size': Size parameter 'size' should not be signed.")

@@ -160,7 +160,8 @@ let oe_gen_ocall_marshal_struct (uf: Ast.untrusted_func) =
 (** [oe_get_param_size] is the most complex function. For a parameter,
     get its size expression. *)
 let oe_get_param_size (ptype, decl, argstruct) =
-  (* Get the base type of the parameter. *)
+  (* Get the base type of the parameter, that is, recursively
+     decompose the pointer. *)
   let atype =
     match Ast.get_param_atype ptype with
     | Ast.Ptr at -> at
@@ -853,6 +854,38 @@ let warn_non_portable_types (fd:Ast.func_decl) =
   (if uses_type (Ast.Long Ast.Unsigned) fd || uses_type ulong_t fd then
      print_portability_warning_with_recommendation "unsigned long" "uint64_t or uint32_t")
 
+let warn_signed_size_types (fd:Ast.func_decl) =
+  let print_signedness_warning ty =
+    printf "Warning: Function '%s': Size parameter '%s' should not be signed.\n" fd.fname ty
+  in
+  (* Get the names of all size parameters for the function [fd]. *)
+  let size_params = List.map (fun (ptype, decl) ->
+      match ptype with
+      (* Only variables that are pointers where [chkptr] is true may have
+         size parameters. TODO: Validate this! *)
+      | Ast.PTPtr (atype, ptr_attr) when ptr_attr.Ast.pa_chkptr->
+        (* The size may be either a count, [ANumber], or named size
+           parameter, [AString]. *)
+        (match ptr_attr.Ast.pa_size.Ast.ps_size with
+         | None -> ""
+         | Some (Ast.ANumber n) -> "" (* TODO: Check that [n > 0] *)
+         | Some (Ast.AString s) -> s (* We have the name of the parameter. *))
+      | _ -> ""
+    ) fd.Ast.plist
+  in
+  (* Print warnings for size parameters that are [Signed]. *)
+  List.iter (fun (ptype, decl) ->
+      (* TODO: Maybe make this a utility function. *)
+      let get_int_signedness (i: Ast.int_attr) = i.Ast.ia_signedness in
+      let name = decl.Ast.identifier in
+      if List.mem name size_params then
+        match ptype with
+        (* TODO: Combine these two patterns. *)
+        | Ast.PTVal (Ast.Long s | Ast.LLong s) when s = Ast.Signed -> print_signedness_warning name
+        | Ast.PTVal (Ast.Int i) when get_int_signedness i = Ast.Signed -> print_signedness_warning name
+        | _ -> ()
+    ) fd.Ast.plist
+
 (** Validate Open Enclave supported EDL features. *)
 let validate_oe_support (ec: enclave_content) (ep: edger8r_params) =
   (* check supported options *)
@@ -881,6 +914,7 @@ let validate_oe_support (ec: enclave_content) (ep: edger8r_params) =
   let funcs = List.append ufuncs tfuncs in
   List.iter (fun f ->
       warn_non_portable_types f;
+      warn_signed_size_types f;
     ) funcs
 
 (** Includes are emitted in [args.h]. Imported functions have already
