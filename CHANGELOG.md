@@ -23,9 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - oe-gdb allows attaching to a host that is already running
 - Added Quote Enclave Identity validation into oe_verify_report implementation
 - Added OE SDK internal logging mechanism
-- Support for thread local variables 
+- Support for thread local variables
    - Both GNU __thread and C++11 thread_local
-   - Both hardware and simulation mode 
+   - Both hardware and simulation mode
    - Local-Exec and Initial-Exec thread-local storage models
 - Added v2 versions of the following APIs that instead of passing in buffers now
   return a buffer that needs to be freed via an associated free method. OE_API_VERSION
@@ -35,6 +35,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    - oe_get_target_info, free target_info_buffer via oe_free_target_info
    - oe_get_seal_key, free key_buffer and key_info via oe_free_seal_key
    - oe_get_seal_key_by_policy, free key_buffer and key_info via oe_free_seal_key
+- Added new enumeration for enclave type parameter of oe_create_enclave. Now use
+  OE_ENCLAVE_TYPE_AUTO to have the enclave appropriate to your built environment
+  be chosen automatically. For instance, building intel binaries will select SGX
+  automatically, where on ARM it will pick trustzone.
 
 ### Changed
 
@@ -47,6 +51,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
      may require compiling with the `-std=c++11` option when building with GCC.
 - Update minimum required CMake version for building from source to 3.13.1.
 - Update minimum required C++ standard for building from source to C++14.
+- OE_ENCLAVE_TYPE_UNDEFINED was renumbered as we used 0 in the enumeration to
+  represent OE_ENCLAVE_TYPE_AUTO.
 
 ### Deprecated
 

@@ -748,7 +748,9 @@ oe_result_t oe_create_enclave(
         *enclave_out = NULL;
 
     /* Check parameters */
-    if (!enclave_path || !enclave_out || enclave_type != OE_ENCLAVE_TYPE_SGX ||
+    if (!enclave_path || !enclave_out ||
+        ((enclave_type != OE_ENCLAVE_TYPE_SGX) &&
+         (enclave_type != OE_ENCLAVE_TYPE_AUTO)) ||
         (flags & OE_ENCLAVE_FLAG_RESERVED) || config || config_size > 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
