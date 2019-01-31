@@ -94,6 +94,18 @@ Launch Visual Studio 2017 and use File -> Open -> CMake... to open the file you
 just edited. Visual Studio's CMake integration allows you to work with your code
 in a fashion similar to using projects and solutions.
 
+The build output is located, say for x86-SGX-Debug, under:
+
+```
+build\x86-SGX-Debug\out
+```
+
+The host app and enclave in turn are located under:
+
+```
+build\x86-SGX-Debug\out\bin\Debug
+```
+
 ## On Linux
 
 Begin with an empty directory and do:
@@ -202,6 +214,18 @@ cmake -DOE_TEE=TZ                                                               
 cmake --build . -- -j
 
 popd
+```
+
+The build output is located, say for aarch64, under:
+
+```
+build/aarch64/out
+```
+
+The host app and enclave in turn are located under:
+
+```
+build/aarch64/out/bin
 ```
 
 # Using the SDK
