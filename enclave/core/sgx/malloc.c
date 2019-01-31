@@ -22,12 +22,12 @@
 #define POSIX_MEMALIGN oe_debug_posix_memalign
 #define FREE oe_debug_free
 #else
-#define MALLOC _oe_malloc
-#define CALLOC _oe_calloc
-#define REALLOC _oe_realloc
-#define MEMALIGN _oe_memalign
-#define POSIX_MEMALIGN _oe_posix_memalign
-#define FREE _oe_free
+#define MALLOC oe_internal_malloc
+#define CALLOC oe_internal_calloc
+#define REALLOC oe_internal_realloc
+#define MEMALIGN oe_internal_memalign
+#define POSIX_MEMALIGN oe_internal_posix_memalign
+#define FREE oe_internal_free
 #endif
 
 static oe_allocation_failure_callback_t _failure_callback;

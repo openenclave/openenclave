@@ -12,8 +12,8 @@ oe_result_t test_malloc()
     const size_t GIGABYTE = 1024 * 1024 * 1024;
     size_t heap_remaining;
     uint8_t* ptr = NULL;
-    extern void* _oe_malloc(size_t n);
-    extern void _oe_free(void* ptr);    
+    extern void* oe_internal_malloc(size_t n);
+    extern void oe_internal_free(void* ptr);
     oe_result_t return_value = OE_UNEXPECTED;
 
     /* Determine how much heap memory remains */
@@ -43,7 +43,7 @@ oe_result_t test_malloc()
     {
         const size_t allocation_size = (size_t)(0.99 * (double)heap_remaining);
 
-        if (!(ptr = (uint8_t*)_oe_malloc(allocation_size)))
+        if (!(ptr = (uint8_t*)oe_internal_malloc(allocation_size)))
         {
             return_value = OE_OUT_OF_MEMORY;
             goto done;
@@ -59,7 +59,7 @@ oe_result_t test_malloc()
 done:
 
     if (ptr)
-        _oe_free(ptr);
+        oe_internal_free(ptr);
 
     return return_value;
 }

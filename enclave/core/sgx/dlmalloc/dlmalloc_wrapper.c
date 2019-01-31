@@ -38,12 +38,12 @@ static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...);
 #endif
 
 /* Indirection to alloc other allocators */
-#define dlmalloc         _oe_malloc
-#define dlcalloc         _oe_calloc
-#define dlrealloc        _oe_realloc
-#define dlmemalign       _oe_memalign
-#define dlposix_memalign _oe_posix_memalign
-#define dlfree           _oe_free
+#define dlmalloc         oe_internal_malloc
+#define dlcalloc         oe_internal_calloc
+#define dlrealloc        oe_internal_realloc
+#define dlmemalign       oe_internal_memalign
+#define dlposix_memalign oe_internal_posix_memalign
+#define dlfree           oe_internal_free
 #include "../../../../3rdparty/dlmalloc/dlmalloc/malloc.c"
 
 #pragma GCC diagnostic pop
@@ -137,8 +137,8 @@ done:
     return result;
 }
 
-void _oe_alloc_thread_startup()
+void oe_alloc_thread_startup()
 {}
 
-void _oe_alloc_thread_teardown()
+void oe_alloc_thread_teardown()
 {}
