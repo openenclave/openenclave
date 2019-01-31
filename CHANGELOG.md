@@ -51,12 +51,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
      may require compiling with the `-std=c++11` option when building with GCC.
 - Update minimum required CMake version for building from source to 3.13.1.
 - Update minimum required C++ standard for building from source to C++14.
-- OE_ENCLAVE_TYPE_UNDEFINED was renumbered as we used 0 in the enumeration to
-  represent OE_ENCLAVE_TYPE_AUTO.
 
 ### Deprecated
 
 - String based `ocalls`/`ecalls`, `OE_ECALL`, and `OE_OCALL` macros.
+- OE_ENCLAVE_TYPE_UNDEFINED was removed and replaced with OE_ENCLAVE_TYPE_AUTO.
 
 [v0.4.1] - 2018-12-21
 ---------------------
