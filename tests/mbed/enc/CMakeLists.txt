@@ -22,23 +22,27 @@ function(add_mbed_test_enclave NAME)
 
   set(MBEDTLS_TESTS_DIR "${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests")
 
-# Use Perl that is found in the Path
-# If Perl is not found on Windows, use Perl from the Git/usr/bin directory
-# and report error on Linux
+  # For Win32 ELF enclave builds, use Perl from the Git Bash shell
   if (WIN32)
     find_program(GIT git)
     get_filename_component(GIT_DIR ${GIT} DIRECTORY)
-    set(PERL_HINTS "C:/Program Files/Git/usr/bin" "${GIT_DIR}/../usr/bin")
-  endif ()
+    find_program(BASH bash
+      PATHS "C:/Program Files/Git/bin" "${GIT_DIR}/../bin"
+      NO_DEFAULT_PATH) # Do not find WSL bash
 
-  find_program(PERL perl HINTS ${PERL_HINTS})
-  if (NOT PERL)
-    message(FATAL_ERROR "Perl not found! Cannot build mbedtls Test Suites without Perl!")
+    if (NOT BASH)
+      message(FATAL_ERROR "Git Bash not found! Cannot build mbedtls Test Suites")
+    endif ()
+  else ()
+    find_program(BASH bash)
+    if (NOT BASH)
+       message(FATAL_ERROR "Bash not found! Cannot build mbedtls Test Suites")
+    endif ()
   endif ()
 
   add_custom_command(
     OUTPUT test_suite_${NAME}.c
-    COMMAND ${PERL} ${MBEDTLS_TESTS_DIR}/scripts/generate_code.pl ${MBEDTLS_TESTS_DIR}/suites test_suite_${suite_name} test_suite_${data_name}
+    COMMAND ${BASH} -c "perl ${MBEDTLS_TESTS_DIR}/scripts/generate_code.pl ${MBEDTLS_TESTS_DIR}/suites test_suite_${suite_name} test_suite_${data_name}"
     DEPENDS
     mbedcrypto
     ${MBEDTLS_TESTS_DIR}/scripts/generate_code.pl
