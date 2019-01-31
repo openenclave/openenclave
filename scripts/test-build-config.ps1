@@ -3,13 +3,11 @@
 
 ##====================================================================================
 ##
-## This script fires OE build and test for specified build-type
-## Default run with no parameters builds with Debug build-type and for SGX1
-## platform and will test in Simulator mode.
-## Please note that this script does not install any packages needed for build/test.
-## Please install all packages necessary for your test before invoking this script.
-## For CI runs, the Docker image will contain the necessary packages.
-##
+## This script fires OE build and test for specified build-type on Windows.
+## ELF enclaves are optionally built on Linux using the NMake generator.
+## Otherwise, directory for linux binaries needs to be specified. In this case,
+## the Visual Studio 2017 Generator is used to test the ELF Linux enclaves
+## on Windows.
 ##====================================================================================
 
 [CmdletBinding()]
@@ -30,12 +28,12 @@ if ($h -or $help) {
      echo " Usage: "
      echo " ./scripts/test-build-config.ps1"
      echo "        -help to Display usage and exit"
-     echo "        -add_windows_enclave_tests to add tests for windows enclave"
+     echo "        -add_windows_enclave_tests to add tests for windows enclaves"
      echo "        -build_type Debug|Release"
      echo "        -build_enclaves 1"
      echo "        -linux_bin_dir [directory] directory for linux binaries"
-     echo " Default is to build for SGX1 platform, Debug Build type & test in"
-     echo " simulator mode"
+     echo " Default is to build for SGX1-FLC platform using Debug Build type "
+     echo " & test on hardware"
      echo ""
      exit 0
 }
