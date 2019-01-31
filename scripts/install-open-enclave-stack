@@ -3,14 +3,20 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+set -o errexit
+
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 echo "!!! WARNING THIS SCRIPT WILL BE DEPRECATED IN FAVOUR OF ANSIBLE-PLAYBOOK !!!"
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
-if ! command -v "ansible-playbook" > /dev/null; then
+if ! command -v "ansible" > /dev/null; then
     echo "Ansible is required to run this script but it is not installed on your system."
     echo "You can install it by running ansible/install-ansible.sh script"
     exit 1
 fi
 
-ansible-playbook ansible/ansible-include_task.yml --extra-vars "target=localhost included_task=tasks/ansible-install-openenclave.yml"
+DIR=$(dirname "$0")
+ansible localhost -m import_role -a "name=linux/openenclave tasks_from=environment-setup.yml" --become --playbook-dir="$DIR/ansible"
+ansible localhost -m import_role -a "name=linux/intel tasks_from=sgx-driver.yml" --become --playbook-dir="$DIR/ansible"
+ansible localhost -m import_role -a "name=linux/intel tasks_from=sgx-packages.yml" --become --playbook-dir="$DIR/ansible"
+ansible localhost -m import_role -a "name=linux/openenclave tasks_from=stable-install.yml" --become --playbook-dir="$DIR/ansible"
