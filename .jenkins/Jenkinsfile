@@ -133,7 +133,7 @@ def win2016LinuxElfBuild(String version, String compiler, String build_type) {
                 cleanWs()
                 checkout scm
                 def task = """
-                           cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DUSE_DEBUG_MALLOC=OFF -Wdev
+                           cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -Wdev
                            ninja -v
                            """
                 oe.ContainerRun("oetools-full-${version}", compiler, task, "--cap-add=SYS_PTRACE")
