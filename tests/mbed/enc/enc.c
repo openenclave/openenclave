@@ -117,36 +117,7 @@ static oe_result_t _syscall_hook(
             oe_host_free(host_buf);
             break;
         }
-        case SYS_readv:
-        {
-            int i;
-            struct iovec* iov = (struct iovec*)arg2;
-            const int iovcnt = (int)arg3;
-            struct iovec* host_iov = (struct iovec*)oe_host_malloc(
-                sizeof(struct iovec) * (unsigned long)iovcnt);
 
-            for (i = 0; i < iovcnt; ++i)
-            {
-                host_iov[i].iov_base = (void*)oe_host_malloc(iov[i].iov_len);
-                host_iov[i].iov_len = iov[i].iov_len;
-            }
-
-            ssize_t rval = 0;
-            result = mbed_test_readv(&rval, (int)arg1, host_iov, iovcnt);
-            *ret = rval;
-
-            for (i = 0; i < iovcnt; ++i)
-            {
-                if (rval > 0)
-                {
-                    oe_memcpy(
-                        iov[i].iov_base, host_iov[i].iov_base, iov[i].iov_len);
-                }
-                oe_host_free(host_iov[i].iov_base);
-            }
-            oe_host_free(host_iov);
-            break;
-        }
         case SYS_writev:
         {
             char* str_full;
@@ -178,6 +149,7 @@ static oe_result_t _syscall_hook(
             result = mbed_test_close(&rval, (int)arg1);
             break;
         }
+        case SYS_readv:
         default:
         {
             OE_RAISE(OE_UNSUPPORTED);
