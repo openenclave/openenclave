@@ -75,7 +75,7 @@ $BUILD_ENCLAVES_FLAG=""
 $LINUX_BIN_FLAG="-DLINUX_BIN_DIR=`"$LINUX_BIN_DIR`""
 
 if ($BUILD_ENCLAVES) {
-    $BUILD_GENERATOR="NMake Makefiles"
+    $BUILD_GENERATOR="ninja"
     $BUILD_ENCLAVES_FLAG="-DBUILD_ENCLAVES=1"
     $LINUX_BIN_FLAG=""
 
@@ -114,10 +114,10 @@ if ($LASTEXITCODE) {
     exit 1
 }
 
-# Build
+# Build 
 if ($BUILD_ENCLAVES) {
-    cmake.exe --build . --config $BUILD_TYPE
-} else {
+    ninja
+} else { 
     msbuild .\ALL_BUILD.vcxproj $CONFIG_FLAG
 }
 if ($LASTEXITCODE) {

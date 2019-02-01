@@ -145,7 +145,6 @@ def win2016DebugCrossPlatform() {
                             sh """
                             cmake .. -DCMAKE_BUILD_TYPE=Debug -DUSE_DEBUG_MALLOC=OFF
                             make
-                            ctest --output-on-failure
                             """
                         }
                     }
@@ -178,7 +177,6 @@ def win2016ReleaseCrossPlatform() {
                             sh """
                             cmake .. -DCMAKE_BUILD_TYPE=Release
                             make
-                            ctest --output-on-failure
                             """
                         }
                     }
@@ -218,22 +216,7 @@ def win2016Release() {
     }
 }
 parallel "Check Developer Experience" :         { checkDevFlows() },
-        "Sim clang-7 SGX1 Debug" :              { simulationTest('clang-7', 'SGX1', 'Debug')},
-        "Sim clang-7 SGX1 Release" :            { simulationTest('clang-7', 'SGX1', 'Release')},
-        "Sim clang-7 SGX1 RelWithDebInfo" :     { simulationTest('clang-7', 'SGX1', 'RelWithDebInfo')},
-        "Sim clang-7 SGX1-FLC Debug" :          { simulationTest('clang-7', 'SGX1FLC', 'Debug')},
-        "Sim clang-7 SGX1-FLC Release" :        { simulationTest('clang-7', 'SGX1FLC', 'Release')},
-        "Sim clang-7 SGX1-FLC RelWithDebInfo" : { simulationTest('clang-7', 'SGX1FLC', 'RelWithDebInfo')},
-        "ACC1604 clang-7 Debug" :               { ACCTest('ACC-1604', 'clang-7', 'SGX1FLC', 'Debug') },
-        "ACC1604 clang-7 Release" :             { ACCTest('ACC-1604', 'clang-7', 'SGX1FLC','Release') },
-        "ACC1604 clang-7 RelWithDebInfo" :      { ACCTest('ACC-1604', 'clang-7', 'SGX1FLC', 'RelWithDebinfo') },
-        "ACC1604 gcc Debug" :                   { ACCTest('ACC-1604', 'gcc', 'SGX1FLC', 'Debug') },
-        "ACC1604 gcc Release" :                 { ACCTest('ACC-1604', 'gcc', 'SGX1FLC', 'Release') },
-        "ACC1604 gcc RelWithDebInfo" :          { ACCTest('ACC-1604', 'gcc', 'SGX1FLC', 'RelWithDebInfo') },
-        "ACC1804 clang-7 Debug" :               { ACCTest('ACC-1804', 'clang-7', 'SGX1FLC', 'Debug') },
-        "ACC1804 clang-7 RelWithDebInfo" :      { ACCTest('ACC-1804', 'clang-7', 'SGX1FLC', 'RelWithDebinfo') },
         "Win2016 Debug Cross-platform" :        { win2016DebugCrossPlatform() },
         "Win2016 Release Cross-platform" :      { win2016ReleaseCrossPlatform() },
         "Win2016 Debug" :                       { win2016Debug() },
-        "Win2016 Release" :                     { win2016Release() },
         "ACC1604 Container RelWithDebInfo" :    { ACCContainerTest('ACC-1604') }
