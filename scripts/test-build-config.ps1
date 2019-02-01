@@ -75,7 +75,7 @@ $BUILD_ENCLAVES_FLAG=""
 $LINUX_BIN_FLAG="-DLINUX_BIN_DIR=`"$LINUX_BIN_DIR`""
 
 if ($BUILD_ENCLAVES) {
-    $BUILD_GENERATOR="ninja"
+    $BUILD_GENERATOR="Ninja"
     $BUILD_ENCLAVES_FLAG="-DBUILD_ENCLAVES=1"
     $LINUX_BIN_FLAG=""
 
@@ -98,18 +98,17 @@ else {
     $CONFIG_FLAG="-p:Configuration=Debug"
 }
 
-& cmake.exe -G $BUILD_GENERATOR $LINUX_BIN_FLAG $BUILD_TYPE_FLAG $ADD_WINDOWS_ENCLAVE_TESTS_FLAG $BUILD_ENCLAVES_FLAG ..
-
-if ($LASTEXITCODE) {
-    echo ""
-    echo "cmake failed"
-    echo ""
-    exit 1
+if ($BUILD_ENCLAVES) {
+   mkdir build\X64-Debug
+   & cmake.exe -G $BUILD_GENERATOR $LINUX_BIN_FLAG $BUILD_TYPE_FLAG $ADD_WINDOWS_ENCLAVE_TESTS_FLAG $BUILD_ENCLAVES_FLAG ../..
+}
+else {
+    & cmake.exe -G $BUILD_GENERATOR $LINUX_BIN_FLAG $BUILD_TYPE_FLAG $ADD_WINDOWS_ENCLAVE_TESTS_FLAG $BUILD_ENCLAVES_FLAG ..
 }
 
 if ($LASTEXITCODE) {
     echo ""
-    echo "Visual Studio failed"
+    echo "cmake failed"
     echo ""
     exit 1
 }
