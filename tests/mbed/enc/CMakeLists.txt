@@ -22,24 +22,6 @@ function(add_mbed_test_enclave NAME)
 
   set(MBEDTLS_TESTS_DIR "${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests")
 
-  # For Win32 ELF enclave builds, use Perl from the Git Bash shell
-  if (WIN32)
-    find_program(GIT git)
-    get_filename_component(GIT_DIR ${GIT} DIRECTORY)
-    find_program(BASH bash
-      PATHS "C:/Program Files/Git/bin" "${GIT_DIR}/../bin"
-      NO_DEFAULT_PATH) # Do not find WSL bash
-
-    if (NOT BASH)
-      message(FATAL_ERROR "Git Bash not found! Cannot build mbedtls Test Suites")
-    endif ()
-  else ()
-    find_program(BASH bash)
-    if (NOT BASH)
-       message(FATAL_ERROR "Bash not found! Cannot build mbedtls Test Suites")
-    endif ()
-  endif ()
-
   add_custom_command(
     OUTPUT test_suite_${NAME}.c
     COMMAND ${BASH} -c "perl ${MBEDTLS_TESTS_DIR}/scripts/generate_code.pl ${MBEDTLS_TESTS_DIR}/suites test_suite_${suite_name} test_suite_${data_name}"
