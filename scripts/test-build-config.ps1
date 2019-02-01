@@ -99,7 +99,8 @@ else {
 }
 
 if ($BUILD_ENCLAVES) {
-   mkdir build\X64-Debug
+   mkdir X64-Debug
+   cd X64-Debug
    & cmake.exe -G $BUILD_GENERATOR $LINUX_BIN_FLAG $BUILD_TYPE_FLAG $ADD_WINDOWS_ENCLAVE_TESTS_FLAG $BUILD_ENCLAVES_FLAG ../..
 }
 else {
