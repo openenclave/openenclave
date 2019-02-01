@@ -3,13 +3,11 @@
 
 ##====================================================================================
 ##
-## This script fires OE build and test for specified build-type
-## Default run with no parameters builds with Debug build-type and for SGX1
-## platform and will test in Simulator mode.
-## Please note that this script does not install any packages needed for build/test.
-## Please install all packages necessary for your test before invoking this script.
-## For CI runs, the Docker image will contain the necessary packages.
-##
+## This script fires OE build and test for specified build-type on Windows.
+## ELF enclaves are optionally built on Linux using the NMake generator.
+## Otherwise, directory for linux binaries needs to be specified. In this case,
+## the Visual Studio 2017 Generator is used to test the ELF Linux enclaves
+## on Windows.
 ##====================================================================================
 
 [CmdletBinding()]
@@ -30,12 +28,12 @@ if ($h -or $help) {
      echo " Usage: "
      echo " ./scripts/test-build-config.ps1"
      echo "        -help to Display usage and exit"
-     echo "        -add_windows_enclave_tests to add tests for windows enclave"
+     echo "        -add_windows_enclave_tests to add tests for windows enclaves"
      echo "        -build_type Debug|Release"
      echo "        -build_enclaves 1"
      echo "        -linux_bin_dir [directory] directory for linux binaries"
-     echo " Default is to build for SGX1 platform, Debug Build type & test in"
-     echo " simulator mode"
+     echo " Default is to build for SGX1-FLC platform using Debug Build type "
+     echo " & test on hardware"
      echo ""
      exit 0
 }
@@ -89,7 +87,17 @@ if ($ADD_WINDOWS_ENCLAVE_TESTS) {
     $ADD_WINDOWS_ENCLAVE_TESTS_FLAG="-DADD_WINDOWS_ENCLAVE_TESTS=1"
 }
 
-& cmake.exe -G $BUILD_GENERATOR $LINUX_BIN_FLAG $ADD_WINDOWS_ENCLAVE_TESTS_FLAG $BUILD_ENCLAVES_FLAG ..
+# Create Build Type parameter
+if ($BUILD_TYPE -eq "Release") {
+    $BUILD_TYPE_FLAG="-DCMAKE_BUILD_TYPE=Release"
+    $CONFIG_FLAG="-p:Configuration=Release"
+}
+else {
+    $BUILD_TYPE_FLAG="-DCMAKE_BUILD_TYPE=Debug"
+    $CONFIG_FLAG="-p:Configuration=Debug"
+}
+
+& cmake.exe -G $BUILD_GENERATOR $LINUX_BIN_FLAG $BUILD_TYPE_FLAG $ADD_WINDOWS_ENCLAVE_TESTS_FLAG $BUILD_ENCLAVES_FLAG ..
 
 if ($LASTEXITCODE) {
     echo ""
@@ -106,10 +114,14 @@ if ($LASTEXITCODE) {
 }
 
 # Build
-cmake.exe --build . --config $BUILD_TYPE
+if ($BUILD_ENCLAVES) {
+    cmake.exe --build . --config $BUILD_TYPE
+} else {
+    msbuild .\ALL_BUILD.vcxproj $CONFIG_FLAG
+}
 if ($LASTEXITCODE) {
     echo ""
-    echo "Build failed"
+    echo "Build failed for $BUILD_TYPE on Windows"
     echo ""
     exit 1
 }
@@ -117,7 +129,7 @@ if ($LASTEXITCODE) {
 ctest.exe -V -C $BUILD_TYPE
 if ($LASTEXITCODE) {
     echo ""
-    echo "Test failed for $BUILD_TYPE"
+    echo "Test failed for $BUILD_TYPE on Windows"
     echo ""
     exit 1
 }
