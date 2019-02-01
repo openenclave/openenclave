@@ -11,52 +11,52 @@ open Util
 (**************************** Begin Code borrowed and tweaked from CodeGen.ml *******************************************************)      
 let is_foreign_array (pt: Ast.parameter_type) =
   match pt with
-      Ast.PTVal _     -> false
-    | Ast.PTPtr(t, a) ->
-        match t with
-            Ast.Foreign _ -> a.Ast.pa_isary
-          | _             -> false
+    Ast.PTVal _     -> false
+  | Ast.PTPtr(t, a) ->
+    match t with
+      Ast.Foreign _ -> a.Ast.pa_isary
+    | _             -> false
 let get_array_dims (ns: int list) =
   (* Get the array declaration from a list of array dimensions.
    * Empty `ns' indicates the corresponding declarator is a simple identifier.
    * Element of value -1 means that user does not specify the dimension size.
-   *)
+  *)
   let get_dim n = if n = -1 then "[]" else sprintf "[%d]" n
   in
-    if ns = [] then ""
-    else List.fold_left (fun acc n -> acc ^ get_dim n) "" ns
+  if ns = [] then ""
+  else List.fold_left (fun acc n -> acc ^ get_dim n) "" ns
 
 let get_typed_declr_str (ty: Ast.atype) (declr: Ast.declarator) =
   let tystr = Ast.get_tystr  ty in
   let dmstr = get_array_dims declr.Ast.array_dims in
-    sprintf "%s %s%s" tystr declr.Ast.identifier dmstr
+  sprintf "%s %s%s" tystr declr.Ast.identifier dmstr
 
 (* Check whether given parameter is `const' specified. *)
 let is_const_ptr (pt: Ast.parameter_type) =
   let aty = Ast.get_param_atype pt in
-    match pt with
-      Ast.PTVal _      -> false
-    | Ast.PTPtr(_, pa) ->
-      if not pa.Ast.pa_rdonly then false
-      else
-        match aty with
-          Ast.Foreign _ -> false
-        | _             -> true
+  match pt with
+    Ast.PTVal _      -> false
+  | Ast.PTPtr(_, pa) ->
+    if not pa.Ast.pa_rdonly then false
+    else
+      match aty with
+        Ast.Foreign _ -> false
+      | _             -> true
 
 (* Generate parameter representation. *)
 let gen_parm_str (p: Ast.pdecl) =
   let (pt, (declr : Ast.declarator)) = p in
   let aty = Ast.get_param_atype pt in
   let str = get_typed_declr_str aty declr in
-    if is_const_ptr pt then "const " ^ str else str
+  if is_const_ptr pt then "const " ^ str else str
 
 let retval_declr = { Ast.identifier = "_retval"; Ast.array_dims = []; }
 let get_ret_tystr (fd: Ast.func_decl) = Ast.get_tystr fd.Ast.rtype
 let get_plist_str (fd: Ast.func_decl) =
   if fd.Ast.plist = [] then ""
   else List.fold_left (fun acc pd -> acc ^ ",\n        " ^ gen_parm_str pd)
-                      (gen_parm_str (List.hd fd.Ast.plist))
-                      (List.tl fd.Ast.plist)
+      (gen_parm_str (List.hd fd.Ast.plist))
+      (List.tl fd.Ast.plist)
 
 
 (* This function is used to convert Array form into Pointer form.
@@ -64,23 +64,23 @@ let get_plist_str (fd: Ast.func_decl) =
  *
  * This function is called when generating proxy/bridge code and
  * the marshaling structure.
- *)
+*)
 let conv_array_to_ptr (pd: Ast.pdecl): Ast.pdecl =
   let (pt, declr) = pd in
   let get_count_attr ilist =
     (* XXX: assume the size of each dimension will be > 0. *)
     Ast.ANumber (List.fold_left (fun acc i -> acc*i) 1 ilist)
   in
-    match pt with
-      Ast.PTVal _        ->  (pt, declr)
-    | Ast.PTPtr(aty, pa) ->
-      if Ast.is_array declr then
-        let tmp_declr = { declr with Ast.array_dims = [] } in
-        let tmp_aty = Ast.Ptr aty in
-        let tmp_cnt = get_count_attr declr.Ast.array_dims in
-        let tmp_pa = { pa with Ast.pa_size = { Ast.empty_ptr_size with Ast.ps_count = Some tmp_cnt } }
-        in (Ast.PTPtr(tmp_aty, tmp_pa), tmp_declr)
-      else (pt, declr)
+  match pt with
+    Ast.PTVal _        ->  (pt, declr)
+  | Ast.PTPtr(aty, pa) ->
+    if Ast.is_array declr then
+      let tmp_declr = { declr with Ast.array_dims = [] } in
+      let tmp_aty = Ast.Ptr aty in
+      let tmp_cnt = get_count_attr declr.Ast.array_dims in
+      let tmp_pa = { pa with Ast.pa_size = { Ast.empty_ptr_size with Ast.ps_count = Some tmp_cnt } }
+      in (Ast.PTPtr(tmp_aty, tmp_pa), tmp_declr)
+    else (pt, declr)
 
 (* Note that, for a foreign array type `foo_array_t' we will generate
  *   foo_array_t* ms_field;
@@ -98,36 +98,36 @@ let mk_ms_member_decl (pt: Ast.parameter_type) (declr: Ast.declarator) (isecall:
   let field = declr.Ast.identifier in
   (* String attribute is available for in/inout both ecall and ocall.
    * For ocall ,strlen is called in trusted proxy ocde, so no need to defense it.
-   *)
+  *)
   let need_str_len_var (pt: Ast.parameter_type) =
     match pt with
-    Ast.PTVal _        -> false
+      Ast.PTVal _        -> false
     | Ast.PTPtr(_, pa) ->
-    if pa.Ast.pa_isstr || pa.Ast.pa_iswstr then
+      if pa.Ast.pa_isstr || pa.Ast.pa_iswstr then
         match pa.Ast.pa_direction with
-        Ast.PtrInOut | Ast.PtrIn ->  if isecall then true else false
+          Ast.PtrInOut | Ast.PtrIn ->  if isecall then true else false
         | _ -> false
-    else false
+      else false
   in
   let str_len = if need_str_len_var pt then sprintf "\tsize_t %s_len;\n" field else ""
   in
   let dmstr = get_array_dims declr.Ast.array_dims in
-    sprintf "\t%s%s %s%s;\n%s" tystr ptr field dmstr str_len
+  sprintf "\t%s%s %s%s;\n%s" tystr ptr field dmstr str_len
 
 (**************************** END Code borrowed and tweaked from CodeGen.ml *******************************************************)      
 
 (* Open a file for writing in the specified directory.
    Also emit auto-generated marker in file.
- *)
+*)
 let open_file (filename:string) (dir:string) = 
-    let os = if dir = "." then
-              open_out filename
-            else
-              open_out (dir ^ separator_str ^ filename) in
-    fprintf os "/*\n";
-    fprintf os " *  This file is auto generated by oeedger8r. DO NOT EDIT.\n";    
-    fprintf os " */\n";
-    os
+  let os = if dir = "." then
+      open_out filename
+    else
+      open_out (dir ^ separator_str ^ filename) in
+  fprintf os "/*\n";
+  fprintf os " *  This file is auto generated by oeedger8r. DO NOT EDIT.\n";
+  fprintf os " */\n";
+  os
 
 
 (* oe: util functions *)
@@ -140,21 +140,21 @@ let oe_mk_struct_decl (fs: string) (name: string) =
 (* oe: Generate marshaling structure definition *)
 let oe_gen_marshal_struct_impl (fd: Ast.func_decl) (errno: string) (isecall: bool) =
   let member_list_str = errno ^
-  let new_param_list = List.map conv_array_to_ptr fd.Ast.plist in
-  List.fold_left (fun acc (pt, declr) ->
-          acc ^ mk_ms_member_decl pt declr isecall) "" new_param_list in
-let struct_name = oe_mk_ms_struct_name fd.Ast.fname in
+                        let new_param_list = List.map conv_array_to_ptr fd.Ast.plist in
+                        List.fold_left (fun acc (pt, declr) ->
+                            acc ^ mk_ms_member_decl pt declr isecall) "" new_param_list in
+  let struct_name = oe_mk_ms_struct_name fd.Ast.fname in
   match fd.Ast.rtype with
-      Ast.Void -> oe_mk_struct_decl member_list_str struct_name
-    | _ -> let rv_str = mk_ms_member_decl (Ast.PTVal fd.Ast.rtype) retval_declr isecall
-           in oe_mk_struct_decl (rv_str ^ member_list_str) struct_name
+    Ast.Void -> oe_mk_struct_decl member_list_str struct_name
+  | _ -> let rv_str = mk_ms_member_decl (Ast.PTVal fd.Ast.rtype) retval_declr isecall
+    in oe_mk_struct_decl (rv_str ^ member_list_str) struct_name
 
 let oe_gen_ecall_marshal_struct (tf: Ast.trusted_func) =
-    oe_gen_marshal_struct_impl tf.Ast.tf_fdecl "" true
+  oe_gen_marshal_struct_impl tf.Ast.tf_fdecl "" true
 
 let oe_gen_ocall_marshal_struct (uf: Ast.untrusted_func) =
-    let errno_decl = if uf.Ast.uf_propagate_errno then "\tint _ocall_errno;\n" else "" in
-    oe_gen_marshal_struct_impl uf.Ast.uf_fdecl errno_decl true
+  let errno_decl = if uf.Ast.uf_propagate_errno then "\tint _ocall_errno;\n" else "" in
+  oe_gen_marshal_struct_impl uf.Ast.uf_fdecl errno_decl true
 
 (* This is the most complex function. 
  * For a parameter, get its size expression.
@@ -170,11 +170,11 @@ let oe_get_param_size (ptype, decl, argstruct) =
 
   let type_expr = 
     match ptype with
-      | Ast.PTPtr (atype, ptr_attr) ->
-        if ptr_attr.Ast.pa_isptr then
-          sprintf "*(%s)0" base_t
-        else base_t
-      | _ -> base_t
+    | Ast.PTPtr (atype, ptr_attr) ->
+      if ptr_attr.Ast.pa_isptr then
+        sprintf "*(%s)0" base_t
+      else base_t
+    | _ -> base_t
   in
 
   (* convert an attribute to string *)
@@ -194,29 +194,29 @@ let oe_get_param_size (ptype, decl, argstruct) =
     let dims_expr = String.concat "" dims in
     sprintf "sizeof(%s%s)" type_expr dims_expr
   in
-    match ptype with
-        Ast.PTPtr (atype, ptr_attr) ->
-          let pa_size = pa_size_to_string ptr_attr.Ast.pa_size in
-          (* Compute declared size *)
-          let decl_size = decl_size_to_string ptype decl in
-          if ptr_attr.Ast.pa_isstr then
-            argstruct ^ decl.Ast.identifier ^ "_len * sizeof(char)"
-          else if ptr_attr.Ast.pa_iswstr then
-            argstruct ^ decl.Ast.identifier ^ "_len * sizeof(wchar_t)" 
-          else 
-            (* Prefer size attribute over decl size *)
-            if pa_size="" then decl_size else pa_size
-        | _ -> ""
+  match ptype with
+    Ast.PTPtr (atype, ptr_attr) ->
+    let pa_size = pa_size_to_string ptr_attr.Ast.pa_size in
+    (* Compute declared size *)
+    let decl_size = decl_size_to_string ptype decl in
+    if ptr_attr.Ast.pa_isstr then
+      argstruct ^ decl.Ast.identifier ^ "_len * sizeof(char)"
+    else if ptr_attr.Ast.pa_iswstr then
+      argstruct ^ decl.Ast.identifier ^ "_len * sizeof(wchar_t)"
+    else
+      (* Prefer size attribute over decl size *)
+    if pa_size="" then decl_size else pa_size
+  | _ -> ""
 
 
 (* Generate the prototype for a given function.
  * Optionally add an oe_enclave_t* first parameter.
- *)
+*)
 let oe_gen_prototype (fd: Ast.func_decl) =
   let params_str = 
-      if List.length fd.Ast.plist = 0 then
-        "void"
-      else get_plist_str fd in
+    if List.length fd.Ast.plist = 0 then
+      "void"
+    else get_plist_str fd in
   sprintf "%s %s(%s)" (get_ret_tystr fd) fd.Ast.fname params_str
 
 let oe_gen_wrapper_prototype (fd: Ast.func_decl) (is_ecall:bool) =
@@ -231,7 +231,7 @@ let oe_gen_wrapper_prototype (fd: Ast.func_decl) (is_ecall:bool) =
       [retval_str; plist_str] in 
   let args = List.filter (fun s-> s <> "") args
   in 
-    sprintf "oe_result_t %s(\n        %s)" fd.Ast.fname (String.concat ",\n        " args)
+  sprintf "oe_result_t %s(\n        %s)" fd.Ast.fname (String.concat ",\n        " args)
 
 (*
   Emit struct or union
@@ -240,33 +240,33 @@ let oe_gen_wrapper_prototype (fd: Ast.func_decl) (is_ecall:bool) =
 let emit_struct_or_union  (os:out_channel) (s:Ast.struct_def) (union:bool) =
   fprintf os "typedef %s %s {\n" (if union then "union" else "struct") s.Ast.sname;
   List.iter (fun (atype, decl) -> 
-    let dims = List.map (fun d-> sprintf "[%d]" d) decl.Ast.array_dims in
-    let dims_str = String.concat "" dims in
-    fprintf os "    %s %s%s;\n" (Ast.get_tystr atype) decl.Ast.identifier dims_str
-  ) s.Ast.mlist;
+      let dims = List.map (fun d-> sprintf "[%d]" d) decl.Ast.array_dims in
+      let dims_str = String.concat "" dims in
+      fprintf os "    %s %s%s;\n" (Ast.get_tystr atype) decl.Ast.identifier dims_str
+    ) s.Ast.mlist;
   fprintf os "} %s;\n\n" s.Ast.sname
 
 let emit_enum (os:out_channel) (e:Ast.enum_def) = 
   let n = List.length e.Ast.enbody in
   fprintf os "typedef enum %s {\n" e.Ast.enname;
   List.iteri (fun idx (name, value) ->
-    fprintf os "    %s%s" name
-    (match value with
-      | Ast.EnumVal (Ast.AString s) -> " = " ^ s
-      | Ast.EnumVal (Ast.ANumber n) -> " = " ^ (string_of_int n)
-      | Ast.EnumValNone -> "");
-    if idx != (n-1) then fprintf os ",\n"
-  ) e.Ast.enbody;
+      fprintf os "    %s%s" name
+        (match value with
+         | Ast.EnumVal (Ast.AString s) -> " = " ^ s
+         | Ast.EnumVal (Ast.ANumber n) -> " = " ^ (string_of_int n)
+         | Ast.EnumValNone -> "");
+      if idx != (n-1) then fprintf os ",\n"
+    ) e.Ast.enbody;
   fprintf os "} %s;\n\n" e.Ast.enname
 
 (*
 * Emit composite types defined in edl.
 *)  
 let emit_composite_type (os:out_channel) = function
-| Ast.StructDef s -> emit_struct_or_union os s false  
-| Ast.UnionDef u -> emit_struct_or_union os u true
-| Ast.EnumDef e -> emit_enum os e
-  
+  | Ast.StructDef s -> emit_struct_or_union os s false
+  | Ast.UnionDef u -> emit_struct_or_union os u true
+  | Ast.EnumDef e -> emit_enum os e
+
 (*
  * Get function id for a given function.
  *)
@@ -280,46 +280,46 @@ let emit_function_ids (os:out_channel) (ec: enclave_content) =
   fprintf os "\n/* trusted function ids */\n";
   fprintf os "enum {\n";
   List.iteri (fun idx f ->
-    fprintf os "    %s = %d,\n" (get_function_id f.Ast.tf_fdecl) idx
-  ) ec.tfunc_decls;
+      fprintf os "    %s = %d,\n" (get_function_id f.Ast.tf_fdecl) idx
+    ) ec.tfunc_decls;
   fprintf os "    fcn_id_trusted_call_id_max = OE_ENUM_MAX\n";
   fprintf os "};\n\n";
   fprintf os "\n/* untrusted function ids */\n";
   fprintf os "enum {\n";
   List.iteri (fun idx f ->
-    fprintf os "    %s = %d,\n" (get_function_id f.Ast.uf_fdecl) idx
-  ) ec.ufunc_decls;
+      fprintf os "    %s = %d,\n" (get_function_id f.Ast.uf_fdecl) idx
+    ) ec.ufunc_decls;
   fprintf os "    fcn_id_untrusted_call_max = OE_ENUM_MAX\n";
   fprintf os "};\n\n"
 
 (* oe: Generate args.h which contains structs for ecalls and ocalls *)
 let oe_gen_args_header (ec: enclave_content) (dir:string)=  
   let structs = List.append
-    (* For each ecall, generate its marshalling struct *)
-    (List.map oe_gen_ecall_marshal_struct ec.tfunc_decls)
-    (* For each ocall, generate its marshalling struct *) 
-    (List.map oe_gen_ocall_marshal_struct ec.ufunc_decls)
+      (* For each ecall, generate its marshalling struct *)
+      (List.map oe_gen_ecall_marshal_struct ec.tfunc_decls)
+      (* For each ocall, generate its marshalling struct *)
+      (List.map oe_gen_ocall_marshal_struct ec.ufunc_decls)
   in  
   let with_errno = List.exists (fun uf -> uf.Ast.uf_propagate_errno) ec.ufunc_decls in
   let header_fname = sprintf "%s_args.h" ec.file_shortnm in
   let guard_macro = sprintf "%s_ARGS_H" (String.uppercase ec.enclave_name) in
   let os = open_file header_fname dir in  
-    fprintf os "#ifndef %s\n" guard_macro;
-    fprintf os "#define %s\n\n" guard_macro;
-    fprintf os "#include <stdint.h>\n";
-    fprintf os "#include <stdlib.h> /* for wchar_t */ \n\n";
-    if with_errno then fprintf os "#include <errno.h>\n";
-    fprintf os "#include <openenclave/bits/result.h>\n\n";
-    List.iter (fun inc -> fprintf os "#include \"%s\"\n" inc) ec.include_list;    
-    if ec.include_list <> [] then fprintf os "\n";
-    if ec.comp_defs <> [] then fprintf os "/* User types specified in edl */\n";
-    List.iter (emit_composite_type os) ec.comp_defs;
-    if ec.comp_defs <> [] then fprintf os "\n";
-    fprintf os "%s" (String.concat "\n" structs);
-    emit_function_ids os ec; 
-    fprintf os "\n#endif // %s\n" guard_macro;
-    close_out os
-  
+  fprintf os "#ifndef %s\n" guard_macro;
+  fprintf os "#define %s\n\n" guard_macro;
+  fprintf os "#include <stdint.h>\n";
+  fprintf os "#include <stdlib.h> /* for wchar_t */ \n\n";
+  if with_errno then fprintf os "#include <errno.h>\n";
+  fprintf os "#include <openenclave/bits/result.h>\n\n";
+  List.iter (fun inc -> fprintf os "#include \"%s\"\n" inc) ec.include_list;
+  if ec.include_list <> [] then fprintf os "\n";
+  if ec.comp_defs <> [] then fprintf os "/* User types specified in edl */\n";
+  List.iter (emit_composite_type os) ec.comp_defs;
+  if ec.comp_defs <> [] then fprintf os "\n";
+  fprintf os "%s" (String.concat "\n" structs);
+  emit_function_ids os ec;
+  fprintf os "\n#endif // %s\n" guard_macro;
+  close_out os
+
 (* 
   Generate a cast expression for a pointer argument.
   Pointer arguments need to be cast to their root type, since the
@@ -330,12 +330,12 @@ let get_cast_to_mem_expr (ptype, decl)=
   match ptype with
   | Ast.PTVal _ -> ""
   | Ast.PTPtr (t, _) ->
-      if Ast.is_array decl then
-        sprintf "(%s*) " (get_tystr t)
-      else if is_foreign_array ptype then
-        sprintf "/* foreign array of type %s */ " (get_tystr t)
-      else 
-        sprintf "(%s) " (get_tystr t)
+    if Ast.is_array decl then
+      sprintf "(%s*) " (get_tystr t)
+    else if is_foreign_array ptype then
+      sprintf "/* foreign array of type %s */ " (get_tystr t)
+    else
+      sprintf "(%s) " (get_tystr t)
 
 (*
    Prepare input_buffer
@@ -344,32 +344,32 @@ let oe_prepare_input_buffer (os:out_channel) (fd:Ast.func_decl) (alloc_func:stri
   fprintf os "    /* Compute input buffer size. Include in and in-out parameters. */\n";
   fprintf os "    OE_ADD_SIZE(_input_buffer_size, sizeof(%s_args_t));\n" fd.Ast.fname;
   List.iter (fun (ptype, decl) ->
-    match ptype with
-    | Ast.PTPtr (atype, ptr_attr) ->
-      if ptr_attr.Ast.pa_chkptr then
-        match ptr_attr.Ast.pa_direction with
-        | Ast.PtrIn | Ast.PtrInOut ->
-          let size = oe_get_param_size (ptype, decl, "_args.") in
-          fprintf os "    if (%s) OE_ADD_SIZE(_input_buffer_size, %s);\n" decl.Ast.identifier size
-        | _ -> ()
-      else ()
-    | _ -> ()
-  ) fd.Ast.plist;
+      match ptype with
+      | Ast.PTPtr (atype, ptr_attr) ->
+        if ptr_attr.Ast.pa_chkptr then
+          match ptr_attr.Ast.pa_direction with
+          | Ast.PtrIn | Ast.PtrInOut ->
+            let size = oe_get_param_size (ptype, decl, "_args.") in
+            fprintf os "    if (%s) OE_ADD_SIZE(_input_buffer_size, %s);\n" decl.Ast.identifier size
+          | _ -> ()
+        else ()
+      | _ -> ()
+    ) fd.Ast.plist;
   fprintf os "\n";
   fprintf os "    /* Compute output buffer size. Include out and in-out parameters. */\n";
   fprintf os "    OE_ADD_SIZE(_output_buffer_size, sizeof(%s_args_t));\n" fd.Ast.fname;
   List.iter (fun (ptype, decl) ->
-    match ptype with
-    | Ast.PTPtr (atype, ptr_attr) ->
-      if ptr_attr.Ast.pa_chkptr then
-        match ptr_attr.Ast.pa_direction with
-        | Ast.PtrOut | Ast.PtrInOut ->
-          let size = oe_get_param_size (ptype, decl, "_args.") in
-          fprintf os "    if (%s) OE_ADD_SIZE(_output_buffer_size, %s);\n" decl.Ast.identifier size
-        | _ -> ()
-      else ()
-    | _ -> ()
-  ) fd.Ast.plist;
+      match ptype with
+      | Ast.PTPtr (atype, ptr_attr) ->
+        if ptr_attr.Ast.pa_chkptr then
+          match ptr_attr.Ast.pa_direction with
+          | Ast.PtrOut | Ast.PtrInOut ->
+            let size = oe_get_param_size (ptype, decl, "_args.") in
+            fprintf os "    if (%s) OE_ADD_SIZE(_output_buffer_size, %s);\n" decl.Ast.identifier size
+          | _ -> ()
+        else ()
+      | _ -> ()
+    ) fd.Ast.plist;
   fprintf os "\n";
   fprintf os "    /* Allocate marshaling buffer */\n";
   fprintf os "    _total_buffer_size = _input_buffer_size;\n";
@@ -387,17 +387,17 @@ let oe_prepare_input_buffer (os:out_channel) (fd:Ast.func_decl) (alloc_func:stri
   fprintf os "    *(uint8_t**)&_pargs_in = _input_buffer; \n";
   fprintf os "    OE_ADD_SIZE(_input_buffer_offset, sizeof(*_pargs_in));\n\n";
   List.iter (fun (ptype, decl) ->
-    match ptype with
-    | Ast.PTPtr (atype, ptr_attr) ->
-      if ptr_attr.Ast.pa_chkptr then
-        let size = oe_get_param_size (ptype, decl, "_args.") in
-        match ptr_attr.Ast.pa_direction with
-        | Ast.PtrIn -> fprintf os "    OE_WRITE_IN_PARAM(%s, %s);\n" decl.Ast.identifier size
-        | Ast.PtrInOut -> fprintf os "    OE_WRITE_IN_OUT_PARAM(%s, %s);\n" decl.Ast.identifier size
-        | _ -> ()
-      else ()
-    | _ -> ()
-  ) fd.Ast.plist;
+      match ptype with
+      | Ast.PTPtr (atype, ptr_attr) ->
+        if ptr_attr.Ast.pa_chkptr then
+          let size = oe_get_param_size (ptype, decl, "_args.") in
+          match ptr_attr.Ast.pa_direction with
+          | Ast.PtrIn -> fprintf os "    OE_WRITE_IN_PARAM(%s, %s);\n" decl.Ast.identifier size
+          | Ast.PtrInOut -> fprintf os "    OE_WRITE_IN_OUT_PARAM(%s, %s);\n" decl.Ast.identifier size
+          | _ -> ()
+        else ()
+      | _ -> ()
+    ) fd.Ast.plist;
   fprintf os "\n    /* Copy args structure (now filled) to input buffer */\n";
   fprintf os "    memcpy(_pargs_in, &_args, sizeof(*_pargs_in));\n\n"
 
@@ -419,19 +419,19 @@ let oe_process_output_buffer (os:out_channel) (fd:Ast.func_decl) =
   (* Unmarshal return value and ouput buffers *)
   fprintf os "    /* Unmarshal return value and out, in-out parameters */\n";
   (if fd.Ast.rtype <> Ast.Void then
-    fprintf os "    *_retval = _pargs_out->_retval;\n");
+     fprintf os "    *_retval = _pargs_out->_retval;\n");
   List.iter (fun (ptype, decl) ->
-    match ptype with
-    | Ast.PTPtr (atype, ptr_attr) ->
-      if ptr_attr.Ast.pa_chkptr then
-        let size = oe_get_param_size (ptype, decl, "_args.") in
-        match ptr_attr.Ast.pa_direction with
-        | Ast.PtrOut -> fprintf os "    OE_READ_OUT_PARAM(%s, (size_t)(%s));\n" decl.Ast.identifier size
-        | Ast.PtrInOut -> fprintf os "    OE_READ_IN_OUT_PARAM(%s, (size_t)(%s));\n" decl.Ast.identifier size
-        | _ -> ()
-      else ()
-    | _ -> ()
-  ) fd.Ast.plist;
+      match ptype with
+      | Ast.PTPtr (atype, ptr_attr) ->
+        if ptr_attr.Ast.pa_chkptr then
+          let size = oe_get_param_size (ptype, decl, "_args.") in
+          match ptr_attr.Ast.pa_direction with
+          | Ast.PtrOut -> fprintf os "    OE_READ_OUT_PARAM(%s, (size_t)(%s));\n" decl.Ast.identifier size
+          | Ast.PtrInOut -> fprintf os "    OE_READ_IN_OUT_PARAM(%s, (size_t)(%s));\n" decl.Ast.identifier size
+          | _ -> ()
+        else ()
+      | _ -> ()
+    ) fd.Ast.plist;
   fprintf os "\n"
 
 
@@ -443,16 +443,16 @@ let get_cast_from_mem_expr (ptype, decl)=
   match ptype with
   | Ast.PTVal _ -> ""
   | Ast.PTPtr (t, attr) ->
-      if Ast.is_array decl then
-        sprintf "*(%s (*)%s) " (get_tystr t) (get_array_dims decl.Ast.array_dims)
-      else if is_foreign_array ptype then
-        sprintf "/*foreign array*/ *(%s *) " (get_tystr t)
-      else
-        if attr.Ast.pa_rdonly then
-           (* for ptrs, only constness is removed; add it back *)
-           sprintf "(const %s) " (get_tystr t)
-        else ""
-  
+    if Ast.is_array decl then
+      sprintf "*(%s (*)%s) " (get_tystr t) (get_array_dims decl.Ast.array_dims)
+    else if is_foreign_array ptype then
+      sprintf "/*foreign array*/ *(%s *) " (get_tystr t)
+    else
+    if attr.Ast.pa_rdonly then
+      (* for ptrs, only constness is removed; add it back *)
+      sprintf "(const %s) " (get_tystr t)
+    else ""
+
 let oe_copy_members_to_enclave (os:out_channel) (fd: Ast.func_decl) =  
   let is_primitive ptype =
     match ptype with
@@ -472,34 +472,34 @@ let oe_copy_members_to_enclave (os:out_channel) (fd: Ast.func_decl) =
 let oe_gen_allocate_buffers (os:out_channel) (fd: Ast.func_decl) =    
   let gen_allocate_buffer (ptype, decl) =
     match ptype with
-      | Ast.PTPtr (atype, ptr_attr) ->
-          if ptr_attr.Ast.pa_chkptr then
-            let size = oe_get_param_size (ptype, decl, "args.") in
-            let macro = 
-              match ptr_attr.Ast.pa_direction with
-                | Ast.PtrOut -> "OE_CHECKED_ALLOCATE_OUTPUT"                
-                | _ -> "OE_CHECKED_COPY_INPUT"
-            in 
-            fprintf os "    %s(enc_args.%s, args.%s, %s); \n" 
-                macro decl.Ast.identifier 
-                decl.Ast.identifier
-                size            
-          else ()
-      | _ -> () (* Non pointer arguments *)    
+    | Ast.PTPtr (atype, ptr_attr) ->
+      if ptr_attr.Ast.pa_chkptr then
+        let size = oe_get_param_size (ptype, decl, "args.") in
+        let macro =
+          match ptr_attr.Ast.pa_direction with
+          | Ast.PtrOut -> "OE_CHECKED_ALLOCATE_OUTPUT"
+          | _ -> "OE_CHECKED_COPY_INPUT"
+        in
+        fprintf os "    %s(enc_args.%s, args.%s, %s); \n"
+          macro decl.Ast.identifier
+          decl.Ast.identifier
+          size
+      else ()
+    | _ -> () (* Non pointer arguments *)
   in 
   fprintf os "    /* Copy checked buffers properties to enclave memory */\n";
   List.iter gen_allocate_buffer fd.Ast.plist;
   fprintf os "\n"
-  
+
 let oe_gen_free_buffers (os:out_channel) (fd: Ast.func_decl) =  
   let gen_free_buffer (ptype, decl) =
     match ptype with
-      | Ast.PTPtr (atype, ptr_attr) ->
-          if ptr_attr.Ast.pa_chkptr then
-            (fprintf os "    if (enc_args.%s)\n" decl.Ast.identifier;
-             fprintf os "        free (enc_args.%s); \n" decl.Ast.identifier)            
-          else ()
-      | _ -> () (* Non pointer arguments *)    
+    | Ast.PTPtr (atype, ptr_attr) ->
+      if ptr_attr.Ast.pa_chkptr then
+        (fprintf os "    if (enc_args.%s)\n" decl.Ast.identifier;
+         fprintf os "        free (enc_args.%s); \n" decl.Ast.identifier)
+      else ()
+    | _ -> () (* Non pointer arguments *)
   in 
   fprintf os "    /* Free enclave buffers */\n";
   List.iter gen_free_buffer fd.Ast.plist;
@@ -508,26 +508,26 @@ let oe_gen_free_buffers (os:out_channel) (fd: Ast.func_decl) =
 let oe_gen_copy_outputs (os:out_channel) (fd: Ast.func_decl) =  
   let gen_free_buffer (ptype, decl) =
     match ptype with
-      | Ast.PTPtr (atype, ptr_attr) ->
-          if ptr_attr.Ast.pa_chkptr then
-            match ptr_attr.Ast.pa_direction with
-            Ast.PtrOut | Ast.PtrInOut -> 
-              fprintf os "    if (args.%s)\n" decl.Ast.identifier;
-              fprintf os "        memcpy(args.%s, enc_args.%s, %s);\n"
-                decl.Ast.identifier
-                decl.Ast.identifier
-                (oe_get_param_size (ptype, decl, "args."))              
-            | _ -> ()               
-          else ()
-      | _ -> () (* Non pointer arguments *)    
+    | Ast.PTPtr (atype, ptr_attr) ->
+      if ptr_attr.Ast.pa_chkptr then
+        match ptr_attr.Ast.pa_direction with
+          Ast.PtrOut | Ast.PtrInOut ->
+          fprintf os "    if (args.%s)\n" decl.Ast.identifier;
+          fprintf os "        memcpy(args.%s, enc_args.%s, %s);\n"
+            decl.Ast.identifier
+            decl.Ast.identifier
+            (oe_get_param_size (ptype, decl, "args."))
+        | _ -> ()
+      else ()
+    | _ -> () (* Non pointer arguments *)
   in 
   fprintf os "\n    /* Copy output buffers */\n";
   List.iter gen_free_buffer fd.Ast.plist;
   fprintf os "\n"  
-  
+
 let oe_gen_call_function (os:out_channel) (fd: Ast.func_decl) =
   let params = List.map (fun (pt, decl) -> 
-    sprintf "%spargs_in->%s" (get_cast_from_mem_expr (pt, decl))decl.Ast.identifier) fd.Ast.plist
+      sprintf "%spargs_in->%s" (get_cast_from_mem_expr (pt, decl))decl.Ast.identifier) fd.Ast.plist
   in
   let params_str = "(\n        " ^ (String.concat ",\n        " params ) ^ ")" in
   let ret_str = match fd.Ast.rtype with
@@ -565,33 +565,33 @@ let oe_gen_ecall_function (os:out_channel) (fd: Ast.func_decl) =
   (* Prepare in and in-out parameters *)
   fprintf os "    /* Set in and in-out pointers */\n";
   List.iter (fun (ptype, decl) ->
-    match ptype with
-    | Ast.PTPtr (atype, ptr_attr) ->
-      if ptr_attr.Ast.pa_chkptr then
-        let size = oe_get_param_size (ptype, decl, "pargs_in->") in
-        match ptr_attr.Ast.pa_direction with
-        | Ast.PtrIn -> fprintf os "    OE_SET_IN_POINTER(%s, %s);\n" decl.Ast.identifier size
-        | Ast.PtrInOut -> fprintf os "    OE_SET_IN_OUT_POINTER(%s, %s);\n" decl.Ast.identifier size
-        | _ -> ()
-      else ()
-    | _ -> ()
-  ) fd.Ast.plist;
+      match ptype with
+      | Ast.PTPtr (atype, ptr_attr) ->
+        if ptr_attr.Ast.pa_chkptr then
+          let size = oe_get_param_size (ptype, decl, "pargs_in->") in
+          match ptr_attr.Ast.pa_direction with
+          | Ast.PtrIn -> fprintf os "    OE_SET_IN_POINTER(%s, %s);\n" decl.Ast.identifier size
+          | Ast.PtrInOut -> fprintf os "    OE_SET_IN_OUT_POINTER(%s, %s);\n" decl.Ast.identifier size
+          | _ -> ()
+        else ()
+      | _ -> ()
+    ) fd.Ast.plist;
   fprintf os "\n";
 
   (* Prepare out and in-out parameters. The in-out parameter is copied to output buffer. *)
   fprintf os "    /* Set out and in-out pointers. In-out parameters are copied to output buffer. */\n";
   List.iter (fun (ptype, decl) ->
-    match ptype with
-    | Ast.PTPtr (atype, ptr_attr) ->
-      if ptr_attr.Ast.pa_chkptr then
-        let size = oe_get_param_size (ptype, decl, "pargs_in->") in
-        match ptr_attr.Ast.pa_direction with
-        | Ast.PtrOut -> fprintf os "    OE_SET_OUT_POINTER(%s, %s);\n" decl.Ast.identifier size
-        | Ast.PtrInOut -> fprintf os "    OE_COPY_AND_SET_IN_OUT_POINTER(%s, %s);\n" decl.Ast.identifier size
-        | _ -> ()
-      else ()
-    | _ -> ()
-  ) fd.Ast.plist;
+      match ptype with
+      | Ast.PTPtr (atype, ptr_attr) ->
+        if ptr_attr.Ast.pa_chkptr then
+          let size = oe_get_param_size (ptype, decl, "pargs_in->") in
+          match ptr_attr.Ast.pa_direction with
+          | Ast.PtrOut -> fprintf os "    OE_SET_OUT_POINTER(%s, %s);\n" decl.Ast.identifier size
+          | Ast.PtrInOut -> fprintf os "    OE_COPY_AND_SET_IN_OUT_POINTER(%s, %s);\n" decl.Ast.identifier size
+          | _ -> ()
+        else ()
+      | _ -> ()
+    ) fd.Ast.plist;
   fprintf os "\n";
 
   (* Call the enclave function *)
@@ -609,7 +609,7 @@ let oe_gen_ecall_function (os:out_channel) (fd: Ast.func_decl) =
   fprintf os "    if (pargs_out && output_buffer_size >= sizeof(*pargs_out)) \n";
   fprintf os "        pargs_out->_result = _result;\n";
   fprintf os "}\n\n"
-  
+
 
 let oe_gen_ecall_functions (os:out_channel) (ec: enclave_content)  =
   fprintf os "\n\n/****** ECALL function wrappers  *************/\n";
@@ -625,21 +625,21 @@ let oe_gen_ecall_table (os:out_channel) (ec: enclave_content)  =
     ec.tfunc_decls;
   fprintf os "};\n\n";
   fprintf os "size_t __oe_ecalls_table_size = OE_COUNTOF(__oe_ecalls_table);\n\n"
-  
+
 let gen_fill_marshal_struct (os:out_channel) (fd:Ast.func_decl)  (args:string) =
   (* Generate assignment argument to corresponding field in args *)
   List.iter (fun (ptype, decl)->
-    let varname = decl.Ast.identifier in 
-    fprintf os "    %s.%s = %s%s;\n" args varname (get_cast_to_mem_expr (ptype, decl)) varname; 
-    (* for string parameter fill the len field *)
-    match ptype with
-        | Ast.PTPtr(_, attr) -> 
-            if attr.Ast.pa_isstr then 
-                fprintf os "    %s.%s_len = (%s) ? (strlen(%s) + 1) : 0;\n" args varname varname varname 
-            else if attr.Ast.pa_iswstr then
-                fprintf os "    %s.%s_len = (%s) ? (wcslen(%s) + 1) : 0;\n" args varname varname varname
-        | _ ->()
-  ) fd.Ast.plist;
+      let varname = decl.Ast.identifier in
+      fprintf os "    %s.%s = %s%s;\n" args varname (get_cast_to_mem_expr (ptype, decl)) varname;
+      (* for string parameter fill the len field *)
+      match ptype with
+      | Ast.PTPtr(_, attr) ->
+        if attr.Ast.pa_isstr then
+          fprintf os "    %s.%s_len = (%s) ? (strlen(%s) + 1) : 0;\n" args varname varname varname
+        else if attr.Ast.pa_iswstr then
+          fprintf os "    %s.%s_len = (%s) ? (wcslen(%s) + 1) : 0;\n" args varname varname varname
+      | _ ->()
+    ) fd.Ast.plist;
   fprintf os "\n"
 
 let oe_get_host_ecall_function (os:out_channel) (fd:Ast.func_decl) =
@@ -681,10 +681,10 @@ let oe_get_host_ecall_function (os:out_channel) (fd:Ast.func_decl) =
 
 let iter_ptr_params f params = 
   List.iter (fun (ptype, decl)->
-    match ptype with
-        | Ast.PTPtr(_, attr) ->  f (ptype, decl, attr)
-        | _ ->()
-  ) params
+      match ptype with
+      | Ast.PTPtr(_, attr) ->  f (ptype, decl, attr)
+      | _ ->()
+    ) params
 
 (* Generate ocalls wrapper function *)
 let oe_gen_ocall_enclave_wrapper (os:out_channel) (uf:Ast.untrusted_func) =
@@ -721,10 +721,10 @@ let oe_gen_ocall_enclave_wrapper (os:out_channel) (uf:Ast.untrusted_func) =
 
   (* Propagate errno *)
   (if propagate_errno then
-    begin
-    fprintf os "    /* Propagate errno */\n";
-    fprintf os "    errno = _pargs_out->_ocall_errno;\n\n";
-    end);
+     begin
+       fprintf os "    /* Propagate errno */\n";
+       fprintf os "    errno = _pargs_out->_ocall_errno;\n\n";
+     end);
 
   fprintf os "    _result = OE_OK;\n";
   fprintf os "done:    \n";
@@ -740,8 +740,8 @@ let oe_gen_ocall_table (os:out_channel) (ec:enclave_content) =
   fprintf os "\n/*ocall function table*/\n";
   fprintf os "static oe_ocall_func_t __%s_ocall_function_table[]= {\n" ec.enclave_name;
   List.iter (fun fd ->
-    fprintf os "    (oe_ocall_func_t) ocall_%s,\n" fd.Ast.uf_fdecl.fname
-  )  ec.ufunc_decls;
+      fprintf os "    (oe_ocall_func_t) ocall_%s,\n" fd.Ast.uf_fdecl.fname
+    )  ec.ufunc_decls;
   fprintf os "    NULL\n";
   fprintf os "};\n\n"
 
@@ -775,33 +775,33 @@ let oe_gen_ocall_host_wrapper (os:out_channel) (uf:Ast.untrusted_func) =
   (* Prepare in and in-out parameters *)
   fprintf os "    /* Set in and in-out pointers */\n";
   List.iter (fun (ptype, decl) ->
-    match ptype with
-    | Ast.PTPtr (atype, ptr_attr) ->
-      if ptr_attr.Ast.pa_chkptr then
-        let size = oe_get_param_size (ptype, decl, "pargs_in->") in
-        match ptr_attr.Ast.pa_direction with
-        | Ast.PtrIn -> fprintf os "    OE_SET_IN_POINTER(%s, %s);\n" decl.Ast.identifier size
-        | Ast.PtrInOut -> fprintf os "    OE_SET_IN_OUT_POINTER(%s, %s);\n" decl.Ast.identifier size
-        | _ -> ()
-      else ()
-    | _ -> ()
-  ) fd.Ast.plist;
+      match ptype with
+      | Ast.PTPtr (atype, ptr_attr) ->
+        if ptr_attr.Ast.pa_chkptr then
+          let size = oe_get_param_size (ptype, decl, "pargs_in->") in
+          match ptr_attr.Ast.pa_direction with
+          | Ast.PtrIn -> fprintf os "    OE_SET_IN_POINTER(%s, %s);\n" decl.Ast.identifier size
+          | Ast.PtrInOut -> fprintf os "    OE_SET_IN_OUT_POINTER(%s, %s);\n" decl.Ast.identifier size
+          | _ -> ()
+        else ()
+      | _ -> ()
+    ) fd.Ast.plist;
   fprintf os "\n";
 
   (* Prepare out and in-out parameters. The in-out parameter is copied to output buffer. *)
   fprintf os "    /* Set out and in-out pointers. In-out parameters are copied to output buffer. */\n";
   List.iter (fun (ptype, decl) ->
-    match ptype with
-    | Ast.PTPtr (atype, ptr_attr) ->
-      if ptr_attr.Ast.pa_chkptr then
-        let size = oe_get_param_size (ptype, decl, "pargs_in->") in
-        match ptr_attr.Ast.pa_direction with
-        | Ast.PtrOut -> fprintf os "    OE_SET_OUT_POINTER(%s, %s);\n" decl.Ast.identifier size
-        | Ast.PtrInOut -> fprintf os "    OE_COPY_AND_SET_IN_OUT_POINTER(%s, %s);\n" decl.Ast.identifier size
-        | _ -> ()
-      else ()
-    | _ -> ()
-  ) fd.Ast.plist;
+      match ptype with
+      | Ast.PTPtr (atype, ptr_attr) ->
+        if ptr_attr.Ast.pa_chkptr then
+          let size = oe_get_param_size (ptype, decl, "pargs_in->") in
+          match ptr_attr.Ast.pa_direction with
+          | Ast.PtrOut -> fprintf os "    OE_SET_OUT_POINTER(%s, %s);\n" decl.Ast.identifier size
+          | Ast.PtrInOut -> fprintf os "    OE_COPY_AND_SET_IN_OUT_POINTER(%s, %s);\n" decl.Ast.identifier size
+          | _ -> ()
+        else ()
+      | _ -> ()
+    ) fd.Ast.plist;
   fprintf os "\n";
 
   (* Call the host function *)
@@ -809,10 +809,10 @@ let oe_gen_ocall_host_wrapper (os:out_channel) (uf:Ast.untrusted_func) =
 
   (* Propagate errno *)
   (if propagate_errno then
-    begin
-    fprintf os "\n    /* Propagate errno */\n";
-    fprintf os "    pargs_out->_ocall_errno = errno;\n";
-    end);
+     begin
+       fprintf os "\n    /* Propagate errno */\n";
+       fprintf os "    pargs_out->_ocall_errno = errno;\n";
+     end);
 
   (* Mark call as success *)
   fprintf os "\n    /* Success. */\n";
@@ -832,71 +832,71 @@ let oe_gen_ocall_host_wrapper (os:out_channel) (uf:Ast.untrusted_func) =
 let uses_type (root_type:Ast.atype) (fd:Ast.func_decl) =
   let param_match = 
     List.exists (fun (pt, decl) -> 
-      root_type =  (Ast.get_param_atype pt)
-    ) fd.Ast.plist in
+        root_type =  (Ast.get_param_atype pt)
+      ) fd.Ast.plist in
   if param_match then
     param_match 
   else
     root_type = fd.Ast.rtype
 
 let warn_non_portable_types (fd:Ast.func_decl) =
-    let print_portability_warning ty =
-        printf "Warning: Function '%s': %s has different sizes on Windows and Linux. \
-                This enclave cannot be built in Linux and then safely loaded in Windows.\n"
-                fd.fname ty
-    in
-    let print_portability_warning_with_recommendation ty recommendation =
-        printf "Warning: Function '%s': %s has different sizes on Windows and Linux. \
-        This enclave cannot be built in Linux and then safely loaded in Windows. \
-        Consider using %s instead.\n"        
-        fd.fname ty recommendation                     
-    in
-    (* longs are represented as an Ast.Int type *)
-    let long_t = Ast.Int { Ast.ia_signedness = Ast.Signed; Ast.ia_shortness = Ast.ILong} in
-    let ulong_t = Ast.Int { Ast.ia_signedness = Ast.Unsigned; Ast.ia_shortness = Ast.ILong} in
-    
-    (if uses_type Ast.WChar fd then
-      print_portability_warning "wchar_t");
-    (if uses_type Ast.LDouble fd then
-      print_portability_warning "long double");
+  let print_portability_warning ty =
+    printf "Warning: Function '%s': %s has different sizes on Windows and Linux. \
+            This enclave cannot be built in Linux and then safely loaded in Windows.\n"
+      fd.fname ty
+  in
+  let print_portability_warning_with_recommendation ty recommendation =
+    printf "Warning: Function '%s': %s has different sizes on Windows and Linux. \
+            This enclave cannot be built in Linux and then safely loaded in Windows. \
+            Consider using %s instead.\n"
+      fd.fname ty recommendation
+  in
+  (* longs are represented as an Ast.Int type *)
+  let long_t = Ast.Int { Ast.ia_signedness = Ast.Signed; Ast.ia_shortness = Ast.ILong} in
+  let ulong_t = Ast.Int { Ast.ia_signedness = Ast.Unsigned; Ast.ia_shortness = Ast.ILong} in
 
-    (* Handle long type *)
-    (if uses_type (Ast.Long Ast.Signed) fd || uses_type long_t fd then
-      print_portability_warning_with_recommendation "long" "int64_t or int32_t");
-    
-    (* Handle unsigned long type *)
-    (if uses_type (Ast.Long Ast.Unsigned) fd || uses_type ulong_t fd then
-      print_portability_warning_with_recommendation "unsigned long" "uint64_t or uint32_t")
+  (if uses_type Ast.WChar fd then
+     print_portability_warning "wchar_t");
+  (if uses_type Ast.LDouble fd then
+     print_portability_warning "long double");
+
+  (* Handle long type *)
+  (if uses_type (Ast.Long Ast.Signed) fd || uses_type long_t fd then
+     print_portability_warning_with_recommendation "long" "int64_t or int32_t");
+
+  (* Handle unsigned long type *)
+  (if uses_type (Ast.Long Ast.Unsigned) fd || uses_type ulong_t fd then
+     print_portability_warning_with_recommendation "unsigned long" "uint64_t or uint32_t")
 
 (* Valid oe support *)
 let validate_oe_support (ec: enclave_content) (ep: edger8r_params) =
   (* check supported options *)
   if ep.use_prefix then failwithf "--use_prefix option is not supported by oeedger8r.";
   List.iter (fun f -> 
-    (if f.Ast.tf_is_priv then 
-        failwithf "Function '%s': 'private' specifier is not supported by oeedger8r" f.Ast.tf_fdecl.fname);
-    (if f.Ast.tf_is_switchless then
-        failwithf "Function '%s': switchless ecalls and ocalls are not yet supported by Open Enclave SDK." f.Ast.tf_fdecl.fname);  
-  ) ec.tfunc_decls;
+      (if f.Ast.tf_is_priv then
+         failwithf "Function '%s': 'private' specifier is not supported by oeedger8r" f.Ast.tf_fdecl.fname);
+      (if f.Ast.tf_is_switchless then
+         failwithf "Function '%s': switchless ecalls and ocalls are not yet supported by Open Enclave SDK." f.Ast.tf_fdecl.fname);
+    ) ec.tfunc_decls;
   List.iter (fun f -> 
-    (if f.Ast.uf_fattr.fa_convention <> Ast.CC_NONE then
-        let cconv_str = Ast.get_call_conv_str f.Ast.uf_fattr.Ast.fa_convention in
-        printf "Warning: Function '%s': Calling convention '%s' for ocalls is not supported by oeedger8r.\n" f.Ast.uf_fdecl.fname cconv_str);
-    (if f.Ast.uf_fattr.fa_dllimport then
-        failwithf "Function '%s': dllimport is not supported by oeedger8r." f.Ast.uf_fdecl.fname);
-    (if f.Ast.uf_allow_list != [] then
-        printf "Warning: Function '%s': Reentrant ocalls are not supported by Open Enclave. Allow list ignored.\n" f.Ast.uf_fdecl.fname);
-    (if f.Ast.uf_is_switchless then
-        failwithf "Function '%s': switchless ecalls and ocalls are not yet supported by Open Enclave SDK." f.Ast.uf_fdecl.fname);
-  ) ec.ufunc_decls;
+      (if f.Ast.uf_fattr.fa_convention <> Ast.CC_NONE then
+         let cconv_str = Ast.get_call_conv_str f.Ast.uf_fattr.Ast.fa_convention in
+         printf "Warning: Function '%s': Calling convention '%s' for ocalls is not supported by oeedger8r.\n" f.Ast.uf_fdecl.fname cconv_str);
+      (if f.Ast.uf_fattr.fa_dllimport then
+         failwithf "Function '%s': dllimport is not supported by oeedger8r." f.Ast.uf_fdecl.fname);
+      (if f.Ast.uf_allow_list != [] then
+         printf "Warning: Function '%s': Reentrant ocalls are not supported by Open Enclave. Allow list ignored.\n" f.Ast.uf_fdecl.fname);
+      (if f.Ast.uf_is_switchless then
+         failwithf "Function '%s': switchless ecalls and ocalls are not yet supported by Open Enclave SDK." f.Ast.uf_fdecl.fname);
+    ) ec.ufunc_decls;
   (* Map warning functions over trusted and untrusted function
      declarations *)
   let ufuncs = List.map (fun f -> (f.Ast.uf_fdecl)) ec.ufunc_decls in
   let tfuncs = List.map (fun f -> (f.Ast.tf_fdecl)) ec.tfunc_decls in
   let funcs = List.append ufuncs tfuncs in
   List.iter (fun f ->
-    warn_non_portable_types f;
-  ) funcs
+      warn_non_portable_types f;
+    ) funcs
 
   (*
     Includes are emitted in args.h.
@@ -1021,7 +1021,7 @@ let gen_u_c (ec: enclave_content) (ep: edger8r_params) =
 (* Generate the Enclave code. *)
 let gen_enclave_code (ec: enclave_content) (ep: edger8r_params) =
   validate_oe_support ec ep;
-  
+
   if ep.gen_trusted then(
     oe_gen_args_header ec ep.trusted_dir;
     gen_t_h ec ep;
