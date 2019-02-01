@@ -4,8 +4,9 @@
 ##====================================================================================
 ##
 ## This script fires OE build and test for specified build-type on Windows.
-## ELF enclaves are optionally built on Linux using the NMake generator.
-## Otherwise, directory for linux binaries needs to be specified. In this case,
+## The NMake generator uses clang to build ELF enclaves on Windows via cross
+## compilation if the BUILD_ENCLAVES flag is specified.
+## Otherwise, directory for Linux binaries needs to be specified. In this case,
 ## the Visual Studio 2017 Generator is used to test the ELF Linux enclaves
 ## on Windows.
 ##====================================================================================
