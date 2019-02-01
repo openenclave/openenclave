@@ -4,13 +4,30 @@ def PowerShellWrapper(psCmd) {
 }
 
 def ACCTest(String label, String compiler, String unit, String suite) {
+    def c_compiler
+    def cpp_compiler
     stage("$label $compiler $unit $suite") {
         node("$label") {
             cleanWs()
             checkout scm
 
             timeout(15) {
-                sh "./scripts/test-build-config -p $unit -b $suite --compiler=$compiler --disable_sim"
+                dir('build') {
+                    if (compiler == "gcc") {
+                        c_compiler = "gcc"
+                        cpp_compiler = "g++"
+                    } else if (compiler == "clang-7") {
+                        c_compiler = "clang-7"
+                        cpp_compiler = "clang++-7"
+                    }
+                    withEnv(["CC=${c_compiler}","CXX=${cpp_compiler}"]) {
+                        sh """
+                        cmake .. -DCMAKE_BUILD_TYPE=${suite}
+                        make
+                        ctest --output-on-failure
+                        """
+                    }
+                }
             }
 
         }
@@ -18,6 +35,8 @@ def ACCTest(String label, String compiler, String unit, String suite) {
 }
 
 def simulationTest(String compiler, String unit, String suite ) {
+    def c_compiler
+    def cpp_compiler
     stage("Sim $compiler $unit $suite") {
         node {
             cleanWs()
@@ -26,7 +45,22 @@ def simulationTest(String compiler, String unit, String suite ) {
             def oetoolsSim = docker.build("oetools-simulation", "-f .jenkins/Dockerfile .")
             oetoolsSim.inside {
                 timeout(15) {
-                    sh "./scripts/test-build-config -p $unit -b $suite --compiler=$compiler"
+                    dir('build') {
+                        if (compiler == "gcc") {
+                            c_compiler = "gcc"
+                            cpp_compiler = "g++"
+                        } else if (compiler == "clang-7") {
+                            c_compiler = "clang-7"
+                            cpp_compiler = "clang++-7"
+                        }
+                        withEnv(["CC=${c_compiler}","CXX=${cpp_compiler}","OE_SIMULATION=1"]) {
+                            sh """
+                            cmake .. -DCMAKE_BUILD_TYPE=${suite} -DUSE_LIBSGX=OFF
+                            make
+                            ctest --output-on-failure
+                            """
+                        }
+                    }
                 }
             }
         }
@@ -42,7 +76,15 @@ def ACCContainerTest(String label) {
             def oetoolsContainer = docker.build("oetools-containertest", "-f .jenkins/Dockerfile .")
             oetoolsContainer.inside('--device /dev/sgx:/dev/sgx') {
                 timeout(15) {
-                    sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo --disable_sim'
+                    dir('build') {
+                        withEnv(["CC=clang-7","CXX=clang++-7"]) {
+                            sh """
+                            cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo
+                            make
+                            ctest --output-on-failure
+                            """
+                        }
+                    }
                 }
             }
         }
@@ -98,7 +140,15 @@ def win2016DebugCrossPlatform() {
             def oetoolsWincp = docker.build("oetools-wincp", "-f .jenkins/Dockerfile .")
             oetoolsWincp.inside {
                 timeout(15) {
-                    sh './scripts/test-build-config -p SGX1FLC -b Debug --compiler=clang-7'
+                    dir('build') {
+                        withEnv(["CC=clang-7","CXX=clang++-7","OE_SIMULATION=1"]) {
+                            sh """
+                            cmake .. -DCMAKE_BUILD_TYPE=Debug -DUSE_DEBUG_MALLOC=OFF
+                            make
+                            ctest --output-on-failure
+                            """
+                        }
+                    }
                     stash includes: 'build/tests/**', name: 'linuxdebug'
                 }
             }
@@ -123,7 +173,15 @@ def win2016ReleaseCrossPlatform() {
             def oetoolsWin = docker.build("oetools-wincp", "-f .jenkins/Dockerfile .")
             oetoolsWin.inside {
                 timeout(15) {
-                    sh './scripts/test-build-config -p SGX1FLC -b Release --compiler=clang-7'
+                    dir('build') {
+                        withEnv(["CC=clang-7","CXX=clang++-7","OE_SIMULATION=1"]) {
+                            sh """
+                            cmake .. -DCMAKE_BUILD_TYPE=Release
+                            make
+                            ctest --output-on-failure
+                            """
+                        }
+                    }
                     stash includes: 'build/tests/**', name: 'linuxrelease'
                 }
             }
