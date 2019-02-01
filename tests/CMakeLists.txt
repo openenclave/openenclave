@@ -2,6 +2,7 @@
 # Licensed under the MIT License.
 
 include(oeedl_file)
+include(${PROJECT_SOURCE_DIR}/cmake/get_testcase_name.cmake)
 
 option(ENABLE_FULL_LIBCXX_TESTS "Build all libcxx tests and include in test list" OFF)
 

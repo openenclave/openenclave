@@ -4,7 +4,7 @@
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/print.h>
-#include "../args.h"
+#include "VectorException_t.h"
 
 // Wrapper over the CPUID instruction.
 void get_cpuid(
@@ -37,7 +37,7 @@ static volatile enum {
 } g_handled_sigill;
 
 // 2nd-chance exception handler to continue on test triggered exceptions
-uint64_t TestSigillHandler(oe_exception_record_t* exception)
+uint64_t enc_test_sigill_handler(oe_exception_record_t* exception)
 {
     if (exception->code == OE_EXCEPTION_ILLEGAL_INSTRUCTION)
     {
@@ -57,7 +57,7 @@ uint64_t TestSigillHandler(oe_exception_record_t* exception)
     return OE_EXCEPTION_CONTINUE_SEARCH;
 }
 
-bool TestGetsecInstruction()
+bool test_getsec_instruction()
 {
     // Arbitrary constants to verify r1/r2 have not been clobbered
     const uint32_t c_r1 = 0xDEADBEEF;
@@ -81,12 +81,12 @@ bool TestGetsecInstruction()
     if (r1 != c_r1 || r2 != c_r2)
     {
         oe_host_printf(
-            "TestGetsecInstruction stack parameters were corrupted.\n");
+            "test_getsec_instruction stack parameters were corrupted.\n");
         return false;
     }
     else
     {
-        oe_host_printf("TestGetsecInstruction stack parameters are ok.\n");
+        oe_host_printf("test_getsec_instruction stack parameters are ok.\n");
     }
 
     // Verify that illegal instruction was handled by test handler, not by
@@ -111,7 +111,7 @@ bool TestGetsecInstruction()
 // illegal exception in the host and is passed to the enclave which invokes
 // EmulateCpuid. This routine should return -1 for unsupported
 // cpuid leaves and cause the 2nd chance exception handler to be invoked.
-bool TestUnsupportedCpuidLeaf(uint32_t leaf)
+bool test_unsupported_cpuid_leaf(uint32_t leaf)
 {
     g_handled_sigill = HANDLED_SIGILL_NONE;
     uint32_t cpuid_rax = 0;
@@ -144,42 +144,34 @@ bool TestUnsupportedCpuidLeaf(uint32_t leaf)
     }
 }
 
-OE_ECALL void TestSigillHandling(void* args_)
+int enc_test_sigill_handling(
+    uint32_t cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT])
 {
-    TestSigillHandlingArgs* args = (TestSigillHandlingArgs*)args_;
     oe_result_t result;
 
-    args->ret = -1;
-
-    if (!oe_is_outside_enclave(args, sizeof(TestSigillHandlingArgs)))
-    {
-        oe_host_printf("TestSigillHandlingArgs failed bounds check.\n");
-        return;
-    }
-
     // Register the sigill handler to catch test triggered exceptions
-    result = oe_add_vectored_exception_handler(false, TestSigillHandler);
+    result = oe_add_vectored_exception_handler(false, enc_test_sigill_handler);
     if (result != OE_OK)
     {
-        oe_host_printf("Failed to register TestSigillHandler.\n");
-        return;
+        oe_host_printf("Failed to register enc_test_sigill_handler.\n");
+        return -1;
     }
 
     // Test illegal SGX instruction that is not emulated (GETSEC)
-    if (!TestGetsecInstruction())
+    if (!test_getsec_instruction())
     {
-        return;
+        return -1;
     }
 
     // Test unsupported CPUID leaves
-    if (!TestUnsupportedCpuidLeaf(OE_CPUID_LEAF_COUNT))
+    if (!test_unsupported_cpuid_leaf(OE_CPUID_LEAF_COUNT))
     {
-        return;
+        return -1;
     }
 
-    if (!TestUnsupportedCpuidLeaf(OE_CPUID_EXTENDED_CPUID_LEAF))
+    if (!test_unsupported_cpuid_leaf(OE_CPUID_EXTENDED_CPUID_LEAF))
     {
-        return;
+        return -1;
     }
 
     // Return enclave-cached CPUID leaves to host for further validation
@@ -190,22 +182,21 @@ OE_ECALL void TestSigillHandling(void* args_)
             get_cpuid(
                 i,
                 0,
-                &args->cpuid_table[i][OE_CPUID_RAX],
-                &args->cpuid_table[i][OE_CPUID_RBX],
-                &args->cpuid_table[i][OE_CPUID_RCX],
-                &args->cpuid_table[i][OE_CPUID_RDX]);
+                &(cpuid_table[i][OE_CPUID_RAX]),
+                &(cpuid_table[i][OE_CPUID_RBX]),
+                &(cpuid_table[i][OE_CPUID_RCX]),
+                &(cpuid_table[i][OE_CPUID_RDX]));
         }
     }
 
     // Clean up sigill handler
-    if (oe_remove_vectored_exception_handler(TestSigillHandler) != OE_OK)
+    if (oe_remove_vectored_exception_handler(enc_test_sigill_handler) != OE_OK)
     {
-        oe_host_printf("Failed to unregister TestSigillHandler.\n");
-        return;
+        oe_host_printf("Failed to unregister enc_test_sigill_handler.\n");
+        return -1;
     }
 
-    oe_host_printf("TestSigillHandling: completed successfully.\n");
-    args->ret = 0;
+    oe_host_printf("test_sigill_handling: completed successfully.\n");
 
-    return;
+    return 0;
 }

@@ -53,6 +53,11 @@ if (IS_DIRECTORY "${PROJECT_SOURCE_DIR}/.git")
   endif ()
 endif ()
 
+# Generates `compile_commands.json` used by some developers. Only
+# supported by Makefile and Ninja generators, but is otherwise
+# ignored.
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Get Jenkins build number
 set(BUILD_NUMBER $ENV{BUILD_NUMBER})
 if (NOT BUILD_NUMBER)
@@ -150,6 +155,16 @@ endif ()
 
 option(ADD_WINDOWS_ENCLAVE_TESTS "Build Windows enclave tests" OFF)
 
+find_program(VALGRIND "valgrind")
+if (VALGRIND)
+  set(MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full --error-exitcode=1")
+  # include Dart to generate the site configuration:
+  # https://gitlab.kitware.com/cmake/community/wikis/doc/ctest/Generating-Testing-Files#using-cmake
+  include(Dart)
+  message(STATUS "ExperimentalMemCheck can be used to run tests under valgrind")
+else ()
+  message(STATUS "Valgrind not found")
+endif ()
 # Configure testing
 enable_testing()
 include(add_enclave_test)

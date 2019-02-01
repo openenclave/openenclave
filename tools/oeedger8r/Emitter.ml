@@ -157,7 +157,7 @@ let oe_gen_ocall_marshal_struct (uf: Ast.untrusted_func) =
     oe_gen_marshal_struct_impl uf.Ast.uf_fdecl errno_decl true
 
 (* This is the most complex function. 
- * For a parameter, get its size experssion.
+ * For a parameter, get its size expression.
 *)
 let oe_get_param_size (ptype, decl, argstruct) = 
   (* get the base type of the parameter *)
@@ -182,7 +182,7 @@ let oe_get_param_size (ptype, decl, argstruct) =
     match av with
     | None -> ""
     | Some (Ast.ANumber n) -> string_of_int n
-    | Some (Ast.AString s) -> sprintf "%s%s" argstruct s  (*another parameter name *)
+    | Some (Ast.AString s) -> sprintf "%s%s" argstruct s  (* another parameter name *)
   in 
   let pa_size_to_string pa = 
     let c = attr_value_to_string pa.Ast.ps_count in
@@ -199,7 +199,7 @@ let oe_get_param_size (ptype, decl, argstruct) =
           let pa_size = pa_size_to_string ptr_attr.Ast.pa_size in
           (* Compute declared size *)
           let decl_size = decl_size_to_string ptype decl in
-          if  ptr_attr.Ast.pa_isstr then
+          if ptr_attr.Ast.pa_isstr then
             argstruct ^ decl.Ast.identifier ^ "_len * sizeof(char)"
           else if ptr_attr.Ast.pa_iswstr then
             argstruct ^ decl.Ast.identifier ^ "_len * sizeof(wchar_t)" 
@@ -839,7 +839,6 @@ let uses_type (root_type:Ast.atype) (fd:Ast.func_decl) =
   else
     root_type = fd.Ast.rtype
 
-
 let warn_non_portable_types (fd:Ast.func_decl) =
     let print_portability_warning ty =
         printf "Warning: Function '%s': %s has different sizes on Windows and Linux. \
@@ -878,7 +877,6 @@ let validate_oe_support (ec: enclave_content) (ep: edger8r_params) =
         failwithf "Function '%s': 'private' specifier is not supported by oeedger8r" f.Ast.tf_fdecl.fname);
     (if f.Ast.tf_is_switchless then
         failwithf "Function '%s': switchless ecalls and ocalls are not yet supported by Open Enclave SDK." f.Ast.tf_fdecl.fname);  
-    warn_non_portable_types f.Ast.tf_fdecl;   
   ) ec.tfunc_decls;
   List.iter (fun f -> 
     (if f.Ast.uf_fattr.fa_convention <> Ast.CC_NONE then
@@ -890,8 +888,15 @@ let validate_oe_support (ec: enclave_content) (ep: edger8r_params) =
         printf "Warning: Function '%s': Reentrant ocalls are not supported by Open Enclave. Allow list ignored.\n" f.Ast.uf_fdecl.fname);
     (if f.Ast.uf_is_switchless then
         failwithf "Function '%s': switchless ecalls and ocalls are not yet supported by Open Enclave SDK." f.Ast.uf_fdecl.fname);
-    warn_non_portable_types f.Ast.uf_fdecl;          
-  ) ec.ufunc_decls
+  ) ec.ufunc_decls;
+  (* Map warning functions over trusted and untrusted function
+     declarations *)
+  let ufuncs = List.map (fun f -> (f.Ast.uf_fdecl)) ec.ufunc_decls in
+  let tfuncs = List.map (fun f -> (f.Ast.tf_fdecl)) ec.tfunc_decls in
+  let funcs = List.append ufuncs tfuncs in
+  List.iter (fun f ->
+    warn_non_portable_types f;
+  ) funcs
 
   (*
     Includes are emitted in args.h.

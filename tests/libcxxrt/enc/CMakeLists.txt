@@ -2,10 +2,6 @@
 # Licensed under the MIT License.
 
 
-# create a binary for each testcase listed in ../tests.supported
-
-include(${CMAKE_CURRENT_LIST_DIR}/../../../cmake/get_testcase_name.cmake)
-
 oeedl_file(../libcxxrt.edl enclave gen)
 
 # helper lib to contain file needed by some tests
