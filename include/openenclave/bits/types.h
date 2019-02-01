@@ -90,7 +90,6 @@ typedef enum _oe_enclave_type
 {
     OE_ENCLAVE_TYPE_AUTO,
     OE_ENCLAVE_TYPE_SGX,
-    OE_ENCLAVE_TYPE_UNDEFINED,
     __OE_ENCLAVE_TYPE_MAX = OE_ENUM_MAX,
 } oe_enclave_type_t;
 
