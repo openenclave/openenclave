@@ -90,6 +90,14 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
   add_compile_options(-fno-builtin-malloc -fno-builtin-calloc)
 elseif (MSVC)
   # MSVC options go here
+  if (MSVC_VERSION VERSION_LESS 1910)
+    message(FATAL_ERROR "Only Visual Studio 2017 and above supported!")
+  endif ()
+  if (CMAKE_MSVC_PARALLEL_ENABLE)
+    add_compile_options(/MP)
+    message(STATUS "Using parallel compiling (/MP)")
+  endif()
+
 endif ()
 
 # Use ML64 as assembler on Windows
