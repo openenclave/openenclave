@@ -8,8 +8,8 @@ enclave {
 
         // Launch a thread that tests thread-local variables.
         public void enclave_thread(
-            int thread_num, 
-            int iters, 
+            int thread_num,
+            int iters,
             int step);
     };
 
