@@ -20,8 +20,7 @@ Param
     # Valid BUILDTYPE values are Debug|Release
     [ValidateSet("Debug", "Release", IgnoreCase = $false)]
     [String]$BUILD_TYPE = "DEBUG",
-    [Switch]$BUILD_ENCLAVES,
-    [Parameter(Mandatory = $true)][String]$LINUX_BIN_DIR
+    [Switch]$BUILD_ENCLAVES
 )
 
 if ($h -or $help) {
