@@ -1,26 +1,29 @@
-(* 
-  Copyright (c) Microsoft Corporation. All rights reserved.
-  Licensed under the MIT License. 
-*)
+(* Copyright (c) Microsoft Corporation. All rights reserved.
+   Licensed under the MIT License. *)
+
+(** This module is Open Enclave's plugin for Intel's Edger8r, allowing
+    us to share the same Enclave Definition Language, but emit our
+    SDK's bindings. *)
 
 open Ast
 open Plugin
 open Printf
-open Util  
+open Util
 
-(**************************** Begin Code borrowed and tweaked from CodeGen.ml *******************************************************)      
+(** ----- Begin code borrowed and tweaked from {!CodeGen.ml}. ----- *)
 let is_foreign_array (pt: Ast.parameter_type) =
   match pt with
-    Ast.PTVal _     -> false
+    Ast.PTVal _ -> false
   | Ast.PTPtr(t, a) ->
     match t with
       Ast.Foreign _ -> a.Ast.pa_isary
-    | _             -> false
+    | _ -> false
+
+(** Get the array declaration from a list of array dimensions. Empty
+    [ns] indicates the corresponding declarator is a simple identifier.
+    Element of value -1 means that user does not specify the dimension
+    size. *)
 let get_array_dims (ns: int list) =
-  (* Get the array declaration from a list of array dimensions.
-   * Empty `ns' indicates the corresponding declarator is a simple identifier.
-   * Element of value -1 means that user does not specify the dimension size.
-  *)
   let get_dim n = if n = -1 then "[]" else sprintf "[%d]" n
   in
   if ns = [] then ""
@@ -31,19 +34,19 @@ let get_typed_declr_str (ty: Ast.atype) (declr: Ast.declarator) =
   let dmstr = get_array_dims declr.Ast.array_dims in
   sprintf "%s %s%s" tystr declr.Ast.identifier dmstr
 
-(* Check whether given parameter is `const' specified. *)
+(** Check whether given parameter [pt] is [const] specified. *)
 let is_const_ptr (pt: Ast.parameter_type) =
   let aty = Ast.get_param_atype pt in
   match pt with
-    Ast.PTVal _      -> false
+    Ast.PTVal _ -> false
   | Ast.PTPtr(_, pa) ->
     if not pa.Ast.pa_rdonly then false
     else
       match aty with
         Ast.Foreign _ -> false
-      | _             -> true
+      | _ -> true
 
-(* Generate parameter representation. *)
+(** Generate parameter [p] representation. *)
 let gen_parm_str (p: Ast.pdecl) =
   let (pt, (declr : Ast.declarator)) = p in
   let aty = Ast.get_param_atype pt in
@@ -58,13 +61,13 @@ let get_plist_str (fd: Ast.func_decl) =
       (gen_parm_str (List.hd fd.Ast.plist))
       (List.tl fd.Ast.plist)
 
+(** [conv_array_to_ptr] is used to convert Array form into Pointer form.
+    {[
+      int array[10][20] => [count = 200] int* array
+    ]}
 
-(* This function is used to convert Array form into Pointer form.
- * e.g.: int array[10][20]   =>  [count = 200] int* array
- *
- * This function is called when generating proxy/bridge code and
- * the marshaling structure.
-*)
+    This function is called when generating proxy/bridge code and the
+    marshalling structure. *)
 let conv_array_to_ptr (pd: Ast.pdecl): Ast.pdecl =
   let (pt, declr) = pd in
   let get_count_attr ilist =
@@ -72,7 +75,7 @@ let conv_array_to_ptr (pd: Ast.pdecl): Ast.pdecl =
     Ast.ANumber (List.fold_left (fun acc i -> acc*i) 1 ilist)
   in
   match pt with
-    Ast.PTVal _        ->  (pt, declr)
+    Ast.PTVal _ ->  (pt, declr)
   | Ast.PTPtr(aty, pa) ->
     if Ast.is_array declr then
       let tmp_declr = { declr with Ast.array_dims = [] } in
@@ -82,26 +85,24 @@ let conv_array_to_ptr (pd: Ast.pdecl): Ast.pdecl =
       in (Ast.PTPtr(tmp_aty, tmp_pa), tmp_declr)
     else (pt, declr)
 
-(* Note that, for a foreign array type `foo_array_t' we will generate
- *   foo_array_t* ms_field;
- * in the marshaling data structure to keep the pass-by-address scheme
- * as in the C programming language.
-*)
+(** Note that, for a foreign array type [foo_array_t] we will generate
+    [foo_array_t* ms_field;] in the marshalling data structure to keep
+    the pass-by-address scheme as in the C programming language. *)
 let mk_ms_member_decl (pt: Ast.parameter_type) (declr: Ast.declarator) (isecall: bool) =
   let aty = Ast.get_param_atype pt in
-  let tystr =  
-    if is_foreign_array pt then 
+  let tystr =
+    if is_foreign_array pt then
       sprintf "/* foreign array of type %s */ void" (Ast.get_tystr aty)
-    else Ast.get_tystr aty 
+    else Ast.get_tystr aty
   in
   let ptr = if is_foreign_array pt then "* " else "" in
   let field = declr.Ast.identifier in
-  (* String attribute is available for in/inout both ecall and ocall.
-   * For ocall ,strlen is called in trusted proxy ocde, so no need to defense it.
-  *)
+  (* String attribute is available for in/in-out both ecall and ocall.
+     For ocall ,strlen is called in trusted proxy code, so no need to
+     defense it. *)
   let need_str_len_var (pt: Ast.parameter_type) =
     match pt with
-      Ast.PTVal _        -> false
+      Ast.PTVal _ -> false
     | Ast.PTPtr(_, pa) ->
       if pa.Ast.pa_isstr || pa.Ast.pa_iswstr then
         match pa.Ast.pa_direction with
@@ -114,12 +115,11 @@ let mk_ms_member_decl (pt: Ast.parameter_type) (declr: Ast.declarator) (isecall:
   let dmstr = get_array_dims declr.Ast.array_dims in
   sprintf "\t%s%s %s%s;\n%s" tystr ptr field dmstr str_len
 
-(**************************** END Code borrowed and tweaked from CodeGen.ml *******************************************************)      
+(** ----- End code borrowed and tweaked from {!CodeGen.ml} ----- *)
 
-(* Open a file for writing in the specified directory.
-   Also emit auto-generated marker in file.
-*)
-let open_file (filename:string) (dir:string) = 
+(** [open_file] opens [filename] in the directory [dir] and emits a
+    comment noting the file is auto generated. *)
+let open_file (filename:string) (dir:string) =
   let os = if dir = "." then
       open_out filename
     else
@@ -130,14 +130,15 @@ let open_file (filename:string) (dir:string) =
   os
 
 
-(* oe: util functions *)
+(** [oe_mk_ms_struct_name] appends our [struct] naming suffix. *)
 let oe_mk_ms_struct_name (fname: string) = fname ^ "_args_t"
 
-(* Construct the string of structure definition *)
+(** [oe_mk_struct_decl] constructs the string of a [struct] definition. *)
 let oe_mk_struct_decl (fs: string) (name: string) =
   sprintf "typedef struct _%s {\n%s    oe_result_t _result;\n } %s;\n" name fs name
 
-(* oe: Generate marshaling structure definition *)
+(** [oe_gen_marshal_struct_impl] generates a marshalling [struct]
+    definition. *)
 let oe_gen_marshal_struct_impl (fd: Ast.func_decl) (errno: string) (isecall: bool) =
   let member_list_str = errno ^
                         let new_param_list = List.map conv_array_to_ptr fd.Ast.plist in
@@ -156,19 +157,18 @@ let oe_gen_ocall_marshal_struct (uf: Ast.untrusted_func) =
   let errno_decl = if uf.Ast.uf_propagate_errno then "\tint _ocall_errno;\n" else "" in
   oe_gen_marshal_struct_impl uf.Ast.uf_fdecl errno_decl true
 
-(* This is the most complex function. 
- * For a parameter, get its size expression.
-*)
-let oe_get_param_size (ptype, decl, argstruct) = 
-  (* get the base type of the parameter *)
-  let atype = 
+(** [oe_get_param_size] is the most complex function. For a parameter,
+    get its size expression. *)
+let oe_get_param_size (ptype, decl, argstruct) =
+  (* Get the base type of the parameter. *)
+  let atype =
     match Ast.get_param_atype ptype with
     | Ast.Ptr at -> at
     | _ -> Ast.get_param_atype ptype
-  in 
+  in
   let base_t = Ast.get_tystr atype in
 
-  let type_expr = 
+  let type_expr =
     match ptype with
     | Ast.PTPtr (atype, ptr_attr) ->
       if ptr_attr.Ast.pa_isptr then
@@ -177,14 +177,14 @@ let oe_get_param_size (ptype, decl, argstruct) =
     | _ -> base_t
   in
 
-  (* convert an attribute to string *)
-  let attr_value_to_string av = 
+  (* Convert an attribute to string. *)
+  let attr_value_to_string av =
     match av with
     | None -> ""
     | Some (Ast.ANumber n) -> string_of_int n
     | Some (Ast.AString s) -> sprintf "%s%s" argstruct s  (* another parameter name *)
-  in 
-  let pa_size_to_string pa = 
+  in
+  let pa_size_to_string pa =
     let c = attr_value_to_string pa.Ast.ps_count in
     if c <> "" then sprintf "(%s * sizeof(%s))" c type_expr
     else attr_value_to_string pa.Ast.ps_size
@@ -209,44 +209,39 @@ let oe_get_param_size (ptype, decl, argstruct) =
   | _ -> ""
 
 
-(* Generate the prototype for a given function.
- * Optionally add an oe_enclave_t* first parameter.
-*)
+(** Generate the prototype for a given function. Optionally add an
+    [oe_enclave_t*] first parameter. *)
 let oe_gen_prototype (fd: Ast.func_decl) =
-  let params_str = 
+  let params_str =
     if List.length fd.Ast.plist = 0 then
       "void"
     else get_plist_str fd in
   sprintf "%s %s(%s)" (get_ret_tystr fd) fd.Ast.fname params_str
 
 let oe_gen_wrapper_prototype (fd: Ast.func_decl) (is_ecall:bool) =
-  let plist_str = get_plist_str fd in  
-  let retval_str = 
+  let plist_str = get_plist_str fd in
+  let retval_str =
     if fd.Ast.rtype = Ast.Void then ""
-    else sprintf "%s* _retval" (get_ret_tystr fd) in  
-  let args = 
+    else sprintf "%s* _retval" (get_ret_tystr fd) in
+  let args =
     if is_ecall then
       ["oe_enclave_t* enclave"; retval_str; plist_str]
     else
-      [retval_str; plist_str] in 
+      [retval_str; plist_str] in
   let args = List.filter (fun s-> s <> "") args
-  in 
+  in
   sprintf "oe_result_t %s(\n        %s)" fd.Ast.fname (String.concat ",\n        " args)
 
-(*
-  Emit struct or union
-*)
-
-let emit_struct_or_union  (os:out_channel) (s:Ast.struct_def) (union:bool) =
+let emit_struct_or_union (os:out_channel) (s:Ast.struct_def) (union:bool) =
   fprintf os "typedef %s %s {\n" (if union then "union" else "struct") s.Ast.sname;
-  List.iter (fun (atype, decl) -> 
+  List.iter (fun (atype, decl) ->
       let dims = List.map (fun d-> sprintf "[%d]" d) decl.Ast.array_dims in
       let dims_str = String.concat "" dims in
       fprintf os "    %s %s%s;\n" (Ast.get_tystr atype) decl.Ast.identifier dims_str
     ) s.Ast.mlist;
   fprintf os "} %s;\n\n" s.Ast.sname
 
-let emit_enum (os:out_channel) (e:Ast.enum_def) = 
+let emit_enum (os:out_channel) (e:Ast.enum_def) =
   let n = List.length e.Ast.enbody in
   fprintf os "typedef enum %s {\n" e.Ast.enname;
   List.iteri (fun idx (name, value) ->
@@ -259,24 +254,17 @@ let emit_enum (os:out_channel) (e:Ast.enum_def) =
     ) e.Ast.enbody;
   fprintf os "} %s;\n\n" e.Ast.enname
 
-(*
-* Emit composite types defined in edl.
-*)  
+(** Emit [struct], [union], or [enum]. *)
 let emit_composite_type (os:out_channel) = function
   | Ast.StructDef s -> emit_struct_or_union os s false
   | Ast.UnionDef u -> emit_struct_or_union os u true
   | Ast.EnumDef e -> emit_enum os e
 
-(*
- * Get function id for a given function.
- *)
 let get_function_id (f:Ast.func_decl) =
   sprintf "fcn_id_%s" f.fname
 
-(*
- * Emit function ids.
- *)
-let emit_function_ids (os:out_channel) (ec: enclave_content) = 
+(** Emit all trusted and untrusted function IDs in enclave [ec]. *)
+let emit_function_ids (os:out_channel) (ec: enclave_content) =
   fprintf os "\n/* trusted function ids */\n";
   fprintf os "enum {\n";
   List.iteri (fun idx f ->
@@ -292,18 +280,18 @@ let emit_function_ids (os:out_channel) (ec: enclave_content) =
   fprintf os "    fcn_id_untrusted_call_max = OE_ENUM_MAX\n";
   fprintf os "};\n\n"
 
-(* oe: Generate args.h which contains structs for ecalls and ocalls *)
-let oe_gen_args_header (ec: enclave_content) (dir:string)=  
+(** Generate [args.h] which contains [struct]s for ecalls and ocalls *)
+let oe_gen_args_header (ec: enclave_content) (dir:string)=
   let structs = List.append
-      (* For each ecall, generate its marshalling struct *)
+      (* For each ecall, generate its marshalling struct. *)
       (List.map oe_gen_ecall_marshal_struct ec.tfunc_decls)
-      (* For each ocall, generate its marshalling struct *)
+      (* For each ocall, generate its marshalling struct. *)
       (List.map oe_gen_ocall_marshal_struct ec.ufunc_decls)
-  in  
+  in
   let with_errno = List.exists (fun uf -> uf.Ast.uf_propagate_errno) ec.ufunc_decls in
   let header_fname = sprintf "%s_args.h" ec.file_shortnm in
   let guard_macro = sprintf "%s_ARGS_H" (String.uppercase ec.enclave_name) in
-  let os = open_file header_fname dir in  
+  let os = open_file header_fname dir in
   fprintf os "#ifndef %s\n" guard_macro;
   fprintf os "#define %s\n\n" guard_macro;
   fprintf os "#include <stdint.h>\n";
@@ -320,13 +308,14 @@ let oe_gen_args_header (ec: enclave_content) (dir:string)=
   fprintf os "\n#endif // %s\n" guard_macro;
   close_out os
 
-(* 
-  Generate a cast expression for a pointer argument.
-  Pointer arguments need to be cast to their root type, since the
-  marshalling struct has the root pointer.
-  For example, int a[10][20] needs to be cast to int *.
-*)
-let get_cast_to_mem_expr (ptype, decl)= 
+(** Generate a cast expression for a pointer argument. Pointer
+    arguments need to be cast to their root type, since the marshalling
+    struct has the root pointer. For example:
+    {[
+      int a[10][20]
+    ]}
+    needs to be cast to [int *] . *)
+let get_cast_to_mem_expr (ptype, decl)=
   match ptype with
   | Ast.PTVal _ -> ""
   | Ast.PTPtr (t, _) ->
@@ -337,9 +326,7 @@ let get_cast_to_mem_expr (ptype, decl)=
     else
       sprintf "(%s) " (get_tystr t)
 
-(*
-   Prepare input_buffer
-*)
+(** Prepare [input_buffer]. *)
 let oe_prepare_input_buffer (os:out_channel) (fd:Ast.func_decl) (alloc_func:string) =
   fprintf os "    /* Compute input buffer size. Include in and in-out parameters. */\n";
   fprintf os "    OE_ADD_SIZE(_input_buffer_size, sizeof(%s_args_t));\n" fd.Ast.fname;
@@ -371,7 +358,7 @@ let oe_prepare_input_buffer (os:out_channel) (fd:Ast.func_decl) (alloc_func:stri
       | _ -> ()
     ) fd.Ast.plist;
   fprintf os "\n";
-  fprintf os "    /* Allocate marshaling buffer */\n";
+  fprintf os "    /* Allocate marshalling buffer */\n";
   fprintf os "    _total_buffer_size = _input_buffer_size;\n";
   fprintf os "    OE_ADD_SIZE(_total_buffer_size, _output_buffer_size);\n\n";
   fprintf os "    _buffer = (uint8_t*) %s(_total_buffer_size);\n" alloc_func;
@@ -435,11 +422,12 @@ let oe_process_output_buffer (os:out_channel) (fd:Ast.func_decl) =
   fprintf os "\n"
 
 
-(* 
-  Generate a cast expression to a specific pointer type.  
-  For example, int* needs to be cast to  * (int ( *  )[5][6]).
-*)
-let get_cast_from_mem_expr (ptype, decl)= 
+(** Generate a cast expression to a specific pointer type. For example,
+    [int*] needs to be cast to
+    {[
+      *(int ( * )[5][6])
+    ]}. *)
+let get_cast_from_mem_expr (ptype, decl)=
   match ptype with
   | Ast.PTVal _ -> ""
   | Ast.PTPtr (t, attr) ->
@@ -453,23 +441,23 @@ let get_cast_from_mem_expr (ptype, decl)=
       sprintf "(const %s) " (get_tystr t)
     else ""
 
-let oe_copy_members_to_enclave (os:out_channel) (fd: Ast.func_decl) =  
+let oe_copy_members_to_enclave (os:out_channel) (fd: Ast.func_decl) =
   let is_primitive ptype =
     match ptype with
     | Ast.PTPtr (atype, ptr_attr) -> not ptr_attr.Ast.pa_chkptr
-    | _ -> true     
+    | _ -> true
   in
   let gen_copy_member (ptype, decl) =
     if is_primitive ptype then
-      fprintf os "    enc_args.%s = args.%s;\n"      
+      fprintf os "    enc_args.%s = args.%s;\n"
         decl.Ast.identifier
         decl.Ast.identifier
-  in 
+  in
   fprintf os "    /* Copy primitive properties to enc_args */\n";
   List.iter gen_copy_member fd.Ast.plist;
   fprintf os "\n"
 
-let oe_gen_allocate_buffers (os:out_channel) (fd: Ast.func_decl) =    
+let oe_gen_allocate_buffers (os:out_channel) (fd: Ast.func_decl) =
   let gen_allocate_buffer (ptype, decl) =
     match ptype with
     | Ast.PTPtr (atype, ptr_attr) ->
@@ -486,12 +474,12 @@ let oe_gen_allocate_buffers (os:out_channel) (fd: Ast.func_decl) =
           size
       else ()
     | _ -> () (* Non pointer arguments *)
-  in 
+  in
   fprintf os "    /* Copy checked buffers properties to enclave memory */\n";
   List.iter gen_allocate_buffer fd.Ast.plist;
   fprintf os "\n"
 
-let oe_gen_free_buffers (os:out_channel) (fd: Ast.func_decl) =  
+let oe_gen_free_buffers (os:out_channel) (fd: Ast.func_decl) =
   let gen_free_buffer (ptype, decl) =
     match ptype with
     | Ast.PTPtr (atype, ptr_attr) ->
@@ -500,12 +488,12 @@ let oe_gen_free_buffers (os:out_channel) (fd: Ast.func_decl) =
          fprintf os "        free (enc_args.%s); \n" decl.Ast.identifier)
       else ()
     | _ -> () (* Non pointer arguments *)
-  in 
+  in
   fprintf os "    /* Free enclave buffers */\n";
   List.iter gen_free_buffer fd.Ast.plist;
   fprintf os "\n"
 
-let oe_gen_copy_outputs (os:out_channel) (fd: Ast.func_decl) =  
+let oe_gen_copy_outputs (os:out_channel) (fd: Ast.func_decl) =
   let gen_free_buffer (ptype, decl) =
     match ptype with
     | Ast.PTPtr (atype, ptr_attr) ->
@@ -520,13 +508,13 @@ let oe_gen_copy_outputs (os:out_channel) (fd: Ast.func_decl) =
         | _ -> ()
       else ()
     | _ -> () (* Non pointer arguments *)
-  in 
+  in
   fprintf os "\n    /* Copy output buffers */\n";
   List.iter gen_free_buffer fd.Ast.plist;
-  fprintf os "\n"  
+  fprintf os "\n"
 
 let oe_gen_call_function (os:out_channel) (fd: Ast.func_decl) =
-  let params = List.map (fun (pt, decl) -> 
+  let params = List.map (fun (pt, decl) ->
       sprintf "%spargs_in->%s" (get_cast_from_mem_expr (pt, decl))decl.Ast.identifier) fd.Ast.plist
   in
   let params_str = "(\n        " ^ (String.concat ",\n        " params ) ^ ")" in
@@ -535,10 +523,10 @@ let oe_gen_call_function (os:out_channel) (fd: Ast.func_decl) =
     | _ -> "pargs_out->_retval = " in
   let call_str = ret_str ^ fd.Ast.fname ^ params_str in
   fprintf os "    /* Call user function */\n";
-  fprintf os "    %s;\n" call_str  
+  fprintf os "    %s;\n" call_str
 
-(* oe: Generate ecall function . *)
-let oe_gen_ecall_function (os:out_channel) (fd: Ast.func_decl) =  
+(** Generate ecall function. *)
+let oe_gen_ecall_function (os:out_channel) (fd: Ast.func_decl) =
   fprintf os "void ecall_%s(\n" fd.Ast.fname;
   fprintf os "        uint8_t* input_buffer, size_t input_buffer_size,\n";
   fprintf os "        uint8_t* output_buffer, size_t output_buffer_size,\n";
@@ -578,7 +566,8 @@ let oe_gen_ecall_function (os:out_channel) (fd: Ast.func_decl) =
     ) fd.Ast.plist;
   fprintf os "\n";
 
-  (* Prepare out and in-out parameters. The in-out parameter is copied to output buffer. *)
+  (* Prepare out and in-out parameters. The in-out parameter is copied
+     to output buffer. *)
   fprintf os "    /* Set out and in-out pointers. In-out parameters are copied to output buffer. */\n";
   List.iter (fun (ptype, decl) ->
       match ptype with
@@ -610,17 +599,16 @@ let oe_gen_ecall_function (os:out_channel) (fd: Ast.func_decl) =
   fprintf os "        pargs_out->_result = _result;\n";
   fprintf os "}\n\n"
 
-
 let oe_gen_ecall_functions (os:out_channel) (ec: enclave_content)  =
   fprintf os "\n\n/****** ECALL function wrappers  *************/\n";
-  List.iter 
+  List.iter
     (fun f -> oe_gen_ecall_function os f.Ast.tf_fdecl)
     ec.tfunc_decls
 
 let oe_gen_ecall_table (os:out_channel) (ec: enclave_content)  =
   fprintf os "\n\n/****** ECALL function table  *************/\n";
   fprintf os "oe_ecall_func_t __oe_ecalls_table[] = {\n";
-  List.iter 
+  List.iter
     (fun f -> fprintf os "    (oe_ecall_func_t) ecall_%s,\n" f.Ast.tf_fdecl.fname)
     ec.tfunc_decls;
   fprintf os "};\n\n";
@@ -647,9 +635,9 @@ let oe_get_host_ecall_function (os:out_channel) (fd:Ast.func_decl) =
   fprintf os "\n";
   fprintf os "{\n";
   fprintf os "    oe_result_t _result = OE_FAILURE;\n\n";
-  fprintf os "    /* Marshaling struct */ \n";
+  fprintf os "    /* Marshalling struct */ \n";
   fprintf os "    %s_args_t _args, *_pargs_in = NULL, *_pargs_out=NULL;\n\n" fd.Ast.fname;
-  fprintf os "    /* Marshaling buffer and sizes */ \n";
+  fprintf os "    /* Marshalling buffer and sizes */ \n";
   fprintf os "    size_t _input_buffer_size = 0;\n";
   fprintf os "    size_t _output_buffer_size = 0;\n";
   fprintf os "    size_t _total_buffer_size = 0;\n";
@@ -659,7 +647,7 @@ let oe_get_host_ecall_function (os:out_channel) (fd:Ast.func_decl) =
   fprintf os "    size_t _input_buffer_offset = 0;\n";
   fprintf os "    size_t _output_buffer_offset = 0;\n";
   fprintf os "    size_t _output_bytes_written = 0;\n\n";
-  fprintf os "    /* Fill marshaling struct */\n";
+  fprintf os "    /* Fill marshalling struct */\n";
   fprintf os "    memset(&_args, 0, sizeof(_args));\n";
   gen_fill_marshal_struct os fd "_args";
   oe_prepare_input_buffer os fd "malloc";
@@ -673,20 +661,20 @@ let oe_get_host_ecall_function (os:out_channel) (fd:Ast.func_decl) =
   fprintf os "        goto done;\n\n";
   oe_process_output_buffer os fd;
   fprintf os "    _result = OE_OK;\n";
-  fprintf os "done:    \n";  
+  fprintf os "done:    \n";
   fprintf os "    if (_buffer)\n";
   fprintf os "        free(_buffer);\n";
   fprintf os "    return _result;\n";
   fprintf os "}\n\n"
 
-let iter_ptr_params f params = 
+let iter_ptr_params f params =
   List.iter (fun (ptype, decl)->
       match ptype with
-      | Ast.PTPtr(_, attr) ->  f (ptype, decl, attr)
-      | _ ->()
+      | Ast.PTPtr(_, attr) -> f (ptype, decl, attr)
+      | _ -> ()
     ) params
 
-(* Generate ocalls wrapper function *)
+(** Generate ocalls wrapper function. *)
 let oe_gen_ocall_enclave_wrapper (os:out_channel) (uf:Ast.untrusted_func) =
   let propagate_errno = uf.Ast.uf_propagate_errno in
   let fd = uf.Ast.uf_fdecl in
@@ -694,9 +682,9 @@ let oe_gen_ocall_enclave_wrapper (os:out_channel) (uf:Ast.untrusted_func) =
   fprintf os "\n";
   fprintf os "{\n";
   fprintf os "    oe_result_t _result = OE_FAILURE;\n\n";
-  fprintf os "    /* Marshaling struct */ \n";
+  fprintf os "    /* Marshalling struct */ \n";
   fprintf os "    %s_args_t _args, *_pargs_in = NULL, *_pargs_out=NULL;\n\n" fd.Ast.fname;
-  fprintf os "    /* Marshaling buffer and sizes */ \n";
+  fprintf os "    /* Marshalling buffer and sizes */ \n";
   fprintf os "    size_t _input_buffer_size = 0;\n";
   fprintf os "    size_t _output_buffer_size = 0;\n";
   fprintf os "    size_t _total_buffer_size = 0;\n";
@@ -706,7 +694,7 @@ let oe_gen_ocall_enclave_wrapper (os:out_channel) (uf:Ast.untrusted_func) =
   fprintf os "    size_t _input_buffer_offset = 0;\n";
   fprintf os "    size_t _output_buffer_offset = 0;\n";
   fprintf os "    size_t _output_bytes_written = 0;\n\n";
-  fprintf os "    /* Fill marshaling struct */\n";
+  fprintf os "    /* Fill marshalling struct */\n";
   fprintf os "    memset(&_args, 0, sizeof(_args));\n";
   gen_fill_marshal_struct os fd "_args";
   oe_prepare_input_buffer os fd "oe_allocate_ocall_buffer";
@@ -733,9 +721,7 @@ let oe_gen_ocall_enclave_wrapper (os:out_channel) (uf:Ast.untrusted_func) =
   fprintf os "    return _result;\n";
   fprintf os "}\n\n"
 
-(*
- * Generate ocall function table and registration
- *)  
+(** Generate ocall function table and registration *)
 let oe_gen_ocall_table (os:out_channel) (ec:enclave_content) =
   fprintf os "\n/*ocall function table*/\n";
   fprintf os "static oe_ocall_func_t __%s_ocall_function_table[]= {\n" ec.enclave_name;
@@ -745,7 +731,7 @@ let oe_gen_ocall_table (os:out_channel) (ec:enclave_content) =
   fprintf os "    NULL\n";
   fprintf os "};\n\n"
 
-(* Generate ocalls wrapper function *)
+(** Generate ocalls wrapper function *)
 let oe_gen_ocall_host_wrapper (os:out_channel) (uf:Ast.untrusted_func) =
   let propagate_errno = uf.Ast.uf_propagate_errno in
   let fd = uf.Ast.uf_fdecl in
@@ -753,6 +739,7 @@ let oe_gen_ocall_host_wrapper (os:out_channel) (uf:Ast.untrusted_func) =
   fprintf os "        uint8_t* input_buffer, size_t input_buffer_size,\n";
   fprintf os "        uint8_t* output_buffer, size_t output_buffer_size,\n";
   fprintf os "        size_t* output_bytes_written)\n";
+
   (* Variable declarations *)
   fprintf os "{\n";
   fprintf os "    oe_result_t _result = OE_FAILURE;\n";
@@ -825,17 +812,15 @@ let oe_gen_ocall_host_wrapper (os:out_channel) (uf:Ast.untrusted_func) =
   fprintf os "        pargs_out->_result = _result;\n";
   fprintf os "}\n\n"
 
-(* 
-  Check if any of the parameters or the return type
-  has the given root type.
-*)  
+(** Check if any of the parameters or the return type has the given
+    root type. *)
 let uses_type (root_type:Ast.atype) (fd:Ast.func_decl) =
-  let param_match = 
-    List.exists (fun (pt, decl) -> 
+  let param_match =
+    List.exists (fun (pt, decl) ->
         root_type =  (Ast.get_param_atype pt)
       ) fd.Ast.plist in
   if param_match then
-    param_match 
+    param_match
   else
     root_type = fd.Ast.rtype
 
@@ -868,17 +853,17 @@ let warn_non_portable_types (fd:Ast.func_decl) =
   (if uses_type (Ast.Long Ast.Unsigned) fd || uses_type ulong_t fd then
      print_portability_warning_with_recommendation "unsigned long" "uint64_t or uint32_t")
 
-(* Valid oe support *)
+(** Validate Open Enclave supported EDL features. *)
 let validate_oe_support (ec: enclave_content) (ep: edger8r_params) =
   (* check supported options *)
   if ep.use_prefix then failwithf "--use_prefix option is not supported by oeedger8r.";
-  List.iter (fun f -> 
+  List.iter (fun f ->
       (if f.Ast.tf_is_priv then
          failwithf "Function '%s': 'private' specifier is not supported by oeedger8r" f.Ast.tf_fdecl.fname);
       (if f.Ast.tf_is_switchless then
          failwithf "Function '%s': switchless ecalls and ocalls are not yet supported by Open Enclave SDK." f.Ast.tf_fdecl.fname);
     ) ec.tfunc_decls;
-  List.iter (fun f -> 
+  List.iter (fun f ->
       (if f.Ast.uf_fattr.fa_convention <> Ast.CC_NONE then
          let cconv_str = Ast.get_call_conv_str f.Ast.uf_fattr.Ast.fa_convention in
          printf "Warning: Function '%s': Calling convention '%s' for ocalls is not supported by oeedger8r.\n" f.Ast.uf_fdecl.fname cconv_str);
@@ -898,19 +883,16 @@ let validate_oe_support (ec: enclave_content) (ep: edger8r_params) =
       warn_non_portable_types f;
     ) funcs
 
-  (*
-    Includes are emitted in args.h.
-    Imported functions have already been brought into function lists.
-  *)  
-
+(** Includes are emitted in [args.h]. Imported functions have already
+    been brought into function lists. *)
 let gen_t_h (ec: enclave_content) (ep: edger8r_params) =
   let fname = ec.file_shortnm ^ "_t.h" in
   let guard = sprintf "EDGER8R_%s_T_H" (String.uppercase ec.file_shortnm) in
-  let os = open_file fname ep.trusted_dir in  
+  let os = open_file fname ep.trusted_dir in
   fprintf os "#ifndef %s\n" guard;
   fprintf os "#define %s\n\n" guard;
-  fprintf os "#include <openenclave/enclave.h>\n";  
-  fprintf os "#include \"%s_args.h\"\n\n" ec.file_shortnm;  
+  fprintf os "#include <openenclave/enclave.h>\n";
+  fprintf os "#include \"%s_args.h\"\n\n" ec.file_shortnm;
   fprintf os "OE_EXTERNC_BEGIN\n\n";
   if ec.tfunc_decls <> [] then (
     fprintf os "/* List of ecalls */\n\n";
@@ -922,16 +904,16 @@ let gen_t_h (ec: enclave_content) (ep: edger8r_params) =
     fprintf os "\n");
   fprintf os "OE_EXTERNC_END\n\n";
   fprintf os "#endif // %s\n" guard;
-  close_out os  
+  close_out os
 
 let gen_t_c (ec: enclave_content) (ep: edger8r_params) =
   let ecalls_fname = ec.file_shortnm ^ "_t.c" in
   let os = open_file ecalls_fname ep.trusted_dir in
-  fprintf os "#include \"%s_t.h\"\n" ec.file_shortnm;  
-  fprintf os "#include <openenclave/edger8r/enclave.h>\n";  
+  fprintf os "#include \"%s_t.h\"\n" ec.file_shortnm;
+  fprintf os "#include <openenclave/edger8r/enclave.h>\n";
   fprintf os "#include <stdlib.h>\n";
   fprintf os "#include <string.h>\n";
-  fprintf os "#include <wchar.h>\n";  
+  fprintf os "#include <wchar.h>\n";
   fprintf os "\n";
   fprintf os "OE_EXTERNC_BEGIN\n\n";
   if ec.tfunc_decls <> [] then (
@@ -945,7 +927,7 @@ let gen_t_c (ec: enclave_content) (ep: edger8r_params) =
   fprintf os "    OE_UNUSED(arg);\n";
   fprintf os "}\n\n";
   fprintf os "OE_EXTERNC_END\n";
-  close_out os 
+  close_out os
 
 let oe_emit_create_enclave_decl (os:out_channel)  (ec:enclave_content) =
   fprintf os "oe_result_t oe_create_%s_enclave(const char* path,\n" ec.enclave_name;
@@ -973,15 +955,14 @@ let oe_emit_create_enclave_defn (os:out_channel)  (ec:enclave_content) =
   fprintf os "               enclave);\n";
   fprintf os "}\n\n"
 
-
 let gen_u_h (ec: enclave_content) (ep: edger8r_params) =
   let fname = ec.file_shortnm ^ "_u.h" in
   let guard = sprintf "EDGER8R_%s_U_H" (String.uppercase ec.file_shortnm) in
-  let os = open_file fname ep.untrusted_dir in  
+  let os = open_file fname ep.untrusted_dir in
   fprintf os "#ifndef %s\n" guard;
   fprintf os "#define %s\n\n" guard;
-  fprintf os "#include <openenclave/host.h>\n";  
-  fprintf os "#include \"%s_args.h\"\n\n" ec.file_shortnm;  
+  fprintf os "#include <openenclave/host.h>\n";
+  fprintf os "#include \"%s_args.h\"\n\n" ec.file_shortnm;
   fprintf os "OE_EXTERNC_BEGIN\n\n";
   oe_emit_create_enclave_decl os ec;
   if ec.tfunc_decls <> [] then (
@@ -994,17 +975,16 @@ let gen_u_h (ec: enclave_content) (ep: edger8r_params) =
     fprintf os "\n");
   fprintf os "OE_EXTERNC_END\n\n";
   fprintf os "#endif // %s\n" guard;
-  close_out os  
-
+  close_out os
 
 let gen_u_c (ec: enclave_content) (ep: edger8r_params) =
   let ecalls_fname = ec.file_shortnm ^ "_u.c" in
   let os = open_file ecalls_fname ep.untrusted_dir in
-  fprintf os "#include \"%s_u.h\"\n" ec.file_shortnm;  
-  fprintf os "#include <openenclave/edger8r/host.h>\n";  
+  fprintf os "#include \"%s_u.h\"\n" ec.file_shortnm;
+  fprintf os "#include <openenclave/edger8r/host.h>\n";
   fprintf os "#include <stdlib.h>\n";
   fprintf os "#include <string.h>\n";
-  fprintf os "#include <wchar.h>\n";  
+  fprintf os "#include <wchar.h>\n";
   fprintf os "\n";
   fprintf os "OE_EXTERNC_BEGIN\n\n";
   if ec.tfunc_decls <> [] then (
@@ -1016,9 +996,9 @@ let gen_u_c (ec: enclave_content) (ep: edger8r_params) =
   oe_gen_ocall_table os ec;
   oe_emit_create_enclave_defn os ec;
   fprintf os "OE_EXTERNC_END\n";
-  close_out os   
+  close_out os
 
-(* Generate the Enclave code. *)
+(** Generate the Enclave code. *)
 let gen_enclave_code (ec: enclave_content) (ep: edger8r_params) =
   validate_oe_support ec ep;
 
@@ -1036,10 +1016,8 @@ let gen_enclave_code (ec: enclave_content) (ep: edger8r_params) =
   );
   printf "Success.\n"
 
-
-(* Install the plugin *)
-let _ = 
+(** Install the plugin. *)
+let _ =
   Printf.printf "Generating edge routines for the Open Enclave SDK.\n";
   Plugin.instance.available <- true;
   Plugin.instance.gen_edge_routines <- gen_enclave_code;
-
