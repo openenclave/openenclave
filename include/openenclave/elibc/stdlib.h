@@ -1,93 +1,60 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _ELIBC_STDLIB_H
-#define _ELIBC_STDLIB_H
+#ifndef _OE_STDLIB_H
+#define _OE_STDLIB_H
 
-#include "bits/common.h"
+#include <openenclave/bits/defs.h>
+#include <openenclave/bits/types.h>
 
-ELIBC_EXTERNC_BEGIN
+OE_EXTERNC_BEGIN
 
-#define ELIBC_RAND_MAX (0x7fffffff)
+#define OE_RAND_MAX (0x7fffffff)
 
 int elibc_rand(void);
 
-void* elibc_malloc(size_t size);
+void* oe_malloc(size_t size);
 
-void elibc_free(void* ptr);
+void oe_free(void* ptr);
 
-void* elibc_calloc(size_t nmemb, size_t size);
+void* oe_calloc(size_t nmemb, size_t size);
 
-void* elibc_realloc(void* ptr, size_t size);
+void* oe_realloc(void* ptr, size_t size);
 
-void* elibc_memalign(size_t alignment, size_t size);
+void* oe_memalign(size_t alignment, size_t size);
 
-int elibc_posix_memalign(void** memptr, size_t alignment, size_t size);
+int oe_posix_memalign(void** memptr, size_t alignment, size_t size);
 
 unsigned long int elibc_strtoul(const char* nptr, char** endptr, int base);
 
 int elibc_atexit(void (*function)(void));
 
-#if defined(ELIBC_NEED_STDC_NAMES)
+#if defined(OE_NEED_STDC_NAMES)
 
-#define RAND_MAX ELIBC_RAND_MAX
+#include "bits/malloc.h"
 
-ELIBC_INLINE
+#define RAND_MAX OE_RAND_MAX
+
+OE_INLINE
 int rand(void)
 {
     return elibc_rand();
 }
 
-ELIBC_INLINE
-void* malloc(size_t size)
-{
-    return elibc_malloc(size);
-}
-
-ELIBC_INLINE
-void free(void* ptr)
-{
-    elibc_free(ptr);
-}
-
-ELIBC_INLINE
-void* calloc(size_t nmemb, size_t size)
-{
-    return elibc_calloc(nmemb, size);
-}
-
-ELIBC_INLINE
-void* realloc(void* ptr, size_t size)
-{
-    return elibc_realloc(ptr, size);
-}
-
-ELIBC_INLINE
-void* memalign(size_t alignment, size_t size)
-{
-    return elibc_memalign(alignment, size);
-}
-
-ELIBC_INLINE
-int posix_memalign(void** memptr, size_t alignment, size_t size)
-{
-    return elibc_posix_memalign(memptr, alignment, size);
-}
-
-ELIBC_INLINE
+OE_INLINE
 unsigned long int strtoul(const char* nptr, char** endptr, int base)
 {
     return elibc_strtoul(nptr, endptr, base);
 }
 
-ELIBC_INLINE
+OE_INLINE
 int atexit(void (*function)(void))
 {
     return elibc_atexit(function);
 }
 
-#endif /* defined(ELIBC_NEED_STDC_NAMES) */
+#endif /* defined(OE_NEED_STDC_NAMES) */
 
-ELIBC_EXTERNC_END
+OE_EXTERNC_END
 
-#endif /* _ELIBC_STDLIB_H */
+#endif /* _OE_STDLIB_H */

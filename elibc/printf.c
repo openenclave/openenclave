@@ -676,7 +676,7 @@ int elibc_vprintf(const char* fmt, elibc_va_list ap_)
 
     /* If string was truncated, retry with correctly sized buffer */
     {
-        if (!(new_buf = (char*)malloc((size_t)n + 1)))
+        if (!(new_buf = (char*)oe_malloc((size_t)n + 1)))
             goto done;
 
         p = new_buf;
@@ -695,7 +695,7 @@ int elibc_vprintf(const char* fmt, elibc_va_list ap_)
 done:
 
     if (new_buf)
-        free(new_buf);
+        oe_free(new_buf);
 
     return n;
 }

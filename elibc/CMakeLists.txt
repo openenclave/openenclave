@@ -4,7 +4,6 @@
 add_library(oeelibc STATIC
     atexit.c
     intstr.c
-    malloc.c
     printf.c
     rand.c
     stdio.c
