@@ -73,11 +73,13 @@ $env:PATH += ";C:\Program Files\LLVM\bin"
 $BUILD_GENERATOR="Visual Studio 15 2017 Win64"
 $BUILD_ENCLAVES_FLAG=""
 $LINUX_BIN_FLAG="-DLINUX_BIN_DIR=`"$LINUX_BIN_DIR`""
+$CMAKE_ROOT_DIR=".."
 
 if ($BUILD_ENCLAVES) {
     $BUILD_GENERATOR="Ninja"
     $BUILD_ENCLAVES_FLAG="-DBUILD_ENCLAVES=1"
     $LINUX_BIN_FLAG=""
+    $CMAKE_ROOT_DIR="../.."
 
     # Currently disable Windows Enclave Tests for BUILD_ENCLAVE builds.
     # This will be enabled in a later PR.
@@ -98,14 +100,19 @@ else {
     $CONFIG_FLAG="-p:Configuration=Debug"
 }
 
+# Create X64-Debug/X64-Release directories for Ninja generator
 if ($BUILD_ENCLAVES) {
-   mkdir X64-Debug
-   cd X64-Debug
-   & cmake.exe -G $BUILD_GENERATOR $LINUX_BIN_FLAG $BUILD_TYPE_FLAG $ADD_WINDOWS_ENCLAVE_TESTS_FLAG $BUILD_ENCLAVES_FLAG ../..
+   if ($BUILD_TYPE -eq "Release") {
+       $BUILD_DIR="X64-Release"
+   }
+   else {
+        $BUILD_DIR="X64-Debug"
+   }
+   mkdir $BUILD_DIR
+   cd $BUILD_DIR
 }
-else {
-    & cmake.exe -G $BUILD_GENERATOR $LINUX_BIN_FLAG $BUILD_TYPE_FLAG $ADD_WINDOWS_ENCLAVE_TESTS_FLAG $BUILD_ENCLAVES_FLAG ..
-}
+
+& cmake.exe -G $BUILD_GENERATOR $LINUX_BIN_FLAG $ADD_WINDOWS_ENCLAVE_TESTS_FLAG $BUILD_ENCLAVES_FLAG $CMAKE_ROOT_DIR
 
 if ($LASTEXITCODE) {
     echo ""

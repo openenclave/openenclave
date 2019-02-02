@@ -132,7 +132,7 @@ def checkDevFlows() {
     }
 }
 
-def win2016DebugCrossPlatform() {
+def win2016DebugLinuxElfBuild() {
     stage('Linux SGX1 Debug') {
         node {
             cleanWs()
@@ -164,7 +164,7 @@ def win2016DebugCrossPlatform() {
     }
 }
 
-def win2016ReleaseCrossPlatform() {
+def win2016ReleaseLinuxElfBuild() {
     stage('Linux SGX1 Release') {
         node {
             cleanWs()
@@ -201,7 +201,7 @@ def win2016DebugCrossCompile() {
         node('SGXFLC-Windows') {
             cleanWs()
             checkout scm
-            PowerShellWrapper('./scripts/test-build-config.ps1 -add_windows_enclave_tests -linux_bin_dir $ENV:WORKSPACE/linuxbin/tests -build_type Debug -build_enclaves')
+            PowerShellWrapper('./scripts/test-build-config.ps1 -add_windows_enclave_tests -build_type Debug -build_enclaves')
        }
     }
 }
@@ -211,10 +211,13 @@ def win2016ReleaseCrossCompile() {
         node('SGXFLC-Windows') {
             cleanWs()
             checkout scm
-            PowerShellWrapper('./scripts/test-build-config.ps1 -add_windows_enclave_tests -linux_bin_dir $ENV:WORKSPACE/linuxbin/tests -build_type Release -build_enclaves')
+            PowerShellWrapper('./scripts/test-build-config.ps1 -build_type Release -build_enclaves')
         }
     }
 }
 parallel "Check Developer Experience" :         { checkDevFlows() },
+        "Win2016 Debug Linux-Elf-build" :       { win2016DebugLinuxElfBuild() },
+        "Win2016 Release Linux-Elf-build" :     { win2016ReleaseLinuxElfBuild() },
         "Win2016 Debug Cross Compile" :         { win2016DebugCrossCompile() },
+        "Win2016 Release Cross Compile" :       { win2016ReleaseCrossCompile() },
         "ACC1604 Container RelWithDebInfo" :    { ACCContainerTest('ACC-1604') }
