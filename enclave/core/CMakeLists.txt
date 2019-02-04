@@ -6,6 +6,7 @@ set(MUSL_SRC_DIR ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
 if (OE_SGX)
     list(APPEND PLATFORM_SRC
+        ${MUSL_SRC_DIR}/prng/rand.c
         ${MUSL_SRC_DIR}/string/memcmp.c
         ${MUSL_SRC_DIR}/string/memcpy.c
         ${MUSL_SRC_DIR}/string/memmove.c

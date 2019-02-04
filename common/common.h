@@ -16,7 +16,7 @@
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/print.h>
 
-// Redefine C library funtions to use enclave libc functions.
+// Redefine C library functions to use enclave libc functions.
 #define malloc oe_malloc
 #define free oe_free
 
@@ -33,7 +33,5 @@
 #include <string.h>
 
 #endif
-
-uint64_t _rdrand(void);
 
 #endif // _OE_COMMON_COMMON_H

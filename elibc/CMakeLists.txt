@@ -4,7 +4,6 @@
 add_library(oeelibc STATIC
     intstr.c
     printf.c
-    rand.c
     stdio.c
     strtoul.c
     ${SOURCES})

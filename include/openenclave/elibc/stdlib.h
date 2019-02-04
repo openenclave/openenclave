@@ -9,9 +9,9 @@
 
 OE_EXTERNC_BEGIN
 
-#define OE_RAND_MAX (0x7fffffff)
-
-int elibc_rand(void);
+/* Implementations taken directly from MUSL */
+void srand(unsigned s);
+int rand(void);
 
 void* oe_malloc(size_t size);
 
@@ -33,14 +33,6 @@ int oe_atexit(void (*function)(void));
 
 #include "bits/atexit.h"
 #include "bits/malloc.h"
-
-#define RAND_MAX OE_RAND_MAX
-
-OE_INLINE
-int rand(void)
-{
-    return elibc_rand();
-}
 
 OE_INLINE
 unsigned long int strtoul(const char* nptr, char** endptr, int base)
