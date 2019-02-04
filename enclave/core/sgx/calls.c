@@ -5,7 +5,6 @@
 #include <openenclave/bits/safemath.h>
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/atexit.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/fault.h>
@@ -20,6 +19,7 @@
 #include <openenclave/internal/utils.h>
 #include "../../sgx/report.h"
 #include "asmdefs.h"
+#include "atexit.h"
 #include "cpuid.h"
 #include "init.h"
 #include "report.h"

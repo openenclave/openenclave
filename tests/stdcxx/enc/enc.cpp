@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include <openenclave/edger8r/enclave.h>
+#include <openenclave/elibc/stdlib.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/atexit.h>
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/tests.h>
 #include <iostream>

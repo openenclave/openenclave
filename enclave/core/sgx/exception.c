@@ -3,7 +3,6 @@
 
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/atexit.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/constants_x64.h>
 #include <openenclave/internal/context.h>

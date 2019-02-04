@@ -2,7 +2,6 @@
 # Licensed under the MIT License.
 
 add_library(oeelibc STATIC
-    atexit.c
     intstr.c
     printf.c
     rand.c

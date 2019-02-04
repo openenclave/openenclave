@@ -27,10 +27,11 @@ int oe_posix_memalign(void** memptr, size_t alignment, size_t size);
 
 unsigned long int elibc_strtoul(const char* nptr, char** endptr, int base);
 
-int elibc_atexit(void (*function)(void));
+int oe_atexit(void (*function)(void));
 
 #if defined(OE_NEED_STDC_NAMES)
 
+#include "bits/atexit.h"
 #include "bits/malloc.h"
 
 #define RAND_MAX OE_RAND_MAX
@@ -45,12 +46,6 @@ OE_INLINE
 unsigned long int strtoul(const char* nptr, char** endptr, int base)
 {
     return elibc_strtoul(nptr, endptr, base);
-}
-
-OE_INLINE
-int atexit(void (*function)(void))
-{
-    return elibc_atexit(function);
 }
 
 #endif /* defined(OE_NEED_STDC_NAMES) */
