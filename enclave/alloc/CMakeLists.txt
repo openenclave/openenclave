@@ -11,3 +11,6 @@ target_compile_options(oealloc PUBLIC -fPIC -nostdinc -fno-stack-protector)
 
 set_source_files_properties(allocator.c
     PROPERTIES COMPILE_FLAGS "-Wno-conversion -Wno-null-pointer-arithmetic")
+
+install(TARGETS oealloc EXPORT openenclave-targets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
