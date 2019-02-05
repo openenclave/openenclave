@@ -73,6 +73,7 @@ add_library(oecore STATIC
     snprintf.c
     strerror.c
     string.c
+    strtoul.c
     time.c
     ${PLATFORM_SRC})
 

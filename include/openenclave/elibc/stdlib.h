@@ -25,7 +25,7 @@ void* oe_memalign(size_t alignment, size_t size);
 
 int oe_posix_memalign(void** memptr, size_t alignment, size_t size);
 
-unsigned long int elibc_strtoul(const char* nptr, char** endptr, int base);
+unsigned long int oe_strtoul(const char* nptr, char** endptr, int base);
 
 int oe_atexit(void (*function)(void));
 
@@ -33,12 +33,7 @@ int oe_atexit(void (*function)(void));
 
 #include "bits/atexit.h"
 #include "bits/malloc.h"
-
-OE_INLINE
-unsigned long int strtoul(const char* nptr, char** endptr, int base)
-{
-    return elibc_strtoul(nptr, endptr, base);
-}
+#include "bits/strtoul.h"
 
 #endif /* defined(OE_NEED_STDC_NAMES) */
 

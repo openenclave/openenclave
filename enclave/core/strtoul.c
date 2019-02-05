@@ -1,12 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <ctype.h>
-#include <limits.h>
-#include <openenclave/enclave.h>
-#include <openenclave/internal/enclavelibc.h>
-#include <stdint.h>
-#include <string.h>
+#include <openenclave/bits/defs.h>
+#include <openenclave/bits/types.h>
+#include <openenclave/elibc/ctype.h>
 
 //
 // If c is a digit character:
@@ -47,12 +44,12 @@ static const unsigned char _digit[256] = {
 };
 
 /* Return true if c is a digit character within the given base */
-ELIBC_INLINE bool _isdigit(char c, int base)
+OE_INLINE bool _isdigit(char c, int base)
 {
     return _digit[(unsigned char)c] < base;
 }
 
-unsigned long int elibc_strtoul(const char* nptr, char** endptr, int base)
+unsigned long int oe_strtoul(const char* nptr, char** endptr, int base)
 {
     const char* p;
     unsigned long x = 0;
@@ -106,12 +103,12 @@ unsigned long int elibc_strtoul(const char* nptr, char** endptr, int base)
         /* Multiply by base */
         {
             /* Check for overflow */
-            if (x > ELIBC_UINT64_MAX / (unsigned long)base)
+            if (x > OE_UINT64_MAX / (unsigned long)base)
             {
                 if (endptr)
                     *endptr = (char*)p;
 
-                return ELIBC_UINT64_MAX;
+                return OE_UINT64_MAX;
             }
 
             x = x * (unsigned long)base;
@@ -122,12 +119,12 @@ unsigned long int elibc_strtoul(const char* nptr, char** endptr, int base)
             const unsigned long digit = _digit[(unsigned char)*p];
 
             /* Check for overflow */
-            if (digit > ELIBC_ULONG_MAX - x)
+            if (digit > OE_ULONG_MAX - x)
             {
                 if (endptr)
                     *endptr = (char*)p;
 
-                return ELIBC_UINT64_MAX;
+                return OE_UINT64_MAX;
             }
 
             x += digit;
@@ -144,9 +141,9 @@ unsigned long int elibc_strtoul(const char* nptr, char** endptr, int base)
     /* Invert if negative */
     if (negative)
     {
-        if (x > ELIBC_LONG_MAX)
+        if (x > OE_LONG_MAX)
         {
-            if (x == (unsigned long)ELIBC_LONG_MAX + 1)
+            if (x == (unsigned long)OE_LONG_MAX + 1)
                 return x;
             else
                 return 0;
@@ -165,29 +162,29 @@ unsigned long int elibc_strtoul(const char* nptr, char** endptr, int base)
 **==============================================================================
 */
 
-#if defined(ELIBC_NEED_STRTOUL_GENERATOR)
+#if defined(OE_NEED_STRTOUL_GENERATOR)
 
-void __elibc_gen_strtoul_table(void)
+void __oe_gen_strtoul_table(void)
 {
     for (int i = 0; i < 256; i++)
     {
         if (i >= '0' && i <= '9')
         {
-            elibc_printf("0x%02x,\n", i - '0');
+            oe_printf("0x%02x,\n", i - '0');
         }
         else if (i >= 'A' && i <= 'Z')
         {
-            elibc_printf("0x%02x,\n", i - 'A' + 10);
+            oe_printf("0x%02x,\n", i - 'A' + 10);
         }
         else if (i >= 'a' && i <= 'z')
         {
-            elibc_printf("0x%02x,\n", i - 'a' + 10);
+            oe_printf("0x%02x,\n", i - 'a' + 10);
         }
         else
         {
-            elibc_printf("0xFF,\n");
+            oe_printf("0xFF,\n");
         }
     }
 }
 
-#endif /* defined(ELIBC_NEED_STRTOUL_GENERATOR) */
+#endif /* defined(OE_NEED_STRTOUL_GENERATOR) */

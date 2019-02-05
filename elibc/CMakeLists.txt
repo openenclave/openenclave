@@ -5,7 +5,6 @@ add_library(oeelibc STATIC
     intstr.c
     printf.c
     stdio.c
-    strtoul.c
     ${SOURCES})
 
 maybe_build_using_clangw(oeelibc)

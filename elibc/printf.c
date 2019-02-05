@@ -119,7 +119,7 @@ static const char* _parse_placeholder(
     if (oe_isdigit(*p))
     {
         char* end = NULL;
-        unsigned long int ul = elibc_strtoul(p, &end, 10);
+        unsigned long int ul = oe_strtoul(p, &end, 10);
         if (!end || ul > ELIBC_INT_MAX)
             return NULL;
 
@@ -141,7 +141,7 @@ static const char* _parse_placeholder(
         if (oe_isdigit(*p))
         {
             char* end = NULL;
-            unsigned long int ul = elibc_strtoul(p, &end, 10);
+            unsigned long int ul = oe_strtoul(p, &end, 10);
             if (!end || ul > ELIBC_INT_MAX)
                 return NULL;
 
