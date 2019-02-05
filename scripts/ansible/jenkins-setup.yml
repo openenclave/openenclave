@@ -4,6 +4,7 @@
 ---
 - hosts: linux-agents
   any_errors_fatal: true
+  gather_facts: true
   become: yes
   tasks:
     - import_role:
@@ -44,6 +45,7 @@
 
 - hosts: windows-agents
   any_errors_fatal: true
+  become_method: runas
   tasks:
     - block:
       - import_role:
@@ -56,6 +58,10 @@
       fail:
         msg: "The node_secret fact is not defined!"
       when: node_secret is undefined
+
+    - import_role:
+        name: windows/az-dcap-client
+        tasks_from: environment-setup.yml
 
     - import_role:
         name: windows/jenkins
