@@ -43,16 +43,8 @@ if (NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
   message(FATAL_ERROR "Only 64-bit builds are supported!")
 endif ()
 
-# Use ccache if available.
-# TODO: See #759: Replace this with `CMAKE_<LANG>_COMPILER_LAUNCHER`.
-find_program(CCACHE_FOUND ccache)
-if (CCACHE_FOUND)
-  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
-  set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
-  message("Using ccache")
-else ()
-  message("ccache not found")
-endif (CCACHE_FOUND)
+# Setup ccache
+include(ccache)
 
 # Check for compiler flags
 include(CheckCCompilerFlag)
