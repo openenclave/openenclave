@@ -77,7 +77,7 @@ endfunction()
 function(add_mbed_selftest_enclave)
   add_enclave(TARGET mbedtest_selftest
     SOURCES
-    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/programs/test/selftest.c
+    selftest_wrapper.c
     enc.c
     start.S
     ${gen})

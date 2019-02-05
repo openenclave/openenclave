@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/elibc/bits/intstr.h>
+#include "intstr.h"
 #include <openenclave/elibc/string.h>
 
 const char* oe_uint64_to_hexstr(oe_intstr_buf_t* buf, uint64_t x, size_t* size)
@@ -33,7 +33,7 @@ const char* oe_uint64_to_octstr(oe_intstr_buf_t* buf, uint64_t x, size_t* size)
 
     do
     {
-        *--p = '0' + x % 8;
+        *--p = (char)('0' + x % 8);
     } while (x /= 8);
 
     if (size)
@@ -52,7 +52,7 @@ const char* oe_uint64_to_decstr(oe_intstr_buf_t* buf, uint64_t x, size_t* size)
 
     do
     {
-        *--p = '0' + x % 10;
+        *--p = (char)('0' + x % 10);
     } while (x /= 10);
 
     if (size)
@@ -85,7 +85,7 @@ const char* oe_int64_to_decstr(oe_intstr_buf_t* buf, int64_t x, size_t* size)
 
     do
     {
-        *--p = '0' + x % 10;
+        *--p = (char)('0' + x % 10);
     } while (x /= 10);
 
     if (neg)

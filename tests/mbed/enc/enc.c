@@ -40,7 +40,7 @@ void exit(int status)
 
 char* oe_host_strdup(const char* str)
 {
-    size_t n = oe_strlen(str);
+    size_t n = strlen(str);
     char* dup = (char*)oe_host_malloc(n + 1);
 
     if (dup)

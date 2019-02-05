@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/elibc/bits/intstr.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/trace.h>
+#include "intstr.h"
 
 char* oe_hex_string(
     char* str,

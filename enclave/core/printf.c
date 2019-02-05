@@ -1,15 +1,14 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <ctype.h>
-#include <limits.h>
-#include <openenclave/elibc/bits/intstr.h>
-#include <openenclave/enclave.h>
-#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/bits/defs.h>
+#include <openenclave/bits/types.h>
+#include <openenclave/elibc/ctype.h>
+#include <openenclave/elibc/stdarg.h>
+#include <openenclave/elibc/stdlib.h>
+#include <openenclave/elibc/string.h>
 #include <openenclave/internal/print.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <string.h>
+#include "intstr.h"
 
 /*
 **==============================================================================
@@ -26,14 +25,14 @@
 #define FLAG_POUND (uint32_t)(1 << 4)
 #define FLAG_ZERO (uint32_t)(1 << 5)
 
-#define ELIBC_STRLEN(STR) (sizeof(STR) - 1)
-#define ELIBC_STRLIT(STR) STR, ELIBC_STRLEN(STR)
+#define OE_STRLEN(STR) (sizeof(STR) - 1)
+#define OE_STRLIT(STR) STR, OE_STRLEN(STR)
 
-typedef struct _elibc_out elibc_out_t;
+typedef struct _oe_out oe_out_t;
 
-struct _elibc_out
+struct _oe_out
 {
-    size_t (*write)(elibc_out_t* out, const void* buf, size_t count);
+    size_t (*write)(oe_out_t* out, const void* buf, size_t count);
 };
 
 enum type
@@ -74,11 +73,11 @@ struct placeholder
 static const char* _parse_placeholder(
     const char* p,
     struct placeholder* ph,
-    elibc_va_list ap)
+    oe_va_list ap)
 {
     ph->flags = FLAG_NONE;
-    ph->width = ELIBC_INT_MAX;
-    ph->precision = ELIBC_INT_MAX;
+    ph->width = OE_INT_MAX;
+    ph->precision = OE_INT_MAX;
     ph->type = TYPE_none;
 
     if (*p++ != '%')
@@ -120,7 +119,7 @@ static const char* _parse_placeholder(
     {
         char* end = NULL;
         unsigned long int ul = oe_strtoul(p, &end, 10);
-        if (!end || ul > ELIBC_INT_MAX)
+        if (!end || ul > OE_INT_MAX)
             return NULL;
 
         ph->width = (int)ul;
@@ -128,7 +127,7 @@ static const char* _parse_placeholder(
     }
     else if (*p == '*')
     {
-        ph->width = elibc_va_arg(ap, int);
+        ph->width = oe_va_arg(ap, int);
         p++;
     }
 
@@ -142,7 +141,7 @@ static const char* _parse_placeholder(
         {
             char* end = NULL;
             unsigned long int ul = oe_strtoul(p, &end, 10);
-            if (!end || ul > ELIBC_INT_MAX)
+            if (!end || ul > OE_INT_MAX)
                 return NULL;
 
             ph->precision = (int)ul;
@@ -150,7 +149,7 @@ static const char* _parse_placeholder(
         }
         else if (*p == '*')
         {
-            ph->precision = elibc_va_arg(ap, int);
+            ph->precision = oe_va_arg(ap, int);
             p++;
         }
     }
@@ -167,7 +166,7 @@ static const char* _parse_placeholder(
         ph->type = TYPE_c;
         ph->conversion = 'c';
         /* Ignore precision on %c */
-        ph->precision = ELIBC_INT_MAX;
+        ph->precision = OE_INT_MAX;
         ph->flags &= ~FLAG_ZERO;
         p++;
     }
@@ -308,7 +307,7 @@ static void _str_toupper(char* s)
     }
 }
 
-static size_t _fill(elibc_out_t* out, char c, size_t count)
+static size_t _fill(oe_out_t* out, char c, size_t count)
 {
     size_t n = 0;
 
@@ -318,7 +317,7 @@ static size_t _fill(elibc_out_t* out, char c, size_t count)
     return n;
 }
 
-static size_t _prefix(elibc_out_t* out, struct placeholder* ph)
+static size_t _prefix(oe_out_t* out, struct placeholder* ph)
 {
     size_t n = 0;
 
@@ -328,17 +327,17 @@ static size_t _prefix(elibc_out_t* out, struct placeholder* ph)
         {
             case 'x':
             {
-                n += out->write(out, ELIBC_STRLIT("0x"));
+                n += out->write(out, OE_STRLIT("0x"));
                 break;
             }
             case 'X':
             {
-                n += out->write(out, ELIBC_STRLIT("0X"));
+                n += out->write(out, OE_STRLIT("0X"));
                 break;
             }
             case 'o':
             {
-                n += out->write(out, ELIBC_STRLIT("0"));
+                n += out->write(out, OE_STRLIT("0"));
                 break;
             }
         }
@@ -349,7 +348,7 @@ static size_t _prefix(elibc_out_t* out, struct placeholder* ph)
 
 /* return the number of characters formatted */
 static size_t _format(
-    elibc_out_t* out,
+    oe_out_t* out,
     const char* buf,
     size_t len,
     struct placeholder* ph)
@@ -359,10 +358,10 @@ static size_t _format(
     char pad = ' ';
     size_t n = 0;
 
-    if (ph->width != ELIBC_INT_MAX && (size_t)ph->width > len)
+    if (ph->width != OE_INT_MAX && (size_t)ph->width > len)
         nwidth = (size_t)ph->width - len;
 
-    if (ph->precision != ELIBC_INT_MAX && (size_t)ph->precision > len)
+    if (ph->precision != OE_INT_MAX && (size_t)ph->precision > len)
         nprecision = (size_t)ph->precision - len;
 
     if (nprecision > nwidth)
@@ -406,7 +405,7 @@ static size_t _format(
     return n;
 }
 
-static int _vprintf(elibc_out_t* out, const char* fmt, elibc_va_list ap)
+static int _vprintf(oe_out_t* out, const char* fmt, oe_va_list ap)
 {
     const char* p = fmt;
     size_t n = 0;
@@ -436,7 +435,7 @@ static int _vprintf(elibc_out_t* out, const char* fmt, elibc_va_list ap)
             {
                 case TYPE_s:
                 {
-                    if ((s = elibc_va_arg(ap, const char*)))
+                    if ((s = oe_va_arg(ap, const char*)))
                     {
                         sn = oe_strlen(s);
                     }
@@ -449,7 +448,7 @@ static int _vprintf(elibc_out_t* out, const char* fmt, elibc_va_list ap)
                 }
                 case TYPE_c:
                 {
-                    buf[0] = (char)elibc_va_arg(ap, int);
+                    buf[0] = (char)oe_va_arg(ap, int);
                     buf[1] = '\0';
                     s = buf;
                     sn = sizeof(char);
@@ -457,32 +456,32 @@ static int _vprintf(elibc_out_t* out, const char* fmt, elibc_va_list ap)
                 }
                 case TYPE_o:
                 {
-                    const uint32_t x = elibc_va_arg(ap, uint32_t);
+                    const uint32_t x = oe_va_arg(ap, uint32_t);
                     s = oe_uint64_to_octstr(&is, x, &sn);
                     break;
                 }
                 case TYPE_u:
                 {
-                    const uint32_t x = elibc_va_arg(ap, uint32_t);
+                    const uint32_t x = oe_va_arg(ap, uint32_t);
                     s = oe_uint64_to_decstr(&is, x, &sn);
                     break;
                 }
                 case TYPE_d:
                 case TYPE_i:
                 {
-                    const int32_t x = elibc_va_arg(ap, int32_t);
+                    const int32_t x = oe_va_arg(ap, int32_t);
                     s = oe_int64_to_decstr(&is, x, &sn);
                     break;
                 }
                 case TYPE_x:
                 {
-                    const uint32_t x = elibc_va_arg(ap, uint32_t);
+                    const uint32_t x = oe_va_arg(ap, uint32_t);
                     s = oe_uint64_to_hexstr(&is, x, &sn);
                     break;
                 }
                 case TYPE_X:
                 {
-                    const uint32_t x = elibc_va_arg(ap, uint32_t);
+                    const uint32_t x = oe_va_arg(ap, uint32_t);
                     s = oe_uint64_to_hexstr(&is, x, &sn);
                     _str_toupper((char*)s);
                     break;
@@ -490,7 +489,7 @@ static int _vprintf(elibc_out_t* out, const char* fmt, elibc_va_list ap)
                 case TYPE_lu:
                 case TYPE_llu:
                 {
-                    const uint64_t x = elibc_va_arg(ap, uint64_t);
+                    const uint64_t x = oe_va_arg(ap, uint64_t);
                     s = oe_uint64_to_decstr(&is, x, &sn);
                     break;
                 }
@@ -499,14 +498,14 @@ static int _vprintf(elibc_out_t* out, const char* fmt, elibc_va_list ap)
                 case TYPE_lld:
                 case TYPE_lli:
                 {
-                    const int64_t x = elibc_va_arg(ap, int64_t);
+                    const int64_t x = oe_va_arg(ap, int64_t);
                     s = oe_int64_to_decstr(&is, x, &sn);
                     break;
                 }
                 case TYPE_lx:
                 case TYPE_llx:
                 {
-                    const uint64_t x = elibc_va_arg(ap, uint64_t);
+                    const uint64_t x = oe_va_arg(ap, uint64_t);
                     s = oe_uint64_to_hexstr(&is, x, &sn);
 
                     if (ph.conversion == 'X')
@@ -516,20 +515,20 @@ static int _vprintf(elibc_out_t* out, const char* fmt, elibc_va_list ap)
                 }
                 case TYPE_zu:
                 {
-                    const size_t x = elibc_va_arg(ap, size_t);
+                    const size_t x = oe_va_arg(ap, size_t);
                     s = oe_uint64_to_decstr(&is, x, &sn);
                     break;
                 }
                 case TYPE_zd:
                 case TYPE_zi:
                 {
-                    const ssize_t x = elibc_va_arg(ap, ssize_t);
+                    const ssize_t x = oe_va_arg(ap, ssize_t);
                     s = oe_int64_to_decstr(&is, x, &sn);
                     break;
                 }
                 case TYPE_p:
                 {
-                    const uint64_t x = (uint64_t)elibc_va_arg(ap, void*);
+                    const uint64_t x = (uint64_t)oe_va_arg(ap, void*);
                     s = oe_uint64_to_hexstr(&is, x, &sn);
                     break;
                 }
@@ -551,18 +550,18 @@ static int _vprintf(elibc_out_t* out, const char* fmt, elibc_va_list ap)
     return (int)n;
 }
 
-typedef struct _elibc_out_str
+typedef struct _oe_out_str
 {
-    elibc_out_t base;
+    oe_out_t base;
     char* str;
     size_t size;
     size_t off;
-} elibc_out_str_t;
+} oe_out_str_t;
 
 /* Not POSIX compliant write since this method does not return errno */
-static size_t _write(elibc_out_t* out_, const void* buf, size_t count)
+static size_t _write(oe_out_t* out_, const void* buf, size_t count)
 {
-    elibc_out_str_t* out = (elibc_out_str_t*)out_;
+    oe_out_str_t* out = (oe_out_str_t*)out_;
 
     if (out->off < out->size)
     {
@@ -584,7 +583,7 @@ static size_t _write(elibc_out_t* out_, const void* buf, size_t count)
     return count;
 }
 
-static void _elibc_out_str_init(elibc_out_str_t* out, char* str, size_t size)
+static void _oe_out_str_init(oe_out_str_t* out, char* str, size_t size)
 {
     out->base.write = _write;
     out->str = str;
@@ -615,14 +614,14 @@ static void _elibc_out_str_init(elibc_out_str_t* out, char* str, size_t size)
 // string was truncated.
 //
 //
-int elibc_vsnprintf(char* str, size_t size, const char* fmt, elibc_va_list ap)
+int oe_vsnprintf(char* str, size_t size, const char* fmt, oe_va_list ap)
 {
-    elibc_out_str_t out;
+    oe_out_str_t out;
 
     if (!str && size != 0)
         return -1;
 
-    _elibc_out_str_init(&out, str, size);
+    _oe_out_str_init(&out, str, size);
 
     return _vprintf(&out.base, fmt, ap);
 }
@@ -631,7 +630,7 @@ int elibc_vsnprintf(char* str, size_t size, const char* fmt, elibc_va_list ap)
 // Produce output according to a given format string.
 //
 // This function is similar to snprintf() but has limited support for format
-// types. See elibc_vsnprintf() for details on these limits.
+// types. See oe_vsnprintf() for details on these limits.
 //
 // @param str Write output to this string.
 // @param size The size of **str** parameter.
@@ -641,16 +640,16 @@ int elibc_vsnprintf(char* str, size_t size, const char* fmt, elibc_va_list ap)
 // zero-terminator. If this value is greater or equal to **size**, then the
 // string was truncated.
 //
-int elibc_snprintf(char* str, size_t size, const char* fmt, ...)
+int oe_snprintf(char* str, size_t size, const char* fmt, ...)
 {
-    elibc_va_list ap;
-    elibc_va_start(ap, fmt);
+    oe_va_list ap;
+    oe_va_start(ap, fmt);
     int n = oe_vsnprintf(str, size, fmt, ap);
-    elibc_va_end(ap);
+    oe_va_end(ap);
     return n;
 }
 
-int elibc_vprintf(const char* fmt, elibc_va_list ap_)
+int oe_vprintf(const char* fmt, oe_va_list ap_)
 {
     char buf[256];
     char* p = buf;
@@ -659,10 +658,10 @@ int elibc_vprintf(const char* fmt, elibc_va_list ap_)
 
     /* Try first with a fixed-length scratch buffer */
     {
-        elibc_va_list ap;
-        elibc_va_copy(ap, ap_);
+        oe_va_list ap;
+        oe_va_copy(ap, ap_);
         n = oe_vsnprintf(buf, sizeof(buf), fmt, ap);
-        elibc_va_end(ap);
+        oe_va_end(ap);
 
         if (n < 0)
             goto done;
@@ -681,10 +680,10 @@ int elibc_vprintf(const char* fmt, elibc_va_list ap_)
 
         p = new_buf;
 
-        elibc_va_list ap;
-        elibc_va_copy(ap, ap_);
+        oe_va_list ap;
+        oe_va_copy(ap, ap_);
         n = oe_vsnprintf(p, (size_t)n + 1, fmt, ap);
-        elibc_va_end(ap);
+        oe_va_end(ap);
 
         if (n < 0)
             goto done;
@@ -700,14 +699,14 @@ done:
     return n;
 }
 
-int elibc_printf(const char* format, ...)
+int oe_printf(const char* format, ...)
 {
-    elibc_va_list ap;
+    oe_va_list ap;
     int n;
 
-    elibc_va_start(ap, format);
-    n = elibc_vprintf(format, ap);
-    elibc_va_end(ap);
+    oe_va_start(ap, format);
+    n = oe_vprintf(format, ap);
+    oe_va_end(ap);
 
     return n;
 }

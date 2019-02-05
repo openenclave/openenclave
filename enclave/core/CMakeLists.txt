@@ -64,14 +64,15 @@ endif()
 add_library(oecore STATIC
     ../../common/safecrt.c
     __secs_to_tm.c
+    __stack_chk_fail.c
     assert.c
     ctype.c
     gmtime.c
     hexdump.c
     intstr.c
+    printf.c
     pthread.c
     result.c
-    snprintf.c
     strerror.c
     string.c
     strtoul.c
@@ -79,6 +80,8 @@ add_library(oecore STATIC
     ${PLATFORM_SRC})
 
 # Suppress type conversion warnings introduced by 3rdparty code
+set_source_files_properties(${MUSL_SRC_DIR}/prng/rand.c ROPERTIES
+    COMPILE_FLAGS -Wno-conversion)
 set_source_files_properties(${MUSL_SRC_DIR}/string/memset.c PROPERTIES
     COMPILE_FLAGS -Wno-conversion)
 set_source_files_properties(__secs_to_tm.c PROPERTIES

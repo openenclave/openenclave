@@ -38,8 +38,8 @@ done:
 /* OE core libc wrapper for time() function */
 time_t oe_time(time_t* tloc)
 {
-    uint64_t msec = oe_get_time();
-    time_t time = (msec / 1000);
+    uint64_t msec = oe_get_time() / 1000;
+    time_t time = (time_t)(msec > OE_LONG_MAX ? OE_LONG_MAX : msec);
 
     if (tloc)
         *tloc = time;

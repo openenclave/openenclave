@@ -14,7 +14,7 @@ OE_INLINE char oe_get_hex_char(uint64_t x, size_t i)
 {
     uint64_t nbits = (uint64_t)i * 4;
     char nibble = (char)((x & (0x000000000000000fUL << nbits)) >> nbits);
-    return ((nibble < 10) ? ('0' + nibble) : ('a' + (nibble - 10)));
+    return (char)((nibble < 10) ? ('0' + nibble) : ('a' + (nibble - 10)));
 }
 
 typedef struct _oe_intstr_buf
