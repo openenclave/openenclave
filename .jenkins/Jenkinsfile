@@ -141,7 +141,7 @@ def win2016DebugLinuxElfBuild() {
             oetoolsWincp.inside {
                 timeout(15) {
                     dir('build') {
-                        withEnv(["CC=clang-7","CXX=clang++-7","OE_SIMULATION=1"]) {
+                        withEnv(["CC=clang-7","CXX=clang++-7"]) {
                             sh """
                             cmake .. -DCMAKE_BUILD_TYPE=Debug -DUSE_DEBUG_MALLOC=OFF
                             make
@@ -159,7 +159,7 @@ def win2016DebugLinuxElfBuild() {
             checkout scm
             unstash 'linuxdebug'
             PowerShellWrapper('mv build linuxbin')
-            PowerShellWrapper('./scripts/test-build-config.ps1 -add_windows_enclave_tests -linux_bin_dir $ENV:WORKSPACE/linuxbin/tests -build_type Debug')
+            PowerShellWrapper('./scripts/test-build-config.ps1 -add_windows_enclave_tests -build_type Debug -linux_bin_dir $ENV:WORKSPACE/linuxbin/tests')
        }
     }
 }
@@ -173,7 +173,7 @@ def win2016ReleaseLinuxElfBuild() {
             oetoolsWin.inside {
                 timeout(15) {
                     dir('build') {
-                        withEnv(["CC=clang-7","CXX=clang++-7","OE_SIMULATION=1"]) {
+                        withEnv(["CC=clang-7","CXX=clang++-7"]) {
                             sh """
                             cmake .. -DCMAKE_BUILD_TYPE=Release
                             make
@@ -191,7 +191,7 @@ def win2016ReleaseLinuxElfBuild() {
             checkout scm
             unstash 'linuxrelease'
             PowerShellWrapper('mv build linuxbin')
-            PowerShellWrapper('./scripts/test-build-config.ps1 -add_windows_enclave_tests -linux_bin_dir $ENV:WORKSPACE/linuxbin/tests -build_type Release')
+            PowerShellWrapper('./scripts/test-build-config.ps1 -add_windows_enclave_tests -build_type Release -linux_bin_dir $ENV:WORKSPACE/linuxbin/tests')
         }
     }
 }
@@ -201,7 +201,7 @@ def win2016DebugCrossCompile() {
         node('SGXFLC-Windows') {
             cleanWs()
             checkout scm
-            PowerShellWrapper('./scripts/test-build-config.ps1 -add_windows_enclave_tests -build_type Debug -build_enclaves')
+            PowerShellWrapper('./scripts/test-build-config.ps1 -build_type Debug -build_enclaves')
        }
     }
 }
