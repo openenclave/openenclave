@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _ELIBC_STDDEF_H
-#define _ELIBC_STDDEF_H
+#ifndef _OE_STDDEF_H
+#define _OE_STDDEF_H
 
-#include "bits/common.h"
+#include <openenclave/bits/types.h>
 
-#endif /* _ELIBC_STDDEF_H */
+#endif /* _OE_STDDEF_H */

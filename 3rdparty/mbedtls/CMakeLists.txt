@@ -31,7 +31,7 @@ configure_file(config.h config.h) # This copies from source to binary folders.
 
 include(ExternalProject)
 ExternalProject_Add(mbedtls-wrap
-  DEPENDS oeelibc oe_includes
+  DEPENDS oecore oe_includes
 
   DOWNLOAD_COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_CURRENT_LIST_DIR}/mbedtls <SOURCE_DIR>
@@ -58,22 +58,22 @@ ExternalProject_Add(mbedtls-wrap
 ExternalProject_Get_property(mbedtls-wrap SOURCE_DIR)
 ExternalProject_Get_property(mbedtls-wrap BINARY_DIR)
 
-# NOTE: These imported libraries must be specified before `oeelibc`
+# NOTE: These imported libraries must be specified before `oecore`
 # when linking, hence their dependency on it.
 add_library(mbedtls_imported IMPORTED STATIC)
 set_target_properties(mbedtls_imported PROPERTIES
   IMPORTED_LOCATION ${BINARY_DIR}/library/libmbedtls.a)
-target_link_libraries(mbedtls_imported INTERFACE oeelibc)
+target_link_libraries(mbedtls_imported INTERFACE oecore)
 
 add_library(mbedx509_imported IMPORTED STATIC)
 set_target_properties(mbedx509_imported PROPERTIES
   IMPORTED_LOCATION ${BINARY_DIR}/library/libmbedx509.a)
-target_link_libraries(mbedx509_imported INTERFACE oeelibc)
+target_link_libraries(mbedx509_imported INTERFACE oecore)
 
 add_library(mbedcrypto_imported IMPORTED STATIC)
 set_target_properties(mbedcrypto_imported PROPERTIES
   IMPORTED_LOCATION ${BINARY_DIR}/library/libmbedcrypto.a)
-target_link_libraries(mbedcrypto_imported INTERFACE oeelibc)
+target_link_libraries(mbedcrypto_imported INTERFACE oecore)
 
 # Convenience lib for use in target_link_libraries
 add_library(mbedcrypto INTERFACE)
@@ -94,7 +94,7 @@ target_link_libraries(mbedcrypto INTERFACE
   # NOTE: This dependency is repeated because during installation the
   # imported libraries are not part of the CMake dependency graph, so
   # this transitive dependency would be left out.
-  oeelibc
+  oecore
   oe_includes)
 
 install(TARGETS mbedcrypto EXPORT openenclave-targets)
@@ -105,7 +105,7 @@ install(DIRECTORY ${SOURCE_DIR}/include/mbedtls
 # NOTE: Because these libraries are `IMPORTED`, it is not possible
 # with CMake to install them as targets, so instead they must be
 # installed as files. This is what causes the above problem with the
-# repeated dependency on `oelibc`.
+# repeated dependency on `oecore`.
 install(FILES ${BINARY_DIR}/library/libmbedtls.a
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
 

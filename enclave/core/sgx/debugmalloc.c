@@ -13,7 +13,16 @@
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/utils.h>
 #include "../3rdparty/dlmalloc/dlmalloc/malloc.h"
-#include "dlmalloc/errno.h"
+
+#if !defined(OE_NEED_STDC_NAMES)
+#define OE_NEED_STDC_NAMES
+#define __UNDEF_OE_NEED_STDC_NAMES
+#endif
+#include <openenclave/elibc/errno.h>
+#if defined(__UNDEF_OE_NEED_STDC_NAMES)
+#undef OE_NEED_STDC_NAMES
+#undef __UNDEF_OE_NEED_STDC_NAMES
+#endif
 
 #if defined(OE_USE_DEBUG_MALLOC)
 
@@ -34,7 +43,7 @@
 **
 **         [padding] [header] [user-data] [footer]
 **
-**     The padding is applied by memalign() when the aligment is non-zero.
+**     The padding is applied by memalign() when the alignment is non-zero.
 **
 **==============================================================================
 */

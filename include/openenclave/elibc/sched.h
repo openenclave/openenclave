@@ -1,9 +1,24 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _ELIBC_SCHED_H
-#define _ELIBC_SCHED_H
+#ifndef _OE_SCHED_H
+#define _OE_SCHED_H
 
-#include "bits/common.h"
+#include <openenclave/bits/defs.h>
 
-#endif /* _ELIBC_SCHED_H */
+OE_EXTERNC_BEGIN
+
+int oe_sched_yield(void);
+
+#if defined(OE_NEED_STDC_NAMES)
+
+OE_INLINE int sched_yield(void)
+{
+    return oe_sched_yield();
+}
+
+#endif /* defined(OE_NEED_STDC_NAMES) */
+
+OE_EXTERNC_END
+
+#endif /* _OE_SCHED_H */

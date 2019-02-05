@@ -10,16 +10,12 @@
 
 OE_EXTERNC_BEGIN
 
-typedef struct _ELIBC_IO_FILE ELIBC_FILE;
-extern ELIBC_FILE* const elibc_stdin;
-extern ELIBC_FILE* const elibc_stdout;
-extern ELIBC_FILE* const elibc_stderr;
+typedef struct _OE_IO_FILE OE_FILE;
+extern OE_FILE* const oe_stdin;
+extern OE_FILE* const oe_stdout;
+extern OE_FILE* const oe_stderr;
 
-int oe_vsnprintf(
-    char* str,
-    size_t size,
-    const char* format,
-    oe_va_list ap);
+int oe_vsnprintf(char* str, size_t size, const char* format, oe_va_list ap);
 
 OE_PRINTF_FORMAT(3, 4)
 int oe_snprintf(char* str, size_t size, const char* format, ...);
@@ -31,10 +27,7 @@ int oe_printf(const char* format, ...);
 
 #if defined(OE_NEED_STDC_NAMES)
 
-typedef ELIBC_FILE FILE;
-#define stdin elibc_stdin
-#define stdout elibc_stdout
-#define stderr elibc_stderr
+#include "bits/stdfile.h"
 
 OE_INLINE
 int vsnprintf(char* str, size_t size, const char* format, va_list ap)

@@ -47,8 +47,7 @@ target_include_directories(oeenclave PRIVATE ${PROJECT_SOURCE_DIR}/include/opene
 
 target_link_libraries(oeenclave PUBLIC
     oe_includes
-    mbedcrypto
-    oeelibc)
+    mbedcrypto)
 
 set_property(TARGET oeenclave PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 
