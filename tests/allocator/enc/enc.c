@@ -49,7 +49,7 @@ int test_allocator(void)
     OE_TEST(allocator.free_count == N);
 
     oe_malloc_stats_t stats;
-    OE_TEST(oe_allocator_get_stats(&stats) == OE_OK);
+    OE_TEST(oe_allocator_get_stats(&stats) == 0);
     OE_TEST(stats.peak_system_bytes == PEAK_SYSTEM_BYTES);
     OE_TEST(stats.system_bytes == SYSTEM_BYTES);
     OE_TEST(stats.in_use_bytes == IN_USE_BYTES);

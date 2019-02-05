@@ -90,7 +90,7 @@ static __inline void* __libunwind_mmap(
     int fd,
     off_t offset)
 {
-    void* oe_internal_memalign(size_t alignment, size_t size);
+    void* oe_allocator_memalign(size_t alignment, size_t size);
     void* result = MAP_FAILED;
 
     if (addr || fd != -1 || offset)
@@ -102,7 +102,7 @@ static __inline void* __libunwind_mmap(
     if (flags != (MAP_PRIVATE | MAP_ANONYMOUS))
         goto done;
 
-    result = oe_internal_memalign(4096, length);
+    result = oe_allocator_memalign(4096, length);
 
 done:
 
@@ -111,13 +111,13 @@ done:
 
 static __inline int __libunwind_munmap(void* addr, size_t length)
 {
-    extern void oe_internal_free(void* ptr);
+    extern void oe_allocator_free(void* ptr);
 
     if (!addr)
         return -1;
 
     if (length)
-        oe_internal_free(addr);
+        oe_allocator_free(addr);
 
     return 0;
 }

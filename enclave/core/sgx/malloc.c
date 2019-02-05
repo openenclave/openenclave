@@ -225,9 +225,9 @@ done:
     return ret;
 }
 
-oe_result_t __oe_get_malloc_stats(oe_malloc_stats_t* stats)
+int __oe_get_malloc_stats(oe_malloc_stats_t* stats)
 {
-    oe_result_t result = OE_UNEXPECTED;
+    int ret = -1;
     static oe_mutex_t _mutex = OE_MUTEX_INITIALIZER;
 
     if (stats)
@@ -249,16 +249,16 @@ oe_result_t __oe_get_malloc_stats(oe_malloc_stats_t* stats)
 
     *stats = _malloc_stats;
 
-    result = OE_OK;
+    ret = 0;
 
 done:
     oe_mutex_unlock(&_mutex);
-    return result;
+    return ret;
 }
 
 OE_WEAK_ALIAS(__oe_get_malloc_stats, oe_allocator_get_stats);
 
-oe_result_t oe_get_malloc_stats(oe_malloc_stats_t* stats)
+int oe_get_malloc_stats(oe_malloc_stats_t* stats)
 {
     return oe_allocator_get_stats(stats);
 }

@@ -42,7 +42,7 @@ typedef struct _oe_malloc_stats
  * @return 0 success
  * @return -1 failure
  */
-oe_result_t oe_get_malloc_stats(oe_malloc_stats_t* stats);
+int oe_get_malloc_stats(oe_malloc_stats_t* stats);
 
 /* Dump the list of all in-use allocations */
 void oe_debug_malloc_dump(void);
@@ -93,7 +93,7 @@ int oe_allocator_posix_memalign(void** memptr, size_t alignment, size_t size);
 
 void oe_allocator_free(void* ptr);
 
-oe_result_t oe_allocator_get_stats(oe_malloc_stats_t* stats);
+int oe_allocator_get_stats(oe_malloc_stats_t* stats);
 
 OE_EXTERNC_END
 
