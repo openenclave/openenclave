@@ -64,21 +64,13 @@ add_library(oecore STATIC
 
 maybe_build_using_clangw(oecore)
 
-target_link_libraries(oecore PUBLIC oe_includes)
+target_link_libraries(oecore PUBLIC oealloc oe_includes)
 
 if (CMAKE_C_COMPILER_ID MATCHES GNU)
     target_compile_options(oecore PRIVATE -Wjump-misses-init)
 endif()
 
 if (OE_SGX)
-    # This directory contains dummy C headers needed by dlmalloc:
-    target_include_directories(oecore PRIVATE sgx/dlmalloc)
-
-    # Unfortunately dlmalloc uses GNU extension that allows arithmetic
-    # null pointers.
-    set_source_files_properties(sgx/malloc.c
-        PROPERTIES COMPILE_FLAGS "-Wno-conversion -Wno-null-pointer-arithmetic")
-
     # jump.s must be optimized for the correct call-frame.
     set_source_files_properties(sgx/jump.c PROPERTIES COMPILE_FLAGS -O2)
 

@@ -176,6 +176,7 @@ add_subdirectory(tests)
 add_subdirectory(tools)
 
 if (BUILD_ENCLAVES)
+  add_subdirectory(enclave/alloc)
   add_subdirectory(enclave/core)
   add_subdirectory(3rdparty)
   add_subdirectory(libc)

@@ -12,8 +12,7 @@
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/utils.h>
-#include "../3rdparty/dlmalloc/dlmalloc/malloc.h"
-#include "dlmalloc/errno.h"
+#include "../../alloc/include/errno.h"
 
 #if defined(OE_USE_DEBUG_MALLOC)
 

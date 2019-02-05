@@ -49,6 +49,7 @@ string(APPEND ENCLAVE_CLIBS_1 "-lmbedcrypto ")
 
 string(APPEND ENCLAVE_CLIBS_2 "-loelibc ")
 string(APPEND ENCLAVE_CLIBS_2 "-loecore ")
+string(APPEND ENCLAVE_CLIBS_2 "-loealloc ")
 
 set(ENCLAVE_CLIBS "${ENCLAVE_CLIBS_1} ${ENCLAVE_CLIBS_2}")
 
