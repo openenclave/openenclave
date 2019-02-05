@@ -5,89 +5,110 @@
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/tests.h>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <vector>
-#include "../common/args.h"
 #include "../common/tests.cpp"
+#include "crypto_crls_cert_chains_u.h"
 
-std::vector<uint8_t> read_file(const char* path)
+std::string read_text_file(const char* path)
 {
-    std::ifstream f(path, std::ios::binary);
-    std::vector<uint8_t> bytes = std::vector<uint8_t>(
-        std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>());
-
-    if (bytes.empty())
+    std::ifstream f(path);
+    if (!f.good())
     {
         printf("File %s not found\n", path);
         exit(1);
     }
-    bytes.push_back('\0');
+    std::ostringstream buffer;
+    buffer << f.rdbuf();
+    return buffer.str();
+}
+
+std::vector<char> read_binary_file(const char* path)
+{
+    std::ifstream f(path, std::ios::binary | std::ios::ate);
+    if (!f.good())
+    {
+        printf("File %s not found\n", path);
+        exit(1);
+    }
+    std::ifstream::pos_type len = f.tellg();
+    std::vector<char> bytes(static_cast<std::vector<char>::size_type>(len));
+    f.seekg(0, std::ios::beg);
+    f.read(bytes.data(), len);
     return bytes;
 }
 
 void run_cert_chain_tests(oe_enclave_t* enclave)
 {
-    auto root_ca1 = read_file("./data/RootCA1.crt.pem");
-    auto intermediate_ca1 = read_file("./data/IntermediateCA1.crt.pem");
-    auto leaf1 = read_file("./data/Leaf1.crt.pem");
-    auto leaf2 = read_file("./data/Leaf2.crt.pem");
+    std::string root = read_text_file("./data/RootCA1.crt.pem");
+    std::string intermediate = read_text_file("./data/IntermediateCA1.crt.pem");
+    std::string leaf = read_text_file("./data/Leaf1.crt.pem");
+    std::string leaf2 = read_text_file("./data/Leaf2.crt.pem");
 
-    test_cert_chain_args_t args = {.root = (char*)&root_ca1[0],
-                                   .intermediate = (char*)&intermediate_ca1[0],
-                                   .leaf = (char*)&leaf1[0],
-                                   .leaf2 = (char*)&leaf2[0]};
     test_cert_chain_positive(
-        args.root, args.intermediate, args.leaf, args.leaf2);
-    OE_TEST(
-        oe_call_enclave(enclave, "ecall_test_cert_chain_positive", &args) ==
-        OE_OK);
+        root.c_str(), intermediate.c_str(), leaf.c_str(), leaf2.c_str());
+    oe_result_t result = ecall_test_cert_chain_positive(
+        enclave,
+        root.c_str(),
+        intermediate.c_str(),
+        leaf.c_str(),
+        leaf2.c_str());
+    OE_TEST(OE_OK == result);
 
     test_cert_chain_negative(
-        args.root, args.intermediate, args.leaf, args.leaf2);
-    OE_TEST(
-        oe_call_enclave(enclave, "ecall_test_cert_chain_negative", &args) ==
-        OE_OK);
+        root.c_str(), intermediate.c_str(), leaf.c_str(), leaf2.c_str());
+    result = ecall_test_cert_chain_negative(
+        enclave,
+        root.c_str(),
+        intermediate.c_str(),
+        leaf.c_str(),
+        leaf2.c_str());
+    OE_TEST(OE_OK == result);
 }
 
 void run_crl_tests(oe_enclave_t* enclave)
 {
-    auto root_ca1 = read_file("./data/RootCA1.crt.pem");
-    auto intermediate_ca1 = read_file("./data/IntermediateCA1.crt.pem");
-    auto leaf1 = read_file("./data/Leaf1.crt.pem");
-    auto leaf2 = read_file("./data/Leaf2.crt.pem");
-    auto root_crl1 = read_file("./data/root_crl1.der");
-    auto root_crl2 = read_file("./data/root_crl2.der");
-    auto intermediate_crl1 = read_file("./data/intermediate_crl1.der");
-    auto intermediate_crl2 = read_file("./data/intermediate_crl2.der");
+    std::string root = read_text_file("./data/RootCA1.crt.pem");
+    std::string intermediate = read_text_file("./data/IntermediateCA1.crt.pem");
+    std::string leaf = read_text_file("./data/Leaf1.crt.pem");
+    std::string leaf2 = read_text_file("./data/Leaf2.crt.pem");
+    std::vector<char> root_crl1 = read_binary_file("./data/root_crl1.der");
+    std::vector<char> root_crl2 = read_binary_file("./data/root_crl2.der");
+    std::vector<char> intermediate_crl1 =
+        read_binary_file("./data/intermediate_crl1.der");
+    std::vector<char> intermediate_crl2 =
+        read_binary_file("./data/intermediate_crl2.der");
 
-    test_crl_args_t args = {
-        .root = (char*)&root_ca1[0],
-        .intermediate = (char*)&intermediate_ca1[0],
-        .leaf1 = (char*)&leaf1[0],
-        .leaf2 = (char*)&leaf2[0],
-        .root_crl1 = &root_crl1[0],
-        .root_crl1_size = root_crl1.size() - 1,
-        .root_crl2 = &root_crl2[0],
-        .root_crl2_size = root_crl2.size() - 1,
-        .intermediate_crl1 = &intermediate_crl1[0],
-        .intermediate_crl1_size = intermediate_crl1.size() - 1,
-        .intermediate_crl2 = &intermediate_crl2[0],
-        .intermediate_crl2_size = intermediate_crl2.size() - 1};
     test_crls(
-        args.root,
-        args.intermediate,
-        args.leaf1,
-        args.leaf2,
-        args.root_crl1,
-        args.root_crl1_size,
-        args.root_crl2,
-        args.root_crl2_size,
-        args.intermediate_crl1,
-        args.intermediate_crl1_size,
-        args.intermediate_crl2,
-        args.intermediate_crl2_size);
+        root.c_str(),
+        intermediate.c_str(),
+        leaf.c_str(),
+        leaf2.c_str(),
+        reinterpret_cast<uint8_t*>(root_crl1.data()),
+        root_crl1.size(),
+        reinterpret_cast<uint8_t*>(root_crl2.data()),
+        root_crl2.size(),
+        reinterpret_cast<uint8_t*>(intermediate_crl1.data()),
+        intermediate_crl1.size(),
+        reinterpret_cast<uint8_t*>(intermediate_crl2.data()),
+        intermediate_crl2.size());
 
-    OE_TEST(oe_call_enclave(enclave, "ecall_test_crls", &args) == OE_OK);
+    oe_result_t result = ecall_test_crls(
+        enclave,
+        root.c_str(),
+        intermediate.c_str(),
+        leaf.c_str(),
+        leaf2.c_str(),
+        root_crl1.data(),
+        root_crl1.size(),
+        root_crl2.data(),
+        root_crl2.size(),
+        intermediate_crl1.data(),
+        intermediate_crl1.size(),
+        intermediate_crl2.data(),
+        intermediate_crl2.size());
+    OE_TEST(OE_OK == result);
 }
 
 int main(int argc, const char* argv[])
@@ -105,17 +126,11 @@ int main(int argc, const char* argv[])
     const uint32_t flags = oe_get_create_flags();
 
     /* Create the enclave */
-    if ((result = oe_create_enclave(
-             argv[1],
-             OE_ENCLAVE_TYPE_SGX,
-             flags,
-             NULL,
-             0,
-             NULL,
-             0,
-             &enclave)) != OE_OK)
+    if ((result = oe_create_crypto_crls_cert_chains_enclave(
+             argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
     {
-        oe_put_err("oe_create_enclave(): result=%u", result);
+        oe_put_err(
+            "oe_create_crypto_crls_cert_chains_enclave(): result=%u", result);
     }
 
     run_cert_chain_tests(enclave);

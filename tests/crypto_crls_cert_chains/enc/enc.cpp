@@ -2,39 +2,54 @@
 // Licensed under the MIT License.
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
-#include "../common/args.h"
 #include "../common/tests.cpp"
+#include "crypto_crls_cert_chains_t.h"
 
-OE_ECALL void ecall_test_cert_chain_positive(void* args_)
+void ecall_test_cert_chain_positive(
+    const char* root,
+    const char* intermediate,
+    const char* leaf,
+    const char* leaf2)
 {
-    test_cert_chain_args_t* args = (test_cert_chain_args_t*)args_;
-    test_cert_chain_positive(
-        args->root, args->intermediate, args->leaf, args->leaf2);
+    test_cert_chain_positive(root, intermediate, leaf, leaf2);
 }
 
-OE_ECALL void ecall_test_cert_chain_negative(void* args_)
+void ecall_test_cert_chain_negative(
+    const char* root,
+    const char* intermediate,
+    const char* leaf,
+    const char* leaf2)
 {
-    test_cert_chain_args_t* args = (test_cert_chain_args_t*)args_;
-    test_cert_chain_negative(
-        args->root, args->intermediate, args->leaf, args->leaf2);
+    test_cert_chain_negative(root, intermediate, leaf, leaf2);
 }
 
-OE_ECALL void ecall_test_crls(void* args_)
+void ecall_test_crls(
+    const char* root,
+    const char* intermediate,
+    const char* leaf1,
+    const char* leaf2,
+    const char* root_crl1,
+    size_t root_crl1_size,
+    const char* root_crl2,
+    size_t root_crl2_size,
+    const char* intermediate_crl1,
+    size_t intermediate_crl1_size,
+    const char* intermediate_crl2,
+    size_t intermediate_crl2_size)
 {
-    test_crl_args_t* args = (test_crl_args_t*)args_;
     test_crls(
-        args->root,
-        args->intermediate,
-        args->leaf1,
-        args->leaf2,
-        args->root_crl1,
-        args->root_crl1_size,
-        args->root_crl2,
-        args->root_crl2_size,
-        args->intermediate_crl1,
-        args->intermediate_crl1_size,
-        args->intermediate_crl2,
-        args->intermediate_crl2_size);
+        root,
+        intermediate,
+        leaf1,
+        leaf2,
+        reinterpret_cast<const uint8_t*>(root_crl1),
+        root_crl1_size,
+        reinterpret_cast<const uint8_t*>(root_crl2),
+        root_crl2_size,
+        reinterpret_cast<const uint8_t*>(intermediate_crl1),
+        intermediate_crl1_size,
+        reinterpret_cast<const uint8_t*>(intermediate_crl2),
+        intermediate_crl2_size);
 }
 
 OE_SET_ENCLAVE_SGX(
@@ -44,5 +59,3 @@ OE_SET_ENCLAVE_SGX(
     1024, /* HeapPageCount */
     1024, /* StackPageCount */
     2);   /* TCSCount */
-
-OE_DEFINE_EMPTY_ECALL_TABLE();
