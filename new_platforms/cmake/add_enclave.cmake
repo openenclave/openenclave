@@ -30,14 +30,14 @@ function(add_enclave)
                 TA_DEV_KIT_DIR=${TA_DEV_KIT_DIR}
                 CROSS_COMPILE=${OE_TA_TOOLCHAIN_PREFIX}
                 O=${CMAKE_CURRENT_BINARY_DIR}
-                AR_O=${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
+                AR_O=${OE_ARCHIVE_OUTPUT_DIRECTORY}
                 GEN=${ENCLAVE_C_GEN}
             DEPENDS ${ENCLAVE_SOURCES}
             SOURCES ${ENCLAVE_SOURCES})
             add_dependencies(${ENCLAVE_TARGET} oeenclave liboestdio_enc liboesocket_enc)
             add_custom_command(TARGET ${ENCLAVE_TARGET} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E
-                    copy ${CMAKE_CURRENT_BINARY_DIR}/*.ta ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+                    copy ${CMAKE_CURRENT_BINARY_DIR}/*.ta ${OE_RUNTIME_OUTPUT_DIRECTORY})
     elseif(WIN32 AND (SGX OR (TZ AND SIM)))
         add_library(${ENCLAVE_TARGET} MODULE ${ENCLAVE_SOURCES})
 
