@@ -37,7 +37,6 @@ struct oe_tm* oe_gmtime_r(const time_t* timep, struct oe_tm* result);
 
 #if defined(OE_NEED_STDC_NAMES)
 
-#if !defined(OE_USE_MUSL_DEFS)
 struct tm
 {
     int tm_sec;
@@ -56,7 +55,6 @@ struct timespec
     time_t tv_sec;
     long tv_nsec;
 };
-#endif
 
 OE_INLINE
 time_t time(time_t* tloc)

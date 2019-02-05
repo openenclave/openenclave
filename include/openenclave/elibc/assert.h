@@ -6,6 +6,7 @@
 
 #if defined(OE_NEED_STDC_NAMES)
 
+#include <openenclave/enclave.h>
 #define assert(EXPR) oe_assert(EXPR)
 #define __assert_fail(EXPR) __oe_assert_fail(EXPR)
 
