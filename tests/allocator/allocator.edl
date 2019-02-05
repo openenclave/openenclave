@@ -3,6 +3,6 @@
 
 enclave {
     trusted {
-        public void test_malloc();
+        public int test_allocator();
     };
 };

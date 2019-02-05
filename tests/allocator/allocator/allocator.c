@@ -6,89 +6,91 @@
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/print.h>
-#include "libmalloc.h"
+#include "allocator.h"
 // clang-format on
 
-libmalloc_t libmalloc;
+allocator_t allocator;
 
-void* dlmalloc(size_t size);
-
-void dlfree(void* ptr);
-
-void* dlcalloc(size_t nmemb, size_t size);
-
-void* dlrealloc(void* ptr, size_t size);
-
-int dlposix_memalign(void** memptr, size_t alignment, size_t size);
-
-void* dlmemalign(size_t alignment, size_t size);
-
-void* oe_internal_malloc(size_t size)
+void* oe_allocator_malloc(size_t size)
 {
-    libmalloc.malloc_count++;
+    extern void* dlmalloc(size_t size);
+    allocator.malloc_count++;
     return dlmalloc(size);
 }
 
-void oe_internal_free(void* ptr)
+void oe_allocator_free(void* ptr)
 {
-    libmalloc.free_count++;
+    extern void dlfree(void* ptr);
+    allocator.free_count++;
     return dlfree(ptr);
 }
 
-void* oe_internal_calloc(size_t nmemb, size_t size)
+void* oe_allocator_calloc(size_t nmemb, size_t size)
 {
-    libmalloc.calloc_count++;
+    extern void* dlcalloc(size_t nmemb, size_t size);
+    allocator.calloc_count++;
     return dlcalloc(nmemb, size);
 }
 
-void* oe_internal_realloc(void* ptr, size_t size)
+void* oe_allocator_realloc(void* ptr, size_t size)
 {
-    libmalloc.realloc_count++;
+    extern void* dlrealloc(void* ptr, size_t size);
+    allocator.realloc_count++;
     return dlrealloc(ptr, size);
 }
 
-int oe_internal_posix_memalign(void** memptr, size_t alignment, size_t size)
+int oe_allocator_posix_memalign(void** memptr, size_t alignment, size_t size)
 {
-    libmalloc.posix_memalign_count++;
+    extern int dlposix_memalign(void** memptr, size_t alignment, size_t size);
+    allocator.posix_memalign_count++;
     return dlposix_memalign(memptr, alignment, size);
 }
 
-void* oe_internal_memalign(size_t alignment, size_t size)
+void* oe_allocator_memalign(size_t alignment, size_t size)
 {
+    void* dlmemalign(size_t alignment, size_t size);
+    allocator.memalign_count++;
     return dlmemalign(alignment, size);
-    libmalloc.memalign_count++;
 }
 
-void oe_internal_malloc_thread_startup(void)
+void oe_allocator_startup(void)
 {
-    for (size_t i = 0; i < libmalloc.num_threads; i++)
+    for (size_t i = 0; i < allocator.num_threads; i++)
     {
-        if (libmalloc.threads[i].id == oe_thread_self())
+        if (allocator.threads[i].id == oe_thread_self())
         {
-            libmalloc.threads[i].count++;
+            allocator.threads[i].count++;
             return;
         }
     }
 
-    if (libmalloc.num_threads == MAX_THREADS)
+    if (allocator.num_threads == MAX_THREADS)
     {
         oe_assert("too many threads" == NULL);
         oe_abort();
     }
 
-    libmalloc.threads[libmalloc.num_threads].id = oe_thread_self();
-    libmalloc.threads[libmalloc.num_threads].count = 1;
-    libmalloc.num_threads++;
+    allocator.threads[allocator.num_threads].id = oe_thread_self();
+    allocator.threads[allocator.num_threads].count = 1;
+    allocator.num_threads++;
 }
 
-void oe_internal_malloc_thread_teardown(void)
+void oe_allocator_teardown(void)
 {
-    for (size_t i = 0; i < libmalloc.num_threads; i++)
+    for (size_t i = 0; i < allocator.num_threads; i++)
     {
-        if (libmalloc.threads[i].id == oe_thread_self())
+        if (allocator.threads[i].id == oe_thread_self())
         {
-            libmalloc.threads[i].count--;
+            allocator.threads[i].count--;
             return;
         }
     }
+}
+
+oe_result_t oe_allocator_get_stats(oe_malloc_stats_t* stats)
+{
+    stats->peak_system_bytes = PEAK_SYSTEM_BYTES;
+    stats->system_bytes = SYSTEM_BYTES;
+    stats->in_use_bytes = IN_USE_BYTES;
+    return OE_OK;
 }

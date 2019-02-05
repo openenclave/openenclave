@@ -69,27 +69,31 @@ extern bool oe_disable_debug_malloc_check;
 **==============================================================================
 **
 ** Applications may replace the default allocator by overriding these functions.
-** Note that these are the low-level allocator functions which bypass the
-** debug allocator.
+**
+** Note: the OE thread binding model binds a thread on enclave entry and severs
+** the binding on enclave exit. So the startup and teardown routines are called
+** on enclave entry and enclave exit.
 **
 **==============================================================================
 */
 
-void* oe_internal_malloc(size_t size);
+void oe_allocator_startup(void);
 
-void oe_internal_free(void* ptr);
+void oe_allocator_teardown(void);
 
-void* oe_internal_calloc(size_t nmemb, size_t size);
+void* oe_allocator_malloc(size_t size);
 
-void* oe_internal_realloc(void* ptr, size_t size);
+void* oe_allocator_calloc(size_t nmemb, size_t size);
 
-int oe_internal_posix_memalign(void** memptr, size_t alignment, size_t size);
+void* oe_allocator_realloc(void* ptr, size_t size);
 
-void* oe_internal_memalign(size_t alignment, size_t size);
+void* oe_allocator_memalign(size_t alignment, size_t size);
 
-void oe_internal_malloc_thread_startup(void);
+int oe_allocator_posix_memalign(void** memptr, size_t alignment, size_t size);
 
-void oe_internal_malloc_thread_teardown(void);
+void oe_allocator_free(void* ptr);
+
+oe_result_t oe_allocator_get_stats(oe_malloc_stats_t* stats);
 
 OE_EXTERNC_END
 

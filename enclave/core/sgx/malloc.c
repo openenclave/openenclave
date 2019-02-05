@@ -40,29 +40,25 @@ static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...);
 
 #include "../../../3rdparty/dlmalloc/dlmalloc/malloc.c"
 
-void __oe_internal_malloc_thread_startup(void)
+void __oe_allocator_startup(void)
 {
     /* Nothing to startup for dlmalloc. */
 }
 
-void __oe_internal_malloc_thread_teardown(void)
+void __oe_allocator_teardown(void)
 {
     /* Nothing to tearmdown for dlmalloc. */
 }
 
 /* Create weak aliases that can be overriden by application. */
-OE_WEAK_ALIAS(dlmalloc, oe_internal_malloc);
-OE_WEAK_ALIAS(dlcalloc, oe_internal_calloc);
-OE_WEAK_ALIAS(dlrealloc, oe_internal_realloc);
-OE_WEAK_ALIAS(dlmemalign, oe_internal_memalign);
-OE_WEAK_ALIAS(dlposix_memalign, oe_internal_posix_memalign);
-OE_WEAK_ALIAS(dlfree, oe_internal_free);
-OE_WEAK_ALIAS(
-    __oe_internal_malloc_thread_startup,
-    oe_internal_malloc_thread_startup);
-OE_WEAK_ALIAS(
-    __oe_internal_malloc_thread_teardown,
-    oe_internal_malloc_thread_teardown);
+OE_WEAK_ALIAS(dlmalloc, oe_allocator_malloc);
+OE_WEAK_ALIAS(dlcalloc, oe_allocator_calloc);
+OE_WEAK_ALIAS(dlrealloc, oe_allocator_realloc);
+OE_WEAK_ALIAS(dlmemalign, oe_allocator_memalign);
+OE_WEAK_ALIAS(dlposix_memalign, oe_allocator_posix_memalign);
+OE_WEAK_ALIAS(dlfree, oe_allocator_free);
+OE_WEAK_ALIAS(__oe_allocator_startup, oe_allocator_startup);
+OE_WEAK_ALIAS(__oe_allocator_teardown, oe_allocator_teardown);
 
 #pragma GCC diagnostic pop
 
@@ -75,12 +71,12 @@ OE_WEAK_ALIAS(
 #define POSIX_MEMALIGN oe_debug_posix_memalign
 #define FREE oe_debug_free
 #else
-#define MALLOC oe_internal_malloc
-#define CALLOC oe_internal_calloc
-#define REALLOC oe_internal_realloc
-#define MEMALIGN oe_internal_memalign
-#define POSIX_MEMALIGN oe_internal_posix_memalign
-#define FREE oe_internal_free
+#define MALLOC oe_allocator_malloc
+#define CALLOC oe_allocator_calloc
+#define REALLOC oe_allocator_realloc
+#define MEMALIGN oe_allocator_memalign
+#define POSIX_MEMALIGN oe_allocator_posix_memalign
+#define FREE oe_allocator_free
 #endif
 
 static oe_allocation_failure_callback_t _failure_callback;
@@ -229,7 +225,7 @@ done:
     return ret;
 }
 
-oe_result_t oe_get_malloc_stats(oe_malloc_stats_t* stats)
+oe_result_t __oe_get_malloc_stats(oe_malloc_stats_t* stats)
 {
     oe_result_t result = OE_UNEXPECTED;
     static oe_mutex_t _mutex = OE_MUTEX_INITIALIZER;
@@ -258,4 +254,11 @@ oe_result_t oe_get_malloc_stats(oe_malloc_stats_t* stats)
 done:
     oe_mutex_unlock(&_mutex);
     return result;
+}
+
+OE_WEAK_ALIAS(__oe_get_malloc_stats, oe_allocator_get_stats);
+
+oe_result_t oe_get_malloc_stats(oe_malloc_stats_t* stats)
+{
+    return oe_allocator_get_stats(stats);
 }

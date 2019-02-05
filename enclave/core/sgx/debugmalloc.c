@@ -312,7 +312,7 @@ void* oe_debug_malloc(size_t size)
     void* block;
     const size_t block_size = _calculate_block_size(0, size);
 
-    if (!(block = oe_internal_malloc(block_size)))
+    if (!(block = oe_allocator_malloc(block_size)))
         return NULL;
 
     /* Fill block with 0xAA (Allocated) bytes */
@@ -339,7 +339,7 @@ void oe_debug_free(void* ptr)
         size_t block_size = _get_block_size(ptr);
         oe_memset_s(block, block_size, 0xDD, block_size);
 
-        oe_internal_free(block);
+        oe_allocator_free(block);
     }
 }
 
@@ -404,7 +404,7 @@ void* oe_debug_memalign(size_t alignment, size_t size)
     void* block;
     header_t* header;
 
-    if (!(block = oe_internal_memalign(alignment, block_size)))
+    if (!(block = oe_allocator_memalign(alignment, block_size)))
         return NULL;
 
     header = (header_t*)((uint8_t*)block + padding_size);

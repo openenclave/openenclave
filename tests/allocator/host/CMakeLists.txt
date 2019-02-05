@@ -2,10 +2,10 @@
 # Licensed under the MIT License.
 
 
-oeedl_file(../malloc.edl host gen)
+oeedl_file(../allocator.edl host gen)
 
-add_executable(malloc_host host.c ${gen})
+add_executable(allocator_host host.c ${gen})
 
-target_include_directories(malloc_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(allocator_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(malloc_host oehostapp)
+target_link_libraries(allocator_host oehostapp)

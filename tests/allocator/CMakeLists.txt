@@ -5,7 +5,7 @@ add_subdirectory(host)
 
 if (BUILD_ENCLAVES)
     add_subdirectory(enc)
-    add_subdirectory(libmalloc)
+    add_subdirectory(allocator)
 endif()
 
-add_enclave_test(tests/malloc malloc_host malloc_enc)
+add_enclave_test(tests/allocator allocator_host allocator_enc)

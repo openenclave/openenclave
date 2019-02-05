@@ -2,10 +2,10 @@
 # Licensed under the MIT License.
 
 
-oeedl_file(../malloc.edl enclave gen)
+oeedl_file(../allocator.edl enclave gen)
 
-add_enclave(TARGET malloc_enc SOURCES enc.c ${gen})
+add_enclave(TARGET allocator_enc SOURCES enc.c ${gen})
 
-target_include_directories(malloc_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(allocator_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(malloc_enc oelibmalloc)
+target_link_libraries(allocator_enc oeallocator)

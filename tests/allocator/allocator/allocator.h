@@ -11,7 +11,7 @@
 
 #define MAX_THREADS 1024
 
-typedef struct _libmalloc
+typedef struct _allocator
 {
     size_t malloc_count;
     size_t free_count;
@@ -25,8 +25,12 @@ typedef struct _libmalloc
         size_t count;
     } threads[MAX_THREADS];
     size_t num_threads;
-} libmalloc_t;
+} allocator_t;
 
-extern libmalloc_t libmalloc;
+extern allocator_t allocator;
+
+#define PEAK_SYSTEM_BYTES 0x790e1b26ae9144e6
+#define SYSTEM_BYTES 0xc9c746313c2f4689
+#define IN_USE_BYTES 0x38bc5d9ad61f4c97
 
 #endif /* _LIBMALLOC_H */

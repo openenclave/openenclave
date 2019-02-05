@@ -261,7 +261,7 @@ void td_init(td_t* td)
         td->callsites = NULL;
 
         /* Initialize the allocator. */
-        oe_internal_malloc_thread_startup();
+        oe_allocator_startup();
 
 #if __linux__
         oe_thread_local_init(td);
@@ -294,7 +294,7 @@ void td_clear(td_t* td)
 #endif
 
     /* Tear down the allocator. */
-    oe_internal_malloc_thread_teardown();
+    oe_allocator_teardown();
 
     // The call sites and depth are cleaned up after the thread-local storage is
     // cleaned up since thread-local dynamic destructors could make ocalls.
