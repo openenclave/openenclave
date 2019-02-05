@@ -68,6 +68,7 @@ add_library(oecore STATIC
     ctype.c
     gmtime.c
     hexdump.c
+    intstr.c
     pthread.c
     result.c
     snprintf.c

@@ -2,7 +2,6 @@
 # Licensed under the MIT License.
 
 add_library(oeelibc STATIC
-    intstr.c
     printf.c
     stdio.c
     ${SOURCES})

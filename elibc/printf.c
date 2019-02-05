@@ -2,14 +2,14 @@
 // Licensed under the MIT License.
 
 #include <ctype.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
 #include <limits.h>
+#include <openenclave/elibc/bits/intstr.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
-#include <bits/intstr.h>
 #include <openenclave/internal/print.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
 
 /*
 **==============================================================================
@@ -425,7 +425,7 @@ static int _vprintf(elibc_out_t* out, const char* fmt, elibc_va_list ap)
             struct placeholder ph;
             const char* s = NULL;
             size_t sn = 0;
-            elibc_intstr_buf_t is;
+            oe_intstr_buf_t is;
 
             if (!(p = _parse_placeholder(p, &ph, ap)))
             {
@@ -458,32 +458,32 @@ static int _vprintf(elibc_out_t* out, const char* fmt, elibc_va_list ap)
                 case TYPE_o:
                 {
                     const uint32_t x = elibc_va_arg(ap, uint32_t);
-                    s = elibc_uint64_to_octstr(&is, x, &sn);
+                    s = oe_uint64_to_octstr(&is, x, &sn);
                     break;
                 }
                 case TYPE_u:
                 {
                     const uint32_t x = elibc_va_arg(ap, uint32_t);
-                    s = elibc_uint64_to_decstr(&is, x, &sn);
+                    s = oe_uint64_to_decstr(&is, x, &sn);
                     break;
                 }
                 case TYPE_d:
                 case TYPE_i:
                 {
                     const int32_t x = elibc_va_arg(ap, int32_t);
-                    s = elibc_int64_to_decstr(&is, x, &sn);
+                    s = oe_int64_to_decstr(&is, x, &sn);
                     break;
                 }
                 case TYPE_x:
                 {
                     const uint32_t x = elibc_va_arg(ap, uint32_t);
-                    s = elibc_uint64_to_hexstr(&is, x, &sn);
+                    s = oe_uint64_to_hexstr(&is, x, &sn);
                     break;
                 }
                 case TYPE_X:
                 {
                     const uint32_t x = elibc_va_arg(ap, uint32_t);
-                    s = elibc_uint64_to_hexstr(&is, x, &sn);
+                    s = oe_uint64_to_hexstr(&is, x, &sn);
                     _str_toupper((char*)s);
                     break;
                 }
@@ -491,7 +491,7 @@ static int _vprintf(elibc_out_t* out, const char* fmt, elibc_va_list ap)
                 case TYPE_llu:
                 {
                     const uint64_t x = elibc_va_arg(ap, uint64_t);
-                    s = elibc_uint64_to_decstr(&is, x, &sn);
+                    s = oe_uint64_to_decstr(&is, x, &sn);
                     break;
                 }
                 case TYPE_ld:
@@ -500,14 +500,14 @@ static int _vprintf(elibc_out_t* out, const char* fmt, elibc_va_list ap)
                 case TYPE_lli:
                 {
                     const int64_t x = elibc_va_arg(ap, int64_t);
-                    s = elibc_int64_to_decstr(&is, x, &sn);
+                    s = oe_int64_to_decstr(&is, x, &sn);
                     break;
                 }
                 case TYPE_lx:
                 case TYPE_llx:
                 {
                     const uint64_t x = elibc_va_arg(ap, uint64_t);
-                    s = elibc_uint64_to_hexstr(&is, x, &sn);
+                    s = oe_uint64_to_hexstr(&is, x, &sn);
 
                     if (ph.conversion == 'X')
                         _str_toupper((char*)s);
@@ -517,20 +517,20 @@ static int _vprintf(elibc_out_t* out, const char* fmt, elibc_va_list ap)
                 case TYPE_zu:
                 {
                     const size_t x = elibc_va_arg(ap, size_t);
-                    s = elibc_uint64_to_decstr(&is, x, &sn);
+                    s = oe_uint64_to_decstr(&is, x, &sn);
                     break;
                 }
                 case TYPE_zd:
                 case TYPE_zi:
                 {
                     const ssize_t x = elibc_va_arg(ap, ssize_t);
-                    s = elibc_int64_to_decstr(&is, x, &sn);
+                    s = oe_int64_to_decstr(&is, x, &sn);
                     break;
                 }
                 case TYPE_p:
                 {
                     const uint64_t x = (uint64_t)elibc_va_arg(ap, void*);
-                    s = elibc_uint64_to_hexstr(&is, x, &sn);
+                    s = oe_uint64_to_hexstr(&is, x, &sn);
                     break;
                 }
                 default:
