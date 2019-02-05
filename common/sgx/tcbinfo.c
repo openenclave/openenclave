@@ -503,7 +503,10 @@ oe_result_t oe_parse_tcb_info_json(
     if (itr == end)
     {
         if (platform_tcb_level->status != OE_TCB_LEVEL_STATUS_UP_TO_DATE)
-            OE_RAISE(OE_TCB_LEVEL_INVALID);
+            OE_RAISE_MSG(
+                OE_TCB_LEVEL_INVALID,
+                "Platform TCB (%d) is not up-to-date",
+                platform_tcb_level->status);
 
         OE_TRACE_VERBOSE("TCB Info json parsing successful.\n");
         result = OE_OK;
