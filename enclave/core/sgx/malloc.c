@@ -40,6 +40,30 @@ static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...);
 
 #include "../../../3rdparty/dlmalloc/dlmalloc/malloc.c"
 
+void __oe_internal_malloc_thread_startup(void)
+{
+    /* Nothing to startup for dlmalloc. */
+}
+
+void __oe_internal_malloc_thread_teardown(void)
+{
+    /* Nothing to tearmdown for dlmalloc. */
+}
+
+/* Create weak aliases that can be overriden by application. */
+OE_WEAK_ALIAS(dlmalloc, oe_internal_malloc);
+OE_WEAK_ALIAS(dlcalloc, oe_internal_calloc);
+OE_WEAK_ALIAS(dlrealloc, oe_internal_realloc);
+OE_WEAK_ALIAS(dlmemalign, oe_internal_memalign);
+OE_WEAK_ALIAS(dlposix_memalign, oe_internal_posix_memalign);
+OE_WEAK_ALIAS(dlfree, oe_internal_free);
+OE_WEAK_ALIAS(
+    __oe_internal_malloc_thread_startup,
+    oe_internal_malloc_thread_startup);
+OE_WEAK_ALIAS(
+    __oe_internal_malloc_thread_teardown,
+    oe_internal_malloc_thread_teardown);
+
 #pragma GCC diagnostic pop
 
 /* Choose release mode or debug mode allocation functions */
@@ -51,12 +75,12 @@ static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...);
 #define POSIX_MEMALIGN oe_debug_posix_memalign
 #define FREE oe_debug_free
 #else
-#define MALLOC dlmalloc
-#define CALLOC dlcalloc
-#define REALLOC dlrealloc
-#define MEMALIGN dlmemalign
-#define POSIX_MEMALIGN dlposix_memalign
-#define FREE dlfree
+#define MALLOC oe_internal_malloc
+#define CALLOC oe_internal_calloc
+#define REALLOC oe_internal_realloc
+#define MEMALIGN oe_internal_memalign
+#define POSIX_MEMALIGN oe_internal_posix_memalign
+#define FREE oe_internal_free
 #endif
 
 static oe_allocation_failure_callback_t _failure_callback;

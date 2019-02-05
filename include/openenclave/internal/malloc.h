@@ -65,6 +65,32 @@ size_t oe_debug_malloc_check(void);
 //
 extern bool oe_disable_debug_malloc_check;
 
+/*
+**==============================================================================
+**
+** Applications may replace the default allocator by overriding these functions.
+** Note that these are the low-level allocator functions which bypass the
+** debug allocator.
+**
+**==============================================================================
+*/
+
+void* oe_internal_malloc(size_t size);
+
+void oe_internal_free(void* ptr);
+
+void* oe_internal_calloc(size_t nmemb, size_t size);
+
+void* oe_internal_realloc(void* ptr, size_t size);
+
+int oe_internal_posix_memalign(void** memptr, size_t alignment, size_t size);
+
+void* oe_internal_memalign(size_t alignment, size_t size);
+
+void oe_internal_malloc_thread_startup(void);
+
+void oe_internal_malloc_thread_teardown(void);
+
 OE_EXTERNC_END
 
 #endif /* _OE_MALLOC_H */
