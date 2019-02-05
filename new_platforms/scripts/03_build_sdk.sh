@@ -45,7 +45,7 @@ cmake -DOE_TEE=TZ                                                               
       -DCMAKE_TOOLCHAIN_FILE=$NP_PATH/cmake/linux-arm-v6.cmake                   \
       $NP_PATH || exit 1
 
-cmake --build . -- -j
+cmake --build . -- -j || exit 1
 
 popd  # vexpress-qemu_virt
 
@@ -59,7 +59,7 @@ cmake -DOE_TEE=TZ                                                               
       -DCMAKE_TOOLCHAIN_FILE=$NP_PATH/cmake/linux-aarch64-v6.cmake                 \
       $NP_PATH || exit 1
 
-cmake --build . -- -j
+cmake --build . -- -j || exit 1
 
 popd  # vexpress-qemu_armv8a
 
@@ -73,7 +73,7 @@ cmake -DOE_TEE=TZ                                                               
       -DCMAKE_TOOLCHAIN_FILE=$NP_PATH/cmake/linux-aarch64-v6.cmake                \
       $NP_PATH || exit 1
 
-cmake --build . -- -j
+cmake --build . -- -j || exit 1
 
 popd  # ls-ls1012grapeboard
 
