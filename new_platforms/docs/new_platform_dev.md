@@ -20,7 +20,7 @@ Enclave SDK in binary form via a NuGet package. This allows you to write host
 apps for Windows and enclaves for both Intel SGX and ARM TrustZone using Visual
 Studio and its familiar solution and projects paradigm. See [Developing your own
 enclave using Visual Studio](visualstudio_dev.md) for details. While there is
-nothing preventing the a host app written in this way from running on Linux, the
+nothing preventing a host app written in this way from running on Linux, the
 Visual Studio extension only supports building it for Windows.
 
 This guide shows you how to work using the first way: using CMake as the build
