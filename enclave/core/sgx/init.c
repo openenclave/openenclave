@@ -3,7 +3,9 @@
 
 #include "init.h"
 #include <openenclave/enclave.h>
+#include <openenclave/internal/allocator.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/jump.h>
@@ -71,4 +73,17 @@ static void _initialize_enclave_imp(void)
 void oe_initialize_enclave()
 {
     oe_once(&_enclave_initialize_once, _initialize_enclave_imp);
+
+    /* Initialize the memory allocator. */
+    {
+        static oe_allocator_upcalls_t _upcalls = {
+            oe_memset,
+            oe_memcpy,
+            oe_strcmp,
+            oe_sbrk,
+            oe_abort,
+        };
+
+        oe_allocator_initialize(&_upcalls);
+    }
 }
