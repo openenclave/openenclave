@@ -503,12 +503,20 @@ oe_result_t oe_parse_tcb_info_json(
     if (itr == end)
     {
         if (platform_tcb_level->status != OE_TCB_LEVEL_STATUS_UP_TO_DATE)
+        {
+            for (uint32_t i = 0;
+                 i < OE_COUNTOF(platform_tcb_level->sgx_tcb_comp_svn);
+                 ++i)
+                OE_TRACE_VERBOSE(
+                    "sgx_tcb_comp_svn[%d] = 0x%x",
+                    i,
+                    platform_tcb_level->sgx_tcb_comp_svn[i]);
+            OE_TRACE_VERBOSE("pce_svn = 0x%x", platform_tcb_level->pce_svn);
             OE_RAISE_MSG(
                 OE_TCB_LEVEL_INVALID,
                 "Platform TCB (%d) is not up-to-date",
                 platform_tcb_level->status);
-
-        OE_TRACE_VERBOSE("TCB Info json parsing successful.\n");
+        }
         result = OE_OK;
     }
 done:
