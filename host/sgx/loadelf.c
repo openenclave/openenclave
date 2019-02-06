@@ -271,18 +271,40 @@ static oe_result_t _oe_load_elf_image(
         assert(ph->p_filesz <= ph->p_memsz);
         if (ph->p_type == PT_TLS)
         {
+            // The ELF Handling for ELF Storage spec
+            // (https://uclibc.org/docs/tls.pdf) says in page 4:
+            //     "The section header is not usable; instead a new program
+            //      header entry is created."
+            // These assertions exist to understand those scenarios better.
+            // Currently, in all cases except one, the section and program
+            // header values are observed to be same.
             if (image->tdata_rva != ph->p_vaddr)
             {
-                OE_TRACE_ERROR(
-                    "loadelf: .tdata rva mismatch. Section value = %lx, "
-                    "Program "
-                    "header value = 0x%lx\n",
-                    image->tdata_rva,
-                    ph->p_vaddr);
-                OE_RAISE(OE_FAILURE);
+                if (image->tdata_rva == 0)
+                {
+                    // The ELF has no thread local variables that are
+                    // explicitly initialized. There for there is no .tdata
+                    // section; only a .tbss section.
+                    // In this case, the linker seems to put the address of the
+                    // .tbss section in p_vaddr field; however it leaves the
+                    // size zero. This seems to be strange linker behavior;
+                    // we don't assert on it.
+                    OE_TRACE_INFO("Ignoring .tdata_rva, p_vaddr mismatch for "
+                                  "empty .tdata section");
+                }
+                else
+                {
+                    OE_TRACE_ERROR(
+                        "loadelf: .tdata rva mismatch. Section value = %lx, "
+                        "Program header value = 0x%lx\n",
+                        image->tdata_rva,
+                        ph->p_vaddr);
+                    OE_RAISE(OE_FAILURE);
+                }
             }
             if (image->tdata_size != ph->p_filesz)
             {
+                // Always assert on size mismatch.
                 OE_TRACE_ERROR(
                     "loadelf: .tdata_size mismatch. Section value = %lx, "
                     "Program "
