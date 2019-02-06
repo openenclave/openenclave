@@ -264,6 +264,11 @@ typedef enum _oe_result
      */
     OE_UNSUPPORTED_ENCLAVE_IMAGE,
 
+    /**
+     * The CRL for a PCK certification expired
+     */
+    OE_VERIFY_CRL_EXPIRED,
+
     __OE_RESULT_MAX = OE_ENUM_MAX,
 } oe_result_t;
 /**< typedef enum _oe_result oe_result_t*/
