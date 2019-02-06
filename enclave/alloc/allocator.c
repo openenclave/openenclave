@@ -82,7 +82,7 @@ OE_WEAK_ALIAS(
 **==============================================================================
 */
 
-static oe_malloc_stats_t _malloc_stats;
+static oe_allocator_stats_t _malloc_stats;
 static size_t _dlmalloc_stats_fprintf_calls;
 
 /* Replacement for fprintf in dlmalloc sources below */
@@ -121,13 +121,13 @@ done:
     return ret;
 }
 
-int oe_dlmalloc_allocator_get_stats(oe_malloc_stats_t* stats)
+int oe_dlmalloc_allocator_get_stats(oe_allocator_stats_t* stats)
 {
     int ret = -1;
     static oe_mutex_t _mutex = OE_MUTEX_INITIALIZER;
 
     if (stats)
-        oe_memset(stats, 0, sizeof(oe_malloc_stats_t));
+        oe_memset(stats, 0, sizeof(oe_allocator_stats_t));
 
     oe_mutex_lock(&_mutex);
 

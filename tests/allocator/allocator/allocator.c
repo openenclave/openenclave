@@ -87,7 +87,7 @@ void oe_allocator_thread_teardown(void)
     }
 }
 
-int oe_allocator_get_stats(oe_malloc_stats_t* stats)
+int oe_allocator_get_stats(oe_allocator_stats_t* stats)
 {
     stats->peak_system_bytes = PEAK_SYSTEM_BYTES;
     stats->system_bytes = SYSTEM_BYTES;
