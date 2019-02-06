@@ -3,9 +3,9 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <openenclave/elibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/syscall.h>
 #include <stdarg.h>

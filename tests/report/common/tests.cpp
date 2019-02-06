@@ -1,14 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifdef OE_BUILD_ENCLAVE
-#include <openenclave/internal/enclavelibc.h>
-#endif
-#include <openenclave/internal/report.h>
-#include <openenclave/internal/tests.h>
 #include "../common/tests.h"
+#include <openenclave/internal/tests.h>
 
 #ifdef OE_BUILD_ENCLAVE
+#include <openenclave/elibc/string.h>
 
 #define GetReport oe_get_report
 #define GetReport_v1 oe_get_report_v1

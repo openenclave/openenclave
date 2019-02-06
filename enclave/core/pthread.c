@@ -4,7 +4,7 @@
 #include <openenclave/elibc/errno.h>
 #include <openenclave/elibc/pthread.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/defs.h>
 #include <openenclave/internal/thread.h>
 
 OE_STATIC_ASSERT(sizeof(oe_pthread_once_t) == sizeof(oe_once_t));

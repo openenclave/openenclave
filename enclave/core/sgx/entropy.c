@@ -3,7 +3,6 @@
 
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/random.h>
 
 /*

@@ -3,9 +3,10 @@
 
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
+#include <openenclave/elibc/stdlib.h>
+#include <openenclave/elibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/raise.h>
 #include "../common/sgx/revocation.h"
 

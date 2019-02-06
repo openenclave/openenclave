@@ -4,6 +4,8 @@
 #ifndef _TESTS_H_
 #define _TESTS_H_
 
+#include <openenclave/internal/report.h>
+
 #ifdef OE_BUILD_ENCLAVE
 #include <openenclave/enclave.h>
 #else

@@ -3,10 +3,10 @@
 
 #include <assert.h>
 #include <fcntl.h>
+#include <openenclave/elibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/ec.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/raise.h>

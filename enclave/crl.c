@@ -4,8 +4,8 @@
 #include "crl.h"
 #include <mbedtls/platform.h>
 #include <openenclave/bits/safecrt.h>
+#include <openenclave/elibc/string.h>
 #include <openenclave/internal/crl.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>

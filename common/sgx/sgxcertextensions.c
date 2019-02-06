@@ -7,7 +7,6 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxcertextensions.h>
 #include <openenclave/internal/trace.h>
-#include <string.h>
 #include "../common.h"
 
 #define SGX_EXTENSION_OID_STR "1.2.840.113741.1.13.1"

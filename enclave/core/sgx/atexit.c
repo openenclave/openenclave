@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include "atexit.h"
+#include <openenclave/elibc/unistd.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/thread.h>
 
 /*

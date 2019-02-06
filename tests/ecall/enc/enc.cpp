@@ -2,9 +2,10 @@
 // Licensed under the MIT License.
 
 #include <openenclave/edger8r/enclave.h>
+#include <openenclave/elibc/stdio.h>
+#include <openenclave/elibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/jump.h>
 #include <openenclave/internal/tests.h>

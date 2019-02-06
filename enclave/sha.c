@@ -12,7 +12,7 @@
 #endif
 
 #include <openenclave/bits/types.h>
-#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/defs.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sha.h>
 

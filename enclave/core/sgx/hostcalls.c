@@ -4,10 +4,12 @@
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/edger8r/enclave.h>
+#include <openenclave/elibc/stdio.h>
+#include <openenclave/elibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/print.h>
+#include <openenclave/internal/stack_alloc.h>
 #include "td.h"
 
 void* oe_host_malloc(size_t size)

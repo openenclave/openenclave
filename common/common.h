@@ -7,22 +7,25 @@
 // This file is intended to be used by code that exists in common folder.
 // It includes the necessary header files and allows code to be written against
 // standard C library.
-// When compiling for enclave, it routes the C library calls to enclavelibc
-// functions.
+// When compiling for enclave, it routes the C library calls to enclave core
+// libc inline functions.
 
 #ifdef OE_BUILD_ENCLAVE
 
 #include <openenclave/enclave.h>
-#include <openenclave/internal/enclavelibc.h>
-#include <openenclave/internal/print.h>
 
-// Redefine C library functions to use enclave libc functions.
-#define malloc oe_malloc
-#define free oe_free
-
-#define strlen oe_strlen
-
-#define printf oe_host_printf
+#if !defined(OE_NEED_STDC_NAMES)
+#define OE_NEED_STDC_NAMES
+#define __UNDEF_OE_NEED_STDC_NAMES
+#endif
+#include <openenclave/elibc/stdint.h>
+#include <openenclave/elibc/stdio.h>
+#include <openenclave/elibc/stdlib.h>
+#include <openenclave/elibc/string.h>
+#if defined(__UNDEF_OE_NEED_STDC_NAMES)
+#undef OE_NEED_STDC_NAMES
+#undef __UNDEF_OE_NEED_STDC_NAMES
+#endif
 
 #else
 

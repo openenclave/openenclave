@@ -114,7 +114,12 @@ Excerpt from `enclave/key.c`:
 // Licensed under the MIT License.
 
 #include "key.h"
-#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/bits/safecrt.h>
+#include <openenclave/elibc/string.h>
+#include <openenclave/internal/hash.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/utils.h>
+#include "pem.h"
 
 typedef oe_result_t (*oe_copy_key)(
     mbedtls_pk_context* dest,
@@ -126,6 +131,46 @@ bool oe_private_key_is_valid(
     uint64_t magic)
 {
     return private_key && private_key->magic == magic;
+}
+
+oe_result_t oe_private_key_init(
+    oe_private_key_t* private_key,
+    const mbedtls_pk_context* pk,
+    oe_copy_key copy_key,
+    uint64_t magic)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    if (!private_key || (pk && !copy_key) || (copy_key && !pk))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    private_key->magic = 0;
+
+    if (pk && copy_key)
+        OE_CHECK(copy_key(&private_key->pk, pk, true));
+    else
+        mbedtls_pk_init(&private_key->pk);
+
+    private_key->magic = magic;
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+void oe_private_key_release(oe_private_key_t* private_key, uint64_t magic)
+{
+    if (oe_private_key_is_valid(private_key, magic))
+    {
+        mbedtls_pk_free(&private_key->pk);
+        oe_secure_zero_fill(private_key, sizeof(oe_private_key_t));
+    }
+}
+
+bool oe_public_key_is_valid(const oe_public_key_t* public_key, uint64_t magic)
+{
+    return public_key && public_key->magic == magic;
 }
 
 oe_result_t oe_public_key_init(
@@ -153,6 +198,23 @@ oe_result_t oe_public_key_init(
 done:
     return result;
 }
+
+void oe_public_key_release(oe_public_key_t* public_key, uint64_t magics)
+{
+    if (oe_public_key_is_valid(public_key, magic))
+    {
+        mbedtls_pk_free(&public_key->pk);
+        oe_secure_zero_fill(public_key, sizeof(oe_public_key_t));
+    }
+}
+
+/*
+**==============================================================================
+**
+** _map_hash_type()
+**
+**==============================================================================
+*/
 
 static mbedtls_md_type_t _map_hash_type(oe_hash_type_t md)
 {

@@ -3,9 +3,9 @@
 
 #include "threadlocal.h"
 #include <openenclave/bits/safecrt.h>
+#include <openenclave/elibc/stdlib.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/elf.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>

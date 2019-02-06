@@ -5,7 +5,6 @@
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/ec.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/keys.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/sha.h>

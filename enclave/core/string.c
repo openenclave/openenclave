@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 #include <openenclave/elibc/ctype.h>
+#include <openenclave/elibc/stdlib.h>
 #include <openenclave/elibc/string.h>
-#include <openenclave/enclave.h>
-#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/defs.h>
 
 size_t oe_strlen(const char* s)
 {

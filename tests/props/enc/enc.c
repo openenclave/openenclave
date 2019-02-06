@@ -3,7 +3,6 @@
 
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/enclavelibc.h>
 #include "props_t.h"
 
 int enc_props(int* out_param)

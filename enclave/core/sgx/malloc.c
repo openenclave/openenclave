@@ -3,8 +3,8 @@
 
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/elibc/stdio.h>
+#include <openenclave/elibc/string.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/malloc.h>

@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 #include <openenclave/elibc/stdlib.h>
-#include <openenclave/internal/enclavelibc.h>
 
 #if !defined(OE_NEED_STDC_NAMES)
 #define OE_NEED_STDC_NAMES

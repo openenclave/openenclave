@@ -15,10 +15,10 @@
 #endif
 
 #include <openenclave/bits/safecrt.h>
+#include <openenclave/elibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atomic.h>
 #include <openenclave/internal/cert.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/pem.h>
 #include <openenclave/internal/print.h>
