@@ -3,7 +3,7 @@
 
 // clang-format off
 #include <openenclave/enclave.h>
-#include <openenclave/internal/malloc.h>
+#include <openenclave/internal/allocator.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/print.h>
 #include "allocator.h"
