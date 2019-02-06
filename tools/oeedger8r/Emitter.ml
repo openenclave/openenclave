@@ -854,24 +854,29 @@ let warn_non_portable_types (fd:Ast.func_decl) =
   (if uses_type (Ast.Long Ast.Unsigned) fd || uses_type ulong_t fd then
      print_portability_warning_with_recommendation "unsigned long" "uint64_t or uint32_t")
 
-let warn_signed_size_types (fd:Ast.func_decl) =
+let warn_signed_size_or_count_types (fd:Ast.func_decl) =
   let print_signedness_warning ty =
-    printf "Warning: Function '%s': Size parameter '%s' should not be signed.\n" fd.fname ty
+    printf "Warning: Function '%s': Size or count parameter '%s' should not be signed.\n" fd.fname ty
   in
-  (* Get the names of all size parameters for the function [fd]. *)
+  (* Get the names of all size and count parameters for the function [fd]. *)
   let size_params = List.map (fun (ptype, decl) ->
+      (* The size may be either a [count] or [size], and then either a
+         number or string. We are interested in the strings, as the
+         indicate named [size] or [count] parameters. *)
+      let param_name { ps_size; ps_count } =
+        match ps_size, ps_count with
+        (* [s] is the name of the parameter as a string. *)
+        | (None, Some (Ast.AString s) | Some (Ast.AString s), None) -> s
+        (* TODO: Check for [Some (Ast.ANumber n)] that [n > 0] *)
+        | _ -> ""
+      in
+      (* Only variables that are pointers where [chkptr] is true may
+         have size parameters. TODO: Validate this! *)
       match ptype with
-      (* Only variables that are pointers where [chkptr] is true may have
-         size parameters. TODO: Validate this! *)
-      | Ast.PTPtr (atype, ptr_attr) when ptr_attr.Ast.pa_chkptr->
-        (* The size may be either a count, [ANumber], or named size
-           parameter, [AString]. *)
-        (match ptr_attr.Ast.pa_size.Ast.ps_size with
-         | None -> ""
-         | Some (Ast.ANumber n) -> "" (* TODO: Check that [n > 0] *)
-         | Some (Ast.AString s) -> s (* We have the name of the parameter. *))
+      | Ast.PTPtr (atype, ptr_attr) when ptr_attr.Ast.pa_chkptr ->
+        param_name ptr_attr.Ast.pa_size
       | _ -> ""
-    ) fd.Ast.plist
+    ) fd.Ast.plist |> List.filter (fun x -> String.length x > 0) (* Remove the empty strings. *)
   in
   (* Print warnings for size parameters that are [Signed]. *)
   List.iter (fun (ptype, decl) ->
@@ -914,7 +919,7 @@ let validate_oe_support (ec: enclave_content) (ep: edger8r_params) =
   let funcs = List.append ufuncs tfuncs in
   List.iter (fun f ->
       warn_non_portable_types f;
-      warn_signed_size_types f;
+      warn_signed_size_or_count_types f;
     ) funcs
 
 (** Includes are emitted in [args.h]. Imported functions have already
