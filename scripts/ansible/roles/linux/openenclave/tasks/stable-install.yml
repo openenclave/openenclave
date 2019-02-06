@@ -1,0 +1,16 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+---
+- name: Gather Ansible facts
+  setup:
+
+- import_role:
+    name: linux/common
+    tasks_from: apt-repo-microsoft.yml
+
+- name: Install the official Open Enclave APT package
+  apt:
+    name: open-enclave
+    state: present
+    update_cache: yes

@@ -44,13 +44,10 @@ FROM ubuntu:16.04
 
 ADD scripts/ansible /ansible
 
-RUN /ansible/install-ansible.sh \
-    && ansible-playbook /ansible/ansible-dockerfile.yml --extra-vars "target=localhost" \
-    && /ansible/remove-ansible.sh \
-    && rm -rf /ansible \
+RUN /ansible/install-ansible.sh && \
+    ansible localhost --playbook-dir=/ansible -m import_role -a "name=linux/docker tasks_from=ci-setup.yml" -vvv && \
+    /ansible/remove-ansible.sh && \
+    rm -rf /ansible && \
     # Configure Git in target image to enable merge/rebase actions.
-    && git config --global user.email "oeciteam@microsoft.com" \
-    && git config --global user.name "OE CI Team" 
-
-# Add CMake folder to path (PATH from /etc/environment doesn't appear to be working in docker container)
-ENV PATH="/cmake/bin:${PATH}"
+    git config --global user.email "oeciteam@microsoft.com" && \
+    git config --global user.name "OE CI Team"

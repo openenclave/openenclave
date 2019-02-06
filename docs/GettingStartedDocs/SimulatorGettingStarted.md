@@ -22,11 +22,11 @@ Ansible is required to install the project prerequisites. You can install it by 
 sudo ./scripts/ansible/install-ansible.sh
 ```
 
-The ansible-playbook [scripts/ansible/ansible-include_task.yml](/scripts/ansible/ansible-include_task.yml) was created to be able to run pre-defined ansible tasks on a target host. To make installing the prerequisites less tedious execute the following commands from the root of the source tree:
+To install all the Open Enclave prerequisites you can execute the `environment-setup.yml` tasks from `linux/openenclave` Ansible role:
 
 ```bash
-ansible-playbook scripts/ansible/ansible-include_task.yml --extra-vars "target=localhost included_task=tasks/ansible-install-prereqs.yml"
-ansible-playbook scripts/ansible/ansible-include_task.yml --extra-vars "target=localhost included_task=tasks/ansible-install-openenclave-deps.yml"
+cd openenclave/scripts/ansible
+ansible localhost -m import_role -a "name=linux/openenclave tasks_from=environment-setup.yml" --become --ask-become-pass
 ```
 
 ## Build

@@ -9,6 +9,8 @@ graphviz/
 build/
 winbuild/
 
+scripts/ansible/*.retry
+
 prereqs/aesm/.build
 prereqs/aesm/.prebuilt
 prereqs/aesm/.psw_installer
