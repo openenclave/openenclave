@@ -77,9 +77,9 @@ extern bool oe_disable_debug_malloc_check;
 **==============================================================================
 */
 
-void oe_allocator_startup(void);
+void oe_allocator_thread_startup(void);
 
-void oe_allocator_teardown(void);
+void oe_allocator_thread_teardown(void);
 
 void* oe_allocator_malloc(size_t size);
 

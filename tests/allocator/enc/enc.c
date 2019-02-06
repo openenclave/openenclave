@@ -14,7 +14,7 @@ int test_allocator(void)
     const size_t N = 1024;
     void* pointers[N];
 
-    /* Verify oe_allocator_startup() was called on this thread. */
+    /* Verify oe_allocator_thread_startup() was called on this thread. */
     {
         bool found = false;
 

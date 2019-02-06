@@ -47,17 +47,21 @@ OE_WEAK_ALIAS(dlposix_memalign, oe_allocator_posix_memalign);
 
 OE_WEAK_ALIAS(dlfree, oe_allocator_free);
 
-void oe_dlmalloc_allocator_startup(void)
+void oe_dlmalloc_allocator_thread_startup(void)
 {
 }
 
-void oe_dlmalloc_allocator_teardown(void)
+void oe_dlmalloc_allocator_thread_teardown(void)
 {
 }
 
-OE_WEAK_ALIAS(oe_dlmalloc_allocator_startup, oe_allocator_startup);
+OE_WEAK_ALIAS(
+    oe_dlmalloc_allocator_thread_startup,
+    oe_allocator_thread_startup);
 
-OE_WEAK_ALIAS(oe_dlmalloc_allocator_teardown, oe_allocator_teardown);
+OE_WEAK_ALIAS(
+    oe_dlmalloc_allocator_thread_teardown,
+    oe_allocator_thread_teardown);
 
 /*
 **==============================================================================

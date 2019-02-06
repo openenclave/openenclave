@@ -53,7 +53,7 @@ void* oe_allocator_memalign(size_t alignment, size_t size)
     return dlmemalign(alignment, size);
 }
 
-void oe_allocator_startup(void)
+void oe_allocator_thread_startup(void)
 {
     for (size_t i = 0; i < allocator.num_threads; i++)
     {
@@ -75,7 +75,7 @@ void oe_allocator_startup(void)
     allocator.num_threads++;
 }
 
-void oe_allocator_teardown(void)
+void oe_allocator_thread_teardown(void)
 {
     for (size_t i = 0; i < allocator.num_threads; i++)
     {
