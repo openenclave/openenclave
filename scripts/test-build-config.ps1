@@ -67,9 +67,6 @@ Get-Content -Path "$VCVARSPATH" | Foreach-Object {
   }
 }
 
-# Add clang binaries to PATH
-$env:PATH += ";C:\Program Files\LLVM\bin"
-
 $BUILD_GENERATOR="Visual Studio 15 2017 Win64"
 $BUILD_ENCLAVES_FLAG=""
 $LINUX_BIN_FLAG="-DLINUX_BIN_DIR=`"$LINUX_BIN_DIR`""
