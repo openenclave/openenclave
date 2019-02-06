@@ -8,7 +8,7 @@
 #define OE_NEED_STDC_NAMES
 #define __UNDEF_OE_NEED_STDC_NAMES
 #endif
-#include <openenclave/elibc/time.h>
+#include <openenclave/corelibc/time.h>
 #if defined(__UNDEF_OE_NEED_STDC_NAMES)
 #undef OE_NEED_STDC_NAMES
 #undef __UNDEF_OE_NEED_STDC_NAMES

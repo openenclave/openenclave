@@ -15,7 +15,7 @@
 #endif
 
 #include <openenclave/bits/safecrt.h>
-#include <openenclave/elibc/string.h>
+#include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atomic.h>
 #include <openenclave/internal/cert.h>

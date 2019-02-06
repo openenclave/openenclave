@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/elibc/string.h>
+#include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 
 /* Use OE STDC errno defs for MUSL __strerror.h */
@@ -9,7 +9,7 @@
 #define OE_NEED_STDC_NAMES
 #define __UNDEF_OE_NEED_STDC_NAMES
 #endif
-#include <openenclave/elibc/errno.h>
+#include <openenclave/corelibc/errno.h>
 #if defined(__UNDEF_OE_NEED_STDC_NAMES)
 #undef OE_NEED_STDC_NAMES
 #undef __UNDEF_OE_NEED_STDC_NAMES

@@ -7,7 +7,7 @@
 #define __UNDEF_OE_NEED_STDC_NAMES
 #endif
 #include "../../3rdparty/musl/musl/src/time/__secs_to_tm.c"
-#include <openenclave/elibc/time.h>
+#include <openenclave/corelibc/time.h>
 #if defined(__UNDEF_OE_NEED_STDC_NAMES)
 #undef OE_NEED_STDC_NAMES
 #undef __UNDEF_OE_NEED_STDC_NAMES

@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/corelibc/string.h>
 #include <openenclave/edger8r/enclave.h>
-#include <openenclave/elibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>

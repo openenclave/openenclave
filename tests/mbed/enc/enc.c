@@ -3,7 +3,7 @@
 
 #include <assert.h>
 #include <errno.h>
-#include <openenclave/elibc/string.h>
+#include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>

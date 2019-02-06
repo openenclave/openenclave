@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/elibc/stdlib.h>
+#include <openenclave/corelibc/stdlib.h>
 
 #if !defined(OE_NEED_STDC_NAMES)
 #define OE_NEED_STDC_NAMES
@@ -11,7 +11,7 @@
 #undef OE_INLINE
 #define OE_INLINE
 #endif
-#include <openenclave/elibc/bits/atexit.h>
+#include <openenclave/corelibc/bits/atexit.h>
 #if defined(__UNDEF_OE_NEED_STDC_NAMES)
 #undef OE_NEED_STDC_NAMES
 #undef __UNDEF_OE_NEED_STDC_NAMES

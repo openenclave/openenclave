@@ -3,7 +3,7 @@
 
 #include "td.h"
 #include <openenclave/bits/safecrt.h>
-#include <openenclave/elibc/string.h>
+#include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/fault.h>

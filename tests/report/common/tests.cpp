@@ -5,7 +5,7 @@
 #include <openenclave/internal/tests.h>
 
 #ifdef OE_BUILD_ENCLAVE
-#include <openenclave/elibc/string.h>
+#include <openenclave/corelibc/string.h>
 
 #define GetReport oe_get_report
 #define GetReport_v1 oe_get_report_v1

@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/elibc/ctype.h>
-#include <openenclave/elibc/stdlib.h>
-#include <openenclave/elibc/string.h>
+#include <openenclave/corelibc/ctype.h>
+#include <openenclave/corelibc/stdlib.h>
+#include <openenclave/corelibc/string.h>
 #include <openenclave/internal/defs.h>
 
 size_t oe_strlen(const char* s)

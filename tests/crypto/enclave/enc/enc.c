@@ -3,7 +3,7 @@
 
 #include <assert.h>
 #include <fcntl.h>
-#include <openenclave/elibc/string.h>
+#include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/ec.h>

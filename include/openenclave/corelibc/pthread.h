@@ -5,7 +5,7 @@
 #define _OE_PTHREAD_H
 
 #include <openenclave/bits/types.h>
-#include <openenclave/elibc/time.h>
+#include <openenclave/corelibc/time.h>
 
 // clang-format off
 #define OE_PTHREAD_MUTEX_INITIALIZER {{0}}

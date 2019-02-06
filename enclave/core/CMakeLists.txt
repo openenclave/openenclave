@@ -101,7 +101,7 @@ endif()
 if (OE_SGX)
     # This directory contains enclave core libc headers:
     target_include_directories(oecore PRIVATE
-        ${PROJECT_SOURCE_DIR}/include/openenclave/elibc)
+        ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
 
     # Unfortunately dlmalloc uses GNU extension that allows arithmetic
     # null pointers.

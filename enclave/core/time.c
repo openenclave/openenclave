@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/types.h>
-#include <openenclave/elibc/time.h>
+#include <openenclave/corelibc/time.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/time.h>
 

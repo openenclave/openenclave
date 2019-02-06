@@ -3,7 +3,7 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/elibc/ctype.h>
+#include <openenclave/corelibc/ctype.h>
 
 //
 // If c is a digit character:

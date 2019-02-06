@@ -18,10 +18,10 @@
 #define OE_NEED_STDC_NAMES
 #define __UNDEF_OE_NEED_STDC_NAMES
 #endif
-#include <openenclave/elibc/stdint.h>
-#include <openenclave/elibc/stdio.h>
-#include <openenclave/elibc/stdlib.h>
-#include <openenclave/elibc/string.h>
+#include <openenclave/corelibc/stdint.h>
+#include <openenclave/corelibc/stdio.h>
+#include <openenclave/corelibc/stdlib.h>
+#include <openenclave/corelibc/string.h>
 #if defined(__UNDEF_OE_NEED_STDC_NAMES)
 #undef OE_NEED_STDC_NAMES
 #undef __UNDEF_OE_NEED_STDC_NAMES

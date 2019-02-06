@@ -3,7 +3,7 @@
 
 #include "threadlocal.h"
 #include <openenclave/bits/safecrt.h>
-#include <openenclave/elibc/stdlib.h>
+#include <openenclave/corelibc/stdlib.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/globals.h>

@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/elibc/pthread.h>
-#include <openenclave/elibc/string.h>
+#include <openenclave/corelibc/pthread.h>
+#include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/defs.h>
 #include <openenclave/internal/pthreadhooks.h>
@@ -22,13 +22,13 @@
 #undef OE_INLINE
 #define OE_INLINE
 #endif
-#include <openenclave/elibc/bits/pthread_cond.h>
-#include <openenclave/elibc/bits/pthread_equal.h>
-#include <openenclave/elibc/bits/pthread_key.h>
-#include <openenclave/elibc/bits/pthread_mutex.h>
-#include <openenclave/elibc/bits/pthread_once.h>
-#include <openenclave/elibc/bits/pthread_rwlock.h>
-#include <openenclave/elibc/bits/pthread_spin.h>
+#include <openenclave/corelibc/bits/pthread_cond.h>
+#include <openenclave/corelibc/bits/pthread_equal.h>
+#include <openenclave/corelibc/bits/pthread_key.h>
+#include <openenclave/corelibc/bits/pthread_mutex.h>
+#include <openenclave/corelibc/bits/pthread_once.h>
+#include <openenclave/corelibc/bits/pthread_rwlock.h>
+#include <openenclave/corelibc/bits/pthread_spin.h>
 #if defined(__UNDEF_OE_NEED_STDC_NAMES)
 #undef OE_NEED_STDC_NAMES
 #undef __UNDEF_OE_NEED_STDC_NAMES
