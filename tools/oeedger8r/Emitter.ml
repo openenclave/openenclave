@@ -855,8 +855,8 @@ let warn_non_portable_types (fd:Ast.func_decl) =
      print_portability_warning_with_recommendation "unsigned long" "uint64_t or uint32_t")
 
 let warn_signed_size_or_count_types (fd:Ast.func_decl) =
-  let print_signedness_warning ty =
-    printf "Warning: Function '%s': Size or count parameter '%s' should not be signed.\n" fd.fname ty
+  let print_signedness_warning p =
+    printf "Warning: Function '%s': Size or count parameter '%s' should not be signed.\n" fd.fname p
   in
   (* Get the names of all size and count parameters for the function [fd]. *)
   let size_params = List.map (fun (ptype, decl) ->
@@ -891,6 +891,20 @@ let warn_signed_size_or_count_types (fd:Ast.func_decl) =
         | _ -> ()
     ) fd.Ast.plist
 
+let warn_size_and_count_params (fd:Ast.func_decl) =
+  let print_size_and_count_warning { ps_size; ps_count } =
+    match ps_size, ps_count with
+        | Some (Ast.AString p), Some (Ast.AString q) ->
+          failwithf "Function '%s': simultaneous 'size' and 'count' parameters '%s' and '%s' are not supported by oeedger8r.\n" fd.fname p q
+        | _ -> ()
+  in
+  List.iter (fun (ptype, _) ->
+      match ptype with
+      | Ast.PTPtr (_, ptr_attr) when ptr_attr.Ast.pa_chkptr ->
+        print_size_and_count_warning ptr_attr.Ast.pa_size
+      | _ -> ()
+    ) fd.Ast.plist
+
 (** Validate Open Enclave supported EDL features. *)
 let validate_oe_support (ec: enclave_content) (ep: edger8r_params) =
   (* check supported options *)
@@ -920,6 +934,7 @@ let validate_oe_support (ec: enclave_content) (ep: edger8r_params) =
   List.iter (fun f ->
       warn_non_portable_types f;
       warn_signed_size_or_count_types f;
+      warn_size_and_count_params f;
     ) funcs
 
 (** Includes are emitted in [args.h]. Imported functions have already
