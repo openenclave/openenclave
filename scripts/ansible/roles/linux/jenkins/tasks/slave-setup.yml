@@ -89,11 +89,24 @@
     name: jenkins
     groups: docker
 
-- name: Jenkins | Setup JNLP Slave
-  import_role:
-    name: kobanyan.jenkins-jnlp-slave
-  vars:
-    jenkins_master: "{{ jenkins_url }}"
-    jenkins_slave_secret: "{{ node_secret }}"
-    jenkins_slave_name: "{{ jenkins_agent_name }}"
-    jenkins_slave_home: "{{ jenkins_agent_root_dir }}"
+- name: Make Jenkins JNLP slave directories
+  file:
+    path: "{{ jenkins_agent_root_dir }}"
+    state: directory
+    owner: jenkins
+    group: jenkins
+
+- name: Template Jenkins JNLP slave files
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - { src: jenkins-slave.service.j2, dest: /etc/systemd/system/jenkins-slave.service, mode: 755 }
+    - { src: jenkins-slave.default.j2, dest: /etc/default/jenkins-slave, mode: 644 }
+
+- name: Start Jenkins JNLP slave
+  systemd:
+    name: jenkins-slave
+    enabled: yes
+    state: restarted
+    daemon_reload: yes
