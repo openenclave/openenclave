@@ -3,10 +3,10 @@ def PowerShellWrapper(psCmd) {
     bat "powershell.exe -NonInteractive -ExecutionPolicy Bypass -Command \"\$ErrorActionPreference='Stop';[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;$psCmd;EXIT \$global:LastExitCode\""
 }
 
-def ACCTest(String label, String compiler, String platform_mode, String build_type) {
-    def c_compiler
-    def cpp_compiler
-    stage("${label} ${compiler} ${platform_mode} ${build_type}") {
+def ACCTest(String label, String compiler, String build_type) {
+    def c_compiler = "clang-7"
+    def cpp_compiler = "clang++-7"
+    stage("${label} ${compiler} SGX1FLC ${build_type}") {
         node("${label}") {
             cleanWs()
             checkout scm
@@ -16,9 +16,6 @@ def ACCTest(String label, String compiler, String platform_mode, String build_ty
                     if (compiler == "gcc") {
                         c_compiler = "gcc"
                         cpp_compiler = "g++"
-                    } else if (compiler == "clang-7") {
-                        c_compiler = "clang-7"
-                        cpp_compiler = "clang++-7"
                     }
                     withEnv(["CC=${c_compiler}","CXX=${cpp_compiler}"]) {
                         sh """
@@ -34,10 +31,8 @@ def ACCTest(String label, String compiler, String platform_mode, String build_ty
     }
 }
 
-def simulationTest(String compiler, String platform_mode, String build_type ) {
-    def c_compiler
-    def cpp_compiler
-    stage("Sim ${compiler} ${platform_mode} ${build_type}") {
+def simulationTest(String platform_mode, String build_type) {
+    stage("Sim clang-7 ${platform_mode} ${build_type}") {
         node {
             cleanWs()
             checkout scm
@@ -46,14 +41,7 @@ def simulationTest(String compiler, String platform_mode, String build_type ) {
             oetoolsSim.inside {
                 timeout(15) {
                     dir('build') {
-                        if (compiler == "gcc") {
-                            c_compiler = "gcc"
-                            cpp_compiler = "g++"
-                        } else if (compiler == "clang-7") {
-                            c_compiler = "clang-7"
-                            cpp_compiler = "clang++-7"
-                        }
-                        withEnv(["CC=${c_compiler}","CXX=${cpp_compiler}","OE_SIMULATION=1"]) {
+                        withEnv(["CC=clang-7","CXX=clang++-7","OE_SIMULATION=1"]) {
                             sh """
                             cmake .. -DCMAKE_BUILD_TYPE=${build_type} -DUSE_LIBSGX=OFF
                             make
@@ -122,7 +110,7 @@ def checkDevFlows() {
                         sh '''
                         cmake .. -DUSE_LIBSGX=OFF
                         make
-                    '''
+                        '''
                         // Note that `make package` is not expected to work
                         // without extra configuration.
                     }
@@ -174,23 +162,23 @@ def win2016CrossCompile(String build_type) {
     }
 }
 
-parallel "Check Developer Experience" :         { checkDevFlows() },
-        "Sim clang-7 SGX1 Debug" :              { simulationTest('clang-7', 'SGX1', 'Debug')},
-        "Sim clang-7 SGX1 Release" :            { simulationTest('clang-7', 'SGX1', 'Release')},
-        "Sim clang-7 SGX1 RelWithDebInfo" :     { simulationTest('clang-7', 'SGX1', 'RelWithDebInfo')},
-        "Sim clang-7 SGX1-FLC Debug" :          { simulationTest('clang-7', 'SGX1FLC', 'Debug')},
-        "Sim clang-7 SGX1-FLC Release" :        { simulationTest('clang-7', 'SGX1FLC', 'Release')},
-        "Sim clang-7 SGX1-FLC RelWithDebInfo" : { simulationTest('clang-7', 'SGX1FLC', 'RelWithDebInfo')},
-        "ACC1604 clang-7 Debug" :               { ACCTest('ACC-1604', 'clang-7', 'SGX1FLC', 'Debug') },
-        "ACC1604 clang-7 Release" :             { ACCTest('ACC-1604', 'clang-7', 'SGX1FLC','Release') },
-        "ACC1604 clang-7 RelWithDebInfo" :      { ACCTest('ACC-1604', 'clang-7', 'SGX1FLC', 'RelWithDebinfo') },
-        "ACC1604 gcc Debug" :                   { ACCTest('ACC-1604', 'gcc', 'SGX1FLC', 'Debug') },
-        "ACC1604 gcc Release" :                 { ACCTest('ACC-1604', 'gcc', 'SGX1FLC', 'Release') },
-        "ACC1604 gcc RelWithDebInfo" :          { ACCTest('ACC-1604', 'gcc', 'SGX1FLC', 'RelWithDebInfo') },
-        "ACC1804 clang-7 Debug" :               { ACCTest('ACC-1804', 'clang-7', 'SGX1FLC', 'Debug') },
-        "ACC1804 clang-7 RelWithDebInfo" :      { ACCTest('ACC-1804', 'clang-7', 'SGX1FLC', 'RelWithDebinfo') },
-        "Win2016 Debug Cross Compile" :         { win2016CrossCompile("Debug") },
-        "Win2016 Release Cross Compile" :       { win2016CrossCompile("Release") },
-        "Win2016 Debug Linux-Elf-build" :       { win2016LinuxElfBuild("Debug") },
-        "Win2016 Release Linux-Elf-build" :     { win2016LinuxElfBuild("Release") },
-        "ACC1604 Container RelWithDebInfo" :    { ACCContainerTest('ACC-1604') }
+parallel "Check Developer Experience" :          { checkDevFlows() },
+         "Sim clang-7 SGX1 Debug" :              { simulationTest('SGX1', 'Debug')},
+         "Sim clang-7 SGX1 Release" :            { simulationTest('SGX1', 'Release')},
+         "Sim clang-7 SGX1 RelWithDebInfo" :     { simulationTest('SGX1', 'RelWithDebInfo')},
+         "Sim clang-7 SGX1-FLC Debug" :          { simulationTest('SGX1FLC', 'Debug')},
+         "Sim clang-7 SGX1-FLC Release" :        { simulationTest('SGX1FLC', 'Release')},
+         "Sim clang-7 SGX1-FLC RelWithDebInfo" : { simulationTest('SGX1FLC', 'RelWithDebInfo')},
+         "ACC1604 clang-7 Debug" :               { ACCTest('ACC-1604', 'clang-7', 'Debug') },
+         "ACC1604 clang-7 Release" :             { ACCTest('ACC-1604', 'clang-7', 'Release') },
+         "ACC1604 clang-7 RelWithDebInfo" :      { ACCTest('ACC-1604', 'clang-7', 'RelWithDebinfo') },
+         "ACC1604 gcc Debug" :                   { ACCTest('ACC-1604', 'gcc', 'Debug') },
+         "ACC1604 gcc Release" :                 { ACCTest('ACC-1604', 'gcc', 'Release') },
+         "ACC1604 gcc RelWithDebInfo" :          { ACCTest('ACC-1604', 'gcc', 'RelWithDebInfo') },
+         "ACC1804 clang-7 Debug" :               { ACCTest('ACC-1804', 'clang-7', 'Debug') },
+         "ACC1804 clang-7 RelWithDebInfo" :      { ACCTest('ACC-1804', 'clang-7', 'RelWithDebinfo') },
+         "Win2016 Debug Cross Compile" :         { win2016CrossCompile("Debug") },
+         "Win2016 Release Cross Compile" :       { win2016CrossCompile("Release") },
+         "Win2016 Debug Linux-Elf-build" :       { win2016LinuxElfBuild("Debug") },
+         "Win2016 Release Linux-Elf-build" :     { win2016LinuxElfBuild("Release") },
+         "ACC1604 Container RelWithDebInfo" :    { ACCContainerTest('ACC-1604') }
