@@ -27,16 +27,7 @@ typedef struct _oe_allocator_stats
     uint64_t in_use_bytes;
 } oe_allocator_stats_t;
 
-typedef struct _oe_allocator_upcalls
-{
-    void* (*memset_func)(void* s, int c, size_t n);
-    void* (*memcpy_func)(void* dest, const void* src, size_t n);
-    int (*strcmp_func)(const char* s1, const char* s2);
-    void* (*sbrk_func)(ptrdiff_t increment);
-    void (*abort_func)(void);
-} oe_allocator_upcalls_t;
-
-void oe_allocator_initialize(oe_allocator_upcalls_t* upcalls);
+void oe_allocator_initialize(void);
 
 void oe_allocator_threstartup(void);
 

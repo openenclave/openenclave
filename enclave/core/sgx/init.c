@@ -75,15 +75,5 @@ void oe_initialize_enclave()
     oe_once(&_enclave_initialize_once, _initialize_enclave_imp);
 
     /* Initialize the memory allocator. */
-    {
-        static oe_allocator_upcalls_t _upcalls = {
-            oe_memset,
-            oe_memcpy,
-            oe_strcmp,
-            oe_sbrk,
-            oe_abort,
-        };
-
-        oe_allocator_initialize(&_upcalls);
-    }
+    oe_allocator_initialize();
 }

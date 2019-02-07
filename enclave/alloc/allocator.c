@@ -3,52 +3,26 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/allocator.h>
+#include <openenclave/internal/enclavelibc.h>
 
 #define HAVE_MMAP 0
 #define LACKS_UNISTD_H
 #define LACKS_SYS_PARAM_H
 #define LACKS_SYS_TYPES_H
 #define LACKS_TIME_H
-#define MORECORE _sbrk
-#define ABORT _abort()
+#define MORECORE oe_sbrk
+#define ABORT oe_abort()
 #define USE_DL_PREFIX
 #define LACKS_STDLIB_H
 #define LACKS_STRING_H
 #define USE_LOCKS 1
-#define memset _memset
-#define memcpy _memcpy
+#define memset oe_memset
+#define memcpy oe_memcpy
 #define fprintf _dlmalloc_stats_fprintf
 
 typedef struct _FILE FILE;
 
 static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...);
-
-static oe_allocator_upcalls_t* _upcalls;
-
-OE_INLINE void* _memset(void* s, int c, size_t n)
-{
-    return _upcalls->memset_func(s, c, n);
-}
-
-OE_INLINE void* _memcpy(void* dest, const void* src, size_t n)
-{
-    return _upcalls->memcpy_func(dest, src, n);
-}
-
-OE_INLINE int _strcmp(const char* s1, const char* s2)
-{
-    return _upcalls->strcmp_func(s1, s2);
-}
-
-OE_INLINE void _abort(void)
-{
-    return _upcalls->abort_func();
-}
-
-OE_INLINE void* _sbrk(ptrdiff_t increment)
-{
-    return _upcalls->sbrk_func(increment);
-}
 
 #pragma GCC diagnostic push
 #ifdef __clang__
@@ -58,6 +32,10 @@ OE_INLINE void* _sbrk(ptrdiff_t increment)
 #pragma GCC diagnostic pop
 
 #define ALIAS(OLD, NEW) extern __typeof(OLD) NEW __attribute__((alias(#OLD)))
+
+void oe_allocator_initialize(void)
+{
+}
 
 OE_WEAK_ALIAS(dlmalloc, oe_allocator_malloc);
 
@@ -70,11 +48,6 @@ OE_WEAK_ALIAS(dlmemalign, oe_allocator_memalign);
 OE_WEAK_ALIAS(dlposix_memalign, oe_allocator_posix_memalign);
 
 OE_WEAK_ALIAS(dlfree, oe_allocator_free);
-
-void oe_allocator_initialize(oe_allocator_upcalls_t* upcalls)
-{
-    _upcalls = upcalls;
-}
 
 void oe_dlmalloc_allocator_thread_startup(void)
 {
@@ -123,17 +96,17 @@ static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...)
     OE_UNUSED(stream);
     oe_va_start(ap, format);
 
-    if (_strcmp(format, "max system bytes = %10lu\n") == 0)
+    if (oe_strcmp(format, "max system bytes = %10lu\n") == 0)
     {
         _malloc_stats.peak_system_bytes = oe_va_arg(ap, uint64_t);
         _dlmalloc_stats_fprintf_calls++;
     }
-    else if (_strcmp(format, "system bytes     = %10lu\n") == 0)
+    else if (oe_strcmp(format, "system bytes     = %10lu\n") == 0)
     {
         _malloc_stats.system_bytes = oe_va_arg(ap, uint64_t);
         _dlmalloc_stats_fprintf_calls++;
     }
-    else if (_strcmp(format, "in use bytes     = %10lu\n") == 0)
+    else if (oe_strcmp(format, "in use bytes     = %10lu\n") == 0)
     {
         _malloc_stats.in_use_bytes = oe_va_arg(ap, uint64_t);
         _dlmalloc_stats_fprintf_calls++;
@@ -141,7 +114,7 @@ static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...)
     }
     else
     {
-        _abort();
+        oe_abort();
     }
 
     oe_va_end(ap);
@@ -156,7 +129,7 @@ int oe_dlmalloc_allocator_get_stats(oe_allocator_stats_t* stats)
     static MLOCK_T _lock = 0;
 
     if (stats)
-        _memset(stats, 0, sizeof(oe_allocator_stats_t));
+        oe_memset(stats, 0, sizeof(oe_allocator_stats_t));
 
     ACQUIRE_LOCK(&_lock);
 
