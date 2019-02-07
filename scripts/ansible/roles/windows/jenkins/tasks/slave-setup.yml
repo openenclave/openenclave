@@ -1,0 +1,193 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+---
+- name: Jenkins | Set default host variables (if not already set by the user)
+  block:
+    - set_fact:
+        jenkins_agent_name: "{{ ansible_hostname }}"
+      when: jenkins_agent_name is not defined
+
+    - set_fact:
+        jenkins_agent_executors_count: 1
+      when: jenkins_agent_executors_count is not defined
+
+    - set_fact:
+        jenkins_agent_label: ""
+      when: jenkins_agent_label is not defined
+
+    - set_fact:
+        jenkins_agent_root_dir: "C:/Jenkins"
+      when: jenkins_agent_root_dir is not defined
+
+- name: Provision new slave node
+  delegate_to: localhost
+  block:
+    - name: Provision new slave node - Groovy provisioning
+      jenkins_script:
+        script: |
+            import jenkins.model.*
+            import hudson.model.*
+            import hudson.slaves.*
+            Jenkins.instance.addNode(
+              new DumbSlave(
+              "{{ jenkins_agent_name }}",
+              "",
+              "{{ jenkins_agent_root_dir }}",
+              "{{ jenkins_agent_executors_count }}",
+              Node.Mode.NORMAL,
+              "{{ jenkins_agent_label }}",
+              new JNLPLauncher(),
+              new RetentionStrategy.Always(),
+              new LinkedList()))
+
+        user: "{{ jenkins_admin_name }}"
+        password: "{{ jenkins_admin_password }}"
+        url: "{{ jenkins_url }}"
+
+    - name: Provision new slave node - Groovy slave secret extraction
+      jenkins_script:
+        script: jenkins.model.Jenkins.getInstance().getComputer("{{ jenkins_agent_name }}").getJnlpMac()
+        user: "{{ jenkins_admin_name }}"
+        password: "{{ jenkins_admin_password }}"
+        url: "{{ jenkins_url }}"
+      register: script_output
+
+    - set_fact: node_secret="{{script_output.output.lstrip('Result:') | trim}}"
+
+- name: Make sure that Jenkins home exists
+  win_file:
+    path: "{{ jenkins_agent_root_dir }}"
+    state: directory
+
+- name: Download slave-agent.jnlp from Jenkins Master
+  win_get_url:
+    url: "{{ jenkins_url }}/computer/{{ jenkins_agent_name }}/slave-agent.jnlp"
+    force_basic_auth: yes
+    url_username: '{{ jenkins_admin_name }}'
+    url_password: '{{ jenkins_admin_password }}'
+    dest: "{{ jenkins_agent_root_dir }}/slave-agent.jnlp"
+
+- name: Download agent.jar from Jenkins Master
+  win_get_url:
+    url: "{{ jenkins_url }}/jnlpJars/agent.jar"
+    force_basic_auth: yes
+    url_username: "{{ jenkins_admin_name }}"
+    url_password: "{{ jenkins_admin_password }}"
+    dest: "{{ jenkins_agent_root_dir }}/agent.jar"
+
+- name: Download all the installers
+  win_get_url:
+    url: "{{ item.value.url }}"
+    dest: "{{ item.value.dest }}"
+    timeout: 60
+  retries: 5
+  with_dict: "{{ packages }}"
+
+- name: Oracle JDK8 - Download
+  win_get_url:
+    url: "{{ jdk8_url }}"
+    headers:
+      Cookie: "oraclelicense=accept-securebackup-cookie"
+    dest: "{{ tmp_dir }}\\jdk-windows-x64.exe"
+
+- name: Add all the packages to the machine PATH
+  win_path: 
+    elements: "{{ packages_env_path }}"
+
+- name: Oracle JDK8 - Install
+  raw: "{{ tmp_dir }}\\jdk-windows-x64.exe /s REBOOT=Disable REMOVEOUTOFDATEJRES=1"
+
+- name: 7Zip - Install
+  win_package:
+    path: "{{ packages['7z']['dest'] }}"
+
+- name: Microsoft Visual Studio 2017 - Install
+  raw: "{{ packages['vs_2017']['dest'] }} --quiet --wait --add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.VC.CMake.Project --includeRecommended"
+
+- name: Clang 7 - Install
+  raw: "{{ packages['clang7']['dest'] }} /S"
+
+- name: Git - Install
+  raw: "{{ packages.git.dest }} /SILENT"
+
+- name: OCaml - Extract
+  raw: '7z.exe x "{{ packages.ocaml.dest }}" -r -y -o"C:\Program Files"'
+
+- name: shellcheck - Extract
+  raw: '7z.exe x "{{ packages.shellcheck.dest }}" -r -y -o"C:\Program Files\shellcheck"'
+
+- name: Windows | Check if the service wrapper exists
+  win_stat:
+    path: "{{ jenkins_agent_root_dir }}/servicewrapper.exe"
+  register: servicewrapper_info
+
+- name: Windows | Get the service wrapper
+  block:
+    - name: Windows | Download the service wrapper zip file
+      win_get_url:
+        url: "{{ servicewrapper_url }}"
+        dest: "{{ tmp_dir }}\\service-wrapper.zip"
+        timeout: 60
+      retries: 3
+
+    - name: Windows | Unzip the service-wrapper zip archive
+      win_unzip:
+        src: "{{ tmp_dir }}\\service-wrapper.zip"
+        dest: "{{ tmp_dir }}\\service-wrapper"
+
+    - name: Windows | Move the service wrapper to the expected location
+      win_copy:
+        src: "{{ tmp_dir }}\\service-wrapper\\service-wrapper.exe"
+        dest: "{{ jenkins_agent_root_dir }}\\servicewrapper.exe"
+        remote_src: yes
+
+    - name: Windows | Remove service-wrapper temporary files
+      win_file:
+        state: absent
+        path: "{{ item }}"
+      with_items:
+        - "{{ tmp_dir }}\\service-wrapper.zip"
+        - "{{ tmp_dir }}\\service-wrapper"
+  when: not servicewrapper_info.stat.exists
+
+- name: Jenkins Slave | Create the service wrapper config file
+  block:
+    - name: Jenkins Slave | Remove existing service wrapper config file
+      win_file:
+        state: absent
+        path: '{{ jenkins_agent_root_dir }}/jenkins-servicewrapper-config.ini'
+
+    - name: Jenkins Slave | Create the new service wrapper config file
+      win_lineinfile:
+        path: '{{ jenkins_agent_root_dir }}/jenkins-servicewrapper-config.ini'
+        create: yes
+        line: |
+          log-file={{ jenkins_agent_root_dir }}/jenkins-slave.log
+          service-name=jenkins-slave
+          service-command=java.exe -jar {{ jenkins_agent_root_dir }}/agent.jar -jnlpUrl {{ jenkins_url }}/computer/{{ jenkins_agent_name }}/slave-agent.jnlp -secret {{ node_secret }}
+
+- name: Jenkins Slave | Create Jenkins Slave JNLP Windows service
+  win_service:
+    name: jenkins-slave
+    display_name: Jenkins Slave
+    description: Jenkins Slave service
+    path: >-
+      "{{ jenkins_agent_root_dir }}/servicewrapper.exe" --config "{{ jenkins_agent_root_dir }}/jenkins-servicewrapper-config.ini"
+
+- name: Jenkins Slave | Set service failure command
+  win_shell: >-
+    sc.exe failure jenkins-slave reset=40 actions=restart/0/restart/0/run/30000
+    command="powershell.exe Move-Item
+    \\\`"{{ jenkins_agent_root_dir }}/jenkins-slave.log\\\`"
+    \\\`"{{ jenkins_agent_root_dir }}/jenkins-slave.log_`$(Get-Date -f yyyy-MM-dd-hh-mm-ss)\\\`";
+    Restart-Service jenkins-slave"
+
+- name: Jenkins Slave | Enable jenkins-slave service failure flags
+  win_shell: sc.exe failureflag jenkins-slave 1
+
+- name: Jenkins Slave | Start service
+  win_service:
+    name: jenkins-slave
+    start_mode: auto
+    state: started
