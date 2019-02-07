@@ -3,11 +3,11 @@ def PowerShellWrapper(psCmd) {
     bat "powershell.exe -NonInteractive -ExecutionPolicy Bypass -Command \"\$ErrorActionPreference='Stop';[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;$psCmd;EXIT \$global:LastExitCode\""
 }
 
-def ACCTest(String label, String compiler, String unit, String suite) {
+def ACCTest(String label, String compiler, String platform_mode, String build_type) {
     def c_compiler
     def cpp_compiler
-    stage("$label $compiler $unit $suite") {
-        node("$label") {
+    stage("${label} ${compiler} ${platform_mode} ${build_type}") {
+        node("${label}") {
             cleanWs()
             checkout scm
 
@@ -22,7 +22,7 @@ def ACCTest(String label, String compiler, String unit, String suite) {
                     }
                     withEnv(["CC=${c_compiler}","CXX=${cpp_compiler}"]) {
                         sh """
-                        cmake .. -DCMAKE_BUILD_TYPE=${suite}
+                        cmake .. -DCMAKE_BUILD_TYPE=${build_type}
                         make
                         ctest --output-on-failure
                         """
@@ -34,10 +34,10 @@ def ACCTest(String label, String compiler, String unit, String suite) {
     }
 }
 
-def simulationTest(String compiler, String unit, String suite ) {
+def simulationTest(String compiler, String platform_mode, String build_type ) {
     def c_compiler
     def cpp_compiler
-    stage("Sim $compiler $unit $suite") {
+    stage("Sim ${compiler} ${platform_mode} ${build_type}") {
         node {
             cleanWs()
             checkout scm
@@ -55,7 +55,7 @@ def simulationTest(String compiler, String unit, String suite ) {
                         }
                         withEnv(["CC=${c_compiler}","CXX=${cpp_compiler}","OE_SIMULATION=1"]) {
                             sh """
-                            cmake .. -DCMAKE_BUILD_TYPE=${suite} -DUSE_LIBSGX=OFF
+                            cmake .. -DCMAKE_BUILD_TYPE=${build_type} -DUSE_LIBSGX=OFF
                             make
                             ctest --output-on-failure
                             """
@@ -68,8 +68,8 @@ def simulationTest(String compiler, String unit, String suite ) {
 }
 
 def ACCContainerTest(String label) {
-    stage("$label Container RelWithDebInfo") {
-        node("$label") {
+    stage("${label} Container RelWithDebInfo") {
+        node("${label}") {
             cleanWs()
             checkout scm
 
