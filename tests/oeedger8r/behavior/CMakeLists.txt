@@ -58,3 +58,18 @@ set_tests_properties(edger8r_portability_untrusted_long_warning PROPERTIES
 add_test(NAME edger8r_portability_untrusted_unsigned_long_warning COMMAND edger8r ${EDGER8R_ARGS} portability.edl)
 set_tests_properties(edger8r_portability_untrusted_unsigned_long_warning PROPERTIES
   PASS_REGULAR_EXPRESSION "Function 'ecall': unsigned long has different sizes")
+
+# Test signedness of size and count
+add_test(NAME edger8r_size_signedness_warning COMMAND edger8r ${EDGER8R_ARGS} size_signedness.edl)
+set_tests_properties(edger8r_size_signedness_warning PROPERTIES
+  PASS_REGULAR_EXPRESSION "Warning: Function 'signed_size': Size or count parameter 'size' should not be signed."
+  FAIL_REGULAR_EXPRESSION "Warning: Function 'unsigned_size': Size or count parameter 'size' should not be signed.")
+
+add_test(NAME edger8r_count_signedness_warning COMMAND edger8r ${EDGER8R_ARGS} count_signedness.edl)
+set_tests_properties(edger8r_count_signedness_warning PROPERTIES
+  PASS_REGULAR_EXPRESSION "Warning: Function 'signed_count': Size or count parameter 'count' should not be signed."
+  FAIL_REGULAR_EXPRESSION "Warning: Function 'unsigned_count': Size or count parameter 'count' should not be signed.")
+
+add_test(NAME edger8r_size_and_count_warning COMMAND edger8r ${EDGER8R_ARGS} size_and_count.edl)
+set_tests_properties(edger8r_size_and_count_warning PROPERTIES
+  PASS_REGULAR_EXPRESSION "Function 'size_and_count': simultaneous 'size' and 'count' parameters 'size' and 'count' are not supported by oeedger8r.")
