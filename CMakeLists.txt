@@ -141,7 +141,8 @@ endif ()
 
 # TODO: See #756: Fix this because it is incompatible with
 # multi-configuration generators
-if (CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT WIN32)
+string(TOUPPER "${CMAKE_BUILD_TYPE}" uppercase_CMAKE_BUILD_TYPE)
+if (uppercase_CMAKE_BUILD_TYPE STREQUAL "DEBUG" AND NOT WIN32)
   # In non-win32 debug build, debug_malloc is on by default
   option(USE_DEBUG_MALLOC "Build oeenclave with memory leak detection capability." ON)
 else ()
