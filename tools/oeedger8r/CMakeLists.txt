@@ -31,6 +31,10 @@ add_custom_command(
   DEPENDS intel/Parser.mly)
 
 # Compile
+find_program(OCAMLOPT ocamlopt)
+if (NOT OCAMLOPT)
+  message(FATAL_ERROR "ocamlopt not found! Please check your OCAML installation")
+endif ()
 set(BINARY oeedger8r${CMAKE_EXECUTABLE_SUFFIX})
 add_custom_command(
     OUTPUT ${BINARY}
