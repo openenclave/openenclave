@@ -132,8 +132,8 @@ def checkDevFlows() {
     }
 }
 
-def win2016DebugLinuxElfBuild() {
-    stage('Linux SGX1 Debug') {
+def win2016LinuxElfBuild(String build_type) {
+    stage("Linux SGX1 ${build_type}") {
         node {
             cleanWs()
             checkout scm
@@ -143,78 +143,37 @@ def win2016DebugLinuxElfBuild() {
                     dir('build') {
                         withEnv(["CC=clang-7","CXX=clang++-7"]) {
                             sh """
-                            cmake .. -DCMAKE_BUILD_TYPE=Debug -DUSE_DEBUG_MALLOC=OFF
+                            cmake .. -DCMAKE_BUILD_TYPE=${build_type} -DUSE_DEBUG_MALLOC=OFF
                             make
                             """
                         }
                     }
-                    stash includes: 'build/tests/**', name: 'linuxdebug'
+                    stash includes: 'build/tests/**', name: "linux${build_type}"
                 }
             }
         }
     }
-    stage('Windows Debug') {
+    stage("Windows ${build_type}") {
         node('SGXFLC-Windows') {
             cleanWs()
             checkout scm
-            unstash 'linuxdebug'
+            unstash "linux${build_type}"
             PowerShellWrapper('mv build linuxbin')
-            PowerShellWrapper('./scripts/test-build-config.ps1 -add_windows_enclave_tests -build_type Debug -linux_bin_dir $ENV:WORKSPACE/linuxbin/tests')
+            PowerShellWrapper("./scripts/test-build-config.ps1 -add_windows_enclave_tests -build_type ${build_type} -linux_bin_dir ${WORKSPACE}/linuxbin/tests")
        }
     }
 }
 
-def win2016ReleaseLinuxElfBuild() {
-    stage('Linux SGX1 Release') {
-        node {
-            cleanWs()
-            checkout scm
-            def oetoolsWin = docker.build("oetools-wincp", "-f .jenkins/Dockerfile .")
-            oetoolsWin.inside {
-                timeout(15) {
-                    dir('build') {
-                        withEnv(["CC=clang-7","CXX=clang++-7"]) {
-                            sh """
-                            cmake .. -DCMAKE_BUILD_TYPE=Release
-                            make
-                            """
-                        }
-                    }
-                    stash includes: 'build/tests/**', name: 'linuxrelease'
-                }
-            }
-        }
-    }
-    stage('Windows Release') {
+def win2016CrossCompile(String build_type) {
+    stage("Windows ${build_type}") {
         node('SGXFLC-Windows') {
             cleanWs()
             checkout scm
-            unstash 'linuxrelease'
-            PowerShellWrapper('mv build linuxbin')
-            PowerShellWrapper('./scripts/test-build-config.ps1 -add_windows_enclave_tests -build_type Release -linux_bin_dir $ENV:WORKSPACE/linuxbin/tests')
-        }
-    }
-}
-
-def win2016DebugCrossCompile() {
-    stage('Windows Debug') {
-        node('SGXFLC-Windows') {
-            cleanWs()
-            checkout scm
-            PowerShellWrapper('./scripts/test-build-config.ps1 -build_type Debug -build_enclaves')
+            PowerShellWrapper("./scripts/test-build-config.ps1 -build_type ${build_type} -build_enclaves")
        }
     }
 }
 
-def win2016ReleaseCrossCompile() {
-    stage('Windows Release') {
-        node('SGXFLC-Windows') {
-            cleanWs()
-            checkout scm
-            PowerShellWrapper('./scripts/test-build-config.ps1 -build_type Release -build_enclaves')
-        }
-    }
-}
 parallel "Check Developer Experience" :         { checkDevFlows() },
         "Sim clang-7 SGX1 Debug" :              { simulationTest('clang-7', 'SGX1', 'Debug')},
         "Sim clang-7 SGX1 Release" :            { simulationTest('clang-7', 'SGX1', 'Release')},
@@ -230,8 +189,8 @@ parallel "Check Developer Experience" :         { checkDevFlows() },
         "ACC1604 gcc RelWithDebInfo" :          { ACCTest('ACC-1604', 'gcc', 'SGX1FLC', 'RelWithDebInfo') },
         "ACC1804 clang-7 Debug" :               { ACCTest('ACC-1804', 'clang-7', 'SGX1FLC', 'Debug') },
         "ACC1804 clang-7 RelWithDebInfo" :      { ACCTest('ACC-1804', 'clang-7', 'SGX1FLC', 'RelWithDebinfo') },
-        "Win2016 Debug Cross Compile" :         { win2016DebugCrossCompile() },
-        "Win2016 Release Cross Compile" :       { win2016ReleaseCrossCompile() },
-        "Win2016 Debug Linux-Elf-build" :       { win2016DebugLinuxElfBuild() },
-        "Win2016 Release Linux-Elf-build" :     { win2016ReleaseLinuxElfBuild() },
+        "Win2016 Debug Cross Compile" :         { win2016CrossCompile("Debug") },
+        "Win2016 Release Cross Compile" :       { win2016CrossCompile("Release") },
+        "Win2016 Debug Linux-Elf-build" :       { win2016LinuxElfBuild("Debug") },
+        "Win2016 Release Linux-Elf-build" :     { win2016LinuxElfBuild("Release") },
         "ACC1604 Container RelWithDebInfo" :    { ACCContainerTest('ACC-1604') }
