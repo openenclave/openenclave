@@ -4,6 +4,7 @@
 # Licensed under the MIT License.
 
 if [ -f ../environment ]; then
+  # shellcheck disable=SC1091  
   source ../environment
 fi
 
