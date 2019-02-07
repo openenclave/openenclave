@@ -39,12 +39,6 @@ As a good practice, it is advised to address the nodes via their hostnames direc
 10.0.28.143    ACC-1604-5
 ```
 
-At the moment, the Jenkins setup playbook has a third party dependency on `kobanyan.jenkins-jnlp-slave`. Before running the main playbook, make sure this is installed:
-
-```
-ansible-galaxy install kobanyan.jenkins-jnlp-slave
-```
-
 The playbook can be started with:
 
 ```

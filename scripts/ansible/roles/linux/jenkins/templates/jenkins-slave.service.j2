@@ -1,0 +1,21 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+[Unit]
+Description=Jenkins JNLP Slave
+Wants=network.target
+After=network.target
+
+[Service]
+EnvironmentFile=/etc/default/jenkins-slave
+ExecStartPre=/bin/mkdir -p ${JENKINS_RUN}
+ExecStartPre=/bin/chown -R jenkins:jenkins ${JENKINS_RUN}
+ExecStartPre=/usr/bin/wget -q -O ${JENKINS_RUN}/slave.jar ${JENKINS_URL}/jnlpJars/slave.jar
+ExecStart=/usr/bin/java -jar ${JENKINS_RUN}/slave.jar -jnlpUrl ${JENKINS_URL}/computer/${JENKINS_NODE_NAME}/slave-agent.jnlp -secret=${JENKINS_SECRET}
+User=jenkins
+PermissionsStartOnly=true
+LimitNOFILE=8192
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
