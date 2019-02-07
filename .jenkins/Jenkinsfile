@@ -32,6 +32,10 @@ def ACCTest(String label, String compiler, String build_type) {
 }
 
 def simulationTest(String platform_mode, String build_type) {
+    def use_libsgx = "OFF"
+    if (platform_mode == "SGX1FLC") {
+        use_libsgx = "ON"
+    }
     stage("Sim clang-7 ${platform_mode} ${build_type}") {
         node {
             cleanWs()
@@ -43,7 +47,7 @@ def simulationTest(String platform_mode, String build_type) {
                     dir('build') {
                         withEnv(["CC=clang-7","CXX=clang++-7","OE_SIMULATION=1"]) {
                             sh """
-                            cmake .. -DCMAKE_BUILD_TYPE=${build_type} -DUSE_LIBSGX=OFF
+                            cmake .. -DCMAKE_BUILD_TYPE=${build_type} -DUSE_LIBSGX=${use_libsgx}
                             make
                             ctest --output-on-failure
                             """
