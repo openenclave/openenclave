@@ -95,15 +95,24 @@ add_library(oelibc_includes INTERFACE)
 
 add_dependencies(oelibc_includes musl_includes)
 
-# NOTE: This is explicitly marked as a `SYSTEM` directory because it
-# must be searched last. In particularly, the headers found in
-# `libcxx` utilize an unfortunate GNU pre-processor extension,
-# `#include_next`, which forces an order on the include paths. It
-# means that `-Ilibcxx` must come before `-Ilibc`, and the least
-# troublesome way to do this in CMake is set this as a `SYSTEM`
-# include path.
+# NOTE: The `libcxx` headers are added to this target, not `libcxx`
+# itself, so that the correct ordering is enforced. See
+# `../libcxxrt/CMakeLists.txt` for the target.
+#
+# In particular, the headers found in `libcxx` utilize an unfortunate
+# GNU pre-processor extension, `#include_next`, which forces an order
+# on the include paths. It means that `-Ilibcxx` must come before
+# `-Ilibc`, and the least troublesome way to do this in CMake is to
+# explicitly add them to the same target. We previously accomplished
+# this by setting the `libc` headers as `SYSTEM` headers, but this
+# approach broke down in the exported CMake package.
+#
+# TODO: Perhaps give this a less misleading name as it includes both C
+# and C++ headers (but the latter only when the language is C++).
 target_include_directories(oelibc_includes
-  SYSTEM INTERFACE
+  INTERFACE
+  $<BUILD_INTERFACE:$<$<COMPILE_LANGUAGE:CXX>:${LIBCXX_INCLUDES}>>
+  $<INSTALL_INTERFACE:$<$<COMPILE_LANGUAGE:CXX>:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/libcxx>>
   $<BUILD_INTERFACE:${MUSL_INCLUDES}>
   $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/libc>)
 
