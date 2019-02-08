@@ -25,3 +25,8 @@ target_include_directories(${TARGET} PRIVATE ${CYREP_PATH}/tcps)
 target_include_directories(${TARGET} PRIVATE ${TINYCBOR_PATH}/src)
 target_include_directories(${TARGET} PRIVATE ${OPTEE_OS_PATH}/lib/libutee/include)
 target_include_directories(${TARGET} PRIVATE ${OPTEE_OS_PATH}/lib/libutils/ext/include)
+
+install(
+    TARGETS ${TARGET}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})

@@ -100,3 +100,8 @@ endif()
 add_library(${TARGET} STATIC ${SRCS} ${GEN})
 target_include_directories(${TARGET} ${INCS})
 target_link_libraries(${TARGET} ${LIBS})
+
+install(
+    TARGETS ${TARGET}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})

@@ -28,3 +28,8 @@ if(WIN32)
         target_include_directories(${TARGET} PRIVATE ${SGXSDKInstallPath}/include)
     endif()
 endif()
+
+install(
+    TARGETS ${TARGET}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})

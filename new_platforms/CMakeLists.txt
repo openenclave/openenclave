@@ -143,6 +143,8 @@ else()
     endif()
 endif()
 
+include(GNUInstallDirs)
+
 # 3rd-party components
 if(WIN32 AND (SGX OR (TZ AND SIM)))
     # This subdirectory compiles mbed TLS for use *inside* enclaves.

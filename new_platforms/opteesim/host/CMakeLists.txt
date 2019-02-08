@@ -12,3 +12,8 @@ target_include_directories(${TARGET} PRIVATE ${OPTEE_OS_PATH}/lib/libutee/includ
 target_include_directories(${TARGET} PRIVATE ${OPTEE_OS_PATH}/lib/libutils/ext/include)
 target_include_directories(${TARGET} PRIVATE ${OPTEE_CALLS_PATH}/OpteeCalls/inc)
 target_include_directories(${TARGET} PRIVATE ${WDK_PATH})
+
+install(
+    TARGETS ${TARGET}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})

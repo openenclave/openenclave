@@ -89,3 +89,11 @@ else()
     set_target_properties(mbedcrypto_enc PROPERTIES
         IMPORTED_LOCATION ${BINARY_DIR}/library/libmbedcrypto.a)
 endif()
+
+install(
+    FILES
+        ${BINARY_DIR}/library/$<CONFIG>/mbedtls.lib
+        ${BINARY_DIR}/library/$<CONFIG>/mbedx509.lib
+        ${BINARY_DIR}/library/$<CONFIG>/mbedcrypto.lib
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
