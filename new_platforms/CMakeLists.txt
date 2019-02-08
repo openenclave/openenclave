@@ -145,10 +145,12 @@ endif()
 
 # 3rd-party components
 if(WIN32 AND (SGX OR (TZ AND SIM)))
+    # This subdirectory compiles mbed TLS for use *inside* enclaves.
     add_subdirectory(libmbedtls)
-elseif(UNIX AND TZ)
-    add_subdirectory(${MBEDTLS_PATH} ${CMAKE_BINARY_DIR}/out/mbedtls EXCLUDE_FROM_ALL)
 endif()
+
+# This one does the same for use *outside* enclaves (i.e., in the host).
+add_subdirectory(${MBEDTLS_PATH} ${CMAKE_BINARY_DIR}/out/mbedtls EXCLUDE_FROM_ALL)
 
 if(UNIX AND TZ)
     add_subdirectory(${OPTEE_CLIENT_PATH} ${CMAKE_BINARY_DIR}/out/teec EXCLUDE_FROM_ALL)
