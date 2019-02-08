@@ -6,7 +6,7 @@ function(add_enclave)
     # Using the same signature so that the functions are easier to merge.
     set(options CXX)
     set(oneValueArgs TARGET UUID CONFIG KEY)
-    set(multiValueArgs SOURCES C_GEN)
+    set(multiValueArgs SOURCES C_GEN LIBRARIES)
     cmake_parse_arguments(ENCLAVE
         "${options}"
         "${oneValueArgs}"
@@ -50,16 +50,19 @@ function(add_enclave)
                 target_compile_definitions(${ENCLAVE_TARGET} PUBLIC OE_USE_OPTEE)
             endif()
         endif()
-        
+
         target_include_directories(${ENCLAVE_TARGET} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-        target_link_libraries(${ENCLAVE_TARGET} oeenclave oestdio_enc oesocket_enc)
+        target_link_libraries(${ENCLAVE_TARGET} oeenclave oestdio_enc oesocket_enc ${ENCLAVE_LIBRARIES})
 
         if(NOT (TZ AND SIM))
             target_compile_options(${ENCLAVE_TARGET} PUBLIC "/X")
             target_compile_definitions(${ENCLAVE_TARGET} PUBLIC OE_NO_SAL)
         endif()
 
+        string(REPLACE "/RTC1" "" CMAKE_C_FLAGS       "${CMAKE_C_FLAGS}")
         string(REPLACE "/RTC1" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
+
+        set(CMAKE_C_FLAGS       ${CMAKE_C_FLAGS}       PARENT_SCOPE)
         set(CMAKE_C_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG} PARENT_SCOPE)
 
         if(SGX)
@@ -76,8 +79,8 @@ function(add_enclave)
             add_custom_command(TARGET ${ENCLAVE_TARGET} POST_BUILD
                 COMMAND ${SGX_SDK_SIGN_TOOL} sign
                     -key ${CMAKE_CURRENT_SOURCE_DIR}/${ENCLAVE_TARGET}_private.pem
-                    -enclave ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/$<CONFIG>/${ENCLAVE_TARGET}.dll
-                    -out ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/$<CONFIG>/${ENCLAVE_TARGET}.signed.dll
+                    -enclave $<TARGET_FILE_DIR:${ENCLAVE_TARGET}>/${ENCLAVE_TARGET}.dll
+                    -out $<TARGET_FILE_DIR:${ENCLAVE_TARGET}>/${ENCLAVE_TARGET}.signed.dll
                     -config ${CMAKE_CURRENT_SOURCE_DIR}/${ENCLAVE_TARGET}.config.xml)
         endif()
     endif()

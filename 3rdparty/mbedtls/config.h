@@ -33,6 +33,14 @@
 #define _CRT_SECURE_NO_DEPRECATE 1
 #endif
 
+#cmakedefine MBEDTLS_OE_INCLUDE_ENCLAVE_H
+#if defined(MBEDTLS_OE_INCLUDE_ENCLAVE_H)
+#undef _WIN32
+#undef _WIN64
+#include <tcps_string_t.h>
+#include <tcps_time_t.h>
+#endif
+
 /**
  * \name SECTION: System support
  *
@@ -212,7 +220,7 @@
  * Uncomment to get warnings on using deprecated functions.
  */
 // Open Enclave: Enable deprecations warnings
-#define MBEDTLS_DEPRECATED_WARNING
+#cmakedefine MBEDTLS_DEPRECATED_WARNING
 
 /**
  * \def MBEDTLS_DEPRECATED_REMOVED
@@ -225,7 +233,7 @@
  * Uncomment to get errors on using deprecated functions.
  */
  // Open Enclave: Enable deprecation errors
-#define MBEDTLS_DEPRECATED_REMOVED
+#cmakedefine MBEDTLS_DEPRECATED_REMOVED
 
 /* \} name SECTION: System support */
 
@@ -1490,7 +1498,7 @@
  * Uncomment this to enable pthread mutexes.
  */
 // Open Enclave: Default to thread-safe versions of mbedtls context objects.
-#define MBEDTLS_THREADING_PTHREAD
+#cmakedefine MBEDTLS_THREADING_PTHREAD
 
 /**
  * \def MBEDTLS_VERSION_FEATURES
@@ -2581,7 +2589,7 @@
  * Enable this layer to allow use of mutexes within mbed TLS
  */
 // Open Enclave: Enable use of threading in enclave context.
-#define MBEDTLS_THREADING_C
+#cmakedefine MBEDTLS_THREADING_C
 
 /**
  * \def MBEDTLS_TIMING_C

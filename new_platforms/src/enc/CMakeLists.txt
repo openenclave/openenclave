@@ -56,11 +56,6 @@ elseif(WIN32)
         PUBLIC  ${CYREP_PATH}/tcps
         PUBLIC  ${MBEDTLS_PATH}/include)
 
-    # Library lists
-    set(MBEDTLS_LIBS
-        PUBLIC mbedx509
-        PUBLIC mbedcrypto)
-
     # By TEE ->
     if(SGX)
         # Source lists
@@ -151,7 +146,12 @@ elseif(WIN32)
         target_compile_definitions(${TARGET} PUBLIC  OE_NO_SAL)
     endif()
 
-    string(REGEX REPLACE "(-D|/D)[^ ]* " "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
-    string(REGEX REPLACE "(-D|/D)[^ ]* " "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    string(REGEX REPLACE "(-D|/D)[^ ]* " "" CMAKE_C_FLAGS       "${CMAKE_C_FLAGS}")
+    string(REGEX REPLACE "(-D|/D)[^ ]* " "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
+
+    string(REGEX REPLACE "(-D|/D)[^ ]* " "" CMAKE_CXX_FLAGS       "${CMAKE_CXX_FLAGS}")
+    string(REGEX REPLACE "(-D|/D)[^ ]* " "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+
+    string(REPLACE "/RTC1" "" CMAKE_C_FLAGS       "${CMAKE_C_FLAGS}")
     string(REPLACE "/RTC1" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
 endif()

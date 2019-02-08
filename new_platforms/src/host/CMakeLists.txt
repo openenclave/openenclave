@@ -22,9 +22,6 @@ set(INCS
     PRIVATE ${CYREP_PATH}/cyrep
     PRIVATE ${CYREP_PATH}/tcps
     PRIVATE ${TINYCBOR_PATH}/src)
-set(LIBS
-    PUBLIC mbedx509
-    PUBLIC mbedcrypto)
 
 set(CYREP_SRCS
     ${CYREP_PATH}/RiotAes128.c  ${CYREP_PATH}/RiotAesTables.c

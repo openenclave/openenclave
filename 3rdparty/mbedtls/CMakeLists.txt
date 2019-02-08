@@ -26,6 +26,11 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "DEBUG")
   set(MBEDTLS_DEBUG_C TRUE)
 endif ()
 
+set(MBEDTLS_THREADING_C TRUE)
+set(MBEDTLS_THREADING_PTHREAD TRUE)
+set(MBEDTLS_DEPRECATED_WARNING TRUE)
+set(MBEDTLS_DEPRECATED_REMOVED TRUE)
+
 configure_file(config.h config.h) # This copies from source to binary folders.
 
 include(ExternalProject)

@@ -144,7 +144,12 @@ else()
 endif()
 
 # 3rd-party components
-add_subdirectory(${MBEDTLS_PATH} ${CMAKE_BINARY_DIR}/out/mbedtls EXCLUDE_FROM_ALL)
+if(SGX)
+    # OP-TEE includes MBED via the TA Dev Kit, so building it ourselves is not
+    # necessary.
+    add_subdirectory(libmbedtls)
+endif()
+
 if(UNIX AND TZ)
     add_subdirectory(${OPTEE_CLIENT_PATH} ${CMAKE_BINARY_DIR}/out/teec EXCLUDE_FROM_ALL)
 endif()
