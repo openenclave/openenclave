@@ -29,35 +29,11 @@ int oe_strcmp(const char* s1, const char* s2);
 
 int oe_strncmp(const char* s1, const char* s2, size_t n);
 
-int oe_strcasecmp(const char* s1, const char* s2);
-
-int oe_strncasecmp(const char* s1, const char* s2, size_t n);
-
-char* oe_strcpy(char* dest, const char* src);
-
-char* oe_strncpy(char* dest, const char* src, size_t n);
-
-char* oe_strcat(char* dest, const char* src);
-
-char* oe_strncat(char* dest, const char* src, size_t n);
-
-char* oe_strchr(const char* s, int c);
-
-char* oe_strrchr(const char* s, int c);
-
-char* oe_index(const char* s, int c);
-
-char* oe_rindex(const char* s, int c);
-
 char* oe_strstr(const char* haystack, const char* needle);
 
 size_t oe_strlcpy(char* dest, const char* src, size_t size);
 
 size_t oe_strlcat(char* dest, const char* src, size_t size);
-
-char* oe_strdup(const char* s);
-
-char* oe_strndup(const char* s, size_t n);
 
 char* oe_strerror(int errnum);
 
@@ -78,18 +54,6 @@ size_t strnlen(const char* s, size_t n)
 }
 
 OE_INLINE
-int strcasecmp(const char* s1, const char* s2)
-{
-    return oe_strcasecmp(s1, s2);
-}
-
-OE_INLINE
-int strncasecmp(const char* s1, const char* s2, size_t n)
-{
-    return oe_strncasecmp(s1, s2, n);
-}
-
-OE_INLINE
 int strcmp(const char* s1, const char* s2)
 {
     return oe_strcmp(s1, s2);
@@ -99,54 +63,6 @@ OE_INLINE
 int strncmp(const char* s1, const char* s2, size_t n)
 {
     return oe_strncmp(s1, s2, n);
-}
-
-OE_INLINE
-char* strcpy(char* dest, const char* src)
-{
-    return oe_strcpy(dest, src);
-}
-
-OE_INLINE
-char* strncpy(char* dest, const char* src, size_t n)
-{
-    return oe_strncpy(dest, src, n);
-}
-
-OE_INLINE
-char* strcat(char* dest, const char* src)
-{
-    return oe_strcat(dest, src);
-}
-
-OE_INLINE
-char* strncat(char* dest, const char* src, size_t n)
-{
-    return oe_strncat(dest, src, n);
-}
-
-OE_INLINE
-char* strchr(const char* s, int c)
-{
-    return oe_strchr(s, c);
-}
-
-OE_INLINE
-char* strrchr(const char* s, int c)
-{
-    return oe_strrchr(s, c);
-}
-
-OE_INLINE
-char* index(const char* s, int c)
-{
-    return oe_index(s, c);
-}
-
-OE_INLINE
-char* rindex(const char* s, int c)
-{
-    return oe_rindex(s, c);
 }
 
 OE_INLINE
@@ -165,18 +81,6 @@ OE_INLINE
 size_t strlcat(char* dest, const char* src, size_t size)
 {
     return oe_strlcat(dest, src, size);
-}
-
-OE_INLINE
-char* strdup(const char* s)
-{
-    return oe_strdup(s);
-}
-
-OE_INLINE
-char* strndup(const char* s, size_t n)
-{
-    return oe_strndup(s, n);
 }
 
 OE_INLINE
