@@ -144,10 +144,10 @@ else()
 endif()
 
 # 3rd-party components
-if(SGX)
-    # OP-TEE includes MBED via the TA Dev Kit, so building it ourselves is not
-    # necessary.
+if(WIN32 AND (SGX OR (TZ AND SIM)))
     add_subdirectory(libmbedtls)
+elseif(UNIX AND TZ)
+    add_subdirectory(${MBEDTLS_PATH} ${CMAKE_BINARY_DIR}/out/mbedtls EXCLUDE_FROM_ALL)
 endif()
 
 if(UNIX AND TZ)

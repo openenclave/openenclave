@@ -56,6 +56,11 @@ elseif(WIN32)
         PUBLIC  ${CYREP_PATH}/tcps
         PUBLIC  ${MBEDTLS_PATH}/include)
 
+    # Library lists
+    set(MBEDTLS_LIBS
+        PUBLIC mbedx509_enc
+        PUBLIC mbedcrypto_enc)
+
     # By TEE ->
     if(SGX)
         # Source lists
