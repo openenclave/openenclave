@@ -27,8 +27,8 @@ endif()
 
 # Create a patched version of mbed TLS's `config.h` that the external
 # project depends on.
-set(MBEDTLS_CERTS_C TRUE)
-set(MBEDTLS_DEBUG_C TRUE)
+set(MBEDTLS_CERTS_C $<CONFIG:Debug>)
+set(MBEDTLS_DEBUG_C $<CONFIG:Debug>)
 set(MBEDTLS_OE_INCLUDE_ENCLAVE_H TRUE)
 
 configure_file(${OE_PATH}/3rdparty/mbedtls/config.h config.h) # This copies from source to binary folders.
@@ -36,23 +36,22 @@ configure_file(${OE_PATH}/3rdparty/mbedtls/config.h config.h) # This copies from
 set(PREFIX $<IF:$<CONFIG:RelWithDebInfo>,Release,$<CONFIG>>)
 
 include(ExternalProject)
-    ExternalProject_Add(mbedtls-wrap
-        DOWNLOAD_COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${OE_PATH}/3rdparty/mbedtls/mbedtls <SOURCE_DIR>
+ExternalProject_Add(mbedtls-wrap
+    DOWNLOAD_COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${OE_PATH}/3rdparty/mbedtls/mbedtls <SOURCE_DIR>
 
-        UPDATE_COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            ${CMAKE_CURRENT_BINARY_DIR}/config.h <SOURCE_DIR>/include/mbedtls/config.h
+    UPDATE_COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_CURRENT_BINARY_DIR}/config.h <SOURCE_DIR>/include/mbedtls/config.h
 
-        CMAKE_ARGS
-            -DENABLE_PROGRAMS=OFF
-            -DENABLE_TESTING=OFF
-            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-            -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
-            -DCMAKE_C_FLAGS_DEBUG=${CMAKE_C_FLAGS_DEBUG}
-            -DUSE_STATIC_MBEDTLS_LIBRARY=1
+    CMAKE_ARGS
+        -DENABLE_PROGRAMS=OFF
+        -DENABLE_TESTING=OFF
+        -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
+        -DCMAKE_C_FLAGS_DEBUG=${CMAKE_C_FLAGS_DEBUG}
+        -DUSE_STATIC_MBEDTLS_LIBRARY=1
 
-        # This is a no-op to override the default.
-        INSTALL_COMMAND "")
+    # This is a no-op to override the default.
+    INSTALL_COMMAND "")
 
 ExternalProject_Get_property(mbedtls-wrap SOURCE_DIR)
 ExternalProject_Get_property(mbedtls-wrap BINARY_DIR)
@@ -61,18 +60,19 @@ add_library(mbedtls_enc STATIC IMPORTED GLOBAL)
 add_library(mbedx509_enc STATIC IMPORTED GLOBAL)
 add_library(mbedcrypto_enc STATIC IMPORTED GLOBAL)
 
+add_dependencies(mbedtls_enc mbedtls-wrap)
+add_dependencies(mbedx509_enc mbedtls-wrap)
+add_dependencies(mbedcrypto_enc mbedtls-wrap)
+
 if(MSVC)
     set_target_properties(mbedtls_enc PROPERTIES
-        IMPORTED_LOCATION_DEBUG   ${BINARY_DIR}/library/Debug/mbedtls.lib
-        IMPORTED_LOCATION_RELEASE ${BINARY_DIR}/library/Release/mbedtls.lib)
+        IMPORTED_LOCATION ${BINARY_DIR}/library/$<CONFIG>/mbedtls.lib)
 
     set_target_properties(mbedx509_enc PROPERTIES
-        IMPORTED_LOCATION_DEBUG   ${BINARY_DIR}/library/Debug/mbedx509.lib
-        IMPORTED_LOCATION_RELEASE ${BINARY_DIR}/library/Release/mbedx509.lib)
+        IMPORTED_LOCATION ${BINARY_DIR}/library/$<CONFIG>/mbedx509.lib)
 
     set_target_properties(mbedcrypto_enc PROPERTIES
-        IMPORTED_LOCATION_DEBUG   ${BINARY_DIR}/library/Debug/mbedcrypto.lib
-        IMPORTED_LOCATION_RELEASE ${BINARY_DIR}/library/Release/mbedcrypto.lib)
+        IMPORTED_LOCATION ${BINARY_DIR}/library/$<CONFIG>/mbedcrypto.lib)
 else()
     set_target_properties(mbedtls_enc PROPERTIES
         IMPORTED_LOCATION ${BINARY_DIR}/library/libmbedtls.a)

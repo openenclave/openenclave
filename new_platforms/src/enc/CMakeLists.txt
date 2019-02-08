@@ -58,6 +58,7 @@ elseif(WIN32)
 
     # Library lists
     set(MBEDTLS_LIBS
+        PUBLIC mbedtls_enc
         PUBLIC mbedx509_enc
         PUBLIC mbedcrypto_enc)
 
