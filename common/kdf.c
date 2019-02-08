@@ -119,7 +119,7 @@ oe_result_t oe_kdf_create_fixed_data(
     /* The +5 is 1 byte for 0x00 and 4 bytes for key_bits. */
     OE_CHECK(oe_safe_add_sizet(data_size, 5, &data_size));
 
-    data = (uint8_t*)malloc(data_size);
+    data = (uint8_t*)oe_malloc(data_size);
     if (data == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
@@ -153,7 +153,7 @@ oe_result_t oe_kdf_create_fixed_data(
 
 done:
     if (data != NULL)
-        free(data);
+        oe_free(data);
 
     return result;
 }

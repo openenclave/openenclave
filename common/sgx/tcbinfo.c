@@ -175,7 +175,7 @@ static oe_result_t _read_property_name_and_colon(
     const uint8_t* tmp_itr = *itr;
 
     OE_CHECK(_read_string(&tmp_itr, end, &name, &name_length));
-    if (name_length == strlen(property_name) &&
+    if (name_length == oe_strlen(property_name) &&
         memcmp(property_name, name, name_length) == 0)
     {
         OE_CHECK(_read(':', &tmp_itr, end));
@@ -191,7 +191,7 @@ static bool _json_str_equal(
     size_t str1_length,
     const char* str2)
 {
-    size_t str2_length = strlen(str2);
+    size_t str2_length = oe_strlen(str2);
 
     // Strings in json stream are not zero terminated.
     // Hence the special comparison function.
@@ -205,13 +205,13 @@ static oe_result_t _trace_json_string(const uint8_t* str, size_t str_length)
 
     if (get_current_logging_level() >= OE_LOG_LEVEL_VERBOSE)
     {
-        char* buffer = (char*)malloc(str_length + 1);
+        char* buffer = (char*)oe_malloc(str_length + 1);
         if (buffer)
         {
             OE_CHECK(oe_memcpy_s(buffer, str_length + 1, str, str_length));
             buffer[str_length] = 0;
             OE_TRACE_VERBOSE("value = %s\n", buffer);
-            free(buffer);
+            oe_free(buffer);
         }
         else
         {
@@ -796,7 +796,7 @@ oe_result_t oe_verify_ecdsa256_signature(
     OE_CHECK(oe_ec_public_key_read_pem(
         &trusted_root_key,
         (const uint8_t*)_trusted_root_key_pem,
-        strlen(_trusted_root_key_pem) + 1));
+        oe_strlen(_trusted_root_key_pem) + 1));
 
     OE_CHECK(oe_ec_public_key_equal(
         &trusted_root_key, &tcb_root_key, &root_of_trust_match));

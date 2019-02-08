@@ -129,7 +129,7 @@ oe_result_t oe_get_crl_distribution_points(
         size_t urls_bytes;
 
         /* Find the extension */
-        data = (uint8_t*)malloc(size);
+        data = (uint8_t*)oe_malloc(size);
         if (!data)
             OE_RAISE(OE_OUT_OF_MEMORY);
 
@@ -206,7 +206,7 @@ oe_result_t oe_get_crl_distribution_points(
 
 done:
     if (data)
-        free(data);
+        oe_free(data);
 
     return result;
 }
