@@ -31,7 +31,7 @@ set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug;Release;RelWithDebIn
 
 string(TOUPPER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_SUFFIX)
 if (NOT DEFINED CMAKE_C_FLAGS_${CMAKE_BUILD_TYPE_SUFFIX})
-  message(FATAL_ERROR "Unknown CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE_SUFFIX}")
+  message(FATAL_ERROR "Unknown CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 endif ()
 
 # TODO: When ARM support is added, we will need to exclude the check
@@ -43,16 +43,8 @@ if (NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
   message(FATAL_ERROR "Only 64-bit builds are supported!")
 endif ()
 
-# Use ccache if available.
-# TODO: See #759: Replace this with `CMAKE_<LANG>_COMPILER_LAUNCHER`.
-find_program(CCACHE_FOUND ccache)
-if (CCACHE_FOUND)
-  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
-  set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
-  message("Using ccache")
-else ()
-  message("ccache not found")
-endif (CCACHE_FOUND)
+# Setup ccache
+include(ccache)
 
 # Check for compiler flags
 include(CheckCCompilerFlag)
@@ -87,9 +79,17 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
 
   # We should only need this for in-enclave code but it's easier
   # and conservative to specify everywhere
-  add_compile_options(-fno-builtin-malloc -fno-builtin-calloc)
+  add_compile_options(-fno-builtin-malloc -fno-builtin-calloc -fno-builtin)
 elseif (MSVC)
   # MSVC options go here
+  if (MSVC_VERSION VERSION_LESS 1910)
+    message(FATAL_ERROR "Only Visual Studio 2017 and above supported!")
+  endif ()
+  if (CMAKE_MSVC_PARALLEL_ENABLE)
+    add_compile_options(/MP)
+    message(STATUS "Using parallel compiling (/MP)")
+  endif()
+
 endif ()
 
 # Use ML64 as assembler on Windows

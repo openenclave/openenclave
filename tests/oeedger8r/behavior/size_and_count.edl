@@ -1,0 +1,19 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+        // Size and count parameters together should trigger warning.
+        public void size_and_count(
+            [in, size=size, count=count] int* in,
+            size_t size, size_t count);
+
+        public void only_count(
+            [in, count=count] int* in,
+            size_t count);
+
+        public void only_size(
+            [in, size=size] int* in,
+            size_t size);
+    };
+};

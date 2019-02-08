@@ -21,7 +21,7 @@ static void _test_invalid_param(const char* path, uint32_t flags)
 
     /* Invalid enclave type. Note that 0 is now allowed! */
     result = oe_create_create_errors_enclave(
-        path, OE_ENCLAVE_TYPE_UNDEFINED, flags, NULL, 0, &enclave);
+        path, (OE_ENCLAVE_TYPE_SGX + 1), flags, NULL, 0, &enclave);
 
     OE_TEST(result == OE_INVALID_PARAMETER);
 

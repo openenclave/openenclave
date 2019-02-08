@@ -5,7 +5,7 @@ enclave {
     include "fcntl.h"
     include "sys/types.h"
     include "sys/stat.h"
-    include "sys/uio.h"
+    include "myfileio.h"
 
     struct mbed_args {
         int skipped;
@@ -33,11 +33,6 @@ enclave {
             int fd,
             [out, size=buf_len] char* buf,
             size_t buf_len);
-
-        ssize_t mbed_test_readv(
-            int fd,
-            [in, size=iovcnt] const struct iovec* iov,
-            int iovcnt);
 
         int mbed_test_close(
             int fd);

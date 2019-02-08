@@ -1,0 +1,8 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+# Global configs for all the Ansible machines
+
+jenkins_url: "<JENKINS_URL>"
+jenkins_admin_name: "<JENKINS_ADMIN_NAME>"
+jenkins_admin_password: "<JENKINS_ADMIN_PASSWORD>"

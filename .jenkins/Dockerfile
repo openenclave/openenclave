@@ -13,10 +13,10 @@
 #
 # Once installed, build a docker image from .jenkins folder and
 # it will use this Dockerfile by default:
-#     openenclave$ sudo docker build --no-cache=true -t oetools-azure:<version> -f .jenkins/Dockerfile .
+#     openenclave$ sudo docker build --no-cache=true --build-arg ubuntu_version=<ubuntu_version> -t oetools-azure-<ubuntu_version>:<version> -f .jenkins/Dockerfile .
 #
-# For example, for version 1.x:
-#     openenclave$ sudo docker build --no-cache=true -t oetools-azure:1.x -f .jenkins/Dockerfile .
+# For example, for version 1.x with Ubuntu 18.04 :
+#     openenclave$ sudo docker build --no-cache=true --build-arg ubuntu_version=18.04 -t oetools-azure-18.04:1.x -f .jenkins/Dockerfile .
 #
 # Note that DNS forwarding in a VM can interfere with Docker
 # getting updates from Ubuntu apt-get repositories as part of the
@@ -31,8 +31,8 @@
 # Jenkins pulls the images it uses from the private oejenkinscidockerregistry
 # repository on Azure. To upload the image to that repository:
 #     $ sudo docker login oejenkinscidockerregistry.azurecr.io
-#     $ sudo docker tag oetools-azure:<version> oejenkinscidockerregistry.azurecr.io/oetools-azure:<version>
-#     $ sudo docker push oejenkinscidockerregistry.azurecr.io/oetools-azure:<version>
+#     $ sudo docker tag oetools-azure-<ubuntu_version>:<version> oejenkinscidockerregistry.azurecr.io/oetools-azure-<ubuntu_version>:<version>
+#     $ sudo docker push oejenkinscidockerregistry.azurecr.io/oetools-azure-<ubuntu_version>:<version>
 #     $ sudo docker logout
 #
 # You can check that the image has been successfully uploaded by checking
@@ -40,17 +40,16 @@
 # assuming you have proper permissions:
 # https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource/subscriptions/e5839dfd-61f0-4b2f-b06f-de7fc47b5998/resourceGroups/OE-Jenkins-CI/providers/Microsoft.ContainerRegistry/registries/oejenkinscidockerregistry/overview
 
-FROM ubuntu:16.04
+ARG ubuntu_version=16.04
+
+FROM ubuntu:${ubuntu_version}
 
 ADD scripts/ansible /ansible
 
-RUN /ansible/install-ansible.sh \
-    && ansible-playbook /ansible/ansible-dockerfile.yml --extra-vars "target=localhost" \
-    && /ansible/remove-ansible.sh \
-    && rm -rf /ansible \
+RUN /ansible/install-ansible.sh && \
+    ansible localhost --playbook-dir=/ansible -m import_role -a "name=linux/docker tasks_from=ci-setup.yml" -vvv && \
+    /ansible/remove-ansible.sh && \
+    rm -rf /ansible && \
     # Configure Git in target image to enable merge/rebase actions.
-    && git config --global user.email "oeciteam@microsoft.com" \
-    && git config --global user.name "OE CI Team" 
-
-# Add CMake folder to path (PATH from /etc/environment doesn't appear to be working in docker container)
-ENV PATH="/cmake/bin:${PATH}"
+    git config --global user.email "oeciteam@microsoft.com" && \
+    git config --global user.name "OE CI Team"

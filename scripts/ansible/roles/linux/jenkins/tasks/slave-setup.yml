@@ -1,0 +1,112 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+---
+- name: Jenkins | Set default host variables (if not already set by the user)
+  block:
+    - set_fact:
+        jenkins_agent_name: "{{ ansible_hostname }}"
+      when: jenkins_agent_name is not defined
+
+    - set_fact:
+        jenkins_agent_executors_count: 1
+      when: jenkins_agent_executors_count is not defined
+
+    - set_fact:
+        jenkins_agent_label: ""
+      when: jenkins_agent_label is not defined
+
+    - set_fact:
+        jenkins_agent_root_dir: "/home/jenkins"
+      when: jenkins_agent_root_dir is not defined
+
+- name: Jenkins | Check if the node already exists
+  jenkins_script:
+    script: jenkins.model.Jenkins.getInstance().getComputer("{{ jenkins_agent_name }}")
+    url: "{{ jenkins_url }}"
+    user: "{{ jenkins_admin_name }}"
+    password: "{{ jenkins_admin_password }}"
+  register: script_output
+
+- name: Jenkins | Create the node if it doesn't exist already
+  jenkins_script:
+    script: |
+      import jenkins.model.*
+      import hudson.model.*
+      import hudson.slaves.*
+
+      Slave agent = new DumbSlave(
+          "{{ jenkins_agent_name }}",
+          "{{ jenkins_agent_root_dir }}",
+          new JNLPLauncher()
+      )
+      agent.setNumExecutors({{ jenkins_agent_executors_count }})
+      agent.setLabelString("{{ jenkins_agent_label }}")
+      agent.setMode(Node.Mode.NORMAL)
+      agent.setRetentionStrategy(new RetentionStrategy.Always())
+
+      Jenkins.instance.addNode(agent)
+
+    url: "{{ jenkins_url }}"
+    user: "{{ jenkins_admin_name }}"
+    password: "{{ jenkins_admin_password }}"
+  when: (script_output.output.lstrip('Result:') | trim) == ""
+
+- name: Jenkins | Extract the Jenkins agent secret
+  jenkins_script:
+    script: jenkins.model.Jenkins.getInstance().getComputer("{{ jenkins_agent_name }}").getJnlpMac()
+    url: "{{ jenkins_url }}"
+    user: "{{ jenkins_admin_name }}"
+    password: "{{ jenkins_admin_password }}"
+  register: script_output
+
+- set_fact:
+    node_secret: "{{ script_output.output.lstrip('Result:') | trim }}"
+
+- name: Jenkins | Install Java JRE needed by Jenkins
+  apt:
+    name: openjdk-8-jre
+    state: present
+    update_cache: yes
+
+- name: Jenkins | Create the Jenkins group
+  group:
+    name: jenkins
+    state: present
+
+- name: Jenkins | Add the Jenkins user
+  user:
+    name: jenkins
+    group: jenkins
+    state: present
+
+- import_role:
+    name: linux/docker
+    tasks_from: stable-install.yml
+
+- name: Docker | Add the Jenkins system user to the Docker group
+  user:
+    name: jenkins
+    groups: docker
+
+- name: Make Jenkins JNLP slave directories
+  file:
+    path: "{{ jenkins_agent_root_dir }}"
+    state: directory
+    owner: jenkins
+    group: jenkins
+
+- name: Template Jenkins JNLP slave files
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - { src: jenkins-slave.service.j2, dest: /etc/systemd/system/jenkins-slave.service, mode: 755 }
+    - { src: jenkins-slave.default.j2, dest: /etc/default/jenkins-slave, mode: 644 }
+
+- name: Start Jenkins JNLP slave
+  systemd:
+    name: jenkins-slave
+    enabled: yes
+    state: restarted
+    daemon_reload: yes

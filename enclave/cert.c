@@ -352,6 +352,7 @@ static oe_result_t _verify_whole_chain(mbedtls_x509_crt* chain)
             oe_verify_cert_error_t error;
             mbedtls_x509_crt_verify_info(
                 error.buf, sizeof(error.buf), "", flags);
+
             OE_RAISE_MSG(
                 OE_FAILURE,
                 "mbedtls_x509_crt_verify failed with %s (flags=0x%x)",
@@ -754,7 +755,7 @@ oe_result_t oe_cert_verify(
         OE_RAISE(OE_INVALID_PARAMETER);
     }
 
-    // Build the list of CRLS if any. Copy them onto auxilliary memory
+    // Build the list of CRLS if any. Copy them onto auxiliary memory
     // to avoid modifying them when putting them on the list.
     if (crls && num_crls)
     {
@@ -806,6 +807,8 @@ oe_result_t oe_cert_verify(
                 "mbedtls_x509_crt_verify failed with %s (flags=0x%x)\n",
                 error->buf,
                 flags);
+            if (flags & MBEDTLS_X509_BADCRL_EXPIRED)
+                OE_RAISE(OE_VERIFY_CRL_EXPIRED);
         }
         OE_RAISE(OE_VERIFY_FAILED);
     }

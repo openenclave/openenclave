@@ -1,0 +1,32 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+        public void ecall_test_cert_chain_positive(
+            [in, string] const char* root,
+            [in, string] const char* intermediate,
+            [in, string] const char* leaf,
+            [in, string] const char* leaf2);
+
+        public void ecall_test_cert_chain_negative(
+            [in, string] const char* root,
+            [in, string] const char* intermediate,
+            [in, string] const char* leaf,
+            [in, string] const char* leaf2);
+
+        public void ecall_test_crls(
+            [in, string] const char* root,
+            [in, string] const char* intermediate,
+            [in, string] const char* leaf1,
+            [in, string] const char* leaf2,
+            [in, size=root_crl1_size] const char* root_crl1,
+            size_t root_crl1_size,
+            [in, size=root_crl2_size] const char* root_crl2,
+            size_t root_crl2_size,
+            [in, size=intermediate_crl1_size] const char* intermediate_crl1,
+            size_t intermediate_crl1_size,
+            [in, size=intermediate_crl2_size] const char* intermediate_crl2,
+            size_t intermediate_crl2_size);
+    };
+};

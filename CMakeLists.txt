@@ -95,6 +95,26 @@ else()
   endif()
 endif()
 
+if (WIN32)
+  # NOTE: On Windows we have found that we must use Git Bash, not the
+  # Bash from the Windows Subsystem for Linux. Hence this is
+  # explicitly searching only for Git Bash. See #1302 for more.
+  find_program(GIT git)
+  get_filename_component(GIT_DIR ${GIT} DIRECTORY)
+  find_program(BASH bash
+    PATHS "C:/Program Files/Git/bin" "${GIT_DIR}/../bin"
+    NO_DEFAULT_PATH) # Do not find WSL bash.
+
+  if (NOT BASH)
+    message(FATAL_ERROR "Git Bash not found!")
+  endif ()
+else ()
+  find_program(BASH bash)
+  if (NOT BASH)
+    message(FATAL_ERROR "Bash not found!")
+  endif ()
+endif ()
+
 # This is always included.
 # maybe_build_using_clangw will be a noop if USE_CLANGW is false.
 include(maybe_build_using_clangw)
@@ -121,7 +141,8 @@ endif ()
 
 # TODO: See #756: Fix this because it is incompatible with
 # multi-configuration generators
-if (CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT WIN32)
+string(TOUPPER "${CMAKE_BUILD_TYPE}" uppercase_CMAKE_BUILD_TYPE)
+if (uppercase_CMAKE_BUILD_TYPE STREQUAL "DEBUG" AND NOT WIN32)
   # In non-win32 debug build, debug_malloc is on by default
   option(USE_DEBUG_MALLOC "Build oeenclave with memory leak detection capability." ON)
 else ()

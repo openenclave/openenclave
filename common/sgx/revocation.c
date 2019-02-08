@@ -219,6 +219,10 @@ oe_result_t oe_enforce_revocation(
             &crl_issuer_chain[i],
             revocation_args.crl_issuer_chain[i],
             revocation_args.crl_issuer_chain_size[i]));
+        OE_TRACE_VERBOSE(
+            "CRL certificate[%d]: \n[%s]\n",
+            i,
+            revocation_args.crl_issuer_chain[i]);
     }
 
     // Verify the leaf cert.
