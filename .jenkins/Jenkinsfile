@@ -163,8 +163,8 @@ def win2016LinuxElfBuild(String version, String compiler, String build_type) {
 }
 
 def win2016CrossCompile(String build_type) {
-    stage("Windows ${build_type}") {
-        node('SGXFLC-Windows') {
+    node('SGXFLC-Windows') {
+        stage("Windows ${build_type}") {
             cleanWs()
             checkout scm
             dir("build/X64-${build_type}") {
@@ -172,7 +172,18 @@ def win2016CrossCompile(String build_type) {
                        cmake.exe ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DBUILD_ENCLAVES=ON && \
                        ninja.exe && \
                        ctest.exe -V -C ${build_type}"""
-            }          
+            }
+       }
+       stage("Windows ${build_type} Simulation") {
+           withEnv(["OE_SIMULATION=1"]){
+               dir("build/X64-${build_type}"){
+                   bat """
+                       vcvars64.bat x64 && \
+                       cmake.exe ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DBUILD_ENCLAVES=ON -DWIN32_SIMULATION=ON && \
+                       ctest.exe -V -C ${build_type}
+                       """
+               }
+           }
        }
     }
 }
