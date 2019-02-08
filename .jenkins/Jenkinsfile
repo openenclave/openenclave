@@ -1,8 +1,3 @@
-def PowerShellWrapper(psCmd) {
-    psCmd = psCmd.replaceAll("\r", "").replaceAll("\n", "")
-    bat "powershell.exe -NonInteractive -ExecutionPolicy Bypass -Command \"\$ErrorActionPreference='Stop';[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;$psCmd;EXIT \$global:LastExitCode\""
-}
-
 def ACCTest(String label, String compiler, String build_type) {
     def c_compiler = "clang-7"
     def cpp_compiler = "clang++-7"
@@ -19,7 +14,7 @@ def ACCTest(String label, String compiler, String build_type) {
                     }
                     withEnv(["CC=${c_compiler}","CXX=${cpp_compiler}"]) {
                         sh """
-                        cmake .. -DCMAKE_BUILD_TYPE=${build_type}
+                        cmake ${WORKSPACE} -DCMAKE_BUILD_TYPE=${build_type}
                         make
                         ctest --output-on-failure
                         """
@@ -47,7 +42,7 @@ def simulationTest(String version, String platform_mode, String build_type) {
                     dir('build') {
                         withEnv(["CC=clang-7","CXX=clang++-7","OE_SIMULATION=1"]) {
                             sh """
-                            cmake .. -DCMAKE_BUILD_TYPE=${build_type} -DUSE_LIBSGX=${use_libsgx}
+                            cmake ${WORKSPACE} -DCMAKE_BUILD_TYPE=${build_type} -DUSE_LIBSGX=${use_libsgx}
                             make
                             ctest --output-on-failure
                             """
@@ -71,7 +66,7 @@ def ACCContainerTest(String label, String version) {
                     dir('build') {
                         withEnv(["CC=clang-7","CXX=clang++-7"]) {
                             sh """
-                            cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo
+                            cmake ${WORKSPACE} -DCMAKE_BUILD_TYPE=RelWithDebInfo
                             make
                             ctest --output-on-failure
                             """
@@ -112,7 +107,7 @@ def checkDevFlows(String version) {
 
                     dir('build') {
                         sh '''
-                        cmake .. -DUSE_LIBSGX=OFF
+                        cmake ${WORKSPACE} -DUSE_LIBSGX=OFF
                         make
                         '''
                         // Note that `make package` is not expected to work
@@ -135,7 +130,7 @@ def win2016LinuxElfBuild(String version, String build_type) {
                     dir('build') {
                         withEnv(["CC=clang-7","CXX=clang++-7"]) {
                             sh """
-                            cmake .. -DCMAKE_BUILD_TYPE=${build_type} -DUSE_DEBUG_MALLOC=OFF
+                            cmake ${WORKSPACE} -DCMAKE_BUILD_TYPE=${build_type} -DUSE_DEBUG_MALLOC=OFF
                             make
                             """
                         }
@@ -150,8 +145,13 @@ def win2016LinuxElfBuild(String version, String build_type) {
             cleanWs()
             checkout scm
             unstash "linux${build_type}${version}"
-            PowerShellWrapper('mv build linuxbin')
-            PowerShellWrapper("./scripts/test-build-config.ps1 -add_windows_enclave_tests -build_type ${build_type} -linux_bin_dir ${WORKSPACE}/linuxbin/tests")
+            bat 'move build linuxbin'
+            dir('build') {
+                bat """vcvars64.bat x64 && \
+                       cmake.exe ${WORKSPACE} -G \"Visual Studio 15 2017 Win64\" -DADD_WINDOWS_ENCLAVE_TESTS=ON -DBUILD_ENCLAVES=OFF -DCMAKE_BUILD_TYPE=${build_type} -DLINUX_BIN_DIR=${WORKSPACE}\\linuxbin\\tests && \
+                       msbuild ALL_BUILD.vcxproj -p:Configuration=${build_type} && \
+                       ctest.exe -V -C ${build_type}"""
+            }
        }
     }
 }
@@ -161,7 +161,12 @@ def win2016CrossCompile(String build_type) {
         node('SGXFLC-Windows') {
             cleanWs()
             checkout scm
-            PowerShellWrapper("./scripts/test-build-config.ps1 -build_type ${build_type} -build_enclaves")
+            dir("build/X64-${build_type}") {
+                bat """vcvars64.bat x64 && \
+                       cmake.exe ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DBUILD_ENCLAVES=ON ${WORKSPACE} && \
+                       ninja.exe && \
+                       ctest.exe -V -C ${build_type}"""
+            }          
        }
     }
 }
