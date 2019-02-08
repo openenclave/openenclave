@@ -66,13 +66,19 @@ add_dependencies(mbedcrypto_enc mbedtls-wrap)
 
 if(MSVC)
     set_target_properties(mbedtls_enc PROPERTIES
-        IMPORTED_LOCATION ${BINARY_DIR}/library/$<CONFIG>/mbedtls.lib)
+        IMPORTED_LOCATION_DEBUG ${BINARY_DIR}/library/Debug/mbedtls.lib
+        IMPORTED_LOCATION_RELEASE ${BINARY_DIR}/library/Release/mbedtls.lib
+        IMPORTED_LOCATION_RELWITHDEBINFO ${BINARY_DIR}/library/RelWithDebInfo/mbedtls.lib)
 
     set_target_properties(mbedx509_enc PROPERTIES
-        IMPORTED_LOCATION ${BINARY_DIR}/library/$<CONFIG>/mbedx509.lib)
+        IMPORTED_LOCATION_DEBUG ${BINARY_DIR}/library/Debug/mbedx509.lib
+        IMPORTED_LOCATION_RELEASE ${BINARY_DIR}/library/Release/mbedx509.lib
+        IMPORTED_LOCATION_RELWITHDEBINFO ${BINARY_DIR}/library/RelWithDebInfo/mbedx509.lib)
 
     set_target_properties(mbedcrypto_enc PROPERTIES
-        IMPORTED_LOCATION ${BINARY_DIR}/library/$<CONFIG>/mbedcrypto.lib)
+        IMPORTED_LOCATION_DEBUG ${BINARY_DIR}/library/Debug/mbedcrypto.lib
+        IMPORTED_LOCATION_RELEASE ${BINARY_DIR}/library/Release/mbedcrypto.lib
+        IMPORTED_LOCATION_RELWITHDEBINFO ${BINARY_DIR}/library/RelWithDebInfo/mbedcrypto.lib)
 else()
     set_target_properties(mbedtls_enc PROPERTIES
         IMPORTED_LOCATION ${BINARY_DIR}/library/libmbedtls.a)
