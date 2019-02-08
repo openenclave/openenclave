@@ -21,15 +21,15 @@ OE_INLINE int _to_errno(oe_result_t result)
         case OE_OK:
             return 0;
         case OE_INVALID_PARAMETER:
-            return OE_EINVAL;
+            return EINVAL;
         case OE_BUSY:
-            return OE_EBUSY;
+            return EBUSY;
         case OE_NOT_OWNER:
-            return OE_EPERM;
+            return EPERM;
         case OE_OUT_OF_MEMORY:
-            return OE_ENOMEM;
+            return ENOMEM;
         default:
-            return OE_EINVAL; /* unreachable */
+            return EINVAL; /* unreachable */
     }
 }
 

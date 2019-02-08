@@ -4,6 +4,7 @@
 #define USE_DL_PREFIX
 #include "debugmalloc.h"
 #include <openenclave/bits/safecrt.h>
+#include <openenclave/corelibc/errno.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/backtrace.h>
 #include <openenclave/internal/calls.h>
@@ -12,16 +13,6 @@
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/utils.h>
 #include "../3rdparty/dlmalloc/dlmalloc/malloc.h"
-
-#if !defined(OE_NEED_STDC_NAMES)
-#define OE_NEED_STDC_NAMES
-#define __UNDEF_OE_NEED_STDC_NAMES
-#endif
-#include <openenclave/corelibc/errno.h>
-#if defined(__UNDEF_OE_NEED_STDC_NAMES)
-#undef OE_NEED_STDC_NAMES
-#undef __UNDEF_OE_NEED_STDC_NAMES
-#endif
 
 #if defined(OE_USE_DEBUG_MALLOC)
 

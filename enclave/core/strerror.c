@@ -1,19 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
-
-/* Use OE STDC errno defs for MUSL __strerror.h */
-#if !defined(OE_NEED_STDC_NAMES)
-#define OE_NEED_STDC_NAMES
-#define __UNDEF_OE_NEED_STDC_NAMES
-#endif
-#include <openenclave/corelibc/errno.h>
-#if defined(__UNDEF_OE_NEED_STDC_NAMES)
-#undef OE_NEED_STDC_NAMES
-#undef __UNDEF_OE_NEED_STDC_NAMES
-#endif
 
 typedef struct _error_info
 {
@@ -57,5 +47,5 @@ int oe_strerror_r(int errnum, char* buf, size_t buflen)
     if (!str)
         str = _unknown;
 
-    return oe_strlcpy(buf, str, buflen) >= buflen ? OE_ERANGE : 0;
+    return oe_strlcpy(buf, str, buflen) >= buflen ? ERANGE : 0;
 }
