@@ -57,10 +57,17 @@ elseif(WIN32)
         PUBLIC  ${MBEDTLS_PATH}/include)
 
     # Library lists
-    set(MBEDTLS_LIBS
-        PUBLIC mbedtls_enc
-        PUBLIC mbedx509_enc
-        PUBLIC mbedcrypto_enc)
+    if(TZ AND SIM)
+        set(MBEDTLS_LIBS
+            PUBLIC mbedtls
+            PUBLIC mbedx509
+            PUBLIC mbedcrypto)
+    else()
+        set(MBEDTLS_LIBS
+            PUBLIC mbedtls_enc
+            PUBLIC mbedx509_enc
+            PUBLIC mbedcrypto_enc)
+    endif()
 
     # By TEE ->
     if(SGX)

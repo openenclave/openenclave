@@ -146,7 +146,7 @@ endif()
 include(GNUInstallDirs)
 
 # 3rd-party components
-if(WIN32 AND (SGX OR (TZ AND SIM)))
+if(WIN32 AND SGX)
     # This subdirectory compiles mbed TLS for use *inside* enclaves.
     add_subdirectory(libmbedtls)
 endif()

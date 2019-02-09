@@ -1,27 +1,35 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I\"${NP_PATH}/include\"")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I\"${OE_PATH}/include\"")
+
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -I\"${NP_PATH}/include\"")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -I\"${OE_PATH}/include\"")
+
 if(SGX)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I\"${SGXSDKInstallPath}/include\"")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I\"${SGXSDKInstallPath}/include/tlibc\"")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I\"${NP_PATH}/include/sgx/enclave\"")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I\"${NP_PATH}/include\"")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I\"${OE_PATH}/include\"")
 
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -I\"${SGXSDKInstallPath}/include\"")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -I\"${SGXSDKInstallPath}/include/tlibc\"")
-    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -I\"${NP_PATH}/include\"")
-    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -I\"${OE_PATH}/include\"")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -I\"${NP_PATH}/include/sgx/enclave\"")
+    endif()
 
-    if(WIN32)
-        string(REPLACE "/RTC1" "" CMAKE_C_FLAGS       "${CMAKE_C_FLAGS}")
-        string(REPLACE "/RTC1" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
+if(WIN32)
+    string(REPLACE "/RTC1" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+    string(REPLACE "/RTC1" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
 
-        string(REGEX REPLACE "(-D|/D)[^ ]* " "" CMAKE_C_FLAGS       "${CMAKE_C_FLAGS}")
-        string(REGEX REPLACE "(-D|/D)[^ ]* " "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
+    string(REGEX REPLACE "(-D|/D)[^ ]* " "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+    string(REGEX REPLACE "(-D|/D)[^ ]* " "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
 
-        set(CMAKE_C_FLAGS       "${CMAKE_C_FLAGS} /X /DOE_NO_SAL /D_TLIBC_WARN_DEPRECATED_FUNCTIONS_ /wd4996")
-        set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /X /DOE_NO_SAL /D_TLIBC_WARN_DEPRECATED_FUNCTIONS_ /wd4996")
+    set(CMAKE_C_FLAGS       "${CMAKE_C_FLAGS} /X /DOE_NO_SAL")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /X /DOE_NO_SAL")
+
+    if(SGX)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /D_TLIBC_WARN_DEPRECATED_FUNCTIONS_ /wd4996")
+        set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /D_TLIBC_WARN_DEPRECATED_FUNCTIONS_ /wd4996")
     endif()
 endif()
 
