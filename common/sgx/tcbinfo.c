@@ -431,6 +431,28 @@ static oe_result_t _read_tcb_info(
         itr, end, parsed_info->fmspc, sizeof(parsed_info->fmspc)));
     OE_CHECK(_read(',', itr, end));
 
+    {
+        const uint8_t* old_itr = *itr;
+
+        // read optional "pceId", if it does not exist, restore the read
+        // pointers
+        OE_TRACE_VERBOSE("Attempt reading optional pceId field...");
+
+        parsed_info->pceid[0] = 0;
+        parsed_info->pceid[1] = 0;
+        result = _read_property_name_and_colon("pceId", itr, end);
+        if (result == OE_OK)
+        {
+            OE_CHECK(_read_hex_string(
+                itr, end, parsed_info->pceid, sizeof(parsed_info->pceid)));
+            OE_CHECK(_read(',', itr, end));
+        }
+        else if (result == OE_JSON_INFO_PARSE_ERROR)
+        {
+            *itr = old_itr;
+        }
+    }
+
     OE_TRACE_VERBOSE("Reading tcbLevels");
     OE_CHECK(_read_property_name_and_colon("tcbLevels", itr, end));
     OE_CHECK(_read('[', itr, end));

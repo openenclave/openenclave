@@ -16,7 +16,9 @@
 
 #define SKIP_RETURN_CODE 2
 
-extern void TestVerifyTCBInfo(oe_enclave_t* enclave);
+extern void TestVerifyTCBInfo(
+    oe_enclave_t* enclave,
+    const char* test_file_name);
 extern std::vector<uint8_t> FileToBytes(const char* path);
 
 void generate_and_save_report(oe_enclave_t* enclave)
@@ -125,7 +127,8 @@ int main(int argc, const char* argv[])
 #ifdef OE_USE_LIBSGX
     OE_TEST(enclave_test_remote_verify_report(enclave) == OE_OK);
 
-    TestVerifyTCBInfo(enclave);
+    TestVerifyTCBInfo(enclave, "./data/tcbInfo.json");
+    TestVerifyTCBInfo(enclave, "./data/tcbInfo_with_pceid.json");
 
     // Get current time and pass it to enclave.
     std::time_t t = std::time(0);
