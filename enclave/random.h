@@ -4,15 +4,12 @@
 #ifndef _CRYPTO_ENCLAVE_RANDOM_H
 #define _CRYPTO_ENCLAVE_RANDOM_H
 
-#if !defined(OE_NEED_STDC_NAMES)
-#define OE_NEED_STDC_NAMES
-#define __UNDEF_OE_NEED_STDC_NAMES
-#endif
+/* Nest mbedtls header includes with required corelibc defines */
+// clang-format off
+#include "mbedtls_corelibc_defs.h"
 #include <mbedtls/ctr_drbg.h>
-#if defined(__UNDEF_OE_NEED_STDC_NAMES)
-#undef OE_NEED_STDC_NAMES
-#undef __UNDEF_OE_NEED_STDC_NAMES
-#endif
+#include "mbedtls_corelibc_undef.h"
+// clang-format on
 
 mbedtls_ctr_drbg_context* oe_mbedtls_get_drbg();
 

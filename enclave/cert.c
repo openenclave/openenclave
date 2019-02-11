@@ -1,18 +1,14 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-/* Use OE STDC definitions for mbedtls */
-#if !defined(OE_NEED_STDC_NAMES)
-#define OE_NEED_STDC_NAMES
-#define __UNDEF_OE_NEED_STDC_NAMES
-#endif
+/* Nest mbedtls header includes with required corelibc defines */
+// clang-format off
+#include "mbedtls_corelibc_defs.h"
 #include <mbedtls/oid.h>
 #include <mbedtls/platform.h>
 #include <mbedtls/x509_crt.h>
-#if defined(__UNDEF_OE_NEED_STDC_NAMES)
-#undef OE_NEED_STDC_NAMES
-#undef __UNDEF_OE_NEED_STDC_NAMES
-#endif
+#include "mbedtls_corelibc_undef.h"
+// clang-format on
 
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/corelibc/string.h>
