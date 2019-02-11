@@ -43,11 +43,14 @@ class IssueTracker(object):
             for i, line in enumerate(iter(f.readline, b"")):
                 self.check_file_line(filepath, line, i + 1)
 
+    def record_issue(self, filepath, line_number):
+        if filepath not in self.files_with_issues.keys():
+            self.files_with_issues[filepath] = []
+        self.files_with_issues[filepath].append(line_number)
+
     def check_file_line(self, filepath, line, line_number):
         if self.issue_with_line(line):
-            if filepath not in self.files_with_issues.keys():
-                self.files_with_issues[filepath] = []
-            self.files_with_issues[filepath].append(line_number)
+            self.record_issue(filepath, line_number)
 
     def output_file_issues(self, logger):
         if self.files_with_issues.values():
@@ -132,6 +135,27 @@ class TabIssueTracker(IssueTracker):
         return b"\t" in line
 
 
+class MergeArtifactIssueTracker(IssueTracker):
+
+    def __init__(self):
+        super().__init__()
+        self.heading = "Merge artifact:"
+
+    def issue_with_line(self, filepath, line):
+        # Detect leftover git conflict markers.
+        if line.startswith(b'<<<<<<< ') or line.startswith(b'>>>>>>> '):
+            return True
+        if line.startswith(b'||||||| '): # from merge.conflictStyle=diff3
+            return True
+        if line.rstrip(b'\r\n') == b'=======' and \
+           not filepath.endswith('.md'):
+            return True
+        return False
+
+    def check_file_line(self, filepath, line, line_number):
+        if self.issue_with_line(filepath, line):
+            self.record_issue(filepath, line_number)
+
 class TodoIssueTracker(IssueTracker):
 
     def __init__(self):
@@ -155,6 +179,12 @@ class IntegrityChecker(object):
             ".c", ".h", ".sh", ".pl", ".py", ".md", ".function", ".data",
             "Makefile", "CMakeLists.txt", "ChangeLog"
         )
+        self.excluded_directories = ['.git', 'mbed-os']
+        self.excluded_paths = list(map(os.path.normpath, [
+            'cov-int',
+            'examples',
+            'yotta/module'
+        ]))
         self.issues_to_check = [
             PermissionIssueTracker(),
             EndOfFileNewlineIssueTracker(),
@@ -162,6 +192,7 @@ class IntegrityChecker(object):
             LineEndingIssueTracker(),
             TrailingWhitespaceIssueTracker(),
             TabIssueTracker(),
+            MergeArtifactIssueTracker(),
             TodoIssueTracker(),
         ]
 
@@ -179,12 +210,19 @@ class IntegrityChecker(object):
             console = logging.StreamHandler()
             self.logger.addHandler(console)
 
+    def prune_branch(self, root, d):
+        if d in self.excluded_directories:
+            return True
+        if os.path.normpath(os.path.join(root, d)) in self.excluded_paths:
+            return True
+        return False
+
     def check_files(self):
-        for root, dirs, files in sorted(os.walk(".")):
+        for root, dirs, files in os.walk("."):
+            dirs[:] = sorted(d for d in dirs if not self.prune_branch(root, d))
             for filename in sorted(files):
                 filepath = os.path.join(root, filename)
-                if (os.path.join("yotta", "module") in filepath or
-                        not filepath.endswith(self.files_to_check)):
+                if not filepath.endswith(self.files_to_check):
                     continue
                 for issue_to_check in self.issues_to_check:
                     if issue_to_check.should_check_file(filepath):

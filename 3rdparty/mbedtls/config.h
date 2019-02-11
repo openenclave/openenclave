@@ -1217,7 +1217,7 @@
 /**
  * \def MBEDTLS_SSL_RENEGOTIATION
  *
- * Disable support for TLS renegotiation.
+ * Enable support for TLS renegotiation.
  *
  * The two main uses of renegotiation are (1) refresh keys on long-lived
  * connections and (2) client authentication after the initial handshake.
@@ -2780,14 +2780,15 @@
 /* Platform options */
 //#define MBEDTLS_PLATFORM_STD_MEM_HDR   <stdlib.h> /**< Header to include if MBEDTLS_PLATFORM_NO_STD_FUNCTIONS is defined. Don't define if no header is needed. */
 /* Open Enclave: Redirect the mbedtls_calloc/free calls to the corelibc methods
- * so that mbedtls does not need to depend on oelibc.
- * TODO: Enabling MBEDTLS_PLATFORM_MEMORY means we should define
- * MBEDTLS_PLATFORM_CALLOC/FREE_MACRO instead of the STD versions,
- * but a bug will cause mbedtls not to compile.
- * Revisit this after updating to v2.7.9 or better.
+ * so that mbedtls does not need to depend on oelibc. Note that we do this
+ * instead of defining the MBEDTLS_PLATFORM_CALLOC/FREE_MACRO as the STD
+ * implementation defines them as function pointers instead of macros, which is
+ * resiliant to compiling without the oe_calloc/free definition as happens in
+ * tests/mbed where the return value is corrupted by being marshalled as an
+ * int by default instead of void*.
  */
-#define MBEDTLS_PLATFORM_STD_CALLOC        oe_calloc /**< Default allocator to use, can be undefined */
-#define MBEDTLS_PLATFORM_STD_FREE            oe_free /**< Default free to use, can be undefined */
+#define MBEDTLS_PLATFORM_STD_CALLOC       oe_calloc /**< Default allocator to use, can be undefined */
+#define MBEDTLS_PLATFORM_STD_FREE           oe_free /**< Default free to use, can be undefined */
 //#define MBEDTLS_PLATFORM_STD_EXIT            exit /**< Default exit to use, can be undefined */
 //#define MBEDTLS_PLATFORM_STD_TIME            time /**< Default time to use, can be undefined. MBEDTLS_HAVE_TIME must be enabled */
 //#define MBEDTLS_PLATFORM_STD_FPRINTF      fprintf /**< Default fprintf to use, can be undefined */
