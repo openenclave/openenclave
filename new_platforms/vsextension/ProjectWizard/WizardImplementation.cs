@@ -9,6 +9,8 @@ namespace OpenEnclaveSDK
 {
     public class WizardImplementation : IWizard
     {
+        public static string EdlLocation;
+
         // This method is called before opening any item that   
         // has the OpenInEditor attribute.  
         public void BeforeOpeningFile(ProjectItem projectItem)
@@ -61,8 +63,6 @@ namespace OpenEnclaveSDK
         {
             try
             {
-                // Get the $guid$1 value that has already been generated, and
-                // create a struct version of it for use in code that needs it.
                 string safeitemname;
                 replacementsDictionary.TryGetValue("$safeitemname$", out safeitemname);
 
@@ -74,6 +74,21 @@ namespace OpenEnclaveSDK
                     // Add $enclavename$.
                     replacementsDictionary.Add("$enclavename$", enclavename);
                 }
+
+                // Try to get enclave guid from the enclave project.
+                string enclaveguid = "FILL THIS IN";
+                string makFileName = Path.Combine(EdlLocation, "optee", "linux_gcc.mak");
+                foreach (string line in File.ReadLines(makFileName))
+                {
+                    int index = line.IndexOf("BINARY=");
+                    if (index >= 0)
+                    {
+                        enclaveguid = line.Substring(index + 7).Trim();
+                        break;
+                    }
+                }
+                replacementsDictionary.Add("$enclaveguid$", enclaveguid);
+
                 return true;
             } catch (Exception)
             {
@@ -90,7 +105,7 @@ namespace OpenEnclaveSDK
         {
             try
             {
-                // Get the $guid$1 value that has already been generated, and
+                // Get the $guid1$ value that has already been generated, and
                 // create a struct version of it for use in code that needs it.
                 string guid1;
                 replacementsDictionary.TryGetValue("$guid1$", out guid1);
