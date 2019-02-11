@@ -7,8 +7,7 @@ add_library(oe_includes INTERFACE)
 add_dependencies(oe_includes oe_includes_place)
 target_include_directories(oe_includes INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-    )
+    $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>)
 install(DIRECTORY openenclave/bits DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/)
 install(DIRECTORY openenclave/edger8r DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/)
 install(FILES openenclave/enclave.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/)

@@ -81,15 +81,15 @@ add_dependencies(mbedcrypto mbedtls-wrap)
 
 target_include_directories(mbedcrypto INTERFACE
   $<BUILD_INTERFACE:${SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty>)
+  $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty>)
 
 target_link_libraries(mbedcrypto INTERFACE
   $<BUILD_INTERFACE:mbedtls_imported>
-  $<INSTALL_INTERFACE:${CMAKE_INSTALL_LIBDIR}/openenclave/enclave/libmbedtls.a>
+  $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_LIBDIR}/openenclave/enclave/libmbedtls.a>
   $<BUILD_INTERFACE:mbedx509_imported>
-  $<INSTALL_INTERFACE:${CMAKE_INSTALL_LIBDIR}/openenclave/enclave/libmbedx509.a>
+  $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_LIBDIR}/openenclave/enclave/libmbedx509.a>
   $<BUILD_INTERFACE:mbedcrypto_imported>
-  $<INSTALL_INTERFACE:${CMAKE_INSTALL_LIBDIR}/openenclave/enclave/libmbedcrypto.a>
+  $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_LIBDIR}/openenclave/enclave/libmbedcrypto.a>
   # NOTE: This dependency is repeated because during installation the
   # imported libraries are not part of the CMake dependency graph, so
   # this transitive dependency would be left out.

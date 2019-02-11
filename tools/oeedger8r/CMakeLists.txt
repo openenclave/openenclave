@@ -70,4 +70,11 @@ add_dependencies(edger8r oeedger8r_target)
 
 # Can't use `install(TARGETS)` on an imported executable, because it
 # causes CMake to crash with a segmentation fault.
+#
+# TODO: Get CMake to fix this as it is particularly annoying. It
+# prevents us from exporting a proper target for our users to consume.
+#
+# Because of this bug, consumers of the Open Enclave SDK CMake package
+# are forced to manually import the oeedger8r executable into their
+# graph.
 install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${BINARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
