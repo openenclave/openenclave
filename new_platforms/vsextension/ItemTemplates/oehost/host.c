@@ -25,6 +25,7 @@ oe_result_t create_$enclavename$_enclave(const char* enclave_name, oe_enclave_t*
         return result;
     }
 
+    *out_enclave = enclave;
     return OE_OK;
 }
 
@@ -32,7 +33,11 @@ void sample_enclave_call(void)
 {
     oe_enclave_t* enclave = NULL;
     oe_result_t result = create_$enclavename$_enclave(
+#ifdef OE_USE_OPTEE
+        "$enclaveguid$",
+#else
         "$enclavename$",
+#endif
         &enclave);
     if (result != OE_OK)
     {
