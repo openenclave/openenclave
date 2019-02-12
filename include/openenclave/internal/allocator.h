@@ -29,9 +29,9 @@ typedef struct _oe_allocator_stats
 
 void oe_allocator_initialize(void);
 
-void oe_allocator_threstartup(void);
+void oe_allocator_thread_startup(void);
 
-void oe_allocator_threteardown(void);
+void oe_allocator_thread_teardown(void);
 
 void* oe_allocator_malloc(size_t size);
 
