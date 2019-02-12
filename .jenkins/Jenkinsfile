@@ -168,7 +168,10 @@ def win2016CrossCompile(String build_type) {
 
 
 parallel "Check Developer Experience Ubuntu 16.04" :    { checkDevFlows('16.04') },
-         "Win2016 Ubuntu1604 Debug Linux-Elf-build" :   { win2016LinuxElfBuild('16.04', 'Debug') },
+         "ACC1604 clang-7 Debug" :               { ACCTest('ACC-1604', 'clang-7', 'SGX1FLC', 'Debug') },
+         "ACC1604 clang-7 Release" :             { ACCTest('ACC-1604', 'clang-7', 'SGX1FLC','Release') },
+         "ACC1604 clang-7 RelWithDebInfo" :      { ACCTest('ACC-1604', 'clang-7', 'SGX1FLC', 'RelWithDebinfo') },
+	 "Win2016 Ubuntu1604 Debug Linux-Elf-build" :   { win2016LinuxElfBuild('16.04', 'Debug') },
          "Win2016 Ubuntu1604 Release Linux-Elf-build" : { win2016LinuxElfBuild('16.04', 'Release') },
          "Win2016 Ubuntu1804 Debug Linux-Elf-build" :   { win2016LinuxElfBuild('18.04', 'Debug') },
          "Win2016 Ubuntu1804 Release Linux-Elf-build" : { win2016LinuxElfBuild('18.04', 'Release') },
