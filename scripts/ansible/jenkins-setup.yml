@@ -22,6 +22,18 @@
         name: linux/az-dcap-client
         tasks_from: stable-install.yml
 
+    - block:
+      - import_role:
+          name: common/jenkins-agent
+          tasks_from: agent-provision.yml
+        delegate_to: localhost
+      become: no
+
+    - name: Check if node_secret fact is defined
+      fail: 
+        msg: "The node_secret fact is not defined!"
+      when: node_secret is undefined
+
     - import_role:
         name: linux/jenkins
         tasks_from: slave-setup.yml
@@ -29,6 +41,18 @@
 - hosts: windows-agents
   any_errors_fatal: true
   tasks:
+    - block:
+      - import_role:
+          name: common/jenkins-agent
+          tasks_from: agent-provision.yml
+        delegate_to: localhost
+      become: no
+
+    - name: Check if node_secret fact is defined
+      fail:
+        msg: "The node_secret fact is not defined!"
+      when: node_secret is undefined
+
     - import_role:
         name: windows/jenkins
         tasks_from: slave-setup.yml
