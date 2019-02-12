@@ -1,13 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _LIBMALLOC_H
-#define _LIBMALLOC_H
+#ifndef _ALLOCATOR_H
+#define _ALLOCATOR_H
 
-// clang-format off
-#include <openenclave/internal/thread.h>
 #include <openenclave/enclave.h>
-// clang-format on
+#include <openenclave/internal/allocator.h>
+#include <openenclave/internal/thread.h>
 
 #define MAX_THREADS 1024
 
@@ -33,4 +32,4 @@ extern allocator_t allocator;
 #define SYSTEM_BYTES 0xc9c746313c2f4689
 #define IN_USE_BYTES 0x38bc5d9ad61f4c97
 
-#endif /* _LIBMALLOC_H */
+#endif /* _ALLOCATOR_H */

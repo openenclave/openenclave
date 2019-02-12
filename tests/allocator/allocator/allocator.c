@@ -1,13 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-// clang-format off
+#include "allocator.h"
 #include <openenclave/enclave.h>
 #include <openenclave/internal/allocator.h>
-#include <openenclave/internal/thread.h>
 #include <openenclave/internal/print.h>
-#include "allocator.h"
-// clang-format on
+#include <openenclave/internal/thread.h>
 
 allocator_t allocator;
 
