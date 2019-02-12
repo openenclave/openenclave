@@ -84,11 +84,35 @@ if (OE_SGX)
   endif()
 
   if (BUILD_ENCLAVES AND WIN32)
+    # Search for prerequisites
+    find_program(CLANG clang)
+    if (NOT CLANG)
+      message(FATAL_ERROR "Clang is required to build ELF enclaves on Windows")
+    endif ()
+
+    # Get the list of clang specific defines and search for __clang_major__
+    execute_process(
+      COMMAND cmd.exe /c " clang -dM -E -x c nul | findstr __clang_major__ "
+      RESULT_VARIABLE HAD_ERROR
+      OUTPUT_VARIABLE CONFIG_OUTPUT
+    )
+    if (HAD_ERROR)
+      message(FATAL_ERROR "Could not parse clang major version")
+    endif ()
+
+    # Format the output for a list
+    string(REPLACE " " ";" CONFIG_OUTPUT ${CONFIG_OUTPUT})
+    # Get the major version for clang
+    list(GET CONFIG_OUTPUT 2 MAJOR_VERSION)
+    if (MAJOR_VERSION VERSION_LESS 7)
+      message(FATAL_ERROR "Clang version 7.0 or higher is required")
+    endif ()
+
     # Setup cross compiler (clangw)
     add_subdirectory(windows/clangw)  
     set(USE_CLANGW ON)
   endif()
-else()
+else() # NOT OE_SGX
   # On non-sgx enclaves are built by default on Unix
   if (UNIX)
     set(BUILD_ENCLAVES ON)
