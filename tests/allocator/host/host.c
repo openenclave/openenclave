@@ -25,7 +25,7 @@ int main(int argc, const char* argv[])
     int ret;
     r = test_allocator(enclave, &ret);
     OE_TEST(r == OE_OK);
-    OE_TEST(ret == 12345);
+    OE_TEST(ret == TEST_ALLOCATOR_RETURN_VALUE);
 
     r = oe_terminate_enclave(enclave);
     OE_TEST(r == OE_OK);

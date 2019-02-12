@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../allocator/allocator.h"
+#include "allocator_t.h"
 
 int test_allocator(void)
 {
@@ -54,7 +55,7 @@ int test_allocator(void)
     OE_TEST(stats.system_bytes == SYSTEM_BYTES);
     OE_TEST(stats.in_use_bytes == IN_USE_BYTES);
 
-    return 12345;
+    return TEST_ALLOCATOR_RETURN_VALUE;
 }
 
 OE_SET_ENCLAVE_SGX(

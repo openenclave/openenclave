@@ -2,6 +2,11 @@
 // Licensed under the MIT License.
 
 enclave {
+
+    enum test_allocator_return {
+        TEST_ALLOCATOR_RETURN_VALUE = 12345
+    };
+
     trusted {
         public int test_allocator();
     };
