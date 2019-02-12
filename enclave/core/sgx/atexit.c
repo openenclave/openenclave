@@ -43,8 +43,7 @@ static oe_atexit_entry_t* _new_atexit_entry(void (*func)(void*), void* arg)
 {
     oe_atexit_entry_t* entry;
 
-    if ((entry = (oe_atexit_entry_t*)oe_sbrk(sizeof(oe_atexit_entry_t))) ==
-        (void*)-1)
+    if (!(entry = (oe_atexit_entry_t*)oe_malloc(sizeof(oe_atexit_entry_t))))
         return NULL;
 
     entry->func = func;
