@@ -38,6 +38,7 @@ typedef struct _oe_parsed_tcb_info
     oe_datetime_t issue_date;
     oe_datetime_t next_update;
     uint8_t fmspc[6];
+    uint8_t pceid[2];
     uint8_t signature[64];
     const uint8_t* tcb_info_start;
     size_t tcb_info_size;

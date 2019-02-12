@@ -1,8 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-set(LIBCXX_INCLUDES ${OE_INCDIR}/openenclave/libcxx)
-
 include (ExternalProject)
 ExternalProject_Add(libcxx_includes
   DOWNLOAD_COMMAND ""
@@ -64,10 +62,10 @@ target_compile_definitions(libcxx
 
 target_link_libraries(libcxx PUBLIC oelibc)
 
+# NOTE: The `PUBLIC` headers for `libcxx` are actually added to
+# `oelibc_includes`, this is necessary to get the ordering correct.
+# See `../musl/CMakeLists.txt` for more details.
 target_include_directories(libcxx
-  PUBLIC
-  $<BUILD_INTERFACE:$<$<COMPILE_LANGUAGE:CXX>:${LIBCXX_INCLUDES}>>
-  $<INSTALL_INTERFACE:$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/libcxx>>
   PRIVATE
   libcxx/src
   ../libcxxrt/libcxxrt/src)
