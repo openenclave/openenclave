@@ -160,9 +160,9 @@ if (NOT USE_CLANGW)
 endif()
 
 # Exclude tests that fail on Clang:
-if (NOT USE_CLANGW OR MY_COMPILER MATCHES "CLANG")
+if (NOT (USE_CLANGW OR MY_COMPILER MATCHES "CLANG"))
     list(APPEND LIBC_TESTS 
-		${MUSL_FUNC_PATH}//tgmath.c
+	${MUSL_FUNC_PATH}//tgmath.c
         ${MUSL_MATH_PATH}//fmax.c
         ${MUSL_MATH_PATH}//fmaxf.c
         ${MUSL_MATH_PATH}//fmin.c
