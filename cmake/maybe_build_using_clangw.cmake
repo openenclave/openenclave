@@ -40,7 +40,8 @@ function(maybe_build_using_clangw OE_TARGET)
         -Wall -Werror -Wpointer-arith -Wconversion -Wextra -Wno-missing-field-initializers
         -fno-strict-aliasing
         -mxsave
-        -fno-builtin-malloc -fno-builtin-calloc -fno-builtin)
+        -fno-builtin-malloc -fno-builtin-calloc -fno-builtin
+        -mllvm -x86-speculative-load-hardening)
 
     # Setup library names variables
     set(CMAKE_STATIC_LIBRARY_PREFIX "lib" PARENT_SCOPE)
