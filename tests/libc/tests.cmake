@@ -18,7 +18,7 @@ set(MUSL_REGR_PATH "${MUSL_PATH}//regression")
 # Include tests that work on all builds:
 set(LIBC_TESTS
     ${MUSL_FUNC_PATH}//argv.c
-	${MUSL_FUNC_PATH}//basename.c
+    ${MUSL_FUNC_PATH}//basename.c
     ${MUSL_FUNC_PATH}//clock_gettime.c
     ${MUSL_FUNC_PATH}//dirname.c
     ${MUSL_FUNC_PATH}//env.c
@@ -41,8 +41,8 @@ set(LIBC_TESTS
     ${MUSL_FUNC_PATH}//udiv.c
     ${MUSL_FUNC_PATH}//wcsstr.c
     ${MUSL_FUNC_PATH}//wcstol.c
-	${MUSL_MATH_PATH}//coshl.c	
-	${MUSL_MATH_PATH}//cosl.c	
+    ${MUSL_MATH_PATH}//coshl.c
+    ${MUSL_MATH_PATH}//cosl.c
     ${MUSL_MATH_PATH}//fabsl.c
     ${MUSL_MATH_PATH}//fmaxl.c
     ${MUSL_MATH_PATH}//fminl.c
@@ -52,27 +52,23 @@ set(LIBC_TESTS
     ${MUSL_MATH_PATH}//frexpl.c
     ${MUSL_MATH_PATH}//lgammal.c
     ${MUSL_MATH_PATH}//lgammal_r.c
-    
-    	
 )
 
 # Exclude tests that fail on Clang Windows:
-if (NOT USE_CLANGW)
+if (NOT WIN32)
     list(APPEND LIBC_TESTS 
-        ${MUSL_FUNC_PATH}//sscanf_long.c
-		${MUSL_FUNC_PATH}//strtod.c
-		${MUSL_FUNC_PATH}//strtod_simple.c
-		${MUSL_FUNC_PATH}//strtof.c
-		${MUSL_MATH_PATH}//asin.c
-		${MUSL_MATH_PATH}//acos.c
-		${MUSL_MATH_PATH}//asinf.c
-		${MUSL_MATH_PATH}//asinhf.c
-		${MUSL_MATH_PATH}//asinhl.c
-		${MUSL_MATH_PATH}//asinl.c
-		${MUSL_MATH_PATH}//atan2.c
-		${MUSL_MATH_PATH}//atan2f.c
-		${MUSL_MATH_PATH}//atan2l.c
-		${MUSL_MATH_PATH}//atan.c
+        #${MUSL_FUNC_PATH}//sscanf_long.c - running out of memory on Linux
+	    ${MUSL_FUNC_PATH}//strtod.c
+	    ${MUSL_FUNC_PATH}//strtod_simple.c
+        ${MUSL_FUNC_PATH}//strtof.c
+        ${MUSL_MATH_PATH}//asin.c
+        ${MUSL_MATH_PATH}//acos.c
+        ${MUSL_MATH_PATH}//asinf.c
+	    ${MUSL_MATH_PATH}//asinhf.c
+	    ${MUSL_MATH_PATH}//asinhl.c
+	    ${MUSL_MATH_PATH}//asinl.c
+	    ${MUSL_MATH_PATH}//atan2l.c
+	    ${MUSL_MATH_PATH}//atan.c
 		${MUSL_MATH_PATH}//atanf.c
 		${MUSL_MATH_PATH}//atanh.c
 		${MUSL_MATH_PATH}//atanhf.c
