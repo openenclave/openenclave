@@ -846,6 +846,12 @@ void __oe_handle_main(
     *output_arg1 = 0;
     *output_arg2 = 0;
 
+    /* Force certain symbols to be exported to subsequence libraries. */
+    {
+        extern const void* oe_link_core(void);
+        oe_link_core();
+    }
+
     // Block enclave enter based on current enclave status.
     switch (__oe_enclave_status)
     {

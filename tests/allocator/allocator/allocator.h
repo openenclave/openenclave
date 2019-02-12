@@ -5,8 +5,8 @@
 #define _LIBMALLOC_H
 
 // clang-format off
-#include <openenclave/enclave.h>
 #include <openenclave/internal/thread.h>
+#include <openenclave/enclave.h>
 // clang-format on
 
 #define MAX_THREADS 1024
