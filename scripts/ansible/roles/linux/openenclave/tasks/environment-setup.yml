@@ -48,6 +48,7 @@
   file:
     src: "/usr/local/cmake-3.13.1-Linux-x86_64/bin/{{ item }}"
     dest: "/usr/local/bin/{{ item }}"
+    force: yes
     state: link
   with_items:
     - ccmake
