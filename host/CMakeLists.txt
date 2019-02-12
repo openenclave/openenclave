@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
-
 # OS specific but arch agnostic files.
 if (UNIX)
   set(PLATFORM_SRC
