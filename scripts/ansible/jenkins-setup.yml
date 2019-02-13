@@ -38,6 +38,10 @@
         name: linux/jenkins
         tasks_from: slave-setup.yml
 
+    - import_role:
+        name: linux/validation
+        tasks_from: slave-validation.yml
+
 - hosts: windows-agents
   any_errors_fatal: true
   tasks:
