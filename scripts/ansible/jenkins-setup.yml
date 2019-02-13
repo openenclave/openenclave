@@ -60,3 +60,7 @@
     - import_role:
         name: windows/jenkins
         tasks_from: slave-setup.yml
+
+    - import_role:
+        name: windows/validation
+        tasks_from: slave-validation.yml
