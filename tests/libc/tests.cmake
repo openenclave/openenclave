@@ -4,6 +4,7 @@
 string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
 string(TOUPPER ${CMAKE_C_COMPILER_ID} MY_COMPILER)
 set(BUILD "${MY_COMPILER}:${BUILD_TYPE}")
+message("Build for libc tests set to: ${BUILD}")
 set(MUSL_PATH "3rdparty//musl//libc-test//src")
 set(MUSL_FUNC_PATH "${MUSL_PATH}//functional")
 set(MUSL_MATH_PATH "${MUSL_PATH}//math")
@@ -54,8 +55,8 @@ set(LIBC_TESTS
     ${MUSL_MATH_PATH}//lgammal_r.c
 )
 
-# Exclude tests that fail on Clang Windows:
-if (NOT WIN32)
+# Exclude tests that fail on Windows:
+if (NOT USE_CLANGW)
     list(APPEND LIBC_TESTS 
         #${MUSL_FUNC_PATH}//sscanf_long.c - running out of memory on Linux
 	    ${MUSL_FUNC_PATH}//strtod.c
