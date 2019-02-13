@@ -339,7 +339,7 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args)
 
     if (!_get_qe_identity_info || !_free_qe_identity_info)
     {
-        OE_TRACE_ERROR(
+        OE_TRACE_WARNING(
             "Warning: QE Identity was not supported by quote provider\n");
         result = OE_QUOTE_PROVIDER_CALL_ERROR;
         goto done;
