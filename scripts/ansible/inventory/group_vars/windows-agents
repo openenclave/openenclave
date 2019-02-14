@@ -1,0 +1,70 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+# Username and password of the nodes (if the nodes have different passwords, please look into host_vars folder)
+ansible_user: Administrator
+ansible_password: Passw0rd
+# This is the default port for HTTPS used by WinRM
+ansible_port: 5986
+ansible_connection: winrm
+# The following is necessary for Python 2.7.9+ (or any older Python that has backported SSLContext
+# eg, Python 2.7.5 on RHEL7) when using default WinRM self-signed certificates:
+ansible_winrm_server_cert_validation: ignore
+
+tmp_dir: "C:\\Windows\\Temp"
+jenkins_agent_root_dir: "C:/Jenkins"
+servicewrapper_url: "https://github.com/cloudbase/OpenStackService/releases/download/v0.1/service-wrapper-sdk10-x64.zip"
+jdk8_url: "https://download.oracle.com/otn-pub/java/jdk/8u201-b09/42970487e3af4f5aa5bca3f542482c60/jdk-8u201-windows-x64.exe"
+packages:
+  7z:
+    url: "https://www.7-zip.org/a/7z1806-x64.msi"
+    dest: "{{ tmp_dir }}\\7z1806-x64.msi"
+  vs_2017:
+    url: "https://aka.ms/vs/15/release/vs_buildtools.exe"
+    dest: "{{ tmp_dir }}\\vs_buildtools-2017.exe"
+  ocaml:
+    url: "https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/ocpwin64-20160113-4.02.1+ocp1-mingw64.zip"
+    dest: "{{ tmp_dir }}\\ocpwin64-4.02.1-ocp1-mingw64.zip"
+  clang7:
+    url: "http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe"
+    dest: "{{ tmp_dir }}\\LLVM-7.0.1-win64.exe"
+  git:
+    url: "https://github.com/git-for-windows/git/releases/download/v2.20.1.windows.1/Git-2.20.1-64-bit.exe"
+    dest: "{{ tmp_dir }}\\Git-2.20.1-64-bit.exe"
+  shellcheck:
+    url: "https://storage.googleapis.com/shellcheck/shellcheck-stable.zip"
+    dest: "{{ tmp_dir }}\\shellcheck-stable.zip"
+
+packages_env_path:
+  - 'C:\Program Files\7-Zip'
+  - 'C:\Program Files\4.02.1+ocp1-mingw64-20160113\bin'
+  - 'C:\Program Files\LLVM\bin'
+  - 'C:\Program Files\Git\bin'
+  - 'C:\Program Files\Java\jdk1.8.0_201\bin'
+  - 'C:\Program Files\shellcheck'
+
+cmake_target_version: 3.12.18081601
+ninja_target_version: 1.8.2
+clang_target_version: 7.0.1
+ocaml_target_version: 4.02.1
+
+validation_directories:
+  - "C:\\Program Files\\LLVM\\bin"
+  - "C:\\Program Files\\LLVM\\lib"
+  - "C:\\Program Files\\4.02.1+ocp1-mingw64-20160113\\bin"
+  - "C:\\Program Files\\shellcheck"
+  - "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Tools\\MSVC\\14.16.27023\\bin"
+  - "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Tools\\MSVC\\14.16.27023\\lib\\x64"
+
+validation_files:
+  - "C:\\Program Files\\LLVM\\lib\\libclang.lib"
+  - "C:\\Program Files\\4.02.1+ocp1-mingw64-20160113\\lib\\arg.cmi"
+  - "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Tools\\MSVC\\14.16.27023\\lib\\x64\\vcomp.lib"
+
+validation_binaries:
+  - "C:\\Program Files\\LLVM\\bin\\clang.exe"
+  - "C:\\Program Files\\LLVM\\bin\\llvm-ar.exe"
+  - "C:\\Program Files\\4.02.1+ocp1-mingw64-20160113\\bin\\ocaml.exe"
+  - "C:\\Program Files\\shellcheck\\shellcheck-stable.exe"
+  - "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Tools\\MSVC\\14.16.27023\\bin\\Hostx64\\x64\\cl.exe"
+  - "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Tools\\MSVC\\14.16.27023\\bin\\Hostx64\\x64\\link.exe"

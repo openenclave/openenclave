@@ -431,6 +431,28 @@ static oe_result_t _read_tcb_info(
         itr, end, parsed_info->fmspc, sizeof(parsed_info->fmspc)));
     OE_CHECK(_read(',', itr, end));
 
+    {
+        const uint8_t* old_itr = *itr;
+
+        // read optional "pceId", if it does not exist, restore the read
+        // pointers
+        OE_TRACE_VERBOSE("Attempt reading optional pceId field...");
+
+        parsed_info->pceid[0] = 0;
+        parsed_info->pceid[1] = 0;
+        result = _read_property_name_and_colon("pceId", itr, end);
+        if (result == OE_OK)
+        {
+            OE_CHECK(_read_hex_string(
+                itr, end, parsed_info->pceid, sizeof(parsed_info->pceid)));
+            OE_CHECK(_read(',', itr, end));
+        }
+        else if (result == OE_JSON_INFO_PARSE_ERROR)
+        {
+            *itr = old_itr;
+        }
+    }
+
     OE_TRACE_VERBOSE("Reading tcbLevels");
     OE_CHECK(_read_property_name_and_colon("tcbLevels", itr, end));
     OE_CHECK(_read('[', itr, end));
@@ -503,9 +525,20 @@ oe_result_t oe_parse_tcb_info_json(
     if (itr == end)
     {
         if (platform_tcb_level->status != OE_TCB_LEVEL_STATUS_UP_TO_DATE)
-            OE_RAISE(OE_TCB_LEVEL_INVALID);
-
-        OE_TRACE_VERBOSE("TCB Info json parsing successful.\n");
+        {
+            for (uint32_t i = 0;
+                 i < OE_COUNTOF(platform_tcb_level->sgx_tcb_comp_svn);
+                 ++i)
+                OE_TRACE_VERBOSE(
+                    "sgx_tcb_comp_svn[%d] = 0x%x",
+                    i,
+                    platform_tcb_level->sgx_tcb_comp_svn[i]);
+            OE_TRACE_VERBOSE("pce_svn = 0x%x", platform_tcb_level->pce_svn);
+            OE_RAISE_MSG(
+                OE_TCB_LEVEL_INVALID,
+                "Platform TCB (%d) is not up-to-date",
+                platform_tcb_level->status);
+        }
         result = OE_OK;
     }
 done:

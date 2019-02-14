@@ -1,60 +1,51 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-Add Jenkins slave
-=========
+This directory contains the Ansible work used to automate all the required tasks for setting up new Open Enclave environments, and new Jenkins agents for the CI / CD system.
 
-This role will install needed Jenkins students (slaves) for both linux and windows. That includes all the needed requirements for openenclave.
+To quickly install / uninstall Ansible, the script `install-ansible.sh` / `remove-ansible.sh` can be used.
 
-Requirements
-------------
+# Open Enclave Deployment Options via Ansible
 
-All the python requirements are in the requirements.txt and can be installed with:
+On the target machine where Open Enclave is desired to be configured, you may setup the environment in one of the following ways:
 
-```
-pip3 install -r requirements.txt
-```
-
-Ansible >=2.7
-
-Ubuntu 16.04 targets (should work with 18.04 also, but not tested)
-
-Create the node on Jenkins master
-
-Add the external role:
+1. Open Enclave environment for contributors:
 
 ```
-ansible-galaxy install kobanyan.jenkins-jnlp-slave
-
+ansible-playbook oe-contributors-setup.yml
 ```
 
-Add the IPADDRESS in the hosts file from the repository.
-
-Role Variables
---------------
-
-The bellow variables need to be changed in var/variables.var for the playbook to execute succesfully
-
-jenkins_master: "JENKINS_MASTER_URL"
-
-
-Dependencies
-------------
-
-https://galaxy.ansible.com/kobanyan/jenkins-jnlp-slave 
-
-Example running
-----------------
-
-As a good practice, it is advised to address the nodes via their hostnames directly (for simplicity purposes). 
-If the hostnames are not resolvable by the configured DNS server, before running the playbook append 
-a new line to /etc/hosts containing: "NEW_SLAVE_IP" "NEW_SLAVE_NAME"
-
-example: 
-```
-10.0.28.143	ACC-1604-5
-```
+2. Open Enclave environment for contributors using ACC hardware:
 
 ```
-ansible-playbook -i hosts deploy_jenkins.yml -u **USER**
+ansible-playbook oe-contributors-acc-setup.yml
 ```
+
+3. Open Enclave vanilla environment (without SGX packages and with Azure-DCAP-Client package)
+
+```
+ansible-playbook oe-vanilla-prelibsgx-setup.yml
+```
+
+# Configure new Jenkins slaves
+
+The playbook `jenkins-setup.yml` can be used to set up new Jenkin slaves.
+
+Before anything else, make sure you configure your [inventory](/scripts/ansible/inventory) accordingly to target the new machines.
+
+As a good practice, it is advised to address the nodes via their hostnames directly (for simplicity purposes). If the hostnames are not resolvable by the configured DNS server, before running the playbook append a new line to /etc/hosts containing `"NEW_SLAVE_IP"    "NEW_SLAVE_NAME"`. For example:
+
+```
+10.0.28.143    ACC-1604-5
+```
+
+The playbook can be started with:
+
+```
+ansible-playbook jenkins-setup.yml
+```
+
+# Supported platforms by the Ansible playbooks
+
+* Ubuntu 16.04
+* Ubuntu 18.04

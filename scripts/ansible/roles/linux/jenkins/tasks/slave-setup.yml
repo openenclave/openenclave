@@ -1,0 +1,51 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+---
+- name: Jenkins | Install Java JRE needed by Jenkins
+  apt:
+    name: openjdk-8-jre
+    state: present
+    update_cache: yes
+
+- name: Jenkins | Create the Jenkins group
+  group:
+    name: jenkins
+    state: present
+
+- name: Jenkins | Add the Jenkins user
+  user:
+    name: jenkins
+    group: jenkins
+    state: present
+
+- import_role:
+    name: linux/docker
+    tasks_from: stable-install.yml
+
+- name: Docker | Add the Jenkins system user to the Docker group
+  user:
+    name: jenkins
+    groups: docker
+
+- name: Make Jenkins JNLP slave directories
+  file:
+    path: "{{ jenkins_agent_root_dir }}"
+    state: directory
+    owner: jenkins
+    group: jenkins
+
+- name: Template Jenkins JNLP slave files
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - { src: jenkins-slave.service.j2, dest: /etc/systemd/system/jenkins-slave.service, mode: 755 }
+    - { src: jenkins-slave.default.j2, dest: /etc/default/jenkins-slave, mode: 644 }
+
+- name: Start Jenkins JNLP slave
+  systemd:
+    name: jenkins-slave
+    enabled: yes
+    state: restarted
+    daemon_reload: yes

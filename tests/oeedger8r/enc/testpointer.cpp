@@ -266,7 +266,17 @@ static T* ecall_pointer_fun_impl(
         if (p4)
         {
             OE_TEST(oe_is_within_enclave(p4, sizeof(T) * 16));
-            OE_TEST(memcmp(p4, exp, sizeof(T) * 16) == 0);
+
+            // This next test verifies that the elements in p4[] are equivalent
+            // to the expected elements in exp[]. Previously, this next test
+            // line did a 'memcmp' over the entirety of the array. A 'memcmp'
+            // function call will not work for the 'long double' type. This
+            // is because the 'long double' type appears to use only 10 of its
+            // 16 bytes for actual data, and the extra 6 bytes are irrelevant.
+            // (On x86_64 systems, at least). Those irrelevant bytes can differ
+            // between two 'long double' values, and yet those values will be
+            // considered equivalent.
+            OE_TEST(array_compare(exp, p4) == 0);
 
             // change p4. Should not have any effect on host.
             memset(p4, 0, sizeof(T) * 16);
@@ -276,7 +286,7 @@ static T* ecall_pointer_fun_impl(
         if (p5)
         {
             OE_TEST(oe_is_within_enclave(p5, sizeof(T) * 16));
-            OE_TEST(memcmp(p5, exp, sizeof(T) * 16) == 0);
+            OE_TEST(array_compare(exp, p5) == 0);
             reverse(p5, 16);
         }
 

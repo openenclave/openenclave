@@ -31,7 +31,6 @@ if (UNIX OR ADD_WINDOWS_ENCLAVE_TESTS OR USE_CLANGW)
         add_subdirectory(crypto)
         add_subdirectory(debug-mode)
         add_subdirectory(ecall)
-        add_subdirectory(ecall_ocall)
         add_subdirectory(file)
         add_subdirectory(oeedger8r)
         add_subdirectory(props)
@@ -51,7 +50,8 @@ if (UNIX OR ADD_WINDOWS_ENCLAVE_TESTS OR USE_CLANGW)
         add_subdirectory(thread)
         add_subdirectory(threadcxx)
         add_subdirectory(thread_local)
-        add_subdirectory(VectorException)
+        add_subdirectory(thread_local_no_tdata)
+	add_subdirectory(VectorException)
     endif()
 
 add_subdirectory(create-errors)
@@ -75,6 +75,8 @@ endif()
 
 if (OE_SGX AND UNIX)
    add_subdirectory(crypto_crls_cert_chains)
+#ecall_ocall enclave size cannot be handled by Windows ninja CI
+   add_subdirectory(ecall_ocall)
    add_subdirectory(libunwind)
 
    #Attestation supported only on Linux

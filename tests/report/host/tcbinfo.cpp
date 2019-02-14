@@ -51,6 +51,11 @@ void AssertParsedValues(oe_parsed_tcb_info_t& parsed_info)
         memcmp(parsed_info.fmspc, expected_fm_spc, sizeof(expected_fm_spc)) ==
         0);
 
+    uint8_t expected_pce_id[2] = {0x00, 0x00};
+    OE_TEST(
+        memcmp(parsed_info.pceid, expected_pce_id, sizeof(expected_pce_id)) ==
+        0);
+
     const uint8_t expected_signature[] = {
         0x62, 0xd1, 0x81, 0xc4, 0xba, 0x86, 0x32, 0x13, 0xb8, 0x25, 0xd1,
         0xc0, 0xb6, 0x6b, 0x92, 0xa3, 0xdb, 0xdb, 0x27, 0xb8, 0xff, 0x7c,
@@ -67,10 +72,11 @@ void AssertParsedValues(oe_parsed_tcb_info_t& parsed_info)
 
 void TestVerifyTCBInfo(
     oe_enclave_t* enclave,
+    const char* test_filename,
     oe_tcb_level_t* platform_tcb_level,
     oe_result_t expected)
 {
-    std::vector<uint8_t> tcbInfo = FileToBytes("./data/tcbInfo.json");
+    std::vector<uint8_t> tcbInfo = FileToBytes(test_filename);
     oe_parsed_tcb_info_t parsed_info = {0};
     oe_result_t ecall_result = OE_FAILURE;
 
@@ -92,7 +98,7 @@ void TestVerifyTCBInfo(
     OE_TEST(oe_datetime_compare(&parsed_info.next_update, &nextUpdate) == 0);
 }
 
-void TestVerifyTCBInfo(oe_enclave_t* enclave)
+void TestVerifyTCBInfo(oe_enclave_t* enclave, const char* test_filename)
 {
     oe_tcb_level_t platform_tcb_level = {
         {4, 4, 2, 4, 1, 128, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
@@ -109,7 +115,7 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
     // the determined status is up to date.
     platform_tcb_level.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
     platform_tcb_level.pce_svn = 8;
-    TestVerifyTCBInfo(enclave, &platform_tcb_level, OE_OK);
+    TestVerifyTCBInfo(enclave, test_filename, &platform_tcb_level, OE_OK);
     OE_TEST(platform_tcb_level.status == OE_TCB_LEVEL_STATUS_UP_TO_DATE);
     printf("UptoDate TCB Level determination test passed.\n");
 
@@ -117,7 +123,8 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
     // the determined status is configuration needed.
     platform_tcb_level.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
     platform_tcb_level.pce_svn = 4;
-    TestVerifyTCBInfo(enclave, &platform_tcb_level, OE_TCB_LEVEL_INVALID);
+    TestVerifyTCBInfo(
+        enclave, test_filename, &platform_tcb_level, OE_TCB_LEVEL_INVALID);
     OE_TEST(
         platform_tcb_level.status == OE_TCB_LEVEL_STATUS_CONFIGURATION_NEEDED);
     printf("ConfigurationNeeded TCB Level determination test passed.\n");
@@ -126,7 +133,8 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
     // the determined status is out of date.
     platform_tcb_level.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
     platform_tcb_level.pce_svn = 3;
-    TestVerifyTCBInfo(enclave, &platform_tcb_level, OE_TCB_LEVEL_INVALID);
+    TestVerifyTCBInfo(
+        enclave, test_filename, &platform_tcb_level, OE_TCB_LEVEL_INVALID);
     OE_TEST(platform_tcb_level.status == OE_TCB_LEVEL_STATUS_OUT_OF_DATE);
     printf("OutOfDate TCB Level determination test passed.\n");
 
@@ -134,7 +142,8 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
     // the determined status is revoked.
     platform_tcb_level.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
     platform_tcb_level.pce_svn = 2;
-    TestVerifyTCBInfo(enclave, &platform_tcb_level, OE_TCB_LEVEL_INVALID);
+    TestVerifyTCBInfo(
+        enclave, test_filename, &platform_tcb_level, OE_TCB_LEVEL_INVALID);
     OE_TEST(platform_tcb_level.status == OE_TCB_LEVEL_STATUS_REVOKED);
     printf("OutOfDate TCB Level determination test passed.\n");
 
@@ -145,7 +154,8 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
     {
         platform_tcb_level.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
         platform_tcb_level.sgx_tcb_comp_svn[i] = 0;
-        TestVerifyTCBInfo(enclave, &platform_tcb_level, OE_TCB_LEVEL_INVALID);
+        TestVerifyTCBInfo(
+            enclave, test_filename, &platform_tcb_level, OE_TCB_LEVEL_INVALID);
         OE_TEST(platform_tcb_level.status == OE_TCB_LEVEL_STATUS_UNKNOWN);
         platform_tcb_level.sgx_tcb_comp_svn[i] = 1;
     }
