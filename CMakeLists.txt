@@ -179,6 +179,7 @@ if (USE_DEBUG_MALLOC AND WIN32)
 endif ()
 
 option(ADD_WINDOWS_ENCLAVE_TESTS "Build Windows enclave tests" OFF)
+option(WIN32_SIMULATION "Windows Simulation Mode" OFF)
 
 find_program(VALGRIND "valgrind")
 if (VALGRIND)
