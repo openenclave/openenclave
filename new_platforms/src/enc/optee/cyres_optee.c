@@ -32,47 +32,6 @@ static TEE_Result call_cyres_pta(
     return get_oe_result_from_tee_result(result);
 }
 
-static TEE_Result get_pta_buf(uint32_t cmd_id, uint8_t* buf, uint32_t* buf_size)
-{
-    uint32_t pt;
-    TEE_Param params[TEE_NUM_PARAMS];
-    oe_result_t oe_result;
-
-    if (buf_size == NULL)
-        return OE_INVALID_PARAMETER;
-
-    if (buf == NULL) 
-    {
-        *buf_size = 0;
-        buf = TEE_Malloc(0, 0);
-    }
-
-    pt = TEE_PARAM_TYPES(
-        TEE_PARAM_TYPE_MEMREF_OUTPUT,
-        TEE_PARAM_TYPE_NONE,
-        TEE_PARAM_TYPE_NONE,
-        TEE_PARAM_TYPE_NONE);
-    memset(params, 0, sizeof(params));
-
-    /* Null indicates request for required size */
-    if (buf != NULL)
-    {
-        params[0].memref.buffer = buf;
-    }
-    params[0].memref.size = *buf_size;
-
-    oe_result = call_cyres_pta(cmd_id, pt, params);
-    if (oe_result != OE_OK)
-    {
-        if (oe_result == OE_BUFFER_TOO_SMALL)
-            *buf_size = params[0].memref.size;
-        return oe_result;
-    }
-
-    *buf_size = params[0].memref.size;
-    return OE_OK;
-}
-
 /* Common PTA routine for buffer retrieval commands */
 static TEE_Result get_pta_allocated_buf(
     uint32_t cmd_id,
@@ -82,12 +41,22 @@ static TEE_Result get_pta_allocated_buf(
     oe_result_t oe_result;
     uint32_t local_buf_size;
     uint8_t* local_buf = NULL;
+    uint32_t pt;
+    TEE_Param params[TEE_NUM_PARAMS];
 
     /* Get the data size */
-    oe_result = get_pta_buf(cmd_id, NULL, &local_buf_size);
-    if (oe_result != OE_BUFFER_TOO_SMALL)
+    pt = TEE_PARAM_TYPES(
+        TEE_PARAM_TYPE_VALUE_OUTPUT,
+        TEE_PARAM_TYPE_NONE,
+        TEE_PARAM_TYPE_NONE,
+        TEE_PARAM_TYPE_NONE);
+
+    memset(params, 0, sizeof(params));
+    oe_result = call_cyres_pta(cmd_id - 1, pt, params);
+    if (oe_result != OE_OK)
         goto done;
 
+    local_buf_size = params[0].value.a;
     oe_assert(local_buf_size != 0);
 
     /* Allocate memory locally and request the data */
@@ -97,9 +66,18 @@ static TEE_Result get_pta_allocated_buf(
         oe_result = OE_OUT_OF_MEMORY;
         goto done;
     }
-    memset(local_buf, 0, local_buf_size);
 
-    oe_result = get_pta_buf(cmd_id, local_buf, &local_buf_size);
+    pt = TEE_PARAM_TYPES(
+        TEE_PARAM_TYPE_MEMREF_OUTPUT,
+        TEE_PARAM_TYPE_NONE,
+        TEE_PARAM_TYPE_NONE,
+        TEE_PARAM_TYPE_NONE);
+
+    memset(params, 0, sizeof(params));
+    params[0].memref.buffer = local_buf;
+    params[0].memref.size = local_buf_size;
+
+    oe_result = call_cyres_pta(cmd_id, pt, params);
     if (oe_result != OE_OK)
         goto done;
 
