@@ -1,0 +1,37 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+---
+- name: Check for existing required executables and files
+  win_stat:
+    path: "{{ item }}"
+  with_items: "{{ validation_binaries + validation_files }}"
+  register: file
+  failed_when: file.stat.isreg == False
+
+- name: Check for existing required folders
+  win_stat:
+    path: "{{ item }}"
+  with_items: "{{ validation_directories }}"
+  register: directory
+  failed_when: directory.stat.isdir == False
+
+- name: CMake version check
+  win_command: vcvars64.bat x64 && cmake --version
+  register: cmake_check_version
+  failed_when: cmake_check_version.stdout.find(cmake_target_version) == -1
+
+- name: Ninja version check
+  win_command: vcvars64.bat x64 && ninja --version
+  register: ninja_check_version
+  failed_when: ninja_check_version.stdout.find(ninja_target_version) == -1
+
+- name: Clang version check
+  raw: "clang --version"
+  register: clang_check_version
+  failed_when: clang_check_version.stdout.find(clang_target_version) == -1
+
+- name: Ocaml version check
+  raw: "ocaml -version"
+  register: ocaml_check_version
+  failed_when: ocaml_check_version.stdout.find(ocaml_target_version) == -1
