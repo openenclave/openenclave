@@ -163,7 +163,7 @@ def win2016CrossCompile(String build_type) {
             checkout scm
             dir("build/X64-${build_type}") {
                 bat """vcvars64.bat x64 && \
-                       cmake.exe ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DBUILD_ENCLAVES=ON ${WORKSPACE} && \
+                       cmake.exe ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DBUILD_ENCLAVES=ON && \
                        ninja.exe && \
                        ctest.exe -V -C ${build_type}"""
             }          
