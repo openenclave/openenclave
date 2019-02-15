@@ -6,11 +6,6 @@ set(MUSL_SRC_DIR ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
 if (OE_SGX)
     list(APPEND PLATFORM_SRC
-        ${MUSL_SRC_DIR}/prng/rand.c
-        ${MUSL_SRC_DIR}/string/memcmp.c
-        ${MUSL_SRC_DIR}/string/memcpy.c
-        ${MUSL_SRC_DIR}/string/memmove.c
-        ${MUSL_SRC_DIR}/string/memset.c
         sgx/atexit.c
         sgx/backtrace.c
         sgx/calls.c
@@ -65,6 +60,11 @@ endif()
 
 add_library(oecore STATIC
     ../../common/safecrt.c
+    ${MUSL_SRC_DIR}/prng/rand.c
+    ${MUSL_SRC_DIR}/string/memcmp.c
+    ${MUSL_SRC_DIR}/string/memcpy.c
+    ${MUSL_SRC_DIR}/string/memmove.c
+    ${MUSL_SRC_DIR}/string/memset.c
     __secs_to_tm.c
     __stack_chk_fail.c
     assert.c
@@ -98,11 +98,11 @@ if (CMAKE_C_COMPILER_ID MATCHES GNU)
     target_compile_options(oecore PRIVATE -Wjump-misses-init)
 endif()
 
-if (OE_SGX)
-    # This directory contains enclave core libc headers:
-    target_include_directories(oecore PRIVATE
-        ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
+# This directory contains enclave core libc headers:
+target_include_directories(oecore PRIVATE
+    ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
 
+if (OE_SGX)
     # Unfortunately dlmalloc uses GNU extension that allows arithmetic
     # null pointers.
     set_source_files_properties(sgx/malloc.c

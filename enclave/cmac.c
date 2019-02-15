@@ -12,7 +12,6 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/cmac.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
 
 oe_result_t oe_aes_cmac_sign(

@@ -6,7 +6,6 @@
 
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
-#include "sgxtypes.h"
 #include "utils.h"
 
 OE_EXTERNC_BEGIN
