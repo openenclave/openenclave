@@ -3,8 +3,7 @@
 
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/enclavelibc.h>
-#include "../../../common/common.h"
+#include <openenclave/internal/random.h>
 
 /*
  * MBEDTLS links this function definition when MBEDTLS_ENTROPY_HARDWARE_ALT
@@ -32,7 +31,7 @@ int mbedtls_hardware_poll(
 
         while (n--)
         {
-            uint64_t x = _rdrand();
+            uint64_t x = oe_rdrand();
 
             if (oe_memcpy_s(p, sizeof(uint64_t), &x, sizeof(uint64_t)) != OE_OK)
                 goto done;
@@ -44,7 +43,7 @@ int mbedtls_hardware_poll(
     /* Copy remaining random bytes to output */
     {
         size_t r = len % sizeof(uint64_t);
-        uint64_t x = _rdrand();
+        uint64_t x = oe_rdrand();
         const unsigned char* q = (const unsigned char*)&x;
 
         while (r--)

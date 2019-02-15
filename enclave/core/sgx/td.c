@@ -3,9 +3,9 @@
 
 #include "td.h"
 #include <openenclave/bits/safecrt.h>
+#include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/sgxtypes.h>
@@ -45,22 +45,18 @@ OE_STATIC_ASSERT(sizeof(oe_ocall_context_t) == (2 * sizeof(uintptr_t)));
 **
 ** oe_get_thread_data()
 **
-**     Returns a pointer to the thread data structure for the current thread.
-**     This structure resides in the GS segment. Offset zero of this segment
-**     contains the oe_thread_data_t.self_addr field (a back pointer to the
-**     structure itself). This field is zero until the structure is initialized
-**     by __oe_handle_main (which happens immediately an EENTER).
+**     Gets a pointer to the thread data structure from the GS segment.
+**     The td_t data structure is a concatenation of the oe_thread_data_t with
+**     extended fields, and this method returns the td->base offset with as the
+**     appropriate type.
 **
 **==============================================================================
 */
 
 oe_thread_data_t* oe_get_thread_data()
 {
-    oe_thread_data_t* td;
-
-    asm("mov %%gs:0, %0" : "=r"(td));
-
-    return td;
+    td_t* td = oe_get_td();
+    return &(td->base);
 }
 
 /*
@@ -170,15 +166,22 @@ void* td_to_tcs(const td_t* td)
 **
 ** oe_get_td()
 **
-**     Gets a pointer to the thread data structure from the GS segment.
+**     Returns a pointer to the thread data structure for the current thread.
+**     This structure resides in the GS segment. Offset zero of this segment
+**     contains the oe_thread_data_t.self_addr field (a back pointer to the
+**     structure itself). This field is zero until the structure is initialized
+**     by __oe_handle_main (which happens immediately an EENTER).
 **
 **==============================================================================
 */
 
 td_t* oe_get_td()
 {
-    oe_thread_data_t* td = oe_get_thread_data();
-    return (td_t*)td;
+    td_t* td;
+
+    asm("mov %%gs:0, %0" : "=r"(td));
+
+    return td;
 }
 
 /*
@@ -245,7 +248,7 @@ void td_init(td_t* td)
         // oe_enter().
 
         /* Clear base structure */
-        oe_memset(&td->base, 0, sizeof(td->base));
+        memset(&td->base, 0, sizeof(td->base));
 
         /* Set pointer to self */
         td->base.self_addr = (uint64_t)td;
@@ -300,7 +303,7 @@ void td_clear(td_t* td)
         oe_abort();
 
     /* Clear base structure */
-    oe_memset(&td->base, 0, sizeof(td->base));
+    memset(&td->base, 0, sizeof(td->base));
 
     /* Clear the magic number */
     td->magic = 0;

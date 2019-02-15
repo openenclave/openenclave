@@ -4,16 +4,16 @@
 #define USE_DL_PREFIX
 #include "debugmalloc.h"
 #include <openenclave/bits/safecrt.h>
+#include <openenclave/corelibc/errno.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/backtrace.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/thread.h>
+#include <openenclave/internal/types.h>
 #include <openenclave/internal/utils.h>
 #include "../3rdparty/dlmalloc/dlmalloc/malloc.h"
-#include "dlmalloc/errno.h"
 
 #if defined(OE_USE_DEBUG_MALLOC)
 
@@ -34,7 +34,7 @@
 **
 **         [padding] [header] [user-data] [footer]
 **
-**     The padding is applied by memalign() when the aligment is non-zero.
+**     The padding is applied by memalign() when the alignment is non-zero.
 **
 **==============================================================================
 */

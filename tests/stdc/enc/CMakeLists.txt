@@ -17,3 +17,5 @@ target_compile_options(stdc_enc PRIVATE
 target_include_directories(stdc_enc PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR})
+
+target_link_libraries(stdc_enc oelibc)

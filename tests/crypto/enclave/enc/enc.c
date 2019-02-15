@@ -3,10 +3,10 @@
 
 #include <assert.h>
 #include <fcntl.h>
+#include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/ec.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/raise.h>
@@ -31,7 +31,7 @@ char* oe_host_strdup(const char* str)
 
     if (dup)
     {
-        oe_memcpy(dup, str, n + 1);
+        memcpy(dup, str, n + 1);
     }
 
     return dup;
@@ -122,7 +122,7 @@ static oe_result_t _syscall_hook(
                 // copy the data returned from the host
                 for (size_t i = 0; i < (size_t)arg3; ++i)
                 {
-                    oe_memcpy(
+                    memcpy(
                         iov[i].iov_base, iov_host[i].iov_base, iov[i].iov_len);
                 }
             }

@@ -3,7 +3,6 @@
 
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/atexit.h>
 #include <openenclave/internal/print.h>
 #include <atomic>
 #include "abortStatus_t.h"

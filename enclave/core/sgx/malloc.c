@@ -2,14 +2,21 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/safecrt.h>
+#include <openenclave/corelibc/stdio.h>
+#include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/thread.h>
 #include "debugmalloc.h"
+
+/* The use of dlmalloc/malloc.c below requires stdc names from these headers */
+#define OE_NEED_STDC_NAMES
+#include <openenclave/corelibc/bits/stdfile.h> // For stderr & FILE
+#include <openenclave/corelibc/errno.h>        // For errno & error defs
+#include <openenclave/corelibc/sched.h>        // For sched_yield
 
 #define HAVE_MMAP 0
 #define LACKS_UNISTD_H
@@ -22,14 +29,8 @@
 #define LACKS_STDLIB_H
 #define LACKS_STRING_H
 #define USE_LOCKS 1
-#define size_t size_t
-#define ptrdiff_t ptrdiff_t
-#define memset oe_memset
-#define memcpy oe_memcpy
 #define sbrk oe_sbrk
 #define fprintf _dlmalloc_stats_fprintf
-
-typedef struct _FILE FILE;
 
 static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...);
 
@@ -211,7 +212,7 @@ oe_result_t oe_get_malloc_stats(oe_malloc_stats_t* stats)
     static oe_mutex_t _mutex = OE_MUTEX_INITIALIZER;
 
     if (stats)
-        oe_memset(stats, 0, sizeof(oe_malloc_stats_t));
+        memset(stats, 0, sizeof(oe_malloc_stats_t));
 
     oe_mutex_lock(&_mutex);
 

@@ -8,3 +8,5 @@ add_enclave(TARGET create_errors_enc SOURCES enc.c ${gen})
 
 target_include_directories(create_errors_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
                            ${CMAKE_CURRENT_SOURCE_DIR})
+
+target_link_libraries(create_errors_enc oelibc)

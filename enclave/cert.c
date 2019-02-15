@@ -1,17 +1,20 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <mbedtls/asn1.h>
-#include <mbedtls/config.h>
+/* Nest mbedtls header includes with required corelibc defines */
+// clang-format off
+#include "mbedtls_corelibc_defs.h"
 #include <mbedtls/oid.h>
-#include <mbedtls/pem.h>
 #include <mbedtls/platform.h>
 #include <mbedtls/x509_crt.h>
+#include "mbedtls_corelibc_undef.h"
+// clang-format on
+
 #include <openenclave/bits/safecrt.h>
+#include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atomic.h>
 #include <openenclave/internal/cert.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/pem.h>
 #include <openenclave/internal/print.h>
@@ -100,7 +103,7 @@ OE_INLINE void _referent_free(Referent* referent)
         mbedtls_free(referent->crt);
 
         /* Free the referent structure */
-        oe_memset(referent, 0, sizeof(Referent));
+        memset(referent, 0, sizeof(Referent));
         mbedtls_free(referent);
     }
 }
@@ -157,12 +160,12 @@ OE_INLINE void _cert_free(Cert* impl)
     {
         /* Release the MBEDTLS certificate */
         mbedtls_x509_crt_free(impl->cert);
-        oe_memset(impl->cert, 0, sizeof(mbedtls_x509_crt));
+        memset(impl->cert, 0, sizeof(mbedtls_x509_crt));
         mbedtls_free(impl->cert);
     }
 
     /* Clear the fields */
-    oe_memset(impl, 0, sizeof(Cert));
+    memset(impl, 0, sizeof(Cert));
 }
 
 /*
@@ -218,7 +221,7 @@ static bool _x509_buf_equal(
     const mbedtls_x509_buf* y)
 {
     return (x->tag == y->tag) && (x->len == y->len) &&
-           oe_memcmp(x->p, y->p, x->len) == 0;
+           memcmp(x->p, y->p, x->len) == 0;
 }
 
 // Find the last certificate in the chain and then verify that it's a
@@ -591,7 +594,7 @@ oe_result_t oe_cert_read_pem(
 
     /* Clear the implementation */
     if (impl)
-        oe_memset(impl, 0, sizeof(Cert));
+        memset(impl, 0, sizeof(Cert));
 
     /* Check parameters */
     if (!pem_data || !pem_size || !cert)
@@ -624,7 +627,7 @@ done:
     if (crt)
     {
         mbedtls_x509_crt_free(crt);
-        oe_memset(crt, 0, sizeof(mbedtls_x509_crt));
+        memset(crt, 0, sizeof(mbedtls_x509_crt));
         mbedtls_free(crt);
     }
 
@@ -661,7 +664,7 @@ oe_result_t oe_cert_chain_read_pem(
 
     /* Clear the implementation (making it invalid) */
     if (impl)
-        oe_memset(impl, 0, sizeof(CertChain));
+        memset(impl, 0, sizeof(CertChain));
 
     /* Check parameters */
     if (!pem_data || !pem_size || !chain)
@@ -716,7 +719,7 @@ oe_result_t oe_cert_chain_free(oe_cert_chain_t* chain)
     _referent_free(impl->referent);
 
     /* Clear the implementation (making it invalid) */
-    oe_memset(impl, 0, sizeof(CertChain));
+    memset(impl, 0, sizeof(CertChain));
 
     result = OE_OK;
 
@@ -962,7 +965,7 @@ oe_result_t oe_cert_chain_get_cert(
 
     /* Clear the output certificate for all error pathways */
     if (cert)
-        oe_memset(cert, 0, sizeof(oe_cert_t));
+        memset(cert, 0, sizeof(oe_cert_t));
 
     /* Reject invalid parameters */
     if (!_cert_chain_is_valid(impl) || !cert)

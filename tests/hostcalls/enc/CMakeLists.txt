@@ -9,3 +9,4 @@ oeedl_file(../hostcalls.edl enclave gen)
 add_enclave(TARGET hostcalls_enc SOURCES enc.cpp ${gen})
 
 target_include_directories(hostcalls_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(hostcalls_enc oelibc)

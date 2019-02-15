@@ -111,20 +111,6 @@ typedef struct _oe_ocall_context
 /*
 **==============================================================================
 **
-** oe_va_list:
-**
-**==============================================================================
-*/
-
-#define oe_va_list __builtin_va_list
-#define oe_va_start __builtin_va_start
-#define oe_va_arg __builtin_va_arg
-#define oe_va_end __builtin_va_end
-#define oe_va_copy __builtin_va_copy
-
-/*
-**==============================================================================
-**
 ** OE_LLU()
 ** OE_LLD()
 ** OE_LLX()

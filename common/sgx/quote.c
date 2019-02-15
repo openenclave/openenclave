@@ -223,7 +223,7 @@ oe_result_t VerifyQuoteImpl(
         OE_CHECK(oe_ec_public_key_read_pem(
             &expected_root_public_key,
             (const uint8_t*)g_expected_root_certificate_key,
-            strlen(g_expected_root_certificate_key) + 1));
+            oe_strlen(g_expected_root_certificate_key) + 1));
 
         OE_CHECK(oe_ec_public_key_equal(
             &root_public_key, &expected_root_public_key, &key_equal));

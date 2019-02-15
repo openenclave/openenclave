@@ -7,7 +7,7 @@ oeedl_file(../libcxxrt.edl enclave gen)
 # helper lib to contain file needed by some tests
 add_library(libcxxrttest-support ${gen})
 target_compile_options(libcxxrttest-support PUBLIC -Wno-error)
-target_link_libraries(libcxxrttest-support PRIVATE oeenclave)
+target_link_libraries(libcxxrttest-support PRIVATE oeenclave oelibc)
 target_link_libraries(libcxxrttest-support INTERFACE -Wl,--undefined=test)
 
 # helper function to create enclave binary

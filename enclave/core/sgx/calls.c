@@ -3,11 +3,11 @@
 
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
+#include <openenclave/corelibc/stdlib.h>
+#include <openenclave/corelibc/string.h>
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/atexit.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/jump.h>
@@ -20,6 +20,7 @@
 #include <openenclave/internal/utils.h>
 #include "../../sgx/report.h"
 #include "asmdefs.h"
+#include "atexit.h"
 #include "cpuid.h"
 #include "init.h"
 #include "report.h"
@@ -310,13 +311,13 @@ static oe_result_t _handle_call_enclave_function(uint64_t arg_in)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     // Copy input buffer to enclave buffer.
-    oe_memcpy(input_buffer, args.input_buffer, args.input_buffer_size);
+    memcpy(input_buffer, args.input_buffer, args.input_buffer_size);
 
     // Clear out output buffer.
     // This ensures reproducible behavior if say the function is reading from
     // output buffer.
     output_buffer = buffer + args.input_buffer_size;
-    oe_memset(output_buffer, 0, args.output_buffer_size);
+    memset(output_buffer, 0, args.output_buffer_size);
 
     // Call the function.
     func(
@@ -327,7 +328,7 @@ static oe_result_t _handle_call_enclave_function(uint64_t arg_in)
         &output_bytes_written);
 
     // Copy outputs to host memory.
-    oe_memcpy(args.output_buffer, output_buffer, output_bytes_written);
+    memcpy(args.output_buffer, output_buffer, output_bytes_written);
 
     // The ecall succeeded.
     args_ptr->output_bytes_written = output_bytes_written;

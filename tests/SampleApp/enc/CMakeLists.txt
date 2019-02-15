@@ -10,3 +10,5 @@ add_enclave(TARGET SampleApp SOURCES SampleApp.cpp ${gen})
 target_include_directories(SampleApp PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR})
+
+target_link_libraries(SampleApp oelibc)

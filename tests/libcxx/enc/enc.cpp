@@ -4,7 +4,6 @@
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/pthreadhooks.h>
 #include <openenclave/internal/tests.h>
 #include <pthread.h>

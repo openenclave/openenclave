@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/safecrt.h>
+#include <openenclave/corelibc/stdlib.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/ec.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/kdf.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>

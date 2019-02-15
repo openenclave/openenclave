@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/corelibc/stdio.h>
+#include <openenclave/corelibc/string.h>
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/jump.h>
 #include <openenclave/internal/tests.h>
@@ -26,7 +27,7 @@ int TestSetjmp()
 void enc_test(test_args* args)
 {
     /* Set output arguments */
-    oe_memset(args, 0xDD, sizeof(test_args));
+    memset(args, 0xDD, sizeof(test_args));
     args->magic = NEW_MAGIC;
     args->self = args;
     args->mm = 12;

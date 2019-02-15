@@ -12,7 +12,7 @@
 #elif defined(_WIN32)
 #include <windows.h>
 
-static const char* get_fullpath(const char* path)
+static char* get_fullpath(const char* path)
 {
     char* fullpath = (char*)calloc(1, MAX_PATH);
     if (fullpath)

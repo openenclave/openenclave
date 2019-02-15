@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 .text
-.globl  _rdrand
+.globl  oe_rdrand
 
-_rdrand:
+oe_rdrand:
     pushq   %rbp
     movq    %rsp, %rbp
 

@@ -2,8 +2,8 @@
 ;; Licensed under the MIT License.
 .CODE
 
-PUBLIC _rdrand
-_rdrand PROC
+PUBLIC oe_rdrand
+oe_rdrand PROC
 ;; Subroutine Prologue
 	push rbp     ;; Save the old base pointer value.
 	mov rbp, rsp ;; Set the new base pointer value.

@@ -42,8 +42,10 @@ OE_EXTERNC_BEGIN
 
 #define SGX_QUOTE_IV_SIZE 12
 
+#if __x86_64__ || _M_X64
 OE_STATIC_ASSERT(SGX_FLAGS_DEBUG == OE_SGX_FLAGS_DEBUG);
 OE_STATIC_ASSERT(SGX_FLAGS_MODE64BIT == OE_SGX_FLAGS_MODE64BIT);
+#endif
 
 /* Rename OE_? types to SGX_? to make SGX types more explicit */
 
@@ -206,7 +208,10 @@ typedef struct _sgx_sigstruct
 OE_PACK_END
 
 OE_CHECK_SIZE(sizeof(sgx_sigstruct_t), 1808);
+
+#if __x86_64__ || _M_X64
 OE_CHECK_SIZE(sizeof(sgx_sigstruct_t), OE_SGX_SIGSTRUCT_SIZE);
+#endif
 
 OE_CHECK_SIZE(
     sizeof((sgx_sigstruct_t*)NULL)->header,
