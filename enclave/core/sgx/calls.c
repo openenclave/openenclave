@@ -525,6 +525,20 @@ OE_INLINE void _handle_oret(
 /*
 **==============================================================================
 **
+** oe_get_enclave_status()
+**
+**     Return the value of __oe_enclave_status to external code.
+**
+**==============================================================================
+*/
+oe_result_t oe_get_enclave_status()
+{
+    return __oe_enclave_status;
+}
+
+/*
+**==============================================================================
+**
 ** oe_ocall()
 **
 **     Initiate a call into the host (exiting the enclave).
@@ -936,7 +950,7 @@ void __oe_handle_main(
 **
 ** oe_notify_nested_exit_start()
 **
-**     Notify the nested exist happens.
+**     Notify the nested exit happens.
 **
 **     This function saves the current ocall context to the thread data. The
 **     ocall context contains the stack pointer and the return address of the
@@ -962,7 +976,7 @@ void oe_notify_nested_exit_start(
     if (code != OE_CODE_OCALL)
         return;
 
-    // Save the ocallcontext to the callsite of current enclave thread.
+    // Save the ocall_context to the callsite of current enclave thread.
     td_t* td = oe_get_td();
     Callsite* callsite = td->callsites;
     callsite->ocall_context = ocall_context;
