@@ -328,7 +328,7 @@
     -->
 
     <!-- Post-Build Events for Enclaves -->
-    <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave' And '$(ConfigurationType)'=='DynamicLibrary'">
+    <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave' And '$(ConfigurationType)' == 'DynamicLibrary'">
         <!-- *-SGX-* & *-SGX-Simulation-* -->
         <PostBuildEvent Condition="$(OEIsSgx) == True">
             <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" sign -key "$(ProjectDir)$(TargetName)_private.pem" -enclave "$(OutDir)$(TargetFileName)" -out "$(OutDir)$(TargetName).signed.dll" -config "$(ProjectDir)$(TargetName).config.xml"</Command>
@@ -336,7 +336,7 @@
         </PostBuildEvent>
 
         <!-- *-SGX-Release -->
-        <PostBuildEvent Condition="$(OEIsSgx) == True And '$(ConfigurationType)'=='DynamicLibrary' And $(OEIsSim) == False And $(OEIsRelease) == True">
+        <PostBuildEvent Condition="$(OEIsSgx) == True And '$(ConfigurationType)' == 'DynamicLibrary' And $(OEIsSim) == False And $(OEIsRelease) == True">
             <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" gendata -enclave "$(OutDir)$(TargetFileName)" -out "$(OutDir)$(TargetName).hex" -config "$(ProjectDir)$(TargetName).config.xml"</Command>
             <Message>Generate the enclave signing material for Intel SGX.</Message>
         </PostBuildEvent>
