@@ -10,7 +10,6 @@ CFLAGS +=                                  \
 	-I$(NP_INC)/optee/enclave              \
 	-I$(NP_INC)/optee                      \
 	-I$(NP_INC)                            \
-	-I$(OPTEE_OS_PATH)/lib/libutee/include \
 	-I$(CYREP_PATH)/cyrep                  \
 	-I$(CYREP_PATH)/tcps                   \
 	-I$(TINYCBOR_PATH)/src                 \
