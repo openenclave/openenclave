@@ -15,266 +15,172 @@
 #include <system_error>
 #include <thread>
 #include <vector>
-#include "../args.h"
+#include "ecall_ocall_u.h"
 
 #define THREAD_COUNT 5 // must not exceed what is configured in sign.conf
 
 // Slightly specialized wrapper around an oe_enclave_t object to allow
 // scope-based lifetime mgmt. Also a bit of identifying glue (which relies on
 // custom code in the enclave).
-struct EnclaveWrap
+class enclave_wrap
 {
-    EnclaveWrap(const char* enclave_path, uint32_t flags)
+  public:
+    enclave_wrap(const char* enclave_path, uint32_t flags)
     {
-        EncSetEnclaveIdArg args = {};
-        oe_enclave_t* enclave;
-        oe_result_t result;
-
-        if ((result = oe_create_enclave(
-                 enclave_path,
-                 OE_ENCLAVE_TYPE_SGX,
-                 flags,
-                 NULL,
-                 0,
-                 NULL,
-                 0,
-                 &enclave)) != OE_OK)
+        oe_enclave_t* enclave = NULL;
+        oe_result_t result = oe_create_ecall_ocall_enclave(
+            enclave_path, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
+        if (result != OE_OK)
         {
-            oe_put_err("oe_create_enclave(): result=%u", result);
-            throw std::runtime_error("oe_create_enclave() failed");
+            oe_put_err("oe_create_ecall_ocall_enclave(): result=%u", result);
+            throw std::runtime_error("oe_create_ecall_ocall_enclave() failed");
         }
-        m_id = static_cast<unsigned>(m_enclaves.size());
+        m_id = static_cast<unsigned>(s_enclaves.size());
 
-        args.result = OE_FAILURE;
-        args.id = m_id;
-        if ((result = oe_call_enclave(enclave, "EncSetEnclaveId", &args)) !=
-            OE_OK)
+        oe_result_t ret_result = OE_FAILURE;
+        const void* base_addr = NULL;
+        if ((result = enc_set_enclave_id(
+                 enclave, &ret_result, m_id, &base_addr)) != OE_OK)
         {
-            oe_put_err("oe_call_enclave(EncSetEnclaveId): result=%u", result);
-            throw std::runtime_error("oe_call_enclave(EncSetEnclaveId) failed");
+            oe_put_err("enc_set_enclave_id): result=%u", result);
+            throw std::runtime_error("enc_set_enclave_id failed");
         }
-        if (args.result != OE_OK)
+        if (ret_result != OE_OK)
         {
-            oe_put_err("EncSetEnclaveId(): result=%u", result);
-            throw std::runtime_error("EncSetEnclaveId() failed");
+            oe_put_err("enc_set_enclave_id(): ret_result=%u", ret_result);
+            throw std::runtime_error("enc_set_enclave_id() failed");
         }
 
-        m_enclave_base = args.base_addr;
-        m_enclaves.push_back(enclave);
+        m_enclave_base = base_addr;
+        s_enclaves.push_back(enclave);
     }
 
-    ~EnclaveWrap()
+    ~enclave_wrap()
     {
         oe_result_t result;
-        if ((result = oe_terminate_enclave(Get())) != OE_OK)
+        if ((result = oe_terminate_enclave(get())) != OE_OK)
         {
             oe_put_err("oe_terminate_enclave(): result=%u", result);
         }
         // simplified cleanup to keep identifiers stable
-        m_enclaves[m_id] = NULL;
+        s_enclaves[m_id] = NULL;
     }
 
-    unsigned GetId() const
+    unsigned get_id() const
     {
         return m_id;
     }
-    const void* GetBase() const
+    const void* get_base() const
     {
         return m_enclave_base;
     }
-    oe_enclave_t* Get() const
+    oe_enclave_t* get() const
     {
-        return m_enclaves[m_id];
+        return s_enclaves[m_id];
     }
 
-    static oe_enclave_t* Get(uint64_t Id)
+    static oe_enclave_t* get(uint64_t id)
     {
-        return m_enclaves[Id];
+        return s_enclaves[id];
     }
 
-    static size_t Count()
+    static size_t count()
     {
-        return m_enclaves.size();
+        return s_enclaves.size();
     }
 
   private:
     unsigned m_id;
     const void* m_enclave_base;
-    static std::vector<oe_enclave_t*> m_enclaves;
+    static std::vector<oe_enclave_t*> s_enclaves;
 };
-std::vector<oe_enclave_t*> EnclaveWrap::m_enclaves;
+std::vector<oe_enclave_t*> enclave_wrap::s_enclaves;
 
-static std::vector<void*> InitOCallValues;
+static std::vector<void*> g_init_ocall_values;
 
 // OCall handler for initial ocall testing - track argument for later
 // verification
-OE_OCALL void InitOcallHandler(void* arg_)
+void init_ocall_handler(void* arg)
 {
-    InitOCallValues.push_back(arg_);
+    g_init_ocall_values.push_back(arg);
 }
 
 // Initial OCall test helper - Verify that the ocall happened (by asking the
 // enclave), and obtain the result of it.
-static void TestInitOcallResult(unsigned enclave_id)
+void test_init_ocall_result(unsigned enclave_id)
 {
-    oe_result_t result, result_ocall;
-
-    result_ocall = OE_FAILURE;
-    result = oe_call_enclave(
-        EnclaveWrap::Get(enclave_id), "EncGetInitOcallResult", &result_ocall);
+    oe_result_t ret_result = OE_FAILURE;
+    oe_result_t result =
+        enc_get_init_ocall_result(enclave_wrap::get(enclave_id), &ret_result);
     OE_TEST(result == OE_OK);
-    OE_TEST(result_ocall == OE_OK);
-}
-
-// For ocall-test on not explicitly OE_OCALL-tagged function
-#if defined(__unix__)
-extern "C" void ExportedHostFunction(void*)
-#elif defined(_WIN32)
-extern "C" OE_EXPORT void ExportedHostFunction(void*)
-#endif
-{
-}
-
-#if defined(_WIN32)
-extern "C" void InternalHostFunction(void*)
-{
-}
-#else
-extern "C" void __attribute__((visibility("internal")))
-InternalHostFunction(void*)
-{
-}
-#endif
-
-// Test availability and non-availability of functions, according to their
-// OE_OCALL/OE_ECALL annotations.
-static void TestInvalidFunctions(unsigned enclave_id)
-{
-    oe_result_t result;
-    EncTestCallHostFunctionArg args = {};
-
-    result = oe_call_enclave(
-        EnclaveWrap::Get(enclave_id), "EncDummyEncFunction", NULL);
-    printf("oe_call_enclave(EncDummyEncFunction): %u\n", result);
-    OE_TEST(result == OE_OK);
-
-    result = oe_call_enclave(
-        EnclaveWrap::Get(enclave_id), "EncUnExportedFunction", NULL);
-    printf("oe_call_enclave(EncUnExportedFunction): %u\n", result);
-    OE_TEST(result == OE_NOT_FOUND);
-
-    result = oe_call_enclave(
-        EnclaveWrap::Get(enclave_id), "NonExistingFunction", NULL);
-    printf("oe_call_enclave(NonExistingFunction): %u\n", result);
-    OE_TEST(result == OE_NOT_FOUND);
-
-    args.result = OE_FAILURE;
-    args.function_name = "InternalHostFunction";
-    result = oe_call_enclave(
-        EnclaveWrap::Get(enclave_id), "EncTestCallHostFunction", &args);
-    printf(
-        "oe_call_enclave(EncTestCallHostFunction, InternalHostFunction): "
-        "%u/%u\n",
-        result,
-        args.result);
-    OE_TEST(result == OE_OK);
-    OE_TEST(args.result == OE_NOT_FOUND);
-
-    args.result = OE_FAILURE;
-    args.function_name = "NonExistingFunction";
-    result = oe_call_enclave(
-        EnclaveWrap::Get(enclave_id), "EncTestCallHostFunction", &args);
-    printf(
-        "oe_call_enclave(EncTestCallHostFunction, NonExistingFunction): "
-        "%u/%u\n",
-        result,
-        args.result);
-    OE_TEST(result == OE_OK);
-    OE_TEST(args.result == OE_NOT_FOUND);
-
-    args.result = OE_FAILURE;
-    args.function_name = "ExportedHostFunction";
-    result = oe_call_enclave(
-        EnclaveWrap::Get(enclave_id), "EncTestCallHostFunction", &args);
-    printf(
-        "oe_call_enclave(EncTestCallHostFunction, ExportedHostFunction): "
-        "%u/%u\n",
-        result,
-        args.result);
-    OE_TEST(result == OE_OK);
-    OE_TEST(args.result == OE_OK);
+    OE_TEST(ret_result == OE_OK);
 }
 
 // Helper function for parallel test
-static void ParallelThread(
+static void parallel_thread(
     unsigned enclave_id,
     unsigned flow_id,
-    volatile unsigned* counter,
-    volatile unsigned* release)
+    std::atomic<unsigned>* counter,
+    std::atomic<unsigned>* release)
 {
-    oe_result_t result;
-
-    EncParallelExecutionArg args = {};
-    args.result = OE_FAILURE;
-    args.enclave_id = enclave_id;
-    args.flow_id = flow_id;
-    args.counter = counter;
-    args.release = release;
+    oe_result_t ret_result = OE_FAILURE;
 
     OE_TRACE_INFO(
         "%s(Enclave=%u, Flow=%u) started\n", __FUNCTION__, enclave_id, flow_id);
-    result = oe_call_enclave(
-        EnclaveWrap::Get(enclave_id), "EncParallelExecution", &args);
+    oe_result_t result = enc_parallel_execution(
+        enclave_wrap::get(enclave_id), &ret_result, flow_id, counter, release);
     OE_TRACE_INFO(
         "%s(Enclave=%u, Flow=%u) done.\n", __FUNCTION__, enclave_id, flow_id);
     OE_TEST(result == OE_OK);
-    OE_TEST(args.result == OE_OK);
+    OE_TEST(ret_result == OE_OK);
 }
 
 // Parallel execution test - verify parallel threads are actually executed
-static void TestExecutionParallel(
+static void test_execution_parallel(
     std::vector<unsigned> enclave_ids,
     unsigned thread_count)
 {
     std::vector<std::thread> threads;
-    volatile unsigned counter = 0;
-    volatile unsigned release = 0;
+    std::atomic<unsigned> counter(0);
+    std::atomic<unsigned> release(0);
 
     printf("%s(): Test parallel execution across enclaves {", __FUNCTION__);
     for (unsigned e : enclave_ids)
+    {
         printf("%u ", e);
+    }
     printf("} with %u threads each\n", thread_count);
-
-    counter = release = 0;
 
     for (unsigned enclave_id : enclave_ids)
     {
         for (unsigned i = 0; i < thread_count; i++)
         {
             threads.push_back(std::thread(
-                ParallelThread, enclave_id, i + 1, &counter, &release));
+                parallel_thread, enclave_id, i + 1, &counter, &release));
         }
     }
 
     // wait for all enclave-threads to have incremented the counter
-    while (counter < enclave_ids.size() * thread_count)
+    unsigned count = counter.load(std::memory_order_acquire);
+    unsigned old_val = ~count;
+    while (count < enclave_ids.size() * thread_count)
     {
         if (get_current_logging_level() >= OE_LOG_LEVEL_INFO)
         {
-            static unsigned old_val;
-            if (counter != old_val)
+            if (count != old_val)
             {
                 printf(
                     "%s(): Looking for counter=%u, have %u.\n",
                     __FUNCTION__,
                     (unsigned)enclave_ids.size() * thread_count,
-                    counter);
-                old_val = counter;
+                    count);
+                old_val = count;
             }
         }
+        count = counter.load(std::memory_order_acquire);
     }
     // all threads arrived and spin on the release
-    release = 1;
+    release.store(1, std::memory_order_release);
 
     for (auto& t : threads)
     {
@@ -282,16 +188,21 @@ static void TestExecutionParallel(
     }
 }
 
-OE_OCALL void CrossEnclaveCall(CrossEnclaveCallArg* arg)
+uint32_t host_cross_enclave_call(
+    uint32_t enclave_id,
+    uint32_t value,
+    uint32_t total)
 {
-    if (arg->enclave_id < EnclaveWrap::Count())
+    if (enclave_id < enclave_wrap::count())
     {
         // Forward the call to the next enclave.
         OE_TEST(
-            oe_call_enclave(
-                EnclaveWrap::Get(arg->enclave_id),
-                "EncCrossEnclaveCall",
-                arg) == OE_OK);
+            enc_cross_enclave_call(
+                enclave_wrap::get(enclave_id),
+                &total,
+                enclave_id,
+                value,
+                total) == OE_OK);
     }
     else
     {
@@ -299,22 +210,19 @@ OE_OCALL void CrossEnclaveCall(CrossEnclaveCallArg* arg)
         // in the main thread (this thread).
         // Ecalls from current thread should fail.
         // But Ecalls from another thread should succeed.
-        for (size_t i = 0; i < EnclaveWrap::Count(); ++i)
+        for (uint32_t i = 0; i < enclave_wrap::count(); ++i)
         {
             OE_TEST(
-                oe_call_enclave(
-                    EnclaveWrap::Get(i), "EncSetFactor", (void*)(i + 1)) ==
+                enc_set_factor(enclave_wrap::get(i), i + 1) ==
                 OE_REENTRANT_ECALL);
 
             std::thread t([i]() {
-                OE_TEST(
-                    oe_call_enclave(
-                        EnclaveWrap::Get(i), "EncSetFactor", (void*)(i + 1)) ==
-                    OE_OK);
+                OE_TEST(enc_set_factor(enclave_wrap::get(i), i + 1) == OE_OK);
             });
             t.join();
         }
     }
+    return total;
 }
 
 // Test scenarios where ocall from one enclave calls into another
@@ -327,27 +235,25 @@ OE_OCALL void CrossEnclaveCall(CrossEnclaveCallArg* arg)
 // launched that set the factors in each of the enclaves.
 // This tests the scenario that when one enclave thread is blocked in
 // an ocall, other enclave threads can process ecalls.
-static void TestCrossEnclaveCalls()
+static void test_cross_enclave_calls()
 {
-    CrossEnclaveCallArg arg = {
-        0, // start with first enclave
-        8, // input value
-        0, // output value.
-    };
+    static const uint32_t SEED = 8;
 
-    size_t expected_output = 0;
-    for (size_t i = 0; i < EnclaveWrap::Count(); ++i)
+    size_t expected_total = 0;
+    for (size_t i = 0; i < enclave_wrap::count(); ++i)
     {
-        expected_output += (arg.input + i) * (i + 1);
+        expected_total += (SEED + i) * (i + 1);
     }
 
-    OE_TEST(
-        oe_call_enclave(EnclaveWrap::Get(0), "EncCrossEnclaveCall", &arg) ==
-        OE_OK);
-    printf("arg.output=%u, expected_output=%lu\n", arg.output, expected_output);
-    OE_TEST(arg.output == expected_output);
+    uint32_t total = 0;
+    oe_result_t result =
+        enc_cross_enclave_call(enclave_wrap::get(0), &total, 0, SEED, 0);
+    OE_TEST(OE_OK == result);
 
-    printf("=== TestCrossEnclaveCalls passed\n");
+    printf("total=%u, expected_total=%lu\n", total, expected_total);
+    OE_TEST(total == expected_total);
+
+    printf("=== test_cross_enclave_calls passed\n");
 }
 
 int main(int argc, const char* argv[])
@@ -360,38 +266,35 @@ int main(int argc, const char* argv[])
 
     const uint32_t flags = oe_get_create_flags();
 
-    OE_TEST(InitOCallValues.size() == 0);
-    EnclaveWrap enc1(argv[1], flags);
+    OE_TEST(g_init_ocall_values.size() == 0);
+    enclave_wrap enc1(argv[1], flags);
     // verify initial OCall succeeded
-    OE_TEST(InitOCallValues.size() == 1);
-    OE_TEST(InitOCallValues[0] != NULL);
-    OE_TEST(InitOCallValues[0] == enc1.GetBase());
-    TestInitOcallResult(enc1.GetId());
-
-    // invalid function tests
-    TestInvalidFunctions(enc1.GetId());
+    OE_TEST(g_init_ocall_values.size() == 1);
+    OE_TEST(g_init_ocall_values[0] != NULL);
+    OE_TEST(g_init_ocall_values[0] == enc1.get_base());
+    test_init_ocall_result(enc1.get_id());
 
     // verify threads execute in parallel
-    TestExecutionParallel({enc1.GetId()}, THREAD_COUNT);
+    test_execution_parallel({enc1.get_id()}, THREAD_COUNT);
 
     // Test in a 2nd enclave
-    EnclaveWrap enc2(argv[1], flags);
+    enclave_wrap enc2(argv[1], flags);
     // verify initial OCall succeeded
-    OE_TEST(InitOCallValues.size() == 2);
-    OE_TEST(InitOCallValues[1] != NULL);
-    OE_TEST(InitOCallValues[1] != InitOCallValues[0]);
-    OE_TEST(InitOCallValues[1] == enc2.GetBase());
-    TestInitOcallResult(enc2.GetId());
+    OE_TEST(g_init_ocall_values.size() == 2);
+    OE_TEST(g_init_ocall_values[1] != NULL);
+    OE_TEST(g_init_ocall_values[1] != g_init_ocall_values[0]);
+    OE_TEST(g_init_ocall_values[1] == enc2.get_base());
+    test_init_ocall_result(enc2.get_id());
 
     // verify threads execute in parallel across enclaves
-    TestExecutionParallel({enc1.GetId(), enc2.GetId()}, THREAD_COUNT);
+    test_execution_parallel({enc1.get_id(), enc2.get_id()}, THREAD_COUNT);
 
     // Verify enclaves calling each other via the host.
     // Create 5 enclaves.
-    EnclaveWrap enc3(argv[1], flags);
-    EnclaveWrap enc4(argv[1], flags);
-    EnclaveWrap enc5(argv[1], flags);
-    TestCrossEnclaveCalls();
+    enclave_wrap enc3(argv[1], flags);
+    enclave_wrap enc4(argv[1], flags);
+    enclave_wrap enc5(argv[1], flags);
+    test_cross_enclave_calls();
 
     return 0;
 }
