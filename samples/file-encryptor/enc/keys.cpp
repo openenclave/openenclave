@@ -200,6 +200,7 @@ int ecall_dispatcher::cipher_encryption_key(
     unsigned char* output_data,
     unsigned int output_data_size)
 {
+    std::ignore = output_data_size;
     int ret = 0;
     mbedtls_aes_context aescontext;
     unsigned char iv[IV_SIZE] = {0xb2,

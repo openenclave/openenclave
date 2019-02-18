@@ -27,12 +27,14 @@ all:
 build:
 	cp ../enc1/private.pem .
 	@ echo "Compilers used: $(CC), $(CXX)"
-	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -std=c++11 ecalls.cpp ../common/dispatcher.cpp ../common/keys.cpp
-	$(CC) -g -c $(CFLAGS) $(CINCLUDES) ../common/datasealing_t.c
+	oeedger8r ../datasealing.edl --trusted
+	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -DOE_API_VERSION=2 -DOE_BUILD_ENCLAVE -std=c++11 ecalls.cpp ../common/dispatcher.cpp ../common/keys.cpp
+	$(CC) -g -c $(CFLAGS) $(CINCLUDES) -DOE_API_VERSION=2 -DOE_BUILD_ENCLAVE datasealing_t.c
 	$(CXX) -o enclave_a_v2 ecalls.o dispatcher.o keys.o datasealing_t.o $(LDFLAGS)
 
 sign:
 	oesign sign enclave_a_v2 data-sealing.conf private.pem
 
 clean:
-	rm -f enclave_a_v2 enclave_a_v2.signed *.o *.pem
+	rm -f enclave_a_v2 enclave_a_v2.signed *.o *.pem datasealing_t.* datasealing_args.h
+

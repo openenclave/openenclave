@@ -24,18 +24,18 @@ all:
 	$(MAKE) build
 	$(MAKE) keys
 	$(MAKE) sign
-
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
-	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -std=c++11 ecalls.cpp ../common/dispatcher.cpp ../common/keys.cpp
-	$(CC) -g -c $(CFLAGS) $(CINCLUDES) ../common/datasealing_t.c
-	$(CXX) -o enclave_b ecalls.o dispatcher.o keys.o datasealing_t.o $(LDFLAGS)	
+	oeedger8r ../datasealing.edl --trusted
+	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -DOE_API_VERSION=2 -DOE_BUILD_ENCLAVE -std=c++11 ecalls.cpp ../common/dispatcher.cpp ../common/keys.cpp
+	$(CC) -g -c $(CFLAGS) $(CINCLUDES) -DOE_API_VERSION=2 -DOE_BUILD_ENCLAVE datasealing_t.c
+	$(CXX) -o enclave_b ecalls.o dispatcher.o keys.o datasealing_t.o $(LDFLAGS)
 
 sign:
 	oesign sign enclave_b data-sealing.conf private.pem
 
 clean:
-	rm -f enclave_b enclave_b.signed *.o *.pem 
+	rm -f enclave_b enclave_b.signed *.o *.pem datasealing_t.* datasealing_args.h
 
 keys:
 	openssl genrsa -out private.pem -3 3072

@@ -24,7 +24,7 @@ class Attestation
         size_t target_info_size,
         const uint8_t* data,
         size_t data_size,
-        uint8_t* report_buf,
+        uint8_t** report_buf,
         size_t* remote_report_buf_size);
 
     /**

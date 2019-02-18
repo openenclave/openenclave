@@ -32,7 +32,8 @@ bool check_simulate_opt(int* argc, const char* argv[])
         if (strcmp(argv[i], "--simulate") == 0)
         {
             cout << "Running in simulation mode" << endl;
-            memmove(&argv[i], &argv[i + 1], (*argc - i) * sizeof(char*));
+            memmove(
+                &argv[i], &argv[i + 1], (size_t)(*argc - i) * sizeof(char*));
             (*argc)--;
             return true;
         }
@@ -310,7 +311,7 @@ int encrypt_file(
         // PKCS5 Padding
         memset(
             (void*)(plaintext_padding_buf + leftover_bytes),
-            padded_byte_count,
+            (int)padded_byte_count,
             padded_byte_count);
 
         result = encrypt_block(

@@ -1,6 +1,12 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+add_subdirectory(data-sealing)
+add_subdirectory(file-encryptor)
+add_subdirectory(helloworld)
+add_subdirectory(local_attestation)
+add_subdirectory(remote_attestation)
+
 if(USE_LIBSGX)
 
 # Install the remote_attestation sample.

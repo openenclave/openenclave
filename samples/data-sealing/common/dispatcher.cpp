@@ -90,9 +90,9 @@ int ecall_dispatcher::seal_data(
     ret = cipher_data(
         ENCRYPT_OPERATION,
         m_data,
-        m_data_size,
+        (unsigned int)m_data_size,
         seal_key,
-        seal_key_size,
+        (unsigned int)seal_key_size,
         iv,
         m_sealed_data->encrypted_data);
     if (ret != 0)
@@ -108,7 +108,10 @@ int ecall_dispatcher::seal_data(
     // generate signature by signing the hash of the sealed data with the seal
     // key
     ret = sign_sealed_data(
-        m_sealed_data, seal_key, seal_key_size, m_sealed_data->signature);
+        m_sealed_data,
+        seal_key,
+        (unsigned int)seal_key_size,
+        m_sealed_data->signature);
     if (ret != 0)
     {
         TRACE_ENCLAVE("sign_sealed_data %d\n", ret);
@@ -145,7 +148,7 @@ exit:
 
     if (ret)
         result = OE_FAILURE;
-    return result;
+    return (int)result;
 }
 
 int ecall_dispatcher::unseal_data(
@@ -154,6 +157,7 @@ int ecall_dispatcher::unseal_data(
     unsigned char** data,
     size_t* data_size)
 {
+    std::ignore = sealed_data_size;
     oe_result_t result = OE_OK;
     unsigned char iv[IV_SIZE];
     unsigned char signature[SIGNATURE_LEN];
@@ -190,7 +194,8 @@ int ecall_dispatcher::unseal_data(
     // structure then comparing it with sealed_data.signature
 
     // regenerate signature
-    ret = sign_sealed_data(m_sealed_data, seal_key, seal_key_size, signature);
+    ret = sign_sealed_data(
+        m_sealed_data, seal_key, (unsigned int)seal_key_size, signature);
     if (ret != 0)
     {
         ret = ERROR_SIGN_SEALED_DATA_FAIL;
@@ -222,9 +227,9 @@ int ecall_dispatcher::unseal_data(
     ret = cipher_data(
         DECRYPT_OPERATION,
         m_sealed_data->encrypted_data,
-        m_sealed_data->encrypted_data_len,
+        (unsigned int)m_sealed_data->encrypted_data_len,
         seal_key,
-        seal_key_size,
+        (unsigned int)seal_key_size,
         iv,
         data_buf);
     if (ret != 0)
@@ -303,7 +308,7 @@ oe_result_t ecall_dispatcher::get_seal_key_and_prep_sealed_data(
     // PKCS5 padding
     memset(
         (void*)(padded_data + m_data_size),
-        padded_byte_count,
+        (int)padded_byte_count,
         padded_byte_count);
     m_data_size += padded_byte_count;
 

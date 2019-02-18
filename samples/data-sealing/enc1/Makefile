@@ -27,16 +27,16 @@ all:
 
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
-	oeedger8r ../datasealing.edl --trusted  --trusted-dir ../common
-	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -std=c++11 ecalls.cpp ../common/dispatcher.cpp ../common/keys.cpp
-	$(CC) -g -c $(CFLAGS) $(CINCLUDES) ../common/datasealing_t.c
+	oeedger8r ../datasealing.edl --trusted
+	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -DOE_API_VERSION=2 -DOE_BUILD_ENCLAVE -std=c++11 ecalls.cpp ../common/dispatcher.cpp ../common/keys.cpp
+	$(CC) -g -c $(CFLAGS) $(CINCLUDES) -DOE_API_VERSION=2 -DOE_BUILD_ENCLAVE datasealing_t.c
 	$(CXX) -o enclave_a_v1 ecalls.o dispatcher.o keys.o datasealing_t.o $(LDFLAGS)
 
 sign:
 	oesign sign enclave_a_v1 data-sealing.conf private.pem
 
 clean:
-	rm -f enclave_a_v1 enclave_a_v1.signed *.o *.pem ../common/datasealing_t.* ../common/datasealing_args.h
+	rm -f enclave_a_v1 enclave_a_v1.signed *.o *.pem datasealing_t.* datasealing_args.h
 
 keys:
 	openssl genrsa -out private.pem -3 3072
