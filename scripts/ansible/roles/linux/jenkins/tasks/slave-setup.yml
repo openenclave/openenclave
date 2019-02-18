@@ -49,3 +49,15 @@
     enabled: yes
     state: restarted
     daemon_reload: yes
+
+- name: Configure Git in target image to enable merge/rebase actions - email
+  git_config:
+    name: user.email
+    scope: system
+    value: '{{ ci_team_email }}'
+
+- name: Configure Git in target image to enable merge/rebase actions - name
+  git_config:
+    name: user.name
+    scope: system
+    value: '{{ ci_team_name }}'

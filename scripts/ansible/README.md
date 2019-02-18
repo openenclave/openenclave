@@ -5,6 +5,8 @@ This directory contains the Ansible work used to automate all the required tasks
 
 To quickly install / uninstall Ansible, the script `install-ansible.sh` / `remove-ansible.sh` can be used.
 
+Supported Ansible version >= 2.7.2
+
 # Open Enclave Deployment Options via Ansible
 
 On the target machine where Open Enclave is desired to be configured, you may setup the environment in one of the following ways:
@@ -49,3 +51,4 @@ ansible-playbook jenkins-setup.yml
 
 * Ubuntu 16.04
 * Ubuntu 18.04
+* Windows Server 2016 (ACC VM)
