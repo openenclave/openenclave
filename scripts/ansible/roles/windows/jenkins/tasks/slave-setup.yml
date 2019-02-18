@@ -138,3 +138,11 @@
     name: jenkins-slave
     start_mode: auto
     state: started
+
+- name: Configure Git in target image to enable merge/rebase actions - email
+  win_shell: |
+    git config --system user.email '{{ ci_team_email }}'
+
+- name: Configure Git in target image to enable merge/rebase actions - name
+  win_shell: |
+    git config --system user.name '{{ ci_team_name }}'
