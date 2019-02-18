@@ -55,14 +55,9 @@ def WindowsUpload() {
 
             timeout(10) {
                 dir('build') {
-                    bat '''
-                        cmake -G "Visual Studio 15 2017 Win64" .. && \
-                        pushd . && \
-                        "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\Common7\\Tools\\LaunchDevCmd.bat" && \
-                        popd && \
-                        cmake --build . --config Debug && \
-                        ctest -C Debug
-                        '''
+                    bat """vcvars64.bat x64 && \
+                           cmake.exe ${WORKSPACE} -G \"Visual Studio 15 2017 Win64\" && \
+                           msbuild tools\\oeedger8r\\oeedger8r_target.vcxproj -p:Configuration=Release"""
                 }
                 azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/tools/oeedger8r/oeedger8r.exe', storageType: 'blobstorage', virtualPath: "master/${BUILD_NUMBER}/windows/", containerName: 'oejenkins')
                 azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/tools/oeedger8r/oeedger8r.exe', storageType: 'blobstorage', virtualPath: "master/latest/windows/", containerName: 'oejenkins')
