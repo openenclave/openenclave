@@ -24,7 +24,7 @@
 
     - block:
       - import_role:
-          name: common/jenkins-agent
+          name: common/jenkins
           tasks_from: agent-provision.yml
         delegate_to: localhost
       become: no
@@ -47,7 +47,7 @@
   tasks:
     - block:
       - import_role:
-          name: common/jenkins-agent
+          name: common/jenkins
           tasks_from: agent-provision.yml
         delegate_to: localhost
       become: no
