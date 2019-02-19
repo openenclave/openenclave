@@ -9,6 +9,8 @@
 #ifdef _MSC_VER
 # include <Shlobj.h>
 # include <time.h>
+# include <Shlwapi.h>
+# pragma comment(lib, "shlwapi.lib")
 #else
 # include <unistd.h>
 # include <pwd.h>
@@ -373,6 +375,32 @@ oe_result_t oe_create_enclave_helper(
 
         for (int i = 0; i < sizeof(extension_search_list) / sizeof(*extension_search_list); i++) {
             result = initialize_enclave(a_TaIdString, a_TaIdString, extension_search_list[i], a_Flags, a_pId);
+#if defined(_MSC_VER)
+            /* If the host's current working directory is not the directory */
+            /* where the enclave is located, sgx_create_enclave fails.      */
+            /* Temporarily change directory to the location of the host and */
+            /* try to load the enclave from there.                          */
+
+            // TODO: Upstream supports a full path to an enclave, whereas this
+            //       code does not.
+            if (result != OE_OK)
+            {
+                TCHAR szPath[MAX_PATH];
+                TCHAR szCurrPath[MAX_PATH];
+
+                if(GetCurrentDirectory(MAX_PATH, szCurrPath) &&
+                   GetModuleFileName(NULL, szPath, MAX_PATH))
+                {
+                    PathRemoveFileSpec(szPath);
+                    if(SetCurrentDirectory(szPath))
+                    {
+                        result = initialize_enclave(a_TaIdString, a_TaIdString, extension_search_list[i], a_Flags, a_pId);
+                        SetCurrentDirectory(szCurrPath);
+                    }
+                }
+
+            }
+#endif
             if (result == OE_OK)
             {
                 break;
