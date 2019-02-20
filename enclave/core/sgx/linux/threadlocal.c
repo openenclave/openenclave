@@ -200,6 +200,10 @@ static volatile uint64_t _tbss_align = 1;
 // Number of thread-local relocations.
 static volatile bool _thread_locals_relocated = false;
 
+/* Thread local variables to track functions to call on thread exit */
+static __thread oe_tls_atexit_t* _tls_atexit_functions;
+static __thread uint64_t _num_tls_atexit_functions;
+
 /**
  * Get the address of the FS segment given a thread data object.
  * Currently FS is assumed to exist one page after the thread data.
@@ -340,17 +344,16 @@ done:
  */
 void __cxa_thread_atexit(void (*destructor)(void*), void* object)
 {
-    td_t* td = oe_get_td();
     oe_tls_atexit_t item = {destructor, object};
 
-    td->num_tls_atexit_functions++;
+    _num_tls_atexit_functions++;
 
     // TODO: What happens if realloc fails?
-    td->tls_atexit_functions = oe_realloc(
-        td->tls_atexit_functions,
-        sizeof(oe_tls_atexit_t) * td->num_tls_atexit_functions);
+    _tls_atexit_functions = oe_realloc(
+        _tls_atexit_functions,
+        sizeof(oe_tls_atexit_t) * _num_tls_atexit_functions);
 
-    td->tls_atexit_functions[td->num_tls_atexit_functions - 1] = item;
+    _tls_atexit_functions[_num_tls_atexit_functions - 1] = item;
 }
 
 /**
@@ -360,18 +363,18 @@ void __cxa_thread_atexit(void (*destructor)(void*), void* object)
 oe_result_t oe_thread_local_cleanup(td_t* td)
 {
     /* Call tls atexit functions in reverse order*/
-    if (td->tls_atexit_functions)
+    if (_tls_atexit_functions)
     {
-        for (uint64_t i = td->num_tls_atexit_functions; i > 0; --i)
+        for (uint64_t i = _num_tls_atexit_functions; i > 0; --i)
         {
-            td->tls_atexit_functions[i - 1].destructor(
-                td->tls_atexit_functions[i - 1].object);
+            _tls_atexit_functions[i - 1].destructor(
+                _tls_atexit_functions[i - 1].object);
         }
 
         // Free the allocated at exit buffer.
-        oe_free(td->tls_atexit_functions);
-        td->tls_atexit_functions = NULL;
-        td->num_tls_atexit_functions = 0;
+        oe_free(_tls_atexit_functions);
+        _tls_atexit_functions = NULL;
+        _num_tls_atexit_functions = 0;
     }
 
     /* Clear tls section if it exists */

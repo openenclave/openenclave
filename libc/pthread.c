@@ -41,39 +41,18 @@
 #undef pthread
 #endif
 
-OE_STATIC_ASSERT(sizeof(struct __pthread) <= sizeof(((td_t*)NULL)->pthread));
+OE_STATIC_ASSERT(sizeof(struct __pthread) <= OE_THREAD_LOCAL_SPACE);
 OE_STATIC_ASSERT(sizeof(pthread_once_t) == sizeof(oe_once_t));
 OE_STATIC_ASSERT(sizeof(pthread_spinlock_t) == sizeof(oe_spinlock_t));
 OE_STATIC_ASSERT(sizeof(pthread_mutex_t) >= sizeof(oe_mutex_t));
 OE_STATIC_ASSERT(sizeof(pthread_cond_t) >= sizeof(oe_cond_t));
 OE_STATIC_ASSERT(sizeof(pthread_rwlock_t) >= sizeof(oe_rwlock_t));
 
-static void _pthread_self_init()
-{
-    td_t* td = oe_get_td();
-
-    if (td)
-    {
-        struct __pthread* self = (struct __pthread*)td->pthread;
-        memset(self, 0, sizeof(struct __pthread));
-        self->locale = C_LOCALE;
-    }
-}
+static __thread struct __pthread _pthread_self = {.locale = C_LOCALE};
 
 pthread_t __pthread_self()
 {
-    static oe_once_t _once = OE_ONCE_INITIALIZER;
-    td_t* td;
-
-    if (oe_once(&_once, _pthread_self_init) != 0)
-        return NULL;
-
-    if (!(td = oe_get_td()))
-        return NULL;
-
-    struct __pthread* self = (struct __pthread*)td->pthread;
-
-    return self;
+    return &_pthread_self;
 }
 
 OE_WEAK_ALIAS(__pthread_self, pthread_self);

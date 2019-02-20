@@ -1,14 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/corelibc/assert.h>
 #include <openenclave/corelibc/errno.h>
-#include <openenclave/enclave.h>
-#include <openenclave/internal/sgxtypes.h>
+
+static __thread int _oe_errno = 0;
 
 int* __oe_errno_location(void)
 {
-    td_t* td = (td_t*)oe_get_thread_data();
-    oe_assert(td);
-    return &td->linux_errno;
+    return &_oe_errno;
 }
