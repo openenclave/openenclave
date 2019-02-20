@@ -6,14 +6,12 @@ if (OE_SGX)
   set(PLATFORM_SRC
     libunwind/src/x86_64/Los-linux.c
     Gstep.c  # libunwind/src/x86_64/Lstep.c
-    Gtrace.c # libunwind/src/x86_64/Ltrace.c
     setcontext.S # libunwind/src/x86_64/setcontext.c
   )
 else()
   set(ARCH "aarch64")
   set(PLATFORM_SRC
     libunwind/src/aarch64/Lstep.c
-    libunwind/src/aarch64/Ltrace.c
   )
 endif()
 
@@ -26,17 +24,6 @@ configure_file(
   libunwind/src/${ARCH}/Gstep.c
   Gstep.inc
   COPYONLY)
-
-add_custom_command(
-  OUTPUT Gtrace.c
-  # TODO: We are doing this ugly workaround since we don't support
-  # thread local storage (__thread). Once the PR for Thread Local
-  # Storage goes in (#1157), we can remove this.
-  COMMAND ${BASH} -c \"grep -v '^static __thread' ${CMAKE_CURRENT_SOURCE_DIR}/libunwind/src/${ARCH}/Gtrace.c > ${CMAKE_CURRENT_BINARY_DIR}/Gtrace.inc\"
-  COMMAND ${CMAKE_COMMAND} -E copy
-    ${CMAKE_CURRENT_SOURCE_DIR}/Gtrace.c
-    ${CMAKE_CURRENT_BINARY_DIR}/Gtrace.c
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/libunwind/src/${ARCH}/Gtrace.c)
 
 file(GENERATE OUTPUT config.h CONTENT "/* Empty file */\n")
 
@@ -111,6 +98,7 @@ add_library(libunwind OBJECT
   libunwind/src/${ARCH}/Lregs.c
   libunwind/src/${ARCH}/Lresume.c
   libunwind/src/${ARCH}/Lstash_frame.c
+  libunwind/src/${ARCH}/Ltrace.c
   libunwind/src/${ARCH}/regname.c
   libunwind/src/os-linux.c
   libunwind/src/elf64.c
@@ -124,7 +112,6 @@ set_target_properties(libunwind PROPERTIES POSITION_INDEPENDENT_CODE ON)
 maybe_build_using_clangw(libunwind)
 
 set_source_files_properties(Gstep.c PROPERTIES COMPILE_FLAGS "-Werror")
-set_source_files_properties(Gtrace.c PROPERTIES COMPILE_FLAGS "-Werror")
 set_source_files_properties(setcontext.S PROPERTIES COMPILE_FLAGS "-Werror")
 
 target_compile_options(libunwind PRIVATE
