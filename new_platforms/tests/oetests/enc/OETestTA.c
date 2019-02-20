@@ -118,7 +118,7 @@ oe_result_t ecall_TestOERandom()
 oe_result_t ecall_TestOEGetReportV1(uint32_t flags)
 {
     uint8_t* report_buffer = NULL;
-    size_t report_buffer_size = 4096;
+    size_t report_buffer_size = 8192;
     uint8_t report_data[OE_REPORT_DATA_SIZE] = { 0 };
     size_t report_data_size = OE_REPORT_DATA_SIZE;
 
@@ -202,7 +202,7 @@ oe_result_t ecall_TestOEGetTargetInfoV1(uint32_t flags)
 {
     uint8_t* targetInfo = NULL;
     uint8_t* report_buffer = NULL;
-    size_t report_buffer_size = 4096;
+    size_t report_buffer_size = 8192;
     uint8_t report_data[OE_REPORT_DATA_SIZE] = { 0 };
     size_t report_data_size = OE_REPORT_DATA_SIZE;
 

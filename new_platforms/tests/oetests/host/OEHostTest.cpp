@@ -121,7 +121,7 @@ class OEHostTest : public TrustedAppTest {
 TEST_F(OEHostTest, get_report_v1_Success)
 {
     uint8_t* report_buffer = NULL;
-    size_t report_buffer_size = 4096;
+    size_t report_buffer_size = 8192;
 
     report_buffer = (uint8_t*)malloc(report_buffer_size);
     EXPECT_TRUE(report_buffer != NULL);
@@ -195,7 +195,7 @@ TEST_F(OEHostTest, get_target_info_v2_Failed)
 TEST_F(OEHostTest, get_target_info_v1_Success)
 {
     uint8_t* report_buffer = NULL;
-    size_t report_buffer_size = 4096;
+    size_t report_buffer_size = 8192;
 
     report_buffer = (uint8_t*)malloc(report_buffer_size);
     EXPECT_TRUE(report_buffer != NULL);
