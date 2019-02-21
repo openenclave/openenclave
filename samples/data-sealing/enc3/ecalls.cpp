@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <common/dispatcher.h>
+#include <common/shared.h>
 #include <openenclave/enclave.h>
-#include "../common/datasealing_t.h"
-#include "../common/dispatcher.h"
-#include "../shared.h"
+#include "datasealing_t.h"
 
 // Declare a static dispatcher object for better organization of enclave-wise
 // global variables

@@ -5,15 +5,15 @@
 # if not gcc and g++, default to clang-7
 C_COMPILER=$(notdir $(CC))
 ifeq ($(C_COMPILER), gcc)
-        CXX_COMPILER=$(notdir $(CXX))
-        USE_GCC = true
+	CXX_COMPILER=$(notdir $(CXX))
+	USE_GCC = true
 endif
 
 ifeq ($(USE_GCC),)
-        CC = clang-7
-        CXX = clang++-7
-        C_COMPILER=clang
-        CXX_COMPILER=clang++
+	CC = clang-7
+	CXX = clang++-7
+	C_COMPILER=clang
+	CXX_COMPILER=clang++
 endif
 
 CFLAGS=$(shell pkg-config oeenclave-$(C_COMPILER) --cflags)
@@ -41,4 +41,3 @@ clean:
 keys:
 	openssl genrsa -out private.pem -3 3072
 	openssl rsa -in private.pem -pubout -out public.pem
-

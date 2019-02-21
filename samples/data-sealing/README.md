@@ -55,11 +55,9 @@ Note: While it's not shown in this sample, seal/unseal operations could be trigg
 
 ### Create three enclaves
 
-- `enclave_a_v1` and `enclave_a_v2` were created and signed by the same private.pem file, which means they share the same signer.
+- `enclave_a_v1` and `enclave_a_v2` were created and signed by the same `private_a.pem` file, which means they share the same signer.
 
-  Notice that in `enc2/Makefile`, instead of generating enc2's own private.pem, it copies the one from enc1, this is how enclave1 and enclave2 shares the same signer.
-
-- `enclave_b` was signed by a newly created private.pem and has a different signer/product identity.
+- `enclave_b` was signed by a newly created `private_b.pem` and has a different signer/product identity.
 
 ### Seal and unseal data with OE_SEAL_POLICY_UNIQUE in different enclaves
 
@@ -142,12 +140,9 @@ int unseal_data(sealed_data_t* sealed_data, size_t sealed_data_size,
 
 ## Build and run
 
-To build a sample, change directory to your target sample directory and run `make build` to build the sample and run `make run` to run it.
-
-For example:
-
 ```bash
-yourusername@yourVMname:~/openenclave/share/openenclave/samples$ cd data-sealing
-yourusername@yourVMname:~/openenclave/share/openenclave/samples/data-sealing$ make build
-yourusername@yourVMname:~/openenclave/share/openenclave/samples/data-sealing$ make run
+$ cd data-sealing
+$ mkdir build && cd build
+$ cmake ..
+$ make run
 ```
