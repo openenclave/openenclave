@@ -186,12 +186,7 @@ Known Issues
 ------------
 * Samples have not yet been ported to Windows
 * Not all tests currently run on Windows. See See tests/CMakeLists for a list of supported tests.  
-* The following tests are known to fail under simulation mode
-  - tests/ecall (SEGFAULT)
-  - tests/ecall_ocall (SEGFAULT)
-  - tests/file (SEGFAULT)
-  - tests/oethread (SEGFAULT)
-  - tests/pthread (SEGFAULT)
-  - tests/threadcxx (SEGFAULT)
-  - tests/thread_local (SEGFAULT)
-  - tests/thread_local_exported (SEGFAULT)
+* Failing simulation tests can be disabled by defining `WIN32_SIMULATION` in `cmake` arguments. I.e.:
+  ```cmd
+  cmake.exe -G Ninja -DBUILD_ENCLAVES=1 -DWIN32_SIMULATION=1 ../..
+  ```
