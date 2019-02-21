@@ -26,6 +26,7 @@
       - "gcc"
       - "gdb"
       - "g++"
+      - "ninja-build"
       - "apt-transport-https"
       - "autoconf"
       - "doxygen"

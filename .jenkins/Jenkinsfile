@@ -14,8 +14,8 @@ def ACCTest(String label, String compiler, String build_type) {
                     }
                     withEnv(["CC=${c_compiler}","CXX=${cpp_compiler}"]) {
                         sh """
-                        cmake ${WORKSPACE} -DCMAKE_BUILD_TYPE=${build_type}
-                        make
+                        cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type}
+                        ninja -v
                         ctest --output-on-failure
                         """
                     }
@@ -42,8 +42,8 @@ def simulationTest(String version, String platform_mode, String build_type) {
                     dir('build') {
                         withEnv(["CC=clang-7","CXX=clang++-7","OE_SIMULATION=1"]) {
                             sh """
-                            cmake ${WORKSPACE} -DCMAKE_BUILD_TYPE=${build_type} -DUSE_LIBSGX=${use_libsgx}
-                            make
+                            cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DUSE_LIBSGX=${use_libsgx}
+                            ninja -v
                             ctest --output-on-failure
                             """
                         }
@@ -66,8 +66,8 @@ def ACCContainerTest(String label, String version) {
                     dir('build') {
                         withEnv(["CC=clang-7","CXX=clang++-7"]) {
                             sh """
-                            cmake ${WORKSPACE} -DCMAKE_BUILD_TYPE=RelWithDebInfo
-                            make
+                            cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
+                            ninja -v
                             ctest --output-on-failure
                             """
                         }
@@ -107,8 +107,8 @@ def checkDevFlows(String version) {
 
                     dir('build') {
                         sh '''
-                        cmake ${WORKSPACE} -DUSE_LIBSGX=OFF
-                        make
+                        cmake ${WORKSPACE} -G Ninja -DUSE_LIBSGX=OFF
+                        ninja -v
                         '''
                         // Note that `make package` is not expected to work
                         // without extra configuration.
@@ -130,8 +130,8 @@ def win2016LinuxElfBuild(String version, String build_type) {
                     dir('build') {
                         withEnv(["CC=clang-7","CXX=clang++-7"]) {
                             sh """
-                            cmake ${WORKSPACE} -DCMAKE_BUILD_TYPE=${build_type} -DUSE_DEBUG_MALLOC=OFF
-                            make
+                            cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DUSE_DEBUG_MALLOC=OFF
+                            ninja -v
                             """
                         }
                     }
