@@ -154,7 +154,11 @@ endif ()
 
 # Compile definitions and options
 target_compile_definitions(oehost
-  PUBLIC -DOE_API_VERSION=2
+  PUBLIC
+  # NOTE: This definition is public to the rest of our project's
+  # targets, but should not yet be exposed to consumers of our
+  # package.
+  $<BUILD_INTERFACE:OE_API_VERSION=2>
   PRIVATE
   OE_BUILD_UNTRUSTED
   OE_REPO_BRANCH_NAME="${GIT_BRANCH}"
