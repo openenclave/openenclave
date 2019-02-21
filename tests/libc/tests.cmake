@@ -8,6 +8,7 @@ message("Build for libc tests set to: ${BUILD}")
 set(MUSL_PATH "3rdparty//musl//libc-test//src")
 set(MUSL_FUNC_PATH "${MUSL_PATH}//functional")
 set(MUSL_MATH_PATH "${MUSL_PATH}//math")
+set(MUSL_MUSL_PATH "${MUSL_PATH}//musl")
 set(MUSL_REGR_PATH "${MUSL_PATH}//regression")
 
 ##==============================================================================
@@ -19,10 +20,23 @@ set(MUSL_REGR_PATH "${MUSL_PATH}//regression")
 # Include tests that work on all builds:
 set(LIBC_TESTS
     ${MUSL_FUNC_PATH}//argv.c
+	${MUSL_MATH_PATH}//asinhl.c
+	${MUSL_MATH_PATH}//asinl.c
+	${MUSL_MATH_PATH}//atan2l.c
+	${MUSL_MATH_PATH}//atanhl.c
+	${MUSL_MATH_PATH}//atanl.c
     ${MUSL_FUNC_PATH}//basename.c
+	${MUSL_MATH_PATH}//ceill.c
     ${MUSL_FUNC_PATH}//clock_gettime.c
     ${MUSL_FUNC_PATH}//dirname.c
     ${MUSL_FUNC_PATH}//env.c
+	${MUSL_MATH_PATH}//erfcl.c
+	${MUSL_MATH_PATH}//erfl.c
+	${MUSL_MATH_PATH}//exp2l.c
+	${MUSL_MATH_PATH}//expl.c
+	${MUSL_MATH_PATH}//fmodl.c
+	${MUSL_MATH_PATH}//hypotl.c
+	${MUSL_MATH_PATH}//ldexpl.c
     ${MUSL_FUNC_PATH}//qsort.c
     ${MUSL_FUNC_PATH}//search_insque.c
     ${MUSL_FUNC_PATH}//search_lsearch.c
@@ -44,15 +58,25 @@ set(LIBC_TESTS
     ${MUSL_FUNC_PATH}//wcstol.c
     ${MUSL_MATH_PATH}//coshl.c
     ${MUSL_MATH_PATH}//cosl.c
+    ${MUSL_MATH_PATH}//expm1l.c	
     ${MUSL_MATH_PATH}//fabsl.c
     ${MUSL_MATH_PATH}//fmaxl.c
     ${MUSL_MATH_PATH}//fminl.c
     ${MUSL_MATH_PATH}//fpclassify.c
+	${MUSL_MATH_PATH}//floorl.c
     ${MUSL_MATH_PATH}//frexp.c
     ${MUSL_MATH_PATH}//frexpf.c
     ${MUSL_MATH_PATH}//frexpl.c
     ${MUSL_MATH_PATH}//lgammal.c
     ${MUSL_MATH_PATH}//lgammal_r.c
+    ${MUSL_MATH_PATH}//modf.c
+    ${MUSL_MATH_PATH}//modff.c
+    ${MUSL_MATH_PATH}//modfl.c   
+    ${MUSL_MATH_PATH}//remainderl.c
+    ${MUSL_MATH_PATH}//remquol.c
+    ${MUSL_MATH_PATH}//rintl.c
+    ${MUSL_MATH_PATH}//roundl.c
+    
 )
 
 # Exclude tests that fail on Windows:
@@ -65,22 +89,16 @@ if (NOT USE_CLANGW)
         ${MUSL_MATH_PATH}//asin.c
         ${MUSL_MATH_PATH}//acos.c
         ${MUSL_MATH_PATH}//asinf.c
-	    ${MUSL_MATH_PATH}//asinhf.c
-	    ${MUSL_MATH_PATH}//asinhl.c
-	    ${MUSL_MATH_PATH}//asinl.c
-	    ${MUSL_MATH_PATH}//atan2l.c
+	    ${MUSL_MATH_PATH}//asinhf.c   
 	    ${MUSL_MATH_PATH}//atan.c
 		${MUSL_MATH_PATH}//atanf.c
 		${MUSL_MATH_PATH}//atanh.c
 		${MUSL_MATH_PATH}//atanhf.c
-		${MUSL_MATH_PATH}//atanhl.c
-		${MUSL_MATH_PATH}//atanl.c
 		${MUSL_MATH_PATH}//cbrt.c
 		${MUSL_MATH_PATH}//cbrtf.c
 		${MUSL_MATH_PATH}//cbrtl.c
 		${MUSL_MATH_PATH}//ceil.c
 		${MUSL_MATH_PATH}//ceilf.c
-		${MUSL_MATH_PATH}//ceill.c
 		${MUSL_MATH_PATH}//copysign.c
 		${MUSL_MATH_PATH}//copysignf.c
 		${MUSL_MATH_PATH}//copysignl.c
@@ -93,41 +111,32 @@ if (NOT USE_CLANGW)
 		${MUSL_MATH_PATH}//erf.c
 		${MUSL_MATH_PATH}//erfc.c
 		${MUSL_MATH_PATH}//erfcf.c
-		${MUSL_MATH_PATH}//erfcl.c
 		${MUSL_MATH_PATH}//erff.c
-		${MUSL_MATH_PATH}//erfl.c
 		${MUSL_MATH_PATH}//exp10.c
 		${MUSL_MATH_PATH}//exp10f.c
 		${MUSL_MATH_PATH}//exp10l.c
 		${MUSL_MATH_PATH}//exp2.c
 		${MUSL_MATH_PATH}//exp2f.c
-		${MUSL_MATH_PATH}//exp2l.c
 		${MUSL_MATH_PATH}//exp.c
-		${MUSL_MATH_PATH}//expf.c
-		${MUSL_MATH_PATH}//expl.c
-		${MUSL_MATH_PATH}//expm1.c
-		${MUSL_MATH_PATH}//expm1f.c
-		${MUSL_MATH_PATH}//expm1l.c		
+	    ${MUSL_MATH_PATH}//expf.c
+	    ${MUSL_MATH_PATH}//expm1.c
+	    ${MUSL_MATH_PATH}//expm1f.c
 		${MUSL_MATH_PATH}//fabs.c
 		${MUSL_MATH_PATH}//fabsf.c
 		${MUSL_MATH_PATH}//fenv.c
 		${MUSL_MATH_PATH}//floor.c
 		${MUSL_MATH_PATH}//floorf.c
-		${MUSL_MATH_PATH}//floorl.c
 		${MUSL_MATH_PATH}//fma.c
 		${MUSL_MATH_PATH}//fmod.c
 		${MUSL_MATH_PATH}//fmodf.c
-		${MUSL_MATH_PATH}//fmodl.c
 		${MUSL_MATH_PATH}//hypot.c
 		${MUSL_MATH_PATH}//hypotf.c
-		${MUSL_MATH_PATH}//hypotl.c
 		${MUSL_MATH_PATH}//isless.c
 		${MUSL_MATH_PATH}//j0f.c
 		${MUSL_MATH_PATH}//j1.c
 		${MUSL_MATH_PATH}//j1f.c
 		${MUSL_MATH_PATH}//ldexp.c
 		${MUSL_MATH_PATH}//ldexpf.c
-		${MUSL_MATH_PATH}//ldexpl.c
 		${MUSL_MATH_PATH}//llrint.c
 		${MUSL_MATH_PATH}//llrintf.c
 		${MUSL_MATH_PATH}//llrintl.c
@@ -153,6 +162,82 @@ if (NOT USE_CLANGW)
 		${MUSL_MATH_PATH}//lround.c
 		${MUSL_MATH_PATH}//lroundf.c
 		${MUSL_MATH_PATH}//lroundl.c
+        ${MUSL_MATH_PATH}//nearbyint.c
+        ${MUSL_MATH_PATH}//nearbyintf.c
+        ${MUSL_MATH_PATH}//nearbyintl.c
+        ${MUSL_MATH_PATH}//nextafter.c
+        ${MUSL_MATH_PATH}//nextafterf.c
+        ${MUSL_MATH_PATH}//nextafterl.c
+        ${MUSL_MATH_PATH}//nexttoward.c
+        ${MUSL_MATH_PATH}//nexttowardf.c
+        ${MUSL_MATH_PATH}//nexttowardl.c
+        ${MUSL_MATH_PATH}//pow10.c
+        ${MUSL_MATH_PATH}//pow10f.c
+        ${MUSL_MATH_PATH}//pow10l.c
+	${MUSL_MATH_PATH}//remainder.c
+    ${MUSL_MATH_PATH}//remainderf.c
+    ${MUSL_MATH_PATH}//remquo.c
+    ${MUSL_MATH_PATH}//remquof.c
+    ${MUSL_MATH_PATH}//rint.c
+	${MUSL_MATH_PATH}//rintf.c
+    ${MUSL_MATH_PATH}//round.c
+    ${MUSL_MATH_PATH}//roundf.c
+	
+		
+    ${MUSL_MATH_PATH}//scalb.c
+    ${MUSL_MATH_PATH}//scalbf.c
+    ${MUSL_MATH_PATH}//scalbln.c
+    ${MUSL_MATH_PATH}//scalblnf.c
+    ${MUSL_MATH_PATH}//scalblnl.c
+    ${MUSL_MATH_PATH}//sin.c
+    ${MUSL_MATH_PATH}//sincos.c
+    ${MUSL_MATH_PATH}//sincosf.c
+    ${MUSL_MATH_PATH}//sincosl.c
+    ${MUSL_MATH_PATH}//sinf.c
+    ${MUSL_MATH_PATH}//sinhf.c
+    ${MUSL_MATH_PATH}//sinl.c
+    ${MUSL_MATH_PATH}//sqrt.c
+    ${MUSL_MATH_PATH}//sqrtf.c
+    ${MUSL_MATH_PATH}//sqrtl.c
+    ${MUSL_MATH_PATH}//tan.c
+    ${MUSL_MATH_PATH}//tanf.c
+    ${MUSL_MATH_PATH}//tanh.c
+    ${MUSL_MATH_PATH}//tanhf.c
+    ${MUSL_MATH_PATH}//tanhl.c
+    ${MUSL_MATH_PATH}//tanl.c
+    ${MUSL_MATH_PATH}//tgammal.c
+    ${MUSL_MATH_PATH}//trunc.c
+    ${MUSL_MATH_PATH}//truncf.c
+    ${MUSL_MATH_PATH}//truncl.c
+    ${MUSL_REGR_PATH}//fpclassify-invalid-ld80.c
+    ${MUSL_REGR_PATH}//iswspace-null.c
+    ${MUSL_REGR_PATH}//lrand48-signextend.c
+    ${MUSL_REGR_PATH}//malloc-0.c
+    ${MUSL_REGR_PATH}//mbsrtowcs-overflow.c
+    ${MUSL_REGR_PATH}//memmem-oob.c
+    ${MUSL_REGR_PATH}//memmem-oob-read.c
+    ${MUSL_REGR_PATH}//printf-1e9-oob.c
+    ${MUSL_REGR_PATH}//printf-fmt-g-round.c
+    ${MUSL_REGR_PATH}//printf-fmt-g-zeros.c
+    ${MUSL_REGR_PATH}//printf-fmt-n.c
+    ${MUSL_REGR_PATH}//scanf-bytes-consumed.c
+    ${MUSL_REGR_PATH}//scanf-match-literal-eof.c
+    ${MUSL_REGR_PATH}//scanf-nullbyte-char.c
+    ${MUSL_REGR_PATH}//wcsncpy-read-overflow.c
+    ${MUSL_REGR_PATH}//wcsstr-false-negative.c
+    ${MUSL_FUNC_PATH}//clocale_mbfuncs.c
+    ${MUSL_FUNC_PATH}//iconv_open.c
+    ${MUSL_FUNC_PATH}//memstream.c
+    ${MUSL_MATH_PATH}//scalbn.c
+    ${MUSL_MATH_PATH}//scalbnf.c
+    ${MUSL_MATH_PATH}//scalbnl.c
+    ${MUSL_MUSL_PATH}//pleval.c
+    ${MUSL_REGR_PATH}//fgets-eof.c
+    ${MUSL_REGR_PATH}//iconv-roundtrips.c
+    ${MUSL_REGR_PATH}//putenv-doublefree.c
+    ${MUSL_REGR_PATH}//strverscmp.c
+    ${MUSL_FUNC_PATH}//random.c
+    ${MUSL_FUNC_PATH}//time.c
     )
 endif()
 
