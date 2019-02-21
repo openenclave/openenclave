@@ -5,23 +5,26 @@
 
 // TLS wrapper for a bit of syntactic sugar, in absence of thread_local
 // support.
-struct TLSWrapper
+class tls_wrapper
 {
-    TLSWrapper()
+  public:
+    tls_wrapper()
     {
         if (oe_thread_key_create(&m_key, NULL))
         {
             throw std::logic_error("oe_thread_key_create() failed");
         }
     }
-    unsigned GetU() const
+    unsigned get_u() const
     {
-        return (unsigned)(uintptr_t)oe_thread_getspecific(m_key);
+        return static_cast<unsigned>(
+            reinterpret_cast<uintptr_t>(oe_thread_getspecific(m_key)));
     }
 
-    void Set(unsigned Value)
+    void set(unsigned value)
     {
-        oe_thread_setspecific(m_key, (void*)(uintptr_t)Value);
+        oe_thread_setspecific(
+            m_key, reinterpret_cast<void*>(static_cast<uintptr_t>(value)));
     }
 
   private:
