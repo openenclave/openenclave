@@ -5,148 +5,83 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/tests.h>
-#include "../args.h"
+#include "ocall_create_t.h"
 
-OE_ECALL void Double(void* args_)
+int enc_double(int val)
 {
-    oe_host_printf("==== Enclave: Double\n");
-
-    if (!args_ || !oe_is_outside_enclave(args_, sizeof(int)))
-        return;
-
-    int* args = (int*)args_;
-    *args = *args * 2;
+    oe_host_printf("==== enc_double\n");
+    return val * 2;
 }
 
-OE_ECALL void DoubleOCall(void* args_)
+int enc_double_ocall(int val)
 {
-    oe_host_printf("==== Enclave: DoubleOCall\n");
-
-    if (!args_ || !oe_is_outside_enclave(args_, sizeof(int)))
-        return;
-
-    OE_TEST(oe_call_host("Double", args_) == OE_OK);
+    oe_host_printf("==== enc_double_ocall\n");
+    int rval = 0;
+    OE_TEST(OE_OK == host_double(&rval, val));
+    return rval;
 }
 
-OE_ECALL void CreateEnclave(void* args_)
+oe_result_t enc_create_enclave(
+    char const* path,
+    oe_enclave_type_t type,
+    uint32_t flags,
+    oe_enclave_t** enclave_out)
 {
-    oe_host_printf("==== Enclave: CreateEnclave\n");
-    CreateEnclaveArgs* args = (CreateEnclaveArgs*)args_;
-
-    if (!args || !oe_is_outside_enclave(args, sizeof(*args)))
-    {
-        oe_abort();
-        return;
-    }
-
-    /* Create enclave with an OCALL from host. */
-    args->ret = oe_call_host("CreateEnclaveHost", args);
+    oe_host_printf("==== enc_create_enclave\n");
+    oe_result_t ret_result = OE_OK;
+    oe_result_t result =
+        host_create_enclave(&ret_result, path, type, flags, enclave_out);
+    return (OE_OK == result) ? ret_result : result;
 }
 
-static oe_enclave_t* _create_enclave(TestEnclaveArgs* args)
+static oe_enclave_t* _create_enclave(const char* path, uint32_t flags)
 {
-    /* Allocate memory for the CreateEnclaveArgs struct. */
-    CreateEnclaveArgs* create_args =
-        (CreateEnclaveArgs*)oe_host_malloc(sizeof(CreateEnclaveArgs));
-
-    OE_TEST(create_args != NULL);
-
-    /* Populate fields. */
-    create_args->path = args->path;
-    create_args->type = OE_ENCLAVE_TYPE_SGX;
-    create_args->flags = args->flags;
-    create_args->enclave = NULL;
-    create_args->ret = 1;
-
-    /* Create enclave with an OCALL from host. */
-    oe_result_t result = oe_call_host("CreateEnclaveHost", create_args);
-    OE_TEST(result == OE_OK);
-    OE_TEST(create_args->ret == OE_OK);
-
-    /* Return enclave. */
-    oe_enclave_t* enclave = create_args->enclave;
-    oe_host_free(create_args);
-    OE_TEST(enclave != NULL);
+    oe_enclave_t* enclave = NULL;
+    oe_result_t ret_result = 1;
+    oe_result_t result = host_create_enclave(
+        &ret_result, path, OE_ENCLAVE_TYPE_SGX, flags, &enclave);
+    OE_TEST(OE_OK == result);
+    OE_TEST(OE_OK == ret_result);
+    OE_TEST(NULL != enclave);
     return enclave;
 }
 
-static void _call_enclave(oe_enclave_t* enclave, const char* func)
+int enc_test_ocall_enclave(const char* path, uint32_t flags)
 {
-    /* Allocate memory for calling the enclave. */
-    CallEnclaveArgs* call_args =
-        (CallEnclaveArgs*)oe_host_malloc(sizeof(CallEnclaveArgs));
+    oe_host_printf("==== enc_test_ocall_enclave\n");
 
-    OE_TEST(call_args != NULL);
-
-    /* Fill struct values. */
-    call_args->enclave = enclave;
-
-    call_args->func = oe_host_strndup(func, OE_SIZE_MAX);
-    OE_TEST(call_args->func != NULL);
-
-    call_args->args = oe_host_malloc(sizeof(int));
-    OE_TEST(call_args->args != NULL);
-    *((int*)call_args->args) = 123;
-
-    call_args->ret = 1;
-
-    /* Test calling the enclave via an OCALL. */
-    oe_result_t result = oe_call_host("CallEnclaveHost", call_args);
-    OE_TEST(result == OE_OK);
-    OE_TEST(call_args->ret == OE_OK);
-    OE_TEST(*((int*)call_args->args) == 246);
-
-    oe_host_free(call_args->args);
-    oe_host_free(call_args->func);
-    oe_host_free(call_args);
-}
-
-static void _terminate_enclave(oe_enclave_t* enclave)
-{
-    /* Allocate memory for terminating the enclave. */
-    TerminateEnclaveArgs* terminate_args =
-        (TerminateEnclaveArgs*)oe_host_malloc(sizeof(TerminateEnclaveArgs));
-
-    OE_TEST(terminate_args != NULL);
-
-    /* Fill struct values. */
-    terminate_args->enclave = enclave;
-    terminate_args->ret = 1;
-
-    /* Call terminate enclave via OCALL. */
-    oe_result_t result = oe_call_host("TerminateEnclave", terminate_args);
-    OE_TEST(result == OE_OK);
-    OE_TEST(terminate_args->ret == OE_OK);
-
-    oe_host_free(terminate_args);
-}
-
-OE_ECALL void TestOCallEnclave(void* args_)
-{
-    oe_host_printf("==== Host: TestOCallEnclave\n");
-
-    TestEnclaveArgs* args = (TestEnclaveArgs*)args_;
-
-    if (!args || !oe_is_outside_enclave(args, sizeof(*args)))
-    {
-        oe_abort();
-        return;
-    }
+    int seed = 123;
 
     /* Create Enclave via OCALL. */
-    oe_enclave_t* enclave = _create_enclave(args);
+    oe_enclave_t* enclave = _create_enclave(path, flags);
     OE_TEST(enclave != NULL);
 
     /* Test ECALL on this enclave. */
-    _call_enclave(enclave, "Double");
+    oe_result_t ret_result;
+    int ret_val = 0;
+    oe_result_t result =
+        host_call_enc_double(&ret_result, enclave, &ret_val, seed);
+    seed *= 2;
+
+    OE_TEST(OE_OK == result);
+    OE_TEST(OE_OK == ret_result);
+    OE_TEST(seed == ret_val);
 
     /* Test OCALL on this enclave. */
-    _call_enclave(enclave, "DoubleOCall");
+    ret_val = 0;
+    result = host_call_enc_double_ocall(&ret_result, enclave, &ret_val, seed);
+    seed *= 2;
+
+    OE_TEST(OE_OK == result);
+    OE_TEST(OE_OK == ret_result);
+    OE_TEST(seed == ret_val);
 
     /* Test terminating the enclave. */
-    _terminate_enclave(enclave);
+    result = host_terminate_enclave(&ret_result, enclave);
+    OE_TEST(OE_OK == result);
+    OE_TEST(OE_OK == ret_result);
 
-    args->ret = 0;
+    return 0;
 }
 
 OE_SET_ENCLAVE_SGX(
@@ -156,5 +91,3 @@ OE_SET_ENCLAVE_SGX(
     256,  /* HeapPageCount */
     128,  /* StackPageCount */
     2);   /* TCSCount */
-
-OE_DEFINE_EMPTY_ECALL_TABLE();

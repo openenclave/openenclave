@@ -1,0 +1,43 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+        public int enc_double(int val);
+
+        public int enc_double_ocall(int val);
+
+        public oe_result_t enc_create_enclave(
+            [in, string] const char* path,
+            oe_enclave_type_t type,
+            uint32_t flags,
+            [out] oe_enclave_t** enclave_out);
+
+        public int enc_test_ocall_enclave(
+            [in, string] const char* path,
+            uint32_t flag);
+    };
+
+    untrusted {
+        int host_double(int val);
+
+        oe_result_t host_create_enclave(
+            [in, string] const char* path,
+            oe_enclave_type_t type,
+            uint32_t flags,
+            [out] oe_enclave_t** enclave_out);
+
+        oe_result_t host_call_enc_double(
+            [user_check] oe_enclave_t* _enclave,
+            [out] int* ret_val,
+            int val);
+
+        oe_result_t host_call_enc_double_ocall(
+            [user_check] oe_enclave_t* _enclave,
+            [out] int* ret_val,
+            int val);
+
+        oe_result_t host_terminate_enclave(
+            [user_check] oe_enclave_t* _enclave);
+    };
+};
