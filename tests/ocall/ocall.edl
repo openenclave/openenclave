@@ -1,0 +1,37 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    enum constants {
+        MY_OCALL_SEED = 1000,
+        MY_OCALL_MULTIPLIER = 7
+    };
+
+    trusted {
+        public uint64_t enc_test2(
+            uint64_t val);
+
+        public void enc_test4();
+
+        public bool was_destructor_called();
+
+        public int enc_set_tsd(
+            [user_check] void* value);
+
+        public void* enc_get_tsd();
+
+        public uint64_t enc_test_my_ocall();
+
+        public void enc_test_reentrancy();
+    };
+
+    untrusted {
+        uint64_t host_my_ocall(
+            uint64_t val);
+
+        void host_func2(
+            [user_check]const unsigned char* buffer);
+
+        void host_test_reentrancy();
+    };
+};
