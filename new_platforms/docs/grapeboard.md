@@ -17,7 +17,7 @@ The reference firmware also enables OCALL-like functionality in OP-TEE and Linux
 This reference design is available as part of the [ms-iot/LSDK](https://github.com/ms-iot/lsdk). 
 
 ### Building Your Grapeboard
-Follow the Getting Started on [LS1012 Grapeboard guide](https://github.com/ms-iot/lsdk/blob/master/docs/grapeboard.md#getting-started-on-ls1012-grapeboard) to download, build, and flash all the firmware needed.
+Follow the Getting Started on [LS1012 Grapeboard guide](https://github.com/ms-iot/lsdk/blob/master/Readme.md) to download, build, and flash all the firmware needed.
 
 ## Connecting to your Device
 
