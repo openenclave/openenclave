@@ -234,6 +234,7 @@ void __oe_assert_fail(
  * string representation of the expression as well as the file, the line, and
  * the function name where the macro was expanded.
  */
+#if !defined(oe_assert)
 #ifndef NDEBUG
 #define oe_assert(EXPR)                                                \
     do                                                                 \
@@ -244,6 +245,7 @@ void __oe_assert_fail(
 #else
 #define oe_assert(EXPR)
 #endif
+#endif /* !defined(oe_assert) */
 
 #if (OE_API_VERSION < 2)
 #define oe_get_report oe_get_report_v1

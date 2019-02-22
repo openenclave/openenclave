@@ -29,8 +29,15 @@ unsigned long int oe_strtoul(const char* nptr, char** endptr, int base);
 
 int oe_atexit(void (*function)(void));
 
+/* Defined here in addition to openenclave/enclave.h (public API),
+ * for stdlib.h parity and so that use of corelibc/stdlib.h doesn't
+ * pull in that entire header which includes oeenclave methods.
+ */
+void oe_abort(void);
+
 #if defined(OE_NEED_STDC_NAMES)
 
+#include "bits/abort.h"
 #include "bits/atexit.h"
 #include "bits/malloc.h"
 #include "bits/strtoul.h"
