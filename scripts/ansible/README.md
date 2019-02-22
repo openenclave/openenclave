@@ -11,21 +11,29 @@ On the target machine where Open Enclave is desired to be configured, you may se
 
 1. Open Enclave environment for contributors:
 
-```
-ansible-playbook oe-contributors-setup.yml
-```
+    ```
+    ansible-playbook oe-contributors-setup.yml
+    ```
 
 2. Open Enclave environment for contributors using ACC hardware:
 
-```
-ansible-playbook oe-contributors-acc-setup.yml
-```
+    ```
+    ansible-playbook oe-contributors-acc-setup.yml
+    ```
 
 3. Open Enclave vanilla environment (without SGX packages and with Azure-DCAP-Client package)
 
-```
-ansible-playbook oe-vanilla-prelibsgx-setup.yml
-```
+    ```
+    ansible-playbook oe-vanilla-prelibsgx-setup.yml
+    ```
+
+4. Setup the remote Windows agents with all the requirements for the DCAP Windows testing:
+
+    ```
+    ansible windows-agents -m import_role -a "name=windows/az-dcap-client tasks_from=environment-setup.yml"
+    ```
+
+    This assumes that the inventory was properly set up with the `windows-agents` machines.
 
 # Configure new Jenkins slaves
 
