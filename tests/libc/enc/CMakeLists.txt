@@ -39,7 +39,8 @@ target_compile_options(libc_enc PRIVATE
     -Wno-unused-variable
     -Wno-literal-range
     -Wno-missing-braces
-    -Wno-writable-strings)
+    -Wno-writable-strings
+    -mfpmath=sse)
 
 target_include_directories(
     libc_enc PRIVATE
