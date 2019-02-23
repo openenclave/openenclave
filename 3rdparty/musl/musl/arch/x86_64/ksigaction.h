@@ -1,3 +1,5 @@
+#include <features.h>
+
 struct k_sigaction {
 	void (*handler)(int);
 	unsigned long flags;
@@ -5,5 +7,5 @@ struct k_sigaction {
 	unsigned mask[2];
 };
 
-void __restore_rt();
+hidden void __restore_rt();
 #define __restore __restore_rt

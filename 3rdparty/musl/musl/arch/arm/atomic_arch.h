@@ -1,11 +1,12 @@
+#include "libc.h"
+
 #if __ARM_ARCH_4__ || __ARM_ARCH_4T__ || __ARM_ARCH == 4
 #define BLX "mov lr,pc\n\tbx"
 #else
 #define BLX "blx"
 #endif
 
-extern uintptr_t __attribute__((__visibility__("hidden")))
-	__a_cas_ptr, __a_barrier_ptr;
+extern hidden uintptr_t __a_cas_ptr, __a_barrier_ptr;
 
 #if ((__ARM_ARCH_6__ || __ARM_ARCH_6K__ || __ARM_ARCH_6KZ__ || __ARM_ARCH_6ZK__) && !__thumb__) \
  || __ARM_ARCH_6T2__ || __ARM_ARCH_7A__ || __ARM_ARCH_7R__ || __ARM_ARCH >= 7

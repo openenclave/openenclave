@@ -3,6 +3,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <string.h>
+#include <stdlib.h>
 #include <netinet/in.h>
 
 int __get_resolv_conf(struct resolvconf *conf, char *search, size_t search_sz)

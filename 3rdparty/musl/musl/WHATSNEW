@@ -1919,7 +1919,7 @@ new features:
 - mlock2 syscall wrapper
 - memfd_create syscall wrapper
 - explicit_bzero function
-- header-level support for new linux features through 4.18 ??
+- header-level support for new linux features through 4.17
 - wcsftime now supports padding specifier extensions
 - dynamic linker's reclaim_gaps now works on fdpic archs
 - getaddrinfo now honors AI_ADDRCONFIG
@@ -1984,3 +1984,55 @@ arch-specfic bugs fixed:
 - on mips, return from start function passed to clone crashed (runaway exec)
 - printf %a precision specifier malfunctioned except on ld80 archs
 - async thread cancellation crashed on powerpc64 and sh-fdpic
+
+
+1.1.21 release notes
+
+new features:
+- setting default thread stack size via PT_GNU_STACK program header
+- arm vfork implementation
+- arm tlsdesc/gnu2 tls dialect support
+- name_to_handle_at and name_to_handle_at syscall wrappers
+- header-level support for new linux features through 4.18
+
+optimizations:
+- glob rewrite with much better performance and stack usage properties
+- single-threaded and already-locked fast paths for getc/putc variants
+- single-instruction fma implementations for arm, s390x, powerpc, & x86_64
+- single-instruction fabs and sqrt implementations for powerpc
+- size and performance from making all internal-only functions/data hidden
+- made &errno and pthread_self results cachable again (attribute((const)))
+- significant speedup in strtod with short inputs
+- new tsearch AVL tree implementation, smaller and faster
+- special-cased nop calls to wmemmove
+- fixed erroneously suboptimal skip conditions in strstr and memmem
+
+hardening:
+- default thread stack guard size increased from 4k to 8k
+
+compatibility:
+- default thread stack size increased from 80k to 128k
+- building for arm as thumb2 with clang internal assembler now works
+- aio threads could overflow stack on kernels that break MINSIGSTKSZ ABI
+- aio threads no longer call malloc (problematic with malloc replacement)
+- pthread_sigmask/sigprocmask now ignore an invalid how when not changing mask
+
+bugs fixed:
+- soft deadlock regression in stdio FILE locks with >2 threads contending
+- deadlock and buffered data loss race in fclose
+- race condition leading to possible crash in dcngettext plural forms
+- glob failed to see past searchable-but-unreadable path components
+- getdelim wrongly realloc'd buffer that was already exactly right size
+- getdelim failed to set stream orientation on early error
+- ttyname[_r] reported wrong error when given bad fd
+- pthread_key_delete left old tsd values exposed if slot was reused
+- freeaddrinfo failed to support freeing sublists
+- access to optopt was broken by copy relocations
+- memccpy returned wrong result if first byte past buffer end matched
+- wordexp read past end of input string ending in backslash
+- sem_wait and sem_timedwait were wrongly not interruptible by signals
+- getspnam[_r] wrongly treated not-found as an error
+
+arch-specfic bugs fixed:
+- soft deadlocks (missing futex wake) on powerpc locking
+- dlsym returned wrong address for thread-local symbols on ppc/mips/m68k

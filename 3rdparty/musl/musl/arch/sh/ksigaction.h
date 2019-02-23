@@ -1,3 +1,5 @@
+#include <features.h>
+
 struct k_sigaction {
 	void (*handler)(int);
 	unsigned long flags;
@@ -5,4 +7,4 @@ struct k_sigaction {
 	unsigned mask[2];
 };
 
-extern unsigned char __restore[], __restore_rt[];
+extern hidden unsigned char __restore[], __restore_rt[];

@@ -2,13 +2,10 @@
 #include "pthread_impl.h"
 #include "stdio_impl.h"
 #include "libc.h"
+#include "lock.h"
 #include <sys/mman.h>
 #include <string.h>
 #include <stddef.h>
-
-void *__mmap(void *, size_t, int, int, int, off_t);
-int __munmap(void *, size_t);
-int __mprotect(void *, size_t, int);
 
 static void dummy_0()
 {
@@ -165,8 +162,6 @@ static void *dummy_tsd[1] = { 0 };
 weak_alias(dummy_tsd, __pthread_tsd_main);
 
 volatile int __block_new_threads = 0;
-extern size_t __default_stacksize;
-extern size_t __default_guardsize;
 
 static FILE *volatile dummy_file = 0;
 weak_alias(dummy_file, __stdin_used);
@@ -177,8 +172,6 @@ static void init_file_lock(FILE *f)
 {
 	if (f && f->lock<0) f->lock = 0;
 }
-
-void *__copy_tls(unsigned char *);
 
 int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict attrp, void *(*entry)(void *), void *restrict arg)
 {

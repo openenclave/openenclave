@@ -35,7 +35,6 @@
 3rdparty/musl/libc-test/src/functional/search_hsearch.c
 3rdparty/musl/libc-test/src/functional/search_insque.c
 3rdparty/musl/libc-test/src/functional/search_lsearch.c
-3rdparty/musl/libc-test/src/functional/search_tsearch.c
 3rdparty/musl/libc-test/src/functional/sem_init.c
 3rdparty/musl/libc-test/src/functional/sem_open.c
 3rdparty/musl/libc-test/src/functional/setjmp.c

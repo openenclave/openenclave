@@ -2,10 +2,7 @@
 #include <errno.h>
 #include <time.h>
 #include "atomic.h"
-#include "libc.h"
 #include "pthread_impl.h"
-
-extern volatile int __aio_fut;
 
 int aio_suspend(const struct aiocb *const cbs[], int cnt, const struct timespec *ts)
 {
@@ -76,4 +73,4 @@ int aio_suspend(const struct aiocb *const cbs[], int cnt, const struct timespec 
 	}
 }
 
-LFS64(aio_suspend);
+weak_alias(aio_suspend, aio_suspend64);

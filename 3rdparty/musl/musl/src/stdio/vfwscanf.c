@@ -11,7 +11,6 @@
 #include "shgetc.h"
 #include "intscan.h"
 #include "floatscan.h"
-#include "libc.h"
 
 #define SIZE_hh -2
 #define SIZE_h  -1
@@ -77,7 +76,7 @@ static int in_set(const wchar_t *set, int c)
 #if 1
 #undef getwc
 #define getwc(f) \
-	((f)->rpos < (f)->rend && *(f)->rpos < 128 ? *(f)->rpos++ : (getwc)(f))
+	((f)->rpos != (f)->rend && *(f)->rpos < 128 ? *(f)->rpos++ : (getwc)(f))
 
 #undef ungetwc
 #define ungetwc(c,f) \

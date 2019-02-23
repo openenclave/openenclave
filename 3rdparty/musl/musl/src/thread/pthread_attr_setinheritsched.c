@@ -1,8 +1,7 @@
 #include "pthread_impl.h"
 #include "syscall.h"
 
-__attribute__((__visibility__("hidden")))
-void *__start_sched(void *p)
+hidden void *__start_sched(void *p)
 {
 	struct start_sched_args *ssa = p;
 	void *start_arg = ssa->start_arg;

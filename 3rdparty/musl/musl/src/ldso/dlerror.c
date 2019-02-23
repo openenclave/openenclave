@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include "pthread_impl.h"
-#include "libc.h"
+#include "dynlink.h"
 
 char *dlerror()
 {
@@ -23,8 +23,7 @@ void __dl_thread_cleanup(void)
 		free(self->dlerror_buf);
 }
 
-__attribute__((__visibility__("hidden")))
-void __dl_vseterr(const char *fmt, va_list ap)
+hidden void __dl_vseterr(const char *fmt, va_list ap)
 {
 	va_list ap2;
 	va_copy(ap2, ap);
@@ -43,17 +42,13 @@ void __dl_vseterr(const char *fmt, va_list ap)
 	self->dlerror_flag = 1;
 }
 
-__attribute__((__visibility__("hidden")))
-void __dl_seterr(const char *fmt, ...)
+hidden void __dl_seterr(const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
 	__dl_vseterr(fmt, ap);
 	va_end(ap);
 }
-
-__attribute__((__visibility__("hidden")))
-int __dl_invalid_handle(void *);
 
 static int stub_invalid_handle(void *h)
 {

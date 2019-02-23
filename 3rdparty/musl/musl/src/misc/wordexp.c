@@ -42,7 +42,7 @@ static int do_wordexp(const char *s, wordexp_t *we, int flags)
 
 	if (flags & WRDE_NOCMD) for (i=0; s[i]; i++) switch (s[i]) {
 	case '\\':
-		if (!sq) i++;
+		if (!sq && !s[++i]) return WRDE_SYNTAX;
 		break;
 	case '\'':
 		if (!dq) sq^=1;

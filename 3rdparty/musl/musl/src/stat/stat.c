@@ -1,7 +1,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include "syscall.h"
-#include "libc.h"
 
 int stat(const char *restrict path, struct stat *restrict buf)
 {
@@ -12,4 +11,4 @@ int stat(const char *restrict path, struct stat *restrict buf)
 #endif
 }
 
-LFS64(stat);
+weak_alias(stat, stat64);

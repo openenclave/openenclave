@@ -328,4 +328,6 @@
 #define __NR_pkey_alloc			6328
 #define __NR_pkey_free			6329
 #define __NR_statx			6330
+#define __NR_rseq			6331
+#define __NR_io_pgetevents		6332
 

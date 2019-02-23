@@ -36,6 +36,10 @@
 #define TCP_MD5SIG_EXT   32
 #define TCP_FASTOPEN_KEY 33
 #define TCP_FASTOPEN_NO_COOKIE 34
+#define TCP_ZEROCOPY_RECEIVE   35
+#define TCP_INQ          36
+
+#define TCP_CM_INQ TCP_INQ
 
 #define TCP_ESTABLISHED  1
 #define TCP_SYN_SENT     2
@@ -66,6 +70,8 @@ enum {
 	TCP_NLA_SNDQ_SIZE,
 	TCP_NLA_CA_STATE,
 	TCP_NLA_SND_SSTHRESH,
+	TCP_NLA_DELIVERED,
+	TCP_NLA_DELIVERED_CE,
 };
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
@@ -217,6 +223,8 @@ struct tcp_info {
 	uint64_t tcpi_busy_time;
 	uint64_t tcpi_rwnd_limited;
 	uint64_t tcpi_sndbuf_limited;
+	uint32_t tcpi_delivered;
+	uint32_t tcpi_delivered_ce;
 };
 
 #define TCP_MD5SIG_MAXKEYLEN    80
@@ -240,12 +248,22 @@ struct tcp_diag_md5sig {
 	uint8_t tcpm_key[TCP_MD5SIG_MAXKEYLEN];
 };
 
+#define TCP_REPAIR_ON		1
+#define TCP_REPAIR_OFF		0
+#define TCP_REPAIR_OFF_NO_WP	-1
+
 struct tcp_repair_window {
 	uint32_t snd_wl1;
 	uint32_t snd_wnd;
 	uint32_t max_window;
 	uint32_t rcv_wnd;
 	uint32_t rcv_wup;
+};
+
+struct tcp_zerocopy_receive {
+	uint64_t address;
+	uint32_t length;
+	uint32_t recv_skip_hint;
 };
 
 #endif

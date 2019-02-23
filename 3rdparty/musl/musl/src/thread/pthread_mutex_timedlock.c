@@ -6,7 +6,8 @@ int __pthread_mutex_timedlock(pthread_mutex_t *restrict m, const struct timespec
 	    && !a_cas(&m->_m_lock, 0, EBUSY))
 		return 0;
 
-	int r, t, priv = (m->_m_type & 128) ^ 128;
+	int type = m->_m_type;
+	int r, t, priv = (type & 128) ^ 128;
 
 	r = pthread_mutex_trylock(m);
 	if (r != EBUSY) return r;
@@ -14,10 +15,10 @@ int __pthread_mutex_timedlock(pthread_mutex_t *restrict m, const struct timespec
 	int spins = 100;
 	while (spins-- && m->_m_lock && !m->_m_waiters) a_spin();
 
-	while ((r=pthread_mutex_trylock(m)) == EBUSY) {
-		if (!(r=m->_m_lock) || ((r&0x40000000) && (m->_m_type&4)))
+	while ((r=__pthread_mutex_trylock(m)) == EBUSY) {
+		if (!(r=m->_m_lock) || ((r&0x40000000) && (type&4)))
 			continue;
-		if ((m->_m_type&3) == PTHREAD_MUTEX_ERRORCHECK
+		if ((type&3) == PTHREAD_MUTEX_ERRORCHECK
 		 && (r&0x7fffffff) == __pthread_self()->tid)
 			return EDEADLK;
 

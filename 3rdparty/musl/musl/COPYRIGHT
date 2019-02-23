@@ -126,12 +126,6 @@ in jurisdictions that may not recognize the public domain.
 The smoothsort implementation (src/stdlib/qsort.c) is Copyright © 2011
 Valentin Ochs and is licensed under an MIT-style license.
 
-The BSD PRNG implementation (src/prng/random.c) and XSI search API
-(src/search/*.c) functions are Copyright © 2011 Szabolcs Nagy and
-licensed under following terms: "Permission to use, copy, modify,
-and/or distribute this code for any purpose with or without fee is
-hereby granted. There is no warranty."
-
 The x86_64 port was written by Nicholas J. Kain and is licensed under
 the standard MIT terms.
 

@@ -1,6 +1,5 @@
 #include <stdlib.h>
-
-void *__memalign(size_t, size_t);
+#include "malloc_impl.h"
 
 void *aligned_alloc(size_t align, size_t len)
 {

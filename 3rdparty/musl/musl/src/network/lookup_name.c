@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <errno.h>
+#include <resolv.h>
 #include "lookup.h"
 #include "stdio_impl.h"
 #include "syscall.h"
@@ -97,11 +98,6 @@ struct dpc_ctx {
 	char *canon;
 	int cnt;
 };
-
-int __dns_parse(const unsigned char *, int, int (*)(void *, int, const void *, int, const void *), void *);
-int __dn_expand(const unsigned char *, const unsigned char *, const unsigned char *, char *, int);
-int __res_mkquery(int, const char *, int, int, const unsigned char *, int, const unsigned char*, unsigned char *, int);
-int __res_msend_rc(int, const unsigned char *const *, const int *, unsigned char *const *, int *, int, const struct resolvconf *);
 
 #define RR_A 1
 #define RR_CNAME 5

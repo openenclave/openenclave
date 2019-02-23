@@ -5,4 +5,4 @@ int fsetpos(FILE *f, const fpos_t *pos)
 	return __fseeko(f, *(const long long *)pos, SEEK_SET);
 }
 
-LFS64(fsetpos);
+weak_alias(fsetpos, fsetpos64);

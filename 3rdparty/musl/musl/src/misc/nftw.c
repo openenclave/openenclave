@@ -6,7 +6,6 @@
 #include <string.h>
 #include <limits.h>
 #include <pthread.h>
-#include "libc.h"
 
 struct history
 {
@@ -126,4 +125,4 @@ int nftw(const char *path, int (*fn)(const char *, const struct stat *, int, str
 	return r;
 }
 
-LFS64(nftw);
+weak_alias(nftw, nftw64);

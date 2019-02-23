@@ -1,3 +1,4 @@
+#define _BSD_SOURCE
 #include <glob.h>
 #include <fnmatch.h>
 #include <sys/stat.h>
@@ -7,137 +8,158 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <stddef.h>
-#include "libc.h"
 
 struct match
 {
 	struct match *next;
-	char name[1];
+	char name[];
 };
-
-static int is_literal(const char *p, int useesc)
-{
-	int bracket = 0;
-	for (; *p; p++) {
-		switch (*p) {
-		case '\\':
-			if (!useesc) break;
-		case '?':
-		case '*':
-			return 0;
-		case '[':
-			bracket = 1;
-			break;
-		case ']':
-			if (bracket) return 0;
-			break;
-		}
-	}
-	return 1;
-}
 
 static int append(struct match **tail, const char *name, size_t len, int mark)
 {
-	struct match *new = malloc(sizeof(struct match) + len + 1);
+	struct match *new = malloc(sizeof(struct match) + len + 2);
 	if (!new) return -1;
 	(*tail)->next = new;
 	new->next = NULL;
-	strcpy(new->name, name);
-	if (mark) strcat(new->name, "/");
+	memcpy(new->name, name, len+1);
+	if (mark && len && name[len-1]!='/') {
+		new->name[len] = '/';
+		new->name[len+1] = 0;
+	}
 	*tail = new;
 	return 0;
 }
 
-static int match_in_dir(const char *d, const char *p, int flags, int (*errfunc)(const char *path, int err), struct match **tail)
+static int do_glob(char *buf, size_t pos, int type, char *pat, int flags, int (*errfunc)(const char *path, int err), struct match **tail)
 {
-	DIR *dir;
-	struct dirent de_buf, *de;
-	char pat[strlen(p)+1];
-	char *p2;
-	size_t l = strlen(d);
-	int literal;
-	int fnm_flags= ((flags & GLOB_NOESCAPE) ? FNM_NOESCAPE : 0)
-		| ((!(flags & GLOB_PERIOD)) ? FNM_PERIOD : 0);
-	int error;
+	/* If GLOB_MARK is unused, we don't care about type. */
+	if (!type && !(flags & GLOB_MARK)) type = DT_REG;
 
-	if ((p2 = strchr(p, '/'))) {
-		strcpy(pat, p);
-		pat[p2-p] = 0;
-		for (; *p2 == '/'; p2++);
-		p = pat;
-	}
-	literal = is_literal(p, !(flags & GLOB_NOESCAPE));
-	if (*d == '/' && !*(d+1)) l = 0;
+	/* Special-case the remaining pattern being all slashes, in
+	 * which case we can use caller-passed type if it's a dir. */
+	if (*pat && type!=DT_DIR) type = 0;
+	while (pos+1 < PATH_MAX && *pat=='/') buf[pos++] = *pat++;
 
-	/* rely on opendir failing for nondirectory objects */
-	dir = opendir(*d ? d : ".");
-	error = errno;
-	if (!dir) {
-		/* this is not an error -- we let opendir call stat for us */
-		if (error == ENOTDIR) return 0;
-		if (error == EACCES && !*p) {
-			struct stat st;
-			if (!stat(d, &st) && S_ISDIR(st.st_mode)) {
-				if (append(tail, d, l, l))
-					return GLOB_NOSPACE;
-				return 0;
-			}
+	/* Consume maximal [escaped-]literal prefix of pattern, copying
+	 * and un-escaping it to the running buffer as we go. */
+	ptrdiff_t i=0, j=0;
+	int in_bracket = 0, overflow = 0;
+	for (; pat[i]!='*' && pat[i]!='?' && (!in_bracket || pat[i]!=']'); i++) {
+		if (!pat[i]) {
+			if (overflow) return 0;
+			pat += i;
+			pos += j;
+			i = j = 0;
+			break;
+		} else if (pat[i] == '[') {
+			in_bracket = 1;
+		} else if (pat[i] == '\\' && !(flags & GLOB_NOESCAPE)) {
+			/* Backslashes inside a bracket are (at least by
+			 * our interpretation) non-special, so if next
+			 * char is ']' we have a complete expression. */
+			if (in_bracket && pat[i+1]==']') break;
+			/* Unpaired final backslash never matches. */
+			if (!pat[i+1]) return 0;
+			i++;
 		}
-		if (errfunc(d, error) || (flags & GLOB_ERR))
+		if (pat[i] == '/') {
+			if (overflow) return 0;
+			in_bracket = 0;
+			pat += i+1;
+			i = -1;
+			pos += j+1;
+			j = -1;
+		}
+		/* Only store a character if it fits in the buffer, but if
+		 * a potential bracket expression is open, the overflow
+		 * must be remembered and handled later only if the bracket
+		 * is unterminated (and thereby a literal), so as not to
+		 * disallow long bracket expressions with short matches. */
+		if (pos+(j+1) < PATH_MAX) {
+			buf[pos+j++] = pat[i];
+		} else if (in_bracket) {
+			overflow = 1;
+		} else {
+			return 0;
+		}
+		/* If we consume any new components, the caller-passed type
+		 * or dummy type from above is no longer valid. */
+		type = 0;
+	}
+	buf[pos] = 0;
+	if (!*pat) {
+		/* If we consumed any components above, or if GLOB_MARK is
+		 * requested and we don't yet know if the match is a dir,
+		 * we must call stat to confirm the file exists and/or
+		 * determine its type. */
+		struct stat st;
+		if ((flags & GLOB_MARK) && type==DT_LNK) type = 0;
+		if (!type && stat(buf, &st)) {
+			if (errno!=ENOENT && (errfunc(buf, errno) || (flags & GLOB_ERR)))
+				return GLOB_ABORTED;
+			return 0;
+		}
+		if (!type && S_ISDIR(st.st_mode)) type = DT_DIR;
+		if (append(tail, buf, pos, (flags & GLOB_MARK) && type==DT_DIR))
+			return GLOB_NOSPACE;
+		return 0;
+	}
+	char *p2 = strchr(pat, '/'), saved_sep = '/';
+	/* Check if the '/' was escaped and, if so, remove the escape char
+	 * so that it will not be unpaired when passed to fnmatch. */
+	if (p2 && !(flags & GLOB_NOESCAPE)) {
+		char *p;
+		for (p=p2; p>pat && p[-1]=='\\'; p--);
+		if ((p2-p)%2) {
+			p2--;
+			saved_sep = '\\';
+		}
+	}
+	DIR *dir = opendir(pos ? buf : ".");
+	if (!dir) {
+		if (errfunc(buf, errno) || (flags & GLOB_ERR))
 			return GLOB_ABORTED;
 		return 0;
 	}
-	if (!*p) {
-		error = append(tail, d, l, l) ? GLOB_NOSPACE : 0;
-		closedir(dir);
-		return error;
-	}
-	while (!(error = readdir_r(dir, &de_buf, &de)) && de) {
-		char namebuf[l+de->d_reclen+2], *name = namebuf;
-		if (!literal && fnmatch(p, de->d_name, fnm_flags))
+	int old_errno = errno;
+	struct dirent *de;
+	while (errno=0, de=readdir(dir)) {
+		/* Quickly skip non-directories when there's pattern left. */
+		if (p2 && de->d_type && de->d_type!=DT_DIR && de->d_type!=DT_LNK)
 			continue;
-		if (literal && strcmp(p, de->d_name))
+
+		size_t l = strlen(de->d_name);
+		if (l >= PATH_MAX-pos) continue;
+
+		if (p2) *p2 = 0;
+
+		int fnm_flags= ((flags & GLOB_NOESCAPE) ? FNM_NOESCAPE : 0)
+			| ((!(flags & GLOB_PERIOD)) ? FNM_PERIOD : 0);
+
+		if (fnmatch(pat, de->d_name, fnm_flags))
 			continue;
-		if (p2 && de->d_type && !S_ISDIR(de->d_type<<12) && !S_ISLNK(de->d_type<<12))
-			continue;
+
 		/* With GLOB_PERIOD, don't allow matching . or .. unless
 		 * fnmatch would match them with FNM_PERIOD rules in effect. */
 		if (p2 && (flags & GLOB_PERIOD) && de->d_name[0]=='.'
 		    && (!de->d_name[1] || de->d_name[1]=='.' && !de->d_name[2])
-		    && fnmatch(p, de->d_name, fnm_flags | FNM_PERIOD))
+		    && fnmatch(pat, de->d_name, fnm_flags | FNM_PERIOD))
 			continue;
-		if (*d) {
-			memcpy(name, d, l);
-			name[l] = '/';
-			strcpy(name+l+1, de->d_name);
-		} else {
-			name = de->d_name;
-		}
-		if (p2) {
-			if ((error = match_in_dir(name, p2, flags, errfunc, tail))) {
-				closedir(dir);
-				return error;
-			}
-		} else {
-			int mark = 0;
-			if (flags & GLOB_MARK) {
-				if (de->d_type && !S_ISLNK(de->d_type<<12))
-					mark = S_ISDIR(de->d_type<<12);
-				else {
-					struct stat st;
-					stat(name, &st);
-					mark = S_ISDIR(st.st_mode);
-				}
-			}
-			if (append(tail, name, l+de->d_reclen+1, mark)) {
-				closedir(dir);
-				return GLOB_NOSPACE;
-			}
+
+		memcpy(buf+pos, de->d_name, l+1);
+		if (p2) *p2 = saved_sep;
+		int r = do_glob(buf, pos+l, de->d_type, p2 ? p2 : "", flags, errfunc, tail);
+		if (r) {
+			closedir(dir);
+			return r;
 		}
 	}
+	int readerr = errno;
+	if (p2) *p2 = saved_sep;
 	closedir(dir);
-	if (error && (errfunc(d, error) || (flags & GLOB_ERR)))
+	if (readerr && (errfunc(buf, errno) || (flags & GLOB_ERR)))
 		return GLOB_ABORTED;
+	errno = old_errno;
 	return 0;
 }
 
@@ -162,19 +184,12 @@ static int sort(const void *a, const void *b)
 
 int glob(const char *restrict pat, int flags, int (*errfunc)(const char *path, int err), glob_t *restrict g)
 {
-	const char *p=pat, *d;
 	struct match head = { .next = NULL }, *tail = &head;
 	size_t cnt, i;
 	size_t offs = (flags & GLOB_DOOFFS) ? g->gl_offs : 0;
 	int error = 0;
+	char buf[PATH_MAX];
 	
-	if (*p == '/') {
-		for (; *p == '/'; p++);
-		d = "/";
-	} else {
-		d = "";
-	}
-
 	if (!errfunc) errfunc = ignore_err;
 
 	if (!(flags & GLOB_APPEND)) {
@@ -183,9 +198,14 @@ int glob(const char *restrict pat, int flags, int (*errfunc)(const char *path, i
 		g->gl_pathv = NULL;
 	}
 
-	if (strnlen(p, PATH_MAX+1) > PATH_MAX) return GLOB_NOSPACE;
+	if (*pat) {
+		char *p = strdup(pat);
+		if (!p) return GLOB_NOSPACE;
+		buf[0] = 0;
+		error = do_glob(buf, 0, 0, p, flags, errfunc, &tail);
+		free(p);
+	}
 
-	if (*pat) error = match_in_dir(d, p, flags, errfunc, &tail);
 	if (error == GLOB_NOSPACE) {
 		freelist(&head);
 		return error;
@@ -240,5 +260,5 @@ void globfree(glob_t *g)
 	g->gl_pathv = NULL;
 }
 
-LFS64(glob);
-LFS64(globfree);
+weak_alias(glob, glob64);
+weak_alias(globfree, globfree64);

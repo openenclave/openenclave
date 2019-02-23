@@ -5,6 +5,7 @@
 #include <signal.h>
 #include <errno.h>
 #include <limits.h>
+#include <sys/mman.h>
 #include "libc.h"
 #include "syscall.h"
 #include "atomic.h"
@@ -16,7 +17,8 @@ struct pthread {
 	/* Part 1 -- these fields may be external or
 	 * internal (accessed via asm) ABI. Do not change. */
 	struct pthread *self;
-	void **dtv, *unused1, *unused2;
+	uintptr_t *dtv;
+	void *unused1, *unused2;
 	uintptr_t sysinfo;
 	uintptr_t canary, canary2;
 
@@ -53,7 +55,7 @@ struct pthread {
 	/* Part 3 -- the positions of these fields relative to
 	 * the end of the structure is external and internal ABI. */
 	uintptr_t canary_at_end;
-	void **dtv_copy;
+	uintptr_t *dtv_copy;
 };
 
 struct start_sched_args {
@@ -135,22 +137,35 @@ struct __timer {
 	((sigset_t *)(const unsigned long [_NSIG/8/sizeof(long)]){ \
 	 0x80000000 })
 
-pthread_t __pthread_self_init(void);
+void *__tls_get_addr(tls_mod_off_t *);
+hidden void *__tls_get_new(tls_mod_off_t *);
+hidden int __init_tp(void *);
+hidden void *__copy_tls(unsigned char *);
+hidden void __reset_tls();
 
-int __clone(int (*)(void *), void *, int, void *, ...);
-int __set_thread_area(void *);
-int __libc_sigaction(int, const struct sigaction *, struct sigaction *);
-int __libc_sigprocmask(int, const sigset_t *, sigset_t *);
-void __lock(volatile int *);
-void __unmapself(void *, size_t);
+hidden void __dl_thread_cleanup(void);
+hidden void __testcancel();
+hidden void __do_cleanup_push(struct __ptcb *);
+hidden void __do_cleanup_pop(struct __ptcb *);
+hidden void __pthread_tsd_run_dtors();
 
-void __vm_wait(void);
-void __vm_lock(void);
-void __vm_unlock(void);
+hidden void __pthread_key_delete_synccall(void (*)(void *), void *);
+hidden int __pthread_key_delete_impl(pthread_key_t);
 
-int __timedwait(volatile int *, int, clockid_t, const struct timespec *, int);
-int __timedwait_cp(volatile int *, int, clockid_t, const struct timespec *, int);
-void __wait(volatile int *, volatile int *, int, int);
+extern hidden volatile int __block_new_threads;
+extern hidden volatile size_t __pthread_tsd_size;
+extern hidden void *__pthread_tsd_main[];
+extern hidden volatile int __aio_fut;
+extern hidden volatile int __eintr_valid_flag;
+
+hidden int __clone(int (*)(void *), void *, int, void *, ...);
+hidden int __set_thread_area(void *);
+hidden int __libc_sigaction(int, const struct sigaction *, struct sigaction *);
+hidden void __unmapself(void *, size_t);
+
+hidden int __timedwait(volatile int *, int, clockid_t, const struct timespec *, int);
+hidden int __timedwait_cp(volatile int *, int, clockid_t, const struct timespec *, int);
+hidden void __wait(volatile int *, volatile int *, int, int);
 static inline void __wake(volatile void *addr, int cnt, int priv)
 {
 	if (priv) priv = FUTEX_PRIVATE;
@@ -165,16 +180,18 @@ static inline void __futexwait(volatile void *addr, int val, int priv)
 	__syscall(SYS_futex, addr, FUTEX_WAIT, val, 0);
 }
 
-void __acquire_ptc(void);
-void __release_ptc(void);
-void __inhibit_ptc(void);
+hidden void __acquire_ptc(void);
+hidden void __release_ptc(void);
+hidden void __inhibit_ptc(void);
 
-void __block_all_sigs(void *);
-void __block_app_sigs(void *);
-void __restore_sigs(void *);
+extern hidden unsigned __default_stacksize;
+extern hidden unsigned __default_guardsize;
 
-#define DEFAULT_STACK_SIZE 81920
-#define DEFAULT_GUARD_SIZE 4096
+#define DEFAULT_STACK_SIZE 131072
+#define DEFAULT_GUARD_SIZE 8192
+
+#define DEFAULT_STACK_MAX (8<<20)
+#define DEFAULT_GUARD_MAX (1<<20)
 
 #define __ATTRP_C11_THREAD ((void*)(uintptr_t)-1)
 

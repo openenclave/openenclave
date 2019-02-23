@@ -1,5 +1,4 @@
 #include <sys/stat.h>
-#include "libc.h"
 
 int __fxstat(int ver, int fd, struct stat *buf)
 {
@@ -21,10 +20,10 @@ int __xstat(int ver, const char *path, struct stat *buf)
 	return stat(path, buf);
 }
 
-LFS64(__fxstat);
-LFS64(__fxstatat);
-LFS64(__lxstat);
-LFS64(__xstat);
+weak_alias(__fxstat, __fxstat64);
+weak_alias(__fxstatat, __fxstatat64);
+weak_alias(__lxstat, __lxstat64);
+weak_alias(__xstat, __xstat64);
 
 int __xmknod(int ver, const char *path, mode_t mode, dev_t *dev)
 {

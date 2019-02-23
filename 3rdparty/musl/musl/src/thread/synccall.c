@@ -7,6 +7,7 @@
 #include "futex.h"
 #include "atomic.h"
 #include "../dirent/__dirent.h"
+#include "lock.h"
 
 static struct chain {
 	struct chain *next;

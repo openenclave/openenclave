@@ -17,7 +17,6 @@ void __stack_chk_fail(void)
 	a_crash();
 }
 
-__attribute__((__visibility__("hidden")))
-void __stack_chk_fail_local(void);
+hidden void __stack_chk_fail_local(void);
 
 weak_alias(__stack_chk_fail, __stack_chk_fail_local);

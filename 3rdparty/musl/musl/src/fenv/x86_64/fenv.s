@@ -30,6 +30,7 @@ feraiseexcept:
 	ret
 
 .global __fesetround
+.hidden __fesetround
 .type __fesetround,@function
 __fesetround:
 	push %rax

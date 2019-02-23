@@ -1,8 +1,5 @@
 #include <stdlib.h>
 #include "locale_impl.h"
-#include "libc.h"
-
-int __loc_is_allocated(locale_t);
 
 void freelocale(locale_t l)
 {

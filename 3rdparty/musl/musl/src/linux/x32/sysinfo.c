@@ -1,6 +1,5 @@
 #include <sys/sysinfo.h>
 #include "syscall.h"
-#include "libc.h"
 
 #define klong long long
 #define kulong unsigned long long
