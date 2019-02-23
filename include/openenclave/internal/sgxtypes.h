@@ -1012,33 +1012,6 @@ typedef struct _sgx_nonce
 /*
 **==============================================================================
 **
-** oe_ecall_pages_t
-**
-**     The enclave image has ECALL address pages that keep the virtual
-**     addresses of all ECALL functions. When the host performs an OCALL, it
-**     passes a function number that the enclave uses as an index into this
-**     table to obtain the virtual address of the corresponding function.
-**
-**==============================================================================
-*/
-
-#define OE_ECALL_PAGES_MAGIC 0x927ccf78a3de9f9d
-
-typedef struct _oe_ecall_pages
-{
-    /* Should be OE_ECALL_PAGES_MAGIC if page is valid */
-    uint64_t magic;
-
-    /* Number of ECALL virtual addresses */
-    uint64_t num_vaddrs;
-
-    /* ECALL virtual addresses (index by function number) */
-    OE_ZERO_SIZED_ARRAY uint64_t vaddrs[];
-} oe_ecall_pages_t;
-
-/*
-**==============================================================================
-**
 ** sgx_init_quote()
 **
 **==============================================================================
