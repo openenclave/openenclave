@@ -16,7 +16,36 @@
 #include "libc_t.h"
 #include "mtest.h"
 
+#pragma STDC FENV_ACCESS ON
+
+/* Type of the control word.  */
+typedef unsigned int fpu_control_t __attribute__ ((__mode__ (__HI__)));
+/* Macros for accessing the hardware control word.  */
+#define _FPU_GETCW(cw) __asm__ __volatile__ ("fnstcw %0" : "=m" (*&cw))
+#define _FPU_SETCW(cw) __asm__ __volatile__("fldcw %0" : : "m" (*&cw))
+
 int t_status = 0;
+
+int my_printfpu_control()
+{
+	fpu_control_t cw;
+    _FPU_GETCW(cw);
+    //printf("FPU Control Word is 0x%x\n", cw);
+}
+
+uint32_t my_getmxcsr()
+{
+	uint32_t csr; 
+    asm volatile("stmxcsr %0" : "=m"(csr)); 
+	//printf("MXCSR is %x\n", csr);
+	return csr;
+} 
+
+void my_setmxcsr()
+{
+	uint32_t csr = 0x1f80;
+	asm volatile("ldmxcsr %0" : : "m"(csr)); 
+}
 
 int t_printf(const char* s, ...)
 {
@@ -45,6 +74,7 @@ int run_test(const char* name, int (*main)(int argc, const char* argv[]))
 
     /* Print running message. */
     printf("=== running: %s\n", name);
+	my_setmxcsr();
 
     /* Disable Open Enclave debug malloc checks. */
     {
