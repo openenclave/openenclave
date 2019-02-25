@@ -1,0 +1,62 @@
+def ACCDeployVM(String version) {
+    return {
+        stage("Deploy ${version}") {
+            node("nonSGX") {
+                cleanWs()
+                checkout scm
+                def azure_image = docker.build("oetools-deploy", ".jenkins/libcxx" )
+                azure_image.inside {
+                    withCredentials([usernamePassword(credentialsId: 'SERVICE_PRINCIPAL_OSTCLAB',
+                                                      passwordVariable: 'SERVICE_PRINCIPAL_PASSWORD',
+                                                      usernameVariable: 'SERVICE_PRINCIPAL_ID'),
+                                     string(credentialsId: 'OSCTLabSubID', variable: 'SUBSCRIPTION_ID'),
+                                     string(credentialsId: 'TenantID', variable: 'TENANT_ID')]) {
+                        dir('.jenkins/libcxx') {
+                            sh "./deploy_azure_accvm.sh ${version}.json"
+                            sh "ls -la"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+def deleteRG() {
+    stage("Deleting Resource group oe-libcxx-${BUILD_NUMBER}") {
+        node("nonSGX") {
+            cleanWs()
+            checkout scm
+            def azure_image = docker.build("oetools-deploy", ".jenkins/libcxx" )
+            azure_image.inside {
+                withCredentials([usernamePassword(credentialsId: 'SERVICE_PRINCIPAL_OSTCLAB',
+                                                  passwordVariable: 'SERVICE_PRINCIPAL_PASSWORD',
+                                                  usernameVariable: 'SERVICE_PRINCIPAL_ID'),
+                                 string(credentialsId: 'OSCTLabSubID', variable: 'SUBSCRIPTION_ID'),
+                                 string(credentialsId: 'TenantID', variable: 'TENANT_ID')]) {
+                    dir('.jenkins/libcxx') {
+                        withEnv(["AZURE_CONFIG_DIR=${WORKSPACE}/.jenkins/libcxx"]) {
+                            sh """
+                            az login --service-principal -u ${SERVICE_PRINCIPAL_ID} -p ${SERVICE_PRINCIPAL_PASSWORD} --tenant ${TENANT_ID}
+                            az account set --subscription ${SUBSCRIPTION_ID}
+                            az group delete --name oe-libcxx-${BUILD_NUMBER} --yes --no-wait
+                            """
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+def testVersions = ["ubuntu-16.04", "ubuntu-18.04"]
+
+def stepsForParallel = testVersions.collectEntries { version ->
+    ["Deploying  ${version}" : ACCDeployVM(version)]
+}
+
+try {
+  parallel stepsForParallel
+} finally {
+  deleteRG()
+}
