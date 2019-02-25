@@ -26,6 +26,26 @@ def ACCTest(String label, String compiler, String build_type) {
     }
 }
 
+def ACCGNUTest() {
+    stage("ACC1804 GNU gcc SGX1FLC") {
+        node("ACC-1804") {
+            cleanWs()
+            checkout scm
+            timeout(15) {
+                dir('build') {
+                    withEnv(["CC=gcc","CXX=g++"]) {
+                        sh """
+                        cmake ${WORKSPACE} -DUSE_LIBSGX=ON
+                        make
+                        ctest --output-on-failure
+                        """
+                    }
+                }
+            }
+        }
+    }
+}
+
 def simulationTest(String version, String platform_mode, String build_type) {
     def use_libsgx = "OFF"
     if (platform_mode == "SGX1FLC") {
@@ -194,6 +214,7 @@ parallel "Check Developer Experience Ubuntu 16.04" :            { checkDevFlows(
          "ACC1804 gcc Release" :                                { ACCTest('ACC-1804', 'gcc', 'Release') },
          "ACC1804 gcc RelWithDebInfo" :                         { ACCTest('ACC-1804', 'gcc', 'RelWithDebInfo') },
          "ACC1804 Container RelWithDebInfo" :                   { ACCContainerTest('ACC-1804', '18.04') },
+         "ACC1804 GNU gcc SGX1FLC" :                            { ACCGNUTest() },
          "Sim 1604 clang-7 SGX1 Debug" :                        { simulationTest('16.04', 'SGX1', 'Debug')},
          "Sim 1604 clang-7 SGX1 Release" :                      { simulationTest('16.04', 'SGX1', 'Release')},
          "Sim 1604 clang-7 SGX1 RelWithDebInfo" :               { simulationTest('16.04', 'SGX1', 'RelWithDebInfo')},
