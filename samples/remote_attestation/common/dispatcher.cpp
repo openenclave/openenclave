@@ -104,22 +104,24 @@ int ecall_dispatcher::get_remote_report_with_pubkey(
 
     // Generate a remote report for the public key so that the enclave that
     // receives the key can attest this enclave.
-    report = (uint8_t*)oe_host_malloc(OE_MAX_REPORT_SIZE);
-    if (report == NULL)
-    {
-        goto exit;
-    }
-    report_size = OE_MAX_REPORT_SIZE;
-
     if (m_attestation->generate_remote_report(
-            pem_public_key, sizeof(pem_public_key), report, &report_size))
+            pem_public_key, sizeof(pem_public_key), &report, &report_size))
     {
-        *remote_report = report;
+        // Allocate memory on the host and copy the report over.
+        *remote_report = (uint8_t*)oe_host_malloc(report_size);
+        if (*remote_report == NULL)
+        {
+            ret = OE_OUT_OF_MEMORY;
+            goto exit;
+        }
+        memcpy(*remote_report, report, report_size);
         *remote_report_size = report_size;
+        oe_free_report(report);
 
         key_buf = (uint8_t*)oe_host_malloc(512);
         if (key_buf == NULL)
         {
+            ret = OE_OUT_OF_MEMORY;
             goto exit;
         }
         memcpy(key_buf, pem_public_key, sizeof(pem_public_key));
@@ -139,9 +141,11 @@ exit:
     if (ret != 0)
     {
         if (report)
-            oe_host_free(report);
+            oe_free_report(report);
         if (key_buf)
             oe_host_free(key_buf);
+        if (*remote_report)
+            oe_host_free(*remote_report);
     }
     return ret;
 }
