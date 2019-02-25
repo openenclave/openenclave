@@ -213,4 +213,4 @@ parallel "Check Developer Experience Ubuntu 16.04" :            { checkDevFlows(
          "Win2016 Ubuntu1804 clang-7 Release Linux-Elf-build" : { win2016LinuxElfBuild('18.04', 'clang-7', 'Release') },
          "Win2016 Debug Cross Compile" :                        { win2016CrossCompile('Debug') },
          "Win2016 Release Cross Compile" :                      { win2016CrossCompile('Release') }
-         
+
