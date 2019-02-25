@@ -1,0 +1,52 @@
+{
+  "properties": {
+    "vmProfiles": [
+      {
+        "name": "libcxx-bionic-vm-1",
+        "osType": "Linux",
+        "vmSize": "Standard_DC2s",
+        "ports": [22],
+        "isVanilla": true,
+        "hasDNSName": true
+      },
+      {
+        "name": "libcxx-bionic-vm-2",
+        "osType": "Linux",
+        "vmSize": "Standard_DC2s",
+        "ports": [22],
+        "isVanilla": true,
+        "hasDNSName": true
+      },
+      {
+        "name": "libcxx-bionic-vm-3",
+        "osType": "Linux",
+        "vmSize": "Standard_DC2s",
+        "ports": [22],
+        "isVanilla": true,
+        "hasDNSName": true
+      }
+    ],
+    "vnetProfile": {
+      "vnetResourceGroup": "OE-Jenkins-CI-VNET",
+      "vnetName": "OE-Jenkins-CI-VNET",
+      "subnetName": "default"
+    },
+    "linuxProfile": {
+      "adminUsername": "azureuser",
+      "sshPublicKeys": [
+        {
+          "keyData": ""
+        }
+      ],
+      "osImage": {
+        "publisher": "Canonical",
+        "offer": "UbuntuServer",
+        "sku": "18.04-LTS",
+        "version": "latest"
+      }
+    },
+    "diagnosticsProfile": {
+      "enabled": false
+    }
+  }
+}
