@@ -1,0 +1,12 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+[1604-agents]
+libcxx-xenial-vm-1.eastus.cloudapp.azure.com jenkins_label=LIBCXX-1604
+libcxx-xenial-vm-2.eastus.cloudapp.azure.com jenkins_label=LIBCXX-1604
+libcxx-xenial-vm-3.eastus.cloudapp.azure.com jenkins_label=LIBCXX-1604
+
+[1804-agents]
+libcxx-bionic-vm-1.eastus.cloudapp.azure.com jenkins_label=LIBCXX-1804
+libcxx-bionic-vm-2.eastus.cloudapp.azure.com jenkins_label=LIBCXX-1804
+libcxx-bionic-vm-3.eastus.cloudapp.azure.com jenkins_label=LIBCXX-1804
