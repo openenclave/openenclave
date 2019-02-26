@@ -5,6 +5,7 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <string.h>
+#include "stdio_impl.h"
 
 extern int __optpos, __optreset;
 
@@ -17,8 +18,6 @@ static void permute(char *const *argv, int dest, int src)
 		av[i] = av[i-1];
 	av[dest] = tmp;
 }
-
-void __getopt_msg(const char *, const char *, const char *, size_t);
 
 static int __getopt_long_core(int argc, char *const *argv, const char *optstring, const struct option *longopts, int *idx, int longonly);
 

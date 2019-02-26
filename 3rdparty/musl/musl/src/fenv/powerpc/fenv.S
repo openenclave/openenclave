@@ -79,6 +79,7 @@ fegetround:
 	blr
 
 .global __fesetround
+.hidden __fesetround
 .type __fesetround,@function
 __fesetround:
 	/*

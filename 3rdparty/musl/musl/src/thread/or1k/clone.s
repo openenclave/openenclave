@@ -3,6 +3,7 @@
  * sys_clone(flags, stack, ptid, ctid, tls)
  */
 .global __clone
+.hidden __clone
 .type   __clone,@function
 __clone:
 	l.addi	r4, r4, -8

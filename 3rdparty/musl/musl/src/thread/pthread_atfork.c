@@ -1,5 +1,6 @@
 #include <pthread.h>
 #include "libc.h"
+#include "lock.h"
 
 static struct atfork_funcs {
 	void (*prepare)(void);

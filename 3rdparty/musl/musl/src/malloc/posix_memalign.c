@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <errno.h>
-
-void *__memalign(size_t, size_t);
+#include "malloc_impl.h"
 
 int posix_memalign(void **res, size_t align, size_t len)
 {

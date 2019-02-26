@@ -123,8 +123,6 @@ void __dump_heap(int x)
 }
 #endif
 
-void *__expand_heap(size_t *);
-
 static struct chunk *expand_heap(size_t n)
 {
 	static int heap_lock[2];

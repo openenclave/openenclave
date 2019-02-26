@@ -1,4 +1,5 @@
 #include <fenv.h>
+#include <features.h>
 
 static inline unsigned get_fpc(void)
 {
@@ -36,7 +37,7 @@ int fegetround(void)
 	return get_fpc() & 3;
 }
 
-int __fesetround(int r)
+hidden int __fesetround(int r)
 {
 	set_fpc(get_fpc() & ~3L | r);
 	return 0;

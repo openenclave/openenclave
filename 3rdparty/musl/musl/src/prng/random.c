@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdint.h>
-#include "libc.h"
+#include "lock.h"
 
 /*
 this code uses the same lagged fibonacci generator as the

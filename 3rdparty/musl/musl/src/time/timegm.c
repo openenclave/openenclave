@@ -2,8 +2,6 @@
 #include "time_impl.h"
 #include <errno.h>
 
-extern const char __utc[];
-
 time_t timegm(struct tm *tm)
 {
 	struct tm new;

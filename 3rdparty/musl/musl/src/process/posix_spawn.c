@@ -8,19 +8,15 @@
 #include "syscall.h"
 #include "pthread_impl.h"
 #include "fdop.h"
-#include "libc.h"
 
 struct args {
 	int p[2];
 	sigset_t oldmask;
 	const char *path;
-	int (*exec)(const char *, char *const *, char *const *);
 	const posix_spawn_file_actions_t *fa;
 	const posix_spawnattr_t *restrict attr;
 	char *const *argv, *const *envp;
 };
-
-void __get_handler_set(sigset_t *);
 
 static int __sys_dup2(int old, int new)
 {
@@ -138,7 +134,10 @@ static int child(void *args_vp)
 	pthread_sigmask(SIG_SETMASK, (attr->__flags & POSIX_SPAWN_SETSIGMASK)
 		? &attr->__mask : &args->oldmask, 0);
 
-	args->exec(args->path, args->argv, args->envp);
+	int (*exec)(const char *, char *const *, char *const *) =
+		attr->__fn ? (int (*)())attr->__fn : execve;
+
+	exec(args->path, args->argv, args->envp);
 	ret = -errno;
 
 fail:
@@ -149,8 +148,7 @@ fail:
 }
 
 
-int __posix_spawnx(pid_t *restrict res, const char *restrict path,
-	int (*exec)(const char *, char *const *, char *const *),
+int posix_spawn(pid_t *restrict res, const char *restrict path,
 	const posix_spawn_file_actions_t *fa,
 	const posix_spawnattr_t *restrict attr,
 	char *const argv[restrict], char *const envp[restrict])
@@ -166,7 +164,6 @@ int __posix_spawnx(pid_t *restrict res, const char *restrict path,
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
 
 	args.path = path;
-	args.exec = exec;
 	args.fa = fa;
 	args.attr = attr ? attr : &(const posix_spawnattr_t){0};
 	args.argv = argv;
@@ -192,12 +189,4 @@ int __posix_spawnx(pid_t *restrict res, const char *restrict path,
 	pthread_setcancelstate(cs, 0);
 
 	return ec;
-}
-
-int posix_spawn(pid_t *restrict res, const char *restrict path,
-	const posix_spawn_file_actions_t *fa,
-	const posix_spawnattr_t *restrict attr,
-	char *const argv[restrict], char *const envp[restrict])
-{
-	return __posix_spawnx(res, path, execve, fa, attr, argv, envp);
 }

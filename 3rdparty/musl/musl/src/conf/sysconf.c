@@ -204,7 +204,6 @@ long sysconf(int name)
 	case JT_PHYS_PAGES & 255:
 	case JT_AVPHYS_PAGES & 255: ;
 		unsigned long long mem;
-		int __lsysinfo(struct sysinfo *);
 		struct sysinfo si;
 		__lsysinfo(&si);
 		if (!si.mem_unit) si.mem_unit = 1;

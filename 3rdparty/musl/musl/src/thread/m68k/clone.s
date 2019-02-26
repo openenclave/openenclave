@@ -1,5 +1,6 @@
 .text
 .global __clone
+.hidden __clone
 .type   __clone,@function
 __clone:
 	movem.l %d2-%d5,-(%sp)

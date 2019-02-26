@@ -5,7 +5,7 @@
 
 #define HWCAP_TLS (1 << 15)
 
-extern const unsigned char __attribute__((__visibility__("hidden")))
+extern hidden const unsigned char
 	__a_barrier_oldkuser[], __a_barrier_v6[], __a_barrier_v7[],
 	__a_cas_v6[], __a_cas_v7[],
 	__a_gettp_cp15[];
@@ -22,8 +22,7 @@ extern const unsigned char __attribute__((__visibility__("hidden")))
 #define __a_gettp_kuser 0xffff0fe0
 #define __a_gettp_cp15 (uintptr_t)__a_gettp_cp15
 
-extern uintptr_t __attribute__((__visibility__("hidden")))
-	__a_barrier_ptr, __a_cas_ptr, __a_gettp_ptr;
+extern hidden uintptr_t __a_barrier_ptr, __a_cas_ptr, __a_gettp_ptr;
 
 int __set_thread_area(void *p)
 {

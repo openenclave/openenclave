@@ -1,8 +1,5 @@
-.global __vfork
-.weak vfork
-.type __vfork,@function
+.global vfork
 .type vfork,@function
-__vfork:
 vfork:
 	mov #95, r3
 	add r3, r3

@@ -8,6 +8,7 @@ fegetround:
 	 and #3, r0
 
 .global __fesetround
+.hidden __fesetround
 .type   __fesetround, @function
 __fesetround:
 	sts fpscr, r0

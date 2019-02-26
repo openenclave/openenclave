@@ -1,7 +1,6 @@
 #include <sys/msg.h>
 #include "syscall.h"
 #include "ipc.h"
-#include "libc.h"
 
 int msgsnd(int q, const void *m, size_t len, int flag)
 {

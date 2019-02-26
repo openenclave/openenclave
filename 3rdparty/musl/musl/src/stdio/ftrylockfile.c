@@ -2,8 +2,6 @@
 #include "pthread_impl.h"
 #include <limits.h>
 
-#define MAYBE_WAITERS 0x40000000
-
 void __do_orphaned_stdio_locks()
 {
 	FILE *f;

@@ -1,4 +1,5 @@
 .global __clone
+.hidden __clone
 .type   __clone,@function
 
 # r5, r6, r7, r8, r9, r10, stack

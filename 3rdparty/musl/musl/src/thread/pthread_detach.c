@@ -1,8 +1,6 @@
 #include "pthread_impl.h"
 #include <threads.h>
 
-int __pthread_join(pthread_t, void **);
-
 static int __pthread_detach(pthread_t t)
 {
 	/* If the cas fails, detach state is either already-detached

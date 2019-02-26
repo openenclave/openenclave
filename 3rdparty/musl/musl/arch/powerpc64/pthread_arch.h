@@ -1,7 +1,7 @@
 static inline struct pthread *__pthread_self()
 {
 	register char *tp __asm__("r13");
-	__asm__ __volatile__ ("" : "=r" (tp) );
+	__asm__ ("" : "=r" (tp) );
 	return (pthread_t)(tp - 0x7000 - sizeof(struct pthread));
 }
 

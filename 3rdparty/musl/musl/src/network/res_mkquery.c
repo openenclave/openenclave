@@ -1,7 +1,6 @@
 #include <resolv.h>
 #include <string.h>
 #include <time.h>
-#include "libc.h"
 
 int __res_mkquery(int op, const char *dname, int class, int type,
 	const unsigned char *data, int datalen,

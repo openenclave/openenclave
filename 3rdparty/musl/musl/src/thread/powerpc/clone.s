@@ -1,5 +1,6 @@
 .text
 .global __clone
+.hidden __clone
 .type __clone, %function
 __clone:
 # int clone(fn, stack, flags, arg, ptid, tls, ctid)

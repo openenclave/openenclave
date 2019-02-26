@@ -1,8 +1,9 @@
+#define _GNU_SOURCE
 #include "pthread_impl.h"
 #include <string.h>
 
-extern size_t __default_stacksize;
-extern size_t __default_guardsize;
+#define MIN(a,b) ((a)<(b) ? (a) : (b))
+#define MAX(a,b) ((a)>(b) ? (a) : (b))
 
 int pthread_setattr_default_np(const pthread_attr_t *attrp)
 {
@@ -13,11 +14,12 @@ int pthread_setattr_default_np(const pthread_attr_t *attrp)
 	if (memcmp(&tmp, &zero, sizeof tmp))
 		return EINVAL;
 
+	unsigned stack = MIN(attrp->_a_stacksize, DEFAULT_STACK_MAX);
+	unsigned guard = MIN(attrp->_a_guardsize, DEFAULT_GUARD_MAX);
+
 	__inhibit_ptc();
-	if (attrp->_a_stacksize >= __default_stacksize)
-		__default_stacksize = attrp->_a_stacksize;
-	if (attrp->_a_guardsize >= __default_guardsize)
-		__default_guardsize = attrp->_a_guardsize;
+	__default_stacksize = MAX(__default_stacksize, stack);
+	__default_guardsize = MAX(__default_guardsize, guard);
 	__release_ptc();
 
 	return 0;

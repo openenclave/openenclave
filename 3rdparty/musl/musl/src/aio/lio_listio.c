@@ -3,7 +3,6 @@
 #include <unistd.h>
 #include <string.h>
 #include "pthread_impl.h"
-#include "libc.h"
 
 struct lio_state {
 	struct sigevent *sev;
@@ -141,4 +140,4 @@ int lio_listio(int mode, struct aiocb *restrict const *restrict cbs, int cnt, st
 	return 0;
 }
 
-LFS64(lio_listio);
+weak_alias(lio_listio, lio_listio64);

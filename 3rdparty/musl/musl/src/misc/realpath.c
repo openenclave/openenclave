@@ -7,8 +7,6 @@
 #include <string.h>
 #include "syscall.h"
 
-void __procfdname(char *, unsigned);
-
 char *realpath(const char *restrict filename, char *restrict resolved)
 {
 	int fd;

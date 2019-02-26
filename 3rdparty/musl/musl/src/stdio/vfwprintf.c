@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include <wchar.h>
 #include <inttypes.h>
 

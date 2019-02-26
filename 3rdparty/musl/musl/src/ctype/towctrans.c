@@ -1,6 +1,6 @@
 #include <ctype.h>
+#include <stddef.h>
 #include <wctype.h>
-#include "libc.h"
 
 #define CASEMAP(u1,u2,l) { (u1), (l)-(u1), (u2)-(u1)+1 }
 #define CASELACE(u1,u2) CASEMAP((u1),(u2),(u1)+1)

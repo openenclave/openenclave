@@ -1,8 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include "libc.h"
-
-char *__strchrnul(const char *, int);
+#include <unistd.h>
 
 char *getenv(const char *name)
 {

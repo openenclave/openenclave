@@ -6,7 +6,7 @@
 #define MIN(a, b) ((a)<(b) ? (a) : (b))
 #define FIX(x) do{ if ((x)>=SYSCALL_RLIM_INFINITY) (x)=RLIM_INFINITY; }while(0)
 
-int __setrlimit(int resource, const struct rlimit *rlim)
+static int __setrlimit(int resource, const struct rlimit *rlim)
 {
 	unsigned long k_rlim[2];
 	struct rlimit tmp;
@@ -47,4 +47,4 @@ int setrlimit(int resource, const struct rlimit *rlim)
 	return 0;
 }
 
-LFS64(setrlimit);
+weak_alias(setrlimit, setrlimit64);

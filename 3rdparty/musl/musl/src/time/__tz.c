@@ -3,7 +3,9 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
 #include "libc.h"
+#include "lock.h"
 
 long  __timezone = 0;
 int   __daylight = 0;
@@ -113,8 +115,6 @@ static size_t zi_dotprod(const unsigned char *z, const unsigned char *v, size_t 
 	return y;
 }
 
-int __munmap(void *, size_t);
-
 static void do_tzset()
 {
 	char buf[NAME_MAX+25], *pathname=buf+24;
@@ -129,6 +129,8 @@ static void do_tzset()
 	if (!*s) s = __utc;
 
 	if (old_tz && !strcmp(s, old_tz)) return;
+
+	for (i=0; i<5; i++) r0[i] = r1[i] = 0;
 
 	if (zi) __munmap((void *)zi, map_size);
 
@@ -194,7 +196,6 @@ static void do_tzset()
 			const unsigned char *p;
 			__tzname[0] = __tzname[1] = 0;
 			__daylight = __timezone = dst_off = 0;
-			for (i=0; i<5; i++) r0[i] = r1[i] = 0;
 			for (p=types; p<abbrevs; p+=6) {
 				if (!p[4] && !__tzname[0]) {
 					__tzname[0] = (char *)abbrevs + p[5];
@@ -399,7 +400,7 @@ dst:
 	UNLOCK(lock);
 }
 
-void __tzset()
+static void __tzset()
 {
 	LOCK(lock);
 	do_tzset();

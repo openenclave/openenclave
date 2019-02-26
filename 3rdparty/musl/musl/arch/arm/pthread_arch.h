@@ -4,7 +4,7 @@
 static inline pthread_t __pthread_self()
 {
 	char *p;
-	__asm__ __volatile__ ( "mrc p15,0,%0,c13,c0,3" : "=r"(p) );
+	__asm__ ( "mrc p15,0,%0,c13,c0,3" : "=r"(p) );
 	return (void *)(p-sizeof(struct pthread));
 }
 
@@ -18,9 +18,9 @@ static inline pthread_t __pthread_self()
 
 static inline pthread_t __pthread_self()
 {
-	extern uintptr_t __attribute__((__visibility__("hidden"))) __a_gettp_ptr;
+	extern hidden uintptr_t __a_gettp_ptr;
 	register uintptr_t p __asm__("r0");
-	__asm__ __volatile__ ( BLX " %1" : "=r"(p) : "r"(__a_gettp_ptr) : "cc", "lr" );
+	__asm__ ( BLX " %1" : "=r"(p) : "r"(__a_gettp_ptr) : "cc", "lr" );
 	return (void *)(p-sizeof(struct pthread));
 }
 

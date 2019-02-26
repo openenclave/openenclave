@@ -1,4 +1,5 @@
 #include <fenv.h>
+#include <features.h>
 
 #if __HAVE_68881__ || __mcffpu__
 
@@ -50,7 +51,7 @@ int fegetround(void)
 	return getcr() & FE_UPWARD;
 }
 
-int __fesetround(int r)
+hidden int __fesetround(int r)
 {
 	setcr((getcr() & ~FE_UPWARD) | r);
 	return 0;
