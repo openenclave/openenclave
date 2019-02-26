@@ -8,7 +8,7 @@
 
 /* OE_WEAK_ALIAS */
 #define OE_WEAK_ALIAS(OLD, NEW) \
-    extern __typeof(OLD) NEW __attribute__((weak, alias(#OLD)))
+    extern __typeof(OLD) NEW __attribute__((__weak__, alias(#OLD)))
 
 /* OE_ZERO_SIZED_ARRAY */
 #ifdef _WIN32
