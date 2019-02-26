@@ -85,6 +85,8 @@ add_library(oecore STATIC
 # Suppress type conversion warnings introduced by 3rdparty code
 set_source_files_properties(${MUSL_SRC_DIR}/prng/rand.c ROPERTIES
     COMPILE_FLAGS -Wno-conversion)
+set_source_files_properties(${MUSL_SRC_DIR}/string/memmove.c PROPERTIES
+    COMPILE_FLAGS -Wno-sign-conversion)
 set_source_files_properties(${MUSL_SRC_DIR}/string/memset.c PROPERTIES
     COMPILE_FLAGS -Wno-conversion)
 set_source_files_properties(__secs_to_tm.c PROPERTIES
