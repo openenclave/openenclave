@@ -465,7 +465,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/search/hsearch.c
     ${MUSLSRC}/search/insque.c
     ${MUSLSRC}/search/lsearch.c
-    ${MUSLSRC}/search/tsearch_avl.c
     ${MUSLSRC}/stat/stat.c
     ${MUSLSRC}/stdio/asprintf.c
     ${MUSLSRC}/stdio/asprintf.c
