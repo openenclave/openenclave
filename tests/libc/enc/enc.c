@@ -37,7 +37,7 @@ uint32_t my_getmxcsr()
 {
 	uint32_t csr; 
     asm volatile("stmxcsr %0" : "=m"(csr)); 
-	//printf("MXCSR is %x\n", csr);
+	printf("MXCSR is %x\n", csr);
 	return csr;
 } 
 
@@ -74,7 +74,6 @@ int run_test(const char* name, int (*main)(int argc, const char* argv[]))
 
     /* Print running message. */
     printf("=== running: %s\n", name);
-	my_setmxcsr();
 
     /* Disable Open Enclave debug malloc checks. */
     {

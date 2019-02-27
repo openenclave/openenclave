@@ -44,6 +44,7 @@ ENCLAVE          EQU [rbp-56]
 ARG1OUT         EQU [rbp-64]
 ARG2OUT         EQU [rbp-72]
 STACKPTR        EQU [rbp-80]
+HOST_CONTEXT EQU [rbp-88]
 
 NESTED_ENTRY oe_enter, _TEXT$00
     END_PROLOGUE
@@ -60,7 +61,7 @@ NESTED_ENTRY oe_enter, _TEXT$00
     ;;     ARG3 := [RBP-40] <- [RBP+48]
     ;;     ARG4 := [RBP-48] <- [RBP+56]
     ;;     ENCLAVE := [RBP-56] <- [RBP+64]
-    ;;
+    ;;     HOST_CONTEXT := [RBP-88]
     sub rsp, PARAMS_SPACE
     mov TCS, rcx
     mov AEP, rdx
@@ -73,17 +74,26 @@ NESTED_ENTRY oe_enter, _TEXT$00
     mov rax, [rbp+64]
     mov ENCLAVE, rax
 
+	;; Save the host context in the host stack
+	mov HOST_CONTEXT, rsp
+	
+	;;Save the current context
+	
+	;;Save the SSE status and control flags only in host_context 
+	stmxcsr HOST_CONTEXT
+
     ;; Save registers:
     push rbx
     push rdi
     push rsi
     push r12
+	
     push r13
     push r14
     push r15
 
 execute_eenter:
-
+	
     ;; Save the stack pointer so enclave can use the stack.
     mov STACKPTR, rsp
 
@@ -97,7 +107,10 @@ execute_eenter:
 
     mov ARG1OUT, rdi
     mov ARG2OUT, rsi
-
+	
+	;; Restore the saved host context; only SSE state for now
+	ldmxcsr HOST_CONTEXT
+	
 dispatch_ocall:
 
     ;; RAX = __oe_dispatch_ocall(
@@ -153,6 +166,7 @@ return_from_ecall:
     pop rsi
     pop rdi
     pop rbx
+
 
     ;; Return parameters space:
     add rsp, PARAMS_SPACE
