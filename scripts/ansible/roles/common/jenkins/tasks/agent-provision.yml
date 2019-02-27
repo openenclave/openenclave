@@ -17,7 +17,7 @@
       when: jenkins_agent_label is not defined
 
     - set_fact:
-        jenkins_agent_root_dir: "/home/jenkins"
+        jenkins_agent_root_dir: "/home/jenkins/workspace"
       when: jenkins_agent_root_dir is not defined
 
 - name: Jenkins | Check if the node already exists
