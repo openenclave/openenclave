@@ -10,20 +10,20 @@
 #include <cstring>
 #include "libc_u.h"
 
-#if defined (_WIN32)
-	#include <xmmintrin.h>
+#if defined(_WIN32)
+#include <xmmintrin.h>
 
 uint32_t my_getmxcsr()
 {
-	uint32_t csr;
+    uint32_t csr;
 
-	csr = _mm_getcsr();
-	return csr;
-} 
+    csr = _mm_getcsr();
+    return csr;
+}
 
 void my_setmxcsr(uint32_t csr)
 {
-	_mm_setcsr(csr);
+    _mm_setcsr(csr);
 }
 
 #endif
@@ -65,24 +65,27 @@ int main(int argc, const char* argv[])
 
     printf("=== %s: %s\n", argv[0], argv[1]);
 
-#if defined (_WIN32)
+#if defined(_WIN32)
     printf("Windows Host - Initial value of MXCSR is %0x\n", my_getmxcsr());
 #endif
-
 
     // Create the enclave:
     if ((result = oe_create_libc_enclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
         oe_put_err("oe_create_libc_enclave(): result=%u", result);
 
-#if defined (_WIN32)
-    printf("Windows Host - Value of MXCSR after create_libc_enclave is %0x\n", my_getmxcsr());
+#if defined(_WIN32)
+    printf(
+        "Windows Host - Value of MXCSR after create_libc_enclave is %0x\n",
+        my_getmxcsr());
 #endif
-	
+
     Test(enclave);
 
-#if defined (_WIN32)
-    printf("Windows Host - Value of MXCSR after enclave Test is %0x\n", my_getmxcsr());
+#if defined(_WIN32)
+    printf(
+        "Windows Host - Value of MXCSR after enclave Test is %0x\n",
+        my_getmxcsr());
 #endif
 
     r = oe_terminate_enclave(enclave);
