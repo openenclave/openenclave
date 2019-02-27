@@ -2,6 +2,18 @@
 # Licensed under the MIT License.
 
 ---
+- block:
+  - import_role:
+      name: common/jenkins
+      tasks_from: agent-provision.yml
+    delegate_to: localhost
+  become: no
+
+- name: Check if node_secret fact is defined
+  fail:
+    msg: "The node_secret fact is not defined!"
+  when: node_secret is undefined
+
 - name: Jenkins | Install Java JRE needed by Jenkins
   apt:
     name: openjdk-8-jre
