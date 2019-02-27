@@ -148,8 +148,8 @@ int main(int argc, const char* argv[])
             dump_regs(&regs);
             return 0;
         }
-        epcSz = ((regs.ecx & 0x0fffff000) | ( (uint64_t)(regs.edx & 0x0fffff) << 32));
-        printf("EPC size=%lu\n", epcSz);
+        epcSz = ((regs.ecx & 0x0fffff000) | ((uint64_t)(regs.edx & 0x0fffff) << 32));
+        printf("EPC size on the platform: %lu\n", epcSz);
     }
     return 0;
 }
