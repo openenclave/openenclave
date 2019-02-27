@@ -87,13 +87,19 @@ oe_result_t oe_remove_vectored_exception_handler(
  * While handling the OCALL, the host is not allowed to make an ECALL back into
  * the enclave. A re-entrant ECALL will fail and return OE_REENTRANT_ECALL.
  *
+ * @deprecated This function has been deprecated. Use oeedger8r to generate
+ * code that will call oe_ocall() instead.
+ *
  * @param func The name of the enclave function that will be called.
  * @param args The arguments to be passed to the enclave function.
  *
  * @returns This function return **OE_OK** on success.
  *
  */
-oe_result_t oe_call_host(const char* func, void* args);
+OE_DEPRECATED(
+    oe_result_t oe_call_host(const char* func, void* args),
+    "This function is deprecated. Use oeedger8r to generate code that will "
+    "call oe_ocall() instead.");
 
 /**
  * Perform a high-level host function call (OCALL).
@@ -111,6 +117,9 @@ oe_result_t oe_call_host(const char* func, void* args);
  * the call and not of the underlying function. The OCALL implementation must
  * define its own error reporting scheme based on **args**.
  *
+ * @deprecated This function has been deprecated. Use oeedger8r to generate
+ * code that will call oe_ocall() instead.
+ *
  * @param func The address of the host function that will be called.
  * @param args The arguments to be passed to the host function.
  *
@@ -118,9 +127,11 @@ oe_result_t oe_call_host(const char* func, void* args);
  * @return OE_INVALID_PARAMETER a parameter is invalid.
  * @return OE_FAILURE the call failed.
  */
-oe_result_t oe_call_host_by_address(
-    void (*func)(void*, oe_enclave_t*),
-    void* args);
+OE_DEPRECATED(
+    oe_result_t
+        oe_call_host_by_address(void (*func)(void*, oe_enclave_t*), void* args),
+    "This function is deprecated. Use oeedger8r to generate code that will "
+    "call oe_ocall() instead.");
 
 /**
  * Check whether the given buffer is strictly within the enclave.

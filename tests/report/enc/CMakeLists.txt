@@ -10,3 +10,5 @@ add_enclave(TARGET report_enc
 target_include_directories(report_enc PRIVATE
   ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/../common)
+
+target_link_libraries(report_enc oelibc)

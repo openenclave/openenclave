@@ -2,6 +2,18 @@
 # Licensed under the MIT License.
 
 ---
+- block:
+  - import_role:
+      name: common/jenkins
+      tasks_from: agent-provision.yml
+    delegate_to: localhost
+  become: no
+
+- name: Check if node_secret fact is defined
+  fail:    
+    msg: "The node_secret fact is not defined!"
+  when: node_secret is undefined
+
 - name: Make sure that Jenkins home exists
   win_file:
     path: "{{ jenkins_agent_root_dir }}"
@@ -23,14 +35,6 @@
     url_password: "{{ jenkins_admin_password }}"
     dest: "{{ jenkins_agent_root_dir }}/agent.jar"
 
-- name: Download all the installers
-  win_get_url:
-    url: "{{ item.value.url }}"
-    dest: "{{ item.value.dest }}"
-    timeout: 60
-  retries: 5
-  with_dict: "{{ packages }}"
-
 - name: Oracle JDK8 - Download
   win_get_url:
     url: "{{ jdk8_url }}"
@@ -38,31 +42,8 @@
       Cookie: "oraclelicense=accept-securebackup-cookie"
     dest: "{{ tmp_dir }}\\jdk-windows-x64.exe"
 
-- name: Add all the packages to the machine PATH
-  win_path: 
-    elements: "{{ packages_env_path }}"
-
 - name: Oracle JDK8 - Install
   raw: "{{ tmp_dir }}\\jdk-windows-x64.exe /s REBOOT=Disable REMOVEOUTOFDATEJRES=1"
-
-- name: 7Zip - Install
-  win_package:
-    path: "{{ packages['7z']['dest'] }}"
-
-- name: Microsoft Visual Studio 2017 - Install
-  raw: "{{ packages['vs_2017']['dest'] }} --quiet --wait --add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.VC.CMake.Project --includeRecommended"
-
-- name: Clang 7 - Install
-  raw: "{{ packages['clang7']['dest'] }} /S"
-
-- name: Git - Install
-  raw: "{{ packages.git.dest }} /SILENT"
-
-- name: OCaml - Extract
-  raw: '7z.exe x "{{ packages.ocaml.dest }}" -r -y -o"C:\Program Files"'
-
-- name: shellcheck - Extract
-  raw: '7z.exe x "{{ packages.shellcheck.dest }}" -r -y -o"C:\Program Files\shellcheck"'
 
 - name: Windows | Check if the service wrapper exists
   win_stat:
@@ -138,3 +119,11 @@
     name: jenkins-slave
     start_mode: auto
     state: started
+
+- name: Configure Git in target image to enable merge/rebase actions - email
+  win_shell: |
+    git config --system user.email '{{ ci_team_email }}'
+
+- name: Configure Git in target image to enable merge/rebase actions - name
+  win_shell: |
+    git config --system user.name '{{ ci_team_name }}'

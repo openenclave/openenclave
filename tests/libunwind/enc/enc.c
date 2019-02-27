@@ -5,7 +5,6 @@
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>

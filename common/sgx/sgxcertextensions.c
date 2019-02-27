@@ -7,7 +7,6 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxcertextensions.h>
 #include <openenclave/internal/trace.h>
-#include <string.h>
 #include "../common.h"
 
 #define SGX_EXTENSION_OID_STR "1.2.840.113741.1.13.1"
@@ -132,7 +131,7 @@ static int8_t _oid_equal(
     size_t oid_length,
     const char* expected_oid)
 {
-    size_t expected_length = strlen(expected_oid);
+    size_t expected_length = oe_strlen(expected_oid);
     return (oid_length == expected_length) && (oid + oid_length < end) &&
            (memcmp(oid, expected_oid, oid_length) == 0);
 }

@@ -1,11 +1,14 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/corelibc/stdarg.h>
+#include <openenclave/corelibc/stdio.h>
+#include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
@@ -103,7 +106,7 @@ oe_result_t _handle_oelog_init(uint64_t arg)
     }
     else
     {
-        oe_memset(_enclave_filename, 0, sizeof(_enclave_filename));
+        memset(_enclave_filename, 0, sizeof(_enclave_filename));
     }
 
     _debug_allowed_enclave = is_enclave_debug_allowed();

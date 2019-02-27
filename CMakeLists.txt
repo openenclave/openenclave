@@ -77,8 +77,8 @@ endif()
 
 if (OE_SGX)
   if (WIN32)
-    # Building enclaves on windows is off by default
-    option(BUILD_ENCLAVES "Build ELF enclaves" OFF)
+    # Building enclaves on windows is on by default but can be disabled for enclaves pre-compiled under linux
+    option(BUILD_ENCLAVES "Build ELF enclaves" ON)
   else()
     set(BUILD_ENCLAVES ON)
   endif()
@@ -179,6 +179,7 @@ if (USE_DEBUG_MALLOC AND WIN32)
 endif ()
 
 option(ADD_WINDOWS_ENCLAVE_TESTS "Build Windows enclave tests" OFF)
+option(WIN32_SIMULATION "Windows Simulation Mode" OFF)
 
 find_program(VALGRIND "valgrind")
 if (VALGRIND)

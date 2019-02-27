@@ -2,11 +2,18 @@
 // Licensed under the MIT License.
 
 #include "../common/asn1.h"
+
+/* Nest mbedtls header includes with required corelibc defines */
+// clang-format off
+#include "mbedtls_corelibc_defs.h"
 #include <mbedtls/asn1.h>
 #include <mbedtls/oid.h>
+#include "mbedtls_corelibc_undef.h"
+// clang-format on
+
 #include <openenclave/bits/safecrt.h>
+#include <openenclave/corelibc/string.h>
 #include <openenclave/internal/asn1.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
@@ -91,7 +98,7 @@ oe_result_t oe_asn1_get_sequence(oe_asn1_t* asn1, oe_asn1_t* sequence)
     size_t length;
 
     if (sequence)
-        oe_memset(sequence, 0, sizeof(oe_asn1_t));
+        memset(sequence, 0, sizeof(oe_asn1_t));
 
     if (!_is_valid(asn1) || !sequence)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -142,7 +149,7 @@ oe_result_t oe_asn1_get_oid(oe_asn1_t* asn1, oe_oid_string_t* oid)
     int rc = 0;
 
     if (oid)
-        oe_memset(oid, 0, sizeof(oe_oid_string_t));
+        memset(oid, 0, sizeof(oe_oid_string_t));
 
     if (!_is_valid(asn1) || !oid)
         OE_RAISE(OE_INVALID_PARAMETER);

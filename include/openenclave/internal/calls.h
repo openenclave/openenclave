@@ -9,7 +9,6 @@
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/defs.h>
 #include "backtrace.h"
-#include "sgxtypes.h"
 
 OE_EXTERNC_BEGIN
 

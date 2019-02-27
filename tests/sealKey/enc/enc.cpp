@@ -5,7 +5,6 @@
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/ec.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/keys.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/sha.h>
@@ -275,10 +274,9 @@ bool TestOEGetSealKey()
         OE_TEST(third_key_ptr_size == sizeof(sgx_key_t));
 
         // The seal keys should match.
-        if ((oe_memcmp(key_buffer, second_key_buffer, sizeof(sgx_key_t)) !=
-             0) ||
-            (oe_memcmp(key_buffer, third_key_ptr, sizeof(sgx_key_t)) != 0) ||
-            (oe_memcmp(key_buffer, third_key_buffer, sizeof(sgx_key_t)) != 0))
+        if ((memcmp(key_buffer, second_key_buffer, sizeof(sgx_key_t)) != 0) ||
+            (memcmp(key_buffer, third_key_ptr, sizeof(sgx_key_t)) != 0) ||
+            (memcmp(key_buffer, third_key_buffer, sizeof(sgx_key_t)) != 0))
         {
             return false;
         }
@@ -306,7 +304,7 @@ bool TestOEGetSealKey()
         // Modify the cpu_svn of key request to invalid and verify the function
         // can't get seal key.
         key_request->isv_svn = cur_isv_svn;
-        oe_memset(
+        memset(
             key_request->cpu_svn,
             0XFF,
             OE_FIELD_SIZE(sgx_key_request_t, cpu_svn));
@@ -532,7 +530,7 @@ bool TestAsymKeyCase(
     // Modify the cpu_svn of key request to invalid and verify the function
     // can't get seal key.
     key_request->isv_svn = cur_isv_svn;
-    oe_memset(
+    memset(
         key_request->cpu_svn, 0XFF, OE_FIELD_SIZE(sgx_key_request_t, cpu_svn));
 
     ret = oe_get_public_key(

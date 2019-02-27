@@ -1,18 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifdef OE_BUILD_ENCLAVE
-#include <openenclave/internal/enclavelibc.h>
-#endif
-#include <openenclave/internal/report.h>
-#include <openenclave/internal/tests.h>
 #include "../common/tests.h"
+#include <openenclave/internal/tests.h>
 
 #ifdef OE_BUILD_ENCLAVE
-
-#define Memset oe_memset
-#define Memcpy oe_memcpy
-#define Memcmp oe_memcmp
+#include <openenclave/corelibc/string.h>
 
 #define GetReport oe_get_report
 #define GetReport_v1 oe_get_report_v1
@@ -21,10 +14,6 @@
 #define VerifyReport oe_verify_report
 
 #else
-
-#define Memset memset
-#define Memcpy memcpy
-#define Memcmp memcmp
 
 // The host side API requires the enclave to be passed in.
 
@@ -86,7 +75,7 @@ static bool CheckReportData(
         oe_parse_report(report_buffer, report_size, &parsed_report) == OE_OK);
 
     return (
-        Memcmp(parsed_report.report_data, report_data, report_data_size) == 0);
+        memcmp(parsed_report.report_data, report_data, report_data_size) == 0);
 }
 #endif
 
@@ -111,7 +100,7 @@ static void ValidateReport(
     /* Validate header. */
     OE_TEST(parsed_report.type == OE_ENCLAVE_TYPE_SGX);
     OE_TEST(
-        Memcmp(parsed_report.report_data, report_data, report_data_size) == 0);
+        memcmp(parsed_report.report_data, report_data, report_data_size) == 0);
 
     /* Validate pointer fields. */
     if (remote)
@@ -154,7 +143,7 @@ static void ValidateReport(
 
     if (first_time)
     {
-        Memcpy(
+        memcpy(
             g_unique_id,
             parsed_report.identity.unique_id,
             sizeof(parsed_report.identity.unique_id));
@@ -163,19 +152,19 @@ static void ValidateReport(
     }
 
     OE_TEST(
-        Memcmp(
+        memcmp(
             parsed_report.identity.unique_id,
             g_unique_id,
             sizeof(parsed_report.identity.unique_id)) == 0);
 
     OE_TEST(
-        Memcmp(
+        memcmp(
             parsed_report.identity.signer_id,
             g_signer_id,
             sizeof(parsed_report.identity.signer_id)) == 0);
 
     OE_TEST(
-        Memcmp(
+        memcmp(
             parsed_report.identity.product_id,
             g_product_id,
             sizeof(parsed_report.identity.product_id)) == 0);
@@ -956,16 +945,16 @@ static void GetSGXTargetInfo(sgx_target_info_t* sgx_target_info)
         GetReport_v1(0, NULL, 0, NULL, 0, report_buffer, &report_size) ==
         OE_OK);
 
-    Memset(sgx_target_info, 0, sizeof(*sgx_target_info));
-    Memcpy(
+    memset(sgx_target_info, 0, sizeof(*sgx_target_info));
+    memcpy(
         sgx_target_info->mrenclave,
         &sgx_report->body.mrenclave,
         sizeof(sgx_target_info->mrenclave));
-    Memcpy(
+    memcpy(
         &sgx_target_info->attributes,
         &sgx_report->body.attributes,
         sizeof(sgx_target_info->attributes));
-    Memcpy(
+    memcpy(
         &sgx_target_info->misc_select,
         &sgx_report->body.miscselect,
         sizeof(sgx_target_info->attributes));

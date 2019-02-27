@@ -16,7 +16,7 @@ void oe_hex_dump(const void* data_, size_t size)
 
     for (i = 0; i < size; i++)
     {
-        printf("%02X", data[i]);
+        printf("%02x", data[i]);
     }
 
     printf("\n");
@@ -40,7 +40,7 @@ char* oe_hex_string(
 
     while (n--)
     {
-        snprintf(s, 3, "%02X", *p);
+        snprintf(s, 3, "%02x", *p);
         p++;
         s += 2;
     }

@@ -23,3 +23,4 @@ add_enclave(TARGET cryptoenc
     ${gen})
 
 target_include_directories(cryptoenc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+target_link_libraries(cryptoenc oelibc)

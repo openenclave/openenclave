@@ -4,24 +4,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/trace.h>
-
-/* Convert a nibble to an ASCII character: Example 0xF => 'F' */
-OE_INLINE char _nibble_to_hex_char(uint8_t x)
-{
-    return (char)((x < 10) ? ('0' + (char)x) : ('A' + ((char)x - 10)));
-}
-
-/* Convert high nibble to a hex character */
-OE_INLINE char _high_nibble_to_hex_char(uint8_t byte)
-{
-    return _nibble_to_hex_char(byte >> 4);
-}
-
-/* Convert low nibble to a hex character */
-OE_INLINE char _low_nibble_to_hex_char(uint8_t byte)
-{
-    return _nibble_to_hex_char(byte & 0x0F);
-}
+#include "intstr.h"
 
 char* oe_hex_string(
     char* str,
@@ -40,8 +23,8 @@ char* oe_hex_string(
     /* For each byte in data buffer */
     while (n--)
     {
-        *s++ = _high_nibble_to_hex_char(*p);
-        *s++ = _low_nibble_to_hex_char(*p);
+        *s++ = oe_get_hex_char(*p, 1);
+        *s++ = oe_get_hex_char(*p, 0);
         p++;
     }
 

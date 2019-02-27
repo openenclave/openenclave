@@ -5,27 +5,37 @@ This directory contains the Ansible work used to automate all the required tasks
 
 To quickly install / uninstall Ansible, the script `install-ansible.sh` / `remove-ansible.sh` can be used.
 
+Supported Ansible version >= 2.7.2
+
 # Open Enclave Deployment Options via Ansible
 
 On the target machine where Open Enclave is desired to be configured, you may setup the environment in one of the following ways:
 
 1. Open Enclave environment for contributors:
 
-```
-ansible-playbook oe-contributors-setup.yml
-```
+    ```
+    ansible-playbook oe-contributors-setup.yml
+    ```
 
 2. Open Enclave environment for contributors using ACC hardware:
 
-```
-ansible-playbook oe-contributors-acc-setup.yml
-```
+    ```
+    ansible-playbook oe-contributors-acc-setup.yml
+    ```
 
 3. Open Enclave vanilla environment (without SGX packages and with Azure-DCAP-Client package)
 
-```
-ansible-playbook oe-vanilla-prelibsgx-setup.yml
-```
+    ```
+    ansible-playbook oe-vanilla-prelibsgx-setup.yml
+    ```
+
+4. Setup the remote Windows agents with all the requirements for the DCAP Windows testing:
+
+    ```
+    ansible windows-agents -m import_role -a "name=windows/az-dcap-client tasks_from=environment-setup.yml"
+    ```
+
+    This assumes that the inventory was properly set up with the `windows-agents` machines.
 
 # Configure new Jenkins slaves
 
@@ -49,3 +59,4 @@ ansible-playbook jenkins-setup.yml
 
 * Ubuntu 16.04
 * Ubuntu 18.04
+* Windows Server 2016 (ACC VM)

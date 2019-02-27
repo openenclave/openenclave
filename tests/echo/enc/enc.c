@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/print.h>
 #include "echo_t.h"
 
@@ -13,7 +13,7 @@ char* oe_host_strdup(const char* str)
     char* dup = (char*)oe_host_calloc(1, n + 1);
 
     if (dup)
-        oe_memcpy(dup, str, n + 1);
+        memcpy(dup, str, n + 1);
 
     return dup;
 }

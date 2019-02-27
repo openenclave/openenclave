@@ -1,0 +1,35 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+        public oe_result_t enc_get_init_ocall_result();
+
+        public oe_result_t enc_set_enclave_id(
+            unsigned id,
+            [user_check] const void** base_addr);
+
+        public oe_result_t enc_parallel_execution(
+            unsigned flow_id,
+            [user_check] void* counter,
+            [user_check] void* release);
+
+        public uint32_t enc_cross_enclave_call(
+            uint32_t enclave_id,
+            uint32_t value,
+            uint32_t total);
+
+        public void enc_set_factor(
+            uint32_t factor);
+        };
+
+    untrusted {
+        void init_ocall_handler(
+            [user_check] void* arg);
+
+        uint32_t host_cross_enclave_call(
+            uint32_t enclave_id,
+            uint32_t value,
+            uint32_t total);
+    };
+};

@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/tests.h>
 #include "hostcalls_t.h"
 
@@ -49,13 +49,12 @@ void test_host_realloc(
     {
         if (!in_ptr)
         {
-            oe_memset(out_ptr, TEST_HOSTREALLOC_INIT_VALUE, new_size);
+            memset(out_ptr, TEST_HOSTREALLOC_INIT_VALUE, new_size);
         }
         else if (old_size < new_size)
         {
             void* ext_ptr = (void*)((uint64_t)out_ptr + old_size);
-            oe_memset(
-                ext_ptr, TEST_HOSTREALLOC_INIT_VALUE, new_size - old_size);
+            memset(ext_ptr, TEST_HOSTREALLOC_INIT_VALUE, new_size - old_size);
         }
     }
 

@@ -59,7 +59,9 @@ function(oeedl_file EDL_FILE TYPE OUT_FILES_VAR)
 
 	add_custom_command(
 		OUTPUT ${h_file} ${c_file}
-		DEPENDS ${EDL_FILE}
+		# NOTE: CMake does not add a file dependency for targets used in COMMAND, so we must
+		# add it to DEPENDS too in order to re-run this command when the edger8r is updated.
+		DEPENDS ${EDL_FILE} edger8r
 		COMMAND edger8r ${type_opt} ${headers_only} ${dir_opt} ${CMAKE_CURRENT_BINARY_DIR} ${EDL_FILE} --search-path ${in_path} ${edl_search_path}
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		)

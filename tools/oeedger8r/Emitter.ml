@@ -391,7 +391,7 @@ let oe_prepare_input_buffer (os:out_channel) (fd:Ast.func_decl) (alloc_func:stri
 
 let oe_process_output_buffer (os:out_channel) (fd:Ast.func_decl) =
   (* Verify that the ecall succeeded *)
-  fprintf os "    /* Set up output arg struct pointer*/\n";
+  fprintf os "    /* Set up output arg struct pointer */\n";
   fprintf os "    *(uint8_t**)&_pargs_out = _output_buffer; \n";
   fprintf os "    OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));\n\n";
   fprintf os "    /* Check if the call succeeded */\n";
@@ -683,6 +683,10 @@ let oe_gen_ocall_enclave_wrapper (os:out_channel) (uf:Ast.untrusted_func) =
   fprintf os "\n";
   fprintf os "{\n";
   fprintf os "    oe_result_t _result = OE_FAILURE;\n\n";
+  fprintf os "    /* If the enclave is in crashing/crashed status, new OCALL should fail\n";
+  fprintf os "       immediately. */\n";
+  fprintf os "    if (oe_get_enclave_status() != OE_OK)\n";
+  fprintf os "        return oe_get_enclave_status();\n\n";
   fprintf os "    /* Marshalling struct */ \n";
   fprintf os "    %s_args_t _args, *_pargs_in = NULL, *_pargs_out=NULL;\n\n" fd.Ast.fname;
   fprintf os "    /* Marshalling buffer and sizes */ \n";

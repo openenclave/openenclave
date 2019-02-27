@@ -218,7 +218,7 @@ oe_result_t oe_get_target_info_v2(
         return result;
     }
 
-    temp_info = malloc(temp_size);
+    temp_info = oe_malloc(temp_size);
     if (temp_info == NULL)
     {
         return OE_OUT_OF_MEMORY;
@@ -227,7 +227,7 @@ oe_result_t oe_get_target_info_v2(
     result = oe_get_target_info_v1(report, report_size, temp_info, &temp_size);
     if (result != OE_OK)
     {
-        free(temp_info);
+        oe_free(temp_info);
 
         return result;
     }
@@ -239,5 +239,5 @@ oe_result_t oe_get_target_info_v2(
 
 void oe_free_target_info(void* target_info_buffer)
 {
-    free(target_info_buffer);
+    oe_free(target_info_buffer);
 }

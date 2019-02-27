@@ -57,7 +57,7 @@ static oe_result_t _parse_sgx_extensions(
     size_t buffer_size = 1024;
     uint8_t* buffer = NULL;
 
-    buffer = (uint8_t*)malloc(buffer_size);
+    buffer = (uint8_t*)oe_malloc(buffer_size);
     if (buffer == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
@@ -69,15 +69,15 @@ static oe_result_t _parse_sgx_extensions(
     {
         // Allocate larger buffer. extensions_buffer_size contains required size
         // of buffer.
-        free(buffer);
-        buffer = (uint8_t*)malloc(buffer_size);
+        oe_free(buffer);
+        buffer = (uint8_t*)oe_malloc(buffer_size);
 
         result = ParseSGXExtensions(
             leaf_cert, buffer, &buffer_size, parsed_extension_info);
     }
 
 done:
-    free(buffer);
+    oe_free(buffer);
     return result;
 }
 
@@ -94,7 +94,7 @@ static oe_result_t _get_crl_distribution_point(oe_cert_t* cert, char** url)
 {
     oe_result_t result = OE_FAILURE;
     size_t buffer_size = 512;
-    uint8_t* buffer = malloc(buffer_size);
+    uint8_t* buffer = oe_malloc(buffer_size);
     const char** urls = NULL;
     uint64_t num_urls = 0;
     size_t url_length = 0;
@@ -107,8 +107,8 @@ static oe_result_t _get_crl_distribution_point(oe_cert_t* cert, char** url)
 
     if (result == OE_BUFFER_TOO_SMALL)
     {
-        free(buffer);
-        buffer = malloc(buffer_size);
+        oe_free(buffer);
+        buffer = oe_malloc(buffer_size);
         if (buffer == NULL)
             OE_RAISE(OE_OUT_OF_MEMORY);
 
@@ -123,14 +123,14 @@ static oe_result_t _get_crl_distribution_point(oe_cert_t* cert, char** url)
             OE_RAISE(OE_FAILURE);
 
         // Sanity check. No URL should be this large.
-        url_length = strlen(urls[0]);
+        url_length = oe_strlen(urls[0]);
         if (url_length > OE_INT16_MAX)
             OE_RAISE(OE_OUT_OF_BOUNDS);
 
         // Add +1 to include null character.
         url_length++;
 
-        *url = (char*)malloc(url_length);
+        *url = (char*)oe_malloc(url_length);
         if (*url == NULL)
             OE_RAISE(OE_OUT_OF_MEMORY);
 
@@ -139,7 +139,7 @@ static oe_result_t _get_crl_distribution_point(oe_cert_t* cert, char** url)
     }
 
 done:
-    free(buffer);
+    oe_free(buffer);
     return result;
 }
 
@@ -310,8 +310,8 @@ done:
     }
     oe_cert_chain_free(&tcb_issuer_chain);
 
-    free(leaf_crl_url);
-    free(intermediate_crl_url);
+    oe_free(leaf_crl_url);
+    oe_free(intermediate_crl_url);
     oe_cleanup_get_revocation_info_args(&revocation_args);
 
     return result;
