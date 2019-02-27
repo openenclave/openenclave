@@ -1,0 +1,16 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+---
+psw_archive_url: 'http://registrationcenter-download.intel.com/akdlm/irc_nas/15018/Intel%20SGX%20PSW%20for%20Windows%20v2.2.100.48339.exe'
+dcap_archive_url: 'http://registrationcenter-download.intel.com/akdlm/irc_nas/15017/Intel%20SGX%20DCAP%20for%20Windows%20v1.0.100.48134.exe'
+azure_dcap_client_nupkg_url: 'https://oejenkins.blob.core.windows.net/oejenkins/Microsoft.Azure.DCAP.Client.1.0.0.nupkg'
+nuget_bin_url: 'https://dist.nuget.org/win-x86-commandline/latest/nuget.exe'
+devcon_bin_url: 'https://oejenkins.blob.core.windows.net/oejenkins/devcon.exe'
+
+oe_nuget_dir: "C:\\openenclave\\prereqs\\nuget"
+
+lc_driver:
+  reg_path: HKLM:\SYSTEM\CurrentControlSet\Services\sgx_lc_msr\Parameters
+  reg_key: SGX_Launch_Config_Optin
+  reg_value: 1
