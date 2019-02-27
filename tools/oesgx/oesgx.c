@@ -13,7 +13,7 @@
 #define HAVE_FLC(regs) (((regs.ecx) >> 30) & 1)
 #define HAVE_SGX1(regs) (((regs.eax) & 1))
 #define HAVE_SGX2(regs) (((regs.eax) >> 1) & 1)
-#define HAVE_EPC(regs) (((regs.eax) & 0x0f) == 0x01)
+#define HAVE_EPC_SUBLEAF(regs) (((regs.eax) & 0x0f) == 0x01)
 
 typedef struct _regs
 {
@@ -134,7 +134,7 @@ int main(int argc, const char* argv[])
     /* Enumeration of Intel SGX Capabilities: figure out EPC size */
     {
         Regs regs = {SGX_CAPABILITY_ENUMERATION, 0, 0x2, 0};
-        uint64_t epcSz = 0;
+        uint64_t epc_size = 0;
 
         result = _CPUID(&regs);
         if (result)
@@ -143,13 +143,13 @@ int main(int argc, const char* argv[])
             dump_regs(&regs);
             return result;
         }
-        if (!HAVE_EPC(regs)) {
+        if (!HAVE_EPC_SUBLEAF(regs)) {
             printf("No EPC section\n");
             dump_regs(&regs);
             return 0;
         }
-        epcSz = ((regs.ecx & 0x0fffff000) | ((uint64_t)(regs.edx & 0x0fffff) << 32));
-        printf("EPC size on the platform: %lu\n", epcSz);
+        epc_size = ((regs.ecx & 0x0fffff000) | ((uint64_t)(regs.edx & 0x0fffff) << 32));
+        printf("EPC size on the platform: %lu\n", epc_size);
     }
     return 0;
 }
