@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "../host/sgx/cpuid.h"
-#include <openenclave/bits/types.h>
 
 #define EXTENDED_FEATURE_FLAGS_FUNCTION 0x7
 #define SGX_CAPABILITY_ENUMERATION 0x12
@@ -143,12 +143,15 @@ int main(int argc, const char* argv[])
             dump_regs(&regs);
             return result;
         }
-        if (!HAVE_EPC_SUBLEAF(regs)) {
+        if (!HAVE_EPC_SUBLEAF(regs))
+        {
             printf("No EPC section\n");
             dump_regs(&regs);
             return 0;
         }
-        epc_size = ((regs.ecx & 0x0fffff000) | ((uint64_t)(regs.edx & 0x0fffff) << 32));
+        epc_size =
+            ((regs.ecx & 0x0fffff000) |
+             ((uint64_t)(regs.edx & 0x0fffff) << 32));
         printf("EPC size on the platform: %lu\n", epc_size);
     }
     return 0;
