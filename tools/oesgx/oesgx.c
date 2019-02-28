@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <cpuid.h>
 #include <openenclave/bits/types.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "../host/sgx/cpuid.h"
 
 #define EXTENDED_FEATURE_FLAGS_FUNCTION 0x7
 #define SGX_CAPABILITY_ENUMERATION 0x12
@@ -29,6 +29,17 @@ void dump_regs(Regs* regs)
     printf("ebx = 0x%x\n", regs->ebx);
     printf("ecx = 0x%x\n", regs->ecx);
     printf("edx = 0x%x\n", regs->edx);
+}
+
+static void oe_get_cpuid(
+    unsigned int __leaf,
+    unsigned int __subleaf,
+    unsigned int* __eax,
+    unsigned int* __ebx,
+    unsigned int* __ecx,
+    unsigned int* __edx)
+{
+    __cpuid_count(__leaf, __subleaf, *__eax, *__ebx, *__ecx, *__edx);
 }
 
 static unsigned int get_max_leaf()
