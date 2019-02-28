@@ -87,7 +87,6 @@ NESTED_ENTRY oe_enter, _TEXT$00
     push rdi
     push rsi
     push r12
-	
     push r13
     push r14
     push r15
