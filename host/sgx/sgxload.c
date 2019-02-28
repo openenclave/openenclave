@@ -317,12 +317,12 @@ static oe_result_t _sgx_free_enclave_memory(
         /* munmap memory created for either AESM or simulation enclave */
         munmap(addr, size);
 #elif defined(_WIN32)
-        /* VirtualFree is used for enclave addr return by CreateEnclave and 
+        /* VirtualFree is used for enclave addr return by CreateEnclave and
            simulation enclave allocated by VirtualAlloc */
         VirtualFree(addr, 0, MEM_RELEASE);
 #endif
     }
- 
+
     return OE_OK;
 }
 

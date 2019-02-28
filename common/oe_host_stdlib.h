@@ -11,7 +11,10 @@
 #include <string.h>
 
 #if defined(_MSC_VER)
+#include <errno.h>
 #include <malloc.h>
+#include <openenclave/internal/utils.h>
+#include "../host/memalign.h"
 #endif
 
 OE_EXTERNC_BEGIN
@@ -51,21 +54,14 @@ OE_INLINE
 int oe_posix_memalign(void** memptr, size_t alignment, size_t size)
 {
 #if defined(_MSC_VER)
-    /* posix_memalign() enforces a minimum alignment of sizeof(void*). */
-    if (alignment < sizeof(void*))
-        alignment = sizeof(void*);
-
     if (!memptr)
-    {
-        errno = EINVAL;
-        return -1;
-    }
+        return EINVAL;
 
-    if ((*memptr = _aligned_malloc(size, alignment)))
-    {
-        errno = ENOMEM;
-        return -1;
-    }
+    if (!oe_is_ptrsize_multiple(alignment) || !oe_is_pow2(alignment))
+        return EINVAL;
+
+    if (!(*memptr = oe_memalign(alignment, size)))
+        return ENOMEM;
 
     return 0;
 #else
