@@ -40,11 +40,11 @@ ARG1            EQU [rbp-24]
 ARG2            EQU [rbp-32]
 ARG3            EQU [rbp-40]
 ARG4            EQU [rbp-48]
-ENCLAVE          EQU [rbp-56]
+ENCLAVE         EQU [rbp-56]
 ARG1OUT         EQU [rbp-64]
 ARG2OUT         EQU [rbp-72]
 STACKPTR        EQU [rbp-80]
-HOST_CONTEXT EQU [rbp-88]
+MXCSR           EQU [rbp-88]
 
 NESTED_ENTRY oe_enter, _TEXT$00
     END_PROLOGUE
@@ -61,7 +61,7 @@ NESTED_ENTRY oe_enter, _TEXT$00
     ;;     ARG3 := [RBP-40] <- [RBP+48]
     ;;     ARG4 := [RBP-48] <- [RBP+56]
     ;;     ENCLAVE := [RBP-56] <- [RBP+64]
-    ;;     HOST_CONTEXT := [RBP-88]
+    ;;     MXCSR := [RBP-88]
     sub rsp, PARAMS_SPACE
     mov TCS, rcx
     mov AEP, rdx
@@ -74,14 +74,14 @@ NESTED_ENTRY oe_enter, _TEXT$00
     mov rax, [rbp+64]
     mov ENCLAVE, rax
 
-	;; Save the host context in the host stack
-	mov HOST_CONTEXT, rsp
-	
-	;;Save the current context
-	
-	;;Save the SSE status and control flags only in host_context 
-	stmxcsr HOST_CONTEXT
+    ;; Save the host context in the host stack
+    ;;mov HOST_CONTEXT, rsp
 
+    ;;Save the current context
+
+    ;;Save the SSE status and control flags
+    stmxcsr MXCSR
+	
     ;; Save registers:
     push rbx
     push rdi
@@ -108,8 +108,8 @@ execute_eenter:
     mov ARG1OUT, rdi
     mov ARG2OUT, rsi
 	
-	;; Restore the saved host context; only SSE state for now
-	ldmxcsr HOST_CONTEXT
+    ;; Restore the saved MXCSR
+    ldmxcsr MXCSR
 	
 dispatch_ocall:
 
