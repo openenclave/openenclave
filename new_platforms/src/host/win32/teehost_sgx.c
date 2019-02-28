@@ -11,6 +11,7 @@
 # include <time.h>
 # include <Shlwapi.h>
 # pragma comment(lib, "shlwapi.lib")
+# pragma comment(lib, "Shell32.lib")
 #else
 # include <unistd.h>
 # include <pwd.h>
