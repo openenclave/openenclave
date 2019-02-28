@@ -16,22 +16,12 @@ validation_directories:
   - "/usr/lib/ocaml/compiler-libs"
   - "/usr/lib/graphviz"
   - "/usr/share/libtool"
-  - "/opt/openenclave"
-  - "/opt/openenclave/lib/openenclave/cmake"
-  - "/opt/openenclave/lib/openenclave/enclave"
-  - "/opt/openenclave/lib/openenclave/host"
-  - "/opt/openenclave/lib/openenclave/debugger/gdb-sgx-plugin"
 
 validation_files:
   - "/usr/lib/x86_64-linux-gnu/libsgx_dcap_ql.so"
   - "/usr/lib/libdcap_quoteprov.so"
   - "/usr/lib/x86_64-linux-gnu/libssl.so"
   - "/usr/lib/ocaml/arg.cmi"
-  - "/opt/openenclave/lib/openenclave/cmake/openenclave-config.cmake"
-  - "/opt/openenclave/lib/openenclave/enclave/libmbedcrypto.a"
-  - "/opt/openenclave/lib/openenclave/enclave/liboelibcxx.a"
-  - "/opt/openenclave/lib/openenclave/host/liboehost.a"
-  - "/opt/openenclave/lib/openenclave/debugger/gdb-sgx-plugin/gdb_sgx_plugin.py"
 
 validation_binaries:
   - "/usr/bin/make"
@@ -53,7 +43,3 @@ validation_binaries:
   - "/usr/bin/shellcheck"
   - "/usr/bin/git"
   - "/usr/bin/svn"
-  - "/opt/openenclave/bin/oesgx"
-  - "/opt/openenclave/bin/oeedger8r"
-  - "/opt/openenclave/bin/oe-gdb"
-  - "/opt/openenclave/bin/oesign"
