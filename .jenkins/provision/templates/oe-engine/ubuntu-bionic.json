@@ -1,0 +1,36 @@
+{
+  "properties": {
+    "vmProfiles": [
+      {
+        "name": "${AGENT_NAME}",
+        "osType": "Linux",
+        "vmSize": "Standard_DC2s",
+        "ports": [22],
+        "isVanilla": true,
+        "hasDNSName": true
+      }
+    ],
+    "vnetProfile": {
+      "vnetResourceGroup": "OE-Jenkins-CI-VNET",
+      "vnetName": "OE-Jenkins-CI-VNET",
+      "subnetName": "default"
+    },
+    "linuxProfile": {
+      "adminUsername": "azureuser",
+      "sshPublicKeys": [
+        {
+          "keyData": "${SSH_PUBLIC_KEY}"
+        }
+      ],
+      "osImage": {
+        "publisher": "Canonical",
+        "offer": "UbuntuServer",
+        "sku": "18.04-LTS",
+        "version": "latest"
+      }
+    },
+    "diagnosticsProfile": {
+      "enabled": false
+    }
+  }
+}
