@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
-#include <openenclave/internal/enclavelibc.h>
 #include "file_t.h"
 
 OE_EXTERNC int TestReadFile(const char* path, unsigned int* checksum)

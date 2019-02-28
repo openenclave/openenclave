@@ -4,10 +4,10 @@
 #include "report.h"
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/corelibc/stdlib.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/cmac.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/keys.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>

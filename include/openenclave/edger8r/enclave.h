@@ -100,6 +100,20 @@ void oe_free_ocall_buffer(void* buffer);
     OE_EXPORT_CONST oe_ecall_func_t __oe_ecalls_table[] = {NULL}; \
     OE_EXPORT_CONST size_t __oe_ecalls_table_size = 0
 
+#if __x86_64__ || _M_X64
+/**
+ * Get the internal status of the enclave.
+ *
+ * @returns read-only copy of the internal status.
+ */
+oe_result_t oe_get_enclave_status();
+#else // Make oe_get_enclave_status a no-op for non x86-64 platforms.
+OE_INLINE oe_result_t oe_get_enclave_status()
+{
+    return OE_OK;
+}
+#endif
+
 // Define oe_lfence for Spectre mitigation in x86-64 platforms.
 #if __x86_64__ || _M_X64
 

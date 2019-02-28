@@ -29,7 +29,7 @@ if test "$1" = "-i" ; then
     BIN_DIR=$(realpath $2)
     INSTALL_DIR=$(realpath -m $4$3)
     rm -rf "$INSTALL_DIR"
-    make -C "$BIN_DIR" "DESTDIR=$4" install
+    DESTDIR=$4 cmake --build "$BIN_DIR" --target install
 else
     # inside installed tree. Assume this is placed under
     # prefix/share/openenclave/samples/

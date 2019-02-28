@@ -1,0 +1,17 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+        // Normally this would be `private`, but that is also not
+        // supported, so we need to make this public in order to test
+        // the next code.
+        public void ecall();
+    };
+
+    untrusted {
+        // Allow lists are not supported. NOTE: `allow` is reserved as
+        // a keyword, so the function cannot also be named `allow()`.
+        void ocall_allow() allow(ecall);
+    };
+};

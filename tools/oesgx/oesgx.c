@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "../host/sgx/cpuid.h"
@@ -12,6 +13,7 @@
 #define HAVE_FLC(regs) (((regs.ecx) >> 30) & 1)
 #define HAVE_SGX1(regs) (((regs.eax) & 1))
 #define HAVE_SGX2(regs) (((regs.eax) >> 1) & 1)
+#define HAVE_EPC_SUBLEAF(regs) (((regs.eax) & 0x0f) == 0x01)
 
 typedef struct _regs
 {
@@ -127,6 +129,30 @@ int main(int argc, const char* argv[])
             printf("SGX1\n");
         }
         printf("MaxEnclaveSize_64: 2^(%d)\n", (regs.edx >> 8) & 0xFF);
+    }
+
+    /* Enumeration of Intel SGX Capabilities: figure out EPC size */
+    {
+        Regs regs = {SGX_CAPABILITY_ENUMERATION, 0, 0x2, 0};
+        uint64_t epc_size = 0;
+
+        result = _CPUID(&regs);
+        if (result)
+        {
+            printf("Read SGX_CAPABILITY_ENUMERATION failed:\n");
+            dump_regs(&regs);
+            return result;
+        }
+        if (!HAVE_EPC_SUBLEAF(regs))
+        {
+            printf("No EPC section\n");
+            dump_regs(&regs);
+            return 0;
+        }
+        epc_size =
+            ((regs.ecx & 0x0fffff000) |
+             ((uint64_t)(regs.edx & 0x0fffff) << 32));
+        printf("EPC size on the platform: %lu\n", epc_size);
     }
     return 0;
 }

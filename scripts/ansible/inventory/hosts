@@ -1,0 +1,10 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+[linux-agents]
+host2
+host3
+
+[windows-agents]
+host4
+host5

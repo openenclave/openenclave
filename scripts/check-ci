@@ -3,32 +3,27 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-##==============================================================================
-##
-## This script performs various checks on the source tree in CI.
-##
-##==============================================================================
+# This script is very similar to the pre-commit hook, except it
+# unconditionally checks all files, which we have time for in CI.
 
-## Check whether source code has been formatted (diff outputs '@@'):
-if ./scripts/format-code --whatif | grep -q "@@"; then
+exit_() {
     echo ""
-    echo "Commit failed: please run ./scripts/format-code"
+    echo "$1"
     echo ""
     exit 1
+}
+
+## Check whether source code has been formatted:
+if ! ./scripts/format-code --quiet --whatif; then
+    exit_ "CI failed: please run ./scripts/format-code"
 fi
 
 # Check whether all sources have the license header:
 if ! ./scripts/check-license; then
-    echo ""
-    echo "Commit failed: please add license headers to the above files"
-    echo ""
-    exit 1
+    exit_ "CI failed: please add license headers to the above files"
 fi
 
 # Check whether all scripts pass ShellCheck:
 if ! ./scripts/check-linters; then
-    echo ""
-    echo "Commit failed: please run ./scripts/check-linters"
-    echo ""
-    exit 1
+    exit_ "CI failed: please run ./scripts/check-linters"
 fi

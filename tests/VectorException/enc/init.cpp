@@ -4,6 +4,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/tests.h>
+#include "VectorException_t.h"
 
 // Defined in sigill_handling.c
 extern "C" void get_cpuid(
@@ -48,12 +49,13 @@ static int init =
      test_cpuid_instruction(600),
      test_cpuid_instruction(AESNI_INSTRUCTIONS));
 
-OE_ECALL void TestCpuidInGlobalConstructors(void*)
+void enc_test_cpuid_in_global_constructors()
 {
     OE_TEST(init == 1);
     OE_TEST(done == 1);
     OE_TEST(c != 0);
     OE_TEST(hits1 == 1);
     OE_TEST(hits2 == 3);
-    oe_host_printf("TestCpuidInGlobalConstructors: completed successfully.\n");
+    oe_host_printf(
+        "enc_test_cpuid_in_global_constructors: completed successfully.\n");
 }

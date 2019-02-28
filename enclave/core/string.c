@@ -1,20 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/enclave.h>
-#include <openenclave/internal/enclavelibc.h>
-
-/*
-**=====/=========================================================================
-**
-** oe_strlen()
-** oe_strcmp()
-** oe_strcpy()
-** oe_strlcpy()
-** oe_strlcat()
-**
-**==============================================================================
-*/
+#include <openenclave/corelibc/ctype.h>
+#include <openenclave/corelibc/stdlib.h>
+#include <openenclave/corelibc/string.h>
+#include <openenclave/internal/defs.h>
 
 size_t oe_strlen(const char* s)
 {
@@ -131,156 +121,21 @@ size_t oe_strlcat(char* dest, const char* src, size_t size)
     return n;
 }
 
-/*
-**==============================================================================
-**
-** oe_memset()
-** oe_memcpy()
-** oe_memcmp()
-**
-**==============================================================================
-*/
-
-static inline void _oe_memcpy(void* dest, const void* src, size_t n)
+char* oe_strstr(const char* haystack, const char* needle)
 {
-// TODO: Revisit this later. Looks like compilers might replace
-// __builtin_X with the C library version of X.
-#if defined(__x86_64__) || defined(_M_X64)
-    __builtin_memcpy(dest, src, n);
-#else
-    unsigned char* d = (unsigned char*)dest;
-    unsigned char* s = (unsigned char*)src;
-    while (n--)
-        *d++ = *s++;
-#endif
-}
-void* oe_memcpy(void* dest, const void* src, size_t n)
-{
-    unsigned char* p = (unsigned char*)dest;
-    const unsigned char* q = (const unsigned char*)src;
+    size_t hlen = oe_strlen(haystack);
+    size_t nlen = oe_strlen(needle);
 
-    while (n >= 1024)
+    if (nlen > hlen)
+        return NULL;
+
+    for (size_t i = 0; i < hlen - nlen + 1; i++)
     {
-        _oe_memcpy(p, q, 1024);
-        n -= 1024;
-        p += 1024;
-        q += 1024;
+        if (memcmp(haystack + i, needle, nlen) == 0)
+            return (char*)haystack + i;
     }
 
-    while (n >= 256)
-    {
-        _oe_memcpy(p, q, 256);
-        n -= 256;
-        p += 256;
-        q += 256;
-    }
-
-    while (n >= 64)
-    {
-        _oe_memcpy(p, q, 64);
-        n -= 64;
-        p += 64;
-        q += 64;
-    }
-
-    while (n >= 16)
-    {
-        _oe_memcpy(p, q, 16);
-        n -= 16;
-        p += 16;
-        q += 16;
-    }
-
-    while (n--)
-        *p++ = *q++;
-
-    return dest;
+    return NULL;
 }
 
-static inline void _oe_memset(void* s, int c, size_t n)
-{
-// TODO: Revisit this later. Looks like compilers might replace
-// __builtin_X with the C library version of X.
-#if defined(__x86_64__) || defined(_M_X64)
-    __builtin_memset(s, c, n);
-#else
-    unsigned char* s_ = (unsigned char*)s;
-    while (n--)
-        *s_++ = (unsigned char)c;
-#endif
-}
-
-void* oe_memset(void* s, int c, size_t n)
-{
-    unsigned char* p = (unsigned char*)s;
-
-    while (n >= 1024)
-    {
-        _oe_memset(p, c, 1024);
-        n -= 1024;
-        p += 1024;
-    }
-
-    while (n >= 256)
-    {
-        _oe_memset(p, c, 256);
-        n -= 256;
-        p += 256;
-    }
-
-    while (n >= 64)
-    {
-        _oe_memset(p, c, 64);
-        n -= 64;
-        p += 64;
-    }
-
-    while (n >= 16)
-    {
-        _oe_memset(p, c, 16);
-        n -= 16;
-        p += 16;
-    }
-
-    while (n--)
-        *p++ = (unsigned char)c;
-
-    return s;
-}
-
-int oe_memcmp(const void* s1, const void* s2, size_t n)
-{
-    const unsigned char* p = (const unsigned char*)s1;
-    const unsigned char* q = (const unsigned char*)s2;
-
-    while (n--)
-    {
-        int r = *p++ - *q++;
-
-        if (r)
-            return r;
-    }
-
-    return 0;
-}
-
-void* oe_memmove(void* dest, const void* src, size_t n)
-{
-    char* p = (char*)dest;
-    const char* q = (const char*)src;
-
-    if (p != q && n > 0)
-    {
-        if (p <= q)
-        {
-            oe_memcpy(p, q, n);
-        }
-        else
-        {
-            for (q += n, p += n; n--; p--, q--)
-                p[-1] = q[-1];
-        }
-    }
-
-    return p;
-}
+OE_WEAK_ALIAS(oe_strcmp, strcmp);

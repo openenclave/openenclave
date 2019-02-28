@@ -140,6 +140,9 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave);
  * the call and not of the underlying function. The ECALL implementation must
  * define its own error reporting scheme based on **args**.
  *
+ * @deprecated This function has been deprecated. Use oeedger8r to generate
+ * code that will call oe_ecall() instead.
+ *
  * @param enclave The instance of the enclave to be called.
  *
  * @param func The name of the enclave function that will be called.
@@ -149,10 +152,11 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave);
  * @returns This function return **OE_OK** on success.
  *
  */
-oe_result_t oe_call_enclave(
-    oe_enclave_t* enclave,
-    const char* func,
-    void* args);
+OE_DEPRECATED(
+    oe_result_t
+        oe_call_enclave(oe_enclave_t* enclave, const char* func, void* args),
+    "This function is deprecated. Use oeedger8r to generate code that will "
+    "call oe_ecall() instead.");
 
 #if (OE_API_VERSION < 2)
 #define oe_get_report oe_get_report_v1

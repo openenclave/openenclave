@@ -175,7 +175,7 @@ static oe_result_t _read_property_name_and_colon(
     const uint8_t* tmp_itr = *itr;
 
     OE_CHECK(_read_string(&tmp_itr, end, &name, &name_length));
-    if (name_length == strlen(property_name) &&
+    if (name_length == oe_strlen(property_name) &&
         memcmp(property_name, name, name_length) == 0)
     {
         OE_CHECK(_read(':', &tmp_itr, end));
@@ -191,7 +191,7 @@ static bool _json_str_equal(
     size_t str1_length,
     const char* str2)
 {
-    size_t str2_length = strlen(str2);
+    size_t str2_length = oe_strlen(str2);
 
     // Strings in json stream are not zero terminated.
     // Hence the special comparison function.
@@ -205,13 +205,13 @@ static oe_result_t _trace_json_string(const uint8_t* str, size_t str_length)
 
     if (get_current_logging_level() >= OE_LOG_LEVEL_VERBOSE)
     {
-        char* buffer = (char*)malloc(str_length + 1);
+        char* buffer = (char*)oe_malloc(str_length + 1);
         if (buffer)
         {
             OE_CHECK(oe_memcpy_s(buffer, str_length + 1, str, str_length));
             buffer[str_length] = 0;
             OE_TRACE_VERBOSE("value = %s\n", buffer);
-            free(buffer);
+            oe_free(buffer);
         }
         else
         {
@@ -431,6 +431,28 @@ static oe_result_t _read_tcb_info(
         itr, end, parsed_info->fmspc, sizeof(parsed_info->fmspc)));
     OE_CHECK(_read(',', itr, end));
 
+    {
+        const uint8_t* old_itr = *itr;
+
+        // read optional "pceId", if it does not exist, restore the read
+        // pointers
+        OE_TRACE_VERBOSE("Attempt reading optional pceId field...");
+
+        parsed_info->pceid[0] = 0;
+        parsed_info->pceid[1] = 0;
+        result = _read_property_name_and_colon("pceId", itr, end);
+        if (result == OE_OK)
+        {
+            OE_CHECK(_read_hex_string(
+                itr, end, parsed_info->pceid, sizeof(parsed_info->pceid)));
+            OE_CHECK(_read(',', itr, end));
+        }
+        else if (result == OE_JSON_INFO_PARSE_ERROR)
+        {
+            *itr = old_itr;
+        }
+    }
+
     OE_TRACE_VERBOSE("Reading tcbLevels");
     OE_CHECK(_read_property_name_and_colon("tcbLevels", itr, end));
     OE_CHECK(_read('[', itr, end));
@@ -503,9 +525,20 @@ oe_result_t oe_parse_tcb_info_json(
     if (itr == end)
     {
         if (platform_tcb_level->status != OE_TCB_LEVEL_STATUS_UP_TO_DATE)
-            OE_RAISE(OE_TCB_LEVEL_INVALID);
-
-        OE_TRACE_VERBOSE("TCB Info json parsing successful.\n");
+        {
+            for (uint32_t i = 0;
+                 i < OE_COUNTOF(platform_tcb_level->sgx_tcb_comp_svn);
+                 ++i)
+                OE_TRACE_VERBOSE(
+                    "sgx_tcb_comp_svn[%d] = 0x%x",
+                    i,
+                    platform_tcb_level->sgx_tcb_comp_svn[i]);
+            OE_TRACE_VERBOSE("pce_svn = 0x%x", platform_tcb_level->pce_svn);
+            OE_RAISE_MSG(
+                OE_TCB_LEVEL_INVALID,
+                "Platform TCB (%d) is not up-to-date",
+                platform_tcb_level->status);
+        }
         result = OE_OK;
     }
 done:
@@ -763,7 +796,7 @@ oe_result_t oe_verify_ecdsa256_signature(
     OE_CHECK(oe_ec_public_key_read_pem(
         &trusted_root_key,
         (const uint8_t*)_trusted_root_key_pem,
-        strlen(_trusted_root_key_pem) + 1));
+        oe_strlen(_trusted_root_key_pem) + 1));
 
     OE_CHECK(oe_ec_public_key_equal(
         &trusted_root_key, &tcb_root_key, &root_of_trust_match));

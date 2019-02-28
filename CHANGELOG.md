@@ -23,9 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - oe-gdb allows attaching to a host that is already running
 - Added Quote Enclave Identity validation into oe_verify_report implementation
 - Added OE SDK internal logging mechanism
-- Support for thread local variables 
+- Support for thread local variables
    - Both GNU __thread and C++11 thread_local
-   - Both hardware and simulation mode 
+   - Both hardware and simulation mode
    - Local-Exec and Initial-Exec thread-local storage models
 - Added v2 versions of the following APIs that instead of passing in buffers now
   return a buffer that needs to be freed via an associated free method. OE_API_VERSION
@@ -35,12 +35,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    - oe_get_target_info, free target_info_buffer via oe_free_target_info
    - oe_get_seal_key, free key_buffer and key_info via oe_free_seal_key
    - oe_get_seal_key_by_policy, free key_buffer and key_info via oe_free_seal_key
+- Added new enumeration for enclave type parameter of oe_create_enclave. Now use
+  OE_ENCLAVE_TYPE_AUTO to have the enclave appropriate to your built environment
+  be chosen automatically. For instance, building intel binaries will select SGX
+  automatically, where on ARM it will pick trustzone.
 
 ### Changed
 
 - `oe_create_enclave` takes two additional parameters: `ocall_table` and
   `ocall_table_size`.
-- Update mbed TLS library to version 2.7.6.
+- Update mbed TLS library to version 2.7.9.
 - Update musl libc to version 1.1.20.
 - Update LLVM libcxx to version 7.0.0.
    - Some libcxx headers (e.g. `<string>`) now use C++11 template features and
@@ -51,6 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Deprecated
 
 - String based `ocalls`/`ecalls`, `OE_ECALL`, and `OE_OCALL` macros.
+- OE_ENCLAVE_TYPE_UNDEFINED was removed and replaced with OE_ENCLAVE_TYPE_AUTO.
 
 [v0.4.1] - 2018-12-21
 ---------------------

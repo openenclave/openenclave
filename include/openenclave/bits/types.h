@@ -20,6 +20,10 @@ typedef long int64_t;
 typedef unsigned long uint64_t;
 typedef unsigned long uintptr_t;
 typedef long ptrdiff_t;
+typedef long intptr_t;
+typedef long time_t;
+typedef long suseconds_t;
+
 #elif defined(_MSC_VER)
 typedef long long ssize_t;
 typedef unsigned long long size_t;
@@ -33,6 +37,9 @@ typedef long long int64_t;
 typedef unsigned long long uint64_t;
 typedef unsigned long long uintptr_t;
 typedef long long ptrdiff_t;
+typedef long long intptr_t;
+typedef long long time_t;
+typedef long long suseconds_t;
 #else
 #error "unknown compiler - please adapt basic types"
 #endif
@@ -56,7 +63,13 @@ typedef long long ptrdiff_t;
 #define OE_INT_MIN (-1 - 0x7fffffff)
 #define OE_INT_MAX 0x7fffffff
 #define OE_UINT_MAX 0xffffffffU
+
+#ifdef _MSC_VER
+#define OE_LONG_MAX 0x7fffffffL
+#elif __linux__
 #define OE_LONG_MAX 0x7fffffffffffffffL
+#endif
+
 #define OE_LONG_MIN (-OE_LONG_MAX - 1)
 #define OE_ULONG_MAX (2UL * OE_LONG_MAX + 1)
 #define OE_LLONG_MAX 0x7fffffffffffffffLL
@@ -80,12 +93,15 @@ typedef long long ptrdiff_t;
 
 /**
  * This enumeration defines values for the **enclave_type** parameter
- * passed to **oe_create_enclave()**. Currently only **OE_ENCLAVE_TYPE_SGX**
- * is supported.
+ * passed to **oe_create_enclave()**. OE_ENCLAVE_TYPE_AUTO will pick the type
+ * based on the target platform that is being built, such that x64 binaries will
+ * use SGX.
+ * **OE_ENCLAVE_TYPE_SGX** will force the platform to use SGX, but any platform
+ * other than x64 will not support this and will generate errors.
  */
 typedef enum _oe_enclave_type
 {
-    OE_ENCLAVE_TYPE_UNDEFINED,
+    OE_ENCLAVE_TYPE_AUTO,
     OE_ENCLAVE_TYPE_SGX,
     __OE_ENCLAVE_TYPE_MAX = OE_ENUM_MAX,
 } oe_enclave_type_t;

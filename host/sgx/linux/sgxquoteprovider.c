@@ -141,6 +141,10 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
     uint8_t* p = 0;
     uint8_t* p_end = 0;
 
+#if defined(OE_USE_LIBSGX)
+    OE_CHECK(oe_initialize_quote_provider());
+#endif
+
     if (!_get_revocation_info || !_free_revocation_info)
         OE_RAISE(OE_QUOTE_PROVIDER_LOAD_ERROR);
 
@@ -199,6 +203,8 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
             OE_RAISE_MSG(
                 OE_INVALID_REVOCATION_INFO, "crl[%d].crl_data is NULL.", i);
         }
+        OE_TRACE_VERBOSE(
+            "crl_data = \n[%s]\n", revocation_info->crls[i].crl_data);
         // CRL is in DER format. Null not added.
         host_buffer_size += revocation_info->crls[i].crl_data_size;
 
@@ -327,9 +333,13 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args)
     uint8_t* p_end = 0;
     OE_TRACE_INFO("Calling %s\n", __PRETTY_FUNCTION__);
 
+#if defined(OE_USE_LIBSGX)
+    OE_CHECK(oe_initialize_quote_provider());
+#endif
+
     if (!_get_qe_identity_info || !_free_qe_identity_info)
     {
-        OE_TRACE_ERROR(
+        OE_TRACE_WARNING(
             "Warning: QE Identity was not supported by quote provider\n");
         result = OE_QUOTE_PROVIDER_CALL_ERROR;
         goto done;

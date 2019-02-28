@@ -1,5 +1,11 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-add_executable(ocall_create_host host.c)
+oeedl_file(../ocall_create.edl host gen)
+
+add_executable(ocall_create_host host.c ${gen})
+
+target_include_directories(ocall_create_host PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR})
+
 target_link_libraries(ocall_create_host oehostapp)

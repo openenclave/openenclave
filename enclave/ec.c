@@ -7,7 +7,6 @@
 #include <mbedtls/ecp.h>
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
 #include "key.h"

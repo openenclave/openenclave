@@ -3,9 +3,9 @@
 
 #include "thread.h"
 #include <openenclave/bits/safecrt.h>
+#include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/thread.h>
@@ -171,7 +171,7 @@ oe_result_t oe_mutex_init(oe_mutex_t* mutex)
     if (!m)
         return OE_INVALID_PARAMETER;
 
-    oe_memset(m, 0, sizeof(oe_mutex_t));
+    memset(m, 0, sizeof(oe_mutex_t));
     m->lock = OE_SPINLOCK_INITIALIZER;
 
     result = OE_OK;
@@ -337,7 +337,7 @@ oe_result_t oe_mutex_destroy(oe_mutex_t* mutex)
     {
         if (_queue_empty(&m->queue))
         {
-            oe_memset(m, 0, sizeof(oe_mutex_t));
+            memset(m, 0, sizeof(oe_mutex_t));
             result = OE_OK;
         }
     }
@@ -378,7 +378,7 @@ oe_result_t oe_cond_init(oe_cond_t* condition)
     if (!cond)
         return OE_INVALID_PARAMETER;
 
-    oe_memset(cond, 0, sizeof(oe_cond_t));
+    memset(cond, 0, sizeof(oe_cond_t));
     cond->lock = OE_SPINLOCK_INITIALIZER;
 
     result = OE_OK;
@@ -540,7 +540,7 @@ oe_result_t oe_rwlock_init(oe_rwlock_t* read_write_lock)
     if (!rw_lock)
         return OE_INVALID_PARAMETER;
 
-    oe_memset(rw_lock, 0, sizeof(oe_rwlock_t));
+    memset(rw_lock, 0, sizeof(oe_rwlock_t));
     rw_lock->lock = OE_SPINLOCK_INITIALIZER;
 
     result = OE_OK;

@@ -1,0 +1,66 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+---
+- name: Gather Ansible facts
+  setup:
+
+- name: Download all the installers
+  win_get_url:
+    url: "{{ item.value.url }}"
+    dest: "{{ item.value.dest }}"
+    timeout: 60
+  retries: 5
+  with_dict: "{{ packages }}"
+
+- name: Add all the packages to the machine PATH
+  win_path:
+    elements: "{{ packages_env_path }}"
+
+- name: 7Zip - Install
+  win_package:
+    path: "{{ packages['7z']['dest'] }}"
+
+- name: Microsoft Visual Studio 2017 - Install
+  raw: "{{ packages['vs_2017']['dest'] }} --quiet --wait --add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.VC.CMake.Project --includeRecommended"
+
+- name: Clang 7 - Install
+  raw: "{{ packages['clang7']['dest'] }} /S"
+
+- name: Git - Install
+  raw: "{{ packages.git.dest }} /SILENT"
+
+- name: OCaml - Create new temp install directory
+  block:
+   - win_file:
+       state: absent
+       path: "{{ tmp_dir }}\\OCaml"
+   - win_file:
+       state: directory
+       path: "{{ tmp_dir }}\\OCaml"
+
+- name: OCaml - Extract
+  raw: '7z.exe x "{{ packages.ocaml.dest }}" -r -y -o"{{ tmp_dir }}\OCaml"'
+
+- name: OCaml - Install
+  win_shell: |
+    $ocamlDest = "C:\Program Files\OCaml"
+    if(Test-Path -Path $ocamlDest) {
+        Remove-Item -Path $ocamlDest -Force -Recurse
+    }
+    New-Item -ItemType Directory -Path $ocamlDest
+    Move-Item -Path "{{ tmp_dir }}\OCaml\*\*" -Destination $ocamlDest
+
+- name: OCaml - Cleanup temp install directory
+  win_file:
+    state: absent
+    path: "{{ tmp_dir }}\\OCaml"
+
+- name: shellcheck - Install
+  win_shell: |
+    $shellcheckDest = "C:\Program Files\shellcheck"
+    if(Test-Path -Path $shellcheckDest) {
+        Remove-Item -Path $shellcheckDest -Force -Recurse
+    }
+    New-Item -ItemType Directory -Path $shellcheckDest
+    Move-Item "{{ packages.shellcheck.dest }}" $shellcheckDest -Force

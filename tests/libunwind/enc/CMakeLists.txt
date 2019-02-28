@@ -6,8 +6,6 @@
 # Disabling warning-as-errors for the specific warnings is painful across multiple different compilers.
 # It was agreed to, that it is best to just disable warnings-as-errors for these tests specifically.
 
-include(${CMAKE_CURRENT_LIST_DIR}/../../../cmake/get_testcase_name.cmake)
-
 oeedl_file(../libunwind.edl enclave gen)
 
 set(LIBUNWIND_TEST_DIR ${PROJECT_SOURCE_DIR}/3rdparty/libunwind/libunwind/tests)
@@ -20,7 +18,7 @@ add_library(libunwindtest-support
         ${LIBUNWIND_TEST_DIR}/flush-cache.h
         test_support.c
         )
-target_link_libraries(libunwindtest-support PRIVATE oeenclave)
+target_link_libraries(libunwindtest-support PRIVATE oeenclave oelibc)
 target_compile_options(libunwindtest-support PRIVATE -Wno-error -DUNW_LOCAL_ONLY=1)
 target_include_directories(libunwindtest-support PUBLIC
         ${PROJECT_SOURCE_DIR}/3rdparty/libunwind

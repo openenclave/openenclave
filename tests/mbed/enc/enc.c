@@ -3,13 +3,11 @@
 
 #include <assert.h>
 #include <errno.h>
-#include <fcntl.h>
+#include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/syscall.h>
-#include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,11 +40,11 @@ void exit(int status)
 
 char* oe_host_strdup(const char* str)
 {
-    size_t n = oe_strlen(str);
+    size_t n = strlen(str);
     char* dup = (char*)oe_host_malloc(n + 1);
 
     if (dup)
-        oe_memcpy(dup, str, n + 1);
+        memcpy(dup, str, n + 1);
 
     return dup;
 }
@@ -111,40 +109,10 @@ static oe_result_t _syscall_hook(
             if (rval > 0)
             {
                 char* enc_buf = (char*)arg2;
-                oe_memcpy(enc_buf, host_buf, buf_len);
+                memcpy(enc_buf, host_buf, buf_len);
             }
             *ret = (int)rval;
             oe_host_free(host_buf);
-            break;
-        }
-        case SYS_readv:
-        {
-            int i;
-            struct iovec* iov = (struct iovec*)arg2;
-            const int iovcnt = (int)arg3;
-            struct iovec* host_iov = (struct iovec*)oe_host_malloc(
-                sizeof(struct iovec) * (unsigned long)iovcnt);
-
-            for (i = 0; i < iovcnt; ++i)
-            {
-                host_iov[i].iov_base = (void*)oe_host_malloc(iov[i].iov_len);
-                host_iov[i].iov_len = iov[i].iov_len;
-            }
-
-            ssize_t rval = 0;
-            result = mbed_test_readv(&rval, (int)arg1, host_iov, iovcnt);
-            *ret = rval;
-
-            for (i = 0; i < iovcnt; ++i)
-            {
-                if (rval > 0)
-                {
-                    oe_memcpy(
-                        iov[i].iov_base, host_iov[i].iov_base, iov[i].iov_len);
-                }
-                oe_host_free(host_iov[i].iov_base);
-            }
-            oe_host_free(host_iov);
             break;
         }
         case SYS_writev:
@@ -178,6 +146,7 @@ static oe_result_t _syscall_hook(
             result = mbed_test_close(&rval, (int)arg1);
             break;
         }
+        case SYS_readv:
         default:
         {
             OE_RAISE(OE_UNSUPPORTED);
@@ -250,6 +219,6 @@ OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
     true, /* AllowDebug */
-    1024, /* HeapPageCount */
-    1024, /* StackPageCount */
+    512,  /* HeapPageCount */
+    512,  /* StackPageCount */
     2);   /* TCSCount */

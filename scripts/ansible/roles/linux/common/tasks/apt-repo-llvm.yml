@@ -1,0 +1,19 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+---
+- name: Install apt-transport-https APT package
+  apt:
+    name: apt-transport-https
+    state: present
+
+- name: Add LLVM APT repository key
+  apt_key:
+    url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
+    state: present
+
+- name: Add LLVM APT repository
+  apt_repository:
+    repo: "deb http://apt.llvm.org/{{ ansible_distribution_release }} llvm-toolchain-{{ ansible_distribution_release }}-7 main"
+    state: present
+    update_cache: yes

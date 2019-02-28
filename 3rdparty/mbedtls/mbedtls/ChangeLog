@@ -1,5 +1,115 @@
 mbed TLS ChangeLog (Sorted per branch, date)
 
+= mbed TLS 2.7.9 branch released 2018-12-21
+
+Bugfix
+   * Fix for Clang, which was reporting a warning for the bignum.c inline
+     assembly for AMD64 targets creating string literals greater than those
+     permitted by the ISO C99 standard. Found by Aaron Jones. Fixes #482.
+   * Fix runtime error in `mbedtls_platform_entropy_poll()` when run
+     through qemu user emulation. Reported and fix suggested by randombit
+     in #1212. Fixes #1212.
+   * Fix an unsafe bounds check when restoring an SSL session from a ticket.
+     This could lead to a buffer overflow, but only in case ticket authentication
+     was broken. Reported and fix suggested by Guido Vranken in #659.
+   * Add explicit integer to enumeration type casts to example program
+     programs/pkey/gen_key which previously led to compilation failure
+     on some toolchains. Reported by phoenixmcallister. Fixes #2170.
+   * Clarify documentation of mbedtls_ssl_set_own_cert() regarding the absence
+     of check for certificate/key matching. Reported by Attila Molnar, #507.
+
+= mbed TLS 2.7.8 branch released 2018-11-30
+
+Security
+   * Fix timing variations and memory access variations in RSA PKCS#1 v1.5
+     decryption that could lead to a Bleichenbacher-style padding oracle
+     attack. In TLS, this affects servers that accept ciphersuites based on
+     RSA decryption (i.e. ciphersuites whose name contains RSA but not
+     (EC)DH(E)). Discovered by Eyal Ronen (Weizmann Institute),  Robert Gillham
+     (University of Adelaide), Daniel Genkin (University of Michigan),
+     Adi Shamir (Weizmann Institute), David Wong (NCC Group), and Yuval Yarom
+     (University of Adelaide, Data61). The attack is described in more detail
+     in the paper available here: http://cat.eyalro.net/cat.pdf  CVE-2018-19608
+   * In mbedtls_mpi_write_binary(), don't leak the exact size of the number
+     via branching and memory access patterns. An attacker who could submit
+     a plaintext for RSA PKCS#1 v1.5 decryption but only observe the timing
+     of the decryption and not its result could nonetheless decrypt RSA
+     plaintexts and forge RSA signatures. Other asymmetric algorithms may
+     have been similarly vulnerable. Reported by Eyal Ronen, Robert Gillham,
+     Daniel Genkin, Adi Shamir, David Wong and Yuval Yarom.
+   * Wipe sensitive buffers on the stack in the CTR_DRBG and HMAC_DRBG
+     modules.
+
+API Changes
+   * The new functions mbedtls_ctr_drbg_update_ret() and
+     mbedtls_hmac_drbg_update_ret() are similar to mbedtls_ctr_drbg_update()
+     and mbedtls_hmac_drbg_update() respectively, but the new functions
+     report errors whereas the old functions return void. We recommend that
+     applications use the new functions.
+
+= mbed TLS 2.7.7 branch released 2018-11-19
+
+Security
+   * Fix overly strict DN comparison when looking for CRLs belonging to a
+     particular CA. This previously led to ignoring CRLs when the CRL's issuer
+     name and the CA's subject name differed in their string encoding (e.g.,
+     one using PrintableString and the other UTF8String) or in the choice of
+     upper and lower case. Reported by Henrik Andersson of Bosch GmbH in issue
+     #1784.
+   * Fix a flawed bounds check in server PSK hint parsing. In case the
+     incoming message buffer was placed within the first 64KiB of address
+     space and a PSK-(EC)DHE ciphersuite was used, this allowed an attacker
+     to trigger a memory access up to 64KiB beyond the incoming message buffer,
+     potentially leading to application crash or information disclosure.
+   * Fix mbedtls_mpi_is_prime() to use more rounds of probabilistic testing. The
+     previous settings for the number of rounds made it practical for an
+     adversary to construct non-primes that would be erroneously accepted as
+     primes with high probability. This does not have an impact on the
+     security of TLS, but can matter in other contexts with numbers chosen
+     potentially by an adversary that should be prime and can be validated.
+     For example, the number of rounds was enough to securely generate RSA key
+     pairs or Diffie-Hellman parameters, but was insufficient to validate
+     Diffie-Hellman parameters properly.
+     See "Prime and Prejudice" by by Martin R. Albrecht and Jake Massimo and
+     Kenneth G. Paterson and Juraj Somorovsky.
+
+Bugfix
+   * Fix failure in hmac_drbg in the benchmark sample application, when
+     MBEDTLS_THREADING_C is defined. Found by TrinityTonic, #1095
+   * Fix a bug in the update function for SSL ticket keys which previously
+     invalidated keys of a lifetime of less than a 1s. Fixes #1968.
+   * Fix a bug in the record decryption routine ssl_decrypt_buf()
+     which led to accepting properly authenticated but improperly
+     padded records in case of CBC ciphersuites using Encrypt-then-MAC.
+   * Fix wrong order of freeing in programs/ssl/ssl_server2 example
+     application leading to a memory leak in case both
+     MBEDTLS_MEMORY_BUFFER_ALLOC_C and MBEDTLS_MEMORY_BACKTRACE are set.
+     Fixes #2069.
+   * Fix memory leak and freeing without initialization in the example
+     program programs/x509/cert_write. Fixes #1422.
+   * Ignore IV in mbedtls_cipher_set_iv() when the cipher mode is
+     MBEDTLS_MODE_ECB. Found by ezdevelop. Fixes for #1091.
+   * Zeroize memory used for reassembling handshake messages after use.
+   * Use `mbedtls_zeroize()` instead of `memset()` for zeroization of
+     sensitive data in the example programs aescrypt2 and crypt_and_hash.
+   * Fix compilation failure for configurations which use compile time
+     replacements of standard calloc/free functions through the macros
+     MBEDTLS_PLATFORM_CALLOC_MACRO and MBEDTLS_PLATFORM_FREE_MACRO.
+     Reported by ole-de and ddhome2006. Fixes #882, #1642 and #1706.
+
+Changes
+   * Add tests for session resumption in DTLS.
+   * Close a test gap in (D)TLS between the client side and the server side:
+     test the handling of large packets and small packets on the client side
+     in the same way as on the server side.
+   * Change the dtls_client and dtls_server samples to work by default over
+     IPv6 and optionally by a build option over IPv4.
+   * Change the use of Windows threading to use Microsoft Visual C++ runtime
+     calls, rather than Win32 API calls directly. This is necessary to avoid
+     conflict with C runtime usage. Found and fixed by irwir.
+   * Improve documentation of mbedtls_ssl_get_verify_result().
+     Fixes #517 reported by github-monoculture.
+
 = mbed TLS 2.7.6 branch released 2018-08-31
 
 Security
@@ -11,8 +121,7 @@ Security
 Bugfix
    * Fix a potential memory leak in mbedtls_ssl_setup() function. An allocation
      failure in the function could lead to other buffers being leaked.
-   * Fixes an issue with MBEDTLS_CHACHAPOLY_C which would not compile if
-     MBEDTLS_ARC4_C and MBEDTLS_CIPHER_NULL_CIPHER weren't also defined. #1890
+   * Fixes a missing test dependency on MBEDTLS_ARC4_C. #1890
    * Fix a memory leak in ecp_mul_comb() if ecp_precompute_comb() fails.
      Fix contributed by Espressif Systems.
    * Add ecc extensions only if an ecc based ciphersuite is used.
@@ -26,8 +135,8 @@ Bugfix
    * Fix a bug that caused SSL/TLS clients to incorrectly abort the handshake
      with TLS versions 1.1 and earlier when the server requested authentication
      without providing a list of CAs. This was due to an overly strict bounds
-     check in parsing the CertificateRequest message,
-     introduced in Mbed TLS 2.12.0. Fixes #1954.
+     check in parsing the CertificateRequest message, introduced in
+     Mbed TLS 2.12.0. Fixes #1954.
    * Fix undefined shifts with negative values in certificates parsing
      (found by Catena cyber using oss-fuzz)
    * Fix memory leak and free without initialization in pk_encrypt

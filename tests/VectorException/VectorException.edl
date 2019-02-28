@@ -1,0 +1,13 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    include "openenclave/internal/cpuid.h"
+
+    trusted {
+        public int enc_test_vector_exception();
+        public void enc_test_cpuid_in_global_constructors();
+        public int enc_test_sigill_handling(
+            [out] uint32_t cpuid_table[8][4]);
+    };
+};

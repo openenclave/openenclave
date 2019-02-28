@@ -713,7 +713,8 @@ oe_result_t oe_cert_verify(
 
         errorno = X509_STORE_CTX_get_error(ctx);
         OE_RAISE_MSG(
-            OE_VERIFY_FAILED,
+            (X509_V_ERR_CRL_HAS_EXPIRED == errorno) ? OE_VERIFY_CRL_EXPIRED
+                                                    : OE_VERIFY_FAILED,
             "X509_verify_cert failed!\n"
             " error: (%d) %s\n",
             errorno,

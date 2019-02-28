@@ -9,6 +9,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/tests.h>
 #include <openenclave/internal/thread.h>
+#include <openenclave/internal/types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <atomic>

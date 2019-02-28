@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 #include "asn1.h"
-#include <limits.h>
 #include <openenclave/internal/asn1.h>
 #include <openenclave/internal/raise.h>
 
@@ -45,7 +44,7 @@ oe_result_t oe_asn1_get_tag(
                 if (oe_asn1_remaining(asn1) < 1)
                     OE_RAISE(OE_FAILURE);
 
-                if (long_tag > (INT_MAX >> 7L))
+                if (long_tag > (OE_INT_MAX >> 7L))
                     OE_RAISE(OE_FAILURE);
             }
 

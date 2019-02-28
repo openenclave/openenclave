@@ -1,23 +1,20 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-if (WIN32)
-    set(BINARY ${OE_BINDIR}/oeedger8r.exe)
-else()
-    set(BINARY ${OE_BINDIR}/oeedger8r)
-endif()
-
 # NOTE: The custom commands below first copy the input files to the
 # build directory and then invoke the OCaml tools because those tools
 # do not emit to the current working directory, they always emit to
 # the location of the input file.
 
-# Generate Lexer.
+# Check prerequisites
 find_program(OCAMLLEX ocamllex)
-if (NOT OCAMLLEX)
-  message(FATAL_ERROR "ocamllex not found! Please install 'ocaml-native-compilers'")
+find_program(OCAMLYACC ocamlyacc)
+find_program(OCAMLOPT ocamlopt)
+if ((NOT OCAMLLEX) OR (NOT OCAMLYACC) OR (NOT OCAMLOPT))
+  message(FATAL_ERROR "Please check your OCAML installation and make sure you installed 'ocaml-native-compilers'")
 endif ()
 
+# Generate Lexer.
 add_custom_command(
   OUTPUT Lexer.ml
   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/intel/Lexer.mll ${CMAKE_CURRENT_BINARY_DIR}
@@ -25,11 +22,6 @@ add_custom_command(
   DEPENDS intel/Lexer.mll)
 
 # Generate Parser.
-find_program(OCAMLYACC ocamlyacc)
-if (NOT OCAMLYACC)
-  message(FATAL_ERROR "ocamlycac not found! Please install 'ocaml-native-compilers'")
-endif ()
-
 add_custom_command(
   OUTPUT Parser.ml Parser.mli
   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/intel/Parser.mly ${CMAKE_CURRENT_BINARY_DIR}
@@ -37,6 +29,7 @@ add_custom_command(
   DEPENDS intel/Parser.mly)
 
 # Compile
+set(BINARY oeedger8r${CMAKE_EXECUTABLE_SUFFIX})
 add_custom_command(
     OUTPUT ${BINARY}
     COMMAND ocamlopt -c -bin-annot -I . -o Ast.cmx          ${CMAKE_CURRENT_SOURCE_DIR}/intel/Ast.ml
@@ -66,10 +59,22 @@ add_custom_command(
             intel/Plugin.ml
             intel/Preprocessor.ml
             intel/SimpleStack.ml
-            intel/Util.ml
-)
+            intel/Util.ml)
 
-add_custom_target(oeedger8r ALL DEPENDS ${BINARY})
+# The names here are important because the output file must be named
+# `oeedger8r`, and our targets must not clash with that.
+add_executable(edger8r IMPORTED GLOBAL)
+set_target_properties(edger8r PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/${BINARY})
+add_custom_target(oeedger8r_target DEPENDS ${BINARY})
+add_dependencies(edger8r oeedger8r_target)
 
-# install rule
-install (PROGRAMS ${BINARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
+# Can't use `install(TARGETS)` on an imported executable, because it
+# causes CMake to crash with a segmentation fault.
+#
+# TODO: Get CMake to fix this as it is particularly annoying. It
+# prevents us from exporting a proper target for our users to consume.
+#
+# Because of this bug, consumers of the Open Enclave SDK CMake package
+# are forced to manually import the oeedger8r executable into their
+# graph.
+install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${BINARY} DESTINATION ${CMAKE_INSTALL_BINDIR})

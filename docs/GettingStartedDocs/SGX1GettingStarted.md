@@ -17,12 +17,11 @@ This creates a source tree under the directory called openenclave.
 
 ## Install project prerequisites
 
-Ansible is required to install the project prerequisites. If not already installed, you can install it by running: `scripts/ansible/install-ansible.sh`
-The ansible-playbook [scripts/ansible/ansible-include_task.yml](/scripts/ansible/ansible-include_task.yml) was created to be able to run pre-defined ansible tasks on a target host. All the tasks required to install the prerequisites can be found in the following ansible task list : [scripts/ansible/tasks/ansible-install-prereqs.yml](/scripts/ansible/tasks/ansible-install-prereqs.yml) To make installing the prerequisites less tedious execute the following commands from the root of the source tree:
+Ansible is required to install the project prerequisites. If not already installed, you can install it by running: `scripts/ansible/install-ansible.sh`. To install all the OpenEnclave prerequisites you can execute the `environment-setup.yml` tasks from `linux/openenclave` Ansible role:
 
 ```bash
-cd openenclave
-ansible-playbook scripts/ansible/ansible-include_task.yml --extra-vars "target=localhost included_task=tasks/ansible-install-prereqs.yml"
+cd openenclave/scripts/ansible
+ansible localhost -m import_role -a "name=linux/openenclave tasks_from=environment-setup.yml" --become --ask-become-pass
 ```
 
 ## Install Intel SGX1 support software packages

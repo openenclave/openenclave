@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "atexit.h"
+#include <openenclave/corelibc/unistd.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/atexit.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/thread.h>
 
 /*

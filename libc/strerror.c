@@ -1,38 +1,18 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#define __NEED_size_t
-#define __NEED_locale_t
-#include <bits/alltypes.h>
-#include <errno.h>
+#include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
-
-typedef struct _error_info
-{
-    int errnum;
-    const char* message;
-} error_info_t;
-
-static error_info_t _errors[] = {
-#define E(errno, message) {errno, message},
-#include "../3rdparty/musl/musl/src/errno/__strerror.h"
-};
-
-static size_t _num_errors = sizeof(_errors) / sizeof(_errors[0]);
+#include "locale_impl.h"
 
 char* strerror_l(int errnum, locale_t loc)
 {
     OE_UNUSED(loc);
-    for (size_t i = 0; i < _num_errors; i++)
-    {
-        if (errnum == _errors[i].errnum)
-            return (char*)_errors[i].message;
-    }
-
-    return (char*)"Unknown error";
+    oe_assert(loc == C_LOCALE);
+    return oe_strerror(errnum);
 }
 
 char* strerror(int errnum)
 {
-    return strerror_l(errnum, 0);
+    return oe_strerror(errnum);
 }

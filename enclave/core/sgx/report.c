@@ -5,9 +5,10 @@
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/corelibc/stdlib.h>
+#include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgxtypes.h>
@@ -244,7 +245,7 @@ oe_result_t oe_get_remote_report(
     if (*report_buffer_size > OE_MAX_REPORT_SIZE)
         OE_RAISE(OE_UNEXPECTED);
 
-    if (oe_memcmp(
+    if (memcmp(
             &sgx_quote->report_body,
             &sgx_report.body,
             sizeof(sgx_report.body)) != 0)

@@ -49,6 +49,15 @@ Intel's Edger8r code exists in the intel folder. The following minimal changes h
 Edge routine emitter for Open Enclave is implemented in Emitter.ml. It generates code for all the test .edl files.
 It is work in progress. There is also a new main.ml which acts are the program entry point. I would like to somehow get rid of that.
 
+#### Best Practices
 
+We follow [OCamlverse Best Practices](https://ocamlverse.github.io/content/best_practices.html).
 
+We use [ocp-indent](https://github.com/OCamlPro/ocp-indent) to indent our code
+(but not the code imported from Intel).
+This can be run manually or with an editor such as
+[Emacs](https://github.com/ocaml/tuareg/blob/master/dot-emacs.el).
 
+For comments, we are in the process of converting to
+[OCamldoc](https://ocamlverse.github.io/content/documentation_guidelines.html) style,
+which uses `(** [pre-formatted] ... *)` and can later be exported and rendered.

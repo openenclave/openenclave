@@ -4,8 +4,8 @@
 #ifndef _OE_PRINT_H
 #define _OE_PRINT_H
 
+#include <openenclave/corelibc/stdarg.h>
 #include <openenclave/internal/defs.h>
-#include <openenclave/internal/types.h>
 
 OE_EXTERNC_BEGIN
 

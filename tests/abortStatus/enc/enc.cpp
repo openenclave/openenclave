@@ -3,7 +3,6 @@
 
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/atexit.h>
 #include <openenclave/internal/print.h>
 #include <atomic>
 #include "abortStatus_t.h"
@@ -41,10 +40,7 @@ int test_ocall_after_abort(void* thread_ready_count, void* is_enclave_crashed)
         continue;
     }
 
-    // OCALL should return OE_ENCLAVE_ABORTING.
-    // There is currently an issue with the generated code that needs to be
-    // fixed.
-    if (foobar() == OE_OUT_OF_MEMORY)
+    if (foobar() == OE_ENCLAVE_ABORTING)
     {
         rval = 0;
     }

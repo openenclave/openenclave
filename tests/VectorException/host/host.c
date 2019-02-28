@@ -7,40 +7,47 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../args.h"
 #include "../host/sgx/cpuid.h"
+#include "VectorException_u.h"
 
 #define SKIP_RETURN_CODE 2
 
-void TestVectorException(oe_enclave_t* enclave)
+void test_vector_exception(oe_enclave_t* enclave)
 {
-    TestVectorExceptionArgs args;
-    memset(&args, 0, sizeof(args));
-    args.ret = -1;
-    oe_result_t result = oe_call_enclave(enclave, "TestVectorException", &args);
+    int ret = -1;
+    oe_result_t result = enc_test_vector_exception(enclave, &ret);
+
     if (result != OE_OK)
-        oe_put_err("oe_call_enclave() failed: result=%u", result);
+    {
+        oe_put_err("enc_test_vector_exception() failed: result=%u", result);
+    }
 
-    if (args.ret != 0)
-        oe_put_err("ECALL TestVectorException failed args.result=%d", args.ret);
+    if (ret != 0)
+    {
+        oe_put_err("enc_test_vector_exception failed ret=%d", ret);
+    }
 
-    OE_TEST(args.ret == 0);
+    OE_TEST(ret == 0);
 }
 
-void TestSigillHandling(oe_enclave_t* enclave)
+void test_sigill_handling(oe_enclave_t* enclave)
 {
-    TestSigillHandlingArgs args;
-    memset(&args, 0, sizeof(args));
-    args.ret = -1;
+    uint32_t cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
+    memset(&cpuid_table, 0, sizeof(cpuid_table));
+    int ret = -1;
 
-    oe_result_t result = oe_call_enclave(enclave, "TestSigillHandling", &args);
+    oe_result_t result = enc_test_sigill_handling(enclave, &ret, cpuid_table);
     if (result != OE_OK)
-        oe_put_err("oe_call_enclave() failed: result=%u", result);
+    {
+        oe_put_err("enc_test_sigill_handling() failed: result=%u", result);
+    }
 
-    if (args.ret != 0)
-        oe_put_err("ECALL TestSigillHandling failed args.result=%d", args.ret);
+    if (ret != 0)
+    {
+        oe_put_err("enc_test_sigill_handling failed ret=%d", ret);
+    }
 
-    OE_TEST(args.ret == 0);
+    OE_TEST(ret == 0);
 
     // Verify that the enclave cached CPUID values match host's
     // First, verify values being tested do not reach above max supported leaf.
@@ -55,16 +62,20 @@ void TestSigillHandling(oe_enclave_t* enclave)
         &cpuid_maxlevel[OE_CPUID_RDX]);
 
     if (OE_CPUID_LEAF_COUNT - 1 > cpuid_maxlevel[OE_CPUID_RAX])
+    {
         oe_put_err(
             "Test machine does not support CPUID leaf %x expected by "
-            "TestSigillHandling.\n",
+            "test_sigill_handling.\n",
             (OE_CPUID_LEAF_COUNT - 1));
+    }
 
     // Check all values.
     for (uint32_t i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
         if (!oe_is_emulated_cpuid_leaf(i))
+        {
             continue;
+        }
 
         uint32_t cpuid_info[OE_CPUID_REG_COUNT];
         memset(cpuid_info, 0, sizeof(cpuid_info));
@@ -84,17 +95,17 @@ void TestSigillHandling(oe_enclave_t* enclave)
                 // The highest 8 bits indicates the current executing processor
                 // id.
                 // There is no guarantee that the value is the same across
-                // multiple cpu-id calles since the thread could be scheduled to
+                // multiple cpu-id calls since the thread could be scheduled to
                 // different processors for different calls.
                 // Additionally, the enclave returns a cached value which has
                 // lesser chance of matching up with the current value.
                 OE_TEST(
                     (cpuid_info[j] & 0x00FFFFFF) ==
-                    (args.cpuid_table[i][j] & 0x00FFFFFF));
+                    (cpuid_table[i][j] & 0x00FFFFFF));
             }
             else
             {
-                OE_TEST(cpuid_info[j] == args.cpuid_table[i][j]);
+                OE_TEST(cpuid_info[j] == cpuid_table[i][j]);
             }
         }
     }
@@ -122,23 +133,16 @@ int main(int argc, const char* argv[])
         return SKIP_RETURN_CODE;
     }
 
-    if ((result = oe_create_enclave(
-             argv[1],
-             OE_ENCLAVE_TYPE_SGX,
-             flags,
-             NULL,
-             0,
-             NULL,
-             0,
-             &enclave)) != OE_OK)
-        oe_put_err("oe_create_enclave(): result=%u", result);
+    if ((result = oe_create_VectorException_enclave(
+             argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
+    {
+        oe_put_err("oe_create_VectorException_enclave(): result=%u", result);
+    }
 
-    OE_TEST(
-        oe_call_enclave(enclave, "TestCpuidInGlobalConstructors", NULL) ==
-        OE_OK);
+    OE_TEST(enc_test_cpuid_in_global_constructors(enclave) == OE_OK);
 
-    TestVectorException(enclave);
-    TestSigillHandling(enclave);
+    test_vector_exception(enclave);
+    test_sigill_handling(enclave);
 
     oe_terminate_enclave(enclave);
 

@@ -1,0 +1,16 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+        // Signed count should generate a warning.
+        public void signed_count(
+            [in, count=count] int* in,
+            int count);
+
+        // Unsigned count should not generate a warning.
+        public void unsigned_count(
+            [in, count=count] int* in,
+            size_t count);
+    };
+};

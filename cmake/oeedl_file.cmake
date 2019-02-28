@@ -57,20 +57,12 @@ function(oeedl_file EDL_FILE TYPE OUT_FILES_VAR)
 
 	set(h_file ${CMAKE_CURRENT_BINARY_DIR}/${idl_base}_${type_id}.h)
 
-	if (UNIX)
-		set(OEEDGER8R_COMMAND oeedger8r)
-	else()
-		set(OEEDGER8R_COMMAND oeedger8r.exe)
-	endif()
-
 	add_custom_command(
 		OUTPUT ${h_file} ${c_file}
-		# NOTE: Because `OEEDGER8R_COMMAND` is not a CMake
-		# executable, we need an explicit dependency on it in
-		# order to cause files to be regenerated if the
-		# oeedger8r is rebuilt.
-		DEPENDS ${EDL_FILE} oeedger8r ${OE_BINDIR}/${OEEDGER8R_COMMAND}
-		COMMAND ${OE_BINDIR}/${OEEDGER8R_COMMAND} ${type_opt} ${headers_only} ${dir_opt} ${CMAKE_CURRENT_BINARY_DIR} ${EDL_FILE} --search-path ${in_path} ${edl_search_path}
+		# NOTE: CMake does not add a file dependency for targets used in COMMAND, so we must
+		# add it to DEPENDS too in order to re-run this command when the edger8r is updated.
+		DEPENDS ${EDL_FILE} edger8r
+		COMMAND edger8r ${type_opt} ${headers_only} ${dir_opt} ${CMAKE_CURRENT_BINARY_DIR} ${EDL_FILE} --search-path ${in_path} ${edl_search_path}
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		)
 

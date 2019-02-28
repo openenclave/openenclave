@@ -3,9 +3,9 @@
 
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
+#include <openenclave/corelibc/stdlib.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/raise.h>
 #include "../common/sgx/qeidentity.h"
 
@@ -65,8 +65,11 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args)
 
     // Copy args to prevent TOCTOU issues.
     tmp_args = *host_args;
+    if (tmp_args.result == OE_QUOTE_PROVIDER_CALL_ERROR)
+        OE_TRACE_WARNING(
+            "Warning: QE Identity was not supported by quote provider\n");
 
-    OE_CHECK(tmp_args.result);
+    OE_CHECK_NO_TRACE(tmp_args.result);
 
     if (tmp_args.host_out_buffer == NULL ||
         !oe_is_outside_enclave(tmp_args.host_out_buffer, sizeof(uint8_t)))

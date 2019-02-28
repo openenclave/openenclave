@@ -5,11 +5,11 @@
 This project requires at least [CMake 3.13.1](https://cmake.org/download/). This
 is probably not available in your package manager's repositories, but we use the
 `OBJECT` library feature extensively, so you need to install it either manually
-from their website, or with ansible including our [scripts/ansible/tasks/ansible-install-prereqs.yml](/scripts/ansible/tasks/ansible-install-prereqs.yml) task list into a playbook.
-ex: Using our wrapper playbook [scripts/ansible/ansible-include_task.yml](/scripts/ansible/ansible-include_task.yml) you can execute the following command :
+from their website, or with our Ansible scripts:
+
 ```bash
-cd openenclave
-ansible-playbook scripts/ansible/ansible-include_task.yml --extra-vars "target=localhost included_task=tasks/ansible-install-prereqs.yml"
+cd openenclave/scripts/ansible
+ansible localhost -m import_role -a "name=linux/openenclave tasks_from=environment-setup.yml" --become --ask-become-pass
 ```
 
 ## CMake Configuration

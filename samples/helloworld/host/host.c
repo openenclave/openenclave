@@ -52,7 +52,7 @@ int main(int argc, const char* argv[])
 
     // Create the enclave
     result = oe_create_helloworld_enclave(
-        argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
+        argv[1], OE_ENCLAVE_TYPE_AUTO, flags, NULL, 0, &enclave);
     if (result != OE_OK)
     {
         fprintf(

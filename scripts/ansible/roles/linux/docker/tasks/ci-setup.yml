@@ -1,0 +1,52 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+---
+- name: Gather Ansible facts
+  setup:
+
+- name: Set the names list of the APT packages to be installed
+  block:
+    - set_fact:
+        pkg_names:
+          - "automake"
+          - "dh-exec"
+          - "dpkg-dev"
+          - "gawk"
+          - "git"
+          - "libmbedtls10"
+          - "sudo"
+
+    - set_fact:
+        pkg_names: "{{ pkg_names }} + {{ ['libcurl3', 'libprotobuf9v5'] }}"
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'xenial'
+
+    - set_fact:
+        pkg_names: "{{ pkg_names }} + {{ ['libcurl4', 'libprotobuf10'] }}"
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'bionic'
+
+- name: Install Docker prerequisite packages
+  apt:
+    name: "{{ pkg_names }}"
+    state: present
+    update_cache: yes
+    install_recommends: no
+
+# Workaround for Ubuntu 18.04 Docker container tests
+# https://github.com/intel/linux-sgx/blob/a85fbe9a55767681b0f799a66555b123312fb72c/linux/installer/common/psw/install.sh#L66-L99
+- name: Create /etc/init directory
+  file:
+    path: /etc/init
+    state: directory
+
+- import_role:
+    name: linux/openenclave
+    tasks_from: environment-setup.yml
+
+- import_role:
+    name: linux/intel
+    tasks_from: sgx-packages.yml
+
+- import_role:
+    name: linux/az-dcap-client
+    tasks_from: stable-install.yml

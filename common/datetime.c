@@ -40,7 +40,7 @@ oe_result_t oe_datetime_is_valid(const oe_datetime_t* datetime)
                 else
                     is_leap_year = true;
             }
-            valid_day = (day >= 1 && day <= (is_leap_year ? 29 : 28));
+            valid_day = (day >= 1 && day <= (uint32_t)(is_leap_year ? 29 : 28));
             break;
         case 3:
             valid_day = (day >= 1 && day <= 31);

@@ -1,0 +1,9 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+        // Switchless functions not supported.
+        public void switchless() transition_using_threads;
+    };
+};
