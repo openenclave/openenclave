@@ -66,7 +66,9 @@ int main(int argc, const char* argv[])
     printf("=== %s: %s\n", argv[0], argv[1]);
 
 #if defined(_WIN32)
-    printf("Windows Host - Initial value of MXCSR is %0x\n", my_getmxcsr());
+    volatile uint32_t csr;
+    csr = my_getmxcsr();
+    OE_TEST(csr == 0x1f80);
 #endif
 
     // Create the enclave:
@@ -75,17 +77,15 @@ int main(int argc, const char* argv[])
         oe_put_err("oe_create_libc_enclave(): result=%u", result);
 
 #if defined(_WIN32)
-    printf(
-        "Windows Host - Value of MXCSR after create_libc_enclave is %0x\n",
-        my_getmxcsr());
+    csr = my_getmxcsr();
+    OE_TEST(csr == 0x1f80);
 #endif
 
     Test(enclave);
 
 #if defined(_WIN32)
-    printf(
-        "Windows Host - Value of MXCSR after enclave Test is %0x\n",
-        my_getmxcsr());
+    csr = my_getmxcsr();
+    OE_TEST(csr == 0x1f80);
 #endif
 
     r = oe_terminate_enclave(enclave);

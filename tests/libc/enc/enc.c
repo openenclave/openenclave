@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <libgen.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/tests.h>
 #include <search.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -30,20 +31,18 @@ int my_printfpu_control()
 {
     fpu_control_t cw;
     _FPU_GETCW(cw);
-    // printf("FPU Control Word is 0x%x\n", cw);
+    return cw;
 }
 
 uint32_t my_getmxcsr()
 {
     uint32_t csr;
     asm volatile("stmxcsr %0" : "=m"(csr));
-    printf("MXCSR is %x\n", csr);
     return csr;
 }
 
-void my_setmxcsr()
+void my_setmxcsr(uint32_t csr)
 {
-    uint32_t csr = 0x1f80;
     asm volatile("ldmxcsr %0" : : "m"(csr));
 }
 
@@ -74,6 +73,14 @@ int run_test(const char* name, int (*main)(int argc, const char* argv[]))
 
     /* Print running message. */
     printf("=== running: %s\n", name);
+
+    /* Verify that the FPU control word and SSE control/status flags are set
+     * correctly before each test */
+    uint32_t cw = my_printfpu_control();
+    OE_TEST(cw == 0x37f);
+
+    uint32_t csr = my_getmxcsr();
+    OE_TEST(csr == 0x1f80);
 
     /* Disable Open Enclave debug malloc checks. */
     {

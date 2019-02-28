@@ -74,9 +74,6 @@ NESTED_ENTRY oe_enter, _TEXT$00
     mov rax, [rbp+64]
     mov ENCLAVE, rax
 
-    ;; Save the host context in the host stack
-    ;;mov HOST_CONTEXT, rsp
-
     ;;Save the current context
 
     ;;Save the SSE status and control flags
