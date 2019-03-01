@@ -146,7 +146,7 @@ static void _test_get_dates(void)
     // The two values are not guaranteed to be equal.
     // OE_TEST(last.seconds == _time.seconds);
 
-    OE_TEST(next.year == _time.year + 1);
+    OE_TEST(next.year == _time.year + 4);
     OE_TEST(next.month == _time.month);
     OE_TEST(next.day == _time.day);
     OE_TEST(next.hours == _time.hours);
