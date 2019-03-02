@@ -63,7 +63,6 @@ if (OE_SGX)
     list(APPEND PLATFORM_SRC
       sgx/linux/aep.S
       sgx/linux/aesm.c
-      sgx/linux/cpuid.c
       sgx/linux/enter.S
       sgx/linux/entersim.S
       sgx/linux/exception.c
@@ -73,7 +72,6 @@ if (OE_SGX)
     list(APPEND PLATFORM_SRC
       sgx/windows/aep.asm
       sgx/windows/aesm.c
-      sgx/windows/cpuid.c
       sgx/windows/enter.asm
       sgx/windows/entersim.asm
       sgx/windows/exception.c)
