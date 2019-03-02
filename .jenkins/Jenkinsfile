@@ -1,3 +1,5 @@
+cmakeCheckFlags="--warn-uninitialized -Wdev --warn-unused-vars"
+
 def ACCTest(String label, String compiler, String build_type) {
     def c_compiler = "clang-7"
     def cpp_compiler = "clang++-7"
@@ -6,7 +8,7 @@ def ACCTest(String label, String compiler, String build_type) {
             cleanWs()
             checkout scm
 
-            timeout(15) {
+            timeout(30) {
                 dir('build') {
                     if (compiler == "gcc") {
                         c_compiler = "gcc"
@@ -14,7 +16,7 @@ def ACCTest(String label, String compiler, String build_type) {
                     }
                     withEnv(["CC=${c_compiler}","CXX=${cpp_compiler}"]) {
                         sh """
-                        cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type}
+                        cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} ${cmakeCheckFlags}
                         ninja -v
                         ctest --output-on-failure
                         """
@@ -22,6 +24,26 @@ def ACCTest(String label, String compiler, String build_type) {
                 }
             }
 
+        }
+    }
+}
+
+def ACCGNUTest() {
+    stage("ACC1804 GNU gcc SGX1FLC") {
+        node("ACC-1804") {
+            cleanWs()
+            checkout scm
+            timeout(30) {
+                dir('build') {
+                    withEnv(["CC=gcc","CXX=g++"]) {
+                        sh """
+                        cmake ${WORKSPACE} -DUSE_LIBSGX=ON
+                        make
+                        ctest --output-on-failure
+                        """
+                    }
+                }
+            }
         }
     }
 }
@@ -38,11 +60,11 @@ def simulationTest(String version, String platform_mode, String build_type) {
 
             def oetoolsSim = docker.build("oetools-simulation-${version}", "--build-arg ubuntu_version=${version} -f .jenkins/Dockerfile .")
             oetoolsSim.inside {
-                timeout(15) {
+                timeout(30) {
                     dir('build') {
                         withEnv(["CC=clang-7","CXX=clang++-7","OE_SIMULATION=1"]) {
                             sh """
-                            cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DUSE_LIBSGX=${use_libsgx}
+                            cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DUSE_LIBSGX=${use_libsgx} ${cmakeCheckFlags}
                             ninja -v
                             ctest --output-on-failure
                             """
@@ -62,11 +84,11 @@ def ACCContainerTest(String label, String version) {
 
             def oetoolsContainer = docker.build("oetools-containertest-${version}", "--build-arg ubuntu_version=${version} -f .jenkins/Dockerfile .")
             oetoolsContainer.inside('--device /dev/sgx:/dev/sgx') {
-                timeout(15) {
+                timeout(30) {
                     dir('build') {
                         withEnv(["CC=clang-7","CXX=clang++-7"]) {
                             sh """
-                            cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
+                            cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo ${cmakeCheckFlags}
                             ninja -v
                             ctest --output-on-failure
                             """
@@ -86,7 +108,7 @@ def checkDevFlows(String version) {
 
             def oetoolsCheck = docker.build("oetools-check-${version}", "--build-arg ubuntu_version=${version} -f .jenkins/Dockerfile .")
             oetoolsCheck.inside {
-                timeout(2) {
+                timeout(10) {
                     sh './scripts/check-ci'
                 }
             }
@@ -101,15 +123,15 @@ def checkDevFlows(String version) {
             def buildImage = docker.build("oetools-base-${version}", "--build-arg ubuntu_version=${version} -f .jenkins/Dockerfile.scripts .")
 
             buildImage.inside {
-                timeout(15) {
+                timeout(30) {
                     // This is run to test that it works with the dependencies
                     // installed by our install-prereqs ansible playbook.
 
                     dir('build') {
-                        sh '''
-                        cmake ${WORKSPACE} -G Ninja -DUSE_LIBSGX=OFF
+                        sh """
+                        cmake ${WORKSPACE} -G Ninja -DUSE_LIBSGX=OFF ${cmakeCheckFlags}
                         ninja -v
-                        '''
+                        """
                         // Note that `make package` is not expected to work
                         // without extra configuration.
                     }
@@ -128,7 +150,7 @@ def win2016LinuxElfBuild(String version, String compiler, String build_type) {
             def cpp_compiler = "clang++-7"
             def oetoolsWincp = docker.build("oetools-wincp-${version}", "--build-arg ubuntu_version=${version} -f .jenkins/Dockerfile .")
             oetoolsWincp.inside {
-                timeout(15) {
+                timeout(30) {
                     dir('build') {
                         if (compiler == "gcc") {
                             c_compiler = "gcc"
@@ -136,7 +158,7 @@ def win2016LinuxElfBuild(String version, String compiler, String build_type) {
                         }
                         withEnv(["CC=${c_compiler}","CXX=${cpp_compiler}"]) {
                             sh """
-                            cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DUSE_DEBUG_MALLOC=OFF
+                            cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DUSE_DEBUG_MALLOC=OFF ${cmakeCheckFlags}
                             ninja -v
                             """
                         }
@@ -154,7 +176,7 @@ def win2016LinuxElfBuild(String version, String compiler, String build_type) {
             bat 'move build linuxbin'
             dir('build') {
                 bat """vcvars64.bat x64 && \
-                       cmake.exe ${WORKSPACE} -G \"Visual Studio 15 2017 Win64\" -DADD_WINDOWS_ENCLAVE_TESTS=ON -DBUILD_ENCLAVES=OFF -DCMAKE_BUILD_TYPE=${build_type} -DLINUX_BIN_DIR=${WORKSPACE}\\linuxbin\\tests && \
+                       cmake.exe ${WORKSPACE} -G \"Visual Studio 15 2017 Win64\" -DADD_WINDOWS_ENCLAVE_TESTS=ON -DBUILD_ENCLAVES=OFF -DCMAKE_BUILD_TYPE=${build_type} -DLINUX_BIN_DIR=${WORKSPACE}\\linuxbin\\tests ${cmakeCheckFlags} && \
                        msbuild ALL_BUILD.vcxproj -p:Configuration=${build_type} && \
                        ctest.exe -V -C ${build_type}"""
             }
@@ -169,10 +191,10 @@ def win2016CrossCompile(String build_type) {
             checkout scm
             dir("build/X64-${build_type}") {
                 bat """vcvars64.bat x64 && \
-                       cmake.exe ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DBUILD_ENCLAVES=ON && \
+                       cmake.exe ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DBUILD_ENCLAVES=ON ${cmakeCheckFlags} && \
                        ninja.exe && \
                        ctest.exe -V -C ${build_type}"""
-            }          
+            }
        }
     }
 }
@@ -194,6 +216,7 @@ parallel "Check Developer Experience Ubuntu 16.04" :            { checkDevFlows(
          "ACC1804 gcc Release" :                                { ACCTest('ACC-1804', 'gcc', 'Release') },
          "ACC1804 gcc RelWithDebInfo" :                         { ACCTest('ACC-1804', 'gcc', 'RelWithDebInfo') },
          "ACC1804 Container RelWithDebInfo" :                   { ACCContainerTest('ACC-1804', '18.04') },
+         "ACC1804 GNU gcc SGX1FLC" :                            { ACCGNUTest() },
          "Sim 1604 clang-7 SGX1 Debug" :                        { simulationTest('16.04', 'SGX1', 'Debug')},
          "Sim 1604 clang-7 SGX1 Release" :                      { simulationTest('16.04', 'SGX1', 'Release')},
          "Sim 1604 clang-7 SGX1 RelWithDebInfo" :               { simulationTest('16.04', 'SGX1', 'RelWithDebInfo')},
@@ -213,4 +236,4 @@ parallel "Check Developer Experience Ubuntu 16.04" :            { checkDevFlows(
          "Win2016 Ubuntu1804 clang-7 Release Linux-Elf-build" : { win2016LinuxElfBuild('18.04', 'clang-7', 'Release') },
          "Win2016 Debug Cross Compile" :                        { win2016CrossCompile('Debug') },
          "Win2016 Release Cross Compile" :                      { win2016CrossCompile('Release') }
-         
+

@@ -44,7 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `oe_create_enclave` takes two additional parameters: `ocall_table` and
   `ocall_table_size`.
-- Update mbed TLS library to version 2.7.6.
+- Update mbed TLS library to version 2.7.9.
 - Update musl libc to version 1.1.20.
 - Update LLVM libcxx to version 7.0.0.
    - Some libcxx headers (e.g. `<string>`) now use C++11 template features and
