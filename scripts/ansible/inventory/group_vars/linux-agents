@@ -3,18 +3,17 @@
 
 ansible_ssh_user: azureuser
 
-cmake_target_version: 3.13.1
-docker_target_version: 18.09.2
-dockerd_target_version: 18.09.2
-clang_target_version: 7.0.1
-ocaml_target_version: 4.02.3
+cmake_target_version: "3.13"
+docker_target_version: "18.09"
+dockerd_target_version: "18.09"
+clang_target_version: "7.0"
+ocaml_target_version: "4.0"
 
 validation_directories:
   - "/opt/intel/sgxdriver"
   - "/opt/intel/libsgx-enclave-common"
   - "/usr/lib/ocaml"
   - "/usr/lib/ocaml/compiler-libs"
-  - "/usr/lib/graphviz"
   - "/usr/share/libtool"
 
 validation_files:
@@ -29,6 +28,7 @@ validation_binaries:
   - "/usr/local/bin/ccmake"
   - "/usr/local/bin/cpack"
   - "/usr/local/bin/ctest"
+  - "/usr/bin/dot"
   - "/usr/bin/gcc"
   - "/usr/bin/g++"
   - "/usr/bin/gdb"
@@ -36,7 +36,9 @@ validation_binaries:
   - "/usr/bin/libtoolize"
   - "/usr/bin/java"
   - "/usr/bin/docker"
+  - "/usr/bin/dockerd"
   - "/usr/bin/doxygen"
+  - "/usr/bin/ocaml"
   - "/usr/bin/openssl"
   - "/usr/bin/pkg-config"
   - "/usr/bin/clang-7"
