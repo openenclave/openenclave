@@ -465,7 +465,10 @@ add_library(oelibc STATIC
     ${MUSLSRC}/search/hsearch.c
     ${MUSLSRC}/search/insque.c
     ${MUSLSRC}/search/lsearch.c
-    ${MUSLSRC}/search/tsearch_avl.c
+    ${MUSLSRC}/search/tdelete.c
+    ${MUSLSRC}/search/tfind.c
+    ${MUSLSRC}/search/tsearch.c
+    ${MUSLSRC}/search/twalk.c
     ${MUSLSRC}/stat/stat.c
     ${MUSLSRC}/stdio/asprintf.c
     ${MUSLSRC}/stdio/asprintf.c
@@ -751,10 +754,12 @@ target_link_libraries(oelibc
 
 if (OE_SGX)
 target_include_directories(oelibc PRIVATE
+  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/include
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/x86_64)
 else()
 target_include_directories(oelibc PRIVATE
+  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/include
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/aarch64)
 endif()

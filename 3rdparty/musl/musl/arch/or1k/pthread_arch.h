@@ -3,10 +3,10 @@ static inline struct pthread *__pthread_self()
 {
 #ifdef __clang__
 	char *tp;
-	__asm__ __volatile__ ("l.ori %0, r10, 0" : "=r" (tp) );
+	__asm__ ("l.ori %0, r10, 0" : "=r" (tp) );
 #else
 	register char *tp __asm__("r10");
-	__asm__ __volatile__ ("" : "=r" (tp) );
+	__asm__ ("" : "=r" (tp) );
 #endif
 	return (struct pthread *) (tp - sizeof(struct pthread));
 }

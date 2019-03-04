@@ -1,8 +1,5 @@
 #include <dlfcn.h>
-#include "libc.h"
-
-__attribute__((__visibility__("hidden")))
-void __dl_seterr(const char *, ...);
+#include "dynlink.h"
 
 static void *stub_dlsym(void *restrict p, const char *restrict s, void *restrict ra)
 {

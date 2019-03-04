@@ -1,10 +1,9 @@
 #include <stdio.h>
 #include <fcntl.h>
+#include <stdlib.h>
 #include "stdio_impl.h"
 
 #define MAXTRIES 100
-
-char *__randname(char *);
 
 FILE *tmpfile(void)
 {
@@ -29,4 +28,4 @@ FILE *tmpfile(void)
 	return 0;
 }
 
-LFS64(tmpfile);
+weak_alias(tmpfile, tmpfile64);

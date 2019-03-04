@@ -3,8 +3,6 @@
 #include <errno.h>
 #include "syscall.h"
 
-void __procfdname(char *, unsigned);
-
 int fchmodat(int fd, const char *path, mode_t mode, int flag)
 {
 	if (!flag) return syscall(SYS_fchmodat, fd, path, mode, flag);

@@ -61,6 +61,7 @@ feraiseexcept:
 	ret
 
 .global __fesetround
+.hidden __fesetround
 .type __fesetround,@function
 __fesetround:
 	mov 4(%esp),%ecx

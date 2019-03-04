@@ -3,8 +3,7 @@
 ((union { long long ll; long l[2]; }){ .ll = x }).l[1]
 #define __SYSCALL_LL_O(x) 0, __SYSCALL_LL_E((x))
 
-__attribute__((visibility("hidden")))
-long (__syscall)(long, ...);
+hidden long (__syscall)(long, ...);
 
 #define SYSCALL_RLIM_INFINITY (-1UL/2)
 

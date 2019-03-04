@@ -4,10 +4,12 @@
 #include <errno.h>
 #include <limits.h>
 #include <sys/stat.h>
+#include <sys/mman.h>
 #include <ctype.h>
 #include "locale_impl.h"
-#include "libc.h"
 #include "atomic.h"
+#include "pleval.h"
+#include "lock.h"
 
 struct binding {
 	struct binding *next;
@@ -98,8 +100,8 @@ struct msgcat {
 	struct msgcat *next;
 	const void *map;
 	size_t map_size;
-	void *volatile plural_rule;
-	volatile int nplurals;
+	const char *plural_rule;
+	int nplurals;
 	struct binding *binding;
 	const struct __locale_map *lm;
 	int cat;
@@ -111,10 +113,6 @@ static char *dummy_gettextdomain()
 }
 
 weak_alias(dummy_gettextdomain, __gettextdomain);
-
-const unsigned char *__map_file(const char *, size_t *);
-int __munmap(void *, size_t);
-unsigned long __pleval(const char *, unsigned long);
 
 char *dcngettext(const char *domainname, const char *msgid1, const char *msgid2, unsigned long int n, int category)
 {
@@ -202,20 +200,7 @@ notrans:
 		p->lm = lm;
 		p->map = map;
 		p->map_size = map_size;
-		do {
-			old_cats = cats;
-			p->next = old_cats;
-		} while (a_cas_p(&cats, old_cats, p) != old_cats);
-	}
 
-	const char *trans = __mo_lookup(p->map, p->map_size, msgid1);
-	if (!trans) goto notrans;
-
-	/* Non-plural-processing gettext forms pass a null pointer as
-	 * msgid2 to request that dcngettext suppress plural processing. */
-	if (!msgid2) return (char *)trans;
-
-	if (!p->plural_rule) {
 		const char *rule = "n!=1;";
 		unsigned long np = 2;
 		const char *r = __mo_lookup(p->map, p->map_size, "");
@@ -239,10 +224,22 @@ notrans:
 					rule = r+7;
 			}
 		}
-		a_store(&p->nplurals, np);
-		a_cas_p(&p->plural_rule, 0, (void *)rule);
+		p->nplurals = np;
+		p->plural_rule = rule;
+
+		do {
+			old_cats = cats;
+			p->next = old_cats;
+		} while (a_cas_p(&cats, old_cats, p) != old_cats);
 	}
-	if (p->nplurals) {
+
+	const char *trans = __mo_lookup(p->map, p->map_size, msgid1);
+	if (!trans) goto notrans;
+
+	/* Non-plural-processing gettext forms pass a null pointer as
+	 * msgid2 to request that dcngettext suppress plural processing. */
+
+	if (msgid2 && p->nplurals) {
 		unsigned long plural = __pleval(p->plural_rule, n);
 		if (plural > p->nplurals) goto notrans;
 		while (plural--) {

@@ -31,7 +31,6 @@ Optional features:
   --enable-optimize=...   optimize listed components for speed over size [auto]
   --enable-debug          build with debugging information [disabled]
   --enable-warnings       build with recommended warnings flags [disabled]
-  --enable-visibility     use global visibility options to optimize PIC [no]
   --enable-wrapper=...    build given musl toolchain wrapper [auto]
   --disable-shared        inhibit building shared library [enabled]
   --disable-static        inhibit building static library [enabled]
@@ -135,7 +134,6 @@ target=
 optimize=auto
 debug=no
 warnings=no
-visibility=no
 shared=auto
 static=yes
 wrapper=auto
@@ -163,9 +161,6 @@ case "$arg" in
 --disable-debug|--enable-debug=no) debug=no ;;
 --enable-warnings|--enable-warnings=yes) warnings=yes ;;
 --disable-warnings|--enable-warnings=no) warnings=no ;;
---enable-visibility=auto) visibility=auto ;;
---enable-visibility|--enable-visibility=yes) visibility=yes ;;
---disable-visibility|--enable-visibility=no) visibility=no ;;
 --enable-wrapper|--enable-wrapper=yes) wrapper=detect ;;
 --enable-wrapper=all) wrapper=yes ; gcc_wrapper=yes ; clang_wrapper=yes ;;
 --enable-wrapper=gcc) wrapper=yes ; gcc_wrapper=yes ;;
@@ -325,8 +320,8 @@ mips64*|mipsisa64*) ARCH=mips64 ;;
 mips*) ARCH=mips ;;
 microblaze*) ARCH=microblaze ;;
 or1k*) ARCH=or1k ;;
-powerpc64*) ARCH=powerpc64 ;;
-powerpc*) ARCH=powerpc ;;
+powerpc64*|ppc64*) ARCH=powerpc64 ;;
+powerpc*|ppc*) ARCH=powerpc ;;
 sh[1-9bel-]*|sh|superh*) ARCH=sh ;;
 s390x*) ARCH=s390x ;;
 unknown) fail "$0: unable to detect target arch; try $0 --target=..." ;;
@@ -512,7 +507,7 @@ tryflag CFLAGS_AUTO -Werror=pointer-arith
 # parameter to stop printing warnings about LDFLAGS passed during
 # compiling stage and CFLAGS passed during linking stage.
 #
-tryflag CFLAGS_AUTO -Qunused-arguments
+test "$cc_family" = clang && tryflag CFLAGS_AUTO -Qunused-arguments
 
 if test "x$warnings" = xyes ; then
 tryflag CFLAGS_AUTO -Wall
@@ -523,39 +518,6 @@ tryflag CFLAGS_AUTO -Wno-unused-value
 tryflag CFLAGS_AUTO -Wno-unused-but-set-variable
 tryflag CFLAGS_AUTO -Wno-unknown-pragmas
 tryflag CFLAGS_AUTO -Wno-pointer-to-int-cast
-fi
-
-if test "x$visibility" = xauto ; then
-# This test checks toolchain support for several things:
-# - the -include option
-# - the attributes/pragmas used in vis.h
-# - linking code that takes the address of protected symbols
-# - gcc 3.x bug that wrongly claims declarations mismatch
-printf "checking whether global visibility preinclude works... "
-cat > "$tmpc" <<EOF
-__attribute__((__visibility__("default")))
-extern struct a *const x;
-typedef struct a b;
-extern b *const x;
-b *const x;
-int (*fp)(void);
-int foo(void) { }
-int bar(void) { fp = foo; return foo(); }
-EOF
-if $CC $CFLAGS_C99FSE $CPPFLAGS $CFLAGS \
-  -DSHARED -fPIC -I$srcdir/src/internal -include vis.h \
-  -nostdlib -shared -Wl,-Bsymbolic-functions \
-  -o /dev/null "$tmpc" >/dev/null 2>&1 ; then
-visibility=yes
-else
-visibility=no
-fi
-printf "%s\n" "$visibility"
-fi
-
-if test "x$visibility" = xyes ; then
-CFLAGS_AUTO="$CFLAGS_AUTO -include vis.h"
-CFLAGS_AUTO="${CFLAGS_AUTO# }"
 fi
 
 # Determine if the compiler produces position-independent code (PIC)
@@ -617,6 +579,7 @@ fi
 
 if test "$ARCH" = "arm" ; then
 if trycppif __thumb2__ "$t" ; then
+tryflag CFLAGS_AUTO -mimplicit-it=always
 tryflag CFLAGS_AUTO -Wa,-mimplicit-it=always
 tryflag CFLAGS_AUTO -Wa,-mthumb
 fi

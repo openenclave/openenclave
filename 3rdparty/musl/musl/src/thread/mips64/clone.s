@@ -1,5 +1,6 @@
 .set	noreorder
 .global	__clone
+.hidden __clone
 .type	__clone,@function
 __clone:
 	# Save function pointer and argument pointer on new thread stack

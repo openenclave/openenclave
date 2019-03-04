@@ -36,32 +36,32 @@ void *__copy_tls(unsigned char *mem)
 	pthread_t td;
 	struct tls_module *p;
 	size_t i;
-	void **dtv;
+	uintptr_t *dtv;
 
 #ifdef TLS_ABOVE_TP
-	dtv = (void **)(mem + libc.tls_size) - (libc.tls_cnt + 1);
+	dtv = (uintptr_t*)(mem + libc.tls_size) - (libc.tls_cnt + 1);
 
 	mem += -((uintptr_t)mem + sizeof(struct pthread)) & (libc.tls_align-1);
 	td = (pthread_t)mem;
 	mem += sizeof(struct pthread);
 
 	for (i=1, p=libc.tls_head; p; i++, p=p->next) {
-		dtv[i] = mem + p->offset;
-		memcpy(dtv[i], p->image, p->len);
+		dtv[i] = (uintptr_t)(mem + p->offset) + DTP_OFFSET;
+		memcpy(mem + p->offset, p->image, p->len);
 	}
 #else
-	dtv = (void **)mem;
+	dtv = (uintptr_t *)mem;
 
 	mem += libc.tls_size - sizeof(struct pthread);
 	mem -= (uintptr_t)mem & (libc.tls_align-1);
 	td = (pthread_t)mem;
 
 	for (i=1, p=libc.tls_head; p; i++, p=p->next) {
-		dtv[i] = mem - p->offset;
-		memcpy(dtv[i], p->image, p->len);
+		dtv[i] = (uintptr_t)(mem - p->offset) + DTP_OFFSET;
+		memcpy(mem - p->offset, p->image, p->len);
 	}
 #endif
-	dtv[0] = (void *)libc.tls_cnt;
+	dtv[0] = libc.tls_cnt;
 	td->dtv = td->dtv_copy = dtv;
 	return td;
 }
@@ -72,8 +72,7 @@ typedef Elf32_Phdr Phdr;
 typedef Elf64_Phdr Phdr;
 #endif
 
-__attribute__((__weak__, __visibility__("hidden")))
-extern const size_t _DYNAMIC[];
+extern weak hidden const size_t _DYNAMIC[];
 
 static void static_init_tls(size_t *aux)
 {
@@ -91,6 +90,11 @@ static void static_init_tls(size_t *aux)
 			base = (size_t)_DYNAMIC - phdr->p_vaddr;
 		if (phdr->p_type == PT_TLS)
 			tls_phdr = phdr;
+		if (phdr->p_type == PT_GNU_STACK &&
+		    phdr->p_memsz > __default_stacksize)
+			__default_stacksize =
+				phdr->p_memsz < DEFAULT_STACK_MAX ?
+				phdr->p_memsz : DEFAULT_STACK_MAX;
 	}
 
 	if (tls_phdr) {

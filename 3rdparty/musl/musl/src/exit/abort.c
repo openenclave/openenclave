@@ -3,11 +3,10 @@
 #include "syscall.h"
 #include "pthread_impl.h"
 #include "atomic.h"
-#include "libc.h"
+#include "lock.h"
 #include "ksigaction.h"
 
-__attribute__((__visibility__("hidden")))
-volatile int __abort_lock[1];
+hidden volatile int __abort_lock[1];
 
 _Noreturn void abort(void)
 {

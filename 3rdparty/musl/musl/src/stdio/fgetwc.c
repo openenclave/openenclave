@@ -10,7 +10,7 @@ static wint_t __fgetwc_unlocked_internal(FILE *f)
 	size_t l;
 
 	/* Convert character from buffer if possible */
-	if (f->rpos < f->rend) {
+	if (f->rpos != f->rend) {
 		l = mbtowc(&wc, (void *)f->rpos, f->rend - f->rpos);
 		if (l+1 >= 1) {
 			f->rpos += l + !l; /* l==0 means 1 byte, null */

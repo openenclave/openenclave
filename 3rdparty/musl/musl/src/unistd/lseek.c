@@ -1,6 +1,5 @@
 #include <unistd.h>
 #include "syscall.h"
-#include "libc.h"
 
 off_t lseek(int fd, off_t offset, int whence)
 {
@@ -12,4 +11,4 @@ off_t lseek(int fd, off_t offset, int whence)
 #endif
 }
 
-LFS64(lseek);
+weak_alias(lseek, lseek64);

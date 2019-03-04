@@ -167,29 +167,33 @@ do {                                              \
 
 /* fdlibm kernel functions */
 
-int    __rem_pio2_large(double*,double*,int,int,int);
+hidden int    __rem_pio2_large(double*,double*,int,int,int);
 
-int    __rem_pio2(double,double*);
-double __sin(double,double,int);
-double __cos(double,double);
-double __tan(double,double,int);
-double __expo2(double);
-double complex __ldexp_cexp(double complex,int);
+hidden int    __rem_pio2(double,double*);
+hidden double __sin(double,double,int);
+hidden double __cos(double,double);
+hidden double __tan(double,double,int);
+hidden double __expo2(double);
+hidden double complex __ldexp_cexp(double complex,int);
 
-int    __rem_pio2f(float,double*);
-float  __sindf(double);
-float  __cosdf(double);
-float  __tandf(double,int);
-float  __expo2f(float);
-float complex __ldexp_cexpf(float complex,int);
+hidden int    __rem_pio2f(float,double*);
+hidden float  __sindf(double);
+hidden float  __cosdf(double);
+hidden float  __tandf(double,int);
+hidden float  __expo2f(float);
+hidden float complex __ldexp_cexpf(float complex,int);
 
-int __rem_pio2l(long double, long double *);
-long double __sinl(long double, long double, int);
-long double __cosl(long double, long double);
-long double __tanl(long double, long double, int);
+hidden int __rem_pio2l(long double, long double *);
+hidden long double __sinl(long double, long double, int);
+hidden long double __cosl(long double, long double);
+hidden long double __tanl(long double, long double, int);
 
 /* polynomial evaluation */
-long double __polevll(long double, const long double *, int);
-long double __p1evll(long double, const long double *, int);
+hidden long double __polevll(long double, const long double *, int);
+hidden long double __p1evll(long double, const long double *, int);
+
+extern int __signgam;
+hidden double __lgamma_r(double, int *);
+hidden float __lgammaf_r(float, int *);
 
 #endif

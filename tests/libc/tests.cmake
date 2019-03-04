@@ -314,6 +314,7 @@ if (FALSE)
         3rdparty/musl/libc-test/src/functional/spawn.c
         3rdparty/musl/libc-test/src/functional/stat.c
         3rdparty/musl/libc-test/src/functional/strftime.c
+        3rdparty/musl/libc-test/src/functional/strptime.c
         3rdparty/musl/libc-test/src/functional/swprintf.c
         3rdparty/musl/libc-test/src/functional/tls_align_dlopen.c
         3rdparty/musl/libc-test/src/functional/tls_init.c

@@ -39,6 +39,7 @@ fegetround:
 	andi    $2, $2, 3
 
 .global __fesetround
+.hidden __fesetround
 .type __fesetround,@function
 __fesetround:
 	cfc1    $5, $31

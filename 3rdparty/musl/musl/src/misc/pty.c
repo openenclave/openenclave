@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <errno.h>
-#include "libc.h"
 #include "syscall.h"
 
 int posix_openpt(int flags)

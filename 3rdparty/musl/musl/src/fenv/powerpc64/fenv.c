@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #include <fenv.h>
+#include <features.h>
 
 static inline double get_fpscr_f(void)
 {
@@ -49,7 +50,7 @@ int fegetround(void)
 	return get_fpscr() & 3;
 }
 
-int __fesetround(int r)
+hidden int __fesetround(int r)
 {
 	set_fpscr(get_fpscr() & ~3L | r);
 	return 0;

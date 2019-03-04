@@ -1,10 +1,13 @@
 #ifndef MALLOC_IMPL_H
 #define MALLOC_IMPL_H
 
-void *__mmap(void *, size_t, int, int, int, off_t);
-int __munmap(void *, size_t);
-void *__mremap(void *, size_t, size_t, int, ...);
-int __madvise(void *, size_t, int);
+#include <sys/mman.h>
+
+hidden void *__expand_heap(size_t *);
+
+hidden void __malloc_donate(char *, char *);
+
+hidden void *__memalign(size_t, size_t);
 
 struct chunk {
 	size_t psize, csize;
@@ -36,10 +39,8 @@ struct bin {
 
 #define IS_MMAPPED(c) !((c)->csize & (C_INUSE))
 
-__attribute__((__visibility__("hidden")))
-void __bin_chunk(struct chunk *);
+hidden void __bin_chunk(struct chunk *);
 
-__attribute__((__visibility__("hidden")))
-extern int __malloc_replaced;
+hidden extern int __malloc_replaced;
 
 #endif

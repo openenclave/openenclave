@@ -100,7 +100,7 @@ static char *twoway_memmem(const unsigned char *h, const unsigned char *z, const
 		if (BITOP(byteset, h[l-1], &)) {
 			k = l-shift[h[l-1]];
 			if (k) {
-				if (mem0 && mem && k < p) k = l-p;
+				if (k < mem) k = mem;
 				h += k;
 				mem = 0;
 				continue;

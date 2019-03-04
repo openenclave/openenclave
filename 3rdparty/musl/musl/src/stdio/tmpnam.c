@@ -3,11 +3,10 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <string.h>
+#include <stdlib.h>
 #include "syscall.h"
 
 #define MAXTRIES 100
-
-char *__randname(char *);
 
 char *tmpnam(char *buf)
 {

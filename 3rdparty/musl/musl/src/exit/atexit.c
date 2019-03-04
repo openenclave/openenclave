@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include "libc.h"
+#include "lock.h"
 
 /* Ensure that at least 32 atexit handlers can be registered without malloc */
 #define COUNT 32

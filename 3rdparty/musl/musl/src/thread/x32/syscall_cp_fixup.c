@@ -1,8 +1,9 @@
 #include <sys/syscall.h>
+#include <features.h>
 
-__attribute__((__visibility__("hidden")))
-long __syscall_cp_internal(volatile void*, long long, long long, long long, long long,
-                             long long, long long, long long);
+hidden long __syscall_cp_internal(volatile void*, long long, long long,
+                                  long long, long long, long long,
+                                  long long, long long);
 
 struct __timespec { long long tv_sec; long tv_nsec; };
 struct __timespec_kernel { long long tv_sec; long long tv_nsec; };
@@ -12,9 +13,9 @@ struct __timespec_kernel { long long tv_sec; long long tv_nsec; };
 	ts->tv_nsec = __tsc(X)->tv_nsec; \
 	(X) = (unsigned long)ts; } } while(0)
 
-__attribute__((__visibility__("hidden")))
-long __syscall_cp_asm (volatile void * foo, long long n, long long a1, long long a2, long long a3,
-	                     long long a4, long long a5, long long a6)
+hidden long __syscall_cp_asm (volatile void * foo, long long n, long long a1,
+                              long long a2, long long a3, long long a4,
+                              long long a5, long long a6)
 {
 	struct __timespec_kernel ts[1];
 	switch (n) {

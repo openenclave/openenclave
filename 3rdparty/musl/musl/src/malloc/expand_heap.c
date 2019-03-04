@@ -4,6 +4,7 @@
 #include <sys/mman.h>
 #include "libc.h"
 #include "syscall.h"
+#include "malloc_impl.h"
 
 /* This function returns true if the interval [old,new]
  * intersects the 'len'-sized interval below &libc.auxv
@@ -26,8 +27,6 @@ static int traverses_stack_p(uintptr_t old, uintptr_t new)
 
 	return 0;
 }
-
-void *__mmap(void *, size_t, int, int, int, off_t);
 
 /* Expand the heap in-place if brk can be used, or otherwise via mmap,
  * using an exponential lower bound on growth by mmap to make

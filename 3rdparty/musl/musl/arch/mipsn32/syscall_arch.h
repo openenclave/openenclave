@@ -1,8 +1,7 @@
 #define __SYSCALL_LL_E(x) (x)
 #define __SYSCALL_LL_O(x) (x)
 
-__attribute__((visibility("hidden")))
-long (__syscall)(long, ...);
+hidden long (__syscall)(long, ...);
 
 #define SYSCALL_RLIM_INFINITY (-1UL/2)
 
