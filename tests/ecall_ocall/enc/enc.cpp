@@ -82,11 +82,10 @@ oe_result_t enc_parallel_execution(
 
         ++(*counter);
 
-        unsigned release_val;
-        do
-        {
-            release_val = release->load(std::memory_order_acquire);
-        } while (0 != release_val);
+        // Wait for the signal from host before continuing.
+        // (wait until release becomes non-zero)
+        while (0 == release->load(std::memory_order_acquire))
+            ;
 
         old_flow_id = g_per_thread_flow_id.get_u();
         if (old_flow_id != flow_id)
