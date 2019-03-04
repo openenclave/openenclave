@@ -11,7 +11,7 @@ endif()
 add_subdirectory(host)
 
 if (BUILD_ENCLAVES)
-	add_subdirectory(enc)
+    add_subdirectory(enc)
 endif()
 
 foreach(testcase ${alltests})
@@ -30,16 +30,16 @@ foreach(testcase ${alltests})
             OR "${name}" MATCHES "sequences_array_at.pass" 
             OR "${name}" MATCHES "libcxx_containers_unord_next_pow2.pass" 
             OR "${name}" MATCHES "std_utilities_template.bitset_bitset.members_count.pass")
-	    if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
-	        continue()
+        if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
+            continue()
         endif()
     endif()
 
 # the following test fails when built with clang, see #830 -- Skipping this test in clang
     if ("${name}" MATCHES "array_sized_delete_array_calls_unsized_delete_array.pass")
         if (CMAKE_CXX_COMPILER_ID MATCHES Clang)
-	    continue()
-	endif()
+            continue()
+        endif()
     endif()
 
     add_enclave_test(tests/libcxxtest-${name} libcxx_host libcxxtest-${name}_enc)
