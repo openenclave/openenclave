@@ -84,7 +84,7 @@ foreach(testcase ${alltests})
         string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE_UPPER)
         if (CMAKE_CXX_COMPILER_ID MATCHES Clang AND BUILD_TYPE_UPPER MATCHES REL)
             continue()
-	endif()
+        endif()
     endif()
 
 # few functions invoked in these tests are not supported in gnu and excluded from GCC builds
@@ -93,15 +93,24 @@ foreach(testcase ${alltests})
             OR "${name}" MATCHES "libcxx_containers_unord_next_pow2.pass" 
             OR "${name}" MATCHES "std_utilities_template.bitset_bitset.members_count.pass")
             if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
-	        continue()
+                continue()
             endif()
     endif()
 
 # the following test fails when built with clang, see #830 -- Skipping this test in clang
     if ("${name}" MATCHES "array_sized_delete_array_calls_unsized_delete_array.pass")
         if (CMAKE_CXX_COMPILER_ID MATCHES Clang)
-	    continue()
-	endif()
+            continue()
+        endif()
+    endif()
+
+# the following test fails on GCC version 7, see  #1523 -- Skipping this test in GCC 7.0 -> 7.5
+    if ("${name}" MATCHES "std_utilities_function.objects_comparisons_constexpr_init.pass")
+        if(CMAKE_CXX_COMPILER_ID MATCHES GNU
+               AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 7
+               AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.5)
+            continue()
+        endif()
     endif()
 
     add_libcxx_test_enc("${name}" "${testcase}")
