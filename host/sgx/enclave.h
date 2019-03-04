@@ -28,18 +28,6 @@ typedef struct _enclave_event
 
 #define ENCLAVE_MAGIC 0x20dc98463a5ad8b8
 
-typedef struct _ecall_name_addr
-{
-    /* ECALL function name */
-    char* name;
-
-    /* Code of the name field, calculated by StrCode() */
-    uint64_t code;
-
-    /* Virtual address of ECALL function */
-    uint64_t vaddr;
-} ECallNameAddr;
-
 /*
 **==============================================================================
 **
@@ -123,10 +111,6 @@ struct _oe_enclave
     /* Hash of enclave (MRENCLAVE) */
     OE_SHA256 hash;
 
-    /* Array of ECALL entry points */
-    ECallNameAddr* ecalls;
-    size_t num_ecalls;
-
     /* Array of ocall functions */
     const oe_ocall_func_t* ocalls;
     size_t num_ocalls;
@@ -149,7 +133,7 @@ OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_t, addr) == 2 * sizeof(void*));
 // The fields up to binding correspond to 'ENCLAVE_HEADER'
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_t, bindings) == 0x28);
 
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_t, debug) == 0x798);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_t, debug) == 0x788);
 OE_STATIC_ASSERT(
     OE_OFFSETOF(oe_enclave_t, debug) + 1 ==
     OE_OFFSETOF(oe_enclave_t, simulate));
@@ -157,8 +141,5 @@ OE_STATIC_ASSERT(
 
 /* Get the event for the given TCS */
 EnclaveEvent* GetEnclaveEvent(oe_enclave_t* enclave, uint64_t tcs);
-
-/* Free enclave ecall allocation */
-void oe_free_enclave_ecalls(oe_enclave_t* enclave);
 
 #endif /* _OE_HOST_ENCLAVE_H */

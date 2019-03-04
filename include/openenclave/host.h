@@ -121,43 +121,6 @@ oe_result_t oe_create_enclave(
  */
 oe_result_t oe_terminate_enclave(oe_enclave_t* enclave);
 
-/**
- * Perform a high-level enclave function call (ECALL).
- *
- * Call the enclave function whose name is given by the **func** parameter.
- * The enclave must define a corresponding function with the following
- * prototype.
- *
- *     OE_ECALL void (*)(void* args);
- *
- * The meaning of the **args** parameter is defined by the implementer of the
- * function and may be null.
- *
- * This function is implemented using the low-level oe_ecall() interface
- * where the function number is given by the **OE_ECALL_CALL_ENCLAVE** constant.
- *
- * Note that the return value of this function only indicates the success of
- * the call and not of the underlying function. The ECALL implementation must
- * define its own error reporting scheme based on **args**.
- *
- * @deprecated This function has been deprecated. Use oeedger8r to generate
- * code that will call oe_ecall() instead.
- *
- * @param enclave The instance of the enclave to be called.
- *
- * @param func The name of the enclave function that will be called.
- *
- * @param args The arguments to be passed to the enclave function.
- *
- * @returns This function return **OE_OK** on success.
- *
- */
-OE_DEPRECATED(
-    oe_result_t
-        oe_call_enclave(oe_enclave_t* enclave, const char* func, void* args),
-    "This function is deprecated. Use oeedger8r to generate code that will "
-    "call oe_ecall() instead.");
-
 #if (OE_API_VERSION < 2)
 #define oe_get_report oe_get_report_v1
 #else

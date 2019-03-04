@@ -980,10 +980,6 @@ let gen_t_c (ec: enclave_content) (ep: edger8r_params) =
   if ec.ufunc_decls <> [] then (
     fprintf os "\n/* ocall wrappers */\n\n";
     List.iter (fun d -> oe_gen_ocall_enclave_wrapper os d)  ec.ufunc_decls);
-  fprintf os "\nOE_ECALL void _dummy_old_style_ecall_to_keep_loader_happy(void* arg)\n";
-  fprintf os "{\n";
-  fprintf os "    OE_UNUSED(arg);\n";
-  fprintf os "}\n\n";
   fprintf os "OE_EXTERNC_END\n";
   close_out os
 

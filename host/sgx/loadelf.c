@@ -129,11 +129,7 @@ static oe_result_t _oe_load_elf_image(
                         sh->sh_offset,
                         sh->sh_size);
                 }
-                else if (strcmp(name, ".ecall") == 0)
-                {
-                    image->ecall_rva = sh->sh_addr;
-                    image->ecall_section_size = sh->sh_size;
-                }
+
                 else if (strcmp(name, ".note.gnu.build-id") == 0)
                 {
                     has_build_id = true;
@@ -164,8 +160,7 @@ static oe_result_t _oe_load_elf_image(
         }
 
         /* Fail if required sections not found */
-        if ((0 == image->text_rva) || (0 == image->ecall_rva) ||
-            (0 == image->oeinfo_rva))
+        if ((0 == image->text_rva) || (0 == image->oeinfo_rva))
         {
             OE_RAISE(OE_FAILURE);
         }
@@ -649,10 +644,7 @@ done:
     return result;
 }
 
-static oe_result_t _patch(
-    oe_enclave_image_t* image,
-    size_t ecall_size,
-    size_t enclave_end)
+static oe_result_t _patch(oe_enclave_image_t* image, size_t enclave_end)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_sgx_enclave_properties_t* oeprops;
@@ -666,7 +658,6 @@ static oe_result_t _patch(
     assert((image->image_size & (OE_PAGE_SIZE - 1)) == 0);
     assert((image->reloc_size & (OE_PAGE_SIZE - 1)) == 0);
     assert((enclave_end & (OE_PAGE_SIZE - 1)) == 0);
-    assert((ecall_size & (OE_PAGE_SIZE - 1)) == 0);
 
     /* Clear certain ELF header fields */
     for (i = 0; i < image->u.elf.num_segments; i++)
@@ -699,12 +690,8 @@ static oe_result_t _patch(
     OE_CHECK(
         _set_uint64_t_symbol_value(image, "_reloc_size", image->reloc_size));
 
-    /* ecal right after reloc */
-    oeprops->image_info.ecall_rva = image->image_size + image->reloc_size;
-    oeprops->image_info.ecall_size = ecall_size;
-
-    /* heap right after ecall */
-    oeprops->image_info.heap_rva = oeprops->image_info.ecall_rva + ecall_size;
+    /* heap right after image */
+    oeprops->image_info.heap_rva = image->image_size + image->reloc_size;
 
     if (image->tdata_size)
     {
@@ -735,105 +722,6 @@ static oe_result_t _patch(
     memset(oeprops->sigstruct, 0, sizeof(oeprops->sigstruct));
 
     result = OE_OK;
-done:
-    return result;
-}
-
-typedef struct _visit_sym_data
-{
-    const elf64_t* elf;
-    const elf64_shdr_t* shdr;
-    mem_t* mem;
-    oe_result_t result;
-} VisitSymData;
-
-static int _visit_sym(const elf64_sym_t* sym, void* data_)
-{
-    int rc = -1;
-    VisitSymData* data = (VisitSymData*)data_;
-    const elf64_shdr_t* shdr = data->shdr;
-    const char* name;
-
-    data->result = OE_UNEXPECTED;
-
-    /* Skip symbol if not a function */
-    if ((sym->st_info & 0x0F) != STT_FUNC)
-    {
-        rc = 0;
-        goto done;
-    }
-
-    /* Skip symbol if not in the ".ecall" section */
-    if (sym->st_value < shdr->sh_addr ||
-        sym->st_value + sym->st_size > shdr->sh_addr + shdr->sh_size)
-    {
-        rc = 0;
-        goto done;
-    }
-
-    /* Skip null names */
-    if (!(name = elf64_get_string_from_dynstr(data->elf, sym->st_name)))
-    {
-        rc = 0;
-        goto done;
-    }
-
-    /* Add to array of ECALLS */
-    {
-        ECallNameAddr tmp;
-
-        if (!(tmp.name = oe_strdup(name)))
-            goto done;
-
-        tmp.code = StrCode(name, strlen(name));
-        tmp.vaddr = sym->st_value;
-
-        if (mem_cat(data->mem, &tmp, sizeof(tmp)) != 0)
-            goto done;
-    }
-
-    rc = 0;
-
-done:
-    if (rc != 0)
-        OE_TRACE_ERROR("rc=0x%x sym=0x%x\n", rc, sym);
-
-    return rc;
-}
-
-static oe_result_t _build_ecall_array(
-    oe_enclave_image_t* image,
-    oe_enclave_t* enclave)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    elf64_shdr_t shdr;
-
-    /* Reject invalid parameters */
-    if (!enclave || !image)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Find the ".ecalls" section */
-    if (elf64_find_section_header(&image->u.elf.elf, ".ecall", &shdr) != 0)
-        OE_RAISE(OE_FAILURE);
-
-    /* Find all functions that reside in the ".ecalls" section */
-    {
-        VisitSymData data;
-        mem_t mem = MEM_DYNAMIC_INIT;
-
-        data.elf = &image->u.elf.elf;
-        data.shdr = &shdr;
-        data.mem = &mem;
-
-        if (elf64_visit_symbols(&image->u.elf.elf, _visit_sym, &data) != 0)
-            OE_RAISE(OE_FAILURE);
-
-        enclave->ecalls = (ECallNameAddr*)mem_ptr(&mem);
-        enclave->num_ecalls = mem_size(&mem) / sizeof(ECallNameAddr);
-    }
-
-    result = OE_OK;
-
 done:
     return result;
 }
@@ -910,7 +798,6 @@ oe_result_t oe_load_elf_enclave_image(
     image->calculate_size = _calculate_size;
     image->add_pages = _add_pages;
     image->patch = _patch;
-    image->build_ecall_array = _build_ecall_array;
     image->sgx_load_enclave_properties = _sgx_load_enclave_properties;
     image->sgx_update_enclave_properties = _sgx_update_enclave_properties;
     image->unload = _unload;

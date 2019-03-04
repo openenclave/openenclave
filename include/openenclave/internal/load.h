@@ -78,10 +78,6 @@ struct _oe_enclave_image
     uint64_t oeinfo_rva;
     uint64_t oeinfo_file_pos;
 
-    /* rva/size of .ecall section */
-    uint64_t ecall_rva;
-    uint64_t ecall_section_size;
-
     /* size of relocation */
     size_t reloc_size;
 
@@ -110,13 +106,7 @@ struct _oe_enclave_image
         oe_enclave_t* enclave,
         uint64_t* vaddr);
 
-    oe_result_t (*patch)(
-        oe_enclave_image_t* image,
-        size_t ecall_size,
-        size_t enclave_end);
-
-    oe_result_t (
-        *build_ecall_array)(oe_enclave_image_t* image, oe_enclave_t* enclave);
+    oe_result_t (*patch)(oe_enclave_image_t* image, size_t enclave_end);
 
     oe_result_t (*sgx_load_enclave_properties)(
         const oe_enclave_image_t* image,

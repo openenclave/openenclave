@@ -31,9 +31,6 @@ static void _check_memory_boundaries(void)
     if (!oe_is_within_enclave(__oe_get_reloc_base(), __oe_get_reloc_size()))
         oe_abort();
 
-    if (!oe_is_within_enclave(__oe_get_ecall_base(), __oe_get_ecall_size()))
-        oe_abort();
-
     if (!oe_is_within_enclave(__oe_get_heap_base(), __oe_get_heap_size()))
         oe_abort();
 }
