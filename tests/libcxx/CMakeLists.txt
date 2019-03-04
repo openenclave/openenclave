@@ -42,5 +42,14 @@ foreach(testcase ${alltests})
         endif()
     endif()
 
+# the following test fails on GCC version 7, see  #1523 -- Skipping this test in GCC 7.0 -> 7.5
+    if ("${name}" MATCHES "std_utilities_function.objects_comparisons_constexpr_init.pass")
+        if(CMAKE_CXX_COMPILER_ID MATCHES GNU
+               AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 7
+               AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.5)
+            continue()
+        endif()
+    endif()
+
     add_enclave_test(tests/libcxxtest-${name} libcxx_host libcxxtest-${name}_enc)
 endforeach(testcase)
