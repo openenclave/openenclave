@@ -27,8 +27,8 @@ all:
 build:
 	cp ../enc1/private.pem .
 	@ echo "Compilers used: $(CC), $(CXX)"
-	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -DOE_API_VERSION=2 -std=c++11 ecalls.cpp ../common/dispatcher.cpp ../common/keys.cpp
-	$(CC) -g -c $(CFLAGS) $(CINCLUDES) -DOE_API_VERSION=2 ../common/datasealing_t.c
+	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -I.. -DOE_API_VERSION=2 -std=c++11 ecalls.cpp ../common/dispatcher.cpp ../common/keys.cpp
+	$(CC) -g -c $(CFLAGS) $(CINCLUDES) -I.. -DOE_API_VERSION=2 ../common/datasealing_t.c
 	$(CXX) -o enclave_a_v2 ecalls.o dispatcher.o keys.o datasealing_t.o $(LDFLAGS)
 
 sign:
