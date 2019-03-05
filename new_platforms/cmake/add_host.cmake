@@ -3,7 +3,7 @@
 
 function(configure_host TARGET)
     target_include_directories(${TARGET} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-    target_link_libraries(${TARGET} oehost oestdio_host oesocket_host)
+    target_link_libraries(${TARGET} oestdio_host oesocket_host oehost)
 
     if(UNIX)
         add_dependencies(${TARGET} oeedger8rtool)

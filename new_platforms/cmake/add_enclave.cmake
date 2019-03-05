@@ -34,7 +34,7 @@ function(add_enclave)
                 GEN=${ENCLAVE_C_GEN}
             DEPENDS ${ENCLAVE_SOURCES}
             SOURCES ${ENCLAVE_SOURCES})
-            add_dependencies(${ENCLAVE_TARGET} oeenclave liboestdio_enc liboesocket_enc)
+            add_dependencies(${ENCLAVE_TARGET} liboestdio_enc liboesocket_enc oeenclave)
             add_custom_command(TARGET ${ENCLAVE_TARGET} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E
                     copy ${CMAKE_CURRENT_BINARY_DIR}/*.ta ${OE_RUNTIME_OUTPUT_DIRECTORY})
