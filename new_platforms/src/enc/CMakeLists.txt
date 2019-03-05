@@ -26,6 +26,7 @@ if(UNIX AND TZ)
             LIB_O=${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
             GEN=${C_GEN}
         DEPENDS ${GEN})
+        add_dependencies(${TARGET} oeedger8rtool)
 elseif(WIN32)
     # Source lists
     set(COMMON_SRCS

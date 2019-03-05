@@ -1,11 +1,13 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-cmake_minimum_required(VERSION 3.10.2 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
 project("Open Enclave SDK (New Platforms)" VERSION 0.1 LANGUAGES C CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # Declare options
 set(OE_TEE "" CACHE STRING
@@ -49,11 +51,11 @@ elseif(UNIX AND TZ AND SIM)
 endif()
 
 # Validate target, TEE and toolchain combinations.
-if(UNIX AND TZ AND NOT(
-    "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm" OR
-    "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64"))
-    message(FATAL_ERROR "Building for ARM TrustZone requires one of the cross-compiler toolchain failes in the cmake directory; use -DCMAKE_TOOLCHAIN_FILE to specify it.")
-endif()
+# if(UNIX AND TZ AND NOT(
+#     "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm" OR
+#     "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64"))
+#     message(FATAL_ERROR "Building for ARM TrustZone requires one of the cross-compiler toolchain failes in the cmake directory; use -DCMAKE_TOOLCHAIN_FILE to specify it.")
+# endif()
 
 if(WIN32 AND SGX AND ${CMAKE_GENERATOR} MATCHES "ARM")
     message(FATAL_ERROR "Building for Intel SGX is not supported with an ARM generator see (cmake --help).")
@@ -79,7 +81,23 @@ elseif(WIN32 AND TZ)
     find_package(WDK REQUIRED)
 endif()
 
-find_package(OEEDGER8R REQUIRED)
+if(UNIX)
+    include(${CMAKE_ROOT}/Modules/ExternalProject.cmake)
+    ExternalProject_Add(oeedger8rtool
+        DOWNLOAD_COMMAND
+            curl https://oedownload.blob.core.windows.net/binaries/master/85/oeedger8r/build/output/bin/oeedger8r > ${CMAKE_BINARY_DIR}/oeedger8r && chmod +x ${CMAKE_BINARY_DIR}/oeedger8r
+        UPDATE_COMMAND ""
+        PATCH_COMMAND ""
+        CONFIGURE_COMMAND ""
+        BUILD_COMMAND ""
+        INSTALL_COMMAND ""
+        TEST_COMMAND "")
+
+    set(OEEDGER8R_PATH ${CMAKE_BINARY_DIR}/oeedger8r)
+    set(OEEDGER8R_PATH ${OEEDGER8R_PATH} PARENT_SCOPE)
+else(WIN32)
+    find_package(OEEDGER8R REQUIRED)
+endif()
 
 # Save the path to Open Enclave proper as well as to where the new platform
 # support is located. The latter will make it easier to remove all references
@@ -127,6 +145,16 @@ set(OE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 set(OE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} PARENT_SCOPE)
 set(OE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} PARENT_SCOPE)
 set(OE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY} PARENT_SCOPE)
+
+if("${OE_TA_TOOLCHAIN_PREFIX}" STREQUAL "")
+    string(REGEX REPLACE "-gcc$" "-" OE_TA_TOOLCHAIN_PREFIX ${CMAKE_C_COMPILER})
+    set(OE_TA_TOOLCHAIN_PREFIX ${OE_TA_TOOLCHAIN_PREFIX} PARENT_SCOPE)
+
+    set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+    set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+    set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+    set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
+endif()
 
 # Add common compiler definitions
 if(UNIX)

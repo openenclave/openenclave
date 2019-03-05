@@ -23,6 +23,8 @@ if(UNIX AND TZ)
             GEN=${C_GEN}
         DEPENDS ${GEN}
         SOURCES socket_insecure_enc.c)
+
+        add_dependencies(lib${TARGET} oeedger8rtool)
 elseif(WIN32)
     set(SRCS socket_insecure_enc.c)
 

@@ -98,6 +98,10 @@ elseif(WIN32)
 endif()
 
 add_library(${TARGET} STATIC ${SRCS} ${GEN})
+if(UNIX)
+    add_dependencies(${TARGET} oeedger8rtool)
+endif()
+
 target_include_directories(${TARGET} ${INCS})
 target_link_libraries(${TARGET} ${LIBS})
 

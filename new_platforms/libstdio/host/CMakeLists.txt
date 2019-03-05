@@ -16,6 +16,9 @@ endif()
 set(SRCS uTcpsFileOcalls_shared.c ${DIR}/ufiles.c ${DIR}/uTcpsFileOcalls.c)
 
 add_library(${TARGET} STATIC ${SRCS} ${GEN})
+if(UNIX)
+    add_dependencies(${TARGET} oeedger8rtool)
+endif()
 
 target_include_directories(${TARGET} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(${TARGET} PRIVATE ${OE_PATH}/include)

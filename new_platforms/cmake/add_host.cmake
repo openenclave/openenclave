@@ -6,6 +6,8 @@ function(configure_host TARGET)
     target_link_libraries(${TARGET} oehost oestdio_host oesocket_host)
 
     if(UNIX)
+        add_dependencies(${TARGET} oeedger8rtool)
+
         target_compile_definitions(${TARGET} PUBLIC LINUX)
         target_link_libraries(${TARGET} teec)
     elseif(WIN32 AND TZ AND SIM)

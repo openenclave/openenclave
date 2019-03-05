@@ -23,6 +23,8 @@ if(UNIX AND TZ)
             GEN=${C_GEN}
         DEPENDS ${GEN}
         SOURCES stdio_enc.c optee/files_optee.c)
+
+        add_dependencies(lib${TARGET} oeedger8rtool)
 elseif(WIN32)
     set(SRCS stdio_enc.c)
 

@@ -38,6 +38,7 @@ function(add_enclave)
             add_custom_command(TARGET ${ENCLAVE_TARGET} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E
                     copy ${CMAKE_CURRENT_BINARY_DIR}/*.ta ${OE_RUNTIME_OUTPUT_DIRECTORY})
+        add_dependencies(${ENCLAVE_TARGET} oeedger8rtool)
     elseif(WIN32 AND (SGX OR (TZ AND SIM)))
         add_library(${ENCLAVE_TARGET} MODULE ${ENCLAVE_SOURCES})
 
