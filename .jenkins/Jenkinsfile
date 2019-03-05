@@ -163,7 +163,7 @@ def win2016LinuxElfBuild(String version, String compiler, String build_type) {
                             """
                         }
                     }
-                    stash includes: 'build/tests/**', name: "linux${build_type}${version}"
+                    stash includes: 'build/tests/**', name: "linux-${compiler}-${build_type}-${version}-${BUILD_NUMBER}"
                 }
             }
         }
@@ -172,7 +172,7 @@ def win2016LinuxElfBuild(String version, String compiler, String build_type) {
         node('SGXFLC-Windows') {
             cleanWs()
             checkout scm
-            unstash "linux${build_type}${version}"
+            unstash "linux-${compiler}-${build_type}-${version}-${BUILD_NUMBER}"
             bat 'move build linuxbin'
             dir('build') {
                 bat """vcvars64.bat x64 && \
@@ -232,8 +232,7 @@ parallel "Check Developer Experience Ubuntu 16.04" :            { checkDevFlows(
          "Win2016 Ubuntu1604 clang-7 Debug Linux-Elf-build" :   { win2016LinuxElfBuild('16.04', 'clang-7', 'Debug') },
          "Win2016 Ubuntu1604 clang-7 Release Linux-Elf-build" : { win2016LinuxElfBuild('16.04', 'clang-7', 'Release') },
          "Win2016 Ubuntu1804 clang-7 Debug Linux-Elf-build" :   { win2016LinuxElfBuild('18.04', 'clang-7', 'Debug') },
-         "Win2016 Ubuntu1804 gcc Debug Linux-Elf-build" :       { win2016LinuxElfBuild('18.04', 'gcc', 'Debug') },
          "Win2016 Ubuntu1804 clang-7 Release Linux-Elf-build" : { win2016LinuxElfBuild('18.04', 'clang-7', 'Release') },
+         "Win2016 Ubuntu1804 gcc Debug Linux-Elf-build" :       { win2016LinuxElfBuild('18.04', 'gcc', 'Debug') },
          "Win2016 Debug Cross Compile" :                        { win2016CrossCompile('Debug') },
          "Win2016 Release Cross Compile" :                      { win2016CrossCompile('Release') }
-
