@@ -54,7 +54,7 @@ def simulationTest(String version, String platform_mode, String build_type) {
         use_libsgx = "ON"
     }
     stage("Sim clang-7 Ubuntu${version} ${platform_mode} ${build_type}") {
-        node {
+        node("nonSGX") {
             cleanWs()
             checkout scm
 
@@ -102,7 +102,7 @@ def ACCContainerTest(String label, String version) {
 
 def checkDevFlows(String version) {
     stage('Check dev flows') {
-        node {
+        node("nonSGX") {
             cleanWs()
             checkout scm
 
@@ -116,7 +116,7 @@ def checkDevFlows(String version) {
     }
     stage('Default compiler') {
         // This stage verifies developer flows after running ansible playbooks to bootstrap a machine.
-        node {
+        node("nonSGX") {
             cleanWs()
             checkout scm
 
@@ -143,7 +143,7 @@ def checkDevFlows(String version) {
 
 def win2016LinuxElfBuild(String version, String compiler, String build_type) {
     stage("Ubuntu ${version} SGX1 ${compiler} ${build_type}}") {
-        node {
+        node("nonSGX") {
             cleanWs()
             checkout scm
             def c_compiler = "clang-7"
