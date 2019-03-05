@@ -53,7 +53,7 @@ static oe_result_t _get_length(oe_asn1_t* asn1, size_t* length)
 
     rc = mbedtls_asn1_get_len(_pptr(asn1), _end(asn1), length);
     if (rc != 0)
-        OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x\n", rc);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "rc = 0x%x\n", rc);
 
     result = OE_OK;
 
@@ -133,7 +133,7 @@ oe_result_t oe_asn1_get_integer(oe_asn1_t* asn1, int* value)
 
     rc = mbedtls_asn1_get_int(_pptr(asn1), _end(asn1), value);
     if (rc != 0)
-        OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x\n", rc);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "rc = 0x%x\n", rc);
 
     result = OE_OK;
 
@@ -156,7 +156,7 @@ oe_result_t oe_asn1_get_oid(oe_asn1_t* asn1, oe_oid_string_t* oid)
 
     rc = mbedtls_asn1_get_tag(_pptr(asn1), _end(asn1), &length, tag);
     if (rc != 0)
-        OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x\n", rc);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "rc = 0x%x\n", rc);
 
     if (tag != MBEDTLS_ASN1_OID)
         OE_RAISE(OE_FAILURE);
@@ -172,7 +172,7 @@ oe_result_t oe_asn1_get_oid(oe_asn1_t* asn1, oe_oid_string_t* oid)
 
         rc = mbedtls_oid_get_numeric_string(oid->buf, sizeof(*oid), &buf);
         if (rc < 0)
-            OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x\n", rc);
+            OE_RAISE_MSG(OE_CRYPTO_ERROR, "rc = 0x%x\n", rc);
     }
 
     asn1->ptr += length;
@@ -203,7 +203,7 @@ oe_result_t oe_asn1_get_octet_string(
 
     rc = mbedtls_asn1_get_tag(_pptr(asn1), _end(asn1), length, tag);
     if (rc != 0)
-        OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x\n", rc);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "rc = 0x%x\n", rc);
 
     *data = asn1->ptr;
     asn1->ptr += *length;

@@ -33,7 +33,7 @@ oe_result_t oe_aes_cmac_sign(
 
     info = mbedtls_cipher_info_from_type(MBEDTLS_CIPHER_AES_128_ECB);
     if (info == NULL)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     oe_secure_zero_fill(aes_cmac->impl, sizeof(*aes_cmac));
 
@@ -44,7 +44,7 @@ oe_result_t oe_aes_cmac_sign(
             message,
             message_length,
             (uint8_t*)aes_cmac->impl) != 0)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     result = OE_OK;
 

@@ -38,13 +38,13 @@ oe_result_t oe_hmac_sha256_init(
         &impl->ctx, mbedtls_md_info_from_type(MBEDTLS_MD_SHA256), 1);
 
     if (mbedtls_result != 0)
-        OE_RAISE_MSG(OE_FAILURE, "mbedtls error: 0x%x", mbedtls_result);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "mbedtls error: 0x%x", mbedtls_result);
 
     mbedtls_result = mbedtls_md_hmac_starts(&impl->ctx, key, keysize);
     if (mbedtls_result != 0)
     {
         mbedtls_md_free(&impl->ctx);
-        OE_RAISE_MSG(OE_FAILURE, "mbedtls error: 0x%x", mbedtls_result);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "mbedtls error: 0x%x", mbedtls_result);
     }
 
     result = OE_OK;
@@ -68,7 +68,7 @@ oe_result_t oe_hmac_sha256_update(
 
     res = mbedtls_md_hmac_update(&impl->ctx, (const uint8_t*)data, size);
     if (res != 0)
-        OE_RAISE_MSG(OE_FAILURE, "mbedtls error: 0x%x", res);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "mbedtls error: 0x%x", res);
 
     result = OE_OK;
 
@@ -90,7 +90,7 @@ oe_result_t oe_hmac_sha256_final(
 
     res = mbedtls_md_hmac_finish(&impl->ctx, sha256->buf);
     if (res != 0)
-        OE_RAISE_MSG(OE_FAILURE, "mbedtls error: 0x%x", res);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "mbedtls error: 0x%x", res);
 
     result = OE_OK;
 

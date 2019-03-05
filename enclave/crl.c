@@ -62,7 +62,7 @@ oe_result_t oe_crl_read_der(
     /* Parse the DER data to populate the mbedtls_x509_crl struct */
     rc = mbedtls_x509_crl_parse_der(x509_crl, der_data, der_size);
     if (rc != 0)
-        OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x\n", rc);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "rc = 0x%x\n", rc);
 
     /* Initialize the implementation */
     _crl_init(impl, x509_crl);

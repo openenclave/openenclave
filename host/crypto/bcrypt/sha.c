@@ -1,21 +1,17 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-/* Nest mbedtls header includes with required corelibc defines */
-// clang-format off
-#include "mbedtls_corelibc_defs.h"
-#include <mbedtls/sha256.h>
-#include "mbedtls_corelibc_undef.h"
-// clang-format on
-
-#include <openenclave/bits/types.h>
+#include <openenclave/host.h>
 #include <openenclave/internal/defs.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sha.h>
+#include <stdio.h>
+#include <string.h>
+#include "bcrypt.h"
 
 typedef struct _oe_sha256_context_impl
 {
-    mbedtls_sha256_context ctx;
+    BCRYPT_HASH_HANDLE handle;
 } oe_sha256_context_impl_t;
 
 OE_STATIC_ASSERT(
@@ -25,16 +21,16 @@ oe_result_t oe_sha256_init(oe_sha256_context_t* context)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_sha256_context_impl_t* impl = (oe_sha256_context_impl_t*)context;
-    int rc = 0;
 
     if (!context)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    mbedtls_sha256_init(&impl->ctx);
+    NTSTATUS status = BCryptCreateHash(
+        BCRYPT_SHA256_ALG_HANDLE, &impl->handle, NULL, 0, NULL, 0, 0);
 
-    rc = mbedtls_sha256_starts_ret(&impl->ctx, 0);
-    if (rc != 0)
-        OE_RAISE_MSG(OE_CRYPTO_ERROR, "rc = 0x%x\n", rc);
+    if (!BCRYPT_SUCCESS(status))
+        OE_RAISE_MSG(
+            OE_CRYPTO_ERROR, "BCryptCreateHash failed (err=%#x)\n", status);
 
     result = OE_OK;
 
@@ -47,16 +43,17 @@ oe_result_t oe_sha256_update(
     const void* data,
     size_t size)
 {
-    oe_result_t result = OE_INVALID_PARAMETER;
+    oe_result_t result = OE_UNEXPECTED;
     oe_sha256_context_impl_t* impl = (oe_sha256_context_impl_t*)context;
-    int rc = 0;
 
-    if (!context || !data)
+    if (!context)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    rc = mbedtls_sha256_update_ret(&impl->ctx, data, size);
-    if (rc != 0)
-        OE_RAISE_MSG(OE_CRYPTO_ERROR, "rc = 0x%x\n", rc);
+    NTSTATUS status = BCryptHashData(impl->handle, (void*)data, (ULONG)size, 0);
+
+    if (!BCRYPT_SUCCESS(status))
+        OE_RAISE_MSG(
+            OE_CRYPTO_ERROR, "BCryptHashData failed (err=%#x)\n", status);
 
     result = OE_OK;
 
@@ -66,16 +63,18 @@ done:
 
 oe_result_t oe_sha256_final(oe_sha256_context_t* context, OE_SHA256* sha256)
 {
-    oe_result_t result = OE_INVALID_PARAMETER;
+    oe_result_t result = OE_UNEXPECTED;
     oe_sha256_context_impl_t* impl = (oe_sha256_context_impl_t*)context;
-    int rc = 0;
 
-    if (!context || !sha256)
+    if (!context)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    rc = mbedtls_sha256_finish_ret(&impl->ctx, sha256->buf);
-    if (rc != 0)
-        OE_RAISE_MSG(OE_CRYPTO_ERROR, "rc = 0x%x\n", rc);
+    NTSTATUS status =
+        BCryptFinishHash(impl->handle, sha256->buf, sizeof(OE_SHA256), 0);
+
+    if (!BCRYPT_SUCCESS(status))
+        OE_RAISE_MSG(
+            OE_CRYPTO_ERROR, "BCryptFinishHash failed (err=%#x)\n", status);
 
     result = OE_OK;
 

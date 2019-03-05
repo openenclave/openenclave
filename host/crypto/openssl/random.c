@@ -10,7 +10,7 @@ oe_result_t oe_random_internal(void* data, size_t size)
         return OE_INVALID_PARAMETER;
 
     if (!RAND_bytes(data, (int)size))
-        return OE_FAILURE;
+        return OE_CRYPTO_ERROR;
 
     return OE_OK;
 }
