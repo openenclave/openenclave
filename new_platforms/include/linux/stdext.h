@@ -11,16 +11,16 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-errno_t strcpy_s(char *__restrict dest, size_t destsz, const char *__restrict src);
-int sprintf_s(char * __restrict s, size_t n, const char * __restrict format, ...);
-errno_t fopen_s(FILE **f, const char *name, const char *mode);
+errno_t __attribute__((weak)) strcpy_s(char *__restrict dest, size_t destsz, const char *__restrict src);
+int __attribute__((weak)) sprintf_s(char * __restrict s, size_t n, const char * __restrict format, ...);
+errno_t __attribute__((weak)) fopen_s(FILE **f, const char *name, const char *mode);
 #ifdef __cplusplus
 }
 #endif
 
 #ifdef __cplusplus
 template <size_t destsz>
-int strcpy_s(
+int __attribute__((weak)) strcpy_s(
    char (&dest)[destsz],
    const char *src
 )
