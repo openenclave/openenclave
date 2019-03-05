@@ -9,13 +9,18 @@ if (OE_SGX)
         sgx/atexit.c
         sgx/backtrace.c
         sgx/calls.c
+        sgx/console.c
         sgx/cpuid.c
         sgx/debugmalloc.c
         sgx/entropy.c
         sgx/errno.c
         sgx/exception.c
         sgx/globals.c
+        sgx/globals.c
+        sgx/hostbatch.c
         sgx/hostcalls.c
+        sgx/hostfs.c
+        sgx/hostsock.c
         sgx/init.c
         sgx/jump.c
         sgx/keys.c
@@ -51,6 +56,7 @@ elseif(OE_TRUSTZONE)
     message("TODO: ADD ARM files.")
     list(APPEND PLATFORM_SRC
         optee/abort.c
+        optee/errno.c
         optee/bounds.c
         optee/host.c
         optee/printf.c
@@ -67,19 +73,42 @@ add_library(oecore STATIC
     ${MUSL_SRC_DIR}/string/memset.c
     __secs_to_tm.c
     __stack_chk_fail.c
+    array.c
     assert.c
+    corelibc.c
     ctype.c
+    cwd.c
+    device.c
+    epoll.c
+    exit.c
+    select.c
+    eventfd.c
+    fd.c
+    fs.c
+    gethostname.c
+    getdomainname.c
     gmtime.c
     hexdump.c
     intstr.c
+    mount.c
     printf.c
     pthread.c
+    realpath.c
+    resolver.c
     result.c
+    sleep.c
+    socket.c
     stdio.c
     strerror.c
+    strcspn.c
     string.c
+    strspn.c
+    strtok_r.c
+    strchrnul.c
     strtoul.c
+    syscall.c
     time.c
+    uname.c
     ${PLATFORM_SRC})
 
 # Suppress type conversion warnings introduced by 3rdparty code
@@ -103,6 +132,9 @@ endif()
 # This directory contains enclave core libc headers:
 target_include_directories(oecore PRIVATE
     ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
+
+target_include_directories(oecore PRIVATE
+    ${PROJECT_SOURCE_DIR}/enclave/core/include)
 
 if (OE_SGX)
     # Unfortunately dlmalloc uses GNU extension that allows arithmetic

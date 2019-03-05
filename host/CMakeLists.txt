@@ -15,16 +15,20 @@ if (UNIX)
     crypto/openssl/key.c
     crypto/openssl/random.c
     crypto/openssl/rsa.c
+    linux/hostepoll.c
     linux/hostthread.c
     linux/time.c
+    linux/uname.c
     linux/windows.c)
 elseif (WIN32)
   set(PLATFORM_SRC
     ../3rdparty/mbedtls/mbedtls/library/bignum.c
     crypto/bcrypt/hmac.c
     crypto/bcrypt/rsa.c
+    windows/hostepoll.c
     windows/hostthread.c
-    windows/time.c)
+    windows/time.c
+    windows/uname.c)
 else()
   message(FATAL_ERROR "Unknown OS. Only supported OSes are Linux and Windows")
 endif()
@@ -95,8 +99,9 @@ add_library(oehost STATIC
   files.c
   fopen.c
   hexdump.c
+  hostfs.c
+  hostsock.c
   memalign.c
-  ocalls.c
   result.c
   signkey.c
   strings.c
