@@ -15,13 +15,13 @@ OE_EXTERNC_BEGIN
 OE_INLINE bool oe_sgx_is_simulation_load_context(
     const oe_sgx_load_context_t* context)
 {
-    return (context && (context->attributes & OE_ENCLAVE_FLAG_SIMULATE));
+    return (context && (context->attributes.flags & OE_ENCLAVE_FLAG_SIMULATE));
 }
 
 OE_INLINE bool oe_sgx_is_debug_load_context(
     const oe_sgx_load_context_t* context)
 {
-    return (context && (context->attributes & OE_ENCLAVE_FLAG_DEBUG));
+    return (context && (context->attributes.flags & OE_ENCLAVE_FLAG_DEBUG));
 }
 
 oe_result_t oe_sgx_create_enclave(

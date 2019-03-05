@@ -544,6 +544,8 @@ oe_result_t oe_sgx_build_enclave(
                 NULL);
         }
     }
+    // Set the XFRM field
+    props.config.xfrm = context->attributes.xfrm;
 
     /* Calculate the size of image */
     OE_CHECK(oeimage.calculate_size(&oeimage, &image_size));
