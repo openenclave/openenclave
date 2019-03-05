@@ -7,8 +7,6 @@ project("Open Enclave SDK (New Platforms)" VERSION 0.1 LANGUAGES C CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
-
 # Declare options
 set(OE_TEE "" CACHE STRING
     "Select a Trusted Execution Environment (TEE) implementation.")
