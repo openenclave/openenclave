@@ -184,6 +184,10 @@ add_subdirectory(${MBEDTLS_PATH} ${CMAKE_BINARY_DIR}/out/mbedtls EXCLUDE_FROM_AL
 
 if(UNIX AND TZ)
     add_subdirectory(${OPTEE_CLIENT_PATH} ${CMAKE_BINARY_DIR}/out/teec EXCLUDE_FROM_ALL)
+
+    install(
+        FILES $<TARGET_FILE:teec>
+        DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()
 
 add_subdirectory(libsocket)
