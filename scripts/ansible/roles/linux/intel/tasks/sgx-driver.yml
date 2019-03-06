@@ -7,6 +7,8 @@
     url: https://download.01.org/intel-sgx/dcap-1.0/sgx_linux_x64_driver_dcap_36594a7.bin
     dest: /tmp/sgx_linux_x64_driver_dcap.bin
     mode: 0755
+    timeout: 120
+  retries: 3
 
 - name: Install the Intel SGX DCAP Driver
   command: /tmp/sgx_linux_x64_driver_dcap.bin
