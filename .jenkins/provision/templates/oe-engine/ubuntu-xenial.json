@@ -21,7 +21,10 @@
         {
           "keyData": "${SSH_PUBLIC_KEY}"
         }
-      ]
+      ],
+      "osImage": {
+        "url": "https://oejenkins.blob.core.windows.net/disks/jenkins-agent-1604-base-disk.vhd"
+      }
     },
     "diagnosticsProfile": {
       "enabled": false

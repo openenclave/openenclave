@@ -23,10 +23,7 @@
         }
       ],
       "osImage": {
-        "publisher": "Canonical",
-        "offer": "UbuntuServer",
-        "sku": "18.04-LTS",
-        "version": "latest"
+        "url": "https://oejenkins.blob.core.windows.net/disks/jenkins-agent-1804-base-disk.vhd"
       }
     },
     "diagnosticsProfile": {
