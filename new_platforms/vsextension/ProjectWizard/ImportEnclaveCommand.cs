@@ -237,6 +237,7 @@ namespace OpenEnclaveSDK
                 {
                     // Get the path of specified file.
                     filePath = openFileDialog.FileName;
+                    WizardImplementation.EdlLocation = Path.GetDirectoryName(filePath);
 
                     // Extract base name.
                     string baseName = System.IO.Path.GetFileNameWithoutExtension(filePath);
@@ -310,8 +311,16 @@ namespace OpenEnclaveSDK
                             config3.SetPropertyValue("Configuration", true, "WindowsSDKDesktopARMSupport", "true");
                             config3.SetPropertyValue("Configuration", true, "WindowsSDKDesktopARM64Support", "true");
                         }
+
+                        // Change OutDir to $(SolutionDir)bin\$(Platform)\$(Configuration)\
+                        // so it's the same as the enclave.
+                        config.OutputDirectory = "$(SolutionDir)bin\\$(Platform)\\$(Configuration)\\";
+
                         if (name.Contains("OPTEE") || name.Contains("ARM"))
                         {
+                            // Set the debugger's working directory to where the binary is placed.
+                            VCDebugSettings debugging = config.DebugSettings;
+                            debugging.WorkingDirectory = "$(OutDir)";
                             continue;
                         }
 
