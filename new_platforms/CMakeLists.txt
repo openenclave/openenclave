@@ -186,6 +186,10 @@ if(UNIX AND TZ)
     install(
         FILES $<TARGET_FILE:teec>
         DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    install(
+        FILES $<TARGET_FILE:teec>
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RENAME libteec.so)
 endif()
 
 add_subdirectory(libsocket)
