@@ -1,0 +1,10 @@
+{
+    "storage_account": "oejenkins",
+    "capture_container_name": "disks",
+    "capture_name_prefix": "packer",
+    "os_type": "Linux",
+    "image_publisher": "Canonical",
+    "image_offer": "UbuntuServer",
+    "image_sku": "18.04-LTS",
+    "vm_size": "Standard_DC2s"
+}
