@@ -15,6 +15,7 @@ libdirs += $(AR_O)
 libnames += oeenclave
 libnames += oesocket_enc
 libnames += oestdio_enc
+libnames += mbedtls
 
 srcs-y += ../OETestTA.c
 srcs-y += ../oetests_enclave.c
