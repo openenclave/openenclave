@@ -1,0 +1,15 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+---
+- hosts: windows-agents
+  any_errors_fatal: true
+  become_method: runas
+  tasks:
+    - import_role:
+        name: windows/openenclave
+        tasks_from: environment-setup.yml
+
+    - import_role:
+        name: windows/az-dcap-client
+        tasks_from: environment-setup.yml
