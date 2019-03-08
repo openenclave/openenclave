@@ -8,10 +8,14 @@ if (BUILD_ENCLAVES)
 endif()
 
 # Run all tests. Also generate a report.
-add_enclave_test(tests/report report_host report_enc)
-set_tests_properties(tests/report PROPERTIES SKIP_RETURN_CODE 2)
+if (USE_LIBSGX)
+  add_enclave_test(tests/report report_host report_enc)
+  set_tests_properties(tests/report PROPERTIES SKIP_RETURN_CODE 2)
 
-# Attest generated report; but without creating any enclave.
-add_enclave_test(tests/report_attestation_without_enclave report_host report_enc
+  # Attest generated report; but without creating any enclave.
+  # We can verify reports with USE_LIBSGX, but we can't generate one, so
+  # only do this test under the USE_LIBSGX define.
+  add_enclave_test(tests/report_attestation_without_enclave report_host report_enc
     --attest-generated-report)
-set_tests_properties(tests/report_attestation_without_enclave PROPERTIES SKIP_RETURN_CODE 2)
+  set_tests_properties(tests/report_attestation_without_enclave PROPERTIES SKIP_RETURN_CODE 2)
+endif()

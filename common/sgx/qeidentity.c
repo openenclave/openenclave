@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifdef OE_USE_LIBSGX
 #include "qeidentity.h"
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
@@ -181,4 +180,3 @@ done:
     oe_cert_chain_free(&pck_cert_chain);
     return result;
 }
-#endif

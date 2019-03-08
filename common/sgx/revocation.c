@@ -14,13 +14,10 @@
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgxcertextensions.h>
 #include <openenclave/internal/sha.h>
-#include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include "../common.h"
 #include "tcbinfo.h"
-
-#ifdef OE_USE_LIBSGX
 
 // Defaults to Intel SGX 1.8 Release Date.
 oe_datetime_t _sgx_minimim_crl_tcb_issue_date = {2017, 3, 17};
@@ -316,5 +313,3 @@ done:
 
     return result;
 }
-
-#endif
