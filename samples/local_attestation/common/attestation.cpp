@@ -20,12 +20,13 @@ bool Attestation::generate_local_report(
     size_t target_info_size,
     const uint8_t* data,
     const size_t data_size,
-    uint8_t* report_buf,
+    uint8_t** report_buf,
     size_t* remote_report_buf_size)
 {
     bool ret = false;
     uint8_t sha256[32];
     oe_result_t result = OE_OK;
+    uint8_t* temp_buf = NULL;
 
     if (m_crypto->Sha256(data, data_size, sha256) != 0)
     {
@@ -42,13 +43,14 @@ bool Attestation::generate_local_report(
         sizeof(sha256),
         target_info_buffer,
         target_info_size,
-        report_buf,
+        &temp_buf,
         remote_report_buf_size);
     if (result != OE_OK)
     {
         TRACE_ENCLAVE("oe_get_report failed.");
         goto exit;
     }
+    *report_buf = temp_buf;
     ret = true;
     TRACE_ENCLAVE("generate_local_report succeeded.");
 exit:

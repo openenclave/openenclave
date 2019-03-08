@@ -96,7 +96,6 @@ oe_result_t ecall_dispatcher::get_seal_key_by_policy(
     size_t* key_info_size)
 {
     oe_result_t result = OE_OK;
-    uint8_t temp_buf[1];
     uint8_t* buf = NULL;
     size_t buf_size = 0;
     uint8_t* info = NULL;
@@ -104,46 +103,8 @@ oe_result_t ecall_dispatcher::get_seal_key_by_policy(
 
     TRACE_ENCLAVE("get_seal_key_by_policy: %d", policy);
 
-    // query key buffer size and allocate memory for key buffer
     result = oe_get_seal_key_by_policy(
-        (oe_seal_policy_t)policy, temp_buf, &buf_size, NULL, NULL);
-    if (result != OE_BUFFER_TOO_SMALL)
-    {
-        TRACE_ENCLAVE(
-            "oe_get_seal_key_by_policy failed with %s\n",
-            oe_result_str(result));
-        goto exit;
-    }
-
-    buf = (uint8_t*)malloc(buf_size);
-    if (buf == NULL)
-    {
-        result = OE_OUT_OF_MEMORY;
-        TRACE_ENCLAVE("OE_OUT_OF_MEMORY");
-        goto exit;
-    }
-
-    // query key info size and allocate memory for key info buffer
-    result = oe_get_seal_key_by_policy(
-        (oe_seal_policy_t)policy, buf, &buf_size, temp_buf, &info_size);
-    if (result != OE_BUFFER_TOO_SMALL)
-    {
-        TRACE_ENCLAVE(
-            "oe_get_seal_key_by_policy failed with %s\n",
-            oe_result_str(result));
-        goto exit;
-    }
-    info = (uint8_t*)malloc(info_size);
-    if (info == NULL)
-    {
-        result = OE_OUT_OF_MEMORY;
-        TRACE_ENCLAVE("OE_OUT_OF_MEMORY");
-        goto exit;
-    }
-
-    // Query required key buffer size by passing 0 in key_buf_size
-    result = oe_get_seal_key_by_policy(
-        (oe_seal_policy_t)policy, buf, &buf_size, info, &info_size);
+        (oe_seal_policy_t)policy, &buf, &buf_size, &info, &info_size);
     if (result != OE_OK)
     {
         TRACE_ENCLAVE(
@@ -161,10 +122,8 @@ oe_result_t ecall_dispatcher::get_seal_key_by_policy(
 exit:
     if (result != OE_OK)
     {
-        if (key_info)
-            free(key_info);
-        if (key_buf)
-            free(key_buf);
+        if (buf && info)
+            oe_free_key(buf, buf_size, info, info_size);
     }
     return result;
 }
@@ -176,30 +135,10 @@ oe_result_t ecall_dispatcher::get_seal_key_by_keyinfo(
     size_t* key_buf_size)
 {
     oe_result_t result = OE_OK;
-    uint8_t temp_buf[1];
     uint8_t* buf = NULL;
     size_t required_buf_size = 0;
 
-    result =
-        oe_get_seal_key(key_info, key_info_size, temp_buf, &required_buf_size);
-    if (result != OE_BUFFER_TOO_SMALL)
-    {
-        TRACE_ENCLAVE(
-            "oe_get_seal_key_by_policy failed with %s\n",
-            oe_result_str(result));
-        goto exit;
-    }
-    TRACE_ENCLAVE("required_buf_size = %ld", required_buf_size);
-
-    buf = (uint8_t*)malloc(required_buf_size);
-    if (buf == NULL)
-    {
-        result = OE_OUT_OF_MEMORY;
-        TRACE_ENCLAVE("OE_OUT_OF_MEMORY");
-        goto exit;
-    }
-
-    result = oe_get_seal_key(key_info, key_info_size, buf, &required_buf_size);
+    result = oe_get_seal_key(key_info, key_info_size, &buf, &required_buf_size);
     if (result != OE_OK)
     {
         TRACE_ENCLAVE(
@@ -214,7 +153,7 @@ exit:
     if (result != OE_OK)
     {
         if (buf)
-            free(buf);
+            oe_free_key(key_info, key_info_size, buf, required_buf_size);
     }
     return result;
 }

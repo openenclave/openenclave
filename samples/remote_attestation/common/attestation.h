@@ -22,7 +22,7 @@ class Attestation
     bool generate_remote_report(
         const uint8_t* data,
         size_t data_size,
-        uint8_t* remote_report_buf,
+        uint8_t** remote_report_buf,
         size_t* remote_report_buf_size);
 
     /**
