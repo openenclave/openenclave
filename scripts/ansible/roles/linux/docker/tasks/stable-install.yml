@@ -6,15 +6,27 @@
   apt_key:
     url: "https://download.docker.com/linux/ubuntu/gpg"
     state: present
+  retries: 10
+  delay: 10
+  register: result
+  until: result is success
 
 - name: Docker | Add the APT repository
   apt_repository:
     repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
     state: present
     update_cache: yes
+  retries: 10
+  delay: 10
+  register: result
+  until: result is success
 
 - name: Docker | Install Docker-CE
   apt:
     name: docker-ce
     state: present
     update_cache: yes
+  retries: 10
+  delay: 10
+  register: result
+  until: result is success

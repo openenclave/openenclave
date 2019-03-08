@@ -1,0 +1,33 @@
+{
+  "properties": {
+    "vmProfiles": [
+      {
+        "name": "${AGENT_NAME}",
+        "osType": "Linux",
+        "vmSize": "Standard_DC2s",
+        "ports": [22],
+        "isVanilla": true,
+        "hasDNSName": true
+      }
+    ],
+    "vnetProfile": {
+      "vnetResourceGroup": "OE-Jenkins-CI-VNET",
+      "vnetName": "OE-Jenkins-CI-VNET",
+      "subnetName": "default"
+    },
+    "linuxProfile": {
+      "adminUsername": "azureuser",
+      "sshPublicKeys": [
+        {
+          "keyData": "${SSH_PUBLIC_KEY}"
+        }
+      ],
+      "osImage": {
+        "url": "https://oejenkins.blob.core.windows.net/disks/jenkins-agent-1604-base-disk.vhd"
+      }
+    },
+    "diagnosticsProfile": {
+      "enabled": false
+    }
+  }
+}

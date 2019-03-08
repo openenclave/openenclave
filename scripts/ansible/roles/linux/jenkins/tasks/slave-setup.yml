@@ -19,6 +19,10 @@
     name: openjdk-8-jre
     state: present
     update_cache: yes
+  retries: 10
+  delay: 10
+  register: result
+  until: result is success
 
 - name: Jenkins | Create the Jenkins group
   group:
