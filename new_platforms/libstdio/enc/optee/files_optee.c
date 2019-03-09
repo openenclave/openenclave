@@ -14,6 +14,8 @@
 #undef errno
 #include "enclavelibc.h"
 
+#include <mbedtls/sha512.h>
+
 typedef struct _OPTEE_FILE {
     TEE_ObjectHandle hObject;
     int iEof;
@@ -27,6 +29,29 @@ typedef struct _OPTEE_FILE {
 #define USE_MANIFEST_FILES
 
 int errno = 0;
+
+/* OP-TEE secure storage (RPMB) is not quite a filesystem: there are no
+ * directories and there are no file names. Instead, one stores objects, each
+ * of which is identified by an at most 64-byte long byte sequence. This byte
+ * sequence need not be a sensible string; it is merely treated as a (void *).
+ * Seeing as oe_fopen(...) is used with file paths and that these can be longer
+ * than 64 characters (i.e. bytes), we don't pass the file path down to OP-TEE.
+ * Instead, we hash it first using SHA-512, which conveniently generates a
+ * 64-byte long digest and use that as the object ID.
+ * 
+ * NOTE: This breaks file enumeration.
+ */
+static void sha512( const unsigned char *input, size_t ilen,
+             unsigned char output[64], int is384 )
+{
+    mbedtls_sha512_context ctx;
+
+    mbedtls_sha512_init( &ctx );
+    mbedtls_sha512_starts( &ctx, is384 );
+    mbedtls_sha512_update( &ctx, input, ilen );
+    mbedtls_sha512_finish( &ctx, output );
+    mbedtls_sha512_free( &ctx );
+}
 
 static int oe_optee_fclose(
     intptr_t stream)
@@ -196,21 +221,24 @@ OE_FILE* oe_fopen_OE_FILE_SECURE_HARDWARE(
     const char* filename,
     const char* mode)
 {
+    unsigned char objectID[64];
+    sha512((const unsigned char *)filename, strlen(filename), objectID, 0);
+
     TEE_Result result = TEE_SUCCESS;
     OPTEE_FILE* fp = oe_malloc(sizeof(*fp));
     if (fp == NULL) {
         errno = ENOMEM;
         return NULL;
     }
-    
+
     Tcps_Trace(Tcps_TraceLevelDebug, "fopen('%s', '%s') called\n", filename, mode);
 
     fp->iEof = fp->iError = 0;
     if ((strcmp(mode, "r") == 0) || (strcmp(mode, "rb") == 0)) {
         result = TEE_OpenPersistentObject(
             TEE_STORAGE_PRIVATE,
-            filename,
-            strlen(filename),
+            objectID,
+            64,
             TEE_DATA_FLAG_ACCESS_READ | TEE_DATA_FLAG_SHARE_READ,
             &fp->hObject);
         if (result != TEE_SUCCESS) {
@@ -220,8 +248,8 @@ OE_FILE* oe_fopen_OE_FILE_SECURE_HARDWARE(
         /* First see if the file already exists */
         result = TEE_OpenPersistentObject(
             TEE_STORAGE_PRIVATE,
-            filename,
-            strlen(filename),
+            objectID,
+            64,
             TEE_DATA_FLAG_ACCESS_WRITE,
             &fp->hObject);
         if (result == TEE_SUCCESS) {
@@ -232,8 +260,8 @@ OE_FILE* oe_fopen_OE_FILE_SECURE_HARDWARE(
 
             result = TEE_CreatePersistentObject(
                 TEE_STORAGE_PRIVATE,
-                filename,
-                strlen(filename),
+                objectID,
+                64,
                 TEE_DATA_FLAG_ACCESS_WRITE | TEE_DATA_FLAG_OVERWRITE,
                 TEE_HANDLE_NULL,
                 NULL,
@@ -246,8 +274,8 @@ OE_FILE* oe_fopen_OE_FILE_SECURE_HARDWARE(
     } else if (strcmp(mode, "w") == 0) {
         result = TEE_CreatePersistentObject(
             TEE_STORAGE_PRIVATE,
-            filename,
-            strlen(filename),
+            objectID,
+            64,
             TEE_DATA_FLAG_ACCESS_WRITE | TEE_DATA_FLAG_OVERWRITE,
             TEE_HANDLE_NULL,
             NULL,
@@ -461,16 +489,19 @@ oe_result_t GetTrustedFileSize(const char* trustedFilePath, int64_t* fileSize)
     TEE_Result result;
     TEE_ObjectHandle handle;
     TEE_ObjectInfo info;
+    unsigned char objectID[64];
     oe_result_t tcpsStatus = OE_OK;
 
     *fileSize = 0;
 
     FMSG("trustedFilePath = %s", trustedFilePath);
 
+    sha512((const unsigned char *)trustedFilePath, strlen(trustedFilePath), objectID, 0);
+
     result = TEE_OpenPersistentObject(
         TEE_STORAGE_PRIVATE,
-        trustedFilePath,
-        strlen(trustedFilePath),
+        objectID,
+        64,
         TEE_DATA_FLAG_ACCESS_READ | TEE_DATA_FLAG_SHARE_READ,
         &handle);
 
@@ -559,10 +590,13 @@ int oe_remove_OE_FILE_SECURE_HARDWARE(const char* filename)
     TEE_Result result;
     TEE_ObjectHandle hObject;
 
+    unsigned char objectID[64];
+    sha512((const unsigned char *)filename, strlen(filename), objectID, 0);
+
     result = TEE_OpenPersistentObject(
         TEE_STORAGE_PRIVATE,
-        filename,
-        strlen(filename),
+        objectID,
+        64,
         TEE_DATA_FLAG_ACCESS_WRITE_META,
         &hObject);
 

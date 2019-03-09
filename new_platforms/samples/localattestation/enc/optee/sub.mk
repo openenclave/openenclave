@@ -14,6 +14,7 @@ libdirs += $(AR_O)
 
 libnames += oeenclave
 libnames += oestdio_enc
+libnames += mbedtls
 
 srcs-y += ../enc.c
 
