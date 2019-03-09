@@ -31,7 +31,8 @@ include(CMakePackageConfigHelpers)
 configure_package_config_file(
   ${PROJECT_SOURCE_DIR}/cmake/openenclave-config.cmake.in
   ${CMAKE_BINARY_DIR}/cmake/openenclave-config.cmake
-  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
+  PATH_VARS CMAKE_INSTALL_LIBDIR CMAKE_INSTALL_BINDIR CMAKE_INSTALL_DATADIR CMAKE_INSTALL_INCLUDEDIR)
 write_basic_package_version_file(
   ${CMAKE_BINARY_DIR}/cmake/openenclave-config-version.cmake
   COMPATIBILITY SameMajorVersion)

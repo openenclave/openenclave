@@ -1,7 +1,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-# This script requires the variables BUILD_DIR and SOURCE_DIR.
+# This script requires the variables SOURCE_DIR, BUILD_DIR, and
+# PREFIX_DIR to be defined:
+#
+#     cmake -DSOURCE_DIR=~/openenclave -DBUILD_DIR=~/openenclave/build -DPREFIX_DIR=/opt/openenclave -P ~/openenclave/samples/test-samples.cmake
 
 # The samples cannot run in simulation mode.
 if ($ENV{OE_SIMULATION})
@@ -10,12 +13,11 @@ if ($ENV{OE_SIMULATION})
   return()
 endif ()
 
-set(INSTALL_DIR ${BUILD_DIR}/install)
-
 # Install the SDK from current build to a known location in the build tree.
-message(WARNING "The CMAKE_INSTALL_PREFIX is being changed to '${INSTALL_DIR}' for the samples tests!")
-execute_process(COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} ${BUILD_DIR})
-execute_process(COMMAND ${CMAKE_COMMAND} --build ${BUILD_DIR} --target install)
+execute_process(COMMAND ${CMAKE_COMMAND} -E env DESTDIR=${BUILD_DIR}/install ${CMAKE_COMMAND} --build ${BUILD_DIR} --target install)
+
+# The prefix is appended to the value given to DESTDIR, e.g. build/install/opt/openenclave/...
+set(INSTALL_DIR ${BUILD_DIR}/install${PREFIX_DIR})
 
 # TODO: Add the rest of the samples.
 foreach (SAMPLE data-sealing)
