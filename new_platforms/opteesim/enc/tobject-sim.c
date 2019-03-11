@@ -1,5 +1,6 @@
 /* Copyright (c) Microsoft Corporation.  All Rights Reserved. */
 #include <stdio.h>
+#include <string.h>
 #include <windows.h>
 #include <assert.h>
 #include <tee_api.h>
@@ -8,18 +9,30 @@ static const char* TEEP_ObjectIDToString(
     _In_reads_bytes_(objectIDLen) void* objectID,
     _In_ size_t objectIDLen)
 {
-    size_t bufsz = sizeof(char) * ((objectIDLen * 2) + 1);
-    char* output = malloc(bufsz);
-    if (output == NULL) {
+    char* buffer; 
+    size_t bufferSize;
+
+	int charsWritten;
+    
+	bufferSize = ((objectIDLen * 2) + 1) * sizeof(char);
+    buffer = malloc(bufferSize);
+    if (buffer == NULL) {
         return NULL;
 	}
-
-	char* ptr = &output[0];
+    
+	char* ptr = &buffer[0];
     for (size_t i = 0; i < objectIDLen; i++) {
-        ptr += sprintf_s(ptr, bufsz, "%02X", ((const unsigned char *)objectID)[i]);
+        charsWritten = sprintf_s(ptr, bufferSize, "%02X", ((const unsigned char*)objectID)[i]);
+        if (charsWritten == -1) {
+            free(buffer);
+            return NULL;
+        }
+
+        ptr += charsWritten;
+        bufferSize -= charsWritten;
     }
 
-    return output;
+    return buffer;
 }
 
 TEE_Result TEE_OpenPersistentObject(
@@ -65,6 +78,8 @@ TEE_Result TEE_OpenPersistentObject(
         OPEN_EXISTING,
         FILE_ATTRIBUTE_NORMAL,
         NULL);
+
+	free((void *)fileName);
 
     *object = (TEE_ObjectHandle)hFile;
 
@@ -122,6 +137,8 @@ TEE_Result TEE_CreatePersistentObject(
         dwCreationDisposition,
         FILE_ATTRIBUTE_NORMAL,
         NULL);
+
+	free((void *)fileName);
 
     *object = (TEE_ObjectHandle)hFile;
 
