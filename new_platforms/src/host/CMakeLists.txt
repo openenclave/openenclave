@@ -75,6 +75,8 @@ elseif(WIN32)
         list(APPEND INCS PRIVATE ${OE_PATH}/3rdparty/OpteeCalls/OpteeCalls/inc)
         
         list(APPEND LIBS PUBLIC Rpcrt4)
+        list(APPEND LIBS PUBLIC shlwapi)
+        list(APPEND LIBS PUBLIC Shell32)
 
         if(SIM)
             list(APPEND LIBS PUBLIC oehost_opteesim)
