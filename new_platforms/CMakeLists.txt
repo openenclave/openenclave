@@ -49,11 +49,14 @@ elseif(UNIX AND TZ AND SIM)
 endif()
 
 # Validate target, TEE and toolchain combinations.
-# if(UNIX AND TZ AND NOT(
-#     "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm" OR
-#     "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64"))
-#     message(FATAL_ERROR "Building for ARM TrustZone requires one of the cross-compiler toolchain failes in the cmake directory; use -DCMAKE_TOOLCHAIN_FILE to specify it.")
-# endif()
+if(UNIX AND TZ AND NOT(
+    "${CMAKE_C_COMPILER}" MATCHES "arm" OR
+    "${CMAKE_C_COMPILER}" MATCHES "aarch64"))
+    # We check the compiler because Rust's 'cross' tool and 'cmake' crate do
+    # not cooperate to set CMAKE_SYSTEM_PROCESSOR, and setting it manually in a
+    # Rust build script does not work.
+    message(FATAL_ERROR "Building for ARM TrustZone requires one of the cross-compiler toolchain failes in the cmake directory; use -DCMAKE_TOOLCHAIN_FILE to specify it.")
+endif()
 
 if(WIN32 AND SGX AND ${CMAKE_GENERATOR} MATCHES "ARM")
     message(FATAL_ERROR "Building for Intel SGX is not supported with an ARM generator see (cmake --help).")
