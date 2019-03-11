@@ -101,19 +101,6 @@ def ACCContainerTest(String label, String version) {
 }
 
 def checkDevFlows(String version) {
-    stage('Check dev flows') {
-        node("nonSGX") {
-            cleanWs()
-            checkout scm
-
-            def oetoolsCheck = docker.build("oetools-check-${version}", "--build-arg ubuntu_version=${version} -f .jenkins/Dockerfile .")
-            oetoolsCheck.inside {
-                timeout(10) {
-                    sh './scripts/check-ci'
-                }
-            }
-        }
-    }
     stage('Default compiler') {
         // This stage verifies developer flows after running ansible playbooks to bootstrap a machine.
         node("nonSGX") {
@@ -135,6 +122,22 @@ def checkDevFlows(String version) {
                         // Note that `make package` is not expected to work
                         // without extra configuration.
                     }
+                }
+            }
+        }
+    }
+}
+
+def checkCI() {
+    stage('Check CI') {
+        node("nonSGX") {
+            cleanWs()
+            checkout scm
+
+            def oetoolsCheck = docker.build("oetools-check-1804", "--build-arg ubuntu_version=18.04 -f .jenkins/Dockerfile .")
+            oetoolsCheck.inside {
+                timeout(10) {
+                    sh './scripts/check-ci'
                 }
             }
         }
@@ -202,6 +205,7 @@ def win2016CrossCompile(String build_type) {
 
 parallel "Check Developer Experience Ubuntu 16.04" :            { checkDevFlows('16.04') },
          "Check Developer Experience Ubuntu 18.04" :            { checkDevFlows('18.04') },
+         "Check CI" :                                           { checkCI() },
          "ACC1604 clang-7 Debug" :                              { ACCTest('ACC-1604', 'clang-7', 'Debug') },
          "ACC1604 clang-7 Release" :                            { ACCTest('ACC-1604', 'clang-7', 'Release') },
          "ACC1604 clang-7 RelWithDebInfo" :                     { ACCTest('ACC-1604', 'clang-7', 'RelWithDebinfo') },
