@@ -82,7 +82,10 @@ elseif(WIN32)
     elseif(SGX)
         list(APPEND SRCS ../oeresult.c win32/teehost_sgx.c)
         list(APPEND INCS PUBLIC ${SGXSDKInstallPath}/include)
-        
+
+        list(APPEND LIBS PUBLIC Shlwapi)
+        list(APPEND LIBS PUBLIC Shell32)
+
         set(SGX_PREFIX ${SGX_SDK_LIBRARIES_PREFIX}/$<IF:$<CONFIG:RelWithDebInfo>,Release,$<CONFIG>>)
         if(SIM)
             list(APPEND LIBS
