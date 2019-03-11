@@ -47,6 +47,7 @@ elseif(WIN32)
         target_include_directories(${TARGET} PRIVATE ${NP_PATH}/include/optee)
         target_include_directories(${TARGET} PRIVATE ${OPTEE_OS_PATH}/lib/libutee/include)
         target_include_directories(${TARGET} PRIVATE ${OPTEE_OS_PATH}/lib/libutils/ext/include)
+        target_include_directories(${TARGET} PRIVATE ${MBEDTLS_PATH}/include)
     endif()
 
     target_include_directories(${TARGET} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
