@@ -5,8 +5,6 @@ cmake_minimum_required(VERSION 3.10)
 
 project("Data Sealing Sample" LANGUAGES C CXX)
 
-find_package(Threads REQUIRED)
-
 find_package(OpenEnclave CONFIG REQUIRED)
 
 set(CMAKE_CXX_STANDARD 11)

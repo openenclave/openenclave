@@ -17,6 +17,10 @@ set_and_check(OE_BINDIR "@PACKAGE_CMAKE_INSTALL_BINDIR@")
 set_and_check(OE_DATADIR "@PACKAGE_CMAKE_INSTALL_DATADIR@")
 set_and_check(OE_INCLUDEDIR "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@")
 
+# Dependencies.
+include(CMakeFindDependencyMacro)
+find_dependency(Threads)
+
 # This target is an OCaml executable, not C++, so we have to manually
 # "export" it here for users of the package.
 add_executable(openenclave::oeedger8r IMPORTED)
