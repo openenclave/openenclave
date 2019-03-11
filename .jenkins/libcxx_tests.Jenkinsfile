@@ -1,10 +1,17 @@
 import hudson.slaves.*
 import hudson.model.*
 
+env.XENIAL_RG = "oe-libcxx-${BUILD_NUMBER}-1604"
 env.XENIAL_LABEL = "LIBCXX-${BUILD_NUMBER}-1604"
 env.XENIAL_HOSTS = "libcxx-${BUILD_NUMBER}-1604-1.eastus.cloudapp.azure.com," + \
                    "libcxx-${BUILD_NUMBER}-1604-2.eastus.cloudapp.azure.com," + \
                    "libcxx-${BUILD_NUMBER}-1604-3.eastus.cloudapp.azure.com"
+
+env.BIONIC_RG = "oe-libcxx-${BUILD_NUMBER}-1804"
+env.BIONIC_LABEL = "LIBCXX-${BUILD_NUMBER}-1804"
+env.BIONIC_HOSTS = "libcxx-${BUILD_NUMBER}-1804-1.westeurope.cloudapp.azure.com," + \
+                   "libcxx-${BUILD_NUMBER}-1804-2.westeurope.cloudapp.azure.com," + \
+                   "libcxx-${BUILD_NUMBER}-1804-3.westeurope.cloudapp.azure.com"
 
 
 String dockerBuildArgs(String... args) {
@@ -32,10 +39,8 @@ def azureEnvironment(String task) {
                                                   usernameVariable: 'SERVICE_PRINCIPAL_ID'),
                                  string(credentialsId: 'OSCTLabSubID', variable: 'SUBSCRIPTION_ID'),
                                  string(credentialsId: 'TenantID', variable: 'TENANT_ID')]) {
-                    withEnv(["REGION=eastus", "RESOURCE_GROUP=oe-libcxx-${BUILD_NUMBER}"]) {
-                        dir('.jenkins/provision') {
-                            sh "${task}"
-                        }
+                    dir('.jenkins/provision') {
+                        sh "${task}"
                     }
                 }
             }
@@ -43,9 +48,9 @@ def azureEnvironment(String task) {
     }
 }
 
-def ACCDeployVM(String agent_name, String agent_type) {
+def ACCDeployVM(String agent_name, String agent_type, String region, String resource_group) {
     stage("Deploy ${agent_name}") {
-        withEnv(["AGENT_NAME=${agent_name}", "AGENT_TYPE=${agent_type}"]) {
+        withEnv(["REGION=${region}", "RESOURCE_GROUP=${resource_group}", "AGENT_NAME=${agent_name}", "AGENT_TYPE=${agent_type}"]) {
             azureEnvironment("./deploy-agent.sh")
         }
     }
@@ -109,8 +114,13 @@ def ACClibcxxTest(String agent_name, String compiler, String build_type) {
 }
 
 def deleteRG() {
-    stage("Delete the libcxx resource group") {
-        azureEnvironment("./cleanup.sh")
+    stage("Delete the libcxx resource groups") {
+        withEnv(["RESOURCE_GROUP=${env.XENIAL_RG}"]) {
+            azureEnvironment("./cleanup.sh")
+        }
+        withEnv(["RESOURCE_GROUP=${env.BIONIC_RG}"]) {
+            azureEnvironment("./cleanup.sh")
+        }
     }
 }
 
@@ -118,7 +128,7 @@ def unregisterJenkinsSlaves() {
     stage("Unregister Jenkins Slaves") {
         node("nonSGX") {
             for (s in hudson.model.Hudson.instance.slaves) {
-                if(s.getLabelString() == "${env.XENIAL_LABEL}") {
+                if(s.getLabelString() == "${env.XENIAL_LABEL}" || s.getLabelString() == "${env.BIONIC_LABEL}") {
                     s.getComputer().doDoDelete()
                 }
             }
@@ -128,9 +138,12 @@ def unregisterJenkinsSlaves() {
 
 
 try {
-    ACCDeployVM("libcxx-${BUILD_NUMBER}-1604-1", "xenial")
-    ACCDeployVM("libcxx-${BUILD_NUMBER}-1604-2", "xenial")
-    ACCDeployVM("libcxx-${BUILD_NUMBER}-1604-3", "xenial")
+    ACCDeployVM("libcxx-${BUILD_NUMBER}-1604-1", "xenial", "eastus", "${env.XENIAL_RG}")
+    ACCDeployVM("libcxx-${BUILD_NUMBER}-1604-2", "xenial", "eastus", "${env.XENIAL_RG}")
+    ACCDeployVM("libcxx-${BUILD_NUMBER}-1604-3", "xenial", "eastus", "${env.XENIAL_RG}")
+    ACCDeployVM("libcxx-${BUILD_NUMBER}-1804-1", "bionic", "westeurope", "${env.BIONIC_RG}")
+    ACCDeployVM("libcxx-${BUILD_NUMBER}-1804-2", "bionic", "westeurope", "${env.BIONIC_RG}")
+    ACCDeployVM("libcxx-${BUILD_NUMBER}-1804-3", "bionic", "westeurope", "${env.BIONIC_RG}")
 
     registerJenkinsSlaves()
 
@@ -139,7 +152,13 @@ try {
              "libcxx ACC1604 clang-7 RelWithDebInfo" : { ACClibcxxTest("${env.XENIAL_LABEL}", 'clang-7', 'RelWithDebinfo') },
              "libcxx ACC1604 gcc Debug" :              { ACClibcxxTest("${env.XENIAL_LABEL}", 'gcc', 'Debug') },
              "libcxx ACC1604 gcc Release" :            { ACClibcxxTest("${env.XENIAL_LABEL}", 'gcc', 'Release') },
-             "libcxx ACC1604 gcc RelWithDebInfo" :     { ACClibcxxTest("${env.XENIAL_LABEL}", 'gcc', 'RelWithDebInfo') }
+             "libcxx ACC1604 gcc RelWithDebInfo" :     { ACClibcxxTest("${env.XENIAL_LABEL}", 'gcc', 'RelWithDebInfo') },
+             "libcxx ACC1804 clang-7 Debug" :          { ACClibcxxTest("${env.BIONIC_LABEL}", 'clang-7', 'Debug') },
+             "libcxx ACC1804 clang-7 Release" :        { ACClibcxxTest("${env.BIONIC_LABEL}", 'clang-7', 'Release') },
+             "libcxx ACC1804 clang-7 RelWithDebInfo" : { ACClibcxxTest("${env.BIONIC_LABEL}", 'clang-7', 'RelWithDebinfo') },
+             "libcxx ACC1804 gcc Debug" :              { ACClibcxxTest("${env.BIONIC_LABEL}", 'gcc', 'Debug') },
+             "libcxx ACC1804 gcc Release" :            { ACClibcxxTest("${env.BIONIC_LABEL}", 'gcc', 'Release') },
+             "libcxx ACC1804 gcc RelWithDebInfo" :     { ACClibcxxTest("${env.BIONIC_LABEL}", 'gcc', 'RelWithDebinfo') }
 } finally {
     deleteRG()
     unregisterJenkinsSlaves()

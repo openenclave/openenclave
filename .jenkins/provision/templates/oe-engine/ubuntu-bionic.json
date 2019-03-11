@@ -11,7 +11,7 @@
       }
     ],
     "vnetProfile": {
-      "vnetResourceGroup": "OE-Jenkins-CI-VNET",
+      "vnetResourceGroup": "OE-Jenkins-CI-westeurope",
       "vnetName": "OE-Jenkins-CI-VNET",
       "subnetName": "default"
     },
@@ -23,7 +23,7 @@
         }
       ],
       "osImage": {
-        "url": "https://oejenkins.blob.core.windows.net/disks/jenkins-agent-1804-base-disk.vhd"
+        "url": "https://oejenkinswesteurope.blob.core.windows.net/disks/jenkins-agent-1804-base-disk.vhd"
       }
     },
     "diagnosticsProfile": {
