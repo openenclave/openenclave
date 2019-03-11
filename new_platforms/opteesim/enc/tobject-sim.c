@@ -12,15 +12,15 @@ static const char* TEEP_ObjectIDToString(
     char* buffer; 
     size_t bufferSize;
 
-	int charsWritten;
+    int charsWritten;
     
-	bufferSize = ((objectIDLen * 2) + 1) * sizeof(char);
+    bufferSize = ((objectIDLen * 2) + 1) * sizeof(char);
     buffer = malloc(bufferSize);
     if (buffer == NULL) {
         return NULL;
-	}
+    }
     
-	char* ptr = &buffer[0];
+    char* ptr = &buffer[0];
     for (size_t i = 0; i < objectIDLen; i++) {
         charsWritten = sprintf_s(ptr, bufferSize, "%02X", ((const unsigned char*)objectID)[i]);
         if (charsWritten == -1) {
@@ -44,7 +44,7 @@ TEE_Result TEE_OpenPersistentObject(
 {
     *object = (TEE_ObjectHandle)INVALID_HANDLE_VALUE;
 
-	/* Note that objectID is a meaningless byte array (i.e. not necessarily a
+    /* Note that objectID is a meaningless byte array (i.e. not necessarily a
      * string). */
     const char* fileName = TEEP_ObjectIDToString(objectID, objectIDLen);
     if (fileName == NULL || strlen(fileName) > MAX_PATH) {
@@ -79,7 +79,7 @@ TEE_Result TEE_OpenPersistentObject(
         FILE_ATTRIBUTE_NORMAL,
         NULL);
 
-	free((void *)fileName);
+    free((void *)fileName);
 
     *object = (TEE_ObjectHandle)hFile;
 
@@ -102,7 +102,7 @@ TEE_Result TEE_CreatePersistentObject(
 
     *object = (TEE_ObjectHandle)INVALID_HANDLE_VALUE;
 
-	/* Note that objectID is a meaningless byte array (i.e. not necessarily a
+    /* Note that objectID is a meaningless byte array (i.e. not necessarily a
      * string). */
     const char* fileName = TEEP_ObjectIDToString(objectID, objectIDLen);
     if (fileName == NULL || strlen(fileName) > MAX_PATH) {
@@ -138,7 +138,7 @@ TEE_Result TEE_CreatePersistentObject(
         FILE_ATTRIBUTE_NORMAL,
         NULL);
 
-	free((void *)fileName);
+    free((void *)fileName);
 
     *object = (TEE_ObjectHandle)hFile;
 
