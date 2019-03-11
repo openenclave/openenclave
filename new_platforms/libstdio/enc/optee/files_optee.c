@@ -41,8 +41,11 @@ int errno = 0;
  * 
  * NOTE: This breaks file enumeration.
  */
-static void sha512( const unsigned char *input, size_t ilen,
-             unsigned char output[64], int is384 )
+static void sha512(
+    const unsigned char *input,
+    size_t ilen,
+    unsigned char output[TEE_OBJECT_ID_MAX_LEN],
+    int is384)
 {
     mbedtls_sha512_context ctx;
 
@@ -221,7 +224,7 @@ OE_FILE* oe_fopen_OE_FILE_SECURE_HARDWARE(
     const char* filename,
     const char* mode)
 {
-    unsigned char objectID[64];
+    unsigned char objectID[TEE_OBJECT_ID_MAX_LEN];
     sha512((const unsigned char *)filename, strlen(filename), objectID, 0);
 
     TEE_Result result = TEE_SUCCESS;
@@ -238,7 +241,7 @@ OE_FILE* oe_fopen_OE_FILE_SECURE_HARDWARE(
         result = TEE_OpenPersistentObject(
             TEE_STORAGE_PRIVATE,
             objectID,
-            64,
+            sizeof(objectID),
             TEE_DATA_FLAG_ACCESS_READ | TEE_DATA_FLAG_SHARE_READ,
             &fp->hObject);
         if (result != TEE_SUCCESS) {
@@ -249,7 +252,7 @@ OE_FILE* oe_fopen_OE_FILE_SECURE_HARDWARE(
         result = TEE_OpenPersistentObject(
             TEE_STORAGE_PRIVATE,
             objectID,
-            64,
+            sizeof(objectID),
             TEE_DATA_FLAG_ACCESS_WRITE,
             &fp->hObject);
         if (result == TEE_SUCCESS) {
@@ -261,7 +264,7 @@ OE_FILE* oe_fopen_OE_FILE_SECURE_HARDWARE(
             result = TEE_CreatePersistentObject(
                 TEE_STORAGE_PRIVATE,
                 objectID,
-                64,
+                sizeof(objectID),
                 TEE_DATA_FLAG_ACCESS_WRITE | TEE_DATA_FLAG_OVERWRITE,
                 TEE_HANDLE_NULL,
                 NULL,
@@ -275,7 +278,7 @@ OE_FILE* oe_fopen_OE_FILE_SECURE_HARDWARE(
         result = TEE_CreatePersistentObject(
             TEE_STORAGE_PRIVATE,
             objectID,
-            64,
+            sizeof(objectID),
             TEE_DATA_FLAG_ACCESS_WRITE | TEE_DATA_FLAG_OVERWRITE,
             TEE_HANDLE_NULL,
             NULL,
@@ -489,7 +492,7 @@ oe_result_t GetTrustedFileSize(const char* trustedFilePath, int64_t* fileSize)
     TEE_Result result;
     TEE_ObjectHandle handle;
     TEE_ObjectInfo info;
-    unsigned char objectID[64];
+    unsigned char objectID[TEE_OBJECT_ID_MAX_LEN];
     oe_result_t tcpsStatus = OE_OK;
 
     *fileSize = 0;
@@ -501,7 +504,7 @@ oe_result_t GetTrustedFileSize(const char* trustedFilePath, int64_t* fileSize)
     result = TEE_OpenPersistentObject(
         TEE_STORAGE_PRIVATE,
         objectID,
-        64,
+        sizeof(objectID),
         TEE_DATA_FLAG_ACCESS_READ | TEE_DATA_FLAG_SHARE_READ,
         &handle);
 
@@ -590,13 +593,13 @@ int oe_remove_OE_FILE_SECURE_HARDWARE(const char* filename)
     TEE_Result result;
     TEE_ObjectHandle hObject;
 
-    unsigned char objectID[64];
+    unsigned char objectID[TEE_OBJECT_ID_MAX_LEN];
     sha512((const unsigned char *)filename, strlen(filename), objectID, 0);
 
     result = TEE_OpenPersistentObject(
         TEE_STORAGE_PRIVATE,
         objectID,
-        64,
+        sizeof(objectID),
         TEE_DATA_FLAG_ACCESS_WRITE_META,
         &hObject);
 

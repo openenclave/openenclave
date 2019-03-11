@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <tee_api.h>
 
+/* Caller must free the string that is returned. */
 static const char* TEEP_ObjectIDToString(
     _In_reads_bytes_(objectIDLen) void* objectID,
     _In_ size_t objectIDLen)

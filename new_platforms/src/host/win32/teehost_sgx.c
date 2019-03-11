@@ -387,17 +387,16 @@ oe_result_t oe_create_enclave_helper(
                 TCHAR szPath[MAX_PATH];
                 TCHAR szCurrPath[MAX_PATH];
 
-                if(GetCurrentDirectory(MAX_PATH, szCurrPath) &&
+                if (GetCurrentDirectory(MAX_PATH, szCurrPath) &&
                    GetModuleFileName(NULL, szPath, MAX_PATH))
                 {
                     PathRemoveFileSpec(szPath);
-                    if(SetCurrentDirectory(szPath))
+                    if (SetCurrentDirectory(szPath))
                     {
                         result = initialize_enclave(a_TaIdString, a_TaIdString, extension_search_list[i], a_Flags, a_pId);
                         SetCurrentDirectory(szCurrPath);
                     }
                 }
-
             }
 #endif
             if (result == OE_OK)
