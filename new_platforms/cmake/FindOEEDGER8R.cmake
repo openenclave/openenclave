@@ -23,8 +23,7 @@ if(NOT OEEDGER8R_PATH)
             message(FATAL_ERROR "FindOEEDGER8R only works on Windows.")
         else()
             file(DOWNLOAD ${OEEDGER8R_URI} ${OEEDGER8R_TMP_PATH}
-                SHOW_PROGRESS
-                EXPECTED_MD5 e9776c68297e92452703d2d5d348b35f)
+                SHOW_PROGRESS)
             file(COPY ${OEEDGER8R_TMP_PATH}
                 DESTINATION ${CMAKE_BINARY_DIR}
                 FILE_PERMISSIONS
