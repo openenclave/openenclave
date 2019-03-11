@@ -34,14 +34,8 @@
           - "libtool"
           - "shellcheck"
           - "subversion"
-
-    - set_fact:
-        pkg_names: "{{ pkg_names }} + {{ ['gcc', 'g++'] }}"
-      when: ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'xenial'
-
-    - set_fact:
-        pkg_names: "{{ pkg_names }} + {{ ['gcc-5', 'g++-5'] }}"
-      when: ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'bionic'
+          - "gcc"
+          - "g++"
 
 - name: Install all the Open Enclave prerequisites APT packages for development
   apt:
@@ -49,17 +43,6 @@
     state: present
     update_cache: yes
     install_recommends: no
-
-- name: Create gcc and g++ symbolic links for Ubuntu Bionic
-  file:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
-    force: yes
-    state: link
-  with_items:
-    - { src: "/usr/bin/gcc-5", dest: "/usr/bin/gcc" }
-    - { src: "/usr/bin/g++-5", dest: "/usr/bin/g++" }
-  when: ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'bionic'
 
 - name: Install CMake 3.13.1
   unarchive:
