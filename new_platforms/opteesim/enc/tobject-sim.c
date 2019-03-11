@@ -1,7 +1,26 @@
 /* Copyright (c) Microsoft Corporation.  All Rights Reserved. */
+#include <stdio.h>
 #include <windows.h>
 #include <assert.h>
 #include <tee_api.h>
+
+static const char* TEEP_ObjectIDToString(
+    _In_reads_bytes_(objectIDLen) void* objectID,
+    _In_ size_t objectIDLen)
+{
+    size_t bufsz = sizeof(char) * ((objectIDLen * 2) + 1);
+    char* output = malloc(bufsz);
+    if (output == NULL) {
+        return NULL;
+	}
+
+	char* ptr = &output[0];
+    for (size_t i = 0; i < objectIDLen; i++) {
+        ptr += sprintf_s(ptr, bufsz, "%02X", ((const unsigned char *)objectID)[i]);
+    }
+
+    return output;
+}
 
 TEE_Result TEE_OpenPersistentObject(
     _In_ uint32_t storageID,
@@ -10,15 +29,14 @@ TEE_Result TEE_OpenPersistentObject(
     _In_ uint32_t flags,
     _Out_ TEE_ObjectHandle* object)
 {
-    char fileName[MAX_PATH];
-
     *object = (TEE_ObjectHandle)INVALID_HANDLE_VALUE;
 
-    if (objectIDLen >= sizeof(fileName)) {
+	/* Note that objectID is a meaningless byte array (i.e. not necessarily a
+     * string). */
+    const char* fileName = TEEP_ObjectIDToString(objectID, objectIDLen);
+    if (fileName == NULL || strlen(fileName) > MAX_PATH) {
         return TEE_ERROR_ITEM_NOT_FOUND;
     }
-    strncpy_s(fileName, sizeof(fileName), objectID, objectIDLen);
-    fileName[objectIDLen] = 0;
 
     DWORD dwFlags = 0;
     DWORD dwSharing = 0;
@@ -69,12 +87,12 @@ TEE_Result TEE_CreatePersistentObject(
 
     *object = (TEE_ObjectHandle)INVALID_HANDLE_VALUE;
 
-    char fileName[MAX_PATH];
-    if (objectIDLen >= sizeof(fileName)) {
+	/* Note that objectID is a meaningless byte array (i.e. not necessarily a
+     * string). */
+    const char* fileName = TEEP_ObjectIDToString(objectID, objectIDLen);
+    if (fileName == NULL || strlen(fileName) > MAX_PATH) {
         return TEE_ERROR_ITEM_NOT_FOUND;
     }
-    strncpy_s(fileName, sizeof(fileName), objectID, objectIDLen);
-    fileName[objectIDLen] = 0;
 
     DWORD dwFlags = 0;
     DWORD dwSharing = 0;
