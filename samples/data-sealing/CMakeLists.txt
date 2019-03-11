@@ -9,10 +9,6 @@ find_package(Threads REQUIRED)
 
 find_package(OpenEnclave CONFIG REQUIRED)
 
-# TODO: Remove this when the package exports the target.
-add_executable(openenclave::oeedger8r IMPORTED)
-set_target_properties(openenclave::oeedger8r PROPERTIES IMPORTED_LOCATION ${OE_BINDIR}/oeedger8r)
-
 set(CMAKE_CXX_STANDARD 11)
 
 add_subdirectory(common)
