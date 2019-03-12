@@ -46,6 +46,7 @@ if (UNIX OR ADD_WINDOWS_ENCLAVE_TESTS OR USE_CLANGW)
         endif()
         add_subdirectory(bigmalloc)
         add_subdirectory(crypto)
+        add_subdirectory(crypto_crls_cert_chains)
         add_subdirectory(debug-mode)
         add_subdirectory(echo)
         add_subdirectory(enclaveparam)
@@ -81,12 +82,11 @@ add_subdirectory(create-rapid)
 endif()
 
 if (OE_SGX AND UNIX)
-   add_subdirectory(crypto_crls_cert_chains)
-#ecall_ocall enclave size cannot be handled by Windows ninja CI
+   # ecall_ocall enclave size cannot be handled by Windows ninja CI
    add_subdirectory(ecall_ocall)
    add_subdirectory(libunwind)
 
-   #Attestation supported only on Linux
+   # Attestation supported only on Linux
    add_subdirectory(qeidentity)
    add_subdirectory(report)
    add_subdirectory(attestation_cert_apis)
