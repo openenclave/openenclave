@@ -140,9 +140,29 @@ int unseal_data(sealed_data_t* sealed_data, size_t sealed_data_size,
 
 ## Build and run
 
+Note that there are two different build systems here, one using GNU Make and
+`pkg-config`, the other using CMake.
+
+### CMake
+
+This uses the CMake package provided by the Open Enclave SDK. It assumes that
+the SDK has been installed to a standard location. If it is in a non-standard
+location, set `CMAKE_PREFIX_PATH` to include the SDK, e.g. `cmake
+-DCMAKE_PREFIX_PATH=/opt/openenclave ..` .
+
 ```bash
-$ cd data-sealing
-$ mkdir build && cd build
-$ cmake ..
-$ make run
+cd data-sealing
+mkdir build && cd build
+cmake ..
+make run
+```
+
+### pkg-config
+
+This uses GNU Make with `pkg-config` to build in the source tree.
+
+```bash
+cd data-sealing
+make build
+make run
 ```
