@@ -115,7 +115,8 @@ typedef struct _oe_enclave oe_enclave_t;
 /**
  * This enumeration type defines the policy used to derive a seal key.
  */
-typedef enum _oe_seal_policy {
+typedef enum _oe_seal_policy
+{
     /**
      * Key is derived from a measurement of the enclave. Under this policy,
      * the sealed secret can only be unsealed by an instance of the exact
@@ -138,7 +139,8 @@ typedef enum _oe_seal_policy {
 /**
  * This enumeration defines the type of a asymmetric key.
  */
-typedef enum _oe_asymmetric_key_type {
+typedef enum _oe_asymmetric_key_type
+{
     /**
      * A secp256r1/NIST P-256 elliptic curve key.
      */
@@ -154,7 +156,8 @@ typedef enum _oe_asymmetric_key_type {
 /**
  * This enumeration defines the format of the asymmetric key.
  */
-typedef enum _oe_asymmetric_key_format {
+typedef enum _oe_asymmetric_key_format
+{
     /**
      * The PEM format.
      */

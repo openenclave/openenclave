@@ -30,9 +30,8 @@ oe_result_t oe_get_public_key_by_policy(
     args.seal_policy = seal_policy;
     args.key_params = *key_params;
 
-    OE_CHECK(
-        oe_ecall(
-            enclave, OE_ECALL_GET_PUBLIC_KEY_BY_POLICY, (uint64_t)&args, NULL));
+    OE_CHECK(oe_ecall(
+        enclave, OE_ECALL_GET_PUBLIC_KEY_BY_POLICY, (uint64_t)&args, NULL));
 
     /* Set the output params. */
     *key_buffer = args.key_buffer;

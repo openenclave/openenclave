@@ -551,33 +551,29 @@ void oe_handle_get_public_key_by_policy(uint64_t arg_in)
     arg.key_info = NULL;
     arg.key_info_size = 0;
 
-    OE_CHECK(
-        _copy_to_from_host(
-            false,
-            arg.key_params.user_data,
-            arg.key_params.user_data_size,
-            &enclave_user_data));
+    OE_CHECK(_copy_to_from_host(
+        false,
+        arg.key_params.user_data,
+        arg.key_params.user_data_size,
+        &enclave_user_data));
 
     arg.key_params.user_data = enclave_user_data;
 
     /* Get the key. */
-    OE_CHECK(
-        oe_get_public_key_by_policy(
-            arg.seal_policy,
-            &arg.key_params,
-            &arg.key_buffer,
-            &arg.key_buffer_size,
-            &arg.key_info,
-            &arg.key_info_size));
+    OE_CHECK(oe_get_public_key_by_policy(
+        arg.seal_policy,
+        &arg.key_params,
+        &arg.key_buffer,
+        &arg.key_buffer_size,
+        &arg.key_info,
+        &arg.key_info_size));
 
     /* Copy to host memory. */
-    OE_CHECK(
-        _copy_to_from_host(
-            true, arg.key_info, arg.key_info_size, &host_key_info));
+    OE_CHECK(_copy_to_from_host(
+        true, arg.key_info, arg.key_info_size, &host_key_info));
 
-    OE_CHECK(
-        _copy_to_from_host(
-            true, arg.key_buffer, arg.key_buffer_size, &host_key_buffer));
+    OE_CHECK(_copy_to_from_host(
+        true, arg.key_buffer, arg.key_buffer_size, &host_key_buffer));
 
     /* Success. Just copy to unsafe struct now. */
     uarg->key_info = host_key_info;
@@ -624,33 +620,29 @@ void oe_handle_get_public_key(uint64_t arg_in)
     arg.key_buffer = NULL;
     arg.key_buffer_size = 0;
 
-    OE_CHECK(
-        _copy_to_from_host(
-            false,
-            arg.key_params.user_data,
-            arg.key_params.user_data_size,
-            &enclave_user_data));
+    OE_CHECK(_copy_to_from_host(
+        false,
+        arg.key_params.user_data,
+        arg.key_params.user_data_size,
+        &enclave_user_data));
 
-    OE_CHECK(
-        _copy_to_from_host(
-            false, arg.key_info, arg.key_info_size, &enclave_key_info));
+    OE_CHECK(_copy_to_from_host(
+        false, arg.key_info, arg.key_info_size, &enclave_key_info));
 
     arg.key_params.user_data = enclave_user_data;
     arg.key_info = enclave_key_info;
 
     /* Get the key. */
-    OE_CHECK(
-        oe_get_public_key(
-            &arg.key_params,
-            arg.key_info,
-            arg.key_info_size,
-            &arg.key_buffer,
-            &arg.key_buffer_size));
+    OE_CHECK(oe_get_public_key(
+        &arg.key_params,
+        arg.key_info,
+        arg.key_info_size,
+        &arg.key_buffer,
+        &arg.key_buffer_size));
 
     /* Copy to host memory. */
-    OE_CHECK(
-        _copy_to_from_host(
-            true, arg.key_buffer, arg.key_buffer_size, &host_key_buffer));
+    OE_CHECK(_copy_to_from_host(
+        true, arg.key_buffer, arg.key_buffer_size, &host_key_buffer));
 
     /* Success. Just copy to unsafe struct now. */
     uarg->key_buffer = host_key_buffer;
