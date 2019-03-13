@@ -9,6 +9,7 @@
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
+#include <openenclave/quote.h>
 #include "../common/sgx/quote.h"
 #include "quote.h"
 
@@ -291,10 +292,6 @@ oe_result_t oe_verify_report(
     oe_verify_report_args_t arg = {0};
     oe_report_header_t* header = (oe_report_header_t*)report;
 
-    // The two host side attestation API's are oe_get_report and
-    // oe_verify_report. Initialize the quote provider in both these APIs.
-    OE_CHECK(oe_initialize_quote_provider());
-
     if (report == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
@@ -307,8 +304,9 @@ oe_result_t oe_verify_report(
     if (header->report_type == OE_REPORT_TYPE_SGX_REMOTE)
     {
         // Quote attestation can be done entirely on the host side.
-        OE_CHECK(VerifyQuoteImpl(
-            header->report, header->report_size, NULL, 0, NULL, 0, NULL, 0));
+        OE_CHECK(oe_verify_remote_report(report, report_size, parsed_report));
+        result = OE_OK;
+        goto done;
     }
     else if (header->report_type == OE_REPORT_TYPE_SGX_LOCAL)
     {

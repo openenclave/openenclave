@@ -49,6 +49,7 @@ if (OE_SGX)
     sgx/loadpe.c
     sgx/ocalls.c
     sgx/quote.c
+    sgx/quote_verify.c
     sgx/registers.c
     sgx/report.c
     sgx/sgxload.c
