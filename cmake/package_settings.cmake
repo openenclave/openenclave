@@ -43,6 +43,8 @@ install(
 install(
   EXPORT openenclave-targets
   NAMESPACE openenclave::
+  # Note that this is used in `openenclaverc` to set the path for
+  # users of the SDK and so must remain consistent.
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
   FILE openenclave-targets.cmake)
 install(
