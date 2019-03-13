@@ -8,7 +8,7 @@
 #include <mbedtls/entropy.h>
 #include <openenclave/enclave.h>
 #include <string>
-#include "../shared.h"
+#include "shared.h"
 
 using namespace std;
 

@@ -5,15 +5,15 @@
 # if not gcc and g++, default to clang-7
 C_COMPILER=$(notdir $(CC))
 ifeq ($(C_COMPILER), gcc)
-        CXX_COMPILER=$(notdir $(CXX))
-        USE_GCC = true
+	CXX_COMPILER=$(notdir $(CXX))
+	USE_GCC = true
 endif
 
 ifeq ($(USE_GCC),)
-        CC = clang-7
-        CXX = clang++-7
-        C_COMPILER=clang
-        CXX_COMPILER=clang++
+	CC = clang-7
+	CXX = clang++-7
+	C_COMPILER=clang
+	CXX_COMPILER=clang++
 endif
 
 CFLAGS=$(shell pkg-config oeenclave-$(C_COMPILER) --cflags)
@@ -28,8 +28,8 @@ all:
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../datasealing.edl --trusted  --trusted-dir ../common
-	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -DOE_API_VERSION=2 -std=c++11 ecalls.cpp ../common/dispatcher.cpp ../common/keys.cpp
-	$(CC) -g -c $(CFLAGS) $(CINCLUDES) -DOE_API_VERSION=2 ../common/datasealing_t.c
+	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -I.. -DOE_API_VERSION=2 -std=c++11 ecalls.cpp ../common/dispatcher.cpp ../common/keys.cpp
+	$(CC) -g -c $(CFLAGS) $(CINCLUDES) -I.. -DOE_API_VERSION=2 ../common/datasealing_t.c
 	$(CXX) -o enclave_a_v1 ecalls.o dispatcher.o keys.o datasealing_t.o $(LDFLAGS)
 
 sign:
@@ -41,4 +41,3 @@ clean:
 keys:
 	openssl genrsa -out private.pem -3 3072
 	openssl rsa -in private.pem -pubout -out public.pem
-

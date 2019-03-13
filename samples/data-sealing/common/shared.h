@@ -4,6 +4,8 @@
 #ifndef _SHARED_H
 #define _SHARED_H
 
+#include <stddef.h>
+
 #define POLICY_UNIQUE 1
 #define POLICY_PRODUCT 2
 

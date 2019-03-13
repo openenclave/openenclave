@@ -3,19 +3,27 @@
 
 @PACKAGE_INIT@
 
-include("${CMAKE_CURRENT_LIST_DIR}/openenclave-targets.cmake")
-
-set(OE_MAJOR "@PROJECT_VERSION_MAJOR@")
-set(OE_MINOR "@PROJECT_VERSION_MINOR@")
-set(OE_REVISION "@PROJECT_VERSION_PATCH@")
-set(OE_VERSION "@PROJECT_VERSION@")
+# Reference data.
 set(OE_BRANCH "@GIT_BRANCH@")
 set(OE_COMMIT "@GIT_COMMIT@")
 set(OE_BUILD_NUMBER "@BUILD_NUMBER@")
+
+set_and_check(OE_LIBDIR "@PACKAGE_CMAKE_INSTALL_LIBDIR@")
+set_and_check(OE_BINDIR "@PACKAGE_CMAKE_INSTALL_BINDIR@")
+set_and_check(OE_DATADIR "@PACKAGE_CMAKE_INSTALL_DATADIR@")
+set_and_check(OE_INCLUDEDIR "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@")
+
+# Use these flags if your compiler supports them.
 set(OE_SPECTRE_MITIGATION_FLAGS "@SPECTRE_MITIGATION_FLAGS@")
 
-set_and_check(OE_PREFIX "@CMAKE_INSTALL_PREFIX@")
-set_and_check(OE_LIBDIR "${OE_PREFIX}/@CMAKE_INSTALL_LIBDIR@")
-set_and_check(OE_BINDIR "${OE_PREFIX}/@CMAKE_INSTALL_BINDIR@")
-set_and_check(OE_DATADIR "${OE_PREFIX}/@CMAKE_INSTALL_DATADIR@")
-set_and_check(OE_INCLUDEDIR "${OE_PREFIX}/@CMAKE_INSTALL_INCLUDEDIR@")
+# Dependencies.
+include(CMakeFindDependencyMacro)
+find_dependency(Threads)
+
+# This target is an OCaml executable, not C++, so we have to manually
+# "export" it here for users of the package.
+add_executable(openenclave::oeedger8r IMPORTED)
+set_target_properties(openenclave::oeedger8r PROPERTIES IMPORTED_LOCATION ${OE_BINDIR}/oeedger8r)
+
+# Include the automatically exported targets.
+include("${CMAKE_CURRENT_LIST_DIR}/openenclave-targets.cmake")

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <assert.h>
+#include <common/shared.h>
 #include <limits.h>
 #include <openenclave/host.h>
 #include <stdio.h>
@@ -10,7 +11,6 @@
 #include <unistd.h>
 #include <iostream>
 #include <vector>
-#include "../shared.h"
 #include "datasealing_u.h"
 
 using namespace std;
