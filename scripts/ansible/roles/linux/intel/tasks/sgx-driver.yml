@@ -10,10 +10,14 @@
     update_cache: yes
     install_recommends: no
 
+- name: Populate service facts
+  service_facts:
+
 - name: Ensure aesmd service stopped
   service:
     name: aesmd
     state: stopped
+  when: "'aesmd.service' in ansible_facts.services"
 
 - name: Download Intel SGX DCAP Driver
   get_url:
@@ -46,3 +50,4 @@
     name: aesmd
     state: started
     enabled: yes
+  when: "'aesmd.service' in ansible_facts.services"
