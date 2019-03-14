@@ -20,7 +20,7 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E env DESTDIR=${BUILD_DIR}/install ${C
 set(INSTALL_DIR ${BUILD_DIR}/install${PREFIX_DIR})
 
 # TODO: Add the rest of the samples.
-foreach (SAMPLE data-sealing)
+foreach (SAMPLE data-sealing file-encryptor helloworld local_attestation remote_attestation)
   set(SAMPLE_BUILD_DIR ${BUILD_DIR}/samples/${SAMPLE})
   set(SAMPLE_SOURCE_DIR ${INSTALL_DIR}/share/openenclave/samples/${SAMPLE})
 
@@ -38,9 +38,18 @@ foreach (SAMPLE data-sealing)
     COMMAND ${CMAKE_COMMAND} --build ${SOURCE_DIR}/${SAMPLE}
     WORKING_DIRECTORY ${SAMPLE_BUILD_DIR})
 
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} --build ${SAMPLE_BUILD_DIR} --target run
-    RESULT_VARIABLE TEST_RESULT)
+  if (NOT DEFINED $ENV{OE_SIMULATION})
+    execute_process(
+      COMMAND ${CMAKE_COMMAND} --build ${SAMPLE_BUILD_DIR} --target run
+      RESULT_VARIABLE TEST_RESULT)
+  endif ()
+
+  if (${SAMPLE} MATCHES "(file-encryptor|helloworld)")
+    # Simulation tests
+    execute_process(
+      COMMAND ${CMAKE_COMMAND} --build ${SAMPLE_BUILD_DIR} --target simulate_run
+      RESULT_VARIABLE TEST_RESULT)
+  endif()
 
   # The prior common cannot succeed unless all commands before also
   # succeeded, so testing only the result of this is sufficient.
