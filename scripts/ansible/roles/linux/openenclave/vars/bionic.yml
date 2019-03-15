@@ -1,0 +1,24 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+---
+apt_packages:
+  - "clang-7=1:7.0.1~svn348686-1~exp1~20190113235231.54"
+  - "clang-format-7=1:7.0.1~svn348686-1~exp1~20190113235231.54"
+  - "make=4.1-9.1ubuntu1"
+  - "ocaml-nox=4.05.0-10ubuntu1"
+  - "ninja-build=1.8.2-1"
+  - "shellcheck=0.4.6-1"
+  - "gcc=4:7.3.0-3ubuntu2.1"
+  - "g++=4:7.3.0-3ubuntu2.1"
+  - "gdb=8.1-0ubuntu3"
+  - "libssl-dev"
+  - "openssl"
+  - "pkg-config"
+  - "apt-transport-https"
+  - "autoconf"
+  - "doxygen"
+  - "graphviz"
+  - "libexpat1-dev"
+  - "libtool"
+  - "subversion"

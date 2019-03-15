@@ -13,33 +13,13 @@
     name: linux/common
     tasks_from: apt-repo-llvm.yml
 
-- name: Set the names list of the APT packages to be installed
-  block:
-    - set_fact:
-        pkg_names:
-          - "clang-7"
-          - "clang-format-7"
-          - "libssl-dev"
-          - "make"
-          - "ocaml-native-compilers"
-          - "openssl"
-          - "pkg-config"
-          - "gdb"
-          - "ninja-build"
-          - "apt-transport-https"
-          - "autoconf"
-          - "doxygen"
-          - "graphviz"
-          - "libexpat1-dev"
-          - "libtool"
-          - "shellcheck"
-          - "subversion"
-          - "gcc"
-          - "g++"
+- name: Include vars
+  include_vars:
+    file: "{{ ansible_distribution_release | lower }}.yml"
 
 - name: Install all the Open Enclave prerequisites APT packages for development
   apt:
-    name: "{{ pkg_names }}"
+    name: "{{ apt_packages }}"
     state: present
     update_cache: yes
     install_recommends: no
