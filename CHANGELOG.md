@@ -27,6 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    - Both GNU __thread and C++11 thread_local
    - Both hardware and simulation mode
    - Local-Exec and Initial-Exec thread-local storage models
+- Added `oe_get_public_key` and `oe_get_public_key_by_policy` host functions,
+  which allow the host to get a public key derived from an enclave's identity.
 - Added v2 versions of the following APIs that instead of passing in buffers now
   return a buffer that needs to be freed via an associated free method. OE_API_VERSION
   needs to be set to 2 to pick up the versions. The mentioned APIs have a *_V1 and *_V2
@@ -51,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
      may require compiling with the `-std=c++11` option when building with GCC.
 - Update minimum required CMake version for building from source to 3.13.1.
 - Update minimum required C++ standard for building from source to C++14.
+- Moved `oe_seal_policy_t`, `oe_asymmetric_key_type_t`, `oe_asymmetric_key_format_t`,
+  and `oe_asymmetric_key_params_t` to `bits/types.h` from `enclave.h`. 
 
 ### Deprecated
 

@@ -36,6 +36,7 @@ if (ENABLE_REFMAN)
     bits/properties.h
     bits/report.h
     bits/result.h
+    bits/types.h
     bits/exception.h
     ../../docs/refman/MainPage.md
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/include/openenclave/
