@@ -22,10 +22,10 @@ set(ENCLAVE_CXXINCLUDES
     "-I\${includedir}/openenclave/3rdparty/libcxx ${ENCLAVE_CINCLUDES}")
 
 set(ENCLAVE_CFLAGS_CLANG
-    "-nostdinc -m64 -fPIE -mllvm -x86-speculative-load-hardening")
+    "-nostdinc -m64 -fPIE -ftls-model=local-exec -mllvm -x86-speculative-load-hardening")
 
 set(ENCLAVE_CFLAGS_GCC
-    "-nostdinc -m64 -fPIE")
+    "-nostdinc -m64 -fPIE -ftls-model=local-exec")
 
 ##==============================================================================
 ##

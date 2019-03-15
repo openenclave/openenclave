@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for thread local variables
    - Both GNU __thread and C++11 thread_local
    - Both hardware and simulation mode
-   - Local-Exec and Initial-Exec thread-local storage models
+   - Enclaves are compiled using local-exec thread-local model (-ftls-model=local-exec)
 - Added `oe_get_public_key` and `oe_get_public_key_by_policy` host functions,
   which allow the host to get a public key derived from an enclave's identity.
 - Added v2 versions of the following APIs that instead of passing in buffers now

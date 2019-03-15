@@ -63,9 +63,11 @@ int main(int argc, const char* argv[])
 
 // There are originally 7 exported thread-local variables. Since we
 // are compiling with -fPIE, the relocations for these thread-locals
-// are optimized to three.
+// are optimized to three. Furthermore, compiling with
+// -ftls-model=local-exec optimizes away all these relocations.
 #if __linux__
-        OE_TEST(num_thread_local_relocs == 3);
+        OE_TEST(num_thread_local_relocs == 0);
+
 #else
 // If the host is Windows, we are locking down the case where
 // the enclave was created on Windows as well. LLVM's ld (ld.lld)
