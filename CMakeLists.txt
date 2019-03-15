@@ -217,3 +217,8 @@ if (UNIX)
   add_subdirectory(pkgconfig)
   add_subdirectory(samples)
 endif()
+
+# Configure all the CPACK settings. This must be last because the
+# file calls include(CPack), which needs to be at the end for CPack
+# to pick up all component information.
+include(cpack_settings)

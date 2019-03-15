@@ -39,30 +39,21 @@ write_basic_package_version_file(
 install(
   FILES ${CMAKE_BINARY_DIR}/cmake/openenclave-config.cmake
   ${CMAKE_BINARY_DIR}/cmake/openenclave-config-version.cmake
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
+  COMPONENT OEQUOTE)
 install(
   EXPORT openenclave-targets
   NAMESPACE openenclave::
   # Note that this is used in `openenclaverc` to set the path for
   # users of the SDK and so must remain consistent.
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
-  FILE openenclave-targets.cmake)
+  FILE openenclave-targets.cmake
+  COMPONENT OEQUOTE)
 install(
   FILES ${PROJECT_SOURCE_DIR}/cmake/sdk_cmake_targets_readme.md
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
-  RENAME README.md)
-
-# CPack package handling
-include(InstallRequiredSystemLibraries)
-set(CPACK_PACKAGE_NAME "open-enclave")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Open Enclave SDK")
-set(CPACK_PACKAGE_CONTACT "openenclave@microsoft.com")
-set(CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_SOURCE_DIR}/README.md")
-set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE")
-set(CPACK_PACKAGE_VERSION ${OE_VERSION})
-set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libsgx-enclave-common (>=2.3.100.46354-1), libsgx-enclave-common-dev (>=2.3.100.0-1), libsgx-dcap-ql (>=1.0.100.46460-1.0), libsgx-dcap-ql-dev (>=1.0.100.46460-1.0), pkg-config")
-include(CPack)
+  RENAME README.md
+  COMPONENT OEQUOTE)
 
 # Generate the openenclaverc script.
 configure_file(
@@ -74,4 +65,5 @@ configure_file(
 install(FILES
     ${CMAKE_BINARY_DIR}/output/share/openenclave/openenclaverc
     DESTINATION
-    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/openenclave")
+    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/openenclave"
+    COMPONENT OEQUOTE)

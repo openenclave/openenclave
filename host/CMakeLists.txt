@@ -195,6 +195,7 @@ endif ()
 
 # Install targets
 install(TARGETS oehost EXPORT openenclave-targets
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host)
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host
+  COMPONENT OEQUOTE)
 
 install(TARGETS oehostapp EXPORT openenclave-targets)
