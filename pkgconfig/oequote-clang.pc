@@ -1,0 +1,14 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+prefix=@PREFIX@
+exec_prefix=${prefix}
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+
+Name: Open Enclave
+Description: Open Enclave clang flags and libraries for building hosts.
+Version: @OE_VERSION@
+Requires: openssl
+Cflags: @HOST_CFLAGS_CLANG@ @HOST_INCLUDES@
+Libs: @HOST_QUOTE_CLIBS@

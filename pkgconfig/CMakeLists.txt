@@ -80,8 +80,10 @@ if(USE_LIBSGX)
     set(SGX_LIBS "-lsgx_enclave_common -lsgx_dcap_ql -lsgx_urts")
 endif()
 
-set(HOST_CLIBS "-rdynamic -L\${libdir}/openenclave/host -loehost -ldl -lpthread ${SGX_LIBS}")
+set(HOST_QUOTE_CLIBS "-rdynamic -L\${libdir}/openenclave/host -loehost -ldl -lpthread")
+set(HOST_CLIBS "${HOST_QUOTE_LIBS} ${SGX_LIBS}")
 
+set(HOST_QUOTE_CXXLIBS "${HOST_QUOTE_CLIBS}")
 set(HOST_CXXLIBS "${HOST_CLIBS}")
 
 ##==============================================================================
@@ -150,6 +152,40 @@ install(FILES
 
 ##==============================================================================
 ##
+## oequote-gcc.pc:
+##
+##==============================================================================
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/oequote-gcc.pc
+    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oequote-gcc.pc
+    @ONLY)
+
+install(FILES
+    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oequote-gcc.pc
+    DESTINATION
+    "${CMAKE_INSTALL_DATADIR}/pkgconfig"
+    COMPONENT OEQUOTE)
+
+##==============================================================================
+##
+## oequote-g++.pc:
+##
+##==============================================================================
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/oequote-g++.pc
+    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oequote-g++.pc
+    @ONLY)
+
+install(FILES
+    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oequote-g++.pc
+    DESTINATION
+    "${CMAKE_INSTALL_DATADIR}/pkgconfig"
+    COMPONENT OEQUOTE)
+
+##==============================================================================
+##
 ## oeenclave-clang.pc:
 ##
 ##==============================================================================
@@ -211,6 +247,40 @@ install(FILES
     ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-clang++.pc
     DESTINATION
     "${CMAKE_INSTALL_DATADIR}/pkgconfig")
+
+##==============================================================================
+##
+## oequote-clang.pc:
+##
+##==============================================================================
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/oequote-clang.pc
+    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oequote-clang.pc
+    @ONLY)
+
+install(FILES
+    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oequote-clang.pc
+    DESTINATION
+    "${CMAKE_INSTALL_DATADIR}/pkgconfig"
+    COMPONENT OEQUOTE)
+
+##==============================================================================
+##
+## oequote-clang++.pc:
+##
+##==============================================================================
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/oequote-clang++.pc
+    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oequote-clang++.pc
+    @ONLY)
+
+install(FILES
+    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oequote-clang++.pc
+    DESTINATION
+    "${CMAKE_INSTALL_DATADIR}/pkgconfig"
+    COMPONENT OEQUOTE)
 
 ##==============================================================================
 ##
