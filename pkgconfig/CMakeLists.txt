@@ -81,7 +81,7 @@ if(USE_LIBSGX)
 endif()
 
 set(HOST_QUOTE_CLIBS "-rdynamic -L\${libdir}/openenclave/host -loehost -ldl -lpthread")
-set(HOST_CLIBS "${HOST_QUOTE_LIBS} ${SGX_LIBS}")
+set(HOST_CLIBS "${HOST_QUOTE_CLIBS} ${SGX_LIBS}")
 
 set(HOST_QUOTE_CXXLIBS "${HOST_QUOTE_CLIBS}")
 set(HOST_CXXLIBS "${HOST_CLIBS}")
