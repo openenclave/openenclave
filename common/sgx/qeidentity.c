@@ -57,17 +57,18 @@ oe_result_t oe_enforce_qe_identity(sgx_report_body_t* qe_report_body)
         // enclave's mrsigner.
         if (!oe_constant_time_mem_equal(
                 qe_report_body->mrsigner, g_qe_mrsigner, sizeof(g_qe_mrsigner)))
-            OE_RAISE_MSG(OE_VERIFY_FAILED, "mrsigner mismatch");
+            OE_RAISE_MSG(OE_VERIFY_FAILED, "mrsigner mismatch", NULL);
 
         if (qe_report_body->isvprodid != g_qe_isvprodid)
-            OE_RAISE_MSG(OE_VERIFY_FAILED, "isvprodid mismatch");
+            OE_RAISE_MSG(OE_VERIFY_FAILED, "isvprodid mismatch", NULL);
 
         if (qe_report_body->isvsvn < g_qeisvsvn)
-            OE_RAISE_MSG(OE_VERIFY_FAILED, "isvsvn is out-of-date");
+            OE_RAISE_MSG(OE_VERIFY_FAILED, "isvsvn is out-of-date", NULL);
 
         // Ensure that the QE is not a debug supporting enclave.
         if (qe_report_body->attributes.flags & SGX_FLAGS_DEBUG)
-            OE_RAISE_MSG(OE_VERIFY_FAILED, "QE has SGX_FLAGS_DEBUG set!!");
+            OE_RAISE_MSG(
+                OE_VERIFY_FAILED, "QE has SGX_FLAGS_DEBUG set!!", NULL);
 
         result = OE_OK;
         goto done;
