@@ -46,7 +46,7 @@ foreach (SAMPLE data-sealing file-encryptor helloworld local_attestation remote_
   if (${SAMPLE} MATCHES "(file-encryptor|helloworld)")
     # Simulation tests
     execute_process(
-      COMMAND ${CMAKE_COMMAND} --build ${SAMPLE_BUILD_DIR} --target simulate_run
+      COMMAND ${CMAKE_COMMAND} --build ${SAMPLE_BUILD_DIR} --target simulate
       RESULT_VARIABLE TEST_RESULT)
   endif()
 

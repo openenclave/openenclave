@@ -28,6 +28,6 @@ if (NOT DEFINED $ENV{OE_SIMULATION})
     COMMAND helloworld_host ${CMAKE_BINARY_DIR}/enc/enclave.signed)
 endif ()
 
-add_custom_target(simulate_run
+add_custom_target(simulate
   DEPENDS helloworld_host ${CMAKE_BINARY_DIR}/enc/enclave.signed
   COMMAND helloworld_host ${CMAKE_BINARY_DIR}/enc/enclave.signed --simulate)

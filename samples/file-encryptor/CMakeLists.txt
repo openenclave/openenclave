@@ -28,6 +28,6 @@ if (NOT DEFINED $ENV{OE_SIMULATION})
     COMMAND file-encryptor_host ${CMAKE_CURRENT_SOURCE_DIR}/testfile ${CMAKE_BINARY_DIR}/enc/enclave.signed)
 endif ()
 
-add_custom_target(simulate_run
+add_custom_target(simulate
   DEPENDS file-encryptor_host ${CMAKE_BINARY_DIR}/enc/enclave.signed
   COMMAND file-encryptor_host ${CMAKE_CURRENT_SOURCE_DIR}/testfile ${CMAKE_BINARY_DIR}/enc/enclave.signed --simulate)
