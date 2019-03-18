@@ -24,30 +24,20 @@ add_custom_command(OUTPUT private_b.pem public_b.pem
   COMMAND openssl genrsa -out private_b.pem -3 3072
   COMMAND openssl rsa -in private_b.pem -pubout -out public_b.pem)
 
-# Generate header for A
-add_custom_command(OUTPUT enc2/enc1_pubkey.h
-  DEPENDS ${CMAKE_BINARY_DIR}/public_a.pem
-  COMMAND chmod u+x ${CMAKE_SOURCE_DIR}/gen_pubkey_header.sh
-  COMMAND ${CMAKE_SOURCE_DIR}/gen_pubkey_header.sh ${CMAKE_BINARY_DIR}/enc2/enc1_pubkey.h ${CMAKE_BINARY_DIR}/public_a.pem)
-
-# Generate header for B
-add_custom_command(OUTPUT enc1/enc2_pubkey.h
-  DEPENDS ${CMAKE_BINARY_DIR}/public_b.pem
-  COMMAND chmod u+x ${CMAKE_SOURCE_DIR}/gen_pubkey_header.sh
-  COMMAND ${CMAKE_SOURCE_DIR}/gen_pubkey_header.sh ${CMAKE_BINARY_DIR}/enc1/enc2_pubkey.h ${CMAKE_BINARY_DIR}/public_b.pem)
-
 # Sign enclave A with key A
 add_custom_command(OUTPUT enc1/enclave_a.signed
-  DEPENDS ${CMAKE_BINARY_DIR}/private_a.pem ${CMAKE_BINARY_DIR}/enc2/enc1_pubkey.h
+  DEPENDS ${CMAKE_BINARY_DIR}/private_a.pem
   COMMAND openenclave::oesign sign $<TARGET_FILE:enclave_a> ${CMAKE_SOURCE_DIR}/enc1/enc.conf private_a.pem)
 
 # Sign enclave B with key B
 add_custom_command(OUTPUT enc2/enclave_b.signed
-  DEPENDS ${CMAKE_BINARY_DIR}/private_b.pem ${CMAKE_BINARY_DIR}/enc1/enc2_pubkey.h
+  DEPENDS ${CMAKE_BINARY_DIR}/private_b.pem
   COMMAND openenclave::oesign sign $<TARGET_FILE:enclave_b> ${CMAKE_SOURCE_DIR}/enc2/enc.conf private_b.pem)
 
-add_custom_target(local_attestation_headers ALL DEPENDS ${CMAKE_BINARY_DIR}/enc2/enc1_pubkey.h ${CMAKE_BINARY_DIR}/enc1/enc2_pubkey.h)
+# The following is needed to make enclaves aware about the keys
+add_custom_target(public_key_a DEPENDS public_a.pem)
+add_custom_target(public_key_b DEPENDS public_b.pem)
 
 add_custom_target(run
-  DEPENDS local_attestation_host ${CMAKE_BINARY_DIR}/enc1/enclave_a.signed ${CMAKE_BINARY_DIR}/enc2/enclave_b.signed local_attestation_headers
+  DEPENDS local_attestation_host ${CMAKE_BINARY_DIR}/enc1/enclave_a.signed ${CMAKE_BINARY_DIR}/enc2/enclave_b.signed
   COMMAND local_attestation_host ${CMAKE_BINARY_DIR}/enc1/enclave_a.signed ${CMAKE_BINARY_DIR}/enc2/enclave_b.signed)
