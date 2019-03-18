@@ -41,7 +41,6 @@ public.pem: private.pem
 # a malicious host might change it. So, we would need to load a certicate
 # that contains the expected public key that is signed by a trusted CA.
 genkey: public.pem
-	chmod u+x ../gen_pubkey_header.sh
 	../gen_pubkey_header.sh ../enc2/enc1_pubkey.h $<
 
 build:

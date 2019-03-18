@@ -4,7 +4,6 @@
 # Generate header needed by other enclaves for attestation
 add_custom_command(OUTPUT enc1_pubkey.h
   DEPENDS public_key_a
-  COMMAND chmod u+x ${CMAKE_SOURCE_DIR}/gen_pubkey_header.sh
   COMMAND ${CMAKE_SOURCE_DIR}/gen_pubkey_header.sh ${CMAKE_BINARY_DIR}/enc2/enc1_pubkey.h ${CMAKE_BINARY_DIR}/public_a.pem)
 
 add_custom_target(enc1_pubkey_h DEPENDS enc1_pubkey.h)

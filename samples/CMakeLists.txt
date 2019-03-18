@@ -3,7 +3,8 @@
 
 if (USE_LIBSGX)
   install(DIRECTORY remote_attestation local_attestation
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
+    USE_SOURCE_PERMISSIONS)
 endif ()
 
 install(DIRECTORY helloworld file-encryptor data-sealing
