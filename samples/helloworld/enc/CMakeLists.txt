@@ -11,4 +11,4 @@ target_compile_definitions(enclave PUBLIC OE_API_VERSION=2)
 
 target_include_directories(enclave PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(enclave openenclave::oeenclave openenclave::oelibcxx)
+target_link_libraries(enclave openenclave::oeenclave openenclave::oelibc)
