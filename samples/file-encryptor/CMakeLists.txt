@@ -22,7 +22,7 @@ add_custom_command(OUTPUT enc/enclave.signed
   DEPENDS ${CMAKE_BINARY_DIR}/private.pem
   COMMAND openenclave::oesign sign $<TARGET_FILE:enclave> ${CMAKE_SOURCE_DIR}/enc/file-encryptor.conf private.pem)
 
-if (NOT DEFINED $ENV{OE_SIMULATION})
+if ((NOT DEFINED ENV{OE_SIMULATION}) OR (NOT $ENV{OE_SIMULATION}))
   add_custom_target(run
     DEPENDS file-encryptor_host ${CMAKE_BINARY_DIR}/enc/enclave.signed
     COMMAND file-encryptor_host ${CMAKE_CURRENT_SOURCE_DIR}/testfile ${CMAKE_BINARY_DIR}/enc/enclave.signed)

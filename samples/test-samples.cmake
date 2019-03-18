@@ -6,11 +6,9 @@
 #
 #     cmake -DSOURCE_DIR=~/openenclave -DBUILD_DIR=~/openenclave/build -DPREFIX_DIR=/opt/openenclave -P ~/openenclave/samples/test-samples.cmake
 
-# The samples cannot run in simulation mode.
 if ($ENV{OE_SIMULATION})
-  message(WARNING "Samples tests skipped due to OE_SIMULATION=$ENV{OE_SIMULATION}!")
+  message(WARNING "Running only sample simulation tests due to OE_SIMULATION=$ENV{OE_SIMULATION}!")
   # This is not a failure condition, so we return with a success status.
-  return()
 endif ()
 
 # Install the SDK from current build to a known location in the build tree.
@@ -37,7 +35,7 @@ foreach (SAMPLE data-sealing file-encryptor helloworld local_attestation remote_
     COMMAND ${CMAKE_COMMAND} --build ${SOURCE_DIR}/${SAMPLE}
     WORKING_DIRECTORY ${SAMPLE_BUILD_DIR})
 
-  if (NOT DEFINED $ENV{OE_SIMULATION})
+  if ((NOT DEFINED ENV{OE_SIMULATION}) OR (NOT $ENV{OE_SIMULATION}))
     execute_process(
       COMMAND ${CMAKE_COMMAND} --build ${SAMPLE_BUILD_DIR} --target run
       RESULT_VARIABLE TEST_RESULT)
