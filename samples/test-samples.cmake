@@ -46,7 +46,7 @@ foreach (SAMPLE data-sealing file-encryptor helloworld local_attestation remote_
     # so we test that additional scenario here.
     execute_process(
       COMMAND ${CMAKE_COMMAND} --build ${SAMPLE_BUILD_DIR} --target simulate
-      RESULT_VARIABLE TEST_RESULT)
+      RESULT_VARIABLE TEST_SIMULATE_RESULT)
   endif()
 
   # The prior common cannot succeed unless all commands before also
@@ -54,7 +54,7 @@ foreach (SAMPLE data-sealing file-encryptor helloworld local_attestation remote_
   #
   # TODO: An unfortunate side-effect of this placement is that a
   # failed sample will cause the rest of the samples to be skipped.
-  if (TEST_RESULT)
+  if (TEST_RESULT OR TEST_SIMULATE_RESULT)
     message(FATAL_ERROR "Samples test '${SAMPLE}' failed!")
   endif ()
 
