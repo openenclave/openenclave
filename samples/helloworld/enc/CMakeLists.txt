@@ -9,6 +9,7 @@ add_executable(enclave enc.c ${CMAKE_CURRENT_BINARY_DIR}/helloworld_t.c)
 
 target_compile_definitions(enclave PUBLIC OE_API_VERSION=2)
 
-target_include_directories(enclave PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+# Need for the generated file helloworld_t.h
+target_include_directories(enclave PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 target_link_libraries(enclave openenclave::oeenclave openenclave::oelibc)
