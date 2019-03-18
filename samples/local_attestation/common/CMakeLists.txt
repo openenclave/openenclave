@@ -5,7 +5,7 @@
 add_custom_command(OUTPUT localattestation_t.h localattestation_t.c
   COMMAND openenclave::oeedger8r --trusted ${CMAKE_SOURCE_DIR}/localattestation.edl)
 
-# Create a library common to each of our three enclaves.
+# Create a library common to each of our two enclaves.
 add_library(common STATIC attestation.cpp crypto.cpp dispatcher.cpp ${CMAKE_CURRENT_BINARY_DIR}/localattestation_t.c)
 target_compile_definitions(common PUBLIC OE_API_VERSION=2)
 target_link_libraries(common PUBLIC
