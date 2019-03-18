@@ -19,7 +19,6 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E env DESTDIR=${BUILD_DIR}/install ${C
 # The prefix is appended to the value given to DESTDIR, e.g. build/install/opt/openenclave/...
 set(INSTALL_DIR ${BUILD_DIR}/install${PREFIX_DIR})
 
-# TODO: Add the rest of the samples.
 foreach (SAMPLE data-sealing file-encryptor helloworld local_attestation remote_attestation)
   set(SAMPLE_BUILD_DIR ${BUILD_DIR}/samples/${SAMPLE})
   set(SAMPLE_SOURCE_DIR ${INSTALL_DIR}/share/openenclave/samples/${SAMPLE})
