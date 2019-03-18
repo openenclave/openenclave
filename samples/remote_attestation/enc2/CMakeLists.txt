@@ -1,6 +1,16 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+# Generate header needed by other enclaves for attestation
+add_custom_command(OUTPUT enc2_pubkey.h
+  DEPENDS public_key_b
+  COMMAND chmod u+x ${CMAKE_SOURCE_DIR}/gen_pubkey_header.sh
+  COMMAND ${CMAKE_SOURCE_DIR}/gen_pubkey_header.sh ${CMAKE_BINARY_DIR}/enc1/enc2_pubkey.h ${CMAKE_BINARY_DIR}/public_b.pem)
+
+add_custom_target(enc2_pubkey_h DEPENDS enc2_pubkey.h)
+add_custom_target(key_info_b DEPENDS public_key_b enc1_pubkey_h)
+
 add_executable(enclave_b ecalls.cpp)
+add_dependencies(enclave_b key_info_b)
 target_link_libraries(enclave_b common)
 target_include_directories(enclave_b PRIVATE ${CMAKE_BINARY_DIR}/enc2)
