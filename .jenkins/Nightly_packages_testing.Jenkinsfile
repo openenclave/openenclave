@@ -1,51 +1,13 @@
-import hudson.slaves.*
-import hudson.model.*
+@Library("OpenEnclaveCommon") _
+oe = new jenkins.common.Openenclave()
 
-env.XENIAL_RG = "oe-deb-test-${BUILD_NUMBER}-1604"
-env.BIONIC_RG = "oe-deb-test-${BUILD_NUMBER}-1804"
-
-String dockerBuildArgs(String... args) {
-    String argumentString = ""
-    for(arg in args) {
-        argumentString += " --build-arg ${arg}"
-    }
-    return argumentString
-}
-
-def dockerImage(String tag, String dockerfile = ".jenkins/Dockerfile", String buildArgs = "") {
-    checkout scm
-    return docker.build(tag, "${buildArgs} -f ${dockerfile} .")
-}
-
-def azureEnvironment(String task) {
-    node("nonSGX") {
-        cleanWs()
-        checkout scm
-        String buildArgs = dockerBuildArgs("UID=\$(id -u)",
-                                           "GID=\$(id -g)",
-                                           "UNAME=\$(id -un)",
-                                           "GNAME=\$(id -gn)")
-
-        dockerImage("oetools-deploy", ".jenkins/Dockerfile.deploy", buildArgs).inside {
-            timeout(60) {
-                withCredentials([usernamePassword(credentialsId: 'SERVICE_PRINCIPAL_OSTCLAB',
-                                                  passwordVariable: 'SERVICE_PRINCIPAL_PASSWORD',
-                                                  usernameVariable: 'SERVICE_PRINCIPAL_ID'),
-                                 string(credentialsId: 'OSCTLabSubID', variable: 'SUBSCRIPTION_ID'),
-                                 string(credentialsId: 'TenantID', variable: 'TENANT_ID')]) {
-                    dir('.jenkins/provision') {
-                        sh "${task}"
-                    }
-                }
-            }
-        }
-    }
-}
+XENIAL_RG = "oe-deb-test-${BUILD_NUMBER}-1604"
+BIONIC_RG = "oe-deb-test-${BUILD_NUMBER}-1804"
 
 def ACCDeployVM(String agent_name, String agent_type, String region, String resource_group) {
     stage("Deploy ${agent_name}") {
         withEnv(["REGION=${region}", "RESOURCE_GROUP=${resource_group}", "AGENT_NAME=${agent_name}", "AGENT_TYPE=${agent_type}"]) {
-            azureEnvironment("./deploy-agent.sh")
+            oe.azureEnvironment("./deploy-agent.sh")
         }
     }
 }
@@ -68,30 +30,17 @@ def AccDebTesting(String version, String region, String deb_url) {
         azureuser@oe-deb-test-${BUILD_NUMBER}-${version}.${region}.cloudapp.azure.com '${test_deb_script}' """
 
     stage("OE Nightly Package Testing ${version}") {
-        timeout(25) {
-            azureEnvironment("${script}")
-        }
-    }
-}
-
-def deleteRG() {
-    stage("Delete the oe-deb-test resource groups") {
-        withEnv(["RESOURCE_GROUP=${env.XENIAL_RG}"]) {
-            azureEnvironment("./cleanup.sh")
-        }
-        withEnv(["RESOURCE_GROUP=${env.BIONIC_RG}"]) {
-            azureEnvironment("./cleanup.sh")
-        }
+        oe.azureEnvironment("${script}")
     }
 }
 
 try {
-    ACCDeployVM("oe-deb-test-${BUILD_NUMBER}-1604", "xenial", "eastus", "${env.XENIAL_RG}")
-    ACCDeployVM("oe-deb-test-${BUILD_NUMBER}-1804", "bionic", "westeurope", "${env.BIONIC_RG}")
+    parallel "Deploy Ubuntu 16.04" :    { ACCDeployVM(XENIAL_RG, "xenial", "eastus", XENIAL_RG) },
+             "Deploy Ubuntu 18.04" :    { ACCDeployVM(BIONIC_RG, "bionic", "westeurope", BIONIC_RG) }
 
-    parallel "OE 16.04 Testing" :          { AccDebTesting("1604", "eastus", "${OE_1604_DEB_URL}") },
-             "OE 18.04 Testing" :          { AccDebTesting("1804", "westeurope", "${OE_1804_DEB_URL}") }
+    parallel "OE 16.04 Testing" :       { AccDebTesting("1604", "eastus", "${OE_1604_DEB_URL}") },
+             "OE 18.04 Testing" :       { AccDebTesting("1804", "westeurope", "${OE_1804_DEB_URL}") }
 
 } finally {
-    deleteRG()
+    oe.deleteRG([XENIAL_RG, BIONIC_RG])
 }
