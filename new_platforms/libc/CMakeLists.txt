@@ -1,0 +1,133 @@
+if(NOT TZ)
+    message(FATAL_ERROR "The custom C runtime library is only supported for Linux + ARM TrustZone.")
+endif()
+
+set(ARCH "aarch64")
+
+# Override compiler inside TA's.
+set(CMAKE_ASM_COMPILER ${OE_TA_TOOLCHAIN_PREFIX}gcc)
+set(CMAKE_C_COMPILER   ${OE_TA_TOOLCHAIN_PREFIX}gcc)
+set(CMAKE_CXX_COMPILER ${OE_TA_TOOLCHAIN_PREFIX}g++)
+
+# Path to Open Enclave proper.
+set(OE_PATH      ${CMAKE_CURRENT_LIST_DIR}/../..)
+
+# Path to the C runtime library (musl).
+set(MUSL_OE      ${OE_PATH}/3rdparty/musl)
+set(MUSL_PATCHES ${MUSL_OE}/patches)
+set(MUSL_SRC     ${MUSL_OE}/musl)
+set(MUSL_OUT     ${CMAKE_CURRENT_BINARY_DIR}/musl)
+set(MUSL_OUT_INC ${MUSL_OUT}/include)
+set(MUSL_CFLAGS  "-fPIC -DSYSCALL_NO_INLINE")
+
+# Path to the memory allocated (dlmalloc).
+set(DLMALLOC_OE  ${OE_PATH}/3rdparty/dlmalloc)
+set(DLMALLOC_SRC ${DLMALLOC_OE}/dlmalloc)
+
+# Path to OP-TEE OS.
+set(OPTEE_SRC    ${OE_PATH}/3rdparty/optee_os)
+
+# Path to OP-TEE's user-mode library (libutee).
+set(LIBUTEE_SRC  ${OPTEE_SRC}/lib/libutee)
+set(LIBUTEE_INC  ${LIBUTEE_SRC}/include)
+
+# Path to OP-TEE's user-mode utilities (libutils).
+set(LIBUTILS_SRC ${OPTEE_SRC}/lib/libutils)
+
+# Path to OP-TEE's user-mode C runtime library (part of libutils).
+set(LIBUTILS_ISOC_INC ${LIBUTILS_SRC}/isoc/include)
+
+# Path to OP-TEE's user-mode C runtime library extenions (part of libutils).
+set(LIBUTILS_EXT_SRC ${LIBUTILS_SRC}/ext)
+set(LIBUTILS_EXT_INC ${LIBUTILS_EXT_SRC}/include)
+
+# Path to OP-TEE's user-mode math library (libmpa).
+set(LIBMPA_SRC   ${OPTEE_SRC}/lib/libmpa)
+set(LIBMPA_INC   ${LIBMPA_SRC}/include)
+
+# Source listings (uses the variables defined above).
+include(${CMAKE_CURRENT_LIST_DIR}/libc.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/libutee.cmake)
+
+message(STATUS "MUSL_SRC = ${MUSL_SRC}")
+message(STATUS "MUSL_OUT = ${MUSL_OUT}")
+
+# Set up musl.
+include(ExternalProject)
+ExternalProject_Add(musl
+    DOWNLOAD_COMMAND
+        ${CMAKE_COMMAND} -E copy_directory
+        ${MUSL_SRC}
+        ${MUSL_OUT}
+    PATCH_COMMAND
+        COMMAND ${CMAKE_COMMAND} -E copy
+            ${MUSL_OUT}/arch/${ARCH}/syscall_arch.h
+            ${MUSL_OUT}/arch/${ARCH}/__syscall_arch.h
+        COMMAND ${CMAKE_COMMAND} -E copy
+            ${MUSL_PATCHES}/syscall_arch.h
+            ${MUSL_OUT}/arch/${ARCH}/syscall_arch.h
+    CONFIGURE_COMMAND
+        ${CMAKE_COMMAND} -E chdir ${MUSL_OUT}
+        sh -x ./configure
+            --includedir=${MUSL_OUT_INC}
+            CFLAGS=${MUSL_CFLAGS}
+            CC=${CMAKE_C_COMPILER}
+            CXX=${CMAKE_CXX_COMPILER}
+    BUILD_COMMAND
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${MUSL_OUT}/include
+            ${MUSL_OUT_INC}
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${MUSL_OUT}/arch/generic/bits
+            ${MUSL_OUT_INC}/bits
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${MUSL_OUT}/arch/${ARCH}/bits
+            ${MUSL_OUT_INC}/bits
+        COMMAND sh -c
+            "sed -f ${MUSL_OUT}/tools/mkalltypes.sed ${MUSL_OUT}/arch/${ARCH}/bits/alltypes.h.in ${MUSL_OUT}/include/alltypes.h.in > ${MUSL_OUT_INC}/bits/alltypes.h"
+        COMMAND ${CMAKE_COMMAND} -E copy
+            ${MUSL_OUT}/arch/${ARCH}/bits/syscall.h.in
+            ${MUSL_OUT_INC}/bits/syscall.h
+        COMMAND sh -c
+            "sed -n -e s/__NR_/SYS_/p < ${MUSL_OUT}/arch/${ARCH}/bits/syscall.h.in >> ${MUSL_OUT_INC}/bits/syscall.h"
+    BUILD_BYPRODUCTS
+        ${MUSL_OUT_INC}
+        ${MUSL_OUT}
+    INSTALL_COMMAND "")
+
+# Set up C runtime library.
+add_library(libcasm OBJECT ${LIBC_S_SRC})
+add_dependencies(libcasm musl)
+target_compile_options(libcasm PRIVATE ${OE_TA_S_FLAGS})
+
+add_library(libc STATIC ${LIBC_C_SRC})
+set_property(TARGET libc PROPERTY C_STANDARD 99)
+target_compile_options(libc PRIVATE ${OE_TA_C_FLAGS})
+target_include_directories(libc PRIVATE
+    ${MUSL_OUT}/src/include
+    ${MUSL_OUT}/src/internal
+    ${MUSL_OUT}/arch/${ARCH}
+    ${MUSL_OUT_INC})
+target_link_libraries(libc libcasm)
+
+# Set up libutee.
+add_library(libuteeasm OBJECT ${LIBUTEE_S_SRC})
+target_compile_options(libuteeasm PRIVATE ${OE_TA_S_FLAGS})
+target_include_directories(libuteeasm PRIVATE
+    ${LIBUTEE_INC}
+    ${LIBUTILS_EXT_INC})
+
+add_library(libutee STATIC ${LIBUTEE_C_SRC})
+set_property(TARGET libutee PROPERTY C_STANDARD 99)
+target_compile_options(libutee PRIVATE ${OE_TA_C_FLAGS} -D_GNU_SOURCE)
+target_include_directories(libutee PRIVATE
+    ${MUSL_OUT}/src/include
+    ${MUSL_OUT}/src/internal
+    ${MUSL_OUT}/arch/${ARCH}
+    ${MUSL_OUT_INC}
+    ${LIBUTEE_SRC}
+    ${LIBUTEE_INC}
+    ${LIBUTILS_EXT_INC}
+    ${LIBUTILS_ISOC_INC}
+    ${LIBMPA_INC})
+target_link_libraries(libutee libuteeasm)

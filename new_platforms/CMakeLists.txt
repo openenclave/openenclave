@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
-project("Open Enclave SDK (New Platforms)" VERSION 0.1 LANGUAGES C CXX)
+project("Open Enclave SDK (New Platforms)" VERSION 0.1 LANGUAGES ASM C CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
@@ -193,6 +193,10 @@ if(UNIX AND TZ)
         FILES $<TARGET_FILE:teec>
         DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RENAME libteec.so)
+endif()
+
+if(TZ)
+    add_subdirectory(libc)
 endif()
 
 add_subdirectory(libsocket)
