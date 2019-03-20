@@ -57,8 +57,9 @@ set(LIBCXXRT_SRC ${LIBCXXRT_OE}/libcxxrt)
 
 # Source listings (uses the variables defined above).
 include(${CMAKE_CURRENT_LIST_DIR}/libc.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/libutee.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/libcxx.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/libcxxrt.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/libutee.cmake)
 
 # Set up musl.
 include(ExternalProject)
@@ -127,7 +128,9 @@ target_include_directories(libuteeasm PRIVATE
 
 add_library(libutee STATIC ${LIBUTEE_C_SRC})
 set_property(TARGET libutee PROPERTY C_STANDARD 99)
-target_compile_options(libutee PRIVATE ${OE_TA_C_FLAGS} -D_GNU_SOURCE)
+target_compile_options(libutee PRIVATE
+    ${OE_TA_C_FLAGS}
+    -D_GNU_SOURCE)
 target_include_directories(libutee PRIVATE
     ${MUSL_OUT}/src/include
     ${MUSL_OUT}/src/internal
@@ -157,7 +160,7 @@ ExternalProject_Add(libcxx_includes
     INSTALL_COMMAND "")
 
 add_library(libcxx STATIC ${LIBCXX_CXX_SRC})
-add_dependencies(libcxx libcxx_includes)
+add_dependencies(libcxx musl_includes libcxx_includes)
 target_compile_options(libcxx PRIVATE
     ${OE_TA_C_FLAGS}
     -DLIBCXXRT
@@ -174,3 +177,15 @@ target_include_directories(libcxx PRIVATE
     ${MUSL_OUT}/arch/${ARCH}
     ${MUSL_OUT_INC})
 target_link_libraries(libcxx libc)
+
+# Set up libcxxrt.
+add_library(libcxxrt STATIC ${LIBCXXRT_CXX_SRC})
+add_dependencies(libcxxrt musl_includes)
+target_compile_options(libcxxrt PRIVATE
+    ${OE_TA_C_FLAGS}
+    -D_GNU_SOURCE)
+target_include_directories(libcxxrt PRIVATE
+    ${MUSL_OUT}/src/include
+    ${MUSL_OUT}/src/internal
+    ${MUSL_OUT}/arch/${ARCH}
+    ${MUSL_OUT_INC})

@@ -1,4 +1,3 @@
-export OE_LOG_LEVEL=NONE
 test_command=$1
 expected_output=$2
 test_log=$3

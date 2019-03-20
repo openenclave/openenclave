@@ -10,9 +10,6 @@ set(CXXRT_SOURCES
     libelftc_dem_gnu3.c
    )
 
-# Ignore unused char variable in __cxa_call_unexpected function.
-set_property(SOURCE exception.cc PROPERTY COMPILE_FLAGS -Wno-unused-variable)
-
 add_definitions(-D_GNU_SOURCE)
 add_library(cxxrt-static STATIC ${CXXRT_SOURCES})
 add_library(cxxrt-shared SHARED ${CXXRT_SOURCES})
