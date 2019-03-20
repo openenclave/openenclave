@@ -33,6 +33,7 @@ if (ENABLE_REFMAN)
     # This list of files is explicit because we disable recursion.
     enclave.h
     host.h
+    host_verify.h
     bits/properties.h
     bits/report.h
     bits/result.h
