@@ -1,23 +1,68 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+# Function to set the proper compile definitions for the given target.
+function(set_host_compile_defs TARGET FLAGS)
+  target_compile_definitions(${TARGET}
+    PUBLIC
+    # NOTE: This definition is public to the rest of our project's
+    # targets, but should not yet be exposed to consumers of our
+    # package.
+    $<BUILD_INTERFACE:OE_API_VERSION=2>
+    PRIVATE
+    OE_BUILD_UNTRUSTED
+    OE_REPO_BRANCH_NAME="${GIT_BRANCH}"
+    OE_REPO_LAST_COMMIT="${GIT_COMMIT}")
+
+  if (USE_DEBUG_MALLOC)
+    target_compile_definitions(${TARGET} PRIVATE OE_USE_DEBUG_MALLOC)
+  endif ()
+
+  if (UNIX)
+    target_compile_options(${TARGET} PRIVATE
+      -Wno-attributes -Wmissing-prototypes -fPIC ${FLAGS})
+    target_compile_definitions(${TARGET} PRIVATE _GNU_SOURCE)
+  endif ()
+
+  if (CMAKE_C_COMPILER_ID MATCHES GNU)
+    target_compile_options(${TARGET} PRIVATE -Wjump-misses-init)
+  endif ()
+endfunction()
+
+# Function for creating a convenience library for host-app that need the
+# -rdynamic link flag.
+function(create_hostapp TARGETAPP TARGET)
+  add_library(${TARGETAPP} INTERFACE)
+
+  target_link_libraries(${TARGETAPP} INTERFACE ${TARGET})
+
+  if (UNIX)
+    target_link_libraries(${TARGETAPP} INTERFACE -rdynamic)
+  endif ()
+
+  install(TARGETS ${TARGETAPP} EXPORT openenclave-targets)
+endfunction()
+
 # OS specific but arch agnostic files.
 if (UNIX)
-  set(PLATFORM_SRC
-    ../common/asn1.c
+  set(PLATFORM_QUOTE_SRC
     ../common/cert.c
     crypto/openssl/asn1.c
     crypto/openssl/cert.c
     crypto/openssl/crl.c
     crypto/openssl/ec.c
-    crypto/openssl/hmac.c
     crypto/openssl/init.c
     crypto/openssl/key.c
-    crypto/openssl/random.c
     crypto/openssl/rsa.c
     linux/hostthread.c
-    linux/time.c
-    linux/windows.c)
+    linux/time.c)
+
+  set(PLATFORM_SRC
+    ../common/asn1.c
+    crypto/openssl/hmac.c
+    crypto/openssl/random.c
+    linux/windows.c
+    ${PLATFORM_QUOTE_SRC})
 elseif (WIN32)
   set(PLATFORM_SRC
     ../3rdparty/mbedtls/mbedtls/library/bignum.c
@@ -31,13 +76,19 @@ endif()
 
 # SGX specific files
 if (OE_SGX)
-  list(APPEND PLATFORM_SRC
+  set(NEW_QUOTE_SRC
     ../common/sgx/qeidentity.c
     ../common/sgx/quote.c
     ../common/sgx/report.c
     ../common/sgx/revocation.c
     ../common/sgx/sgxcertextensions.c
     ../common/sgx/tcbinfo.c
+     sgx/quote_verify.c
+     sgx/traceh.c)
+
+  list(APPEND PLATFORM_QUOTE_SRC ${NEW_QUOTE_SRC})
+
+  list(APPEND PLATFORM_SRC
     sgx/calls.c
     sgx/create.c
     sgx/elf.c
@@ -49,7 +100,6 @@ if (OE_SGX)
     sgx/loadpe.c
     sgx/ocalls.c
     sgx/quote.c
-    sgx/quote_verify.c
     sgx/registers.c
     sgx/report.c
     sgx/sgxload.c
@@ -57,10 +107,16 @@ if (OE_SGX)
     sgx/sgxquote.c
     sgx/sgxsign.c
     sgx/sgxtypes.c
-    sgx/traceh.c)
+    sgx/traceh_enclave.c
+    ${NEW_QUOTE_SRC})
 
   # OS specific as well.
   if (UNIX)
+    set(NEW_QUOTE_SRC
+      sgx/linux/sgxquoteprovider.c)
+
+    list(APPEND PLATFORM_QUOTE_SRC ${NEW_QUOTE_SRC})
+
     list(APPEND PLATFORM_SRC
       sgx/linux/aep.S
       sgx/linux/aesm.c
@@ -68,7 +124,7 @@ if (OE_SGX)
       sgx/linux/entersim.S
       sgx/linux/exception.c
       sgx/linux/sgxioctl.c
-      sgx/linux/sgxquoteprovider.c)
+      ${NEW_QUOTE_SRC})
   else()
     list(APPEND PLATFORM_SRC
       sgx/windows/aep.asm
@@ -86,7 +142,20 @@ elseif(OE_TRUSTZONE)
   set(PLATFORM_FLAGS "")
 endif()
 
-# Combine with all other non platform dependent files.
+set(NEW_QUOTE_SRC
+  ../common/datetime.c
+  ../common/safecrt.c
+  hexdump.c
+  result.c
+  crypto/sha.c)
+
+# Make quote verification library for Linux only
+if (UNIX)
+  add_library(oequote STATIC
+    ${PLATFORM_QUOTE_SRC}
+    ${NEW_QUOTE_SRC})
+endif()
+
 add_library(oehost STATIC
   ../common/datetime.c
   ../common/kdf.c
@@ -103,10 +172,12 @@ add_library(oehost STATIC
   strings.c
   tests.c
   crypto/sha.c
-  ${PLATFORM_SRC})
+  ${PLATFORM_SRC}
+  ${NEW_QUOTE_SRC})
 
 # Link libraries
 target_link_libraries(oehost PUBLIC oe_includes)
+target_link_libraries(oequote PUBLIC oe_includes)
 
 # TODO: Replace these with `find_package` and add as dependencies to
 # the CMake package.
@@ -124,6 +195,7 @@ find_package(Threads REQUIRED)
 
 if (UNIX)
   target_link_libraries(oehost PRIVATE crypto dl Threads::Threads)
+  target_link_libraries(oequote PRIVATE crypto dl Threads::Threads)
 elseif (WIN32)
   target_include_directories(oehost PRIVATE
     ${CMAKE_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
@@ -154,48 +226,23 @@ if (USE_LIBSGX)
 endif ()
 
 # Compile definitions and options
-target_compile_definitions(oehost
-  PUBLIC
-  # NOTE: This definition is public to the rest of our project's
-  # targets, but should not yet be exposed to consumers of our
-  # package.
-  $<BUILD_INTERFACE:OE_API_VERSION=2>
-  PRIVATE
-  OE_BUILD_UNTRUSTED
-  OE_REPO_BRANCH_NAME="${GIT_BRANCH}"
-  OE_REPO_LAST_COMMIT="${GIT_COMMIT}")
-
-if (USE_DEBUG_MALLOC)
-  target_compile_definitions(oehost PRIVATE OE_USE_DEBUG_MALLOC)
-endif ()
-
-if (UNIX)
-  target_compile_options(oehost PRIVATE
-    -Wno-attributes -Wmissing-prototypes -fPIC ${PLATFORM_FLAGS})
-  target_compile_definitions(oehost PRIVATE _GNU_SOURCE)
-endif ()
-
-if (CMAKE_C_COMPILER_ID MATCHES GNU)
-  target_compile_options(oehost PRIVATE -Wjump-misses-init)
-endif ()
+set_host_compile_defs(oehost ${PLATFORM_FLAGS})
+set_host_compile_defs(oequote ${PLATFORM_FLAGS})
 
 # TODO: Remove this hard coded output directory.
 set_property(TARGET oehost PROPERTY
   ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/host)
-
-# Convenience library for creating a host-app (that needs the
-# -rdynamic link flag).
-add_library(oehostapp INTERFACE)
-
-target_link_libraries(oehostapp INTERFACE oehost)
-
-if (UNIX)
-  target_link_libraries(oehostapp INTERFACE -rdynamic)
-endif ()
+set_property(TARGET oequote PROPERTY
+  ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/host)
 
 # Install targets
 install(TARGETS oehost EXPORT openenclave-targets
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host)
+
+install(TARGETS oequote EXPORT openenclave-targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host
   COMPONENT OEQUOTE)
 
-install(TARGETS oehostapp EXPORT openenclave-targets)
+# Create convenience libraries for apps that need the -rdynamic link flag.
+create_hostapp(oehostapp oehost)
+create_hostapp(oequoteapp oequote)

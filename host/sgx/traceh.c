@@ -21,7 +21,7 @@ static char* _log_level_strings[OE_LOG_LEVEL_MAX] =
 static oe_mutex _log_lock = OE_H_MUTEX_INITIALIZER;
 static const char* _log_file_name = NULL;
 static bool _log_creation_failed_before = false;
-static log_level_t _log_level = OE_LOG_LEVEL_ERROR;
+log_level_t _log_level = OE_LOG_LEVEL_ERROR;
 static bool _initialized = false;
 
 static log_level_t _env2log_level(void)
@@ -61,7 +61,7 @@ done:
     return level;
 }
 
-static void _initialize_log_config()
+void _initialize_log_config()
 {
     if (!_initialized)
     {
@@ -149,33 +149,6 @@ static void _log_session_header()
             oe_mutex_unlock(&_log_lock);
         }
     }
-}
-
-oe_result_t oe_log_enclave_init(oe_enclave_t* enclave)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    log_level_t level = _log_level;
-
-    _initialize_log_config();
-
-    // Populate arg fields.
-    oe_log_filter_t* arg = calloc(1, sizeof(oe_log_filter_t));
-    if (arg == NULL)
-    {
-        result = OE_OUT_OF_MEMORY;
-        goto done;
-    }
-    arg->path = enclave->path;
-    arg->path_len = strlen(enclave->path);
-    arg->level = level;
-    // Call enclave
-    result = oe_ecall(enclave, OE_ECALL_LOG_INIT, (uint64_t)arg, NULL);
-    if (result != OE_OK)
-        goto done;
-
-    result = OE_OK;
-done:
-    return result;
 }
 
 void oe_log(log_level_t level, const char* fmt, ...)
