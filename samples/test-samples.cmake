@@ -39,6 +39,9 @@ foreach (SAMPLE data-sealing file-encryptor helloworld local_attestation remote_
     execute_process(
       COMMAND ${CMAKE_COMMAND} --build ${SAMPLE_BUILD_DIR} --target run
       RESULT_VARIABLE TEST_RESULT)
+    if (TEST_RESULT)
+      message(FATAL_ERROR "Samples test '${SAMPLE}' failed!")
+    endif ()
   endif ()
 
   if (${SAMPLE} MATCHES "(file-encryptor|helloworld)")
@@ -47,16 +50,16 @@ foreach (SAMPLE data-sealing file-encryptor helloworld local_attestation remote_
     execute_process(
       COMMAND ${CMAKE_COMMAND} --build ${SAMPLE_BUILD_DIR} --target simulate
       RESULT_VARIABLE TEST_SIMULATE_RESULT)
+    if (TEST_SIMULATE_RESULT)
+      message(FATAL_ERROR "Samples test '${SAMPLE}' failed in simulation mode!")
+    endif ()
   endif()
 
   # The prior common cannot succeed unless all commands before also
-  # succeeded, so testing only the result of this is sufficient.
+  # succeeded, so testing only for the results is sufficient.
   #
-  # TODO: An unfortunate side-effect of this placement is that a
-  # failed sample will cause the rest of the samples to be skipped.
-  if (TEST_RESULT OR TEST_SIMULATE_RESULT)
-    message(FATAL_ERROR "Samples test '${SAMPLE}' failed!")
-  endif ()
+  # TODO: An unfortunate side-effect of using FATAL_ERROR and its placement
+  # is that a failed sample will cause the rest of the samples to be skipped.
 
   # TODO: Build the sample with GNU Make.
 endforeach ()
