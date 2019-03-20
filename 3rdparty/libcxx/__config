@@ -26,4 +26,8 @@ extern "C" unsigned int arc4random(void);
 # define _LIBCPP_USING_ARC4_RANDOM
 #endif
 
+#ifdef __FLT16_MANT_DIG__
+# undef __FLT16_MANT_DIG__
+#endif
+
 #endif /* __OPEN_ENCLAVE_LIBCXX_CONFIG */

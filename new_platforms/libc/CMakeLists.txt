@@ -45,16 +45,24 @@ set(LIBUTILS_EXT_INC ${LIBUTILS_EXT_SRC}/include)
 set(LIBMPA_SRC   ${OPTEE_SRC}/lib/libmpa)
 set(LIBMPA_INC   ${LIBMPA_SRC}/include)
 
+# Path to the C++ runtime library (libcxx).
+set(LIBCXX_OE      ${OE_PATH}/3rdparty/libcxx)
+set(LIBCXX_SRC     ${LIBCXX_OE}/libcxx)
+set(LIBCXX_OUT     ${CMAKE_CURRENT_BINARY_DIR}/libcxx)
+set(LIBCXX_OUT_INC ${LIBCXX_OUT}/include)
+
+# Path to the C++ ABI library (libcxxrt)
+set(LIBCXXRT_OE  ${OE_PATH}/3rdparty/libcxxrt)
+set(LIBCXXRT_SRC ${LIBCXXRT_OE}/libcxxrt)
+
 # Source listings (uses the variables defined above).
 include(${CMAKE_CURRENT_LIST_DIR}/libc.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/libutee.cmake)
-
-message(STATUS "MUSL_SRC = ${MUSL_SRC}")
-message(STATUS "MUSL_OUT = ${MUSL_OUT}")
+include(${CMAKE_CURRENT_LIST_DIR}/libcxx.cmake)
 
 # Set up musl.
 include(ExternalProject)
-ExternalProject_Add(musl
+ExternalProject_Add(musl_includes
     DOWNLOAD_COMMAND
         ${CMAKE_COMMAND} -E copy_directory
         ${MUSL_SRC}
@@ -97,7 +105,7 @@ ExternalProject_Add(musl
 
 # Set up C runtime library.
 add_library(libcasm OBJECT ${LIBC_S_SRC})
-add_dependencies(libcasm musl)
+add_dependencies(libcasm musl_includes)
 target_compile_options(libcasm PRIVATE ${OE_TA_S_FLAGS})
 
 add_library(libc STATIC ${LIBC_C_SRC})
@@ -131,3 +139,38 @@ target_include_directories(libutee PRIVATE
     ${LIBUTILS_ISOC_INC}
     ${LIBMPA_INC})
 target_link_libraries(libutee libuteeasm)
+
+# Set up libcxx.
+include (ExternalProject)
+ExternalProject_Add(libcxx_includes
+    DOWNLOAD_COMMAND ""
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${LIBCXX_SRC}/include ${LIBCXX_OUT_INC}
+        COMMAND ${CMAKE_COMMAND} -E copy
+            ${LIBCXX_SRC}/include/__config
+            ${LIBCXX_OUT_INC}/__config_original
+        COMMAND ${CMAKE_COMMAND} -E copy
+            ${LIBCXX_OE}/__config
+            ${LIBCXX_OUT_INC}/__config
+    INSTALL_COMMAND "")
+
+add_library(libcxx STATIC ${LIBCXX_CXX_SRC})
+add_dependencies(libcxx libcxx_includes)
+target_compile_options(libcxx PRIVATE
+    ${OE_TA_C_FLAGS}
+    -DLIBCXXRT
+    -D_LIBCPP_PROVIDES_DEFAULT_RUNE_TABLE
+    -D_LIBCPP_BUILDING_LIBRARY
+    -D_LIBCPP_HAS_NO_CXX14_CONSTEXPR
+    -D_LIBCPP_HAS_NO_THREADS)
+target_include_directories(libcxx PRIVATE
+    ${LIBCXX_OUT_INC}
+    ${LIBCXX_SRC}/src
+    ${LIBCXXRT_SRC}/src
+    ${MUSL_OUT}/src/include
+    ${MUSL_OUT}/src/internal
+    ${MUSL_OUT}/arch/${ARCH}
+    ${MUSL_OUT_INC})
+target_link_libraries(libcxx libc)

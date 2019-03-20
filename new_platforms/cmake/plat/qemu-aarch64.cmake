@@ -26,7 +26,7 @@ set(OE_TA_C_FLAGS_WARNINGS
     -Wno-conversion
     -Wno-unused-parameter
     -Wno-sign-compare
-    -Wno-jump-misses-init
+    #-Wno-jump-misses-init
     -Wno-maybe-uninitialized
     -Wno-unknown-pragmas
     -Wno-unused-but-set-variable
@@ -37,12 +37,16 @@ set(OE_TA_C_FLAGS_WARNINGS
 set(OE_TA_C_FLAGS_OPTIONS
     -mstrict-align
     -nostdinc
+    -nostdlib
+    -nodefaultlibs
+    -nostartfiles
     -fno-builtin-memcpy
     -fno-builtin-memset
     -ffreestanding
-    -fexcess-precision=standard
+    #-fexcess-precision=standard
     -frounding-math
     -fpie
+    -fPIC
     #-std=gnu99
     -include ${OE_TA_CONF})
 

@@ -1,0 +1,33 @@
+set(LIBCXX_CXX_SRC
+    ${LIBCXX_OE}/__dso_handle.cpp
+    ${LIBCXX_SRC}/src/algorithm.cpp
+    ${LIBCXX_SRC}/src/any.cpp
+    ${LIBCXX_SRC}/src/bind.cpp
+    ${LIBCXX_SRC}/src/chrono.cpp
+    #${LIBCXX_SRC}/src/condition_variable.cpp
+    ${LIBCXX_SRC}/src/debug.cpp
+    ${LIBCXX_SRC}/src/exception.cpp
+    ${LIBCXX_SRC}/src/functional.cpp
+    #${LIBCXX_SRC}/src/future.cpp
+    ${LIBCXX_SRC}/src/hash.cpp
+    ${LIBCXX_SRC}/src/ios.cpp
+    ${LIBCXX_SRC}/src/iostream.cpp
+    ${LIBCXX_SRC}/src/locale.cpp
+    ${LIBCXX_SRC}/src/memory.cpp
+    ${LIBCXX_SRC}/src/mutex.cpp
+    ${LIBCXX_SRC}/src/new.cpp
+    ${LIBCXX_SRC}/src/optional.cpp
+    ${LIBCXX_SRC}/src/random.cpp
+    ${LIBCXX_SRC}/src/regex.cpp
+    ${LIBCXX_SRC}/src/shared_mutex.cpp
+    ${LIBCXX_SRC}/src/stdexcept.cpp
+    ${LIBCXX_SRC}/src/string.cpp
+    ${LIBCXX_SRC}/src/strstream.cpp
+    ${LIBCXX_SRC}/src/system_error.cpp
+    ${LIBCXX_SRC}/src/thread.cpp
+    ${LIBCXX_SRC}/src/typeinfo.cpp
+    ${LIBCXX_SRC}/src/utility.cpp
+    ${LIBCXX_SRC}/src/valarray.cpp
+    ${LIBCXX_SRC}/src/variant.cpp
+    ${LIBCXX_SRC}/src/vector.cpp)
+set(LIBCXX_CXX_SRC ${LIBCXX_CXX_SRC} PARENT_SCOPE)
