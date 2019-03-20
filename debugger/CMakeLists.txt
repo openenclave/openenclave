@@ -17,5 +17,6 @@ set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX_BAK})
 # Patch oe-gdb script based on install location.
 configure_file(oe-gdb oe-gdb-for-install)
 
-# Install oe-gdb script upon install-time
-install (PROGRAMS ${CMAKE_BINARY_DIR}/debugger/oe-gdb-for-install DESTINATION ${CMAKE_INSTALL_BINDIR})
+# Install and rename oe-gdb-for-install
+install (PROGRAMS ${CMAKE_BINARY_DIR}/debugger/oe-gdb-for-install DESTINATION ${CMAKE_INSTALL_BINDIR}
+         RENAME oe-gdb)
