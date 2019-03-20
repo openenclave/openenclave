@@ -12,7 +12,7 @@ echo [CI] Downloading Emulated Environment
 CI_DIR=ci  # Matches name inside tarball.
 CI_ENV=OE-CI-Ubuntu-16.04-AARCH64
 
-# The tarball contains QEMU, a root FS and guest firmware (i.e. ATF, OP-TEE,
+# The tarball contains QEMU, a root FS and guest firmware (i.e., ATF, OP-TEE,
 # etc.).
 if [ ! -d $CI_DIR ]; then
     if [ ! -f $CI_ENV.tar.xz ]; then

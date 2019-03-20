@@ -25,7 +25,7 @@ int main(int argc, char** argv)
     uint32_t enclave_flags = OE_ENCLAVE_FLAG_SERIALIZE_ECALLS;
 
     if (argc != 3 && argc != 1) {
-        printf("Usage: SampleClientApp servername port\n\n");
+        printf("Usage: socketclient_host servername port\n\n");
         printf("    Acts as an echo client.\n");
         return 0;
     }

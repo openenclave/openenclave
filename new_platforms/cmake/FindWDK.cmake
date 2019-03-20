@@ -30,5 +30,7 @@ if(DEFINED WDK_PATH_TEST)
     unset(WDK_PATH_TEST)
 endif()
 
+set(WDK_PATH ${WDK_PATH} PARENT_SCOPE)
+
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(WDK REQUIRED_VARS WDK_PATH)

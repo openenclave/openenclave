@@ -31,5 +31,7 @@ if(NOT OEEDGER8R_PATH)
     endif()
 endif()
 
+set(OEEDGER8R_PATH ${OEEDGER8R_PATH} PARENT_SCOPE)
+
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(OEEDGER8R REQUIRED_VARS OEEDGER8R_PATH)

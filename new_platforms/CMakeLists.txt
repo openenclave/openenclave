@@ -20,18 +20,26 @@ option(OE_USE_SIMULATION
 # Validate and create option shorthands
 if("${OE_TEE}" STREQUAL "Intel SGX" OR "${OE_TEE}" STREQUAL "SGX")
     set(SGX ON)
+    set(SGX ON PARENT_SCOPE)
+
     set(TZ OFF)
+    set(TZ OFF PARENT_SCOPE)
 elseif("${OE_TEE}" STREQUAL "ARM TrustZone" OR "${OE_TEE}" STREQUAL "TZ")
     set(SGX OFF)
+    set(SGX OFF PARENT_SCOPE)
+
     set(TZ ON)
+    set(TZ ON PARENT_SCOPE)
 else()
     message(FATAL_ERROR "OE_TEE must be one of 'Intel SGX' (shorthand: 'SGX') or 'ARM TrustZone' (shorthand: 'TZ').")
 endif()
 
 if(OE_USE_SIMULATION)
     set(SIM ON)
+    set(SIM ON PARENT_SCOPE)
 else()
     set(SIM OFF)
+    set(SIM OFF PARENT_SCOPE)
 endif()
 
 if(UNIX AND SGX)
@@ -79,6 +87,9 @@ find_package(OEEDGER8R REQUIRED)
 set(OE_PATH ${PROJECT_SOURCE_DIR}/..)
 set(NP_PATH ${PROJECT_SOURCE_DIR})
 
+set(OE_PATH ${OE_PATH} PARENT_SCOPE)
+set(NP_PATH ${NP_PATH} PARENT_SCOPE)
+
 # Add 3rd-party path shorthands
 set(GTEST_PATH        ${OE_PATH}/3rdparty/googletest)
 set(OPTEE_CLIENT_PATH ${OE_PATH}/3rdparty/optee_client)
@@ -89,10 +100,33 @@ set(RIOT_PATH         ${OE_PATH}/3rdparty/RIoT)
 set(CYREP_PATH        ${RIOT_PATH}/CyReP)
 set(TINYCBOR_PATH     ${RIOT_PATH}/External/tinycbor)
 
+set(GTEST_PATH        ${GTEST_PATH}        PARENT_SCOPE)
+set(OPTEE_CLIENT_PATH ${OPTEE_CLIENT_PATH} PARENT_SCOPE)
+set(OPTEE_OS_PATH     ${OPTEE_OS_PATH}     PARENT_SCOPE)
+set(OPTEE_CALLS_PATH  ${OPTEE_CALLS_PATH}  PARENT_SCOPE)
+set(MBEDTLS_PATH      ${MBEDTLS_PATH}      PARENT_SCOPE)
+set(RIOT_PATH         ${RIOT_PATH}         PARENT_SCOPE)
+set(CYREP_PATH        ${CYREP_PATH}        PARENT_SCOPE)
+set(TINYCBOR_PATH     ${TINYCBOR_PATH}     PARENT_SCOPE)
+
 # Place binaries in predictable locations.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out/lib)
+
+# The duplication is so that the add_enclave function can be used by 3rd-party
+# consumers of the SDK. The add_enclave function calls into GNU Make and has to
+# know the location of the outputs of certain targets. This location is indeed
+# CMAKE_*_OUTPUT_DIRECTORY, but the value is different in the scope of a
+# consumer from that in the scope of this CMakeLists.txt file and
+# subdirectories.
+set(OE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+set(OE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+set(OE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
+
+set(OE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} PARENT_SCOPE)
+set(OE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} PARENT_SCOPE)
+set(OE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY} PARENT_SCOPE)
 
 # Add common compiler definitions
 if(UNIX)
