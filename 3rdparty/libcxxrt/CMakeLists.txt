@@ -17,9 +17,6 @@ add_library(libcxxrt OBJECT
 
 maybe_build_using_clangw(libcxxrt)
 
-set_target_properties(libcxxrt PROPERTIES
-  POSITION_INDEPENDENT_CODE ON)
-
 target_compile_options(libcxxrt PRIVATE -Wno-error)
 
 target_compile_definitions(libcxxrt PRIVATE -D_GNU_SOURCE)

@@ -123,8 +123,13 @@ if (CMAKE_C_COMPILER_ID MATCHES GNU)
     target_compile_options(oecore PRIVATE -Wjump-misses-init)
 endif ()
 
+# NOTE: All code inside an enclave must be compile with "position
+# independent executable" semantics via -fPIE, and linked with -pie.
+# Hence the PUBLIC (and INTERFACE) use of these flags instead of -fPIC
+# or POSITION_INDEPENDENT_CODE, which would use the incorrect flag as
+# enclaves actually are executables.
 target_compile_options(oecore PUBLIC
-    -fPIC
+    -fPIE
     -nostdinc
     -fno-stack-protector
     -fvisibility=hidden)
@@ -148,7 +153,7 @@ if(USE_DEBUG_MALLOC)
     message("USE_DEBUG_MALLOC is set, building oecore with memory leak detection.")
 endif()
 
-# addl link-options for enclave apps
+# Interface link flags for enclaves.
 target_link_libraries(oecore INTERFACE
     -nostdlib -nodefaultlibs -nostartfiles
     -Wl,--no-undefined,-Bstatic,-Bsymbolic,--export-dynamic,-pie,--build-id)

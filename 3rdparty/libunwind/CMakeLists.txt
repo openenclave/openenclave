@@ -107,8 +107,6 @@ add_library(libunwind OBJECT
   # Add dependency to libunwind.h generation.
   ${CMAKE_CURRENT_BINARY_DIR}/libunwind.h)
 
-set_target_properties(libunwind PROPERTIES POSITION_INDEPENDENT_CODE ON)
-
 maybe_build_using_clangw(libunwind)
 
 set_source_files_properties(Gstep.c PROPERTIES COMPILE_FLAGS "-Werror")
