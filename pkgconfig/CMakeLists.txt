@@ -152,37 +152,37 @@ install(FILES
 
 ##==============================================================================
 ##
-## oequote-gcc.pc:
+## oehostverify-gcc.pc:
 ##
 ##==============================================================================
 
 configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/oequote-gcc.pc
-    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oequote-gcc.pc
+    ${CMAKE_CURRENT_SOURCE_DIR}/oehostverify-gcc.pc
+    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehostverify-gcc.pc
     @ONLY)
 
 install(FILES
-    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oequote-gcc.pc
+    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehostverify-gcc.pc
     DESTINATION
     "${CMAKE_INSTALL_DATADIR}/pkgconfig"
-    COMPONENT OEQUOTE)
+    COMPONENT OEHOSTVERIFY)
 
 ##==============================================================================
 ##
-## oequote-g++.pc:
+## oehostverify-g++.pc:
 ##
 ##==============================================================================
 
 configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/oequote-g++.pc
-    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oequote-g++.pc
+    ${CMAKE_CURRENT_SOURCE_DIR}/oehostverify-g++.pc
+    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehostverify-g++.pc
     @ONLY)
 
 install(FILES
-    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oequote-g++.pc
+    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehostverify-g++.pc
     DESTINATION
     "${CMAKE_INSTALL_DATADIR}/pkgconfig"
-    COMPONENT OEQUOTE)
+    COMPONENT OEHOSTVERIFY)
 
 ##==============================================================================
 ##
@@ -250,37 +250,37 @@ install(FILES
 
 ##==============================================================================
 ##
-## oequote-clang.pc:
+## oehostverify-clang.pc:
 ##
 ##==============================================================================
 
 configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/oequote-clang.pc
-    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oequote-clang.pc
+    ${CMAKE_CURRENT_SOURCE_DIR}/oehostverify-clang.pc
+    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehostverify-clang.pc
     @ONLY)
 
 install(FILES
-    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oequote-clang.pc
+    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehostverify-clang.pc
     DESTINATION
     "${CMAKE_INSTALL_DATADIR}/pkgconfig"
-    COMPONENT OEQUOTE)
+    COMPONENT OEHOSTVERIFY)
 
 ##==============================================================================
 ##
-## oequote-clang++.pc:
+## oehostverify-clang++.pc:
 ##
 ##==============================================================================
 
 configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/oequote-clang++.pc
-    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oequote-clang++.pc
+    ${CMAKE_CURRENT_SOURCE_DIR}/oehostverify-clang++.pc
+    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehostverify-clang++.pc
     @ONLY)
 
 install(FILES
-    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oequote-clang++.pc
+    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehostverify-clang++.pc
     DESTINATION
     "${CMAKE_INSTALL_DATADIR}/pkgconfig"
-    COMPONENT OEQUOTE)
+    COMPONENT OEHOSTVERIFY)
 
 ##==============================================================================
 ##

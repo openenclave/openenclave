@@ -40,7 +40,7 @@ install(
   FILES ${CMAKE_BINARY_DIR}/cmake/openenclave-config.cmake
   ${CMAKE_BINARY_DIR}/cmake/openenclave-config-version.cmake
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
-  COMPONENT OEQUOTE)
+  COMPONENT OEHOSTVERIFY)
 install(
   EXPORT openenclave-targets
   NAMESPACE openenclave::
@@ -48,12 +48,12 @@ install(
   # users of the SDK and so must remain consistent.
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
   FILE openenclave-targets.cmake
-  COMPONENT OEQUOTE)
+  COMPONENT OEHOSTVERIFY)
 install(
   FILES ${PROJECT_SOURCE_DIR}/cmake/sdk_cmake_targets_readme.md
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
   RENAME README.md
-  COMPONENT OEQUOTE)
+  COMPONENT OEHOSTVERIFY)
 
 # Generate the openenclaverc script.
 configure_file(
@@ -66,4 +66,4 @@ install(FILES
     ${CMAKE_BINARY_DIR}/output/share/openenclave/openenclaverc
     DESTINATION
     "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/openenclave"
-    COMPONENT OEQUOTE)
+    COMPONENT OEHOSTVERIFY)

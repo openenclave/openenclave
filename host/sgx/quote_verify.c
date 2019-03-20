@@ -4,8 +4,8 @@
 #include <openenclave/bits/report.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/host.h>
+#include <openenclave/host_verify.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/quote.h>
 
 #include "../common/sgx/quote.h"
 #include "sgxquoteprovider.h"

@@ -39,9 +39,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   OE_ENCLAVE_TYPE_AUTO to have the enclave appropriate to your built environment
   be chosen automatically. For instance, building intel binaries will select SGX
   automatically, where on ARM it will pick trustzone.
-- Added new package called `open-enclave-quote` that allows verification of
+- Added new package called `open-enclave-hostverify` that allows verification of
   quotes on non-SGX machines. The package contains the neccessary libraries
-  and a single include file called `quote.h` that has the function
+  and a single include file called `host_verify.h` that has the function
   `oe_verify_remote_report`.
 
 ### Changed

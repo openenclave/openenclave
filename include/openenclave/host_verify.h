@@ -2,17 +2,17 @@
 // Licensed under the MIT License.
 
 /**
- * @file quote.h
+ * @file host_verify.h
  *
- * This file defines the programming interface verifying quotes for remote
+ * This file defines the programming interface verifying reports for remote
  * attestation.
  *
  */
-#ifndef _OE_QUOTE_H
-#define _OE_QUOTE_H
+#ifndef _OE_HOST_VERIFY_H
+#define _OE_HOST_VERIFY_H
 
 #ifdef _OE_ENCLAVE_H
-#error "enclave.h must not be in the same compilation unit as quote.h"
+#error "enclave.h must not be in the same compilation unit as host_verify.h"
 #endif
 
 #include "bits/defs.h"
@@ -33,7 +33,7 @@ OE_EXTERNC_BEGIN
  * @param parsed_report Optional **oe_report_t** structure to populate
  * with the report properties in a standard format.
  *
- * @retval OE_OK The report was successfully created.
+ * @retval OE_OK The report was successfully verified.
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
  *
  */

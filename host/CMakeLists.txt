@@ -151,7 +151,7 @@ set(NEW_QUOTE_SRC
 
 # Make quote verification library for Linux only
 if (UNIX)
-  add_library(oequote STATIC
+  add_library(oehostverify STATIC
     ${PLATFORM_QUOTE_SRC}
     ${NEW_QUOTE_SRC})
 endif()
@@ -177,7 +177,7 @@ add_library(oehost STATIC
 
 # Link libraries
 target_link_libraries(oehost PUBLIC oe_includes)
-target_link_libraries(oequote PUBLIC oe_includes)
+target_link_libraries(oehostverify PUBLIC oe_includes)
 
 # TODO: Replace these with `find_package` and add as dependencies to
 # the CMake package.
@@ -195,7 +195,7 @@ find_package(Threads REQUIRED)
 
 if (UNIX)
   target_link_libraries(oehost PRIVATE crypto dl Threads::Threads)
-  target_link_libraries(oequote PRIVATE crypto dl Threads::Threads)
+  target_link_libraries(oehostverify PRIVATE crypto dl Threads::Threads)
 elseif (WIN32)
   target_include_directories(oehost PRIVATE
     ${CMAKE_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
@@ -227,22 +227,22 @@ endif ()
 
 # Compile definitions and options
 set_host_compile_defs(oehost ${PLATFORM_FLAGS})
-set_host_compile_defs(oequote ${PLATFORM_FLAGS})
+set_host_compile_defs(oehostverify ${PLATFORM_FLAGS})
 
 # TODO: Remove this hard coded output directory.
 set_property(TARGET oehost PROPERTY
   ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/host)
-set_property(TARGET oequote PROPERTY
+set_property(TARGET oehostverify PROPERTY
   ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/host)
 
 # Install targets
 install(TARGETS oehost EXPORT openenclave-targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host)
 
-install(TARGETS oequote EXPORT openenclave-targets
+install(TARGETS oehostverify EXPORT openenclave-targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host
-  COMPONENT OEQUOTE)
+  COMPONENT OEHOSTVERIFY)
 
 # Create convenience libraries for apps that need the -rdynamic link flag.
 create_hostapp(oehostapp oehost)
-create_hostapp(oequoteapp oequote)
+create_hostapp(oehostverifyapp oehostverify)

@@ -7,8 +7,8 @@ includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
 libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
 
 Name: Open Enclave
-Description: Open Enclave gcc flags and libraries for building hosts.
+Description: Open Enclave g++ flags and libraries verifying remote reports on hosts.
 Version: @OE_VERSION@
 Requires: openssl
-Cflags: @HOST_CFLAGS_GCC@ @HOST_INCLUDES@
-Libs: @HOST_QUOTE_CLIBS@
+Cflags: @HOST_CXXFLAGS_GCC@ @HOST_INCLUDES@
+Libs: @HOST_QUOTE_CXXLIBS@
