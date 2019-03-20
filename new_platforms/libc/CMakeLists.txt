@@ -11,6 +11,7 @@ set(CMAKE_CXX_COMPILER ${OE_TA_TOOLCHAIN_PREFIX}g++)
 
 # Path to Open Enclave proper.
 set(OE_PATH      ${CMAKE_CURRENT_LIST_DIR}/../..)
+set(OE_INC       ${OE_PATH}/include)
 
 # Path to the C runtime library (musl).
 set(MUSL_OE      ${OE_PATH}/3rdparty/musl)
@@ -51,14 +52,19 @@ set(LIBCXX_SRC     ${LIBCXX_OE}/libcxx)
 set(LIBCXX_OUT     ${CMAKE_CURRENT_BINARY_DIR}/libcxx)
 set(LIBCXX_OUT_INC ${LIBCXX_OUT}/include)
 
-# Path to the C++ ABI library (libcxxrt)
+# Path to the C++ ABI library (libcxxrt).
 set(LIBCXXRT_OE  ${OE_PATH}/3rdparty/libcxxrt)
 set(LIBCXXRT_SRC ${LIBCXXRT_OE}/libcxxrt)
+
+# Path to the stack unwinding library (libunwind).
+set(LIBUNWIND_OE  ${OE_PATH}/3rdparty/libunwind)
+set(LIBUNWIND_SRC ${LIBUNWIND_OE}/libunwind)
 
 # Source listings (uses the variables defined above).
 include(${CMAKE_CURRENT_LIST_DIR}/libc.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/libcxx.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/libcxxrt.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/libunwind.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/libutee.cmake)
 
 # Set up musl.
@@ -111,37 +117,80 @@ target_compile_options(libcasm PRIVATE ${OE_TA_S_FLAGS})
 
 add_library(libc STATIC ${LIBC_C_SRC})
 set_property(TARGET libc PROPERTY C_STANDARD 99)
-target_compile_options(libc PRIVATE ${OE_TA_C_FLAGS})
-target_include_directories(libc PRIVATE
+target_compile_options(libc PUBLIC ${OE_TA_C_FLAGS})
+target_include_directories(libc PUBLIC
     ${MUSL_OUT}/src/include
     ${MUSL_OUT}/src/internal
     ${MUSL_OUT}/arch/${ARCH}
     ${MUSL_OUT_INC})
-target_link_libraries(libc libcasm)
+target_link_libraries(libc PUBLIC libcasm)
 
 # Set up libutee.
 add_library(libuteeasm OBJECT ${LIBUTEE_S_SRC})
-target_compile_options(libuteeasm PRIVATE ${OE_TA_S_FLAGS})
+set_property(TARGET libuteeasm PROPERTY C_STANDARD 99)
+target_compile_options(libuteeasm PRIVATE
+    ${OE_TA_S_FLAGS}
+    -include ${OE_TA_CONF})
 target_include_directories(libuteeasm PRIVATE
     ${LIBUTEE_INC}
     ${LIBUTILS_EXT_INC})
 
 add_library(libutee STATIC ${LIBUTEE_C_SRC})
 set_property(TARGET libutee PROPERTY C_STANDARD 99)
-target_compile_options(libutee PRIVATE
-    ${OE_TA_C_FLAGS}
-    -D_GNU_SOURCE)
-target_include_directories(libutee PRIVATE
-    ${MUSL_OUT}/src/include
-    ${MUSL_OUT}/src/internal
-    ${MUSL_OUT}/arch/${ARCH}
-    ${MUSL_OUT_INC}
+target_compile_options(libutee PUBLIC
+    -D_GNU_SOURCE
+    -include ${OE_TA_CONF})
+target_include_directories(libutee PUBLIC
     ${LIBUTEE_SRC}
     ${LIBUTEE_INC}
     ${LIBUTILS_EXT_INC}
     ${LIBUTILS_ISOC_INC}
     ${LIBMPA_INC})
-target_link_libraries(libutee libuteeasm)
+target_link_libraries(libutee PUBLIC libuteeasm PUBLIC libc)
+
+# Set up libunwind.
+configure_file(
+    ${LIBUNWIND_SRC}/include/libunwind-${ARCH}.h
+    libunwind.h
+    COPYONLY)
+file(GENERATE OUTPUT config.h CONTENT "/* Empty file */\n")
+
+set(PKG_MAJOR 1)
+set(PKG_MINOR 3)
+configure_file(
+    ${LIBUNWIND_SRC}/include/libunwind-common.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/libunwind-common.inc
+    COPYONLY)
+file(COPY ${LIBUNWIND_SRC}/include/tdep-${ARCH}/
+    DESTINATION tdep)
+
+add_library(libunwind STATIC ${LIBUNWIND_C_SRC})
+target_compile_options(libunwind PRIVATE
+    -DHAVE_ELF_H
+    -DHAVE_ENDIAN_H
+    -DHAVE_LINK_H
+    -D_GNU_SOURCE
+    -DHAVE_DL_ITERATE_PHDR
+    -DPACKAGE_STRING=\"libunwind-1.3\"
+    -DPACKAGE_BUGREPORT=\"unwind.org\"
+    -include ${LIBUNWIND_OE}/stubs.h)
+target_include_directories(libunwind PRIVATE
+    ${OE_INC}
+    ${LIBUNWIND_OE}
+    ${LIBUNWIND_SRC}/include
+    ${LIBUNWIND_SRC}/src/${ARCH}
+    ${LIBUNWIND_SRC}/src
+    ${CMAKE_CURRENT_BINARY_DIR}/tdep
+    ${CMAKE_CURRENT_BINARY_DIR})
+target_link_libraries(libunwind PUBLIC libc)
+
+# Set up libcxxrt.
+add_library(libcxxrt STATIC ${LIBCXXRT_CXX_SRC})
+add_dependencies(libcxxrt musl_includes)
+target_compile_options(libcxxrt PRIVATE
+    ${OE_TA_C_FLAGS}
+    -D_GNU_SOURCE)
+target_link_libraries(libcxxrt PUBLIC libunwind)
 
 # Set up libcxx.
 include (ExternalProject)
@@ -160,7 +209,7 @@ ExternalProject_Add(libcxx_includes
     INSTALL_COMMAND "")
 
 add_library(libcxx STATIC ${LIBCXX_CXX_SRC})
-add_dependencies(libcxx musl_includes libcxx_includes)
+add_dependencies(libcxx libcxx_includes)
 target_compile_options(libcxx PRIVATE
     ${OE_TA_C_FLAGS}
     -DLIBCXXRT
@@ -168,24 +217,8 @@ target_compile_options(libcxx PRIVATE
     -D_LIBCPP_BUILDING_LIBRARY
     -D_LIBCPP_HAS_NO_CXX14_CONSTEXPR
     -D_LIBCPP_HAS_NO_THREADS)
-target_include_directories(libcxx PRIVATE
+target_include_directories(libcxx PUBLIC
     ${LIBCXX_OUT_INC}
     ${LIBCXX_SRC}/src
-    ${LIBCXXRT_SRC}/src
-    ${MUSL_OUT}/src/include
-    ${MUSL_OUT}/src/internal
-    ${MUSL_OUT}/arch/${ARCH}
-    ${MUSL_OUT_INC})
-target_link_libraries(libcxx libc)
-
-# Set up libcxxrt.
-add_library(libcxxrt STATIC ${LIBCXXRT_CXX_SRC})
-add_dependencies(libcxxrt musl_includes)
-target_compile_options(libcxxrt PRIVATE
-    ${OE_TA_C_FLAGS}
-    -D_GNU_SOURCE)
-target_include_directories(libcxxrt PRIVATE
-    ${MUSL_OUT}/src/include
-    ${MUSL_OUT}/src/internal
-    ${MUSL_OUT}/arch/${ARCH}
-    ${MUSL_OUT_INC})
+    ${LIBCXXRT_SRC}/src)
+target_link_libraries(libcxx PUBLIC libcxxrt)

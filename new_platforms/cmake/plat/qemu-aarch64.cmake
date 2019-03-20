@@ -46,9 +46,8 @@ set(OE_TA_C_FLAGS_OPTIONS
     #-fexcess-precision=standard
     -frounding-math
     -fpie
-    -fPIC
-    #-std=gnu99
-    -include ${OE_TA_CONF})
+    -fPIC)
+    #-std=gnu99)
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "" OR "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     list(APPEND OE_TA_C_FLAGS_OPTIONS -g3)
