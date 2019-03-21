@@ -135,10 +135,6 @@ static ssize_t _hostresolv_getnameinfo(
         // With a buffer big enough for a single addrinfo
 
         size_t required = (size_t)salen + (size_t)hostlen + (size_t)servlen;
-        if ((hostlen + servlen + 2) > salen)
-        {
-            required = hostlen + servlen + 2;
-        }
         if (!(args = oe_host_batch_calloc(batch, sizeof(args_t) + required)))
         {
             oe_errno = ENOMEM;
@@ -163,6 +159,7 @@ static ssize_t _hostresolv_getnameinfo(
         args->u.getnameinfo.ret = -1;
         args->u.getnameinfo.addrlen = (int32_t)salen;
         args->u.getnameinfo.hostlen = (int32_t)hostlen;
+        args->u.getnameinfo.servlen = (int32_t)servlen;
         args->u.getnameinfo.flags = (int32_t)flags;
         memcpy(args->buf, sa, (size_t)salen);
     }
