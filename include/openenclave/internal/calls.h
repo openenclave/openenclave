@@ -8,6 +8,7 @@
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/defs.h>
+#include <openenclave/internal/uid.h>
 #include "backtrace.h"
 
 OE_EXTERNC_BEGIN
@@ -77,8 +78,10 @@ typedef enum _oe_func
     OE_ECALL_GET_SGX_REPORT,
     OE_ECALL_VIRTUAL_EXCEPTION_HANDLER,
     OE_ECALL_LOG_INIT,
+    OE_ECALL_DEVICE_NOTIFICATION,
     OE_ECALL_GET_PUBLIC_KEY_BY_POLICY,
     OE_ECALL_GET_PUBLIC_KEY,
+
     /* Caution: always add new ECALL function numbers here */
 
     OE_OCALL_CALL_HOST_FUNCTION = OE_OCALL_BASE,
@@ -92,11 +95,16 @@ typedef enum _oe_func
     OE_OCALL_MALLOC,
     OE_OCALL_REALLOC,
     OE_OCALL_FREE,
-    OE_OCALL_WRITE,
     OE_OCALL_SLEEP,
     OE_OCALL_GET_TIME,
     OE_OCALL_BACKTRACE_SYMBOLS,
     OE_OCALL_LOG,
+    OE_OCALL_HOSTFS,
+    OE_OCALL_SGXFS,
+    OE_OCALL_HOSTSOCK,
+    OE_OCALL_EPOLL,
+    OE_OCALL_HOSTRESOLVER,
+    OE_OCALL_UNAME,
     /* Caution: always add new OCALL function numbers here */
 
     __OE_FUNC_MAX = OE_ENUM_MAX,
@@ -270,6 +278,15 @@ typedef struct _oe_realloc_args
 
 typedef struct _oe_init_enclave_args
 {
+    uint64_t pid;  // Process ID
+    uint64_t ppid; // Parent PID
+    uint64_t pgrp; // Process Group ID
+    uint64_t uid;  // user id
+    uint64_t euid; // effective user id
+    uint32_t num_groups;
+    uint64_t
+        groups[OE_NGROUP_MAX]; // where to define? NGROUPS_MAX 256 (32 before
+                               // Linux 2.6.4; 65536 since Linux 2.6.4).
     uint32_t cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
     oe_enclave_t* enclave;
 } oe_init_enclave_args_t;

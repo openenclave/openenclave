@@ -19,11 +19,12 @@ typedef unsigned int uint32_t;
 typedef long int64_t;
 typedef unsigned long uint64_t;
 typedef unsigned long uintptr_t;
+typedef long intptr_t;
 typedef long ptrdiff_t;
+typedef unsigned mode_t;
 typedef long intptr_t;
 typedef long time_t;
 typedef long suseconds_t;
-
 #elif defined(_MSC_VER)
 typedef long long ssize_t;
 typedef unsigned long long size_t;
@@ -36,13 +37,40 @@ typedef unsigned int uint32_t;
 typedef long long int64_t;
 typedef unsigned long long uint64_t;
 typedef unsigned long long uintptr_t;
+typedef unsigned long intptr_t;
 typedef long long ptrdiff_t;
+typedef unsigned mode_t;
 typedef long long intptr_t;
 typedef long long time_t;
 typedef long long suseconds_t;
 #else
 #error "unknown compiler - please adapt basic types"
 #endif
+
+typedef int64_t off_t;
+typedef uint64_t ino_t;
+typedef uint32_t uid_t;
+typedef uint32_t gid_t;
+typedef uint64_t dev_t;
+#if !defined(__aarch64__)
+typedef uint64_t nlink_t;
+typedef int64_t blksize_t;
+#else
+typedef uint32_t nlink_t;
+typedef int32_t blksize_t;
+typedef int64_t blkcnt64_t;
+typedef int64_t off64_t;
+typedef uint64_t ino64_t;
+#endif
+typedef int64_t blkcnt_t;
+typedef int64_t time_t;
+typedef int64_t suseconds_t;
+typedef struct _OE_DIR OE_DIR;
+struct oe_dirent;
+typedef uint32_t socklen_t;
+typedef uint16_t sa_family_t;
+typedef uint16_t in_port_t;
+typedef uint32_t in_addr_t;
 
 /* bool type */
 #ifndef __cplusplus

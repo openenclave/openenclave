@@ -8,8 +8,14 @@
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/device.h>
+#include <openenclave/internal/epoll.h>
+#include <openenclave/internal/eventfd.h>
 #include <openenclave/internal/fault.h>
+#include <openenclave/internal/fs.h>
 #include <openenclave/internal/globals.h>
+#include <openenclave/internal/hostfs.h>
+#include <openenclave/internal/hostsock.h>
 #include <openenclave/internal/jump.h>
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/print.h>
@@ -26,6 +32,8 @@
 #include "init.h"
 #include "report.h"
 #include "td.h"
+
+#include <openenclave/internal/epoll.h>
 
 oe_result_t __oe_enclave_status = OE_OK;
 uint8_t __oe_initialized = 0;
@@ -171,6 +179,41 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
                 oe_enclave = safe_args.enclave;
             }
 
+            /* Register the host file system. */
+            if (oe_register_hostfs_device() != 0)
+            {
+                result = OE_FAILURE;
+                goto done;
+            }
+
+            /* Register the host sockets device. */
+            if (oe_register_hostsock_device() != 0)
+            {
+                result = OE_FAILURE;
+                goto done;
+            }
+
+            /* Register the epoll device. */
+            if (oe_register_epoll_device() != 0)
+            {
+                result = OE_FAILURE;
+                goto done;
+            }
+
+            /* Register the eventfd device. */
+            if (oe_register_eventfd_device() != 0)
+            {
+                result = OE_FAILURE;
+                goto done;
+            }
+
+            /* Initialize the console devices: stdin, stdout, stderr. */
+            if (oe_initialize_console_devices() != 0)
+            {
+                result = OE_FAILURE;
+                goto done;
+            }
+
             /* Call all enclave state initialization functions */
             OE_CHECK(oe_initialize_cpuid(arg_in));
 
@@ -298,7 +341,7 @@ done:
 
 static void _handle_exit(oe_code_t code, uint16_t func, uint64_t arg)
 {
-    oe_exit(oe_make_call_arg1(code, func, 0, OE_OK), arg);
+    oe_exit_enclave(oe_make_call_arg1(code, func, 0, OE_OK), arg);
 }
 
 void oe_virtual_exception_dispatcher(
@@ -416,6 +459,10 @@ static void _handle_ecall(
             _handle_oelog_init(arg_in);
             break;
         }
+        case OE_ECALL_DEVICE_NOTIFICATION:
+        {
+            _handle_oe_device_notification(arg_in);
+        }
         case OE_ECALL_GET_PUBLIC_KEY_BY_POLICY:
         {
             oe_handle_get_public_key_by_policy(arg_in);
@@ -424,7 +471,6 @@ static void _handle_ecall(
         case OE_ECALL_GET_PUBLIC_KEY:
         {
             oe_handle_get_public_key(arg_in);
-            break;
         }
         default:
         {
@@ -766,7 +812,7 @@ void __oe_handle_main(
                 break;
 
             case OE_CODE_ORET:
-                /* Eventually calls oe_exit() and never returns here if
+                /* Eventually calls oe_exit_enclave() and never returns here if
                  * successful */
                 _handle_oret(td, func, arg1_result, arg_in);
                 // fallthrough

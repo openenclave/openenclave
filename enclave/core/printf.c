@@ -7,6 +7,7 @@
 #include <openenclave/corelibc/stdarg.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
+#include <openenclave/internal/fs.h>
 #include <openenclave/internal/print.h>
 #include "intstr.h"
 
@@ -668,7 +669,7 @@ int oe_vprintf(const char* fmt, oe_va_list ap_)
 
         if ((size_t)n < sizeof(buf))
         {
-            oe_host_write(0, p, (size_t)-1);
+            oe_write(OE_STDOUT_FILENO, p, oe_strlen(p));
             goto done;
         }
     }
@@ -688,7 +689,7 @@ int oe_vprintf(const char* fmt, oe_va_list ap_)
         if (n < 0)
             goto done;
 
-        oe_host_write(0, p, (size_t)-1);
+        oe_write(OE_STDOUT_FILENO, p, oe_strlen(p));
     }
 
 done:

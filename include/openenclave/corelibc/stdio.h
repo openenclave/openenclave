@@ -6,9 +6,12 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/corelibc/bits/devids.h>
 #include <openenclave/corelibc/stdarg.h>
 
 OE_EXTERNC_BEGIN
+
+#define OE_BUFSIZ 8192
 
 typedef struct _OE_IO_FILE OE_FILE;
 extern OE_FILE* const oe_stdin;
@@ -25,9 +28,14 @@ int oe_vprintf(const char* format, oe_va_list ap);
 OE_PRINTF_FORMAT(1, 2)
 int oe_printf(const char* format, ...);
 
+int oe_rename(const char* oldpath, const char* newpath);
+
+int oe_rename_d(uint64_t devid, const char* oldpath, const char* newpath);
+
 #if defined(OE_NEED_STDC_NAMES)
 
 #include "bits/stdfile.h"
+#define BUFSIZ OE_BUFSIZ
 
 OE_INLINE
 int vsnprintf(char* str, size_t size, const char* format, va_list ap)
@@ -67,6 +75,11 @@ int printf(const char* format, ...)
     va_start(ap, format);
     return oe_vprintf(format, ap);
     va_end(ap);
+}
+
+OE_INLINE int rename(const char* oldpath, const char* newpath)
+{
+    return oe_rename(oldpath, newpath);
 }
 
 #endif /* defined(OE_NEED_STDC_NAMES) */

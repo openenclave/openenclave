@@ -29,11 +29,34 @@ unsigned long int oe_strtoul(const char* nptr, char** endptr, int base);
 
 int oe_atexit(void (*function)(void));
 
+char* oe_realpath(const char* path, char* resolved_path);
+
+void oe_abort(void);
+
+void oe_exit(int status);
+
+void oe_set_exit_handler(void (*handler)(int status));
+
 #if defined(OE_NEED_STDC_NAMES)
 
 #include "bits/atexit.h"
 #include "bits/malloc.h"
 #include "bits/strtoul.h"
+
+OE_INLINE char* realpath(const char* path, char* resolved_path)
+{
+    return oe_realpath(path, resolved_path);
+}
+
+OE_INLINE void abort(void)
+{
+    oe_abort();
+}
+
+OE_INLINE void exit(int status)
+{
+    return oe_exit(status);
+}
 
 #endif /* defined(OE_NEED_STDC_NAMES) */
 

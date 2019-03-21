@@ -5,6 +5,7 @@
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/internal/defs.h>
+#include <openenclave/internal/print.h>
 
 size_t oe_strlen(const char* s)
 {
@@ -136,6 +137,22 @@ char* oe_strstr(const char* haystack, const char* needle)
     }
 
     return NULL;
+}
+
+char* oe_strdup(const char* s)
+{
+    size_t len;
+    char* p;
+
+    if (!s)
+        return NULL;
+
+    len = oe_strlen(s);
+
+    if (!(p = oe_malloc(len + 1)))
+        return NULL;
+
+    return memcpy(p, s, len + 1);
 }
 
 OE_WEAK_ALIAS(oe_strcmp, strcmp);

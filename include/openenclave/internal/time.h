@@ -11,7 +11,7 @@ OE_EXTERNC_BEGIN
 /*
 **==============================================================================
 **
-** oe_sleep()
+** oe_sleep_msec()
 **
 **     Sleep for milliseconds. Return 0 on success and -1 if thread
 **     interrupted.
@@ -19,7 +19,7 @@ OE_EXTERNC_BEGIN
 **==============================================================================
 */
 
-int oe_sleep(uint64_t milliseconds);
+int oe_sleep_msec(uint64_t milliseconds);
 
 /*
 **==============================================================================

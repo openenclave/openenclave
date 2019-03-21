@@ -39,6 +39,14 @@ char* oe_strerror(int errnum);
 
 int oe_strerror_r(int errnum, char* buf, size_t buflen);
 
+char* oe_strtok_r(char* str, const char* delim, char** saveptr);
+
+char* oe_strdup(const char* s);
+
+size_t oe_strspn(const char* s, const char* accept);
+
+size_t oe_strcspn(const char* s, const char* reject);
+
 #if defined(OE_NEED_STDC_NAMES)
 
 OE_INLINE
@@ -93,6 +101,27 @@ OE_INLINE
 int strerror_r(int errnum, char* buf, size_t buflen)
 {
     return oe_strerror_r(errnum, buf, buflen);
+}
+
+OE_INLINE
+char* strtok_r(char* str, const char* delim, char** saveptr)
+{
+    return oe_strtok_r(str, delim, saveptr);
+}
+
+OE_INLINE char* strdup(const char* s)
+{
+    return oe_strdup(s);
+}
+
+OE_INLINE size_t strspn(const char* s, const char* accept)
+{
+    return oe_strspn(s, accept);
+}
+
+OE_INLINE size_t strcspn(const char* s, const char* reject)
+{
+    return oe_strcspn(s, reject);
 }
 
 #endif /* defined(OE_NEED_STDC_NAMES) */

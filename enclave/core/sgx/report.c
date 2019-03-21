@@ -101,7 +101,7 @@ static oe_result_t _oe_get_local_report(
     if (report_buffer == NULL || *report_buffer_size < sizeof(sgx_report_t))
     {
         *report_buffer_size = sizeof(sgx_report_t);
-        OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
+        OE_RAISE(OE_BUFFER_TOO_SMALL);
     }
 
     OE_CHECK(sgx_create_report(
@@ -230,11 +230,7 @@ oe_result_t oe_get_remote_report(
     /*
      * OCall: Get the quote for the local report.
      */
-    result = _oe_get_quote(&sgx_report, report_buffer, report_buffer_size);
-    if (result == OE_BUFFER_TOO_SMALL)
-        OE_CHECK_NO_TRACE(result);
-    else
-        OE_CHECK(result);
+    OE_CHECK(_oe_get_quote(&sgx_report, report_buffer, report_buffer_size));
 
     /*
      * Check that the entire report body in the returned quote matches the local
@@ -286,29 +282,25 @@ oe_result_t oe_get_report_v1(
 
     if (flags & OE_REPORT_FLAGS_REMOTE_ATTESTATION)
     {
-        result = oe_get_remote_report(
+        OE_CHECK(oe_get_remote_report(
             report_data,
             report_data_size,
             opt_params,
             opt_params_size,
             report_buffer,
-            report_buffer_size);
+            report_buffer_size));
     }
     else
     {
         // If no flags are specified, default to locally attestable report.
-        result = _oe_get_local_report(
+        OE_CHECK(_oe_get_local_report(
             report_data,
             report_data_size,
             opt_params,
             opt_params_size,
             report_buffer,
-            report_buffer_size);
+            report_buffer_size));
     }
-    if (result == OE_BUFFER_TOO_SMALL)
-        OE_CHECK_NO_TRACE(result);
-    else
-        OE_CHECK(result);
 
     header->version = OE_REPORT_HEADER_VERSION;
     header->report_type = (flags & OE_REPORT_FLAGS_REMOTE_ATTESTATION)

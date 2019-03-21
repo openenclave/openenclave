@@ -21,6 +21,8 @@
 #include "bits/result.h"
 #include "bits/types.h"
 
+#define OE_NGROUP_MAX 256
+
 /**
  * @cond IGNORE
  */

@@ -45,6 +45,7 @@ static char* get_fullpath(const char* path)
 #include <openenclave/internal/sgxcreate.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
+#include <openenclave/internal/uid.h>
 #include <openenclave/internal/utils.h>
 #include <string.h>
 #include "../memalign.h"
@@ -357,6 +358,16 @@ static oe_result_t _initialize_enclave(oe_enclave_t* enclave)
             &args.cpuid_table[i][OE_CPUID_RCX],
             &args.cpuid_table[i][OE_CPUID_RDX]);
     }
+
+    // uid, gid, and other stuff. uid is uint32_t in linux, but a 64 bit handle
+    // of the user SID in windows. So we will allocate 64 bits and pass all 64
+    // bits.  In the enclave, apps should treat the uid/sid as anonymous data.
+    args.pid = oe_get_host_pid();
+    args.ppid = oe_get_host_ppid();
+    args.pgrp = oe_get_host_pgrp();
+    args.uid = oe_get_host_uid();
+    args.euid = oe_get_host_euid();
+    args.num_groups = (uint32_t)oe_get_host_groups(OE_NGROUP_MAX, args.groups);
 
     // Pass the enclave handle to the enclave.
     args.enclave = enclave;

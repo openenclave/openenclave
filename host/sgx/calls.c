@@ -22,6 +22,8 @@
 #include <openenclave/bits/safemath.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/hostfs.h>
+#include <openenclave/internal/hostsock.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/registers.h>
 #include <openenclave/internal/sgxtypes.h>
@@ -30,6 +32,12 @@
 #include "asmdefs.h"
 #include "enclave.h"
 #include "ocalls.h"
+
+/* This callback is installed by the host by calling oe_fs_install_sgxfs(). */
+void (*oe_handle_sgxfs_ocall_callback)(void* args);
+
+void (*oe_handle_epoll_ocall_callback)(void* args);
+void (*oe_handle_hostresolver_ocall_callback)(void* args);
 
 /*
 **==============================================================================
@@ -348,10 +356,6 @@ static oe_result_t _handle_ocall(
             HandleFree(arg_in);
             break;
 
-        case OE_OCALL_WRITE:
-            HandlePrint(arg_in);
-            break;
-
         case OE_OCALL_THREAD_WAIT:
             HandleThreadWait(enclave, arg_in);
             break;
@@ -397,6 +401,49 @@ static oe_result_t _handle_ocall(
         case OE_OCALL_LOG:
             oe_handle_log(enclave, arg_in);
             break;
+
+        case OE_OCALL_HOSTFS:
+        {
+            oe_handle_hostfs_ocall((void*)arg_in);
+            break;
+        }
+        case OE_OCALL_SGXFS:
+        {
+            if (oe_handle_sgxfs_ocall_callback)
+                oe_handle_sgxfs_ocall_callback((void*)arg_in);
+            else
+                OE_RAISE(OE_NOT_FOUND);
+
+            break;
+        }
+        case OE_OCALL_HOSTSOCK:
+        {
+            oe_handle_hostsock_ocall((void*)arg_in);
+            break;
+        }
+        case OE_OCALL_EPOLL:
+        {
+            if (oe_handle_epoll_ocall_callback)
+                oe_handle_epoll_ocall_callback((void*)arg_in);
+            else
+                OE_RAISE(OE_NOT_FOUND);
+
+            break;
+        }
+        case OE_OCALL_HOSTRESOLVER:
+        {
+            if (oe_handle_hostresolver_ocall_callback)
+                oe_handle_hostresolver_ocall_callback((void*)arg_in);
+            else
+                OE_RAISE(OE_NOT_FOUND);
+
+            break;
+        }
+        case OE_OCALL_UNAME:
+        {
+            oe_handle_uname(arg_in, arg_out);
+            break;
+        }
 
         default:
         {
