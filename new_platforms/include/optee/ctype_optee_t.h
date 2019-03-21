@@ -8,6 +8,7 @@
 # error tcps_ctype_optee_t.h should only be included with OE_USE_OPTEE
 #endif
 
+#ifndef _CTYPE_H
 int tolower(int c);
 int toupper(int const c);
 
@@ -18,3 +19,4 @@ int isdigit(int c);
 int isxdigit(int c); 
 int isalnum(int c);
 int isalpha(int c);
+#endif  // _CTYPE_H

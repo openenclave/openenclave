@@ -11,22 +11,60 @@ if(WIN32 AND SGX)
 endif()
 
 if(UNIX AND TZ)
-    add_custom_target(${TARGET} ALL
-        COMMAND make -C ${CMAKE_CURRENT_SOURCE_DIR}/optee
-            -f linux_gcc.mak
-            OE_INC=${OE_PATH}/include
-            NP_INC=${NP_PATH}/include
-            OPTEE_OS_PATH=${OPTEE_OS_PATH}
-            CYREP_PATH=${CYREP_PATH}
-            MBEDTLS_PATH=${MBEDTLS_PATH}
-            TINYCBOR_PATH=${TINYCBOR_PATH}
-            TA_DEV_KIT_DIR=${TA_DEV_KIT_DIR}
-            CROSS_COMPILE=${OE_TA_TOOLCHAIN_PREFIX}
-            O=${CMAKE_CURRENT_BINARY_DIR}
-            LIB_O=${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
-            GEN=${C_GEN}
-        DEPENDS ${GEN})
+    if(OE_USE_TA_DEV_KIT)
+        add_custom_target(${TARGET} ALL
+            COMMAND make -C ${CMAKE_CURRENT_SOURCE_DIR}/optee
+                -f linux_gcc.mak
+                OE_INC=${OE_PATH}/include
+                NP_INC=${NP_PATH}/include
+                OPTEE_OS_PATH=${OPTEE_OS_PATH}
+                CYREP_PATH=${CYREP_PATH}
+                MBEDTLS_PATH=${MBEDTLS_PATH}
+                TINYCBOR_PATH=${TINYCBOR_PATH}
+                TA_DEV_KIT_DIR=${TA_DEV_KIT_DIR}
+                CROSS_COMPILE=${OE_TA_TOOLCHAIN_PREFIX}
+                O=${CMAKE_CURRENT_BINARY_DIR}
+                LIB_O=${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
+                GEN=${C_GEN}
+            DEPENDS ${GEN})
         add_dependencies(${TARGET} oeedger8rtool)
+    else()
+        add_enclave_library_ex(
+            TARGET ${TARGET}
+            SOURCES
+                ${GEN}
+                CallbackHelper.c cborhelper.c files_enc.c
+                keygen.c oeshim_enc.c socket_enc.c string_t.c
+                ../optee_common.c
+                optee/ctype_optee.c optee/cyres_optee.c
+                optee/except_optee.c optee/keygen_optee.c
+                optee/oeresult_optee.c optee/rand_optee.c
+                optee/report_optee.c optee/strings_optee.c
+                optee/time_optee.c optee/trpc_optee.c
+                ${CYREP_PATH}/RiotAes128.c ${CYREP_PATH}/RiotAesTables.c
+                ${CYREP_PATH}/RiotBase64.c ${CYREP_PATH}/RiotCrypt.c
+                ${CYREP_PATH}/RiotDerEnc.c ${CYREP_PATH}/RiotEcc.c
+                ${CYREP_PATH}/RiotHmac.c   ${CYREP_PATH}/RiotKdf.c
+                ${CYREP_PATH}/RiotSha256.c ${CYREP_PATH}/RiotX509Bldr.c
+                ${CYREP_PATH}/tcps/TcpsId.c
+                ${TINYCBOR_PATH}/src/cborencoder.c
+                ${TINYCBOR_PATH}/src/cborparser.c)
+        target_include_directories(${TARGET}
+            PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
+            PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
+            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..
+            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+            PUBLIC ${NP_PATH}/include/optee/enclave
+            PUBLIC ${NP_PATH}/include/optee
+            PUBLIC ${NP_PATH}/include
+            PUBLIC ${CYREP_PATH}/cyrep
+            PUBLIC ${CYREP_PATH}/tcps
+            PUBLIC ${TINYCBOR_PATH}/src
+            PUBLIC ${MBEDTLS_PATH}/include
+            PUBLIC ${OE_PATH}/include)
+        file(GLOB RIOT_SRCS "${CYREP_PATH}/Riot*.c")
+        set_source_files_properties(${RIOT_SRCS} PROPERTIES COMPILE_FLAGS -Wno-implicit-function-declaration)
+    endif()
 elseif(WIN32)
     # Source lists
     set(COMMON_SRCS

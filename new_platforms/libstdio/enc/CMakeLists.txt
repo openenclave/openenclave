@@ -8,23 +8,33 @@ set(TARGET oestdio_enc)
 oeedl_file(${OE_PATH}/include/openenclave/stdio.edl enclave GEN C_GEN H_GEN)
 
 if(UNIX AND TZ)
-    set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
-        "lib${TARGET}.a;stdio_enc.o;optee/files_optee.o")
+    if(OE_USE_TA_DEV_KIT)
+        set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
+            "lib${TARGET}.a;stdio_enc.o;optee/files_optee.o")
 
-    add_custom_target(lib${TARGET} ALL
-        COMMAND make -C ${CMAKE_CURRENT_SOURCE_DIR}/optee
-            -f linux_gcc.mak
-            OE_INC=${OE_PATH}/include
-            NP_INC=${NP_PATH}/include
-            TA_DEV_KIT_DIR=${TA_DEV_KIT_DIR}
-            CROSS_COMPILE=${OE_TA_TOOLCHAIN_PREFIX}
-            O=${CMAKE_CURRENT_BINARY_DIR}
-            LIB_O=${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
-            GEN=${C_GEN}
-        DEPENDS ${GEN}
-        SOURCES stdio_enc.c optee/files_optee.c)
+        add_custom_target(lib${TARGET} ALL
+            COMMAND make -C ${CMAKE_CURRENT_SOURCE_DIR}/optee
+                -f linux_gcc.mak
+                OE_INC=${OE_PATH}/include
+                NP_INC=${NP_PATH}/include
+                TA_DEV_KIT_DIR=${TA_DEV_KIT_DIR}
+                CROSS_COMPILE=${OE_TA_TOOLCHAIN_PREFIX}
+                O=${CMAKE_CURRENT_BINARY_DIR}
+                LIB_O=${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
+                GEN=${C_GEN}
+            DEPENDS ${GEN}
+            SOURCES stdio_enc.c optee/files_optee.c)
 
         add_dependencies(lib${TARGET} oeedger8rtool)
+    else()
+        add_enclave_library_ex(
+            TARGET lib${TARGET}
+            SOURCES ${GEN} stdio_enc.c optee/files_optee.c)
+        target_include_directories(lib${TARGET}
+            PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
+            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+        target_link_libraries(lib${TARGET} PUBLIC oeenclave)
+    endif()
 elseif(WIN32)
     set(SRCS stdio_enc.c)
 

@@ -14,12 +14,10 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "" OR "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 endif()
 
 # When using GCC to compile C/CXX files.
-set(OE_TA_COMMON_DEFINITIONS
+set(OE_TA_C_FLAGS
     -D_XOPEN_SOURCE=700
     -DARM64=1
-    -D__LP64__=1)
-
-set(OE_TA_COMMON_FLAGS
+    -D__LP64__=1
     -mstrict-align
     -nostdinc
     -nostdlib
@@ -32,22 +30,12 @@ set(OE_TA_COMMON_FLAGS
     -fPIC)
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "" OR "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-    list(APPEND OE_TA_COMMON_FLAGS -g3)
+    list(APPEND OE_TA_C_FLAGS -g3)
 else()
-    list(APPEND OE_TA_COMMON_FLAGS -Os)
+    list(APPEND OE_TA_C_FLAGS -Os)
 endif()
 
 # When using GCC for linking.
-set(OE_TA_LINKER_FLAGS
-    -fpie
-    --sort-section=alignment)
-
-# Final values.
-set(OE_TA_C_FLAGS
-    ${OE_TA_COMMON_DEFINITIONS}
-    ${OE_TA_COMMON_FLAGS})
-set(OE_TA_CXX_FLAGS
-    ${OE_TA_COMMON_DEFINITIONS}
-    ${OE_TA_COMMON_FLAGS})
 set(OE_TA_LD_FLAGS
-    ${OE_TA_LINKER_FLAGS})
+    -pie
+    --sort-section=alignment)

@@ -140,14 +140,13 @@ target_include_directories(libuteeasm PRIVATE
 add_library(libutee STATIC ${LIBUTEE_C_SRC})
 set_property(TARGET libutee PROPERTY C_STANDARD 99)
 target_compile_options(libutee PUBLIC
-    -D_GNU_SOURCE
     -include ${OE_TA_CONF})
-target_include_directories(libutee PUBLIC
-    ${LIBUTEE_SRC}
-    ${LIBUTEE_INC}
-    ${LIBUTILS_EXT_INC}
-    ${LIBUTILS_ISOC_INC}
-    ${LIBMPA_INC})
+target_include_directories(libutee
+    PRIVATE ${LIBUTEE_SRC}
+    PUBLIC  ${LIBUTEE_INC}
+    PUBLIC  ${LIBUTILS_EXT_INC}
+    PRIVATE ${LIBUTILS_ISOC_INC}
+    PRIVATE ${LIBMPA_INC})
 target_link_libraries(libutee PUBLIC
     libuteeasm
     libc)
@@ -192,9 +191,7 @@ target_link_libraries(libunwind PUBLIC libc)
 # Set up libcxxrt.
 add_library(libcxxrt STATIC ${LIBCXXRT_CXX_SRC})
 add_dependencies(libcxxrt musl_includes)
-target_compile_options(libcxxrt
-    PUBLIC ${OE_TA_CXX_FLAGS}
-    PRIVATE -D_GNU_SOURCE)
+target_compile_options(libcxxrt PRIVATE)
 target_link_libraries(libcxxrt PUBLIC libunwind)
 
 # Set up libcxx.

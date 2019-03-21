@@ -17,6 +17,10 @@ option(OE_USE_SIMULATION
     "If selected, logic to operate a hardware TEE is replaced with stubs which simulate it, but do not require any."
     OFF)
 
+option(OE_USE_TA_DEV_KIT
+    "If selected, use a TA Dev Kit for building TAs instead of Open Enclave built-in libraries."
+    OFF)
+
 # Validate and create option shorthands
 if("${OE_TEE}" STREQUAL "Intel SGX" OR "${OE_TEE}" STREQUAL "SGX")
     set(SGX ON)
@@ -74,7 +78,7 @@ elseif(WIN32 AND SGX AND ("$ENV{SGXSDKInstallPath}" STREQUAL "") AND ("${SGXSDKI
 endif()
 
 # Propagate the environment variables into locals, if necessary.
-if(TZ AND (NOT "$ENV{TA_DEV_KIT_DIR}" STREQUAL "") AND ("${TA_DEV_KIT_DIR}" STREQUAL ""))
+if(UNIX AND TZ AND (NOT "$ENV{TA_DEV_KIT_DIR}" STREQUAL "") AND ("${TA_DEV_KIT_DIR}" STREQUAL ""))
     set(TA_DEV_KIT_DIR $ENV{TA_DEV_KIT_DIR})
 elseif(WIN32 AND SGX)
     find_package(SGXSDK REQUIRED)
@@ -195,7 +199,7 @@ if(UNIX AND TZ)
         RENAME libteec.so)
 endif()
 
-if(TZ)
+if(TZ AND (NOT OE_USE_TA_DEV_KIT))
     add_subdirectory(libc)
 endif()
 
