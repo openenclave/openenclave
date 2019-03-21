@@ -13,28 +13,13 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "" OR "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     list(APPEND OE_TA_S_FLAGS -g)
 endif()
 
-# When using GCC to compile C files.
-set(OE_TA_C_FLAGS_DEFINITIONS
+# When using GCC to compile C/CXX files.
+set(OE_TA_COMMON_DEFINITIONS
     -D_XOPEN_SOURCE=700
     -DARM64=1
     -D__LP64__=1)
 
-set(OE_TA_C_FLAGS_WARNINGS
-    -Wno-missing-braces
-    -Wno-parentheses
-    -Wno-unknown-pragmas
-    -Wno-conversion
-    -Wno-unused-parameter
-    -Wno-sign-compare
-    #-Wno-jump-misses-init
-    -Wno-maybe-uninitialized
-    -Wno-unknown-pragmas
-    -Wno-unused-but-set-variable
-    -Wno-unused-function
-    -Wno-unused-value
-    -Wno-unused-variable)
-
-set(OE_TA_C_FLAGS_OPTIONS
+set(OE_TA_COMMON_FLAGS
     -mstrict-align
     -nostdinc
     -nostdlib
@@ -43,19 +28,26 @@ set(OE_TA_C_FLAGS_OPTIONS
     -fno-builtin-memcpy
     -fno-builtin-memset
     -ffreestanding
-    #-fexcess-precision=standard
-    -frounding-math
     -fpie
     -fPIC)
-    #-std=gnu99)
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "" OR "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-    list(APPEND OE_TA_C_FLAGS_OPTIONS -g3)
+    list(APPEND OE_TA_COMMON_FLAGS -g3)
 else()
-    list(APPEND OE_TA_C_FLAGS_OPTIONS -Os)
+    list(APPEND OE_TA_COMMON_FLAGS -Os)
 endif()
 
+# When using GCC for linking.
+set(OE_TA_LINKER_FLAGS
+    -fpie
+    --sort-section=alignment)
+
+# Final values.
 set(OE_TA_C_FLAGS
-    ${OE_TA_C_FLAGS_DEFINITIONS}
-    ${OE_TA_C_FLAGS_WARNINGS}
-    ${OE_TA_C_FLAGS_OPTIONS})
+    ${OE_TA_COMMON_DEFINITIONS}
+    ${OE_TA_COMMON_FLAGS})
+set(OE_TA_CXX_FLAGS
+    ${OE_TA_COMMON_DEFINITIONS}
+    ${OE_TA_COMMON_FLAGS})
+set(OE_TA_LD_FLAGS
+    ${OE_TA_LINKER_FLAGS})

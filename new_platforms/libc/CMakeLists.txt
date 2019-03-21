@@ -117,7 +117,9 @@ target_compile_options(libcasm PRIVATE ${OE_TA_S_FLAGS})
 
 add_library(libc STATIC ${LIBC_C_SRC})
 set_property(TARGET libc PROPERTY C_STANDARD 99)
-target_compile_options(libc PUBLIC ${OE_TA_C_FLAGS})
+target_compile_options(libc
+    PRIVATE -fexcess-precision=standard -frounding-math
+    PUBLIC ${OE_TA_C_FLAGS})
 target_include_directories(libc PUBLIC
     ${MUSL_OUT}/src/include
     ${MUSL_OUT}/src/internal
@@ -146,7 +148,9 @@ target_include_directories(libutee PUBLIC
     ${LIBUTILS_EXT_INC}
     ${LIBUTILS_ISOC_INC}
     ${LIBMPA_INC})
-target_link_libraries(libutee PUBLIC libuteeasm PUBLIC libc)
+target_link_libraries(libutee PUBLIC
+    libuteeasm
+    libc)
 
 # Set up libunwind.
 configure_file(
@@ -161,6 +165,7 @@ configure_file(
     ${LIBUNWIND_SRC}/include/libunwind-common.h.in
     ${CMAKE_CURRENT_BINARY_DIR}/libunwind-common.inc
     COPYONLY)
+
 file(COPY ${LIBUNWIND_SRC}/include/tdep-${ARCH}/
     DESTINATION tdep)
 
@@ -187,9 +192,9 @@ target_link_libraries(libunwind PUBLIC libc)
 # Set up libcxxrt.
 add_library(libcxxrt STATIC ${LIBCXXRT_CXX_SRC})
 add_dependencies(libcxxrt musl_includes)
-target_compile_options(libcxxrt PRIVATE
-    ${OE_TA_C_FLAGS}
-    -D_GNU_SOURCE)
+target_compile_options(libcxxrt
+    PUBLIC ${OE_TA_CXX_FLAGS}
+    PRIVATE -D_GNU_SOURCE)
 target_link_libraries(libcxxrt PUBLIC libunwind)
 
 # Set up libcxx.
@@ -211,7 +216,6 @@ ExternalProject_Add(libcxx_includes
 add_library(libcxx STATIC ${LIBCXX_CXX_SRC})
 add_dependencies(libcxx libcxx_includes)
 target_compile_options(libcxx PRIVATE
-    ${OE_TA_C_FLAGS}
     -DLIBCXXRT
     -D_LIBCPP_PROVIDES_DEFAULT_RUNE_TABLE
     -D_LIBCPP_BUILDING_LIBRARY
