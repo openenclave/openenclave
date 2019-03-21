@@ -7,32 +7,47 @@ example:
 Version Bump
 ------------
 
-We want to release `v0.4.0` in about a week, so we choose a release manager from
-the committers. The initial announcement of the upcoming release will be a PR by
-the release manager to the `master` branch with the commit to bump the [VERSION
-file](../VERSION) to `v0.4.0`, and the commit to update the
-[CHANGELOG](#changelog-updates) "Unreleased" section to `v0.4.0`.
-
-Release Branch
---------------
-
-After the version bump PR is merged to `master`, the release manager creates a
-branch off `master` named `v0.4.x`.
-
 > A note on naming: please prepend the `v` for consistency. Tags are `v0.4.0`
 > and branches are `v0.4.x`. We follow [Semantic
 > Versioning](https://semver.org/spec/v2.0.0.html).
 
+We want to release `v0.5.0` in about a week, so we choose a release manager from
+the committers.
+
+The initial announcement of the upcoming release will be a PR by the release
+manager to the `master` branch with the commit to bump the [VERSION
+file](../VERSION) to _next_ pre-release, e.g. `v0.6.x`, and the commit to update
+the [CHANGELOG](#changelog-updates) "Unreleased" section to `v0.6.0` (and change
+the previous to v0.5.0).
+
+Release Branch
+--------------
+
+After this is merged, a release branch named `v0.5.x` is created from the last
+commit in `master` before the version changed to `v0.6.x`. The VERSION file in
+this commit should currently have `v0.5.x` in it, and the first commit to the
+release branch is to change it to `v0.5.0-rc1`.
+
+As release candidates are created, the suffix is incremented, e.g. `v0.5.0-rc2`.
+It is from this branch that pre-release packages are created.
+
+When the release is finalized, the branch is once again bumped to the final
+version number without the suffix, e.g. `v0.5.0`.
+
+Hotfix releases are made from this branch, following a similar process, but with
+the patch version incremented to `v0.5.1`.
+
 All normal development continues to happen on the `master` branch. As PRs are
-opened against `master`, if the author believes the PR also belongs in `v0.4.x`,
-they will note this in the PR (this can be done with a label). After approval,
-the PR will be merged into `master` as we do normally (with `bors r+`).
+opened against `master`, if the author believes the PR also belongs in `v0.5.x`,
+they will note this in the PR (this should be done with the milestone). After
+approval, the PR will be merged into `master` as we do normally (with `bors
+r+`).
 
 Backports to Release Branch
 ---------------------------
 
 For PRs that should also land in the release, the _release manager_ will craft a
-second PR with the same changes rebased onto the `v0.4.x` branch, and will open
+second PR with the same changes rebased onto the `v0.5.x` branch, and will open
 a PR targeting the release branch. This PR will go through the same review
 process, and explicitly requires the original author to approve it. After
 approval, the PR will be merged to the release branch, again with `bors r+`.
