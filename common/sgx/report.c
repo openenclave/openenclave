@@ -133,7 +133,7 @@ static oe_result_t _oe_sgx_get_target_info(
     if (target_info_buffer == NULL || *target_info_size < sizeof(*info))
     {
         *target_info_size = sizeof(*info);
-        OE_RAISE(OE_BUFFER_TOO_SMALL);
+        OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
     }
 
     OE_CHECK(oe_memset_s(info, sizeof(*info), 0, sizeof(*info)));
@@ -176,8 +176,12 @@ oe_result_t oe_get_target_info_v1(
     {
         case OE_REPORT_TYPE_SGX_LOCAL:
         case OE_REPORT_TYPE_SGX_REMOTE:
-            OE_CHECK(_oe_sgx_get_target_info(
-                report, report_size, target_info_buffer, target_info_size));
+            result = _oe_sgx_get_target_info(
+                report, report_size, target_info_buffer, target_info_size);
+            if (result == OE_BUFFER_TOO_SMALL)
+                OE_CHECK_NO_TRACE(result);
+            else
+                OE_CHECK(result);
             break;
         default:
             OE_RAISE(OE_INVALID_PARAMETER);

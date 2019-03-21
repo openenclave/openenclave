@@ -178,7 +178,8 @@ oe_result_t oe_enforce_qe_identity(sgx_report_body_t* qe_report_body)
     result = OE_OK;
 
 done:
-    oe_cert_chain_free(&pck_cert_chain);
+    if (pck_cert_chain.impl[0] != 0)
+        oe_cert_chain_free(&pck_cert_chain);
     return result;
 }
 #endif
