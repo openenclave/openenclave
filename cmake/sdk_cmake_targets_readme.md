@@ -65,21 +65,31 @@ structure example.
 
 ### Creating an unsigned enclave
 
-Enclave targets in CMake should use `add_executable`, link to
-`openenclave::oeenclave`, and include the trusted EDL code if `oeedger8r` was
-used. An example is:
+Enclave targets in CMake should use `add_executable`, link to both
+`openenclave::oeenclave` and `openenclave::oelibc`, and include the trusted EDL
+code if `oeedger8r` was used. An example is:
 
 ```cmake
 add_executable(example_enclave example.c example_t.c)
-target_link_libraries(example_enclave openenclave::oeenclave)
+target_link_libraries(example_enclave openenclave::oeenclave openenclave::oelibc)
 ```
 
-If the enclave uses C++ code, you also need to link `openenclave::oelibcxx`:
+Technically, the `openenclave::oelibc` dependency is optional. That is, if you
+don't use anything from the C library (such as `#include <stdio.h>` etc.), you
+can exclude it, but this is very unlikely.
+
+If the enclave uses C++ code, it must link to both `openenclave::oeenclave` and
+`openenclave::oelibcxx`:
 
 ```cmake
 add_executable(example_cpp_enclave example.cpp example_t.c)
 target_link_libraries(example_cpp_enclave openenclave::oeenclave openenclave::oelibcxx)
 ```
+
+Because `openenclave:oelibccxx` depends on `openenclave::oelibc`, you don't have
+to specify both. The latter is brought in automatically by the former. However,
+`openenclave:oeenclave` depends on neither of these libraries, so it must always
+be included.
 
 Note that to opt-in to our latest API version, you should also use:
 
