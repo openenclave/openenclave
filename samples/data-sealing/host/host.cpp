@@ -71,8 +71,8 @@ int unseal_data_and_verify_result(
         target_enclave, &ret, sealed_data, sealed_data_size, &data, &data_size);
     if ((result != OE_OK) || (ret != 0))
     {
-        cout << "Host: unseal_data failed with " << oe_result_str(result)
-             << " ret = " << ret << endl;
+        cout << "Host: ecall unseal_data returned " << oe_result_str(result)
+             << " ret = " << ret << (ret ? " (failed)" : "(success)") << endl;
         goto exit;
     }
 
@@ -169,9 +169,10 @@ oe_result_t seal_unseal_by_policy(
     // product
     // For POLICY_PRODUCT: this is expected to succeed. POLICY_PRODUCT sealing
     // policy ensures sealed data could be unsealed by enclaves from the product
-    cout
-        << "\n\nHost: Unseal data in an different enclave from the same product"
-        << endl;
+    cout << "\n\nHost: Unseal data in an different enclave from the same "
+            "product:"
+         << "Seal policy is " << GET_POLICY_NAME(policy) << "--> failure is "
+         << ((policy == POLICY_UNIQUE) ? "expected" : "not expected") << endl;
     ret = unseal_data_and_verify_result(
         enclave_a_v2,
         sealed_data,
@@ -205,7 +206,7 @@ oe_result_t seal_unseal_by_policy(
     // Unsealing the data in an enclave with a different product identity is
     // expected to fail
     cout << "\n\nHost: Unseal data in a different enclave from a diffent "
-            "product: expect to fail"
+            "product: failure is expected"
          << endl;
     ret = unseal_data_and_verify_result(
         enclave_b,
