@@ -51,5 +51,13 @@ foreach(testcase ${alltests})
         endif()
     endif()
 
+# the following test fails on GCC 7 or newer, see #1559 -- Skip this test on GCC 7.0 and above in non debug builds
+    if ("${name}" MATCHES "std_containers_associative_map_map.access_at.pass")
+        string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE_UPPER)
+        if (CMAKE_CXX_COMPILER_ID MATCHES GNU AND BUILD_TYPE_UPPER MATCHES REL)
+            continue()
+        endif()
+    endif()
+
     add_enclave_test(tests/libcxxtest-${name} libcxx_host libcxxtest-${name}_enc)
 endforeach(testcase)
