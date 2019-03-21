@@ -1,48 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-# Function to set the proper compile definitions for the given target.
-function(set_host_compile_defs TARGET FLAGS)
-  target_compile_definitions(${TARGET}
-    PUBLIC
-    # NOTE: This definition is public to the rest of our project's
-    # targets, but should not yet be exposed to consumers of our
-    # package.
-    $<BUILD_INTERFACE:OE_API_VERSION=2>
-    PRIVATE
-    OE_BUILD_UNTRUSTED
-    OE_REPO_BRANCH_NAME="${GIT_BRANCH}"
-    OE_REPO_LAST_COMMIT="${GIT_COMMIT}")
-
-  if (USE_DEBUG_MALLOC)
-    target_compile_definitions(${TARGET} PRIVATE OE_USE_DEBUG_MALLOC)
-  endif ()
-
-  if (UNIX)
-    target_compile_options(${TARGET} PRIVATE
-      -Wno-attributes -Wmissing-prototypes -fPIC ${FLAGS})
-    target_compile_definitions(${TARGET} PRIVATE _GNU_SOURCE)
-  endif ()
-
-  if (CMAKE_C_COMPILER_ID MATCHES GNU)
-    target_compile_options(${TARGET} PRIVATE -Wjump-misses-init)
-  endif ()
-endfunction()
-
-# Function for creating a convenience library for host-app that need the
-# -rdynamic link flag.
-function(create_hostapp TARGETAPP TARGET)
-  add_library(${TARGETAPP} INTERFACE)
-
-  target_link_libraries(${TARGETAPP} INTERFACE ${TARGET})
-
-  if (UNIX)
-    target_link_libraries(${TARGETAPP} INTERFACE -rdynamic)
-  endif ()
-
-  install(TARGETS ${TARGETAPP} EXPORT openenclave-targets)
-endfunction()
-
 # OS specific but arch agnostic files.
 if (UNIX)
   set(PLATFORM_QUOTE_SRC
@@ -175,9 +133,10 @@ add_library(oehost STATIC
   ${PLATFORM_SRC}
   ${NEW_QUOTE_SRC})
 
-# Link libraries
-target_link_libraries(oehost PUBLIC oe_includes)
-target_link_libraries(oehostverify PUBLIC oe_includes)
+# oehost and oehostverify share a lot of the same compiler/linker flags.
+# Create an interface library that encapsulates all of them.
+add_library(oehostinterface INTERFACE)
+target_link_libraries(oehostinterface INTERFACE oe_includes)
 
 # TODO: Replace these with `find_package` and add as dependencies to
 # the CMake package.
@@ -194,12 +153,11 @@ endif ()
 find_package(Threads REQUIRED)
 
 if (UNIX)
-  target_link_libraries(oehost PRIVATE crypto dl Threads::Threads)
-  target_link_libraries(oehostverify PRIVATE crypto dl Threads::Threads)
+  target_link_libraries(oehostinterface INTERFACE crypto dl Threads::Threads)
 elseif (WIN32)
-  target_include_directories(oehost PRIVATE
+  target_include_directories(oehostinterface INTERFACE
     ${CMAKE_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
-  target_link_libraries(oehost PRIVATE bcrypt Crypt32)
+  target_link_libraries(oehostinterface INTERFACE bcrypt Crypt32)
 endif ()
 
 # TODO: Handle Trust Zone etc.
@@ -221,28 +179,77 @@ if (USE_LIBSGX)
   add_library(sgx_urts SHARED IMPORTED)
   set_target_properties(sgx_urts PROPERTIES IMPORTED_LOCATION ${LIBSGX_URTS})
 
-  target_link_libraries(oehost PUBLIC sgx_enclave_common sgx_dcap_ql sgx_urts)
-  target_compile_definitions(oehost PUBLIC OE_USE_LIBSGX)
+  target_link_libraries(oehostinterface INTERFACE sgx_enclave_common sgx_dcap_ql sgx_urts)
+  target_compile_definitions(oehostinterface INTERFACE OE_USE_LIBSGX)
 endif ()
 
 # Compile definitions and options
-set_host_compile_defs(oehost ${PLATFORM_FLAGS})
-set_host_compile_defs(oehostverify ${PLATFORM_FLAGS})
+target_compile_definitions(oehostinterface
+  INTERFACE
+  # NOTE: This definition is public to the rest of our project's
+  # targets, but should not yet be exposed to consumers of our
+  # package.
+  $<BUILD_INTERFACE:OE_API_VERSION=2>)
+
+install(TARGETS oehostinterface EXPORT openenclave-targets)
+
+# These are private to oehost, so we can't use the interface library.
+set(OEHOST_PRIVATE_COMPILE_DEFS
+  OE_BUILD_UNTRUSTED
+  OE_REPO_BRANCH_NAME="${GIT_BRANCH}"
+  OE_REPO_LAST_COMMIT="${GIT_COMMIT}")
+
+set(OEHOST_PRIVATE_COMPILE_OPTIONS ${PLATFORM_FLAGS})
+
+if (USE_DEBUG_MALLOC)
+  list(APPEND OEHOST_PRIVATE_COMPILE_DEFS OE_USE_DEBUG_MALLOC)
+endif()
+
+if (UNIX)
+  list(APPEND OEHOST_PRIVATE_COMPILE_DEFS _GNU_SOURCE)
+  list(APPEND OEHOST_PRIVATE_COMPILE_OPTIONS -Wno-attributes -Wmissing-prototypes -fPIC)
+endif()
+
+if (CMAKE_C_COMPILER_ID MATCHES GNU)
+  list(APPEND OEHOST_PRIVATE_COMPILE_OPTIONS -Wjump-misses-init)
+endif ()
+
+# Link the oehost and oehostverify with the oehostinterface library, so that
+# they have the updated arguments. Also, add the private compile options.
+target_link_libraries(oehost oehostinterface)
+target_compile_definitions(oehost PRIVATE ${OEHOST_PRIVATE_COMPILE_DEFS})
+target_compile_options(oehost PRIVATE ${OEHOST_PRIVATE_COMPILE_OPTIONS})
 
 # TODO: Remove this hard coded output directory.
 set_property(TARGET oehost PROPERTY
-  ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/host)
-set_property(TARGET oehostverify PROPERTY
   ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/host)
 
 # Install targets
 install(TARGETS oehost EXPORT openenclave-targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host)
 
-install(TARGETS oehostverify EXPORT openenclave-targets
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host
-  COMPONENT OEHOSTVERIFY)
+# Only create the host verification library in Linux systems.
+if (UNIX)
+  target_link_libraries(oehostverify oehostinterface)
+  target_compile_definitions(oehostverify PRIVATE ${OEHOST_PRIVATE_COMPILE_DEFS})
+  target_compile_options(oehostverify PRIVATE ${OEHOST_PRIVATE_COMPILE_OPTIONS})
+
+  # TODO: Remove this hard coded output directory.
+  set_property(TARGET oehostverify PROPERTY
+    ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/host)
+
+  install(TARGETS oehostverify EXPORT openenclave-targets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host
+    COMPONENT OEHOSTVERIFY)
+endif()
 
 # Create convenience libraries for apps that need the -rdynamic link flag.
-create_hostapp(oehostapp oehost)
-create_hostapp(oehostverifyapp oehostverify)
+add_library(oehostapp INTERFACE)
+target_link_libraries(oehostapp INTERFACE oehost $<$<BOOL:UNIX>:-rdynamic>)
+install(TARGETS oehostapp EXPORT openenclave-targets)
+
+if (UNIX)
+  add_library(oehostverifyapp INTERFACE)
+  target_link_libraries(oehostverifyapp INTERFACE oehostverify $<$<BOOL:UNIX>:-rdynamic>)
+  install(TARGETS oehostverifyapp EXPORT openenclave-targets)
+endif()
