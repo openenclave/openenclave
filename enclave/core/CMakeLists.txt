@@ -132,7 +132,13 @@ target_compile_options(oecore PUBLIC
     -fPIE
     -nostdinc
     -fno-stack-protector
-    -fvisibility=hidden)
+    -fvisibility=hidden
+# According to https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#Code-Gen-Options
+# "The default without -fpic is ‘initial-exec’; with -fpic the default is ‘global-dynamic’"
+# Enclaves are linked using -pie and therefore global-dynamic is too conservative.
+# Of the two efficient static tls models, inital-exec and local-exec, we choose the most
+# optimal one.
+    -ftls-model=local-exec)
 
 target_compile_options(oecore INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>)
 
