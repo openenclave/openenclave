@@ -20,7 +20,7 @@ static const uint8_t g_qe_mrsigner[32] = {
 static const uint32_t g_qe_isvprodid = 1;
 
 // The isvsvn value of Intel's Production quoting enclave.
-static const uint32_t g_qeisvsvn = 1;
+static const uint32_t g_qeisvsvn = 2;
 
 extern oe_datetime_t _sgx_minimim_crl_tcb_issue_date;
 
