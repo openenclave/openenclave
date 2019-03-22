@@ -54,7 +54,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update minimum required CMake version for building from source to 3.13.1.
 - Update minimum required C++ standard for building from source to C++14.
 - Moved `oe_seal_policy_t`, `oe_asymmetric_key_type_t`, `oe_asymmetric_key_format_t`,
-  and `oe_asymmetric_key_params_t` to `bits/types.h` from `enclave.h`. 
+  and `oe_asymmetric_key_params_t` to `bits/types.h` from `enclave.h`.
+- Changed minimum required QE ISVSVN version from 1 to 2 for the QE Identity
+  revocation check that is performed during quote verification. Remote reports
+  that were generated with a QE ISVSVN version of 1 will fail during report
+  verification now. To resolve this issue, please install the latest version
+  of the Intel SGX DCAP packages on the system that generates the remote report,
+  which as of the time of this change is version 1.0.1 and can be found here:
+  https://download.01.org/intel-sgx/dcap-1.0.1/dcap_installer/ubuntuServer1604/
 
 ### Deprecated
 
