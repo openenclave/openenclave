@@ -6,14 +6,10 @@
 #include <openenclave/internal/trace.h>
 #include "../cpuid.h"
 
-/*
-**==============================================================================
-**
-** Implementation of SGX Platform Capability Discovery.
-** Example usage is to set SECS.ATTRIBUTES correctly
-**
-**==============================================================================
-*/
+#define XSAVE_SHIFT 26
+#define OSXSAVE_SHIFT 27
+#define AVX_SHIFT 28
+bool is_xgetbv_supported(void);
 
 // Returns if processor and OS support extended states feature.
 // If cpuid.01h:ECX.XSAVE[bit 26] is 1, the processor supports the XSAVE/XRSTOR
@@ -21,11 +17,6 @@
 // If cpuid.01h:ECX.XSAVE[bit 27] is 1, it indicates that OS has set CR4,OSXSAVE
 // to enable XSETBV/XGETBV instructions to access XCR0 and to support processor
 // extended state management using XSAVE/XRSTOR.
-#define XSAVE_SHIFT 26
-#define OSXSAVE_SHIFT 27
-#define AVX_SHIFT 28
-bool is_xgetbv_supported(void);
-
 bool is_xgetbv_supported()
 {
     uint32_t eax, ebx, ecx, edx;
@@ -54,6 +45,7 @@ bool is_xgetbv_supported()
     return true;
 }
 
+/* Returns the value of XCR0 register which is programmed by the OS */
 uint64_t oe_get_xfrm()
 {
     uint32_t eax, edx, index;

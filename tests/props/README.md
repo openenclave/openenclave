@@ -14,6 +14,8 @@ OE_SET_ENCLAVE_SGX macro.
 The propshost program tests both of these scenarios. It is run once for 
 the unsigned case and once for the signed case as follows.
 
+The test also verifies that legacy and AVX configurations work for creating enclaves.
+
 ```
 # ./host/propshost ./enc/propsenc unsigned
 # ./host/propshost ./enc/propsenc.signed signed
