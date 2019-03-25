@@ -55,7 +55,7 @@ foreach (SAMPLE data-sealing file-encryptor helloworld local_attestation remote_
     endif ()
   endif()
 
-  # The prior common cannot succeed unless all commands before also
+  # The prior code cannot succeed unless all commands before also
   # succeeded, so testing only for the results is sufficient.
   #
   # TODO: An unfortunate side-effect of using FATAL_ERROR and its placement
