@@ -502,7 +502,9 @@ static oe_result_t _init_sigstruct(
 
     /* sgx_sigstruct_t.attributemask */
     sigstruct->attributemask.flags = SGX_SIGSTRUCT_ATTRIBUTEMASK_FLAGS;
-    sigstruct->attributemask.xfrm = SGX_SIGSTRUCT_ATTRIBUTEMASK_XFRM;
+    sigstruct->attributemask.xfrm =
+        SGX_SIGSTRUCT_ATTRIBUTEMASK_XFRM; // Reason this mask is 0 is because we
+                                          // don't enforce XFRM in signature
 
     /* In debug enclaves, we don't care about the debug bit, so unmask it. */
     if (attributes & SGX_FLAGS_DEBUG)

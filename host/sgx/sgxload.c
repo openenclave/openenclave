@@ -29,6 +29,7 @@
 #include "../signkey.h"
 #include "enclave.h"
 #include "sgxmeasure.h"
+#include "xstate.h"
 
 static int _make_memory_protect_param(uint64_t inflags, bool simulate)
 {
@@ -122,7 +123,23 @@ static int _make_memory_protect_param(uint64_t inflags, bool simulate)
     return outflags;
 }
 
-static sgx_secs_t* _new_secs(uint64_t base, size_t size, bool debug)
+/* Detect the XSave Feature Request Mask (XFRM) to set in the enclave */
+static uint64_t _detect_xfrm()
+{
+    uint64_t xfrm = SGX_ATTRIBUTES_DEFAULT_XFRM;
+    // Enable AVX in the enclave if supported by the OS
+    if ((oe_get_xfrm() & SGX_XFRM_AVX) == SGX_XFRM_AVX)
+        xfrm |= SGX_XFRM_AVX;
+
+    OE_TRACE_INFO("Value of XFRM to be set in enclave is %d\n", xfrm);
+    return xfrm;
+}
+
+/* Set the SGX Enclave Control Structure (SECS) for the enclave */
+static sgx_secs_t* _new_secs(
+    uint64_t base,
+    size_t size,
+    const oe_sgx_load_context_t* context)
 {
     sgx_secs_t* secs = NULL;
 
@@ -134,11 +151,11 @@ static sgx_secs_t* _new_secs(uint64_t base, size_t size, bool debug)
     secs->base = base;
 
     secs->flags = SGX_FLAGS_MODE64BIT;
-    if (debug)
+    if (oe_sgx_is_debug_load_context(context))
         secs->flags |= SGX_FLAGS_DEBUG;
 
     /* what the driver sees with SGX SDK */
-    secs->xfrm = SGX_ATTRIBUTES_DEFAULT_XFRM;
+    secs->xfrm = context->attributes.xfrm;
 
     /* COMMENT1: ssaframesize hardcoded to one for now */
     secs->ssaframesize = 1;
@@ -370,7 +387,7 @@ static oe_result_t _get_launch_token(
     /* Initialize the SGX attributes */
     sgx_attributes_t attributes = {0};
     attributes.flags = properties->config.attributes;
-    attributes.xfrm = SGX_ATTRIBUTES_DEFAULT_XFRM;
+    attributes.xfrm = properties->config.xfrm;
 
     memset(launch_token, 0, sizeof(sgx_launch_token_t));
 
@@ -410,7 +427,9 @@ oe_result_t oe_sgx_initialize_load_context(
 
     /* Set attributes before checking context properties */
     context->type = type;
-    context->attributes = attributes;
+    context->attributes.flags = attributes;
+    context->attributes.xfrm = _detect_xfrm();
+
     context->dev = OE_SGX_NO_DEVICE_HANDLE;
 #if !defined(OE_USE_LIBSGX) && defined(__linux__)
     if (type != OE_SGX_LOAD_TYPE_MEASURE &&
@@ -476,10 +495,7 @@ oe_result_t oe_sgx_create_enclave(
     }
 
     /* Create SECS structure */
-    if (!(secs = _new_secs(
-              (uint64_t)base,
-              enclave_size,
-              oe_sgx_is_debug_load_context(context))))
+    if (!(secs = _new_secs((uint64_t)base, enclave_size, context)))
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* Measure this operation */

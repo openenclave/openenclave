@@ -137,6 +137,7 @@ as listed below.
 
 - Add appropriate validations for ELF64 in Open Enclave loader.
 - Expand libc/libcxx test coverage.
+- Check support for AVX in platform/OS before setting SECS.ATTRIBUTES.XFRM in enclave.
 
 ### Security
 

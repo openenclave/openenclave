@@ -43,6 +43,9 @@ typedef struct oe_sgx_enclave_config_t
 
     /* (OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT) */
     uint64_t attributes;
+
+    /* XSave Feature Request Mask */
+    uint64_t xfrm;
 } oe_sgx_enclave_config_t;
 
 /* Extends oe_enclave_properties_header_t base type */
