@@ -2,12 +2,12 @@
 # Licensed under the MIT License.
 
 # Use the edger8r to generate C bindings from the EDL file.
-add_custom_command(OUTPUT datasealing_t.h datasealing_t.c
-  DEPENDS ${CMAKE_SOURCE_DIR}/datasealing.edl
-  COMMAND openenclave::oeedger8r --trusted ${CMAKE_SOURCE_DIR}/datasealing.edl)
+add_custom_command(OUTPUT localattestation_t.h localattestation_t.c
+  DEPENDS ${CMAKE_SOURCE_DIR}/localattestation.edl
+  COMMAND openenclave::oeedger8r --trusted ${CMAKE_SOURCE_DIR}/localattestation.edl)
 
-# Create a library common to each of our three enclaves.
-add_library(common STATIC dispatcher.cpp keys.cpp ${CMAKE_CURRENT_BINARY_DIR}/datasealing_t.c)
+# Create a library common to each of our two enclaves.
+add_library(common STATIC attestation.cpp crypto.cpp dispatcher.cpp ${CMAKE_CURRENT_BINARY_DIR}/localattestation_t.c)
 target_compile_definitions(common PUBLIC OE_API_VERSION=2)
 target_link_libraries(common PUBLIC
   # `liboecore`, a dependency of `liboeenclave`, requires the ecalls

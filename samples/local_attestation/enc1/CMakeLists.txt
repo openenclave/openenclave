@@ -1,0 +1,27 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+# Generate header with public key of enclave B (2)
+add_custom_command(OUTPUT enc2_pubkey.h
+  DEPENDS public_key_b
+  COMMAND ${CMAKE_SOURCE_DIR}/gen_pubkey_header.sh enc2_pubkey.h ${CMAKE_BINARY_DIR}/enc2/public_b.pem)
+
+add_executable(enclave_a ecalls.cpp ${CMAKE_CURRENT_BINARY_DIR}/enc2_pubkey.h)
+
+target_include_directories(enclave_a PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
+target_link_libraries(enclave_a common)
+
+# Generate key A
+add_custom_command(OUTPUT private_a.pem public_a.pem
+  COMMAND openssl genrsa -out private_a.pem -3 3072
+  COMMAND openssl rsa -in private_a.pem -pubout -out public_a.pem)
+
+add_custom_target(public_key_a DEPENDS public_a.pem)
+
+# Sign enclave A with key A
+add_custom_command(OUTPUT enclave_a.signed
+  DEPENDS private_a.pem
+  COMMAND openenclave::oesign sign $<TARGET_FILE:enclave_a> ${CMAKE_CURRENT_SOURCE_DIR}/enc.conf private_a.pem)
+
+add_custom_target(enclave_a_signed DEPENDS enclave_a.signed)

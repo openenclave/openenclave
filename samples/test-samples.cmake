@@ -6,11 +6,9 @@
 #
 #     cmake -DSOURCE_DIR=~/openenclave -DBUILD_DIR=~/openenclave/build -DPREFIX_DIR=/opt/openenclave -P ~/openenclave/samples/test-samples.cmake
 
-# The samples cannot run in simulation mode.
 if ($ENV{OE_SIMULATION})
-  message(WARNING "Samples tests skipped due to OE_SIMULATION=$ENV{OE_SIMULATION}!")
+  message(WARNING "Running only sample simulation tests due to OE_SIMULATION=$ENV{OE_SIMULATION}!")
   # This is not a failure condition, so we return with a success status.
-  return()
 endif ()
 
 # Install the SDK from current build to a known location in the build tree.
@@ -19,8 +17,10 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E env DESTDIR=${BUILD_DIR}/install ${C
 # The prefix is appended to the value given to DESTDIR, e.g. build/install/opt/openenclave/...
 set(INSTALL_DIR ${BUILD_DIR}/install${PREFIX_DIR})
 
-# TODO: Add the rest of the samples.
-foreach (SAMPLE data-sealing)
+# A variable to know if all samples ran successfully
+set(ALL_TEST_RESULT 0)
+
+foreach (SAMPLE data-sealing file-encryptor helloworld local_attestation remote_attestation)
   set(SAMPLE_BUILD_DIR ${BUILD_DIR}/samples/${SAMPLE})
   set(SAMPLE_SOURCE_DIR ${INSTALL_DIR}/share/openenclave/samples/${SAMPLE})
 
@@ -38,18 +38,31 @@ foreach (SAMPLE data-sealing)
     COMMAND ${CMAKE_COMMAND} --build ${SOURCE_DIR}/${SAMPLE}
     WORKING_DIRECTORY ${SAMPLE_BUILD_DIR})
 
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} --build ${SAMPLE_BUILD_DIR} --target run
-    RESULT_VARIABLE TEST_RESULT)
+  if ((NOT DEFINED ENV{OE_SIMULATION}) OR (NOT $ENV{OE_SIMULATION}))
+    execute_process(
+      COMMAND ${CMAKE_COMMAND} --build ${SAMPLE_BUILD_DIR} --target run
+      RESULT_VARIABLE TEST_RESULT)
+    if (TEST_RESULT)
+      message(WARNING "Samples test '${SAMPLE}' failed!")
+      set(ALL_TEST_RESULT 1)
+    endif ()
+  endif ()
 
-  # The prior common cannot succeed unless all commands before also
-  # succeeded, so testing only the result of this is sufficient.
-  #
-  # TODO: An unfortunate side-effect of this placement is that a
-  # failed sample will cause the rest of the samples to be skipped.
-  if (TEST_RESULT)
-    message(FATAL_ERROR "Samples test '${SAMPLE}' failed!")
+  if (${SAMPLE} MATCHES "(file-encryptor|helloworld)")
+    # Of all the current samples, only file-encryptor and helloworld also work under simulation,
+    # so we test that additional scenario here.
+    execute_process(
+      COMMAND ${CMAKE_COMMAND} --build ${SAMPLE_BUILD_DIR} --target simulate
+      RESULT_VARIABLE TEST_SIMULATE_RESULT)
+    if (TEST_SIMULATE_RESULT)
+      message(WARNING "Samples test '${SAMPLE}' failed in simulation mode!")
+      set(ALL_TEST_RESULT 1)
+    endif ()
   endif ()
 
   # TODO: Build the sample with GNU Make.
 endforeach ()
+
+if (${ALL_TEST_RESULT})
+  message(FATAL_ERROR "One of the samples failed while testing it. Please check the log!")
+endif ()

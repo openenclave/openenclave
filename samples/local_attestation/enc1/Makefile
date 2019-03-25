@@ -41,14 +41,13 @@ public.pem: private.pem
 # a malicious host might change it. So, we would need to load a certicate
 # that contains the expected public key that is signed by a trusted CA.
 genkey: public.pem
-	chmod u+x ../gen_pubkey_header.sh
 	../gen_pubkey_header.sh ../enc2/enc1_pubkey.h $<
 
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../localattestation.edl --trusted --trusted-dir ../common
-	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -std=c++11 -DOE_API_VERSION=2 ecalls.cpp ../common/attestation.cpp ../common/crypto.cpp ../common/dispatcher.cpp
-	$(CC) -g -c $(CFLAGS) $(CINCLUDES) -DOE_API_VERSION=2 ../common/localattestation_t.c
+	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -I.. -std=c++11 -DOE_API_VERSION=2 ecalls.cpp ../common/attestation.cpp ../common/crypto.cpp ../common/dispatcher.cpp
+	$(CC) -g -c $(CFLAGS) $(CINCLUDES) -I.. -DOE_API_VERSION=2 ../common/localattestation_t.c
 	$(CXX) -o enclave1 attestation.o crypto.o ecalls.o dispatcher.o localattestation_t.o $(LDFLAGS)
 
 sign:

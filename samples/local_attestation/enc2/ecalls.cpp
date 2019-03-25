@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+#include <common/dispatcher.h>
+#include <common/localattestation_t.h>
 #include <openenclave/enclave.h>
-#include "../common/dispatcher.h"
-#include "../common/localattestation_t.h"
 #include "enc1_pubkey.h"
 
 // For this purpose of this example: demonstrating how to do attestation
