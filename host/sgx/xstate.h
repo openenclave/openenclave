@@ -4,7 +4,7 @@
 #ifndef _OE_XSTATE_H
 #define _OE_XSTATE_H
 
-#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/bits/types.h>
 
 /* Read XCR0 register, which the OS programs to reflect the features for
  * which it provides context management.

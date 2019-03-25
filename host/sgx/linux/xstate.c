@@ -9,7 +9,6 @@
 #define XSAVE_SHIFT 26
 #define OSXSAVE_SHIFT 27
 #define AVX_SHIFT 28
-bool is_xgetbv_supported(void);
 
 // Returns if processor and OS support extended states feature.
 // If cpuid.01h:ECX.XSAVE[bit 26] is 1, the processor supports the XSAVE/XRSTOR
@@ -17,7 +16,7 @@ bool is_xgetbv_supported(void);
 // If cpuid.01h:ECX.XSAVE[bit 27] is 1, it indicates that OS has set CR4,OSXSAVE
 // to enable XSETBV/XGETBV instructions to access XCR0 and to support processor
 // extended state management using XSAVE/XRSTOR.
-bool is_xgetbv_supported()
+static bool _is_xgetbv_supported()
 {
     uint32_t eax, ebx, ecx, edx;
 
@@ -54,7 +53,7 @@ uint64_t oe_get_xfrm()
 
     // Ensure that Processor and OS support extended states feature. XGETBV will
     // #GP fault otherwise.
-    if (is_xgetbv_supported())
+    if (_is_xgetbv_supported())
     {
         /* Invoke xgetbv to get the value of the Extended Control Register XCR0
          */
