@@ -2,6 +2,7 @@
 # Licensed under the MIT License.
 
 add_custom_command(OUTPUT helloworld_u.h helloworld_u.c
+  DEPENDS ${CMAKE_SOURCE_DIR}/helloworld.edl
   COMMAND openenclave::oeedger8r --untrusted ${CMAKE_SOURCE_DIR}/helloworld.edl)
 
 add_executable(helloworld_host host.c ${CMAKE_CURRENT_BINARY_DIR}/helloworld_u.c)

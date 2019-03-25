@@ -2,6 +2,7 @@
 # Licensed under the MIT License.
 
 add_custom_command(OUTPUT fileencryptor_u.h fileencryptor_u.c
+  DEPENDS ${CMAKE_SOURCE_DIR}/fileencryptor.edl
   COMMAND openenclave::oeedger8r --untrusted ${CMAKE_SOURCE_DIR}/fileencryptor.edl)
 
 add_executable(file-encryptor_host host.cpp ${CMAKE_CURRENT_BINARY_DIR}/fileencryptor_u.c)

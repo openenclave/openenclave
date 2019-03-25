@@ -3,6 +3,7 @@
 
 # Use the edger8r to generate C bindings from the EDL file.
 add_custom_command(OUTPUT datasealing_t.h datasealing_t.c
+  DEPENDS ${CMAKE_SOURCE_DIR}/datasealing.edl
   COMMAND openenclave::oeedger8r --trusted ${CMAKE_SOURCE_DIR}/datasealing.edl)
 
 # Create a library common to each of our three enclaves.

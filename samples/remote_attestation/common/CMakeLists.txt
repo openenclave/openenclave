@@ -3,6 +3,7 @@
 
 # Use the edger8r to generate C bindings from the EDL file.
 add_custom_command(OUTPUT remoteattestation_t.h remoteattestation_t.c
+  DEPENDS ${CMAKE_SOURCE_DIR}/remoteattestation.edl
   COMMAND openenclave::oeedger8r --trusted ${CMAKE_SOURCE_DIR}/remoteattestation.edl)
 
 # Create a library common to each of our two enclaves.

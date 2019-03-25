@@ -2,6 +2,7 @@
 # Licensed under the MIT License.
 
 add_custom_command(OUTPUT remoteattestation_u.h remoteattestation_u.c
+  DEPENDS ${CMAKE_SOURCE_DIR}/remoteattestation.edl
   COMMAND openenclave::oeedger8r --untrusted ${CMAKE_SOURCE_DIR}/remoteattestation.edl)
 
 add_executable(remote_attestation_host host.cpp ${CMAKE_CURRENT_BINARY_DIR}/remoteattestation_u.c)
