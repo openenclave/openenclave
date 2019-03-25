@@ -17,6 +17,9 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E env DESTDIR=${BUILD_DIR}/install ${C
 # The prefix is appended to the value given to DESTDIR, e.g. build/install/opt/openenclave/...
 set(INSTALL_DIR ${BUILD_DIR}/install${PREFIX_DIR})
 
+# A variable to know if all samples ran successfully
+set(ALL_TEST_RESULT 0)
+
 foreach (SAMPLE data-sealing file-encryptor helloworld local_attestation remote_attestation)
   set(SAMPLE_BUILD_DIR ${BUILD_DIR}/samples/${SAMPLE})
   set(SAMPLE_SOURCE_DIR ${INSTALL_DIR}/share/openenclave/samples/${SAMPLE})
@@ -40,7 +43,8 @@ foreach (SAMPLE data-sealing file-encryptor helloworld local_attestation remote_
       COMMAND ${CMAKE_COMMAND} --build ${SAMPLE_BUILD_DIR} --target run
       RESULT_VARIABLE TEST_RESULT)
     if (TEST_RESULT)
-      message(FATAL_ERROR "Samples test '${SAMPLE}' failed!")
+      message(WARNING "Samples test '${SAMPLE}' failed!")
+      set(ALL_TEST_RESULT 1)
     endif ()
   endif ()
 
@@ -51,15 +55,14 @@ foreach (SAMPLE data-sealing file-encryptor helloworld local_attestation remote_
       COMMAND ${CMAKE_COMMAND} --build ${SAMPLE_BUILD_DIR} --target simulate
       RESULT_VARIABLE TEST_SIMULATE_RESULT)
     if (TEST_SIMULATE_RESULT)
-      message(FATAL_ERROR "Samples test '${SAMPLE}' failed in simulation mode!")
+      message(WARNING "Samples test '${SAMPLE}' failed in simulation mode!")
+      set(ALL_TEST_RESULT 1)
     endif ()
-  endif()
-
-  # The prior code cannot succeed unless all commands before also
-  # succeeded, so testing only for the results is sufficient.
-  #
-  # TODO: An unfortunate side-effect of using FATAL_ERROR and its placement
-  # is that a failed sample will cause the rest of the samples to be skipped.
+  endif ()
 
   # TODO: Build the sample with GNU Make.
 endforeach ()
+
+if (${ALL_TEST_RESULT})
+  message(FATAL_ERROR "One of the samples failed while testing it. Please check the log!")
+endif ()
