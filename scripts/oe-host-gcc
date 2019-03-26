@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+cflags=$(pkg-config oehost-gcc --cflags)
+libs=$(pkg-config oehost-gcc --libs)
+/usr/bin/gcc "$@" "${cflags}" "${libs}"

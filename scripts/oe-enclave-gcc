@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+cflags=$(pkg-config oeenclave-gcc --cflags)
+libs=$(pkg-config oeenclave-gcc --libs)
+/usr/bin/gcc "$@" "${cflags}" "${libs}"
