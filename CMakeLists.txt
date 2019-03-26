@@ -25,7 +25,8 @@ endif ()
 set(CMAKE_C_COMPILER_NAMES clang-7 cc)
 set(CMAKE_CXX_COMPILER_NAMES clang++-7 c++)
 
-project("Open Enclave SDK" VERSION ${OE_VERSION} LANGUAGES C CXX ${OE_ASM})
+project("Open Enclave SDK" LANGUAGES C CXX ${OE_ASM})
+set(PROJECT_VERSION ${OE_VERSION})
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
