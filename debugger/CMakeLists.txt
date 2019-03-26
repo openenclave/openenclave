@@ -6,6 +6,6 @@ add_subdirectory(pythonExtension)
 
 # Copy oe-gdb to build/output/bin so that it can be used
 # for debugging enclaves built as part of OE SDK.
-file(COPY oe-gdb DESTINATION ${OE_BINDIR})
+file(COPY oegdb DESTINATION ${OE_BINDIR})
 
-install(PROGRAMS oe-gdb DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(PROGRAMS oegdb DESTINATION ${CMAKE_INSTALL_BINDIR})
