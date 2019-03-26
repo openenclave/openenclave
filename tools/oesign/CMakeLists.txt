@@ -1,7 +1,21 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-add_executable(oesign main.c oedump.c)
+include(CheckSymbolExists)
+
+list(APPEND SOURCES main.c oedump.c)
+
+CHECK_SYMBOL_EXISTS(getopt_long getopt.h HAVE_GETOPT_LONG)
+
+if (NOT HAVE_GETOPT_LONG)
+  list (APPEND SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/getopt_long.c)
+endif()
+
+add_executable(oesign ${SOURCES})
+
+if (NOT HAVE_GETOPT_LONG)
+  target_include_directories(oesign PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+endif()
 
 target_link_libraries(oesign oehost)
 

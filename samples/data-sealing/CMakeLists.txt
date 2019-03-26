@@ -23,12 +23,12 @@ add_custom_command(OUTPUT private_a.pem public_a.pem
 # Sign enclave A v1 with key A
 add_custom_command(OUTPUT enc1/enclave_a_v1.signed
   DEPENDS ${CMAKE_BINARY_DIR}/private_a.pem
-  COMMAND openenclave::oesign sign $<TARGET_FILE:enclave_a_v1> ${CMAKE_SOURCE_DIR}/enc1/data-sealing.conf private_a.pem)
+  COMMAND openenclave::oesign sign -e $<TARGET_FILE:enclave_a_v1> -c ${CMAKE_SOURCE_DIR}/enc1/data-sealing.conf -k private_a.pem)
 
 # Sign enclave A v2 with key A
 add_custom_command(OUTPUT enc2/enclave_a_v2.signed
   DEPENDS ${CMAKE_BINARY_DIR}/private_a.pem
-  COMMAND openenclave::oesign sign $<TARGET_FILE:enclave_a_v2> ${CMAKE_SOURCE_DIR}/enc2/data-sealing.conf private_a.pem)
+  COMMAND openenclave::oesign sign -e $<TARGET_FILE:enclave_a_v2> -c ${CMAKE_SOURCE_DIR}/enc2/data-sealing.conf -k private_a.pem)
 
 # Generate key B
 add_custom_command(OUTPUT private_b.pem public_b.pem
@@ -38,7 +38,7 @@ add_custom_command(OUTPUT private_b.pem public_b.pem
 # Sign enclave B with key B
 add_custom_command(OUTPUT enc3/enclave_b.signed
   DEPENDS ${CMAKE_BINARY_DIR}/private_b.pem
-  COMMAND openenclave::oesign sign $<TARGET_FILE:enclave_b> ${CMAKE_SOURCE_DIR}/enc3/data-sealing.conf private_b.pem)
+  COMMAND openenclave::oesign sign -e $<TARGET_FILE:enclave_b> -c ${CMAKE_SOURCE_DIR}/enc3/data-sealing.conf -k private_b.pem)
 
 add_custom_target(run
   DEPENDS data-sealing_host ${CMAKE_BINARY_DIR}/enc1/enclave_a_v1.signed ${CMAKE_BINARY_DIR}/enc2/enclave_a_v2.signed ${CMAKE_BINARY_DIR}/enc3/enclave_b.signed

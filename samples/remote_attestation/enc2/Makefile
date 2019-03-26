@@ -50,7 +50,7 @@ build:
 	$(CXX) -o enclave2 attestation.o crypto.o ecalls.o dispatcher.o remoteattestation_t.o $(LDFLAGS) 
 
 sign:
-	oesign sign enclave2 enc.conf private.pem
+	oesign sign -e enclave2 -c enc.conf -k private.pem
 
 clean:
 	rm -f *.o enclave2 enclave2.signed remoteattestation_t.* *.pem enc1_pubkey.h

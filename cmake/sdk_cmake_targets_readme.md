@@ -95,7 +95,7 @@ enclave. Example usage is:
 
 ```cmake
 add_custom_command(OUTPUT example_enclave.signed
-  COMMAND openenclave::oesign sign $<TARGET_FILE:example_enclave> ${CMAKE_CURRENT_SOURCE_DIR}/example.conf ${CMAKE_CURRENT_SOURCE_DIR}/key.pem)
+  COMMAND openenclave::oesign sign -e $<TARGET_FILE:example_enclave> -c ${CMAKE_CURRENT_SOURCE_DIR}/example.conf -k ${CMAKE_CURRENT_SOURCE_DIR}/key.pem)
 ```
 
 Since `oesign` is unaware of CMake information, the

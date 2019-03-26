@@ -49,12 +49,12 @@ of the signing process. To do so, you will need to use the oesign tool, which
 takes the following parameters:
 
 ```bash
-Usage: oesign ENCLAVE CONFFILE KEYFILE
+Usage: oesign sign --enclave-image ENCLAVE --config-file CONFFILE --key-file KEYFILE
 ```
 
 For example, to sign the helloworld sample enclave in the output folder:
 ```bash
-/opt/openenclave/bin/oesign helloworld_enc enc.conf private.pem
+/opt/openenclave/bin/oesign sign --enclave-image helloworld_enc --config-file enc.conf --key-file private.pem
 ```
 
 **When signing the enclave, the `KEYFILE` specified must contain a 3072-bit RSA keys
