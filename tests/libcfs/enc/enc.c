@@ -7,6 +7,9 @@
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/tests.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/mount.h>
 
 static oe_jmp_buf _jmp_buf;
 static int _exit_status = OE_INT_MAX;
@@ -28,6 +31,12 @@ static int _run_main(int argc, const char* argv[])
     }
 
     oe_set_exit_handler(_exit_handler);
+
+    if (mount("/", "/", "hostfs", 0, NULL) != 0)
+    {
+        fprintf(stderr, "mount() failed\n");
+        exit(1);
+    }
 
     ret = main(argc, argv);
 

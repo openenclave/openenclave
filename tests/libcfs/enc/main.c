@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/mount.h>
 #include <sys/stat.h>
 
 int main(int argc, const char* argv[])
@@ -20,12 +19,6 @@ int main(int argc, const char* argv[])
     if (argc != 3)
     {
         fprintf(stderr, "Usage: %s src-dir tmp-dir\n", argv[0]);
-        exit(1);
-    }
-
-    if (mount("/", "/", "hostfs", 0, NULL) != 0)
-    {
-        fprintf(stderr, "mount() failed\n");
         exit(1);
     }
 
