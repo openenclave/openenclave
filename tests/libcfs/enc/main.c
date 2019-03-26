@@ -16,15 +16,15 @@ int main(int argc, const char* argv[])
     char path[PATH_MAX];
     const char alphabet[] = "abcdefghijklmnopqrstuvwxyz";
 
-    if (argc != 3)
+    if (argc != 2)
     {
-        fprintf(stderr, "Usage: %s src-dir tmp-dir\n", argv[0]);
+        fprintf(stderr, "Usage: %s tmp-dir\n", argv[0]);
         exit(1);
     }
 
     /* Create the temporary directory. */
     {
-        strcpy(tmp_dir, argv[2]);
+        strcpy(tmp_dir, argv[1]);
 
         if (mkdir(tmp_dir, 0777) != 0)
         {

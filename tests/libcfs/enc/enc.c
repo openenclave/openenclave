@@ -45,18 +45,14 @@ static int _run_main(int argc, const char* argv[])
 
 void test_libcfs(const char* src_dir, const char* tmp_dir)
 {
-    const int argc = 3;
-    const char* argv[4] = {
-        "main",
-        src_dir,
-        tmp_dir,
-        NULL,
-    };
+    const int argc = 2;
+    const char* argv[3];
+
+    (void)src_dir;
 
     argv[0] = "./main";
-    argv[1] = src_dir;
-    argv[2] = tmp_dir;
-    argv[3] = NULL;
+    argv[1] = tmp_dir;
+    argv[2] = NULL;
 
     OE_TEST(_run_main(argc, argv) == 0);
 }
