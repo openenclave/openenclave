@@ -200,7 +200,7 @@ oe_result_t oe_private_key_write_pem(
         if (*pem_size < size)
         {
             *pem_size = size;
-            OE_RAISE(OE_BUFFER_TOO_SMALL);
+            OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
         }
 
         OE_CHECK(oe_memcpy_s(pem_data, *pem_size, buf, size));
@@ -285,7 +285,7 @@ oe_result_t oe_public_key_write_pem(
         if (*pem_size < size)
         {
             *pem_size = size;
-            OE_RAISE(OE_BUFFER_TOO_SMALL);
+            OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
         }
 
         OE_CHECK(oe_memcpy_s(pem_data, *pem_size, buf, size));
@@ -305,7 +305,7 @@ oe_result_t oe_private_key_free(oe_private_key_t* private_key, uint64_t magic)
     if (private_key)
     {
         if (!oe_private_key_is_valid(private_key, magic))
-            OE_RAISE(OE_INVALID_PARAMETER);
+            OE_RAISE_NO_TRACE(OE_INVALID_PARAMETER);
 
         oe_private_key_release(private_key, magic);
     }

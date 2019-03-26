@@ -197,7 +197,7 @@ oe_result_t oe_private_key_write_pem(
         if (*size < mem->length)
         {
             *size = mem->length;
-            OE_RAISE(OE_BUFFER_TOO_SMALL);
+            OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
         }
 
         /* Copy result to output buffer */
@@ -285,7 +285,7 @@ oe_result_t oe_private_key_free(oe_private_key_t* key, uint64_t magic)
 
         /* Check parameter */
         if (!oe_private_key_is_valid(impl, magic))
-            OE_RAISE(OE_INVALID_PARAMETER);
+            OE_RAISE_NO_TRACE(OE_INVALID_PARAMETER);
 
         /* Release the key */
         EVP_PKEY_free(impl->pkey);
