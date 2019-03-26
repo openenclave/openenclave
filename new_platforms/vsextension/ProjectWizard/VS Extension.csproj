@@ -118,6 +118,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <Content Include="EULA.rtf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <None Include="key.snk" />
     <None Include="packages.config" />
     <VSCTCompile Include="ImportEnclaveCommandPackage.vsct">
