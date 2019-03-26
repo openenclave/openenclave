@@ -1,23 +1,22 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/corelibc/limits.h>
-#include <openenclave/corelibc/setjmp.h>
-#include <openenclave/corelibc/stdio.h>
-#include <openenclave/corelibc/stdlib.h>
+#include <assert.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/tests.h>
+#include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/mount.h>
 
-static oe_jmp_buf _jmp_buf;
+static jmp_buf _jmp_buf;
 static int _exit_status = OE_INT_MAX;
+
+void oe_set_exit_handler(void (*handler)(int status));
 
 static void _exit_handler(int status)
 {
     _exit_status = status;
-    oe_longjmp(&_jmp_buf, 1);
+    longjmp(_jmp_buf, 1);
 }
 
 static int _run_main(int argc, const char* argv[])
@@ -25,7 +24,7 @@ static int _run_main(int argc, const char* argv[])
     int ret;
     int main(int argc, const char* argv[]);
 
-    if (oe_setjmp(&_jmp_buf) == 1)
+    if (setjmp(_jmp_buf) == 1)
     {
         return _exit_status;
     }
@@ -54,7 +53,11 @@ void test_libcfs(const char* src_dir, const char* tmp_dir)
     argv[1] = tmp_dir;
     argv[2] = NULL;
 
-    OE_TEST(_run_main(argc, argv) == 0);
+    if (_run_main(argc, argv) != 0)
+    {
+        assert("_run_main() failed" == NULL);
+        exit(1);
+    }
 }
 
 OE_SET_ENCLAVE_SGX(
