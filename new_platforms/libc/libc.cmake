@@ -1,3 +1,18 @@
+set(LIBC_MALLOC_FLAGS
+    -include stddef.h
+    -DHAVE_MMAP=0
+    -DMORECORE=sbrk
+    -DLACKS_UNISTD_H
+    -DLACKS_SYS_PARAM_H
+    -DLACKS_SYS_TYPES_H
+    -DLACKS_TIME_H
+    -DLACKS_STDLIB_H
+    -DLACKS_STRING_H
+    -DUSE_LOCKS=0
+    -Dsize_t=size_t
+    -Dptrdiff_t=ptrdiff_t)
+string(REPLACE ";" " " LIBC_MALLOC_FLAGS "${LIBC_MALLOC_FLAGS}" PARENT_SCOPE)
+
 set(LIBC_S_SRC
     ${MUSL_SRC}/src/fenv/aarch64/fenv.s
     ${MUSL_SRC}/src/setjmp/aarch64/longjmp.s
@@ -5,6 +20,7 @@ set(LIBC_S_SRC
 set(LIBC_S_SRC ${LIBC_S_SRC} PARENT_SCOPE)
 
 set(LIBC_C_SRC
+    ${DLMALLOC_SRC}/malloc.c
     ${MUSL_SRC}/src/complex/cabs.c
     ${MUSL_SRC}/src/complex/cabsf.c
     ${MUSL_SRC}/src/complex/cabsl.c
@@ -378,7 +394,7 @@ set(LIBC_C_SRC
     ${MUSL_SRC}/src/prng/lrand48.c
     ${MUSL_SRC}/src/prng/mrand48.c
     ${MUSL_SRC}/src/prng/__rand48_step.c
-    ${MUSL_SRC}/src/prng/rand.c
+    #${MUSL_SRC}/src/prng/rand.c
     ${MUSL_SRC}/src/prng/random.c
     ${MUSL_SRC}/src/prng/rand_r.c
     ${MUSL_SRC}/src/prng/__seed48.c
@@ -612,5 +628,9 @@ set(LIBC_C_SRC
     ${MUSL_SRC}/src/unistd/close.c
     ${MUSL_SRC}/src/unistd/dup.c
     ${MUSL_SRC}/src/unistd/dup3.c
-    ${DLMALLOC_SRC}/malloc.c)
+    ${CMAKE_CURRENT_LIST_DIR}/enc/optee/errno.c
+    ${CMAKE_CURRENT_LIST_DIR}/enc/optee/sbrk.c
+    ${CMAKE_CURRENT_LIST_DIR}/enc/optee/strerror.c
+    ${CMAKE_CURRENT_LIST_DIR}/enc/optee/syscalls.c
+    ${CMAKE_CURRENT_LIST_DIR}/enc/optee/sysconf.c)
 set(LIBC_C_SRC ${LIBC_C_SRC} PARENT_SCOPE)

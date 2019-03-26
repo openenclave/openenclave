@@ -20,10 +20,5 @@ set(LIBUTEE_C_SRC
     ${LIBUTEE_SRC}/arch/arm/user_ta_entry.c
     ${LIBUTEE_SRC}/arch/arm/utee_misc.c
     ${LIBUTILS_EXT_SRC}/snprintk.c
-    ${LIBUTILS_EXT_SRC}/buf_compare_ct.c
-    ${CMAKE_CURRENT_LIST_DIR}/enc/optee/errno.c
-    ${CMAKE_CURRENT_LIST_DIR}/enc/optee/sbrk.c
-    ${CMAKE_CURRENT_LIST_DIR}/enc/optee/strerror.c
-    ${CMAKE_CURRENT_LIST_DIR}/enc/optee/syscalls.c
-    ${CMAKE_CURRENT_LIST_DIR}/enc/optee/sysconf.c)
+    ${LIBUTILS_EXT_SRC}/buf_compare_ct.c)
 set(LIBUTEE_C_SRC ${LIBUTEE_C_SRC} PARENT_SCOPE)

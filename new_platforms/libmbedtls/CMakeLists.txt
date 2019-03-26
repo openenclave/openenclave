@@ -1,11 +1,21 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I\"${NP_PATH}/include\"")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I\"${OE_PATH}/include\"")
+set(ARCH "aarch64")
 
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -I\"${NP_PATH}/include\"")
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -I\"${OE_PATH}/include\"")
+# OE_TA_C_FLAGS is a LIST, but we need to give ExternalProject_Add
+# a space-separated STRING...
+string(REPLACE ";" " " OE_TA_C_FLAGS "${OE_TA_C_FLAGS}")
+
+if(UNIX AND TZ AND (NOT OE_USE_TA_DEV_KIT))
+    set(CMAKE_C_COMPILER    ${OE_TA_TOOLCHAIN_PREFIX}gcc)
+
+    set(CMAKE_C_FLAGS       ${OE_TA_C_FLAGS})
+    set(CMAKE_C_FLAGS_DEBUG ${OE_TA_C_FLAGS})
+endif()
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I${MUSL_OUT}/src/include -I${MUSL_OUT}/src/internal -I${MUSL_OUT}/arch/${ARCH} -I${MUSL_OUT_INC} -I${NP_PATH}/include -I${OE_PATH}/include")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -I${MUSL_OUT}/src/include -I${MUSL_OUT}/src/internal -I${MUSL_OUT}/arch/${ARCH} -I${MUSL_OUT_INC} -I${NP_PATH}/include -I${OE_PATH}/include")
 
 if(SGX)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I\"${SGXSDKInstallPath}/include\"")
@@ -43,6 +53,11 @@ configure_file(${OE_PATH}/3rdparty/mbedtls/config.h config.h) # This copies from
 
 set(PREFIX $<IF:$<CONFIG:RelWithDebInfo>,Release,$<CONFIG>>)
 
+configure_file(${CMAKE_CURRENT_LIST_DIR}/test.cmake ${CMAKE_CURRENT_BINARY_DIR}/test.cmake @ONLY)
+
+message(STATUS "CMAKE_C_FLAGS ${CMAKE_C_FLAGS}")
+message(STATUS "CMAKE_C_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG}")
+
 include(ExternalProject)
 ExternalProject_Add(mbedtls-wrap
     DOWNLOAD_COMMAND ${CMAKE_COMMAND} -E copy_directory
@@ -50,16 +65,19 @@ ExternalProject_Add(mbedtls-wrap
 
     UPDATE_COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${CMAKE_CURRENT_BINARY_DIR}/config.h <SOURCE_DIR>/include/mbedtls/config.h
-
+    
     CMAKE_ARGS
-        -DENABLE_PROGRAMS=OFF
-        -DENABLE_TESTING=OFF
+        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
         -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
         -DCMAKE_C_FLAGS_DEBUG=${CMAKE_C_FLAGS_DEBUG}
+        -DENABLE_PROGRAMS=OFF
+        -DENABLE_TESTING=OFF
         -DUSE_STATIC_MBEDTLS_LIBRARY=1
 
     # This is a no-op to override the default.
     INSTALL_COMMAND "")
+
+add_dependencies(mbedtls-wrap libc oeenclave)
 
 ExternalProject_Get_property(mbedtls-wrap SOURCE_DIR)
 ExternalProject_Get_property(mbedtls-wrap BINARY_DIR)

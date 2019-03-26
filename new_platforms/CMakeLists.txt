@@ -178,11 +178,13 @@ endif()
 
 include(GNUInstallDirs)
 
-# 3rd-party components
-if(WIN32 AND SGX)
-    # This subdirectory compiles mbed TLS for use *inside* enclaves.
-    add_subdirectory(libmbedtls)
+if(TZ AND (NOT OE_USE_TA_DEV_KIT))
+    add_subdirectory(libc)
 endif()
+
+# 3rd-party components
+# This subdirectory compiles mbed TLS for use *inside* enclaves.
+add_subdirectory(libmbedtls)
 
 # This one does the same for use *outside* enclaves (i.e., in the host).
 add_subdirectory(${MBEDTLS_PATH} ${CMAKE_BINARY_DIR}/out/mbedtls EXCLUDE_FROM_ALL)
@@ -197,10 +199,6 @@ if(UNIX AND TZ)
         FILES $<TARGET_FILE:teec>
         DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RENAME libteec.so)
-endif()
-
-if(TZ AND (NOT OE_USE_TA_DEV_KIT))
-    add_subdirectory(libc)
 endif()
 
 add_subdirectory(libsocket)

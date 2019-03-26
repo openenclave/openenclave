@@ -14,3 +14,9 @@ char* strerror(int errnum)
 
     return "[ERROR STRING PLACEHOLDER]";
 }
+
+void trace_printf(const char *function, int line, int level, int level_ok,
+		  const char *fmt, ...)
+{
+
+}

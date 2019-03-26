@@ -10,8 +10,8 @@ set(CMAKE_C_COMPILER   ${OE_TA_TOOLCHAIN_PREFIX}gcc)
 set(CMAKE_CXX_COMPILER ${OE_TA_TOOLCHAIN_PREFIX}g++)
 
 # Path to Open Enclave proper.
-set(OE_PATH      ${CMAKE_CURRENT_LIST_DIR}/../..)
-set(OE_INC       ${OE_PATH}/include)
+set(OE_PATH ${CMAKE_CURRENT_LIST_DIR}/../..)
+set(OE_INC  ${OE_PATH}/include)
 
 # Path to the C runtime library (musl).
 set(MUSL_OE      ${OE_PATH}/3rdparty/musl)
@@ -20,6 +20,9 @@ set(MUSL_SRC     ${MUSL_OE}/musl)
 set(MUSL_OUT     ${CMAKE_CURRENT_BINARY_DIR}/musl)
 set(MUSL_OUT_INC ${MUSL_OUT}/include)
 set(MUSL_CFLAGS  "-fPIC -DSYSCALL_NO_INLINE")
+
+set(MUSL_OUT     ${MUSL_OUT}     PARENT_SCOPE)
+set(MUSL_OUT_INC ${MUSL_OUT_INC} PARENT_SCOPE)
 
 # Path to the memory allocated (dlmalloc).
 set(DLMALLOC_OE  ${OE_PATH}/3rdparty/dlmalloc)
@@ -125,6 +128,8 @@ target_include_directories(libc PUBLIC
     ${MUSL_OUT}/src/internal
     ${MUSL_OUT}/arch/${ARCH}
     ${MUSL_OUT_INC})
+set_source_files_properties(${DLMALLOC_SRC}/malloc.c PROPERTIES COMPILE_FLAGS ${LIBC_MALLOC_FLAGS})
+
 target_link_libraries(libc PUBLIC libcasm)
 
 # Set up libutee.
@@ -132,7 +137,7 @@ add_library(libuteeasm OBJECT ${LIBUTEE_S_SRC})
 set_property(TARGET libuteeasm PROPERTY C_STANDARD 99)
 target_compile_options(libuteeasm PRIVATE
     ${OE_TA_S_FLAGS}
-    -include ${OE_TA_CONF})
+    -include ${OE_TA_DEV_KIT_CONF})
 target_include_directories(libuteeasm PRIVATE
     ${LIBUTEE_INC}
     ${LIBUTILS_EXT_INC})
@@ -140,7 +145,7 @@ target_include_directories(libuteeasm PRIVATE
 add_library(libutee STATIC ${LIBUTEE_C_SRC})
 set_property(TARGET libutee PROPERTY C_STANDARD 99)
 target_compile_options(libutee PUBLIC
-    -include ${OE_TA_CONF})
+    -include ${OE_TA_DEV_KIT_CONF})
 target_include_directories(libutee
     PRIVATE ${LIBUTEE_SRC}
     PUBLIC  ${LIBUTEE_INC}

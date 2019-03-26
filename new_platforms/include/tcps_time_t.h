@@ -7,7 +7,7 @@
 
 #include <openenclave/bits/timetypes.h>
 
-#ifndef _INC_TIME
+#if !defined(OE_USE_OPTEE) && !defined(_INC_TIME)
 /* Only include these definitions if not already included by time.h */
 
 __time64_t _time64(
@@ -28,6 +28,6 @@ struct tm *_localtime64(const __time64_t *timer);
 
 #endif
 
-#ifdef OE_USE_OPTEE
-# include <optee/time_optee_t.h>
-#endif
+// #ifdef OE_USE_OPTEE
+// # include <optee/time_optee_t.h>
+// #endif

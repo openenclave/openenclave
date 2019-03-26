@@ -34,13 +34,17 @@ if(UNIX AND TZ)
             SOURCES
                 ${GEN}
                 CallbackHelper.c cborhelper.c files_enc.c
-                keygen.c oeshim_enc.c socket_enc.c string_t.c
+                keygen.c oeshim_enc.c socket_enc.c
+                string_t.c
                 ../optee_common.c
-                optee/ctype_optee.c optee/cyres_optee.c
+                #optee/ctype_optee.c
+                optee/cyres_optee.c
                 optee/except_optee.c optee/keygen_optee.c
                 optee/oeresult_optee.c optee/rand_optee.c
-                optee/report_optee.c optee/strings_optee.c
-                optee/time_optee.c optee/trpc_optee.c
+                optee/report_optee.c 
+                #optee/strings_optee.c
+                #optee/time_optee.c
+                optee/trpc_optee.c
                 ${CYREP_PATH}/RiotAes128.c ${CYREP_PATH}/RiotAesTables.c
                 ${CYREP_PATH}/RiotBase64.c ${CYREP_PATH}/RiotCrypt.c
                 ${CYREP_PATH}/RiotDerEnc.c ${CYREP_PATH}/RiotEcc.c
