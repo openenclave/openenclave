@@ -13,6 +13,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Rename `oe-gdb` to `oegdb` for consistency with other tools, such as `oesign`.
+- Update pkg-config and CMake exports to include the following hardening build
+  flags by default:
+    - Enclaves will:
+       - Compile with `-fPIE` instead of `-fPIC`.
+       - Link with `-Wl,-z,noexecstack`, `-Wl,-z,now`.
+    - Host apps will:
+       - Compile with `-D_FORTIFY_SOURCE=2` (only effective if compiling under
+         GCC with `-O2` specified) and `-fstack-protector-strong`.
+       - Link with `-Wl,-z,noexecstack`.
+       - Note that `-Wl,-z,now` is _not_ enabled by default, but app authors
+         should enable it themselves after assessing its startup impact.
 
 [v0.5.0] - 2019-4-9
 -------------------
