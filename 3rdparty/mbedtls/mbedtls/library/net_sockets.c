@@ -190,7 +190,7 @@ int mbedtls_net_bind( mbedtls_net_context *ctx, const char *bind_ip, const char 
 
     if( ( ret = net_prepare() ) != 0 )
         return( ret );
-
+#define AI_PASSIVE      0x01
     /* Bind to IPv6 and/or IPv4, but only in the desired protocol */
     memset( &hints, 0, sizeof( hints ) );
     hints.ai_family = AF_UNSPEC;
@@ -258,43 +258,43 @@ int mbedtls_net_bind( mbedtls_net_context *ctx, const char *bind_ip, const char 
  * Check if the requested operation would be blocking on a non-blocking socket
  * and thus 'failed' with a negative return value.
  */
-static int net_would_block( const mbedtls_net_context *ctx )
-{
-    ((void) ctx);
-    return( WSAGetLastError() == WSAEWOULDBLOCK );
-}
-#else
-/*
- * Check if the requested operation would be blocking on a non-blocking socket
- * and thus 'failed' with a negative return value.
- *
- * Note: on a blocking socket this function always returns 0!
- */
-static int net_would_block( const mbedtls_net_context *ctx )
-{
-    int err = errno;
+// static int net_would_block( const mbedtls_net_context *ctx )
+// {
+//     ((void) ctx);
+//     return( WSAGetLastError() == WSAEWOULDBLOCK );
+// }
+// #else
+// /*
+//  * Check if the requested operation would be blocking on a non-blocking socket
+//  * and thus 'failed' with a negative return value.
+//  *
+//  * Note: on a blocking socket this function always returns 0!
+//  */
+// static int net_would_block( const mbedtls_net_context *ctx )
+// {
+//     int err = errno;
 
-    /*
-     * Never return 'WOULD BLOCK' on a non-blocking socket
-     */
-    if( ( fcntl( ctx->fd, F_GETFL ) & O_NONBLOCK ) != O_NONBLOCK )
-    {
-        errno = err;
-        return( 0 );
-    }
+//     /*
+//      * Never return 'WOULD BLOCK' on a non-blocking socket
+//      */
+//     if( ( fcntl( ctx->fd, F_GETFL ) & O_NONBLOCK ) != O_NONBLOCK )
+//     {
+//         errno = err;
+//         return( 0 );
+//     }
 
-    switch( errno = err )
-    {
-#if defined EAGAIN
-        case EAGAIN:
-#endif
-#if defined EWOULDBLOCK && EWOULDBLOCK != EAGAIN
-        case EWOULDBLOCK:
-#endif
-            return( 1 );
-    }
-    return( 0 );
-}
+//     switch( errno = err )
+//     {
+// #if defined EAGAIN
+//         case EAGAIN:
+// #endif
+// #if defined EWOULDBLOCK && EWOULDBLOCK != EAGAIN
+//         case EWOULDBLOCK:
+// #endif
+//             return( 1 );
+//     }
+//     return( 0 );
+// }
 #endif /* ( _WIN32 || _WIN32_WCE ) && !EFIX64 && !EFI32 */
 
 /*

@@ -446,10 +446,7 @@ OE_INLINE int getpeername(int sockfd, struct sockaddr* addr, socklen_t* addrlen)
     return oe_getpeername(sockfd, (struct oe_sockaddr*)addr, addrlen);
 }
 
-OE_INLINE int getsockname(
-    int sockfd,
-    struct oe_sockaddr* addr,
-    socklen_t* addrlen)
+OE_INLINE int getsockname(int sockfd, struct sockaddr* addr, socklen_t* addrlen)
 {
     return oe_getsockname(sockfd, (struct oe_sockaddr*)addr, addrlen);
 }
