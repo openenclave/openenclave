@@ -5,4 +5,4 @@
 
 cflags=$(pkg-config oehost-gcc --cflags)
 libs=$(pkg-config oehost-gcc --libs)
-/usr/bin/gcc "$@" "${cflags}" "${libs}"
+/usr/bin/gcc "$@" ${cflags} ${libs}

@@ -5,4 +5,4 @@
 
 cflags=$(pkg-config oeenclave-gcc --cflags)
 libs=$(pkg-config oeenclave-gcc --libs)
-/usr/bin/gcc "$@" "${cflags}" "${libs}"
+/usr/bin/gcc "$@" ${cflags} ${libs}
