@@ -3,7 +3,7 @@
 #include <common/dispatcher.h>
 #include <common/localattestation_t.h>
 #include <openenclave/enclave.h>
-#include "enc2_pubkey.h"
+#include "enclave_a_pubkey.h"
 
 // For this purpose of this example: demonstrating how to do attestation
 // g_enclave_secret_data is hardcoded as part of the enclave. In this sample,
@@ -12,7 +12,7 @@
 // since the enclave binary itself is not encrypted. Instead, secrets are
 // acquired via provisioning from a service (such as a cloud server) after
 // successful attestation.
-// The g_enclave_secret_data holds the secret data specific to the holding
+// This g_enclave_secret_data holds the secret data specific to the holding
 // enclave, it's only visible inside this secured enclave. Arbitrary enclave
 // specific secret data exchanged by the enclaves. In this sample, the first
 // enclave sends its g_enclave_secret_data (encrypted) to the second enclave.
@@ -27,8 +27,8 @@ enclave_config_data_t config_data = {g_enclave_secret_data,
 
 // Declare a static dispatcher object for enabling
 // for better organizing enclave-wise global variables
-static ecall_dispatcher dispatcher("Enclave1", &config_data);
-const char* enclave_name = "Enclave1";
+static ecall_dispatcher dispatcher("Enclave2", &config_data);
+const char* enclave_name = "Enclave2";
 
 int get_target_info(uint8_t** target_info_buffer, size_t* target_info_size)
 {
@@ -44,17 +44,16 @@ int get_targeted_report_with_pubkey(
     uint8_t* target_info_buffer,
     size_t target_info_size,
     uint8_t** pem_key,
-    size_t* pem_key_size,
-    uint8_t** local_report,
+    size_t* key_size,
+    uint8_t** report,
     size_t* report_size)
 {
-    TRACE_ENCLAVE("enter get_targeted_report_with_pubkey");
     return dispatcher.get_targeted_report_with_pubkey(
         target_info_buffer,
         target_info_size,
         pem_key,
-        pem_key_size,
-        local_report,
+        key_size,
+        report,
         report_size);
 }
 
