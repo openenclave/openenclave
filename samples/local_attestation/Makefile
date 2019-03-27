@@ -4,18 +4,18 @@
 all: build
 
 genkey:
-	$(MAKE) -C enc1 genkey
-	$(MAKE) -C enc2 genkey
+	$(MAKE) -C enclave_a genkey
+	$(MAKE) -C enclave_b genkey
 
 build:
-	$(MAKE) -C enc1
-	$(MAKE) -C enc2	
+	$(MAKE) -C enclave_a
+	$(MAKE) -C enclave_b
 	$(MAKE) -C host
 
 clean:
-	$(MAKE) -C enc1 clean
-	$(MAKE) -C enc2 clean
+	$(MAKE) -C enclave_a clean
+	$(MAKE) -C enclave_b clean
 	$(MAKE) -C host clean
 
 run:
-	host/attestation_host ./enc1/enclave1.signed ./enc2/enclave2.signed
+	host/attestation_host ./enclave_a/enclave_a.signed ./enclave_b/enclave_b.signed
