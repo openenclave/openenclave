@@ -218,3 +218,6 @@ if (UNIX)
   add_subdirectory(pkgconfig)
   add_subdirectory(samples)
 endif()
+
+install(FILES LICENSE THIRD_PARTY_NOTICES
+  DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/licenses)
