@@ -2,11 +2,11 @@
 # Licensed under the MIT License.
 
 # Generate header with public key of enclave B (2)
-add_custom_command(OUTPUT enc2_pubkey.h
+add_custom_command(OUTPUT enclave_b_pubkey.h
   DEPENDS public_key_b
-  COMMAND ${CMAKE_SOURCE_DIR}/gen_pubkey_header.sh enc2_pubkey.h ${CMAKE_BINARY_DIR}/enc2/public_b.pem)
+  COMMAND ${CMAKE_SOURCE_DIR}/gen_pubkey_header.sh enclave_b_pubkey.h ${CMAKE_BINARY_DIR}/enclave_b/public_b.pem)
 
-add_executable(enclave_a ecalls.cpp ${CMAKE_CURRENT_BINARY_DIR}/enc2_pubkey.h)
+add_executable(enclave_a ecalls.cpp ${CMAKE_CURRENT_BINARY_DIR}/enclave_b_pubkey.h)
 
 target_include_directories(enclave_a PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
