@@ -25,7 +25,7 @@ all:
 	$(MAKE) sign
 
 build:
-	cp ../enc1/private.pem .
+	cp ../enclave_a_v1/private.pem .
 	@ echo "Compilers used: $(CC), $(CXX)"
 	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -I.. -DOE_API_VERSION=2 -std=c++11 ecalls.cpp ../common/dispatcher.cpp ../common/keys.cpp
 	$(CC) -g -c $(CFLAGS) $(CINCLUDES) -I.. -DOE_API_VERSION=2 ../common/datasealing_t.c
