@@ -1,2 +1,0 @@
-#!/bin/sh
-exec /usr/bin/g++ "$@" -specs "/opt/musl++/lib/musl-gcc.specs" -nostdinc++ -std=c++14 -fpermissive
