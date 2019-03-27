@@ -21,26 +21,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    - oeedger8r generates `oe_create_foo_enclave` function for `foo.edl`
    - oe-gdb allows attaching to a host that is already running
 - oe-gdb allows attaching to a host that is already running
-- Added Quote Enclave Identity validation into oe_verify_report implementation
+- Added Quote Enclave Identity validation into `oe_verify_report` implementation
 - Added OE SDK internal logging mechanism
 - Support for thread local variables
-   - Both GNU __thread and C++11 thread_local
+   - Both GNU `__thread` and C++11 `thread_local`
    - Both hardware and simulation mode
    - Enclaves are compiled using local-exec thread-local model (-ftls-model=local-exec)
 - Added `oe_get_public_key` and `oe_get_public_key_by_policy` host functions,
   which allow the host to get a public key derived from an enclave's identity.
 - Added v2 versions of the following APIs that instead of passing in buffers now
-  return a buffer that needs to be freed via an associated free method. OE_API_VERSION
+  return a buffer that needs to be freed via an associated free method. `OE_API_VERSION`
   needs to be set to 2 to pick up the versions. The mentioned APIs have a *_V1 and *_V2
-  version that the below versions map to detending on the OE_API_VERSION.
-   - oe_get_report, free report buffer via oe_free_report
-   - oe_get_target_info, free target_info_buffer via oe_free_target_info
-   - oe_get_seal_key, free key_buffer and key_info via oe_free_seal_key
-   - oe_get_seal_key_by_policy, free key_buffer and key_info via oe_free_seal_key
-- Added new enumeration for enclave type parameter of oe_create_enclave. Now use
-  OE_ENCLAVE_TYPE_AUTO to have the enclave appropriate to your built environment
-  be chosen automatically. For instance, building intel binaries will select SGX
-  automatically, where on ARM it will pick trustzone.
+  version that the below versions map to detending on the `OE_API_VERSION`.
+   - `oe_get_report`, free `report_buffer` via `oe_free_report`
+   - `oe_get_target_info`, free `target_info_buffer` via `oe_free_target_info`
+   - `oe_get_seal_key`, free `key_buffer` and `key_info` via `oe_free_seal_key`
+   - `oe_get_seal_key_by_policy`, free `key_buffer` and `key_info` via `oe_free_seal_key`
+- Added new enumeration for enclave type parameter of `oe_create_enclave`. Now use
+  `OE_ENCLAVE_TYPE_AUTO` to have the enclave appropriate to your built environment
+  be chosen automatically. For instance, building Intel binaries will select SGX
+  automatically, where on ARM it will pick TrustZone.
 
 ### Changed
 
@@ -66,7 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Deprecated
 
 - String based `ocalls`/`ecalls`, `OE_ECALL`, and `OE_OCALL` macros.
-- OE_ENCLAVE_TYPE_UNDEFINED was removed and replaced with OE_ENCLAVE_TYPE_AUTO.
+- `OE_ENCLAVE_TYPE_UNDEFINED` was removed and replaced with `OE_ENCLAVE_TYPE_AUTO`.
 
 [v0.4.1] - 2018-12-21
 ---------------------
