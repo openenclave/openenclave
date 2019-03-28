@@ -18,7 +18,7 @@
 
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
 
-static oe_result_t _oe_get_local_report(
+static oe_result_t _get_local_report(
     oe_enclave_t* enclave,
     const void* opt_params,
     size_t opt_params_size,
@@ -78,7 +78,7 @@ done:
     return result;
 }
 
-static oe_result_t _oe_get_remote_report(
+static oe_result_t _get_remote_report(
     oe_enclave_t* enclave,
     const void* opt_params,
     size_t opt_params_size,
@@ -119,7 +119,7 @@ static oe_result_t _oe_get_remote_report(
     if (sgx_report == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
-    OE_CHECK(_oe_get_local_report(
+    OE_CHECK(_get_local_report(
         enclave,
         sgx_target_info,
         sizeof(*sgx_target_info),
@@ -182,7 +182,7 @@ oe_result_t oe_get_report_v1(
 
     if (flags & OE_REPORT_FLAGS_REMOTE_ATTESTATION)
     {
-        OE_CHECK(_oe_get_remote_report(
+        OE_CHECK(_get_remote_report(
             enclave,
             opt_params,
             opt_params_size,
@@ -192,7 +192,7 @@ oe_result_t oe_get_report_v1(
     else
     {
         // If no flags are specified, default to locally attestable report.
-        OE_CHECK(_oe_get_local_report(
+        OE_CHECK(_get_local_report(
             enclave,
             opt_params,
             opt_params_size,

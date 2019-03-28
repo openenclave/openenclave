@@ -70,7 +70,7 @@ done:
     return result;
 }
 
-static oe_result_t _oe_get_local_report(
+static oe_result_t _get_local_report(
     const void* report_data,
     size_t report_data_size,
     const void* opt_params,
@@ -119,7 +119,7 @@ done:
     return result;
 }
 
-static oe_result_t _oe_get_sgx_target_info(sgx_target_info_t* target_info)
+static oe_result_t _get_sgx_target_info(sgx_target_info_t* target_info)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_get_qetarget_info_args_t* args =
@@ -144,7 +144,7 @@ done:
     return result;
 }
 
-static oe_result_t _oe_get_quote(
+static oe_result_t _get_quote(
     const sgx_report_t* sgx_report,
     uint8_t* quote,
     size_t* quote_size)
@@ -214,12 +214,12 @@ oe_result_t oe_get_remote_report(
      * requires privacy. The trust decision is one of integrity verification
      * on the part of the report recipient.
      */
-    OE_CHECK(_oe_get_sgx_target_info(&sgx_target_info));
+    OE_CHECK(_get_sgx_target_info(&sgx_target_info));
 
     /*
      * Get enclave's local report passing in the quoting enclave's target info.
      */
-    OE_CHECK(_oe_get_local_report(
+    OE_CHECK(_get_local_report(
         report_data,
         report_data_size,
         &sgx_target_info,
@@ -230,7 +230,7 @@ oe_result_t oe_get_remote_report(
     /*
      * OCall: Get the quote for the local report.
      */
-    result = _oe_get_quote(&sgx_report, report_buffer, report_buffer_size);
+    result = _get_quote(&sgx_report, report_buffer, report_buffer_size);
     if (result == OE_BUFFER_TOO_SMALL)
         OE_CHECK_NO_TRACE(result);
     else
@@ -297,7 +297,7 @@ oe_result_t oe_get_report_v1(
     else
     {
         // If no flags are specified, default to locally attestable report.
-        result = _oe_get_local_report(
+        result = _get_local_report(
             report_data,
             report_data_size,
             opt_params,
@@ -410,7 +410,7 @@ oe_result_t _handle_get_sgx_report(uint64_t arg_in)
     // enclave to put whatever data it wants in a report. The data field is
     // intended to be used for digital signatures and is not allowed to be
     // tampered with by the host.
-    OE_CHECK(_oe_get_local_report(
+    OE_CHECK(_get_local_report(
         NULL,
         0,
         (enc_arg.opt_params_size != 0) ? enc_arg.opt_params : NULL,
