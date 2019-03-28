@@ -105,17 +105,25 @@ typedef long long suseconds_t;
  */
 
 /**
- * This enumeration defines values for the **enclave_type** parameter
- * passed to **oe_create_enclave()**. OE_ENCLAVE_TYPE_AUTO will pick the type
- * based on the target platform that is being built, such that x64 binaries will
- * use SGX.
- * **OE_ENCLAVE_TYPE_SGX** will force the platform to use SGX, but any platform
- * other than x64 will not support this and will generate errors.
+ * This enumeration defines values for the type parameter
+ * passed to **oe_create_enclave()**.
  */
 typedef enum _oe_enclave_type
 {
-    OE_ENCLAVE_TYPE_AUTO,
-    OE_ENCLAVE_TYPE_SGX,
+    /**
+     * OE_ENCLAVE_TYPE_AUTO will pick the type
+     * based on the target platform that is being built, such that x64 binaries
+     * will use SGX.
+     */
+    OE_ENCLAVE_TYPE_AUTO = 1,
+    /**
+     * OE_ENCLAVE_TYPE_SGX will force the platform to use SGX, but any platform
+     * other than x64 will not support this and will generate errors.
+     */
+    OE_ENCLAVE_TYPE_SGX = 2,
+    /**
+     * Unused
+     */
     __OE_ENCLAVE_TYPE_MAX = OE_ENUM_MAX,
 } oe_enclave_type_t;
 
