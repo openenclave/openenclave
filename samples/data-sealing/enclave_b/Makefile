@@ -35,7 +35,7 @@ sign:
 	oesign sign -e enclave_b -c data-sealing.conf -k private.pem
 
 clean:
-	rm -f enclave_b enclave_b.signed *.o *.pem
+	rm -f enclave_b enclave_b.signed *.o *.pem ../common/datasealing_t.* ../common/datasealing_args.h
 
 keys:
 	openssl genrsa -out private.pem -3 3072
