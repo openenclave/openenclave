@@ -54,4 +54,4 @@ sign:
 	oesign sign -e enclave_b -c enc.conf -k private.pem
 
 clean:
-	rm -f *.o enclave_b enclave_b.signed ../common/localattestation_t.* ../common/remoteattestation_args.h *.pem enclave_a_pubkey.h
+	rm -f *.o enclave_b enclave_b.signed ../common/localattestation_t.* ../common/localattestation_args.h *.pem enclave_a_pubkey.h
