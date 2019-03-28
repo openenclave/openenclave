@@ -35,4 +35,4 @@ sign:
 	oesign sign enclave_a_v2 data-sealing.conf private.pem
 
 clean:
-	rm -f enclave_a_v2 enclave_a_v2.signed *.o *.pem
+	rm -f enclave_a_v2 enclave_a_v2.signed *.o *.pem ../common/datasealing_t.* ../common/datasealing_args.h
