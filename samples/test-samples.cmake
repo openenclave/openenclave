@@ -46,6 +46,13 @@ foreach (SAMPLE data-sealing file-encryptor helloworld local_attestation remote_
       message(WARNING "Samples test '${SAMPLE}' failed!")
       set(ALL_TEST_RESULT 1)
     endif ()
+    execute_process(
+      COMMAND make -C ${SAMPLE_SOURCE_DIR} clean build run
+      RESULT_VARIABLE TEST_RESULT)
+      if (TEST_RESULT)
+        message(WARNING "Samples test '${SAMPLE}' failed while building via Makefile!")
+        set(ALL_TEST_RESULT 1)
+    endif ()
   endif ()
 
   if (${SAMPLE} MATCHES "(file-encryptor|helloworld)")
@@ -58,9 +65,15 @@ foreach (SAMPLE data-sealing file-encryptor helloworld local_attestation remote_
       message(WARNING "Samples test '${SAMPLE}' failed in simulation mode!")
       set(ALL_TEST_RESULT 1)
     endif ()
+    execute_process(
+      COMMAND make -C ${SAMPLE_SOURCE_DIR} clean build simulate
+      RESULT_VARIABLE TEST_SIMULATE_RESULT)
+      if (TEST_SIMULATE_RESULT)
+        message(WARNING "Samples test '${SAMPLE}' failed while building via Makefile!")
+        set(TEST_SIMULATE_RESULT 1)
+    endif ()
   endif ()
 
-  # TODO: Build the sample with GNU Make.
 endforeach ()
 
 if (${ALL_TEST_RESULT})
