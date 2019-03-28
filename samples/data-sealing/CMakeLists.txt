@@ -40,6 +40,11 @@ add_custom_command(OUTPUT enclave_b/enclave_b.signed
   DEPENDS ${CMAKE_BINARY_DIR}/private_b.pem
   COMMAND openenclave::oesign sign -e $<TARGET_FILE:enclave_b> -c ${CMAKE_SOURCE_DIR}/enclave_b/data-sealing.conf -k private_b.pem)
 
+add_custom_target(sign
+  DEPENDS ${CMAKE_BINARY_DIR}/enclave_a_v1/enclave_a_v1.signed
+    ${CMAKE_BINARY_DIR}/enclave_a_v2/enclave_a_v2.signed
+    ${CMAKE_BINARY_DIR}/enclave_b/enclave_b.signed)
+
 add_custom_target(run
   DEPENDS data-sealing_host ${CMAKE_BINARY_DIR}/enclave_a_v1/enclave_a_v1.signed ${CMAKE_BINARY_DIR}/enclave_a_v2/enclave_a_v2.signed ${CMAKE_BINARY_DIR}/enclave_b/enclave_b.signed
   COMMAND data-sealing_host ${CMAKE_BINARY_DIR}/enclave_a_v1/enclave_a_v1.signed ${CMAKE_BINARY_DIR}/enclave_a_v2/enclave_a_v2.signed ${CMAKE_BINARY_DIR}/enclave_b/enclave_b.signed)
