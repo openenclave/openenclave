@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-add_custom_command(OUTPUT localattestation_u.h localattestation_u.c
+add_custom_command(OUTPUT localattestation_u.h localattestation_u.c localattestation_args.h
   DEPENDS ${CMAKE_SOURCE_DIR}/localattestation.edl
   COMMAND openenclave::oeedger8r --untrusted ${CMAKE_SOURCE_DIR}/localattestation.edl)
 
