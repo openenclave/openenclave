@@ -22,6 +22,9 @@ add_custom_command(OUTPUT enclave/enclave.signed
   DEPENDS ${CMAKE_BINARY_DIR}/private.pem
   COMMAND openenclave::oesign sign $<TARGET_FILE:enclave> ${CMAKE_SOURCE_DIR}/enclave/helloworld.conf private.pem)
 
+add_custom_target(sign
+  DEPENDS ${CMAKE_BINARY_DIR}/enclave/enclave.signed)
+
 if ((NOT DEFINED ENV{OE_SIMULATION}) OR (NOT $ENV{OE_SIMULATION}))
   add_custom_target(run
     DEPENDS helloworld_host ${CMAKE_BINARY_DIR}/enclave/enclave.signed
