@@ -53,7 +53,7 @@ sign:
 	oesign sign enclave2 enc.conf private.pem
 
 clean:
-	rm -f *.o enclave2 enclave2.signed remoteattestation_t.* *.pem enclave_a_pubkey.h
+	rm -f *.o enclave2 enclave2.signed ../common/remoteattestation_t.* ../common/remoteattestation_args.h *.pem enclave_a_pubkey.h
 
 
 
