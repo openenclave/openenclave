@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 # Use the edger8r to generate C bindings from the EDL file.
-add_custom_command(OUTPUT remoteattestation_t.h remoteattestation_t.c
+add_custom_command(OUTPUT remoteattestation_t.h remoteattestation_t.c remoteattestation_args.h
   DEPENDS ${CMAKE_SOURCE_DIR}/remoteattestation.edl
   COMMAND openenclave::oeedger8r --trusted ${CMAKE_SOURCE_DIR}/remoteattestation.edl)
 
