@@ -15,6 +15,5 @@ install(DIRECTORY helloworld file-encryptor data-sealing
 install(FILES Makefile README.md
   DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
 
-# This script currently only tests data-sealing against the CMake package.
 add_test(NAME samples
   COMMAND ${CMAKE_COMMAND} -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR} -DBUILD_DIR=${PROJECT_BINARY_DIR} -DPREFIX_DIR=${CMAKE_INSTALL_PREFIX} -P ${CMAKE_CURRENT_SOURCE_DIR}/test-samples.cmake)
