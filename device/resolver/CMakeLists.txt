@@ -3,4 +3,4 @@
 
 #add_subdirectory(resolv_enclave_dns)
 #add_subdirectory(resolv_enclave_local)
-add_subdirectory(resolv_host)
+add_subdirectory(hostresolver)

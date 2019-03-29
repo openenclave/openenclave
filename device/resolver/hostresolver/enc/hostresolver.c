@@ -10,7 +10,7 @@
 #include <openenclave/internal/device.h>
 #include <openenclave/corelibc/sys/socket.h>
 #include <openenclave/corelibc/netdb.h>
-#include <openenclave/internal/host_resolver.h>
+#include <openenclave/internal/hostresolver.h>
 #include <openenclave/internal/resolver.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/internal/calls.h>

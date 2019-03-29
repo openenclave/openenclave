@@ -4,8 +4,8 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/epoll.h>
 #include <openenclave/internal/eventfd.h>
-#include <openenclave/internal/host_resolver.h>
 #include <openenclave/internal/hostfs.h>
+#include <openenclave/internal/hostresolver.h>
 #include <openenclave/internal/hostsock.h>
 
 static bool _enabled[__OE_FEATURE_MAX];

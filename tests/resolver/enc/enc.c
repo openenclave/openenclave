@@ -8,7 +8,7 @@
 #include <openenclave/corelibc/netdb.h>
 #include <openenclave/corelibc/netinet/in.h>
 #include <openenclave/internal/device.h>
-#include <openenclave/internal/host_resolver.h>
+#include <openenclave/internal/hostresolver.h>
 #include <openenclave/internal/tests.h>
 
 #include <resolver_test_t.h>
