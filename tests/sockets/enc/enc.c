@@ -14,11 +14,20 @@
 #include <stdio.h>
 #include <string.h>
 
+static void _initialize()
+{
+    oe_enable_feature(OE_FEATURE_HOST_FILES);
+    oe_enable_feature(OE_FEATURE_HOST_SOCKETS);
+    oe_enable_feature(OE_FEATURE_HOST_RESOLVER);
+    oe_enable_feature(OE_FEATURE_POLLING);
+}
+
 /* This client connects to an echo server, sends a text message,
  * and outputs the text reply.
  */
 int ecall_run_client(char* recv_buff, ssize_t* recv_buff_len)
 {
+    _initialize();
     int sockfd = 0;
     ssize_t n = 0;
     size_t buff_len = (size_t)*recv_buff_len;
@@ -79,6 +88,7 @@ int ecall_run_client(char* recv_buff, ssize_t* recv_buff_len)
  */
 int ecall_run_server()
 {
+    _initialize();
     int status = OE_FAILURE;
     const static char TESTDATA[] = "This is TEST DATA\n";
     int listenfd = oe_socket(OE_AF_HOST, OE_SOCK_STREAM, 0);
@@ -98,18 +108,19 @@ int ecall_run_server()
     serv_addr.sin_addr.s_addr = oe_htonl(OE_INADDR_LOOPBACK);
     serv_addr.sin_port = oe_htons(1493);
 
-    printf("accepting\n");
+    printf("enclave: accepting\n");
     oe_bind(listenfd, (struct oe_sockaddr*)&serv_addr, sizeof(serv_addr));
     oe_listen(listenfd, 10);
 
     while (1)
     {
         oe_sleep_msec(1);
-        printf("accepting\n");
+        printf("enc: accepting\n");
         connfd = oe_accept(listenfd, (struct oe_sockaddr*)NULL, NULL);
+
         if (connfd >= 0)
         {
-            printf("accepted fd = %d\n", connfd);
+            printf("enc: accepted fd = %d\n", connfd);
             do
             {
                 ssize_t n = oe_write(connfd, TESTDATA, strlen(TESTDATA));
@@ -125,11 +136,12 @@ int ecall_run_server()
                 }
                 oe_sleep_msec(3);
             } while (1);
+
             break;
         }
         else
         {
-            printf("accept failed errno = %d \n", oe_errno);
+            printf("enc: accept failed errno = %d \n", oe_errno);
         }
     }
 

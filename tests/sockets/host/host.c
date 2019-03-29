@@ -66,7 +66,7 @@ void* host_server_thread(void* arg)
 
     while (1)
     {
-        printf("accepting\n");
+        printf("host: accepting\n");
         connfd = accept(listenfd, (struct sockaddr*)NULL, NULL);
         printf("accepted fd = %d\n", connfd);
         if (connfd >= 0)
