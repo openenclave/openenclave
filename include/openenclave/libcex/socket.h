@@ -7,9 +7,9 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <openenclave/bits/defs.h>
-#include <openenclave/bits/io.h>
 #include <openenclave/corelibc/netdb.h>
 #include <openenclave/corelibc/unistd.h>
+#include <openenclave/enclave.h>
 #include <openenclave/libcex/sal.h>
 #include <sys/ioctl.h>
 #include <sys/select.h>

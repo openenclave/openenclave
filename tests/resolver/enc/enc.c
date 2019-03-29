@@ -36,22 +36,23 @@ int ecall_getnameinfo(char* buffer, size_t bufflen)
     (void)status;
 
     char host[256] = {0};
+    char serv[256] = {0};
 
     struct oe_sockaddr_in addr = {
-        .sin_family = OE_AF_HOST,
+        .sin_family = OE_AF_INET,
         .sin_port = 22,
         .sin_addr.s_addr = oe_htonl(OE_INADDR_LOOPBACK)};
+
+    printf("s_addr=%x\n", addr.sin_addr.s_addr);
 
     int rslt = oe_getnameinfo(
         (const struct oe_sockaddr*)&addr,
         sizeof(addr),
         host,
         sizeof(host),
-        NULL,
-        0,
+        serv,
+        sizeof(serv),
         0);
-
-    printf("host{%s}\n", host);
 
     if (rslt != 0)
     {
@@ -60,7 +61,7 @@ int ecall_getnameinfo(char* buffer, size_t bufflen)
     }
     else
     {
-        memcpy(buffer, host, strnlen(host, 255));
+        strlcpy(buffer, host, bufflen);
         printf("getnameinfo passed\n");
         return OE_OK; // status;
     }

@@ -4,7 +4,6 @@
 #ifndef _OE_DEVICE_H
 #define _OE_DEVICE_H
 
-#include <openenclave/bits/io.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/corelibc/errno.h>

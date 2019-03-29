@@ -9,8 +9,8 @@
 #endif
 
 #include <openenclave/bits/defs.h>
-#include <openenclave/bits/io.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/enclave.h>
 #include <openenclave/libcex/bits/common.h>
 #include <stdio.h>
 
@@ -120,6 +120,8 @@ OE_INLINE OE_FILE* oe_fopen_secure(const char* path, const char* mode)
     return oe_fopen_secure_encrypted(path, mode);
 #endif
 }
+
+int oe_unlink_d(uint64_t devid, const char* pathname);
 
 OE_INLINE int oe_remove_nonsecure(const char* pathname)
 {

@@ -132,10 +132,9 @@ static ssize_t _hostresolv_getnameinfo(
 
     /* Input */
     {
-        // With a buffer big enough for a single addrinfo
+        size_t extra = (size_t)salen + (size_t)hostlen + (size_t)servlen;
 
-        size_t required = (size_t)salen + (size_t)hostlen + (size_t)servlen;
-        if (!(args = oe_host_batch_calloc(batch, sizeof(args_t) + required)))
+        if (!(args = oe_host_batch_calloc(batch, sizeof(args_t) + extra)))
         {
             oe_errno = ENOMEM;
             goto done;
@@ -145,15 +144,6 @@ static ssize_t _hostresolv_getnameinfo(
         {
             ((struct oe_sockaddr*)sa)->sa_family = OE_AF_INET;
         }
-
-        //    int64_t ret;
-        //    socklen_t addrlen; // in
-        //    // struct oe_sockaddr *addr;  data in buf
-        //    socklen_t hostlen;
-        // Hostname returned in buf
-        // socklen_t servlen;
-        // Service name returned in buf+hostlen after hostname
-        //  int32_t flags;
 
         args->op = OE_HOSTRESOLV_OP_GETNAMEINFO;
         args->u.getnameinfo.ret = -1;
@@ -183,26 +173,23 @@ static ssize_t _hostresolv_getnameinfo(
         }
         ret = args->u.getaddrinfo.ret;
     }
+
     /* Output */
     {
-        uint8_t* bufptr = args->buf;
-        // We always pass at least a zero length node and service.
+        const char* p = (const char*)args->buf;
+
         if (hostlen > 0)
-        {
-            hostlen = (socklen_t)oe_strnlen((const char*)bufptr, hostlen - 1);
-            memcpy(host, bufptr, (size_t)hostlen);
-            bufptr[hostlen] = '\0';
-            bufptr += hostlen + 1;
-        }
+            oe_strlcpy(host, p + salen, hostlen);
 
         if (servlen > 0)
-        {
-            servlen = (socklen_t)oe_strnlen((const char*)bufptr, servlen - 1);
-            memcpy(serv, bufptr, (size_t)servlen);
-            bufptr[servlen] = '\0';
-        }
+            oe_strlcpy(serv, p + salen + hostlen, servlen);
     }
+
 done:
+
+    if (args)
+        oe_host_batch_free(batch);
+
     return ret;
 }
 

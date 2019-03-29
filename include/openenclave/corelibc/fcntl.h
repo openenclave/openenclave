@@ -36,6 +36,8 @@ OE_EXTERNC_BEGIN
 
 int oe_open(const char* pathname, int flags, mode_t mode);
 
+int oe_open_d(uint64_t devid, const char* pathname, int flags, mode_t mode);
+
 #if defined(OE_NEED_STDC_NAMES)
 
 #define O_RDONLY OE_O_RDONLY

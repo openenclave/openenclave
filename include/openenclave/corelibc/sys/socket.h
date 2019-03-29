@@ -172,6 +172,8 @@ uint64_t oe_get_default_socket_devid(void);
 
 int oe_socket(int domain, int type, int protocol);
 
+int oe_socket_d(uint64_t devid, int domain, int type, int protocol);
+
 int oe_socketpair(int domain, int type, int protocol, int rtnfd[2]);
 
 int oe_accept(int sockfd, struct oe_sockaddr* addr, socklen_t* addrlen);

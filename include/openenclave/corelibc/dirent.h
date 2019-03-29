@@ -33,6 +33,8 @@ struct oe_dirent
 
 OE_DIR* oe_opendir(const char* pathname);
 
+OE_DIR* oe_opendir_d(uint64_t devid, const char* pathname);
+
 struct oe_dirent* oe_readdir(OE_DIR* dir);
 
 void oe_rewinddir(OE_DIR* dir);

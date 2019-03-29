@@ -132,24 +132,38 @@ void oe_handle_hostresolver_ocall(void* args_)
         }
         case OE_HOSTRESOLV_OP_GETNAMEINFO:
         {
-            const struct sockaddr* addr =
-                (args->u.getnameinfo.addrlen > 0)
-                    ? (const struct sockaddr*)(args->buf)
-                    : NULL;
-            char* hostname =
-                (args->u.getnameinfo.hostlen > 0) ? (char*)(args->buf) : NULL;
-            char* servicename =
-                (args->u.getnameinfo.servlen > 0)
-                    ? (char*)(args->buf + args->u.getnameinfo.hostlen)
-                    : NULL;
+            const struct sockaddr* addr = NULL;
+            char* host = NULL;
+            char* serv = NULL;
+            uint8_t* p = (uint8_t*)args->buf;
+
+            if (args->u.getnameinfo.addrlen > 0)
+            {
+                addr = (const struct sockaddr*)p;
+                p += args->u.getnameinfo.addrlen;
+            }
+
+            if (args->u.getnameinfo.hostlen > 0)
+            {
+                host = (char*)p;
+                p += args->u.getnameinfo.hostlen;
+            }
+
+            if (args->u.getnameinfo.servlen > 0)
+            {
+                serv = (char*)p;
+                p += args->u.getnameinfo.servlen;
+            }
+
             args->u.getnameinfo.ret = getnameinfo(
                 addr,
                 (socklen_t)args->u.getnameinfo.addrlen,
-                hostname,
+                host,
                 (socklen_t)args->u.getnameinfo.hostlen,
-                servicename,
+                serv,
                 (socklen_t)args->u.getnameinfo.servlen,
                 args->u.getnameinfo.flags);
+
             break;
         }
         case OE_HOSTRESOLV_OP_SHUTDOWN:

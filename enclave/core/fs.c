@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/corelibc/stdlib.h>
+#include <openenclave/enclave.h>
 #include <openenclave/internal/fs.h>
 #include <openenclave/internal/print.h>
 

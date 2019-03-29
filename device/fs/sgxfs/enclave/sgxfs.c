@@ -7,6 +7,7 @@
 
 /* ATTN: use elibc within SGX code. */
 #include <errno.h>
+#include <openenclave/enclave.h>
 #include <openenclave/internal/fs.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/corelibc/string.h>

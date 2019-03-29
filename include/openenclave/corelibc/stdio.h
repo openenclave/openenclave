@@ -29,6 +29,8 @@ int oe_printf(const char* format, ...);
 
 int oe_rename(const char* oldpath, const char* newpath);
 
+int oe_rename_d(uint64_t devid, const char* oldpath, const char* newpath);
+
 #if defined(OE_NEED_STDC_NAMES)
 
 #include "bits/stdfile.h"
