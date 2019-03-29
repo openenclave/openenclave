@@ -115,7 +115,6 @@ class oe_fd_hostfs_file_system : public oe_fd_file_system
   public:
     oe_fd_hostfs_file_system()
     {
-        oe_register_hostfs_device();
         OE_TEST(oe_mount("/", "/", "hostfs", 0, NULL) == 0);
     }
 
@@ -240,7 +239,6 @@ class fd_hostfs_file_system : public fd_file_system
   public:
     fd_hostfs_file_system()
     {
-        oe_register_hostfs_device();
         OE_TEST(oe_mount("/", "/", "hostfs", 0, NULL) == 0);
     }
 
@@ -471,7 +469,6 @@ class stream_hostfs_file_system : public stream_file_system
   public:
     stream_hostfs_file_system()
     {
-        oe_register_hostfs_device();
         OE_TEST(oe_mount("/", "/", "sgxfs", 0, NULL) == 0);
     }
 
