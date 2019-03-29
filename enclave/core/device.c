@@ -16,9 +16,6 @@ static oe_array_t _dev_arr = OE_ARRAY_INITIALIZER(ELEMENT_SIZE, CHUNK_SIZE);
 static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
 static bool _initialized = false;
 
-static oe_once_t _device_id_once = OE_ONCE_INIT;
-static oe_thread_key_t _device_id_key = OE_THREADKEY_INITIALIZER;
-
 OE_INLINE oe_device_t** _table(void)
 {
     return (oe_device_t**)_dev_arr.data;
@@ -351,62 +348,4 @@ int oe_ioctl(int fd, unsigned long request, ...)
     int r = oe_ioctl_va(fd, request, ap);
     oe_va_end(ap);
     return r;
-}
-
-static void _create_device_id_key()
-{
-    if (oe_thread_key_create(&_device_id_key, NULL) != 0)
-        oe_abort();
-}
-
-int oe_set_thread_device(uint64_t devid)
-{
-    int ret = -1;
-
-    if (devid == OE_DEVID_NULL)
-        goto done;
-
-    if (oe_once(&_device_id_once, _create_device_id_key) != 0)
-        goto done;
-
-    if (oe_thread_setspecific(_device_id_key, (void*)devid) != 0)
-        goto done;
-
-    ret = 0;
-
-done:
-    return ret;
-}
-
-int oe_clear_thread_device(void)
-{
-    int ret = -1;
-
-    if (oe_once(&_device_id_once, _create_device_id_key) != 0)
-        goto done;
-
-    if (oe_thread_setspecific(_device_id_key, NULL) != 0)
-        goto done;
-
-    ret = 0;
-
-done:
-    return ret;
-}
-
-uint64_t oe_get_thread_device(void)
-{
-    uint64_t ret = OE_DEVID_NULL;
-    uint64_t devid;
-
-    if (oe_once(&_device_id_once, _create_device_id_key) != 0)
-        goto done;
-
-    if (!(devid = (uint64_t)oe_thread_getspecific(_device_id_key)))
-        goto done;
-
-    ret = devid;
-
-done:
-    return ret;
 }

@@ -103,15 +103,6 @@ int oe_dup2(int fd, int newfd);
 
 int oe_ioctl(int fd, unsigned long request, ...);
 
-/* Set the default device for this thread (used in lieu of the mount table). */
-int oe_set_thread_device(uint64_t devid);
-
-/* Clear the default device for this thread. */
-int oe_clear_thread_device(void);
-
-/* Get the default device for this thread. */
-uint64_t oe_get_thread_device(void);
-
 OE_EXTERNC_END
 
 #endif // _OE_DEVICE_H

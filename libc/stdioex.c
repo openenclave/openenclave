@@ -9,9 +9,9 @@
 #if 0
 OE_FILE *oe_fopen_dev(uint64_t devid, const char *path, const char *mode)
 {
-    oe_set_thread_device(device_id);
+    oe_set_device_for_current_thread(device_id);
     OE_FILE* ret = (OE_FILE*)fopen(path, mode);
-    oe_clear_thread_device();
+    oe_clear_device_for_current_thread();
 
     return ret;
 }

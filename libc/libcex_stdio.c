@@ -58,9 +58,15 @@ int oe_fileno(OE_FILE* stream)
 
 OE_FILE* oe_fopen(uint64_t devid, const char* path, const char* mode)
 {
-    oe_set_thread_device(devid);
+    if (oe_mount(NULL, "__tls__", NULL, 0, &devid) != 0)
+    {
+        oe_errno = EINVAL;
+        return NULL;
+    }
+
     FILE* ret = (FILE*)fopen(path, mode);
-    oe_clear_thread_device();
+
+    oe_umount("__tls__");
 
     return (OE_FILE*)ret;
 }

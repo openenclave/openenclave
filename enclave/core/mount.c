@@ -31,6 +31,67 @@ static void _free_mount_table(void)
         oe_free(_mount_table[i].path);
 }
 
+static oe_once_t _tls_device_once = OE_ONCE_INIT;
+static oe_thread_key_t _tls_device_key = OE_THREADKEY_INITIALIZER;
+
+static void _create_tls_device_key()
+{
+    if (oe_thread_key_create(&_tls_device_key, NULL) != 0)
+        oe_abort();
+}
+
+static int _set_tls_device(uint64_t devid)
+{
+    int ret = -1;
+
+    if (devid == OE_DEVID_NULL)
+        goto done;
+
+    if (oe_once(&_tls_device_once, _create_tls_device_key) != 0)
+        goto done;
+
+    if (oe_thread_setspecific(_tls_device_key, (void*)devid) != 0)
+        goto done;
+
+    ret = 0;
+
+done:
+    return ret;
+}
+
+static int _clear_tls_device(void)
+{
+    int ret = -1;
+
+    if (oe_once(&_tls_device_once, _create_tls_device_key) != 0)
+        goto done;
+
+    if (oe_thread_setspecific(_tls_device_key, NULL) != 0)
+        goto done;
+
+    ret = 0;
+
+done:
+    return ret;
+}
+
+static uint64_t _get_tls_device(void)
+{
+    uint64_t ret = OE_DEVID_NULL;
+    uint64_t devid;
+
+    if (oe_once(&_tls_device_once, _create_tls_device_key) != 0)
+        goto done;
+
+    if (!(devid = (uint64_t)oe_thread_getspecific(_tls_device_key)))
+        goto done;
+
+    ret = devid;
+
+done:
+    return ret;
+}
+
 oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
 {
     oe_device_t* ret = NULL;
@@ -47,7 +108,7 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
     {
         uint64_t devid;
 
-        if ((devid = oe_get_thread_device()) != OE_DEVID_NULL)
+        if ((devid = _get_tls_device()) != OE_DEVID_NULL)
         {
             oe_device_t* device = oe_get_devid_device(devid);
 
@@ -118,7 +179,9 @@ done:
     return ret;
 }
 
-static oe_device_t* _filesystemtype_to_device(const char* filesystemtype)
+static oe_device_t* _filesystemtype_to_device(
+    const char* filesystemtype,
+    uint64_t* devid_out)
 {
     oe_device_t* ret = NULL;
     struct pair
@@ -129,11 +192,13 @@ static oe_device_t* _filesystemtype_to_device(const char* filesystemtype)
     struct pair pairs[] = {
         {"hostfs", OE_DEVID_HOSTFS},
         {"sgxfs", OE_DEVID_SGXFS},
-        {"shwfs", OE_DEVID_SHWFS},
     };
     static const size_t num_pairs = OE_COUNTOF(pairs);
     size_t i;
     uint64_t devid = OE_DEVID_NULL;
+
+    if (devid_out)
+        *devid_out = OE_DEVID_NULL;
 
     for (i = 0; i < num_pairs; i++)
     {
@@ -147,6 +212,7 @@ static oe_device_t* _filesystemtype_to_device(const char* filesystemtype)
     if (devid == OE_DEVID_NULL)
         goto done;
 
+    *devid_out = devid;
     ret = oe_get_devid_device(devid);
 
 done:
@@ -161,13 +227,62 @@ int oe_mount(
     const void* data)
 {
     int ret = -1;
-    oe_device_t* device = _filesystemtype_to_device(filesystemtype);
+    uint64_t devid = OE_DEVID_NULL;
+    oe_device_t* device = NULL;
     oe_device_t* new_device = NULL;
     bool locked = false;
 
-    OE_UNUSED(data);
+    /* Check required arguments. */
+    if (!target)
+    {
+        oe_errno = EINVAL;
+        goto done;
+    }
 
-    if (!device || device->type != OE_DEVICETYPE_FILESYSTEM || !target)
+    /* Resolve the device and the devid if filesystemtype present. */
+    if (filesystemtype)
+    {
+        if (!(device = _filesystemtype_to_device(filesystemtype, &devid)))
+        {
+            oe_errno = EINVAL;
+            goto done;
+        }
+    }
+
+    /* Set special thread-local-storage device just for this thread. */
+    if (oe_strcmp(target, "__tls__") == 0)
+    {
+        /* Resolve devid if not already resolved. */
+        if (devid == OE_DEVID_NULL)
+        {
+            if (!data)
+            {
+                oe_errno = EINVAL;
+                goto done;
+            }
+
+            devid = *((uint64_t*)data);
+
+            if (!oe_get_devid_device(devid))
+            {
+                oe_errno = EINVAL;
+                goto done;
+            }
+        }
+
+        /* Use this devid for all requests on this thread. */
+        if (_set_tls_device(devid) != 0)
+        {
+            oe_errno = EINVAL;
+            goto done;
+        }
+
+        ret = 0;
+        goto done;
+    }
+
+    /* If the device has not been resolved. */
+    if (!device || device->type != OE_DEVICETYPE_FILESYSTEM)
     {
         oe_errno = EINVAL;
         goto done;
@@ -269,8 +384,7 @@ int oe_umount2(const char* target, int flags)
     size_t index = (size_t)-1;
     char suffix[OE_PATH_MAX];
     oe_device_t* device = oe_mount_resolve(target, suffix);
-
-    oe_spin_lock(&_lock);
+    bool locked = false;
 
     OE_UNUSED(flags);
 
@@ -279,6 +393,22 @@ int oe_umount2(const char* target, int flags)
         oe_errno = EINVAL;
         goto done;
     }
+
+    /* Handle special case of unmounting the thread-local-storage device. */
+    if (oe_strcmp(target, "__tls__") == 0)
+    {
+        if (_clear_tls_device() != 0)
+        {
+            oe_errno = EINVAL;
+            goto done;
+        }
+
+        ret = 0;
+        goto done;
+    }
+
+    oe_spin_lock(&_lock);
+    locked = true;
 
     /* Find and remove this device. */
     for (size_t i = 0; i < _mount_table_size; i++)
@@ -316,7 +446,9 @@ int oe_umount2(const char* target, int flags)
 
 done:
 
-    oe_spin_unlock(&_lock);
+    if (locked)
+        oe_spin_unlock(&_lock);
+
     return ret;
 }
 
