@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-add_custom_command(OUTPUT helloworld_u.h helloworld_u.c
+add_custom_command(OUTPUT helloworld_u.h helloworld_u.c helloworld_args.h
   DEPENDS ${CMAKE_SOURCE_DIR}/helloworld.edl
   COMMAND openenclave::oeedger8r --untrusted ${CMAKE_SOURCE_DIR}/helloworld.edl)
 

@@ -43,3 +43,7 @@ add_custom_command(OUTPUT enc3/enclave_b.signed
 add_custom_target(run
   DEPENDS data-sealing_host ${CMAKE_BINARY_DIR}/enc1/enclave_a_v1.signed ${CMAKE_BINARY_DIR}/enc2/enclave_a_v2.signed ${CMAKE_BINARY_DIR}/enc3/enclave_b.signed
   COMMAND data-sealing_host ${CMAKE_BINARY_DIR}/enc1/enclave_a_v1.signed ${CMAKE_BINARY_DIR}/enc2/enclave_a_v2.signed ${CMAKE_BINARY_DIR}/enc3/enclave_b.signed)
+
+# Automatically sign the enclaves
+add_custom_target(sign ALL
+  DEPENDS ${CMAKE_BINARY_DIR}/enc1/enclave_a_v1.signed ${CMAKE_BINARY_DIR}/enc2/enclave_a_v2.signed ${CMAKE_BINARY_DIR}/enc3/enclave_b.signed)
