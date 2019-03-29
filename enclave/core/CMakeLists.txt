@@ -22,7 +22,7 @@ if (OE_SGX)
         sgx/hostcalls.c
         sgx/hostfs.c
         sgx/hostsock.c
-        sgx/host_resolver.c
+        sgx/hostresolver.c
         sgx/epoll.c
         sgx/eventfd.c
         sgx/init.c
