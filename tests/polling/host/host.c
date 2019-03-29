@@ -110,9 +110,6 @@ int main(int argc, const char* argv[])
     sleep(3); // Give the server time to launch
     const uint32_t flags = oe_get_create_flags();
 
-    // oe_fs_install_hostfs();
-    oe_epoll_install_hostepoll();
-
     result = oe_create_epoll_test_enclave(
         argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &client_enclave);
 

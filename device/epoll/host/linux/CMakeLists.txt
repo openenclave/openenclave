@@ -4,7 +4,7 @@
 include(oeedl_file)
 
 add_library(oeepoll_host STATIC
-    host_epoll.c
+    hostepoll.c
     ${epoll_u_h})
 
 if(CMAKE_C_COMPILER_ID MATCHES GNU)

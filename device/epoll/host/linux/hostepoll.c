@@ -15,10 +15,7 @@
 #include <unistd.h>
 #include "../../common/epollargs.h"
 
-extern void (*oe_handle_epoll_ocall_callback)(void*);
-
 static void* epoll_wait_thread(void* arg_)
-
 {
     int ret = 0;
     struct _oe_epoll_args* args = (struct _oe_epoll_args*)arg_;
@@ -69,7 +66,7 @@ done:
     return NULL;
 }
 
-static void _handle_hostepoll_ocall(void* args_)
+void oe_handle_hostepoll_ocall(void* args_)
 {
     oe_epoll_args_t* args = (oe_epoll_args_t*)args_;
 
@@ -184,9 +181,4 @@ static void _handle_hostepoll_ocall(void* args_)
         }
     }
     args->err = errno;
-}
-
-void oe_epoll_install_hostepoll(void)
-{
-    oe_handle_epoll_ocall_callback = _handle_hostepoll_ocall;
 }

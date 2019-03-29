@@ -12,4 +12,4 @@ add_enclave(
 )
 
 target_include_directories(polling_test_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(polling_test_enc oe_epoll_enc oelibc)
+target_link_libraries(polling_test_enc oelibc)

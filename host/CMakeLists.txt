@@ -102,6 +102,7 @@ add_library(oehost STATIC
   files.c
   fopen.c
   hexdump.c
+  hostepoll.c
   hostfs.c
   hostsock.c
   hostresolver.c

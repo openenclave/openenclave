@@ -34,8 +34,8 @@ enum OE_EPOLL_EVENTS
     OE_EPOLLET = 1u << 31
 };
 
-void oe_epoll_install_epoll(void);
 oe_device_t* oe_epoll_get_epoll(void);
+
 int oe_register_epoll_device(void);
 
 struct oe_device_notifications
@@ -96,6 +96,8 @@ int oe_epoll_wait(
 
 // int oe_epoll_pwait (int epfd, struct epoll_event *events, int maxevents,
 // int timeout, const sigset_t *ss);
+
+void oe_handle_hostepoll_ocall(void* args_);
 
 OE_EXTERNC_END
 
