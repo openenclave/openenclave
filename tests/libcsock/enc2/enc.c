@@ -8,12 +8,20 @@
 
 void run_enclave_server(uint16_t port)
 {
+    oe_enable_feature(OE_FEATURE_HOST_FILES);
+    oe_enable_feature(OE_FEATURE_HOST_SOCKETS);
+    oe_enable_feature(OE_FEATURE_POLLING);
+
     oe_set_default_socket_devid(OE_DEVID_HOST_SOCKET);
     run_server(port);
 }
 
 void run_enclave_client(uint16_t port)
 {
+    oe_enable_feature(OE_FEATURE_HOST_FILES);
+    oe_enable_feature(OE_FEATURE_HOST_SOCKETS);
+    oe_enable_feature(OE_FEATURE_POLLING);
+
     oe_set_default_socket_devid(OE_DEVID_HOST_SOCKET);
     run_client(port);
 }

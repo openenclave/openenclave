@@ -9,6 +9,7 @@
 #include <openenclave/corelibc/netinet/in.h>
 #include <openenclave/internal/device.h>
 #include <openenclave/internal/host_resolver.h>
+#include <openenclave/internal/tests.h>
 
 #include <resolver_test_t.h>
 #include <stdio.h>
@@ -20,13 +21,14 @@ struct addrinfo;
 
 int ecall_device_init()
 {
-    oe_resolver_t* host_resolver = oe_get_hostresolver();
-    (void)oe_register_resolver(2, host_resolver);
+    OE_TEST(oe_enable_feature(OE_FEATURE_HOST_FILES) == OE_OK);
+    OE_TEST(oe_enable_feature(OE_FEATURE_HOST_SOCKETS) == OE_OK);
+    OE_TEST(oe_enable_feature(OE_FEATURE_POLLING) == OE_OK);
+    OE_TEST(oe_enable_feature(OE_FEATURE_HOST_RESOLVER) == OE_OK);
     return 0;
 }
 
 int ecall_getnameinfo(char* buffer, size_t bufflen)
-
 {
     int status = OE_FAILURE;
     (void)buffer;
@@ -34,7 +36,6 @@ int ecall_getnameinfo(char* buffer, size_t bufflen)
     (void)status;
 
     char host[256] = {0};
-    char serv[256] = {0};
 
     struct oe_sockaddr_in addr = {
         .sin_family = OE_AF_HOST,
@@ -46,9 +47,11 @@ int ecall_getnameinfo(char* buffer, size_t bufflen)
         sizeof(addr),
         host,
         sizeof(host),
-        serv,
-        sizeof(serv),
+        NULL,
+        0,
         0);
+
+    printf("host{%s}\n", host);
 
     if (rslt != 0)
     {
@@ -64,7 +67,6 @@ int ecall_getnameinfo(char* buffer, size_t bufflen)
 }
 
 int ecall_getaddrinfo(struct addrinfo** buffer)
-
 {
     struct oe_addrinfo* ai = NULL;
     int status = OE_FAILURE;
@@ -99,7 +101,7 @@ int ecall_getaddrinfo(struct addrinfo** buffer)
 
         {
             size_t canon_namelen = 0;
-            uint8_t* bufptr = oe_host_calloc(0, buffer_required);
+            uint8_t* bufptr = oe_host_calloc(1, buffer_required);
             struct oe_addrinfo* retinfo = (struct oe_addrinfo*)bufptr;
             thisinfo = ai;
             do

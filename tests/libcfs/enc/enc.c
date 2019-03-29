@@ -42,12 +42,12 @@ static int _run_main(int argc, const char* argv[])
     return ret;
 }
 
-void test_libcfs(const char* src_dir, const char* tmp_dir)
+void test_libcfs(const char* tmp_dir)
 {
     const int argc = 2;
     const char* argv[3];
 
-    (void)src_dir;
+    oe_enable_feature(OE_FEATURE_HOST_FILES);
 
     argv[0] = "./main";
     argv[1] = tmp_dir;

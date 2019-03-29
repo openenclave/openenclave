@@ -14,5 +14,4 @@ add_test(tests/libcfs1 /bin/rm -rf "${TMP_DIR}")
 add_enclave_test(tests/libcfs
     libcfs_host
     libcfs_enc
-    "${PROJECT_SOURCE_DIR}"
     "${TMP_DIR}")

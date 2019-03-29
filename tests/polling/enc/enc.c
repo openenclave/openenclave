@@ -19,8 +19,8 @@
 
 int ecall_device_init()
 {
-    (void)oe_allocate_devid(OE_DEVID_EPOLL);
-    (void)oe_set_devid_device(OE_DEVID_EPOLL, oe_epoll_get_epoll());
+    oe_enable_feature(OE_FEATURE_POLLING);
+    oe_enable_feature(OE_FEATURE_HOST_SOCKETS);
     return 0;
 }
 

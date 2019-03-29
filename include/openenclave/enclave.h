@@ -715,6 +715,31 @@ oe_enclave_t* oe_get_enclave(void);
  */
 oe_result_t oe_random(void* data, size_t size);
 
+typedef enum _oe_feature
+{
+    OE_FEATURE_HOST_FILES,
+    OE_FEATURE_HOST_SOCKETS,
+    OE_FEATURE_POLLING,
+    OE_FEATURE_HOST_RESOLVER,
+    __OE_FEATURE_MAX,
+} oe_feature_t;
+
+/**
+ * Enable the enclave feature given by the feature parameter.
+ *
+ * This function enables the given enclave feature. By default, all features
+ * that affect the enclave's security characteristics are disabled. Calling
+ * this function effectively opts into a given feature. For example,
+ * **OE_FEATURE_HOST_FILES** allows the enclave to access files on the
+ * host file system. Always use this function with care as it modifies the
+ * security policy of the enclave in some way.
+ *
+ * @param feature enable this feature.
+ *
+ * @return OE_OK on success
+ */
+oe_result_t oe_enable_feature(oe_feature_t feature);
+
 OE_EXTERNC_END
 
 #endif /* _OE_ENCLAVE_H */

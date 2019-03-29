@@ -179,6 +179,7 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
                 oe_enclave = safe_args.enclave;
             }
 
+#if 0
             /* Register the host file system. */
             if (oe_register_hostfs_device() != 0)
             {
@@ -207,6 +208,7 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
                 goto done;
             }
 
+#endif
             /* Initialize the console devices: stdin, stdout, stderr. */
             if (oe_initialize_console_devices() != 0)
             {

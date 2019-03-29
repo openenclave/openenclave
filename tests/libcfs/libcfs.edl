@@ -4,7 +4,6 @@
 enclave {
     trusted {
         public void test_libcfs(
-            [string, in] const char* src_dir,
             [string, in] const char* tmp_dir);
 
     };

@@ -22,6 +22,7 @@
 #include <openenclave/bits/safemath.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/host_resolver.h>
 #include <openenclave/internal/hostfs.h>
 #include <openenclave/internal/hostsock.h>
 #include <openenclave/internal/raise.h>
@@ -37,7 +38,6 @@
 void (*oe_handle_sgxfs_ocall_callback)(void* args);
 
 void (*oe_handle_epoll_ocall_callback)(void* args);
-void (*oe_handle_hostresolver_ocall_callback)(void* args);
 
 /*
 **==============================================================================
@@ -432,11 +432,7 @@ static oe_result_t _handle_ocall(
         }
         case OE_OCALL_HOSTRESOLVER:
         {
-            if (oe_handle_hostresolver_ocall_callback)
-                oe_handle_hostresolver_ocall_callback((void*)arg_in);
-            else
-                OE_RAISE(OE_NOT_FOUND);
-
+            oe_handle_hostresolver_ocall((void*)arg_in);
             break;
         }
         case OE_OCALL_UNAME:
@@ -444,7 +440,6 @@ static oe_result_t _handle_ocall(
             oe_handle_uname(arg_in, arg_out);
             break;
         }
-
         default:
         {
             /* No function found with the number */

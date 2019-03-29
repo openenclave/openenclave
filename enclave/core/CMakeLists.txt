@@ -15,12 +15,14 @@ if (OE_SGX)
         sgx/entropy.c
         sgx/errno.c
         sgx/exception.c
+        sgx/features.c
         sgx/globals.c
         sgx/globals.c
         sgx/hostbatch.c
         sgx/hostcalls.c
         sgx/hostfs.c
         sgx/hostsock.c
+        sgx/host_resolver.c
         sgx/epoll.c
         sgx/eventfd.c
         sgx/init.c

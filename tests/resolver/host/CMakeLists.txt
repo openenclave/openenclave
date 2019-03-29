@@ -13,6 +13,6 @@ add_executable(resolver_host
     ${resolver_test_u}
 )
 
-target_link_libraries(resolver_host oehostresolver_host)
 target_include_directories(resolver_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
 target_link_libraries(resolver_host oehostapp)

@@ -20,8 +20,6 @@
 
 #define SERVER_PORT "12345"
 
-void oe_resolver_install_hostresolver();
-
 int main(int argc, const char* argv[])
 {
     oe_result_t result;
@@ -40,7 +38,6 @@ int main(int argc, const char* argv[])
     // disable buffering
     setvbuf(stdout, NULL, _IONBF, 0);
 
-    oe_resolver_install_hostresolver();
     result = oe_create_resolver_test_enclave(
         argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &client_enclave);
 

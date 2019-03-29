@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <netdb.h>
+#include <openenclave/internal/host_resolver.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -12,9 +13,7 @@
 #include <unistd.h>
 #include "../../common/hostresolvargs.h"
 
-void (*oe_handle_hostresolver_ocall_callback)(void*);
-
-static void _handle_hostresolver_ocall(void* args_)
+void oe_handle_hostresolver_ocall(void* args_)
 {
     oe_hostresolv_args_t* args = (oe_hostresolv_args_t*)args_;
 
@@ -165,9 +164,4 @@ static void _handle_hostresolver_ocall(void* args_)
         }
     }
     args->err = errno;
-}
-
-void oe_resolver_install_hostresolver(void)
-{
-    oe_handle_hostresolver_ocall_callback = _handle_hostresolver_ocall;
 }
