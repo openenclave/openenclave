@@ -24,7 +24,9 @@ Getting Started
 ---------------
 
 If you would like to start developing apps with the preview Open Enclave SDK release,
-start here for instructions to [install and use the SDK package](docs/GettingStartedDocs/install_oe_sdk.md).
+start here for instructions to install and use the SDK package:
+- [Ubuntu 16.04](docs/GettingStartedDocs/install_oe_sdk-Ubuntu_16.04.md)
+- [Ubuntu 18.04](docs/GettingStartedDocs/install_oe_sdk-Ubuntu_18.04.md)
 
 If you would like to modify and build the Open Enclave SDK from sources, refer to
 the documents for [getting started](docs/GettingStartedDocs/GettingStarted.md).
