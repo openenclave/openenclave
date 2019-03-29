@@ -4,7 +4,6 @@
 set(LINUX_SGX_DIR ${PROJECT_SOURCE_DIR}/3rdparty/linux-sgx)
 
 add_library(oesgxfshost STATIC
-    handleocall.c
     sgx_unprotected.cpp)
 
 target_include_directories(oesgxfshost PRIVATE 

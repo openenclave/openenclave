@@ -35,9 +35,6 @@
 #include "enclave.h"
 #include "ocalls.h"
 
-/* This callback is installed by the host by calling oe_fs_install_sgxfs(). */
-void (*oe_handle_sgxfs_ocall_callback)(void* args);
-
 /*
 **==============================================================================
 **
@@ -404,15 +401,6 @@ static oe_result_t _handle_ocall(
         case OE_OCALL_HOSTFS:
         {
             oe_handle_hostfs_ocall((void*)arg_in);
-            break;
-        }
-        case OE_OCALL_SGXFS:
-        {
-            if (oe_handle_sgxfs_ocall_callback)
-                oe_handle_sgxfs_ocall_callback((void*)arg_in);
-            else
-                OE_RAISE(OE_NOT_FOUND);
-
             break;
         }
         case OE_OCALL_HOSTSOCK:

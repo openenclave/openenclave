@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 
 enclave {
+    from "sgx_tprotected_fs.edl" import *;
+
     trusted {
         public void test_fs(
             [string, in] const char* src_dir,

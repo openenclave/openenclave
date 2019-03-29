@@ -13,7 +13,6 @@ add_library(oesgxfsenclave STATIC
     lru_cache.cpp
     sgxfs.c
     sgx_tprotected_fs.cpp
-    ocalls.c
     thread.c
     memset_s.c
     memequal.c
