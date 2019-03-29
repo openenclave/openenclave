@@ -1,36 +1,23 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#undef OE_BUILD_ENCLAVE
-#include <assert.h>
 #include <limits.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 
-int main(int argc, const char* argv[])
+int run_main(const char* tmp_dir)
 {
-    FILE* stream;
-    char tmp_dir[PATH_MAX];
+    int ret = -1;
+    FILE* stream = NULL;
     char path[PATH_MAX];
     const char alphabet[] = "abcdefghijklmnopqrstuvwxyz";
 
-    if (argc != 2)
-    {
-        fprintf(stderr, "Usage: %s tmp-dir\n", argv[0]);
-        exit(1);
-    }
-
     /* Create the temporary directory. */
+    if (mkdir(tmp_dir, 0777) != 0)
     {
-        strcpy(tmp_dir, argv[1]);
-
-        if (mkdir(tmp_dir, 0777) != 0)
-        {
-            fprintf(stderr, "mkdir() failed\n");
-            exit(1);
-        }
+        fprintf(stderr, "mkdir() failed: %s\n", tmp_dir);
+        goto done;
     }
 
     /* Form the path to the new file. */
@@ -42,7 +29,7 @@ int main(int argc, const char* argv[])
         if (!(stream = fopen(path, "w")))
         {
             fprintf(stderr, "fopen() failed: %s\n", path);
-            exit(1);
+            goto done;
         }
 
         size_t n = fwrite(alphabet, 1, sizeof(alphabet), stream);
@@ -50,10 +37,11 @@ int main(int argc, const char* argv[])
         if (n != sizeof(alphabet))
         {
             fprintf(stderr, "fwrite() failed: %s\n", path);
-            exit(1);
+            goto done;
         }
 
         fclose(stream);
+        stream = NULL;
 
         printf("Created %s\n", path);
     }
@@ -65,7 +53,7 @@ int main(int argc, const char* argv[])
         if (!(stat(path, &buf) == 0 && buf.st_size == sizeof(alphabet)))
         {
             fprintf(stderr, "stat() failed: %s\n", path);
-            exit(1);
+            goto done;
         }
     }
 
@@ -76,7 +64,7 @@ int main(int argc, const char* argv[])
         if (!(stream = fopen(path, "r")))
         {
             fprintf(stderr, "fopen() failed: %s\n", path);
-            exit(1);
+            goto done;
         }
 
         size_t n = fread(buf, 1, sizeof(alphabet), stream);
@@ -84,17 +72,25 @@ int main(int argc, const char* argv[])
         if (n != sizeof(alphabet))
         {
             fprintf(stderr, "fread() failed: %s\n", path);
-            exit(1);
+            goto done;
         }
 
         if (memcmp(alphabet, buf, sizeof(alphabet)) != 0)
         {
             fprintf(stderr, "memcmp() failed\n");
-            exit(1);
+            goto done;
         }
 
         fclose(stream);
+        stream = NULL;
     }
 
-    return 0;
+    ret = 0;
+
+done:
+
+    if (stream)
+        fclose(stream);
+
+    return ret;
 }

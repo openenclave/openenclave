@@ -8,28 +8,11 @@
 #include <stdlib.h>
 #include <sys/mount.h>
 
-static jmp_buf _jmp_buf;
-static int _exit_status = OE_INT_MAX;
-
-void oe_set_exit_handler(void (*handler)(int status));
-
-static void _exit_handler(int status)
+void test_libcfs(const char* tmp_dir)
 {
-    _exit_status = status;
-    longjmp(_jmp_buf, 1);
-}
+    extern int run_main(const char* tmp_dir);
 
-static int _run_main(int argc, const char* argv[])
-{
-    int ret;
-    int main(int argc, const char* argv[]);
-
-    if (setjmp(_jmp_buf) == 1)
-    {
-        return _exit_status;
-    }
-
-    oe_set_exit_handler(_exit_handler);
+    oe_enable_feature(OE_FEATURE_HOST_FILES);
 
     if (mount("/", "/", "hostfs", 0, NULL) != 0)
     {
@@ -37,23 +20,7 @@ static int _run_main(int argc, const char* argv[])
         exit(1);
     }
 
-    ret = main(argc, argv);
-
-    return ret;
-}
-
-void test_libcfs(const char* tmp_dir)
-{
-    const int argc = 2;
-    const char* argv[3];
-
-    oe_enable_feature(OE_FEATURE_HOST_FILES);
-
-    argv[0] = "./main";
-    argv[1] = tmp_dir;
-    argv[2] = NULL;
-
-    if (_run_main(argc, argv) != 0)
+    if (run_main(tmp_dir) != 0)
     {
         assert("_run_main() failed" == NULL);
         exit(1);
