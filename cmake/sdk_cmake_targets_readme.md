@@ -5,8 +5,8 @@ This [CMake Config-file package](https://cmake.org/cmake/help/latest/manual/cmak
 is provided for use with CMake's
 [`find_package` command](https://cmake.org/cmake/help/latest/command/find_package.html).
 
-In a CMake project which is using The Open Enclave SDK, you find the package the
-following in your `CMakeLists.txt`:
+In a CMake project which is using the Open Enclave SDK, you find the package by
+using the following in your `CMakeLists.txt`:
 
 ```cmake
 find_package(OpenEnclave CONFIG REQUIRED)
@@ -16,9 +16,15 @@ This will bring in the Open Enclave targets under the `openenclave::` namespace.
 
 The targets relevant to users of the SDK are:
 
+### Executables
+
 - `openenclave::oeedger8r`
 - `openenclave::oesign`
+
+### Libraries
+
 - `openenclave::oeenclave`
+- `openenclave::oelibc`
 - `openenclave::oelibcxx`
 - `openenclave::oehostapp`
 
@@ -27,7 +33,10 @@ when needed by the above.
 
 The package will also search for (and requires) the
 [`Threads` package](https://cmake.org/cmake/help/latest/module/FindThreads.html).
-The libraries `crypto` and `dl` will also need to be available on the system.
+
+However, the libraries `crypto` and `dl` will also need to be available on the
+system, but due to an outstanding issue, the failure will happen at link-time if
+they are unavailable.
 
 Examples
 --------
@@ -39,11 +48,13 @@ untrusted C bindings from an Enclave Definition Language file. Example usage is:
 
 ```cmake
 # Trusted bindings for the enclave
-add_custom_command(OUTPUT example_t.h example_t.c
+add_custom_command(OUTPUT example_t.h example_t.c example_args.h
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/example.edl
   COMMAND openenclave::oeedger8r --trusted ${CMAKE_CURRENT_SOURCE_DIR}/example.edl)
 
-# Untrusted bindings fo rthe host
-add_custom_command(OUTPUT example_u.h example_u.c
+# Untrusted bindings for the host
+add_custom_command(OUTPUT example_u.h example_u.c example_args.h
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/example.edl
   COMMAND openenclave::oeedger8r --untrusted ${CMAKE_CURRENT_SOURCE_DIR}/example.edl)
 ```
 
@@ -62,6 +73,11 @@ This is because the output of a CMake custom command can only be used as an
 input to a CMake target in the same `CMakeLists.txt`, and your enclave and host
 targets are probably in separate folders. See our samples for a complete build
 structure example.
+
+There is a special case where the `example_args.h` file is not generated, but it
+is exceedingly rare. If the only functions specified in the EDL are of the form
+`void fn()` (no arguments and a void return type), then no arguments header will
+be generated.
 
 ### Creating an unsigned enclave
 
@@ -105,6 +121,7 @@ enclave. Example usage is:
 
 ```cmake
 add_custom_command(OUTPUT example_enclave.signed
+  DEPENDS example_enclave ${CMAKE_CURRENT_SOURCE_DIR}/example.conf ${CMAKE_CURRENT_SOURCE_DIR}/key.pem
   COMMAND openenclave::oesign sign -e $<TARGET_FILE:example_enclave> -c ${CMAKE_CURRENT_SOURCE_DIR}/example.conf -k ${CMAKE_CURRENT_SOURCE_DIR}/key.pem)
 ```
 
@@ -119,7 +136,7 @@ typically is in the build directory corresponding to the source directory of the
 enclave. The current working directory does not affect it.
 
 Because this is a custom command, you will need to depend on
-`example_encalve.signed` from a
+`example_enclave.signed` from a
 [custom target](https://cmake.org/cmake/help/latest/command/add_custom_target.html).
 
 ```cmake
