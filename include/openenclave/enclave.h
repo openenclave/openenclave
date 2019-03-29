@@ -195,6 +195,10 @@ char* oe_host_strndup(const char* str, size_t n);
 void oe_abort(void);
 
 /**
+ * @cond IGNORE
+ */
+
+/**
  * Called whenever an assertion fails.
  *
  * This internal function is called when the expression of the oe_assert()
@@ -220,9 +224,15 @@ void __oe_assert_fail(
     const char* file,
     int line,
     const char* func);
+/**
+ * @endcond
+ */
 
 /**
  * Evaluates assertion.
+ * If EXPR evaulates to zero, this function is called with the
+ * string representation of the expression as well as the file, the line, and
+ * the function name where the macro was expanded.
  */
 #ifndef NDEBUG
 #define oe_assert(EXPR)                                                \
