@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <getopt.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/mem.h>
 #include <openenclave/internal/properties.h>
@@ -9,6 +10,7 @@
 #include <openenclave/internal/sgxsign.h>
 #include <openenclave/internal/str.h>
 #include <stdarg.h>
+#include <stdlib.h>
 #include <sys/stat.h>
 #include "../host/sgx/enclave.h"
 
@@ -19,7 +21,7 @@ int oesign(const char*, const char*, const char*);
 OE_PRINTF_FORMAT(1, 2)
 void Err(const char* format, ...)
 {
-    fprintf(stderr, "%s: ", arg0);
+    fprintf(stderr, "%s ERROR: ", arg0);
 
     va_list ap;
     va_start(ap, format);
@@ -461,10 +463,11 @@ static const char _usage_gen[] =
     "    dump  -  Print out the Open Enclave metadata for the specified "
     "enclave.\n"
     "\n"
-    "For help with a specific command, enter \"%s <command> -?\"\n";
+    "For help with a specific command, enter \"%s <command> --help\"\n";
 
 static const char _usage_sign[] =
-    "Usage: %s sign enclave_image config_file key_file\n"
+    "Usage: %s sign --enclave-image [-e] enclave_image "
+    "--config-file [-c] config_file --key-file [-k] key_file\n"
     "\n"
     "Where:\n"
     "    enclave_image -- path of an enclave image file\n"
@@ -506,7 +509,7 @@ static const char _usage_sign[] =
 
 static const char _usage_dump[] =
     "\n"
-    "Usage: %s dump enclave_image\n"
+    "Usage: %s dump --enclave-image [-e] enclave_image\n"
     "\n"
     "Where:\n"
     "    enclave_image -- path of an enclave image file\n"
@@ -631,124 +634,135 @@ done:
     return ret;
 }
 
-int dump_parser(const char* argv[])
+int dump_parser(int argc, const char* argv[])
 {
-    int ret = 1;
-    const char* enclave;
+    int ret = 0;
+    const char* enclave = NULL;
 
-    if (strcmp(argv[2], "-?") == 0)
+    const struct option long_options[] = {
+        {"help", no_argument, NULL, 'h'},
+        {"enclave-image", required_argument, NULL, 'e'},
+        {NULL, 0, NULL, 0},
+    };
+    const char short_options[] = "he:";
+
+    int c;
+    do
     {
-        fprintf(stderr, _usage_dump, argv[0]);
-        exit(1);
-    }
-    else
+        c = getopt_long(
+            argc, (char* const*)argv, short_options, long_options, NULL);
+        if (c == -1)
+        {
+            // all the command-line options are parsed
+            break;
+        }
+
+        switch (c)
+        {
+            case 'h':
+                fprintf(stderr, _usage_dump, argv[0]);
+                goto done;
+            case 'e':
+                enclave = optarg;
+                break;
+            case ':':
+                // Missing option argument
+                ret = 1;
+                goto done;
+            case '?':
+            default:
+                // Invalid option
+                ret = 1;
+                goto done;
+        }
+    } while (1);
+
+    if (enclave == NULL)
     {
-        if (strstr(argv[2], "_enc") != NULL)
-        {
-            enclave = argv[2];
-            /* dump oeinfo and signature information */
-            ret = oedump(enclave);
-        }
-        else
-        {
-            fprintf(stderr, _usage_gen, argv[0], argv[0]);
-            exit(1);
-        }
+        Err("Enclave image flag is missing");
+        ret = 1;
     }
+    if (!ret)
+        /* dump oeinfo and signature information */
+        ret = oedump(enclave);
+
+done:
 
     return ret;
 }
 
 int sign_parser(int argc, const char* argv[])
 {
-    int ret = 1;
-    const char* enclave;
-    const char* conffile;
-    const char* keyfile;
+    int ret = 0;
+    const char* enclave = NULL;
+    const char* conffile = NULL;
+    const char* keyfile = NULL;
 
-    if (strcmp(argv[2], "-?") == 0)
-    {
-        fprintf(stderr, _usage_sign, argv[0]);
-        exit(1);
-    }
-    else if (argc == 5)
-    {
-        if (strstr(argv[2], "enc") != NULL)
-        {
-            enclave = argv[2];
-            if (strstr(argv[3], "conf") != NULL)
-            {
-                /* Collect arguments for signing*/
-                conffile = argv[3];
-                keyfile = argv[4];
-            }
-            else if (strstr(argv[3], "pem") != NULL)
-            {
-                /* Collect arguments for signing*/
-                keyfile = argv[3];
-                conffile = argv[4];
-            }
-            else
-            {
-                fprintf(stderr, _usage_gen, argv[0], argv[0]);
-                exit(1);
-            }
-        }
-        else if (strstr(argv[3], "enc") != NULL)
-        {
-            enclave = argv[3];
-            if (strstr(argv[2], "conf") != NULL)
-            {
-                /* Collect arguments for signing*/
-                conffile = argv[2];
-                keyfile = argv[4];
-            }
-            else if (strstr(argv[2], "pem") != NULL)
-            {
-                /* Collect arguments for signing*/
-                keyfile = argv[2];
-                conffile = argv[4];
-            }
-            else
-            {
-                fprintf(stderr, _usage_gen, argv[0], argv[0]);
-                exit(1);
-            }
-        }
-        else if (strstr(argv[4], "enc") != NULL)
-        {
-            enclave = argv[4];
-            if (strstr(argv[2], "conf") != NULL)
-            {
-                /* Collect arguments for signing*/
-                conffile = argv[2];
-                keyfile = argv[3];
-            }
-            else if (strstr(argv[2], "pem") != NULL)
-            {
-                /* Collect arguments for signing*/
-                keyfile = argv[2];
-                conffile = argv[3];
-            }
-            else
-            {
-                fprintf(stderr, _usage_gen, argv[0], argv[0]);
-                exit(1);
-            }
-        }
-        else
-        {
-            fprintf(stderr, _usage_gen, argv[0], argv[0]);
-            exit(1);
-        }
-    }
-    else
-    {
-        fprintf(stderr, _usage_gen, argv[0], argv[0]);
-        exit(1);
-    }
+    const struct option long_options[] = {
+        {"help", no_argument, NULL, 'h'},
+        {"enclave-image", required_argument, NULL, 'e'},
+        {"config-file", required_argument, NULL, 'c'},
+        {"key-file", required_argument, NULL, 'k'},
+        {NULL, 0, NULL, 0},
+    };
+    const char short_options[] = "he:c:k:";
 
-    ret = oesign(enclave, conffile, keyfile);
+    int c;
+    do
+    {
+        c = getopt_long(
+            argc, (char* const*)argv, short_options, long_options, NULL);
+        if (c == -1)
+        {
+            // all the command-line options are parsed
+            break;
+        }
+
+        switch (c)
+        {
+            case 'h':
+                fprintf(stderr, _usage_sign, argv[0]);
+                goto done;
+            case 'e':
+                enclave = optarg;
+                break;
+            case 'c':
+                conffile = optarg;
+                break;
+            case 'k':
+                keyfile = optarg;
+                break;
+            case ':':
+                // Missing option argument
+                ret = 1;
+                goto done;
+            case '?':
+            default:
+                // Invalid option
+                ret = 1;
+                goto done;
+        }
+    } while (1);
+
+    if (enclave == NULL)
+    {
+        Err("Enclave image flag is missing");
+        ret = 1;
+    }
+    if (conffile == NULL)
+    {
+        Err("Config file flag is missing");
+        ret = 1;
+    }
+    if (keyfile == NULL)
+    {
+        Err("Key file flag is missing");
+        ret = 1;
+    }
+    if (!ret)
+        ret = oesign(enclave, conffile, keyfile);
+
+done:
 
     return ret;
 }
@@ -757,7 +771,7 @@ int arg_handler(int argc, const char* argv[])
 {
     int ret = 1;
     if ((strcmp(argv[1], "dump") == 0))
-        ret = dump_parser(argv);
+        ret = dump_parser(argc, argv);
     else if ((strcmp(argv[1], "sign") == 0))
         ret = sign_parser(argc, argv);
     else

@@ -62,6 +62,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   of the Intel SGX DCAP packages on the system that generates the remote report,
   which as of the time of this change is version 1.0.1 and can be found here:
   https://download.01.org/intel-sgx/dcap-1.0.1/dcap_installer/ubuntuServer1604/
+- Revamped `oesign` CLI tool arguments parsing. Instead of relying on the arguments
+  order and name, named parameters are used as such:
+   - The `sign` subcommand accepts the following mandatory flags:
+     - `--enclave-image [-e]`, the enclave image file path
+     - `--config-file [-c]`, the path of the config file with enclave properties
+     - `--key-file [-k]`, the path of the private key file used to digitally sign the enclave image
+   - The `dump` subcommand accepts only the `--enclave-image [-e]` mandatory flag, for the enclave file path.
 
 ### Deprecated
 

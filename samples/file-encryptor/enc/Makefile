@@ -33,7 +33,7 @@ build:
 	$(CXX) -o file-encryptorenc ecalls.o encryptor.o keys.o fileencryptor_t.o $(LDFLAGS)
 
 sign:
-	oesign sign file-encryptorenc file-encryptor.conf private.pem
+	oesign sign -e file-encryptorenc -c file-encryptor.conf -k private.pem
 
 clean:
 	rm -f file-encryptorenc file-encryptorenc.signed *.o fileencryptor_t.* fileencryptor_args.h private.pem public.pem
