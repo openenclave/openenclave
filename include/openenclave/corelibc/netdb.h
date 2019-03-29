@@ -4,7 +4,6 @@
 #ifndef _OE_CORELIBC_NETDB_H_
 #define _OE_CORELIBC_NETDB_H_
 
-#include <openenclave/corelibc/bits/devids.h>
 #include <openenclave/corelibc/sys/socket.h>
 
 OE_EXTERNC_BEGIN

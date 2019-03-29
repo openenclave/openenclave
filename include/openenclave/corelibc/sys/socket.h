@@ -6,7 +6,6 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/corelibc/bits/devids.h>
 #include <openenclave/corelibc/sys/uio.h>
 
 OE_EXTERNC_BEGIN
@@ -204,8 +203,6 @@ ssize_t oe_sendmsg(int sockfd, const struct oe_msghdr* buf, int flags);
 
 ssize_t oe_recv(int sockfd, void* buf, size_t len, int flags);
 ssize_t oe_recvmsg(int sockfd, struct oe_msghdr* buf, int flags);
-
-int oe_socket_d(uint64_t devid, int domain, int type, int protocol);
 
 int oe_getpeername(int sockfd, struct oe_sockaddr* addr, socklen_t* addrlen);
 

@@ -5,8 +5,8 @@
 #define _OE_INTERNAL_FS_H
 
 #include <openenclave/bits/defs.h>
+#include <openenclave/bits/io.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/corelibc/bits/devids.h>
 #include <openenclave/corelibc/dirent.h>
 #include <openenclave/corelibc/fcntl.h>
 #include <openenclave/corelibc/limits.h>

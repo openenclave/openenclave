@@ -7,6 +7,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <openenclave/bits/defs.h>
+#include <openenclave/bits/io.h>
 #include <openenclave/corelibc/netdb.h>
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/libcex/sal.h>

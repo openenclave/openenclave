@@ -6,7 +6,6 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/corelibc/bits/devids.h>
 
 OE_EXTERNC_BEGIN
 
@@ -27,8 +26,6 @@ OE_EXTERNC_BEGIN
 
 int oe_access(const char* pathname, int mode);
 
-int oe_access_d(uint64_t devid, const char* pathname, int mode);
-
 void* oe_sbrk(intptr_t increment);
 
 ssize_t oe_read(int fd, void* buf, size_t count);
@@ -39,19 +36,11 @@ off_t oe_lseek(int fd, off_t offset, int whence);
 
 int oe_link(const char* oldpath, const char* newpath);
 
-int oe_link_d(uint64_t devid, const char* oldpath, const char* newpath);
-
 int oe_unlink(const char* pathname);
-
-int oe_unlink_d(uint64_t devid, const char* pathname);
 
 int oe_rmdir(const char* pathname);
 
-int oe_rmdir_d(uint64_t devid, const char* pathname);
-
 int oe_truncate(const char* path, off_t length);
-
-int oe_truncate_d(uint64_t devid, const char* path, off_t length);
 
 char* oe_getcwd(char* buf, size_t size);
 

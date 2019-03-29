@@ -6,7 +6,6 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/corelibc/bits/devids.h>
 #include <openenclave/corelibc/stdarg.h>
 
 OE_EXTERNC_BEGIN
@@ -29,8 +28,6 @@ OE_PRINTF_FORMAT(1, 2)
 int oe_printf(const char* format, ...);
 
 int oe_rename(const char* oldpath, const char* newpath);
-
-int oe_rename_d(uint64_t devid, const char* oldpath, const char* newpath);
 
 #if defined(OE_NEED_STDC_NAMES)
 

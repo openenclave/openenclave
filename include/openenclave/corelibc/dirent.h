@@ -6,7 +6,6 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/corelibc/bits/devids.h>
 
 OE_EXTERNC_BEGIN
 
@@ -33,8 +32,6 @@ struct oe_dirent
 };
 
 OE_DIR* oe_opendir(const char* pathname);
-
-OE_DIR* oe_opendir_d(uint64_t devid, const char* pathname);
 
 struct oe_dirent* oe_readdir(OE_DIR* dir);
 

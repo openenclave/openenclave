@@ -3,11 +3,12 @@
 
 // clang-format off
 #define OE_SECURE_POSIX_FILE_API
+#include <openenclave/libcex/dirent.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/tests.h>
 #include <openenclave/libcex/stdio.h>
-#include <openenclave/libcex/dirent.h>
 #include <openenclave/corelibc/string.h>
+#include <openenclave/corelibc/dirent.h>
 // clang-format on
 
 /* Be sure stdio.h was included from the libcex directory. */

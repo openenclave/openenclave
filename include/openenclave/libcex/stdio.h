@@ -9,9 +9,8 @@
 #endif
 
 #include <openenclave/bits/defs.h>
+#include <openenclave/bits/io.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/corelibc/bits/devids.h>
-#include <openenclave/internal/fs.h>
 #include <openenclave/libcex/bits/common.h>
 #include <stdio.h>
 

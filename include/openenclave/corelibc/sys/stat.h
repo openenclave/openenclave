@@ -6,7 +6,6 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/corelibc/bits/devids.h>
 
 OE_EXTERNC_BEGIN
 
@@ -65,11 +64,7 @@ struct oe_stat
 
 int oe_stat(const char* pathname, struct oe_stat* buf);
 
-int oe_stat_d(uint64_t devid, const char* pathname, struct oe_stat* buf);
-
 int oe_mkdir(const char* pathname, mode_t mode);
-
-int oe_mkdir_d(uint64_t devid, const char* pathname, mode_t mode);
 
 #if defined(OE_NEED_STDC_NAMES)
 
