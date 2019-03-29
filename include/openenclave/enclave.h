@@ -692,10 +692,11 @@ oe_result_t oe_get_seal_key_v2(
     uint8_t** key_buffer,
     size_t* key_buffer_size);
 
-/* Free a key and/or key info.
+/**
+ * Frees a key and/or key info.
  *
- * @param[in] key_buffer If non-NULL, the key buffer to free.
- * @param[in] key_info If non-NULL, the key info buffer to free.
+ * @param key_buffer If non-NULL, the key buffer to free.
+ * @param key_info If non-NULL, the key info buffer to free.
  */
 void oe_free_seal_key(uint8_t* key_buffer, uint8_t* key_info);
 

@@ -14,5 +14,6 @@ set(GRAPHVIZ_IGNORE_TARGETS
   "_enc_exported$"
   "_host$"
   "^libmbedtest"
+  "^mbedtest_"
   "^SampleApp"
   "^pingpong-")
