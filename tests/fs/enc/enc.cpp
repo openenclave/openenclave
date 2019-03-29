@@ -540,9 +540,8 @@ void test_fs(const char* src_dir, const char* tmp_dir)
 
         fd_file_system fs;
         uint64_t devid = OE_DEVID_HOSTFS;
-        OE_TEST(oe_mount(NULL, "__tls__", NULL, 0, &devid) == 0);
+        device_registrant reg(devid);
         test_all(fs, tmp_dir);
-        OE_TEST(oe_umount("__tls__") == 0);
     }
 
     /* Test writing to a read-only mounted file system. */
