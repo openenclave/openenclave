@@ -42,7 +42,7 @@ drwxr-xr-x 2 yourusername yourusername 4096 Aug 16 13:59 host
 
 ### How to build and run samples
 
-Each sample comes with a set of simple Makefiles to simplify the sample building process, which involves building and signing
+Each sample comes with two different build systems: one using GNU Make and pkg-config, the other using CMake. They help simplify the sample building process, which involves building and signing
 binaries.
 
 #### Source the openenclaverc file (Required)
@@ -69,23 +69,42 @@ Package oeenclave-clang was not found in the pkg-config search path.
 Perhaps you should add the directory containing `oeenclave-clang.pc`
 ```
 
-#### Build samples
+#### Build and Run samples
 
-To build a sample, change directory to your target sample directory and run `make build` to build the sample
-and run `make run` to run it.
+##### GNU Make
+
+To build a sample using GNU Make, change directory to your target sample directory and run `make build` to build the sample.
+Then execute "make run" to run the sample.
 
 For example:
 
 ```bash
-username@yourVMname:~/openenclave/share/openenclave/samples$ cd helloworld/
-username@yourVMname:~/openenclave/share/openenclave/samples/helloworld$ ls enclave host Makefile
-
-username@yourVMname:~/openenclave/share/openenclave/samples/helloworld$ make build
- ...
-username@yourVMname:~/openenclave/share/openenclave/samples/helloworld$ make run host/helloworldhost ./enclave/helloworldenc.signed
-Enclave called into host to print: Hello World!
+~/openenclave/share/openenclave/samples$ cd helloworld/
+~/openenclave/share/openenclave/samples/helloworld$ make build
+~/openenclave/share/openenclave/samples/helloworld$ make run
 ```
 
+##### CMake
+
+To build a sample using CMake, change directory to your target sample directory and execute the following commands:
+
+mkdir build && cd build
+cmake ..
+make
+
+Then execute "make run" to run the sample.
+
+For example:
+
+```bash
+~/openenclave/share/openenclave/samples$ cd helloworld/
+~/openenclave/share/openenclave/samples/helloworld$ mkdir build && cd build
+~/openenclave/share/openenclave/samples/helloworld/build$ cmake ..
+~/openenclave/share/openenclave/samples/helloworld/build$ make
+~/openenclave/share/openenclave/samples/helloworld/build$ make run
+```
+
+##### Note:
 For details on how to configure build and sign options, refer to [Enclave Building and Signing](https://github.com/Microsoft/openenclave/blob/master/docs/GettingStartedDocs/buildandsign.md).
 
 ## Samples

@@ -492,22 +492,31 @@ The following files are generated during the build.
 | helloworld_u.h | Function prototype for `enclave_helloworld()` function |
 | helloworld_u.o | compiled helloworld_u.c source file |
 
-# How to Run
 
-You can run the helloworld sample directly on the command line as follows:
+## Build and run
+
+Note that there are two different build systems supported, one using GNU Make and
+`pkg-config`, the other using CMake.
+
+### CMake
+
+This uses the CMake package provided by the Open Enclave SDK.
 
 ```bash
-./host/helloworldhost ./enclave/helloworldenc.signed
+cd helloworld
+mkdir build && cd build
+cmake ..
+make run
 ```
 
-Or execute `make run` from the root of the sample:
+### GNU Make
 
 ```bash
-$ make run
-host/helloworldhost ./enclave/helloworldenc.signed
-Hello world from the enclave
-Enclave called into host to print: Hello World!
+cd helloworld
+make build
+make run
 ```
+#### Note
 
 helloworld sample can run under OE simulation mode.
 
