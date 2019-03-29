@@ -1,8 +1,0 @@
-#!/bin/bash
-
-# Copyright (c) Microsoft Corporation. All rights reserved.
-# Licensed under the MIT License.
-
-cflags=$(pkg-config oehost-g++ --cflags)
-libs=$(pkg-config oehost-g++ --libs)
-/usr/bin/g++ "$@" ${cflags} ${libs}
