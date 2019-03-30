@@ -39,6 +39,7 @@ foreach (SAMPLE data-sealing file-encryptor helloworld local_attestation remote_
     WORKING_DIRECTORY ${SAMPLE_BUILD_DIR})
 
   if ((NOT DEFINED ENV{OE_SIMULATION}) OR (NOT $ENV{OE_SIMULATION}))
+    # Build with the CMake package
     execute_process(
       COMMAND ${CMAKE_COMMAND} --build ${SAMPLE_BUILD_DIR} --target run
       RESULT_VARIABLE TEST_RESULT)
@@ -46,8 +47,10 @@ foreach (SAMPLE data-sealing file-encryptor helloworld local_attestation remote_
       message(WARNING "Samples test '${SAMPLE}' failed!")
       set(ALL_TEST_RESULT 1)
     endif ()
+
+    # Build with pkg-config
     execute_process(
-      COMMAND make -C ${SAMPLE_SOURCE_DIR} clean build run
+      COMMAND PKG_CONFIG_PATH=${INSTALL_DIR}/share/pkgconfig make -C ${SAMPLE_SOURCE_DIR} clean build run
       RESULT_VARIABLE TEST_RESULT)
       if (TEST_RESULT)
         message(WARNING "Samples test '${SAMPLE}' failed while building via Makefile!")
@@ -55,9 +58,10 @@ foreach (SAMPLE data-sealing file-encryptor helloworld local_attestation remote_
     endif ()
   endif ()
 
+  # The file-encryptor and helloworld are special cases which also
+  # work under simulation, so we test that additional scenario here.
   if (${SAMPLE} MATCHES "(file-encryptor|helloworld)")
-    # Of all the current samples, only file-encryptor and helloworld also work under simulation,
-    # so we test that additional scenario here.
+    # Build with the CMake package
     execute_process(
       COMMAND ${CMAKE_COMMAND} --build ${SAMPLE_BUILD_DIR} --target simulate
       RESULT_VARIABLE TEST_SIMULATE_RESULT)
@@ -65,8 +69,10 @@ foreach (SAMPLE data-sealing file-encryptor helloworld local_attestation remote_
       message(WARNING "Samples test '${SAMPLE}' failed in simulation mode!")
       set(ALL_TEST_RESULT 1)
     endif ()
+
+    # Build with pkg-config
     execute_process(
-      COMMAND make -C ${SAMPLE_SOURCE_DIR} clean build simulate
+      COMMAND PKG_CONFIG_PATH=${INSTALL_DIR}/share/pkgconfig make -C ${SAMPLE_SOURCE_DIR} clean build simulate
       RESULT_VARIABLE TEST_SIMULATE_RESULT)
       if (TEST_SIMULATE_RESULT)
         message(WARNING "Samples test '${SAMPLE}' failed while building via Makefile!")
