@@ -24,4 +24,4 @@ add_custom_command(OUTPUT enclave_b.signed
   DEPENDS private_b.pem
   COMMAND openenclave::oesign sign -e $<TARGET_FILE:enclave_b> -c ${CMAKE_CURRENT_SOURCE_DIR}/enc.conf -k private_b.pem)
 
-add_custom_target(enclave_b_signed DEPENDS enclave_b.signed)
+add_custom_target(enclave_b_signed ALL DEPENDS enclave_b.signed)

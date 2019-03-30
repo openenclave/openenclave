@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 # Use the edger8r to generate C bindings from the EDL file.
-add_custom_command(OUTPUT fileencryptor_t.h fileencryptor_t.c
+add_custom_command(OUTPUT fileencryptor_t.h fileencryptor_t.c fileencryptor_args.h
   DEPENDS ${CMAKE_SOURCE_DIR}/fileencryptor.edl
   COMMAND openenclave::oeedger8r --trusted ${CMAKE_SOURCE_DIR}/fileencryptor.edl)
 
