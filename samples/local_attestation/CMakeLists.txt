@@ -14,12 +14,10 @@ add_subdirectory(enclave_a)
 add_subdirectory(enclave_b)
 add_subdirectory(host)
 
-add_custom_target(sign
-  DEPENDS ${CMAKE_BINARY_DIR}/enclave_a/enclave_a.signed
-    ${CMAKE_BINARY_DIR}/enclave_b/enclave_b.signed)
+add_custom_target(sign ALL DEPENDS enclave_a_signed enclave_b_signed)
 
 if ((NOT DEFINED ENV{OE_SIMULATION}) OR (NOT $ENV{OE_SIMULATION}))
   add_custom_target(run
-    DEPENDS local_attestation_host enclave_a_signed enclave_b_signed
+    DEPENDS local_attestation_host sign
     COMMAND local_attestation_host ${CMAKE_BINARY_DIR}/enclave_a/enclave_a.signed ${CMAKE_BINARY_DIR}/enclave_b/enclave_b.signed)
 endif ()

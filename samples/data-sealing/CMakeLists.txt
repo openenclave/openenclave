@@ -25,10 +25,14 @@ add_custom_command(OUTPUT enclave_a_v1/enclave_a_v1.signed
   DEPENDS ${CMAKE_BINARY_DIR}/private_a.pem
   COMMAND openenclave::oesign sign -e $<TARGET_FILE:enclave_a_v1> -c ${CMAKE_SOURCE_DIR}/enclave_a_v1/data-sealing.conf -k private_a.pem)
 
+add_custom_target(enclave_a_v1_signed DEPENDS enclave_a_v1/enclave_a_v1.signed)
+
 # Sign enclave A v2 with key A
 add_custom_command(OUTPUT enclave_a_v2/enclave_a_v2.signed
   DEPENDS ${CMAKE_BINARY_DIR}/private_a.pem
   COMMAND openenclave::oesign sign -e $<TARGET_FILE:enclave_a_v2> -c ${CMAKE_SOURCE_DIR}/enclave_a_v2/data-sealing.conf -k private_a.pem)
+
+add_custom_target(enclave_a_v2_signed DEPENDS enclave_a_v2/enclave_a_v2.signed)
 
 # Generate key B
 add_custom_command(OUTPUT private_b.pem public_b.pem
@@ -40,15 +44,10 @@ add_custom_command(OUTPUT enclave_b/enclave_b.signed
   DEPENDS ${CMAKE_BINARY_DIR}/private_b.pem
   COMMAND openenclave::oesign sign -e $<TARGET_FILE:enclave_b> -c ${CMAKE_SOURCE_DIR}/enclave_b/data-sealing.conf -k private_b.pem)
 
-add_custom_target(sign
-  DEPENDS ${CMAKE_BINARY_DIR}/enclave_a_v1/enclave_a_v1.signed
-    ${CMAKE_BINARY_DIR}/enclave_a_v2/enclave_a_v2.signed
-    ${CMAKE_BINARY_DIR}/enclave_b/enclave_b.signed)
+add_custom_target(enclave_b_signed DEPENDS enclave_b/enclave_b.signed)
+
+add_custom_target(sign ALL DEPENDS enclave_a_v1_signed enclave_a_v2_signed enclave_b_signed)
 
 add_custom_target(run
-  DEPENDS data-sealing_host ${CMAKE_BINARY_DIR}/enclave_a_v1/enclave_a_v1.signed ${CMAKE_BINARY_DIR}/enclave_a_v2/enclave_a_v2.signed ${CMAKE_BINARY_DIR}/enclave_b/enclave_b.signed
+  DEPENDS data-sealing_host sign
   COMMAND data-sealing_host ${CMAKE_BINARY_DIR}/enclave_a_v1/enclave_a_v1.signed ${CMAKE_BINARY_DIR}/enclave_a_v2/enclave_a_v2.signed ${CMAKE_BINARY_DIR}/enclave_b/enclave_b.signed)
-
-# Automatically sign the enclaves
-add_custom_target(sign ALL
-  DEPENDS ${CMAKE_BINARY_DIR}/enclave_a_v1/enclave_a_v1.signed ${CMAKE_BINARY_DIR}/enclave_a_v2/enclave_a_v2.signed ${CMAKE_BINARY_DIR}/enclave_b/enclave_b.signed)
