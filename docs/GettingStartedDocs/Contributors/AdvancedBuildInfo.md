@@ -102,9 +102,9 @@ huge number of nodes (targets) in the resulting graph.
 To change the ignored targets, edit the file named `CMakeGraphVizOptions.cmake`
 at the root of the repo.
 
-As of 2019-01-02, it looks like this:
+As of 2019-03-27, it looks like this:
 
-![CMake Dependency Graph](/docs/DependencyGraph.svg)
+![CMake Dependency Graph](/docs/GettingStartedDocs/DependencyGraph.svg)
 
 ### Legend
 
