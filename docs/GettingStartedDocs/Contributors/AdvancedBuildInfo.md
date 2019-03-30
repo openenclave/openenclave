@@ -21,7 +21,7 @@ control the behavior of the Linux make generator for Open Enclave:
 |--------------------------|------------------------------------------------------|
 | CMAKE_BUILD_TYPE         | Build configuration (*Debug*, *Release*, *RelWithDebInfo*). Default is *Debug*. |
 | ENABLE_FULL_LIBCXX_TESTS | Enable full Libc++ tests. Default is disabled, enable with setting to "On", "1", ... |
-| ENABLE_REFMAN            | Enable building of reference manual. Requires Doxygen to be installed. Default is enabled, disable with setting to "Off", "No", "0", ... |
+| ENABLE_REFMAN            | Enable building of reference manual. Requires Doxygen to be installed. Default is disabled, enable with setting to "On", "1", ... |
 
 For example, to generate an optimized release-build with debug info, run the following
 from your build subfolder:
@@ -35,7 +35,7 @@ The following build types cause the C macro `NDEBUG` to be defined:
 - `CMAKE_BUILD_TYPE="Release"`
 - `CMAKE_BUILD_TYPE="RelWithDebInfo"`
 
-Whereas `CMAKE_BUILD_TYPE="Debug"` causes it to be undefined. Defining the
+whereas `CMAKE_BUILD_TYPE="Debug"` causes it to be undefined. Defining the
 `NDEBUG` macro affects the behavior of Open Enclave in three ways:
 
 - The `oe_assert()` and `assert()` macros become no-ops.
@@ -53,18 +53,20 @@ Once CMake has run and the build is configured, build with:
 make
 ```
 
-This builds the entire Open Enclave SDK, creating the following files.
+This builds the entire Open Enclave SDK, creating the following files in your build folder.
 
 | Filename                          | Description                                           |
 |-----------------------------------|-------------------------------------------------------|
-| output/bin/oegen                  | Utility for generating ECALL and OCALL stubs from IDL |
+| output/bin/oe-gdb                 | Utility for debugging enclaves                        |
+| output/bin/oesgx                  | Utility for determining the level of SGX support for the given platform |
 | output/bin/oesign                 | Utility for signing enclaves                          |
 | output/lib/enclave/liboecore.a    | Core library for building enclave applications (defines enclave intrinsics) |
 | output/lib/enclave/liboeenclave.a | Enclave library for building enclave applications (defines enclave features) |
 | output/lib/enclave/liboelibc.a    | C runtime library for enclave                         |
-| output/lib/enclave/liboelibcxx.a  | C++ runtime library for enclave                       |
+| output/enclave/liboelibcxx.a      | C++ runtime library for enclave                       |
 | output/lib/host/liboehost.a       | Library for building host applications                |
 | output/share/doc/openenclave/     | HTML API reference for Open Enclave                   |
+| tools/oeedger8r/oeedger8r         | Utility for generating ECALL and OCALL stubs from IDL |
 
 If there is a build failure, set the `VERBOSE` make variable to print all invoked commands.
 
@@ -102,7 +104,7 @@ at the root of the repo.
 
 As of 2019-01-02, it looks like this:
 
-![CMake Dependency Graph](DependencyGraph.svg)
+![CMake Dependency Graph](/docs/DependencyGraph.svg)
 
 ### Legend
 
