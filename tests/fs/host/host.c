@@ -5,7 +5,10 @@
 #include <openenclave/internal/fs.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include "fs_u.h"
+
 int rmdir(const char* path);
 
 int main(int argc, const char* argv[])
@@ -24,6 +27,8 @@ int main(int argc, const char* argv[])
     const char* enclave_path = argv[1];
     const char* src_dir = argv[2];
     const char* tmp_dir = argv[3];
+
+    umask(0022);
 
     rmdir(tmp_dir);
 
