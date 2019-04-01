@@ -12,7 +12,7 @@ endif ()
 install(DIRECTORY helloworld file-encryptor data-sealing
   DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
 
-install(FILES Makefile README.md
+install(FILES README.md
   DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
 
 add_test(NAME samples
