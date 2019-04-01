@@ -6,4 +6,4 @@ oeedl_file(../test_hostfs.edl enclave gen)
 
 add_enclave(TARGET hostfs_enc SOURCES enc.c main.c ${gen})
 
-target_link_libraries(hostfs_enc oelibc oesgxfsenclave oeenclave)
+target_link_libraries(hostfs_enc oelibc oeenclave)
