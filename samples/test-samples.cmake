@@ -4,11 +4,27 @@
 # This script requires the variables SOURCE_DIR, BUILD_DIR, and
 # PREFIX_DIR to be defined:
 #
-#     cmake -DSOURCE_DIR=~/openenclave -DBUILD_DIR=~/openenclave/build -DPREFIX_DIR=/opt/openenclave -P ~/openenclave/samples/test-samples.cmake
+#     cmake -DUSE_LIBSGX=ON -DSOURCE_DIR=~/openenclave -DBUILD_DIR=~/openenclave/build -DPREFIX_DIR=/opt/openenclave -P ~/openenclave/samples/test-samples.cmake
+
+# These two samples can run in simulation, and therefore run in every configuration.
+set(SAMPLES_LIST helloworld file-encryptor)
 
 if ($ENV{OE_SIMULATION})
   message(WARNING "Running only sample simulation tests due to OE_SIMULATION=$ENV{OE_SIMULATION}!")
   # This is not a failure condition, so we return with a success status.
+else ()
+  # All the other tests require that we are not running in simulation.
+
+  # This sample can run on SGX, both with and without FLC, meaning
+  # they can run even if they weren't built against SGX, because in
+  # that cause they directly interface with the AESM service.
+  list(APPEND SAMPLES_LIST data-sealing)
+
+  # These tests can only run with SGX-FLC, meaning they were built
+  # against SGX.
+  if (USE_LIBSGX)
+    list(APPEND SAMPLES_LIST local_attestation remote_attestation)
+  endif ()
 endif ()
 
 # Install the SDK from current build to a known location in the build tree.
@@ -20,7 +36,7 @@ set(INSTALL_DIR ${BUILD_DIR}/install${PREFIX_DIR})
 # A variable to know if all samples ran successfully
 set(ALL_TEST_RESULT 0)
 
-foreach (SAMPLE data-sealing file-encryptor helloworld local_attestation remote_attestation)
+foreach (SAMPLE ${SAMPLES_LIST})
   set(SAMPLE_BUILD_DIR ${BUILD_DIR}/samples/${SAMPLE})
   set(SAMPLE_SOURCE_DIR ${INSTALL_DIR}/share/openenclave/samples/${SAMPLE})
 
@@ -38,24 +54,30 @@ foreach (SAMPLE data-sealing file-encryptor helloworld local_attestation remote_
     COMMAND ${CMAKE_COMMAND} --build ${SOURCE_DIR}/${SAMPLE}
     WORKING_DIRECTORY ${SAMPLE_BUILD_DIR})
 
-  if ((NOT DEFINED ENV{OE_SIMULATION}) OR (NOT $ENV{OE_SIMULATION}))
+  if (NOT $ENV{OE_SIMULATION})
     # Build with the CMake package
+    message(STATUS "Samples test '${SAMPLE}' with CMake running...")
     execute_process(
       COMMAND ${CMAKE_COMMAND} --build ${SAMPLE_BUILD_DIR} --target run
       RESULT_VARIABLE TEST_RESULT)
     if (TEST_RESULT)
-      message(WARNING "Samples test '${SAMPLE}' failed!")
+      message(WARNING "Samples test '${SAMPLE}' with CMake failed!")
       set(ALL_TEST_RESULT 1)
+    else ()
+      message(STATUS "Samples test '${SAMPLE}' passed!")
     endif ()
 
     # Build with pkg-config
     # TODO: Use INSTALL_DIR for pkg-config after it is made relocatable.
+    message(STATUS "Samples test '${SAMPLE}' with pkg-config running...")
     execute_process(
       COMMAND ${CMAKE_COMMAND} -E env PATH=${INSTALL_DIR}/bin:$ENV{PATH} PKG_CONFIG_PATH=${BUILD_DIR}/pkgconfig OE_PREFIX=${INSTALL_DIR} make -C ${SAMPLE_SOURCE_DIR} clean build run
       RESULT_VARIABLE TEST_RESULT)
       if (TEST_RESULT)
-        message(WARNING "Samples test '${SAMPLE}' failed while building via Makefile!")
+        message(WARNING "Samples test '${SAMPLE}' with pkg-config failed!")
         set(ALL_TEST_RESULT 1)
+      else ()
+        message(STATUS "Samples test '${SAMPLE}' with pkg-config passed!")
     endif ()
   endif ()
 
