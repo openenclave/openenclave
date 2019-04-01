@@ -50,7 +50,7 @@ foreach (SAMPLE data-sealing file-encryptor helloworld local_attestation remote_
 
     # Build with pkg-config
     execute_process(
-      COMMAND sh -c "PATH=${INSTALL_DIR}/bin:$PATH PKG_CONFIG_PATH=${BUILD_DIR}/pkgconfig OE_PREFIX=${INSTALL_DIR} make -C ${SAMPLE_SOURCE_DIR} clean build run"
+      COMMAND ${CMAKE_COMMAND} -E env PATH=${INSTALL_DIR}/bin:$ENV{PATH} PKG_CONFIG_PATH=${INSTALL_DIR}/share/pkgconfig OE_PREFIX=${INSTALL_DIR} make -C ${SAMPLE_SOURCE_DIR} clean build run
       RESULT_VARIABLE TEST_RESULT)
       if (TEST_RESULT)
         message(WARNING "Samples test '${SAMPLE}' failed while building via Makefile!")
@@ -72,7 +72,7 @@ foreach (SAMPLE data-sealing file-encryptor helloworld local_attestation remote_
 
     # Build with pkg-config
     execute_process(
-      COMMAND sh -c "PATH=${INSTALL_DIR}/bin:$PATH PKG_CONFIG_PATH=${BUILD_DIR}/pkgconfig OE_PREFIX=${INSTALL_DIR} make -C ${SAMPLE_SOURCE_DIR} clean build simulate"
+      COMMAND ${CMAKE_COMMAND} -E env PATH=${INSTALL_DIR}/bin:$ENV{PATH} PKG_CONFIG_PATH=${INSTALL_DIR}/share/pkgconfig OE_PREFIX=${INSTALL_DIR} make -C ${SAMPLE_SOURCE_DIR} clean build simulate
       RESULT_VARIABLE TEST_SIMULATE_RESULT)
       if (TEST_SIMULATE_RESULT)
         message(WARNING "Samples test '${SAMPLE}' failed in simulation mode while building via Makefile!")
