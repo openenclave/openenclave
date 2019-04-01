@@ -22,6 +22,10 @@ OE_EXTERNC_BEGIN
 #define OE_INADDR_LOOPBACK ((in_addr_t)0x7f000001) /* Inet 127.0.0.1.  */
 
 #define OE_SOCK_STREAM 1
+#define OE_SOCK_DGRAM 2
+
+#define IPPROTO_TCP 6
+#define IPPROTO_UDP 17
 
 // clang-format off
 #define OE_IN6ADDR_ANY_INIT { { { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 } } }
@@ -61,6 +65,7 @@ struct oe_sockaddr_in6
 #define INADDR_NONE OE_INADDR_NONE
 #define INADDR_LOOPBACK OE_INADDR_LOOPBACK
 #define SOCK_STREAM OE_SOCK_STREAM
+#define SOCK_DGRAM OE_SOCK_DGRAM
 #define IN6ADDR_ANY_INIT OE_IN6ADDR_ANY_INIT
 #define IN6ADDR_LOOPBACK_INIT OE_IN6ADDR_LOOPBACK_INIT
 #define s6_addr oe_s6_addr

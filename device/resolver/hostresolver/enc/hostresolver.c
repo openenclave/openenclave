@@ -289,8 +289,8 @@ static ssize_t _hostresolv_getaddrinfo_r(
             args->u.getaddrinfo.hint_protocol = 0;
         }
         args->u.getaddrinfo.buffer_len =
-            (int32_t)required_size; // pass down the buffer that is available.
-                                    // It is likely enough
+            (int32_t)*required_size; // pass down the buffer that is available.
+                                     // It is likely enough
     }
 
     /* Call */

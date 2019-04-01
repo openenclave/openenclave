@@ -63,6 +63,9 @@ int oe_open_d(uint64_t devid, const char* pathname, int flags, mode_t mode);
 #define O_TMPFILE OE_O_TMPFILE
 #define O_NDELAY OE_O_NDELAY
 
+#define F_GETFL 3
+#define F_SETFL 4
+
 OE_INLINE int open(const char* pathname, int flags, mode_t mode)
 {
     return oe_open(pathname, flags, mode);

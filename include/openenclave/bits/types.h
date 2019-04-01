@@ -79,6 +79,9 @@ typedef uint32_t in_addr_t;
 #define bool _Bool
 #endif
 
+#define EXIT_FAILURE 1
+#define EXIT_SUCCESS 0
+
 #define OE_SCHAR_MIN (-128)
 #define OE_SCHAR_MAX 127
 #define OE_UCHAR_MAX 255
