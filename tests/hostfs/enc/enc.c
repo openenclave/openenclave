@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <sys/mount.h>
 
-void test_libcfs(const char* tmp_dir)
+void test_hostfs(const char* tmp_dir)
 {
     extern int run_main(const char* tmp_dir);
 

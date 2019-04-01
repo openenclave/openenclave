@@ -3,7 +3,7 @@
 
 enclave {
     trusted {
-        public void test_libcfs(
+        public void test_hostfs(
             [string, in] const char* tmp_dir);
 
     };

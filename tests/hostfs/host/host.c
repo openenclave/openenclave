@@ -5,7 +5,7 @@
 #include <openenclave/internal/fs.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
-#include "libcfs_u.h"
+#include "test_hostfs_u.h"
 
 int main(int argc, const char* argv[])
 {
@@ -23,16 +23,17 @@ int main(int argc, const char* argv[])
     const char* enclave_path = argv[1];
     const char* tmp_dir = argv[2];
 
-    r = oe_create_libcfs_enclave(enclave_path, type, flags, NULL, 0, &enclave);
+    r = oe_create_test_hostfs_enclave(
+        enclave_path, type, flags, NULL, 0, &enclave);
     OE_TEST(r == OE_OK);
 
-    r = test_libcfs(enclave, tmp_dir);
+    r = test_hostfs(enclave, tmp_dir);
     OE_TEST(r == OE_OK);
 
     r = oe_terminate_enclave(enclave);
     OE_TEST(r == OE_OK);
 
-    printf("=== passed all tests (libcfs)\n");
+    printf("=== passed all tests (test_hostfs)\n");
 
     return 0;
 }
