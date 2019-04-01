@@ -1,8 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-
-oeedl_file(../test_sgxfs.edl host gen --edl-search-dir ../../../device/fs/sgxfs)
+oeedl_file(../test_sgxfs.edl host gen --edl-search-dir ../../../device/edl)
 
 add_executable(sgxfs_host host.c ${gen})
 

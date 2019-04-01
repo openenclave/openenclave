@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 
-oeedl_file(../fs.edl enclave gen --edl-search-dir ../../../device/fs/sgxfs)
+oeedl_file(../fs.edl enclave gen --edl-search-dir ../../../device/edl)
 
 add_enclave(TARGET fs_enc SOURCES enc.cpp libcex.cpp ${gen})
 

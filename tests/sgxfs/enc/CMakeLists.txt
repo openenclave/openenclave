@@ -2,8 +2,7 @@
 # Licensed under the MIT License.
 
 
-oeedl_file(../test_sgxfs.edl
-    enclave gen --edl-search-dir ../../../device/fs/sgxfs)
+oeedl_file(../test_sgxfs.edl enclave gen --edl-search-dir ../../../device/edl)
 
 add_executable(sgxfs_enc enc.c main.c ${gen})
 
