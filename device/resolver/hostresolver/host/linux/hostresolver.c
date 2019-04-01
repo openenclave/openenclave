@@ -44,7 +44,9 @@ void oe_handle_hostresolver_ocall(void* args_)
             struct addrinfo* result = NULL;
             const char* node =
                 (const char*)((args->u.getaddrinfo.nodelen > 0) ? args->buf : NULL);
-            const char *service = (const char*)((args->u.getaddrinfo.servicelen > 0)? args->buf+args->u.getaddrinfo.nodelen: NULL);
+            // Need to add 1 to accommdate the null char for the node name,
+            // without this service returned will be off by a byte.
+            const char *service = (const char*)((args->u.getaddrinfo.servicelen > 0)? args->buf+args->u.getaddrinfo.nodelen+1: NULL);
 
             args->u.getaddrinfo.ret =
                 getaddrinfo(node, service, &hints, &result);

@@ -57,6 +57,17 @@ void oe_handle_hostsock_ocall(void* args_)
                 args->u.recv.flags);
             break;
         }
+        case OE_HOSTSOCK_OP_RECVFROM:
+        {
+            args->u.recvfrom.ret = recvfrom(
+                (int)args->u.recvfrom.host_fd,
+                args->buf,
+                args->u.recvfrom.count,
+                args->u.recvfrom.flags,
+                (struct sockaddr*)(args->buf + args->u.recvfrom.count),
+                &args->u.recvfrom.addrlen);
+            break;
+        }
         case OE_HOSTSOCK_OP_RECVMSG:
         {
             args->u.recvmsg.ret = recvmsg(
@@ -72,6 +83,17 @@ void oe_handle_hostsock_ocall(void* args_)
                 args->buf,
                 args->u.send.count,
                 args->u.send.flags);
+            break;
+        }
+        case OE_HOSTSOCK_OP_SENDTO:
+        {
+            args->u.sendto.ret = sendto(
+                (int)args->u.sendto.host_fd,
+                args->buf,
+                args->u.sendto.count,
+                args->u.sendto.flags,
+                (const struct sockaddr*)(args->buf + args->u.sendto.count),
+                args->u.sendto.addrlen);
             break;
         }
         case OE_HOSTSOCK_OP_SENDMSG:

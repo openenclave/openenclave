@@ -258,6 +258,33 @@ ssize_t oe_recv(int sockfd, void* buf, size_t len, int flags)
     return (*psock->ops.socket->recv)(psock, buf, len, flags);
 }
 
+ssize_t oe_recvfrom(
+    int sockfd,
+    void* buf,
+    size_t len,
+    int flags,
+    const struct oe_sockaddr* src_addr,
+    socklen_t* addrlen)
+{
+    oe_device_t* psock = oe_get_fd_device(sockfd);
+
+    if (!psock)
+    {
+        // Log error here
+        return -1; // erno is already set
+    }
+
+    if (psock->ops.socket->recvfrom == NULL)
+    {
+        oe_errno = EINVAL;
+        return -1;
+    }
+
+    // The action routine sets errno
+    return (*psock->ops.socket->recvfrom)(
+        psock, buf, len, flags, src_addr, addrlen);
+}
+
 ssize_t oe_send(int sockfd, const void* buf, size_t len, int flags)
 
 {
@@ -277,6 +304,33 @@ ssize_t oe_send(int sockfd, const void* buf, size_t len, int flags)
 
     // The action routine sets errno
     return (*psock->ops.socket->send)(psock, buf, len, flags);
+}
+
+ssize_t oe_sendto(
+    int sockfd,
+    const void* buf,
+    size_t len,
+    int flags,
+    const struct oe_sockaddr* dest_addr,
+    socklen_t addrlen)
+{
+    oe_device_t* psock = oe_get_fd_device(sockfd);
+
+    if (!psock)
+    {
+        // Log error here
+        return -1; // erno is already set
+    }
+
+    if (psock->ops.socket->sendto == NULL)
+    {
+        oe_errno = EINVAL;
+        return -1;
+    }
+
+    // The action routine sets errno
+    return (*psock->ops.socket->sendto)(
+        psock, buf, len, flags, dest_addr, addrlen);
 }
 
 ssize_t oe_recvmsg(int sockfd, struct oe_msghdr* buf, int flags)
