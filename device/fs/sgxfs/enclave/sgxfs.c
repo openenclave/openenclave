@@ -14,6 +14,7 @@
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/internal/hostfs.h>
+#include <openenclave/internal/thread.h>
 
 #define FS_MAGIC 0x4a335f60
 #define FILE_MAGIC 0x8d7e422f
@@ -1189,31 +1190,39 @@ oe_result_t oe_register_sgxfs(void)
 {
     oe_result_t result = OE_UNEXPECTED;
     static bool _registered = false;
+    static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
 
     if (!_registered)
     {
-        /* Allocate the device id. */
-        if (oe_allocate_devid(OE_DEVID_SGXFS) != OE_DEVID_SGXFS)
+        oe_spin_lock(&_lock);
+
+        if (!_registered)
         {
-            result = OE_FAILURE;
-            goto done;
+            /* Allocate the device id. */
+            if (oe_allocate_devid(OE_DEVID_SGXFS) != OE_DEVID_SGXFS)
+            {
+                result = OE_FAILURE;
+                goto done;
+            }
+
+            /* Add the sgxfs device to the device table. */
+            if (oe_set_devid_device(OE_DEVID_SGXFS, oe_fs_get_sgxfs()) != 0)
+            {
+                result = OE_FAILURE;
+                goto done;
+            }
+
+            /* Check that the above operation was successful. */
+            if (oe_get_devid_device(OE_DEVID_SGXFS) != oe_fs_get_sgxfs())
+            {
+                result = OE_FAILURE;
+                goto done;
+            }
+
+            _registered = true;
         }
 
-        /* Add the sgxfs device to the device table. */
-        if (oe_set_devid_device(OE_DEVID_SGXFS, oe_fs_get_sgxfs()) != 0)
-        {
-            result = OE_FAILURE;
-            goto done;
-        }
-
-        /* Check that the above operation was successful. */
-        if (oe_get_devid_device(OE_DEVID_SGXFS) != oe_fs_get_sgxfs())
-        {
-            result = OE_FAILURE;
-            goto done;
-        }
-
-        _registered = true;
+        oe_spin_unlock(&_lock);
     }
 
     result = OE_OK;
