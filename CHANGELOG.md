@@ -46,8 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `oe_create_enclave` takes two additional parameters: `ocall_table` and
   `ocall_table_size`.
-- Update mbed TLS library to version 2.7.9.
-- Update musl libc to version 1.1.20.
+- Update mbedTLS library to version 2.7.9.
+- Update MUSL libc to version 1.1.20.
 - Update LLVM libcxx to version 7.0.0.
    - Some libcxx headers (e.g. `<string>`) now use C++11 template features and
      may require compiling with the `-std=c++11` option when building with GCC.
@@ -74,6 +74,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - String based `ocalls`/`ecalls`, `OE_ECALL`, and `OE_OCALL` macros.
 - `OE_ENCLAVE_TYPE_UNDEFINED` was removed and replaced with `OE_ENCLAVE_TYPE_AUTO`.
+
+### Fixed
+
+- Check support for AVX in platform/OS before setting SECS.ATTRIBUTES.XFRM in enclave.
 
 [v0.4.1] - 2018-12-21
 ---------------------
@@ -144,7 +148,6 @@ as listed below.
 
 - Add appropriate validations for ELF64 in Open Enclave loader.
 - Expand libc/libcxx test coverage.
-- Check support for AVX in platform/OS before setting SECS.ATTRIBUTES.XFRM in enclave.
 
 ### Security
 

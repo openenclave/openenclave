@@ -51,7 +51,8 @@ Refer to the [Advanced Build Information](AdvancedBuildInfo.md) documentation fo
 
 ## Run unittests
 
-After building, run all unit test cases using `ctest` to confirm the SDK is built and working as expected. Note that in simulator mode the `OE_SIMULATION` environment must be set.
+After building, run all unit test cases using `ctest` to confirm the SDK is built and working as expected.
+Note that to run the tests in simulation mode, the `OE_SIMULATION` environment variable must be set to `1`.
 
 Run the following command from the build directory:
 
