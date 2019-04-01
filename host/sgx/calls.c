@@ -261,6 +261,8 @@ static oe_result_t _handle_call_host_function(
     oe_result_t result = OE_OK;
     oe_ocall_func_t func = NULL;
     size_t buffer_size = 0;
+    const oe_ocall_func_t* ocalls;
+    size_t num_ocalls;
 
     args_ptr = (oe_call_host_function_args_t*)arg;
     if (args_ptr == NULL)
@@ -270,15 +272,32 @@ static oe_result_t _handle_call_host_function(
     if (args_ptr->input_buffer == NULL || args_ptr->output_buffer == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    // Fetch matching function.
-    if (args_ptr->function_id >= enclave->num_ocalls)
-        OE_RAISE(OE_NOT_FOUND);
-
-    func = enclave->ocalls[args_ptr->function_id];
-    if (func == NULL)
+    // Select either internal or user ocall table.
+    if (args_ptr->call_internal_host_function)
     {
-        result = OE_NOT_FOUND;
-        goto done;
+        extern const oe_ocall_func_t* oe_get_internal_ocall_function_table();
+        extern size_t oe_get_internal_ocall_function_table_size();
+
+        ocalls = oe_get_internal_ocall_function_table();
+        num_ocalls = oe_get_internal_ocall_function_table_size();
+    }
+    else
+    {
+        ocalls = enclave->ocalls;
+        num_ocalls = enclave->num_ocalls;
+    }
+
+    // Fetch matching function.
+    {
+        if (args_ptr->function_id >= num_ocalls)
+            OE_RAISE(OE_NOT_FOUND);
+
+        func = ocalls[args_ptr->function_id];
+        if (func == NULL)
+        {
+            result = OE_NOT_FOUND;
+            goto done;
+        }
     }
 
     OE_CHECK(oe_safe_add_u64(

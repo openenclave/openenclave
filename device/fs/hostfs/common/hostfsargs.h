@@ -98,6 +98,7 @@ typedef struct _oe_hostfs_args
             char pathname[OE_PATH_MAX];
             struct oe_stat buf;
         } stat;
+
         struct
         {
             int ret;

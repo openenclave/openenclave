@@ -16,6 +16,7 @@
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/hostbatch.h>
 #include "../common/hostfsargs.h"
+#include "../../../common/oe_t.h"
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 
@@ -27,36 +28,7 @@
 **==============================================================================
 */
 
-static oe_host_batch_t* _host_batch;
 static oe_spinlock_t _lock;
-
-static void _atexit_handler()
-{
-    oe_spin_lock(&_lock);
-    oe_host_batch_delete(_host_batch);
-    _host_batch = NULL;
-    oe_spin_unlock(&_lock);
-}
-
-static oe_host_batch_t* _get_host_batch(void)
-{
-    const size_t BATCH_SIZE = sizeof(oe_hostfs_args_t) + OE_BUFSIZ;
-
-    if (_host_batch == NULL)
-    {
-        oe_spin_lock(&_lock);
-
-        if (_host_batch == NULL)
-        {
-            _host_batch = oe_host_batch_new(BATCH_SIZE);
-            oe_atexit(_atexit_handler);
-        }
-
-        oe_spin_unlock(&_lock);
-    }
-
-    return _host_batch;
-}
 
 /*
 **==============================================================================
@@ -299,14 +271,14 @@ static oe_device_t* _hostfs_open_file(
 {
     oe_device_t* ret = NULL;
     fs_t* fs = _cast_fs(fs_);
-    args_t* args = NULL;
     file_t* file = NULL;
-    oe_host_batch_t* batch = _get_host_batch();
+    char full_pathname[OE_PATH_MAX];
+    int retval = -1;
 
     oe_errno = 0;
 
     /* Check parameters */
-    if (!fs || !pathname || !batch)
+    if (!fs || !pathname)
     {
         oe_errno = EINVAL;
         goto done;
@@ -319,35 +291,22 @@ static oe_device_t* _hostfs_open_file(
         goto done;
     }
 
-    /* Input */
-    {
-        if (!(args = oe_host_batch_calloc(batch, sizeof(args_t))))
-        {
-            oe_errno = ENOMEM;
-            goto done;
-        }
-
-        args->op = OE_HOSTFS_OP_OPEN;
-        args->u.open.ret = -1;
-
-        if (_expand_path(fs, pathname, args->u.open.pathname) != 0)
-            goto done;
-
-        args->u.open.flags = flags;
-        args->u.open.mode = mode;
-    }
-
     /* Call */
     {
-        if (oe_ocall(OE_OCALL_HOSTFS, (uint64_t)args, NULL) != OE_OK)
+        int err;
+
+        if (_expand_path(fs, pathname, full_pathname) != 0)
+            goto done;
+
+        if (oe_hostfs_open(&retval, full_pathname, flags, mode, &err) != OE_OK)
         {
             oe_errno = EINVAL;
             goto done;
         }
 
-        if (args->u.open.ret < 0)
+        if (retval < 0)
         {
-            oe_errno = args->err;
+            oe_errno = err;
             goto done;
         }
     }
@@ -364,7 +323,7 @@ static oe_device_t* _hostfs_open_file(
         file->base.size = sizeof(file_t);
         file->magic = FILE_MAGIC;
         file->base.ops.fs = fs->base.ops.fs;
-        file->host_fd = args->u.open.ret;
+        file->host_fd = retval;
     }
 
     ret = &file->base;
@@ -374,9 +333,6 @@ done:
 
     if (file)
         oe_free(file);
-
-    if (args)
-        oe_host_batch_free(batch);
 
     return ret;
 }
@@ -470,54 +426,44 @@ static int _hostfs_dup(oe_device_t* file_, oe_device_t** new_file)
 {
     int ret = -1;
     file_t* file = _cast_file(file_);
-    oe_host_batch_t* batch = _get_host_batch();
-    args_t* args = NULL;
 
     oe_errno = 0;
 
     /* Check parameters. */
-    if (!file_ || !batch)
+    if (!file)
     {
         oe_errno = EINVAL;
         goto done;
     }
 
-    /* Input */
-    {
-        if (!(args = oe_host_batch_calloc(batch, sizeof(args_t))))
-        {
-            oe_errno = ENOMEM;
-            goto done;
-        }
-
-        args->op = OE_HOSTFS_OP_DUP;
-        args->u.dup.ret = -1;
-        args->u.dup.host_fd = file->host_fd;
-    }
-
     /* Call */
     {
-        if (oe_ocall(OE_OCALL_HOSTFS, (uint64_t)args, NULL) != OE_OK)
+        int err = 0;
+        int retval = -1;
+
+        if (oe_hostfs_dup(&retval, file->host_fd, &err) != OE_OK)
         {
             oe_errno = EINVAL;
             goto done;
         }
 
-        if (args->u.dup.ret >= 0)
+        if (retval != -1)
         {
             file_t* f = NULL;
             _hostfs_clone(file_, (oe_device_t**)&f);
+
             if (!f)
             {
                 oe_errno = EINVAL;
                 goto done;
             }
-            f->host_fd = (int32_t)args->u.dup.ret;
+
+            f->host_fd = retval;
             *new_file = (oe_device_t*)f;
         }
         else
         {
-            oe_errno = args->err;
+            oe_errno = err;
             goto done;
         }
     }
@@ -530,52 +476,23 @@ done:
 
 static ssize_t _hostfs_read(oe_device_t* file_, void* buf, size_t count)
 {
-    int ret = -1;
+    ssize_t ret = -1;
     file_t* file = _cast_file(file_);
-    oe_host_batch_t* batch = _get_host_batch();
-    args_t* args = NULL;
 
     oe_errno = 0;
 
     /* Check parameters. */
-    if (!file || !batch || (count && !buf))
+    if (!file || (count && !buf))
     {
         oe_errno = EINVAL;
         goto done;
     }
 
-    /* Input */
+    /* Call the host. */
+    if (oe_hostfs_read(&ret, file->host_fd, buf, count, &oe_errno) != OE_OK)
     {
-        if (!(args = oe_host_batch_calloc(batch, sizeof(args_t) + count)))
-        {
-            oe_errno = ENOMEM;
-            goto done;
-        }
-
-        args->op = OE_HOSTFS_OP_READ;
-        args->u.read.ret = -1;
-        args->u.read.fd = file->host_fd;
-        args->u.read.count = count;
-    }
-
-    /* Call */
-    {
-        if (oe_ocall(OE_OCALL_HOSTFS, (uint64_t)args, NULL) != OE_OK)
-        {
-            oe_errno = EINVAL;
-            goto done;
-        }
-
-        if ((ret = args->u.open.ret) == -1)
-        {
-            oe_errno = args->err;
-            goto done;
-        }
-    }
-
-    /* Output */
-    {
-        memcpy(buf, args->buf, count);
+        oe_errno = EINVAL;
+        goto done;
     }
 
 done:
@@ -630,100 +547,49 @@ done:
     return ret;
 }
 
-static ssize_t _hostfs_write(oe_device_t* file_, const void* buf, size_t count)
+static ssize_t _hostfs_write(oe_device_t* file, const void* buf, size_t count)
 {
-    int ret = -1;
-    file_t* file = _cast_file(file_);
-    oe_host_batch_t* batch = _get_host_batch();
-    args_t* args = NULL;
+    ssize_t ret = -1;
+    file_t* f = _cast_file(file);
 
     oe_errno = 0;
 
     /* Check parameters. */
-    if (!file || !batch || (count && !buf))
+    if (!f || (count && !buf))
     {
         oe_errno = EINVAL;
         goto done;
     }
 
-    /* Input */
+    /* Call the host. */
+    if (oe_hostfs_write(&ret, f->host_fd, buf, count, &oe_errno) != OE_OK)
     {
-        if (!(args = oe_host_batch_calloc(batch, sizeof(args_t) + count)))
-        {
-            oe_errno = ENOMEM;
-            goto done;
-        }
-
-        args->op = OE_HOSTFS_OP_WRITE;
-        args->u.write.ret = -1;
-        args->u.write.fd = file->host_fd;
-        args->u.write.count = count;
-        memcpy(args->buf, buf, count);
-    }
-
-    /* Call */
-    {
-        if (oe_ocall(OE_OCALL_HOSTFS, (uint64_t)args, NULL) != OE_OK)
-        {
-            oe_errno = EINVAL;
-            goto done;
-        }
-
-        if ((ret = args->u.open.ret) == -1)
-        {
-            oe_errno = args->err;
-            goto done;
-        }
+        oe_errno = EINVAL;
+        goto done;
     }
 
 done:
     return ret;
 }
 
-static off_t _hostfs_lseek_file(oe_device_t* file_, off_t offset, int whence)
+static off_t _hostfs_lseek_file(oe_device_t* file, off_t offset, int whence)
 {
     off_t ret = -1;
-    file_t* file = _cast_file(file_);
-    oe_host_batch_t* batch = _get_host_batch();
-    args_t* args = NULL;
+    file_t* f = _cast_file(file);
 
     oe_errno = 0;
 
     /* Check parameters. */
-    if (!file || !batch)
+    if (!file)
     {
         oe_errno = EINVAL;
         goto done;
     }
 
-    /* Input */
+    if (oe_hostfs_lseek(&ret, f->host_fd, offset, whence, &oe_errno) != OE_OK)
     {
-        if (!(args = oe_host_batch_calloc(batch, sizeof(args_t))))
-        {
-            oe_errno = ENOMEM;
-            goto done;
-        }
-
-        args->op = OE_HOSTFS_OP_LSEEK;
-        args->u.lseek.ret = -1;
-        args->u.lseek.fd = file->host_fd;
-        args->u.lseek.offset = offset;
-        args->u.lseek.whence = whence;
-    }
-
-    /* Call */
-    {
-        if (oe_ocall(OE_OCALL_HOSTFS, (uint64_t)args, NULL) != OE_OK)
-        {
-            oe_errno = EINVAL;
-            goto done;
-        }
-
-        if ((ret = args->u.lseek.ret) == -1)
-        {
-            oe_errno = args->err;
-            goto done;
-        }
+        oe_errno = EINVAL;
+        goto done;
     }
 
 done:
@@ -734,36 +600,18 @@ static int _hostfs_rewinddir(oe_device_t* dir_)
 {
     int ret = -1;
     dir_t* dir = _cast_dir(dir_);
-    oe_host_batch_t* batch = _get_host_batch();
-    args_t* args = NULL;
 
-    /* Check parameters */
-    if (!dir || !batch)
+    if (!dir)
     {
         oe_errno = EINVAL;
         goto done;
     }
 
-    /* Input */
-    {
-        if (!(args = oe_host_batch_calloc(batch, sizeof(args_t))))
-            goto done;
+    oe_hostfs_rewinddir(dir->host_dir);
 
-        args->op = OE_HOSTFS_OP_REWINDDIR;
-        args->u.rewinddir.dirp = dir->host_dir;
-    }
-
-    /* Call */
-    {
-        if (oe_ocall(OE_OCALL_HOSTFS, (uint64_t)args, NULL) != OE_OK)
-            goto done;
-    }
+    ret = 0;
 
 done:
-
-    if (args)
-        oe_host_batch_free(batch);
-
     return ret;
 }
 
@@ -819,52 +667,27 @@ done:
     return ret;
 }
 
-static int _hostfs_close_file(oe_device_t* file_)
+static int _hostfs_close_file(oe_device_t* file)
 {
     int ret = -1;
-    file_t* file = _cast_file(file_);
-    oe_host_batch_t* batch = _get_host_batch();
-    args_t* args = NULL;
+    file_t* f = _cast_file(file);
 
     oe_errno = 0;
 
-    /* Check parameters. */
-    if (!file || !batch)
+    if (!f)
     {
         oe_errno = EINVAL;
         goto done;
     }
 
-    /* Input */
+    if (oe_hostfs_close(&ret, f->host_fd, &oe_errno) != OE_OK)
     {
-        if (!(args = oe_host_batch_calloc(batch, sizeof(args_t))))
-        {
-            oe_errno = ENOMEM;
-            goto done;
-        }
-
-        args->op = OE_HOSTFS_OP_CLOSE;
-        args->u.close.ret = -1;
-        args->u.close.fd = file->host_fd;
+        oe_errno = EINVAL;
+        goto done;
     }
 
-    /* Call */
-    {
-        if (oe_ocall(OE_OCALL_HOSTFS, (uint64_t)args, NULL) != OE_OK)
-        {
-            oe_errno = EINVAL;
-            goto done;
-        }
-
-        if (args->u.close.ret != 0)
-        {
-            oe_errno = args->err;
-            goto done;
-        }
-    }
-
-    /* Release the file object. */
-    oe_free(file);
+    if (ret == 0)
+        oe_free(file);
 
     ret = 0;
 
@@ -943,48 +766,25 @@ static oe_device_t* _hostfs_opendir(oe_device_t* fs_, const char* name)
 {
     oe_device_t* ret = NULL;
     fs_t* fs = _cast_fs(fs_);
-    oe_host_batch_t* batch = _get_host_batch();
-    args_t* args = NULL;
     dir_t* dir = NULL;
+    char full_name[OE_PATH_MAX];
+    void* retval = NULL;
 
-    /* Check parameters */
-    if (!fs || !name || !batch)
+    if (!fs || !name)
     {
         oe_errno = EINVAL;
         goto done;
     }
 
-    /* Input */
+    if (_expand_path(fs, name, full_name) != 0)
+        goto done;
+
+    if (oe_hostfs_opendir(&retval, full_name, &oe_errno) != OE_OK)
     {
-        if (!(args = oe_host_batch_calloc(batch, sizeof(args_t))))
-        {
-            oe_errno = ENOMEM;
-            goto done;
-        }
-
-        args->op = OE_HOSTFS_OP_OPENDIR;
-        args->u.opendir.ret = NULL;
-
-        if (_expand_path(fs, name, args->u.opendir.name) != 0)
-            goto done;
+        oe_errno = EINVAL;
+        goto done;
     }
 
-    /* Call */
-    {
-        if (oe_ocall(OE_OCALL_HOSTFS, (uint64_t)args, NULL) != OE_OK)
-        {
-            oe_errno = EINVAL;
-            goto done;
-        }
-
-        if (args->u.opendir.ret == NULL)
-        {
-            oe_errno = args->err;
-            goto done;
-        }
-    }
-
-    /* Output */
     {
         if (!(dir = oe_calloc(1, sizeof(dir_t))))
         {
@@ -996,7 +796,7 @@ static oe_device_t* _hostfs_opendir(oe_device_t* fs_, const char* name)
         dir->base.size = sizeof(dir_t);
         dir->magic = DIR_MAGIC;
         dir->base.ops.fs = fs->base.ops.fs;
-        dir->host_dir = args->u.opendir.ret;
+        dir->host_dir = retval;
     }
 
     ret = &dir->base;
@@ -1004,109 +804,75 @@ static oe_device_t* _hostfs_opendir(oe_device_t* fs_, const char* name)
 
 done:
 
-    if (args)
-        oe_host_batch_free(batch);
-
     if (dir)
         oe_free(dir);
 
     return ret;
 }
 
-static struct oe_dirent* _hostfs_readdir(oe_device_t* dir_)
+static struct oe_dirent* _hostfs_readdir(oe_device_t* dir)
 {
     struct oe_dirent* ret = NULL;
-    dir_t* dir = _cast_dir(dir_);
-    oe_host_batch_t* batch = _get_host_batch();
-    args_t* args = NULL;
+    dir_t* d = _cast_dir(dir);
+    int retval = -1;
+    struct oe_hostfs_dirent_struct buf;
 
-    /* Check parameters */
-    if (!dir || !batch)
+    if (!d)
     {
         oe_errno = EINVAL;
         goto done;
     }
 
-    /* Input */
+    if (oe_hostfs_readdir(&retval, d->host_dir, &buf, &oe_errno) != OE_OK)
     {
-        if (!(args = oe_host_batch_calloc(batch, sizeof(args_t))))
-            goto done;
-
-        args->u.readdir.ret = NULL;
-        args->op = OE_HOSTFS_OP_READDIR;
-        args->u.readdir.dirp = dir->host_dir;
+        oe_errno = EINVAL;
+        goto done;
     }
 
-    /* Call */
+    if (retval == 0)
     {
-        if (oe_ocall(OE_OCALL_HOSTFS, (uint64_t)args, NULL) != OE_OK)
-            goto done;
-
-        if (!args->u.readdir.ret)
-        {
-            oe_errno = args->err;
-            goto done;
-        }
+        d->entry.d_ino = buf.d_ino;
+        d->entry.d_off = buf.d_off;
+        d->entry.d_reclen = sizeof(struct oe_dirent);
+        d->entry.d_type = buf.d_type;
+        oe_strlcpy(d->entry.d_name, buf.d_name, sizeof(d->entry.d_name));
+        ret = &d->entry;
     }
-
-    /* Output */
-    if (args->u.readdir.ret)
+    else
     {
-        dir->entry = args->u.readdir.entry;
-        dir->entry.d_reclen = sizeof(struct oe_dirent);
-        ret = &dir->entry;
+        memset(&d->entry, 0, sizeof(d->entry));
     }
 
 done:
-
-    if (args)
-        oe_host_batch_free(batch);
 
     return ret;
 }
 
-static int _hostfs_closedir(oe_device_t* dir_)
+static int _hostfs_closedir(oe_device_t* dir)
 {
     int ret = -1;
-    dir_t* dir = _cast_dir(dir_);
-    oe_host_batch_t* batch = _get_host_batch();
-    args_t* args = NULL;
+    dir_t* d = _cast_dir(dir);
+    int retval = -1;
 
     /* Check parameters */
-    if (!dir || !batch)
+    if (!d)
     {
         oe_errno = EINVAL;
         goto done;
     }
 
-    /* Input */
+    if (oe_hostfs_closedir(&retval, d->host_dir, &oe_errno) != OE_OK)
     {
-        if (!(args = oe_host_batch_calloc(batch, sizeof(args_t))))
-            goto done;
-
-        args->op = OE_HOSTFS_OP_CLOSEDIR;
-        args->u.closedir.ret = -1;
-        args->u.closedir.dirp = dir->host_dir;
+        oe_errno = EINVAL;
+        goto done;
     }
 
-    /* Call */
-    {
-        if (oe_ocall(OE_OCALL_HOSTFS, (uint64_t)args, NULL) != OE_OK)
-            goto done;
-
-        if ((ret = args->u.closedir.ret) != 0)
-        {
-            oe_errno = args->err;
-            goto done;
-        }
-    }
+    if (retval == 0)
+        ret = 0;
 
     oe_free(dir);
 
 done:
-
-    if (args)
-        oe_host_batch_free(batch);
 
     return ret;
 }
@@ -1118,49 +884,47 @@ static int _hostfs_stat(
 {
     int ret = -1;
     fs_t* fs = _cast_fs(fs_);
-    oe_host_batch_t* batch = _get_host_batch();
-    args_t* args = NULL;
+    struct oe_hostfs_stat_struct st;
+    char full_pathname[OE_PATH_MAX];
 
-    /* Check parameters */
-    if (!fs || !pathname || !buf || !batch)
+    if (buf)
+        memset(buf, 0, sizeof(*buf));
+
+    if (!fs || !pathname || !buf)
     {
         oe_errno = EINVAL;
         goto done;
     }
 
-    /* Input */
+    if (_expand_path(fs, pathname, full_pathname) != 0)
+        goto done;
+
+    if (oe_hostfs_stat(&ret, full_pathname, &st, &oe_errno) != OE_OK)
     {
-        if (!(args = oe_host_batch_calloc(batch, sizeof(args_t))))
-            goto done;
-
-        args->op = OE_HOSTFS_OP_STAT;
-        args->u.stat.ret = -1;
-
-        if (_expand_path(fs, pathname, args->u.stat.pathname) != 0)
-            goto done;
+        goto done;
     }
 
-    /* Call */
+    if (ret == 0)
     {
-        if (oe_ocall(OE_OCALL_HOSTFS, (uint64_t)args, NULL) != OE_OK)
-            goto done;
-
-        if ((ret = args->u.stat.ret) != 0)
-        {
-            oe_errno = args->err;
-            goto done;
-        }
-    }
-
-    /* Output */
-    {
-        *buf = args->u.stat.buf;
+        buf->st_dev = st.st_dev;
+        buf->st_ino = st.st_ino;
+        buf->st_nlink = st.st_nlink;
+        buf->st_mode = st.st_mode;
+        buf->st_uid = st.st_uid;
+        buf->st_gid = st.st_gid;
+        buf->st_rdev = st.st_rdev;
+        buf->st_size = st.st_size;
+        buf->st_blksize = st.st_blksize;
+        buf->st_blocks = st.st_blocks;
+        buf->st_atim.tv_sec = st.st_atim.tv_sec;
+        buf->st_atim.tv_nsec = st.st_atim.tv_nsec;
+        buf->st_mtim.tv_sec = st.st_mtim.tv_sec;
+        buf->st_mtim.tv_nsec = st.st_mtim.tv_nsec;
+        buf->st_ctim.tv_sec = st.st_ctim.tv_sec;
+        buf->st_ctim.tv_nsec = st.st_ctim.tv_nsec;
     }
 
 done:
-
-    if (args)
-        oe_host_batch_free(batch);
 
     return ret;
 }
@@ -1169,8 +933,7 @@ static int _hostfs_access(oe_device_t* fs_, const char* pathname, int mode)
 {
     int ret = -1;
     fs_t* fs = _cast_fs(fs_);
-    oe_host_batch_t* batch = _get_host_batch();
-    args_t* args = NULL;
+    char full_pathname[OE_PATH_MAX];
 
     /* Check parameters */
     {
@@ -1183,35 +946,13 @@ static int _hostfs_access(oe_device_t* fs_, const char* pathname, int mode)
         }
     }
 
-    /* Input */
-    {
-        if (!(args = oe_host_batch_calloc(batch, sizeof(args_t))))
-            goto done;
+    if (_expand_path(fs, pathname, full_pathname) != 0)
+        goto done;
 
-        args->op = OE_HOSTFS_OP_ACCESS;
-        args->u.access.ret = -1;
-        args->u.access.mode = mode;
-
-        if (_expand_path(fs, pathname, args->u.access.pathname) != 0)
-            goto done;
-    }
-
-    /* Call */
-    {
-        if (oe_ocall(OE_OCALL_HOSTFS, (uint64_t)args, NULL) != OE_OK)
-            goto done;
-
-        if ((ret = args->u.stat.ret) != 0)
-        {
-            oe_errno = args->err;
-            goto done;
-        }
-    }
+    if (oe_hostfs_access(&ret, full_pathname, mode, &oe_errno) != OE_OK)
+        goto done;
 
 done:
-
-    if (args)
-        oe_host_batch_free(batch);
 
     return ret;
 }
@@ -1223,11 +964,11 @@ static int _hostfs_link(
 {
     int ret = -1;
     fs_t* fs = _cast_fs(fs_);
-    oe_host_batch_t* batch = _get_host_batch();
-    args_t* args = NULL;
+    char full_oldpath[OE_PATH_MAX];
+    char full_newpath[OE_PATH_MAX];
 
     /* Check parameters */
-    if (!fs || !oldpath || !newpath || !batch)
+    if (!fs || !oldpath || !newpath)
     {
         oe_errno = EINVAL;
         goto done;
@@ -1240,37 +981,16 @@ static int _hostfs_link(
         goto done;
     }
 
-    /* Input */
-    {
-        if (!(args = oe_host_batch_calloc(batch, sizeof(args_t))))
-            goto done;
+    if (_expand_path(fs, oldpath, full_oldpath) != 0)
+        goto done;
 
-        args->op = OE_HOSTFS_OP_LINK;
-        args->u.link.ret = -1;
+    if (_expand_path(fs, newpath, full_newpath) != 0)
+        goto done;
 
-        if (_expand_path(fs, oldpath, args->u.link.oldpath) != 0)
-            goto done;
-
-        if (_expand_path(fs, newpath, args->u.link.newpath) != 0)
-            goto done;
-    }
-
-    /* Call */
-    {
-        if (oe_ocall(OE_OCALL_HOSTFS, (uint64_t)args, NULL) != OE_OK)
-            goto done;
-
-        if ((ret = args->u.link.ret) != 0)
-        {
-            oe_errno = args->err;
-            goto done;
-        }
-    }
+    if (oe_hostfs_link(&ret, full_oldpath, full_newpath, &oe_errno) != OE_OK)
+        goto done;
 
 done:
-
-    if (args)
-        oe_host_batch_free(batch);
 
     return ret;
 }
@@ -1279,11 +999,10 @@ static int _hostfs_unlink(oe_device_t* fs_, const char* pathname)
 {
     int ret = -1;
     fs_t* fs = _cast_fs(fs_);
-    oe_host_batch_t* batch = _get_host_batch();
-    args_t* args = NULL;
+    char full_pathname[OE_PATH_MAX];
 
     /* Check parameters */
-    if (!fs || !pathname || !batch)
+    if (!fs || !pathname)
     {
         oe_errno = EINVAL;
         goto done;
@@ -1296,34 +1015,13 @@ static int _hostfs_unlink(oe_device_t* fs_, const char* pathname)
         goto done;
     }
 
-    /* Input */
-    {
-        if (!(args = oe_host_batch_calloc(batch, sizeof(args_t))))
-            goto done;
+    if (_expand_path(fs, pathname, full_pathname) != 0)
+        goto done;
 
-        args->op = OE_HOSTFS_OP_UNLINK;
-        args->u.unlink.ret = -1;
-
-        if (_expand_path(fs, pathname, args->u.unlink.pathname) != 0)
-            goto done;
-    }
-
-    /* Call */
-    {
-        if (oe_ocall(OE_OCALL_HOSTFS, (uint64_t)args, NULL) != OE_OK)
-            goto done;
-
-        if ((ret = args->u.unlink.ret) != 0)
-        {
-            oe_errno = args->err;
-            goto done;
-        }
-    }
+    if (oe_hostfs_unlink(&ret, full_pathname, &oe_errno) != OE_OK)
+        goto done;
 
 done:
-
-    if (args)
-        oe_host_batch_free(batch);
 
     return ret;
 }
@@ -1335,11 +1033,11 @@ static int _hostfs_rename(
 {
     int ret = -1;
     fs_t* fs = _cast_fs(fs_);
-    oe_host_batch_t* batch = _get_host_batch();
-    args_t* args = NULL;
+    char full_oldpath[OE_PATH_MAX];
+    char full_newpath[OE_PATH_MAX];
 
     /* Check parameters */
-    if (!fs || !oldpath || !newpath || !batch)
+    if (!fs || !oldpath || !newpath)
     {
         oe_errno = EINVAL;
         goto done;
@@ -1352,37 +1050,16 @@ static int _hostfs_rename(
         goto done;
     }
 
-    /* Input */
-    {
-        if (!(args = oe_host_batch_calloc(batch, sizeof(args_t))))
-            goto done;
+    if (_expand_path(fs, oldpath, full_oldpath) != 0)
+        goto done;
 
-        args->op = OE_HOSTFS_OP_RENAME;
-        args->u.rename.ret = -1;
+    if (_expand_path(fs, newpath, full_newpath) != 0)
+        goto done;
 
-        if (_expand_path(fs, oldpath, args->u.rename.oldpath) != 0)
-            goto done;
-
-        if (_expand_path(fs, newpath, args->u.rename.newpath) != 0)
-            goto done;
-    }
-
-    /* Call */
-    {
-        if (oe_ocall(OE_OCALL_HOSTFS, (uint64_t)args, NULL) != OE_OK)
-            goto done;
-
-        if ((ret = args->u.rename.ret) != 0)
-        {
-            oe_errno = args->err;
-            goto done;
-        }
-    }
+    if (oe_hostfs_rename(&ret, full_oldpath, full_newpath, &oe_errno) != OE_OK)
+        goto done;
 
 done:
-
-    if (args)
-        oe_host_batch_free(batch);
 
     return ret;
 }
@@ -1391,11 +1068,10 @@ static int _hostfs_truncate(oe_device_t* fs_, const char* path, off_t length)
 {
     int ret = -1;
     fs_t* fs = _cast_fs(fs_);
-    oe_host_batch_t* batch = _get_host_batch();
-    args_t* args = NULL;
+    char full_path[OE_PATH_MAX];
 
     /* Check parameters */
-    if (!fs || !path || !batch)
+    if (!fs || !path)
     {
         oe_errno = EINVAL;
         goto done;
@@ -1408,35 +1084,13 @@ static int _hostfs_truncate(oe_device_t* fs_, const char* path, off_t length)
         goto done;
     }
 
-    /* Input */
-    {
-        if (!(args = oe_host_batch_calloc(batch, sizeof(args_t))))
-            goto done;
+    if (_expand_path(fs, path, full_path) != 0)
+        goto done;
 
-        args->op = OE_HOSTFS_OP_TRUNCATE;
-        args->u.truncate.ret = -1;
-        args->u.truncate.length = length;
-
-        if (_expand_path(fs, path, args->u.truncate.path) != 0)
-            goto done;
-    }
-
-    /* Call */
-    {
-        if (oe_ocall(OE_OCALL_HOSTFS, (uint64_t)args, NULL) != OE_OK)
-            goto done;
-
-        if ((ret = args->u.truncate.ret) != 0)
-        {
-            oe_errno = args->err;
-            goto done;
-        }
-    }
+    if (oe_hostfs_truncate(&ret, full_path, length, &oe_errno) != OE_OK)
+        goto done;
 
 done:
-
-    if (args)
-        oe_host_batch_free(batch);
 
     return ret;
 }
@@ -1445,11 +1099,10 @@ static int _hostfs_mkdir(oe_device_t* fs_, const char* pathname, mode_t mode)
 {
     int ret = -1;
     fs_t* fs = _cast_fs(fs_);
-    oe_host_batch_t* batch = _get_host_batch();
-    args_t* args = NULL;
+    char full_pathname[OE_PATH_MAX];
 
     /* Check parameters */
-    if (!fs || !pathname || !batch)
+    if (!fs || !pathname)
     {
         oe_errno = EINVAL;
         goto done;
@@ -1462,35 +1115,13 @@ static int _hostfs_mkdir(oe_device_t* fs_, const char* pathname, mode_t mode)
         goto done;
     }
 
-    /* Input */
-    {
-        if (!(args = oe_host_batch_calloc(batch, sizeof(args_t))))
-            goto done;
+    if (_expand_path(fs, pathname, full_pathname) != 0)
+        goto done;
 
-        args->op = OE_HOSTFS_OP_MKDIR;
-        args->u.mkdir.ret = -1;
-        args->u.mkdir.mode = mode;
-
-        if (_expand_path(fs, pathname, args->u.mkdir.pathname) != 0)
-            goto done;
-    }
-
-    /* Call */
-    {
-        if (oe_ocall(OE_OCALL_HOSTFS, (uint64_t)args, NULL) != OE_OK)
-            goto done;
-
-        if ((ret = args->u.mkdir.ret) != 0)
-        {
-            oe_errno = args->err;
-            goto done;
-        }
-    }
+    if (oe_hostfs_mkdir(&ret, full_pathname, mode, &oe_errno) != OE_OK)
+        goto done;
 
 done:
-
-    if (args)
-        oe_host_batch_free(batch);
 
     return ret;
 }
@@ -1499,11 +1130,10 @@ static int _hostfs_rmdir(oe_device_t* fs_, const char* pathname)
 {
     int ret = -1;
     fs_t* fs = _cast_fs(fs_);
-    oe_host_batch_t* batch = _get_host_batch();
-    args_t* args = NULL;
+    char full_pathname[OE_PATH_MAX];
 
     /* Check parameters */
-    if (!fs || !pathname || !batch)
+    if (!fs || !pathname)
     {
         oe_errno = EINVAL;
         goto done;
@@ -1516,34 +1146,13 @@ static int _hostfs_rmdir(oe_device_t* fs_, const char* pathname)
         goto done;
     }
 
-    /* Input */
-    {
-        if (!(args = oe_host_batch_calloc(batch, sizeof(args_t))))
-            goto done;
+    if (_expand_path(fs, pathname, full_pathname) != 0)
+        goto done;
 
-        args->op = OE_HOSTFS_OP_RMDIR;
-        args->u.rmdir.ret = -1;
-
-        if (_expand_path(fs, pathname, args->u.rmdir.pathname) != 0)
-            goto done;
-    }
-
-    /* Call */
-    {
-        if (oe_ocall(OE_OCALL_HOSTFS, (uint64_t)args, NULL) != OE_OK)
-            goto done;
-
-        if ((ret = args->u.rmdir.ret) != 0)
-        {
-            oe_errno = args->err;
-            goto done;
-        }
-    }
+    if (oe_hostfs_rmdir(&ret, full_pathname, &oe_errno) != OE_OK)
+        goto done;
 
 done:
-
-    if (args)
-        oe_host_batch_free(batch);
 
     return ret;
 }

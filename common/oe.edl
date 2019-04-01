@@ -3,9 +3,11 @@
 
 enclave {
 
+    from "hostfs.edl" import *;
+
     trusted {
-        public void test_hostfs(
-            [string, in] const char* tmp_dir);
+
+        public void public_root_ecall();
 
     };
 };

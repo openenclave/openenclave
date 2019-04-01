@@ -85,6 +85,7 @@ add_library(oecore STATIC
     device.c
     epoll.c
     exit.c
+    oe_t.c
     select.c
     poll.c
     eventfd.c
@@ -117,7 +118,7 @@ add_library(oecore STATIC
     ${PLATFORM_SRC})
 
 # Suppress type conversion warnings introduced by 3rdparty code
-set_source_files_properties(${MUSL_SRC_DIR}/prng/rand.c ROPERTIES
+set_source_files_properties(${MUSL_SRC_DIR}/prng/rand.c PROPERTIES
     COMPILE_FLAGS -Wno-conversion)
 set_source_files_properties(${MUSL_SRC_DIR}/string/memmove.c PROPERTIES
     COMPILE_FLAGS -Wno-sign-conversion)

@@ -224,6 +224,10 @@ typedef struct _oe_call_enclave_function_args
 typedef struct _oe_call_host_function_args
 {
     uint64_t function_id;
+
+    /* If true, then call the internal host function with the above id. */
+    bool call_internal_host_function;
+
     const void* input_buffer;
     size_t input_buffer_size;
     void* output_buffer;
@@ -231,6 +235,25 @@ typedef struct _oe_call_host_function_args
     size_t output_bytes_written;
     oe_result_t result;
 } oe_call_host_function_args_t;
+
+/*
+**==============================================================================
+**
+** oe_call_internal_host_function()
+**
+**     This function is nearly identical to oe_call_host_function(), but it
+**     employs the 'internal' ocall table on this host side.
+**
+**==============================================================================
+*/
+
+oe_result_t oe_call_internal_host_function(
+    size_t function_id,
+    const void* input_buffer,
+    size_t input_buffer_size,
+    void* output_buffer,
+    size_t output_buffer_size,
+    size_t* output_bytes_written);
 
 /*
 **==============================================================================

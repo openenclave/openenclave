@@ -1,0 +1,129 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+
+    include "openenclave/bits/defs.h"
+    include "openenclave/bits/types.h"
+
+    struct oe_hostfs_dirent_struct
+    {
+        uint64_t d_ino;
+        off_t d_off;
+        uint16_t d_reclen;
+        uint8_t d_type;
+        char d_name[256];
+    };
+
+    struct oe_hostfs_timespec_struct
+    {
+        time_t tv_sec;
+        suseconds_t tv_nsec;
+    };
+
+    struct oe_hostfs_stat_struct
+    {
+        dev_t st_dev;
+        ino_t st_ino;
+        nlink_t st_nlink;
+        mode_t st_mode;
+        uid_t st_uid;
+        gid_t st_gid;
+        dev_t st_rdev;
+        off_t st_size;
+        blksize_t st_blksize;
+        blkcnt_t st_blocks;
+        struct oe_hostfs_timespec_struct st_atim;
+        struct oe_hostfs_timespec_struct st_mtim;
+        struct oe_hostfs_timespec_struct st_ctim;
+    };
+
+    untrusted {
+
+        int oe_hostfs_open(
+            [in, string] const char* pathname,
+            int flags,
+            mode_t mode,
+            [out, count=1] int* err);
+
+        ssize_t oe_hostfs_read(
+            int fd,
+            [out, size=count] void* buf,
+            size_t count,
+            [out, count=1] int* err);
+
+        ssize_t oe_hostfs_write(
+            int fd,
+            [in, size=count] const void* buf,
+            size_t count,
+            [out, count=1] int* err);
+
+        off_t oe_hostfs_lseek(
+            int fd,
+            off_t offset,
+            int whence,
+            [out, count=1] int* err);
+
+        int oe_hostfs_close(
+            int fd,
+            [out, count=1] int* err);
+
+        int oe_hostfs_dup(
+            int oldfd,
+            [out, count=1] int* err);
+
+        void* oe_hostfs_opendir(
+            [in, string] const char* name,
+            [out, count=1] int* err);
+
+        int oe_hostfs_readdir(
+            [user_check] void* dirp,
+            [out, count=1] struct oe_hostfs_dirent_struct* ent,
+            [out, count=1] int* err);
+
+        void oe_hostfs_rewinddir(
+            [user_check] void* dirp);
+
+        int oe_hostfs_closedir(
+            [user_check] void* dirp,
+            [out, count=1] int* err);
+
+        int oe_hostfs_stat(
+            [in, string] const char *pathname,
+            [out, count=1] struct oe_hostfs_stat_struct *buf,
+            [out, count=1] int* err);
+
+        int oe_hostfs_access(
+            [in, string] const char *pathname,
+            int mode,
+            [out, count=1] int* err);
+
+        int oe_hostfs_link(
+            [in, string] const char *oldpath,
+            [in, string] const char *newpath,
+            [out, count=1] int* err);
+
+        int oe_hostfs_unlink(
+            [in, string] const char *pathname,
+            [out, count=1] int* err);
+
+        int oe_hostfs_rename(
+            [in, string] const char *oldpath,
+            [in, string] const char *newpath,
+            [out, count=1] int* err);
+
+        int oe_hostfs_truncate(
+            [in, string] const char *path,
+            off_t length,
+            [out, count=1] int* err);
+
+        int oe_hostfs_mkdir(
+            [in, string] const char *pathname,
+            mode_t mode,
+            [out, count=1] int* err);
+
+        int oe_hostfs_rmdir(
+            [in, string] const char *pathname,
+            [out, count=1] int* err);
+    };
+};

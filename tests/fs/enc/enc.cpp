@@ -64,9 +64,7 @@ void list(const char* dirname, set<string>& names)
     OE_TEST((dir = opendir(dirname)) != NULL);
 
     while ((ent = readdir(dir)))
-    {
         names.insert(ent->d_name);
-    }
 
     closedir(dir);
 }

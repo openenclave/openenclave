@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 
-oeedl_file(../test_hostfs.edl enclave gen)
+oeedl_file(../test_hostfs.edl enclave gen --edl-search-dir ../../../device/edl)
 
 add_enclave(TARGET hostfs_enc SOURCES enc.c main.c ${gen})
 

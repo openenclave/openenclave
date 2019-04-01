@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 
-oeedl_file(../test_hostfs.edl host gen)
+oeedl_file(../test_hostfs.edl host gen --edl-search-dir ../../../device/edl)
 
 add_executable(hostfs_host host.c ${gen})
 
