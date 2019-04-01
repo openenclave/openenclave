@@ -8,6 +8,7 @@
 /* ATTN: use elibc within SGX code. */
 #include <errno.h>
 #include <openenclave/enclave.h>
+#include <openenclave/sgxfs.h>
 #include <openenclave/internal/fs.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/corelibc/string.h>
@@ -1184,24 +1185,39 @@ oe_device_t* oe_fs_get_sgxfs(void)
     return &_sgxfs.base;
 }
 
-int oe_register_sgxfs_device(void)
+oe_result_t oe_register_sgxfs(void)
 {
-    int ret = -1;
+    oe_result_t result = OE_UNEXPECTED;
+    static bool _registered = false;
 
-    /* Allocate the device id. */
-    if (oe_allocate_devid(OE_DEVID_SGXFS) != OE_DEVID_SGXFS)
-        goto done;
+    if (!_registered)
+    {
+        /* Allocate the device id. */
+        if (oe_allocate_devid(OE_DEVID_SGXFS) != OE_DEVID_SGXFS)
+        {
+            result = OE_FAILURE;
+            goto done;
+        }
 
-    /* Add the sgxfs device to the device table. */
-    if (oe_set_devid_device(OE_DEVID_SGXFS, oe_fs_get_sgxfs()) != 0)
-        goto done;
+        /* Add the sgxfs device to the device table. */
+        if (oe_set_devid_device(OE_DEVID_SGXFS, oe_fs_get_sgxfs()) != 0)
+        {
+            result = OE_FAILURE;
+            goto done;
+        }
 
-    /* Check that the above operation was successful. */
-    if (oe_get_devid_device(OE_DEVID_SGXFS) != oe_fs_get_sgxfs())
-        goto done;
+        /* Check that the above operation was successful. */
+        if (oe_get_devid_device(OE_DEVID_SGXFS) != oe_fs_get_sgxfs())
+        {
+            result = OE_FAILURE;
+            goto done;
+        }
 
-    ret = 0;
+        _registered = true;
+    }
+
+    result = OE_OK;
 
 done:
-    return ret;
+    return result;
 }
