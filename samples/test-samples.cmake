@@ -64,7 +64,7 @@ foreach (SAMPLE ${SAMPLES_LIST})
       message(WARNING "Samples test '${SAMPLE}' with CMake failed!")
       set(ALL_TEST_RESULT 1)
     else ()
-      message(STATUS "Samples test '${SAMPLE}' passed!")
+      message(STATUS "Samples test '${SAMPLE}' with CMake passed!")
     endif ()
 
     # Build with pkg-config
@@ -85,22 +85,28 @@ foreach (SAMPLE ${SAMPLES_LIST})
   # work under simulation, so we test that additional scenario here.
   if (${SAMPLE} MATCHES "(file-encryptor|helloworld)")
     # Build with the CMake package
+    message(STATUS "Samples test '${SAMPLE}' in simulation with CMake running...")
     execute_process(
       COMMAND ${CMAKE_COMMAND} --build ${SAMPLE_BUILD_DIR} --target simulate
       RESULT_VARIABLE TEST_SIMULATE_RESULT)
     if (TEST_SIMULATE_RESULT)
-      message(WARNING "Samples test '${SAMPLE}' failed in simulation mode!")
+      message(WARNING "Samples test '${SAMPLE}' in simulation with CMake failed!")
       set(ALL_TEST_RESULT 1)
+    else ()
+      message(STATUS "Samples test '${SAMPLE}' in simulation with CMake passed!")
     endif ()
 
     # Build with pkg-config
     # TODO: Use INSTALL_DIR for pkg-config after it is made relocatable.
+    message(STATUS "Samples test '${SAMPLE}' in simulation with pkg-config running...")
     execute_process(
       COMMAND ${CMAKE_COMMAND} -E env PATH=${INSTALL_DIR}/bin:$ENV{PATH} PKG_CONFIG_PATH=${BUILD_DIR}/pkgconfig OE_PREFIX=${INSTALL_DIR} make -C ${SAMPLE_SOURCE_DIR} clean build simulate
       RESULT_VARIABLE TEST_SIMULATE_RESULT)
-      if (TEST_SIMULATE_RESULT)
-        message(WARNING "Samples test '${SAMPLE}' failed in simulation mode while building via Makefile!")
-        set(TEST_SIMULATE_RESULT 1)
+    if (TEST_SIMULATE_RESULT)
+      message(WARNING "Samples test '${SAMPLE}' in simulation with pkg-config failed!")
+      set(TEST_SIMULATE_RESULT 1)
+    else ()
+      message(STATUS "Samples test '${SAMPLE}' in simulation with pkg-config passed!")
     endif ()
   endif ()
 
