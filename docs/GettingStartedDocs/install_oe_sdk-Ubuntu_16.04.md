@@ -5,7 +5,7 @@
 - Ubuntu 16.04-LTS 64-bits
 - SGX1-capable system with support for Flexible Launch Control (FLC).
     - You can acquire a VM with the required features from [Azure Confidential Compute](https://azure.microsoft.com/en-us/solutions/confidential-compute/).
-    - Alternatively, you can [check if your existing device supports SGX with FLC](/docs/GettingStartedDocs/GettingStarted.md#1-determine-the-sgx-support-level-on-your-developmenttarget-system).
+    - Alternatively, you can [check if your existing device supports SGX with FLC](/docs/GettingStartedDocs/Contributors/building_oe_sdk.md#1-determine-the-sgx-support-level-on-your-developmenttarget-system).
 
 ### 1. Configure the Intel and Microsoft APT Repositories
 ```bash

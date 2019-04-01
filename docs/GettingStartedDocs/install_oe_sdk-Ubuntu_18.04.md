@@ -5,16 +5,16 @@
 - Ubuntu 18.04-LTS 64-bits
 - SGX1-capable system with support for Flexible Launch Control (FLC).
     - You can acquire a VM with the required features from [Azure Confidential Compute](https://azure.microsoft.com/en-us/solutions/confidential-compute/).
-    - Alternatively, you can [check if your existing device supports SGX with FLC](/docs/GettingStartedDocs/GettingStarted.md#1-determine-the-sgx-support-level-on-your-developmenttarget-system).
+    - Alternatively, you can [check if your existing device supports SGX with FLC](/docs/GettingStartedDocs/Contributors/building_oe_sdk.md#1-determine-the-sgx-support-level-on-your-developmenttarget-system).
 
 ### 1. Configure the Intel and Microsoft APT Repositories
 ```bash
 echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu bionic main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list
 wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | sudo apt-key add -
- 
+
 echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main" | sudo tee /etc/apt/sources.list.d/llvm-toolchain-bionic-7.list
 wget -qO - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
- 
+
 echo "deb [arch=amd64] https://packages.microsoft.com/ubuntu/18.04/prod bionic main" | sudo tee /etc/apt/sources.list.d/msprod.list
 wget -qO - https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
 ```
