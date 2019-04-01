@@ -24,9 +24,6 @@ OE_INLINE int oe_get_open_access_mode(int flags)
     return (flags & 000000003);
 }
 
-/* The host calls this to install the host file system (SGXFS). */
-void oe_fs_install_sgxfs(void);
-
 /* The enclave calls this to get an instance of host file system (SGXFS). */
 oe_device_t* oe_fs_get_sgxfs(void);
 

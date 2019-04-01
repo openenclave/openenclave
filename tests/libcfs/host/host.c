@@ -23,8 +23,6 @@ int main(int argc, const char* argv[])
     const char* enclave_path = argv[1];
     const char* tmp_dir = argv[2];
 
-    oe_fs_install_sgxfs();
-
     r = oe_create_libcfs_enclave(enclave_path, type, flags, NULL, 0, &enclave);
     OE_TEST(r == OE_OK);
 
