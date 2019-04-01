@@ -31,6 +31,7 @@ Note: This may not be the latest Intel SGX DCAP driver. Please check with [Intel
 
 ### 3. Install the Intel and Open Enclave packages and dependencies
 ```bash
+sudo apt update
 sudo apt -y install clang-7 libssl-dev gdb libsgx-enclave-common libsgx-enclave-common-dev libsgx-dcap-ql libsgx-dcap-ql-dev az-dcap-client open-enclave
 ```
 
