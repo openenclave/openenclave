@@ -22,7 +22,7 @@ LDFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --libs)
 
 all:
 	$(MAKE) genkey
-	$(MAKE) -C ../enc1 genkey
+	$(MAKE) -C ../enclave_a genkey
 	$(MAKE) build
 	$(MAKE) sign
 
@@ -41,19 +41,19 @@ public.pem: private.pem
 # a malicious host might change it. So, we would need to load a certicate
 # that contains the expected public key that is signed by a trusted CA.
 genkey: public.pem
-	../gen_pubkey_header.sh ../enc1/enc2_pubkey.h $<
+	../gen_pubkey_header.sh ../enclave_a/enclave_b_pubkey.h $<
 
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
 	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -I.. -std=c++11 -DOE_API_VERSION=2 ecalls.cpp ../common/attestation.cpp ../common/crypto.cpp ../common/dispatcher.cpp
 	$(CC) -g -c $(CFLAGS) $(CINCLUDES) -I.. -DOE_API_VERSION=2 ../common/remoteattestation_t.c
-	$(CXX) -o enclave2 attestation.o crypto.o ecalls.o dispatcher.o remoteattestation_t.o $(LDFLAGS) 
+	$(CXX) -o enclave2 attestation.o crypto.o ecalls.o dispatcher.o remoteattestation_t.o $(LDFLAGS)
 
 sign:
 	oesign sign -e enclave2 -c enc.conf -k private.pem
 
 clean:
-	rm -f *.o enclave2 enclave2.signed remoteattestation_t.* *.pem enc1_pubkey.h
+	rm -f *.o enclave2 enclave2.signed ../common/remoteattestation_t.* ../common/remoteattestation_args.h *.pem enclave_a_pubkey.h
 
 
 

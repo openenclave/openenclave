@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 #include <common/dispatcher.h>
-#include <common/remoteattestation_t.h>
+#include <common/localattestation_t.h>
 #include <openenclave/enclave.h>
-#include "enc1_pubkey.h"
+#include "enclave_a_pubkey.h"
 
-// For this purpose of this example: demonstrating how to do remote attestation
+// For this purpose of this example: demonstrating how to do attestation
 // g_enclave_secret_data is hardcoded as part of the enclave. In this sample,
 // the secret data is hard coded as part of the enclave binary. In a real world
 // enclave implementation, secrets are never hard coded in the enclave binary
@@ -30,30 +30,42 @@ enclave_config_data_t config_data = {g_enclave_secret_data,
 static ecall_dispatcher dispatcher("Enclave2", &config_data);
 const char* enclave_name = "Enclave2";
 
+int get_target_info(uint8_t** target_info_buffer, size_t* target_info_size)
+{
+    return dispatcher.get_target_info(target_info_buffer, target_info_size);
+}
+
 /**
- * Return the public key of this enclave along with the enclave's remote report.
- * Another enclave can use the remote report to attest the enclave and verify
+ * Return the public key of this enclave along with the enclave's report.
+ * Another enclave can use the report to attest the enclave and verify
  * the integrity of the public key.
  */
-int get_remote_report_with_pubkey(
+int get_targeted_report_with_pubkey(
+    uint8_t* target_info_buffer,
+    size_t target_info_size,
     uint8_t** pem_key,
     size_t* key_size,
-    uint8_t** remote_report,
-    size_t* remote_report_size)
+    uint8_t** report,
+    size_t* report_size)
 {
-    return dispatcher.get_remote_report_with_pubkey(
-        pem_key, key_size, remote_report, remote_report_size);
+    return dispatcher.get_targeted_report_with_pubkey(
+        target_info_buffer,
+        target_info_size,
+        pem_key,
+        key_size,
+        report,
+        report_size);
 }
 
 // Attest and store the public key of another enclave.
 int verify_report_and_set_pubkey(
     uint8_t* pem_key,
-    size_t key_size,
-    uint8_t* remote_report,
-    size_t remote_report_size)
+    size_t pem_key_size,
+    uint8_t* local_report,
+    size_t report_size)
 {
     return dispatcher.verify_report_and_set_pubkey(
-        pem_key, key_size, remote_report, remote_report_size);
+        pem_key, pem_key_size, local_report, report_size);
 }
 
 // Encrypt message for another enclave using the public key stored for it.

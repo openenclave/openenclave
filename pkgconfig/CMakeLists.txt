@@ -218,6 +218,7 @@ install(FILES
 ##
 ##==============================================================================
 
+# TODO: Remove this work-around after we make the pkg-config files relocatable.
 set(PREFIX "$OE_PREFIX")
 
 set(ENCLAVE_CINCLUDES
@@ -266,4 +267,3 @@ configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/oehost-clang++.pc
     ${CMAKE_BINARY_DIR}/pkgconfig/oehost-clang++.pc
     @ONLY)
-

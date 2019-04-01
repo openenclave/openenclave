@@ -120,9 +120,14 @@ enclave, an enclave configuration file, and a private key, and outputs a signed
 enclave. Example usage is:
 
 ```cmake
+# NOTE: This is a self-signed certificate only for demonstration.
+add_custom_command(OUTPUT private.pem public.pem
+  COMMAND openssl genrsa -out private.pem -3 3072
+  COMMAND openssl rsa -in private.pem -pubout -out public.pem)
+
 add_custom_command(OUTPUT example_enclave.signed
-  DEPENDS example_enclave ${CMAKE_CURRENT_SOURCE_DIR}/example.conf ${CMAKE_CURRENT_SOURCE_DIR}/key.pem
-  COMMAND openenclave::oesign sign -e $<TARGET_FILE:example_enclave> -c ${CMAKE_CURRENT_SOURCE_DIR}/example.conf -k ${CMAKE_CURRENT_SOURCE_DIR}/key.pem)
+  DEPENDS example_enclave example.conf private.pem
+  COMMAND openenclave::oesign sign -e $<TARGET_FILE:example_enclave> -c ${CMAKE_CURRENT_SOURCE_DIR}/example.conf -k private.pem)
 ```
 
 Since `oesign` is unaware of CMake information, the
