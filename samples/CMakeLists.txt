@@ -2,8 +2,9 @@
 # Licensed under the MIT License.
 
 if (USE_LIBSGX)
-  install(DIRECTORY remote_attestation local_attestation
+  install(DIRECTORY remote_attestation local_attestation tls_with_attestation
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
+
 endif ()
 
 install(DIRECTORY helloworld file-encryptor data-sealing
