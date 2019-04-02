@@ -60,8 +60,9 @@ endif ()
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Get Jenkins build number
-set(BUILD_NUMBER $ENV{BUILD_NUMBER})
-if (NOT BUILD_NUMBER)
+if (DEFINED ENV{BUILD_NUMBER})
+  set(BUILD_NUMBER $ENV{BUILD_NUMBER})
+else()
   set(BUILD_NUMBER "0")
 endif ()
 
@@ -110,7 +111,7 @@ if (OE_SGX)
     endif ()
 
     # Setup cross compiler (clangw)
-    add_subdirectory(windows/clangw)  
+    add_subdirectory(windows/clangw)
     set(USE_CLANGW ON)
   endif()
 else() # NOT OE_SGX
