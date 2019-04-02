@@ -98,6 +98,11 @@ oe_result_t generate_key_pair(
         NULL);
     OE_CHECK(result);
 
+    OE_TRACE_INFO("Dump private key here");
+    OE_TRACE_INFO("[\n%s\n]\n", private_key);
+    OE_TRACE_INFO("Dump public key here");
+    OE_TRACE_INFO("[\n%s\n]\n", public_key);
+
 done:
     return result;
 }
