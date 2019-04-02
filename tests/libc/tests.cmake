@@ -3,7 +3,7 @@
 
 string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
 string(TOUPPER ${CMAKE_C_COMPILER_ID} MY_COMPILER)
-set(BUILD "${MY_COMPILER}:${BUILD_TYYPE}")
+set(BUILD "${MY_COMPILER}:${BUILD_TYPE}")
 
 ##==============================================================================
 ##

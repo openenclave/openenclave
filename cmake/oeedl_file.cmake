@@ -51,7 +51,11 @@ function(oeedl_file EDL_FILE TYPE OUT_FILES_VAR)
 	if(${ARGC} EQUAL 5)
 		if (${ARGV3} STREQUAL "--edl-search-dir")
 			set(edl_search_path --search-path ${CMAKE_CURRENT_SOURCE_DIR}/${ARGV4})
+        else()
+            set(edl_search_path "")
 		endif()
+    else()
+        set(edl_search_path "")
 	endif()
 
 
