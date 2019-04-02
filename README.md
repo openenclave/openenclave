@@ -13,7 +13,7 @@ container whose memory is protected from entities outside the enclave. These
 protections allow enclaves to perform secure computations with assurances that
 secrets will not be compromised.
 
-This SDK is a fully open-source and transparent project, which plans to generalize enclave application models across 
+This SDK is a fully open-source and transparent project, which plans to generalize enclave application models across
 enclave implementations from different hardware vendors. It's a non-vendor specific solution that supports enclave applications both on
 Linux and Windows platforms.
 
@@ -29,7 +29,7 @@ start here for instructions to install and use the SDK package:
 - [Ubuntu 18.04](docs/GettingStartedDocs/install_oe_sdk-Ubuntu_18.04.md)
 
 If you would like to modify and build the Open Enclave SDK from sources, refer to
-the documents for [getting started](docs/GettingStartedDocs/GettingStarted.md).
+the documents for [getting started](docs/GettingStartedDocs/Contributors/building_oe_sdk.md).
 
 Contributing
 ------------

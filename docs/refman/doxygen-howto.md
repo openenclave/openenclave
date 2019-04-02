@@ -14,8 +14,7 @@ into the GitHub repository. This allows one to browse the documentation from
 GitHub Pages.
 
 To update the generated documentation, create the CMake build tree by using the
-instructions in [Getting Started with Open
-Enclave](/docs/GettingStartedDocs/GettingStarted.md). Assuming that `build` is
+instructions in [Building the Open Enclave SDK](/docs/GettingStartedDocs/Contributors/building_oe_sdk.md). Assuming that `build` is
 the root of the CMake build tree, a successful `make` will build the HTML
 reference documentation by default. You can also make the documentation directly
 from the build folder:
@@ -193,7 +192,7 @@ To disable Doxygen documentation from blocks of code with `#defines` or
  * @cond DEV
  *
  */
- 
+
 <your code section goes here>
 
 /**
