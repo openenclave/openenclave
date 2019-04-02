@@ -62,6 +62,8 @@ if (UNIX OR ADD_WINDOWS_ENCLAVE_TESTS OR USE_CLANGW)
         add_subdirectory(sealKey)
         add_subdirectory(sgxfs)
         add_subdirectory(stdc)
+	add_subdirectory(tls_apis)
+        add_subdirectory(tls_e2e)
         add_subdirectory(VectorException)
     endif()
 

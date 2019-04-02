@@ -384,6 +384,18 @@ void oe_free_key(
     uint8_t* key_info,
     size_t key_info_size);
 
+/*
+   TODO:
+   Added detailed comments here
+*/
+typedef oe_result_t (
+    *oe_enclave_identity_verify_callback_t)(oe_identity_t* identity, void* arg);
+oe_result_t oe_verify_tls_cert(
+    uint8_t* der_crt,
+    size_t der_crt_len,
+    oe_enclave_identity_verify_callback_t enclave_identity_callback,
+    void* arg);
+
 OE_EXTERNC_END
 
 #endif /* _OE_HOST_H */

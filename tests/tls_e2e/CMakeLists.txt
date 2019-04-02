@@ -1,0 +1,22 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+if (BUILD_ENCLAVES)
+	add_subdirectory(server_enc)
+	add_subdirectory(client_enc)
+endif()
+add_subdirectory(host)
+
+set(TEST_NAME "tests/tls_e2e_host")
+set(HOST_FILE "tls_e2e_host")
+set(ENC_FILE "tls_server_enc")
+set(ENC_FILE2 "tls_client_enc")
+
+#add_test(NAME tests/tls_e2e COMMAND $<TARGET_FILE:tls_e2e_host}> $<TARGET_FILE:tls_server_enc> $<TARGET_FILE:tls_client_enc> ${ARGN})
+#add_test(NAME ${TEST_NAME} COMMAND $<TARGET_FILE:${HOST_FILE}> $<TARGET_FILE:${ENC_FILE}> $<TARGET_FILE:${ENC_FILE2}> ${ARGN})
+
+add_enclave_test(tests/tls_e2e
+	tls_e2e_host tls_server_enc $<TARGET_FILE:tls_client_enc>)
+
+#add_enclave_test(tests/tls_enc2enc
+#    tls_enc2enc_host tls_server_enc tls_client_enc)

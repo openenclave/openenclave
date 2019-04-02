@@ -1,0 +1,20 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    from "../../../include/openenclave/socket.edl" import *;
+
+    struct tls_control_args {
+        bool fail_cert_verify_callback;
+        bool fail_enclave_identity_verifier_callback;
+        bool fail_oe_verify_tls_cert;
+    };
+
+    trusted {
+        public int setup_tls_server([in] tls_control_args *args, [in, string] char* port);
+        public int launch_tls_client([in] tls_control_args *args, [in, string] char* server_name, [in, string] char* server_port);
+    };
+    untrusted {
+        int server_is_ready();
+    };
+};

@@ -1,0 +1,18 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+        public oe_result_t get_TLS_cert([out] unsigned char** data, [out] size_t* data_size);
+        public void free_TLS_cert([in] unsigned char* data, size_t data_size);
+    };
+
+//    untrusted {
+//        int host_echo(
+//            [string, in] char* in,
+//            [out] char out[100],
+//            [string, in] char* str1,
+//            [user_check] char* str2,
+//            [in] char str3[100]);
+//    };
+};
