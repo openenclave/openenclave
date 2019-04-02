@@ -1610,6 +1610,7 @@ int oe_register_hostsock_device(void)
     if (oe_set_devid_device(devid, oe_get_hostsock_device()) != 0)
         goto done;
 
+    oe_set_default_socket_devid(OE_DEVID_HOST_SOCKET);
     ret = 0;
 
 done:

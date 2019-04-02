@@ -179,6 +179,13 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
                 oe_enclave = safe_args.enclave;
             }
 
+            /* Register the host sockets device. */
+            if (oe_register_hostsock_device() != 0)
+            {
+                result = OE_FAILURE;
+                goto done;
+            }
+
 #if 0
             /* Register the host file system. */
             if (oe_register_hostfs_device() != 0)
