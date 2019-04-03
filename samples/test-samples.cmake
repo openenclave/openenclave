@@ -11,7 +11,8 @@ set(SAMPLES_LIST helloworld file-encryptor)
 
 if ($ENV{OE_SIMULATION})
   message(WARNING "Running only sample simulation tests due to OE_SIMULATION=$ENV{OE_SIMULATION}!")
-  # This is not a failure condition, so we return with a success status.
+  # Set because testing environment variables in CMake is annoying.
+  set(SIMULATION ON)
 else ()
   # All the other tests require that we are not running in simulation.
 
@@ -54,7 +55,7 @@ foreach (SAMPLE ${SAMPLES_LIST})
     COMMAND ${CMAKE_COMMAND} --build ${SOURCE_DIR}/${SAMPLE}
     WORKING_DIRECTORY ${SAMPLE_BUILD_DIR})
 
-  if (NOT $ENV{OE_SIMULATION})
+  if (NOT SIMULATION)
     # Build with the CMake package
     message(STATUS "Samples test '${SAMPLE}' with CMake running...")
     execute_process(
