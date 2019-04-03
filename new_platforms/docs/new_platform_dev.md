@@ -342,7 +342,7 @@ The `CMakeLists.txt` file under `enc` looks like this:
 include(oeedl_file)
 include(add_enclave)
 
-oeedl_file(../interface.edl enclave GEN C_GEN H_GEN ${OE_PATH}/include)
+oeedl_file(${CMAKE_CURRENT_LIST_DIR}/../interface.edl enclave GEN C_GEN H_GEN ${OE_PATH}/include)
 
 add_enclave(
     TARGET myproject_enc
@@ -386,7 +386,7 @@ The `CMakeLists.txt` file under `host` looks like this:
 include(oeedl_file)
 include(add_host)
 
-oeedl_file(../helloworld.edl host GEN C_GEN H_GEN ${OE_PATH}/include)
+oeedl_file(${CMAKE_CURRENT_LIST_DIR}/../helloworld.edl host GEN C_GEN H_GEN ${OE_PATH}/include)
 
 add_host(
     TARGET myproject_host

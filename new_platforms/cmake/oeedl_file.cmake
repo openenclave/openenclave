@@ -71,6 +71,7 @@ macro(edl_file TOOL EDL_FILE TYPE OUT_FILES_VAR OUT_C_FILES_VAR OUT_H_FILES_VAR 
 		# edger8r tool is rebuilt.
 		COMMAND ${TOOL_COMMAND} ${type_opt} ${headers_only} ${dir_opt} ${CMAKE_CURRENT_BINARY_DIR} ${EDL_FILE} --search-path "${edl_search_path}"
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+		DEPENDS ${EDL_FILE}
 	)
 
 	set_source_files_properties(

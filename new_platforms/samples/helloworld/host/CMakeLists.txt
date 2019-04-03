@@ -6,7 +6,7 @@ include(add_host)
 
 set(TARGET helloworld_host)
 
-oeedl_file(../helloworld.edl host GEN C_GEN H_GEN ${OE_PATH}/include)
+oeedl_file(${CMAKE_CURRENT_LIST_DIR}/../helloworld.edl host GEN C_GEN H_GEN ${OE_PATH}/include)
 
 add_host(
     TARGET ${TARGET}

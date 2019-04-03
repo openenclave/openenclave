@@ -53,11 +53,6 @@ configure_file(${OE_PATH}/3rdparty/mbedtls/config.h config.h) # This copies from
 
 set(PREFIX $<IF:$<CONFIG:RelWithDebInfo>,Release,$<CONFIG>>)
 
-configure_file(${CMAKE_CURRENT_LIST_DIR}/test.cmake ${CMAKE_CURRENT_BINARY_DIR}/test.cmake @ONLY)
-
-message(STATUS "CMAKE_C_FLAGS ${CMAKE_C_FLAGS}")
-message(STATUS "CMAKE_C_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG}")
-
 include(ExternalProject)
 ExternalProject_Add(mbedtls-wrap
     DOWNLOAD_COMMAND ${CMAKE_COMMAND} -E copy_directory

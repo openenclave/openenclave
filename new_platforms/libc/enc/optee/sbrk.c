@@ -1,7 +1,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/* Filled in by linker. */
 extern uint8_t ta_heap[];
 extern const size_t ta_heap_size;
 

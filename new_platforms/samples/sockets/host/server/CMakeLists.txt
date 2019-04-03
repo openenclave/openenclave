@@ -6,7 +6,7 @@ include(add_host)
 
 set(TARGET socketserver_host)
 
-oeedl_file(../sockets.edl host GEN C_GEN H_GEN ${OE_PATH}/include)
+oeedl_file(${CMAKE_CURRENT_LIST_DIR}/../sockets.edl host GEN C_GEN H_GEN ${OE_PATH}/include)
 
 add_host(
     TARGET ${TARGET}

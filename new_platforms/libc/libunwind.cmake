@@ -1,6 +1,7 @@
 set(LIBUNWIND_C_SRC
     ${LIBUNWIND_SRC}/src/aarch64/Lstep.c
     ${LIBUNWIND_SRC}/src/aarch64/Ltrace.c
+    ${LIBUNWIND_SRC}/src/dwarf/Gfind_proc_info-lsb.c
     ${LIBUNWIND_SRC}/src/dwarf/global.c
     ${LIBUNWIND_SRC}/src/dwarf/Lexpr.c
     ${LIBUNWIND_SRC}/src/dwarf/Lfde.c
@@ -8,7 +9,7 @@ set(LIBUNWIND_C_SRC
     ${LIBUNWIND_SRC}/src/dwarf/Lfind_unwind_table.c
     ${LIBUNWIND_SRC}/src/dwarf/Lparser.c
     ${LIBUNWIND_SRC}/src/dwarf/Lpe.c
-    ${LIBUNWIND_SRC}/src/dwarf/Lstep.c
+    #${LIBUNWIND_SRC}/src/dwarf/Lstep.c
     ${LIBUNWIND_SRC}/src/mi/_ReadULEB.c
     ${LIBUNWIND_SRC}/src/mi/_ReadSLEB.c
     ${LIBUNWIND_SRC}/src/mi/backtrace.c
@@ -55,6 +56,7 @@ set(LIBUNWIND_C_SRC
     ${LIBUNWIND_SRC}/src/${ARCH}/Lget_save_loc.c
     ${LIBUNWIND_SRC}/src/${ARCH}/Lglobal.c
     ${LIBUNWIND_SRC}/src/${ARCH}/Linit.c
+    ${LIBUNWIND_SRC}/src/${ARCH}/Lis_signal_frame.c
     ${LIBUNWIND_SRC}/src/${ARCH}/Linit_local.c
     ${LIBUNWIND_SRC}/src/${ARCH}/Linit_remote.c
     ${LIBUNWIND_SRC}/src/${ARCH}/Lget_proc_info.c

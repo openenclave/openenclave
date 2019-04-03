@@ -5,7 +5,7 @@ include(oeedl_file)
 
 set(TARGET oetests_host)
 
-oeedl_file(../oetests.edl host GEN C_GEN H_GEN ${OE_PATH}/include)
+oeedl_file(${CMAKE_CURRENT_LIST_DIR}/../oetests.edl host GEN C_GEN H_GEN ${OE_PATH}/include)
 
 add_host(
     TARGET ${TARGET}

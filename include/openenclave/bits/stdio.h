@@ -110,6 +110,16 @@ struct oe_dirent *oe_readdir(OE_DIR *dirp);
 #define EINVAL    22
 #define ERANGE    34
 
+#ifdef stdin
+# undef stdin
+#endif
+#ifdef stderr
+# undef stderr
+#endif
+#ifdef stdout
+# undef stdout
+#endif
+
 #if !defined(_FILE_DEFINED) && !defined(_STDIO_H)
 # define stdin ((void*)0)
 # define stdout ((void*)1)

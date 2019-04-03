@@ -355,7 +355,7 @@ oe_getsockopt(
     _In_ int level,
     _In_ int optname,
     _Out_writes_(*optlen) char* optval,
-    _Inout_ socklen_t* optlen);
+    _Inout_ oe_socklen_t* optlen);
 
 uint32_t
 oe_htonl(
@@ -416,7 +416,7 @@ oe_setsockopt(
     _In_ int level,
     _In_ int optname,
     _In_reads_bytes_(optlen) const char* optval,
-    _In_ socklen_t optlen);
+    _In_ oe_socklen_t optlen);
 
 int
 oe_shutdown(
@@ -529,7 +529,7 @@ typedef struct {
                         int level,
                         int optname,
                         _Out_writes_(*optlen) char* optval,
-                        _Inout_ socklen_t* optlen);
+                        _Inout_ oe_socklen_t* optlen);
     int (*s_ioctl)(_In_ intptr_t provider_socket,
                    long cmd,
                    _Inout_ unsigned long *argp);
@@ -552,7 +552,7 @@ typedef struct {
                         int level,
                         int optname,
                         _In_reads_bytes_(optlen) const char* optval,
-                        socklen_t optlen);
+                        oe_socklen_t optlen);
     int (*s_shutdown)(_In_ intptr_t provider_socket,
                       int how);
 } oe_socket_provider_t;

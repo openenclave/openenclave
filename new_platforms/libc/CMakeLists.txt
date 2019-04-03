@@ -179,7 +179,6 @@ target_compile_options(libunwind PRIVATE
     -DHAVE_ENDIAN_H
     -DHAVE_LINK_H
     -D_GNU_SOURCE
-    -DHAVE_DL_ITERATE_PHDR
     -DPACKAGE_STRING=\"libunwind-1.3\"
     -DPACKAGE_BUGREPORT=\"unwind.org\"
     -include ${LIBUNWIND_OE}/stubs.h)
@@ -192,12 +191,14 @@ target_include_directories(libunwind PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}/tdep
     ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(libunwind PUBLIC libc)
+set_target_properties(libunwind PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # Set up libcxxrt.
 add_library(libcxxrt STATIC ${LIBCXXRT_CXX_SRC})
 add_dependencies(libcxxrt musl_includes)
-target_compile_options(libcxxrt PRIVATE)
+#target_compile_options(libcxxrt PRIVATE)
 target_link_libraries(libcxxrt PUBLIC libunwind)
+set_target_properties(libcxxrt PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # Set up libcxx.
 include (ExternalProject)
@@ -228,3 +229,4 @@ target_include_directories(libcxx PUBLIC
     ${LIBCXX_SRC}/src
     ${LIBCXXRT_SRC}/src)
 target_link_libraries(libcxx PUBLIC libcxxrt)
+set_target_properties(libcxx PROPERTIES POSITION_INDEPENDENT_CODE ON)

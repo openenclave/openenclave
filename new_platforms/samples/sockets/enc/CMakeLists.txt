@@ -4,7 +4,7 @@
 include(oeedl_file)
 include(add_enclave)
 
-oeedl_file(../sockets.edl enclave GEN C_GEN H_GEN ${OE_PATH}/include)
+oeedl_file(${CMAKE_CURRENT_LIST_DIR}/../sockets.edl enclave GEN C_GEN H_GEN ${OE_PATH}/include)
 
 add_enclave(
     TARGET sockets_enclave

@@ -5,7 +5,7 @@ include(oeedl_file)
 
 set(TARGET oehost)
 
-oeedl_file(../oeinternal.edl host GEN C_GEN H_GEN)
+oeedl_file(${CMAKE_CURRENT_LIST_DIR}/../oeinternal.edl host GEN C_GEN H_GEN)
 if(WIN32 AND SGX)
     sgxedl_file(../oeoverintelsgx.edl host GEN C_GEN H_GEN "${NP_PATH}/src;${SGXSDKInstallPath}/include")
 endif()

@@ -11,9 +11,9 @@
 
 // This is the function that the enclave will call back into to
 // print a message.
-int host_helloworld(void)
+int host_print(const char *msg)
 {
-    return fprintf(stdout, "Enclave called into host to print: Hello World!\n");
+    return fprintf(stdout, "TA says: %s\n", msg);
 }
 
 int main(int argc, const char* argv[])
@@ -47,7 +47,7 @@ int main(int argc, const char* argv[])
 
     // Call into the enclave
     int hostResult;
-    result = enclave_helloworld(enclave, &hostResult);
+    result = enclave_entry(enclave, &hostResult);
     if (result != OE_OK)
     {
         fprintf(

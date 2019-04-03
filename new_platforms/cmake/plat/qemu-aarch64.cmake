@@ -25,13 +25,15 @@ set(OE_TA_C_FLAGS
     -fno-builtin-memcpy
     -fno-builtin-memset
     -ffreestanding
+    -funwind-tables
+    -fexceptions
     -fpie
     -fPIC)
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "" OR "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     list(APPEND OE_TA_C_FLAGS -g3)
 else()
-    list(APPEND OE_TA_C_FLAGS -Os)
+    list(APPEND OE_TA_C_FLAGS -gdwarf -Os)
 endif()
 
 # When using GCC for linking.
