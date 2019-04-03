@@ -1,13 +1,11 @@
 @Library("OpenEnclaveCommon") _
 oe = new jenkins.common.Openenclave()
 
-cmakeCheckFlags="--warn-uninitialized -Wdev --warn-unused-vars"
-
 def ACCTest(String label, String compiler, String build_type) {
     stage("${label} ${compiler} SGX1FLC ${build_type}") {
         node("${label}") {
             def task = """
-                       cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} ${cmakeCheckFlags}
+                       cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -Wdev
                        ninja -v
                        ctest --output-on-failure
                        """
@@ -38,7 +36,7 @@ def simulationTest(String version, String platform_mode, String build_type) {
         node("nonSGX") {
             withEnv(["OE_SIMULATION=1"]) {
                 def task = """
-                           cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DUSE_LIBSGX=${use_libsgx} ${cmakeCheckFlags}
+                           cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DUSE_LIBSGX=${use_libsgx} -Wdev
                            ninja -v
                            ctest --output-on-failure
                            """
@@ -52,7 +50,7 @@ def ACCContainerTest(String label, String version) {
     stage("${label} Container RelWithDebInfo") {
         node("${label}") {
             def task = """
-                       cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo ${cmakeCheckFlags}
+                       cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -Wdev
                        ninja -v
                        ctest --output-on-failure
                        """
@@ -68,7 +66,7 @@ def checkDevFlows(String version) {
                 timeout(30) {
                     dir('build') {
                         sh """
-                           cmake ${WORKSPACE} -G Ninja -DUSE_LIBSGX=OFF ${cmakeCheckFlags}
+                           cmake ${WORKSPACE} -G Ninja -DUSE_LIBSGX=OFF -Wdev --warn-uninitialized --warn-unused-vars
                            ninja -v
                            """
                     }
@@ -94,7 +92,7 @@ def win2016LinuxElfBuild(String version, String compiler, String build_type) {
     stage("Ubuntu ${version} SGX1 ${compiler} ${build_type}}") {
         node("nonSGX") {
             def task = """
-                       cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DUSE_DEBUG_MALLOC=OFF ${cmakeCheckFlags}
+                       cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DUSE_DEBUG_MALLOC=OFF -Wdev
                        ninja -v
                        """
             oe.oetoolsImage(version, compiler, task)
@@ -110,7 +108,7 @@ def win2016LinuxElfBuild(String version, String compiler, String build_type) {
             dir('build') {
               bat """
                   vcvars64.bat x64 && \
-                  cmake.exe ${WORKSPACE} -G \"Visual Studio 15 2017 Win64\" -DADD_WINDOWS_ENCLAVE_TESTS=ON -DBUILD_ENCLAVES=OFF -DCMAKE_BUILD_TYPE=${build_type} -DLINUX_BIN_DIR=${WORKSPACE}\\linuxbin\\tests ${cmakeCheckFlags} && \
+                  cmake.exe ${WORKSPACE} -G \"Visual Studio 15 2017 Win64\" -DADD_WINDOWS_ENCLAVE_TESTS=ON -DBUILD_ENCLAVES=OFF -DCMAKE_BUILD_TYPE=${build_type} -DLINUX_BIN_DIR=${WORKSPACE}\\linuxbin\\tests -Wdev && \
                   msbuild ALL_BUILD.vcxproj -p:Configuration=${build_type} && \
                   ctest.exe -V -C ${build_type}
                   """
@@ -127,7 +125,7 @@ def win2016CrossCompile(String build_type) {
             dir("build/X64-${build_type}") {
               bat """
                   vcvars64.bat x64 && \
-                  cmake.exe ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DBUILD_ENCLAVES=ON ${cmakeCheckFlags} && \
+                  cmake.exe ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DBUILD_ENCLAVES=ON -Wdev && \
                   ninja.exe && \
                   ctest.exe -V -C ${build_type}
                   """
