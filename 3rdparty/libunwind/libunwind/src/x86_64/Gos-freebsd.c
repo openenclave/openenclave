@@ -33,7 +33,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 #include "ucontext_i.h"
 
-PROTECTED int
+int
 unw_is_signal_frame (unw_cursor_t *cursor)
 {
   /* XXXKIB */
@@ -45,7 +45,7 @@ unw_is_signal_frame (unw_cursor_t *cursor)
   int ret;
 
   as = c->dwarf.as;
-  a = unw_get_accessors (as);
+  a = unw_get_accessors_int (as);
   arg = c->dwarf.as_arg;
 
   /* Check if RIP points at sigreturn sequence.
@@ -87,8 +87,8 @@ eb fd                   jmp     0b
   return (X86_64_SCF_NONE);
 }
 
-PROTECTED int
-unw_handle_signal_frame (unw_cursor_t *cursor)
+HIDDEN int
+x86_64_handle_signal_frame (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
   unw_word_t ucontext;
@@ -191,6 +191,24 @@ x86_64_sigreturn (unw_cursor_t *cursor)
   struct cursor *c = (struct cursor *) cursor;
   ucontext_t *uc = (ucontext_t *)(c->sigcontext_addr +
     offsetof(struct sigframe, sf_uc));
+
+  uc->uc_mcontext.mc_r8 = c->uc->uc_mcontext.mc_r8;
+  uc->uc_mcontext.mc_r9 = c->uc->uc_mcontext.mc_r9;
+  uc->uc_mcontext.mc_r10 = c->uc->uc_mcontext.mc_r10;
+  uc->uc_mcontext.mc_r11 = c->uc->uc_mcontext.mc_r11;
+  uc->uc_mcontext.mc_r12 = c->uc->uc_mcontext.mc_r12;
+  uc->uc_mcontext.mc_r13 = c->uc->uc_mcontext.mc_r13;
+  uc->uc_mcontext.mc_r14 = c->uc->uc_mcontext.mc_r14;
+  uc->uc_mcontext.mc_r15 = c->uc->uc_mcontext.mc_r15;
+  uc->uc_mcontext.mc_rdi = c->uc->uc_mcontext.mc_rdi;
+  uc->uc_mcontext.mc_rsi = c->uc->uc_mcontext.mc_rsi;
+  uc->uc_mcontext.mc_rbp = c->uc->uc_mcontext.mc_rbp;
+  uc->uc_mcontext.mc_rbx = c->uc->uc_mcontext.mc_rbx;
+  uc->uc_mcontext.mc_rdx = c->uc->uc_mcontext.mc_rdx;
+  uc->uc_mcontext.mc_rax = c->uc->uc_mcontext.mc_rax;
+  uc->uc_mcontext.mc_rcx = c->uc->uc_mcontext.mc_rcx;
+  uc->uc_mcontext.mc_rsp = c->uc->uc_mcontext.mc_rsp;
+  uc->uc_mcontext.mc_rip = c->uc->uc_mcontext.mc_rip;
 
   Debug (8, "resuming at ip=%llx via sigreturn(%p)\n",
              (unsigned long long) c->dwarf.ip, uc);

@@ -7,24 +7,27 @@ EXTRA_DIST =	run-ia64-test-dyn1 run-ptrace-mapper run-ptrace-misc	\
 
 MAINTAINERCLEANFILES = Makefile.in
 
+noinst_PROGRAMS_arch =
+noinst_PROGRAMS_cdep =
 noinst_PROGRAMS_common =
+check_PROGRAMS_arch =
+check_PROGRAMS_cdep =
 check_PROGRAMS_common = test-proc-info test-static-link \
 			test-strerror
+check_SCRIPTS_arch =
+check_SCRIPTS_cdep =
 check_SCRIPTS_common =	run-check-namespace
 
 if REMOTE_ONLY
- check_SCRIPTS_cdep =
- check_PROGRAMS_cdep =
- noinst_PROGRAMS_cdep = $(noinst_PROGRAMS_common)
 
 perf:
 
 else
  LIBUNWIND_local = $(top_builddir)/src/libunwind.la
 if ARCH_IA64
- noinst_PROGRAMS_arch = ia64-test-dyn1
- check_SCRIPTS_arch =	run-ia64-test-dyn1
- check_PROGRAMS_arch =	Gia64-test-stack Lia64-test-stack		\
+ noinst_PROGRAMS_arch += ia64-test-dyn1
+ check_SCRIPTS_arch +=	run-ia64-test-dyn1
+ check_PROGRAMS_arch +=	Gia64-test-stack Lia64-test-stack		\
 			Gia64-test-nat Lia64-test-nat			\
 			Gia64-test-rbs Lia64-test-rbs			\
 			Gia64-test-readonly Lia64-test-readonly		\
@@ -32,22 +35,26 @@ if ARCH_IA64
 else #!ARCH_IA64
 if ARCH_PPC64
 if USE_ALTIVEC
- noinst_PROGRAMS_arch = ppc64-test-altivec
+ noinst_PROGRAMS_arch += ppc64-test-altivec
 endif #USE_ALTIVEC
-endif #ARCH_PPC64
+else  #!ARCH_PPC64
+if ARCH_X86_64
+ check_PROGRAMS_arch +=	Gx64-test-dwarf-expressions Lx64-test-dwarf-expressions
+endif #ARCH X86_64
+endif #!ARCH_PPC64
 endif #!ARCH_IA64
- check_SCRIPTS_cdep =
- check_PROGRAMS_cdep =	Gtest-bt Ltest-bt Gtest-exc Ltest-exc		 \
+ check_PROGRAMS_cdep +=	Gtest-bt Ltest-bt Gtest-exc Ltest-exc		 \
 			Gtest-init Ltest-init				 \
 			Gtest-concurrent Ltest-concurrent		 \
 			Gtest-resume-sig Ltest-resume-sig		 \
 			Gtest-resume-sig-rt Ltest-resume-sig-rt		 \
-			Gtest-dyn1 Ltest-dyn1				 \
 			Gtest-trace Ltest-trace				 \
+			Ltest-init-local-signal				 \
+			Ltest-mem-validate				 \
 			test-async-sig test-flush-cache test-init-remote \
-			test-mem Ltest-varargs Ltest-nomalloc	 \
-			Ltest-nocalloc Lrs-race
- noinst_PROGRAMS_cdep = forker Gperf-simple Lperf-simple \
+			test-mem test-reg-state Ltest-varargs		 \
+			Ltest-nomalloc Ltest-nocalloc Lrs-race
+ noinst_PROGRAMS_cdep += forker Gperf-simple Lperf-simple \
 			Gperf-trace Lperf-trace
 
 if BUILD_PTRACE
@@ -96,8 +103,8 @@ check_SCRIPTS =	$(check_SCRIPTS_common) $(check_SCRIPTS_cdep) \
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 XFAIL_TESTS =
 
-if !ARCH_IA64
-XFAIL_TESTS += Gtest-dyn1 Ltest-dyn1
+if ARCH_IA64
+ check_PROGRAMS_cdep += Gtest-dyn1 Ltest-dyn1
 endif
 
 # Use if arch defines but does not support PTRACE_SINGLESTEP
@@ -111,6 +118,13 @@ endif
 if ARCH_ARM
 # ARM Linux kernel >=2.6.39 removed PTRACE_SINGLESTEP emulation
 XFAIL_TESTS += $(XFAIL_TESTS_PTRACE_SINGLESTEP)
+endif
+
+# This is meant for multilib binaries, -m32.
+# ptrace gives EBADREG when testing,
+# but generally everything else works.
+if NO_PTRACE_TEST
+ XFAIL_TESTS += run-ptrace-mapper test-ptrace Ltest-init-local-signal
 endif
 
 noinst_PROGRAMS = $(noinst_PROGRAMS_common) $(noinst_PROGRAMS_cdep) \
@@ -129,9 +143,19 @@ Gia64_test_nat_SOURCES = Gia64-test-nat.c ia64-test-nat-asm.S
 ia64_test_dyn1_SOURCES = ia64-test-dyn1.c ia64-dyn-asm.S flush-cache.S \
 				flush-cache.h
 ppc64_test_altivec_SOURCES = ppc64-test-altivec.c  ppc64-test-altivec-utils.c
+
+
+Gx64_test_dwarf_expressions_SOURCES =  Gx64-test-dwarf-expressions.c \
+																			 x64-test-dwarf-expressions.S
+Lx64_test_dwarf_expressions_SOURCES =  Lx64-test-dwarf-expressions.c \
+																			 x64-test-dwarf-expressions.S
+
+
 Gtest_init_SOURCES = Gtest-init.cxx
 Ltest_init_SOURCES = Ltest-init.cxx
 Ltest_cxx_exceptions_SOURCES = Ltest-cxx-exceptions.cxx
+
+Ltest_init_local_signal_SOURCES = Ltest-init-local-signal.c Ltest-init-local-signal-lib.c
 
 Gtest_dyn1_SOURCES = Gtest-dyn1.c flush-cache.S flush-cache.h
 Ltest_dyn1_SOURCES = Ltest-dyn1.c flush-cache.S flush-cache.h
@@ -145,6 +169,7 @@ Ltest_nomalloc_SOURCES = Ltest-nomalloc.c
 Ltest_nocalloc_SOURCES = Ltest-nocalloc.c
 Gtest_trace_SOURCES = Gtest-trace.c ident.c
 Ltest_trace_SOURCES = Ltest-trace.c ident.c
+Ltest_mem_validate_SOURCES = Ltest-mem-validate.c
 
 LIBUNWIND = $(top_builddir)/src/libunwind-$(arch).la
 LIBUNWIND_ptrace = $(top_builddir)/src/libunwind-ptrace.la
@@ -167,18 +192,20 @@ test_async_sig_LDADD = $(LIBUNWIND_local) -lpthread
 test_flush_cache_LDADD = $(LIBUNWIND_local)
 test_init_remote_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 test_mem_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
+test_reg_state_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 test_ptrace_LDADD = $(LIBUNWIND_ptrace) $(LIBUNWIND)
 test_proc_info_LDADD = $(LIBUNWIND)
 test_static_link_LDADD = $(LIBUNWIND)
 test_strerror_LDADD = $(LIBUNWIND)
 Lrs_race_LDADD = $(LIBUNWIND_local) -lpthread
 Ltest_varargs_LDADD = $(LIBUNWIND_local)
+Ltest_init_local_signal_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 
 Gtest_bt_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_concurrent_LDADD = $(LIBUNWIND) $(LIBUNWIND_local) -lpthread
 Gtest_dyn1_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_exc_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
-Gtest_init_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
+Gtest_init_LDADD = $(LIBUNWIND) $(LIBUNWIND_local) @BACKTRACELIB@
 Gtest_resume_sig_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_resume_sig_rt_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gperf_simple_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
@@ -197,12 +224,13 @@ Ltest_resume_sig_rt_LDADD = $(LIBUNWIND_local)
 Lperf_simple_LDADD = $(LIBUNWIND_local)
 Ltest_trace_LDADD = $(LIBUNWIND_local)
 Lperf_trace_LDADD = $(LIBUNWIND_local)
+Ltest_mem_validate_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 
 test_setjmp_LDADD = $(LIBUNWIND_setjmp)
 ia64_test_setjmp_LDADD = $(LIBUNWIND_setjmp)
 
 if BUILD_COREDUMP
-test_coredump_unwind_LDADD = $(LIBUNWIND_coredump) $(LIBUNWIND)
+test_coredump_unwind_LDADD = $(LIBUNWIND_coredump) $(LIBUNWIND) @BACKTRACELIB@
 endif
 
 Gia64_test_nat_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
@@ -216,3 +244,6 @@ Lia64_test_readonly_LDADD = $(LIBUNWIND_local)
 ia64_test_dyn1_LDADD = $(LIBUNWIND)
 ia64_test_sig_LDADD = $(LIBUNWIND)
 ppc64_test_altivec_LDADD = $(LIBUNWIND)
+
+Gx64_test_dwarf_expressions_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
+Lx64_test_dwarf_expressions_LDADD = $(LIBUNWIND_local)

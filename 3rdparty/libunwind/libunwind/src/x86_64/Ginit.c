@@ -30,22 +30,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <config.h>
 #endif
 
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <sys/syscall.h>
 
 #include "unwind_i.h"
 
 #ifdef UNW_REMOTE_ONLY
 
 /* unw_local_addr_space is a NULL pointer in this case.  */
-PROTECTED unw_addr_space_t unw_local_addr_space;
+unw_addr_space_t unw_local_addr_space;
 
 #else /* !UNW_REMOTE_ONLY */
 
 static struct unw_addr_space local_addr_space;
 
-PROTECTED unw_addr_space_t unw_local_addr_space = &local_addr_space;
+unw_addr_space_t unw_local_addr_space = &local_addr_space;
 
 HIDDEN unw_dyn_info_list_t _U_dyn_info_list;
 
@@ -71,17 +73,74 @@ get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dyn_info_list_addr,
 #define PAGE_SIZE 4096
 #define PAGE_START(a)   ((a) & ~(PAGE_SIZE-1))
 
+static int mem_validate_pipe[2] = {-1, -1};
+
+static inline void
+open_pipe (void)
+{
+  if (mem_validate_pipe[0] != -1)
+    close (mem_validate_pipe[0]);
+  if (mem_validate_pipe[1] != -1)
+    close (mem_validate_pipe[1]);
+
+  pipe2 (mem_validate_pipe, O_CLOEXEC | O_NONBLOCK);
+}
+
+ALWAYS_INLINE
+static int
+write_validate (void *addr)
+{
+  int ret = -1;
+  ssize_t bytes = 0;
+
+  do
+    {
+      char buf;
+      bytes = read (mem_validate_pipe[0], &buf, 1);
+    }
+  while ( errno == EINTR );
+
+  int valid_read = (bytes > 0 || errno == EAGAIN || errno == EWOULDBLOCK);
+  if (!valid_read)
+    {
+      // re-open closed pipe
+      open_pipe ();
+    }
+
+  do
+    {
+      /* use syscall insteadof write() so that ASAN does not complain */
+      ret = syscall (SYS_write, mem_validate_pipe[1], addr, 1);
+    }
+  while ( errno == EINTR );
+
+  return ret;
+}
+
 static int (*mem_validate_func) (void *addr, size_t len);
 static int msync_validate (void *addr, size_t len)
 {
-  return msync (addr, len, MS_ASYNC);
+  if (msync (addr, len, MS_ASYNC) != 0)
+    {
+      return -1;
+    }
+
+  return write_validate (addr);
 }
 
 #ifdef HAVE_MINCORE
 static int mincore_validate (void *addr, size_t len)
 {
   unsigned char mvec[2]; /* Unaligned access may cross page boundary */
-  return mincore (addr, len, mvec);
+
+  /* mincore could fail with EAGAIN but we conservatively return -1
+     instead of looping. */
+  if (mincore (addr, len, mvec) != 0)
+    {
+      return -1;
+    }
+
+  return write_validate (addr);
 }
 #endif
 
@@ -92,9 +151,16 @@ static int mincore_validate (void *addr, size_t len)
 HIDDEN void
 tdep_init_mem_validate (void)
 {
+  open_pipe ();
+
 #ifdef HAVE_MINCORE
   unsigned char present = 1;
-  if (mincore (&present, 1, &present) == 0)
+  unw_word_t addr = PAGE_START((unw_word_t)&present);
+  unsigned char mvec[1];
+  int ret;
+  while ((ret = mincore ((void*)addr, PAGE_SIZE, mvec)) == -1 &&
+         errno == EAGAIN) {}
+  if (ret == 0)
     {
       Debug(1, "using mincore to validate memory\n");
       mem_validate_func = mincore_validate;
@@ -109,13 +175,93 @@ tdep_init_mem_validate (void)
 
 /* Cache of already validated addresses */
 #define NLGA 4
-static unw_word_t last_good_addr[NLGA];
-static int lga_victim;
+#if defined(HAVE___THREAD) && HAVE___THREAD
+// thread-local variant
+static __thread unw_word_t last_good_addr[NLGA];
+static __thread int lga_victim;
+
+static int
+is_cached_valid_mem(unw_word_t addr)
+{
+  int i;
+  for (i = 0; i < NLGA; i++)
+    {
+      if (addr == &last_good_addr[i])
+        return 1;
+    }
+  return 0;
+}
+
+static void
+cache_valid_mem(unw_word_t addr)
+{
+  int i, victim;
+  victim = lga_victim;
+  for (i = 0; i < NLGA; i++) {
+    if (last_good_addr[victim] == 0) {
+      last_good_addr[victim] = addr;
+      return;
+    }
+    victim = (victim + 1) % NLGA;
+  }
+
+  /* All slots full. Evict the victim. */
+  last_good_addr[victim] = addr;
+  victim = (victim + 1) % NLGA;
+  lga_victim = victim;
+}
+
+#elif HAVE_ATOMIC_OPS_H
+// global, thread safe variant
+static AO_T last_good_addr[NLGA];
+static AO_T lga_victim;
+
+static int
+is_cached_valid_mem(unw_word_t addr)
+{
+  int i;
+  for (i = 0; i < NLGA; i++)
+    {
+      if (addr == AO_load(&last_good_addr[i]))
+        return 1;
+    }
+  return 0;
+}
+
+static void
+cache_valid_mem(unw_word_t addr)
+{
+  int i, victim;
+  victim = AO_load(&lga_victim);
+  for (i = 0; i < NLGA; i++) {
+    if (AO_compare_and_swap(&last_good_addr[victim], 0, addr)) {
+      return;
+    }
+    victim = (victim + 1) % NLGA;
+  }
+
+  /* All slots full. Evict the victim. */
+  AO_store(&last_good_addr[victim], addr);
+  victim = (victim + 1) % NLGA;
+  AO_store(&lga_victim, victim);
+}
+#else
+// disabled, no cache
+static int
+is_cached_valid_mem(unw_word_t addr UNUSED)
+{
+  return 0;
+}
+
+static void
+cache_valid_mem(unw_word_t addr UNUSED)
+{
+}
+#endif
 
 static int
 validate_mem (unw_word_t addr)
 {
-  int i, victim;
   size_t len;
 
   if (PAGE_START(addr + sizeof (unw_word_t) - 1) == PAGE_START(addr))
@@ -128,28 +274,13 @@ validate_mem (unw_word_t addr)
   if (addr == 0)
     return -1;
 
-  for (i = 0; i < NLGA; i++)
-    {
-      if (last_good_addr[i] && (addr == last_good_addr[i]))
-        return 0;
-    }
+  if (is_cached_valid_mem(addr))
+    return 0;
 
   if (mem_validate_func ((void *) addr, len) == -1)
     return -1;
 
-  victim = lga_victim;
-  for (i = 0; i < NLGA; i++) {
-    if (!last_good_addr[victim]) {
-      last_good_addr[victim++] = addr;
-      return 0;
-    }
-    victim = (victim + 1) % NLGA;
-  }
-
-  /* All slots full. Evict the victim. */
-  last_good_addr[victim] = addr;
-  victim = (victim + 1) % NLGA;
-  lga_victim = victim;
+  cache_valid_mem(addr);
 
   return 0;
 }
@@ -168,8 +299,10 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
       /* validate address */
       const struct cursor *c = (const struct cursor *)arg;
       if (likely (c != NULL) && unlikely (c->validate)
-          && unlikely (validate_mem (addr)))
+          && unlikely (validate_mem (addr))) {
+        Debug (16, "mem[%016lx] -> invalid\n", addr);
         return -1;
+      }
       *val = *(unw_word_t *) addr;
       Debug (16, "mem[%016lx] -> %lx\n", addr, *val);
     }
@@ -251,7 +384,7 @@ HIDDEN void
 x86_64_local_addr_space_init (void)
 {
   memset (&local_addr_space, 0, sizeof (local_addr_space));
-  local_addr_space.caching_policy = UNW_CACHE_GLOBAL;
+  local_addr_space.caching_policy = UNWI_DEFAULT_CACHING_POLICY;
   local_addr_space.acc.find_proc_info = dwarf_find_proc_info;
   local_addr_space.acc.put_unwind_info = put_unwind_info;
   local_addr_space.acc.get_dyn_info_list_addr = get_dyn_info_list_addr;
@@ -261,9 +394,6 @@ x86_64_local_addr_space_init (void)
   local_addr_space.acc.resume = x86_64_local_resume;
   local_addr_space.acc.get_proc_name = get_static_proc_name;
   unw_flush_cache (&local_addr_space, 0, 0);
-
-  memset (last_good_addr, 0, sizeof (unw_word_t) * NLGA);
-  lga_victim = 0;
 }
 
 #endif /* !UNW_REMOTE_ONLY */

@@ -1,6 +1,12 @@
-include_HEADERS = include/libunwind-dynamic.h \
-    include/libunwind-ptrace.h \
-    include/libunwind-coredump.h
+include_HEADERS = include/libunwind-dynamic.h
+
+if BUILD_PTRACE
+include_HEADERS += include/libunwind-ptrace.h
+endif BUILD_PTRACE
+
+if BUILD_COREDUMP
+include_HEADERS += include/libunwind-coredump.h
+endif BUILD_COREDUMP
 
 if ARCH_AARCH64
 include_HEADERS += include/libunwind-aarch64.h
@@ -35,6 +41,9 @@ endif
 if ARCH_SH
 include_HEADERS += include/libunwind-sh.h
 endif
+if ARCH_S390X
+include_HEADERS += include/libunwind-s390x.h
+endif
 
 if !REMOTE_ONLY
 include_HEADERS += include/libunwind.h include/unwind.h
@@ -42,7 +51,11 @@ endif
 
 nodist_include_HEADERS = include/libunwind-common.h
 
-SUBDIRS = src tests
+SUBDIRS = src
+
+if CONFIG_TESTS
+SUBDIRS += tests
+endif
 
 if CONFIG_DOCS
 SUBDIRS += doc
@@ -74,6 +87,8 @@ noinst_HEADERS = include/dwarf.h include/dwarf_i.h include/dwarf-eh.h	\
 	include/tdep-ppc64/jmpbuf.h include/tdep-ppc64/libunwind_i.h	\
 	include/tdep-sh/dwarf-config.h					\
 	include/tdep-sh/jmpbuf.h include/tdep-sh/libunwind_i.h		\
+	include/tdep-s390x/dwarf-config.h				\
+	include/tdep-s390x/jmpbuf.h include/tdep-s390x/libunwind_i.h	\
 	include/tdep/libunwind_i.h					\
 	include/tdep/jmpbuf.h include/tdep/dwarf-config.h
 

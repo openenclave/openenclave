@@ -484,6 +484,7 @@ const int _UPT_reg_offset[UNW_REG_LAST + 1] =
 #endif
 
 #elif defined(UNW_TARGET_ARM)
+#if defined(__linux__) || defined(__FreeBSD__)
     [UNW_ARM_R0]       = 0x00,
     [UNW_ARM_R1]       = 0x04,
     [UNW_ARM_R2]       = 0x08,
@@ -500,7 +501,43 @@ const int _UPT_reg_offset[UNW_REG_LAST + 1] =
     [UNW_ARM_R13]      = 0x34,
     [UNW_ARM_R14]      = 0x38,
     [UNW_ARM_R15]      = 0x3c,
+#else
+#error Fix me
+#endif
 #elif defined(UNW_TARGET_MIPS)
+    [UNW_MIPS_R0]  =  0,
+    [UNW_MIPS_R1]  =  1,
+    [UNW_MIPS_R2]  =  2,
+    [UNW_MIPS_R3]  =  3,
+    [UNW_MIPS_R4]  =  4,
+    [UNW_MIPS_R5]  =  5,
+    [UNW_MIPS_R6]  =  6,
+    [UNW_MIPS_R7]  =  7,
+    [UNW_MIPS_R8]  =  8,
+    [UNW_MIPS_R9]  =  9,
+    [UNW_MIPS_R10] = 10,
+    [UNW_MIPS_R11] = 11,
+    [UNW_MIPS_R12] = 12,
+    [UNW_MIPS_R13] = 13,
+    [UNW_MIPS_R14] = 14,
+    [UNW_MIPS_R15] = 15,
+    [UNW_MIPS_R16] = 16,
+    [UNW_MIPS_R17] = 17,
+    [UNW_MIPS_R18] = 18,
+    [UNW_MIPS_R19] = 19,
+    [UNW_MIPS_R20] = 20,
+    [UNW_MIPS_R21] = 21,
+    [UNW_MIPS_R22] = 22,
+    [UNW_MIPS_R23] = 23,
+    [UNW_MIPS_R24] = 24,
+    [UNW_MIPS_R25] = 25,
+    [UNW_MIPS_R26] = 26,
+    [UNW_MIPS_R27] = 27,
+    [UNW_MIPS_R28] = 28,
+    [UNW_MIPS_R29] = 29,
+    [UNW_MIPS_R30] = 30,
+    [UNW_MIPS_R31] = 31,
+    [UNW_MIPS_PC]  = 64,
 #elif defined(UNW_TARGET_SH)
 #elif defined(UNW_TARGET_AARCH64)
     [UNW_AARCH64_X0]       = 0x00,
@@ -595,6 +632,40 @@ const int _UPT_reg_offset[UNW_REG_LAST + 1] =
     [UNW_TILEGX_R54]    = 0x1b0,
     [UNW_TILEGX_R55]    = 0x1b8,
     [UNW_TILEGX_PC]     = 0x1a0
+#elif defined(UNW_TARGET_S390X)
+    [UNW_S390X_R0]      = 0x10,
+    [UNW_S390X_R1]      = 0x18,
+    [UNW_S390X_R2]      = 0x20,
+    [UNW_S390X_R3]      = 0x28,
+    [UNW_S390X_R4]      = 0x30,
+    [UNW_S390X_R5]      = 0x38,
+    [UNW_S390X_R6]      = 0x40,
+    [UNW_S390X_R7]      = 0x48,
+    [UNW_S390X_R8]      = 0x50,
+    [UNW_S390X_R9]      = 0x58,
+    [UNW_S390X_R10]     = 0x60,
+    [UNW_S390X_R11]     = 0x68,
+    [UNW_S390X_R12]     = 0x70,
+    [UNW_S390X_R13]     = 0x78,
+    [UNW_S390X_R14]     = 0x80,
+    [UNW_S390X_R15]     = 0x88,
+    [UNW_S390X_F0]      = 0xe0,
+    [UNW_S390X_F1]      = 0xe8,
+    [UNW_S390X_F2]      = 0xf0,
+    [UNW_S390X_F3]      = 0xf8,
+    [UNW_S390X_F4]      = 0x100,
+    [UNW_S390X_F5]      = 0x108,
+    [UNW_S390X_F6]      = 0x110,
+    [UNW_S390X_F7]      = 0x118,
+    [UNW_S390X_F8]      = 0x120,
+    [UNW_S390X_F9]      = 0x128,
+    [UNW_S390X_F10]     = 0x130,
+    [UNW_S390X_F11]     = 0x138,
+    [UNW_S390X_F12]     = 0x140,
+    [UNW_S390X_F13]     = 0x148,
+    [UNW_S390X_F14]     = 0x150,
+    [UNW_S390X_F15]     = 0x150,
+    [UNW_S390X_IP]      = 0x08
 #else
 # error Fix me.
 #endif

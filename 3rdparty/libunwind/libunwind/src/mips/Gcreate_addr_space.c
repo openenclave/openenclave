@@ -26,7 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind_i.h"
 
-PROTECTED unw_addr_space_t
+unw_addr_space_t
 unw_create_addr_space (unw_accessors_t *a, int byte_order)
 {
 #ifdef UNW_LOCAL_ONLY
@@ -58,7 +58,15 @@ unw_create_addr_space (unw_accessors_t *a, int byte_order)
     as->big_endian = (byte_order == __BIG_ENDIAN);
 
   /* FIXME!  There is no way to specify the ABI.  */
+#if _MIPS_SIM == _ABIO32
   as->abi = UNW_MIPS_ABI_O32;
+#elif _MIPS_SIM == _ABIN32
+  as->abi = UNW_MIPS_ABI_N32;
+#elif _MIPS_SIM == _ABI64
+  as->abi = UNW_MIPS_ABI_N64;
+#else
+# error Unsupported ABI
+#endif
   as->addr_size = 4;
 
   return as;

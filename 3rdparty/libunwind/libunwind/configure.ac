@@ -1,6 +1,6 @@
 define(pkg_major, 1)
-define(pkg_minor, 1)
-define(pkg_extra, )
+define(pkg_minor, 4)
+define(pkg_extra, -rc1)
 define(pkg_maintainer, libunwind-devel@nongnu.org)
 define(mkvers, $1.$2$3)
 dnl Process this file with autoconf to produce a configure script.
@@ -17,6 +17,7 @@ AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
+m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 LT_INIT
 AM_PROG_AS
 AM_PROG_CC_C_O
@@ -55,7 +56,7 @@ AC_CHECK_TYPES([struct elf_prstatus, struct prstatus], [], [],
 #endif
 ])
 
-AC_CHECK_DECLS([PTRACE_POKEUSER, PTRACE_POKEDATA,
+AC_CHECK_DECLS([PTRACE_POKEUSER, PTRACE_POKEDATA, PTRACE_SETREGSET,
 PTRACE_TRACEME, PTRACE_CONT, PTRACE_SINGLESTEP,
 PTRACE_SYSCALL, PT_IO, PT_GETREGS,
 PT_GETFPREGS, PT_CONTINUE, PT_TRACE_ME,
@@ -104,6 +105,19 @@ SET_ARCH([$build_cpu],[build_arch])
 SET_ARCH([$host_cpu],[host_arch])
 SET_ARCH([$target_cpu],[target_arch])
 
+# Check for Android
+AC_MSG_CHECKING([for Android])
+android="no"
+case "$host_os" in
+  *android*)
+    android="yes"
+    AC_MSG_RESULT([yes])
+    ;;
+  *)
+    AC_MSG_RESULT([no])
+    ;;
+esac
+
 AC_ARG_ENABLE(coredump,
 	AS_HELP_STRING([--enable-coredump],[building libunwind-coredump library]),,
         [AS_CASE([$host_arch], [aarch64*|arm*|mips*|sh*|x86*|tile*], [enable_coredump=yes], [enable_coredump=no])]
@@ -129,6 +143,10 @@ AC_ARG_ENABLE(documentation,
 	AS_HELP_STRING([--disable-documentation],[Disable generating the man pages]),,
 	[enable_documentation=yes])
 
+AC_ARG_ENABLE(tests,
+ AS_HELP_STRING([--disable-tests],[Disable tests build]),,
+ [enable_tests=yes])
+
 AC_MSG_CHECKING([if we should build libunwind-setjmp])
 AC_MSG_RESULT([$enable_setjmp])
 
@@ -144,6 +162,7 @@ AC_MSG_RESULT([$target_os])
 AM_CONDITIONAL(BUILD_COREDUMP, test x$enable_coredump = xyes)
 AM_CONDITIONAL(BUILD_PTRACE, test x$enable_ptrace = xyes)
 AM_CONDITIONAL(BUILD_SETJMP, test x$enable_setjmp = xyes)
+AM_CONDITIONAL(NO_PTRACE_TEST, test x$build_arch != x$host_arch)
 AM_CONDITIONAL(REMOTE_ONLY, test x$target_arch != x$host_arch)
 AM_CONDITIONAL(ARCH_AARCH64, test x$target_arch = xaarch64)
 AM_CONDITIONAL(ARCH_ARM, test x$target_arch = xarm)
@@ -156,6 +175,7 @@ AM_CONDITIONAL(ARCH_PPC32, test x$target_arch = xppc32)
 AM_CONDITIONAL(ARCH_PPC64, test x$target_arch = xppc64)
 AM_CONDITIONAL(ARCH_SH, test x$target_arch = xsh)
 AM_CONDITIONAL(ARCH_TILEGX, test x$target_arch = xtilegx)
+AM_CONDITIONAL(ARCH_S390X, test x$target_arch = xs390x)
 AM_CONDITIONAL(OS_LINUX, expr x$target_os : xlinux >/dev/null)
 AM_CONDITIONAL(OS_HPUX, expr x$target_os : xhpux >/dev/null)
 AM_CONDITIONAL(OS_FREEBSD, expr x$target_os : xfreebsd >/dev/null)
@@ -164,7 +184,7 @@ AM_CONDITIONAL(OS_QNX, expr x$target_os : xnto-qnx >/dev/null)
 AC_MSG_CHECKING([for ELF helper width])
 case "${target_arch}" in
 (arm|hppa|ppc32|x86|sh) use_elf32=yes; AC_MSG_RESULT([32]);;
-(aarch64|ia64|ppc64|x86_64|tilegx)  use_elf64=yes; AC_MSG_RESULT([64]);;
+(aarch64|ia64|ppc64|x86_64|s390x|tilegx)  use_elf64=yes; AC_MSG_RESULT([64]);;
 (mips)                 use_elfxx=yes; AC_MSG_RESULT([xx]);;
 *)                     AC_MSG_ERROR([Unknown ELF target: ${target_arch}])
 esac
@@ -229,6 +249,7 @@ AC_ARG_ENABLE(debug_frame,
 AS_HELP_STRING([--enable-debug-frame],[Load the ".debug_frame" section if available]),, [
 case "${target_arch}" in
   (arm) enable_debug_frame=yes;;
+  (aarch64) enable_debug_frame=yes;;
   (*)   enable_debug_frame=no;;
 esac])
 if test x$enable_debug_frame = xyes; then
@@ -280,7 +301,16 @@ fi
 AC_SUBST([LIBLZMA])
 AM_CONDITIONAL(HAVE_LZMA, test x$enable_minidebuginfo = xyes)
 
-LIBUNWIND___THREAD
+AC_MSG_CHECKING([whether to support UNW_CACHE_PER_THREAD])
+AC_ARG_ENABLE([per-thread-cache],
+AS_HELP_STRING([--enable-per-thread-cache], [build with support for UNW_CACHE_PER_THREAD (which imposes a hight TLS memory usage) (default: disabled)]))
+AC_MSG_RESULT([$enable_per_thread_cache])
+AS_IF([test x$enable_per_thread_cache = xyes], [
+  LIBUNWIND___THREAD
+  AS_IF([test x$libc_cv_gcc___thread = xno], [
+    AC_MSG_FAILURE([UNW_CACHE_PER_THREAD requires __thread])
+  ])
+])
 
 AC_MSG_CHECKING([for Intel compiler])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[#ifndef __INTEL_COMPILER
@@ -314,7 +344,7 @@ else
     LDFLAGS_NOSTARTFILES="-XCClinker -nostartfiles"
 fi
 
-if test x$GCC = xyes -a x$intel_compiler != xyes -a x$qcc_compiler != xyes; then
+if test x$GCC = xyes -a x$intel_compiler != xyes -a x$qcc_compiler != xyes -a x$android != xyes; then
   LIBCRTS="-lgcc_s"
 fi
 
@@ -369,6 +399,11 @@ old_LIBS="$LIBS"
 LIBS=""
 AC_SEARCH_LIBS(backtrace, execinfo)
 LIBS="$old_LIBS"
+case "$ac_cv_search_backtrace" in
+  -l*) BACKTRACELIB=$ac_cv_search_backtrace;;
+  *) BACKTRACELIB="";;
+esac
+
 
 AC_SUBST(build_arch)
 AC_SUBST(target_os)
@@ -384,6 +419,7 @@ AC_SUBST(PKG_MAINTAINER)
 AC_SUBST(enable_cxx_exceptions)
 AC_SUBST(enable_debug_frame)
 AC_SUBST(DLLIB)
+AC_SUBST(BACKTRACELIB)
 
 AC_PATH_PROG([LATEX2MAN],[latex2man])
 if test "x$LATEX2MAN" = "x"; then
@@ -396,8 +432,13 @@ if test "x$enable_documentation" = "xyes"; then
   AC_CONFIG_FILES(doc/Makefile doc/common.tex)
 fi
 
-AC_CONFIG_FILES(Makefile src/Makefile tests/Makefile tests/check-namespace.sh
-		include/libunwind-common.h
+AM_CONDITIONAL([CONFIG_TESTS], [test x$enable_tests = xyes])
+if test "x$enable_tests" = "xyes"; then
+  AC_CONFIG_FILES(tests/Makefile tests/check-namespace.sh)
+fi
+
+AC_CONFIG_FILES(Makefile src/Makefile
+                include/libunwind-common.h
                 include/libunwind.h include/tdep/libunwind_i.h)
 AC_CONFIG_FILES(src/unwind/libunwind.pc src/coredump/libunwind-coredump.pc
                 src/ptrace/libunwind-ptrace.pc src/setjmp/libunwind-setjmp.pc

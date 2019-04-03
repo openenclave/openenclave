@@ -1,6 +1,6 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (c) 2003-2005 Hewlett-Packard Development Company, L.P.
-        Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+
+        Contributed by Max Asbock <masbock@us.ibm.com>
 
 This file is part of libunwind.
 
@@ -23,19 +23,35 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#include "dwarf.h"
-#include "libunwind_i.h"
+#include "unwind_i.h"
 
-HIDDEN int
-dwarf_step (struct dwarf_cursor *c)
+static const char *regname[] =
+  {
+    [UNW_S390X_R0]="R0",
+    [UNW_S390X_R1]="R1",
+    [UNW_S390X_R2]="R2",
+    [UNW_S390X_R3]="R3",
+    [UNW_S390X_R4]="R4",
+    [UNW_S390X_R5]="R5",
+    [UNW_S390X_R6]="R6",
+    [UNW_S390X_R7]="R7",
+    [UNW_S390X_R8]="R8",
+    [UNW_S390X_R9]="R9",
+    [UNW_S390X_R10]="R10",
+    [UNW_S390X_R11]="R11",
+    [UNW_S390X_R12]="R12",
+    [UNW_S390X_R13]="R13",
+    [UNW_S390X_R14]="R14",
+    [UNW_S390X_R15]="R15",
+
+    [UNW_S390X_IP]="IP"
+   };
+
+const char *
+unw_regname (unw_regnum_t reg)
 {
-  int ret;
-
-  if ((ret = dwarf_find_save_locs (c)) >= 0) {
-    c->pi_valid = 0;
-    ret = 1;
-  }
-
-  Debug (15, "returning %d\n", ret);
-  return ret;
+  if (reg < (unw_regnum_t) ARRAY_SIZE (regname))
+    return regname[reg];
+  else
+    return "???";
 }

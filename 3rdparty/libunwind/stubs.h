@@ -48,6 +48,8 @@
 #pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
 
+#define __sigset_t sigset_t
+
 static __inline void __libunwind_setbuf(FILE* stream, char* buf)
 {
 }
@@ -90,7 +92,6 @@ static __inline void* __libunwind_mmap(
     int fd,
     off_t offset)
 {
-    void* dlmemalign(size_t alignment, size_t size);
     void* result = MAP_FAILED;
 
     if (addr || fd != -1 || offset)
@@ -102,7 +103,7 @@ static __inline void* __libunwind_mmap(
     if (flags != (MAP_PRIVATE | MAP_ANONYMOUS))
         goto done;
 
-    result = dlmemalign(4096, length);
+    result = memalign(4096, length);
 
 done:
 
@@ -112,13 +113,11 @@ done:
 
 static __inline int __libunwind_munmap(void* addr, size_t length)
 {
-    extern void dlfree(void *ptr);
-
     if (!addr)
         return -1;
 
     if (length)
-        dlfree(addr);
+        free(addr);
 
     return 0;
 }

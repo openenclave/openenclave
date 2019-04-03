@@ -74,11 +74,19 @@ handler (int sig)
 #endif
 {
   unw_word_t ip;
-  sigset_t mask, oldmask;
+  sigset_t mask;
   unw_context_t uc;
   unw_cursor_t c;
   char foo;
   int ret;
+  // The test rely on SIGUSR2 mask to be cleared when the handler returns.
+  // For local context from the signal handler, there doesn't seem to be a way
+  // currently to set it so just clear the whole struct to make sure the signal mask is cleared.
+  // This should probably be fixed to avoid signal mask being set to random values
+  // by `unw_resume` if the context was not pre-zeroed.,
+  // Using the signal ucontext direction should also work automatically but currently doesn't
+  // on ARM/AArch64 (or any other archs that doesn't have a proper sigreturn implementation)
+  memset(&uc, 0x0, sizeof(uc));
 
 #if UNW_TARGET_IA64
   if (verbose)
@@ -95,17 +103,13 @@ handler (int sig)
 
       sigemptyset (&mask);
       sigaddset (&mask, SIGUSR2);
-      sigprocmask (SIG_BLOCK, &mask, &oldmask);
+      sigprocmask (SIG_BLOCK, &mask, NULL);
       kill (getpid (), SIGUSR2);	/* pend SIGUSR2 */
 
       signal (SIGUSR1, SIG_IGN);
 
       if ((ret = unw_getcontext (&uc)) < 0)
 	panic ("unw_getcontext() failed: ret=%d\n", ret);
-#if UNW_TARGET_X86_64
-      /* unw_getcontext() doesn't save signal mask to avoid a syscall */
-      uc.uc_sigmask = oldmask; 
-#endif
       if ((ret = unw_init_local (&c, &uc)) < 0)
 	panic ("unw_init_local() failed: ret=%d\n", ret);
 

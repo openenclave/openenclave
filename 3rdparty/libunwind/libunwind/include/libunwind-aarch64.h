@@ -44,9 +44,13 @@ extern "C" {
    leaving some slack for future expansion.  Changing this value will
    require recompiling all users of this library.  Stack allocation is
    relatively cheap and unwind-state copying is relatively rare, so we
-   want to err on making it rather too big than too small.  */
+   want to err on making it rather too big than too small.
 
-#define UNW_TDEP_CURSOR_LEN     4096
+   Calculation is regs used (64 + 34) * 2 + 40 (bytes of rest of
+   cursor) + padding
+*/
+
+#define UNW_TDEP_CURSOR_LEN     250
 
 typedef uint64_t unw_word_t;
 typedef int64_t unw_sword_t;
@@ -169,14 +173,68 @@ typedef struct unw_tdep_save_loc
 unw_tdep_save_loc_t;
 
 
-/* On AArch64, we can directly use ucontext_t as the unwind context.  */
-typedef ucontext_t unw_tdep_context_t;
+/* On AArch64, we can directly use ucontext_t as the unwind context,
+ * however, the __reserved struct is quite large: tune it down to only
+ * the necessary used fields.  */
+
+struct unw_sigcontext
+  {
+	uint64_t fault_address;
+	uint64_t regs[31];
+	uint64_t sp;
+	uint64_t pc;
+	uint64_t pstate;
+	uint8_t __reserved[(34 * 8)] __attribute__((__aligned__(16)));
+};
+
+typedef struct
+  {
+	unsigned long uc_flags;
+	struct ucontext *uc_link;
+	stack_t uc_stack;
+	__sigset_t uc_sigmask;
+	struct unw_sigcontext uc_mcontext;
+  } unw_tdep_context_t;
+
+typedef struct
+  {
+	uint32_t _ctx_magic;
+	uint32_t _ctx_size;
+	uint32_t fpsr;
+	uint32_t fpcr;
+	uint64_t vregs[64];
+  } unw_fpsimd_context_t;
+
+
 
 #include "libunwind-common.h"
 #include "libunwind-dynamic.h"
 
-#define unw_tdep_getcontext(uc)         (getcontext (uc), 0)
-#define unw_tdep_is_fpreg               UNW_ARCH_OBJ(is_fpreg)
+#define unw_tdep_getcontext(uc) (({					\
+  unw_tdep_context_t *unw_ctx = (uc);					\
+  register uint64_t *unw_base __asm__ ("x0") = (uint64_t*) unw_ctx->uc_mcontext.regs;		\
+  __asm__ __volatile__ (						\
+     "stp x0, x1, [%[base], #0]\n" \
+     "stp x2, x3, [%[base], #16]\n" \
+     "stp x4, x5, [%[base], #32]\n" \
+     "stp x6, x7, [%[base], #48]\n" \
+     "stp x8, x9, [%[base], #64]\n" \
+     "stp x10, x11, [%[base], #80]\n" \
+     "stp x12, x13, [%[base], #96]\n" \
+     "stp x14, x13, [%[base], #112]\n" \
+     "stp x16, x17, [%[base], #128]\n" \
+     "stp x18, x19, [%[base], #144]\n" \
+     "stp x20, x21, [%[base], #160]\n" \
+     "stp x22, x23, [%[base], #176]\n" \
+     "stp x24, x25, [%[base], #192]\n" \
+     "stp x26, x27, [%[base], #208]\n" \
+     "stp x28, x29, [%[base], #224]\n" \
+     "str x30, [%[base], #240]\n" \
+     "mov x1, sp\n" \
+     "stp x1, x30, [%[base], #248]\n" \
+     : [base] "+r" (unw_base) : : "x1", "memory"); \
+  }), 0)
+#define unw_tdep_is_fpreg		UNW_ARCH_OBJ(is_fpreg)
 
 extern int unw_tdep_is_fpreg (int);
 

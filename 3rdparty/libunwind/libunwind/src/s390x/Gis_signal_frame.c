@@ -1,6 +1,9 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2008 CodeSourcery
-   Copyright 2011 Linaro Limited
+   Copyright (C) 2012 Tommi Rantala <tt.rantala@gmail.com>
+   Copyright (C) 2013 Linaro Limited
+   Copyright (C) 2017 IBM
+
+   Modified for s390x by Michael Munday <mike.munday@ibm.com>
 
 This file is part of libunwind.
 
@@ -23,32 +26,14 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#include <stdio.h>
 #include "unwind_i.h"
 
-#ifdef __linux__
-#define ARM_NR_sigreturn 119
-#define ARM_NR_rt_sigreturn 173
-#define ARM_NR_OABI_SYSCALL_BASE 0x900000
+/* The restorer stub will be a system call:
+   - rt_sigreturn: svc 173 (0x0aad)
+   - sigreturn:    svc 119 (0x0a77)
+*/
 
-/* ARM EABI sigreturn (the syscall number is loaded into r7) */
-#define MOV_R7_SIGRETURN (0xe3a07000UL | ARM_NR_sigreturn)
-#define MOV_R7_RT_SIGRETURN (0xe3a07000UL | ARM_NR_rt_sigreturn)
-
-/* ARM OABI sigreturn (using SWI) */
-#define ARM_SIGRETURN \
-  (0xef000000UL | ARM_NR_sigreturn | ARM_NR_OABI_SYSCALL_BASE)
-#define ARM_RT_SIGRETURN \
-  (0xef000000UL | ARM_NR_rt_sigreturn | ARM_NR_OABI_SYSCALL_BASE)
-
-/* Thumb sigreturn (two insns, syscall number is loaded into r7) */
-#define THUMB_SIGRETURN (0xdf00UL << 16 | 0x2700 | ARM_NR_sigreturn)
-#define THUMB_RT_SIGRETURN (0xdf00UL << 16 | 0x2700 | ARM_NR_rt_sigreturn)
-#endif /* __linux__ */
-
-/* Returns 1 in case of a non-RT signal frame and 2 in case of a RT signal
-   frame. */
-PROTECTED int
+int
 unw_is_signal_frame (unw_cursor_t *cursor)
 {
 #ifdef __linux__
@@ -57,31 +42,36 @@ unw_is_signal_frame (unw_cursor_t *cursor)
   unw_addr_space_t as;
   unw_accessors_t *a;
   void *arg;
-  int ret;
+  int ret, shift = 48;
 
   as = c->dwarf.as;
   a = unw_get_accessors (as);
   arg = c->dwarf.as_arg;
 
-  ip = c->dwarf.ip;
+  /* Align the instruction pointer to 8 bytes so that we guarantee
+     an 8 byte read from it won't cross a page boundary.
+     Instructions on s390x are 2 byte aligned.  */
+  ip = c->dwarf.ip & ~7;
+  shift -= (c->dwarf.ip - ip) * 8;
 
-  if ((ret = (*a->access_mem) (as, ip, &w0, 0, arg)) < 0)
+  ret = (*a->access_mem) (as, ip, &w0, 0, arg);
+  if (ret < 0)
     return ret;
 
-  /* Return 1 if the IP points to a non-RT sigreturn sequence.  */
-  if (w0 == MOV_R7_SIGRETURN || w0 == ARM_SIGRETURN || w0 == THUMB_SIGRETURN)
+  /* extract first 2 bytes of the next instruction */
+  w0 = (w0 >> shift) & 0xffff;
+
+  /* sigreturn */
+  if (w0 == 0x0a77)
     return 1;
-  /* Return 2 if the IP points to a RT sigreturn sequence.  */
-  else if (w0 == MOV_R7_RT_SIGRETURN || w0 == ARM_RT_SIGRETURN
-           || w0 == THUMB_RT_SIGRETURN)
+
+  /* rt_sigreturn */
+  if (w0 == 0x0aad)
     return 2;
 
   return 0;
-#elif defined(__QNX__)
-  /* Not supported yet */
-  return 0;
+
 #else
-  printf ("%s: implement me\n", __FUNCTION__);
   return -UNW_ENOINFO;
 #endif
 }

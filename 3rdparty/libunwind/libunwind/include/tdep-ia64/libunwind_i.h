@@ -226,11 +226,12 @@ struct ia64_global_unwind_state
 #define tdep_find_proc_info             UNW_OBJ(find_proc_info)
 #define tdep_uc_addr                    UNW_OBJ(uc_addr)
 #define tdep_get_elf_image              UNW_ARCH_OBJ(get_elf_image)
+#define tdep_get_exe_image_path         UNW_ARCH_OBJ(get_exe_image_path)
 #define tdep_access_reg                 UNW_OBJ(access_reg)
 #define tdep_access_fpreg               UNW_OBJ(access_fpreg)
 #define tdep_fetch_frame(c,ip,n)        do {} while(0)
-#define tdep_cache_frame(c,rs)          do {} while(0)
-#define tdep_reuse_frame(c,rs)          do {} while(0)
+#define tdep_cache_frame(c)             0
+#define tdep_reuse_frame(c,frame)       do {} while(0)
 #define tdep_stash_frame(c,rs)          do {} while(0)
 #define tdep_trace(cur,addr,n)          (-UNW_ENOINFO)
 #define tdep_get_as(c)                  ((c)->as)
@@ -245,7 +246,7 @@ struct ia64_global_unwind_state
 /* This can't be an UNW_ARCH_OBJ() because we need separate
    unw.initialized flags for the local-only and generic versions of
    the library.  Also, if we wanted to have a single, shared global
-   data structure, we couldn't declare "unw" as HIDDEN/PROTECTED.  */
+   data structure, we couldn't declare "unw" as HIDDEN.  */
 #define unw                             UNW_OBJ(data)
 
 extern void tdep_init (void);
@@ -263,6 +264,7 @@ extern void *tdep_uc_addr (ucontext_t *uc, unw_regnum_t regnum,
 extern int tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
                                unsigned long *segbase, unsigned long *mapoff,
                                char *path, size_t pathlen);
+extern void tdep_get_exe_image_path (char *path);
 extern int tdep_access_reg (struct cursor *c, unw_regnum_t reg,
                             unw_word_t *valp, int write);
 extern int tdep_access_fpreg (struct cursor *c, unw_regnum_t reg,
