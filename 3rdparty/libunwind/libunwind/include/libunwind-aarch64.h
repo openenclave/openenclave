@@ -231,8 +231,9 @@ typedef struct
      "stp x28, x29, [%[base], #224]\n" \
      "str x30, [%[base], #240]\n" \
      "mov x1, sp\n" \
-     "stp x1, x30, [%[base], #248]\n" \
-     : [base] "+r" (unw_base) : : "x1", "memory"); \
+     "adr x2, .\n" \
+     "stp x1, x2, [%[base], #248]\n" \
+     : [base] "+r" (unw_base) : : "x1", "x2", "memory"); \
   }), 0)
 #define unw_tdep_is_fpreg		UNW_ARCH_OBJ(is_fpreg)
 
