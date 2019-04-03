@@ -15,5 +15,3 @@ the following directories:
 - [libunwind](libunwind) - C++ exception unwinding library (used in oelibcxx)
 
 - [mbedtls](mbedtls) - Crypto library
-
-- [openssl](openssl) - Crypto library
