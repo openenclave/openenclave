@@ -21,9 +21,9 @@ String hostsList(String label, String region) {
     return result
 }
 
-def ACCDeployVM(String agent_name, String agent_type, String region, String resource_group) {
+def ACCDeployVM(String agent_name, String agent_type, String region, String resource_group, String vhd_url) {
     stage("Deploy ${agent_name}") {
-        withEnv(["REGION=${region}", "RESOURCE_GROUP=${resource_group}", "AGENT_NAME=${agent_name}", "AGENT_TYPE=${agent_type}"]) {
+        withEnv(["REGION=${region}", "RESOURCE_GROUP=${resource_group}", "AGENT_NAME=${agent_name}", "AGENT_TYPE=${agent_type}", "VHD_URL=${vhd_url}"]) {
             oe.azureEnvironment("./deploy-agent.sh")
         }
     }
@@ -74,8 +74,8 @@ def ACClibcxxTest(String label, String compiler, String build_type) {
 
 try {
     for (int i = 1 ; i <= AGENT_NUM ; i++ ) {
-        parallel "Deploy Ubuntu 16.04 #${i}" :  { ACCDeployVM("${XENIAL_LABEL}-${i}".toLowerCase(), "xenial" , "eastus", XENIAL_RG) },
-                 "Deploy Ubuntu 18.04 #${i}" :  { ACCDeployVM("${BIONIC_LABEL}-${i}".toLowerCase(), "bionic", "westeurope", BIONIC_RG) }
+        parallel "Deploy Ubuntu 16.04 #${i}" :  { ACCDeployVM("${XENIAL_LABEL}-${i}".toLowerCase(), "xenial" , "eastus", XENIAL_RG, "${VHD_URL_XENIAL}") },
+                 "Deploy Ubuntu 18.04 #${i}" :  { ACCDeployVM("${BIONIC_LABEL}-${i}".toLowerCase(), "bionic", "westeurope", BIONIC_RG, "${VHD_URL_BIONIC}") }
     }
 
     registerJenkinsSlaves()

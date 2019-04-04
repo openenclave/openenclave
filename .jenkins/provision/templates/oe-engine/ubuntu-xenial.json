@@ -23,7 +23,7 @@
         }
       ],
       "osImage": {
-        "url": "https://oejenkins.blob.core.windows.net/disks/jenkins-agent-1604-base-disk.vhd"
+        "url": "${VHD_URL}"
       }
     },
     "diagnosticsProfile": {
