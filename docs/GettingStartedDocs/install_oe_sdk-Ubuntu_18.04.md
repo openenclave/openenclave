@@ -22,7 +22,7 @@ wget -qO - https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add 
 ### 2. Install the Intel SGX DCAP Driver
 ```bash
 sudo apt -y install dkms
-wget https://download.01.org/intel-sgx/dcap-1.0.1/dcap_installer/ubuntuServer1804/sgx_linux_x64_driver_dcap_4f32b98.bin -O sgx_linux_x64_driver.bin
+wget https://download.01.org/intel-sgx/dcap-1.1/linux/dcap_installers/ubuntuServer18.04/sgx_linux_x64_driver_dcap_3c2bd37.bin -O sgx_linux_x64_driver.bin
 chmod +x sgx_linux_x64_driver.bin
 sudo ./sgx_linux_x64_driver.bin
 ```
