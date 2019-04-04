@@ -134,6 +134,13 @@ def win2016CrossCompile(String build_type) {
     }
 }
 
+
+properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '90',
+                                      artifactNumToKeepStr: '180',
+                                      daysToKeepStr: '90',
+                                      numToKeepStr: '180')),
+            [$class: 'JobRestrictionProperty']])
+
 parallel "Check Developer Experience Ubuntu 16.04" :            { checkDevFlows('16.04') },
          "Check Developer Experience Ubuntu 18.04" :            { checkDevFlows('18.04') },
          "Check CI" :                                           { checkCI() },
