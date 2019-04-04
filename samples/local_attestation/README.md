@@ -226,12 +226,24 @@ See [here](https://github.com/Microsoft/openenclave/tree/master/docs/MbedtlsSupp
 
 ## Build and run
 
-To build the sample, change into the local_attestation directory and run `make build` to build the sample and run `make run` to run it.
+Note that there are two different build systems supported, one using GNU Make and
+`pkg-config`, the other using CMake.
 
-For example:
+### CMake
+
+This uses the CMake package provided by the Open Enclave SDK.
 
 ```bash
-yourusername@yourVMname:~/openenclave/share/openenclave/samples$ cd local_attestation
-yourusername@yourVMname:~/openenclave/share/openenclave/samples/local_attestation$ make build
-yourusername@yourVMname:~/openenclave/share/openenclave/samples/local_attestation$ make run
+cd local_attestation
+mkdir build && cd build
+cmake ..
+make run
+```
+
+### GNU Make
+
+```bash
+cd local_attestation
+make build
+make run
 ```
