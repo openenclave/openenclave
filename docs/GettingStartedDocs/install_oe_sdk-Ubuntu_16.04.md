@@ -21,6 +21,7 @@ wget -qO - https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add 
 
 ### 2. Install the Intel SGX DCAP Driver
 ```bash
+sudo apt update
 sudo apt -y install dkms
 wget https://download.01.org/intel-sgx/dcap-1.1/linux/dcap_installers/ubuntuServer16.04/sgx_linux_x64_driver_dcap_3c2bd37.bin -O sgx_linux_x64_driver.bin
 chmod +x sgx_linux_x64_driver.bin
@@ -31,7 +32,6 @@ Note: This may not be the latest Intel SGX DCAP driver. Please check with [Intel
 
 ### 3. Install the Intel and Open Enclave packages and dependencies
 ```bash
-sudo apt update
 sudo apt -y install clang-7 libssl-dev gdb libsgx-enclave-common libsgx-enclave-common-dev libsgx-dcap-ql libsgx-dcap-ql-dev az-dcap-client open-enclave
 ```
 
@@ -39,7 +39,7 @@ sudo apt -y install clang-7 libssl-dev gdb libsgx-enclave-common libsgx-enclave-
 > package which is necessary for performing remote attestation in Azure. A general
 > implementation for using Intel DCAP outside the Azure environment is coming soon.
 
-Note: If you wish to make use of the Open Enclave CMake package, please install cmake and [follow the instructions here](cmake/sdk_cmake_targets_readme.md).
+Note: If you wish to make use of the Open Enclave CMake package, please install CMake and [follow the instructions here](/cmake/sdk_cmake_targets_readme.md).
 
 ### 4. Verify the Open Enclave SDK install
 
