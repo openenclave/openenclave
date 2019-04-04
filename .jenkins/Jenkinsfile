@@ -1,6 +1,37 @@
 @Library("OpenEnclaveCommon") _
 oe = new jenkins.common.Openenclave()
 
+def buildDockerImages() {
+    node("nonSGX") {
+        stage("Build Ubuntu1604 Docker Image") {
+            oetools1604 = oe.dockerImage("oetools:16.04", ".jenkins/Dockerfile", "--build-arg ubuntu_version=16.04")
+        }
+        stage("Build Ubuntu1804 Docker Image") {
+            oetools1804 = oe.dockerImage("oetools:18.04", ".jenkins/Dockerfile", "--build-arg ubuntu_version=18.04")
+        }
+    }
+}
+
+def oetoolsimage(String version, String compiler, String task, String runArgs="") {
+    if (version == "16.04") {
+        oetools1604.inside(runArgs) {
+            dir("${WORKSPACE}/build") {
+                oe.Run(compiler, task)
+            }
+        }
+    }
+    else if (version == "18.04") {
+        oetools1804.inside(runArgs) {
+            dir("${WORKSPACE}/build") {
+                oe.Run(compiler, task)
+            }
+        }
+    }
+    else {
+       error('Unsupported version , aborting build')
+    }
+}
+
 def ACCTest(String label, String compiler, String build_type) {
     stage("${label} ${compiler} SGX1FLC ${build_type}") {
         node("${label}") {
@@ -40,7 +71,7 @@ def simulationTest(String version, String platform_mode, String build_type) {
                            ninja -v
                            ctest --output-on-failure
                            """
-                oe.oetoolsImage(version, "clang-7", task)
+                oetoolsimage(version, "clang-7", task)
             }
         }
     }
@@ -54,7 +85,7 @@ def ACCContainerTest(String label, String version) {
                        ninja -v
                        ctest --output-on-failure
                        """
-            oe.oetoolsImage(version, "clang-7", task, "--device /dev/sgx:/dev/sgx")
+            oetoolsimage(version, "clang-7", task, "--device /dev/sgx:/dev/sgx")
         }
     }
 }
@@ -95,7 +126,7 @@ def win2016LinuxElfBuild(String version, String compiler, String build_type) {
                        cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DUSE_DEBUG_MALLOC=OFF -Wdev
                        ninja -v
                        """
-            oe.oetoolsImage(version, compiler, task)
+            oetoolsimage(version, compiler, task)
             stash includes: 'build/tests/**', name: "linux-${compiler}-${build_type}-${version}-${BUILD_NUMBER}"
         }
     }
@@ -141,6 +172,8 @@ properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '90',
                                       numToKeepStr: '180')),
             [$class: 'JobRestrictionProperty']])
 
+
+buildDockerImages()
 parallel "Check Developer Experience Ubuntu 16.04" :            { checkDevFlows('16.04') },
          "Check Developer Experience Ubuntu 18.04" :            { checkDevFlows('18.04') },
          "Check CI" :                                           { checkCI() },
