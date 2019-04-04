@@ -13,6 +13,7 @@ if [[ -z $REGION ]]; then echo "ERROR: Env variable REGION is not set"; exit 1; 
 if [[ -z $RESOURCE_GROUP ]]; then echo "ERROR: Env variable RESOURCE_GROUP is not set"; exit 1; fi
 
 if [[ -z $AGENT_NAME ]]; then echo "ERROR: Env variable AGENT_NAME is not set"; exit 1; fi
+if [[ -z $VHD_URL ]]; then echo "ERROR: Env variable VHD_URL is not set"; exit 1; fi
 if [[ "$AGENT_TYPE" != "xenial" ]] && [[ "$AGENT_TYPE" != "bionic" ]]; then
     echo "ERROR: Env variable AGENT_TYPE has the wrong value. The allowed values for the script are: xenial, bionic"
     exit 1
