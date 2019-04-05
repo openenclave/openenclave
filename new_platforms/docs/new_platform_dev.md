@@ -430,7 +430,7 @@ paths, processor defines, compiler flags, and linker flags.
 
 ### SGX Enclave
 
-The SGX enclave should link with `oeenclave.lib` and have the following
+The SGX enclave should link with `oecore.lib` and have the following
 additional include paths:
 
 * `new_platforms\include\sgx\enclave`
@@ -523,7 +523,7 @@ definitions.
 
 The trusted component depends on the following Open Enclave-provided libraries:
 
-* `oeenclave`: Provides core Open Enclave functionality;
+* `oecore`: Provides core Open Enclave functionality;
 * `oesocket_enc`: Provides sockets functionality inside the TA:
     * Linking is necessary only if you use sockets;
     * This library marshals socket calls out to the host app.

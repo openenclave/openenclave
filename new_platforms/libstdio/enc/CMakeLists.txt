@@ -33,7 +33,7 @@ if(UNIX AND TZ)
         target_include_directories(lib${TARGET}
             PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-        target_link_libraries(lib${TARGET} PUBLIC oeenclave)
+        target_link_libraries(lib${TARGET} PUBLIC oecore)
     endif()
 elseif(WIN32)
     set(SRCS stdio_enc.c)

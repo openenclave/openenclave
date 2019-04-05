@@ -26,7 +26,7 @@ $Leaves = @(
 )
 
 $Libraries = @(
-    "oeenclave",
+    "oecore",
     "oeenclave_opteesim",
     
     "oehost",

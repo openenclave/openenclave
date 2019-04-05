@@ -84,6 +84,9 @@ ExternalProject_Add(musl_includes
         COMMAND ${CMAKE_COMMAND} -E copy
             ${MUSL_PATCHES}/syscall_arch.h
             ${MUSL_OUT}/arch/${ARCH}/syscall_arch.h
+        COMMAND ${CMAKE_COMMAND} -E copy
+            ${CMAKE_CURRENT_LIST_DIR}/enc/optee/patches/pthread_arch.h
+            ${MUSL_OUT}/arch/${ARCH}/pthread_arch.h
     CONFIGURE_COMMAND
         ${CMAKE_COMMAND} -E chdir ${MUSL_OUT}
         sh -x ./configure
@@ -118,16 +121,16 @@ add_library(libcasm OBJECT ${LIBC_S_SRC})
 add_dependencies(libcasm musl_includes)
 target_compile_options(libcasm PRIVATE ${OE_TA_S_FLAGS})
 
-add_library(libc STATIC ${LIBC_C_SRC})
+add_library(libc OBJECT ${LIBC_C_SRC})
 set_property(TARGET libc PROPERTY C_STANDARD 99)
 target_compile_options(libc
     PRIVATE -fexcess-precision=standard -frounding-math
     PUBLIC ${OE_TA_C_FLAGS})
-target_include_directories(libc PUBLIC
-    ${MUSL_OUT}/src/include
-    ${MUSL_OUT}/src/internal
-    ${MUSL_OUT}/arch/${ARCH}
-    ${MUSL_OUT_INC})
+target_include_directories(libc
+    PRIVATE ${MUSL_OUT}/src/include
+    PRIVATE ${MUSL_OUT}/src/internal
+    PRIVATE ${MUSL_OUT}/arch/${ARCH}
+    PUBLIC ${MUSL_OUT_INC})
 set_source_files_properties(${DLMALLOC_SRC}/malloc.c PROPERTIES COMPILE_FLAGS ${LIBC_MALLOC_FLAGS})
 
 target_link_libraries(libc PUBLIC libcasm)
@@ -142,7 +145,7 @@ target_include_directories(libuteeasm PRIVATE
     ${LIBUTEE_INC}
     ${LIBUTILS_EXT_INC})
 
-add_library(libutee STATIC ${LIBUTEE_C_SRC})
+add_library(libutee OBJECT ${LIBUTEE_C_SRC})
 set_property(TARGET libutee PROPERTY C_STANDARD 99)
 target_compile_options(libutee PUBLIC
     -include ${OE_TA_DEV_KIT_CONF})
@@ -173,7 +176,7 @@ configure_file(
 file(COPY ${LIBUNWIND_SRC}/include/tdep-${ARCH}/
     DESTINATION tdep)
 
-add_library(libunwind STATIC ${LIBUNWIND_C_SRC})
+add_library(libunwind OBJECT ${LIBUNWIND_C_SRC})
 target_compile_options(libunwind PRIVATE
     -DHAVE_ELF_H
     -DHAVE_ENDIAN_H
@@ -194,9 +197,8 @@ target_link_libraries(libunwind PUBLIC libc)
 set_target_properties(libunwind PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # Set up libcxxrt.
-add_library(libcxxrt STATIC ${LIBCXXRT_CXX_SRC})
+add_library(libcxxrt OBJECT ${LIBCXXRT_CXX_SRC})
 add_dependencies(libcxxrt musl_includes)
-#target_compile_options(libcxxrt PRIVATE)
 target_link_libraries(libcxxrt PUBLIC libunwind)
 set_target_properties(libcxxrt PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
@@ -216,7 +218,7 @@ ExternalProject_Add(libcxx_includes
             ${LIBCXX_OUT_INC}/__config
     INSTALL_COMMAND "")
 
-add_library(libcxx STATIC ${LIBCXX_CXX_SRC})
+add_library(libcxx OBJECT ${LIBCXX_CXX_SRC})
 add_dependencies(libcxx libcxx_includes)
 target_compile_options(libcxx PRIVATE
     -DLIBCXXRT
@@ -224,9 +226,16 @@ target_compile_options(libcxx PRIVATE
     -D_LIBCPP_BUILDING_LIBRARY
     -D_LIBCPP_HAS_NO_CXX14_CONSTEXPR
     -D_LIBCPP_HAS_NO_THREADS)
-target_include_directories(libcxx PUBLIC
-    ${LIBCXX_OUT_INC}
-    ${LIBCXX_SRC}/src
-    ${LIBCXXRT_SRC}/src)
+target_include_directories(libcxx BEFORE
+    PUBLIC ${LIBCXX_OUT_INC}
+    PRIVATE ${LIBCXX_SRC}/src
+    PRIVATE ${LIBCXXRT_SRC}/src)
 target_link_libraries(libcxx PUBLIC libcxxrt)
 set_target_properties(libcxx PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+# Set up umbrella libraries
+add_library(oelibc STATIC)
+target_link_libraries(oelibc PUBLIC libc libutee libuteeasm gcc)
+
+add_library(oelibcxx STATIC)
+target_link_libraries(oelibcxx PUBLIC libcxx libcxxrt libunwind)

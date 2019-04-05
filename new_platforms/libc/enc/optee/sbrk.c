@@ -1,5 +1,7 @@
 #include <stddef.h>
 #include <stdint.h>
+#define _GNU_SOURCE
+#include <unistd.h>
 
 extern uint8_t ta_heap[];
 extern const size_t ta_heap_size;

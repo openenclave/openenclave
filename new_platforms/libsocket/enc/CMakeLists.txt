@@ -32,7 +32,7 @@ if(UNIX AND TZ)
             TARGET lib${TARGET}
             SOURCES ${GEN} socket_insecure_enc.c)
         target_include_directories(lib${TARGET} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-        target_link_libraries(lib${TARGET} PUBLIC oeenclave)
+        target_link_libraries(lib${TARGET} PUBLIC oecore)
     endif()
 elseif(WIN32)
     set(SRCS socket_insecure_enc.c)

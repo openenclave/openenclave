@@ -72,7 +72,7 @@ ExternalProject_Add(mbedtls-wrap
     # This is a no-op to override the default.
     INSTALL_COMMAND "")
 
-add_dependencies(mbedtls-wrap libc oeenclave)
+add_dependencies(mbedtls-wrap libc oecore)
 
 ExternalProject_Get_property(mbedtls-wrap SOURCE_DIR)
 ExternalProject_Get_property(mbedtls-wrap BINARY_DIR)

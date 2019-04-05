@@ -1,5 +1,19 @@
-#include <pthread.h>
 #include <errno.h>
+#include <pthread.h>
+#include "locale_impl.h"
+#include "pthread_impl.h"
+
+#ifdef pthread
+#undef pthread
+#endif
+
+struct __pthread self = { 0 };
+
+pthread_t __pthread_self()
+{
+    self.locale = C_LOCALE;
+    return &self;
+}
 
 int pthread_cond_signal(pthread_cond_t *cond)
 {

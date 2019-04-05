@@ -280,19 +280,19 @@
             <IgnoreAllDefaultLibraries Condition="!($(OEIsTz) == True And $(OEIsSim) == True)">True</IgnoreAllDefaultLibraries>
 
             <!-- x86-SGX-* -->
-            <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX86) == True">$(OESgxHwX86)\oeenclave.lib;$(OESgxHwX86)\oesocket_enc.lib;$(OESgxHwX86)\oestdio_enc.lib;$(OESgxHwLibsT)</AdditionalDependencies>
+            <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX86) == True">$(OESgxHwX86)\oecore.lib;$(OESgxHwX86)\oesocket_enc.lib;$(OESgxHwX86)\oestdio_enc.lib;$(OESgxHwLibsT)</AdditionalDependencies>
 
             <!-- x64-SGX-* -->
-            <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX64) == True">$(OESgxHwX64)\oeenclave.lib;$(OESgxHwX64)\oesocket_enc.lib;$(OESgxHwX64)\oestdio_enc.lib;$(OESgxHwLibsT)</AdditionalDependencies>
+            <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX64) == True">$(OESgxHwX64)\oecore.lib;$(OESgxHwX64)\oesocket_enc.lib;$(OESgxHwX64)\oestdio_enc.lib;$(OESgxHwLibsT)</AdditionalDependencies>
 
             <!-- x86-SGX-Simulation-* -->
-            <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX86) == True And $(OEIsSim) == True">$(OESgxSimX86)\oeenclave.lib;$(OESgxSimX86)\oesocket_enc.lib;$(OESgxSimX86)\oestdio_enc.lib;$(OESgxSimLibsT)</AdditionalDependencies>
+            <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX86) == True And $(OEIsSim) == True">$(OESgxSimX86)\oecore.lib;$(OESgxSimX86)\oesocket_enc.lib;$(OESgxSimX86)\oestdio_enc.lib;$(OESgxSimLibsT)</AdditionalDependencies>
 
             <!-- x64-SGX-Simulation-* -->
-            <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX64) == True And $(OEIsSim) == True">$(OESgxSimX64)\oeenclave.lib;$(OESgxSimX64)\oesocket_enc.lib;$(OESgxSimX64)\oestdio_enc.lib;$(OESgxSimLibsT)</AdditionalDependencies>
+            <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX64) == True And $(OEIsSim) == True">$(OESgxSimX64)\oecore.lib;$(OESgxSimX64)\oesocket_enc.lib;$(OESgxSimX64)\oestdio_enc.lib;$(OESgxSimLibsT)</AdditionalDependencies>
 
             <!-- x86-OPTEE-Simulation-Debug -->
-            <AdditionalDependencies Condition="$(OEIsTz) == True And $(OEIsX86) == True And $(OEIsSim) == True">$(OEOpteeSimX86)\oeenclave.lib;$(OEOpteeSimX86)\oesocket_enc.lib;$(OEOpteeSimX86)\oestdio_enc.lib;$(OEOpteeSimX86)\oeenclave_opteesim.lib;$(OEOpteeSimX86)\mbedcrypto.lib;$(OEOpteeSimX86)\mbedx509.lib;onecore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalDependencies Condition="$(OEIsTz) == True And $(OEIsX86) == True And $(OEIsSim) == True">$(OEOpteeSimX86)\oecore.lib;$(OEOpteeSimX86)\oesocket_enc.lib;$(OEOpteeSimX86)\oestdio_enc.lib;$(OEOpteeSimX86)\oeenclave_opteesim.lib;$(OEOpteeSimX86)\mbedcrypto.lib;$(OEOpteeSimX86)\mbedx509.lib;onecore.lib;%(AdditionalDependencies)</AdditionalDependencies>
         </Link>
     </ItemDefinitionGroup>
 

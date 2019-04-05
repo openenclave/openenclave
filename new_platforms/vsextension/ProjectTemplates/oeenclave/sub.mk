@@ -28,7 +28,7 @@ srcs-y             += ../$projectname$_t.c
 # Add additional sources here
 srcs-y             += ../ecalls.c
 
-libnames           += oeenclave
+libnames           += oecore
 libnames           += oestdio_enc
 
 # Add additional libraries here

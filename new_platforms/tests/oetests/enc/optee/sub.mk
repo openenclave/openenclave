@@ -12,7 +12,7 @@ CFLAGS += -DLINUX -DOE_USE_OPTEE
 
 libdirs += $(AR_O)
 
-libnames += oeenclave
+libnames += oecore
 libnames += oesocket_enc
 libnames += oestdio_enc
 libnames += mbedtls

@@ -3,7 +3,7 @@
 
 include(oeedl_file)
 
-set(TARGET oeenclave)
+set(TARGET oecore)
 
 oeedl_file(${CMAKE_CURRENT_LIST_DIR}/../oeinternal.edl enclave GEN C_GEN H_GEN)
 if(WIN32 AND SGX)

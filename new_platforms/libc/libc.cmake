@@ -627,14 +627,18 @@ set(LIBC_C_SRC
     ${MUSL_SRC}/src/unistd/close.c
     ${MUSL_SRC}/src/unistd/dup.c
     ${MUSL_SRC}/src/unistd/dup3.c
+    ${CMAKE_CURRENT_LIST_DIR}/enc/optee/atexit.c
     ${CMAKE_CURRENT_LIST_DIR}/enc/optee/dladdr.c
     ${CMAKE_CURRENT_LIST_DIR}/enc/optee/errno.c
     ${CMAKE_CURRENT_LIST_DIR}/enc/optee/getpagesize.c
     ${CMAKE_CURRENT_LIST_DIR}/enc/optee/libunwind_stubs.c
+    ${CMAKE_CURRENT_LIST_DIR}/enc/optee/locale.c
     ${CMAKE_CURRENT_LIST_DIR}/enc/optee/pthread.c
     ${CMAKE_CURRENT_LIST_DIR}/enc/optee/sbrk.c
     ${CMAKE_CURRENT_LIST_DIR}/enc/optee/sched_yield.c
+    ${CMAKE_CURRENT_LIST_DIR}/enc/optee/stdlib.c
     ${CMAKE_CURRENT_LIST_DIR}/enc/optee/strerror.c
     ${CMAKE_CURRENT_LIST_DIR}/enc/optee/syscalls.c
-    ${CMAKE_CURRENT_LIST_DIR}/enc/optee/sysconf.c)
+    ${CMAKE_CURRENT_LIST_DIR}/enc/optee/sysconf.c
+    ${CMAKE_CURRENT_LIST_DIR}/enc/optee/time.c)
 set(LIBC_C_SRC ${LIBC_C_SRC} PARENT_SCOPE)

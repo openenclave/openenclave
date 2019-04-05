@@ -34,7 +34,7 @@ function(add_enclave)
                 GEN=${ENCLAVE_C_GEN}
             DEPENDS ${ENCLAVE_SOURCES}
             SOURCES ${ENCLAVE_SOURCES})
-            add_dependencies(${ENCLAVE_TARGET} liboestdio_enc liboesocket_enc oeenclave)
+            add_dependencies(${ENCLAVE_TARGET} liboestdio_enc liboesocket_enc oecore)
             add_custom_command(TARGET ${ENCLAVE_TARGET} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E
                     copy ${CMAKE_CURRENT_BINARY_DIR}/*.ta ${OE_RUNTIME_OUTPUT_DIRECTORY})
@@ -53,7 +53,7 @@ function(add_enclave)
         endif()
 
         target_include_directories(${ENCLAVE_TARGET} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-        target_link_libraries(${ENCLAVE_TARGET} oeenclave oestdio_enc oesocket_enc ${ENCLAVE_LIBRARIES})
+        target_link_libraries(${ENCLAVE_TARGET} oecore oestdio_enc oesocket_enc ${ENCLAVE_LIBRARIES})
 
         if(NOT (TZ AND SIM))
             target_compile_options(${ENCLAVE_TARGET} PUBLIC "/X")
