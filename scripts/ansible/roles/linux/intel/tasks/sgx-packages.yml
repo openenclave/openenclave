@@ -12,6 +12,13 @@
     name: linux/common
     tasks_from: apt-repo-intel.yml
 
+- name: Install the Intel libsgx package dependencies
+  apt:
+    name: "{{ intel_sgx_package_dependencies }}"
+    state: present
+    update_cache: yes
+    install_recommends: no
+
 - name: Install the Intel libsgx packages
   apt:
     name: "{{ intel_sgx_packages }}"
