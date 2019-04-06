@@ -26,7 +26,6 @@ set(OE_TA_C_FLAGS
     -fno-builtin-memset
     -ffreestanding
     -funwind-tables
-    -fexceptions
     -fpie
     -fPIC)
 
