@@ -36,11 +36,7 @@ include setting breakpoints, dumping memory addresses and back tracing the execu
 
 ## Known issues:
 
-- oe-gdb currently only supports debugging an enclave when the app is launched
-  under the debugger. If the debugger is attached to an existing enclave host
-  process, it will not be able to step into enclave code.
 - The debugger will inevitably catch a SIGILL (Illegal instruction) signal during
   enclave initialization in the mbedtls_aesni_has_support method. This signal can
   be continued without issue as it is handled by Open Enclave as part of the CPUID
   emulation it provides to mbedtls.
-- oe-gdb cannot be used to debug enclave code while running in simulation mode.

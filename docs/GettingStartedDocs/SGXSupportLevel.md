@@ -52,7 +52,7 @@ output/bin/oesgx
 
 |                                oesgx output | SGX support level |
 |:--------------------------------------------|:------------------:|
-| CPU supports SGX_FLC:Flexible Launch Control<br>CPU supports Software Guard Extensions:SGX1| SGX1+FLC          |
+| CPU supports SGX_FLC:Flexible Launch Control| SGX1+FLC          |
 | CPU supports Software Guard Extensions:SGX1 | SGX1              |
 | CPU does not support SGX                    |   None            |
 
@@ -61,7 +61,6 @@ For reference, the outputs from oesgx that lines up with the above table are:
 ```bash
 $ ./oesgx
 CPU supports SGX_LC:Flexible Launch Control
-CPU supports Software Guard Extensions:SGX1
 ```
 
 ```bash
