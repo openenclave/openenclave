@@ -3,8 +3,8 @@
 
 ---
 apt_packages:
-  - "clang-7=1:7.0.1~svn348686-1~exp1~20190113235231.54"
-  - "clang-format-7=1:7.0.1~svn348686-1~exp1~20190113235231.54"
+  - "clang-7"
+  - "clang-format-7"
   - "make=4.1-9.1ubuntu1"
   - "ocaml-nox=4.05.0-10ubuntu1"
   - "ninja-build=1.8.2-1"
