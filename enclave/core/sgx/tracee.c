@@ -6,6 +6,7 @@
 #include <openenclave/bits/types.h>
 #include <openenclave/corelibc/stdarg.h>
 #include <openenclave/corelibc/stdio.h>
+#include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
@@ -73,6 +74,7 @@ done:
 oe_result_t _handle_oelog_init(uint64_t arg)
 {
     oe_result_t result = OE_FAILURE;
+    char* path = NULL;
     const char* filename = NULL;
     oe_log_filter_t* filter = (oe_log_filter_t*)arg;
     oe_log_filter_t local;
@@ -98,6 +100,17 @@ oe_result_t _handle_oelog_init(uint64_t arg)
         goto done;
     }
 
+    /* Copy path to enclave memory and add a null-terminator */
+    path = (char*)oe_calloc(1, local.path_len + 1);
+    if (path == NULL)
+    {
+        result = OE_OUT_OF_MEMORY;
+        goto done;
+    }
+    oe_secure_memcpy(path, local.path, local.path_len);
+    path[local.path_len] = '\0';
+    local.path = path;
+
     _active_log_level = local.level;
     filename = get_filename_from_path(local.path, local.path_len);
     if (filename)
@@ -112,6 +125,9 @@ oe_result_t _handle_oelog_init(uint64_t arg)
     _debug_allowed_enclave = is_enclave_debug_allowed();
     result = OE_OK;
 done:
+    if (path)
+        oe_free(path);
+
     return result;
 }
 

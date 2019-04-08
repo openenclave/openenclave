@@ -3,10 +3,223 @@
 
 #include "../edltestutils.h"
 
+#include <openenclave/edger8r/host.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/tests.h>
 #include <wchar.h>
 #include "all_u.h"
+
+oe_result_t ecall_string_no_null_terminator_modified(
+    oe_enclave_t* enclave,
+    char* s1,
+    char* s2,
+    size_t s1_len,
+    size_t s2_len)
+{
+    oe_result_t _result = OE_FAILURE;
+
+    /* Marshalling struct */
+    ecall_string_no_null_terminator_args_t _args, *_pargs_in = NULL,
+                                                  *_pargs_out = NULL;
+
+    /* Marshalling buffer and sizes */
+    size_t _input_buffer_size = 0;
+    size_t _output_buffer_size = 0;
+    size_t _total_buffer_size = 0;
+    uint8_t* _buffer = NULL;
+    uint8_t* _input_buffer = NULL;
+    uint8_t* _output_buffer = NULL;
+    size_t _input_buffer_offset = 0;
+    size_t _output_buffer_offset = 0;
+    size_t _output_bytes_written = 0;
+
+    /* Fill marshalling struct */
+    memset(&_args, 0, sizeof(_args));
+    _args.s1 = (char*)s1;
+    _args.s1_len = (s1) ? s1_len : 0;
+    _args.s2 = (char*)s2;
+    _args.s2_len = (s2) ? s2_len : 0;
+
+    /* Compute input buffer size. Include in and in-out parameters. */
+    OE_ADD_SIZE(
+        _input_buffer_size, sizeof(ecall_string_no_null_terminator_args_t));
+    if (s1)
+        OE_ADD_SIZE(_input_buffer_size, _args.s1_len * sizeof(char));
+    if (s2)
+        OE_ADD_SIZE(_input_buffer_size, _args.s2_len * sizeof(char));
+
+    /* Compute output buffer size. Include out and in-out parameters. */
+    OE_ADD_SIZE(
+        _output_buffer_size, sizeof(ecall_string_no_null_terminator_args_t));
+    if (s2)
+        OE_ADD_SIZE(_output_buffer_size, _args.s2_len * sizeof(char));
+
+    /* Allocate marshalling buffer */
+    _total_buffer_size = _input_buffer_size;
+    OE_ADD_SIZE(_total_buffer_size, _output_buffer_size);
+
+    _buffer = (uint8_t*)malloc(_total_buffer_size);
+    _input_buffer = _buffer;
+    _output_buffer = _buffer + _input_buffer_size;
+    if (_buffer == NULL)
+    {
+        _result = OE_OUT_OF_MEMORY;
+        goto done;
+    }
+
+    /* Serialize buffer inputs (in and in-out parameters) */
+    *(uint8_t**)&_pargs_in = _input_buffer;
+    OE_ADD_SIZE(_input_buffer_offset, sizeof(*_pargs_in));
+
+    OE_WRITE_IN_PARAM(s1, _args.s1_len * sizeof(char));
+    OE_WRITE_IN_OUT_PARAM(s2, _args.s2_len * sizeof(char));
+
+    /* Copy args structure (now filled) to input buffer */
+    memcpy(_pargs_in, &_args, sizeof(*_pargs_in));
+
+    /* Call enclave function */
+    if ((_result = oe_call_enclave_function(
+             enclave,
+             fcn_id_ecall_string_no_null_terminator,
+             _input_buffer,
+             _input_buffer_size,
+             _output_buffer,
+             _output_buffer_size,
+             &_output_bytes_written)) != OE_OK)
+        goto done;
+
+    /* Set up output arg struct pointer */
+    *(uint8_t**)&_pargs_out = _output_buffer;
+    OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));
+
+    /* Check if the call succeeded */
+    if ((_result = _pargs_out->_result) != OE_OK)
+        goto done;
+
+    /* Currently exactly _output_buffer_size bytes must be written */
+    if (_output_bytes_written != _output_buffer_size)
+    {
+        _result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Unmarshal return value and out, in-out parameters */
+    OE_CHECK_NULL_TERMINATOR(
+        _output_buffer + _output_buffer_offset, _args.s2_len);
+    OE_READ_IN_OUT_PARAM(s2, (size_t)(_args.s2_len * sizeof(char)));
+
+    _result = OE_OK;
+done:
+    if (_buffer)
+        free(_buffer);
+    return _result;
+}
+
+oe_result_t ecall_wstring_no_null_terminator_modified(
+    oe_enclave_t* enclave,
+    wchar_t* s1,
+    wchar_t* s2,
+    size_t s1_len,
+    size_t s2_len)
+{
+    oe_result_t _result = OE_FAILURE;
+
+    /* Marshalling struct */
+    ecall_wstring_no_null_terminator_args_t _args, *_pargs_in = NULL,
+                                                   *_pargs_out = NULL;
+
+    /* Marshalling buffer and sizes */
+    size_t _input_buffer_size = 0;
+    size_t _output_buffer_size = 0;
+    size_t _total_buffer_size = 0;
+    uint8_t* _buffer = NULL;
+    uint8_t* _input_buffer = NULL;
+    uint8_t* _output_buffer = NULL;
+    size_t _input_buffer_offset = 0;
+    size_t _output_buffer_offset = 0;
+    size_t _output_bytes_written = 0;
+
+    /* Fill marshalling struct */
+    memset(&_args, 0, sizeof(_args));
+    _args.s1 = (wchar_t*)s1;
+    _args.s1_len = (s1) ? s1_len : 0;
+    _args.s2 = (wchar_t*)s2;
+    _args.s2_len = (s2) ? s2_len : 0;
+
+    /* Compute input buffer size. Include in and in-out parameters. */
+    OE_ADD_SIZE(
+        _input_buffer_size, sizeof(ecall_wstring_no_null_terminator_args_t));
+    if (s1)
+        OE_ADD_SIZE(_input_buffer_size, _args.s1_len * sizeof(wchar_t));
+    if (s2)
+        OE_ADD_SIZE(_input_buffer_size, _args.s2_len * sizeof(wchar_t));
+
+    /* Compute output buffer size. Include out and in-out parameters. */
+    OE_ADD_SIZE(
+        _output_buffer_size, sizeof(ecall_wstring_no_null_terminator_args_t));
+    if (s2)
+        OE_ADD_SIZE(_output_buffer_size, _args.s2_len * sizeof(wchar_t));
+
+    /* Allocate marshalling buffer */
+    _total_buffer_size = _input_buffer_size;
+    OE_ADD_SIZE(_total_buffer_size, _output_buffer_size);
+
+    _buffer = (uint8_t*)malloc(_total_buffer_size);
+    _input_buffer = _buffer;
+    _output_buffer = _buffer + _input_buffer_size;
+    if (_buffer == NULL)
+    {
+        _result = OE_OUT_OF_MEMORY;
+        goto done;
+    }
+
+    /* Serialize buffer inputs (in and in-out parameters) */
+    *(uint8_t**)&_pargs_in = _input_buffer;
+    OE_ADD_SIZE(_input_buffer_offset, sizeof(*_pargs_in));
+
+    OE_WRITE_IN_PARAM(s1, _args.s1_len * sizeof(wchar_t));
+    OE_WRITE_IN_OUT_PARAM(s2, _args.s2_len * sizeof(wchar_t));
+
+    /* Copy args structure (now filled) to input buffer */
+    memcpy(_pargs_in, &_args, sizeof(*_pargs_in));
+
+    /* Call enclave function */
+    if ((_result = oe_call_enclave_function(
+             enclave,
+             fcn_id_ecall_wstring_no_null_terminator,
+             _input_buffer,
+             _input_buffer_size,
+             _output_buffer,
+             _output_buffer_size,
+             &_output_bytes_written)) != OE_OK)
+        goto done;
+
+    /* Set up output arg struct pointer */
+    *(uint8_t**)&_pargs_out = _output_buffer;
+    OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));
+
+    /* Check if the call succeeded */
+    if ((_result = _pargs_out->_result) != OE_OK)
+        goto done;
+
+    /* Currently exactly _output_buffer_size bytes must be written */
+    if (_output_bytes_written != _output_buffer_size)
+    {
+        _result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Unmarshal return value and out, in-out parameters */
+    OE_CHECK_NULL_TERMINATOR_WIDE(
+        _output_buffer + _output_buffer_offset, _args.s2_len);
+    OE_READ_IN_OUT_PARAM(s2, (size_t)(_args.s2_len * sizeof(wchar_t)));
+
+    _result = OE_OK;
+done:
+    if (_buffer)
+        free(_buffer);
+    return _result;
+}
 
 void test_string_edl_ecalls(oe_enclave_t* enclave)
 {
@@ -40,6 +253,52 @@ void test_string_edl_ecalls(oe_enclave_t* enclave)
 
     // Multiple string params. One null.
     OE_TEST(ecall_string_fun7(enclave, str, NULL) == OE_OK);
+
+    // Test strings without null terminators.
+    {
+        char s1[] = "Hello";
+        char s2[] = "Hello";
+
+        // Call function with proper strings.
+        OE_TEST(
+            ecall_string_no_null_terminator_modified(enclave, s1, s2, 6, 6) ==
+            OE_OK);
+
+        // Pass s1 without null terminator
+        OE_TEST(
+            ecall_string_no_null_terminator_modified(enclave, s1, s2, 5, 6) ==
+            OE_INVALID_PARAMETER);
+
+        // Pass s2 without null terminator
+        OE_TEST(
+            ecall_string_no_null_terminator_modified(enclave, s1, s2, 6, 5) ==
+            OE_INVALID_PARAMETER);
+    }
+    // Test wstrings without null terminators.
+    {
+        OE_UNUSED(ecall_wstring_no_null_terminator_modified);
+        // wchar_t is not a portable type. Hence the test is performed
+        // only on Linux.
+#ifdef __linux__
+        wchar_t s1[] = L"Hello";
+        wchar_t s2[] = L"Hello";
+
+        // Call function with proper strings.
+        OE_TEST(
+            ecall_wstring_no_null_terminator_modified(enclave, s1, s2, 6, 6) ==
+            OE_OK);
+
+        // Pass s1 without null terminator
+        OE_TEST(
+            ecall_wstring_no_null_terminator_modified(enclave, s1, s2, 5, 6) ==
+            OE_INVALID_PARAMETER);
+
+        // Pass s2 without null terminator
+        OE_TEST(
+            ecall_wstring_no_null_terminator_modified(enclave, s1, s2, 6, 5) ==
+            OE_INVALID_PARAMETER);
+#endif
+    }
 
     printf("=== test_string_edl_ecalls passed\n");
 }
@@ -225,4 +484,18 @@ void ocall_wstring_fun7(wchar_t* s1, wchar_t* s2)
 
     OE_TEST(s1 != NULL);
     OE_TEST(s2 == NULL);
+}
+
+void ocall_string_no_null_terminator(bool erasenull, char* s)
+{
+    size_t size = strlen(s);
+    if (erasenull)
+        s[size] = '?';
+}
+
+void ocall_wstring_no_null_terminator(bool erasenull, wchar_t* s)
+{
+    size_t size = wcslen(s);
+    if (erasenull)
+        s[size] = '?';
 }

@@ -220,12 +220,16 @@ static oe_result_t _handle_call_enclave_function(uint64_t arg_in)
     args = *args_ptr;
 
     // Ensure that input buffer is valid.
-    if (args.input_buffer == NULL || args.input_buffer_size == 0 ||
+    // Input buffer must be able to hold atleast an oe_result_t.
+    if (args.input_buffer == NULL ||
+        args.input_buffer_size < sizeof(oe_result_t) ||
         !oe_is_outside_enclave(args.input_buffer, args.input_buffer_size))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Ensure that output buffer is valid.
-    if (args.output_buffer == NULL || args.output_buffer_size == 0 ||
+    // Output buffer must be able to hold atleast an oe_result_t.
+    if (args.output_buffer == NULL ||
+        args.output_buffer_size < sizeof(oe_result_t) ||
         !oe_is_outside_enclave(args.output_buffer, args.output_buffer_size))
         OE_RAISE(OE_INVALID_PARAMETER);
 
@@ -271,13 +275,20 @@ static oe_result_t _handle_call_enclave_function(uint64_t arg_in)
         args.output_buffer_size,
         &output_bytes_written);
 
-    // Copy outputs to host memory.
-    memcpy(args.output_buffer, output_buffer, output_bytes_written);
+    // The output_buffer is expected to point to a marshaling struct,
+    // whose first field is an oe_result_t. The function is expected
+    // to fill this field with the status of the ecall.
+    result = *(oe_result_t*)output_buffer;
 
-    // The ecall succeeded.
-    args_ptr->output_bytes_written = output_bytes_written;
-    args_ptr->result = OE_OK;
-    result = OE_OK;
+    if (result == OE_OK)
+    {
+        // Copy outputs to host memory.
+        memcpy(args.output_buffer, output_buffer, output_bytes_written);
+
+        // The ecall succeeded.
+        args_ptr->output_bytes_written = output_bytes_written;
+        args_ptr->result = OE_OK;
+    }
 
 done:
     if (buffer)

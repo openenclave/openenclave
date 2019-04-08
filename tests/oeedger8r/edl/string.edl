@@ -38,6 +38,13 @@ enclave {
         public void ecall_wstring_fun7([wstring, in] wchar_t* s1, [wstring, in] wchar_t* s2);
 
         public void test_wstring_edl_ocalls();
+
+        // Negative tests for non null-terminated strings
+	    public void ecall_string_no_null_terminator(
+	                [string, in] char* s1, [string, in, out] char* s2);
+        public void ecall_wstring_no_null_terminator(
+	                [wstring, in] wchar_t* s1, [wstring, in, out] wchar_t* s2);
+
     };
 
     untrusted {
@@ -74,6 +81,10 @@ enclave {
 
         // Multiple string parameters
         void ocall_wstring_fun7([wstring, in] wchar_t* s1, [wstring, in] wchar_t* s2);        
-    };
+
+        // Scenario where host does not null terminate in-out strings.
+	void ocall_string_no_null_terminator(bool erasenull, [string, in, out] char* s);
+	void ocall_wstring_no_null_terminator(bool erasenull, [wstring, in, out] wchar_t* s);
+   };
 };
 

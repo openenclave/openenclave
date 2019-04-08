@@ -158,6 +158,34 @@ done:
 
 #define OE_READ_IN_OUT_PARAM OE_READ_OUT_PARAM
 
+/**
+ * Check that a string is null terminated.
+ */
+#define OE_CHECK_NULL_TERMINATOR(str, size)                  \
+    {                                                        \
+        const char* _str = (const char*)(str);               \
+        size_t _size = (size_t)(size);                       \
+        if (_str && (_size == 0 || _str[_size - 1] != '\0')) \
+        {                                                    \
+            _result = OE_INVALID_PARAMETER;                  \
+            goto done;                                       \
+        }                                                    \
+    }
+
+/**
+ * Check that a wstring is null terminated.
+ */
+#define OE_CHECK_NULL_TERMINATOR_WIDE(str, size)              \
+    {                                                         \
+        const wchar_t* _str = (const wchar_t*)(str);          \
+        size_t _size = (size_t)(size);                        \
+        if (_str && (_size == 0 || _str[_size - 1] != L'\0')) \
+        {                                                     \
+            _result = OE_INVALID_PARAMETER;                   \
+            goto done;                                        \
+        }                                                     \
+    }
+
 OE_EXTERNC_END
 
 #endif // _OE_EDGER8R_COMMON_H

@@ -135,7 +135,7 @@ let oe_mk_ms_struct_name (fname: string) = fname ^ "_args_t"
 
 (** [oe_mk_struct_decl] constructs the string of a [struct] definition. *)
 let oe_mk_struct_decl (fs: string) (name: string) =
-  sprintf "typedef struct _%s {\n%s    oe_result_t _result;\n } %s;\n" name fs name
+  sprintf "typedef struct _%s {\n    oe_result_t _result;\n%s } %s;\n" name fs name
 
 (** [oe_gen_marshal_struct_impl] generates a marshalling [struct]
     definition. *)
@@ -412,16 +412,25 @@ let oe_process_output_buffer (os:out_channel) (fd:Ast.func_decl) =
       match ptype with
       | Ast.PTPtr (atype, ptr_attr) ->
         if ptr_attr.Ast.pa_chkptr then
-          let size = oe_get_param_size (ptype, decl, "_args.") in
-          match ptr_attr.Ast.pa_direction with
-          | Ast.PtrOut -> fprintf os "    OE_READ_OUT_PARAM(%s, (size_t)(%s));\n" decl.Ast.identifier size
-          | Ast.PtrInOut -> fprintf os "    OE_READ_IN_OUT_PARAM(%s, (size_t)(%s));\n" decl.Ast.identifier size
-          | _ -> ()
-        else ()
+           let size = oe_get_param_size (ptype, decl, "_args.") in
+           match ptr_attr.Ast.pa_direction with
+           | Ast.PtrOut ->
+	      (* strings cannot be out parameters *)
+	      fprintf os "    OE_READ_OUT_PARAM(%s, (size_t)(%s));\n" decl.Ast.identifier size
+	   | Ast.PtrInOut ->
+              (* Check that strings are null terminated.
+                 Note output buffer has already been copied into the enclave.*)
+              if ptr_attr.Ast.pa_isstr then
+                  fprintf os "    OE_CHECK_NULL_TERMINATOR(_output_buffer + _output_buffer_offset, _args.%s_len);\n" decl.Ast.identifier
+              else if ptr_attr.Ast.pa_iswstr then
+                  fprintf os "    OE_CHECK_NULL_TERMINATOR_WIDE(_output_buffer + _output_buffer_offset, _args.%s_len);\n" decl.Ast.identifier
+              else ();
+              fprintf os "    OE_READ_IN_OUT_PARAM(%s, (size_t)(%s));\n" decl.Ast.identifier size
+	   | _ -> ()
+        else  ()
       | _ -> ()
     ) fd.Ast.plist;
   fprintf os "\n"
-
 
 (** Generate a cast expression to a specific pointer type. For example,
     [int*] needs to be cast to
@@ -578,6 +587,23 @@ let oe_gen_ecall_function (os:out_channel) (fd: Ast.func_decl) =
           match ptr_attr.Ast.pa_direction with
           | Ast.PtrOut -> fprintf os "    OE_SET_OUT_POINTER(%s, %s);\n" decl.Ast.identifier size
           | Ast.PtrInOut -> fprintf os "    OE_COPY_AND_SET_IN_OUT_POINTER(%s, %s);\n" decl.Ast.identifier size
+          | _ -> ()
+        else ()
+      | _ -> ()
+    ) fd.Ast.plist;
+  fprintf os "\n";
+
+  (* Check for null terminators in string parameters *)
+  fprintf os "    /* Check that in/in-out strings are null terminated */\n";
+  List.iter (fun (ptype, decl) ->
+      match ptype with
+      | Ast.PTPtr (atype, ptr_attr) ->
+        if ptr_attr.Ast.pa_isstr || ptr_attr.Ast.pa_iswstr then
+          let check_string = "OE_CHECK_NULL_TERMINATOR" ^
+                             (if ptr_attr.Ast.pa_iswstr then "_WIDE" else "") in
+	  match ptr_attr.Ast.pa_direction with
+          | Ast.PtrIn
+          | Ast.PtrInOut -> fprintf os "    %s(pargs_in->%s, pargs_in->%s_len);\n" check_string decl.Ast.identifier decl.Ast.identifier
           | _ -> ()
         else ()
       | _ -> ()
