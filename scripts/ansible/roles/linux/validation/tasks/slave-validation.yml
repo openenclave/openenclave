@@ -2,6 +2,10 @@
 # Licensed under the MIT License.
 
 ---
+- name: Include vars
+  include_vars:
+    file: "{{ ansible_distribution_release | lower }}.yml"
+
 - name: Check for existing required binaries
   stat:
     path: "{{ item }}"
