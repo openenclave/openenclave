@@ -3,12 +3,6 @@
 
 ansible_ssh_user: azureuser
 
-cmake_target_version: "3.13"
-docker_target_version: "18.09"
-dockerd_target_version: "18.09"
-clang_target_version: "7.0"
-ocaml_target_version: "4.0"
-
 validation_directories:
   - "/opt/intel/sgxdriver"
   - "/opt/intel/libsgx-enclave-common"
