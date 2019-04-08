@@ -154,14 +154,16 @@ include(package_settings)
 include(add_enclave)
 
 # User configurable options
-if (UNIX)
-  option(USE_LIBSGX "Build oehost using SGX library requiring FLC" ON)
-elseif (WIN32)
-  option(USE_LIBSGX "Build oehost using SGX library requiring FLC" OFF)
-endif ()
+if (OE_SGX)
+  if (UNIX)
+    option(USE_LIBSGX "Build oehost using SGX library requiring FLC" ON)
+  elseif (WIN32)
+    option(USE_LIBSGX "Build oehost using SGX library requiring FLC" OFF)
+  endif ()
 
-if (USE_LIBSGX AND WIN32)
-  message(FATAL_ERROR "USE_LIBSGX is not yet supported on Windows.")
+  if (USE_LIBSGX AND WIN32)
+    message(FATAL_ERROR "USE_LIBSGX is not yet supported on Windows.")
+  endif ()
 endif ()
 
 # TODO: See #756: Fix this because it is incompatible with
