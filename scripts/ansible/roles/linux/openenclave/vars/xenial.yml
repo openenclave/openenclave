@@ -3,8 +3,8 @@
 
 ---
 apt_packages:
-  - "clang-7=1:7.0.1~svn348686-1~exp1~20181221231927.53"
-  - "clang-format-7=1:7.0.1~svn348686-1~exp1~20181221231927.53"
+  - "clang-7"
+  - "clang-format-7"
   - "make=4.1-6"
   - "ocaml-native-compilers=4.02.3-5ubuntu2"
   - "ninja-build=1.5.1-0.1ubuntu1"
