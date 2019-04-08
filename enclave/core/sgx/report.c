@@ -400,10 +400,11 @@ oe_result_t _handle_get_sgx_report(uint64_t arg_in)
     oe_get_sgx_report_args_t enc_arg;
     size_t report_buffer_size = sizeof(sgx_report_t);
 
-    if (host_arg == NULL)
+    if (!oe_is_outside_enclave(host_arg, sizeof(*host_arg)))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Validate and copy args to prevent TOCTOU issues.
+    // oe_get_sgx_report_args_t is a flat structure with no nested pointers.
     enc_arg = *host_arg;
 
     // Host is not allowed to pass report data. Otherwise, the host can use the
@@ -420,9 +421,8 @@ oe_result_t _handle_get_sgx_report(uint64_t arg_in)
 
     *host_arg = enc_arg;
     result = OE_OK;
-
+    host_arg->result = result;
 done:
-    if (host_arg)
-        host_arg->result = result;
+
     return result;
 }

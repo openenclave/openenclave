@@ -41,6 +41,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `OE_ENCLAVE_TYPE_AUTO` to have the enclave appropriate to your built environment
   be chosen automatically. For instance, building Intel binaries will select SGX
   automatically, where on ARM it will pick TrustZone.
+- Fix CVE-2019-0876
+   - `_handle_sgx_get_report` will now write to the supplied argument if it les in host memory.
+   - Added check for missing null terminator in oeedger8r generated code.
 
 ### Changed
 
