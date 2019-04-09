@@ -4,6 +4,8 @@ oe = new jenkins.common.Openenclave()
 def packageUpload(String version, String build_type) {
     stage("Ubuntu${version} SGX1FLC Package ${build_type}") {
         node("ACC-${version}") {
+            cleanWs()
+            checkout scm
             def task = """
                        cmake ${WORKSPACE} -DCMAKE_BUILD_TYPE=${build_type} -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave' -DCPACK_GENERATOR=DEB
                        make

@@ -6,8 +6,12 @@ BIONIC_RG = "oe-deb-test-${BUILD_NUMBER}-1804"
 
 def ACCDeployVM(String agent_name, String agent_type, String region, String resource_group) {
     stage("Deploy ${agent_name}") {
-        withEnv(["REGION=${region}", "RESOURCE_GROUP=${resource_group}", "AGENT_NAME=${agent_name}", "AGENT_TYPE=${agent_type}"]) {
-            oe.azureEnvironment("./deploy-agent.sh")
+        node("nonSGX") {
+            cleanWs()
+            checkout scm
+            withEnv(["REGION=${region}", "RESOURCE_GROUP=${resource_group}", "AGENT_NAME=${agent_name}", "AGENT_TYPE=${agent_type}"]) {
+                oe.azureEnvironment("./deploy-agent.sh")
+            }
         }
     }
 }
@@ -30,7 +34,19 @@ def AccDebTesting(String version, String region, String deb_url) {
         azureuser@oe-deb-test-${BUILD_NUMBER}-${version}.${region}.cloudapp.azure.com '${test_deb_script}' """
 
     stage("OE Nightly Package Testing ${version}") {
-        oe.azureEnvironment("${script}")
+        node("nonSGX") {
+            cleanWs()
+            checkout scm
+            oe.azureEnvironment("${script}")
+        }
+    }
+}
+
+def cleanup(){
+    node("nonSGX") {
+        cleanWs()
+        checkout scm
+        oe.deleteRG([XENIAL_RG, BIONIC_RG])
     }
 }
 
@@ -42,5 +58,5 @@ try {
              "OE 18.04 Testing" :       { AccDebTesting("1804", "westeurope", "${OE_1804_DEB_URL}") }
 
 } finally {
-    oe.deleteRG([XENIAL_RG, BIONIC_RG])
+    cleanup()
 }

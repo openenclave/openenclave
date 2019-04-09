@@ -4,6 +4,8 @@ oe = new jenkins.common.Openenclave()
 def ACCTest(String label, String compiler, String build_type) {
     stage("${label} ${compiler} SGX1FLC ${build_type}") {
         node("${label}") {
+            cleanWs()
+            checkout scm
             def task = """
                        cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -Wdev
                        ninja -v
@@ -17,6 +19,8 @@ def ACCTest(String label, String compiler, String build_type) {
 def ACCGNUTest() {
     stage("ACC1804 GNU gcc SGX1FLC") {
         node("ACC-1804") {
+            cleanWs()
+            checkout scm
             def task = """
                        cmake ${WORKSPACE} -DUSE_LIBSGX=ON
                        make
@@ -34,6 +38,8 @@ def simulationTest(String version, String platform_mode, String build_type) {
     }
     stage("Sim clang-7 Ubuntu${version} ${platform_mode} ${build_type}") {
         node("nonSGX") {
+            cleanWs()
+            checkout scm
             withEnv(["OE_SIMULATION=1"]) {
                 def task = """
                            cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DUSE_LIBSGX=${use_libsgx} -Wdev
@@ -49,6 +55,8 @@ def simulationTest(String version, String platform_mode, String build_type) {
 def ACCContainerTest(String label, String version) {
     stage("${label} Container RelWithDebInfo") {
         node("${label}") {
+            cleanWs()
+            checkout scm
             def task = """
                        cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -Wdev
                        ninja -v
@@ -62,6 +70,8 @@ def ACCContainerTest(String label, String version) {
 def checkDevFlows(String version) {
     stage('Default compiler') {
         node("nonSGX") {
+            cleanWs()
+            checkout scm
             oe.dockerImage("oetools:${version}", ".jenkins/Dockerfile.scripts", "--build-arg ubuntu_version=${version}").inside {
                 timeout(30) {
                     dir('build') {
@@ -79,6 +89,8 @@ def checkDevFlows(String version) {
 def checkCI() {
     stage('Check CI') {
         node("nonSGX") {
+            cleanWs()
+            checkout scm
             oe.dockerImage("oetools:18.04", ".jenkins/Dockerfile", "--build-arg ubuntu_version=18.04").inside {
                 timeout(10) {
                     sh './scripts/check-ci'
@@ -91,6 +103,8 @@ def checkCI() {
 def win2016LinuxElfBuild(String version, String compiler, String build_type) {
     stage("Ubuntu ${version} SGX1 ${compiler} ${build_type}}") {
         node("nonSGX") {
+            cleanWs()
+            checkout scm
             def task = """
                        cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DUSE_DEBUG_MALLOC=OFF -Wdev
                        ninja -v
