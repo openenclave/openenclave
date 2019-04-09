@@ -1,6 +1,12 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+if (OE_SGX)
+  set(ARCH "x86_64")
+elseif (OE_TRUSTZONE)
+  set(ARCH "aarch64")
+endif ()
+
 # Build the C library, using local sources and sources from musl.
 set(MUSLSRC ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
@@ -43,7 +49,10 @@ set (PLATFORM_SRC "")
 
 if (OE_SGX)
     list(APPEND PLATFORM_SRC
-        sgx/syscalls.c)
+        sgx/arc4random.c
+        sgx/link.c
+        sgx/syscalls.c
+        sgx/sysconf.c)
 
     if (UNIX OR USE_CLANGW)
         list(APPEND PLATFORM_SRC
@@ -52,26 +61,24 @@ if (OE_SGX)
         set(APPEND PLATFORM_SRC
             ../common/sgx/rand.asm)
     endif()
-else()
+elseif (OE_TRUSTZONE)
     list(APPEND PLATFORM_SRC
+        optee/exp2l.c
+        optee/link.c
         optee/syscalls.c
-        optee/abort.c
-        optee/exp2l.c)
-endif()
+        optee/sysconf.c)
+endif ()
 
 add_library(oelibc STATIC
-    arc4random.c
     atexit.c
     dladdr.c
     libunwind_stubs.c
-    link.c
     locale.c
     malloc.c
     pthread.c
     sched_yield.c
     stdlib.c
     strerror.c
-    sysconf.c
     time.c
     __printf_chk.c
     __vfprintf_chk.c
@@ -752,17 +759,10 @@ target_link_libraries(oelibc
   PUBLIC oecore oelibc_includes
   PRIVATE oelibasm)
 
-if (OE_SGX)
 target_include_directories(oelibc PRIVATE
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/include
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal
-  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/x86_64)
-else()
-target_include_directories(oelibc PRIVATE
-  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/include
-  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal
-  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/aarch64)
-endif()
+  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/${ARCH})
 
 set_property(TARGET oelibc PROPERTY
   ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)

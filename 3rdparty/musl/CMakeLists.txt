@@ -6,9 +6,9 @@
 
 if (OE_SGX)
   set(ARCH "x86_64")
-else()
+elseif (OE_TRUSTZONE)
   set(ARCH "aarch64")
-endif()
+endif ()
 
 # NOTE: MUSL is NOT built by the `ExternalProject_Add` command. These
 # C flags only apply to a configuration step that generates the MUSL
@@ -18,7 +18,11 @@ endif()
 #
 # The build command here is just a set of copy instructions to setup
 # `oelibc_includes`. See that CMake target for compile options.
-set(MUSL_CFLAGS "-DSYSCALL_NO_INLINE -ftls-model=local-exec")
+if (OE_SGX)
+  set(MUSL_CFLAGS "-DSYSCALL_NO_INLINE -ftls-model=local-exec")
+elseif (OE_TRUSTZONE)
+  set(MUSL_CFLAGS "-DSYSCALL_NO_INLINE -fPIC")
+endif ()
 set(MUSL_CC ${CMAKE_C_COMPILER})
 set(MUSL_CXX ${CMAKE_CXX_COMPILER})
 
@@ -49,7 +53,7 @@ ExternalProject_Add(musl_includes
       ${PATCHES_DIR}/syscall_arch.h
       ${MUSL_DIR}/arch/${ARCH}/syscall_arch.h
     COMMAND ${CMAKE_COMMAND} -E copy
-      ${PATCHES_DIR}/pthread_arch.h
+      ${PATCHES_DIR}/pthread_${ARCH}.h
       ${MUSL_DIR}/arch/${ARCH}/pthread_arch.h
   CONFIGURE_COMMAND
     ${CMAKE_COMMAND} -E chdir ${MUSL_DIR}
@@ -112,7 +116,17 @@ add_dependencies(oelibc_includes musl_includes)
 target_include_directories(oelibc_includes
   INTERFACE
   $<BUILD_INTERFACE:$<$<COMPILE_LANGUAGE:CXX>:${LIBCXX_INCLUDES}>>
-  $<INSTALL_INTERFACE:$<$<COMPILE_LANGUAGE:CXX>:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/libcxx>>
+  $<INSTALL_INTERFACE:$<$<COMPILE_LANGUAGE:CXX>:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/libcxx>>)
+if (OE_TRUSTZONE)
+target_include_directories(oelibc_includes
+  INTERFACE
+  $<BUILD_INTERFACE:${OE_TZ_LIBUTEE_INC}>
+  $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/optee/libutee>
+  $<BUILD_INTERFACE:${OE_TZ_LIBUTILS_EXT_INC}>
+  $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/optee/libutils/ext>)
+endif ()
+target_include_directories(oelibc_includes
+  INTERFACE
   $<BUILD_INTERFACE:${MUSL_INCLUDES}>
   $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/libc>)
 
