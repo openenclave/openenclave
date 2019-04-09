@@ -21,7 +21,7 @@ set(ENCLAVE_CINCLUDES
 set(ENCLAVE_CXXINCLUDES
     "-I\${includedir}/openenclave/3rdparty/libcxx ${ENCLAVE_CINCLUDES}")
 
-set(ENCLAVE_CFLAGS_LIST -nostdinc -m64 -fPIE -ftls-model=local-exec)
+set(ENCLAVE_CFLAGS_LIST -nostdinc -m64 -fPIE -ftls-model=local-exec -fvisibility=hidden)
 
 set(ENCLAVE_CFLAGS_CLANG_LIST ${ENCLAVE_CFLAGS_LIST} ${SPECTRE_MITIGATION_FLAGS})
 list(JOIN ENCLAVE_CFLAGS_CLANG_LIST " " ENCLAVE_CFLAGS_CLANG)

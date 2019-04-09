@@ -14,6 +14,7 @@ list(APPEND MBEDTLS_WRAP_CFLAGS_LIST
   -DOE_NEED_STDC_NAMES
   -fPIE
   -ftls-model=local-exec
+  -fvisibility=hidden
   -fno-builtin-udivti3)
 
 if (USE_CLANGW)
