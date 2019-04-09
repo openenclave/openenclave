@@ -34,7 +34,7 @@ Please stage the formatting changes with your commit, instead of making an extra
 "Format Code" commit. Your editor can likely be setup to automatically run
 `clang-format` across the file or region you're editing. See:
 
-- [clang-format.el](https://github.com/emacsorphanage/clang-format/) for Emacs
+- [clang-format.el](https://github.com/llvm-mirror/clang/blob/master/tools/clang-format/clang-format.el) for Emacs
 - [vim-clang-format](https://github.com/rhysd/vim-clang-format) for Vim
 - [vscode-cpptools](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)
   for Visual Studio Code
