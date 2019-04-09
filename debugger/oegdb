@@ -3,13 +3,13 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-# Get path of the oe-gdb script
+# Get path of the oegdb script
 # See https://mywiki.wooledge.org/BashFAQ/028 for complexities involved
 # in determining location of a bash script. ${BASH_SOURCE}, though not perfect,
-# is an acceptable solution for oe-gdb.
+# is an acceptable solution for oegdb.
 OE_GDB_DIR=$(dirname "${BASH_SOURCE[0]}")
 
-# Get the path to the debugger libraries relative to the oe-gdb path.
+# Get the path to the debugger libraries relative to the oegdb path.
 # Normalize the path by cd-ing and doing a pwd -P.
 OE_GDB_LIB_DIR=$(cd "$OE_GDB_DIR/../lib/openenclave/debugger" || exit; pwd -P)
 

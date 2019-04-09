@@ -156,12 +156,12 @@ def enable_oeenclave_debug(oe_enclave_addr, enclave_path):
 
     # Check if debugging is enabled.
     if flags_tuple[0] == 0:
-        print ("oe-gdb: Debugging not enabled for enclave %s" % enclave_path)
+        print ("oegdb: Debugging not enabled for enclave %s" % enclave_path)
         return False
 
     # Check if the enclave is loaded in simulation mode.
     if flags_tuple[1] != 0:
-        print ("oe-gdb: Enclave %s loaded in simulation mode" % enclave_path)
+        print ("oegdb: Enclave %s loaded in simulation mode" % enclave_path)
 
     # Load symbol.
     if load_enclave_symbol(enclave_path, enclave_tuple[OE_ENCLAVE_ADDR_FIELD]) != 1:
@@ -259,15 +259,15 @@ class OCallStartBreakpoint(gdb.Breakpoint):
 def new_objfile_handler(event):
     global g_enclave_list_parsed
     if not g_enclave_list_parsed:
-        list_head = None        
+        list_head = None
         try:
-            list_head = gdb.parse_and_eval("oe_enclave_list_head")            
+            list_head = gdb.parse_and_eval("oe_enclave_list_head")
         except:
             pass
         enclaves = []
         try:
             if list_head != None:
-                print ("oe-gdb: Found global enclave list.")
+                print ("oegdb: Found global enclave list.")
                 node_ptr = list_head['lh_first']
                 while node_ptr != 0:
                     node = node_ptr.dereference()
@@ -276,30 +276,30 @@ def new_objfile_handler(event):
                     enclave_path = enclave.dereference()['path'].string('utf-8')
                     enclaves.append((enclave_addr, enclave_path))
                     node_ptr = node['next_entry']['le_next']
-                
+
 
                 # Set parsed to true. enable_oeenclave_debug loads the enclave
-                # binary and therefore would trigger a recursive call to 
-                # new_objfile_handler.Setting g_enclave_list_parsed breaks out 
+                # binary and therefore would trigger a recursive call to
+                # new_objfile_handler.Setting g_enclave_list_parsed breaks out
                 # the potential infinite recursion.
                 g_enclave_list_parsed = True;
 
-                print ("oe-gdb: %d enclaves in global enclave list." % len(enclaves))
+                print ("oegdb: %d enclaves in global enclave list." % len(enclaves))
                 for (enclave_addr, enclave_path) in enclaves:
-                    print("oe-gdb: Reading symbols from %s ..." % enclave_path, end='')    
+                    print("oegdb: Reading symbols from %s ..." % enclave_path, end='')
                     enable_oeenclave_debug(enclave_addr, enclave_path)
                     print("done.")
         except:
-            print("oe-gdb: Global enclave list processing failed.")
+            print("oegdb: Global enclave list processing failed.")
             g_enclave_list_parsed = True
 
 def exited_handler(event):
-    oe_debugger_cleanup()                
+    oe_debugger_cleanup()
 
 def oe_debugger_init():
     #execute "set displaced-stepping off" to workaround the gdb 7.11 issue
     gdb.execute("set displaced-stepping off", False, True)
-    
+
     # When the inferior quits, execute cleanup.
     gdb.events.exited.connect(exited_handler)
 

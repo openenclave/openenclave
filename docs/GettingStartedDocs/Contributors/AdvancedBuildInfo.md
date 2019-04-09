@@ -57,7 +57,7 @@ This builds the entire Open Enclave SDK, creating the following files in your bu
 
 | Filename                          | Description                                           |
 |-----------------------------------|-------------------------------------------------------|
-| output/bin/oe-gdb                 | Utility for debugging enclaves                        |
+| output/bin/oegdb                  | Utility for debugging enclaves                        |
 | output/bin/oesgx                  | Utility for determining the level of SGX support for the given platform |
 | output/bin/oesign                 | Utility for signing enclaves                          |
 | output/lib/enclave/liboecore.a    | Core library for building enclave applications (defines enclave intrinsics) |

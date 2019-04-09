@@ -1,4 +1,4 @@
-oe-gdb tests
+oegdb tests
 =====================
 
 Test suite locking down supported debugging capabilities in both

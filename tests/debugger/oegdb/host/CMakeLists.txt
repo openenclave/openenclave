@@ -4,8 +4,8 @@
 
 oeedl_file(../oe_gdb_test.edl host oe_gdb_test_u)
 
-add_executable(oe_gdb_test_host 
-    host.c 
+add_executable(oe_gdb_test_host
+    host.c
     ${oe_gdb_test_u}
 )
 
