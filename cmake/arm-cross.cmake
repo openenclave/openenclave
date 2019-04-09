@@ -19,17 +19,14 @@ if (OE_BUILDROOT_BIN AND OE_BUILDROOT_SYSROOT)
 endif ()
 
 # When using GCC to compile assembly files.
-set(OE_TRUSTZONE_TA_S_FLAGS
+set(OE_TZ_TA_S_FLAGS
     -DASM=1
     -pipe)
 
-set(OE_TRUSTZONE_TA_DEFINES
-    -D_XOPEN_SOURCE=700
-    -DARM64=1
-    -D__LP64__=1)
-
 # When using GCC to compile C/CXX files.
-set(OE_TRUSTZONE_TA_C_FLAGS
+set(OE_TZ_TA_C_FLAGS
+    -DARM64=1
+    -D__LP64__=1
     -mstrict-align
     -nostdinc
     -nostdlib
@@ -45,15 +42,36 @@ set(OE_TRUSTZONE_TA_C_FLAGS
 
 string(REPLACE ";"
     " "
-    OE_TRUSTZONE_TA_C_FLAGS_STRING
-    "${OE_TRUSTZONE_TA_C_FLAGS}")
+    OE_TZ_TA_C_FLAGS_STRING
+    "${OE_TZ_TA_C_FLAGS}")
 
 # When using GNU LD for linking.
-set(OE_TRUSTZONE_TA_LD_FLAGS "-nostdinc -nostdlib -nodefaultlibs -nostartfiles -pie --sort-section=alignment")
+set(OE_TZ_TA_LD_FLAGS "-nostdinc -nostdlib -nodefaultlibs -nostartfiles -pie --sort-section=alignment")
 
 # Path to required bits of the TA Dev Kit.
-set(OE_TRUSTZONE_TA_DEV_KIT_CONF                   ${TA_DEV_KIT_DIR}/host_include/conf.h)
-set(OE_TRUSTZONE_TA_DEV_KIT_LINKER_SCRIPT_TEMPLATE ${TA_DEV_KIT_DIR}/src/ta.ld.S)
-set(OE_TRUSTZONE_TA_DEV_KIT_HEADER_SOURCE          ${TA_DEV_KIT_DIR}/src/user_ta_header.c)
-set(OE_TRUSTZONE_TA_DEV_KIT_DEFAULT_SIGNING_KEY    ${TA_DEV_KIT_DIR}/keys/default_ta.pem)
-set(OE_TRUSTZONE_TA_DEV_KIT_SIGN_TOOL              ${TA_DEV_KIT_DIR}/scripts/sign.py)
+set(OE_TZ_TA_DEV_KIT_CONF                   ${OE_TA_DEV_KIT_DIR}/host_include/conf.h)
+set(OE_TZ_TA_DEV_KIT_LINKER_SCRIPT_TEMPLATE ${OE_TA_DEV_KIT_DIR}/src/ta.ld.S)
+set(OE_TZ_TA_DEV_KIT_HEADER_SOURCE          ${OE_TA_DEV_KIT_DIR}/src/user_ta_header.c)
+set(OE_TZ_TA_DEV_KIT_DEFAULT_SIGNING_KEY    ${OE_TA_DEV_KIT_DIR}/keys/default_ta.pem)
+set(OE_TZ_TA_DEV_KIT_SIGN_TOOL              ${OE_TA_DEV_KIT_DIR}/scripts/sign.py)
+
+# Path to OP-TEE OS.
+set(OE_TZ_OPTEE_SRC ${PROJECT_SOURCE_DIR}/3rdparty/optee/optee_os)
+
+# Path to OP-TEE's user-mode library (libutee).
+set(OE_TZ_LIBUTEE_SRC ${OE_TZ_OPTEE_SRC}/lib/libutee)
+set(OE_TZ_LIBUTEE_INC ${OE_TZ_LIBUTEE_SRC}/include)
+
+# Path to OP-TEE's user-mode utilities (libutils).
+set(OE_TZ_LIBUTILS_SRC ${OE_TZ_OPTEE_SRC}/lib/libutils)
+
+# Path to OP-TEE's user-mode C runtime library (part of libutils).
+set(OE_TZ_LIBUTILS_ISOC_INC ${OE_TZ_LIBUTILS_SRC}/isoc/include)
+
+# Path to OP-TEE's user-mode C runtime library extenions (part of libutils).
+set(OE_TZ_LIBUTILS_EXT_SRC ${OE_TZ_LIBUTILS_SRC}/ext)
+set(OE_TZ_LIBUTILS_EXT_INC ${OE_TZ_LIBUTILS_EXT_SRC}/include)
+
+# Path to OP-TEE's user-mode math library (libmpa).
+set(OE_TZ_LIBMPA_SRC ${OE_TZ_OPTEE_SRC}/lib/libmpa)
+set(OE_TZ_LIBMPA_INC ${OE_TZ_LIBMPA_SRC}/include)
