@@ -46,7 +46,7 @@ that it is relative to `./include/openenclave`, from the root of the repo.
 ## Source code documentation conventions
 
 Open Enclave uses the Doxygen Markdown style throughout the sources. To learn
-more about Doxygen Markdown, refer to the [Doxygen Markdown Support](https://www.stack.nl/~dimitri/doxygen/manual/markdown.html).
+more about Doxygen Markdown, refer to the [Doxygen Markdown Support](http://www.doxygen.nl/manual/markdown.html).
 
 The sections below explain the basics.
 
