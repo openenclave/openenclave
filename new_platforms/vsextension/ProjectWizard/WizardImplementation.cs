@@ -53,8 +53,7 @@ namespace OpenEnclaveSDK
                 // User picked a specific board for which we have a TA Dev Kit in the nuget package.
                 string solutionDirectory;
                 replacementsDictionary.TryGetValue("$solutiondirectory$", out solutionDirectory);
-                // TODO: update the path below, and the actual values of board, once we know the path from the actual nuget package.
-                folder = Path.Combine(solutionDirectory, "packages\\openenclave.0.2.0-CI-20190129-011410\\boards\\" + board);
+                folder = Path.Combine(solutionDirectory, "packages\\openenclave.0.2.0-CI-20190409-193849\\lib\\native\\gcc6\\optee\\v3.3.0\\" + board);
             }
             else
             {

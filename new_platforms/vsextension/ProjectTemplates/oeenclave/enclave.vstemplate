@@ -35,7 +35,7 @@
   </WizardExtension>
   <WizardData>
     <packages repository="extension" repositoryId="OpenEnclaveVisualStudioExtension-1">
-      <package id="openenclave" version="0.2.0-CI-20190129-011410" />
+      <package id="openenclave" version="0.2.0-CI-20190409-193849" />
     </packages>
   </WizardData>
 </VSTemplate>
