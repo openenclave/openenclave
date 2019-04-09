@@ -72,7 +72,10 @@ macro(add_enclave_ex)
         set(ENCLAVE_C_SOURCES   ${ENCLAVE_SOURCES})
         set(ENCLAVE_CPP_SOURCES ${ENCLAVE_SOURCES})
 
+        list(FILTER ENCLAVE_C_SOURCES   EXCLUDE REGEX "\\.cc$")
         list(FILTER ENCLAVE_C_SOURCES   EXCLUDE REGEX "\\.cpp$")
+        list(FILTER ENCLAVE_C_SOURCES   EXCLUDE REGEX "\\.cxx$")
+
         list(FILTER ENCLAVE_CPP_SOURCES EXCLUDE REGEX "\\.c$")
 
         add_library(${ENCLAVE_TARGET}-c OBJECT ${ENCLAVE_C_SOURCES})

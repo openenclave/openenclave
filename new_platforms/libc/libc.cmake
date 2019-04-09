@@ -632,6 +632,7 @@ set(LIBC_C_SRC
     ${CMAKE_CURRENT_LIST_DIR}/enc/optee/errno.c
     ${CMAKE_CURRENT_LIST_DIR}/enc/optee/getpagesize.c
     ${CMAKE_CURRENT_LIST_DIR}/enc/optee/libunwind_stubs.c
+    ${CMAKE_CURRENT_LIST_DIR}/enc/optee/lifecycle.c
     ${CMAKE_CURRENT_LIST_DIR}/enc/optee/locale.c
     ${CMAKE_CURRENT_LIST_DIR}/enc/optee/pthread.c
     ${CMAKE_CURRENT_LIST_DIR}/enc/optee/sbrk.c

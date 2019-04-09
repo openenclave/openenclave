@@ -3,6 +3,7 @@
 
 #include <openenclave/enclave.h>
 #include <stdio.h>
+#include <lifecycle.h>
 
 #include <errno.h>
 #include <iostream>
@@ -12,17 +13,10 @@ using namespace std;
 
 extern "C"
 {
-#include <user_ta_header.h>
-
-    void* __gcc_personality_v0;
-    extern void oe_call_atexit_functions(void);
+    #include <user_ta_header.h>
 }
 
 #include "helloworld_t.h"
-
-void ecall_InitializeStdio(void)
-{
-}
 
 static void deal_with_result(oe_result_t result)
 {
@@ -108,16 +102,9 @@ int enclave_entry(void)
 
     char buf[128];
 
-    void (**fn)(void);
-    extern void (*__init_array_start)(void);
-    extern void (*__init_array_end)(void);
-
     result = host_print(&retval, "Processing init array.");
     deal_with_result(result);
-    for (fn = &__init_array_start; fn < &__init_array_end; fn++)
-    {
-        (*fn)();
-    }
+    _oe_entry();
 
     result = host_print(&retval, "Reading some linker variables.");
     deal_with_result(result);
@@ -263,17 +250,9 @@ int enclave_entry(void)
     result = host_print(&retval, "Bye bye!");
     deal_with_result(result);
 
-    oe_call_atexit_functions();
-
-    extern void (*__fini_array_start)(void);
-    extern void (*__fini_array_end)(void);
-
-    result = host_print(&retval, "Processing fini array.");
+    result = host_print(&retval, "Processing init array.");
     deal_with_result(result);
-    for (fn = &__fini_array_start; fn < &__fini_array_end; fn++)
-    {
-        (*fn)();
-    }
+    _oe_exit();
 
     return result;
 }
