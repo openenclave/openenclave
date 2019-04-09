@@ -132,7 +132,7 @@ elseif (WIN32)
 endif ()
 
 # TODO: Handle Trust Zone etc.
-if (USE_LIBSGX)
+if (OE_SGX AND USE_LIBSGX)
   find_library(LIBSGX_COMMON NAMES sgx_enclave_common)
   find_library(LIBSGX_QE NAMES sgx_dcap_ql)
   find_library(LIBSGX_URTS NAMES sgx_urts)
