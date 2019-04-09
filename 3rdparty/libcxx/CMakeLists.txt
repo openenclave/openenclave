@@ -11,17 +11,15 @@ ExternalProject_Add(libcxx_includes
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/__config ${LIBCXX_INCLUDES}/__config
   INSTALL_COMMAND "")
 
-add_library(libcxx OBJECT
+set(SOURCES
   __dso_handle.cpp
   libcxx/src/algorithm.cpp
   libcxx/src/any.cpp
   libcxx/src/bind.cpp
   libcxx/src/chrono.cpp
-  libcxx/src/condition_variable.cpp
   libcxx/src/debug.cpp
   libcxx/src/exception.cpp
   libcxx/src/functional.cpp
-  libcxx/src/future.cpp
   libcxx/src/hash.cpp
   libcxx/src/ios.cpp
   libcxx/src/iostream.cpp
@@ -44,6 +42,13 @@ add_library(libcxx OBJECT
   libcxx/src/variant.cpp
   libcxx/src/vector.cpp)
 
+if (OE_SGX)
+  list(APPEND SOURCES
+    libcxx/src/condition_variable.cpp
+    libcxx/src/future.cpp)
+endif ()
+
+add_library(libcxx OBJECT ${SOURCES})
 maybe_build_using_clangw(libcxx)
 
 add_dependencies(libcxx libcxx_includes)
@@ -56,7 +61,12 @@ target_compile_definitions(libcxx
   -D_LIBCPP_PROVIDES_DEFAULT_RUNE_TABLE
   -D_LIBCPP_BUILDING_LIBRARY
   -DOE_LIBC_SUPPRESS_DEPRECATIONS)
-
+if (OE_TRUSTZONE)
+target_compile_definitions(libcxx
+  PRIVATE
+  -D_LIBCPP_HAS_NO_CXX14_CONSTEXPR
+  -D_LIBCPP_HAS_NO_THREADS)
+endif ()
 target_link_libraries(libcxx PUBLIC oelibc)
 
 # NOTE: The `PUBLIC` headers for `libcxx` are actually added to
