@@ -2,7 +2,14 @@
 # Licensed under the MIT License.
 
 string(REPLACE ";" "  " MBEDTLS_SPECTRE_MITIGATION_FLAGS "${OE_SPECTRE_MITIGATION_FLAGS}")
-set(MBEDTLS_WRAP_CFLAGS "-nostdinc -I${PROJECT_SOURCE_DIR}/include/openenclave/corelibc -I${PROJECT_SOURCE_DIR}/include -DOE_NEED_STDC_NAMES -fPIE -fno-builtin-udivti3 ${MBEDTLS_SPECTRE_MITIGATION_FLAGS} -ftls-model=local-exec")
+
+set(MBEDTLS_WRAP_CFLAGS_BASE "-I${PROJECT_SOURCE_DIR}/include/openenclave/corelibc -I${PROJECT_SOURCE_DIR}/include -DOE_NEED_STDC_NAMES ${MBEDTLS_SPECTRE_MITIGATION_FLAGS}")
+
+if (OE_SGX)
+  set(MBEDTLS_WRAP_CFLAGS "-nostdinc -fPIE -fno-builtin-udivti3 -ftls-model=local-exec ${MBEDTLS_WRAP_CFLAGS_BASE}")
+elseif (OE_TRUSTZONE)
+  set(MBEDTLS_WRAP_CFLAGS "${OE_TZ_TA_C_FLAGS_STRING} ${MBEDTLS_WRAP_CFLAGS_BASE}")
+endif ()
 
 if (USE_CLANGW)
   set(MBEDTLS_WRAP_CFLAGS "-target x86_64-pc-linux ${MBEDTLS_WRAP_CFLAGS}")
