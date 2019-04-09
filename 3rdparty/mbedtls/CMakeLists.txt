@@ -15,6 +15,7 @@ list(APPEND MBEDTLS_WRAP_CFLAGS_LIST
   -fPIE
   -ftls-model=local-exec
   -fvisibility=hidden
+  -fno-stack-protector
   -fno-builtin-udivti3)
 
 if (USE_CLANGW)
