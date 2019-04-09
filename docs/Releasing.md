@@ -18,7 +18,7 @@ The initial announcement of the upcoming release will be a PR by the release
 manager to the `master` branch with the commit to bump the [VERSION
 file](../VERSION) to _next_ pre-release, e.g. `v0.6.x`, and the commit to update
 the [CHANGELOG](#changelog-updates) "Unreleased" section to `v0.6.0` (and change
-the previous to v0.5.0).
+the previous to `v0.5.0`).
 
 Release Branch
 --------------
