@@ -15,7 +15,7 @@ Code of Conduct
 
 In order to maintain a pleasant and welcoming environment, we want to reiterate
 that it is imperative that all community members adhere to our [Code of
-Conduct](Contribution.md#code-of-conduct).
+Conduct](Contributing.md#code-of-conduct).
 
 Design and Development Discussions
 ----------------------------------

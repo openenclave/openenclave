@@ -13,11 +13,6 @@ def packageUpload(String version, String build_type) {
             oe.Run("clang-7", task)
             azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: "master/${BUILD_NUMBER}/ubuntu/${version}/${build_type}/SGX1FLC/", containerName: 'oejenkins')
             azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: "master/latest/ubuntu/${version}/${build_type}/SGX1FLC/", containerName: 'oejenkins')
-            if ( build_type == 'Release' ) {
-                withCredentials([usernamePassword(credentialsId: 'https_gh_pages_push', passwordVariable: 'GHUSER_PASSWORD', usernameVariable: 'GHUSER_ID')]) {
-                    sh 'bash ./scripts/deploy-docs build https $GHUSER_ID $GHUSER_PASSWORD'
-                }
-            }
         }
     }
 }
