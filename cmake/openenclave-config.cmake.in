@@ -13,10 +13,6 @@ set_and_check(OE_BINDIR "@PACKAGE_CMAKE_INSTALL_BINDIR@")
 set_and_check(OE_DATADIR "@PACKAGE_CMAKE_INSTALL_DATADIR@")
 set_and_check(OE_INCLUDEDIR "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@")
 
-# Check for compiler flags
-include(CheckCCompilerFlag)
-include(CheckCXXCompilerFlag)
-
 # Dependencies.
 include(CMakeFindDependencyMacro)
 find_dependency(Threads)
@@ -31,8 +27,18 @@ include("${CMAKE_CURRENT_LIST_DIR}/openenclave-targets.cmake")
 
 # Apply Spectre mitigations if available.
 set(OE_SPECTRE_MITIGATION_FLAGS "@SPECTRE_MITIGATION_FLAGS@")
-check_c_compiler_flag("${OE_SPECTRE_MITIGATION_FLAGS}" OE_SPECTRE_MITIGATION_C_FLAGS_SUPPORTED)
-check_cxx_compiler_flag("${OE_SPECTRE_MITIGATION_FLAGS}" OE_SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
-if (OE_SPECTRE_MITIGATION_C_FLAGS_SUPPORTED AND OE_SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
+
+# Check for compiler flags support.
+if (CMAKE_C_COMPILER)
+  include(CheckCCompilerFlag)
+  check_c_compiler_flag("${OE_SPECTRE_MITIGATION_FLAGS}" OE_SPECTRE_MITIGATION_C_FLAGS_SUPPORTED)
+endif ()
+
+if (CMAKE_CXX_COMPILER)
+  include(CheckCXXCompilerFlag)
+  check_cxx_compiler_flag("${OE_SPECTRE_MITIGATION_FLAGS}" OE_SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
+endif ()
+
+if (OE_SPECTRE_MITIGATION_C_FLAGS_SUPPORTED OR OE_SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
   target_compile_options(openenclave::oecore INTERFACE ${OE_SPECTRE_MITIGATION_FLAGS})
 endif ()
