@@ -23,7 +23,7 @@ endfunction()
 macro(add_enclave_ex)
     set(options CXX)
     set(oneValueArgs TARGET UUID CONFIG KEY)
-    set(multiValueArgs SOURCES C_GEN LIBRARIES)
+    set(multiValueArgs SOURCES INCLUDES LIBRARIES)
     cmake_parse_arguments(ENCLAVE
         "${options}"
         "${oneValueArgs}"
@@ -82,6 +82,7 @@ macro(add_enclave_ex)
         set_property(TARGET ${ENCLAVE_TARGET}-c PROPERTY C_STANDARD 99)
         target_include_directories(${ENCLAVE_TARGET}-c
             BEFORE PRIVATE
+                ${ENCLAVE_INCLUDES}
                 ${CMAKE_CURRENT_BINARY_DIR}
                 ${CMAKE_CURRENT_SOURCE_DIR}/optee)
         target_link_libraries(${ENCLAVE_TARGET}-c
@@ -99,6 +100,7 @@ macro(add_enclave_ex)
             set_property(TARGET ${ENCLAVE_TARGET}-cpp PROPERTY C_STANDARD 99)
             target_include_directories(${ENCLAVE_TARGET}-cpp
                 BEFORE PRIVATE
+                    ${ENCLAVE_INCLUDES}
                     ${CMAKE_CURRENT_BINARY_DIR}
                     ${CMAKE_CURRENT_SOURCE_DIR}/optee)
             target_link_libraries(${ENCLAVE_TARGET}-cpp
