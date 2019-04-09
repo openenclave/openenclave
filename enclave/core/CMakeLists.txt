@@ -123,22 +123,26 @@ if (CMAKE_C_COMPILER_ID MATCHES GNU)
     target_compile_options(oecore PRIVATE -Wjump-misses-init)
 endif ()
 
-# NOTE: All code inside an enclave must be compile with "position
-# independent executable" semantics via -fPIE, and linked with -pie.
-# Hence the PUBLIC (and INTERFACE) use of these flags instead of -fPIC
-# or POSITION_INDEPENDENT_CODE, which would use the incorrect flag as
-# enclaves actually are executables.
-target_compile_options(oecore PUBLIC
-    -fPIE
-    -nostdinc
-    -fno-stack-protector
-    -fvisibility=hidden
-# According to https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#Code-Gen-Options
-# "The default without -fpic is ‘initial-exec’; with -fpic the default is ‘global-dynamic’"
-# Enclaves are linked using -pie and therefore global-dynamic is too conservative.
-# Of the two efficient static tls models, inital-exec and local-exec, we choose the most
-# optimal one.
-    -ftls-model=local-exec)
+if (OE_SGX)
+    # NOTE: All code inside an enclave must be compile with "position
+    # independent executable" semantics via -fPIE, and linked with -pie.
+    # Hence the PUBLIC (and INTERFACE) use of these flags instead of -fPIC
+    # or POSITION_INDEPENDENT_CODE, which would use the incorrect flag as
+    # enclaves actually are executables.
+    target_compile_options(oecore PUBLIC
+        -fPIE
+        -nostdinc
+        -fno-stack-protector
+        -fvisibility=hidden
+    # According to https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#Code-Gen-Options
+    # "The default without -fpic is ‘initial-exec’; with -fpic the default is ‘global-dynamic’"
+    # Enclaves are linked using -pie and therefore global-dynamic is too conservative.
+    # Of the two efficient static tls models, inital-exec and local-exec, we choose the most
+    # optimal one.
+        -ftls-model=local-exec)
+elseif (OE_TRUSTZONE)
+    target_compile_options(oecore PUBLIC ${OE_TZ_TA_C_FLAGS})
+endif ()
 
 target_compile_options(oecore INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>)
 
@@ -150,7 +154,7 @@ target_compile_definitions(oecore
     # package.
     $<BUILD_INTERFACE:OE_API_VERSION=2>)
 
-if(USE_LIBSGX)
+if(OE_SGX AND USE_LIBSGX)
     target_compile_definitions(oecore PUBLIC OE_USE_LIBSGX)
 endif()
 
@@ -160,9 +164,15 @@ if(USE_DEBUG_MALLOC)
 endif()
 
 # Interface link flags for enclaves.
-target_link_libraries(oecore INTERFACE
-    -nostdlib -nodefaultlibs -nostartfiles
-    -Wl,--no-undefined,-Bstatic,-Bsymbolic,--export-dynamic,-pie,--build-id)
+if (OE_SGX)
+    target_link_libraries(oecore INTERFACE
+        -nostdlib -nodefaultlibs -nostartfiles
+        -Wl,--no-undefined,-Bstatic,-Bsymbolic,--export-dynamic,-pie,--build-id)
+elseif (OE_TRUSTZONE)
+    target_link_libraries(oecore INTERFACE
+        -nostdinc -nostdlib -nodefaultlibs -nostartfiles
+        -Wl,--no-undefined,-pie,--sort-section=alignment)
+endif ()
 
 set_property(TARGET oecore PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 install (TARGETS oecore EXPORT openenclave-targets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
