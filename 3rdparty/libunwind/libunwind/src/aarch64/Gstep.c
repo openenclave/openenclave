@@ -27,8 +27,32 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 #include "offsets.h"
 
-PROTECTED int
-unw_handle_signal_frame (unw_cursor_t *cursor)
+/* Recognise PLT entries such as:
+  40ddf0:       b0000570        adrp    x16, 4ba000 <_GLOBAL_OFFSET_TABLE_+0x2a8>
+  40ddf4:       f9433611        ldr     x17, [x16,#1640]
+  40ddf8:       9119a210        add     x16, x16, #0x668
+  40ddfc:       d61f0220        br      x17 */
+static int
+is_plt_entry (struct dwarf_cursor *c)
+{
+  unw_word_t w0, w1;
+  unw_accessors_t *a;
+  int ret;
+
+  a = unw_get_accessors_int (c->as);
+  if ((ret = (*a->access_mem) (c->as, c->ip, &w0, 0, c->as_arg)) < 0
+      || (ret = (*a->access_mem) (c->as, c->ip + 8, &w1, 0, c->as_arg)) < 0)
+    return 0;
+
+  ret = (((w0 & 0xff0000009f000000) == 0xf900000090000000)
+         && ((w1 & 0xffffffffff000000) == 0xd61f022091000000));
+
+  Debug (14, "ip=0x%lx => 0x%016lx 0x%016lx, ret = %d\n", c->ip, w0, w1, ret);
+  return ret;
+}
+
+static int
+aarch64_handle_signal_frame (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
   int ret;
@@ -101,11 +125,12 @@ unw_handle_signal_frame (unw_cursor_t *cursor)
   dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_PC], &c->dwarf.ip);
 
   c->dwarf.pi_valid = 0;
+  c->dwarf.use_prev_instr = 0;
 
   return 1;
 }
 
-PROTECTED int
+int
 unw_step (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
@@ -115,8 +140,8 @@ unw_step (unw_cursor_t *cursor)
          c, c->dwarf.ip, c->dwarf.cfa);
 
   /* Check if this is a signal frame. */
-  if (unw_is_signal_frame (cursor))
-    return unw_handle_signal_frame (cursor);
+  if (unw_is_signal_frame (cursor) > 0)
+    return aarch64_handle_signal_frame (cursor);
 
   ret = dwarf_step (&c->dwarf);
   Debug(1, "dwarf_step()=%d\n", ret);
@@ -125,7 +150,40 @@ unw_step (unw_cursor_t *cursor)
     return ret;
 
   if (unlikely (ret < 0))
-    return 0;
+    {
+      /* DWARF failed. */
+      if (is_plt_entry (&c->dwarf))
+        {
+          Debug (2, "found plt entry\n");
+          c->frame_info.frame_type = UNW_AARCH64_FRAME_STANDARD;
+        }
+      else
+        {
+          Debug (2, "fallback\n");
+          c->frame_info.frame_type = UNW_AARCH64_FRAME_GUESSED;
+        }
+      /* Use link register (X30). */
+      c->frame_info.cfa_reg_offset = 0;
+      c->frame_info.cfa_reg_sp = 0;
+      c->frame_info.fp_cfa_offset = -1;
+      c->frame_info.lr_cfa_offset = -1;
+      c->frame_info.sp_cfa_offset = -1;
+      c->dwarf.loc[UNW_AARCH64_PC] = c->dwarf.loc[UNW_AARCH64_X30];
+      c->dwarf.loc[UNW_AARCH64_X30] = DWARF_NULL_LOC;
+      if (!DWARF_IS_NULL_LOC (c->dwarf.loc[UNW_AARCH64_PC]))
+        {
+          ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_PC], &c->dwarf.ip);
+          if (ret < 0)
+            {
+              Debug (2, "failed to get pc from link register: %d\n", ret);
+              return ret;
+            }
+          Debug (2, "link register (x30) = 0x%016lx\n", c->dwarf.ip);
+          ret = 1;
+        }
+      else
+        c->dwarf.ip = 0;
+    }
 
   return (c->dwarf.ip == 0) ? 0 : 1;
 }

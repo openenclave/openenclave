@@ -49,7 +49,7 @@ static inline int
 get_proc_name (unw_addr_space_t as, unw_word_t ip,
                char *buf, size_t buf_len, unw_word_t *offp, void *arg)
 {
-  unw_accessors_t *a = unw_get_accessors (as);
+  unw_accessors_t *a = unw_get_accessors_int (as);
   unw_proc_info_t pi;
   int ret;
 
@@ -95,7 +95,7 @@ get_proc_name (unw_addr_space_t as, unw_word_t ip,
   return -UNW_ENOINFO;
 }
 
-PROTECTED int
+int
 unw_get_proc_name (unw_cursor_t *cursor, char *buf, size_t buf_len,
                    unw_word_t *offp)
 {
@@ -104,11 +104,15 @@ unw_get_proc_name (unw_cursor_t *cursor, char *buf, size_t buf_len,
   int error;
 
   ip = tdep_get_ip (c);
+#if !defined(__ia64__)
   if (c->dwarf.use_prev_instr)
     --ip;
+#endif
   error = get_proc_name (tdep_get_as (c), ip, buf, buf_len, offp,
                          tdep_get_as_arg (c));
+#if !defined(__ia64__)
   if (c->dwarf.use_prev_instr && offp != NULL && error == 0)
     *offp += 1;
+#endif
   return error;
 }

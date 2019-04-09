@@ -26,7 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 #include "offsets.h"
 
-PROTECTED int
+int
 unw_step (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
@@ -60,7 +60,6 @@ unw_step (unw_cursor_t *cursor)
 
           c->sigcontext_format = HPPA_SCF_LINUX_RT_SIGFRAME;
           c->sigcontext_addr = sc_addr;
-          c->dwarf.ret_addr_column = UNW_HPPA_RP;
 
           if ((ret = dwarf_get (&c->dwarf, iaoq_loc, &ip)) < 0)
             {
