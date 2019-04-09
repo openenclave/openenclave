@@ -40,56 +40,53 @@ struct table_entry
     int32_t fde_offset;
   };
 
-
-static inline const struct table_entry *
-lookup (const struct table_entry *table, size_t table_size, int32_t rel_ip);
-
-static int
-remote_lookup (unw_addr_space_t as,
-	       unw_word_t table, size_t table_size, int32_t rel_ip,
-	       struct table_entry *e, void *arg);
-
-
 #ifndef UNW_REMOTE_ONLY
 
 #ifdef __linux
 #include "os-linux.h"
 #endif
 
+#ifndef __clang__
+static ALIAS(dwarf_search_unwind_table) int
+dwarf_search_unwind_table_int (unw_addr_space_t as,
+                               unw_word_t ip,
+                               unw_dyn_info_t *di,
+                               unw_proc_info_t *pi,
+                               int need_unwind_info, void *arg);
+#else
+#define dwarf_search_unwind_table_int dwarf_search_unwind_table
+#endif
+
 static int
 linear_search (unw_addr_space_t as, unw_word_t ip,
                unw_word_t eh_frame_start, unw_word_t eh_frame_end,
                unw_word_t fde_count,
-               unw_word_t *fde_addr, int need_unwind_info, void *arg)
+               unw_proc_info_t *pi, int need_unwind_info, void *arg)
 {
-  unw_accessors_t *a = unw_get_accessors (unw_local_addr_space);
-  unw_word_t i = 0, faddr, addr = eh_frame_start;
-  unw_proc_info_t pi;
+  unw_accessors_t *a = unw_get_accessors_int (unw_local_addr_space);
+  unw_word_t i = 0, fde_addr, addr = eh_frame_start;
   int ret;
 
   while (i++ < fde_count && addr < eh_frame_end)
     {
-      *fde_addr = addr;
-      if ((ret = dwarf_extract_proc_info_from_fde (as, a, &addr, &pi,
+      fde_addr = addr;
+      if ((ret = dwarf_extract_proc_info_from_fde (as, a, &addr, pi,
                                                    eh_frame_start,
                                                    0, 0, arg)) < 0)
         return ret;
 
-      if (ip >= pi.start_ip && ip < pi.end_ip)
+      if (ip >= pi->start_ip && ip < pi->end_ip)
         {
-          *fde_addr = faddr;
-
           if (!need_unwind_info)
-            return 0;
-
-          addr = faddr;
-          if ((ret = dwarf_extract_proc_info_from_fde (as, a, &addr, &pi,
+            return 1;
+          addr = fde_addr;
+          if ((ret = dwarf_extract_proc_info_from_fde (as, a, &addr, pi,
                                                        eh_frame_start,
                                                        need_unwind_info, 0,
                                                        arg))
               < 0)
             return ret;
-          return 0;
+          return 1;
         }
     }
   return -UNW_ENOINFO;
@@ -100,151 +97,42 @@ linear_search (unw_addr_space_t as, unw_word_t ip,
 /* Load .debug_frame section from FILE.  Allocates and returns space
    in *BUF, and sets *BUFSIZE to its size.  IS_LOCAL is 1 if using the
    local process, in which case we can search the system debug file
-   directory; 0 for other address spaces, in which case we do not; or
-   -1 for recursive calls following .gnu_debuglink.  Returns 0 on
-   success, 1 on error.  Succeeds even if the file contains no
-   .debug_frame.  */
+   directory; 0 for other address spaces, in which case we do
+   not. Returns 0 on success, 1 on error.  Succeeds even if the file
+   contains no .debug_frame.  */
 /* XXX: Could use mmap; but elf_map_image keeps tons mapped in.  */
 
 static int
 load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local)
 {
-  FILE *f;
-  Elf_W (Ehdr) ehdr;
-  Elf_W (Half) shstrndx;
-  Elf_W (Shdr) *sec_hdrs = NULL;
-  char *stringtab = NULL;
-  unsigned int i;
-  size_t linksize = 0;
-  char *linkbuf = NULL;
-  
-  *buf = NULL;
-  *bufsize = 0;
-  
-  f = fopen (file, "r");
-  
-  if (!f)
-    return 1;
-  
-  if (fread (&ehdr, sizeof (Elf_W (Ehdr)), 1, f) != 1)
-    goto file_error;
-  
-  shstrndx = ehdr.e_shstrndx;
-  
-  Debug (4, "opened file '%s'. Section header at offset %d\n",
-         file, (int) ehdr.e_shoff);
+  struct elf_image ei;
+  Elf_W (Shdr) *shdr;
+  int ret;
 
-  fseek (f, ehdr.e_shoff, SEEK_SET);
-  sec_hdrs = calloc (ehdr.e_shnum, sizeof (Elf_W (Shdr)));
-  if (fread (sec_hdrs, sizeof (Elf_W (Shdr)), ehdr.e_shnum, f) != ehdr.e_shnum)
-    goto file_error;
-  
-  Debug (4, "loading string table of size %zd\n",
-           sec_hdrs[shstrndx].sh_size);
-  stringtab = malloc (sec_hdrs[shstrndx].sh_size);
-  fseek (f, sec_hdrs[shstrndx].sh_offset, SEEK_SET);
-  if (fread (stringtab, 1, sec_hdrs[shstrndx].sh_size, f) != sec_hdrs[shstrndx].sh_size)
-    goto file_error;
-  
-  for (i = 1; i < ehdr.e_shnum && *buf == NULL; i++)
+  ei.image = NULL;
+
+  ret = elf_w (load_debuglink) (file, &ei, is_local);
+  if (ret != 0)
+    return ret;
+
+  shdr = elf_w (find_section) (&ei, ".debug_frame");
+  if (!shdr ||
+      (shdr->sh_offset + shdr->sh_size > ei.size))
     {
-      char *secname = &stringtab[sec_hdrs[i].sh_name];
-
-      if (strcmp (secname, ".debug_frame") == 0)
-        {
-          *bufsize = sec_hdrs[i].sh_size;
-          *buf = malloc (*bufsize);
-
-          fseek (f, sec_hdrs[i].sh_offset, SEEK_SET);
-          if (fread (*buf, 1, *bufsize, f) != *bufsize)
-            goto file_error;
-
-          Debug (4, "read %zd bytes of .debug_frame from offset %zd\n",
-                 *bufsize, sec_hdrs[i].sh_offset);
-        }
-      else if (strcmp (secname, ".gnu_debuglink") == 0)
-        {
-          linksize = sec_hdrs[i].sh_size;
-          linkbuf = malloc (linksize);
-
-          fseek (f, sec_hdrs[i].sh_offset, SEEK_SET);
-          if (fread (linkbuf, 1, linksize, f) != linksize)
-            goto file_error;
-
-          Debug (4, "read %zd bytes of .gnu_debuglink from offset %zd\n",
-                 linksize, sec_hdrs[i].sh_offset);
-        }
-    }
-
-  free (stringtab);
-  free (sec_hdrs);
-
-  fclose (f);
-
-  /* Ignore separate debug files which contain a .gnu_debuglink section. */
-  if (linkbuf && is_local == -1)
-    {
-      free (linkbuf);
+      munmap(ei.image, ei.size);
       return 1;
     }
 
-  if (*buf == NULL && linkbuf != NULL && memchr (linkbuf, 0, linksize) != NULL)
-    {
-      char *newname, *basedir, *p;
-      static const char *debugdir = "/usr/lib/debug";
-      int ret;
+  *bufsize = shdr->sh_size;
+  *buf = malloc (*bufsize);
 
-      /* XXX: Don't bother with the checksum; just search for the file.  */
-      basedir = malloc (strlen (file) + 1);
-      newname = malloc (strlen (linkbuf) + strlen (debugdir)
-                        + strlen (file) + 9);
+  memcpy(*buf, shdr->sh_offset + ei.image, *bufsize);
 
-      p = strrchr (file, '/');
-      if (p != NULL)
-        {
-          memcpy (basedir, file, p - file);
-          basedir[p - file] = '\0';
-        }
-      else
-        basedir[0] = 0;
+  Debug (4, "read %zd bytes of .debug_frame from offset %zd\n",
+	 *bufsize, shdr->sh_offset);
 
-      strcpy (newname, basedir);
-      strcat (newname, "/");
-      strcat (newname, linkbuf);
-      ret = load_debug_frame (newname, buf, bufsize, -1);
-
-      if (ret == 1)
-        {
-          strcpy (newname, basedir);
-          strcat (newname, "/.debug/");
-          strcat (newname, linkbuf);
-          ret = load_debug_frame (newname, buf, bufsize, -1);
-        }
-
-      if (ret == 1 && is_local == 1)
-        {
-          strcpy (newname, debugdir);
-          strcat (newname, basedir);
-          strcat (newname, "/");
-          strcat (newname, linkbuf);
-          ret = load_debug_frame (newname, buf, bufsize, -1);
-        }
-
-      free (basedir);
-      free (newname);
-    }
-  free (linkbuf);
-
+  munmap(ei.image, ei.size);
   return 0;
-
-/* An error reading image file. Release resources and return error code */
-file_error:
-  free(stringtab);
-  free(sec_hdrs);
-  free(linkbuf);
-  fclose(f);
-
-  return 1;
 }
 
 /* Locate the binary which originated the contents of address ADDR. Return
@@ -260,7 +148,9 @@ find_binary_for_address (unw_word_t ip, char *name, size_t name_size)
   int pid = getpid ();
   unsigned long segbase, mapoff, hi;
 
-  maps_init (&mi, pid);
+  if (maps_init (&mi, pid) != 0)
+    return 1;
+
   while (maps_next (&mi, &segbase, &hi, &mapoff))
     if (ip >= segbase && ip < hi)
       {
@@ -320,7 +210,7 @@ locate_debug_info (unw_addr_space_t as, unw_word_t addr, const char *dlname,
     name = (char*) dlname;
 
   err = load_debug_frame (name, &buf, &bufsize, as == unw_local_addr_space);
-  
+
   if (!err)
     {
       fdesc = malloc (sizeof (struct unw_debug_frame_list));
@@ -331,10 +221,10 @@ locate_debug_info (unw_addr_space_t as, unw_word_t addr, const char *dlname,
       fdesc->debug_frame_size = bufsize;
       fdesc->index = NULL;
       fdesc->next = as->debug_frames;
-      
+
       as->debug_frames = fdesc;
     }
-  
+
   return fdesc;
 }
 
@@ -356,10 +246,10 @@ debug_frame_tab_append (struct debug_frame_tab *tab,
       tab->size *= 2;
       tab->tab = realloc (tab->tab, sizeof (struct table_entry) * tab->size);
     }
-  
+
   tab->tab[length].fde_offset = fde_offset;
   tab->tab[length].start_ip_offset = start_ip;
-  
+
   tab->length = length + 1;
 }
 
@@ -377,7 +267,7 @@ static int
 debug_frame_tab_compare (const void *a, const void *b)
 {
   const struct table_entry *fa = a, *fb = b;
-  
+
   if (fa->start_ip_offset > fb->start_ip_offset)
     return 1;
   else if (fa->start_ip_offset < fb->start_ip_offset)
@@ -386,7 +276,7 @@ debug_frame_tab_compare (const void *a, const void *b)
     return 0;
 }
 
-PROTECTED int
+int
 dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug, unw_word_t ip,
                         unw_word_t segbase, const char* obj_name,
                         unw_word_t start, unw_word_t end)
@@ -431,7 +321,7 @@ dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug, unw_word_t ip,
        {
          addr = (unw_word_t) (uintptr_t) buf;
 
-         a = unw_get_accessors (unw_local_addr_space);
+         a = unw_get_accessors_int (unw_local_addr_space);
 
          /* Find all FDE entries in debug_frame, and make into a sorted
             index.  */
@@ -537,151 +427,54 @@ dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug, unw_word_t ip,
 
 #ifndef UNW_REMOTE_ONLY
 
-static int
-dwarf_search_fde_in_unwind_table (unw_addr_space_t as, unw_word_t ip,
-                                  unw_word_t segbase, size_t table_len,
-                                  const struct table_entry *table,
-                                  unw_word_t debug_frame_base,
-                                  unw_word_t *fde_addr,
-                                  void *arg)
+static Elf_W (Addr)
+dwarf_find_eh_frame_section(struct dl_phdr_info *info)
 {
-  const struct table_entry *e = NULL;
-  unw_accessors_t *a;
-#ifndef UNW_LOCAL_ONLY
-  struct table_entry ent;
-#endif
-  int ret;
+  int rc;
+  struct elf_image ei;
+  Elf_W (Addr) eh_frame = 0;
+  Elf_W (Shdr)* shdr;
+  const char *file = info->dlpi_name;
+  char exepath[PATH_MAX];
 
-  Debug(15, "dwarf_search_fde_in_unwind_table: ip=0x%lx, segbase=%lx, "
-            "table_len=%zu, table=%p, debug_frame_base=%lx",
-        ip, segbase, table_len, table, debug_frame_base);
-
-  a = unw_get_accessors (as);
-
-#ifndef UNW_REMOTE_ONLY
-  if (as == unw_local_addr_space)
+  if (strlen(file) == 0)
     {
-      e = lookup (table, table_len, ip - segbase);
-    }
-  else
-#endif
-    {
-#ifndef UNW_LOCAL_ONLY
-      if ((ret = remote_lookup (as, (uintptr_t) table, table_len,
-                ip - segbase, &ent, arg)) < 0)
-    return ret;
-      if (ret)
-    e = &ent;
-      else
-    e = NULL;	/* no info found */
-#endif
-    }
-  if (!e)
-    {
-      Debug (1, "IP %x: no explicit unwind info found\n",
-         (int) ip);
-      /* IP is inside this table's range, but there is no explicit
-     unwind info.  */
-      return -UNW_ENOINFO;
+      tdep_get_exe_image_path(exepath);
+      file = exepath;
     }
 
-  Debug (15, "ip=0x%lx, start_ip=0x%lx\n",
-     (long) ip, (long) (e->start_ip_offset));
+  Debug (1, "looking for .eh_frame section in %s\n",
+         file);
 
-  if (debug_frame_base)
-    *fde_addr = e->fde_offset + debug_frame_base;
-  else
-    *fde_addr = e->fde_offset + segbase;
+  rc = elf_map_image (&ei, file);
+  if (rc != 0)
+    return 0;
 
-  Debug (1, "e->fde_offset = %x, segbase = %x, debug_frame_base = %x, "
-        "fde_addr = %x\n", (int) e->fde_offset, (int) segbase,
-        (int) debug_frame_base, (int) fde_addr);
+  shdr = elf_w (find_section) (&ei, ".eh_frame");
+  if (!shdr)
+    goto out;
 
-  return 0;
+  eh_frame = shdr->sh_addr + info->dlpi_addr;
+  Debug (4, "found .eh_frame at address %lx\n",
+         eh_frame);
+
+out:
+  munmap (ei.image, ei.size);
+
+  return eh_frame;
 }
 
-
-/* Searches for FDE for specific ip in eh_frame_hdr.
-   Returns 0 if success. */
-static int
-search_fde_in_eh_frame(unw_word_t ip, unw_word_t hdr_addr, unw_word_t gp,
-                       unw_word_t eh_frame_end, unw_word_t *fde_addr,
-                       int need_unwind_info, void *arg,
-                       const char * name)
-{
-  unw_accessors_t *a;
-  unw_word_t addr, eh_frame_start, fde_count;
-  int ret;
-  struct dwarf_eh_frame_hdr *hdr = (struct dwarf_eh_frame_hdr *)hdr_addr;
-  
-  if (hdr->version != DW_EH_VERSION)
-	{
-	  Debug (1, "table `%s' has unexpected version %d\n",
-		 name, hdr->version);
-	  return -UNW_ENOINFO;
-	}
-
-  a = unw_get_accessors (unw_local_addr_space);
-  addr = (unw_word_t) (uintptr_t) (hdr + 1);
-
-  /* (Optionally) read eh_frame_ptr: */
-  if ((ret = dwarf_read_encoded_pointer (unw_local_addr_space, a,
-					                     &addr, hdr->eh_frame_ptr_enc, gp, 0,
-                                         &eh_frame_start, NULL)) < 0)
-	return ret;
-
-  /* (Optionally) read fde_count: */
-  if ((ret = dwarf_read_encoded_pointer (unw_local_addr_space, a,
-                                         &addr, hdr->fde_count_enc, gp, 0,
-                                         &fde_count, NULL)) < 0)
-	return ret;
-
-  if (hdr->table_enc != (DW_EH_PE_datarel | DW_EH_PE_sdata4))
-	{
-      int err;
-
-	  /* If there is no search table or it has an unsupported
-	     encoding, fall back on linear search.  */
-	  if (hdr->table_enc == DW_EH_PE_omit)
-	    Debug (4, "table `%s' lacks search table; doing linear search\n",
-		   name);
-	  else
-	    Debug (4, "table `%s' has encoding 0x%x; doing linear search\n",
-		   name, hdr->table_enc);
-
-	  if (hdr->fde_count_enc == DW_EH_PE_omit)
-	    fde_count = ~0UL;
-	  if (hdr->eh_frame_ptr_enc == DW_EH_PE_omit)
-	    abort ();
-
-	  /* XXX we know how to build a local binary search table for
-	     .debug_frame, so we could do that here too.  */
-	  return  linear_search (unw_local_addr_space, ip,
-                             eh_frame_start, eh_frame_end, fde_count,
-                             fde_addr, need_unwind_info, NULL);
-	}
-  else
-	{
-      int err;
-
-      size_t table_len = (fde_count * sizeof (struct table_entry));
-	  /* For the binary-search table in the eh_frame_hdr, data-relative
-	     means relative to the start of that section... */
-	  unw_word_t sbase = (unw_word_t) (uintptr_t) hdr;
-
-	  Debug (15, "found table `%s': sbase=0x%lx, len=%lu, gp=0x%lx, "
-		 "table_data=0x%lx\n", (char *) (uintptr_t) name,
-		 (long) sbase, (long) table_len,
-		 (long) gp, (long) addr);
-
-      return dwarf_search_fde_in_unwind_table (unw_local_addr_space, ip,
-                                               sbase, table_len,
-                                               (const struct table_entry*)addr, 0,
-                                               fde_addr, arg);
-	}
-}
-
-#ifdef HAVE_DL_ITERATE_PHDR
+struct dwarf_callback_data
+  {
+    /* in: */
+    unw_word_t ip;              /* instruction-pointer we're looking for */
+    unw_proc_info_t *pi;        /* proc-info pointer */
+    int need_unwind_info;
+    /* out: */
+    int single_fde;             /* did we find a single FDE? (vs. a table) */
+    unw_dyn_info_t di;          /* table info (if single_fde is false) */
+    unw_dyn_info_t di_debug;    /* additional table info for .debug_frame */
+  };
 
 /* ptr is a pointer to a dwarf_callback_data structure and, on entry,
    member ip contains the instruction-pointer we're looking
@@ -690,14 +483,17 @@ HIDDEN int
 dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
 {
   struct dwarf_callback_data *cb_data = ptr;
+  unw_dyn_info_t *di = &cb_data->di;
   const Elf_W(Phdr) *phdr, *p_eh_hdr, *p_dynamic, *p_text;
   unw_word_t addr, eh_frame_start, eh_frame_end, fde_count, ip;
   Elf_W(Addr) load_base, max_load_addr = 0;
   int ret, need_unwind_info = cb_data->need_unwind_info;
-  struct dwarf_eh_frame_hdr *hdr;
+  unw_proc_info_t *pi = cb_data->pi;
+  struct dwarf_eh_frame_hdr *hdr = NULL;
   unw_accessors_t *a;
   long n;
   int found = 0;
+  struct dwarf_eh_frame_hdr synth_eh_frame_hdr;
 #ifdef CONFIG_DEBUG_FRAME
   unw_word_t start, end;
 #endif /* CONFIG_DEBUG_FRAME*/
@@ -737,11 +533,34 @@ dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
       else if (phdr->p_type == PT_DYNAMIC)
         p_dynamic = phdr;
     }
-  
+
   if (!p_text)
     return 0;
 
   if (p_eh_hdr)
+    {
+      hdr = (struct dwarf_eh_frame_hdr *) (p_eh_hdr->p_vaddr + load_base);
+    }
+  else
+    {
+      Elf_W (Addr) eh_frame;
+      Debug (1, "no .eh_frame_hdr section found\n");
+      eh_frame = dwarf_find_eh_frame_section (info);
+      if (eh_frame)
+        {
+          Debug (1, "using synthetic .eh_frame_hdr section for %s\n",
+                 info->dlpi_name);
+	  synth_eh_frame_hdr.version = DW_EH_VERSION;
+	  synth_eh_frame_hdr.eh_frame_ptr_enc = DW_EH_PE_absptr |
+	    ((sizeof(Elf_W (Addr)) == 4) ? DW_EH_PE_udata4 : DW_EH_PE_udata8);
+          synth_eh_frame_hdr.fde_count_enc = DW_EH_PE_omit;
+          synth_eh_frame_hdr.table_enc = DW_EH_PE_omit;
+	  synth_eh_frame_hdr.eh_frame = eh_frame;
+          hdr = &synth_eh_frame_hdr;
+        }
+    }
+
+  if (hdr)
     {
       if (p_dynamic)
         {
@@ -754,7 +573,7 @@ dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
               {
                 /* Assume that _DYNAMIC is writable and GLIBC has
                    relocated it (true for x86 at least).  */
-                cb_data->gp = dyn->d_un.d_ptr;
+                di->gp = dyn->d_un.d_ptr;
                 break;
               }
         }
@@ -762,106 +581,112 @@ dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
         /* Otherwise this is a static executable with no _DYNAMIC.  Assume
            that data-relative addresses are relative to 0, i.e.,
            absolute.  */
-        cb_data->gp = 0;
+        di->gp = 0;
+      pi->gp = di->gp;
 
-      eh_frame_end = (unw_word_t)max_load_addr;   // Can we do better?
-      ret = search_fde_in_eh_frame(ip, (unw_word_t)(p_eh_hdr->p_vaddr + load_base),
-                                   cb_data->gp, eh_frame_end, &cb_data->fde_addr,
-                                   cb_data->need_unwind_info, cb_data->arg, info->dlpi_name);
-      if (ret < 0)
+      if (hdr->version != DW_EH_VERSION)
+        {
+          Debug (1, "table `%s' has unexpected version %d\n",
+                 info->dlpi_name, hdr->version);
+          return 0;
+        }
+
+      a = unw_get_accessors_int (unw_local_addr_space);
+      addr = (unw_word_t) (uintptr_t) (&hdr->eh_frame);
+
+      /* (Optionally) read eh_frame_ptr: */
+      if ((ret = dwarf_read_encoded_pointer (unw_local_addr_space, a,
+                                             &addr, hdr->eh_frame_ptr_enc, pi,
+                                             &eh_frame_start, NULL)) < 0)
         return ret;
 
-      cb_data->fde_base = 0;
-      cb_data->ip_offset = 0;
+      /* (Optionally) read fde_count: */
+      if ((ret = dwarf_read_encoded_pointer (unw_local_addr_space, a,
+                                             &addr, hdr->fde_count_enc, pi,
+                                             &fde_count, NULL)) < 0)
+        return ret;
 
-      return 1;
+      if (hdr->table_enc != (DW_EH_PE_datarel | DW_EH_PE_sdata4))
+        {
+          /* If there is no search table or it has an unsupported
+             encoding, fall back on linear search.  */
+          if (hdr->table_enc == DW_EH_PE_omit)
+            Debug (4, "table `%s' lacks search table; doing linear search\n",
+                   info->dlpi_name);
+          else
+            Debug (4, "table `%s' has encoding 0x%x; doing linear search\n",
+                   info->dlpi_name, hdr->table_enc);
+
+          eh_frame_end = max_load_addr; /* XXX can we do better? */
+
+          if (hdr->fde_count_enc == DW_EH_PE_omit)
+            fde_count = ~0UL;
+          if (hdr->eh_frame_ptr_enc == DW_EH_PE_omit)
+            abort ();
+
+          Debug (1, "eh_frame_start = %lx eh_frame_end = %lx\n",
+                 eh_frame_start, eh_frame_end);
+
+          /* XXX we know how to build a local binary search table for
+             .debug_frame, so we could do that here too.  */
+          found = linear_search (unw_local_addr_space, ip,
+                                 eh_frame_start, eh_frame_end, fde_count,
+                                 pi, need_unwind_info, NULL);
+          if (found != 1)
+            found = 0;
+	  else
+	    cb_data->single_fde = 1;
+        }
+      else
+        {
+          di->format = UNW_INFO_FORMAT_REMOTE_TABLE;
+          di->start_ip = p_text->p_vaddr + load_base;
+          di->end_ip = p_text->p_vaddr + load_base + p_text->p_memsz;
+          di->u.rti.name_ptr = (unw_word_t) (uintptr_t) info->dlpi_name;
+          di->u.rti.table_data = addr;
+          assert (sizeof (struct table_entry) % sizeof (unw_word_t) == 0);
+          di->u.rti.table_len = (fde_count * sizeof (struct table_entry)
+                                 / sizeof (unw_word_t));
+          /* For the binary-search table in the eh_frame_hdr, data-relative
+             means relative to the start of that section... */
+          di->u.rti.segbase = (unw_word_t) (uintptr_t) hdr;
+
+          found = 1;
+          Debug (15, "found table `%s': segbase=0x%lx, len=%lu, gp=0x%lx, "
+                 "table_data=0x%lx\n", (char *) (uintptr_t) di->u.rti.name_ptr,
+                 (long) di->u.rti.segbase, (long) di->u.rti.table_len,
+                 (long) di->gp, (long) di->u.rti.table_data);
+        }
     }
 
 #ifdef CONFIG_DEBUG_FRAME
-  found = dwarf_find_debug_frame (found, &cb_data->di_debug, info, ip);
+  /* Find the start/end of the described region by parsing the phdr_info
+     structure.  */
+  start = (unw_word_t) -1;
+  end = 0;
+
+  for (n = 0; n < info->dlpi_phnum; n++)
+    {
+      if (info->dlpi_phdr[n].p_type == PT_LOAD)
+        {
+          unw_word_t seg_start = info->dlpi_addr + info->dlpi_phdr[n].p_vaddr;
+          unw_word_t seg_end = seg_start + info->dlpi_phdr[n].p_memsz;
+
+          if (seg_start < start)
+            start = seg_start;
+
+          if (seg_end > end)
+            end = seg_end;
+        }
+    }
+
+  found = dwarf_find_debug_frame (found, &cb_data->di_debug, ip,
+                                  info->dlpi_addr, info->dlpi_name, start,
+                                  end);
 #endif  /* CONFIG_DEBUG_FRAME */
 
   return found;
 }
-
-static int
-find_proc_fde (unw_word_t ip, unw_word_t *fde_addr,
-               unw_word_t *gp, unw_word_t *fde_base,
-               unw_word_t *ip_offset, void *arg) {
-  struct dwarf_callback_data cb_data;
-  intrmask_t saved_mask;
-  int ret;
-
-  memset (&cb_data, 0, sizeof (cb_data));
-  cb_data.ip = ip;
-  cb_data.arg = arg;
-
-  SIGPROCMASK (SIG_SETMASK, &unwi_full_mask, &saved_mask);
-  ret = dl_iterate_phdr (dwarf_callback, &cb_data);
-  SIGPROCMASK (SIG_SETMASK, &saved_mask, NULL);
-
-  if (ret < 0)
-    return ret;
-
-  if (ret == 0)
-    {
-      ret = -UNW_ENOINFO;
-      return ret;
-    }
-
-  *fde_addr = cb_data.fde_addr;
-  *gp = cb_data.gp;
-  *fde_base = cb_data.fde_base;
-  *ip_offset = cb_data.ip_offset;
-
-  return 0;
-}
-
-#else // HAVE_DL_ITERATE_PHDR
-
-static int
-find_proc_fde(unw_word_t ip, unw_word_t *fde_addr,
-              unw_word_t *gp, unw_word_t *fde_base,
-              unw_word_t *ip_offset, void *arg) {
-  Dl_amd64_unwindinfo dlef;
-  void* data;
-  void* data_end;
-  int fp_enc, fc_enc, ft_enc;
-  unsigned char *pi, *pj;
-  ptrdiff_t reloc;
-  uintptr_t base;
-  int ret;
-  
-  dlef.dlui_version = 1;
-  
-  /* Locate the appropiate exception_range_entry table first */
-  if (0 == dlamd64getunwind((void*)ip, &dlef)) {
-    return -UNW_ENOINFO;
-  }
-  
-  /*
-   * you now know size and position of block of data needed for
-   * binary search ??REMOTE??
-   */
-  data = dlef.dlui_unwindstart;
-  if (0 == data)
-  	return -UNW_ENOINFO;
-
-  base = (uintptr_t)data;
-  data_end = dlef.dlui_unwindend;
-  reloc = 0;
-  /* ??REMOTE?? */
-
-  *gp = 0;
-  *fde_base = 0;
-  *ip_offset = 0;
-
-  return search_fde_in_eh_frame(ip, (unw_word_t)data, 0,
-                                (unw_word_t)data_end, fde_addr, arg, 0,
-                                dlef.dlui_objname);
-}
-
-#endif // HAVE_DL_ITERATE_PHDR
 
 HIDDEN int
 dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
@@ -870,38 +695,41 @@ dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
   struct dwarf_callback_data cb_data;
   intrmask_t saved_mask;
   int ret;
-  unw_word_t fde_addr;
-  unw_word_t gp;
-  unw_word_t fde_base;
-  unw_word_t ip_offset;
-  unw_accessors_t *a;
 
   Debug (14, "looking for IP=0x%lx\n", (long) ip);
 
-  ret = find_proc_fde (ip, &fde_addr, &gp, &fde_base, &ip_offset, arg);
-  if (ret < 0)
+  memset (&cb_data, 0, sizeof (cb_data));
+  cb_data.ip = ip;
+  cb_data.pi = pi;
+  cb_data.need_unwind_info = need_unwind_info;
+  cb_data.di.format = -1;
+  cb_data.di_debug.format = -1;
+
+  SIGPROCMASK (SIG_SETMASK, &unwi_full_mask, &saved_mask);
+  ret = dl_iterate_phdr (dwarf_callback, &cb_data);
+  SIGPROCMASK (SIG_SETMASK, &saved_mask, NULL);
+
+  if (ret > 0)
     {
-      Debug (14, "IP=0x%lx not found\n", (long) ip);
-      return ret;
+      if (cb_data.single_fde)
+	/* already got the result in *pi */
+	return 0;
+
+      /* search the table: */
+      if (cb_data.di.format != -1)
+	ret = dwarf_search_unwind_table_int (as, ip, &cb_data.di,
+					     pi, need_unwind_info, arg);
+      else
+	ret = -UNW_ENOINFO;
+
+      if (ret == -UNW_ENOINFO && cb_data.di_debug.format != -1)
+	ret = dwarf_search_unwind_table_int (as, ip, &cb_data.di_debug, pi,
+					     need_unwind_info, arg);
     }
+  else
+    ret = -UNW_ENOINFO;
 
-  pi->gp = gp;
-
-  a = unw_get_accessors (unw_local_addr_space);
-  ret = dwarf_extract_proc_info_from_fde (as, a, &fde_addr, pi,
-                                          fde_base,
-                                          need_unwind_info, 0,
-                                          arg);
-  if (ret < 0)
-    return ret;
-
-  pi->start_ip += ip_offset;
-  pi->end_ip += ip_offset;
-
-  if (ip < pi->start_ip || ip >= pi->end_ip)
-    return -UNW_ENOINFO;
-
-  return 0;
+  return ret;
 }
 
 static inline const struct table_entry *
@@ -938,13 +766,13 @@ lookup (const struct table_entry *table, size_t table_size, int32_t rel_ip)
 static int
 remote_lookup (unw_addr_space_t as,
                unw_word_t table, size_t table_size, int32_t rel_ip,
-               struct table_entry *e, void *arg)
+               struct table_entry *e, int32_t *last_ip_offset, void *arg)
 {
   unsigned long table_len = table_size / sizeof (struct table_entry);
-  unw_accessors_t *a = unw_get_accessors (as);
+  unw_accessors_t *a = unw_get_accessors_int (as);
   unsigned long lo, hi, mid;
   unw_word_t e_addr = 0;
-  int32_t start;
+  int32_t start = 0;
   int ret;
 
   /* do a binary search for right entry: */
@@ -964,20 +792,28 @@ remote_lookup (unw_addr_space_t as,
     return 0;
   e_addr = table + (hi - 1) * sizeof (struct table_entry);
   if ((ret = dwarf_reads32 (as, a, &e_addr, &e->start_ip_offset, arg)) < 0
-   || (ret = dwarf_reads32 (as, a, &e_addr, &e->fde_offset, arg)) < 0)
+   || (ret = dwarf_reads32 (as, a, &e_addr, &e->fde_offset, arg)) < 0
+   || (hi < table_len &&
+       (ret = dwarf_reads32 (as, a, &e_addr, last_ip_offset, arg)) < 0))
     return ret;
   return 1;
 }
 
 #endif /* !UNW_LOCAL_ONLY */
 
-PROTECTED int
+static int is_remote_table(int format)
+{
+  return (format == UNW_INFO_FORMAT_REMOTE_TABLE ||
+          format == UNW_INFO_FORMAT_IP_OFFSET);
+}
+
+int
 dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
                            unw_dyn_info_t *di, unw_proc_info_t *pi,
                            int need_unwind_info, void *arg)
 {
   const struct table_entry *e = NULL, *table;
-  unw_word_t segbase = 0, fde_addr;
+  unw_word_t ip_base = 0, segbase = 0, last_ip, fde_addr;
   unw_accessors_t *a;
 #ifndef UNW_LOCAL_ONLY
   struct table_entry ent;
@@ -987,14 +823,14 @@ dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
   size_t table_len;
 
 #ifdef UNW_REMOTE_ONLY
-  assert (di->format == UNW_INFO_FORMAT_REMOTE_TABLE);
+  assert (is_remote_table(di->format));
 #else
-  assert (di->format == UNW_INFO_FORMAT_REMOTE_TABLE
+  assert (is_remote_table(di->format)
           || di->format == UNW_INFO_FORMAT_TABLE);
 #endif
   assert (ip >= di->start_ip && ip < di->end_ip);
 
-  if (di->format == UNW_INFO_FORMAT_REMOTE_TABLE)
+  if (is_remote_table(di->format))
     {
       table = (const struct table_entry *) (uintptr_t) di->u.rti.table_data;
       table_len = di->u.rti.table_len * sizeof (unw_word_t);
@@ -1002,6 +838,7 @@ dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
     }
   else
     {
+      assert(di->format == UNW_INFO_FORMAT_TABLE);
 #ifndef UNW_REMOTE_ONLY
       struct unw_debug_frame_list *fdesc = (void *) di->u.ti.table_data;
 
@@ -1016,24 +853,38 @@ dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
 #endif
     }
 
-  a = unw_get_accessors (as);
+  a = unw_get_accessors_int (as);
+
+  segbase = di->u.rti.segbase;
+  if (di->format == UNW_INFO_FORMAT_IP_OFFSET) {
+    ip_base = di->start_ip;
+  } else {
+    ip_base = segbase;
+  }
 
 #ifndef UNW_REMOTE_ONLY
   if (as == unw_local_addr_space)
     {
-      segbase = di->u.rti.segbase;
-      e = lookup (table, table_len, ip - segbase);
+      e = lookup (table, table_len, ip - ip_base);
+      if (e && &e[1] < &table[table_len])
+	last_ip = e[1].start_ip_offset + ip_base;
+      else
+	last_ip = di->end_ip;
     }
   else
 #endif
     {
 #ifndef UNW_LOCAL_ONLY
+      int32_t last_ip_offset = di->end_ip - ip_base;
       segbase = di->u.rti.segbase;
       if ((ret = remote_lookup (as, (uintptr_t) table, table_len,
-                                ip - segbase, &ent, arg)) < 0)
+                                ip - ip_base, &ent, &last_ip_offset, arg)) < 0)
         return ret;
       if (ret)
-        e = &ent;
+	{
+	  e = &ent;
+	  last_ip = last_ip_offset + ip_base;
+	}
       else
         e = NULL;       /* no info found */
 #endif
@@ -1071,6 +922,11 @@ dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
       pi->flags = UNW_PI_FLAG_DEBUG_FRAME;
     }
 
+#if defined(NEED_LAST_IP)
+  pi->last_ip = last_ip;
+#else
+  (void)last_ip;
+#endif
   if (ip < pi->start_ip || ip >= pi->end_ip)
     return -UNW_ENOINFO;
 

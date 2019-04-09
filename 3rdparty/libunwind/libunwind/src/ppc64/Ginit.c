@@ -34,13 +34,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifdef UNW_REMOTE_ONLY
 
 /* unw_local_addr_space is a NULL pointer in this case.  */
-PROTECTED unw_addr_space_t unw_local_addr_space;
+unw_addr_space_t unw_local_addr_space;
 
 #else /* !UNW_REMOTE_ONLY */
 
 static struct unw_addr_space local_addr_space;
 
-PROTECTED unw_addr_space_t unw_local_addr_space = &local_addr_space;
+unw_addr_space_t unw_local_addr_space = &local_addr_space;
 
 static void *
 uc_addr (ucontext_t *uc, int reg)
@@ -169,12 +169,10 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
   ucontext_t *uc = arg;
   unw_fpreg_t *addr;
 
-  if ((reg - UNW_PPC64_F0) < 0)
+  /* Allow only 32 fregs and 32 vregs */
+  if (!(((unsigned) (reg - UNW_PPC64_F0) < 32)
+	||((unsigned) (reg - UNW_PPC64_V0) < 32)))
     goto badreg;
-
-  if ((unsigned) (reg - UNW_PPC64_V0) >= 32)
-    goto badreg;
-
 
   addr = uc_addr (uc, reg);
   if (!addr)
@@ -216,7 +214,7 @@ ppc64_local_addr_space_init (void)
 #else
   local_addr_space.abi = UNW_PPC64_ABI_ELFv1;
 #endif
-  local_addr_space.caching_policy = UNW_CACHE_GLOBAL;
+  local_addr_space.caching_policy = UNWI_DEFAULT_CACHING_POLICY;
   local_addr_space.acc.find_proc_info = dwarf_find_proc_info;
   local_addr_space.acc.put_unwind_info = put_unwind_info;
   local_addr_space.acc.get_dyn_info_list_addr = get_dyn_info_list_addr;

@@ -26,7 +26,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 #include "offsets.h"
 
-PROTECTED int
+#include <sys/syscall.h>
+
+int
 unw_is_signal_frame (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
@@ -37,7 +39,7 @@ unw_is_signal_frame (unw_cursor_t *cursor)
   int ret;
 
   as = c->dwarf.as;
-  a = unw_get_accessors (as);
+  a = unw_get_accessors_int (as);
   arg = c->dwarf.as_arg;
 
   /* Check if EIP points at sigreturn() sequence.  On Linux, this is:
@@ -52,7 +54,7 @@ unw_is_signal_frame (unw_cursor_t *cursor)
     __restore_rt:
        0xb8 0xad 0x00 0x00 0x00        movl 0xad,%eax
        0xcd 0x80                       int 0x80
-       0x00                            
+       0x00
 
      if SA_SIGINFO is specified.
   */
@@ -67,8 +69,8 @@ unw_is_signal_frame (unw_cursor_t *cursor)
   return ret;
 }
 
-PROTECTED int
-unw_handle_signal_frame (unw_cursor_t *cursor)
+HIDDEN int
+x86_handle_signal_frame (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
   int ret;
@@ -296,7 +298,7 @@ x86_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       struct sigcontext *sc = (struct sigcontext *) c->sigcontext_addr;
 
       Debug (8, "resuming at ip=%x via sigreturn(%p)\n", c->dwarf.ip, sc);
-      sigreturn (sc);
+      x86_sigreturn (sc);
     }
   else
     {
@@ -304,5 +306,26 @@ x86_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       setcontext (uc);
     }
   return -UNW_EINVAL;
+}
+
+/* sigreturn() is a no-op on x86 glibc.  */
+HIDDEN void
+x86_sigreturn (unw_cursor_t *cursor)
+{
+  struct cursor *c = (struct cursor *) cursor;
+  struct sigcontext *sc = (struct sigcontext *) c->sigcontext_addr;
+  mcontext_t *sc_mcontext = &((ucontext_t*)sc)->uc_mcontext;
+  /* Copy in saved uc - all preserved regs are at the start of sigcontext */
+  memcpy(sc_mcontext, &c->uc->uc_mcontext,
+         DWARF_NUM_PRESERVED_REGS * sizeof(unw_word_t));
+
+  Debug (8, "resuming at ip=%llx via sigreturn(%p)\n",
+             (unsigned long long) c->dwarf.ip, sc);
+  __asm__ __volatile__ ("mov %0, %%esp;"
+                        "mov %1, %%eax;"
+                        "syscall"
+                        :: "r"(sc), "i"(SYS_rt_sigreturn)
+                        : "memory");
+  abort();
 }
 #endif

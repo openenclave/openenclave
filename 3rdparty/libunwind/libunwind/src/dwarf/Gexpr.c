@@ -187,10 +187,58 @@ read_operand (unw_addr_space_t as, unw_accessors_t *a,
 }
 
 HIDDEN int
+dwarf_stack_aligned(struct dwarf_cursor *c, unw_word_t cfa_addr,
+                    unw_word_t rbp_addr, unw_word_t *cfa_offset) {
+  unw_accessors_t *a;
+  int ret;
+  void *arg;
+  unw_word_t len;
+  uint8_t opcode;
+  unw_word_t operand1;
+
+  a = unw_get_accessors_int (c->as);
+  arg = c->as_arg;
+
+  ret = dwarf_read_uleb128(c->as, a, &rbp_addr, &len, arg);
+  if (len != 2 || ret < 0)
+    return 0;
+
+  ret = dwarf_readu8(c->as, a, &rbp_addr, &opcode, arg);
+  if (ret < 0 || opcode != DW_OP_breg6)
+    return 0;
+
+  ret = read_operand(c->as, a, &rbp_addr,
+                     OPND1_TYPE(operands[opcode]), &operand1, arg);
+
+  if (ret < 0 || operand1 != 0)
+    return 0;
+
+  ret = dwarf_read_uleb128(c->as, a, &cfa_addr, &len, arg);
+  if (ret < 0 || len != 3)
+    return 0;
+
+  ret = dwarf_readu8(c->as, a, &cfa_addr, &opcode, arg);
+  if (ret < 0 || opcode != DW_OP_breg6)
+    return 0;
+
+  ret = read_operand(c->as, a, &cfa_addr,
+                     OPND1_TYPE(operands[opcode]), &operand1, arg);
+  if (ret < 0)
+    return 0;
+
+  ret = dwarf_readu8(c->as, a, &cfa_addr, &opcode, arg);
+  if (ret < 0 || opcode != DW_OP_deref)
+    return 0;
+
+  *cfa_offset = operand1;
+  return 1;
+}
+
+HIDDEN int
 dwarf_eval_expr (struct dwarf_cursor *c, unw_word_t *addr, unw_word_t len,
                  unw_word_t *valp, int *is_register)
 {
-  unw_word_t operand1 = 0, operand2 = 0, tmp1, tmp2, tmp3, end_addr;
+  unw_word_t operand1 = 0, operand2 = 0, tmp1, tmp2 = 0, tmp3, end_addr;
   uint8_t opcode, operands_signature, u8;
   unw_addr_space_t as;
   unw_accessors_t *a;
@@ -233,7 +281,7 @@ do {                                            \
 
   as = c->as;
   arg = c->as_arg;
-  a = unw_get_accessors (as);
+  a = unw_get_accessors_int (as);
   end_addr = *addr + len;
   *is_register = 0;
 

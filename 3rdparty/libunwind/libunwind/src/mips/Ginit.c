@@ -30,13 +30,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifdef UNW_REMOTE_ONLY
 
 /* unw_local_addr_space is a NULL pointer in this case.  */
-PROTECTED unw_addr_space_t unw_local_addr_space;
+unw_addr_space_t unw_local_addr_space;
 
 #else /* !UNW_REMOTE_ONLY */
 
 static struct unw_addr_space local_addr_space;
 
-PROTECTED unw_addr_space_t unw_local_addr_space = &local_addr_space;
+unw_addr_space_t unw_local_addr_space = &local_addr_space;
 
 /* Return the address of the 64-bit slot in UC for REG (even for o32,
    where registers are 32-bit, the slots are still 64-bit).  */
@@ -59,7 +59,7 @@ tdep_uc_addr (ucontext_t *uc, int reg)
 {
   char *addr = uc_addr (uc, reg);
 
-  if (reg >= UNW_MIPS_R0 && reg <= UNW_MIPS_R31
+  if (((reg >= UNW_MIPS_R0 && reg <= UNW_MIPS_R31) || reg == UNW_MIPS_PC)
       && tdep_big_endian (unw_local_addr_space)
       && unw_local_addr_space->abi == UNW_MIPS_ABI_O32)
     addr += 4;
@@ -195,7 +195,7 @@ mips_local_addr_space_init (void)
 # error Unsupported ABI
 #endif
   local_addr_space.addr_size = sizeof (void *);
-  local_addr_space.caching_policy = UNW_CACHE_GLOBAL;
+  local_addr_space.caching_policy = UNWI_DEFAULT_CACHING_POLICY;
   local_addr_space.acc.find_proc_info = dwarf_find_proc_info;
   local_addr_space.acc.put_unwind_info = put_unwind_info;
   local_addr_space.acc.get_dyn_info_list_addr = get_dyn_info_list_addr;

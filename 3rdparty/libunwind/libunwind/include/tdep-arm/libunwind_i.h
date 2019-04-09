@@ -38,6 +38,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 typedef enum
   {
+    UNW_ARM_FRAME_SYSCALL = -3,      /* r7 saved in r12, sp offset zero */
     UNW_ARM_FRAME_STANDARD = -2,     /* regular r7, sp +/- offset */
     UNW_ARM_FRAME_SIGRETURN = -1,    /* special sigreturn frame */
     UNW_ARM_FRAME_OTHER = 0,         /* not cacheable (special or unrecognised) */
@@ -48,7 +49,7 @@ unw_tdep_frame_type_t;
 typedef struct
   {
     uint32_t virtual_address;
-    int32_t frame_type     : 2;  /* unw_tdep_frame_type_t classification */
+    int32_t frame_type     : 3;  /* unw_tdep_frame_type_t classification */
     int32_t last_frame     : 1;  /* non-zero if last frame in chain */
     int32_t cfa_reg_sp     : 1;  /* cfa dwarf base register is sp vs. r7 */
     int32_t cfa_reg_offset : 30; /* cfa is at this offset from base register value */
@@ -86,7 +87,9 @@ struct cursor
         ARM_SCF_LINUX_SIGFRAME,         /* non-RT signal frame, kernel >=2.6.18 */
         ARM_SCF_LINUX_RT_SIGFRAME,      /* RT signal frame, kernel >=2.6.18 */
         ARM_SCF_LINUX_OLD_SIGFRAME,     /* non-RT signal frame, kernel < 2.6.18 */
-        ARM_SCF_LINUX_OLD_RT_SIGFRAME   /* RT signal frame, kernel < 2.6.18 */
+        ARM_SCF_LINUX_OLD_RT_SIGFRAME,  /* RT signal frame, kernel < 2.6.18 */
+        ARM_SCF_FREEBSD_SIGFRAME,	/* FreeBSD sigframe */
+	ARM_SCF_FREEBSD_SYSCALL,	/* FreeBSD syscall stub */
       }
     sigcontext_format;
     unw_word_t sigcontext_addr;
@@ -257,11 +260,12 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 #define tdep_find_unwind_table          dwarf_find_unwind_table
 #define tdep_uc_addr                    UNW_ARCH_OBJ(uc_addr)
 #define tdep_get_elf_image              UNW_ARCH_OBJ(get_elf_image)
+#define tdep_get_exe_image_path         UNW_ARCH_OBJ(get_exe_image_path)
 #define tdep_access_reg                 UNW_OBJ(access_reg)
 #define tdep_access_fpreg               UNW_OBJ(access_fpreg)
 #define tdep_fetch_frame(c,ip,n)        do {} while(0)
-#define tdep_cache_frame(c,rs)          do {} while(0)
-#define tdep_reuse_frame(c,rs)          do {} while(0)
+#define tdep_cache_frame(c)             0
+#define tdep_reuse_frame(c,frame)       do {} while(0)
 #define tdep_stash_frame                UNW_OBJ(tdep_stash_frame)
 #define tdep_trace                      UNW_OBJ(tdep_trace)
 
@@ -299,6 +303,7 @@ extern void *tdep_uc_addr (unw_tdep_context_t *uc, int reg);
 extern int tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
                                unsigned long *segbase, unsigned long *mapoff,
                                char *path, size_t pathlen);
+extern void tdep_get_exe_image_path (char *path);
 extern int tdep_access_reg (struct cursor *c, unw_regnum_t reg,
                             unw_word_t *valp, int write);
 extern int tdep_access_fpreg (struct cursor *c, unw_regnum_t reg,
