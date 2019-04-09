@@ -5,8 +5,8 @@ if (OE_SGX)
   set(ARCH "x86_64")
   set(PLATFORM_SRC
     libunwind/src/x86_64/Los-linux.c
-    Gstep.c  # libunwind/src/x86_64/Lstep.c
-    setcontext.S # libunwind/src/x86_64/setcontext.c
+    sgx/Gstep.c  # libunwind/src/x86_64/Lstep.c
+    sgx/setcontext.S # libunwind/src/x86_64/setcontext.c
   )
 else()
   set(ARCH "aarch64")
@@ -20,10 +20,12 @@ configure_file(
   libunwind.h
   COPYONLY)
 
-configure_file(
-  libunwind/src/${ARCH}/Gstep.c
-  Gstep.inc
-  COPYONLY)
+if (OE_SGX)
+  configure_file(
+    libunwind/src/${ARCH}/Gstep.c
+    Gstep.inc
+    COPYONLY)
+endif ()
 
 file(GENERATE OUTPUT config.h CONTENT "/* Empty file */\n")
 
@@ -45,7 +47,6 @@ add_library(libunwind OBJECT
   libunwind/src/dwarf/Lfind_unwind_table.c
   libunwind/src/dwarf/Lparser.c
   libunwind/src/dwarf/Lpe.c
-  libunwind/src/dwarf/Lstep.c
   libunwind/src/mi/_ReadULEB.c
   libunwind/src/mi/_ReadSLEB.c
   libunwind/src/mi/backtrace.c
@@ -109,8 +110,10 @@ add_library(libunwind OBJECT
 
 maybe_build_using_clangw(libunwind)
 
-set_source_files_properties(Gstep.c PROPERTIES COMPILE_FLAGS "-Werror")
-set_source_files_properties(setcontext.S PROPERTIES COMPILE_FLAGS "-Werror")
+if (OE_SGX)
+  set_source_files_properties(Gstep.c PROPERTIES COMPILE_FLAGS "-Werror")
+  set_source_files_properties(setcontext.S PROPERTIES COMPILE_FLAGS "-Werror")
+endif ()
 
 target_compile_options(libunwind PRIVATE
   -Wno-error
@@ -129,13 +132,20 @@ target_compile_definitions(libunwind PRIVATE
 
 target_link_libraries(libunwind PUBLIC oelibc)
 
-target_include_directories(libunwind PRIVATE
+set(INCLUDE_DIRS
   ${PROJECT_SOURCE_DIR}/include
-  ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/libunwind/include
   ${CMAKE_CURRENT_SOURCE_DIR}/libunwind/src/${ARCH}
   ${CMAKE_CURRENT_SOURCE_DIR}/libunwind/src
   ${CMAKE_CURRENT_BINARY_DIR}/tdep
   ${CMAKE_CURRENT_BINARY_DIR})
+
+if (OE_SGX)
+  list(INSERT INCLUDE_DIRS 1 ${CMAKE_CURRENT_SOURCE_DIR}/sgx)
+elseif (OE_TRUSTZONE)
+  list(INSERT INCLUDE_DIRS 1 ${CMAKE_CURRENT_SOURCE_DIR}/optee)
+endif ()
+
+target_include_directories(libunwind PRIVATE ${INCLUDE_DIRS})
 
 install(TARGETS libunwind EXPORT openenclave-targets)
