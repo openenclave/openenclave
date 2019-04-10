@@ -75,7 +75,10 @@ Naming conventions we use that are not automated include:
    `mem_ctx`).
 5. Prefix names with `_` to indicate internal and private fields or methods
    (e.g. `_internal_field, _internal_method()`).
-6. Prefix `struct` definitions with `_`, and always create a `typedef` with the
+6. The single underscore (`_` ) is reserved for local definitions (static,
+   file-scope definitions).
+   e.g. static oe_result_t _parse_sgx_report_body(..).
+7. Prefix `struct` definitions with `_`, and always create a `typedef` with the
    suffix `_t`:
 ```c
 typedef struct _oe_private_key
@@ -84,7 +87,7 @@ typedef struct _oe_private_key
     mbedtls_pk_context pk;
 } oe_private_key_t;
 ```
-7. Prefix Open Enclave specific names in the global namespace with `oe_` (e.g.
+8. Prefix Open Enclave specific names in the global namespace with `oe_` (e.g.
    `oe_result_t, oe_call_enclave`).
 
 Above all, if a file happens to differ in style from these guidelines (e.g.

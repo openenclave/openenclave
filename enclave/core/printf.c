@@ -583,7 +583,7 @@ static size_t _write(oe_out_t* out_, const void* buf, size_t count)
     return count;
 }
 
-static void _oe_out_str_init(oe_out_str_t* out, char* str, size_t size)
+static void _out_str_init(oe_out_str_t* out, char* str, size_t size)
 {
     out->base.write = _write;
     out->str = str;
@@ -621,7 +621,7 @@ int oe_vsnprintf(char* str, size_t size, const char* fmt, oe_va_list ap)
     if (!str && size != 0)
         return -1;
 
-    _oe_out_str_init(&out, str, size);
+    _out_str_init(&out, str, size);
 
     return _vprintf(&out.base, fmt, ap);
 }

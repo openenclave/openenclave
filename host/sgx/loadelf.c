@@ -24,7 +24,7 @@
 #include "enclave.h"
 #include "sgxload.h"
 
-static oe_result_t _oe_free_elf_image(oe_enclave_image_t* image)
+static oe_result_t _free_elf_image(oe_enclave_image_t* image)
 {
     if (image->u.elf.elf.data)
     {
@@ -54,9 +54,7 @@ static int _compare_segments(const void* s1, const void* s2)
     return (int)(seg1->vaddr - seg2->vaddr);
 }
 
-static oe_result_t _oe_load_elf_image(
-    const char* path,
-    oe_enclave_image_t* image)
+static oe_result_t _load_elf_image(const char* path, oe_enclave_image_t* image)
 {
     oe_result_t result = OE_UNEXPECTED;
     size_t i;
@@ -382,7 +380,7 @@ done:
 
     if (result != OE_OK)
     {
-        _oe_free_elf_image(image);
+        _free_elf_image(image);
     }
     return result;
 }
@@ -421,7 +419,7 @@ static oe_result_t _unload(oe_enclave_image_t* image)
         free(image->u.elf.reloc_data);
     }
 
-    return _oe_free_elf_image(image);
+    return _free_elf_image(image);
 }
 
 // ------------------------------------------------------------------
@@ -783,7 +781,7 @@ oe_result_t oe_load_elf_enclave_image(
     memset(image, 0, sizeof(oe_enclave_image_t));
 
     /* Load the program segments into memory */
-    OE_CHECK(_oe_load_elf_image(path, image));
+    OE_CHECK(_load_elf_image(path, image));
 
     /* Load the relocations into memory (zero-padded to next page size) */
     if (elf64_load_relocations(

@@ -33,7 +33,7 @@
         ((PIMAGE_NT_HEADERS)(ntheader))->FileHeader.SizeOfOptionalHeader))
 #endif
 
-static oe_result_t _oe_get_nt_header(
+static oe_result_t _get_nt_header(
     char* image_base,
     PIMAGE_NT_HEADERS* nt_header)
 {
@@ -281,7 +281,7 @@ oe_result_t oe_load_pe_enclave_image(
         (char*)((uint64_t)image->u.pe.module & (uint64_t)-OE_PAGE_SIZE);
 
     /* get nt header */
-    OE_CHECK(_oe_get_nt_header(image->image_base, &nt_header));
+    OE_CHECK(_get_nt_header(image->image_base, &nt_header));
 
     image->u.pe.nt_header = nt_header;
     image->image_size = nt_header->OptionalHeader.SizeOfImage;

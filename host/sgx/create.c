@@ -289,7 +289,7 @@ static oe_result_t _calculate_enclave_size(
     return result;
 }
 
-static oe_result_t _oe_add_data_pages(
+static oe_result_t _add_data_pages(
     oe_sgx_load_context_t* context,
     oe_enclave_t* enclave,
     const oe_sgx_enclave_properties_t* props,
@@ -569,8 +569,8 @@ oe_result_t oe_sgx_build_enclave(
     OE_CHECK(oeimage.add_pages(&oeimage, context, enclave, &vaddr));
 
     /* Add data pages */
-    OE_CHECK(_oe_add_data_pages(
-        context, enclave, &props, oeimage.entry_rva, &vaddr));
+    OE_CHECK(
+        _add_data_pages(context, enclave, &props, oeimage.entry_rva, &vaddr));
 
     /* Ask the platform to initialize the enclave and finalize the hash */
     OE_CHECK(oe_sgx_initialize_enclave(
