@@ -31,6 +31,7 @@ mkdir -p nuget/tools || exit 1
 for PLATFORM in "${PLATFORMS[@]}"
 do
     mkdir -p $TARGET/$PLATFORM || exit 1
+    cp -R optee/$PLATFORM/export-ta_arm* $TARGET/$PLATFORM || exit 1
 done
 
 for LIBRARY in "${LIBRARIES[@]}"
