@@ -46,10 +46,10 @@
             this.boardGrapeboard.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.boardGrapeboard.Location = new System.Drawing.Point(37, 46);
             this.boardGrapeboard.Name = "boardGrapeboard";
-            this.boardGrapeboard.Size = new System.Drawing.Size(414, 33);
+            this.boardGrapeboard.Size = new System.Drawing.Size(629, 33);
             this.boardGrapeboard.TabIndex = 0;
             this.boardGrapeboard.TabStop = true;
-            this.boardGrapeboard.Text = "Scalys SES-LS1012A (Grapeboard)";
+            this.boardGrapeboard.Text = "Scalys SES-LS1012A (Grapeboard) [AArch64/ARMv8-A]";
             this.boardGrapeboard.UseVisualStyleBackColor = true;
             // 
             // boardQemuArm32
@@ -58,9 +58,9 @@
             this.boardQemuArm32.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.boardQemuArm32.Location = new System.Drawing.Point(37, 102);
             this.boardQemuArm32.Name = "boardQemuArm32";
-            this.boardQemuArm32.Size = new System.Drawing.Size(501, 33);
+            this.boardQemuArm32.Size = new System.Drawing.Size(349, 33);
             this.boardQemuArm32.TabIndex = 1;
-            this.boardQemuArm32.Text = "QEMU Emulated Cortex A15 (32-bit ARMv7)";
+            this.boardQemuArm32.Text = "QEMU (Emulated) [ARMv7-A]";
             this.boardQemuArm32.UseVisualStyleBackColor = true;
             // 
             // boardOther
@@ -89,7 +89,7 @@
             this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button1.Location = new System.Drawing.Point(35, 446);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(579, 45);
+            this.button1.Size = new System.Drawing.Size(675, 45);
             this.button1.TabIndex = 4;
             this.button1.Text = "OK";
             this.button1.UseVisualStyleBackColor = true;
@@ -104,7 +104,7 @@
             this.panel1.Controls.Add(this.boardGrapeboard);
             this.panel1.Location = new System.Drawing.Point(35, 75);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(579, 345);
+            this.panel1.Size = new System.Drawing.Size(675, 345);
             this.panel1.TabIndex = 6;
             // 
             // boardNone
@@ -124,16 +124,16 @@
             this.boardQemuArm64.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.boardQemuArm64.Location = new System.Drawing.Point(37, 158);
             this.boardQemuArm64.Name = "boardQemuArm64";
-            this.boardQemuArm64.Size = new System.Drawing.Size(501, 33);
+            this.boardQemuArm64.Size = new System.Drawing.Size(445, 33);
             this.boardQemuArm64.TabIndex = 4;
-            this.boardQemuArm64.Text = "QEMU Emulated Cortex A57 (64-bit ARMv8)";
+            this.boardQemuArm64.Text = "QEMU (Emulated) [AArch64/ARMv8-A]";
             this.boardQemuArm64.UseVisualStyleBackColor = true;
             // 
             // BoardPickerPage
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(649, 512);
+            this.ClientSize = new System.Drawing.Size(742, 512);
             this.ControlBox = false;
             this.Controls.Add(this.label1);
             this.Controls.Add(this.panel1);
