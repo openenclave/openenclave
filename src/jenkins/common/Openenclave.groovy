@@ -13,7 +13,6 @@ String dockerBuildArgs(String... args) {
 }
 
 String dockerImage(String tag, String dockerfile = ".jenkins/Dockerfile", String buildArgs = "") {
-    checkout scm
     return docker.build(tag, "${buildArgs} -f ${dockerfile} .")
 }
 
@@ -27,22 +26,20 @@ def oetoolsImage(String version, String compiler, String task, String runArgs=""
 }
 
 def azureEnvironment(String task) {
-    node("nonSGX") {
-        String buildArgs = dockerBuildArgs("UID=\$(id -u)",
-                                           "GID=\$(id -g)",
-                                           "UNAME=\$(id -un)",
-                                           "GNAME=\$(id -gn)")
+    String buildArgs = dockerBuildArgs("UID=\$(id -u)",
+                                       "GID=\$(id -g)",
+                                       "UNAME=\$(id -un)",
+                                       "GNAME=\$(id -gn)")
 
-        dockerImage("oetools-deploy", ".jenkins/Dockerfile.deploy", buildArgs).inside {
-            timeout(60) {
-                withCredentials([usernamePassword(credentialsId: 'SERVICE_PRINCIPAL_OSTCLAB',
-                                                  passwordVariable: 'SERVICE_PRINCIPAL_PASSWORD',
-                                                  usernameVariable: 'SERVICE_PRINCIPAL_ID'),
-                                 string(credentialsId: 'OSCTLabSubID', variable: 'SUBSCRIPTION_ID'),
-                                 string(credentialsId: 'TenantID', variable: 'TENANT_ID')]) {
-                    dir('.jenkins/provision') {
-                        sh "${task}"
-                    }
+    dockerImage("oetools-deploy", ".jenkins/Dockerfile.deploy", buildArgs).inside {
+        timeout(60) {
+            withCredentials([usernamePassword(credentialsId: 'SERVICE_PRINCIPAL_OSTCLAB',
+                                              passwordVariable: 'SERVICE_PRINCIPAL_PASSWORD',
+                                              usernameVariable: 'SERVICE_PRINCIPAL_ID'),
+                             string(credentialsId: 'OSCTLabSubID', variable: 'SUBSCRIPTION_ID'),
+                             string(credentialsId: 'TenantID', variable: 'TENANT_ID')]) {
+                dir('.jenkins/provision') {
+                    sh "${task}"
                 }
             }
         }
@@ -56,8 +53,6 @@ def Run(String compiler, String task, Integer timeoutMinutes = 30) {
         c_compiler = "gcc"
         cpp_compiler = "g++"
     }
-    cleanWs()
-    checkout scm
 
     withEnv(["CC=${c_compiler}","CXX=${cpp_compiler}"]) {
         timeout(timeoutMinutes) {
