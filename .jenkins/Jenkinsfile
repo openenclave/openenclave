@@ -46,7 +46,7 @@ def simulationTest(String version, String platform_mode, String build_type) {
                            ninja -v
                            ctest --output-on-failure
                            """
-                oe.oetoolsImage(version, "clang-7", task)
+                oe.ContainerRun("oetools-full-${version}", "clang-7", task)
             }
         }
     }
@@ -62,7 +62,7 @@ def ACCContainerTest(String label, String version) {
                        ninja -v
                        ctest --output-on-failure
                        """
-            oe.oetoolsImage(version, "clang-7", task, "--device /dev/sgx:/dev/sgx")
+            oe.ContainerRun("oetools-full-${version}", "clang-7", task, "--device /dev/sgx:/dev/sgx")
         }
     }
 }
@@ -72,16 +72,11 @@ def checkDevFlows(String version) {
         node("nonSGX") {
             cleanWs()
             checkout scm
-            oe.dockerImage("oetools:${version}", ".jenkins/Dockerfile.scripts", "--build-arg ubuntu_version=${version}").inside {
-                timeout(30) {
-                    dir('build') {
-                        sh """
-                           cmake ${WORKSPACE} -G Ninja -DUSE_LIBSGX=OFF -Wdev --warn-uninitialized -Werror=dev
-                           ninja -v
-                           """
-                    }
-                }
-            }
+            def task = """
+                       cmake ${WORKSPACE} -G Ninja -DUSE_LIBSGX=OFF -Wdev --warn-uninitialized -Werror=dev
+                       ninja -v
+                       """
+            oe.ContainerRun("oetools-minimal-${version}", "clang-7", task)
         }
     }
 }
@@ -91,11 +86,7 @@ def checkCI() {
         node("nonSGX") {
             cleanWs()
             checkout scm
-            oe.dockerImage("oetools:18.04", ".jenkins/Dockerfile", "--build-arg ubuntu_version=18.04").inside {
-                timeout(10) {
-                    sh './scripts/check-ci'
-                }
-            }
+            oe.ContainerRun("oetools-minimal-18.04", "clang-7", "cd ${WORKSPACE} && ./scripts/check-ci")
         }
     }
 }
@@ -109,7 +100,7 @@ def win2016LinuxElfBuild(String version, String compiler, String build_type) {
                        cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DUSE_DEBUG_MALLOC=OFF -Wdev
                        ninja -v
                        """
-            oe.oetoolsImage(version, compiler, task)
+            oe.ContainerRun("oetools-full-${version}", compiler, task)
             stash includes: 'build/tests/**', name: "linux-${compiler}-${build_type}-${version}-${BUILD_NUMBER}"
         }
     }
