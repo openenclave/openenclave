@@ -79,10 +79,6 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
   if (OE_SGX)
       add_compile_options(-mxsave)
   endif()
-
-  # We should only need this for in-enclave code but it's easier
-  # and conservative to specify everywhere
-  add_compile_options(-fno-builtin-malloc -fno-builtin-calloc -fno-builtin)
 elseif (MSVC)
   # MSVC options go here
   if (MSVC_VERSION VERSION_LESS 1910)
