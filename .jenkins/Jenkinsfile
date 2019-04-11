@@ -86,6 +86,8 @@ def checkCI() {
         node("nonSGX") {
             cleanWs()
             checkout scm
+            // At the moment, the check-ci script assumes that it's executed from the
+            // root source code directory.
             oe.ContainerRun("oetools-minimal-18.04", "clang-7", "cd ${WORKSPACE} && ./scripts/check-ci")
         }
     }
