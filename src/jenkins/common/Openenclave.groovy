@@ -16,11 +16,14 @@ String dockerImage(String tag, String dockerfile = ".jenkins/Dockerfile", String
     return docker.build(tag, "${buildArgs} -f ${dockerfile} .")
 }
 
-def oetoolsImage(String version, String compiler, String task, String runArgs="") {
-    String buildArgs = dockerBuildArgs("ubuntu_version=${version}")
-    dockerImage("oetools:${version}", ".jenkins/Dockerfile", buildArgs).inside(runArgs) {
-        dir("${WORKSPACE}/build") {
-            Run(compiler, task)
+def ContainerRun(String imageName, String compiler, String task, String runArgs="") {
+    docker.withRegistry("https://oejenkinscidockerregistry.azurecr.io", "oejenkinscidockerregistry") {
+        image = docker.image("${imageName}:latest")
+        image.pull()
+        image.inside(runArgs) {
+            dir("${WORKSPACE}/build") {
+                Run(compiler, task)
+            }
         }
     }
 }
