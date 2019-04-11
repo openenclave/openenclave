@@ -1,11 +1,25 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-string(REPLACE ";" "  " MBEDTLS_SPECTRE_MITIGATION_FLAGS "${OE_SPECTRE_MITIGATION_FLAGS}")
-set(MBEDTLS_WRAP_CFLAGS "-nostdinc -I${PROJECT_SOURCE_DIR}/include/openenclave/corelibc -I${PROJECT_SOURCE_DIR}/include -DOE_NEED_STDC_NAMES -fPIE -fno-builtin-udivti3 ${MBEDTLS_SPECTRE_MITIGATION_FLAGS} -ftls-model=local-exec")
+# NOTE: Because we still build mbed TLS via `ExternalProject_Add`, it
+# does not automatically inherit our build settings (nor could it
+# because it doesn't link against our targets). Unfortunately, that
+# means we have to maintain these flags to be consistent with
+# those used to build `oecore`.
+list(APPEND MBEDTLS_WRAP_CFLAGS_LIST
+  ${OE_SPECTRE_MITIGATION_FLAGS}
+  -nostdinc
+  -I${PROJECT_SOURCE_DIR}/include/openenclave/corelibc
+  -I${PROJECT_SOURCE_DIR}/include
+  -DOE_NEED_STDC_NAMES
+  -fPIE
+  -ftls-model=local-exec
+  -fvisibility=hidden
+  -fno-stack-protector
+  -fno-builtin-udivti3)
 
 if (USE_CLANGW)
-  set(MBEDTLS_WRAP_CFLAGS "-target x86_64-pc-linux ${MBEDTLS_WRAP_CFLAGS}")
+  list(APPEND MBEDTLS_WRAP_CFLAGS_LIST "-target x86_64-pc-linux")
   # Setup clang wrapper toolchain
   set(MBEDTLS_TOOLCHAIN "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_CURRENT_SOURCE_DIR}/toolchain-clangw.cmake")
 
@@ -27,6 +41,7 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "DEBUG")
   set(MBEDTLS_DEBUG_C TRUE)
 endif ()
 
+list(JOIN MBEDTLS_WRAP_CFLAGS_LIST " " MBEDTLS_WRAP_CFLAGS)
 configure_file(config.h config.h) # This copies from source to binary folders.
 
 include(ExternalProject)

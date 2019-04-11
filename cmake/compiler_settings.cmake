@@ -51,12 +51,14 @@ include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 
 # Apply Spectre mitigations if available.
-set(SPECTRE_MITIGATION_FLAGS "-mllvm;-x86-speculative-load-hardening")
+set(SPECTRE_MITIGATION_FLAGS -mllvm -x86-speculative-load-hardening)
 check_c_compiler_flag("${SPECTRE_MITIGATION_FLAGS}" SPECTRE_MITIGATION_C_FLAGS_SUPPORTED)
 check_cxx_compiler_flag("${SPECTRE_MITIGATION_FLAGS}" SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
 if (SPECTRE_MITIGATION_C_FLAGS_SUPPORTED AND SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
   message(STATUS "Spectre 1 mitigations supported")
-  set(OE_SPECTRE_MITIGATION_FLAGS "${SPECTRE_MITIGATION_FLAGS}")
+  # We set this variable to indicate the flags are supported. It is
+  # empty otherwise.
+  set(OE_SPECTRE_MITIGATION_FLAGS ${SPECTRE_MITIGATION_FLAGS})
   # TODO: We really should specify this only on the `oecore` target;
   # however, the third-party mbed TLS build needs it set to, so we
   # have to keep this here for now.

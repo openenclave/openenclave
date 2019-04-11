@@ -21,11 +21,18 @@ set(ENCLAVE_CINCLUDES
 set(ENCLAVE_CXXINCLUDES
     "-I\${includedir}/openenclave/3rdparty/libcxx ${ENCLAVE_CINCLUDES}")
 
-set(ENCLAVE_CFLAGS_CLANG
-    "-nostdinc -m64 -fPIE -ftls-model=local-exec -mllvm -x86-speculative-load-hardening")
+set(ENCLAVE_CFLAGS_LIST
+  -nostdinc
+  -m64
+  -fPIE
+  -ftls-model=local-exec
+  -fvisibility=hidden
+  -fno-stack-protector)
 
-set(ENCLAVE_CFLAGS_GCC
-    "-nostdinc -m64 -fPIE -ftls-model=local-exec")
+set(ENCLAVE_CFLAGS_CLANG_LIST ${ENCLAVE_CFLAGS_LIST} ${SPECTRE_MITIGATION_FLAGS})
+list(JOIN ENCLAVE_CFLAGS_CLANG_LIST " " ENCLAVE_CFLAGS_CLANG)
+
+list(JOIN ENCLAVE_CFLAGS_LIST " " ENCLAVE_CFLAGS_GCC)
 
 ##==============================================================================
 ##
@@ -33,26 +40,28 @@ set(ENCLAVE_CFLAGS_GCC
 ##
 ##==============================================================================
 
-string(APPEND ENCLAVE_CLIBS_1 "-nostdlib ")
-string(APPEND ENCLAVE_CLIBS_1 "-nodefaultlibs ")
-string(APPEND ENCLAVE_CLIBS_1 "-nostartfiles ")
-string(APPEND ENCLAVE_CLIBS_1 "-Wl,--no-undefined ")
-string(APPEND ENCLAVE_CLIBS_1 "-Wl,-Bstatic ")
-string(APPEND ENCLAVE_CLIBS_1 "-Wl,-Bsymbolic ")
-string(APPEND ENCLAVE_CLIBS_1 "-Wl,--export-dynamic ")
-string(APPEND ENCLAVE_CLIBS_1 "-Wl,-pie ")
-string(APPEND ENCLAVE_CLIBS_1 "-Wl,--build-id ")
-string(APPEND ENCLAVE_CLIBS_1 "-L\${libdir}/openenclave/enclave ")
-string(APPEND ENCLAVE_CLIBS_1 "-loeenclave ")
-string(APPEND ENCLAVE_CLIBS_1 "-lmbedx509 ")
-string(APPEND ENCLAVE_CLIBS_1 "-lmbedcrypto ")
+set(ENCLAVE_CLIBS_1
+  -nostdlib
+  -nodefaultlibs
+  -nostartfiles
+  -Wl,--no-undefined
+  -Wl,-Bstatic
+  -Wl,-Bsymbolic
+  -Wl,--export-dynamic
+  -Wl,-pie
+  -Wl,--build-id
+  -L\${libdir}/openenclave/enclave
+  -loeenclave
+  -lmbedx509
+  -lmbedcrypto)
 
-string(APPEND ENCLAVE_CLIBS_2 "-loelibc ")
-string(APPEND ENCLAVE_CLIBS_2 "-loecore ")
+set(ENCLAVE_CLIBS_2 -loelibc -loecore)
 
-set(ENCLAVE_CLIBS "${ENCLAVE_CLIBS_1} ${ENCLAVE_CLIBS_2}")
+set(ENCLAVE_CLIBS_LIST ${ENCLAVE_CLIBS_1} ${ENCLAVE_CLIBS_2})
+list(JOIN ENCLAVE_CLIBS_LIST " " ENCLAVE_CLIBS)
 
-set(ENCLAVE_CXXLIBS "${ENCLAVE_CLIBS_1} -loelibcxx ${ENCLAVE_CLIBS_2}")
+set(ENCLAVE_CXXLIBS_LIST ${ENCLAVE_CLIBS_1} -loelibcxx ${ENCLAVE_CLIBS_2})
+list(JOIN ENCLAVE_CXXLIBS_LIST " " ENCLAVE_CXXLIBS)
 
 ##==============================================================================
 ##
@@ -62,13 +71,13 @@ set(ENCLAVE_CXXLIBS "${ENCLAVE_CLIBS_1} -loelibcxx ${ENCLAVE_CLIBS_2}")
 
 set(HOST_INCLUDES "-I\${includedir}")
 
-set(HOST_CFLAGS_CLANG "-mllvm -x86-speculative-load-hardening")
+list(JOIN SPECTRE_MITIGATION_FLAGS " " HOST_CFLAGS_CLANG)
 
-set(HOST_CXXFLAGS_CLANG "${HOST_CFLAGS_CLANG}")
+set(HOST_CXXFLAGS_CLANG ${HOST_CFLAGS_CLANG})
 
 set(HOST_CFLAGS_GCC "")
 
-set(HOST_CXXFLAGS_GCC "${HOST_CFLAGS_GCC}")
+set(HOST_CXXFLAGS_GCC ${HOST_CFLAGS_GCC})
 
 ##==============================================================================
 ##
