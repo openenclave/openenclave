@@ -296,7 +296,7 @@ let oe_gen_args_header (ec: enclave_content) (dir:string)=
   fprintf os "#ifndef %s\n" guard_macro;
   fprintf os "#define %s\n\n" guard_macro;
   fprintf os "#include <stdint.h>\n";
-  fprintf os "#include <stdlib.h> /* for wchar_t */ \n\n";
+  fprintf os "#include <stdlib.h> /* for wchar_t */\n\n";
   if with_errno then fprintf os "#include <errno.h>\n";
   fprintf os "#include <openenclave/bits/result.h>\n\n";
   List.iter (fun inc -> fprintf os "#include \"%s\"\n" inc) ec.include_list;
@@ -365,14 +365,14 @@ let oe_prepare_input_buffer (os:out_channel) (fd:Ast.func_decl) (alloc_func:stri
   fprintf os "    _buffer = (uint8_t*) %s(_total_buffer_size);\n" alloc_func;
   fprintf os "    _input_buffer = _buffer;\n";
   fprintf os "    _output_buffer = _buffer + _input_buffer_size;\n";
-  fprintf os "    if (_buffer == NULL) { \n";
+  fprintf os "    if (_buffer == NULL) {\n";
   fprintf os "        _result = OE_OUT_OF_MEMORY;\n";
   fprintf os "        goto done;\n";
   fprintf os "    }\n\n";
 
   (* Serialize in and in-out parameters *)
   fprintf os "    /* Serialize buffer inputs (in and in-out parameters) */\n";
-  fprintf os "    *(uint8_t**)&_pargs_in = _input_buffer; \n";
+  fprintf os "    *(uint8_t**)&_pargs_in = _input_buffer;\n";
   fprintf os "    OE_ADD_SIZE(_input_buffer_offset, sizeof(*_pargs_in));\n\n";
   List.iter (fun (ptype, decl) ->
       match ptype with
@@ -392,7 +392,7 @@ let oe_prepare_input_buffer (os:out_channel) (fd:Ast.func_decl) (alloc_func:stri
 let oe_process_output_buffer (os:out_channel) (fd:Ast.func_decl) =
   (* Verify that the ecall succeeded *)
   fprintf os "    /* Set up output arg struct pointer */\n";
-  fprintf os "    *(uint8_t**)&_pargs_out = _output_buffer; \n";
+  fprintf os "    *(uint8_t**)&_pargs_out = _output_buffer;\n";
   fprintf os "    OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));\n\n";
   fprintf os "    /* Check if the call succeeded */\n";
   fprintf os "    if ((_result=_pargs_out->_result) != OE_OK)\n";
@@ -478,7 +478,7 @@ let oe_gen_allocate_buffers (os:out_channel) (fd: Ast.func_decl) =
           | Ast.PtrOut -> "OE_CHECKED_ALLOCATE_OUTPUT"
           | _ -> "OE_CHECKED_COPY_INPUT"
         in
-        fprintf os "    %s(enc_args.%s, args.%s, %s); \n"
+        fprintf os "    %s(enc_args.%s, args.%s, %s);\n"
           macro decl.Ast.identifier
           decl.Ast.identifier
           size
@@ -495,7 +495,7 @@ let oe_gen_free_buffers (os:out_channel) (fd: Ast.func_decl) =
     | Ast.PTPtr (atype, ptr_attr) ->
       if ptr_attr.Ast.pa_chkptr then
         (fprintf os "    if (enc_args.%s)\n" decl.Ast.identifier;
-         fprintf os "        free (enc_args.%s); \n" decl.Ast.identifier)
+         fprintf os "        free (enc_args.%s);\n" decl.Ast.identifier)
       else ()
     | _ -> () (* Non pointer arguments *)
   in
@@ -617,12 +617,12 @@ let oe_gen_ecall_function (os:out_channel) (fd: Ast.func_decl) =
 
   (* Mark call as success *)
   fprintf os "\n    /* Success. */\n";
-  fprintf os "    _result = OE_OK; \n";
+  fprintf os "    _result = OE_OK;\n";
   fprintf os "    *output_bytes_written = output_buffer_offset;\n\n";
   fprintf os "done:\n";
 
   (* oe_gen_free_buffers os fd; *)
-  fprintf os "    if (pargs_out && output_buffer_size >= sizeof(*pargs_out)) \n";
+  fprintf os "    if (pargs_out && output_buffer_size >= sizeof(*pargs_out))\n";
   fprintf os "        pargs_out->_result = _result;\n";
   fprintf os "}\n\n"
 
@@ -662,9 +662,9 @@ let oe_get_host_ecall_function (os:out_channel) (fd:Ast.func_decl) =
   fprintf os "\n";
   fprintf os "{\n";
   fprintf os "    oe_result_t _result = OE_FAILURE;\n\n";
-  fprintf os "    /* Marshalling struct */ \n";
+  fprintf os "    /* Marshalling struct */\n";
   fprintf os "    %s_args_t _args, *_pargs_in = NULL, *_pargs_out=NULL;\n\n" fd.Ast.fname;
-  fprintf os "    /* Marshalling buffer and sizes */ \n";
+  fprintf os "    /* Marshalling buffer and sizes */\n";
   fprintf os "    size_t _input_buffer_size = 0;\n";
   fprintf os "    size_t _output_buffer_size = 0;\n";
   fprintf os "    size_t _total_buffer_size = 0;\n";
@@ -688,7 +688,7 @@ let oe_get_host_ecall_function (os:out_channel) (fd:Ast.func_decl) =
   fprintf os "        goto done;\n\n";
   oe_process_output_buffer os fd;
   fprintf os "    _result = OE_OK;\n";
-  fprintf os "done:    \n";
+  fprintf os "done:\n";
   fprintf os "    if (_buffer)\n";
   fprintf os "        free(_buffer);\n";
   fprintf os "    return _result;\n";
@@ -713,9 +713,9 @@ let oe_gen_ocall_enclave_wrapper (os:out_channel) (uf:Ast.untrusted_func) =
   fprintf os "       immediately. */\n";
   fprintf os "    if (oe_get_enclave_status() != OE_OK)\n";
   fprintf os "        return oe_get_enclave_status();\n\n";
-  fprintf os "    /* Marshalling struct */ \n";
+  fprintf os "    /* Marshalling struct */\n";
   fprintf os "    %s_args_t _args, *_pargs_in = NULL, *_pargs_out=NULL;\n\n" fd.Ast.fname;
-  fprintf os "    /* Marshalling buffer and sizes */ \n";
+  fprintf os "    /* Marshalling buffer and sizes */\n";
   fprintf os "    size_t _input_buffer_size = 0;\n";
   fprintf os "    size_t _output_buffer_size = 0;\n";
   fprintf os "    size_t _total_buffer_size = 0;\n";
@@ -746,7 +746,7 @@ let oe_gen_ocall_enclave_wrapper (os:out_channel) (uf:Ast.untrusted_func) =
      end);
 
   fprintf os "    _result = OE_OK;\n";
-  fprintf os "done:    \n";
+  fprintf os "done:\n";
   fprintf os "    if (_buffer)\n";
   fprintf os "        oe_free_ocall_buffer(_buffer);\n";
   fprintf os "    return _result;\n";
@@ -834,12 +834,12 @@ let oe_gen_ocall_host_wrapper (os:out_channel) (uf:Ast.untrusted_func) =
 
   (* Mark call as success *)
   fprintf os "\n    /* Success. */\n";
-  fprintf os "    _result = OE_OK; \n";
+  fprintf os "    _result = OE_OK;\n";
   fprintf os "    *output_bytes_written = output_buffer_offset;\n\n";
   fprintf os "done:\n";
 
   (* oe_gen_free_buffers os fd; *)
-  fprintf os "    if (pargs_out && output_buffer_size >= sizeof(*pargs_out)) \n";
+  fprintf os "    if (pargs_out && output_buffer_size >= sizeof(*pargs_out))\n";
   fprintf os "        pargs_out->_result = _result;\n";
   fprintf os "}\n\n"
 
