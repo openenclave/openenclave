@@ -2899,6 +2899,12 @@
 #include MBEDTLS_USER_CONFIG_FILE
 #endif
 
+#define MBEDTLS_EDDSA_C
+#define MBEDTLS_ECDH_VARIANT_EVEREST_ENABLED
+#define MBEDTLS_ECDH_VARIANT_EVEREST_AES_GCM
+#define MBEDTLS_HKDF_C
+
+
 #include "check_config.h"
 
 #endif /* MBEDTLS_CONFIG_H */

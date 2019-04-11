@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 string(REPLACE ";" "  " MBEDTLS_SPECTRE_MITIGATION_FLAGS "${OE_SPECTRE_MITIGATION_FLAGS}")
-set(MBEDTLS_WRAP_CFLAGS "-nostdinc -I${PROJECT_SOURCE_DIR}/include/openenclave/corelibc -I${PROJECT_SOURCE_DIR}/include -DOE_NEED_STDC_NAMES -fPIE -fno-builtin-udivti3 ${MBEDTLS_SPECTRE_MITIGATION_FLAGS} -ftls-model=local-exec")
+set(MBEDTLS_WRAP_CFLAGS "-nostdinc -I${PROJECT_SOURCE_DIR}/include/openenclave/corelibc -I${PROJECT_SOURCE_DIR}/include -DOE_NEED_STDC_NAMES -fPIE -fno-builtin-udivti3 ${MBEDTLS_SPECTRE_MITIGATION_FLAGS} -ftls-model=local-exec -I ${CMAKE_CURRENT_SOURCE_DIR} --include ${CMAKE_CURRENT_SOURCE_DIR}/libc_missing.h")
 
 if (USE_CLANGW)
   set(MBEDTLS_WRAP_CFLAGS "-target x86_64-pc-linux ${MBEDTLS_WRAP_CFLAGS}")
@@ -82,6 +82,7 @@ add_dependencies(mbedcrypto mbedtls-wrap)
 
 target_include_directories(mbedcrypto INTERFACE
   $<BUILD_INTERFACE:${SOURCE_DIR}/include>
+  $<BUILD_INTERFACE:${SOURCE_DIR}/3rdparty/everest/include>
   $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty>)
 
 target_link_libraries(mbedcrypto INTERFACE
