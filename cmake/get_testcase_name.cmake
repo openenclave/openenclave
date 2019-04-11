@@ -19,5 +19,16 @@ function(get_testcase_name FILENAME NAMEVAR PREFIX)
         endif()
         string(REGEX REPLACE "[/=]" "_" n ${n})
         string(REGEX REPLACE "[\!]" "-" n ${n})
+
+        # Encrypted filesystems on Linux have a smaller limit on the
+	# maximum file name length. Limit the testcase name to the
+	# last 120 characters.
+	set(max_length 120)
+	string(LENGTH ${n} n_length)
+	if (${n_length} GREATER ${max_length})
+	    math(EXPR start_pos "${n_length} - ${max_length}")
+	    string(SUBSTRING ${n} ${start_pos} ${max_length} n)
+	endif()
+
 	set(${NAMEVAR} ${n} PARENT_SCOPE)
 endfunction(get_testcase_name)
