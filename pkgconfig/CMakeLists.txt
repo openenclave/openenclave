@@ -87,6 +87,8 @@ set(HOST_CXXFLAGS_GCC ${HOST_CFLAGS_GCC})
 
 if(USE_LIBSGX)
     set(SGX_LIBS "-lsgx_enclave_common -lsgx_dcap_ql -lsgx_urts")
+else()
+    set(SGX_LIBS "")
 endif()
 
 set(HOST_CLIBS "-rdynamic -L\${libdir}/openenclave/host -loehost -ldl -lpthread ${SGX_LIBS}")

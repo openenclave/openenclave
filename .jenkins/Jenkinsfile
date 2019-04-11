@@ -66,7 +66,7 @@ def checkDevFlows(String version) {
                 timeout(30) {
                     dir('build') {
                         sh """
-                           cmake ${WORKSPACE} -G Ninja -DUSE_LIBSGX=OFF -Wdev --warn-uninitialized --warn-unused-vars
+                           cmake ${WORKSPACE} -G Ninja -DUSE_LIBSGX=OFF -Wdev --warn-uninitialized -Werror=dev
                            ninja -v
                            """
                     }
