@@ -10,16 +10,16 @@ def buildDockerImages() {
             checkout scm
         }
         stage("Build Ubuntu1604 Docker Image") {
-            oefull1604 = oe.dockerImage("oetools-full-16.04:${DOCKER_TAG}", ".jenkins/Dockerfile", "--build-arg ubuntu_version=16.04")
+            oefull1604 = oe.dockerImage("oetools-full-16.04:${DOCKER_TAG}", ".jenkins/Dockerfile.full", "--build-arg ubuntu_version=16.04")
         }
         stage("Build Ubuntu1804 Docker Image") {
-            oefull1804 = oe.dockerImage("oetools-full-18.04:${DOCKER_TAG}", ".jenkins/Dockerfile", "--build-arg ubuntu_version=18.04")
+            oefull1804 = oe.dockerImage("oetools-full-18.04:${DOCKER_TAG}", ".jenkins/Dockerfile.full", "--build-arg ubuntu_version=18.04")
         }
          stage("Build Ubuntu1604 scripts Docker image") {
-            oeminimal1604 = oe.dockerImage("oetools-minimal-16.04:${DOCKER_TAG}", ".jenkins/Dockerfile.scripts", "--build-arg ubuntu_version=16.04")
+            oeminimal1604 = oe.dockerImage("oetools-minimal-16.04:${DOCKER_TAG}", ".jenkins/Dockerfile.minimal", "--build-arg ubuntu_version=16.04")
         }
         stage("Build Ubuntu1804 scripts Docker image") {
-            oeminimal1804 = oe.dockerImage("oetools-minimal-18.04:${DOCKER_TAG}", ".jenkins/Dockerfile.scripts", "--build-arg ubuntu_version=18.04")
+            oeminimal1804 = oe.dockerImage("oetools-minimal-18.04:${DOCKER_TAG}", ".jenkins/Dockerfile.minimal", "--build-arg ubuntu_version=18.04")
         }
         stage("Push to OE Docker Registry") {
             docker.withRegistry(OETOOLS_REPO, OETOOLS_REPO_CREDENTIAL_ID) {
