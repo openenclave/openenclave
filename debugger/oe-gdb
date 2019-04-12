@@ -4,7 +4,10 @@
 # Licensed under the MIT License.
 
 # Get path of the oe-gdb script
-OE_GDB_DIR=$(dirname "$0")
+# See https://mywiki.wooledge.org/BashFAQ/028 for complexities involved
+# in determining location of a bash script. ${BASH_SOURCE}, though not perfect,
+# is an acceptable solution for oe-gdb.
+OE_GDB_DIR=$(dirname "${BASH_SOURCE[0]}")
 
 # Get the path to the debugger libraries relative to the oe-gdb path.
 # Normalize the path by cd-ing and doing a pwd -P.
