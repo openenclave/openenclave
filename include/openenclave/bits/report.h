@@ -98,30 +98,24 @@ typedef struct _oe_identity
 
     /** The unique ID for the enclave.
       * For SGX enclaves, this is the MRENCLAVE value.
-      * For CyReS TAs, this is a hash of the TA image. */
+      * For CyReS components, this is a hash of the CyReS component binary. */
     uint8_t unique_id[OE_UNIQUE_ID_SIZE];
 
     /** The signer ID for the enclave.
       * For SGX enclaves, this is the MRSIGNER value.
-      * For CyReS TAs, this is a hash of the public key that signed the TA image. */
+      * For CyReS components, this is a hash of the public key that signed the CyReS component image. */
     uint8_t signer_id[OE_SIGNER_ID_SIZE];
 
     /** The Product ID for the enclave.
-     * For SGX enclaves, this is the ISVPRODID value. */
+     * For SGX enclaves, this is the ISVPRODID value. 
+     * For CyReS components, this is a binary encoding of a GUID based on the component name. */
     uint8_t product_id[OE_PRODUCT_ID_SIZE];
 
-    /** The unique ID for the device. 
-     *  For CyReS TAs, this is a U-Boot identifier. */
-    uint8_t device_unique_id[OE_UNIQUE_ID_SIZE];
+    /* For CyReS components, this is ECC public key issued for the CyReS component by the caller component. */
+    uint8_t public_key[OE_ECC_PUBLIC_KEY_SIZE];
 
-    /** The signer ID for the device. 
-     *  For CyReS TAs, this is a hash of the public key that signed the U-Boot image. */
-    uint8_t device_signer_id[OE_SIGNER_ID_SIZE];
-
-    /** The public key for the device.
-     *  For CyReS TAs, this is ECC public key which corresponding private key is held by U-Boot
-     * image. */
-    uint8_t device_public_key[OE_ECC_PUBLIC_KEY_SIZE];
+    /* For CyReS components, this points to an identity of a parent CyReS component that started execution of the current CyReS component. */
+    struct _oe_identity* caller;
 
 } oe_identity_t;
 /**< typedef struct _oe_identity oe_identity_t*/

@@ -17,3 +17,6 @@
 	path = 3rdparty/OpteeCalls
 	url = https://github.com/ms-iot/OpteeCalls.git
 	branch = master
+[submodule "3rdparty/json11"]
+	path = 3rdparty/json11
+	url = https://github.com/dropbox/json11

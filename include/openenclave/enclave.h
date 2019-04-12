@@ -550,6 +550,8 @@ oe_result_t oe_parse_report(
     size_t report_size,
     oe_report_t* parsed_report);
 
+void oe_free_parsed_report(_In_ oe_report_t* parsed_report);
+
 /**
  * Verify the integrity of the report and its signature.
  *
