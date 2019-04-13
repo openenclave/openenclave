@@ -347,6 +347,8 @@ set(LIBC_C_SRC
     ${MUSL_SRC}/src/math/sinhl.c
     ${MUSL_SRC}/src/math/__sinl.c
     ${MUSL_SRC}/src/math/sinl.c
+    ${MUSL_SRC}/src/math/sqrt.c
+    ${MUSL_SRC}/src/math/sqrtf.c
     ${MUSL_SRC}/src/math/__tan.c
     ${MUSL_SRC}/src/math/tan.c
     ${MUSL_SRC}/src/math/__tandf.c
@@ -628,6 +630,7 @@ set(LIBC_C_SRC
     ${MUSL_SRC}/src/unistd/dup.c
     ${MUSL_SRC}/src/unistd/dup3.c
     ${CMAKE_CURRENT_LIST_DIR}/enc/optee/atexit.c
+    ${CMAKE_CURRENT_LIST_DIR}/enc/optee/dl.c
     ${CMAKE_CURRENT_LIST_DIR}/enc/optee/dladdr.c
     ${CMAKE_CURRENT_LIST_DIR}/enc/optee/errno.c
     ${CMAKE_CURRENT_LIST_DIR}/enc/optee/getpagesize.c
@@ -637,6 +640,7 @@ set(LIBC_C_SRC
     ${CMAKE_CURRENT_LIST_DIR}/enc/optee/pthread.c
     ${CMAKE_CURRENT_LIST_DIR}/enc/optee/sbrk.c
     ${CMAKE_CURRENT_LIST_DIR}/enc/optee/sched_yield.c
+    ${CMAKE_CURRENT_LIST_DIR}/enc/optee/stack.c
     ${CMAKE_CURRENT_LIST_DIR}/enc/optee/stdlib.c
     ${CMAKE_CURRENT_LIST_DIR}/enc/optee/strerror.c
     ${CMAKE_CURRENT_LIST_DIR}/enc/optee/syscalls.c

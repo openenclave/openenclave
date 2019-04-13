@@ -205,8 +205,11 @@ add_subdirectory(libsocket)
 add_subdirectory(libstdio)
 add_subdirectory(samples)
 add_subdirectory(src)
-add_subdirectory(tests)
+# add_subdirectory(tests)
 
 if(WIN32 AND TZ AND SIM)
     add_subdirectory(opteesim)
 endif()
+
+add_library(oeenclave INTERFACE)
+target_link_libraries(oeenclave INTERFACE oecore mbedtls_enc mbedx509_enc mbedcrypto_enc oelibcxx oelibc)

@@ -44,8 +44,8 @@ macro(add_enclave_ex)
         set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS)
         set(CMAKE_EXE_EXPORTS_C_FLAG)
         
-        set(CMAKE_C_LINK_EXECUTABLE "${OE_TA_TOOLCHAIN_PREFIX}ld <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>")
-        set(CMAKE_CXX_LINK_EXECUTABLE "${OE_TA_TOOLCHAIN_PREFIX}ld <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>")
+        set(CMAKE_C_LINK_EXECUTABLE "${OE_TA_TOOLCHAIN_PREFIX}ld <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>")
+        set(CMAKE_CXX_LINK_EXECUTABLE "${OE_TA_TOOLCHAIN_PREFIX}ld <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>")
 
         # Generate linker script from template.
         set(C_PREPROCESSOR ${OE_TA_TOOLCHAIN_PREFIX}cpp)
@@ -86,7 +86,7 @@ macro(add_enclave_ex)
                 ${CMAKE_CURRENT_BINARY_DIR}
                 ${CMAKE_CURRENT_SOURCE_DIR}/optee)
         target_link_libraries(${ENCLAVE_TARGET}-c
-            PUBLIC
+            PRIVATE
                 oecore
                 mbedx509_enc mbedcrypto_enc
                 oelibc)
@@ -104,7 +104,7 @@ macro(add_enclave_ex)
                     ${CMAKE_CURRENT_BINARY_DIR}
                     ${CMAKE_CURRENT_SOURCE_DIR}/optee)
             target_link_libraries(${ENCLAVE_TARGET}-cpp
-                PUBLIC
+                PRIVATE
                     oecore
                     mbedx509_enc mbedcrypto_enc
                     oelibcxx oelibc)
@@ -121,10 +121,12 @@ macro(add_enclave_ex)
         add_dependencies(${ENCLAVE_TARGET} oeedger8rtool ${ENCLAVE_UUID}.ld)
         if(ENCLAVE_CXX)
             target_link_libraries(${ENCLAVE_TARGET} ${ENCLAVE_TARGET}-cpp)
-            target_link_libraries(${ENCLAVE_TARGET} ${ENCLAVE_TARGET}-c)
-        else()
-            target_link_libraries(${ENCLAVE_TARGET} ${ENCLAVE_TARGET}-c)
         endif()
+        target_link_libraries(${ENCLAVE_TARGET} ${ENCLAVE_TARGET}-c)
+        if(ENCLAVE_LIBRARIES)
+            target_link_libraries(${ENCLAVE_TARGET} ${ENCLAVE_LIBRARIES})
+        endif()
+        target_link_libraries(${ENCLAVE_TARGET} oecore mbedx509_enc mbedcrypto_enc oelibcxx oelibc)
 
         # Strip unneeded bits.
         set(OBJCOPY ${OE_TA_TOOLCHAIN_PREFIX}objcopy)

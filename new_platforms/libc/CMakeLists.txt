@@ -201,6 +201,10 @@ add_library(libcxxrt OBJECT ${LIBCXXRT_CXX_SRC})
 add_dependencies(libcxxrt musl_includes)
 target_link_libraries(libcxxrt PUBLIC libunwind)
 set_target_properties(libcxxrt PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set_source_files_properties(${LIBCXXRT_SRC}/src/dynamic_cast.cc PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
+set_source_files_properties(${LIBCXXRT_SRC}/src/exception.cc PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter -Wno-shift-negative-value -Wno-missing-field-initializers")
+set_source_files_properties(${LIBCXXRT_SRC}/src/stdexcept.cc PROPERTIES COMPILE_FLAGS "-Wno-extra")
+set_source_files_properties(${LIBCXXRT_SRC}/src/typeinfo.cc PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
 
 # Set up libcxx.
 include (ExternalProject)
@@ -224,14 +228,15 @@ target_compile_options(libcxx PRIVATE
     -DLIBCXXRT
     -D_LIBCPP_PROVIDES_DEFAULT_RUNE_TABLE
     -D_LIBCPP_BUILDING_LIBRARY
-    -D_LIBCPP_HAS_NO_CXX14_CONSTEXPR
-    -D_LIBCPP_HAS_NO_THREADS)
+    -D_LIBCPP_HAS_NO_CXX14_CONSTEXPR)
 target_include_directories(libcxx BEFORE
     PUBLIC ${LIBCXX_OUT_INC}
     PRIVATE ${LIBCXX_SRC}/src
     PRIVATE ${LIBCXXRT_SRC}/src)
 target_link_libraries(libcxx PUBLIC libcxxrt)
 set_target_properties(libcxx PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set_source_files_properties(${LIBCXX_SRC}/src/new.cpp PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
+set_source_files_properties(${LIBCXX_SRC}/src/system_error.cpp PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
 
 # Set up umbrella libraries
 add_library(oelibc STATIC)

@@ -4,11 +4,11 @@ set(LIBCXX_CXX_SRC
     ${LIBCXX_SRC}/src/any.cpp
     ${LIBCXX_SRC}/src/bind.cpp
     ${LIBCXX_SRC}/src/chrono.cpp
-    #${LIBCXX_SRC}/src/condition_variable.cpp
+    ${LIBCXX_SRC}/src/condition_variable.cpp
     ${LIBCXX_SRC}/src/debug.cpp
     ${LIBCXX_SRC}/src/exception.cpp
     ${LIBCXX_SRC}/src/functional.cpp
-    #${LIBCXX_SRC}/src/future.cpp
+    ${LIBCXX_SRC}/src/future.cpp
     ${LIBCXX_SRC}/src/hash.cpp
     ${LIBCXX_SRC}/src/ios.cpp
     ${LIBCXX_SRC}/src/iostream.cpp

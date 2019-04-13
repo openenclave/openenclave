@@ -66,6 +66,7 @@ if(UNIX AND TZ)
             PUBLIC ${TINYCBOR_PATH}/src
             PUBLIC ${MBEDTLS_PATH}/include
             PUBLIC ${OE_PATH}/include)
+        target_compile_definitions(${TARGET} PUBLIC OE_BUILD_ENCLAVE OE_API_VERSION=2)
         file(GLOB RIOT_SRCS "${CYREP_PATH}/Riot*.c")
         set_source_files_properties(${RIOT_SRCS} PROPERTIES COMPILE_FLAGS -Wno-implicit-function-declaration)
     endif()
