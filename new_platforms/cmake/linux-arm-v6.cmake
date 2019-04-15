@@ -4,7 +4,7 @@
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_PROCESSOR arm)
 
-if("$ENV{OE_TOOLCHAIN_PREFIX}" STREQUAL "")
+if(("${OE_TOOLCHAIN_PREFIX}" STREQUAL "") AND ("$ENV{OE_TOOLCHAIN_PREFIX}" STREQUAL ""))
     set(CMAKE_ASM_COMPILER ${CMAKE_BINARY_DIR}/toolchains/arm/bin/arm-linux-gnueabihf-gcc)
     set(CMAKE_C_COMPILER   ${CMAKE_BINARY_DIR}/toolchains/arm/bin/arm-linux-gnueabihf-gcc)
     set(CMAKE_CXX_COMPILER ${CMAKE_BINARY_DIR}/toolchains/arm/bin/arm-linux-gnueabihf-g++)
