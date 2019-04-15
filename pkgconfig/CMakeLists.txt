@@ -50,6 +50,8 @@ set(ENCLAVE_CLIBS_1
   -Wl,--export-dynamic
   -Wl,-pie
   -Wl,--build-id
+  -Wl,-z,noexecstack
+  -Wl,-z,now
   -L\${libdir}/openenclave/enclave
   -loeenclave
   -lmbedx509
@@ -71,11 +73,13 @@ list(JOIN ENCLAVE_CXXLIBS_LIST " " ENCLAVE_CXXLIBS)
 
 set(HOST_INCLUDES "-I\${includedir}")
 
-list(JOIN SPECTRE_MITIGATION_FLAGS " " HOST_CFLAGS_CLANG)
+set(HOST_CFLAGS_CLANG_LIST -fstack-protector-strong ${SPECTRE_MITIGATION_FLAGS})
+list(JOIN HOST_CFLAGS_CLANG_LIST " " HOST_CFLAGS_CLANG)
 
 set(HOST_CXXFLAGS_CLANG ${HOST_CFLAGS_CLANG})
 
-set(HOST_CFLAGS_GCC "")
+set(HOST_CFLAGS_GCC_LIST -fstack-protector-strong -D_FORTIFY_SOURCE=2)
+list(JOIN HOST_CFLAGS_GCC_LIST " " HOST_CFLAGS_GCC)
 
 set(HOST_CXXFLAGS_GCC ${HOST_CFLAGS_GCC})
 
@@ -91,7 +95,7 @@ else()
     set(SGX_LIBS "")
 endif()
 
-set(HOST_CLIBS "-rdynamic -L\${libdir}/openenclave/host -loehost -ldl -lpthread ${SGX_LIBS}")
+set(HOST_CLIBS "-rdynamic -Wl,-z,noexecstack -L\${libdir}/openenclave/host -loehost -ldl -lpthread ${SGX_LIBS}")
 
 set(HOST_CXXLIBS "${HOST_CLIBS}")
 

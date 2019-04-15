@@ -49,9 +49,11 @@ int oe_strerror_r(int errnum, char* buf, size_t buflen)
 {
 #if defined(__GNUC__)
     /* GNUC version of strerror_r returns char* instead
-     * caller is responsible for validating the output buf
+     * caller is responsible for validating the output buf.
+     * It should never return NULL.
      */
-    strerror_r(errnum, buf, buflen);
+    if (!strerror_r(errnum, buf, buflen))
+        return -1;
     return 0;
 #else
     return strerror_r(errnum, buf, buflen);
