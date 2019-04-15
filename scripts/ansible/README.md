@@ -5,7 +5,7 @@ This directory contains the Ansible work used to automate all the required tasks
 
 To quickly install / uninstall Ansible, the script `install-ansible.sh` / `remove-ansible.sh` can be used.
 
-Supported Ansible version >= 2.7.2
+Supported Ansible version >= 2.7.10
 
 # Open Enclave Deployment Options via Ansible
 
