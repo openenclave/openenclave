@@ -23,7 +23,7 @@ def AccDebTesting(String version, String region, String deb_url) {
         cp -r /opt/openenclave/share/openenclave/samples/ ./samples && \
         source /opt/openenclave/share/openenclave/openenclaverc && \
         cd ./samples && \
-        make world"""
+        for DIR in \$(find ~/samples/* -maxdepth 0 -type d); do cd \$DIR; make build; make run; done"""
 
     def script = """\
         az login --service-principal -u \${SERVICE_PRINCIPAL_ID} -p \${SERVICE_PRINCIPAL_PASSWORD} --tenant \${TENANT_ID} --output table && \
