@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+echo "!!! WARNING: This script was renamed 'oegdb' and will be deleted in v0.7.0 !!!"
+echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+
+OE_GDB_DIR=$(dirname "${BASH_SOURCE[0]}")
+
+exec "$OE_GDB_DIR/oegdb" "$@"
