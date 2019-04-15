@@ -51,7 +51,7 @@ int main(int argc, const char* argv[])
     OE_TEST(result == OE_OK);
 
     printf(
-        "=== passed all tests (oe-gdb-test%s)\n",
+        "=== passed all tests (oegdb-test%s)\n",
         simulation_mode ? "-simulation-mode" : "");
 
     return 0;

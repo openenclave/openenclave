@@ -2,7 +2,7 @@
 
 While you can use GDB to debug the host of the enclave app like any other normal process,
 you won’t be able to debug into the enclave’s execution state or memory. To enable that,
-you will need to launch the debugger with the **oe-gdb** plug-in.
+you will need to launch the debugger with the **oegdb** plug-in.
 
 Before you attempt to debug an enclave, you should ensure that:
 - The enclave is built or signed to allow debugging as previously discussed.
@@ -23,13 +23,13 @@ oe_result_t result = oe_create_enclave(
 It should only be set during development of the app and must be removed before
 deployment into production.
 
-You can use oe-gdb on the command line the same way you would use GDB, and is
+You can use oegdb on the command line the same way you would use GDB, and is
 added to `PATH` by sourcing the `openenclaverc` file in the installed Open Enclave SDK.
 
 For example, to debug the helloworld sample from the sample build folder:
 
 ```bash
-/opt/openenclave/bin/oe-gdb -arg ./host/helloworld_host ./enc/helloworld_enc.signed
+/opt/openenclave/bin/oegdb -arg ./host/helloworld_host ./enc/helloworld_enc.signed
 ```
 Once GDB is started, you can use standard GDB commands to debug through the enclave,
 include setting breakpoints, dumping memory addresses and back tracing the execution stack.

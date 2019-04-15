@@ -3,18 +3,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-# Get path of the oe-gdb script
-# See https://mywiki.wooledge.org/BashFAQ/028 for complexities involved
-# in determining location of a bash script. ${BASH_SOURCE}, though not perfect,
-# is an acceptable solution for oe-gdb.
+echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+echo "!!! WARNING: This script was renamed 'oegdb' and will be deleted in v0.7.0 !!!"
+echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+
 OE_GDB_DIR=$(dirname "${BASH_SOURCE[0]}")
 
-# Get the path to the debugger libraries relative to the oe-gdb path.
-# Normalize the path by cd-ing and doing a pwd -P.
-OE_GDB_LIB_DIR=$(cd "$OE_GDB_DIR/../lib/openenclave/debugger" || exit; pwd -P)
-
-OE_GDB_PLUGIN_DIR=$OE_GDB_LIB_DIR/gdb-sgx-plugin
-OE_GDB_PTRACE_PATH=$OE_GDB_LIB_DIR/liboe_ptrace.so
-
-export PYTHONPATH=$OE_GDB_PLUGIN_DIR
-LD_PRELOAD=$OE_GDB_PTRACE_PATH gdb -iex "directory $OE_GDB_PLUGIN_DIR" -iex "source $OE_GDB_PLUGIN_DIR/gdb_sgx_plugin.py" -iex "set environment LD_PRELOAD" -iex "add-auto-load-safe-path /usr/lib" "$@"
+exec "$OE_GDB_DIR/oegdb" "$@"
