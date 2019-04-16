@@ -153,11 +153,11 @@ check_version()
 ##==============================================================================
 check_clang-format()
 {
-    # First check explicitly for the clang-format-7 executable.
-    cf=$(command -v clang-format-7 2> /dev/null)
+    # First check explicitly for the clang-format-8 executable.
+    cf=$(command -v clang-format-8 2> /dev/null)
 
     if [[ -x ${cf} ]]; then
-        cf="clang-format-7"
+        cf="clang-format-8"
         return
     else
         cf=$(command -v clang-format 2> /dev/null)
