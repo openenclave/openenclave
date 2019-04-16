@@ -44,6 +44,11 @@ ARG ubuntu_version=18.04
 
 FROM ubuntu:${ubuntu_version}
 
+ARG UNAME=jenkins
+ARG GNAME=jenkins
+ARG UID=1000
+ARG GID=1000
+
 ADD scripts/ansible /ansible
 
 RUN /ansible/install-ansible.sh && \
@@ -52,4 +57,6 @@ RUN /ansible/install-ansible.sh && \
     rm -rf /ansible && \
     # Configure Git in target image to enable merge/rebase actions.
     git config --global user.email "oeciteam@microsoft.com" && \
-    git config --global user.name "OE CI Team"
+    git config --global user.name "OE CI Team" && \
+    groupadd --gid ${GID} ${GNAME} && \
+    useradd --create-home --uid ${UID} --gid ${GID} --shell /bin/bash ${UNAME}
