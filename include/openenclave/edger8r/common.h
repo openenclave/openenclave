@@ -80,10 +80,10 @@ done:
  * Compute and set the pointer value for the given parameter within the input
  * buffer. Make sure that the buffer has enough space.
  */
-#define OE_SET_IN_POINTER(argname, argsize)                                  \
+#define OE_SET_IN_POINTER(argname, argsize, argtype)                         \
     if (pargs_in->argname)                                                   \
     {                                                                        \
-        *(uint8_t**)&pargs_in->argname = input_buffer + input_buffer_offset; \
+        pargs_in->argname = (argtype)(input_buffer + input_buffer_offset); \
         OE_ADD_SIZE(input_buffer_offset, (size_t)(argsize));                 \
         if (input_buffer_offset > input_buffer_size)                         \
         {                                                                    \
@@ -98,10 +98,10 @@ done:
  * Compute and set the pointer value for the given parameter within the output
  * buffer. Make sure that the buffer has enough space.
  */
-#define OE_SET_OUT_POINTER(argname, argsize)                                   \
+#define OE_SET_OUT_POINTER(argname, argsize, argtype)                          \
     if (pargs_in->argname)                                                     \
     {                                                                          \
-        *(uint8_t**)&pargs_in->argname = output_buffer + output_buffer_offset; \
+        pargs_in->argname = (argtype)(output_buffer + output_buffer_offset); \
         OE_ADD_SIZE(output_buffer_offset, (size_t)(argsize));                  \
         if (output_buffer_offset > output_buffer_size)                         \
         {                                                                      \
@@ -116,11 +116,11 @@ done:
  * Also copy the contents of the corresponding in-out pointer in the input
  * buffer.
  */
-#define OE_COPY_AND_SET_IN_OUT_POINTER(argname, argsize)                       \
+#define OE_COPY_AND_SET_IN_OUT_POINTER(argname, argsize, argtype)                 \
     if (pargs_in->argname)                                                     \
     {                                                                          \
-        uint8_t* _p_in = (uint8_t*)pargs_in->argname;                          \
-        *(uint8_t**)&pargs_in->argname = output_buffer + output_buffer_offset; \
+        argtype _p_in = (argtype)pargs_in->argname;                          \
+        pargs_in->argname = (argtype)(output_buffer + output_buffer_offset); \
         OE_ADD_SIZE(output_buffer_offset, (size_t)argsize);                    \
         if (output_buffer_offset > output_buffer_size)                         \
         {                                                                      \
@@ -133,12 +133,12 @@ done:
 /**
  * Copy an input parameter to input buffer.
  */
-#define OE_WRITE_IN_PARAM(argname, size)                                   \
+#define OE_WRITE_IN_PARAM(argname, argsize, argtype)                       \
     if (argname)                                                           \
     {                                                                      \
-        *(uint8_t**)&_args.argname = _input_buffer + _input_buffer_offset; \
-        OE_ADD_SIZE(_input_buffer_offset, (size_t)(size));                 \
-        memcpy((void*)_args.argname, argname, (size_t)(size));             \
+        _args.argname = (argtype)(_input_buffer + _input_buffer_offset); \
+        OE_ADD_SIZE(_input_buffer_offset, (size_t)(argsize));                 \
+        memcpy((void*)_args.argname, argname, (size_t)(argsize));             \
     }
 
 #define OE_WRITE_IN_OUT_PARAM OE_WRITE_IN_PARAM
@@ -146,14 +146,14 @@ done:
 /**
  * Read an output parameter from output buffer.
  */
-#define OE_READ_OUT_PARAM(argname, size)                    \
+#define OE_READ_OUT_PARAM(argname, argsize)                 \
     if (argname)                                            \
     {                                                       \
         memcpy(                                             \
             (void*)argname,                                 \
             _output_buffer + _output_buffer_offset,         \
-            (size_t)(size));                                \
-        OE_ADD_SIZE(_output_buffer_offset, (size_t)(size)); \
+            (size_t)(argsize));                             \
+        OE_ADD_SIZE(_output_buffer_offset, (size_t)(argsize)); \
     }
 
 #define OE_READ_IN_OUT_PARAM OE_READ_OUT_PARAM

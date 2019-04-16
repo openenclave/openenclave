@@ -71,8 +71,8 @@ oe_result_t ecall_string_no_null_terminator_modified(
     *(uint8_t**)&_pargs_in = _input_buffer;
     OE_ADD_SIZE(_input_buffer_offset, sizeof(*_pargs_in));
 
-    OE_WRITE_IN_PARAM(s1, _args.s1_len * sizeof(char));
-    OE_WRITE_IN_OUT_PARAM(s2, _args.s2_len * sizeof(char));
+    OE_WRITE_IN_PARAM(s1, _args.s1_len * sizeof(char), char*);
+    OE_WRITE_IN_OUT_PARAM(s2, _args.s2_len * sizeof(char), char*);
 
     /* Copy args structure (now filled) to input buffer */
     memcpy(_pargs_in, &_args, sizeof(*_pargs_in));
@@ -177,8 +177,8 @@ oe_result_t ecall_wstring_no_null_terminator_modified(
     *(uint8_t**)&_pargs_in = _input_buffer;
     OE_ADD_SIZE(_input_buffer_offset, sizeof(*_pargs_in));
 
-    OE_WRITE_IN_PARAM(s1, _args.s1_len * sizeof(wchar_t));
-    OE_WRITE_IN_OUT_PARAM(s2, _args.s2_len * sizeof(wchar_t));
+    OE_WRITE_IN_PARAM(s1, _args.s1_len * sizeof(wchar_t), wchar_t*);
+    OE_WRITE_IN_OUT_PARAM(s2, _args.s2_len * sizeof(wchar_t), wchar_t*);
 
     /* Copy args structure (now filled) to input buffer */
     memcpy(_pargs_in, &_args, sizeof(*_pargs_in));
