@@ -765,7 +765,7 @@ static ssize_t _hostsock_sendmsg(
                  &err)) != OE_OK)
         {
             oe_errno = EINVAL;
-            OE_TRACE_ERROR("%s", oe_result_str(result));
+            OE_TRACE_ERROR("ocall failed: %s", oe_result_str(result));
             goto done;
         }
 

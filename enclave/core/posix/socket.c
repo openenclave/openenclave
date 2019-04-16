@@ -397,6 +397,7 @@ ssize_t oe_sendmsg(int sockfd, const struct oe_msghdr* buf, int flags)
     }
 
     ret = (*psock->ops.socket->sendmsg)(psock, buf, flags);
+
 done:
     return ret;
 }

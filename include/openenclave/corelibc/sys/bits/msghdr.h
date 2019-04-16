@@ -5,7 +5,7 @@
 void* msg_name;        /* Address to send to/receive from.  */
 socklen_t msg_namelen; /* Length of address data.  */
 
-struct oe_iovec* msg_iov; /* Vector of data to send/receive into.  */
+struct OE_IOVEC_TYPE* msg_iov; /* Vector of data to send/receive into.  */
 size_t msg_iovlen;        /* Number of elements in the vector.  */
 
 void* msg_control;     /* Ancillary data (eg BSD filedesc passing). */
