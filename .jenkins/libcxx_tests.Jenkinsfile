@@ -102,15 +102,15 @@ try {
 
     registerJenkinsSlaves()
 
-    parallel "libcxx ACC1604 clang-7 Debug" :          { ACClibcxxTest(XENIAL_LABEL, 'clang-7', 'Debug') },
-             "libcxx ACC1604 clang-7 Release" :        { ACClibcxxTest(XENIAL_LABEL, 'clang-7','Release') },
-             "libcxx ACC1604 clang-7 RelWithDebInfo" : { ACClibcxxTest(XENIAL_LABEL, 'clang-7', 'RelWithDebinfo') },
+    parallel "libcxx ACC1604 clang-8 Debug" :          { ACClibcxxTest(XENIAL_LABEL, 'clang-8', 'Debug') },
+             "libcxx ACC1604 clang-8 Release" :        { ACClibcxxTest(XENIAL_LABEL, 'clang-8','Release') },
+             "libcxx ACC1604 clang-8 RelWithDebInfo" : { ACClibcxxTest(XENIAL_LABEL, 'clang-8', 'RelWithDebinfo') },
              "libcxx ACC1604 gcc Debug" :              { ACClibcxxTest(XENIAL_LABEL, 'gcc', 'Debug') },
              "libcxx ACC1604 gcc Release" :            { ACClibcxxTest(XENIAL_LABEL, 'gcc', 'Release') },
              "libcxx ACC1604 gcc RelWithDebInfo" :     { ACClibcxxTest(XENIAL_LABEL, 'gcc', 'RelWithDebInfo') },
-             "libcxx ACC1804 clang-7 Debug" :          { ACClibcxxTest(BIONIC_LABEL, 'clang-7', 'Debug') },
-             "libcxx ACC1804 clang-7 Release" :        { ACClibcxxTest(BIONIC_LABEL, 'clang-7', 'Release') },
-             "libcxx ACC1804 clang-7 RelWithDebInfo" : { ACClibcxxTest(BIONIC_LABEL, 'clang-7', 'RelWithDebinfo') },
+             "libcxx ACC1804 clang-8 Debug" :          { ACClibcxxTest(BIONIC_LABEL, 'clang-8', 'Debug') },
+             "libcxx ACC1804 clang-8 Release" :        { ACClibcxxTest(BIONIC_LABEL, 'clang-8', 'Release') },
+             "libcxx ACC1804 clang-8 RelWithDebInfo" : { ACClibcxxTest(BIONIC_LABEL, 'clang-8', 'RelWithDebinfo') },
              "libcxx ACC1804 gcc Debug" :              { ACClibcxxTest(BIONIC_LABEL, 'gcc', 'Debug') },
              "libcxx ACC1804 gcc Release" :            { ACClibcxxTest(BIONIC_LABEL, 'gcc', 'Release') },
              "libcxx ACC1804 gcc RelWithDebInfo" :     { ACClibcxxTest(BIONIC_LABEL, 'gcc', 'RelWithDebinfo') }
