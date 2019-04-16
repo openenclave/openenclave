@@ -74,17 +74,15 @@ static int _inflate_iov(
     if (!buf || !iov)
         goto done;
 
-    for (size_t i = 0; i < iov_len; i++)
+    for (size_t i = 0; i < iov_len && buf_len; i++)
     {
         void* base = iov[i].iov_base;
         size_t len = iov[i].iov_len;
+        size_t min = (len < buf_len) ? len : buf_len;
 
-        if (buf_len < len)
-            goto done;
-
-        memcpy(base, buf, len);
-        buf += len;
-        buf_len -= len;
+        memcpy(base, buf, min);
+        buf += min;
+        buf_len -= min;
     }
 
     ret = 0;
@@ -611,26 +609,20 @@ static ssize_t _hostsock_recvmsg(
                  &oe_errno)) != OE_OK)
         {
             oe_errno = EINVAL;
-            OE_TRACE_ERROR(
-                "oe_posix_recvmsg_ocall(): host_fd=%ld %s",
-                sock->host_fd,
-                oe_result_str(result));
+            OE_TRACE_ERROR("%s", oe_result_str(result));
             goto done;
         }
 
-        if (ret == -1)
+        if (ret < 0)
         {
             oe_errno = err;
-            OE_TRACE_ERROR(
-                "oe_posix_recvmsg_ocall(): host_fd=%ld oe_errno=%d",
-                sock->host_fd,
-                oe_errno);
+            OE_TRACE_ERROR("ret=%ld oe_errno=%d", ret, oe_errno);
             goto done;
         }
     }
 
     /* Copy the buffer back onto the original iov array. */
-    if (_inflate_iov(buf, buf_len, msg->msg_iov, msg->msg_iovlen) != 0)
+    if (_inflate_iov(buf, (size_t)ret, msg->msg_iov, msg->msg_iovlen) != 0)
     {
         oe_errno = EINVAL;
         OE_TRACE_ERROR("_inflate_iov(): oe_errno=%d", oe_errno);
@@ -773,20 +765,14 @@ static ssize_t _hostsock_sendmsg(
                  &err)) != OE_OK)
         {
             oe_errno = EINVAL;
-            OE_TRACE_ERROR(
-                "oe_posix_sendmsg_ocall(): host_fd=%ld %s",
-                sock->host_fd,
-                oe_result_str(result));
+            OE_TRACE_ERROR("%s", oe_result_str(result));
             goto done;
         }
 
         if (ret == -1)
         {
             oe_errno = err;
-            OE_TRACE_ERROR(
-                "oe_posix_sendmsg_ocall(): host_fd=%ld oe_errno=%d",
-                sock->host_fd,
-                oe_errno);
+            OE_TRACE_ERROR("ret=%d oe_errno=%d", ret, oe_errno);
             goto done;
         }
     }
