@@ -33,11 +33,13 @@ def buildDockerImages() {
                 oeminimal1604.push()
                 oeminimal1804.push()
                 oeDeploy.push()
-                oefull1604.push('latest')
-                oefull1804.push('latest')
-                oeminimal1604.push('latest')
-                oeminimal1804.push('latest')
-                oeDeploy.push('latest')
+                if(TAG_LATEST == "true") {
+                    oefull1604.push('latest')
+                    oefull1804.push('latest')
+                    oeminimal1604.push('latest')
+                    oeminimal1804.push('latest')
+                    oeDeploy.push('latest')
+                }
             }
         }
     }
