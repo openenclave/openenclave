@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 # Detect C and C++ compiler options
-# if not gcc and g++, default to clang-7
+# if not gcc and g++, default to clang-8
 C_COMPILER=$(notdir $(CC))
 ifeq ($(C_COMPILER), gcc)
         CXX_COMPILER=$(notdir $(CXX))
@@ -10,8 +10,8 @@ ifeq ($(C_COMPILER), gcc)
 endif
 
 ifeq ($(USE_GCC),)
-        CC = clang-7
-        CXX = clang++-7
+        CC = clang-8
+        CXX = clang++-8
         C_COMPILER=clang
         CXX_COMPILER=clang++
 endif
