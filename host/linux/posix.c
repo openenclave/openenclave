@@ -413,19 +413,47 @@ int oe_posix_listen_ocall(int sockfd, int backlog, int* err)
 /* ATTN:IO: need test for this function. */
 ssize_t oe_posix_recvmsg_ocall(
     int sockfd,
-    struct msghdr* msg,
+    void* msg_name,
+    socklen_t msg_namelen,
+    socklen_t* msg_namelen_out,
+    void* msg_buf,
+    size_t msg_buflen,
+    void* msg_control,
+    size_t msg_controllen,
+    size_t* msg_controllen_out,
     int flags,
     int* err)
 {
-    ssize_t ret = recvmsg(sockfd, msg, flags);
+    ssize_t ret = -1;
+    struct msghdr msg;
+    struct iovec iov;
 
-    if (ret == -1)
+    if (err)
+        *err = 0;
+
+    iov.iov_base = msg_buf;
+    iov.iov_len = msg_buflen;
+    msg.msg_name = msg_name;
+    msg.msg_namelen = msg_namelen;
+    msg.msg_iov = &iov;
+    msg.msg_iovlen = 1;
+    msg.msg_control = msg_control;
+    msg.msg_controllen = msg_controllen;
+    msg.msg_flags = 0;
+
+    if ((ret = recvmsg(sockfd, &msg, flags)) == -1)
     {
         if (err)
             *err = errno;
 
         goto done;
     }
+
+    if (*msg_namelen_out)
+        *msg_namelen_out = msg.msg_namelen;
+
+    if (*msg_controllen_out)
+        *msg_controllen_out = msg.msg_controllen;
 
 done:
     return ret;
@@ -434,13 +462,33 @@ done:
 /* ATTN:IO: need test for this function. */
 ssize_t oe_posix_sendmsg_ocall(
     int sockfd,
-    const struct msghdr* msg,
+    const void* msg_name,
+    socklen_t msg_namelen,
+    const void* msg_buf,
+    size_t msg_buflen,
+    const void* msg_control,
+    size_t msg_controllen,
     int flags,
     int* err)
 {
-    ssize_t ret = sendmsg(sockfd, msg, flags);
+    ssize_t ret = -1;
+    struct msghdr msg;
+    struct iovec iov;
 
-    if (ret == -1)
+    if (err)
+        *err = 0;
+
+    iov.iov_base = (void*)msg_buf;
+    iov.iov_len = msg_buflen;
+    msg.msg_name = (void*)msg_name;
+    msg.msg_namelen = msg_namelen;
+    msg.msg_iov = (void*)&iov;
+    msg.msg_iovlen = 1;
+    msg.msg_control = (void*)msg_control;
+    msg.msg_controllen = msg_controllen;
+    msg.msg_flags = 0;
+
+    if ((ret = sendmsg(sockfd, &msg, flags)) == -1)
     {
         if (err)
             *err = errno;
@@ -448,6 +496,16 @@ ssize_t oe_posix_sendmsg_ocall(
 
     return ret;
 }
+
+#if 0
+ssize_t oe_posix_sendmsg_ocall(
+    int sockfd,
+    const struct msghdr* msg,
+    int flags,
+    int* err)
+{
+}
+#endif
 
 ssize_t oe_posix_recv_ocall(
     int sockfd,
@@ -836,12 +894,6 @@ static void* poll_wait_thread(void* arg_)
                     (uint32_t)ev[ev_idx].revents;
                 notifications[notify_idx].list_idx = (uint32_t)ev_idx;
                 notifications[notify_idx].epoll_fd = (uint32_t)args->epfd;
-
-                printf(
-                    "notification[%d] = events: %d data: %ld\n",
-                    notify_idx,
-                    notifications[notify_idx].event_mask,
-                    notifications[notify_idx].data);
             }
         }
 

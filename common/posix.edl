@@ -179,13 +179,25 @@ enclave {
 
         ssize_t oe_posix_recvmsg_ocall(
             int sockfd,
-            [out, count=1] struct msghdr *msg,
+            [out, size=msg_namelen] void* msg_name,
+            socklen_t msg_namelen,
+            [out, count=1] socklen_t* msg_namelen_out,
+            [out, size=msg_buflen] void* msg_buf,
+            size_t msg_buflen,
+            [out, size=msg_controllen] void* msg_control,
+            size_t msg_controllen,
+            [out, count=1] size_t* msg_controllen_out,
             int flags,
             [out, count=1] int* err);
 
         ssize_t oe_posix_sendmsg_ocall(
             int sockfd,
-            [user_check] const struct msghdr* msg,
+            [in, size=msg_namelen] const void* msg_name,
+            socklen_t msg_namelen,
+            [in, size=msg_buflen] const void* msg_buf,
+            size_t msg_buflen,
+            [in, size=msg_controllen] const void* msg_control,
+            size_t msg_controllen,
             int flags,
             [out, count=1] int* err);
 

@@ -17,60 +17,81 @@
 #include <openenclave/corelibc/sys/uio.h>
 #include <openenclave/corelibc/sys/socket.h>
 #include <openenclave/internal/print.h>
-#include <openenclave/internal/typeinfo.h>
 #include <openenclave/bits/module.h>
 #include <openenclave/internal/trace.h>
 #include "oe_t.h"
 
-/*
-**==============================================================================
-**
-** struct type information:
-**
-**==============================================================================
-*/
-
-// clang-format off
-
-
-typedef struct oe_iovec iovec_t;
-typedef struct oe_msghdr msghdr_t;
-
-static oe_field_type_info_t _iovec_ftis[] =
+static size_t _get_iov_size(const struct oe_iovec* iov, size_t iov_len)
 {
-    OE_FTI_ARRAY(iovec_t, iov_base, sizeof(uint8_t), iov_len),
-};
+    size_t size = 0;
 
-static oe_struct_type_info_t _iovec_sti =
+    for (size_t i = 0; i < iov_len; i++)
+        size += iov[i].iov_len;
+
+    return size;
+}
+
+static int _flatten_iov(
+    const struct oe_iovec* iov,
+    size_t iov_len,
+    void* buf_,
+    size_t buf_len)
 {
-    sizeof(iovec_t),
-    _iovec_ftis,
-    OE_COUNTOF(_iovec_ftis)
-};
+    int ret = -1;
+    uint8_t* buf = (uint8_t*)buf_;
 
-static oe_field_type_info_t _msghdr_ftis[] =
+    if (!iov || (buf_len && !buf))
+        goto done;
+
+    for (size_t i = 0; i < iov_len; i++)
+    {
+        const void* base = iov[i].iov_base;
+        size_t len = iov[i].iov_len;
+
+        if (len > buf_len)
+            goto done;
+
+        memcpy(buf, base, len);
+        buf += len;
+        buf_len -= len;
+    }
+
+    ret = 0;
+
+done:
+    return ret;
+}
+
+static int _inflate_iov(
+    const void* buf_,
+    size_t buf_len,
+    struct oe_iovec* iov,
+    size_t iov_len)
 {
-    OE_FTI_ARRAY(msghdr_t, msg_name, sizeof(uint8_t), msg_namelen),
-    OE_FTI_STRUCTS(msghdr_t, msg_iov, iovec_t, msg_iovlen, &_iovec_sti),
-    OE_FTI_ARRAY(msghdr_t, msg_control, sizeof(uint8_t), msg_controllen),
-};
+    int ret = -1;
+    const uint8_t* buf = (uint8_t*)buf_;
 
-static oe_struct_type_info_t _msghdr_sti =
-{
-    sizeof(msghdr_t),
-    _msghdr_ftis,
-    OE_COUNTOF(_msghdr_ftis)
-};
+    if (!buf || !iov)
+        goto done;
 
-// clang-format on
+    for (size_t i = 0; i < iov_len; i++)
+    {
+        void* base = iov[i].iov_base;
+        size_t len = iov[i].iov_len;
 
-/*
-**==============================================================================
-**
-** hostsock operations:
-**
-**==============================================================================
-*/
+        if (buf_len < len)
+            goto done;
+
+        memcpy(base, buf, len);
+        buf += len;
+        buf_len -= len;
+    }
+
+    ret = 0;
+
+done:
+    return ret;
+}
 
 #define SOCKET_MAGIC 0x536f636b
 
@@ -83,7 +104,6 @@ typedef struct _sock
     // epoll registers with us.
     int max_event_fds;
     int num_event_fds;
-    // oe_event_device_t *event_fds;
 } sock_t;
 
 static sock_t* _cast_sock(const oe_device_t* device)
@@ -101,6 +121,7 @@ done:
 }
 
 static sock_t _hostsock;
+
 static ssize_t _hostsock_read(oe_device_t*, void* buf, size_t count);
 
 static int _hostsock_close(oe_device_t*);
@@ -547,61 +568,79 @@ static ssize_t _hostsock_recvmsg(
 {
     ssize_t ret = -1;
     sock_t* sock = _cast_sock(sock_);
-    size_t size;
-    struct oe_msghdr* host = NULL;
-    oe_result_t result = OE_FAILURE;
     oe_errno = 0;
+    void* buf = NULL;
+    size_t buf_len;
 
-    /* Determine size requirements to deep-copy msg. */
-    if ((result = oe_type_info_clone(&_msghdr_sti, msg, NULL, &size)) !=
-        OE_BUFFER_TOO_SMALL)
+    /* Check the parameters. */
+    if (!sock || !msg || (msg->msg_iovlen && !msg->msg_iov))
     {
         oe_errno = EINVAL;
-        OE_TRACE_ERROR("%s", oe_result_str(result));
-        goto done;
-    }
-
-    /* Allocate host memory to hold this message. */
-    if (!(host = oe_host_calloc(1, sizeof(size))))
-    {
-        oe_errno = ENOMEM;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
 
-    /* Deep-copy the message to host memory. */
-    if ((result = oe_type_info_clone(&_msghdr_sti, msg, host, &size)) != OE_OK)
+    /* Get the size the total (flat) size of the msg_iov array. */
+    buf_len = _get_iov_size(msg->msg_iov, msg->msg_iovlen);
+
+    /* Allocate the read buffer if its length is non-zero. */
+    if (buf_len && !(buf = oe_calloc(1, buf_len)))
     {
-        oe_errno = EINVAL;
-        OE_TRACE_ERROR("%s", oe_result_str(result));
+        oe_errno = ENOMEM;
+        OE_TRACE_ERROR("oe_errno=%d buf_len=%zu", oe_errno, buf_len);
         goto done;
     }
 
-    /* Receive the message. */
-    if ((result = oe_posix_recvmsg_ocall(
-             &ret,
-             (int)sock->host_fd,
-             (struct msghdr*)host,
-             flags,
-             &oe_errno)) != OE_OK)
+    /* Call the host. */
     {
-        oe_errno = EINVAL;
-        OE_TRACE_ERROR("host_fd=%ld %s", sock->host_fd, oe_result_str(result));
-        goto done;
+        oe_result_t result;
+        int err = 0;
+
+        if ((result = oe_posix_recvmsg_ocall(
+                 &ret,
+                 (int)sock->host_fd,
+                 msg->msg_name,
+                 msg->msg_namelen,
+                 &msg->msg_namelen,
+                 buf,
+                 buf_len,
+                 msg->msg_control,
+                 msg->msg_controllen,
+                 &msg->msg_controllen,
+                 flags,
+                 &oe_errno)) != OE_OK)
+        {
+            oe_errno = EINVAL;
+            OE_TRACE_ERROR(
+                "oe_posix_recvmsg_ocall(): host_fd=%ld %s",
+                sock->host_fd,
+                oe_result_str(result));
+            goto done;
+        }
+
+        if (ret == -1)
+        {
+            oe_errno = err;
+            OE_TRACE_ERROR(
+                "oe_posix_recvmsg_ocall(): host_fd=%ld oe_errno=%d",
+                sock->host_fd,
+                oe_errno);
+            goto done;
+        }
     }
 
-    /* Update caller's buffer from host result. */
-    if ((result = oe_type_info_update(&_msghdr_sti, host, msg)) != OE_OK)
+    /* Copy the buffer back onto the original iov array. */
+    if (_inflate_iov(buf, buf_len, msg->msg_iov, msg->msg_iovlen) != 0)
     {
         oe_errno = EINVAL;
-        OE_TRACE_ERROR("%s", oe_result_str(result));
+        OE_TRACE_ERROR("_inflate_iov(): oe_errno=%d", oe_errno);
         goto done;
     }
 
 done:
 
-    if (host)
-        oe_host_free(host);
+    if (buf)
+        oe_free(buf);
 
     return ret;
 }
@@ -684,60 +723,78 @@ static ssize_t _hostsock_sendmsg(
 {
     ssize_t ret = -1;
     sock_t* sock = _cast_sock(sock_);
-    struct oe_msghdr* host = NULL;
-    size_t size;
-    oe_result_t result = OE_FAILURE;
+    void* buf = NULL;
+    size_t buf_len;
 
     oe_errno = 0;
 
-    if (!sock || !msg)
+    /* Check the parameters. */
+    if (!sock || !msg || (msg->msg_iovlen && !msg->msg_iov))
     {
         oe_errno = EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
 
-    /* Determine size requirements to deep-copy msg. */
-    if ((result = oe_type_info_clone(&_msghdr_sti, msg, NULL, &size)) !=
-        OE_BUFFER_TOO_SMALL)
-    {
-        oe_errno = EINVAL;
-        OE_TRACE_ERROR("%s", oe_result_str(result));
-        goto done;
-    }
+    /* Get the size the total (flat) size of the msg_iov array. */
+    buf_len = _get_iov_size(msg->msg_iov, msg->msg_iovlen);
 
-    /* Allocate host memory to hold this message. */
-    if (!(host = oe_host_calloc(1, sizeof(size))))
+    /* Allocate the write buffer if its length is non-zero. */
+    if (buf_len && !(buf = oe_calloc(1, buf_len)))
     {
         oe_errno = ENOMEM;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
+        OE_TRACE_ERROR("oe_errno=%d buf_len=%zu", oe_errno, buf_len);
         goto done;
     }
 
-    /* Deep-copy the message to host memory. */
-    if ((result = oe_type_info_clone(&_msghdr_sti, msg, host, &size)) != OE_OK)
+    /* Flatten the iov array onto the buffer. */
+    if (_flatten_iov(msg->msg_iov, msg->msg_iovlen, buf, buf_len) != 0)
     {
         oe_errno = EINVAL;
-        OE_TRACE_ERROR("%s", oe_result_str(result));
+        OE_TRACE_ERROR("_flatten_iov(): oe_errno=%d", oe_errno);
         goto done;
     }
 
-    if ((result = oe_posix_sendmsg_ocall(
-             &ret,
-             (int)sock->host_fd,
-             (const struct msghdr*)msg,
-             flags,
-             &oe_errno)) != OE_OK)
+    /* Call the host. */
     {
-        oe_errno = EINVAL;
-        OE_TRACE_ERROR("host_fd=%ld %s", sock->host_fd, oe_result_str(result));
-        goto done;
+        oe_result_t result;
+        int err = 0;
+
+        if ((result = oe_posix_sendmsg_ocall(
+                 &ret,
+                 (int)sock->host_fd,
+                 msg->msg_name,
+                 msg->msg_namelen,
+                 buf,
+                 buf_len,
+                 msg->msg_control,
+                 msg->msg_controllen,
+                 flags,
+                 &err)) != OE_OK)
+        {
+            oe_errno = EINVAL;
+            OE_TRACE_ERROR(
+                "oe_posix_sendmsg_ocall(): host_fd=%ld %s",
+                sock->host_fd,
+                oe_result_str(result));
+            goto done;
+        }
+
+        if (ret == -1)
+        {
+            oe_errno = err;
+            OE_TRACE_ERROR(
+                "oe_posix_sendmsg_ocall(): host_fd=%ld oe_errno=%d",
+                sock->host_fd,
+                oe_errno);
+            goto done;
+        }
     }
 
 done:
 
-    if (host)
-        oe_host_free(host);
+    if (buf)
+        oe_free(buf);
 
     return ret;
 }
