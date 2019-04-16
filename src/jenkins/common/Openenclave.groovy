@@ -29,20 +29,19 @@ def ContainerRun(String imageName, String compiler, String task, String runArgs=
 }
 
 def azureEnvironment(String task) {
-    String buildArgs = dockerBuildArgs("UID=\$(id -u)",
-                                       "GID=\$(id -g)",
-                                       "UNAME=\$(id -un)",
-                                       "GNAME=\$(id -gn)")
-
-    dockerImage("oetools-deploy", ".jenkins/Dockerfile.deploy", buildArgs).inside {
-        timeout(60) {
-            withCredentials([usernamePassword(credentialsId: 'SERVICE_PRINCIPAL_OSTCLAB',
-                                              passwordVariable: 'SERVICE_PRINCIPAL_PASSWORD',
-                                              usernameVariable: 'SERVICE_PRINCIPAL_ID'),
-                             string(credentialsId: 'OSCTLabSubID', variable: 'SUBSCRIPTION_ID'),
-                             string(credentialsId: 'TenantID', variable: 'TENANT_ID')]) {
-                dir('.jenkins/provision') {
-                    sh "${task}"
+    timeout(60) {
+        withCredentials([usernamePassword(credentialsId: 'SERVICE_PRINCIPAL_OSTCLAB',
+                                          passwordVariable: 'SERVICE_PRINCIPAL_PASSWORD',
+                                          usernameVariable: 'SERVICE_PRINCIPAL_ID'),
+                         string(credentialsId: 'OSCTLabSubID', variable: 'SUBSCRIPTION_ID'),
+                         string(credentialsId: 'TenantID', variable: 'TENANT_ID')]) {
+            dir("${WORKSPACE}/.jenkins/provision") {
+                docker.withRegistry("https://oejenkinscidockerregistry.azurecr.io", "oejenkinscidockerregistry") {
+                    image = docker.image("oetools-deploy:latest")
+                    image.pull()
+                    image.inside {
+                        sh "${task}"
+                    }
                 }
             }
         }
