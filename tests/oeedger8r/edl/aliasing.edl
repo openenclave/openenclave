@@ -1,0 +1,10 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+  trusted {
+    public int a([in, count=c] const char* d, size_t c);
+    public int b([user_check] char** e, [in, count=f] size_t* g, size_t f, [out, count=i] char* h, size_t i, [out, count=1] size_t* j);
+    public int c([in] char a[2]);
+  };
+};

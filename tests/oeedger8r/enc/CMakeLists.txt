@@ -47,3 +47,15 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang OR 
 endif()
 
 target_include_directories(edl_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)
+
+# TODO: Clean up the structure of these tests. For now, this is used
+# to repro a user-reported issue.
+oeedl_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/../edl/aliasing.edl
+    enclave
+    aliasing_t
+)
+
+add_enclave(TARGET edl_aliasing_enc CXX SOURCES aliasing.cpp ${aliasing_t})
+target_include_directories(edl_aliasing_enc PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+target_compile_options(edl_aliasing_enc PUBLIC -fstrict-aliasing -Werror=strict-aliasing)
