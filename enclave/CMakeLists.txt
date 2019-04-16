@@ -43,6 +43,8 @@ if(CMAKE_C_COMPILER_ID MATCHES GNU)
 target_compile_options(oeenclave PRIVATE -Wjump-misses-init)
 endif()
 
+target_compile_options(oeenclave PRIVATE -Werror)
+
 target_include_directories(oeenclave PRIVATE
     ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
 

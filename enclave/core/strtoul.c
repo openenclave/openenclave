@@ -4,6 +4,7 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/corelibc/ctype.h>
+#include <openenclave/corelibc/stdlib.h>
 
 //
 // If c is a digit character:
@@ -79,22 +80,38 @@ unsigned long int oe_strtoul(const char* nptr, char** endptr, int base)
         p++;
     }
 
-    /* Handle case where base == 0 */
+    /* If base is zero, deduce the base from the prefix. */
     if (base == 0)
     {
         if (p[0] == '0' && (p[1] == 'x' || p[1] == 'X'))
         {
             base = 16;
-            p += 2;
         }
         else if (p[0] == '0')
         {
             base = 8;
-            p++;
         }
         else
         {
             base = 10;
+        }
+    }
+
+    /* Remove any base 16 prefix. */
+    if (base == 16)
+    {
+        if (p[0] == '0' && (p[1] == 'x' || p[1] == 'X'))
+        {
+            p += 2;
+        }
+    }
+
+    /* Remove any base 8 prefix. */
+    if (base == 8)
+    {
+        if (p[0] == '0')
+        {
+            p++;
         }
     }
 
@@ -152,6 +169,11 @@ unsigned long int oe_strtoul(const char* nptr, char** endptr, int base)
     }
 
     return x;
+}
+
+long int oe_strtol(const char* nptr, char** endptr, int base)
+{
+    return (long)oe_strtoul(nptr, endptr, base);
 }
 
 /*

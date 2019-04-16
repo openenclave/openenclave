@@ -33,11 +33,29 @@ char* oe_strstr(const char* haystack, const char* needle);
 
 size_t oe_strlcpy(char* dest, const char* src, size_t size);
 
+char* oe_strncpy(char* dest, const char* src, size_t n);
+
 size_t oe_strlcat(char* dest, const char* src, size_t size);
 
 char* oe_strerror(int errnum);
 
 int oe_strerror_r(int errnum, char* buf, size_t buflen);
+
+char* oe_strtok_r(char* str, const char* delim, char** saveptr);
+
+char* oe_strdup(const char* s);
+
+size_t oe_strspn(const char* s, const char* accept);
+
+size_t oe_strcspn(const char* s, const char* reject);
+
+int oe_strcasecmp(const char* s1, const char* s2);
+
+int oe_strncasecmp(const char* s1, const char* s2, size_t n);
+
+char* oe_strchr(const char* s, int c);
+
+char* oe_strrchr(const char* s, int c);
 
 #if defined(OE_NEED_STDC_NAMES)
 
@@ -78,6 +96,12 @@ size_t strlcpy(char* dest, const char* src, size_t size)
 }
 
 OE_INLINE
+char* strncpy(char* dest, const char* src, size_t n)
+{
+    return oe_strncpy(dest, src, n);
+}
+
+OE_INLINE
 size_t strlcat(char* dest, const char* src, size_t size)
 {
     return oe_strlcat(dest, src, size);
@@ -93,6 +117,47 @@ OE_INLINE
 int strerror_r(int errnum, char* buf, size_t buflen)
 {
     return oe_strerror_r(errnum, buf, buflen);
+}
+
+OE_INLINE
+char* strtok_r(char* str, const char* delim, char** saveptr)
+{
+    return oe_strtok_r(str, delim, saveptr);
+}
+
+OE_INLINE char* strdup(const char* s)
+{
+    return oe_strdup(s);
+}
+
+OE_INLINE size_t strspn(const char* s, const char* accept)
+{
+    return oe_strspn(s, accept);
+}
+
+OE_INLINE size_t strcspn(const char* s, const char* reject)
+{
+    return oe_strcspn(s, reject);
+}
+
+OE_INLINE int strcasecmp(const char* s1, const char* s2)
+{
+    return oe_strcasecmp(s1, s2);
+}
+
+OE_INLINE int strncasecmp(const char* s1, const char* s2, size_t n)
+{
+    return oe_strncasecmp(s1, s2, n);
+}
+
+OE_INLINE char* strchr(const char* s, int c)
+{
+    return oe_strchr(s, c);
+}
+
+OE_INLINE char* strrchr(const char* s, int c)
+{
+    return oe_strrchr(s, c);
 }
 
 #endif /* defined(OE_NEED_STDC_NAMES) */

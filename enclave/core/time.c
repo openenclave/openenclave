@@ -6,7 +6,7 @@
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/time.h>
 
-int oe_sleep(uint64_t milliseconds)
+int oe_sleep_msec(uint64_t milliseconds)
 {
     int ret = -1;
 

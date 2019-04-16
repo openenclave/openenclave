@@ -15,6 +15,11 @@
 #undef CHAR_BIT
 #endif
 
+/* Remove the FILE definition, which was already used by an mbed TLS header. */
+#if defined(FILE)
+#undef FILE
+#endif
+
 /* Undefine the custom pthread_mutex_t redefine */
 #if defined(pthread_mutex_t)
 #undef pthread_mutex_t

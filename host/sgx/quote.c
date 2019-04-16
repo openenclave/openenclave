@@ -203,7 +203,7 @@ oe_result_t sgx_get_quote(
         if (*quote_size < size)
         {
             *quote_size = size;
-            OE_CHECK_NO_TRACE(OE_BUFFER_TOO_SMALL);
+            OE_RAISE(OE_BUFFER_TOO_SMALL);
         }
 
         // Return correct size of the quote.

@@ -1,0 +1,348 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+
+    include "openenclave/bits/defs.h"
+    include "openenclave/bits/types.h"
+
+    struct oe_posix_dirent
+    {
+        uint64_t d_ino;
+        off_t d_off;
+        uint16_t d_reclen;
+        uint8_t d_type;
+        char d_name[256];
+    };
+
+    struct oe_posix_timespec
+    {
+        time_t tv_sec;
+        suseconds_t tv_nsec;
+    };
+
+    struct oe_posix_stat
+    {
+        dev_t st_dev;
+        ino_t st_ino;
+        nlink_t st_nlink;
+        mode_t st_mode;
+        uid_t st_uid;
+        gid_t st_gid;
+        dev_t st_rdev;
+        off_t st_size;
+        blksize_t st_blksize;
+        blkcnt_t st_blocks;
+        struct oe_posix_timespec st_atim;
+        struct oe_posix_timespec st_mtim;
+        struct oe_posix_timespec st_ctim;
+    };
+
+    trusted {
+
+        public int oe_posix_signal_notify_ecall(int signum);
+
+        public int oe_posix_polling_notify_ecall(
+            [in, count=num_notifications]
+            struct _oe_device_notifications* notifications,
+            size_t num_notifications);
+    };
+
+    untrusted {
+
+        int oe_posix_uname_ocall(
+            [out, count=1] struct utsname*buf,
+            [out, count=1] int* err);
+
+        int oe_posix_open_ocall(
+            [in, string] const char* pathname,
+            int flags,
+            mode_t mode,
+            [out, count=1] int* err);
+
+        ssize_t oe_posix_read_ocall(
+            int fd,
+            [out, size=count] void* buf,
+            size_t count,
+            [out, count=1] int* err);
+
+        ssize_t oe_posix_write_ocall(
+            int fd,
+            [in, size=count] const void* buf,
+            size_t count,
+            [out, count=1] int* err);
+
+        off_t oe_posix_lseek_ocall(
+            int fd,
+            off_t offset,
+            int whence,
+            [out, count=1] int* err);
+
+        int oe_posix_close_ocall(
+            int fd,
+            [out, count=1] int* err);
+
+        int oe_posix_dup_ocall(
+            int oldfd,
+            [out, count=1] int* err);
+
+        void* oe_posix_opendir_ocall(
+            [in, string] const char* name,
+            [out, count=1] int* err);
+
+        int oe_posix_readdir_ocall(
+            [user_check] void* dirp,
+            [out, count=1] struct oe_posix_dirent* ent,
+            [out, count=1] int* err);
+
+        void oe_posix_rewinddir_ocall(
+            [user_check] void* dirp);
+
+        int oe_posix_closedir_ocall(
+            [user_check] void* dirp,
+            [out, count=1] int* err);
+
+        int oe_posix_stat_ocall(
+            [in, string] const char *pathname,
+            [out, count=1] struct oe_posix_stat *buf,
+            [out, count=1] int* err);
+
+        int oe_posix_access_ocall(
+            [in, string] const char *pathname,
+            int mode,
+            [out, count=1] int* err);
+
+        int oe_posix_link_ocall(
+            [in, string] const char *oldpath,
+            [in, string] const char *newpath,
+            [out, count=1] int* err);
+
+        int oe_posix_unlink_ocall(
+            [in, string] const char *pathname,
+            [out, count=1] int* err);
+
+        int oe_posix_rename_ocall(
+            [in, string] const char *oldpath,
+            [in, string] const char *newpath,
+            [out, count=1] int* err);
+
+        int oe_posix_truncate_ocall(
+            [in, string] const char *path,
+            off_t length,
+            [out, count=1] int* err);
+
+        int oe_posix_mkdir_ocall(
+            [in, string] const char *pathname,
+            mode_t mode,
+            [out, count=1] int* err);
+
+        int oe_posix_rmdir_ocall(
+            [in, string] const char *pathname,
+            [out, count=1] int* err);
+
+       int oe_posix_socket_ocall(
+            int domain,
+            int type,
+            int protocol,
+            [out, count=1] int* err);
+
+        int oe_posix_socketpair_ocall(
+            int domain,
+            int type,
+            int protocol,
+            [in] int sv[2],
+            [out, count=1] int* err);
+
+        int oe_posix_connect_ocall(
+            int sockfd,
+            [in, size=addrlen] const struct sockaddr* addr,
+            socklen_t addrlen,
+            [out, count=1] int* err);
+
+        int oe_posix_accept_ocall(
+            int sockfd,
+            [in, out, size=addrlen_in] struct sockaddr* addr,
+            socklen_t addrlen_in,
+            [out, count=1] socklen_t* addrlen_out,
+            [out, count=1] int* err);
+
+        int oe_posix_bind_ocall(
+            int sockfd,
+            [in, size=addrlen] const struct sockaddr* addr,
+            socklen_t addrlen,
+            [out, count=1] int* err);
+
+        int oe_posix_listen_ocall(
+            int sockfd,
+            int backlog,
+            [out, count=1] int* err);
+
+        ssize_t oe_posix_recvmsg_ocall(
+            int sockfd,
+            [out, count=1] struct msghdr *msg,
+            int flags,
+            [out, count=1] int* err);
+
+        ssize_t oe_posix_sendmsg_ocall(
+            int sockfd,
+            [user_check] const struct msghdr* msg,
+            int flags,
+            [out, count=1] int* err);
+
+        ssize_t oe_posix_recv_ocall(
+            int sockfd,
+            [in, out, size=len] void* buf,
+            size_t len,
+            int flags,
+            [out, count=1] int* err);
+
+        ssize_t oe_posix_recvfrom_ocall(
+            int sockfd,
+            [out, size=len] void* buf,
+            size_t len,
+            int flags,
+            [in, out, size=addrlen_in] struct sockaddr* src_addr,
+            socklen_t addrlen_in,
+            [out, count=1] socklen_t* addrlen_out,
+            [out, count=1] int* err);
+
+        ssize_t oe_posix_send_ocall(
+            int sockfd,
+            [in, size=len] const void* buf,
+            size_t len,
+            int flags,
+            [out, count=1] int* err);
+
+        ssize_t oe_posix_sendto_ocall(
+            int sockfd,
+            [in, size=len] const void* buf,
+            size_t len,
+            int flags,
+            [in, size=addrlen] const struct sockaddr* dest_addr,
+            socklen_t addrlen,
+            [out, count=1] int* err);
+
+        int oe_posix_shutdown_ocall(
+            int sockfd,
+            int how,
+            [out, count=1] int* err);
+
+        int oe_posix_fcntl_ocall(
+            int fd,
+            int cmd,
+            int arg,
+            [out, count=1] int* err);
+
+        int oe_posix_setsockopt_ocall(
+            int sockfd,
+            int level,
+            int optname,
+            [in, size=optlen] const void* optval,
+            socklen_t optlen,
+            [out, count=1] int* err);
+
+        int oe_posix_getsockopt_ocall(
+            int sockfd,
+            int level,
+            int optname,
+            [out, size=optlen_in] void* optval,
+            socklen_t optlen_in,
+            [out] socklen_t* optlen_out,
+            [out, count=1] int* err);
+
+        int oe_posix_getsockname_ocall(
+            int sockfd,
+            [in, out, size=addrlen_in] struct sockaddr* addr,
+            socklen_t addrlen_in,
+            [out, size=1] socklen_t* addrlen_out,
+            [out, count=1] int* err);
+
+        int oe_posix_getpeername_ocall(
+            int sockfd,
+            [in, out, size=addrlen_in] struct sockaddr* addr,
+            socklen_t addrlen_in,
+            [out, size=1] socklen_t* addrlen_out,
+            [out, count=1] int* err);
+
+        int oe_posix_shutdown_sockets_device_ocall(
+            int sockfd,
+            [out, count=1] int* err);
+
+        int oe_posix_kill_ocall(
+            int pid,
+            int signum,
+            [out, count=1] int* err);
+
+        int oe_posix_getaddrinfo_ocall(
+            [in, string] const char* node,
+            [in, string] const char* service,
+            [in, count=1] const struct addrinfo* hints,
+            [out] struct addrinfo** res,
+            [out, count=1] int* err);
+
+        void oe_posix_freeaddrinfo_ocall(
+            [user_check] struct addrinfo *res);
+
+        int oe_posix_getnameinfo_ocall(
+            [in, size=salen] const struct sockaddr* sa,
+            socklen_t salen,
+            [out, size=hostlen] char* host,
+            socklen_t hostlen,
+            [out, size=servlen] char *serv,
+            socklen_t servlen,
+            int flags,
+            [out, count=1] int* err);
+
+        int oe_posix_shutdown_resolver_device_ocall(
+            [out, count=1] int* err);
+
+        int oe_posix_epoll_create1_ocall(
+            int flags,
+            [out, count=1] int* err);
+
+        int oe_posix_epoll_wait_ocall(
+            int64_t enclaveid,
+            int epfd,
+            [out, count=maxevents] struct epoll_event* events,
+            size_t maxevents,
+            int timeout,
+            [out, count=1] int* err);
+
+        int oe_posix_epoll_poll_ocall(
+            int64_t enclaveid,
+            int epfd,
+            [in,out, count=nfds] struct pollfd* fds,
+            size_t nfds,
+            int timeout,
+            [out, count=1] int* err);
+
+        int oe_posix_epoll_ctl_add_ocall(
+            int epfd,
+            int fd,
+            unsigned int event_mask,
+            int list_idx,
+            int epoll_enclave_fd,
+            [out, count=1] int* err);
+
+        int oe_posix_epoll_ctl_del_ocall(
+            int epfd,
+            int fd,
+            [out, count=1] int* err);
+
+        int oe_posix_epoll_ctl_mod_ocall(
+            int epfd,
+            int fd,
+            unsigned int event_mask,
+            int list_idx,
+            int epoll_enclave_fd,
+            [out, count=1] int* err);
+
+        int oe_posix_epoll_close_ocall(
+            int fd,
+            [out, count=1] int* err);
+
+        int oe_posix_shutdown_polling_device_ocall(
+            int fd,
+            [out, count=1] int* err);
+    };
+};

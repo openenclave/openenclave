@@ -9,6 +9,10 @@
 
 OE_EXTERNC_BEGIN
 
+#if defined(WIN32) /* __feature_io__ */
+int strerror_r(int errnum, char* buf, size_t buflen);
+#endif
+
 OE_INLINE
 size_t oe_strlen(const char* s)
 {

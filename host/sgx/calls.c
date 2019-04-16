@@ -8,6 +8,9 @@
 #if defined(__linux__)
 #include <dlfcn.h>
 #include <linux/futex.h>
+#include <openenclave/internal/epoll.h>
+#include <openenclave/internal/hostfs.h>
+#include <openenclave/internal/resolver.h>
 #include <setjmp.h>
 #include <sys/mman.h>
 #include <sys/syscall.h>
@@ -257,6 +260,8 @@ static oe_result_t _handle_call_host_function(
     oe_result_t result = OE_OK;
     oe_ocall_func_t func = NULL;
     size_t buffer_size = 0;
+    const oe_ocall_func_t* ocalls;
+    size_t num_ocalls;
 
     args_ptr = (oe_call_host_function_args_t*)arg;
     if (args_ptr == NULL)
@@ -266,15 +271,34 @@ static oe_result_t _handle_call_host_function(
     if (args_ptr->input_buffer == NULL || args_ptr->output_buffer == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    // Fetch matching function.
-    if (args_ptr->function_id >= enclave->num_ocalls)
-        OE_RAISE(OE_NOT_FOUND);
-
-    func = enclave->ocalls[args_ptr->function_id];
-    if (func == NULL)
+#if !defined(_WIN32) /* __feature_io__ */
+    // Select either internal or user ocall table.
+    if (args_ptr->is_internal_call)
     {
-        result = OE_NOT_FOUND;
-        goto done;
+        extern const oe_ocall_func_t* oe_get_internal_ocall_function_table();
+        extern size_t oe_get_internal_ocall_function_table_size();
+
+        ocalls = oe_get_internal_ocall_function_table();
+        num_ocalls = oe_get_internal_ocall_function_table_size();
+    }
+    else
+#endif
+    {
+        ocalls = enclave->ocalls;
+        num_ocalls = enclave->num_ocalls;
+    }
+
+    // Fetch matching function.
+    {
+        if (args_ptr->function_id >= num_ocalls)
+            OE_RAISE(OE_NOT_FOUND);
+
+        func = ocalls[args_ptr->function_id];
+        if (func == NULL)
+        {
+            result = OE_NOT_FOUND;
+            goto done;
+        }
     }
 
     OE_CHECK(oe_safe_add_u64(
@@ -348,10 +372,6 @@ static oe_result_t _handle_ocall(
             HandleFree(arg_in);
             break;
 
-        case OE_OCALL_WRITE:
-            HandlePrint(arg_in);
-            break;
-
         case OE_OCALL_THREAD_WAIT:
             HandleThreadWait(enclave, arg_in);
             break;
@@ -396,6 +416,10 @@ static oe_result_t _handle_ocall(
 
         case OE_OCALL_LOG:
             oe_handle_log(enclave, arg_in);
+            break;
+
+        case OE_OCALL_WRITE:
+            HandlePrint(arg_in);
             break;
 
         default:
@@ -693,7 +717,8 @@ done:
 **==============================================================================
 */
 
-oe_result_t oe_call_enclave_function(
+static oe_result_t _call_enclave_function(
+    bool is_internal_call,
     oe_enclave_t* enclave,
     uint32_t function_id,
     const void* input_buffer,
@@ -711,6 +736,7 @@ oe_result_t oe_call_enclave_function(
 
     /* Initialize the call_enclave_args structure */
     {
+        args.is_internal_call = is_internal_call;
         args.function_id = function_id;
         args.input_buffer = input_buffer;
         args.input_buffer_size = input_buffer_size;
@@ -740,6 +766,46 @@ oe_result_t oe_call_enclave_function(
 
 done:
     return result;
+}
+
+oe_result_t oe_call_enclave_function(
+    oe_enclave_t* enclave,
+    uint32_t function_id,
+    const void* input_buffer,
+    size_t input_buffer_size,
+    void* output_buffer,
+    size_t output_buffer_size,
+    size_t* output_bytes_written)
+{
+    return _call_enclave_function(
+        false,
+        enclave,
+        function_id,
+        input_buffer,
+        input_buffer_size,
+        output_buffer,
+        output_buffer_size,
+        output_bytes_written);
+}
+
+oe_result_t oe_call_internal_enclave_function(
+    oe_enclave_t* enclave,
+    uint32_t function_id,
+    const void* input_buffer,
+    size_t input_buffer_size,
+    void* output_buffer,
+    size_t output_buffer_size,
+    size_t* output_bytes_written)
+{
+    return _call_enclave_function(
+        true,
+        enclave,
+        function_id,
+        input_buffer,
+        input_buffer_size,
+        output_buffer,
+        output_buffer_size,
+        output_bytes_written);
 }
 
 /*

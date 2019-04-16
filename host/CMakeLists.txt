@@ -1,11 +1,24 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+if(UNIX) # __feature_io__
+add_custom_command(
+    OUTPUT oe_u.h oe_u.c oe_args.h
+    DEPENDS ${CMAKE_SOURCE_DIR}/common/oe.edl edger8r
+    COMMAND edger8r
+        --search-path ${CMAKE_SOURCE_DIR}/common
+        --untrusted ${CMAKE_SOURCE_DIR}/common/oe.edl)
+add_custom_target(oe_untrusted_edl DEPENDS oe_u.h oe_u.c oe_args.h)
+endif()
+
+
 # OS specific but arch agnostic files.
 if (UNIX)
   set(PLATFORM_SRC
     ../common/asn1.c
     ../common/cert.c
+    oe_u_wrapper.c
+    files.c # __feature_io__
     crypto/openssl/asn1.c
     crypto/openssl/cert.c
     crypto/openssl/crl.c
@@ -15,8 +28,11 @@ if (UNIX)
     crypto/openssl/key.c
     crypto/openssl/random.c
     crypto/openssl/rsa.c
+    linux/hostuid.c
     linux/hostthread.c
+    linux/posix.c
     linux/time.c
+    linux/uname.c
     linux/windows.c)
 elseif (WIN32)
   set(PLATFORM_SRC
@@ -24,7 +40,9 @@ elseif (WIN32)
     crypto/bcrypt/hmac.c
     crypto/bcrypt/rsa.c
     windows/hostthread.c
-    windows/time.c)
+    windows/time.c
+#    windows/uname.c
+    )
 else()
   message(FATAL_ERROR "Unknown OS. Only supported OSes are Linux and Windows")
 endif()
@@ -89,25 +107,40 @@ endif()
 
 # Combine with all other non platform dependent files.
 add_library(oehost STATIC
+  # __feature_io__: - ${CMAKE_CURRENT_BINARY_DIR}/oe_u.c
+  # __feature_io__: - ../common/kdf.c
   ../common/datetime.c
-  ../common/kdf.c
   ../common/safecrt.c
+  ../common/kdf.c
   asym_keys.c
   dupenv.c
   error.c
-  files.c
+  # __feature_io__: - ${CMAKE_CURRENT_BINARY_DIR}/oe_u.c
+  # __feature_io__: - files.c
   fopen.c
   hexdump.c
   memalign.c
-  ocalls.c
   result.c
   signkey.c
   strings.c
   tests.c
+  ocalls.c
   crypto/sha.c
   ${PLATFORM_SRC})
 
+if (UNIX) # __feature_io__
+add_dependencies(oehost oe_untrusted_edl)
+endif()
+
+set_property(SOURCE ${CMAKE_CURRENT_BINARY_DIR}/oe_u.c
+    PROPERTY COMPILE_DEFINITIONS
+    OE_EDGER8R_INCLUDE_PROLOGUE
+    OE_EDGER8R_INCLUDE_EPILOGUE)
+
 target_link_libraries(oehost PUBLIC oe_includes)
+
+target_include_directories(oehost PRIVATE
+    ${PROJECT_SOURCE_DIR}/host/include)
 
 # TODO: Replace these with `find_package` and add as dependencies to
 # the CMake package.
@@ -122,6 +155,8 @@ if (UNIX)
 endif ()
 
 find_package(Threads REQUIRED)
+
+target_include_directories(oehost PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 if (UNIX)
   target_link_libraries(oehost PRIVATE crypto dl Threads::Threads)

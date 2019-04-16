@@ -4,6 +4,10 @@
 #ifndef _OE_ERRNO_H
 #define _OE_ERRNO_H
 
+#include <openenclave/bits/defs.h>
+
+OE_EXTERNC_BEGIN
+
 /*
  * Use MUSL generic arch errno definitions directly without the OE_ prefix.
  * These should be directly compatible across arch except for MIPS & PowerPC.
@@ -19,5 +23,7 @@ extern int* __oe_errno_location(void);
 #define errno oe_errno
 
 #endif /* defined(OE_NEED_STDC_NAMES) */
+
+OE_EXTERNC_END
 
 #endif /* _OE_ERRNO_H */

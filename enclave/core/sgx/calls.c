@@ -8,8 +8,13 @@
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/device.h>
+#include <openenclave/internal/epoll.h>
+#include <openenclave/internal/eventfd.h>
 #include <openenclave/internal/fault.h>
+#include <openenclave/internal/fs.h>
 #include <openenclave/internal/globals.h>
+#include <openenclave/internal/hostfs.h>
 #include <openenclave/internal/jump.h>
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/print.h>
@@ -26,6 +31,8 @@
 #include "init.h"
 #include "report.h"
 #include "td.h"
+
+#include <openenclave/internal/epoll.h>
 
 oe_result_t __oe_enclave_status = OE_OK;
 uint8_t __oe_initialized = 0;
@@ -171,6 +178,17 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
                 oe_enclave = safe_args.enclave;
             }
 
+#if !defined(WINDOWS_HOST)
+
+            /* Initialize the console devices: stdin, stdout, stderr. */
+            if (oe_initialize_console_devices() != 0)
+            {
+                result = OE_FAILURE;
+                goto done;
+            }
+
+#endif /* !defined(WINDOWS_HOST) */
+
             /* Call all enclave state initialization functions */
             OE_CHECK(oe_initialize_cpuid(arg_in));
 
@@ -195,6 +213,10 @@ done:
  */
 extern const oe_ecall_func_t __oe_ecalls_table[];
 extern const size_t __oe_ecalls_table_size;
+
+/* Internal ecalls table. */
+extern const oe_ecall_func_t __oe_internal_ecalls_table[];
+extern const size_t __oe_internal_ecalls_table_size;
 
 /**
  * This is the preferred way to call enclave functions.
@@ -245,10 +267,20 @@ static oe_result_t _handle_call_enclave_function(uint64_t arg_in)
         args.input_buffer_size, args.output_buffer_size, &buffer_size));
 
     // Fetch matching function.
-    if (args.function_id >= __oe_ecalls_table_size)
-        OE_RAISE(OE_NOT_FOUND);
+    if (args.is_internal_call)
+    {
+        if (args.function_id >= __oe_internal_ecalls_table_size)
+            OE_RAISE(OE_NOT_FOUND);
 
-    func = __oe_ecalls_table[args.function_id];
+        func = __oe_internal_ecalls_table[args.function_id];
+    }
+    else
+    {
+        if (args.function_id >= __oe_ecalls_table_size)
+            OE_RAISE(OE_NOT_FOUND);
+
+        func = __oe_ecalls_table[args.function_id];
+    }
 
     if (func == NULL)
         OE_RAISE(OE_NOT_FOUND);
@@ -309,7 +341,7 @@ done:
 
 static void _handle_exit(oe_code_t code, uint16_t func, uint64_t arg)
 {
-    oe_exit(oe_make_call_arg1(code, func, 0, OE_OK), arg);
+    oe_exit_enclave(oe_make_call_arg1(code, func, 0, OE_OK), arg);
 }
 
 void oe_virtual_exception_dispatcher(
@@ -435,7 +467,6 @@ static void _handle_ecall(
         case OE_ECALL_GET_PUBLIC_KEY:
         {
             oe_handle_get_public_key(arg_in);
-            break;
         }
         default:
         {
@@ -565,7 +596,8 @@ done:
 **==============================================================================
 */
 
-oe_result_t oe_call_host_function(
+static oe_result_t _call_host_function(
+    bool is_internal_call,
     size_t function_id,
     const void* input_buffer,
     size_t input_buffer_size,
@@ -590,6 +622,7 @@ oe_result_t oe_call_host_function(
         }
 
         args->function_id = function_id;
+        args->is_internal_call = is_internal_call;
         args->input_buffer = input_buffer;
         args->input_buffer_size = input_buffer_size;
         args->output_buffer = output_buffer;
@@ -611,6 +644,42 @@ done:
     oe_host_free(args);
 
     return result;
+}
+
+oe_result_t oe_call_host_function(
+    size_t function_id,
+    const void* input_buffer,
+    size_t input_buffer_size,
+    void* output_buffer,
+    size_t output_buffer_size,
+    size_t* output_bytes_written)
+{
+    return _call_host_function(
+        false,
+        function_id,
+        input_buffer,
+        input_buffer_size,
+        output_buffer,
+        output_buffer_size,
+        output_bytes_written);
+}
+
+oe_result_t oe_call_internal_host_function(
+    size_t function_id,
+    const void* input_buffer,
+    size_t input_buffer_size,
+    void* output_buffer,
+    size_t output_buffer_size,
+    size_t* output_bytes_written)
+{
+    return _call_host_function(
+        true,
+        function_id,
+        input_buffer,
+        input_buffer_size,
+        output_buffer,
+        output_buffer_size,
+        output_bytes_written);
 }
 
 /*
@@ -777,7 +846,7 @@ void __oe_handle_main(
                 break;
 
             case OE_CODE_ORET:
-                /* Eventually calls oe_exit() and never returns here if
+                /* Eventually calls oe_exit_enclave() and never returns here if
                  * successful */
                 _handle_oret(td, func, arg1_result, arg_in);
                 // fallthrough

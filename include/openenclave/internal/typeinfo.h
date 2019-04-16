@@ -4,164 +4,184 @@
 #ifndef _OE_TYPEINFO_H
 #define _OE_TYPEINFO_H
 
+#include <openenclave/bits/defs.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/internal/types.h>
 
 OE_EXTERNC_BEGIN
 
-typedef struct _oe_field_ti oe_field_ti_t;
-typedef struct _oe_struct_ti oe_struct_ti_t;
-typedef struct _oe_param_ti oe_param_ti_t;
-typedef struct _oe_function_ti oe_function_ti_t;
+#define OE_SIZEOF(TYPE, MEMBER) (sizeof(((((TYPE*)0)->MEMBER))))
 
-// Type flags:
-#define OE_FLAG_STRUCT (1 << 0)
-#define OE_FLAG_CONST (1 << 1)
-#define OE_FLAG_PTR (1 << 2)
-#define OE_FLAG_ARRAY (1 << 3)
+// clang-format off
+#define OE_FTI_STRING(STRUCT, FIELD)                \
+    {                                               \
+        .field_offset = OE_OFFSETOF(STRUCT, FIELD), \
+        .field_size = OE_SIZEOF(STRUCT, FIELD),     \
+        .elem_size = sizeof(char),                  \
+        .count_offset = OE_SIZE_MAX,                \
+        .count_value = OE_SIZE_MAX,                 \
+    }
+// clang-format on
 
-// Qualifier flags:
-#define OE_FLAG_ECALL (1 << 5)
-#define OE_FLAG_OCALL (1 << 6)
-#define OE_FLAG_IN (1 << 7)
-#define OE_FLAG_OUT (1 << 8)
-#define OE_FLAG_REF (1 << 9)
-#define OE_FLAG_UNCHECKED (1 << 10)
-#define OE_FLAG_COUNT (1 << 11)
-#define OE_FLAG_STRING (1 << 12)
-#define OE_FLAG_OPT (1 << 13)
+// clang-format off
+#define OE_FTI_STRUCTS(STRUCT, FIELD, STRUCT2, COUNT_FIELD, STI) \
+    {                                                            \
+        .field_offset = OE_OFFSETOF(STRUCT, FIELD),              \
+        .field_size = OE_SIZEOF(STRUCT, FIELD),                  \
+        .elem_size = sizeof(STRUCT2),                            \
+        .count_offset = OE_OFFSETOF(STRUCT, COUNT_FIELD),        \
+        .count_value = OE_SIZEOF(STRUCT, COUNT_FIELD),           \
+        .sti = STI                                               \
+    }
+// clang-format on
 
-struct _oe_field_ti
+// clang-format off
+#define OE_FTI_STRUCT(STRUCT, FIELD, STRUCT2, STI)  \
+    {                                               \
+        .field_offset = OE_OFFSETOF(STRUCT, FIELD), \
+        .field_size = OE_SIZEOF(STRUCT, FIELD),     \
+        .elem_size = sizeof(STRUCT2),               \
+        .count_offset = OE_SIZE_MAX,                \
+        .count_value = 1,                           \
+        .sti = STI                                  \
+    }
+// clang-format on
+
+// clang-format off
+#define OE_FTI_ARRAY(STRUCT, FIELD, ELEM_SIZE, COUNT_FIELD) \
+    {                                                       \
+        .field_offset = OE_OFFSETOF(STRUCT, FIELD),         \
+        .field_size = OE_SIZEOF(STRUCT, FIELD),             \
+        .elem_size = ELEM_SIZE,                             \
+        .count_offset = OE_OFFSETOF(STRUCT, COUNT_FIELD),   \
+        .count_value = OE_SIZEOF(STRUCT, COUNT_FIELD),      \
+    }
+// clang-format on
+
+struct _oe_struct_type_info;
+
+/* This structure provides type information for a pointer field within a
+ * structure.
+ */
+typedef struct _oe_field_type_info
 {
-    /* flags (OE_FLAG_*) */
-    uint32_t flags;
+    /* The byte offset of this field within the structure. */
+    size_t field_offset;
 
-    /* Name of this field */
-    const char* name;
+    /* The size of this field within the structure. */
+    size_t field_size;
 
-    /* Type of field (OE_TYPE_*) */
-    oe_type_t type;
+    /* This size of one element */
+    size_t elem_size;
 
-    /* Type information for this structure (when type==OE_STRUCT_TYPE) */
-    const oe_struct_ti_t* sti;
+    /* If count_offset == SIZE_MAX:
+     *     count_value contains the count.
+     * Else:
+     *     count_offset is the offset of the integer field containing the count.
+     */
+    size_t count_offset;
 
-    /* For pointer types: the field in the struct that holds the array size */
-    const char* count_field;
+    /* If count_offset == SIZE_MAX:
+     *     count_value contains the count. If this count is SIZE_MAX then
+     *     the field is a zero-terminated string.
+     * Else:
+     *     count_value is the size of the integer field containing the count.
+     */
+    size_t count_value;
 
-    /* Offset of this field within struct */
-    size_t offset;
+    /* The strut type information for this field. */
+    const struct _oe_struct_type_info* sti;
 
-    /* Size of this type */
-    size_t size;
+} oe_field_type_info_t;
 
-    /* Array subscript (when type==OE_FLAG_ARRAY) */
-    int32_t subscript;
-};
-
-struct _oe_struct_ti
+/* This structure provides type information for a structure definition.
+ */
+typedef struct _oe_struct_type_info
 {
-    /* flags (OE_FLAG_*) */
-    uint32_t flags;
+    size_t struct_size;
+    const oe_field_type_info_t* fields;
+    size_t num_fields;
+} oe_struct_type_info_t;
 
-    /* Name of this structure */
-    const char* name;
+/**
+ * Clone a structure onto a memory buffer.`
+ *
+ * This function performs a deep clone of the source structure (**src**), which
+ * includes all heap objects reachable from the structure. The destination
+ * buffer must be large enough to contain this result. To determine the
+ * required destination size, call this function with **dest** set to null
+ * **dest_size_in_out** set to zero.
+ *
+ * Note: this function does not handle cycles.
+ *
+ * @param sti the structure type information of **src** and **dest**.
+ * @param src the source structure that will be deep copied.
+ * @param dest the destination structure that will contain the result (may be
+ *        null to determine size requirements).
+ * @param dest_size_in_out size **dest** buffer on input. The required size
+ *        on output.
+ *
+ * @return OE_OK success
+ * @return OE_FAILURE the operation failed.
+ * @return OE_BUFFER_TOO_SMALL the **dest** buffer is too small and
+ *         upon return, **dest_size_in_out** contains the required size.
+ *
+ */
+oe_result_t oe_type_info_clone(
+    const oe_struct_type_info_t* sti,
+    const void* src,
+    void* dest,
+    size_t* dest_size_in_out);
 
-    /* Size of this structure in bytes */
-    size_t size;
-
-    /* Pointer to array of fields */
-    const oe_field_ti_t* fields;
-
-    /* Number of fields in the array */
-    uint32_t nfields;
-};
-
-oe_result_t oe_struct_eq(
-    const oe_struct_ti_t* sti,
-    const void* s1,
-    const void* s2,
-    bool* flag);
-
-oe_result_t oe_copy_struct(
-    const oe_struct_ti_t* struc_ti,
-    const void* struct_in,
-    void* struct_out,
-    void*(alloc)(size_t size));
-
-oe_result_t oe_clone_struct(
-    const oe_struct_ti_t* struct_ti,
-    const void* struct_in,
-    void** struct_out,
-    void*(alloc)(size_t size));
-
-void oe_print_struct(const oe_struct_ti_t* struct_ti, const void* struct_in);
-
-oe_result_t oe_destroy_struct(
-    const oe_struct_ti_t* struct_ti,
-    void* struct_ptr,
-    oe_dealloc_proc_t dealloc);
-
-oe_result_t oe_free_struct(
-    const oe_struct_ti_t* struct_ti,
-    void* struct_ptr,
-    oe_dealloc_proc_t dealloc);
-
-oe_result_t oe_init_arg(
-    const oe_struct_ti_t* sti,
-    void* strct,
-    size_t index,
-    bool is_ptr_ptr,
-    void* arg,
-    void*(alloc)(size_t size));
-
-oe_result_t oe_clear_arg(
-    const oe_struct_ti_t* sti,
-    void* strct,
-    size_t index,
-    bool is_ptr_ptr,
-    void* arg,
-    oe_dealloc_proc_t dealloc);
-
-oe_result_t oe_clear_arg_by_name(
-    const oe_struct_ti_t* sti,
-    void* strct,
-    const char* name,
-    bool is_ptr_ptr,
-    void* arg,
-    oe_dealloc_proc_t dealloc);
-
-oe_result_t oe_set_arg(
-    const oe_struct_ti_t* sti,
-    void* strct,
-    size_t index,
-    bool is_ptr_ptr, /* if 'arg' is a pointer to a pointer to an object */
-    void* arg,
-    void*(alloc)(size_t size));
-
-oe_result_t oe_set_arg_by_name(
-    const oe_struct_ti_t* sti,
-    void* strct,
-    const char* name,
-    bool is_ptr_ptr, /* if 'arg' is a pointer to a pointer to an object */
-    void* arg,
-    void*(alloc)(size_t size));
-
-size_t oe_struct_find_field(const oe_struct_ti_t* struct_ti, const char* name);
-
-oe_result_t oe_check_pre_constraints(
-    const oe_struct_ti_t* sti,
-    const void* sin);
-
-oe_result_t oe_check_post_constraints(
-    const oe_struct_ti_t* sti,
-    const void* sin);
-
-oe_result_t oe_test_struct_padding(const oe_struct_ti_t* sti, const void* sin);
-
-oe_result_t oe_pad_struct(const oe_struct_ti_t* sti, const void* sin);
-
-oe_result_t oe_check_struct(const oe_struct_ti_t* ti, void* strct);
+/**
+ * Use the source structure to update the destination structure.
+ *
+ * This function updates fields in the destination structure from fields
+ * in the source structure. It does not require any additional destination
+ * memory, since all heap objects reachable from the source structure are the
+ * same size or smaller than the corresponding heap objects in the destination
+ * structure (that is the source and destination structures have the same shape
+ * on the heap). As an example, consider the following
+ * structure.
+ *
+ *     ```
+ *     struct my_struct
+ *     {
+ *         uint8_t* data;
+ *         size_t datalen;
+ *     };
+ *     .
+ *     .
+ *     .
+ *     const struct my_struct* src;
+ *     struct my_struct* dest;
+ *     ```
+ *
+ * In this example, the following conditions must hold, else an error is
+ * returned.
+ *
+ *     - The size of the **src->data** buffer must be less than or equal to the
+ *       size of the **dest->data** buffer.
+ *     - The value of **src->datalen** is less than or equal to
+ *       **dest->datalen**.
+ *
+ * For these fields, this function performs two operations:
+ *
+ *     - Copies **src->datalen** bytes from **src->data** to **dest->data**.
+ *     - Sets **dest->datalen** to **src->datalen**.
+ *
+ * @param sti the structure type information of **src** and **dest**.
+ * @param src the source structure.
+ * @param dest the destination structure.
+ *
+ * @return OE_OK success
+ * @return OE_FAILURE the operation failed.
+ *
+ */
+oe_result_t oe_type_info_update(
+    const oe_struct_type_info_t* sti,
+    const void* src,
+    void* dest);
 
 OE_EXTERNC_END
 

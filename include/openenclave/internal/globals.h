@@ -7,6 +7,7 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/types.h>
+#include <openenclave/internal/uid.h>
 
 OE_EXTERNC_BEGIN
 

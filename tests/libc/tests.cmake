@@ -13,6 +13,11 @@ set(BUILD "${MY_COMPILER}:${BUILD_TYPE}")
 
 # Include tests that work on all builds:
 set(LIBC_TESTS
+    3rdparty/musl/libc-test/src/functional/socket.c
+    3rdparty/musl/libc-test/src/functional/inet_pton.c
+    3rdparty/musl/libc-test/src/functional/fnmatch.c
+    3rdparty/musl/libc-test/src/functional/fwscanf.c
+    3rdparty/musl/libc-test/src/functional/ungetc.c
     3rdparty/musl/libc-test/src/functional/argv.c
     3rdparty/musl/libc-test/src/functional/basename.c
     3rdparty/musl/libc-test/src/functional/clock_gettime.c
@@ -291,10 +296,7 @@ if (FALSE)
         3rdparty/musl/libc-test/src/functional/dlopen.c
         3rdparty/musl/libc-test/src/functional/fcntl.c
         3rdparty/musl/libc-test/src/functional/fdopen.c
-        3rdparty/musl/libc-test/src/functional/fnmatch.c
         3rdparty/musl/libc-test/src/functional/fscanf.c
-        3rdparty/musl/libc-test/src/functional/fwscanf.c
-        3rdparty/musl/libc-test/src/functional/inet_pton.c
         3rdparty/musl/libc-test/src/functional/ipc_msg.c
         3rdparty/musl/libc-test/src/functional/ipc_sem.c
         3rdparty/musl/libc-test/src/functional/ipc_shm.c
@@ -310,7 +312,6 @@ if (FALSE)
         3rdparty/musl/libc-test/src/functional/sem_init.c
         3rdparty/musl/libc-test/src/functional/sem_open.c
         3rdparty/musl/libc-test/src/functional/setjmp.c
-        3rdparty/musl/libc-test/src/functional/socket.c
         3rdparty/musl/libc-test/src/functional/spawn.c
         3rdparty/musl/libc-test/src/functional/stat.c
         3rdparty/musl/libc-test/src/functional/strftime.c
@@ -320,7 +321,6 @@ if (FALSE)
         3rdparty/musl/libc-test/src/functional/tls_init.c
         3rdparty/musl/libc-test/src/functional/tls_init_dlopen.c
         3rdparty/musl/libc-test/src/functional/tls_local_exec.c
-        3rdparty/musl/libc-test/src/functional/ungetc.c
         3rdparty/musl/libc-test/src/functional/vfork.c
         3rdparty/musl/libc-test/src/math/acosh.c
         3rdparty/musl/libc-test/src/math/asinh.c

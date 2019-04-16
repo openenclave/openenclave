@@ -8,6 +8,7 @@
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/fs.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/stack_alloc.h>
 #include "td.h"
@@ -118,17 +119,17 @@ int oe_host_write(int device, const char* str, size_t len)
     size_t total_size;
     if (oe_safe_add_sizet(len, 1 + sizeof(oe_print_args_t), &total_size) !=
         OE_OK)
-        goto done;
+        /*goto done*/;
 
     if (!(args = (oe_print_args_t*)oe_host_calloc(1, total_size)))
-        goto done;
+        /*goto done*/;
 
     /* Initialize the arguments */
     args->device = device;
     args->str = (char*)(args + 1);
 
     if (oe_memcpy_s(args->str, len, str, len) != OE_OK)
-        goto done;
+        /*goto done*/;
 
     args->str[len] = '\0';
 
@@ -148,6 +149,9 @@ int oe_host_vfprintf(int device, const char* fmt, oe_va_list ap_)
     char buf[256];
     char* p = buf;
     int n;
+
+    if (device != 0 && device != 1)
+        return -1;
 
     /* Try first with a fixed-length scratch buffer */
     {
@@ -169,7 +173,12 @@ int oe_host_vfprintf(int device, const char* fmt, oe_va_list ap_)
         oe_va_end(ap);
     }
 
+#if defined(WINDOWS_HOST) /* __feature_io__ */
     oe_host_write(device, p, (size_t)-1);
+#else
+    if (oe_write(device + 1, p, (size_t)n) != n)
+        return -1;
+#endif
 
     return n;
 }

@@ -1,0 +1,16 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+
+    trusted {
+        /* define ECALLs here. */
+        public int ecall_device_init();
+        public int ecall_signal_in_test(size_t bufflen, [in, out,count=bufflen]char *pbuff);
+        public int ecall_signal_out_test();
+    };
+
+    untrusted {
+        /* define OCALLs here. */
+    };
+};

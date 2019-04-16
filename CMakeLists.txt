@@ -77,6 +77,10 @@ else()
   message(FATAL_ERROR "Unknown processor. Only Intel SGX and ARM TrustZone are supported")
 endif()
 
+if (WIN32)
+   set(WINDOWS_HOST ON)
+endif()
+
 if (OE_SGX)
   if (WIN32)
     # Building enclaves on windows is on by default but can be disabled for enclaves pre-compiled under linux
@@ -208,6 +212,7 @@ if (BUILD_ENCLAVES)
   add_subdirectory(3rdparty)
   add_subdirectory(libc)
   add_subdirectory(libcxx)
+  add_subdirectory(device)
   add_subdirectory(enclave)
 endif()
 

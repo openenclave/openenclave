@@ -6,8 +6,10 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/defs.h>
+#include <openenclave/internal/uid.h>
 #include "backtrace.h"
 
 OE_EXTERNC_BEGIN
@@ -196,6 +198,9 @@ OE_INLINE uint16_t oe_get_result_from_call_arg1(uint64_t arg)
 
 typedef struct _oe_call_enclave_function_args
 {
+    /* If true, then call the internal enclave function with the above id. */
+    bool is_internal_call;
+
     uint64_t function_id;
     const void* input_buffer;
     size_t input_buffer_size;
@@ -208,6 +213,26 @@ typedef struct _oe_call_enclave_function_args
 /*
 **==============================================================================
 **
+** oe_call_internal_enclave_function()
+**
+**     This function is nearly identical to oe_call_enclave_function(), but it
+**     employs the 'internal' ocall table on this enclave side.
+**
+**==============================================================================
+*/
+
+oe_result_t oe_call_internal_enclave_function(
+    oe_enclave_t* enclave,
+    uint32_t function_id,
+    const void* input_buffer,
+    size_t input_buffer_size,
+    void* output_buffer,
+    size_t output_buffer_size,
+    size_t* output_bytes_written);
+
+/*
+**==============================================================================
+**
 ** oe_call_host_function_args_t
 **
 **==============================================================================
@@ -216,6 +241,10 @@ typedef struct _oe_call_enclave_function_args
 typedef struct _oe_call_host_function_args
 {
     uint64_t function_id;
+
+    /* If true, then call the internal host function with the above id. */
+    bool is_internal_call;
+
     const void* input_buffer;
     size_t input_buffer_size;
     void* output_buffer;
@@ -223,6 +252,25 @@ typedef struct _oe_call_host_function_args
     size_t output_bytes_written;
     oe_result_t result;
 } oe_call_host_function_args_t;
+
+/*
+**==============================================================================
+**
+** oe_call_internal_host_function()
+**
+**     This function is nearly identical to oe_call_host_function(), but it
+**     employs the 'internal' ocall table on this host side.
+**
+**==============================================================================
+*/
+
+oe_result_t oe_call_internal_host_function(
+    size_t function_id,
+    const void* input_buffer,
+    size_t input_buffer_size,
+    void* output_buffer,
+    size_t output_buffer_size,
+    size_t* output_bytes_written);
 
 /*
 **==============================================================================
@@ -270,6 +318,13 @@ typedef struct _oe_realloc_args
 
 typedef struct _oe_init_enclave_args
 {
+    pid_t pid;  // Process ID
+    pid_t ppid; // Parent PID
+    pid_t pgrp; // Process Group ID
+    uid_t uid;  // user id
+    uid_t euid; // effective user id
+    gid_t groups[OE_NGROUP_MAX];
+    uint32_t num_groups;
     uint32_t cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
     oe_enclave_t* enclave;
 } oe_init_enclave_args_t;

@@ -5,6 +5,7 @@
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/internal/defs.h>
+#include <openenclave/internal/print.h>
 
 size_t oe_strlen(const char* s)
 {
@@ -89,6 +90,21 @@ size_t oe_strlcpy(char* dest, const char* src, size_t size)
     return (size_t)(src - start);
 }
 
+char* oe_strncpy(char* dest, const char* src, size_t n)
+{
+    char* ret = dest;
+
+    /* Copy at most n bytes. Terminate when src is exhausted. */
+    while (n-- && *src)
+        *dest++ = *src++;
+
+    /* If there is room left, then inject zero-terminator. */
+    if (n)
+        *dest = '\0';
+
+    return ret;
+}
+
 size_t oe_strlcat(char* dest, const char* src, size_t size)
 {
     size_t n = 0;
@@ -138,4 +154,84 @@ char* oe_strstr(const char* haystack, const char* needle)
     return NULL;
 }
 
+char* oe_strdup(const char* s)
+{
+    size_t len;
+    char* p;
+
+    if (!s)
+        return NULL;
+
+    len = oe_strlen(s);
+
+    if (!(p = oe_malloc(len + 1)))
+        return NULL;
+
+    return memcpy(p, s, len + 1);
+}
+
 OE_WEAK_ALIAS(oe_strcmp, strcmp);
+
+int oe_strcasecmp(const char* s1, const char* s2)
+{
+    while ((*s1 && *s2) && (oe_toupper(*s1) == oe_toupper(*s2)))
+    {
+        s1++;
+        s2++;
+    }
+
+    return oe_toupper(*s1) - oe_toupper(*s2);
+}
+
+int oe_strncasecmp(const char* s1, const char* s2, size_t n)
+{
+    while (n && *s1 && *s2 && oe_toupper(*s1) == oe_toupper(*s2))
+    {
+        n--;
+        s1++;
+        s2++;
+    }
+
+    if (n == 0)
+        return 0;
+
+    if (!*s1)
+        return -1;
+
+    if (!*s2)
+        return 1;
+
+    return oe_toupper(*s1) - oe_toupper(*s2);
+}
+
+char* oe_strchr(const char* s, int c)
+{
+    while (*s && *s != c)
+        s++;
+
+    if (*s == c)
+        return (char*)s;
+
+    return NULL;
+}
+
+char* oe_strrchr(const char* s, int c)
+{
+    char* p = (char*)s + oe_strlen(s);
+
+    if (c == '\0')
+        return p;
+
+    while (p != s)
+    {
+        if (*--p == c)
+            return p;
+    }
+
+    return NULL;
+}
+
+int oe_atoi(const char* nptr)
+{
+    return (int)oe_strtol(nptr, NULL, 10);
+}

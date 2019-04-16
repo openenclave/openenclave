@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
+#include <openenclave/internal/fs.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
@@ -29,9 +30,9 @@ int enclave_test_print()
         r = fputs("fputs(stdout)\n", stdout);
         OE_TEST(r >= 0);
 
-        const char str[] = "oe_host_write(stdout)\n";
-        oe_host_write(0, str, (size_t)-1);
-        oe_host_write(0, str, sizeof(str) - 1);
+        const char str[] = "oe_write(stdout)\n";
+        oe_write(OE_STDOUT_FILENO, str, (size_t)-1);
+        oe_write(OE_STDOUT_FILENO, str, sizeof(str) - 1);
     }
 
     /* Write to standard error */
@@ -45,9 +46,9 @@ int enclave_test_print()
         fprintf(stderr, "\n");
         r = fputs("fputs(stderr)\n", stderr);
         OE_TEST(r >= 0);
-        const char str[] = "oe_host_write(stderr)\n";
-        oe_host_write(1, str, (size_t)-1);
-        oe_host_write(1, str, sizeof(str) - 1);
+        const char str[] = "oe_write(stderr)\n";
+        oe_write(OE_STDERR_FILENO, str, (size_t)-1);
+        oe_write(OE_STDERR_FILENO, str, sizeof(str) - 1);
     }
 
     return 0;

@@ -11,6 +11,7 @@
 OE_EXTERNC_BEGIN
 
 #define OE_SHA256_SIZE 32
+#define OE_RSA_KEY_BUFF_SIZE 512
 
 /* Opaque representation of a SHA-256 context */
 typedef struct _oe_sha256_context

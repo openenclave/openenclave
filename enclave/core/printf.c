@@ -7,6 +7,7 @@
 #include <openenclave/corelibc/stdarg.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
+#include <openenclave/internal/fs.h>
 #include <openenclave/internal/print.h>
 #include "intstr.h"
 
@@ -389,7 +390,10 @@ static size_t _format(
     {
         /* left justified */
         n += _prefix(out, ph);
-        n += _fill(out, '0', nprecision);
+
+        if (ph->type != TYPE_s)
+            n += _fill(out, '0', nprecision);
+
         n += out->write(out, buf, len);
         n += _fill(out, pad, nwidth);
     }
@@ -398,7 +402,10 @@ static size_t _format(
         /* right justified */
         n += _fill(out, pad, nwidth);
         n += _prefix(out, ph);
-        n += _fill(out, '0', nprecision);
+
+        if (ph->type != TYPE_s)
+            n += _fill(out, '0', nprecision);
+
         n += out->write(out, buf, len);
     }
 
@@ -668,7 +675,7 @@ int oe_vprintf(const char* fmt, oe_va_list ap_)
 
         if ((size_t)n < sizeof(buf))
         {
-            oe_host_write(0, p, (size_t)-1);
+            oe_write(OE_STDOUT_FILENO, p, oe_strlen(p));
             goto done;
         }
     }
@@ -688,7 +695,7 @@ int oe_vprintf(const char* fmt, oe_va_list ap_)
         if (n < 0)
             goto done;
 
-        oe_host_write(0, p, (size_t)-1);
+        oe_write(OE_STDOUT_FILENO, p, oe_strlen(p));
     }
 
 done:
@@ -707,6 +714,65 @@ int oe_printf(const char* format, ...)
     oe_va_start(ap, format);
     n = oe_vprintf(format, ap);
     oe_va_end(ap);
+
+    return n;
+}
+
+int oe_vfprintf(OE_FILE* stream, const char* format, oe_va_list ap_)
+{
+    char buf[1024];
+    char* p = buf;
+    int n;
+    char* new_buf = NULL;
+
+    /* Try first with a fixed-length scratch buffer */
+    {
+        oe_va_list ap;
+        oe_va_copy(ap, ap_);
+        n = oe_vsnprintf(buf, sizeof(buf), format, ap);
+        oe_va_end(ap);
+
+        if (n < 0)
+            goto done;
+
+        if ((size_t)n < sizeof(buf))
+        {
+            if (oe_fwrite(p, 1, (size_t)n, stream) != (size_t)n)
+            {
+                n = -1;
+                goto done;
+            }
+
+            goto done;
+        }
+    }
+
+    /* If string was truncated, retry with correctly sized buffer */
+    {
+        if (!(new_buf = (char*)oe_malloc((size_t)n + 1)))
+            goto done;
+
+        p = new_buf;
+
+        oe_va_list ap;
+        oe_va_copy(ap, ap_);
+        n = oe_vsnprintf(p, (size_t)n + 1, format, ap);
+        oe_va_end(ap);
+
+        if (n < 0)
+            goto done;
+
+        if (oe_fwrite(p, 1, (size_t)n, stream) != (size_t)n)
+        {
+            n = -1;
+            goto done;
+        }
+    }
+
+done:
+
+    if (new_buf)
+        oe_free(new_buf);
 
     return n;
 }

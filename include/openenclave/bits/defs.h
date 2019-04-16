@@ -142,4 +142,16 @@
 #define OE_DEPRECATED(FUNC, MSG) FUNC
 #endif
 
+/* Endianess */
+#define __OE_LITTLE_ENDIAN 1234
+#define __OE_BIG_ENDIAN 4321
+#define __OE_PDP_ENDIAN 3412
+#if defined(__i386) || defined(__x86_64)
+#define __OE_BYTE_ORDER __OE_LITTLE_ENDIAN
+#elif defined(__arm__) || defined(__aarch64__)
+#define __OE_BYTE_ORDER __OE_BIG_ENDIAN
+#elif defined(_WIN32)
+#define __OE_BYTE_ORDER __OE_LITTLE_ENDIAN
+#endif
+
 #endif /* _OE_BITS_DEFS_H */
