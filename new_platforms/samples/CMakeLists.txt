@@ -8,5 +8,4 @@ add_subdirectory(sockets)
 # ARM TrustZone.
 if(TZ)
     add_subdirectory(localattestation)
-    add_subdirectory(oe_policy_tool)
 endif()

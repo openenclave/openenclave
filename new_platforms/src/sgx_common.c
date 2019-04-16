@@ -142,14 +142,11 @@ oe_result_t oe_parse_report(
         sizeof(sgx_prod_id_t));
 
     memset(
-        parsed_report->identity.device_signer_id,
+        parsed_report->identity.public_key,
         0,
-        sizeof(parsed_report->identity.device_signer_id));
+        sizeof(parsed_report->identity.public_key));
 
-    memset(
-        parsed_report->identity.device_unique_id,
-        0,
-        sizeof(parsed_report->identity.device_unique_id));
+    parsed_report->identity.caller = NULL;
 
     return OE_OK;
 }
