@@ -20,7 +20,7 @@ oe<enclave|host>-<gcc|g++|clang|clang++>
 ```
 
 For example, if you have added the Open Enclave SDK `pkgconfig` to your `PKG_CONFIG_PATH`,
-you can specify in your Makefile how to build your C enclave using Clang-7:
+you can specify in your Makefile how to build your C enclave using Clang-8:
 
 ```make
 CFLAGS=$(shell pkg-config oeenclave-clang --cflags)
