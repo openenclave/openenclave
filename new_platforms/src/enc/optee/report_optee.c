@@ -38,17 +38,11 @@ oe_result_t oe_verify_report(
     oe_report_t* parsed_report)
 {
     oe_result_t result = OE_OK;
+    int res;
 
     mbedtls_x509_crt chain = {0};
+    bool parseComplete = FALSE;
     mbedtls_x509_crt local_chain = {0};
-
-    mbedtls_x509_crt_init(&chain);
-    int res = mbedtls_x509_crt_parse(&chain, report, report_size);
-    if (res != 0)
-    {
-        result = OE_FAILURE;
-        goto Cleanup;
-    }
 
     // validate the cert chain contains CyReS measurements
 
@@ -57,6 +51,7 @@ oe_result_t oe_verify_report(
     {
         goto Cleanup;
     }
+    parseComplete = TRUE;
 
     // validate the chain is properly rooted
     {
@@ -107,8 +102,15 @@ oe_result_t oe_verify_report(
     }
 
 Cleanup:
-    mbedtls_x509_crt_free(&chain);
     mbedtls_x509_crt_free(&local_chain);
+    if (parseComplete)
+    {
+        mbedtls_x509_crt_free(&chain);
+        if (result != OE_OK)
+        {
+            oe_free_parsed_report(parsed_report);
+        }
+    }
 
     return result;
 }

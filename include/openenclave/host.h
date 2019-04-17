@@ -283,6 +283,13 @@ oe_result_t oe_get_report_v2(
  */
 void oe_free_report(uint8_t* report_buffer);
 
+/**
+ * Frees any allocated buffers that are part of the parsed report obtained from oe_parse_report.
+ *
+ * @param[in] report_buffer The report buffer to free.
+ */
+void oe_free_parsed_report(_In_ oe_report_t* parsed_report);
+
 #if (OE_API_VERSION < 2)
 #define oe_get_target_info oe_get_target_info_v1
 #else
