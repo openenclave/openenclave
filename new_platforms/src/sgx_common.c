@@ -150,3 +150,8 @@ oe_result_t oe_parse_report(
 
     return OE_OK;
 }
+
+void oe_free_parsed_report(_In_ oe_report_t* parsed_report)
+{
+    (void)parsed_report;
+}
