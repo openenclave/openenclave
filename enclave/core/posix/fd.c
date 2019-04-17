@@ -166,6 +166,15 @@ oe_device_t* oe_get_fd_device(int fd)
     oe_device_t* ret = NULL;
     bool locked = false;
 
+    /* First check whether it is a console device. */
+    {
+        extern oe_device_t* oe_get_console_device(int fd);
+        oe_device_t* device;
+
+        if ((device = oe_get_console_device(fd)))
+            return device;
+    }
+
     oe_spin_unlock(&_lock);
     locked = true;
 

@@ -384,3 +384,26 @@ done:
 
     return ret;
 }
+
+oe_device_t* oe_get_console_device(int fd)
+{
+    switch (fd)
+    {
+        case OE_STDIN_FILENO:
+        {
+            return &_stdin_file.base;
+        }
+        case OE_STDOUT_FILENO:
+        {
+            return &_stdout_file.base;
+        }
+        case OE_STDERR_FILENO:
+        {
+            return &_stderr_file.base;
+        }
+        default:
+        {
+            return NULL;
+        }
+    }
+}

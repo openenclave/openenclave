@@ -35,6 +35,8 @@ void test_hostfs(const char* tmp_dir)
         fprintf(stderr, "umount() failed\n");
         exit(1);
     }
+
+    malloc(10);
 }
 
 OE_SET_ENCLAVE_SGX(
