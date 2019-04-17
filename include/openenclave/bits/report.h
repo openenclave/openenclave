@@ -111,7 +111,7 @@ typedef struct _oe_identity
      * For CyReS components, this is a binary encoding of a GUID based on the component name. */
     uint8_t product_id[OE_PRODUCT_ID_SIZE];
 
-    /* For CyReS components, this is ECC public key issued for the CyReS component by the caller component. */
+    /* For CyReS components, this is the ECC public key issued for the CyReS component by the caller component. */
     uint8_t public_key[OE_ECC_PUBLIC_KEY_SIZE];
 
     /* For CyReS components, this points to an identity of a parent CyReS component that started execution of the current CyReS component. */
