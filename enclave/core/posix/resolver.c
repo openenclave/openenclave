@@ -38,8 +38,6 @@ done:
     return ret;
 }
 
-size_t oe_debug_malloc_check();
-
 int oe_getaddrinfo(
     const char* node,
     const char* service,

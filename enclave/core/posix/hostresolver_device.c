@@ -318,18 +318,24 @@ done:
     return ret;
 }
 
-// clang format-off
-static oe_resolver_ops_t _ops = {.getaddrinfo = _hostresolv_getaddrinfo,
-                                 .getnameinfo = _hostresolv_getnameinfo,
-                                 .shutdown = _hostresolv_shutdown};
-// clang format-off
+// clang-format off
+static oe_resolver_ops_t _ops =
+{
+    .getaddrinfo = _hostresolv_getaddrinfo,
+    .getnameinfo = _hostresolv_getnameinfo,
+    .shutdown = _hostresolv_shutdown
+};
+// clang-format on
 
-// clang format-off
-static resolv_t _hostresolv = {.base.type = OE_RESOLVER_HOST,
-                               .base.size = sizeof(resolv_t),
-                               .base.ops = &_ops,
-                               .magic = RESOLV_MAGIC};
-// clang format-off
+// clang-format off
+static resolv_t _hostresolv =
+{
+    .base.type = OE_RESOLVER_HOST,
+    .base.size = sizeof(resolv_t),
+    .base.ops = &_ops,
+    .magic = RESOLV_MAGIC
+};
+// clang-format on
 
 oe_result_t oe_load_module_hostresolver(void)
 {

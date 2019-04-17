@@ -109,24 +109,29 @@ static oe_device_t* _eventfd_eventfd(
     int flags)
 {
     oe_device_t* ret = NULL;
-    eventfd_dev_t* eventfd = NULL;
-
-    (void)_eventfd_clone(eventfd_, &ret);
-    eventfd = _cast_eventfd(ret);
+    eventfd_dev_t* eventfd = _cast_eventfd(eventfd_);
+    eventfd_dev_t* new_eventfd = NULL;
 
     if (!eventfd)
     {
         oe_errno = EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
+        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
 
-    eventfd->base.type = OE_DEVID_EVENTFD;
-    eventfd->base.size = sizeof(eventfd_dev_t);
-    eventfd->magic = EVENTFD_MAGIC;
-    eventfd->base.ops.eventfd = _eventfd.base.ops.eventfd;
-    eventfd->count = initval;
-    eventfd->flags = (uint32_t)flags;
+    if (_eventfd_clone(eventfd_, (oe_device_t**)&new_eventfd) != 0)
+    {
+        oe_errno = EINVAL;
+        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
+        goto done;
+    }
+
+    new_eventfd->base.type = OE_DEVID_EVENTFD;
+    new_eventfd->base.size = sizeof(eventfd_dev_t);
+    new_eventfd->magic = EVENTFD_MAGIC;
+    new_eventfd->base.ops.eventfd = _eventfd.base.ops.eventfd;
+    new_eventfd->count = initval;
+    new_eventfd->flags = (uint32_t)flags;
 
 done:
     return ret;
@@ -321,14 +326,12 @@ oe_result_t oe_load_module_eventfd(void)
         {
             const uint64_t devid = OE_DEVID_EVENTFD;
 
-            /* Allocate the device id. */
             if (oe_allocate_devid(devid) != devid)
             {
                 OE_TRACE_ERROR("devid=%lu", devid);
                 goto done;
             }
 
-            /* Add the hostfs device to the device table. */
             if ((ret = oe_set_devid_device(devid, oe_get_eventfd_device())) !=
                 0)
             {

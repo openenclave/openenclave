@@ -53,6 +53,7 @@ static int _init_table()
                 }
 
                 oe_atexit(_free_table);
+                _initialized = true;
             }
         }
         oe_spin_unlock(&_lock);

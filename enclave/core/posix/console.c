@@ -110,7 +110,7 @@ static int _consolefs_fcntl(oe_device_t* file, int cmd, int arg)
     OE_UNUSED(cmd);
     OE_UNUSED(arg);
 
-    oe_errno = ENOTTY;
+    oe_errno = ENOTSUP;
     return -1;
 }
 
