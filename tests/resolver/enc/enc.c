@@ -179,13 +179,8 @@ done:
 int ecall_getaddrinfo(struct addrinfo** res)
 {
     struct oe_addrinfo* ai = NULL;
-#if 1
     const char host[] = {"localhost"};
     const char serv[] = {"telnet"};
-#else
-    const char host[] = {"google.com"};
-    const char serv[] = {"http"};
-#endif
     struct oe_addrinfo hints;
 
     memset(&hints, 0, sizeof(hints));
