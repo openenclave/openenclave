@@ -93,12 +93,24 @@ int main(int argc, const char* argv[])
     char test_data_rtn[1024] = {0};
     size_t test_data_len = 1024;
     int done = 0;
+    bool use_libc = false;
 
-    if (argc != 2)
+    if (argc != 3)
     {
-        fprintf(stderr, "Usage: %s ENCLAVE_PATH\n", argv[0]);
+        fprintf(stderr, "Usage: %s ENCLAVE_PATH USE_LIBC\n", argv[0]);
         return 1;
     }
+
+    if (strcmp(argv[2], "USE_LIBC") == 0)
+        use_libc = true;
+    else if (strcmp(argv[2], "USE_CORELIBC") == 0)
+        use_libc = false;
+    else
+    {
+        fprintf(stderr, "%s: bad arg: %s\n", argv[0], argv[2]);
+        return 1;
+    }
+
     // disable buffering
     setvbuf(stdout, NULL, _IONBF, 0);
 
@@ -119,7 +131,8 @@ int main(int argc, const char* argv[])
 
     test_data_len = 1024;
     OE_TEST(
-        ecall_poll_test(client_enclave, &ret, test_data_len, test_data_rtn) ==
+        ecall_poll_test(
+            client_enclave, &ret, test_data_len, test_data_rtn, use_libc) ==
         OE_OK);
 
     sleep(5);
@@ -129,7 +142,8 @@ int main(int argc, const char* argv[])
 
     test_data_len = 1024;
     OE_TEST(
-        ecall_epoll_test(client_enclave, &ret, test_data_len, test_data_rtn) ==
+        ecall_epoll_test(
+            client_enclave, &ret, test_data_len, test_data_rtn, use_libc) ==
         OE_OK);
 
     sleep(5);
@@ -141,7 +155,8 @@ int main(int argc, const char* argv[])
 
     test_data_len = 1024;
     OE_TEST(
-        ecall_select_test(client_enclave, &ret, test_data_len, test_data_rtn) ==
+        ecall_select_test(
+            client_enclave, &ret, test_data_len, test_data_rtn, use_libc) ==
         OE_OK);
 
     printf("select: host received: %s\n", test_data_rtn);

@@ -7,4 +7,6 @@ if (UNIX)
 	add_subdirectory(enc)
 endif()
 
-add_enclave_test(tests/polling polling_test_host polling_test_enc)
+add_enclave_test(tests/polling2 polling_test_host polling_test_enc USE_CORELIBC)
+
+#add_enclave_test(tests/polling1 polling_test_host polling_test_enc USE_LIBC)

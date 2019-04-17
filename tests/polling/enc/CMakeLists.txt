@@ -8,8 +8,9 @@ oeedl_file(../epoll_test.edl
 
 add_enclave(
     TARGET polling_test_enc
-    SOURCES enc.c ${epoll_test_t}
+    SOURCES enc.cpp ${epoll_test_t}
 )
 
 target_include_directories(polling_test_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(polling_test_enc oelibc)
+
+target_link_libraries(polling_test_enc oelibcxx oelibc)

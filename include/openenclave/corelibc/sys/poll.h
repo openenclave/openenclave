@@ -47,6 +47,8 @@ OE_EXTERNC_BEGIN
 
 int oe_poll(struct oe_pollfd* __fds, nfds_t __nfds, int __timeout);
 
+/* ATTN:IO: missing C names. */
+
 OE_EXTERNC_END
 
 #endif /* _OE_SYS_POLL_H */

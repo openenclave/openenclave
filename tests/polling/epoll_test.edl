@@ -6,9 +6,21 @@ enclave {
     trusted {
         /* define ECALLs here. */
         public int ecall_device_init();
-        public int ecall_poll_test(size_t bufflen, [in, out,count=bufflen]char *pbuff);
-        public int ecall_epoll_test(size_t bufflen, [in, out,count=bufflen]char *pbuff);
-        public int ecall_select_test(size_t bufflen, [in, out,count=bufflen]char *pbuff);
+
+        public int ecall_poll_test(
+            size_t bufflen, 
+            [in, out,count=bufflen]char *pbuff,
+            bool use_libc);
+
+        public int ecall_epoll_test(
+            size_t bufflen, 
+            [in, out,count=bufflen]char *pbuff,
+            bool use_libc);
+
+        public int ecall_select_test(
+            size_t bufflen, 
+            [in, out,count=bufflen]char *pbuff,
+            bool use_libc);
     };
 
     untrusted {

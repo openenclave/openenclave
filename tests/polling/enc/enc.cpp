@@ -19,6 +19,10 @@
 #include <epoll_test_t.h>
 #include <stdio.h>
 #include <string.h>
+#include "epoll_test_t.h"
+#include "interface.h"
+
+//#define USE_LIBC_INTERFACE
 
 int ecall_device_init()
 {
@@ -54,15 +58,19 @@ const char* print_file_success(int numfds, int* fdlist)
 /* This client connects to an echo server, sends a text message,
  * and outputs the text reply.
  */
-int ecall_epoll_test(size_t buff_len, char* recv_buff)
+template <class INTERFACE>
+static int _ecall_epoll_test(INTERFACE& x, size_t buff_len, char* recv_buff)
 {
+    typedef typename INTERFACE::SOCKADDR_IN_T SOCKADDR_IN_T;
+    typedef typename INTERFACE::SOCKADDR_T SOCKADDR_T;
+    typedef typename INTERFACE::EPOLL_EVENT_T EPOLL_EVENT_T;
     int sockfd = 0;
     int file_fd = 0;
-    struct oe_sockaddr_in serv_addr = {0};
+    SOCKADDR_IN_T serv_addr = {0};
 #define MAX_EVENTS 20
-    struct oe_epoll_event event = {0};
-    struct oe_epoll_event events[MAX_EVENTS] = {{0}};
-    int epoll_fd = oe_epoll_create1(0);
+    EPOLL_EVENT_T event = {0};
+    EPOLL_EVENT_T events[MAX_EVENTS] = {{0}};
+    int epoll_fd = x.epoll_create1(0);
 
     printf("--------------- epoll -------------\n");
     if (epoll_fd == -1)
@@ -73,26 +81,26 @@ int ecall_epoll_test(size_t buff_len, char* recv_buff)
 
     memset(recv_buff, 0, buff_len);
     printf("create socket\n");
-    if ((sockfd = oe_socket(OE_AF_HOST, OE_SOCK_STREAM, 0)) < 0)
+    if ((sockfd = x.socket(x.AF_INET_T, x.SOCK_STREAM_T, 0)) < 0)
     {
         printf("\n Error : Could not create socket \n");
         return OE_FAILURE;
     }
-    serv_addr.sin_family = OE_AF_HOST;
-    serv_addr.sin_addr.s_addr = oe_htonl(OE_INADDR_LOOPBACK);
-    serv_addr.sin_port = oe_htons(1642);
+    serv_addr.sin_family = x.AF_INET_T;
+    serv_addr.sin_addr.s_addr = x.htonl(x.INADDR_LOOPBACK_T);
+    serv_addr.sin_port = x.htons(1642);
 
     printf("socket fd = %d\n", sockfd);
     printf("Connecting...\n");
     int retries = 0;
     static const int max_retries = 4;
-    while (oe_connect(
-               sockfd, (struct oe_sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
+
+    while (x.connect(sockfd, (SOCKADDR_T*)&serv_addr, sizeof(serv_addr)) < 0)
     {
         if (retries++ > max_retries)
         {
             printf("\n Error : Connect Failed \n");
-            oe_close(sockfd);
+            x.close(sockfd);
             return OE_FAILURE;
         }
         else
@@ -101,39 +109,39 @@ int ecall_epoll_test(size_t buff_len, char* recv_buff)
         }
     }
 
-    const int flags = OE_O_NONBLOCK | OE_O_RDONLY;
-    file_fd = oe_open("/tmp/test", flags, 0);
+    const int flags = x.O_NONBLOCK_T | x.O_RDONLY_T;
+    file_fd = x.open("/tmp/test", flags, 0);
 
     printf("polling...\n");
     if (file_fd >= 0)
     {
-        event.events = OE_EPOLLIN;
+        event.events = x.EPOLLIN_T;
         event.data.ptr = (void*)print_file_success;
 
-        if (oe_epoll_ctl(epoll_fd, OE_EPOLL_CTL_ADD, 0, &event))
+        if (x.epoll_ctl(epoll_fd, x.EPOLL_CTL_ADD_T, 0, &event))
         {
             fprintf(stderr, "Failed to add file descriptor to epoll\n");
-            oe_close(epoll_fd);
+            x.close(epoll_fd);
             return 1;
         }
     }
 
     event.events = 0x3c7;
     event.data.ptr = (void*)print_socket_success;
-    if (oe_epoll_ctl(epoll_fd, OE_EPOLL_CTL_ADD, sockfd, &event))
+    if (x.epoll_ctl(epoll_fd, x.EPOLL_CTL_ADD_T, sockfd, &event))
     {
         fprintf(stderr, "Failed to add file descriptor to epoll\n");
-        oe_close(epoll_fd);
+        x.close(epoll_fd);
         return 1;
     }
 
     int nfds = 0;
     do
     {
-        /*while*/ if ((nfds = oe_epoll_wait(epoll_fd, events, 20, 30000)) < 0)
+        if ((nfds = x.epoll_wait(epoll_fd, events, 20, 30000)) < 0)
         {
             printf("error.\n");
-            assert("oe_epoll_wait() failed" == NULL);
+            assert("x.epoll_wait() failed" == NULL);
         }
         else
         {
@@ -160,10 +168,10 @@ int ecall_epoll_test(size_t buff_len, char* recv_buff)
     } while (nfds >= 0);
 
     if (sockfd != -1)
-        oe_close(sockfd);
+        x.close(sockfd);
 
     if (epoll_fd != -1)
-        oe_close(epoll_fd);
+        x.close(epoll_fd);
 
     oe_sleep_msec(3);
 
@@ -171,43 +179,63 @@ int ecall_epoll_test(size_t buff_len, char* recv_buff)
     return OE_OK;
 }
 
-int ecall_select_test(size_t buff_len, char* recv_buff)
+int ecall_epoll_test(size_t buff_len, char* recv_buff, bool use_libc)
 {
+    if (use_libc)
+    {
+        libc_interface x;
+        return _ecall_epoll_test(x, buff_len, recv_buff);
+    }
+    else
+    {
+        corelibc_interface x;
+        return _ecall_epoll_test(x, buff_len, recv_buff);
+    }
+}
+
+template <class INTERFACE>
+static int _ecall_select_test(INTERFACE& x, size_t buff_len, char* recv_buff)
+{
+    typedef typename INTERFACE::SOCKADDR_IN_T SOCKADDR_IN_T;
+    typedef typename INTERFACE::SOCKADDR_T SOCKADDR_T;
+    typedef typename INTERFACE::FD_SET_T FD_SET_T;
+    typedef typename INTERFACE::TIMEVAL_T TIMEVAL_T;
     int sockfd = 0;
     int file_fd = 0;
-    struct oe_sockaddr_in serv_addr = {0};
-    oe_fd_set readfds;
-    oe_fd_set writefds;
-    oe_fd_set exceptfds;
-    struct oe_timeval timeout = {0};
+    SOCKADDR_IN_T serv_addr = {0};
+    FD_SET_T readfds;
+    FD_SET_T writefds;
+    FD_SET_T exceptfds;
+    TIMEVAL_T timeout = {0};
 
-    OE_FD_ZERO(&readfds);
-    OE_FD_ZERO(&writefds);
-    OE_FD_ZERO(&exceptfds);
+    OE_UNUSED(x);
+
+    x.FD_ZERO_F(&readfds);
+    x.FD_ZERO_F(&writefds);
+    x.FD_ZERO_F(&exceptfds);
 
     printf("--------------- select -------------\n");
     memset(recv_buff, 0, buff_len);
     printf("create socket\n");
-    if ((sockfd = oe_socket(OE_AF_HOST, OE_SOCK_STREAM, 0)) < 0)
+    if ((sockfd = x.socket(x.AF_INET_T, x.SOCK_STREAM_T, 0)) < 0)
     {
         printf("\n Error : Could not create socket \n");
         return OE_FAILURE;
     }
-    serv_addr.sin_family = OE_AF_HOST;
-    serv_addr.sin_addr.s_addr = oe_htonl(OE_INADDR_LOOPBACK);
-    serv_addr.sin_port = oe_htons(1642);
+    serv_addr.sin_family = x.AF_INET_T;
+    serv_addr.sin_addr.s_addr = x.htonl(x.INADDR_LOOPBACK_T);
+    serv_addr.sin_port = x.htons(1642);
 
     printf("socket fd = %d\n", sockfd);
     printf("Connecting...\n");
     int retries = 0;
     static const int max_retries = 4;
-    while (oe_connect(
-               sockfd, (struct oe_sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
+    while (x.connect(sockfd, (SOCKADDR_T*)&serv_addr, sizeof(serv_addr)) < 0)
     {
         if (retries++ > max_retries)
         {
             printf("\n Error : Connect Failed \n");
-            oe_close(sockfd);
+            x.close(sockfd);
             return OE_FAILURE;
         }
         else
@@ -217,28 +245,27 @@ int ecall_select_test(size_t buff_len, char* recv_buff)
     }
     if (sockfd >= 0)
     {
-        OE_FD_SET(sockfd, &readfds);
-        OE_FD_SET(sockfd, &writefds);
-        OE_FD_SET(sockfd, &exceptfds);
+        x.FD_SET_F(sockfd, &readfds);
+        x.FD_SET_F(sockfd, &writefds);
+        x.FD_SET_F(sockfd, &exceptfds);
     }
 
-    const int flags = OE_O_NONBLOCK | OE_O_RDONLY;
-    file_fd = oe_open("/tmp/test", flags, 0);
+    const int flags = x.O_NONBLOCK_T | x.O_RDONLY_T;
+    file_fd = x.open("/tmp/test", flags, 0);
 
     printf("polling...\n");
     if (file_fd >= 0)
     {
-        OE_FD_SET(file_fd, &readfds);
-        OE_FD_SET(file_fd, &writefds);
-        OE_FD_SET(file_fd, &exceptfds);
+        x.FD_SET_F(file_fd, &readfds);
+        x.FD_SET_F(file_fd, &writefds);
+        x.FD_SET_F(file_fd, &exceptfds);
     }
 
     int nfds = 0;
     do
     {
         timeout.tv_sec = 30;
-        if ((nfds = oe_select(1, &readfds, &writefds, &exceptfds, &timeout)) <
-            0)
+        if ((nfds = x.select(1, &readfds, &writefds, &exceptfds, &timeout)) < 0)
         {
             printf("select error.\n");
         }
@@ -246,13 +273,13 @@ int ecall_select_test(size_t buff_len, char* recv_buff)
         {
             printf("input from %d fds\n", nfds);
 
-            if (OE_FD_ISSET(sockfd, &readfds))
+            if (x.FD_ISSET_F(sockfd, &readfds))
             {
                 ssize_t n;
                 char buff[1024] = {0};
 
                 printf("read sockfd:%d\n", sockfd);
-                n = oe_read(sockfd, buff, sizeof(buff));
+                n = x.read(sockfd, buff, sizeof(buff));
                 buff[n] = 0;
                 if (n > 0)
                 {
@@ -268,42 +295,59 @@ int ecall_select_test(size_t buff_len, char* recv_buff)
 
     } while (nfds >= 0);
 
-    oe_close(sockfd);
+    x.close(sockfd);
     printf("--------------- select done -------------\n");
     return OE_OK;
 }
 
-int ecall_poll_test(size_t buff_len, char* recv_buff)
+int ecall_select_test(size_t buff_len, char* recv_buff, bool use_libc)
 {
+    if (use_libc)
+    {
+        libc_interface x;
+        return _ecall_select_test(x, buff_len, recv_buff);
+    }
+    else
+    {
+        corelibc_interface x;
+        return _ecall_select_test(x, buff_len, recv_buff);
+    }
+}
+
+template <class INTERFACE>
+static int _ecall_poll_test(INTERFACE& x, size_t buff_len, char* recv_buff)
+{
+    typedef typename INTERFACE::SOCKADDR_IN_T SOCKADDR_IN_T;
+    typedef typename INTERFACE::SOCKADDR_T SOCKADDR_T;
+    typedef typename INTERFACE::POLLFD_T POLLFD_T;
     int sockfd = 0;
     int file_fd = 0;
-    struct oe_sockaddr_in serv_addr = {0};
-    struct oe_pollfd pollfds[3] = {0};
+    SOCKADDR_IN_T serv_addr = {0};
+    POLLFD_T pollfds[3] = {{0}};
     int timeout_ms = 30000; // in millis
 
     printf("--------------- poll -------------\n");
     memset(recv_buff, 0, buff_len);
     printf("create socket\n");
-    if ((sockfd = oe_socket(OE_AF_HOST, OE_SOCK_STREAM, 0)) < 0)
+    if ((sockfd = x.socket(OE_AF_INET, OE_SOCK_STREAM, 0)) < 0)
     {
         printf("\n Error : Could not create socket \n");
         return OE_FAILURE;
     }
-    serv_addr.sin_family = OE_AF_HOST;
-    serv_addr.sin_addr.s_addr = oe_htonl(OE_INADDR_LOOPBACK);
-    serv_addr.sin_port = oe_htons(1642);
+    serv_addr.sin_family = OE_AF_INET;
+    serv_addr.sin_addr.s_addr = x.htonl(OE_INADDR_LOOPBACK);
+    serv_addr.sin_port = x.htons(1642);
 
     printf("socket fd = %d\n", sockfd);
     printf("Connecting...\n");
     int retries = 0;
     static const int max_retries = 4;
-    while (oe_connect(
-               sockfd, (struct oe_sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
+    while (x.connect(sockfd, (SOCKADDR_T*)&serv_addr, sizeof(serv_addr)) < 0)
     {
         if (retries++ > max_retries)
         {
             printf("\n Error : Connect Failed \n");
-            oe_close(sockfd);
+            x.close(sockfd);
             return OE_FAILURE;
         }
         else
@@ -321,7 +365,7 @@ int ecall_poll_test(size_t buff_len, char* recv_buff)
     }
 
     const int flags = OE_O_NONBLOCK | OE_O_RDONLY;
-    file_fd = oe_open("/tmp/test", flags, 0);
+    file_fd = x.open("/tmp/test", flags, 0);
 
     printf("polling...\n");
     if (file_fd >= 0)
@@ -336,7 +380,7 @@ int ecall_poll_test(size_t buff_len, char* recv_buff)
     int nfds = 0;
     do
     {
-        if ((nfds = oe_poll(pollfds, 2, timeout_ms)) < 0)
+        if ((nfds = x.poll(pollfds, 2, timeout_ms)) < 0)
         {
             printf("poll error.\n");
         }
@@ -351,7 +395,7 @@ int ecall_poll_test(size_t buff_len, char* recv_buff)
                 char buff[1024] = {0};
 
                 printf("read sockfd:%d\n", sockfd);
-                n = oe_read(sockfd, buff, sizeof(buff));
+                n = x.read(sockfd, buff, sizeof(buff));
                 buff[n] = 0;
                 if (n > 0)
                 {
@@ -367,9 +411,23 @@ int ecall_poll_test(size_t buff_len, char* recv_buff)
 
     } while (nfds >= 0);
 
-    oe_close(sockfd);
+    x.close(sockfd);
     printf("--------------- poll done -------------\n");
     return OE_OK;
+}
+
+int ecall_poll_test(size_t buff_len, char* recv_buff, bool use_libc)
+{
+    if (use_libc)
+    {
+        libc_interface x;
+        return _ecall_poll_test(x, buff_len, recv_buff);
+    }
+    else
+    {
+        corelibc_interface x;
+        return _ecall_poll_test(x, buff_len, recv_buff);
+    }
 }
 
 OE_SET_ENCLAVE_SGX(
