@@ -87,23 +87,29 @@ int main(int argc, const char* argv[])
 {
     static char TESTDATA[] = "This is TEST DATA\n";
     oe_result_t result;
-    oe_enclave_t* client_enclave = NULL;
+    oe_enclave_t* enclave = NULL;
     pthread_t server_thread_id = 0;
     int ret = 0;
     char test_data_rtn[1024] = {0};
     size_t test_data_len = 1024;
     int done = 0;
     bool use_libc = false;
+    const char* tmp_dir;
 
-    if (argc != 3)
+    if (argc != 4)
     {
-        fprintf(stderr, "Usage: %s ENCLAVE_PATH USE_LIBC\n", argv[0]);
+        fprintf(
+            stderr,
+            "Usage: %s ENCLAVE_PATH TMP_DIR [libc|corelibc]\n",
+            argv[0]);
         return 1;
     }
 
-    if (strcmp(argv[2], "USE_LIBC") == 0)
+    tmp_dir = argv[2];
+
+    if (strcmp(argv[3], "libc") == 0)
         use_libc = true;
-    else if (strcmp(argv[2], "USE_CORELIBC") == 0)
+    else if (strcmp(argv[3], "corelibc") == 0)
         use_libc = false;
     else
     {
@@ -123,17 +129,16 @@ int main(int argc, const char* argv[])
     const uint32_t flags = oe_get_create_flags();
 
     result = oe_create_epoll_test_enclave(
-        argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &client_enclave);
+        argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
 
     OE_TEST(result == OE_OK);
 
-    OE_TEST(ecall_device_init(client_enclave, &ret) == OE_OK);
+    OE_TEST(ecall_device_init(enclave, &ret, tmp_dir) == OE_OK);
 
     test_data_len = 1024;
     OE_TEST(
         ecall_poll_test(
-            client_enclave, &ret, test_data_len, test_data_rtn, use_libc) ==
-        OE_OK);
+            enclave, &ret, test_data_len, test_data_rtn, use_libc) == OE_OK);
 
     sleep(5);
 
@@ -143,8 +148,7 @@ int main(int argc, const char* argv[])
     test_data_len = 1024;
     OE_TEST(
         ecall_epoll_test(
-            client_enclave, &ret, test_data_len, test_data_rtn, use_libc) ==
-        OE_OK);
+            enclave, &ret, test_data_len, test_data_rtn, use_libc) == OE_OK);
 
     sleep(5);
 
@@ -156,15 +160,16 @@ int main(int argc, const char* argv[])
     test_data_len = 1024;
     OE_TEST(
         ecall_select_test(
-            client_enclave, &ret, test_data_len, test_data_rtn, use_libc) ==
-        OE_OK);
+            enclave, &ret, test_data_len, test_data_rtn, use_libc) == OE_OK);
 
     printf("select: host received: %s\n", test_data_rtn);
     OE_TEST(strncmp(TESTDATA, test_data_rtn, strlen(TESTDATA)) == 0);
 
+    OE_TEST(ecall_device_shutdown(enclave) == OE_OK);
+
     done = 2;
     pthread_join(server_thread_id, NULL);
-    OE_TEST(oe_terminate_enclave(client_enclave) == OE_OK);
+    OE_TEST(oe_terminate_enclave(enclave) == OE_OK);
 
     printf("=== passed all tests (epoll_test)\n");
 

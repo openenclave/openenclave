@@ -7,6 +7,10 @@ if (UNIX)
 	add_subdirectory(enc)
 endif()
 
-add_enclave_test(tests/polling2 polling_test_host polling_test_enc USE_CORELIBC)
+add_enclave_test(tests/polling_corelibc
+    polling_test_host
+    polling_test_enc
+    ${CMAKE_CURRENT_BINARY_DIR}
+    corelibc)
 
-#add_enclave_test(tests/polling1 polling_test_host polling_test_enc USE_LIBC)
+#add_enclave_test(tests/polling_libc polling_test_host polling_test_enc libc)

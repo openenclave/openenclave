@@ -19,17 +19,38 @@
 #include <epoll_test_t.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/mount.h>
 #include "epoll_test_t.h"
 #include "interface.h"
 
-//#define USE_LIBC_INTERFACE
+static char _path[OE_PATH_MAX];
 
-int ecall_device_init()
+extern "C" int ecall_device_init(const char* tmp_dir)
 {
-    OE_TEST(oe_load_module_hostsock() == OE_OK);
+    OE_TEST(tmp_dir != NULL);
     OE_TEST(oe_load_module_hostfs() == OE_OK);
+    OE_TEST(oe_load_module_hostsock() == OE_OK);
     OE_TEST(oe_load_module_polling() == OE_OK);
+
+    strlcpy(_path, tmp_dir, sizeof(_path));
+    strlcat(_path, "/test", sizeof(_path));
+
+    OE_TEST(mount("/", "/", "hostfs", 0, NULL) == 0);
+
+    /* Create a file. */
+    {
+        int fd = oe_open(_path, OE_O_CREAT | OE_O_WRONLY | OE_O_TRUNC, 0644);
+        OE_TEST(fd != -1);
+        oe_close(fd);
+        printf("Created %s\n", _path);
+    }
+
     return 0;
+}
+
+extern "C" void ecall_device_shutdown(void)
+{
+    umount("/");
 }
 
 const char* print_socket_success(int numfds, int* fdlist)
@@ -109,8 +130,10 @@ static int _ecall_epoll_test(INTERFACE& x, size_t buff_len, char* recv_buff)
         }
     }
 
-    const int flags = x.O_NONBLOCK_T | x.O_RDONLY_T;
-    file_fd = x.open("/tmp/test", flags, 0);
+    /* ATTN:IO: polling does not seem to work on files. */
+    const int flags = x.O_NONBLOCK_T | x.O_WRONLY_T | x.O_CREAT_T | x.O_TRUNC_T;
+    file_fd = x.open(_path, flags, 0);
+    OE_TEST(file_fd >= 0);
 
     printf("polling...\n");
     if (file_fd >= 0)
@@ -126,6 +149,7 @@ static int _ecall_epoll_test(INTERFACE& x, size_t buff_len, char* recv_buff)
         }
     }
 
+    /* ATTN:IO: what is this constant? Please use constants. */
     event.events = 0x3c7;
     event.data.ptr = (void*)print_socket_success;
     if (x.epoll_ctl(epoll_fd, x.EPOLL_CTL_ADD_T, sockfd, &event))
@@ -135,6 +159,7 @@ static int _ecall_epoll_test(INTERFACE& x, size_t buff_len, char* recv_buff)
         return 1;
     }
 
+    size_t nevents = 0;
     int nfds = 0;
     do
     {
@@ -147,8 +172,12 @@ static int _ecall_epoll_test(INTERFACE& x, size_t buff_len, char* recv_buff)
         {
             printf("input from %d fds\n", nfds);
 
+            nevents += (size_t)nfds;
+
             for (int i = 0; i < nfds; i++)
             {
+                nevents++;
+
                 const char* (*func)(int numfds, int* fdlist) =
                     (const char* (*)(int, int*))events[i].data.ptr;
                 printf("func = %p\n", events[i].data.ptr);
@@ -167,6 +196,9 @@ static int _ecall_epoll_test(INTERFACE& x, size_t buff_len, char* recv_buff)
 
     } while (nfds >= 0);
 
+    printf("nevents=%zu\n", nevents);
+    OE_TEST(nevents > 0);
+
     if (sockfd != -1)
         x.close(sockfd);
 
@@ -174,6 +206,8 @@ static int _ecall_epoll_test(INTERFACE& x, size_t buff_len, char* recv_buff)
         x.close(epoll_fd);
 
     oe_sleep_msec(3);
+
+    x.close(file_fd);
 
     printf("--------------- epoll done -------------\n");
     return OE_OK;
@@ -183,12 +217,12 @@ int ecall_epoll_test(size_t buff_len, char* recv_buff, bool use_libc)
 {
     if (use_libc)
     {
-        libc_interface x;
+        libc x;
         return _ecall_epoll_test(x, buff_len, recv_buff);
     }
     else
     {
-        corelibc_interface x;
+        corelibc x;
         return _ecall_epoll_test(x, buff_len, recv_buff);
     }
 }
@@ -251,7 +285,8 @@ static int _ecall_select_test(INTERFACE& x, size_t buff_len, char* recv_buff)
     }
 
     const int flags = x.O_NONBLOCK_T | x.O_RDONLY_T;
-    file_fd = x.open("/tmp/test", flags, 0);
+    file_fd = x.open(_path, flags, 0);
+    OE_TEST(file_fd >= 0);
 
     printf("polling...\n");
     if (file_fd >= 0)
@@ -261,6 +296,7 @@ static int _ecall_select_test(INTERFACE& x, size_t buff_len, char* recv_buff)
         x.FD_SET_F(file_fd, &exceptfds);
     }
 
+    size_t nevents = 0;
     int nfds = 0;
     do
     {
@@ -272,6 +308,7 @@ static int _ecall_select_test(INTERFACE& x, size_t buff_len, char* recv_buff)
         else
         {
             printf("input from %d fds\n", nfds);
+            nevents++;
 
             if (x.FD_ISSET_F(sockfd, &readfds))
             {
@@ -295,7 +332,10 @@ static int _ecall_select_test(INTERFACE& x, size_t buff_len, char* recv_buff)
 
     } while (nfds >= 0);
 
+    OE_TEST(nevents > 0);
+
     x.close(sockfd);
+    x.close(file_fd);
     printf("--------------- select done -------------\n");
     return OE_OK;
 }
@@ -304,12 +344,12 @@ int ecall_select_test(size_t buff_len, char* recv_buff, bool use_libc)
 {
     if (use_libc)
     {
-        libc_interface x;
+        libc x;
         return _ecall_select_test(x, buff_len, recv_buff);
     }
     else
     {
-        corelibc_interface x;
+        corelibc x;
         return _ecall_select_test(x, buff_len, recv_buff);
     }
 }
@@ -365,7 +405,8 @@ static int _ecall_poll_test(INTERFACE& x, size_t buff_len, char* recv_buff)
     }
 
     const int flags = OE_O_NONBLOCK | OE_O_RDONLY;
-    file_fd = x.open("/tmp/test", flags, 0);
+    file_fd = x.open(_path, flags, 0);
+    OE_TEST(file_fd >= 0);
 
     printf("polling...\n");
     if (file_fd >= 0)
@@ -377,6 +418,7 @@ static int _ecall_poll_test(INTERFACE& x, size_t buff_len, char* recv_buff)
         pollfds[0].revents = 0;
     }
 
+    size_t nevents = 0;
     int nfds = 0;
     do
     {
@@ -387,6 +429,7 @@ static int _ecall_poll_test(INTERFACE& x, size_t buff_len, char* recv_buff)
         else
         {
             printf("input from %d fds\n", nfds);
+            nevents++;
 
             if (pollfds[0].revents &
                 (POLLIN | POLLPRI | POLLRDNORM | POLLRDBAND))
@@ -411,7 +454,10 @@ static int _ecall_poll_test(INTERFACE& x, size_t buff_len, char* recv_buff)
 
     } while (nfds >= 0);
 
+    OE_TEST(nevents > 0);
+
     x.close(sockfd);
+    x.close(file_fd);
     printf("--------------- poll done -------------\n");
     return OE_OK;
 }
@@ -420,12 +466,12 @@ int ecall_poll_test(size_t buff_len, char* recv_buff, bool use_libc)
 {
     if (use_libc)
     {
-        libc_interface x;
+        libc x;
         return _ecall_poll_test(x, buff_len, recv_buff);
     }
     else
     {
-        corelibc_interface x;
+        corelibc x;
         return _ecall_poll_test(x, buff_len, recv_buff);
     }
 }

@@ -11,13 +11,14 @@
 #include <openenclave/corelibc/sys/select.h>
 #include <openenclave/corelibc/sys/socket.h>
 #include <openenclave/corelibc/unistd.h>
+#include <openenclave/internal/defs.h>
 #include <poll.h>
 #include <sys/epoll.h>
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
-struct corelibc_interface
+struct corelibc
 {
     typedef struct oe_sockaddr_in SOCKADDR_IN_T;
     typedef struct oe_sockaddr SOCKADDR_T;
@@ -27,6 +28,9 @@ struct corelibc_interface
     static const long INADDR_LOOPBACK_T = OE_INADDR_LOOPBACK;
     static const int O_NONBLOCK_T = OE_O_NONBLOCK;
     static const int O_RDONLY_T = OE_O_RDONLY;
+    static const int O_WRONLY_T = OE_O_WRONLY;
+    static const int O_CREAT_T = OE_O_CREAT;
+    static const int O_TRUNC_T = OE_O_TRUNC;
     enum
     {
         EPOLLIN_T = OE_EPOLLIN
@@ -50,6 +54,11 @@ struct corelibc_interface
     ssize_t read(int fd, void* buf, size_t count)
     {
         return ::oe_read(fd, buf, count);
+    }
+
+    ssize_t write(int fd, const void* buf, size_t count)
+    {
+        return ::oe_write(fd, buf, count);
     }
 
     int epoll_create1(int flags)
@@ -128,7 +137,7 @@ struct corelibc_interface
     }
 };
 
-struct libc_interface
+struct libc
 {
     typedef struct sockaddr_in SOCKADDR_IN_T;
     typedef struct sockaddr SOCKADDR_T;
@@ -138,6 +147,9 @@ struct libc_interface
     static const long INADDR_LOOPBACK_T = INADDR_LOOPBACK;
     static const int O_NONBLOCK_T = O_NONBLOCK;
     static const int O_RDONLY_T = O_RDONLY;
+    static const int O_WRONLY_T = O_WRONLY;
+    static const int O_CREAT_T = O_CREAT;
+    static const int O_TRUNC_T = O_TRUNC;
     enum
     {
         EPOLLIN_T = EPOLLIN
@@ -161,6 +173,11 @@ struct libc_interface
     ssize_t read(int fd, void* buf, size_t count)
     {
         return ::read(fd, buf, count);
+    }
+
+    ssize_t write(int fd, const void* buf, size_t count)
+    {
+        return ::write(fd, buf, count);
     }
 
     int epoll_create1(int flags)
@@ -238,5 +255,18 @@ struct libc_interface
         return ::poll(fds, nfds, timeout);
     }
 };
+
+OE_STATIC_ASSERT(
+    sizeof(corelibc::SOCKADDR_IN_T) == sizeof(libc::SOCKADDR_IN_T));
+OE_STATIC_ASSERT(sizeof(corelibc::SOCKADDR_T) == sizeof(libc::SOCKADDR_T));
+OE_STATIC_ASSERT(
+    sizeof(corelibc::EPOLL_EVENT_T) == sizeof(libc::EPOLL_EVENT_T));
+OE_STATIC_ASSERT(sizeof(corelibc::AF_INET_T) == sizeof(libc::AF_INET_T));
+OE_STATIC_ASSERT(
+    sizeof(corelibc::SOCK_STREAM_T) == sizeof(libc::SOCK_STREAM_T));
+OE_STATIC_ASSERT(
+    sizeof(corelibc::INADDR_LOOPBACK_T) == sizeof(libc::INADDR_LOOPBACK_T));
+OE_STATIC_ASSERT(sizeof(corelibc::O_NONBLOCK_T) == sizeof(libc::O_NONBLOCK_T));
+OE_STATIC_ASSERT(sizeof(corelibc::O_RDONLY_T) == sizeof(libc::O_RDONLY_T));
 
 #endif /* _OE_TEST_POLLING_INTERFACE_H */

@@ -196,7 +196,7 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
     if (!ret)
     {
         oe_errno = ENOENT;
-        OE_TRACE_ERROR("oe_errno =%d ", oe_errno);
+        OE_TRACE_ERROR("oe_errno=%d path={%s}", oe_errno, path);
     }
 
 done:
