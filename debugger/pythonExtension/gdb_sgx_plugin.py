@@ -19,7 +19,7 @@ OE_ENCLAVE_MAGIC_VALUE = 0x20dc98463a5ad8b8
 
 # The following are the offset of the 'debug' and
 # 'simulate' flag fields which must lie one after the other.
-OE_ENCLAVE_FLAGS_OFFSET = 0x798
+OE_ENCLAVE_FLAGS_OFFSET = 0x788
 OE_ENCLAVE_FLAGS_LENGTH = 2
 OE_ENCLAVE_FLAGS_FORMAT = 'BB'
 OE_ENCLAVE_THREAD_BINDING_OFFSET = 0x28
