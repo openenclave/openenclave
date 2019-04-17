@@ -91,7 +91,11 @@ static struct oe_addrinfo* _clone_one_addrinfo(const struct oe_addrinfo* ai)
         if (!(p = oe_host_calloc(1, sizeof(struct oe_addrinfo))))
             goto done;
 
-        memcpy(p, ai, sizeof(struct oe_addrinfo));
+        p->ai_flags = ai->ai_flags;
+        p->ai_family = ai->ai_family;
+        p->ai_socktype = ai->ai_socktype;
+        p->ai_protocol = ai->ai_protocol;
+        p->ai_addrlen = ai->ai_addrlen;
     }
 
     /* Clone the ai_addrlen field. */
@@ -150,7 +154,7 @@ static struct oe_addrinfo* _clone_addrinfo(const struct oe_addrinfo* ai)
 
         if (tail)
         {
-            new->ai_next = tail;
+            tail->ai_next = new;
             tail = new;
         }
         else
@@ -175,13 +179,23 @@ done:
 int ecall_getaddrinfo(struct addrinfo** res)
 {
     struct oe_addrinfo* ai = NULL;
+#if 1
     const char host[] = {"localhost"};
     const char serv[] = {"telnet"};
+#else
+    const char host[] = {"google.com"};
+    const char serv[] = {"http"};
+#endif
+    struct oe_addrinfo hints;
+
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
 
     if (res)
         *res = NULL;
 
-    OE_TEST(oe_getaddrinfo(host, serv, NULL, (struct oe_addrinfo**)&ai) == 0);
+    OE_TEST(oe_getaddrinfo(host, serv, &hints, (struct oe_addrinfo**)&ai) == 0);
 
     if (!(*res = (struct addrinfo*)_clone_addrinfo(ai)))
         OE_TEST("_clone_addrinfo() failed" == NULL);

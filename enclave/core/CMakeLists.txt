@@ -109,7 +109,6 @@ add_library(oecore STATIC
     assert.c
     corelibc.c
     ctype.c
-    typeinfo.c
     exit.c
     gmtime.c
     hexdump.c
