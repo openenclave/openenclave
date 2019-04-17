@@ -2,15 +2,15 @@
 // Licensed under the MIT License.
 
 enclave {
-
-    trusted {
-        /* define ECALLs here. */
+    trusted
+    {
         public int ecall_device_init();
-        public int ecall_getaddrinfo([in,out,count=1] struct addrinfo ** ai );
-        public int ecall_getnameinfo([in, out, count=bufflen]char *buffer, size_t bufflen );
-    };
 
-    untrusted {
-        /* define OCALLs here. */
+        public int ecall_getaddrinfo(
+            [in,out,count=1] struct addrinfo** res);
+
+        public int ecall_getnameinfo(
+            [in, out, count=bufflen] char* buffer,
+            size_t bufflen);
     };
 };

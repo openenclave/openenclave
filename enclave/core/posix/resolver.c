@@ -44,110 +44,52 @@ int oe_getaddrinfo(
     const char* node,
     const char* service,
     const struct oe_addrinfo* hints,
-    struct oe_addrinfo** res)
+    struct oe_addrinfo** res_out)
 {
-    size_t resolver_idx = 0;
-    ssize_t ret = -1;
-    // ATTN:IO: the following size calculation seems to assume there will be
-    // only one set of addrinfo returned, not good
-    size_t required_size = (size_t)(
-        sizeof(struct oe_addrinfo) + sizeof(struct oe_sockaddr) +
-        256); // 255+1 for canonname
-    struct oe_addrinfo* retinfo = NULL;
+    int ret = OE_EAI_FAIL;
+    size_t i;
 
-    if (!(retinfo = oe_calloc(1, required_size)))
-    {
-        OE_TRACE_ERROR("oe_calloc failed required_size=%ld", required_size);
-        goto done;
-    }
+    if (res_out)
+        *res_out = NULL;
 
-    for (resolver_idx = 0; resolver_idx < _resolver_table_len; resolver_idx++)
+    /* Try each resolver in the table. */
+    for (i = 0; i < _resolver_table_len; i++)
     {
-        if (_resolver_table[resolver_idx] != NULL)
+        if (_resolver_table[i])
         {
-            ret = (*_resolver_table[resolver_idx]->ops->getaddrinfo_r)(
-                _resolver_table[resolver_idx],
-                node,
-                service,
-                hints,
-                retinfo,
-                &required_size);
-            switch (ret)
+            struct oe_addrinfo* p;
+
+            if ((*_resolver_table[i]->ops->getaddrinfo)(
+                    _resolver_table[i], node, service, hints, &p) == 0)
             {
-                case OE_EAI_BADFLAGS:
-                case OE_EAI_NONAME:
-                case OE_EAI_AGAIN:
-                case OE_EAI_FAIL:
-                case OE_EAI_FAMILY:
-                case OE_EAI_SOCKTYPE:
-                case OE_EAI_SERVICE:
-                case OE_EAI_MEMORY:
-                case OE_EAI_SYSTEM:
-                case OE_EAI_NODATA:
-                case OE_EAI_ADDRFAMILY:
-                case OE_EAI_INPROGRESS:
-                case OE_EAI_CANCELED:
-                case OE_EAI_NOTCANCELED:
-                case OE_EAI_INTR:
-                case OE_EAI_IDN_ENCODE:
-                    // This says we failed to find the name. Try the next
-                    // resolver .
-                    continue;
-
-                case 0:
-                case OE_EAI_ALLDONE:
-                {
-                    *res = retinfo;
-                    retinfo = NULL;
-                    goto done;
-                }
-
-                case OE_EAI_OVERFLOW:
-                {
-                    struct oe_addrinfo* ptr;
-
-                    if (!(ptr = oe_realloc(retinfo, (size_t)required_size)))
-                    {
-                        OE_TRACE_ERROR(
-                            "oe_realloc failed required_size=%ld",
-                            required_size);
-                        oe_free(retinfo);
-                        goto done;
-                    }
-
-                    retinfo = ptr;
-
-                    ret = (*_resolver_table[resolver_idx]->ops->getaddrinfo_r)(
-                        _resolver_table[resolver_idx],
-                        node,
-                        service,
-                        hints,
-                        retinfo,
-                        &required_size);
-                    if (ret == 0 || ret == OE_EAI_ALLDONE)
-                    {
-                        *res = retinfo;
-                        retinfo = NULL;
-                        goto done;
-                    }
-                }
+                *res_out = p;
+                ret = 0;
+                goto done;
             }
         }
     }
-    OE_TRACE_ERROR("oe_getaddrinfo failed");
+
+    OE_TRACE_ERROR("oe_getaddrinfo() failed");
 
 done:
 
-    if (retinfo)
-        oe_free(retinfo);
-
-    return (int)ret;
+    return ret;
 }
 
 void oe_freeaddrinfo(struct oe_addrinfo* res)
 {
-    if (res != NULL)
-        oe_free(res);
+    struct oe_addrinfo* p;
+
+    for (p = res; p;)
+    {
+        struct oe_addrinfo* next = p->ai_next;
+
+        oe_free(p->ai_addr);
+        oe_free(p->ai_canonname);
+        oe_free(p);
+
+        p = next;
+    }
 }
 
 int oe_getnameinfo(

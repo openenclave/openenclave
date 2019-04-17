@@ -5,7 +5,11 @@ set(PLATFORM_SRC "")
 set(MUSL_SRC_DIR ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
 add_custom_command(OUTPUT oe_t.h oe_t.c oe_args.h
-  DEPENDS ${CMAKE_SOURCE_DIR}/common/oe.edl edger8r
+  DEPENDS
+    ${CMAKE_SOURCE_DIR}/common/oe.edl
+    edger8r
+    ../../common/oe.edl
+    ../../common/posix.edl
   COMMAND edger8r
       --search-path ${CMAKE_SOURCE_DIR}/common
       --trusted ${CMAKE_SOURCE_DIR}/common/oe.edl)

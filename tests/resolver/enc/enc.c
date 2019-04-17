@@ -10,7 +10,6 @@
 #include <openenclave/internal/device.h>
 #include <openenclave/internal/resolver.h>
 #include <openenclave/internal/tests.h>
-#include <openenclave/internal/typeinfo.h>
 
 #include <resolver_test_t.h>
 #include <stdio.h>
@@ -66,40 +65,128 @@ int ecall_getnameinfo(char* buffer, size_t bufflen)
     return 0;
 }
 
-extern oe_struct_type_info_t __oe_addrinfo_sti;
+static void _free_addrinfo(struct oe_addrinfo* res)
+{
+    struct oe_addrinfo* p;
 
-int ecall_getaddrinfo(struct addrinfo** buffer)
+    for (p = res; p;)
+    {
+        struct oe_addrinfo* next = p->ai_next;
+
+        oe_host_free(p->ai_addr);
+        oe_host_free(p->ai_canonname);
+        oe_host_free(p);
+
+        p = next;
+    }
+}
+
+static struct oe_addrinfo* _clone_one_addrinfo(const struct oe_addrinfo* ai)
+{
+    struct oe_addrinfo* ret = NULL;
+    struct oe_addrinfo* p;
+
+    /* Clone the base structure. */
+    {
+        if (!(p = oe_host_calloc(1, sizeof(struct oe_addrinfo))))
+            goto done;
+
+        memcpy(p, ai, sizeof(struct oe_addrinfo));
+    }
+
+    /* Clone the ai_addrlen field. */
+    if (ai->ai_addr && ai->ai_addrlen)
+    {
+        if (!(p->ai_addr = oe_host_calloc(1, ai->ai_addrlen)))
+            goto done;
+
+        memcpy(p->ai_addr, ai->ai_addr, ai->ai_addrlen);
+    }
+
+    /* Clone the ai_canonname field. */
+    if (ai->ai_canonname)
+    {
+        size_t size = strlen(ai->ai_canonname) + 1;
+
+        if (size)
+        {
+            if (!(p->ai_canonname = oe_host_calloc(1, size)))
+                goto done;
+
+            memcpy(p->ai_canonname, ai->ai_canonname, size);
+        }
+    }
+
+    ret = p;
+    p = NULL;
+
+done:
+
+    if (p && p->ai_addr)
+        oe_host_free(p->ai_addr);
+
+    if (p && p->ai_canonname)
+        oe_host_free(p->ai_canonname);
+
+    if (p)
+        oe_host_free(p);
+
+    return ret;
+}
+
+static struct oe_addrinfo* _clone_addrinfo(const struct oe_addrinfo* ai)
+{
+    struct oe_addrinfo* ret = NULL;
+    struct oe_addrinfo* head = NULL;
+    struct oe_addrinfo* tail = NULL;
+    const struct oe_addrinfo* p;
+
+    for (p = ai; p; p = p->ai_next)
+    {
+        struct oe_addrinfo* new;
+
+        if (!(new = _clone_one_addrinfo(p)))
+            goto done;
+
+        if (tail)
+        {
+            new->ai_next = tail;
+            tail = new;
+        }
+        else
+        {
+            head = new;
+            tail = new;
+        }
+    }
+
+    ret = head;
+    head = NULL;
+    tail = NULL;
+
+done:
+
+    if (head)
+        _free_addrinfo(head);
+
+    return ret;
+}
+
+int ecall_getaddrinfo(struct addrinfo** res)
 {
     struct oe_addrinfo* ai = NULL;
-    struct addrinfo* ai2 = NULL;
-    size_t size = 0;
-    oe_struct_type_info_t* structure = &__oe_addrinfo_sti;
-
     const char host[] = {"localhost"};
     const char serv[] = {"telnet"};
 
+    if (res)
+        *res = NULL;
+
     OE_TEST(oe_getaddrinfo(host, serv, NULL, (struct oe_addrinfo**)&ai) == 0);
-    OE_TEST(getaddrinfo(host, serv, NULL, &ai2) == 0);
-    OE_TEST(addrinfo_compare((struct addrinfo*)ai, ai2) == 0);
 
-    /* Determine the size of the host output buffer. */
-    OE_TEST(
-        oe_type_info_clone(structure, ai, NULL, &size) == OE_BUFFER_TOO_SMALL);
-
-    /* Allocate host memory and initialize the flat allocator. */
-    OE_TEST((*buffer = oe_host_calloc(1, size)));
-
-    /* Copy the result from enclave to host memory. */
-
-    OE_TEST(oe_type_info_clone(structure, ai, *buffer, &size) == OE_OK);
-
-    addrinfo_dump((struct addrinfo*)ai);
-    addrinfo_dump(*buffer);
-
-    OE_TEST(addrinfo_compare((struct addrinfo*)ai, *buffer) == 0);
+    if (!(*res = (struct addrinfo*)_clone_addrinfo(ai)))
+        OE_TEST("_clone_addrinfo() failed" == NULL);
 
     oe_freeaddrinfo(ai);
-    freeaddrinfo(ai2);
 
     return 0;
 }

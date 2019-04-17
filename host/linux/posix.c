@@ -18,6 +18,12 @@
 #include <unistd.h>
 #include "oe_u.h"
 
+OE_INLINE void _set_err(int* err, int num)
+{
+    if (err)
+        *err = num;
+}
+
 /*
 **==============================================================================
 **
@@ -754,20 +760,142 @@ int oe_posix_kill_ocall(int pid, int signum, int* err)
 **==============================================================================
 */
 
-int oe_posix_getaddrinfo_ocall(
+#define GETADDRINFO_HANDLE_MAGIC 0xed11d13a
+
+typedef struct _getaddrinfo_handle
+{
+    uint32_t magic;
+    struct addrinfo* res;
+    struct addrinfo* next;
+} getaddrinfo_handle_t;
+
+static getaddrinfo_handle_t* _cast_getaddrinfo_handle(void* handle_)
+{
+    getaddrinfo_handle_t* handle = (getaddrinfo_handle_t*)handle_;
+
+    if (!handle || handle->magic != GETADDRINFO_HANDLE_MAGIC || !handle->res)
+        return NULL;
+
+    return handle;
+}
+
+void* oe_posix_getaddrinfo_open_ocall(
     const char* node,
     const char* service,
     const struct addrinfo* hints,
-    struct addrinfo** res,
     int* err)
 {
-    int ret = getaddrinfo(node, service, hints, res);
+    getaddrinfo_handle_t* ret = NULL;
+    getaddrinfo_handle_t* handle = NULL;
 
-    if (ret == EAI_SYSTEM)
+    if (err)
+        *err = 0;
+
+    if (!(handle = calloc(1, sizeof(getaddrinfo_handle_t))))
     {
-        if (err)
-            *err = errno;
+        _set_err(err, ENOMEM);
+        goto done;
+    }
 
+    if (getaddrinfo(node, service, hints, &handle->res) != 0)
+    {
+        _set_err(err, errno);
+        goto done;
+    }
+
+    handle->magic = GETADDRINFO_HANDLE_MAGIC;
+    handle->next = handle->res;
+    ret = handle;
+    handle = NULL;
+
+done:
+
+    if (handle)
+        free(handle);
+
+    return ret;
+}
+
+int oe_posix_getaddrinfo_read_ocall(
+    void* handle_,
+    int* ai_flags,
+    int* ai_family,
+    int* ai_socktype,
+    int* ai_protocol,
+    socklen_t ai_addrlen_in,
+    socklen_t* ai_addrlen,
+    struct sockaddr* ai_addr,
+    size_t ai_canonnamelen_in,
+    size_t* ai_canonnamelen,
+    char* ai_canonname,
+    int* err)
+{
+    int ret = -1;
+    getaddrinfo_handle_t* handle = _cast_getaddrinfo_handle(handle_);
+
+    if (err)
+        *err = 0;
+
+    if (!handle || !ai_flags || !ai_family || !ai_socktype || !ai_protocol ||
+        !ai_addrlen || !ai_canonnamelen || !err)
+    {
+        _set_err(err, EINVAL);
+        goto done;
+    }
+
+    if (!ai_addr && ai_addrlen_in)
+    {
+        _set_err(err, EINVAL);
+        goto done;
+    }
+
+    if (!ai_canonname && ai_canonnamelen_in)
+    {
+        _set_err(err, EINVAL);
+        goto done;
+    }
+
+    if (handle->next)
+    {
+        struct addrinfo* p = handle->next;
+
+        *ai_flags = p->ai_flags;
+        *ai_family = p->ai_family;
+        *ai_socktype = p->ai_socktype;
+        *ai_protocol = p->ai_protocol;
+        *ai_addrlen = p->ai_addrlen;
+
+        if (p->ai_canonname)
+            *ai_canonnamelen = strlen(p->ai_canonname) + 1;
+        else
+            *ai_canonnamelen = 0;
+
+        if (*ai_addrlen > ai_addrlen_in)
+        {
+            _set_err(err, ENAMETOOLONG);
+            goto done;
+        }
+
+        if (*ai_canonnamelen > ai_canonnamelen_in)
+        {
+            _set_err(err, ENAMETOOLONG);
+            goto done;
+        }
+
+        memcpy(ai_addr, p->ai_addr, *ai_addrlen);
+
+        if (p->ai_canonname)
+            memcpy(ai_canonname, p->ai_canonname, *ai_canonnamelen);
+
+        handle->next = handle->next->ai_next;
+
+        ret = 0;
+        goto done;
+    }
+    else
+    {
+        /* Done */
+        ret = 1;
         goto done;
     }
 
@@ -775,10 +903,27 @@ done:
     return ret;
 }
 
-void oe_posix_freeaddrinfo_ocall(struct addrinfo* res)
+int oe_posix_getaddrinfo_close_ocall(void* handle_, int* err)
 {
-    if (res)
-        freeaddrinfo(res);
+    int ret = -1;
+    getaddrinfo_handle_t* handle = _cast_getaddrinfo_handle(handle_);
+
+    if (err)
+        *err = 0;
+
+    if (!handle)
+    {
+        _set_err(err, EINVAL);
+        goto done;
+    }
+
+    freeaddrinfo(handle->res);
+    free(handle);
+
+    ret = 0;
+
+done:
+    return ret;
 }
 
 int oe_posix_getnameinfo_ocall(
@@ -914,11 +1059,6 @@ static void* poll_wait_thread(void* arg_)
 done:
     free(args);
     return NULL;
-}
-OE_INLINE void _set_err(int* err, int num)
-{
-    if (err)
-        *err = num;
 }
 
 int oe_posix_epoll_create1_ocall(int flags, int* err)

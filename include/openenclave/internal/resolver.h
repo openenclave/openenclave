@@ -14,15 +14,12 @@ typedef struct _oe_resolver oe_resolver_t;
 
 typedef struct _oe_resolver_ops
 {
-    int (*getaddrinfo_r)(
+    int (*getaddrinfo)(
         oe_resolver_t* dev,
         const char* node,
         const char* service,
         const struct oe_addrinfo* hints,
-        struct oe_addrinfo* res,
-        size_t* buffersize);
-
-    void (*freeaddrinfo)(oe_resolver_t* dev, struct oe_addrinfo* res);
+        struct oe_addrinfo** res);
 
     ssize_t (*getnameinfo)(
         oe_resolver_t* dev,
@@ -34,7 +31,6 @@ typedef struct _oe_resolver_ops
         socklen_t servlen,
         int flags);
 
-    // 2Do:     gethostbyaddr(3), getservbyname(3), getservbyport(3),
     int (*shutdown)(oe_resolver_t* dev);
 
 } oe_resolver_ops_t;

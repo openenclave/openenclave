@@ -4,13 +4,16 @@
 if(UNIX) # __feature_io__
 add_custom_command(
     OUTPUT oe_u.h oe_u.c oe_args.h
-    DEPENDS ${CMAKE_SOURCE_DIR}/common/oe.edl edger8r
+    DEPENDS
+        ${CMAKE_SOURCE_DIR}/common/oe.edl
+        edger8r
+        ../common/oe.edl
+        ../common/posix.edl
     COMMAND edger8r
         --search-path ${CMAKE_SOURCE_DIR}/common
         --untrusted ${CMAKE_SOURCE_DIR}/common/oe.edl)
-add_custom_target(oe_untrusted_edl DEPENDS oe_u.h oe_u.c oe_args.h)
+    add_custom_target(oe_untrusted_edl DEPENDS oe_u.h oe_u.c oe_args.h)
 endif()
-
 
 # OS specific but arch agnostic files.
 if (UNIX)

@@ -17,40 +17,9 @@
 #include <openenclave/internal/print.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
-#include <openenclave/internal/typeinfo.h>
 #include <openenclave/bits/module.h>
 #include <openenclave/internal/trace.h>
 #include "oe_t.h"
-
-/*
-**==============================================================================
-**
-** struct oe_addrinfo type information.
-**
-**==============================================================================
-*/
-
-// clang-format off
-
-extern oe_struct_type_info_t __oe_addrinfo_sti;
-
-typedef struct oe_addrinfo oe_addrinfo_t;
-
-static oe_field_type_info_t _oe_addrinfo_ftis[] =
-{
-    OE_FTI_ARRAY(oe_addrinfo_t, ai_addr, sizeof(uint8_t), ai_addrlen),
-    OE_FTI_STRUCT(oe_addrinfo_t, ai_next, oe_addrinfo_t, &__oe_addrinfo_sti),
-    OE_FTI_STRING(oe_addrinfo_t, ai_canonname),
-};
-
-oe_struct_type_info_t __oe_addrinfo_sti =
-{
-    .struct_size = sizeof(struct oe_addrinfo),
-    _oe_addrinfo_ftis,
-    OE_COUNTOF(_oe_addrinfo_ftis),
-};
-
-// clang-format on
 
 /*
 **==============================================================================
@@ -122,76 +91,199 @@ done:
     return ret;
 }
 
-//
-// We try return the sockaddr if it fits, but if it doesn't we return
-// OE_EAI_OVERFLOW and the required size. IF the buffer is overflowed the caller
-// needs to try _hostresolv_getaddrinfo with a suitably reallocated buffer
-//
-static int _hostresolv_getaddrinfo_r(
+static int _hostresolv_getaddrinfo(
     oe_resolver_t* resolv,
     const char* node,
     const char* service,
     const struct oe_addrinfo* hints,
-    struct oe_addrinfo* res_out,
-    size_t* required_size_in_out)
+    struct oe_addrinfo** res)
 {
     int ret = OE_EAI_FAIL;
-    int retval;
-    struct oe_addrinfo* res = NULL;
-    oe_struct_type_info_t* structure = &__oe_addrinfo_sti;
-    oe_result_t result = OE_FAILURE;
+    void* handle = NULL;
+    int err = 0;
+    struct oe_addrinfo* head = NULL;
+    struct oe_addrinfo* tail = NULL;
+    struct oe_addrinfo* p = NULL;
+
     OE_UNUSED(resolv);
 
-    oe_errno = 0;
-    if ((result = oe_posix_getaddrinfo_ocall(
-             &retval,
-             node,
-             service,
-             (const struct addrinfo*)hints,
-             (struct addrinfo**)&res,
-             &oe_errno)) != OE_OK)
+    if (res)
+        *res = NULL;
+
+    if (!res)
     {
-        oe_errno = EINVAL;
-        OE_TRACE_ERROR("%s retval=%d", oe_result_str(result), retval);
+        OE_TRACE_ERROR("invalid parameters");
         goto done;
     }
 
-    if (retval != 0)
+    /* Get the handle for enumerating addrinfo structures. */
     {
-        ret = retval;
-        OE_TRACE_ERROR("ret=%d", ret);
-        goto done;
-    }
+        oe_result_t result;
 
-    /* Clone the result to caller's memory. */
-    {
-        oe_result_t result = OE_FAILURE;
-
-        if ((result = oe_type_info_clone(
-                 structure, res, res_out, required_size_in_out)) == OE_OK)
+        if ((result = oe_posix_getaddrinfo_open_ocall(
+                 &handle, node, service, (struct addrinfo*)hints, &err)) !=
+            OE_OK)
         {
-            ret = 0;
+            OE_TRACE_ERROR(
+                "oe_posix_getaddrinfo_open_ocall(): result=%s",
+                oe_result_str(result));
             goto done;
         }
 
-        if (result == OE_BUFFER_TOO_SMALL)
-            ret = OE_EAI_OVERFLOW;
-        else
-            ret = OE_EAI_FAIL;
-
-        OE_TRACE_ERROR("%s ret=%d", oe_result_str(result), ret);
-    }
-
-done:
-    if (res)
-    {
-        /* Ask host to release the result buffer. */
-        if ((result = oe_posix_freeaddrinfo_ocall((struct addrinfo*)res)) !=
-            OE_OK)
+        if (!handle)
         {
-            OE_TRACE_ERROR("%s", oe_result_str(result));
+            OE_TRACE_ERROR("handle=null");
+            goto done;
         }
     }
+
+    /* Enumerate addrinfo structures. */
+    for (;;)
+    {
+        int retval = 0;
+        int err = 0;
+        size_t canonnamelen = 0;
+        oe_result_t result;
+
+        if (!(p = oe_calloc(1, sizeof(struct oe_addrinfo))))
+        {
+            OE_TRACE_ERROR("oe_calloc() failed");
+            goto done;
+        }
+
+        /* Determine required size ai_addr and ai_canonname buffers. */
+        if ((result = oe_posix_getaddrinfo_read_ocall(
+                 &retval,
+                 handle,
+                 &p->ai_flags,
+                 &p->ai_family,
+                 &p->ai_socktype,
+                 &p->ai_protocol,
+                 p->ai_addrlen,
+                 &p->ai_addrlen,
+                 NULL, /* ai_addr */
+                 canonnamelen,
+                 &canonnamelen,
+                 NULL, /* ai_canonname */
+                 &err)) != OE_OK)
+        {
+            OE_TRACE_ERROR(
+                "oe_posix_getaddrinfo_read_ocall(): result=%s",
+                oe_result_str(result));
+            goto done;
+        }
+
+        /* If this is the final element in the enumeration. */
+        if (retval == 1)
+            break;
+
+        /* Expecting that addr and canonname buffers were too small. */
+        if (retval != -1 || err != ENAMETOOLONG)
+        {
+            OE_TRACE_ERROR("oe_posix_getaddrinfo_read_ocall() failed");
+            goto done;
+        }
+
+        if (p->ai_addrlen && !(p->ai_addr = oe_calloc(1, p->ai_addrlen)))
+        {
+            OE_TRACE_ERROR("oe_calloc() failed");
+            goto done;
+        }
+
+        if (canonnamelen && !(p->ai_canonname = oe_calloc(1, canonnamelen)))
+        {
+            OE_TRACE_ERROR("oe_calloc() failed");
+            goto done;
+        }
+
+        if ((result = oe_posix_getaddrinfo_read_ocall(
+                 &retval,
+                 handle,
+                 &p->ai_flags,
+                 &p->ai_family,
+                 &p->ai_socktype,
+                 &p->ai_protocol,
+                 p->ai_addrlen,
+                 &p->ai_addrlen,
+                 (struct sockaddr*)p->ai_addr,
+                 canonnamelen,
+                 &canonnamelen,
+                 p->ai_canonname,
+                 &err)) != OE_OK)
+        {
+            OE_TRACE_ERROR(
+                "oe_posix_getaddrinfo_read_ocall(): result=%s",
+                oe_result_str(result));
+            goto done;
+        }
+
+        /* Append to the list. */
+        if (tail)
+        {
+            tail->ai_next = p;
+            tail = p;
+        }
+        else
+        {
+            head = p;
+            tail = p;
+        }
+
+        p = NULL;
+    }
+
+    /* Close the enumeration. */
+    if (handle)
+    {
+        int retval = -1;
+        int err = 0;
+        oe_result_t result;
+
+        if ((result = oe_posix_getaddrinfo_close_ocall(
+                 &retval, handle, &err)) != OE_OK)
+        {
+            OE_TRACE_ERROR(
+                "oe_posix_getaddrinfo_read_ocall(): result=%s",
+                oe_result_str(result));
+            goto done;
+        }
+
+        handle = NULL;
+
+        if (retval != 0)
+        {
+            OE_TRACE_ERROR(
+                "oe_posix_getaddrinfo_read_ocall(): retval=%d", retval);
+            goto done;
+        }
+    }
+
+    /* If the list is empty. */
+    if (!head)
+    {
+        OE_TRACE_ERROR("empty enumeration");
+        goto done;
+    }
+
+    *res = head;
+    head = NULL;
+    tail = NULL;
+    ret = 0;
+
+done:
+
+    if (handle)
+    {
+        int retval;
+        int err;
+        oe_posix_getaddrinfo_close_ocall(&retval, handle, &err);
+    }
+
+    if (head)
+        oe_freeaddrinfo(head);
+
+    if (p)
+        oe_freeaddrinfo(p);
 
     return ret;
 }
@@ -226,14 +318,18 @@ done:
     return ret;
 }
 
-static oe_resolver_ops_t _ops = {.getaddrinfo_r = _hostresolv_getaddrinfo_r,
+// clang format-off
+static oe_resolver_ops_t _ops = {.getaddrinfo = _hostresolv_getaddrinfo,
                                  .getnameinfo = _hostresolv_getnameinfo,
                                  .shutdown = _hostresolv_shutdown};
+// clang format-off
 
+// clang format-off
 static resolv_t _hostresolv = {.base.type = OE_RESOLVER_HOST,
                                .base.size = sizeof(resolv_t),
                                .base.ops = &_ops,
                                .magic = RESOLV_MAGIC};
+// clang format-off
 
 oe_result_t oe_load_module_hostresolver(void)
 {

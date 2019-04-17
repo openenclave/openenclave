@@ -21,6 +21,22 @@
 
 #define SERVER_PORT "12345"
 
+static void _free_addrinfo(struct addrinfo* res)
+{
+    struct addrinfo* p;
+
+    for (p = res; p;)
+    {
+        struct addrinfo* next = p->ai_next;
+
+        free(p->ai_addr);
+        free(p->ai_canonname);
+        free(p);
+
+        p = next;
+    }
+}
+
 int main(int argc, const char* argv[])
 {
     oe_result_t result;
@@ -30,7 +46,7 @@ int main(int argc, const char* argv[])
 
     char host[256];
 
-    struct addrinfo* paddrinfo = NULL;
+    struct addrinfo* addrinfo = NULL;
     if (argc != 2)
     {
         fprintf(stderr, "Usage: %s ENCLAVE_PATH\n", argv[0]);
@@ -46,18 +62,19 @@ int main(int argc, const char* argv[])
 
     OE_TEST(ecall_device_init(client_enclave, &ret) == OE_OK);
 
-    OE_TEST(ecall_getaddrinfo(client_enclave, &ret, &paddrinfo) == OE_OK);
+    OE_TEST(ecall_getaddrinfo(client_enclave, &ret, &addrinfo) == OE_OK);
 
-    addrinfo_dump(paddrinfo);
+    addrinfo_dump(addrinfo);
 
-    if (!paddrinfo)
+    if (!addrinfo)
     {
-        printf("host received: paddrinfo == NULL\n");
+        printf("host received: addrinfo == NULL\n");
     }
     else
     {
-        struct addrinfo* thisinfo = paddrinfo;
+        struct addrinfo* thisinfo = addrinfo;
         bool found = false;
+
         while (thisinfo)
         {
             uint8_t* addr =
@@ -67,7 +84,7 @@ int main(int argc, const char* argv[])
             {
                 found = true;
                 printf(
-                    "host received: paddrinfo->ai_addr: %02x %02x %02x %02x\n",
+                    "host received: addrinfo->ai_addr: %02x %02x %02x %02x\n",
                     addr[0],
                     addr[1],
                     addr[2],
@@ -76,6 +93,9 @@ int main(int argc, const char* argv[])
             }
             thisinfo = thisinfo->ai_next;
         }
+
+        _free_addrinfo(addrinfo);
+
         OE_TEST(found);
     }
 

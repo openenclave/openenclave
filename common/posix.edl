@@ -285,15 +285,29 @@ enclave {
             int signum,
             [out, count=1] int* err);
 
-        int oe_posix_getaddrinfo_ocall(
+        void* oe_posix_getaddrinfo_open_ocall(
             [in, string] const char* node,
             [in, string] const char* service,
             [in, count=1] const struct addrinfo* hints,
-            [out] struct addrinfo** res,
             [out, count=1] int* err);
 
-        void oe_posix_freeaddrinfo_ocall(
-            [user_check] struct addrinfo *res);
+        int oe_posix_getaddrinfo_read_ocall(
+            [user_check] void* handle,
+            [out, count=1] int* ai_flags,
+            [out, count=1] int* ai_family,
+            [out, count=1] int* ai_socktype,
+            [out, count=1] int* ai_protocol,
+            socklen_t ai_addrlen_in,
+            [out, count=1] socklen_t* ai_addrlen,
+            [out, size=ai_addrlen_in] struct sockaddr* ai_addr,
+            size_t ai_canonnamelen_in,
+            [out, count=1] size_t* ai_canonnamelen,
+            [out, size=ai_canonnamelen_in] char* ai_canonname,
+            [out, count=1] int* err);
+
+        int oe_posix_getaddrinfo_close_ocall(
+            [user_check] void* handle,
+            [out, count=1] int* err);
 
         int oe_posix_getnameinfo_ocall(
             [in, size=salen] const struct sockaddr* sa,
