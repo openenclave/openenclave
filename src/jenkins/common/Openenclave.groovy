@@ -35,13 +35,11 @@ def azureEnvironment(String task) {
                                           usernameVariable: 'SERVICE_PRINCIPAL_ID'),
                          string(credentialsId: 'OSCTLabSubID', variable: 'SUBSCRIPTION_ID'),
                          string(credentialsId: 'TenantID', variable: 'TENANT_ID')]) {
-            dir("${WORKSPACE}/.jenkins/provision") {
-                docker.withRegistry("https://oejenkinscidockerregistry.azurecr.io", "oejenkinscidockerregistry") {
-                    image = docker.image("oetools-deploy:latest")
-                    image.pull()
-                    image.inside {
-                        sh "${task}"
-                    }
+            docker.withRegistry("https://oejenkinscidockerregistry.azurecr.io", "oejenkinscidockerregistry") {
+                image = docker.image("oetools-deploy:latest")
+                image.pull()
+                image.inside {
+                    sh "${task}"
                 }
             }
         }
@@ -69,7 +67,9 @@ def deleteRG(List resourceGroups) {
     stage("Delete ${resourceGroups.toString()} resource groups") {
         resourceGroups.each { rg ->
             withEnv(["RESOURCE_GROUP=${rg}"]) {
-                azureEnvironment("./cleanup.sh")
+                dir("${WORKSPACE}/.jenkins/provision") {
+                    azureEnvironment("./cleanup.sh")
+                }
             }
         }
     }

@@ -10,7 +10,9 @@ def ACCDeployVM(String agent_name, String agent_type, String region, String reso
             cleanWs()
             checkout scm
             withEnv(["REGION=${region}", "RESOURCE_GROUP=${resource_group}", "AGENT_NAME=${agent_name}", "AGENT_TYPE=${agent_type}", "VHD_URL=${vhd_url}"]) {
-                oe.azureEnvironment("./deploy-agent.sh")
+                dir("${WORKSPACE}/.jenkins/provision") {
+                    oe.azureEnvironment("./deploy-agent.sh")
+                }
             }
         }
     }
