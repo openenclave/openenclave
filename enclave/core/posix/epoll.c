@@ -14,6 +14,7 @@
 #include <openenclave/internal/epoll.h>
 #include <openenclave/internal/list.h>
 #include <openenclave/corelibc/string.h>
+#include <openenclave/corelibc/stdio.h>
 #include <openenclave/internal/trace.h>
 
 /* For synchronizing access to all static structures defined below. */
@@ -417,41 +418,15 @@ int oe_epoll_pwait(
     const oe_sigset_t* sigmask)
 {
     int ret = -1;
-    oe_device_t* epoll;
 
-    OE_UNUSED(timeout);
-    OE_UNUSED(sigmask);
-
-    if (epollfd < 0)
+    if (sigmask)
     {
-        oe_errno = EBADF;
+        oe_errno = ENOTSUP;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
 
-    if (!(epoll = oe_get_fd_device_by_type(epollfd, OE_DEVICETYPE_EPOLL)))
-    {
-        oe_errno = EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
-
-    if (!events)
-    {
-        oe_errno = EFAULT;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
-
-    if (!events || maxevents <= 0)
-    {
-        oe_errno = EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
-
-    oe_errno = ENOTSUP;
-    OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
+    ret = oe_epoll_wait(epollfd, events, maxevents, timeout);
 
 done:
     return ret;
