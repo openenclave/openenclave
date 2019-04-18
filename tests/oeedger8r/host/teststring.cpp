@@ -68,7 +68,7 @@ oe_result_t ecall_string_no_null_terminator_modified(
     }
 
     /* Serialize buffer inputs (in and in-out parameters) */
-    *(uint8_t**)&_pargs_in = _input_buffer;
+    _pargs_in = (ecall_string_no_null_terminator_args_t*)_input_buffer;
     OE_ADD_SIZE(_input_buffer_offset, sizeof(*_pargs_in));
 
     OE_WRITE_IN_PARAM(s1, _args.s1_len * sizeof(char), char*);
@@ -89,7 +89,7 @@ oe_result_t ecall_string_no_null_terminator_modified(
         goto done;
 
     /* Set up output arg struct pointer */
-    *(uint8_t**)&_pargs_out = _output_buffer;
+    _pargs_out = (ecall_string_no_null_terminator_args_t*)_output_buffer;
     OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));
 
     /* Check if the call succeeded */
@@ -174,7 +174,7 @@ oe_result_t ecall_wstring_no_null_terminator_modified(
     }
 
     /* Serialize buffer inputs (in and in-out parameters) */
-    *(uint8_t**)&_pargs_in = _input_buffer;
+    _pargs_in = (ecall_wstring_no_null_terminator_args_t*)_input_buffer;
     OE_ADD_SIZE(_input_buffer_offset, sizeof(*_pargs_in));
 
     OE_WRITE_IN_PARAM(s1, _args.s1_len * sizeof(wchar_t), wchar_t*);
@@ -195,7 +195,7 @@ oe_result_t ecall_wstring_no_null_terminator_modified(
         goto done;
 
     /* Set up output arg struct pointer */
-    *(uint8_t**)&_pargs_out = _output_buffer;
+    _pargs_out = (ecall_wstring_no_null_terminator_args_t*)_output_buffer;
     OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));
 
     /* Check if the call succeeded */

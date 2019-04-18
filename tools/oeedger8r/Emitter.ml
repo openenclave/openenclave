@@ -392,7 +392,7 @@ let oe_prepare_input_buffer (os:out_channel) (fd:Ast.func_decl) (alloc_func:stri
 
   (* Serialize in and in-out parameters *)
   fprintf os "    /* Serialize buffer inputs (in and in-out parameters) */\n";
-  fprintf os "    *(uint8_t**)&_pargs_in = _input_buffer;\n";
+  fprintf os "    _pargs_in = (%s_args_t*)_input_buffer;\n" fd.Ast.fname;
   fprintf os "    OE_ADD_SIZE(_input_buffer_offset, sizeof(*_pargs_in));\n\n";
   List.iter (fun (ptype, decl) ->
       match ptype with
@@ -413,7 +413,7 @@ let oe_prepare_input_buffer (os:out_channel) (fd:Ast.func_decl) (alloc_func:stri
 let oe_process_output_buffer (os:out_channel) (fd:Ast.func_decl) =
   (* Verify that the ecall succeeded *)
   fprintf os "    /* Set up output arg struct pointer */\n";
-  fprintf os "    *(uint8_t**)&_pargs_out = _output_buffer;\n";
+  fprintf os "    _pargs_out = (%s_args_t*)_output_buffer;\n" fd.Ast.fname;
   fprintf os "    OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));\n\n";
   fprintf os "    /* Check if the call succeeded */\n";
   fprintf os "    if ((_result=_pargs_out->_result) != OE_OK)\n";
