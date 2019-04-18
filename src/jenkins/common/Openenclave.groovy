@@ -18,7 +18,7 @@ String dockerImage(String tag, String dockerfile = ".jenkins/Dockerfile", String
 
 def ContainerRun(String imageName, String compiler, String task, String runArgs="") {
     docker.withRegistry("https://oejenkinscidockerregistry.azurecr.io", "oejenkinscidockerregistry") {
-        image = docker.image("${imageName}:latest")
+        def image = docker.image("${imageName}:latest")
         image.pull()
         image.inside(runArgs) {
             dir("${WORKSPACE}/build") {
@@ -36,7 +36,7 @@ def azureEnvironment(String task) {
                          string(credentialsId: 'OSCTLabSubID', variable: 'SUBSCRIPTION_ID'),
                          string(credentialsId: 'TenantID', variable: 'TENANT_ID')]) {
             docker.withRegistry("https://oejenkinscidockerregistry.azurecr.io", "oejenkinscidockerregistry") {
-                image = docker.image("oetools-deploy:latest")
+                def image = docker.image("oetools-deploy:latest")
                 image.pull()
                 image.inside {
                     sh "${task}"
