@@ -10,9 +10,9 @@
 
 OE_EXTERNC_BEGIN
 
-int oe_ioctl(int fd, unsigned long request, ...);
+int __oe_ioctl(int fd, unsigned long request, uint64_t arg);
 
-int oe_ioctl_va(int fd, unsigned long request, oe_va_list ap);
+int oe_ioctl(int fd, unsigned long request, ...);
 
 #if defined(OE_NEED_STDC_NAMES)
 
@@ -20,8 +20,9 @@ OE_INLINE int ioctl(int fd, unsigned long request, ...)
 {
     oe_va_list ap;
     oe_va_start(ap, request);
-    int r = oe_ioctl_va(fd, request, ap);
+    int r = __oe_ioctl(fd, request, oe_va_arg(ap, uint64_t));
     oe_va_end(ap);
+
     return r;
 }
 

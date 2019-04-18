@@ -6,7 +6,6 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/corelibc/stdarg.h>
 #include <openenclave/internal/types.h>
 
 OE_EXTERNC_BEGIN
@@ -32,9 +31,10 @@ typedef struct _oe_device_ops
 
     int (*close)(oe_device_t* file);
 
-    int (*ioctl)(oe_device_t* file, unsigned long request, oe_va_list ap);
+    int (*ioctl)(oe_device_t* file, unsigned long request, uint64_t arg);
 
-    int (*fcntl)(oe_device_t* file, int cmd, int arg);
+    int (*fcntl)(oe_device_t* file, int cmd, uint64_t arg);
+
 } oe_device_ops_t;
 
 OE_EXTERNC_END

@@ -644,7 +644,7 @@ int oe_posix_shutdown_ocall(int sockfd, int how, int* err)
     return ret;
 }
 
-int oe_posix_fcntl_ocall(int fd, int cmd, int arg, int* err)
+int oe_posix_fcntl_ocall(int fd, int cmd, uint64_t arg, int* err)
 {
     int ret;
 

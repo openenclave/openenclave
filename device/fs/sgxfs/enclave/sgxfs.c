@@ -624,23 +624,24 @@ done:
     return ret;
 }
 
-static int _sgxfs_ioctl(oe_device_t* file, unsigned long request, oe_va_list ap)
+static int _sgxfs_ioctl(oe_device_t* file, unsigned long request, uint64_t arg)
 {
-    /* Unsupported */
-    oe_errno = ENOTTY;
-    (void)file;
-    (void)request;
-    (void)ap;
+    OE_UNUSED(file);
+    OE_UNUSED(request);
+    OE_UNUSED(arg);
+
+    oe_errno = ENOTSUP;
     return -1;
 }
 
-static int _sgxfs_fcntl(oe_device_t* file, int cmd, int arg)
+static int _sgxfs_fcntl(oe_device_t* file, int cmd, uint64_t arg)
 {
     /* Unsupported */
-    oe_errno = ENOTTY;
-    (void)file;
-    (void)cmd;
-    (void)arg;
+    OE_UNUSED(file);
+    OE_UNUSED(cmd);
+    OE_UNUSED(arg);
+
+    oe_errno = ENOTSUP;
     return -1;
 }
 

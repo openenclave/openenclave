@@ -302,19 +302,16 @@ done:
     return ret;
 }
 
-int __oe_fcntl_va(int fd, int cmd, oe_va_list ap)
+int __oe_fcntl(int fd, int cmd, uint64_t arg)
 {
     int ret = -1;
     oe_device_t* device = oe_get_fd_device(fd);
-    int arg;
 
     if (!device)
     {
         OE_TRACE_ERROR("no device found fd=%d", fd);
         goto done;
     }
-
-    arg = oe_va_arg(ap, int);
 
     if (device->ops.base->fcntl == NULL)
     {
@@ -329,7 +326,7 @@ done:
     return ret;
 }
 
-int oe_ioctl_va(int fd, unsigned long request, oe_va_list ap)
+int __oe_ioctl(int fd, unsigned long request, uint64_t arg)
 {
     int ret = -1;
     static const unsigned long _TIOCGWINSZ = 0x5413;
@@ -349,9 +346,7 @@ int oe_ioctl_va(int fd, unsigned long request, oe_va_list ap)
             };
             struct winsize* p;
 
-            p = oe_va_arg(ap, struct winsize*);
-
-            if (!p)
+            if (!(p = (struct winsize*)arg))
             {
                 OE_TRACE_ERROR("fd=%d oe_va_arg failed", fd);
                 goto done;
@@ -389,7 +384,7 @@ int oe_ioctl_va(int fd, unsigned long request, oe_va_list ap)
         }
 
         // The action routine sets errno
-        ret = (*pdevice->ops.base->ioctl)(pdevice, request, ap);
+        ret = (*pdevice->ops.base->ioctl)(pdevice, request, arg);
         goto done;
     }
 
@@ -401,7 +396,7 @@ int oe_ioctl(int fd, unsigned long request, ...)
 {
     oe_va_list ap;
     oe_va_start(ap, request);
-    int r = oe_ioctl_va(fd, request, ap);
+    int r = __oe_ioctl(fd, request, oe_va_arg(ap, uint64_t));
     oe_va_end(ap);
     return r;
 }

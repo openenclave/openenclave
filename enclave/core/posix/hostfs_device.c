@@ -802,13 +802,13 @@ done:
 static int _hostfs_ioctl(
     oe_device_t* file_,
     unsigned long request,
-    oe_va_list ap)
+    uint64_t arg)
 {
     int ret = -1;
     file_t* file = _cast_file(file_);
     OE_UNUSED(file);
     OE_UNUSED(request);
-    OE_UNUSED(ap);
+    OE_UNUSED(arg);
 
     if (!file)
     {
@@ -824,7 +824,7 @@ done:
     return ret;
 }
 
-static int _hostfs_fcntl(oe_device_t* file_, int cmd, int arg)
+static int _hostfs_fcntl(oe_device_t* file_, int cmd, uint64_t arg)
 {
     int ret = -1;
     file_t* file = _cast_file(file_);

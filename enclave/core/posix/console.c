@@ -92,11 +92,11 @@ done:
 static int _consolefs_ioctl(
     oe_device_t* file,
     unsigned long request,
-    oe_va_list ap)
+    uint64_t arg)
 {
     OE_UNUSED(file);
     OE_UNUSED(request);
-    OE_UNUSED(ap);
+    OE_UNUSED(arg);
 
     oe_errno = ENOTSUP;
     OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
@@ -104,7 +104,7 @@ static int _consolefs_ioctl(
     return -1;
 }
 
-static int _consolefs_fcntl(oe_device_t* file, int cmd, int arg)
+static int _consolefs_fcntl(oe_device_t* file, int cmd, uint64_t arg)
 {
     OE_UNUSED(file);
     OE_UNUSED(cmd);

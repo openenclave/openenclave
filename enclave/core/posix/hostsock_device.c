@@ -816,7 +816,7 @@ done:
     return ret;
 }
 
-static int _hostsock_fcntl(oe_device_t* sock_, int cmd, int arg)
+static int _hostsock_fcntl(oe_device_t* sock_, int cmd, uint64_t arg)
 {
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
@@ -980,11 +980,11 @@ done:
 static int _hostsock_ioctl(
     oe_device_t* sock,
     unsigned long request,
-    oe_va_list ap)
+    uint64_t arg)
 {
     OE_UNUSED(sock);
     OE_UNUSED(request);
-    OE_UNUSED(ap);
+    OE_UNUSED(arg);
 
     oe_errno = ENOTSUP;
     OE_TRACE_ERROR("oe_errno=%d ", oe_errno);

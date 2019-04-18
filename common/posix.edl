@@ -238,7 +238,7 @@ enclave {
         int oe_posix_fcntl_ocall(
             int fd,
             int cmd,
-            int arg,
+            uint64_t arg,
             [out, count=1] int* err);
 
         int oe_posix_setsockopt_ocall(

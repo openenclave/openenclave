@@ -74,14 +74,14 @@ int oe_chdir(const char* path);
 
 int oe_close(int fd);
 
-int __oe_fcntl_va(int fd, int cmd, oe_va_list ap);
+int __oe_fcntl(int fd, int cmd, uint64_t arg);
 
 #if !defined(WIN32) /* __feature_io__ */
 OE_INLINE int oe_fcntl(int fd, int cmd, ...)
 {
     oe_va_list ap;
     oe_va_start(ap, cmd);
-    int r = __oe_fcntl_va(fd, cmd, ap);
+    int r = __oe_fcntl(fd, cmd, oe_va_arg(ap, uint64_t));
     oe_va_end(ap);
 
     return r;
@@ -208,7 +208,7 @@ OE_INLINE int fcntl(int fd, int cmd, ...)
 {
     oe_va_list ap;
     oe_va_start(ap, cmd);
-    int r = __oe_fcntl_va(fd, cmd, ap);
+    int r = __oe_fcntl(fd, cmd, oe_va_arg(ap, uint64_t));
     oe_va_end(ap);
 
     return r;
