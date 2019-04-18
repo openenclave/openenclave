@@ -1019,7 +1019,6 @@ static int _hostfs_stat(
 {
     int ret = -1;
     fs_t* fs = _cast_fs(fs_);
-    struct oe_posix_stat st;
     char full_pathname[OE_PATH_MAX];
 
     if (buf)
@@ -1038,31 +1037,30 @@ static int _hostfs_stat(
         goto done;
     }
 
-    if (oe_posix_stat_ocall(&ret, full_pathname, &st, &oe_errno) != OE_OK)
+    if (oe_posix_stat_ocall(
+            &ret,
+            full_pathname,
+            &buf->st_dev,
+            &buf->st_ino,
+            &buf->st_nlink,
+            &buf->st_mode,
+            &buf->st_uid,
+            &buf->st_gid,
+            &buf->st_rdev,
+            &buf->st_size,
+            &buf->st_blksize,
+            &buf->st_blocks,
+            &buf->st_atim.tv_sec,
+            &buf->st_atim.tv_nsec,
+            &buf->st_mtim.tv_sec,
+            &buf->st_mtim.tv_nsec,
+            &buf->st_ctim.tv_sec,
+            &buf->st_ctim.tv_nsec,
+            &oe_errno) != OE_OK)
     {
         OE_TRACE_ERROR(
             "full_pathname=%s oe_errno =%d", full_pathname, oe_errno);
         goto done;
-    }
-
-    if (ret == 0)
-    {
-        buf->st_dev = st.st_dev;
-        buf->st_ino = st.st_ino;
-        buf->st_nlink = st.st_nlink;
-        buf->st_mode = st.st_mode;
-        buf->st_uid = st.st_uid;
-        buf->st_gid = st.st_gid;
-        buf->st_rdev = st.st_rdev;
-        buf->st_size = st.st_size;
-        buf->st_blksize = st.st_blksize;
-        buf->st_blocks = st.st_blocks;
-        buf->st_atim.tv_sec = st.st_atim.tv_sec;
-        buf->st_atim.tv_nsec = st.st_atim.tv_nsec;
-        buf->st_mtim.tv_sec = st.st_mtim.tv_sec;
-        buf->st_mtim.tv_nsec = st.st_mtim.tv_nsec;
-        buf->st_ctim.tv_sec = st.st_ctim.tv_sec;
-        buf->st_ctim.tv_nsec = st.st_ctim.tv_nsec;
     }
 
 done:

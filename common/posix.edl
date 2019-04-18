@@ -6,29 +6,6 @@ enclave {
     include "openenclave/bits/defs.h"
     include "openenclave/bits/types.h"
 
-    struct oe_posix_timespec
-    {
-        time_t tv_sec;
-        suseconds_t tv_nsec;
-    };
-
-    struct oe_posix_stat
-    {
-        dev_t st_dev;
-        ino_t st_ino;
-        nlink_t st_nlink;
-        mode_t st_mode;
-        uid_t st_uid;
-        gid_t st_gid;
-        dev_t st_rdev;
-        off_t st_size;
-        blksize_t st_blksize;
-        blkcnt_t st_blocks;
-        struct oe_posix_timespec st_atim;
-        struct oe_posix_timespec st_mtim;
-        struct oe_posix_timespec st_ctim;
-    };
-
     trusted {
 
         public int oe_posix_signal_notify_ecall(int signum);
@@ -100,7 +77,22 @@ enclave {
 
         int oe_posix_stat_ocall(
             [in, string] const char *pathname,
-            [out, count=1] struct oe_posix_stat *buf,
+            [out, count=1] uint64_t* st_dev,
+            [out, count=1] uint64_t* st_ino,
+            [out, count=1] uint64_t* st_nlink,
+            [out, count=1] uint32_t* st_mode,
+            [out, count=1] uint32_t* st_uid,
+            [out, count=1] uint32_t* st_gid,
+            [out, count=1] uint64_t* st_rdev,
+            [out, count=1] int64_t* st_size,
+            [out, count=1] int64_t* st_blksize,
+            [out, count=1] int64_t* st_blocks,
+            [out, count=1] int64_t* st_atim_tv_sec,
+            [out, count=1] int64_t* st_atim_tv_nsec,
+            [out, count=1] int64_t* st_mtim_tv_sec,
+            [out, count=1] int64_t* st_mtim_tv_nsec,
+            [out, count=1] int64_t* st_ctim_tv_sec,
+            [out, count=1] int64_t* st_ctim_tv_nsec,
             [out, count=1] int* err);
 
         int oe_posix_access_ocall(
