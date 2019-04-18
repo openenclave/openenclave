@@ -7,4 +7,4 @@ if (UNIX)
 	add_subdirectory(enc)
 endif()
 
-#add_enclave_test(tests/signal signal_test_host signal_test_enc)
+add_enclave_test(tests/signal signal_test_host signal_test_enc)
