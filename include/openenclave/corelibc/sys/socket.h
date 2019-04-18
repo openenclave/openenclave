@@ -139,6 +139,8 @@ OE_EXTERNC_BEGIN
 #define OE_SHUT_WR 1
 #define OE_SHUT_RDWR 2
 
+#define OE_MSG_PEEK 0x0002
+
 struct oe_sockaddr
 {
 #include <openenclave/corelibc/sys/bits/sockaddr.h>
@@ -335,9 +337,12 @@ int oe_getsockname(int sockfd, struct oe_sockaddr* addr, socklen_t* addrlen);
 #define SO_LINGER OE_SO_LINGER
 #define SO_BSDCOMPAT OE_SO_BSDCOMPAT
 #define SO_REUSEPORT OE_SO_REUSEPORT
+
 #define SHUT_RD OE_SHUT_RD
 #define SHUT_WR OE_SHUT_WR
 #define SHUT_RDWR OE_SHUT_RDWR
+
+#define MSG_PEEK OE_MSG_PEEK
 
 /* mbed TLS needs this so it will use socklen_t rather than int. */
 #define __DEFINED_socklen_t

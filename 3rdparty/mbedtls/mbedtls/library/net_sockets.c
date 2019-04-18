@@ -98,8 +98,6 @@ static int wsa_init_done = 0;
 #include <time.h>
 
 #include <stdint.h>
-#define MSG_PEEK      0x0002
-#define AI_PASSIVE      0x01
 
 /*
  * Prepare for using the sockets interface
@@ -419,7 +417,6 @@ int mbedtls_net_accept( mbedtls_net_context *bind_ctx,
 /*
  * Set the socket blocking or non-blocking
  */
-
 int mbedtls_net_set_block( mbedtls_net_context *ctx )
 {
 #if ( defined(_WIN32) || defined(_WIN32_WCE) ) && !defined(EFIX64) && \
