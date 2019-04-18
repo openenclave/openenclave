@@ -10,12 +10,12 @@ endif()
 add_enclave_test(tests/polling_corelibc
     polling_test_host
     polling_test_enc
-    ${CMAKE_CURRENT_BINARY_DIR}
+    "${CMAKE_CURRENT_BINARY_DIR}"
     corelibc)
 
 add_enclave_test(
     tests/polling_libc
     polling_test_host
     polling_test_enc
-    ${CMAKE_CURRENT_BINARY_DIR}
+    "${CMAKE_CURRENT_BINARY_DIR}"
     libc)
