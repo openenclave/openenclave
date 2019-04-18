@@ -300,6 +300,7 @@ void test_string_edl_ecalls(oe_enclave_t* enclave)
 #endif
     }
 
+    printf("=== expect four OE_INVALID_PARAMETER errors above ===");
     printf("=== test_string_edl_ecalls passed\n");
 }
 
