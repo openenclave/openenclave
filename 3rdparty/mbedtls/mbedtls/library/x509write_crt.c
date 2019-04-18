@@ -308,7 +308,7 @@ int mbedtls_x509write_crt_der( mbedtls_x509write_cert *ctx, unsigned char *buf, 
     unsigned char *c, *c2;
     unsigned char hash[64];
     unsigned char sig[MBEDTLS_MPI_MAX_SIZE];
-    unsigned char tmp_buf[2048*4];
+    unsigned char tmp_buf[2048];
     size_t sub_len = 0, pub_len = 0, sig_and_oid_len = 0, sig_len;
     size_t len = 0;
     mbedtls_pk_type_t pk_alg;
@@ -462,7 +462,7 @@ int mbedtls_x509write_crt_pem( mbedtls_x509write_cert *crt, unsigned char *buf, 
                        void *p_rng )
 {
     int ret;
-    unsigned char output_buf[4096*2];
+    unsigned char output_buf[4096];
     size_t olen = 0;
 
     if( ( ret = mbedtls_x509write_crt_der( crt, output_buf, sizeof(output_buf),
