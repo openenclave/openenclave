@@ -34,6 +34,24 @@ OE_EXTERNC_BEGIN
 #define OE_O_NDELAY        O_NONBLOCK
 // clang-format on
 
+// clang-format off
+#define OE_F_DUPFD          0
+#define OE_F_GETFD          1
+#define OE_F_SETFD          2
+#define OE_F_GETFL          3
+#define OE_F_SETFL          4
+#define OE_F_GETLK          5
+#define OE_F_SETLK          6
+#define OE_F_SETLKW         7
+#define OE_F_SETOWN         8
+#define OE_F_GETOWN         9
+#define OE_F_SETSIG        10
+#define OE_F_GETSIG        11
+#define OE_F_SETOWN_EX     15
+#define OE_F_GETOWN_EX     16
+#define OE_F_GETOWNER_UIDS 17
+// clang-format on
+
 int oe_open(const char* pathname, int flags, mode_t mode);
 
 int oe_open_d(uint64_t devid, const char* pathname, int flags, mode_t mode);
@@ -63,8 +81,21 @@ int oe_open_d(uint64_t devid, const char* pathname, int flags, mode_t mode);
 #define O_TMPFILE OE_O_TMPFILE
 #define O_NDELAY OE_O_NDELAY
 
-#define F_GETFL 3
-#define F_SETFL 4
+#define F_DUPFD OE_F_DUPFD
+#define F_GETFD OE_F_GETFD
+#define F_SETFD OE_F_SETFD
+#define F_GETFL OE_F_GETFL
+#define F_SETFL OE_F_SETFL
+#define F_GETLK OE_F_GETLK
+#define F_SETLK OE_F_SETLK
+#define F_SETLKW OE_F_SETLKW
+#define F_SETOWN OE_F_SETOWN
+#define F_GETOWN OE_F_GETOWN
+#define F_SETSIG OE_F_SETSIG
+#define F_GETSIG OE_F_GETSIG
+#define F_SETOWN_EX OE_F_SETOWN_EX
+#define F_GETOWN_EX OE_F_GETOWN_EX
+#define F_GETOWNER_UIDS OE_F_GETOWNER_UIDS
 
 OE_INLINE int open(const char* pathname, int flags, mode_t mode)
 {

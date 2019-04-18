@@ -314,14 +314,14 @@ int __oe_fcntl_va(int fd, int cmd, oe_va_list ap)
         goto done;
     }
 
+    arg = oe_va_arg(ap, int);
+
     if (device->ops.base->fcntl == NULL)
     {
         oe_errno = EINVAL;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
-
-    arg = oe_va_arg(ap, int);
 
     ret = (*device->ops.base->fcntl)(device, cmd, arg);
 
@@ -332,69 +332,65 @@ done:
 int oe_ioctl_va(int fd, unsigned long request, oe_va_list ap)
 {
     int ret = -1;
+    static const unsigned long _TIOCGWINSZ = 0x5413;
 
-    switch (fd)
+    if (request == _TIOCGWINSZ)
     {
-        case OE_STDIN_FILENO:
-        case OE_STDERR_FILENO:
-        case OE_STDOUT_FILENO:
+        static const unsigned long _TIOCGWINSZ = 0x5413;
+
+        if (request == _TIOCGWINSZ)
         {
-            static const unsigned long _TIOCGWINSZ = 0x5413;
-
-            if (request == _TIOCGWINSZ)
+            struct winsize
             {
-                struct winsize
-                {
-                    unsigned short int ws_row;
-                    unsigned short int ws_col;
-                    unsigned short int ws_xpixel;
-                    unsigned short int ws_ypixel;
-                };
-                struct winsize* p;
+                unsigned short int ws_row;
+                unsigned short int ws_col;
+                unsigned short int ws_xpixel;
+                unsigned short int ws_ypixel;
+            };
+            struct winsize* p;
 
-                p = oe_va_arg(ap, struct winsize*);
+            p = oe_va_arg(ap, struct winsize*);
 
-                if (!p)
-                {
-                    OE_TRACE_ERROR("fd=%d oe_va_arg failed", fd);
-                    goto done;
-                }
-
-                p->ws_row = 24;
-                p->ws_col = 80;
-                p->ws_xpixel = 0;
-                p->ws_ypixel = 0;
-
-                ret = 0;
+            if (!p)
+            {
+                OE_TRACE_ERROR("fd=%d oe_va_arg failed", fd);
                 goto done;
             }
 
+            p->ws_row = 24;
+            p->ws_col = 80;
+            p->ws_xpixel = 0;
+            p->ws_ypixel = 0;
+
+            ret = 0;
+            goto done;
+        }
+
+        ret = -1;
+        goto done;
+    }
+    else
+    {
+        oe_device_t* pdevice = oe_get_fd_device(fd);
+
+        if (!pdevice)
+        {
+            OE_TRACE_ERROR("no device found fd=%d", fd);
             ret = -1;
             goto done;
         }
-        default:
+
+        if (pdevice->ops.base->ioctl == NULL)
         {
-            oe_device_t* pdevice = oe_get_fd_device(fd);
-
-            if (!pdevice)
-            {
-                OE_TRACE_ERROR("no device found fd=%d", fd);
-                ret = -1;
-                goto done;
-            }
-
-            if (pdevice->ops.base->ioctl == NULL)
-            {
-                oe_errno = EINVAL;
-                OE_TRACE_ERROR("fd=%d oe_errno =%d ", fd, oe_errno);
-                ret = -1;
-                goto done;
-            }
-
-            // The action routine sets errno
-            ret = (*pdevice->ops.base->ioctl)(pdevice, request, ap);
+            oe_errno = EINVAL;
+            OE_TRACE_ERROR("fd=%d oe_errno =%d ", fd, oe_errno);
+            ret = -1;
             goto done;
         }
+
+        // The action routine sets errno
+        ret = (*pdevice->ops.base->ioctl)(pdevice, request, ap);
+        goto done;
     }
 
 done:

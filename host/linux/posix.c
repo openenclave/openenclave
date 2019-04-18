@@ -24,6 +24,12 @@ OE_INLINE void _set_err(int* err, int num)
         *err = num;
 }
 
+OE_INLINE void _clear_err(int* err)
+{
+    if (err)
+        *err = 0;
+}
+
 /*
 **==============================================================================
 **
@@ -150,33 +156,62 @@ void* oe_posix_opendir_ocall(const char* name, int* err)
     return ret;
 }
 
-int oe_posix_readdir_ocall(void* dirp, struct oe_posix_dirent* buf, int* err)
+int oe_posix_readdir_ocall(
+    void* dirp,
+    uint64_t* d_ino,
+    int64_t* d_off,
+    uint16_t* d_reclen,
+    uint8_t* d_type,
+    char* d_name,
+    size_t d_namelen,
+    int* err)
 {
     int ret = -1;
-    struct dirent* ent = readdir((DIR*)dirp);
+    struct dirent* ent;
 
-    if (err)
-        *err = 0;
+    _clear_err(err);
 
-    if (!buf)
+    if (!dirp)
     {
-        if (err)
-            *err = EBADF;
-
+        _set_err(err, EBADF);
         goto done;
     }
 
-    if (!ent)
+    if (!d_ino || !d_off || !d_reclen || !d_type || !d_name)
     {
+        _set_err(err, EINVAL);
         goto done;
     }
 
-    memset(buf, 0, sizeof(struct oe_posix_dirent));
-    buf->d_ino = ent->d_ino;
-    buf->d_off = ent->d_off;
-    buf->d_reclen = ent->d_reclen;
-    buf->d_type = ent->d_type;
-    strncat(buf->d_name, ent->d_name, sizeof(buf->d_name) - 1);
+    errno = 0;
+
+    if (!(ent = readdir((DIR*)dirp)))
+    {
+        if (errno)
+        {
+            _set_err(err, errno);
+            goto done;
+        }
+
+        ret = -1;
+        goto done;
+    }
+
+    {
+        size_t len = strlen(ent->d_name);
+        *d_ino = ent->d_ino;
+        *d_off = ent->d_off;
+        *d_reclen = ent->d_reclen;
+        *d_type = ent->d_type;
+
+        if (len >= d_namelen)
+        {
+            _set_err(err, ENAMETOOLONG);
+            goto done;
+        }
+
+        memcpy(d_name, ent->d_name, len + 1);
+    }
 
     ret = 0;
 

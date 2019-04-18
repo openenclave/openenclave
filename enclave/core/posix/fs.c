@@ -171,7 +171,8 @@ struct oe_dirent* oe_readdir(OE_DIR* dir)
 
     if (oe_getdents((unsigned int)dir->fd, &dir->buf, count) != (int)count)
     {
-        OE_TRACE_ERROR("count=%d", count);
+        if (oe_errno)
+            OE_TRACE_ERROR("count=%d", count);
         goto done;
     }
 

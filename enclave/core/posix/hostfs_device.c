@@ -800,18 +800,28 @@ done:
 }
 
 static int _hostfs_ioctl(
-    oe_device_t* file,
+    oe_device_t* file_,
     unsigned long request,
     oe_va_list ap)
 {
+    int ret = -1;
+    file_t* file = _cast_file(file_);
     OE_UNUSED(file);
     OE_UNUSED(request);
     OE_UNUSED(ap);
 
-    oe_errno = ENOTSUP;
-    OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
+    if (!file)
+    {
+        oe_errno = EINVAL;
+        goto done;
+    }
 
-    return -1;
+    oe_errno = ENOTSUP;
+    OE_TRACE_ERROR(
+        "oe_errno=%d fd=%d request=%lx", file->host_fd, oe_errno, request);
+
+done:
+    return ret;
 }
 
 static int _hostfs_fcntl(oe_device_t* file_, int cmd, int arg)
@@ -879,6 +889,7 @@ static oe_device_t* _hostfs_opendir(oe_device_t* fs_, const char* name)
         OE_TRACE_ERROR("full_name=%s oe_errno =%d", full_name, oe_errno);
         goto done;
     }
+
     {
         if (!(dir = oe_calloc(1, sizeof(dir_t))))
         {
@@ -905,45 +916,61 @@ done:
     return ret;
 }
 
-static struct oe_dirent* _hostfs_readdir(oe_device_t* dir)
+static struct oe_dirent* _hostfs_readdir(oe_device_t* dir_)
 {
     struct oe_dirent* ret = NULL;
-    dir_t* d = _cast_dir(dir);
+    dir_t* dir = _cast_dir(dir_);
     int retval = -1;
-    struct oe_posix_dirent buf;
     int err = 0;
 
     oe_errno = 0;
 
-    if (!d)
+    if (!dir)
     {
         oe_errno = EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
 
-    if (oe_posix_readdir_ocall(&retval, d->host_dir, &buf, &err) != OE_OK)
+    /* Call the host. */
     {
+        oe_result_t result;
+
+        if ((result = oe_posix_readdir_ocall(
+                 &retval,
+                 dir->host_dir,
+                 &dir->entry.d_ino,
+                 &dir->entry.d_off,
+                 &dir->entry.d_reclen,
+                 &dir->entry.d_type,
+                 dir->entry.d_name,
+                 sizeof(dir->entry.d_name),
+                 &err)) != OE_OK)
+        {
+            oe_errno = err;
+            OE_TRACE_ERROR("%s", oe_result_str(result));
+            goto done;
+        }
+
+        /* Fix up the record length. */
+        if (retval == 0)
+            dir->entry.d_reclen = sizeof(struct oe_dirent);
+
         oe_errno = err;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
+    }
+
+    /* Handle any error. */
+    if (retval == -1)
+    {
+        memset(&dir->entry, 0, sizeof(dir->entry));
+
+        if (oe_errno)
+            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
+
         goto done;
     }
 
-    oe_errno = err;
-
-    if (retval == 0)
-    {
-        d->entry.d_ino = buf.d_ino;
-        d->entry.d_off = buf.d_off;
-        d->entry.d_reclen = sizeof(struct oe_dirent);
-        d->entry.d_type = buf.d_type;
-        oe_strlcpy(d->entry.d_name, buf.d_name, sizeof(d->entry.d_name));
-        ret = &d->entry;
-    }
-    else
-    {
-        memset(&d->entry, 0, sizeof(d->entry));
-    }
+    ret = &dir->entry;
 
 done:
 

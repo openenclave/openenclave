@@ -6,15 +6,6 @@ enclave {
     include "openenclave/bits/defs.h"
     include "openenclave/bits/types.h"
 
-    struct oe_posix_dirent
-    {
-        uint64_t d_ino;
-        off_t d_off;
-        uint16_t d_reclen;
-        uint8_t d_type;
-        char d_name[256];
-    };
-
     struct oe_posix_timespec
     {
         time_t tv_sec;
@@ -92,7 +83,12 @@ enclave {
 
         int oe_posix_readdir_ocall(
             [user_check] void* dirp,
-            [out, count=1] struct oe_posix_dirent* ent,
+            [out, count=1] uint64_t* d_ino,
+            [out, count=1] int64_t* d_off,
+            [out, count=1] uint16_t* d_reclen,
+            [out, count=1] uint8_t* d_type,
+            [out, count=d_namelen] char* d_name,
+            size_t d_namelen,
             [out, count=1] int* err);
 
         void oe_posix_rewinddir_ocall(
