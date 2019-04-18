@@ -467,6 +467,7 @@ static void _handle_ecall(
         case OE_ECALL_GET_PUBLIC_KEY:
         {
             oe_handle_get_public_key(arg_in);
+            break;
         }
         default:
         {
