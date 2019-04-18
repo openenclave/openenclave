@@ -56,8 +56,21 @@ int main(int argc, const char* argv[])
     char test_data_rtn[1024] = {0};
     size_t test_data_len = 1024;
     int done = 0;
+    bool sigout = true;
 
-    if (argc != 2)
+    if (argc == 3)
+    {
+        if (strcmp("nosignal-out", argv[2]) == 0)
+        {
+            sigout = false;
+        }
+        else
+        {
+            fprintf(stderr, "Usage: %s ENCLAVE_PATH [nosignal-out]\n", argv[0]);
+            return 1;
+        }
+    }
+    else if (argc != 2)
     {
         fprintf(stderr, "Usage: %s ENCLAVE_PATH\n", argv[0]);
         return 1;
@@ -93,19 +106,23 @@ int main(int argc, const char* argv[])
     done = 2;
 
     int numtries = 10;
-    received_signum = -1;
-    pid_t pid = getpid();
-    OE_TEST(
-        ecall_signal_out_test(client_enclave, &ret, (uint64_t)pid) == OE_OK);
-
-    while (received_signum == -1 && numtries > 0)
+    if (sigout)
     {
-        printf("waiting for signal\n");
-        sleep(1);
-        numtries--;
-    }
+        received_signum = -1;
+        pid_t pid = getpid();
+        OE_TEST(
+            ecall_signal_out_test(client_enclave, &ret, (uint64_t)pid) ==
+            OE_OK);
 
-    OE_TEST(received_signum == SIGUSR2);
+        while (received_signum == -1 && numtries > 0)
+        {
+            printf("waiting for signal\n");
+            sleep(1);
+            numtries--;
+        }
+
+        OE_TEST(received_signum == SIGUSR2);
+    }
 
     pthread_join(signal_thread_id, NULL);
     OE_TEST(oe_terminate_enclave(client_enclave) == OE_OK);
