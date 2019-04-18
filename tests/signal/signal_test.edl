@@ -7,7 +7,7 @@ enclave {
         /* define ECALLs here. */
         public int ecall_device_init();
         public int ecall_signal_in_test(size_t bufflen, [in, out,count=bufflen]char *pbuff);
-        public int ecall_signal_out_test();
+        public int ecall_signal_out_test(uint64_t pid);
     };
 
     untrusted {

@@ -18,6 +18,8 @@
 
 #define SERVER_PORT "12345"
 
+int received_signum = -1;
+
 oe_result_t oe_posix_signal_notify_ecall(
     oe_enclave_t* enclave,
     int* _retval,
@@ -27,6 +29,7 @@ void sigusr2_handler(int signum)
 {
     // Doens't do anything. We expect sigpipe from the signal pipe
     printf("host received signal %d\n", signum);
+    received_signum = signum;
 }
 
 oe_enclave_t* client_enclave = NULL;
@@ -89,7 +92,20 @@ int main(int argc, const char* argv[])
         test_data_rtn);
     done = 2;
 
-    OE_TEST(ecall_signal_out_test(client_enclave, &ret) == OE_OK);
+    int numtries = 10;
+    received_signum = -1;
+    pid_t pid = getpid();
+    OE_TEST(
+        ecall_signal_out_test(client_enclave, &ret, (uint64_t)pid) == OE_OK);
+
+    while (received_signum == -1 && numtries > 0)
+    {
+        printf("waiting for signal\n");
+        sleep(1);
+        numtries--;
+    }
+
+    OE_TEST(received_signum == SIGUSR2);
 
     pthread_join(signal_thread_id, NULL);
     OE_TEST(oe_terminate_enclave(client_enclave) == OE_OK);

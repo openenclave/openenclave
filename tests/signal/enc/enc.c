@@ -54,11 +54,11 @@ int ecall_signal_in_test(size_t buff_len, char* recv_buff)
     return OE_OK;
 }
 
-int ecall_signal_out_test()
+int ecall_signal_out_test(uint64_t pid)
 {
     printf("--------------- send signal -------------\n");
     memset(buff, 0, sizeof(buff));
-    oe_kill(0, OE_SIGUSR2);
+    oe_kill((pid_t)pid, OE_SIGUSR2);
 
     oe_sleep_msec(3000);
 
