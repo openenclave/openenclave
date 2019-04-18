@@ -99,7 +99,7 @@ static int _hostresolv_getaddrinfo(
     struct oe_addrinfo** res)
 {
     int ret = OE_EAI_FAIL;
-    void* handle = NULL;
+    uint64_t handle = 0;
     int err = 0;
     struct oe_addrinfo* head = NULL;
     struct oe_addrinfo* tail = NULL;
@@ -248,7 +248,7 @@ static int _hostresolv_getaddrinfo(
             goto done;
         }
 
-        handle = NULL;
+        handle = 0;
 
         if (retval != 0)
         {

@@ -146,18 +146,18 @@ int oe_posix_dup_ocall(int oldfd, int* err)
     return ret;
 }
 
-void* oe_posix_opendir_ocall(const char* name, int* err)
+uint64_t oe_posix_opendir_ocall(const char* name, int* err)
 {
     void* ret = opendir(name);
 
     if (!ret && err)
         *err = errno;
 
-    return ret;
+    return (uint64_t)ret;
 }
 
 int oe_posix_readdir_ocall(
-    void* dirp,
+    uint64_t dirp,
     uint64_t* d_ino,
     int64_t* d_off,
     uint16_t* d_reclen,
@@ -220,12 +220,12 @@ done:
     return ret;
 }
 
-void oe_posix_rewinddir_ocall(void* dirp)
+void oe_posix_rewinddir_ocall(uint64_t dirp)
 {
     rewinddir((DIR*)dirp);
 }
 
-int oe_posix_closedir_ocall(void* dirp, int* err)
+int oe_posix_closedir_ocall(uint64_t dirp, int* err)
 {
     int ret = closedir((DIR*)dirp);
 
@@ -836,7 +836,7 @@ static getaddrinfo_handle_t* _cast_getaddrinfo_handle(void* handle_)
     return handle;
 }
 
-void* oe_posix_getaddrinfo_open_ocall(
+uint64_t oe_posix_getaddrinfo_open_ocall(
     const char* node,
     const char* service,
     const struct addrinfo* hints,
@@ -870,11 +870,11 @@ done:
     if (handle)
         free(handle);
 
-    return ret;
+    return (uint64_t)ret;
 }
 
 int oe_posix_getaddrinfo_read_ocall(
-    void* handle_,
+    uint64_t handle_,
     int* ai_flags,
     int* ai_family,
     int* ai_socktype,
@@ -888,7 +888,7 @@ int oe_posix_getaddrinfo_read_ocall(
     int* err)
 {
     int ret = -1;
-    getaddrinfo_handle_t* handle = _cast_getaddrinfo_handle(handle_);
+    getaddrinfo_handle_t* handle = _cast_getaddrinfo_handle((void*)handle_);
 
     if (err)
         *err = 0;
@@ -960,10 +960,10 @@ done:
     return ret;
 }
 
-int oe_posix_getaddrinfo_close_ocall(void* handle_, int* err)
+int oe_posix_getaddrinfo_close_ocall(uint64_t handle_, int* err)
 {
     int ret = -1;
-    getaddrinfo_handle_t* handle = _cast_getaddrinfo_handle(handle_);
+    getaddrinfo_handle_t* handle = _cast_getaddrinfo_handle((void*)handle_);
 
     if (err)
         *err = 0;

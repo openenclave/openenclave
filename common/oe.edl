@@ -6,10 +6,4 @@ enclave {
     include "openenclave/internal/epoll.h"
 
     from "posix.edl" import *;
-
-    trusted {
-
-        public void public_root_ecall();
-
-    };
 };

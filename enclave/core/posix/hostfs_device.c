@@ -53,7 +53,7 @@ typedef struct _dir
 {
     struct _oe_device base;
     uint32_t magic;
-    void* host_dir;
+    uint64_t host_dir;
     struct oe_dirent entry;
 } dir_t;
 
@@ -868,7 +868,7 @@ static oe_device_t* _hostfs_opendir(oe_device_t* fs_, const char* name)
     fs_t* fs = _cast_fs(fs_);
     dir_t* dir = NULL;
     char full_name[OE_PATH_MAX];
-    void* retval = NULL;
+    uint64_t retval = 0;
 
     if (!fs || !name)
     {
