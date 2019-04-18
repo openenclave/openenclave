@@ -71,7 +71,8 @@ void* host_server_thread(void* arg)
         printf("accepted fd = %d\n", connfd);
         if (connfd >= 0)
         {
-            write(connfd, TESTDATA, strlen(TESTDATA));
+            ssize_t n = write(connfd, TESTDATA, strlen(TESTDATA));
+            OE_TEST(n == strlen(TESTDATA));
             printf("write test data\n");
             close(connfd);
             break;

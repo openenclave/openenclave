@@ -2,8 +2,5 @@
 // Licensed under the MIT License.
 
 enclave {
-
-    include "openenclave/internal/epoll.h"
-
     from "posix.edl" import *;
 };

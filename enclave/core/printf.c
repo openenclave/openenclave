@@ -776,3 +776,25 @@ done:
 
     return n;
 }
+
+int oe_puts(const char* s)
+{
+    oe_printf("%s\n", s);
+    return 0;
+}
+
+int oe_putchar(int c)
+{
+    oe_printf("%c", c);
+    return 0;
+}
+
+__attribute__((weak)) int putchar(int c)
+{
+    return oe_putchar(c);
+}
+
+__attribute__((weak)) int puts(const char* s)
+{
+    return oe_puts(s);
+}

@@ -128,7 +128,7 @@ if(USE_STATIC_MBEDTLS_LIBRARY)
 
     add_library(${mbedx509_static_target} STATIC ${src_x509})
     set_target_properties(${mbedx509_static_target} PROPERTIES OUTPUT_NAME mbedx509)
-    target_link_libraries(${mbedx509_static_target} ${libs} ${mbedcrypto_static_target} oelibc)
+    target_link_libraries(${mbedx509_static_target} ${libs} ${mbedcrypto_static_target})
 
     add_library(${mbedtls_static_target} STATIC ${src_tls})
     set_target_properties(${mbedtls_static_target} PROPERTIES OUTPUT_NAME mbedtls)
@@ -150,7 +150,7 @@ if(USE_SHARED_MBEDTLS_LIBRARY)
 
     add_library(mbedtls SHARED ${src_tls})
     set_target_properties(mbedtls PROPERTIES VERSION 2.7.9 SOVERSION 10)
-    target_link_libraries(mbedtls ${libs} mbedx509 oelibc)
+    target_link_libraries(mbedtls ${libs} mbedx509)
 
     install(TARGETS mbedtls mbedx509 mbedcrypto
             DESTINATION ${LIB_INSTALL_DIR}

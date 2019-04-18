@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if defined(WIN32) /* __feature_io__ */
+#if defined(WIN32)
 int posix_memalign(void** res, size_t align, size_t len);
 #endif
 
