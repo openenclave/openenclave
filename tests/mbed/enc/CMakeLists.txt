@@ -20,14 +20,23 @@ function(add_mbed_test_enclave NAME)
 
   set(MBEDTLS_TESTS_DIR "${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests")
 
+  string(CONCAT GEN_TEST_CODE_SCRIPT "${MBEDTLS_TESTS_DIR}/scripts/generate_test_code.py"
+                                     " --suites-dir ${MBEDTLS_TESTS_DIR}/suites"
+                                     " --functions-file ${MBEDTLS_TESTS_DIR}/suites/test_suite_${suite_name}.function"
+                                     " --data-file ${MBEDTLS_TESTS_DIR}/suites/test_suite_${data_name}.data"
+                                     " --helpers-file ${MBEDTLS_TESTS_DIR}/suites/helpers.function"
+                                     " --template-file ${MBEDTLS_TESTS_DIR}/suites/main_test.function"
+                                     " --platform-file ${MBEDTLS_TESTS_DIR}/suites/host_test.function"
+                                     " --out-dir ${CMAKE_CURRENT_BINARY_DIR}")
   add_custom_command(
-    OUTPUT test_suite_${NAME}.c
-    COMMAND ${BASH} -c "perl ${MBEDTLS_TESTS_DIR}/scripts/generate_code.pl ${MBEDTLS_TESTS_DIR}/suites test_suite_${suite_name} test_suite_${data_name}"
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/test_suite_${NAME}.c
+    COMMAND ${BASH} -c "python3 ${GEN_TEST_CODE_SCRIPT}"
     DEPENDS
     mbedcrypto
-    ${MBEDTLS_TESTS_DIR}/scripts/generate_code.pl
+    ${MBEDTLS_TESTS_DIR}/scripts/generate_test_code.py
     ${MBEDTLS_TESTS_DIR}/suites/helpers.function
     ${MBEDTLS_TESTS_DIR}/suites/main_test.function
+    ${MBEDTLS_TESTS_DIR}/suites/host_test.function
     ${MBEDTLS_TESTS_DIR}/suites/test_suite_${suite_name}.function
     ${MBEDTLS_TESTS_DIR}/suites/test_suite_${data_name}.data)
 
