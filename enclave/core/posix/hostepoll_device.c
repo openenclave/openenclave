@@ -378,7 +378,7 @@ done:
     return ret;
 }
 
-/* TODO:IO: add test for mod case. */
+/* ATTN:IO: add test for mod case. */
 static int _epoll_ctl_mod(
     int epoll_fd,
     int enclave_fd,
@@ -445,7 +445,7 @@ done:
     return ret;
 }
 
-/* TODO:IO: add test for del case. */
+/* ATTN:IO: add test for del case. */
 static int _epoll_ctl_del(int epoll_fd, int enclave_fd)
 {
     int ret = -1;
@@ -512,6 +512,9 @@ static int _epoll_wait(
     struct oe_epoll_event* host_events = NULL;
     oe_result_t result = OE_FAILURE;
 
+    // ATTN:IO: timeout is unused.
+    OE_UNUSED(timeout);
+
     if (!epoll || !events)
     {
         oe_errno = EINVAL;
@@ -541,13 +544,11 @@ static int _epoll_wait(
         goto done;
     }
 
-    result = oe_posix_epoll_wait_ocall(
+    result = oe_posix_epoll_wait_async_ocall(
         &ret,
         (int64_t)oe_get_enclave(),
         (int)epoll_host_fd,
-        (struct epoll_event*)host_events,
         maxevents,
-        (int)timeout,
         &oe_errno);
     if (result != OE_OK)
     {

@@ -130,7 +130,7 @@ static int _ecall_epoll_test(INTERFACE& x, size_t buff_len, char* recv_buff)
         }
     }
 
-    // TODO:IO finalize test for files.
+    // ATTN:IO: finalize test for files.
     const int flags = x.O_NONBLOCK_T | x.O_WRONLY_T | x.O_CREAT_T | x.O_TRUNC_T;
     file_fd = x.open(_path, flags, 0);
     OE_TEST(file_fd >= 0);
@@ -149,7 +149,7 @@ static int _ecall_epoll_test(INTERFACE& x, size_t buff_len, char* recv_buff)
         }
     }
 
-    // TODO:IO: compose this value from predefined macros.
+    // ATTN:IO: compose this value from predefined macros.
     event.events = 0x3c7;
     event.data.ptr = (void*)print_socket_success;
     if (x.epoll_ctl(epoll_fd, x.EPOLL_CTL_ADD_T, sockfd, &event))

@@ -472,7 +472,6 @@ int oe_posix_listen_ocall(int sockfd, int backlog, int* err)
     return ret;
 }
 
-/* ATTN:IO: need test for this function. */
 ssize_t oe_posix_recvmsg_ocall(
     int sockfd,
     void* msg_name,
@@ -522,7 +521,6 @@ done:
     return ret;
 }
 
-/* ATTN:IO: need test for this function. */
 ssize_t oe_posix_sendmsg_ocall(
     int sockfd,
     const void* msg_name,
@@ -588,7 +586,7 @@ ssize_t oe_posix_recv_ocall(
     return ret;
 }
 
-/* ATTN:IO: need test for this function. */
+/* ATTN:IO: add test for this function. */
 ssize_t oe_posix_recvfrom_ocall(
     int sockfd,
     void* buf,
@@ -631,7 +629,7 @@ ssize_t oe_posix_send_ocall(
     return ret;
 }
 
-/* ATTN:IO: need test for this function. */
+/* ATTN:IO: add test for this function. */
 ssize_t oe_posix_sendto_ocall(
     int sockfd,
     const void* buf,
@@ -771,12 +769,12 @@ int oe_posix_getpeername_ocall(
     return ret;
 }
 
-/* ATTN:IO: why does this take a sockfd parameter? */
 int oe_posix_shutdown_sockets_device_ocall(int sockfd, int* err)
 {
     OE_UNUSED(sockfd);
+
     /* No shutdown actions needed for this device. */
-    (void)sockfd;
+
     if (err)
         *err = 0;
 
@@ -1127,23 +1125,16 @@ int oe_posix_epoll_create1_ocall(int flags, int* err)
     return ret;
 }
 
-int oe_posix_epoll_wait_ocall(
+int oe_posix_epoll_wait_async_ocall(
     int64_t enclaveid,
     int epfd,
-    struct epoll_event* events,
     size_t maxevents,
-    int timeout,
     int* err)
 {
     int ret = -1;
     size_t eventsize;
     pthread_t thread = 0;
     wait_args_t* args = NULL;
-
-    (void)events;
-    (void)timeout;
-
-    /* ATTN:IO: how does this work without using the events parameter? */
 
     eventsize = sizeof(struct oe_epoll_event) * maxevents;
 

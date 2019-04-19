@@ -246,8 +246,10 @@ int oe_dup(int oldfd)
         goto done;
     }
 
-    // TODO:IO: if this fail, need to release new_dev.
-    newfd = oe_assign_fd_device(new_dev);
+    if (!(newfd = oe_assign_fd_device(new_dev)))
+    {
+        // ATTN:IO: release new_dev here.
+    }
 
 done:
 
@@ -280,7 +282,7 @@ int oe_dup2(int oldfd, int newfd)
         goto done;
     }
 
-    // TODO:IO: release dev if this fails. */
+    // ATTN:IO: release dev if this fails. */
     if (oe_set_fd_device(newfd, dev))
     {
         oe_errno = EBADF;

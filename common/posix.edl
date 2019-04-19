@@ -315,12 +315,12 @@ enclave {
             int flags,
             [out, count=1] int* err);
 
-        int oe_posix_epoll_wait_ocall(
+        // Initiate waiting for epoll events. This function creates a new
+        // thread and delivers the events via oe_posix_polling_notify_ecall().
+        int oe_posix_epoll_wait_async_ocall(
             int64_t enclaveid,
             int epfd,
-            [out, count=maxevents] struct epoll_event* events,
             size_t maxevents,
-            int timeout,
             [out, count=1] int* err);
 
         int oe_posix_epoll_poll_ocall(

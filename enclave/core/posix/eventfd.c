@@ -3,9 +3,9 @@
 
 // clang-format off
 #include <openenclave/enclave.h>
-#include <openenclave/internal/thread.h>
 // clang-format on
 
+#include <openenclave/internal/thread.h>
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/utils.h>
 #include <openenclave/internal/print.h>
@@ -46,7 +46,7 @@ done:
 
     if (eventfd)
     {
-        // TODO:IO: release this device.
+        // ATTN:IO: release this device.
     }
 
     return ret;
@@ -54,10 +54,16 @@ done:
 
 int oe_eventfd_read(int fd, oe_eventfd_t* value)
 {
-    return (int)oe_read(fd, value, sizeof(uint64_t));
+    if (oe_read(fd, value, sizeof(uint64_t)) != sizeof(uint64_t))
+        return -1;
+
+    return 0;
 }
 
 int oe_eventfd_write(int fd, oe_eventfd_t value)
 {
-    return (int)oe_write(fd, &value, sizeof(uint64_t));
+    if (oe_write(fd, &value, sizeof(uint64_t)) != sizeof(uint64_t))
+        return -1;
+
+    return 0;
 }
