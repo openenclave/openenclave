@@ -6,6 +6,7 @@
 
 #include <arpa/inet.h>
 #include <openenclave/corelibc/arpa/inet.h>
+#include <openenclave/corelibc/fcntl.h>
 #include <openenclave/corelibc/poll.h>
 #include <openenclave/corelibc/sys/epoll.h>
 #include <openenclave/corelibc/sys/select.h>

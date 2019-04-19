@@ -1,7 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/corelibc/dirent.h>
+#include <openenclave/corelibc/fcntl.h>
 #include <openenclave/corelibc/stdlib.h>
+#include <openenclave/corelibc/sys/uio.h>
+#include <openenclave/corelibc/unistd.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/posix/fs.h>
 #include <openenclave/internal/print.h>

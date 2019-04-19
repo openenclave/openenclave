@@ -7,6 +7,7 @@
 #include <openenclave/corelibc/signal.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/corelibc/errno.h>
+#include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/trace.h>
 #include "oe_t.h"

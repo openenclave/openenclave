@@ -5,8 +5,10 @@
 #include <openenclave/bits/types.h>
 #include <openenclave/corelibc/ctype.h>
 #include <openenclave/corelibc/stdarg.h>
+#include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
+#include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/posix/fs.h>
 #include <openenclave/internal/print.h>
 #include "intstr.h"

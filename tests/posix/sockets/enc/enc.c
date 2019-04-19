@@ -8,6 +8,7 @@
 #include <openenclave/corelibc/arpa/inet.h>
 #include <openenclave/corelibc/netinet/in.h>
 #include <openenclave/corelibc/sys/socket.h>
+#include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/tests.h>
 #include <unistd.h>

@@ -7,6 +7,7 @@
 #include <openenclave/corelibc/sys/socket.h>
 #include <openenclave/internal/posix/epoll.h>
 #include <openenclave/corelibc/sys/poll.h>
+#include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/print.h>

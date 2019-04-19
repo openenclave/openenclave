@@ -12,7 +12,9 @@
 #include <openenclave/internal/posix/fs.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/corelibc/string.h>
+#include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
+#include <openenclave/corelibc/fcntl.h>
 #include <openenclave/internal/posix/hostfs.h>
 #include <openenclave/internal/thread.h>
 

@@ -15,8 +15,10 @@
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/print.h>
 #include "oe_t.h"
+#include <openenclave/corelibc/dirent.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
+#include <openenclave/corelibc/fcntl.h>
 #include <openenclave/bits/module.h>
 #include <openenclave/internal/trace.h>
 

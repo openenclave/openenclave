@@ -3,6 +3,7 @@
 
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/stdlib.h>
+#include <openenclave/corelibc/unistd.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/array.h>
 #include <openenclave/internal/posix/fd.h>

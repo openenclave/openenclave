@@ -7,6 +7,11 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <openenclave/corelibc/dirent.h>
+#include <openenclave/corelibc/fcntl.h>
+#include <openenclave/corelibc/stdio.h>
+#include <openenclave/corelibc/stdlib.h>
+#include <openenclave/corelibc/unistd.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/posix/fs.h>
 #include <openenclave/internal/posix/hostfs.h>

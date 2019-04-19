@@ -44,7 +44,7 @@ int oe_posix_open_ocall(const char* pathname, int flags, mode_t mode, int* err)
 
     if (strcmp(pathname, "/dev/stdin") == 0)
     {
-        if ((flags & 0x00000003) != OE_O_RDONLY)
+        if ((flags & 0x00000003) != O_RDONLY)
         {
             if (err)
                 *err = EINVAL;
@@ -52,11 +52,11 @@ int oe_posix_open_ocall(const char* pathname, int flags, mode_t mode, int* err)
             goto done;
         }
 
-        ret = OE_STDIN_FILENO;
+        ret = STDIN_FILENO;
     }
     else if (strcmp(pathname, "/dev/stdout") == 0)
     {
-        if ((flags & 0x00000003) != OE_O_WRONLY)
+        if ((flags & 0x00000003) != O_WRONLY)
         {
             if (err)
                 *err = EINVAL;
@@ -64,11 +64,11 @@ int oe_posix_open_ocall(const char* pathname, int flags, mode_t mode, int* err)
             goto done;
         }
 
-        ret = OE_STDOUT_FILENO;
+        ret = STDOUT_FILENO;
     }
     else if (strcmp(pathname, "/dev/stderr") == 0)
     {
-        if ((flags & 0x00000003) != OE_O_WRONLY)
+        if ((flags & 0x00000003) != O_WRONLY)
         {
             if (err)
                 *err = EINVAL;
@@ -76,7 +76,7 @@ int oe_posix_open_ocall(const char* pathname, int flags, mode_t mode, int* err)
             goto done;
         }
 
-        ret = OE_STDERR_FILENO;
+        ret = STDERR_FILENO;
     }
     else
     {
