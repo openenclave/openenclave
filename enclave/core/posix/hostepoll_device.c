@@ -427,7 +427,7 @@ static int _epoll_ctl_mod(
              (int)epoll->host_fd,
              (int)host_fd,
              event->events,
-             enclave_fd, /* list_idx: ATTN:IO: is this correct? */
+             enclave_fd,
              epoll_fd,
              &oe_errno)) != OE_OK)
     {

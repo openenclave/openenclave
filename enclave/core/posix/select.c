@@ -12,7 +12,7 @@
 
 void _set_to_fd_list(
     oe_fd_set* set,
-    uint32_t flags,
+    int flags,
     int fdlist_max,
     int* fd_list,
     int* fd_flags)
@@ -47,8 +47,8 @@ void _set_to_fd_list(
                     {
                         fd_list[fd_idx] = (int)fd;
                     }
-                    /* ATTN:IO: sign change here. Double check this. */
-                    fd_flags[fd] |= (int)flags;
+
+                    fd_flags[fd] |= flags;
                 }
             }
             bitmask <<= 1;
