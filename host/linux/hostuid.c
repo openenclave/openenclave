@@ -4,7 +4,7 @@
 // clang-format off
 #include <openenclave/host.h>
 #include <unistd.h>
-#include <openenclave/internal/uid.h>
+#include <openenclave/internal/posix/uid.h>
 // clang-format on
 
 pid_t oe_get_host_pid(void)

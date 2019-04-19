@@ -23,7 +23,6 @@
 #include <openenclave/internal/posix/eventfd.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/trace.h>
-#include <openenclave/internal/uid.h>
 
 typedef int (*ioctl_proc)(
     int fd,

@@ -3,8 +3,8 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/globals.h>
-
 #include <openenclave/corelibc/errno.h>
+#include <openenclave/internal/posix/uid.h>
 
 /* Note: The variables below are initialized during enclave loading */
 

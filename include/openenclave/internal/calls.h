@@ -9,7 +9,7 @@
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/defs.h>
-#include <openenclave/internal/uid.h>
+#include <openenclave/internal/posix/uid.h>
 #include "backtrace.h"
 
 OE_EXTERNC_BEGIN
