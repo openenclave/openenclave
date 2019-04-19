@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/corelibc/errno.h>
+#include <openenclave/corelibc/limits.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/posix/uid.h>
@@ -258,7 +259,7 @@ uid_t oe_euid; // effective user id
 
 uint32_t oe_num_groups;
 
-gid_t oe_groups[OE_NGROUP_MAX];
+gid_t oe_groups[OE_NGROUPS_MAX];
 
 pid_t oe_getpid(void)
 {
@@ -297,7 +298,7 @@ int32_t oe_getgroups(uint32_t num_groups, gid_t* pgroups)
             retval = -1;
             goto done;
         }
-        if (num_groups > OE_NGROUP_MAX)
+        if (num_groups > OE_NGROUPS_MAX)
         {
             oe_errno = EINVAL;
             retval = -1;

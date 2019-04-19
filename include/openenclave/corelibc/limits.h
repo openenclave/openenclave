@@ -7,6 +7,7 @@
 #include <openenclave/bits/types.h>
 
 #define OE_PATH_MAX 4096
+#define OE_NGROUPS_MAX 32
 
 #if defined(OE_NEED_STDC_NAMES)
 
@@ -29,6 +30,7 @@
 #define LLONG_MIN OE_LLONG_MIN
 #define ULLONG_MAX OE_ULLONG_MAX
 #define PATH_MAX OE_PATH_MAX
+#define NGROUPS_MAX OE_NGROUPS_MAX
 
 #endif /* defined(OE_NEED_STDC_NAMES) */
 

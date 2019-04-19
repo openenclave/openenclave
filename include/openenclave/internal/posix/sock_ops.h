@@ -95,6 +95,7 @@ typedef struct _oe_sock_ops
         oe_device_t* dev,
         struct oe_sockaddr* addr,
         socklen_t* addrlen);
+
 } oe_sock_ops_t;
 
 OE_EXTERNC_END

@@ -331,7 +331,6 @@ static oe_resolver_ops_t _ops =
 static resolv_t _hostresolv =
 {
     .base.type = OE_RESOLVER_HOST,
-    .base.size = sizeof(resolv_t),
     .base.ops = &_ops,
     .magic = RESOLV_MAGIC
 };

@@ -5,6 +5,7 @@
 #include <openenclave/host.h>
 #include <unistd.h>
 #include <openenclave/internal/posix/uid.h>
+#include <openenclave/corelibc/limits.h>
 // clang-format on
 
 pid_t oe_get_host_pid(void)
@@ -36,12 +37,12 @@ uid_t oe_get_host_euid(void)
 int32_t oe_get_host_groups(size_t size, gid_t plist[])
 {
     int32_t retval = -1;
-    gid_t list[OE_NGROUP_MAX] = {0};
+    gid_t list[OE_NGROUPS_MAX] = {0};
     int idx = 0;
 
-    if (size > OE_NGROUP_MAX)
+    if (size > OE_NGROUPS_MAX)
     {
-        size = OE_NGROUP_MAX;
+        size = OE_NGROUPS_MAX;
     }
 
     retval = getgroups((int)size, list);
