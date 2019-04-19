@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_DEVICETYPES_H
-#define _OE_DEVICETYPES_H
+#ifndef _OE_INTERNAL_POSIX_DEVICETYPES_H
+#define _OE_INTERNAL_POSIX_DEVICETYPES_H
 
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
@@ -22,4 +22,4 @@ typedef enum _oe_device_type
 
 OE_EXTERNC_END
 
-#endif // _OE_DEVICETYPES_H
+#endif // _OE_INTERNAL_POSIX_DEVICETYPES_H

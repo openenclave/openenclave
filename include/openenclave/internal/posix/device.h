@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_DEVICE_H
-#define _OE_DEVICE_H
+#ifndef _OE_INTERNAL_POSIX_DEVICE_H
+#define _OE_INTERNAL_POSIX_DEVICE_H
 
 #include <openenclave/bits/result.h>
 #include <openenclave/internal/posix/devicetypes.h>
@@ -45,4 +45,4 @@ int oe_remove_device(uint64_t devid);
 
 OE_EXTERNC_END
 
-#endif // _OE_DEVICE_H
+#endif // _OE_INTERNAL_POSIX_DEVICE_H
