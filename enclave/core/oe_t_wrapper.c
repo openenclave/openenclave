@@ -15,6 +15,6 @@
 #include <openenclave/corelibc/sys/poll.h>
 #include <openenclave/corelibc/sys/socket.h>
 #include <openenclave/corelibc/sys/utsname.h>
-#include <openenclave/internal/epoll.h>
+#include <openenclave/internal/posix/epoll.h>
 
 #include "oe_t.c"

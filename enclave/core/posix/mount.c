@@ -6,7 +6,7 @@
 #include <openenclave/internal/thread.h>
 // clang-format on
 
-#include <openenclave/internal/fs.h>
+#include <openenclave/internal/posix/fs.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/internal/trace.h>

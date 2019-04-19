@@ -8,13 +8,13 @@
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/device.h>
-#include <openenclave/internal/epoll.h>
-#include <openenclave/internal/eventfd.h>
+#include <openenclave/internal/posix/device.h>
+#include <openenclave/internal/posix/epoll.h>
+#include <openenclave/internal/posix/eventfd.h>
 #include <openenclave/internal/fault.h>
-#include <openenclave/internal/fs.h>
+#include <openenclave/internal/posix/fs.h>
 #include <openenclave/internal/globals.h>
-#include <openenclave/internal/hostfs.h>
+#include <openenclave/internal/posix/hostfs.h>
 #include <openenclave/internal/jump.h>
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/print.h>
@@ -32,7 +32,7 @@
 #include "report.h"
 #include "td.h"
 
-#include <openenclave/internal/epoll.h>
+#include <openenclave/internal/posix/epoll.h>
 
 oe_result_t __oe_enclave_status = OE_OK;
 uint8_t __oe_initialized = 0;

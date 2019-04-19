@@ -6,7 +6,7 @@
 
 #include <netdb.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/epoll.h>
+#include <openenclave/internal/posix/epoll.h>
 #include <sys/epoll.h>
 #include <sys/poll.h>
 #include <sys/socket.h>

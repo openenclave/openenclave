@@ -7,9 +7,9 @@
 // clang-format on
 
 #include <openenclave/internal/utils.h>
-#include <openenclave/internal/fs.h>
+#include <openenclave/internal/posix/fs.h>
 #include <openenclave/internal/print.h>
-#include <openenclave/internal/eventfd.h>
+#include <openenclave/internal/posix/eventfd.h>
 #include <openenclave/internal/trace.h>
 
 int oe_eventfd(unsigned int initval, int flags)

@@ -6,7 +6,7 @@
 
 // enclave.h must come before socket.h
 #include <openenclave/corelibc/signal.h>
-#include <openenclave/internal/device.h>
+#include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/tests.h>
 
 #include <assert.h>

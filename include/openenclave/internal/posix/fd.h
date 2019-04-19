@@ -6,7 +6,7 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/internal/devicetypes.h>
+#include <openenclave/internal/posix/devicetypes.h>
 
 OE_EXTERNC_BEGIN
 

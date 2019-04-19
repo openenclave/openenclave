@@ -3,7 +3,7 @@
 
 #include <openenclave/corelibc/sys/select.h>
 #include <openenclave/internal/defs.h>
-#include <openenclave/internal/epoll.h>
+#include <openenclave/internal/posix/epoll.h>
 #include <sys/epoll.h>
 
 OE_STATIC_ASSERT(sizeof(struct oe_epoll_event) == sizeof(struct epoll_event));

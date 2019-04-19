@@ -9,11 +9,11 @@
 #include <errno.h>
 #include <openenclave/enclave.h>
 #include <openenclave/sgxfs.h>
-#include <openenclave/internal/fs.h>
+#include <openenclave/internal/posix/fs.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/stdlib.h>
-#include <openenclave/internal/hostfs.h>
+#include <openenclave/internal/posix/hostfs.h>
 #include <openenclave/internal/thread.h>
 
 #define FS_MAGIC 0x4a335f60

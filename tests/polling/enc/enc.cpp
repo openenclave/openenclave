@@ -10,9 +10,9 @@
 #include <openenclave/corelibc/sys/poll.h>
 #include <openenclave/corelibc/sys/select.h>
 #include <openenclave/corelibc/sys/socket.h>
-#include <openenclave/internal/device.h>
-#include <openenclave/internal/epoll.h>
-#include <openenclave/internal/fs.h>
+#include <openenclave/internal/posix/device.h>
+#include <openenclave/internal/posix/epoll.h>
+#include <openenclave/internal/posix/fs.h>
 #include <openenclave/internal/tests.h>
 
 #include <assert.h>

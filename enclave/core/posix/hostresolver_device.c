@@ -7,10 +7,10 @@
 #include <openenclave/enclave.h>
 // clang-format on
 
-#include <openenclave/internal/device.h>
+#include <openenclave/internal/posix/device.h>
 #include <openenclave/corelibc/sys/socket.h>
 #include <openenclave/corelibc/netdb.h>
-#include <openenclave/internal/resolver.h>
+#include <openenclave/internal/posix/resolver.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/thread.h>

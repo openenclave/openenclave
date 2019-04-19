@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/host.h>
-#include <openenclave/internal/fs.h>
+#include <openenclave/internal/posix/fs.h>
 #include <openenclave/internal/tests.h>
 #include <pthread.h>
 #include <stdio.h>

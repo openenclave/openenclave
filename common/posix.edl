@@ -5,7 +5,7 @@ enclave {
 
     include "openenclave/bits/defs.h"
     include "openenclave/bits/types.h"
-    include "openenclave/internal/epoll.h"
+    include "openenclave/internal/posix/epoll.h"
 
     trusted {
 

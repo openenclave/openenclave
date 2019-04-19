@@ -5,7 +5,7 @@
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/sys/select.h>
 #include <openenclave/corelibc/time.h>
-#include <openenclave/internal/epoll.h>
+#include <openenclave/internal/posix/epoll.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/trace.h>
 

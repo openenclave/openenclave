@@ -7,9 +7,9 @@
 #include <openenclave/enclave.h>
 // clang-format on
 
-#include <openenclave/internal/device.h>
-#include <openenclave/internal/epoll_ops.h>
-#include <openenclave/internal/epoll.h>
+#include <openenclave/internal/posix/device.h>
+#include <openenclave/internal/posix/epoll_ops.h>
+#include <openenclave/internal/posix/epoll.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/thread.h>
@@ -17,7 +17,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
-#include <openenclave/internal/epoll.h>
+#include <openenclave/internal/posix/epoll.h>
 #include <openenclave/corelibc/sys/poll.h>
 #include <openenclave/bits/module.h>
 #include <openenclave/internal/trace.h>

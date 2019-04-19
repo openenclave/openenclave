@@ -14,7 +14,7 @@
 #ifndef _OE_INTERNAL_HOSTFS_H
 #define _OE_INTERNAL_HOSTFS_H
 
-#include <openenclave/internal/device.h>
+#include <openenclave/internal/posix/device.h>
 
 OE_EXTERNC_BEGIN
 

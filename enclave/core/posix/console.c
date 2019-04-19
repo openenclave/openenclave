@@ -3,8 +3,8 @@
 
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/device.h>
-#include <openenclave/internal/fs.h>
+#include <openenclave/internal/posix/device.h>
+#include <openenclave/internal/posix/fs.h>
 #include <openenclave/internal/trace.h>
 #include "oe_t.h"
 

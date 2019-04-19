@@ -8,12 +8,12 @@
 #include <openenclave/bits/types.h>
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/unistd.h>
-#include <openenclave/internal/devicetypes.h>
-#include <openenclave/internal/epoll_ops.h>
-#include <openenclave/internal/eventfd_ops.h>
-#include <openenclave/internal/fd.h>
-#include <openenclave/internal/fs_ops.h>
-#include <openenclave/internal/sock_ops.h>
+#include <openenclave/internal/posix/devicetypes.h>
+#include <openenclave/internal/posix/epoll_ops.h>
+#include <openenclave/internal/posix/eventfd_ops.h>
+#include <openenclave/internal/posix/fd.h>
+#include <openenclave/internal/posix/fs_ops.h>
+#include <openenclave/internal/posix/sock_ops.h>
 
 OE_EXTERNC_BEGIN
 

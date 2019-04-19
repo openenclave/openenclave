@@ -9,9 +9,9 @@
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/internal/utils.h>
 #include <openenclave/internal/array.h>
-#include <openenclave/internal/fs.h>
+#include <openenclave/internal/posix/fs.h>
 #include <openenclave/internal/print.h>
-#include <openenclave/internal/epoll.h>
+#include <openenclave/internal/posix/epoll.h>
 #include <openenclave/internal/list.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/stdio.h>

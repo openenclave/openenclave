@@ -3,7 +3,7 @@
 #include <openenclave/corelibc/netdb.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/sys/socket.h>
-#include <openenclave/internal/resolver.h>
+#include <openenclave/internal/posix/resolver.h>
 #include <openenclave/internal/trace.h>
 
 static size_t _resolver_table_len = 3;

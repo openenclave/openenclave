@@ -14,7 +14,7 @@
 #include <openenclave/corelibc/sys/stat.h>
 #include <openenclave/corelibc/sys/uio.h>
 #include <openenclave/corelibc/unistd.h>
-#include <openenclave/internal/device.h>
+#include <openenclave/internal/posix/device.h>
 
 OE_EXTERNC_BEGIN
 
