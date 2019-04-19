@@ -791,8 +791,8 @@ static oe_epoll_ops_t _ops = {
     .ctl_add = _epoll_ctl_add,
     .ctl_mod = _epoll_ctl_mod,
     .ctl_del = _epoll_ctl_del,
-    .addeventdata = _epoll_add_event_data,
-    .geteventdata = _epoll_get_event_data,
+    .add_event_data = _epoll_add_event_data,
+    .get_event_data = _epoll_get_event_data,
     .wait = _epoll_wait,
     .poll = _epoll_poll,
 };

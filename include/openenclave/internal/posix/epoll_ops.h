@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_INTERNA_POSIX_EPOLL_OPS_H
-#define _OE_INTERNA_POSIX_EPOLL_OPS_H
+#ifndef _OE_INTERNAL_POSIX_EPOLL_OPS_H
+#define _OE_INTERNAL_POSIX_EPOLL_OPS_H
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
@@ -40,16 +40,16 @@ typedef struct _oe_epoll_ops
         size_t maxevents,
         int64_t timeout);
 
-    int (*addeventdata)(
+    int (*add_event_data)(
         int epoll_fd,
         int enclave_fd,
         uint32_t events,
         uint64_t data);
 
-    uint64_t (*geteventdata)(oe_device_t* epoll_device, uint32_t list_idx);
+    uint64_t (*get_event_data)(oe_device_t* epoll_device, uint32_t list_idx);
 
 } oe_epoll_ops_t;
 
 OE_EXTERNC_END
 
-#endif /* _OE_INTERNA_POSIX_EPOLL_OPS_H */
+#endif /* _OE_INTERNAL_POSIX_EPOLL_OPS_H */

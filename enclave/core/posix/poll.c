@@ -42,7 +42,7 @@ int oe_poll(struct oe_pollfd* fds, nfds_t nfds, int timeout_ms)
         goto done;
     }
 
-    if (pepoll->ops.epoll->addeventdata == NULL)
+    if (pepoll->ops.epoll->add_event_data == NULL)
     {
         oe_errno = EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
@@ -56,7 +56,7 @@ int oe_poll(struct oe_pollfd* fds, nfds_t nfds, int timeout_ms)
             struct oe_epoll_event ev = {.data.fd = fds[i].fd,
                                         .events = (uint32_t)fds[i].events};
 
-            retval = (*pepoll->ops.epoll->addeventdata)(
+            retval = (*pepoll->ops.epoll->add_event_data)(
                 epollfd, fds[i].fd, ev.events, ev.data.u64);
             if (retval < 0)
             {

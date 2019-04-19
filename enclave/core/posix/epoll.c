@@ -568,7 +568,7 @@ int oe_get_epoll_events(
     {
         events[i].events = p->notice.event_mask;
 
-        if ((events[i].data.u64 = (*epoll->ops.epoll->geteventdata)(
+        if ((events[i].data.u64 = (*epoll->ops.epoll->get_event_data)(
                  epoll, p->notice.list_idx)) == (uint64_t)-1)
         {
             oe_errno = EINVAL;

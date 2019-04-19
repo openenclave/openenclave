@@ -1,8 +1,8 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
 
-#ifndef _OE_EVENTFD_H
-#define _OE_EVENTFD_H
+#ifndef _OE_INTERNAL_POSIX_EVENTFD_H
+#define _OE_INTERNAL_POSIX_EVENTFD_H
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
@@ -29,4 +29,4 @@ int oe_eventfd_write(int fd, oe_eventfd_t value);
 
 OE_EXTERNC_END
 
-#endif /* _OE_EVENTFD_H */
+#endif /* _OE_INTERNAL_POSIX_EVENTFD_H */
