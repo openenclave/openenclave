@@ -772,7 +772,7 @@ static ssize_t _hostsock_sendmsg(
         if (ret == -1)
         {
             oe_errno = err;
-            OE_TRACE_ERROR("ret=%d oe_errno=%d", ret, oe_errno);
+            OE_TRACE_ERROR("ret=%ld oe_errno=%d", ret, oe_errno);
             goto done;
         }
     }

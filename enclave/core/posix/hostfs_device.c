@@ -844,7 +844,7 @@ static int _hostfs_fcntl(oe_device_t* file_, int cmd, uint64_t arg)
     {
         oe_errno = EINVAL;
         OE_TRACE_ERROR(
-            "host_fd=%d cmd=%d arg=%d oe_errno=%d",
+            "host_fd=%d cmd=%d arg=%lu oe_errno=%d",
             file->host_fd,
             cmd,
             arg,

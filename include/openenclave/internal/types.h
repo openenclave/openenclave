@@ -7,6 +7,8 @@
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/defs.h>
 
+OE_EXTERNC_BEGIN
+
 /*
 **==============================================================================
 **
@@ -240,5 +242,7 @@ OE_INLINE int64_t oe_assign_int64(int64_t* lhs, const int64_t* rhs)
 {
     return *lhs = *rhs;
 }
+
+OE_EXTERNC_END
 
 #endif /* _OE_INTERNAL_TYPES_H */
