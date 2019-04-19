@@ -162,7 +162,7 @@ done:
     return ret;
 }
 
-oe_device_t* oe_get_fd_device(int fd)
+static oe_device_t* _get_fd_device(int fd)
 {
     oe_device_t* ret = NULL;
     bool locked = false;
@@ -205,15 +205,15 @@ done:
     return ret;
 }
 
-oe_device_t* oe_get_fd_device_by_type(int fd, oe_device_type_t type)
+oe_device_t* oe_get_fd_device(int fd, oe_device_type_t type)
 {
     oe_device_t* ret = NULL;
     oe_device_t* device;
 
-    if (!(device = oe_get_fd_device(fd)))
+    if (!(device = _get_fd_device(fd)))
         goto done;
 
-    if (device->type != type)
+    if (type != OE_DEVICE_TYPE_NONE && device->type != type)
         oe_errno = EINVAL;
 
     ret = device;
@@ -224,10 +224,17 @@ done:
 
 int oe_dup(int oldfd)
 {
-    oe_device_t* old_dev = oe_get_fd_device(oldfd);
+    oe_device_t* old_dev;
     oe_device_t* new_dev = NULL;
     int newfd = -1;
     int retval = -1;
+
+    if (!(old_dev = oe_get_fd_device(oldfd, OE_DEVICE_TYPE_NONE)))
+    {
+        oe_errno = EBADF;
+        OE_TRACE_ERROR("oldfd=%d oe_errno=%d", oldfd, oe_errno);
+        goto done;
+    }
 
     if ((retval = (*old_dev->ops.base->dup)(old_dev, &new_dev)) < 0)
     {
@@ -237,6 +244,8 @@ int oe_dup(int oldfd)
         newfd = -1;
         goto done;
     }
+
+    // TODO: if this fail, need to release new_dev.
     newfd = oe_assign_fd_device(new_dev);
 
 done:
@@ -246,29 +255,36 @@ done:
 
 int oe_dup2(int oldfd, int newfd)
 {
-    oe_device_t* old_dev = oe_get_fd_device(oldfd);
-    oe_device_t* old_new_dev = oe_get_fd_device(newfd);
-    oe_device_t* new_dev = NULL;
+    oe_device_t* old_dev;
+    oe_device_t* new_dev;
+    oe_device_t* dev = NULL;
     int retval = -1;
 
-    if (old_new_dev)
+    if (!(old_dev = oe_get_fd_device(oldfd, OE_DEVICE_TYPE_NONE)))
     {
-        (*old_new_dev->ops.base->close)(old_new_dev);
+        oe_errno = EBADF;
+        OE_TRACE_ERROR("oldfd=%d oe_errno=%d", oldfd, oe_errno);
+        goto done;
     }
 
-    if ((retval = (*old_dev->ops.base->dup)(old_dev, &new_dev)) < 0)
+    if (!(new_dev = oe_get_fd_device(newfd, OE_DEVICE_TYPE_NONE)))
+    {
+        (*new_dev->ops.base->close)(new_dev);
+    }
+
+    if ((retval = (*old_dev->ops.base->dup)(old_dev, &dev)) < 0)
     {
         oe_errno = EBADF;
         newfd = -1;
         goto done;
     }
 
-    if (oe_set_fd_device(newfd, new_dev))
+    // TODO: release dev if this fails. */
+    if (oe_set_fd_device(newfd, dev))
     {
         oe_errno = EBADF;
-        OE_TRACE_ERROR(
-            "newfd=%d new_dev=%p oe_errno=%d", newfd, new_dev, oe_errno);
-        (*new_dev->ops.base->close)(new_dev);
+        OE_TRACE_ERROR("newfd=%d dev=%p oe_errno=%d", newfd, dev, oe_errno);
+        (*dev->ops.base->close)(dev);
         newfd = -1;
         goto done;
     }

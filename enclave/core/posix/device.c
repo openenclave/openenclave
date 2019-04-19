@@ -215,7 +215,7 @@ ssize_t oe_read(int fd, void* buf, size_t count)
     oe_device_t* device;
     ssize_t n;
 
-    if (!(device = oe_get_fd_device(fd)))
+    if (!(device = oe_get_fd_device(fd, OE_DEVICE_TYPE_NONE)))
     {
         OE_TRACE_ERROR("no device found fd=%d", fd);
         goto done;
@@ -244,11 +244,11 @@ done:
 ssize_t oe_write(int fd, const void* buf, size_t count)
 {
     ssize_t ret = -1;
-    oe_device_t* device = oe_get_fd_device(fd);
+    oe_device_t* device;
 
-    OE_TRACE_VERBOSE("fd =%d device=%p", fd, device);
+    OE_TRACE_VERBOSE("fd=%d", fd);
 
-    if (!device)
+    if (!(device = oe_get_fd_device(fd, OE_DEVICE_TYPE_NONE)))
     {
         oe_errno = EBADF;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
@@ -273,9 +273,9 @@ int oe_close(int fd)
 {
     int ret = -1;
     int retval = -1;
-    oe_device_t* device = oe_get_fd_device(fd);
+    oe_device_t* device;
 
-    if (!device)
+    if (!(device = oe_get_fd_device(fd, OE_DEVICE_TYPE_NONE)))
     {
         OE_TRACE_ERROR("no device found for fd=%d", fd);
         goto done;
@@ -305,9 +305,9 @@ done:
 int __oe_fcntl(int fd, int cmd, uint64_t arg)
 {
     int ret = -1;
-    oe_device_t* device = oe_get_fd_device(fd);
+    oe_device_t* device;
 
-    if (!device)
+    if (!(device = oe_get_fd_device(fd, OE_DEVICE_TYPE_NONE)))
     {
         OE_TRACE_ERROR("no device found fd=%d", fd);
         goto done;
@@ -366,16 +366,16 @@ int __oe_ioctl(int fd, unsigned long request, uint64_t arg)
     }
     else
     {
-        oe_device_t* pdevice = oe_get_fd_device(fd);
+        oe_device_t* device;
 
-        if (!pdevice)
+        if (!(device = oe_get_fd_device(fd, OE_DEVICE_TYPE_NONE)))
         {
             OE_TRACE_ERROR("no device found fd=%d", fd);
             ret = -1;
             goto done;
         }
 
-        if (pdevice->ops.base->ioctl == NULL)
+        if (device->ops.base->ioctl == NULL)
         {
             oe_errno = EINVAL;
             OE_TRACE_ERROR("fd=%d oe_errno =%d ", fd, oe_errno);
@@ -384,7 +384,7 @@ int __oe_ioctl(int fd, unsigned long request, uint64_t arg)
         }
 
         // The action routine sets errno
-        ret = (*pdevice->ops.base->ioctl)(pdevice, request, arg);
+        ret = (*device->ops.base->ioctl)(device, request, arg);
         goto done;
     }
 

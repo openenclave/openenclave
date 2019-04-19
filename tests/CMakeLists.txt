@@ -73,7 +73,6 @@ endif()
 # Windows test Broken Post #632 issue
 if ( UNIX )
     if (OE_SGX)
-        add_subdirectory(sgxfs) # __feature_io__
         add_subdirectory(libc)
         add_subdirectory(libcxx)
         add_subdirectory(libcxxrt)
@@ -83,16 +82,9 @@ if ( UNIX )
         add_subdirectory(mbedssl2)
         add_subdirectory(mbedssl3)
     endif()
-add_subdirectory(corelibc)      # __feature_io__
-add_subdirectory(send)
-add_subdirectory(sendmsg)
-add_subdirectory(signal)
-add_subdirectory(sockets)
-add_subdirectory(polling)
-add_subdirectory(resolver)
+add_subdirectory(corelibc)
 add_subdirectory(create-rapid)
-add_subdirectory(hostfs)        # __feature_io__
-add_subdirectory(fs)            # __feature_io__
+add_subdirectory(posix)
 endif()
 
 if (OE_SGX AND UNIX)

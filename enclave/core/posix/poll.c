@@ -36,7 +36,7 @@ int oe_poll(struct oe_pollfd* fds, nfds_t nfds, int timeout_ms)
         goto done;
     }
 
-    if (!(pepoll = oe_get_fd_device(epollfd)))
+    if (!(pepoll = oe_get_fd_device(epollfd, OE_DEVICE_TYPE_EPOLL)))
     {
         OE_TRACE_ERROR("pepoll=%p, epollfd=%d", pepoll, epollfd);
         goto done;

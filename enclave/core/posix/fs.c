@@ -429,7 +429,7 @@ off_t oe_lseek(int fd, off_t offset, int whence)
     off_t ret = -1;
     oe_device_t* file;
 
-    if (!(file = oe_get_fd_device(fd)))
+    if (!(file = oe_get_fd_device(fd, OE_DEVICE_TYPE_FILE)))
     {
         oe_errno = EBADF;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
@@ -454,7 +454,7 @@ int oe_getdents(unsigned int fd, struct oe_dirent* dirp, unsigned int count)
     int ret = -1;
     oe_device_t* file;
 
-    if (!(file = oe_get_fd_device((int)fd)))
+    if (!(file = oe_get_fd_device((int)fd, OE_DEVICE_TYPE_FILE)))
     {
         oe_errno = EBADF;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);

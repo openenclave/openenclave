@@ -322,9 +322,10 @@ static int _epoll_ctl_add(
     struct oe_epoll_event* event)
 {
     int ret = -1;
-    epoll_dev_t* epoll = _cast_epoll(oe_get_fd_device(epoll_fd));
+    epoll_dev_t* epoll =
+        _cast_epoll(oe_get_fd_device(epoll_fd, OE_DEVICE_TYPE_EPOLL));
     ssize_t host_fd = -1;
-    oe_device_t* pdev = oe_get_fd_device(enclave_fd);
+    oe_device_t* pdev = oe_get_fd_device(enclave_fd, OE_DEVICE_TYPE_NONE);
 
     /* Check parameters. */
     if (!epoll || !pdev || !event || (enclave_fd == -1))
@@ -384,9 +385,10 @@ static int _epoll_ctl_mod(
     struct oe_epoll_event* event)
 {
     int ret = -1;
-    epoll_dev_t* epoll = _cast_epoll(oe_get_fd_device(epoll_fd));
+    epoll_dev_t* epoll =
+        _cast_epoll(oe_get_fd_device(epoll_fd, OE_DEVICE_TYPE_EPOLL));
     ssize_t host_fd = -1;
-    oe_device_t* pdev = oe_get_fd_device(enclave_fd);
+    oe_device_t* pdev = oe_get_fd_device(enclave_fd, OE_DEVICE_TYPE_NONE);
     oe_result_t result = OE_FAILURE;
 
     if (!epoll || !pdev || !event)
@@ -447,9 +449,10 @@ done:
 static int _epoll_ctl_del(int epoll_fd, int enclave_fd)
 {
     int ret = -1;
-    epoll_dev_t* epoll = _cast_epoll(oe_get_fd_device(epoll_fd));
+    epoll_dev_t* epoll =
+        _cast_epoll(oe_get_fd_device(epoll_fd, OE_DEVICE_TYPE_EPOLL));
     ssize_t host_fd = -1;
-    oe_device_t* pdev = oe_get_fd_device(enclave_fd);
+    oe_device_t* pdev = oe_get_fd_device(enclave_fd, OE_DEVICE_TYPE_NONE);
     oe_result_t result = OE_FAILURE;
 
     /* Check parameters. */
@@ -503,7 +506,8 @@ static int _epoll_wait(
     int64_t timeout)
 {
     int ret = -1;
-    epoll_dev_t* epoll = _cast_epoll(oe_get_fd_device(epoll_fd));
+    epoll_dev_t* epoll =
+        _cast_epoll(oe_get_fd_device(epoll_fd, OE_DEVICE_TYPE_EPOLL));
     ssize_t epoll_host_fd = -1;
     struct oe_epoll_event* host_events = NULL;
     oe_result_t result = OE_FAILURE;
@@ -583,8 +587,9 @@ static int _epoll_add_event_data(
     uint64_t data)
 {
     int ret = -1;
-    epoll_dev_t* epoll = _cast_epoll(oe_get_fd_device(epoll_fd));
-    oe_device_t* pdev = oe_get_fd_device(enclave_fd);
+    epoll_dev_t* epoll =
+        _cast_epoll(oe_get_fd_device(epoll_fd, OE_DEVICE_TYPE_EPOLL));
+    oe_device_t* pdev = oe_get_fd_device(enclave_fd, OE_DEVICE_TYPE_NONE);
 
     OE_UNUSED(events);
 
@@ -619,7 +624,8 @@ static int _epoll_poll(
     int64_t timeout)
 {
     int ret = -1;
-    epoll_dev_t* epoll = _cast_epoll(oe_get_fd_device(epoll_fd));
+    epoll_dev_t* epoll =
+        _cast_epoll(oe_get_fd_device(epoll_fd, OE_DEVICE_TYPE_EPOLL));
     oe_device_t* pdev = NULL;
     struct oe_pollfd* host_fds = NULL;
     oe_result_t result = OE_FAILURE;
@@ -646,7 +652,7 @@ static int _epoll_poll(
         for (; fd_idx < nfds; fd_idx++)
         {
             int host_fd = -1;
-            pdev = oe_get_fd_device(fds[fd_idx].fd);
+            pdev = oe_get_fd_device(fds[fd_idx].fd, OE_DEVICE_TYPE_NONE);
             if (pdev)
             {
                 if (pdev->ops.base->get_host_fd != NULL)
