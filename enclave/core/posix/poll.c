@@ -124,7 +124,7 @@ int oe_poll(struct oe_pollfd* fds, nfds_t nfds, int timeout_ms)
     {
         if (fds[i].fd == -1)
         {
-            fds[i].revents = POLLNVAL;
+            fds[i].revents = OE_POLLNVAL;
             continue;
         }
 

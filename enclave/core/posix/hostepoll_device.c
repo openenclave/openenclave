@@ -378,7 +378,7 @@ done:
     return ret;
 }
 
-/* TODO: add test for mod case. */
+/* TODO:IO: add test for mod case. */
 static int _epoll_ctl_mod(
     int epoll_fd,
     int enclave_fd,
@@ -445,7 +445,7 @@ done:
     return ret;
 }
 
-/* TODO: add test for del case. */
+/* TODO:IO: add test for del case. */
 static int _epoll_ctl_del(int epoll_fd, int enclave_fd)
 {
     int ret = -1;
