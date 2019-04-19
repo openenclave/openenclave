@@ -5,9 +5,6 @@
 #define _OE_DEVICE_H
 
 #include <openenclave/bits/result.h>
-#include <openenclave/bits/types.h>
-#include <openenclave/corelibc/errno.h>
-#include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/posix/devicetypes.h>
 #include <openenclave/internal/posix/epoll_ops.h>
 #include <openenclave/internal/posix/eventfd_ops.h>
@@ -55,10 +52,13 @@ struct _oe_device
 };
 
 uint64_t oe_allocate_devid(uint64_t devid);
+
 int oe_release_devid(uint64_t devid);
 
 int oe_set_devid_device(uint64_t devid, oe_device_t* pdevice);
+
 oe_device_t* oe_get_devid_device(uint64_t devid);
+
 oe_device_t* oe_clone_device(oe_device_t* pdevice);
 
 int oe_device_init(); // Overridable function to set up device structures. Shoud
