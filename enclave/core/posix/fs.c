@@ -76,7 +76,7 @@ int oe_open_d(uint64_t devid, const char* pathname, int flags, mode_t mode)
 {
     int ret = -1;
 
-    if (devid == OE_DEVID_NULL)
+    if (devid == OE_DEVID_NONE)
     {
         ret = oe_open(pathname, flags, mode);
     }
@@ -154,7 +154,7 @@ done:
 
 OE_DIR* oe_opendir(const char* pathname)
 {
-    return oe_opendir_d(OE_DEVID_NULL, pathname);
+    return oe_opendir_d(OE_DEVID_NONE, pathname);
 }
 
 struct oe_dirent* oe_readdir(OE_DIR* dir)
@@ -575,7 +575,7 @@ int oe_unlink_d(uint64_t devid, const char* pathname)
 {
     int ret = -1;
 
-    if (devid == OE_DEVID_NULL)
+    if (devid == OE_DEVID_NONE)
     {
         ret = oe_unlink(pathname);
     }
@@ -605,7 +605,7 @@ int oe_link_d(uint64_t devid, const char* oldpath, const char* newpath)
 {
     int ret = -1;
 
-    if (devid == OE_DEVID_NULL)
+    if (devid == OE_DEVID_NONE)
     {
         ret = oe_link(oldpath, newpath);
     }
@@ -640,7 +640,7 @@ int oe_rename_d(uint64_t devid, const char* oldpath, const char* newpath)
 {
     int ret = -1;
 
-    if (devid == OE_DEVID_NULL)
+    if (devid == OE_DEVID_NONE)
     {
         ret = oe_rename(oldpath, newpath);
     }
@@ -674,7 +674,7 @@ int oe_mkdir_d(uint64_t devid, const char* pathname, mode_t mode)
 {
     int ret = -1;
 
-    if (devid == OE_DEVID_NULL)
+    if (devid == OE_DEVID_NONE)
     {
         ret = oe_mkdir(pathname, mode);
     }
@@ -708,7 +708,7 @@ int oe_rmdir_d(uint64_t devid, const char* pathname)
 {
     int ret = -1;
 
-    if (devid == OE_DEVID_NULL)
+    if (devid == OE_DEVID_NONE)
     {
         ret = oe_rmdir(pathname);
     }
@@ -738,7 +738,7 @@ int oe_stat_d(uint64_t devid, const char* pathname, struct oe_stat* buf)
 {
     int ret = -1;
 
-    if (devid == OE_DEVID_NULL)
+    if (devid == OE_DEVID_NONE)
     {
         ret = oe_stat(pathname, buf);
     }
@@ -768,7 +768,7 @@ int oe_truncate_d(uint64_t devid, const char* path, off_t length)
 {
     int ret = -1;
 
-    if (devid == OE_DEVID_NULL)
+    if (devid == OE_DEVID_NONE)
     {
         ret = oe_truncate(path, length);
     }
@@ -797,7 +797,7 @@ int oe_access_d(uint64_t devid, const char* pathname, int mode)
 {
     int ret = -1;
 
-    if (devid == OE_DEVID_NULL)
+    if (devid == OE_DEVID_NONE)
     {
         ret = oe_access(pathname, mode);
     }

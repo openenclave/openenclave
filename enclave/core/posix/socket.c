@@ -11,7 +11,7 @@
 #include <openenclave/internal/trace.h>
 // clang-format on
 
-static uint64_t _default_socket_devid = OE_DEVID_NULL;
+static uint64_t _default_socket_devid = OE_DEVID_NONE;
 static oe_spinlock_t _default_socket_devid_lock;
 
 void oe_set_default_socket_devid(uint64_t devid)
@@ -36,7 +36,7 @@ int oe_socket_d(uint64_t devid, int domain, int type, int protocol)
     oe_device_t* sock = NULL;
     oe_device_t* device;
 
-    if (devid == OE_DEVID_NULL)
+    if (devid == OE_DEVID_NONE)
     {
         /* Only one device today. */
         devid = OE_DEVID_HOSTSOCK;
@@ -84,7 +84,7 @@ int oe_socketpair(int domain, int type, int protocol, int retfd[2])
     ssize_t ret = -1;
     oe_device_t* socks[2] = {0};
     oe_device_t* device;
-    uint64_t devid = OE_DEVID_NULL;
+    uint64_t devid = OE_DEVID_NONE;
 
     /* Resolve the device id. */
     switch (domain)

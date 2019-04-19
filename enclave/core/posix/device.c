@@ -60,7 +60,7 @@ static int _init_table()
 
 uint64_t oe_allocate_devid(uint64_t devid)
 {
-    uint64_t ret = OE_DEVID_NULL;
+    uint64_t ret = OE_DEVID_NONE;
     bool locked = false;
 
     if (!_initialized && _init_table() != 0)

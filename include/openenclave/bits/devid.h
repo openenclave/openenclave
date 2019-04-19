@@ -12,7 +12,7 @@ OE_EXTERNC_BEGIN
 /* Identifiers for well-known device types. */
 enum
 {
-    OE_DEVID_NULL,
+    OE_DEVID_NONE,
     OE_DEVID_HOSTFS,
     OE_DEVID_SGXFS,
     OE_DEVID_HOSTSOCK,

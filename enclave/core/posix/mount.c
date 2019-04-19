@@ -46,9 +46,9 @@ static int _set_tls_device(uint64_t devid)
     int ret = -1;
     oe_result_t result = OE_FAILURE;
 
-    if (devid == OE_DEVID_NULL)
+    if (devid == OE_DEVID_NONE)
     {
-        OE_TRACE_ERROR("devid is OE_DEVID_NULL");
+        OE_TRACE_ERROR("devid is OE_DEVID_NONE");
         goto done;
     }
 
@@ -94,7 +94,7 @@ done:
 
 static uint64_t _get_tls_device(void)
 {
-    uint64_t ret = OE_DEVID_NULL;
+    uint64_t ret = OE_DEVID_NONE;
     uint64_t devid;
 
     if (oe_once(&_tls_device_once, _create_tls_device_key) != 0)
@@ -125,7 +125,7 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
     {
         uint64_t devid;
 
-        if ((devid = _get_tls_device()) != OE_DEVID_NULL)
+        if ((devid = _get_tls_device()) != OE_DEVID_NONE)
         {
             oe_device_t* device = oe_get_devid_device(devid);
 
@@ -219,10 +219,10 @@ static oe_device_t* _filesystemtype_to_device(
     };
     static const size_t num_pairs = OE_COUNTOF(pairs);
     size_t i;
-    uint64_t devid = OE_DEVID_NULL;
+    uint64_t devid = OE_DEVID_NONE;
 
     if (devid_out)
-        *devid_out = OE_DEVID_NULL;
+        *devid_out = OE_DEVID_NONE;
 
     for (i = 0; i < num_pairs; i++)
     {
@@ -233,9 +233,9 @@ static oe_device_t* _filesystemtype_to_device(
         }
     }
 
-    if (devid == OE_DEVID_NULL)
+    if (devid == OE_DEVID_NONE)
     {
-        OE_TRACE_ERROR("devid is OE_DEVID_NULL");
+        OE_TRACE_ERROR("devid is OE_DEVID_NONE");
         goto done;
     }
 
@@ -254,7 +254,7 @@ int oe_mount(
     const void* data)
 {
     int ret = -1;
-    uint64_t devid = OE_DEVID_NULL;
+    uint64_t devid = OE_DEVID_NONE;
     oe_device_t* device = NULL;
     oe_device_t* new_device = NULL;
     bool locked = false;
@@ -284,7 +284,7 @@ int oe_mount(
     if (oe_strcmp(target, "__tls__") == 0)
     {
         /* Resolve devid if not already resolved. */
-        if (devid == OE_DEVID_NULL)
+        if (devid == OE_DEVID_NONE)
         {
             if (!data)
             {
