@@ -314,7 +314,10 @@ let oe_gen_args_header (ec: enclave_content) (dir:string)=
     {[
       int a[10][20]
     ]}
-    needs to be cast to [int *] . *)
+    needs to be cast to [int *].
+
+    NOTE: Foreign arrays are marshalled as [void *], but foreign pointers
+    are marshalled as-is. *)
 let get_cast_to_mem_expr (ptype, decl)=
   match ptype with
   | Ast.PTVal _ -> ""
@@ -322,7 +325,7 @@ let get_cast_to_mem_expr (ptype, decl)=
     if Ast.is_array decl then
       sprintf "(%s*) " (get_tystr t)
     else if is_foreign_array ptype then
-      sprintf "/* foreign array of type %s */ " (get_tystr t)
+      sprintf "/* foreign array of type %s */ (void*) " (get_tystr t)
     else
       sprintf "(%s) " (get_tystr t)
 
@@ -336,7 +339,7 @@ let get_cast_to_mem_type (ptype, decl)=
     if Ast.is_array decl then
       (get_tystr t) ^ "*"
     else if is_foreign_array ptype then
-      sprintf "#error foreign array type '%s' not expected here" (get_tystr t)
+      sprintf "/* foreign array of type %s */ void* " (get_tystr t)
     else
       get_tystr t
 
@@ -458,7 +461,7 @@ let get_cast_from_mem_expr (ptype, decl)=
     if Ast.is_array decl then
       sprintf "*(%s (*)%s) " (get_tystr t) (get_array_dims decl.Ast.array_dims)
     else if is_foreign_array ptype then
-      sprintf "/*foreign array*/ *(%s *) " (get_tystr t)
+      sprintf "/* foreign array */ *(%s *) " (get_tystr t)
     else
     if attr.Ast.pa_rdonly then
       (* for ptrs, only constness is removed; add it back *)
