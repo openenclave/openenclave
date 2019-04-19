@@ -5,7 +5,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <netdb.h>
-#include <openenclave/internal/posix/fs.h>
 #include <openenclave/internal/posix/hostfs.h>
 #include <pthread.h>
 #include <stdio.h>

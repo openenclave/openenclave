@@ -8,7 +8,6 @@
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/posix/fs.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/stack_alloc.h>
 #include "td.h"

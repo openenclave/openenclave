@@ -12,10 +12,10 @@
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/jump.h>
 #include <openenclave/internal/malloc.h>
+#include <openenclave/internal/posix/console.h>
 #include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/posix/epoll.h>
 #include <openenclave/internal/posix/eventfd.h>
-#include <openenclave/internal/posix/fs.h>
 #include <openenclave/internal/posix/hostfs.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>

@@ -8,7 +8,6 @@
 
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/utils.h>
-#include <openenclave/internal/posix/fs.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/posix/eventfd.h>
 #include <openenclave/internal/trace.h>

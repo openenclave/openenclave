@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/corelibc/limits.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/posix/device.h>
-#include <openenclave/internal/posix/fs.h>
 #include <openenclave/internal/posix/fs_ops.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>

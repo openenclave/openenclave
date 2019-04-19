@@ -11,7 +11,6 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <limits.h>
-#include <openenclave/internal/posix/fs.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>

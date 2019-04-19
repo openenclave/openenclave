@@ -9,7 +9,6 @@
 #include <errno.h>
 #include <openenclave/enclave.h>
 #include <openenclave/sgxfs.h>
-#include <openenclave/internal/posix/fs.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/stdio.h>
@@ -17,6 +16,7 @@
 #include <openenclave/corelibc/fcntl.h>
 #include <openenclave/internal/posix/hostfs.h>
 #include <openenclave/internal/thread.h>
+#include <openenclave/corelibc/limits.h>
 
 #define FS_MAGIC 0x4a335f60
 #define FILE_MAGIC 0x8d7e422f
@@ -36,6 +36,11 @@ typedef struct _file
     uint32_t magic;
     SGX_FILE* stream;
 } file_t;
+
+static int _get_open_access_mode(int flags)
+{
+    return (flags & 000000003);
+}
 
 static fs_t* _cast_fs(const oe_device_t* device)
 {
@@ -319,7 +324,7 @@ static oe_device_t* _sgxfs_open_file(
     }
 
     /* Fail if attempting to write to a read-only file system. */
-    if (_is_rdonly(fs) && oe_get_open_access_mode(flags) != OE_O_RDONLY)
+    if (_is_rdonly(fs) && _get_open_access_mode(flags) != OE_O_RDONLY)
     {
         oe_errno = EPERM;
         goto done;
@@ -1193,7 +1198,7 @@ static fs_t _sgxfs = {
     .magic = FS_MAGIC,
 };
 
-oe_device_t* oe_get_sgxfs_device(void)
+static oe_device_t* _get_sgxfs_device(void)
 {
     return &_sgxfs.base;
 }
@@ -1218,14 +1223,14 @@ oe_result_t oe_load_module_sgxfs(void)
             }
 
             /* Add the sgxfs device to the device table. */
-            if (oe_set_devid_device(OE_DEVID_SGXFS, oe_get_sgxfs_device()) != 0)
+            if (oe_set_devid_device(OE_DEVID_SGXFS, _get_sgxfs_device()) != 0)
             {
                 result = OE_FAILURE;
                 goto done;
             }
 
             /* Check that the above operation was successful. */
-            if (oe_get_devid_device(OE_DEVID_SGXFS) != oe_get_sgxfs_device())
+            if (oe_get_devid_device(OE_DEVID_SGXFS) != _get_sgxfs_device())
             {
                 result = OE_FAILURE;
                 goto done;

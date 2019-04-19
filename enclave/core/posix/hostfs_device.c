@@ -8,8 +8,8 @@
 // clang-format on
 
 #include <openenclave/internal/posix/device.h>
+#include <openenclave/corelibc/limits.h>
 #include <openenclave/internal/posix/fs_ops.h>
-#include <openenclave/internal/posix/fs.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/thread.h>
@@ -58,6 +58,11 @@ typedef struct _dir
     uint64_t host_dir;
     struct oe_dirent entry;
 } dir_t;
+
+static int _get_open_access_mode(int flags)
+{
+    return (flags & 000000003);
+}
 
 static fs_t* _cast_fs(const oe_device_t* device)
 {
@@ -294,7 +299,7 @@ static oe_device_t* _hostfs_open_file(
     }
 
     /* Fail if attempting to write to a read-only file system. */
-    if (_is_rdonly(fs) && oe_get_open_access_mode(flags) != OE_O_RDONLY)
+    if (_is_rdonly(fs) && _get_open_access_mode(flags) != OE_O_RDONLY)
     {
         oe_errno = EPERM;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
@@ -385,7 +390,7 @@ static oe_device_t* _hostfs_open_directory(
     }
 
     /* Directories can only be opened for read access. */
-    if (oe_get_open_access_mode(flags) != OE_O_RDONLY)
+    if (_get_open_access_mode(flags) != OE_O_RDONLY)
     {
         oe_errno = EACCES;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);

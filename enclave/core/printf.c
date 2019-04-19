@@ -9,7 +9,6 @@
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/unistd.h>
-#include <openenclave/internal/posix/fs.h>
 #include <openenclave/internal/print.h>
 #include "intstr.h"
 

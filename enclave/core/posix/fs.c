@@ -3,11 +3,13 @@
 
 #include <openenclave/corelibc/dirent.h>
 #include <openenclave/corelibc/fcntl.h>
+#include <openenclave/corelibc/limits.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/sys/uio.h>
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/posix/fs.h>
+#include <openenclave/internal/posix/device.h>
+#include <openenclave/internal/posix/mount.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/trace.h>
 

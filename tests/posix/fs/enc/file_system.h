@@ -13,7 +13,6 @@
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/posix/fs.h>
 #include <openenclave/internal/posix/hostfs.h>
 #include <openenclave/sgxfs.h>
 #include <stdio.h>

@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 #include <openenclave/host.h>
-#include <openenclave/internal/posix/fs.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include "corelibc_u.h"

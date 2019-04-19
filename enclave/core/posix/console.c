@@ -5,7 +5,6 @@
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/posix/device.h>
-#include <openenclave/internal/posix/fs.h>
 #include <openenclave/internal/trace.h>
 #include "oe_t.h"
 
