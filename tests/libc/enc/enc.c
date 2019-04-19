@@ -5,7 +5,6 @@
 #include <errno.h>
 #include <libgen.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/tests.h>
 #include <search.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -13,7 +12,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/mount.h>
 #include <time.h>
 #include "libc_t.h"
 #include "mtest.h"
@@ -88,19 +86,6 @@ extern int run_tests(void);
 
 int test()
 {
-    OE_TEST(oe_load_module_hostfs() == OE_OK);
-    OE_TEST(oe_load_module_hostsock() == OE_OK);
-    OE_TEST(oe_load_module_hostresolver() == OE_OK);
-    OE_TEST(oe_load_module_polling() == OE_OK);
-    OE_TEST(oe_load_module_hostresolver() == OE_OK);
-    OE_TEST(oe_load_module_eventfd() == OE_OK);
-
-    if (mount("/", "/", "hostfs", 0, NULL) != 0)
-    {
-        fprintf(stderr, "mount() failed\n");
-        exit(1);
-    }
-
     return run_tests();
 }
 
