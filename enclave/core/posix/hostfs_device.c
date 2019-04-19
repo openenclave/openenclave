@@ -1447,8 +1447,3 @@ oe_result_t oe_load_module_hostfs(void)
 done:
     return result;
 }
-
-size_t oe_get_hostfs_file_struct_size(void)
-{
-    return sizeof(file_t);
-}

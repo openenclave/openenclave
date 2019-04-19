@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved._ops
 // Licensed under the MIT License.
 
-#ifndef _OE_INTERNAL_FS_H
-#define _OE_INTERNAL_FS_H
+#ifndef _OE_INTERNAL_POSIX_FS_H
+#define _OE_INTERNAL_POSIX_FS_H
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
@@ -28,4 +28,4 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX]);
 
 OE_EXTERNC_END
 
-#endif // _OE_INTERNAL_FS_H
+#endif // _OE_INTERNAL_POSIX_FS_H
