@@ -9,6 +9,8 @@
 
 OE_EXTERNC_BEGIN
 
+int oe_host_write(int device, const char* str, size_t len);
+
 int oe_host_vfprintf(int device, const char* fmt, oe_va_list ap_);
 
 /**
@@ -38,8 +40,6 @@ int oe_host_printf(const char* fmt, ...);
  */
 OE_PRINTF_FORMAT(2, 3)
 int oe_host_fprintf(int device, const char* fmt, ...);
-
-int oe_host_write(int device, const char* str, size_t len);
 
 OE_EXTERNC_END
 

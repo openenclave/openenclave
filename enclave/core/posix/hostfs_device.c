@@ -1409,7 +1409,7 @@ static fs_t _hostfs = {
     .mount_source = {'/'},
 };
 
-oe_device_t* oe_fs_get_hostfs(void)
+oe_device_t* oe_get_hostfs_device(void)
 {
     return &_hostfs.base;
 }
@@ -1436,7 +1436,7 @@ oe_result_t oe_load_module_hostfs(void)
             }
 
             /* Add the hostfs device to the device table. */
-            if (oe_set_devid_device(devid, oe_fs_get_hostfs()) != 0)
+            if (oe_set_devid_device(devid, oe_get_hostfs_device()) != 0)
             {
                 OE_TRACE_ERROR("devid=%lu", devid);
                 goto done;

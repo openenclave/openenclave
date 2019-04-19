@@ -448,7 +448,7 @@ static oe_device_t* _sgxfs_open_directory(
 {
     oe_device_t* ret = NULL;
     fs_t* fs = _cast_fs(fs_);
-    oe_device_t* hostfs = oe_fs_get_hostfs();
+    oe_device_t* hostfs = oe_get_hostfs_device();
 
     if (!fs || !hostfs)
     {
@@ -599,7 +599,7 @@ static int _sgxfs_close(oe_device_t* file_)
 {
     int ret = -1;
     file_t* file = _cast_file(file_);
-    oe_device_t* hostfs = oe_fs_get_hostfs();
+    oe_device_t* hostfs = oe_get_hostfs_device();
 
     if (!hostfs)
     {
@@ -652,7 +652,7 @@ static int _sgxfs_getdents(
 {
     int ret = -1;
     int n;
-    oe_device_t* hostfs = oe_fs_get_hostfs();
+    oe_device_t* hostfs = oe_get_hostfs_device();
 
     if (!hostfs)
     {
@@ -679,7 +679,7 @@ static int _sgxfs_stat(
     int ret = -1;
     SGX_FILE* stream = NULL;
     fs_t* fs = _cast_fs(fs_);
-    oe_device_t* hostfs = oe_fs_get_hostfs();
+    oe_device_t* hostfs = oe_get_hostfs_device();
 
     OE_UNUSED(fs_);
 
@@ -735,7 +735,7 @@ static int _sgxfs_access(oe_device_t* fs_, const char* pathname, int mode)
 {
     int ret = -1;
     fs_t* fs = _cast_fs(fs_);
-    oe_device_t* hostfs = oe_fs_get_hostfs();
+    oe_device_t* hostfs = oe_get_hostfs_device();
 
     OE_UNUSED(fs_);
 
@@ -842,7 +842,7 @@ done:
 static int _sgxfs_unlink(oe_device_t* fs_, const char* pathname)
 {
     int ret = -1;
-    oe_device_t* hostfs = oe_fs_get_hostfs();
+    oe_device_t* hostfs = oe_get_hostfs_device();
     fs_t* fs = _cast_fs(fs_);
 
     if (!fs || !hostfs)
@@ -883,7 +883,7 @@ static int _sgxfs_rename(
     SGX_FILE* out = NULL;
     char buf[OE_BUFSIZ];
     size_t n;
-    oe_device_t* hostfs = oe_fs_get_hostfs();
+    oe_device_t* hostfs = oe_get_hostfs_device();
 
     if (!fs || !hostfs || !oldpath || !newpath)
     {
@@ -1093,7 +1093,7 @@ done:
 static int _sgxfs_mkdir(oe_device_t* fs_, const char* pathname, mode_t mode)
 {
     int ret = -1;
-    oe_device_t* hostfs = oe_fs_get_hostfs();
+    oe_device_t* hostfs = oe_get_hostfs_device();
     fs_t* fs = _cast_fs(fs_);
 
     if (!fs || !hostfs)
@@ -1129,7 +1129,7 @@ done:
 static int _sgxfs_rmdir(oe_device_t* fs_, const char* pathname)
 {
     int ret = -1;
-    oe_device_t* hostfs = oe_fs_get_hostfs();
+    oe_device_t* hostfs = oe_get_hostfs_device();
     fs_t* fs = _cast_fs(fs_);
 
     if (!fs || !hostfs)
@@ -1193,7 +1193,7 @@ static fs_t _sgxfs = {
     .magic = FS_MAGIC,
 };
 
-oe_device_t* oe_fs_get_sgxfs(void)
+oe_device_t* oe_get_sgxfs_device(void)
 {
     return &_sgxfs.base;
 }
@@ -1218,14 +1218,14 @@ oe_result_t oe_load_module_sgxfs(void)
             }
 
             /* Add the sgxfs device to the device table. */
-            if (oe_set_devid_device(OE_DEVID_SGXFS, oe_fs_get_sgxfs()) != 0)
+            if (oe_set_devid_device(OE_DEVID_SGXFS, oe_get_sgxfs_device()) != 0)
             {
                 result = OE_FAILURE;
                 goto done;
             }
 
             /* Check that the above operation was successful. */
-            if (oe_get_devid_device(OE_DEVID_SGXFS) != oe_fs_get_sgxfs())
+            if (oe_get_devid_device(OE_DEVID_SGXFS) != oe_get_sgxfs_device())
             {
                 result = OE_FAILURE;
                 goto done;

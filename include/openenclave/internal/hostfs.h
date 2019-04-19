@@ -18,7 +18,7 @@
 
 OE_EXTERNC_BEGIN
 
-oe_device_t* oe_fs_get_hostfs(void);
+oe_device_t* oe_get_hostfs_device(void);
 
 size_t oe_get_hostfs_file_struct_size(void);
 

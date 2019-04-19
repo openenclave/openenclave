@@ -25,7 +25,7 @@ OE_INLINE int oe_get_open_access_mode(int flags)
 }
 
 /* The enclave calls this to get an instance of host file system (SGXFS). */
-oe_device_t* oe_fs_get_sgxfs(void);
+oe_device_t* oe_get_sgxfs_device(void);
 
 /* Initialize the stdin, stdout, and stderr devices. */
 int oe_initialize_console_devices(void);
