@@ -203,7 +203,7 @@ static oe_mutex_t poll_lock = OE_MUTEX_INITIALIZER;
 int oe_epoll_create(int size)
 {
     int ret = -1;
-    int epollfd = -1;
+    int epfd = -1;
     oe_device_t* device = NULL;
     oe_device_t* epoll = NULL;
 
@@ -221,7 +221,7 @@ int oe_epoll_create(int size)
         goto done;
     }
 
-    if ((epollfd = oe_assign_fd_device(epoll)) == -1)
+    if ((epfd = oe_assign_fd_device(epoll)) == -1)
     {
         OE_TRACE_ERROR("oe_assign_fd_device failed");
         goto done;
@@ -240,7 +240,7 @@ done:
 int oe_epoll_create1(int flags)
 {
     int ret = -1;
-    int epollfd = -1;
+    int epfd = -1;
     oe_device_t* device = NULL;
     oe_device_t* epoll = NULL;
 
@@ -258,7 +258,7 @@ int oe_epoll_create1(int flags)
         goto done;
     }
 
-    if ((epollfd = oe_assign_fd_device(epoll)) == -1)
+    if ((epfd = oe_assign_fd_device(epoll)) == -1)
     {
         OE_TRACE_ERROR("oe_assign_fd_device failed");
         goto done;
@@ -272,10 +272,10 @@ done:
     if (epoll)
         (*device->ops.base->close)(epoll);
 
-    return epollfd;
+    return epfd;
 }
 
-int oe_epoll_ctl(int epollfd, int op, int fd, struct oe_epoll_event* event)
+int oe_epoll_ctl(int epfd, int op, int fd, struct oe_epoll_event* event)
 {
     int ret = -1;
     oe_device_t* epoll;
@@ -285,7 +285,7 @@ int oe_epoll_ctl(int epollfd, int op, int fd, struct oe_epoll_event* event)
 
     oe_errno = 0;
 
-    if (!(epoll = oe_get_fd_device(epollfd, OE_DEVICE_TYPE_EPOLL)))
+    if (!(epoll = oe_get_fd_device(epfd, OE_DEVICE_TYPE_EPOLL)))
     {
         oe_errno = EBADF;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
@@ -310,7 +310,7 @@ int oe_epoll_ctl(int epollfd, int op, int fd, struct oe_epoll_event* event)
                 goto done;
             }
 
-            ret = (*epoll->ops.epoll->ctl_add)(epollfd, fd, event);
+            ret = (*epoll->ops.epoll->ctl_add)(epfd, fd, event);
             break;
         }
         case OE_EPOLL_CTL_DEL:
@@ -322,7 +322,7 @@ int oe_epoll_ctl(int epollfd, int op, int fd, struct oe_epoll_event* event)
                 goto done;
             }
 
-            ret = (*epoll->ops.epoll->ctl_del)(epollfd, fd);
+            ret = (*epoll->ops.epoll->ctl_del)(epfd, fd);
             break;
         }
         case OE_EPOLL_CTL_MOD:
@@ -334,7 +334,7 @@ int oe_epoll_ctl(int epollfd, int op, int fd, struct oe_epoll_event* event)
                 goto done;
             }
 
-            ret = (*epoll->ops.epoll->ctl_mod)(epollfd, fd, event);
+            ret = (*epoll->ops.epoll->ctl_mod)(epfd, fd, event);
             break;
         }
         default:
@@ -351,7 +351,7 @@ done:
 }
 
 int oe_epoll_wait(
-    int epollfd,
+    int epfd,
     struct oe_epoll_event* events,
     int maxevents,
     int timeout)
@@ -362,9 +362,9 @@ int oe_epoll_wait(
 
     oe_once(&_once, _once_function);
 
-    if (!(epoll = oe_get_fd_device(epollfd, OE_DEVICE_TYPE_EPOLL)))
+    if (!(epoll = oe_get_fd_device(epfd, OE_DEVICE_TYPE_EPOLL)))
     {
-        OE_TRACE_ERROR("no device found epollfd=%d", epollfd);
+        OE_TRACE_ERROR("no device found epfd=%d", epfd);
         goto done;
     }
 
@@ -376,16 +376,15 @@ int oe_epoll_wait(
     }
 
     /* Wait until there are events. */
-    if ((*epoll->ops.epoll->wait)(epollfd, events, (size_t)maxevents, timeout) <
-        0)
+    if ((*epoll->ops.epoll->wait)(epfd, events, (size_t)maxevents, timeout) < 0)
     {
         oe_errno = EINVAL;
-        OE_TRACE_ERROR("epollfd=%d", epollfd);
+        OE_TRACE_ERROR("epfd=%d", epfd);
         goto done;
     }
 
     /* See if there are events waiting. */
-    n = oe_get_epoll_events(epollfd, (size_t)maxevents, events);
+    n = oe_get_epoll_events(epfd, (size_t)maxevents, events);
 
     /* If no events polled, then wait again. */
     if (n == 0)
@@ -398,7 +397,7 @@ int oe_epoll_wait(
         }
 
         /* See how many events are waiting. */
-        n = oe_get_epoll_events(epollfd, (size_t)maxevents, events);
+        n = oe_get_epoll_events(epfd, (size_t)maxevents, events);
     }
 
     ret = n;
@@ -410,7 +409,7 @@ done:
 }
 
 int oe_epoll_pwait(
-    int epollfd,
+    int epfd,
     struct oe_epoll_event* events,
     int maxevents,
     int timeout,
@@ -425,7 +424,7 @@ int oe_epoll_pwait(
         goto done;
     }
 
-    ret = oe_epoll_wait(epollfd, events, maxevents, timeout);
+    ret = oe_epoll_wait(epfd, events, maxevents, timeout);
 
 done:
     return ret;
@@ -499,7 +498,7 @@ done:
 }
 
 //
-// parms: epollfd is the enclave fd of the epoll
+// parms: epfd is the enclave fd of the epoll
 //        maxevents is the number of events in the buffer
 //        pevents is storage for <maxevents> events
 //
@@ -508,7 +507,7 @@ done:
 //          <0 = something bad happened.
 //
 int oe_get_epoll_events(
-    int epollfd,
+    int epfd,
     size_t maxevents,
     struct oe_epoll_event* events)
 {
@@ -530,22 +529,22 @@ int oe_get_epoll_events(
         goto done;
     }
 
-    if (!(epoll = oe_get_fd_device(epollfd, OE_DEVICE_TYPE_EPOLL)))
+    if (!(epoll = oe_get_fd_device(epfd, OE_DEVICE_TYPE_EPOLL)))
     {
         ret = -1;
-        OE_TRACE_ERROR("no device found epollfd=%d", epollfd);
+        OE_TRACE_ERROR("no device found epfd=%d", epfd);
         goto done;
     }
 
     /* Expand array if not already big enough. */
-    if (_array_resize((size_t)epollfd + 1) != 0)
+    if (_array_resize((size_t)epfd + 1) != 0)
     {
-        OE_TRACE_ERROR("epollfd=%d", epollfd);
+        OE_TRACE_ERROR("epfd=%d", epfd);
         goto done;
     }
 
     /* Get the list for this epid file descriptor. */
-    list = _array_data() + epollfd;
+    list = _array_data() + epfd;
 
     /* If the list is empty. */
     if (list->size == 0)

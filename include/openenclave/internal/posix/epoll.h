@@ -53,7 +53,7 @@ int oe_wait_device_notification(int timeout);
 void oe_clear_device_notification(void);
 
 int oe_get_epoll_events(
-    int epollfd,
+    int epfd,
     size_t maxevents,
     struct oe_epoll_event* pevents);
 
