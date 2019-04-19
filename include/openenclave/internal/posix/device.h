@@ -18,17 +18,11 @@ typedef struct _oe_device oe_device_t;
 
 struct _oe_device
 {
-    /* Type of this device: OE_DEVID_FILE or OE_DEVID_SOCKET. */
+    /* Type of this device. */
     oe_device_type_t type;
 
     /* Index of the device into the device table. */
     uint64_t devid;
-
-    /* sizeof additional data. To get a pointer to the device private data,
-     * ptr = (oe_file_device_t)(devptr+1); usually sizeof(oe_file_t) or
-     * sizeof(oe_socket_t).
-     */
-    size_t size;
 
     /* String name of this device. */
     const char* devicename;
