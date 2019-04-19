@@ -14,28 +14,42 @@
 
 int oe_eventfd(unsigned int initval, int flags)
 {
-    int ed = -1;
-    oe_device_t* peventfd = NULL;
-    oe_device_t* pdevice = NULL;
+    int ret = -1;
+    int ed;
+    oe_device_t* device;
+    oe_device_t* eventfd = NULL;
 
-    if (!(pdevice = oe_get_devid_device(OE_DEVID_EVENTFD)))
+    if (!(device = oe_get_devid_device(OE_DEVID_EVENTFD)))
     {
-        return -1;
+        oe_errno = EINVAL;
+        OE_TRACE_ERROR("oe_errno=%d\n", oe_errno);
+        goto done;
     }
 
-    if ((peventfd = (*pdevice->ops.eventfd->eventfd)(
-             pdevice, (uint64_t)initval, flags)) == NULL)
+    if (!(eventfd = (*device->ops.eventfd->eventfd)(device, initval, flags)))
     {
-        return -1;
+        OE_TRACE_ERROR("oe_errno=%d\n", oe_errno);
+        goto done;
     }
 
-    if ((ed = oe_assign_fd_device(peventfd)) == -1)
+    if ((ed = oe_assign_fd_device(eventfd)) == -1)
     {
-        /* Release peventfd here? */
-        return -1;
+        oe_errno = EINVAL;
+        OE_TRACE_ERROR("oe_errno=%d\n", oe_errno);
+        goto done;
     }
 
-    return ed;
+    ret = ed;
+    eventfd = NULL;
+
+done:
+
+    if (eventfd)
+    {
+        // TODO:IO: release this device.
+    }
+
+    return ret;
 }
 
 int oe_eventfd_read(int fd, oe_eventfd_t* value)

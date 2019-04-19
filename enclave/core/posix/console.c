@@ -65,13 +65,11 @@ static int _consolefs_dup(oe_device_t* file_, oe_device_t** new_file_out)
         }
     }
 
-    /* Allocation and initialize a new file structure. */
+    /* Allocate and initialize a new file structure. */
     {
         file_t* new_file;
 
-        new_file = oe_calloc(1, sizeof(file_t));
-
-        if (!new_file)
+        if (!(new_file = oe_calloc(1, sizeof(file_t))))
         {
             oe_errno = ENOMEM;
             OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
@@ -111,6 +109,7 @@ static int _consolefs_fcntl(oe_device_t* file, int cmd, uint64_t arg)
     OE_UNUSED(arg);
 
     oe_errno = ENOTSUP;
+    OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
     return -1;
 }
 
@@ -359,19 +358,19 @@ int oe_initialize_console_devices(void)
 
     if (!oe_set_fd_device(OE_STDIN_FILENO, &_stdin_file.base))
     {
-        OE_TRACE_ERROR("Set the stdin device");
+        OE_TRACE_ERROR("failed to initialize stdin device");
         goto done;
     }
 
     if (!oe_set_fd_device(OE_STDOUT_FILENO, &_stdout_file.base))
     {
-        OE_TRACE_ERROR("Set the stdout device");
+        OE_TRACE_ERROR("failed to initialize the stdout device");
         goto done;
     }
 
     if (!oe_set_fd_device(OE_STDERR_FILENO, &_stderr_file.base))
     {
-        OE_TRACE_ERROR("Set the stderr device");
+        OE_TRACE_ERROR("failed to initialize the stderr device");
         goto done;
     }
 

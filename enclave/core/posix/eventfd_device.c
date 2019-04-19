@@ -105,7 +105,7 @@ done:
 
 static oe_device_t* _eventfd_eventfd(
     oe_device_t* eventfd_,
-    uint64_t initval,
+    unsigned int initval,
     int flags)
 {
     oe_device_t* ret = NULL;
@@ -340,7 +340,9 @@ oe_result_t oe_load_module_eventfd(void)
         }
         oe_spin_unlock(&_lock);
     }
+
     result = OE_OK;
+
 done:
     return result;
 }
