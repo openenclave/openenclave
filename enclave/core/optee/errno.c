@@ -4,7 +4,6 @@
 static int _errno = 0; // We do this because a TA has only one thread
 
 int* __oe_errno_location(void)
-
 {
     return &_errno;
 }
