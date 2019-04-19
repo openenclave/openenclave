@@ -333,7 +333,7 @@ static oe_fs_ops_t _ops = {
 };
 
 static file_t _stdin_file = {
-    .base.type = OE_DEVICETYPE_FILESYSTEM,
+    .base.type = OE_DEVICE_TYPE_FILESYSTEM,
     .base.size = sizeof(file_t),
     .base.ops.fs = &_ops,
     .magic = MAGIC,
@@ -341,7 +341,7 @@ static file_t _stdin_file = {
 };
 
 static file_t _stdout_file = {
-    .base.type = OE_DEVICETYPE_FILESYSTEM,
+    .base.type = OE_DEVICE_TYPE_FILESYSTEM,
     .base.size = sizeof(file_t),
     .base.ops.fs = &_ops,
     .magic = MAGIC,
@@ -349,7 +349,7 @@ static file_t _stdout_file = {
 };
 
 static file_t _stderr_file = {
-    .base.type = OE_DEVICETYPE_FILESYSTEM,
+    .base.type = OE_DEVICE_TYPE_FILESYSTEM,
     .base.size = sizeof(file_t),
     .base.ops.fs = &_ops,
     .magic = MAGIC,

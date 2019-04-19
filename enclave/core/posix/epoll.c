@@ -286,7 +286,7 @@ int oe_epoll_ctl(int epollfd, int op, int fd, struct oe_epoll_event* event)
 
     oe_errno = 0;
 
-    if (!(epoll = oe_get_fd_device_by_type(epollfd, OE_DEVICETYPE_EPOLL)))
+    if (!(epoll = oe_get_fd_device_by_type(epollfd, OE_DEVICE_TYPE_EPOLL)))
     {
         oe_errno = EBADF;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
@@ -363,7 +363,7 @@ int oe_epoll_wait(
 
     oe_once(&_once, _once_function);
 
-    if (!(epoll = oe_get_fd_device_by_type(epollfd, OE_DEVICETYPE_EPOLL)))
+    if (!(epoll = oe_get_fd_device_by_type(epollfd, OE_DEVICE_TYPE_EPOLL)))
     {
         OE_TRACE_ERROR("no device found epollfd=%d", epollfd);
         goto done;
@@ -531,7 +531,7 @@ int oe_get_epoll_events(
         goto done;
     }
 
-    if (!(epoll = oe_get_fd_device_by_type(epollfd, OE_DEVICETYPE_EPOLL)))
+    if (!(epoll = oe_get_fd_device_by_type(epollfd, OE_DEVICE_TYPE_EPOLL)))
     {
         ret = -1;
         OE_TRACE_ERROR("no device found epollfd=%d", epollfd);

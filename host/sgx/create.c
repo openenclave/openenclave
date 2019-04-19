@@ -40,12 +40,12 @@ static char* get_fullpath(const char* path)
 #include <openenclave/internal/debug.h>
 #include <openenclave/internal/load.h>
 #include <openenclave/internal/mem.h>
+#include <openenclave/internal/posix/uid.h>
 #include <openenclave/internal/properties.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxcreate.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
-#include <openenclave/internal/posix/uid.h>
 #include <openenclave/internal/utils.h>
 #include <string.h>
 #include "../memalign.h"

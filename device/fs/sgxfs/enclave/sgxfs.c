@@ -415,7 +415,7 @@ static oe_device_t* _sgxfs_open_file(
             goto done;
         }
 
-        file->base.type = OE_DEVICETYPE_FILE;
+        file->base.type = OE_DEVICE_TYPE_FILE;
         file->base.size = sizeof(file_t);
         file->magic = FILE_MAGIC;
         file->base.ops.fs = fs->base.ops.fs;
@@ -1187,7 +1187,7 @@ static oe_fs_ops_t _ops = {
 };
 
 static fs_t _sgxfs = {
-    .base.type = OE_DEVICETYPE_FILESYSTEM,
+    .base.type = OE_DEVICE_TYPE_FILESYSTEM,
     .base.size = sizeof(fs_t),
     .base.ops.fs = &_ops,
     .magic = FS_MAGIC,

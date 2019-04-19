@@ -209,7 +209,7 @@ static oe_device_t* _hostsock_socket(
         goto done;
     }
 
-    sock->base.type = OE_DEVICETYPE_SOCKET;
+    sock->base.type = OE_DEVICE_TYPE_SOCKET;
     sock->base.size = sizeof(sock_t);
     sock->magic = SOCKET_MAGIC;
     sock->base.ops.socket = _hostsock.base.ops.socket;
@@ -271,13 +271,13 @@ static ssize_t _hostsock_socketpair(
     }
 
     {
-        sock1->base.type = OE_DEVICETYPE_SOCKET;
+        sock1->base.type = OE_DEVICE_TYPE_SOCKET;
         sock1->base.size = sizeof(sock_t);
         sock1->magic = SOCKET_MAGIC;
         sock1->base.ops.socket = _hostsock.base.ops.socket;
         sock1->host_fd = svs[0];
 
-        sock2->base.type = OE_DEVICETYPE_SOCKET;
+        sock2->base.type = OE_DEVICE_TYPE_SOCKET;
         sock2->base.size = sizeof(sock_t);
         sock2->magic = SOCKET_MAGIC;
         sock2->base.ops.socket = _hostsock.base.ops.socket;
@@ -1183,7 +1183,7 @@ static oe_sock_ops_t _ops = {
 };
 
 static sock_t _hostsock = {
-    .base.type = OE_DEVICETYPE_SOCKET,
+    .base.type = OE_DEVICE_TYPE_SOCKET,
     .base.size = sizeof(sock_t),
     .base.ops.socket = &_ops,
     .magic = SOCKET_MAGIC,
@@ -1205,7 +1205,7 @@ oe_result_t oe_load_module_hostsock(void)
 
         if (!_loaded)
         {
-            const uint64_t devid = OE_DEVID_HOST_SOCKET;
+            const uint64_t devid = OE_DEVID_HOSTSOCK;
 
             /* Allocate the device id. */
             if (oe_allocate_devid(devid) != devid)

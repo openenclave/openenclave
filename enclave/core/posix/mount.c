@@ -129,7 +129,7 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
         {
             oe_device_t* device = oe_get_devid_device(devid);
 
-            if (!device || device->type != OE_DEVICETYPE_FILESYSTEM)
+            if (!device || device->type != OE_DEVICE_TYPE_FILESYSTEM)
             {
                 oe_errno = EINVAL;
                 OE_TRACE_ERROR("oe_errno=%d", oe_errno);
@@ -317,7 +317,7 @@ int oe_mount(
     }
 
     /* If the device has not been resolved. */
-    if (!device || device->type != OE_DEVICETYPE_FILESYSTEM)
+    if (!device || device->type != OE_DEVICE_TYPE_FILESYSTEM)
     {
         oe_errno = EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
@@ -435,7 +435,7 @@ int oe_umount2(const char* target, int flags)
 
     OE_UNUSED(flags);
 
-    if (!device || device->type != OE_DEVICETYPE_FILESYSTEM || !target)
+    if (!device || device->type != OE_DEVICE_TYPE_FILESYSTEM || !target)
     {
         oe_errno = EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);

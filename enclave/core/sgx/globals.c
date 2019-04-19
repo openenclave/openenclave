@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/corelibc/errno.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/globals.h>
-#include <openenclave/corelibc/errno.h>
 #include <openenclave/internal/posix/uid.h>
 
 /* Note: The variables below are initialized during enclave loading */

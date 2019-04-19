@@ -21,7 +21,7 @@ static oe_device_t* _get_fs_device(uint64_t devid)
     oe_device_t* ret = NULL;
     oe_device_t* device = oe_get_devid_device(devid);
 
-    if (!device || device->type != OE_DEVICETYPE_FILESYSTEM)
+    if (!device || device->type != OE_DEVICE_TYPE_FILESYSTEM)
     {
         oe_errno = EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
