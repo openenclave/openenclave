@@ -7,7 +7,7 @@ if (BUILD_ENCLAVES)
     add_subdirectory(enc)
 endif()
 
-set(TMP_DIR "${CMAKE_BINARY_DIR}/tests/sgxfs/tmp")
+set(TMP_DIR "${CMAKE_CURRENT_BINARY_DIR}/tmp")
 
 add_test(tests/sgxfs1 /bin/rm -rf "${TMP_DIR}")
 
