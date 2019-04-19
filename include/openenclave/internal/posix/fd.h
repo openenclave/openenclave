@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_FD_H
-#define _OE_FD_H
+#ifndef _OE_INTERNAL_POSIX_FD_H
+#define _OE_INTERNAL_POSIX_FD_H
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
@@ -28,4 +28,4 @@ ssize_t oe_map_host_fd(uint64_t host_fd);
 
 OE_EXTERNC_END
 
-#endif // _OE_FD_H
+#endif // _OE_INTERNAL_POSIX_FD_H
