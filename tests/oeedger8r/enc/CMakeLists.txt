@@ -20,6 +20,7 @@ add_enclave(TARGET edl_enc CXX
     bar.cpp
     config.cpp
     foo.cpp
+    testaliasing.cpp
     testarray.cpp
     testbasic.cpp
     testenum.cpp
@@ -47,3 +48,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang OR 
 endif()
 
 target_include_directories(edl_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)
+if (NOT WIN32)
+  # Re-enable strict aliasing. TODO: Remove this when #1717 is resolved.
+  target_compile_options(edl_enc PUBLIC -fstrict-aliasing -Werror=strict-aliasing)
+endif ()
