@@ -143,7 +143,11 @@ static int _ecall_epoll_test(INTERFACE& x, size_t buff_len, char* recv_buff)
 
         if (x.epoll_ctl(epoll_fd, x.EPOLL_CTL_ADD_T, 0, &event))
         {
-            fprintf(stderr, "Failed to add file descriptor to epoll\n");
+            fprintf(
+                stderr,
+                "Failed to add file descriptor to epoll: %s %s\n",
+                __FILE__,
+                __LINE__);
             x.close(epoll_fd);
             return 1;
         }
@@ -154,7 +158,11 @@ static int _ecall_epoll_test(INTERFACE& x, size_t buff_len, char* recv_buff)
     event.data.ptr = (void*)print_socket_success;
     if (x.epoll_ctl(epoll_fd, x.EPOLL_CTL_ADD_T, sockfd, &event))
     {
-        fprintf(stderr, "Failed to add file descriptor to epoll\n");
+        fprintf(
+            stderr,
+            "Failed to add socket file descriptor to epoll %s %s\n",
+            __FILE__,
+            __LINE__);
         x.close(epoll_fd);
         return 1;
     }
