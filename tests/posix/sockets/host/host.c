@@ -41,7 +41,7 @@ void* enclave_server_thread(void* arg)
 
 void* host_server_thread(void* arg)
 {
-    const static char TESTDATA[] = "This is TEST DATA\n";
+    static const char TESTDATA[] = "This is TEST DATA\n";
     int listenfd = socket(AF_INET, SOCK_STREAM, 0);
     int connfd = 0;
     struct sockaddr_in serv_addr = {0};

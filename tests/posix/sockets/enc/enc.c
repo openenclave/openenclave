@@ -109,7 +109,7 @@ int ecall_run_server()
 {
     _initialize();
     int status = OE_FAILURE;
-    const static char TESTDATA[] = "This is TEST DATA\n";
+    static const char TESTDATA[] = "This is TEST DATA\n";
     int listenfd = oe_socket(OE_AF_HOST, OE_SOCK_STREAM, 0);
     int connfd = 0;
     struct oe_sockaddr_in serv_addr = {0};
