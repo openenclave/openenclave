@@ -31,7 +31,7 @@ static size_t _get_iov_size(const struct oe_iovec* iov, size_t iov_len)
     return size;
 }
 
-static int _flatten_iov(
+static int _deflate_iov(
     const struct oe_iovec* iov,
     size_t iov_len,
     void* buf_,
@@ -737,10 +737,10 @@ static ssize_t _hostsock_sendmsg(
     }
 
     /* Flatten the iov array onto the buffer. */
-    if (_flatten_iov(msg->msg_iov, msg->msg_iovlen, buf, buf_len) != 0)
+    if (_deflate_iov(msg->msg_iov, msg->msg_iovlen, buf, buf_len) != 0)
     {
         oe_errno = EINVAL;
-        OE_TRACE_ERROR("_flatten_iov(): oe_errno=%d", oe_errno);
+        OE_TRACE_ERROR("_deflate_iov(): oe_errno=%d", oe_errno);
         goto done;
     }
 
