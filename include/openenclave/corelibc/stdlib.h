@@ -37,8 +37,6 @@ void oe_abort(void);
 
 void oe_exit(int status);
 
-void oe_set_exit_handler(void (*handler)(int status));
-
 int oe_atoi(const char* nptr);
 
 #if defined(OE_NEED_STDC_NAMES)
