@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+
 enclave {
+
+    include "edger8r_prologue.h"
+
     from "posix.edl" import *;
 };

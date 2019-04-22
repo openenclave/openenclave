@@ -140,6 +140,8 @@ target_link_libraries(oehost PUBLIC oe_includes)
 target_include_directories(oehost PRIVATE
     ${PROJECT_SOURCE_DIR}/host/include)
 
+target_include_directories(oehost PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
 # TODO: Replace these with `find_package` and add as dependencies to
 # the CMake package.
 if (UNIX)

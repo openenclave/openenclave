@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#ifndef _EDGER8R_PROLOGUE_H
+#define _EDGER8R_PROLOGUE_H
+
 #define OE_NEED_STDC_NAMES
 
 #include <openenclave/internal/calls.h>
@@ -15,4 +18,4 @@
 #include <openenclave/corelibc/sys/utsname.h>
 #include <openenclave/internal/posix/epoll.h>
 
-#include "oe_t.c"
+#endif /* _EDGER8R_PROLOGUE_H */

@@ -74,7 +74,7 @@ endif()
 
 add_library(oecore STATIC
     ../../common/safecrt.c
-    oe_t_wrapper.c
+    ${CMAKE_CURRENT_BINARY_DIR}/oe_t.c
     ${MUSL_SRC_DIR}/prng/rand.c
     ${MUSL_SRC_DIR}/string/memcmp.c
     ${MUSL_SRC_DIR}/string/memcpy.c
@@ -153,6 +153,8 @@ endif()
 # This directory contains enclave core libc headers:
 target_include_directories(oecore PRIVATE
     ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
+
+target_include_directories(oecore PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 if (OE_SGX)
     # Unfortunately dlmalloc uses GNU extension that allows arithmetic
