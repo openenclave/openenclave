@@ -54,6 +54,7 @@ set(ENCLAVE_CLIBS_1
   -Wl,-z,now
   -L\${libdir}/openenclave/enclave
   -loeenclave
+  -loecrypto
   -lmbedx509
   -lmbedcrypto)
 
