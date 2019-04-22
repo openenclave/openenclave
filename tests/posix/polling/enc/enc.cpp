@@ -17,6 +17,7 @@
 
 #include <assert.h>
 #include <epoll_test_t.h>
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/mount.h>
@@ -145,7 +146,8 @@ static int _ecall_epoll_test(INTERFACE& x, size_t buff_len, char* recv_buff)
         {
             fprintf(
                 stderr,
-                "Failed to add file descriptor to epoll: %s %s\n",
+                "Failed to add file descriptor to epoll errno = %d: %s %s\n",
+                errno,
                 __FILE__,
                 __LINE__);
             x.close(epoll_fd);
@@ -160,7 +162,8 @@ static int _ecall_epoll_test(INTERFACE& x, size_t buff_len, char* recv_buff)
     {
         fprintf(
             stderr,
-            "Failed to add socket file descriptor to epoll %s %s\n",
+            "Failed to add socket file descriptor to epoll errno = %d: %s %s\n",
+            errno,
             __FILE__,
             __LINE__);
         x.close(epoll_fd);
