@@ -77,7 +77,7 @@ void run_client(uint16_t port)
 
         /* Get the total size of the iov[] array. */
         for (size_t i = 0; i < iovlen; i++)
-            total_iov_size += iov[i].iov_len;
+            total_iov_size += (ssize_t)iov[i].iov_len;
 
         /* Send a message. */
         {
