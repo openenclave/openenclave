@@ -16,3 +16,5 @@ add_enclave_test(tests/fs2
     fs_enc
     "${PROJECT_SOURCE_DIR}"
     "${TMP_DIR}")
+
+set_tests_properties(tests/fs2 PROPERTIES SKIP_RETURN_CODE 2)

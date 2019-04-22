@@ -8,6 +8,8 @@
 #include <sys/types.h>
 #include "fs_u.h"
 
+#define SKIP_RETURN_CODE 2
+
 int rmdir(const char* path);
 
 int main(int argc, const char* argv[])
@@ -21,6 +23,12 @@ int main(int argc, const char* argv[])
     {
         fprintf(stderr, "Usage: %s ENCLAVE_PATH SRC_DIR BIN_DIR\n", argv[0]);
         return 1;
+    }
+
+    if ((flags & OE_ENCLAVE_FLAG_SIMULATE))
+    {
+        printf("=== Skipped unsupported test in simulation mode (sealKey)\n");
+        return SKIP_RETURN_CODE;
     }
 
     const char* enclave_path = argv[1];

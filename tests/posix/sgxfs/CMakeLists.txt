@@ -12,3 +12,5 @@ set(TMP_DIR "${CMAKE_CURRENT_BINARY_DIR}/tmp")
 add_test(tests/sgxfs1 /bin/rm -rf "${TMP_DIR}")
 
 add_enclave_test(tests/sgxfs sgxfs_host sgxfs_enc "${TMP_DIR}")
+
+set_tests_properties(tests/sgxfs PROPERTIES SKIP_RETURN_CODE 2)
