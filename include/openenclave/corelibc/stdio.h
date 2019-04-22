@@ -34,6 +34,8 @@ int oe_puts(const char* s);
 
 int oe_putchar(int c);
 
+int oe_fputc(int c, OE_FILE* stream);
+
 int oe_vfprintf(OE_FILE* stream, const char* format, oe_va_list ap);
 
 OE_PRINTF_FORMAT(2, 3)
@@ -63,7 +65,17 @@ size_t oe_fwrite(const void* ptr, size_t size, size_t nmemb, OE_FILE* stream);
 
 long oe_ftell(OE_FILE* stream);
 
+OE_INLINE off_t oe_ftello(OE_FILE* stream)
+{
+    return (off_t)oe_ftell(stream);
+}
+
 int oe_fseek(OE_FILE* stream, long offset, int whence);
+
+OE_INLINE int oe_fseeko(OE_FILE* stream, off_t offset, int whence)
+{
+    return oe_fseek(stream, (long)offset, whence);
+}
 
 int oe_ferror(OE_FILE* stream);
 
@@ -184,9 +196,19 @@ OE_INLINE long ftell(FILE* stream)
     return oe_ftell((OE_FILE*)stream);
 }
 
+OE_INLINE off_t ftello(FILE* stream)
+{
+    return oe_ftello((OE_FILE*)stream);
+}
+
 OE_INLINE int fseek(FILE* stream, long offset, int whence)
 {
     return oe_fseek((OE_FILE*)stream, offset, whence);
+}
+
+OE_INLINE int fseeko(FILE* stream, off_t offset, int whence)
+{
+    return oe_fseeko((OE_FILE*)stream, offset, whence);
 }
 
 OE_INLINE int ferror(FILE* stream)
@@ -232,6 +254,11 @@ OE_INLINE int puts(const char* s)
 OE_INLINE int putchar(int c)
 {
     return oe_putchar(c);
+}
+
+OE_INLINE int fputc(int c, FILE* stream)
+{
+    return oe_fputc(c, (OE_FILE*)stream);
 }
 
 #endif /* defined(OE_NEED_STDC_NAMES) */

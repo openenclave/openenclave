@@ -18,7 +18,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include "strarr.h"
-#include "strings.h"
 #include "trace.h"
 #include "utils.h"
 
@@ -479,7 +478,7 @@ int oe_cpio_write_entry(oe_cpio_t* cpio, const oe_cpio_entry_t* entry)
     /* Write the CPIO header */
     {
         memset(&h, 0, sizeof(h));
-        strcpy(h.magic, "070701");
+        memcpy(h.magic, "070701", sizeof(h.magic));
         _uint_to_hex(h.ino, 0);
         _uint_to_hex(h.mode, entry->mode);
         _uint_to_hex(h.uid, 0);

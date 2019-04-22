@@ -790,6 +790,14 @@ int oe_putchar(int c)
     return 0;
 }
 
+int oe_fputc(int c, OE_FILE* stream)
+{
+    if (oe_fprintf(stream, "%c", c) <= 0)
+        return OE_EOF;
+
+    return c;
+}
+
 __attribute__((weak)) int putchar(int c)
 {
     return oe_putchar(c);
