@@ -87,7 +87,6 @@ static int _ecall_epoll_test(INTERFACE& x, size_t buff_len, char* recv_buff)
     typedef typename INTERFACE::SOCKADDR_T SOCKADDR_T;
     typedef typename INTERFACE::EPOLL_EVENT_T EPOLL_EVENT_T;
     int sockfd = 0;
-    int file_fd = 0;
     SOCKADDR_IN_T serv_addr = {0};
 #define MAX_EVENTS 20
     EPOLL_EVENT_T event = {0};
@@ -131,29 +130,7 @@ static int _ecall_epoll_test(INTERFACE& x, size_t buff_len, char* recv_buff)
         }
     }
 
-    // ATTN:IO: finalize test for files.
-    const int flags = x.O_NONBLOCK_T | x.O_WRONLY_T | x.O_CREAT_T | x.O_TRUNC_T;
-    file_fd = x.open(_path, flags, 0);
-    OE_TEST(file_fd >= 0);
-
     printf("polling...\n");
-    if (file_fd >= 0)
-    {
-        event.events = x.EPOLLIN_T;
-        event.data.ptr = (void*)print_file_success;
-
-        if (x.epoll_ctl(epoll_fd, x.EPOLL_CTL_ADD_T, 0, &event))
-        {
-            fprintf(
-                stderr,
-                "Failed to add file descriptor to epoll errno = %d: %s %u\n",
-                errno,
-                __FILE__,
-                __LINE__);
-            x.close(epoll_fd);
-            return 1;
-        }
-    }
 
     // ATTN:IO: compose this value from predefined macros.
     event.events = 0x3c7;
@@ -217,8 +194,6 @@ static int _ecall_epoll_test(INTERFACE& x, size_t buff_len, char* recv_buff)
         x.close(epoll_fd);
 
     oe_sleep_msec(3);
-
-    x.close(file_fd);
 
     printf("--------------- epoll done -------------\n");
     return OE_OK;
