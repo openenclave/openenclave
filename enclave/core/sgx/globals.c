@@ -3,6 +3,7 @@
 
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/limits.h>
+#include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/posix/uid.h>
@@ -10,8 +11,6 @@
 /* Note: The variables below are initialized during enclave loading */
 
 extern volatile const oe_sgx_enclave_properties_t oe_enclave_properties_sgx;
-
-void* memcpy(void*, const void*, size_t);
 
 #if defined(__linux__)
 /**
