@@ -132,11 +132,6 @@ add_dependencies(oecore oe_trusted_edl)
 
 target_include_directories(oecore PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-set_property(SOURCE ${CMAKE_CURRENT_BINARY_DIR}/oe_t.c
-    PROPERTY COMPILE_DEFINITIONS
-    OE_EDGER8R_INCLUDE_PROLOGUE
-    OE_EDGER8R_INCLUDE_EPILOGUE)
-
 # Suppress type conversion warnings introduced by 3rdparty code
 set_source_files_properties(${MUSL_SRC_DIR}/prng/rand.c PROPERTIES
     COMPILE_FLAGS -Wno-conversion)
@@ -151,8 +146,6 @@ maybe_build_using_clangw(oecore)
 
 target_link_libraries(oecore PUBLIC oe_includes)
 
-target_compile_options(oecore PRIVATE -Werror)
-
 if (CMAKE_C_COMPILER_ID MATCHES GNU)
     target_compile_options(oecore PRIVATE -Wjump-misses-init)
 endif()
@@ -160,9 +153,6 @@ endif()
 # This directory contains enclave core libc headers:
 target_include_directories(oecore PRIVATE
     ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
-
-target_include_directories(oecore PRIVATE
-    ${PROJECT_SOURCE_DIR}/enclave/core/include)
 
 if (OE_SGX)
     # Unfortunately dlmalloc uses GNU extension that allows arithmetic

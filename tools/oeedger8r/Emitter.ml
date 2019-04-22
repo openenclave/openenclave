@@ -1060,9 +1060,6 @@ let gen_u_h (ec: enclave_content) (ep: edger8r_params) =
 let gen_u_c (ec: enclave_content) (ep: edger8r_params) =
   let ecalls_fname = ec.file_shortnm ^ "_u.c" in
   let os = open_file ecalls_fname ep.untrusted_dir in
-  fprintf os "#if defined(OE_EDGER8R_INCLUDE_PROLOGUE)\n";
-  fprintf os "#include \"edger8r_prologue.h\"\n";
-  fprintf os "#endif\n\n";
   fprintf os "#include \"%s_u.h\"\n" ec.file_shortnm;
   fprintf os "#include <openenclave/edger8r/host.h>\n";
   fprintf os "#include <stdlib.h>\n";
@@ -1078,10 +1075,7 @@ let gen_u_c (ec: enclave_content) (ep: edger8r_params) =
     List.iter (fun d -> oe_gen_ocall_host_wrapper os d) ec.ufunc_decls);
   oe_gen_ocall_table os ec;
   oe_emit_create_enclave_defn os ec;
-  fprintf os "OE_EXTERNC_END\n\n";
-  fprintf os "#if defined(OE_EDGER8R_INCLUDE_EPILOGUE)\n";
-  fprintf os "#include \"edger8r_epilogue.h\"\n";
-  fprintf os "#endif\n";
+  fprintf os "OE_EXTERNC_END\n";
   close_out os
 
 (** Generate the Enclave code. *)

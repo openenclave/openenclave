@@ -135,11 +135,6 @@ if (UNIX) # __feature_io__
 add_dependencies(oehost oe_untrusted_edl)
 endif()
 
-set_property(SOURCE ${CMAKE_CURRENT_BINARY_DIR}/oe_u.c
-    PROPERTY COMPILE_DEFINITIONS
-    OE_EDGER8R_INCLUDE_PROLOGUE
-    OE_EDGER8R_INCLUDE_EPILOGUE)
-
 target_link_libraries(oehost PUBLIC oe_includes)
 
 target_include_directories(oehost PRIVATE
