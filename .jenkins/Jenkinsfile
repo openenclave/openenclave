@@ -9,7 +9,7 @@ def ACCTest(String label, String compiler, String build_type) {
             def task = """
                        cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -Wdev
                        ninja -v
-                       ctest --output-on-failure
+                       ctest -V --output-on-failure
                        """
             oe.Run(compiler, task)
         }
@@ -24,7 +24,7 @@ def ACCGNUTest() {
             def task = """
                        cmake ${WORKSPACE} -DUSE_LIBSGX=ON
                        make
-                       ctest --output-on-failure
+                       ctest -V --output-on-failure
                        """
             oe.Run("gcc", task)
         }
