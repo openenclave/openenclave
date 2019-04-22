@@ -4,3 +4,14 @@
 ---
 apt_packages:
   - "docker-ce=5:18.09.3~3-0~ubuntu-xenial"
+
+ci_apt_packages:
+  - "automake"
+  - "dh-exec"
+  - "dpkg-dev"
+  - "gawk"
+  - "git"
+  - "libmbedtls10"
+  - "sudo"
+  - "libcurl3"
+  - "libprotobuf9v5"
