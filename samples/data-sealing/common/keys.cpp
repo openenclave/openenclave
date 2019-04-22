@@ -142,7 +142,7 @@ oe_result_t ecall_dispatcher::get_seal_key_by_keyinfo(
     if (result != OE_OK)
     {
         TRACE_ENCLAVE(
-            "oe_get_seal_key_by_policy failed with %s\n",
+            "oe_get_seal_key failed with %s\n",
             oe_result_str(result));
         goto exit;
     }
