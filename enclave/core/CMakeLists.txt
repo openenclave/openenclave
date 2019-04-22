@@ -74,7 +74,7 @@ endif()
 
 add_library(oecore STATIC
     ../../common/safecrt.c
-    ${CMAKE_CURRENT_BINARY_DIR}/oe_t.c
+    oe_t_wrapper.c
     ${MUSL_SRC_DIR}/prng/rand.c
     ${MUSL_SRC_DIR}/string/memcmp.c
     ${MUSL_SRC_DIR}/string/memcpy.c

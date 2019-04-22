@@ -3,8 +3,11 @@
 
 enclave {
 
-    include "openenclave/bits/defs.h"
-    include "openenclave/bits/types.h"
+    include "netdb.h"
+    include "sys/epoll.h"
+    include "sys/poll.h"
+    include "sys/socket.h"
+    include "sys/utsname.h"
     include "openenclave/internal/posix/epoll.h"
 
     trusted {
