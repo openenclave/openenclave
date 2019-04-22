@@ -1,6 +1,9 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+# This builds a library needed by later tests and must be first.
+add_subdirectory(cpio)
+
 add_subdirectory(fs)
 add_subdirectory(hostfs)
 add_subdirectory(polling)

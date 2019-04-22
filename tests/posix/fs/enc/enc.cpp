@@ -13,8 +13,8 @@
 #include <sys/mount.h>
 #include <set>
 #include <string>
-#include "../../../../device/fs/cpio/commands.h"
-#include "../../../../device/fs/cpio/cpio.h"
+#include "../../cpio/commands.h"
+#include "../../cpio/cpio.h"
 #include "file_system.h"
 #include "fs_t.h"
 
