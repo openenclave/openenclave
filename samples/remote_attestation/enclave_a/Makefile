@@ -48,10 +48,10 @@ build:
 	oeedger8r ../remoteattestation.edl --trusted --trusted-dir ../common
 	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -I.. -std=c++11 -DOE_API_VERSION=2 ecalls.cpp ../common/attestation.cpp ../common/crypto.cpp ../common/dispatcher.cpp
 	$(CC) -g -c $(CFLAGS) $(CINCLUDES) -I.. -DOE_API_VERSION=2 ../common/remoteattestation_t.c
-	$(CXX) -o enclave1 attestation.o crypto.o ecalls.o dispatcher.o remoteattestation_t.o $(LDFLAGS)
+	$(CXX) -o enclave_a attestation.o crypto.o ecalls.o dispatcher.o remoteattestation_t.o $(LDFLAGS)
 
 sign:
-	oesign sign -e enclave1 -c enc.conf -k private.pem
+	oesign sign -e enclave_a -c enc.conf -k private.pem
 
 clean:
-	rm -f *.o enclave1 enclave1.signed ../common/remoteattestation_t.* ../common/remoteattestation_args.h *.pem enclave_b_pubkey.h
+	rm -f *.o enclave_a enclave_a.signed ../common/remoteattestation_t.* ../common/remoteattestation_args.h *.pem enclave_b_pubkey.h
