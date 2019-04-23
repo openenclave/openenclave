@@ -29,12 +29,12 @@ int main(int argc, const char* argv[])
 
     /* Ask enclvae to run the test. */
     {
-        gid_t list[OE_NGROUPS_MAX];
+        gid_t list[OE_NGROUPS_MAX] = {0};
         int required_size;
         int size;
 
         required_size = getgroups(0, NULL);
-        OE_TEST(required_size > 0);
+        OE_TEST(required_size >= 0);
 
         size = getgroups(required_size, list);
         OE_TEST(required_size == size);
