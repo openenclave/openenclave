@@ -37,6 +37,8 @@ function(add_mbed_test_enclave NAME)
     enc.c
     ${gen})
 
+  add_definitions(-DEXIT_FAILURE=0 -DEXIT_SUCCESS=1)
+
   target_compile_options(mbedtest_suite_${NAME} PRIVATE
     -Wno-error)
   target_compile_definitions(mbedtest_suite_${NAME} PRIVATE
