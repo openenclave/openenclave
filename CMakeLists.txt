@@ -59,6 +59,13 @@ endif ()
 # ignored.
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Validate CMAKE_BUILD_TYPE
+string(TOUPPER "${CMAKE_BUILD_TYPE}" uppercase_CMAKE_BUILD_TYPE)
+list(APPEND uppercase_build_type "" "DEBUG" "RELEASE" "RELWITHDEBINFO")
+if (NOT uppercase_CMAKE_BUILD_TYPE IN_LIST uppercase_build_type)
+  message(FATAL_ERROR "UNKNOWN CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+endif()
+
 # Get Jenkins build number
 if (DEFINED ENV{BUILD_NUMBER})
   set(BUILD_NUMBER $ENV{BUILD_NUMBER})
@@ -167,7 +174,6 @@ endif ()
 
 # TODO: See #756: Fix this because it is incompatible with
 # multi-configuration generators
-string(TOUPPER "${CMAKE_BUILD_TYPE}" uppercase_CMAKE_BUILD_TYPE)
 if (uppercase_CMAKE_BUILD_TYPE STREQUAL "DEBUG" AND NOT WIN32)
   # In non-win32 debug build, debug_malloc is on by default
   option(USE_DEBUG_MALLOC "Build oeenclave with memory leak detection capability." ON)
