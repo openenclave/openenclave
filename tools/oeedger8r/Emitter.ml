@@ -235,35 +235,39 @@ let oe_gen_wrapper_prototype (fd : func_decl) (is_ecall : bool) =
   sprintf "oe_result_t %s(\n        %s)" fd.fname
     (String.concat ",\n        " args)
 
-let emit_struct_or_union (os : out_channel) (s : struct_def) (union : bool) =
-  fprintf os "typedef %s %s {\n" (if union then "union" else "struct") s.sname ;
-  List.iter
-    (fun (atype, decl) ->
-      let dims = List.map (fun d -> sprintf "[%d]" d) decl.array_dims in
-      let dims_str = String.concat "" dims in
-      fprintf os "    %s %s%s;\n" (get_tystr atype) decl.identifier dims_str )
-    s.mlist ;
-  fprintf os "} %s;\n\n" s.sname
-
-let emit_enum (os : out_channel) (e : enum_def) =
-  let n = List.length e.enbody in
-  fprintf os "typedef enum %s {\n" e.enname ;
-  List.iteri
-    (fun idx (name, value) ->
-      fprintf os "    %s%s" name
-        ( match value with
-        | EnumVal (AString s) -> " = " ^ s
-        | EnumVal (ANumber n) -> " = " ^ string_of_int n
-        | EnumValNone -> "" ) ;
-      if idx != n - 1 then fprintf os ",\n" )
-    e.enbody ;
-  fprintf os "} %s;\n\n" e.enname
-
 (** Emit [struct], [union], or [enum]. *)
-let emit_composite_type (os : out_channel) = function
-  | StructDef s -> emit_struct_or_union os s false
-  | UnionDef u -> emit_struct_or_union os u true
-  | EnumDef e -> emit_enum os e
+let emit_composite_type =
+  let emit_struct_or_union (s : struct_def) (union : bool) =
+    [ sprintf "typedef %s %s" (if union then "union" else "struct") s.sname
+    ; "{"
+    ; String.concat "\n"
+        (List.map
+           (fun (atype, decl) ->
+             let dims = List.map (fun d -> sprintf "[%d]" d) decl.array_dims in
+             let dims_str = String.concat "" dims in
+             sprintf "    %s %s%s;" (get_tystr atype) decl.identifier dims_str
+             )
+           s.mlist)
+    ; sprintf "} %s;\n" s.sname ]
+  in
+  let emit_enum (e : enum_def) =
+    [ sprintf "typedef enum %s" e.enname
+    ; "{"
+    ; String.concat ",\n"
+        (List.map
+           (fun (name, value) ->
+             sprintf "    %s%s" name
+               ( match value with
+               | EnumVal (AString s) -> " = " ^ s
+               | EnumVal (ANumber n) -> " = " ^ string_of_int n
+               | EnumValNone -> "" ) )
+           e.enbody)
+    ; sprintf "} %s;\n" e.enname ]
+  in
+  function
+  | StructDef s -> emit_struct_or_union s false
+  | UnionDef u -> emit_struct_or_union u true
+  | EnumDef e -> emit_enum e
 
 let get_function_id (f : func_decl) = sprintf "fcn_id_%s" f.fname
 
@@ -286,6 +290,7 @@ let emit_function_ids (os : out_channel) (ec : enclave_content) =
 
 (** Generate [args.h] which contains [struct]s for ecalls and ocalls *)
 let oe_gen_args_header (ec : enclave_content) (dir : string) =
+  let types = List.flatten (List.map emit_composite_type ec.comp_defs) in
   let structs =
     List.append
       (* For each ecall, generate its marshalling struct. *)
@@ -308,7 +313,7 @@ let oe_gen_args_header (ec : enclave_content) (dir : string) =
   List.iter (fun inc -> fprintf os "#include \"%s\"\n" inc) ec.include_list ;
   if ec.include_list <> [] then fprintf os "\n" ;
   if ec.comp_defs <> [] then fprintf os "/* User types specified in edl */\n" ;
-  List.iter (emit_composite_type os) ec.comp_defs ;
+  fprintf os "%s" (String.concat "\n" types) ;
   if ec.comp_defs <> [] then fprintf os "\n" ;
   fprintf os "%s" (String.concat "\n" structs) ;
   emit_function_ids os ec ;
