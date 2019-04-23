@@ -71,10 +71,4 @@
 /* OE_FIELD_SIZE */
 #define OE_FIELD_SIZE(TYPE, FIELD) (sizeof(((TYPE*)0)->FIELD))
 
-#ifdef __GNUC__
-#define OE_NO_RETURN __attribute__((__noreturn__))
-#else
-#define OE_NO_RETURN
-#endif
-
 #endif /* _OE_INTERNAL_DEFS_H */

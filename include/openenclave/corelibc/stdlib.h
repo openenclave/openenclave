@@ -35,7 +35,7 @@ char* oe_realpath(const char* path, char* resolved_path);
 
 void oe_abort(void);
 
-void oe_exit(int status);
+OE_NO_RETURN void oe_exit(int status);
 
 int oe_atoi(const char* nptr);
 
