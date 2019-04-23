@@ -498,6 +498,7 @@ static long _syscall(
         {
             int status = (int)arg1;
             oe_exit(status);
+            goto done; // Needed by gcc
         }
         case OE_SYS_getpid:
         {
