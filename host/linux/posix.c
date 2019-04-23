@@ -4,6 +4,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <netdb.h>
 #include <openenclave/internal/posix/hostfs.h>
 #include <pthread.h>
@@ -1295,6 +1296,72 @@ int oe_posix_epoll_poll_ocall(
     }
 
     ret = 0;
+
+done:
+    return ret;
+}
+
+int oe_posix_getpid(void)
+{
+    return getpid();
+}
+
+int oe_posix_getppid(void)
+{
+    return getppid();
+}
+
+int oe_posix_getpgrp(void)
+{
+    return getpgrp();
+}
+
+unsigned int oe_posix_getuid(void)
+{
+    return getuid();
+}
+
+unsigned int oe_posix_geteuid(void)
+{
+    return geteuid();
+}
+
+unsigned int oe_posix_getgid(void)
+{
+    return getgid();
+}
+
+unsigned int oe_posix_getegid(void)
+{
+    return getegid();
+}
+
+int oe_posix_getpgid(int pid, int* err)
+{
+    int ret;
+
+    _clear_err(err);
+
+    if ((ret = getpgid(pid)) == -1)
+        _set_err(err, errno);
+
+    return ret;
+}
+
+int oe_posix_getgroups(size_t size, unsigned int* list, int* err)
+{
+    int ret = -1;
+
+    _clear_err(err);
+
+    if (size > INT_MAX)
+    {
+        _set_err(err, EINVAL);
+        goto done;
+    }
+
+    if ((ret = getgroups((int)size, list)) == -1)
+        _set_err(err, errno);
 
 done:
     return ret;

@@ -1,12 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/corelibc/errno.h>
-#include <openenclave/corelibc/limits.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/globals.h>
-#include <openenclave/internal/posix/uid.h>
 
 /* Note: The variables below are initialized during enclave loading */
 
@@ -237,81 +234,6 @@ oe_enclave_t* oe_enclave;
 oe_enclave_t* oe_get_enclave(void)
 {
     return oe_enclave;
-}
-
-/*
-**==============================================================================
-**
-** oe_pid, oe_ppid, oe_uid, oe_euid
-**
-**     The process and user information with oe_create_enclave() and passed
-**     to the enclave during initialization (via OE_ECALL_INIT_ENCLAVE).
-**
-**==============================================================================
-*/
-
-pid_t oe_pid;
-pid_t oe_ppid; // Parent PID
-pid_t oe_pgrp; // Process Group ID
-uid_t oe_uid;  // user id
-uid_t oe_euid; // effective user id
-
-uint32_t oe_num_groups;
-
-gid_t oe_groups[OE_NGROUPS_MAX];
-
-pid_t oe_getpid(void)
-{
-    return oe_pid;
-}
-
-pid_t oe_getppid(void)
-{
-    return oe_ppid;
-}
-
-pid_t oe_getpgrp(void)
-{
-    return oe_pgrp;
-}
-
-uid_t oe_getuid(void)
-{
-    return oe_uid;
-}
-
-uid_t oe_geteuid(void)
-{
-    return oe_euid;
-}
-
-int32_t oe_getgroups(uint32_t num_groups, gid_t* pgroups)
-{
-    int32_t retval = -1;
-
-    if (num_groups)
-    {
-        if (!pgroups)
-        {
-            oe_errno = EFAULT;
-            retval = -1;
-            goto done;
-        }
-        if (num_groups > OE_NGROUPS_MAX)
-        {
-            oe_errno = EINVAL;
-            retval = -1;
-            goto done;
-        }
-
-        memcpy(pgroups, oe_groups, oe_num_groups * sizeof(gid_t));
-    }
-    else
-    {
-        retval = (int32_t)oe_num_groups;
-    }
-done:
-    return retval;
 }
 
 /*

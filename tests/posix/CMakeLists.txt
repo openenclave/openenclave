@@ -6,6 +6,7 @@ add_subdirectory(cpio)
 
 add_subdirectory(fs)
 add_subdirectory(hostfs)
+add_subdirectory(ids)
 add_subdirectory(polling)
 add_subdirectory(resolver)
 add_subdirectory(send)

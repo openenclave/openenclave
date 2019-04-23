@@ -362,5 +362,29 @@ enclave {
         int oe_posix_shutdown_polling_device_ocall(
             int fd,
             [out, count=1] int* err);
+
+        int oe_posix_getpid();
+
+        int oe_posix_getppid();
+
+        int oe_posix_getpgrp();
+
+        unsigned int oe_posix_getuid();
+
+        unsigned int oe_posix_geteuid();
+
+        unsigned int oe_posix_getgid();
+
+        unsigned int oe_posix_getegid();
+
+        int oe_posix_getpgid(
+            int pid,
+            [out, count=1] int* err);
+
+        int oe_posix_getgroups(
+            size_t size,
+            [out, size=size] unsigned int* list,
+            [out, count=1] int* err);
+
     };
 };

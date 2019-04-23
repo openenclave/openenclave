@@ -31,7 +31,6 @@ if (UNIX)
     crypto/openssl/key.c
     crypto/openssl/random.c
     crypto/openssl/rsa.c
-    linux/hostuid.c
     linux/hostthread.c
     linux/posix.c
     linux/time.c

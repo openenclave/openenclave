@@ -769,6 +769,8 @@ add_library(oelibc STATIC
      ${MUSLSRC}/unistd/access.c
      ${MUSLSRC}/unistd/chdir.c
      ${MUSLSRC}/unistd/close.c
+     ${MUSLSRC}/unistd/getgid.c
+     ${MUSLSRC}/unistd/getegid.c
      ${MUSLSRC}/unistd/getuid.c
      ${MUSLSRC}/unistd/geteuid.c
      ${MUSLSRC}/unistd/getpid.c

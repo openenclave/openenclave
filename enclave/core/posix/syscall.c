@@ -514,6 +514,29 @@ static long _syscall(
             ret = (long)oe_geteuid();
             goto done;
         }
+        case OE_SYS_getgid:
+        {
+            ret = (long)oe_getgid();
+            goto done;
+        }
+        case OE_SYS_getpgid:
+        {
+            int pid = (int)arg1;
+            ret = (long)oe_getpgid(pid);
+            goto done;
+        }
+        case OE_SYS_getgroups:
+        {
+            int size = (int)arg1;
+            gid_t* list = (gid_t*)arg2;
+            ret = (long)oe_getgroups(size, list);
+            goto done;
+        }
+        case OE_SYS_getegid:
+        {
+            ret = (long)oe_getegid();
+            goto done;
+        }
         case OE_SYS_getppid:
         {
             ret = (long)oe_getppid();

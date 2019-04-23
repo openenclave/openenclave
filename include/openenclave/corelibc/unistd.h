@@ -108,6 +108,14 @@ uid_t oe_getuid(void);
 
 uid_t oe_geteuid(void);
 
+gid_t oe_getgid(void);
+
+gid_t oe_getegid(void);
+
+pid_t oe_getpgid(pid_t pid);
+
+int oe_getgroups(int size, gid_t list[]);
+
 /*
 **==============================================================================
 **
@@ -247,6 +255,26 @@ OE_INLINE uid_t getuid(void)
 OE_INLINE uid_t geteuid(void)
 {
     return oe_geteuid();
+}
+
+OE_INLINE gid_t getgid(void)
+{
+    return oe_getgid();
+}
+
+OE_INLINE gid_t getegid(void)
+{
+    return oe_getegid();
+}
+
+OE_INLINE pid_t getpgid(pid_t pid)
+{
+    return oe_getpgid(pid);
+}
+
+OE_INLINE int getgroups(int size, gid_t list[])
+{
+    return oe_getgroups(size, list);
 }
 
 #endif /* defined(OE_NEED_STDC_NAMES) */

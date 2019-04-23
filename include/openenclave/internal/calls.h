@@ -9,7 +9,6 @@
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/defs.h>
-#include <openenclave/internal/posix/uid.h>
 #include "backtrace.h"
 
 OE_EXTERNC_BEGIN
@@ -318,15 +317,15 @@ typedef struct _oe_realloc_args
 
 typedef struct _oe_init_enclave_args
 {
-    pid_t pid;  // Process ID
-    pid_t ppid; // Parent PID
-    pid_t pgrp; // Process Group ID
-    uid_t uid;  // user id
-    uid_t euid; // effective user id
-    gid_t groups[OE_NGROUP_MAX];
-    uint32_t num_groups;
     uint32_t cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
     oe_enclave_t* enclave;
+
+    pid_t pid;  /* The process ID */
+    pid_t ppid; /* The parent process ID */
+    pid_t pgrp; /* The process group ID */
+    uid_t uid;  /* The user ID */
+    gid_t gid;  /* The group ID */
+
 } oe_init_enclave_args_t;
 
 /*

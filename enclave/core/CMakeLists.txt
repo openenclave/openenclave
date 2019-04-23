@@ -94,6 +94,7 @@ add_library(oecore STATIC
     posix/hostfs_device.c
     posix/hostresolver_device.c
     posix/hostsock_device.c
+    posix/ids.c
     posix/mount.c
     posix/poll.c
     posix/realpath.c
