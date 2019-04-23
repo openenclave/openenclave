@@ -39,8 +39,8 @@ void terminate_enclave(oe_enclave_t* enclave)
 
 int main(int argc, const char* argv[])
 {
-    oe_enclave_t* enclave1 = NULL;
-    oe_enclave_t* enclave2 = NULL;
+    oe_enclave_t* enclave_a = NULL;
+    oe_enclave_t* enclave_b = NULL;
     uint8_t* encrypted_msg = NULL;
     size_t encrypted_msg_size = 0;
     oe_result_t result = OE_OK;
@@ -58,13 +58,13 @@ int main(int argc, const char* argv[])
     }
 
     printf("Host: Creating two enclaves\n");
-    enclave1 = create_enclave(argv[1]);
-    if (enclave1 == NULL)
+    enclave_a = create_enclave(argv[1]);
+    if (enclave_a == NULL)
     {
         goto exit;
     }
-    enclave2 = create_enclave(argv[2]);
-    if (enclave2 == NULL)
+    enclave_b = create_enclave(argv[2]);
+    if (enclave_b == NULL)
     {
         goto exit;
     }
@@ -72,7 +72,7 @@ int main(int argc, const char* argv[])
     printf("Host: requesting a remote report and the encryption key from 1st "
            "enclave\n");
     result = get_remote_report_with_pubkey(
-        enclave1,
+        enclave_a,
         &ret,
         &pem_key,
         &pem_key_size,
@@ -92,7 +92,7 @@ int main(int argc, const char* argv[])
     printf("Host: requesting 2nd enclave to attest 1st enclave's the remote "
            "report and the public key\n");
     result = verify_report_and_set_pubkey(
-        enclave2,
+        enclave_b,
         &ret,
         pem_key,
         pem_key_size,
@@ -115,7 +115,7 @@ int main(int argc, const char* argv[])
     printf("Host: Requesting a remote report and the encryption key from "
            "2nd enclave=====\n");
     result = get_remote_report_with_pubkey(
-        enclave2,
+        enclave_b,
         &ret,
         &pem_key,
         &pem_key_size,
@@ -136,7 +136,7 @@ int main(int argc, const char* argv[])
     printf("Host: Requesting first enclave to attest 2nd enclave's "
            "remote report and the public key=====\n");
     result = verify_report_and_set_pubkey(
-        enclave1,
+        enclave_a,
         &ret,
         pem_key,
         pem_key_size,
@@ -159,7 +159,7 @@ int main(int argc, const char* argv[])
     // exchange data between enclaves, securely
     printf("Host: Requesting encrypted message from 1st enclave\n");
     result = generate_encrypted_message(
-        enclave1, &ret, &encrypted_msg, &encrypted_msg_size);
+        enclave_a, &ret, &encrypted_msg, &encrypted_msg_size);
     if ((result != OE_OK) || (ret != 0))
     {
         printf(
@@ -172,7 +172,7 @@ int main(int argc, const char* argv[])
 
     printf("Host: Sending the encrypted message to 2nd enclave\n");
     result = process_encrypted_msg(
-        enclave2, &ret, encrypted_msg, encrypted_msg_size);
+        enclave_b, &ret, encrypted_msg, encrypted_msg_size);
     if ((result != OE_OK) || (ret != 0))
     {
         printf("Host: process_encrypted_msg failed. %s", oe_result_str(result));
@@ -188,7 +188,7 @@ int main(int argc, const char* argv[])
 
     printf("Host: Requesting encrypted message from 2nd enclave\n");
     result = generate_encrypted_message(
-        enclave2, &ret, &encrypted_msg, &encrypted_msg_size);
+        enclave_b, &ret, &encrypted_msg, &encrypted_msg_size);
     if ((result != OE_OK) || (ret != 0))
     {
         printf(
@@ -201,7 +201,7 @@ int main(int argc, const char* argv[])
 
     printf("Sending encrypted message to 1st  enclave=====\n");
     result = process_encrypted_msg(
-        enclave1, &ret, encrypted_msg, encrypted_msg_size);
+        enclave_a, &ret, encrypted_msg, encrypted_msg_size);
     if ((result != OE_OK) || (ret != 0))
     {
         printf("host process_encrypted_msg failed. %s", oe_result_str(result));
@@ -227,11 +227,11 @@ exit:
         free(encrypted_msg);
 
     printf("Host: Terminating enclaves\n");
-    if (enclave1)
-        terminate_enclave(enclave1);
+    if (enclave_a)
+        terminate_enclave(enclave_a);
 
-    if (enclave2)
-        terminate_enclave(enclave2);
+    if (enclave_b)
+        terminate_enclave(enclave_b);
 
     printf("Host:  %s \n", (ret == 0) ? "succeeded" : "failed");
     return ret;
