@@ -608,7 +608,7 @@ static int _append_file(oe_cpio_t* cpio, const char* path, const char* name)
     int ret = -1;
     struct stat st;
     FILE* is = NULL;
-    size_t n;
+    ssize_t n;
 
     if (!cpio || !path)
         GOTO(done);
@@ -647,9 +647,9 @@ static int _append_file(oe_cpio_t* cpio, const char* path, const char* name)
         if (!(is = fopen(path, "rb")))
             GOTO(done);
 
-        while ((n = fread(buf, 1, sizeof(buf), is)) > 0)
+        while ((n = (ssize_t)fread(buf, 1, sizeof(buf), is)) > 0)
         {
-            if (oe_cpio_write_data(cpio, buf, n) != 0)
+            if (oe_cpio_write_data(cpio, buf, (size_t)n) != 0)
                 GOTO(done);
         }
 

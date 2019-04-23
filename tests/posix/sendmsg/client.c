@@ -77,12 +77,12 @@ void run_client(uint16_t port)
 
         /* Get the total size of the iov[] array. */
         for (size_t i = 0; i < iovlen; i++)
-            total_iov_size += iov[i].iov_len;
+            total_iov_size += (ssize_t)iov[i].iov_len;
 
         /* Send a message. */
         {
             msg_send.msg_iov = (struct iovec*)iov;
-            msg_send.msg_iovlen = iovlen;
+            msg_send.msg_iovlen = (size_t)iovlen;
 
             if (sendmsg(sd, &msg_send, 0) != total_iov_size)
                 OE_TEST("sendmsg() failed" == NULL);
@@ -101,7 +101,7 @@ void run_client(uint16_t port)
 
             memset(&msg_recv, 0, sizeof(msg_recv));
             msg_recv.msg_iov = iov_buf;
-            msg_recv.msg_iovlen = iovlen;
+            msg_recv.msg_iovlen = (size_t)iovlen;
 
             if (recvmsg(sd, &msg_recv, 0) != total_iov_size)
                 OE_TEST("recvmsg() failed" == NULL);
@@ -140,7 +140,7 @@ void run_client(uint16_t port)
         memset(&msg, 0, sizeof(msg));
 
         msg.msg_iov = (struct iovec*)iov;
-        msg.msg_iovlen = iovlen;
+        msg.msg_iovlen = (size_t)iovlen;
 
         ssize_t m = sendmsg(sd, &msg, 0);
 

@@ -72,7 +72,7 @@ void* host_server_thread(void* arg)
         if (connfd >= 0)
         {
             ssize_t n = write(connfd, TESTDATA, strlen(TESTDATA));
-            OE_TEST(n == strlen(TESTDATA));
+            OE_TEST((size_t)n == strlen(TESTDATA));
             printf("write test data\n");
             close(connfd);
             break;

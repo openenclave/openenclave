@@ -326,6 +326,8 @@ static int _epoll_ctl_add(
         _cast_epoll(oe_get_fd_device(epoll_fd, OE_DEVICE_TYPE_EPOLL));
     ssize_t host_fd = -1;
     oe_device_t* pdev = oe_get_fd_device(enclave_fd, OE_DEVICE_TYPE_NONE);
+    int list_idx = -1;
+    epoll_event_data_t ev_data = {0};
 
     /* Check parameters. */
     if (!epoll || !pdev || !event || (enclave_fd == -1))
@@ -347,11 +349,8 @@ static int _epoll_ctl_add(
         return 0;
     }
 
-    int list_idx = -1;
-    epoll_event_data_t ev_data = {
-        .enclave_fd = enclave_fd,
-        .enclave_data = event->data.u64,
-    };
+    ev_data.enclave_fd = enclave_fd;
+    ev_data.enclave_data = event->data.u64;
 
     if (add_event_data(epoll, &ev_data, &list_idx) == NULL)
     {
@@ -390,6 +389,7 @@ static int _epoll_ctl_mod(
     ssize_t host_fd = -1;
     oe_device_t* pdev = oe_get_fd_device(enclave_fd, OE_DEVICE_TYPE_NONE);
     oe_result_t result = OE_FAILURE;
+    epoll_event_data_t ev_data = {0};
 
     if (!epoll || !pdev || !event)
     {
@@ -410,10 +410,8 @@ static int _epoll_ctl_mod(
         return 0;
     }
 
-    epoll_event_data_t ev_data = {
-        .enclave_fd = enclave_fd,
-        .enclave_data = event->data.u64,
-    };
+    ev_data.enclave_fd = enclave_fd;
+    ev_data.enclave_data = event->data.u64;
 
     if (modify_event_data(epoll, &ev_data) == NULL)
     {
@@ -591,6 +589,8 @@ static int _epoll_add_event_data(
     epoll_dev_t* epoll =
         _cast_epoll(oe_get_fd_device(epoll_fd, OE_DEVICE_TYPE_EPOLL));
     oe_device_t* pdev = oe_get_fd_device(enclave_fd, OE_DEVICE_TYPE_NONE);
+    epoll_event_data_t ev_data = {};
+    int list_idx = -1;
 
     OE_UNUSED(events);
 
@@ -602,10 +602,9 @@ static int _epoll_add_event_data(
     }
 
     oe_errno = 0;
-    int list_idx = -1;
 
-    epoll_event_data_t ev_data = {.enclave_fd = enclave_fd,
-                                  .enclave_data = data};
+    ev_data.enclave_fd = enclave_fd;
+    ev_data.enclave_data = data;
 
     if (add_event_data(epoll, &ev_data, &list_idx) == NULL)
     {

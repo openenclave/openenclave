@@ -39,22 +39,29 @@ void* host_server_thread(void* arg)
     const int optVal = 1;
     const socklen_t optLen = sizeof(optVal);
     int* done = (int*)arg;
+    int rtn = -1;
 
     struct sigaction action = {{sigpipe_handler}};
     sigaction(SIGPIPE, &action, NULL);
 
-    int rtn =
-        setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, (void*)&optVal, optLen);
-    if (rtn > 0)
-    {
-        printf("setsockopt failed errno = %d\n", errno);
-    }
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
     serv_addr.sin_port = htons(1642);
 
-    bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+    while (bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
+    {
+        printf("bind failed errno = %d\n", errno);
+        sleep(5);
+    }
+
     listen(listenfd, 10);
+
+    rtn =
+        setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, (void*)&optVal, optLen);
+    if (rtn < 0)
+    {
+        printf("setsockopt failed errno = %d\n", errno);
+    }
 
     do
     {

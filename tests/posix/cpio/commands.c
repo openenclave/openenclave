@@ -142,7 +142,7 @@ int oe_cmp(const char* path1, const char* path2)
         size += n1;
     }
 
-    if (size != st1.st_size)
+    if (size != (size_t)st1.st_size)
     {
         GOTO(done);
     }

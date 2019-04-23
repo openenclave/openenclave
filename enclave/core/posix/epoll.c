@@ -239,7 +239,6 @@ done:
 
 int oe_epoll_create1(int flags)
 {
-    int ret = -1;
     int epfd = -1;
     oe_device_t* device = NULL;
     oe_device_t* epoll = NULL;
@@ -264,7 +263,6 @@ int oe_epoll_create1(int flags)
         goto done;
     }
 
-    ret = 0;
     epoll = NULL;
 
 done:
@@ -341,7 +339,6 @@ int oe_epoll_ctl(int epfd, int op, int fd, struct oe_epoll_event* event)
         {
             oe_errno = EINVAL;
             OE_TRACE_ERROR("op=%d  fd=%d oe_errno=%d", op, fd, oe_errno);
-
             goto done;
         }
     }
