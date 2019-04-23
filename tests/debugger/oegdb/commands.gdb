@@ -78,17 +78,22 @@ commands 5
     python gdb.parse_and_eval("OE_ENCLAVE_MAGIC_FIELD = " + str(gdb_sgx_plugin.OE_ENCLAVE_MAGIC_FIELD))
     python gdb.parse_and_eval("OE_ENCLAVE_ADDR_FIELD = sizeof(void*) * " + str(gdb_sgx_plugin.OE_ENCLAVE_ADDR_FIELD))
     python gdb.parse_and_eval("OE_ENCLAVE_HEADER_LENGTH = " + str(gdb_sgx_plugin.OE_ENCLAVE_HEADER_LENGTH))
-    python gdb.parse_and_eval('sprintf(OE_ENCLAVE_HEADER_FORMAT, "%s", "' + gdb_sgx_plugin.OE_ENCLAVE_HEADER_FORMAT + '")')
+    python gdb.parse_and_eval("OE_ENCLAVE_HEADER_FORMAT[0] = '" + str(gdb_sgx_plugin.OE_ENCLAVE_HEADER_FORMAT[0]) + "'")
+    python gdb.parse_and_eval("OE_ENCLAVE_HEADER_FORMAT[1] = '" + str(gdb_sgx_plugin.OE_ENCLAVE_HEADER_FORMAT[1]) + "'")
+    python gdb.parse_and_eval("OE_ENCLAVE_HEADER_FORMAT[2] = '" + str(gdb_sgx_plugin.OE_ENCLAVE_HEADER_FORMAT[2]) + "'")
+    python gdb.parse_and_eval("OE_ENCLAVE_HEADER_FORMAT[3] = '" + str(gdb_sgx_plugin.OE_ENCLAVE_HEADER_FORMAT[3]) + "'")
+    python gdb.parse_and_eval("OE_ENCLAVE_HEADER_FORMAT[4] = '" + str(gdb_sgx_plugin.OE_ENCLAVE_HEADER_FORMAT[4]) + "'")
     python gdb.parse_and_eval("OE_ENCLAVE_MAGIC_VALUE = " + str(gdb_sgx_plugin.OE_ENCLAVE_MAGIC_VALUE))
 
     python gdb.parse_and_eval("OE_ENCLAVE_FLAGS_OFFSET = " + str(gdb_sgx_plugin.OE_ENCLAVE_FLAGS_OFFSET))
     python gdb.parse_and_eval("OE_ENCLAVE_FLAGS_LENGTH = " + str(gdb_sgx_plugin.OE_ENCLAVE_FLAGS_LENGTH))
-    python gdb.parse_and_eval('sprintf(OE_ENCLAVE_FLAGS_FORMAT, "%s", "' + gdb_sgx_plugin.OE_ENCLAVE_FLAGS_FORMAT + '")')
+    python gdb.parse_and_eval("OE_ENCLAVE_FLAGS_FORMAT[0] = '" + str(gdb_sgx_plugin.OE_ENCLAVE_FLAGS_FORMAT[0]) + "'")
+    python gdb.parse_and_eval("OE_ENCLAVE_FLAGS_FORMAT[1] = '" + str(gdb_sgx_plugin.OE_ENCLAVE_FLAGS_FORMAT[1]) + "'")
     python gdb.parse_and_eval("OE_ENCLAVE_THREAD_BINDING_OFFSET = " + str(gdb_sgx_plugin.OE_ENCLAVE_THREAD_BINDING_OFFSET))
 
     python gdb.parse_and_eval("THREAD_BINDING_SIZE = " + str(gdb_sgx_plugin.THREAD_BINDING_SIZE))
     python gdb.parse_and_eval("THREAD_BINDING_HEADER_LENGTH = " + str(gdb_sgx_plugin.THREAD_BINDING_HEADER_LENGTH))
-    python gdb.parse_and_eval('sprintf(THREAD_BINDING_HEADER_FORMAT, "%s", "' + gdb_sgx_plugin.THREAD_BINDING_HEADER_FORMAT + '")')
+    python gdb.parse_and_eval("THREAD_BINDING_HEADER_FORMAT[0] = '" + str(gdb_sgx_plugin.THREAD_BINDING_HEADER_FORMAT[0]) + "'")
 
     python print("Debugger contract serialized on host side.")
     continue
