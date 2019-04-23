@@ -113,8 +113,8 @@ exit:
 }
 int main(int argc, const char* argv[])
 {
-    oe_enclave_t* enclave1 = NULL;
-    oe_enclave_t* enclave2 = NULL;
+    oe_enclave_t* enclave_a = NULL;
+    oe_enclave_t* enclave_b = NULL;
     uint8_t* encrypted_msg = NULL;
     size_t encrypted_msg_size = 0;
     oe_result_t result = OE_OK;
@@ -128,20 +128,20 @@ int main(int argc, const char* argv[])
     }
 
     printf("Host: Creating two enclaves\n");
-    enclave1 = create_enclave(argv[1]);
-    if (enclave1 == NULL)
+    enclave_a = create_enclave(argv[1]);
+    if (enclave_a == NULL)
     {
         goto exit;
     }
-    enclave2 = create_enclave(argv[2]);
-    if (enclave2 == NULL)
+    enclave_b = create_enclave(argv[2]);
+    if (enclave_b == NULL)
     {
         goto exit;
     }
 
     // attest enclave 2 to enclave 1
     ret = attest_one_enclave_to_the_other(
-        "enclave1", enclave1, "enclave2", enclave2);
+        "enclave_a", enclave_a, "enclave_b", enclave_b);
     if (ret)
     {
         printf("Host: attestation failed with %d\n", ret);
@@ -150,7 +150,7 @@ int main(int argc, const char* argv[])
 
     // attest enclave 1 to enclave 2
     ret = attest_one_enclave_to_the_other(
-        "enclave2", enclave2, "enclave1", enclave1);
+        "enclave_b", enclave_b, "enclave_a", enclave_a);
     if (ret)
     {
         printf("Host: attestation failed with %d\n", ret);
@@ -161,7 +161,7 @@ int main(int argc, const char* argv[])
     // data between enclaves, securely via asymmetric encryption
     printf("Host: Requesting encrypted message from 1st enclave\n");
     result = generate_encrypted_message(
-        enclave1, &ret, &encrypted_msg, &encrypted_msg_size);
+        enclave_a, &ret, &encrypted_msg, &encrypted_msg_size);
     if ((result != OE_OK) || (ret != 0))
     {
         printf(
@@ -174,7 +174,7 @@ int main(int argc, const char* argv[])
 
     printf("Host: Sending the encrypted message to 2nd enclave\n");
     result = process_encrypted_msg(
-        enclave2, &ret, encrypted_msg, encrypted_msg_size);
+        enclave_b, &ret, encrypted_msg, encrypted_msg_size);
     if ((result != OE_OK) || (ret != 0))
     {
         printf("Host: process_encrypted_msg failed. %s", oe_result_str(result));
@@ -194,7 +194,7 @@ int main(int argc, const char* argv[])
 
     printf("Host: Requesting encrypted message from 2nd enclave\n");
     result = generate_encrypted_message(
-        enclave2, &ret, &encrypted_msg, &encrypted_msg_size);
+        enclave_b, &ret, &encrypted_msg, &encrypted_msg_size);
     if ((result != OE_OK) || (ret != 0))
     {
         printf(
@@ -207,7 +207,7 @@ int main(int argc, const char* argv[])
 
     printf("Sending encrypted message to 1st  enclave=====\n");
     result = process_encrypted_msg(
-        enclave1, &ret, encrypted_msg, encrypted_msg_size);
+        enclave_a, &ret, encrypted_msg, encrypted_msg_size);
     if ((result != OE_OK) || (ret != 0))
     {
         printf("host process_encrypted_msg failed. %s", oe_result_str(result));
@@ -228,11 +228,11 @@ exit:
         free(encrypted_msg);
 
     printf("Host: Terminating enclaves\n");
-    if (enclave1)
-        terminate_enclave(enclave1);
+    if (enclave_a)
+        terminate_enclave(enclave_a);
 
-    if (enclave2)
-        terminate_enclave(enclave2);
+    if (enclave_b)
+        terminate_enclave(enclave_b);
 
     printf("Host:  %s \n", (ret == 0) ? "succeeded" : "failed");
     return ret;
