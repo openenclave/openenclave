@@ -105,6 +105,7 @@ add_library(oecore STATIC
     posix/socket.c
     posix/syscall.c
     posix/uname.c
+    posix/sleep.c
     __secs_to_tm.c
     __stack_chk_fail.c
     array.c
@@ -117,7 +118,6 @@ add_library(oecore STATIC
     printf.c
     pthread.c
     result.c
-    sleep.c
     stdio.c
     strerror.c
     strcspn.c

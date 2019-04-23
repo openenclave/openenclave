@@ -6,5 +6,8 @@
 
 unsigned int oe_sleep(unsigned int seconds)
 {
-    return (oe_sleep_msec((uint64_t)seconds * 1000) == 0) ? 0 : seconds;
+    const uint64_t ONE_SECOND = 1000;
+    const uint64_t msec = seconds * ONE_SECOND;
+
+    return (oe_sleep_msec(msec) == 0) ? 0 : seconds;
 }
