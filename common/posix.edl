@@ -383,7 +383,7 @@ enclave {
 
         int oe_posix_getgroups(
             size_t size,
-            [out, size=size] unsigned int* list,
+            [out, count=size] unsigned int* list,
             [out, count=1] int* err);
 
     };
