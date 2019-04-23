@@ -86,6 +86,7 @@ add_library(oecore STATIC
     posix/epoll.c
     posix/eventfd.c
     posix/eventfd_device.c
+    posix/exit.c
     posix/fd.c
     posix/fs.c
     posix/getdomainname.c
@@ -110,7 +111,6 @@ add_library(oecore STATIC
     assert.c
     corelibc.c
     ctype.c
-    exit.c
     gmtime.c
     hexdump.c
     intstr.c
