@@ -1,0 +1,20 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+
+    include "unistd.h"
+
+    trusted {
+        public void test_ids(
+            pid_t pid,
+            pid_t ppid,
+            uid_t uid,
+            uid_t euid,
+            gid_t gid,
+            gid_t egid,
+            pid_t pgrp,
+            [in, count=num_groups] const gid_t* groups,
+            size_t num_groups);
+    };
+};
