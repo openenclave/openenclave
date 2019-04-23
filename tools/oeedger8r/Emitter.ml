@@ -113,7 +113,7 @@ let mk_ms_member_decl (pt: parameter_type) (declr: declarator) (isecall: bool) =
   let str_len = if need_str_len_var pt then sprintf "\tsize_t %s_len;\n" field else ""
   in
   let dmstr = get_array_dims declr.array_dims in
-  sprintf "\t%s%s %s%s;\n%s" tystr ptr field dmstr str_len
+  sprintf "    %s%s %s%s;\n%s" tystr ptr field dmstr str_len
 
 (** ----- End code borrowed and tweaked from {!CodeGen.ml} ----- *)
 
@@ -134,7 +134,7 @@ let oe_mk_ms_struct_name (fname: string) = fname ^ "_args_t"
 
 (** [oe_mk_struct_decl] constructs the string of a [struct] definition. *)
 let oe_mk_struct_decl (fs: string) (name: string) =
-  sprintf "typedef struct _%s {\n    oe_result_t _result;\n%s } %s;\n" name fs name
+  sprintf "typedef struct _%s {\n    oe_result_t _result;\n%s} %s;\n" name fs name
 
 (** [oe_gen_marshal_struct_impl] generates a marshalling [struct]
     definition. *)
