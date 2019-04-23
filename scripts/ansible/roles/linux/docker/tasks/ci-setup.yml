@@ -5,29 +5,13 @@
 - name: Gather Ansible facts
   setup:
 
-- name: Set the names list of the APT packages to be installed
-  block:
-    - set_fact:
-        pkg_names:
-          - "automake"
-          - "dh-exec"
-          - "dpkg-dev"
-          - "gawk"
-          - "git"
-          - "libmbedtls10"
-          - "sudo"
-
-    - set_fact:
-        pkg_names: "{{ pkg_names }} + {{ ['libcurl3', 'libprotobuf9v5'] }}"
-      when: ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'xenial'
-
-    - set_fact:
-        pkg_names: "{{ pkg_names }} + {{ ['libcurl4', 'libprotobuf10'] }}"
-      when: ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'bionic'
+- name: Include vars
+  include_vars:
+    file: "{{ ansible_distribution_release | lower }}.yml"
 
 - name: Install Docker prerequisite packages
   apt:
-    name: "{{ pkg_names }}"
+    name: "{{ ci_apt_packages }}"
     state: present
     update_cache: yes
     install_recommends: no
