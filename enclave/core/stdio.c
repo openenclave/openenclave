@@ -13,12 +13,20 @@
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/thread.h>
 
+/*
+**==============================================================================
+**
+** These standard-C stream functions were implemented to satisfy mbed TLS,
+** which is compiled against the corelibc headers (with OE_NEED_STDC_NAMES).
+** As with corelibc, these functions should only be used internally. External
+** applications will use MUSL libc and bypass these definitions altogether.
+**
+**==============================================================================
+*/
+
 #define MAGIC 0xe437a308
-#define BUFFER_SIZE (OE_BUFSIZ * 4)
 
-/* TODO: use buffering to optimize small reads and writes. */
-
-/* ATTN:IO: add locking. */
+/* TODO: add buffering to optimize small reads and writes. */
 
 struct _OE_IO_FILE
 {
