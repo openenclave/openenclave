@@ -3,10 +3,6 @@
 
 all: build
 
-genkey:
-	$(MAKE) -C enclave_a genkey
-	$(MAKE) -C enclave_b genkey
-
 build:
 	$(MAKE) -C enclave_a
 	$(MAKE) -C enclave_b
