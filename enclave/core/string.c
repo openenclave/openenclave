@@ -235,3 +235,13 @@ int oe_atoi(const char* nptr)
 {
     return (int)oe_strtol(nptr, NULL, 10);
 }
+
+char* oe_strchrnul(const char* s, int c)
+{
+    char* p;
+
+    if (!(p = oe_strchr(s, c)))
+        p = (char*)(s + oe_strlen(s));
+
+    return p;
+}

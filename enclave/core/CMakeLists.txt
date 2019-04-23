@@ -124,7 +124,6 @@ add_library(oecore STATIC
     string.c
     strspn.c
     strtok_r.c
-    strchrnul.c
     strtoul.c
     time.c
     ${PLATFORM_SRC})
