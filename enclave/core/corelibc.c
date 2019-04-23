@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-/* Check that the syntax of the standard C declarations. */
+/* Check the syntax of the standard C declarations. */
 #define OE_NEED_STDC_NAMES
 #include <openenclave/corelibc/arpa/inet.h>
 #include <openenclave/corelibc/assert.h>
