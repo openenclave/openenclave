@@ -22,6 +22,4 @@ void HandleGetQuoteEnclaveIdentityInfo(uint64_t arg_in);
 void oe_handle_backtrace_symbols(oe_enclave_t* enclave, uint64_t arg);
 void oe_handle_log(oe_enclave_t* enclave, uint64_t arg);
 
-void HandlePrint(uint64_t arg_in);
-
 #endif /* _OE_HOST_SGX_OCALLS_H */

@@ -34,7 +34,6 @@ if (UNIX)
     linux/hostthread.c
     linux/posix.c
     linux/time.c
-    linux/uname.c
     linux/windows.c)
 elseif (WIN32)
   set(PLATFORM_SRC

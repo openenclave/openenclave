@@ -4,7 +4,6 @@
 #include "ocalls.h"
 #include <openenclave/internal/calls.h>
 #include <stdio.h>
-#include "sgx/ocalls.h"
 
 void HandlePrint(uint64_t arg_in)
 {
