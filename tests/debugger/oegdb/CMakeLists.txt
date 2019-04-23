@@ -9,6 +9,7 @@ add_test(
     COMMAND
         ${OE_BINDIR}/oegdb --batch
         --command=${CMAKE_CURRENT_SOURCE_DIR}/commands.gdb
+        --return-child-result # This fails the test in case of any error.
         -arg host/oe_gdb_test_host enc/oe_gdb_test_enc
 )
 
@@ -17,5 +18,6 @@ add_test(
     COMMAND
         ${OE_BINDIR}/oegdb --batch
         --command=${CMAKE_CURRENT_SOURCE_DIR}/commands.gdb
+        --return-child-result # Tnis fails the test in case of any error.
         -arg host/oe_gdb_test_host enc/oe_gdb_test_enc --simulation-mode
 )

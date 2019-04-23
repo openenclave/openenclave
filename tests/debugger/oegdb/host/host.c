@@ -4,11 +4,14 @@
 #include <limits.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/error.h>
+#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "oe_gdb_test_u.h"
+
+extern void assert_debugger_binary_contract_host_side();
 
 int main(int argc, const char* argv[])
 {
@@ -46,6 +49,9 @@ int main(int argc, const char* argv[])
         // enclave.
         OE_TEST(c == 10000);
     }
+
+    assert_debugger_binary_contract_host_side();
+    OE_TEST(enc_assert_debugger_binary_contract(enclave1) == OE_OK);
 
     result = oe_terminate_enclave(enclave1);
     OE_TEST(result == OE_OK);
