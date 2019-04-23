@@ -1,12 +1,14 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#pragma GCC diagnostic ignored "-Wparentheses"
+#include <openenclave/corelibc/string.h>
 
-#include <openenclave/corelibc/limits.h>
-#pragma GCC diagnostic ignored "-Wsign-conversion"
-#define __strchrnul __oe_strchrnul
-#define strlen oe_strlen
-#define UCHAR_MAX OE_UCHAR_MAX
-#define weak_alias(old, new) /* empty */
-#include "../../3rdparty/musl/musl/src/string/strchrnul.c"
+char* oe_strchrnul(const char* s, int c)
+{
+    char* p;
+
+    if (!(p = oe_strchr(s, c)))
+        p = (char*)(s + oe_strlen(s));
+
+    return p;
+}

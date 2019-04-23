@@ -4,13 +4,11 @@
 #include <openenclave/enclave.h>
 
 #include <openenclave/bits/safemath.h>
-#include <openenclave/corelibc/assert.h>
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/fcntl.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
-#include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/thread.h>
 
 /*
@@ -32,7 +30,7 @@ struct _OE_IO_FILE
 {
     uint32_t magic;
     int fd;
-    oe_spinlock_t lock;
+    oe_mutex_t lock;
     bool err;
     bool eof;
 };
@@ -59,6 +57,18 @@ OE_FILE* const oe_stderr = &_stderr;
 static bool _valid(const OE_FILE* stream)
 {
     return stream && stream->magic == MAGIC && stream->fd >= 0;
+}
+
+static void _lock(OE_FILE* stream)
+{
+    if (_valid(stream))
+        oe_mutex_lock(&stream->lock);
+}
+
+static void _unlock(OE_FILE* stream)
+{
+    if (_valid(stream))
+        oe_mutex_unlock(&stream->lock);
 }
 
 static ssize_t _read_n(int fd, void* buf, size_t count)
@@ -193,8 +203,13 @@ OE_FILE* oe_fopen(const char* path, const char* mode)
         goto done;
 
     /* Initialize the stream object. */
-    stream->magic = MAGIC;
-    stream->fd = fd;
+    {
+        oe_mutex_t m = OE_MUTEX_INITIALIZER;
+        memcpy(&stream->lock, &m, sizeof(m));
+        stream->magic = MAGIC;
+        stream->fd = fd;
+    }
+
     ret = stream;
     stream = NULL;
 
@@ -225,6 +240,9 @@ done:
 int oe_fclose(OE_FILE* stream)
 {
     int ret = -1;
+    bool locked = true;
+
+    _lock(stream);
 
     if (!_valid(stream))
     {
@@ -242,13 +260,19 @@ int oe_fclose(OE_FILE* stream)
         goto done;
     }
 
-    memset(stream, 0, sizeof(OE_FILE));
+    _unlock(stream);
+    locked = false;
 
+    memset(stream, 0, sizeof(OE_FILE));
     oe_free(stream);
 
     ret = 0;
 
 done:
+
+    if (locked)
+        _unlock(stream);
+
     return ret;
 }
 
@@ -257,6 +281,8 @@ size_t oe_fread(void* ptr_, size_t size, size_t nmemb, OE_FILE* stream)
     size_t ret = 0;
     size_t count;
     uint8_t* ptr = (uint8_t*)ptr_;
+
+    _lock(stream);
 
     if (oe_safe_mul_u64(size, nmemb, &count) != OE_OK)
     {
@@ -294,7 +320,7 @@ size_t oe_fread(void* ptr_, size_t size, size_t nmemb, OE_FILE* stream)
     }
 
 done:
-
+    _unlock(stream);
     return ret;
 }
 
@@ -303,6 +329,8 @@ size_t oe_fwrite(const void* ptr_, size_t size, size_t nmemb, OE_FILE* stream)
     size_t ret = 0;
     size_t count;
     const uint8_t* ptr = (const uint8_t*)ptr_;
+
+    _lock(stream);
 
     /* Fail if the product of size and nmemb overflows. */
     if (oe_safe_mul_u64(size, nmemb, &count) != OE_OK)
@@ -333,7 +361,7 @@ size_t oe_fwrite(const void* ptr_, size_t size, size_t nmemb, OE_FILE* stream)
     }
 
 done:
-
+    _unlock(stream);
     return ret;
 }
 
@@ -341,6 +369,8 @@ long oe_ftell(OE_FILE* stream)
 {
     long ret = -1;
     off_t r;
+
+    _lock(stream);
 
     if (!_valid(stream))
     {
@@ -354,6 +384,7 @@ long oe_ftell(OE_FILE* stream)
     ret = (long)r;
 
 done:
+    _unlock(stream);
     return ret;
 }
 
@@ -361,6 +392,8 @@ int oe_fseek(OE_FILE* stream, long offset, int whence)
 {
     int ret = -1;
     off_t r;
+
+    _lock(stream);
 
     if (!_valid(stream))
     {
@@ -374,12 +407,15 @@ int oe_fseek(OE_FILE* stream, long offset, int whence)
     ret = 0;
 
 done:
+    _unlock(stream);
     return ret;
 }
 
 int oe_ferror(OE_FILE* stream)
 {
     int ret = 1;
+
+    _lock(stream);
 
     if (!_valid(stream))
     {
@@ -393,12 +429,15 @@ int oe_ferror(OE_FILE* stream)
     ret = 0;
 
 done:
+    _unlock(stream);
     return ret;
 }
 
 int oe_feof(OE_FILE* stream)
 {
     int ret = 1;
+
+    _lock(stream);
 
     if (!_valid(stream))
     {
@@ -412,6 +451,7 @@ int oe_feof(OE_FILE* stream)
     ret = 0;
 
 done:
+    _unlock(stream);
     return ret;
 }
 
@@ -429,6 +469,8 @@ int oe_fgetc(OE_FILE* stream)
     int ret = OE_EOF;
     char c;
 
+    _lock(stream);
+
     if (!_valid(stream))
     {
         oe_errno = EINVAL;
@@ -441,6 +483,7 @@ int oe_fgetc(OE_FILE* stream)
     ret = c;
 
 done:
+    _unlock(stream);
     return ret;
 }
 
@@ -451,6 +494,8 @@ char* oe_fgets(char* s, int size, OE_FILE* stream)
     int n = size;
     int c;
     int count = 0;
+
+    _lock(stream);
 
     if (!s || !_valid(stream) || size < 1)
     {
@@ -480,12 +525,15 @@ char* oe_fgets(char* s, int size, OE_FILE* stream)
     ret = s;
 
 done:
+    _unlock(stream);
     return ret;
 }
 
 int oe_fileno(OE_FILE* stream)
 {
     int ret = -1;
+
+    _lock(stream);
 
     if (!_valid(stream))
     {
@@ -496,6 +544,7 @@ int oe_fileno(OE_FILE* stream)
     ret = stream->fd;
 
 done:
+    _unlock(stream);
     return ret;
 }
 
@@ -515,8 +564,13 @@ OE_FILE* oe_fdopen(int fd, const char* mode)
     }
 
     /* Initialize the stream object. */
-    stream->magic = MAGIC;
-    stream->fd = fd;
+    {
+        oe_mutex_t m = OE_MUTEX_INITIALIZER;
+        memcpy(&stream->lock, &m, sizeof(m));
+        stream->magic = MAGIC;
+        stream->fd = fd;
+    }
+
     ret = stream;
     stream = NULL;
 
