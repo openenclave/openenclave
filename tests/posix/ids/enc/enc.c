@@ -21,6 +21,8 @@ void test_ids(
 {
     gid_t list[NGROUPS_MAX];
 
+    memset(list, 0, sizeof(list));
+
     /* This cannot possibly be the init process. */
     OE_TEST(getpid() != 0);
 
