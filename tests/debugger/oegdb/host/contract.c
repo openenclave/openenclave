@@ -7,11 +7,12 @@
 #include <string.h>
 #include "../../../../host/sgx/enclave.h"
 
-// These values are filled by the debugger.
-// The variables are marked volatile so that the compiler does not hard-code
-// the initialization value of the variables in comparision.
-// Since 0 could be a legal value for some of these items, they are
-// initialized to -1.
+// The following variables are initialized so that the assertions below will
+// fail by default. The test expects the debugger to update the values
+// of these variables by introspecting the gdb python plugin.
+// If the gdb plugin's assumptions match the layout of the data structures,
+// then the assertions won't be triggered.
+// volatile is used to prevent compiler-optimizations.
 volatile uint64_t OE_ENCLAVE_MAGIC_FIELD = (uint64_t)-1;
 volatile uint64_t OE_ENCLAVE_ADDR_FIELD = (uint64_t)-1;
 volatile uint64_t OE_ENCLAVE_HEADER_LENGTH = (uint64_t)-1;

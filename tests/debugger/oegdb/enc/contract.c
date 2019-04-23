@@ -8,11 +8,12 @@
 #include <string.h>
 #include "../../../../enclave/core/sgx/td.h"
 
-// These values are filled by the debugger.
-// The variables are marked volatile so that the compiler does not hard-code
-// the initialization value of the variables in comparision.
-// Since 0 could be a legal value for some of these items, they are
-// initialized to -1.
+// The following variables are initialized so that the assertions below will
+// fail by default. The test expects the debugger to update the values
+// of these variables by introspecting the gdb python plugin.
+// If the gdb plugin's assumptions match the layout of the data structures,
+// then the assertions won't be triggered.
+// volatile is used to prevent compiler-optimizations.
 volatile uint64_t TD_OFFSET_FROM_TCS = (uint64_t)-1;
 volatile uint64_t TD_CALLSITE_OFFSET = (uint64_t)-1;
 volatile uint64_t CALLSITE_OCALLCONTEXT_OFFSET = (uint64_t)-1;
