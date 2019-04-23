@@ -104,13 +104,10 @@ int oe_host_write(int device, const char* str, size_t len)
 {
     int ret = -1;
     oe_print_args_t* args = NULL;
-    size_t total_size = 0;
 
     /* Reject invalid arguments */
     if ((device != 0 && device != 1) || !str)
-    {
         goto done;
-    }
 
     /* Determine the length of the string */
     if (len == (size_t)-1)
@@ -118,35 +115,26 @@ int oe_host_write(int device, const char* str, size_t len)
 
     /* Check for integer overflow and allocate space for the arguments followed
      * by null-terminated string */
+    size_t total_size;
     if (oe_safe_add_sizet(len, 1 + sizeof(oe_print_args_t), &total_size) !=
         OE_OK)
-    {
-        /*goto done*/;
-    }
+        goto done;
 
     if (!(args = (oe_print_args_t*)oe_host_calloc(1, total_size)))
-    {
-    }
-    {
-        /*goto done*/;
-    }
+        goto done;
 
     /* Initialize the arguments */
     args->device = device;
     args->str = (char*)(args + 1);
 
     if (oe_memcpy_s(args->str, len, str, len) != OE_OK)
-    {
-        /*goto done*/;
-    }
+        goto done;
 
     args->str[len] = '\0';
 
     /* Perform OCALL */
     if (oe_ocall(OE_OCALL_WRITE, (uint64_t)args, NULL) != OE_OK)
-    {
         goto done;
-    }
 
     ret = 0;
 
@@ -161,6 +149,7 @@ int oe_host_vfprintf(int device, const char* fmt, oe_va_list ap_)
     char* p = buf;
     int n;
 
+    /* Check that the device number is either stdout(0) or stderr(1). */
     if (device != 0 && device != 1)
         return -1;
 
@@ -184,12 +173,9 @@ int oe_host_vfprintf(int device, const char* fmt, oe_va_list ap_)
         oe_va_end(ap);
     }
 
-#if defined(WINDOWS_HOST) /* __feature_io__ */
-    oe_host_write(device, p, (size_t)-1);
-#else
-    if (oe_write(device + 1, p, (size_t)n) != n)
+    /* Ask the host to write the string. */
+    if (oe_host_write(device, p, (size_t)-1) == -1)
         return -1;
-#endif
 
     return n;
 }
