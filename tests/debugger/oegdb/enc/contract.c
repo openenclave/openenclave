@@ -8,21 +8,21 @@
 #include <string.h>
 #include "../../../../enclave/core/sgx/td.h"
 
+// These values are filled by the debugger.
+// The variables are marked volatile so that the compiler does not hard-code
+// the initialization value of the variables in comparision.
+// Since 0 could be a legal value for some of these items, they are
+// initialized to -1.
+volatile uint64_t TD_OFFSET_FROM_TCS = (uint64_t)-1;
+volatile uint64_t TD_CALLSITE_OFFSET = (uint64_t)-1;
+volatile uint64_t CALLSITE_OCALLCONTEXT_OFFSET = (uint64_t)-1;
+volatile uint64_t OCALLCONTEXT_LENGTH = (uint64_t)-1;
+volatile char OCALLCONTEXT_FORMAT[10];
+volatile uint64_t OCALLCONTEXT_RBP = (uint64_t)-1;
+volatile uint64_t OCALLCONTEXT_RET = (uint64_t)-1;
+
 void assert_debugger_binary_contract_enclave_side()
 {
-    // These values are filled by the debugger.
-    // The variables are marked volatile so that the compiler does not hard-code
-    // the initialization value of the variables in comparision.
-    // Since 0 could be a legal value for some of these items, they are
-    // initialized to -1.
-    static volatile uint64_t TD_OFFSET_FROM_TCS = (uint64_t)-1;
-    static volatile uint64_t TD_CALLSITE_OFFSET = (uint64_t)-1;
-    static volatile uint64_t CALLSITE_OCALLCONTEXT_OFFSET = (uint64_t)-1;
-    static volatile uint64_t OCALLCONTEXT_LENGTH = (uint64_t)-1;
-    static volatile char OCALLCONTEXT_FORMAT[10];
-    static volatile uint64_t OCALLCONTEXT_RBP = (uint64_t)-1;
-    static volatile uint64_t OCALLCONTEXT_RET = (uint64_t)-1;
-
     OE_TEST(TD_OFFSET_FROM_TCS == 4 * OE_PAGE_SIZE);
     OE_TEST(TD_CALLSITE_OFFSET == OE_OFFSETOF(td_t, callsites));
     OE_TEST(

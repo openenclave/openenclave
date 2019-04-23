@@ -7,26 +7,26 @@
 #include <string.h>
 #include "../../../../host/sgx/enclave.h"
 
+// These values are filled by the debugger.
+// The variables are marked volatile so that the compiler does not hard-code
+// the initialization value of the variables in comparision.
+// Since 0 could be a legal value for some of these items, they are
+// initialized to -1.
+volatile uint64_t OE_ENCLAVE_MAGIC_FIELD = (uint64_t)-1;
+volatile uint64_t OE_ENCLAVE_ADDR_FIELD = (uint64_t)-1;
+volatile uint64_t OE_ENCLAVE_HEADER_LENGTH = (uint64_t)-1;
+volatile char OE_ENCLAVE_HEADER_FORMAT[10];
+volatile uint64_t OE_ENCLAVE_MAGIC_VALUE = (uint64_t)-1;
+volatile uint64_t OE_ENCLAVE_FLAGS_OFFSET = (uint64_t)-1;
+volatile uint64_t OE_ENCLAVE_FLAGS_LENGTH = (uint64_t)-1;
+volatile char OE_ENCLAVE_FLAGS_FORMAT[10];
+volatile uint64_t OE_ENCLAVE_THREAD_BINDING_OFFSET = (uint64_t)-1;
+volatile uint64_t THREAD_BINDING_SIZE = (uint64_t)-1;
+volatile uint64_t THREAD_BINDING_HEADER_LENGTH = (uint64_t)-1;
+volatile char THREAD_BINDING_HEADER_FORMAT[10];
+
 void assert_debugger_binary_contract_host_side()
 {
-    // These values are filled by the debugger.
-    // The variables are marked volatile so that the compiler does not hard-code
-    // the initialization value of the variables in comparision.
-    // Since 0 could be a legal value for some of these items, they are
-    // initialized to -1.
-    static volatile uint64_t OE_ENCLAVE_MAGIC_FIELD = (uint64_t)-1;
-    static volatile uint64_t OE_ENCLAVE_ADDR_FIELD = (uint64_t)-1;
-    static volatile uint64_t OE_ENCLAVE_HEADER_LENGTH = (uint64_t)-1;
-    static volatile char OE_ENCLAVE_HEADER_FORMAT[10];
-    static volatile uint64_t OE_ENCLAVE_MAGIC_VALUE = (uint64_t)-1;
-    static volatile uint64_t OE_ENCLAVE_FLAGS_OFFSET = (uint64_t)-1;
-    static volatile uint64_t OE_ENCLAVE_FLAGS_LENGTH = (uint64_t)-1;
-    static volatile char OE_ENCLAVE_FLAGS_FORMAT[10];
-    static volatile uint64_t OE_ENCLAVE_THREAD_BINDING_OFFSET = (uint64_t)-1;
-    static volatile uint64_t THREAD_BINDING_SIZE = (uint64_t)-1;
-    static volatile uint64_t THREAD_BINDING_HEADER_LENGTH = (uint64_t)-1;
-    static volatile char THREAD_BINDING_HEADER_FORMAT[10];
-
     OE_TEST(OE_ENCLAVE_MAGIC_FIELD == OE_OFFSETOF(oe_enclave_t, magic));
     OE_TEST(OE_ENCLAVE_ADDR_FIELD == OE_OFFSETOF(oe_enclave_t, addr));
     OE_TEST(OE_ENCLAVE_HEADER_LENGTH == OE_OFFSETOF(oe_enclave_t, bindings));
