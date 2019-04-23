@@ -4,22 +4,22 @@
 set(LINUX_SGX_DIR ${PROJECT_SOURCE_DIR}/3rdparty/linux-sgx)
 
 add_library(oesgxfsenclave STATIC 
+    crypto.c
+    file_crypto.cpp
     file_flush.cpp
     file_init.cpp
     file_other.cpp
-    file_crypto.cpp
     file_read_write.cpp
     file_version.cpp
+    getkey.c
+    isoutside.c
     lru_cache.cpp
+    memequal.c
+    memset_s.c
+    rand.c
     sgxfs.c
     sgx_tprotected_fs.cpp
-    thread.c
-    memset_s.c
-    memequal.c
-    isoutside.c
-    rand.c
-    crypto.c
-    getkey.c)
+    thread.c)
 
 target_include_directories(oesgxfsenclave PRIVATE 
     ${CMAKE_CURRENT_SOURCE_DIR}/include
