@@ -8,9 +8,6 @@
 #if defined(__linux__)
 #include <dlfcn.h>
 #include <linux/futex.h>
-#include <openenclave/internal/posix/epoll.h>
-#include <openenclave/internal/posix/hostfs.h>
-#include <openenclave/internal/posix/resolver.h>
 #include <setjmp.h>
 #include <sys/mman.h>
 #include <sys/syscall.h>
