@@ -3,7 +3,16 @@
 
 #include <openenclave/corelibc/string.h>
 
-#pragma GCC diagnostic ignored "-Wsign-conversion"
-#define strcspn oe_strcspn
-#define __strchrnul oe_strchrnul
-#include "../../3rdparty/musl/musl/src/string/strcspn.c"
+size_t oe_strcspn(const char* s, const char* reject)
+{
+    const char* p = s;
+
+    while (*p)
+    {
+        if (oe_strchr(reject, *p))
+            break;
+        p++;
+    }
+
+    return (size_t)(p - s);
+}

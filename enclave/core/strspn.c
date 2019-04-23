@@ -1,6 +1,18 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#pragma GCC diagnostic ignored "-Wsign-conversion"
-#define strspn oe_strspn
-#include "../../3rdparty/musl/musl/src/string/strspn.c"
+#include <openenclave/corelibc/string.h>
+
+size_t oe_strspn(const char* s, const char* accept)
+{
+    const char* p = s;
+
+    while (*p)
+    {
+        if (!oe_strchr(accept, *p))
+            break;
+        p++;
+    }
+
+    return (size_t)(p - s);
+}

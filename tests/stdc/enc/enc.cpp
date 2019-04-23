@@ -121,6 +121,18 @@ void Test_llabs()
     OE_TEST(llabs(0) == 0);
 }
 
+void test_strspn()
+{
+    OE_TEST(strspn("xyzmmm", "xyz") == 3);
+    OE_TEST(strspn("xyz", "xyz") == 3);
+    OE_TEST(strspn("abc", "xyz") == 0);
+}
+
+void test_strcspn()
+{
+    OE_TEST(strcspn("0123456789xyz", "xyz") == 10);
+}
+
 #if 0
 void Test_div()
 {
@@ -262,6 +274,8 @@ int test(char buf1[BUFSIZE], char buf2[BUFSIZE])
     Test_abs();
     Test_labs();
     Test_llabs();
+    test_strspn();
+    test_strcspn();
 #if 0
     Test_div();
 #endif
