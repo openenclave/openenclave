@@ -10,6 +10,17 @@
 
 OE_EXTERNC_BEGIN
 
+#define __OE_LITTLE_ENDIAN 1234
+#define __OE_BIG_ENDIAN 4321
+
+#if defined(__i386) || defined(__x86_64)
+#define __OE_BYTE_ORDER __OE_LITTLE_ENDIAN
+#elif defined(__arm__) || defined(__aarch64__)
+#define __OE_BYTE_ORDER __OE_BIG_ENDIAN
+#elif defined(_WIN32)
+#define __OE_BYTE_ORDER __OE_LITTLE_ENDIAN
+#endif
+
 OE_INLINE uint32_t oe_ntohl(uint32_t x)
 {
 #if __OE_BYTE_ORDER == __OE_BIG_ENDIAN
