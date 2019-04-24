@@ -22,14 +22,9 @@ OE_EXTERNC_BEGIN
 
 typedef struct _OE_DIR OE_DIR;
 
-struct oe_dirent
-{
-    uint64_t d_ino;
-    oe_off_t d_off;
-    uint16_t d_reclen;
-    uint8_t d_type;
-    char d_name[256];
-};
+#define __OE_STRUCT_DIRENT oe_dirent
+#include <openenclave/corelibc/bits/struct_dirent.h>
+#undef __OE_STRUCT_DIRENT
 
 OE_DIR* oe_opendir(const char* pathname);
 
@@ -54,9 +49,12 @@ int oe_getdents(unsigned int fd, struct oe_dirent* dirp, unsigned int count);
 #define DT_LNK OE_DT_LNK
 #define DT_SOCK OE_DT_SOCK
 #define DT_WHT OE_DT_WHT
-#define dirent oe_dirent
 
 typedef OE_DIR DIR;
+
+#define __OE_STRUCT_DIRENT dirent
+#include <openenclave/corelibc/bits/struct_dirent.h>
+#undef __OE_STRUCT_DIRENT
 
 OE_INLINE DIR* opendir(const char* pathname)
 {
