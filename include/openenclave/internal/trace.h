@@ -40,7 +40,6 @@ typedef struct _oe_log_args
 #include <openenclave/enclave.h>
 OE_EXTERNC_BEGIN
 oe_result_t _handle_oelog_init(uint64_t arg);
-// OE_PRINTF_FORMAT(2, 3)
 oe_result_t oe_log(log_level_t level, const char* fmt, ...);
 log_level_t get_current_logging_level(void);
 OE_EXTERNC_END
@@ -48,7 +47,6 @@ OE_EXTERNC_END
 #include <stdio.h>
 OE_EXTERNC_BEGIN
 oe_result_t oe_log_enclave_init(oe_enclave_t* enclave);
-// OE_PRINTF_FORMAT(2, 3)
 void oe_log(log_level_t level, const char* fmt, ...);
 log_level_t get_current_logging_level(void);
 void log_message(bool is_enclave, oe_log_args_t* args);
