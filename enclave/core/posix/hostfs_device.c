@@ -612,7 +612,10 @@ done:
     return ret;
 }
 
-static oe_off_t _hostfs_lseek_file(oe_device_t* file, oe_off_t offset, int whence)
+static oe_off_t _hostfs_lseek_file(
+    oe_device_t* file,
+    oe_off_t offset,
+    int whence)
 {
     oe_off_t ret = -1;
     file_t* f = _cast_file(file);
@@ -658,7 +661,10 @@ done:
     return ret;
 }
 
-static oe_off_t _hostfs_lseek_dir(oe_device_t* file_, oe_off_t offset, int whence)
+static oe_off_t _hostfs_lseek_dir(
+    oe_device_t* file_,
+    oe_off_t offset,
+    int whence)
 {
     oe_off_t ret = -1;
     file_t* file = _cast_file(file_);

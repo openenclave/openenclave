@@ -56,7 +56,7 @@ typedef long long suseconds_t;
 #error "unknown compiler - please adapt basic types"
 #endif
 
-typedef int64_t  oe_off_t;
+typedef int64_t oe_off_t;
 typedef uint64_t oe_ino_t;
 typedef uint64_t oe_dev_t;
 

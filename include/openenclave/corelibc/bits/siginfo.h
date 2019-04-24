@@ -23,7 +23,8 @@ typedef struct
             void* oe_si_tid;   /* timer id */
             int oe_si_overrun; /* overrun count */
 #if !defined(_MSC_VER)
-            char __oe_si_pad[sizeof(uid_t) - sizeof(int)]; // This turns out to be zero length
+            char __oe_si_pad[sizeof(uid_t) - sizeof(int)]; // This turns out to
+                                                           // be zero length
 #endif
             union oe_sigval oe_si_sigval; /* same as below */
             int oe_si_sys_private;        /* not to be passed to user */
