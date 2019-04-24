@@ -10,8 +10,6 @@
 
 OE_EXTERNC_BEGIN
 
-#if 0
-
 typedef struct FILE OE_FILE;
 #define oe_in stdin
 #define oe_out stdout
@@ -48,8 +46,6 @@ int oe_printf(const char* format, ...)
     return vprintf(format, ap);
     va_end(ap);
 }
-
-#endif
 
 OE_EXTERNC_END
 
