@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_ARRAY_H
-#define _OE_ARRAY_H
+#ifndef _OE_INTERNAL_ARRAY_H
+#define _OE_INTERNAL_ARRAY_H
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/result.h>
@@ -59,4 +59,4 @@ int oe_array_set(oe_array_t* array, size_t index, const void* element);
 
 OE_EXTERNC_END
 
-#endif /* _OE_ARRAY_H */
+#endif /* _OE_INTERNAL_ARRAY_H */

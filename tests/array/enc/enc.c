@@ -3,7 +3,7 @@
 
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/array.h>
+#include <openenclave/internal/posix/array.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/tests.h>
 #include "array_t.h"

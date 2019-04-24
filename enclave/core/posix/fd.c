@@ -5,7 +5,7 @@
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/array.h>
+#include <openenclave/internal/posix/array.h>
 #include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/posix/fd.h>
 #include <openenclave/internal/print.h>

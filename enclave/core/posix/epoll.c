@@ -8,7 +8,7 @@
 
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/internal/utils.h>
-#include <openenclave/internal/array.h>
+#include <openenclave/internal/posix/array.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/posix/epoll.h>
 #include <openenclave/internal/list.h>
