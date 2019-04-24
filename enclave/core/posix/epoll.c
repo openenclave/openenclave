@@ -11,7 +11,7 @@
 #include <openenclave/internal/posix/array.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/posix/epoll.h>
-#include <openenclave/internal/list.h>
+#include <openenclave/internal/posix/list.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/internal/trace.h>
