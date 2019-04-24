@@ -9,19 +9,17 @@
 
 OE_EXTERNC_BEGIN
 
-struct oe_utsname
-{
+#define __OE_STRUCT_UTSNAME oe_utsname
 #include <openenclave/corelibc/sys/bits/utsname.h>
-};
+#undef __OE_STRUCT_UTSNAME
 
 int oe_uname(struct oe_utsname* buf);
 
 #if defined(OE_NEED_STDC_NAMES)
 
-struct utsname
-{
+#define __OE_STRUCT_UTSNAME utsname
 #include <openenclave/corelibc/sys/bits/utsname.h>
-};
+#undef __OE_STRUCT_UTSNAME
 
 int uname(struct oe_utsname* buf);
 
