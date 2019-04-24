@@ -19,13 +19,13 @@ OE_ENCLAVE_MAGIC_VALUE = 0x20dc98463a5ad8b8
 
 # The following are the offset of the 'debug' and
 # 'simulate' flag fields which must lie one after the other.
-OE_ENCLAVE_FLAGS_OFFSET = 0x798
+OE_ENCLAVE_FLAGS_OFFSET = 0x788
 OE_ENCLAVE_FLAGS_LENGTH = 2
 OE_ENCLAVE_FLAGS_FORMAT = 'BB'
 OE_ENCLAVE_THREAD_BINDING_OFFSET = 0x28
 
 # These constant definitions must align with ThreadBinding structure defined in host\enclave.h
-THREAD_BINDING_SIZE = 0x28
+THREAD_BINDING_SIZE = 0x38
 THREAD_BINDING_HEADER_LENGTH = 0X8
 THREAD_BINDING_HEADER_FORMAT = 'Q'
 

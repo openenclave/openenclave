@@ -69,6 +69,56 @@ commands 4
     continue
 end
 
+# Assert debugger contract on host side.
+b assert_debugger_binary_contract_host_side
+commands 5
+    python print("Serializing debugger contract on host side....")
+    python import gdb_sgx_plugin
+
+    python gdb.parse_and_eval("OE_ENCLAVE_MAGIC_FIELD = " + str(gdb_sgx_plugin.OE_ENCLAVE_MAGIC_FIELD))
+    python gdb.parse_and_eval("OE_ENCLAVE_ADDR_FIELD = sizeof(void*) * " + str(gdb_sgx_plugin.OE_ENCLAVE_ADDR_FIELD))
+    python gdb.parse_and_eval("OE_ENCLAVE_HEADER_LENGTH = " + str(gdb_sgx_plugin.OE_ENCLAVE_HEADER_LENGTH))
+    python gdb.parse_and_eval("OE_ENCLAVE_HEADER_FORMAT[0] = '" + str(gdb_sgx_plugin.OE_ENCLAVE_HEADER_FORMAT[0]) + "'")
+    python gdb.parse_and_eval("OE_ENCLAVE_HEADER_FORMAT[1] = '" + str(gdb_sgx_plugin.OE_ENCLAVE_HEADER_FORMAT[1]) + "'")
+    python gdb.parse_and_eval("OE_ENCLAVE_HEADER_FORMAT[2] = '" + str(gdb_sgx_plugin.OE_ENCLAVE_HEADER_FORMAT[2]) + "'")
+    python gdb.parse_and_eval("OE_ENCLAVE_HEADER_FORMAT[3] = '" + str(gdb_sgx_plugin.OE_ENCLAVE_HEADER_FORMAT[3]) + "'")
+    python gdb.parse_and_eval("OE_ENCLAVE_HEADER_FORMAT[4] = '" + str(gdb_sgx_plugin.OE_ENCLAVE_HEADER_FORMAT[4]) + "'")
+    python gdb.parse_and_eval("OE_ENCLAVE_MAGIC_VALUE = " + str(gdb_sgx_plugin.OE_ENCLAVE_MAGIC_VALUE))
+
+    python gdb.parse_and_eval("OE_ENCLAVE_FLAGS_OFFSET = " + str(gdb_sgx_plugin.OE_ENCLAVE_FLAGS_OFFSET))
+    python gdb.parse_and_eval("OE_ENCLAVE_FLAGS_LENGTH = " + str(gdb_sgx_plugin.OE_ENCLAVE_FLAGS_LENGTH))
+    python gdb.parse_and_eval("OE_ENCLAVE_FLAGS_FORMAT[0] = '" + str(gdb_sgx_plugin.OE_ENCLAVE_FLAGS_FORMAT[0]) + "'")
+    python gdb.parse_and_eval("OE_ENCLAVE_FLAGS_FORMAT[1] = '" + str(gdb_sgx_plugin.OE_ENCLAVE_FLAGS_FORMAT[1]) + "'")
+    python gdb.parse_and_eval("OE_ENCLAVE_THREAD_BINDING_OFFSET = " + str(gdb_sgx_plugin.OE_ENCLAVE_THREAD_BINDING_OFFSET))
+
+    python gdb.parse_and_eval("THREAD_BINDING_SIZE = " + str(gdb_sgx_plugin.THREAD_BINDING_SIZE))
+    python gdb.parse_and_eval("THREAD_BINDING_HEADER_LENGTH = " + str(gdb_sgx_plugin.THREAD_BINDING_HEADER_LENGTH))
+    python gdb.parse_and_eval("THREAD_BINDING_HEADER_FORMAT[0] = '" + str(gdb_sgx_plugin.THREAD_BINDING_HEADER_FORMAT[0]) + "'")
+
+    python print("Debugger contract serialized on host side.")
+    continue
+end
+
+# Assert debugger contract on enclave side.
+b assert_debugger_binary_contract_enclave_side
+commands 6
+    python print("Serializing debugger contract on enclave side....")
+    python import gdb_sgx_plugin
+
+    python gdb.parse_and_eval("TD_OFFSET_FROM_TCS = " + str(gdb_sgx_plugin.TD_OFFSET_FROM_TCS))
+    python gdb.parse_and_eval("TD_CALLSITE_OFFSET = " + str(gdb_sgx_plugin.TD_CALLSITE_OFFSET))
+    python gdb.parse_and_eval("CALLSITE_OCALLCONTEXT_OFFSET = " + str(gdb_sgx_plugin.CALLSITE_OCALLCONTEXT_OFFSET))
+
+    python gdb.parse_and_eval("OCALLCONTEXT_LENGTH  = " + str(gdb_sgx_plugin.OCALLCONTEXT_LENGTH))
+    python gdb.parse_and_eval("OCALLCONTEXT_FORMAT[0] = '" + gdb_sgx_plugin.OCALLCONTEXT_FORMAT[0] + "'")
+    python gdb.parse_and_eval("OCALLCONTEXT_FORMAT[1] = '" + gdb_sgx_plugin.OCALLCONTEXT_FORMAT[1] + "'")
+    python gdb.parse_and_eval("OCALLCONTEXT_RBP = " + str(gdb_sgx_plugin.OCALLCONTEXT_RBP))
+    python gdb.parse_and_eval("OCALLCONTEXT_RET = " + str(gdb_sgx_plugin.OCALLCONTEXT_RET))
+
+    python print("Debugger contract serialized on enclave side.")
+    continue
+end
+
 # Run the program
 run
 
