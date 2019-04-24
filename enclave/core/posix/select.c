@@ -79,7 +79,6 @@ int oe_select(
     oe_fd_set* writefds,
     oe_fd_set* exceptfds,
     struct oe_timeval* timeout)
-
 {
     int fd_list[OE_FD_SETSIZE] = {0};  // <nfds> members
     int fd_flags[OE_FD_SETSIZE] = {0}; // indexed by fd
@@ -98,29 +97,36 @@ int oe_select(
 
     memset(fd_list, 0xff, sizeof(uint32_t) * (size_t)(nfds + 1));
 
-    _set_to_fd_list(
-        readfds,
-        (OE_EPOLLIN | OE_EPOLLRDNORM | OE_EPOLLRDBAND),
-        nfds,
-        fd_list,
-        fd_flags);
-    _set_to_fd_list(
-        writefds,
-        (OE_EPOLLOUT | OE_EPOLLWRNORM | OE_EPOLLWRBAND),
-        nfds,
-        fd_list,
-        fd_flags);
-    _set_to_fd_list(
-        exceptfds,
-        (OE_EPOLLERR | OE_EPOLLHUP | OE_EPOLLRDHUP | OE_EPOLLWAKEUP),
-        nfds,
-        fd_list,
-        fd_flags);
-    int j = 0;
-    for (; j < nfds; j++)
+    if (readfds)
     {
-        oe_printf("fd[%d] = %d\n", j, fd_list[j]);
+        _set_to_fd_list(
+            readfds,
+            (OE_EPOLLIN | OE_EPOLLRDNORM | OE_EPOLLRDBAND),
+            nfds,
+            fd_list,
+            fd_flags);
     }
+
+    if (writefds)
+    {
+        _set_to_fd_list(
+            writefds,
+            (OE_EPOLLOUT | OE_EPOLLWRNORM | OE_EPOLLWRBAND),
+            nfds,
+            fd_list,
+            fd_flags);
+    }
+
+    if (exceptfds)
+    {
+        _set_to_fd_list(
+            exceptfds,
+            (OE_EPOLLERR | OE_EPOLLHUP | OE_EPOLLRDHUP | OE_EPOLLWAKEUP),
+            nfds,
+            fd_list,
+            fd_flags);
+    }
+
     epoll_fd = oe_epoll_create1(0);
     if (epoll_fd < 0)
     {
@@ -149,25 +155,41 @@ int oe_select(
         goto done;
     }
 
-    OE_FD_ZERO(readfds);
-    OE_FD_ZERO(writefds);
-    OE_FD_ZERO(exceptfds);
+    if (readfds)
+        OE_FD_ZERO(readfds);
 
-    _ev_list_to_set(
-        ret_fds,
-        rtn_ev,
-        (OE_EPOLLIN | OE_EPOLLRDNORM | OE_EPOLLRDBAND),
-        readfds);
-    _ev_list_to_set(
-        ret_fds,
-        rtn_ev,
-        (OE_EPOLLOUT | OE_EPOLLWRNORM | OE_EPOLLWRBAND),
-        writefds);
-    _ev_list_to_set(
-        ret_fds,
-        rtn_ev,
-        (OE_EPOLLERR | OE_EPOLLHUP | OE_EPOLLRDHUP | OE_EPOLLWAKEUP),
-        exceptfds);
+    if (writefds)
+        OE_FD_ZERO(writefds);
+
+    if (exceptfds)
+        OE_FD_ZERO(exceptfds);
+
+    if (readfds)
+    {
+        _ev_list_to_set(
+            ret_fds,
+            rtn_ev,
+            (OE_EPOLLIN | OE_EPOLLRDNORM | OE_EPOLLRDBAND),
+            readfds);
+    }
+
+    if (writefds)
+    {
+        _ev_list_to_set(
+            ret_fds,
+            rtn_ev,
+            (OE_EPOLLOUT | OE_EPOLLWRNORM | OE_EPOLLWRBAND),
+            writefds);
+    }
+
+    if (exceptfds)
+    {
+        _ev_list_to_set(
+            ret_fds,
+            rtn_ev,
+            (OE_EPOLLERR | OE_EPOLLHUP | OE_EPOLLRDHUP | OE_EPOLLWAKEUP),
+            exceptfds);
+    }
 done:
     oe_close(epoll_fd);
     return ret_fds;

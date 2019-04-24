@@ -16,6 +16,7 @@
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/sys/uio.h>
 #include <openenclave/corelibc/sys/socket.h>
+#include <openenclave/corelibc/stdio.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/bits/module.h>
 #include <openenclave/internal/trace.h>
@@ -827,9 +828,6 @@ static int _hostsock_fcntl(oe_device_t* sock_, int cmd, uint64_t arg)
         OE_TRACE_ERROR("host_fd=%ld %s", sock->host_fd, oe_result_str(result));
         goto done;
     }
-
-    if (ret == 0)
-        oe_free(sock);
 
 done:
 
