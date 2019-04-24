@@ -268,7 +268,6 @@ static oe_result_t _handle_call_host_function(
     if (args_ptr->input_buffer == NULL || args_ptr->output_buffer == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-#if !defined(_WIN32) /* __feature_io__ */
     // Select either internal or user ocall table.
     if (args_ptr->is_internal_call)
     {
@@ -279,7 +278,6 @@ static oe_result_t _handle_call_host_function(
         num_ocalls = oe_get_internal_ocall_function_table_size();
     }
     else
-#endif
     {
         ocalls = enclave->ocalls;
         num_ocalls = enclave->num_ocalls;

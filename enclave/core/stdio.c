@@ -368,7 +368,7 @@ done:
 long oe_ftell(OE_FILE* stream)
 {
     long ret = -1;
-    off_t r;
+    oe_off_t r;
 
     _lock(stream);
 
@@ -378,7 +378,7 @@ long oe_ftell(OE_FILE* stream)
         goto done;
     }
 
-    if ((r = oe_lseek(stream->fd, 0, OE_SEEK_CUR)) == (off_t)-1)
+    if ((r = oe_lseek(stream->fd, 0, OE_SEEK_CUR)) == (oe_off_t)-1)
         goto done;
 
     ret = (long)r;
@@ -391,7 +391,7 @@ done:
 int oe_fseek(OE_FILE* stream, long offset, int whence)
 {
     int ret = -1;
-    off_t r;
+    oe_off_t r;
 
     _lock(stream);
 
@@ -401,7 +401,7 @@ int oe_fseek(OE_FILE* stream, long offset, int whence)
         goto done;
     }
 
-    if ((r = oe_lseek(stream->fd, offset, whence)) == (off_t)-1)
+    if ((r = oe_lseek(stream->fd, offset, whence)) == (oe_off_t)-1)
         goto done;
 
     ret = 0;

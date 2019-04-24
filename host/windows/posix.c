@@ -2,23 +2,8 @@
 // Licensed under the MIT License.
 
 typedef __int64 off_t;
-#include <openenclave/internal/posix/hostfs.h>
-#if defined(NOTYET)
-#include <errno.h>
-#include <fcntl.h>
-#include <limits.h>
-#include <netdb.h>
-#include <pthread.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/epoll.h>
-#include <sys/poll.h>
-#include <sys/signal.h>
-#include <sys/socket.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#endif
 #include <io.h>
+#include <openenclave/internal/posix/hostfs.h>
 #include <stdint.h>
 #pragma warning(disable : 4005)
 #include "oe_u.h"
@@ -497,7 +482,7 @@ int oe_posix_socketpair_ocall(
 
 int oe_posix_connect_ocall(
     int sockfd,
-    const struct sockaddr* addr,
+    const struct oe_sockaddr* addr,
     socklen_t addrlen,
     int* err)
 {
@@ -516,7 +501,7 @@ int oe_posix_connect_ocall(
 
 int oe_posix_accept_ocall(
     int sockfd,
-    struct sockaddr* addr,
+    struct oe_sockaddr* addr,
     socklen_t addrlen_in,
     socklen_t* addrlen_out,
     int* err)
@@ -545,7 +530,7 @@ done:
 
 int oe_posix_bind_ocall(
     int sockfd,
-    const struct sockaddr* addr,
+    const struct oe_sockaddr* addr,
     socklen_t addrlen,
     int* err)
 {
@@ -720,7 +705,7 @@ ssize_t oe_posix_recvfrom_ocall(
     void* buf,
     size_t len,
     int flags,
-    struct sockaddr* src_addr,
+    struct oe_sockaddr* src_addr,
     socklen_t addrlen_in,
     socklen_t* addrlen_out,
     int* err)
@@ -773,7 +758,7 @@ ssize_t oe_posix_sendto_ocall(
     const void* buf,
     size_t len,
     int flags,
-    const struct sockaddr* src_addr,
+    const struct oe_sockaddr* src_addr,
     socklen_t addrlen,
     int* err)
 {
@@ -892,7 +877,7 @@ int oe_posix_getsockopt_ocall(
 
 int oe_posix_getsockname_ocall(
     int sockfd,
-    struct sockaddr* addr,
+    struct oe_sockaddr* addr,
     socklen_t addrlen_in,
     socklen_t* addrlen_out,
     int* err)
@@ -918,7 +903,7 @@ int oe_posix_getsockname_ocall(
 
 int oe_posix_getpeername_ocall(
     int sockfd,
-    struct sockaddr* addr,
+    struct oe_sockaddr* addr,
     socklen_t addrlen_in,
     socklen_t* addrlen_out,
     int* err)
@@ -1014,7 +999,7 @@ static getaddrinfo_handle_t* _cast_getaddrinfo_handle(void* handle_)
 uint64_t oe_posix_getaddrinfo_open_ocall(
     const char* node,
     const char* service,
-    const struct addrinfo* hints,
+    const struct oe_addrinfo* hints,
     int* err)
 {
 #if defined(NOTYET)
@@ -1061,7 +1046,7 @@ int oe_posix_getaddrinfo_read_ocall(
     int* ai_protocol,
     socklen_t ai_addrlen_in,
     socklen_t* ai_addrlen,
-    struct sockaddr* ai_addr,
+    struct oe_sockaddr* ai_addr,
     size_t ai_canonnamelen_in,
     size_t* ai_canonnamelen,
     char* ai_canonname,
@@ -1176,7 +1161,7 @@ done:
 }
 
 int oe_posix_getnameinfo_ocall(
-    const struct sockaddr* sa,
+    const struct oe_sockaddr* sa,
     socklen_t salen,
     char* host,
     socklen_t hostlen,
@@ -1488,7 +1473,7 @@ int oe_posix_shutdown_polling_device_ocall(int fd, int* err)
 int oe_posix_epoll_poll_ocall(
     int64_t enclaveid,
     int epfd,
-    struct pollfd* fds,
+    struct oe_pollfd* fds,
     size_t nfds,
     int timeout,
     int* err)

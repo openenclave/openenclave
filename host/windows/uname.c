@@ -9,7 +9,7 @@
 int oe_posix_uname_ocall(struct utsname* buf, int* err)
 {
     int ret = -1;
-
+#if defined(NOTYET)
     if (!buf)
     {
         if (err)
@@ -42,5 +42,6 @@ int oe_posix_uname_ocall(struct utsname* buf, int* err)
     ret = 0;
 
 done:
+#endif
     return ret;
 }

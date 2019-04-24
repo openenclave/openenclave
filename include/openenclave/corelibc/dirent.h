@@ -25,7 +25,7 @@ typedef struct _OE_DIR OE_DIR;
 struct oe_dirent
 {
     uint64_t d_ino;
-    off_t d_off;
+    oe_off_t d_off;
     uint16_t d_reclen;
     uint8_t d_type;
     char d_name[256];

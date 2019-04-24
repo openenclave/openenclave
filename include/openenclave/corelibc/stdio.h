@@ -65,14 +65,14 @@ size_t oe_fwrite(const void* ptr, size_t size, size_t nmemb, OE_FILE* stream);
 
 long oe_ftell(OE_FILE* stream);
 
-OE_INLINE off_t oe_ftello(OE_FILE* stream)
+OE_INLINE oe_off_t oe_ftello(OE_FILE* stream)
 {
-    return (off_t)oe_ftell(stream);
+    return (oe_off_t)oe_ftell(stream);
 }
 
 int oe_fseek(OE_FILE* stream, long offset, int whence);
 
-OE_INLINE int oe_fseeko(OE_FILE* stream, off_t offset, int whence)
+OE_INLINE int oe_fseeko(OE_FILE* stream, oe_off_t offset, int whence)
 {
     return oe_fseek(stream, (long)offset, whence);
 }
@@ -196,7 +196,7 @@ OE_INLINE long ftell(FILE* stream)
     return oe_ftell((OE_FILE*)stream);
 }
 
-OE_INLINE off_t ftello(FILE* stream)
+OE_INLINE oe_off_t ftello(FILE* stream)
 {
     return oe_ftello((OE_FILE*)stream);
 }

@@ -612,9 +612,12 @@ done:
     return ret;
 }
 
-static off_t _hostfs_lseek_file(oe_device_t* file, off_t offset, int whence)
+static oe_off_t _hostfs_lseek_file(
+    oe_device_t* file,
+    oe_off_t offset,
+    int whence)
 {
-    off_t ret = -1;
+    oe_off_t ret = -1;
     file_t* f = _cast_file(file);
 
     oe_errno = 0;
@@ -658,9 +661,12 @@ done:
     return ret;
 }
 
-static off_t _hostfs_lseek_dir(oe_device_t* file_, off_t offset, int whence)
+static oe_off_t _hostfs_lseek_dir(
+    oe_device_t* file_,
+    oe_off_t offset,
+    int whence)
 {
-    off_t ret = -1;
+    oe_off_t ret = -1;
     file_t* file = _cast_file(file_);
 
     oe_errno = 0;
@@ -684,9 +690,9 @@ done:
     return ret;
 }
 
-static off_t _hostfs_lseek(oe_device_t* file_, off_t offset, int whence)
+static oe_off_t _hostfs_lseek(oe_device_t* file_, oe_off_t offset, int whence)
 {
-    off_t ret = -1;
+    oe_off_t ret = -1;
     file_t* file = _cast_file(file_);
 
     oe_errno = 0;
@@ -1253,7 +1259,7 @@ done:
     return ret;
 }
 
-static int _hostfs_truncate(oe_device_t* fs_, const char* path, off_t length)
+static int _hostfs_truncate(oe_device_t* fs_, const char* path, oe_off_t length)
 {
     int ret = -1;
     fs_t* fs = _cast_fs(fs_);
