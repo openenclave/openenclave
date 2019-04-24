@@ -74,20 +74,6 @@ int oe_chdir(const char* path);
 
 int oe_close(int fd);
 
-int __oe_fcntl(int fd, int cmd, uint64_t arg);
-
-#if !defined(WIN32) /* __feature_io__ */
-OE_INLINE int oe_fcntl(int fd, int cmd, ...)
-{
-    oe_va_list ap;
-    oe_va_start(ap, cmd);
-    int r = __oe_fcntl(fd, cmd, oe_va_arg(ap, uint64_t));
-    oe_va_end(ap);
-
-    return r;
-}
-#endif /* !defined(WIN32) */
-
 int oe_gethostname(char* name, size_t len);
 
 int oe_getdomainname(char* name, size_t len);
@@ -211,16 +197,6 @@ OE_INLINE int getdomainname(char* name, size_t len)
 OE_INLINE unsigned int sleep(unsigned int seconds)
 {
     return oe_sleep(seconds);
-}
-
-OE_INLINE int fcntl(int fd, int cmd, ...)
-{
-    oe_va_list ap;
-    oe_va_start(ap, cmd);
-    int r = __oe_fcntl(fd, cmd, oe_va_arg(ap, uint64_t));
-    oe_va_end(ap);
-
-    return r;
 }
 
 OE_INLINE int dup(int fd)

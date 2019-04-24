@@ -6,6 +6,7 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/corelibc/stdarg.h>
 
 OE_EXTERNC_BEGIN
 
@@ -56,6 +57,20 @@ int oe_open(const char* pathname, int flags, mode_t mode);
 
 int oe_open_d(uint64_t devid, const char* pathname, int flags, mode_t mode);
 
+int __oe_fcntl(int fd, int cmd, uint64_t arg);
+
+#if !defined(WIN32) /* __feature_io__ */
+OE_INLINE int oe_fcntl(int fd, int cmd, ...)
+{
+    oe_va_list ap;
+    oe_va_start(ap, cmd);
+    int r = __oe_fcntl(fd, cmd, oe_va_arg(ap, uint64_t));
+    oe_va_end(ap);
+
+    return r;
+}
+#endif /* !defined(WIN32) */
+
 #if defined(OE_NEED_STDC_NAMES)
 
 #define O_RDONLY OE_O_RDONLY
@@ -100,6 +115,16 @@ int oe_open_d(uint64_t devid, const char* pathname, int flags, mode_t mode);
 OE_INLINE int open(const char* pathname, int flags, mode_t mode)
 {
     return oe_open(pathname, flags, mode);
+}
+
+OE_INLINE int fcntl(int fd, int cmd, ...)
+{
+    oe_va_list ap;
+    oe_va_start(ap, cmd);
+    int r = __oe_fcntl(fd, cmd, oe_va_arg(ap, uint64_t));
+    oe_va_end(ap);
+
+    return r;
 }
 
 #endif /* defined(OE_NEED_STDC_NAMES) */
