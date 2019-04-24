@@ -9,7 +9,7 @@
 
 OE_EXTERNC_BEGIN
 
-int oe_host_write(int device, const char* str, size_t len);
+int oe_host_write(int device, const char* str, size_t size);
 
 int oe_host_vfprintf(int device, const char* fmt, oe_va_list ap_);
 
