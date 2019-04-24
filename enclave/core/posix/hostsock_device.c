@@ -331,11 +331,7 @@ static int _hostsock_connect(
     _fix_address_family(&buf.addr);
 
     if ((result = oe_posix_connect_ocall(
-             &ret,
-             (int)sock->host_fd,
-             (struct sockaddr*)&buf.addr,
-             addrlen,
-             &oe_errno)) != OE_OK)
+             &ret, (int)sock->host_fd, &buf.addr, addrlen, &oe_errno)) != OE_OK)
     {
         oe_errno = EINVAL;
         OE_TRACE_ERROR("%s oe_errno=%d", oe_result_str(result), oe_errno);
@@ -389,7 +385,7 @@ static int _hostsock_accept(
     if ((result = oe_posix_accept_ocall(
              &ret,
              (int)sock->host_fd,
-             (struct sockaddr*)&buf.addr,
+             &buf.addr,
              addrlen_in,
              addrlen,
              &oe_errno)) != OE_OK)
@@ -435,11 +431,7 @@ static int _hostsock_bind(
     _fix_address_family(&buf.addr);
 
     if ((result = oe_posix_bind_ocall(
-             &ret,
-             (int)sock->host_fd,
-             (struct sockaddr*)&buf.addr,
-             addrlen,
-             &oe_errno)) != OE_OK)
+             &ret, (int)sock->host_fd, &buf.addr, addrlen, &oe_errno)) != OE_OK)
     {
         oe_errno = EINVAL;
         OE_TRACE_ERROR("host_fd=%ld %s", sock->host_fd, oe_result_str(result));
@@ -542,7 +534,7 @@ static ssize_t _hostsock_recvfrom(
              buf,
              count,
              flags,
-             (struct sockaddr*)src_addr,
+             (struct oe_sockaddr*)src_addr,
              addrlen_in,
              addrlen,
              &oe_errno)) != OE_OK)
@@ -692,7 +684,7 @@ static ssize_t _hostsock_sendto(
              buf,
              count,
              flags,
-             (struct sockaddr*)dest_addr,
+             (struct oe_sockaddr*)dest_addr,
              addrlen,
              &oe_errno)) != OE_OK)
     {
@@ -1014,7 +1006,7 @@ static int _hostsock_getpeername(
     if ((result = oe_posix_getpeername_ocall(
              &ret,
              (int)sock->host_fd,
-             (struct sockaddr*)addr,
+             (struct oe_sockaddr*)addr,
              addrlen_in,
              addrlen,
              &oe_errno)) != OE_OK)
@@ -1054,7 +1046,7 @@ static int _hostsock_getsockname(
     if ((result = oe_posix_getsockname_ocall(
              &ret,
              (int)sock->host_fd,
-             (struct sockaddr*)addr,
+             (struct oe_sockaddr*)addr,
              addrlen_in,
              addrlen,
              &oe_errno)) != OE_OK)

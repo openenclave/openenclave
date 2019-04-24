@@ -41,8 +41,8 @@ int oe_atoi(const char* nptr);
 
 #if defined(OE_NEED_STDC_NAMES)
 
-#include "bits/atexit.h"
-#include "bits/malloc.h"
+#include <openenclave/corelibc/bits/atexit.h>
+#include <openenclave/corelibc/bits/malloc.h>
 
 OE_INLINE
 unsigned long int strtoul(const char* nptr, char** endptr, int base)

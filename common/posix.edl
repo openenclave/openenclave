@@ -3,11 +3,11 @@
 
 enclave {
 
-    include "netdb.h"
-    include "sys/epoll.h"
-    include "sys/poll.h"
-    include "sys/socket.h"
-    include "sys/utsname.h"
+    include "openenclave/corelibc/netdb.h"
+    include "openenclave/corelibc/sys/epoll.h"
+    include "openenclave/corelibc/sys/poll.h"
+    include "openenclave/corelibc/sys/socket.h"
+    include "openenclave/corelibc/sys/utsname.h"
     include "openenclave/internal/posix/epoll.h"
 
     trusted {
@@ -23,7 +23,7 @@ enclave {
     untrusted {
 
         int oe_posix_uname_ocall(
-            [out, count=1] struct utsname* buf,
+            [out, count=1] struct oe_utsname* buf,
             [out, count=1] int* err);
 
         int oe_posix_open_ocall(
@@ -147,20 +147,20 @@ enclave {
 
         int oe_posix_connect_ocall(
             int sockfd,
-            [in, size=addrlen] const struct sockaddr* addr,
+            [in, size=addrlen] const struct oe_sockaddr* addr,
             socklen_t addrlen,
             [out, count=1] int* err);
 
         int oe_posix_accept_ocall(
             int sockfd,
-            [in, out, size=addrlen_in] struct sockaddr* addr,
+            [in, out, size=addrlen_in] struct oe_sockaddr* addr,
             socklen_t addrlen_in,
             [out, count=1] socklen_t* addrlen_out,
             [out, count=1] int* err);
 
         int oe_posix_bind_ocall(
             int sockfd,
-            [in, size=addrlen] const struct sockaddr* addr,
+            [in, size=addrlen] const struct oe_sockaddr* addr,
             socklen_t addrlen,
             [out, count=1] int* err);
 
@@ -205,7 +205,7 @@ enclave {
             [out, size=len] void* buf,
             size_t len,
             int flags,
-            [in, out, size=addrlen_in] struct sockaddr* src_addr,
+            [in, out, size=addrlen_in] struct oe_sockaddr* src_addr,
             socklen_t addrlen_in,
             [out, count=1] socklen_t* addrlen_out,
             [out, count=1] int* err);
@@ -222,7 +222,7 @@ enclave {
             [in, size=len] const void* buf,
             size_t len,
             int flags,
-            [in, size=addrlen] const struct sockaddr* dest_addr,
+            [in, size=addrlen] const struct oe_sockaddr* dest_addr,
             socklen_t addrlen,
             [out, count=1] int* err);
 
@@ -256,14 +256,14 @@ enclave {
 
         int oe_posix_getsockname_ocall(
             int sockfd,
-            [in, out, size=addrlen_in] struct sockaddr* addr,
+            [in, out, size=addrlen_in] struct oe_sockaddr* addr,
             socklen_t addrlen_in,
             [out, size=1] socklen_t* addrlen_out,
             [out, count=1] int* err);
 
         int oe_posix_getpeername_ocall(
             int sockfd,
-            [in, out, size=addrlen_in] struct sockaddr* addr,
+            [in, out, size=addrlen_in] struct oe_sockaddr* addr,
             socklen_t addrlen_in,
             [out, size=1] socklen_t* addrlen_out,
             [out, count=1] int* err);
@@ -280,7 +280,7 @@ enclave {
         uint64_t oe_posix_getaddrinfo_open_ocall(
             [in, string] const char* node,
             [in, string] const char* service,
-            [in, count=1] const struct addrinfo* hints,
+            [in, count=1] const struct oe_addrinfo* hints,
             [out, count=1] int* err);
 
         int oe_posix_getaddrinfo_read_ocall(
@@ -291,7 +291,7 @@ enclave {
             [out, count=1] int* ai_protocol,
             socklen_t ai_addrlen_in,
             [out, count=1] socklen_t* ai_addrlen,
-            [out, size=ai_addrlen_in] struct sockaddr* ai_addr,
+            [out, size=ai_addrlen_in] struct oe_sockaddr* ai_addr,
             size_t ai_canonnamelen_in,
             [out, count=1] size_t* ai_canonnamelen,
             [out, size=ai_canonnamelen_in] char* ai_canonname,
@@ -302,7 +302,7 @@ enclave {
             [out, count=1] int* err);
 
         int oe_posix_getnameinfo_ocall(
-            [in, size=salen] const struct sockaddr* sa,
+            [in, size=salen] const struct oe_sockaddr* sa,
             socklen_t salen,
             [out, size=hostlen] char* host,
             socklen_t hostlen,
@@ -329,7 +329,7 @@ enclave {
         int oe_posix_epoll_poll_ocall(
             int64_t enclaveid,
             int epfd,
-            [in,out, count=nfds] struct pollfd* fds,
+            [in,out, count=nfds] struct oe_pollfd* fds,
             size_t nfds,
             int timeout,
             [out, count=1] int* err);

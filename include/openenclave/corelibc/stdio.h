@@ -93,7 +93,7 @@ OE_FILE* oe_fdopen(int fd, const char* mode);
 
 #if defined(OE_NEED_STDC_NAMES)
 
-#include "bits/stdfile.h"
+#include <openenclave/corelibc/bits/stdfile.h>
 #define BUFSIZ OE_BUFSIZ
 #define EOF (-1)
 

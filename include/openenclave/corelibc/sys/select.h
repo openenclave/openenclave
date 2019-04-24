@@ -8,7 +8,7 @@
 #include <openenclave/bits/types.h>
 #include <openenclave/corelibc/sys/time.h>
 #include <openenclave/corelibc/time.h>
-#include <unistd.h>
+#include <openenclave/corelibc/unistd.h>
 
 OE_EXTERNC_BEGIN
 

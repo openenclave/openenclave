@@ -1,8 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-/* The generated code expects the standard-C headers and names. */
-#define OE_NEED_STDC_NAMES
+#include <openenclave/corelibc/string.h>
+
+OE_INLINE size_t strlen(const char* s)
+{
+    return oe_strlen(s);
+}
 
 /* Rename the ecalls table to __oe_ecalls_table_size. */
 #define __oe_ecalls_table_size __oe_internal_ecalls_table_size

@@ -12,7 +12,7 @@ int oe_uname(struct oe_utsname* buf)
     oe_result_t result = OE_FAILURE;
 
     if ((result = oe_posix_uname_ocall(
-             &ret, (struct utsname*)buf, &oe_errno)) != OE_OK)
+             &ret, (struct oe_utsname*)buf, &oe_errno)) != OE_OK)
     {
         OE_TRACE_ERROR("%s", oe_result_str(result));
         goto done;

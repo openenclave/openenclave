@@ -672,7 +672,7 @@ static int _epoll_poll(
         &ret,
         (int64_t)oe_get_enclave(),
         (int)epoll_fd,
-        (struct pollfd*)host_fds,
+        host_fds,
         nfds,
         (int)timeout,
         &oe_errno);

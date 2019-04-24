@@ -73,15 +73,8 @@ static ssize_t _hostresolv_getnameinfo(
     oe_errno = 0;
 
     if (oe_posix_getnameinfo_ocall(
-            &ret,
-            (const struct sockaddr*)sa,
-            salen,
-            host,
-            hostlen,
-            serv,
-            servlen,
-            flags,
-            &oe_errno) != OE_OK)
+            &ret, sa, salen, host, hostlen, serv, servlen, flags, &oe_errno) !=
+        OE_OK)
     {
         goto done;
     }
@@ -121,8 +114,7 @@ static int _hostresolv_getaddrinfo(
         oe_result_t result;
 
         if ((result = oe_posix_getaddrinfo_open_ocall(
-                 &handle, node, service, (struct addrinfo*)hints, &err)) !=
-            OE_OK)
+                 &handle, node, service, hints, &err)) != OE_OK)
         {
             OE_TRACE_ERROR(
                 "oe_posix_getaddrinfo_open_ocall(): result=%s",
@@ -205,7 +197,7 @@ static int _hostresolv_getaddrinfo(
                  &p->ai_protocol,
                  p->ai_addrlen,
                  &p->ai_addrlen,
-                 (struct sockaddr*)p->ai_addr,
+                 p->ai_addr,
                  canonnamelen,
                  &canonnamelen,
                  p->ai_canonname,

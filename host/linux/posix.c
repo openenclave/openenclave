@@ -407,11 +407,11 @@ int oe_posix_socketpair_ocall(
 
 int oe_posix_connect_ocall(
     int sockfd,
-    const struct sockaddr* addr,
+    const struct oe_sockaddr* addr,
     socklen_t addrlen,
     int* err)
 {
-    int ret = connect(sockfd, addr, addrlen);
+    int ret = connect(sockfd, (const struct sockaddr*)addr, addrlen);
 
     if (ret == -1 && err)
         *err = errno;
@@ -421,12 +421,12 @@ int oe_posix_connect_ocall(
 
 int oe_posix_accept_ocall(
     int sockfd,
-    struct sockaddr* addr,
+    struct oe_sockaddr* addr,
     socklen_t addrlen_in,
     socklen_t* addrlen_out,
     int* err)
 {
-    int ret = accept(sockfd, addr, &addrlen_in);
+    int ret = accept(sockfd, (struct sockaddr*)addr, &addrlen_in);
 
     if (ret == -1)
     {
@@ -445,11 +445,11 @@ done:
 
 int oe_posix_bind_ocall(
     int sockfd,
-    const struct sockaddr* addr,
+    const struct oe_sockaddr* addr,
     socklen_t addrlen,
     int* err)
 {
-    int ret = bind(sockfd, addr, addrlen);
+    int ret = bind(sockfd, (const struct sockaddr*)addr, addrlen);
 
     if (ret == -1)
     {
@@ -595,12 +595,13 @@ ssize_t oe_posix_recvfrom_ocall(
     void* buf,
     size_t len,
     int flags,
-    struct sockaddr* src_addr,
+    struct oe_sockaddr* src_addr,
     socklen_t addrlen_in,
     socklen_t* addrlen_out,
     int* err)
 {
-    ssize_t ret = recvfrom(sockfd, buf, len, flags, src_addr, &addrlen_in);
+    ssize_t ret = recvfrom(
+        sockfd, buf, len, flags, (struct sockaddr*)src_addr, &addrlen_in);
 
     if (ret == -1)
     {
@@ -638,11 +639,12 @@ ssize_t oe_posix_sendto_ocall(
     const void* buf,
     size_t len,
     int flags,
-    const struct sockaddr* src_addr,
+    const struct oe_sockaddr* src_addr,
     socklen_t addrlen,
     int* err)
 {
-    ssize_t ret = sendto(sockfd, buf, len, flags, src_addr, addrlen);
+    ssize_t ret = sendto(
+        sockfd, buf, len, flags, (const struct sockaddr*)src_addr, addrlen);
 
     if (ret == -1)
     {
@@ -732,7 +734,7 @@ int oe_posix_getsockopt_ocall(
 
 int oe_posix_getsockname_ocall(
     int sockfd,
-    struct sockaddr* addr,
+    struct oe_sockaddr* addr,
     socklen_t addrlen_in,
     socklen_t* addrlen_out,
     int* err)
@@ -740,7 +742,7 @@ int oe_posix_getsockname_ocall(
     if (addrlen_out)
         *addrlen_out = addrlen_in;
 
-    int ret = getsockname(sockfd, addr, addrlen_out);
+    int ret = getsockname(sockfd, (struct sockaddr*)addr, addrlen_out);
 
     if (ret == -1)
     {
@@ -753,7 +755,7 @@ int oe_posix_getsockname_ocall(
 
 int oe_posix_getpeername_ocall(
     int sockfd,
-    struct sockaddr* addr,
+    struct oe_sockaddr* addr,
     socklen_t addrlen_in,
     socklen_t* addrlen_out,
     int* err)
@@ -761,7 +763,7 @@ int oe_posix_getpeername_ocall(
     if (addrlen_out)
         *addrlen_out = addrlen_in;
 
-    int ret = getpeername(sockfd, addr, addrlen_out);
+    int ret = getpeername(sockfd, (struct sockaddr*)addr, addrlen_out);
 
     if (ret == -1)
     {
@@ -839,7 +841,7 @@ static getaddrinfo_handle_t* _cast_getaddrinfo_handle(void* handle_)
 uint64_t oe_posix_getaddrinfo_open_ocall(
     const char* node,
     const char* service,
-    const struct addrinfo* hints,
+    const struct oe_addrinfo* hints,
     int* err)
 {
     getaddrinfo_handle_t* ret = NULL;
@@ -854,7 +856,8 @@ uint64_t oe_posix_getaddrinfo_open_ocall(
         goto done;
     }
 
-    if (getaddrinfo(node, service, hints, &handle->res) != 0)
+    if (getaddrinfo(
+            node, service, (const struct addrinfo*)hints, &handle->res) != 0)
     {
         _set_err(err, errno);
         goto done;
@@ -881,7 +884,7 @@ int oe_posix_getaddrinfo_read_ocall(
     int* ai_protocol,
     socklen_t ai_addrlen_in,
     socklen_t* ai_addrlen,
-    struct sockaddr* ai_addr,
+    struct oe_sockaddr* ai_addr,
     size_t ai_canonnamelen_in,
     size_t* ai_canonnamelen,
     char* ai_canonname,
@@ -984,7 +987,7 @@ done:
 }
 
 int oe_posix_getnameinfo_ocall(
-    const struct sockaddr* sa,
+    const struct oe_sockaddr* sa,
     socklen_t salen,
     char* host,
     socklen_t hostlen,
@@ -993,7 +996,8 @@ int oe_posix_getnameinfo_ocall(
     int flags,
     int* err)
 {
-    int ret = getnameinfo(sa, salen, host, hostlen, serv, servlen, flags);
+    int ret = getnameinfo(
+        (const struct sockaddr*)sa, salen, host, hostlen, serv, servlen, flags);
 
     if (ret == EAI_SYSTEM)
     {
@@ -1256,7 +1260,7 @@ int oe_posix_shutdown_polling_device_ocall(int fd, int* err)
 int oe_posix_epoll_poll_ocall(
     int64_t enclaveid,
     int epfd,
-    struct pollfd* fds,
+    struct oe_pollfd* fds,
     size_t nfds,
     int timeout,
     int* err)
@@ -1282,9 +1286,11 @@ int oe_posix_epoll_poll_ocall(
     args->enclaveid = enclaveid;
     args->epfd = epfd;
     args->nfds = nfds;
+
     for (; fd_idx < nfds; fd_idx++)
     {
-        args->fds[fd_idx] = fds[fd_idx];
+        OE_STATIC_ASSERT(sizeof(args->fds[0]) == sizeof(fds[0]));
+        memcpy(&args->fds[fd_idx], &fds[fd_idx], sizeof(fds[fd_idx]));
     }
 
     // We lose the wait thread when we exit the func, but the thread will die
@@ -1369,7 +1375,7 @@ done:
     return ret;
 }
 
-int oe_posix_uname_ocall(struct utsname* buf, int* err)
+int oe_posix_uname_ocall(struct oe_utsname* buf, int* err)
 {
     int ret = -1;
     struct oe_utsname* out = (struct oe_utsname*)buf;

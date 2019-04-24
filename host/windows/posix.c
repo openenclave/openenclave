@@ -4,13 +4,13 @@
 typedef __int64 off_t;
 #include <openenclave/internal/posix/hostfs.h>
 #if defined(NOTYET)
-#include <string.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
-#include <stdio.h>
-#include <errno.h>
 #include <netdb.h>
 #include <pthread.h>
+#include <stdio.h>
+#include <string.h>
 #include <sys/epoll.h>
 #include <sys/poll.h>
 #include <sys/signal.h>
@@ -20,9 +20,8 @@ typedef __int64 off_t;
 #endif
 #include <io.h>
 #include <stdint.h>
-#pragma warning(disable:4005)
+#pragma warning(disable : 4005)
 #include "oe_u.h"
-
 
 OE_INLINE void _set_err(int* err, int num)
 {
@@ -87,16 +86,15 @@ int oe_posix_open_ocall(const char* pathname, int flags, mode_t mode, int* err)
     }
     else
     {
-
         ret = open(pathname, flags, mode);
 
         if (ret == -1 && err)
             *err = errno;
     }
 #else
-        ret = -1;
-        _set_err(err, 38); // ENOSYS
-	goto done;
+    ret = -1;
+    _set_err(err, 38); // ENOSYS
+    goto done;
 #endif
 
 done:
@@ -126,10 +124,10 @@ ssize_t oe_posix_write_ocall(int fd, const void* buf, size_t count, int* err)
 off_t oe_posix_lseek_ocall(int fd, off_t offset, int whence, int* err)
 {
 #if defined(NOTYET)
-    off_t ret = lseek(fd, offset, whence); 2DO
+    off_t ret = lseek(fd, offset, whence);
+    2DO
 
-    if (ret == -1 && err)
-        *err = errno;
+        if (ret == -1 && err)* err = errno;
 #else
     int ret = -1;
     _set_err(err, 38); // ENOSYS
@@ -261,7 +259,7 @@ done:
 
 void oe_posix_rewinddir_ocall(uint64_t dirp)
 {
-//    rewinddir((DIR*)dirp); 2do
+    //    rewinddir((DIR*)dirp); 2do
 }
 
 int oe_posix_closedir_ocall(uint64_t dirp, int* err)
@@ -1048,7 +1046,7 @@ done:
     if (handle)
         free(handle);
 #else
-   int ret = -1;
+    int ret = -1;
     _set_err(err, 38); // ENOSYS
 #endif
 
@@ -1379,7 +1377,6 @@ int oe_posix_epoll_wait_async_ocall(
     goto done;
 #endif
 
-
 done:
     return ret;
 }
@@ -1471,7 +1468,7 @@ int oe_posix_epoll_close_ocall(int fd, int* err)
     if (ret == -1)
         _set_err(err, errno);
 #else
-        _set_err(err, 38); // ENOSYS
+    _set_err(err, 38); // ENOSYS
 #endif
     return ret;
 }

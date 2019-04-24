@@ -7,7 +7,7 @@
 #include <openenclave/bits/types.h>
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/sys/mount.h>
-//#include <openenclave/corelibc/sys/stat.h>
+#include <openenclave/corelibc/sys/stat.h>
 #include <openenclave/internal/posix/device_ops.h>
 
 OE_EXTERNC_BEGIN
@@ -15,6 +15,7 @@ OE_EXTERNC_BEGIN
 typedef struct _oe_file oe_file_t;
 typedef struct _oe_fs_ops oe_fs_ops_t;
 typedef struct _oe_device oe_device_t;
+struct oe_stat;
 
 struct _oe_fs_ops
 {

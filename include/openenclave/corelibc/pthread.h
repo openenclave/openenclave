@@ -140,16 +140,15 @@ void* oe_pthread_getspecific(oe_pthread_key_t key);
 
 #if defined(OE_NEED_STDC_NAMES)
 
-#include "bits/pthread_def.h"
-
-#include "bits/pthread_cond.h"
-#include "bits/pthread_create.h"
-#include "bits/pthread_equal.h"
-#include "bits/pthread_key.h"
-#include "bits/pthread_mutex.h"
-#include "bits/pthread_once.h"
-#include "bits/pthread_rwlock.h"
-#include "bits/pthread_spin.h"
+#include <openenclave/corelibc/bits/pthread_def.h>
+#include <openenclave/corelibc/bits/pthread_cond.h>
+#include <openenclave/corelibc/bits/pthread_create.h>
+#include <openenclave/corelibc/bits/pthread_equal.h>
+#include <openenclave/corelibc/bits/pthread_key.h>
+#include <openenclave/corelibc/bits/pthread_mutex.h>
+#include <openenclave/corelibc/bits/pthread_once.h>
+#include <openenclave/corelibc/bits/pthread_rwlock.h>
+#include <openenclave/corelibc/bits/pthread_spin.h>
 
 #endif /* defined(OE_NEED_STDC_NAMES) */
 
