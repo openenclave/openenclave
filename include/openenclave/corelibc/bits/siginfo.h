@@ -39,4 +39,4 @@ typedef struct
         } __oe_si_rt;
 
     } __oe_si_fields;
-} __OE_SIGINFO;
+} __OE_TYPEDEF_SIGINFO;

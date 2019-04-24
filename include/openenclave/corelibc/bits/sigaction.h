@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-struct __OE_SIGACTION
+struct __OE_STRUCT_SIGACTION
 {
     /* Signal handler.  */
     union {

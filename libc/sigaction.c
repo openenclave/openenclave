@@ -4,9 +4,9 @@
 
 #include <openenclave/corelibc/signal.h>
 
-#define __OE_SIGACTION sigaction
+#define __OE_STRUCT_SIGACTION sigaction
 #include <openenclave/corelibc/bits/sigaction.h>
-#undef __OE_SIGACTION
+#undef __OE_STRUCT_SIGACTION
 
 int sigaction(int signum, const struct sigaction* act, struct sigaction* oldact)
 {

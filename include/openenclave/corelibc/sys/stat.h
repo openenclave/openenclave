@@ -45,10 +45,9 @@ OE_EXTERNC_BEGIN
 #define OE_S_IRWGRP (OE_S_IRGRP | OE_S_IWGRP)
 #define OE_S_IRWOTH (OE_S_IROTH | OE_S_IWOTH)
 
-struct oe_stat
-{
-#include <openenclave/corelibc/bits/struct_stat.h>
-};
+#define __OE_STRUCT_STAT oe_stat
+#include <openenclave/corelibc/sys/bits/struct_stat.h>
+#undef __OE_STRUCT_STAT
 
 #ifndef st_atime
 #define st_atime st_atim.tv_sec
@@ -108,10 +107,9 @@ int oe_mkdir_d(uint64_t devid, const char* pathname, mode_t mode);
 #define S_IRWGRP OE_S_IRWGRP
 #define S_IRWOTH OE_S_IRWOTH
 
-struct stat
-{
-#include <openenclave/corelibc/bits/struct_stat.h>
-};
+#define __OE_STRUCT_STAT stat
+#include <openenclave/corelibc/sys/bits/struct_stat.h>
+#undef __OE_STRUCT_STAT
 
 OE_INLINE int stat(const char* pathname, struct stat* buf)
 {

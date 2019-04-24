@@ -71,13 +71,13 @@ union oe_sigval {
     void* sival_ptr;
 };
 
-#define __OE_SIGINFO oe_siginfo_t
+#define __OE_TYPEDEF_SIGINFO oe_siginfo_t
 #include <openenclave/corelibc/bits/siginfo.h>
-#undef __OE_SIGINFO
+#undef __OE_TYPEDEF_SIGINFO
 
-#define __OE_SIGACTION oe_sigaction
+#define __OE_STRUCT_SIGACTION oe_sigaction
 #include <openenclave/corelibc/bits/sigaction.h>
-#undef __OE_SIGACTION
+#undef __OE_STRUCT_SIGACTION
 
 oe_sighandler_t oe_signal(int signum, oe_sighandler_t handler);
 
@@ -142,13 +142,13 @@ union sigval {
     void* sival_ptr;
 };
 
-#define __OE_SIGINFO siginfo_t
+#define __OE_TYPEDEF_SIGINFO siginfo_t
 #include <openenclave/corelibc/bits/siginfo.h>
-#undef __OE_SIGINFO
+#undef __OE_TYPEDEF_SIGINFO
 
-#define __OE_SIGACTION sigaction
+#define __OE_STRUCT_SIGACTION sigaction
 #include <openenclave/corelibc/bits/sigaction.h>
-#undef __OE_SIGACTION
+#undef __OE_STRUCT_SIGACTION
 
 #define sa_handler oe_sa_handler
 #define sa_sigaction oe_sa_sigaction
