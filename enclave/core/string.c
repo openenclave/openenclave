@@ -244,3 +244,31 @@ char* oe_strchrnul(const char* s, int c)
 
     return p;
 }
+
+size_t oe_strspn(const char* s, const char* accept)
+{
+    const char* p = s;
+
+    while (*p)
+    {
+        if (!oe_strchr(accept, *p))
+            break;
+        p++;
+    }
+
+    return (size_t)(p - s);
+}
+
+size_t oe_strcspn(const char* s, const char* reject)
+{
+    const char* p = s;
+
+    while (*p)
+    {
+        if (oe_strchr(reject, *p))
+            break;
+        p++;
+    }
+
+    return (size_t)(p - s);
+}

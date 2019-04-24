@@ -120,9 +120,7 @@ add_library(oecore STATIC
     result.c
     stdio.c
     strerror.c
-    strcspn.c
     string.c
-    strspn.c
     strtok_r.c
     strtoul.c
     time.c
