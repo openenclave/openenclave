@@ -32,7 +32,7 @@ struct _oe_fs_ops
     oe_device_t* (
         *open)(oe_device_t* fs, const char* pathname, int flags, mode_t mode);
 
-    off_t (*lseek)(oe_device_t* file, off_t offset, int whence);
+    oe_off_t (*lseek)(oe_device_t* file, oe_off_t offset, int whence);
 
     int (*getdents)(
         oe_device_t* file,
@@ -49,7 +49,7 @@ struct _oe_fs_ops
 
     int (*rename)(oe_device_t* fs, const char* oldpath, const char* newpath);
 
-    int (*truncate)(oe_device_t* fs, const char* path, off_t length);
+    int (*truncate)(oe_device_t* fs, const char* path, oe_off_t length);
 
     int (*mkdir)(oe_device_t* fs, const char* pathname, mode_t mode);
 

@@ -11,15 +11,22 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <sys/types.h>
+#include <openenclave/corelibc/string.h>
+//#include <openenclave/corelibc/sys/stat.h>
+#include <openenclave/corelibc/sys/types.h>
 #include "fopen.h"
+
+#include <sys/stat.h>
 
 bool __oe_file_exists(const char* path)
 {
+#if defined(_MSC_VER)
+    struct _stat st;
+    return _stat(path, &st) == 0 ? true : false;
+#else
     struct stat st;
     return stat(path, &st) == 0 ? true : false;
+#endif
 }
 
 oe_result_t __oe_load_file(

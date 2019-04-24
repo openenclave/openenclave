@@ -212,9 +212,9 @@ done:
     return ret;
 }
 
-static off_t _consolefs_lseek(oe_device_t* file_, off_t offset, int whence)
+static oe_off_t _consolefs_lseek(oe_device_t* file_, oe_off_t offset, int whence)
 {
-    off_t ret = -1;
+    oe_off_t ret = -1;
     file_t* file = _cast_file(file_);
     oe_result_t result = OE_FAILURE;
 
@@ -239,7 +239,7 @@ static off_t _consolefs_lseek(oe_device_t* file_, off_t offset, int whence)
             goto done;
         }
 
-        if (ret == (off_t)-1)
+        if (ret == (oe_off_t)-1)
         {
             oe_errno = err;
             OE_TRACE_ERROR("oe_errno=%d ", oe_errno);

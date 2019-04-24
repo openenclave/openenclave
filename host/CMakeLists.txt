@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-if(UNIX) # __feature_io__
 add_custom_command(
     OUTPUT oe_u.h oe_u.c oe_args.h
     DEPENDS
@@ -13,7 +12,6 @@ add_custom_command(
         --search-path ${CMAKE_SOURCE_DIR}/common
         --untrusted ${CMAKE_SOURCE_DIR}/common/oe.edl)
     add_custom_target(oe_untrusted_edl DEPENDS oe_u.h oe_u.c oe_args.h)
-endif()
 
 # OS specific but arch agnostic files.
 if (UNIX)
@@ -40,9 +38,12 @@ elseif (WIN32)
     ../3rdparty/mbedtls/mbedtls/library/bignum.c
     crypto/bcrypt/hmac.c
     crypto/bcrypt/rsa.c
+    oe_u_wrapper.c
+    files.c # __feature_io__
     windows/hostthread.c
+    windows/posix.c
     windows/time.c
-#    windows/uname.c
+    windows/uname.c
     )
 else()
   message(FATAL_ERROR "Unknown OS. Only supported OSes are Linux and Windows")
@@ -129,9 +130,7 @@ add_library(oehost STATIC
   crypto/sha.c
   ${PLATFORM_SRC})
 
-if (UNIX) # __feature_io__
 add_dependencies(oehost oe_untrusted_edl)
-endif()
 
 target_link_libraries(oehost PUBLIC oe_includes)
 

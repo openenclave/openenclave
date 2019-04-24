@@ -48,11 +48,11 @@ ssize_t oe_write(int fd, const void* buf, size_t count);
 
 #if !defined(WIN32) /* __feature_io__ */
 
-off_t oe_lseek(int fd, off_t offset, int whence);
+oe_off_t oe_lseek(int fd, oe_off_t offset, int whence);
 
-int oe_truncate(const char* path, off_t length);
+int oe_truncate(const char* path, oe_off_t length);
 
-int oe_truncate_d(uint64_t devid, const char* path, off_t length);
+int oe_truncate_d(uint64_t devid, const char* path, oe_off_t length);
 
 #endif /* !defined(WIN32) */
 
@@ -136,6 +136,7 @@ int oe_getgroups(int size, gid_t list[]);
 #define SEEK_SET OE_SEEK_SET
 #define SEEK_CUR OE_SEEK_CUR
 #define SEEK_END OE_SEEK_END
+#define off_t oe_off_t
 
 OE_INLINE void* sbrk(intptr_t increment)
 {

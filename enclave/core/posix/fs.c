@@ -378,7 +378,7 @@ done:
     return ret;
 }
 
-int oe_truncate(const char* pathname, off_t length)
+int oe_truncate(const char* pathname, oe_off_t length)
 {
     int ret = -1;
     oe_device_t* fs = NULL;
@@ -430,9 +430,9 @@ done:
     return ret;
 }
 
-off_t oe_lseek(int fd, off_t offset, int whence)
+oe_off_t oe_lseek(int fd, oe_off_t offset, int whence)
 {
-    off_t ret = -1;
+    oe_off_t ret = -1;
     oe_device_t* file;
 
     if (!(file = oe_get_fd_device(fd, OE_DEVICE_TYPE_FILE)))
@@ -770,7 +770,7 @@ done:
     return ret;
 }
 
-int oe_truncate_d(uint64_t devid, const char* path, off_t length)
+int oe_truncate_d(uint64_t devid, const char* path, oe_off_t length)
 {
     int ret = -1;
 
