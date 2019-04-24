@@ -141,23 +141,19 @@ OE_EXTERNC_BEGIN
 
 #define OE_MSG_PEEK 0x0002
 
-struct oe_sockaddr
-{
+#define __OE_STRUCT_SOCKADDR oe_sockaddr
 #include <openenclave/corelibc/sys/bits/sockaddr.h>
-};
+#undef __OE_STRUCT_SOCKADDR
 
-struct oe_sockaddr_storage
-{
+#define __OE_STRUCT_SOCKADDR_STORAGE oe_sockaddr_storage
 #include <openenclave/corelibc/sys/bits/sockaddr_storage.h>
-#undef OE_IOVEC_TYPE
-};
+#undef __OE_STRUCT_SOCKADDR_STORAGE
 
-struct oe_msghdr
-{
-#define OE_IOVEC_TYPE oe_iovec
+#define __OE_STRUCT_IOVEC oe_iovec
+#define __OE_STRUCT_MSGHDR oe_msghdr
 #include <openenclave/corelibc/sys/bits/msghdr.h>
-#undef OE_IOVEC_TYPE
-};
+#undef __OE_STRUCT_IOVEC
+#undef __OE_STRUCT_MSGHDR
 
 void oe_set_default_socket_devid(uint64_t devid);
 
@@ -347,22 +343,19 @@ int oe_getsockname(int sockfd, struct oe_sockaddr* addr, socklen_t* addrlen);
 /* mbed TLS needs this so it will use socklen_t rather than int. */
 #define __DEFINED_socklen_t
 
-struct sockaddr
-{
+#define __OE_STRUCT_SOCKADDR sockaddr
 #include <openenclave/corelibc/sys/bits/sockaddr.h>
-};
+#undef __OE_STRUCT_SOCKADDR
 
-struct sockaddr_storage
-{
+#define __OE_STRUCT_SOCKADDR_STORAGE sockaddr_storage
 #include <openenclave/corelibc/sys/bits/sockaddr_storage.h>
-};
+#undef __OE_STRUCT_SOCKADDR_STORAGE
 
-struct msghdr
-{
-#define OE_IOVEC_TYPE iovec
+#define __OE_STRUCT_IOVEC iovec
+#define __OE_STRUCT_MSGHDR msghdr
 #include <openenclave/corelibc/sys/bits/msghdr.h>
-#undef OE_IOVEC_TYPE
-};
+#undef __OE_STRUCT_IOVEC
+#undef __OE_STRUCT_MSGHDR
 
 OE_INLINE int socket(int domain, int type, int protocol)
 {

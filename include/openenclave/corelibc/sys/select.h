@@ -22,10 +22,9 @@ OE_EXTERNC_BEGIN
 
 #define OE_FD_SETSIZE 1024
 
-typedef struct
-{
+#define _OE_TYPEDEF_FD_SET oe_fd_set
 #include <openenclave/corelibc/sys/bits/fd_set.h>
-} oe_fd_set;
+#undef _OE_TYPEDEF_FD_SET
 
 int oe_select(
     int nfds,
@@ -54,10 +53,9 @@ void OE_FD_ZERO(oe_fd_set* set);
 
 #define FD_SETSIZE 1024
 
-typedef struct
-{
+#define _OE_TYPEDEF_FD_SET fd_set
 #include <openenclave/corelibc/sys/bits/fd_set.h>
-} fd_set;
+#undef _OE_TYPEDEF_FD_SET
 
 OE_INLINE int select(
     int nfds,

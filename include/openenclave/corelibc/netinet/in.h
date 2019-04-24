@@ -39,24 +39,21 @@ struct oe_in_addr
     in_addr_t s_addr;
 };
 
-struct oe_in6_addr
-{
+#define __OE_STRUCT_IN6_ADDR oe_in6_addr
 #include <openenclave/corelibc/netinet/bits/in6_addr.h>
-};
+#undef __OE_STRUCT_IN6_ADDR
 
 #define oe_s6_addr __in6_union.__s6_addr
 #define oe_s6_addr16 __in6_union.__s6_addr16
 #define oe_s6_addr32 __in6_union.__s6_addr32
 
-struct oe_sockaddr_in
-{
+#define __OE_STRUCT_SOCKADDR_IN oe_sockaddr_in
 #include <openenclave/corelibc/netinet/bits/sockaddr_in.h>
-};
+#undef __OE_STRUCT_SOCKADDR_IN
 
-struct oe_sockaddr_in6
-{
+#define __OE_STRUCT_SOCKADDR_IN6 oe_sockaddr_in6
 #include <openenclave/corelibc/netinet/bits/sockaddr_in6.h>
-};
+#undef __OE_STRUCT_SOCKADDR_IN6
 
 #if defined(OE_NEED_STDC_NAMES)
 
@@ -77,20 +74,17 @@ struct in_addr
     in_addr_t s_addr;
 };
 
-struct in6_addr
-{
+#define __OE_STRUCT_IN6_ADDR in6_addr
 #include <openenclave/corelibc/netinet/bits/in6_addr.h>
-};
+#undef __OE_STRUCT_IN6_ADDR
 
-struct sockaddr_in
-{
+#define __OE_STRUCT_SOCKADDR_IN sockaddr_in
 #include <openenclave/corelibc/netinet/bits/sockaddr_in.h>
-};
+#undef __OE_STRUCT_SOCKADDR_IN
 
-struct sockaddr_in6
-{
+#define __OE_STRUCT_SOCKADDR_IN6 sockaddr_in6
 #include <openenclave/corelibc/netinet/bits/sockaddr_in6.h>
-};
+#undef __OE_STRUCT_SOCKADDR_IN6
 
 #endif /* defined(OE_NEED_STDC_NAMES) */
 
