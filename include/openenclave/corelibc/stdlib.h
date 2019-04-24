@@ -43,15 +43,9 @@ int oe_atoi(const char* nptr);
 
 #include <openenclave/corelibc/bits/atexit.h>
 #include <openenclave/corelibc/bits/malloc.h>
+#include <openenclave/corelibc/bits/strtoul.h>
 
-OE_INLINE
-unsigned long int strtoul(const char* nptr, char** endptr, int base)
-{
-    return oe_strtoul(nptr, endptr, base);
-}
-
-OE_INLINE
-long int strtol(const char* nptr, char** endptr, int base)
+OE_INLINE long int strtol(const char* nptr, char** endptr, int base)
 {
     return oe_strtol(nptr, endptr, base);
 }
