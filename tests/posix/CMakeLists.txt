@@ -4,6 +4,7 @@
 # This builds a library needed by later tests and must be first.
 add_subdirectory(cpio)
 
+add_subdirectory(echod)
 add_subdirectory(fs)
 add_subdirectory(hostfs)
 add_subdirectory(ids)
