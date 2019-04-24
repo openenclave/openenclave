@@ -15,7 +15,6 @@
 #endif
 
 #include "bits/defs.h"
-#include "bits/devid.h"
 #include "bits/exception.h"
 #include "bits/module.h"
 #include "bits/properties.h"

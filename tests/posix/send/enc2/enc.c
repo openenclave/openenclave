@@ -25,14 +25,12 @@ static void _init(void)
 void run_enclave_server(uint16_t port)
 {
     _init();
-    oe_set_default_socket_devid(OE_DEVID_HOSTSOCK);
     run_server(port);
 }
 
 void run_enclave_client(uint16_t port)
 {
     _init();
-    oe_set_default_socket_devid(OE_DEVID_HOSTSOCK);
     run_client(port);
 }
 

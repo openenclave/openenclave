@@ -11,6 +11,7 @@
 #include <openenclave/internal/posix/fd.h>
 #include <openenclave/internal/posix/fs_ops.h>
 #include <openenclave/internal/posix/sock_ops.h>
+#include <openenclave/internal/posix/devid.h>
 
 OE_EXTERNC_BEGIN
 
