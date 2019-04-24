@@ -395,7 +395,7 @@ void _test_mount(const char* tmp_dir)
 
     OE_TEST(oe_mkdir(source, 0777) == 0);
     OE_TEST(oe_mkdir(target, 0777) == 0);
-    OE_TEST(oe_mount(source, target, "sgxfs", 0, NULL) == 0);
+    OE_TEST(oe_mount(source, target, "hostfs", 0, NULL) == 0);
 
     _touch(mkpath(path, target, "file1"));
     _touch(mkpath(path, target, "file2"));
@@ -492,14 +492,6 @@ void test_fs(const char* src_dir, const char* tmp_dir)
         test_all(fs, tmp_dir);
     }
 
-    /* Test the SGXFS oe file descriptor interfaces. */
-    {
-        printf("=== testing oe-fd-sgxfs:\n");
-
-        oe_fd_sgxfs_file_system fs;
-        test_all(fs, tmp_dir);
-    }
-
     /* Test the HOSTFS standard C descriptor interfaces. */
     {
         printf("=== testing fd-hostfs:\n");
@@ -508,27 +500,11 @@ void test_fs(const char* src_dir, const char* tmp_dir)
         test_all(fs, tmp_dir);
     }
 
-    /* Test the SGXFS standard C descriptor interfaces. */
-    {
-        printf("=== testing fd-sgxfs:\n");
-
-        fd_sgxfs_file_system fs;
-        test_all(fs, tmp_dir);
-    }
-
     /* Test stream I/O hostfs functions. */
     {
         printf("=== testing stream I/O hostfs functions:\n");
 
         stream_hostfs_file_system fs;
-        test_all(fs, tmp_dir);
-    }
-
-    /* Test stream I/O sgxfs functions. */
-    {
-        printf("=== testing stream I/O sgxfs functions:\n");
-
-        stream_sgxfs_file_system fs;
         test_all(fs, tmp_dir);
     }
 

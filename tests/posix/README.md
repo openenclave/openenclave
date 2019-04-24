@@ -9,7 +9,6 @@ This directory contains tests for the Open Enclave POSIX extensions, including:
 - resolver - tests for getnameinfo() and getaddrinfo().
 - send - tests for send() and recv() over sockets.
 - sendmsg - tests for sendmsg() and recvmsg() over sockets.
-- sgxfs - tests for the Intel SGX protected file system.
 - signal - tests for signals.
 - sockets - tests for host sockets.
 

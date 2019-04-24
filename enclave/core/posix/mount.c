@@ -216,7 +216,6 @@ static oe_device_t* _filesystemtype_to_device(
     };
     struct pair pairs[] = {
         {"hostfs", OE_DEVID_HOSTFS},
-        {"sgxfs", OE_DEVID_SGXFS},
     };
     static const size_t num_pairs = OE_COUNTOF(pairs);
     size_t i;

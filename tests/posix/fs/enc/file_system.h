@@ -14,7 +14,6 @@
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/posix/hostfs.h>
-#include <openenclave/sgxfs.h>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -129,21 +128,6 @@ class oe_fd_hostfs_file_system : public oe_fd_file_system
     }
 };
 
-class oe_fd_sgxfs_file_system : public oe_fd_file_system
-{
-  public:
-    oe_fd_sgxfs_file_system()
-    {
-        OE_TEST(oe_load_module_sgxfs() == OE_OK);
-        OE_TEST(oe_mount("/", "/", "sgxfs", 0, NULL) == 0);
-    }
-
-    ~oe_fd_sgxfs_file_system()
-    {
-        OE_TEST(oe_umount("/") == 0);
-    }
-};
-
 class fd_file_system
 {
   public:
@@ -248,21 +232,6 @@ class fd_hostfs_file_system : public fd_file_system
     }
 
     ~fd_hostfs_file_system()
-    {
-        OE_TEST(oe_umount("/") == 0);
-    }
-};
-
-class fd_sgxfs_file_system : public fd_file_system
-{
-  public:
-    fd_sgxfs_file_system()
-    {
-        OE_TEST(oe_load_module_sgxfs() == OE_OK);
-        OE_TEST(oe_mount("/", "/", "sgxfs", 0, NULL) == 0);
-    }
-
-    ~fd_sgxfs_file_system()
     {
         OE_TEST(oe_umount("/") == 0);
     }
@@ -474,25 +443,10 @@ class stream_hostfs_file_system : public stream_file_system
   public:
     stream_hostfs_file_system()
     {
-        OE_TEST(oe_mount("/", "/", "sgxfs", 0, NULL) == 0);
+        OE_TEST(oe_mount("/", "/", "hostfs", 0, NULL) == 0);
     }
 
     ~stream_hostfs_file_system()
-    {
-        OE_TEST(oe_umount("/") == 0);
-    }
-};
-
-class stream_sgxfs_file_system : public stream_file_system
-{
-  public:
-    stream_sgxfs_file_system()
-    {
-        OE_TEST(oe_load_module_sgxfs() == OE_OK);
-        OE_TEST(oe_mount("/", "/", "sgxfs", 0, NULL) == 0);
-    }
-
-    ~stream_sgxfs_file_system()
     {
         OE_TEST(oe_umount("/") == 0);
     }

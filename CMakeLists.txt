@@ -212,7 +212,6 @@ if (BUILD_ENCLAVES)
   add_subdirectory(3rdparty)
   add_subdirectory(libc)
   add_subdirectory(libcxx)
-  add_subdirectory(device)
   add_subdirectory(enclave)
 endif()
 

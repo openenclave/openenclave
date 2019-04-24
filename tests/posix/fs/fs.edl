@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 enclave {
-    from "sgxfs.edl" import *;
 
     trusted {
         public void test_fs(
