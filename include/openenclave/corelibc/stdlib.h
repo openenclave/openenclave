@@ -4,8 +4,8 @@
 #ifndef _OE_STDLIB_H
 #define _OE_STDLIB_H
 
-#include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/corelibc/bits/defs.h>
 
 OE_EXTERNC_BEGIN
 

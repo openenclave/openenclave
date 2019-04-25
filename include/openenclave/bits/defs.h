@@ -142,10 +142,4 @@
 #define OE_DEPRECATED(FUNC, MSG) FUNC
 #endif
 
-#ifdef __GNUC__
-#define OE_NO_RETURN __attribute__((__noreturn__))
-#else
-#define OE_NO_RETURN
-#endif
-
 #endif /* _OE_BITS_DEFS_H */
