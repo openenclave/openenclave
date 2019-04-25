@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_SYS_UIO
-#define _OE_SYS_UIO
+#ifndef _OE_SYS_UIO_H
+#define _OE_SYS_UIO_H
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
@@ -57,4 +57,4 @@ OE_INLINE ssize_t writev(int fd, const struct iovec* iov, int iovcnt)
 
 OE_EXTERNC_END
 
-#endif /* _OE_SYS_UIO */
+#endif /* _OE_SYS_UIO_H */
