@@ -4,8 +4,8 @@
 #ifndef _OE_STRING_H
 #define _OE_STRING_H
 
-#include <openenclave/corelibc/bits/defs.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/corelibc/bits/defs.h>
 
 OE_EXTERNC_BEGIN
 
