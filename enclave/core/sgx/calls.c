@@ -28,8 +28,6 @@
 #include "report.h"
 #include "td.h"
 
-#include <openenclave/internal/posix/epoll.h>
-
 oe_result_t __oe_enclave_status = OE_OK;
 uint8_t __oe_initialized = 0;
 

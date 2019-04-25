@@ -6,8 +6,6 @@
 #include <fcntl.h>
 #include <limits.h>
 #include <netdb.h>
-#include <openenclave/corelibc/sys/utsname.h>
-#include <openenclave/internal/posix/hostfs.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>

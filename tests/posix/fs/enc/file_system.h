@@ -8,12 +8,15 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <openenclave/corelibc/dirent.h>
+#include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/fcntl.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
+#include <openenclave/corelibc/sys/mount.h>
+#include <openenclave/corelibc/sys/stat.h>
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/posix/hostfs.h>
+#include <openenclave/internal/posix/devid.h>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>

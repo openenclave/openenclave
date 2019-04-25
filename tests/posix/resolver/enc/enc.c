@@ -7,8 +7,6 @@
 #include <openenclave/corelibc/arpa/inet.h>
 #include <openenclave/corelibc/netdb.h>
 #include <openenclave/corelibc/netinet/in.h>
-#include <openenclave/internal/posix/device.h>
-#include <openenclave/internal/posix/resolver.h>
 #include <openenclave/internal/tests.h>
 
 #include <resolver_test_t.h>

@@ -3,7 +3,6 @@
 
 typedef __int64 off_t;
 #include <io.h>
-#include <openenclave/internal/posix/hostfs.h>
 #include <stdint.h>
 #pragma warning(disable : 4005)
 #include "oe_u.h"

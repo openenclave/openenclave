@@ -4,8 +4,8 @@
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/array.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/posix/array.h>
 #include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/thread.h>

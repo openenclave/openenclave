@@ -80,7 +80,6 @@ add_library(oecore STATIC
     ${MUSL_SRC_DIR}/string/memcpy.c
     ${MUSL_SRC_DIR}/string/memmove.c
     ${MUSL_SRC_DIR}/string/memset.c
-    posix/array.c
     posix/console.c
     posix/cwd.c
     posix/device.c
@@ -109,6 +108,7 @@ add_library(oecore STATIC
     posix/sleep.c
     __secs_to_tm.c
     __stack_chk_fail.c
+    array.c
     assert.c
     corelibc.c
     ctype.c
