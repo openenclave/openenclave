@@ -32,14 +32,14 @@ const char* mkpath(char buf[OE_PATH_MAX], const char* target, const char* path)
 class device_registrant
 {
   public:
-    device_registrant(uint64_t devid)
+    device_registrant(const char* device_name)
     {
-        OE_TEST(oe_mount(NULL, "__tls__", NULL, 0, &devid) == 0);
+        OE_TEST(oe_set_device_for_current_thread(device_name) == OE_OK);
     }
 
     ~device_registrant()
     {
-        OE_TEST(oe_umount("__tls__") == 0);
+        OE_TEST(oe_clear_device_for_current_thread() == OE_OK);
     }
 };
 
@@ -339,7 +339,7 @@ void test_all(FILE_SYSTEM& fs, const char* tmp_dir)
 void test_fprintf_fscanf(const char* tmp_dir)
 {
     char path[OE_PAGE_SIZE];
-    device_registrant registrant(OE_DEVID_HOSTFS);
+    device_registrant registrant("hostfs");
 
     printf("--- %s()\n", __FUNCTION__);
 
@@ -511,8 +511,7 @@ void test_fs(const char* src_dir, const char* tmp_dir)
         printf("=== testing oe_set_device_for_current_thread:\n");
 
         fd_file_system fs;
-        uint64_t devid = OE_DEVID_HOSTFS;
-        device_registrant reg(devid);
+        device_registrant reg("hostfs");
         test_all(fs, tmp_dir);
     }
 

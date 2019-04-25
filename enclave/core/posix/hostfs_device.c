@@ -30,6 +30,7 @@
 **==============================================================================
 */
 
+#define DEVICE_NAME "hostfs"
 #define FS_MAGIC 0x5f35f964
 #define FILE_MAGIC 0xfe48c6ff
 #define DIR_MAGIC 0x8add1b0b
@@ -347,6 +348,7 @@ static oe_device_t* _hostfs_open_file(
         }
 
         file->base.type = OE_DEVICE_TYPE_FILE;
+        file->base.name = DEVICE_NAME;
         file->magic = FILE_MAGIC;
         file->base.ops.fs = fs->base.ops.fs;
         file->host_fd = retval;
@@ -414,6 +416,7 @@ static oe_device_t* _hostfs_open_directory(
         }
 
         file->base.type = OE_DEVICE_TYPE_FILE;
+        file->base.name = DEVICE_NAME;
         file->magic = FILE_MAGIC;
         file->base.ops.fs = fs->base.ops.fs;
         file->host_fd = -1;
@@ -910,6 +913,7 @@ static oe_device_t* _hostfs_opendir(oe_device_t* fs_, const char* name)
         }
 
         dir->base.type = OE_DEVICE_TYPE_DIRECTORY;
+        dir->base.name = DEVICE_NAME;
         dir->magic = DIR_MAGIC;
         dir->base.ops.fs = fs->base.ops.fs;
         dir->host_dir = retval;
@@ -1412,6 +1416,7 @@ static oe_fs_ops_t _ops = {
 
 static fs_t _hostfs = {
     .base.type = OE_DEVICE_TYPE_FILESYSTEM,
+    .base.name = DEVICE_NAME,
     .base.ops.fs = &_ops,
     .magic = FS_MAGIC,
     .mount_flags = 0,

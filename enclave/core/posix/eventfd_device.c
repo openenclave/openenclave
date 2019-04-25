@@ -27,6 +27,7 @@
 **==============================================================================
 */
 
+#define DEVICE_NAME "eventfd"
 #define MAX_EVENTFD_COUNT 0xfffffffffffffffe
 #define EVENTFD_MAGIC 0x4e455645
 
@@ -127,6 +128,7 @@ static oe_device_t* _eventfd_eventfd(
     }
 
     new_eventfd->base.type = OE_DEVID_EVENTFD;
+    new_eventfd->base.name = DEVICE_NAME;
     new_eventfd->magic = EVENTFD_MAGIC;
     new_eventfd->base.ops.eventfd = _eventfd.base.ops.eventfd;
     new_eventfd->count = initval;
@@ -297,6 +299,7 @@ static oe_eventfd_ops_t _ops = {
 
 static eventfd_dev_t _eventfd = {
     .base.type = OE_DEVID_EVENTFD,
+    .base.name = DEVICE_NAME,
     .base.ops.eventfd = &_ops,
     .magic = EVENTFD_MAGIC,
     .count = 0,

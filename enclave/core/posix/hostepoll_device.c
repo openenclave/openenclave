@@ -31,6 +31,8 @@
 **==============================================================================
 */
 
+#define DEVICE_NAME "hostepoll"
+
 #define EPOLL_MAGIC 0x4504f4c
 
 typedef struct _epoll_event_data
@@ -275,6 +277,7 @@ static oe_device_t* _epoll_create(oe_device_t* epoll_, int size)
     if (retval != -1)
     {
         epoll->base.type = OE_DEVID_EPOLL;
+        epoll->base.name = DEVICE_NAME;
         epoll->magic = EPOLL_MAGIC;
         epoll->base.ops.epoll = _epoll.base.ops.epoll;
         epoll->host_fd = retval;
@@ -307,6 +310,7 @@ static oe_device_t* _epoll_create1(oe_device_t* epoll_, int32_t flags)
     if (retval != -1)
     {
         epoll->base.type = OE_DEVID_EPOLL;
+        epoll->base.name = DEVICE_NAME;
         epoll->magic = EPOLL_MAGIC;
         epoll->base.ops.epoll = _epoll.base.ops.epoll;
         epoll->host_fd = retval;
@@ -805,6 +809,7 @@ static oe_epoll_ops_t _ops = {
 
 static epoll_dev_t _epoll = {
     .base.type = OE_DEVID_EPOLL,
+    .base.name = DEVICE_NAME,
     .base.ops.epoll = &_ops,
     .magic = EPOLL_MAGIC,
     .ready_mask = 0,

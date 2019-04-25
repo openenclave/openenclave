@@ -22,6 +22,8 @@
 #include <openenclave/internal/trace.h>
 #include "oe_t.h"
 
+#define DEVICE_NAME "hostsock"
+
 static size_t _get_iov_size(const struct oe_iovec* iov, size_t iov_len)
 {
     size_t size = 0;
@@ -211,6 +213,7 @@ static oe_device_t* _hostsock_socket(
     }
 
     sock->base.type = OE_DEVICE_TYPE_SOCKET;
+    sock->base.name = DEVICE_NAME;
     sock->magic = SOCKET_MAGIC;
     sock->base.ops.socket = _hostsock.base.ops.socket;
     sock->host_fd = retval;
@@ -272,11 +275,13 @@ static ssize_t _hostsock_socketpair(
 
     {
         sock1->base.type = OE_DEVICE_TYPE_SOCKET;
+        sock1->base.name = DEVICE_NAME;
         sock1->magic = SOCKET_MAGIC;
         sock1->base.ops.socket = _hostsock.base.ops.socket;
         sock1->host_fd = svs[0];
 
         sock2->base.type = OE_DEVICE_TYPE_SOCKET;
+        sock2->base.name = DEVICE_NAME;
         sock2->magic = SOCKET_MAGIC;
         sock2->base.ops.socket = _hostsock.base.ops.socket;
         sock2->host_fd = svs[1];
@@ -1171,6 +1176,7 @@ static oe_sock_ops_t _ops = {
 
 static sock_t _hostsock = {
     .base.type = OE_DEVICE_TYPE_SOCKET,
+    .base.name = DEVICE_NAME,
     .base.ops.socket = &_ops,
     .magic = SOCKET_MAGIC,
     .ready_mask = 0,

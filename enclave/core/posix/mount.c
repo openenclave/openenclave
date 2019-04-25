@@ -33,85 +33,6 @@ static void _free_mount_table(void)
         oe_free(_mount_table[i].path);
 }
 
-static oe_once_t _tls_device_once = OE_ONCE_INIT;
-static oe_thread_key_t _tls_device_key = OE_THREADKEY_INITIALIZER;
-
-static void _create_tls_device_key()
-{
-    if (oe_thread_key_create(&_tls_device_key, NULL) != 0)
-        oe_abort();
-}
-
-static int _set_tls_device(uint64_t devid)
-{
-    int ret = -1;
-    oe_result_t result = OE_FAILURE;
-
-    if (devid == OE_DEVID_NONE)
-    {
-        OE_TRACE_ERROR("devid is OE_DEVID_NONE");
-        goto done;
-    }
-
-    if ((result = oe_once(&_tls_device_once, _create_tls_device_key)) != OE_OK)
-    {
-        OE_TRACE_ERROR("devid=%lu result=%s", devid, oe_result_str(result));
-        goto done;
-    }
-
-    if ((result = oe_thread_setspecific(_tls_device_key, (void*)devid)) !=
-        OE_OK)
-    {
-        OE_TRACE_ERROR("devid=%lu result=%s", devid, oe_result_str(result));
-        goto done;
-    }
-
-    ret = 0;
-
-done:
-    return ret;
-}
-
-static int _clear_tls_device(void)
-{
-    int ret = -1;
-    oe_result_t result = OE_FAILURE;
-
-    if ((result = oe_once(&_tls_device_once, _create_tls_device_key)) != OE_OK)
-    {
-        OE_TRACE_ERROR("%s", oe_result_str(result));
-        goto done;
-    }
-
-    if ((result = oe_thread_setspecific(_tls_device_key, NULL)) != OE_OK)
-    {
-        OE_TRACE_ERROR("%s", oe_result_str(result));
-        goto done;
-    }
-
-    ret = 0;
-
-done:
-    return ret;
-}
-
-static uint64_t _get_tls_device(void)
-{
-    uint64_t ret = OE_DEVID_NONE;
-    uint64_t devid;
-
-    if (oe_once(&_tls_device_once, _create_tls_device_key) != 0)
-        goto done;
-
-    if (!(devid = (uint64_t)oe_thread_getspecific(_tls_device_key)))
-        goto done;
-
-    ret = devid;
-
-done:
-    return ret;
-}
-
 oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
 {
     oe_device_t* ret = NULL;
@@ -129,7 +50,7 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
     {
         uint64_t devid;
 
-        if ((devid = _get_tls_device()) != OE_DEVID_NONE)
+        if ((devid = oe_get_device_for_current_thread()) != OE_DEVID_NONE)
         {
             oe_device_t* device = oe_get_devid_device(devid);
 
@@ -263,6 +184,8 @@ int oe_mount(
     bool locked = false;
     int retval = -1;
 
+    OE_UNUSED(data);
+
     if (!target)
     {
         oe_errno = EINVAL;
@@ -281,42 +204,6 @@ int oe_mount(
             OE_TRACE_ERROR("oe_errno=%d", oe_errno);
             goto done;
         }
-    }
-
-    /* Set special thread-local-storage device just for this thread. */
-    if (oe_strcmp(target, "__tls__") == 0)
-    {
-        /* Resolve devid if not already resolved. */
-        if (devid == OE_DEVID_NONE)
-        {
-            if (!data)
-            {
-                oe_errno = EINVAL;
-                OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-                goto done;
-            }
-
-            devid = *((uint64_t*)data);
-
-            if (!oe_get_devid_device(devid))
-            {
-                oe_errno = EINVAL;
-                OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-                goto done;
-            }
-        }
-
-        /* Use this devid for all requests on this thread. */
-
-        if ((retval = _set_tls_device(devid)) != 0)
-        {
-            oe_errno = EINVAL;
-            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-            goto done;
-        }
-
-        ret = 0;
-        goto done;
     }
 
     /* If the device has not been resolved. */
@@ -442,20 +329,6 @@ int oe_umount2(const char* target, int flags)
     {
         oe_errno = EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
-
-    /* Handle special case of unmounting the thread-local-storage device. */
-    if (oe_strcmp(target, "__tls__") == 0)
-    {
-        if (_clear_tls_device() != 0)
-        {
-            oe_errno = EINVAL;
-            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-            goto done;
-        }
-
-        ret = 0;
         goto done;
     }
 

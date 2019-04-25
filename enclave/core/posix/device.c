@@ -1,8 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/device.h>
 #include <openenclave/corelibc/errno.h>
+#include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
+#include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/array.h>
 #include <openenclave/internal/calls.h>
@@ -398,4 +401,118 @@ int oe_ioctl(int fd, unsigned long request, ...)
     int r = __oe_ioctl(fd, request, oe_va_arg(ap, uint64_t));
     oe_va_end(ap);
     return r;
+}
+
+uint64_t oe_device_name_to_devid(const char* name)
+{
+    uint64_t ret = OE_DEVID_NONE;
+
+    if (!name)
+        goto done;
+
+    for (uint64_t devid = 0; devid < (uint64_t)_table_size(); devid++)
+    {
+        oe_device_t* dev = _table()[devid];
+
+        if (dev && oe_strcmp(dev->name, name) == 0)
+        {
+            ret = devid;
+            goto done;
+        }
+    }
+
+done:
+    return ret;
+}
+
+/*
+**==============================================================================
+**
+** oe_set_device_for_current_thread()
+** oe_get_device_for_current_thread()
+** oe_clear_device_for_current_thread()
+**
+**==============================================================================
+*/
+
+static oe_once_t _tls_device_once = OE_ONCE_INIT;
+static oe_thread_key_t _tls_device_key = OE_THREADKEY_INITIALIZER;
+
+static void _create_tls_device_key()
+{
+    if (oe_thread_key_create(&_tls_device_key, NULL) != 0)
+        oe_abort();
+}
+
+oe_result_t oe_set_device_for_current_thread(const char* device_name)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    uint64_t devid;
+
+    if ((devid = oe_device_name_to_devid(device_name)) == OE_DEVID_NONE)
+    {
+        OE_TRACE_ERROR("no such device: %s", device_name);
+        result = OE_NOT_FOUND;
+        goto done;
+    }
+
+    if (oe_once(&_tls_device_once, _create_tls_device_key) != OE_OK)
+    {
+        OE_TRACE_ERROR("devid=%lu result=%s", devid, oe_result_str(result));
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    if (oe_thread_setspecific(_tls_device_key, (void*)devid) != OE_OK)
+    {
+        OE_TRACE_ERROR("devid=%lu result=%s", devid, oe_result_str(result));
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+oe_result_t oe_clear_device_for_current_thread(void)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    if (oe_once(&_tls_device_once, _create_tls_device_key) != OE_OK)
+    {
+        OE_TRACE_ERROR("%s", oe_result_str(result));
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    if (oe_thread_setspecific(_tls_device_key, NULL) != OE_OK)
+    {
+        OE_TRACE_ERROR("%s", oe_result_str(result));
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+uint64_t oe_get_device_for_current_thread(void)
+{
+    uint64_t ret = OE_DEVID_NONE;
+    uint64_t devid;
+
+    if (oe_once(&_tls_device_once, _create_tls_device_key) != 0)
+        goto done;
+
+    if (!(devid = (uint64_t)oe_thread_getspecific(_tls_device_key)))
+        goto done;
+
+    ret = devid;
+
+done:
+    return ret;
 }
