@@ -12,4 +12,10 @@
 #define OE_NO_RETURN
 #endif
 
+#if __STDC_VERSION__ >= 199901L
+#define OE_RESTRICT restrict
+#elif !defined(__GNUC__) || defined(__cplusplus)
+#define OE_RESTRICT
+#endif
+
 #endif /* _OE_CORELIBC_BITS_DEFS_H */
