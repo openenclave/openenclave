@@ -13,12 +13,14 @@ def buildVHD(String version) {
                                       storageAccountKeyVariable: 'WESTEUROPE_STORAGE_ACCOUNT_KEY',
                                       storageAccountNameVariable: 'WESTEUROPE_STORAGE_ACCOUNT_NAME')]) {
             withEnv(["REGION=eastus", "DEST_VHD_NAME=${VHD_NAME_PREFIX}-${version}.vhd", "CONTAINER_NAME=disks"]) {
-                oe.azureEnvironment("""
-                                    packer build -var-file=templates/packer/ubuntu-${version}-variables.json templates/packer/packer.json 2>&1 | tee packer.log
-                                    export SOURCE_URI=\$(cat packer.log | grep OSDiskUri: | awk '{print \$2}')
-                                    az storage blob copy start --source-uri \$SOURCE_URI --destination-blob \$DEST_VHD_NAME --destination-container \$CONTAINER_NAME --account-key \$EASTUS_STORAGE_ACCOUNT_KEY --account-name \$EASTUS_STORAGE_ACCOUNT_NAME
-                                    az storage blob copy start --source-uri \$SOURCE_URI --destination-blob \$DEST_VHD_NAME --destination-container \$CONTAINER_NAME --account-key \$WESTEUROPE_STORAGE_ACCOUNT_KEY --account-name \$WESTEUROPE_STORAGE_ACCOUNT_NAME
-                                    """)
+                dir("${WORKSPACE}/.jenkins/provision") {
+                    oe.azureEnvironment("""
+                                        packer build -var-file=templates/packer/ubuntu-${version}-variables.json templates/packer/packer.json 2>&1 | tee packer.log
+                                        export SOURCE_URI=\$(cat packer.log | grep OSDiskUri: | awk '{print \$2}')
+                                        az storage blob copy start --source-uri \$SOURCE_URI --destination-blob \$DEST_VHD_NAME --destination-container \$CONTAINER_NAME --account-key \$EASTUS_STORAGE_ACCOUNT_KEY --account-name \$EASTUS_STORAGE_ACCOUNT_NAME
+                                        az storage blob copy start --source-uri \$SOURCE_URI --destination-blob \$DEST_VHD_NAME --destination-container \$CONTAINER_NAME --account-key \$WESTEUROPE_STORAGE_ACCOUNT_KEY --account-name \$WESTEUROPE_STORAGE_ACCOUNT_NAME
+                                        """)
+                }
             }
         }
     }

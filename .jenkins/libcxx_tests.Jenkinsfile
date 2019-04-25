@@ -27,7 +27,9 @@ def ACCDeployVM(String agent_name, String agent_type, String region, String reso
             cleanWs()
             checkout scm
             withEnv(["REGION=${region}", "RESOURCE_GROUP=${resource_group}", "AGENT_NAME=${agent_name}", "AGENT_TYPE=${agent_type}", "VHD_URL=${vhd_url}"]) {
-                oe.azureEnvironment("./deploy-agent.sh")
+                dir("${WORKSPACE}/.jenkins/provision") {
+                    oe.azureEnvironment("./deploy-agent.sh")
+                }
             }
         }
     }
@@ -48,7 +50,9 @@ def registerJenkinsSlaves() {
                          "BIONIC_LABEL=${BIONIC_LABEL}",
                          "XENIAL_HOSTS=${hostsList(XENIAL_LABEL, 'eastus').join(',')}",
                          "BIONIC_HOSTS=${hostsList(BIONIC_LABEL, 'westeurope').join(',')}"]) {
-                    oe.azureEnvironment("./register-agents.sh")
+                    dir(WORKSPACE) {
+                        oe.azureEnvironment("${WORKSPACE}/.jenkins/provision/register-agents.sh")
+                    }
                 }
             }
         }

@@ -70,15 +70,15 @@ The host process is what drives the enclave app. It is responsible for managing 
 
 The host does the following in this sample:
 
-   1. Create two enclaves for attesting each other, let's say they are enclave1 and enclave2
+   1. Create two enclaves for attesting each other, let's say they are enclave_a and enclave_b
 
       ```c
       oe_create_remoteattestation_enclave( enclaveImagePath, OE_ENCLAVE_TYPE_SGX, OE_ENCLAVE_FLAG_DEBUG, NULL, 0, &enclave);
       ```
 
-   2. Ask enclave1 for a remote report and a public key, which is returned in a `RemoteReportWithPKey` structure.
+   2. Ask enclave_a for a remote report and a public key, which is returned in a `RemoteReportWithPKey` structure.
 
-      This is done through a call into the enclave1 `GetRemoteReportWithPKey` `OE_ECALL`
+      This is done through a call into the enclave_a `GetRemoteReportWithPKey` `OE_ECALL`
 
       ```c
       oe_call_enclave(enclave, "GetRemoteReportWithPKey", &args);
@@ -93,20 +93,20 @@ The host does the following in this sample:
 
       Where:
 
-        - `pem_key` holds the public key that identifying enclave1 and will be used for establishing a secure communication channel between the enclave1 and the enclave2 once the attestation was done.
+        - `pem_key` holds the public key that identifying enclave_a and will be used for establishing a secure communication channel between the enclave_a and the enclave_b once the attestation was done.
 
         - `remote_report` contains a remote report signed by the enclave platform for use in remote attestation
 
-   3. Ask enclave2 to attest (validate) enclave1's remote report (remote_report from above)
+   3. Ask enclave_b to attest (validate) enclave_a's remote report (remote_report from above)
 
       This is done through the following call:
       ```c
       oe_call_enclave(enclave, "VerifyReportAndSetPKey", &args);
       ```
 
-      In the enclave2's implmentation of `VerifyReportAndSetPKey`, it calls `oe_verify_report`, which will be described in the enclave section to handle all the platform specfic report validation operations (including PCK certificate chain checking). If successful the public key in `RemoteReportWithPKey.pem_key` will be stored inside the enclave for future use
+      In the enclave_b's implmentation of `VerifyReportAndSetPKey`, it calls `oe_verify_report`, which will be described in the enclave section to handle all the platform specfic report validation operations (including PCK certificate chain checking). If successful the public key in `RemoteReportWithPKey.pem_key` will be stored inside the enclave for future use
 
-   4. Repeat step 2 and 3 for asking enclave1 to validate enclave2
+   4. Repeat step 2 and 3 for asking enclave_a to validate enclave_b
   
    5. After both enclaves successfully attest each other, use Asymmetric/Public-Key Encryption to establish secure communications between the two attesting enclaves.
   
@@ -115,13 +115,13 @@ The host does the following in this sample:
    6. Send encrypted messages securely between enclaves
 
       ```c
-      // Ask enclave1 to encrypt an internal data with its private key and output encrypted message in encrypted_msg
-      generate_encrypted_message(enclave1, &encrypted_msg, &encrypted_msg_size);
+      // Ask enclave_a to encrypt an internal data with its private key and output encrypted message in encrypted_msg
+      generate_encrypted_message(enclave_a, &encrypted_msg, &encrypted_msg_size);
 
-      // Send encrypted_msg to the enclave2, which will decrypt it and comparing with its internal data,
+      // Send encrypted_msg to the enclave_b, which will decrypt it and comparing with its internal data,
       // In this sample, it starts both enclaves with the exact same data contents for the purpose of
       // demonstrating that the encryption works as expected
-      process_encrypted_msg(enclave2, encrypted_msg, encrypted_msg_size);
+      process_encrypted_msg(enclave_b, encrypted_msg, encrypted_msg_size);
       ```
 
    7. Free the resource used, including the host memory allocated by the enclaves and the enclaves themselves
@@ -129,8 +129,8 @@ The host does the following in this sample:
       For example:
 
       ```c
-      oe_terminate_enclave(enclave1);
-      oe_terminate_enclave(enclave2);
+      oe_terminate_enclave(enclave_a);
+      oe_terminate_enclave(enclave_b);
       ```
 
 ### Authoring the Enclave

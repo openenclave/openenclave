@@ -18,7 +18,7 @@ String dockerImage(String tag, String dockerfile = ".jenkins/Dockerfile", String
 
 def ContainerRun(String imageName, String compiler, String task, String runArgs="") {
     docker.withRegistry("https://oejenkinscidockerregistry.azurecr.io", "oejenkinscidockerregistry") {
-        image = docker.image("${imageName}:latest")
+        def image = docker.image("${imageName}:latest")
         image.pull()
         image.inside(runArgs) {
             dir("${WORKSPACE}/build") {
@@ -29,19 +29,16 @@ def ContainerRun(String imageName, String compiler, String task, String runArgs=
 }
 
 def azureEnvironment(String task) {
-    String buildArgs = dockerBuildArgs("UID=\$(id -u)",
-                                       "GID=\$(id -g)",
-                                       "UNAME=\$(id -un)",
-                                       "GNAME=\$(id -gn)")
-
-    dockerImage("oetools-deploy", ".jenkins/Dockerfile.deploy", buildArgs).inside {
-        timeout(60) {
-            withCredentials([usernamePassword(credentialsId: 'SERVICE_PRINCIPAL_OSTCLAB',
-                                              passwordVariable: 'SERVICE_PRINCIPAL_PASSWORD',
-                                              usernameVariable: 'SERVICE_PRINCIPAL_ID'),
-                             string(credentialsId: 'OSCTLabSubID', variable: 'SUBSCRIPTION_ID'),
-                             string(credentialsId: 'TenantID', variable: 'TENANT_ID')]) {
-                dir('.jenkins/provision') {
+    timeout(60) {
+        withCredentials([usernamePassword(credentialsId: 'SERVICE_PRINCIPAL_OSTCLAB',
+                                          passwordVariable: 'SERVICE_PRINCIPAL_PASSWORD',
+                                          usernameVariable: 'SERVICE_PRINCIPAL_ID'),
+                         string(credentialsId: 'OSCTLabSubID', variable: 'SUBSCRIPTION_ID'),
+                         string(credentialsId: 'TenantID', variable: 'TENANT_ID')]) {
+            docker.withRegistry("https://oejenkinscidockerregistry.azurecr.io", "oejenkinscidockerregistry") {
+                def image = docker.image("oetools-deploy:latest")
+                image.pull()
+                image.inside {
                     sh "${task}"
                 }
             }
@@ -70,7 +67,9 @@ def deleteRG(List resourceGroups) {
     stage("Delete ${resourceGroups.toString()} resource groups") {
         resourceGroups.each { rg ->
             withEnv(["RESOURCE_GROUP=${rg}"]) {
-                azureEnvironment("./cleanup.sh")
+                dir("${WORKSPACE}/.jenkins/provision") {
+                    azureEnvironment("./cleanup.sh")
+                }
             }
         }
     }

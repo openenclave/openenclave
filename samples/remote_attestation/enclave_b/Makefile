@@ -47,13 +47,13 @@ build:
 	@ echo "Compilers used: $(CC), $(CXX)"
 	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -I.. -std=c++11 -DOE_API_VERSION=2 ecalls.cpp ../common/attestation.cpp ../common/crypto.cpp ../common/dispatcher.cpp
 	$(CC) -g -c $(CFLAGS) $(CINCLUDES) -I.. -DOE_API_VERSION=2 ../common/remoteattestation_t.c
-	$(CXX) -o enclave2 attestation.o crypto.o ecalls.o dispatcher.o remoteattestation_t.o $(LDFLAGS)
+	$(CXX) -o enclave_b attestation.o crypto.o ecalls.o dispatcher.o remoteattestation_t.o $(LDFLAGS)
 
 sign:
-	oesign sign -e enclave2 -c enc.conf -k private.pem
+	oesign sign -e enclave_b -c enc.conf -k private.pem
 
 clean:
-	rm -f *.o enclave2 enclave2.signed ../common/remoteattestation_t.* ../common/remoteattestation_args.h *.pem enclave_a_pubkey.h
+	rm -f *.o enclave_b enclave_b.signed ../common/remoteattestation_t.* ../common/remoteattestation_args.h *.pem enclave_a_pubkey.h
 
 
 

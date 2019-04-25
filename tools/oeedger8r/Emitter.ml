@@ -129,7 +129,6 @@ let open_file (filename:string) (dir:string) =
   fprintf os " */\n";
   os
 
-
 (** [oe_mk_ms_struct_name] appends our [struct] naming suffix. *)
 let oe_mk_ms_struct_name (fname: string) = fname ^ "_args_t"
 
@@ -315,7 +314,10 @@ let oe_gen_args_header (ec: enclave_content) (dir:string)=
     {[
       int a[10][20]
     ]}
-    needs to be cast to [int *] . *)
+    needs to be cast to [int *].
+
+    NOTE: Foreign arrays are marshalled as [void *], but foreign pointers
+    are marshalled as-is. *)
 let get_cast_to_mem_expr (ptype, decl)=
   match ptype with
   | Ast.PTVal _ -> ""
@@ -323,9 +325,23 @@ let get_cast_to_mem_expr (ptype, decl)=
     if Ast.is_array decl then
       sprintf "(%s*) " (get_tystr t)
     else if is_foreign_array ptype then
-      sprintf "/* foreign array of type %s */ " (get_tystr t)
+      sprintf "/* foreign array of type %s */ (void*) " (get_tystr t)
     else
       sprintf "(%s) " (get_tystr t)
+
+(** This function is nearly identical to the above, but does not
+    surround the expression with the final set of parentheses, which is
+    necessary for passing it to C macros. *)
+let get_cast_to_mem_type (ptype, decl)=
+  match ptype with
+  | Ast.PTVal _ -> ""
+  | Ast.PTPtr (t, _) ->
+    if Ast.is_array decl then
+      (get_tystr t) ^ "*"
+    else if is_foreign_array ptype then
+      sprintf "/* foreign array of type %s */ void* " (get_tystr t)
+    else
+      get_tystr t
 
 (** Prepare [input_buffer]. *)
 let oe_prepare_input_buffer (os:out_channel) (fd:Ast.func_decl) (alloc_func:string) =
@@ -372,16 +388,17 @@ let oe_prepare_input_buffer (os:out_channel) (fd:Ast.func_decl) (alloc_func:stri
 
   (* Serialize in and in-out parameters *)
   fprintf os "    /* Serialize buffer inputs (in and in-out parameters) */\n";
-  fprintf os "    *(uint8_t**)&_pargs_in = _input_buffer;\n";
+  fprintf os "    _pargs_in = (%s_args_t*)_input_buffer;\n" fd.Ast.fname;
   fprintf os "    OE_ADD_SIZE(_input_buffer_offset, sizeof(*_pargs_in));\n\n";
   List.iter (fun (ptype, decl) ->
       match ptype with
       | Ast.PTPtr (atype, ptr_attr) ->
         if ptr_attr.Ast.pa_chkptr then
           let size = oe_get_param_size (ptype, decl, "_args.") in
+          let tystr = get_cast_to_mem_type (ptype, decl) in
           match ptr_attr.Ast.pa_direction with
-          | Ast.PtrIn -> fprintf os "    OE_WRITE_IN_PARAM(%s, %s);\n" decl.Ast.identifier size
-          | Ast.PtrInOut -> fprintf os "    OE_WRITE_IN_OUT_PARAM(%s, %s);\n" decl.Ast.identifier size
+          | Ast.PtrIn -> fprintf os "    OE_WRITE_IN_PARAM(%s, %s, %s);\n" decl.Ast.identifier size tystr
+          | Ast.PtrInOut -> fprintf os "    OE_WRITE_IN_OUT_PARAM(%s, %s, %s);\n" decl.Ast.identifier size tystr
           | _ -> ()
         else ()
       | _ -> ()
@@ -392,7 +409,7 @@ let oe_prepare_input_buffer (os:out_channel) (fd:Ast.func_decl) (alloc_func:stri
 let oe_process_output_buffer (os:out_channel) (fd:Ast.func_decl) =
   (* Verify that the ecall succeeded *)
   fprintf os "    /* Set up output arg struct pointer */\n";
-  fprintf os "    *(uint8_t**)&_pargs_out = _output_buffer;\n";
+  fprintf os "    _pargs_out = (%s_args_t*)_output_buffer;\n" fd.Ast.fname;
   fprintf os "    OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));\n\n";
   fprintf os "    /* Check if the call succeeded */\n";
   fprintf os "    if ((_result=_pargs_out->_result) != OE_OK)\n";
@@ -444,7 +461,7 @@ let get_cast_from_mem_expr (ptype, decl)=
     if Ast.is_array decl then
       sprintf "*(%s (*)%s) " (get_tystr t) (get_array_dims decl.Ast.array_dims)
     else if is_foreign_array ptype then
-      sprintf "/*foreign array*/ *(%s *) " (get_tystr t)
+      sprintf "/* foreign array */ *(%s *) " (get_tystr t)
     else
     if attr.Ast.pa_rdonly then
       (* for ptrs, only constness is removed; add it back *)
@@ -567,9 +584,10 @@ let oe_gen_ecall_function (os:out_channel) (fd: Ast.func_decl) =
       | Ast.PTPtr (atype, ptr_attr) ->
         if ptr_attr.Ast.pa_chkptr then
           let size = oe_get_param_size (ptype, decl, "pargs_in->") in
+          let tystr = get_cast_to_mem_type (ptype, decl) in
           match ptr_attr.Ast.pa_direction with
-          | Ast.PtrIn -> fprintf os "    OE_SET_IN_POINTER(%s, %s);\n" decl.Ast.identifier size
-          | Ast.PtrInOut -> fprintf os "    OE_SET_IN_OUT_POINTER(%s, %s);\n" decl.Ast.identifier size
+          | Ast.PtrIn -> fprintf os "    OE_SET_IN_POINTER(%s, %s, %s);\n" decl.Ast.identifier size tystr
+          | Ast.PtrInOut -> fprintf os "    OE_SET_IN_OUT_POINTER(%s, %s, %s);\n" decl.Ast.identifier size tystr
           | _ -> ()
         else ()
       | _ -> ()
@@ -584,9 +602,10 @@ let oe_gen_ecall_function (os:out_channel) (fd: Ast.func_decl) =
       | Ast.PTPtr (atype, ptr_attr) ->
         if ptr_attr.Ast.pa_chkptr then
           let size = oe_get_param_size (ptype, decl, "pargs_in->") in
+          let tystr = get_cast_to_mem_type (ptype, decl) in
           match ptr_attr.Ast.pa_direction with
-          | Ast.PtrOut -> fprintf os "    OE_SET_OUT_POINTER(%s, %s);\n" decl.Ast.identifier size
-          | Ast.PtrInOut -> fprintf os "    OE_COPY_AND_SET_IN_OUT_POINTER(%s, %s);\n" decl.Ast.identifier size
+          | Ast.PtrOut -> fprintf os "    OE_SET_OUT_POINTER(%s, %s, %s);\n" decl.Ast.identifier size tystr
+          | Ast.PtrInOut -> fprintf os "    OE_COPY_AND_SET_IN_OUT_POINTER(%s, %s, %s);\n" decl.Ast.identifier size tystr
           | _ -> ()
         else ()
       | _ -> ()
@@ -797,9 +816,10 @@ let oe_gen_ocall_host_wrapper (os:out_channel) (uf:Ast.untrusted_func) =
       | Ast.PTPtr (atype, ptr_attr) ->
         if ptr_attr.Ast.pa_chkptr then
           let size = oe_get_param_size (ptype, decl, "pargs_in->") in
+          let tystr = get_cast_to_mem_type (ptype, decl) in
           match ptr_attr.Ast.pa_direction with
-          | Ast.PtrIn -> fprintf os "    OE_SET_IN_POINTER(%s, %s);\n" decl.Ast.identifier size
-          | Ast.PtrInOut -> fprintf os "    OE_SET_IN_OUT_POINTER(%s, %s);\n" decl.Ast.identifier size
+          | Ast.PtrIn -> fprintf os "    OE_SET_IN_POINTER(%s, %s, %s);\n" decl.Ast.identifier size tystr
+          | Ast.PtrInOut -> fprintf os "    OE_SET_IN_OUT_POINTER(%s, %s, %s);\n" decl.Ast.identifier size tystr
           | _ -> ()
         else ()
       | _ -> ()
@@ -813,9 +833,10 @@ let oe_gen_ocall_host_wrapper (os:out_channel) (uf:Ast.untrusted_func) =
       | Ast.PTPtr (atype, ptr_attr) ->
         if ptr_attr.Ast.pa_chkptr then
           let size = oe_get_param_size (ptype, decl, "pargs_in->") in
+          let tystr = get_cast_to_mem_type (ptype, decl) in
           match ptr_attr.Ast.pa_direction with
-          | Ast.PtrOut -> fprintf os "    OE_SET_OUT_POINTER(%s, %s);\n" decl.Ast.identifier size
-          | Ast.PtrInOut -> fprintf os "    OE_COPY_AND_SET_IN_OUT_POINTER(%s, %s);\n" decl.Ast.identifier size
+          | Ast.PtrOut -> fprintf os "    OE_SET_OUT_POINTER(%s, %s, %s);\n" decl.Ast.identifier size tystr
+          | Ast.PtrInOut -> fprintf os "    OE_COPY_AND_SET_IN_OUT_POINTER(%s, %s, %s);\n" decl.Ast.identifier size tystr
           | _ -> ()
         else ()
       | _ -> ()

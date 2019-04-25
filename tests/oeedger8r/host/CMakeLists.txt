@@ -45,4 +45,8 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
 endif()
 
 target_include_directories(edl_host PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)
+if (NOT WIN32)
+  # Re-enable strict aliasing. TODO: Remove this when #1717 is resolved.
+  target_compile_options(edl_host PUBLIC -fstrict-aliasing -Werror=strict-aliasing)
+endif ()
 target_link_libraries(edl_host oehostapp)
