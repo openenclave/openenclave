@@ -309,7 +309,7 @@ done:
 
 static void _handle_exit(oe_code_t code, uint16_t func, uint64_t arg)
 {
-    oe_exit(oe_make_call_arg1(code, func, 0, OE_OK), arg);
+    oe_exit_enclave(oe_make_call_arg1(code, func, 0, OE_OK), arg);
 }
 
 void oe_virtual_exception_dispatcher(
@@ -777,7 +777,7 @@ void __oe_handle_main(
                 break;
 
             case OE_CODE_ORET:
-                /* Eventually calls oe_exit() and never returns here if
+                /* Eventually calls oe_exit_enclave() and never returns here if
                  * successful */
                 _handle_oret(td, func, arg1_result, arg_in);
                 // fallthrough
