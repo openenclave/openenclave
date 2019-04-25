@@ -7,6 +7,8 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
 
+OE_EXTERNC_BEGIN
+
 /*
 **==============================================================================
 **
@@ -14,8 +16,6 @@
 **
 **==============================================================================
 */
-
-OE_EXTERNC_BEGIN
 
 struct oe_iovec
 {
