@@ -37,7 +37,10 @@ int oe_uname(struct oe_utsname* buf);
 #include <openenclave/corelibc/sys/bits/utsname.h>
 #undef __OE_UTSNAME
 
-int uname(struct utsname* buf);
+OE_INLINE int uname(struct utsname* buf)
+{
+    return oe_uname((struct oe_utsname*)buf);
+}
 
 #endif /* defined(OE_NEED_STDC_NAMES) */
 
