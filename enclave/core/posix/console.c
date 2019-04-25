@@ -4,8 +4,8 @@
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/trace.h>
+#include "device.h"
 #include "oe_t.h"
 
 #define DEVICE_NAME "consolefs"

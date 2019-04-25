@@ -9,7 +9,7 @@
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/utils.h>
 #include <openenclave/internal/print.h>
-#include <openenclave/internal/posix/eventfd.h>
+#include "eventfd.h"
 #include <openenclave/internal/trace.h>
 
 int oe_eventfd(unsigned int initval, int flags)

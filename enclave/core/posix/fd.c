@@ -1,16 +1,16 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "fd.h"
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/array.h>
-#include <openenclave/internal/posix/device.h>
-#include <openenclave/internal/posix/fd.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
+#include "device.h"
 
 typedef struct _entry
 {

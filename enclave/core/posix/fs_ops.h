@@ -8,7 +8,7 @@
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/sys/mount.h>
 #include <openenclave/corelibc/sys/stat.h>
-#include <openenclave/internal/posix/device_ops.h>
+#include "device_ops.h"
 
 OE_EXTERNC_BEGIN
 

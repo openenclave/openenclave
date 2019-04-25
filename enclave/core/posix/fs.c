@@ -8,10 +8,10 @@
 #include <openenclave/corelibc/sys/uio.h>
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/posix/device.h>
-#include <openenclave/internal/posix/mount.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/trace.h>
+#include "device.h"
+#include "mount.h"
 
 #define DIR_MAGIC 0x09180827
 

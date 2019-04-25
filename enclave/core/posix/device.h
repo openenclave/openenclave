@@ -6,13 +6,13 @@
 
 #include <openenclave/bits/device.h>
 #include <openenclave/bits/result.h>
-#include <openenclave/internal/posix/devicetypes.h>
-#include <openenclave/internal/posix/devid.h>
-#include <openenclave/internal/posix/epoll_ops.h>
-#include <openenclave/internal/posix/eventfd_ops.h>
-#include <openenclave/internal/posix/fd.h>
-#include <openenclave/internal/posix/fs_ops.h>
-#include <openenclave/internal/posix/sock_ops.h>
+#include "devicetypes.h"
+#include "devid.h"
+#include "epoll_ops.h"
+#include "eventfd_ops.h"
+#include "fd.h"
+#include "fs_ops.h"
+#include "sock_ops.h"
 
 OE_EXTERNC_BEGIN
 

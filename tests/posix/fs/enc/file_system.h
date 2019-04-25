@@ -16,7 +16,6 @@
 #include <openenclave/corelibc/sys/stat.h>
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/posix/devid.h>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>

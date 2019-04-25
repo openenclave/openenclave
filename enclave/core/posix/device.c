@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "device.h"
 #include <openenclave/bits/device.h>
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/stdio.h>
@@ -9,7 +10,6 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/array.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>

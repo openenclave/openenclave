@@ -11,6 +11,7 @@
 #include <sys/mount.h>
 #include <set>
 #include <string>
+#include "../../../../enclave/core/posix/devid.h"
 #include "../../cpio/commands.h"
 #include "../../cpio/cpio.h"
 #include "file_system.h"

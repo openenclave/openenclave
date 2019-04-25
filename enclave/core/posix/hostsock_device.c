@@ -7,8 +7,8 @@
 #include <openenclave/enclave.h>
 // clang-format on
 
-#include <openenclave/internal/posix/device.h>
-#include <openenclave/internal/posix/sock_ops.h>
+#include "device.h"
+#include "sock_ops.h"
 #include <openenclave/bits/safemath.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/thread.h>

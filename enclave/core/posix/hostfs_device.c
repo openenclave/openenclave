@@ -7,9 +7,9 @@
 #include <openenclave/enclave.h>
 // clang-format on
 
-#include <openenclave/internal/posix/device.h>
+#include "device.h"
 #include <openenclave/corelibc/limits.h>
-#include <openenclave/internal/posix/fs_ops.h>
+#include "fs_ops.h"
 #include <openenclave/bits/safemath.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/thread.h>

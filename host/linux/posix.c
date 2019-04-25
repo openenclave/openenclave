@@ -16,6 +16,7 @@
 #include <sys/stat.h>
 #include <sys/utsname.h>
 #include <unistd.h>
+#include "../enclave/core/posix/epoll.h"
 #include "oe_u.h"
 
 OE_INLINE void _set_err(int* err, int num)

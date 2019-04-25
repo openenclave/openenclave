@@ -5,7 +5,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/sys/socket.h>
-#include <openenclave/internal/posix/device.h>
+#include "device.h"
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/trace.h>

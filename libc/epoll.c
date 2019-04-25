@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "../enclave/core/posix/epoll.h"
 #include <openenclave/corelibc/sys/select.h>
 #include <openenclave/internal/defs.h>
-#include <openenclave/internal/posix/epoll.h>
 #include <sys/epoll.h>
 
 OE_STATIC_ASSERT(sizeof(struct oe_epoll_event) == sizeof(struct epoll_event));

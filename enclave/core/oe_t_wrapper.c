@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/corelibc/string.h>
+#include "posix/epoll.h"
 
 OE_INLINE size_t strlen(const char* s)
 {

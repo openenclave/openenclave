@@ -12,7 +12,6 @@
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/jump.h>
 #include <openenclave/internal/malloc.h>
-#include <openenclave/internal/posix/console.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxtypes.h>
@@ -21,6 +20,7 @@
 #include <openenclave/internal/utils.h>
 #include "../../asym_keys.h"
 #include "../../sgx/report.h"
+#include "../posix/console.h"
 #include "asmdefs.h"
 #include "atexit.h"
 #include "cpuid.h"

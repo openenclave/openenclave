@@ -19,11 +19,11 @@
 #include <openenclave/corelibc/sys/uio.h>
 #include <openenclave/corelibc/sys/utsname.h>
 #include <openenclave/corelibc/unistd.h>
-#include <openenclave/internal/posix/device.h>
-#include <openenclave/internal/posix/epoll.h>
-#include <openenclave/internal/posix/eventfd.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/trace.h>
+#include "device.h"
+#include "epoll.h"
+#include "eventfd.h"
 
 typedef int (*ioctl_proc)(
     int fd,
