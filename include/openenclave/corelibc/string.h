@@ -4,7 +4,7 @@
 #ifndef _OE_STRING_H
 #define _OE_STRING_H
 
-#include <openenclave/bits/defs.h>
+#include <openenclave/corelibc/bits/defs.h>
 #include <openenclave/bits/types.h>
 
 OE_EXTERNC_BEGIN
@@ -16,12 +16,6 @@ OE_EXTERNC_BEGIN
 **
 **==============================================================================
 */
-
-#if __STDC_VERSION__ >= 199901L
-#define OE_RESTRICT restrict
-#elif !defined(__GNUC__) || defined(__cplusplus)
-#define OE_RESTRICT
-#endif
 
 /* The mem methods are always defined by their stdc names in oecore */
 int memcmp(const void* vl, const void* vr, size_t n);
