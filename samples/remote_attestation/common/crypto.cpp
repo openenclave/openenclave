@@ -158,15 +158,7 @@ bool Crypto::Encrypt(
     rsa_context->padding = MBEDTLS_RSA_PKCS_V21;
     rsa_context->hash_id = MBEDTLS_MD_SHA256;
 
-    if (rsa_context->padding == MBEDTLS_RSA_PKCS_V21)
-    {
-        TRACE_ENCLAVE("Padding used: MBEDTLS_RSA_PKCS_V21 for OAEP or PSS");
-    }
-
-    if (rsa_context->padding == MBEDTLS_RSA_PKCS_V15)
-    {
-        TRACE_ENCLAVE("New MBEDTLS_RSA_PKCS_V15  for 1.5 padding");
-    }
+    TRACE_ENCLAVE("Padding used: MBEDTLS_RSA_PKCS_V21 for OAEP or PSS");
 
     // Encrypt the data.
     res = mbedtls_rsa_pkcs1_encrypt(
@@ -194,7 +186,7 @@ exit:
  * decrypt the given data using current enclave's private key.
  * Used to receive encrypted data from another enclave.
  */
-bool Crypto::decrypt(
+bool Crypto::Decrypt(
     const uint8_t* encrypted_data,
     size_t encrypted_data_size,
     uint8_t* data,
@@ -309,4 +301,25 @@ exit:
 
 exit_preinit:
     return ret;
+}
+
+bool Crypto::Sign(
+    const unsigned char* hash_data,
+    size_t hash_size,
+    unsigned char* sig,
+    size_t* sig_len)
+{
+    int rc = 0;
+
+    rc = mbedtls_pk_sign(
+        (mbedtls_pk_context*)&m_pk_context,
+        MBEDTLS_MD_SHA256,
+        hash_data,
+        hash_size,
+        sig,
+        sig_len,
+        NULL,
+        NULL);
+
+    return rc;
 }

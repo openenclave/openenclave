@@ -1,6 +1,6 @@
 # The Remote Attestation Sample
 
-This sample demonstrates how to do remote attestation between two enclaves and establish a secure communication channel for exchanging messages between them.
+This sample demonstrates how to do remote attestation between two enclaves.
 
 It has the following properties:
 
@@ -43,7 +43,7 @@ There are two types of attestation:
 
 ### Secure Communication Channel
 
-Remote Attestation alone is not enough for the remote party to be able to securely deliver their secrets to the requesting enclave. Securely delivering services requires a secure communication channel. Using Asymmetric/Public-Key encryption is a mechanism for establishing such a channel.
+Remote Attestation alone is not enough for the remote party to be able to securely deliver their secrets to the requesting enclave. Securely delivering services requires a secure communication channel which is usually guaranteed by Transport Layer Security (TLS). Using Asymmetric/Public-Key encryption in conjunction with generating a symmetric key based on the sealing key provides an alternate mechanism for establishing such a channel in the absence of TLS support.
 
 In this remote attestation sample, it demonstrates a way to embed public keys in the remote attestation process to help establish a secure communication channel right after the attestation is done.
 
@@ -93,7 +93,7 @@ The host does the following in this sample:
 
       Where:
 
-        - `pem_key` holds the public key that identifying enclave_a and will be used for establishing a secure communication channel between the enclave_a and the enclave_b once the attestation was done.
+        - `pem_key` holds the public key that identifies enclave_a and will be used for establishing a secure communication channel between the enclave_a and the enclave_b once the attestation is done.
 
         - `remote_report` contains a remote report signed by the enclave platform for use in remote attestation
 
@@ -108,7 +108,7 @@ The host does the following in this sample:
 
    4. Repeat step 2 and 3 for asking enclave_a to validate enclave_b
   
-   5. After both enclaves successfully attest each other, use Asymmetric/Public-Key Encryption to establish secure communications between the two attesting enclaves.
+   5. After both enclaves successfully attest each other, use Asymmetric/Public-Key Encryption followed by the alternate implementation to establish secure communications between the two attesting enclaves.
   
       The fact that each enclave has the other enclave's public key makes it possible to establish a secure communication channel.
   

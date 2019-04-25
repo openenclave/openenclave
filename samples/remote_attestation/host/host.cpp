@@ -156,6 +156,9 @@ int main(int argc, const char* argv[])
     free(remote_report);
     remote_report = NULL;
 
+    // Generate random symmetric key; prefix with counter/seq number to prevent
+    // replay attacks
+
     // exchange data between enclaves, securely
     printf("Host: Requesting encrypted message from 1st enclave\n");
     result = generate_encrypted_message(

@@ -186,6 +186,9 @@ int ecall_dispatcher::generate_encrypted_message(uint8_t** data, size_t* size)
 {
     uint8_t encrypted_data_buf[1024];
     size_t encrypted_data_size;
+    uint8_t* signature = &encrypted_data_buf[256];
+    size_t signature_size = 0;
+    size_t total_size = 512;
     int ret = 1;
 
     if (m_initialized == false)
@@ -194,21 +197,77 @@ int ecall_dispatcher::generate_encrypted_message(uint8_t** data, size_t* size)
         goto exit;
     }
 
+    if (oe_random(m_enclave_config->sym_key, 32) != OE_OK)
+    {
+        TRACE_ENCLAVE("ecall_dispatcher initialization failed to generate "
+                      "random symmetric key.");
+        goto exit;
+    }
+
+    TRACE_ENCLAVE("Generated random symmetric key successfully");
+
     encrypted_data_size = sizeof(encrypted_data_buf);
-    if (m_crypto->Encrypt(
+    /* if (m_crypto->Encrypt(
             m_crypto->get_the_other_enclave_public_key(),
             m_enclave_config->enclave_secret_data,
             ENCLAVE_SECRET_DATA_SIZE,
             encrypted_data_buf,
+            &encrypted_data_size)) */
+    // Step 2- Encrypt the symmetric key with the other enclave's public key
+    // TO DO - PREFIX with counter/seq number to prevent replay attacks
+    if (m_crypto->Encrypt(
+            m_crypto->get_the_other_enclave_public_key(),
+            m_enclave_config->sym_key,
+            32,
+            encrypted_data_buf,
             &encrypted_data_size))
+
     {
-        uint8_t* host_buf = (uint8_t*)oe_host_malloc(encrypted_data_size);
-        memcpy(host_buf, encrypted_data_buf, encrypted_data_size);
+        uint8_t* host_buf = (uint8_t*)oe_host_malloc(total_size);
+        if (host_buf == NULL)
+        {
+            goto exit;
+        }
+
+        // Step 3 - Do a SHA hash of the encrypted key
+        if (m_crypto->Sha256(
+                encrypted_data_buf,
+                encrypted_data_size,
+                m_other_enclave_mrsigner) != 0)
+        {
+            goto exit;
+        }
+
+        TRACE_ENCLAVE("enclave: generate_encrypted_message: Completed SHA hash "
+                      "of the encrypted key");
+
+        // Step 4 - Sign this SHA hash with my enclave's private key
+        // TO DO - Who allocates space for signature?
+        if (m_crypto->Sign(
+                encrypted_data_buf,
+                encrypted_data_size,
+                signature,
+                &signature_size) != 0)
+        {
+            goto exit;
+        }
+
         TRACE_ENCLAVE(
-            "enclave: generate_encrypted_message: encrypted_data_size = %ld",
-            encrypted_data_size);
+            "enclave: generate_encrypted_message: signature_size = %ld",
+            signature_size);
+
+        if ((encrypted_data_size != 256) || (signature_size != 256))
+        {
+            TRACE_ENCLAVE("enclave: generate_encrypted_message: failed as "
+                          "encrypted data size or signature size is not 256");
+        }
+        // Step 5 - Send to the other enclave
+        memcpy(host_buf, encrypted_data_buf, total_size);
+        TRACE_ENCLAVE(
+            "enclave: generate_encrypted_message: total_size = %ld",
+            total_size);
         *data = host_buf;
-        *size = encrypted_data_size;
+        *size = total_size;
     }
     else
     {
@@ -234,7 +293,7 @@ int ecall_dispatcher::process_encrypted_msg(
     }
 
     data_size = sizeof(data);
-    if (m_crypto->decrypt(
+    if (m_crypto->Decrypt(
             encrypted_data, encrypted_data_size, data, &data_size))
     {
         // This is where the business logic for verifying the data should be.
@@ -265,7 +324,7 @@ int ecall_dispatcher::process_encrypted_msg(
         goto exit;
     }
     TRACE_ENCLAVE("Decrypted data matches with the enclave internal secret "
-                  "data: descryption validation succeeded");
+                  "data: decryption validation succeeded");
     ret = 0;
 exit:
     return ret;

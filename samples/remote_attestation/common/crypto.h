@@ -54,7 +54,7 @@ class Crypto
      * decrypt decrypts the given data using current enclave's private key.
      * Used to receive encrypted data from another enclave.
      */
-    bool decrypt(
+    bool Decrypt(
         const uint8_t* encrypted_data,
         size_t encrypted_data_size,
         uint8_t* data,
@@ -83,6 +83,17 @@ class Crypto
      * Compute the sha256 hash of given data.
      */
     int Sha256(const uint8_t* data, size_t data_size, uint8_t sha256[32]);
+
+    /**
+     * Sign using ECDSA256
+     */
+    bool Sign(
+        const unsigned char* hash_data,
+        size_t hash_size,
+        unsigned char* sig,
+        size_t* sig_len);
+
+    bool verify_signature();
 
   private:
     /**
