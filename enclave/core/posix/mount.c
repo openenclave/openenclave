@@ -88,7 +88,9 @@ static int _clear_tls_device(void)
         OE_TRACE_ERROR("%s", oe_result_str(result));
         goto done;
     }
+
     ret = 0;
+
 done:
     return ret;
 }
@@ -109,6 +111,7 @@ static uint64_t _get_tls_device(void)
 done:
     return ret;
 }
+
 oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
 {
     oe_device_t* ret = NULL;
