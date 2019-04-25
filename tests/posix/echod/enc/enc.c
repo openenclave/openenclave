@@ -159,10 +159,12 @@ void echod_run_server_ecall(uint16_t port)
                     OE_TEST("accept() failed" == NULL);
                 }
 
+#if 0
                 _set_blocking(client_sock, false);
 
                 /* Watch for read events on this socket. */
                 FD_SET((uint32_t)client_sock, &readfds);
+#endif
 
                 OE_TEST(_set_blocking(listen_sock, false) == 0);
 
