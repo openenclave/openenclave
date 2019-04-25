@@ -7,8 +7,6 @@
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/defs.h>
 
-OE_EXTERNC_BEGIN
-
 /*
 **==============================================================================
 **
@@ -192,57 +190,5 @@ OE_INLINE long long oe_check_lld(const int64_t* ptr)
 #define OE_LLX(_X_) OE_LLU(_X_)
 
 #endif /* defined(__GNUC__) */
-
-/*
-**==============================================================================
-**
-** Strict assignment operators for various integer types. These functions
-** utilize pointer arguments to enable the compiler catches pointer conversions
-** when the types to not match exactly.
-**
-**==============================================================================
-*/
-
-OE_INLINE uint8_t oe_assign_uint8(uint8_t* lhs, const uint8_t* rhs)
-{
-    return *lhs = *rhs;
-}
-
-OE_INLINE int8_t oe_assign_int8(int8_t* lhs, const int8_t* rhs)
-{
-    return *lhs = *rhs;
-}
-
-OE_INLINE uint16_t oe_assign_uint16(uint16_t* lhs, const uint16_t* rhs)
-{
-    return *lhs = *rhs;
-}
-
-OE_INLINE int16_t oe_assign_int16(int16_t* lhs, const int16_t* rhs)
-{
-    return *lhs = *rhs;
-}
-
-OE_INLINE uint32_t oe_assign_uint32(uint32_t* lhs, const uint32_t* rhs)
-{
-    return *lhs = *rhs;
-}
-
-OE_INLINE int32_t oe_assign_int32(int32_t* lhs, const int32_t* rhs)
-{
-    return *lhs = *rhs;
-}
-
-OE_INLINE uint64_t oe_assign_uint64(uint64_t* lhs, const uint64_t* rhs)
-{
-    return *lhs = *rhs;
-}
-
-OE_INLINE int64_t oe_assign_int64(int64_t* lhs, const int64_t* rhs)
-{
-    return *lhs = *rhs;
-}
-
-OE_EXTERNC_END
 
 #endif /* _OE_INTERNAL_TYPES_H */

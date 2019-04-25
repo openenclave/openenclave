@@ -202,10 +202,10 @@ int oe_posix_readdir_ocall(
     {
         size_t len = strlen(ent->d_name);
 
-        oe_assign_uint64(d_ino, &ent->d_ino);
-        oe_assign_int64(d_off, &ent->d_off);
-        oe_assign_uint16(d_reclen, &ent->d_reclen);
-        oe_assign_uint8(d_type, &ent->d_type);
+        *d_ino = ent->d_ino;
+        *d_off = ent->d_off;
+        *d_reclen = ent->d_reclen;
+        *d_type = ent->d_type;
 
         if (len >= d_namelen)
         {
@@ -277,23 +277,23 @@ int oe_posix_stat_ocall(
         goto done;
     }
 
-    oe_assign_uint64(st_dev, &st.st_dev);
-    oe_assign_uint64(st_dev, &st.st_dev);
-    oe_assign_uint64(st_ino, &st.st_ino);
-    oe_assign_uint64(st_nlink, &st.st_nlink);
-    oe_assign_uint32(st_mode, &st.st_mode);
-    oe_assign_uint32(st_uid, &st.st_uid);
-    oe_assign_uint32(st_gid, &st.st_gid);
-    oe_assign_uint64(st_rdev, &st.st_rdev);
-    oe_assign_int64(st_size, &st.st_size);
-    oe_assign_int64(st_blksize, &st.st_blksize);
-    oe_assign_int64(st_blocks, &st.st_blocks);
-    oe_assign_int64(st_atim_tv_sec, &st.st_atim.tv_sec);
-    oe_assign_int64(st_atim_tv_nsec, &st.st_atim.tv_nsec);
-    oe_assign_int64(st_mtim_tv_sec, &st.st_mtim.tv_sec);
-    oe_assign_int64(st_mtim_tv_nsec, &st.st_mtim.tv_nsec);
-    oe_assign_int64(st_ctim_tv_sec, &st.st_ctim.tv_sec);
-    oe_assign_int64(st_ctim_tv_nsec, &st.st_ctim.tv_nsec);
+    *st_dev = st.st_dev;
+    *st_dev = st.st_dev;
+    *st_ino = st.st_ino;
+    *st_nlink = st.st_nlink;
+    *st_mode = st.st_mode;
+    *st_uid = st.st_uid;
+    *st_gid = st.st_gid;
+    *st_rdev = st.st_rdev;
+    *st_size = st.st_size;
+    *st_blksize = st.st_blksize;
+    *st_blocks = st.st_blocks;
+    *st_atim_tv_sec = st.st_atim.tv_sec;
+    *st_atim_tv_nsec = st.st_atim.tv_nsec;
+    *st_mtim_tv_sec = st.st_mtim.tv_sec;
+    *st_mtim_tv_nsec = st.st_mtim.tv_nsec;
+    *st_ctim_tv_sec = st.st_ctim.tv_sec;
+    *st_ctim_tv_nsec = st.st_ctim.tv_nsec;
 
 done:
     return ret;
