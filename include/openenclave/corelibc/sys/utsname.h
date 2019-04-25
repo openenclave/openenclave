@@ -7,21 +7,37 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
 
+/*
+**==============================================================================
+**
+** OE names:
+**
+**==============================================================================
+*/
+
 OE_EXTERNC_BEGIN
 
-#define __OE_STRUCT_UTSNAME oe_utsname
+#define __OE_UTSNAME oe_utsname
 #include <openenclave/corelibc/sys/bits/utsname.h>
-#undef __OE_STRUCT_UTSNAME
+#undef __OE_UTSNAME
 
 int oe_uname(struct oe_utsname* buf);
 
+/*
+**==============================================================================
+**
+** Standard-C names:
+**
+**==============================================================================
+*/
+
 #if defined(OE_NEED_STDC_NAMES)
 
-#define __OE_STRUCT_UTSNAME utsname
+#define __OE_UTSNAME utsname
 #include <openenclave/corelibc/sys/bits/utsname.h>
-#undef __OE_STRUCT_UTSNAME
+#undef __OE_UTSNAME
 
-int uname(struct oe_utsname* buf);
+int uname(struct utsname* buf);
 
 #endif /* defined(OE_NEED_STDC_NAMES) */
 

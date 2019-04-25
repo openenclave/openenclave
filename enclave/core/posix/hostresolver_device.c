@@ -59,11 +59,11 @@ static resolv_t _hostresolv;
 static ssize_t _hostresolv_getnameinfo(
     oe_resolver_t* dev,
     const struct oe_sockaddr* sa,
-    socklen_t salen,
+    oe_socklen_t salen,
     char* host,
-    socklen_t hostlen,
+    oe_socklen_t hostlen,
     char* serv,
-    socklen_t servlen,
+    oe_socklen_t servlen,
     int flags)
 {
     int ret = OE_EAI_FAIL;

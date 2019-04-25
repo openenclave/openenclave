@@ -9,6 +9,14 @@
 OE_EXTERNC_BEGIN
 
 /*
+**==============================================================================
+**
+** OE names:
+**
+**==============================================================================
+*/
+
+/*
  * Use MUSL generic arch errno definitions directly without the OE_ prefix.
  * These should be directly compatible across arch except for MIPS & PowerPC.
  */
@@ -18,6 +26,14 @@ OE_EXTERNC_BEGIN
 extern int* __oe_errno_location(void);
 
 #define oe_errno *__oe_errno_location()
+
+/*
+**==============================================================================
+**
+** Standard-C names:
+**
+**==============================================================================
+*/
 
 #if defined(OE_NEED_STDC_NAMES)
 

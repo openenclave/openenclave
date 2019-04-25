@@ -312,7 +312,7 @@ typedef struct
 static int _hostsock_connect(
     oe_device_t* sock_,
     const struct oe_sockaddr* addr,
-    socklen_t addrlen)
+    oe_socklen_t addrlen)
 {
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
@@ -346,12 +346,12 @@ done:
 static int _hostsock_accept(
     oe_device_t* sock_,
     struct oe_sockaddr* addr,
-    socklen_t* addrlen)
+    oe_socklen_t* addrlen)
 {
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
     sockaddr_t buf;
-    socklen_t addrlen_in = 0;
+    oe_socklen_t addrlen_in = 0;
     oe_result_t result = OE_FAILURE;
 
     oe_errno = 0;
@@ -411,7 +411,7 @@ done:
 static int _hostsock_bind(
     oe_device_t* sock_,
     const struct oe_sockaddr* addr,
-    socklen_t addrlen)
+    oe_socklen_t addrlen)
 {
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
@@ -510,11 +510,11 @@ static ssize_t _hostsock_recvfrom(
     size_t count,
     int flags,
     const struct oe_sockaddr* src_addr,
-    socklen_t* addrlen)
+    oe_socklen_t* addrlen)
 {
     ssize_t ret = -1;
     sock_t* sock = _cast_sock(sock_);
-    socklen_t addrlen_in = 0;
+    oe_socklen_t addrlen_in = 0;
     oe_result_t result = OE_FAILURE;
 
     oe_errno = 0;
@@ -664,7 +664,7 @@ static ssize_t _hostsock_sendto(
     size_t count,
     int flags,
     const struct oe_sockaddr* dest_addr,
-    socklen_t addrlen)
+    oe_socklen_t addrlen)
 {
     ssize_t ret = -1;
     sock_t* sock = _cast_sock(sock_);
@@ -886,11 +886,11 @@ static int _hostsock_getsockopt(
     int level,
     int optname,
     void* optval,
-    socklen_t* optlen)
+    oe_socklen_t* optlen)
 {
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
-    socklen_t optlen_in = 0;
+    oe_socklen_t optlen_in = 0;
     oe_result_t result = OE_FAILURE;
 
     oe_errno = 0;
@@ -930,7 +930,7 @@ static int _hostsock_setsockopt(
     int level,
     int optname,
     const void* optval,
-    socklen_t optlen)
+    oe_socklen_t optlen)
 {
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
@@ -982,11 +982,11 @@ static int _hostsock_ioctl(
 static int _hostsock_getpeername(
     oe_device_t* sock_,
     struct oe_sockaddr* addr,
-    socklen_t* addrlen)
+    oe_socklen_t* addrlen)
 {
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
-    socklen_t addrlen_in = 0;
+    oe_socklen_t addrlen_in = 0;
     oe_result_t result = OE_FAILURE;
 
     oe_errno = 0;
@@ -1022,11 +1022,11 @@ done:
 static int _hostsock_getsockname(
     oe_device_t* sock_,
     struct oe_sockaddr* addr,
-    socklen_t* addrlen)
+    oe_socklen_t* addrlen)
 {
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
-    socklen_t addrlen_in = 0;
+    oe_socklen_t addrlen_in = 0;
     oe_result_t result = OE_FAILURE;
 
     oe_errno = 0;

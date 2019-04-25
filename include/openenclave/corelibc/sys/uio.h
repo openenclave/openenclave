@@ -7,6 +7,14 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
 
+/*
+**==============================================================================
+**
+** OE names:
+**
+**==============================================================================
+*/
+
 OE_EXTERNC_BEGIN
 
 struct oe_iovec
@@ -18,6 +26,14 @@ struct oe_iovec
 ssize_t oe_readv(int fd, const struct oe_iovec* iov, int iovcnt);
 
 ssize_t oe_writev(int fd, const struct oe_iovec* iov, int iovcnt);
+
+/*
+**==============================================================================
+**
+** Standard-C names:
+**
+**==============================================================================
+*/
 
 #if defined(OE_NEED_STDC_NAMES)
 

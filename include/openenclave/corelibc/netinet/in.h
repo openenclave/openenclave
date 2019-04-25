@@ -5,9 +5,17 @@
 #define _OE_NETINET_IN_H
 
 #include <openenclave/bits/defs.h>
-#include <openenclave/bits/types.h>
+#include <openenclave/corelibc/bits/types.h>
 
 OE_EXTERNC_BEGIN
+
+/*
+**==============================================================================
+**
+** OE names:
+**
+**==============================================================================
+*/
 
 /* Address to accept any incoming messages. */
 #define OE_INADDR_ANY ((in_addr_t)0x00000000)
@@ -39,21 +47,29 @@ struct oe_in_addr
     in_addr_t s_addr;
 };
 
-#define __OE_STRUCT_IN6_ADDR oe_in6_addr
+#define __OE_IN6_ADDR oe_in6_addr
 #include <openenclave/corelibc/netinet/bits/in6_addr.h>
-#undef __OE_STRUCT_IN6_ADDR
+#undef __OE_IN6_ADDR
 
 #define oe_s6_addr __in6_union.__s6_addr
 #define oe_s6_addr16 __in6_union.__s6_addr16
 #define oe_s6_addr32 __in6_union.__s6_addr32
 
-#define __OE_STRUCT_SOCKADDR_IN oe_sockaddr_in
+#define __OE_SOCKADDR_IN oe_sockaddr_in
 #include <openenclave/corelibc/netinet/bits/sockaddr_in.h>
-#undef __OE_STRUCT_SOCKADDR_IN
+#undef __OE_SOCKADDR_IN
 
-#define __OE_STRUCT_SOCKADDR_IN6 oe_sockaddr_in6
+#define __OE_SOCKADDR_IN6 oe_sockaddr_in6
 #include <openenclave/corelibc/netinet/bits/sockaddr_in6.h>
-#undef __OE_STRUCT_SOCKADDR_IN6
+#undef __OE_SOCKADDR_IN6
+
+/*
+**==============================================================================
+**
+** Standard-C names:
+**
+**==============================================================================
+*/
 
 #if defined(OE_NEED_STDC_NAMES)
 
@@ -74,17 +90,17 @@ struct in_addr
     in_addr_t s_addr;
 };
 
-#define __OE_STRUCT_IN6_ADDR in6_addr
+#define __OE_IN6_ADDR in6_addr
 #include <openenclave/corelibc/netinet/bits/in6_addr.h>
-#undef __OE_STRUCT_IN6_ADDR
+#undef __OE_IN6_ADDR
 
-#define __OE_STRUCT_SOCKADDR_IN sockaddr_in
+#define __OE_SOCKADDR_IN sockaddr_in
 #include <openenclave/corelibc/netinet/bits/sockaddr_in.h>
-#undef __OE_STRUCT_SOCKADDR_IN
+#undef __OE_SOCKADDR_IN
 
-#define __OE_STRUCT_SOCKADDR_IN6 sockaddr_in6
+#define __OE_SOCKADDR_IN6 sockaddr_in6
 #include <openenclave/corelibc/netinet/bits/sockaddr_in6.h>
-#undef __OE_STRUCT_SOCKADDR_IN6
+#undef __OE_SOCKADDR_IN6
 
 #endif /* defined(OE_NEED_STDC_NAMES) */
 

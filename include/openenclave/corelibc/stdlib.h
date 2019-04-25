@@ -9,6 +9,14 @@
 
 OE_EXTERNC_BEGIN
 
+/*
+**==============================================================================
+**
+** OE names:
+**
+**==============================================================================
+*/
+
 /* Implementations taken directly from MUSL */
 void srand(unsigned s);
 int rand(void);
@@ -38,6 +46,14 @@ void oe_abort(void);
 OE_NO_RETURN void oe_exit(int status);
 
 int oe_atoi(const char* nptr);
+
+/*
+**==============================================================================
+**
+** Standard-C names:
+**
+**==============================================================================
+*/
 
 #if defined(OE_NEED_STDC_NAMES)
 

@@ -1,4 +1,7 @@
-struct __OE_STRUCT_DIRENT
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+struct __OE_DIRENT
 {
     uint64_t d_ino;
     oe_off_t d_off;

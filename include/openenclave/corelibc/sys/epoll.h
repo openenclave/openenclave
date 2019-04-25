@@ -14,7 +14,7 @@ OE_EXTERNC_BEGIN
 /*
 **==============================================================================
 **
-** oe-prefixed names:
+** OE names:
 **
 **==============================================================================
 */
@@ -42,15 +42,15 @@ enum OE_EPOLL_EVENTS
     OE_EPOLLET = 1u << 31
 };
 
-#define __OE_STRUCT_EPOLL_DATA oe_epoll_data
-#define __OE_TYPEDEF_EPOLL_DATA oe_epoll_data_t
+#define __OE_EPOLL_DATA oe_epoll_data
+#define __OE_EPOLL_DATA_T oe_epoll_data_t
 #include <openenclave/corelibc/sys/bits/epoll_data.h>
-#undef __OE_STRUCT_EPOLL_DATA
-#undef __OE_TYPEDEF_EPOLL_DATA
+#undef __OE_EPOLL_DATA
+#undef __OE_EPOLL_DATA_T
 
-#define __OE_STRUCT_EPOLL_EVENT oe_epoll_event
+#define __OE_EPOLL_EVENT oe_epoll_event
 #include <openenclave/corelibc/sys/bits/epoll_event.h>
-#undef __OE_STRUCT_EPOLL_EVENT
+#undef __OE_EPOLL_EVENT
 
 int oe_epoll_create(int size);
 
@@ -104,15 +104,15 @@ enum EPOLL_EVENTS
     EPOLLET = OE_EPOLLET,
 };
 
-#define __OE_STRUCT_EPOLL_DATA epoll_data
-#define __OE_TYPEDEF_EPOLL_DATA epoll_data_t
+#define __OE_EPOLL_DATA epoll_data
+#define __OE_EPOLL_DATA_T epoll_data_t
 #include <openenclave/corelibc/sys/bits/epoll_data.h>
-#undef __OE_STRUCT_EPOLL_DATA
-#undef __OE_TYPEDEF_EPOLL_DATA
+#undef __OE_EPOLL_DATA
+#undef __OE_EPOLL_DATA_T
 
-#define __OE_STRUCT_EPOLL_EVENT epoll_event
+#define __OE_EPOLL_EVENT epoll_event
 #include <openenclave/corelibc/sys/bits/epoll_event.h>
-#undef __OE_STRUCT_EPOLL_EVENT
+#undef __OE_EPOLL_EVENT
 
 OE_INLINE int epoll_create(int size)
 {

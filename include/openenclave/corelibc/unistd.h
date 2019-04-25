@@ -6,6 +6,7 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/corelibc/bits/types.h>
 #include <openenclave/corelibc/stdarg.h>
 #include <openenclave/corelibc/unistd.h>
 
@@ -84,23 +85,23 @@ int oe_dup(int fd);
 
 int oe_dup2(int fd, int newfd);
 
-pid_t oe_getpid(void);
+oe_pid_t oe_getpid(void);
 
-pid_t oe_getppid(void);
+oe_pid_t oe_getppid(void);
 
-pid_t oe_getpgrp(void);
+oe_pid_t oe_getpgrp(void);
 
-uid_t oe_getuid(void);
+oe_uid_t oe_getuid(void);
 
-uid_t oe_geteuid(void);
+oe_uid_t oe_geteuid(void);
 
-gid_t oe_getgid(void);
+oe_gid_t oe_getgid(void);
 
-gid_t oe_getegid(void);
+oe_gid_t oe_getegid(void);
 
-pid_t oe_getpgid(pid_t pid);
+oe_pid_t oe_getpgid(oe_pid_t pid);
 
-int oe_getgroups(int size, gid_t list[]);
+int oe_getgroups(int size, oe_gid_t list[]);
 
 /*
 **==============================================================================

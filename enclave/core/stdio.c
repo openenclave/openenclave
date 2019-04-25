@@ -131,7 +131,7 @@ OE_FILE* oe_fopen(const char* path, const char* mode)
     int flags;
     int fd;
     static const size_t MODE_BUF_SIZE = 8;
-    static const mode_t CREATE_MODE = 0666;
+    static const oe_mode_t CREATE_MODE = 0666;
 
     /* Reject bad parameters. */
     if (!path || !mode || oe_strlen(mode) >= MODE_BUF_SIZE)

@@ -7,11 +7,11 @@ struct sockaddr;
 
 int getnameinfo(
     const struct sockaddr* sa,
-    socklen_t salen,
+    oe_socklen_t salen,
     char* host,
-    socklen_t hostlen,
+    oe_socklen_t hostlen,
     char* serv,
-    socklen_t servlen,
+    oe_socklen_t servlen,
     int flags)
 {
     return oe_getnameinfo(

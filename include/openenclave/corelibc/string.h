@@ -9,6 +9,14 @@
 
 OE_EXTERNC_BEGIN
 
+/*
+**==============================================================================
+**
+** OE names:
+**
+**==============================================================================
+*/
+
 #if __STDC_VERSION__ >= 199901L
 #define OE_RESTRICT restrict
 #elif !defined(__GNUC__) || defined(__cplusplus)
@@ -58,6 +66,14 @@ char* oe_strchr(const char* s, int c);
 char* oe_strchrnul(const char* s, int c);
 
 char* oe_strrchr(const char* s, int c);
+
+/*
+**==============================================================================
+**
+** Standard-C names:
+**
+**==============================================================================
+*/
 
 #if defined(OE_NEED_STDC_NAMES)
 

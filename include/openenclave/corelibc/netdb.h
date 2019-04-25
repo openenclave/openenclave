@@ -8,6 +8,14 @@
 
 OE_EXTERNC_BEGIN
 
+/*
+**==============================================================================
+**
+** OE names:
+**
+**==============================================================================
+*/
+
 #define OE_AI_PASSIVE 0x01
 #define OE_AI_CANONNAME 0x02
 #define OE_AI_NUMERICHOST 0x04
@@ -44,11 +52,11 @@ OE_EXTERNC_BEGIN
 #define OE_NI_MAXHOST 255
 #define OE_NI_MAXSERV 32
 
-#define __OE_STRUCT_ADDRINFO oe_addrinfo
-#define __OE_STRUCT_SOCKADDR oe_sockaddr
+#define __OE_ADDRINFO oe_addrinfo
+#define __OE_SOCKADDR oe_sockaddr
 #include <openenclave/corelibc/bits/addrinfo.h>
-#undef __OE_STRUCT_ADDRINFO
-#undef __OE_STRUCT_SOCKADDR
+#undef __OE_ADDRINFO
+#undef __OE_SOCKADDR
 
 int oe_getaddrinfo(
     const char* node,
@@ -60,12 +68,20 @@ void oe_freeaddrinfo(struct oe_addrinfo* res);
 
 int oe_getnameinfo(
     const struct oe_sockaddr* sa,
-    socklen_t salen,
+    oe_socklen_t salen,
     char* host,
-    socklen_t hostlen,
+    oe_socklen_t hostlen,
     char* serv,
-    socklen_t servlen,
+    oe_socklen_t servlen,
     int flags);
+
+/*
+**==============================================================================
+**
+** Standard-C names:
+**
+**==============================================================================
+*/
 
 #if defined(OE_NEED_STDC_NAMES)
 
@@ -103,11 +119,11 @@ int oe_getnameinfo(
 #define NI_MAXHOST OE_NI_MAXHOST
 #define NI_MAXSERV OE_NI_MAXSERV
 
-#define __OE_STRUCT_ADDRINFO addrinfo
-#define __OE_STRUCT_SOCKADDR sockaddr
+#define __OE_ADDRINFO addrinfo
+#define __OE_SOCKADDR sockaddr
 #include <openenclave/corelibc/bits/addrinfo.h>
-#undef __OE_STRUCT_ADDRINFO
-#undef __OE_STRUCT_SOCKADDR
+#undef __OE_ADDRINFO
+#undef __OE_SOCKADDR
 
 OE_INLINE int getaddrinfo(
     const char* node,

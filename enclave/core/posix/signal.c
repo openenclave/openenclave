@@ -38,7 +38,7 @@ static void _handle_error(int signum)
     (void)signum;
 }
 
-int oe_kill(pid_t pid, int signum)
+int oe_kill(oe_pid_t pid, int signum)
 {
     int retval = -1;
     oe_errno = 0;

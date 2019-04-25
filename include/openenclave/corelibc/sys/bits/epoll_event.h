@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 OE_PACK_BEGIN
-struct __OE_STRUCT_EPOLL_EVENT
+struct __OE_EPOLL_EVENT
 {
     uint32_t events;
     oe_epoll_data_t data;

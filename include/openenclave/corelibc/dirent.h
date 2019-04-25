@@ -5,9 +5,17 @@
 #define _OE_DIRENT_H
 
 #include <openenclave/bits/defs.h>
-#include <openenclave/bits/types.h>
+#include <openenclave/corelibc/bits/types.h>
 
 OE_EXTERNC_BEGIN
+
+/*
+**==============================================================================
+**
+** OE names:
+**
+**==============================================================================
+*/
 
 /* struct dirent d_type values. */
 #define OE_DT_UNKNOWN 0
@@ -22,9 +30,9 @@ OE_EXTERNC_BEGIN
 
 typedef struct _OE_DIR OE_DIR;
 
-#define __OE_STRUCT_DIRENT oe_dirent
+#define __OE_DIRENT oe_dirent
 #include <openenclave/corelibc/bits/dirent.h>
-#undef __OE_STRUCT_DIRENT
+#undef __OE_DIRENT
 
 OE_DIR* oe_opendir(const char* pathname);
 
@@ -38,6 +46,14 @@ int oe_closedir(OE_DIR* dir);
 
 int oe_getdents(unsigned int fd, struct oe_dirent* dirp, unsigned int count);
 
+/*
+**==============================================================================
+**
+** Standard-C names:
+**
+**==============================================================================
+*/
+
 #if defined(OE_NEED_STDC_NAMES)
 
 #define DT_UNKNOWN OE_DT_UNKNOWN
@@ -50,11 +66,9 @@ int oe_getdents(unsigned int fd, struct oe_dirent* dirp, unsigned int count);
 #define DT_SOCK OE_DT_SOCK
 #define DT_WHT OE_DT_WHT
 
-typedef OE_DIR DIR;
-
-#define __OE_STRUCT_DIRENT dirent
+#define __OE_DIRENT dirent
 #include <openenclave/corelibc/bits/dirent.h>
-#undef __OE_STRUCT_DIRENT
+#undef __OE_DIRENT
 
 OE_INLINE DIR* opendir(const char* pathname)
 {

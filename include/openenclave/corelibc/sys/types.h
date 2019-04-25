@@ -5,7 +5,7 @@
 #define _OE_SYS_TYPES_H
 
 #include <openenclave/bits/defs.h>
-#include <openenclave/bits/types.h>
+#include <openenclave/corelibc/bits/types.h>
 #include <openenclave/corelibc/sys/select.h>
 
 #endif /* _OE_SYS_TYPES_H */

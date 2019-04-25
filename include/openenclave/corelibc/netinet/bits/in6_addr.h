@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-struct __OE_STRUCT_IN6_ADDR
+struct __OE_IN6_ADDR
 {
     union {
         uint8_t __s6_addr[16];

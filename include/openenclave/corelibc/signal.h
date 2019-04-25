@@ -6,12 +6,15 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/corelibc/bits/types.h>
 #include <openenclave/internal/defs.h>
+
+OE_EXTERNC_BEGIN
 
 /*
 **==============================================================================
 **
-** oe-prefixed names:
+** OE names:
 **
 **==============================================================================
 */
@@ -71,17 +74,17 @@ union oe_sigval {
     void* sival_ptr;
 };
 
-#define __OE_TYPEDEF_SIGINFO oe_siginfo_t
+#define __OE_SIGINFO_T oe_siginfo_t
 #include <openenclave/corelibc/bits/siginfo.h>
-#undef __OE_TYPEDEF_SIGINFO
+#undef __OE_SIGINFO_T
 
-#define __OE_STRUCT_SIGACTION oe_sigaction
+#define __OE_SIGACTION oe_sigaction
 #include <openenclave/corelibc/bits/sigaction.h>
-#undef __OE_STRUCT_SIGACTION
+#undef __OE_SIGACTION
 
 oe_sighandler_t oe_signal(int signum, oe_sighandler_t handler);
 
-int oe_kill(pid_t pid, int sig);
+int oe_kill(oe_pid_t pid, int sig);
 
 int oe_sigaction(
     int signum,
@@ -142,13 +145,13 @@ union sigval {
     void* sival_ptr;
 };
 
-#define __OE_TYPEDEF_SIGINFO siginfo_t
+#define __OE_SIGINFO_T siginfo_t
 #include <openenclave/corelibc/bits/siginfo.h>
-#undef __OE_TYPEDEF_SIGINFO
+#undef __OE_SIGINFO_T
 
-#define __OE_STRUCT_SIGACTION sigaction
+#define __OE_SIGACTION sigaction
 #include <openenclave/corelibc/bits/sigaction.h>
-#undef __OE_STRUCT_SIGACTION
+#undef __OE_SIGACTION
 
 #define sa_handler oe_sa_handler
 #define sa_sigaction oe_sa_sigaction
@@ -188,5 +191,7 @@ OE_INLINE int sigaction(
 }
 
 #endif /* defined(OE_NEED_STDC_NAMES) */
+
+OE_EXTERNC_END
 
 #endif /* _OE_SIGNAL_H */

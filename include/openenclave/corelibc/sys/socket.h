@@ -6,9 +6,18 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/corelibc/bits/types.h>
 #include <openenclave/corelibc/sys/uio.h>
 
 OE_EXTERNC_BEGIN
+
+/*
+**==============================================================================
+**
+** OE names:
+**
+**==============================================================================
+*/
 
 /* Protocol families.  */
 #define OE_PF_UNSPEC 0      /* Unspecified.  */
@@ -141,19 +150,19 @@ OE_EXTERNC_BEGIN
 
 #define OE_MSG_PEEK 0x0002
 
-#define __OE_STRUCT_SOCKADDR oe_sockaddr
+#define __OE_SOCKADDR oe_sockaddr
 #include <openenclave/corelibc/sys/bits/sockaddr.h>
-#undef __OE_STRUCT_SOCKADDR
+#undef __OE_SOCKADDR
 
-#define __OE_STRUCT_SOCKADDR_STORAGE oe_sockaddr_storage
+#define __OE_SOCKADDR_STORAGE oe_sockaddr_storage
 #include <openenclave/corelibc/sys/bits/sockaddr_storage.h>
-#undef __OE_STRUCT_SOCKADDR_STORAGE
+#undef __OE_SOCKADDR_STORAGE
 
-#define __OE_STRUCT_IOVEC oe_iovec
-#define __OE_STRUCT_MSGHDR oe_msghdr
+#define __OE_IOVEC oe_iovec
+#define __OE_MSGHDR oe_msghdr
 #include <openenclave/corelibc/sys/bits/msghdr.h>
-#undef __OE_STRUCT_IOVEC
-#undef __OE_STRUCT_MSGHDR
+#undef __OE_IOVEC
+#undef __OE_MSGHDR
 
 void oe_set_default_socket_devid(uint64_t devid);
 
@@ -165,11 +174,14 @@ int oe_socket_d(uint64_t devid, int domain, int type, int protocol);
 
 int oe_socketpair(int domain, int type, int protocol, int rtnfd[2]);
 
-int oe_accept(int sockfd, struct oe_sockaddr* addr, socklen_t* addrlen);
+int oe_accept(int sockfd, struct oe_sockaddr* addr, oe_socklen_t* addrlen);
 
-int oe_bind(int sockfd, const struct oe_sockaddr* addr, socklen_t namelen);
+int oe_bind(int sockfd, const struct oe_sockaddr* addr, oe_socklen_t namelen);
 
-int oe_connect(int sockfd, const struct oe_sockaddr* addr, socklen_t namelen);
+int oe_connect(
+    int sockfd,
+    const struct oe_sockaddr* addr,
+    oe_socklen_t namelen);
 
 int oe_shutdown(int sockfd, int how);
 
@@ -180,14 +192,14 @@ int oe_setsockopt(
     int level,
     int optname,
     const void* optval,
-    socklen_t optlen);
+    oe_socklen_t optlen);
 
 int oe_getsockopt(
     int sockfd,
     int level,
     int optname,
     void* optval,
-    socklen_t* optlen);
+    oe_socklen_t* optlen);
 
 ssize_t oe_send(int sockfd, const void* buf, size_t len, int flags);
 
@@ -199,7 +211,7 @@ ssize_t oe_sendto(
     size_t len,
     int flags,
     const struct oe_sockaddr* dest_addr,
-    socklen_t addrlen);
+    oe_socklen_t addrlen);
 
 ssize_t oe_recvfrom(
     int sockfd,
@@ -207,15 +219,23 @@ ssize_t oe_recvfrom(
     size_t len,
     int flags,
     const struct oe_sockaddr* src_addr,
-    socklen_t* addrlen);
+    oe_socklen_t* addrlen);
 
 ssize_t oe_sendmsg(int sockfd, const struct oe_msghdr* buf, int flags);
 
 ssize_t oe_recvmsg(int sockfd, struct oe_msghdr* buf, int flags);
 
-int oe_getpeername(int sockfd, struct oe_sockaddr* addr, socklen_t* addrlen);
+int oe_getpeername(int sockfd, struct oe_sockaddr* addr, oe_socklen_t* addrlen);
 
-int oe_getsockname(int sockfd, struct oe_sockaddr* addr, socklen_t* addrlen);
+int oe_getsockname(int sockfd, struct oe_sockaddr* addr, oe_socklen_t* addrlen);
+
+/*
+**==============================================================================
+**
+** Standard-C names:
+**
+**==============================================================================
+*/
 
 #if defined(OE_NEED_STDC_NAMES)
 
@@ -340,34 +360,37 @@ int oe_getsockname(int sockfd, struct oe_sockaddr* addr, socklen_t* addrlen);
 
 #define MSG_PEEK OE_MSG_PEEK
 
-/* mbed TLS needs this so it will use socklen_t rather than int. */
+/* mbed TLS needs this so it will use oe_socklen_t rather than int. */
 #define __DEFINED_socklen_t
 
-#define __OE_STRUCT_SOCKADDR sockaddr
+#define __OE_SOCKADDR sockaddr
 #include <openenclave/corelibc/sys/bits/sockaddr.h>
-#undef __OE_STRUCT_SOCKADDR
+#undef __OE_SOCKADDR
 
-#define __OE_STRUCT_SOCKADDR_STORAGE sockaddr_storage
+#define __OE_SOCKADDR_STORAGE sockaddr_storage
 #include <openenclave/corelibc/sys/bits/sockaddr_storage.h>
-#undef __OE_STRUCT_SOCKADDR_STORAGE
+#undef __OE_SOCKADDR_STORAGE
 
-#define __OE_STRUCT_IOVEC iovec
-#define __OE_STRUCT_MSGHDR msghdr
+#define __OE_IOVEC iovec
+#define __OE_MSGHDR msghdr
 #include <openenclave/corelibc/sys/bits/msghdr.h>
-#undef __OE_STRUCT_IOVEC
-#undef __OE_STRUCT_MSGHDR
+#undef __OE_IOVEC
+#undef __OE_MSGHDR
 
 OE_INLINE int socket(int domain, int type, int protocol)
 {
     return oe_socket(domain, type, protocol);
 }
 
-OE_INLINE int accept(int sockfd, struct sockaddr* addr, socklen_t* addrlen)
+OE_INLINE int accept(int sockfd, struct sockaddr* addr, oe_socklen_t* addrlen)
 {
     return oe_accept(sockfd, (struct oe_sockaddr*)addr, addrlen);
 }
 
-OE_INLINE int bind(int sockfd, const struct sockaddr* addr, socklen_t namelen)
+OE_INLINE int bind(
+    int sockfd,
+    const struct sockaddr* addr,
+    oe_socklen_t namelen)
 {
     return oe_bind(sockfd, (struct oe_sockaddr*)addr, namelen);
 }
@@ -375,7 +398,7 @@ OE_INLINE int bind(int sockfd, const struct sockaddr* addr, socklen_t namelen)
 OE_INLINE int connect(
     int sockfd,
     const struct sockaddr* addr,
-    socklen_t namelen)
+    oe_socklen_t namelen)
 {
     return oe_connect(sockfd, (struct oe_sockaddr*)addr, namelen);
 }
@@ -395,7 +418,7 @@ OE_INLINE int setsockopt(
     int level,
     int optname,
     const void* optval,
-    socklen_t optlen)
+    oe_socklen_t optlen)
 {
     return oe_setsockopt(sockfd, level, optname, optval, optlen);
 }
@@ -405,7 +428,7 @@ OE_INLINE int getsockopt(
     int level,
     int optname,
     void* optval,
-    socklen_t* optlen)
+    oe_socklen_t* optlen)
 {
     return oe_getsockopt(sockfd, level, optname, optval, optlen);
 }
@@ -426,7 +449,7 @@ OE_INLINE ssize_t sendto(
     size_t len,
     int flags,
     const struct sockaddr* dest_addr,
-    socklen_t addrlen)
+    oe_socklen_t addrlen)
 {
     return oe_sendto(
         sockfd, buf, len, flags, (const struct oe_sockaddr*)dest_addr, addrlen);
@@ -438,7 +461,7 @@ OE_INLINE ssize_t recvfrom(
     size_t len,
     int flags,
     struct sockaddr* src_addr,
-    socklen_t* addrlen)
+    oe_socklen_t* addrlen)
 {
     return oe_recvfrom(
         sockfd, buf, len, flags, (const struct oe_sockaddr*)src_addr, addrlen);
@@ -454,12 +477,18 @@ OE_INLINE ssize_t recvmsg(int sockfd, struct msghdr* buf, int flags)
     return oe_recvmsg(sockfd, (struct oe_msghdr*)buf, flags);
 }
 
-OE_INLINE int getpeername(int sockfd, struct sockaddr* addr, socklen_t* addrlen)
+OE_INLINE int getpeername(
+    int sockfd,
+    struct sockaddr* addr,
+    oe_socklen_t* addrlen)
 {
     return oe_getpeername(sockfd, (struct oe_sockaddr*)addr, addrlen);
 }
 
-OE_INLINE int getsockname(int sockfd, struct sockaddr* addr, socklen_t* addrlen)
+OE_INLINE int getsockname(
+    int sockfd,
+    struct sockaddr* addr,
+    oe_socklen_t* addrlen)
 {
     return oe_getsockname(sockfd, (struct oe_sockaddr*)addr, addrlen);
 }

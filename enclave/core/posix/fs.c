@@ -40,7 +40,7 @@ done:
     return ret;
 }
 
-int oe_open(const char* pathname, int flags, mode_t mode)
+int oe_open(const char* pathname, int flags, oe_mode_t mode)
 {
     int ret = -1;
     int fd;
@@ -78,7 +78,7 @@ done:
     return ret;
 }
 
-int oe_open_d(uint64_t devid, const char* pathname, int flags, mode_t mode)
+int oe_open_d(uint64_t devid, const char* pathname, int flags, oe_mode_t mode)
 {
     int ret = -1;
 
@@ -404,7 +404,7 @@ done:
     return ret;
 }
 
-int oe_mkdir(const char* pathname, mode_t mode)
+int oe_mkdir(const char* pathname, oe_mode_t mode)
 {
     int ret = -1;
     oe_device_t* fs = NULL;
@@ -676,7 +676,7 @@ done:
     return ret;
 }
 
-int oe_mkdir_d(uint64_t devid, const char* pathname, mode_t mode)
+int oe_mkdir_d(uint64_t devid, const char* pathname, oe_mode_t mode)
 {
     int ret = -1;
 

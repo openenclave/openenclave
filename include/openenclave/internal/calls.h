@@ -319,13 +319,6 @@ typedef struct _oe_init_enclave_args
 {
     uint32_t cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
     oe_enclave_t* enclave;
-
-    pid_t pid;  /* The process ID */
-    pid_t ppid; /* The parent process ID */
-    pid_t pgrp; /* The process group ID */
-    uid_t uid;  /* The user ID */
-    gid_t gid;  /* The group ID */
-
 } oe_init_enclave_args_t;
 
 /*

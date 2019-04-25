@@ -280,7 +280,7 @@ static oe_device_t* _hostfs_open_file(
     oe_device_t* fs_,
     const char* pathname,
     int flags,
-    mode_t mode)
+    oe_mode_t mode)
 {
     oe_device_t* ret = NULL;
     fs_t* fs = _cast_fs(fs_);
@@ -370,7 +370,7 @@ static oe_device_t* _hostfs_open_directory(
     oe_device_t* fs_,
     const char* pathname,
     int flags,
-    mode_t mode)
+    oe_mode_t mode)
 {
     oe_device_t* ret = NULL;
     fs_t* fs = _cast_fs(fs_);
@@ -439,7 +439,7 @@ static oe_device_t* _hostfs_open(
     oe_device_t* fs,
     const char* pathname,
     int flags,
-    mode_t mode)
+    oe_mode_t mode)
 {
     if ((flags & OE_O_DIRECTORY))
     {
@@ -1298,7 +1298,7 @@ done:
     return ret;
 }
 
-static int _hostfs_mkdir(oe_device_t* fs_, const char* pathname, mode_t mode)
+static int _hostfs_mkdir(oe_device_t* fs_, const char* pathname, oe_mode_t mode)
 {
     int ret = -1;
     fs_t* fs = _cast_fs(fs_);

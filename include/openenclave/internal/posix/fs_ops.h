@@ -29,8 +29,11 @@ struct _oe_fs_ops
 
     int (*unmount)(oe_device_t* fs, const char* target);
 
-    oe_device_t* (
-        *open)(oe_device_t* fs, const char* pathname, int flags, mode_t mode);
+    oe_device_t* (*open)(
+        oe_device_t* fs,
+        const char* pathname,
+        int flags,
+        oe_mode_t mode);
 
     oe_off_t (*lseek)(oe_device_t* file, oe_off_t offset, int whence);
 
@@ -51,7 +54,7 @@ struct _oe_fs_ops
 
     int (*truncate)(oe_device_t* fs, const char* path, oe_off_t length);
 
-    int (*mkdir)(oe_device_t* fs, const char* pathname, mode_t mode);
+    int (*mkdir)(oe_device_t* fs, const char* pathname, oe_mode_t mode);
 
     int (*rmdir)(oe_device_t* fs, const char* pathname);
 };

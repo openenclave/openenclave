@@ -51,7 +51,7 @@ static long _syscall(
         case OE_SYS_creat:
         {
             const char* pathname = (const char*)arg1;
-            mode_t mode = (mode_t)arg2;
+            oe_mode_t mode = (oe_mode_t)arg2;
             int flags = (OE_O_CREAT | OE_O_WRONLY | OE_O_TRUNC);
 
             ret = oe_open(pathname, flags, mode);
@@ -291,7 +291,7 @@ static long _syscall(
         {
             int sd = (int)arg1;
             const struct oe_sockaddr* addr = (const struct oe_sockaddr*)arg2;
-            socklen_t addrlen = (socklen_t)arg3;
+            oe_socklen_t addrlen = (oe_socklen_t)arg3;
             ret = oe_connect(sd, addr, addrlen);
             goto done;
         }
@@ -301,7 +301,7 @@ static long _syscall(
             int level = (int)arg2;
             int optname = (int)arg3;
             void* optval = (void*)arg4;
-            socklen_t optlen = (socklen_t)arg5;
+            oe_socklen_t optlen = (oe_socklen_t)arg5;
             ret = oe_setsockopt(sockfd, level, optname, optval, optlen);
             goto done;
         }
@@ -311,7 +311,7 @@ static long _syscall(
             int level = (int)arg2;
             int optname = (int)arg3;
             void* optval = (void*)arg4;
-            socklen_t* optlen = (socklen_t*)arg5;
+            oe_socklen_t* optlen = (oe_socklen_t*)arg5;
             ret = oe_getsockopt(sockfd, level, optname, optval, optlen);
             goto done;
         }
@@ -319,7 +319,7 @@ static long _syscall(
         {
             int sockfd = (int)arg1;
             struct sockaddr* addr = (struct sockaddr*)arg2;
-            socklen_t* addrlen = (socklen_t*)arg3;
+            oe_socklen_t* addrlen = (oe_socklen_t*)arg3;
             ret = oe_getpeername(sockfd, (struct oe_sockaddr*)addr, addrlen);
             goto done;
         }
@@ -327,7 +327,7 @@ static long _syscall(
         {
             int sockfd = (int)arg1;
             struct sockaddr* addr = (struct sockaddr*)arg2;
-            socklen_t* addrlen = (socklen_t*)arg3;
+            oe_socklen_t* addrlen = (oe_socklen_t*)arg3;
             ret = oe_getsockname(sockfd, (struct oe_sockaddr*)addr, addrlen);
             goto done;
         }
@@ -335,7 +335,7 @@ static long _syscall(
         {
             int sockfd = (int)arg1;
             struct oe_sockaddr* addr = (struct oe_sockaddr*)arg2;
-            socklen_t addrlen = (socklen_t)arg3;
+            oe_socklen_t addrlen = (oe_socklen_t)arg3;
             ret = oe_bind(sockfd, addr, addrlen);
             goto done;
         }
@@ -350,7 +350,7 @@ static long _syscall(
         {
             int sockfd = (int)arg1;
             struct oe_sockaddr* addr = (struct oe_sockaddr*)arg2;
-            socklen_t* addrlen = (socklen_t*)arg3;
+            oe_socklen_t* addrlen = (oe_socklen_t*)arg3;
             ret = oe_accept(sockfd, addr, addrlen);
             goto done;
         }
@@ -362,7 +362,7 @@ static long _syscall(
             int flags = (int)arg4;
             const struct oe_sockaddr* dest_add =
                 (const struct oe_sockaddr*)arg5;
-            socklen_t addrlen = (socklen_t)arg6;
+            oe_socklen_t addrlen = (oe_socklen_t)arg6;
 
             ret = oe_sendto(sockfd, buf, len, flags, dest_add, addrlen);
             goto done;
@@ -375,7 +375,7 @@ static long _syscall(
             int flags = (int)arg4;
             const struct oe_sockaddr* dest_add =
                 (const struct oe_sockaddr*)arg5;
-            socklen_t* addrlen = (socklen_t*)arg6;
+            oe_socklen_t* addrlen = (oe_socklen_t*)arg6;
 
             ret = oe_recvfrom(sockfd, buf, len, flags, dest_add, addrlen);
             goto done;
@@ -529,7 +529,7 @@ static long _syscall(
         case OE_SYS_getgroups:
         {
             int size = (int)arg1;
-            gid_t* list = (gid_t*)arg2;
+            oe_gid_t* list = (oe_gid_t*)arg2;
             ret = (long)oe_getgroups(size, list);
             goto done;
         }

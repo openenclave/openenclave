@@ -7,6 +7,16 @@
 #include <openenclave/bits/types.h>
 #include <openenclave/corelibc/time.h>
 
+OE_EXTERNC_BEGIN
+
+/*
+**==============================================================================
+**
+** OE names:
+**
+**==============================================================================
+*/
+
 // clang-format off
 #define OE_PTHREAD_MUTEX_INITIALIZER {{0}}
 #define OE_PTHREAD_RWLOCK_INITIALIZER {{0}}
@@ -138,6 +148,14 @@ int oe_pthread_setspecific(oe_pthread_key_t key, const void* value);
 
 void* oe_pthread_getspecific(oe_pthread_key_t key);
 
+/*
+**==============================================================================
+**
+** Standard-C names:
+**
+**==============================================================================
+*/
+
 #if defined(OE_NEED_STDC_NAMES)
 
 #include <openenclave/corelibc/bits/pthread_def.h>
@@ -151,5 +169,7 @@ void* oe_pthread_getspecific(oe_pthread_key_t key);
 #include <openenclave/corelibc/bits/pthread_spin.h>
 
 #endif /* defined(OE_NEED_STDC_NAMES) */
+
+OE_EXTERNC_END
 
 #endif /* _OE_PTHREAD_H */

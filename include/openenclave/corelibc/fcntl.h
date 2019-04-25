@@ -5,10 +5,18 @@
 #define _OE_FCNTL_H
 
 #include <openenclave/bits/defs.h>
-#include <openenclave/bits/types.h>
+#include <openenclave/corelibc/bits/types.h>
 #include <openenclave/corelibc/stdarg.h>
 
 OE_EXTERNC_BEGIN
+
+/*
+**==============================================================================
+**
+** OE names:
+**
+**==============================================================================
+*/
 
 // clang-format off
 #define OE_O_RDONLY        000000000
@@ -53,9 +61,9 @@ OE_EXTERNC_BEGIN
 #define OE_F_GETOWNER_UIDS 17
 // clang-format on
 
-int oe_open(const char* pathname, int flags, mode_t mode);
+int oe_open(const char* pathname, int flags, oe_mode_t mode);
 
-int oe_open_d(uint64_t devid, const char* pathname, int flags, mode_t mode);
+int oe_open_d(uint64_t devid, const char* pathname, int flags, oe_mode_t mode);
 
 int __oe_fcntl(int fd, int cmd, uint64_t arg);
 
@@ -70,6 +78,14 @@ OE_INLINE int oe_fcntl(int fd, int cmd, ...)
     return r;
 }
 #endif /* !defined(WIN32) */
+
+/*
+**==============================================================================
+**
+** Standard-C names:
+**
+**==============================================================================
+*/
 
 #if defined(OE_NEED_STDC_NAMES)
 

@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-struct __OE_STRUCT_SOCKADDR
+struct __OE_SOCKADDR
 {
-    sa_family_t sa_family;
+    oe_sa_family_t sa_family;
     char sa_data[14];
 };

@@ -6,7 +6,7 @@
  * RBX, RSP, RBP, R12, R13, R14, R15. In addition, oe_setjmp() saves
  * the RIP register (instruction pointer) to know where to jump back to).
  */
-typedef struct __OE_STRUCT_JMP_BUF
+typedef struct ___OE_JMP_BUF
 {
     uint64_t rsp;
     uint64_t rbp;
@@ -19,4 +19,4 @@ typedef struct __OE_STRUCT_JMP_BUF
     /* Added these to align with size of MUSL jmp_buf */
     uint64_t __fl;
     uint64_t __ss[128 / sizeof(long)];
-} __OE_TYPEDEF_JMP_BUF;
+} __OE_JMP_BUF;

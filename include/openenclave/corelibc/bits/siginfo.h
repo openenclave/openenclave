@@ -13,30 +13,29 @@ typedef struct
         /* kill() */
         struct
         {
-            pid_t oe_si_pid; /* sender's pid */
-            uid_t oe_si_uid; /* sender's uid */
+            oe_pid_t oe_si_pid;
+            oe_uid_t oe_si_uid;
         } __oe_si_kill;
 
         /* POSIX.1b timers */
         struct
         {
-            void* oe_si_tid;   /* timer id */
-            int oe_si_overrun; /* overrun count */
+            void* oe_si_tid;
+            int oe_si_overrun;
 #if !defined(_MSC_VER)
-            char __oe_si_pad[sizeof(uid_t) - sizeof(int)]; // This turns out to
-                                                           // be zero length
+            char __oe_si_pad[sizeof(oe_uid_t) - sizeof(int)];
 #endif
-            union oe_sigval oe_si_sigval; /* same as below */
-            int oe_si_sys_private;        /* not to be passed to user */
+            union oe_sigval oe_si_sigval;
+            int oe_si_sys_private;
         } __oe_si_timer;
 
         /* POSIX.1b signals */
         struct
         {
-            pid_t oe_si_pid;    /* sender's pid */
-            uint32_t oe_si_uid; /* sender's uid */
+            oe_pid_t oe_si_pid;
+            uint32_t oe_si_uid;
             union oe_sigval oe_si_sigval;
         } __oe_si_rt;
 
     } __oe_si_fields;
-} __OE_TYPEDEF_SIGINFO;
+} __OE_SIGINFO_T;

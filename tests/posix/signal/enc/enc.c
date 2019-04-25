@@ -58,7 +58,7 @@ int ecall_signal_out_test(uint64_t pid)
 {
     printf("--------------- send signal -------------\n");
     memset(buff, 0, sizeof(buff));
-    oe_kill((pid_t)pid, OE_SIGUSR2);
+    oe_kill((oe_pid_t)pid, OE_SIGUSR2);
 
     oe_sleep_msec(3000);
 

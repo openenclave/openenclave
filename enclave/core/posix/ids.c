@@ -10,59 +10,59 @@
 #include <openenclave/internal/globals.h>
 #include "oe_t.h"
 
-pid_t oe_getpid(void)
+oe_pid_t oe_getpid(void)
 {
-    pid_t ret = 0;
+    oe_pid_t ret = 0;
     oe_posix_getpid(&ret);
     return ret;
 }
 
-pid_t oe_getppid(void)
+oe_pid_t oe_getppid(void)
 {
-    pid_t ret = 0;
+    oe_pid_t ret = 0;
     oe_posix_getppid(&ret);
     return ret;
 }
 
-pid_t oe_getpgrp(void)
+oe_pid_t oe_getpgrp(void)
 {
-    pid_t ret = 0;
+    oe_pid_t ret = 0;
     oe_posix_getpgrp(&ret);
     return ret;
 }
 
-uid_t oe_getuid(void)
+oe_uid_t oe_getuid(void)
 {
-    uid_t ret = 0;
+    oe_uid_t ret = 0;
     oe_posix_getuid(&ret);
     return ret;
 }
 
-uid_t oe_geteuid(void)
+oe_uid_t oe_geteuid(void)
 {
-    uid_t ret = 0;
+    oe_uid_t ret = 0;
     oe_posix_geteuid(&ret);
     return ret;
 }
 
-gid_t oe_getgid(void)
+oe_gid_t oe_getgid(void)
 {
-    gid_t ret = 0;
+    oe_gid_t ret = 0;
     oe_posix_getgid(&ret);
     return ret;
 }
 
-gid_t oe_getegid(void)
+oe_gid_t oe_getegid(void)
 {
-    gid_t ret = 0;
+    oe_gid_t ret = 0;
     oe_posix_getegid(&ret);
     return ret;
 }
 
-pid_t oe_getpgid(pid_t pid)
+oe_pid_t oe_getpgid(oe_pid_t pid)
 {
-    pid_t ret = -1;
-    pid_t retval = -1;
+    oe_pid_t ret = -1;
+    oe_pid_t retval = -1;
     int err = 0;
 
     if (oe_posix_getpgid(&retval, pid, &err) != OE_OK)
@@ -83,7 +83,7 @@ done:
     return ret;
 }
 
-int oe_getgroups(int size, gid_t list[])
+int oe_getgroups(int size, oe_gid_t list[])
 {
     int ret = -1;
     int retval = -1;

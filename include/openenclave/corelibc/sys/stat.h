@@ -5,9 +5,17 @@
 #define _OE_SYS_STAT_H
 
 #include <openenclave/bits/defs.h>
-#include <openenclave/bits/types.h>
+#include <openenclave/corelibc/bits/types.h>
 
 OE_EXTERNC_BEGIN
+
+/*
+**==============================================================================
+**
+** OE names:
+**
+**==============================================================================
+*/
 
 #define OE_S_IFMT 0170000
 #define OE_S_IFDIR 0040000
@@ -45,9 +53,9 @@ OE_EXTERNC_BEGIN
 #define OE_S_IRWGRP (OE_S_IRGRP | OE_S_IWGRP)
 #define OE_S_IRWOTH (OE_S_IROTH | OE_S_IWOTH)
 
-#define __OE_STRUCT_STAT oe_stat
+#define __OE_STAT oe_stat
 #include <openenclave/corelibc/sys/bits/stat.h>
-#undef __OE_STRUCT_STAT
+#undef __OE_STAT
 
 #ifndef st_atime
 #define st_atime st_atim.tv_sec
@@ -65,9 +73,17 @@ int oe_stat(const char* pathname, struct oe_stat* buf);
 
 int oe_stat_d(uint64_t devid, const char* pathname, struct oe_stat* buf);
 
-int oe_mkdir(const char* pathname, mode_t mode);
+int oe_mkdir(const char* pathname, oe_mode_t mode);
 
-int oe_mkdir_d(uint64_t devid, const char* pathname, mode_t mode);
+int oe_mkdir_d(uint64_t devid, const char* pathname, oe_mode_t mode);
+
+/*
+**==============================================================================
+**
+** Standard-C names:
+**
+**==============================================================================
+*/
 
 #if defined(OE_NEED_STDC_NAMES)
 
@@ -107,9 +123,9 @@ int oe_mkdir_d(uint64_t devid, const char* pathname, mode_t mode);
 #define S_IRWGRP OE_S_IRWGRP
 #define S_IRWOTH OE_S_IRWOTH
 
-#define __OE_STRUCT_STAT stat
+#define __OE_STAT stat
 #include <openenclave/corelibc/sys/bits/stat.h>
-#undef __OE_STRUCT_STAT
+#undef __OE_STAT
 
 OE_INLINE int stat(const char* pathname, struct stat* buf)
 {
