@@ -12,6 +12,14 @@
 
 OE_EXTERNC_BEGIN
 
+/*
+**==============================================================================
+**
+** OE names:
+**
+**==============================================================================
+*/
+
 #define OE_BUFSIZ 8192
 #define OE_EOF (-1)
 
@@ -90,6 +98,14 @@ char* oe_fgets(char* s, int size, OE_FILE* stream);
 int oe_fileno(OE_FILE* stream);
 
 OE_FILE* oe_fdopen(int fd, const char* mode);
+
+/*
+**==============================================================================
+**
+** Standard-C names:
+**
+**==============================================================================
+*/
 
 #if defined(OE_NEED_STDC_NAMES)
 
@@ -196,7 +212,7 @@ OE_INLINE long ftell(FILE* stream)
     return oe_ftell((OE_FILE*)stream);
 }
 
-OE_INLINE oe_off_t ftello(FILE* stream)
+OE_INLINE off_t ftello(FILE* stream)
 {
     return oe_ftello((OE_FILE*)stream);
 }
