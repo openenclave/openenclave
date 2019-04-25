@@ -17,10 +17,6 @@ OE_EXTERNC_BEGIN
 **==============================================================================
 */
 
-/* Implementations taken directly from MUSL */
-void srand(unsigned s);
-int rand(void);
-
 void* oe_malloc(size_t size);
 
 void oe_free(void* ptr);
