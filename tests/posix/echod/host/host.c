@@ -46,23 +46,35 @@ static void* _client_thread_start_routine(void* arg)
 
     /* write/read "hello" to/from  the server. */
     {
-        if (send(sd, hello, sizeof(hello), 0) != sizeof(hello))
+        printf("send\n");
+        int tries = 10;
+        while (tries-- > 0)
         {
-            OE_TEST("write() failed" == NULL);
+            if (send(sd, hello, sizeof(hello), 0) != sizeof(hello))
+            {
+                OE_TEST("write() failed" == NULL);
+            }
+            else
+            {
+                break;
+            }
         }
 
+        printf("recv\n");
         /* Read "hello" from the server. */
         if (recv(sd, buf, sizeof(buf), 0) != sizeof(hello))
         {
             OE_TEST("read() failed" == NULL);
         }
 
+        printf("memcmp with %s\n", buf);
         if (memcmp(hello, buf, sizeof(hello)) != 0)
         {
             OE_TEST("memcmp() failed" == NULL);
         }
     }
 
+    printf("write quit\n");
     /* Send "quit" command to the server. */
     if (write(sd, quit, sizeof(quit)) != sizeof(quit))
     {
@@ -80,6 +92,7 @@ static void* _server_thread_start_routine(void* arg)
 
     echod_run_server_ecall(_enclave, PORT);
 
+    printf("return from server\n");
     return NULL;
 }
 
@@ -88,21 +101,24 @@ void run_server_and_clients(void)
     pthread_t client;
     pthread_t server;
     void* ret;
-
+    printf("_server_thread_start_routine\n");
     if (pthread_create(&server, NULL, _server_thread_start_routine, NULL) != 0)
     {
         OE_TEST("pthread_create()" == NULL);
     }
 
-    sleep(1);
+    sleep(5);
 
+    printf("_client_thread_start_routine\n");
     if (pthread_create(&client, NULL, _client_thread_start_routine, NULL) != 0)
     {
         OE_TEST("pthread_create()" == NULL);
     }
 
     pthread_join(client, &ret);
+    printf("joined client thread\n");
     pthread_join(server, &ret);
+    printf("joined server thread\n");
 }
 
 int main(int argc, const char* argv[])
@@ -117,16 +133,20 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
+    printf("create enclave\n");
     r = oe_create_echod_enclave(argv[1], type, flags, NULL, 0, &_enclave);
     OE_TEST(r == OE_OK);
 
+    printf("init enclave\n");
     /* Initialize the enclave. */
     r = echod_initialize_ecall(_enclave);
     OE_TEST(r == OE_OK);
 
+    printf("run server and clients\n");
     /* Run the clients (host) and the server (enclave). */
     run_server_and_clients();
 
+    printf("terminate enclave\n");
     /* Terminate the enclave. */
     r = oe_terminate_enclave(_enclave);
     OE_TEST(r == OE_OK);
