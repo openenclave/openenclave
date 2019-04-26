@@ -9,6 +9,9 @@ oeedl_file(
     --edl-search-dir ../moreedl
 )
 
+# Dummy target used for generating from EDL on demand.
+add_custom_target(edl_gen DEPENDS ${all_t})
+
 oeedl_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/../moreedl/bar.edl 
     enclave-headers
