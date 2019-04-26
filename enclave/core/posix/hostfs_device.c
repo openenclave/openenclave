@@ -1051,26 +1051,7 @@ static int _hostfs_stat(
         goto done;
     }
 
-    if (oe_posix_stat_ocall(
-            &ret,
-            full_pathname,
-            &buf->st_dev,
-            &buf->st_ino,
-            &buf->st_nlink,
-            &buf->st_mode,
-            &buf->st_uid,
-            &buf->st_gid,
-            &buf->st_rdev,
-            &buf->st_size,
-            &buf->st_blksize,
-            &buf->st_blocks,
-            &buf->st_atim.tv_sec,
-            &buf->st_atim.tv_nsec,
-            &buf->st_mtim.tv_sec,
-            &buf->st_mtim.tv_nsec,
-            &buf->st_ctim.tv_sec,
-            &buf->st_ctim.tv_nsec,
-            &oe_errno) != OE_OK)
+    if (oe_posix_stat_ocall(&ret, full_pathname, buf, &oe_errno) != OE_OK)
     {
         OE_TRACE_ERROR(
             "full_pathname=%s oe_errno =%d", full_pathname, oe_errno);

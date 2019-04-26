@@ -26,6 +26,8 @@ OE_INLINE void _set_err(int* err, int num)
 
 OE_INLINE void _clear_err(int* err)
 {
+    errno = 0;
+
     if (err)
         *err = 0;
 }
@@ -82,10 +84,8 @@ int oe_posix_open_ocall(const char* pathname, int flags, mode_t mode, int* err)
     }
     else
     {
-        ret = open(pathname, flags, mode);
-
-        if (ret == -1 && err)
-            *err = errno;
+        if ((ret = open(pathname, flags, mode)) == -1)
+            _set_err(err, errno);
     }
 
 done:
@@ -106,56 +106,58 @@ ssize_t oe_posix_read_ocall(int fd, void* buf, size_t count, int* err)
 
 ssize_t oe_posix_write_ocall(int fd, const void* buf, size_t count, int* err)
 {
-    ssize_t ret = write(fd, buf, count);
+    ssize_t ret;
 
-    if (ret == -1 && err)
-        *err = errno;
+    _clear_err(err);
+
+    if ((ret = write(fd, buf, count)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
 
 off_t oe_posix_lseek_ocall(int fd, off_t offset, int whence, int* err)
 {
-    off_t ret = lseek(fd, offset, whence);
+    off_t ret;
 
-    if (ret == -1 && err)
-        *err = errno;
+    _clear_err(err);
+
+    if ((ret = lseek(fd, offset, whence)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
 
 int oe_posix_close_ocall(int fd, int* err)
 {
-    int ret = close(fd);
+    int ret;
 
-    if (ret != 0 && err)
-    {
-        if (err)
-            *err = errno;
-    }
+    _clear_err(err);
+
+    if ((ret = close(fd)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
 
 int oe_posix_dup_ocall(int oldfd, int* err)
 {
-    int ret = dup(oldfd);
+    int ret;
 
-    if (ret == -1)
-    {
-        if (err)
-            *err = errno;
-    }
+    _clear_err(err);
+
+    if ((ret = dup(oldfd)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
 
 uint64_t oe_posix_opendir_ocall(const char* name, int* err)
 {
-    void* ret = opendir(name);
+    void* ret;
 
-    if (!ret && err)
-        *err = errno;
+    if ((ret = opendir(name)) == NULL)
+        _set_err(err, errno);
 
     return (uint64_t)ret;
 }
@@ -226,52 +228,31 @@ done:
 
 void oe_posix_rewinddir_ocall(uint64_t dirp)
 {
-    rewinddir((DIR*)dirp);
+    if (dirp)
+        rewinddir((DIR*)dirp);
 }
 
 int oe_posix_closedir_ocall(uint64_t dirp, int* err)
 {
-    int ret = closedir((DIR*)dirp);
+    int ret;
 
-    if (ret != 0 && err)
-        *err = errno;
+    _clear_err(err);
+
+    if ((ret = closedir((DIR*)dirp)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
 
-int oe_posix_stat_ocall(
-    const char* pathname,
-    uint64_t* st_dev,
-    uint64_t* st_ino,
-    uint64_t* st_nlink,
-    uint32_t* st_mode,
-    uint32_t* st_uid,
-    uint32_t* st_gid,
-    uint64_t* st_rdev,
-    int64_t* st_size,
-    int64_t* st_blksize,
-    int64_t* st_blocks,
-    int64_t* st_atim_tv_sec,
-    int64_t* st_atim_tv_nsec,
-    int64_t* st_mtim_tv_sec,
-    int64_t* st_mtim_tv_nsec,
-    int64_t* st_ctim_tv_sec,
-    int64_t* st_ctim_tv_nsec,
-    int* err)
+int oe_posix_stat_ocall(const char* pathname, struct oe_stat* buf, int* err)
 {
     int ret = -1;
     struct stat st;
 
-    errno = 0;
     _clear_err(err);
 
-    if (!st_dev || !st_ino || !st_nlink || !st_mode || !st_uid || !st_gid ||
-        !st_rdev || !st_size || !st_blksize || !st_blocks || !st_atim_tv_sec ||
-        !st_atim_tv_nsec || !st_ctim_tv_sec || !st_ctim_tv_nsec ||
-        !st_mtim_tv_sec || !st_mtim_tv_nsec)
-    {
+    if (!buf)
         goto done;
-    }
 
     if ((ret = stat(pathname, &st)) == -1)
     {
@@ -279,27 +260,29 @@ int oe_posix_stat_ocall(
         goto done;
     }
 
-    *st_dev = st.st_dev;
-    *st_dev = st.st_dev;
-    *st_ino = st.st_ino;
-    *st_nlink = st.st_nlink;
-    *st_mode = st.st_mode;
-    *st_uid = st.st_uid;
-    *st_gid = st.st_gid;
-    *st_rdev = st.st_rdev;
-    *st_size = st.st_size;
-    *st_blksize = st.st_blksize;
-    *st_blocks = st.st_blocks;
-    *st_atim_tv_sec = st.st_atim.tv_sec;
-    *st_atim_tv_nsec = st.st_atim.tv_nsec;
-    *st_mtim_tv_sec = st.st_mtim.tv_sec;
-    *st_mtim_tv_nsec = st.st_mtim.tv_nsec;
-    *st_ctim_tv_sec = st.st_ctim.tv_sec;
-    *st_ctim_tv_nsec = st.st_ctim.tv_nsec;
+    buf->st_dev = st.st_dev;
+    buf->st_dev = st.st_dev;
+    buf->st_ino = st.st_ino;
+    buf->st_nlink = st.st_nlink;
+    buf->st_mode = st.st_mode;
+    buf->st_uid = st.st_uid;
+    buf->st_gid = st.st_gid;
+    buf->st_rdev = st.st_rdev;
+    buf->st_size = st.st_size;
+    buf->st_blksize = st.st_blksize;
+    buf->st_blocks = st.st_blocks;
+    buf->st_atim.tv_sec = st.st_atim.tv_sec;
+    buf->st_atim.tv_nsec = st.st_atim.tv_nsec;
+    buf->st_mtim.tv_sec = st.st_mtim.tv_sec;
+    buf->st_mtim.tv_nsec = st.st_mtim.tv_nsec;
+    buf->st_ctim.tv_sec = st.st_ctim.tv_sec;
+    buf->st_ctim.tv_nsec = st.st_ctim.tv_nsec;
 
 done:
     return ret;
 }
+
+/* BOOKMARK */
 
 int oe_posix_access_ocall(const char* pathname, int mode, int* err)
 {
