@@ -91,12 +91,8 @@ void echod_run_server_ecall(uint16_t port)
         addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
         addr.sin_port = htons(port);
 
-        printf("bind\n");
-
         if (bind(listen_sock, (struct sockaddr*)&addr, sizeof(addr)) != 0)
         {
-            int tmp = errno;
-            printf("bind failed: %d\n", tmp);
             OE_TEST("bind() failed" == NULL);
         }
 
@@ -134,10 +130,8 @@ void echod_run_server_ecall(uint16_t port)
             memcpy(&tmp_readfds, &readfds, sizeof(tmp_readfds));
             memcpy(&tmp_writefds, &writefds, sizeof(tmp_writefds));
 
-            printf("select\n");
             nfds = select(1, &tmp_readfds, &tmp_writefds, NULL, &timeout);
 
-            printf("selectd nfds = %d\n", nfds);
             if (nfds > 0)
             {
                 if (FD_ISSET((uint32_t)listen_sock, &tmp_readfds))
@@ -159,13 +153,6 @@ void echod_run_server_ecall(uint16_t port)
                     OE_TEST("accept() failed" == NULL);
                 }
 
-#if 0
-                _set_blocking(client_sock, false);
-
-                /* Watch for read events on this socket. */
-                FD_SET((uint32_t)client_sock, &readfds);
-#endif
-
                 OE_TEST(_set_blocking(listen_sock, false) == 0);
 
                 break;
@@ -178,7 +165,6 @@ void echod_run_server_ecall(uint16_t port)
 
         for (;;)
         {
-            printf("read\n");
             if ((n = read(client_sock, buf, sizeof(buf))) < 0)
             {
                 OE_TEST("read() failed" == NULL);
@@ -186,15 +172,12 @@ void echod_run_server_ecall(uint16_t port)
 
             if (n > 0)
             {
-                printf("received = %s\n", buf);
                 if (strncmp(buf, "quit", 4) == 0)
                 {
-                    printf("got quit\n");
                     quit = true;
                     break;
                 }
 
-                printf("write\n");
                 if (write(client_sock, buf, (size_t)n) != n)
                 {
                     OE_TEST("write() failed" == NULL);
