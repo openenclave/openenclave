@@ -421,6 +421,8 @@ int oe_posix_connect_ocall(
 
     _clear_err(err);
 
+    OE_STATIC_ASSERT(sizeof(struct oe_sockaddr) == sizeof(struct sockaddr));
+
     if ((ret = connect(sockfd, (const struct sockaddr*)addr, addrlen)) == -1)
         _set_err(err, errno);
 
