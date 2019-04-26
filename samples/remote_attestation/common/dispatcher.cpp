@@ -235,7 +235,7 @@ int ecall_dispatcher::establish_secure_channel(uint8_t** key, size_t* key_size)
             goto exit;
         }
 
-        TRACE_ENCLAVE("enclave: generate_encrypted_message: Completed SHA hash "
+        TRACE_ENCLAVE("enclave: establish_secure_channel: Completed SHA hash "
                       "of the encrypted key");
 
         // Step 4 - Sign this SHA hash with my enclave's private key
@@ -250,19 +250,18 @@ int ecall_dispatcher::establish_secure_channel(uint8_t** key, size_t* key_size)
         }
 
         TRACE_ENCLAVE(
-            "enclave: generate_encrypted_message: signature_size = %ld",
+            "enclave: establish_secure_channel: signature_size = %ld",
             signature_size);
 
         if ((encrypted_key_size != 256) || (signature_size != 256))
         {
-            TRACE_ENCLAVE("enclave: generate_encrypted_message: failed as "
+            TRACE_ENCLAVE("enclave: establish_secure_channel: failed as "
                           "encrypted data size or signature size is not 256");
         }
         // Step 5 - Send to the other enclave
         memcpy(host_buf, encrypted_key_buf, total_size);
         TRACE_ENCLAVE(
-            "enclave: generate_encrypted_message: total_size = %ld",
-            total_size);
+            "enclave: establish_secure_channel: total_size = %ld", total_size);
         *key = host_buf;
         *key_size = total_size;
     }
@@ -276,10 +275,17 @@ exit:
 }
 
 int ecall_dispatcher::acknowledge_secure_channel(
-    uint8_t* encrypted_data,
-    size_t encrypted_data_size)
+    uint8_t* encrypted_key_buf,
+    size_t encrypted_key_size)
 {
     int ret = 1;
+    /* Steps --
+     *   1) Verify Signature; if good proceed to step 2
+     *   2) Decrypt the key using your own private key
+     *   3) Now use this key with sequence number to communicate further
+     */
+    unsigned char* signature = &encrypted_key_buf[256];
+    size_t signature_size = 256;
 
     if (m_initialized == false)
     {
@@ -287,11 +293,17 @@ int ecall_dispatcher::acknowledge_secure_channel(
         goto exit;
     }
 
-    /* Steps --
-     *   1) Verify Signature; if good proceed to step 2
-     *   2) Decrypt the key using your own private key
-     *   3) Now use this key with sequence number to communicate further
-     */
+    if (m_crypto->Verify_sign(
+            encrypted_key_buf, encrypted_key_size, signature, signature_size) !=
+        0)
+    {
+        TRACE_ENCLAVE("enclave: acknowledge_secure_channel: signature "
+                      "verification failed");
+        goto exit;
+    }
+
+    TRACE_ENCLAVE("enclave: acknowledge_secure_channel: signature verified ok");
+
     ret = 0;
 exit:
     return ret;

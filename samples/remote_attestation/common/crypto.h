@@ -87,13 +87,17 @@ class Crypto
     /**
      * Sign using ECDSA256
      */
-    bool Sign(
+    int Sign(
         const unsigned char* hash_data,
         size_t hash_size,
         unsigned char* sig,
         size_t* sig_len);
 
-    bool verify_signature();
+    int Verify_sign(
+        const unsigned char* hash_data,
+        size_t hash_size,
+        const unsigned char* sig,
+        size_t sig_len);
 
   private:
     /**

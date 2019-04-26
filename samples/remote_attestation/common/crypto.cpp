@@ -303,7 +303,7 @@ exit_preinit:
     return ret;
 }
 
-bool Crypto::Sign(
+int Crypto::Sign(
     const unsigned char* hash_data,
     size_t hash_size,
     unsigned char* sig,
@@ -320,6 +320,25 @@ bool Crypto::Sign(
         sig_len,
         NULL,
         NULL);
+
+    return rc;
+}
+
+int Crypto::Verify_sign(
+    const unsigned char* hash_data,
+    size_t hash_size,
+    const unsigned char* sig,
+    size_t sig_len)
+{
+    int rc = 0;
+
+    rc = mbedtls_pk_verify(
+        (mbedtls_pk_context*)&m_pk_context,
+        MBEDTLS_MD_SHA256,
+        hash_data,
+        hash_size,
+        sig,
+        sig_len);
 
     return rc;
 }
