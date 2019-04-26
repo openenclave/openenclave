@@ -575,7 +575,6 @@ ssize_t oe_posix_recv_ocall(
     return ret;
 }
 
-/* ATTN:IO: add test for this function. */
 ssize_t oe_posix_recvfrom_ocall(
     int sockfd,
     void* buf,
@@ -586,14 +585,15 @@ ssize_t oe_posix_recvfrom_ocall(
     socklen_t* addrlen_out,
     int* err)
 {
-    ssize_t ret = recvfrom(
+    ssize_t ret;
+
+    _clear_err(err);
+
+    ret = recvfrom(
         sockfd, buf, len, flags, (struct sockaddr*)src_addr, &addrlen_in);
 
     if (ret == -1)
-    {
-        if (err)
-            *err = errno;
-    }
+        _set_err(err, errno);
 
     if (addrlen_out)
         *addrlen_out = addrlen_in;
@@ -610,18 +610,16 @@ ssize_t oe_posix_send_ocall(
     int flags,
     int* err)
 {
-    ssize_t ret = send(sockfd, buf, len, flags);
+    ssize_t ret;
 
-    if (ret == -1)
-    {
-        if (err)
-            *err = errno;
-    }
+    _clear_err(err);
+
+    if ((ret = send(sockfd, buf, len, flags)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
 
-/* ATTN:IO: add test for this function. */
 ssize_t oe_posix_sendto_ocall(
     int sockfd,
     const void* buf,
@@ -631,14 +629,15 @@ ssize_t oe_posix_sendto_ocall(
     socklen_t addrlen,
     int* err)
 {
-    ssize_t ret = sendto(
+    ssize_t ret;
+
+    _clear_err(err);
+
+    ret = sendto(
         sockfd, buf, len, flags, (const struct sockaddr*)src_addr, addrlen);
 
     if (ret == -1)
-    {
-        if (err)
-            *err = errno;
-    }
+        _set_err(err, errno);
 
     return ret;
 }
