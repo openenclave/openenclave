@@ -18,6 +18,14 @@
 #include <unistd.h>
 #include "oe_u.h"
 
+/*
+**==============================================================================
+**
+** Local definitions.
+**
+**==============================================================================
+*/
+
 OE_INLINE void _set_err(int* err, int num)
 {
     if (err)
@@ -282,74 +290,86 @@ done:
     return ret;
 }
 
-/* BOOKMARK */
-
 int oe_posix_access_ocall(const char* pathname, int mode, int* err)
 {
-    int ret = access(pathname, mode);
+    int ret;
 
-    if (ret != 0 && err)
-        *err = errno;
+    _clear_err(err);
+
+    if ((ret = access(pathname, mode)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
 
 int oe_posix_link_ocall(const char* oldpath, const char* newpath, int* err)
 {
-    int ret = link(oldpath, newpath);
+    int ret;
 
-    if (ret != 0 && err)
-        *err = errno;
+    _clear_err(err);
+
+    if ((ret = link(oldpath, newpath)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
 
 int oe_posix_unlink_ocall(const char* pathname, int* err)
 {
-    int ret = unlink(pathname);
+    int ret;
 
-    if (ret != 0 && err)
-        *err = errno;
+    _clear_err(err);
+
+    if ((ret = unlink(pathname)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
 
 int oe_posix_rename_ocall(const char* oldpath, const char* newpath, int* err)
 {
-    int ret = rename(oldpath, newpath);
+    int ret;
 
-    if (ret != 0 && err)
-        *err = errno;
+    _clear_err(err);
+
+    if ((ret = rename(oldpath, newpath)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
 
 int oe_posix_truncate_ocall(const char* path, off_t length, int* err)
 {
-    int ret = truncate(path, length);
+    int ret;
 
-    if (ret != 0 && err)
-        *err = errno;
+    _clear_err(err);
+
+    if ((ret = truncate(path, length)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
 
 int oe_posix_mkdir_ocall(const char* pathname, mode_t mode, int* err)
 {
-    int ret = mkdir(pathname, mode);
+    int ret;
 
-    if (ret != 0 && err)
-        *err = errno;
+    _clear_err(err);
+
+    if ((ret = mkdir(pathname, mode)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
 
 int oe_posix_rmdir_ocall(const char* pathname, int* err)
 {
-    int ret = rmdir(pathname);
+    int ret;
 
-    if (ret != 0 && err)
-        *err = errno;
+    _clear_err(err);
+
+    if ((ret = rmdir(pathname)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
@@ -364,10 +384,12 @@ int oe_posix_rmdir_ocall(const char* pathname, int* err)
 
 int oe_posix_socket_ocall(int domain, int type, int protocol, int* err)
 {
-    int ret = socket(domain, type, protocol);
+    int ret;
 
-    if (ret == -1 && err)
-        *err = errno;
+    _clear_err(err);
+
+    if ((ret = socket(domain, type, protocol)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
@@ -379,13 +401,12 @@ int oe_posix_socketpair_ocall(
     int sv[2],
     int* err)
 {
-    int ret = socketpair(domain, type, protocol, sv);
+    int ret;
 
-    if (ret == -1)
-    {
-        if (err)
-            *err = errno;
-    }
+    _clear_err(err);
+
+    if ((ret = socketpair(domain, type, protocol, sv)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
@@ -396,10 +417,12 @@ int oe_posix_connect_ocall(
     socklen_t addrlen,
     int* err)
 {
-    int ret = connect(sockfd, (const struct sockaddr*)addr, addrlen);
+    int ret;
 
-    if (ret == -1 && err)
-        *err = errno;
+    _clear_err(err);
+
+    if ((ret = connect(sockfd, (const struct sockaddr*)addr, addrlen)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
@@ -411,13 +434,13 @@ int oe_posix_accept_ocall(
     socklen_t* addrlen_out,
     int* err)
 {
-    int ret = accept(sockfd, (struct sockaddr*)addr, &addrlen_in);
+    int ret;
 
-    if (ret == -1)
+    _clear_err(err);
+
+    if ((ret = accept(sockfd, (struct sockaddr*)addr, &addrlen_in)) == -1)
     {
-        if (err)
-            *err = errno;
-
+        _set_err(err, errno);
         goto done;
     }
 
@@ -428,34 +451,32 @@ done:
     return ret;
 }
 
+/* BOOKMARK */
+
 int oe_posix_bind_ocall(
     int sockfd,
     const struct oe_sockaddr* addr,
     socklen_t addrlen,
     int* err)
 {
-    int ret = bind(sockfd, (const struct sockaddr*)addr, addrlen);
+    int ret;
 
-    if (ret == -1)
-    {
-        if (err)
-            *err = errno;
-    }
+    _clear_err(err);
+
+    if ((ret = bind(sockfd, (const struct sockaddr*)addr, addrlen)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
 
 int oe_posix_listen_ocall(int sockfd, int backlog, int* err)
 {
-    errno = 0;
+    int ret;
 
-    int ret = listen(sockfd, backlog);
+    _clear_err(err);
 
-    if (ret == -1)
-    {
-        if (err)
-            *err = errno;
-    }
+    if ((ret = listen(sockfd, backlog)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }

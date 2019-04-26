@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-typedef __int64 off_t;
+typedef __int64 oe_off_t;
 #include <io.h>
 #include <stdint.h>
 #pragma warning(disable : 4005)
@@ -27,7 +27,11 @@ OE_INLINE void _clear_err(int* err)
 **==============================================================================
 */
 
-int oe_posix_open_ocall(const char* pathname, int flags, mode_t mode, int* err)
+int oe_posix_open_ocall(
+    const char* pathname,
+    int flags,
+    oe_mode_t mode,
+    int* err)
 {
     int ret = -1;
 
@@ -105,10 +109,10 @@ ssize_t oe_posix_write_ocall(int fd, const void* buf, size_t count, int* err)
     return ret;
 }
 
-off_t oe_posix_lseek_ocall(int fd, off_t offset, int whence, int* err)
+oe_off_t oe_posix_lseek_ocall(int fd, oe_off_t offset, int whence, int* err)
 {
 #if defined(NOTYET)
-    off_t ret = lseek(fd, offset, whence);
+    oe_off_t ret = lseek(fd, offset, whence);
     2DO
 
         if (ret == -1 && err)* err = errno;
@@ -388,7 +392,7 @@ int oe_posix_rename_ocall(const char* oldpath, const char* newpath, int* err)
     return ret;
 }
 
-int oe_posix_truncate_ocall(const char* path, off_t length, int* err)
+int oe_posix_truncate_ocall(const char* path, oe_off_t length, int* err)
 {
 #if defined(NOTYET)
     int ret = truncate(path, length);
@@ -403,7 +407,7 @@ int oe_posix_truncate_ocall(const char* path, off_t length, int* err)
     return ret;
 }
 
-int oe_posix_mkdir_ocall(const char* pathname, mode_t mode, int* err)
+int oe_posix_mkdir_ocall(const char* pathname, oe_mode_t mode, int* err)
 {
 #if defined(NOTYET)
     int ret = mkdir(pathname, mode);
@@ -482,7 +486,7 @@ int oe_posix_socketpair_ocall(
 int oe_posix_connect_ocall(
     int sockfd,
     const struct oe_sockaddr* addr,
-    socklen_t addrlen,
+    oe_socklen_t addrlen,
     int* err)
 {
 #if defined(NOTYET)
@@ -501,8 +505,8 @@ int oe_posix_connect_ocall(
 int oe_posix_accept_ocall(
     int sockfd,
     struct oe_sockaddr* addr,
-    socklen_t addrlen_in,
-    socklen_t* addrlen_out,
+    oe_socklen_t addrlen_in,
+    oe_socklen_t* addrlen_out,
     int* err)
 {
 #if defined(NOTYET)
@@ -530,7 +534,7 @@ done:
 int oe_posix_bind_ocall(
     int sockfd,
     const struct oe_sockaddr* addr,
-    socklen_t addrlen,
+    oe_socklen_t addrlen,
     int* err)
 {
 #if defined(NOTYET)
@@ -572,8 +576,8 @@ int oe_posix_listen_ocall(int sockfd, int backlog, int* err)
 ssize_t oe_posix_recvmsg_ocall(
     int sockfd,
     void* msg_name,
-    socklen_t msg_namelen,
-    socklen_t* msg_namelen_out,
+    oe_socklen_t msg_namelen,
+    oe_socklen_t* msg_namelen_out,
     void* msg_buf,
     size_t msg_buflen,
     void* msg_control,
@@ -626,7 +630,7 @@ done:
 ssize_t oe_posix_sendmsg_ocall(
     int sockfd,
     const void* msg_name,
-    socklen_t msg_namelen,
+    oe_socklen_t msg_namelen,
     const void* msg_buf,
     size_t msg_buflen,
     const void* msg_control,
@@ -705,8 +709,8 @@ ssize_t oe_posix_recvfrom_ocall(
     size_t len,
     int flags,
     struct oe_sockaddr* src_addr,
-    socklen_t addrlen_in,
-    socklen_t* addrlen_out,
+    oe_socklen_t addrlen_in,
+    oe_socklen_t* addrlen_out,
     int* err)
 {
 #if defined(NOTYET)
@@ -758,7 +762,7 @@ ssize_t oe_posix_sendto_ocall(
     size_t len,
     int flags,
     const struct oe_sockaddr* src_addr,
-    socklen_t addrlen,
+    oe_socklen_t addrlen,
     int* err)
 {
 #if defined(NOTYET)
@@ -821,7 +825,7 @@ int oe_posix_setsockopt_ocall(
     int level,
     int optname,
     const void* optval,
-    socklen_t optlen,
+    oe_socklen_t optlen,
     int* err)
 {
     int ret = -1;
@@ -849,8 +853,8 @@ int oe_posix_getsockopt_ocall(
     int level,
     int optname,
     void* optval,
-    socklen_t optlen_in,
-    socklen_t* optlen,
+    oe_socklen_t optlen_in,
+    oe_socklen_t* optlen,
     int* err)
 {
     int ret;
@@ -877,8 +881,8 @@ int oe_posix_getsockopt_ocall(
 int oe_posix_getsockname_ocall(
     int sockfd,
     struct oe_sockaddr* addr,
-    socklen_t addrlen_in,
-    socklen_t* addrlen_out,
+    oe_socklen_t addrlen_in,
+    oe_socklen_t* addrlen_out,
     int* err)
 {
 #if defined(NOTYET)
@@ -903,8 +907,8 @@ int oe_posix_getsockname_ocall(
 int oe_posix_getpeername_ocall(
     int sockfd,
     struct oe_sockaddr* addr,
-    socklen_t addrlen_in,
-    socklen_t* addrlen_out,
+    oe_socklen_t addrlen_in,
+    oe_socklen_t* addrlen_out,
     int* err)
 {
 #if defined(NOTYET)
@@ -1043,8 +1047,8 @@ int oe_posix_getaddrinfo_read_ocall(
     int* ai_family,
     int* ai_socktype,
     int* ai_protocol,
-    socklen_t ai_addrlen_in,
-    socklen_t* ai_addrlen,
+    oe_socklen_t ai_addrlen_in,
+    oe_socklen_t* ai_addrlen,
     struct oe_sockaddr* ai_addr,
     size_t ai_canonnamelen_in,
     size_t* ai_canonnamelen,
@@ -1161,11 +1165,11 @@ done:
 
 int oe_posix_getnameinfo_ocall(
     const struct oe_sockaddr* sa,
-    socklen_t salen,
+    oe_socklen_t salen,
     char* host,
-    socklen_t hostlen,
+    oe_socklen_t hostlen,
     char* serv,
-    socklen_t servlen,
+    oe_socklen_t servlen,
     int flags,
     int* err)
 {
