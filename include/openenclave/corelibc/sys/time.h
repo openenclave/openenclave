@@ -1,8 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_ASSERT_H
-#define _OE_ASSERT_H
+#ifndef _OE_SYS_TIME_H
+#define _OE_SYS_TIME_H
+
+#include <openenclave/bits/defs.h>
+#include <openenclave/bits/types.h>
+
+OE_EXTERNC_BEGIN
 
 /*
 **==============================================================================
@@ -12,8 +17,11 @@
 **==============================================================================
 */
 
-/* Include the oe_assert() definition from enclave.h. */
-#include <openenclave/enclave.h>
+struct oe_timeval
+{
+    time_t tv_sec;       /* seconds */
+    suseconds_t tv_usec; /* microseconds */
+};
 
 /*
 **==============================================================================
@@ -25,10 +33,14 @@
 
 #if defined(OE_NEED_STDC_NAMES)
 
-#define assert oe_assert
-
-#define __assert_fail __oe_assert_fail
+struct timeval
+{
+    time_t tv_sec;       /* seconds */
+    suseconds_t tv_usec; /* microseconds */
+};
 
 #endif /* defined(OE_NEED_STDC_NAMES) */
 
-#endif /* _OE_ASSERT_H */
+OE_EXTERNC_END
+
+#endif /* _OE_SYS_TIME_H */
