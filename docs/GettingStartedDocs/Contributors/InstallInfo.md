@@ -7,7 +7,7 @@ not currently need to be installed system-wide, so you could choose to install i
 into your home directory. From the build subfolder in your source tree:
 
 ```bash
-cmake -DCMAKE_INSTALL_PREFIX:PATH=~/openenclave-install ..
+cmake -DCMAKE_INSTALL_PREFIX=~/openenclave-install ..
 make install
 ```
 
@@ -31,7 +31,7 @@ explicitly installing to a path outside the standard `/usr/local/` location.
 From the build subfolder:
 
 ```bash
-cmake -DCMAKE_INSTALL_PREFIX:PATH=/opt/openenclave ..
+cmake -DCMAKE_INSTALL_PREFIX=/opt/openenclave ..
 sudo make install
 ```
 
@@ -56,6 +56,6 @@ as above. For example, to create a Debian package that will install the SDK to
 /opt/openenclave, run the following from your build subfolder:
 
 ```bash
-cmake -DCMAKE_INSTALL_PREFIX:PATH=/opt/openenclave ..
+cmake -DCMAKE_INSTALL_PREFIX=/opt/openenclave ..
 cpack -G DEB
 ```
