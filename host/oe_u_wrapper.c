@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "../enclave/core/posix/epoll.h"
-
 #if !defined(_MSC_VER)
 #pragma GCC diagnostic ignored "-Wmissing-prototypes"
 #else

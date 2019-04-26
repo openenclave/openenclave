@@ -16,7 +16,6 @@
 #include <sys/stat.h>
 #include <sys/utsname.h>
 #include <unistd.h>
-#include "../enclave/core/posix/epoll.h"
 #include "oe_u.h"
 
 OE_INLINE void _set_err(int* err, int num)
@@ -42,6 +41,8 @@ OE_INLINE void _clear_err(int* err)
 int oe_posix_open_ocall(const char* pathname, int flags, mode_t mode, int* err)
 {
     int ret = -1;
+
+    _clear_err(err);
 
     if (strcmp(pathname, "/dev/stdin") == 0)
     {
@@ -93,10 +94,12 @@ done:
 
 ssize_t oe_posix_read_ocall(int fd, void* buf, size_t count, int* err)
 {
-    ssize_t ret = read(fd, buf, count);
+    ssize_t ret;
 
-    if (ret == -1 && err)
-        *err = errno;
+    _clear_err(err);
+
+    if ((ret = read(fd, buf, count)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
