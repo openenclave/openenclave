@@ -40,6 +40,10 @@
 
 #define oe_exit_enclave __morestack
 #ifndef __ASSEMBLER__
+/* This function exits the enclave by initiating the ENCLU-EEXIT instruction.
+ * It should not be confused with oe_exit(), which maps to the standard-C
+ * exit() function defined in <openenclave/corelibc/stdlib.h>.
+ */
 void oe_exit_enclave(uint64_t arg1, uint64_t arg2);
 #endif
 
