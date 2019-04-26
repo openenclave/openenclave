@@ -17,11 +17,15 @@ OE_EXTERNC_BEGIN
 **==============================================================================
 */
 
+#if !defined(OE_OMIT_STANDARD_MEM_FUNCTIONS)
+
 /* The mem methods are always defined by their stdc names in oecore */
 int memcmp(const void* vl, const void* vr, size_t n);
 void* memcpy(void* OE_RESTRICT dest, const void* OE_RESTRICT src, size_t n);
 void* memmove(void* dest, const void* src, size_t n);
 void* memset(void* dest, int c, size_t n);
+
+#endif /* !defined(OE_OMIT_STANDARD_MEM_FUNCTIONS) */
 
 size_t oe_strlen(const char* s);
 

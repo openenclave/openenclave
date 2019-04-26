@@ -451,8 +451,6 @@ done:
     return ret;
 }
 
-/* BOOKMARK */
-
 int oe_posix_bind_ocall(
     int sockfd,
     const struct oe_sockaddr* addr,
@@ -498,8 +496,7 @@ ssize_t oe_posix_recvmsg_ocall(
     struct msghdr msg;
     struct iovec iov;
 
-    if (err)
-        *err = 0;
+    _clear_err(err);
 
     iov.iov_base = msg_buf;
     iov.iov_len = msg_buflen;
@@ -513,9 +510,7 @@ ssize_t oe_posix_recvmsg_ocall(
 
     if ((ret = recvmsg(sockfd, &msg, flags)) == -1)
     {
-        if (err)
-            *err = errno;
-
+        _set_err(err, errno);
         goto done;
     }
 
@@ -545,8 +540,7 @@ ssize_t oe_posix_sendmsg_ocall(
     struct msghdr msg;
     struct iovec iov;
 
-    if (err)
-        *err = 0;
+    _clear_err(err);
 
     iov.iov_base = (void*)msg_buf;
     iov.iov_len = msg_buflen;
@@ -559,23 +553,10 @@ ssize_t oe_posix_sendmsg_ocall(
     msg.msg_flags = 0;
 
     if ((ret = sendmsg(sockfd, &msg, flags)) == -1)
-    {
-        if (err)
-            *err = errno;
-    }
+        _set_err(err, errno);
 
     return ret;
 }
-
-#if 0
-ssize_t oe_posix_sendmsg_ocall(
-    int sockfd,
-    const struct msghdr* msg,
-    int flags,
-    int* err)
-{
-}
-#endif
 
 ssize_t oe_posix_recv_ocall(
     int sockfd,
@@ -584,13 +565,12 @@ ssize_t oe_posix_recv_ocall(
     int flags,
     int* err)
 {
-    ssize_t ret = recv(sockfd, buf, len, flags);
+    ssize_t ret;
 
-    if (ret == -1)
-    {
-        if (err)
-            *err = errno;
-    }
+    _clear_err(err);
+
+    if ((ret = recv(sockfd, buf, len, flags)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
@@ -620,6 +600,8 @@ ssize_t oe_posix_recvfrom_ocall(
 
     return ret;
 }
+
+/* BOOKMARK */
 
 ssize_t oe_posix_send_ocall(
     int sockfd,
