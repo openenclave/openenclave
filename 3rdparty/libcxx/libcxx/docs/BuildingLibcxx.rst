@@ -160,7 +160,7 @@ CMake docs or execute ``cmake --help-variable VARIABLE_NAME``.
   Release, Debug, RelWithDebInfo and MinSizeRel. On systems like Visual Studio
   the user sets the build type with the IDE settings.
 
-**CMAKE_INSTALL_PREFIX**:PATH
+**CMAKE_INSTALL_PREFIX**
   Path where LLVM will be installed if "make install" is invoked or the
   "INSTALL" target is built.
 
@@ -263,11 +263,11 @@ ABI Library Specific Options
 
   Select the ABI library to build libc++ against.
 
-.. option:: LIBCXX_CXX_ABI_INCLUDE_PATHS:PATHS
+.. option:: LIBCXX_CXX_ABI_INCLUDE_PATHS
 
   Provide additional search paths for the ABI library headers.
 
-.. option:: LIBCXX_CXX_ABI_LIBRARY_PATH:PATH
+.. option:: LIBCXX_CXX_ABI_LIBRARY_PATH
 
   Provide the path to the ABI library that libc++ should link against.
 
