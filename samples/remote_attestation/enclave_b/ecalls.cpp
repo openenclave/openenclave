@@ -56,6 +56,25 @@ int verify_report_and_set_pubkey(
         pem_key, key_size, remote_report, remote_report_size);
 }
 
+/**
+ * Create ephemeral symmetric key, encrypt using other enclave's public key
+ * and sign using private key
+ */
+int establish_secure_channel(uint8_t** data, size_t* size)
+{
+    return dispatcher.establish_secure_channel(data, size);
+}
+
+/**
+ * Verify signature, decrypt using private ke
+ * Send back symmetric key after encrypting using other enclave's public key
+ * and sign using private key
+ */
+int acknowledge_secure_channel(uint8_t* data, size_t size)
+{
+    return dispatcher.acknowledge_secure_channel(data, size);
+}
+
 // Encrypt message for another enclave using the public key stored for it.
 int generate_encrypted_message(uint8_t** data, size_t* size)
 {

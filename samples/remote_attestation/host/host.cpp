@@ -49,6 +49,8 @@ int main(int argc, const char* argv[])
     size_t pem_key_size = 0;
     uint8_t* remote_report = NULL;
     size_t remote_report_size = 0;
+    uint8_t* encrypted_key = NULL;
+    size_t encrypted_key_size = 0;
 
     /* Check argument count */
     if (argc != 3)
@@ -156,8 +158,34 @@ int main(int argc, const char* argv[])
     free(remote_report);
     remote_report = NULL;
 
-    // Generate random symmetric key; prefix with counter/seq number to prevent
-    // replay attacks
+    // Establish secure channel using an ephemeral symmetric key, encrypted and
+    // signed
+    printf(
+        "Host: Requesting secure channel to be established from 1st enclave\n");
+    result = establish_secure_channel(
+        enclave_a, &ret, &encrypted_key, &encrypted_key_size);
+    if ((result != OE_OK) || (ret != 0))
+    {
+        printf(
+            "Host: establish_secure_channel failed. %s", oe_result_str(result));
+        if (ret == 0)
+            ret = 1;
+        goto exit;
+    }
+
+    // TODO - Acknowledge secure channel
+    printf("Host: Acknowleging secure channel from 2nd enclave\n");
+    result = acknowledge_secure_channel(
+        enclave_a, &ret, encrypted_key, encrypted_key_size);
+    if ((result != OE_OK) || (ret != 0))
+    {
+        printf(
+            "Host: acknowledge_secure_channel failed. %s",
+            oe_result_str(result));
+        if (ret == 0)
+            ret = 1;
+        goto exit;
+    }
 
     // exchange data between enclaves, securely
     printf("Host: Requesting encrypted message from 1st enclave\n");

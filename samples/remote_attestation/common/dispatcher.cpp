@@ -182,11 +182,11 @@ exit:
     return ret;
 }
 
-int ecall_dispatcher::generate_encrypted_message(uint8_t** data, size_t* size)
+int ecall_dispatcher::establish_secure_channel(uint8_t** key, size_t* key_size)
 {
-    uint8_t encrypted_data_buf[1024];
-    size_t encrypted_data_size;
-    uint8_t* signature = &encrypted_data_buf[256];
+    uint8_t encrypted_key_buf[512];
+    size_t encrypted_key_size;
+    uint8_t* signature = &encrypted_key_buf[256];
     size_t signature_size = 0;
     size_t total_size = 512;
     int ret = 1;
@@ -197,32 +197,29 @@ int ecall_dispatcher::generate_encrypted_message(uint8_t** data, size_t* size)
         goto exit;
     }
 
+    // Step 1 - Create an ephemeral symmetric key
     if (oe_random(m_enclave_config->sym_key, 32) != OE_OK)
     {
         TRACE_ENCLAVE("ecall_dispatcher initialization failed to generate "
-                      "random symmetric key.");
+                      "ephemeral symmetric key.");
         goto exit;
     }
 
     TRACE_ENCLAVE("Generated random symmetric key successfully");
 
-    encrypted_data_size = sizeof(encrypted_data_buf);
-    /* if (m_crypto->Encrypt(
-            m_crypto->get_the_other_enclave_public_key(),
-            m_enclave_config->enclave_secret_data,
-            ENCLAVE_SECRET_DATA_SIZE,
-            encrypted_data_buf,
-            &encrypted_data_size)) */
     // Step 2- Encrypt the symmetric key with the other enclave's public key
     // TO DO - PREFIX with counter/seq number to prevent replay attacks
     if (m_crypto->Encrypt(
             m_crypto->get_the_other_enclave_public_key(),
             m_enclave_config->sym_key,
             32,
-            encrypted_data_buf,
-            &encrypted_data_size))
+            encrypted_key_buf,
+            &encrypted_key_size))
 
     {
+        // Reason we allocate memory in the host is so that the encrypted data
+        // can be accessed by the hosts - aka real world scenario where we have
+        // 2 hosts and two enclaves
         uint8_t* host_buf = (uint8_t*)oe_host_malloc(total_size);
         if (host_buf == NULL)
         {
@@ -231,8 +228,8 @@ int ecall_dispatcher::generate_encrypted_message(uint8_t** data, size_t* size)
 
         // Step 3 - Do a SHA hash of the encrypted key
         if (m_crypto->Sha256(
-                encrypted_data_buf,
-                encrypted_data_size,
+                encrypted_key_buf,
+                encrypted_key_size,
                 m_other_enclave_mrsigner) != 0)
         {
             goto exit;
@@ -244,8 +241,8 @@ int ecall_dispatcher::generate_encrypted_message(uint8_t** data, size_t* size)
         // Step 4 - Sign this SHA hash with my enclave's private key
         // TO DO - Who allocates space for signature?
         if (m_crypto->Sign(
-                encrypted_data_buf,
-                encrypted_data_size,
+                encrypted_key_buf,
+                encrypted_key_size,
                 signature,
                 &signature_size) != 0)
         {
@@ -256,18 +253,86 @@ int ecall_dispatcher::generate_encrypted_message(uint8_t** data, size_t* size)
             "enclave: generate_encrypted_message: signature_size = %ld",
             signature_size);
 
-        if ((encrypted_data_size != 256) || (signature_size != 256))
+        if ((encrypted_key_size != 256) || (signature_size != 256))
         {
             TRACE_ENCLAVE("enclave: generate_encrypted_message: failed as "
                           "encrypted data size or signature size is not 256");
         }
         // Step 5 - Send to the other enclave
-        memcpy(host_buf, encrypted_data_buf, total_size);
+        memcpy(host_buf, encrypted_key_buf, total_size);
         TRACE_ENCLAVE(
             "enclave: generate_encrypted_message: total_size = %ld",
             total_size);
+        *key = host_buf;
+        *key_size = total_size;
+    }
+    else
+    {
+        goto exit;
+    }
+    ret = 0;
+exit:
+    return ret;
+}
+
+int ecall_dispatcher::acknowledge_secure_channel(
+    uint8_t* encrypted_data,
+    size_t encrypted_data_size)
+{
+    int ret = 1;
+
+    if (m_initialized == false)
+    {
+        TRACE_ENCLAVE("ecall_dispatcher initialization failed.");
+        goto exit;
+    }
+
+    /* Steps --
+     *   1) Verify Signature; if good proceed to step 2
+     *   2) Decrypt the key using your own private key
+     *   3) Now use this key with sequence number to communicate further
+     */
+    ret = 0;
+exit:
+    return ret;
+}
+
+int ecall_dispatcher::generate_encrypted_message(uint8_t** data, size_t* size)
+{
+    uint8_t encrypted_data_buf[1024];
+    size_t encrypted_data_size;
+    int ret = 1;
+
+    if (m_initialized == false)
+    {
+        TRACE_ENCLAVE("ecall_dispatcher initialization failed.");
+        goto exit;
+    }
+
+    encrypted_data_size = sizeof(encrypted_data_buf);
+    if (m_crypto->Encrypt(
+            m_crypto->get_the_other_enclave_public_key(),
+            m_enclave_config->enclave_secret_data,
+            ENCLAVE_SECRET_DATA_SIZE,
+            encrypted_data_buf,
+            &encrypted_data_size))
+    {
+        // Reason we allocate memory in the host is so that the encrypted data
+        // can be accessed by the hosts - aka real world scenario where we have
+        // 2 hosts and two enclaves
+        uint8_t* host_buf = (uint8_t*)oe_host_malloc(encrypted_data_size);
+        if (host_buf == NULL)
+        {
+            goto exit;
+        }
+
+        // Step 5 - Send to the other enclave
+        memcpy(host_buf, encrypted_data_buf, encrypted_data_size);
+        TRACE_ENCLAVE(
+            "enclave: generate_encrypted_message: encrypted_data_size = %ld",
+            encrypted_data_size);
         *data = host_buf;
-        *size = total_size;
+        *size = encrypted_data_size;
     }
     else
     {

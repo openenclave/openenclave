@@ -40,6 +40,8 @@ class ecall_dispatcher
         size_t key_size,
         uint8_t* remote_report,
         size_t remote_report_size);
+    int establish_secure_channel(uint8_t** key, size_t* key_size);
+    int acknowledge_secure_channel(uint8_t* key, size_t key_size);
     int generate_encrypted_message(uint8_t** data, size_t* size);
     int process_encrypted_msg(
         uint8_t* encrypted_data,

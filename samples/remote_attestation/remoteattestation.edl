@@ -18,6 +18,17 @@ enclave {
                                                [in, count=remote_report_size] uint8_t *remote_report,
                                                size_t   remote_report_size);
 
+        // Create ephemeral symmetric key, encrypt using other enclave's public key
+        // and sign using private key
+        public int establish_secure_channel(  [out] uint8_t** data,
+                                              [out] size_t*  size);
+
+        // Verify signature, decrypt using private key
+        // Send back symmetric key after encrypting using other enclave's public key
+        // and sign using private key
+        public int acknowledge_secure_channel(  [in, count=size] uint8_t* data,
+                                               size_t  size);
+
         // Encrypt message for another enclave using the public key stored for it
         public int generate_encrypted_message(  [out] uint8_t** data,
                                               [out] size_t*  size);
