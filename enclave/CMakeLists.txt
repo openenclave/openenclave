@@ -22,9 +22,7 @@ elseif(OE_TRUSTZONE)
 endif()
 
 add_library(oeenclave STATIC
-    ../common/cert.c
     ../common/datetime.c
-    ../common/kdf.c
     asym_keys.c
     ${PLATFORM_SRC})
 

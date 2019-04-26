@@ -11,7 +11,6 @@ if (OE_SGX)
         sgx/calls.c
         sgx/cpuid.c
         sgx/debugmalloc.c
-        sgx/entropy.c
         sgx/errno.c
         sgx/exception.c
         sgx/globals.c
@@ -39,12 +38,10 @@ if (OE_SGX)
     # OS specific sources for SGX.
     if (UNIX OR USE_CLANGW)
         list(APPEND PLATFORM_SRC
-            ../../common/sgx/rand.S
             sgx/linux/reloc.c
             sgx/linux/threadlocal.c)
     elseif (WIN32)
         list(APPEND PLATFORM_SRC
-            ../../common/sgx/rand.asm
             sgx/windows/reloc.c)
     endif()
 elseif(OE_TRUSTZONE)

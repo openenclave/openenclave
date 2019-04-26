@@ -56,7 +56,8 @@ set(ENCLAVE_CLIBS_1
   -loeenclave
   -loecrypto
   -lmbedx509
-  -lmbedcrypto)
+  -lmbedcrypto
+  -loecrypto)
 
 set(ENCLAVE_CLIBS_2 -loelibc -loecore)
 

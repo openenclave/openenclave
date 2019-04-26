@@ -110,7 +110,14 @@ target_link_libraries(mbedcrypto INTERFACE
   # imported libraries are not part of the CMake dependency graph, so
   # this transitive dependency would be left out.
   oecore
-  oe_includes)
+  oe_includes
+  # NOTE: Our mbedtls config file defines MBEDTLS_ENTROPY_HARDWARE_ALT, which allows
+  # for a custom mbedtls_hardware_poll implementation defined elsewhere. That function
+  # is defined in oecrypto, which creates a circular library dependency. So, we add
+  # the library here as a dependency.
+  $<BUILD_INTERFACE:${OE_LIBDIR}/openenclave/enclave/liboecrypto.a>
+  $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_LIBDIR}/openenclave/enclave/liboecrypto.a>)
+
 
 install(TARGETS mbedcrypto EXPORT openenclave-targets)
 
