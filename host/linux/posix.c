@@ -644,13 +644,12 @@ ssize_t oe_posix_sendto_ocall(
 
 int oe_posix_shutdown_ocall(int sockfd, int how, int* err)
 {
-    int ret = shutdown(sockfd, how);
+    int ret;
 
-    if (ret == -1)
-    {
-        if (err)
-            *err = errno;
-    }
+    _clear_err(err);
+
+    if ((ret = shutdown(sockfd, how)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
@@ -659,14 +658,10 @@ int oe_posix_fcntl_ocall(int fd, int cmd, uint64_t arg, int* err)
 {
     int ret;
 
-    if (err)
-        *err = 0;
+    _clear_err(err);
 
     if ((ret = fcntl(fd, cmd, arg)) == -1)
-    {
-        if (err)
-            *err = errno;
-    }
+        _set_err(err, errno);
 
     return ret;
 }
@@ -679,17 +674,12 @@ int oe_posix_setsockopt_ocall(
     socklen_t optlen,
     int* err)
 {
-    int ret = -1;
+    int ret;
 
-    errno = 0;
+    _clear_err(err);
 
-    ret = setsockopt(sockfd, level, optname, optval, optlen);
-
-    if (ret == -1)
-    {
-        if (err)
-            *err = errno;
-    }
+    if ((ret = setsockopt(sockfd, level, optname, optval, optlen)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
@@ -700,21 +690,18 @@ int oe_posix_getsockopt_ocall(
     int optname,
     void* optval,
     socklen_t optlen_in,
-    socklen_t* optlen,
+    socklen_t* optlen_out,
     int* err)
 {
     int ret;
 
-    if (optlen)
-        *optlen = optlen_in;
+    _clear_err(err);
 
-    ret = getsockopt(sockfd, level, optname, optval, optlen);
+    if ((ret = getsockopt(sockfd, level, optname, optval, &optlen_in)) == -1)
+        _set_err(err, errno);
 
-    if (ret == -1)
-    {
-        if (err)
-            *err = errno;
-    }
+    if (optlen_out)
+        *optlen_out = optlen_in;
 
     return ret;
 }
@@ -726,16 +713,15 @@ int oe_posix_getsockname_ocall(
     socklen_t* addrlen_out,
     int* err)
 {
+    int ret;
+
+    _clear_err(err);
+
+    if ((ret = getsockname(sockfd, (struct sockaddr*)addr, &addrlen_in)) == -1)
+        _set_err(err, errno);
+
     if (addrlen_out)
         *addrlen_out = addrlen_in;
-
-    int ret = getsockname(sockfd, (struct sockaddr*)addr, addrlen_out);
-
-    if (ret == -1)
-    {
-        if (err)
-            *err = errno;
-    }
 
     return ret;
 }
@@ -747,16 +733,15 @@ int oe_posix_getpeername_ocall(
     socklen_t* addrlen_out,
     int* err)
 {
+    int ret;
+
+    _clear_err(err);
+
+    if ((ret = getpeername(sockfd, (struct sockaddr*)addr, &addrlen_in)) == -1)
+        _set_err(err, errno);
+
     if (addrlen_out)
         *addrlen_out = addrlen_in;
-
-    int ret = getpeername(sockfd, (struct sockaddr*)addr, addrlen_out);
-
-    if (ret == -1)
-    {
-        if (err)
-            *err = errno;
-    }
 
     return ret;
 }
@@ -765,10 +750,9 @@ int oe_posix_shutdown_sockets_device_ocall(int sockfd, int* err)
 {
     OE_UNUSED(sockfd);
 
-    /* No shutdown actions needed for this device. */
+    _clear_err(err);
 
-    if (err)
-        *err = 0;
+    /* No shutdown actions needed for this device. */
 
     return 0;
 }
@@ -783,17 +767,12 @@ int oe_posix_shutdown_sockets_device_ocall(int sockfd, int* err)
 
 int oe_posix_kill_ocall(int pid, int signum, int* err)
 {
-    int ret = -1;
+    int ret;
 
-    *err = 0;
+    _clear_err(err);
 
-    ret = kill(pid, signum);
-
-    if (ret < 0)
-    {
-        if (err)
-            *err = errno;
-    }
+    if ((ret = kill(pid, signum)) < 0)
+        _set_err(err, errno);
 
     return ret;
 }
@@ -834,8 +813,7 @@ uint64_t oe_posix_getaddrinfo_open_ocall(
     getaddrinfo_handle_t* ret = NULL;
     getaddrinfo_handle_t* handle = NULL;
 
-    if (err)
-        *err = 0;
+    _clear_err(err);
 
     if (!(handle = calloc(1, sizeof(getaddrinfo_handle_t))))
     {
@@ -880,8 +858,7 @@ int oe_posix_getaddrinfo_read_ocall(
     int ret = -1;
     getaddrinfo_handle_t* handle = _cast_getaddrinfo_handle((void*)handle_);
 
-    if (err)
-        *err = 0;
+    _clear_err(err);
 
     if (!handle || !ai_flags || !ai_family || !ai_socktype || !ai_protocol ||
         !ai_addrlen || !ai_canonnamelen || !err)
@@ -955,8 +932,7 @@ int oe_posix_getaddrinfo_close_ocall(uint64_t handle_, int* err)
     int ret = -1;
     getaddrinfo_handle_t* handle = _cast_getaddrinfo_handle((void*)handle_);
 
-    if (err)
-        *err = 0;
+    _clear_err(err);
 
     if (!handle)
     {
@@ -983,14 +959,15 @@ int oe_posix_getnameinfo_ocall(
     int flags,
     int* err)
 {
-    int ret = getnameinfo(
+    int ret;
+
+    _clear_err(err);
+
+    ret = getnameinfo(
         (const struct sockaddr*)sa, salen, host, hostlen, serv, servlen, flags);
 
     if (ret == EAI_SYSTEM)
-    {
-        if (err)
-            *err = errno;
-    }
+        _set_err(err, errno);
 
     return ret;
 }
@@ -998,9 +975,7 @@ int oe_posix_getnameinfo_ocall(
 int oe_posix_shutdown_resolver_device_ocall(int* err)
 {
     /* No shutdown actions needed for this device. */
-
-    if (err)
-        *err = 0;
+    _clear_err(err);
 
     return 0;
 }
@@ -1023,7 +998,7 @@ typedef struct _wait_args
 
 static void* epoll_wait_thread(void* arg_)
 {
-    int ret = 0;
+    int ret;
     wait_args_t* args = (wait_args_t*)arg_;
     int retval;
 
@@ -1066,7 +1041,7 @@ typedef struct _poll_args
 
 static void* poll_wait_thread(void* arg_)
 {
-    int ret = 0;
+    int ret;
     poll_args_t* args = (poll_args_t*)arg_;
     int retval;
 
@@ -1111,9 +1086,11 @@ done:
 
 int oe_posix_epoll_create1_ocall(int flags, int* err)
 {
-    int ret = epoll_create1(flags);
+    int ret;
 
-    if (ret == -1)
+    _clear_err(err);
+
+    if ((ret = epoll_create1(flags)) == -1)
         _set_err(err, errno);
 
     return ret;
@@ -1166,21 +1143,19 @@ int oe_posix_epoll_ctl_add_ocall(
     int epoll_enclave_fd,
     int* err)
 {
-    int ret = -1;
-
+    int ret;
     oe_ev_data_t ev_data = {
         .event_list_idx = (uint32_t)list_idx,
         .epoll_enclave_fd = (uint32_t)epoll_enclave_fd,
     };
-
     struct epoll_event ev = {
         .events = event_mask,
         .data.u64 = ev_data.data,
     };
 
-    ret = epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev);
+    _clear_err(err);
 
-    if (ret == -1)
+    if ((ret = epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev)) == -1)
         _set_err(err, errno);
 
     return ret;
@@ -1188,9 +1163,11 @@ int oe_posix_epoll_ctl_add_ocall(
 
 int oe_posix_epoll_ctl_del_ocall(int epfd, int fd, int* err)
 {
-    int ret = epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL);
+    int ret;
 
-    if (ret == -1)
+    _clear_err(err);
+
+    if ((ret = epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL)) == -1)
         _set_err(err, errno);
 
     return ret;
@@ -1204,19 +1181,17 @@ int oe_posix_epoll_ctl_mod_ocall(
     int enclave_fd,
     int* err)
 {
+    int ret;
     oe_ev_data_t ev_data = {
         .event_list_idx = (uint32_t)list_idx,
         .epoll_enclave_fd = (uint32_t)enclave_fd,
     };
-
     struct epoll_event ev = {
         .events = event_mask,
         .data.u64 = ev_data.data,
     };
 
-    int ret = epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &ev);
-
-    if (ret == -1)
+    if ((ret = epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &ev)) == -1)
         _set_err(err, errno);
 
     return ret;
@@ -1224,22 +1199,22 @@ int oe_posix_epoll_ctl_mod_ocall(
 
 int oe_posix_epoll_close_ocall(int fd, int* err)
 {
-    int ret = close(fd);
+    int ret;
 
-    if (ret == -1)
+    _clear_err(err);
+
+    if ((ret = close(fd)) == -1)
         _set_err(err, errno);
 
     return ret;
 }
 
-/* ATTN:IO: never called. */
 int oe_posix_shutdown_polling_device_ocall(int fd, int* err)
 {
     OE_UNUSED(fd);
     OE_UNUSED(err);
 
-    if (err)
-        *err = 0;
+    _clear_err(err);
 
     return 0;
 }
@@ -1258,9 +1233,9 @@ int oe_posix_epoll_poll_ocall(
     poll_args_t* args = NULL;
     nfds_t fd_idx = 0;
 
-    (void)timeout;
+    _clear_err(err);
 
-    /* ATTN:IO: how does this work without using the events parameter. */
+    OE_UNUSED(timeout);
 
     fdsize = sizeof(struct pollfd) * nfds;
 
@@ -1367,6 +1342,8 @@ int oe_posix_uname_ocall(struct oe_utsname* buf, int* err)
     int ret = -1;
     struct oe_utsname* out = (struct oe_utsname*)buf;
 
+    _clear_err(err);
+
     OE_STATIC_ASSERT(sizeof(struct oe_utsname) == sizeof(struct utsname));
     OE_CHECK_FIELD(struct oe_utsname, struct utsname, sysname);
     OE_CHECK_FIELD(struct oe_utsname, struct utsname, nodename);
@@ -1379,13 +1356,8 @@ int oe_posix_uname_ocall(struct oe_utsname* buf, int* err)
     OE_CHECK_FIELD(struct oe_utsname, struct utsname, __domainname);
 #endif
 
-    ret = uname((struct utsname*)out);
-
-    if (ret == -1)
-    {
-        if (err)
-            *err = errno;
-    }
+    if ((ret = uname((struct utsname*)out)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
