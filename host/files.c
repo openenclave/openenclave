@@ -3,7 +3,7 @@
 
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
-#include <openenclave/corelibc/string.h>
+#include <openenclave/corelibc/sys/types.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/files.h>
 #include <openenclave/internal/raise.h>
@@ -12,8 +12,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-//#include <openenclave/corelibc/sys/stat.h>
-#include <openenclave/corelibc/sys/types.h>
 #include "fopen.h"
 
 #include <sys/stat.h>
