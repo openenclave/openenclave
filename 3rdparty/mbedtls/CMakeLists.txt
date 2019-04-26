@@ -73,21 +73,45 @@ ExternalProject_Add(mbedtls-wrap
 ExternalProject_Get_property(mbedtls-wrap SOURCE_DIR)
 ExternalProject_Get_property(mbedtls-wrap BINARY_DIR)
 
+# If we are going to rename the symbols, then we are also going to change the
+# library name, so an user can use their own mbedtls library.
+if (OE_PREFIX_MBEDTLS_SYMBOLS)
+  set(MBEDCRYPTO_LIB_NAME liboembedcrypto.a)
+  set(MBEDX509_LIB_NAME liboembedx509.a)
+  set(MBEDTLS_LIB_NAME liboembedtls.a)
+else()
+  set(MBEDCRYPTO_LIB_NAME libmbedcrypto.a)
+  set(MBEDX509_LIB_NAME libmbedx509.a)
+  set(MBEDTLS_LIB_NAME libmbedtls.a)
+endif()
+
+# Prefix the mbedtls symbols if desired.
+if (OE_PREFIX_MBEDTLS_SYMBOLS)
+   add_custom_command(TARGET mbedtls-wrap
+        POST_BUILD
+        COMMAND ${CMAKE_CURRENT_LIST_DIR}/rename-mbedtls-symbols ${BINARY_DIR}/library/libmbedcrypto.a
+        COMMAND ${CMAKE_CURRENT_LIST_DIR}/rename-mbedtls-symbols ${BINARY_DIR}/library/libmbedx509.a
+        COMMAND ${CMAKE_CURRENT_LIST_DIR}/rename-mbedtls-symbols ${BINARY_DIR}/library/libmbedtls.a
+        COMMAND ${CMAKE_COMMAND} -E rename ${BINARY_DIR}/library/libmbedcrypto.a ${BINARY_DIR}/library/${MBEDCRYPTO_LIB_NAME}
+        COMMAND ${CMAKE_COMMAND} -E rename ${BINARY_DIR}/library/libmbedx509.a ${BINARY_DIR}/library/${MBEDX509_LIB_NAME}
+        COMMAND ${CMAKE_COMMAND} -E rename ${BINARY_DIR}/library/libmbedtls.a ${BINARY_DIR}/library/${MBEDTLS_LIB_NAME})
+endif()
+
 # NOTE: These imported libraries must be specified before `oecore`
 # when linking, hence their dependency on it.
 add_library(mbedtls_imported IMPORTED STATIC)
 set_target_properties(mbedtls_imported PROPERTIES
-  IMPORTED_LOCATION ${BINARY_DIR}/library/libmbedtls.a)
+  IMPORTED_LOCATION ${BINARY_DIR}/library/${MBEDTLS_LIB_NAME})
 target_link_libraries(mbedtls_imported INTERFACE oecore)
 
 add_library(mbedx509_imported IMPORTED STATIC)
 set_target_properties(mbedx509_imported PROPERTIES
-  IMPORTED_LOCATION ${BINARY_DIR}/library/libmbedx509.a)
+  IMPORTED_LOCATION ${BINARY_DIR}/library/${MBEDX509_LIB_NAME})
 target_link_libraries(mbedx509_imported INTERFACE oecore)
 
 add_library(mbedcrypto_imported IMPORTED STATIC)
 set_target_properties(mbedcrypto_imported PROPERTIES
-  IMPORTED_LOCATION ${BINARY_DIR}/library/libmbedcrypto.a)
+  IMPORTED_LOCATION ${BINARY_DIR}/library/${MBEDCRYPTO_LIB_NAME})
 target_link_libraries(mbedcrypto_imported INTERFACE oecore)
 
 # Convenience lib for use in target_link_libraries
@@ -101,11 +125,11 @@ target_include_directories(mbedcrypto INTERFACE
 
 target_link_libraries(mbedcrypto INTERFACE
   $<BUILD_INTERFACE:mbedtls_imported>
-  $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_LIBDIR}/openenclave/enclave/libmbedtls.a>
+  $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_LIBDIR}/openenclave/enclave/${MBEDTLS_LIB_NAME}>
   $<BUILD_INTERFACE:mbedx509_imported>
-  $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_LIBDIR}/openenclave/enclave/libmbedx509.a>
+  $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_LIBDIR}/openenclave/enclave/${MBEDX509_LIB_NAME}>
   $<BUILD_INTERFACE:mbedcrypto_imported>
-  $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_LIBDIR}/openenclave/enclave/libmbedcrypto.a>
+  $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_LIBDIR}/openenclave/enclave/${MBEDCRYPTO_LIB_NAME}>
   # NOTE: This dependency is repeated because during installation the
   # imported libraries are not part of the CMake dependency graph, so
   # this transitive dependency would be left out.
@@ -128,11 +152,11 @@ install(DIRECTORY ${SOURCE_DIR}/include/mbedtls
 # with CMake to install them as targets, so instead they must be
 # installed as files. This is what causes the above problem with the
 # repeated dependency on `oecore`.
-install(FILES ${BINARY_DIR}/library/libmbedtls.a
+install(FILES ${BINARY_DIR}/library/${MBEDTLS_LIB_NAME}
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
 
-install(FILES ${BINARY_DIR}/library/libmbedx509.a
+install(FILES ${BINARY_DIR}/library/${MBEDX509_LIB_NAME}
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
 
-install(FILES ${BINARY_DIR}/library/libmbedcrypto.a
+install(FILES ${BINARY_DIR}/library/${MBEDCRYPTO_LIB_NAME}
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)

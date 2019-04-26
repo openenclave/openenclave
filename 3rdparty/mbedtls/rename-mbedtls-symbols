@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+# Explanation:
+#   readelf -sW: dump symbol table (-s) with the full/wide names (-W).
+#   awk '...': If the symbol is global and begins with mbedtls, then output
+#              the pair $SYMBOL oe_$SYMBOL to feed to objcopy. The seen
+#              array prevents printing duplicates.
+#   objcopy: --redefine-syms will take each $SYMBOL replace it with oe_$SYMBOL.
+readelf -sW "$1" | awk '$5 == "GLOBAL" && $NF ~ /^mbedtls/ && !seen[$NF] {print $NF,"oe_"$NF; seen[$NF]++} {}' > symbols.txt
+objcopy --redefine-syms=symbols.txt "$1"

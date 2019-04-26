@@ -164,6 +164,7 @@ include(add_enclave)
 # User configurable options
 if (UNIX)
   option(USE_LIBSGX "Build oehost using SGX library requiring FLC" ON)
+  option(OE_PREFIX_MBEDTLS_SYMBOLS "Prefix mbedtls symbols to avoid name collisions" OFF)
 elseif (WIN32)
   option(USE_LIBSGX "Build oehost using SGX library requiring FLC" OFF)
 endif ()

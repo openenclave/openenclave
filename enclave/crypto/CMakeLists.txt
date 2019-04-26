@@ -34,6 +34,12 @@ target_link_libraries(oecrypto PUBLIC
     oe_includes
     mbedcrypto)
 
+if (OE_PREFIX_MBEDTLS_SYMBOLS)
+    add_custom_command(TARGET oecrypto
+        POST_BUILD
+        COMMAND ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/rename-mbedtls-symbols $<TARGET_FILE:oecrypto>)
+endif()
+
 set_property(TARGET oecrypto PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 
 install(TARGETS oecrypto EXPORT openenclave-targets

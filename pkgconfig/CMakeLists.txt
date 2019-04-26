@@ -54,10 +54,19 @@ set(ENCLAVE_CLIBS_1
   -Wl,-z,now
   -L\${libdir}/openenclave/enclave
   -loeenclave
-  -loecrypto
-  -lmbedx509
-  -lmbedcrypto
   -loecrypto)
+
+if (OE_PREFIX_MBEDTLS_SYMBOLS)
+  list(APPEND ENCLAVE_CLIBS_1
+    -loembedx509
+    -loembedcrypto)
+else()
+  list(APPEND ENCLAVE_CLIBS_1
+    -lmbedx509
+    -lmbedcrypto)
+endif()
+
+list(APPEND ENCLAVE_CLIBS_1 -loecrypto)
 
 set(ENCLAVE_CLIBS_2 -loelibc -loecore)
 
