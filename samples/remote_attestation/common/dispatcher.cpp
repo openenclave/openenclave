@@ -185,10 +185,12 @@ exit:
 int ecall_dispatcher::establish_secure_channel(uint8_t** key, size_t* key_size)
 {
     uint8_t encrypted_key_buf[512];
-    size_t encrypted_key_size;
-    uint8_t* signature = &encrypted_key_buf[256];
-    size_t signature_size = 0;
+    uint8_t signature[256];
+    uint8_t digest[32];
+    size_t encrypted_key_size = 256;
+    size_t signature_size = 256;
     size_t total_size = 512;
+
     int ret = 1;
 
     if (m_initialized == false)
@@ -205,7 +207,8 @@ int ecall_dispatcher::establish_secure_channel(uint8_t** key, size_t* key_size)
         goto exit;
     }
 
-    TRACE_ENCLAVE("Generated random symmetric key successfully");
+    TRACE_ENCLAVE("enclave: establish_secure_channel: Generated random "
+                  "symmetric key successfully");
 
     // Step 2- Encrypt the symmetric key with the other enclave's public key
     // TO DO - PREFIX with counter/seq number to prevent replay attacks
@@ -223,28 +226,23 @@ int ecall_dispatcher::establish_secure_channel(uint8_t** key, size_t* key_size)
         uint8_t* host_buf = (uint8_t*)oe_host_malloc(total_size);
         if (host_buf == NULL)
         {
+            TRACE_ENCLAVE(
+                "enclave: establish_secure_channel: oe_host_malloc failed.");
             goto exit;
         }
 
-        // Step 3 - Do a SHA hash of the encrypted key
-        if (m_crypto->Sha256(
-                encrypted_key_buf,
-                encrypted_key_size,
-                m_other_enclave_mrsigner) != 0)
+        // Step 3 - Compute a SHA hash of the encrypted key
+        if (m_crypto->Sha256(encrypted_key_buf, encrypted_key_size, digest) !=
+            0)
         {
             goto exit;
         }
 
-        TRACE_ENCLAVE("enclave: establish_secure_channel: Completed SHA hash "
+        TRACE_ENCLAVE("enclave: establish_secure_channel: Computed SHA hash "
                       "of the encrypted key");
 
         // Step 4 - Sign this SHA hash with my enclave's private key
-        // TO DO - Who allocates space for signature?
-        if (m_crypto->Sign(
-                encrypted_key_buf,
-                encrypted_key_size,
-                signature,
-                &signature_size) != 0)
+        if (m_crypto->Sign(digest, 32, signature, &signature_size) != 0)
         {
             goto exit;
         }
@@ -258,8 +256,9 @@ int ecall_dispatcher::establish_secure_channel(uint8_t** key, size_t* key_size)
             TRACE_ENCLAVE("enclave: establish_secure_channel: failed as "
                           "encrypted data size or signature size is not 256");
         }
-        // Step 5 - Send to the other enclave
+        // Step 5 - Send digest plus signature to the other enclave
         memcpy(host_buf, encrypted_key_buf, total_size);
+
         TRACE_ENCLAVE(
             "enclave: establish_secure_channel: total_size = %ld", total_size);
         *key = host_buf;
@@ -274,13 +273,17 @@ exit:
     return ret;
 }
 
+/* Encrypted key_buf should contain encrypted key followed by signature, each of
+ * 256 bits
+ */
 int ecall_dispatcher::acknowledge_secure_channel(
     uint8_t* encrypted_key_buf,
     size_t encrypted_key_size)
 {
     int ret = 1;
-    uint8_t data[1024];
-    size_t data_size = 0;
+    uint8_t data[512];
+    size_t data_size = 256;
+    uint8_t digest[32];
 
     /* Steps --
      *   1) Verify Signature; if good proceed to step 2
@@ -296,9 +299,12 @@ int ecall_dispatcher::acknowledge_secure_channel(
         goto exit;
     }
 
-    if (m_crypto->Verify_sign(
-            encrypted_key_buf, encrypted_key_size, signature, signature_size) !=
-        0)
+    if (m_crypto->Sha256(encrypted_key_buf, 256, digest) != 0)
+    {
+        goto exit;
+    }
+
+    if (m_crypto->Verify_sign(digest, 32, signature, signature_size) != 0)
     {
         TRACE_ENCLAVE("enclave: acknowledge_secure_channel: signature "
                       "verification failed");
@@ -307,12 +313,20 @@ int ecall_dispatcher::acknowledge_secure_channel(
 
     TRACE_ENCLAVE("enclave: acknowledge_secure_channel: signature verified ok");
 
-    if (m_crypto->Decrypt(
-            encrypted_key_buf, encrypted_key_size, data, &data_size))
+    if (m_crypto->Decrypt(encrypted_key_buf, 256, data, &data_size))
     {
         TRACE_ENCLAVE(
-            "enclave: acknowledge_secure_channel: extracted symmetric key ok");
+            "enclave: acknowledge_secure_channel: extracted symmetric key size "
+            "= %ld",
+            data_size);
     }
+    else
+    {
+        TRACE_ENCLAVE("enclave: acknowledge_secure_channel: symmetric key "
+                      "decrypt failed");
+        goto exit;
+    }
+
     ret = 0;
 exit:
     return ret;

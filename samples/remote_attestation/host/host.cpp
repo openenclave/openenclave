@@ -179,11 +179,11 @@ int main(int argc, const char* argv[])
 
     printf("Host: Requesting 2nd enclave to acknowledge secure channel\n");
     result = acknowledge_secure_channel(
-        enclave_a, &ret, encrypted_key, encrypted_key_size);
+        enclave_b, &ret, encrypted_key, encrypted_key_size);
     if ((result != OE_OK) || (ret != 0))
     {
         printf(
-            "Host: acknowledge_secure_channel failed. %s",
+            "Host: acknowledge_secure_channel failed. %s\n",
             oe_result_str(result));
         if (ret == 0)
             ret = 1;
@@ -197,7 +197,7 @@ int main(int argc, const char* argv[])
     if ((result != OE_OK) || (ret != 0))
     {
         printf(
-            "Host: generate_encrypted_message failed. %s",
+            "Host: generate_encrypted_message failed. %s\n",
             oe_result_str(result));
         if (ret == 0)
             ret = 1;
@@ -209,7 +209,8 @@ int main(int argc, const char* argv[])
         enclave_b, &ret, encrypted_msg, encrypted_msg_size);
     if ((result != OE_OK) || (ret != 0))
     {
-        printf("Host: process_encrypted_msg failed. %s", oe_result_str(result));
+        printf(
+            "Host: process_encrypted_msg failed. %s\n", oe_result_str(result));
         if (ret == 0)
             ret = 1;
         goto exit;
@@ -226,7 +227,7 @@ int main(int argc, const char* argv[])
     if ((result != OE_OK) || (ret != 0))
     {
         printf(
-            "Host: generate_encrypted_message failed. %s",
+            "Host: generate_encrypted_message failed. %s\n",
             oe_result_str(result));
         if (ret == 0)
             ret = 1;
@@ -238,7 +239,8 @@ int main(int argc, const char* argv[])
         enclave_a, &ret, encrypted_msg, encrypted_msg_size);
     if ((result != OE_OK) || (ret != 0))
     {
-        printf("host process_encrypted_msg failed. %s", oe_result_str(result));
+        printf(
+            "host process_encrypted_msg failed. %s\n", oe_result_str(result));
         if (ret == 0)
             ret = 1;
         goto exit;
