@@ -8,7 +8,7 @@
 # Set the default install prefix for Open Enclave. One may override this value
 # with the cmake command. For example:
 #
-#     $ cmake -DCMAKE_INSTALL_PREFIX:PATH=/opt/myplace ..
+#     $ cmake -DCMAKE_INSTALL_PREFIX=/opt/myplace ..
 #
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX

@@ -49,7 +49,7 @@ Please refer to the following [documentation](/docs/GettingStartedDocs/SGXSuppor
 Assuming you install the SDK as below (also described in the [basic install section](InstallInfo.md#basic-install))
 
 ```bash
-cmake -DCMAKE_INSTALL_PREFIX:PATH=~/openenclave ..
+cmake -DCMAKE_INSTALL_PREFIX=~/openenclave ..
 make install
 ```
 
