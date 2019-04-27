@@ -85,7 +85,7 @@ class Crypto
     int Sha256(const uint8_t* data, size_t data_size, uint8_t sha256[32]);
 
     /**
-     * Sign using ECDSA256
+     * Sign the SHA256 hash with enclave's private key
      */
     int Sign(
         const unsigned char* hash_data,
@@ -93,6 +93,9 @@ class Crypto
         unsigned char* sig,
         size_t* sig_len);
 
+    /**
+     * Verify the signature using public key of other enclave
+     */
     int Verify_sign(
         const unsigned char* hash_data,
         size_t hash_size,

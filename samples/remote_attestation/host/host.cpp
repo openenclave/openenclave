@@ -173,8 +173,11 @@ int main(int argc, const char* argv[])
         goto exit;
     }
 
-    // TODO - Acknowledge secure channel
-    printf("Host: Acknowledging secure channel from 2nd enclave\n");
+    printf(
+        "Received encrypted data to establish secure channel of size = %ld\n",
+        encrypted_key_size);
+
+    printf("Host: Requesting 2nd enclave to acknowledge secure channel\n");
     result = acknowledge_secure_channel(
         enclave_a, &ret, encrypted_key, encrypted_key_size);
     if ((result != OE_OK) || (ret != 0))

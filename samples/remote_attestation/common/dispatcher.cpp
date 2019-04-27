@@ -279,6 +279,9 @@ int ecall_dispatcher::acknowledge_secure_channel(
     size_t encrypted_key_size)
 {
     int ret = 1;
+    uint8_t data[1024];
+    size_t data_size = 0;
+
     /* Steps --
      *   1) Verify Signature; if good proceed to step 2
      *   2) Decrypt the key using your own private key
@@ -304,6 +307,12 @@ int ecall_dispatcher::acknowledge_secure_channel(
 
     TRACE_ENCLAVE("enclave: acknowledge_secure_channel: signature verified ok");
 
+    if (m_crypto->Decrypt(
+            encrypted_key_buf, encrypted_key_size, data, &data_size))
+    {
+        TRACE_ENCLAVE(
+            "enclave: acknowledge_secure_channel: extracted symmetric key ok");
+    }
     ret = 0;
 exit:
     return ret;
@@ -335,10 +344,11 @@ int ecall_dispatcher::generate_encrypted_message(uint8_t** data, size_t* size)
         uint8_t* host_buf = (uint8_t*)oe_host_malloc(encrypted_data_size);
         if (host_buf == NULL)
         {
+            TRACE_ENCLAVE(
+                "enclave: generate_encrypted_message oe_host_malloc failed.");
             goto exit;
         }
 
-        // Step 5 - Send to the other enclave
         memcpy(host_buf, encrypted_data_buf, encrypted_data_size);
         TRACE_ENCLAVE(
             "enclave: generate_encrypted_message: encrypted_data_size = %ld",
