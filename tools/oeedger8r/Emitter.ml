@@ -117,6 +117,21 @@ let mk_ms_member_decl (pt : parameter_type) (declr : declarator)
 
 (** ----- End code borrowed and tweaked from {!CodeGen.ml} ----- *)
 
+let is_in_ptr (ptype, _) =
+  match ptype with
+  | PTVal _ -> false
+  | PTPtr (_, a) -> a.pa_chkptr && a.pa_direction = PtrIn
+
+let is_out_ptr (ptype, _) =
+  match ptype with
+  | PTVal _ -> false
+  | PTPtr (_, a) -> a.pa_chkptr && a.pa_direction = PtrOut
+
+let is_inout_ptr (ptype, _) =
+  match ptype with
+  | PTVal _ -> false
+  | PTPtr (_, a) -> a.pa_chkptr && a.pa_direction = PtrInOut
+
 (** [open_file] opens [filename] in the directory [dir] and emits a
     comment noting the file is auto generated. *)
 let open_file (filename : string) (dir : string) =
@@ -352,81 +367,58 @@ let get_cast_to_mem_type (ptype, decl) =
       else get_tystr t
 
 (** Prepare [input_buffer]. *)
-let oe_prepare_input_buffer (os : out_channel) (fd : func_decl)
-    (alloc_func : string) =
-  fprintf os
-    "    /* Compute input buffer size. Include in and in-out parameters. */\n" ;
-  fprintf os "    OE_ADD_SIZE(_input_buffer_size, sizeof(%s_args_t));\n"
-    fd.fname ;
-  List.iter
-    (fun (ptype, decl) ->
-      match ptype with
-      | PTPtr (atype, ptr_attr) ->
-          if ptr_attr.pa_chkptr then
-            match ptr_attr.pa_direction with
-            | PtrIn | PtrInOut ->
-                let size = oe_get_param_size (ptype, decl, "_args.") in
-                fprintf os "    if (%s) OE_ADD_SIZE(_input_buffer_size, %s);\n"
-                  decl.identifier size
-            | _ -> ()
-          else ()
-      | _ -> () )
-    fd.plist ;
-  fprintf os "\n" ;
-  fprintf os
-    "    /* Compute output buffer size. Include out and in-out parameters. */\n" ;
-  fprintf os "    OE_ADD_SIZE(_output_buffer_size, sizeof(%s_args_t));\n"
-    fd.fname ;
-  List.iter
-    (fun (ptype, decl) ->
-      match ptype with
-      | PTPtr (atype, ptr_attr) ->
-          if ptr_attr.pa_chkptr then
-            match ptr_attr.pa_direction with
-            | PtrOut | PtrInOut ->
-                let size = oe_get_param_size (ptype, decl, "_args.") in
-                fprintf os
-                  "    if (%s) OE_ADD_SIZE(_output_buffer_size, %s);\n"
-                  decl.identifier size
-            | _ -> ()
-          else ()
-      | _ -> () )
-    fd.plist ;
-  fprintf os "\n" ;
-  fprintf os "    /* Allocate marshalling buffer */\n" ;
-  fprintf os "    _total_buffer_size = _input_buffer_size;\n" ;
-  fprintf os "    OE_ADD_SIZE(_total_buffer_size, _output_buffer_size);\n\n" ;
-  fprintf os "    _buffer = (uint8_t*) %s(_total_buffer_size);\n" alloc_func ;
-  fprintf os "    _input_buffer = _buffer;\n" ;
-  fprintf os "    _output_buffer = _buffer + _input_buffer_size;\n" ;
-  fprintf os "    if (_buffer == NULL) {\n" ;
-  fprintf os "        _result = OE_OUT_OF_MEMORY;\n" ;
-  fprintf os "        goto done;\n" ;
-  fprintf os "    }\n\n" ;
-  (* Serialize in and in-out parameters *)
-  fprintf os "    /* Serialize buffer inputs (in and in-out parameters) */\n" ;
-  fprintf os "    _pargs_in = (%s_args_t*)_input_buffer;\n" fd.fname ;
-  fprintf os "    OE_ADD_SIZE(_input_buffer_offset, sizeof(*_pargs_in));\n\n" ;
-  List.iter
-    (fun (ptype, decl) ->
-      match ptype with
-      | PTPtr (atype, ptr_attr) ->
-          if ptr_attr.pa_chkptr then
-            let size = oe_get_param_size (ptype, decl, "_args.") in
-            let tystr = get_cast_to_mem_type (ptype, decl) in
-            match ptr_attr.pa_direction with
-            | PtrIn ->
-                fprintf os "    OE_WRITE_IN_PARAM(%s, %s, %s);\n"
-                  decl.identifier size tystr
-            | PtrInOut ->
-                fprintf os "    OE_WRITE_IN_OUT_PARAM(%s, %s, %s);\n"
-                  decl.identifier size tystr
-            | _ -> ()
-          else ()
-      | _ -> () )
-    fd.plist ;
-  fprintf os "\n    /* Copy args structure (now filled) to input buffer */\n" ;
-  fprintf os "    memcpy(_pargs_in, &_args, sizeof(*_pargs_in));\n\n"
+let oe_prepare_input_buffer (fd : func_decl) (alloc_func : string) =
+  [ "/* Compute input buffer size. Include in and in-out parameters. */"
+  ; sprintf "OE_ADD_SIZE(_input_buffer_size, sizeof(%s_args_t));" fd.fname
+    (* TODO: Emit a comment instead of a blank newline if this is empty. *)
+  ; String.concat "\n    "
+      (List.map
+         (fun (ptype, decl) ->
+           let size = oe_get_param_size (ptype, decl, "_args.") in
+           sprintf "if (%s) OE_ADD_SIZE(_input_buffer_size, %s);"
+             decl.identifier size )
+         (List.filter (fun p -> is_in_ptr p || is_inout_ptr p) fd.plist))
+  ; ""
+  ; "/* Compute output buffer size. Include out and in-out parameters. */"
+  ; sprintf "OE_ADD_SIZE(_output_buffer_size, sizeof(%s_args_t));" fd.fname
+    (* TODO: Emit a comment instead of a blank newline if this is empty. *)
+  ; String.concat "\n    "
+      (List.map
+         (fun (ptype, decl) ->
+           let size = oe_get_param_size (ptype, decl, "_args.") in
+           sprintf "if (%s) OE_ADD_SIZE(_output_buffer_size, %s);"
+             decl.identifier size )
+         (List.filter (fun p -> is_out_ptr p || is_inout_ptr p) fd.plist))
+  ; ""
+  ; "/* Allocate marshalling buffer */"
+  ; "_total_buffer_size = _input_buffer_size;"
+  ; "OE_ADD_SIZE(_total_buffer_size, _output_buffer_size);"
+  ; sprintf "_buffer = (uint8_t*)%s(_total_buffer_size);" alloc_func
+  ; "_input_buffer = _buffer;"
+  ; "_output_buffer = _buffer + _input_buffer_size;"
+  ; "if (_buffer == NULL)"
+  ; "{"
+  ; "    _result = OE_OUT_OF_MEMORY;"
+  ; "    goto done;"
+  ; "}"
+  ; ""
+  ; "/* Serialize buffer inputs (in and in-out parameters) */"
+  ; sprintf "_pargs_in = (%s_args_t*)_input_buffer;" fd.fname
+  ; "OE_ADD_SIZE(_input_buffer_offset, sizeof(*_pargs_in));"
+    (* TODO: Emit a comment instead of a blank newline if this is empty. *)
+  ; String.concat "\n    "
+      (List.map
+         (fun (ptype, decl) ->
+           let size = oe_get_param_size (ptype, decl, "_args.") in
+           let tystr = get_cast_to_mem_type (ptype, decl) in
+           (* These need to be in order and so done together. *)
+           sprintf "OE_WRITE_%s_PARAM(%s, %s, %s);"
+             (if is_in_ptr (ptype, decl) then "IN" else "IN_OUT")
+             decl.identifier size tystr )
+         (List.filter (fun p -> is_in_ptr p || is_inout_ptr p) fd.plist))
+  ; ""
+  ; "/* Copy args structure (now filled) to input buffer */"
+  ; "memcpy(_pargs_in, &_args, sizeof(*_pargs_in));" ]
 
 let oe_process_output_buffer (os : out_channel) (fd : func_decl) =
   (* Verify that the ecall succeeded *)
@@ -653,8 +645,7 @@ let gen_fill_marshal_struct (os : out_channel) (fd : func_decl) (args : string)
             fprintf os "    %s.%s_len = (%s) ? (wcslen(%s) + 1) : 0;\n" args
               varname varname varname
       | _ -> () )
-    fd.plist ;
-  fprintf os "\n"
+    fd.plist
 
 let oe_get_host_ecall_function (os : out_channel) (fd : func_decl) =
   fprintf os "%s" (oe_gen_wrapper_prototype fd true) ;
@@ -677,7 +668,8 @@ let oe_get_host_ecall_function (os : out_channel) (fd : func_decl) =
   fprintf os "    /* Fill marshalling struct */\n" ;
   fprintf os "    memset(&_args, 0, sizeof(_args));\n" ;
   gen_fill_marshal_struct os fd "_args" ;
-  oe_prepare_input_buffer os fd "malloc" ;
+  fprintf os "%s"
+    (String.concat "\n    " (oe_prepare_input_buffer fd "malloc")) ;
   fprintf os "    /* Call enclave function */\n" ;
   fprintf os "    if((_result = oe_call_enclave_function(\n" ;
   fprintf os "                        enclave,\n" ;
@@ -723,7 +715,9 @@ let oe_gen_ocall_enclave_wrapper (os : out_channel) (uf : untrusted_func) =
   fprintf os "    /* Fill marshalling struct */\n" ;
   fprintf os "    memset(&_args, 0, sizeof(_args));\n" ;
   gen_fill_marshal_struct os fd "_args" ;
-  oe_prepare_input_buffer os fd "oe_allocate_ocall_buffer" ;
+  fprintf os "%s"
+    (String.concat "\n    "
+       (oe_prepare_input_buffer fd "oe_allocate_ocall_buffer")) ;
   fprintf os "    /* Call host function */\n" ;
   fprintf os "    if((_result = oe_call_host_function(\n" ;
   fprintf os "                        %s,\n" (get_function_id fd) ;
