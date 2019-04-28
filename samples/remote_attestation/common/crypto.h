@@ -97,6 +97,7 @@ class Crypto
      * Verify the signature using public key of other enclave
      */
     int Verify_sign(
+        const uint8_t* pem_public_key,
         const unsigned char* hash_data,
         size_t hash_size,
         const unsigned char* sig,

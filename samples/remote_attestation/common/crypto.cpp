@@ -310,35 +310,78 @@ int Crypto::Sign(
     size_t* sig_len)
 {
     int rc = 0;
+    int res = -1;
+    mbedtls_rsa_context* rsa_context;
 
-    rc = mbedtls_pk_sign(
-        (mbedtls_pk_context*)&m_pk_context,
+    if (!m_initialized)
+        goto exit;
+
+    rsa_context = mbedtls_pk_rsa(m_pk_context);
+    rsa_context->padding = MBEDTLS_RSA_PKCS_V21;
+    rsa_context->hash_id = MBEDTLS_MD_SHA256;
+
+    rc = mbedtls_rsa_pkcs1_sign(
+        rsa_context,
+        mbedtls_ctr_drbg_random,
+        &m_ctr_drbg_contex,
+        MBEDTLS_RSA_PRIVATE,
         MBEDTLS_MD_SHA256,
-        hash_data,
         hash_size,
-        sig,
-        sig_len,
-        NULL,
-        NULL);
+        hash_data,
+        sig);
 
+exit:
     return rc;
 }
 
 int Crypto::Verify_sign(
+    const uint8_t* pem_public_key,
     const unsigned char* hash_data,
     size_t hash_size,
     const unsigned char* sig,
     size_t sig_len)
 {
     int rc = 0;
+    mbedtls_pk_context key;
+    size_t key_size = 0;
+    int res = -1;
+    mbedtls_rsa_context* rsa_context;
 
-    rc = mbedtls_pk_verify(
-        (mbedtls_pk_context*)&m_pk_context,
+    mbedtls_pk_init(&key);
+
+    if (!m_initialized)
+        goto exit;
+
+    res = mbedtls_pk_setup(&key, mbedtls_pk_info_from_type(MBEDTLS_PK_RSA));
+    if (res != 0)
+    {
+        TRACE_ENCLAVE("TODO TOD -- mbedtls_pk_setup failed (%d).", res);
+        goto exit;
+    }
+
+    // Read the given public key.
+    key_size = strlen((const char*)pem_public_key) + 1; // Include ending '\0'.
+    res = mbedtls_pk_parse_public_key(&key, pem_public_key, key_size);
+    if (res != 0)
+    {
+        TRACE_ENCLAVE("mbedtls_pk_parse_public_key failed.");
+        goto exit;
+    }
+
+    rsa_context = mbedtls_pk_rsa(key);
+    rsa_context->padding = MBEDTLS_RSA_PKCS_V21;
+    rsa_context->hash_id = MBEDTLS_MD_SHA256;
+
+    rc = mbedtls_rsa_pkcs1_verify(
+        rsa_context,
+        mbedtls_ctr_drbg_random,
+        &m_ctr_drbg_contex,
+        MBEDTLS_RSA_PUBLIC,
         MBEDTLS_MD_SHA256,
-        hash_data,
         hash_size,
-        sig,
-        sig_len);
-
+        hash_data,
+        sig);
+exit:
+    mbedtls_pk_free(&key);
     return rc;
 }

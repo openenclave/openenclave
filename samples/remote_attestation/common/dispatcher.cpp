@@ -284,6 +284,7 @@ int ecall_dispatcher::acknowledge_secure_channel(
     uint8_t data[512];
     size_t data_size = 256;
     uint8_t digest[32];
+    int rc;
 
     /* Steps --
      *   1) Verify Signature; if good proceed to step 2
@@ -304,10 +305,18 @@ int ecall_dispatcher::acknowledge_secure_channel(
         goto exit;
     }
 
-    if (m_crypto->Verify_sign(digest, 32, signature, signature_size) != 0)
+    rc = m_crypto->Verify_sign(
+        m_crypto->get_the_other_enclave_public_key(),
+        digest,
+        32,
+        signature,
+        signature_size);
+    if (rc != 0)
     {
-        TRACE_ENCLAVE("enclave: acknowledge_secure_channel: signature "
-                      "verification failed");
+        TRACE_ENCLAVE(
+            "enclave: acknowledge_secure_channel: signature "
+            "verification failed with %x\n",
+            rc);
         goto exit;
     }
 
