@@ -35,9 +35,7 @@ endif()
 target_include_directories(oeenclave PRIVATE
     ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
 
-target_link_libraries(oeenclave PUBLIC
-    oe_includes
-    oecrypto)
+target_link_libraries(oeenclave PUBLIC oecrypto)
 
 set_property(TARGET oeenclave PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 

@@ -30,9 +30,7 @@ maybe_build_using_clangw(oecrypto)
 target_include_directories(oecrypto PRIVATE
     ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
 
-target_link_libraries(oecrypto PUBLIC
-    oe_includes
-    mbedcrypto)
+target_link_libraries(oecrypto PUBLIC mbedcrypto)
 
 if (OE_PREFIX_MBEDTLS_SYMBOLS)
     add_custom_command(TARGET oecrypto
