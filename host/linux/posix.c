@@ -43,7 +43,7 @@ OE_INLINE void _clear_err(int* err)
 /*
 **==============================================================================
 **
-** File I/O:
+** File and directory I/O:
 **
 **==============================================================================
 */
@@ -54,49 +54,9 @@ int oe_posix_open_ocall(const char* pathname, int flags, mode_t mode, int* err)
 
     _clear_err(err);
 
-    if (strcmp(pathname, "/dev/stdin") == 0)
-    {
-        if ((flags & 0x00000003) != O_RDONLY)
-        {
-            if (err)
-                *err = EINVAL;
+    if ((ret = open(pathname, flags, mode)) == -1)
+        _set_err(err, errno);
 
-            goto done;
-        }
-
-        ret = STDIN_FILENO;
-    }
-    else if (strcmp(pathname, "/dev/stdout") == 0)
-    {
-        if ((flags & 0x00000003) != O_WRONLY)
-        {
-            if (err)
-                *err = EINVAL;
-
-            goto done;
-        }
-
-        ret = STDOUT_FILENO;
-    }
-    else if (strcmp(pathname, "/dev/stderr") == 0)
-    {
-        if ((flags & 0x00000003) != O_WRONLY)
-        {
-            if (err)
-                *err = EINVAL;
-
-            goto done;
-        }
-
-        ret = STDERR_FILENO;
-    }
-    else
-    {
-        if ((ret = open(pathname, flags, mode)) == -1)
-            _set_err(err, errno);
-    }
-
-done:
     return ret;
 }
 
@@ -602,8 +562,6 @@ ssize_t oe_posix_recvfrom_ocall(
 
     return ret;
 }
-
-/* BOOKMARK */
 
 ssize_t oe_posix_send_ocall(
     int sockfd,

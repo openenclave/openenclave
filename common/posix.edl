@@ -1,6 +1,25 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+/*
+**==============================================================================
+**
+** posix.edl:
+**
+**     This file declares OCALLs and ECALLs needed by the enclave to implement
+**     various system operations, such as file and socket I/O. Implementations
+**     are provided for both Linux and Windows here:
+**
+**         ../host/linux/posix.c
+**         ../host/linux/windows.c
+**
+**     The file declares a tiny subset of the POSIX API. Within the enclave,
+**     this subset functions as a portable abstration layer. POSIX was chosen
+**     rather than inventing a new and proprietary API.
+**
+**==============================================================================
+*/
+
 enclave {
 
     include "openenclave/corelibc/netdb.h"
