@@ -236,7 +236,7 @@ export class OpenEnclaveManager {
         }
 
         if (address.endsWith(".azurecr.io")) {
-            await this.populateACRCredential(address, envFile, usernameEnv, passwordEnv, debugUsernameEnv, debugPasswordEnv);
+            await this.populateAcrCredential(address, envFile, usernameEnv, passwordEnv, debugUsernameEnv, debugPasswordEnv);
         } else {
             await this.populateStaticEnv(envFile, usernameEnv, passwordEnv, debugUsernameEnv, debugPasswordEnv);
         }
@@ -252,7 +252,7 @@ export class OpenEnclaveManager {
         this.askEditEnv(envFile);
     }
 
-    private async populateACRCredential(address: string, envFile: string, usernameEnv: string, passwordEnv: string, debugUsernameEnv?: string, debugPasswordEnv?: string): Promise<void> {
+    private async populateAcrCredential(address: string, envFile: string, usernameEnv: string, passwordEnv: string, debugUsernameEnv?: string, debugPasswordEnv?: string): Promise<void> {
         const acrManager = new AcrManager();
         let cred;
         try {
