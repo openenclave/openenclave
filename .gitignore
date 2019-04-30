@@ -30,6 +30,8 @@ new_platforms/vscode-extension/*.vsix
 new_platforms/vscode-extension/**/*.map
 
 new_platforms/vscode-extension/node_modules/
+new_platforms/vscode-extension/3rdparty/
+new_platforms/vscode-extension/devkit/
 new_platforms/vscode-extension/out/
 new_platforms/vscode-extension/dist/
 
