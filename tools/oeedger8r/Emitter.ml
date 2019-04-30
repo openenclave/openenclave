@@ -492,22 +492,18 @@ let get_cast_from_mem_expr (ptype, decl) =
         sprintf "(const %s) " (get_tystr t)
       else ""
 
-let oe_gen_call_function (os : out_channel) (fd : func_decl) =
-  let params =
-    List.map
-      (fun (pt, decl) ->
-        sprintf "%spargs_in->%s"
-          (get_cast_from_mem_expr (pt, decl))
-          decl.identifier )
-      fd.plist
-  in
-  let params_str = "(\n        " ^ String.concat ",\n        " params ^ ")" in
-  let ret_str =
-    match fd.rtype with Void -> "" | _ -> "pargs_out->_retval = "
-  in
-  let call_str = ret_str ^ fd.fname ^ params_str in
-  fprintf os "    /* Call user function */\n" ;
-  fprintf os "    %s;\n" call_str
+let oe_gen_call_function (fd : func_decl) =
+  [ ""
+  ; "/* Call user function. */"
+  ; (match fd.rtype with Void -> "" | _ -> "pargs_out->_retval = ")
+    ^ fd.fname ^ "("
+  ; String.concat ",\n    "
+      (List.map
+         (fun (ptype, decl) ->
+           let cast_expr = get_cast_from_mem_expr (ptype, decl) in
+           sprintf "    %spargs_in->%s" cast_expr decl.identifier )
+         fd.plist)
+    ^ ");" ]
 
 (** Generate ecall function. *)
 let oe_gen_ecall_function (os : out_channel) (fd : func_decl) =
@@ -585,8 +581,8 @@ let oe_gen_ecall_function (os : out_channel) (fd : func_decl) =
   fprintf os "\n" ;
   (* Call the enclave function *)
   fprintf os "    /* lfence after checks */\n" ;
-  fprintf os "    oe_lfence();\n\n" ;
-  oe_gen_call_function os fd ;
+  fprintf os "    oe_lfence();\n" ;
+  fprintf os "%s\n" (String.concat "\n    " (oe_gen_call_function fd)) ;
   (* Mark call as success *)
   fprintf os "\n    /* Success. */\n" ;
   fprintf os "    _result = OE_OK;\n" ;
@@ -802,9 +798,8 @@ let oe_gen_ocall_host_wrapper (os : out_channel) (uf : untrusted_func) =
           else ()
       | _ -> () )
     fd.plist ;
-  fprintf os "\n" ;
   (* Call the host function *)
-  oe_gen_call_function os fd ;
+  fprintf os "%s\n" (String.concat "\n    " (oe_gen_call_function fd)) ;
   (* Propagate errno *)
   if propagate_errno then (
     fprintf os "\n    /* Propagate errno */\n" ;
