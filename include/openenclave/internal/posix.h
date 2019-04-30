@@ -1,11 +1,21 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_INTERNAL_EPOLL_H
-#define _OE_INTERNAL_EPOLL_H
+#ifndef _OE_INTERNAL_POSIX_H
+#define _OE_INTERNAL_POSIX_H
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/internal/types.h>
+
+/*
+**==============================================================================
+**
+** posix.h
+**
+**     This file defines common types used by the POSIX interface.
+**
+**==============================================================================
+*/
 
 OE_EXTERNC_BEGIN
 
@@ -36,6 +46,9 @@ typedef union _oe_ev_data {
     uint64_t data;
 } oe_ev_data_t;
 
+/* Represents file-descriptors returned by host (64-bits on Windows). */
+typedef int64_t oe_host_fd_t;
+
 OE_EXTERNC_END
 
-#endif /* _OE_INTERNAL_EPOLL_H */
+#endif /* _OE_INTERNAL_POSIX_H */
