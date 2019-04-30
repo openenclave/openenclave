@@ -55,8 +55,7 @@ static void _once_function(void)
     }
 }
 
-oe_result_t oe_load_module_posix(void)
+void oe_register_posix_ecall_function_table(void)
 {
     oe_once(&_once, _once_function);
-    return OE_OK;
 }

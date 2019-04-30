@@ -19,9 +19,6 @@
 
 OE_EXTERNC_BEGIN
 
-/* Load the posix (needed by all other modules below). */
-oe_result_t oe_load_module_posix(void);
-
 /* Load the host file system module. */
 oe_result_t oe_load_module_hostfs(void);
 

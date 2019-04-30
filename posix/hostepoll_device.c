@@ -22,6 +22,7 @@
 #include <openenclave/bits/module.h>
 #include <openenclave/internal/trace.h>
 #include "posix_t.h"
+#include "../common/posix.h"
 
 /*
 **==============================================================================
@@ -512,7 +513,6 @@ static int _epoll_wait(
         _cast_epoll(oe_get_fd_device(epoll_fd, OE_DEVICE_TYPE_EPOLL));
     ssize_t epoll_host_fd = -1;
     struct oe_epoll_event* host_events = NULL;
-    oe_result_t result = OE_FAILURE;
 
     // ATTN:IO: timeout is unused.
     OE_UNUSED(timeout);
@@ -546,13 +546,15 @@ static int _epoll_wait(
         goto done;
     }
 
-    result = oe_posix_epoll_wait_async_ocall(
-        &ret,
-        (int64_t)oe_get_enclave(),
-        (int)epoll_host_fd,
-        maxevents,
-        &oe_errno);
-    if (result != OE_OK)
+    /* Install the posix ecall table since the next call initates ecalls. */
+    oe_register_posix_ecall_function_table();
+
+    if (oe_posix_epoll_wait_async_ocall(
+            &ret,
+            (int64_t)oe_get_enclave(),
+            (int)epoll_host_fd,
+            maxevents,
+            &oe_errno) != OE_OK)
     {
         oe_errno = EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
@@ -671,6 +673,9 @@ static int _epoll_poll(
             host_fds[fd_idx].revents = 0;
         }
     }
+
+    /* Install the posix ecall table since the next call initates ecalls. */
+    oe_register_posix_ecall_function_table();
 
     result = oe_posix_epoll_poll_ocall(
         &ret,

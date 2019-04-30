@@ -475,7 +475,6 @@ void test_fs(const char* src_dir, const char* tmp_dir)
 {
     (void)src_dir;
 
-    OE_TEST(oe_load_module_posix() == OE_OK);
     OE_TEST(oe_load_module_hostfs() == OE_OK);
 
     OE_TEST(oe_mkdir_d(OE_DEVID_HOSTFS, tmp_dir, 0777) == 0);

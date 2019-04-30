@@ -30,7 +30,6 @@ typedef struct _client
 
 void echod_initialize_ecall(void)
 {
-    OE_TEST(oe_load_module_posix() == OE_OK);
     OE_TEST(oe_load_module_hostfs() == OE_OK);
     OE_TEST(oe_load_module_hostsock() == OE_OK);
     OE_TEST(oe_load_module_polling() == OE_OK);
