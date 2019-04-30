@@ -4,11 +4,9 @@
 
 oeedl_file(../mbed.edl host gen)
 
-add_executable(libmbedtest_host host.c ${gen})
+add_executable(libmbedtest_host host.c ocalls.c ${gen})
 
-target_compile_definitions(libmbedtest_host PRIVATE 
-    PROJECT_DIR="${CMAKE_SOURCE_DIR}/")
-
+target_compile_definitions(libmbedtest_host PRIVATE PROJECT_DIR="${CMAKE_SOURCE_DIR}/")
 if (NOT WIN32)
   target_compile_options(libmbedtest_host PRIVATE -Wno-error)
 endif()

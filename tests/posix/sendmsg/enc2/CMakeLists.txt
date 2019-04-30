@@ -10,4 +10,4 @@ target_include_directories(sendmsg_enc2 PRIVATE
 
 add_definitions(-DOE_NEED_STDC_NAMES)
 
-target_link_libraries(sendmsg_enc2 oeenclave)
+target_link_libraries(sendmsg_enc2 oeposix oeenclave)

@@ -199,7 +199,7 @@ extern const size_t __oe_ecalls_table_size;
 /*
 **==============================================================================
 **
-** oe_register_ecall_table()
+** oe_register_ecall_function_table()
 **
 ** Register an ecall table with the given table_id.
 **
@@ -217,7 +217,7 @@ typedef struct _ecall_table
 static ecall_table_t _ecall_tables[MAX_ECALL_TABLES];
 static oe_spinlock_t _ecall_tables_lock = OE_SPINLOCK_INITIALIZER;
 
-oe_result_t oe_register_ecall_table(
+oe_result_t oe_register_ecall_function_table(
     uint64_t table_id,
     const oe_ecall_func_t* ecalls,
     size_t num_ecalls)

@@ -26,6 +26,8 @@
 #include <openenclave/internal/registers.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
+#include "../common/posix.h"
+#include "../hostthread.h"
 #include "../ocalls.h"
 #include "asmdefs.h"
 #include "enclave.h"
@@ -242,7 +244,7 @@ done:
 /*
 **==============================================================================
 **
-** oe_register_ocall_table()
+** oe_register_ocall_function_table()
 **
 ** Register an ocall table with the given table_id.
 **
@@ -258,9 +260,9 @@ typedef struct _ocall_table
 } ocall_table_t;
 
 static ocall_table_t _ocall_tables[MAX_OCALL_TABLES];
-static pthread_spinlock_t _ocall_tables_lock;
+static oe_mutex _ocall_tables_lock = OE_H_MUTEX_INITIALIZER;
 
-oe_result_t oe_register_ocall_table(
+oe_result_t oe_register_ocall_function_table(
     uint64_t table_id,
     const oe_ocall_func_t* ocalls,
     size_t num_ocalls)
@@ -270,10 +272,10 @@ oe_result_t oe_register_ocall_table(
     if (table_id >= MAX_OCALL_TABLES || !ocalls)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    pthread_spin_lock(&_ocall_tables_lock);
+    oe_mutex_lock(&_ocall_tables_lock);
     _ocall_tables[table_id].ocalls = ocalls;
     _ocall_tables[table_id].num_ocalls = num_ocalls;
-    pthread_spin_unlock(&_ocall_tables_lock);
+    oe_mutex_unlock(&_ocall_tables_lock);
 
     result = OE_OK;
 
@@ -770,6 +772,9 @@ oe_result_t oe_call_enclave_function_by_table_id(
     /* Reject invalid parameters */
     if (!enclave)
         OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Ensure that the POSIX interface is registered. */
+    oe_register_posix_ocall_function_table();
 
     /* Initialize the call_enclave_args structure */
     {

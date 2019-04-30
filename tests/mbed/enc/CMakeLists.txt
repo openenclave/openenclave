@@ -35,30 +35,17 @@ function(add_mbed_test_enclave NAME)
     SOURCES
     ${CMAKE_CURRENT_BINARY_DIR}/test_suite_${NAME}.c
     enc.c
+    start.S
     ${gen})
 
-  add_definitions(-DEXIT_FAILURE=0 -DEXIT_SUCCESS=1)
-
-  target_compile_options(mbedtest_suite_${NAME} PRIVATE
-    -Wno-error)
-  target_compile_definitions(mbedtest_suite_${NAME} PRIVATE
-    -D__TEST__="${NAME}"
-    -DOE_NEED_STDC_NAMES)
+  target_compile_options(mbedtest_suite_${NAME} PRIVATE -Wno-error)
+  target_compile_definitions(mbedtest_suite_${NAME} PRIVATE -D__TEST__="${NAME}")
   target_include_directories(mbedtest_suite_${NAME} PRIVATE
     ..
-    ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc
     ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/mbedtls-wrap-prefix/src/mbedtls-wrap/include/)
-  target_link_libraries(mbedtest_suite_${NAME} oeenclave)
-
-  # The following variables remain uninitialized on Linux and throw warnings
-  # Calling the function maybe_build_using_clangw(mbedtest_selftest) skips setting
-  # the following variables on linux and returns noop
-  set(CMAKE_C_CREATE_STATIC_LIBRARY "")
-  set(CMAKE_CXX_CREATE_STATIC_LIBRARY "")
-  set(CMAKE_C_STANDARD_LIBRARIES "")
-  set(CMAKE_CXX_STANDARD_LIBRARIES "")
+  target_link_libraries(mbedtest_suite_${NAME} oelibc)
 
   maybe_build_using_clangw(mbedtest_suite_${NAME})
 
@@ -92,20 +79,17 @@ function(add_mbed_selftest_enclave)
     SOURCES
     selftest_wrapper.c
     enc.c
+    start.S
     ${gen})
 
-  target_compile_options(mbedtest_selftest PRIVATE
-    -Wno-error)
-  target_compile_definitions(mbedtest_selftest PRIVATE
-    -D__TEST__="selftest"
-    -DOE_NEED_STDC_NAMES)
+  target_compile_options(mbedtest_selftest PRIVATE -Wno-conversion -Wno-pointer-arith)
+  target_compile_definitions(mbedtest_selftest PRIVATE -D__TEST__="selftest")
   target_include_directories(mbedtest_selftest PRIVATE
     ..
-    ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc
     ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/mbedtls-wrap-prefix/src/mbedtls-wrap/include/)
-  target_link_libraries(mbedtest_selftest oeenclave)
+  target_link_libraries(mbedtest_selftest oelibc)
 
   # The following variables remain uninitialized on Linux and throw warnings
   # Calling the function maybe_build_using_clangw(mbedtest_selftest) skips setting

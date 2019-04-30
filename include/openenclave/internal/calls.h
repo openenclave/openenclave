@@ -272,15 +272,12 @@ oe_result_t oe_call_host_function_by_table_id(
 /*
 **==============================================================================
 **
-** oe_register_ocall_table()
+** oe_register_ocall_function_table()
 **
 **     Register an ocall table with the given table id.
 **
 **==============================================================================
 */
-
-/* OCALL table identfiers. */
-#define OE_OCALL_TABLE_IO 0
 
 typedef void (*oe_ocall_func_t)(
     const uint8_t* input_buffer,
@@ -289,7 +286,7 @@ typedef void (*oe_ocall_func_t)(
     size_t output_buffer_size,
     size_t* output_bytes_written);
 
-oe_result_t oe_register_ocall_table(
+oe_result_t oe_register_ocall_function_table(
     uint64_t table_id,
     const oe_ocall_func_t* ocalls,
     size_t num_ocalls);
@@ -297,15 +294,12 @@ oe_result_t oe_register_ocall_table(
 /*
 **==============================================================================
 **
-** oe_register_ecall_table()
+** oe_register_ecall_function_table()
 **
 **     Register an ecall table with the given table id.
 **
 **==============================================================================
 */
-
-/* ECALL table identfiers. */
-#define OE_ECALL_TABLE_IO 0
 
 typedef void (*oe_ecall_func_t)(
     const uint8_t* input_buffer,
@@ -314,7 +308,7 @@ typedef void (*oe_ecall_func_t)(
     size_t output_buffer_size,
     size_t* output_bytes_written);
 
-oe_result_t oe_register_ecall_table(
+oe_result_t oe_register_ecall_function_table(
     uint64_t table_id,
     const oe_ecall_func_t* ecalls,
     size_t num_ecalls);

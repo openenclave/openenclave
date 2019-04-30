@@ -27,6 +27,8 @@ int main(int argc, const char* argv[])
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
 
+    printf("xxxxxxxxxxxx\n");
+    fflush(stdout);
     if (argc != 2)
     {
         fprintf(stderr, "Usage: %s ENCLAVE_PATH\n", argv[0]);
@@ -35,6 +37,8 @@ int main(int argc, const char* argv[])
 
     const uint32_t flags = oe_get_create_flags();
 
+    printf("xxxxxxxxxxxx\n");
+    fflush(stdout);
     if ((result = oe_create_echo_enclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);
@@ -42,7 +46,11 @@ int main(int argc, const char* argv[])
     char out_parameter[100];
     int return_val;
 
+    printf("yyyyyyyyyyyy\n");
+    fflush(stdout);
     result = enc_echo(enclave, &return_val, "Hello World", out_parameter);
+    printf("zzzzzzzzzzzz\n");
+    fflush(stdout);
 
     if (result != OE_OK)
         oe_put_err("oe_call_enclave() failed: result=%u", result);
