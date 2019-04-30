@@ -10,7 +10,7 @@ Alternatively, you can run the extension from this repository by following these
 
 1. Clone this repository `git clone --recursive https://github.com/microsoft/openenclave`
 2. Navigate to `new_platforms\vscode-extension` in the cloned folder.
-3. Run npm to install the dependencies: `npm install`
+3. Run npm to install the dependencies: `npm install` (see Requirements section for npm installation link)
 4. Start VSCode: `code .`
 5. Start the extension using F5
 
@@ -81,6 +81,8 @@ to an Azure Edge device by:
 ## Requirements
 
 Install [Visual Studio Code](https://code.visualstudio.com/)
+
+Install [npm](https://www.npmjs.com/get-npm)
 
 On Linux, for standalone projects:
 

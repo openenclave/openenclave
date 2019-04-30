@@ -10,7 +10,7 @@ Alternatively, you can run the extension from this repository by following these
 
 1. Clone this repository `git clone --recursive https://github.com/microsoft/openenclave`
 2. Navigate to `new_platforms\vscode-extension` in the cloned folder.
-3. Run npm to install the dependencies: `npm install`
+3. Run npm to install the dependencies: `npm install` (see Requirements section for npm installation link)
 4. Start VSCode: `code .`
 5. Start the extension using F5
 
@@ -82,11 +82,16 @@ to an Azure Edge device by:
 
 Install [Visual Studio Code](https://code.visualstudio.com/)
 
+Install [npm](https://www.npmjs.com/get-npm)
+
 On Linux, for standalone projects:
 
 * Run `sudo apt update && sudo apt install -y build-essential cmake gcc-arm-linux-gnueabi gcc-aarch64-linux-gnu g++-aarch64-linux-gnu`
 
-On other platforms, ensure that [Docker is installed and running: https://docs.docker.com/get-started/](https://docs.docker.com/get-started/).
+For Azure IoT Edge projects:
+
+* Ensure that [Docker is installed and running: https://docs.docker.com/get-started/](https://docs.docker.com/get-started/).
+* Create a container repository, like [Azure Container Registry](https://azure.microsoft.com/en-us/services/container-registry/)
 
 For better Azure integration:
 
