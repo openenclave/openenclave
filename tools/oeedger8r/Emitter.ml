@@ -491,21 +491,6 @@ let get_cast_from_mem_expr (ptype, decl) =
         sprintf "(const %s) " (get_tystr t)
       else ""
 
-let oe_gen_free_buffers (os : out_channel) (fd : func_decl) =
-  let gen_free_buffer (ptype, decl) =
-    match ptype with
-    | PTPtr (atype, ptr_attr) ->
-        if ptr_attr.pa_chkptr then (
-          fprintf os "    if (enc_args.%s)\n" decl.identifier ;
-          fprintf os "        free (enc_args.%s);\n" decl.identifier )
-        else ()
-    | _ -> ()
-    (* Non pointer arguments *)
-  in
-  fprintf os "    /* Free enclave buffers */\n" ;
-  List.iter gen_free_buffer fd.plist ;
-  fprintf os "\n"
-
 let oe_gen_call_function (os : out_channel) (fd : func_decl) =
   let params =
     List.map
@@ -626,7 +611,6 @@ let oe_gen_ecall_function (os : out_channel) (fd : func_decl) =
   fprintf os "    _result = OE_OK;\n" ;
   fprintf os "    *output_bytes_written = output_buffer_offset;\n\n" ;
   fprintf os "done:\n" ;
-  (* oe_gen_free_buffers os fd; *)
   fprintf os "    if (pargs_out && output_buffer_size >= sizeof(*pargs_out))\n" ;
   fprintf os "        pargs_out->_result = _result;\n" ;
   fprintf os "}\n\n"
@@ -847,7 +831,6 @@ let oe_gen_ocall_host_wrapper (os : out_channel) (uf : untrusted_func) =
   fprintf os "    _result = OE_OK;\n" ;
   fprintf os "    *output_bytes_written = output_buffer_offset;\n\n" ;
   fprintf os "done:\n" ;
-  (* oe_gen_free_buffers os fd; *)
   fprintf os "    if (pargs_out && output_buffer_size >= sizeof(*pargs_out))\n" ;
   fprintf os "        pargs_out->_result = _result;\n" ;
   fprintf os "}\n\n"
