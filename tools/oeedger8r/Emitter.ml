@@ -287,21 +287,25 @@ let emit_composite_type =
 let get_function_id (f : func_decl) = sprintf "fcn_id_%s" f.fname
 
 (** Emit all trusted and untrusted function IDs in enclave [ec]. *)
-let emit_function_ids (os : out_channel) (ec : enclave_content) =
-  fprintf os "\n/* trusted function ids */\n" ;
-  fprintf os "enum {\n" ;
-  List.iteri
-    (fun idx f -> fprintf os "    %s = %d,\n" (get_function_id f.tf_fdecl) idx)
-    ec.tfunc_decls ;
-  fprintf os "    fcn_id_trusted_call_id_max = OE_ENUM_MAX\n" ;
-  fprintf os "};\n\n" ;
-  fprintf os "\n/* untrusted function ids */\n" ;
-  fprintf os "enum {\n" ;
-  List.iteri
-    (fun idx f -> fprintf os "    %s = %d,\n" (get_function_id f.uf_fdecl) idx)
-    ec.ufunc_decls ;
-  fprintf os "    fcn_id_untrusted_call_max = OE_ENUM_MAX\n" ;
-  fprintf os "};\n\n"
+let emit_function_ids (ec : enclave_content) =
+  [ ""
+  ; "/**** Trusted function IDs ****/"
+  ; "enum {"
+  ; String.concat "\n"
+      (List.mapi
+         (fun i f -> sprintf "    %s = %d," (get_function_id f.tf_fdecl) i)
+         ec.tfunc_decls)
+  ; "    fcn_id_trusted_call_id_max = OE_ENUM_MAX"
+  ; "};"
+  ; ""
+  ; "/**** Untrusted function IDs. ****/"
+  ; "enum {"
+  ; String.concat "\n"
+      (List.mapi
+         (fun i f -> sprintf "    %s = %d," (get_function_id f.uf_fdecl) i)
+         ec.ufunc_decls)
+  ; "    fcn_id_untrusted_call_max = OE_ENUM_MAX"
+  ; "};" ]
 
 (** Generate [args.h] which contains [struct]s for ecalls and ocalls *)
 let oe_gen_args_header (ec : enclave_content) (dir : string) =
@@ -331,7 +335,7 @@ let oe_gen_args_header (ec : enclave_content) (dir : string) =
   fprintf os "%s" (String.concat "\n" types) ;
   if ec.comp_defs <> [] then fprintf os "\n" ;
   fprintf os "%s" (String.concat "\n" structs) ;
-  emit_function_ids os ec ;
+  fprintf os "%s" (String.concat "\n" (emit_function_ids ec)) ;
   fprintf os "\n#endif // %s\n" guard_macro ;
   close_out os
 
