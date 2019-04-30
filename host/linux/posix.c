@@ -48,7 +48,11 @@ OE_INLINE void _clear_err(int* err)
 **==============================================================================
 */
 
-int oe_posix_open_ocall(const char* pathname, int flags, mode_t mode, int* err)
+oe_host_fd_t oe_posix_open_ocall(
+    const char* pathname,
+    int flags,
+    mode_t mode,
+    int* err)
 {
     int ret = -1;
 
@@ -60,61 +64,65 @@ int oe_posix_open_ocall(const char* pathname, int flags, mode_t mode, int* err)
     return ret;
 }
 
-ssize_t oe_posix_read_ocall(int fd, void* buf, size_t count, int* err)
+ssize_t oe_posix_read_ocall(oe_host_fd_t fd, void* buf, size_t count, int* err)
 {
     ssize_t ret;
 
     _clear_err(err);
 
-    if ((ret = read(fd, buf, count)) == -1)
+    if ((ret = read((int)fd, buf, count)) == -1)
         _set_err(err, errno);
 
     return ret;
 }
 
-ssize_t oe_posix_write_ocall(int fd, const void* buf, size_t count, int* err)
+ssize_t oe_posix_write_ocall(
+    oe_host_fd_t fd,
+    const void* buf,
+    size_t count,
+    int* err)
 {
     ssize_t ret;
 
     _clear_err(err);
 
-    if ((ret = write(fd, buf, count)) == -1)
+    if ((ret = write((int)fd, buf, count)) == -1)
         _set_err(err, errno);
 
     return ret;
 }
 
-off_t oe_posix_lseek_ocall(int fd, off_t offset, int whence, int* err)
+off_t oe_posix_lseek_ocall(oe_host_fd_t fd, off_t offset, int whence, int* err)
 {
     off_t ret;
 
     _clear_err(err);
 
-    if ((ret = lseek(fd, offset, whence)) == -1)
+    if ((ret = lseek((int)fd, offset, whence)) == -1)
         _set_err(err, errno);
 
     return ret;
 }
 
-int oe_posix_close_ocall(int fd, int* err)
+int oe_posix_close_ocall(oe_host_fd_t fd, int* err)
 {
     int ret;
 
     _clear_err(err);
 
-    if ((ret = close(fd)) == -1)
+    if ((ret = close((int)fd)) == -1)
         _set_err(err, errno);
 
     return ret;
 }
 
-int oe_posix_dup_ocall(int oldfd, int* err)
+oe_host_fd_t oe_posix_dup_ocall(oe_host_fd_t oldfd, int* err)
 {
-    int ret;
+    oe_host_fd_t ret;
 
     _clear_err(err);
 
-    if ((ret = dup(oldfd)) == -1)
+    if ((ret = dup((int)oldfd)) == -1)
         _set_err(err, errno);
 
     return ret;
@@ -358,21 +366,27 @@ int oe_posix_socketpair_ocall(
     int domain,
     int type,
     int protocol,
-    int sv[2],
+    oe_host_fd_t sv_out[2],
     int* err)
 {
     int ret;
+    int sv[2];
 
     _clear_err(err);
 
     if ((ret = socketpair(domain, type, protocol, sv)) == -1)
         _set_err(err, errno);
+    else
+    {
+        sv_out[0] = sv[0];
+        sv_out[1] = sv[1];
+    }
 
     return ret;
 }
 
 int oe_posix_connect_ocall(
-    int sockfd,
+    oe_host_fd_t sockfd,
     const struct oe_sockaddr* addr,
     socklen_t addrlen,
     int* err)
@@ -383,24 +397,25 @@ int oe_posix_connect_ocall(
 
     OE_STATIC_ASSERT(sizeof(struct oe_sockaddr) == sizeof(struct sockaddr));
 
-    if ((ret = connect(sockfd, (const struct sockaddr*)addr, addrlen)) == -1)
+    if ((ret = connect((int)sockfd, (const struct sockaddr*)addr, addrlen)) ==
+        -1)
         _set_err(err, errno);
 
     return ret;
 }
 
-int oe_posix_accept_ocall(
-    int sockfd,
+oe_host_fd_t oe_posix_accept_ocall(
+    oe_host_fd_t sockfd,
     struct oe_sockaddr* addr,
     socklen_t addrlen_in,
     socklen_t* addrlen_out,
     int* err)
 {
-    int ret;
+    oe_host_fd_t ret;
 
     _clear_err(err);
 
-    if ((ret = accept(sockfd, (struct sockaddr*)addr, &addrlen_in)) == -1)
+    if ((ret = accept((int)sockfd, (struct sockaddr*)addr, &addrlen_in)) == -1)
     {
         _set_err(err, errno);
         goto done;
@@ -414,7 +429,7 @@ done:
 }
 
 int oe_posix_bind_ocall(
-    int sockfd,
+    oe_host_fd_t sockfd,
     const struct oe_sockaddr* addr,
     socklen_t addrlen,
     int* err)
@@ -423,26 +438,26 @@ int oe_posix_bind_ocall(
 
     _clear_err(err);
 
-    if ((ret = bind(sockfd, (const struct sockaddr*)addr, addrlen)) == -1)
+    if ((ret = bind((int)sockfd, (const struct sockaddr*)addr, addrlen)) == -1)
         _set_err(err, errno);
 
     return ret;
 }
 
-int oe_posix_listen_ocall(int sockfd, int backlog, int* err)
+int oe_posix_listen_ocall(oe_host_fd_t sockfd, int backlog, int* err)
 {
     int ret;
 
     _clear_err(err);
 
-    if ((ret = listen(sockfd, backlog)) == -1)
+    if ((ret = listen((int)sockfd, backlog)) == -1)
         _set_err(err, errno);
 
     return ret;
 }
 
 ssize_t oe_posix_recvmsg_ocall(
-    int sockfd,
+    oe_host_fd_t sockfd,
     void* msg_name,
     socklen_t msg_namelen,
     socklen_t* msg_namelen_out,
@@ -470,7 +485,7 @@ ssize_t oe_posix_recvmsg_ocall(
     msg.msg_controllen = msg_controllen;
     msg.msg_flags = 0;
 
-    if ((ret = recvmsg(sockfd, &msg, flags)) == -1)
+    if ((ret = recvmsg((int)sockfd, &msg, flags)) == -1)
     {
         _set_err(err, errno);
         goto done;
@@ -488,7 +503,7 @@ done:
 }
 
 ssize_t oe_posix_sendmsg_ocall(
-    int sockfd,
+    oe_host_fd_t sockfd,
     const void* msg_name,
     socklen_t msg_namelen,
     const void* msg_buf,
@@ -514,14 +529,14 @@ ssize_t oe_posix_sendmsg_ocall(
     msg.msg_controllen = msg_controllen;
     msg.msg_flags = 0;
 
-    if ((ret = sendmsg(sockfd, &msg, flags)) == -1)
+    if ((ret = sendmsg((int)sockfd, &msg, flags)) == -1)
         _set_err(err, errno);
 
     return ret;
 }
 
 ssize_t oe_posix_recv_ocall(
-    int sockfd,
+    oe_host_fd_t sockfd,
     void* buf,
     size_t len,
     int flags,
@@ -531,14 +546,14 @@ ssize_t oe_posix_recv_ocall(
 
     _clear_err(err);
 
-    if ((ret = recv(sockfd, buf, len, flags)) == -1)
+    if ((ret = recv((int)sockfd, buf, len, flags)) == -1)
         _set_err(err, errno);
 
     return ret;
 }
 
 ssize_t oe_posix_recvfrom_ocall(
-    int sockfd,
+    oe_host_fd_t sockfd,
     void* buf,
     size_t len,
     int flags,
@@ -552,7 +567,7 @@ ssize_t oe_posix_recvfrom_ocall(
     _clear_err(err);
 
     ret = recvfrom(
-        sockfd, buf, len, flags, (struct sockaddr*)src_addr, &addrlen_in);
+        (int)sockfd, buf, len, flags, (struct sockaddr*)src_addr, &addrlen_in);
 
     if (ret == -1)
         _set_err(err, errno);
@@ -564,7 +579,7 @@ ssize_t oe_posix_recvfrom_ocall(
 }
 
 ssize_t oe_posix_send_ocall(
-    int sockfd,
+    oe_host_fd_t sockfd,
     const void* buf,
     size_t len,
     int flags,
@@ -574,14 +589,14 @@ ssize_t oe_posix_send_ocall(
 
     _clear_err(err);
 
-    if ((ret = send(sockfd, buf, len, flags)) == -1)
+    if ((ret = send((int)sockfd, buf, len, flags)) == -1)
         _set_err(err, errno);
 
     return ret;
 }
 
 ssize_t oe_posix_sendto_ocall(
-    int sockfd,
+    oe_host_fd_t sockfd,
     const void* buf,
     size_t len,
     int flags,
@@ -594,7 +609,12 @@ ssize_t oe_posix_sendto_ocall(
     _clear_err(err);
 
     ret = sendto(
-        sockfd, buf, len, flags, (const struct sockaddr*)src_addr, addrlen);
+        (int)sockfd,
+        buf,
+        len,
+        flags,
+        (const struct sockaddr*)src_addr,
+        addrlen);
 
     if (ret == -1)
         _set_err(err, errno);
@@ -602,32 +622,32 @@ ssize_t oe_posix_sendto_ocall(
     return ret;
 }
 
-int oe_posix_shutdown_ocall(int sockfd, int how, int* err)
+int oe_posix_shutdown_ocall(oe_host_fd_t sockfd, int how, int* err)
 {
     int ret;
 
     _clear_err(err);
 
-    if ((ret = shutdown(sockfd, how)) == -1)
+    if ((ret = shutdown((int)sockfd, how)) == -1)
         _set_err(err, errno);
 
     return ret;
 }
 
-int oe_posix_fcntl_ocall(int fd, int cmd, uint64_t arg, int* err)
+int oe_posix_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg, int* err)
 {
     int ret;
 
     _clear_err(err);
 
-    if ((ret = fcntl(fd, cmd, arg)) == -1)
+    if ((ret = fcntl((int)fd, cmd, arg)) == -1)
         _set_err(err, errno);
 
     return ret;
 }
 
 int oe_posix_setsockopt_ocall(
-    int sockfd,
+    oe_host_fd_t sockfd,
     int level,
     int optname,
     const void* optval,
@@ -638,14 +658,14 @@ int oe_posix_setsockopt_ocall(
 
     _clear_err(err);
 
-    if ((ret = setsockopt(sockfd, level, optname, optval, optlen)) == -1)
+    if ((ret = setsockopt((int)sockfd, level, optname, optval, optlen)) == -1)
         _set_err(err, errno);
 
     return ret;
 }
 
 int oe_posix_getsockopt_ocall(
-    int sockfd,
+    oe_host_fd_t sockfd,
     int level,
     int optname,
     void* optval,
@@ -657,7 +677,8 @@ int oe_posix_getsockopt_ocall(
 
     _clear_err(err);
 
-    if ((ret = getsockopt(sockfd, level, optname, optval, &optlen_in)) == -1)
+    if ((ret = getsockopt((int)sockfd, level, optname, optval, &optlen_in)) ==
+        -1)
         _set_err(err, errno);
 
     if (optlen_out)
@@ -667,7 +688,7 @@ int oe_posix_getsockopt_ocall(
 }
 
 int oe_posix_getsockname_ocall(
-    int sockfd,
+    oe_host_fd_t sockfd,
     struct oe_sockaddr* addr,
     socklen_t addrlen_in,
     socklen_t* addrlen_out,
@@ -677,7 +698,8 @@ int oe_posix_getsockname_ocall(
 
     _clear_err(err);
 
-    if ((ret = getsockname(sockfd, (struct sockaddr*)addr, &addrlen_in)) == -1)
+    if ((ret = getsockname((int)sockfd, (struct sockaddr*)addr, &addrlen_in)) ==
+        -1)
         _set_err(err, errno);
 
     if (addrlen_out)
@@ -687,7 +709,7 @@ int oe_posix_getsockname_ocall(
 }
 
 int oe_posix_getpeername_ocall(
-    int sockfd,
+    oe_host_fd_t sockfd,
     struct oe_sockaddr* addr,
     socklen_t addrlen_in,
     socklen_t* addrlen_out,
@@ -697,7 +719,8 @@ int oe_posix_getpeername_ocall(
 
     _clear_err(err);
 
-    if ((ret = getpeername(sockfd, (struct sockaddr*)addr, &addrlen_in)) == -1)
+    if ((ret = getpeername((int)sockfd, (struct sockaddr*)addr, &addrlen_in)) ==
+        -1)
         _set_err(err, errno);
 
     if (addrlen_out)
@@ -706,7 +729,7 @@ int oe_posix_getpeername_ocall(
     return ret;
 }
 
-int oe_posix_shutdown_sockets_device_ocall(int sockfd, int* err)
+int oe_posix_shutdown_sockets_device_ocall(oe_host_fd_t sockfd, int* err)
 {
     OE_UNUSED(sockfd);
 
@@ -951,7 +974,7 @@ int oe_posix_shutdown_resolver_device_ocall(int* err)
 typedef struct _wait_args
 {
     int64_t enclaveid;
-    int epfd;
+    oe_host_fd_t epfd;
     int maxevents;
     struct epoll_event events[];
 } wait_args_t;
@@ -962,7 +985,7 @@ static void* epoll_wait_thread(void* arg_)
     wait_args_t* args = (wait_args_t*)arg_;
     int retval;
 
-    ret = epoll_wait(args->epfd, args->events, args->maxevents, -1);
+    ret = epoll_wait((int)args->epfd, args->events, args->maxevents, -1);
 
     if (ret >= 0)
     {
@@ -994,7 +1017,7 @@ done:
 typedef struct _poll_args
 {
     int64_t enclaveid;
-    int epfd;
+    oe_host_fd_t epfd;
     nfds_t nfds;
     struct pollfd fds[];
 } poll_args_t;
@@ -1044,9 +1067,9 @@ done:
     return NULL;
 }
 
-int oe_posix_epoll_create1_ocall(int flags, int* err)
+oe_host_fd_t oe_posix_epoll_create1_ocall(int flags, int* err)
 {
-    int ret;
+    oe_host_fd_t ret;
 
     _clear_err(err);
 
@@ -1058,7 +1081,7 @@ int oe_posix_epoll_create1_ocall(int flags, int* err)
 
 int oe_posix_epoll_wait_async_ocall(
     int64_t enclaveid,
-    int epfd,
+    oe_host_fd_t epfd,
     size_t maxevents,
     int* err)
 {
@@ -1096,8 +1119,8 @@ done:
 }
 
 int oe_posix_epoll_ctl_add_ocall(
-    int epfd,
-    int fd,
+    oe_host_fd_t epfd,
+    oe_host_fd_t fd,
     unsigned int event_mask,
     int list_idx,
     int epoll_enclave_fd,
@@ -1115,27 +1138,27 @@ int oe_posix_epoll_ctl_add_ocall(
 
     _clear_err(err);
 
-    if ((ret = epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev)) == -1)
+    if ((ret = epoll_ctl((int)epfd, EPOLL_CTL_ADD, (int)fd, &ev)) == -1)
         _set_err(err, errno);
 
     return ret;
 }
 
-int oe_posix_epoll_ctl_del_ocall(int epfd, int fd, int* err)
+int oe_posix_epoll_ctl_del_ocall(oe_host_fd_t epfd, oe_host_fd_t fd, int* err)
 {
     int ret;
 
     _clear_err(err);
 
-    if ((ret = epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL)) == -1)
+    if ((ret = epoll_ctl((int)epfd, EPOLL_CTL_DEL, (int)fd, NULL)) == -1)
         _set_err(err, errno);
 
     return ret;
 }
 
 int oe_posix_epoll_ctl_mod_ocall(
-    int epfd,
-    int fd,
+    oe_host_fd_t epfd,
+    oe_host_fd_t fd,
     unsigned int event_mask,
     int list_idx,
     int enclave_fd,
@@ -1151,25 +1174,25 @@ int oe_posix_epoll_ctl_mod_ocall(
         .data.u64 = ev_data.data,
     };
 
-    if ((ret = epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &ev)) == -1)
+    if ((ret = epoll_ctl((int)epfd, EPOLL_CTL_MOD, (int)fd, &ev)) == -1)
         _set_err(err, errno);
 
     return ret;
 }
 
-int oe_posix_epoll_close_ocall(int fd, int* err)
+int oe_posix_epoll_close_ocall(oe_host_fd_t fd, int* err)
 {
     int ret;
 
     _clear_err(err);
 
-    if ((ret = close(fd)) == -1)
+    if ((ret = close((int)fd)) == -1)
         _set_err(err, errno);
 
     return ret;
 }
 
-int oe_posix_shutdown_polling_device_ocall(int fd, int* err)
+int oe_posix_shutdown_polling_device_ocall(oe_host_fd_t fd, int* err)
 {
     OE_UNUSED(fd);
     OE_UNUSED(err);
@@ -1181,7 +1204,7 @@ int oe_posix_shutdown_polling_device_ocall(int fd, int* err)
 
 int oe_posix_epoll_poll_ocall(
     int64_t enclaveid,
-    int epfd,
+    oe_host_fd_t epfd,
     struct oe_pollfd* fds,
     size_t nfds,
     int timeout,

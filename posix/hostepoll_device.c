@@ -257,7 +257,7 @@ done:
 static oe_device_t* _epoll_create(oe_device_t* epoll_, int size)
 {
     oe_device_t* ret = NULL;
-    int retval;
+    oe_host_fd_t retval;
     epoll_dev_t* epoll = NULL;
     oe_result_t result = OE_FAILURE;
 
@@ -292,7 +292,7 @@ static oe_device_t* _epoll_create1(oe_device_t* epoll_, int32_t flags)
 {
     oe_device_t* ret = NULL;
     epoll_dev_t* epoll = NULL;
-    int retval;
+    oe_host_fd_t retval;
     oe_result_t result = OE_FAILURE;
 
     oe_errno = 0;

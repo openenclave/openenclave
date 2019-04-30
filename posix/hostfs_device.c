@@ -47,7 +47,7 @@ typedef struct _file
 {
     struct _oe_device base;
     uint32_t magic;
-    int host_fd;
+    oe_host_fd_t host_fd;
     uint32_t ready_mask;
     oe_device_t* dir;
 } file_t;
@@ -287,7 +287,7 @@ static oe_device_t* _hostfs_open_file(
     fs_t* fs = _cast_fs(fs_);
     file_t* file = NULL;
     char full_pathname[OE_PATH_MAX];
-    int retval = -1;
+    oe_host_fd_t retval = -1;
 
     oe_errno = 0;
 
@@ -472,7 +472,7 @@ static int _hostfs_dup(oe_device_t* file_, oe_device_t** new_file)
     /* Call */
     {
         int err = 0;
-        int retval = -1;
+        oe_host_fd_t retval = -1;
 
         if (oe_posix_dup_ocall(&retval, file->host_fd, &err) != OE_OK)
         {
@@ -1357,7 +1357,7 @@ done:
     return ret;
 }
 
-static ssize_t _hostfs_gethostfd(oe_device_t* file_)
+static oe_host_fd_t _hostfs_gethostfd(oe_device_t* file_)
 {
     file_t* f = _cast_file(file_);
 

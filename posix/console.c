@@ -15,7 +15,7 @@ typedef struct _file
 {
     struct _oe_device base;
     uint32_t magic;
-    int host_fd;
+    oe_host_fd_t host_fd;
 } file_t;
 
 static file_t* _cast_file(const oe_device_t* device)
@@ -32,7 +32,7 @@ static int _consolefs_dup(oe_device_t* file_, oe_device_t** new_file_out)
 {
     int ret = -1;
     file_t* file = _cast_file(file_);
-    int retval = -1;
+    oe_host_fd_t retval = -1;
     oe_result_t result = OE_FAILURE;
 
     if (new_file_out)
