@@ -181,7 +181,7 @@ static oe_device_t* _hostsock_socket(
 {
     oe_device_t* ret = NULL;
     sock_t* sock = NULL;
-    int retval = -1;
+    oe_host_fd_t retval = oe_host_fd(-1);
     oe_result_t result = OE_FAILURE;
 
     oe_errno = 0;
@@ -206,7 +206,7 @@ static oe_device_t* _hostsock_socket(
         goto done;
     }
 
-    if (retval == -1)
+    if (oe_host_fd_v(retval) == -1)
     {
         OE_TRACE_ERROR("retval=%d", retval);
         goto done;
@@ -354,7 +354,7 @@ static int _hostsock_accept(
     oe_socklen_t* addrlen)
 {
     int ret = -1;
-    oe_host_fd_t retval = -1;
+    oe_host_fd_t retval = oe_host_fd(-1);
     sock_t* sock = _cast_sock(sock_);
     sockaddr_t buf;
     oe_socklen_t addrlen_in = 0;
@@ -402,7 +402,7 @@ static int _hostsock_accept(
         goto done;
     }
 
-    if (retval == -1)
+    if (oe_host_fd_v(retval) == -1)
     {
         OE_TRACE_ERROR("retval=%ld", retval);
         goto done;
@@ -846,7 +846,7 @@ done:
 static int _hostsock_dup(oe_device_t* sock_, oe_device_t** new_sock)
 {
     int ret = -1;
-    oe_host_fd_t retval = -1;
+    oe_host_fd_t retval = oe_host_fd(-1);
     sock_t* sock = _cast_sock(sock_);
     oe_result_t result = OE_FAILURE;
 
@@ -867,7 +867,7 @@ static int _hostsock_dup(oe_device_t* sock_, oe_device_t** new_sock)
         goto done;
     }
 
-    if (retval != -1)
+    if (oe_host_fd_v(retval) != -1)
     {
         sock_t* s = NULL;
 
@@ -1138,7 +1138,7 @@ done:
     return ret;
 }
 
-static ssize_t _hostsock_gethostfd(oe_device_t* sock_)
+static oe_host_fd_t _hostsock_gethostfd(oe_device_t* sock_)
 {
     sock_t* sock = _cast_sock(sock_);
     return sock->host_fd;

@@ -287,7 +287,7 @@ static oe_device_t* _hostfs_open_file(
     fs_t* fs = _cast_fs(fs_);
     file_t* file = NULL;
     char full_pathname[OE_PATH_MAX];
-    oe_host_fd_t retval = -1;
+    oe_host_fd_t retval = oe_host_fd(-1);
 
     oe_errno = 0;
 
@@ -330,7 +330,7 @@ static oe_device_t* _hostfs_open_file(
             goto done;
         }
 
-        if (retval < 0)
+        if (oe_host_fd_v(retval) < 0)
         {
             oe_errno = err;
             OE_TRACE_ERROR("oe_errno=%d", oe_errno);
@@ -419,7 +419,7 @@ static oe_device_t* _hostfs_open_directory(
         file->base.name = DEVICE_NAME;
         file->magic = FILE_MAGIC;
         file->base.ops.fs = fs->base.ops.fs;
-        file->host_fd = -1;
+        file->host_fd = oe_host_fd(-1);
         file->dir = dir;
     }
 
@@ -472,7 +472,7 @@ static int _hostfs_dup(oe_device_t* file_, oe_device_t** new_file)
     /* Call */
     {
         int err = 0;
-        oe_host_fd_t retval = -1;
+        oe_host_fd_t retval = oe_host_fd(-1);
 
         if (oe_posix_dup_ocall(&retval, file->host_fd, &err) != OE_OK)
         {
@@ -481,7 +481,7 @@ static int _hostfs_dup(oe_device_t* file_, oe_device_t** new_file)
             goto done;
         }
 
-        if (retval != -1)
+        if (oe_host_fd_v(retval) != -1)
         {
             file_t* f = NULL;
             _hostfs_clone(file_, (oe_device_t**)&f);
@@ -1366,7 +1366,7 @@ static oe_host_fd_t _hostfs_gethostfd(oe_device_t* file_)
         return f->host_fd;
     }
 
-    return -1;
+    return oe_host_fd(-1);
 }
 
 static oe_fs_ops_t _ops = {

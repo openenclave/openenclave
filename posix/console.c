@@ -32,7 +32,7 @@ static int _consolefs_dup(oe_device_t* file_, oe_device_t** new_file_out)
 {
     int ret = -1;
     file_t* file = _cast_file(file_);
-    oe_host_fd_t retval = -1;
+    oe_host_fd_t retval = oe_host_fd(-1);
     oe_result_t result = OE_FAILURE;
 
     if (new_file_out)
@@ -58,7 +58,7 @@ static int _consolefs_dup(oe_device_t* file_, oe_device_t** new_file_out)
             goto done;
         }
 
-        if (retval == -1)
+        if (oe_host_fd_v(retval) == -1)
         {
             oe_errno = err;
             OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
@@ -195,9 +195,9 @@ done:
     return ret;
 }
 
-static ssize_t _consolefs_gethostfd(oe_device_t* file_)
+static oe_host_fd_t _consolefs_gethostfd(oe_device_t* file_)
 {
-    ssize_t ret = -1;
+    oe_host_fd_t ret = oe_host_fd(-1);
     file_t* file = _cast_file(file_);
 
     if (!file)
@@ -288,14 +288,14 @@ static int _consolefs_close(oe_device_t* file_)
         }
     }
 
-    switch (file->host_fd)
+    switch (oe_host_fd_v(file->host_fd))
     {
         case OE_STDIN_FILENO:
         case OE_STDOUT_FILENO:
         case OE_STDERR_FILENO:
         {
             /* Do not free these statically initialized structures. */
-            file->host_fd = -1;
+            file->host_fd = oe_host_fd(-1);
             break;
         }
         default:
@@ -340,7 +340,7 @@ static file_t _stdin_file = {
     .base.name = DEVICE_NAME,
     .base.ops.fs = &_ops,
     .magic = MAGIC,
-    .host_fd = OE_STDIN_FILENO,
+    .host_fd.value = OE_STDIN_FILENO,
 };
 
 static file_t _stdout_file = {
@@ -348,7 +348,7 @@ static file_t _stdout_file = {
     .base.name = DEVICE_NAME,
     .base.ops.fs = &_ops,
     .magic = MAGIC,
-    .host_fd = OE_STDOUT_FILENO,
+    .host_fd.value = OE_STDOUT_FILENO,
 };
 
 static file_t _stderr_file = {
@@ -356,7 +356,7 @@ static file_t _stderr_file = {
     .base.name = DEVICE_NAME,
     .base.ops.fs = &_ops,
     .magic = MAGIC,
-    .host_fd = OE_STDERR_FILENO,
+    .host_fd.value = OE_STDERR_FILENO,
 };
 
 int oe_initialize_console_devices(void)

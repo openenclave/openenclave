@@ -279,10 +279,10 @@ done:
     return ret;
 }
 
-static ssize_t _eventfd_gethostfd(oe_device_t* eventfd_)
+static oe_host_fd_t _eventfd_gethostfd(oe_device_t* eventfd_)
 {
     (void)eventfd_;
-    return -1;
+    return oe_host_fd(-1);
 }
 
 static oe_eventfd_ops_t _ops = {

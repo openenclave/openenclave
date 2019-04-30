@@ -449,7 +449,7 @@ int oe_post_device_notifications(
     locked = true;
 
     /* Save the epoll file descriptor (the array index). */
-    index = (size_t)(notices[0].epoll_fd);
+    index = (size_t)notices[0].epoll_fd;
 
     /* Expand array if not already big enough. */
     if (_array_resize(index + 1) != 0)
