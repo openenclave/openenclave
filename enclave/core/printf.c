@@ -676,7 +676,7 @@ int oe_vprintf(const char* fmt, oe_va_list ap_)
 
         if ((size_t)n < sizeof(buf))
         {
-            oe_write(OE_STDOUT_FILENO, p, oe_strlen(p));
+            oe_host_write(0, p, (size_t)-1);
             goto done;
         }
     }
@@ -696,7 +696,7 @@ int oe_vprintf(const char* fmt, oe_va_list ap_)
         if (n < 0)
             goto done;
 
-        oe_write(OE_STDOUT_FILENO, p, oe_strlen(p));
+        oe_host_write(0, p, (size_t)-1);
     }
 
 done:
@@ -719,65 +719,6 @@ int oe_printf(const char* format, ...)
     return n;
 }
 
-int oe_vfprintf(OE_FILE* stream, const char* format, oe_va_list ap_)
-{
-    char buf[1024];
-    char* p = buf;
-    int n;
-    char* new_buf = NULL;
-
-    /* Try first with a fixed-length scratch buffer */
-    {
-        oe_va_list ap;
-        oe_va_copy(ap, ap_);
-        n = oe_vsnprintf(buf, sizeof(buf), format, ap);
-        oe_va_end(ap);
-
-        if (n < 0)
-            goto done;
-
-        if ((size_t)n < sizeof(buf))
-        {
-            if (oe_fwrite(p, 1, (size_t)n, stream) != (size_t)n)
-            {
-                n = -1;
-                goto done;
-            }
-
-            goto done;
-        }
-    }
-
-    /* If string was truncated, retry with correctly sized buffer */
-    {
-        if (!(new_buf = (char*)oe_malloc((size_t)n + 1)))
-            goto done;
-
-        p = new_buf;
-
-        oe_va_list ap;
-        oe_va_copy(ap, ap_);
-        n = oe_vsnprintf(p, (size_t)n + 1, format, ap);
-        oe_va_end(ap);
-
-        if (n < 0)
-            goto done;
-
-        if (oe_fwrite(p, 1, (size_t)n, stream) != (size_t)n)
-        {
-            n = -1;
-            goto done;
-        }
-    }
-
-done:
-
-    if (new_buf)
-        oe_free(new_buf);
-
-    return n;
-}
-
 int oe_puts(const char* s)
 {
     oe_printf("%s\n", s);
@@ -788,14 +729,6 @@ int oe_putchar(int c)
 {
     oe_printf("%c", c);
     return 0;
-}
-
-int oe_fputc(int c, OE_FILE* stream)
-{
-    if (oe_fprintf(stream, "%c", c) <= 0)
-        return OE_EOF;
-
-    return c;
 }
 
 __attribute__((weak)) int putchar(int c)

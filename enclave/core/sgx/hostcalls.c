@@ -149,10 +149,6 @@ int oe_host_vfprintf(int device, const char* fmt, oe_va_list ap_)
     char* p = buf;
     int n;
 
-    /* Check that the device number is either stdout(0) or stderr(1). */
-    if (device != 0 && device != 1)
-        return -1;
-
     /* Try first with a fixed-length scratch buffer */
     {
         oe_va_list ap;
@@ -173,9 +169,7 @@ int oe_host_vfprintf(int device, const char* fmt, oe_va_list ap_)
         oe_va_end(ap);
     }
 
-    /* Ask the host to write the string. */
-    if (oe_host_write(device, p, (size_t)-1) == -1)
-        return -1;
+    oe_host_write(device, p, (size_t)-1);
 
     return n;
 }

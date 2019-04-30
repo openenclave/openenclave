@@ -946,7 +946,7 @@
  * Enable functions that use the filesystem.
  */
 // Open Enclave: disabled, file I/O is currently unsupported in enclaves
-#define MBEDTLS_FS_IO
+//#define MBEDTLS_FS_IO
 
 /**
  * \def MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES

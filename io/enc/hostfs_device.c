@@ -14,7 +14,7 @@
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/print.h>
-#include "oe_t.h"
+#include "oeio_t.h"
 #include <openenclave/corelibc/dirent.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>

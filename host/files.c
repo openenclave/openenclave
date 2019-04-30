@@ -3,7 +3,6 @@
 
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
-#include <openenclave/corelibc/sys/types.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/files.h>
 #include <openenclave/internal/raise.h>
@@ -12,19 +11,15 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "fopen.h"
-
+#include <string.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include "fopen.h"
 
 bool __oe_file_exists(const char* path)
 {
-#if defined(_MSC_VER)
-    struct _stat st;
-    return _stat(path, &st) == 0 ? true : false;
-#else
     struct stat st;
     return stat(path, &st) == 0 ? true : false;
-#endif
 }
 
 oe_result_t __oe_load_file(

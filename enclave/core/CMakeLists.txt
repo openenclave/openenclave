@@ -4,18 +4,6 @@
 set(PLATFORM_SRC "")
 set(MUSL_SRC_DIR ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
-add_custom_command(OUTPUT oe_t.h oe_t.c oe_args.h
-  DEPENDS
-    ${CMAKE_SOURCE_DIR}/common/oe.edl
-    edger8r
-    ../../common/oe.edl
-    ../../common/posix.edl
-  COMMAND edger8r
-      --search-path ${CMAKE_SOURCE_DIR}/common
-      --trusted ${CMAKE_SOURCE_DIR}/common/oe.edl)
-
-add_custom_target(oe_trusted_edl DEPENDS oe_t.h oe_t.c oe_args.h)
-
 if (OE_SGX)
     list(APPEND PLATFORM_SRC
         sgx/atexit.c
@@ -26,7 +14,6 @@ if (OE_SGX)
         sgx/entropy.c
         sgx/errno.c
         sgx/exception.c
-        sgx/globals.c
         sgx/globals.c
         sgx/hostcalls.c
         sgx/init.c
@@ -64,7 +51,6 @@ elseif(OE_TRUSTZONE)
     message("TODO: ADD ARM files.")
     list(APPEND PLATFORM_SRC
         optee/abort.c
-        optee/errno.c
         optee/bounds.c
         optee/host.c
         optee/printf.c
@@ -74,43 +60,14 @@ endif()
 
 add_library(oecore STATIC
     ../../common/safecrt.c
-    oe_t_wrapper.c
     ${MUSL_SRC_DIR}/prng/rand.c
     ${MUSL_SRC_DIR}/string/memcmp.c
     ${MUSL_SRC_DIR}/string/memcpy.c
     ${MUSL_SRC_DIR}/string/memmove.c
     ${MUSL_SRC_DIR}/string/memset.c
-    posix/console.c
-    posix/cwd.c
-    posix/device.c
-    posix/epoll.c
-    posix/eventfd.c
-    posix/eventfd_device.c
-    posix/exit.c
-    posix/fd.c
-    posix/fs.c
-    posix/getdomainname.c
-    posix/gethostname.c
-    posix/hostepoll_device.c
-    posix/hostfs_device.c
-    posix/hostresolver_device.c
-    posix/hostsock_device.c
-    posix/ids.c
-    posix/mount.c
-    posix/poll.c
-    posix/realpath.c
-    posix/resolver.c
-    posix/select.c
-    posix/signal.c
-    posix/socket.c
-    posix/syscall.c
-    posix/uname.c
-    posix/sleep.c
     __secs_to_tm.c
     __stack_chk_fail.c
-    array.c
     assert.c
-    corelibc.c
     ctype.c
     gmtime.c
     hexdump.c
@@ -126,12 +83,8 @@ add_library(oecore STATIC
     time.c
     ${PLATFORM_SRC})
 
-add_dependencies(oecore oe_trusted_edl)
-
-target_include_directories(oecore PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-
 # Suppress type conversion warnings introduced by 3rdparty code
-set_source_files_properties(${MUSL_SRC_DIR}/prng/rand.c PROPERTIES
+set_source_files_properties(${MUSL_SRC_DIR}/prng/rand.c ROPERTIES
     COMPILE_FLAGS -Wno-conversion)
 set_source_files_properties(${MUSL_SRC_DIR}/string/memmove.c PROPERTIES
     COMPILE_FLAGS -Wno-sign-conversion)
@@ -151,8 +104,6 @@ endif()
 # This directory contains enclave core libc headers:
 target_include_directories(oecore PRIVATE
     ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
-
-target_include_directories(oecore PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 if (OE_SGX)
     # Unfortunately dlmalloc uses GNU extension that allows arithmetic

@@ -8,7 +8,7 @@
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/globals.h>
-#include "oe_t.h"
+#include "oeio_t.h"
 
 oe_pid_t oe_getpid(void)
 {

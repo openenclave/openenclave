@@ -84,7 +84,7 @@ if ( UNIX )
     endif()
 add_subdirectory(corelibc)
 add_subdirectory(create-rapid)
-add_subdirectory(posix)
+#add_subdirectory(posix)
 endif()
 
 if (OE_SGX AND UNIX)

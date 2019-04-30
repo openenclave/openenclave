@@ -1,25 +1,11 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-add_custom_command(
-    OUTPUT oe_u.h oe_u.c oe_args.h
-    DEPENDS
-        ${CMAKE_SOURCE_DIR}/common/oe.edl
-        edger8r
-        ../common/oe.edl
-        ../common/posix.edl
-    COMMAND edger8r
-        --search-path ${CMAKE_SOURCE_DIR}/common
-        --untrusted ${CMAKE_SOURCE_DIR}/common/oe.edl)
-    add_custom_target(oe_untrusted_edl DEPENDS oe_u.h oe_u.c oe_args.h)
-
 # OS specific but arch agnostic files.
 if (UNIX)
   set(PLATFORM_SRC
     ../common/asn1.c
     ../common/cert.c
-    oe_u_wrapper.c
-    files.c # __feature_io__
     crypto/openssl/asn1.c
     crypto/openssl/cert.c
     crypto/openssl/crl.c
@@ -30,7 +16,6 @@ if (UNIX)
     crypto/openssl/random.c
     crypto/openssl/rsa.c
     linux/hostthread.c
-    linux/posix.c
     linux/time.c
     linux/windows.c)
 elseif (WIN32)
@@ -38,13 +23,8 @@ elseif (WIN32)
     ../3rdparty/mbedtls/mbedtls/library/bignum.c
     crypto/bcrypt/hmac.c
     crypto/bcrypt/rsa.c
-    oe_u_wrapper.c
-    files.c # __feature_io__
     windows/hostthread.c
-    windows/posix.c
-    windows/time.c
-    windows/uname.c
-    )
+    windows/time.c)
 else()
   message(FATAL_ERROR "Unknown OS. Only supported OSes are Linux and Windows")
 endif()
@@ -109,35 +89,25 @@ endif()
 
 # Combine with all other non platform dependent files.
 add_library(oehost STATIC
-  # __feature_io__: - ${CMAKE_CURRENT_BINARY_DIR}/oe_u.c
-  # __feature_io__: - ../common/kdf.c
   ../common/datetime.c
-  ../common/safecrt.c
   ../common/kdf.c
+  ../common/safecrt.c
   asym_keys.c
   dupenv.c
   error.c
-  # __feature_io__: - ${CMAKE_CURRENT_BINARY_DIR}/oe_u.c
-  # __feature_io__: - files.c
+  files.c
   fopen.c
   hexdump.c
   memalign.c
+  ocalls.c
   result.c
   signkey.c
   strings.c
   tests.c
-  ocalls.c
   crypto/sha.c
   ${PLATFORM_SRC})
 
-add_dependencies(oehost oe_untrusted_edl)
-
 target_link_libraries(oehost PUBLIC oe_includes)
-
-target_include_directories(oehost PRIVATE
-    ${PROJECT_SOURCE_DIR}/host/include)
-
-target_include_directories(oehost PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 # TODO: Replace these with `find_package` and add as dependencies to
 # the CMake package.
@@ -152,8 +122,6 @@ if (UNIX)
 endif ()
 
 find_package(Threads REQUIRED)
-
-target_include_directories(oehost PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 if (UNIX)
   target_link_libraries(oehost PRIVATE crypto dl Threads::Threads)

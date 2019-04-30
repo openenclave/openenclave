@@ -1,11 +1,30 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-typedef __int64 oe_off_t;
-#include <io.h>
-#include <stdint.h>
-#pragma warning(disable : 4005)
-#include "oe_u.h"
+#include <dirent.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <limits.h>
+#include <netdb.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/epoll.h>
+#include <sys/poll.h>
+#include <sys/signal.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/utsname.h>
+#include <unistd.h>
+#include "oeio_u.h"
+
+/*
+**==============================================================================
+**
+** Local definitions.
+**
+**==============================================================================
+*/
 
 OE_INLINE void _set_err(int* err, int num)
 {
@@ -15,6 +34,8 @@ OE_INLINE void _set_err(int* err, int num)
 
 OE_INLINE void _clear_err(int* err)
 {
+    errno = 0;
+
     if (err)
         *err = 0;
 }
@@ -22,156 +43,90 @@ OE_INLINE void _clear_err(int* err)
 /*
 **==============================================================================
 **
-** File I/O:
+** File and directory I/O:
 **
 **==============================================================================
 */
 
-int oe_posix_open_ocall(
-    const char* pathname,
-    int flags,
-    oe_mode_t mode,
-    int* err)
+int oe_posix_open_ocall(const char* pathname, int flags, mode_t mode, int* err)
 {
     int ret = -1;
 
-#if defined(NOTYET)
-    if (strcmp(pathname, "/dev/stdin") == 0)
-    {
-        if ((flags & 0x00000003) != O_RDONLY)
-        {
-            if (err)
-                *err = EINVAL;
+    _clear_err(err);
 
-            goto done;
-        }
+    if ((ret = open(pathname, flags, mode)) == -1)
+        _set_err(err, errno);
 
-        ret = STDIN_FILENO;
-    }
-    else if (strcmp(pathname, "/dev/stdout") == 0)
-    {
-        if ((flags & 0x00000003) != O_WRONLY)
-        {
-            if (err)
-                *err = EINVAL;
-
-            goto done;
-        }
-
-        ret = STDOUT_FILENO;
-    }
-    else if (strcmp(pathname, "/dev/stderr") == 0)
-    {
-        if ((flags & 0x00000003) != O_WRONLY)
-        {
-            if (err)
-                *err = EINVAL;
-
-            goto done;
-        }
-
-        ret = STDERR_FILENO;
-    }
-    else
-    {
-        ret = open(pathname, flags, mode);
-
-        if (ret == -1 && err)
-            *err = errno;
-    }
-#else
-    ret = -1;
-    _set_err(err, 38); // ENOSYS
-    goto done;
-#endif
-
-done:
     return ret;
 }
 
 ssize_t oe_posix_read_ocall(int fd, void* buf, size_t count, int* err)
 {
-    ssize_t ret = _read(fd, buf, (uint32_t)count);
+    ssize_t ret;
 
-    if (ret == -1 && err)
-        *err = errno;
+    _clear_err(err);
+
+    if ((ret = read(fd, buf, count)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
 
 ssize_t oe_posix_write_ocall(int fd, const void* buf, size_t count, int* err)
 {
-    ssize_t ret = _write(fd, buf, (uint32_t)count);
+    ssize_t ret;
 
-    if (ret == -1 && err)
-        *err = errno;
+    _clear_err(err);
+
+    if ((ret = write(fd, buf, count)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
 
-oe_off_t oe_posix_lseek_ocall(int fd, oe_off_t offset, int whence, int* err)
+off_t oe_posix_lseek_ocall(int fd, off_t offset, int whence, int* err)
 {
-#if defined(NOTYET)
-    oe_off_t ret = lseek(fd, offset, whence);
-    2DO
+    off_t ret;
 
-        if (ret == -1 && err)* err = errno;
-#else
-    int ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
+    _clear_err(err);
+
+    if ((ret = lseek(fd, offset, whence)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
 
 int oe_posix_close_ocall(int fd, int* err)
 {
-#if defined(NOTYET)
-    int ret = close(fd);
+    int ret;
 
-    if (ret != 0 && err)
-    {
-        if (err)
-            *err = errno;
-    }
-#else
-    int ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
+    _clear_err(err);
+
+    if ((ret = close(fd)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
 
 int oe_posix_dup_ocall(int oldfd, int* err)
 {
-#if defined(NOTYET)
-    int ret = dup(oldfd);
+    int ret;
 
-    if (ret == -1)
-    {
-        if (err)
-            *err = errno;
-    }
-#else
-    int ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
+    _clear_err(err);
+
+    if ((ret = dup(oldfd)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
 
 uint64_t oe_posix_opendir_ocall(const char* name, int* err)
 {
-#if defined(NOTYET)
-    void* ret = opendir(name);
+    void* ret;
 
-    if (!ret && err)
-        *err = errno;
+    if ((ret = opendir(name)) == NULL)
+        _set_err(err, errno);
 
-#else
-    int ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
     return (uint64_t)ret;
 }
 
@@ -186,7 +141,6 @@ int oe_posix_readdir_ocall(
     int* err)
 {
     int ret = -1;
-#if defined(NOTYET)
     struct dirent* ent;
 
     _clear_err(err);
@@ -220,10 +174,10 @@ int oe_posix_readdir_ocall(
     {
         size_t len = strlen(ent->d_name);
 
-        oe_assign_uint64(d_ino, &ent->d_ino);
-        oe_assign_int64(d_off, &ent->d_off);
-        oe_assign_uint16(d_reclen, &ent->d_reclen);
-        oe_assign_uint8(d_type, &ent->d_type);
+        *d_ino = ent->d_ino;
+        *d_off = ent->d_off;
+        *d_reclen = ent->d_reclen;
+        *d_type = ent->d_type;
 
         if (len >= d_namelen)
         {
@@ -235,11 +189,6 @@ int oe_posix_readdir_ocall(
     }
 
     ret = 0;
-#else
-    _set_err(err, 38); // ENOSYS
-    ret = -1;
-    goto done;
-#endif
 
 done:
     return ret;
@@ -247,20 +196,18 @@ done:
 
 void oe_posix_rewinddir_ocall(uint64_t dirp)
 {
-    //    rewinddir((DIR*)dirp); 2do
+    if (dirp)
+        rewinddir((DIR*)dirp);
 }
 
 int oe_posix_closedir_ocall(uint64_t dirp, int* err)
 {
-#if defined(NOTYET)
-    int ret = closedir((DIR*)dirp);
+    int ret;
 
-    if (ret != 0 && err)
-        *err = errno;
-#else
-    int ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
+    _clear_err(err);
+
+    if ((ret = closedir((DIR*)dirp)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
@@ -268,8 +215,6 @@ int oe_posix_closedir_ocall(uint64_t dirp, int* err)
 int oe_posix_stat_ocall(const char* pathname, struct oe_stat* buf, int* err)
 {
     int ret = -1;
-
-#if defined(NOTYET)
     struct stat st;
 
     _clear_err(err);
@@ -300,11 +245,6 @@ int oe_posix_stat_ocall(const char* pathname, struct oe_stat* buf, int* err)
     buf->st_mtim.tv_nsec = st.st_mtim.tv_nsec;
     buf->st_ctim.tv_sec = st.st_ctim.tv_sec;
     buf->st_ctim.tv_nsec = st.st_ctim.tv_nsec;
-#else
-    _set_err(err, 38); // ENOSYS
-    ret = -1;
-    goto done;
-#endif
 
 done:
     return ret;
@@ -312,105 +252,85 @@ done:
 
 int oe_posix_access_ocall(const char* pathname, int mode, int* err)
 {
-#if defined(NOTYET)
-    int ret = access(pathname, mode);
+    int ret;
 
-    if (ret != 0 && err)
-        *err = errno;
+    _clear_err(err);
 
-#else
-    int ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
+    if ((ret = access(pathname, mode)) == -1)
+        _set_err(err, errno);
+
     return ret;
 }
 
 int oe_posix_link_ocall(const char* oldpath, const char* newpath, int* err)
 {
-#if defined(NOTYET)
-    int ret = link(oldpath, newpath);
+    int ret;
 
-    if (ret != 0 && err)
-        *err = errno;
-#else
-    int ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
+    _clear_err(err);
+
+    if ((ret = link(oldpath, newpath)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
 
 int oe_posix_unlink_ocall(const char* pathname, int* err)
 {
-#if defined(NOTYET)
-    int ret = unlink(pathname);
+    int ret;
 
-    if (ret != 0 && err)
-        *err = errno;
-#else
-    int ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
+    _clear_err(err);
+
+    if ((ret = unlink(pathname)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
 
 int oe_posix_rename_ocall(const char* oldpath, const char* newpath, int* err)
 {
-#if defined(NOTYET)
-    int ret = rename(oldpath, newpath);
+    int ret;
 
-    if (ret != 0 && err)
-        *err = errno;
-#else
-    int ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
+    _clear_err(err);
+
+    if ((ret = rename(oldpath, newpath)) == -1)
+        _set_err(err, errno);
+
     return ret;
 }
 
-int oe_posix_truncate_ocall(const char* path, oe_off_t length, int* err)
+int oe_posix_truncate_ocall(const char* path, off_t length, int* err)
 {
-#if defined(NOTYET)
-    int ret = truncate(path, length);
+    int ret;
 
-    if (ret != 0 && err)
-        *err = errno;
+    _clear_err(err);
 
-#else
-    int ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
+    if ((ret = truncate(path, length)) == -1)
+        _set_err(err, errno);
+
     return ret;
 }
 
-int oe_posix_mkdir_ocall(const char* pathname, oe_mode_t mode, int* err)
+int oe_posix_mkdir_ocall(const char* pathname, mode_t mode, int* err)
 {
-#if defined(NOTYET)
-    int ret = mkdir(pathname, mode);
+    int ret;
 
-    if (ret != 0 && err)
-        *err = errno;
-#else
-    int ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
+    _clear_err(err);
+
+    if ((ret = mkdir(pathname, mode)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
 
 int oe_posix_rmdir_ocall(const char* pathname, int* err)
 {
-#if defined(NOTYET)
-    int ret = rmdir(pathname);
+    int ret;
 
-    if (ret != 0 && err)
-        *err = errno;
+    _clear_err(err);
 
-#else
-    int ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
+    if ((ret = rmdir(pathname)) == -1)
+        _set_err(err, errno);
+
     return ret;
 }
 
@@ -424,16 +344,13 @@ int oe_posix_rmdir_ocall(const char* pathname, int* err)
 
 int oe_posix_socket_ocall(int domain, int type, int protocol, int* err)
 {
-#if defined(NOTYET)
-    int ret = socket(domain, type, protocol);
+    int ret;
 
-    if (ret == -1 && err)
-        *err = errno;
+    _clear_err(err);
 
-#else
-    int ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
+    if ((ret = socket(domain, type, protocol)) == -1)
+        _set_err(err, errno);
+
     return ret;
 }
 
@@ -444,18 +361,12 @@ int oe_posix_socketpair_ocall(
     int sv[2],
     int* err)
 {
-#if defined(NOTYET)
-    int ret = socketpair(domain, type, protocol, sv);
+    int ret;
 
-    if (ret == -1)
-    {
-        if (err)
-            *err = errno;
-    }
-#else
-    int ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
+    _clear_err(err);
+
+    if ((ret = socketpair(domain, type, protocol, sv)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
@@ -463,37 +374,35 @@ int oe_posix_socketpair_ocall(
 int oe_posix_connect_ocall(
     int sockfd,
     const struct oe_sockaddr* addr,
-    oe_socklen_t addrlen,
+    socklen_t addrlen,
     int* err)
 {
-#if defined(NOTYET)
-    int ret = connect(sockfd, addr, addrlen);
+    int ret;
 
-    if (ret == -1 && err)
-        *err = errno;
+    _clear_err(err);
 
-#else
-    int ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
+    OE_STATIC_ASSERT(sizeof(struct oe_sockaddr) == sizeof(struct sockaddr));
+
+    if ((ret = connect(sockfd, (const struct sockaddr*)addr, addrlen)) == -1)
+        _set_err(err, errno);
+
     return ret;
 }
 
 int oe_posix_accept_ocall(
     int sockfd,
     struct oe_sockaddr* addr,
-    oe_socklen_t addrlen_in,
-    oe_socklen_t* addrlen_out,
+    socklen_t addrlen_in,
+    socklen_t* addrlen_out,
     int* err)
 {
-#if defined(NOTYET)
-    int ret = accept(sockfd, addr, &addrlen_in);
+    int ret;
 
-    if (ret == -1)
+    _clear_err(err);
+
+    if ((ret = accept(sockfd, (struct sockaddr*)addr, &addrlen_in)) == -1)
     {
-        if (err)
-            *err = errno;
-
+        _set_err(err, errno);
         goto done;
     }
 
@@ -501,60 +410,42 @@ int oe_posix_accept_ocall(
         *addrlen_out = addrlen_in;
 
 done:
-#else
-    int ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
     return ret;
 }
 
 int oe_posix_bind_ocall(
     int sockfd,
     const struct oe_sockaddr* addr,
-    oe_socklen_t addrlen,
+    socklen_t addrlen,
     int* err)
 {
-#if defined(NOTYET)
-    int ret = bind(sockfd, addr, addrlen);
+    int ret;
 
-    if (ret == -1)
-    {
-        if (err)
-            *err = errno;
-    }
-#else
-    int ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
+    _clear_err(err);
+
+    if ((ret = bind(sockfd, (const struct sockaddr*)addr, addrlen)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
 
 int oe_posix_listen_ocall(int sockfd, int backlog, int* err)
 {
-#if defined(NOTYET)
-    errno = 0;
+    int ret;
 
-    int ret = listen(sockfd, backlog);
+    _clear_err(err);
 
-    if (ret == -1)
-    {
-        if (err)
-            *err = errno;
-    }
+    if ((ret = listen(sockfd, backlog)) == -1)
+        _set_err(err, errno);
 
-#else
-    int ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
     return ret;
 }
 
 ssize_t oe_posix_recvmsg_ocall(
     int sockfd,
     void* msg_name,
-    oe_socklen_t msg_namelen,
-    oe_socklen_t* msg_namelen_out,
+    socklen_t msg_namelen,
+    socklen_t* msg_namelen_out,
     void* msg_buf,
     size_t msg_buflen,
     void* msg_control,
@@ -564,12 +455,10 @@ ssize_t oe_posix_recvmsg_ocall(
     int* err)
 {
     ssize_t ret = -1;
-#if defined(NOTYET)
     struct msghdr msg;
     struct iovec iov;
 
-    if (err)
-        *err = 0;
+    _clear_err(err);
 
     iov.iov_base = msg_buf;
     iov.iov_len = msg_buflen;
@@ -583,9 +472,7 @@ ssize_t oe_posix_recvmsg_ocall(
 
     if ((ret = recvmsg(sockfd, &msg, flags)) == -1)
     {
-        if (err)
-            *err = errno;
-
+        _set_err(err, errno);
         goto done;
     }
 
@@ -596,10 +483,6 @@ ssize_t oe_posix_recvmsg_ocall(
         *msg_controllen_out = msg.msg_controllen;
 
 done:
-#else
-    ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
 
     return ret;
 }
@@ -607,7 +490,7 @@ done:
 ssize_t oe_posix_sendmsg_ocall(
     int sockfd,
     const void* msg_name,
-    oe_socklen_t msg_namelen,
+    socklen_t msg_namelen,
     const void* msg_buf,
     size_t msg_buflen,
     const void* msg_control,
@@ -616,12 +499,10 @@ ssize_t oe_posix_sendmsg_ocall(
     int* err)
 {
     ssize_t ret = -1;
-#if defined(NOTYET)
     struct msghdr msg;
     struct iovec iov;
 
-    if (err)
-        *err = 0;
+    _clear_err(err);
 
     iov.iov_base = (void*)msg_buf;
     iov.iov_len = msg_buflen;
@@ -634,27 +515,10 @@ ssize_t oe_posix_sendmsg_ocall(
     msg.msg_flags = 0;
 
     if ((ret = sendmsg(sockfd, &msg, flags)) == -1)
-    {
-        if (err)
-            *err = errno;
-    }
-#else
-    ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
+        _set_err(err, errno);
 
     return ret;
 }
-
-#if 0
-ssize_t oe_posix_sendmsg_ocall(
-    int sockfd,
-    const struct msghdr* msg,
-    int flags,
-    int* err)
-{
-}
-#endif
 
 ssize_t oe_posix_recv_ocall(
     int sockfd,
@@ -663,48 +527,38 @@ ssize_t oe_posix_recv_ocall(
     int flags,
     int* err)
 {
-#if defined(NOTYET)
-    ssize_t ret = recv(sockfd, buf, len, flags);
+    ssize_t ret;
 
-    if (ret == -1)
-    {
-        if (err)
-            *err = errno;
-    }
-#else
-    ssize_t ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
+    _clear_err(err);
+
+    if ((ret = recv(sockfd, buf, len, flags)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
 
-/* ATTN:IO: add test for this function. */
 ssize_t oe_posix_recvfrom_ocall(
     int sockfd,
     void* buf,
     size_t len,
     int flags,
     struct oe_sockaddr* src_addr,
-    oe_socklen_t addrlen_in,
-    oe_socklen_t* addrlen_out,
+    socklen_t addrlen_in,
+    socklen_t* addrlen_out,
     int* err)
 {
-#if defined(NOTYET)
-    ssize_t ret = recvfrom(sockfd, buf, len, flags, src_addr, &addrlen_in);
+    ssize_t ret;
+
+    _clear_err(err);
+
+    ret = recvfrom(
+        sockfd, buf, len, flags, (struct sockaddr*)src_addr, &addrlen_in);
 
     if (ret == -1)
-    {
-        if (err)
-            *err = errno;
-    }
+        _set_err(err, errno);
 
     if (addrlen_out)
         *addrlen_out = addrlen_in;
-#else
-    ssize_t ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
 
     return ret;
 }
@@ -716,62 +570,46 @@ ssize_t oe_posix_send_ocall(
     int flags,
     int* err)
 {
-#if defined(NOTYET)
-    ssize_t ret = send(sockfd, buf, len, flags);
+    ssize_t ret;
 
-    if (ret == -1)
-    {
-        if (err)
-            *err = errno;
-    }
-#else
-    ssize_t ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
+    _clear_err(err);
+
+    if ((ret = send(sockfd, buf, len, flags)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
 
-/* ATTN:IO: add test for this function. */
 ssize_t oe_posix_sendto_ocall(
     int sockfd,
     const void* buf,
     size_t len,
     int flags,
     const struct oe_sockaddr* src_addr,
-    oe_socklen_t addrlen,
+    socklen_t addrlen,
     int* err)
 {
-#if defined(NOTYET)
-    ssize_t ret = sendto(sockfd, buf, len, flags, src_addr, addrlen);
+    ssize_t ret;
+
+    _clear_err(err);
+
+    ret = sendto(
+        sockfd, buf, len, flags, (const struct sockaddr*)src_addr, addrlen);
 
     if (ret == -1)
-    {
-        if (err)
-            *err = errno;
-    }
-#else
-    ssize_t ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
+        _set_err(err, errno);
 
     return ret;
 }
 
 int oe_posix_shutdown_ocall(int sockfd, int how, int* err)
 {
-#if defined(NOTYET)
-    int ret = shutdown(sockfd, how);
+    int ret;
 
-    if (ret == -1)
-    {
-        if (err)
-            *err = errno;
-    }
-#else
-    int ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
+    _clear_err(err);
+
+    if ((ret = shutdown(sockfd, how)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
@@ -780,19 +618,10 @@ int oe_posix_fcntl_ocall(int fd, int cmd, uint64_t arg, int* err)
 {
     int ret;
 
-#if defined(NOTYET)
-    if (err)
-        *err = 0;
+    _clear_err(err);
 
     if ((ret = fcntl(fd, cmd, arg)) == -1)
-    {
-        if (err)
-            *err = errno;
-    }
-#else
-    ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
+        _set_err(err, errno);
 
     return ret;
 }
@@ -802,25 +631,15 @@ int oe_posix_setsockopt_ocall(
     int level,
     int optname,
     const void* optval,
-    oe_socklen_t optlen,
+    socklen_t optlen,
     int* err)
 {
-    int ret = -1;
+    int ret;
 
-    errno = 0;
+    _clear_err(err);
 
-#if defined(NOTYET)
-    ret = setsockopt(sockfd, level, optname, optval, optlen);
-
-    if (ret == -1)
-    {
-        if (err)
-            *err = errno;
-    }
-#else
-    ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
+    if ((ret = setsockopt(sockfd, level, optname, optval, optlen)) == -1)
+        _set_err(err, errno);
 
     return ret;
 }
@@ -830,27 +649,19 @@ int oe_posix_getsockopt_ocall(
     int level,
     int optname,
     void* optval,
-    oe_socklen_t optlen_in,
-    oe_socklen_t* optlen,
+    socklen_t optlen_in,
+    socklen_t* optlen_out,
     int* err)
 {
     int ret;
 
-#if defined(NOTYET)
-    if (optlen)
-        *optlen = optlen_in;
+    _clear_err(err);
 
-    ret = getsockopt(sockfd, level, optname, optval, optlen);
+    if ((ret = getsockopt(sockfd, level, optname, optval, &optlen_in)) == -1)
+        _set_err(err, errno);
 
-    if (ret == -1)
-    {
-        if (err)
-            *err = errno;
-    }
-#else
-    ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
+    if (optlen_out)
+        *optlen_out = optlen_in;
 
     return ret;
 }
@@ -858,25 +669,19 @@ int oe_posix_getsockopt_ocall(
 int oe_posix_getsockname_ocall(
     int sockfd,
     struct oe_sockaddr* addr,
-    oe_socklen_t addrlen_in,
-    oe_socklen_t* addrlen_out,
+    socklen_t addrlen_in,
+    socklen_t* addrlen_out,
     int* err)
 {
-#if defined(NOTYET)
+    int ret;
+
+    _clear_err(err);
+
+    if ((ret = getsockname(sockfd, (struct sockaddr*)addr, &addrlen_in)) == -1)
+        _set_err(err, errno);
+
     if (addrlen_out)
         *addrlen_out = addrlen_in;
-
-    int ret = getsockname(sockfd, addr, addrlen_out);
-
-    if (ret == -1)
-    {
-        if (err)
-            *err = errno;
-    }
-#else
-    int ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
 
     return ret;
 }
@@ -884,25 +689,19 @@ int oe_posix_getsockname_ocall(
 int oe_posix_getpeername_ocall(
     int sockfd,
     struct oe_sockaddr* addr,
-    oe_socklen_t addrlen_in,
-    oe_socklen_t* addrlen_out,
+    socklen_t addrlen_in,
+    socklen_t* addrlen_out,
     int* err)
 {
-#if defined(NOTYET)
+    int ret;
+
+    _clear_err(err);
+
+    if ((ret = getpeername(sockfd, (struct sockaddr*)addr, &addrlen_in)) == -1)
+        _set_err(err, errno);
+
     if (addrlen_out)
         *addrlen_out = addrlen_in;
-
-    int ret = getpeername(sockfd, addr, addrlen_out);
-
-    if (ret == -1)
-    {
-        if (err)
-            *err = errno;
-    }
-#else
-    int ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
 
     return ret;
 }
@@ -911,10 +710,9 @@ int oe_posix_shutdown_sockets_device_ocall(int sockfd, int* err)
 {
     OE_UNUSED(sockfd);
 
-    /* No shutdown actions needed for this device. */
+    _clear_err(err);
 
-    if (err)
-        *err = 0;
+    /* No shutdown actions needed for this device. */
 
     return 0;
 }
@@ -929,22 +727,12 @@ int oe_posix_shutdown_sockets_device_ocall(int sockfd, int* err)
 
 int oe_posix_kill_ocall(int pid, int signum, int* err)
 {
-    int ret = -1;
-#if defined(NOTYET)
+    int ret;
 
-    *err = 0;
+    _clear_err(err);
 
-    ret = kill(pid, signum);
-
-    if (ret < 0)
-    {
-        if (err)
-            *err = errno;
-    }
-#else
-    ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
+    if ((ret = kill(pid, signum)) < 0)
+        _set_err(err, errno);
 
     return ret;
 }
@@ -982,12 +770,10 @@ uint64_t oe_posix_getaddrinfo_open_ocall(
     const struct oe_addrinfo* hints,
     int* err)
 {
-#if defined(NOTYET)
     getaddrinfo_handle_t* ret = NULL;
     getaddrinfo_handle_t* handle = NULL;
 
-    if (err)
-        *err = 0;
+    _clear_err(err);
 
     if (!(handle = calloc(1, sizeof(getaddrinfo_handle_t))))
     {
@@ -995,7 +781,8 @@ uint64_t oe_posix_getaddrinfo_open_ocall(
         goto done;
     }
 
-    if (getaddrinfo(node, service, hints, &handle->res) != 0)
+    if (getaddrinfo(
+            node, service, (const struct addrinfo*)hints, &handle->res) != 0)
     {
         _set_err(err, errno);
         goto done;
@@ -1010,10 +797,6 @@ done:
 
     if (handle)
         free(handle);
-#else
-    int ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
 
     return (uint64_t)ret;
 }
@@ -1024,8 +807,8 @@ int oe_posix_getaddrinfo_read_ocall(
     int* ai_family,
     int* ai_socktype,
     int* ai_protocol,
-    oe_socklen_t ai_addrlen_in,
-    oe_socklen_t* ai_addrlen,
+    socklen_t ai_addrlen_in,
+    socklen_t* ai_addrlen,
     struct oe_sockaddr* ai_addr,
     size_t ai_canonnamelen_in,
     size_t* ai_canonnamelen,
@@ -1033,11 +816,9 @@ int oe_posix_getaddrinfo_read_ocall(
     int* err)
 {
     int ret = -1;
-#if defined(NOTYET)
     getaddrinfo_handle_t* handle = _cast_getaddrinfo_handle((void*)handle_);
 
-    if (err)
-        *err = 0;
+    _clear_err(err);
 
     if (!handle || !ai_flags || !ai_family || !ai_socktype || !ai_protocol ||
         !ai_addrlen || !ai_canonnamelen || !err)
@@ -1101,11 +882,6 @@ int oe_posix_getaddrinfo_read_ocall(
         ret = 1;
         goto done;
     }
-#else
-    ret = -1;
-    _set_err(err, 38); // ENOSYS
-    goto done;
-#endif
 
 done:
     return ret;
@@ -1114,11 +890,9 @@ done:
 int oe_posix_getaddrinfo_close_ocall(uint64_t handle_, int* err)
 {
     int ret = -1;
-#if defined(NOTYET)
     getaddrinfo_handle_t* handle = _cast_getaddrinfo_handle((void*)handle_);
 
-    if (err)
-        *err = 0;
+    _clear_err(err);
 
     if (!handle)
     {
@@ -1130,11 +904,6 @@ int oe_posix_getaddrinfo_close_ocall(uint64_t handle_, int* err)
     free(handle);
 
     ret = 0;
-#else
-    ret = -1;
-    _set_err(err, 38); // ENOSYS
-    goto done;
-#endif
 
 done:
     return ret;
@@ -1142,26 +911,23 @@ done:
 
 int oe_posix_getnameinfo_ocall(
     const struct oe_sockaddr* sa,
-    oe_socklen_t salen,
+    socklen_t salen,
     char* host,
-    oe_socklen_t hostlen,
+    socklen_t hostlen,
     char* serv,
-    oe_socklen_t servlen,
+    socklen_t servlen,
     int flags,
     int* err)
 {
-#if defined(NOTYET)
-    int ret = getnameinfo(sa, salen, host, hostlen, serv, servlen, flags);
+    int ret;
+
+    _clear_err(err);
+
+    ret = getnameinfo(
+        (const struct sockaddr*)sa, salen, host, hostlen, serv, servlen, flags);
 
     if (ret == EAI_SYSTEM)
-    {
-        if (err)
-            *err = errno;
-    }
-#else
-    int ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
+        _set_err(err, errno);
 
     return ret;
 }
@@ -1169,9 +935,7 @@ int oe_posix_getnameinfo_ocall(
 int oe_posix_shutdown_resolver_device_ocall(int* err)
 {
     /* No shutdown actions needed for this device. */
-
-    if (err)
-        *err = 0;
+    _clear_err(err);
 
     return 0;
 }
@@ -1184,7 +948,6 @@ int oe_posix_shutdown_resolver_device_ocall(int* err)
 **==============================================================================
 */
 
-#if defined(NOTYET)
 typedef struct _wait_args
 {
     int64_t enclaveid;
@@ -1195,8 +958,7 @@ typedef struct _wait_args
 
 static void* epoll_wait_thread(void* arg_)
 {
-    int ret = 0;
-#if defined(NOTYET)
+    int ret;
     wait_args_t* args = (wait_args_t*)arg_;
     int retval;
 
@@ -1223,10 +985,6 @@ static void* epoll_wait_thread(void* arg_)
         if (retval != 0)
             goto done;
     }
-#else
-    ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
 
 done:
     free(args);
@@ -1243,7 +1001,7 @@ typedef struct _poll_args
 
 static void* poll_wait_thread(void* arg_)
 {
-    int ret = 0;
+    int ret;
     poll_args_t* args = (poll_args_t*)arg_;
     int retval;
 
@@ -1285,19 +1043,15 @@ done:
     free(args);
     return NULL;
 }
-#endif
 
 int oe_posix_epoll_create1_ocall(int flags, int* err)
 {
-#if defined(NOTYET)
-    int ret = epoll_create1(flags);
+    int ret;
 
-    if (ret == -1)
+    _clear_err(err);
+
+    if ((ret = epoll_create1(flags)) == -1)
         _set_err(err, errno);
-#else
-    int ret = -1;
-    _set_err(err, 38); // ENOSYS
-#endif
 
     return ret;
 }
@@ -1309,7 +1063,6 @@ int oe_posix_epoll_wait_async_ocall(
     int* err)
 {
     int ret = -1;
-#if defined(NOTYET)
     size_t eventsize;
     pthread_t thread = 0;
     wait_args_t* args = NULL;
@@ -1335,12 +1088,8 @@ int oe_posix_epoll_wait_async_ocall(
         _set_err(err, EINVAL);
         goto done;
     }
+
     ret = 0;
-#else
-    _set_err(err, 38); // ENOSYS
-    ret = -1;
-    goto done;
-#endif
 
 done:
     return ret;
@@ -1354,42 +1103,32 @@ int oe_posix_epoll_ctl_add_ocall(
     int epoll_enclave_fd,
     int* err)
 {
-    int ret = -1;
-
-#if defined(NOTYET)
+    int ret;
     oe_ev_data_t ev_data = {
         .event_list_idx = (uint32_t)list_idx,
         .epoll_enclave_fd = (uint32_t)epoll_enclave_fd,
     };
-
     struct epoll_event ev = {
         .events = event_mask,
         .data.u64 = ev_data.data,
     };
 
-    ret = epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev);
+    _clear_err(err);
 
-    if (ret == -1)
+    if ((ret = epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev)) == -1)
         _set_err(err, errno);
-#else
-    _set_err(err, 38); // ENOSYS
-    ret = -1;
-#endif
 
     return ret;
 }
 
 int oe_posix_epoll_ctl_del_ocall(int epfd, int fd, int* err)
 {
-    int ret = -1; // epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL); 2DO
+    int ret;
 
-#if defined(NOTYET)
-    if (ret == -1)
+    _clear_err(err);
+
+    if ((ret = epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL)) == -1)
         _set_err(err, errno);
-#else
-    _set_err(err, 38); // ENOSYS
-    ret = -1;
-#endif
 
     return ret;
 }
@@ -1402,50 +1141,40 @@ int oe_posix_epoll_ctl_mod_ocall(
     int enclave_fd,
     int* err)
 {
-#if defined(NOTYET)
+    int ret;
     oe_ev_data_t ev_data = {
         .event_list_idx = (uint32_t)list_idx,
         .epoll_enclave_fd = (uint32_t)enclave_fd,
     };
-
     struct epoll_event ev = {
         .events = event_mask,
         .data.u64 = ev_data.data,
     };
 
-    int ret = epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &ev);
-
-    if (ret == -1)
+    if ((ret = epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &ev)) == -1)
         _set_err(err, errno);
-#else
-    _set_err(err, 38); // ENOSYS
-    int ret = -1;
-#endif
 
     return ret;
 }
 
 int oe_posix_epoll_close_ocall(int fd, int* err)
 {
-    int ret = -1; // close(fd); 2Do
+    int ret;
 
-#if defined(NOTYET)
-    if (ret == -1)
+    _clear_err(err);
+
+    if ((ret = close(fd)) == -1)
         _set_err(err, errno);
-#else
-    _set_err(err, 38); // ENOSYS
-#endif
+
     return ret;
 }
 
-/* ATTN:IO: never called. */
 int oe_posix_shutdown_polling_device_ocall(int fd, int* err)
 {
     OE_UNUSED(fd);
     OE_UNUSED(err);
 
-    if (err)
-        *err = 0;
+    _clear_err(err);
 
     return 0;
 }
@@ -1459,15 +1188,14 @@ int oe_posix_epoll_poll_ocall(
     int* err)
 {
     int ret = -1;
-#if defined(NOTYET)
     size_t fdsize = 0;
     pthread_t thread = 0;
     poll_args_t* args = NULL;
     nfds_t fd_idx = 0;
 
-    (void)timeout;
+    _clear_err(err);
 
-    /* ATTN:IO: how does this work without using the events parameter. */
+    OE_UNUSED(timeout);
 
     fdsize = sizeof(struct pollfd) * nfds;
 
@@ -1480,9 +1208,11 @@ int oe_posix_epoll_poll_ocall(
     args->enclaveid = enclaveid;
     args->epfd = epfd;
     args->nfds = nfds;
+
     for (; fd_idx < nfds; fd_idx++)
     {
-        args->fds[fd_idx] = fds[fd_idx];
+        OE_STATIC_ASSERT(sizeof(args->fds[0]) == sizeof(fds[0]));
+        memcpy(&args->fds[fd_idx], &fds[fd_idx], sizeof(fds[fd_idx]));
     }
 
     // We lose the wait thread when we exit the func, but the thread will die
@@ -1494,11 +1224,6 @@ int oe_posix_epoll_poll_ocall(
         _set_err(err, EINVAL);
         goto done;
     }
-#else
-    _set_err(err, 38); // ENOSYS
-    ret = -1;
-    goto done;
-#endif
 
     ret = 0;
 
@@ -1506,67 +1231,47 @@ done:
     return ret;
 }
 
+/*
+**==============================================================================
+**
+** uid, gid, pid, and groups:
+**
+**==============================================================================
+*/
+
 int oe_posix_getpid(void)
 {
-#if defined(NOTYET)
     return getpid();
-#else
-    return -1;
-#endif
 }
 
 int oe_posix_getppid(void)
 {
-#if defined(NOTYET)
     return getppid();
-#else
-    return -1;
-#endif
 }
 
 int oe_posix_getpgrp(void)
 {
-#if defined(NOTYET)
     return getpgrp();
-#else
-    return -1;
-#endif
 }
 
 unsigned int oe_posix_getuid(void)
 {
-#if defined(NOTYET)
     return getuid();
-#else
-    return (unsigned int)-1;
-#endif
 }
 
 unsigned int oe_posix_geteuid(void)
 {
-#if defined(NOTYET)
     return geteuid();
-#else
-    return (unsigned int)-1;
-#endif
 }
 
 unsigned int oe_posix_getgid(void)
 {
-#if defined(NOTYET)
     return getgid();
-#else
-    return (unsigned int)-1;
-#endif
 }
 
 unsigned int oe_posix_getegid(void)
 {
-#if defined(NOTYET)
     return getegid();
-#else
-    return (unsigned int)-1;
-#endif
 }
 
 int oe_posix_getpgid(int pid, int* err)
@@ -1575,13 +1280,8 @@ int oe_posix_getpgid(int pid, int* err)
 
     _clear_err(err);
 
-#if defined(NOTYET)
     if ((ret = getpgid(pid)) == -1)
         _set_err(err, errno);
-#else
-    _set_err(err, 38); // ENOSYS
-    ret = -1;
-#endif
 
     return ret;
 }
@@ -1598,15 +1298,42 @@ int oe_posix_getgroups(size_t size, unsigned int* list, int* err)
         goto done;
     }
 
-#if defined(NOTYET)
     if ((ret = getgroups((int)size, list)) == -1)
         _set_err(err, errno);
-#else
-    _set_err(err, 38); // ENOSYS
-    ret = -1;
-    goto done;
-#endif
 
 done:
+    return ret;
+}
+
+/*
+**==============================================================================
+**
+** uname():
+**
+**==============================================================================
+*/
+
+int oe_posix_uname_ocall(struct oe_utsname* buf, int* err)
+{
+    int ret = -1;
+    struct oe_utsname* out = (struct oe_utsname*)buf;
+
+    _clear_err(err);
+
+    OE_STATIC_ASSERT(sizeof(struct oe_utsname) == sizeof(struct utsname));
+    OE_CHECK_FIELD(struct oe_utsname, struct utsname, sysname);
+    OE_CHECK_FIELD(struct oe_utsname, struct utsname, nodename);
+    OE_CHECK_FIELD(struct oe_utsname, struct utsname, release);
+    OE_CHECK_FIELD(struct oe_utsname, struct utsname, version);
+    OE_CHECK_FIELD(struct oe_utsname, struct utsname, machine);
+#ifdef _GNU_SOURCE
+    OE_CHECK_FIELD(struct oe_utsname, struct utsname, domainname);
+#else
+    OE_CHECK_FIELD(struct oe_utsname, struct utsname, __domainname);
+#endif
+
+    if ((ret = uname((struct utsname*)out)) == -1)
+        _set_err(err, errno);
+
     return ret;
 }

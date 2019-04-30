@@ -6,7 +6,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/trace.h>
 #include "device.h"
-#include "oe_t.h"
+#include "oeio_t.h"
 
 #define DEVICE_NAME "consolefs"
 #define MAGIC 0x0b292bab

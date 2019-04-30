@@ -20,7 +20,6 @@
 #include <openenclave/internal/utils.h>
 #include "../../asym_keys.h"
 #include "../../sgx/report.h"
-#include "../posix/console.h"
 #include "asmdefs.h"
 #include "atexit.h"
 #include "cpuid.h"
@@ -172,17 +171,6 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
                 oe_enclave = safe_args.enclave;
             }
 
-#if !defined(WINDOWS_HOST)
-
-            /* Initialize the console devices: stdin, stdout, stderr. */
-            if (oe_initialize_console_devices() != 0)
-            {
-                result = OE_FAILURE;
-                goto done;
-            }
-
-#endif /* !defined(WINDOWS_HOST) */
-
             /* Call all enclave state initialization functions */
             OE_CHECK(oe_initialize_cpuid(arg_in));
 
@@ -208,9 +196,47 @@ done:
 extern const oe_ecall_func_t __oe_ecalls_table[];
 extern const size_t __oe_ecalls_table_size;
 
-/* Internal ecalls table. */
-extern const oe_ecall_func_t __oe_internal_ecalls_table[];
-extern const size_t __oe_internal_ecalls_table_size;
+/*
+**==============================================================================
+**
+** oe_register_ecall_table()
+**
+** Register an ecall table with the given table_id.
+**
+**==============================================================================
+*/
+
+#define MAX_ECALL_TABLES 16
+
+typedef struct _ecall_table
+{
+    const oe_ecall_func_t* ecalls;
+    size_t num_ecalls;
+} ecall_table_t;
+
+static ecall_table_t _ecall_tables[MAX_ECALL_TABLES];
+static oe_spinlock_t _ecall_tables_lock = OE_SPINLOCK_INITIALIZER;
+
+oe_result_t oe_register_ecall_table(
+    uint64_t table_id,
+    const oe_ecall_func_t* ecalls,
+    size_t num_ecalls)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    if (table_id >= MAX_ECALL_TABLES || !ecalls)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    oe_spin_lock(&_ecall_tables_lock);
+    _ecall_tables[table_id].ecalls = ecalls;
+    _ecall_tables[table_id].num_ecalls = num_ecalls;
+    oe_spin_unlock(&_ecall_tables_lock);
+
+    result = OE_OK;
+
+done:
+    return result;
+}
 
 /**
  * This is the preferred way to call enclave functions.
@@ -225,6 +251,7 @@ static oe_result_t _handle_call_enclave_function(uint64_t arg_in)
     uint8_t* output_buffer = NULL;
     size_t buffer_size = 0;
     size_t output_bytes_written = 0;
+    ecall_table_t ecall_table;
 
     // Ensure that args lies outside the enclave.
     if (!oe_is_outside_enclave(
@@ -260,21 +287,29 @@ static oe_result_t _handle_call_enclave_function(uint64_t arg_in)
     OE_CHECK(oe_safe_add_u64(
         args.input_buffer_size, args.output_buffer_size, &buffer_size));
 
-    // Fetch matching function.
-    if (args.is_internal_call)
+    // Resolve which ecall table to use.
+    if (args_ptr->table_id == OE_UINT64_MAX)
     {
-        if (args.function_id >= __oe_internal_ecalls_table_size)
-            OE_RAISE(OE_NOT_FOUND);
-
-        func = __oe_internal_ecalls_table[args.function_id];
+        ecall_table.ecalls = __oe_ecalls_table;
+        ecall_table.num_ecalls = __oe_ecalls_table_size;
     }
     else
     {
-        if (args.function_id >= __oe_ecalls_table_size)
+        if (args_ptr->table_id >= MAX_ECALL_TABLES)
             OE_RAISE(OE_NOT_FOUND);
 
-        func = __oe_ecalls_table[args.function_id];
+        ecall_table.ecalls = _ecall_tables[args_ptr->table_id].ecalls;
+        ecall_table.num_ecalls = _ecall_tables[args_ptr->table_id].num_ecalls;
+
+        if (!ecall_table.ecalls)
+            OE_RAISE(OE_NOT_FOUND);
     }
+
+    // Fetch matching function.
+    if (args.function_id >= ecall_table.num_ecalls)
+        OE_RAISE(OE_NOT_FOUND);
+
+    func = ecall_table.ecalls[args.function_id];
 
     if (func == NULL)
         OE_RAISE(OE_NOT_FOUND);
@@ -585,15 +620,14 @@ done:
 /*
 **==============================================================================
 **
-** oe_call_host_function()
-** This is the preferred way to call host functions.
+** oe_call_host_function_by_table_id()
 **
 **==============================================================================
 */
 
-static oe_result_t _call_host_function(
-    bool is_internal_call,
-    size_t function_id,
+oe_result_t oe_call_host_function_by_table_id(
+    uint64_t table_id,
+    uint64_t function_id,
     const void* input_buffer,
     size_t input_buffer_size,
     void* output_buffer,
@@ -616,8 +650,8 @@ static oe_result_t _call_host_function(
             OE_RAISE(OE_OUT_OF_MEMORY);
         }
 
+        args->table_id = table_id;
         args->function_id = function_id;
-        args->is_internal_call = is_internal_call;
         args->input_buffer = input_buffer;
         args->input_buffer_size = input_buffer_size;
         args->output_buffer = output_buffer;
@@ -641,6 +675,15 @@ done:
     return result;
 }
 
+/*
+**==============================================================================
+**
+** oe_call_host_function()
+** This is the preferred way to call host functions.
+**
+**==============================================================================
+*/
+
 oe_result_t oe_call_host_function(
     size_t function_id,
     const void* input_buffer,
@@ -649,26 +692,8 @@ oe_result_t oe_call_host_function(
     size_t output_buffer_size,
     size_t* output_bytes_written)
 {
-    return _call_host_function(
-        false,
-        function_id,
-        input_buffer,
-        input_buffer_size,
-        output_buffer,
-        output_buffer_size,
-        output_bytes_written);
-}
-
-oe_result_t oe_call_internal_host_function(
-    size_t function_id,
-    const void* input_buffer,
-    size_t input_buffer_size,
-    void* output_buffer,
-    size_t output_buffer_size,
-    size_t* output_bytes_written)
-{
-    return _call_host_function(
-        true,
+    return oe_call_host_function_by_table_id(
+        OE_UINT64_MAX,
         function_id,
         input_buffer,
         input_buffer_size,

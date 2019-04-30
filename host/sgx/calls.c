@@ -242,6 +242,48 @@ done:
 /*
 **==============================================================================
 **
+** oe_register_ocall_table()
+**
+** Register an ocall table with the given table_id.
+**
+**==============================================================================
+*/
+
+#define MAX_OCALL_TABLES 16
+
+typedef struct _ocall_table
+{
+    const oe_ocall_func_t* ocalls;
+    size_t num_ocalls;
+} ocall_table_t;
+
+static ocall_table_t _ocall_tables[MAX_OCALL_TABLES];
+static pthread_spinlock_t _ocall_tables_lock;
+
+oe_result_t oe_register_ocall_table(
+    uint64_t table_id,
+    const oe_ocall_func_t* ocalls,
+    size_t num_ocalls)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    if (table_id >= MAX_OCALL_TABLES || !ocalls)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    pthread_spin_lock(&_ocall_tables_lock);
+    _ocall_tables[table_id].ocalls = ocalls;
+    _ocall_tables[table_id].num_ocalls = num_ocalls;
+    pthread_spin_unlock(&_ocall_tables_lock);
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+/*
+**==============================================================================
+**
 ** _handle_call_host_function()
 **
 ** Handle calls from the enclave.
@@ -257,8 +299,7 @@ static oe_result_t _handle_call_host_function(
     oe_result_t result = OE_OK;
     oe_ocall_func_t func = NULL;
     size_t buffer_size = 0;
-    const oe_ocall_func_t* ocalls;
-    size_t num_ocalls;
+    ocall_table_t ocall_table;
 
     args_ptr = (oe_call_host_function_args_t*)arg;
     if (args_ptr == NULL)
@@ -268,32 +309,33 @@ static oe_result_t _handle_call_host_function(
     if (args_ptr->input_buffer == NULL || args_ptr->output_buffer == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    // Select either internal or user ocall table.
-    if (args_ptr->is_internal_call)
+    // Resolve which ocall table to use.
+    if (args_ptr->table_id == OE_UINT64_MAX)
     {
-        extern const oe_ocall_func_t* oe_get_internal_ocall_function_table();
-        extern size_t oe_get_internal_ocall_function_table_size();
-
-        ocalls = oe_get_internal_ocall_function_table();
-        num_ocalls = oe_get_internal_ocall_function_table_size();
+        ocall_table.ocalls = enclave->ocalls;
+        ocall_table.num_ocalls = enclave->num_ocalls;
     }
     else
     {
-        ocalls = enclave->ocalls;
-        num_ocalls = enclave->num_ocalls;
+        if (args_ptr->table_id >= MAX_OCALL_TABLES)
+            OE_RAISE(OE_NOT_FOUND);
+
+        ocall_table.ocalls = _ocall_tables[args_ptr->table_id].ocalls;
+        ocall_table.num_ocalls = _ocall_tables[args_ptr->table_id].num_ocalls;
+
+        if (!ocall_table.ocalls)
+            OE_RAISE(OE_NOT_FOUND);
     }
 
     // Fetch matching function.
-    {
-        if (args_ptr->function_id >= num_ocalls)
-            OE_RAISE(OE_NOT_FOUND);
+    if (args_ptr->function_id >= ocall_table.num_ocalls)
+        OE_RAISE(OE_NOT_FOUND);
 
-        func = ocalls[args_ptr->function_id];
-        if (func == NULL)
-        {
-            result = OE_NOT_FOUND;
-            goto done;
-        }
+    func = ocall_table.ocalls[args_ptr->function_id];
+    if (func == NULL)
+    {
+        result = OE_NOT_FOUND;
+        goto done;
     }
 
     OE_CHECK(oe_safe_add_u64(
@@ -367,6 +409,10 @@ static oe_result_t _handle_ocall(
             HandleFree(arg_in);
             break;
 
+        case OE_OCALL_WRITE:
+            HandlePrint(arg_in);
+            break;
+
         case OE_OCALL_THREAD_WAIT:
             HandleThreadWait(enclave, arg_in);
             break;
@@ -411,10 +457,6 @@ static oe_result_t _handle_ocall(
 
         case OE_OCALL_LOG:
             oe_handle_log(enclave, arg_in);
-            break;
-
-        case OE_OCALL_WRITE:
-            HandlePrint(arg_in);
             break;
 
         default:
@@ -703,19 +745,19 @@ done:
 /*
 **==============================================================================
 **
-** oe_call_enclave_function()
+** oe_call_enclave_function_by_table_id()
 **
-** Call the enclave function specified by the given function-id.
+** Call the enclave function specified by the given table-id and function-id.
 ** Note: Currently only SGX style marshaling is supported. input_buffer contains
 ** the marshaling args structure.
 **
 **==============================================================================
 */
 
-static oe_result_t _call_enclave_function(
-    bool is_internal_call,
+oe_result_t oe_call_enclave_function_by_table_id(
     oe_enclave_t* enclave,
-    uint32_t function_id,
+    uint64_t table_id,
+    uint64_t function_id,
     const void* input_buffer,
     size_t input_buffer_size,
     void* output_buffer,
@@ -731,7 +773,7 @@ static oe_result_t _call_enclave_function(
 
     /* Initialize the call_enclave_args structure */
     {
-        args.is_internal_call = is_internal_call;
+        args.table_id = table_id;
         args.function_id = function_id;
         args.input_buffer = input_buffer;
         args.input_buffer_size = input_buffer_size;
@@ -763,6 +805,17 @@ done:
     return result;
 }
 
+/*
+**==============================================================================
+**
+** oe_call_enclave_function()
+**
+** Call the enclave function specified by the given function-id in the default
+** function table.
+**
+**==============================================================================
+*/
+
 oe_result_t oe_call_enclave_function(
     oe_enclave_t* enclave,
     uint32_t function_id,
@@ -772,29 +825,9 @@ oe_result_t oe_call_enclave_function(
     size_t output_buffer_size,
     size_t* output_bytes_written)
 {
-    return _call_enclave_function(
-        false,
+    return oe_call_enclave_function_by_table_id(
         enclave,
-        function_id,
-        input_buffer,
-        input_buffer_size,
-        output_buffer,
-        output_buffer_size,
-        output_bytes_written);
-}
-
-oe_result_t oe_call_internal_enclave_function(
-    oe_enclave_t* enclave,
-    uint32_t function_id,
-    const void* input_buffer,
-    size_t input_buffer_size,
-    void* output_buffer,
-    size_t output_buffer_size,
-    size_t* output_bytes_written)
-{
-    return _call_enclave_function(
-        true,
-        enclave,
+        OE_UINT64_T,
         function_id,
         input_buffer,
         input_buffer_size,

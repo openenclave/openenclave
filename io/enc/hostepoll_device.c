@@ -21,7 +21,7 @@
 #include <openenclave/corelibc/sys/poll.h>
 #include <openenclave/bits/module.h>
 #include <openenclave/internal/trace.h>
-#include "oe_t.h"
+#include "oeio_t.h"
 
 /*
 **==============================================================================

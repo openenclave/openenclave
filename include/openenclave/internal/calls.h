@@ -197,8 +197,9 @@ OE_INLINE uint16_t oe_get_result_from_call_arg1(uint64_t arg)
 
 typedef struct _oe_call_enclave_function_args
 {
-    /* If true, then call the internal enclave function with the above id. */
-    bool is_internal_call;
+    // OE_UINT64_MAX refers to default function table. Other values are
+    // reserved for alternative function tables.
+    uint64_t table_id;
 
     uint64_t function_id;
     const void* input_buffer;
@@ -212,17 +213,15 @@ typedef struct _oe_call_enclave_function_args
 /*
 **==============================================================================
 **
-** oe_call_internal_enclave_function()
-**
-**     This function is nearly identical to oe_call_enclave_function(), but it
-**     employs the 'internal' ocall table on this enclave side.
+** oe_call_enclave_function_by_table_id()
 **
 **==============================================================================
 */
 
-oe_result_t oe_call_internal_enclave_function(
+oe_result_t oe_call_enclave_function_by_table_id(
     oe_enclave_t* enclave,
-    uint32_t function_id,
+    uint64_t table_id,
+    uint64_t function_id,
     const void* input_buffer,
     size_t input_buffer_size,
     void* output_buffer,
@@ -239,10 +238,11 @@ oe_result_t oe_call_internal_enclave_function(
 
 typedef struct _oe_call_host_function_args
 {
-    uint64_t function_id;
+    // OE_UINT64_MAX refers to default function table. Other values are
+    // reserved for alternative function tables.
+    uint64_t table_id;
 
-    /* If true, then call the internal host function with the above id. */
-    bool is_internal_call;
+    uint64_t function_id;
 
     const void* input_buffer;
     size_t input_buffer_size;
@@ -255,21 +255,69 @@ typedef struct _oe_call_host_function_args
 /*
 **==============================================================================
 **
-** oe_call_internal_host_function()
-**
-**     This function is nearly identical to oe_call_host_function(), but it
-**     employs the 'internal' ocall table on this host side.
+** oe_call_host_function_by_table_id()
 **
 **==============================================================================
 */
 
-oe_result_t oe_call_internal_host_function(
+oe_result_t oe_call_host_function_by_table_id(
+    size_t table_id,
     size_t function_id,
     const void* input_buffer,
     size_t input_buffer_size,
     void* output_buffer,
     size_t output_buffer_size,
     size_t* output_bytes_written);
+
+/*
+**==============================================================================
+**
+** oe_register_ocall_table()
+**
+**     Register an ocall table with the given table id.
+**
+**==============================================================================
+*/
+
+/* OCALL table identfiers. */
+#define OE_OCALL_TABLE_IO 0
+
+typedef void (*oe_ocall_func_t)(
+    const uint8_t* input_buffer,
+    size_t input_buffer_size,
+    uint8_t* output_buffer,
+    size_t output_buffer_size,
+    size_t* output_bytes_written);
+
+oe_result_t oe_register_ocall_table(
+    uint64_t table_id,
+    const oe_ocall_func_t* ocalls,
+    size_t num_ocalls);
+
+/*
+**==============================================================================
+**
+** oe_register_ecall_table()
+**
+**     Register an ecall table with the given table id.
+**
+**==============================================================================
+*/
+
+/* ECALL table identfiers. */
+#define OE_ECALL_TABLE_IO 0
+
+typedef void (*oe_ecall_func_t)(
+    const uint8_t* input_buffer,
+    size_t input_buffer_size,
+    uint8_t* output_buffer,
+    size_t output_buffer_size,
+    size_t* output_bytes_written);
+
+oe_result_t oe_register_ecall_table(
+    uint64_t table_id,
+    const oe_ecall_func_t* ecalls,
+    size_t num_ecalls);
 
 /*
 **==============================================================================
