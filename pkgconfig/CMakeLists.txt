@@ -57,7 +57,7 @@ set(ENCLAVE_CLIBS_1
   -lmbedx509
   -lmbedcrypto)
 
-set(ENCLAVE_CLIBS_2 -loelibc -loecore)
+set(ENCLAVE_CLIBS_2 -loelibc -loeposix -loecore)
 
 set(ENCLAVE_CLIBS_LIST ${ENCLAVE_CLIBS_1} ${ENCLAVE_CLIBS_2})
 list(JOIN ENCLAVE_CLIBS_LIST " " ENCLAVE_CLIBS)
