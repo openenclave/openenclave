@@ -38,7 +38,7 @@ some code that implements the required Azure IoT Hub communication.
 There are build tasks for both standalone and Azure IoT Edge container projects.  The underlying system used 
 to build is CMake.  
 
-For a standalone project, there will be configure and build tasks for each target (arm and aarch64).  The 
+For a standalone project, there will be configure and build tasks for each target (arm32v7 and aarch64).  The 
 configure task will invoke CMake to create the required build files.  This is only required to be run once.  
 The build task will do the actual compiling and linking.
 
