@@ -541,26 +541,6 @@ let oe_gen_free_buffers (os : out_channel) (fd : func_decl) =
   List.iter gen_free_buffer fd.plist ;
   fprintf os "\n"
 
-let oe_gen_copy_outputs (os : out_channel) (fd : func_decl) =
-  let gen_free_buffer (ptype, decl) =
-    match ptype with
-    | PTPtr (atype, ptr_attr) ->
-        if ptr_attr.pa_chkptr then
-          match ptr_attr.pa_direction with
-          | PtrOut | PtrInOut ->
-              fprintf os "    if (args.%s)\n" decl.identifier ;
-              fprintf os "        memcpy(args.%s, enc_args.%s, %s);\n"
-                decl.identifier decl.identifier
-                (oe_get_param_size (ptype, decl, "args."))
-          | _ -> ()
-        else ()
-    | _ -> ()
-    (* Non pointer arguments *)
-  in
-  fprintf os "\n    /* Copy output buffers */\n" ;
-  List.iter gen_free_buffer fd.plist ;
-  fprintf os "\n"
-
 let oe_gen_call_function (os : out_channel) (fd : func_decl) =
   let params =
     List.map
