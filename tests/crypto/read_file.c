@@ -228,12 +228,8 @@ oe_result_t read_mod(char* filename, uint8_t* mod, size_t* mod_size)
 
 oe_result_t read_mixed_chain(char* chain, char* chain1, char* chain2)
 {
-    char chain_temp[max_cert_chain_size * 2];
-    OE_UNUSED(chain);
-
-    strcat(chain_temp, chain1);
-    strcat(chain_temp, chain2);
-    chain = chain_temp;
+    strcat(chain, chain1);
+    strcat(chain, chain2);
     return OE_OK;
 }
 
