@@ -25,6 +25,14 @@ new_platforms/scripts/build
 new_platforms/scripts/toolchains
 new_platforms/docs/api
 
+new_platforms/vscode-extension/package-lock.json
+new_platforms/vscode-extension/*.vsix
+new_platforms/vscode-extension/**/*.map
+
+new_platforms/vscode-extension/node_modules/
+new_platforms/vscode-extension/out/
+new_platforms/vscode-extension/dist/
+
 3rdparty/SGXSDK/
 helloworld_t.*
 helloworld_u.*

@@ -1,7 +1,0 @@
-
-*.vsix
-*.map
-
-node_modules/
-out/
-dist/
