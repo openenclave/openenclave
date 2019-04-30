@@ -491,27 +491,6 @@ let get_cast_from_mem_expr (ptype, decl) =
         sprintf "(const %s) " (get_tystr t)
       else ""
 
-let oe_gen_allocate_buffers (os : out_channel) (fd : func_decl) =
-  let gen_allocate_buffer (ptype, decl) =
-    match ptype with
-    | PTPtr (atype, ptr_attr) ->
-        if ptr_attr.pa_chkptr then
-          let size = oe_get_param_size (ptype, decl, "args.") in
-          let macro =
-            match ptr_attr.pa_direction with
-            | PtrOut -> "OE_CHECKED_ALLOCATE_OUTPUT"
-            | _ -> "OE_CHECKED_COPY_INPUT"
-          in
-          fprintf os "    %s(enc_args.%s, args.%s, %s);\n" macro
-            decl.identifier decl.identifier size
-        else ()
-    | _ -> ()
-    (* Non pointer arguments *)
-  in
-  fprintf os "    /* Copy checked buffers properties to enclave memory */\n" ;
-  List.iter gen_allocate_buffer fd.plist ;
-  fprintf os "\n"
-
 let oe_gen_free_buffers (os : out_channel) (fd : func_decl) =
   let gen_free_buffer (ptype, decl) =
     match ptype with
