@@ -773,9 +773,6 @@ oe_result_t oe_call_enclave_function_by_table_id(
     if (!enclave)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Ensure that the POSIX interface is registered. */
-    oe_register_posix_ocall_function_table();
-
     /* Initialize the call_enclave_args structure */
     {
         args.table_id = table_id;
