@@ -11,6 +11,7 @@
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/trace.h>
 #include "posix_t.h"
+#include "../common/posix.h"
 // clang-format on
 
 // Poll uses much of the infrastructure from epoll.
@@ -65,6 +66,8 @@ int oe_sigaction(
 {
     int retval = -1;
 
+    oe_register_posix_ecall_function_table();
+
     if (signum >= __OE_NSIG)
     {
         oe_errno = EINVAL;
@@ -90,6 +93,8 @@ done:
 oe_sighandler_t oe_signal(int signum, oe_sighandler_t handler)
 {
     oe_sighandler_t retval = OE_SIG_ERR;
+
+    oe_register_posix_ecall_function_table();
 
     if (signum >= __OE_NSIG)
     {
