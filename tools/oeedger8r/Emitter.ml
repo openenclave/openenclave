@@ -705,12 +705,6 @@ let oe_get_host_ecall_function (os : out_channel) (fd : func_decl) =
   fprintf os "    return _result;\n" ;
   fprintf os "}\n\n"
 
-let iter_ptr_params f params =
-  List.iter
-    (fun (ptype, decl) ->
-      match ptype with PTPtr (_, attr) -> f (ptype, decl, attr) | _ -> () )
-    params
-
 (** Generate ocalls wrapper function. *)
 let oe_gen_ocall_enclave_wrapper (os : out_channel) (uf : untrusted_func) =
   let propagate_errno = uf.uf_propagate_errno in
