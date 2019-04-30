@@ -88,7 +88,10 @@ On Linux, for standalone projects:
 
 * Run `sudo apt update && sudo apt install -y build-essential cmake gcc-arm-linux-gnueabi gcc-aarch64-linux-gnu g++-aarch64-linux-gnu`
 
-On other platforms, ensure that [Docker is installed and running: https://docs.docker.com/get-started/](https://docs.docker.com/get-started/).
+For Azure IoT Edge projects:
+
+* Ensure that [Docker is installed and running: https://docs.docker.com/get-started/](https://docs.docker.com/get-started/).
+* Create a container repository, like [Azure Container Registry](https://azure.microsoft.com/en-us/services/container-registry/)
 
 For better Azure integration:
 

@@ -8,7 +8,7 @@ export class Constants {
     //
     // Extension details
     //
-    public static ExtensionId = "ms-iot.msiot-openenclave";
+    public static ExtensionId = "ms-iot.msiot-vscode-openenclave";
 
     //
     // Github repo and branch for SDK

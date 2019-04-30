@@ -6,7 +6,7 @@ import * as vscode from "vscode";
 
 export class Configuration {
     public static getConfiguration(): vscode.WorkspaceConfiguration {
-        return vscode.workspace.getConfiguration("msiot-openenclave");
+        return vscode.workspace.getConfiguration("msiot-vscode-openenclave");
     }
 
     public static getConfigurationProperty(id: string): any {

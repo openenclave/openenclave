@@ -17,23 +17,9 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Add Open Solution command
     initCommandAsync(context, outputChannel,
-        "msiot-openenclave.newSolution",
+        "msiot-vscode-openenclave.newSolution",
         (): Promise<void> => {
             return openEnclaveManager.createOpenEnclaveSolution();
-        });
-
-    // Download SDK
-    initCommandAsync(context, outputChannel,
-        "msiot-openenclave.udpateSdkInSolution",
-        (): Promise<void> => {
-            return openEnclaveManager.updateSdkFromGit(null);
-        });
-
-    // Use Specific DevKit
-    initCommandAsync(context, outputChannel,
-        "msiot-openenclave.useSpecificDevKit",
-        (): Promise<void> => {
-            return openEnclaveManager.useSpecifiedDevKit(null);
         });
 }
 
