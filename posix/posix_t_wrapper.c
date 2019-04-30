@@ -9,8 +9,8 @@
 #include <openenclave/corelibc/string.h>
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/posix.h>
 #include <openenclave/internal/thread.h>
-#include "../../common/posix.h"
 
 /* Rename the ecalls table. */
 #define __oe_ecalls_table __oe_posix_ecalls_table

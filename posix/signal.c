@@ -11,7 +11,7 @@
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/trace.h>
 #include "posix_t.h"
-#include "../common/posix.h"
+#include <openenclave/internal/posix.h>
 // clang-format on
 
 // Poll uses much of the infrastructure from epoll.
