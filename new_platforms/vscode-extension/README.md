@@ -18,8 +18,8 @@ Alternatively, you can run the extension from this repository by following these
 
 ### Create a new Open Enclave solution.
 
-You can use the **Microsoft Open Enclave: New Open Enclave Solution** command to create a new 
-Open Enclave solution.  
+You can use the **Microsoft Open Enclave: New Open Enclave Solution** command (commands can be found using **CTRL-Shift-P**) 
+to create a new Open Enclave solution.  
 
 You will be prompted to:
 
@@ -59,9 +59,9 @@ container project will invoke docker and leverage project dockerfiles.  The cont
 Deploying an Azure IoT Edge container project is fairly simple:
 
 1. Select the desired platform:
-    1. `CTRL-Shift-P`
+    1. **CTRL-Shift-P**
     1. Select `Azure IoT Edge: Set Default Target Platform for Edge Solution`
-    1. Choose from **arm32v7**, **arm32v7.debug**, **aarch64**, or **aarch64.debug**
+    1. Choose from **arm32v7** or **aarch64**
 1. Right click on `modules/<solution-name>/module.json`
 1. Select `Build and Push IoT Edge Module Image`
 1. Select desired architecture and configuration from picker
