@@ -542,22 +542,12 @@ let oe_gen_ecall_function (os : out_channel) (fd : func_decl) =
   fprintf os "    /* Set in and in-out pointers */\n" ;
   List.iter
     (fun (ptype, decl) ->
-      match ptype with
-      | PTPtr (atype, ptr_attr) ->
-          if ptr_attr.pa_chkptr then
-            let size = oe_get_param_size (ptype, decl, "pargs_in->") in
-            let tystr = get_cast_to_mem_type (ptype, decl) in
-            match ptr_attr.pa_direction with
-            | PtrIn ->
-                fprintf os "    OE_SET_IN_POINTER(%s, %s, %s);\n"
-                  decl.identifier size tystr
-            | PtrInOut ->
-                fprintf os "    OE_SET_IN_OUT_POINTER(%s, %s, %s);\n"
-                  decl.identifier size tystr
-            | _ -> ()
-          else ()
-      | _ -> () )
-    fd.plist ;
+      let size = oe_get_param_size (ptype, decl, "pargs_in->") in
+      let tystr = get_cast_to_mem_type (ptype, decl) in
+      fprintf os "    OE_SET_%s_POINTER(%s, %s, %s);\n"
+        (if is_in_ptr (ptype, decl) then "IN" else "IN_OUT")
+        decl.identifier size tystr )
+    (List.filter (fun p -> is_in_ptr p || is_inout_ptr p) fd.plist) ;
   fprintf os "\n" ;
   (* Prepare out and in-out parameters. The in-out parameter is copied
      to output buffer. *)
@@ -566,22 +556,12 @@ let oe_gen_ecall_function (os : out_channel) (fd : func_decl) =
      output buffer. */\n" ;
   List.iter
     (fun (ptype, decl) ->
-      match ptype with
-      | PTPtr (atype, ptr_attr) ->
-          if ptr_attr.pa_chkptr then
-            let size = oe_get_param_size (ptype, decl, "pargs_in->") in
-            let tystr = get_cast_to_mem_type (ptype, decl) in
-            match ptr_attr.pa_direction with
-            | PtrOut ->
-                fprintf os "    OE_SET_OUT_POINTER(%s, %s, %s);\n"
-                  decl.identifier size tystr
-            | PtrInOut ->
-                fprintf os "    OE_COPY_AND_SET_IN_OUT_POINTER(%s, %s, %s);\n"
-                  decl.identifier size tystr
-            | _ -> ()
-          else ()
-      | _ -> () )
-    fd.plist ;
+      let size = oe_get_param_size (ptype, decl, "pargs_in->") in
+      let tystr = get_cast_to_mem_type (ptype, decl) in
+      fprintf os "    OE_%s_POINTER(%s, %s, %s);\n"
+        (if is_out_ptr (ptype, decl) then "SET_OUT" else "COPY_AND_SET_IN_OUT")
+        decl.identifier size tystr )
+    (List.filter (fun p -> is_out_ptr p || is_inout_ptr p) fd.plist) ;
   fprintf os "\n" ;
   (* Check for null terminators in string parameters *)
   fprintf os "    /* Check that in/in-out strings are null terminated */\n" ;
