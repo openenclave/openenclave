@@ -491,20 +491,6 @@ let get_cast_from_mem_expr (ptype, decl) =
         sprintf "(const %s) " (get_tystr t)
       else ""
 
-let oe_copy_members_to_enclave (os : out_channel) (fd : func_decl) =
-  let is_primitive ptype =
-    match ptype with
-    | PTPtr (atype, ptr_attr) -> not ptr_attr.pa_chkptr
-    | _ -> true
-  in
-  let gen_copy_member (ptype, decl) =
-    if is_primitive ptype then
-      fprintf os "    enc_args.%s = args.%s;\n" decl.identifier decl.identifier
-  in
-  fprintf os "    /* Copy primitive properties to enc_args */\n" ;
-  List.iter gen_copy_member fd.plist ;
-  fprintf os "\n"
-
 let oe_gen_allocate_buffers (os : out_channel) (fd : func_decl) =
   let gen_allocate_buffer (ptype, decl) =
     match ptype with
