@@ -827,7 +827,7 @@ oe_result_t oe_call_enclave_function(
 {
     return oe_call_enclave_function_by_table_id(
         enclave,
-        OE_UINT64_T,
+        OE_UINT64_MAX,
         function_id,
         input_buffer,
         input_buffer_size,
