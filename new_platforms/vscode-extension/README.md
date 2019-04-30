@@ -105,7 +105,7 @@ For better Azure integration:
 
 ## Known Issues
 
-* SGX is not currently supported
+* SGX is not currently supported.
 
 ## Release Notes
 
