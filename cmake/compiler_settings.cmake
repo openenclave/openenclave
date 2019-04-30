@@ -67,10 +67,6 @@ else ()
   message(WARNING "Spectre 1 mitigations NOT supported")
 endif ()
 
-if (WIN32) # __feature_io__
-  add_compile_options(-DWINDOWS_HOST=1)
-endif ()
-
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
   # Enables all the warnings about constructions that some users consider questionable,
   # and that are easy to avoid. Treat at warnings-as-errors, which forces developers
