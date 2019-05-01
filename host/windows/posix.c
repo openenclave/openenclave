@@ -1,19 +1,26 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-typedef __int64 oe_oe_off_t;
+/*
+**==============================================================================
+**
+** windows/posix.c:
+**
+**     This file implements POSIX OCALLs for Windows. Most of these are stubs
+**     which are still under development.
+**
+**==============================================================================
+*/
 
-#include <windows.h>
 #include <io.h>
 #include <stdint.h>
-/* ATTN: please put what 4005 is for here. */
-
-#pragma warning(disable : 4005)
-
-/* warning C4716: must return a value */
-#pragma warning(disable : 4716)
 
 #include "posix_u.h"
+
+/* Definitions in <openenclave/corelibc/errno.h> with Windows headers. */
+#ifdef _OE_ERRNO_H
+#error "error: <openenclave/corelibc/errno.h> included on Windows."
+#endif
 
 /*
 **==============================================================================
@@ -37,13 +44,14 @@ OE_INLINE void _clear_err(int* err)
         *err = 0;
 }
 
+__declspec(noreturn)
 static void _panic(const char* file, unsigned int line, const char* function)
 {
     fprintf(stderr, "%s(%u): %s(): panic\n", file, line, function);
     abort();
 }
 
-#define PANIC _panic(__FILE__, __LINE__, __FUNCTION__)
+#define PANIC _panic(__FILE__, __LINE__, __FUNCTION__); 
 
 /*
 **==============================================================================
