@@ -355,26 +355,19 @@ let oe_gen_args_header (ec : enclave_content) (dir : string) =
 
     NOTE: Foreign arrays are marshalled as [void *], but foreign pointers
     are marshalled as-is. *)
-let get_cast_to_mem_expr (ptype, decl) =
+let get_cast_to_mem_expr (ptype, decl) (parens : bool) =
   match ptype with
   | PTVal _ -> ""
   | PTPtr (t, _) ->
-      if is_array decl then sprintf "(%s*) " (get_tystr t)
+      let tystr = get_tystr t in
+      if is_array decl then
+        let s = tystr ^ "*" in
+        if parens then sprintf "(%s)" s else s
       else if is_foreign_array ptype then
-        sprintf "/* foreign array of type %s */ (void*) " (get_tystr t)
-      else sprintf "(%s) " (get_tystr t)
-
-(** This function is nearly identical to the above, but does not
-    surround the expression with the final set of parentheses, which is
-    necessary for passing it to C macros. *)
-let get_cast_to_mem_type (ptype, decl) =
-  match ptype with
-  | PTVal _ -> ""
-  | PTPtr (t, _) ->
-      if is_array decl then get_tystr t ^ "*"
-      else if is_foreign_array ptype then
-        sprintf "/* foreign array of type %s */ void* " (get_tystr t)
-      else get_tystr t
+        let s = if parens then "(void*)" else "void*" in
+        sprintf "/* foreign array of type %s */ %s" tystr s
+      else if parens then sprintf "(%s)" tystr
+      else tystr
 
 (** Prepare [input_buffer]. *)
 let oe_prepare_input_buffer (fd : func_decl) (alloc_func : string) =
@@ -420,7 +413,7 @@ let oe_prepare_input_buffer (fd : func_decl) (alloc_func : string) =
       (List.map
          (fun (ptype, decl) ->
            let size = oe_get_param_size (ptype, decl, "_args.") in
-           let tystr = get_cast_to_mem_type (ptype, decl) in
+           let tystr = get_cast_to_mem_expr (ptype, decl) false in
            (* These need to be in order and so done together. *)
            sprintf "OE_WRITE_%s_PARAM(%s, %s, %s);"
              (if is_in_ptr (ptype, decl) then "IN" else "IN_OUT")
@@ -486,12 +479,12 @@ let get_cast_from_mem_expr (ptype, decl) =
   | PTVal _ -> ""
   | PTPtr (t, attr) ->
       if is_array decl then
-        sprintf "*(%s (*)%s) " (get_tystr t) (get_array_dims decl.array_dims)
+        sprintf "*(%s(*)%s)" (get_tystr t) (get_array_dims decl.array_dims)
       else if is_foreign_array ptype then
-        sprintf "/* foreign array */ *(%s *) " (get_tystr t)
+        sprintf "/* foreign array */ *(%s*)" (get_tystr t)
       else if attr.pa_rdonly then
         (* for ptrs, only constness is removed; add it back *)
-        sprintf "(const %s) " (get_tystr t)
+        sprintf "(const %s)" (get_tystr t)
       else ""
 
 let oe_gen_call_function (fd : func_decl) =
@@ -548,7 +541,7 @@ let oe_gen_ecall_function (tf : trusted_func) =
        List.map
          (fun (ptype, decl) ->
            let size = oe_get_param_size (ptype, decl, "pargs_in->") in
-           let tystr = get_cast_to_mem_type (ptype, decl) in
+           let tystr = get_cast_to_mem_expr (ptype, decl) false in
            sprintf "    OE_SET_%s_POINTER(%s, %s, %s);"
              (if is_in_ptr (ptype, decl) then "IN" else "IN_OUT")
              decl.identifier size tystr )
@@ -565,7 +558,7 @@ let oe_gen_ecall_function (tf : trusted_func) =
        List.map
          (fun (ptype, decl) ->
            let size = oe_get_param_size (ptype, decl, "pargs_in->") in
-           let tystr = get_cast_to_mem_type (ptype, decl) in
+           let tystr = get_cast_to_mem_expr (ptype, decl) false in
            sprintf "    OE_%s_POINTER(%s, %s, %s);"
              ( if is_out_ptr (ptype, decl) then "SET_OUT"
              else "COPY_AND_SET_IN_OUT" )
@@ -632,7 +625,7 @@ let gen_fill_marshal_struct (fd : func_decl) (args : string) =
     (fun (ptype, decl) ->
       let varname = decl.identifier in
       sprintf "    %s.%s = %s%s;" args varname
-        (get_cast_to_mem_expr (ptype, decl))
+        (get_cast_to_mem_expr (ptype, decl) true)
         varname
       ^
       (* for string parameter fill the len field *)
@@ -797,7 +790,7 @@ let oe_gen_ocall_host_wrapper (os : out_channel) (uf : untrusted_func) =
       | PTPtr (_, ptr_attr) ->
           if ptr_attr.pa_chkptr then
             let size = oe_get_param_size (ptype, decl, "pargs_in->") in
-            let tystr = get_cast_to_mem_type (ptype, decl) in
+            let tystr = get_cast_to_mem_expr (ptype, decl) false in
             match ptr_attr.pa_direction with
             | PtrIn ->
                 fprintf os "    OE_SET_IN_POINTER(%s, %s, %s);\n"
@@ -820,7 +813,7 @@ let oe_gen_ocall_host_wrapper (os : out_channel) (uf : untrusted_func) =
       | PTPtr (_, ptr_attr) ->
           if ptr_attr.pa_chkptr then
             let size = oe_get_param_size (ptype, decl, "pargs_in->") in
-            let tystr = get_cast_to_mem_type (ptype, decl) in
+            let tystr = get_cast_to_mem_expr (ptype, decl) false in
             match ptr_attr.pa_direction with
             | PtrOut ->
                 fprintf os "    OE_SET_OUT_POINTER(%s, %s, %s);\n"
