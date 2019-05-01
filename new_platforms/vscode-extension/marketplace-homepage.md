@@ -44,8 +44,8 @@ The build task will do the actual compiling and linking.
 
 1. **CTRL-Shift-P**
 1. Select `Tasks: Run Task`
-1. Select `Configure for QEMU (ARM | AARCH64)`
-1. Select `Build for QEMU (ARM | AARCH64)`
+1. Select `Configure for QEMU (ARMV7-A | AARCH64/ARMv8-A)`
+1. Select `Build for QEMU (ARMV7-A | AARCH64/ARMv8-A)`
 
 For an Azure IoT Edge container project, containers are used to configure and build.  The build task in a
 container project will invoke docker and leverage project dockerfiles.  The container can be built by:
