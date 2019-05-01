@@ -17,7 +17,7 @@ int main(int argc, const char* argv[])
         return result;
     }
     char* enclaveMessage = (char*)malloc(512 * sizeof(char));
-    result = call_enclave("\"ProcessInEnclave\"", enclaveMessage, 512);
+    result = call_enclave("\"Process In Enclave\"", enclaveMessage, 512);
     if (result != 0)
     {
         return result;
