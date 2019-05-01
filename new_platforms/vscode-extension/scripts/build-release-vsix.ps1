@@ -3,7 +3,8 @@ Param(
     $packageFile = "package.json",
     [ValidateSet("no", "major", "minor", "patch")]
     $incrementVersion = "no",
-    $resetAiKey = $true
+    $resetAiKey = $true,
+    $moveFolderLocation = $null
 )
 
 $originaldata = Get-Content -Raw -Path $packageFile | ConvertFrom-Json
@@ -45,7 +46,7 @@ function Format-Json([Parameter(Mandatory, ValueFromPipeline)][String] $json) {
         }
         $line
     }) -Join "`n"
-  }
+}
 
 #
 # Handle App Insights key modification
@@ -53,7 +54,9 @@ function Format-Json([Parameter(Mandatory, ValueFromPipeline)][String] $json) {
 $jsondata.aiKey = $aiKey
 $jsonData | ConvertTo-Json -depth 100| % { [System.Text.RegularExpressions.Regex]::Unescape($_) } | Format-Json | Set-Content $packageFile
 
-&vsce package
+$vsixFile = $jsonData.name + "-" + $jsondata.version + ".vsix"
+Write-Host "Building VSIX pacakge: $vsixFile"
+& vsce package | Out-String | Write-Host -ForegroundColor Green
 
 if ($resetAiKey) {
     #
@@ -61,4 +64,10 @@ if ($resetAiKey) {
     #
     $jsondata.aiKey = $originalAiKey
     $jsonData | ConvertTo-Json -depth 100| % { [System.Text.RegularExpressions.Regex]::Unescape($_) } | Format-Json | Set-Content $packageFile
+}
+
+if (![string]::IsNullOrEmpty($moveFolderLocation)) {
+    $vsixPath = ".\$vsixFile"
+    Write-Host "Moving $vsixPath to $moveFolderLocation"
+    Move-Item -Path $vsixPath -Destination $moveFolderLocation -Force -Verbose | Out-String | Write-Host -ForegroundColor Green
 }
