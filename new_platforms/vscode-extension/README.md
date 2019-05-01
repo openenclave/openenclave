@@ -82,26 +82,25 @@ to an Azure Edge device by:
 
 Install [Visual Studio Code](https://code.visualstudio.com/)
 
-Install [npm](https://www.npmjs.com/get-npm)
-
-On Linux, for standalone projects:
+### On Linux, for standalone projects
 
 * Run `sudo apt update && sudo apt install -y build-essential cmake gcc-arm-linux-gnueabi gcc-aarch64-linux-gnu g++-aarch64-linux-gnu`
 
-For Azure IoT Edge projects:
+### For Azure IoT Edge projects
 
 * Ensure that [Docker is installed and running: https://docs.docker.com/get-started/](https://docs.docker.com/get-started/).
 * Create a container repository, like [Azure Container Registry](https://azure.microsoft.com/en-us/services/container-registry/)
+* For better Azure integration:
+    * Make sure that the VS Code Azure Account extension is installed and utilized:
+        1. CTRL-Shift-P
+        1. Azure: Sign In
+    * Make sure that the VS Code Azure IoT Hub Toolkit extension is installed and utilized:
+        1. CTRL-Shift-P
+        1. Azure IoT Hub: Select IoT Hub
 
-For better Azure integration:
+### For development of this extension, or running from source code directly
 
-* Make sure that the VS Code Azure Account extension is installed and utilized:
-    1. CTRL-Shift-P
-    1. Azure: Sign In
-
-* Make sure that the VS Code Azure IoT Hub Toolkit extension is installed and utilized:
-    1. CTRL-Shift-P
-    1. Azure IoT Hub: Select IoT Hub
+* Install [npm](https://www.npmjs.com/get-npm)
 
 ## Known Issues
 
