@@ -78,6 +78,19 @@ to an Azure Edge device by:
 1. Right click on `deployment.*.json` (or `deployment.debug.*.json`)
 1. Select `Create Deployment for Single Device` or `Create Deployment at Scale`.
 
+### Debug your Open Enclave solution.
+
+Debugging your standalone project's enclave is easy.  
+
+1. You can simply hit `F5`.  This will configure you cmake, run the build, start QEMU, and load 
+the host and enclave symbols into an instance of the debugger.
+1. Set breakpoints in the files you wish to debug.
+1. Open the **Terminal** view and enter `/mnt/host/bin/<solution-name>`
+
+    The debugger has been configured to break at TA_InvokeCommandEntryPoint.  This will
+    happen twice.
+
+
 ## Requirements
 
 ### Install [Visual Studio Code](https://code.visualstudio.com/)
