@@ -16,7 +16,7 @@ int oe_register_resolver(int resolver_priority, oe_resolver_t* presolver)
 
     if (presolver == NULL)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno =%d  ", oe_errno);
         ret = oe_errno;
         goto done;
@@ -24,7 +24,7 @@ int oe_register_resolver(int resolver_priority, oe_resolver_t* presolver)
 
     if (resolver_priority >= (int)_resolver_table_len)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR(
             "oe_errno =%d  : resolver_priority=%d _resolver_table_len=%ld",
             oe_errno,

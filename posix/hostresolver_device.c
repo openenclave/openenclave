@@ -170,7 +170,7 @@ static int _hostresolv_getaddrinfo(
             break;
 
         /* Expecting that addr and canonname buffers were too small. */
-        if (retval != -1 || err != ENAMETOOLONG)
+        if (retval != -1 || err != OE_ENAMETOOLONG)
         {
             OE_TRACE_ERROR("oe_posix_getaddrinfo_read_ocall() failed");
             goto done;
@@ -290,7 +290,7 @@ static int _hostresolv_shutdown(oe_resolver_t* resolv_)
 
     if (!resolv)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -298,7 +298,7 @@ static int _hostresolv_shutdown(oe_resolver_t* resolv_)
     if ((result = oe_posix_shutdown_resolver_device_ocall(&ret, &oe_errno)) !=
         OE_OK)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("%s oe_errno=%d", oe_result_str(result), oe_errno);
         goto done;
     }

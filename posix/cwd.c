@@ -22,7 +22,7 @@ char* oe_getcwd(char* buf, size_t size)
 
     if (buf && size == 0)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
@@ -34,7 +34,7 @@ char* oe_getcwd(char* buf, size_t size)
 
         if (!p)
         {
-            oe_errno = ENOMEM;
+            oe_errno = OE_ENOMEM;
             OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
             goto done;
         }
@@ -50,7 +50,7 @@ char* oe_getcwd(char* buf, size_t size)
 
     if (oe_strlcpy(p, _cwd, n) >= n)
     {
-        oe_errno = ERANGE;
+        oe_errno = OE_ERANGE;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
@@ -93,7 +93,7 @@ int oe_chdir(const char* path)
     /* Fail if path not a directory. */
     if (!OE_S_ISDIR(st.st_mode))
     {
-        oe_errno = ENOTDIR;
+        oe_errno = OE_ENOTDIR;
         return -1;
     }
 
@@ -103,7 +103,7 @@ int oe_chdir(const char* path)
 
     if (oe_strlcpy(_cwd, real_path, OE_PATH_MAX) >= OE_PATH_MAX)
     {
-        oe_errno = ENAMETOOLONG;
+        oe_errno = OE_ENAMETOOLONG;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }

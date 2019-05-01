@@ -93,7 +93,7 @@ int oe_assign_fd_device(oe_device_t* device)
 
         if (retval != 0)
         {
-            oe_errno = ENOMEM;
+            oe_errno = OE_ENOMEM;
             OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
             goto done;
         }
@@ -139,14 +139,14 @@ oe_device_t* oe_set_fd_device(int fd, oe_device_t* device)
 
     if (fd < 0 || (size_t)fd >= _table_size())
     {
-        oe_errno = EBADF;
+        oe_errno = OE_EBADF;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
 
     if (_table()[fd].device != NULL)
     {
-        oe_errno = EADDRINUSE;
+        oe_errno = OE_EADDRINUSE;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
@@ -184,14 +184,14 @@ static oe_device_t* _get_fd_device(int fd)
 
     if (fd < 0 || fd >= (int)_table_size())
     {
-        oe_errno = EBADF;
+        oe_errno = OE_EBADF;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
 
     if (_table()[fd].device == NULL)
     {
-        oe_errno = EBADF;
+        oe_errno = OE_EBADF;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -215,7 +215,7 @@ oe_device_t* oe_get_fd_device(int fd, oe_device_type_t type)
         goto done;
 
     if (type != OE_DEVICE_TYPE_NONE && device->type != type)
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
 
     ret = device;
 
@@ -232,14 +232,14 @@ int oe_dup(int oldfd)
 
     if (!(old_dev = oe_get_fd_device(oldfd, OE_DEVICE_TYPE_NONE)))
     {
-        oe_errno = EBADF;
+        oe_errno = OE_EBADF;
         OE_TRACE_ERROR("oldfd=%d oe_errno=%d", oldfd, oe_errno);
         goto done;
     }
 
     if ((retval = (*old_dev->ops.base->dup)(old_dev, &new_dev)) < 0)
     {
-        oe_errno = EBADF;
+        oe_errno = OE_EBADF;
         OE_TRACE_ERROR(
             "oldfd=%d oe_errno=%d retval=%d", oldfd, oe_errno, retval);
         newfd = -1;
@@ -265,7 +265,7 @@ int oe_dup2(int oldfd, int newfd)
 
     if (!(old_dev = oe_get_fd_device(oldfd, OE_DEVICE_TYPE_NONE)))
     {
-        oe_errno = EBADF;
+        oe_errno = OE_EBADF;
         OE_TRACE_ERROR("oldfd=%d oe_errno=%d", oldfd, oe_errno);
         goto done;
     }
@@ -277,7 +277,7 @@ int oe_dup2(int oldfd, int newfd)
 
     if ((retval = (*old_dev->ops.base->dup)(old_dev, &dev)) < 0)
     {
-        oe_errno = EBADF;
+        oe_errno = OE_EBADF;
         newfd = -1;
         goto done;
     }
@@ -285,7 +285,7 @@ int oe_dup2(int oldfd, int newfd)
     // ATTN: release dev if this fails. */
     if (oe_set_fd_device(newfd, dev))
     {
-        oe_errno = EBADF;
+        oe_errno = OE_EBADF;
         OE_TRACE_ERROR("newfd=%d dev=%p oe_errno=%d", newfd, dev, oe_errno);
         (*dev->ops.base->close)(dev);
         newfd = -1;

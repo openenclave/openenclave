@@ -285,14 +285,14 @@ int oe_epoll_ctl(int epfd, int op, int fd, struct oe_epoll_event* event)
 
     if (!(epoll = oe_get_fd_device(epfd, OE_DEVICE_TYPE_EPOLL)))
     {
-        oe_errno = EBADF;
+        oe_errno = OE_EBADF;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
 
     if (!(device = oe_get_fd_device(fd, OE_DEVICE_TYPE_NONE)))
     {
-        oe_errno = EBADF;
+        oe_errno = OE_EBADF;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
@@ -303,7 +303,7 @@ int oe_epoll_ctl(int epfd, int op, int fd, struct oe_epoll_event* event)
         {
             if (!epoll->ops.epoll->ctl_add)
             {
-                oe_errno = EINVAL;
+                oe_errno = OE_EINVAL;
                 OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
                 goto done;
             }
@@ -315,7 +315,7 @@ int oe_epoll_ctl(int epfd, int op, int fd, struct oe_epoll_event* event)
         {
             if (!epoll->ops.epoll->ctl_del)
             {
-                oe_errno = EINVAL;
+                oe_errno = OE_EINVAL;
                 OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
                 goto done;
             }
@@ -327,7 +327,7 @@ int oe_epoll_ctl(int epfd, int op, int fd, struct oe_epoll_event* event)
         {
             if (!epoll->ops.epoll->ctl_mod)
             {
-                oe_errno = EINVAL;
+                oe_errno = OE_EINVAL;
                 OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
                 goto done;
             }
@@ -337,7 +337,7 @@ int oe_epoll_ctl(int epfd, int op, int fd, struct oe_epoll_event* event)
         }
         default:
         {
-            oe_errno = EINVAL;
+            oe_errno = OE_EINVAL;
             OE_TRACE_ERROR("op=%d  fd=%d oe_errno=%d", op, fd, oe_errno);
             goto done;
         }
@@ -367,7 +367,7 @@ int oe_epoll_wait(
 
     if (!epoll->ops.epoll->wait)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
@@ -375,7 +375,7 @@ int oe_epoll_wait(
     /* Wait until there are events. */
     if ((*epoll->ops.epoll->wait)(epfd, events, (size_t)maxevents, timeout) < 0)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("epfd=%d", epfd);
         goto done;
     }
@@ -388,7 +388,7 @@ int oe_epoll_wait(
     {
         if (oe_wait_device_notification(timeout) < 0)
         {
-            oe_errno = EPROTO;
+            oe_errno = OE_EPROTO;
             OE_TRACE_ERROR("oe_errno=%d", oe_errno);
             return -1;
         }
@@ -416,7 +416,7 @@ int oe_epoll_pwait(
 
     if (sigmask)
     {
-        oe_errno = ENOTSUP;
+        oe_errno = OE_ENOTSUP;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
@@ -521,7 +521,7 @@ int oe_get_epoll_events(
     /* Check the function parameters. */
     if (!events || maxevents < 1)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
@@ -566,7 +566,7 @@ int oe_get_epoll_events(
         if ((events[i].data.u64 = (*epoll->ops.epoll->get_event_data)(
                  epoll, p->notice.list_idx)) == (uint64_t)-1)
         {
-            oe_errno = EINVAL;
+            oe_errno = OE_EINVAL;
             OE_TRACE_ERROR("oe_errno = %d", oe_errno);
             goto done;
         }

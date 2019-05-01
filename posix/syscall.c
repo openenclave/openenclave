@@ -55,10 +55,10 @@ static long _syscall(
             int flags = (OE_O_CREAT | OE_O_WRONLY | OE_O_TRUNC);
 
             ret = oe_open(pathname, flags, mode);
-            if (oe_errno == ENOENT)
+            if (oe_errno == OE_ENOENT)
             {
                 /* Not handled. Let caller dispatch this syscall. */
-                oe_errno = ENOSYS;
+                oe_errno = OE_ENOSYS;
                 goto done;
             }
 
@@ -72,7 +72,7 @@ static long _syscall(
 
             ret = oe_open(pathname, flags, mode);
 
-            if (ret < 0 && oe_errno == ENOENT)
+            if (ret < 0 && oe_errno == OE_ENOENT)
                 goto done;
 
             goto done;
@@ -569,7 +569,7 @@ static long _syscall(
 
         default:
         {
-            oe_errno = ENOSYS;
+            oe_errno = OE_ENOSYS;
             OE_TRACE_WARNING("syscall num=%ld not handled", num);
             goto done;
         }

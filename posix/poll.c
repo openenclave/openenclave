@@ -27,13 +27,13 @@ int oe_poll(struct oe_pollfd* fds, nfds_t nfds, int timeout_ms)
 
     if ((epfd = oe_epoll_create1(0)) < 0)
     {
-        oe_errno = EBADF;
+        oe_errno = OE_EBADF;
         goto done;
     }
 
     if (!(rev = oe_malloc(sizeof(struct oe_epoll_event) * nfds)))
     {
-        oe_errno = ENOMEM;
+        oe_errno = OE_ENOMEM;
         goto done;
     }
 
@@ -45,7 +45,7 @@ int oe_poll(struct oe_pollfd* fds, nfds_t nfds, int timeout_ms)
 
     if (pepoll->ops.epoll->add_event_data == NULL)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -78,7 +78,7 @@ int oe_poll(struct oe_pollfd* fds, nfds_t nfds, int timeout_ms)
 
     if (pepoll->ops.epoll->poll == NULL)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("poll=%p oe_errno=%d", pepoll, oe_errno);
         retval = -1;
         goto done;
@@ -92,7 +92,7 @@ int oe_poll(struct oe_pollfd* fds, nfds_t nfds, int timeout_ms)
                  epfd, fds, (size_t)nfds, timeout_ms)) < 0)
         {
             OE_TRACE_ERROR("retval=%d", retval);
-            oe_errno = EINVAL;
+            oe_errno = OE_EINVAL;
             goto done;
         }
     }
@@ -105,7 +105,7 @@ int oe_poll(struct oe_pollfd* fds, nfds_t nfds, int timeout_ms)
     {
         if (oe_wait_device_notification(timeout_ms) < 0)
         {
-            oe_errno = EPROTO;
+            oe_errno = OE_EPROTO;
             OE_TRACE_ERROR("oe_errno=%d", oe_errno);
             goto done;
         }

@@ -44,14 +44,14 @@ int oe_socket_d(uint64_t devid, int domain, int type, int protocol)
 
     if (!(device = oe_get_devid_device(devid)))
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
 
     if (!device->ops.socket || !device->ops.socket->socket)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -99,7 +99,7 @@ int oe_socketpair(int domain, int type, int protocol, int retfd[2])
 
         default:
         {
-            oe_errno = EINVAL;
+            oe_errno = OE_EINVAL;
             OE_TRACE_ERROR(
                 "oe_errno =%d  : unknown domain(%d)", oe_errno, domain);
             goto done;
@@ -108,14 +108,14 @@ int oe_socketpair(int domain, int type, int protocol, int retfd[2])
 
     if (!(device = oe_get_devid_device(devid)))
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
 
     if (!device->ops.socket || !device->ops.socket->socketpair)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -170,7 +170,7 @@ int oe_connect(int sockfd, const struct oe_sockaddr* addr, oe_socklen_t addrlen)
 
     if (psock->ops.socket->connect == NULL)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR(
             "sockfd=%d oe_errno =%d  connect callback is null",
             sockfd,
@@ -202,7 +202,7 @@ int oe_accept(int sockfd, struct oe_sockaddr* addr, oe_socklen_t* addrlen)
 
     if (psock->ops.socket->accept == NULL)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -240,7 +240,7 @@ int oe_listen(int sockfd, int backlog)
 
     if (psock->ops.socket->listen == NULL)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -263,7 +263,7 @@ ssize_t oe_recv(int sockfd, void* buf, size_t len, int flags)
 
     if (psock->ops.socket->recv == NULL)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno =%d  : recv callback is null", oe_errno);
         goto done;
     }
@@ -291,7 +291,7 @@ ssize_t oe_recvfrom(
 
     if (psock->ops.socket->recvfrom == NULL)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -315,7 +315,7 @@ ssize_t oe_send(int sockfd, const void* buf, size_t len, int flags)
 
     if (psock->ops.socket->send == NULL)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -344,7 +344,7 @@ ssize_t oe_sendto(
 
     if (psock->ops.socket->sendto == NULL)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -368,7 +368,7 @@ ssize_t oe_recvmsg(int sockfd, struct oe_msghdr* buf, int flags)
 
     if (psock->ops.socket->recvmsg == NULL)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -391,7 +391,7 @@ ssize_t oe_sendmsg(int sockfd, const struct oe_msghdr* buf, int flags)
 
     if (psock->ops.socket->sendmsg == NULL)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -415,7 +415,7 @@ int oe_shutdown(int sockfd, int how)
 
     if (psock->ops.socket->shutdown == NULL)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -438,7 +438,7 @@ int oe_getsockname(int sockfd, struct oe_sockaddr* addr, oe_socklen_t* addrlen)
 
     if (psock->ops.socket->getsockname == NULL)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -461,7 +461,7 @@ int oe_getpeername(int sockfd, struct oe_sockaddr* addr, oe_socklen_t* addrlen)
 
     if (psock->ops.socket->getpeername == NULL)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -489,7 +489,7 @@ int oe_getsockopt(
 
     if (psock->ops.socket->getsockopt == NULL)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -518,7 +518,7 @@ int oe_setsockopt(
 
     if (psock->ops.socket->setsockopt == NULL)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -542,7 +542,7 @@ int oe_bind(int sockfd, const struct oe_sockaddr* name, oe_socklen_t namelen)
 
     if (psock->ops.socket->bind == NULL)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }

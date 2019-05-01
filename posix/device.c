@@ -67,7 +67,7 @@ uint64_t oe_allocate_devid(uint64_t devid)
 
     if (!_initialized && _init_table() != 0)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
@@ -79,7 +79,7 @@ uint64_t oe_allocate_devid(uint64_t devid)
     {
         if (oe_array_resize(&_dev_arr, devid + 1) != 0)
         {
-            oe_errno = ENOMEM;
+            oe_errno = OE_ENOMEM;
             OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
             goto done;
         }
@@ -87,7 +87,7 @@ uint64_t oe_allocate_devid(uint64_t devid)
 
     if (_table()[devid] != NULL)
     {
-        oe_errno = EADDRINUSE;
+        oe_errno = OE_EADDRINUSE;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
@@ -109,7 +109,7 @@ int oe_release_devid(uint64_t devid)
 
     if (!_initialized && _init_table() != 0)
     {
-        oe_errno = ENOMEM;
+        oe_errno = OE_ENOMEM;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
@@ -119,7 +119,7 @@ int oe_release_devid(uint64_t devid)
 
     if (devid >= _dev_arr.size || _table()[devid] == NULL)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
@@ -142,14 +142,14 @@ int oe_set_devid_device(uint64_t devid, oe_device_t* device)
 
     if (devid > _table_size())
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
 
     if (_table()[devid] != NULL)
     {
-        oe_errno = EADDRINUSE;
+        oe_errno = OE_EADDRINUSE;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
@@ -168,7 +168,7 @@ oe_device_t* oe_get_devid_device(uint64_t devid)
 
     if (devid >= _table_size())
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
@@ -187,14 +187,14 @@ int oe_remove_device(uint64_t devid)
 
     if (!(device = oe_get_devid_device(devid)))
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("no device found: devid=%lu", devid);
         goto done;
     }
 
     if (device->ops.base->shutdown == NULL)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
@@ -225,7 +225,7 @@ ssize_t oe_read(int fd, void* buf, size_t count)
 
     if (device->ops.base->read == NULL)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
@@ -252,14 +252,14 @@ ssize_t oe_write(int fd, const void* buf, size_t count)
 
     if (!(device = oe_get_fd_device(fd, OE_DEVICE_TYPE_NONE)))
     {
-        oe_errno = EBADF;
+        oe_errno = OE_EBADF;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
 
     if (device->ops.base->write == NULL)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
@@ -285,7 +285,7 @@ int oe_close(int fd)
 
     if (device->ops.base->close == NULL)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
@@ -317,7 +317,7 @@ int __oe_fcntl(int fd, int cmd, uint64_t arg)
 
     if (device->ops.base->fcntl == NULL)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
@@ -379,7 +379,7 @@ int __oe_ioctl(int fd, unsigned long request, uint64_t arg)
 
         if (device->ops.base->ioctl == NULL)
         {
-            oe_errno = EINVAL;
+            oe_errno = OE_EINVAL;
             OE_TRACE_ERROR("fd=%d oe_errno =%d ", fd, oe_errno);
             ret = -1;
             goto done;

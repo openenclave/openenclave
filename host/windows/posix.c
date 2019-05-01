@@ -44,14 +44,16 @@ OE_INLINE void _clear_err(int* err)
         *err = 0;
 }
 
-__declspec(noreturn)
-static void _panic(const char* file, unsigned int line, const char* function)
+__declspec(noreturn) static void _panic(
+    const char* file,
+    unsigned int line,
+    const char* function)
 {
     fprintf(stderr, "%s(%u): %s(): panic\n", file, line, function);
     abort();
 }
 
-#define PANIC _panic(__FILE__, __LINE__, __FUNCTION__); 
+#define PANIC _panic(__FILE__, __LINE__, __FUNCTION__);
 
 /*
 **==============================================================================
@@ -96,7 +98,11 @@ ssize_t oe_posix_write_ocall(
     return ret;
 }
 
-oe_off_t oe_posix_lseek_ocall(oe_host_fd_t fd, oe_off_t offset, int whence, int* err)
+oe_off_t oe_posix_lseek_ocall(
+    oe_host_fd_t fd,
+    oe_off_t offset,
+    int whence,
+    int* err)
 {
     PANIC;
 }

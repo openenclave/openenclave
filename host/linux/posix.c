@@ -93,7 +93,11 @@ ssize_t oe_posix_write_ocall(
     return ret;
 }
 
-oe_off_t oe_posix_lseek_ocall(oe_host_fd_t fd, oe_off_t offset, int whence, int* err)
+oe_off_t oe_posix_lseek_ocall(
+    oe_host_fd_t fd,
+    oe_off_t offset,
+    int whence,
+    int* err)
 {
     oe_off_t ret;
 

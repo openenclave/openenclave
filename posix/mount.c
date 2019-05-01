@@ -41,7 +41,7 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
 
     if (!path || !suffix)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -56,7 +56,7 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
 
             if (!device || device->type != OE_DEVICE_TYPE_FILESYSTEM)
             {
-                oe_errno = EINVAL;
+                oe_errno = OE_EINVAL;
                 OE_TRACE_ERROR("oe_errno=%d", oe_errno);
                 goto done;
             }
@@ -120,7 +120,7 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
 
     if (!ret)
     {
-        oe_errno = ENOENT;
+        oe_errno = OE_ENOENT;
         OE_TRACE_ERROR("oe_errno=%d path={%s}", oe_errno, path);
     }
 
@@ -188,7 +188,7 @@ int oe_mount(
 
     if (!target)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -200,7 +200,7 @@ int oe_mount(
 
         if (!device)
         {
-            oe_errno = EINVAL;
+            oe_errno = OE_EINVAL;
             OE_TRACE_ERROR("oe_errno=%d", oe_errno);
             goto done;
         }
@@ -209,7 +209,7 @@ int oe_mount(
     /* If the device has not been resolved. */
     if (!device || device->type != OE_DEVICE_TYPE_FILESYSTEM)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -222,14 +222,14 @@ int oe_mount(
 
         if ((retval = oe_stat(target, &buf)) != 0)
         {
-            oe_errno = EIO;
+            oe_errno = OE_EIO;
             OE_TRACE_ERROR("oe_errno=%d", oe_errno);
             goto done;
         }
 
         if (!OE_S_ISDIR(buf.st_mode))
         {
-            oe_errno = ENOTDIR;
+            oe_errno = OE_ENOTDIR;
             OE_TRACE_ERROR("oe_errno=%d", oe_errno);
             goto done;
         }
@@ -249,7 +249,7 @@ int oe_mount(
     /* Fail if mount table exhausted. */
     if (_mount_table_size == MAX_MOUNT_TABLE_SIZE)
     {
-        oe_errno = ENOMEM;
+        oe_errno = OE_ENOMEM;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -260,7 +260,7 @@ int oe_mount(
         retval = oe_strcmp(_mount_table[i].path, target);
         if (retval == 0)
         {
-            oe_errno = EEXIST;
+            oe_errno = OE_EEXIST;
             OE_TRACE_ERROR("oe_errno=%d", oe_errno);
             goto done;
         }
@@ -270,7 +270,7 @@ int oe_mount(
     retval = device->ops.fs->base.clone(device, &new_device);
     if (retval != 0)
     {
-        oe_errno = ENOMEM;
+        oe_errno = OE_ENOMEM;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -284,7 +284,7 @@ int oe_mount(
 
         if (!_mount_table[index].path)
         {
-            oe_errno = ENOMEM;
+            oe_errno = OE_ENOMEM;
             OE_TRACE_ERROR("oe_errno=%d", oe_errno);
             goto done;
         }
@@ -327,7 +327,7 @@ int oe_umount2(const char* target, int flags)
 
     if (!device || device->type != OE_DEVICE_TYPE_FILESYSTEM || !target)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -348,7 +348,7 @@ int oe_umount2(const char* target, int flags)
     /* If mount point not found. */
     if (index == (size_t)-1)
     {
-        oe_errno = ENOENT;
+        oe_errno = OE_ENOENT;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }

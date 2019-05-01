@@ -74,7 +74,7 @@ void* oe_malloc(size_t size)
 
     if (!p && size)
     {
-        errno = ENOMEM;
+        errno = OE_ENOMEM;
 
         if (_failure_callback)
             _failure_callback(__FILE__, __LINE__, __FUNCTION__, size);
@@ -94,7 +94,7 @@ void* oe_calloc(size_t nmemb, size_t size)
 
     if (!p && nmemb && size)
     {
-        errno = ENOMEM;
+        errno = OE_ENOMEM;
 
         if (_failure_callback)
             _failure_callback(__FILE__, __LINE__, __FUNCTION__, nmemb * size);
@@ -109,7 +109,7 @@ void* oe_realloc(void* ptr, size_t size)
 
     if (!p && size)
     {
-        errno = ENOMEM;
+        errno = OE_ENOMEM;
 
         if (_failure_callback)
             _failure_callback(__FILE__, __LINE__, __FUNCTION__, size);
@@ -124,7 +124,7 @@ int oe_posix_memalign(void** memptr, size_t alignment, size_t size)
 
     if (rc != 0 && size)
     {
-        errno = ENOMEM;
+        errno = OE_ENOMEM;
 
         if (_failure_callback)
             _failure_callback(__FILE__, __LINE__, __FUNCTION__, size);
@@ -139,7 +139,7 @@ void* oe_memalign(size_t alignment, size_t size)
 
     if (!p && size)
     {
-        errno = ENOMEM;
+        errno = OE_ENOMEM;
 
         if (_failure_callback)
             _failure_callback(__FILE__, __LINE__, __FUNCTION__, size);

@@ -21,7 +21,7 @@ int oe_eventfd(unsigned int initval, int flags)
 
     if (!(device = oe_get_devid_device(OE_DEVID_EVENTFD)))
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d\n", oe_errno);
         goto done;
     }
@@ -34,7 +34,7 @@ int oe_eventfd(unsigned int initval, int flags)
 
     if ((ed = oe_assign_fd_device(eventfd)) == -1)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d\n", oe_errno);
         goto done;
     }

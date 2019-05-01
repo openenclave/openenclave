@@ -214,14 +214,14 @@ static int _epoll_clone(oe_device_t* device, oe_device_t** new_device)
 
     if (!(epoll = _cast_epoll(device)))
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
 
     if (!(new_epoll = oe_calloc(1, sizeof(epoll_dev_t))))
     {
-        oe_errno = ENOMEM;
+        oe_errno = OE_ENOMEM;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -242,7 +242,7 @@ static int _epoll_release(oe_device_t* device)
 
     if (!(epoll = _cast_epoll(device)))
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -270,7 +270,7 @@ static oe_device_t* _epoll_create(oe_device_t* epoll_, int size)
 
     if ((result = oe_posix_epoll_create1_ocall(&retval, 0, &oe_errno)) != OE_OK)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("%s", oe_result_str(result));
         goto done;
     }
@@ -303,7 +303,7 @@ static oe_device_t* _epoll_create1(oe_device_t* epoll_, int32_t flags)
     if ((result = oe_posix_epoll_create1_ocall(&retval, flags, &oe_errno)) !=
         OE_OK)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("%s", oe_result_str(result));
         goto done;
     }
@@ -337,7 +337,7 @@ static int _epoll_ctl_add(
     /* Check parameters. */
     if (!epoll || !pdev || !event || (enclave_fd == -1))
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -359,7 +359,7 @@ static int _epoll_ctl_add(
 
     if (add_event_data(epoll, &ev_data, &list_idx) == NULL)
     {
-        oe_errno = ENOMEM;
+        oe_errno = OE_ENOMEM;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -373,7 +373,7 @@ static int _epoll_ctl_add(
             epoll_fd,
             &oe_errno) != OE_OK)
     {
-        oe_errno = ENOMEM;
+        oe_errno = OE_ENOMEM;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -397,7 +397,7 @@ static int _epoll_ctl_mod(
 
     if (!epoll || !pdev || !event)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -419,7 +419,7 @@ static int _epoll_ctl_mod(
 
     if (modify_event_data(epoll, &ev_data) == NULL)
     {
-        oe_errno = ENOMEM;
+        oe_errno = OE_ENOMEM;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -433,7 +433,7 @@ static int _epoll_ctl_mod(
              epoll_fd,
              &oe_errno)) != OE_OK)
     {
-        oe_errno = ENOMEM;
+        oe_errno = OE_ENOMEM;
         OE_TRACE_ERROR(
             "epoll->host_fd=%ld host_fd=%ld %s oe_errno =%d ",
             epoll->host_fd,
@@ -459,7 +459,7 @@ static int _epoll_ctl_del(int epoll_fd, int enclave_fd)
     /* Check parameters. */
     if (!epoll || !pdev)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -478,7 +478,7 @@ static int _epoll_ctl_del(int epoll_fd, int enclave_fd)
 
     if (delete_event_data(epoll, enclave_fd) == NULL)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -486,7 +486,7 @@ static int _epoll_ctl_del(int epoll_fd, int enclave_fd)
     if ((result = oe_posix_epoll_ctl_del_ocall(
              &ret, epoll->host_fd, host_fd, &oe_errno)) != OE_OK)
     {
-        oe_errno = ENOMEM;
+        oe_errno = OE_ENOMEM;
         OE_TRACE_ERROR(
             "epoll->host_fd=%ld host_fd=%ld %s oe_errno =%d ",
             epoll->host_fd,
@@ -516,7 +516,7 @@ static int _epoll_wait(
 
     if (!epoll || !events)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -538,7 +538,7 @@ static int _epoll_wait(
     host_events = oe_calloc(1, sizeof(struct oe_epoll_event) * maxevents);
     if (!host_events)
     {
-        oe_errno = ENOMEM;
+        oe_errno = OE_ENOMEM;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -553,7 +553,7 @@ static int _epoll_wait(
             maxevents,
             &oe_errno) != OE_OK)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -599,7 +599,7 @@ static int _epoll_add_event_data(
 
     if (!epoll || !pdev || (enclave_fd == -1))
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -611,7 +611,7 @@ static int _epoll_add_event_data(
 
     if (add_event_data(epoll, &ev_data, &list_idx) == NULL)
     {
-        oe_errno = ENOMEM;
+        oe_errno = OE_ENOMEM;
         goto done;
     }
     ret = 0;
@@ -635,7 +635,7 @@ static int _epoll_poll(
 
     if (!epoll || !fds)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -646,7 +646,7 @@ static int _epoll_poll(
     {
         if (!(host_fds = oe_calloc(1, sizeof(struct oe_pollfd) * nfds)))
         {
-            oe_errno = ENOMEM;
+            oe_errno = OE_ENOMEM;
             OE_TRACE_ERROR("oe_errno=%d", oe_errno);
             goto done;
         }
@@ -713,7 +713,7 @@ static int _epoll_close(oe_device_t* epoll_)
 
     if (!epoll)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -741,7 +741,7 @@ static int _epoll_shutdown_device(oe_device_t* epoll_)
 
     if (!epoll)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -762,21 +762,21 @@ static uint64_t _epoll_get_event_data(oe_device_t* epoll_, uint32_t list_idx)
 
     if (!epoll)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
 
     if (list_idx > epoll->num_event_data)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
 
     if (!epoll->pevent_data)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }

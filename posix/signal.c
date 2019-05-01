@@ -70,7 +70,7 @@ int oe_sigaction(
 
     if (signum >= __OE_NSIG)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -98,7 +98,7 @@ oe_sighandler_t oe_signal(int signum, oe_sighandler_t handler)
 
     if (signum >= __OE_NSIG)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -115,7 +115,7 @@ int oe_posix_signal_notify_ecall(int signum)
 
     if (signum >= __OE_NSIG)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }

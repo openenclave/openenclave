@@ -67,7 +67,7 @@ oe_pid_t oe_getpgid(oe_pid_t pid)
 
     if (oe_posix_getpgid(&retval, pid, &err) != OE_OK)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         goto done;
     }
 
@@ -91,7 +91,7 @@ int oe_getgroups(int size, oe_gid_t list[])
 
     if (oe_posix_getgroups(&retval, (size_t)size, list, &err) != OE_OK)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         goto done;
     }
 

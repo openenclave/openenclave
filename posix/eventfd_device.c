@@ -62,7 +62,7 @@ static int _eventfd_clone(oe_device_t* device, oe_device_t** new_device)
 
     if (!eventfd || !new_device)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
@@ -71,7 +71,7 @@ static int _eventfd_clone(oe_device_t* device, oe_device_t** new_device)
 
     if (!new_eventfd)
     {
-        oe_errno = ENOMEM;
+        oe_errno = OE_ENOMEM;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
@@ -92,7 +92,7 @@ static int _eventfd_release(oe_device_t* device)
 
     if (!eventfd)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
@@ -115,14 +115,14 @@ static oe_device_t* _eventfd_eventfd(
 
     if (!eventfd)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
 
     if (_eventfd_clone(eventfd_, (oe_device_t**)&new_eventfd) != 0)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
@@ -148,7 +148,7 @@ static ssize_t _eventfd_read(oe_device_t* eventfd_, void* buf, size_t count)
     /* Check parameters. */
     if (!eventfd || !buf || (count < sizeof(uint64_t)))
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
@@ -157,7 +157,7 @@ static ssize_t _eventfd_read(oe_device_t* eventfd_, void* buf, size_t count)
     {
         if (eventfd->flags & OE_EFD_NONBLOCK)
         {
-            oe_errno = EAGAIN;
+            oe_errno = OE_EAGAIN;
             OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
             goto done;
         }
@@ -196,7 +196,7 @@ static ssize_t _eventfd_write(
     /* Check parameters. */
     if (!eventfd || !buf || (count < sizeof(uint64_t)))
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
@@ -205,7 +205,7 @@ static ssize_t _eventfd_write(
     {
         if (eventfd->flags & OE_EFD_NONBLOCK)
         {
-            oe_errno = EAGAIN;
+            oe_errno = OE_EAGAIN;
             OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
             goto done;
         }
@@ -243,7 +243,7 @@ static int _eventfd_close(oe_device_t* eventfd_)
     /* Check parameters. */
     if (!eventfd)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
@@ -266,7 +266,7 @@ static int _eventfd_shutdown_device(oe_device_t* eventfd_)
 
     if (!eventfd)
     {
-        oe_errno = EINVAL;
+        oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
