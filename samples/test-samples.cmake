@@ -28,9 +28,6 @@ else ()
   endif ()
 endif ()
 
-# Install the SDK from current build to a known location in the build tree.
-# Make sure the directory in which we try to install does not exist.
-execute_process(COMMAND ${CMAKE_COMMAND} -E remove_directory ${BUILD_DIR}/install${PREFIX_DIR})
 execute_process(COMMAND ${CMAKE_COMMAND} -E env DESTDIR=${BUILD_DIR}/install ${CMAKE_COMMAND} --build ${BUILD_DIR} --target install)
 
 # The prefix is appended to the value given to DESTDIR, e.g. build/install/opt/openenclave/...
@@ -43,9 +40,6 @@ foreach (SAMPLE ${SAMPLES_LIST})
   set(SAMPLE_BUILD_DIR ${BUILD_DIR}/samples/${SAMPLE})
   set(SAMPLE_SOURCE_DIR ${INSTALL_DIR}/share/openenclave/samples/${SAMPLE})
 
-  # Delete and re-create a clean build directory for the sample, used
-  # as the working directory in the next steps.
-  execute_process(COMMAND ${CMAKE_COMMAND} -E remove_directory ${SAMPLE_BUILD_DIR})
   execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${SAMPLE_BUILD_DIR})
 
   # Configure, build, and run the installed sample with CMake.

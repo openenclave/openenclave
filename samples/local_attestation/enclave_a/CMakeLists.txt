@@ -3,7 +3,7 @@
 
 # Generate header with public key of enclave B (2)
 add_custom_command(OUTPUT enclave_b_pubkey.h
-  DEPENDS public_key_b
+  DEPENDS public_key_b gen_pubkey_header.sh
   COMMAND ${CMAKE_SOURCE_DIR}/gen_pubkey_header.sh enclave_b_pubkey.h ${CMAKE_BINARY_DIR}/enclave_b/public_b.pem)
 
 add_executable(enclave_a ecalls.cpp ${CMAKE_CURRENT_BINARY_DIR}/enclave_b_pubkey.h)
@@ -21,7 +21,7 @@ add_custom_target(public_key_a DEPENDS public_a.pem)
 
 # Sign enclave A with key A
 add_custom_command(OUTPUT enclave_a.signed
-  DEPENDS private_a.pem
+  DEPENDS enclave_a enc.conf private_a.pem
   COMMAND openenclave::oesign sign -e $<TARGET_FILE:enclave_a> -c ${CMAKE_CURRENT_SOURCE_DIR}/enc.conf -k private_a.pem)
 
 add_custom_target(enclave_a_signed ALL DEPENDS enclave_a.signed)
