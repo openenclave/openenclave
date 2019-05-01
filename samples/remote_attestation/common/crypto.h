@@ -51,7 +51,7 @@ class Crypto
         size_t* encrypted_data_size);
 
     /**
-     * decrypt decrypts the given data using current enclave's private key.
+     * Decrypt decrypts the given data using current enclave's private key.
      * Used to receive encrypted data from another enclave.
      */
     bool Decrypt(
@@ -83,6 +83,29 @@ class Crypto
      * Compute the sha256 hash of given data.
      */
     int Sha256(const uint8_t* data, size_t data_size, uint8_t sha256[32]);
+
+    /**
+     * Encrypt_gcm encrypts the given data using the given symmetric key.
+     */
+    bool Encrypt_gcm(
+        const uint8_t* sym_key,
+        const uint8_t* data,
+        size_t size,
+        uint8_t* encrypted_data,
+        size_t* encrypted_data_size,
+        uint8_t* tag_output);
+
+    /**
+     * Decrypt_gcm decrypts the given data using the given symmetric key.
+     * Used to receive encrypted data from another enclave.
+     */
+    bool Decrypt_gcm(
+        const uint8_t* sym_key,
+        const uint8_t* encrypted_data,
+        size_t encrypted_data_size,
+        const uint8_t* tag_output,
+        uint8_t* data,
+        size_t* data_size);
 
     /**
      * Sign the SHA256 hash with enclave's private key

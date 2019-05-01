@@ -281,8 +281,8 @@ int ecall_dispatcher::acknowledge_secure_channel(
     size_t encrypted_key_size)
 {
     int ret = 1;
-    uint8_t data[512];
-    size_t data_size = 256;
+    uint8_t* data;
+    size_t data_size = 32;
     uint8_t digest[32];
     int rc;
 
@@ -293,6 +293,8 @@ int ecall_dispatcher::acknowledge_secure_channel(
      */
     unsigned char* signature = &encrypted_key_buf[256];
     size_t signature_size = 256;
+
+    data = m_enclave_config->sym_key;
 
     if (m_initialized == false)
     {
@@ -343,8 +345,10 @@ exit:
 
 int ecall_dispatcher::generate_encrypted_message(uint8_t** data, size_t* size)
 {
-    uint8_t encrypted_data_buf[1024];
+    uint8_t encrypted_data_buf[ENCLAVE_SECRET_DATA_SIZE];
+    uint8_t tag_str[ENCLAVE_SECRET_DATA_SIZE];
     size_t encrypted_data_size;
+    size_t total_size = ENCLAVE_SECRET_DATA_SIZE * 2;
     int ret = 1;
 
     if (m_initialized == false)
@@ -354,17 +358,20 @@ int ecall_dispatcher::generate_encrypted_message(uint8_t** data, size_t* size)
     }
 
     encrypted_data_size = sizeof(encrypted_data_buf);
-    if (m_crypto->Encrypt(
-            m_crypto->get_the_other_enclave_public_key(),
+    memset(encrypted_data_buf, 0x00, encrypted_data_size);
+    if (m_crypto->Encrypt_gcm(
+            m_enclave_config->sym_key,
             m_enclave_config->enclave_secret_data,
             ENCLAVE_SECRET_DATA_SIZE,
             encrypted_data_buf,
-            &encrypted_data_size))
+            &encrypted_data_size,
+            tag_str))
     {
         // Reason we allocate memory in the host is so that the encrypted data
         // can be accessed by the hosts - aka real world scenario where we have
-        // 2 hosts and two enclaves
-        uint8_t* host_buf = (uint8_t*)oe_host_malloc(encrypted_data_size);
+        // 2 hosts and two enclaves. Allocate space for tag_str to be appended
+        // after encrypted data
+        uint8_t* host_buf = (uint8_t*)oe_host_malloc(total_size);
         if (host_buf == NULL)
         {
             TRACE_ENCLAVE(
@@ -372,15 +379,24 @@ int ecall_dispatcher::generate_encrypted_message(uint8_t** data, size_t* size)
             goto exit;
         }
 
+        // Copy the encrypted secret followed by the tag_str
         memcpy(host_buf, encrypted_data_buf, encrypted_data_size);
+        memcpy(
+            &host_buf[ENCLAVE_SECRET_DATA_SIZE],
+            tag_str,
+            ENCLAVE_SECRET_DATA_SIZE);
+
         TRACE_ENCLAVE(
             "enclave: generate_encrypted_message: encrypted_data_size = %ld",
             encrypted_data_size);
         *data = host_buf;
-        *size = encrypted_data_size;
+        *size = encrypted_data_size *
+                2; // Encrypted_data plus tag_str of equal length
     }
     else
     {
+        TRACE_ENCLAVE(
+            "enclave: generate_encrypted_message: Encrypt_gcm failed\n");
         goto exit;
     }
     ret = 0;
@@ -388,11 +404,13 @@ exit:
     return ret;
 }
 
+// encrypted_data contains encrypted_data followed by tag_str of equal length
 int ecall_dispatcher::process_encrypted_msg(
     uint8_t* encrypted_data,
     size_t encrypted_data_size)
 {
-    uint8_t data[1024];
+    uint8_t data[ENCLAVE_SECRET_DATA_SIZE];
+    uint8_t tag_str[ENCLAVE_SECRET_DATA_SIZE];
     size_t data_size = 0;
     int ret = 1;
 
@@ -403,8 +421,17 @@ int ecall_dispatcher::process_encrypted_msg(
     }
 
     data_size = sizeof(data);
-    if (m_crypto->Decrypt(
-            encrypted_data, encrypted_data_size, data, &data_size))
+    memcpy(
+        tag_str,
+        &encrypted_data[ENCLAVE_SECRET_DATA_SIZE],
+        ENCLAVE_SECRET_DATA_SIZE);
+    if (m_crypto->Decrypt_gcm(
+            m_enclave_config->sym_key,
+            encrypted_data,
+            ENCLAVE_SECRET_DATA_SIZE,
+            tag_str,
+            data,
+            &data_size))
     {
         // This is where the business logic for verifying the data should be.
         // In this sample, both enclaves start with identical data in

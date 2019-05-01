@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "crypto.h"
+#include <mbedtls/gcm.h>
 #include <mbedtls/pk.h>
 #include <mbedtls/rsa.h>
 #include <openenclave/enclave.h>
@@ -303,6 +304,122 @@ exit_preinit:
     return ret;
 }
 
+bool Crypto::Encrypt_gcm(
+    const uint8_t* sym_key,
+    const uint8_t* data,
+    size_t data_size,
+    uint8_t* encrypted_data,
+    size_t* encrypted_data_size,
+    uint8_t* tag_output)
+{
+    mbedtls_gcm_context gcm_context;
+    unsigned char iv_str[12];
+
+    bool result = false;
+    int res = -1;
+    size_t iv_len, tag_len = 16;
+
+    mbedtls_gcm_init(&gcm_context);
+
+    memset(iv_str, 0x00, sizeof(iv_str));
+    memcpy(iv_str, "1234567890ab", sizeof("1234567890ab"));
+    memset(tag_output, 0x00, 16);
+    iv_len = sizeof(iv_str);
+
+    res = mbedtls_gcm_setkey(&gcm_context, MBEDTLS_CIPHER_ID_AES, sym_key, 256);
+    if (res != 0)
+    {
+        TRACE_ENCLAVE("Encrypt_gcm: mbedtls_gcm_setkey failed with %d\n", res);
+        goto exit;
+    }
+
+    TRACE_ENCLAVE("Encrypt_gcm: mbedtls_gcm_setkey succeeded\n");
+
+    res = mbedtls_gcm_crypt_and_tag(
+        &gcm_context,
+        MBEDTLS_GCM_ENCRYPT,
+        data_size,
+        iv_str,
+        iv_len,
+        NULL,
+        0,
+        data,
+        encrypted_data,
+        tag_len,
+        tag_output);
+
+    if (res != 0)
+    {
+        TRACE_ENCLAVE(
+            "Encrypt_gcm: mbedtls_gcm_crypt_and_tag failed with %d\n", res);
+        goto exit;
+    }
+
+    *encrypted_data_size = 16;
+    result = true;
+exit:
+    mbedtls_gcm_free(&gcm_context);
+    return result;
+}
+
+/**
+ * Decrypt_gcm decrypts the given data using the given symmetric key.
+ * Used to receive encrypted data from another enclave.
+ */
+bool Crypto::Decrypt_gcm(
+    const uint8_t* sym_key,
+    const uint8_t* encrypted_data,
+    size_t encrypted_data_size,
+    const uint8_t* tag_str,
+    uint8_t* data,
+    size_t* data_size)
+{
+    mbedtls_gcm_context gcm_context;
+    unsigned char iv_str[12];
+    bool result = false;
+    int res = 0;
+    size_t iv_len, tag_len = 16;
+
+    mbedtls_gcm_init(&gcm_context);
+
+    memset(iv_str, 0x00, sizeof(iv_str));
+    memcpy(iv_str, "1234567890ab", sizeof("1234567890ab"));
+    iv_len = sizeof(iv_str);
+
+    res = mbedtls_gcm_setkey(&gcm_context, MBEDTLS_CIPHER_ID_AES, sym_key, 256);
+    if (res != 0)
+    {
+        TRACE_ENCLAVE("Decrypt_gcm: mbedtls_gcm_setkey failed with %d\n", res);
+        goto exit;
+    }
+
+    res = mbedtls_gcm_auth_decrypt(
+        &gcm_context,
+        *data_size,
+        iv_str,
+        iv_len,
+        NULL,
+        0,
+        tag_str,
+        tag_len,
+        encrypted_data,
+        data);
+    if (res != 0)
+    {
+        TRACE_ENCLAVE(
+            "Decrypt_gcm: mbedtls_gcm_auth_decrypt failed with %d\n", res);
+        goto exit;
+    }
+
+    TRACE_ENCLAVE("Decrypt_gcm: mbedtls_gcm_setkey succeeded\n");
+
+    *data_size = 16;
+    result = true;
+exit:
+    mbedtls_gcm_free(&gcm_context);
+    return result;
+}
+
 int Crypto::Sign(
     const unsigned char* hash_data,
     size_t hash_size,
@@ -355,7 +472,7 @@ int Crypto::Verify_sign(
     res = mbedtls_pk_setup(&key, mbedtls_pk_info_from_type(MBEDTLS_PK_RSA));
     if (res != 0)
     {
-        TRACE_ENCLAVE("TODO TOD -- mbedtls_pk_setup failed (%d).", res);
+        TRACE_ENCLAVE("mbedtls_pk_setup failed (%d).", res);
         goto exit;
     }
 
