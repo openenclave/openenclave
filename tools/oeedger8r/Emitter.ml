@@ -155,8 +155,10 @@ let oe_mk_ms_struct_name (fname : string) = fname ^ "_args_t"
 
 (** [oe_mk_struct_decl] constructs the string of a [struct] definition. *)
 let oe_mk_struct_decl (fs : string) (name : string) =
-  sprintf "typedef struct _%s {\n    oe_result_t _result;\n%s} %s;\n" name fs
-    name
+  String.concat "\n"
+    [ sprintf "typedef struct _%s {" name
+    ; "    oe_result_t _result;"
+    ; sprintf "%s} %s;" fs name ]
 
 (** [oe_gen_marshal_struct_impl] generates a marshalling [struct]
     definition. *)
@@ -182,7 +184,7 @@ let oe_gen_ecall_marshal_struct (tf : trusted_func) =
 
 let oe_gen_ocall_marshal_struct (uf : untrusted_func) =
   let errno_decl =
-    if uf.uf_propagate_errno then "\tint _ocall_errno;\n" else ""
+    if uf.uf_propagate_errno then "    int _ocall_errno;\n" else ""
   in
   oe_gen_marshal_struct_impl uf.uf_fdecl errno_decl true
 
@@ -199,7 +201,7 @@ let oe_get_param_size (ptype, decl, argstruct) =
   let base_t = get_tystr atype in
   let type_expr =
     match ptype with
-    | PTPtr (atype, ptr_attr) ->
+    | PTPtr (_, ptr_attr) ->
         if ptr_attr.pa_isptr then sprintf "*(%s)0" base_t else base_t
     | _ -> base_t
   in
@@ -222,7 +224,7 @@ let oe_get_param_size (ptype, decl, argstruct) =
     sprintf "sizeof(%s%s)" type_expr dims_expr
   in
   match ptype with
-  | PTPtr (atype, ptr_attr) ->
+  | PTPtr (_, ptr_attr) ->
       let pa_size = pa_size_to_string ptr_attr.pa_size in
       (* Compute declared size *)
       let decl_size = decl_size_to_string ptype decl in
@@ -238,9 +240,7 @@ let oe_get_param_size (ptype, decl, argstruct) =
 (** Generate the prototype for a given function. Optionally add an
     [oe_enclave_t*] first parameter. *)
 let oe_gen_prototype (fd : func_decl) =
-  let params_str =
-    if List.length fd.plist = 0 then "void" else get_plist_str fd
-  in
+  let params_str = if fd.plist = [] then "void" else get_plist_str fd in
   sprintf "%s %s(%s)" (get_ret_tystr fd) fd.fname params_str
 
 let oe_gen_wrapper_prototype (fd : func_decl) (is_ecall : bool) =
@@ -450,7 +450,7 @@ let oe_process_output_buffer (os : out_channel) (fd : func_decl) =
   List.iter
     (fun (ptype, decl) ->
       match ptype with
-      | PTPtr (atype, ptr_attr) ->
+      | PTPtr (_, ptr_attr) ->
           if ptr_attr.pa_chkptr then
             let size = oe_get_param_size (ptype, decl, "_args.") in
             match ptr_attr.pa_direction with
@@ -784,7 +784,7 @@ let oe_gen_ocall_host_wrapper (os : out_channel) (uf : untrusted_func) =
   List.iter
     (fun (ptype, decl) ->
       match ptype with
-      | PTPtr (atype, ptr_attr) ->
+      | PTPtr (_, ptr_attr) ->
           if ptr_attr.pa_chkptr then
             let size = oe_get_param_size (ptype, decl, "pargs_in->") in
             let tystr = get_cast_to_mem_type (ptype, decl) in
@@ -807,7 +807,7 @@ let oe_gen_ocall_host_wrapper (os : out_channel) (uf : untrusted_func) =
   List.iter
     (fun (ptype, decl) ->
       match ptype with
-      | PTPtr (atype, ptr_attr) ->
+      | PTPtr (_, ptr_attr) ->
           if ptr_attr.pa_chkptr then
             let size = oe_get_param_size (ptype, decl, "pargs_in->") in
             let tystr = get_cast_to_mem_type (ptype, decl) in
@@ -897,7 +897,7 @@ let warn_signed_size_or_count_types (fd : func_decl) =
         (* Only variables that are pointers where [chkptr] is true may
          have size parameters. TODO: Validate this! *)
         match ptype with
-        | PTPtr (atype, ptr_attr) when ptr_attr.pa_chkptr ->
+        | PTPtr (_, ptr_attr) when ptr_attr.pa_chkptr ->
             param_name ptr_attr.pa_size
         | _ -> "" )
       fd.plist
