@@ -279,6 +279,8 @@ oe_result_t oe_call_host_function_by_table_id(
 **==============================================================================
 */
 
+#define OE_MAX_OCALL_TABLES 64
+
 typedef void (*oe_ocall_func_t)(
     const uint8_t* input_buffer,
     size_t input_buffer_size,
@@ -300,6 +302,8 @@ oe_result_t oe_register_ocall_function_table(
 **
 **==============================================================================
 */
+
+#define OE_MAX_ECALL_TABLES 64
 
 typedef void (*oe_ecall_func_t)(
     const uint8_t* input_buffer,

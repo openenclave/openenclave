@@ -251,15 +251,13 @@ done:
 **==============================================================================
 */
 
-#define MAX_OCALL_TABLES 16
-
 typedef struct _ocall_table
 {
     const oe_ocall_func_t* ocalls;
     size_t num_ocalls;
 } ocall_table_t;
 
-static ocall_table_t _ocall_tables[MAX_OCALL_TABLES];
+static ocall_table_t _ocall_tables[OE_MAX_OCALL_TABLES];
 static oe_mutex _ocall_tables_lock = OE_H_MUTEX_INITIALIZER;
 
 oe_result_t oe_register_ocall_function_table(
@@ -269,7 +267,7 @@ oe_result_t oe_register_ocall_function_table(
 {
     oe_result_t result = OE_UNEXPECTED;
 
-    if (table_id >= MAX_OCALL_TABLES || !ocalls)
+    if (table_id >= OE_MAX_OCALL_TABLES || !ocalls)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     oe_mutex_lock(&_ocall_tables_lock);
@@ -319,7 +317,7 @@ static oe_result_t _handle_call_host_function(
     }
     else
     {
-        if (args_ptr->table_id >= MAX_OCALL_TABLES)
+        if (args_ptr->table_id >= OE_MAX_OCALL_TABLES)
             OE_RAISE(OE_NOT_FOUND);
 
         ocall_table.ocalls = _ocall_tables[args_ptr->table_id].ocalls;

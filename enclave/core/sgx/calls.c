@@ -206,15 +206,13 @@ extern const size_t __oe_ecalls_table_size;
 **==============================================================================
 */
 
-#define MAX_ECALL_TABLES 16
-
 typedef struct _ecall_table
 {
     const oe_ecall_func_t* ecalls;
     size_t num_ecalls;
 } ecall_table_t;
 
-static ecall_table_t _ecall_tables[MAX_ECALL_TABLES];
+static ecall_table_t _ecall_tables[OE_MAX_ECALL_TABLES];
 static oe_spinlock_t _ecall_tables_lock = OE_SPINLOCK_INITIALIZER;
 
 oe_result_t oe_register_ecall_function_table(
@@ -224,7 +222,7 @@ oe_result_t oe_register_ecall_function_table(
 {
     oe_result_t result = OE_UNEXPECTED;
 
-    if (table_id >= MAX_ECALL_TABLES || !ecalls)
+    if (table_id >= OE_MAX_ECALL_TABLES || !ecalls)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     oe_spin_lock(&_ecall_tables_lock);
@@ -295,7 +293,7 @@ static oe_result_t _handle_call_enclave_function(uint64_t arg_in)
     }
     else
     {
-        if (args_ptr->table_id >= MAX_ECALL_TABLES)
+        if (args_ptr->table_id >= OE_MAX_ECALL_TABLES)
             OE_RAISE(OE_NOT_FOUND);
 
         ecall_table.ecalls = _ecall_tables[args_ptr->table_id].ecalls;
