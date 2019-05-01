@@ -7,7 +7,7 @@
             "request": "attach",
             "cwd": "[[build-folder]]/vexpress-qemu_virt",
             "preLaunchTask": "QEMU (ARM)",
-            "target": "localhost:1234",
+            "target": "localhost:3232",
             "remote": true,
             "gdbpath": "/usr/bin/gdb-multiarch",
             "autorun": [
@@ -21,7 +21,7 @@
             "request": "attach",
             "cwd": "[[build-folder]]/vexpress-qemu_armv8a",
             "preLaunchTask": "QEMU (AARCH64)",
-            "target": "localhost:1234",
+            "target": "localhost:6464",
             "remote": true,
             "gdbpath": "/usr/bin/gdb-multiarch",
             "autorun": [

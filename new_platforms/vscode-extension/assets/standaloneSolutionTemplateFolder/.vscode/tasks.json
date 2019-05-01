@@ -11,8 +11,8 @@
             "args": [
                 "-DOE_TEE=TZ",
                 "-DTA_DEV_KIT_DIR=[[devkit-folder]]/devkits/vexpress-qemu_virt/export-ta_arm32",
-                "-DOE_TA_TOOLCHAIN_PREFIX=arm-linux-gnueabi-",
-                "-DOE_TOOLCHAIN_PREFIX=arm-linux-gnueabi-",
+                "-DOE_TA_TOOLCHAIN_PREFIX=arm-linux-gnueabihf-",
+                "-DOE_TOOLCHAIN_PREFIX=arm-linux-gnueabihf-",
                 "-DCMAKE_TOOLCHAIN_FILE=[[sdk-folder]]/new_platforms/cmake/linux-arm-v6.cmake",
                 "-DCMAKE_BUILD_TYPE=Debug",
                 "[[solution-folder]]"
@@ -29,7 +29,8 @@
             "args": [
                 "-j"
             ],
-            "problemMatcher": []
+            "problemMatcher": [],
+            "dependsOn": [ "Configure for QEMU (ARM)" ]
         },
         {
             "label": "Configure for QEMU (AARCH64)",
@@ -59,7 +60,8 @@
             "args": [
                 "-j"
             ],
-            "problemMatcher": []
+            "problemMatcher": [],
+            "dependsOn": [ "Configure for QEMU (AARCH64)" ]
         },
         {
             "label": "QEMU (ARM)",
@@ -85,7 +87,8 @@
                 "1057",
                 "-bios",
                 "bl1.bin",
-                "-s",
+                "-gdb",
+                "tcp::3232",
                 "-S",
                 "-semihosting-config",
                 "enable,target=native",
@@ -139,7 +142,8 @@
                 "1057",
                 "-bios",
                 "bl1.bin",
-                "-s",
+                "-gdb",
+                "tcp::6464",
                 "-S",
                 "-semihosting-config",
                 "enable,target=native",

@@ -86,7 +86,7 @@ to an Azure Edge device by:
 
 * Install required compilers
 
-      sudo apt update && sudo apt install -y build-essential cmake gcc-arm-linux-gnueabi gcc-aarch64-linux-gnu g++-arm-linux-gnueabi g++-aarch64-linux-gnu gdb-multiarch
+      sudo apt update && sudo apt install -y build-essential cmake gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu g++-arm-linux-gnueabihf g++-aarch64-linux-gnu gdb-multiarch
 
 ### For Azure IoT Edge projects
 

@@ -8,7 +8,7 @@ CFLAGS +=       \
 	-I$(NP_INC) \
 	-I$(OE_INC)
 
-CFLAGS += -DLINUX -DOE_USE_OPTEE
+CFLAGS += -DLINUX
 
 libdirs += $(AR_O)
 
