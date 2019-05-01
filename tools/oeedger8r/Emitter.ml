@@ -630,25 +630,23 @@ let oe_gen_ecall_table (tfs : trusted_func list) =
     ; "size_t __oe_ecalls_table_size = OE_COUNTOF(__oe_ecalls_table);" ]
   else ["/* There were no ecalls. */"]
 
-let gen_fill_marshal_struct (os : out_channel) (fd : func_decl) (args : string)
-    =
+let gen_fill_marshal_struct (fd : func_decl) (args : string) =
   (* Generate assignment argument to corresponding field in args *)
-  List.iter
+  List.map
     (fun (ptype, decl) ->
       let varname = decl.identifier in
-      fprintf os "    %s.%s = %s%s;\n" args varname
+      sprintf "    %s.%s = %s%s;" args varname
         (get_cast_to_mem_expr (ptype, decl))
-        varname ;
+        varname
+      ^
       (* for string parameter fill the len field *)
-      match ptype with
-      | PTPtr (_, attr) ->
-          if attr.pa_isstr then
-            fprintf os "    %s.%s_len = (%s) ? (strlen(%s) + 1) : 0;\n" args
-              varname varname varname
-          else if attr.pa_iswstr then
-            fprintf os "    %s.%s_len = (%s) ? (wcslen(%s) + 1) : 0;\n" args
-              varname varname varname
-      | _ -> () )
+      if is_str_ptr (ptype, decl) then
+        sprintf "\n    %s.%s_len = (%s) ? (strlen(%s) + 1) : 0;" args varname
+          varname varname
+      else if is_wstr_ptr (ptype, decl) then
+        sprintf "\n    %s.%s_len = (%s) ? (wcslen(%s) + 1) : 0;" args varname
+          varname varname
+      else "" )
     fd.plist
 
 let oe_get_host_ecall_function (os : out_channel) (fd : func_decl) =
@@ -671,7 +669,7 @@ let oe_get_host_ecall_function (os : out_channel) (fd : func_decl) =
   fprintf os "    size_t _output_bytes_written = 0;\n\n" ;
   fprintf os "    /* Fill marshalling struct */\n" ;
   fprintf os "    memset(&_args, 0, sizeof(_args));\n" ;
-  gen_fill_marshal_struct os fd "_args" ;
+  fprintf os "%s\n" (String.concat "\n" (gen_fill_marshal_struct fd "_args")) ;
   fprintf os "%s"
     (String.concat "\n    " (oe_prepare_input_buffer fd "malloc")) ;
   fprintf os "    /* Call enclave function */\n" ;
@@ -718,7 +716,7 @@ let oe_gen_ocall_enclave_wrapper (os : out_channel) (uf : untrusted_func) =
   fprintf os "    size_t _output_bytes_written = 0;\n\n" ;
   fprintf os "    /* Fill marshalling struct */\n" ;
   fprintf os "    memset(&_args, 0, sizeof(_args));\n" ;
-  gen_fill_marshal_struct os fd "_args" ;
+  fprintf os "%s\n" (String.concat "\n" (gen_fill_marshal_struct fd "_args")) ;
   fprintf os "%s"
     (String.concat "\n    "
        (oe_prepare_input_buffer fd "oe_allocate_ocall_buffer")) ;
