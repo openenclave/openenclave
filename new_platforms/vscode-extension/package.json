@@ -2,7 +2,7 @@
 	"name": "msiot-vscode-openenclave",
 	"displayName": "Microsoft Open Enclave",
 	"description": "Develop, deploy, and debug your Microsoft Open Enclave",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"publisher": "ms-iot",
 	"aiKey": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
 	"engines": {
@@ -47,14 +47,7 @@
 		"watch": "tsc -watch -p ./",
 		"postinstall": "node ./node_modules/vscode/bin/install",
 		"test": "npm run compile && node ./node_modules/vscode/bin/test",
-		"tslint": "tslint -t verbose src/**/*.ts",
-		"wp-vscode:prepublish": "webpack --mode production",
-		"wp-compile": "webpack --mode none",
-		"wp-watch": "webpack --mode none --watch",
-		"wp-test-compile": "tsc -p ./",
-		"wp-postinstall": "node ./node_modules/vscode/bin/install",
-		"wp-tslint": "tslint -t verbose src/**/*.ts",
-		"wp-test": "npm run compile && node ./node_modules/vscode/bin/test"
+		"tslint": "tslint -t verbose src/**/*.ts"
 	},
 	"devDependencies": {
 		"@types/fs-extra": "^4.0.3",

@@ -115,6 +115,10 @@ The requirements here are those found in the [Azure IoT Edge extension](https://
 
 ## Release Notes
 
+### 1.0.2
+
+GA
+
 ### 1.0.1
 
 Prototyping and developing :)

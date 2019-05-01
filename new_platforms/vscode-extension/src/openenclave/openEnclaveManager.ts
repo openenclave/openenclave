@@ -10,6 +10,7 @@ import * as zlib from "zlib";
 import { AcrManager } from "../common/acrManager";
 import { Constants } from "../common/constants";
 import { GitHelper } from "../common/gitHelper";
+import { TelemetryClient } from "../common/telemetryClient";
 import { UserCancelledError } from "../common/userCancelledError";
 import { Utility } from "../common/utility";
 
@@ -125,6 +126,8 @@ export class OpenEnclaveManager {
                     const oeProjectStyle = await Utility.showQuickPick([Constants.standaloneProjectType, Constants.edgeProjectType], Constants.selectProjectType);
                     createEdgeSolution = (oeProjectStyle === Constants.edgeProjectType);
                 }
+
+                TelemetryClient.sendEvent(`CreateOpenEnclaveSolution.${createEdgeSolution ? "Edge" : "Standalone"}`);
 
                 // Prompt user for solution name
                 const openEnclaveName: string | undefined =
