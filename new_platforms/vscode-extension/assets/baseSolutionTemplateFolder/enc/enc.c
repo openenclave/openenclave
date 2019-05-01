@@ -9,28 +9,29 @@
 // sdk tool oe_edger8r against the [[project-name]].edl file.
 #include "[[project-name]]_t.h"
 
-// This is the function that the host calls. It prints
-// a message in the enclave before calling back out to
-// the host to print a message from there too.
-int enclave_test(void)
+// This is the function that the host calls. It wraps
+// a message from the host before calling back out to
+// the host to print a message from there.
+int ecall_handle_message(char *input_msg, char *enclave_msg, unsigned int enclave_msg_size)
 {
-    // Print a message from the enclave. Note that this
-    // does not directly call printf, but calls into the
-    // host and calls printf from there. This is because
-    // the printf function is not part of the enclave
-    // as it requires support from the kernel.
-    printf("Hello world from the enclave\n");
+    if (snprintf(enclave_msg, enclave_msg_size, "{ \"enclave\": %s, \"signature\": \"<TODO>\" }", input_msg) < 0)
+    {
+        fprintf(stderr, "message handling failed\n");
+        return 1;
+    }
 
     // Call back into the host
-    int retval;
-    oe_result_t result = host_test(&retval, "The other message!");
+    int retval = 0;
+    oe_result_t result = ocall_log(&retval, enclave_msg);
     if (result != OE_OK)
     {
         fprintf(
             stderr,
-            "Call to host_helloworld failed: result=%u (%s)\n",
+            "Call to ecall_handle_message failed: result=%u (%s)\n",
             result,
             oe_result_str(result));
+        return 1;
     }
-    return result;
+
+    return retval;
 }

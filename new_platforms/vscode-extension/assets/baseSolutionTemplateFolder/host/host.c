@@ -11,13 +11,17 @@
 
 // This is the function that the enclave will call back into to
 // print a message.
-int host_test(const char *msg)
+int ocall_log(char *msg)
 {
-    return fprintf(stdout, "Enclave called into host to print: %s\n", msg);
+    if (fprintf(stdout, "Enclave called into host to print: %s\n", msg) < 0)
+    {
+        return 1;
+    }
+    return 0;
 }
 
 static oe_enclave_t* enclave = NULL;
-oe_result_t open_enclave()
+int open_enclave()
 {
     oe_result_t result = OE_OK;
     uint32_t enclave_flags = 0;
@@ -44,43 +48,43 @@ oe_result_t open_enclave()
             "oe_create_enclave(): result=%u (%s)\n",
             result,
             oe_result_str(result));
+        return 1;
     }
 
-    return result;
+    return 0;
 }
 
-oe_result_t call_enclave()
+int call_enclave(char *input_msg, char *enclave_msg, unsigned int enclave_msg_count)
 {
     oe_result_t result = OE_OK;
 
     // Call into the enclave
     int hostResult;
-    result = enclave_test(enclave, &hostResult);
+    result = ecall_handle_message(enclave, &hostResult, input_msg, enclave_msg, enclave_msg_count);
     if (result != OE_OK)
     {
         fprintf(
             stderr,
-            "calling into enclave_test failed: result=%u (%s)\n",
+            "calling into ecall_handle_message failed: result=%u (%s)\n",
             result,
             oe_result_str(result));
+        return 1;
     }
-    else if (hostResult != OE_OK)
+    else if (hostResult != 0)
     {
-        fprintf(stderr, "OCALL failed: result=%u\n", hostResult);
-        result = (oe_result_t)hostResult;
+        fprintf(stderr, "ecall_handle_message failed: result=%u\n", hostResult);
+        return 1;
     }
 
-    return result;
+    return 0;
 }
 
 
-oe_result_t close_enclave()
+int close_enclave()
 {
-    oe_result_t result = OE_OK;
-
     // Clean up the enclave if we created one
     if (enclave) {
-        result = oe_terminate_enclave(enclave);
+        oe_result_t result = oe_terminate_enclave(enclave);
         if (result != OE_OK)
         {
             fprintf(
@@ -88,8 +92,9 @@ oe_result_t close_enclave()
                 "calling into oe_terminate_enclave failed: result=%u (%s)\n",
                 result,
                 oe_result_str(result));
+            return 1;
         }
     }
 
-    return result;
+    return 0;
 }

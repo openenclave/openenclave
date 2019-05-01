@@ -6,11 +6,11 @@ enclave {
 
     trusted {
         /* define ECALLs here. */
-        public int enclave_test();
+        public int ecall_handle_message([in, string] char *input_msg, [out, count=enclave_msg_size] char *enclave_ms, unsigned int enclave_msg_size);
     };
 
     untrusted {
         /* define OCALLs here. */
-        int host_test([in, string] const char *msg);
+        int ocall_log([in, string] char *msg);
     };
 };

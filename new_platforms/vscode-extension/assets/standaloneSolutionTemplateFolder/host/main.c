@@ -5,19 +5,24 @@
 
 #include <openenclave/host.h>
 
-oe_result_t open_enclave();
-oe_result_t close_enclave();
-oe_result_t call_enclave();
+int open_enclave();
+int close_enclave();
+int call_enclave(char *input_msg, char *enclave_msg, unsigned int enclave_msg_size);
 
 int main(int argc, const char* argv[])
 {
-    oe_result_t result = OE_OK;
-    result = open_enclave();
-    if (result != OE_OK)
+    int result = open_enclave();
+    if (result != 0)
     {
         return result;
     }
-    iothub_module();
+    char* enclaveMessage = (char*)malloc(512 * sizeof(char));
+    result = call_enclave("\"ProcessInEnclave\"", enclaveMessage, 512);
+    if (result != 0)
+    {
+        return result;
+    }
+
     result = close_enclave();
     return result;
 }
