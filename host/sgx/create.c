@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/internal/posix.h>
 #include "../strings.h"
 
 #if defined(__linux__)
@@ -638,6 +639,9 @@ oe_result_t oe_create_enclave(
          (enclave_type != OE_ENCLAVE_TYPE_AUTO)) ||
         (flags & OE_ENCLAVE_FLAG_RESERVED) || config || config_size > 0)
         OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Install the POSIX ocall function table. */
+    oe_register_posix_ocall_function_table();
 
     /* Allocate and zero-fill the enclave structure */
     if (!(enclave = (oe_enclave_t*)calloc(1, sizeof(oe_enclave_t))))

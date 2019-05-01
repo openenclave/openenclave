@@ -6,6 +6,7 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/defs.h>
 #include "backtrace.h"
@@ -196,6 +197,10 @@ OE_INLINE uint16_t oe_get_result_from_call_arg1(uint64_t arg)
 
 typedef struct _oe_call_enclave_function_args
 {
+    // OE_UINT64_MAX refers to default function table. Other values are
+    // reserved for alternative function tables.
+    uint64_t table_id;
+
     uint64_t function_id;
     const void* input_buffer;
     size_t input_buffer_size;
@@ -208,6 +213,24 @@ typedef struct _oe_call_enclave_function_args
 /*
 **==============================================================================
 **
+** oe_call_enclave_function_by_table_id()
+**
+**==============================================================================
+*/
+
+oe_result_t oe_call_enclave_function_by_table_id(
+    oe_enclave_t* enclave,
+    uint64_t table_id,
+    uint64_t function_id,
+    const void* input_buffer,
+    size_t input_buffer_size,
+    void* output_buffer,
+    size_t output_buffer_size,
+    size_t* output_bytes_written);
+
+/*
+**==============================================================================
+**
 ** oe_call_host_function_args_t
 **
 **==============================================================================
@@ -215,7 +238,12 @@ typedef struct _oe_call_enclave_function_args
 
 typedef struct _oe_call_host_function_args
 {
+    // OE_UINT64_MAX refers to default function table. Other values are
+    // reserved for alternative function tables.
+    uint64_t table_id;
+
     uint64_t function_id;
+
     const void* input_buffer;
     size_t input_buffer_size;
     void* output_buffer;
@@ -223,6 +251,71 @@ typedef struct _oe_call_host_function_args
     size_t output_bytes_written;
     oe_result_t result;
 } oe_call_host_function_args_t;
+
+/*
+**==============================================================================
+**
+** oe_call_host_function_by_table_id()
+**
+**==============================================================================
+*/
+
+oe_result_t oe_call_host_function_by_table_id(
+    size_t table_id,
+    size_t function_id,
+    const void* input_buffer,
+    size_t input_buffer_size,
+    void* output_buffer,
+    size_t output_buffer_size,
+    size_t* output_bytes_written);
+
+/*
+**==============================================================================
+**
+** oe_register_ocall_function_table()
+**
+**     Register an ocall table with the given table id.
+**
+**==============================================================================
+*/
+
+#define OE_MAX_OCALL_TABLES 64
+
+typedef void (*oe_ocall_func_t)(
+    const uint8_t* input_buffer,
+    size_t input_buffer_size,
+    uint8_t* output_buffer,
+    size_t output_buffer_size,
+    size_t* output_bytes_written);
+
+oe_result_t oe_register_ocall_function_table(
+    uint64_t table_id,
+    const oe_ocall_func_t* ocalls,
+    size_t num_ocalls);
+
+/*
+**==============================================================================
+**
+** oe_register_ecall_function_table()
+**
+**     Register an ecall table with the given table id.
+**
+**==============================================================================
+*/
+
+#define OE_MAX_ECALL_TABLES 64
+
+typedef void (*oe_ecall_func_t)(
+    const uint8_t* input_buffer,
+    size_t input_buffer_size,
+    uint8_t* output_buffer,
+    size_t output_buffer_size,
+    size_t* output_bytes_written);
+
+oe_result_t oe_register_ecall_function_table(
+    uint64_t table_id,
+    const oe_ecall_func_t* ecalls,
+    size_t num_ecalls);
 
 /*
 **==============================================================================
