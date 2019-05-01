@@ -11,8 +11,8 @@
             "args": [
                 "-DOE_TEE=TZ",
                 "-DTA_DEV_KIT_DIR=[[devkit-folder]]/devkits/vexpress-qemu_virt/export-ta_arm32",
-                "-DOE_TA_TOOLCHAIN_PREFIX=arm-linux-gnueabi-",
-                "-DOE_TOOLCHAIN_PREFIX=arm-linux-gnueabi-",
+                "-DOE_TA_TOOLCHAIN_PREFIX=arm-linux-gnueabihf-",
+                "-DOE_TOOLCHAIN_PREFIX=arm-linux-gnueabihf-",
                 "-DCMAKE_TOOLCHAIN_FILE=[[sdk-folder]]/new_platforms/cmake/linux-arm-v6.cmake",
                 "-DCMAKE_BUILD_TYPE=Debug",
                 "[[solution-folder]]"
