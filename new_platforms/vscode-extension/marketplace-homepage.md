@@ -80,23 +80,30 @@ to an Azure Edge device by:
 
 ## Requirements
 
-Install [Visual Studio Code](https://code.visualstudio.com/)
+### Install [Visual Studio Code](https://code.visualstudio.com/)
 
 ### On Linux, for standalone projects
 
-* Run `sudo apt update && sudo apt install -y build-essential cmake gcc-arm-linux-gnueabi gcc-aarch64-linux-gnu g++-aarch64-linux-gnu`
+* Install required compilers
+
+      sudo apt update && sudo apt install -y build-essential cmake gcc-arm-linux-gnueabi gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
 
 ### For Azure IoT Edge projects
 
+The requirements here are those found in the [Azure IoT Edge extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-edge).
 * Ensure that [Docker is installed and running: https://docs.docker.com/get-started/](https://docs.docker.com/get-started/).
+* Ensure that the [iotedgehubdev](https://pypi.org/project/iotedgehubdev/) tool is installed
+
+      pip install --upgrade iotedgehubdev
+
 * Create a container repository, like [Azure Container Registry](https://azure.microsoft.com/en-us/services/container-registry/)
 * For better Azure integration:
     * Make sure that the VS Code Azure Account extension is installed and utilized:
-        1. CTRL-Shift-P
-        1. Azure: Sign In
+        1. **CTRL-Shift-P**
+        1. `Azure: Sign In`
     * Make sure that the VS Code Azure IoT Hub Toolkit extension is installed and utilized:
-        1. CTRL-Shift-P
-        1. Azure IoT Hub: Select IoT Hub
+        1. **CTRL-Shift-P**
+        1. `Azure IoT Hub: Select IoT Hub`
 
 ### For development of this extension, or running from source code directly
 
