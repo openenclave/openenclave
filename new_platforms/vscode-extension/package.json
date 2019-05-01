@@ -4,7 +4,7 @@
 	"description": "Develop, deploy, and debug your Microsoft Open Enclave",
 	"version": "1.0.2",
 	"publisher": "ms-iot",
-	"aiKey": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+	"aiKey": "specifyt-here-alap-pins-ightskeyhere",
 	"engines": {
 		"vscode": "^1.32.0"
 	},
