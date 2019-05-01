@@ -19,6 +19,7 @@
 		"devkit",
 		"3rdparty",
 		"node_modules",
+		"scripts",
 		".vscode-test"
 	]
 }

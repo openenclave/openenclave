@@ -9,5 +9,7 @@ vsc-extension-quickstart.md
 **/tslint.json
 **/*.map
 **/*.ts
+*.vsix
 3rdparty/**
 devkit/**
+scripts/**
