@@ -16,6 +16,7 @@
 #include <sys/stat.h>
 #include <sys/utsname.h>
 #include <unistd.h>
+#include "../host/strings.h"
 #include "posix_u.h"
 
 /*
@@ -54,7 +55,7 @@ oe_host_fd_t oe_posix_open_ocall(
     mode_t mode,
     int* err)
 {
-    int ret = -1;
+    int ret;
 
     _clear_err(err);
 
@@ -1356,24 +1357,34 @@ done:
 int oe_posix_uname_ocall(struct oe_utsname* buf, int* err)
 {
     int ret = -1;
-    struct oe_utsname* out = (struct oe_utsname*)buf;
+    struct utsname uts;
 
     _clear_err(err);
 
-    OE_STATIC_ASSERT(sizeof(struct oe_utsname) == sizeof(struct utsname));
-    OE_CHECK_FIELD(struct oe_utsname, struct utsname, sysname);
-    OE_CHECK_FIELD(struct oe_utsname, struct utsname, nodename);
-    OE_CHECK_FIELD(struct oe_utsname, struct utsname, release);
-    OE_CHECK_FIELD(struct oe_utsname, struct utsname, version);
-    OE_CHECK_FIELD(struct oe_utsname, struct utsname, machine);
-#ifdef _GNU_SOURCE
-    OE_CHECK_FIELD(struct oe_utsname, struct utsname, domainname);
-#else
-    OE_CHECK_FIELD(struct oe_utsname, struct utsname, __domainname);
+    if (buf)
+        memset(buf, 0, sizeof(struct oe_utsname));
+
+    if (!buf)
+    {
+        _set_err(err, EINVAL);
+        goto done;
+    }
+
+    if ((ret = uname(&uts)) == -1)
+    {
+        _set_err(err, errno);
+        goto done;
+    }
+
+    oe_strlcpy(buf->sysname, uts.sysname, sizeof(buf->sysname));
+    oe_strlcpy(buf->nodename, uts.nodename, sizeof(buf->nodename));
+    oe_strlcpy(buf->release, uts.release, sizeof(buf->release));
+    oe_strlcpy(buf->version, uts.version, sizeof(buf->version));
+    oe_strlcpy(buf->machine, uts.machine, sizeof(buf->machine));
+#if defined(_GNU_SOURCE)
+    oe_strlcpy(buf->domainname, uts.domainname, sizeof(buf->domainname));
 #endif
 
-    if ((ret = uname((struct utsname*)out)) == -1)
-        _set_err(err, errno);
-
+done:
     return ret;
 }
