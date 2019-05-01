@@ -622,8 +622,8 @@ export class OpenEnclaveManager {
         if (!name || name.trim() === "") {
             return "The name could not be empty";
         }
-        if (name.match(/[/\\:*?\"<>|]/)) {
-            return "Solution name can't contain characters: /\:*?<>|";
+        if (!/^[0-9a-zA-Z_]+$/.test(name)) {
+            return "Solution name must only contain characters: 0-9, a-z, A-Z, and _";
         }
         if (parentPath) {
             const folderPath = path.join(parentPath, name);
