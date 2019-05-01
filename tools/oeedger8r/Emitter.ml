@@ -132,6 +132,12 @@ let is_inout_ptr (ptype, _) =
   | PTVal _ -> false
   | PTPtr (_, a) -> a.pa_chkptr && a.pa_direction = PtrInOut
 
+let is_str_ptr (ptype, _) =
+  match ptype with PTVal _ -> false | PTPtr (_, a) -> a.pa_isstr
+
+let is_wstr_ptr (ptype, _) =
+  match ptype with PTVal _ -> false | PTPtr (_, a) -> a.pa_iswstr
+
 (** [open_file] opens [filename] in the directory [dir] and emits a
     comment noting the file is auto generated. *)
 let open_file (filename : string) (dir : string) =
@@ -506,95 +512,109 @@ let oe_gen_call_function (fd : func_decl) =
     ^ ");" ]
 
 (** Generate ecall function. *)
-let oe_gen_ecall_function (os : out_channel) (fd : func_decl) =
-  fprintf os "void ecall_%s(\n" fd.fname ;
-  fprintf os "        uint8_t* input_buffer, size_t input_buffer_size,\n" ;
-  fprintf os "        uint8_t* output_buffer, size_t output_buffer_size,\n" ;
-  fprintf os "        size_t* output_bytes_written)\n" ;
-  fprintf os "{\n" ;
-  (* Variable declarations *)
-  fprintf os "    oe_result_t _result = OE_FAILURE;\n\n" ;
-  fprintf os "    /* Prepare parameters */\n" ;
-  fprintf os "    %s_args_t* pargs_in = (%s_args_t*) input_buffer;\n" fd.fname
-    fd.fname ;
-  fprintf os "    %s_args_t* pargs_out = (%s_args_t*) output_buffer;\n\n"
-    fd.fname fd.fname ;
-  fprintf os "    size_t input_buffer_offset = 0;\n" ;
-  fprintf os "    size_t output_buffer_offset = 0;\n" ;
-  fprintf os "    OE_ADD_SIZE(input_buffer_offset, sizeof(*pargs_in));\n" ;
-  fprintf os "    OE_ADD_SIZE(output_buffer_offset, sizeof(*pargs_out));\n\n" ;
-  (* Buffer validation *)
-  fprintf os
-    "    /* Make sure input and output buffers lie within the enclave */\n" ;
-  fprintf os
-    "    if (!input_buffer || !oe_is_within_enclave(input_buffer, \
-     input_buffer_size))\n" ;
-  fprintf os "        goto done;\n\n" ;
-  fprintf os
-    "    if (!output_buffer || !oe_is_within_enclave(output_buffer, \
-     output_buffer_size))\n" ;
-  fprintf os "        goto done;\n\n" ;
-  (* Prepare in and in-out parameters *)
-  fprintf os "    /* Set in and in-out pointers */\n" ;
-  List.iter
-    (fun (ptype, decl) ->
-      let size = oe_get_param_size (ptype, decl, "pargs_in->") in
-      let tystr = get_cast_to_mem_type (ptype, decl) in
-      fprintf os "    OE_SET_%s_POINTER(%s, %s, %s);\n"
-        (if is_in_ptr (ptype, decl) then "IN" else "IN_OUT")
-        decl.identifier size tystr )
-    (List.filter (fun p -> is_in_ptr p || is_inout_ptr p) fd.plist) ;
-  fprintf os "\n" ;
-  (* Prepare out and in-out parameters. The in-out parameter is copied
+let oe_gen_ecall_function (tf : trusted_func) =
+  let fd = tf.tf_fdecl in
+  [ ""
+  ; sprintf "void ecall_%s(" fd.fname
+  ; "    uint8_t* input_buffer,"
+  ; "    size_t input_buffer_size,"
+  ; "    uint8_t* output_buffer,"
+  ; "    size_t output_buffer_size,"
+  ; "    size_t* output_bytes_written)"
+  ; "{"
+  ; (* Variable declarations *)
+    "    oe_result_t _result = OE_FAILURE;"
+  ; ""
+  ; "    /* Prepare parameters. */"
+  ; sprintf "    %s_args_t* pargs_in = (%s_args_t*)input_buffer;" fd.fname
+      fd.fname
+  ; sprintf "    %s_args_t* pargs_out = (%s_args_t*)output_buffer;" fd.fname
+      fd.fname
+  ; ""
+  ; "    size_t input_buffer_offset = 0;"
+  ; "    size_t output_buffer_offset = 0;"
+  ; "    OE_ADD_SIZE(input_buffer_offset, sizeof(*pargs_in));"
+  ; "    OE_ADD_SIZE(output_buffer_offset, sizeof(*pargs_out));"
+  ; ""
+  ; (* Buffer validation *)
+    "    /* Make sure input and output buffers lie within the enclave. */"
+  ; "    if (!input_buffer || !oe_is_within_enclave(input_buffer, \
+     input_buffer_size))"
+  ; "        goto done;"
+  ; ""
+  ; "    if (!output_buffer || !oe_is_within_enclave(output_buffer, \
+     output_buffer_size))"
+  ; "        goto done;"
+  ; ""
+  ; (* Prepare in and in-out parameters *)
+    "    /* Set in and in-out pointers. */"
+  ; (let params =
+       List.map
+         (fun (ptype, decl) ->
+           let size = oe_get_param_size (ptype, decl, "pargs_in->") in
+           let tystr = get_cast_to_mem_type (ptype, decl) in
+           sprintf "    OE_SET_%s_POINTER(%s, %s, %s);"
+             (if is_in_ptr (ptype, decl) then "IN" else "IN_OUT")
+             decl.identifier size tystr )
+         (List.filter (fun p -> is_in_ptr p || is_inout_ptr p) fd.plist)
+     in
+     if params <> [] then String.concat "\n" params
+     else "    /* There were no in nor in-out parameters. */")
+  ; ""
+  ; (* Prepare out and in-out parameters. The in-out parameter is copied
      to output buffer. *)
-  fprintf os
     "    /* Set out and in-out pointers. In-out parameters are copied to \
-     output buffer. */\n" ;
-  List.iter
-    (fun (ptype, decl) ->
-      let size = oe_get_param_size (ptype, decl, "pargs_in->") in
-      let tystr = get_cast_to_mem_type (ptype, decl) in
-      fprintf os "    OE_%s_POINTER(%s, %s, %s);\n"
-        (if is_out_ptr (ptype, decl) then "SET_OUT" else "COPY_AND_SET_IN_OUT")
-        decl.identifier size tystr )
-    (List.filter (fun p -> is_out_ptr p || is_inout_ptr p) fd.plist) ;
-  fprintf os "\n" ;
-  (* Check for null terminators in string parameters *)
-  fprintf os "    /* Check that in/in-out strings are null terminated */\n" ;
-  List.iter
-    (fun (ptype, decl) ->
-      match ptype with
-      | PTPtr (atype, ptr_attr) ->
-          if ptr_attr.pa_isstr || ptr_attr.pa_iswstr then
-            let check_string =
-              "OE_CHECK_NULL_TERMINATOR"
-              ^ if ptr_attr.pa_iswstr then "_WIDE" else ""
-            in
-            match ptr_attr.pa_direction with
-            | PtrIn | PtrInOut ->
-                fprintf os "    %s(pargs_in->%s, pargs_in->%s_len);\n"
-                  check_string decl.identifier decl.identifier
-            | _ -> ()
-          else ()
-      | _ -> () )
-    fd.plist ;
-  fprintf os "\n" ;
-  (* Call the enclave function *)
-  fprintf os "    /* lfence after checks */\n" ;
-  fprintf os "    oe_lfence();\n" ;
-  fprintf os "%s\n" (String.concat "\n    " (oe_gen_call_function fd)) ;
-  (* Mark call as success *)
-  fprintf os "\n    /* Success. */\n" ;
-  fprintf os "    _result = OE_OK;\n" ;
-  fprintf os "    *output_bytes_written = output_buffer_offset;\n\n" ;
-  fprintf os "done:\n" ;
-  fprintf os "    if (pargs_out && output_buffer_size >= sizeof(*pargs_out))\n" ;
-  fprintf os "        pargs_out->_result = _result;\n" ;
-  fprintf os "}\n\n"
+     output buffer. */"
+  ; (let params =
+       List.map
+         (fun (ptype, decl) ->
+           let size = oe_get_param_size (ptype, decl, "pargs_in->") in
+           let tystr = get_cast_to_mem_type (ptype, decl) in
+           sprintf "    OE_%s_POINTER(%s, %s, %s);"
+             ( if is_out_ptr (ptype, decl) then "SET_OUT"
+             else "COPY_AND_SET_IN_OUT" )
+             decl.identifier size tystr )
+         (List.filter (fun p -> is_out_ptr p || is_inout_ptr p) fd.plist)
+     in
+     if params <> [] then String.concat "\n" params
+     else "    /* There were no out nor in-out parameters. */")
+  ; ""
+  ; "    /* Check that in/in-out strings are null terminated. */"
+  ; (let params =
+       List.map
+         (fun (ptype, decl) ->
+           sprintf
+             "    OE_CHECK_NULL_TERMINATOR%s(pargs_in->%s, pargs_in->%s_len);"
+             (if is_wstr_ptr (ptype, decl) then "_WIDE" else "")
+             decl.identifier decl.identifier )
+         (List.filter
+            (fun p ->
+              (is_str_ptr p || is_wstr_ptr p) && (is_in_ptr p || is_inout_ptr p)
+              )
+            fd.plist)
+     in
+     if params <> [] then String.concat "\n" params
+     else "    /* There were no in nor in-out string parameters. */")
+  ; ""
+  ; "    /* lfence after checks. */"
+  ; "    oe_lfence();"
+  ; ""
+  ; (* Call the enclave function *)
+    "    " ^ String.concat "\n    " (oe_gen_call_function fd)
+  ; ""
+  ; (* Mark call as success *)
+    "    /* Success. */"
+  ; "    _result = OE_OK;"
+  ; "    *output_bytes_written = output_buffer_offset;"
+  ; ""
+  ; "done:"
+  ; "    if (pargs_out && output_buffer_size >= sizeof(*pargs_out))"
+  ; "        pargs_out->_result = _result;"
+  ; "}" ]
 
-let oe_gen_ecall_functions (os : out_channel) (ec : enclave_content) =
-  fprintf os "\n\n/****** ECALL function wrappers  *************/\n" ;
-  List.iter (fun f -> oe_gen_ecall_function os f.tf_fdecl) ec.tfunc_decls
+let oe_gen_ecall_functions (tfs : trusted_func list) =
+  if tfs <> [] then List.flatten (List.map oe_gen_ecall_function tfs)
+  else ["/* There were no ecalls. */"]
 
 let oe_gen_ecall_table (os : out_channel) (ec : enclave_content) =
   fprintf os "\n\n/****** ECALL function table  *************/\n" ;
