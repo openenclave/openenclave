@@ -2,7 +2,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Configure for QEMU (ARM)",
+            "label": "Configure for QEMU (ARMv7-A)",
             "type": "process",
             "command": "cmake",
             "options": {
@@ -20,7 +20,7 @@
             "problemMatcher": []
         },
         {
-            "label": "Build for QEMU (ARM)",
+            "label": "Build for QEMU (ARMv7-A)",
             "type": "process",
             "command": "make",
             "options": {
@@ -30,10 +30,10 @@
                 "-j"
             ],
             "problemMatcher": [],
-            "dependsOn": [ "Configure for QEMU (ARM)" ]
+            "dependsOn": [ "Configure for QEMU (ARMv7-A)" ]
         },
         {
-            "label": "Configure for QEMU (AARCH64)",
+            "label": "Configure for QEMU (AARCH64/ARMv8-A)",
             "type": "process",
             "command": "cmake",
             "options": {
@@ -51,7 +51,7 @@
             "problemMatcher": []
         },
         {
-            "label": "Build for QEMU (AARCH64)",
+            "label": "Build for QEMU (AARCH64/ARMv8-A)",
             "type": "process",
             "command": "make",
             "options": {
@@ -61,10 +61,10 @@
                 "-j"
             ],
             "problemMatcher": [],
-            "dependsOn": [ "Configure for QEMU (AARCH64)" ]
+            "dependsOn": [ "Configure for QEMU (AARCH64/ARMv8-A)" ]
         },
         {
-            "label": "QEMU (ARM)",
+            "label": "QEMU (ARMv7-A)",
             "type": "process",
             "options": {
                 "cwd": "[[devkit-folder]]/emu/arm/"
@@ -99,7 +99,7 @@
                 "-cpu",
                 "cortex-a15"
             ],
-            "dependsOn": [ "Build for QEMU (ARM)" ],
+            "dependsOn": [ "Build for QEMU (ARMv7-A)" ],
             "problemMatcher": [
                 {
                     "pattern": [
@@ -119,7 +119,7 @@
             ]
         },
         {
-            "label": "QEMU (AARCH64)",
+            "label": "QEMU (AARCH64/ARMv8-A)",
             "type": "process",
             "options": {
                 "cwd": "[[devkit-folder]]/emu/aarch64/"
@@ -161,7 +161,7 @@
                 "-cpu",
                 "cortex-a57"
             ],
-            "dependsOn": [ "Build for QEMU (AARCH64)" ],
+            "dependsOn": [ "Build for QEMU (AARCH64/ARMv8-A)" ],
             "problemMatcher": [
                 {
                     "pattern": [
