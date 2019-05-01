@@ -65,7 +65,6 @@ export class GitHelper {
                     } else {
                         resolve();
                     }
-
                 }
             });
         });
