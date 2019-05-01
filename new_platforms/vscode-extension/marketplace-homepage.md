@@ -109,6 +109,13 @@ The requirements here are those found in the [Azure IoT Edge extension](https://
 
 * Install [npm](https://www.npmjs.com/get-npm)
 
+## Data/Telemetry
+
+This project collects usage data and sends it to Microsoft to help improve our products and services. Read our 
+[privacy statement](http://go.microsoft.com/fwlink/?LinkId=521839) to learn more. If you don't wish to send usage 
+data to Microsoft, you can set the `telemetry.enableTelemetry` setting to `false`. Learn more in the 
+[Visual Studio Code FAQ](https://code.visualstudio.com/docs/supporting/faq#_how-to-disable-telemetry-reporting).
+
 ## Known Issues
 
 * SGX is not currently supported.
