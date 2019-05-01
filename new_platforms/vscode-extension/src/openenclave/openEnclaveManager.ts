@@ -127,7 +127,7 @@ export class OpenEnclaveManager {
                     createEdgeSolution = (oeProjectStyle === Constants.edgeProjectType);
                 }
 
-                TelemetryClient.sendEvent(`CreateOpenEnclaveSolution.${createEdgeSolution ? "Edge" : "Standalone"}`);
+                TelemetryClient.sendEvent(`msiot-vscode-openenclave.newSolution.${createEdgeSolution ? "edge" : "standalone"}`);
 
                 // Prompt user for solution name
                 const openEnclaveName: string | undefined =
