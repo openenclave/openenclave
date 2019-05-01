@@ -1,0 +1,50 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Remote Debug (C)",
+      "type": "cppdbg",
+      "request": "attach",
+      "program": "./host/[[project-name]]",
+      "processId": "${command:pickRemoteProcess}",
+      "pipeTransport": {
+        "pipeCwd": "${workspaceFolder}",
+        "pipeProgram": "docker",
+        "pipeArgs": [
+          "exec",
+          "-i",
+          "[[project-name]]",
+          "sh",
+          "-c"
+        ],
+        "debuggerPath": "/usr/bin/gdb"
+      },
+      "sourceFileMap": {
+        "/app": "${workspaceFolder}"
+      },
+      "linux": {
+        "MIMode": "gdb",
+        "setupCommands": [
+          {
+            "description": "Enable pretty-printing for gdb",
+            "text": "-enable-pretty-printing",
+            "ignoreFailures": true
+          }
+        ]
+      },
+      "osx": {
+        "MIMode": "lldb"
+      },
+      "windows": {
+        "MIMode": "gdb",
+        "setupCommands": [
+          {
+            "description": "Enable pretty-printing for gdb",
+            "text": "-enable-pretty-printing",
+            "ignoreFailures": true
+          }
+        ]
+      }
+    }
+  ]
+}
