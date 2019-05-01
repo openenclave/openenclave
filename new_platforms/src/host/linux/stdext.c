@@ -4,7 +4,7 @@
 
 #include <stdarg.h>
 
-errno_t strcpy_s(char *__restrict dest, size_t destsz, const char *__restrict src)
+errno_t __attribute__((weak)) strcpy_s(char *__restrict dest, size_t destsz, const char *__restrict src)
 {
     size_t i;
     if (!destsz)
@@ -26,7 +26,7 @@ errno_t strcpy_s(char *__restrict dest, size_t destsz, const char *__restrict sr
     return ERANGE;
 }
 
-int sprintf_s(char * __restrict s, size_t n, const char * __restrict format, ...)
+int __attribute__((weak)) sprintf_s(char * __restrict s, size_t n, const char * __restrict format, ...)
 {
     va_list ap;
     
@@ -37,7 +37,7 @@ int sprintf_s(char * __restrict s, size_t n, const char * __restrict format, ...
     return result;
 }
 
-errno_t fopen_s(FILE **f, const char *name, const char *mode)
+errno_t __attribute__((weak)) fopen_s(FILE **f, const char *name, const char *mode)
 {
     errno_t ret = 0;
     
