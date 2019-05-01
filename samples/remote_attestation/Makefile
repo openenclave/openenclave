@@ -16,4 +16,4 @@ clean:
 	$(MAKE) -C host clean
 
 run:
-	host/attestation_host ./enclave_a/enclave_a.signed ./enclave_b/enclave_b.signed
+	host/remote_attestation_host ./enclave_a/enclave_a.signed ./enclave_b/enclave_b.signed

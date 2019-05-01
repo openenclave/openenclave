@@ -27,10 +27,10 @@ build:
 	oeedger8r ../remoteattestation.edl --untrusted
 	$(CC) -g -c $(CFLAGS) $(CINCLUDES) remoteattestation_u.c
 	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) host.cpp
-	$(CXX) -o attestation_host host.o remoteattestation_u.o $(LDFLAGS)
+	$(CXX) -o remote_attestation_host host.o remoteattestation_u.o $(LDFLAGS)
 
 clean:
-	rm -f attestation_host *.o remoteattestation_u.*  remoteattestation_args.h
+	rm -f remote_attestation_host *.o remoteattestation_u.*  remoteattestation_args.h
 
 
 
