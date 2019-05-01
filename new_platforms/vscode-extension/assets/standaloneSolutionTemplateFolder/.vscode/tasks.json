@@ -29,7 +29,8 @@
             "args": [
                 "-j"
             ],
-            "problemMatcher": []
+            "problemMatcher": [],
+            "dependsOn": [ "Configure for QEMU (ARM)" ]
         },
         {
             "label": "Configure for QEMU (AARCH64)",
@@ -59,7 +60,8 @@
             "args": [
                 "-j"
             ],
-            "problemMatcher": []
+            "problemMatcher": [],
+            "dependsOn": [ "Configure for QEMU (AARCH64)" ]
         },
         {
             "label": "QEMU (ARM)",
