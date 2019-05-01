@@ -1,0 +1,395 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+/*
+**==============================================================================
+**
+** posix.edl:
+**
+**     This file declares OCALLs and ECALLs needed by the enclave to implement
+**     various system operations, such as file and socket I/O. Implementations
+**     are provided for both Linux and Windows here:
+**
+**         ../host/linux/posix.c
+**         ../host/linux/windows.c
+**
+**     The file declares a tiny subset of the POSIX API. Within the enclave,
+**     this subset functions as a portable abstration layer. POSIX was chosen
+**     rather than inventing a new and proprietary API.
+**
+**==============================================================================
+*/
+
+enclave {
+
+    include "openenclave/corelibc/netdb.h"
+    include "openenclave/corelibc/sys/epoll.h"
+    include "openenclave/corelibc/sys/poll.h"
+    include "openenclave/corelibc/sys/socket.h"
+    include "openenclave/corelibc/sys/utsname.h"
+    include "openenclave/corelibc/sys/stat.h"
+    include "openenclave/internal/posix.h"
+
+    trusted {
+
+        public int oe_posix_signal_notify_ecall(int signum);
+
+        public int oe_posix_polling_notify_ecall(
+            [in, count=num_notifications]
+            struct _oe_device_notifications* notifications,
+            size_t num_notifications);
+    };
+
+    untrusted {
+
+        int oe_posix_uname_ocall(
+            [out, count=1] struct oe_utsname* buf,
+            [out, count=1] int* err);
+
+        oe_host_fd_t oe_posix_open_ocall(
+            [in, string] const char* pathname,
+            int flags,
+            oe_mode_t mode,
+            [out, count=1] int* err);
+
+        ssize_t oe_posix_read_ocall(
+            oe_host_fd_t fd,
+            [out, size=count] void* buf,
+            size_t count,
+            [out, count=1] int* err);
+
+        ssize_t oe_posix_write_ocall(
+            oe_host_fd_t fd,
+            [in, size=count] const void* buf,
+            size_t count,
+            [out, count=1] int* err);
+
+        oe_off_t oe_posix_lseek_ocall(
+            oe_host_fd_t fd,
+            oe_off_t offset,
+            int whence,
+            [out, count=1] int* err);
+
+        int oe_posix_close_ocall(
+            oe_host_fd_t fd,
+            [out, count=1] int* err);
+
+        oe_host_fd_t oe_posix_dup_ocall(
+            oe_host_fd_t oldfd,
+            [out, count=1] int* err);
+
+        uint64_t oe_posix_opendir_ocall(
+            [in, string] const char* name,
+            [out, count=1] int* err);
+
+        int oe_posix_readdir_ocall(
+            uint64_t dirp,
+            [out, count=1] uint64_t* d_ino,
+            [out, count=1] int64_t* d_off,
+            [out, count=1] uint16_t* d_reclen,
+            [out, count=1] uint8_t* d_type,
+            [out, count=d_namelen] char* d_name,
+            size_t d_namelen,
+            [out, count=1] int* err);
+
+        void oe_posix_rewinddir_ocall(
+            uint64_t dirp);
+
+        int oe_posix_closedir_ocall(
+            uint64_t dirp,
+            [out, count=1] int* err);
+
+        int oe_posix_stat_ocall(
+            [in, string] const char* pathname,
+            [out, count=1] struct oe_stat* buf,
+            [out, count=1] int* err);
+
+        int oe_posix_access_ocall(
+            [in, string] const char* pathname,
+            int mode,
+            [out, count=1] int* err);
+
+        int oe_posix_link_ocall(
+            [in, string] const char* oldpath,
+            [in, string] const char* newpath,
+            [out, count=1] int* err);
+
+        int oe_posix_unlink_ocall(
+            [in, string] const char* pathname,
+            [out, count=1] int* err);
+
+        int oe_posix_rename_ocall(
+            [in, string] const char* oldpath,
+            [in, string] const char* newpath,
+            [out, count=1] int* err);
+
+        int oe_posix_truncate_ocall(
+            [in, string] const char* path,
+            oe_off_t length,
+            [out, count=1] int* err);
+
+        int oe_posix_mkdir_ocall(
+            [in, string] const char* pathname,
+            oe_mode_t mode,
+            [out, count=1] int* err);
+
+        int oe_posix_rmdir_ocall(
+            [in, string] const char* pathname,
+            [out, count=1] int* err);
+
+       oe_host_fd_t oe_posix_socket_ocall(
+            int domain,
+            int type,
+            int protocol,
+            [out, count=1] int* err);
+
+        int oe_posix_socketpair_ocall(
+            int domain,
+            int type,
+            int protocol,
+            [in] oe_host_fd_t sv[2],
+            [out, count=1] int* err);
+
+        int oe_posix_connect_ocall(
+            oe_host_fd_t sockfd,
+            [in, size=addrlen] const struct oe_sockaddr* addr,
+            oe_socklen_t addrlen,
+            [out, count=1] int* err);
+
+        oe_host_fd_t oe_posix_accept_ocall(
+            oe_host_fd_t sockfd,
+            [in, out, size=addrlen_in] struct oe_sockaddr* addr,
+            oe_socklen_t addrlen_in,
+            [out, count=1] oe_socklen_t* addrlen_out,
+            [out, count=1] int* err);
+
+        int oe_posix_bind_ocall(
+            oe_host_fd_t sockfd,
+            [in, size=addrlen] const struct oe_sockaddr* addr,
+            oe_socklen_t addrlen,
+            [out, count=1] int* err);
+
+        int oe_posix_listen_ocall(
+            oe_host_fd_t sockfd,
+            int backlog,
+            [out, count=1] int* err);
+
+        ssize_t oe_posix_recvmsg_ocall(
+            oe_host_fd_t sockfd,
+            [out, size=msg_namelen] void* msg_name,
+            oe_socklen_t msg_namelen,
+            [out, count=1] oe_socklen_t* msg_namelen_out,
+            [out, size=msg_buflen] void* msg_buf,
+            size_t msg_buflen,
+            [out, size=msg_controllen] void* msg_control,
+            size_t msg_controllen,
+            [out, count=1] size_t* msg_controllen_out,
+            int flags,
+            [out, count=1] int* err);
+
+        ssize_t oe_posix_sendmsg_ocall(
+            oe_host_fd_t sockfd,
+            [in, size=msg_namelen] const void* msg_name,
+            oe_socklen_t msg_namelen,
+            [in, size=msg_buflen] const void* msg_buf,
+            size_t msg_buflen,
+            [in, size=msg_controllen] const void* msg_control,
+            size_t msg_controllen,
+            int flags,
+            [out, count=1] int* err);
+
+        ssize_t oe_posix_recv_ocall(
+            oe_host_fd_t sockfd,
+            [in, out, size=len] void* buf,
+            size_t len,
+            int flags,
+            [out, count=1] int* err);
+
+        ssize_t oe_posix_recvfrom_ocall(
+            oe_host_fd_t sockfd,
+            [out, size=len] void* buf,
+            size_t len,
+            int flags,
+            [in, out, size=addrlen_in] struct oe_sockaddr* src_addr,
+            oe_socklen_t addrlen_in,
+            [out, count=1] oe_socklen_t* addrlen_out,
+            [out, count=1] int* err);
+
+        ssize_t oe_posix_send_ocall(
+            oe_host_fd_t sockfd,
+            [in, size=len] const void* buf,
+            size_t len,
+            int flags,
+            [out, count=1] int* err);
+
+        ssize_t oe_posix_sendto_ocall(
+            oe_host_fd_t sockfd,
+            [in, size=len] const void* buf,
+            size_t len,
+            int flags,
+            [in, size=addrlen] const struct oe_sockaddr* dest_addr,
+            oe_socklen_t addrlen,
+            [out, count=1] int* err);
+
+        int oe_posix_shutdown_ocall(
+            oe_host_fd_t sockfd,
+            int how,
+            [out, count=1] int* err);
+
+        int oe_posix_fcntl_ocall(
+            oe_host_fd_t fd,
+            int cmd,
+            uint64_t arg,
+            [out, count=1] int* err);
+
+        int oe_posix_setsockopt_ocall(
+            oe_host_fd_t sockfd,
+            int level,
+            int optname,
+            [in, size=optlen] const void* optval,
+            oe_socklen_t optlen,
+            [out, count=1] int* err);
+
+        int oe_posix_getsockopt_ocall(
+            oe_host_fd_t sockfd,
+            int level,
+            int optname,
+            [out, size=optlen_in] void* optval,
+            oe_socklen_t optlen_in,
+            [out] oe_socklen_t* optlen_out,
+            [out, count=1] int* err);
+
+        int oe_posix_getsockname_ocall(
+            oe_host_fd_t sockfd,
+            [in, out, size=addrlen_in] struct oe_sockaddr* addr,
+            oe_socklen_t addrlen_in,
+            [out, size=1] oe_socklen_t* addrlen_out,
+            [out, count=1] int* err);
+
+        int oe_posix_getpeername_ocall(
+            oe_host_fd_t sockfd,
+            [in, out, size=addrlen_in] struct oe_sockaddr* addr,
+            oe_socklen_t addrlen_in,
+            [out, size=1] oe_socklen_t* addrlen_out,
+            [out, count=1] int* err);
+
+        int oe_posix_shutdown_sockets_device_ocall(
+            oe_host_fd_t sockfd,
+            [out, count=1] int* err);
+
+        int oe_posix_kill_ocall(
+            int pid,
+            int signum,
+            [out, count=1] int* err);
+
+        uint64_t oe_posix_getaddrinfo_open_ocall(
+            [in, string] const char* node,
+            [in, string] const char* service,
+            [in, count=1] const struct oe_addrinfo* hints,
+            [out, count=1] int* err);
+
+        int oe_posix_getaddrinfo_read_ocall(
+            uint64_t handle,
+            [out, count=1] int* ai_flags,
+            [out, count=1] int* ai_family,
+            [out, count=1] int* ai_socktype,
+            [out, count=1] int* ai_protocol,
+            oe_socklen_t ai_addrlen_in,
+            [out, count=1] oe_socklen_t* ai_addrlen,
+            [out, size=ai_addrlen_in] struct oe_sockaddr* ai_addr,
+            size_t ai_canonnamelen_in,
+            [out, count=1] size_t* ai_canonnamelen,
+            [out, size=ai_canonnamelen_in] char* ai_canonname,
+            [out, count=1] int* err);
+
+        int oe_posix_getaddrinfo_close_ocall(
+            uint64_t handle,
+            [out, count=1] int* err);
+
+        int oe_posix_getnameinfo_ocall(
+            [in, size=salen] const struct oe_sockaddr* sa,
+            oe_socklen_t salen,
+            [out, size=hostlen] char* host,
+            oe_socklen_t hostlen,
+            [out, size=servlen] char* serv,
+            oe_socklen_t servlen,
+            int flags,
+            [out, count=1] int* err);
+
+        int oe_posix_shutdown_resolver_device_ocall(
+            [out, count=1] int* err);
+
+        oe_host_fd_t oe_posix_epoll_create1_ocall(
+            int flags,
+            [out, count=1] int* err);
+
+        // Initiate waiting for epoll events. This function creates a new
+        // thread and delivers the events via oe_posix_polling_notify_ecall().
+        int oe_posix_epoll_wait_async_ocall(
+            int64_t enclaveid,
+            oe_host_fd_t epfd,
+            size_t maxevents,
+            [out, count=1] int* err);
+
+        int oe_posix_epoll_poll_ocall(
+            int64_t enclaveid,
+            oe_host_fd_t epfd,
+            [in,out, count=nfds] struct oe_pollfd* fds,
+            size_t nfds,
+            int timeout,
+            [out, count=1] int* err);
+
+        int oe_posix_epoll_ctl_add_ocall(
+            oe_host_fd_t epfd,
+            oe_host_fd_t fd,
+            unsigned int event_mask,
+            int list_idx,
+            int epoll_enclave_fd,
+            [out, count=1] int* err);
+
+        int oe_posix_epoll_ctl_del_ocall(
+            oe_host_fd_t epfd,
+            oe_host_fd_t fd,
+            [out, count=1] int* err);
+
+        int oe_posix_epoll_ctl_mod_ocall(
+            oe_host_fd_t epfd,
+            oe_host_fd_t fd,
+            unsigned int event_mask,
+            int list_idx,
+            int epoll_enclave_fd,
+            [out, count=1] int* err);
+
+        int oe_posix_epoll_close_ocall(
+            oe_host_fd_t fd,
+            [out, count=1] int* err);
+
+        int oe_posix_shutdown_polling_device_ocall(
+            oe_host_fd_t fd,
+            [out, count=1] int* err);
+
+        int oe_posix_getpid();
+
+        int oe_posix_getppid();
+
+        int oe_posix_getpgrp();
+
+        unsigned int oe_posix_getuid();
+
+        unsigned int oe_posix_geteuid();
+
+        unsigned int oe_posix_getgid();
+
+        unsigned int oe_posix_getegid();
+
+        int oe_posix_getpgid(
+            int pid,
+            [out, count=1] int* err);
+
+        int oe_posix_getgroups(
+            size_t size,
+            [out, count=size] unsigned int* list,
+            [out, count=1] int* err);
+
+    };
+};
