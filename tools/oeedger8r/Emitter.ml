@@ -430,55 +430,51 @@ let oe_prepare_input_buffer (fd : func_decl) (alloc_func : string) =
   ; "/* Copy args structure (now filled) to input buffer */"
   ; "memcpy(_pargs_in, &_args, sizeof(*_pargs_in));" ]
 
-let oe_process_output_buffer (os : out_channel) (fd : func_decl) =
-  (* Verify that the ecall succeeded *)
-  fprintf os "    /* Set up output arg struct pointer */\n" ;
-  fprintf os "    _pargs_out = (%s_args_t*)_output_buffer;\n" fd.fname ;
-  fprintf os "    OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));\n\n" ;
-  fprintf os "    /* Check if the call succeeded */\n" ;
-  fprintf os "    if ((_result=_pargs_out->_result) != OE_OK)\n" ;
-  fprintf os "        goto done;\n\n" ;
-  fprintf os
-    "    /* Currently exactly _output_buffer_size bytes must be written */\n" ;
-  fprintf os "    if (_output_bytes_written != _output_buffer_size) {\n" ;
-  fprintf os "        _result = OE_FAILURE;\n" ;
-  fprintf os "        goto done;\n" ;
-  fprintf os "    }\n\n" ;
-  (* Unmarshal return value and ouput buffers *)
-  fprintf os "    /* Unmarshal return value and out, in-out parameters */\n" ;
-  if fd.rtype <> Void then fprintf os "    *_retval = _pargs_out->_retval;\n" ;
-  List.iter
-    (fun (ptype, decl) ->
-      match ptype with
-      | PTPtr (_, ptr_attr) ->
-          if ptr_attr.pa_chkptr then
-            let size = oe_get_param_size (ptype, decl, "_args.") in
-            match ptr_attr.pa_direction with
-            | PtrOut ->
-                (* strings cannot be out parameters *)
-                fprintf os "    OE_READ_OUT_PARAM(%s, (size_t)(%s));\n"
-                  decl.identifier size
-            | PtrInOut ->
-                (* Check that strings are null terminated.
-                 Note output buffer has already been copied into the enclave.*)
-                if ptr_attr.pa_isstr then
-                  fprintf os
-                    "    OE_CHECK_NULL_TERMINATOR(_output_buffer + \
-                     _output_buffer_offset, _args.%s_len);\n"
-                    decl.identifier
-                else if ptr_attr.pa_iswstr then
-                  fprintf os
-                    "    OE_CHECK_NULL_TERMINATOR_WIDE(_output_buffer + \
-                     _output_buffer_offset, _args.%s_len);\n"
-                    decl.identifier
-                else () ;
-                fprintf os "    OE_READ_IN_OUT_PARAM(%s, (size_t)(%s));\n"
-                  decl.identifier size
-            | _ -> ()
-          else ()
-      | _ -> () )
-    fd.plist ;
-  fprintf os "\n"
+let oe_process_output_buffer (fd : func_decl) =
+  List.flatten
+    [ [ (* Verify that the ecall succeeded *)
+        ""
+      ; "/* Setup output arg struct pointer */"
+      ; sprintf "_pargs_out = (%s_args_t*)_output_buffer;" fd.fname
+      ; "OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));"
+      ; ""
+      ; "/* Check if the call succeeded */"
+      ; "if ((_result = _pargs_out->_result) != OE_OK)"
+      ; "    goto done;"
+      ; ""
+      ; "/* Currently exactly _output_buffer_size bytes must be written */"
+      ; "if (_output_bytes_written != _output_buffer_size)"
+      ; "{"
+      ; "    _result = OE_FAILURE;"
+      ; "    goto done;"
+      ; "}"
+      ; ""
+      ; (* Unmarshal return value and output buffers *)
+        "/* Unmarshal return value and out, in-out parameters */"
+      ; ( if fd.rtype <> Void then "*_retval = _pargs_out->_retval;"
+        else "/* No return value. */" ) ]
+    ; (* This does not use String.concat because the elements are multiple lines. *)
+      List.map
+        (fun (ptype, decl) ->
+          let size = oe_get_param_size (ptype, decl, "_args.") in
+          (* These need to be in order and so done together. *)
+          if is_out_ptr (ptype, decl) then
+            sprintf "OE_READ_OUT_PARAM(%s, (size_t)(%s));" decl.identifier size
+          else if is_inout_ptr (ptype, decl) then
+            (* Check that strings are null terminated. Note output
+              buffer has already been copied into the enclave. *)
+            ( if is_str_ptr (ptype, decl) || is_wstr_ptr (ptype, decl) then
+              sprintf
+                "OE_CHECK_NULL_TERMINATOR%s(_output_buffer + \
+                 _output_buffer_offset, _args.%s_len);\n"
+                (if is_wstr_ptr (ptype, decl) then "_WIDE" else "")
+                decl.identifier
+            else "" )
+            ^ sprintf "OE_READ_IN_OUT_PARAM(%s, (size_t)(%s));" decl.identifier
+                size
+          else "" )
+        (* We filter the list so an empty string is never output. *)
+        (List.filter (fun p -> is_out_ptr p || is_inout_ptr p) fd.plist) ]
 
 (** Generate a cast expression to a specific pointer type. For example,
     [int*] needs to be cast to
@@ -680,7 +676,7 @@ let oe_get_host_ecall_function (os : out_channel) (fd : func_decl) =
   fprintf os "                        _output_buffer, _output_buffer_size,\n" ;
   fprintf os "                         &_output_bytes_written)) != OE_OK)\n" ;
   fprintf os "        goto done;\n\n" ;
-  oe_process_output_buffer os fd ;
+  fprintf os "%s" (String.concat "\n    " (oe_process_output_buffer fd)) ;
   fprintf os "    _result = OE_OK;\n" ;
   fprintf os "done:\n" ;
   fprintf os "    if (_buffer)\n" ;
@@ -727,11 +723,12 @@ let oe_gen_ocall_enclave_wrapper (os : out_channel) (uf : untrusted_func) =
   fprintf os "                        _output_buffer, _output_buffer_size,\n" ;
   fprintf os "                         &_output_bytes_written)) != OE_OK)\n" ;
   fprintf os "        goto done;\n\n" ;
-  oe_process_output_buffer os fd ;
+  fprintf os "%s" (String.concat "\n    " (oe_process_output_buffer fd)) ;
   (* Propagate errno *)
   if propagate_errno then (
     fprintf os "    /* Propagate errno */\n" ;
-    fprintf os "    errno = _pargs_out->_ocall_errno;\n\n" ) ;
+    fprintf os "    errno = _pargs_out->_ocall_errno;\n\n" )
+  else fprintf os "\n" ;
   fprintf os "    _result = OE_OK;\n" ;
   fprintf os "done:\n" ;
   fprintf os "    if (_buffer)\n" ;
