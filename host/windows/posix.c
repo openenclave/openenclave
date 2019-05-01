@@ -57,33 +57,39 @@ oe_host_fd_t oe_posix_open_ocall(
          if ((flags & 0x00000003) != OE_O_RDONLY)
          {
              if (err)
-                 *err = EINVAL;
+             {
+                 *err = OE_EINVAL;
+             }
              goto done;
          }
 
-         ret = (__int64) GetStdHandle(STD_INPUT_HANDLE);
+         ret = (oe_host_fd_t)GetStdHandle(STD_INPUT_HANDLE);
      }
      else if (strcmp(pathname, "/dev/stdout") == 0)
      {
          if ((flags & 0x00000003) != OE_O_WRONLY)
          {
              if (err)
-                 *err = EINVAL;
+             {
+                 *err = OE_EINVAL;
+             }
              goto done;
          }
 
-         ret = (__int64) GetStdHandle(STD_OUTPUT_HANDLE);
+         ret = (oe_host_fd_t)GetStdHandle(STD_OUTPUT_HANDLE);
      }
      else if (strcmp(pathname, "/dev/stderr") == 0)
      {
          if ((flags & 0x00000003) != OE_O_WRONLY)
          {
              if (err)
-                 *err = EINVAL;
+             {
+                 *err = OE_EINVAL;
+             }
              goto done;
          }
 
-         ret = (__int64) GetStdHandle(STD_ERROR_HANDLE);
+         ret = (oe_host_fd_t)GetStdHandle(STD_ERROR_HANDLE);
      }
      else
      {
@@ -91,7 +97,6 @@ oe_host_fd_t oe_posix_open_ocall(
          DWORD share_mode     = 0;
          DWORD create_dispos  = 0;
         
-    
          int nLen = MultiByteToWideChar(CP_UTF8, 0, pathname, -1, NULL, NULL);
          WCHAR *wpathname = (WCHAR *)(calloc((nLen+1)*sizeof(wchar)));
          MultiByteToWideChar(CP_UTF8, 0, pathname, -1, wpathname, nLen);
@@ -105,7 +110,7 @@ oe_host_fd_t oe_posix_open_ocall(
       
          if ((flags & OE_O_CREAT) != 0)
          {
-            desired_access |= OPEN_ALWAYS;
+             desired_access |= OPEN_ALWAYS;
          }
          else {
              if ((flags & OE_O_TRUNC) != 0)
@@ -121,22 +126,28 @@ oe_host_fd_t oe_posix_open_ocall(
          const int ACCESS_FLAGS = 0x3;   // Covers rdonly, wronly rdwr
          switch ((flags & ACCESS_FLAGS) != 0)
          {
-         case OE_O_RDONLY:
+         case OE_O_RDONLY: // 0
              desired_access = GENERIC_READ;
              share_mode = FILE_SHARE_READ;
              break;
 
-         case OE_O_WRONLY:
+         case OE_O_WRONLY: // 1
              desired_access = GENERIC_WRITE;
              share_mode = FILE_SHARE_WRITE;
              break;
 
-         case OE_O_RDWR:
+         case OE_O_RDWR:  // 2 or 3
              desired_access = GENERIC_READ | GENERIC_WRITE;
              share_mode = FILE_SHARE_READ | FILE_SHARE_WRITE;
              break;
 
-         default:
+         default: 
+             ret = -1;
+             if (err)
+             {
+                 *err = OE_EINVAL;
+             }
+             goto done;
              break;
          }
 
@@ -144,6 +155,8 @@ oe_host_fd_t oe_posix_open_ocall(
                       (FILE_ATTRIBUTE_NORMAL|FILE_FLAG_POSIX_SEMANTICS));
     }
 
+done:
+    return ret;
 }
 
 ssize_t oe_posix_read_ocall(oe_host_fd_t fd, void* buf, size_t count)
