@@ -11,6 +11,7 @@
             "remote": true,
             "gdbpath": "/usr/bin/gdb-multiarch",
             "autorun": [
+                "symbol-file ./out/bin/[[project-name]]",
                 "add-symbol-file ./enc/[[generated-uuid]].elf 0x106020",
                 "b TA_InvokeCommandEntryPoint"
             ]
@@ -25,6 +26,7 @@
             "remote": true,
             "gdbpath": "/usr/bin/gdb-multiarch",
             "autorun": [
+                "symbol-file ./out/bin/[[project-name]]",
                 "add-symbol-file ./enc/[[generated-uuid]].elf 0x40008020",
                 "b TA_InvokeCommandEntryPoint"
             ]
