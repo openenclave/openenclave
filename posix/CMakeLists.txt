@@ -55,6 +55,8 @@ add_library(oeposix STATIC
     syscall.c
     uname.c)
 
+maybe_build_using_clangw(oeposix)
+
 add_dependencies(oeposix posix_trusted_edl)
 
 target_include_directories(oeposix PRIVATE

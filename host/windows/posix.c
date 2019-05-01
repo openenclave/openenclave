@@ -7,7 +7,12 @@ typedef __int64 oe_oe_off_t;
 #include <io.h>
 #include <stdint.h>
 /* ATTN: please put what 4005 is for here. */
+
 #pragma warning(disable : 4005)
+
+/* warning C4716: must return a value */
+#pragma warning(disable : 4716)
+
 #include "posix_u.h"
 
 /*
