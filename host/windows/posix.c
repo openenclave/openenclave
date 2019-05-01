@@ -48,8 +48,102 @@ oe_host_fd_t oe_posix_open_ocall(
     const char* pathname,
     int flags,
     oe_mode_t mode)
+
 {
-    PANIC;
+     int ret = -1;
+
+     if (strcmp(pathname, "/dev/stdin") == 0)
+     {
+         if ((flags & 0x00000003) != OE_O_RDONLY)
+         {
+             if (err)
+                 *err = EINVAL;
+             goto done;
+         }
+
+         ret = (__int64) GetStdHandle(STD_INPUT_HANDLE);
+     }
+     else if (strcmp(pathname, "/dev/stdout") == 0)
+     {
+         if ((flags & 0x00000003) != OE_O_WRONLY)
+         {
+             if (err)
+                 *err = EINVAL;
+             goto done;
+         }
+
+         ret = (__int64) GetStdHandle(STD_OUTPUT_HANDLE);
+     }
+     else if (strcmp(pathname, "/dev/stderr") == 0)
+     {
+         if ((flags & 0x00000003) != OE_O_WRONLY)
+         {
+             if (err)
+                 *err = EINVAL;
+             goto done;
+         }
+
+         ret = (__int64) GetStdHandle(STD_ERROR_HANDLE);
+     }
+     else
+     {
+         DWORD desired_access = 0;
+         DWORD share_mode     = 0;
+         DWORD create_dispos  = 0;
+        
+    
+         int nLen = MultiByteToWideChar(CP_UTF8, 0, pathname, -1, NULL, NULL);
+         WCHAR *wpathname = (WCHAR *)(calloc((nLen+1)*sizeof(wchar)));
+         MultiByteToWideChar(CP_UTF8, 0, pathname, -1, wpathname, nLen);
+       
+         if ((flags & OE_O_DIRECTORY) != 0)
+         {
+            // 2Do  call Opendir
+         }
+      
+         /* Open flags are neither a bitmask nor a sequence, so switching or maskign don't really work. */
+      
+         if ((flags & OE_O_CREAT) != 0)
+         {
+            desired_access |= OPEN_ALWAYS;
+         }
+         else {
+             if ((flags & OE_O_TRUNC) != 0)
+             {
+                 desired_acces = TRUNCATE_EXISTING;
+             }
+             else if ((flags & OE_O_APPEND) != 0)
+             {
+                 desired_acces = OPEN_EXISTING;
+             }
+         }
+    
+         const int ACCESS_FLAGS = 0x3;   // Covers rdonly, wronly rdwr
+         switch ((flags & ACCESS_FLAGS) != 0)
+         {
+         case OE_O_RDONLY:
+             desired_access = GENERIC_READ;
+             share_mode = FILE_SHARE_READ;
+             break;
+
+         case OE_O_WRONLY:
+             desired_access = GENERIC_WRITE;
+             share_mode = FILE_SHARE_WRITE;
+             break;
+
+         case OE_O_RDWR:
+             desired_access = GENERIC_READ | GENERIC_WRITE;
+             share_mode = FILE_SHARE_READ | FILE_SHARE_WRITE;
+             break;
+
+         default:
+             break;
+         }
+
+         ret = CreateFileW(wpathname, desired_access, share_mode, NULL, create_dispos,
+                      (FILE_ATTRIBUTE_NORMAL|FILE_FLAG_POSIX_SEMANTICS));
+    }
+
 }
 
 ssize_t oe_posix_read_ocall(oe_host_fd_t fd, void* buf, size_t count)
