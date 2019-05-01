@@ -47,7 +47,7 @@ RUN cmake \
     -DCMAKE_TOOLCHAIN_FILE=/app/3rdparty/openenclave/new_platforms/cmake/linux-aarch64-v6.cmake \
     -DCMAKE_BUILD_TYPE=Debug \
     . 
-RUN make
+RUN make -j$(nproc)
 
 FROM aarch64/ubuntu:xenial
 RUN apt-get update && \
