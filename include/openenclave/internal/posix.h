@@ -27,32 +27,7 @@ OE_EXTERNC_BEGIN
 **==============================================================================
 */
 
-typedef struct _oe_host_fd
-{
-    int64_t value;
-} oe_host_fd_t;
-
-OE_INLINE oe_host_fd_t oe_host_fd(int64_t x)
-{
-    oe_host_fd_t host_fd;
-    host_fd.value = x;
-    return host_fd;
-}
-
-OE_INLINE int64_t oe_host_fd_v(oe_host_fd_t x)
-{
-    return x.value;
-}
-
-OE_INLINE int oe_host_fd_i(oe_host_fd_t x)
-{
-    return (int)x.value;
-}
-
-OE_INLINE int __oe_host_fd_i_bad_cast(oe_host_fd_t x)
-{
-    return (int)x.value;
-}
+typedef int64_t oe_host_fd_t;
 
 /*
 **==============================================================================

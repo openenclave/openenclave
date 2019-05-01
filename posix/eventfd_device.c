@@ -282,7 +282,7 @@ done:
 static oe_host_fd_t _eventfd_gethostfd(oe_device_t* eventfd_)
 {
     (void)eventfd_;
-    return oe_host_fd(-1);
+    return -1;
 }
 
 static oe_eventfd_ops_t _ops = {

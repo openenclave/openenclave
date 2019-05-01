@@ -275,7 +275,7 @@ static oe_device_t* _epoll_create(oe_device_t* epoll_, int size)
         goto done;
     }
 
-    if (oe_host_fd_v(retval) != -1)
+    if (retval != -1)
     {
         epoll->base.type = OE_DEVID_EPOLL;
         epoll->base.name = DEVICE_NAME;
@@ -308,7 +308,7 @@ static oe_device_t* _epoll_create1(oe_device_t* epoll_, int32_t flags)
         goto done;
     }
 
-    if (oe_host_fd_v(retval) != -1)
+    if (retval != -1)
     {
         epoll->base.type = OE_DEVID_EPOLL;
         epoll->base.name = DEVICE_NAME;
@@ -329,7 +329,7 @@ static int _epoll_ctl_add(
     int ret = -1;
     epoll_dev_t* epoll =
         _cast_epoll(oe_get_fd_device(epoll_fd, OE_DEVICE_TYPE_EPOLL));
-    oe_host_fd_t host_fd = oe_host_fd(-1);
+    oe_host_fd_t host_fd = -1;
     oe_device_t* pdev = oe_get_fd_device(enclave_fd, OE_DEVICE_TYPE_NONE);
     int list_idx = -1;
     epoll_event_data_t ev_data = {0};
@@ -348,7 +348,7 @@ static int _epoll_ctl_add(
         host_fd = (*pdev->ops.base->get_host_fd)(pdev);
     }
 
-    if (oe_host_fd_v(host_fd) == -1)
+    if (host_fd == -1)
     {
         // Not a host file system. Skip the ocall
         return 0;
@@ -382,7 +382,6 @@ done:
     return ret;
 }
 
-/* ATTN:IO: add test for mod case. */
 static int _epoll_ctl_mod(
     int epoll_fd,
     int enclave_fd,
@@ -391,7 +390,7 @@ static int _epoll_ctl_mod(
     int ret = -1;
     epoll_dev_t* epoll =
         _cast_epoll(oe_get_fd_device(epoll_fd, OE_DEVICE_TYPE_EPOLL));
-    oe_host_fd_t host_fd = oe_host_fd(-1);
+    oe_host_fd_t host_fd = -1;
     oe_device_t* pdev = oe_get_fd_device(enclave_fd, OE_DEVICE_TYPE_NONE);
     oe_result_t result = OE_FAILURE;
     epoll_event_data_t ev_data = {0};
@@ -409,7 +408,7 @@ static int _epoll_ctl_mod(
         host_fd = (*pdev->ops.base->get_host_fd)(pdev);
     }
 
-    if (oe_host_fd_v(host_fd) == -1)
+    if (host_fd == -1)
     {
         // Not a host file system. Skip the ocall
         return 0;
@@ -448,13 +447,12 @@ done:
     return ret;
 }
 
-/* ATTN:IO: add test for del case. */
 static int _epoll_ctl_del(int epoll_fd, int enclave_fd)
 {
     int ret = -1;
     epoll_dev_t* epoll =
         _cast_epoll(oe_get_fd_device(epoll_fd, OE_DEVICE_TYPE_EPOLL));
-    oe_host_fd_t host_fd = oe_host_fd(-1);
+    oe_host_fd_t host_fd = -1;
     oe_device_t* pdev = oe_get_fd_device(enclave_fd, OE_DEVICE_TYPE_NONE);
     oe_result_t result = OE_FAILURE;
 
@@ -472,7 +470,7 @@ static int _epoll_ctl_del(int epoll_fd, int enclave_fd)
         host_fd = (*pdev->ops.base->get_host_fd)(pdev);
     }
 
-    if (oe_host_fd_v(host_fd) == -1)
+    if (host_fd == -1)
     {
         // Not a host file system. Skip the ocall
         return 0;
@@ -511,10 +509,9 @@ static int _epoll_wait(
     int ret = -1;
     epoll_dev_t* epoll =
         _cast_epoll(oe_get_fd_device(epoll_fd, OE_DEVICE_TYPE_EPOLL));
-    oe_host_fd_t epoll_host_fd = oe_host_fd(-1);
+    oe_host_fd_t epoll_host_fd = -1;
     struct oe_epoll_event* host_events = NULL;
 
-    // ATTN:IO: timeout is unused.
     OE_UNUSED(timeout);
 
     if (!epoll || !events)
@@ -532,7 +529,7 @@ static int _epoll_wait(
             (*epoll->base.ops.base->get_host_fd)((oe_device_t*)epoll);
     }
 
-    if (oe_host_fd_v(epoll_host_fd) == -1)
+    if (epoll_host_fd == -1)
     {
         // Not a host file system. Skip the ocall
         return 0;
@@ -657,7 +654,7 @@ static int _epoll_poll(
         size_t fd_idx = 0;
         for (; fd_idx < nfds; fd_idx++)
         {
-            oe_host_fd_t host_fd = oe_host_fd(-1);
+            oe_host_fd_t host_fd = -1;
 
             pdev = oe_get_fd_device(fds[fd_idx].fd, OE_DEVICE_TYPE_NONE);
             if (pdev)
@@ -667,7 +664,9 @@ static int _epoll_poll(
                     host_fd = (*pdev->ops.base->get_host_fd)(pdev);
                 }
             }
-            host_fds[fd_idx].fd = __oe_host_fd_i_bad_cast(host_fd);
+
+            /* ATTN: casting from 64-bit fd to 32-bit fd! */
+            host_fds[fd_idx].fd = (int)host_fd;
             // -1 will be ignored by poll on the host side. 2do:
             // how to poll enclave local
             host_fds[fd_idx].events = fds[fd_idx].events;
@@ -681,7 +680,7 @@ static int _epoll_poll(
     result = oe_posix_epoll_poll_ocall(
         &ret,
         (int64_t)oe_get_enclave(),
-        oe_host_fd(epoll_fd),
+        epoll_fd,
         host_fds,
         nfds,
         (int)timeout,

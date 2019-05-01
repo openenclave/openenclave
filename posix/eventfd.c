@@ -46,7 +46,7 @@ done:
 
     if (eventfd)
     {
-        // ATTN:IO: release this device.
+        // ATTN: release this device.
     }
 
     return ret;
