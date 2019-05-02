@@ -487,9 +487,8 @@ let get_cast_from_mem_expr (ptype, decl) =
         sprintf "(const %s)" (get_tystr t)
       else ""
 
-let oe_gen_call_function (fd : func_decl) =
-  [ ""
-  ; "/* Call user function. */"
+let oe_gen_call_user_function (fd : func_decl) =
+  [ "/* Call user function. */"
   ; (match fd.rtype with Void -> "" | _ -> "pargs_out->_retval = ")
     ^ fd.fname ^ "("
   ; String.concat ",\n    "
@@ -589,7 +588,7 @@ let oe_gen_ecall_function (tf : trusted_func) =
   ; "    oe_lfence();"
   ; ""
   ; (* Call the enclave function *)
-    "    " ^ String.concat "\n    " (oe_gen_call_function fd)
+    "    " ^ String.concat "\n    " (oe_gen_call_user_function fd)
   ; ""
   ; (* Mark call as success *)
     "    /* Success. */"
@@ -826,7 +825,7 @@ let oe_gen_ocall_host_wrapper (os : out_channel) (uf : untrusted_func) =
       | _ -> () )
     fd.plist ;
   (* Call the host function *)
-  fprintf os "%s\n" (String.concat "\n    " (oe_gen_call_function fd)) ;
+  fprintf os "%s\n" (String.concat "\n    " (oe_gen_call_user_function fd)) ;
   (* Propagate errno *)
   if propagate_errno then (
     fprintf os "\n    /* Propagate errno */\n" ;
