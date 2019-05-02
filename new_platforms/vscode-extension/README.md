@@ -1,6 +1,8 @@
 # Open Enclave extension for Visual Studio Code
 
-A [Visual Studio Code](https://code.visualstudio.com/) [extension](https://marketplace.visualstudio.com/VSCode) supporting [Open Enclave](https://github.com/Microsoft/openenclave), including development, debugging, emulators, and deployment!
+A [Visual Studio Code](https://code.visualstudio.com/) [extension](https://marketplace.visualstudio.com/VSCode) supporting [Open Enclave](https://openenclave.io/sdk/), including development, debugging, emulators, and deployment!
+
+For more information on the technology, [see here](https://github.com/Microsoft/openenclave/blob/feature.new_platforms/new_platforms/README.md).
 
 ## Getting started
 
