@@ -5,4 +5,4 @@ oeedl_file(../libcsock.edl enclave gen)
 
 add_executable(libcsock_enc1 enc.c ../client.c ../server.c ${gen})
 
-target_link_libraries(libcsock_enc1 oelibc oeenclave)
+target_link_libraries(libcsock_enc1 oelibc oeenclave oehostsock)

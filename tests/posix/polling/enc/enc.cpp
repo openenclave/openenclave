@@ -29,7 +29,7 @@ extern "C" int ecall_device_init(const char* tmp_dir)
     OE_TEST(tmp_dir != NULL);
     OE_TEST(oe_load_module_hostfs() == OE_OK);
     OE_TEST(oe_load_module_hostsock() == OE_OK);
-    OE_TEST(oe_load_module_polling() == OE_OK);
+    OE_TEST(oe_load_module_hostepoll() == OE_OK);
 
     strlcpy(_path, tmp_dir, sizeof(_path));
     strlcat(_path, "/test", sizeof(_path));

@@ -33,16 +33,9 @@ add_library(oeposix STATIC
     device.c
     epoll.c
     eventfd.c
-    eventfd_device.c
     exit.c
     fd.c
     fs.c
-    getdomainname.c
-    gethostname.c
-    hostepoll_device.c
-    hostfs_device.c
-    hostresolver_device.c
-    hostsock_device.c
     ids.c
     mount.c
     poll.c
@@ -53,6 +46,7 @@ add_library(oeposix STATIC
     sleep.c
     socket.c
     syscall.c
+    unistd.c
     uname.c)
 
 maybe_build_using_clangw(oeposix)
@@ -61,7 +55,8 @@ add_dependencies(oeposix posix_trusted_edl)
 
 target_include_directories(oeposix PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_BINARY_DIR})
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
 
 target_link_libraries(oeposix oecore)
 
@@ -69,9 +64,7 @@ set_source_files_properties(
     ${CMAKE_CURRENT_BINARY_DIR}/posix_t.c
     PROPERTIES COMPILE_FLAGS -DOE_NEED_STDC_NAMES)
 
-target_include_directories(oeposix PRIVATE
-    ${CMAKE_CURRENT_BINARY_DIR}
-    ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
-
 install(TARGETS oeposix EXPORT openenclave-targets ARCHIVE
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+
+add_subdirectory(devices)

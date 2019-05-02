@@ -12,4 +12,4 @@ add_enclave(
 )
 
 target_include_directories(signal_test_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(signal_test_enc oelibc)
+target_link_libraries(signal_test_enc oelibc oehostfs)

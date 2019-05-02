@@ -812,7 +812,7 @@ static epoll_dev_t _epoll = {
     .pevent_data = NULL,
 };
 
-oe_result_t oe_load_module_polling(void)
+oe_result_t oe_load_module_hostepoll(void)
 {
     oe_result_t result = OE_FAILURE;
     static bool _loaded = false;

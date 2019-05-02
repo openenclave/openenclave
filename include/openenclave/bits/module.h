@@ -29,7 +29,7 @@ oe_result_t oe_load_module_hostsock(void);
 oe_result_t oe_load_module_hostresolver(void);
 
 /* Load the event polling module. */
-oe_result_t oe_load_module_polling(void);
+oe_result_t oe_load_module_hostepoll(void);
 
 /* Load the eventfd module. */
 oe_result_t oe_load_module_eventfd(void);

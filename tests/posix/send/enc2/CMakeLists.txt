@@ -10,4 +10,4 @@ target_include_directories(libcsock_enc2 PRIVATE
 
 add_definitions(-DOE_NEED_STDC_NAMES)
 
-target_link_libraries(libcsock_enc2 oeposix oeenclave)
+target_link_libraries(libcsock_enc2 oeposix oeenclave oehostsock)
