@@ -45,8 +45,7 @@ int oe_kill(oe_pid_t pid, int signum)
     oe_errno = 0;
     oe_result_t result = OE_FAILURE;
 
-    if ((result = oe_posix_kill_ocall(&retval, (int)pid, signum, &oe_errno)) !=
-        OE_OK)
+    if ((result = oe_posix_kill_ocall(&retval, (int)pid, signum)) != OE_OK)
     {
         OE_TRACE_ERROR(
             "pid=%d signum=%d %s", pid, signum, oe_result_str(result));

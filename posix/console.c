@@ -47,11 +47,9 @@ static int _consolefs_dup(oe_device_t* file_, oe_device_t** new_file_out)
 
     /* Ask the host to perform this operation. */
     {
-        int err = 0;
         oe_errno = 0;
 
-        if ((result = oe_posix_dup_ocall(&retval, file->host_fd, &err)) !=
-            OE_OK)
+        if ((result = oe_posix_dup_ocall(&retval, file->host_fd)) != OE_OK)
         {
             oe_errno = OE_EINVAL;
             OE_TRACE_ERROR("%s oe_errno=%d", oe_result_str(result), oe_errno);
@@ -60,7 +58,6 @@ static int _consolefs_dup(oe_device_t* file_, oe_device_t** new_file_out)
 
         if (retval == -1)
         {
-            oe_errno = err;
             OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
             goto done;
         }
@@ -131,10 +128,8 @@ static ssize_t _consolefs_read(oe_device_t* file_, void* buf, size_t count)
 
     /* Ask the host to perform this operation. */
     {
-        int err = 0;
-
-        if ((result = oe_posix_read_ocall(
-                 &ret, file->host_fd, buf, count, &err)) != OE_OK)
+        if ((result = oe_posix_read_ocall(&ret, file->host_fd, buf, count)) !=
+            OE_OK)
         {
             oe_errno = OE_EINVAL;
             OE_TRACE_ERROR("%s oe_errno=%d", oe_result_str(result), oe_errno);
@@ -143,7 +138,6 @@ static ssize_t _consolefs_read(oe_device_t* file_, void* buf, size_t count)
 
         if (ret == -1)
         {
-            oe_errno = err;
             OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
             goto done;
         }
@@ -173,10 +167,8 @@ static ssize_t _consolefs_write(
 
     /* Ask the host to perform this operation. */
     {
-        int err = 0;
-
-        if ((result = oe_posix_write_ocall(
-                 &ret, file->host_fd, buf, count, &err)) != OE_OK)
+        if ((result = oe_posix_write_ocall(&ret, file->host_fd, buf, count)) !=
+            OE_OK)
         {
             oe_errno = OE_EINVAL;
             OE_TRACE_ERROR("%s oe_errno=%d", oe_result_str(result), oe_errno);
@@ -185,7 +177,6 @@ static ssize_t _consolefs_write(
 
         if (ret == -1)
         {
-            oe_errno = err;
             OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
             goto done;
         }
@@ -233,10 +224,8 @@ static oe_off_t _consolefs_lseek(
 
     /* Ask the host to perform this operation. */
     {
-        int err = 0;
-
         if ((result = oe_posix_lseek_ocall(
-                 &ret, file->host_fd, offset, whence, &err)) != OE_OK)
+                 &ret, file->host_fd, offset, whence)) != OE_OK)
         {
             oe_errno = OE_EINVAL;
             OE_TRACE_ERROR("%s oe_errno=%d", oe_result_str(result), oe_errno);
@@ -245,7 +234,6 @@ static oe_off_t _consolefs_lseek(
 
         if (ret == (oe_off_t)-1)
         {
-            oe_errno = err;
             OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
             goto done;
         }
@@ -271,9 +259,7 @@ static int _consolefs_close(oe_device_t* file_)
 
     /* Ask the host to perform this operation. */
     {
-        int err = 0;
-
-        if ((result = oe_posix_close_ocall(&ret, file->host_fd, &err)) != OE_OK)
+        if ((result = oe_posix_close_ocall(&ret, file->host_fd)) != OE_OK)
         {
             oe_errno = OE_EINVAL;
             OE_TRACE_ERROR("%s oe_errno=%d", oe_result_str(result), oe_errno);
@@ -282,7 +268,6 @@ static int _consolefs_close(oe_device_t* file_)
 
         if (ret == -1)
         {
-            oe_errno = err;
             OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
             goto done;
         }

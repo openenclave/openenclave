@@ -268,7 +268,7 @@ static oe_device_t* _epoll_create(oe_device_t* epoll_, int size)
     (void)_epoll_clone(epoll_, &ret);
     epoll = _cast_epoll(ret);
 
-    if ((result = oe_posix_epoll_create1_ocall(&retval, 0, &oe_errno)) != OE_OK)
+    if ((result = oe_posix_epoll_create1_ocall(&retval, 0)) != OE_OK)
     {
         oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("%s", oe_result_str(result));
@@ -300,8 +300,7 @@ static oe_device_t* _epoll_create1(oe_device_t* epoll_, int32_t flags)
     (void)_epoll_clone(epoll_, &ret);
     epoll = _cast_epoll(ret);
 
-    if ((result = oe_posix_epoll_create1_ocall(&retval, flags, &oe_errno)) !=
-        OE_OK)
+    if ((result = oe_posix_epoll_create1_ocall(&retval, flags)) != OE_OK)
     {
         oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("%s", oe_result_str(result));
@@ -365,13 +364,8 @@ static int _epoll_ctl_add(
     }
 
     if (oe_posix_epoll_ctl_add_ocall(
-            &ret,
-            epoll->host_fd,
-            host_fd,
-            event->events,
-            list_idx,
-            epoll_fd,
-            &oe_errno) != OE_OK)
+            &ret, epoll->host_fd, host_fd, event->events, list_idx, epoll_fd) !=
+        OE_OK)
     {
         oe_errno = OE_ENOMEM;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
@@ -430,8 +424,7 @@ static int _epoll_ctl_mod(
              host_fd,
              event->events,
              enclave_fd,
-             epoll_fd,
-             &oe_errno)) != OE_OK)
+             epoll_fd)) != OE_OK)
     {
         oe_errno = OE_ENOMEM;
         OE_TRACE_ERROR(
@@ -484,7 +477,7 @@ static int _epoll_ctl_del(int epoll_fd, int enclave_fd)
     }
 
     if ((result = oe_posix_epoll_ctl_del_ocall(
-             &ret, epoll->host_fd, host_fd, &oe_errno)) != OE_OK)
+             &ret, epoll->host_fd, host_fd)) != OE_OK)
     {
         oe_errno = OE_ENOMEM;
         OE_TRACE_ERROR(
@@ -547,11 +540,7 @@ static int _epoll_wait(
     oe_register_posix_ecall_function_table();
 
     if (oe_posix_epoll_wait_async_ocall(
-            &ret,
-            (int64_t)oe_get_enclave(),
-            epoll_host_fd,
-            maxevents,
-            &oe_errno) != OE_OK)
+            &ret, (int64_t)oe_get_enclave(), epoll_host_fd, maxevents) != OE_OK)
     {
         oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
@@ -683,8 +672,8 @@ static int _epoll_poll(
         epoll_fd,
         host_fds,
         nfds,
-        (int)timeout,
-        &oe_errno);
+        (int)timeout);
+
     if (result != OE_OK)
     {
         OE_TRACE_ERROR(

@@ -63,19 +63,15 @@ oe_pid_t oe_getpgid(oe_pid_t pid)
 {
     oe_pid_t ret = -1;
     oe_pid_t retval = -1;
-    int err = 0;
 
-    if (oe_posix_getpgid(&retval, pid, &err) != OE_OK)
+    if (oe_posix_getpgid(&retval, pid) != OE_OK)
     {
         oe_errno = OE_EINVAL;
         goto done;
     }
 
     if (retval == -1)
-    {
-        oe_errno = err;
         goto done;
-    }
 
     ret = retval;
 
@@ -87,9 +83,8 @@ int oe_getgroups(int size, oe_gid_t list[])
 {
     int ret = -1;
     int retval = -1;
-    int err;
 
-    if (oe_posix_getgroups(&retval, (size_t)size, list, &err) != OE_OK)
+    if (oe_posix_getgroups(&retval, (size_t)size, list) != OE_OK)
     {
         oe_errno = OE_EINVAL;
         goto done;
@@ -97,7 +92,6 @@ int oe_getgroups(int size, oe_gid_t list[])
 
     if (retval == -1)
     {
-        oe_errno = err;
         goto done;
     }
 

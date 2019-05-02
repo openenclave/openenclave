@@ -73,8 +73,7 @@ static ssize_t _hostresolv_getnameinfo(
     oe_errno = 0;
 
     if (oe_posix_getnameinfo_ocall(
-            &ret, sa, salen, host, hostlen, serv, servlen, flags, &oe_errno) !=
-        OE_OK)
+            &ret, sa, salen, host, hostlen, serv, servlen, flags) != OE_OK)
     {
         goto done;
     }
@@ -93,7 +92,6 @@ static int _hostresolv_getaddrinfo(
 {
     int ret = OE_EAI_FAIL;
     uint64_t handle = 0;
-    int err = 0;
     struct oe_addrinfo* head = NULL;
     struct oe_addrinfo* tail = NULL;
     struct oe_addrinfo* p = NULL;
@@ -114,7 +112,7 @@ static int _hostresolv_getaddrinfo(
         oe_result_t result;
 
         if ((result = oe_posix_getaddrinfo_open_ocall(
-                 &handle, node, service, hints, &err)) != OE_OK)
+                 &handle, node, service, hints)) != OE_OK)
         {
             OE_TRACE_ERROR(
                 "oe_posix_getaddrinfo_open_ocall(): result=%s",
@@ -133,7 +131,6 @@ static int _hostresolv_getaddrinfo(
     for (;;)
     {
         int retval = 0;
-        int err = 0;
         size_t canonnamelen = 0;
         oe_result_t result;
 
@@ -153,11 +150,10 @@ static int _hostresolv_getaddrinfo(
                  &p->ai_protocol,
                  p->ai_addrlen,
                  &p->ai_addrlen,
-                 NULL, /* ai_addr */
+                 NULL,
                  canonnamelen,
                  &canonnamelen,
-                 NULL, /* ai_canonname */
-                 &err)) != OE_OK)
+                 NULL)) != OE_OK)
         {
             OE_TRACE_ERROR(
                 "oe_posix_getaddrinfo_read_ocall(): result=%s",
@@ -170,7 +166,7 @@ static int _hostresolv_getaddrinfo(
             break;
 
         /* Expecting that addr and canonname buffers were too small. */
-        if (retval != -1 || err != OE_ENAMETOOLONG)
+        if (retval != -1 || oe_errno != OE_ENAMETOOLONG)
         {
             OE_TRACE_ERROR("oe_posix_getaddrinfo_read_ocall() failed");
             goto done;
@@ -200,8 +196,7 @@ static int _hostresolv_getaddrinfo(
                  p->ai_addr,
                  canonnamelen,
                  &canonnamelen,
-                 p->ai_canonname,
-                 &err)) != OE_OK)
+                 p->ai_canonname)) != OE_OK)
         {
             OE_TRACE_ERROR(
                 "oe_posix_getaddrinfo_read_ocall(): result=%s",
@@ -228,11 +223,10 @@ static int _hostresolv_getaddrinfo(
     if (handle)
     {
         int retval = -1;
-        int err = 0;
         oe_result_t result;
 
-        if ((result = oe_posix_getaddrinfo_close_ocall(
-                 &retval, handle, &err)) != OE_OK)
+        if ((result = oe_posix_getaddrinfo_close_ocall(&retval, handle)) !=
+            OE_OK)
         {
             OE_TRACE_ERROR(
                 "oe_posix_getaddrinfo_read_ocall(): result=%s",
@@ -267,8 +261,7 @@ done:
     if (handle)
     {
         int retval;
-        int err;
-        oe_posix_getaddrinfo_close_ocall(&retval, handle, &err);
+        oe_posix_getaddrinfo_close_ocall(&retval, handle);
     }
 
     if (head)
@@ -295,8 +288,7 @@ static int _hostresolv_shutdown(oe_resolver_t* resolv_)
         goto done;
     }
 
-    if ((result = oe_posix_shutdown_resolver_device_ocall(&ret, &oe_errno)) !=
-        OE_OK)
+    if ((result = oe_posix_shutdown_resolver_device_ocall(&ret)) != OE_OK)
     {
         oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("%s oe_errno=%d", oe_result_str(result), oe_errno);
