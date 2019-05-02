@@ -5,6 +5,7 @@
 #define _OE_INTERNAL_POSIX_H
 
 #include <openenclave/bits/defs.h>
+#include <openenclave/corelibc/sys/epoll.h>
 #include <openenclave/internal/types.h>
 
 /*
@@ -52,26 +53,29 @@ void oe_register_posix_ecall_function_table(void);
 **
 ** oe_device_notifications_t:
 **
+**     This structure overlays 'struct epoll_event' from <corelibc/sys/epoll.h>,
+**     which is identical to the same structure in both MUSL and glibc. It is
+**     packed to match the definitions in those implementations.
+**
 **==============================================================================
 */
 
 OE_PACK_BEGIN
-typedef struct _oe_device_notifications
+typedef struct _oe_device_notifications /* overlays 'struct epoll_event' */
 {
-    /* oe_epoll_event.event */
-    uint32_t event_mask;
-    union {
-        uint64_t data;
-        struct
-        {
-            /* Enclave fd for the epoll device. */
-            int epoll_fd;
-            /* On the host side we set this into the event data. */
-            uint32_t list_idx;
-        };
-    };
+    uint32_t events;
+    struct
+    {
+        /* Enclave fd for the epoll device. */
+        int epoll_fd;
+        /* On the host side we set this into the event data. */
+        uint32_t list_idx;
+    } data;
 } oe_device_notifications_t;
 OE_PACK_END
+
+OE_STATIC_ASSERT(
+    sizeof(oe_device_notifications_t) == sizeof(struct oe_epoll_event));
 
 /*
 **==============================================================================
