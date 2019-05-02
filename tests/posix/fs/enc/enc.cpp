@@ -11,7 +11,7 @@
 #include <sys/mount.h>
 #include <set>
 #include <string>
-#include "../../../../posix/devid.h"
+#include "../../../../posix/kernel/include/devid.h"
 #include "../../cpio/commands.h"
 #include "../../cpio/cpio.h"
 #include "file_system.h"
