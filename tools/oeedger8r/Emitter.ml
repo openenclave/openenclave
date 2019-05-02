@@ -684,57 +684,72 @@ let oe_get_host_ecall_function (os : out_channel) (fd : func_decl) =
   fprintf os "    return _result;\n" ;
   fprintf os "}\n\n"
 
-(** Generate ocalls wrapper function. *)
-let oe_gen_ocall_enclave_wrapper (os : out_channel) (uf : untrusted_func) =
-  let propagate_errno = uf.uf_propagate_errno in
+(** Generate enclave OCALL wrapper function. *)
+let oe_gen_enclave_ocall_wrapper (uf : untrusted_func) =
   let fd = uf.uf_fdecl in
-  fprintf os "%s" (oe_gen_wrapper_prototype fd false) ;
-  fprintf os "\n" ;
-  fprintf os "{\n" ;
-  fprintf os "    oe_result_t _result = OE_FAILURE;\n\n" ;
-  fprintf os
-    "    /* If the enclave is in crashing/crashed status, new OCALL should fail\n" ;
-  fprintf os "       immediately. */\n" ;
-  fprintf os "    if (oe_get_enclave_status() != OE_OK)\n" ;
-  fprintf os "        return oe_get_enclave_status();\n\n" ;
-  fprintf os "    /* Marshalling struct */\n" ;
-  fprintf os "    %s_args_t _args, *_pargs_in = NULL, *_pargs_out=NULL;\n\n"
-    fd.fname ;
-  fprintf os "    /* Marshalling buffer and sizes */\n" ;
-  fprintf os "    size_t _input_buffer_size = 0;\n" ;
-  fprintf os "    size_t _output_buffer_size = 0;\n" ;
-  fprintf os "    size_t _total_buffer_size = 0;\n" ;
-  fprintf os "    uint8_t* _buffer = NULL;\n" ;
-  fprintf os "    uint8_t* _input_buffer = NULL;\n" ;
-  fprintf os "    uint8_t* _output_buffer = NULL;\n" ;
-  fprintf os "    size_t _input_buffer_offset = 0;\n" ;
-  fprintf os "    size_t _output_buffer_offset = 0;\n" ;
-  fprintf os "    size_t _output_bytes_written = 0;\n\n" ;
-  fprintf os "    /* Fill marshalling struct */\n" ;
-  fprintf os "    memset(&_args, 0, sizeof(_args));\n" ;
-  fprintf os "%s\n" (String.concat "\n" (gen_fill_marshal_struct fd "_args")) ;
-  fprintf os "%s"
-    (String.concat "\n    "
-       (oe_prepare_input_buffer fd "oe_allocate_ocall_buffer")) ;
-  fprintf os "    /* Call host function */\n" ;
-  fprintf os "    if((_result = oe_call_host_function(\n" ;
-  fprintf os "                        %s,\n" (get_function_id fd) ;
-  fprintf os "                        _input_buffer, _input_buffer_size,\n" ;
-  fprintf os "                        _output_buffer, _output_buffer_size,\n" ;
-  fprintf os "                         &_output_bytes_written)) != OE_OK)\n" ;
-  fprintf os "        goto done;\n\n" ;
-  fprintf os "%s" (String.concat "\n    " (oe_process_output_buffer fd)) ;
-  (* Propagate errno *)
-  if propagate_errno then (
-    fprintf os "    /* Propagate errno */\n" ;
-    fprintf os "    errno = _pargs_out->_ocall_errno;\n\n" )
-  else fprintf os "\n" ;
-  fprintf os "    _result = OE_OK;\n" ;
-  fprintf os "done:\n" ;
-  fprintf os "    if (_buffer)\n" ;
-  fprintf os "        oe_free_ocall_buffer(_buffer);\n" ;
-  fprintf os "    return _result;\n" ;
-  fprintf os "}\n\n"
+  [ oe_gen_wrapper_prototype fd false
+  ; "{"
+  ; "    oe_result_t _result = OE_FAILURE;"
+  ; ""
+  ; "    /* If the enclave is in crashing/crashed status, new OCALL should fail"
+  ; "       immediately. */"
+  ; "    if (oe_get_enclave_status() != OE_OK)"
+  ; "        return oe_get_enclave_status();"
+  ; ""
+  ; "    /* Marshalling struct. */"
+  ; sprintf "    %s_args_t _args, *_pargs_in = NULL, *_pargs_out = NULL;"
+      fd.fname
+  ; ""
+  ; "    /* Marshalling buffer and sizes. */"
+  ; "    size_t _input_buffer_size = 0;"
+  ; "    size_t _output_buffer_size = 0;"
+  ; "    size_t _total_buffer_size = 0;"
+  ; "    uint8_t* _buffer = NULL;"
+  ; "    uint8_t* _input_buffer = NULL;"
+  ; "    uint8_t* _output_buffer = NULL;"
+  ; "    size_t _input_buffer_offset = 0;"
+  ; "    size_t _output_buffer_offset = 0;"
+  ; "    size_t _output_bytes_written = 0;"
+  ; ""
+  ; "    /* Fill marshalling struct. */"
+  ; "    memset(&_args, 0, sizeof(_args));"
+  ; String.concat "\n" (gen_fill_marshal_struct fd "_args")
+  ; ""
+  ; "    "
+    ^ String.concat "\n    "
+        (oe_prepare_input_buffer fd "oe_allocate_ocall_buffer")
+  ; ""
+  ; "    /* Call host function. */"
+  ; "    if ((_result = oe_call_host_function("
+  ; "             "
+    ^ String.concat ",\n             "
+        [ sprintf "%s" (get_function_id fd)
+        ; "_input_buffer"
+        ; "_input_buffer_size"
+        ; "_output_buffer"
+        ; "_output_buffer_size"
+        ; "&_output_bytes_written)) != OE_OK)" ]
+  ; "        goto done;"
+  ; ""
+  ; String.concat "\n    " (oe_process_output_buffer fd)
+  ; ""
+  ; "    /* Propagate errno. */"
+  ; ( if uf.uf_propagate_errno then "    errno = _pargs_out->_ocall_errno;\n"
+    else sprintf "    /* Errno not enabled. */" )
+  ; ""
+  ; "    _result = OE_OK;"
+  ; ""
+  ; "done:"
+  ; "    if (_buffer)"
+  ; "        oe_free_ocall_buffer(_buffer);"
+  ; "    return _result;"
+  ; "}"
+  ; "" ]
+
+(** Generate all enclave OCALL wrapper functions, if any. *)
+let oe_gen_enclave_ocall_wrappers (ufs : untrusted_func list) =
+  if ufs <> [] then List.flatten (List.map oe_gen_enclave_ocall_wrapper ufs)
+  else ["/* There were no ocalls. */"]
 
 (** Generate ocall function table and registration *)
 let oe_gen_ocall_table (os : out_channel) (ec : enclave_content) =
