@@ -29,7 +29,6 @@ add_library(oeposix STATIC
     posix_t_wrapper.c
     array.c
     console.c
-    cwd.c
     device.c
     epoll.c
     eventfd.c
@@ -43,7 +42,6 @@ add_library(oeposix STATIC
     resolver.c
     select.c
     signal.c
-    sleep.c
     socket.c
     syscall.c
     unistd.c
