@@ -87,7 +87,7 @@ Debugging your standalone project's enclave is easy.
 1. Set breakpoints in the files you wish to debug.  Breakpoints in the enclave may only be added before
 the emulator (QEMU) starts or when the debugger is already broken inside the enclave.
 1. Choose the architecture you are interested in debugging by navigating to the Visual 
-Studio **Debug** view and selecting either `(gdb) Launch QEMU (ARMv7-A)` or 
+Studio `Debug` view (**CTRL-Shift-D**) and selecting either `(gdb) Launch QEMU (ARMv7-A)` or 
 `(gdb) Launch QEMU (AArch64/ARMv8-A)` from the debug configuration dropdown.
 1. You can simply hit `F5`.  This will run cmake configuration, run the build, start QEMU, and load 
 the host and enclave symbols into an instance of the debugger.
