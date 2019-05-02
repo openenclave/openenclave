@@ -20,7 +20,7 @@ Alternatively, you can run the extension from this repository by following these
 
 ### Create a new Open Enclave solution.
 
-You can use the **Microsoft Open Enclave: New Open Enclave Solution** command (commands can be found using **CTRL-Shift-P**) 
+You can use the `Microsoft Open Enclave: New Open Enclave Solution` command (commands can be found using **CTRL-Shift-P**) 
 to create a new Open Enclave solution.  
 
 You will be prompted to:
