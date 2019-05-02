@@ -84,13 +84,18 @@ to an Azure Edge device by:
 
 Debugging your standalone project's enclave is easy.  
 
+1. Set breakpoints in the files you wish to debug.  Breakpoints in the enclave may only be added before
+the emulator (QEMU) starts or when the debugger is already broken inside the enclave.
+1. Choose the architecture you are interested in debugging by navigating to the Visual 
+Studio **Debug** view and selecting either `(gdb) Launch QEMU (ARMv7-A)` or 
+`(gdb) Launch QEMU (AARCH64/ARMv8-A)` from the debug configuration dropdown.
 1. You can simply hit `F5`.  This will configure you cmake, run the build, start QEMU, and load 
 the host and enclave symbols into an instance of the debugger.
-1. Set breakpoints in the files you wish to debug.
-1. Open the **Terminal** view and enter `/mnt/host/bin/<solution-name>`
+1. Open the **Terminal** view
+1. Log into QEMU using `root` (no password is required)
+1. Start the host process by entering `/mnt/host/bin/<solution-name>`
 
-    The debugger has been configured to break at TA_InvokeCommandEntryPoint.  This will
-    happen twice.
+        Note: The debugger has been configured to break at TA_InvokeCommandEntryPoint.  This will happen once when the enclave starts and once for each ECALL.
 
 ## Requirements
 
