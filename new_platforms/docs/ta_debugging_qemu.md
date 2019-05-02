@@ -27,6 +27,9 @@ This guide is loosely based on [OP-TEE's own Build and Debug
 Guide](https://github.com/OP-TEE/build#op-tee-buildgit) with some modifications
 to render it more pertinent to this SDK.
 
+You can also use the [Open Enclave extension for Visual Studio Code](../vscode-extension/README.md)
+that automates the steps presented in this document.
+
 # Prerequisites
 
 This guide presumes you have a Ubuntu 18.04.1 LTS environment available. You may

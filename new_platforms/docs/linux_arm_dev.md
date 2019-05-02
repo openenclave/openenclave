@@ -4,7 +4,9 @@ Linux Development
 This guide shows you how to obtain and build the SDK as well as the samples and
 test code that it includes with host apps on Linux and enclaves on ARM
 TrustZone. For an architectural overview see [ARM TrustZone and SGX deep
-dive](sgx_trustzone_arch.md).
+dive](sgx_trustzone_arch.md). You can also use the [Open Enclave extension for
+Visual Studio Code](../vscode-extension/README.md) that automates the steps
+presented in this document.
 
 For details on Windows development, see [Windows Development](win_sgx_dev.md).
 
