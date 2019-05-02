@@ -120,6 +120,7 @@ The requirements here are those found in the [Azure IoT Edge extension](https://
 
 ### For development of this extension, or running from source code directly
 
+* Install [node](https://nodejs.org/en/)
 * Install [npm](https://www.npmjs.com/get-npm)
 
 ## Data/Telemetry
