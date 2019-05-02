@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(gdb) Launch QEMU ARM",
+            "name": "(gdb) Launch QEMU (ARMv7-A)",
             "type": "gdb",
             "request": "attach",
             "cwd": "[[build-folder]]/vexpress-qemu_virt",
@@ -17,7 +17,7 @@
             ]
         },
         {
-            "name": "(gdb) Launch QEMU AARCH64",
+            "name": "(gdb) Launch QEMU (AARCH64/ARMv8-A)",
             "type": "gdb",
             "request": "attach",
             "cwd": "[[build-folder]]/vexpress-qemu_armv8a",
