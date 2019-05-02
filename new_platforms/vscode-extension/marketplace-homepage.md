@@ -95,36 +95,29 @@ the host and enclave symbols into an instance of the debugger.
 1. Log into QEMU using `root` (no password is required)
 1. Start the host process by entering `/mnt/host/bin/<solution-name>`
 
-        The debugger has been configured to break at TA_InvokeCommandEntryPoint.  This will
-        happen once when the enclave starts and once for each ECALL.
+        Note: The debugger has been configured to break at TA_InvokeCommandEntryPoint.  This will happen once when the enclave starts and once for each ECALL.
 
 ## Requirements
 
-### Install [Visual Studio Code](https://code.visualstudio.com/)
-
-### On Linux, for standalone projects
-
+* Install [Visual Studio Code](https://code.visualstudio.com/)
 * Install required compilers
 
       sudo apt update && sudo apt install -y build-essential cmake gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu g++-arm-linux-gnueabihf g++-aarch64-linux-gnu gdb-multiarch
 
 * Make sure that the [Native Debug extension](https://marketplace.visualstudio.com/items?itemName=webfreak.debug) is installed.
+* Ensure that the requirements are met for the [Azure IoT Edge extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-edge):
+    * Ensure that [Docker is installed and running: https://docs.docker.com/get-started/](https://docs.docker.com/get-started/).
+    * Ensure that the [iotedgehubdev](https://pypi.org/project/iotedgehubdev/) tool is installed
 
-### For Azure IoT Edge projects
+          pip install --upgrade iotedgehubdev
 
-The requirements here are those found in the [Azure IoT Edge extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-edge).
-* Ensure that [Docker is installed and running: https://docs.docker.com/get-started/](https://docs.docker.com/get-started/).
-* Ensure that the [iotedgehubdev](https://pypi.org/project/iotedgehubdev/) tool is installed
-
-      pip install --upgrade iotedgehubdev
-
-* Create a container repository, like [Azure Container Registry](https://azure.microsoft.com/en-us/services/container-registry/)
-* Make sure that the [Azure Account extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.azure-account) is installed and utilized:
-    1. **CTRL-Shift-P**
-    1. `Azure: Sign In`
-* Make sure that the [Azure IoT Hub Toolkit](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-toolkit) extension is installed and utilized:
-    1. **CTRL-Shift-P**
-    1. `Azure IoT Hub: Select IoT Hub`
+    * Create a container repository, like [Azure Container Registry](https://azure.microsoft.com/en-us/services/container-registry/)
+    * Make sure that the [Azure Account extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.azure-account) is installed and utilized:
+        1. **CTRL-Shift-P**
+        1. `Azure: Sign In`
+    * Make sure that the [Azure IoT Hub Toolkit](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-toolkit) extension is installed and utilized:
+        1. **CTRL-Shift-P**
+        1. `Azure IoT Hub: Select IoT Hub`
 
 ### For development of this extension, or running from source code directly
 
