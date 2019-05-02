@@ -47,16 +47,6 @@ let gen_parm_str (p : pdecl) =
 
 let retval_declr = {identifier= "_retval"; array_dims= []}
 
-let get_ret_tystr (fd : func_decl) = get_tystr fd.rtype
-
-let get_plist_str (fd : func_decl) =
-  if fd.plist = [] then ""
-  else
-    List.fold_left
-      (fun acc pd -> acc ^ ",\n        " ^ gen_parm_str pd)
-      (gen_parm_str (List.hd fd.plist))
-      (List.tl fd.plist)
-
 (** [conv_array_to_ptr] is used to convert Array form into Pointer form.
     {[
       int array[10][20] => [count = 200] int* array
@@ -240,21 +230,25 @@ let oe_get_param_size (ptype, decl, argstruct) =
 (** Generate the prototype for a given function. Optionally add an
     [oe_enclave_t*] first parameter. *)
 let oe_gen_prototype (fd : func_decl) =
-  let params_str = if fd.plist = [] then "void" else get_plist_str fd in
-  sprintf "%s %s(%s)" (get_ret_tystr fd) fd.fname params_str
+  let get_plist_str (plist : pdecl list) =
+    if List.length plist = 0 then "void"
+    else
+      (if List.length plist = 1 then "" else "\n    ")
+      ^ String.concat ",\n    " (List.map gen_parm_str plist)
+  in
+  sprintf "%s %s(%s)" (get_tystr fd.rtype) fd.fname (get_plist_str fd.plist)
 
 let oe_gen_wrapper_prototype (fd : func_decl) (is_ecall : bool) =
-  let plist_str = get_plist_str fd in
-  let retval_str =
-    if fd.rtype = Void then "" else sprintf "%s* _retval" (get_ret_tystr fd)
-  in
+  let args = List.map gen_parm_str fd.plist in
   let args =
-    if is_ecall then ["oe_enclave_t* enclave"; retval_str; plist_str]
-    else [retval_str; plist_str]
+    if fd.rtype <> Void then sprintf "%s* _retval" (get_tystr fd.rtype) :: args
+    else args
   in
-  let args = List.filter (fun s -> s <> "") args in
-  sprintf "oe_result_t %s(\n        %s)" fd.fname
-    (String.concat ",\n        " args)
+  let args = if is_ecall then "oe_enclave_t* enclave" :: args else args in
+  sprintf "oe_result_t %s(%s)" fd.fname
+    ( if List.length args = 0 then ""
+    else if List.length args = 1 then List.hd args
+    else "\n    " ^ String.concat ",\n    " args )
 
 (** Emit [struct], [union], or [enum]. *)
 let emit_composite_type =
