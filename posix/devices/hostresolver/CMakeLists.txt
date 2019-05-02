@@ -9,7 +9,7 @@ add_dependencies(oehostresolver posix_trusted_edl)
 
 target_include_directories(oehostresolver PRIVATE
     ${CMAKE_SOURCE_DIR}/posix/kernel/include
-    ${CMAKE_CURRENT_BINARY_DIR}/../..
+    ${CMAKE_BINARY_DIR}/posix/kernel
     ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
 
 target_link_libraries(oehostresolver oeposix)
