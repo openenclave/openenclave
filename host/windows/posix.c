@@ -17,11 +17,6 @@
 
 #include "posix_u.h"
 
-/* Definitions in <openenclave/corelibc/errno.h> with Windows headers. */
-#ifdef _OE_ERRNO_H
-#error "error: <openenclave/corelibc/errno.h> included on Windows."
-#endif
-
 /*
 **==============================================================================
 **
