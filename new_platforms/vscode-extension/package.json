@@ -5,6 +5,7 @@
 	"version": "1.0.2",
 	"publisher": "ms-iot",
 	"aiKey": "specifyt-here-alap-pins-ightskeyhere",
+	"icon": "openenclave.png",
 	"engines": {
 		"vscode": "^1.32.0"
 	},
