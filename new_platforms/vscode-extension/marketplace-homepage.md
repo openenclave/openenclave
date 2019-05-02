@@ -111,10 +111,10 @@ The requirements here are those found in the [Azure IoT Edge extension](https://
       pip install --upgrade iotedgehubdev
 
 * Create a container repository, like [Azure Container Registry](https://azure.microsoft.com/en-us/services/container-registry/)
-* Make sure that the VS Code Azure Account extension is installed and utilized:
+* Make sure that the [Azure Account extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.azure-account) is installed and utilized:
     1. **CTRL-Shift-P**
     1. `Azure: Sign In`
-* Make sure that the VS Code Azure IoT Hub Toolkit extension is installed and utilized:
+* Make sure that the [Azure IoT Hub Toolkit](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-toolkit) extension is installed and utilized:
     1. **CTRL-Shift-P**
     1. `Azure IoT Hub: Select IoT Hub`
 
