@@ -35,14 +35,13 @@ add_library(oeposix STATIC
     exit.c
     fd.c
     fs.c
-    ids.c
     mount.c
     poll.c
-    realpath.c
     resolver.c
     select.c
     signal.c
     socket.c
+    stdlib.c
     syscall.c
     unistd.c
     uname.c)
