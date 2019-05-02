@@ -748,8 +748,6 @@ done:
 ** oe_call_enclave_function_by_table_id()
 **
 ** Call the enclave function specified by the given table-id and function-id.
-** Note: Currently only SGX style marshaling is supported. input_buffer contains
-** the marshaling args structure.
 **
 **==============================================================================
 */
