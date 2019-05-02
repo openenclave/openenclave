@@ -6,7 +6,7 @@ A [Visual Studio Code](https://code.visualstudio.com/) [extension](https://marke
 
 Ensure that the [requirements](#Requirements) are met.
 
-You can install the Open Enclave extension into Visual Studio Code directly via the Visual Studio Gallery [TBD](TBD).
+You can directly install the [Microsoft Open Enclave extension](https://marketplace.visualstudio.com/items?itemName=ms-iot.msiot-vscode-openenclave).
 
 Alternatively, you can run the extension from this repository by following these instructions:
 
