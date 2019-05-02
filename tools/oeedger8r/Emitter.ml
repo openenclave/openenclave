@@ -631,44 +631,63 @@ let gen_fill_marshal_struct (fd : func_decl) (args : string) =
       else "" )
     fd.plist
 
-let oe_get_host_ecall_function (os : out_channel) (fd : func_decl) =
-  fprintf os "%s" (oe_gen_wrapper_prototype fd true) ;
-  fprintf os "\n" ;
-  fprintf os "{\n" ;
-  fprintf os "    oe_result_t _result = OE_FAILURE;\n\n" ;
-  fprintf os "    /* Marshalling struct */\n" ;
-  fprintf os "    %s_args_t _args, *_pargs_in = NULL, *_pargs_out=NULL;\n\n"
-    fd.fname ;
-  fprintf os "    /* Marshalling buffer and sizes */\n" ;
-  fprintf os "    size_t _input_buffer_size = 0;\n" ;
-  fprintf os "    size_t _output_buffer_size = 0;\n" ;
-  fprintf os "    size_t _total_buffer_size = 0;\n" ;
-  fprintf os "    uint8_t* _buffer = NULL;\n" ;
-  fprintf os "    uint8_t* _input_buffer = NULL;\n" ;
-  fprintf os "    uint8_t* _output_buffer = NULL;\n" ;
-  fprintf os "    size_t _input_buffer_offset = 0;\n" ;
-  fprintf os "    size_t _output_buffer_offset = 0;\n" ;
-  fprintf os "    size_t _output_bytes_written = 0;\n\n" ;
-  fprintf os "    /* Fill marshalling struct */\n" ;
-  fprintf os "    memset(&_args, 0, sizeof(_args));\n" ;
-  fprintf os "%s\n" (String.concat "\n" (gen_fill_marshal_struct fd "_args")) ;
-  fprintf os "%s"
-    (String.concat "\n    " (oe_prepare_input_buffer fd "malloc")) ;
-  fprintf os "    /* Call enclave function */\n" ;
-  fprintf os "    if((_result = oe_call_enclave_function(\n" ;
-  fprintf os "                        enclave,\n" ;
-  fprintf os "                        %s,\n" (get_function_id fd) ;
-  fprintf os "                        _input_buffer, _input_buffer_size,\n" ;
-  fprintf os "                        _output_buffer, _output_buffer_size,\n" ;
-  fprintf os "                         &_output_bytes_written)) != OE_OK)\n" ;
-  fprintf os "        goto done;\n\n" ;
-  fprintf os "%s" (String.concat "\n    " (oe_process_output_buffer fd)) ;
-  fprintf os "    _result = OE_OK;\n" ;
-  fprintf os "done:\n" ;
-  fprintf os "    if (_buffer)\n" ;
-  fprintf os "        free(_buffer);\n" ;
-  fprintf os "    return _result;\n" ;
-  fprintf os "}\n\n"
+(** Generate host ECALL wrapper function. *)
+let oe_gen_host_ecall_wrapper (tf : trusted_func) =
+  let fd = tf.tf_fdecl in
+  [ sprintf "%s" (oe_gen_wrapper_prototype fd true)
+  ; "{"
+  ; "    oe_result_t _result = OE_FAILURE;"
+  ; ""
+  ; "    /* Marshalling struct. */"
+  ; sprintf "    %s_args_t _args, *_pargs_in = NULL, *_pargs_out = NULL;"
+      fd.fname
+  ; ""
+  ; "    /* Marshalling buffer and sizes. */"
+  ; "    size_t _input_buffer_size = 0;"
+  ; "    size_t _output_buffer_size = 0;"
+  ; "    size_t _total_buffer_size = 0;"
+  ; "    uint8_t* _buffer = NULL;"
+  ; "    uint8_t* _input_buffer = NULL;"
+  ; "    uint8_t* _output_buffer = NULL;"
+  ; "    size_t _input_buffer_offset = 0;"
+  ; "    size_t _output_buffer_offset = 0;"
+  ; "    size_t _output_bytes_written = 0;"
+  ; ""
+  ; "    /* Fill marshalling struct. */"
+  ; "    memset(&_args, 0, sizeof(_args));"
+  ; sprintf "%s" (String.concat "\n" (gen_fill_marshal_struct fd "_args"))
+  ; ""
+  ; sprintf "    %s"
+      (String.concat "\n    " (oe_prepare_input_buffer fd "malloc"))
+  ; ""
+  ; "    /* Call enclave function. */"
+  ; "    if ((_result = oe_call_enclave_function("
+  ; "             "
+    ^ String.concat ",\n             "
+        [ "enclave"
+        ; sprintf "%s" (get_function_id fd)
+        ; "_input_buffer"
+        ; "_input_buffer_size"
+        ; "_output_buffer"
+        ; "_output_buffer_size"
+        ; "&_output_bytes_written)) != OE_OK)" ]
+  ; "        goto done;"
+  ; ""
+  ; sprintf "%s" (String.concat "\n    " (oe_process_output_buffer fd))
+  ; ""
+  ; "    _result = OE_OK;"
+  ; ""
+  ; "done:"
+  ; "    if (_buffer)"
+  ; "        free(_buffer);"
+  ; "    return _result;"
+  ; "}"
+  ; "" ]
+
+(** Generate all host ECALL wrappers, if any. *)
+let oe_gen_host_ecall_wrappers (tfs : trusted_func list) =
+  if tfs <> [] then List.flatten (List.map oe_gen_host_ecall_wrapper tfs)
+  else ["/* There were no ecalls. */"]
 
 (** Generate enclave OCALL wrapper function. *)
 let oe_gen_enclave_ocall_wrapper (uf : untrusted_func) =
@@ -1124,7 +1143,8 @@ let gen_u_c (ec : enclave_content) (ep : edger8r_params) =
     fprintf os "/* Wrappers for ecalls */\n\n" ;
     List.iter
       (fun d ->
-        oe_get_host_ecall_function os d.tf_fdecl ;
+        fprintf os "%s"
+          (String.concat "\n" (oe_gen_host_ecall_wrapper d.tf_fdecl)) ;
         fprintf os "\n\n" )
       ec.tfunc_decls ) ;
   if ec.ufunc_decls <> [] then (
