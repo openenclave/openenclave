@@ -1,0 +1,35 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(gdb) Launch QEMU (ARMv7-A)",
+            "type": "gdb",
+            "request": "attach",
+            "cwd": "[[build-folder]]/vexpress-qemu_virt",
+            "preLaunchTask": "QEMU (ARMv7-A)",
+            "target": "localhost:3232",
+            "remote": true,
+            "gdbpath": "/usr/bin/gdb-multiarch",
+            "autorun": [
+                "symbol-file ./out/bin/[[project-name]]",
+                "add-symbol-file ./enc/[[generated-uuid]].elf 0x106020",
+                "b TA_InvokeCommandEntryPoint"
+            ]
+        },
+        {
+            "name": "(gdb) Launch QEMU (AArch64/ARMv8-A)",
+            "type": "gdb",
+            "request": "attach",
+            "cwd": "[[build-folder]]/vexpress-qemu_armv8a",
+            "preLaunchTask": "QEMU (AArch64/ARMv8-A)",
+            "target": "localhost:6464",
+            "remote": true,
+            "gdbpath": "/usr/bin/gdb-multiarch",
+            "autorun": [
+                "symbol-file ./out/bin/[[project-name]]",
+                "add-symbol-file ./enc/[[generated-uuid]].elf 0x40008020",
+                "b TA_InvokeCommandEntryPoint"
+            ]
+        }
+    ]
+}

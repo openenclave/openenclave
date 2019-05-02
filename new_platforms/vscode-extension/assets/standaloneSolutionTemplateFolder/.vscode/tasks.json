@@ -1,0 +1,184 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Configure for QEMU (ARMv7-A)",
+            "type": "process",
+            "command": "cmake",
+            "options": {
+                "cwd": "[[build-folder]]/vexpress-qemu_virt"
+            },
+            "args": [
+                "-DOE_TEE=TZ",
+                "-DTA_DEV_KIT_DIR=[[devkit-folder]]/devkits/vexpress-qemu_virt/export-ta_arm32",
+                "-DOE_TA_TOOLCHAIN_PREFIX=arm-linux-gnueabihf-",
+                "-DOE_TOOLCHAIN_PREFIX=arm-linux-gnueabihf-",
+                "-DCMAKE_TOOLCHAIN_FILE=[[sdk-folder]]/new_platforms/cmake/linux-arm-v6.cmake",
+                "-DCMAKE_BUILD_TYPE=Debug",
+                "[[solution-folder]]"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Build for QEMU (ARMv7-A)",
+            "type": "process",
+            "command": "make",
+            "options": {
+                "cwd": "[[build-folder]]/vexpress-qemu_virt"
+            },
+            "args": [
+                "-j"
+            ],
+            "problemMatcher": [],
+            "dependsOn": [ "Configure for QEMU (ARMv7-A)" ]
+        },
+        {
+            "label": "Configure for QEMU (AArch64/ARMv8-A)",
+            "type": "process",
+            "command": "cmake",
+            "options": {
+                "cwd": "[[build-folder]]/vexpress-qemu_armv8a"
+            },
+            "args": [
+                "-DOE_TEE=TZ",
+                "-DTA_DEV_KIT_DIR=[[devkit-folder]]/devkits/vexpress-qemu_armv8a/export-ta_arm64",
+                "-DOE_TA_TOOLCHAIN_PREFIX=aarch64-linux-gnu-",
+                "-DOE_TOOLCHAIN_PREFIX=aarch64-linux-gnu-",
+                "-DCMAKE_TOOLCHAIN_FILE=[[sdk-folder]]/new_platforms/cmake/linux-aarch64-v6.cmake",
+                "-DCMAKE_BUILD_TYPE=Debug",
+                "[[solution-folder]]"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Build for QEMU (AArch64/ARMv8-A)",
+            "type": "process",
+            "command": "make",
+            "options": {
+                "cwd": "[[build-folder]]/vexpress-qemu_armv8a"
+            },
+            "args": [
+                "-j"
+            ],
+            "problemMatcher": [],
+            "dependsOn": [ "Configure for QEMU (AArch64/ARMv8-A)" ]
+        },
+        {
+            "label": "QEMU (ARMv7-A)",
+            "type": "process",
+            "options": {
+                "cwd": "[[devkit-folder]]/emu/arm/"
+            },
+            "command": "./qemu-system-arm",
+            "isBackground": true,
+            "args": [
+                "-nographic",
+                "-serial",
+                "mon:stdio",
+                "-serial",
+                "pty",
+                "-smp",
+                "1",
+                "-machine",
+                "virt",
+                "-machine",
+                "secure=on",
+                "-m",
+                "1057",
+                "-bios",
+                "bl1.bin",
+                "-gdb",
+                "tcp::3232",
+                "-S",
+                "-semihosting-config",
+                "enable,target=native",
+                "-d",
+                "unimp",
+                "-virtfs",
+                "local,id=sh0,path=[[build-folder]]/vexpress-qemu_virt/out,security_model=passthrough,readonly,mount_tag=sh0",
+                "-cpu",
+                "cortex-a15"
+            ],
+            "dependsOn": [ "Build for QEMU (ARMv7-A)" ],
+            "problemMatcher": [
+                {
+                    "pattern": [
+                        {
+                            "regexp": ".",
+                            "file": 1,
+                            "location": 2,
+                            "message": 3
+                        }
+                    ],
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": ".",
+                        "endsPattern": "."
+                    }
+                }
+            ]
+        },
+        {
+            "label": "QEMU (AArch64/ARMv8-A)",
+            "type": "process",
+            "options": {
+                "cwd": "[[devkit-folder]]/emu/aarch64/"
+            },
+            "command": "./qemu-system-aarch64",
+            "isBackground": true,
+            "args": [
+                "-nographic",
+                "-serial",
+                "mon:stdio",
+                "-serial",
+                "pty",
+                "-smp",
+                "1",
+                "-machine",
+                "virt",
+                "-machine",
+                "secure=on",
+                "-m",
+                "1057",
+                "-bios",
+                "bl1.bin",
+                "-gdb",
+                "tcp::6464",
+                "-S",
+                "-semihosting-config",
+                "enable,target=native",
+                "-d",
+                "unimp",
+                "-initrd",
+                "rootfs.cpio.gz",
+                "-kernel",
+                "Image",
+                "-no-acpi",
+                "-append",
+                "'console=ttyAMA0,38400 keep_bootcon root=/dev/vda2'",
+                "-virtfs",
+                "local,id=sh0,path=[[build-folder]]/vexpress-qemu_armv8a/out,security_model=passthrough,readonly,mount_tag=sh0",
+                "-cpu",
+                "cortex-a57"
+            ],
+            "dependsOn": [ "Build for QEMU (AArch64/ARMv8-A)" ],
+            "problemMatcher": [
+                {
+                    "pattern": [
+                        {
+                            "regexp": ".",
+                            "file": 1,
+                            "location": 2,
+                            "message": 3
+                        }
+                    ],
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": ".",
+                        "endsPattern": "."
+                    }
+                }
+            ]
+        }
+    ]
+}

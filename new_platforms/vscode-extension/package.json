@@ -1,0 +1,84 @@
+{
+	"name": "msiot-vscode-openenclave",
+	"displayName": "Microsoft Open Enclave",
+	"description": "Develop, deploy, and debug your Microsoft Open Enclave",
+	"version": "1.0.2",
+	"publisher": "ms-iot",
+	"aiKey": "specifyt-here-alap-pins-ightskeyhere",
+	"icon": "openenclave.png",
+	"engines": {
+		"vscode": "^1.32.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/microsoft/openenclave.git"
+	},
+	"homepage": "https://github.com/microsoft/openenclave/blob/feature.new_platforms/new_platforms/vscode-extension/marketplace-homepage.md",
+	"bugs": "https://github.com/microsoft/openenclave/issues",
+	"license": "MIT",
+	"categories": [
+		"Azure",
+		"Debuggers"
+	],
+	"keywords": [
+		"azure",
+		"iot",
+		"debug",
+		"IoT Edge",
+		"cloud",
+		"Trusted Agent",
+		"Open Enclave"
+	],
+	"activationEvents": [
+		"*"
+	],
+	"main": "./out/src/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "msiot-vscode-openenclave.newSolution",
+				"title": "New Open Enclave Solution",
+				"category": "Microsoft Open Enclave"
+			}
+		]
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"postinstall": "node ./node_modules/vscode/bin/install",
+		"test": "npm run compile && node ./node_modules/vscode/bin/test",
+		"tslint": "tslint -t verbose src/**/*.ts"
+	},
+	"devDependencies": {
+		"@types/fs-extra": "^4.0.3",
+		"@types/mocha": "^2.2.42",
+		"@types/node": "^10.12.21",
+		"azure-arm-resource": "^3.1.1-preview",
+		"ts-loader": "^5.3.3",
+		"tslint": "^5.12.1",
+		"typescript": "^3.3.1",
+		"vscode": "^1.1.28",
+		"webpack": "^4.29.6",
+		"webpack-cli": "^3.3.0"
+	},
+	"dependencies": {
+		"azure-arm-containerregistry": "^2.2.0",
+		"azure-storage": "^2.10.2",
+		"download": "^7.1.0",
+		"fs-extra": "^4.0.3",
+		"git-clone": "^0.1.0",
+		"path": "^0.12.7",
+		"tar": "^4.4.8",
+		"tmp": "^0.1.0",
+		"tslint": "^5.12.1",
+		"typescript": "^3.3.1",
+		"uuid": "^3.3.2",
+		"vscode-extension-telemetry": "0.0.18"
+	},
+	"extensionDependencies": [
+		"ms-vscode.azure-account",
+		"vsciot-vscode.azure-iot-edge",
+		"webfreak.debug"
+	]
+}
