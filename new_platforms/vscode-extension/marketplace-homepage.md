@@ -4,15 +4,17 @@ A [Visual Studio Code](https://code.visualstudio.com/) [extension](https://marke
 
 ## Getting started
 
+Ensure that the [requirements](#Requirements) are met.
+
 You can install the Open Enclave extension into Visual Studio Code directly via the Visual Studio Gallery [TBD](TBD).
 
 Alternatively, you can run the extension from this repository by following these instructions:
 
 1. Clone this repository `git clone --recursive https://github.com/microsoft/openenclave`
-2. Navigate to `new_platforms\vscode-extension` in the cloned folder.
-3. Run npm to install the dependencies: `npm install` (see Requirements section for npm installation link)
-4. Start VSCode: `code .`
-5. Start the extension using F5
+1. Navigate to `new_platforms\vscode-extension` in the cloned folder.
+1. Run npm to install the dependencies: `npm install` (see the [requirements](#Requirements) section for npm installation link)
+1. Start VSCode: `code .`
+1. Start the extension using `F5`
 
 ## Features
 
@@ -61,21 +63,21 @@ Deploying an Azure IoT Edge container project is fairly simple:
 1. Select the desired platform:
     1. **CTRL-Shift-P**
     1. Select `Azure IoT Edge: Set Default Target Platform for Edge Solution`
-    1. Choose from **arm32v7** or **aarch64**
+    1. Choose from `arm32v7` or `aarch64`
 1. Right click on `modules/<solution-name>/module.json`
 1. Select `Build and Push IoT Edge Module Image`
 1. Select desired architecture and configuration from picker
 
 Azure IoT Edge deployment template files have been provided.  To create
-a new deployment configuration based on the current settings in module.json:
+a new deployment configuration based on the current settings in `module.json`:
 
 1. Right click on `deployment.template.json` (or `deployment.debug.template.json`)
 1. Select `Generate IoT Edge Deployment Manifest`.  This will generate or replace the apppropriate deployment json file in the `config` folder.
 
-Once your deployment json has been created in the config folder, you can deploy
+Once your deployment json has been created in the `config` folder, you can deploy
 to an Azure Edge device by:
 
-1. Right click on `deployment.*.json` (or `deployment.debug.*.json`)
+1. Navigate to the `config` folder and right click on `deployment.*.json`
 1. Select `Create Deployment for Single Device` or `Create Deployment at Scale`.
 
 ### Debug your Open Enclave solution.
@@ -89,7 +91,6 @@ the host and enclave symbols into an instance of the debugger.
 
     The debugger has been configured to break at TA_InvokeCommandEntryPoint.  This will
     happen twice.
-
 
 ## Requirements
 
@@ -110,13 +111,12 @@ The requirements here are those found in the [Azure IoT Edge extension](https://
       pip install --upgrade iotedgehubdev
 
 * Create a container repository, like [Azure Container Registry](https://azure.microsoft.com/en-us/services/container-registry/)
-* For better Azure integration:
-    * Make sure that the VS Code Azure Account extension is installed and utilized:
-        1. **CTRL-Shift-P**
-        1. `Azure: Sign In`
-    * Make sure that the VS Code Azure IoT Hub Toolkit extension is installed and utilized:
-        1. **CTRL-Shift-P**
-        1. `Azure IoT Hub: Select IoT Hub`
+* Make sure that the VS Code Azure Account extension is installed and utilized:
+    1. **CTRL-Shift-P**
+    1. `Azure: Sign In`
+* Make sure that the VS Code Azure IoT Hub Toolkit extension is installed and utilized:
+    1. **CTRL-Shift-P**
+    1. `Azure IoT Hub: Select IoT Hub`
 
 ### For development of this extension, or running from source code directly
 
