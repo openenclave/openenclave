@@ -1027,22 +1027,30 @@ let gen_t_h (ec : enclave_content) (ep : edger8r_params) =
   close_out os
 
 let gen_t_c (ec : enclave_content) (ep : edger8r_params) =
+  let content =
+    [ sprintf "#include \"%s_t.h\"" ec.file_shortnm
+    ; "#include <openenclave/edger8r/enclave.h>"
+    ; "#include <stdlib.h>"
+    ; "#include <string.h>"
+    ; "#include <wchar.h>"
+    ; ""
+    ; "OE_EXTERNC_BEGIN"
+    ; ""
+    ; "/**** ECALL functions. ****/"
+    ; String.concat "\n" (oe_gen_ecall_functions ec.tfunc_decls)
+    ; ""
+    ; "/**** ECALL function table. ****/"
+    ; String.concat "\n" (oe_gen_ecall_table ec.tfunc_decls)
+    ; ""
+    ; "/**** OCALL function wrappers. ****/"
+    ; String.concat "\n" (oe_gen_enclave_ocall_wrappers ec.ufunc_decls)
+    ; ""
+    ; "OE_EXTERNC_END"
+    ; "" ]
+  in
   let ecalls_fname = ec.file_shortnm ^ "_t.c" in
   let os = open_file ecalls_fname ep.trusted_dir in
-  fprintf os "#include \"%s_t.h\"\n" ec.file_shortnm ;
-  fprintf os "#include <openenclave/edger8r/enclave.h>\n" ;
-  fprintf os "#include <stdlib.h>\n" ;
-  fprintf os "#include <string.h>\n" ;
-  fprintf os "#include <wchar.h>\n" ;
-  fprintf os "\n" ;
-  fprintf os "OE_EXTERNC_BEGIN\n\n" ;
-  if ec.tfunc_decls <> [] then (
-    oe_gen_ecall_functions os ec ;
-    oe_gen_ecall_table os ec ) ;
-  if ec.ufunc_decls <> [] then (
-    fprintf os "\n/* ocall wrappers */\n\n" ;
-    List.iter (fun d -> oe_gen_ocall_enclave_wrapper os d) ec.ufunc_decls ) ;
-  fprintf os "OE_EXTERNC_END\n" ;
+  fprintf os "%s" (String.concat "\n" content) ;
   close_out os
 
 let oe_emit_create_enclave_decl (os : out_channel) (ec : enclave_content) =
