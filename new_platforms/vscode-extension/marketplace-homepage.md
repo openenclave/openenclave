@@ -10,7 +10,7 @@ You can directly install the [Microsoft Open Enclave extension](https://marketpl
 
 Alternatively, you can run the extension from this repository by following these instructions:
 
-1. Clone this repository `git clone --recursive https://github.com/microsoft/openenclave`.
+1. Clone this repository `git clone --recursive https://github.com/microsoft/openenclave --branch feature.new_platforms`.
 1. Navigate to `new_platforms\vscode-extension` in the cloned folder.
 1. Run npm to install the dependencies: `npm install` (see the [requirements](#Requirements) section for npm installation link).
 1. Start VSCode: `code .`.
