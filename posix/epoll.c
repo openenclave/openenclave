@@ -449,7 +449,7 @@ int oe_post_device_notifications(
     locked = true;
 
     /* Save the epoll file descriptor (the array index). */
-    index = (size_t)notices[0].epoll_fd;
+    index = (size_t)notices[0].data.epoll_fd;
 
     /* Expand array if not already big enough. */
     if (_array_resize(index + 1) != 0)
@@ -561,10 +561,10 @@ int oe_get_epoll_events(
     /* Handle each event. */
     for (p = list->head, i = 0; p && i < numevents; i++)
     {
-        events[i].events = p->notice.event_mask;
+        events[i].events = p->notice.events;
 
         if ((events[i].data.u64 = (*epoll->ops.epoll->get_event_data)(
-                 epoll, p->notice.list_idx)) == (uint64_t)-1)
+                 epoll, p->notice.data.list_idx)) == (uint64_t)-1)
         {
             oe_errno = OE_EINVAL;
             OE_TRACE_ERROR("oe_errno = %d", oe_errno);

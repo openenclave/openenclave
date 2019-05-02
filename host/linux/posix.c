@@ -1049,12 +1049,11 @@ static void* poll_wait_thread(void* arg_)
         {
             if (ev[ev_idx].revents)
             {
-                notifications[notify_idx].event_mask =
-                    (uint32_t)ev[ev_idx].revents;
-                notifications[notify_idx].list_idx = (uint32_t)ev_idx;
+                notifications[notify_idx].events = (uint32_t)ev[ev_idx].revents;
+                notifications[notify_idx].data.list_idx = (uint32_t)ev_idx;
 
                 /* ATTN: casting 64-bit fd to 32-bit fd. */
-                notifications[notify_idx].epoll_fd = (int)args->epfd;
+                notifications[notify_idx].data.epoll_fd = (int)args->epfd;
             }
         }
 
