@@ -10,11 +10,11 @@ You can install the Open Enclave extension into Visual Studio Code directly via 
 
 Alternatively, you can run the extension from this repository by following these instructions:
 
-1. Clone this repository `git clone --recursive https://github.com/microsoft/openenclave`
+1. Clone this repository `git clone --recursive https://github.com/microsoft/openenclave`.
 1. Navigate to `new_platforms\vscode-extension` in the cloned folder.
-1. Run npm to install the dependencies: `npm install` (see the [requirements](#Requirements) section for npm installation link)
-1. Start VSCode: `code .`
-1. Start the extension using `F5`
+1. Run npm to install the dependencies: `npm install` (see the [requirements](#Requirements) section for npm installation link).
+1. Start VSCode: `code .`.
+1. Start the extension using `F5`.
 
 ## Features
 
@@ -32,7 +32,7 @@ You will be prompted to:
 1. You will be prompted to provide a name for your host/enclave.
 
 A new solution will be created in the folder you've selected.  That solution will contain both the host
-and enclave as well as the required edl.  If you've chosen to build a container, the host will include
+and enclave as well as the required EDL file.  If you've chosen to build a container, the host will include
 some code that implements the required Azure IoT Hub communication.
 
 ### Build your Open Enclave solution.
@@ -40,14 +40,14 @@ some code that implements the required Azure IoT Hub communication.
 There are build tasks for both standalone and Azure IoT Edge container projects.  The underlying system used 
 to build is CMake.  
 
-For a standalone project, there will be configure and build tasks for each target (arm32v7 and aarch64).  The 
+For a standalone project, there will be configure and build tasks for each target (ARMv7-A and AArch64/ARMv8-A).  The 
 configure task will invoke CMake to create the required build files.  This is only required to be run once.  
 The build task will do the actual compiling and linking.
 
 1. **CTRL-Shift-P**
 1. Select `Tasks: Run Task`
-1. Select `Configure for QEMU (ARMV7-A | AARCH64/ARMv8-A)`
-1. Select `Build for QEMU (ARMV7-A | AARCH64/ARMv8-A)`
+1. Select `Configure for QEMU (ARMv7-A | AArch64/ARMv8-A)`
+1. Select `Build for QEMU (ARMv7-A | AArch64/ARMv8-A)`
 
 For an Azure IoT Edge container project, containers are used to configure and build.  The build task in a
 container project will invoke docker and leverage project dockerfiles.  The container can be built by:
@@ -88,8 +88,8 @@ Debugging your standalone project's enclave is easy.
 the emulator (QEMU) starts or when the debugger is already broken inside the enclave.
 1. Choose the architecture you are interested in debugging by navigating to the Visual 
 Studio **Debug** view and selecting either `(gdb) Launch QEMU (ARMv7-A)` or 
-`(gdb) Launch QEMU (AARCH64/ARMv8-A)` from the debug configuration dropdown.
-1. You can simply hit `F5`.  This will configure you cmake, run the build, start QEMU, and load 
+`(gdb) Launch QEMU (AArch64/ARMv8-A)` from the debug configuration dropdown.
+1. You can simply hit `F5`.  This will run cmake configuration, run the build, start QEMU, and load 
 the host and enclave symbols into an instance of the debugger.
 1. Open the **Terminal** view
 1. Log into QEMU using `root` (no password is required)
@@ -126,14 +126,14 @@ the host and enclave symbols into an instance of the debugger.
 
 ## Data/Telemetry
 
-This project collects usage data and sends it to Microsoft to help improve our products and services. Read our 
-[privacy statement](http://go.microsoft.com/fwlink/?LinkId=521839) to learn more. If you don't wish to send usage 
-data to Microsoft, you can set the `telemetry.enableTelemetry` setting to `false`. Learn more in the 
+This project collects usage data and sends it to Microsoft to help improve our products and services.  Read our 
+[privacy statement](http://go.microsoft.com/fwlink/?LinkId=521839) to learn more.  If you don't wish to send usage 
+data to Microsoft, you can set the `telemetry.enableTelemetry` setting to `false`.  Learn more in the 
 [Visual Studio Code FAQ](https://code.visualstudio.com/docs/supporting/faq#_how-to-disable-telemetry-reporting).
 
 ## Known Issues
 
-* SGX is not currently supported.
+* Building SGX enclaves is not currently supported.
 
 ## Release Notes
 
