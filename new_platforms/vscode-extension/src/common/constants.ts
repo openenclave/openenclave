@@ -15,12 +15,14 @@ export class Constants {
     //
     public static openEnclaveRepo = "https://github.com/microsoft/openenclave.git";
     public static openEnclaveBranch = "#feature.new_platforms";
+    public static openEnclaveSdkVersion = "1.0.3";
     //
     // Azure storage info for DevKit
     //
     public static DevKitBlobAccount = "";
     public static DevKitBlobContainerName = "";
     public static DevKitBlobName = "";
+    public static DevKitVersion = "1.0.3";
 
     //
     // Folder and file names

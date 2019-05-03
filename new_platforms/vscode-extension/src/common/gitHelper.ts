@@ -17,13 +17,13 @@ interface IGitSubmodule {
 
 export class GitHelper {
 
-    public static recursiveCloneFromGit(gitRepo: string, gitBranch: string, destination: string, isSubmodule: boolean, progress: ProgressUpdater): Promise<void> {
+    public static recursiveCloneFromGit(gitRepo: string, gitBranch: string, destination: string, isSubmodule: boolean, progress: ProgressUpdater, progressPrefix: string): Promise<void> {
         return new Promise(async (resolve, reject) => {
             const gitUrl = gitRepo + gitBranch;
-            const progressMessagePrefix = (isSubmodule) ? "Cloning git submodule" : "Cloning git repo";
-            progress.report({ message: (progressMessagePrefix + ": " + gitUrl) });
+            const cloneProgressPrefix = (isSubmodule) ? `${progressPrefix}. Cloning git submodule` : `${progressPrefix}. Cloning git repo`;
+            progress.report({ message: (cloneProgressPrefix + ": " + gitUrl) });
             const downloadUrl = "direct:" + gitUrl;
-            return GitHelper.downloadFromDownloadGitRepo(downloadUrl, destination, progressMessagePrefix, progress)
+            return GitHelper.downloadFromDownloadGitRepo(downloadUrl, destination, cloneProgressPrefix, progress, progressPrefix)
                 .then(() => {
                     resolve();
                 })
@@ -33,17 +33,17 @@ export class GitHelper {
         });
     }
 
-    private static downloadFromDownloadGitRepo(url: string, destination: string, progressPrefix: string, progress: ProgressUpdater) {
+    private static downloadFromDownloadGitRepo(url: string, destination: string, cloneProgressPrefix: string, progress: ProgressUpdater, progressPrefix: string) {
         return new Promise(async (resolve, reject) => {
             GitClone.download(url, destination, { clone: true }, (err: any) => {
                 if (err) {
 
-                    progress.report({ message: (progressPrefix + " failed.") });
+                    progress.report({ message: (cloneProgressPrefix + " failed.") });
                     reject(err);
 
                 } else {
 
-                    progress.report({ message: (progressPrefix + " succeeded.") });
+                    progress.report({ message: (cloneProgressPrefix + " succeeded.") });
 
                     // If there is a .gitsubmodule file, use it to clone submodules
                     const gitsubmoduleFile = path.join(destination, ".gitmodules");
@@ -53,7 +53,7 @@ export class GitHelper {
                             gitsubmodules.map(async (submodule: IGitSubmodule) => {
                                 const submoduleDestination = path.join(destination, submodule.path);
                                 const branch = submodule.branch ? ("#" + submodule.branch) : "";
-                                return GitHelper.recursiveCloneFromGit(submodule.url, branch, submoduleDestination, true, progress);
+                                return GitHelper.recursiveCloneFromGit(submodule.url, branch, submoduleDestination, true, progress, progressPrefix);
                             });
                         Promise.all(promises)
                             .then(() => {
