@@ -6,8 +6,8 @@
 
 #include <openenclave/bits/device.h>
 #include <openenclave/bits/result.h>
+#include <openenclave/internal/posix.h>
 #include "devicetypes.h"
-#include "devid.h"
 #include "epoll_ops.h"
 #include "eventfd_ops.h"
 #include "fd.h"

@@ -5,13 +5,13 @@
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/posix.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/mount.h>
 #include <set>
 #include <string>
-#include "../../../../posix/kernel/include/devid.h"
 #include "../../cpio/commands.h"
 #include "../../cpio/cpio.h"
 #include "file_system.h"
