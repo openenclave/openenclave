@@ -8,8 +8,8 @@ maybe_build_using_clangw(oehostresolver)
 add_dependencies(oehostresolver posix_trusted_edl)
 
 target_include_directories(oehostresolver PRIVATE
-    ${CMAKE_SOURCE_DIR}/posix/base/include
-    ${CMAKE_BINARY_DIR}/posix/base
+    ${CMAKE_SOURCE_DIR}/posix/library/include
+    ${CMAKE_BINARY_DIR}/posix/library
     ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
 
 target_link_libraries(oehostresolver oeposix)

@@ -4,8 +4,9 @@
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/limits.h>
 #include <openenclave/internal/trace.h>
-#include "device.h"
-#include "mount.h"
+#include "include/device.h"
+#include "include/fd.h"
+#include "include/mount.h"
 #include "posix_t.h"
 
 int __oe_fcntl(int fd, int cmd, uint64_t arg)
@@ -80,7 +81,7 @@ int oe_open_d(uint64_t devid, const char* pathname, int flags, oe_mode_t mode)
     }
     else
     {
-        oe_device_t* dev = oe_get_fs_device(devid);
+        oe_device_t* dev = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM);
         oe_device_t* file;
 
         if (!dev)

@@ -9,8 +9,9 @@
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/utils.h>
 #include <openenclave/internal/print.h>
-#include "eventfd.h"
 #include <openenclave/internal/trace.h>
+#include "include/eventfd.h"
+#include "include/fd.h"
 
 int oe_eventfd(unsigned int initval, int flags)
 {
@@ -19,7 +20,7 @@ int oe_eventfd(unsigned int initval, int flags)
     oe_device_t* device;
     oe_device_t* eventfd = NULL;
 
-    if (!(device = oe_get_devid_device(OE_DEVID_EVENTFD)))
+    if (!(device = oe_get_device(OE_DEVID_EVENTFD, OE_DEVICE_TYPE_EVENTFD)))
     {
         oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d\n", oe_errno);

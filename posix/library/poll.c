@@ -1,18 +1,18 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-// clang-format off
 #include <openenclave/enclave.h>
+
 #include <openenclave/corelibc/stdlib.h>
-#include <openenclave/corelibc/sys/socket.h>
-#include "epoll.h"
 #include <openenclave/corelibc/sys/poll.h>
+#include <openenclave/corelibc/sys/socket.h>
 #include <openenclave/corelibc/unistd.h>
-#include "device.h"
-#include <openenclave/internal/thread.h>
 #include <openenclave/internal/print.h>
+#include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
-// clang-format on
+#include "include/device.h"
+#include "include/epoll.h"
+#include "include/fd.h"
 
 // Poll uses much of the infrastructure from epoll.
 

@@ -8,7 +8,7 @@
 #include <openenclave/corelibc/time.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/trace.h>
-#include "epoll.h"
+#include "include/epoll.h"
 
 void _set_to_fd_list(
     oe_fd_set* set,

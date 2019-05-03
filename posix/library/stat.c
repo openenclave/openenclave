@@ -3,8 +3,8 @@
 
 #include <openenclave/corelibc/sys/stat.h>
 #include <openenclave/internal/trace.h>
-#include "device.h"
-#include "mount.h"
+#include "include/device.h"
+#include "include/mount.h"
 
 int oe_stat(const char* pathname, struct oe_stat* buf)
 {
@@ -44,7 +44,7 @@ int oe_stat_d(uint64_t devid, const char* pathname, struct oe_stat* buf)
     {
         oe_device_t* dev;
 
-        if (!(dev = oe_get_fs_device(devid)))
+        if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
         {
             oe_errno = OE_EINVAL;
             OE_TRACE_ERROR("oe_errno=%d", oe_errno);
@@ -100,7 +100,7 @@ int oe_mkdir_d(uint64_t devid, const char* pathname, oe_mode_t mode)
     {
         oe_device_t* dev;
 
-        if (!(dev = oe_get_fs_device(devid)))
+        if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
         {
             oe_errno = OE_EINVAL;
             OE_TRACE_ERROR("oe_errno=%d", oe_errno);

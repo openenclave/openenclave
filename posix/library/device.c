@@ -1,18 +1,20 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "device.h"
+#include <openenclave/enclave.h>
+
 #include <openenclave/bits/device.h>
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
-#include <openenclave/enclave.h>
 #include <openenclave/internal/array.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
+
+#include "include/device.h"
 
 /*
 **=============================================================================
@@ -178,9 +180,10 @@ done:
     return ret;
 }
 
-oe_device_t* oe_get_devid_device(uint64_t devid)
+oe_device_t* oe_get_device(uint64_t devid, oe_device_type_t type)
 {
     oe_device_t* ret = NULL;
+    oe_device_t* device;
 
     if (devid >= _table_size())
     {
@@ -189,23 +192,10 @@ oe_device_t* oe_get_devid_device(uint64_t devid)
         goto done;
     }
 
-    ret = _table()[devid];
+    device = _table()[devid];
 
-done:
-    return ret;
-}
-
-oe_device_t* oe_get_fs_device(uint64_t devid)
-{
-    oe_device_t* ret = NULL;
-    oe_device_t* device = oe_get_devid_device(devid);
-
-    if (!device || device->type != OE_DEVICE_TYPE_FILESYSTEM)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
+    if (device && type != OE_DEVICE_TYPE_NONE && device->type != type)
         goto done;
-    }
 
     ret = device;
 
@@ -219,7 +209,7 @@ int oe_remove_device(uint64_t devid)
     int retval = -1;
     oe_device_t* device;
 
-    if (!(device = oe_get_devid_device(devid)))
+    if (!(device = oe_get_device(devid, OE_DEVICE_TYPE_NONE)))
     {
         oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("no device found: devid=%lu", devid);

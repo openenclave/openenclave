@@ -7,14 +7,23 @@
 #include <openenclave/bits/device.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/internal/posix.h>
-#include "devicetypes.h"
 #include "epoll_ops.h"
 #include "eventfd_ops.h"
-#include "fd.h"
 #include "fs_ops.h"
 #include "sock_ops.h"
 
 OE_EXTERNC_BEGIN
+
+typedef enum _oe_device_type
+{
+    OE_DEVICE_TYPE_NONE = 0,
+    OE_DEVICE_TYPE_FILESYSTEM,
+    OE_DEVICE_TYPE_DIRECTORY,
+    OE_DEVICE_TYPE_FILE,
+    OE_DEVICE_TYPE_SOCKET,
+    OE_DEVICE_TYPE_EPOLL,
+    OE_DEVICE_TYPE_EVENTFD
+} oe_device_type_t;
 
 typedef struct _oe_device oe_device_t;
 
@@ -44,13 +53,11 @@ int oe_release_devid(uint64_t devid);
 
 int oe_set_devid_device(uint64_t devid, oe_device_t* pdevice);
 
-oe_device_t* oe_get_devid_device(uint64_t devid);
+oe_device_t* oe_get_device(uint64_t devid, oe_device_type_t type);
 
 uint64_t oe_device_name_to_devid(const char* name);
 
 int oe_remove_device(uint64_t devid);
-
-oe_device_t* oe_get_fs_device(uint64_t devid);
 
 OE_EXTERNC_END
 

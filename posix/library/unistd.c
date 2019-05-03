@@ -11,8 +11,9 @@
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/time.h>
 #include <openenclave/internal/trace.h>
-#include "device.h"
-#include "mount.h"
+#include "include/device.h"
+#include "include/fd.h"
+#include "include/mount.h"
 #include "posix_t.h"
 
 int oe_gethostname(char* name, size_t len)
@@ -472,7 +473,7 @@ int oe_rmdir_d(uint64_t devid, const char* pathname)
     {
         oe_device_t* dev;
 
-        if (!(dev = oe_get_fs_device(devid)))
+        if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
         {
             oe_errno = OE_EINVAL;
             OE_TRACE_ERROR("oe_errno=%d", oe_errno);
@@ -544,7 +545,7 @@ int oe_link_d(uint64_t devid, const char* oldpath, const char* newpath)
     {
         oe_device_t* dev;
 
-        if (!(dev = oe_get_fs_device(devid)))
+        if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
         {
             oe_errno = OE_EINVAL;
             OE_TRACE_ERROR("oe_errno=%d", oe_errno);
@@ -605,7 +606,7 @@ int oe_unlink_d(uint64_t devid, const char* pathname)
     {
         oe_device_t* dev;
 
-        if (!(dev = oe_get_fs_device(devid)))
+        if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
         {
             oe_errno = OE_EINVAL;
             OE_TRACE_ERROR("oe_errno=%d", oe_errno);
@@ -661,7 +662,7 @@ int oe_truncate_d(uint64_t devid, const char* path, oe_off_t length)
     {
         oe_device_t* dev;
 
-        if (!(dev = oe_get_fs_device(devid)))
+        if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
         {
             oe_errno = OE_EINVAL;
             OE_TRACE_ERROR("oe_errno=%d", oe_errno);
@@ -813,7 +814,7 @@ int oe_access_d(uint64_t devid, const char* pathname, int mode)
         oe_device_t* dev;
         struct oe_stat buf;
 
-        if (!(dev = oe_get_fs_device(devid)))
+        if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
         {
             oe_errno = OE_EINVAL;
             OE_TRACE_ERROR("oe_errno=%d", oe_errno);

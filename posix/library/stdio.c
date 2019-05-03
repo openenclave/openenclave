@@ -3,8 +3,8 @@
 
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/internal/trace.h>
-#include "device.h"
-#include "mount.h"
+#include "include/device.h"
+#include "include/mount.h"
 
 int oe_rename(const char* oldpath, const char* newpath)
 {
@@ -60,7 +60,7 @@ int oe_rename_d(uint64_t devid, const char* oldpath, const char* newpath)
     {
         oe_device_t* dev;
 
-        if (!(dev = oe_get_fs_device(devid)))
+        if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
         {
             oe_errno = OE_EINVAL;
             OE_TRACE_ERROR("oe_errno=%d", oe_errno);

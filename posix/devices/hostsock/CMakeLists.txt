@@ -8,8 +8,8 @@ maybe_build_using_clangw(oehostsock)
 add_dependencies(oehostsock posix_trusted_edl)
 
 target_include_directories(oehostsock PRIVATE
-    ${CMAKE_SOURCE_DIR}/posix/base/include
-    ${CMAKE_BINARY_DIR}/posix/base
+    ${CMAKE_SOURCE_DIR}/posix/library/include
+    ${CMAKE_BINARY_DIR}/posix/library
     ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
 
 target_link_libraries(oehostsock oeposix)

@@ -10,11 +10,12 @@
 #include <openenclave/internal/utils.h>
 #include <openenclave/internal/array.h>
 #include <openenclave/internal/print.h>
-#include "epoll.h"
-#include "list.h"
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/internal/trace.h>
+#include "include/epoll.h"
+#include "include/list.h"
+#include "include/fd.h"
 
 /* For synchronizing access to all static structures defined below. */
 static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
@@ -209,7 +210,7 @@ int oe_epoll_create(int size)
 
     oe_once(&_once, _once_function);
 
-    if (!(device = oe_get_devid_device(OE_DEVID_EPOLL)))
+    if (!(device = oe_get_device(OE_DEVID_EPOLL, OE_DEVICE_TYPE_EPOLL)))
     {
         OE_TRACE_ERROR("devid = %lu ", OE_DEVID_EPOLL);
         goto done;
@@ -245,7 +246,7 @@ int oe_epoll_create1(int flags)
 
     oe_once(&_once, _once_function);
 
-    if (!(device = oe_get_devid_device(OE_DEVID_EPOLL)))
+    if (!(device = oe_get_device(OE_DEVID_EPOLL, OE_DEVICE_TYPE_EPOLL)))
     {
         OE_TRACE_ERROR("devid = %lu ", OE_DEVID_EPOLL);
         goto done;

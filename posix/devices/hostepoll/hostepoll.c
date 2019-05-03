@@ -3,26 +3,15 @@
 
 #define _GNU_SOURCE
 
-// clang-format off
 #include <openenclave/enclave.h>
-// clang-format on
 
-#include "device.h"
+#include <openenclave/internal/thread.h>
+#include <openenclave/corelibc/string.h>
+#include <openenclave/internal/trace.h>
+#include "fd.h"
+#include "posix_t.h"
 #include "epoll_ops.h"
 #include "epoll.h"
-#include <openenclave/bits/safemath.h>
-#include <openenclave/internal/calls.h>
-#include <openenclave/internal/thread.h>
-#include <openenclave/internal/print.h>
-#include <openenclave/enclave.h>
-#include <openenclave/corelibc/stdlib.h>
-#include <openenclave/corelibc/string.h>
-#include "epoll.h"
-#include <openenclave/corelibc/sys/poll.h>
-#include <openenclave/bits/module.h>
-#include <openenclave/internal/trace.h>
-#include "posix_t.h"
-#include <openenclave/internal/posix.h>
 
 /*
 **==============================================================================

@@ -9,8 +9,8 @@
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/internal/trace.h>
-#include "device.h"
 #include <openenclave/corelibc/limits.h>
+#include "include/device.h"
 
 #define MAX_MOUNT_TABLE_SIZE 64
 
@@ -52,9 +52,9 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
 
         if ((devid = oe_get_device_for_current_thread()) != OE_DEVID_NONE)
         {
-            oe_device_t* device = oe_get_devid_device(devid);
+            oe_device_t* device;
 
-            if (!device || device->type != OE_DEVICE_TYPE_FILESYSTEM)
+            if (!(device = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
             {
                 oe_errno = OE_EINVAL;
                 OE_TRACE_ERROR("oe_errno=%d", oe_errno);
@@ -164,7 +164,7 @@ static oe_device_t* _filesystemtype_to_device(
     }
 
     *devid_out = devid;
-    ret = oe_get_devid_device(devid);
+    ret = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM);
 
 done:
     return ret;

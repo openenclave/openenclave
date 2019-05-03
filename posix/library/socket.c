@@ -1,15 +1,15 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-// clang-format off
 #include <openenclave/enclave.h>
+
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/sys/socket.h>
-#include "device.h"
-#include <openenclave/internal/thread.h>
 #include <openenclave/internal/print.h>
+#include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
-// clang-format on
+#include "include/device.h"
+#include "include/fd.h"
 
 static uint64_t _default_socket_devid = OE_DEVID_NONE;
 static oe_spinlock_t _default_socket_devid_lock;
@@ -42,7 +42,7 @@ int oe_socket_d(uint64_t devid, int domain, int type, int protocol)
         devid = OE_DEVID_HOSTSOCK;
     }
 
-    if (!(device = oe_get_devid_device(devid)))
+    if (!(device = oe_get_device(devid, OE_DEVICE_TYPE_SOCKET)))
     {
         oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
@@ -106,7 +106,7 @@ int oe_socketpair(int domain, int type, int protocol, int retfd[2])
         }
     }
 
-    if (!(device = oe_get_devid_device(devid)))
+    if (!(device = oe_get_device(devid, OE_DEVICE_TYPE_SOCKET)))
     {
         oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
