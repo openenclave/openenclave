@@ -10,7 +10,7 @@
 #include <openenclave/internal/trace.h>
 #include "epoll.h"
 #include "epollops.h"
-#include "fd.h"
+#include "fdtable.h"
 #include "posix_t.h"
 
 /*
@@ -316,9 +316,9 @@ static int _epoll_ctl_add(
 {
     int ret = -1;
     epoll_dev_t* epoll =
-        _cast_epoll(oe_get_fd_device(epoll_fd, OE_DEVICE_TYPE_EPOLL));
+        _cast_epoll(oe_fdtable_get(epoll_fd, OE_DEVICE_TYPE_EPOLL));
     oe_host_fd_t host_fd = -1;
-    oe_device_t* pdev = oe_get_fd_device(enclave_fd, OE_DEVICE_TYPE_NONE);
+    oe_device_t* pdev = oe_fdtable_get(enclave_fd, OE_DEVICE_TYPE_NONE);
     int list_idx = -1;
     epoll_event_data_t ev_data = {0};
 
@@ -372,9 +372,9 @@ static int _epoll_ctl_mod(
 {
     int ret = -1;
     epoll_dev_t* epoll =
-        _cast_epoll(oe_get_fd_device(epoll_fd, OE_DEVICE_TYPE_EPOLL));
+        _cast_epoll(oe_fdtable_get(epoll_fd, OE_DEVICE_TYPE_EPOLL));
     oe_host_fd_t host_fd = -1;
-    oe_device_t* pdev = oe_get_fd_device(enclave_fd, OE_DEVICE_TYPE_NONE);
+    oe_device_t* pdev = oe_fdtable_get(enclave_fd, OE_DEVICE_TYPE_NONE);
     oe_result_t result = OE_FAILURE;
     epoll_event_data_t ev_data = {0};
 
@@ -433,9 +433,9 @@ static int _epoll_ctl_del(int epoll_fd, int enclave_fd)
 {
     int ret = -1;
     epoll_dev_t* epoll =
-        _cast_epoll(oe_get_fd_device(epoll_fd, OE_DEVICE_TYPE_EPOLL));
+        _cast_epoll(oe_fdtable_get(epoll_fd, OE_DEVICE_TYPE_EPOLL));
     oe_host_fd_t host_fd = -1;
-    oe_device_t* pdev = oe_get_fd_device(enclave_fd, OE_DEVICE_TYPE_NONE);
+    oe_device_t* pdev = oe_fdtable_get(enclave_fd, OE_DEVICE_TYPE_NONE);
     oe_result_t result = OE_FAILURE;
 
     /* Check parameters. */
@@ -490,7 +490,7 @@ static int _epoll_wait(
 {
     int ret = -1;
     epoll_dev_t* epoll =
-        _cast_epoll(oe_get_fd_device(epoll_fd, OE_DEVICE_TYPE_EPOLL));
+        _cast_epoll(oe_fdtable_get(epoll_fd, OE_DEVICE_TYPE_EPOLL));
     oe_host_fd_t epoll_host_fd = -1;
     struct oe_epoll_event* host_events = NULL;
 
@@ -568,8 +568,8 @@ static int _epoll_add_event_data(
 {
     int ret = -1;
     epoll_dev_t* epoll =
-        _cast_epoll(oe_get_fd_device(epoll_fd, OE_DEVICE_TYPE_EPOLL));
-    oe_device_t* pdev = oe_get_fd_device(enclave_fd, OE_DEVICE_TYPE_NONE);
+        _cast_epoll(oe_fdtable_get(epoll_fd, OE_DEVICE_TYPE_EPOLL));
+    oe_device_t* pdev = oe_fdtable_get(enclave_fd, OE_DEVICE_TYPE_NONE);
     epoll_event_data_t ev_data = {};
     int list_idx = -1;
 
@@ -606,7 +606,7 @@ static int _epoll_poll(
 {
     int ret = -1;
     epoll_dev_t* epoll =
-        _cast_epoll(oe_get_fd_device(epoll_fd, OE_DEVICE_TYPE_EPOLL));
+        _cast_epoll(oe_fdtable_get(epoll_fd, OE_DEVICE_TYPE_EPOLL));
     oe_device_t* pdev = NULL;
     struct oe_pollfd* host_fds = NULL;
     oe_result_t result = OE_FAILURE;
@@ -634,7 +634,7 @@ static int _epoll_poll(
         {
             oe_host_fd_t host_fd = -1;
 
-            pdev = oe_get_fd_device(fds[fd_idx].fd, OE_DEVICE_TYPE_NONE);
+            pdev = oe_fdtable_get(fds[fd_idx].fd, OE_DEVICE_TYPE_NONE);
             if (pdev)
             {
                 if (pdev->ops.base->get_host_fd != NULL)

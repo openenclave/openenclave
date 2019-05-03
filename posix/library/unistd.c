@@ -12,7 +12,7 @@
 #include <openenclave/internal/time.h>
 #include <openenclave/internal/trace.h>
 #include "include/device.h"
-#include "include/fd.h"
+#include "include/fdtable.h"
 #include "include/mount.h"
 #include "posix_t.h"
 
@@ -274,7 +274,7 @@ ssize_t oe_read(int fd, void* buf, size_t count)
     oe_device_t* device;
     ssize_t n;
 
-    if (!(device = oe_get_fd_device(fd, OE_DEVICE_TYPE_NONE)))
+    if (!(device = oe_fdtable_get(fd, OE_DEVICE_TYPE_NONE)))
     {
         OE_TRACE_ERROR("no device found fd=%d", fd);
         goto done;
@@ -307,7 +307,7 @@ ssize_t oe_write(int fd, const void* buf, size_t count)
 
     OE_TRACE_VERBOSE("fd=%d", fd);
 
-    if (!(device = oe_get_fd_device(fd, OE_DEVICE_TYPE_NONE)))
+    if (!(device = oe_fdtable_get(fd, OE_DEVICE_TYPE_NONE)))
     {
         oe_errno = OE_EBADF;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
@@ -334,7 +334,7 @@ int oe_close(int fd)
     int retval = -1;
     oe_device_t* device;
 
-    if (!(device = oe_get_fd_device(fd, OE_DEVICE_TYPE_NONE)))
+    if (!(device = oe_fdtable_get(fd, OE_DEVICE_TYPE_NONE)))
     {
         OE_TRACE_ERROR("no device found for fd=%d", fd);
         goto done;
@@ -353,7 +353,7 @@ int oe_close(int fd)
         goto done;
     }
 
-    oe_release_fd(fd);
+    oe_fdtable_clear(fd);
 
     ret = 0;
 
@@ -368,7 +368,7 @@ int oe_dup(int oldfd)
     int newfd = -1;
     int retval = -1;
 
-    if (!(old_dev = oe_get_fd_device(oldfd, OE_DEVICE_TYPE_NONE)))
+    if (!(old_dev = oe_fdtable_get(oldfd, OE_DEVICE_TYPE_NONE)))
     {
         oe_errno = OE_EBADF;
         OE_TRACE_ERROR("oldfd=%d oe_errno=%d", oldfd, oe_errno);
@@ -384,7 +384,7 @@ int oe_dup(int oldfd)
         goto done;
     }
 
-    if (!(newfd = oe_assign_fd_device(new_dev)))
+    if (!(newfd = oe_fdtable_assign(new_dev)))
     {
         // ATTN: release new_dev here.
     }
@@ -401,14 +401,14 @@ int oe_dup2(int oldfd, int newfd)
     oe_device_t* dev = NULL;
     int retval = -1;
 
-    if (!(old_dev = oe_get_fd_device(oldfd, OE_DEVICE_TYPE_NONE)))
+    if (!(old_dev = oe_fdtable_get(oldfd, OE_DEVICE_TYPE_NONE)))
     {
         oe_errno = OE_EBADF;
         OE_TRACE_ERROR("oldfd=%d oe_errno=%d", oldfd, oe_errno);
         goto done;
     }
 
-    if (!(new_dev = oe_get_fd_device(newfd, OE_DEVICE_TYPE_NONE)))
+    if (!(new_dev = oe_fdtable_get(newfd, OE_DEVICE_TYPE_NONE)))
     {
         (*new_dev->ops.base->close)(new_dev);
     }
@@ -420,8 +420,7 @@ int oe_dup2(int oldfd, int newfd)
         goto done;
     }
 
-    // ATTN: release dev if this fails. */
-    if (oe_set_fd_device(newfd, dev))
+    if (oe_fdtable_set(newfd, dev) == -1)
     {
         oe_errno = OE_EBADF;
         OE_TRACE_ERROR("newfd=%d dev=%p oe_errno=%d", newfd, dev, oe_errno);
@@ -684,7 +683,7 @@ oe_off_t oe_lseek(int fd, oe_off_t offset, int whence)
     oe_off_t ret = -1;
     oe_device_t* file;
 
-    if (!(file = oe_get_fd_device(fd, OE_DEVICE_TYPE_FILE)))
+    if (!(file = oe_fdtable_get(fd, OE_DEVICE_TYPE_FILE)))
     {
         oe_errno = OE_EBADF;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);

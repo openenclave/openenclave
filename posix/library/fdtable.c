@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "include/fd.h"
+#include "include/fdtable.h"
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/unistd.h>
@@ -80,7 +80,7 @@ static int _init_table()
 **==============================================================================
 */
 
-int oe_assign_fd_device(oe_device_t* device)
+int oe_fdtable_assign(oe_device_t* device)
 {
     int ret = -1;
     size_t index;
@@ -127,7 +127,7 @@ done:
     return ret;
 }
 
-int oe_release_fd(int fd)
+int oe_fdtable_clear(int fd)
 {
     int ret = -1;
 
@@ -147,9 +147,9 @@ done:
     return ret;
 }
 
-oe_device_t* oe_set_fd_device(int fd, oe_device_t* device)
+int oe_fdtable_set(int fd, oe_device_t* device)
 {
-    oe_device_t* ret = NULL;
+    int ret = -1;
     bool locked = false;
 
     if (_init_table() != 0)
@@ -175,9 +175,9 @@ oe_device_t* oe_set_fd_device(int fd, oe_device_t* device)
         goto done;
     }
 
-    _table()[fd].device = device; // We don't clone
+    _table()[fd].device = device;
 
-    ret = device;
+    ret = 0;
 
 done:
 
@@ -241,7 +241,7 @@ done:
     return ret;
 }
 
-oe_device_t* oe_get_fd_device(int fd, oe_device_type_t type)
+oe_device_t* oe_fdtable_get(int fd, oe_device_type_t type)
 {
     oe_device_t* ret = NULL;
     oe_device_t* device;

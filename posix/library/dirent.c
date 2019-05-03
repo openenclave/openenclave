@@ -8,7 +8,7 @@
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/trace.h>
 #include "include/device.h"
-#include "include/fd.h"
+#include "include/fdtable.h"
 
 #define DIR_MAGIC 0x09180827
 
@@ -119,7 +119,7 @@ int oe_getdents(unsigned int fd, struct oe_dirent* dirp, unsigned int count)
     int ret = -1;
     oe_device_t* file;
 
-    if (!(file = oe_get_fd_device((int)fd, OE_DEVICE_TYPE_FILE)))
+    if (!(file = oe_fdtable_get((int)fd, OE_DEVICE_TYPE_FILE)))
     {
         oe_errno = OE_EBADF;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);

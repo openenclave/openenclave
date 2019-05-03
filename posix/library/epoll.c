@@ -15,7 +15,7 @@
 #include <openenclave/internal/trace.h>
 #include "include/epoll.h"
 #include "include/list.h"
-#include "include/fd.h"
+#include "include/fdtable.h"
 
 /* For synchronizing access to all static structures defined below. */
 static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
@@ -222,9 +222,9 @@ int oe_epoll_create(int size)
         goto done;
     }
 
-    if ((epfd = oe_assign_fd_device(epoll)) == -1)
+    if ((epfd = oe_fdtable_assign(epoll)) == -1)
     {
-        OE_TRACE_ERROR("oe_assign_fd_device failed");
+        OE_TRACE_ERROR("oe_fdtable_assign failed");
         goto done;
     }
     ret = 0;
@@ -258,9 +258,9 @@ int oe_epoll_create1(int flags)
         goto done;
     }
 
-    if ((epfd = oe_assign_fd_device(epoll)) == -1)
+    if ((epfd = oe_fdtable_assign(epoll)) == -1)
     {
-        OE_TRACE_ERROR("oe_assign_fd_device failed");
+        OE_TRACE_ERROR("oe_fdtable_assign failed");
         goto done;
     }
 
@@ -284,14 +284,14 @@ int oe_epoll_ctl(int epfd, int op, int fd, struct oe_epoll_event* event)
 
     oe_errno = 0;
 
-    if (!(epoll = oe_get_fd_device(epfd, OE_DEVICE_TYPE_EPOLL)))
+    if (!(epoll = oe_fdtable_get(epfd, OE_DEVICE_TYPE_EPOLL)))
     {
         oe_errno = OE_EBADF;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
 
-    if (!(device = oe_get_fd_device(fd, OE_DEVICE_TYPE_NONE)))
+    if (!(device = oe_fdtable_get(fd, OE_DEVICE_TYPE_NONE)))
     {
         oe_errno = OE_EBADF;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
@@ -360,7 +360,7 @@ int oe_epoll_wait(
 
     oe_once(&_once, _once_function);
 
-    if (!(epoll = oe_get_fd_device(epfd, OE_DEVICE_TYPE_EPOLL)))
+    if (!(epoll = oe_fdtable_get(epfd, OE_DEVICE_TYPE_EPOLL)))
     {
         OE_TRACE_ERROR("no device found epfd=%d", epfd);
         goto done;
@@ -527,7 +527,7 @@ int oe_get_epoll_events(
         goto done;
     }
 
-    if (!(epoll = oe_get_fd_device(epfd, OE_DEVICE_TYPE_EPOLL)))
+    if (!(epoll = oe_fdtable_get(epfd, OE_DEVICE_TYPE_EPOLL)))
     {
         ret = -1;
         OE_TRACE_ERROR("no device found epfd=%d", epfd);

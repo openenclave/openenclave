@@ -5,7 +5,7 @@
 #include <openenclave/corelibc/limits.h>
 #include <openenclave/internal/trace.h>
 #include "include/device.h"
-#include "include/fd.h"
+#include "include/fdtable.h"
 #include "include/mount.h"
 #include "posix_t.h"
 
@@ -14,7 +14,7 @@ int __oe_fcntl(int fd, int cmd, uint64_t arg)
     int ret = -1;
     oe_device_t* device;
 
-    if (!(device = oe_get_fd_device(fd, OE_DEVICE_TYPE_NONE)))
+    if (!(device = oe_fdtable_get(fd, OE_DEVICE_TYPE_NONE)))
     {
         OE_TRACE_ERROR("no device found fd=%d", fd);
         goto done;
@@ -58,10 +58,10 @@ int oe_open(const char* pathname, int flags, oe_mode_t mode)
         goto done;
     }
 
-    if ((fd = oe_assign_fd_device(file)) == -1)
+    if ((fd = oe_fdtable_assign(file)) == -1)
     {
         (*fs->ops.fs->base.close)(file);
-        OE_TRACE_ERROR("oe_assign_fd_device for pathname=%s", pathname);
+        OE_TRACE_ERROR("oe_fdtable_assign for pathname=%s", pathname);
         goto done;
     }
 
@@ -102,9 +102,9 @@ int oe_open_d(uint64_t devid, const char* pathname, int flags, oe_mode_t mode)
             goto done;
         }
 
-        if ((ret = oe_assign_fd_device(file)) == -1)
+        if ((ret = oe_fdtable_assign(file)) == -1)
         {
-            OE_TRACE_ERROR("oe_assign_fd_device devid=%lu", devid);
+            OE_TRACE_ERROR("oe_fdtable_assign devid=%lu", devid);
             (*dev->ops.fs->base.close)(file);
             goto done;
         }

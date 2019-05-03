@@ -6,7 +6,7 @@
 #include <openenclave/corelibc/stdarg.h>
 #include <openenclave/internal/trace.h>
 #include "include/device.h"
-#include "include/fd.h"
+#include "include/fdtable.h"
 
 int __oe_ioctl(int fd, unsigned long request, uint64_t arg)
 {
@@ -50,7 +50,7 @@ int __oe_ioctl(int fd, unsigned long request, uint64_t arg)
     {
         oe_device_t* device;
 
-        if (!(device = oe_get_fd_device(fd, OE_DEVICE_TYPE_NONE)))
+        if (!(device = oe_fdtable_get(fd, OE_DEVICE_TYPE_NONE)))
         {
             OE_TRACE_ERROR("no device found fd=%d", fd);
             ret = -1;

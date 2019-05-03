@@ -9,7 +9,7 @@
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include "include/device.h"
-#include "include/fd.h"
+#include "include/fdtable.h"
 
 static uint64_t _default_socket_devid = OE_DEVID_NONE;
 static oe_spinlock_t _default_socket_devid_lock;
@@ -68,9 +68,9 @@ int oe_socket_d(uint64_t devid, int domain, int type, int protocol)
         goto done;
     }
 
-    if ((sd = oe_assign_fd_device(sock)) == -1)
+    if ((sd = oe_fdtable_assign(sock)) == -1)
     {
-        OE_TRACE_ERROR("oe_assign_fd_device(sock) failed");
+        OE_TRACE_ERROR("oe_fdtable_assign(sock) failed");
         (*device->ops.socket->base.close)(sock);
         goto done;
     }
@@ -133,7 +133,7 @@ int oe_socketpair(int domain, int type, int protocol, int retfd[2])
         goto done;
     }
 
-    if ((retfd[0] = oe_assign_fd_device(socks[0])) < 0)
+    if ((retfd[0] = oe_fdtable_assign(socks[0])) < 0)
     {
         (*device->ops.socket->base.close)(socks[0]);
         ret = -1;
@@ -141,7 +141,7 @@ int oe_socketpair(int domain, int type, int protocol, int retfd[2])
         goto done;
     }
 
-    if ((retfd[1] = oe_assign_fd_device(socks[1])) < 0)
+    if ((retfd[1] = oe_fdtable_assign(socks[1])) < 0)
     {
         (*device->ops.socket->base.close)(socks[1]);
         ret = -1;
@@ -161,7 +161,7 @@ int oe_socket(int domain, int type, int protocol)
 int oe_connect(int sockfd, const struct oe_sockaddr* addr, oe_socklen_t addrlen)
 {
     int ret = -1;
-    oe_device_t* psock = oe_get_fd_device(sockfd, OE_DEVICE_TYPE_SOCKET);
+    oe_device_t* psock = oe_fdtable_get(sockfd, OE_DEVICE_TYPE_SOCKET);
     if (!psock)
     {
         OE_TRACE_ERROR("sockfd=%d ret=%d returned null", sockfd, ret);
@@ -191,7 +191,7 @@ done:
 
 int oe_accept(int sockfd, struct oe_sockaddr* addr, oe_socklen_t* addrlen)
 {
-    oe_device_t* psock = oe_get_fd_device(sockfd, OE_DEVICE_TYPE_SOCKET);
+    oe_device_t* psock = oe_fdtable_get(sockfd, OE_DEVICE_TYPE_SOCKET);
     oe_device_t* pnewsock = NULL;
     int ret = -1;
     if (!psock)
@@ -217,10 +217,10 @@ int oe_accept(int sockfd, struct oe_sockaddr* addr, oe_socklen_t* addrlen)
         goto done;
     }
 
-    ret = oe_assign_fd_device(pnewsock); // new fd
+    ret = oe_fdtable_assign(pnewsock); // new fd
     if (ret == -1)
     {
-        OE_TRACE_ERROR("newfd(%d) : oe_assign_fd_device() failed", ret);
+        OE_TRACE_ERROR("newfd(%d) : oe_fdtable_assign() failed", ret);
         goto done;
     }
 
@@ -230,11 +230,11 @@ done:
 
 int oe_listen(int sockfd, int backlog)
 {
-    oe_device_t* psock = oe_get_fd_device(sockfd, OE_DEVICE_TYPE_SOCKET);
+    oe_device_t* psock = oe_fdtable_get(sockfd, OE_DEVICE_TYPE_SOCKET);
     int ret = -1;
     if (!psock)
     {
-        OE_TRACE_ERROR("oe_get_fd_device(%d) returned null", sockfd);
+        OE_TRACE_ERROR("oe_fdtable_get(%d) returned null", sockfd);
         goto done;
     }
 
@@ -252,12 +252,12 @@ done:
 
 ssize_t oe_recv(int sockfd, void* buf, size_t len, int flags)
 {
-    oe_device_t* psock = oe_get_fd_device(sockfd, OE_DEVICE_TYPE_SOCKET);
+    oe_device_t* psock = oe_fdtable_get(sockfd, OE_DEVICE_TYPE_SOCKET);
     ssize_t ret = -1;
 
     if (!psock)
     {
-        OE_TRACE_ERROR("oe_get_fd_device(%d) returned null", sockfd);
+        OE_TRACE_ERROR("oe_fdtable_get(%d) returned null", sockfd);
         goto done;
     }
 
@@ -280,12 +280,12 @@ ssize_t oe_recvfrom(
     const struct oe_sockaddr* src_addr,
     oe_socklen_t* addrlen)
 {
-    oe_device_t* psock = oe_get_fd_device(sockfd, OE_DEVICE_TYPE_SOCKET);
+    oe_device_t* psock = oe_fdtable_get(sockfd, OE_DEVICE_TYPE_SOCKET);
     ssize_t ret = -1;
 
     if (!psock)
     {
-        OE_TRACE_ERROR("oe_get_fd_device(%d) returned null", sockfd);
+        OE_TRACE_ERROR("oe_fdtable_get(%d) returned null", sockfd);
         goto done;
     }
 
@@ -304,12 +304,12 @@ done:
 
 ssize_t oe_send(int sockfd, const void* buf, size_t len, int flags)
 {
-    oe_device_t* psock = oe_get_fd_device(sockfd, OE_DEVICE_TYPE_SOCKET);
+    oe_device_t* psock = oe_fdtable_get(sockfd, OE_DEVICE_TYPE_SOCKET);
     ssize_t ret = -1;
 
     if (!psock)
     {
-        OE_TRACE_ERROR("oe_get_fd_device(%d) returned null", sockfd);
+        OE_TRACE_ERROR("oe_fdtable_get(%d) returned null", sockfd);
         goto done;
     }
 
@@ -333,12 +333,12 @@ ssize_t oe_sendto(
     const struct oe_sockaddr* dest_addr,
     oe_socklen_t addrlen)
 {
-    oe_device_t* psock = oe_get_fd_device(sockfd, OE_DEVICE_TYPE_SOCKET);
+    oe_device_t* psock = oe_fdtable_get(sockfd, OE_DEVICE_TYPE_SOCKET);
     ssize_t ret = -1;
 
     if (!psock)
     {
-        OE_TRACE_ERROR("oe_get_fd_device(%d) returned null", sockfd);
+        OE_TRACE_ERROR("oe_fdtable_get(%d) returned null", sockfd);
         goto done;
     }
 
@@ -357,12 +357,12 @@ done:
 
 ssize_t oe_recvmsg(int sockfd, struct oe_msghdr* buf, int flags)
 {
-    oe_device_t* psock = oe_get_fd_device(sockfd, OE_DEVICE_TYPE_SOCKET);
+    oe_device_t* psock = oe_fdtable_get(sockfd, OE_DEVICE_TYPE_SOCKET);
     ssize_t ret = -1;
 
     if (!psock)
     {
-        OE_TRACE_ERROR("oe_get_fd_device(%d) returned null", sockfd);
+        OE_TRACE_ERROR("oe_fdtable_get(%d) returned null", sockfd);
         goto done;
     }
 
@@ -380,12 +380,12 @@ done:
 
 ssize_t oe_sendmsg(int sockfd, const struct oe_msghdr* buf, int flags)
 {
-    oe_device_t* psock = oe_get_fd_device(sockfd, OE_DEVICE_TYPE_SOCKET);
+    oe_device_t* psock = oe_fdtable_get(sockfd, OE_DEVICE_TYPE_SOCKET);
     ssize_t ret = -1;
 
     if (!psock)
     {
-        OE_TRACE_ERROR("oe_get_fd_device(%d) returned null", sockfd);
+        OE_TRACE_ERROR("oe_fdtable_get(%d) returned null", sockfd);
         goto done;
     }
 
@@ -404,12 +404,12 @@ done:
 
 int oe_shutdown(int sockfd, int how)
 {
-    oe_device_t* psock = oe_get_fd_device(sockfd, OE_DEVICE_TYPE_SOCKET);
+    oe_device_t* psock = oe_fdtable_get(sockfd, OE_DEVICE_TYPE_SOCKET);
     int ret = -1;
 
     if (!psock)
     {
-        OE_TRACE_ERROR("oe_get_fd_device(%d) returned null", sockfd);
+        OE_TRACE_ERROR("oe_fdtable_get(%d) returned null", sockfd);
         goto done;
     }
 
@@ -427,12 +427,12 @@ done:
 
 int oe_getsockname(int sockfd, struct oe_sockaddr* addr, oe_socklen_t* addrlen)
 {
-    oe_device_t* psock = oe_get_fd_device(sockfd, OE_DEVICE_TYPE_SOCKET);
+    oe_device_t* psock = oe_fdtable_get(sockfd, OE_DEVICE_TYPE_SOCKET);
     int ret = -1;
 
     if (!psock)
     {
-        OE_TRACE_ERROR("oe_get_fd_device(%d) returned null", sockfd);
+        OE_TRACE_ERROR("oe_fdtable_get(%d) returned null", sockfd);
         goto done;
     }
 
@@ -450,12 +450,12 @@ done:
 
 int oe_getpeername(int sockfd, struct oe_sockaddr* addr, oe_socklen_t* addrlen)
 {
-    oe_device_t* psock = oe_get_fd_device(sockfd, OE_DEVICE_TYPE_SOCKET);
+    oe_device_t* psock = oe_fdtable_get(sockfd, OE_DEVICE_TYPE_SOCKET);
     int ret = -1;
 
     if (!psock)
     {
-        OE_TRACE_ERROR("oe_get_fd_device(%d) returned null", sockfd);
+        OE_TRACE_ERROR("oe_fdtable_get(%d) returned null", sockfd);
         goto done;
     }
 
@@ -478,12 +478,12 @@ int oe_getsockopt(
     void* optval,
     oe_socklen_t* optlen)
 {
-    oe_device_t* psock = oe_get_fd_device(sockfd, OE_DEVICE_TYPE_SOCKET);
+    oe_device_t* psock = oe_fdtable_get(sockfd, OE_DEVICE_TYPE_SOCKET);
     int ret = -1;
 
     if (!psock)
     {
-        OE_TRACE_ERROR("oe_get_fd_device(%d) returned null", sockfd);
+        OE_TRACE_ERROR("oe_fdtable_get(%d) returned null", sockfd);
         goto done;
     }
 
@@ -507,12 +507,12 @@ int oe_setsockopt(
     const void* optval,
     oe_socklen_t optlen)
 {
-    oe_device_t* psock = oe_get_fd_device(sockfd, OE_DEVICE_TYPE_SOCKET);
+    oe_device_t* psock = oe_fdtable_get(sockfd, OE_DEVICE_TYPE_SOCKET);
     int ret = -1;
 
     if (!psock)
     {
-        OE_TRACE_ERROR("oe_get_fd_device(%d) returned null", sockfd);
+        OE_TRACE_ERROR("oe_fdtable_get(%d) returned null", sockfd);
         goto done;
     }
 
@@ -531,12 +531,12 @@ done:
 
 int oe_bind(int sockfd, const struct oe_sockaddr* name, oe_socklen_t namelen)
 {
-    oe_device_t* psock = oe_get_fd_device(sockfd, OE_DEVICE_TYPE_SOCKET);
+    oe_device_t* psock = oe_fdtable_get(sockfd, OE_DEVICE_TYPE_SOCKET);
     int ret = -1;
 
     if (!psock)
     {
-        OE_TRACE_ERROR("oe_get_fd_device(%d) returned null", sockfd);
+        OE_TRACE_ERROR("oe_fdtable_get(%d) returned null", sockfd);
         goto done;
     }
 

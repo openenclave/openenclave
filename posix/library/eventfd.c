@@ -11,7 +11,7 @@
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/corelibc/sys/eventfd.h>
-#include "include/fd.h"
+#include "include/fdtable.h"
 
 int oe_eventfd(unsigned int initval, int flags)
 {
@@ -33,7 +33,7 @@ int oe_eventfd(unsigned int initval, int flags)
         goto done;
     }
 
-    if ((ed = oe_assign_fd_device(eventfd)) == -1)
+    if ((ed = oe_fdtable_assign(eventfd)) == -1)
     {
         oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d\n", oe_errno);

@@ -12,7 +12,7 @@
 #include <openenclave/internal/trace.h>
 #include "include/device.h"
 #include "include/epoll.h"
-#include "include/fd.h"
+#include "include/fdtable.h"
 
 // Poll uses much of the infrastructure from epoll.
 
@@ -37,7 +37,7 @@ int oe_poll(struct oe_pollfd* fds, nfds_t nfds, int timeout_ms)
         goto done;
     }
 
-    if (!(pepoll = oe_get_fd_device(epfd, OE_DEVICE_TYPE_EPOLL)))
+    if (!(pepoll = oe_fdtable_get(epfd, OE_DEVICE_TYPE_EPOLL)))
     {
         OE_TRACE_ERROR("pepoll=%p, epfd=%d", pepoll, epfd);
         goto done;
