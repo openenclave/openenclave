@@ -210,9 +210,9 @@ int oe_epoll_create(int size)
 
     oe_once(&_once, _once_function);
 
-    if (!(device = oe_get_device(OE_DEVID_EPOLL, OE_DEVICE_TYPE_EPOLL)))
+    if (!(device = oe_get_device(OE_DEVID_HOSTEPOLL, OE_DEVICE_TYPE_EPOLL)))
     {
-        OE_TRACE_ERROR("devid = %lu ", OE_DEVID_EPOLL);
+        OE_TRACE_ERROR("devid = %lu ", OE_DEVID_HOSTEPOLL);
         goto done;
     }
 
@@ -246,9 +246,9 @@ int oe_epoll_create1(int flags)
 
     oe_once(&_once, _once_function);
 
-    if (!(device = oe_get_device(OE_DEVID_EPOLL, OE_DEVICE_TYPE_EPOLL)))
+    if (!(device = oe_get_device(OE_DEVID_HOSTEPOLL, OE_DEVICE_TYPE_EPOLL)))
     {
-        OE_TRACE_ERROR("devid = %lu ", OE_DEVID_EPOLL);
+        OE_TRACE_ERROR("devid = %lu ", OE_DEVID_HOSTEPOLL);
         goto done;
     }
 
