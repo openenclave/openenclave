@@ -1,6 +1,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+.PHONY: all build clean run
+
+all: build
+
 build:
 	$(MAKE) -C enclave_a_v1
 	$(MAKE) -C enclave_a_v2
