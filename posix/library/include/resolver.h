@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_INTERNAL_POSIX_RESOLVER_H
-#define _OE_INTERNAL_POSIX_RESOLVER_H
+#ifndef _OE_POSIX_RESOLVER_H
+#define _OE_POSIX_RESOLVER_H
 
 #include <openenclave/bits/types.h>
 #include <openenclave/corelibc/errno.h>
@@ -52,4 +52,4 @@ int oe_register_resolver(int resolver_priority, oe_resolver_t* presolver);
 
 OE_EXTERNC_END
 
-#endif /* _OE_INTERNAL_POSIX_RESOLVER_H */
+#endif /* _OE_POSIX_RESOLVER_H */

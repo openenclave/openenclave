@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_INTERNAL_LIST_H
-#define _OE_INTERNAL_LIST_H
+#ifndef _OE_POSIX_LIST_H
+#define _OE_POSIX_LIST_H
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
@@ -102,4 +102,4 @@ OE_INLINE void oe_list_free(oe_list_t* list, oe_list_free_func func)
 
 OE_EXTERNC_END
 
-#endif /* _OE_INTERNAL_LIST_H */
+#endif /* _OE_POSIX_LIST_H */

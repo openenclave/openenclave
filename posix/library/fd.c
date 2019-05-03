@@ -10,6 +10,7 @@
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
+#include "include/console.h"
 #include "include/device.h"
 
 typedef struct _entry
@@ -169,12 +170,23 @@ static oe_device_t* _get_fd_device(int fd)
     bool locked = false;
 
     /* First check whether it is a console device. */
+    switch (fd)
     {
-        extern oe_device_t* oe_get_console_device(int fd);
-        oe_device_t* device;
-
-        if ((device = oe_get_console_device(fd)))
-            return device;
+        case OE_STDIN_FILENO:
+        {
+            ret = oe_get_stdin_device();
+            goto done;
+        }
+        case OE_STDOUT_FILENO:
+        {
+            ret = oe_get_stdout_device();
+            goto done;
+        }
+        case OE_STDERR_FILENO:
+        {
+            ret = oe_get_stderr_device();
+            goto done;
+        }
     }
 
     oe_spin_unlock(&_lock);

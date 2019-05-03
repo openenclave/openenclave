@@ -345,54 +345,17 @@ static file_t _stderr_file = {
     .host_fd = OE_STDERR_FILENO,
 };
 
-int oe_initialize_console_devices(void)
+oe_device_t* oe_get_stdin_device(void)
 {
-    int ret = -1;
-
-    if (!oe_set_fd_device(OE_STDIN_FILENO, &_stdin_file.base))
-    {
-        OE_TRACE_ERROR("failed to initialize stdin device");
-        goto done;
-    }
-
-    if (!oe_set_fd_device(OE_STDOUT_FILENO, &_stdout_file.base))
-    {
-        OE_TRACE_ERROR("failed to initialize the stdout device");
-        goto done;
-    }
-
-    if (!oe_set_fd_device(OE_STDERR_FILENO, &_stderr_file.base))
-    {
-        OE_TRACE_ERROR("failed to initialize the stderr device");
-        goto done;
-    }
-
-    ret = 0;
-
-done:
-
-    return ret;
+    return &_stdin_file.base;
 }
 
-oe_device_t* oe_get_console_device(int fd)
+oe_device_t* oe_get_stdout_device(void)
 {
-    switch (fd)
-    {
-        case OE_STDIN_FILENO:
-        {
-            return &_stdin_file.base;
-        }
-        case OE_STDOUT_FILENO:
-        {
-            return &_stdout_file.base;
-        }
-        case OE_STDERR_FILENO:
-        {
-            return &_stderr_file.base;
-        }
-        default:
-        {
-            return NULL;
-        }
-    }
+    return &_stdout_file.base;
+}
+
+oe_device_t* oe_get_stderr_device(void)
+{
+    return &_stderr_file.base;
 }

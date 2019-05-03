@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_INTERNAL_POSIX_SOCK_OPS_H
-#define _OE_INTERNAL_POSIX_SOCK_OPS_H
+#ifndef _OE_POSIX_SOCK_OPS_H
+#define _OE_POSIX_SOCK_OPS_H
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
@@ -100,4 +100,4 @@ typedef struct _oe_sock_ops
 
 OE_EXTERNC_END
 
-#endif // _OE_INTERNAL_POSIX_SOCK_OPS_H
+#endif // _OE_POSIX_SOCK_OPS_H

@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_INTERNAL_POSIX_EPOLL_H
-#define _OE_INTERNAL_POSIX_EPOLL_H
+#ifndef _OE_POSIX_EPOLL_H
+#define _OE_POSIX_EPOLL_H
 
 #include <openenclave/corelibc/signal.h>
 #include <openenclave/corelibc/sys/epoll.h>
@@ -28,4 +28,4 @@ int oe_get_epoll_events(
 
 OE_EXTERNC_END
 
-#endif /* _OE_INTERNAL_POSIX_EPOLL_H */
+#endif /* _OE_POSIX_EPOLL_H */

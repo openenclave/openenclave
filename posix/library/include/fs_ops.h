@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved._ops
 // Licensed under the MIT License.
 
-#ifndef _OE_INTERNAL_POSIX_FS_OPS_H
-#define _OE_INTERNAL_POSIX_FS_OPS_H
+#ifndef _OE_POSIX_FS_OPS_H
+#define _OE_POSIX_FS_OPS_H
 
 #include <openenclave/bits/types.h>
 #include <openenclave/corelibc/errno.h>
@@ -61,4 +61,4 @@ struct _oe_fs_ops
 
 OE_EXTERNC_END
 
-#endif // _OE_INTERNAL_POSIX_FS_OPS_H
+#endif // _OE_POSIX_FS_OPS_H
