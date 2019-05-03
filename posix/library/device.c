@@ -276,17 +276,9 @@ static void _create_tls_device_key()
         oe_abort();
 }
 
-oe_result_t oe_set_device_for_current_thread(const char* device_name)
+oe_result_t oe_set_device_for_current_thread(uint64_t devid)
 {
     oe_result_t result = OE_UNEXPECTED;
-    uint64_t devid;
-
-    if ((devid = oe_device_name_to_devid(device_name)) == OE_DEVID_NONE)
-    {
-        OE_TRACE_ERROR("no such device: %s", device_name);
-        result = OE_NOT_FOUND;
-        goto done;
-    }
 
     if (oe_once(&_tls_device_once, _create_tls_device_key) != OE_OK)
     {

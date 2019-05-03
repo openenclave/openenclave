@@ -10,7 +10,19 @@
 
 OE_EXTERNC_BEGIN
 
-oe_result_t oe_set_device_for_current_thread(const char* device_name);
+/* Identifiers for well-known device types. */
+enum
+{
+    OE_DEVID_NONE,
+    OE_DEVID_HOSTFS,
+    OE_DEVID_SGXFS,
+    OE_DEVID_HOSTSOCK,
+    OE_DEVID_ENCLAVESOCK,
+    OE_DEVID_EPOLL,
+    OE_DEVID_EVENTFD,
+};
+
+oe_result_t oe_set_device_for_current_thread(uint64_t devid);
 
 oe_result_t oe_clear_device_for_current_thread(void);
 

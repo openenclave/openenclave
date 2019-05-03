@@ -5,6 +5,7 @@
 #define _OE_INTERNAL_POSIX_H
 
 #include <openenclave/bits/defs.h>
+#include <openenclave/bits/device.h>
 #include <openenclave/corelibc/sys/epoll.h>
 #include <openenclave/internal/types.h>
 
@@ -19,25 +20,6 @@
 */
 
 OE_EXTERNC_BEGIN
-
-/*
-**==============================================================================
-**
-** Identifiers for well-known device types.
-**
-**==============================================================================
-*/
-
-enum
-{
-    OE_DEVID_NONE,
-    OE_DEVID_HOSTFS,
-    OE_DEVID_SGXFS,
-    OE_DEVID_HOSTSOCK,
-    OE_DEVID_ENCLAVESOCK,
-    OE_DEVID_EPOLL,
-    OE_DEVID_EVENTFD,
-};
 
 /*
 **==============================================================================
