@@ -102,7 +102,8 @@ the host and enclave symbols into an instance of the debugger.
 ## Requirements
 
 * Install [Visual Studio Code](https://code.visualstudio.com/)
-* Install required compilers
+* Install [git](https://git-scm.com/downloads)
+* On Linux, install the required build components
 
       sudo apt update && sudo apt install -y build-essential cmake gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu g++-arm-linux-gnueabihf g++-aarch64-linux-gnu gdb-multiarch
 
