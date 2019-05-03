@@ -100,7 +100,7 @@ void Crypto::retrieve_public_key(uint8_t pem_public_key[512])
 }
 
 // Compute the sha256 hash of given data.
-int Crypto::Sha256(const uint8_t* data, size_t data_size, uint8_t sha256[32])
+int Crypto::sha256(const uint8_t* data, size_t data_size, uint8_t sha256[32])
 {
     int ret = 0;
     mbedtls_sha256_context ctx;
@@ -128,7 +128,7 @@ exit:
  * Encrypt encrypts the given data using the given public key.
  * Used to encrypt data using the public key of another enclave.
  */
-bool Crypto::Encrypt(
+bool Crypto::encrypt(
     const uint8_t* pem_public_key,
     const uint8_t* data,
     size_t data_size,
@@ -187,7 +187,7 @@ exit:
  * decrypt the given data using current enclave's private key.
  * Used to receive encrypted data from another enclave.
  */
-bool Crypto::Decrypt(
+bool Crypto::decrypt(
     const uint8_t* encrypted_data,
     size_t encrypted_data_size,
     uint8_t* data,
@@ -304,27 +304,30 @@ exit_preinit:
     return ret;
 }
 
-bool Crypto::Encrypt_gcm(
+bool Crypto::encrypt_gcm(
     const uint8_t* sym_key,
     const uint8_t* data,
     size_t data_size,
+    uint8_t* iv_str,
     uint8_t* encrypted_data,
     size_t* encrypted_data_size,
     uint8_t* tag_output)
 {
     mbedtls_gcm_context gcm_context;
-    unsigned char iv_str[12];
 
     bool result = false;
     int res = -1;
-    size_t iv_len, tag_len = 16;
+    size_t tag_len = 16;
+
+    if (!m_initialized)
+        goto exit;
 
     mbedtls_gcm_init(&gcm_context);
 
-    memset(iv_str, 0x00, sizeof(iv_str));
-    memcpy(iv_str, "1234567890ab", sizeof("1234567890ab"));
+    // Generate a random IV each time
+    memset(iv_str, 0x00, IV_SIZE);
+    mbedtls_ctr_drbg_random(&m_ctr_drbg_contex, iv_str, IV_SIZE);
     memset(tag_output, 0x00, 16);
-    iv_len = sizeof(iv_str);
 
     res = mbedtls_gcm_setkey(&gcm_context, MBEDTLS_CIPHER_ID_AES, sym_key, 256);
     if (res != 0)
@@ -340,7 +343,7 @@ bool Crypto::Encrypt_gcm(
         MBEDTLS_GCM_ENCRYPT,
         data_size,
         iv_str,
-        iv_len,
+        IV_SIZE,
         NULL,
         0,
         data,
@@ -366,8 +369,9 @@ exit:
  * Decrypt_gcm decrypts the given data using the given symmetric key.
  * Used to receive encrypted data from another enclave.
  */
-bool Crypto::Decrypt_gcm(
+bool Crypto::decrypt_gcm(
     const uint8_t* sym_key,
+    const uint8_t* iv_str,
     const uint8_t* encrypted_data,
     size_t encrypted_data_size,
     const uint8_t* tag_str,
@@ -375,16 +379,14 @@ bool Crypto::Decrypt_gcm(
     size_t* data_size)
 {
     mbedtls_gcm_context gcm_context;
-    unsigned char iv_str[12];
     bool result = false;
     int res = 0;
-    size_t iv_len, tag_len = 16;
+    size_t tag_len = 16;
+
+    if (!m_initialized)
+        goto exit;
 
     mbedtls_gcm_init(&gcm_context);
-
-    memset(iv_str, 0x00, sizeof(iv_str));
-    memcpy(iv_str, "1234567890ab", sizeof("1234567890ab"));
-    iv_len = sizeof(iv_str);
 
     res = mbedtls_gcm_setkey(&gcm_context, MBEDTLS_CIPHER_ID_AES, sym_key, 256);
     if (res != 0)
@@ -397,7 +399,7 @@ bool Crypto::Decrypt_gcm(
         &gcm_context,
         *data_size,
         iv_str,
-        iv_len,
+        IV_SIZE,
         NULL,
         0,
         tag_str,
@@ -420,7 +422,7 @@ exit:
     return result;
 }
 
-int Crypto::Sign(
+int Crypto::sign(
     const unsigned char* hash_data,
     size_t hash_size,
     unsigned char* sig,
@@ -451,7 +453,7 @@ exit:
     return rc;
 }
 
-int Crypto::Verify_sign(
+int Crypto::verify_sign(
     const uint8_t* pem_public_key,
     const unsigned char* hash_data,
     size_t hash_size,

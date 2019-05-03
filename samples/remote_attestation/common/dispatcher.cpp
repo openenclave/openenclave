@@ -57,7 +57,7 @@ bool ecall_dispatcher::initialize(const char* name)
     // little endian representation of the public key modulus. This value
     // is populated by the signer_id sub-field of a parsed oe_report_t's
     // identity field.
-    if (m_crypto->Sha256(modulus, modulus_size, m_other_enclave_mrsigner) != 0)
+    if (m_crypto->sha256(modulus, modulus_size, m_other_enclave_mrsigner) != 0)
     {
         goto exit;
     }
@@ -212,7 +212,7 @@ int ecall_dispatcher::establish_secure_channel(uint8_t** key, size_t* key_size)
 
     // Step 2- Encrypt the symmetric key with the other enclave's public key
     // TO DO - PREFIX with counter/seq number to prevent replay attacks
-    if (m_crypto->Encrypt(
+    if (m_crypto->encrypt(
             m_crypto->get_the_other_enclave_public_key(),
             m_enclave_config->sym_key,
             32,
@@ -232,7 +232,7 @@ int ecall_dispatcher::establish_secure_channel(uint8_t** key, size_t* key_size)
         }
 
         // Step 3 - Compute a SHA hash of the encrypted key
-        if (m_crypto->Sha256(encrypted_key_buf, encrypted_key_size, digest) !=
+        if (m_crypto->sha256(encrypted_key_buf, encrypted_key_size, digest) !=
             0)
         {
             goto exit;
@@ -242,7 +242,7 @@ int ecall_dispatcher::establish_secure_channel(uint8_t** key, size_t* key_size)
                       "of the encrypted key");
 
         // Step 4 - Sign this SHA hash with my enclave's private key
-        if (m_crypto->Sign(digest, 32, signature, &signature_size) != 0)
+        if (m_crypto->sign(digest, 32, signature, &signature_size) != 0)
         {
             goto exit;
         }
@@ -302,12 +302,12 @@ int ecall_dispatcher::acknowledge_secure_channel(
         goto exit;
     }
 
-    if (m_crypto->Sha256(encrypted_key_buf, 256, digest) != 0)
+    if (m_crypto->sha256(encrypted_key_buf, 256, digest) != 0)
     {
         goto exit;
     }
 
-    rc = m_crypto->Verify_sign(
+    rc = m_crypto->verify_sign(
         m_crypto->get_the_other_enclave_public_key(),
         digest,
         32,
@@ -324,7 +324,7 @@ int ecall_dispatcher::acknowledge_secure_channel(
 
     TRACE_ENCLAVE("enclave: acknowledge_secure_channel: signature verified ok");
 
-    if (m_crypto->Decrypt(encrypted_key_buf, 256, data, &data_size))
+    if (m_crypto->decrypt(encrypted_key_buf, 256, data, &data_size))
     {
         TRACE_ENCLAVE(
             "enclave: acknowledge_secure_channel: extracted symmetric key size "
@@ -349,6 +349,7 @@ int ecall_dispatcher::generate_encrypted_message(uint8_t** data, size_t* size)
     uint8_t tag_str[ENCLAVE_SECRET_DATA_SIZE];
     size_t encrypted_data_size;
     size_t total_size = ENCLAVE_SECRET_DATA_SIZE * 2;
+    uint8_t iv_str[IV_SIZE];
     int ret = 1;
 
     if (m_initialized == false)
@@ -359,10 +360,11 @@ int ecall_dispatcher::generate_encrypted_message(uint8_t** data, size_t* size)
 
     encrypted_data_size = sizeof(encrypted_data_buf);
     memset(encrypted_data_buf, 0x00, encrypted_data_size);
-    if (m_crypto->Encrypt_gcm(
+    if (m_crypto->encrypt_gcm(
             m_enclave_config->sym_key,
             m_enclave_config->enclave_secret_data,
             ENCLAVE_SECRET_DATA_SIZE,
+            iv_str,
             encrypted_data_buf,
             &encrypted_data_size,
             tag_str))
@@ -390,13 +392,13 @@ int ecall_dispatcher::generate_encrypted_message(uint8_t** data, size_t* size)
             "enclave: generate_encrypted_message: encrypted_data_size = %ld",
             encrypted_data_size);
         *data = host_buf;
-        *size = encrypted_data_size *
-                2; // Encrypted_data plus tag_str of equal length
+        // Encrypted_data plus tag_str of equal length
+        *size = encrypted_data_size * 2;
     }
     else
     {
         TRACE_ENCLAVE(
-            "enclave: generate_encrypted_message: Encrypt_gcm failed\n");
+            "enclave: generate_encrypted_message: encrypt_gcm failed\n");
         goto exit;
     }
     ret = 0;
@@ -412,6 +414,7 @@ int ecall_dispatcher::process_encrypted_msg(
     uint8_t data[ENCLAVE_SECRET_DATA_SIZE];
     uint8_t tag_str[ENCLAVE_SECRET_DATA_SIZE];
     size_t data_size = 0;
+    uint8_t* iv_str;
     int ret = 1;
 
     if (m_initialized == false)
@@ -425,8 +428,9 @@ int ecall_dispatcher::process_encrypted_msg(
         tag_str,
         &encrypted_data[ENCLAVE_SECRET_DATA_SIZE],
         ENCLAVE_SECRET_DATA_SIZE);
-    if (m_crypto->Decrypt_gcm(
+    if (m_crypto->decrypt_gcm(
             m_enclave_config->sym_key,
+            iv_str,
             encrypted_data,
             ENCLAVE_SECRET_DATA_SIZE,
             tag_str,

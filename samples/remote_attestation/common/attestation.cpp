@@ -26,7 +26,7 @@ bool Attestation::generate_remote_report(
     oe_result_t result = OE_OK;
     uint8_t* temp_buf = NULL;
 
-    if (m_crypto->Sha256(data, data_size, sha256) != 0)
+    if (m_crypto->sha256(data, data_size, sha256) != 0)
     {
         goto exit;
     }
@@ -149,7 +149,7 @@ bool Attestation::attest_remote_report(
 
     // 3) Validate the report data
     //    The report_data has the hash value of the report data
-    if (m_crypto->Sha256(data, data_size, sha256) != 0)
+    if (m_crypto->sha256(data, data_size, sha256) != 0)
     {
         goto exit;
     }
