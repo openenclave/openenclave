@@ -147,3 +147,15 @@ char* oe_realpath(const char* path, char resolved_path[OE_PATH_MAX])
 
     return NULL;
 }
+
+OE_NO_RETURN void oe_exit(int status)
+{
+    OE_UNUSED(status);
+
+    oe_printf("oe_exit() panic");
+    oe_abort();
+
+    /* Never return. */
+    for (;;)
+        ;
+}

@@ -30,21 +30,24 @@ add_library(oeposix STATIC
     array.c
     console.c
     device.c
+    dirent.c
+    ioctl.c
     epoll.c
     eventfd.c
-    exit.c
+    fcntl.c
     fd.c
-    fs.c
     mount.c
+    netdb.c
     poll.c
-    resolver.c
     select.c
     signal.c
     socket.c
+    stat.c
+    stdio.c
     stdlib.c
     syscall.c
     unistd.c
-    uname.c)
+    utsname.c)
 
 maybe_build_using_clangw(oeposix)
 

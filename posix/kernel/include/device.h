@@ -50,6 +50,8 @@ uint64_t oe_device_name_to_devid(const char* name);
 
 int oe_remove_device(uint64_t devid);
 
+oe_device_t* oe_get_fs_device(uint64_t devid);
+
 OE_EXTERNC_END
 
 #endif // _OE_INTERNAL_POSIX_DEVICE_H
