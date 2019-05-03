@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_POSIX_EPOLL_OPS_H
-#define _OE_POSIX_EPOLL_OPS_H
+#ifndef _OE_POSIX_EPOLLOPS_H
+#define _OE_POSIX_EPOLLOPS_H
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
-#include "device_ops.h"
+#include "deviceops.h"
 
 OE_EXTERNC_BEGIN
 
@@ -52,4 +52,4 @@ typedef struct _oe_epoll_ops
 
 OE_EXTERNC_END
 
-#endif /* _OE_POSIX_EPOLL_OPS_H */
+#endif /* _OE_POSIX_EPOLLOPS_H */

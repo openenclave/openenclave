@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft Corporation. All rights reserved._ops
 // Licensed under the MIT License.
 
-#ifndef _OE_POSIX_FS_OPS_H
-#define _OE_POSIX_FS_OPS_H
+#ifndef _OE_POSIX_FSOPS_H
+#define _OE_POSIX_FSOPS_H
 
 #include <openenclave/bits/types.h>
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/sys/mount.h>
 #include <openenclave/corelibc/sys/stat.h>
-#include "device_ops.h"
+#include "deviceops.h"
 
 OE_EXTERNC_BEGIN
 
@@ -61,4 +61,4 @@ struct _oe_fs_ops
 
 OE_EXTERNC_END
 
-#endif // _OE_POSIX_FS_OPS_H
+#endif // _OE_POSIX_FSOPS_H

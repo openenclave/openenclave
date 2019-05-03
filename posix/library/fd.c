@@ -13,6 +13,14 @@
 #include "include/console.h"
 #include "include/device.h"
 
+/*
+**==============================================================================
+**
+** Define an array of entry_t elements.
+**
+**==============================================================================
+*/
+
 typedef struct _entry
 {
     oe_device_t* device;
@@ -64,6 +72,14 @@ static int _init_table()
     return 0;
 }
 
+/*
+**==============================================================================
+**
+** Public interface:
+**
+**==============================================================================
+*/
+
 int oe_assign_fd_device(oe_device_t* device)
 {
     int ret = -1;
@@ -111,17 +127,24 @@ done:
     return ret;
 }
 
-void oe_release_fd(int fd)
+int oe_release_fd(int fd)
 {
-    oe_spin_lock(&_lock);
+    int ret = -1;
 
-    OE_TRACE_VERBOSE("oe_release_fd fd =%d", fd);
-    if (fd >= 0 && (size_t)fd < _table_size())
+    if (!(fd >= 0 && (size_t)fd < _table_size()))
     {
-        _table()[fd].device = NULL;
+        oe_errno = OE_EBADF;
+        goto done;
     }
 
+    oe_spin_lock(&_lock);
+    _table()[fd].device = NULL;
     oe_spin_unlock(&_lock);
+
+    ret = 0;
+
+done:
+    return ret;
 }
 
 oe_device_t* oe_set_fd_device(int fd, oe_device_t* device)

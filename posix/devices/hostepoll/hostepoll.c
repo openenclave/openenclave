@@ -9,7 +9,7 @@
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include "epoll.h"
-#include "epoll_ops.h"
+#include "epollops.h"
 #include "fd.h"
 #include "posix_t.h"
 

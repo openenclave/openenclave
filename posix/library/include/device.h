@@ -7,10 +7,10 @@
 #include <openenclave/bits/device.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/internal/posix.h>
-#include "epoll_ops.h"
-#include "eventfd_ops.h"
-#include "fs_ops.h"
-#include "sock_ops.h"
+#include "epollops.h"
+#include "eventfdops.h"
+#include "fsops.h"
+#include "sockops.h"
 
 OE_EXTERNC_BEGIN
 

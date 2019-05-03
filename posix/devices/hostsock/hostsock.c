@@ -8,7 +8,7 @@
 // clang-format on
 
 #include "device.h"
-#include "sock_ops.h"
+#include "sockops.h"
 #include <openenclave/bits/safemath.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/thread.h>
