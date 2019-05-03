@@ -3,10 +3,11 @@
 
 #include "include/fdtable.h"
 #include <openenclave/corelibc/errno.h>
+#include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
+#include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/array.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
@@ -16,60 +17,54 @@
 /*
 **==============================================================================
 **
-** Define an array of entry_t elements.
+** Define the table of oe_device_t* elements.
 **
 **==============================================================================
 */
 
-typedef struct _entry
-{
-    oe_device_t* device;
-} entry_t;
+/* Table must have room for stdin, stdout, and stderr. */
+#define TABLE_SIZE 256
 
-#define ELEMENT_SIZE sizeof(entry_t)
-#define CHUNK_SIZE 8
-
-static oe_array_t _fd_arr = OE_ARRAY_INITIALIZER(ELEMENT_SIZE, CHUNK_SIZE);
+static oe_device_t** _table;
+static size_t _table_size;
 static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
-static bool _initialized = false;
-
-OE_INLINE entry_t* _table(void)
-{
-    return (entry_t*)_fd_arr.data;
-}
-
-OE_INLINE size_t _table_size(void)
-{
-    return _fd_arr.size;
-}
 
 static void _free_table(void)
 {
-    oe_array_free(&_fd_arr);
+    oe_free(_table);
 }
 
-static int _init_table()
+static int _resize_table(size_t new_size)
 {
-    if (_initialized == false)
-    {
-        oe_spin_lock(&_lock);
-        {
-            if (_initialized == false)
-            {
-                if (oe_array_resize(&_fd_arr, CHUNK_SIZE) != 0)
-                {
-                    oe_assert("_init_table()" == NULL);
-                    oe_abort();
-                }
+    int ret = -1;
 
-                oe_atexit(_free_table);
-                _initialized = true;
-            }
+    if (new_size > _table_size)
+    {
+        oe_device_t** p;
+        size_t cap = _table_size * 2;
+
+        if (cap < new_size)
+            cap = new_size;
+
+        if (!_table)
+            oe_atexit(_free_table);
+
+        if (!(p = oe_realloc(_table, cap * sizeof(oe_device_t*))))
+        {
+            oe_errno = OE_ENOMEM;
+            goto done;
         }
-        oe_spin_unlock(&_lock);
+
+        memset(p + _table_size, 0, (cap - _table_size) * sizeof(oe_device_t*));
+        _table = p;
+        _table_size = new_size;
     }
 
-    return 0;
+    ret = 0;
+
+done:
+
+    return ret;
 }
 
 /*
@@ -86,29 +81,26 @@ int oe_fdtable_assign(oe_device_t* device)
     size_t index;
     bool locked = false;
 
-    if (_init_table() != 0)
-    {
-        OE_TRACE_ERROR("_init_table failed");
-        goto done;
-    }
-
     oe_spin_lock(&_lock);
     locked = true;
 
-    /* Search for a free slot in the file descriptor table. */
-    for (index = OE_STDERR_FILENO + 1; index < _table_size(); index++)
+    if (_resize_table(OE_STDERR_FILENO + 1) != 0)
     {
-        if (!_table()[index].device)
+        oe_errno = OE_ENOMEM;
+        goto done;
+    }
+
+    /* Search for a free slot in the file descriptor table. */
+    for (index = OE_STDERR_FILENO + 1; index < _table_size; index++)
+    {
+        if (!_table[index])
             break;
     }
 
     /* If free slot not found, expand size of the file descriptor table. */
-    if (index == _table_size())
+    if (index == _table_size)
     {
-        int retval = -1;
-        retval = oe_array_resize(&_fd_arr, _table_size() + 1);
-
-        if (retval != 0)
+        if (_resize_table(_table_size + 1) != 0)
         {
             oe_errno = OE_ENOMEM;
             OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
@@ -116,7 +108,7 @@ int oe_fdtable_assign(oe_device_t* device)
         }
     }
 
-    _table()[index].device = device;
+    _table[index] = device;
     ret = (int)index;
 
 done:
@@ -131,14 +123,14 @@ int oe_fdtable_clear(int fd)
 {
     int ret = -1;
 
-    if (!(fd >= 0 && (size_t)fd < _table_size()))
+    if (!(fd >= 0 && (size_t)fd < _table_size))
     {
         oe_errno = OE_EBADF;
         goto done;
     }
 
     oe_spin_lock(&_lock);
-    _table()[fd].device = NULL;
+    _table[fd] = NULL;
     oe_spin_unlock(&_lock);
 
     ret = 0;
@@ -152,30 +144,24 @@ int oe_fdtable_set(int fd, oe_device_t* device)
     int ret = -1;
     bool locked = false;
 
-    if (_init_table() != 0)
-    {
-        OE_TRACE_ERROR("_init_table failed");
-        goto done;
-    }
-
     oe_spin_lock(&_lock);
     locked = true;
 
-    if (fd < 0 || (size_t)fd >= _table_size())
+    if (fd < 0 || (size_t)fd >= _table_size)
     {
         oe_errno = OE_EBADF;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
 
-    if (_table()[fd].device != NULL)
+    if (_table[fd] != NULL)
     {
         oe_errno = OE_EADDRINUSE;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
 
-    _table()[fd].device = device;
+    _table[fd] = device;
 
     ret = 0;
 
@@ -217,21 +203,21 @@ static oe_device_t* _get_fd_device(int fd)
 
     OE_TRACE_INFO("fd=%d", fd);
 
-    if (fd < 0 || fd >= (int)_table_size())
+    if (fd < 0 || fd >= (int)_table_size)
+    {
+        oe_errno = OE_EBADF;
+        OE_TRACE_ERROR("oe_errno=%d fd=%d", oe_errno, fd);
+        goto done;
+    }
+
+    if (_table[fd] == NULL)
     {
         oe_errno = OE_EBADF;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
         goto done;
     }
 
-    if (_table()[fd].device == NULL)
-    {
-        oe_errno = OE_EBADF;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
-
-    ret = _table()[fd].device;
+    ret = _table[fd];
 
 done:
 

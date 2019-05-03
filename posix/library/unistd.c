@@ -310,7 +310,7 @@ ssize_t oe_write(int fd, const void* buf, size_t count)
     if (!(device = oe_fdtable_get(fd, OE_DEVICE_TYPE_NONE)))
     {
         oe_errno = OE_EBADF;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
+        OE_TRACE_ERROR("oe_errno=%d fd=%d ", oe_errno, fd);
         goto done;
     }
 

@@ -27,7 +27,6 @@ add_custom_target(posix_trusted_edl
 
 add_library(oeposix STATIC
     posix_t_wrapper.c
-    array.c
     console.c
     device.c
     dirent.c

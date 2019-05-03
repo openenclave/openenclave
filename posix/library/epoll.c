@@ -8,7 +8,6 @@
 
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/internal/utils.h>
-#include <openenclave/internal/array.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/stdio.h>
@@ -23,7 +22,7 @@ static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
 /*
 **==============================================================================
 **
-** Define a list device notifications and methods for manipulating it.
+** Define a list of device notifications and methods for manipulating it.
 **
 **     _list_append() -- append a node to the end of the list.
 **     _list_remove() -- remove the given node from the list.
@@ -64,31 +63,42 @@ OE_INLINE void _list_remove(list_t* list, list_node_t* node)
 /*
 **==============================================================================
 **
-** Define an array of list_t elements (indexed by epoll file descriptor) and
-** the following functions for manipulating the array.
-**
-**     _array_data() -- obtain a pointer to the array.
-**     _array_size() -- get the size of the array.
-**     _array_resize() -- change the size of the array.
+** Define an array of list_t elements.
 **
 **==============================================================================
 */
 
-static oe_array_t _array = OE_ARRAY_INITIALIZER(sizeof(list_t), 64);
+static list_t* _array;
+static size_t _array_size;
 
-static list_t* _array_data(void)
+static int _resize_array(size_t new_size)
 {
-    return (list_t*)_array.data;
-}
+    int ret = -1;
 
-static size_t _array_size(void)
-{
-    return _array.size;
-}
+    if (new_size > _array_size)
+    {
+        list_t* p;
+        size_t cap = _array_size * 2;
 
-static int _array_resize(size_t new_size)
-{
-    return oe_array_resize(&_array, new_size);
+        if (cap < new_size)
+            cap = new_size;
+
+        if (!(p = oe_realloc(_array, cap * sizeof(list_t))))
+        {
+            oe_errno = OE_ENOMEM;
+            goto done;
+        }
+
+        memset(p + _array_size, 0, (cap - _array_size) * sizeof(list_t));
+        _array = p;
+        _array_size = new_size;
+    }
+
+    ret = 0;
+
+done:
+
+    return ret;
 }
 
 /*
@@ -172,15 +182,14 @@ static void _free_free_list(void)
 
 static void _atexit_function(void)
 {
-    for (size_t i = 0; i < _array_size(); i++)
+    for (size_t i = 0; i < _array_size; i++)
     {
-        list_t* list = _array_data() + i;
+        list_t* list = _array + i;
         oe_list_free((oe_list_t*)list, (oe_list_free_func)_free_node);
     }
 
     _free_free_list();
-
-    oe_array_free(&_array);
+    oe_free(_array);
 }
 
 static oe_once_t _once = OE_ONCE_INITIALIZER;
@@ -453,14 +462,14 @@ int oe_post_device_notifications(
     index = (size_t)notices[0].data.epoll_fd;
 
     /* Expand array if not already big enough. */
-    if (_array_resize(index + 1) != 0)
+    if (_resize_array(index + 1) != 0)
     {
         OE_TRACE_ERROR("index=%zu", index);
         goto done;
     }
 
     /* Get the list for this epoll file descriptor. */
-    if (!(list = _array_data() + index))
+    if (!(list = _array + index))
     {
         OE_TRACE_ERROR("list is null");
         goto done;
@@ -535,14 +544,14 @@ int oe_get_epoll_events(
     }
 
     /* Expand array if not already big enough. */
-    if (_array_resize((size_t)epfd + 1) != 0)
+    if (_resize_array((size_t)epfd + 1) != 0)
     {
         OE_TRACE_ERROR("epfd=%d", epfd);
         goto done;
     }
 
     /* Get the list for this epid file descriptor. */
-    list = _array_data() + epfd;
+    list = &_array[epfd];
 
     /* If the list is empty. */
     if (list->size == 0)

@@ -8,7 +8,6 @@
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
-#include <openenclave/internal/array.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/thread.h>
@@ -16,94 +15,27 @@
 
 #include "include/device.h"
 
-/*
-**=============================================================================
-**
-** Define an array of pointers to devices.
-**
-**=============================================================================
-*/
+#define MAX_TABLE_SIZE 128
 
-#define ELEMENT_SIZE (sizeof(oe_device_t*))
-#define CHUNK_SIZE ((size_t)8)
-
-static oe_array_t _dev_arr = OE_ARRAY_INITIALIZER(ELEMENT_SIZE, CHUNK_SIZE);
+static oe_device_t* _table[MAX_TABLE_SIZE];
 static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
-static bool _initialized = false;
-
-OE_INLINE oe_device_t** _table(void)
-{
-    return (oe_device_t**)_dev_arr.data;
-}
-
-OE_INLINE size_t _table_size(void)
-{
-    return _dev_arr.size;
-}
-
-static void _free_table(void)
-{
-    oe_array_free(&_dev_arr);
-}
-
-static int _init_table()
-{
-    if (_initialized == false)
-    {
-        oe_spin_lock(&_lock);
-        {
-            if (_initialized == false)
-            {
-                if (oe_array_resize(&_dev_arr, CHUNK_SIZE) != 0)
-                {
-                    oe_assert("_init_table()" == NULL);
-                    oe_abort();
-                }
-
-                oe_atexit(_free_table);
-                _initialized = true;
-            }
-        }
-        oe_spin_unlock(&_lock);
-    }
-
-    return 0;
-}
-
-/*
-**=============================================================================
-**
-** Public interface
-**
-**=============================================================================
-*/
 
 uint64_t oe_allocate_devid(uint64_t devid)
 {
     uint64_t ret = OE_DEVID_NONE;
     bool locked = false;
 
-    if (!_initialized && _init_table() != 0)
+    oe_spin_lock(&_lock);
+    locked = true;
+
+    if (devid >= MAX_TABLE_SIZE)
     {
-        oe_errno = OE_EINVAL;
+        oe_errno = OE_ENOMEM;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
 
-    oe_spin_lock(&_lock);
-    locked = true;
-
-    if (devid >= _dev_arr.size)
-    {
-        if (oe_array_resize(&_dev_arr, devid + 1) != 0)
-        {
-            oe_errno = OE_ENOMEM;
-            OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-            goto done;
-        }
-    }
-
-    if (_table()[devid] != NULL)
+    if (_table[devid] != NULL)
     {
         oe_errno = OE_EADDRINUSE;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
@@ -125,24 +57,17 @@ int oe_release_devid(uint64_t devid)
     int ret = -1;
     bool locked = false;
 
-    if (!_initialized && _init_table() != 0)
-    {
-        oe_errno = OE_ENOMEM;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
-
     oe_spin_lock(&_lock);
     locked = true;
 
-    if (devid >= _dev_arr.size || _table()[devid] == NULL)
+    if (devid >= MAX_TABLE_SIZE || _table[devid] == NULL)
     {
         oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
 
-    _table()[devid] = NULL;
+    _table[devid] = NULL;
 
     ret = 0;
 
@@ -158,21 +83,21 @@ int oe_set_device(uint64_t devid, oe_device_t* device)
 {
     int ret = -1;
 
-    if (devid > _table_size())
+    if (devid > MAX_TABLE_SIZE)
     {
         oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
 
-    if (_table()[devid] != NULL)
+    if (_table[devid] != NULL)
     {
         oe_errno = OE_EADDRINUSE;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
 
-    _table()[devid] = device;
+    _table[devid] = device;
 
     ret = 0;
 
@@ -185,14 +110,14 @@ oe_device_t* oe_get_device(uint64_t devid, oe_device_type_t type)
     oe_device_t* ret = NULL;
     oe_device_t* device;
 
-    if (devid >= _table_size())
+    if (devid >= MAX_TABLE_SIZE)
     {
         oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
         goto done;
     }
 
-    device = _table()[devid];
+    device = _table[devid];
 
     if (device && type != OE_DEVICE_TYPE_NONE && device->type != type)
         goto done;
