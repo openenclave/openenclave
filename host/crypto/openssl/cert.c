@@ -757,6 +757,42 @@ done:
     return result;
 }
 
+oe_result_t oe_verify_self_signed_cert(
+    oe_cert_t* cert,
+    oe_verify_cert_error_t* error)
+{
+    oe_result_t result = OE_VERIFY_FAILED;
+    const Cert* impl = (const Cert*)cert;
+    EVP_PKEY* pubkey = NULL;
+    int ret = 0;
+
+    /* Initialize error to NULL for now */
+    if (error)
+        *error->buf = '\0';
+
+    // get the public key.
+    pubkey = X509_get_pubkey(impl->x509);
+    if (pubkey == NULL)
+    {
+        _set_err(error, "X509_get_pubkey failed");
+        OE_RAISE(OE_VERIFY_FAILED);
+    }
+
+    // verifies the signature of certificate cert using pubkey
+    ret = X509_verify(impl->x509, pubkey);
+    if (ret != 1)
+    {
+        _set_err(error, "X509_verify failed");
+        OE_RAISE(
+            OE_VERIFY_FAILED, "cert signature validation failed (ret=%d)", ret);
+    }
+
+    result = OE_OK;
+done:
+    EVP_PKEY_free(pubkey);
+    return result;
+}
+
 oe_result_t oe_cert_get_rsa_public_key(
     const oe_cert_t* cert,
     oe_rsa_public_key_t* public_key)
