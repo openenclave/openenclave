@@ -50,6 +50,25 @@ oe_result_t oe_cert_read_pem(
     size_t pem_size);
 
 /**
+ * Read a certificate from DER format
+ *
+ * This function reads a certificate from DER data
+ *
+ * The caller is responsible for releasing the certificate by passing it to
+ * oe_cert_free().
+ *
+ * @param cert initialized certificate handle upon return
+ * @param der_data DER data
+ * @param der_size size of the DER data
+ *
+ * @return OE_OK load was successful
+ */
+oe_result_t oe_cert_read_der(
+    oe_cert_t* cert,
+    const void* der_data,
+    size_t der_size);
+
+/**
  * Read a certificate chain from PEM format.
  *
  * This function reads a certificate chain from PEM data with the following PEM
@@ -124,6 +143,22 @@ oe_result_t oe_cert_verify(
     oe_cert_chain_t* chain,
     const oe_crl_t* const* crls,
     size_t num_crls);
+
+/**
+ * Verify a self-signed certificate's signature
+ *
+ *
+ * @param cert verify this certificate
+ * @param error Optional. Holds the error message if this function failed.
+ *
+ * @return OE_OK verify ok
+ * @return OE_VERIFY_FAILED
+ * @return OE_INVALID_PARAMETER
+ * @return OE_FAILURE
+ */
+oe_result_t oe_verify_self_signed_cert(
+    oe_cert_t* cert,
+    oe_verify_cert_error_t* error);
 
 /**
  * Get the RSA public key from a certificate.
@@ -304,6 +339,33 @@ oe_result_t oe_get_crl_distribution_points(
     size_t* num_urls,
     uint8_t* buffer,
     size_t* buffer_size);
+
+#ifdef _OE_ENCLAVE_H
+// TODO: add comments
+typedef struct _oe_cert_config
+{
+    uint8_t* issuer_key_buf;
+    size_t issuer_key_buf_size;
+    uint8_t* subject_key_buf;
+    size_t subject_key_buf_size;
+    unsigned char* subject_name;
+    unsigned char* issuer_name;
+    unsigned char* date_not_valid_before;
+    unsigned char* date_not_valid_after;
+    uint8_t* ext_data_buf;
+    size_t ext_data_buf_size;
+    char* ext_oid;
+    size_t ext_oid_size;
+} oe_cert_config_t;
+
+#define MAX_CERT_SIZE 8 * 1024
+oe_result_t oe_gen_custom_x509_cert(
+    oe_cert_config_t* cert_config,
+    unsigned char* cert_buf,
+    size_t cert_buf_size,
+    size_t* bytes_written);
+
+#endif
 
 OE_EXTERNC_END
 

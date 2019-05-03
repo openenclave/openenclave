@@ -78,6 +78,7 @@ if ( UNIX )
         add_subdirectory(memory)
     endif()
 add_subdirectory(create-rapid)
+add_subdirectory(tls_apis)
 endif()
 
 if (OE_SGX AND UNIX)

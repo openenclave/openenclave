@@ -67,6 +67,7 @@ if (OE_SGX)
     ../common/sgx/revocation.c
     ../common/sgx/sgxcertextensions.c
     ../common/sgx/tcbinfo.c
+    ../common/sgx/tlsverifier.c
     sgx/calls.c
     sgx/create.c
     sgx/elf.c

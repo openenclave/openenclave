@@ -529,6 +529,45 @@ done:
     return result;
 }
 
+oe_result_t oe_cert_read_der(
+    oe_cert_t* cert,
+    const void* der_data,
+    size_t der_size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    Cert* impl = (Cert*)cert;
+    X509* x509 = NULL;
+    unsigned char* p = NULL;
+
+    /* Zero-initialize the implementation */
+    if (impl)
+        impl->magic = 0;
+
+    /* Check parameters */
+    if (!der_data || !der_size || der_size > OE_INT_MAX || !cert)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Initialize OpenSSL (if not already initialized) */
+    oe_initialize_openssl();
+
+    p = (unsigned char*)der_data;
+
+    /* Convert the PEM BIO into a certificate object */
+    if (!(x509 = d2i_X509(NULL, (const unsigned char**)&p, (int)der_size)))
+        OE_RAISE(OE_FAILURE);
+
+    _cert_init(impl, x509);
+    x509 = NULL;
+
+    result = OE_OK;
+
+done:
+
+    X509_free(x509);
+
+    return result;
+}
+
 oe_result_t oe_cert_free(oe_cert_t* cert)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -679,6 +718,42 @@ oe_result_t oe_cert_verify(
     result = OE_OK;
 
 done:
+    return result;
+}
+
+oe_result_t oe_verify_self_signed_cert(
+    oe_cert_t* cert,
+    oe_verify_cert_error_t* error)
+{
+    oe_result_t result = OE_VERIFY_FAILED;
+    const Cert* impl = (const Cert*)cert;
+    EVP_PKEY* pubkey = NULL;
+    int ret = 0;
+
+    /* Initialize error to NULL for now */
+    if (error)
+        *error->buf = '\0';
+
+    // get the public key.
+    pubkey = X509_get_pubkey(impl->x509);
+    if (pubkey == NULL)
+    {
+        _set_err(error, "X509_get_pubkey failed");
+        OE_RAISE(OE_VERIFY_FAILED);
+    }
+
+    // verifies the signature of certificate cert using pubkey
+    ret = X509_verify(impl->x509, pubkey);
+    if (ret != 1)
+    {
+        _set_err(error, "X509_verify failed");
+        OE_RAISE(
+            OE_VERIFY_FAILED, "cert signature validation failed (ret=%d)", ret);
+    }
+
+    result = OE_OK;
+done:
+    EVP_PKEY_free(pubkey);
     return result;
 }
 
