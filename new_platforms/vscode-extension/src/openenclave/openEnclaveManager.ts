@@ -205,19 +205,26 @@ export class OpenEnclaveManager {
                 // Ensure that the sdk is present on the system
                 const shared3rdpartyLocation = path.join(this._context.globalStoragePath, Constants.openEnclaveSdkVersion, Constants.thirdPartyFolder);
                 if (!fse.existsSync(shared3rdpartyLocation)) {
-                    // Git clone to extension folder first, then move to global storage ... this is slow, but
-                    // the global storage path can be too long for git to handle.
                     const sdkDownloadMessage = "Downloading SDK (this is infrequent)";
                     progress.report({ message: sdkDownloadMessage });
+                    const cloneToLocation = (os.platform() === "win32") ?
+                        this._context.extensionPath :
+                        path.join(this._context.globalStoragePath, Constants.openEnclaveSdkVersion);
+
                     await this.internalUpdateSdkFromGit(
-                        this._context.extensionPath,
+                        cloneToLocation,
                         Constants.openEnclaveSdkName,
                         Constants.openEnclaveRepo,
                         Constants.openEnclaveBranch,
                         progress,
                         sdkDownloadMessage);
-                    progress.report({ message: "Sharing SDK for subsequent projects (this is infrequent)" });
-                    await this.internalMove(path.join(this._context.extensionPath, Constants.thirdPartyFolder), shared3rdpartyLocation);
+
+                    if (os.platform() === "win32") {
+                        // Git clone to extension folder first, then move to global storage ... this is slow, but
+                        // the global storage path can be too long for git to handle.
+                        progress.report({ message: "Sharing SDK for subsequent projects (this is infrequent)" });
+                        await this.internalMove(path.join(this._context.extensionPath, Constants.thirdPartyFolder), shared3rdpartyLocation);
+                    }
                 }
                 // Ensure that the sdk is present in the project
                 progress.report({ message: "Adding Open Enclave SDK to solution" });
