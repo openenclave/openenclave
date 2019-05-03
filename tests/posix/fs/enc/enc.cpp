@@ -35,12 +35,12 @@ class device_registrant
   public:
     device_registrant(uint64_t devid)
     {
-        OE_TEST(oe_set_device_for_current_thread(devid) == OE_OK);
+        OE_TEST(oe_set_thread_devid(devid) == OE_OK);
     }
 
     ~device_registrant()
     {
-        OE_TEST(oe_clear_device_for_current_thread() == OE_OK);
+        OE_TEST(oe_clear_thread_devid() == OE_OK);
     }
 };
 
@@ -507,9 +507,9 @@ void test_fs(const char* src_dir, const char* tmp_dir)
         test_all(fs, tmp_dir);
     }
 
-    /* Test oe_set_device_for_current_thread() */
+    /* Test oe_set_thread_devid() */
     {
-        printf("=== testing oe_set_device_for_current_thread:\n");
+        printf("=== testing oe_set_thread_devid:\n");
 
         fd_file_system fs;
         device_registrant reg(OE_DEVID_HOSTFS);

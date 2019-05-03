@@ -22,11 +22,11 @@ enum
     OE_DEVID_EVENTFD,
 };
 
-oe_result_t oe_set_device_for_current_thread(uint64_t devid);
+oe_result_t oe_set_thread_devid(uint64_t devid);
 
-oe_result_t oe_clear_device_for_current_thread(void);
+oe_result_t oe_clear_thread_devid(void);
 
-uint64_t oe_get_device_for_current_thread(void);
+uint64_t oe_get_thread_devid(void);
 
 OE_EXTERNC_END
 

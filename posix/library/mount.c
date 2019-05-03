@@ -50,7 +50,7 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
     {
         uint64_t devid;
 
-        if ((devid = oe_get_device_for_current_thread()) != OE_DEVID_NONE)
+        if ((devid = oe_get_thread_devid()) != OE_DEVID_NONE)
         {
             oe_device_t* device;
 

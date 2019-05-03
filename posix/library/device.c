@@ -260,9 +260,9 @@ done:
 /*
 **==============================================================================
 **
-** oe_set_device_for_current_thread()
-** oe_get_device_for_current_thread()
-** oe_clear_device_for_current_thread()
+** oe_set_thread_devid()
+** oe_get_thread_devid()
+** oe_clear_thread_devid()
 **
 **==============================================================================
 */
@@ -276,7 +276,7 @@ static void _create_tls_device_key()
         oe_abort();
 }
 
-oe_result_t oe_set_device_for_current_thread(uint64_t devid)
+oe_result_t oe_set_thread_devid(uint64_t devid)
 {
     oe_result_t result = OE_UNEXPECTED;
 
@@ -300,7 +300,7 @@ done:
     return result;
 }
 
-oe_result_t oe_clear_device_for_current_thread(void)
+oe_result_t oe_clear_thread_devid(void)
 {
     oe_result_t result = OE_UNEXPECTED;
 
@@ -324,7 +324,7 @@ done:
     return result;
 }
 
-uint64_t oe_get_device_for_current_thread(void)
+uint64_t oe_get_thread_devid(void)
 {
     uint64_t ret = OE_DEVID_NONE;
     uint64_t devid;
