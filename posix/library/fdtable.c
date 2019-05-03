@@ -106,7 +106,7 @@ int oe_fdtable_assign(oe_device_t* device)
     if (index == _table_size())
     {
         int retval = -1;
-        retval = oe_array_resize(&_fd_arr, _table_size() + CHUNK_SIZE);
+        retval = oe_array_resize(&_fd_arr, _table_size() + 1);
 
         if (retval != 0)
         {
