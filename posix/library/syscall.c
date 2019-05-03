@@ -10,6 +10,7 @@
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
+#include <openenclave/corelibc/sys/eventfd.h>
 #include <openenclave/corelibc/sys/ioctl.h>
 #include <openenclave/corelibc/sys/poll.h>
 #include <openenclave/corelibc/sys/select.h>
@@ -23,7 +24,6 @@
 #include <openenclave/internal/trace.h>
 #include "include/device.h"
 #include "include/epoll.h"
-#include "include/eventfd.h"
 
 typedef int (*ioctl_proc)(
     int fd,

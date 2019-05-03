@@ -10,7 +10,7 @@
 #include <openenclave/internal/utils.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/trace.h>
-#include "include/eventfd.h"
+#include <openenclave/corelibc/sys/eventfd.h>
 #include "include/fd.h"
 
 int oe_eventfd(unsigned int initval, int flags)

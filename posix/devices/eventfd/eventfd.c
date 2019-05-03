@@ -9,13 +9,13 @@
 
 #include "device.h"
 #include "eventfd_ops.h"
-#include "eventfd.h"
 #include <openenclave/bits/safemath.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
+#include <openenclave/corelibc/sys/eventfd.h>
 #include <openenclave/bits/module.h>
 #include <openenclave/internal/trace.h>
 
@@ -307,11 +307,6 @@ static eventfd_dev_t _eventfd = {
     .waitfor = OE_COND_INITIALIZER,
 };
 
-oe_device_t* oe_get_eventfd_device(void)
-{
-    return &_eventfd.base;
-}
-
 oe_result_t oe_load_module_eventfd(void)
 {
     oe_result_t result = OE_FAILURE;
@@ -333,7 +328,7 @@ oe_result_t oe_load_module_eventfd(void)
                 goto done;
             }
 
-            if ((ret = oe_set_device(devid, oe_get_eventfd_device())) != 0)
+            if ((ret = oe_set_device(devid, &_eventfd.base)) != 0)
             {
                 OE_TRACE_ERROR("devid=%lu ret=%d", devid, ret);
                 goto done;
