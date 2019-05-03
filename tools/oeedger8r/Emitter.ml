@@ -140,9 +140,6 @@ let open_file (filename : string) (dir : string) =
   fprintf os " */\n" ;
   os
 
-(** [oe_mk_ms_struct_name] appends our [struct] naming suffix. *)
-let oe_mk_ms_struct_name (fname : string) = fname ^ "_args_t"
-
 (** [oe_mk_struct_decl] constructs the string of a [struct] definition. *)
 let oe_mk_struct_decl (fs : string) (name : string) =
   String.concat "\n"
@@ -162,7 +159,7 @@ let oe_gen_marshal_struct_impl (fd : func_decl) (errno : string)
       (fun acc (pt, declr) -> acc ^ mk_ms_member_decl pt declr isecall)
       "" new_param_list
   in
-  let struct_name = oe_mk_ms_struct_name fd.fname in
+  let struct_name = fd.fname ^ "_args_t" in
   match fd.rtype with
   | Void -> oe_mk_struct_decl member_list_str struct_name
   | _ ->
