@@ -360,31 +360,62 @@ let get_cast_to_mem_expr (ptype, decl) (parens : bool) =
       else if parens then sprintf "(%s)" tystr
       else tystr
 
+let oe_compute_input_buffer_size (plist : pdecl list) =
+  let params =
+    List.map
+      (fun (ptype, decl) ->
+        let size = oe_get_param_size (ptype, decl, "_args.") in
+        sprintf "if (%s) OE_ADD_SIZE(_input_buffer_size, %s);" decl.identifier
+          size )
+      (List.filter (fun p -> is_in_ptr p || is_inout_ptr p) plist)
+  in
+  (* Note that the indentation for the first line is applied by the
+     parent function. *)
+  if params <> [] then String.concat "\n    " params
+  else "/* There were no in nor in-out parameters. */"
+
+let oe_compute_output_buffer_size (plist : pdecl list) =
+  let params =
+    List.map
+      (fun (ptype, decl) ->
+        let size = oe_get_param_size (ptype, decl, "_args.") in
+        sprintf "if (%s) OE_ADD_SIZE(_output_buffer_size, %s);" decl.identifier
+          size )
+      (List.filter (fun p -> is_out_ptr p || is_inout_ptr p) plist)
+  in
+  (* Note that the indentation for the first line is applied by the
+     parent function. *)
+  if params <> [] then String.concat "\n    " params
+  else "/* There were no out nor in-out parameters. */"
+
+let oe_serialize_buffer_inputs (plist : pdecl list) =
+  let params =
+    List.map
+      (fun (ptype, decl) ->
+        let size = oe_get_param_size (ptype, decl, "_args.") in
+        let tystr = get_cast_to_mem_expr (ptype, decl) false in
+        (* These need to be in order and so done together. *)
+        sprintf "OE_WRITE_%s_PARAM(%s, %s, %s);"
+          (if is_in_ptr (ptype, decl) then "IN" else "IN_OUT")
+          decl.identifier size tystr )
+      (List.filter (fun p -> is_in_ptr p || is_inout_ptr p) plist)
+  in
+  (* Note that the indentation for the first line is applied by the
+     parent function. *)
+  if params <> [] then String.concat "\n    " params
+  else "/* There were no in nor in-out parameters. */"
+
 (** Prepare [input_buffer]. *)
 let oe_prepare_input_buffer (fd : func_decl) (alloc_func : string) =
   [ "/* Compute input buffer size. Include in and in-out parameters. */"
   ; sprintf "OE_ADD_SIZE(_input_buffer_size, sizeof(%s_args_t));" fd.fname
-    (* TODO: Emit a comment instead of a blank newline if this is empty. *)
-  ; String.concat "\n    "
-      (List.map
-         (fun (ptype, decl) ->
-           let size = oe_get_param_size (ptype, decl, "_args.") in
-           sprintf "if (%s) OE_ADD_SIZE(_input_buffer_size, %s);"
-             decl.identifier size )
-         (List.filter (fun p -> is_in_ptr p || is_inout_ptr p) fd.plist))
+  ; oe_compute_input_buffer_size fd.plist
   ; ""
   ; "/* Compute output buffer size. Include out and in-out parameters. */"
   ; sprintf "OE_ADD_SIZE(_output_buffer_size, sizeof(%s_args_t));" fd.fname
-    (* TODO: Emit a comment instead of a blank newline if this is empty. *)
-  ; String.concat "\n    "
-      (List.map
-         (fun (ptype, decl) ->
-           let size = oe_get_param_size (ptype, decl, "_args.") in
-           sprintf "if (%s) OE_ADD_SIZE(_output_buffer_size, %s);"
-             decl.identifier size )
-         (List.filter (fun p -> is_out_ptr p || is_inout_ptr p) fd.plist))
+  ; oe_compute_output_buffer_size fd.plist
   ; ""
-  ; "/* Allocate marshalling buffer */"
+  ; "/* Allocate marshalling buffer. */"
   ; "_total_buffer_size = _input_buffer_size;"
   ; "OE_ADD_SIZE(_total_buffer_size, _output_buffer_size);"
   ; sprintf "_buffer = (uint8_t*)%s(_total_buffer_size);" alloc_func
@@ -396,45 +427,34 @@ let oe_prepare_input_buffer (fd : func_decl) (alloc_func : string) =
   ; "    goto done;"
   ; "}"
   ; ""
-  ; "/* Serialize buffer inputs (in and in-out parameters) */"
+  ; "/* Serialize buffer inputs (in and in-out parameters). */"
   ; sprintf "_pargs_in = (%s_args_t*)_input_buffer;" fd.fname
   ; "OE_ADD_SIZE(_input_buffer_offset, sizeof(*_pargs_in));"
-    (* TODO: Emit a comment instead of a blank newline if this is empty. *)
-  ; String.concat "\n    "
-      (List.map
-         (fun (ptype, decl) ->
-           let size = oe_get_param_size (ptype, decl, "_args.") in
-           let tystr = get_cast_to_mem_expr (ptype, decl) false in
-           (* These need to be in order and so done together. *)
-           sprintf "OE_WRITE_%s_PARAM(%s, %s, %s);"
-             (if is_in_ptr (ptype, decl) then "IN" else "IN_OUT")
-             decl.identifier size tystr )
-         (List.filter (fun p -> is_in_ptr p || is_inout_ptr p) fd.plist))
+  ; oe_serialize_buffer_inputs fd.plist
   ; ""
-  ; "/* Copy args structure (now filled) to input buffer */"
+  ; "/* Copy args structure (now filled) to input buffer. */"
   ; "memcpy(_pargs_in, &_args, sizeof(*_pargs_in));" ]
 
 let oe_process_output_buffer (fd : func_decl) =
   List.flatten
     [ [ (* Verify that the ecall succeeded *)
         ""
-      ; "/* Setup output arg struct pointer */"
+      ; "/* Setup output arg struct pointer. */"
       ; sprintf "_pargs_out = (%s_args_t*)_output_buffer;" fd.fname
       ; "OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));"
       ; ""
-      ; "/* Check if the call succeeded */"
+      ; "/* Check if the call succeeded. */"
       ; "if ((_result = _pargs_out->_result) != OE_OK)"
       ; "    goto done;"
       ; ""
-      ; "/* Currently exactly _output_buffer_size bytes must be written */"
+      ; "/* Currently exactly _output_buffer_size bytes must be written. */"
       ; "if (_output_bytes_written != _output_buffer_size)"
       ; "{"
       ; "    _result = OE_FAILURE;"
       ; "    goto done;"
       ; "}"
       ; ""
-      ; (* Unmarshal return value and output buffers *)
-        "/* Unmarshal return value and out, in-out parameters */"
+      ; "/* Unmarshal return value and out, in-out parameters. */"
       ; ( if fd.rtype <> Void then "*_retval = _pargs_out->_retval;"
         else "/* No return value. */" ) ]
     ; (* This does not use String.concat because the elements are multiple lines. *)
