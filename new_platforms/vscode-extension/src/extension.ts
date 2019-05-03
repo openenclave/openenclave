@@ -36,7 +36,6 @@ function initCommandAsync(
             let errorData: ErrorData | undefined;
             const properties: { [key: string]: string; } = {};
             properties.result = "Succeeded";
-            TelemetryClient.sendEvent(`${commandId}.start`);
             outputChannel.appendLine(`${commandId}: `);
             try {
                 return await callback(...args);
@@ -44,7 +43,7 @@ function initCommandAsync(
                 if (error instanceof UserCancelledError) {
                     properties.result = "Cancelled";
                     outputChannel.appendLine(Constants.userCancelled);
-                } else {
+                } else if (error) {
                     properties.result = "Failed";
                     errorData = new ErrorData(error);
                     outputChannel.appendLine(`Error: ${errorData.message}`);
@@ -57,7 +56,6 @@ function initCommandAsync(
                     properties.error = errorData.errorType;
                     properties.errorMessage = errorData.message;
                 }
-                TelemetryClient.sendEvent(`${commandId}.end`, properties);
             }
         }));
 }

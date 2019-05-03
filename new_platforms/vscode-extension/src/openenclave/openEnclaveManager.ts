@@ -105,18 +105,23 @@ export class OpenEnclaveManager {
     }
 
     private async internalCreateOpenEnclaveSolution(progress: ProgressUpdater): Promise<void> {
-        return new Promise(async () => {
+        return new Promise(async (resolve, reject) => {
             // Prompt user for new Solution path
             const parentPath: string | undefined = await this.getSolutionParentFolder();
             if (parentPath === undefined) {
-                throw new UserCancelledError();
+                reject();
+            } else {
+                try {
+                    // Populate new solution folder with Open Enclave code
+                    const openEnclaveFolder = await this.populateOpenEnclaveSolution(parentPath, progress);
+                    resolve();
+
+                    // Open new solution in VSCode
+                    await vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(openEnclaveFolder), false);
+                } catch (error) {
+                    reject(error);
+                }
             }
-
-            // Populate new solution folder with Open Enclave code
-            const openEnclaveFolder = await this.populateOpenEnclaveSolution(parentPath, progress);
-
-            // Open new solution in VSCode
-            await vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(openEnclaveFolder), false);
         });
     }
 
@@ -139,7 +144,8 @@ export class OpenEnclaveManager {
                 const openEnclaveName: string | undefined =
                     await this.inputSolutionName(parentFolder, (createEdgeSolution) ? Constants.edgeSolutionNameDefault : Constants.standaloneSolutionNameDefault);
                 if (openEnclaveName === undefined) {
-                    throw new UserCancelledError();
+                    reject();
+                    return "";
                 }
 
                 // Prompt user for docker repo if needed
@@ -246,7 +252,8 @@ export class OpenEnclaveManager {
                 resolve(openEnclaveFolder);
 
             } catch (error) {
-                progress.report({ message: "Failed to Open Enclave solution" });
+                TelemetryClient.sendEvent(`msiot-vscode-openenclave.newSolution.Failure`, {error: (error) ? error.message : "unknown"});
+                progress.report({ message: "Failed to create new Open Enclave solution" });
                 reject(error);
             }
         });
