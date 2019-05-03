@@ -53,8 +53,13 @@ export class OpenEnclaveManager {
 
     public async updateSdkFromGit(incomingWorkspaceFolder: string | null): Promise<void> {
         return this.promiseWithProgress(async (progress, resolve, reject) => {
-            const sdkDownloadMessage = "Downloading SDK";
-            return this.internalUpdateSdkFromGit(incomingWorkspaceFolder, Constants.openEnclaveSdkName, Constants.openEnclaveRepo, Constants.openEnclaveBranch, progress, sdkDownloadMessage)
+            return this.internalUpdateSdkFromGit(
+                incomingWorkspaceFolder,
+                Constants.openEnclaveSdkName,
+                Constants.openEnclaveRepo,
+                Constants.openEnclaveBranch,
+                progress,
+                "Downloading SDK")
                 .then(() => {
                     resolve();
                 })
@@ -204,7 +209,13 @@ export class OpenEnclaveManager {
                     // the global storage path can be too long for git to handle.
                     const sdkDownloadMessage = "Downloading SDK (this is infrequent)";
                     progress.report({ message: sdkDownloadMessage });
-                    await this.internalUpdateSdkFromGit(this._context.extensionPath, Constants.openEnclaveSdkName, Constants.openEnclaveRepo, Constants.openEnclaveBranch, progress, sdkDownloadMessage);
+                    await this.internalUpdateSdkFromGit(
+                        this._context.extensionPath,
+                        Constants.openEnclaveSdkName,
+                        Constants.openEnclaveRepo,
+                        Constants.openEnclaveBranch,
+                        progress,
+                        sdkDownloadMessage);
                     progress.report({ message: "Sharing SDK for subsequent projects (this is infrequent)" });
                     await this.internalMove(path.join(this._context.extensionPath, Constants.thirdPartyFolder), shared3rdpartyLocation);
                 }
