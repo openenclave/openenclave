@@ -1180,7 +1180,7 @@ oe_result_t oe_load_module_hostsock(void)
             }
 
             /* Add the hostfs device to the device table. */
-            if (oe_set_devid_device(devid, &_hostsock.base) != 0)
+            if (oe_set_device(devid, &_hostsock.base) != 0)
             {
                 OE_TRACE_ERROR("devid=%lu", devid);
                 goto done;

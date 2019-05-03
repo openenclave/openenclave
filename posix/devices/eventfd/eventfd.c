@@ -333,8 +333,7 @@ oe_result_t oe_load_module_eventfd(void)
                 goto done;
             }
 
-            if ((ret = oe_set_devid_device(devid, oe_get_eventfd_device())) !=
-                0)
+            if ((ret = oe_set_device(devid, oe_get_eventfd_device())) != 0)
             {
                 OE_TRACE_ERROR("devid=%lu ret=%d", devid, ret);
                 goto done;

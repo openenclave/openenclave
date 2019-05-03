@@ -5,13 +5,13 @@
 
 #include <openenclave/enclave.h>
 
-#include <openenclave/internal/thread.h>
 #include <openenclave/corelibc/string.h>
+#include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
+#include "epoll.h"
+#include "epoll_ops.h"
 #include "fd.h"
 #include "posix_t.h"
-#include "epoll_ops.h"
-#include "epoll.h"
 
 /*
 **==============================================================================
@@ -823,7 +823,7 @@ oe_result_t oe_load_module_hostepoll(void)
             }
 
             /* Add to the device table. */
-            if (oe_set_devid_device(devid, &_epoll.base) != 0)
+            if (oe_set_device(devid, &_epoll.base) != 0)
             {
                 OE_TRACE_ERROR("devid=%lu", devid);
                 goto done;

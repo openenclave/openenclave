@@ -154,7 +154,7 @@ done:
     return ret;
 }
 
-int oe_set_devid_device(uint64_t devid, oe_device_t* device)
+int oe_set_device(uint64_t devid, oe_device_t* device)
 {
     int ret = -1;
 

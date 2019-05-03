@@ -51,7 +51,7 @@ uint64_t oe_allocate_devid(uint64_t devid);
 
 int oe_release_devid(uint64_t devid);
 
-int oe_set_devid_device(uint64_t devid, oe_device_t* pdevice);
+int oe_set_device(uint64_t devid, oe_device_t* pdevice);
 
 oe_device_t* oe_get_device(uint64_t devid, oe_device_type_t type);
 
