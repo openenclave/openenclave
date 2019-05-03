@@ -22,8 +22,8 @@ interface IUserProgressOptions extends PartialProgressOptions {
     cancellationToken?: vscode.CancellationToken;
 }
 const defaultProgressOptions: vscode.ProgressOptions = {
-    location: vscode.ProgressLocation.Window,
-    title: "",
+    location: vscode.ProgressLocation.Notification,
+    title: Constants.openEnclaveDisplayName,
 };
 const userProgressOptionsDefaults: IUserProgressOptions = {
     ...defaultProgressOptions,
@@ -162,29 +162,29 @@ export class OpenEnclaveManager {
                 await fse.mkdirsSync(enclaveFolder);
 
                 // Create user files with template replacements made
-                progress.report({ message: "Creating base files ... " });
+                progress.report({ message: "Creating base files" });
                 // Put base files in place
                 const baseTemplateSolutionPath = this._context.asAbsolutePath(path.join(Constants.assetsFolder, Constants.baseSolutionTemplateFolder));
                 await Utility.copyTemplateFiles(baseTemplateSolutionPath, enclaveFolder, null, replacementMap);
-                progress.report({ message: "Base files created. " });
+                progress.report({ message: "Base files created" });
                 if (createEdgeSolution) {
-                    progress.report({ message: "Creating edge files ... " });
+                    progress.report({ message: "Creating edge files" });
                     // Put edge files in place
                     const edgeTemplateSolutionPath = this._context.asAbsolutePath(path.join(Constants.assetsFolder, Constants.edgeSolutionTemplateFolder));
                     await Utility.copyTemplateFiles(edgeTemplateSolutionPath, openEnclaveFolder, null, replacementMap);
-                    progress.report({ message: "Edge files created. " });
+                    progress.report({ message: "Edge files created" });
                 } else {
-                    progress.report({ message: "Creating standalone files ... " });
+                    progress.report({ message: "Creating standalone files" });
                     // Put standalone files in place
                     const standaloneTemplateSolutionPath = this._context.asAbsolutePath(path.join(Constants.assetsFolder, Constants.standaloneSolutionTemplateFolder));
                     await Utility.copyTemplateFiles(standaloneTemplateSolutionPath, openEnclaveFolder, null, replacementMap);
-                    progress.report({ message: "Standalone files created. " });
+                    progress.report({ message: "Standalone files created" });
                 }
-                progress.report({ message: "Solution files created." });
+                progress.report({ message: "Solution files created" });
 
                 if (createEdgeSolution) {
                     if (dockerRepo) {
-                        progress.report({ message: "Update deployment template ..." });
+                        progress.report({ message: "Update deployment template" });
                         const address = Utility.getRegistryAddress(dockerRepo);
                         const addressKey = Utility.getAddressKey(address);
                         const lowerCase = address.toLowerCase();
@@ -192,14 +192,14 @@ export class OpenEnclaveManager {
                             await this.writeRegistryCredEnv(address, path.join(openEnclaveFolder, ".env"), `${addressKey}_USERNAME`, `${addressKey}_PASSWORD`);
                             await this.internalUpdateDeploymentTemplate(openEnclaveFolder, address, addressKey, `${addressKey}_USERNAME`, `${addressKey}_PASSWORD`);
                         }
-                        progress.report({ message: "Deployment template updated." });
+                        progress.report({ message: "Deployment template updated" });
                     }
                 } else {
                     // Ensure that the build folders are created for the standalone project
-                    progress.report({ message: "Create build folders ... " });
+                    progress.report({ message: "Create build folders" });
                     await fse.mkdirsSync(path.join(openEnclaveFolder, Constants.standaloneBuildFolder, "vexpress-qemu_virt"));
                     await fse.mkdirsSync(path.join(openEnclaveFolder, Constants.standaloneBuildFolder, "vexpress-qemu_armv8a"));
-                    progress.report({ message: "Build folders created." });
+                    progress.report({ message: "Build folders created" });
                 }
 
                 // Ensure that the sdk is present on the system
@@ -208,9 +208,9 @@ export class OpenEnclaveManager {
                     await this.internalUpdateSdkFromGit(this._context.extensionPath, Constants.openEnclaveSdkName, Constants.openEnclaveRepo, Constants.openEnclaveBranch, progress);
                 }
                 // Ensure that the sdk is present in the project
-                progress.report({ message: "Updating Open Enclave SDK ..." });
+                progress.report({ message: "Adding Open Enclave SDK to solution" });
                 await this.internalMakeCopyOrLink(shared3rdpartyLocation, path.join(enclaveFolder, Constants.thirdPartyFolder), !createEdgeSolution);
-                progress.report({ message: "Open Enclave SDK updated." });
+                progress.report({ message: "Open Enclave SDK added" });
 
                 // Ensure that the devkit is present on the system
                 const sharedDevkitLocation = path.join(this._context.extensionPath, Constants.devKitFolder);
@@ -219,12 +219,12 @@ export class OpenEnclaveManager {
                     await this.internalExpandDevkit(fse.createReadStream(embeddedDevkitPath), sharedDevkitLocation, progress);
                 }
                 // Ensure that the devkit is present in the project
-                progress.report({ message: "Updating toolchain ..." });
+                progress.report({ message: "Adding toolchain to solution" });
                 await this.internalMakeCopyOrLink(sharedDevkitLocation, path.join(enclaveFolder, Constants.devKitFolder), !createEdgeSolution);
-                progress.report({ message: "Toolchain updated." });
+                progress.report({ message: "Toolchain added" });
 
                 // Success!
-                progress.report({ message: "Created Open Enclave solution." });
+                progress.report({ message: "Created Open Enclave solution" });
                 resolve(openEnclaveFolder);
 
             } catch (error) {
@@ -373,7 +373,7 @@ export class OpenEnclaveManager {
                                 reject(blobErr);
                             } else {
                                 // Expand downloaded devkit tarball to local path
-                                progress.report({ message: "Expanding devkit ..."});
+                                progress.report({ message: "Expanding devkit"});
                                 await this.internalExpandDevkit(fse.createReadStream(tempFilePath), null, progress);
                                 progress.report({ message: "Devkit expanded."});
                                 // Remove temp file
@@ -404,7 +404,7 @@ export class OpenEnclaveManager {
                         reject(pathExistsErr);
                     } else if (exists) {
                         // If sdkDestination exists, it must be emptied and deleted.
-                        progress.report({ message: "Cloning SDK from git ..." });
+                        progress.report({ message: "Cloning SDK from git" });
                         return this.clearFolderAndThen(sdkDestination, resolve, reject, progress, () => {
                             // Folder has been deleted, download SDK from git
                             return GitHelper.recursiveCloneFromGit(gitRepo, gitBranch, sdkDestination, false, progress)
@@ -420,7 +420,7 @@ export class OpenEnclaveManager {
                         });
                     } else {
                         // If folder does not exist, download SDK from git
-                        progress.report({ message: "Cloning SDK from git ..." });
+                        progress.report({ message: "Cloning SDK from git" });
                         return GitHelper.recursiveCloneFromGit(gitRepo, gitBranch, sdkDestination, false, progress)
                             .then(() => {
                                 // Signal success
@@ -453,7 +453,7 @@ export class OpenEnclaveManager {
                         // If sdkDestination exists, it must be emptied and deleted.
                         return this.clearFolderAndThen(workspaceFolder, resolve, reject, progress, () => {
                             // Folder has been deleted, download SDK from git
-                            return this.expandTarGzStream(devKitStream, workspaceFolder, "Expanding devkit", progress)
+                            return this.expandTarGzStream(devKitStream, workspaceFolder, "Expanding shared devkit", progress)
                                 .then(() => {
                                     // Signal success
                                     resolve();
@@ -465,7 +465,7 @@ export class OpenEnclaveManager {
                         });
                     } else {
                         // If folder does not exist, download SDK from git
-                        return this.expandTarGzStream(devKitStream, workspaceFolder, "Expanding devkit", progress)
+                        return this.expandTarGzStream(devKitStream, workspaceFolder, "Expanding shared devkit", progress)
                             .then(() => {
                                 // Signal success
                                 resolve();
