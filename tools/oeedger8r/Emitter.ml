@@ -1054,15 +1054,6 @@ let gen_t_c (ec : enclave_content) (ep : edger8r_params) =
   fprintf os "%s" (String.concat "\n" content) ;
   close_out os
 
-let oe_emit_create_enclave_decl (os : out_channel) (ec : enclave_content) =
-  fprintf os "oe_result_t oe_create_%s_enclave(const char* path,\n"
-    ec.enclave_name ;
-  fprintf os "                                 oe_enclave_type_t type,\n" ;
-  fprintf os "                                 uint32_t flags,\n" ;
-  fprintf os "                                 const void* config,\n" ;
-  fprintf os "                                 uint32_t config_size,\n" ;
-  fprintf os "                                 oe_enclave_t** enclave);\n\n"
-
 let oe_emit_create_enclave_defn (os : out_channel) (ec : enclave_content) =
   fprintf os "oe_result_t oe_create_%s_enclave(const char* path,\n"
     ec.enclave_name ;
@@ -1083,29 +1074,51 @@ let oe_emit_create_enclave_defn (os : out_channel) (ec : enclave_content) =
   fprintf os "}\n\n"
 
 let gen_u_h (ec : enclave_content) (ep : edger8r_params) =
-  let fname = ec.file_shortnm ^ "_u.h" in
+  let oe_gen_tfunc_wrapper_prototypes (tfs : trusted_func list) =
+    if tfs <> [] then
+      List.map
+        (fun f -> sprintf "%s;" (oe_gen_wrapper_prototype f.tf_fdecl true))
+        tfs
+    else ["/* There were no ecalls. */"]
+  in
+  let oe_gen_ufunc_prototypes (ufs : untrusted_func list) =
+    if ufs <> [] then
+      List.map (fun f -> sprintf "%s;" (oe_gen_prototype f.uf_fdecl)) ufs
+    else ["/* There were no ocalls. */"]
+  in
   let guard = sprintf "EDGER8R_%s_U_H" (String.uppercase ec.file_shortnm) in
+  let content =
+    [ sprintf "#ifndef %s" guard
+    ; sprintf "#define %s" guard
+    ; ""
+    ; "#include <openenclave/host.h>"
+    ; ""
+    ; sprintf "#include \"%s_args.h\"" ec.file_shortnm
+    ; ""
+    ; "OE_EXTERNC_BEGIN"
+    ; ""
+    ; sprintf "oe_result_t oe_create_%s_enclave(" ec.enclave_name
+    ; "    const char* path,"
+    ; "    oe_enclave_type_t type,"
+    ; "    uint32_t flags,"
+    ; "    const void* config,"
+    ; "    uint32_t config_size,"
+    ; "    oe_enclave_t** enclave);"
+    ; ""
+    ; "/**** ECALL prototypes. ****/"
+    ; String.concat "\n\n" (oe_gen_tfunc_wrapper_prototypes ec.tfunc_decls)
+    ; ""
+    ; "/**** OCALL prototypes. ****/"
+    ; String.concat "\n\n" (oe_gen_ufunc_prototypes ec.ufunc_decls)
+    ; ""
+    ; "OE_EXTERNC_END"
+    ; ""
+    ; sprintf "#endif // %s" guard
+    ; "" ]
+  in
+  let fname = ec.file_shortnm ^ "_u.h" in
   let os = open_file fname ep.untrusted_dir in
-  fprintf os "#ifndef %s\n" guard ;
-  fprintf os "#define %s\n\n" guard ;
-  fprintf os "#include <openenclave/host.h>\n" ;
-  fprintf os "#include \"%s_args.h\"\n\n" ec.file_shortnm ;
-  fprintf os "OE_EXTERNC_BEGIN\n\n" ;
-  oe_emit_create_enclave_decl os ec ;
-  if ec.tfunc_decls <> [] then (
-    fprintf os "/* List of ecalls */\n\n" ;
-    List.iter
-      (fun f -> fprintf os "%s;\n" (oe_gen_wrapper_prototype f.tf_fdecl true))
-      ec.tfunc_decls ;
-    fprintf os "\n" ) ;
-  if ec.ufunc_decls <> [] then (
-    fprintf os "/* List of ocalls */\n\n" ;
-    List.iter
-      (fun d -> fprintf os "%s;\n" (oe_gen_prototype d.uf_fdecl))
-      ec.ufunc_decls ;
-    fprintf os "\n" ) ;
-  fprintf os "OE_EXTERNC_END\n\n" ;
-  fprintf os "#endif // %s\n" guard ;
+  fprintf os "%s" (String.concat "\n" content) ;
   close_out os
 
 let gen_u_c (ec : enclave_content) (ep : edger8r_params) =
