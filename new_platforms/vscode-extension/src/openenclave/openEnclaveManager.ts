@@ -481,7 +481,7 @@ export class OpenEnclaveManager {
 
     private async expandTarGzStream(devKitStream: NodeJS.ReadableStream, localFilePath: string, progressPrefix: string, progress: ProgressUpdater): Promise<void> {
         return new Promise(async (resolve, reject) => {
-            progress.report({ message: `${progressPrefix}: ${localFilePath}`});
+            progress.report({ message: `${progressPrefix}`});
             fse.mkdirs(localFilePath);
 
             // Pipe: DevKit Stream => Zlib unizp => tar.extract
