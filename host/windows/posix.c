@@ -14,6 +14,8 @@
 
 #include <io.h>
 #include <stdint.h>
+#include <errno.h>
+#include <limits.h>
 
 #include "posix_u.h"
 
@@ -54,13 +56,23 @@ oe_host_fd_t oe_posix_open_ocall(
 
 ssize_t oe_posix_read_ocall(oe_host_fd_t fd, void* buf, size_t count)
 {
-    /* ATTN: casting 64-bit fd to 32-bit fd */
+    if (fd > INT_MAX)
+    {
+        errno = EBADF;
+        return -1;
+    }
+
     return _read((int)fd, buf, (uint32_t)count);
 }
 
 ssize_t oe_posix_write_ocall(oe_host_fd_t fd, const void* buf, size_t count)
 {
-    /* ATTN: casting 64-bit fd to 32-bit fd */
+    if (fd > INT_MAX)
+    {
+        errno = EBADF;
+        return -1;
+    }
+
     return _write((int)fd, buf, (uint32_t)count);
 }
 
