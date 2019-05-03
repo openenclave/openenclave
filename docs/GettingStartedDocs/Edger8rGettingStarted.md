@@ -597,7 +597,7 @@ void main(void)
         // We now have a string in out_string
 
         // When we are done we need to free it
-        oe_host_free(out_string);
+        free(out_string);
     }
 }
 ```
