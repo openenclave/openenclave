@@ -763,17 +763,6 @@ let oe_gen_enclave_ocall_wrappers (ufs : untrusted_func list) =
   if ufs <> [] then List.flatten (List.map oe_gen_enclave_ocall_wrapper ufs)
   else ["/* There were no ocalls. */"]
 
-(** Generate ocall function table and registration *)
-let oe_gen_ocall_table (os : out_channel) (ec : enclave_content) =
-  fprintf os "\n/*ocall function table*/\n" ;
-  fprintf os "static oe_ocall_func_t __%s_ocall_function_table[]= {\n"
-    ec.enclave_name ;
-  List.iter
-    (fun fd -> fprintf os "    (oe_ocall_func_t) ocall_%s,\n" fd.uf_fdecl.fname)
-    ec.ufunc_decls ;
-  fprintf os "    NULL\n" ;
-  fprintf os "};\n\n"
-
 (** Generate ocall function. *)
 let oe_gen_ocall_function (uf : untrusted_func) =
   let fd = uf.uf_fdecl in
@@ -830,6 +819,17 @@ let oe_gen_ocall_function (uf : untrusted_func) =
   ; "        pargs_out->_result = _result;"
   ; "}"
   ; "" ]
+
+(** Generate the OCALL function table. Note that this is always present. *)
+let oe_gen_ocall_table (ufs : untrusted_func list) (name : string) =
+  [ sprintf "static oe_ocall_func_t __%s_ocall_function_table[] = {" name
+  ; "    "
+    ^ String.concat "\n    "
+        (List.map
+           (fun f -> sprintf "(oe_ocall_func_t) ocall_%s," f.uf_fdecl.fname)
+           ufs)
+  ; "    NULL"
+  ; "};" ]
 
 (** Check if any of the parameters or the return type has the given
     root type. *)
