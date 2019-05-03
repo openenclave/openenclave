@@ -235,28 +235,6 @@ done:
     return ret;
 }
 
-uint64_t oe_device_name_to_devid(const char* name)
-{
-    uint64_t ret = OE_DEVID_NONE;
-
-    if (!name)
-        goto done;
-
-    for (uint64_t devid = 0; devid < (uint64_t)_table_size(); devid++)
-    {
-        oe_device_t* dev = _table()[devid];
-
-        if (dev && oe_strcmp(dev->name, name) == 0)
-        {
-            ret = devid;
-            goto done;
-        }
-    }
-
-done:
-    return ret;
-}
-
 /*
 **==============================================================================
 **

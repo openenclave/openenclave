@@ -86,6 +86,7 @@ typedef struct _oe_sock_ops
         int optname,
         const void* optval,
         socklen_t optlen);
+
     int (*getpeername)(
         oe_device_t* dev,
         struct oe_sockaddr* addr,
