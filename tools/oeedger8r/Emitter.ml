@@ -820,6 +820,11 @@ let oe_gen_ocall_function (uf : untrusted_func) =
   ; "}"
   ; "" ]
 
+(** Generate all OCALL functions, if any. *)
+let oe_gen_ocall_functions (ufs : untrusted_func list) =
+  if ufs <> [] then List.flatten (List.map oe_gen_ocall_function ufs)
+  else ["/* There were no ocalls. */"]
+
 (** Generate the OCALL function table. Note that this is always present. *)
 let oe_gen_ocall_table (ufs : untrusted_func list) (name : string) =
   [ sprintf "static oe_ocall_func_t __%s_ocall_function_table[] = {" name
@@ -1054,25 +1059,6 @@ let gen_t_c (ec : enclave_content) (ep : edger8r_params) =
   fprintf os "%s" (String.concat "\n" content) ;
   close_out os
 
-let oe_emit_create_enclave_defn (os : out_channel) (ec : enclave_content) =
-  fprintf os "oe_result_t oe_create_%s_enclave(const char* path,\n"
-    ec.enclave_name ;
-  fprintf os "                                 oe_enclave_type_t type,\n" ;
-  fprintf os "                                 uint32_t flags,\n" ;
-  fprintf os "                                 const void* config,\n" ;
-  fprintf os "                                 uint32_t config_size,\n" ;
-  fprintf os "                                 oe_enclave_t** enclave)\n" ;
-  fprintf os "{\n" ;
-  fprintf os "    return oe_create_enclave(path,\n" ;
-  fprintf os "               type,\n" ;
-  fprintf os "               flags,\n" ;
-  fprintf os "               config,\n" ;
-  fprintf os "               config_size,\n" ;
-  fprintf os "               __%s_ocall_function_table,\n" ec.enclave_name ;
-  fprintf os "               %d,\n" (List.length ec.ufunc_decls) ;
-  fprintf os "               enclave);\n" ;
-  fprintf os "}\n\n"
-
 let gen_u_h (ec : enclave_content) (ep : edger8r_params) =
   let oe_gen_tfunc_wrapper_prototypes (tfs : trusted_func list) =
     if tfs <> [] then
@@ -1122,32 +1108,51 @@ let gen_u_h (ec : enclave_content) (ep : edger8r_params) =
   close_out os
 
 let gen_u_c (ec : enclave_content) (ep : edger8r_params) =
+  let content =
+    [ sprintf "#include \"%s_u.h\"" ec.file_shortnm
+    ; ""
+    ; "#include <openenclave/edger8r/host.h>"
+    ; ""
+    ; "#include <stdlib.h>"
+    ; "#include <string.h>"
+    ; "#include <wchar.h>"
+    ; ""
+    ; "OE_EXTERNC_BEGIN"
+    ; ""
+    ; "/**** ECALL function wrappers. ****/"
+    ; String.concat "\n" (oe_gen_host_ecall_wrappers ec.tfunc_decls)
+    ; ""
+    ; "/**** OCALL functions. ****/"
+    ; String.concat "\n" (oe_gen_ocall_functions ec.ufunc_decls)
+    ; ""
+    ; "/**** OCALL function table. ****/"
+    ; String.concat "\n" (oe_gen_ocall_table ec.ufunc_decls ec.enclave_name)
+    ; ""
+    ; sprintf "oe_result_t oe_create_%s_enclave(" ec.enclave_name
+    ; "    const char* path,"
+    ; "    oe_enclave_type_t type,"
+    ; "    uint32_t flags,"
+    ; "    const void* config,"
+    ; "    uint32_t config_size,"
+    ; "    oe_enclave_t** enclave)"
+    ; "{"
+    ; "    return oe_create_enclave("
+    ; "               path,"
+    ; "               type,"
+    ; "               flags,"
+    ; "               config,"
+    ; "               config_size,"
+    ; sprintf "               __%s_ocall_function_table," ec.enclave_name
+    ; sprintf "               %d," (List.length ec.ufunc_decls)
+    ; "               enclave);"
+    ; "}"
+    ; ""
+    ; "OE_EXTERNC_END"
+    ; "" ]
+  in
   let ecalls_fname = ec.file_shortnm ^ "_u.c" in
   let os = open_file ecalls_fname ep.untrusted_dir in
-  fprintf os "#include \"%s_u.h\"\n" ec.file_shortnm ;
-  fprintf os "#include <openenclave/edger8r/host.h>\n" ;
-  fprintf os "#include <stdlib.h>\n" ;
-  fprintf os "#include <string.h>\n" ;
-  fprintf os "#include <wchar.h>\n" ;
-  fprintf os "\n" ;
-  fprintf os "OE_EXTERNC_BEGIN\n\n" ;
-  if ec.tfunc_decls <> [] then (
-    fprintf os "/* Wrappers for ecalls */\n\n" ;
-    List.iter
-      (fun d ->
-        fprintf os "%s"
-          (String.concat "\n" (oe_gen_host_ecall_wrapper d.tf_fdecl)) ;
-        fprintf os "\n\n" )
-      ec.tfunc_decls ) ;
-  if ec.ufunc_decls <> [] then (
-    fprintf os "\n/* ocall functions */\n\n" ;
-    fprintf os "%s"
-      (String.concat "\n"
-         (List.flatten
-            (List.map (fun d -> oe_gen_ocall_function d) ec.ufunc_decls))) ) ;
-  oe_gen_ocall_table os ec ;
-  oe_emit_create_enclave_defn os ec ;
-  fprintf os "OE_EXTERNC_END\n" ;
+  fprintf os "%s" (String.concat "\n" content) ;
   close_out os
 
 (** Generate the Enclave code. *)
