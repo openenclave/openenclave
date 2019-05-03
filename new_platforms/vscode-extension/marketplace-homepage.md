@@ -22,7 +22,7 @@ Alternatively, you can run the extension from this repository by following these
 
 ### Create a new Open Enclave solution.
 
-You can use the `Microsoft Open Enclave: New Open Enclave Solution` command (commands can be found using **CTRL-Shift-P**) 
+You can use the `Microsoft Open Enclave: New Open Enclave Solution` command (commands can be found using **F1** or **CTRL-Shift-P**) 
 to create a new Open Enclave solution.  
 
 You will be prompted to:
@@ -46,7 +46,7 @@ For a standalone project, there will be configure and build tasks for each targe
 configure task will invoke CMake to create the required build files.  This is only required to be run once.  
 The build task will do the actual compiling and linking.
 
-1. **CTRL-Shift-P**
+1. **F1** or **CTRL-Shift-P**
 1. Select `Tasks: Run Task`
 1. Select `Configure for QEMU (ARMv7-A | AArch64/ARMv8-A)`
 1. Select `Build for QEMU (ARMv7-A | AArch64/ARMv8-A)`
@@ -63,7 +63,7 @@ container project will invoke docker and leverage project dockerfiles.  The cont
 Deploying an Azure IoT Edge container project is fairly simple:
 
 1. Select the desired platform:
-    1. **CTRL-Shift-P**
+    1. **F1** or **CTRL-Shift-P**
     1. Select `Azure IoT Edge: Set Default Target Platform for Edge Solution`
     1. Choose from `arm32v7` or `aarch64`
 1. Right click on `modules/<solution-name>/module.json`
@@ -115,10 +115,10 @@ the host and enclave symbols into an instance of the debugger.
 
     * Create a container repository, like [Azure Container Registry](https://azure.microsoft.com/en-us/services/container-registry/)
     * Make sure that the [Azure Account extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.azure-account) is installed and utilized:
-        1. **CTRL-Shift-P**
+        1. **F1** or **CTRL-Shift-P**
         1. `Azure: Sign In`
     * Make sure that the [Azure IoT Hub Toolkit](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-toolkit) extension is installed and utilized:
-        1. **CTRL-Shift-P**
+        1. **F1** or **CTRL-Shift-P**
         1. `Azure IoT Hub: Select IoT Hub`
 
 ### For development of this extension, or running from source code directly
