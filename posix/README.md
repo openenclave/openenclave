@@ -19,5 +19,5 @@ So far, **liboeposix** handles requests on the following kinds of objects.
 - events
 
 Devices are implemented as separate static libraries. See the implementations
-in the [devices](https://github.com/Microsoft/openenclave/posix/devices) for
+in the [devices](./devices) for
 more informations.
