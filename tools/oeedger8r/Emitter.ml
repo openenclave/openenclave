@@ -78,13 +78,14 @@ let conv_array_to_ptr (pd : pdecl) : pdecl =
     the pass-by-address scheme as in the C programming language. *)
 let mk_ms_member_decl (pt : parameter_type) (declr : declarator)
     (isecall : bool) =
+  (* TODO: Clean this up. *)
   let aty = get_param_atype pt in
   let tystr =
     if is_foreign_array pt then
       sprintf "/* foreign array of type %s */ void" (get_tystr aty)
     else get_tystr aty
   in
-  let ptr = if is_foreign_array pt then "* " else "" in
+  let ptr = if is_foreign_array pt then "*" else "" in
   let field = declr.identifier in
   (* String attribute is available for in/in-out both ecall and ocall.
      For ocall ,strlen is called in trusted proxy code, so no need to
@@ -100,7 +101,7 @@ let mk_ms_member_decl (pt : parameter_type) (declr : declarator)
         else false
   in
   let str_len =
-    if need_str_len_var pt then sprintf "\tsize_t %s_len;\n" field else ""
+    if need_str_len_var pt then sprintf "    size_t %s_len;\n" field else ""
   in
   let dmstr = get_array_dims declr.array_dims in
   sprintf "    %s%s %s%s;\n%s" tystr ptr field dmstr str_len
@@ -143,7 +144,8 @@ let open_file (filename : string) (dir : string) =
 (** [oe_mk_struct_decl] constructs the string of a [struct] definition. *)
 let oe_mk_struct_decl (fs : string) (name : string) =
   String.concat "\n"
-    [ sprintf "typedef struct _%s {" name
+    [ sprintf "typedef struct _%s" name
+    ; "{"
     ; "    oe_result_t _result;"
     ; sprintf "%s} %s;" fs name ]
 
@@ -151,6 +153,7 @@ let oe_mk_struct_decl (fs : string) (name : string) =
     definition. *)
 let oe_gen_marshal_struct_impl (fd : func_decl) (errno : string)
     (isecall : bool) =
+  (* TODO: Clean this up. *)
   let member_list_str =
     errno
     ^
@@ -167,13 +170,14 @@ let oe_gen_marshal_struct_impl (fd : func_decl) (errno : string)
       oe_mk_struct_decl (rv_str ^ member_list_str) struct_name
 
 let oe_gen_ecall_marshal_struct (tf : trusted_func) =
-  oe_gen_marshal_struct_impl tf.tf_fdecl "" true
+  oe_gen_marshal_struct_impl tf.tf_fdecl "" true ^ "\n"
 
 let oe_gen_ocall_marshal_struct (uf : untrusted_func) =
   let errno_decl =
     if uf.uf_propagate_errno then "    int _ocall_errno;\n" else ""
   in
-  oe_gen_marshal_struct_impl uf.uf_fdecl errno_decl true
+  (* TODO: Shouldn't this be false?! *)
+  oe_gen_marshal_struct_impl uf.uf_fdecl errno_decl true ^ "\n"
 
 (** [oe_get_param_size] is the most complex function. For a parameter,
     get its size expression. *)
