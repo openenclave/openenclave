@@ -287,57 +287,88 @@ let emit_composite_type =
 
 let get_function_id (f : func_decl) = sprintf "fcn_id_%s" f.fname
 
-(** Emit all trusted and untrusted function IDs in enclave [ec]. *)
-let emit_function_ids (ec : enclave_content) =
-  [ ""
-  ; "/**** Trusted function IDs ****/"
-  ; "enum {"
+(** Emit IDs in enum for trusted functions. *)
+let emit_trusted_function_ids (tfs : trusted_func list) =
+  [ "enum"
+  ; "{"
   ; String.concat "\n"
       (List.mapi
          (fun i f -> sprintf "    %s = %d," (get_function_id f.tf_fdecl) i)
-         ec.tfunc_decls)
+         tfs)
   ; "    fcn_id_trusted_call_id_max = OE_ENUM_MAX"
-  ; "};"
-  ; ""
-  ; "/**** Untrusted function IDs. ****/"
-  ; "enum {"
+  ; "};" ]
+
+(** Emit IDs in enum for untrusted functions. *)
+let emit_untrusted_function_ids (ufs : untrusted_func list) =
+  [ "enum"
+  ; "{"
   ; String.concat "\n"
       (List.mapi
          (fun i f -> sprintf "    %s = %d," (get_function_id f.uf_fdecl) i)
-         ec.ufunc_decls)
+         ufs)
   ; "    fcn_id_untrusted_call_max = OE_ENUM_MAX"
   ; "};" ]
 
 (** Generate [args.h] which contains [struct]s for ecalls and ocalls *)
 let oe_gen_args_header (ec : enclave_content) (dir : string) =
-  let types = List.flatten (List.map emit_composite_type ec.comp_defs) in
-  let structs =
-    List.append
-      (* For each ecall, generate its marshalling struct. *)
-      (List.map oe_gen_ecall_marshal_struct ec.tfunc_decls)
-      (* For each ocall, generate its marshalling struct. *)
-      (List.map oe_gen_ocall_marshal_struct ec.ufunc_decls)
+  let oe_gen_user_includes (includes : string list) =
+    if includes <> [] then
+      List.map (fun i -> sprintf "#include \"%s\"" i) includes
+    else ["/* There were no user includes. */"]
+  in
+  let oe_gen_user_types (cts : composite_type list) =
+    if cts <> [] then List.flatten (List.map emit_composite_type cts)
+    else ["/* There were no user defined types. */"; ""]
+  in
+  let oe_gen_ecall_marshal_structs (tfs : trusted_func list) =
+    if tfs <> [] then List.map oe_gen_ecall_marshal_struct tfs
+    else ["/* There were no ecalls. */"; ""]
+  in
+  let oe_gen_ocall_marshal_structs (ufs : untrusted_func list) =
+    if ufs <> [] then List.map oe_gen_ocall_marshal_struct ufs
+    else ["/* There were no ocalls. */"; ""]
   in
   let with_errno =
     List.exists (fun uf -> uf.uf_propagate_errno) ec.ufunc_decls
   in
-  let header_fname = sprintf "%s_args.h" ec.file_shortnm in
-  let guard_macro = sprintf "%s_ARGS_H" (String.uppercase ec.enclave_name) in
-  let os = open_file header_fname dir in
-  fprintf os "#ifndef %s\n" guard_macro ;
-  fprintf os "#define %s\n\n" guard_macro ;
-  fprintf os "#include <stdint.h>\n" ;
-  fprintf os "#include <stdlib.h> /* for wchar_t */\n\n" ;
-  if with_errno then fprintf os "#include <errno.h>\n" ;
-  fprintf os "#include <openenclave/bits/result.h>\n\n" ;
-  List.iter (fun inc -> fprintf os "#include \"%s\"\n" inc) ec.include_list ;
-  if ec.include_list <> [] then fprintf os "\n" ;
-  if ec.comp_defs <> [] then fprintf os "/* User types specified in edl */\n" ;
-  fprintf os "%s" (String.concat "\n" types) ;
-  if ec.comp_defs <> [] then fprintf os "\n" ;
-  fprintf os "%s" (String.concat "\n" structs) ;
-  fprintf os "%s" (String.concat "\n" (emit_function_ids ec)) ;
-  fprintf os "\n#endif // %s\n" guard_macro ;
+  let guard_macro =
+    sprintf "EDGER8R_%s_ARGS_H" (String.uppercase ec.enclave_name)
+  in
+  let content =
+    [ sprintf "#ifndef %s" guard_macro
+    ; sprintf "#define %s" guard_macro
+    ; ""
+    ; "#include <stdint.h>"
+    ; "#include <stdlib.h> /* for wchar_t */"
+    ; ""
+    ; (if with_errno then "#include <errno.h>" else "/* No errno support. */")
+    ; ""
+    ; "#include <openenclave/bits/result.h>"
+    ; ""
+    ; "/**** User includes. ****/"
+    ; String.concat "\n" (oe_gen_user_includes ec.include_list)
+    ; ""
+    ; "/**** User defined types in EDL. ****/"
+    ; String.concat "\n" (oe_gen_user_types ec.comp_defs)
+    ; (* TODO: Fix newline generation. *)
+      "/**** ECALL marshalling structs. ****/"
+    ; String.concat "\n" (oe_gen_ecall_marshal_structs ec.tfunc_decls)
+    ; (* TODO: Fix newline generation. *)
+      "/**** OCALL marshalling structs. ****/"
+    ; String.concat "\n" (oe_gen_ocall_marshal_structs ec.ufunc_decls)
+    ; (* TODO: Fix newline generation. *)
+      "/**** Trusted function IDs ****/"
+    ; String.concat "\n" (emit_trusted_function_ids ec.tfunc_decls)
+    ; ""
+    ; "/**** Untrusted function IDs. ****/"
+    ; String.concat "\n" (emit_untrusted_function_ids ec.ufunc_decls)
+    ; ""
+    ; sprintf "#endif // %s" guard_macro
+    ; "" ]
+  in
+  let fname = sprintf "%s_args.h" ec.file_shortnm in
+  let os = open_file fname dir in
+  fprintf os "%s" (String.concat "\n" content) ;
   close_out os
 
 (** Generate a cast expression for a pointer argument. Pointer
