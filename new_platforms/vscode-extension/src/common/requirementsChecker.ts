@@ -31,11 +31,11 @@ export class RequirementsChecker {
                     warnings.push("Unable to locate PYTHON.");
                 }));
             }
-        promises.push(this.validateTool("doacker", ["--version"])
+        promises.push(this.validateTool("docker", ["--version"])
             .catch(async (error) => {
                 warnings.push("Unable to locate DOCKER.");
             }));
-        promises.push(this.validateTool("gpit", ["--version"])
+        promises.push(this.validateTool("git", ["--version"])
             .catch(async (error) => {
                 warnings.push("Unable to locate GIT.");
             }));
