@@ -776,7 +776,7 @@ typedef struct _wait_args
     struct epoll_event events[];
 } wait_args_t;
 
-static void* epoll_wait_thread(void* arg_)
+static void* _epoll_wait_thread(void* arg_)
 {
     int ret;
     wait_args_t* args = (wait_args_t*)arg_;
@@ -819,7 +819,7 @@ typedef struct _poll_args
     struct pollfd fds[];
 } poll_args_t;
 
-static void* poll_wait_thread(void* arg_)
+static void* _poll_wait_thread(void* arg_)
 {
     int ret;
     poll_args_t* args = (poll_args_t*)arg_;
