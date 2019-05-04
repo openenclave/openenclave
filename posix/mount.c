@@ -129,50 +129,6 @@ done:
     return ret;
 }
 
-static oe_device_t* _filesystemtype_to_device(
-    const char* filesystemtype,
-    uint64_t* devid_out)
-{
-    oe_device_t* ret = NULL;
-    struct pair
-    {
-        const char* filesystemtype;
-        uint64_t devid;
-    };
-    /* TODO: make this mapping extensible so new fs types can be installed. */
-    struct pair pairs[] = {
-        {"hostfs", OE_DEVID_HOSTFS},
-        {"sgxfs", OE_DEVID_SGXFS},
-    };
-    static const size_t num_pairs = OE_COUNTOF(pairs);
-    size_t i;
-    uint64_t devid = OE_DEVID_NONE;
-
-    if (devid_out)
-        *devid_out = OE_DEVID_NONE;
-
-    for (i = 0; i < num_pairs; i++)
-    {
-        if (oe_strcmp(pairs[i].filesystemtype, filesystemtype) == 0)
-        {
-            devid = pairs[i].devid;
-            break;
-        }
-    }
-
-    if (devid == OE_DEVID_NONE)
-    {
-        OE_TRACE_ERROR("devid is OE_DEVID_NONE");
-        goto done;
-    }
-
-    *devid_out = devid;
-    ret = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM);
-
-done:
-    return ret;
-}
-
 int oe_mount(
     const char* source,
     const char* target,
@@ -181,7 +137,6 @@ int oe_mount(
     const void* data)
 {
     int ret = -1;
-    uint64_t devid = OE_DEVID_NONE;
     oe_device_t* device = NULL;
     oe_device_t* new_device = NULL;
     bool locked = false;
@@ -199,12 +154,13 @@ int oe_mount(
     /* Resolve the device and the devid if filesystemtype present. */
     if (filesystemtype)
     {
-        device = _filesystemtype_to_device(filesystemtype, &devid);
+        device = oe_find_device(filesystemtype, OE_DEVICE_TYPE_FILESYSTEM);
 
         if (!device)
         {
             oe_errno = OE_EINVAL;
-            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
+            OE_TRACE_ERROR(
+                "oe_errno=%d filesystemtype=%s ", oe_errno, filesystemtype);
             goto done;
         }
     }

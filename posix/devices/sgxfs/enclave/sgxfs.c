@@ -18,6 +18,7 @@
 #include <openenclave/corelibc/limits.h>
 #include <openenclave/internal/device/device.h>
 
+#define DEVICE_NAME "sgxfs"
 #define FS_MAGIC 0x4a335f60
 #define FILE_MAGIC 0x8d7e422f
 #define DIR_MAGIC 0xc1bfdfa4
@@ -425,6 +426,7 @@ static oe_device_t* _sgxfs_open_file(
         }
 
         file->base.type = OE_DEVICE_TYPE_FILE;
+        file->base.name = DEVICE_NAME;
         file->magic = FILE_MAGIC;
         file->base.ops.fs = fs->base.ops.fs;
         file->stream = stream;
@@ -1196,6 +1198,7 @@ static oe_fs_ops_t _ops = {
 
 static fs_t _sgxfs = {
     .base.type = OE_DEVICE_TYPE_FILESYSTEM,
+    .base.name = DEVICE_NAME,
     .base.ops.fs = &_ops,
     .magic = FS_MAGIC,
 };

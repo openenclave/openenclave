@@ -83,6 +83,8 @@ int oe_set_device(uint64_t devid, oe_device_t* device)
 {
     int ret = -1;
 
+    oe_spin_lock(&_lock);
+
     if (devid > MAX_TABLE_SIZE)
     {
         oe_errno = OE_EINVAL;
@@ -102,6 +104,8 @@ int oe_set_device(uint64_t devid, oe_device_t* device)
     ret = 0;
 
 done:
+    oe_spin_unlock(&_lock);
+
     return ret;
 }
 
@@ -109,6 +113,8 @@ oe_device_t* oe_get_device(uint64_t devid, oe_device_type_t type)
 {
     oe_device_t* ret = NULL;
     oe_device_t* device;
+
+    oe_spin_lock(&_lock);
 
     if (devid >= MAX_TABLE_SIZE)
     {
@@ -125,6 +131,41 @@ oe_device_t* oe_get_device(uint64_t devid, oe_device_type_t type)
     ret = device;
 
 done:
+    oe_spin_unlock(&_lock);
+
+    return ret;
+}
+
+oe_device_t* oe_find_device(const char* name, oe_device_type_t type)
+{
+    oe_device_t* ret = NULL;
+    oe_device_t* device = NULL;
+    size_t i;
+
+    oe_spin_lock(&_lock);
+
+    if (!name)
+        goto done;
+
+    for (i = 0; i < MAX_TABLE_SIZE; i++)
+    {
+        oe_device_t* p = _table[i];
+
+        if (p && oe_strcmp(p->name, name) == 0)
+        {
+            device = p;
+            break;
+        }
+    }
+
+    if (device && type != OE_DEVICE_TYPE_NONE && device->type != type)
+        goto done;
+
+    ret = device;
+
+done:
+    oe_spin_unlock(&_lock);
+
     return ret;
 }
 
@@ -153,6 +194,8 @@ int oe_remove_device(uint64_t devid)
         OE_TRACE_ERROR("devid=%lu retval=%d", devid, retval);
         goto done;
     }
+
+    /* ATTN: this does not actually remove the device. */
 
     ret = 0;
 

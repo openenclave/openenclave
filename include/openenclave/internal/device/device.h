@@ -55,6 +55,9 @@ int oe_set_device(uint64_t devid, oe_device_t* pdevice);
 
 oe_device_t* oe_get_device(uint64_t devid, oe_device_type_t type);
 
+/* Find the device with the given name and type. */
+oe_device_t* oe_find_device(const char* name, oe_device_type_t type);
+
 int oe_remove_device(uint64_t devid);
 
 OE_EXTERNC_END
