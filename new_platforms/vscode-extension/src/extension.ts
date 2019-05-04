@@ -6,6 +6,7 @@
 import * as vscode from "vscode";
 import { Constants } from "./common/constants";
 import { ErrorData } from "./common/ErrorData";
+import { RequirementsChecker } from "./common/requirementsChecker";
 import { TelemetryClient } from "./common/telemetryClient";
 import { UserCancelledError } from "./common/userCancelledError";
 import { OpenEnclaveManager } from "./openenclave/openEnclaveManager";
@@ -17,6 +18,8 @@ export function activate(context: vscode.ExtensionContext) {
     TelemetryClient.sendEvent("extensionActivated: " + Constants.ExtensionId);
     const outputChannel: vscode.OutputChannel = vscode.window.createOutputChannel(Constants.openEnclaveDisplayName);
     const openEnclaveManager = new OpenEnclaveManager(context);
+
+    RequirementsChecker.checkRequirements();
 
     // Add Open Solution command
     initCommandAsync(context, outputChannel,
