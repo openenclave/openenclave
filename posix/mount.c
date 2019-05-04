@@ -10,6 +10,7 @@
 #include <openenclave/corelibc/string.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/corelibc/limits.h>
+#include <openenclave/corelibc/stdio.h>
 #include <openenclave/internal/device/device.h>
 
 #define MAX_MOUNT_TABLE_SIZE 64
@@ -138,8 +139,10 @@ static oe_device_t* _filesystemtype_to_device(
         const char* filesystemtype;
         uint64_t devid;
     };
+    /* TODO: make this mapping extensible so new fs types can be installed. */
     struct pair pairs[] = {
         {"hostfs", OE_DEVID_HOSTFS},
+        {"sgxfs", OE_DEVID_SGXFS},
     };
     static const size_t num_pairs = OE_COUNTOF(pairs);
     size_t i;
