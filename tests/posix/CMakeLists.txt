@@ -1,10 +1,9 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-# This builds a library needed by later tests and must be first.
 add_subdirectory(hostfs)
 
-if (UNIX)
+if(UNIX)
 add_subdirectory(cpio)
 add_subdirectory(echod)
 add_subdirectory(fs)
