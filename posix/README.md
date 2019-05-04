@@ -11,9 +11,13 @@ library submit POSIX requests in two ways:
 - By calling request functions directly. Examples include **oe_open()**,
   **oe_socket()**, and **oe_select()**.
 
-So far, **liboeposix** handles requets on the following kinds of objects.
+So far, **liboeposix** handles requests on the following kinds of objects.
 
 - files
 - directories
 - sockets
 - events
+
+Devices are implemented as separate static libraries. See the implementations
+in the [devices](https://github.com/Microsoft/openenclave/posix/devices) for
+more informations.
