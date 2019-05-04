@@ -21,6 +21,8 @@ add_library(oesgxfsenclave STATIC
     sgx_tprotected_fs.cpp
     thread.c)
 
+maybe_build_using_clangw(oesgxfsenclave)
+
 target_include_directories(oesgxfsenclave PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${LINUX_SGX_DIR}
