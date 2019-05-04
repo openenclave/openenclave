@@ -793,7 +793,7 @@ static void* _epoll_wait_thread(void* arg_)
     {
         size_t num_notifications = (size_t)ret;
 
-        if (oe_posix_polling_notify_ecall(
+        if (oe_posix_epoll_notify_ecall(
                 (oe_enclave_t*)args->enclaveid,
                 &retval,
                 args->events,
@@ -847,7 +847,7 @@ static void* _poll_wait_thread(void* arg_)
             }
         }
 
-        if (oe_posix_polling_notify_ecall(
+        if (oe_posix_epoll_notify_ecall(
                 (oe_enclave_t*)args->enclaveid,
                 &retval,
                 (struct oe_epoll_event*)notifications,

@@ -34,7 +34,7 @@ enclave {
 
         public int oe_posix_signal_notify_ecall(int signum);
 
-        public int oe_posix_polling_notify_ecall(
+        public int oe_posix_epoll_notify_ecall(
             [in, count=num_notifications]
             struct oe_epoll_event* notifications,
             size_t num_notifications);
@@ -324,7 +324,7 @@ enclave {
             propagate_errno;
 
         // Initiate waiting for epoll events. This function creates a new
-        // thread and delivers the events via oe_posix_polling_notify_ecall().
+        // thread and delivers the events via oe_posix_epoll_notify_ecall().
         int oe_posix_epoll_wait_async_ocall(
             int64_t enclaveid,
             oe_host_fd_t epfd,

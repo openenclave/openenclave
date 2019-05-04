@@ -605,7 +605,7 @@ done:
 // of handle notification calls in rapid succession. This could raise needless
 // synchronization issues. Instead, we send the list and notify the list, the
 // push the doorbell
-int oe_posix_polling_notify_ecall(
+int oe_posix_epoll_notify_ecall(
     oe_device_notifications_t* notifications,
     size_t num_notifications)
 {
