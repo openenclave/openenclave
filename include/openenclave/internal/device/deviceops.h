@@ -6,12 +6,12 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/internal/device/types.h>
 #include <openenclave/internal/types.h>
 
 OE_EXTERNC_BEGIN
 
 typedef struct _oe_device oe_device_t;
-typedef int64_t oe_host_fd_t;
 
 typedef struct _oe_device_ops
 {
