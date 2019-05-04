@@ -213,24 +213,13 @@ export class OpenEnclaveManager {
                 if (!fse.existsSync(shared3rdpartyLocation)) {
                     const sdkDownloadMessage = "Downloading SDK (this is infrequent)";
                     progress.report({ message: sdkDownloadMessage });
-                    const cloneToLocation = (os.platform() === "win32") ?
-                        this._context.extensionPath :
-                        path.join(this._context.globalStoragePath, Constants.openEnclaveSdkVersion);
-
                     await this.internalUpdateSdkFromGit(
-                        cloneToLocation,
+                        path.join(this._context.globalStoragePath, Constants.openEnclaveSdkVersion),
                         Constants.openEnclaveSdkName,
                         Constants.openEnclaveRepo,
                         Constants.openEnclaveBranch,
                         progress,
                         sdkDownloadMessage);
-
-                    if (os.platform() === "win32") {
-                        // Git clone to extension folder first, then move to global storage ... this is slow, but
-                        // the global storage path can be too long for git to handle.
-                        progress.report({ message: "Sharing SDK for subsequent projects (this is infrequent)" });
-                        await this.internalMove(path.join(this._context.extensionPath, Constants.thirdPartyFolder), shared3rdpartyLocation);
-                    }
                 }
                 // Ensure that the sdk is present in the project
                 progress.report({ message: "Adding Open Enclave SDK to solution" });
@@ -451,7 +440,7 @@ export class OpenEnclaveManager {
                         progress.report({ message: `${progressPrefix}. Cloning SDK from git`});
                         return this.clearFolderAndThen(sdkDestination, resolve, reject, progress, () => {
                             // Folder has been deleted, download SDK from git
-                            return GitHelper.recursiveCloneFromGit(gitRepo, gitBranch, sdkDestination, false, progress, progressPrefix)
+                            return GitHelper.getRepo(gitRepo, gitBranch, sdkDestination)
                                 .then(() => {
                                     // Signal success
                                     progress.report({ message: `${progressPrefix}. SDK cloned successfully from git` });
@@ -465,7 +454,7 @@ export class OpenEnclaveManager {
                     } else {
                         // If folder does not exist, download SDK from git
                         progress.report({ message: `${progressPrefix}. Cloning SDK from git` });
-                        return GitHelper.recursiveCloneFromGit(gitRepo, gitBranch, sdkDestination, false, progress, progressPrefix)
+                        return GitHelper.getRepo(gitRepo, gitBranch, sdkDestination)
                             .then(() => {
                                 // Signal success
                                 progress.report({ message: `${progressPrefix}. SDK cloned successfully from git` });
