@@ -898,7 +898,7 @@ int oe_posix_epoll_wait_async_ocall(
     // on its own copy args then spawn pthread to do the waiting. That way we
     // can ecall with notification. the thread args are freed by the thread
     // func.
-    if (pthread_create(&thread, NULL, epoll_wait_thread, args) < 0)
+    if (pthread_create(&thread, NULL, _epoll_wait_thread, args) < 0)
     {
         errno = EINVAL;
         goto done;
@@ -1012,7 +1012,7 @@ int oe_posix_epoll_poll_ocall(
     // on its own copy args then spawn pthread to do the waiting. That way we
     // can ecall with notification. the thread args are freed by the thread
     // func.
-    if (pthread_create(&thread, NULL, poll_wait_thread, args) < 0)
+    if (pthread_create(&thread, NULL, _poll_wait_thread, args) < 0)
     {
         errno = EINVAL;
         goto done;
