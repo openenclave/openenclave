@@ -6,6 +6,7 @@
 #include <fcntl.h>
 #include <limits.h>
 #include <netdb.h>
+#include <openenclave/internal/device/epollops.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
@@ -773,7 +774,7 @@ typedef struct _wait_args
     int64_t enclaveid;
     oe_host_fd_t epfd;
     int maxevents;
-    struct epoll_event events[];
+    struct oe_epoll_event events[];
 } wait_args_t;
 
 static void* _epoll_wait_thread(void* arg_)
@@ -782,21 +783,20 @@ static void* _epoll_wait_thread(void* arg_)
     wait_args_t* args = (wait_args_t*)arg_;
     int retval;
 
-    ret = epoll_wait((int)args->epfd, args->events, args->maxevents, -1);
+    ret = epoll_wait(
+        (int)args->epfd,
+        (struct epoll_event*)args->events,
+        args->maxevents,
+        -1);
 
     if (ret >= 0)
     {
         size_t num_notifications = (size_t)ret;
-        struct epoll_event* ev = args->events;
-        oe_device_notifications_t* notifications =
-            (oe_device_notifications_t*)ev;
-
-        OE_STATIC_ASSERT(sizeof(notifications[0]) == sizeof(ev[0]));
 
         if (oe_posix_polling_notify_ecall(
                 (oe_enclave_t*)args->enclaveid,
                 &retval,
-                notifications,
+                args->events,
                 num_notifications) != OE_OK)
         {
             goto done;
@@ -843,14 +843,14 @@ static void* _poll_wait_thread(void* arg_)
                 notifications[notify_idx].data.list_idx = (uint32_t)ev_idx;
 
                 /* ATTN: casting 64-bit fd to 32-bit fd. */
-                notifications[notify_idx].data.epoll_fd = (int)args->epfd;
+                notifications[notify_idx].data.epfd = (int)args->epfd;
             }
         }
 
         if (oe_posix_polling_notify_ecall(
                 (oe_enclave_t*)args->enclaveid,
                 &retval,
-                notifications,
+                (struct oe_epoll_event*)notifications,
                 num_notifications) != OE_OK)
         {
             goto done;
@@ -918,8 +918,8 @@ int oe_posix_epoll_ctl_add_ocall(
     int epoll_enclave_fd)
 {
     oe_ev_data_t ev_data = {
-        .event_list_idx = (uint32_t)list_idx,
-        .epoll_enclave_fd = (uint32_t)epoll_enclave_fd,
+        .list_idx = (uint32_t)list_idx,
+        .epfd = epoll_enclave_fd,
     };
     struct epoll_event ev = {
         .events = event_mask,
@@ -942,12 +942,12 @@ int oe_posix_epoll_ctl_mod_ocall(
     oe_host_fd_t epfd,
     oe_host_fd_t fd,
     unsigned int event_mask,
-    int list_idx,
+    int list_idx, /* ATTN: should this be uint32_t. */
     int enclave_fd)
 {
     oe_ev_data_t ev_data = {
-        .event_list_idx = (uint32_t)list_idx,
-        .epoll_enclave_fd = (uint32_t)enclave_fd,
+        .list_idx = (uint32_t)list_idx,
+        .epfd = enclave_fd,
     };
     struct epoll_event ev = {
         .events = event_mask,

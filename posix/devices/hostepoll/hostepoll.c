@@ -543,10 +543,10 @@ static int _epoll_wait(
         for (i = 0; ((int)i < ret) && (i < maxevents); i++)
         {
             oe_ev_data_t data;
-            int list_idx;
+            uint32_t list_idx;
 
             data.data = host_events[i].data.u64;
-            list_idx = (int)data.event_list_idx;
+            list_idx = data.list_idx;
             events[i].events = host_events[i].events;
             events[i].data.u64 = epoll->pevent_data[list_idx].enclave_data;
         }
