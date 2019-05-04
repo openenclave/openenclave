@@ -5,11 +5,11 @@
 
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/sys/socket.h>
+#include <openenclave/internal/device/device.h>
+#include <openenclave/internal/device/fdtable.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
-#include "device.h"
-#include "fdtable.h"
 
 static uint64_t _default_socket_devid = OE_DEVID_NONE;
 static oe_spinlock_t _default_socket_devid_lock;

@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include <openenclave/corelibc/sys/stat.h>
+#include <openenclave/internal/device/device.h>
 #include <openenclave/internal/trace.h>
-#include "device.h"
 #include "mount.h"
 
 int oe_stat(const char* pathname, struct oe_stat* buf)

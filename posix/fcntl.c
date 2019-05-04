@@ -3,9 +3,9 @@
 
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/limits.h>
+#include <openenclave/internal/device/device.h>
+#include <openenclave/internal/device/fdtable.h>
 #include <openenclave/internal/trace.h>
-#include "device.h"
-#include "fdtable.h"
 #include "mount.h"
 #include "posix_t.h"
 

@@ -7,12 +7,12 @@
 #include <openenclave/corelibc/sys/poll.h>
 #include <openenclave/corelibc/sys/socket.h>
 #include <openenclave/corelibc/unistd.h>
+#include <openenclave/internal/device/device.h>
+#include <openenclave/internal/device/fdtable.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
-#include "device.h"
 #include "epoll.h"
-#include "fdtable.h"
 
 // Poll uses much of the infrastructure from epoll.
 

@@ -14,7 +14,7 @@
 #include <openenclave/internal/trace.h>
 #include "epoll.h"
 #include "list.h"
-#include "fdtable.h"
+#include <openenclave/internal/device/fdtable.h>
 
 /* For synchronizing access to all static structures defined below. */
 static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;

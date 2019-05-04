@@ -4,9 +4,9 @@
 #include <openenclave/bits/device.h>
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/stdarg.h>
+#include <openenclave/internal/device/device.h>
+#include <openenclave/internal/device/fdtable.h>
 #include <openenclave/internal/trace.h>
-#include "device.h"
-#include "fdtable.h"
 
 int __oe_ioctl(int fd, unsigned long request, uint64_t arg)
 {

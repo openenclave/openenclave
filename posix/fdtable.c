@@ -1,18 +1,18 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "fdtable.h"
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/device/device.h>
+#include <openenclave/internal/device/fdtable.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include "console.h"
-#include "device.h"
 
 /*
 **==============================================================================

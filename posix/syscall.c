@@ -20,9 +20,9 @@
 #include <openenclave/corelibc/sys/uio.h>
 #include <openenclave/corelibc/sys/utsname.h>
 #include <openenclave/corelibc/unistd.h>
+#include <openenclave/internal/device/device.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/trace.h>
-#include "device.h"
 #include "epoll.h"
 
 typedef int (*ioctl_proc)(

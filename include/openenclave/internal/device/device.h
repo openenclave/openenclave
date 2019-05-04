@@ -6,11 +6,11 @@
 
 #include <openenclave/bits/device.h>
 #include <openenclave/bits/result.h>
+#include <openenclave/internal/device/epollops.h>
+#include <openenclave/internal/device/eventfdops.h>
+#include <openenclave/internal/device/fsops.h>
+#include <openenclave/internal/device/sockops.h>
 #include <openenclave/internal/posix.h>
-#include "epollops.h"
-#include "eventfdops.h"
-#include "fsops.h"
-#include "sockops.h"
 
 OE_EXTERNC_BEGIN
 

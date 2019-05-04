@@ -4,8 +4,8 @@
 #include <openenclave/corelibc/netdb.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/sys/socket.h>
+#include <openenclave/internal/device/resolver.h>
 #include <openenclave/internal/trace.h>
-#include "resolver.h"
 
 static size_t _resolver_table_len = 3;
 static oe_resolver_t* _resolver_table[3] = {0}; // At most 3

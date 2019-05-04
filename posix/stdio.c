@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include <openenclave/corelibc/stdio.h>
+#include <openenclave/internal/device/device.h>
 #include <openenclave/internal/trace.h>
-#include "device.h"
 #include "mount.h"
 
 int oe_rename(const char* oldpath, const char* newpath)
