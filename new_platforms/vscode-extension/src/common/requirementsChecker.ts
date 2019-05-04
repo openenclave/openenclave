@@ -30,7 +30,17 @@ export class RequirementsChecker {
                 .catch(async (error) => {
                     warnings.push("Unable to locate PYTHON.");
                 }));
-            }
+        } else if (os.platform() === "win32") {
+            promises.push(this.validateTool("git", ["config", "--get", "--system", "core.longpaths"])
+                .then(async (output) => {
+                    if (!output || !(/^true/.test(output.trim().toLowerCase()))) {
+                        warnings.push(`Enable long paths for GIT.`);
+                    }
+                })
+                .catch(async (error) => {
+                    warnings.push(`Enable long paths for GIT.`);
+                }));
+        }
         promises.push(this.validateTool("docker", ["--version"])
             .catch(async (error) => {
                 warnings.push("Unable to locate DOCKER.");
@@ -73,7 +83,7 @@ export class RequirementsChecker {
         }
     }
 
-    private static validateTool(command: string, args: string[]): Promise<string>{
+    private static validateTool(command: string, args: string[]): Promise<string> {
 
         return new Promise(async (resolve, reject) => {
 

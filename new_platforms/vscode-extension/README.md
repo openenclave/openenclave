@@ -103,6 +103,7 @@ the host and enclave symbols into an instance of the debugger.
 
 * Install [Visual Studio Code](https://code.visualstudio.com/)
 * Install [git](https://git-scm.com/downloads)
+    * On Windows, please make sure that long paths are enabled: `git config --system core.longpaths true`
 * Install [CMake 3.12 or higher](https://cmake.org/download/)
 * On Linux, install the required build components
 
