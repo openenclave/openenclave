@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_INTERNAL_POSIX_H
-#define _OE_INTERNAL_POSIX_H
+#ifndef _OE_DEVICE_POSIX_H
+#define _OE_DEVICE_POSIX_H
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/device.h>
@@ -97,4 +97,4 @@ typedef union _oe_ev_data {
 
 OE_EXTERNC_END
 
-#endif /* _OE_INTERNAL_POSIX_H */
+#endif /* _OE_DEVICE_POSIX_H */

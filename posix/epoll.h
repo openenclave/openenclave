@@ -7,7 +7,7 @@
 #include <openenclave/corelibc/signal.h>
 #include <openenclave/corelibc/sys/epoll.h>
 #include <openenclave/internal/device/device.h>
-#include <openenclave/internal/posix.h>
+#include <openenclave/internal/device/posix.h>
 
 OE_EXTERNC_BEGIN
 
