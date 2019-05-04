@@ -487,6 +487,7 @@ int oe_posix_readdir_ocall(
 
 void oe_posix_rewinddir_ocall(uint64_t dirp)
 {
+    PANIC;
 }
 
 int oe_posix_closedir_ocall(uint64_t dirp)
