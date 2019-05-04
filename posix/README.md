@@ -5,15 +5,15 @@ This directory contains the source for **liboeposix**, which routes POSIX
 requests to devices (e.g., file systems, socket layers). Clients of this
 library submit POSIX requests in two ways:
 
-- By calling **oe_syscall()**, which handles software system calls.
-  This method is used by **libc**.
+- By calling **oe_syscall()**, which handles software system calls (used
+  by **libc**).
 
-- By calling the function for that request directly. Examples include
-  **oe_open()**, **oe_socket()**, and **oe_select()**.
+- By calling request functions directly. Examples include **oe_open()**,
+  **oe_socket()**, and **oe_select()**.
 
-So far, **liboeposix** handles requests on the following categories.
+So far, **liboeposix** handles requets on the following kinds of objects.
 
 - files
 - directories
 - sockets
-- polling
+- events
