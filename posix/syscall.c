@@ -22,8 +22,8 @@
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/trace.h>
-#include "include/device.h"
-#include "include/epoll.h"
+#include "device.h"
+#include "epoll.h"
 
 typedef int (*ioctl_proc)(
     int fd,

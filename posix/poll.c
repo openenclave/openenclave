@@ -10,9 +10,9 @@
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
-#include "include/device.h"
-#include "include/epoll.h"
-#include "include/fdtable.h"
+#include "device.h"
+#include "epoll.h"
+#include "fdtable.h"
 
 // Poll uses much of the infrastructure from epoll.
 

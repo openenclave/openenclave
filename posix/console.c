@@ -5,8 +5,8 @@
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/trace.h>
-#include "include/device.h"
-#include "include/fdtable.h"
+#include "device.h"
+#include "fdtable.h"
 #include "posix_t.h"
 
 #define DEVICE_NAME "consolefs"

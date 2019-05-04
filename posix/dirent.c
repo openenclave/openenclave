@@ -7,8 +7,8 @@
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/trace.h>
-#include "include/device.h"
-#include "include/fdtable.h"
+#include "device.h"
+#include "fdtable.h"
 
 #define DIR_MAGIC 0x09180827
 

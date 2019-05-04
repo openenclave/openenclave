@@ -3,8 +3,8 @@
 
 #include <openenclave/corelibc/sys/stat.h>
 #include <openenclave/internal/trace.h>
-#include "include/device.h"
-#include "include/mount.h"
+#include "device.h"
+#include "mount.h"
 
 int oe_stat(const char* pathname, struct oe_stat* buf)
 {

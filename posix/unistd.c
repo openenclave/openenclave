@@ -11,9 +11,9 @@
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/time.h>
 #include <openenclave/internal/trace.h>
-#include "include/device.h"
-#include "include/fdtable.h"
-#include "include/mount.h"
+#include "device.h"
+#include "fdtable.h"
+#include "mount.h"
 #include "posix_t.h"
 
 int oe_gethostname(char* name, size_t len)

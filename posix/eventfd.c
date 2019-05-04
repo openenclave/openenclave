@@ -11,7 +11,7 @@
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/corelibc/sys/eventfd.h>
-#include "include/fdtable.h"
+#include "fdtable.h"
 
 int oe_eventfd(unsigned int initval, int flags)
 {

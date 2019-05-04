@@ -12,9 +12,9 @@
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/internal/trace.h>
-#include "include/epoll.h"
-#include "include/list.h"
-#include "include/fdtable.h"
+#include "epoll.h"
+#include "list.h"
+#include "fdtable.h"
 
 /* For synchronizing access to all static structures defined below. */
 static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;

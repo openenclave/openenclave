@@ -10,7 +10,7 @@
 #include <openenclave/corelibc/string.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/corelibc/limits.h>
-#include "include/device.h"
+#include "device.h"
 
 #define MAX_MOUNT_TABLE_SIZE 64
 

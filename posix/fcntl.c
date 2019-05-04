@@ -4,9 +4,9 @@
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/limits.h>
 #include <openenclave/internal/trace.h>
-#include "include/device.h"
-#include "include/fdtable.h"
-#include "include/mount.h"
+#include "device.h"
+#include "fdtable.h"
+#include "mount.h"
 #include "posix_t.h"
 
 int __oe_fcntl(int fd, int cmd, uint64_t arg)

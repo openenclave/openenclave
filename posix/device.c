@@ -13,7 +13,7 @@
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 
-#include "include/device.h"
+#include "device.h"
 
 #define MAX_TABLE_SIZE 128
 
