@@ -9,7 +9,6 @@
 #include <openenclave/internal/device/epollops.h>
 #include <openenclave/internal/device/eventfdops.h>
 #include <openenclave/internal/device/fsops.h>
-#include <openenclave/internal/device/posix.h>
 #include <openenclave/internal/device/sockops.h>
 
 OE_EXTERNC_BEGIN

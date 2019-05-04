@@ -6,6 +6,8 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/corelibc/sys/epoll.h>
+#include <openenclave/internal/defs.h>
 #include <openenclave/internal/device/deviceops.h>
 
 OE_EXTERNC_BEGIN
@@ -49,6 +51,52 @@ typedef struct _oe_epoll_ops
     uint64_t (*get_event_data)(oe_device_t* epoll_device, uint32_t list_idx);
 
 } oe_epoll_ops_t;
+
+/*
+**==============================================================================
+**
+** oe_device_notifications_t:
+**
+**     This structure overlays 'struct epoll_event' from <corelibc/sys/epoll.h>,
+**     which is identical to the same structure in both MUSL and glibc. It is
+**     packed to match the definitions in those implementations.
+**
+**==============================================================================
+*/
+
+OE_PACK_BEGIN
+typedef struct _oe_device_notifications /* overlays 'struct epoll_event' */
+{
+    uint32_t events;
+    struct
+    {
+        /* Enclave fd for the epoll device. */
+        int epoll_fd;
+        /* On the host side we set this into the event data. */
+        uint32_t list_idx;
+    } data;
+} oe_device_notifications_t;
+OE_PACK_END
+
+OE_STATIC_ASSERT(
+    sizeof(oe_device_notifications_t) == sizeof(struct oe_epoll_event));
+
+/*
+**==============================================================================
+**
+** oe_ev_data_t:
+**
+**==============================================================================
+*/
+
+typedef union _oe_ev_data {
+    struct
+    {
+        uint32_t epoll_enclave_fd;
+        uint32_t event_list_idx;
+    };
+    uint64_t data;
+} oe_ev_data_t;
 
 OE_EXTERNC_END
 

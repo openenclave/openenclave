@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/internal/device/posix.h>
 #include "../strings.h"
 
 #if defined(__linux__)

@@ -7,7 +7,7 @@
 #include <openenclave/corelibc/signal.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/unistd.h>
-#include <openenclave/internal/device/posix.h>
+#include <openenclave/internal/calls.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>

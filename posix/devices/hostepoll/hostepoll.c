@@ -6,6 +6,7 @@
 #include <openenclave/enclave.h>
 
 #include <openenclave/corelibc/string.h>
+#include <openenclave/internal/calls.h>
 #include <openenclave/internal/device/epollops.h>
 #include <openenclave/internal/device/fdtable.h>
 #include <openenclave/internal/thread.h>
