@@ -3,7 +3,7 @@ devices:
 
 This directory contains device implementations, such as file systems and
 socket layers. These devices are managed by [**liboeposix**](..), which
-is responsible for routing client requests to the appropriate device.
+routes each client request to a target device.
 
 Each device is packaged as a static library. To use a device, the enclave
 application links the library and loads it by calling a load function. This
