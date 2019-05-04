@@ -58,7 +58,9 @@ export class RequirementsChecker {
             }));
         await Promise.all(promises)
             .then(async () => {
-                await this.showWarning(warnings.join("  "));
+                if (warnings.length !== 0) {
+                    await this.showWarning(warnings.join("  "));
+                }
             });
     }
 
