@@ -10,9 +10,9 @@ application links the library and loads it by calling a load function. This
 directory builds the following libraries, shown with their associated load
 functions.
 
-- **liboehostfs** - **oe_load_module_hostfs()**
-- **liboesgxfs** - **oe_load_module_sgxfs()**
-- **liboehostsock** - **oe_load_module_hostsock()**
-- **liboehostresolver** - **oe_load_module_hostresolver()**
-- **liboehostepoll** - **oe_load_module_hostepoll()**
-- **liboeeventfd** - **oe_load_module_eventfd()**
+- **liboehostfs** - oe_load_module_hostfs()
+- **liboesgxfs** - oe_load_module_sgxfs()
+- **liboehostsock** - oe_load_module_hostsock()
+- **liboehostresolver** - oe_load_module_hostresolver()
+- **liboehostepoll** - oe_load_module_hostepoll()
+- **liboeeventfd** - oe_load_module_eventfd()
