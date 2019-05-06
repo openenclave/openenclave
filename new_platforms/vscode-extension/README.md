@@ -95,7 +95,7 @@ the host and enclave symbols into an instance of the debugger.
 
 * Install [Visual Studio Code](https://code.visualstudio.com/)
 * Install [git](https://git-scm.com/downloads)
-    * On Windows, please make sure that long paths are enabled: `git config --system core.longpaths true`
+    * On Windows, please make sure that long paths are enabled: `git config --global core.longpaths true`
 * On Linux
 
     * Make sure that the [Native Debug extension](https://marketplace.visualstudio.com/items?itemName=webfreak.debug) is installed.

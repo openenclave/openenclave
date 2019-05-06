@@ -56,7 +56,7 @@ export class RequirementsChecker {
                     warnings.push("Unable to locate CMAKE 3.12 or higher.");
                 }));
         } else if (os.platform() === "win32") {
-            promises.push(this.validateTool("git", ["config", "--get", "--system", "core.longpaths"])
+            promises.push(this.validateTool("git", ["config", "--get", "core.longpaths"])
                 .then(async (output) => {
                     if (!output || !(/^true/.test(output.trim().toLowerCase()))) {
                         warnings.push(`Enable long paths for GIT.`);
