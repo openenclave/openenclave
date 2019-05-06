@@ -117,7 +117,8 @@ the host and enclave symbols into an instance of the debugger.
           pip install --upgrade iotedgehubdev
 
     * Create a container repository, like [Azure Container Registry](https://azure.microsoft.com/en-us/services/container-registry/)
-        * To push Edge containers to the container registry, find the username and password for your container registry and use them to log into docker: `docker login -u <username> -p <password> <container-url>`
+        * To push Edge containers to the container registry, find the username and password for your container registry and use them to log into docker (the --pasword-stdin option will prevent your password from appearing in the command line history): `docker login --password-stdin -u <username> <container-url>`
+        * Once you've logged into docker, you can log out (ane remove your credentials from the system) by: `docker logout <container-url>`
     * Make sure that the [Azure Account extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.azure-account) is installed and utilized:
         1. **F1** or **CTRL-Shift-P**
         1. `Azure: Sign In`
