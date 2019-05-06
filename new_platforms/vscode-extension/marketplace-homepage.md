@@ -22,7 +22,7 @@ Alternatively, you can run the extension from this repository by following these
 
 ### Create a new Open Enclave solution.
 
-You can use the `Microsoft Open Enclave: New Open Enclave Solution` command (commands can be found using **CTRL-Shift-P**) 
+You can use the `Microsoft Open Enclave: New Open Enclave Solution` command (commands can be found using **F1** or **CTRL-Shift-P**) 
 to create a new Open Enclave solution.  
 
 You will be prompted to:
@@ -46,7 +46,7 @@ For a standalone project, there will be configure and build tasks for each targe
 configure task will invoke CMake to create the required build files.  This is only required to be run once.  
 The build task will do the actual compiling and linking.
 
-1. **CTRL-Shift-P**
+1. **F1** or **CTRL-Shift-P**
 1. Select `Tasks: Run Task`
 1. Select `Configure for QEMU (ARMv7-A | AArch64/ARMv8-A)`
 1. Select `Build for QEMU (ARMv7-A | AArch64/ARMv8-A)`
@@ -63,7 +63,7 @@ container project will invoke docker and leverage project dockerfiles.  The cont
 Deploying an Azure IoT Edge container project is fairly simple:
 
 1. Select the desired platform:
-    1. **CTRL-Shift-P**
+    1. **F1** or **CTRL-Shift-P**
     1. Select `Azure IoT Edge: Set Default Target Platform for Edge Solution`
     1. Choose from `arm32v7` or `aarch64`
 1. Right click on `modules/<solution-name>/module.json`
@@ -102,23 +102,29 @@ the host and enclave symbols into an instance of the debugger.
 ## Requirements
 
 * Install [Visual Studio Code](https://code.visualstudio.com/)
-* Install required compilers
+* Install [git](https://git-scm.com/downloads)
+    * On Windows, please make sure that long paths are enabled: `git config --system core.longpaths true`
+* Install [CMake 3.12 or higher](https://cmake.org/download/)
+* On Linux, install the required build components
 
-      sudo apt update && sudo apt install -y build-essential cmake gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu g++-arm-linux-gnueabihf g++-aarch64-linux-gnu gdb-multiarch
+      sudo apt update && sudo apt install -y build-essential cmake gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu g++-arm-linux-gnueabihf g++-aarch64-linux-gnu gdb-multiarch python
 
 * Make sure that the [Native Debug extension](https://marketplace.visualstudio.com/items?itemName=webfreak.debug) is installed.
 * Ensure that the requirements are met for the [Azure IoT Edge extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-edge):
-    * Ensure that [Docker is installed and running: https://docs.docker.com/get-started/](https://docs.docker.com/get-started/).
+    * Ensure that [Docker is installed and running: https://docs.docker.com/install/](https://docs.docker.com/install/).
+        * On Linux, if you are seeing permissions issues when connecting to the docker daemon, this has helped some people: `sudo usermod -a -G docker $USER`
     * Ensure that the [iotedgehubdev](https://pypi.org/project/iotedgehubdev/) tool is installed
 
           pip install --upgrade iotedgehubdev
 
     * Create a container repository, like [Azure Container Registry](https://azure.microsoft.com/en-us/services/container-registry/)
+        * To push Edge containers to the container registry, find the username and password for your container registry and use them to log into docker (the --pasword-stdin option will prevent your password from appearing in the command line history): `docker login --password-stdin -u <username> <container-url>`
+        * Once you've logged into docker, you can log out (ane remove your credentials from the system) by: `docker logout <container-url>`
     * Make sure that the [Azure Account extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.azure-account) is installed and utilized:
-        1. **CTRL-Shift-P**
+        1. **F1** or **CTRL-Shift-P**
         1. `Azure: Sign In`
     * Make sure that the [Azure IoT Hub Toolkit](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-toolkit) extension is installed and utilized:
-        1. **CTRL-Shift-P**
+        1. **F1** or **CTRL-Shift-P**
         1. `Azure IoT Hub: Select IoT Hub`
 
 ### For development of this extension, or running from source code directly
@@ -139,7 +145,7 @@ data to Microsoft, you can set the `telemetry.enableTelemetry` setting to `false
 
 ## Release Notes
 
-### 1.0.2
+### 1.0.4
 
 GA
 

@@ -6,6 +6,7 @@
 import * as vscode from "vscode";
 import { Constants } from "./common/constants";
 import { ErrorData } from "./common/ErrorData";
+import { RequirementsChecker } from "./common/requirementsChecker";
 import { TelemetryClient } from "./common/telemetryClient";
 import { UserCancelledError } from "./common/userCancelledError";
 import { OpenEnclaveManager } from "./openenclave/openEnclaveManager";
@@ -17,6 +18,8 @@ export function activate(context: vscode.ExtensionContext) {
     TelemetryClient.sendEvent("extensionActivated: " + Constants.ExtensionId);
     const outputChannel: vscode.OutputChannel = vscode.window.createOutputChannel(Constants.openEnclaveDisplayName);
     const openEnclaveManager = new OpenEnclaveManager(context);
+
+    RequirementsChecker.checkRequirements();
 
     // Add Open Solution command
     initCommandAsync(context, outputChannel,
@@ -36,7 +39,6 @@ function initCommandAsync(
             let errorData: ErrorData | undefined;
             const properties: { [key: string]: string; } = {};
             properties.result = "Succeeded";
-            TelemetryClient.sendEvent(`${commandId}.start`);
             outputChannel.appendLine(`${commandId}: `);
             try {
                 return await callback(...args);
@@ -44,7 +46,7 @@ function initCommandAsync(
                 if (error instanceof UserCancelledError) {
                     properties.result = "Cancelled";
                     outputChannel.appendLine(Constants.userCancelled);
-                } else {
+                } else if (error) {
                     properties.result = "Failed";
                     errorData = new ErrorData(error);
                     outputChannel.appendLine(`Error: ${errorData.message}`);
@@ -57,7 +59,6 @@ function initCommandAsync(
                     properties.error = errorData.errorType;
                     properties.errorMessage = errorData.message;
                 }
-                TelemetryClient.sendEvent(`${commandId}.end`, properties);
             }
         }));
 }
