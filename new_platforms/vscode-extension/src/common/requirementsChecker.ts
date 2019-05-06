@@ -38,6 +38,23 @@ export class RequirementsChecker {
                 .catch(async (error) => {
                     warnings.push("Unable to locate PYTHON.");
                 }));
+            promises.push(this.validateTool("cmake", ["--version"])
+                .then(async (output) => {
+                    const versionLine = output.split("\n").filter((line) => line.indexOf("cmake version") !== -1);
+                    if (versionLine && versionLine.length > 0) {
+                        const versionMatches = versionLine[0].match(/^cmake version ([0-9]+)\.([0-9]+)\.([0-9]+)$/);
+                        if (versionMatches && versionMatches.length === 4) {
+                            const major = parseInt(versionMatches[1], 10);
+                            const minor = parseInt(versionMatches[2], 10);
+                            if (major < 3 || (major === 3 && minor < 12)) {
+                                warnings.push(`Incorrect CMAKE found (${major}.${minor}).  Version 3.12.0 or higher is required.`);
+                            }
+                        }
+                    }
+                })
+                .catch(async (error) => {
+                    warnings.push("Unable to locate CMAKE 3.12 or higher.");
+                }));
         } else if (os.platform() === "win32") {
             promises.push(this.validateTool("git", ["config", "--get", "--system", "core.longpaths"])
                 .then(async (output) => {
@@ -56,23 +73,6 @@ export class RequirementsChecker {
         promises.push(this.validateTool("git", ["--version"])
             .catch(async (error) => {
                 warnings.push("Unable to locate GIT.");
-            }));
-        promises.push(this.validateTool("cmake", ["--version"])
-            .then(async (output) => {
-                const versionLine = output.split("\n").filter((line) => line.indexOf("cmake version") !== -1);
-                if (versionLine && versionLine.length > 0) {
-                    const versionMatches = versionLine[0].match(/^cmake version ([0-9]+)\.([0-9]+)\.([0-9]+)$/);
-                    if (versionMatches && versionMatches.length === 4) {
-                        const major = parseInt(versionMatches[1], 10);
-                        const minor = parseInt(versionMatches[2], 10);
-                        if (major < 3 || (major === 3 && minor < 12)) {
-                            warnings.push(`Incorrect CMAKE found (${major}.${minor}).  Version 3.12.0 or higher is required.`);
-                        }
-                    }
-                }
-            })
-            .catch(async (error) => {
-                warnings.push("Unable to locate CMAKE 3.12 or higher.");
             }));
         await Promise.all(promises)
             .then(async () => {
