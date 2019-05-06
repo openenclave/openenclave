@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 // clang-format off
-#include <openenclave/bits/defs.h>
-#include <openenclave/bits/safecrt.h>
+ #include <openenclave/bits/defs.h>
+ #include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgxtypes.h>
@@ -15,7 +15,7 @@
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/print.h>
 // clang-format on
-//
+
 #include <stdio.h>
 #include "../common/common.h"
 #include "ec.h"
@@ -27,10 +27,6 @@
 #define SUBJECT_NAME ISSUER_NAME
 #define DATE_NOT_VALID_BEFORE "20190501000000"
 #define DATE_NOT_VALID_AFTER "20501231235959"
-
-static unsigned char _cert_buf[MAX_CERT_SIZE] = {
-    0,
-};
 
 static const unsigned char oid_oe_report[] = X509_OID_FOR_QUOTE_EXT;
 
@@ -64,7 +60,7 @@ oe_result_t generate_x509_cert(
 {
     oe_result_t result = OE_FAILURE;
     size_t bytes_written = 0;
-    uint8_t* host_cert_buf = NULL;
+    uint8_t* cert_buf = NULL;
     oe_cert_config_t config = {0};
 
     config.issuer_key_buf = issuer_key_buf;
@@ -80,31 +76,25 @@ oe_result_t generate_x509_cert(
     config.ext_oid = (char*)oid_oe_report;
     config.ext_oid_size = sizeof(oid_oe_report);
 
+    // allocate memory for cert output buffer
+    cert_buf = (uint8_t*)oe_malloc(MAX_CERT_SIZE);
+    if (cert_buf == NULL)
+        goto done;
+
     result = oe_gen_custom_x509_cert(
-        &config, _cert_buf, MAX_CERT_SIZE, &bytes_written);
+        &config, cert_buf, MAX_CERT_SIZE, &bytes_written);
     OE_CHECK_MSG(
         result,
         "oe_gen_custom_x509_cert failed with %s",
         oe_result_str(result));
     OE_TRACE_VERBOSE("certificate: bytes_written = 0x%x", bytes_written);
 
-    // allocate memory for cert output buffer
-    host_cert_buf = (uint8_t*)oe_malloc(bytes_written);
-    if (host_cert_buf == NULL)
-        goto done;
-
-    // copy to host buffer
-    oe_memcpy_s(
-        (void*)host_cert_buf,
-        bytes_written,
-        //        (const void*)(_cert_buf + sizeof(_cert_buf) - bytes_written),
-        (const void*)_cert_buf,
-        bytes_written);
-
     *output_cert_size = (size_t)bytes_written;
-    *output_cert = host_cert_buf;
+    *output_cert = cert_buf;
     result = OE_OK;
+    cert_buf = NULL;
 done:
+    oe_free(cert_buf);
     return result;
 }
 

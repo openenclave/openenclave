@@ -1269,12 +1269,11 @@ oe_result_t oe_gen_custom_x509_cert(
     if (*bytes_written <= 0)
         OE_RAISE_MSG(OE_FAILURE, "bytes_written = 0x%x ", *bytes_written);
 
-    oe_memcpy_s(
+    OE_CHECK(oe_memcpy_s(
         (void*)cert_buf,
         cert_buf_size,
         (const void*)(buff + cert_buf_size - *bytes_written),
-        *bytes_written);
-
+        *bytes_written));
     OE_TRACE_VERBOSE("bytes_written = 0x%x", *bytes_written);
 
     result = OE_OK;

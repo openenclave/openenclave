@@ -98,16 +98,16 @@ oe_result_t oe_verify_tls_cert(
         OE_BUFFER_TOO_SMALL)
         OE_RAISE(OE_FAILURE);
 
-    // find the extension
     report = (uint8_t*)oe_malloc(report_size);
     if (!report)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
+    // find the extension
     OE_CHECK(oe_cert_find_extension(
         &cert, (const char*)oid_oe_report, report, &report_size));
     OE_TRACE_VERBOSE("extract_x509_report_extension() succeeded");
 
-#ifdef _OE_ENCLAVE_H
+#ifdef OE_BUILD_ENCLAVE
     result = oe_verify_report(report, report_size, &parsed_report);
 #else
     result = oe_verify_report(NULL, report, report_size, &parsed_report);
