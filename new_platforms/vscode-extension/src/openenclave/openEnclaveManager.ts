@@ -192,7 +192,7 @@ export class OpenEnclaveManager {
 
                 if (createEdgeSolution) {
                     if (dockerRepo) {
-                        progress.report({ message: "Update deployment template" });
+                        progress.report({ message: "Updating deployment template" });
                         const address = Utility.getRegistryAddress(dockerRepo);
                         const addressKey = Utility.getAddressKey(address);
                         const lowerCase = address.toLowerCase();
@@ -203,7 +203,7 @@ export class OpenEnclaveManager {
                     }
                 } else {
                     // Ensure that the build folders are created for the standalone project
-                    progress.report({ message: "Create build folders" });
+                    progress.report({ message: "Creating build folders" });
                     await fse.mkdirsSync(path.join(openEnclaveFolder, Constants.standaloneBuildFolder, "vexpress-qemu_virt"));
                     await fse.mkdirsSync(path.join(openEnclaveFolder, Constants.standaloneBuildFolder, "vexpress-qemu_armv8a"));
                 }
