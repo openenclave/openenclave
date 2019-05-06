@@ -39,58 +39,9 @@ export class OpenEnclaveManager {
         this._context = context;
     }
 
-    public async createOpenEnclaveSolution(): Promise<void> {
+    public async createOpenEnclaveSolution(outputChannel: vscode.OutputChannel): Promise<void> {
         return this.promiseWithProgress(async (progress, resolve, reject) => {
-            return this.internalCreateOpenEnclaveSolution(progress)
-                .then(() => {
-                    resolve();
-                })
-                .catch((err) => {
-                    reject(err);
-                });
-        });
-    }
-
-    public async updateSdkFromGit(incomingWorkspaceFolder: string | null): Promise<void> {
-        return this.promiseWithProgress(async (progress, resolve, reject) => {
-            return this.internalUpdateSdkFromGit(
-                incomingWorkspaceFolder,
-                Constants.openEnclaveSdkName,
-                Constants.openEnclaveRepo,
-                Constants.openEnclaveBranch,
-                progress,
-                "Downloading SDK")
-                .then(() => {
-                    resolve();
-                })
-                .catch((err) => {
-                    reject(err);
-                });
-        });
-    }
-
-    public async downloadDevKitFromBlobStorage(): Promise<void> {
-        return this.promiseWithProgress(async (progress, resolve, reject) => {
-            return this.internalDownloadDevKitFromBlobStorage(progress)
-                .then(() => {
-                    resolve();
-                })
-                .catch((err) => {
-                    reject(err);
-                });
-        });
-    }
-
-    public async useSpecifiedDevKit(incomingWorkspaceFolder: string | null): Promise<void> {
-        return this.promiseWithProgress(async (progress, resolve, reject) => {
-            // Prompt user for DevKit tarball path
-            const devKitPath: string | undefined = await this.getDevKitTarball();
-            if (devKitPath === undefined) {
-                throw new UserCancelledError();
-            }
-
-            // Expand devkit tarball to local path
-            return this.internalExpandDevkit(fse.createReadStream(devKitPath), incomingWorkspaceFolder, progress)
+            return this.internalCreateOpenEnclaveSolution(outputChannel, progress)
                 .then(() => {
                     resolve();
                 })
@@ -104,7 +55,7 @@ export class OpenEnclaveManager {
         return this._context.asAbsolutePath(path.join(Constants.assetsFolder, Constants.devKitFolder, Constants.devKitTarball));
     }
 
-    private async internalCreateOpenEnclaveSolution(progress: ProgressUpdater): Promise<void> {
+    private async internalCreateOpenEnclaveSolution(outputChannel: vscode.OutputChannel, progress: ProgressUpdater): Promise<void> {
         return new Promise(async (resolve, reject) => {
             // Prompt user for new Solution path
             const parentPath: string | undefined = await this.getSolutionParentFolder();
@@ -113,7 +64,7 @@ export class OpenEnclaveManager {
             } else {
                 try {
                     // Populate new solution folder with Open Enclave code
-                    const openEnclaveFolder = await this.populateOpenEnclaveSolution(parentPath, progress);
+                    const openEnclaveFolder = await this.populateOpenEnclaveSolution(parentPath, outputChannel, progress);
                     resolve();
 
                     // Open new solution in VSCode
@@ -125,7 +76,7 @@ export class OpenEnclaveManager {
         });
     }
 
-    private async populateOpenEnclaveSolution(parentFolder: string, progress: ProgressUpdater): Promise<string> {
+    private async populateOpenEnclaveSolution(parentFolder: string, outputChannel: vscode.OutputChannel, progress: ProgressUpdater): Promise<string> {
         return new Promise(async (resolve, reject) => {
 
             try {
@@ -173,18 +124,18 @@ export class OpenEnclaveManager {
                 await fse.mkdirsSync(enclaveFolder);
 
                 // Create user files with template replacements made
-                progress.report({ message: "Creating base files" });
+                this.progressAndOutput("Creating base files", progress, outputChannel);
                 // Put base files in place
                 const baseTemplateSolutionPath = this._context.asAbsolutePath(path.join(Constants.assetsFolder, Constants.baseSolutionTemplateFolder));
                 await Utility.copyTemplateFiles(baseTemplateSolutionPath, enclaveFolder, null, replacementMap);
-                progress.report({ message: "Base files created" });
+                this.progressAndOutput("Base files created", progress, outputChannel);
                 if (createEdgeSolution) {
-                    progress.report({ message: "Creating edge files" });
+                    this.progressAndOutput("Creating edge files", progress, outputChannel);
                     // Put edge files in place
                     const edgeTemplateSolutionPath = this._context.asAbsolutePath(path.join(Constants.assetsFolder, Constants.edgeSolutionTemplateFolder));
                     await Utility.copyTemplateFiles(edgeTemplateSolutionPath, openEnclaveFolder, null, replacementMap);
                 } else {
-                    progress.report({ message: "Creating standalone files" });
+                    this.progressAndOutput("Creating standalone files", progress, outputChannel);
                     // Put standalone files in place
                     const standaloneTemplateSolutionPath = this._context.asAbsolutePath(path.join(Constants.assetsFolder, Constants.standaloneSolutionTemplateFolder));
                     await Utility.copyTemplateFiles(standaloneTemplateSolutionPath, openEnclaveFolder, null, replacementMap);
@@ -192,7 +143,7 @@ export class OpenEnclaveManager {
 
                 if (createEdgeSolution) {
                     if (dockerRepo) {
-                        progress.report({ message: "Updating deployment template" });
+                        this.progressAndOutput("Updating deployment template", progress, outputChannel);
                         const address = Utility.getRegistryAddress(dockerRepo);
                         const addressKey = Utility.getAddressKey(address);
                         const lowerCase = address.toLowerCase();
@@ -203,7 +154,7 @@ export class OpenEnclaveManager {
                     }
                 } else {
                     // Ensure that the build folders are created for the standalone project
-                    progress.report({ message: "Creating build folders" });
+                    this.progressAndOutput("Creating build folders", progress, outputChannel);
                     await fse.mkdirsSync(path.join(openEnclaveFolder, Constants.standaloneBuildFolder, "vexpress-qemu_virt"));
                     await fse.mkdirsSync(path.join(openEnclaveFolder, Constants.standaloneBuildFolder, "vexpress-qemu_armv8a"));
                 }
@@ -212,37 +163,38 @@ export class OpenEnclaveManager {
                 const shared3rdpartyLocation = path.join(this._context.globalStoragePath, Constants.openEnclaveSdkVersion, Constants.thirdPartyFolder);
                 if (!fse.existsSync(shared3rdpartyLocation)) {
                     const sdkDownloadMessage = "Downloading SDK (this is infrequent)";
-                    progress.report({ message: sdkDownloadMessage });
+                    this.progressAndOutput(sdkDownloadMessage, progress, outputChannel);
                     await this.internalUpdateSdkFromGit(
                         path.join(this._context.globalStoragePath, Constants.openEnclaveSdkVersion),
                         Constants.openEnclaveSdkName,
                         Constants.openEnclaveRepo,
                         Constants.openEnclaveBranch,
+                        outputChannel,
                         progress,
                         sdkDownloadMessage);
                 }
                 // Ensure that the sdk is present in the project
-                progress.report({ message: "Adding Open Enclave SDK to solution" });
+                this.progressAndOutput("Adding Open Enclave SDK to solution", progress, outputChannel);
                 await this.internalMakeCopyOrLink(shared3rdpartyLocation, path.join(enclaveFolder, Constants.thirdPartyFolder), !createEdgeSolution);
 
                 // Ensure that the devkit is present on the system
                 const sharedDevkitLocation = path.join(this._context.globalStoragePath, Constants.DevKitVersion, Constants.devKitFolder);
                 if (!fse.existsSync(sharedDevkitLocation)) {
                     const embeddedDevkitPath = this.getEmbeddedDevKitTarballPath();
-                    progress.report({ message: "Expanding platform devkit (this is infrequent)" });
-                    await this.internalExpandDevkit(fse.createReadStream(embeddedDevkitPath), sharedDevkitLocation, progress);
+                    this.progressAndOutput("Expanding platform devkit (this is infrequent)", progress, outputChannel);
+                    await this.internalExpandDevkit(fse.createReadStream(embeddedDevkitPath), sharedDevkitLocation, progress, outputChannel);
                 }
                 // Ensure that the devkit is present in the project
-                progress.report({ message: "Adding devkit to solution" });
+                this.progressAndOutput("Adding devkit to solution", progress, outputChannel);
                 await this.internalMakeCopyOrLink(sharedDevkitLocation, path.join(enclaveFolder, Constants.devKitFolder), !createEdgeSolution);
 
                 // Success!
-                progress.report({ message: "Created Open Enclave solution" });
+                this.progressAndOutput("Created Open Enclave solution", progress, outputChannel);
                 resolve(openEnclaveFolder);
 
             } catch (error) {
                 TelemetryClient.sendEvent(`msiot-vscode-openenclave.newSolution.Failure`, {error: (error) ? error.message : "unknown"});
-                progress.report({ message: "Failed to create new Open Enclave solution" });
+                this.progressAndOutput("Failed to create new Open Enclave solution", progress, outputChannel);
                 reject(error);
             }
         });
@@ -375,7 +327,7 @@ export class OpenEnclaveManager {
         });
     }
 
-    private async internalDownloadDevKitFromBlobStorage(progress: ProgressUpdater): Promise<void> {
+    private async internalDownloadDevKitFromBlobStorage(progress: ProgressUpdater, outputChannel: vscode.OutputChannel): Promise<void> {
         return new Promise(async (resolve, reject) => {
             // Ensure that DevKit blob information is available
             const account = Constants.DevKitBlobAccount;
@@ -387,7 +339,7 @@ export class OpenEnclaveManager {
                 const storageAccountUri = "https://" + account + ".blob.core.windows.net";
 
                 // Download devkit from Azure Blob
-                progress.report({ message: "Downloading devkit"});
+                this.progressAndOutput("Downloading devkit", progress, outputChannel);
                 const tmp = require("tmp");
                 return tmp.file({prefix: Constants.devKitFolder, postfix: ".tmp"}, async (err: Error, tempFilePath: string, fd: any, cleanupCallback: any) => {
                     if (err) {
@@ -400,8 +352,8 @@ export class OpenEnclaveManager {
                                 reject(blobErr);
                             } else {
                                 // Expand downloaded devkit tarball to local path
-                                progress.report({ message: "Expanding devkit"});
-                                await this.internalExpandDevkit(fse.createReadStream(tempFilePath), null, progress);
+                                this.progressAndOutput("Expanding devkit", progress, outputChannel);
+                                await this.internalExpandDevkit(fse.createReadStream(tempFilePath), null, progress, outputChannel);
                                 // Remove temp file
                                 await cleanupCallback();
                                 resolve();
@@ -418,6 +370,7 @@ export class OpenEnclaveManager {
         sdkName: string,
         gitRepo: string,
         gitBranch: string,
+        outputChannel: vscode.OutputChannel,
         progress: ProgressUpdater,
         progressPrefix: string): Promise<void> {
 
@@ -431,19 +384,19 @@ export class OpenEnclaveManager {
 
             if (workspaceFolder !== undefined) {
                 const sdkDestination = path.join(workspaceFolder, Constants.thirdPartyFolder, sdkName);
-                progress.report({ message: `${progressPrefix}. Cleaning up SDK folder if needed`});
+                this.progressAndOutput(`${progressPrefix}. Cleaning up SDK folder if needed`, progress, outputChannel);
                 fse.pathExists(sdkDestination, (pathExistsErr: Error, exists: boolean) => {
                     if (pathExistsErr) {
                         reject(pathExistsErr);
                     } else if (exists) {
                         // If sdkDestination exists, it must be emptied and deleted.
-                        progress.report({ message: `${progressPrefix}. Cloning SDK from git`});
-                        return this.clearFolderAndThen(sdkDestination, resolve, reject, progress, () => {
+                        this.progressAndOutput(`${progressPrefix}. Cloning SDK from git`, progress, outputChannel);
+                        return this.clearFolderAndThen(sdkDestination, resolve, reject, progress, outputChannel, () => {
                             // Folder has been deleted, download SDK from git
-                            return GitHelper.getRepo(gitRepo, gitBranch, sdkDestination)
+                            return GitHelper.getRepo(gitRepo, gitBranch, sdkDestination, outputChannel)
                                 .then(() => {
                                     // Signal success
-                                    progress.report({ message: `${progressPrefix}. SDK cloned successfully from git` });
+                                    this.progressAndOutput(`${progressPrefix}. SDK cloned successfully from git`, progress, outputChannel);
                                     resolve();
                                 })
                                 .catch((gitErr) => {
@@ -453,11 +406,11 @@ export class OpenEnclaveManager {
                         });
                     } else {
                         // If folder does not exist, download SDK from git
-                        progress.report({ message: `${progressPrefix}. Cloning SDK from git` });
-                        return GitHelper.getRepo(gitRepo, gitBranch, sdkDestination)
+                        this.progressAndOutput(`${progressPrefix}. Cloning SDK from git`, progress, outputChannel);
+                        return GitHelper.getRepo(gitRepo, gitBranch, sdkDestination, outputChannel)
                             .then(() => {
                                 // Signal success
-                                progress.report({ message: `${progressPrefix}. SDK cloned successfully from git` });
+                                this.progressAndOutput(`${progressPrefix}. SDK cloned successfully from git`, progress, outputChannel);
                                 resolve();
                             })
                             .catch((gitErr) => {
@@ -469,7 +422,7 @@ export class OpenEnclaveManager {
         });
     }
 
-    private async internalExpandDevkit(devKitStream: NodeJS.ReadableStream, incomingWorkspaceFolder: string | null, progress: ProgressUpdater): Promise<void> {
+    private async internalExpandDevkit(devKitStream: NodeJS.ReadableStream, incomingWorkspaceFolder: string | null, progress: ProgressUpdater, outputChannel: vscode.OutputChannel): Promise<void> {
         return new Promise(async (resolve, reject) => {
             const workspaceFolders = vscode.workspace.workspaceFolders;
             const workspaceFolder: string | undefined = (incomingWorkspaceFolder !== null) ?
@@ -484,9 +437,9 @@ export class OpenEnclaveManager {
                         reject(pathExistsErr);
                     } else if (exists) {
                         // If sdkDestination exists, it must be emptied and deleted.
-                        return this.clearFolderAndThen(workspaceFolder, resolve, reject, progress, () => {
+                        return this.clearFolderAndThen(workspaceFolder, resolve, reject, progress, outputChannel, () => {
                             // Folder has been deleted, download SDK from git
-                            return this.expandTarGzStream(devKitStream, workspaceFolder, "Expanding shared devkit", progress)
+                            return this.expandTarGzStream(devKitStream, workspaceFolder, "Expanding shared devkit", progress, outputChannel)
                                 .then(() => {
                                     // Signal success
                                     resolve();
@@ -498,7 +451,7 @@ export class OpenEnclaveManager {
                         });
                     } else {
                         // If folder does not exist, download SDK from git
-                        return this.expandTarGzStream(devKitStream, workspaceFolder, "Expanding shared devkit", progress)
+                        return this.expandTarGzStream(devKitStream, workspaceFolder, "Expanding shared devkit", progress, outputChannel)
                             .then(() => {
                                 // Signal success
                                 resolve();
@@ -512,30 +465,30 @@ export class OpenEnclaveManager {
         });
     }
 
-    private async expandTarGzStream(devKitStream: NodeJS.ReadableStream, localFilePath: string, progressPrefix: string, progress: ProgressUpdater): Promise<void> {
+    private async expandTarGzStream(devKitStream: NodeJS.ReadableStream, localFilePath: string, progressPrefix: string, progress: ProgressUpdater, outputChannel: vscode.OutputChannel): Promise<void> {
         return new Promise(async (resolve, reject) => {
-            progress.report({ message: `${progressPrefix}`});
+            this.progressAndOutput(`${progressPrefix}`, progress, outputChannel);
             fse.mkdirs(localFilePath);
 
             // Pipe: DevKit Stream => Zlib unizp => tar.extract
             const tar = require("tar");
             return devKitStream
                     .on("error", (err: Error) => {
-                        progress.report({ message: `${progressPrefix} failed`});
+                        this.progressAndOutput(`${progressPrefix} failed`, progress, outputChannel);
                         reject(err);
                     })
                     .pipe(zlib.createGunzip())
                     .on("error", (err: Error) => {
-                        progress.report({ message: `${progressPrefix} failed`});
+                        this.progressAndOutput(`${progressPrefix} failed`, progress, outputChannel);
                         reject(err);
                     })
                     .pipe(tar.extract({ cwd: localFilePath, strip: 0 }))
                     .on("close", () => {
-                        progress.report({ message: `${progressPrefix} finished`});
+                        this.progressAndOutput(`${progressPrefix} finished`, progress, outputChannel);
                         resolve();
                     })
                     .on("error", (err: Error) => {
-                        progress.report({ message: `${progressPrefix} failed`});
+                        this.progressAndOutput(`${progressPrefix} failed`, progress, outputChannel);
                         reject(err);
                     });
         });
@@ -667,25 +620,25 @@ export class OpenEnclaveManager {
         return undefined;
     }
 
-    private async clearFolderAndThen(folder: string, resolve: any, reject: any, progress: ProgressUpdater, callback: () => Promise<any>) {
+    private async clearFolderAndThen(folder: string, resolve: any, reject: any, progress: ProgressUpdater, outputChannel: vscode.OutputChannel, callback: () => Promise<any>) {
         const clearFolderMessage = "Clearing folder: " + folder;
-        progress.report({ message: clearFolderMessage});
+        this.progressAndOutput(clearFolderMessage, progress, outputChannel);
         fse.emptyDir(
             folder,
             (emptyDirErr) => {
                 if (emptyDirErr) {
                     // Empty failed, call reject
-                    progress.report({ message: "Emptying folder failed." });
+                    this.progressAndOutput("Emptying folder failed.", progress, outputChannel);
                     reject(emptyDirErr);
                 } else {
                     // Folder has been emptied, now remove it
                     const removingFolderMessage = "Removing folder: " + folder;
-                    progress.report({ message: removingFolderMessage});
+                    this.progressAndOutput(removingFolderMessage, progress, outputChannel);
                     fse.rmdir(
                         folder,
                         (rmdirErr) => {
                             if (rmdirErr) {
-                                progress.report({ message: "Removing folder failed." });
+                                this.progressAndOutput("Removing folder failed.", progress, outputChannel);
                                 reject(rmdirErr);
                             } else {
                                 // Folder has been deleted, execute callback
@@ -721,5 +674,17 @@ export class OpenEnclaveManager {
 
             });
         });
+    }
+
+    private progress(message: string, progress: ProgressUpdater) {
+        this.progressAndOutput(message, progress, undefined);
+    }
+
+    private progressAndOutput(message: string, progress: ProgressUpdater, outputChannel: vscode.OutputChannel | undefined) {
+        progress.report({ message });
+        if (outputChannel) {
+            outputChannel.show();
+            outputChannel.appendLine(message);
+        }
     }
 }

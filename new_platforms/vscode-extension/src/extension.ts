@@ -25,7 +25,7 @@ export function activate(context: vscode.ExtensionContext) {
     initCommandAsync(context, outputChannel,
         "msiot-vscode-openenclave.newSolution",
         (): Promise<void> => {
-            return openEnclaveManager.createOpenEnclaveSolution();
+            return openEnclaveManager.createOpenEnclaveSolution(outputChannel);
         });
 }
 
