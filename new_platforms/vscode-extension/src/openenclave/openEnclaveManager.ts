@@ -161,7 +161,8 @@ export class OpenEnclaveManager {
 
                 // Ensure that the sdk is present on the system
                 const shared3rdpartyLocation = path.join(this._context.globalStoragePath, Constants.openEnclaveSdkVersion, Constants.thirdPartyFolder);
-                if (!fse.existsSync(shared3rdpartyLocation)) {
+                const sharedSdkLocation = path.join(shared3rdpartyLocation, Constants.openEnclaveSdkName);
+                if (!fse.existsSync(sharedSdkLocation)) {
                     const sdkDownloadMessage = "Downloading SDK (this is infrequent)";
                     this.progressAndOutput(sdkDownloadMessage, progress, outputChannel);
                     await this.internalUpdateSdkFromGit(
@@ -400,6 +401,10 @@ export class OpenEnclaveManager {
                                     resolve();
                                 })
                                 .catch((gitErr) => {
+                                    // Clean up failed SDK directory
+                                    fse.emptyDir(sdkDestination).then(() =>{
+                                        fse.rmdir(sdkDestination)
+                                    });
                                     // Signal git failure
                                     reject(gitErr);
                                 });
@@ -414,6 +419,10 @@ export class OpenEnclaveManager {
                                 resolve();
                             })
                             .catch((gitErr) => {
+                                // Clean up failed SDK directory
+                                fse.emptyDir(sdkDestination).then(() =>{
+                                    fse.rmdir(sdkDestination)
+                                });
                                 // Signal git failure
                                 reject(gitErr);
                             });
