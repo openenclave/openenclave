@@ -143,7 +143,7 @@ data to Microsoft, you can set the `telemetry.enableTelemetry` setting to `false
 
 ## Release Notes
 
-### 1.0.3
+### 1.0.4
 
 GA
 

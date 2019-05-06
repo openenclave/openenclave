@@ -14,17 +14,25 @@ export class RequirementsChecker {
         const promises: Array<Promise<any>> = [];
         const warnings: string[] = [];
         if (os.platform() === "linux") {
-            promises.push(this.validateTool("ls", ["-l", "/usr/bin/arm-linux-gnueabihf-gcc"])
+            promises.push(this.validateTool("arm-linux-gnueabihf-gcc", ["--version"])
                 .catch(async (error) => {
-                    warnings.push("Unable to locate GCC (/usr/bin/arm-linux-gnueabihf-gcc).");
+                    warnings.push("Unable to locate GCC (arm-linux-gnueabihf-gcc).");
                 }));
-            promises.push(this.validateTool("ls", ["-l", "/usr/bin/gdb-multiarch"])
+            promises.push(this.validateTool("arm-linux-gnueabihf-g++", ["--version"])
                 .catch(async (error) => {
-                    warnings.push("Unable to locate GDB (/usr/bin/gdb-multiarch).");
+                    warnings.push("Unable to locate G++ (arm-linux-gnueabihf-g++).");
                 }));
-            promises.push(this.validateTool("ls", ["-l", "/usr/bin/g++-arm-linux-gnueabihf"])
+            promises.push(this.validateTool("aarch64-linux-gnu-gcc", ["--version"])
                 .catch(async (error) => {
-                    warnings.push("Unable to locate G++ (/usr/bin/g++-arm-linux-gnueabihf).");
+                    warnings.push("Unable to locate GCC (aarch64-linux-gnu-gcc).");
+                }));
+            promises.push(this.validateTool("aarch64-linux-gnu-g++", ["--version"])
+                .catch(async (error) => {
+                    warnings.push("Unable to locate G++ (aarch64-linux-gnu-g++).");
+                }));
+            promises.push(this.validateTool("gdb-multiarch", ["--version"])
+                .catch(async (error) => {
+                    warnings.push("Unable to locate GDB (gdb-multiarch).");
                 }));
             promises.push(this.validateTool("python", ["--version"])
                 .catch(async (error) => {
