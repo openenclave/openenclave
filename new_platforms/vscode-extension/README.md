@@ -161,9 +161,9 @@ data to Microsoft, you can set the `telemetry.enableTelemetry` setting to `false
 
 ## Release Notes
 
-### 1.0.5
+### 1.0.8
 
-GA
+Public Preview
 
 ### 1.0.1
 
