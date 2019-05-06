@@ -81,6 +81,7 @@ int ecall_run_client(char* recv_buff, ssize_t* recv_buff_len)
 
     printf("reading...\n");
     n = oe_read(sockdup, recv_buff, buff_len);
+
     *recv_buff_len = n;
     if (n > 0)
     {
@@ -90,9 +91,11 @@ int ecall_run_client(char* recv_buff, ssize_t* recv_buff_len)
     {
         printf("Read error, Fail\n");
         oe_close(sockfd);
+        oe_host_printf("fail close\n");
         return OE_FAILURE;
     }
 
+    oe_host_printf("success close\n");
     oe_close(sockfd);
     oe_close(sockdup);
     return OE_OK;
@@ -123,21 +126,30 @@ int ecall_run_server()
     serv_addr.sin_addr.s_addr = oe_htonl(OE_INADDR_LOOPBACK);
     serv_addr.sin_port = oe_htons(1493);
 
-    printf("enclave: accepting\n");
-    oe_bind(listenfd, (struct oe_sockaddr*)&serv_addr, sizeof(serv_addr));
-    oe_listen(listenfd, 10);
+    printf("enclave: binding\n");
+    rtn = oe_bind(listenfd, (struct oe_sockaddr*)&serv_addr, sizeof(serv_addr));
+    if (rtn < 0)
+    {
+        printf("bind error errno = %d\n", oe_errno);
+    }
+    oe_host_printf("enclave: listening\n");
+    rtn = oe_listen(listenfd, 10);
+    if (rtn < 0)
+    {
+        printf("listen error errno = %d\n", oe_errno);
+    }
 
     while (1)
     {
         oe_sleep_msec(1);
         printf("enc: accepting\n");
         connfd = oe_accept(listenfd, (struct oe_sockaddr*)NULL, NULL);
-
         if (connfd >= 0)
         {
             printf("enc: accepted fd = %d\n", connfd);
             do
             {
+                oe_host_printf("enclave: accepted\n");
                 ssize_t n = oe_write(connfd, TESTDATA, strlen(TESTDATA));
                 if (n > 0)
                 {

@@ -2,6 +2,7 @@
 # Licensed under the MIT License.
 
 add_subdirectory(hostfs)
+add_subdirectory(socket)
 
 if(UNIX)
 add_subdirectory(cpio)
@@ -14,5 +15,4 @@ add_subdirectory(sgxfs)
 add_subdirectory(send)
 add_subdirectory(sendmsg)
 add_subdirectory(signal)
-add_subdirectory(socket)
 endif()

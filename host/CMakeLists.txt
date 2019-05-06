@@ -135,6 +135,9 @@ add_library(oehost STATIC
   ${PLATFORM_SRC})
 
 target_link_libraries(oehost PUBLIC oe_includes)
+if (WIN32)
+    target_link_libraries(oehost PUBLIC ws2_32)
+endif ()
 
 add_dependencies(oehost posix_untrusted_edl)
 

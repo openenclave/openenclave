@@ -25,6 +25,8 @@
 #undef errno
 static __declspec(thread) int errno = 0;
 
+static BOOL _winsock_inited = 0;
+
 // Declare these here rather than deal with header file issues.
 
 int _wmkdir(const wchar_t* dirname);
@@ -206,6 +208,90 @@ static int _winerr_to_errno(DWORD winerr)
     return OE_EINVAL;
 }
 
+static struct errno_tab_entry errno2winsockerr[] = {
+    {WSAEINTR, OE_EINTR},
+    {WSAEBADF, OE_EBADF},
+    {WSAEACCES, OE_EACCES},
+    {WSAEFAULT, OE_EFAULT},
+    {WSAEINVAL, OE_EINVAL},
+    {WSAEMFILE, OE_EMFILE},
+    {WSAEWOULDBLOCK, OE_EWOULDBLOCK},
+    {WSAEINPROGRESS, OE_EINPROGRESS},
+    {WSAEALREADY, OE_EALREADY},
+    {WSAENOTSOCK, OE_ENOTSOCK},
+    {WSAEDESTADDRREQ, OE_EDESTADDRREQ},
+    {WSAEMSGSIZE, OE_EMSGSIZE},
+    {WSAEPROTOTYPE, OE_EPROTOTYPE},
+    {WSAENOPROTOOPT, OE_ENOPROTOOPT},
+    {WSAEPROTONOSUPPORT, OE_EPROTONOSUPPORT},
+    {WSAESOCKTNOSUPPORT, OE_ESOCKTNOSUPPORT},
+    {WSAEOPNOTSUPP, OE_EOPNOTSUPP},
+    {WSAEPFNOSUPPORT, OE_EPFNOSUPPORT},
+    {WSAEAFNOSUPPORT, OE_EAFNOSUPPORT},
+    {WSAEADDRINUSE, OE_EADDRINUSE},
+    {WSAEADDRNOTAVAIL, OE_EADDRNOTAVAIL},
+    {WSAENETDOWN, OE_ENETDOWN},
+    {WSAENETUNREACH, OE_ENETUNREACH},
+    {WSAENETRESET, OE_ENETRESET},
+    {WSAECONNABORTED, OE_ECONNABORTED},
+    {WSAECONNRESET, OE_ECONNRESET},
+    {WSAENOBUFS, OE_ENOBUFS},
+    {WSAEISCONN, OE_EISCONN},
+    {WSAENOTCONN, OE_ENOTCONN},
+    {WSAESHUTDOWN, OE_ESHUTDOWN},
+    {WSAETOOMANYREFS, OE_ETOOMANYREFS},
+    {WSAETIMEDOUT, OE_ETIMEDOUT},
+    {WSAECONNREFUSED, OE_ECONNREFUSED},
+    {WSAELOOP, OE_ELOOP},
+    {WSAENAMETOOLONG, OE_ENAMETOOLONG},
+    {WSAEHOSTDOWN, OE_EHOSTDOWN},
+    {WSAEHOSTUNREACH, OE_EHOSTUNREACH},
+    {WSAENOTEMPTY, OE_ENOTEMPTY},
+    {WSAEUSERS, OE_EUSERS},
+    {WSAEDQUOT, OE_EDQUOT},
+    {WSAESTALE, OE_ESTALE},
+    {WSAEREMOTE, OE_EREMOTE},
+    {WSAEDISCON, 199},
+    {WSAEPROCLIM, 200},
+    {WSASYSNOTREADY, 201}, // Made up number but close to adjacent
+    {WSAVERNOTSUPPORTED, 202},
+    {WSANOTINITIALISED, 203},
+    {0, 0}};
+
+static DWORD _errno_to_winsockerr(int errno)
+{
+    struct errno_tab_entry* pent = errno2winsockerr;
+
+    do
+    {
+        if (pent->error_no == errno)
+        {
+            return pent->winerr;
+        }
+        pent++;
+
+    } while (pent->error_no != 0);
+
+    return ERROR_INVALID_PARAMETER;
+}
+
+static int _winsockerr_to_errno(DWORD winsockerr)
+{
+    struct errno_tab_entry* pent = errno2winsockerr;
+
+    do
+    {
+        if (pent->winerr == winsockerr)
+        {
+            return pent->error_no;
+        }
+        pent++;
+
+    } while (pent->winerr != 0);
+
+    return OE_EINVAL;
+}
+
 /*
 **==============================================================================
 **
@@ -213,6 +299,20 @@ static int _winerr_to_errno(DWORD winerr)
 **
 **==============================================================================
 */
+static BOOL _winsock_init()
+{
+    int ret = -1;
+    static WSADATA startup_data = {0};
+
+    // Initialize Winsock
+    ret = WSAStartup(MAKEWORD(2, 2), &startup_data);
+    if (ret != 0)
+    {
+        printf("WSAStartup failed: %d\n", ret);
+        return FALSE;
+    }
+    return TRUE;
+}
 
 __declspec(noreturn) static void _panic(
     const char* file,
@@ -465,7 +565,64 @@ int oe_posix_close_ocall(oe_host_fd_t fd)
 
 oe_host_fd_t oe_posix_dup_ocall(oe_host_fd_t oldfd)
 {
-    PANIC;
+    oe_host_fd_t ret = -1;
+    oe_host_fd_t newfd = -1;
+    char pibuff[1024] = {0};
+    struct _WSAPROTOCOL_INFOA* pi = (struct _WSAPROTOCOL_INFOA*)pibuff;
+
+    // Convert fd 0, 1, 2 as needed
+    switch (oldfd)
+    {
+        case 0:
+            oldfd = (oe_host_fd_t)GetStdHandle(STD_INPUT_HANDLE);
+            break;
+
+        case 1:
+            oldfd = (oe_host_fd_t)GetStdHandle(STD_OUTPUT_HANDLE);
+            break;
+
+        case 2:
+            oldfd = (oe_host_fd_t)GetStdHandle(STD_ERROR_HANDLE);
+            break;
+
+        default:
+            break;
+    }
+
+    ret = WSADuplicateSocketA((SOCKET)oldfd, GetCurrentProcessId(), pi);
+    if (ret < 0)
+    {
+        int sockerr = WSAGetLastError();
+
+        if (sockerr != WSAENOTSOCK)
+        {
+            errno = _winsockerr_to_errno(WSAGetLastError());
+            goto done;
+        }
+    }
+    else
+    {
+        newfd = WSASocketA(-1, -1, -1, pi, 0, 0);
+        ret = newfd;
+        errno = 0;
+        goto done;
+    }
+
+    if (!DuplicateHandle(
+            GetCurrentProcess(),
+            (HANDLE)oldfd,
+            GetCurrentProcess(),
+            (HANDLE*)&ret,
+            0,
+            FALSE,
+            DUPLICATE_SAME_ACCESS))
+    {
+        errno = _winerr_to_errno(GetLastError());
+        goto done;
+    }
+
+done:
+    return ret;
 }
 
 uint64_t oe_posix_opendir_ocall(const char* name)
@@ -615,10 +772,30 @@ done:
 **
 **==============================================================================
 */
+int WSAStartup(_In_ WORD wVersionRequested, _Out_ LPWSADATA lpWSAData);
 
 oe_host_fd_t oe_posix_socket_ocall(int domain, int type, int protocol)
 {
-    PANIC;
+    oe_host_fd_t ret = -1;
+    HANDLE h = INVALID_HANDLE_VALUE;
+
+    if (!_winsock_inited)
+    {
+        if (!_winsock_init())
+        {
+            errno = OE_ENOTSOCK;
+        }
+    }
+
+    // We are hoping, and think it is true, that accept in winsock returns the
+    // same error returns as accept everywhere else
+    ret = socket(domain, type, protocol);
+    if (ret == SOCKET_ERROR)
+    {
+        errno = _winsockerr_to_errno(WSAGetLastError());
+    }
+
+    return ret;
 }
 
 int oe_posix_socketpair_ocall(
@@ -635,7 +812,22 @@ int oe_posix_connect_ocall(
     const struct oe_sockaddr* addr,
     oe_socklen_t addrlen)
 {
-    PANIC;
+    int ret = -1;
+
+    SOCKADDR_IN sadd = *(PSOCKADDR_IN)addr;
+    printf(
+        "sock addr = %d %d %d %d\n",
+        sadd.sin_addr.S_un.S_un_b.s_b1,
+        sadd.sin_addr.S_un.S_un_b.s_b2,
+        sadd.sin_addr.S_un.S_un_b.s_b3,
+        sadd.sin_addr.S_un.S_un_b.s_b4);
+
+    ret = connect((SOCKET)sockfd, (const struct sockaddr*)addr, (int)addrlen);
+    if (ret == SOCKET_ERROR)
+    {
+        errno = _winsockerr_to_errno(WSAGetLastError());
+    }
+    return ret;
 }
 
 oe_host_fd_t oe_posix_accept_ocall(
@@ -644,7 +836,17 @@ oe_host_fd_t oe_posix_accept_ocall(
     oe_socklen_t addrlen_in,
     oe_socklen_t* addrlen_out)
 {
-    PANIC;
+    oe_host_fd_t ret = -1;
+
+    // We are hoping, and think it is true, that accept in winsock returns the
+    // same error returns as accept everywhere else
+    ret = accept((SOCKET)sockfd, (struct sockaddr*)addr, (int*)addrlen_out);
+    if (ret == SOCKET_ERROR)
+    {
+        errno = _winsockerr_to_errno(WSAGetLastError());
+    }
+
+    return ret;
 }
 
 int oe_posix_bind_ocall(
@@ -652,12 +854,26 @@ int oe_posix_bind_ocall(
     const struct oe_sockaddr* addr,
     oe_socklen_t addrlen)
 {
-    PANIC;
+    oe_host_fd_t ret = -1;
+
+    ret = bind((SOCKET)sockfd, (struct sockaddr*)addr, (int)addrlen);
+    if (ret == SOCKET_ERROR)
+    {
+        errno = _winsockerr_to_errno(WSAGetLastError());
+    }
+
+    return ret;
 }
 
 int oe_posix_listen_ocall(oe_host_fd_t sockfd, int backlog)
 {
-    PANIC;
+    oe_host_fd_t ret = -1;
+
+    ret = listen((SOCKET)sockfd, backlog);
+    if (ret == SOCKET_ERROR)
+    {
+        errno = _winsockerr_to_errno(WSAGetLastError());
+    }
 }
 
 ssize_t oe_posix_recvmsg_ocall(
@@ -694,7 +910,15 @@ ssize_t oe_posix_recv_ocall(
     size_t len,
     int flags)
 {
-    PANIC;
+    oe_host_fd_t ret = -1;
+
+    ret = recv((SOCKET)sockfd, buf, len, flags);
+    if (ret == SOCKET_ERROR)
+    {
+        errno = _winsockerr_to_errno(WSAGetLastError());
+    }
+
+    return ret;
 }
 
 ssize_t oe_posix_recvfrom_ocall(
@@ -715,7 +939,15 @@ ssize_t oe_posix_send_ocall(
     size_t len,
     int flags)
 {
-    PANIC;
+    oe_host_fd_t ret = -1;
+
+    ret = send((SOCKET)sockfd, buf, len, flags);
+    if (ret == SOCKET_ERROR)
+    {
+        errno = _winsockerr_to_errno(WSAGetLastError());
+    }
+
+    return ret;
 }
 
 ssize_t oe_posix_sendto_ocall(
@@ -726,7 +958,15 @@ ssize_t oe_posix_sendto_ocall(
     const struct oe_sockaddr* src_addr,
     oe_socklen_t addrlen)
 {
-    PANIC;
+    oe_host_fd_t ret = -1;
+
+    ret = sendto((SOCKET)sockfd, buf, len, flags, src_addr, addrlen);
+    if (ret == SOCKET_ERROR)
+    {
+        errno = _winsockerr_to_errno(WSAGetLastError());
+    }
+
+    return ret;
 }
 
 int oe_posix_shutdown_ocall(oe_host_fd_t sockfd, int how)
@@ -746,7 +986,17 @@ int oe_posix_setsockopt_ocall(
     const void* optval,
     oe_socklen_t optlen)
 {
-    PANIC;
+    oe_host_fd_t ret = -1;
+
+    // ATTN: I'm trusting setsockopt not to make funny here. IT may or may not.
+    // If it does, we will have to translate the args.
+    ret = setsockopt((SOCKET)sockfd, level, optname, optval, optlen);
+    if (ret == SOCKET_ERROR)
+    {
+        errno = _winsockerr_to_errno(WSAGetLastError());
+    }
+
+    return ret;
 }
 
 int oe_posix_getsockopt_ocall(
@@ -757,7 +1007,18 @@ int oe_posix_getsockopt_ocall(
     oe_socklen_t optlen_in,
     oe_socklen_t* optlen_out)
 {
-    PANIC;
+    oe_host_fd_t ret = -1;
+
+    // ATTN: I'm trusting getsockopt not to make funny here. IT may or may not.
+    // If it does, we will have to translate the args.
+    ret = getsockopt(
+        (SOCKET)sockfd, level, optname, optval, optlen_in, optlen_out);
+    if (ret == SOCKET_ERROR)
+    {
+        errno = _winsockerr_to_errno(WSAGetLastError());
+    }
+
+    return ret;
 }
 
 int oe_posix_getsockname_ocall(
@@ -979,5 +1240,34 @@ int oe_posix_getgroups(size_t size, unsigned int* list)
 
 int oe_posix_uname_ocall(struct oe_utsname* buf)
 {
-    PANIC;
+    OSVERSIONINFO osvi;
+
+    ZeroMemory(&osvi, sizeof(OSVERSIONINFO));
+    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+
+    GetVersionEx(&osvi);
+
+    // 2do: machine
+    memset(buf->sysname, 0, __OE_UTSNAME_FIELD_SIZE);
+    memset(buf->nodename, 0, __OE_UTSNAME_FIELD_SIZE);
+    memset(buf->release, 0, __OE_UTSNAME_FIELD_SIZE);
+    memset(buf->version, 0, __OE_UTSNAME_FIELD_SIZE);
+    memset(buf->machine, 0, __OE_UTSNAME_FIELD_SIZE);
+    memset(buf->__domainname, 0, __OE_UTSNAME_FIELD_SIZE);
+
+    snprintf(
+        buf->release,
+        __OE_UTSNAME_FIELD_SIZE,
+        "%d.%d",
+        osvi.dwMajorVersion,
+        osvi.dwMinorVersion);
+    snprintf(buf->version, __OE_UTSNAME_FIELD_SIZE, "%d", osvi.dwBuildNumber);
+
+    GetEnvironmentVariable("OS", buf->sysname, __OE_UTSNAME_FIELD_SIZE);
+    GetEnvironmentVariable(
+        "USERDNSDOMAIN", buf->__domainname, __OE_UTSNAME_FIELD_SIZE);
+    GetEnvironmentVariable(
+        "COMPUTERNAME", buf->nodename, __OE_UTSNAME_FIELD_SIZE);
+
+    return 0;
 }
