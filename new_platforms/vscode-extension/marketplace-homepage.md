@@ -112,6 +112,7 @@ the host and enclave symbols into an instance of the debugger.
 * Make sure that the [Native Debug extension](https://marketplace.visualstudio.com/items?itemName=webfreak.debug) is installed.
 * Ensure that the requirements are met for the [Azure IoT Edge extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-edge):
     * Ensure that [Docker is installed and running: https://docs.docker.com/install/](https://docs.docker.com/install/).
+        * On Linux, if you are seeing permissions issues when connecting to the docker daemon, this has helped some people: `sudo usermod -a -G docker $USER`
     * Ensure that the [iotedgehubdev](https://pypi.org/project/iotedgehubdev/) tool is installed
 
           pip install --upgrade iotedgehubdev
