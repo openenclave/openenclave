@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 "use strict";
-import { ChildProcess, execSync, ExecSyncOptions, spawn, SpawnOptions } from "child_process";
+import { ChildProcess, spawn } from "child_process";
 import * as vscode from "vscode";
 
 export class GitHelper {
@@ -10,7 +10,6 @@ export class GitHelper {
         const command = "git";
         const args = [
             "clone",
-            "--verbose",
             "--recursive",
             "--branch",
             gitBranch.startsWith("#") ? gitBranch.substr(1) : gitBranch,
@@ -27,12 +26,10 @@ export class GitHelper {
     private static spawnProcess(command: string, args: string[], outputChannel: vscode.OutputChannel): Promise<void> {
         return new Promise((resolve, reject) => {
             let stderr: string = "";
-            let stdOutput: string = "";
 
             const p: ChildProcess = spawn(command, args, {shell: true});
             p.stdout.on("data", (data: string | Buffer): void => {
                 const dataStr = data.toString();
-                stdOutput = stdOutput.concat(dataStr);
                 outputChannel.append(dataStr);
             });
             p.stderr.on("data", (data: string | Buffer) => {
