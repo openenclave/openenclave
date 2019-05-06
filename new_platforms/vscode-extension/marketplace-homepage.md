@@ -8,15 +8,7 @@ For more information on the technology, [see here](https://github.com/Microsoft/
 
 Ensure that the [requirements](#Requirements) are met.
 
-You can directly install the [Microsoft Open Enclave extension](https://marketplace.visualstudio.com/items?itemName=ms-iot.msiot-vscode-openenclave).
-
-Alternatively, you can run the extension from this repository by following these instructions:
-
-1. Clone this repository `git clone --recursive https://github.com/microsoft/openenclave --branch feature.new_platforms`.
-1. Navigate to `new_platforms\vscode-extension` in the cloned folder.
-1. Run npm to install the dependencies: `npm install` (see the [requirements](#Requirements) section for npm installation link).
-1. Start VSCode: `code .`.
-1. Start the extension using `F5`.
+Install the [Microsoft Open Enclave extension](https://marketplace.visualstudio.com/items?itemName=ms-iot.msiot-vscode-openenclave).
 
 ## Features
 
@@ -104,16 +96,18 @@ the host and enclave symbols into an instance of the debugger.
 * Install [Visual Studio Code](https://code.visualstudio.com/)
 * Install [git](https://git-scm.com/downloads)
     * On Windows, please make sure that long paths are enabled: `git config --system core.longpaths true`
-* Install [CMake 3.12 or higher](https://cmake.org/download/)
-* On Linux, install the required build components
+* On Linux
 
-      sudo apt update && sudo apt install -y build-essential cmake gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu g++-arm-linux-gnueabihf g++-aarch64-linux-gnu gdb-multiarch python
-
-* Make sure that the [Native Debug extension](https://marketplace.visualstudio.com/items?itemName=webfreak.debug) is installed.
+    * Make sure that the [Native Debug extension](https://marketplace.visualstudio.com/items?itemName=webfreak.debug) is installed.
+    * Install [CMake 3.12 or higher](https://cmake.org/download/)
+    * Install the required build components: 
+        
+          sudo apt update && sudo apt install -y build-essential cmake gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu g++-arm-linux-gnueabihf g++-aarch64-linux-gnu gdb-multiarch python
+    
 * Ensure that the requirements are met for the [Azure IoT Edge extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-edge):
-    * Ensure that [Docker is installed and running: https://docs.docker.com/install/](https://docs.docker.com/install/).
+    * [Docker is installed and running: https://docs.docker.com/install/](https://docs.docker.com/install/).
         * On Linux, if you are seeing permissions issues when connecting to the docker daemon, this has helped some people: `sudo usermod -a -G docker $USER`
-    * Ensure that the [iotedgehubdev](https://pypi.org/project/iotedgehubdev/) tool is installed
+    * The [iotedgehubdev](https://pypi.org/project/iotedgehubdev/) tool is installed
 
           pip install --upgrade iotedgehubdev
 
@@ -127,10 +121,20 @@ the host and enclave symbols into an instance of the debugger.
         1. **F1** or **CTRL-Shift-P**
         1. `Azure IoT Hub: Select IoT Hub`
 
-### For development of this extension, or running from source code directly
+## Build and run extension from source code
+
+For development of this extension, or running from source code directly
 
 * Install [node](https://nodejs.org/en/)
 * Install [npm](https://www.npmjs.com/get-npm)
+
+Alternatively, you can run the extension from this repository by following these instructions:
+
+1. Clone this repository `git clone --recursive https://github.com/microsoft/openenclave --branch feature.new_platforms`.
+1. Navigate to `new_platforms\vscode-extension` in the cloned folder.
+1. Run npm to install the dependencies: `npm install` (see the [requirements](#Requirements) section for npm installation link).
+1. Start VSCode: `code .`.
+1. Start the extension using `F5`.
 
 ## Data/Telemetry
 
