@@ -146,7 +146,7 @@ data to Microsoft, you can set the `telemetry.enableTelemetry` setting to `false
 ## Known Issues
 
 * Building SGX enclaves is not currently supported.
-* We've had reports that downloading the SDK from git can slow from within the extension, to workaround any issue here, you can run these commands
+* We've had reports that downloading the SDK from git can be slow from within the extension, to work around any issue here, you can run these commands
     * Linux:
         
           rm -rf /home/$USER/.config/Code/User/globalStorage/ms-iot.msiot-vscode-openenclave/1.0.3/3rdparty/openenclave
