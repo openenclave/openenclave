@@ -6,6 +6,7 @@
 #include <mbedtls/pk.h>
 #include <mbedtls/rsa.h>
 #include <openenclave/enclave.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -304,8 +305,14 @@ exit_preinit:
     return ret;
 }
 
+/**
+ * encrypt_gcm encrypts the given data using the given symmetric key.
+ * sequence_num is used as additional data to prevent replay attacks
+ * Random IV is generated each time.
+ */
 bool Crypto::encrypt_gcm(
     const uint8_t* sym_key,
+    uint32_t sequence_num,
     const uint8_t* data,
     size_t data_size,
     uint8_t* iv_str,
@@ -314,10 +321,12 @@ bool Crypto::encrypt_gcm(
     uint8_t* tag_output)
 {
     mbedtls_gcm_context gcm_context;
+    uint8_t add_str[ADD_SIZE]; // Sequence number is sent as additional data
 
     bool result = false;
     int res = -1;
     size_t tag_len = 16;
+    size_t add_len = ADD_SIZE;
 
     if (!m_initialized)
         goto exit;
@@ -328,15 +337,21 @@ bool Crypto::encrypt_gcm(
     memset(iv_str, 0x00, IV_SIZE);
     mbedtls_ctr_drbg_random(&m_ctr_drbg_contex, iv_str, IV_SIZE);
     memset(tag_output, 0x00, 16);
+    memset(add_str, 0x00, ADD_SIZE);
+
+    add_str[0] = sequence_num & 0xff;
+    add_str[1] = sequence_num & 0xff00;
+    add_str[2] = sequence_num & 0xff0000;
+    add_str[3] = sequence_num & 0xff000000;
 
     res = mbedtls_gcm_setkey(&gcm_context, MBEDTLS_CIPHER_ID_AES, sym_key, 256);
     if (res != 0)
     {
-        TRACE_ENCLAVE("Encrypt_gcm: mbedtls_gcm_setkey failed with %d\n", res);
+        TRACE_ENCLAVE("encrypt_gcm: mbedtls_gcm_setkey failed with %d\n", res);
         goto exit;
     }
 
-    TRACE_ENCLAVE("Encrypt_gcm: mbedtls_gcm_setkey succeeded\n");
+    TRACE_ENCLAVE("encrypt_gcm: mbedtls_gcm_setkey succeeded\n");
 
     res = mbedtls_gcm_crypt_and_tag(
         &gcm_context,
@@ -344,8 +359,8 @@ bool Crypto::encrypt_gcm(
         data_size,
         iv_str,
         IV_SIZE,
-        NULL,
-        0,
+        add_str,
+        add_len,
         data,
         encrypted_data,
         tag_len,
@@ -354,7 +369,7 @@ bool Crypto::encrypt_gcm(
     if (res != 0)
     {
         TRACE_ENCLAVE(
-            "Encrypt_gcm: mbedtls_gcm_crypt_and_tag failed with %d\n", res);
+            "encrypt_gcm: mbedtls_gcm_crypt_and_tag failed with %d\n", res);
         goto exit;
     }
 
@@ -366,12 +381,13 @@ exit:
 }
 
 /**
- * Decrypt_gcm decrypts the given data using the given symmetric key.
- * Used to receive encrypted data from another enclave.
+ * Decrypt_gcm decrypts the given data using the given symmetric key, IV and
+ * additional string. Used to decrypt data received from another enclave.
  */
 bool Crypto::decrypt_gcm(
     const uint8_t* sym_key,
     const uint8_t* iv_str,
+    const uint8_t* add_str,
     const uint8_t* encrypted_data,
     size_t encrypted_data_size,
     const uint8_t* tag_str,
@@ -400,8 +416,8 @@ bool Crypto::decrypt_gcm(
         *data_size,
         iv_str,
         IV_SIZE,
-        NULL,
-        0,
+        add_str,
+        ADD_SIZE,
         tag_str,
         tag_len,
         encrypted_data,

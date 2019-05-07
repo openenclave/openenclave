@@ -18,6 +18,7 @@
 
 #define PUBLIC_KEY_SIZE 512
 #define IV_SIZE 12
+#define ADD_SIZE 4
 
 class Crypto
 {
@@ -90,6 +91,7 @@ class Crypto
      */
     bool encrypt_gcm(
         const uint8_t* sym_key,
+        uint32_t sequence_num,
         const uint8_t* data,
         size_t data_size,
         uint8_t* iv_str,
@@ -104,6 +106,7 @@ class Crypto
     bool decrypt_gcm(
         const uint8_t* sym_key,
         const uint8_t* iv_str,
+        const uint8_t* add_str,
         const uint8_t* encrypted_data,
         size_t encrypted_data_size,
         const uint8_t* tag_output,

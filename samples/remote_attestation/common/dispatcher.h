@@ -15,6 +15,8 @@ typedef struct _enclave_config_data
     const char* other_enclave_pubkey_pem;
     size_t other_enclave_pubkey_pem_size;
     uint8_t sym_key[32]; // 32 bytes or 256 bits random symmetric key
+    uint32_t
+        sequence_number; // Sequence number from 1 to (2 to the power of 32) - 1
 } enclave_config_data_t;
 
 class ecall_dispatcher

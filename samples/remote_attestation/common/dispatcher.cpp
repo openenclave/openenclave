@@ -199,7 +199,8 @@ int ecall_dispatcher::establish_secure_channel(uint8_t** key, size_t* key_size)
         goto exit;
     }
 
-    // Step 1 - Create an ephemeral symmetric key
+    // Step 1 - Create an ephemeral symmetric key;
+    // Initialize sequence number to 0, numbering will start at 1
     if (oe_random(m_enclave_config->sym_key, 32) != OE_OK)
     {
         TRACE_ENCLAVE("ecall_dispatcher initialization failed to generate "
@@ -210,8 +211,9 @@ int ecall_dispatcher::establish_secure_channel(uint8_t** key, size_t* key_size)
     TRACE_ENCLAVE("enclave: establish_secure_channel: Generated random "
                   "symmetric key successfully");
 
+    m_enclave_config->sequence_number = 0;
+
     // Step 2- Encrypt the symmetric key with the other enclave's public key
-    // TO DO - PREFIX with counter/seq number to prevent replay attacks
     if (m_crypto->encrypt(
             m_crypto->get_the_other_enclave_public_key(),
             m_enclave_config->sym_key,
@@ -295,6 +297,7 @@ int ecall_dispatcher::acknowledge_secure_channel(
     size_t signature_size = 256;
 
     data = m_enclave_config->sym_key;
+    m_enclave_config->sequence_number = 0;
 
     if (m_initialized == false)
     {
@@ -362,6 +365,7 @@ int ecall_dispatcher::generate_encrypted_message(uint8_t** data, size_t* size)
     memset(encrypted_data_buf, 0x00, encrypted_data_size);
     if (m_crypto->encrypt_gcm(
             m_enclave_config->sym_key,
+            ++(m_enclave_config->sequence_number),
             m_enclave_config->enclave_secret_data,
             ENCLAVE_SECRET_DATA_SIZE,
             iv_str,
@@ -417,6 +421,7 @@ int ecall_dispatcher::process_encrypted_msg(
     uint8_t tag_str[ENCLAVE_SECRET_DATA_SIZE];
     size_t data_size = 0;
     uint8_t iv_str[IV_SIZE];
+    uint8_t add_str[ADD_SIZE];
     int ret = 1;
 
     if (m_initialized == false)
@@ -433,9 +438,17 @@ int ecall_dispatcher::process_encrypted_msg(
         &encrypted_data[ENCLAVE_SECRET_DATA_SIZE + IV_SIZE],
         ENCLAVE_SECRET_DATA_SIZE);
 
+    // Convert sequence number to 4 character bytes
+    m_enclave_config->sequence_number++;
+    add_str[0] = m_enclave_config->sequence_number & 0xff;
+    add_str[1] = m_enclave_config->sequence_number & 0xff00;
+    add_str[2] = m_enclave_config->sequence_number & 0xff0000;
+    add_str[3] = m_enclave_config->sequence_number & 0xff000000;
+
     if (m_crypto->decrypt_gcm(
             m_enclave_config->sym_key,
             iv_str,
+            add_str,
             encrypted_data,
             ENCLAVE_SECRET_DATA_SIZE,
             tag_str,
