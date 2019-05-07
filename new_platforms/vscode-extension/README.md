@@ -106,7 +106,14 @@ the host and enclave symbols into an instance of the debugger.
     
 * Ensure that the requirements are met for the [Azure IoT Edge extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-edge):
     * [Docker is installed and running: https://docs.docker.com/install/](https://docs.docker.com/install/).
-        * On Linux, if you are seeing permissions issues when connecting to the docker daemon, this has helped some people: `sudo usermod -a -G docker $USER`
+        * On Linux, to cross-build a container (i.e. if your host is amd64 and your container is arm32v7), you will need to enable cross-building.  One solution is to add these packages:
+            
+              sudo apt-get install -y qemu qemu-user-static qemu-user binfmt-support
+        
+        * On Linux, if you are seeing permissions issues when connecting to the docker daemon, this has helped some people:
+        
+              sudo usermod -a -G docker $USER
+
     * The [iotedgehubdev](https://pypi.org/project/iotedgehubdev/) tool is installed
 
           pip install --upgrade iotedgehubdev
@@ -146,6 +153,10 @@ data to Microsoft, you can set the `telemetry.enableTelemetry` setting to `false
 ## Known Issues
 
 * Building SGX enclaves is not currently supported.
+* If you see errors in an Edge container build that involve `standard_init_linux.go:207`, you are likely cross-building a container and need to add some packages:
+
+      sudo apt-get install -y qemu qemu-user-static qemu-user binfmt-support
+
 * We've had reports that downloading the SDK from git can be slow from within the extension, to work around any issue here, you can run these commands
     * Linux:
         
