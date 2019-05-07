@@ -17,7 +17,7 @@
 typedef oe_socklen_t socklen_t;
 typedef oe_in_port_t in_port_t;
 
-void sleep(int secs)
+static void sleep(int secs)
 {
     Sleep(secs * 1000);
 }

@@ -2,24 +2,43 @@
 // Licensed under the MIT License.
 
 #include "server.h"
-#include <arpa/inet.h>
-#include <errno.h>
-#include <netinet/in.h>
-#include <openenclave/internal/tests.h>
+#if defined(WINDOWS_HOST)
+#pragma warning(disable : 4005)
+#include <windows.h>
+typedef int socklen_t;
+
+static void sleep(int n) { Sleep(n*1000); }
+typedef SOCKET socket_t;
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#else
+#include <arpa/inet.h>
+#include <errno.h>
+#include <netinet/in.h>
 #include <sys/socket.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
 #include <unistd.h>
+typedef int socket_t;
+#endif
+#include <openenclave/internal/tests.h>
+
 
 void oe_abort(void);
 
 void run_server(uint16_t port)
 {
-    int listen_sd;
-    int client_sd;
+    socket_t listen_sd;
+    socket_t client_sd;
     char buf[1024];
     bool quit = false;
+
+#if defined(WINDOWS_HOST)
+    static WSADATA wsadata = {0};
+    WSAStartup(MAKEWORD(2,2), &wsadata);
+#endif
 
     /* Create the listener socket. */
     if ((listen_sd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
@@ -32,7 +51,7 @@ void run_server(uint16_t port)
         const int opt = 1;
         const socklen_t opt_len = sizeof(opt);
 
-        if (setsockopt(listen_sd, SOL_SOCKET, SO_REUSEADDR, &opt, opt_len) != 0)
+        if (setsockopt(listen_sd, SOL_SOCKET, SO_REUSEADDR, (const char *)&opt, opt_len) != 0)
         {
             OE_TEST("setsockopt() failed" == NULL);
         }
@@ -50,7 +69,11 @@ void run_server(uint16_t port)
 
         if (bind(listen_sd, (struct sockaddr*)&addr, sizeof(addr)) != 0)
         {
+#if defined(WINDOWS_HOST)
+            int tmp = WSAGetLastError();
+#else
             int tmp = errno;
+#endif
             printf("bind failed: %d\n", tmp);
             OE_TEST("bind() failed" == NULL);
         }
@@ -72,7 +95,11 @@ void run_server(uint16_t port)
 
         for (;;)
         {
+#if defined(WINDOWS_HOST)
+            if ((n = recv(client_sd, buf, sizeof(buf), 0)) < 0)
+#else
             if ((n = read(client_sd, buf, sizeof(buf))) < 0)
+#endif
             {
                 OE_TEST("read() failed" == NULL);
             }
@@ -85,7 +112,11 @@ void run_server(uint16_t port)
                     break;
                 }
 
+#if defined(WINDOWS_HOST)
+                if (send(client_sd, buf, (int)n, 0) != n)
+#else
                 if (write(client_sd, buf, (size_t)n) != n)
+#endif
                 {
                     OE_TEST("write() failed" == NULL);
                 }
@@ -95,6 +126,17 @@ void run_server(uint16_t port)
 
     sleep(1);
 
+#if defined(WINDOWS_HOST)
+    if (!CloseHandle((HANDLE)client_sd))
+    {
+        OE_TEST("closeHandle() failed" == NULL);
+    }
+
+    if (!CloseHandle((HANDLE)listen_sd))
+    {
+        OE_TEST("closeHandle() failed" == NULL);
+    }
+#else
     if (close(client_sd) != 0)
     {
         OE_TEST("close() failed" == NULL);
@@ -104,4 +146,5 @@ void run_server(uint16_t port)
     {
         OE_TEST("close() failed" == NULL);
     }
+#endif
 }
