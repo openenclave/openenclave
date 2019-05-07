@@ -5,7 +5,6 @@
 
 #include <openenclave/edger8r/host.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/posix.h>
 #include "hostthread.h"
 
 #if defined(_MSC_VER)
