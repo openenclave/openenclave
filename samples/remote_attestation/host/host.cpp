@@ -91,7 +91,7 @@ int main(int argc, const char* argv[])
     }
     printf("Host: 1st enclave's public key: \n%s", pem_key);
 
-    printf("Host: requesting 2nd enclave to attest 1st enclave's the remote "
+    printf("Host: requesting 2nd enclave to attest 1st enclave's remote "
            "report and the public key\n");
     result = verify_report_and_set_pubkey(
         enclave_b,

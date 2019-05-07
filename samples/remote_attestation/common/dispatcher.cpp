@@ -348,7 +348,7 @@ int ecall_dispatcher::generate_encrypted_message(uint8_t** data, size_t* size)
     uint8_t encrypted_data_buf[ENCLAVE_SECRET_DATA_SIZE];
     uint8_t tag_str[ENCLAVE_SECRET_DATA_SIZE];
     size_t encrypted_data_size;
-    size_t total_size = ENCLAVE_SECRET_DATA_SIZE * 2;
+    size_t total_size = ENCLAVE_SECRET_DATA_SIZE * 2 + IV_SIZE;
     uint8_t iv_str[IV_SIZE];
     int ret = 1;
 
@@ -371,8 +371,9 @@ int ecall_dispatcher::generate_encrypted_message(uint8_t** data, size_t* size)
     {
         // Reason we allocate memory in the host is so that the encrypted data
         // can be accessed by the hosts - aka real world scenario where we have
-        // 2 hosts and two enclaves. Allocate space for tag_str to be appended
-        // after encrypted data
+        // 2 hosts and two enclaves. Allocate space for iv_str & tag_str to be
+        // appended after encrypted data
+        total_size = ENCLAVE_SECRET_DATA_SIZE * 2 + IV_SIZE;
         uint8_t* host_buf = (uint8_t*)oe_host_malloc(total_size);
         if (host_buf == NULL)
         {
@@ -381,19 +382,20 @@ int ecall_dispatcher::generate_encrypted_message(uint8_t** data, size_t* size)
             goto exit;
         }
 
-        // Copy the encrypted secret followed by the tag_str
+        // Copy the encrypted secret followed by the iv_str and tag_str
         memcpy(host_buf, encrypted_data_buf, encrypted_data_size);
-        memcpy(
-            &host_buf[ENCLAVE_SECRET_DATA_SIZE],
-            tag_str,
-            ENCLAVE_SECRET_DATA_SIZE);
+        *size = encrypted_data_size;
+        memcpy(&host_buf[*size], iv_str, IV_SIZE);
+        *size += IV_SIZE;
+        memcpy(&host_buf[*size], tag_str, ENCLAVE_SECRET_DATA_SIZE);
+        *size += ENCLAVE_SECRET_DATA_SIZE;
 
         TRACE_ENCLAVE(
-            "enclave: generate_encrypted_message: encrypted_data_size = %ld",
-            encrypted_data_size);
+            "enclave: generate_encrypted_message: encrypted_data_size = %ld, "
+            "total_size=%ld",
+            encrypted_data_size,
+            total_size);
         *data = host_buf;
-        // Encrypted_data plus tag_str of equal length
-        *size = encrypted_data_size * 2;
     }
     else
     {
@@ -414,7 +416,7 @@ int ecall_dispatcher::process_encrypted_msg(
     uint8_t data[ENCLAVE_SECRET_DATA_SIZE];
     uint8_t tag_str[ENCLAVE_SECRET_DATA_SIZE];
     size_t data_size = 0;
-    uint8_t* iv_str;
+    uint8_t iv_str[IV_SIZE];
     int ret = 1;
 
     if (m_initialized == false)
@@ -424,10 +426,13 @@ int ecall_dispatcher::process_encrypted_msg(
     }
 
     data_size = sizeof(data);
+
+    memcpy(iv_str, &encrypted_data[ENCLAVE_SECRET_DATA_SIZE], IV_SIZE);
     memcpy(
         tag_str,
-        &encrypted_data[ENCLAVE_SECRET_DATA_SIZE],
+        &encrypted_data[ENCLAVE_SECRET_DATA_SIZE + IV_SIZE],
         ENCLAVE_SECRET_DATA_SIZE);
+
     if (m_crypto->decrypt_gcm(
             m_enclave_config->sym_key,
             iv_str,
@@ -443,7 +448,7 @@ int ecall_dispatcher::process_encrypted_msg(
         // The following checking is to make sure the decrypted values are what
         // we have expected.
         TRACE_ENCLAVE("Decrypted data: ");
-        for (uint32_t i = 0; i < data_size; ++i)
+        for (uint32_t i = 0; i < ENCLAVE_SECRET_DATA_SIZE; ++i)
         {
             printf("%d ", data[i]);
             if (m_enclave_config->enclave_secret_data[i] != data[i])
