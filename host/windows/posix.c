@@ -12,6 +12,8 @@
 **==============================================================================
 */
 
+#define OE_SUPPRESS_STDC_ERRNO_MACROS
+
 #include <errno.h>
 #include <io.h>
 #include <limits.h>

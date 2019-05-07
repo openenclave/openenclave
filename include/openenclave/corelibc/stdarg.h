@@ -23,7 +23,7 @@ typedef char* oe_va_list;
 
 #endif
 
-#if defined(OE_NEED_STDC_NAMES)
+#if defined(OE_NEED_STDC_NAMES) && !defined(_MSC_VER)
 
 #define va_list oe_va_list
 #define va_start oe_va_start
