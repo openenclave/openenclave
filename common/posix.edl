@@ -28,16 +28,11 @@ enclave {
     include "openenclave/corelibc/sys/socket.h"
     include "openenclave/corelibc/sys/utsname.h"
     include "openenclave/corelibc/sys/stat.h"
-    include "openenclave/internal/posix.h"
+    include "openenclave/internal/device/types.h"
 
     trusted {
 
         public int oe_posix_signal_notify_ecall(int signum);
-
-        public int oe_posix_polling_notify_ecall(
-            [in, count=num_notifications]
-            struct _oe_device_notifications* notifications,
-            size_t num_notifications);
     };
 
     untrusted {
@@ -323,45 +318,25 @@ enclave {
             int flags)
             propagate_errno;
 
-        // Initiate waiting for epoll events. This function creates a new
-        // thread and delivers the events via oe_posix_polling_notify_ecall().
-        int oe_posix_epoll_wait_async_ocall(
-            int64_t enclaveid,
-            oe_host_fd_t epfd,
-            size_t maxevents)
-            propagate_errno;
-
-        int oe_posix_epoll_poll_ocall(
-            int64_t enclaveid,
-            oe_host_fd_t epfd,
-            [in,out, count=nfds] struct oe_pollfd* fds,
-            size_t nfds,
+        int oe_posix_epoll_wait_ocall(
+            int64_t epfd,
+            [out, count=maxevents] struct oe_epoll_event *events,
+            unsigned int maxevents,
             int timeout)
             propagate_errno;
 
-        int oe_posix_epoll_ctl_add_ocall(
-            oe_host_fd_t epfd,
-            oe_host_fd_t fd,
-            unsigned int event_mask,
-            int list_idx,
-            int epoll_enclave_fd)
+        int oe_posix_epoll_wake_ocall()
             propagate_errno;
 
-        int oe_posix_epoll_ctl_del_ocall(
-            oe_host_fd_t epfd,
-            oe_host_fd_t fd)
-            propagate_errno;
-
-        int oe_posix_epoll_ctl_mod_ocall(
-            oe_host_fd_t epfd,
-            oe_host_fd_t fd,
-            unsigned int event_mask,
-            int list_idx,
-            int epoll_enclave_fd)
+        int oe_posix_epoll_ctl_ocall(
+            int64_t epfd,
+            int op,
+            int64_t fd,
+            [in, count=1] struct oe_epoll_event* event)
             propagate_errno;
 
         int oe_posix_epoll_close_ocall(
-            oe_host_fd_t fd)
+            oe_host_fd_t epfd)
             propagate_errno;
 
         int oe_posix_shutdown_polling_device_ocall(
