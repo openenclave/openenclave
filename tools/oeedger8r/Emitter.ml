@@ -479,8 +479,7 @@ let oe_prepare_input_buffer (fd : func_decl) (alloc_func : string) =
 let oe_process_output_buffer (fd : func_decl) =
   List.flatten
     [ [ (* Verify that the ecall succeeded *)
-        ""
-      ; "/* Setup output arg struct pointer. */"
+        "/* Setup output arg struct pointer. */"
       ; sprintf "_pargs_out = (%s_args_t*)_output_buffer;" fd.fname
       ; "OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));"
       ; ""
@@ -661,10 +660,6 @@ let oe_gen_ecall_function (tf : trusted_func) =
   ; "    if (pargs_out && output_buffer_size >= sizeof(*pargs_out))"
   ; "        pargs_out->_result = _result;"
   ; "}" ]
-
-let oe_gen_ecall_functions (tfs : trusted_func list) =
-  if tfs <> [] then List.flatten (List.map oe_gen_ecall_function tfs)
-  else ["/* There were no ecalls. */"]
 
 (** Generate ECALL function table. *)
 let oe_gen_ecall_table (tfs : trusted_func list) =
@@ -870,11 +865,6 @@ let oe_gen_ocall_function (uf : untrusted_func) =
   ; "        pargs_out->_result = _result;"
   ; "}"
   ; "" ]
-
-(** Generate all OCALL functions, if any. *)
-let oe_gen_ocall_functions (ufs : untrusted_func list) =
-  if ufs <> [] then List.flatten (List.map oe_gen_ocall_function ufs)
-  else ["/* There were no ocalls. */"]
 
 (** Generate the OCALL function table. Note that this is always present. *)
 let oe_gen_ocall_table (ufs : untrusted_func list) (name : string) =
@@ -1082,6 +1072,11 @@ let gen_t_h (ec : enclave_content) (ep : edger8r_params) =
   close_out os
 
 let gen_t_c (ec : enclave_content) (ep : edger8r_params) =
+  let oe_gen_ecall_functions =
+    if ec.tfunc_decls <> [] then
+      List.flatten (List.map oe_gen_ecall_function ec.tfunc_decls)
+    else ["/* There were no ecalls. */"]
+  in
   let oe_gen_enclave_ocall_wrappers =
     if ec.ufunc_decls <> [] then
       List.flatten
@@ -1100,7 +1095,7 @@ let gen_t_c (ec : enclave_content) (ep : edger8r_params) =
     ; "OE_EXTERNC_BEGIN"
     ; ""
     ; "/**** ECALL functions. ****/"
-    ; String.concat "\n" (oe_gen_ecall_functions ec.tfunc_decls)
+    ; String.concat "\n" oe_gen_ecall_functions
     ; ""
     ; "/**** ECALL function table. ****/"
     ; String.concat "\n" (oe_gen_ecall_table ec.tfunc_decls)
@@ -1171,6 +1166,11 @@ let gen_u_c (ec : enclave_content) (ep : edger8r_params) =
         (List.map (oe_gen_host_ecall_wrapper ec.enclave_name) ec.tfunc_decls)
     else ["/* There were no ecalls. */"]
   in
+  let oe_gen_ocall_functions =
+    if ec.ufunc_decls <> [] then
+      List.flatten (List.map oe_gen_ocall_function ec.ufunc_decls)
+    else ["/* There were no ocalls. */"]
+  in
   let content =
     [ sprintf "#include \"%s_u.h\"" ec.file_shortnm
     ; ""
@@ -1186,7 +1186,7 @@ let gen_u_c (ec : enclave_content) (ep : edger8r_params) =
     ; String.concat "\n" oe_gen_host_ecall_wrappers
     ; ""
     ; "/**** OCALL functions. ****/"
-    ; String.concat "\n" (oe_gen_ocall_functions ec.ufunc_decls)
+    ; String.concat "\n" oe_gen_ocall_functions
     ; ""
     ; "/**** OCALL function table. ****/"
     ; String.concat "\n" (oe_gen_ocall_table ec.ufunc_decls ec.enclave_name)
