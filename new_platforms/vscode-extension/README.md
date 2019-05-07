@@ -106,7 +106,7 @@ the host and enclave symbols into an instance of the debugger.
     
 * Ensure that the requirements are met for the [Azure IoT Edge extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-edge):
     * [Docker is installed and running: https://docs.docker.com/install/](https://docs.docker.com/install/).
-        * On Linux, to cross-build a container (i.e. if your host is amd64 and your container is arm32v7), you will need to enable cross-building.  One solution is to add these packages:
+        * On Linux, to cross-build a container (i.e. if your host is amd64 and your container is arm32v7), you will need to enable cross-building.  Adding these packages solved the cross-build issue on Ubuntu 19.04:
             
               sudo apt-get install -y qemu qemu-user-static qemu-user binfmt-support
         
@@ -153,7 +153,7 @@ data to Microsoft, you can set the `telemetry.enableTelemetry` setting to `false
 ## Known Issues
 
 * Building SGX enclaves is not currently supported.
-* If you see errors in an Edge container build that involve `standard_init_linux.go:207`, you are likely cross-building a container and need to add some packages:
+* On Linux, if you see errors in an Edge container build that involve `standard_init_linux.go:207`, you are likely cross-building a container.  Adding these packages solved the cross-build issue on Ubuntu 19.04:
 
       sudo apt-get install -y qemu qemu-user-static qemu-user binfmt-support
 
