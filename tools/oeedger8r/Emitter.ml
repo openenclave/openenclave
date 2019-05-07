@@ -285,28 +285,29 @@ let emit_composite_type =
   | UnionDef u -> emit_struct_or_union u true
   | EnumDef e -> emit_enum e
 
-let get_function_id (f : func_decl) = sprintf "fcn_id_%s" f.fname
+let get_function_id (f : func_decl) (e : string) =
+  sprintf "%s_fcn_id_%s" e f.fname
 
 (** Emit IDs in enum for trusted functions. *)
-let emit_trusted_function_ids (tfs : trusted_func list) =
+let emit_trusted_function_ids (tfs : trusted_func list) (name : string) =
   [ "enum"
   ; "{"
   ; String.concat "\n"
       (List.mapi
-         (fun i f -> sprintf "    %s = %d," (get_function_id f.tf_fdecl) i)
+         (fun i f -> sprintf "    %s = %d," (get_function_id f.tf_fdecl name) i)
          tfs)
-  ; "    fcn_id_trusted_call_id_max = OE_ENUM_MAX"
+  ; sprintf "    %s_fcn_id_trusted_call_id_max = OE_ENUM_MAX" name
   ; "};" ]
 
 (** Emit IDs in enum for untrusted functions. *)
-let emit_untrusted_function_ids (ufs : untrusted_func list) =
+let emit_untrusted_function_ids (ufs : untrusted_func list) (name : string) =
   [ "enum"
   ; "{"
   ; String.concat "\n"
       (List.mapi
-         (fun i f -> sprintf "    %s = %d," (get_function_id f.uf_fdecl) i)
+         (fun i f -> sprintf "    %s = %d," (get_function_id f.uf_fdecl name) i)
          ufs)
-  ; "    fcn_id_untrusted_call_max = OE_ENUM_MAX"
+  ; sprintf "    %s_fcn_id_untrusted_call_max = OE_ENUM_MAX" name
   ; "};" ]
 
 (** Generate [args.h] which contains [struct]s for ecalls and ocalls *)
@@ -361,10 +362,12 @@ let oe_gen_args_header (ec : enclave_content) (dir : string) =
     ; String.concat "\n" (oe_gen_ocall_marshal_structs ec.ufunc_decls)
     ; (* TODO: Fix newline generation. *)
       "/**** Trusted function IDs ****/"
-    ; String.concat "\n" (emit_trusted_function_ids ec.tfunc_decls)
+    ; String.concat "\n"
+        (emit_trusted_function_ids ec.tfunc_decls ec.enclave_name)
     ; ""
     ; "/**** Untrusted function IDs. ****/"
-    ; String.concat "\n" (emit_untrusted_function_ids ec.ufunc_decls)
+    ; String.concat "\n"
+        (emit_untrusted_function_ids ec.ufunc_decls ec.enclave_name)
     ; ""
     ; sprintf "#endif // %s" guard_macro
     ; "" ]
@@ -697,7 +700,7 @@ let gen_fill_marshal_struct (fd : func_decl) (args : string) =
     fd.plist
 
 (** Generate host ECALL wrapper function. *)
-let oe_gen_host_ecall_wrapper (tf : trusted_func) =
+let oe_gen_host_ecall_wrapper (name : string) (tf : trusted_func) =
   let fd = tf.tf_fdecl in
   [ sprintf "%s" (oe_gen_wrapper_prototype fd true)
   ; "{"
@@ -730,7 +733,7 @@ let oe_gen_host_ecall_wrapper (tf : trusted_func) =
   ; "             "
     ^ String.concat ",\n             "
         [ "enclave"
-        ; sprintf "%s" (get_function_id fd)
+        ; sprintf "%s" (get_function_id fd name)
         ; "_input_buffer"
         ; "_input_buffer_size"
         ; "_output_buffer"
@@ -749,13 +752,8 @@ let oe_gen_host_ecall_wrapper (tf : trusted_func) =
   ; "}"
   ; "" ]
 
-(** Generate all host ECALL wrappers, if any. *)
-let oe_gen_host_ecall_wrappers (tfs : trusted_func list) =
-  if tfs <> [] then List.flatten (List.map oe_gen_host_ecall_wrapper tfs)
-  else ["/* There were no ecalls. */"]
-
 (** Generate enclave OCALL wrapper function. *)
-let oe_gen_enclave_ocall_wrapper (uf : untrusted_func) =
+let oe_gen_enclave_ocall_wrapper (name : string) (uf : untrusted_func) =
   let fd = uf.uf_fdecl in
   [ oe_gen_wrapper_prototype fd false
   ; "{"
@@ -793,7 +791,7 @@ let oe_gen_enclave_ocall_wrapper (uf : untrusted_func) =
   ; "    if ((_result = oe_call_host_function("
   ; "             "
     ^ String.concat ",\n             "
-        [ sprintf "%s" (get_function_id fd)
+        [ sprintf "%s" (get_function_id fd name)
         ; "_input_buffer"
         ; "_input_buffer_size"
         ; "_output_buffer"
@@ -815,11 +813,6 @@ let oe_gen_enclave_ocall_wrapper (uf : untrusted_func) =
   ; "    return _result;"
   ; "}"
   ; "" ]
-
-(** Generate all enclave OCALL wrapper functions, if any. *)
-let oe_gen_enclave_ocall_wrappers (ufs : untrusted_func list) =
-  if ufs <> [] then List.flatten (List.map oe_gen_enclave_ocall_wrapper ufs)
-  else ["/* There were no ocalls. */"]
 
 (** Generate ocall function. *)
 let oe_gen_ocall_function (uf : untrusted_func) =
@@ -1089,6 +1082,11 @@ let gen_t_h (ec : enclave_content) (ep : edger8r_params) =
   close_out os
 
 let gen_t_c (ec : enclave_content) (ep : edger8r_params) =
+  let oe_gen_enclave_ocall_wrappers =
+    let wrapper = oe_gen_enclave_ocall_wrapper ec.enclave_name in
+    if ec.ufunc_decls <> [] then List.flatten (List.map wrapper ec.ufunc_decls)
+    else ["/* There were no ocalls. */"]
+  in
   let content =
     [ sprintf "#include \"%s_t.h\"" ec.file_shortnm
     ; ""
@@ -1107,7 +1105,7 @@ let gen_t_c (ec : enclave_content) (ep : edger8r_params) =
     ; String.concat "\n" (oe_gen_ecall_table ec.tfunc_decls)
     ; ""
     ; "/**** OCALL function wrappers. ****/"
-    ; String.concat "\n" (oe_gen_enclave_ocall_wrappers ec.ufunc_decls)
+    ; String.concat "\n" oe_gen_enclave_ocall_wrappers
     ; ""
     ; "OE_EXTERNC_END"
     ; "" ]
@@ -1166,6 +1164,11 @@ let gen_u_h (ec : enclave_content) (ep : edger8r_params) =
   close_out os
 
 let gen_u_c (ec : enclave_content) (ep : edger8r_params) =
+  let oe_gen_host_ecall_wrappers =
+    let wrapper = oe_gen_host_ecall_wrapper ec.enclave_name in
+    if ec.tfunc_decls <> [] then List.flatten (List.map wrapper ec.tfunc_decls)
+    else ["/* There were no ecalls. */"]
+  in
   let content =
     [ sprintf "#include \"%s_u.h\"" ec.file_shortnm
     ; ""
@@ -1178,7 +1181,7 @@ let gen_u_c (ec : enclave_content) (ep : edger8r_params) =
     ; "OE_EXTERNC_BEGIN"
     ; ""
     ; "/**** ECALL function wrappers. ****/"
-    ; String.concat "\n" (oe_gen_host_ecall_wrappers ec.tfunc_decls)
+    ; String.concat "\n" oe_gen_host_ecall_wrappers
     ; ""
     ; "/**** OCALL functions. ****/"
     ; String.concat "\n" (oe_gen_ocall_functions ec.ufunc_decls)
