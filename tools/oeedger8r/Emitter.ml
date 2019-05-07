@@ -341,7 +341,10 @@ let oe_gen_args_header (ec : enclave_content) (dir : string) =
     ; "#include <stdint.h>"
     ; "#include <stdlib.h> /* for wchar_t */"
     ; ""
-    ; (if with_errno then "#include <errno.h>" else "/* No errno support. */")
+    ; ( if with_errno then "#include <errno.h>"
+      else
+        "/* #include <errno.h> - Errno propagation not enabled so not \
+         included. */" )
     ; ""
     ; "#include <openenclave/bits/result.h>"
     ; ""
@@ -800,9 +803,9 @@ let oe_gen_enclave_ocall_wrapper (uf : untrusted_func) =
   ; ""
   ; String.concat "\n    " (oe_process_output_buffer fd)
   ; ""
-  ; "    /* Propagate errno. */"
+  ; "    /* Retrieve propagated errno from OCALL. */"
   ; ( if uf.uf_propagate_errno then "    errno = _pargs_out->_ocall_errno;\n"
-    else sprintf "    /* Errno not enabled. */" )
+    else sprintf "    /* Errno propagation not enabled. */" )
   ; ""
   ; "    _result = OE_OK;"
   ; ""
@@ -860,9 +863,9 @@ let oe_gen_ocall_function (uf : untrusted_func) =
   ; (* Call the host function *)
     "    " ^ String.concat "\n    " (oe_gen_call_user_function fd)
   ; ""
-  ; "    /* Propagate errno. */"
+  ; "    /* Propagate errno back to enclave. */"
   ; ( if uf.uf_propagate_errno then "    pargs_out->_ocall_errno = errno;"
-    else "    /* Errno not enabled. */" )
+    else "    /* Errno propagation not enabled. */" )
   ; ""
   ; (* Mark call as success *)
     "    /* Success. */"
