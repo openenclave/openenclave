@@ -22,6 +22,8 @@
 #include "epoll_test_t.h"
 #include "interface.h"
 
+#define MAX_EVENTS 20
+
 static char _path[OE_PATH_MAX];
 
 extern "C" int ecall_device_init(const char* tmp_dir)
@@ -86,7 +88,6 @@ static int _ecall_epoll_test(INTERFACE& x, size_t buff_len, char* recv_buff)
     typedef typename INTERFACE::EPOLL_EVENT_T EPOLL_EVENT_T;
     int sockfd = 0;
     SOCKADDR_IN_T serv_addr = {0};
-#define MAX_EVENTS 20
     EPOLL_EVENT_T event = {0};
     EPOLL_EVENT_T events[MAX_EVENTS] = {{0}};
     int epoll_fd = x.epoll_create1(0);
@@ -131,7 +132,7 @@ static int _ecall_epoll_test(INTERFACE& x, size_t buff_len, char* recv_buff)
     printf("polling...\n");
 
     // ATTN: where does this magic value come from?
-    event.events = 0x3c7;
+    event.events = OE_EPOLLIN;
     event.data.ptr = (void*)print_socket_success;
     if (x.epoll_ctl(epoll_fd, x.EPOLL_CTL_ADD_T, sockfd, &event))
     {
@@ -149,7 +150,7 @@ static int _ecall_epoll_test(INTERFACE& x, size_t buff_len, char* recv_buff)
     int nfds = 0;
     do
     {
-        if ((nfds = x.epoll_wait(epoll_fd, events, 20, 30000)) < 0)
+        if ((nfds = x.epoll_wait(epoll_fd, events, MAX_EVENTS, 30000)) < 0)
         {
             printf("error.\n");
             assert("x.epoll_wait() failed" == NULL);
@@ -194,6 +195,7 @@ static int _ecall_epoll_test(INTERFACE& x, size_t buff_len, char* recv_buff)
     oe_sleep_msec(3);
 
     printf("--------------- epoll done -------------\n");
+
     return OE_OK;
 }
 
@@ -465,6 +467,52 @@ int ecall_poll_test(size_t buff_len, char* recv_buff, bool use_libc)
         corelibc x;
         return _ecall_poll_test(x, buff_len, recv_buff);
     }
+}
+
+extern "C" int oe_epoll_wake(void);
+
+int ecall_wait_test(void)
+{
+    int epfd;
+    int nfds;
+    struct oe_epoll_event events[MAX_EVENTS];
+    const int TIMEOUT = 1000;
+    size_t num_wakes = 0;
+
+    printf("--------------- wake -------------\n");
+
+    OE_TEST((epfd = oe_epoll_create1(0)) != -1);
+
+    for (size_t i = 0; i < 8; i++)
+    {
+        nfds = oe_epoll_wait(epfd, events, MAX_EVENTS, TIMEOUT);
+        int err = errno;
+
+        printf("nfds=%d err=%d\n", nfds, err);
+
+        if (nfds == -1)
+        {
+            OE_TEST((err == EINTR));
+            num_wakes++;
+        }
+        else
+        {
+            OE_TEST(nfds == 0);
+        }
+    }
+
+    OE_TEST(num_wakes == 3);
+
+    oe_close(epfd);
+
+    printf("--------------- wake done -------------\n");
+
+    return 0;
+}
+
+int ecall_wake_test(void)
+{
+    return oe_epoll_wake();
 }
 
 OE_SET_ENCLAVE_SGX(

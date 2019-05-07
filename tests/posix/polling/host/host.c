@@ -33,13 +33,14 @@ void* host_server_thread(void* arg)
 {
     static const char TESTDATA[] = "This is TEST DATA\n";
     int listenfd = socket(AF_INET, SOCK_STREAM, 0);
-    int connfd = 0;
     struct sockaddr_in serv_addr = {0};
+    static size_t MAX_ACCEPTS = 3;
+
+    OE_UNUSED(arg);
 
     const int optVal = 1;
     const socklen_t optLen = sizeof(optVal);
-    int* done = (int*)arg;
-    int rtn = -1;
+    int r = -1;
 
     struct sigaction action = {{sigpipe_handler}};
     sigaction(SIGPIPE, &action, NULL);
@@ -56,37 +57,36 @@ void* host_server_thread(void* arg)
 
     listen(listenfd, 10);
 
-    rtn =
-        setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, (void*)&optVal, optLen);
-    if (rtn < 0)
-    {
-        printf("setsockopt failed errno = %d\n", errno);
-    }
+    r = setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, (void*)&optVal, optLen);
+    OE_TEST(r == 0);
 
-    do
+    for (size_t i = 0; i < MAX_ACCEPTS; i++)
     {
-        int n = 0;
-        connfd = -1;
-        do
-        {
-            printf("accepting\n");
-            connfd = accept(listenfd, (struct sockaddr*)NULL, NULL);
-            printf("accepted fd = %d\n", connfd);
-        } while (connfd < 0);
+        int connfd;
+        ssize_t n;
 
-        while (!*done)
-        {
-            ssize_t numbytes = write(connfd, TESTDATA, strlen(TESTDATA));
-            printf("write test data\n");
-            if (n++ > 3 || numbytes < 0)
-                break;
-            sleep(1);
-        }
+        OE_TEST((connfd = accept(listenfd, NULL, NULL)) >= 0);
+
+        n = write(connfd, TESTDATA, strlen(TESTDATA));
+        OE_TEST(n == strlen(TESTDATA));
+        sleep(1);
+
         close(connfd);
-    } while (*done != 2);
+    };
 
     close(listenfd);
     printf("exit from server thread\n");
+    return NULL;
+}
+
+static void* _run_wake_test(void* arg)
+{
+    oe_enclave_t* enclave = (oe_enclave_t*)arg;
+    int ret;
+
+    OE_TEST(ecall_wait_test(enclave, &ret) == 0);
+    OE_TEST(ret == 0);
+
     return NULL;
 }
 
@@ -97,7 +97,7 @@ int main(int argc, const char* argv[])
     oe_enclave_t* enclave = NULL;
     pthread_t server_thread_id = 0;
     int ret = 0;
-    char test_data_rtn[1024] = {0};
+    char test_data_r[1024] = {0};
     size_t test_data_len = 1024;
     int done = 0;
     bool use_libc = false;
@@ -142,40 +142,66 @@ int main(int argc, const char* argv[])
 
     OE_TEST(ecall_device_init(enclave, &ret, tmp_dir) == OE_OK);
 
-    test_data_len = 1024;
-    OE_TEST(
-        ecall_poll_test(
-            enclave, &ret, test_data_len, test_data_rtn, use_libc) == OE_OK);
+    /* poll test */
+    {
+        test_data_len = 1024;
+        OE_TEST(
+            ecall_poll_test(
+                enclave, &ret, test_data_len, test_data_r, use_libc) == OE_OK);
 
-    sleep(5);
+        sleep(5);
 
-    printf("poll: host received: %s\n", test_data_rtn);
-    OE_TEST(strncmp(TESTDATA, test_data_rtn, strlen(TESTDATA)) == 0);
+        printf("poll: host received: %s\n", test_data_r);
+        OE_TEST(strncmp(TESTDATA, test_data_r, strlen(TESTDATA)) == 0);
+    }
 
-    test_data_len = 1024;
-    OE_TEST(
-        ecall_epoll_test(
-            enclave, &ret, test_data_len, test_data_rtn, use_libc) == OE_OK);
+    /* epoll test */
+    {
+        test_data_len = 1024;
+        OE_TEST(
+            ecall_epoll_test(
+                enclave, &ret, test_data_len, test_data_r, use_libc) == OE_OK);
 
-    sleep(5);
+        sleep(5);
 
-    printf("epoll: host received: %s\n", test_data_rtn);
-    OE_TEST(
-        strncmp("socket success", test_data_rtn, strlen("socket success")) ==
-        0);
+        printf("epoll: host received: %s\n", test_data_r);
+        OE_TEST(
+            strncmp("socket success", test_data_r, strlen("socket success")) ==
+            0);
+    }
 
-    test_data_len = 1024;
-    OE_TEST(
-        ecall_select_test(
-            enclave, &ret, test_data_len, test_data_rtn, use_libc) == OE_OK);
+    /* select test. */
+    {
+        test_data_len = 1024;
+        OE_TEST(
+            ecall_select_test(
+                enclave, &ret, test_data_len, test_data_r, use_libc) == OE_OK);
 
-    printf("select: host received: %s\n", test_data_rtn);
-    OE_TEST(strncmp(TESTDATA, test_data_rtn, strlen(TESTDATA)) == 0);
+        printf("select: host received: %s\n", test_data_r);
+        OE_TEST(strncmp(TESTDATA, test_data_r, strlen(TESTDATA)) == 0);
 
-    OE_TEST(ecall_device_shutdown(enclave) == OE_OK);
+        OE_TEST(ecall_device_shutdown(enclave) == OE_OK);
+    }
 
     done = 2;
     pthread_join(server_thread_id, NULL);
+
+    /* Test the wake feature. */
+    {
+        pthread_t thread;
+
+        OE_TEST(pthread_create(&thread, NULL, _run_wake_test, enclave) == 0);
+
+        sleep(3);
+
+        for (size_t i = 0; i < 3; i++)
+        {
+            OE_TEST(ecall_wake_test(enclave, &ret) == OE_OK);
+        }
+
+        pthread_join(thread, NULL);
+    }
+
     OE_TEST(oe_terminate_enclave(enclave) == OE_OK);
 
     printf("=== passed all tests (epoll_test)\n");

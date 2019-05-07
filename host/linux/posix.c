@@ -769,140 +769,177 @@ int oe_posix_shutdown_resolver_device_ocall(void)
 **==============================================================================
 */
 
-typedef struct _wait_args
+#define MAX_EPOLLS 64
+#define WAKEFD_MAGIC 0x8700666859244b71
+
+typedef struct _epoll
 {
-    int64_t enclaveid;
-    oe_host_fd_t epfd;
-    int maxevents;
-    struct oe_epoll_event events[];
-} wait_args_t;
+    int epfd;
+    int wakefds[2];
+} epoll_t;
 
-static void* _epoll_wait_thread(void* arg_)
-{
-    int ret;
-    wait_args_t* args = (wait_args_t*)arg_;
-    int retval;
-
-    ret = epoll_wait(
-        (int)args->epfd,
-        (struct epoll_event*)args->events,
-        args->maxevents,
-        -1);
-
-    if (ret >= 0)
-    {
-        size_t num_notifications = (size_t)ret;
-
-        if (oe_posix_epoll_notify_ecall(
-                (oe_enclave_t*)args->enclaveid,
-                &retval,
-                args->events,
-                num_notifications) != OE_OK)
-        {
-            goto done;
-        }
-
-        if (retval != 0)
-            goto done;
-    }
-
-done:
-    free(args);
-    return NULL;
-}
-
-typedef struct _poll_args
-{
-    int64_t enclaveid;
-    oe_host_fd_t epfd;
-    nfds_t nfds;
-    struct pollfd fds[];
-} poll_args_t;
-
-static void* _poll_wait_thread(void* arg_)
-{
-    int ret;
-    poll_args_t* args = (poll_args_t*)arg_;
-    int retval;
-
-    ret = poll(args->fds, args->nfds, -1);
-    if (ret >= 0)
-    {
-        size_t num_notifications = (size_t)ret;
-        struct pollfd* ev = args->fds;
-        oe_device_notifications_t* notifications =
-            (oe_device_notifications_t*)ev;
-
-        size_t ev_idx = 0;
-        size_t notify_idx = 0;
-        for (ev_idx = 0; ev_idx < (size_t)args->nfds; ev_idx++)
-        {
-            if (ev[ev_idx].revents)
-            {
-                notifications[notify_idx].events = (uint32_t)ev[ev_idx].revents;
-                notifications[notify_idx].data.list_idx = (uint32_t)ev_idx;
-
-                /* ATTN: casting 64-bit fd to 32-bit fd. */
-                notifications[notify_idx].data.epfd = (int)args->epfd;
-            }
-        }
-
-        if (oe_posix_epoll_notify_ecall(
-                (oe_enclave_t*)args->enclaveid,
-                &retval,
-                (struct oe_epoll_event*)notifications,
-                num_notifications) != OE_OK)
-        {
-            goto done;
-        }
-
-        if (retval != 0)
-            goto done;
-    }
-
-done:
-    free(args);
-    return NULL;
-}
+static epoll_t _epolls[MAX_EPOLLS];
+static size_t _num_epolls;
+static pthread_mutex_t _epolls_lock = PTHREAD_MUTEX_INITIALIZER;
 
 oe_host_fd_t oe_posix_epoll_create1_ocall(int flags)
 {
+    int ret = -1;
+    int epfd = -1;
+    int wakefds[2] = {-1, -1};
     errno = 0;
 
-    return epoll_create1(flags);
+    if ((epfd = epoll_create1(flags)) == -1)
+        goto done;
+
+    if (pipe(wakefds) == -1)
+        goto done;
+
+    /* Watch for events on the wake file descriptor. */
+    {
+        struct epoll_event event;
+
+        memset(&event, 0, sizeof(event));
+        event.events = EPOLLIN;
+        event.data.u64 = WAKEFD_MAGIC;
+
+        if ((epoll_ctl(epfd, EPOLL_CTL_ADD, wakefds[0], &event)) == -1)
+            goto done;
+    }
+
+    pthread_mutex_lock(&_epolls_lock);
+    {
+        if (_num_epolls == MAX_EPOLLS)
+        {
+            errno = ENOMEM;
+            pthread_mutex_unlock(&_epolls_lock);
+            goto done;
+        }
+
+        _epolls[_num_epolls].epfd = epfd;
+        _epolls[_num_epolls].wakefds[0] = wakefds[0];
+        _epolls[_num_epolls].wakefds[1] = wakefds[1];
+        _num_epolls++;
+    }
+    pthread_mutex_unlock(&_epolls_lock);
+
+    ret = epfd;
+    epfd = -1;
+    wakefds[0] = -1;
+    wakefds[1] = -1;
+
+done:
+
+    if (epfd != -1)
+        close(epfd);
+
+    if (wakefds[0] != -1)
+        close(wakefds[0]);
+
+    if (wakefds[1] != -1)
+        close(wakefds[1]);
+
+    return ret;
 }
 
-int oe_posix_epoll_wait_async_ocall(
-    int64_t enclaveid,
-    oe_host_fd_t epfd,
-    size_t maxevents)
+int oe_posix_epoll_wait_ocall(
+    int64_t epfd,
+    struct oe_epoll_event* events,
+    unsigned int maxevents,
+    int timeout)
 {
     int ret = -1;
-    size_t eventsize;
-    pthread_t thread = 0;
-    wait_args_t* args = NULL;
+    int nfds;
+    bool found_wake_event = false;
+    bool locked = false;
 
-    eventsize = sizeof(struct oe_epoll_event) * maxevents;
+    errno = 0;
 
-    if (!(args = calloc(1, sizeof(wait_args_t) + eventsize)))
-    {
-        errno = ENOMEM;
+    nfds = epoll_wait(
+        (int)epfd, (struct epoll_event*)events, (int)maxevents, timeout);
+
+    if (nfds < 0)
         goto done;
+
+    /* Remove the dummy event for the wakefd. */
+    for (int i = 0; i < nfds; i++)
+    {
+        if (events[i].data.u64 == WAKEFD_MAGIC)
+        {
+            events[i] = events[nfds - 1];
+            nfds--;
+            found_wake_event = true;
+            break;
+        }
     }
 
-    args->enclaveid = enclaveid;
-    args->epfd = epfd;
-    args->maxevents = (int)maxevents;
-
-    // We lose the wait thread when we exit the func, but the thread will die
-    // on its own copy args then spawn pthread to do the waiting. That way we
-    // can ecall with notification. the thread args are freed by the thread
-    // func.
-    if (pthread_create(&thread, NULL, _epoll_wait_thread, args) < 0)
+    /* Read the word that oe_posix_epoll_wake_ocall() wrote. */
+    if (found_wake_event)
     {
-        errno = EINVAL;
-        goto done;
+        int fd = -1;
+        uint64_t c;
+
+        pthread_mutex_lock(&_epolls_lock);
+        locked = true;
+
+        /* Find the read descriptor for the wakefds[] pipe. */
+        for (size_t i = 0; i < _num_epolls; i++)
+        {
+            if (_epolls[i].epfd == epfd)
+            {
+                fd = _epolls[i].wakefds[0];
+                break;
+            }
+        }
+
+        if (fd == -1)
+        {
+            errno = EINVAL;
+            goto done;
+        }
+
+        if (read(fd, &c, sizeof(c)) != sizeof(c) || c != WAKEFD_MAGIC)
+        {
+            goto done;
+        }
+
+        /* Treat as an interrupt if no other descriptors are read. */
+        if (nfds == 0)
+        {
+            errno = EINTR;
+            goto done;
+        }
     }
+
+    ret = nfds;
+
+done:
+
+    if (locked)
+        pthread_mutex_unlock(&_epolls_lock);
+
+    return ret;
+}
+
+int oe_posix_epoll_wake_ocall(void)
+{
+    int ret = -1;
+
+    /* Wake up all the waiting threads. */
+    pthread_mutex_lock(&_epolls_lock);
+    {
+        for (size_t i = 0; i < _num_epolls; i++)
+        {
+            const uint64_t c = WAKEFD_MAGIC;
+
+            if (write(_epolls[i].wakefds[1], &c, sizeof(c)) != sizeof(c))
+            {
+                pthread_mutex_unlock(&_epolls_lock);
+                goto done;
+            }
+        }
+    }
+    pthread_mutex_unlock(&_epolls_lock);
 
     ret = 0;
 
@@ -910,58 +947,39 @@ done:
     return ret;
 }
 
-int oe_posix_epoll_ctl_add_ocall(
-    oe_host_fd_t epfd,
-    oe_host_fd_t fd,
-    unsigned int event_mask,
-    int list_idx,
-    int epoll_enclave_fd)
-{
-    oe_ev_data_t ev_data = {
-        .list_idx = (uint32_t)list_idx,
-        .epfd = epoll_enclave_fd,
-    };
-    struct epoll_event ev = {
-        .events = event_mask,
-        .data.u64 = ev_data.data,
-    };
-
-    errno = 0;
-
-    return epoll_ctl((int)epfd, EPOLL_CTL_ADD, (int)fd, &ev);
-}
-
-int oe_posix_epoll_ctl_del_ocall(oe_host_fd_t epfd, oe_host_fd_t fd)
+int oe_posix_epoll_ctl_ocall(
+    int64_t epfd,
+    int op,
+    int64_t fd,
+    struct oe_epoll_event* event)
 {
     errno = 0;
 
-    return epoll_ctl((int)epfd, EPOLL_CTL_DEL, (int)fd, NULL);
+    return epoll_ctl((int)epfd, op, (int)fd, (struct epoll_event*)event);
 }
 
-int oe_posix_epoll_ctl_mod_ocall(
-    oe_host_fd_t epfd,
-    oe_host_fd_t fd,
-    unsigned int event_mask,
-    int list_idx, /* ATTN: should this be uint32_t. */
-    int enclave_fd)
-{
-    oe_ev_data_t ev_data = {
-        .list_idx = (uint32_t)list_idx,
-        .epfd = enclave_fd,
-    };
-    struct epoll_event ev = {
-        .events = event_mask,
-        .data.u64 = ev_data.data,
-    };
-
-    return epoll_ctl((int)epfd, EPOLL_CTL_MOD, (int)fd, &ev);
-}
-
-int oe_posix_epoll_close_ocall(oe_host_fd_t fd)
+int oe_posix_epoll_close_ocall(oe_host_fd_t epfd)
 {
     errno = 0;
 
-    return close((int)fd);
+    /* Close both ends of the wakefd pipe and remove the epoll_t struct. */
+    pthread_mutex_lock(&_epolls_lock);
+    {
+        for (size_t i = 0; i < _num_epolls; i++)
+        {
+            if (_epolls[i].epfd == epfd)
+            {
+                close(_epolls[i].wakefds[0]);
+                close(_epolls[i].wakefds[1]);
+                _epolls[i] = _epolls[_num_epolls - 1];
+                _num_epolls--;
+                break;
+            }
+        }
+    }
+    pthread_mutex_unlock(&_epolls_lock);
+
+    return close((int)epfd);
 }
 
 int oe_posix_shutdown_polling_device_ocall(oe_host_fd_t fd)
@@ -971,57 +989,6 @@ int oe_posix_shutdown_polling_device_ocall(oe_host_fd_t fd)
     errno = 0;
 
     return 0;
-}
-
-int oe_posix_epoll_poll_ocall(
-    int64_t enclaveid,
-    oe_host_fd_t epfd,
-    struct oe_pollfd* fds,
-    size_t nfds,
-    int timeout)
-{
-    int ret = -1;
-    size_t fdsize = 0;
-    pthread_t thread = 0;
-    poll_args_t* args = NULL;
-    nfds_t fd_idx = 0;
-
-    errno = 0;
-
-    OE_UNUSED(timeout);
-
-    fdsize = sizeof(struct pollfd) * nfds;
-
-    if (!(args = (poll_args_t*)calloc(1, sizeof(*args) + fdsize)))
-    {
-        errno = ENOMEM;
-        goto done;
-    }
-
-    args->enclaveid = enclaveid;
-    args->epfd = epfd;
-    args->nfds = nfds;
-
-    for (; fd_idx < nfds; fd_idx++)
-    {
-        OE_STATIC_ASSERT(sizeof(args->fds[0]) == sizeof(fds[0]));
-        memcpy(&args->fds[fd_idx], &fds[fd_idx], sizeof(fds[fd_idx]));
-    }
-
-    // We lose the wait thread when we exit the func, but the thread will die
-    // on its own copy args then spawn pthread to do the waiting. That way we
-    // can ecall with notification. the thread args are freed by the thread
-    // func.
-    if (pthread_create(&thread, NULL, _poll_wait_thread, args) < 0)
-    {
-        errno = EINVAL;
-        goto done;
-    }
-
-    ret = 0;
-
-done:
-    return ret;
 }
 
 /*

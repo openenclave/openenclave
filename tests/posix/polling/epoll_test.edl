@@ -11,18 +11,22 @@ enclave {
         public void ecall_device_shutdown();
 
         public int ecall_poll_test(
-            size_t bufflen, 
+            size_t bufflen,
             [in, out,count=bufflen]char *pbuff,
             bool use_libc);
 
         public int ecall_epoll_test(
-            size_t bufflen, 
+            size_t bufflen,
             [in, out,count=bufflen]char *pbuff,
             bool use_libc);
 
         public int ecall_select_test(
-            size_t bufflen, 
+            size_t bufflen,
             [in, out,count=bufflen]char *pbuff,
             bool use_libc);
+
+        public int ecall_wait_test();
+
+        public int ecall_wake_test();
     };
 };

@@ -863,55 +863,35 @@ oe_host_fd_t oe_posix_epoll_create1_ocall(int flags)
     PANIC;
 }
 
-int oe_posix_epoll_wait_async_ocall(
-    int64_t enclaveid,
-    oe_host_fd_t epfd,
-    size_t maxevents)
+int oe_posix_epoll_wait_ocall(
+    int64_t epfd,
+    struct oe_epoll_event* events,
+    unsigned int maxevents,
+    int timeout)
 {
     PANIC;
 }
 
-int oe_posix_epoll_ctl_add_ocall(
-    oe_host_fd_t epfd,
-    oe_host_fd_t fd,
-    unsigned int event_mask,
-    int list_idx,
-    int epoll_enclave_fd)
+int oe_posix_epoll_wake_ocall(void)
 {
     PANIC;
 }
 
-int oe_posix_epoll_ctl_del_ocall(oe_host_fd_t epfd, oe_host_fd_t fd)
+int oe_posix_epoll_ctl_ocall(
+    int64_t epfd,
+    int op,
+    int64_t fd,
+    struct oe_epoll_event* event)
 {
     PANIC;
 }
 
-int oe_posix_epoll_ctl_mod_ocall(
-    oe_host_fd_t epfd,
-    oe_host_fd_t fd,
-    unsigned int event_mask,
-    int list_idx,
-    int enclave_fd)
-{
-    PANIC;
-}
-
-int oe_posix_epoll_close_ocall(oe_host_fd_t fd)
+int oe_posix_epoll_close_ocall(oe_host_fd_t epfd)
 {
     PANIC;
 }
 
 int oe_posix_shutdown_polling_device_ocall(oe_host_fd_t fd)
-{
-    PANIC;
-}
-
-int oe_posix_epoll_poll_ocall(
-    int64_t enclaveid,
-    oe_host_fd_t epfd,
-    struct oe_pollfd* fds,
-    size_t nfds,
-    int timeout)
 {
     PANIC;
 }
