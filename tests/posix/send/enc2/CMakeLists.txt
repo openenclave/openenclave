@@ -4,6 +4,7 @@
 oeedl_file(../libcsock.edl enclave gen)
 
 add_executable(libcsock_enc2 enc.c ../client.c ../server.c ${gen})
+maybe_build_using_clangw(libcsock_enc1)
 
 target_include_directories(libcsock_enc2 PRIVATE
     ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
