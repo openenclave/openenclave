@@ -135,6 +135,9 @@ add_library(oehost STATIC
   ${PLATFORM_SRC})
 
 target_link_libraries(oehost PUBLIC oe_includes)
+if (WIN32)
+    target_link_libraries(oehost PUBLIC ws2_32)
+endif ()
 
 add_dependencies(oehost posix_untrusted_edl)
 
@@ -222,6 +225,10 @@ set_property(TARGET oehost PROPERTY
 # Convenience library for creating a host-app (that needs the
 # -rdynamic link flag).
 add_library(oehostapp INTERFACE)
+
+if (NOT UNIX)
+target_compile_definitions(oehostapp INTERFACE -DWINDOWS_HOST )
+endif ()
 
 target_link_libraries(oehostapp INTERFACE oehost)
 

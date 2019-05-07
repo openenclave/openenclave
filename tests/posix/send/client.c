@@ -2,22 +2,39 @@
 // Licensed under the MIT License.
 
 #include "client.h"
+#if defined(WINDOWS_HOST)
+#pragma warning(disable : 4005)
+#include <windows.h>
+typedef int socklen_t;
+typedef SOCKET socket_t;
+
+static void sleep(int n) { Sleep(n*1000); }
+#else
 #include <arpa/inet.h>
+#include <errno.h>
 #include <netinet/in.h>
-#include <openenclave/internal/tests.h>
-#include <stdio.h>
-#include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
+typedef int socket_t;
+#endif
+#include <openenclave/internal/tests.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
 
 void oe_abort(void);
 
 void run_client(uint16_t port)
 {
-    int sd;
+    socket_t sd;
     const char hello[] = "hello";
     const char quit[] = "quit";
     char buf[1024];
+
+#if defined(WINDOWS_HOST)
+    static WSADATA wsadata = {0};
+    WSAStartup(MAKEWORD(2,2), &wsadata);
+#endif
 
     /* Create the client socket. */
     if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
@@ -59,10 +76,22 @@ void run_client(uint16_t port)
     }
 
     /* Send "quit" command to the server. */
+#if defined(WINDOWS_HOST)
+    if (send(sd, quit, sizeof(quit), 0) != sizeof(quit))
+#else
     if (write(sd, quit, sizeof(quit)) != sizeof(quit))
+#endif
     {
         OE_TEST("write() failed" == NULL);
     }
 
+
+#if defined(WINDOWS_HOST)
+    if (!CloseHandle((HANDLE)sd))
+    {
+        OE_TEST("closeHandle() failed" == NULL);
+    }
+#else
     close(sd);
+#endif
 }

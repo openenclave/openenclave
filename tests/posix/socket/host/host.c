@@ -1,7 +1,28 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#if !defined(_MSC_VER)
+
+// Visual C is allergic to gnu pragmas
+#pragma GCC diagnostic ignored "-Wformat"
+#pragma GCC diagnostic ignored "-Wshorten-64-to-32"
+#endif
+
 #define OE_LIBC_SUPPRESS_DEPRECATIONS
+#if defined(_MSC_VER)
+#include <openenclave/corelibc/netinet/in.h>
+#include <openenclave/internal/tests.h>
+#include <windows.h>
+
+typedef oe_socklen_t socklen_t;
+typedef oe_in_port_t in_port_t;
+
+static void sleep(int secs)
+{
+    Sleep(secs * 1000);
+}
+
+#else
 #include <netinet/in.h>
 #include <openenclave/internal/tests.h>
 
@@ -16,12 +37,17 @@
 #include <stdio.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#endif
 
 #include "socket_test_u.h"
 
 #define SERVER_PORT "12345"
 
+#if defined(_WIN32)
+DWORD enclave_server_thread(void* arg)
+#else
 void* enclave_server_thread(void* arg)
+#endif
 {
     oe_enclave_t* server_enclave = NULL;
     int retval = 0;
@@ -36,14 +62,18 @@ void* enclave_server_thread(void* arg)
     OE_TEST(ecall_run_server(server_enclave, &retval) == OE_OK);
     //    OE_TEST(oe_terminate_enclave(server_enclave) == OE_OK);
     sleep(3);
-    return NULL;
+    return 0;
 }
 
+#if defined(_WIN32)
+DWORD host_server_thread(void* arg)
+#else
 void* host_server_thread(void* arg)
+#endif
 {
     static const char TESTDATA[] = "This is TEST DATA\n";
-    int listenfd = socket(AF_INET, SOCK_STREAM, 0);
-    int connfd = 0;
+    int64_t listenfd = socket(AF_INET, SOCK_STREAM, 0);
+    int64_t connfd = 0;
     struct sockaddr_in serv_addr = {0};
 
     (void)arg;
@@ -68,27 +98,46 @@ void* host_server_thread(void* arg)
     {
         printf("host: accepting\n");
         connfd = accept(listenfd, (struct sockaddr*)NULL, NULL);
-        printf("accepted fd = %d\n", connfd);
+        printf("accepted fd = %lld\n", connfd);
         if (connfd >= 0)
         {
+#if defined(_WIN32)
+            DWORD n = 0;
+            int err = 0;
+            n = send(connfd, TESTDATA, (DWORD)strlen(TESTDATA), 0);
+            if (n < 0)
+            {
+                err = WSAGetLastError();
+                printf("write err=%d, data bytes = %ld\n", err, n);
+            }
+#else
             ssize_t n = write(connfd, TESTDATA, strlen(TESTDATA));
+#endif
             OE_TEST((size_t)n == strlen(TESTDATA));
             printf("write test data\n");
+#if defined(_WIN32)
+            CloseHandle((HANDLE)connfd);
+#else
             close(connfd);
+#endif
             break;
         }
         sleep(1);
     }
 
+#if defined(_WIN32)
+    CloseHandle((HANDLE)listenfd);
+#else
     close(listenfd);
+#endif
     printf("exit from server thread\n");
-    return NULL;
+    return 0;
 }
 
 char* host_client(in_port_t port)
 
 {
-    int sockfd = 0;
+    int64_t sockfd = 0;
     ssize_t n = 0;
     static char recvBuff[1024];
     struct sockaddr_in serv_addr = {0};
@@ -100,8 +149,10 @@ char* host_client(in_port_t port)
         return NULL;
     }
 
+#if !defined(_WIN32)
     int flags = fcntl(sockfd, F_GETFL, 0);
     fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
+#endif
 
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
@@ -109,14 +160,18 @@ char* host_client(in_port_t port)
 
     int retries = 0;
     static const int max_retries = 400;
-    printf("host client:socket fd = %d\n", sockfd);
+    printf("host client:socket fd = %lld\n", sockfd);
     printf("host client:Connecting...\n");
     while (connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
     {
         if (retries++ > max_retries)
         {
             printf("\n Error : Connect Failed errno = %d\n", errno);
+#if defined(_WIN32)
+            CloseHandle((HANDLE)sockfd);
+#else
             close(sockfd);
+#endif
             return NULL;
         }
         else
@@ -128,11 +183,17 @@ char* host_client(in_port_t port)
 
     do
     {
+#if defined(_WIN32)
+        DWORD n = 0;
+        int err = 0;
+        n = recv(sockfd, recvBuff, sizeof(recvBuff), 0);
+#else
         n = read(sockfd, recvBuff, sizeof(recvBuff));
+#endif
         if (n > 0)
         {
             recvBuff[n] = '\0';
-            printf("finished reading: %ld bytes...\n", n);
+            printf("host finished reading: %ld bytes...\n", n);
             break;
         }
         else
@@ -140,7 +201,11 @@ char* host_client(in_port_t port)
             if (errno != EAGAIN)
             {
                 printf("Read error, errno = %d\n", errno);
+#if defined(_WIN32)
+                CloseHandle((HANDLE)sockfd);
+#else
                 close(sockfd);
+#endif
                 return NULL;
             }
             else
@@ -150,7 +215,11 @@ char* host_client(in_port_t port)
         }
     } while (1);
 
+#if defined(_WIN32)
+    CloseHandle((HANDLE)sockfd);
+#else
     close(sockfd);
+#endif
     return &recvBuff[0];
 }
 
@@ -159,7 +228,6 @@ int main(int argc, const char* argv[])
     static char TESTDATA[] = "This is TEST DATA\n";
     oe_result_t result;
     oe_enclave_t* client_enclave = NULL;
-    pthread_t server_thread_id = 0;
     int ret = 0;
     char test_data_rtn[1024] = {0};
     ssize_t test_data_len = 1024;
@@ -172,6 +240,13 @@ int main(int argc, const char* argv[])
     // disable buffering
     setvbuf(stdout, NULL, _IONBF, 0);
 
+#if defined(_WIN32)
+    static WSADATA startup_data = {0};
+
+    // Initialize Winsock
+    (void)WSAStartup(MAKEWORD(2, 2), &startup_data);
+
+#endif
 #if 0
     // host server to host client
     OE_TEST(
@@ -188,9 +263,16 @@ int main(int argc, const char* argv[])
     sleep(3); // Let the net stack settle
 #endif
 
+#if defined(_WIN32)
+    HANDLE server_thread_h =
+        CreateThread(NULL, 0, host_server_thread, NULL, 0, NULL);
+    OE_TEST(server_thread_h != INVALID_HANDLE_VALUE);
+#else
+    pthread_t server_thread_id = 0;
     // host server to enclave client
     OE_TEST(
         pthread_create(&server_thread_id, NULL, host_server_thread, NULL) == 0);
+#endif
 
     sleep(3); // Give the server time to launch
     const uint32_t flags = oe_get_create_flags();
@@ -207,15 +289,27 @@ int main(int argc, const char* argv[])
 
     printf("host received: %.*s\n", (int)test_data_len, test_data_rtn);
 
+#if defined(_WIN32)
+    WaitForSingleObject(server_thread_h, INFINITE);
+    server_thread_h = INVALID_HANDLE_VALUE;
+#else
     pthread_join(server_thread_id, NULL);
+#endif
     OE_TEST(oe_terminate_enclave(client_enclave) == OE_OK);
 
     // enclave server to host client
     sleep(3); // Give the server time to launch
+
+#if defined(_WIN32)
+    server_thread_h =
+        CreateThread(NULL, 0, enclave_server_thread, argv[1], 0, NULL);
+    OE_TEST(server_thread_h != INVALID_HANDLE_VALUE);
+#else
     OE_TEST(
         pthread_create(
             &server_thread_id, NULL, enclave_server_thread, (void*)argv[1]) ==
         0);
+#endif
 
     sleep(3); // Give the server time to launch
 
@@ -224,7 +318,12 @@ int main(int argc, const char* argv[])
     printf("received from enclave server: %s\n", test_data);
     OE_TEST(strcmp(test_data, TESTDATA) == 0);
 
+#if defined(_WIN32)
+    WaitForSingleObject(server_thread_h, INFINITE);
+    server_thread_h = INVALID_HANDLE_VALUE;
+#else
     pthread_join(server_thread_id, NULL);
+#endif
 
     printf("=== passed all tests (socket_test)\n");
 
