@@ -159,7 +159,16 @@ extern int* __oe_errno_location(void);
 
 #define oe_errno *__oe_errno_location()
 
-#if !defined(OE_SUPPRESS_STDC_ERRNO_MACROS)
+/*
+**==============================================================================
+**
+** Standard-C names:
+**
+**==============================================================================
+*/
+
+#if defined(OE_NEED_STDC_NAMES)
+
 #define EPERM OE_EPERM
 #define ENOENT OE_ENOENT
 #define ESRCH OE_ESRCH
@@ -294,17 +303,6 @@ extern int* __oe_errno_location(void);
 #define ENOTRECOVERABLE OE_ENOTRECOVERABLE
 #define ERFKILL OE_ERFKILL
 #define EHWPOISON OE_EHWPOISON
-#endif /* !defined(OE_SUPPRESS_STDC_ERRNO_MACROS) */
-
-/*
-**==============================================================================
-**
-** Standard-C names:
-**
-**==============================================================================
-*/
-
-#if defined(OE_NEED_STDC_NAMES)
 
 #define errno oe_errno
 

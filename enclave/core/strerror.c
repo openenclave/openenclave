@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#define OE_NEED_STDC_NAMES
+
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
