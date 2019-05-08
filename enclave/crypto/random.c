@@ -58,14 +58,6 @@ mbedtls_ctr_drbg_context* oe_mbedtls_get_drbg()
 **==============================================================================
 */
 
-oe_result_t oe_random(void* data, size_t size)
-{
-    /* For now just call oe_random_internal.  In the future, this should
-     * return a cryptographically random set of bytes.
-     */
-    return oe_random_internal(data, size);
-}
-
 oe_result_t oe_random_internal(void* data, size_t size)
 {
     oe_result_t result = OE_UNEXPECTED;

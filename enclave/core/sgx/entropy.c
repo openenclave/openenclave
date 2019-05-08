@@ -4,7 +4,7 @@
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/entropy.h>
-#include <openenclave/internal/random.h>
+#include <openenclave/internal/rdrand.h>
 
 /* TODO: This should use RDSEED instead. See issue #242. */
 oe_result_t oe_get_entropy(void* output, size_t len)
