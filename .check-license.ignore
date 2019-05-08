@@ -25,6 +25,7 @@ tests/mbed/tests\..*$
 3rdparty/libcxx/libcxx/.*
 3rdparty/libcxxrt/libcxxrt/.*
 3rdparty/libunwind/libunwind/.*
+3rdparty/linux-sgx/.*
 3rdparty/mbedtls/mbedtls/.*
 3rdparty/musl/libc-test/.*
 3rdparty/musl/musl/.*
@@ -58,3 +59,4 @@ tools/oeedger8r/\.merlin
 tools/oeedger8r/main\.ml
 tools/oesign/getopt\.h
 tools/oesign/getopt_long\.c
+posix/devices/sgxfs/sgxfs.edl
