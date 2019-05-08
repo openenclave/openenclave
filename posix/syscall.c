@@ -549,7 +549,6 @@ static long _syscall(
             ret = (long)oe_getpgrp();
             goto done;
         }
-            // case OE_SYS_getegid:
         case OE_SYS_rt_sigaction:
         {
             int signum = (int)arg1;
