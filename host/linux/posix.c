@@ -780,7 +780,13 @@ typedef struct _epoll
 
 static epoll_t _epolls[MAX_EPOLLS];
 static size_t _num_epolls;
-static pthread_mutex_t _epolls_lock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_spinlock_t _epolls_lock;
+static pthread_once_t _epolls_once = PTHREAD_ONCE_INIT;
+
+static void _init_epolls_lock(void)
+{
+    pthread_spin_init(&_epolls_lock, PTHREAD_PROCESS_PRIVATE);
+}
 
 oe_host_fd_t oe_posix_epoll_create1_ocall(int flags)
 {
@@ -788,6 +794,8 @@ oe_host_fd_t oe_posix_epoll_create1_ocall(int flags)
     int epfd = -1;
     int wakefds[2] = {-1, -1};
     errno = 0;
+
+    pthread_once(&_epolls_once, _init_epolls_lock);
 
     if ((epfd = epoll_create1(flags)) == -1)
         goto done;
@@ -807,12 +815,12 @@ oe_host_fd_t oe_posix_epoll_create1_ocall(int flags)
             goto done;
     }
 
-    pthread_mutex_lock(&_epolls_lock);
+    pthread_spin_lock(&_epolls_lock);
     {
         if (_num_epolls == MAX_EPOLLS)
         {
             errno = ENOMEM;
-            pthread_mutex_unlock(&_epolls_lock);
+            pthread_spin_unlock(&_epolls_lock);
             goto done;
         }
 
@@ -821,7 +829,7 @@ oe_host_fd_t oe_posix_epoll_create1_ocall(int flags)
         _epolls[_num_epolls].wakefds[1] = wakefds[1];
         _num_epolls++;
     }
-    pthread_mutex_unlock(&_epolls_lock);
+    pthread_spin_unlock(&_epolls_lock);
 
     ret = epfd;
     epfd = -1;
@@ -853,6 +861,8 @@ int oe_posix_epoll_wait_ocall(
     bool found_wake_event = false;
     bool locked = false;
 
+    pthread_once(&_epolls_once, _init_epolls_lock);
+
     errno = 0;
 
     nfds = epoll_wait(
@@ -879,7 +889,7 @@ int oe_posix_epoll_wait_ocall(
         int fd = -1;
         uint64_t c;
 
-        pthread_mutex_lock(&_epolls_lock);
+        pthread_spin_lock(&_epolls_lock);
         locked = true;
 
         /* Find the read descriptor for the wakefds[] pipe. */
@@ -916,7 +926,7 @@ int oe_posix_epoll_wait_ocall(
 done:
 
     if (locked)
-        pthread_mutex_unlock(&_epolls_lock);
+        pthread_spin_unlock(&_epolls_lock);
 
     return ret;
 }
@@ -925,8 +935,10 @@ int oe_posix_epoll_wake_ocall(void)
 {
     int ret = -1;
 
+    pthread_once(&_epolls_once, _init_epolls_lock);
+
     /* Wake up all the waiting threads. */
-    pthread_mutex_lock(&_epolls_lock);
+    pthread_spin_lock(&_epolls_lock);
     {
         for (size_t i = 0; i < _num_epolls; i++)
         {
@@ -934,12 +946,12 @@ int oe_posix_epoll_wake_ocall(void)
 
             if (write(_epolls[i].wakefds[1], &c, sizeof(c)) != sizeof(c))
             {
-                pthread_mutex_unlock(&_epolls_lock);
+                pthread_spin_unlock(&_epolls_lock);
                 goto done;
             }
         }
     }
-    pthread_mutex_unlock(&_epolls_lock);
+    pthread_spin_unlock(&_epolls_lock);
 
     ret = 0;
 
@@ -962,8 +974,10 @@ int oe_posix_epoll_close_ocall(oe_host_fd_t epfd)
 {
     errno = 0;
 
+    pthread_once(&_epolls_once, _init_epolls_lock);
+
     /* Close both ends of the wakefd pipe and remove the epoll_t struct. */
-    pthread_mutex_lock(&_epolls_lock);
+    pthread_spin_lock(&_epolls_lock);
     {
         for (size_t i = 0; i < _num_epolls; i++)
         {
@@ -977,7 +991,7 @@ int oe_posix_epoll_close_ocall(oe_host_fd_t epfd)
             }
         }
     }
-    pthread_mutex_unlock(&_epolls_lock);
+    pthread_spin_unlock(&_epolls_lock);
 
     return close((int)epfd);
 }
