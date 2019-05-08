@@ -48,6 +48,8 @@
   failed_when: clang_check_version.stdout.find(clang_target_version) == -1
 
 - name: Ocaml version check
-  command: "ocaml -version"
+  shell: "source /etc/profile && ocaml -version"
+  args:
+    executable: /bin/bash
   register: ocaml_check_version
   failed_when: ocaml_check_version.stdout.find(ocaml_target_version) == -1

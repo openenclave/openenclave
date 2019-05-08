@@ -1,0 +1,78 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+---
+- name: Gather Ansible facts
+  setup:
+
+- name: Include distribution vars
+  include_vars:
+    file: "{{ ansible_distribution | lower }}.yml"
+
+- name: Include distribution release specific vars
+  include_vars:
+    file: "{{ ansible_distribution_release | lower }}.yml"
+
+- name: Add extra bubblewrap APT repository for Ubuntu Xenial
+  block:
+    - apt_key:
+        keyserver: keyserver.ubuntu.com
+        id: 6125E2A8C77F2818FB7BD15B93C4A3FD7BB9C367
+
+    - apt_repository:
+        repo: deb http://ppa.launchpad.net/ansible/bubblewrap/ubuntu xenial main
+        state: present
+        update_cache: yes
+  when: ansible_distribution_release == "xenial"
+
+- name: Install OPAM dependencies
+  apt:
+    name:
+      - "unzip"
+      - "bubblewrap"
+    state: present
+    update_cache: yes
+
+- name: Download OPAM bin
+  get_url:
+    url: "{{ opam_bin_url }}"
+    dest: /usr/local/bin/opam
+    mode: "u=rwx,g=rx,o=rx"
+    timeout: 10
+  retries: 5
+
+- name: Init OPAM
+  shell: |
+    if [[ -f /.dockerenv ]]; then
+        # Disable sandboxing inside Docker environment, otherwise opam will
+        # error out when installing ocamlformat package.
+        DISABLE_SANDBOXING="--disable-sandboxing"
+    fi
+    opam init --no-setup --comp={{ ocaml_version }} --root={{ opam_root }} $DISABLE_SANDBOXING
+  args:
+    executable: /bin/bash
+  retries: 10
+  delay: 5
+  register: result
+  until: result.rc == 0
+
+- name: Create OPAM profile file with the environment variables
+  blockinfile:
+    dest: /etc/profile.d/opam-env.sh
+    create: yes
+    block: |
+      export PATH="{{ opam_root }}/{{ ocaml_version }}/bin:{{ ansible_env.PATH }}"
+      export OPAMROOT="{{ opam_root }}"
+      export OPAM_SWITCH_PREFIX="{{ opam_root }}/{{ ocaml_version }}"
+      export CAML_LD_LIBRARY_PATH="{{ opam_root }}/{{ ocaml_version }}/lib/stublibs"
+      export OCAML_TOPLEVEL_PATH="{{ opam_root }}/{{ ocaml_version }}/lib/toplevel"
+      export MANPATH="{{ opam_root }}/{{ ocaml_version }}/man"
+
+- name: Install ocamlformat via OPAM
+  shell: "source /etc/profile && opam install ocamlformat -y"
+  args:
+    executable: /bin/bash
+  retries: 10
+  delay: 5
+  register: result
+  until: result.rc == 0
