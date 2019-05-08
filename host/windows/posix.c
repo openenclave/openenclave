@@ -15,8 +15,8 @@
 #include <io.h>
 #include <stdint.h>
 #include <sys/stat.h>
-#include "windows.h"
 #include "winsock2.h"
+#include "windows.h"
 
 #include "posix_u.h"
 
