@@ -26,10 +26,10 @@ add_custom_target(sign ALL DEPENDS enclave/enclave.signed)
 
 if ((NOT DEFINED ENV{OE_SIMULATION}) OR (NOT $ENV{OE_SIMULATION}))
   add_custom_target(run
-    DEPENDS file-encryptor_host sign
+    DEPENDS file-encryptor_host sign testfile
     COMMAND file-encryptor_host ${CMAKE_CURRENT_SOURCE_DIR}/testfile ${CMAKE_BINARY_DIR}/enclave/enclave.signed)
 endif ()
 
 add_custom_target(simulate
-  DEPENDS file-encryptor_host sign
+  DEPENDS file-encryptor_host sign testfile
   COMMAND file-encryptor_host ${CMAKE_CURRENT_SOURCE_DIR}/testfile ${CMAKE_BINARY_DIR}/enclave/enclave.signed --simulate)
