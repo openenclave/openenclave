@@ -176,7 +176,7 @@ if (UNIX)
      PUBLIC -fstack-protector-strong)
   target_compile_definitions(oehost
      PRIVATE _GNU_SOURCE
-     PUBLIC _FORTIFY_SOURCE=2)
+     PUBLIC $<$<NOT:$<CONFIG:debug>>:_FORTIFY_SOURCE=2>)
 endif ()
 
 if (CMAKE_C_COMPILER_ID MATCHES GNU)
