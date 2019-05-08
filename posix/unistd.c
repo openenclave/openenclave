@@ -17,8 +17,6 @@
 #include "mount.h"
 #include "posix_t.h"
 
-#undef OE_TRACE_ERROR
-
 int oe_gethostname(char* name, size_t len)
 {
     int ret = -1;

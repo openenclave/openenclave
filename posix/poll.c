@@ -11,6 +11,7 @@
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/device/device.h>
 #include <openenclave/internal/device/fdtable.h>
+#include <openenclave/internal/device/raise.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
@@ -39,19 +40,11 @@ int oe_poll(struct oe_pollfd* fds, nfds_t nfds, int timeout)
 
     /* Check for illegal parameters. */
     if (!fds || nfds >= OE_INT_MAX)
-    {
-        oe_errno = OE_EINTR;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Create the epoll device. */
     if ((epfd = oe_epoll_create1(0)) == -1)
-    {
-        oe_errno = OE_EBADF;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     /* Call oe_epoll_ctl() for each poll file descriptor. */
     for (i = 0; i < nfds; i++)
@@ -64,25 +57,16 @@ int oe_poll(struct oe_pollfd* fds, nfds_t nfds, int timeout)
         event.events = (uint32_t)fd->events;
 
         if (oe_epoll_ctl(epfd, OE_EPOLL_CTL_ADD, fd->fd, &event) == -1)
-        {
-            OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-            goto done;
-        }
+            OE_RAISE_ERRNO(oe_errno);
     }
 
     /* Allocate an array of epoll events. */
     if (!(events = oe_calloc(1, sizeof(struct oe_epoll_event) * nfds)))
-    {
-        oe_errno = OE_ENOMEM;
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_ENOMEM);
 
     /* Call oe_epoll_wait() to wait for events. */
     if ((num_events = oe_epoll_wait(epfd, events, (int)nfds, timeout)) == -1)
-    {
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     /* Convert epoll events back to poll file descriptors. */
     for (i = 0; i < nfds; i++)
