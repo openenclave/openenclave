@@ -15,6 +15,12 @@ oeedl_file(
     bar_u
 )
 
+oeedl_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/../edl/other.edl
+    host
+    other_u
+)
+
 add_executable(edl_host 
     main.cpp
     bar.cpp
@@ -23,11 +29,13 @@ add_executable(edl_host
     testbasic.cpp
     testenum.cpp
     testforeign.cpp
+    testother.cpp
     testpointer.cpp
     teststring.cpp
     teststruct.cpp
     ${all_u}
     ${bar_u}
+    ${other_u}
 )
 
 # The tests intentionally use floats etc in size context.

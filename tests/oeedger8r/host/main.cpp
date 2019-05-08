@@ -5,6 +5,7 @@
 #include <openenclave/internal/tests.h>
 #include <wchar.h>
 #include "all_u.h"
+#include "other_u.h" // Test that multiple enclaves can be shared with one host.
 
 // The types wchar_t, long, unsigned long and long double have different sizes
 // in Linux and Windows. Therefore enclaves built in Linux cannot be safely

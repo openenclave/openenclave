@@ -35,7 +35,6 @@ add_enclave(TARGET edl_enc CXX
     ${bar_t}
     )
 
-
 # The tests intentionally use floats etc in size context.
 # Disable warnings.
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang OR USE_CLANGW)
@@ -55,3 +54,13 @@ if (NOT WIN32)
   # Re-enable strict aliasing. TODO: Remove this when #1717 is resolved.
   target_compile_options(edl_enc PUBLIC -fstrict-aliasing -Werror=strict-aliasing)
 endif ()
+
+# This is a separate enclave specifically shared with the same host.
+oeedl_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/../edl/other.edl
+    enclave
+    other_t
+)
+
+add_enclave(TARGET edl_other_enc CXX SOURCES testother.cpp ${other_t})
+target_include_directories(edl_other_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)

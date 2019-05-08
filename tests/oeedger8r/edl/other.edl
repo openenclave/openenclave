@@ -1,0 +1,20 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+  // This enclave is explicitly separate from the `all` enclave, but
+  // shares the same host. This tests the ability of a single host to
+  // include multiple enclave headers (and so host multiple enclaves).
+
+  struct MyOther {
+    int x;
+  };
+
+  trusted {
+    public MyOther ecall_other(MyOther o);
+  };
+
+  untrusted {
+    MyOther ocall_other(MyOther o);
+  };
+};
