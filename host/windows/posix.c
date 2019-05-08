@@ -15,8 +15,10 @@
 #include <io.h>
 #include <stdint.h>
 #include <sys/stat.h>
-#include "windows.h"
+// clang-format off
 #include "winsock2.h"
+#include "windows.h"
+// clang-format on
 
 #include "posix_u.h"
 

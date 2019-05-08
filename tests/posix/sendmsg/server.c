@@ -4,8 +4,10 @@
 #include "server.h"
 #if defined(WINDOWS_HOST)
 #pragma warning(disable : 4005)
-#include <windows.h>
+// clang-format off
 #include <winsock2.h>
+#include <windows.h>
+// clang-format on
 typedef int socklen_t;
 
 static void sleep(int n)
