@@ -12,6 +12,8 @@ enclave {
 
   trusted {
     public MyOther ecall_other(MyOther o);
+
+    public void test_other_edl_ocalls();
   };
 
   untrusted {

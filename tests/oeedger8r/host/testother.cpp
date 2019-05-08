@@ -11,3 +11,10 @@ MyOther ocall_other(MyOther o)
 {
     return MyOther{o.x + 1};
 }
+
+void test_other_edl_ecalls(oe_enclave_t* enclave)
+{
+    MyOther ret;
+    OE_TEST(ecall_other(enclave, &ret, MyOther{1}) == OE_OK);
+    OE_TEST(ret.x == 2);
+}
