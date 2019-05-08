@@ -1,6 +1,30 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+##==============================================================================
+##
+## These rules generate the edge routines for the POSIX interface, which is
+## installed by oe_register_posix_ecall_function_table().
+##
+##==============================================================================
+
+set(EDL_DIR ${CMAKE_SOURCE_DIR}/common)
+set(EDL_FILE ${EDL_DIR}/posix.edl)
+
+add_custom_command(
+    OUTPUT posix_u.h posix_u.c posix_args.h
+    DEPENDS ${EDL_FILE}
+    COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${EDL_FILE})
+
+add_custom_target(posix_untrusted_edl
+    DEPENDS posix_u.h posix_u.c posix_args.h)
+
+##==============================================================================
+##
+## these rules build the oehost target.
+##
+##==============================================================================
+
 # OS specific but arch agnostic files.
 if (UNIX)
   set(PLATFORM_SRC
@@ -16,6 +40,7 @@ if (UNIX)
     crypto/openssl/random.c
     crypto/openssl/rsa.c
     linux/hostthread.c
+    linux/posix.c
     linux/time.c
     linux/windows.c)
 elseif (WIN32)
@@ -24,6 +49,7 @@ elseif (WIN32)
     crypto/bcrypt/hmac.c
     crypto/bcrypt/rsa.c
     windows/hostthread.c
+    windows/posix.c
     windows/time.c)
 else()
   message(FATAL_ERROR "Unknown OS. Only supported OSes are Linux and Windows")
@@ -98,6 +124,7 @@ add_library(oehost STATIC
   files.c
   fopen.c
   hexdump.c
+  posix_u_wrapper.c
   memalign.c
   ocalls.c
   result.c
@@ -108,6 +135,8 @@ add_library(oehost STATIC
   ${PLATFORM_SRC})
 
 target_link_libraries(oehost PUBLIC oe_includes)
+
+add_dependencies(oehost posix_untrusted_edl)
 
 # TODO: Replace these with `find_package` and add as dependencies to
 # the CMake package.
@@ -130,6 +159,9 @@ elseif (WIN32)
     ${CMAKE_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
   target_link_libraries(oehost PRIVATE bcrypt Crypt32)
 endif ()
+
+# For including edge routines.
+target_include_directories(oehost PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 # TODO: Handle Trust Zone etc.
 if (USE_LIBSGX)
