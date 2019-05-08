@@ -74,6 +74,8 @@ to an Azure Edge device by:
 1. Navigate to the `config` folder and right click on `deployment.*.json`
 1. Select `Create Deployment for Single Device` or `Create Deployment at Scale`.
 
+To set up an actual device to receive a deployment, you can follow [these](./SetupDevice.md) instructions.
+
 ### Debug your Open Enclave solution.
 
 Debugging your standalone project's enclave is easy.  
@@ -102,21 +104,29 @@ the host and enclave symbols into an instance of the debugger.
     * Install [CMake 3.12 or higher](https://cmake.org/download/)
     * Install the required build components: 
         
-          sudo apt update && sudo apt install -y build-essential cmake gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu g++-arm-linux-gnueabihf g++-aarch64-linux-gnu gdb-multiarch python
+        ```bash
+        sudo apt update && sudo apt install -y build-essential cmake gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu g++-arm-linux-gnueabihf g++-aarch64-linux-gnu gdb-multiarch python
+        ```
     
 * Ensure that the requirements are met for the [Azure IoT Edge extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-edge):
     * [Docker is installed and running: https://docs.docker.com/install/](https://docs.docker.com/install/).
-        * On Linux, to cross-build a container (i.e. if your host is amd64 and your container is arm32v7), you will need to enable cross-building.  Adding these packages solved the cross-build issue on Ubuntu 19.04:
+        * On Linux, to cross-build a container (i.e. if your host is amd64 and your container is arm32v7), you will need to enable cross-building.  Adding these packages solves the cross-build issue on Ubuntu 19.04:
             
-              sudo apt-get install -y qemu qemu-user-static qemu-user binfmt-support
+            ```bash
+            sudo apt-get install -y qemu qemu-user-static qemu-user binfmt-support
+            ```
         
-        * On Linux, if you are seeing permissions issues when connecting to the docker daemon, this has helped some people:
+        * On Linux, if you are seeing permission issues related to connecting to the Docker daemon, add your Linux user to the docker group. This will allow your user to connect and issue commands to the Docker daemon:
         
-              sudo usermod -a -G docker $USER
+            ```bash
+            sudo usermod -a -G docker $USER
+            ```
 
     * The [iotedgehubdev](https://pypi.org/project/iotedgehubdev/) tool is installed
 
-          pip install --upgrade iotedgehubdev
+        ```bash
+        pip install --upgrade iotedgehubdev
+        ```
 
     * Create a container repository, like [Azure Container Registry](https://azure.microsoft.com/en-us/services/container-registry/)
         * To push Edge containers to the container registry, find the username and password for your container registry and use them to log into docker (the --pasword-stdin option will prevent your password from appearing in the command line history): `docker login --password-stdin -u <username> <container-url>`
@@ -135,7 +145,7 @@ For development of this extension, or running from source code directly
 * Install [node](https://nodejs.org/en/)
 * Install [npm](https://www.npmjs.com/get-npm)
 
-Alternatively, you can run the extension from this repository by following these instructions:
+To run the extension from this repository, following these instructions:
 
 1. Clone this repository `git clone --recursive https://github.com/microsoft/openenclave --branch feature.new_platforms`.
 1. Navigate to `new_platforms\vscode-extension` in the cloned folder.
@@ -153,20 +163,26 @@ data to Microsoft, you can set the `telemetry.enableTelemetry` setting to `false
 ## Known Issues
 
 * Building SGX enclaves is not currently supported.
-* On Linux, if you see errors in an Edge container build that involve `standard_init_linux.go:207`, you are likely cross-building a container.  Adding these packages solved the cross-build issue on Ubuntu 19.04:
+* On Linux, if you see errors in an Edge container build that involve `standard_init_linux.go:207`, you are likely cross-building a container.  Adding these packages solves the cross-build issue on Ubuntu 19.04:
 
-      sudo apt-get install -y qemu qemu-user-static qemu-user binfmt-support
+    ```bash
+    sudo apt-get install -y qemu qemu-user-static qemu-user binfmt-support
+    ```
 
-* We've had reports that downloading the SDK from git can be slow from within the extension, to work around any issue here, you can run these commands
+* We've had reports that downloading the SDK from git can be slow from within the extension, to work around any issue, you can run these commands
     * Linux:
         
-          rm -rf /home/$USER/.config/Code/User/globalStorage/ms-iot.msiot-vscode-openenclave/1.0.3/3rdparty/openenclave
-          git clone --recursive --branch feature.new_platforms https://github.com/Microsoft/openenclave /home/$USER/.config/Code/User/globalStorage/ms-iot.msiot-vscode-openenclave/1.0.3/3rdparty/openenclave
+        ```bash
+        rm -rf /home/$USER/.config/Code/User/globalStorage/ms-iot.msiot-vscode-openenclave/1.0.3/3rdparty/openenclave
+        git clone --recursive --branch feature.new_platforms https://github.com/Microsoft/openenclave /home/$USER/.config/Code/User/globalStorage/ms-iot.msiot-vscode-openenclave/1.0.3/3rdparty/openenclave
+        ```
     
     * Windows (from CMD prompt): 
 
-          rmdir /S /Q  %APPDATA%\Code\User\globalStorage\ms-iot.msiot-vscode-openenclave\1.0.3\3rdparty\openenclave
-          git clone --recursive --branch feature.new_platforms https://github.com/Microsoft/openenclave %APPDATA%\Code\User\globalStorage\ms-iot.msiot-vscode-openenclave\1.0.3\3rdparty\openenclave
+        ```bat
+        rmdir /S /Q  %APPDATA%\Code\User\globalStorage\ms-iot.msiot-vscode-openenclave\1.0.3\3rdparty\openenclave
+        git clone --recursive --branch feature.new_platforms https://github.com/Microsoft/openenclave %APPDATA%\Code\User\globalStorage\ms-iot.msiot-vscode-openenclave\1.0.3\3rdparty\openenclave
+        ```
 
 
 
