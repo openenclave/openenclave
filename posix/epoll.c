@@ -12,6 +12,7 @@
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/internal/trace.h>
+#include <openenclave/internal/device/raise.h>
 #include "epoll.h"
 #include "list.h"
 #include <openenclave/internal/device/fdtable.h>
@@ -25,22 +26,14 @@ int oe_epoll_create(int size)
     oe_device_t* epoll = NULL;
 
     if (!(device = oe_get_device(OE_DEVID_HOSTEPOLL, OE_DEVICE_TYPE_EPOLL)))
-    {
-        OE_TRACE_ERROR("devid = %lu ", OE_DEVID_HOSTEPOLL);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (!(epoll = (*device->ops.epoll->epoll_create)(device, size)))
-    {
-        OE_TRACE_ERROR("size = %d ", size);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     if ((epfd = oe_fdtable_assign(epoll)) == -1)
-    {
-        OE_TRACE_ERROR("oe_fdtable_assign failed");
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
+
     ret = 0;
     epoll = NULL;
 
@@ -59,22 +52,13 @@ int oe_epoll_create1(int flags)
     oe_device_t* epoll = NULL;
 
     if (!(device = oe_get_device(OE_DEVID_HOSTEPOLL, OE_DEVICE_TYPE_EPOLL)))
-    {
-        OE_TRACE_ERROR("devid = %lu ", OE_DEVID_HOSTEPOLL);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (!(epoll = (*device->ops.epoll->epoll_create1)(device, flags)))
-    {
-        OE_TRACE_ERROR("flags=%d", flags);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     if ((epfd = oe_fdtable_assign(epoll)) == -1)
-    {
-        OE_TRACE_ERROR("oe_fdtable_assign failed");
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     epoll = NULL;
 
@@ -94,11 +78,7 @@ int oe_epoll_ctl(int epfd, int op, int fd, struct oe_epoll_event* event)
     oe_errno = 0;
 
     if (!(epoll = oe_fdtable_get(epfd, OE_DEVICE_TYPE_EPOLL)))
-    {
-        oe_errno = OE_EBADF;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EBADF);
 
     ret = (*epoll->ops.epoll->epoll_ctl)(epoll, op, fd, event);
 
@@ -116,24 +96,15 @@ int oe_epoll_wait(
     oe_device_t* epoll;
 
     if (!(epoll = oe_fdtable_get(epfd, OE_DEVICE_TYPE_EPOLL)))
-    {
-        OE_TRACE_ERROR("no device found epfd=%d", epfd);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EBADF);
 
     if (!epoll->ops.epoll->epoll_wait)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
-    /* Wait until there are events. */
     ret = (epoll->ops.epoll->epoll_wait)(epoll, events, maxevents, timeout);
 
 done:
 
-    /* Return the number of descriptors that were signalled. */
     return ret;
 }
 
@@ -147,11 +118,7 @@ int oe_epoll_pwait(
     int ret = -1;
 
     if (sigmask)
-    {
-        oe_errno = OE_ENOTSUP;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_ENOTSUP);
 
     ret = oe_epoll_wait(epfd, events, maxevents, timeout);
 
@@ -165,10 +132,7 @@ int oe_epoll_wake(void)
     int retval;
 
     if (oe_posix_epoll_wake_ocall(&retval) != OE_OK)
-    {
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     ret = retval;
 

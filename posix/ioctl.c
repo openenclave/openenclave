@@ -6,6 +6,7 @@
 #include <openenclave/corelibc/stdarg.h>
 #include <openenclave/internal/device/device.h>
 #include <openenclave/internal/device/fdtable.h>
+#include <openenclave/internal/device/raise.h>
 #include <openenclave/internal/trace.h>
 
 int __oe_ioctl(int fd, unsigned long request, uint64_t arg)
@@ -29,10 +30,7 @@ int __oe_ioctl(int fd, unsigned long request, uint64_t arg)
             struct winsize* p;
 
             if (!(p = (struct winsize*)arg))
-            {
-                OE_TRACE_ERROR("fd=%d oe_va_arg failed", fd);
-                goto done;
-            }
+                OE_RAISE_ERRNO(OE_EINVAL);
 
             p->ws_row = 24;
             p->ws_col = 80;
@@ -51,19 +49,10 @@ int __oe_ioctl(int fd, unsigned long request, uint64_t arg)
         oe_device_t* device;
 
         if (!(device = oe_fdtable_get(fd, OE_DEVICE_TYPE_NONE)))
-        {
-            OE_TRACE_ERROR("no device found fd=%d", fd);
-            ret = -1;
-            goto done;
-        }
+            OE_RAISE_ERRNO(oe_errno);
 
         if (device->ops.base->ioctl == NULL)
-        {
-            oe_errno = OE_EINVAL;
-            OE_TRACE_ERROR("fd=%d oe_errno =%d ", fd, oe_errno);
-            ret = -1;
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_EINVAL);
 
         // The action routine sets errno
         ret = (*device->ops.base->ioctl)(device, request, arg);

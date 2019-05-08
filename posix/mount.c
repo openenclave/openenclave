@@ -12,6 +12,9 @@
 #include <openenclave/corelibc/limits.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/internal/device/device.h>
+#include <openenclave/internal/device/raise.h>
+
+#undef OE_TRACE_ERROR
 
 #define MAX_MOUNT_TABLE_SIZE 64
 
@@ -41,11 +44,7 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
     char realpath[OE_PATH_MAX];
 
     if (!path || !suffix)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* First check whether a device id is set for this thread. */
     {
@@ -56,11 +55,7 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
             oe_device_t* device;
 
             if (!(device = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
-            {
-                oe_errno = OE_EINVAL;
-                OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-                goto done;
-            }
+                OE_RAISE_ERRNO(OE_EINVAL);
 
             /* Use this device. */
             oe_strlcpy(suffix, path, OE_PATH_MAX);
@@ -71,10 +66,7 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
 
     /* Find the real path (the absolute non-relative path). */
     if (!oe_realpath(path, realpath))
-    {
-        OE_TRACE_ERROR("path = %s realpath=%s", path, realpath);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     oe_spin_lock(&_lock);
     {
@@ -120,10 +112,7 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
     oe_spin_unlock(&_lock);
 
     if (!ret)
-    {
-        oe_errno = OE_ENOENT;
-        OE_TRACE_ERROR("oe_errno=%d path={%s}", oe_errno, path);
-    }
+        OE_RAISE_ERRNO_F(OE_ENOENT, "path=%s", path);
 
 done:
     return ret;
@@ -145,11 +134,7 @@ int oe_mount(
     OE_UNUSED(data);
 
     if (!target)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Resolve the device and the devid if filesystemtype present. */
     if (filesystemtype)
@@ -157,21 +142,12 @@ int oe_mount(
         device = oe_find_device(filesystemtype, OE_DEVICE_TYPE_FILESYSTEM);
 
         if (!device)
-        {
-            oe_errno = OE_EINVAL;
-            OE_TRACE_ERROR(
-                "oe_errno=%d filesystemtype=%s ", oe_errno, filesystemtype);
-            goto done;
-        }
+            OE_RAISE_ERRNO_F(OE_EINVAL, "filesystemtype=%s", filesystemtype);
     }
 
     /* If the device has not been resolved. */
     if (!device || device->type != OE_DEVICE_TYPE_FILESYSTEM)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Be sure the full_target directory exists (if not root). */
     if (oe_strcmp(target, "/") != 0)
@@ -180,18 +156,10 @@ int oe_mount(
         int retval = -1;
 
         if ((retval = oe_stat(target, &buf)) != 0)
-        {
-            oe_errno = OE_EIO;
-            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-            goto done;
-        }
+            OE_RAISE_ERRNO(oe_errno);
 
         if (!OE_S_ISDIR(buf.st_mode))
-        {
-            oe_errno = OE_ENOTDIR;
-            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_ENOTDIR);
     }
 
     /* Lock the mount table. */
@@ -207,11 +175,7 @@ int oe_mount(
 
     /* Fail if mount table exhausted. */
     if (_mount_table_size == MAX_MOUNT_TABLE_SIZE)
-    {
-        oe_errno = OE_ENOMEM;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_ENOMEM);
 
     /* Reject duplicate mount paths. */
     for (size_t i = 0; i < _mount_table_size; i++)

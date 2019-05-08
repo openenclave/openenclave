@@ -9,6 +9,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/device/device.h>
 #include <openenclave/internal/device/fdtable.h>
+#include <openenclave/internal/device/raise.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
@@ -101,11 +102,7 @@ int oe_fdtable_assign(oe_device_t* device)
     if (index == _table_size)
     {
         if (_resize_table(_table_size + 1) != 0)
-        {
-            oe_errno = OE_ENOMEM;
-            OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_ENOMEM);
     }
 
     _table[index] = device;
@@ -148,18 +145,10 @@ int oe_fdtable_set(int fd, oe_device_t* device)
     locked = true;
 
     if (fd < 0 || (size_t)fd >= _table_size)
-    {
-        oe_errno = OE_EBADF;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EBADF);
 
     if (_table[fd] != NULL)
-    {
-        oe_errno = OE_EADDRINUSE;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EADDRINUSE);
 
     _table[fd] = device;
 
@@ -204,18 +193,10 @@ static oe_device_t* _get_fd_device(int fd)
     OE_TRACE_INFO("fd=%d", fd);
 
     if (fd < 0 || fd >= (int)_table_size)
-    {
-        oe_errno = OE_EBADF;
-        OE_TRACE_ERROR("oe_errno=%d fd=%d", oe_errno, fd);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EBADF);
 
     if (_table[fd] == NULL)
-    {
-        oe_errno = OE_EBADF;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EBADF);
 
     ret = _table[fd];
 

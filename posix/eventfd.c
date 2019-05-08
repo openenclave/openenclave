@@ -12,6 +12,7 @@
 #include <openenclave/internal/trace.h>
 #include <openenclave/corelibc/sys/eventfd.h>
 #include <openenclave/internal/device/fdtable.h>
+#include <openenclave/internal/device/raise.h>
 
 int oe_eventfd(unsigned int initval, int flags)
 {
@@ -21,24 +22,13 @@ int oe_eventfd(unsigned int initval, int flags)
     oe_device_t* eventfd = NULL;
 
     if (!(device = oe_get_device(OE_DEVID_EVENTFD, OE_DEVICE_TYPE_EVENTFD)))
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d\n", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (!(eventfd = (*device->ops.eventfd->eventfd)(device, initval, flags)))
-    {
-        OE_TRACE_ERROR("oe_errno=%d\n", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     if ((ed = oe_fdtable_assign(eventfd)) == -1)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d\n", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     ret = ed;
     eventfd = NULL;
@@ -46,9 +36,7 @@ int oe_eventfd(unsigned int initval, int flags)
 done:
 
     if (eventfd)
-    {
-        // ATTN: release this device.
-    }
+        (*eventfd->ops.base->close)(eventfd);
 
     return ret;
 }

@@ -9,11 +9,11 @@
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/device/device.h>
+#include <openenclave/internal/device/raise.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
-
-#include <openenclave/internal/device/device.h>
 
 #define MAX_TABLE_SIZE 128
 
@@ -29,18 +29,10 @@ uint64_t oe_allocate_devid(uint64_t devid)
     locked = true;
 
     if (devid >= MAX_TABLE_SIZE)
-    {
-        oe_errno = OE_ENOMEM;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_ENOMEM);
 
     if (_table[devid] != NULL)
-    {
-        oe_errno = OE_EADDRINUSE;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EADDRINUSE);
 
     ret = devid;
 
@@ -61,11 +53,7 @@ int oe_release_devid(uint64_t devid)
     locked = true;
 
     if (devid >= MAX_TABLE_SIZE || _table[devid] == NULL)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     _table[devid] = NULL;
 
@@ -86,18 +74,10 @@ int oe_set_device(uint64_t devid, oe_device_t* device)
     oe_spin_lock(&_lock);
 
     if (devid > MAX_TABLE_SIZE)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (_table[devid] != NULL)
-    {
-        oe_errno = OE_EADDRINUSE;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EADDRINUSE);
 
     _table[devid] = device;
 
@@ -117,11 +97,7 @@ oe_device_t* oe_get_device(uint64_t devid, oe_device_type_t type)
     oe_spin_lock(&_lock);
 
     if (devid >= MAX_TABLE_SIZE)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     device = _table[devid];
 
@@ -176,26 +152,16 @@ int oe_remove_device(uint64_t devid)
     oe_device_t* device;
 
     if (!(device = oe_get_device(devid, OE_DEVICE_TYPE_NONE)))
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("no device found: devid=%lu", devid);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (device->ops.base->shutdown == NULL)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if ((retval = (*device->ops.base->shutdown)(device)) != 0)
-    {
-        OE_TRACE_ERROR("devid=%lu retval=%d", devid, retval);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
-    /* ATTN: this does not actually remove the device. */
+    if (oe_set_device(devid, NULL) != 0)
+        OE_RAISE_ERRNO(oe_errno);
 
     ret = 0;
 
