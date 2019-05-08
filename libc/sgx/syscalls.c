@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#define OE_SUPPRESS_STDC_ERRNO_MACROS
 #define __OE_NEED_TIME_CALLS
 #define _GNU_SOURCE
 
