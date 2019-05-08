@@ -980,6 +980,8 @@ int oe_posix_epoll_ctl_ocall(
 
 int oe_posix_epoll_close_ocall(oe_host_fd_t epfd)
 {
+    int fd0 = -1;
+    int fd1 = -1;
     errno = 0;
 
     pthread_once(&_epolls_once, _init_epolls_lock);
@@ -992,8 +994,8 @@ int oe_posix_epoll_close_ocall(oe_host_fd_t epfd)
         {
             if (_epolls[i].epfd == epfd)
             {
-                close(_epolls[i].wakefds[0]);
-                close(_epolls[i].wakefds[1]);
+                fd0 = _epolls[i].wakefds[0];
+                fd1 = _epolls[i].wakefds[1];
                 _epolls[i] = _epolls[_num_epolls - 1];
                 _num_epolls--;
                 break;
@@ -1002,6 +1004,12 @@ int oe_posix_epoll_close_ocall(oe_host_fd_t epfd)
 
         pthread_spin_unlock(&_epolls_lock);
     }
+
+    if (fd0 != -1)
+        close(fd0);
+
+    if (fd1 != -1)
+        close(fd1);
 
     return close((int)epfd);
 }
@@ -1109,13 +1117,72 @@ int oe_posix_uname_ocall(struct oe_utsname* buf)
 
     if ((ret = uname(&uts)) != -1)
     {
-        oe_strlcpy(buf->sysname, uts.sysname, sizeof(buf->sysname));
-        oe_strlcpy(buf->nodename, uts.nodename, sizeof(buf->nodename));
-        oe_strlcpy(buf->release, uts.release, sizeof(buf->release));
-        oe_strlcpy(buf->version, uts.version, sizeof(buf->version));
-        oe_strlcpy(buf->machine, uts.machine, sizeof(buf->machine));
+        /* sysname: */
+        {
+            if (strlen(uts.sysname) >= sizeof(buf->sysname))
+            {
+                errno = ENAMETOOLONG;
+                goto done;
+            }
+
+            strcpy(buf->sysname, uts.sysname);
+        }
+
+        /* nodename: */
+        {
+            if (strlen(uts.nodename) >= sizeof(buf->nodename))
+            {
+                errno = ENAMETOOLONG;
+                goto done;
+            }
+
+            strcpy(buf->nodename, uts.nodename);
+        }
+
+        /* release: */
+        {
+            if (strlen(uts.release) >= sizeof(buf->release))
+            {
+                errno = ENAMETOOLONG;
+                goto done;
+            }
+
+            strcpy(buf->release, uts.release);
+        }
+
+        /* version: */
+        {
+            if (strlen(uts.version) >= sizeof(buf->version))
+            {
+                errno = ENAMETOOLONG;
+                goto done;
+            }
+
+            strcpy(buf->version, uts.version);
+        }
+
+        /* machine: */
+        {
+            if (strlen(uts.machine) >= sizeof(buf->machine))
+            {
+                errno = ENAMETOOLONG;
+                goto done;
+            }
+
+            strcpy(buf->machine, uts.machine);
+        }
+
 #if defined(_GNU_SOURCE)
-        oe_strlcpy(buf->domainname, uts.domainname, sizeof(buf->domainname));
+        /* domainname: */
+        {
+            if (strlen(uts.domainname) >= sizeof(buf->domainname))
+            {
+                errno = ENAMETOOLONG;
+                goto done;
+            }
+
+            strcpy(buf->domainname, uts.domainname);
+        }
 #endif
     }
 
