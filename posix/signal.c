@@ -8,6 +8,7 @@
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/device/raise.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
@@ -42,14 +43,9 @@ int oe_kill(oe_pid_t pid, int signum)
 {
     int retval = -1;
     oe_errno = 0;
-    oe_result_t result = OE_FAILURE;
 
-    if ((result = oe_posix_kill_ocall(&retval, (int)pid, signum)) != OE_OK)
-    {
-        OE_TRACE_ERROR(
-            "pid=%d signum=%d %s", pid, signum, oe_result_str(result));
-        goto done;
-    }
+    if (oe_posix_kill_ocall(&retval, (int)pid, signum) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     retval = 0;
 
@@ -67,11 +63,7 @@ int oe_sigaction(
     oe_register_posix_ecall_function_table();
 
     if (signum >= __OE_NSIG)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (oldact)
     {
@@ -95,11 +87,7 @@ oe_sighandler_t oe_signal(int signum, oe_sighandler_t handler)
     oe_register_posix_ecall_function_table();
 
     if (signum >= __OE_NSIG)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     _actions[signum].__oe_sigaction_handler.oe_sa_handler = handler;
 
@@ -112,11 +100,7 @@ int oe_posix_signal_notify_ecall(int signum)
     int ret = -1;
 
     if (signum >= __OE_NSIG)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (_actions[signum].oe_sa_flags & OE_SA_SIGINFO)
     {

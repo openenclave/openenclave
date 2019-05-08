@@ -8,6 +8,7 @@
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/device/device.h>
 #include <openenclave/internal/device/fdtable.h>
+#include <openenclave/internal/device/raise.h>
 #include <openenclave/internal/trace.h>
 
 #define DIR_MAGIC 0x09180827
@@ -26,17 +27,10 @@ OE_DIR* oe_opendir_d(uint64_t devid, const char* pathname)
     int fd = -1;
 
     if (!dir)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if ((fd = oe_open_d(devid, pathname, OE_O_RDONLY | OE_O_DIRECTORY, 0)) < 0)
-    {
-        OE_TRACE_ERROR("devid=%lu pathname=%s", devid, pathname);
-        goto done;
-    }
+        OE_RAISE_ERRNO_F(oe_errno, "pathname=%s", pathname);
 
     dir->magic = DIR_MAGIC;
     dir->fd = fd;
@@ -67,16 +61,13 @@ struct oe_dirent* oe_readdir(OE_DIR* dir)
     unsigned int count = (unsigned int)sizeof(struct oe_dirent);
 
     if (!dir || dir->magic != DIR_MAGIC)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (oe_getdents((unsigned int)dir->fd, &dir->buf, count) != (int)count)
     {
         if (oe_errno)
-            OE_TRACE_ERROR("count=%d", count);
+            OE_RAISE_ERRNO(oe_errno);
+
         goto done;
     }
 
@@ -91,18 +82,14 @@ int oe_closedir(OE_DIR* dir)
     int ret = -1;
 
     if (!dir || dir->magic != DIR_MAGIC)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
-    if ((ret = oe_close(dir->fd)) == 0)
-    {
-        dir->magic = 0;
-    }
+    ret = oe_close(dir->fd);
+
     oe_free(dir);
+
 done:
+
     return ret;
 }
 
@@ -120,18 +107,10 @@ int oe_getdents(unsigned int fd, struct oe_dirent* dirp, unsigned int count)
     oe_device_t* file;
 
     if (!(file = oe_fdtable_get((int)fd, OE_DEVICE_TYPE_FILE)))
-    {
-        oe_errno = OE_EBADF;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EBADF);
 
     if (file->ops.fs->getdents == NULL)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     ret = (*file->ops.fs->getdents)(file, dirp, count);
 

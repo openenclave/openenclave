@@ -11,10 +11,13 @@
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/device/device.h>
 #include <openenclave/internal/device/fdtable.h>
+#include <openenclave/internal/device/raise.h>
 #include <openenclave/internal/time.h>
 #include <openenclave/internal/trace.h>
 #include "mount.h"
 #include "posix_t.h"
+
+#undef OE_TRACE_ERROR
 
 int oe_gethostname(char* name, size_t len)
 {
@@ -22,11 +25,7 @@ int oe_gethostname(char* name, size_t len)
     struct oe_utsname uts;
 
     if ((ret = oe_uname(&uts)) != 0)
-    {
-        OE_TRACE_ERROR("name=%s len=%ld ret=%d", name, len, ret);
-        ret = -1;
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     oe_strlcpy(name, uts.nodename, len);
     ret = 0;
@@ -41,11 +40,7 @@ int oe_getdomainname(char* name, size_t len)
     struct oe_utsname uts;
 
     if ((ret = oe_uname(&uts)) != 0)
-    {
-        OE_TRACE_ERROR("name=%s len=%ld ret=%d", name, len, ret);
-        ret = -1;
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
 #ifdef _GNU_SOURCE
     oe_strlcpy(name, uts.domainname, len);
@@ -69,11 +64,7 @@ char* oe_getcwd(char* buf, size_t size)
     bool locked = false;
 
     if (buf && size == 0)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (!buf)
     {
@@ -81,11 +72,7 @@ char* oe_getcwd(char* buf, size_t size)
         p = oe_malloc(n);
 
         if (!p)
-        {
-            oe_errno = OE_ENOMEM;
-            OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_ENOMEM);
     }
     else
     {
@@ -97,11 +84,7 @@ char* oe_getcwd(char* buf, size_t size)
     locked = true;
 
     if (oe_strlcpy(p, _cwd, n) >= n)
-    {
-        oe_errno = OE_ERANGE;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_ERANGE);
 
     oe_pthread_spin_unlock(&_lock);
     locked = false;
@@ -150,11 +133,7 @@ int oe_chdir(const char* path)
     locked = true;
 
     if (oe_strlcpy(_cwd, real_path, OE_PATH_MAX) >= OE_PATH_MAX)
-    {
-        oe_errno = OE_ENAMETOOLONG;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_ENAMETOOLONG);
 
     oe_pthread_spin_unlock(&_lock);
     locked = false;
@@ -272,29 +251,14 @@ ssize_t oe_read(int fd, void* buf, size_t count)
 {
     ssize_t ret = -1;
     oe_device_t* device;
-    ssize_t n;
 
     if (!(device = oe_fdtable_get(fd, OE_DEVICE_TYPE_NONE)))
-    {
-        OE_TRACE_ERROR("no device found fd=%d", fd);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EBADF);
 
     if (device->ops.base->read == NULL)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
-    // The action routine sets errno
-    if ((n = (*device->ops.base->read)(device, buf, count)) < 0)
-    {
-        OE_TRACE_ERROR("fd = %d n = %zd", fd, n);
-        goto done;
-    }
-
-    ret = n;
+    ret = (*device->ops.base->read)(device, buf, count);
 
 done:
     return ret;
@@ -308,20 +272,11 @@ ssize_t oe_write(int fd, const void* buf, size_t count)
     OE_TRACE_VERBOSE("fd=%d", fd);
 
     if (!(device = oe_fdtable_get(fd, OE_DEVICE_TYPE_NONE)))
-    {
-        oe_errno = OE_EBADF;
-        OE_TRACE_ERROR("oe_errno=%d fd=%d ", oe_errno, fd);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EBADF);
 
     if (device->ops.base->write == NULL)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
-    // The action routine sets errno
     ret = (*device->ops.base->write)(device, buf, count);
 
 done:
@@ -331,31 +286,16 @@ done:
 int oe_close(int fd)
 {
     int ret = -1;
-    int retval = -1;
     oe_device_t* device;
 
     if (!(device = oe_fdtable_get(fd, OE_DEVICE_TYPE_NONE)))
-    {
-        OE_TRACE_ERROR("no device found for fd=%d", fd);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EBADF);
 
     if (device->ops.base->close == NULL)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
-    if ((retval = (*device->ops.base->close)(device)) != 0)
-    {
-        OE_TRACE_ERROR("fd =%d retval=%d", fd, retval);
-        goto done;
-    }
-
-    oe_fdtable_clear(fd);
-
-    ret = 0;
+    if ((ret = (*device->ops.base->close)(device)) == 0)
+        oe_fdtable_clear(fd);
 
 done:
     return ret;
@@ -363,70 +303,47 @@ done:
 
 int oe_dup(int oldfd)
 {
+    int ret = -1;
     oe_device_t* old_dev;
-    oe_device_t* new_dev = NULL;
-    int newfd = -1;
-    int retval = -1;
+    oe_device_t* new_dev;
+    int newfd;
 
     if (!(old_dev = oe_fdtable_get(oldfd, OE_DEVICE_TYPE_NONE)))
-    {
-        oe_errno = OE_EBADF;
-        OE_TRACE_ERROR("oldfd=%d oe_errno=%d", oldfd, oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EBADF);
 
-    if ((retval = (*old_dev->ops.base->dup)(old_dev, &new_dev)) < 0)
-    {
-        oe_errno = OE_EBADF;
-        OE_TRACE_ERROR(
-            "oldfd=%d oe_errno=%d retval=%d", oldfd, oe_errno, retval);
-        newfd = -1;
-        goto done;
-    }
+    if ((*old_dev->ops.base->dup)(old_dev, &new_dev) == -1)
+        OE_RAISE_ERRNO(oe_errno);
 
-    if (!(newfd = oe_fdtable_assign(new_dev)))
-    {
-        // ATTN: release new_dev here.
-    }
+    if ((newfd = oe_fdtable_assign(new_dev)) == -1)
+        (*new_dev->ops.base->close)(new_dev);
+
+    ret = newfd;
 
 done:
 
-    return newfd;
+    return ret;
 }
 
 int oe_dup2(int oldfd, int newfd)
 {
     oe_device_t* old_dev;
     oe_device_t* new_dev;
-    oe_device_t* dev = NULL;
     int retval = -1;
 
     if (!(old_dev = oe_fdtable_get(oldfd, OE_DEVICE_TYPE_NONE)))
-    {
-        oe_errno = OE_EBADF;
-        OE_TRACE_ERROR("oldfd=%d oe_errno=%d", oldfd, oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EBADF);
 
-    if (!(new_dev = oe_fdtable_get(newfd, OE_DEVICE_TYPE_NONE)))
-    {
-        (*new_dev->ops.base->close)(new_dev);
-    }
+    /* Silently close any file associated with thie descritpor. */
+    if (oe_fdtable_get(newfd, OE_DEVICE_TYPE_NONE))
+        oe_close(newfd);
 
-    if ((retval = (*old_dev->ops.base->dup)(old_dev, &dev)) < 0)
-    {
-        oe_errno = OE_EBADF;
-        newfd = -1;
-        goto done;
-    }
+    if ((retval = (*old_dev->ops.base->dup)(old_dev, &new_dev)) < 0)
+        OE_RAISE_ERRNO(oe_errno);
 
-    if (oe_fdtable_set(newfd, dev) == -1)
+    if (oe_fdtable_set(newfd, new_dev) == -1)
     {
-        oe_errno = OE_EBADF;
-        OE_TRACE_ERROR("newfd=%d dev=%p oe_errno=%d", newfd, dev, oe_errno);
-        (*dev->ops.base->close)(dev);
-        newfd = -1;
-        goto done;
+        oe_close(newfd);
+        OE_RAISE_ERRNO(OE_EINVAL);
     }
 
 done:
@@ -441,18 +358,10 @@ int oe_rmdir(const char* pathname)
     char filepath[OE_PATH_MAX] = {0};
 
     if (!(fs = oe_mount_resolve(pathname, filepath)))
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     if (fs->ops.fs->rmdir == NULL)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     ret = (*fs->ops.fs->rmdir)(fs, filepath);
 
@@ -473,17 +382,9 @@ int oe_rmdir_d(uint64_t devid, const char* pathname)
         oe_device_t* dev;
 
         if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
-        {
-            oe_errno = OE_EINVAL;
-            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_EINVAL);
 
-        if ((ret = dev->ops.fs->rmdir(dev, pathname)) != 0)
-        {
-            OE_TRACE_ERROR(
-                "devid=%lu pathname=%s ret=%d", devid, pathname, ret);
-        }
+        ret = dev->ops.fs->rmdir(dev, pathname);
     }
 
 done:
@@ -499,32 +400,16 @@ int oe_link(const char* oldpath, const char* newpath)
     char newfilepath[OE_PATH_MAX] = {0};
 
     if (!(fs = oe_mount_resolve(oldpath, filepath)))
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     if (!(newfs = oe_mount_resolve(newpath, newfilepath)))
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     if (fs != newfs)
-    {
-        oe_errno = OE_EXDEV;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EXDEV);
 
     if (fs->ops.fs->link == NULL)
-    {
-        oe_errno = OE_EPERM;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     ret = (*fs->ops.fs->link)(fs, filepath, newfilepath);
 
@@ -545,22 +430,9 @@ int oe_link_d(uint64_t devid, const char* oldpath, const char* newpath)
         oe_device_t* dev;
 
         if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
-        {
-            oe_errno = OE_EINVAL;
-            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_EINVAL);
 
         ret = dev->ops.fs->link(dev, oldpath, newpath);
-        if (ret != 0)
-        {
-            OE_TRACE_ERROR(
-                "devid=%lu oldpath=%s newpath=%s ret=%d",
-                devid,
-                oldpath,
-                newpath,
-                ret);
-        }
     }
 
 done:
@@ -574,18 +446,10 @@ int oe_unlink(const char* pathname)
     char filepath[OE_PATH_MAX] = {0};
 
     if (!(fs = oe_mount_resolve(pathname, filepath)))
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     if (fs->ops.fs->unlink == NULL)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     ret = (*fs->ops.fs->unlink)(fs, filepath);
 
@@ -606,17 +470,9 @@ int oe_unlink_d(uint64_t devid, const char* pathname)
         oe_device_t* dev;
 
         if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
-        {
-            oe_errno = OE_EINVAL;
-            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_EINVAL);
 
-        if ((ret = dev->ops.fs->unlink(dev, pathname)) != 0)
-        {
-            OE_TRACE_ERROR(
-                "devid=%lu pathname=%s ret=%d", devid, pathname, ret);
-        }
+        ret = dev->ops.fs->unlink(dev, pathname);
     }
 
 done:
@@ -630,18 +486,10 @@ int oe_truncate(const char* pathname, oe_off_t length)
     char filepath[OE_PATH_MAX] = {0};
 
     if (!(fs = oe_mount_resolve(pathname, filepath)))
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     if (fs->ops.fs->truncate == NULL)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     ret = (*fs->ops.fs->truncate)(fs, filepath, length);
 
@@ -662,16 +510,9 @@ int oe_truncate_d(uint64_t devid, const char* path, oe_off_t length)
         oe_device_t* dev;
 
         if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
-        {
-            oe_errno = OE_EINVAL;
-            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_EINVAL);
 
-        if ((ret = dev->ops.fs->truncate(dev, path, length)) != 0)
-        {
-            OE_TRACE_ERROR("devid=%lu path=%s ret=%d", devid, path, ret);
-        }
+        ret = dev->ops.fs->truncate(dev, path, length);
     }
 
 done:
@@ -684,18 +525,10 @@ oe_off_t oe_lseek(int fd, oe_off_t offset, int whence)
     oe_device_t* file;
 
     if (!(file = oe_fdtable_get(fd, OE_DEVICE_TYPE_FILE)))
-    {
-        oe_errno = OE_EBADF;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EBADF);
 
     if (file->ops.fs->lseek == NULL)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     ret = (*file->ops.fs->lseek)(file, offset, whence);
 
@@ -709,11 +542,7 @@ ssize_t oe_readv(int fd, const struct oe_iovec* iov, int iovcnt)
     ssize_t nread = 0;
 
     if (fd < 0 || !iov)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     for (int i = 0; i < iovcnt; i++)
     {
@@ -721,11 +550,9 @@ ssize_t oe_readv(int fd, const struct oe_iovec* iov, int iovcnt)
         ssize_t n;
 
         n = oe_read(fd, p->iov_base, p->iov_len);
+
         if (n < 0)
-        {
-            OE_TRACE_ERROR("n = %ld", n);
             goto done;
-        }
 
         nread += n;
 
@@ -745,11 +572,7 @@ ssize_t oe_writev(int fd, const struct oe_iovec* iov, int iovcnt)
     ssize_t nwritten = 0;
 
     if (fd < 0 || !iov)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     for (int i = 0; i < iovcnt; i++)
     {
@@ -759,11 +582,7 @@ ssize_t oe_writev(int fd, const struct oe_iovec* iov, int iovcnt)
         n = oe_write(fd, p->iov_base, p->iov_len);
 
         if ((size_t)n != p->iov_len)
-        {
-            oe_errno = OE_EIO;
-            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_EIO);
 
         nwritten += n;
     }
@@ -781,18 +600,10 @@ int oe_access(const char* pathname, int mode)
     char suffix[OE_PATH_MAX];
 
     if (!(fs = oe_mount_resolve(pathname, suffix)))
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     if (fs->ops.fs->access == NULL)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     ret = (*fs->ops.fs->access)(fs, suffix, mode);
 
@@ -814,25 +625,13 @@ int oe_access_d(uint64_t devid, const char* pathname, int mode)
         struct oe_stat buf;
 
         if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
-        {
-            oe_errno = OE_EINVAL;
-            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_EINVAL);
 
         if (!pathname)
-        {
-            oe_errno = OE_EINVAL;
-            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_EINVAL);
 
         if (oe_stat(pathname, &buf) != 0)
-        {
-            oe_errno = OE_ENOENT;
-            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_ENOENT);
 
         ret = 0;
     }
