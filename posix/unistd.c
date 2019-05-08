@@ -267,8 +267,6 @@ ssize_t oe_write(int fd, const void* buf, size_t count)
     ssize_t ret = -1;
     oe_device_t* device;
 
-    OE_TRACE_VERBOSE("fd=%d", fd);
-
     if (!(device = oe_fdtable_get(fd, OE_DEVICE_TYPE_NONE)))
         OE_RAISE_ERRNO(OE_EBADF);
 

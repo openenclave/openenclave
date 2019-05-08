@@ -12,6 +12,7 @@
 #include <openenclave/internal/device/device.h>
 #include <openenclave/internal/device/raise.h>
 #include <openenclave/internal/print.h>
+#include <openenclave/internal/raise.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 
@@ -192,19 +193,9 @@ oe_result_t oe_set_thread_devid(uint64_t devid)
 {
     oe_result_t result = OE_UNEXPECTED;
 
-    if (oe_once(&_tls_device_once, _create_tls_device_key) != OE_OK)
-    {
-        OE_TRACE_ERROR("devid=%lu result=%s", devid, oe_result_str(result));
-        result = OE_FAILURE;
-        goto done;
-    }
+    OE_CHECK(oe_once(&_tls_device_once, _create_tls_device_key));
 
-    if (oe_thread_setspecific(_tls_device_key, (void*)devid) != OE_OK)
-    {
-        OE_TRACE_ERROR("devid=%lu result=%s", devid, oe_result_str(result));
-        result = OE_FAILURE;
-        goto done;
-    }
+    OE_CHECK(oe_thread_setspecific(_tls_device_key, (void*)devid));
 
     result = OE_OK;
 
@@ -216,19 +207,9 @@ oe_result_t oe_clear_thread_devid(void)
 {
     oe_result_t result = OE_UNEXPECTED;
 
-    if (oe_once(&_tls_device_once, _create_tls_device_key) != OE_OK)
-    {
-        OE_TRACE_ERROR("%s", oe_result_str(result));
-        result = OE_FAILURE;
-        goto done;
-    }
+    OE_CHECK(oe_once(&_tls_device_once, _create_tls_device_key));
 
-    if (oe_thread_setspecific(_tls_device_key, NULL) != OE_OK)
-    {
-        OE_TRACE_ERROR("%s", oe_result_str(result));
-        result = OE_FAILURE;
-        goto done;
-    }
+    OE_CHECK((oe_thread_setspecific(_tls_device_key, NULL)));
 
     result = OE_OK;
 

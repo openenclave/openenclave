@@ -10,8 +10,6 @@
 #include <openenclave/internal/device/raise.h>
 #include <openenclave/internal/trace.h>
 
-#undef OE_TRACE_ERROR
-
 char* oe_realpath(const char* path, char resolved_path[OE_PATH_MAX])
 {
     char* ret = NULL;

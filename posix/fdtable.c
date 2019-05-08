@@ -190,8 +190,6 @@ static oe_device_t* _get_fd_device(int fd)
     oe_spin_unlock(&_lock);
     locked = true;
 
-    OE_TRACE_INFO("fd=%d", fd);
-
     if (fd < 0 || fd >= (int)_table_size)
         OE_RAISE_ERRNO(OE_EBADF);
 
