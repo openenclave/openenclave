@@ -2,6 +2,7 @@
 *.o
 *.pem
 *.so
+*.swp
 
 .vs/
 .vscode/
