@@ -3,6 +3,8 @@
 
 add_subdirectory(hostfs)
 add_subdirectory(socket)
+add_subdirectory(send)
+add_subdirectory(sendmsg)
 
 if(UNIX)
 add_subdirectory(cpio)
@@ -11,8 +13,6 @@ add_subdirectory(fs)
 add_subdirectory(ids)
 add_subdirectory(polling)
 add_subdirectory(resolver)
-add_subdirectory(send)
-add_subdirectory(sendmsg)
 add_subdirectory(sgxfs)
 add_subdirectory(signal)
 endif()

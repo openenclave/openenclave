@@ -15,8 +15,8 @@
 #include <io.h>
 #include <stdint.h>
 #include <sys/stat.h>
-#include "windows.h"
 #include "winsock2.h"
+#include "windows.h"
 
 #include "posix_u.h"
 
@@ -472,8 +472,15 @@ oe_host_fd_t oe_posix_open_ocall(
         DWORD file_flags = (FILE_ATTRIBUTE_NORMAL | FILE_FLAG_POSIX_SEMANTICS);
 
         int nLen = MultiByteToWideChar(CP_UTF8, 0, pathname, -1, NULL, 0);
-        WCHAR* wpathname = (WCHAR*)(calloc((nLen + 1) * sizeof(WCHAR), 1));
-        MultiByteToWideChar(CP_UTF8, 0, pathname, -1, wpathname, nLen);
+        WCHAR* wpathname_buffer = (WCHAR*)(calloc((nLen + 1) * sizeof(WCHAR), 1));
+        MultiByteToWideChar(CP_UTF8, 0, pathname, -1, wpathname_buffer, nLen);
+
+        WCHAR *wpathname = wpathname_buffer;
+        // Undo abosolute path forcing. 
+        if (wpathname[0] == '/' && wpathname[2] == ':')
+        {
+             wpathname++; 
+        }
 
         if ((flags & OE_O_DIRECTORY) != 0)
         {
@@ -544,9 +551,9 @@ oe_host_fd_t oe_posix_open_ocall(
 
         ret = (oe_host_fd_t)h;
         _wchmod(wpathname, mode);
-        if (wpathname)
+        if (wpathname_buffer)
         {
-            free(wpathname);
+            free(wpathname_buffer);
         }
     }
 
@@ -750,8 +757,14 @@ int oe_posix_stat_ocall(const char* pathname, struct oe_stat* buf)
 {
     int ret = -1;
     int nLen = MultiByteToWideChar(CP_UTF8, 0, pathname, -1, NULL, 0);
-    WCHAR* wpathname = (WCHAR*)(calloc((nLen + 1) * sizeof(WCHAR), 1));
-    MultiByteToWideChar(CP_UTF8, 0, pathname, -1, wpathname, nLen);
+    WCHAR* wpathname_buffer = (WCHAR*)(calloc((nLen + 1) * sizeof(WCHAR), 1));
+    MultiByteToWideChar(CP_UTF8, 0, pathname, -1, wpathname_buffer, nLen);
+    WCHAR *wpathname = wpathname_buffer;
+    // Undo abosolute path forcing. 
+    if (wpathname[0] == '/' && wpathname[2] == ':')
+    {
+         wpathname++; 
+    }
 
     struct _stat64 winstat = {0};
 
@@ -782,9 +795,9 @@ int oe_posix_stat_ocall(const char* pathname, struct oe_stat* buf)
 
 done:
 
-    if (wpathname)
+    if (wpathname_buffer)
     {
-        free(wpathname);
+        free(wpathname_buffer);
     }
 
     return ret;
@@ -819,9 +832,15 @@ int oe_posix_mkdir_ocall(const char* pathname, oe_mode_t mode)
 {
     int ret = -1;
     int nLen = MultiByteToWideChar(CP_UTF8, 0, pathname, -1, NULL, 0);
-    WCHAR* wpathname = (WCHAR*)(calloc((nLen + 1) * sizeof(WCHAR), 1));
-    MultiByteToWideChar(CP_UTF8, 0, pathname, -1, wpathname, nLen);
+    WCHAR* wpathname_buffer = (WCHAR*)(calloc((nLen + 1) * sizeof(WCHAR), 1));
+    MultiByteToWideChar(CP_UTF8, 0, pathname, -1, wpathname_buffer, nLen);
 
+    WCHAR *wpathname = wpathname_buffer;
+    // Undo abosolute path forcing. 
+    if (wpathname[0] == '/' && wpathname[2] == ':')
+    {
+         wpathname++; 
+    }
     ret = _wmkdir(wpathname);
     if (ret < 0)
     {
@@ -830,9 +849,9 @@ int oe_posix_mkdir_ocall(const char* pathname, oe_mode_t mode)
     }
 
 done:
-    if (wpathname)
+    if (wpathname_buffer)
     {
-        free(wpathname);
+        free(wpathname_buffer);
     }
     return ret;
 }
@@ -866,7 +885,6 @@ done:
 **
 **==============================================================================
 */
-int WSAStartup(_In_ WORD wVersionRequested, _Out_ LPWSADATA lpWSAData);
 
 oe_host_fd_t oe_posix_socket_ocall(int domain, int type, int protocol)
 {
@@ -961,13 +979,14 @@ int oe_posix_bind_ocall(
 
 int oe_posix_listen_ocall(oe_host_fd_t sockfd, int backlog)
 {
-    oe_host_fd_t ret = -1;
+    int ret = -1;
 
     ret = listen((SOCKET)sockfd, backlog);
     if (ret == SOCKET_ERROR)
     {
         errno = _winsockerr_to_errno(WSAGetLastError());
     }
+    return ret;
 }
 
 ssize_t oe_posix_recvmsg_ocall(
@@ -982,7 +1001,22 @@ ssize_t oe_posix_recvmsg_ocall(
     size_t* msg_controllen_out,
     int flags)
 {
-    PANIC;
+    DWORD rslt = -1;
+    DWORD recv_bytes = 0;
+
+    WSABUF buf = {0};
+    buf.buf = (void*)msg_buf;
+    buf.len = (DWORD)msg_buflen;
+
+    rslt = WSARecv((SOCKET)sockfd, &buf, 1, &recv_bytes, &flags, NULL, NULL);
+    if (rslt == SOCKET_ERROR)
+    {
+        errno = _winsockerr_to_errno(WSAGetLastError());
+        return -1;
+    }
+
+    *msg_controllen_out = 0;
+    return recv_bytes;
 }
 
 ssize_t oe_posix_sendmsg_ocall(
@@ -995,7 +1029,21 @@ ssize_t oe_posix_sendmsg_ocall(
     size_t msg_controllen,
     int flags)
 {
-    PANIC;
+    DWORD rslt = -1;
+    DWORD sent_bytes = 0;
+
+    WSABUF buf = {0};
+    buf.buf = (void*)msg_buf;
+    buf.len = (DWORD)msg_buflen;
+
+    rslt = WSASend((SOCKET)sockfd, &buf, 1, &sent_bytes, flags, NULL, NULL);
+    if (rslt == SOCKET_ERROR)
+    {
+        errno = _winsockerr_to_errno(WSAGetLastError());
+	return -1;
+    }
+
+    return sent_bytes;
 }
 
 ssize_t oe_posix_recv_ocall(

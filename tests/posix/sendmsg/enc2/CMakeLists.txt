@@ -4,6 +4,7 @@
 oeedl_file(../sendmsg.edl enclave gen)
 
 add_executable(sendmsg_enc2 enc.c ../client.c ../server.c ${gen})
+maybe_build_using_clangw(sendmsg_enc2)
 
 target_include_directories(sendmsg_enc2 PRIVATE
     ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
