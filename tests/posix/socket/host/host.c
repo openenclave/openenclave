@@ -4,8 +4,13 @@
 #if !defined(_MSC_VER)
 
 // Visual C is allergic to gnu pragmas
+#if defined(__clang__)
+#pragma clang diagnostic ignored "-Wformat"
+#pragma clang diagnostic ignored "-Wshorten-64-to-32"
+#else
 #pragma GCC diagnostic ignored "-Wformat"
-#pragma GCC diagnostic ignored "-Wshorten-64-to-32"
+#pragma GCC diagnostic ignored "-Wconversion"
+#endif
 #endif
 
 #define OE_LIBC_SUPPRESS_DEPRECATIONS

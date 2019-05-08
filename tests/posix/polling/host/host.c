@@ -68,7 +68,7 @@ void* host_server_thread(void* arg)
         OE_TEST((connfd = accept(listenfd, NULL, NULL)) >= 0);
 
         n = write(connfd, TESTDATA, strlen(TESTDATA));
-        OE_TEST(n == strlen(TESTDATA));
+        OE_TEST(n == (int)strlen(TESTDATA));
         sleep(1);
 
         close(connfd);
