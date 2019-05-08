@@ -21,6 +21,7 @@
 #include <openenclave/corelibc/sys/utsname.h>
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/device/device.h>
+#include <openenclave/internal/device/raise.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/trace.h>
 #include "epoll.h"

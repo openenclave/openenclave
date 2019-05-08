@@ -7,10 +7,14 @@
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/unistd.h>
+#include <openenclave/internal/device/raise.h>
 #include <openenclave/internal/trace.h>
+
+#undef OE_TRACE_ERROR
 
 char* oe_realpath(const char* path, char resolved_path[OE_PATH_MAX])
 {
+    char* ret = NULL;
     char buf[OE_PATH_MAX];
     const char* in[OE_PATH_MAX];
     size_t nin = 0;
@@ -19,50 +23,28 @@ char* oe_realpath(const char* path, char resolved_path[OE_PATH_MAX])
     char resolved[OE_PATH_MAX];
 
     if (!path)
-    {
-        oe_errno = OE_EINVAL;
-        return NULL;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (path[0] == '/')
     {
         if (oe_strlcpy(buf, path, sizeof(buf)) >= sizeof(buf))
-        {
-            oe_errno = OE_ENAMETOOLONG;
-            OE_TRACE_ERROR("oe_errno=%d path=%s", oe_errno, path);
-            return NULL;
-        }
+            OE_RAISE_ERRNO(OE_ENAMETOOLONG);
     }
     else
     {
         char cwd[OE_PATH_MAX];
 
         if (!oe_getcwd(cwd, sizeof(cwd)))
-        {
-            OE_TRACE_ERROR("failed: path=%s", path);
-            return NULL;
-        }
+            OE_RAISE_ERRNO(OE_EINVAL);
 
         if (oe_strlcpy(buf, cwd, sizeof(buf)) >= sizeof(buf))
-        {
-            oe_errno = OE_ENAMETOOLONG;
-            OE_TRACE_ERROR("oe_errno=%d path=%s", oe_errno, path);
-            return NULL;
-        }
+            OE_RAISE_ERRNO(OE_ENAMETOOLONG);
 
         if (oe_strlcat(buf, "/", sizeof(buf)) >= sizeof(buf))
-        {
-            oe_errno = OE_ENAMETOOLONG;
-            OE_TRACE_ERROR("oe_errno=%d path=%s", oe_errno, path);
-            return NULL;
-        }
+            OE_RAISE_ERRNO(OE_ENAMETOOLONG);
 
         if (oe_strlcat(buf, path, sizeof(buf)) >= sizeof(buf))
-        {
-            oe_errno = OE_ENAMETOOLONG;
-            OE_TRACE_ERROR("oe_errno=%d path=%s", oe_errno, path);
-            return NULL;
-        }
+            OE_RAISE_ERRNO(OE_ENAMETOOLONG);
     }
 
     /* Split the path into elements. */
@@ -102,21 +84,12 @@ char* oe_realpath(const char* path, char resolved_path[OE_PATH_MAX])
         for (size_t i = 0; i < nout; i++)
         {
             if (oe_strlcat(resolved, out[i], OE_PATH_MAX) >= OE_PATH_MAX)
-            {
-                oe_errno = OE_ENAMETOOLONG;
-                OE_TRACE_ERROR("oe_errno=%d out[i]=%s", oe_errno, out[i]);
-                return NULL;
-            }
+                OE_RAISE_ERRNO(OE_ENAMETOOLONG);
 
             if (i != 0 && i + 1 != nout)
             {
                 if (oe_strlcat(resolved, "/", OE_PATH_MAX) >= OE_PATH_MAX)
-                {
-                    oe_errno = OE_ENAMETOOLONG;
-                    OE_TRACE_ERROR(
-                        "oe_errno=%d resolved=%s", oe_errno, resolved);
-                    return NULL;
-                }
+                    OE_RAISE_ERRNO(OE_ENAMETOOLONG);
             }
         }
     }
@@ -124,28 +97,24 @@ char* oe_realpath(const char* path, char resolved_path[OE_PATH_MAX])
     if (resolved_path)
     {
         if (oe_strlcpy(resolved_path, resolved, OE_PATH_MAX) >= OE_PATH_MAX)
-        {
-            oe_errno = OE_ENAMETOOLONG;
-            OE_TRACE_ERROR("oe_errno=%d resolved=%s", oe_errno, resolved);
-            return NULL;
-        }
+            OE_RAISE_ERRNO(OE_ENAMETOOLONG);
 
-        return resolved_path;
+        ret = resolved_path;
+        goto done;
     }
     else
     {
         char* p = oe_strdup(resolved);
 
         if (!p)
-        {
-            oe_errno = OE_ENOMEM;
-            OE_TRACE_ERROR("oe_errno=%d resolved=%s", oe_errno, resolved);
-        }
+            OE_RAISE_ERRNO(OE_ENOMEM);
 
-        return p;
+        ret = p;
+        goto done;
     }
 
-    return NULL;
+done:
+    return ret;
 }
 
 OE_NO_RETURN void oe_exit(int status)

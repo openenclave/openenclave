@@ -6,6 +6,7 @@
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/sys/select.h>
 #include <openenclave/corelibc/time.h>
+#include <openenclave/internal/device/raise.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/trace.h>
 #include "epoll.h"
@@ -129,10 +130,7 @@ int oe_select(
 
     epoll_fd = oe_epoll_create1(0);
     if (epoll_fd < 0)
-    {
-        OE_TRACE_ERROR("epoll_fd =%d", epoll_fd);
-        return epoll_fd;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     for (i = 0; i < nfds; i++)
     {
@@ -143,10 +141,7 @@ int oe_select(
 
         ret = oe_epoll_ctl(epoll_fd, OE_EPOLL_CTL_ADD, fd_list[i], &ev);
         if (ret < 0)
-        {
-            OE_TRACE_ERROR("ret=%d epoll_fd=%d", ret, epoll_fd);
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_EINVAL);
     }
 
     ret_fds = oe_epoll_wait(epoll_fd, rtn_ev, OE_FD_SETSIZE, timeout_ms);

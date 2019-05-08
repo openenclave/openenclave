@@ -3,6 +3,7 @@
 
 #include <openenclave/corelibc/sys/stat.h>
 #include <openenclave/internal/device/device.h>
+#include <openenclave/internal/device/raise.h>
 #include <openenclave/internal/trace.h>
 #include "mount.h"
 
@@ -13,18 +14,10 @@ int oe_stat(const char* pathname, struct oe_stat* buf)
     char filepath[OE_PATH_MAX] = {0};
 
     if (!(fs = oe_mount_resolve(pathname, filepath)))
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     if (fs->ops.fs->stat == NULL)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     ret = (*fs->ops.fs->stat)(fs, filepath, buf);
 
@@ -45,17 +38,9 @@ int oe_stat_d(uint64_t devid, const char* pathname, struct oe_stat* buf)
         oe_device_t* dev;
 
         if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
-        {
-            oe_errno = OE_EINVAL;
-            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_EINVAL);
 
-        if ((ret = dev->ops.fs->stat(dev, pathname, buf)) != 0)
-        {
-            OE_TRACE_ERROR(
-                "devid=%lu pathname=%s ret=%d", devid, pathname, ret);
-        }
+        ret = dev->ops.fs->stat(dev, pathname, buf);
     }
 
 done:
@@ -69,18 +54,10 @@ int oe_mkdir(const char* pathname, oe_mode_t mode)
     char filepath[OE_PATH_MAX] = {0};
 
     if (!(fs = oe_mount_resolve(pathname, filepath)))
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     if (fs->ops.fs->mkdir == NULL)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     ret = (*fs->ops.fs->mkdir)(fs, filepath, mode);
 
@@ -101,21 +78,9 @@ int oe_mkdir_d(uint64_t devid, const char* pathname, oe_mode_t mode)
         oe_device_t* dev;
 
         if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
-        {
-            oe_errno = OE_EINVAL;
-            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_EINVAL);
 
-        if ((ret = dev->ops.fs->mkdir(dev, pathname, mode)) != 0)
-        {
-            OE_TRACE_ERROR(
-                "devid=%lu pathname=%s mode=%d ret=%d",
-                devid,
-                pathname,
-                (int)mode,
-                ret);
-        }
+        ret = dev->ops.fs->mkdir(dev, pathname, mode);
     }
 
 done:

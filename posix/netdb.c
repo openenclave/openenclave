@@ -4,6 +4,7 @@
 #include <openenclave/corelibc/netdb.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/sys/socket.h>
+#include <openenclave/internal/device/raise.h>
 #include <openenclave/internal/device/resolver.h>
 #include <openenclave/internal/trace.h>
 
@@ -16,24 +17,13 @@ int oe_register_resolver(int resolver_priority, oe_resolver_t* presolver)
     int ret = -1;
 
     if (presolver == NULL)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno =%d  ", oe_errno);
-        ret = oe_errno;
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (resolver_priority >= (int)_resolver_table_len)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR(
-            "oe_errno =%d  : resolver_priority=%d _resolver_table_len=%ld",
-            oe_errno,
-            resolver_priority,
-            _resolver_table_len);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
+
     _resolver_table[resolver_priority] = presolver;
+
     ret = 0;
 done:
     return ret;
@@ -67,8 +57,6 @@ int oe_getaddrinfo(
             }
         }
     }
-
-    OE_TRACE_ERROR("oe_getaddrinfo() failed");
 
 done:
 
@@ -121,7 +109,7 @@ int oe_getnameinfo(
                 goto done;
         }
     }
-    OE_TRACE_ERROR("oe_getnameinfo failed");
+
 done:
     return (int)ret;
 }

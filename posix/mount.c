@@ -14,8 +14,6 @@
 #include <openenclave/internal/device/device.h>
 #include <openenclave/internal/device/raise.h>
 
-#undef OE_TRACE_ERROR
-
 #define MAX_MOUNT_TABLE_SIZE 64
 
 typedef struct _mount_point
@@ -133,21 +131,12 @@ int oe_mount(
 
     OE_UNUSED(data);
 
-    if (!target)
+    if (!target || !filesystemtype)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    /* Resolve the device and the devid if filesystemtype present. */
-    if (filesystemtype)
-    {
-        device = oe_find_device(filesystemtype, OE_DEVICE_TYPE_FILESYSTEM);
-
-        if (!device)
-            OE_RAISE_ERRNO_F(OE_EINVAL, "filesystemtype=%s", filesystemtype);
-    }
-
-    /* If the device has not been resolved. */
-    if (!device || device->type != OE_DEVICE_TYPE_FILESYSTEM)
-        OE_RAISE_ERRNO(OE_EINVAL);
+    /* Resolve the device for the given filesystemtype. */
+    if (!(device = oe_find_device(filesystemtype, OE_DEVICE_TYPE_FILESYSTEM)))
+        OE_RAISE_ERRNO_F(OE_EINVAL, "filesystemtype=%s", filesystemtype);
 
     /* Be sure the full_target directory exists (if not root). */
     if (oe_strcmp(target, "/") != 0)
@@ -182,21 +171,13 @@ int oe_mount(
     {
         retval = oe_strcmp(_mount_table[i].path, target);
         if (retval == 0)
-        {
-            oe_errno = OE_EEXIST;
-            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_EEXIST);
     }
 
     /* Clone the device. */
     retval = device->ops.fs->base.clone(device, &new_device);
     if (retval != 0)
-    {
-        oe_errno = OE_ENOMEM;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_ENOMEM);
 
     /* Assign and initialize new mount point. */
     {
@@ -206,11 +187,7 @@ int oe_mount(
         _mount_table[index].path = oe_malloc(len + 1);
 
         if (!_mount_table[index].path)
-        {
-            oe_errno = OE_ENOMEM;
-            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_ENOMEM);
 
         memcpy(_mount_table[index].path, target, len + 1);
         _mount_table[index].fs = new_device;
@@ -249,11 +226,7 @@ int oe_umount2(const char* target, int flags)
     OE_UNUSED(flags);
 
     if (!device || device->type != OE_DEVICE_TYPE_FILESYSTEM || !target)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     oe_spin_lock(&_lock);
     locked = true;
@@ -270,11 +243,7 @@ int oe_umount2(const char* target, int flags)
 
     /* If mount point not found. */
     if (index == (size_t)-1)
-    {
-        oe_errno = OE_ENOENT;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Remove the entry by swapping with the last entry. */
     {
@@ -287,10 +256,7 @@ int oe_umount2(const char* target, int flags)
         _mount_table_size--;
 
         if ((retval = fs->ops.fs->unmount(fs, target)) != 0)
-        {
-            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-            goto done;
-        }
+            OE_RAISE_ERRNO(oe_errno);
 
         fs->ops.fs->base.release(fs);
     }

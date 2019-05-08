@@ -3,6 +3,7 @@
 
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/internal/device/device.h>
+#include <openenclave/internal/device/raise.h>
 #include <openenclave/internal/trace.h>
 #include "mount.h"
 
@@ -15,32 +16,16 @@ int oe_rename(const char* oldpath, const char* newpath)
     char newfilepath[OE_PATH_MAX];
 
     if (!(fs = oe_mount_resolve(oldpath, filepath)))
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (!(newfs = oe_mount_resolve(newpath, newfilepath)))
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     if (fs != newfs)
-    {
-        oe_errno = OE_EXDEV;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EXDEV);
 
     if (fs->ops.fs->rename == NULL)
-    {
-        oe_errno = OE_EPERM;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     ret = (*fs->ops.fs->rename)(fs, filepath, newfilepath);
 
@@ -61,20 +46,16 @@ int oe_rename_d(uint64_t devid, const char* oldpath, const char* newpath)
         oe_device_t* dev;
 
         if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
-        {
-            oe_errno = OE_EINVAL;
-            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_EINVAL);
 
-        if ((ret = dev->ops.fs->rename(dev, oldpath, newpath)) != 0)
+        if ((ret = dev->ops.fs->rename(dev, oldpath, newpath)) == -1)
         {
-            OE_TRACE_ERROR(
-                "devid=%lu oldpath=%s newpath=%s ret=%d",
-                devid,
+            OE_RAISE_ERRNO_F(
+                oe_errno,
+                "ret=%d oldpath=%s newpath=%s",
+                ret,
                 oldpath,
-                newpath,
-                ret);
+                newpath);
         }
     }
 
