@@ -20,17 +20,21 @@ typedef struct _oe_epoll_ops
 {
     oe_device_ops_t base;
 
-    oe_device_t* (*epoll_create)(oe_device_t* epoll_device, int size);
+    oe_device_t* (*epoll_create)(oe_device_t* epfd_device, int size);
 
-    oe_device_t* (*epoll_create1)(oe_device_t* epoll_device, int flags);
+    oe_device_t* (*epoll_create1)(oe_device_t* epfd_device, int flags);
 
-    int (*epoll_ctl)(int epfd, int op, int fd, struct oe_epoll_event* event);
+    int (*epoll_ctl)(
+        oe_device_t* epfd_device,
+        int op,
+        int fd,
+        struct oe_epoll_event* event);
 
     int (*epoll_wait)(
-        int epfd,
+        oe_device_t* epfd_device,
         struct oe_epoll_event* events,
-        size_t maxevents,
-        int64_t timeout);
+        int maxevents,
+        int timeout);
 
 } oe_epoll_ops_t;
 

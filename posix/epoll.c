@@ -90,7 +90,6 @@ int oe_epoll_ctl(int epfd, int op, int fd, struct oe_epoll_event* event)
 {
     int ret = -1;
     oe_device_t* epoll;
-    oe_device_t* device;
 
     oe_errno = 0;
 
@@ -101,14 +100,7 @@ int oe_epoll_ctl(int epfd, int op, int fd, struct oe_epoll_event* event)
         goto done;
     }
 
-    if (!(device = oe_fdtable_get(fd, OE_DEVICE_TYPE_NONE)))
-    {
-        oe_errno = OE_EBADF;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
-
-    ret = (*epoll->ops.epoll->epoll_ctl)(epfd, op, fd, event);
+    ret = (*epoll->ops.epoll->epoll_ctl)(epoll, op, fd, event);
 
 done:
     return ret;
@@ -137,8 +129,7 @@ int oe_epoll_wait(
     }
 
     /* Wait until there are events. */
-    ret = (epoll->ops.epoll->epoll_wait)(
-        epfd, events, (size_t)maxevents, timeout);
+    ret = (epoll->ops.epoll->epoll_wait)(epoll, events, maxevents, timeout);
 
 done:
 

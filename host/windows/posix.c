@@ -15,8 +15,8 @@
 #include <io.h>
 #include <stdint.h>
 #include <sys/stat.h>
-#include "winsock2.h"
 #include "windows.h"
+#include "winsock2.h"
 
 #include "posix_u.h"
 
@@ -276,7 +276,6 @@ static DWORD _errno_to_winsockerr(int errno)
     return ERROR_INVALID_PARAMETER;
 }
 
-
 static int _winsockerr_to_errno(DWORD winsockerr)
 {
     struct errno_tab_entry* pent = errno2winsockerr;
@@ -299,78 +298,78 @@ static int _sockopt_to_winsock_opt(int level, int optname)
     (void)level;
     // table indexed by enclave socket opt expectations
     static const int sockopt_table[] = {
-        -1,     //  0
+        -1,           //  0
         SO_DEBUG,     //  1
         SO_REUSEADDR, // 2
         SO_TYPE,      // 3
-        SO_ERROR, //    4
+        SO_ERROR,     //    4
         SO_DONTROUTE, //    5
         SO_BROADCAST, //    6
-        SO_SNDBUF, //    7
-        SO_RCVBUF, //    8
-        -1, // SO_SNDBUFFORCE,   32
-        -1, // SO_RCVBUFFORCE,   33
+        SO_SNDBUF,    //    7
+        SO_RCVBUF,    //    8
+        -1,           // SO_SNDBUFFORCE,   32
+        -1,           // SO_RCVBUFFORCE,   33
         SO_KEEPALIVE, //    9
         SO_OOBINLINE, //    10
-        -1,  // SO_NO_CHECK, //    11
-        -1,  // SO_PRIORITY, //    12
-        SO_LINGER, //    13
-        -1,  // SO_BSDCOMPAT, //    14
-        -1,  // SO_REUSEPORT, //    15
-        -1,  // SO_PASSCRED, //    16
-        -1,  // SO_PEERCRED, //    17
-        SO_RCVLOWAT, //    18
-        SO_SNDLOWAT, //    19
-        SO_RCVTIMEO, //    20
-        SO_SNDTIMEO, //    21
-    
+        -1,           // SO_NO_CHECK, //    11
+        -1,           // SO_PRIORITY, //    12
+        SO_LINGER,    //    13
+        -1,           // SO_BSDCOMPAT, //    14
+        -1,           // SO_REUSEPORT, //    15
+        -1,           // SO_PASSCRED, //    16
+        -1,           // SO_PEERCRED, //    17
+        SO_RCVLOWAT,  //    18
+        SO_SNDLOWAT,  //    19
+        SO_RCVTIMEO,  //    20
+        SO_SNDTIMEO,  //    21
+
         /* Security levels - as per NRL IPv6 - don't actually do anything */
-        -1,  // SO_SECURITY_AUTHENTICATION, //        22
-        -1,  // SO_SECURITY_ENCRYPTION_TRANSPORT, //    23
-        -1,  // SO_SECURITY_ENCRYPTION_NETWORK, //        24
-        -1,  // SO_BINDTODEVICE, //    25
-    
+        -1, // SO_SECURITY_AUTHENTICATION, //        22
+        -1, // SO_SECURITY_ENCRYPTION_TRANSPORT, //    23
+        -1, // SO_SECURITY_ENCRYPTION_NETWORK, //        24
+        -1, // SO_BINDTODEVICE, //    25
+
         /* Socket filtering */
-        -1,  // SO_ATTACH_FILTER, //    26
-        -1,  // SO_DETACH_FILTER, //    27
-        -1,  // SO_PEERNAME, //        28
-        -1,  // SO_TIMESTAMP, //        29
+        -1,            // SO_ATTACH_FILTER, //    26
+        -1,            // SO_DETACH_FILTER, //    27
+        -1,            // SO_PEERNAME, //        28
+        -1,            // SO_TIMESTAMP, //        29
         SO_ACCEPTCONN, //        30
-        -1,  // SO_PEERSEC, //        31
-        -1,         // 33
-        -1,  // SO_PASSSEC, //        34
-        -1,  // SO_TIMESTAMPNS, //        35
-        -1,  // SO_MARK, //            36
-        -1,  // SO_TIMESTAMPING, //        37
-        -1,  // SO_PROTOCOL, //        38
-        -1,  // SO_DOMAIN, //        39
-        -1,  // SO_RXQ_OVFL, //             40
-        -1,  // SO_WIFI_STATUS, //        41
-        -1,  // SO_PEEK_OFF, //        42
-    
+        -1,            // SO_PEERSEC, //        31
+        -1,            // 33
+        -1,            // SO_PASSSEC, //        34
+        -1,            // SO_TIMESTAMPNS, //        35
+        -1,            // SO_MARK, //            36
+        -1,            // SO_TIMESTAMPING, //        37
+        -1,            // SO_PROTOCOL, //        38
+        -1,            // SO_DOMAIN, //        39
+        -1,            // SO_RXQ_OVFL, //             40
+        -1,            // SO_WIFI_STATUS, //        41
+        -1,            // SO_PEEK_OFF, //        42
+
         /* Instruct lower device to use last 4-bytes of skb data as FCS */
-        -1,  // SO_NOFCS, //        43
-        -1,  // SO_LOCK_FILTER, //        44
-        -1,  // SO_SELECT_ERR_QUEUE, //    45
-        -1,  // SO_BUSY_POLL, //        46
-        -1,  // SO_MAX_PACING_RATE, //    47
-        -1,  // SO_BPF_EXTENSIONS, //    48
-        -1,  // SO_INCOMING_CPU, //        49
-        -1,  // SO_ATTACH_BPF, //        50
-        -1,  // SO_ATTACH_REUSEPORT_CBPF, //    51
-        -1,  // SO_ATTACH_REUSEPORT_EBPF, //    52
-        -1,  // SO_CNX_ADVICE, //        53
+        -1, // SO_NOFCS, //        43
+        -1, // SO_LOCK_FILTER, //        44
+        -1, // SO_SELECT_ERR_QUEUE, //    45
+        -1, // SO_BUSY_POLL, //        46
+        -1, // SO_MAX_PACING_RATE, //    47
+        -1, // SO_BPF_EXTENSIONS, //    48
+        -1, // SO_INCOMING_CPU, //        49
+        -1, // SO_ATTACH_BPF, //        50
+        -1, // SO_ATTACH_REUSEPORT_CBPF, //    51
+        -1, // SO_ATTACH_REUSEPORT_EBPF, //    52
+        -1, // SO_CNX_ADVICE, //        53
         -1, //        54
-        -1,  // SO_MEMINFO, //        55
-        -1,  // SO_INCOMING_NAPI_ID, //    56
-        -1,  // SO_COOKIE, //        57
-        -1,  // SO_PEERGROUPS, //        59
-        -1,  // SO_ZEROCOPY, //        60
+        -1, // SO_MEMINFO, //        55
+        -1, // SO_INCOMING_NAPI_ID, //    56
+        -1, // SO_COOKIE, //        57
+        -1, // SO_PEERGROUPS, //        59
+        -1, // SO_ZEROCOPY, //        60
     };
 
     if (optname < 0)
         return -1;
-    if (optname >= sizeof(sockopt_table)/sizeof(sockopt_table[0]))
+    if (optname >= sizeof(sockopt_table) / sizeof(sockopt_table[0]))
         return -1;
 
     return sockopt_table[optname];
@@ -378,13 +377,13 @@ static int _sockopt_to_winsock_opt(int level, int optname)
 
 static int _sockoptlevel_to_winsock_optlevel(int level)
 {
-    switch(level)
+    switch (level)
     {
-    case OE_SOL_SOCKET:
-        return SOL_SOCKET;
+        case OE_SOL_SOCKET:
+            return SOL_SOCKET;
 
-    default:
-        return -1;
+        default:
+            return -1;
     }
 }
 /*
@@ -1028,7 +1027,13 @@ ssize_t oe_posix_recvfrom_ocall(
     ssize_t ret = -1;
     int fromlen = (int)addrlen_in;
 
-    ret = recvfrom((SOCKET)sockfd, buf, (int)len, flags, (struct sockaddr *)src_addr, &fromlen);
+    ret = recvfrom(
+        (SOCKET)sockfd,
+        buf,
+        (int)len,
+        flags,
+        (struct sockaddr*)src_addr,
+        &fromlen);
     if (ret == SOCKET_ERROR)
     {
         errno = _winsockerr_to_errno(WSAGetLastError());
@@ -1068,7 +1073,13 @@ ssize_t oe_posix_sendto_ocall(
 {
     ssize_t ret = -1;
 
-    ret = sendto((SOCKET)sockfd, buf, (int)len, flags, (const struct sockaddr *)src_addr, (int)addrlen);
+    ret = sendto(
+        (SOCKET)sockfd,
+        buf,
+        (int)len,
+        flags,
+        (const struct sockaddr*)src_addr,
+        (int)addrlen);
     if (ret == SOCKET_ERROR)
     {
         errno = _winsockerr_to_errno(WSAGetLastError());
@@ -1098,14 +1109,14 @@ int oe_posix_setsockopt_ocall(
     int winsock_optname = _sockopt_to_winsock_opt(level, optname);
     int winsock_optlevel = _sockoptlevel_to_winsock_optlevel(level);
 
-
     if (winsock_optname <= 0)
     {
         errno = OE_EINVAL;
         return ret;
     }
     // We lose. The option values are gratutiously juggled. Have to translate
-    ret = setsockopt((SOCKET)sockfd, winsock_optlevel, winsock_optname, optval, optlen);
+    ret = setsockopt(
+        (SOCKET)sockfd, winsock_optlevel, winsock_optname, optval, optlen);
     if (ret == SOCKET_ERROR)
     {
         errno = _winsockerr_to_errno(WSAGetLastError());
@@ -1127,8 +1138,7 @@ int oe_posix_getsockopt_ocall(
 
     // ATTN: I'm trusting getsockopt not to make funny here. IT may or may not.
     // If it does, we will have to translate the args.
-    ret = getsockopt(
-        (SOCKET)sockfd, level, optname, optval, &optlen);
+    ret = getsockopt((SOCKET)sockfd, level, optname, optval, &optlen);
     if (ret == SOCKET_ERROR)
     {
         errno = _winsockerr_to_errno(WSAGetLastError());

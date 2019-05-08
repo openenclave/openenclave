@@ -8,7 +8,10 @@
 typedef int socklen_t;
 typedef SOCKET socket_t;
 
-static void sleep(int n) { Sleep(n*1000); }
+static void sleep(int n)
+{
+    Sleep(n * 1000);
+}
 #else
 #include <arpa/inet.h>
 #include <errno.h>
@@ -33,7 +36,7 @@ void run_client(uint16_t port)
 
 #if defined(WINDOWS_HOST)
     static WSADATA wsadata = {0};
-    WSAStartup(MAKEWORD(2,2), &wsadata);
+    WSAStartup(MAKEWORD(2, 2), &wsadata);
 #endif
 
     /* Create the client socket. */
@@ -84,7 +87,6 @@ void run_client(uint16_t port)
     {
         OE_TEST("write() failed" == NULL);
     }
-
 
 #if defined(WINDOWS_HOST)
     if (!CloseHandle((HANDLE)sd))

@@ -50,16 +50,6 @@ static epoll_t* _cast_epoll(const oe_device_t* device)
     return epoll;
 }
 
-static epoll_t* _get_epoll(int epfd)
-{
-    oe_device_t* dev = oe_fdtable_get(epfd, OE_DEVICE_TYPE_EPOLL);
-
-    if (!dev)
-        return NULL;
-
-    return _cast_epoll(dev);
-}
-
 static int _map_reserve(epoll_t* epoll, size_t new_capacity)
 {
     int ret = -1;
@@ -227,10 +217,9 @@ done:
     return ret;
 }
 
-static int _epoll_ctl_add(int epfd, int fd, struct oe_epoll_event* event)
+static int _epoll_ctl_add(epoll_t* epoll, int fd, struct oe_epoll_event* event)
 {
     int ret = -1;
-    epoll_t* epoll = _get_epoll(epfd);
     oe_device_t* dev = oe_fdtable_get(fd, OE_DEVICE_TYPE_NONE);
     oe_host_fd_t host_epfd;
     oe_host_fd_t host_fd;
@@ -240,7 +229,7 @@ static int _epoll_ctl_add(int epfd, int fd, struct oe_epoll_event* event)
     oe_errno = 0;
 
     /* Check parameters. */
-    if (!epoll || !dev || !event || epfd < 0)
+    if (!epoll || !dev || !event)
     {
         oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
@@ -299,10 +288,9 @@ done:
     return ret;
 }
 
-static int _epoll_ctl_mod(int epfd, int fd, struct oe_epoll_event* event)
+static int _epoll_ctl_mod(epoll_t* epoll, int fd, struct oe_epoll_event* event)
 {
     int ret = -1;
-    epoll_t* epoll = _get_epoll(epfd);
     oe_device_t* dev = oe_fdtable_get(fd, OE_DEVICE_TYPE_NONE);
     oe_host_fd_t host_epfd;
     oe_host_fd_t host_fd;
@@ -312,7 +300,7 @@ static int _epoll_ctl_mod(int epfd, int fd, struct oe_epoll_event* event)
     oe_errno = 0;
 
     /* Check parameters. */
-    if (!epoll || !dev || !event || epfd < 0)
+    if (!epoll || !dev || !event)
     {
         oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
@@ -383,10 +371,9 @@ done:
     return ret;
 }
 
-static int _epoll_ctl_del(int epfd, int fd)
+static int _epoll_ctl_del(epoll_t* epoll, int fd)
 {
     int ret = -1;
-    epoll_t* epoll = _get_epoll(epfd);
     oe_device_t* dev = oe_fdtable_get(fd, OE_DEVICE_TYPE_NONE);
     oe_host_fd_t host_epfd;
     oe_host_fd_t host_fd;
@@ -395,7 +382,7 @@ static int _epoll_ctl_del(int epfd, int fd)
     oe_errno = 0;
 
     /* Check parameters. */
-    if (!epoll || !dev || epfd < 0)
+    if (!epoll || !dev)
     {
         oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
@@ -459,18 +446,32 @@ done:
     return ret;
 }
 
-static int _epoll_ctl(int epfd, int op, int fd, struct oe_epoll_event* event)
+static int _epoll_ctl(
+    oe_device_t* device,
+    int op,
+    int fd,
+    struct oe_epoll_event* event)
 {
+    int ret = -1;
+    epoll_t* epoll = _cast_epoll(device);
+
+    if (!epoll)
+    {
+        oe_errno = OE_EINVAL;
+        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
+        goto done;
+    }
+
     switch (op)
     {
         case OE_EPOLL_CTL_ADD:
-            return _epoll_ctl_add(epfd, fd, event);
+            return _epoll_ctl_add(epoll, fd, event);
 
         case OE_EPOLL_CTL_MOD:
-            return _epoll_ctl_mod(epfd, fd, event);
+            return _epoll_ctl_mod(epoll, fd, event);
 
         case OE_EPOLL_CTL_DEL:
-            return _epoll_ctl_del(epfd, fd);
+            return _epoll_ctl_del(epoll, fd);
 
         default:
         {
@@ -479,21 +480,23 @@ static int _epoll_ctl(int epfd, int op, int fd, struct oe_epoll_event* event)
             return -1;
         }
     }
+
+    ret = 0;
+
+done:
+    return ret;
 }
 
 static int _epoll_wait(
-    int epoll_fd,
+    oe_device_t* device,
     struct oe_epoll_event* events,
-    size_t maxevents,
-    int64_t timeout)
+    int maxevents,
+    int timeout)
 {
     int ret = -1;
     int retval;
-    epoll_t* epoll =
-        _cast_epoll(oe_fdtable_get(epoll_fd, OE_DEVICE_TYPE_EPOLL));
+    epoll_t* epoll = _cast_epoll(device);
     oe_host_fd_t host_epfd = -1;
-
-    OE_UNUSED(timeout);
 
     if (!epoll || !events || maxevents <= 0)
     {
@@ -520,11 +523,8 @@ static int _epoll_wait(
     }
 
     if (oe_posix_epoll_wait_ocall(
-            &retval,
-            host_epfd,
-            events,
-            (unsigned int)maxevents,
-            (int)timeout) != OE_OK)
+            &retval, host_epfd, events, (unsigned int)maxevents, timeout) !=
+        OE_OK)
     {
         oe_errno = OE_EINVAL;
         OE_TRACE_ERROR("oe_errno=%d", oe_errno);
@@ -533,7 +533,7 @@ static int _epoll_wait(
 
     if (retval > 0)
     {
-        if ((size_t)retval > maxevents)
+        if (retval > maxevents)
         {
             oe_errno = OE_EINVAL;
             OE_TRACE_ERROR("oe_errno=%d", oe_errno);

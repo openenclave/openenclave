@@ -7,7 +7,10 @@
 #include <windows.h>
 typedef int socklen_t;
 
-static void sleep(int n) { Sleep(n*1000); }
+static void sleep(int n)
+{
+    Sleep(n * 1000);
+}
 typedef SOCKET socket_t;
 #include <stdbool.h>
 #include <stdio.h>
@@ -16,15 +19,14 @@ typedef SOCKET socket_t;
 #include <arpa/inet.h>
 #include <errno.h>
 #include <netinet/in.h>
-#include <sys/socket.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/socket.h>
 #include <unistd.h>
 typedef int socket_t;
 #endif
 #include <openenclave/internal/tests.h>
-
 
 void oe_abort(void);
 
@@ -37,7 +39,7 @@ void run_server(uint16_t port)
 
 #if defined(WINDOWS_HOST)
     static WSADATA wsadata = {0};
-    WSAStartup(MAKEWORD(2,2), &wsadata);
+    WSAStartup(MAKEWORD(2, 2), &wsadata);
 #endif
 
     /* Create the listener socket. */
@@ -51,7 +53,12 @@ void run_server(uint16_t port)
         const int opt = 1;
         const socklen_t opt_len = sizeof(opt);
 
-        if (setsockopt(listen_sd, SOL_SOCKET, SO_REUSEADDR, (const char *)&opt, opt_len) != 0)
+        if (setsockopt(
+                listen_sd,
+                SOL_SOCKET,
+                SO_REUSEADDR,
+                (const char*)&opt,
+                opt_len) != 0)
         {
             OE_TEST("setsockopt() failed" == NULL);
         }
