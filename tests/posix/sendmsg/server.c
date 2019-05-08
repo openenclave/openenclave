@@ -4,11 +4,14 @@
 #include "server.h"
 #if defined(WINDOWS_HOST)
 #pragma warning(disable : 4005)
-#include <winsock2.h>
 #include <windows.h>
+#include <winsock2.h>
 typedef int socklen_t;
 
-static void sleep(int n) { Sleep(n*1000); }
+static void sleep(int n)
+{
+    Sleep(n * 1000);
+}
 typedef SOCKET socket_t;
 #include <stdbool.h>
 #include <stdio.h>
@@ -17,10 +20,10 @@ typedef SOCKET socket_t;
 #include <arpa/inet.h>
 #include <errno.h>
 #include <netinet/in.h>
-#include <sys/socket.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/socket.h>
 #include <unistd.h>
 typedef int socket_t;
 #endif
@@ -36,7 +39,7 @@ void run_server(uint16_t port)
     bool quit = false;
 
     static WSADATA wsadata = {0};
-    WSAStartup(MAKEWORD(2,2), &wsadata);
+    WSAStartup(MAKEWORD(2, 2), &wsadata);
 
     /* Create the listener socket. */
     if ((listen_sd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
@@ -49,7 +52,12 @@ void run_server(uint16_t port)
         const int opt = 1;
         const socklen_t opt_len = sizeof(opt);
 
-        if (setsockopt(listen_sd, SOL_SOCKET, SO_REUSEADDR, (const char*)&opt, opt_len) != 0)
+        if (setsockopt(
+                listen_sd,
+                SOL_SOCKET,
+                SO_REUSEADDR,
+                (const char*)&opt,
+                opt_len) != 0)
         {
             OE_TEST("setsockopt() failed" == NULL);
         }
@@ -104,13 +112,20 @@ void run_server(uint16_t port)
 
             msg.lpBuffers = &iov;
             msg.dwBufferCount = 1;
-	    msg.Control.buf = msg_control_buf;
+            msg.Control.buf = msg_control_buf;
             msg.Control.len = sizeof(msg_control_buf);
 
-            if (WSARecv(client_sd, msg.lpBuffers, msg.dwBufferCount, &n, &msg.dwFlags, NULL, NULL) != 0)
+            if (WSARecv(
+                    client_sd,
+                    msg.lpBuffers,
+                    msg.dwBufferCount,
+                    &n,
+                    &msg.dwFlags,
+                    NULL,
+                    NULL) != 0)
             {
-	        DWORD err = WSAGetLastError();
-		printf("recvmsg failed err = %d\n", err);
+                DWORD err = WSAGetLastError();
+                printf("recvmsg failed err = %d\n", err);
                 OE_TEST("recvmsg() failed" == NULL);
             }
             iov.len = n;
@@ -129,10 +144,17 @@ void run_server(uint16_t port)
                 }
 
                 DWORD bytes_sent = 0;
-                if (WSASend(client_sd, msg.lpBuffers, msg.dwBufferCount, &bytes_sent, 0, NULL, NULL) != 0)
+                if (WSASend(
+                        client_sd,
+                        msg.lpBuffers,
+                        msg.dwBufferCount,
+                        &bytes_sent,
+                        0,
+                        NULL,
+                        NULL) != 0)
                 {
-	            DWORD err = WSAGetLastError();
-		    printf("sendmsg failed err = %d\n", err);
+                    DWORD err = WSAGetLastError();
+                    printf("sendmsg failed err = %d\n", err);
                     OE_TEST("sendmsg() failed" == NULL);
                 }
             }
@@ -242,9 +264,9 @@ void run_server(uint16_t port)
                 }
 
                 if (sendmsg(client_sd, &msg, 0) != n)
-		{
+                {
                     OE_TEST("sendmsg() failed" == NULL);
-		}
+                }
             }
         }
     }

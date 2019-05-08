@@ -62,8 +62,8 @@ void run_test(void* (*client_proc)(void*), void* (*server_proc)(void*))
     void* ret;
 
 #if defined(_WIN32)
-    server =
-         CreateThread(NULL, 0, ( LPTHREAD_START_ROUTINE )server_proc, NULL, 0, NULL);
+    server = CreateThread(
+        NULL, 0, (LPTHREAD_START_ROUTINE)server_proc, NULL, 0, NULL);
     OE_TEST(server != INVALID_HANDLE_VALUE);
 #else
     if (pthread_create(&server, NULL, server_proc, NULL) != 0)
@@ -75,8 +75,8 @@ void run_test(void* (*client_proc)(void*), void* (*server_proc)(void*))
     sleep(1);
 
 #if defined(_WIN32)
-    client =
-         CreateThread(NULL, 0, ( LPTHREAD_START_ROUTINE ) client_proc, NULL, 0, NULL);
+    client = CreateThread(
+        NULL, 0, (LPTHREAD_START_ROUTINE)client_proc, NULL, 0, NULL);
     OE_TEST(client != INVALID_HANDLE_VALUE);
 #else
     if (pthread_create(&client, NULL, client_proc, NULL) != 0)

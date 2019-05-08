@@ -4,12 +4,15 @@
 #include "client.h"
 #if defined(WINDOWS_HOST)
 #pragma warning(disable : 4005)
-#include <winsock2.h>
 #include <windows.h>
+#include <winsock2.h>
 typedef int socklen_t;
 typedef SOCKET socket_t;
 
-static void sleep(int n) { Sleep(n*1000); }
+static void sleep(int n)
+{
+    Sleep(n * 1000);
+}
 #else
 #include <arpa/inet.h>
 #include <errno.h>
@@ -31,7 +34,7 @@ void run_client(uint16_t port)
     socket_t sd;
 
     static WSADATA wsadata = {0};
-    WSAStartup(MAKEWORD(2,2), &wsadata);
+    WSAStartup(MAKEWORD(2, 2), &wsadata);
 
     /* Create the client socket. */
     if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
@@ -104,9 +107,16 @@ void run_client(uint16_t port)
         {
             DWORD bytes_sent = 0;
             msg_send.lpBuffers = (WSABUF*)iov;
-            msg_send.dwBufferCount = 4; //iovlen;
+            msg_send.dwBufferCount = 4; // iovlen;
 
-            if (WSASend(sd, msg_send.lpBuffers, msg_send.dwBufferCount, &bytes_sent, 0, NULL, NULL) != 0)
+            if (WSASend(
+                    sd,
+                    msg_send.lpBuffers,
+                    msg_send.dwBufferCount,
+                    &bytes_sent,
+                    0,
+                    NULL,
+                    NULL) != 0)
             {
                 DWORD err = WSAGetLastError();
                 printf("sendmsg failed err = %d\n", err);
@@ -132,7 +142,14 @@ void run_client(uint16_t port)
             msg_recv.lpBuffers = (WSABUF*)iov_buf;
             msg_recv.dwBufferCount = iovlen;
 
-            if (WSARecv(sd, msg_recv.lpBuffers, msg_recv.dwBufferCount, &bytes_recvd,  &msg_recv.dwFlags, NULL, NULL) != 0)
+            if (WSARecv(
+                    sd,
+                    msg_recv.lpBuffers,
+                    msg_recv.dwBufferCount,
+                    &bytes_recvd,
+                    &msg_recv.dwFlags,
+                    NULL,
+                    NULL) != 0)
             {
                 DWORD err = WSAGetLastError();
                 printf("recvmsg failed err = %d\n", err);
@@ -144,7 +161,6 @@ void run_client(uint16_t port)
 
         /* Compare the message sent with the message received. */
         {
-
             OE_TEST(msg_send.dwBufferCount == msg_send.dwBufferCount);
 
             for (DWORD i = 0; i < msg_send.dwBufferCount; i++)
@@ -178,7 +194,8 @@ void run_client(uint16_t port)
         msg.dwBufferCount = iovlen;
 
         DWORD m = 0;
-        if (WSASend(sd, msg.lpBuffers, msg.dwBufferCount, &m,  0, NULL, NULL) != 0)
+        if (WSASend(sd, msg.lpBuffers, msg.dwBufferCount, &m, 0, NULL, NULL) !=
+            0)
         {
             OE_TEST("sendmsg() failed" == NULL);
         }

@@ -15,8 +15,8 @@
 #include <io.h>
 #include <stdint.h>
 #include <sys/stat.h>
-#include "winsock2.h"
 #include "windows.h"
+#include "winsock2.h"
 
 #include "posix_u.h"
 
@@ -472,14 +472,15 @@ oe_host_fd_t oe_posix_open_ocall(
         DWORD file_flags = (FILE_ATTRIBUTE_NORMAL | FILE_FLAG_POSIX_SEMANTICS);
 
         int nLen = MultiByteToWideChar(CP_UTF8, 0, pathname, -1, NULL, 0);
-        WCHAR* wpathname_buffer = (WCHAR*)(calloc((nLen + 1) * sizeof(WCHAR), 1));
+        WCHAR* wpathname_buffer =
+            (WCHAR*)(calloc((nLen + 1) * sizeof(WCHAR), 1));
         MultiByteToWideChar(CP_UTF8, 0, pathname, -1, wpathname_buffer, nLen);
 
-        WCHAR *wpathname = wpathname_buffer;
-        // Undo abosolute path forcing. 
+        WCHAR* wpathname = wpathname_buffer;
+        // Undo abosolute path forcing.
         if (wpathname[0] == '/' && wpathname[2] == ':')
         {
-             wpathname++; 
+            wpathname++;
         }
 
         if ((flags & OE_O_DIRECTORY) != 0)
@@ -759,11 +760,11 @@ int oe_posix_stat_ocall(const char* pathname, struct oe_stat* buf)
     int nLen = MultiByteToWideChar(CP_UTF8, 0, pathname, -1, NULL, 0);
     WCHAR* wpathname_buffer = (WCHAR*)(calloc((nLen + 1) * sizeof(WCHAR), 1));
     MultiByteToWideChar(CP_UTF8, 0, pathname, -1, wpathname_buffer, nLen);
-    WCHAR *wpathname = wpathname_buffer;
-    // Undo abosolute path forcing. 
+    WCHAR* wpathname = wpathname_buffer;
+    // Undo abosolute path forcing.
     if (wpathname[0] == '/' && wpathname[2] == ':')
     {
-         wpathname++; 
+        wpathname++;
     }
 
     struct _stat64 winstat = {0};
@@ -835,11 +836,11 @@ int oe_posix_mkdir_ocall(const char* pathname, oe_mode_t mode)
     WCHAR* wpathname_buffer = (WCHAR*)(calloc((nLen + 1) * sizeof(WCHAR), 1));
     MultiByteToWideChar(CP_UTF8, 0, pathname, -1, wpathname_buffer, nLen);
 
-    WCHAR *wpathname = wpathname_buffer;
-    // Undo abosolute path forcing. 
+    WCHAR* wpathname = wpathname_buffer;
+    // Undo abosolute path forcing.
     if (wpathname[0] == '/' && wpathname[2] == ':')
     {
-         wpathname++; 
+        wpathname++;
     }
     ret = _wmkdir(wpathname);
     if (ret < 0)
@@ -1040,7 +1041,7 @@ ssize_t oe_posix_sendmsg_ocall(
     if (rslt == SOCKET_ERROR)
     {
         errno = _winsockerr_to_errno(WSAGetLastError());
-	return -1;
+        return -1;
     }
 
     return sent_bytes;
