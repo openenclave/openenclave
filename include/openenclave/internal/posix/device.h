@@ -78,7 +78,8 @@ int oe_remove_device(uint64_t devid);
 
 #define OE_CALL_EPOLL(FUNC, DEV, ...) __OE_CALL(epoll, FUNC, DEV, ##__VA_ARGS__)
 
-#define OE_CALL_EVENTFD(FUNC, DEV, ...) __OE_CALL(eventfd, FUNC, DEV, ##__VA_ARGS__)
+#define OE_CALL_EVENTFD(FUNC, DEV, ...) \
+    __OE_CALL(eventfd, FUNC, DEV, ##__VA_ARGS__)
 
 OE_EXTERNC_END
 
