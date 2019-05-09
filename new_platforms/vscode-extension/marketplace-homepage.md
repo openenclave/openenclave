@@ -185,24 +185,6 @@ data to Microsoft, you can set the `telemetry.enableTelemetry` setting to `false
 ## Known Issues
 
 * Building SGX enclaves is not currently supported.
-* On Linux, for Edge projects, you will need to enable cross-building.
-
-    * Enable docker cross-building on Ubuntu 19.04 and 18.10 by:
-
-        ```bash
-        sudo apt-get install -y qemu qemu-user-static qemu-user binfmt-support
-        ```
-
-    * Enable docker cross-building on Ubuntu 18.04 and 16.04 by:
-
-        ```bash
-        sudo apt-get install -y qemu qemu-user-static qemu-user binfmt-support
-        sudo mkdir -p /lib/binfmt.d
-        sudo sh -c 'echo :qemu-arm:M::\\x7fELF\\x01\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x02\\x00\\x28\\x00:\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\xfe\\xff\\xff\\xff:/usr/bin/qemu-arm-static:F > /lib/binfmt.d/qemu-arm-static.conf'
-        sudo sh -c 'echo :qemu-aarch64:M::\\x7fELF\\x02\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x02\\x00\\xb7\\x00:\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\xfe\\xff\\xff\\xff:/usr/bin/qemu-aarch64-static:F > /lib/binfmt.d/qemu-aarch64-static.conf'
-        sudo systemctl restart systemd-binfmt.service
-        ```
-
 * We've had reports that downloading the SDK from git can be slow from within the extension. To work around any issue, you can run these commands
     * Linux:
         
