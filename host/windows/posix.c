@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved)
 // Licensed under the MIT License.
 
 /*
@@ -12,6 +12,7 @@
 **==============================================================================
 */
 
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <io.h>
 #include <stdint.h>
 #include <sys/stat.h>
@@ -24,6 +25,7 @@
 
 #include "openenclave/corelibc/errno.h"
 #include "openenclave/corelibc/fcntl.h"
+#include "openenclave/corelibc/sys/epoll.h"
 
 #undef errno
 static __declspec(thread) int errno = 0;
@@ -388,6 +390,72 @@ static int _sockoptlevel_to_winsock_optlevel(int level)
             return -1;
     }
 }
+
+
+long epoll_event_to_win_network_event(epoll_events)
+
+{
+    long ret = FD_ALL_EVENTS; //0;
+
+    if (OE_EPOLLIN&epoll_events) 
+    {
+        ret |= FD_READ;
+    }
+    if (OE_EPOLLPRI &epoll_events)
+    {
+        ret |= FD_READ | FD_WRITE | FD_CLOSE;
+    }
+    if (OE_EPOLLOUT &epoll_events)
+    {
+        ret |= FD_WRITE;
+    }
+    if (OE_EPOLLRDNORM &epoll_events)
+    {
+        ret |= FD_READ;
+    }
+    if (OE_EPOLLRDBAND &epoll_events)
+    {
+        ret |= FD_READ | FD_OOB;
+    }
+    if (OE_EPOLLWRNORM &epoll_events)
+    {
+        ret |= FD_WRITE;
+    }
+    if (OE_EPOLLWRBAND &epoll_events)
+    {
+        ret |= FD_WRITE | FD_OOB;
+    }
+    if (OE_EPOLLMSG &epoll_events)
+    {
+    }
+    if (OE_EPOLLERR &epoll_events)
+    {
+        ret |= FD_CLOSE;
+    }
+    if (OE_EPOLLHUP &epoll_events)
+    {
+        ret |= FD_CLOSE;
+    }
+    if (OE_EPOLLRDHUP &epoll_events)
+    {
+        ret |= FD_CLOSE;
+    }
+    if (OE_EPOLLEXCLUSIVE &epoll_events)
+    {
+    }
+    if (OE_EPOLLWAKEUP &epoll_events)
+    {
+    }
+    if (OE_EPOLLONESHOT &epoll_events)
+    {
+    }
+    if (OE_EPOLLET &epoll_events)
+    {
+    }
+    return ret;
+}
+
+
 /*
 **==============================================================================
 **
@@ -1297,9 +1365,210 @@ int oe_posix_shutdown_resolver_device_ocall()
 **==============================================================================
 */
 
+
+// We need a table of epoll data. 
+static struct WIN_EPOLL_ENTRY *_epoll_table = NULL;
+static const int _EPOLL_ENTRY_CHUNK = 16;
+static int  _max_epoll_table_entries = 0;
+static int  _num_epoll_table_entries = 0;
+static CRITICAL_SECTION _epoll_table_lock;
+static bool _epoll_table_lock_inited = false;
+// This is how we wake the epoll from an external event
+static HANDLE _epoll_hWakeEvent = INVALID_HANDLE_VALUE;
+
+static const int WIN_EPOLL_EVENT_CHUNK = 16;
+
+struct WIN_EPOLL_EVENT {
+    int valid;
+    struct oe_epoll_event event;
+    oe_host_fd_t  epfd;
+    HANDLE fd;
+};
+
+struct WIN_EPOLL_ENTRY
+{
+    int valid;  // Non zero if entry is in use.
+    int max_events;
+    int num_events;
+    struct WIN_EPOLL_EVENT *pevents;
+    WSAEVENT *pWaitHandles;  // We wait on this.... The array indeices are parallel to pevents
+};
+
+static int _del_epoll_event(oe_host_fd_t epfd, HANDLE fd )
+{
+    int ret = -1;
+    struct WIN_EPOLL_ENTRY *pentry = _epoll_table + epfd;
+    struct WIN_EPOLL_EVENT *pevents = NULL;
+    WSAEVENT *pwaithandles = NULL;
+
+    pevents      = pentry->pevents;
+    pwaithandles = pentry->pWaitHandles;
+    int ev_idx = 0;
+    for (; ev_idx < pentry->num_events; ev_idx++)
+    {
+        if (pevents->fd == fd)
+        {
+            break;
+        }
+    }
+
+    // WaitForMultipleObjects doesn't allow voided values in the array. So when we delete an 
+    // event we have to compact the array
+    if (ev_idx < pentry->num_events)
+    {
+        memmove(pevents+ev_idx, pevents+ev_idx+1, sizeof(struct WIN_EPOLL_EVENT)*(pentry->num_events-ev_idx));  
+        memmove(pwaithandles+ev_idx, pwaithandles+ev_idx+1, sizeof(HANDLE)*(pentry->num_events-ev_idx));  
+        pentry->num_events--;
+        ret = 0;
+    }
+    else 
+    {
+        // not foud
+    }
+
+    return ret;
+}
+
+static int _add_epoll_event(oe_host_fd_t epfd, HANDLE fd, uint32_t events, oe_epoll_data_t data)
+{ 
+    int ret = -1;
+    struct WIN_EPOLL_ENTRY *pentry = _epoll_table + epfd;
+
+    if (pentry->num_events >= pentry->max_events)
+    {
+         int new_events_size = pentry->max_events + WIN_EPOLL_EVENT_CHUNK;
+         struct WIN_EPOLL_EVENT *new_epoll_events = 
+                (struct WIN_EPOLL_EVENT *)calloc(1, sizeof(struct WIN_EPOLL_EVENT)*new_events_size);
+
+         if (pentry->pevents != NULL)
+         {
+             memcpy(new_epoll_events, pentry->pevents, sizeof(struct WIN_EPOLL_EVENT)*pentry->max_events);
+             free(pentry->pevents);
+         }
+         pentry->pevents    = new_epoll_events;
+
+         // And wait handles
+
+         WSAEVENT *new_epoll_wait_handles = 
+                (WSAEVENT *)calloc(1, sizeof(WSAEVENT)*(new_events_size+1)); // We alloc an extra entry 
+                                                                             // for the WakeHandle
+
+         if (pentry->pWaitHandles != NULL)
+         {
+             memcpy(new_epoll_wait_handles, pentry->pWaitHandles, sizeof(struct WIN_EPOLL_EVENT)*pentry->max_events);
+             free(pentry->pWaitHandles);
+         }
+         pentry->pWaitHandles    = new_epoll_wait_handles;
+         pentry->max_events = new_events_size;
+    }
+
+    struct WIN_EPOLL_EVENT *pevent = pentry->pevents+pentry->num_events;
+    WSAEVENT *pwaithandle = pentry->pWaitHandles+pentry->num_events;
+    pevent->valid        = true;
+    pevent->event.events = events;
+    pevent->event.data   = data;
+    pevent->epfd         = epfd;
+    pevent->fd           = fd;
+    // ATTN:
+    // We create the event for both file and socket. 
+    // For socket we associate the event with the socket via WSAEventSelect.
+    // For file, we would just wait on the file, but that is deprecated. The file ops need to 
+    // use completion ports and alert the event. 
+    *pwaithandle = WSACreateEvent(); // auto reset. 
+
+BY_HANDLE_FILE_INFORMATION fi = {0};
+if (GetFileInformationByHandle(fd, &fi)) 
+{
+    printf("file handle\n");
+}
+else
+{
+    (void)WSAEventSelect((SOCKET)fd, *pwaithandle, epoll_event_to_win_network_event(events));
+}
+
+    pentry->num_events++;
+
+    ret = (int)(pevent-pentry->pevents);
+    return ret;
+}
+
+static struct WIN_EPOLL_ENTRY* _allocate_epoll()
+{
+    struct WIN_EPOLL_ENTRY* ret = NULL;
+
+    // lock
+    if (_epoll_table_lock_inited == false)
+    {
+        _epoll_table_lock_inited = true;
+        InitializeCriticalSectionAndSpinCount(&_epoll_table_lock, 1000);
+         _epoll_hWakeEvent = CreateEventW(NULL, FALSE, FALSE, NULL); 
+    }
+
+    EnterCriticalSection(&_epoll_table_lock);
+    if (_num_epoll_table_entries >= _max_epoll_table_entries)
+    {
+         int new_table_size = _max_epoll_table_entries + _EPOLL_ENTRY_CHUNK;
+         struct WIN_EPOLL_ENTRY *new_epoll_table = 
+                (struct WIN_EPOLL_ENTRY *)calloc(1, sizeof(struct WIN_EPOLL_ENTRY)*new_table_size);
+
+         if (_epoll_table != NULL)
+         {
+             memcpy(new_epoll_table, _epoll_table, sizeof(struct WIN_EPOLL_ENTRY)*_max_epoll_table_entries);
+             _max_epoll_table_entries = new_table_size;
+             free(_epoll_table);
+         }
+         _epoll_table = new_epoll_table;
+         ret = _epoll_table;
+    }
+    int entry_idx = 0;
+
+    for (; entry_idx < _max_epoll_table_entries; entry_idx++)
+    {
+        if (_epoll_table[entry_idx].valid == false)
+        {
+            _epoll_table[entry_idx].valid = true;
+            _num_epoll_table_entries++;
+            ret = _epoll_table+entry_idx;
+            break;
+        }
+    }
+
+    // unlock
+    LeaveCriticalSection(&_epoll_table_lock);
+
+    return ret;
+}
+
+static int _release_epoll(oe_host_fd_t epfd)
+{
+    int ret = -1;
+
+    if (epfd < 0 || epfd >= _max_epoll_table_entries)
+    {
+        goto done;
+    }
+
+    _epoll_table[epfd].valid = false; // That should do it.
+
+    // release the entry's poll list
+
+    _num_epoll_table_entries--;
+
+done:
+    return ret;
+}
+
+
 oe_host_fd_t oe_posix_epoll_create1_ocall(int flags)
 {
-    PANIC;
+    struct WIN_EPOLL_ENTRY* pepoll = _allocate_epoll();
+
+    pepoll->valid      = true;
+    pepoll->max_events = 0;
+    pepoll->num_events = 0;
+    pepoll->pevents    = NULL;
+
+    return (oe_host_fd_t)(pepoll-_epoll_table);
 }
 
 int oe_posix_epoll_wait_ocall(
@@ -1307,13 +1576,59 @@ int oe_posix_epoll_wait_ocall(
     struct oe_epoll_event* events,
     unsigned int maxevents,
     int timeout)
-{
-    PANIC;
+{  
+    int ret = -1;
+    struct WIN_EPOLL_ENTRY* pepoll = _epoll_table+epfd;
+    
+    if (pepoll->num_events == 0)
+    {
+        // Even with nothing, we wait for the wait event
+        ret = WSAWaitForMultipleEvents(1, &_epoll_hWakeEvent, FALSE, timeout, TRUE);
+    }
+    else
+    {
+        pepoll->pWaitHandles[pepoll->num_events] = _epoll_hWakeEvent;
+        ret = WSAWaitForMultipleEvents(pepoll->num_events+1, pepoll->pWaitHandles, FALSE, timeout, TRUE);
+    }
+    switch(ret)
+    {
+    case WSA_WAIT_TIMEOUT:
+        ret = 0;
+        break;
+    case WSA_WAIT_IO_COMPLETION:
+        ret = 0;
+        break;
+    case WSA_WAIT_FAILED:
+        errno = _winsockerr_to_errno(WSAGetLastError());
+        ret = -1;
+        break;
+    default:
+         if (ret == pepoll->num_events)
+         {
+             errno = EINTR;
+         }
+         else if (ret < pepoll->num_events)
+         {
+             events[0].events = pepoll->pevents[ret].event.events; // We will produce a number of false alarms here. 
+                                                        // If you ask for read|write you will get read and write 
+                                                        // every time you are signaled. The reason is that 
+                                                        // we don't get any info back from wait for multiple events.
+                                                        // So the app will be signaled extra.
+             events[0].data   = pepoll->pevents[ret].event.data;
+             ret = 1; // We get alerted for one at a time
+         }
+         break;
+    }
+    return ret; 
 }
 
 int oe_posix_epoll_wake_ocall(void)
 {
-    PANIC;
+    if (!SetEvent( _epoll_hWakeEvent))
+    {
+         return -1;
+    }
+    return 0;
 }
 
 int oe_posix_epoll_ctl_ocall(
@@ -1322,12 +1637,65 @@ int oe_posix_epoll_ctl_ocall(
     int64_t fd,
     struct oe_epoll_event* event)
 {
-    PANIC;
+
+    switch(op)
+    {
+    case 1: // EPOLL_ADD
+        if (_add_epoll_event(epfd, (HANDLE)fd, event->events, event->data) < 0)
+        {
+            // errno set in add_epoll_event 
+            return -1;
+        }
+        return 0;
+
+    case 2: // EPOLL_DEL
+        return 0;
+
+    case 3: // OE_EPOLL_MOD:
+        return 0;
+    default:
+        break;
+    }
+    return -1;
 }
 
 int oe_posix_epoll_close_ocall(oe_host_fd_t epfd)
 {
-    PANIC;
+    struct WIN_EPOLL_ENTRY *pepoll = _epoll_table+epfd;
+
+    if (epfd > _max_epoll_table_entries)
+    {
+         return -1;
+    }
+    if (!pepoll->valid)
+    {
+         return -1;
+    }
+
+    pepoll->valid = false;
+    if (pepoll->pevents != NULL)
+    {
+        free(pepoll->pevents);
+        pepoll->pevents = NULL;
+
+        int ev_idx = 0;
+        for (; ev_idx < pepoll->num_events; ev_idx++)
+        {
+            BY_HANDLE_FILE_INFORMATION fi = {0};
+            if (!GetFileInformationByHandle(pepoll->pWaitHandles[ev_idx], &fi))
+            {
+                 // Not a file, then it is an added event
+                 CloseHandle(pepoll->pWaitHandles[ev_idx]);
+            }
+        }
+        free(pepoll->pWaitHandles);
+        pepoll->pWaitHandles = NULL;
+
+        pepoll->num_events = 0;
+    }
+    pepoll->max_events = 0;
+    
+    return 0;
 }
 
 int oe_posix_shutdown_polling_device_ocall(oe_host_fd_t fd)
@@ -1398,12 +1766,12 @@ int oe_posix_getgroups(size_t size, unsigned int* list)
 
 int oe_posix_uname_ocall(struct oe_utsname* buf)
 {
-    OSVERSIONINFO osvi;
+    OSVERSIONINFOW osvi;
 
     ZeroMemory(&osvi, sizeof(OSVERSIONINFO));
     osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
 
-    GetVersionEx(&osvi);
+    GetVersionExW(&osvi);
 
     // 2do: machine
     memset(buf->sysname, 0, __OE_UTSNAME_FIELD_SIZE);

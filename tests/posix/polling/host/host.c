@@ -2,19 +2,32 @@
 // Licensed under the MIT License.
 
 #define OE_LIBC_SUPPRESS_DEPRECATIONS
-#include <netinet/in.h>
+#include <openenclave/host.h>
 #include <openenclave/internal/tests.h>
-
+#if defined(_MSC_VER)
+#define OE_NEED_STD_NAMES
+// clang-format off
+#include <winsock2.h>
+#include <windows.h>
+// clang-format on
+static void sleep(int secs)
+{
+    Sleep(secs * 1000);
+}
+typedef HANDLE pthread_t;
+typedef DWORD socklen_t;
+typedef SOCKET socket_t;
+#else
+typedef int socket_t;
 #include <errno.h>
 #include <fcntl.h>
 #include <netinet/in.h>
-#include <openenclave/host.h>
-#include <openenclave/internal/tests.h>
-#include <pthread.h>
 #include <signal.h>
-#include <stdio.h>
 #include <sys/socket.h>
+#include <pthread.h>
 #include <unistd.h>
+#endif
+#include <stdio.h>
 
 #include "epoll_test_u.h"
 
@@ -22,17 +35,19 @@
 
 void oe_epoll_install_hostepoll(void);
 
+#if defined(__linux__)
 void sigpipe_handler(int unused)
 {
     (void)unused;
     // Doens't do anything. We expect sigpipe from the server pipe
     printf("received sigpipe\n");
 }
+#endif
 
 void* host_server_thread(void* arg)
 {
     static const char TESTDATA[] = "This is TEST DATA\n";
-    int listenfd = socket(AF_INET, SOCK_STREAM, 0);
+    socket_t  listenfd = socket(AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in serv_addr = {0};
     static size_t MAX_ACCEPTS = 3;
 
@@ -42,8 +57,10 @@ void* host_server_thread(void* arg)
     const socklen_t optLen = sizeof(optVal);
     int r = -1;
 
+#if defined(__linux__)
     struct sigaction action = {{sigpipe_handler}};
     sigaction(SIGPIPE, &action, NULL);
+#endif
 
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
@@ -62,19 +79,32 @@ void* host_server_thread(void* arg)
 
     for (size_t i = 0; i < MAX_ACCEPTS; i++)
     {
-        int connfd;
+        socket_t connfd;
         ssize_t n;
 
+printf("host server: accepting\n");
         OE_TEST((connfd = accept(listenfd, NULL, NULL)) >= 0);
 
+#if defined(__linux__)
         n = write(connfd, TESTDATA, strlen(TESTDATA));
+#else
+        n = send(connfd, TESTDATA, (int)strlen(TESTDATA), 0);
+#endif
         OE_TEST(n == (int)strlen(TESTDATA));
         sleep(1);
 
+#if defined(__linux__)
         close(connfd);
+#else
+        closesocket(connfd);
+#endif
     };
 
+#if defined(__linux__)
     close(listenfd);
+#else
+    closesocket(listenfd);
+#endif
     printf("exit from server thread\n");
     return NULL;
 }
@@ -112,6 +142,11 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
+#if !defined(__linux__)
+    static WSADATA wsadata = {0};
+    WSAStartup(MAKEWORD(2, 2), &wsadata);
+#endif
+
     tmp_dir = argv[2];
 
     if (strcmp(argv[3], "libc") == 0)
@@ -128,9 +163,15 @@ int main(int argc, const char* argv[])
     setvbuf(stdout, NULL, _IONBF, 0);
 
     // host server to enclave client
+#if !defined(__linux__)
+    server_thread_id = CreateThread(
+        NULL, 0, (LPTHREAD_START_ROUTINE)host_server_thread, (void*)&done, 0, NULL);
+    OE_TEST(server_thread_id != INVALID_HANDLE_VALUE);
+#else
     OE_TEST(
         pthread_create(
             &server_thread_id, NULL, host_server_thread, (void*)&done) == 0);
+#endif
 
     sleep(3); // Give the server time to launch
     const uint32_t flags = oe_get_create_flags();
@@ -184,13 +225,23 @@ int main(int argc, const char* argv[])
     }
 
     done = 2;
+#if defined(_WIN32)
+    ret = WaitForSingleObject(server_thread_id, INFINITE);
+#else
     pthread_join(server_thread_id, NULL);
+#endif
 
     /* Test the wake feature. */
     {
         pthread_t thread;
 
+#if defined(_WIN32)
+        thread = CreateThread(
+            NULL, 0, (LPTHREAD_START_ROUTINE)_run_wake_test, (void*)enclave, 0, NULL);
+        OE_TEST(server_thread_id != INVALID_HANDLE_VALUE);
+#else
         OE_TEST(pthread_create(&thread, NULL, _run_wake_test, enclave) == 0);
+#endif
 
         sleep(3);
 
@@ -199,7 +250,11 @@ int main(int argc, const char* argv[])
             OE_TEST(ecall_wake_test(enclave, &ret) == OE_OK);
         }
 
+#if defined(_WIN32)
+        ret = WaitForSingleObject(thread, INFINITE);
+#else
         pthread_join(thread, NULL);
+#endif
     }
 
     OE_TEST(oe_terminate_enclave(enclave) == OE_OK);
