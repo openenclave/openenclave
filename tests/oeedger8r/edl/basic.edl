@@ -11,24 +11,24 @@ enclave  {
         TYPE_LONG_DOUBLE
     };
 
-    trusted {        
+    trusted {
 
         /* Test all basic type parameters */
         public void ecall_basic_types(
-            char arg1, 
-            short arg2, 
-            int arg3, 
-            float arg4, 
-            double arg5, 
-            size_t arg6, 
+            char arg1,
+            short arg2,
+            int arg3,
+            float arg4,
+            double arg5,
+            size_t arg6,
             unsigned arg7,
-            int8_t arg8, 
-            int16_t arg9, 
-            int32_t arg10, 
+            int8_t arg8,
+            int16_t arg9,
+            int32_t arg10,
             int64_t arg11,
-            uint8_t arg12, 
-            uint16_t arg13, 
-            uint32_t arg14, 
+            uint8_t arg12,
+            uint16_t arg13,
+            uint32_t arg14,
             uint64_t arg15,
             long long arg16,
             unsigned char arg17,
@@ -64,7 +64,7 @@ enclave  {
         public uint8_t ecall_ret_uint8_t();
         public uint16_t ecall_ret_uint16_t();
         public uint32_t ecall_ret_uint32_t();
-        public uint64_t ecall_ret_uint64_t();   
+        public uint64_t ecall_ret_uint64_t();
         public long long ecall_ret_long_long();
         public unsigned char ecall_ret_unsigned_char();
         public unsigned short ecall_ret_unsigned_short();
@@ -74,27 +74,26 @@ enclave  {
         public unsigned long long ecall_ret_unsigned_long_long();
         public void ecall_ret_void();
 
-
-        public void test_basic_edl_ocalls();             
+        public void test_basic_edl_ocalls();
     };
 
     untrusted {
         /* Test all basic type parameters */
         void ocall_basic_types(
-            char arg1, 
-            short arg2, 
-            int arg3, 
-            float arg4, 
-            double arg5, 
-            size_t arg6, 
+            char arg1,
+            short arg2,
+            int arg3,
+            float arg4,
+            double arg5,
+            size_t arg6,
             unsigned arg7,
-            int8_t arg8, 
-            int16_t arg9, 
-            int32_t arg10, 
+            int8_t arg8,
+            int16_t arg9,
+            int32_t arg10,
             int64_t arg11,
-            uint8_t arg12, 
-            uint16_t arg13, 
-            uint32_t arg14, 
+            uint8_t arg12,
+            uint16_t arg13,
+            uint32_t arg14,
             uint64_t arg15,
             long long arg16,
             unsigned char arg17,
@@ -108,10 +107,10 @@ enclave  {
             long arg2,
             unsigned long arg3,
             long double arg4
-        );        
+        );
 
         // Get the size of the given type.
-        uint64_t get_host_sizeof(type_enum_t t);        
+        uint64_t get_host_sizeof(type_enum_t t);
 
         /* Test all basic types are return type */
         char ocall_ret_char();
@@ -130,15 +129,15 @@ enclave  {
         uint8_t ocall_ret_uint8_t();
         uint16_t ocall_ret_uint16_t();
         uint32_t ocall_ret_uint32_t();
-        uint64_t ocall_ret_uint64_t();     
+        uint64_t ocall_ret_uint64_t();
         long long ocall_ret_long_long();
         unsigned char ocall_ret_unsigned_char();
         unsigned short ocall_ret_unsigned_short();
         unsigned int ocall_ret_unsigned_int();
         unsigned long ocall_ret_unsigned_long();
-        long double ocall_ret_long_double();     
-        unsigned long long ocall_ret_unsigned_long_long();     
-        
-        void ocall_ret_void();        
-    }; 
+        long double ocall_ret_long_double();
+        unsigned long long ocall_ret_unsigned_long_long();
+
+        void ocall_ret_void();
+    };
 };

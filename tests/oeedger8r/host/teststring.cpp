@@ -80,7 +80,7 @@ oe_result_t ecall_string_no_null_terminator_modified(
     /* Call enclave function */
     if ((_result = oe_call_enclave_function(
              enclave,
-             fcn_id_ecall_string_no_null_terminator,
+             all_fcn_id_ecall_string_no_null_terminator,
              _input_buffer,
              _input_buffer_size,
              _output_buffer,
@@ -186,7 +186,7 @@ oe_result_t ecall_wstring_no_null_terminator_modified(
     /* Call enclave function */
     if ((_result = oe_call_enclave_function(
              enclave,
-             fcn_id_ecall_wstring_no_null_terminator,
+             all_fcn_id_ecall_wstring_no_null_terminator,
              _input_buffer,
              _input_buffer_size,
              _output_buffer,
