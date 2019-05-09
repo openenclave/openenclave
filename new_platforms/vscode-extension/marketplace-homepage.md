@@ -193,7 +193,7 @@ data to Microsoft, you can set the `telemetry.enableTelemetry` setting to `false
         sudo systemctl restart systemd-binfmt.service
         ```
 
-* We've had reports that downloading the SDK from git can be slow from within the extension, to work around any issue, you can run these commands
+* We've had reports that downloading the SDK from git can be slow from within the extension. To work around any issue, you can run these commands
     * Linux:
         
         ```bash
