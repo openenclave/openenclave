@@ -1,13 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-/* Nest mbedtls header includes with required corelibc defines */
-// clang-format off
-#include "mbedtls_corelibc_defs.h"
-#include <mbedtls/pk.h>
 #include <mbedtls/cmac.h>
-#include "mbedtls_corelibc_undef.h"
-// clang-format on
+#include <mbedtls/pk.h>
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/cmac.h>

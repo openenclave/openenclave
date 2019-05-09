@@ -4,6 +4,8 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/entropy.h>
 
+int mbedtls_hardware_poll(void*, unsigned char*, size_t, size_t*);
+
 /*
  * MBEDTLS links this function definition when MBEDTLS_ENTROPY_HARDWARE_ALT
  * is defined in the MBEDTLS config.h file. This is the sole source of entropy

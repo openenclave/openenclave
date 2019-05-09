@@ -4,12 +4,7 @@
 #ifndef _ENCLAVE_KEY_H
 #define _ENCLAVE_KEY_H
 
-/* Nest mbedtls header includes with required corelibc defines */
-// clang-format off
-#include "mbedtls_corelibc_defs.h"
 #include <mbedtls/pk.h>
-#include "mbedtls_corelibc_undef.h"
-// clang-format on
 
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
