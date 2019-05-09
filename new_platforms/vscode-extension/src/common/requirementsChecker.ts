@@ -9,6 +9,38 @@ import * as vscode from "vscode";
 
 export class RequirementsChecker {
 
+    public static async checkDocker(): Promise<string[]> {
+        const warnings: string[] = [];
+
+        // Check for docker installation
+        await Promise.all([
+            this.validateTool("docker", ["--version"])
+                .catch(async (error) => {
+                    warnings.push("Unable to locate DOCKER.");
+                })
+        ]);
+
+        // If docker is found, check for cross-build capability on linux
+        if (warnings.length === 0 && os.platform() === "linux") {
+            const promises: Array<Promise<any>> = [];
+            promises.push(this.validateTool("docker", ["run amd64/ubuntu:xenial"])
+                .catch(async (error) => {
+                    warnings.push("Unable to run amd64 container, enable docker cross-building.");
+                }));
+            promises.push(this.validateTool("docker", ["run arm32v7/ubuntu:xenial"])
+                .catch(async (error) => {
+                    warnings.push("Unable to run arm32v7 container, enable docker cross-building.");
+                }));
+            promises.push(this.validateTool("docker", ["run aarch64/ubuntu:xenial"])
+                .catch(async (error) => {
+                    warnings.push("Unable to run aarch64 container, enable docker cross-building.");
+                }));
+            await Promise.all(promises);
+        }
+
+        return warnings;
+    }
+
     public static async checkRequirements() {
 
         const promises: Array<Promise<any>> = [];
@@ -66,9 +98,9 @@ export class RequirementsChecker {
                     warnings.push(`Enable long paths for GIT.`);
                 }));
         }
-        promises.push(this.validateTool("docker", ["--version"])
-            .catch(async (error) => {
-                warnings.push("Unable to locate DOCKER.");
+        promises.push(this.checkDocker()
+            .then(async (results) => {
+                results.forEach((result) => warnings.push(result));
             }));
         promises.push(this.validateTool("git", ["--version"])
             .catch(async (error) => {
