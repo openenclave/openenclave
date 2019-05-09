@@ -421,7 +421,11 @@ static long _syscall(
             ret = oe_uname(buf);
             goto done;
         }
+#if defined(__arm__)
+        case OE_SYS__newselect:
+#else
         case OE_SYS_select:
+#endif
         {
             int nfds = (int)arg1;
             oe_fd_set* readfds = (oe_fd_set*)arg2;
@@ -452,7 +456,9 @@ static long _syscall(
             goto done;
         }
         case OE_SYS_epoll_wait:
+#if defined(__x86_64__)
         case OE_SYS_epoll_wait_old:
+#endif
         {
             int epfd = (int)arg1;
             struct oe_epoll_event* events = (struct oe_epoll_event*)arg2;
@@ -472,7 +478,9 @@ static long _syscall(
             goto done;
         }
         case OE_SYS_epoll_ctl:
+#if defined(__x86_64__)
         case OE_SYS_epoll_ctl_old:
+#endif
         {
             int epfd = (int)arg1;
             int op = (int)arg2;
