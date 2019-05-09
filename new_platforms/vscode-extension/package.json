@@ -43,7 +43,7 @@
 			},
 			{
 				"command": "msiot-vscode-openenclave.checkSystemRequirements",
-				"title": "Check system requirements",
+				"title": "Check System Requirements",
 				"category": "Microsoft Open Enclave"
 			}
 		],
