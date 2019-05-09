@@ -40,8 +40,24 @@
 				"command": "msiot-vscode-openenclave.newSolution",
 				"title": "New Open Enclave Solution",
 				"category": "Microsoft Open Enclave"
+			},
+			{
+				"command": "msiot-vscode-openenclave.checkSystemRequirements",
+				"title": "Check system requirements",
+				"category": "Microsoft Open Enclave"
 			}
-		]
+		],
+		"configuration": {
+			"type": "object",
+			"title": "Microsoft Open Enclave configuration",
+			"properties": {
+				"msiot-vscode-openenclave.systemRequirementsPassed": {
+					"type": "string",
+					"default": "0.0.0",
+					"description": "System requirement checks have all passed for this machine based on specified version."
+				}
+			}
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",

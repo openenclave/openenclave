@@ -6,42 +6,17 @@
 import { ChildProcess, execSync, ExecSyncOptions, spawn, SpawnOptions } from "child_process";
 import * as os from "os";
 import * as vscode from "vscode";
+import { Configuration } from "./configuration";
+import { Constants } from "./constants";
 
 export class RequirementsChecker {
 
-    public static async checkDocker(): Promise<string[]> {
-        const warnings: string[] = [];
+    public static async checkRequirements(force: boolean) {
 
-        // Check for docker installation
-        await Promise.all([
-            this.validateTool("docker", ["--version"])
-                .catch(async (error) => {
-                    warnings.push("Unable to locate DOCKER.");
-                })
-        ]);
-
-        // If docker is found, check for cross-build capability on linux
-        if (warnings.length === 0 && os.platform() === "linux") {
-            const promises: Array<Promise<any>> = [];
-            promises.push(this.validateTool("docker", ["run amd64/ubuntu:xenial"])
-                .catch(async (error) => {
-                    warnings.push("Unable to run amd64 container, enable docker cross-building.");
-                }));
-            promises.push(this.validateTool("docker", ["run arm32v7/ubuntu:xenial"])
-                .catch(async (error) => {
-                    warnings.push("Unable to run arm32v7 container, enable docker cross-building.");
-                }));
-            promises.push(this.validateTool("docker", ["run aarch64/ubuntu:xenial"])
-                .catch(async (error) => {
-                    warnings.push("Unable to run aarch64 container, enable docker cross-building.");
-                }));
-            await Promise.all(promises);
+        const systemConfigurationPassed = Configuration.getConfiguration().get<string>("systemRequirementsPassed");
+        if (!force && systemConfigurationPassed && systemConfigurationPassed === Constants.requirementsVersion) {
+            return;
         }
-
-        return warnings;
-    }
-
-    public static async checkRequirements() {
 
         const promises: Array<Promise<any>> = [];
         const warnings: string[] = [];
@@ -110,6 +85,9 @@ export class RequirementsChecker {
             .then(async () => {
                 if (warnings.length !== 0) {
                     await this.showWarning(warnings.join("  "));
+                } else {
+                    // Update global settings to reflect that this system meets this version's requirements
+                    Configuration.setGlobalConfigurationProperty("systemRequirementsPassed", Constants.requirementsVersion);
                 }
             });
     }
@@ -121,6 +99,38 @@ export class RequirementsChecker {
         if (await vscode.window.showWarningMessage(`Some requirements are not found.  ${message}  Click Learn more button to see requirements.` , ...[learnMore]) === learnMore) {
             await vscode.commands.executeCommand("vscode.open", vscode.Uri.parse(requirementsLink));
         }
+    }
+
+    private static async checkDocker(): Promise<string[]> {
+        const warnings: string[] = [];
+
+        // Check for docker installation
+        await Promise.all([
+            this.validateTool("docker", ["--version"])
+                .catch(async (error) => {
+                    warnings.push("Unable to locate DOCKER.");
+                })
+        ]);
+
+        // If docker is found, check for cross-build capability on linux
+        if (warnings.length === 0 && os.platform() === "linux") {
+            const promises: Array<Promise<any>> = [];
+            promises.push(this.validateTool("docker", ["run amd64/ubuntu:xenial"])
+                .catch(async (error) => {
+                    warnings.push("Unable to run amd64 container, enable docker cross-building.");
+                }));
+            promises.push(this.validateTool("docker", ["run arm32v7/ubuntu:xenial"])
+                .catch(async (error) => {
+                    warnings.push("Unable to run arm32v7 container, enable docker cross-building.");
+                }));
+            promises.push(this.validateTool("docker", ["run aarch64/ubuntu:xenial"])
+                .catch(async (error) => {
+                    warnings.push("Unable to run aarch64 container, enable docker cross-building.");
+                }));
+            await Promise.all(promises);
+        }
+
+        return warnings;
     }
 
     private static validateTool(command: string, args: string[]): Promise<string> {
