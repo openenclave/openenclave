@@ -110,12 +110,24 @@ the host and enclave symbols into an instance of the debugger.
     
 * Ensure that the requirements are met for the [Azure IoT Edge extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-edge):
     * [Docker is installed and running: https://docs.docker.com/install/](https://docs.docker.com/install/).
-        * On Linux, to cross-build a container (i.e. if your host is amd64 and your container is arm32v7), you will need to enable cross-building.  Adding these packages solves the cross-build issue on Ubuntu 19.04:
-            
-            ```bash
-            sudo apt-get install -y qemu qemu-user-static qemu-user binfmt-support
-            ```
-        
+        * On Linux, for Edge projects, you will need to enable cross-building.
+
+            * Enable docker cross-building on Ubuntu 19.04 and 18.10 by:
+
+                ```bash
+                sudo apt-get install -y qemu qemu-user-static qemu-user binfmt-support
+                ```
+
+            * Enable docker cross-building on Ubuntu 18.04 and 16.04 by:
+
+                ```bash
+                sudo apt-get install -y qemu qemu-user-static qemu-user binfmt-support
+                sudo mkdir -p /lib/binfmt.d
+                sudo sh -c 'echo :qemu-arm:M::\\x7fELF\\x01\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x02\\x00\\x28\\x00:\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\xfe\\xff\\xff\\xff:/usr/bin/qemu-arm-static:F > /lib/binfmt.d/qemu-arm-static.conf'
+                sudo sh -c 'echo :qemu-aarch64:M::\\x7fELF\\x02\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x02\\x00\\xb7\\x00:\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\xfe\\xff\\xff\\xff:/usr/bin/qemu-aarch64-static:F > /lib/binfmt.d/qemu-aarch64-static.conf'
+                sudo systemctl restart systemd-binfmt.service
+                ```
+
         * On Linux, if you are seeing permission issues related to connecting to the Docker daemon, add your Linux user to the docker group. This will allow your user to connect and issue commands to the Docker daemon:
         
             ```bash
@@ -163,11 +175,23 @@ data to Microsoft, you can set the `telemetry.enableTelemetry` setting to `false
 ## Known Issues
 
 * Building SGX enclaves is not currently supported.
-* On Linux, if you see errors in an Edge container build that involve `standard_init_linux.go:207`, you are likely cross-building a container.  Adding these packages solves the cross-build issue on Ubuntu 19.04:
+* On Linux, for Edge projects, you will need to enable cross-building.
 
-    ```bash
-    sudo apt-get install -y qemu qemu-user-static qemu-user binfmt-support
-    ```
+    * Enable docker cross-building on Ubuntu 19.04 and 18.10 by:
+
+        ```bash
+        sudo apt-get install -y qemu qemu-user-static qemu-user binfmt-support
+        ```
+
+    * Enable docker cross-building on Ubuntu 18.04 and 16.04 by:
+
+        ```bash
+        sudo apt-get install -y qemu qemu-user-static qemu-user binfmt-support
+        sudo mkdir -p /lib/binfmt.d
+        sudo sh -c 'echo :qemu-arm:M::\\x7fELF\\x01\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x02\\x00\\x28\\x00:\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\xfe\\xff\\xff\\xff:/usr/bin/qemu-arm-static:F > /lib/binfmt.d/qemu-arm-static.conf'
+        sudo sh -c 'echo :qemu-aarch64:M::\\x7fELF\\x02\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x02\\x00\\xb7\\x00:\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\xfe\\xff\\xff\\xff:/usr/bin/qemu-aarch64-static:F > /lib/binfmt.d/qemu-aarch64-static.conf'
+        sudo systemctl restart systemd-binfmt.service
+        ```
 
 * We've had reports that downloading the SDK from git can be slow from within the extension, to work around any issue, you can run these commands
     * Linux:
