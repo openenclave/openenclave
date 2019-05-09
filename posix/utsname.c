@@ -3,7 +3,7 @@
 
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/sys/utsname.h>
-#include <openenclave/internal/device/raise.h>
+#include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/trace.h>
 #include "posix_t.h"
 

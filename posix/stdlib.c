@@ -7,7 +7,7 @@
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/unistd.h>
-#include <openenclave/internal/device/raise.h>
+#include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/trace.h>
 
 char* oe_realpath(const char* path, char resolved_path[OE_PATH_MAX])

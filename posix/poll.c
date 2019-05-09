@@ -9,13 +9,12 @@
 #include <openenclave/corelibc/sys/poll.h>
 #include <openenclave/corelibc/sys/socket.h>
 #include <openenclave/corelibc/unistd.h>
-#include <openenclave/internal/device/device.h>
-#include <openenclave/internal/device/fdtable.h>
-#include <openenclave/internal/device/raise.h>
+#include <openenclave/internal/posix/device.h>
+#include <openenclave/internal/posix/fdtable.h>
+#include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
-#include "epoll.h"
 
 /* This module assumes that the following flags are consistent. */
 OE_STATIC_ASSERT(OE_POLLIN == OE_EPOLLIN);

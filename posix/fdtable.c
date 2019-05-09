@@ -7,10 +7,11 @@
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/device/device.h>
-#include <openenclave/internal/device/fdtable.h>
-#include <openenclave/internal/device/raise.h>
+#include <openenclave/internal/posix/device.h>
+#include <openenclave/internal/posix/fdtable.h>
+#include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/print.h>
+#include <openenclave/internal/reserve.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include "console.h"
@@ -23,48 +24,46 @@
 **==============================================================================
 */
 
-/* Table must have room for stdin, stdout, and stderr. */
-#define TABLE_SIZE 256
+#define MIN_TABLE_SIZE 256
 
 static oe_device_t** _table;
 static size_t _table_size;
 static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
+static oe_once_t _once = OE_ONCE_INITIALIZER;
 
 static void _free_table(void)
 {
     oe_free(_table);
 }
 
+static void _install_atexit_handler_once(void)
+{
+    oe_atexit(_free_table);
+}
+
 static int _resize_table(size_t new_size)
 {
     int ret = -1;
+    size_t new_capacity;
 
-    if (new_size > _table_size)
+    if (oe_once(&_once, _install_atexit_handler_once) != OE_OK)
+        goto done;
+
+    new_capacity = (new_size < MIN_TABLE_SIZE) ? MIN_TABLE_SIZE : new_size;
+
+    if (oe_reserve(
+            (void**)&_table,
+            _table_size,
+            sizeof(oe_device_t*),
+            &_table_size,
+            new_capacity) != 0)
     {
-        oe_device_t** p;
-        size_t cap = _table_size * 2;
-
-        if (cap < new_size)
-            cap = new_size;
-
-        if (!_table)
-            oe_atexit(_free_table);
-
-        if (!(p = oe_realloc(_table, cap * sizeof(oe_device_t*))))
-        {
-            oe_errno = OE_ENOMEM;
-            goto done;
-        }
-
-        memset(p + _table_size, 0, (cap - _table_size) * sizeof(oe_device_t*));
-        _table = p;
-        _table_size = new_size;
+        goto done;
     }
 
     ret = 0;
 
 done:
-
     return ret;
 }
 

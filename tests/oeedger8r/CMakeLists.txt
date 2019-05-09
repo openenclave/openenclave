@@ -8,5 +8,6 @@ if (BUILD_ENCLAVES)
 endif()
 
 add_enclave_test(tests/oeedger8r edl_host edl_enc)
+add_enclave_test(tests/oeedger8r_other edl_host edl_other_enc)
 
 add_subdirectory(behavior)

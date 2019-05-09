@@ -6,7 +6,7 @@
 #include <fcntl.h>
 #include <limits.h>
 #include <netdb.h>
-#include <openenclave/internal/device/types.h>
+#include <openenclave/internal/posix/types.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>

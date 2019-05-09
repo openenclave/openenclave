@@ -9,9 +9,9 @@
 #include <openenclave/corelibc/sys/stat.h>
 #include <openenclave/corelibc/sys/utsname.h>
 #include <openenclave/corelibc/unistd.h>
-#include <openenclave/internal/device/device.h>
-#include <openenclave/internal/device/fdtable.h>
-#include <openenclave/internal/device/raise.h>
+#include <openenclave/internal/posix/device.h>
+#include <openenclave/internal/posix/fdtable.h>
+#include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/time.h>
 #include <openenclave/internal/trace.h>
 #include "mount.h"
@@ -253,10 +253,7 @@ ssize_t oe_read(int fd, void* buf, size_t count)
     if (!(device = oe_fdtable_get(fd, OE_DEVICE_TYPE_NONE)))
         OE_RAISE_ERRNO(OE_EBADF);
 
-    if (device->ops.base->read == NULL)
-        OE_RAISE_ERRNO(OE_EINVAL);
-
-    ret = (*device->ops.base->read)(device, buf, count);
+    ret = OE_CALL_BASE(read, device, buf, count);
 
 done:
     return ret;
@@ -270,10 +267,7 @@ ssize_t oe_write(int fd, const void* buf, size_t count)
     if (!(device = oe_fdtable_get(fd, OE_DEVICE_TYPE_NONE)))
         OE_RAISE_ERRNO(OE_EBADF);
 
-    if (device->ops.base->write == NULL)
-        OE_RAISE_ERRNO(OE_EINVAL);
-
-    ret = (*device->ops.base->write)(device, buf, count);
+    ret = OE_CALL_BASE(write, device, buf, count);
 
 done:
     return ret;
@@ -287,10 +281,7 @@ int oe_close(int fd)
     if (!(device = oe_fdtable_get(fd, OE_DEVICE_TYPE_NONE)))
         OE_RAISE_ERRNO(OE_EBADF);
 
-    if (device->ops.base->close == NULL)
-        OE_RAISE_ERRNO(OE_EINVAL);
-
-    if ((ret = (*device->ops.base->close)(device)) == 0)
+    if ((ret = OE_CALL_BASE(close, device)) == 0)
         oe_fdtable_clear(fd);
 
 done:
@@ -307,11 +298,11 @@ int oe_dup(int oldfd)
     if (!(old_dev = oe_fdtable_get(oldfd, OE_DEVICE_TYPE_NONE)))
         OE_RAISE_ERRNO(OE_EBADF);
 
-    if ((*old_dev->ops.base->dup)(old_dev, &new_dev) == -1)
+    if (OE_CALL_BASE(dup, old_dev, &new_dev) == -1)
         OE_RAISE_ERRNO(oe_errno);
 
     if ((newfd = oe_fdtable_assign(new_dev)) == -1)
-        (*new_dev->ops.base->close)(new_dev);
+        OE_CALL_BASE(close, new_dev);
 
     ret = newfd;
 
@@ -333,7 +324,7 @@ int oe_dup2(int oldfd, int newfd)
     if (oe_fdtable_get(newfd, OE_DEVICE_TYPE_NONE))
         oe_close(newfd);
 
-    if ((retval = (*old_dev->ops.base->dup)(old_dev, &new_dev)) < 0)
+    if ((retval = OE_CALL_BASE(dup, old_dev, &new_dev)) < 0)
         OE_RAISE_ERRNO(oe_errno);
 
     if (oe_fdtable_set(newfd, new_dev) == -1)
@@ -356,10 +347,7 @@ int oe_rmdir(const char* pathname)
     if (!(fs = oe_mount_resolve(pathname, filepath)))
         OE_RAISE_ERRNO(oe_errno);
 
-    if (fs->ops.fs->rmdir == NULL)
-        OE_RAISE_ERRNO(OE_EINVAL);
-
-    ret = (*fs->ops.fs->rmdir)(fs, filepath);
+    ret = OE_CALL_FS(rmdir, fs, filepath);
 
 done:
     return ret;
@@ -380,7 +368,7 @@ int oe_rmdir_d(uint64_t devid, const char* pathname)
         if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
             OE_RAISE_ERRNO(OE_EINVAL);
 
-        ret = dev->ops.fs->rmdir(dev, pathname);
+        ret = OE_CALL_FS(rmdir, dev, pathname);
     }
 
 done:
@@ -404,10 +392,7 @@ int oe_link(const char* oldpath, const char* newpath)
     if (fs != newfs)
         OE_RAISE_ERRNO(OE_EXDEV);
 
-    if (fs->ops.fs->link == NULL)
-        OE_RAISE_ERRNO(OE_EINVAL);
-
-    ret = (*fs->ops.fs->link)(fs, filepath, newfilepath);
+    ret = OE_CALL_FS(link, fs, filepath, newfilepath);
 
 done:
     return ret;
@@ -428,7 +413,7 @@ int oe_link_d(uint64_t devid, const char* oldpath, const char* newpath)
         if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
             OE_RAISE_ERRNO(OE_EINVAL);
 
-        ret = dev->ops.fs->link(dev, oldpath, newpath);
+        ret = OE_CALL_FS(link, dev, oldpath, newpath);
     }
 
 done:
@@ -444,10 +429,7 @@ int oe_unlink(const char* pathname)
     if (!(fs = oe_mount_resolve(pathname, filepath)))
         OE_RAISE_ERRNO(oe_errno);
 
-    if (fs->ops.fs->unlink == NULL)
-        OE_RAISE_ERRNO(OE_EINVAL);
-
-    ret = (*fs->ops.fs->unlink)(fs, filepath);
+    ret = OE_CALL_FS(unlink, fs, filepath);
 
 done:
     return ret;
@@ -468,7 +450,7 @@ int oe_unlink_d(uint64_t devid, const char* pathname)
         if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
             OE_RAISE_ERRNO(OE_EINVAL);
 
-        ret = dev->ops.fs->unlink(dev, pathname);
+        ret = OE_CALL_FS(unlink, dev, pathname);
     }
 
 done:
@@ -484,10 +466,7 @@ int oe_truncate(const char* pathname, oe_off_t length)
     if (!(fs = oe_mount_resolve(pathname, filepath)))
         OE_RAISE_ERRNO(oe_errno);
 
-    if (fs->ops.fs->truncate == NULL)
-        OE_RAISE_ERRNO(OE_EINVAL);
-
-    ret = (*fs->ops.fs->truncate)(fs, filepath, length);
+    ret = OE_CALL_FS(truncate, fs, filepath, length);
 
 done:
     return ret;
@@ -508,7 +487,7 @@ int oe_truncate_d(uint64_t devid, const char* path, oe_off_t length)
         if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
             OE_RAISE_ERRNO(OE_EINVAL);
 
-        ret = dev->ops.fs->truncate(dev, path, length);
+        ret = OE_CALL_FS(truncate, dev, path, length);
     }
 
 done:
@@ -523,10 +502,7 @@ oe_off_t oe_lseek(int fd, oe_off_t offset, int whence)
     if (!(file = oe_fdtable_get(fd, OE_DEVICE_TYPE_FILE)))
         OE_RAISE_ERRNO(OE_EBADF);
 
-    if (file->ops.fs->lseek == NULL)
-        OE_RAISE_ERRNO(OE_EINVAL);
-
-    ret = (*file->ops.fs->lseek)(file, offset, whence);
+    ret = OE_CALL_FS(lseek, file, offset, whence);
 
 done:
     return ret;
@@ -598,10 +574,7 @@ int oe_access(const char* pathname, int mode)
     if (!(fs = oe_mount_resolve(pathname, suffix)))
         OE_RAISE_ERRNO(oe_errno);
 
-    if (fs->ops.fs->access == NULL)
-        OE_RAISE_ERRNO(OE_EINVAL);
-
-    ret = (*fs->ops.fs->access)(fs, suffix, mode);
+    ret = OE_CALL_FS(access, fs, suffix, mode);
 
 done:
     return ret;

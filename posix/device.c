@@ -3,15 +3,10 @@
 
 #include <openenclave/enclave.h>
 
-#include <openenclave/bits/device.h>
 #include <openenclave/corelibc/errno.h>
-#include <openenclave/corelibc/stdio.h>
-#include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
-#include <openenclave/internal/calls.h>
-#include <openenclave/internal/device/device.h>
-#include <openenclave/internal/device/raise.h>
-#include <openenclave/internal/print.h>
+#include <openenclave/internal/posix/device.h>
+#include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
@@ -21,31 +16,7 @@
 static oe_device_t* _table[MAX_TABLE_SIZE];
 static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
 
-uint64_t oe_allocate_devid(uint64_t devid)
-{
-    uint64_t ret = OE_DEVID_NONE;
-    bool locked = false;
-
-    oe_spin_lock(&_lock);
-    locked = true;
-
-    if (devid >= MAX_TABLE_SIZE)
-        OE_RAISE_ERRNO(OE_ENOMEM);
-
-    if (_table[devid] != NULL)
-        OE_RAISE_ERRNO(OE_EADDRINUSE);
-
-    ret = devid;
-
-done:
-
-    if (locked)
-        oe_spin_unlock(&_lock);
-
-    return ret;
-}
-
-int oe_release_devid(uint64_t devid)
+int oe_clear_devid(uint64_t devid)
 {
     int ret = -1;
     bool locked = false;
@@ -155,13 +126,12 @@ int oe_remove_device(uint64_t devid)
     if (!(device = oe_get_device(devid, OE_DEVICE_TYPE_NONE)))
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (device->ops.base->shutdown == NULL)
-        OE_RAISE_ERRNO(OE_EINVAL);
+    OE_CALL_BASE(shutdown, device);
 
-    if ((retval = (*device->ops.base->shutdown)(device)) != 0)
+    if ((retval = OE_CALL_BASE(shutdown, device)) != 0)
         OE_RAISE_ERRNO(oe_errno);
 
-    if (oe_set_device(devid, NULL) != 0)
+    if (oe_clear_devid(devid) != 0)
         OE_RAISE_ERRNO(oe_errno);
 
     ret = 0;

@@ -6,7 +6,7 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/corelibc/limits.h>
-#include <openenclave/internal/device/device.h>
+#include <openenclave/internal/posix/device.h>
 
 OE_EXTERNC_BEGIN
 

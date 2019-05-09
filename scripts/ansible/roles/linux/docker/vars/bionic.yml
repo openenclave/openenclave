@@ -3,7 +3,7 @@
 
 ---
 apt_packages:
-  - "docker-ce=5:18.09.3~3-0~ubuntu-bionic"
+  - "docker-ce"
 
 ci_apt_packages:
   - "automake"

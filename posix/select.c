@@ -4,12 +4,12 @@
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
+#include <openenclave/corelibc/sys/epoll.h>
 #include <openenclave/corelibc/sys/select.h>
 #include <openenclave/corelibc/time.h>
-#include <openenclave/internal/device/raise.h>
+#include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/trace.h>
-#include "epoll.h"
 
 void _set_to_fd_list(
     oe_fd_set* set,

@@ -19,12 +19,16 @@ find_dependency(Threads)
 
 # This target is an OCaml executable, not C++, so we have to manually
 # "export" it here for users of the package.
-add_executable(openenclave::oeedger8r IMPORTED)
-set_target_properties(openenclave::oeedger8r PROPERTIES IMPORTED_LOCATION ${OE_BINDIR}/oeedger8r)
+if(NOT TARGET openenclave::oeedger8r)
+  add_executable(openenclave::oeedger8r IMPORTED)
+  set_target_properties(openenclave::oeedger8r PROPERTIES IMPORTED_LOCATION ${OE_BINDIR}/oeedger8r)
+endif ()
 
 # Similarly, this is a shell script.
-add_executable(openenclave::oegdb IMPORTED)
-set_target_properties(openenclave::oegdb PROPERTIES IMPORTED_LOCATION ${OE_BINDIR}/oegdb)
+if(NOT TARGET openenclave::oegdb)
+  add_executable(openenclave::oegdb IMPORTED)
+  set_target_properties(openenclave::oegdb PROPERTIES IMPORTED_LOCATION ${OE_BINDIR}/oegdb)
+endif ()
 
 # Include the automatically exported targets.
 include("${CMAKE_CURRENT_LIST_DIR}/openenclave-targets.cmake")
