@@ -3,24 +3,14 @@
 
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/entropy.h>
 #include <openenclave/internal/random.h>
 
-/*
- * MBEDTLS links this function definition when MBEDTLS_ENTROPY_HARDWARE_ALT
- * is defined in the MBEDTLS config.h file. This is the sole source of entropy
- * for MBEDTLS. All other MBEDTLS entropy sources are disabled since they don't
- * work within enclaves.
- */
-int mbedtls_hardware_poll(
-    void* data,
-    unsigned char* output,
-    size_t len,
-    size_t* olen)
+/* TODO: This should use RDSEED instead. See issue #242. */
+oe_result_t oe_get_entropy(void* output, size_t len)
 {
-    int ret = -1;
-    unsigned char* p = output;
-
-    OE_UNUSED(data);
+    oe_result_t ret = OE_UNEXPECTED;
+    unsigned char* p = (unsigned char*)output;
 
     if (!output)
         goto done;
@@ -50,10 +40,7 @@ int mbedtls_hardware_poll(
             *p++ = *q++;
     }
 
-    if (olen)
-        *olen = len;
-
-    ret = 0;
+    ret = OE_OK;
 
 done:
     return ret;

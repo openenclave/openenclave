@@ -27,6 +27,7 @@ if (USE_CLANGW)
   find_program(LLVM_AR "llvm-ar.exe")
   set(MBEDTLS_LINKER "-DCMAKE_AR=${LLVM_AR}")
   set(MBEDTLS_COMPILER "")
+  set(CMAKE_AR ${LLVM_AR})
 else()
   set(MBEDTLS_TOOLCHAIN "")
   set(MBEDTLS_LINKER "")
@@ -44,9 +45,17 @@ endif ()
 list(JOIN MBEDTLS_WRAP_CFLAGS_LIST " " MBEDTLS_WRAP_CFLAGS)
 configure_file(config.h config.h) # This copies from source to binary folders.
 
+# Since we define mbedtls to use an alternate entropy source, it uses an
+# undefined mebdtls_hardware_poll function. We define it here and add it to
+# the mbedcrypto library, so that we avoid link errors and also circular
+# library dependecies.
+add_library(oe_mbedtls_hardware_poll OBJECT
+    mbedtls_hardware_poll.c)
+target_link_libraries(oe_mbedtls_hardware_poll oecore)
+
 include(ExternalProject)
 ExternalProject_Add(mbedtls-wrap
-  DEPENDS oecore oe_includes
+  DEPENDS oecore oe_includes oe_mbedtls_hardware_poll
 
   DOWNLOAD_COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_CURRENT_LIST_DIR}/mbedtls <SOURCE_DIR>
@@ -72,6 +81,11 @@ ExternalProject_Add(mbedtls-wrap
 
 ExternalProject_Get_property(mbedtls-wrap SOURCE_DIR)
 ExternalProject_Get_property(mbedtls-wrap BINARY_DIR)
+
+# Add the mbedtls_hardware_poll function to the mbedcrypto library.
+add_custom_command(TARGET mbedtls-wrap
+    POST_BUILD
+    COMMAND ${CMAKE_AR} r ${BINARY_DIR}/library/libmbedcrypto.a $<TARGET_OBJECTS:oe_mbedtls_hardware_poll>)
 
 # NOTE: These imported libraries must be specified before `oecore`
 # when linking, hence their dependency on it.
