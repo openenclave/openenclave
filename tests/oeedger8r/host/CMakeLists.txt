@@ -27,6 +27,7 @@ add_executable(edl_host
     testarray.cpp
     testbasic.cpp
     testenum.cpp
+    testerrno.cpp
     testforeign.cpp
     testother.cpp
     testpointer.cpp

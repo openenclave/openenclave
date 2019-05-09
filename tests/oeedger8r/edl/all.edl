@@ -7,6 +7,7 @@ enclave  {
     from "array.edl"    import *;
     from "basic.edl"    import *;
     from "enum.edl"     import *;
+    from "errno.edl"    import *;
     from "foreign.edl"  import *;
     from "pointer.edl"  import *;
     from "string.edl"   import *;

@@ -85,6 +85,8 @@ int main(int argc, const char* argv[])
     test_enum_edl_ecalls(enclave);
     OE_TEST(test_enum_edl_ocalls(enclave) == OE_OK);
 
+    OE_TEST(test_errno_edl_ocalls(enclave) == OE_OK);
+
     test_foreign_edl_ecalls(enclave);
     OE_TEST(test_foreign_edl_ocalls(enclave) == OE_OK);
 

@@ -26,6 +26,7 @@ add_enclave(TARGET edl_enc CXX
     testarray.cpp
     testbasic.cpp
     testenum.cpp
+    testerrno.cpp
     testforeign.cpp
     testpointer.cpp
     teststring.cpp
