@@ -126,10 +126,9 @@ int oe_remove_device(uint64_t devid)
     if (!(device = oe_get_device(devid, OE_DEVICE_TYPE_NONE)))
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (device->ops.base->shutdown == NULL)
-        OE_RAISE_ERRNO(OE_EINVAL);
+    OE_CALL_BASE(shutdown, device);
 
-    if ((retval = (*device->ops.base->shutdown)(device)) != 0)
+    if ((retval = OE_CALL_BASE(shutdown, device)) != 0)
         OE_RAISE_ERRNO(oe_errno);
 
     if (oe_clear_devid(devid) != 0)

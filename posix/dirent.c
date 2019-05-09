@@ -109,10 +109,7 @@ int oe_getdents(unsigned int fd, struct oe_dirent* dirp, unsigned int count)
     if (!(file = oe_fdtable_get((int)fd, OE_DEVICE_TYPE_FILE)))
         OE_RAISE_ERRNO(OE_EBADF);
 
-    if (file->ops.fs->getdents == NULL)
-        OE_RAISE_ERRNO(OE_EINVAL);
-
-    ret = (*file->ops.fs->getdents)(file, dirp, count);
+    ret = OE_CALL_FS(getdents, file, dirp, count);
 
 done:
     return ret;

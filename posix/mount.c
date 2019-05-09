@@ -175,7 +175,7 @@ int oe_mount(
     }
 
     /* Clone the device. */
-    retval = device->ops.fs->base.clone(device, &new_device);
+    retval = OE_CALL_BASE(clone, device, &new_device);
     if (retval != 0)
         OE_RAISE_ERRNO(OE_ENOMEM);
 
@@ -195,7 +195,7 @@ int oe_mount(
     }
 
     /* Notify the device that it has been mounted. */
-    if (new_device->ops.fs->mount(new_device, source, target, mountflags) != 0)
+    if (OE_CALL_FS(mount, new_device, source, target, mountflags) != 0)
     {
         oe_free(_mount_table[--_mount_table_size].path);
         goto done;
@@ -210,7 +210,7 @@ done:
         oe_spin_unlock(&_lock);
 
     if (new_device)
-        new_device->ops.fs->base.release(new_device);
+        OE_CALL_BASE(release, new_device);
 
     return ret;
 }
@@ -255,10 +255,10 @@ int oe_umount2(const char* target, int flags)
         _mount_table[index] = _mount_table[_mount_table_size - 1];
         _mount_table_size--;
 
-        if ((retval = fs->ops.fs->unmount(fs, target)) != 0)
+        if ((retval = OE_CALL_FS(unmount, fs, target)) != 0)
             OE_RAISE_ERRNO(oe_errno);
 
-        fs->ops.fs->base.release(fs);
+        OE_CALL_BASE(release, fs);
     }
 
     ret = 0;

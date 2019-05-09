@@ -40,7 +40,7 @@ struct _oe_device
     union {
         oe_device_ops_t* base;
         oe_fs_ops_t* fs;
-        oe_sock_ops_t* socket;
+        oe_sock_ops_t* sock;
         oe_epoll_ops_t* epoll;
         oe_eventfd_ops_t* eventfd;
     } ops;
@@ -56,6 +56,29 @@ oe_device_t* oe_get_device(uint64_t devid, oe_device_type_t type);
 oe_device_t* oe_find_device(const char* name, oe_device_type_t type);
 
 int oe_remove_device(uint64_t devid);
+
+// clang-format off
+#define __OE_CALL(OPS, FUNC, DEV, ...)                                  \
+    ({                                                                  \
+        oe_device_t* __dev__ = DEV;                                     \
+        if (!__dev__ || !__dev__->ops.OPS || !__dev__->ops.OPS->FUNC)   \
+        {                                                               \
+            oe_errno = OE_EINVAL;                                       \
+            goto done;                                                  \
+        }                                                               \
+        (*__dev__->ops.OPS->FUNC)(__dev__, ##__VA_ARGS__);              \
+    })                                                                  \
+// clang-format on
+
+#define OE_CALL_BASE(FUNC, DEV, ...) __OE_CALL(base, FUNC, DEV, ##__VA_ARGS__)
+
+#define OE_CALL_FS(FUNC, DEV, ...) __OE_CALL(fs, FUNC, DEV, ##__VA_ARGS__)
+
+#define OE_CALL_SOCK(FUNC, DEV, ...) __OE_CALL(sock, FUNC, DEV, ##__VA_ARGS__)
+
+#define OE_CALL_EPOLL(FUNC, DEV, ...) __OE_CALL(epoll, FUNC, DEV, ##__VA_ARGS__)
+
+#define OE_CALL_EVENTFD(FUNC, DEV, ...) __OE_CALL(eventfd, FUNC, DEV, ##__VA_ARGS__)
 
 OE_EXTERNC_END
 

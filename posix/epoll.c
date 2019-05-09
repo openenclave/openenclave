@@ -27,7 +27,7 @@ int oe_epoll_create(int size)
     if (!(device = oe_get_device(OE_DEVID_HOSTEPOLL, OE_DEVICE_TYPE_EPOLL)))
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (!(epoll = (*device->ops.epoll->epoll_create)(device, size)))
+    if (!(epoll = OE_CALL_EPOLL(epoll_create, device, size)))
         OE_RAISE_ERRNO(oe_errno);
 
     if ((epfd = oe_fdtable_assign(epoll)) == -1)
@@ -39,7 +39,7 @@ int oe_epoll_create(int size)
 done:
 
     if (epoll)
-        (*device->ops.base->close)(epoll);
+        OE_CALL_BASE(close, epoll);
 
     return ret;
 }
@@ -53,7 +53,7 @@ int oe_epoll_create1(int flags)
     if (!(device = oe_get_device(OE_DEVID_HOSTEPOLL, OE_DEVICE_TYPE_EPOLL)))
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (!(epoll = (*device->ops.epoll->epoll_create1)(device, flags)))
+    if (!(epoll = OE_CALL_EPOLL(epoll_create1, device, flags)))
         OE_RAISE_ERRNO(oe_errno);
 
     if ((epfd = oe_fdtable_assign(epoll)) == -1)
@@ -64,7 +64,7 @@ int oe_epoll_create1(int flags)
 done:
 
     if (epoll)
-        (*device->ops.base->close)(epoll);
+        OE_CALL_BASE(close, epoll);
 
     return epfd;
 }
@@ -79,7 +79,7 @@ int oe_epoll_ctl(int epfd, int op, int fd, struct oe_epoll_event* event)
     if (!(epoll = oe_fdtable_get(epfd, OE_DEVICE_TYPE_EPOLL)))
         OE_RAISE_ERRNO(OE_EBADF);
 
-    ret = (*epoll->ops.epoll->epoll_ctl)(epoll, op, fd, event);
+    ret = OE_CALL_EPOLL(epoll_ctl, epoll, op, fd, event);
 
 done:
     return ret;
@@ -97,10 +97,7 @@ int oe_epoll_wait(
     if (!(epoll = oe_fdtable_get(epfd, OE_DEVICE_TYPE_EPOLL)))
         OE_RAISE_ERRNO(OE_EBADF);
 
-    if (!epoll->ops.epoll->epoll_wait)
-        OE_RAISE_ERRNO(OE_EINVAL);
-
-    ret = (epoll->ops.epoll->epoll_wait)(epoll, events, maxevents, timeout);
+    ret = OE_CALL_EPOLL(epoll_wait, epoll, events, maxevents, timeout);
 
 done:
 

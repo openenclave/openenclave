@@ -51,12 +51,7 @@ int __oe_ioctl(int fd, unsigned long request, uint64_t arg)
         if (!(device = oe_fdtable_get(fd, OE_DEVICE_TYPE_NONE)))
             OE_RAISE_ERRNO(oe_errno);
 
-        if (device->ops.base->ioctl == NULL)
-            OE_RAISE_ERRNO(OE_EINVAL);
-
-        // The action routine sets errno
-        ret = (*device->ops.base->ioctl)(device, request, arg);
-        goto done;
+        ret = OE_CALL_BASE(ioctl, device, request, arg);
     }
 
 done:
