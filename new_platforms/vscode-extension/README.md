@@ -138,6 +138,14 @@ requirements will be presented in a Visual Studio Code warning window.
                 sudo systemctl restart systemd-binfmt.service
                 ```
 
+            * To validate that your system is configured for cross-building, you can try testing the docker containers that will be needed in the build:
+
+                ```bash
+                docker run arm32v7/ubuntu:xenial
+                docker run aarch64/ubuntu:xenial
+                docker run amd64/ubuntu:xenial
+                ```
+
         * On Linux, if you are seeing permission issues related to connecting to the Docker daemon, add your Linux user to the docker group. This will allow your user to connect and issue commands to the Docker daemon:
         
             ```bash
