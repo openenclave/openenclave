@@ -93,6 +93,16 @@ the host and enclave symbols into an instance of the debugger.
 
         Note: The debugger has been configured to break at TA_InvokeCommandEntryPoint.  This will happen once when the enclave starts and once for each ECALL.
 
+### Check your system for Open Enclave requirements.
+
+You can use the `Microsoft Open Enclave: Check System Requirements` command (commands can be found using **F1** or **CTRL-Shift-P**) 
+to validate your system.
+
+The command will query whether the [required tools and the required versions](#Requirements) are present on your system.  Any unmet
+requirements will be presented in a Visual Studio Code warning window.
+
+**Note:** as long as unmet requirements are found, this requirements check will run whenever the extension is activated automatically.
+
 ## Requirements
 
 * Install [Visual Studio Code](https://code.visualstudio.com/)
