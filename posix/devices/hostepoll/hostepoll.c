@@ -8,14 +8,16 @@
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/device/epollops.h>
-#include <openenclave/internal/device/fdtable.h>
+#include <openenclave/internal/posix/epollops.h>
+#include <openenclave/internal/posix/fdtable.h>
+#include <openenclave/internal/reserve.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include "posix_t.h"
 
 #define DEVICE_NAME "hostepoll"
 #define EPOLL_MAGIC 0x4504f4c
+#define MIN_MAP_SIZE 64
 
 /* epoll_ctl(OE_EPOLL_CTL_ADD) establishes this pair. */
 typedef struct _pair
@@ -40,47 +42,17 @@ typedef struct _epoll
 
 } epoll_t;
 
-static epoll_t* _cast_epoll(const oe_device_t* device)
-{
-    epoll_t* epoll = (epoll_t*)device;
-
-    if (epoll == NULL || epoll->magic != EPOLL_MAGIC)
-        return NULL;
-
-    return epoll;
-}
-
 static int _map_reserve(epoll_t* epoll, size_t new_capacity)
 {
-    int ret = -1;
+    if (new_capacity < MIN_MAP_SIZE)
+        new_capacity = MIN_MAP_SIZE;
 
-    if (new_capacity > epoll->map_capacity)
-    {
-        pair_t* p;
-        size_t cap = epoll->map_capacity * 2;
-
-        if (cap < new_capacity)
-            cap = new_capacity;
-
-        if (!(p = oe_realloc(epoll->map, cap * sizeof(pair_t))))
-        {
-            oe_errno = OE_ENOMEM;
-            OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-            goto done;
-        }
-
-        size_t n = (cap - epoll->map_capacity) * sizeof(pair_t);
-        memset(p + epoll->map_capacity, 0, n);
-
-        epoll->map = p;
-        epoll->map_capacity = new_capacity;
-    }
-
-    ret = 0;
-
-done:
-
-    return ret;
+    return oe_reserve(
+        (void**)&epoll->map,
+        epoll->map_size,
+        sizeof(pair_t),
+        &epoll->map_capacity,
+        new_capacity);
 }
 
 static const pair_t* _map_find(epoll_t* epoll, int fd)
@@ -95,6 +67,16 @@ static const pair_t* _map_find(epoll_t* epoll, int fd)
 
     /* Not found */
     return NULL;
+}
+
+static epoll_t* _cast_epoll(const oe_device_t* device)
+{
+    epoll_t* epoll = (epoll_t*)device;
+
+    if (epoll == NULL || epoll->magic != EPOLL_MAGIC)
+        return NULL;
+
+    return epoll;
 }
 
 static epoll_t _epoll;
@@ -240,20 +222,11 @@ static int _epoll_ctl_add(epoll_t* epoll, int fd, struct oe_epoll_event* event)
     host_epfd = epoll->host_fd;
 
     /* Get the host fd for the device. */
+    if ((host_fd = OE_CALL_BASE(get_host_fd, dev)) == -1)
     {
-        if (!dev->ops.base->get_host_fd)
-        {
-            oe_errno = OE_EINVAL;
-            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-            goto done;
-        }
-
-        if ((host_fd = (*dev->ops.base->get_host_fd)(dev)) == -1)
-        {
-            oe_errno = OE_EINVAL;
-            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-            goto done;
-        }
+        oe_errno = OE_EINVAL;
+        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
+        goto done;
     }
 
     /* Initialize the host event. */
@@ -312,14 +285,7 @@ static int _epoll_ctl_mod(epoll_t* epoll, int fd, struct oe_epoll_event* event)
 
     /* Get the host fd for the device. */
     {
-        if (!dev->ops.base->get_host_fd)
-        {
-            oe_errno = OE_EINVAL;
-            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-            goto done;
-        }
-
-        if ((host_fd = (*dev->ops.base->get_host_fd)(dev)) == -1)
+        if ((host_fd = OE_CALL_BASE(get_host_fd, dev)) == -1)
         {
             oe_errno = OE_EINVAL;
             OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
@@ -394,14 +360,7 @@ static int _epoll_ctl_del(epoll_t* epoll, int fd)
 
     /* Get the host fd for the device. */
     {
-        if (!dev->ops.base->get_host_fd)
-        {
-            oe_errno = OE_EINVAL;
-            OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-            goto done;
-        }
-
-        if ((host_fd = (*dev->ops.base->get_host_fd)(dev)) == -1)
+        if ((host_fd = OE_CALL_BASE(get_host_fd, dev)) == -1)
         {
             oe_errno = OE_EINVAL;
             OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
@@ -507,14 +466,7 @@ static int _epoll_wait(
 
     oe_errno = 0;
 
-    if (!epoll->base.ops.base->get_host_fd)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
-
-    host_epfd = (*epoll->base.ops.base->get_host_fd)((oe_device_t*)epoll);
+    host_epfd = OE_CALL_BASE(get_host_fd, (oe_device_t*)epoll);
     if (host_epfd == -1)
     {
         oe_errno = OE_EINVAL;
@@ -654,40 +606,32 @@ static epoll_t _epoll = {
     .magic = EPOLL_MAGIC,
 };
 
-oe_result_t oe_load_module_hostepoll(void)
+static oe_once_t _once = OE_ONCE_INITIALIZER;
+static bool _loaded;
+
+static void _load_once(void)
 {
     oe_result_t result = OE_FAILURE;
-    static bool _loaded = false;
-    static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
+    const uint64_t devid = OE_DEVID_HOSTEPOLL;
 
-    if (!_loaded)
+    if (oe_set_device(devid, &_epoll.base) != 0)
     {
-        oe_spin_lock(&_lock);
-
-        if (!_loaded)
-        {
-            const uint64_t devid = OE_DEVID_HOSTEPOLL;
-
-            /* Allocate the device id. */
-            if (oe_allocate_devid(devid) != devid)
-            {
-                OE_TRACE_ERROR("devid=%lu", devid);
-                goto done;
-            }
-
-            /* Add to the device table. */
-            if (oe_set_device(devid, &_epoll.base) != 0)
-            {
-                OE_TRACE_ERROR("devid=%lu", devid);
-                goto done;
-            }
-        }
-
-        oe_spin_unlock(&_lock);
+        OE_TRACE_ERROR("devid=%lu ", devid);
+        goto done;
     }
 
     result = OE_OK;
 
 done:
-    return result;
+
+    if (result == OE_OK)
+        _loaded = true;
+}
+
+oe_result_t oe_load_module_hostepoll(void)
+{
+    if (oe_once(&_once, _load_once) != OE_OK || !_loaded)
+        return OE_FAILURE;
+
+    return OE_OK;
 }

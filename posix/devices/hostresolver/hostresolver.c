@@ -7,10 +7,10 @@
 #include <openenclave/enclave.h>
 // clang-format on
 
-#include <openenclave/internal/device/device.h>
+#include <openenclave/internal/posix/device.h>
 #include <openenclave/corelibc/sys/socket.h>
 #include <openenclave/corelibc/netdb.h>
-#include <openenclave/internal/device/resolver.h>
+#include <openenclave/internal/posix/resolver.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/thread.h>
@@ -320,30 +320,32 @@ static resolv_t _hostresolv =
 };
 // clang-format on
 
-oe_result_t oe_load_module_hostresolver(void)
+static oe_once_t _once = OE_ONCE_INITIALIZER;
+static bool _loaded;
+
+static void _load_once(void)
 {
     oe_result_t result = OE_FAILURE;
-    static bool _loaded = false;
-    static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
-    int ret = -1;
+    oe_resolver_t* resolver = &_hostresolv.base;
 
-    if (!_loaded)
+    if (oe_register_resolver(2, resolver) != 0)
     {
-        oe_spin_lock(&_lock);
-
-        if (!_loaded)
-        {
-            oe_resolver_t* resolver = &_hostresolv.base;
-
-            if ((ret = oe_register_resolver(2, resolver)) != 0)
-            {
-                OE_TRACE_ERROR("ret=%d", ret);
-                goto done;
-            }
-        }
-        oe_spin_unlock(&_lock);
+        OE_TRACE_ERROR("failed");
+        goto done;
     }
+
     result = OE_OK;
+
 done:
-    return result;
+
+    if (result == OE_OK)
+        _loaded = true;
+}
+
+oe_result_t oe_load_module_hostresolver(void)
+{
+    if (oe_once(&_once, _load_once) != OE_OK || !_loaded)
+        return OE_FAILURE;
+
+    return OE_OK;
 }

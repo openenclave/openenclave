@@ -7,8 +7,8 @@
 #include <openenclave/enclave.h>
 // clang-format on
 
-#include <openenclave/internal/device/device.h>
-#include <openenclave/internal/device/sockops.h>
+#include <openenclave/internal/posix/device.h>
+#include <openenclave/internal/posix/sockops.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/thread.h>
@@ -215,7 +215,7 @@ static oe_device_t* _hostsock_socket(
     sock->base.type = OE_DEVICE_TYPE_SOCKET;
     sock->base.name = DEVICE_NAME;
     sock->magic = SOCKET_MAGIC;
-    sock->base.ops.socket = _hostsock.base.ops.socket;
+    sock->base.ops.sock = _hostsock.base.ops.sock;
     sock->host_fd = retval;
     sock = NULL;
 
@@ -277,13 +277,13 @@ static ssize_t _hostsock_socketpair(
         sock1->base.type = OE_DEVICE_TYPE_SOCKET;
         sock1->base.name = DEVICE_NAME;
         sock1->magic = SOCKET_MAGIC;
-        sock1->base.ops.socket = _hostsock.base.ops.socket;
+        sock1->base.ops.sock = _hostsock.base.ops.sock;
         sock1->host_fd = svs[0];
 
         sock2->base.type = OE_DEVICE_TYPE_SOCKET;
         sock2->base.name = DEVICE_NAME;
         sock2->magic = SOCKET_MAGIC;
-        sock2->base.ops.socket = _hostsock.base.ops.socket;
+        sock2->base.ops.sock = _hostsock.base.ops.sock;
         sock2->host_fd = svs[1];
         retdevs[0] = retdev1;
         retdevs[1] = retdev2;
@@ -1150,7 +1150,7 @@ static oe_sock_ops_t _ops = {
 static sock_t _hostsock = {
     .base.type = OE_DEVICE_TYPE_SOCKET,
     .base.name = DEVICE_NAME,
-    .base.ops.socket = &_ops,
+    .base.ops.sock = &_ops,
     .magic = SOCKET_MAGIC,
     .ready_mask = 0,
     .max_event_fds = 0,
@@ -1158,40 +1158,32 @@ static sock_t _hostsock = {
     // oe_event_device_t *event_fds;
 };
 
-oe_result_t oe_load_module_hostsock(void)
+static oe_once_t _once = OE_ONCE_INITIALIZER;
+static bool _loaded;
+
+static void _load_once(void)
 {
     oe_result_t result = OE_FAILURE;
-    static bool _loaded = false;
-    static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
+    const uint64_t devid = OE_DEVID_HOSTSOCK;
 
-    if (!_loaded)
+    if (oe_set_device(devid, &_hostsock.base) != 0)
     {
-        oe_spin_lock(&_lock);
-
-        if (!_loaded)
-        {
-            const uint64_t devid = OE_DEVID_HOSTSOCK;
-
-            /* Allocate the device id. */
-            if (oe_allocate_devid(devid) != devid)
-            {
-                OE_TRACE_ERROR("devid=%lu", devid);
-                goto done;
-            }
-
-            /* Add the hostfs device to the device table. */
-            if (oe_set_device(devid, &_hostsock.base) != 0)
-            {
-                OE_TRACE_ERROR("devid=%lu", devid);
-                goto done;
-            }
-        }
-
-        oe_spin_unlock(&_lock);
+        OE_TRACE_ERROR("devid=%lu ", devid);
+        goto done;
     }
 
     result = OE_OK;
 
 done:
-    return result;
+
+    if (result == OE_OK)
+        _loaded = true;
+}
+
+oe_result_t oe_load_module_hostsock(void)
+{
+    if (oe_once(&_once, _load_once) != OE_OK || !_loaded)
+        return OE_FAILURE;
+
+    return OE_OK;
 }

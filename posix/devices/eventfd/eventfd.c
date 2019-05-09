@@ -7,8 +7,8 @@
 #include <openenclave/enclave.h>
 // clang-format on
 
-#include <openenclave/internal/device/device.h>
-#include <openenclave/internal/device/eventfdops.h>
+#include <openenclave/internal/posix/device.h>
+#include <openenclave/internal/posix/eventfdops.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/thread.h>
@@ -307,39 +307,32 @@ static eventfd_dev_t _eventfd = {
     .waitfor = OE_COND_INITIALIZER,
 };
 
-oe_result_t oe_load_module_eventfd(void)
+static oe_once_t _once = OE_ONCE_INITIALIZER;
+static bool _loaded;
+
+static void _load_once(void)
 {
     oe_result_t result = OE_FAILURE;
-    static bool _loaded = false;
-    int ret = -1;
-    static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
+    const uint64_t devid = OE_DEVID_EVENTFD;
 
-    if (!_loaded)
+    if (oe_set_device(devid, &_eventfd.base) != 0)
     {
-        oe_spin_lock(&_lock);
-
-        if (!_loaded)
-        {
-            const uint64_t devid = OE_DEVID_EVENTFD;
-
-            if (oe_allocate_devid(devid) != devid)
-            {
-                OE_TRACE_ERROR("devid=%lu", devid);
-                goto done;
-            }
-
-            if ((ret = oe_set_device(devid, &_eventfd.base)) != 0)
-            {
-                OE_TRACE_ERROR("devid=%lu ret=%d", devid, ret);
-                goto done;
-            }
-            _loaded = true;
-        }
-        oe_spin_unlock(&_lock);
+        OE_TRACE_ERROR("devid=%lu ", devid);
+        goto done;
     }
 
     result = OE_OK;
 
 done:
-    return result;
+
+    if (result == OE_OK)
+        _loaded = true;
+}
+
+oe_result_t oe_load_module_eventfd(void)
+{
+    if (oe_once(&_once, _load_once) != OE_OK || !_loaded)
+        return OE_FAILURE;
+
+    return OE_OK;
 }

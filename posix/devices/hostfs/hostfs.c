@@ -7,9 +7,9 @@
 #include <openenclave/enclave.h>
 // clang-format on
 
-#include <openenclave/internal/device/device.h>
+#include <openenclave/internal/posix/device.h>
 #include <openenclave/corelibc/limits.h>
-#include <openenclave/internal/device/fsops.h>
+#include <openenclave/internal/posix/fsops.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/thread.h>
@@ -1388,38 +1388,32 @@ oe_device_t* oe_get_hostfs_device(void)
     return &_hostfs.base;
 }
 
-oe_result_t oe_load_module_hostfs(void)
+static oe_once_t _once = OE_ONCE_INITIALIZER;
+static bool _loaded;
+
+static void _load_once(void)
 {
     oe_result_t result = OE_FAILURE;
-    static bool _loaded = false;
-    static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
+    const uint64_t devid = OE_DEVID_HOSTFS;
 
-    if (!_loaded)
+    if (oe_set_device(devid, oe_get_hostfs_device()) != 0)
     {
-        oe_spin_lock(&_lock);
-
-        if (!_loaded)
-        {
-            const uint64_t devid = OE_DEVID_HOSTFS;
-
-            /* Allocate the device id. */
-            if (oe_allocate_devid(devid) != devid)
-            {
-                OE_TRACE_ERROR("devid=%lu", devid);
-                goto done;
-            }
-
-            /* Add the hostfs device to the device table. */
-            if (oe_set_device(devid, oe_get_hostfs_device()) != 0)
-            {
-                OE_TRACE_ERROR("devid=%lu", devid);
-                goto done;
-            }
-        }
-        oe_spin_unlock(&_lock);
+        OE_TRACE_ERROR("devid=%lu ", devid);
+        goto done;
     }
+
     result = OE_OK;
 
 done:
-    return result;
+
+    if (result == OE_OK)
+        _loaded = true;
+}
+
+oe_result_t oe_load_module_hostfs(void)
+{
+    if (oe_once(&_once, _load_once) != OE_OK || !_loaded)
+        return OE_FAILURE;
+
+    return OE_OK;
 }

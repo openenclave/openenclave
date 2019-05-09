@@ -74,6 +74,7 @@ add_library(oecore STATIC
     intstr.c
     printf.c
     pthread.c
+    reserve.c
     result.c
     stdio.c
     strerror.c

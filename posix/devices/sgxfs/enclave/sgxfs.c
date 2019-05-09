@@ -16,7 +16,8 @@
 #include <openenclave/corelibc/fcntl.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/corelibc/limits.h>
-#include <openenclave/internal/device/device.h>
+#include <openenclave/internal/trace.h>
+#include <openenclave/internal/posix/device.h>
 
 #define DEVICE_NAME "sgxfs"
 #define FS_MAGIC 0x4a335f60
@@ -473,7 +474,7 @@ static oe_device_t* _sgxfs_open_directory(
         if (_expand_path(fs, pathname, full_path) != 0)
             goto done;
 
-        if ((ret = hostfs->ops.fs->open(hostfs, full_path, flags, mode)) != 0)
+        if ((ret = OE_CALL_FS(open, hostfs, full_path, flags, mode)) != 0)
             goto done;
     }
 
@@ -624,7 +625,7 @@ static int _sgxfs_close(oe_device_t* file_)
     }
     else
     {
-        if ((*hostfs->ops.fs->base.close)(file_) != 0)
+        if (OE_CALL_BASE(close, file_) != 0)
             goto done;
     }
 
@@ -671,7 +672,7 @@ static int _sgxfs_getdents(
     }
 
     /* Delegate the request to HOSTFS. */
-    if ((n = hostfs->ops.fs->getdents(file, dirp, count)) == -1)
+    if ((n = OE_CALL_FS(getdents, file, dirp, count)) == -1)
         goto done;
 
     ret = n;
@@ -706,7 +707,7 @@ static int _sgxfs_stat(
         if (_expand_path(fs, pathname, full_path) != 0)
             goto done;
 
-        if (hostfs->ops.fs->stat(hostfs, full_path, buf) != 0)
+        if (OE_CALL_FS(stat, hostfs, full_path, buf) != 0)
             goto done;
     }
 
@@ -762,7 +763,7 @@ static int _sgxfs_access(oe_device_t* fs_, const char* pathname, int mode)
         if (_expand_path(fs, pathname, full_path) != 0)
             goto done;
 
-        if ((ret = hostfs->ops.fs->access(hostfs, full_path, mode)) != 0)
+        if ((ret = OE_CALL_FS(access, hostfs, full_path, mode)) != 0)
             goto done;
     }
 
@@ -875,7 +876,7 @@ static int _sgxfs_unlink(oe_device_t* fs_, const char* pathname)
         if (_expand_path(fs, pathname, full_path) != 0)
             goto done;
 
-        ret = hostfs->ops.fs->unlink(hostfs, full_path);
+        ret = OE_CALL_FS(unlink, hostfs, full_path);
     }
 
 done:
@@ -953,7 +954,7 @@ static int _sgxfs_rename(
         if (_expand_path(fs, oldpath, full_path) != 0)
             goto done;
 
-        if (hostfs->ops.fs->unlink(hostfs, full_path) != 0)
+        if (OE_CALL_FS(unlink, hostfs, full_path) != 0)
         {
             goto done;
         }
@@ -1126,7 +1127,7 @@ static int _sgxfs_mkdir(oe_device_t* fs_, const char* pathname, oe_mode_t mode)
         if (_expand_path(fs, pathname, full_path) != 0)
             goto done;
 
-        if (hostfs->ops.fs->mkdir(hostfs, full_path, mode) != 0)
+        if (OE_CALL_FS(mkdir, hostfs, full_path, mode) != 0)
             goto done;
     }
 
@@ -1162,7 +1163,7 @@ static int _sgxfs_rmdir(oe_device_t* fs_, const char* pathname)
         if (_expand_path(fs, pathname, full_path) != 0)
             goto done;
 
-        if (hostfs->ops.fs->rmdir(hostfs, full_path) != 0)
+        if (OE_CALL_FS(rmdir, hostfs, full_path) != 0)
             goto done;
     }
 
@@ -1208,40 +1209,32 @@ static oe_device_t* _get_sgxfs_device(void)
     return &_sgxfs.base;
 }
 
-oe_result_t oe_load_module_sgxfs(void)
+static oe_once_t _once = OE_ONCE_INITIALIZER;
+static bool _loaded;
+
+static void _load_once()
 {
-    oe_result_t result = OE_UNEXPECTED;
-    static bool _loaded = false;
-    static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
+    oe_result_t result = OE_FAILURE;
+    const uint64_t devid = OE_DEVID_SGXFS;
 
-    if (!_loaded)
+    if (oe_set_device(devid, _get_sgxfs_device()) != 0)
     {
-        oe_spin_lock(&_lock);
-
-        if (!_loaded)
-        {
-            /* Allocate the device id. */
-            if (oe_allocate_devid(OE_DEVID_SGXFS) != OE_DEVID_SGXFS)
-            {
-                result = OE_FAILURE;
-                goto done;
-            }
-
-            /* Add the sgxfs device to the device table. */
-            if (oe_set_device(OE_DEVID_SGXFS, _get_sgxfs_device()) != 0)
-            {
-                result = OE_FAILURE;
-                goto done;
-            }
-
-            _loaded = true;
-        }
-
-        oe_spin_unlock(&_lock);
+        OE_TRACE_ERROR("devid=%lu ", devid);
+        goto done;
     }
 
     result = OE_OK;
 
 done:
-    return result;
+
+    if (result == OE_OK)
+        _loaded = true;
+}
+
+oe_result_t oe_load_module_sgxfs(void)
+{
+    if (oe_once(&_once, _load_once) != OE_OK || !_loaded)
+        return OE_FAILURE;
+
+    return OE_OK;
 }

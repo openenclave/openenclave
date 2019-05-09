@@ -217,7 +217,6 @@ if (BUILD_ENCLAVES)
   add_subdirectory(posix)
   add_subdirectory(posix/devices)
   add_subdirectory(enclave)
-  add_subdirectory(posix)
 endif()
 
 if (UNIX)

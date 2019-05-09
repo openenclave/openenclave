@@ -47,7 +47,7 @@ void sigpipe_handler(int unused)
 void* host_server_thread(void* arg)
 {
     static const char TESTDATA[] = "This is TEST DATA\n";
-    socket_t  listenfd = socket(AF_INET, SOCK_STREAM, 0);
+    socket_t listenfd = socket(AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in serv_addr = {0};
     static size_t MAX_ACCEPTS = 3;
 
@@ -82,7 +82,7 @@ void* host_server_thread(void* arg)
         socket_t connfd;
         ssize_t n;
 
-printf("host server: accepting\n");
+        printf("host server: accepting\n");
         OE_TEST((connfd = accept(listenfd, NULL, NULL)) >= 0);
 
 #if defined(__linux__)
@@ -165,7 +165,12 @@ int main(int argc, const char* argv[])
     // host server to enclave client
 #if !defined(__linux__)
     server_thread_id = CreateThread(
-        NULL, 0, (LPTHREAD_START_ROUTINE)host_server_thread, (void*)&done, 0, NULL);
+        NULL,
+        0,
+        (LPTHREAD_START_ROUTINE)host_server_thread,
+        (void*)&done,
+        0,
+        NULL);
     OE_TEST(server_thread_id != INVALID_HANDLE_VALUE);
 #else
     OE_TEST(
@@ -237,7 +242,12 @@ int main(int argc, const char* argv[])
 
 #if defined(_WIN32)
         thread = CreateThread(
-            NULL, 0, (LPTHREAD_START_ROUTINE)_run_wake_test, (void*)enclave, 0, NULL);
+            NULL,
+            0,
+            (LPTHREAD_START_ROUTINE)_run_wake_test,
+            (void*)enclave,
+            0,
+            NULL);
         OE_TEST(server_thread_id != INVALID_HANDLE_VALUE);
 #else
         OE_TEST(pthread_create(&thread, NULL, _run_wake_test, enclave) == 0);
