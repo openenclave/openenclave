@@ -20,6 +20,7 @@
 #include <openenclave/internal/print.h>
 #include <openenclave/bits/module.h>
 #include <openenclave/internal/trace.h>
+#include <openenclave/internal/posix/raise.h>
 #include "posix_t.h"
 
 #define DEVICE_NAME "hostsock"
@@ -107,6 +108,23 @@ typedef struct _sock
     int num_event_fds;
 } sock_t;
 
+static oe_sock_ops_t* _get_ops(void);
+
+static sock_t* _new_sock(void)
+{
+    sock_t* sock = NULL;
+
+    if (!(sock = oe_calloc(1, sizeof(sock_t))))
+        return NULL;
+
+    sock->base.type = OE_DEVICE_TYPE_SOCKET;
+    sock->base.name = DEVICE_NAME;
+    sock->base.ops.sock = _get_ops();
+    sock->magic = SOCKET_MAGIC;
+
+    return sock;
+}
+
 static sock_t* _cast_sock(const oe_device_t* device)
 {
     sock_t* sock = (sock_t*)device;
@@ -174,130 +192,112 @@ done:
 }
 
 static oe_device_t* _hostsock_socket(
-    oe_device_t* sock_,
+    oe_device_t* dev,
     int domain,
     int type,
     int protocol)
 {
     oe_device_t* ret = NULL;
-    sock_t* sock = NULL;
-    oe_host_fd_t retval = -1;
-    oe_result_t result = OE_FAILURE;
+    sock_t* sock = _cast_sock(dev);
+    sock_t* new_sock = NULL;
 
     oe_errno = 0;
 
-    (void)_hostsock_clone(sock_, &ret);
-    sock = _cast_sock(ret);
+    if (!sock)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
-    /* Input */
+    /* ATTN: remove OE_AF_HOST */
     if (domain == OE_AF_HOST)
         domain = OE_AF_INET;
 
-    if ((result = oe_posix_socket_ocall(&retval, domain, type, protocol)) !=
-        OE_OK)
+    if (!(new_sock = _new_sock()))
+        OE_RAISE_ERRNO(OE_ENOMEM);
+
+    /* Call the host. */
     {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR(
-            "domain=%d type=%d protocol=%d %s",
-            domain,
-            type,
-            protocol,
-            oe_result_str(result));
-        goto done;
+        oe_host_fd_t retval = -1;
+
+        if (oe_posix_socket_ocall(&retval, domain, type, protocol) != OE_OK)
+            OE_RAISE_ERRNO(OE_EINVAL);
+
+        if (retval == -1)
+            OE_RAISE_ERRNO_F(oe_errno, "retval=%ld\n", retval);
+
+        new_sock->host_fd = retval;
     }
 
-    if (retval == -1)
-    {
-        OE_TRACE_ERROR("retval=%d", retval);
-        goto done;
-    }
-
-    sock->base.type = OE_DEVICE_TYPE_SOCKET;
-    sock->base.name = DEVICE_NAME;
-    sock->magic = SOCKET_MAGIC;
-    sock->base.ops.sock = _hostsock.base.ops.sock;
-    sock->host_fd = retval;
-    sock = NULL;
+    ret = &new_sock->base;
+    new_sock = NULL;
 
 done:
 
-    if (sock)
-        oe_free(sock);
+    if (new_sock)
+        oe_free(new_sock);
 
     return ret;
 }
 
 static ssize_t _hostsock_socketpair(
-    oe_device_t* sock_,
+    oe_device_t* dev,
     int domain,
     int type,
     int protocol,
-    oe_device_t* retdevs[2])
+    oe_device_t* sv[2])
 {
     int ret = -1;
-    oe_device_t* retdev1 = NULL;
-    oe_device_t* retdev2 = NULL;
-    sock_t* sock1 = NULL;
-    sock_t* sock2 = NULL;
-    oe_host_fd_t svs[2];
-    oe_result_t result = OE_FAILURE;
+    sock_t* sock = _cast_sock(dev);
+    sock_t* pair[2] = {NULL, NULL};
 
     oe_errno = 0;
 
-    (void)_hostsock_clone(sock_, &retdev1);
-    (void)_hostsock_clone(sock_, &retdev2);
-    sock1 = _cast_sock(retdev1);
-    sock2 = _cast_sock(retdev2);
+    if (!sock)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Input */
     if (domain == OE_AF_HOST)
         domain = OE_AF_INET;
 
-    /* Call */
-    if ((result = oe_posix_socketpair_ocall(
-             &ret, domain, type, protocol, svs)) != OE_OK)
+    /* Create the new socket devices. */
     {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR(
-            "domain=%d type=%d protocol=%d result=%s",
-            domain,
-            type,
-            protocol,
-            oe_result_str(result));
-        goto done;
+        if (!(pair[0] = _new_sock()))
+            OE_RAISE_ERRNO(OE_ENOMEM);
+
+        if (!(pair[1] = _new_sock()))
+            OE_RAISE_ERRNO(OE_ENOMEM);
     }
 
-    if (ret == -1)
+    /* Call the host. */
     {
-        OE_TRACE_ERROR("ret=%d", ret);
-        goto done;
+        int retval = -1;
+        oe_host_fd_t host_sv[2];
+
+        if (oe_posix_socketpair_ocall(
+                &retval, domain, type, protocol, host_sv) != OE_OK)
+        {
+            OE_RAISE_ERRNO(OE_EINVAL);
+        }
+
+        if (retval == -1)
+            OE_RAISE_ERRNO_F(oe_errno, "retval=%d\n", retval);
+
+        pair[0]->host_fd = host_sv[0];
+        pair[1]->host_fd = host_sv[1];
     }
 
-    {
-        sock1->base.type = OE_DEVICE_TYPE_SOCKET;
-        sock1->base.name = DEVICE_NAME;
-        sock1->magic = SOCKET_MAGIC;
-        sock1->base.ops.sock = _hostsock.base.ops.sock;
-        sock1->host_fd = svs[0];
+    sv[0] = &pair[0]->base;
+    sv[1] = &pair[1]->base;
 
-        sock2->base.type = OE_DEVICE_TYPE_SOCKET;
-        sock2->base.name = DEVICE_NAME;
-        sock2->magic = SOCKET_MAGIC;
-        sock2->base.ops.sock = _hostsock.base.ops.sock;
-        sock2->host_fd = svs[1];
-        retdevs[0] = retdev1;
-        retdevs[1] = retdev2;
-    }
-
-    sock1 = NULL;
+    ret = 0;
+    pair[0] = NULL;
+    pair[1] = NULL;
 
 done:
 
-    if (sock1)
-        oe_free(sock1);
+    if (pair[0])
+        oe_free(pair[0]);
 
-    if (sock2)
-        oe_free(sock2);
+    if (pair[1])
+        oe_free(pair[1]);
 
     return ret;
 }
@@ -348,66 +348,63 @@ done:
     return ret;
 }
 
-static int _hostsock_accept(
+static oe_device_t* _hostsock_accept(
     oe_device_t* sock_,
     struct oe_sockaddr* addr,
     oe_socklen_t* addrlen)
 {
-    int ret = -1;
-    oe_host_fd_t retval = -1;
+    oe_device_t* ret = NULL;
     sock_t* sock = _cast_sock(sock_);
     sockaddr_t buf;
     oe_socklen_t addrlen_in = 0;
-    oe_result_t result = OE_FAILURE;
+    sock_t* new_sock = NULL;
 
     oe_errno = 0;
 
     if (!sock || (addr && !addrlen) || (addrlen && !addr))
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     memset(&buf, 0, sizeof(buf));
 
+    /* Fixup the address. */
     if (addr && addrlen)
     {
         if (sizeof(buf) < *addrlen)
-        {
-            oe_errno = OE_EINVAL;
-            OE_TRACE_ERROR(
-                "oe_errno=%d sizeof(buf)=%zu *addrlen=%u",
-                oe_errno,
-                sizeof(buf),
-                *addrlen);
-            goto done;
-        }
+            OE_RAISE_ERRNO_F(OE_EINVAL, "*addrlen=%u", *addrlen);
 
         memcpy(&buf, addr, *addrlen);
         _fix_address_family(&buf.addr);
         addrlen_in = *addrlen;
     }
 
-    if ((result = oe_posix_accept_ocall(
-             &retval, sock->host_fd, &buf.addr, addrlen_in, addrlen)) != OE_OK)
+    /* Create the new socket. */
+    if (!(new_sock = _new_sock()))
+        OE_RAISE_ERRNO(OE_ENOMEM);
+
+    /* Call the host. */
     {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("host_fd=%ld %s", sock->host_fd, oe_result_str(result));
-        goto done;
+        oe_host_fd_t retval = -1;
+
+        if (oe_posix_accept_ocall(
+                &retval, sock->host_fd, &buf.addr, addrlen_in, addrlen) !=
+            OE_OK)
+        {
+            OE_RAISE_ERRNO(oe_errno);
+        }
+
+        if (retval == -1)
+            OE_RAISE_ERRNO_F(oe_errno, "retval=%d", retval);
+
+        new_sock->host_fd = retval;
     }
 
-    if (retval == -1)
-    {
-        OE_TRACE_ERROR("retval=%ld", retval);
-        goto done;
-    }
-
-    sock->host_fd = retval;
-
-    ret = 0;
+    ret = &new_sock->base;
+    new_sock = NULL;
 
 done:
+
+    if (new_sock)
+        oe_free(new_sock);
 
     return ret;
 }
@@ -827,49 +824,44 @@ done:
     return ret;
 }
 
-static int _hostsock_dup(oe_device_t* sock_, oe_device_t** new_sock)
+static int _hostsock_dup(oe_device_t* sock_, oe_device_t** new_sock_out)
 {
     int ret = -1;
-    oe_host_fd_t retval = -1;
     sock_t* sock = _cast_sock(sock_);
-    oe_result_t result = OE_FAILURE;
+    sock_t* new_sock = NULL;
 
     oe_errno = 0;
 
-    if (!sock)
+    if (new_sock_out)
+        *new_sock_out = NULL;
+
+    if (!sock || !new_sock_out)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    if (!(new_sock = _new_sock()))
+        OE_RAISE_ERRNO(OE_ENOMEM);
+
+    /* Call the host. */
     {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
+        oe_host_fd_t retval = -1;
+
+        if (oe_posix_dup_ocall(&retval, sock->host_fd) != OE_OK)
+            OE_RAISE_ERRNO(OE_EINVAL);
+
+        if (retval == -1)
+            OE_RAISE_ERRNO(oe_errno);
+
+        new_sock->host_fd = retval;
     }
 
-    if ((result = oe_posix_dup_ocall(&retval, sock->host_fd)) != OE_OK)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("host_fd=%ld %s", sock->host_fd, oe_result_str(result));
-        goto done;
-    }
-
-    if (retval != -1)
-    {
-        sock_t* s = NULL;
-
-        _hostsock_clone(sock_, (oe_device_t**)&s);
-
-        if (!s)
-        {
-            oe_errno = OE_EINVAL;
-            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-            goto done;
-        }
-
-        s->host_fd = retval;
-        *new_sock = (oe_device_t*)s;
-    }
-
+    *new_sock_out = &new_sock->base;
+    new_sock = NULL;
     ret = 0;
 
 done:
+
+    if (new_sock)
+        oe_free(new_sock);
 
     return ret;
 }
@@ -1146,6 +1138,11 @@ static oe_sock_ops_t _ops = {
     .recvmsg = _hostsock_recvmsg,
     .sendmsg = _hostsock_sendmsg,
 };
+
+static oe_sock_ops_t* _get_ops(void)
+{
+    return &_ops;
+}
 
 static sock_t _hostsock = {
     .base.type = OE_DEVICE_TYPE_SOCKET,

@@ -27,7 +27,7 @@ typedef struct _oe_sock_ops
         const struct oe_sockaddr* addr,
         socklen_t addrlen);
 
-    int (*accept)(
+    oe_device_t* (*accept)(
         oe_device_t* dev,
         struct oe_sockaddr* addr,
         socklen_t* addrlen);
