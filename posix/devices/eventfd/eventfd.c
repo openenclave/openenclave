@@ -11,6 +11,7 @@
 #include <openenclave/internal/posix/eventfdops.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/bits/safemath.h>
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/print.h>
@@ -67,8 +68,7 @@ static int _eventfd_clone(oe_device_t* device, oe_device_t** new_device)
     if (!(new_eventfd = oe_calloc(1, sizeof(eventfd_dev_t))))
         OE_RAISE_ERRNO(OE_ENOMEM);
 
-    memcpy(new_eventfd, eventfd, sizeof(eventfd_dev_t));
-
+    *new_eventfd = *eventfd;
     *new_device = &new_eventfd->base;
     ret = 0;
 
@@ -121,16 +121,21 @@ static ssize_t _eventfd_read(oe_device_t* eventfd_, void* buf, size_t count)
 
     if (eventfd->flags & OE_EFD_SEMAPHORE)
     {
-        memcpy(buf, &eventfd->count, sizeof(uint64_t));
+        if (oe_memcpy_s(buf, count, &eventfd->count, sizeof(uint64_t)) != OE_OK)
+            OE_RAISE_ERRNO(OE_EINVAL);
+
         eventfd->count = 0;
-        ret = 8; //? man page isn't clear
+        ret = sizeof(uint64_t);
     }
     else
     {
         static const uint64_t one = 1;
-        memcpy(buf, &one, sizeof(uint64_t));
+
+        if (oe_memcpy_s(buf, count, &one, sizeof(uint64_t)) != OE_OK)
+            OE_RAISE_ERRNO(OE_EINVAL);
+
         eventfd->count--;
-        ret = 8; //? man page isn't clear
+        ret = sizeof(uint64_t);
     }
 
 done:
@@ -159,7 +164,8 @@ static ssize_t _eventfd_write(
             OE_RAISE_ERRNO(OE_EAGAIN);
     }
 
-    memcpy(&incr, buf, sizeof(uint64_t));
+    if (oe_memcpy_s(&incr, sizeof(incr), buf, sizeof(uint64_t)) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     total = (__uint128_t)eventfd->count + (__uint128_t)incr;
     if (total > MAX_EVENTFD_COUNT)

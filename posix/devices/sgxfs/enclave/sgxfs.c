@@ -236,8 +236,7 @@ static int _sgxfs_clone(oe_device_t* device, oe_device_t** new_device)
     if (!(new_fs = oe_calloc(1, sizeof(fs_t))))
         OE_RAISE_ERRNO(OE_ENOMEM);
 
-    memcpy(new_fs, fs, sizeof(fs_t));
-
+    *new_fs = *fs;
     *new_device = &new_fs->base;
     ret = 0;
 

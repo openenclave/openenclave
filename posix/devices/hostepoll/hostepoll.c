@@ -98,8 +98,7 @@ static int _epoll_clone(oe_device_t* device, oe_device_t** new_device)
     if (!(new_epoll = oe_calloc(1, sizeof(epoll_t))))
         OE_RAISE_ERRNO(OE_ENOMEM);
 
-    memcpy(new_epoll, epoll, sizeof(epoll_t));
-
+    *new_epoll = *epoll;
     *new_device = &new_epoll->base;
     ret = 0;
 

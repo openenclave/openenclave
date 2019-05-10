@@ -13,6 +13,7 @@
 #include <openenclave/corelibc/sys/socket.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/corelibc/stdlib.h>
+#include <openenclave/bits/safecrt.h>
 #include "posix_t.h"
 
 #define SOCKET_MAGIC 0x536f636b
@@ -48,7 +49,9 @@ static int _deflate_iov(
         if (len > buf_len)
             goto done;
 
-        memcpy(buf, base, len);
+        if (oe_memcpy_s(buf, buf_len, base, len) != OE_OK)
+            goto done;
+
         buf += len;
         buf_len -= len;
     }
@@ -77,7 +80,9 @@ static int _inflate_iov(
         size_t len = iov[i].iov_len;
         size_t min = (len < buf_len) ? len : buf_len;
 
-        memcpy(base, buf, min);
+        if (oe_memcpy_s(base, len, buf, min) != OE_OK)
+            goto done;
+
         buf += min;
         buf_len -= min;
     }
@@ -265,7 +270,9 @@ static int _hostsock_connect(
     if (!sock || !addr || sizeof(buf) < addrlen)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    memcpy(&buf, addr, addrlen);
+    if (oe_memcpy_s(&buf, sizeof(buf), addr, addrlen) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
     _fix_address_family(&buf.addr);
 
     /* Call host. */
@@ -303,7 +310,9 @@ static oe_device_t* _hostsock_accept(
         if (sizeof(buf) < *addrlen)
             OE_RAISE_ERRNO_F(OE_EINVAL, "*addrlen=%u", *addrlen);
 
-        memcpy(&buf, addr, *addrlen);
+        if (oe_memcpy_s(&buf, sizeof(buf), addr, *addrlen) != OE_OK)
+            OE_RAISE_ERRNO(OE_EINVAL);
+
         _fix_address_family(&buf.addr);
         addrlen_in = *addrlen;
     }
@@ -354,7 +363,9 @@ static int _hostsock_bind(
     if (!sock || !addr || sizeof(buf) < addrlen)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    memcpy(&buf, addr, addrlen);
+    if (oe_memcpy_s(&buf, sizeof(buf), addr, addrlen) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
     _fix_address_family(&buf.addr);
 
     /* Call the host. */
