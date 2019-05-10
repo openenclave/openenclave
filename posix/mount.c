@@ -13,12 +13,14 @@
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/posix/raise.h>
+#include <openenclave/bits/safecrt.h>
 
 #define MAX_MOUNT_TABLE_SIZE 64
 
 typedef struct _mount_point
 {
     char* path;
+    size_t path_size;
     oe_device_t* fs;
     uint32_t flags;
 } mount_point_t;
@@ -184,12 +186,21 @@ int oe_mount(
         size_t index = _mount_table_size;
         size_t len = oe_strlen(target);
 
+        _mount_table[index].path_size = len + 1;
         _mount_table[index].path = oe_malloc(len + 1);
 
         if (!_mount_table[index].path)
             OE_RAISE_ERRNO(OE_ENOMEM);
 
-        memcpy(_mount_table[index].path, target, len + 1);
+        if (oe_memcpy_s(
+                _mount_table[index].path,
+                _mount_table[index].path_size,
+                target,
+                len + 1) != OE_OK)
+        {
+            OE_RAISE_ERRNO(OE_EINVAL);
+        }
+
         _mount_table[index].fs = new_device;
         _mount_table_size++;
     }

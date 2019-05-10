@@ -60,7 +60,7 @@ static int _consolefs_dup(oe_device_t* file_, oe_device_t** new_file_out)
         if (!(new_file = oe_calloc(1, sizeof(file_t))))
             OE_RAISE_ERRNO(OE_ENOMEM);
 
-        memcpy(new_file, file, sizeof(file_t));
+        *new_file = *file;
         new_file->host_fd = retval;
         *new_file_out = (oe_device_t*)new_file;
     }

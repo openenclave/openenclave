@@ -147,10 +147,7 @@ static long _syscall(
         {
             const char* pathname = (const char*)arg1;
             struct oe_stat* buf_out = (struct oe_stat*)arg2;
-            struct oe_stat buf;
-
-            ret = oe_stat(pathname, &buf);
-            memcpy(buf_out, &buf, sizeof(struct oe_stat));
+            ret = oe_stat(pathname, buf_out);
             goto done;
         }
         case OE_SYS_link:
