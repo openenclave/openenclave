@@ -36,7 +36,10 @@ set(LIBC_TESTS
     ${MUSL_FUNC_PATH}//string_strchr.c
     ${MUSL_FUNC_PATH}//string_strcspn.c
     ${MUSL_FUNC_PATH}//string_strstr.c
+    ${MUSL_FUNC_PATH}//strtod.c
+    ${MUSL_FUNC_PATH}//strtod_simple.c
     ${MUSL_FUNC_PATH}//strtod_long.c
+    ${MUSL_FUNC_PATH}//strtof.c
     ${MUSL_FUNC_PATH}//strtol.c
     ${MUSL_FUNC_PATH}//strtold.c
     ${MUSL_FUNC_PATH}//udiv.c
@@ -72,15 +75,6 @@ set(LIBC_TESTS
     ${MUSL_MATH_PATH}//copysignl.c
     ${MUSL_MATH_PATH}//cos.c
     ${MUSL_MATH_PATH}//cosf.c
-)
-
-# Exclude tests that fail on Clang Windows:
-if (NOT USE_CLANGW)
-    list(APPEND LIBC_TESTS 
-    #${MUSL_FUNC_PATH}//sscanf_long.c -- Runs out of memory on Linux CI
-    ${MUSL_FUNC_PATH}//strtod.c
-    ${MUSL_FUNC_PATH}//strtod_simple.c
-    ${MUSL_FUNC_PATH}//strtof.c
     ${MUSL_MATH_PATH}//cosh.c
     ${MUSL_MATH_PATH}//coshf.c
     ${MUSL_MATH_PATH}//coshl.c
@@ -240,12 +234,18 @@ if (NOT USE_CLANGW)
     ${MUSL_REGR_PATH}//strverscmp.c
     ${MUSL_FUNC_PATH}//random.c
     ${MUSL_FUNC_PATH}//time.c
+)
+
+# Exclude tests that fail on Clang Windows:
+if (NOT USE_CLANGW)
+    list(APPEND LIBC_TESTS
+    #${MUSL_FUNC_PATH}//sscanf_long.c -- Runs out of memory on Linux CI
     )
 endif()
 
 # Exclude tests that fail on Clang:
 if (NOT (USE_CLANGW OR MY_COMPILER MATCHES "CLANG"))
-    list(APPEND LIBC_TESTS 
+    list(APPEND LIBC_TESTS
 	${MUSL_FUNC_PATH}//tgmath.c
         ${MUSL_MATH_PATH}//fmax.c
         ${MUSL_MATH_PATH}//fmaxf.c

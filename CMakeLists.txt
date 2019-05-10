@@ -84,7 +84,6 @@ if (OE_SGX)
   endif()
 
   if (BUILD_ENCLAVES AND WIN32)
-<<<<<<< HEAD
     # Search for prerequisites
     find_program(CLANG clang)
     if (NOT CLANG)
