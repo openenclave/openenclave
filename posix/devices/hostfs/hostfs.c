@@ -21,6 +21,7 @@
 #include <openenclave/corelibc/fcntl.h>
 #include <openenclave/bits/module.h>
 #include <openenclave/internal/trace.h>
+#include <openenclave/internal/posix/raise.h>
 
 /*
 **==============================================================================
@@ -70,11 +71,9 @@ static fs_t* _cast_fs(const oe_device_t* device)
     fs_t* fs = (fs_t*)device;
 
     if (fs == NULL || fs->magic != FS_MAGIC)
-    {
-        OE_TRACE_ERROR("invalid parameter");
-        return NULL;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
+done:
     return fs;
 }
 
@@ -83,11 +82,9 @@ static file_t* _cast_file(const oe_device_t* device)
     file_t* file = (file_t*)device;
 
     if (file == NULL || file->magic != FILE_MAGIC)
-    {
-        OE_TRACE_ERROR("invalid parameter");
-        return NULL;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
+done:
     return file;
 }
 
@@ -96,11 +93,9 @@ static dir_t* _cast_dir(const oe_device_t* device)
     dir_t* dir = (dir_t*)device;
 
     if (dir == NULL || dir->magic != DIR_MAGIC)
-    {
-        OE_TRACE_ERROR("invalid parameter");
-        return NULL;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
+done:
     return dir;
 }
 
@@ -126,36 +121,20 @@ static int _expand_path(
     if (_is_root(fs->mount_source))
     {
         if (oe_strlcpy(path, suffix, OE_PATH_MAX) >= n)
-        {
-            oe_errno = OE_ENAMETOOLONG;
-            OE_TRACE_ERROR("oe_errno = %d", oe_errno);
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_ENAMETOOLONG);
     }
     else
     {
         if (oe_strlcpy(path, fs->mount_source, OE_PATH_MAX) >= n)
-        {
-            oe_errno = OE_ENAMETOOLONG;
-            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_ENAMETOOLONG);
 
         if (!_is_root(suffix))
         {
             if (oe_strlcat(path, "/", OE_PATH_MAX) >= n)
-            {
-                oe_errno = OE_ENAMETOOLONG;
-                OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-                goto done;
-            }
+                OE_RAISE_ERRNO(OE_ENAMETOOLONG);
 
             if (oe_strlcat(path, suffix, OE_PATH_MAX) >= n)
-            {
-                oe_errno = OE_ENAMETOOLONG;
-                OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-                goto done;
-            }
+                OE_RAISE_ERRNO(OE_ENAMETOOLONG);
         }
     }
 
@@ -175,11 +154,7 @@ static int _hostfs_mount(
     fs_t* fs = _cast_fs(dev);
 
     if (!fs || !source || !target)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     fs->mount_flags = flags;
     oe_strlcpy(fs->mount_source, source, sizeof(fs->mount_source));
@@ -196,11 +171,7 @@ static int _hostfs_unmount(oe_device_t* dev, const char* target)
     fs_t* fs = _cast_fs(dev);
 
     if (!fs || !target)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     ret = 0;
 
@@ -219,18 +190,10 @@ static int _hostfs_clone(oe_device_t* device, oe_device_t** new_device)
     fs_t* new_fs = NULL;
 
     if (!fs || !new_device)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (!(new_fs = oe_calloc(1, sizeof(fs_t))))
-    {
-        oe_errno = OE_ENOMEM;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_ENOMEM);
 
     memcpy(new_fs, fs, sizeof(fs_t));
 
@@ -247,11 +210,7 @@ static int _hostfs_release(oe_device_t* device)
     fs_t* fs = _cast_fs(device);
 
     if (!fs)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     oe_free(fs);
     ret = 0;
@@ -265,11 +224,7 @@ static int _hostfs_shutdown(oe_device_t* device)
     fs_t* fs = _cast_fs(device);
 
     if (!fs)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     ret = 0;
 
@@ -293,55 +248,28 @@ static oe_device_t* _hostfs_open_file(
 
     /* Check parameters */
     if (!fs || !pathname)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Fail if attempting to write to a read-only file system. */
     if (_is_rdonly(fs) && _get_open_access_mode(flags) != OE_O_RDONLY)
-    {
-        oe_errno = OE_EPERM;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EPERM);
 
     /* Call */
     {
         if (_expand_path(fs, pathname, full_pathname) != 0)
-        {
-            OE_TRACE_ERROR(
-                "pathname=%s full_pathname=%s", pathname, full_pathname);
-            goto done;
-        }
+            OE_RAISE_ERRNO_F(oe_errno, "pathname=%s", pathname);
 
         if (oe_posix_open_ocall(&retval, full_pathname, flags, mode) != OE_OK)
-        {
-            oe_errno = OE_EINVAL;
-            OE_TRACE_ERROR(
-                "full_pathname=%s flags=%d oe_errno=%d",
-                full_pathname,
-                flags,
-                oe_errno);
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_EINVAL);
 
         if (retval < 0)
-        {
-            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-            goto done;
-        }
+            OE_RAISE_ERRNO(oe_errno);
     }
 
     /* Output */
     {
         if (!(file = oe_calloc(1, sizeof(file_t))))
-        {
-            oe_errno = OE_ENOMEM;
-            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_ENOMEM);
 
         file->base.type = OE_DEVICE_TYPE_FILE;
         file->base.name = DEVICE_NAME;
@@ -381,35 +309,20 @@ static oe_device_t* _hostfs_open_directory(
 
     /* Check parameters */
     if (!fs || !pathname || !(flags & OE_O_DIRECTORY))
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Directories can only be opened for read access. */
     if (_get_open_access_mode(flags) != OE_O_RDONLY)
-    {
-        oe_errno = OE_EACCES;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EACCES);
 
     /* Attempt to open the directory. */
     if (!(dir = _hostfs_opendir(fs_, pathname)))
-    {
-        OE_TRACE_ERROR("pathname = %s", pathname);
-        goto done;
-    }
+        OE_RAISE_ERRNO_F(oe_errno, "pathname=%s", pathname);
 
     /* Allocate and initialize the file struct. */
     {
         if (!(file = oe_calloc(1, sizeof(file_t))))
-        {
-            oe_errno = OE_ENOMEM;
-            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_ENOMEM);
 
         file->base.type = OE_DEVICE_TYPE_FILE;
         file->base.name = DEVICE_NAME;
@@ -459,42 +372,27 @@ static int _hostfs_dup(oe_device_t* file_, oe_device_t** new_file)
 
     /* Check parameters. */
     if (!file)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Call */
     {
         oe_host_fd_t retval = -1;
 
         if (oe_posix_dup_ocall(&retval, file->host_fd) != OE_OK)
-        {
-            oe_errno = OE_EINVAL;
-            OE_TRACE_ERROR("oe_errno = %d", oe_errno);
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_EINVAL);
 
-        if (retval != -1)
+        if (retval == -1)
+            OE_RAISE_ERRNO(oe_errno);
+
         {
             file_t* f = NULL;
             _hostfs_clone(file_, (oe_device_t**)&f);
 
             if (!f)
-            {
-                oe_errno = OE_EINVAL;
-                OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-                goto done;
-            }
+                OE_RAISE_ERRNO(oe_errno);
 
             f->host_fd = retval;
             *new_file = (oe_device_t*)f;
-        }
-        else
-        {
-            OE_TRACE_ERROR("oe_errno = %d", oe_errno);
-            goto done;
         }
     }
 
@@ -512,19 +410,11 @@ static ssize_t _hostfs_read(oe_device_t* file_, void* buf, size_t count)
     oe_errno = 0;
 
     if (!file)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Call the host. */
     if (oe_posix_read_ocall(&ret, file->host_fd, buf, count) != OE_OK)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("host_fd=%d oe_errno = %d", file->host_fd, oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
     return ret;
@@ -546,11 +436,7 @@ static int _hostfs_getdents(
     oe_errno = 0;
 
     if (!file || !file->dir || !dirp)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Read the entries one-by-one. */
     for (i = 0; i < n; i++)
@@ -563,7 +449,7 @@ static int _hostfs_getdents(
         {
             if (oe_errno)
             {
-                OE_TRACE_ERROR("_hostfs_readdir failed");
+                OE_RAISE_ERRNO(oe_errno);
                 goto done;
             }
 
@@ -590,19 +476,11 @@ static ssize_t _hostfs_write(oe_device_t* file, const void* buf, size_t count)
 
     /* Check parameters. */
     if (!f || (count && !buf))
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Call the host. */
     if (oe_posix_write_ocall(&ret, f->host_fd, buf, count) != OE_OK)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno = %d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
     return ret;
@@ -619,18 +497,10 @@ static oe_off_t _hostfs_lseek_file(
     oe_errno = 0;
 
     if (!file)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (oe_posix_lseek_ocall(&ret, f->host_fd, offset, whence) != OE_OK)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno = %d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
     return ret;
@@ -642,11 +512,7 @@ static int _hostfs_rewinddir(oe_device_t* dir_)
     dir_t* dir = _cast_dir(dir_);
 
     if (!dir)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     oe_posix_rewinddir_ocall(dir->host_dir);
 
@@ -667,17 +533,10 @@ static oe_off_t _hostfs_lseek_dir(
     oe_errno = 0;
 
     if (!file || !file->dir || offset != 0 || whence != OE_SEEK_SET)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (_hostfs_rewinddir(file->dir) != 0)
-    {
-        OE_TRACE_ERROR("_hostfs_rewinddir failed");
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     ret = 0;
 
@@ -693,26 +552,14 @@ static oe_off_t _hostfs_lseek(oe_device_t* file_, oe_off_t offset, int whence)
     oe_errno = 0;
 
     if (!file)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (file->dir)
-    {
         ret = _hostfs_lseek_dir(file_, offset, whence);
-    }
     else
-    {
         ret = _hostfs_lseek_file(file_, offset, whence);
-    }
 
 done:
-    if (ret == -1)
-    {
-        OE_TRACE_ERROR("_hostfs_lseek failed");
-    }
     return ret;
 }
 
@@ -724,18 +571,10 @@ static int _hostfs_close_file(oe_device_t* file)
     oe_errno = 0;
 
     if (!f)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (oe_posix_close_ocall(&ret, f->host_fd) != OE_OK)
-    {
-        OE_TRACE_ERROR("oe_posix_close_ocall failed");
-        oe_errno = OE_EINVAL;
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (ret == 0)
         oe_free(file);
@@ -755,18 +594,11 @@ static int _hostfs_close_directory(oe_device_t* file_)
 
     /* Check parameters. */
     if (!file || !file->dir)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Release the directory object. */
     if (_hostfs_closedir(file->dir) != 0)
-    {
-        OE_TRACE_ERROR("_hostfs_closedir failed");
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     /* Release the file object. */
     oe_free(file);
@@ -784,22 +616,13 @@ static int _hostfs_close(oe_device_t* file_)
 
     oe_errno = 0;
 
-    /* Check parameters. */
     if (!file)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (file->dir)
-    {
         ret = _hostfs_close_directory(file_);
-    }
     else
-    {
         ret = _hostfs_close_file(file_);
-    }
 
 done:
     return ret;
@@ -817,14 +640,9 @@ static int _hostfs_ioctl(
     OE_UNUSED(arg);
 
     if (!file)
-    {
-        oe_errno = OE_EINVAL;
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
-    oe_errno = OE_ENOTSUP;
-    OE_TRACE_ERROR(
-        "oe_errno=%d fd=%d request=%lx", file->host_fd, oe_errno, request);
+    OE_RAISE_ERRNO(OE_ENOTSUP);
 
 done:
     return ret;
@@ -838,29 +656,10 @@ static int _hostfs_fcntl(oe_device_t* file_, int cmd, uint64_t arg)
     oe_errno = 0;
 
     if (!file)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
-    /* Call the host. */
     if (oe_posix_fcntl_ocall(&ret, file->host_fd, cmd, arg) != OE_OK)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR(
-            "host_fd=%d cmd=%d arg=%lu oe_errno=%d",
-            file->host_fd,
-            cmd,
-            arg,
-            oe_errno);
-        goto done;
-    }
-
-    if (ret == -1)
-    {
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
     return ret;
@@ -875,32 +674,17 @@ static oe_device_t* _hostfs_opendir(oe_device_t* fs_, const char* name)
     uint64_t retval = 0;
 
     if (!fs || !name)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (_expand_path(fs, name, full_name) != 0)
-    {
-        OE_TRACE_ERROR("name=%s full_name=%s", name, full_name);
-        goto done;
-    }
+        OE_RAISE_ERRNO_F(oe_errno, "name=%s", name);
 
     if (oe_posix_opendir_ocall(&retval, full_name) != OE_OK)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("full_name=%s oe_errno =%d", full_name, oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     {
         if (!(dir = oe_calloc(1, sizeof(dir_t))))
-        {
-            oe_errno = OE_ENOMEM;
-            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_ENOMEM);
 
         dir->base.type = OE_DEVICE_TYPE_DIRECTORY;
         dir->base.name = DEVICE_NAME;
@@ -929,28 +713,21 @@ static struct oe_dirent* _hostfs_readdir(oe_device_t* dir_)
     oe_errno = 0;
 
     if (!dir)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Call the host. */
     {
-        oe_result_t result;
-
-        if ((result = oe_posix_readdir_ocall(
-                 &retval,
-                 dir->host_dir,
-                 &dir->entry.d_ino,
-                 &dir->entry.d_off,
-                 &dir->entry.d_reclen,
-                 &dir->entry.d_type,
-                 dir->entry.d_name,
-                 sizeof(dir->entry.d_name))) != OE_OK)
+        if (oe_posix_readdir_ocall(
+                &retval,
+                dir->host_dir,
+                &dir->entry.d_ino,
+                &dir->entry.d_off,
+                &dir->entry.d_reclen,
+                &dir->entry.d_type,
+                dir->entry.d_name,
+                sizeof(dir->entry.d_name)) != OE_OK)
         {
-            OE_TRACE_ERROR("%s", oe_result_str(result));
-            goto done;
+            OE_RAISE_ERRNO(OE_EINVAL);
         }
 
         /* Fix up the record length. */
@@ -962,10 +739,7 @@ static struct oe_dirent* _hostfs_readdir(oe_device_t* dir_)
     if (retval == -1)
     {
         memset(&dir->entry, 0, sizeof(dir->entry));
-
-        if (oe_errno)
-            OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-
+        OE_RAISE_ERRNO(oe_errno);
         goto done;
     }
 
@@ -985,17 +759,10 @@ static int _hostfs_closedir(oe_device_t* dir)
     oe_errno = 0;
 
     if (!d)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (oe_posix_closedir_ocall(&retval, d->host_dir) != OE_OK)
-    {
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (retval == 0)
         ret = 0;
@@ -1020,24 +787,13 @@ static int _hostfs_stat(
         memset(buf, 0, sizeof(*buf));
 
     if (!fs || !pathname || !buf)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (_expand_path(fs, pathname, full_pathname) != 0)
-    {
-        OE_TRACE_ERROR("pathname=%s full_pathname=%s", pathname, full_pathname);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     if (oe_posix_stat_ocall(&ret, full_pathname, buf) != OE_OK)
-    {
-        OE_TRACE_ERROR(
-            "full_pathname=%s oe_errno =%d", full_pathname, oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
 
@@ -1051,29 +807,14 @@ static int _hostfs_access(oe_device_t* fs_, const char* pathname, int mode)
     char full_pathname[OE_PATH_MAX];
     const uint32_t MASK = (OE_R_OK | OE_W_OK | OE_X_OK);
 
-    /* Check parameters */
     if (!fs || !pathname || ((uint32_t)mode & ~MASK))
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (_expand_path(fs, pathname, full_pathname) != 0)
-    {
-        OE_TRACE_ERROR("pathname=%s full_pathname=%s", pathname, full_pathname);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     if (oe_posix_access_ocall(&ret, full_pathname, mode) != OE_OK)
-    {
-        OE_TRACE_ERROR(
-            "full_pathname=%s mode=%d oe_errno =%d",
-            full_pathname,
-            mode,
-            oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
 
@@ -1091,41 +832,20 @@ static int _hostfs_link(
     char full_newpath[OE_PATH_MAX];
 
     if (!fs || !oldpath || !newpath)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Fail if attempting to write to a read-only file system. */
     if (_is_rdonly(fs))
-    {
-        oe_errno = OE_EPERM;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EPERM);
 
     if (_expand_path(fs, oldpath, full_oldpath) != 0)
-    {
-        OE_TRACE_ERROR("oldpath=%s full_oldpath=%s", oldpath, full_oldpath);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     if (_expand_path(fs, newpath, full_newpath) != 0)
-    {
-        OE_TRACE_ERROR("newpath=%s full_newpath=%s", newpath, full_newpath);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     if (oe_posix_link_ocall(&ret, full_oldpath, full_newpath) != OE_OK)
-    {
-        OE_TRACE_ERROR(
-            "full_oldpath=%s full_newpath=%s oe_errno =%d",
-            full_oldpath,
-            full_newpath,
-            oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
 
@@ -1139,32 +859,17 @@ static int _hostfs_unlink(oe_device_t* fs_, const char* pathname)
     char full_pathname[OE_PATH_MAX];
 
     if (!fs)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Fail if attempting to write to a read-only file system. */
     if (_is_rdonly(fs))
-    {
-        oe_errno = OE_EPERM;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EPERM);
 
     if (_expand_path(fs, pathname, full_pathname) != 0)
-    {
-        OE_TRACE_ERROR("pathname=%s full_pathname=%s", pathname, full_pathname);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     if (oe_posix_unlink_ocall(&ret, full_pathname) != OE_OK)
-    {
-        OE_TRACE_ERROR(
-            "full_pathname=%s oe_errno =%d", full_pathname, oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
 
@@ -1182,41 +887,19 @@ static int _hostfs_rename(
     char full_newpath[OE_PATH_MAX];
 
     if (!fs || !oldpath || !newpath)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
-    /* Fail if attempting to write to a read-only file system. */
     if (_is_rdonly(fs))
-    {
-        oe_errno = OE_EPERM;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EPERM);
 
     if (_expand_path(fs, oldpath, full_oldpath) != 0)
-    {
-        OE_TRACE_ERROR("oldpath=%s full_oldpath=%s", oldpath, full_oldpath);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     if (_expand_path(fs, newpath, full_newpath) != 0)
-    {
-        OE_TRACE_ERROR("newpath=%s full_newpath=%s", newpath, full_newpath);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     if (oe_posix_rename_ocall(&ret, full_oldpath, full_newpath) != OE_OK)
-    {
-        OE_TRACE_ERROR(
-            "full_oldpath=%s full_newpath=%s oe_errno =%d",
-            full_oldpath,
-            full_newpath,
-            oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
 
@@ -1230,32 +913,16 @@ static int _hostfs_truncate(oe_device_t* fs_, const char* path, oe_off_t length)
     char full_path[OE_PATH_MAX];
 
     if (!fs)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
-    /* Fail if attempting to write to a read-only file system. */
     if (_is_rdonly(fs))
-    {
-        oe_errno = OE_EPERM;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EPERM);
 
     if (_expand_path(fs, path, full_path) != 0)
-    {
-        OE_TRACE_ERROR("path=%s full_path=%s", path, full_path);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     if (oe_posix_truncate_ocall(&ret, full_path, length) != OE_OK)
-    {
-        OE_TRACE_ERROR(
-            "full_path=%s length=%lu oe_errno=%d", full_path, length, oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
 
@@ -1269,35 +936,17 @@ static int _hostfs_mkdir(oe_device_t* fs_, const char* pathname, oe_mode_t mode)
     char full_pathname[OE_PATH_MAX];
 
     if (!fs)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Fail if attempting to write to a read-only file system. */
     if (_is_rdonly(fs))
-    {
-        oe_errno = OE_EPERM;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EPERM);
 
     if (_expand_path(fs, pathname, full_pathname) != 0)
-    {
-        OE_TRACE_ERROR("pathname=%s full_pathname=%s", pathname, full_pathname);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     if (oe_posix_mkdir_ocall(&ret, full_pathname, mode) != OE_OK)
-    {
-        OE_TRACE_ERROR(
-            "full_pathname=%s mode=%d oe_errno =%d",
-            full_pathname,
-            (int)mode,
-            oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
 
@@ -1311,25 +960,17 @@ static int _hostfs_rmdir(oe_device_t* fs_, const char* pathname)
     char full_pathname[OE_PATH_MAX];
 
     if (!fs)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Fail if attempting to write to a read-only file system. */
     if (_is_rdonly(fs))
-    {
-        oe_errno = OE_EPERM;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EPERM);
 
     if (_expand_path(fs, pathname, full_pathname) != 0)
-        goto done;
+        OE_RAISE_ERRNO(oe_errno);
 
     if (oe_posix_rmdir_ocall(&ret, full_pathname) != OE_OK)
-        goto done;
+        OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
 
@@ -1397,10 +1038,7 @@ static void _load_once(void)
     const uint64_t devid = OE_DEVID_HOSTFS;
 
     if (oe_set_device(devid, oe_get_hostfs_device()) != 0)
-    {
-        OE_TRACE_ERROR("devid=%lu ", devid);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     result = OE_OK;
 
