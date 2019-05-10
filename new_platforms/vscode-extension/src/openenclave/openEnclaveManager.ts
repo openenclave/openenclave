@@ -10,6 +10,7 @@ import * as zlib from "zlib";
 import { AcrManager } from "../common/acrManager";
 import { Constants } from "../common/constants";
 import { GitHelper } from "../common/gitHelper";
+import { RequirementsChecker } from "../common/requirementsChecker";
 import { TelemetryClient } from "../common/telemetryClient";
 import { UserCancelledError } from "../common/userCancelledError";
 import { Utility } from "../common/utility";
@@ -42,6 +43,18 @@ export class OpenEnclaveManager {
     public async createOpenEnclaveSolution(outputChannel: vscode.OutputChannel): Promise<void> {
         return this.promiseWithProgress(async (progress, resolve, reject) => {
             return this.internalCreateOpenEnclaveSolution(outputChannel, progress)
+                .then(() => {
+                    resolve();
+                })
+                .catch((err) => {
+                    reject(err);
+                });
+        });
+    }
+
+    public async checkRequirements(outputChannel: vscode.OutputChannel): Promise<void> {
+        return this.promiseWithProgress(async (progress, resolve, reject) => {
+            return RequirementsChecker.checkRequirements(true, true)
                 .then(() => {
                     resolve();
                 })

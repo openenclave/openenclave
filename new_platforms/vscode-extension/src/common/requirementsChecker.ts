@@ -11,7 +11,7 @@ import { Constants } from "./constants";
 
 export class RequirementsChecker {
 
-    public static async checkRequirements(force: boolean) {
+    public static async checkRequirements(force: boolean, showSuccess: boolean) {
 
         const systemConfigurationPassed = Configuration.getConfiguration().get<string>("systemRequirementsPassed");
         if (!force && systemConfigurationPassed && systemConfigurationPassed === Constants.requirementsVersion) {
@@ -88,6 +88,9 @@ export class RequirementsChecker {
                 } else {
                     // Update global settings to reflect that this system meets this version's requirements
                     Configuration.setGlobalConfigurationProperty("systemRequirementsPassed", Constants.requirementsVersion);
+                    if (showSuccess) {
+                        vscode.window.showInformationMessage("System meets requirements.");
+                    }
                 }
             });
     }

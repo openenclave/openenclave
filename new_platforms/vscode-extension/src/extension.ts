@@ -19,7 +19,7 @@ export function activate(context: vscode.ExtensionContext) {
     const outputChannel: vscode.OutputChannel = vscode.window.createOutputChannel(Constants.openEnclaveDisplayName);
     const openEnclaveManager = new OpenEnclaveManager(context);
 
-    RequirementsChecker.checkRequirements(false);
+    RequirementsChecker.checkRequirements(false, false);
 
     // Add Open Solution command
     initCommandAsync(context, outputChannel,
@@ -32,7 +32,7 @@ export function activate(context: vscode.ExtensionContext) {
     initCommandAsync(context, outputChannel,
         "msiot-vscode-openenclave.checkSystemRequirements",
         (): Promise<void> => {
-            return RequirementsChecker.checkRequirements(true);
+            return openEnclaveManager.checkRequirements(outputChannel);
         });
 }
 
