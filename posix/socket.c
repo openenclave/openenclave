@@ -158,10 +158,7 @@ int oe_accept(int sockfd, struct oe_sockaddr* addr, oe_socklen_t* addrlen)
     if (!(sock = oe_fdtable_get(sockfd, OE_DEVICE_TYPE_SOCKET)))
         OE_RAISE_ERRNO(OE_EBADF);
 
-    if (OE_CALL_BASE(clone, sock, &new_sock) != 0)
-        OE_RAISE_ERRNO(OE_EINVAL);
-
-    if (OE_CALL_SOCK(accept, new_sock, addr, addrlen) < 0)
+    if ((new_sock = OE_CALL_SOCK(accept, sock, addr, addrlen)) == NULL)
         OE_RAISE_ERRNO(oe_errno);
 
     if ((ret = oe_fdtable_assign(new_sock)) == -1)
