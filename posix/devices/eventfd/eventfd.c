@@ -9,6 +9,7 @@
 
 #include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/posix/eventfdops.h>
+#include <openenclave/internal/posix/raise.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/thread.h>
@@ -61,20 +62,10 @@ static int _eventfd_clone(oe_device_t* device, oe_device_t** new_device)
     eventfd_dev_t* new_eventfd = NULL;
 
     if (!eventfd || !new_device)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
-    new_eventfd = oe_calloc(1, sizeof(eventfd_dev_t));
-
-    if (!new_eventfd)
-    {
-        oe_errno = OE_ENOMEM;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
+    if (!(new_eventfd = oe_calloc(1, sizeof(eventfd_dev_t))))
+        OE_RAISE_ERRNO(OE_ENOMEM);
 
     memcpy(new_eventfd, eventfd, sizeof(eventfd_dev_t));
 
@@ -95,18 +86,10 @@ static oe_device_t* _eventfd_eventfd(
     eventfd_dev_t* new_eventfd = NULL;
 
     if (!eventfd)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (_eventfd_clone(eventfd_, (oe_device_t**)&new_eventfd) != 0)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     new_eventfd->base.type = OE_DEVID_EVENTFD;
     new_eventfd->base.name = DEVICE_NAME;
@@ -128,20 +111,12 @@ static ssize_t _eventfd_read(oe_device_t* eventfd_, void* buf, size_t count)
 
     /* Check parameters. */
     if (!eventfd || !buf || (count < sizeof(uint64_t)))
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (!eventfd->count)
     {
         if (eventfd->flags & OE_EFD_NONBLOCK)
-        {
-            oe_errno = OE_EAGAIN;
-            OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_EAGAIN);
     }
 
     if (eventfd->flags & OE_EFD_SEMAPHORE)
@@ -176,24 +151,12 @@ static ssize_t _eventfd_write(
 
     /* Check parameters. */
     if (!eventfd || !buf || (count < sizeof(uint64_t)))
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (eventfd->count >= MAX_EVENTFD_COUNT)
     {
         if (eventfd->flags & OE_EFD_NONBLOCK)
-        {
-            oe_errno = OE_EAGAIN;
-            OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-            goto done;
-        }
-
-        {
-            // signal condition variable
-        }
+            OE_RAISE_ERRNO(OE_EAGAIN);
     }
 
     memcpy(&incr, buf, sizeof(uint64_t));
@@ -223,11 +186,7 @@ static int _eventfd_close(oe_device_t* eventfd_)
 
     /* Check parameters. */
     if (!eventfd)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Release the eventfd_ object. */
     oe_free(eventfd);
@@ -246,11 +205,7 @@ static int _eventfd_shutdown_device(oe_device_t* eventfd_)
     oe_errno = 0;
 
     if (!eventfd)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     oe_free(eventfd);
 
@@ -295,10 +250,7 @@ static void _load_once(void)
     const uint64_t devid = OE_DEVID_EVENTFD;
 
     if (oe_set_device(devid, &_eventfd.base) != 0)
-    {
-        OE_TRACE_ERROR("devid=%lu ", devid);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     result = OE_OK;
 

@@ -8,6 +8,7 @@
 // clang-format on
 
 #include <openenclave/internal/posix/device.h>
+#include <openenclave/internal/posix/raise.h>
 #include <openenclave/corelibc/sys/socket.h>
 #include <openenclave/corelibc/netdb.h>
 #include <openenclave/internal/posix/resolver.h>
@@ -44,13 +45,8 @@ static resolv_t* _cast_resolv(const oe_resolver_t* device)
     resolv_t* resolv = (resolv_t*)device;
 
     if (resolv == NULL || resolv->magic != RESOLV_MAGIC)
-    {
-        resolv = NULL;
-        OE_TRACE_ERROR("resolver is invalid");
-        goto done;
-    }
+        return NULL;
 
-done:
     return resolv;
 }
 
@@ -102,29 +98,18 @@ static int _hostresolv_getaddrinfo(
         *res = NULL;
 
     if (!res)
-    {
-        OE_TRACE_ERROR("invalid parameters");
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Get the handle for enumerating addrinfo structures. */
     {
-        oe_result_t result;
-
-        if ((result = oe_posix_getaddrinfo_open_ocall(
-                 &handle, node, service, hints)) != OE_OK)
+        if (oe_posix_getaddrinfo_open_ocall(&handle, node, service, hints) !=
+            OE_OK)
         {
-            OE_TRACE_ERROR(
-                "oe_posix_getaddrinfo_open_ocall(): result=%s",
-                oe_result_str(result));
-            goto done;
+            OE_RAISE_ERRNO(OE_EINVAL);
         }
 
         if (!handle)
-        {
-            OE_TRACE_ERROR("handle=null");
-            goto done;
-        }
+            OE_RAISE_ERRNO(oe_errno);
     }
 
     /* Enumerate addrinfo structures. */
@@ -132,33 +117,26 @@ static int _hostresolv_getaddrinfo(
     {
         int retval = 0;
         size_t canonnamelen = 0;
-        oe_result_t result;
 
         if (!(p = oe_calloc(1, sizeof(struct oe_addrinfo))))
-        {
-            OE_TRACE_ERROR("oe_calloc() failed");
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_ENOMEM);
 
         /* Determine required size ai_addr and ai_canonname buffers. */
-        if ((result = oe_posix_getaddrinfo_read_ocall(
-                 &retval,
-                 handle,
-                 &p->ai_flags,
-                 &p->ai_family,
-                 &p->ai_socktype,
-                 &p->ai_protocol,
-                 p->ai_addrlen,
-                 &p->ai_addrlen,
-                 NULL,
-                 canonnamelen,
-                 &canonnamelen,
-                 NULL)) != OE_OK)
+        if (oe_posix_getaddrinfo_read_ocall(
+                &retval,
+                handle,
+                &p->ai_flags,
+                &p->ai_family,
+                &p->ai_socktype,
+                &p->ai_protocol,
+                p->ai_addrlen,
+                &p->ai_addrlen,
+                NULL,
+                canonnamelen,
+                &canonnamelen,
+                NULL) != OE_OK)
         {
-            OE_TRACE_ERROR(
-                "oe_posix_getaddrinfo_read_ocall(): result=%s",
-                oe_result_str(result));
-            goto done;
+            OE_RAISE_ERRNO(OE_EINVAL);
         }
 
         /* If this is the final element in the enumeration. */
@@ -167,41 +145,29 @@ static int _hostresolv_getaddrinfo(
 
         /* Expecting that addr and canonname buffers were too small. */
         if (retval != -1 || oe_errno != OE_ENAMETOOLONG)
-        {
-            OE_TRACE_ERROR("oe_posix_getaddrinfo_read_ocall() failed");
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_EINVAL);
 
         if (p->ai_addrlen && !(p->ai_addr = oe_calloc(1, p->ai_addrlen)))
-        {
-            OE_TRACE_ERROR("oe_calloc() failed");
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_ENOMEM);
 
         if (canonnamelen && !(p->ai_canonname = oe_calloc(1, canonnamelen)))
-        {
-            OE_TRACE_ERROR("oe_calloc() failed");
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_ENOMEM);
 
-        if ((result = oe_posix_getaddrinfo_read_ocall(
-                 &retval,
-                 handle,
-                 &p->ai_flags,
-                 &p->ai_family,
-                 &p->ai_socktype,
-                 &p->ai_protocol,
-                 p->ai_addrlen,
-                 &p->ai_addrlen,
-                 p->ai_addr,
-                 canonnamelen,
-                 &canonnamelen,
-                 p->ai_canonname)) != OE_OK)
+        if (oe_posix_getaddrinfo_read_ocall(
+                &retval,
+                handle,
+                &p->ai_flags,
+                &p->ai_family,
+                &p->ai_socktype,
+                &p->ai_protocol,
+                p->ai_addrlen,
+                &p->ai_addrlen,
+                p->ai_addr,
+                canonnamelen,
+                &canonnamelen,
+                p->ai_canonname) != OE_OK)
         {
-            OE_TRACE_ERROR(
-                "oe_posix_getaddrinfo_read_ocall(): result=%s",
-                oe_result_str(result));
-            goto done;
+            OE_RAISE_ERRNO(OE_EINVAL);
         }
 
         /* Append to the list. */
@@ -223,33 +189,19 @@ static int _hostresolv_getaddrinfo(
     if (handle)
     {
         int retval = -1;
-        oe_result_t result;
 
-        if ((result = oe_posix_getaddrinfo_close_ocall(&retval, handle)) !=
-            OE_OK)
-        {
-            OE_TRACE_ERROR(
-                "oe_posix_getaddrinfo_read_ocall(): result=%s",
-                oe_result_str(result));
-            goto done;
-        }
+        if (oe_posix_getaddrinfo_close_ocall(&retval, handle) != OE_OK)
+            OE_RAISE_ERRNO(OE_EINVAL);
 
         handle = 0;
 
         if (retval != 0)
-        {
-            OE_TRACE_ERROR(
-                "oe_posix_getaddrinfo_read_ocall(): retval=%d", retval);
-            goto done;
-        }
+            OE_RAISE_ERRNO(oe_errno);
     }
 
     /* If the list is empty. */
     if (!head)
-    {
-        OE_TRACE_ERROR("empty enumeration");
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     *res = head;
     head = NULL;
@@ -277,23 +229,14 @@ static int _hostresolv_shutdown(oe_resolver_t* resolv_)
 {
     int ret = -1;
     resolv_t* resolv = _cast_resolv(resolv_);
-    oe_result_t result = OE_FAILURE;
 
     oe_errno = 0;
 
     if (!resolv)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
-    if ((result = oe_posix_shutdown_resolver_device_ocall(&ret)) != OE_OK)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("%s oe_errno=%d", oe_result_str(result), oe_errno);
-        goto done;
-    }
+    if (oe_posix_shutdown_resolver_device_ocall(&ret) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Release the resolv_ object. */
     oe_free(resolv);
@@ -329,10 +272,7 @@ static void _load_once(void)
     oe_resolver_t* resolver = &_hostresolv.base;
 
     if (oe_register_resolver(2, resolver) != 0)
-    {
-        OE_TRACE_ERROR("failed");
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     result = OE_OK;
 

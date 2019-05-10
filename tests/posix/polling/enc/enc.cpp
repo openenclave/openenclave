@@ -394,16 +394,6 @@ static int _ecall_poll_test(INTERFACE& x, size_t buff_len, char* recv_buff)
     file_fd = x.open(_path, flags, 0);
     OE_TEST(file_fd >= 0);
 
-    printf("polling...\n");
-    if (file_fd >= 0)
-    {
-        pollfds[1].fd = file_fd;
-        pollfds[1].events =
-            (POLLIN | POLLPRI | POLLOUT | POLLRDNORM | POLLRDBAND | POLLWRNORM |
-             POLLWRBAND | POLLRDHUP);
-        pollfds[1].revents = 0;
-    }
-
     size_t nevents = 0;
     int nfds = 0;
     int ntries = 100;
