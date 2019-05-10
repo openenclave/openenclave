@@ -34,9 +34,7 @@ struct _oe_device
     /* String name of this device. */
     const char* name;
 
-    /* Index of the device into the device table. */
-    uint64_t devid;
-
+    /* Function table for this device. */
     union {
         oe_device_ops_t* base;
         oe_fs_ops_t* fs;
