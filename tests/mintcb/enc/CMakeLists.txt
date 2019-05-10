@@ -4,8 +4,12 @@
 
 oeedl_file(../mintcb.edl enclave gen)
 
-add_enclave(TARGET mintcb_enc SOURCES enc.c ${gen})
+add_executable(mintcb_enc enc.c ${gen})
 
-target_include_directories(mintcb_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(mintcb_enc PRIVATE
+    ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc
+    ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(mintcb_enc oelibc -Wl,-e,oe_enter)
+add_definitions(-DOE_NEED_STDC_NAMES)
+
+target_link_libraries(mintcb_enc oestart oecore)
