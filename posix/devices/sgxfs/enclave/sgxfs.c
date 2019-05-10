@@ -371,7 +371,7 @@ static oe_device_t* _sgxfs_open_file(
             OE_RAISE_ERRNO(oe_errno);
 
         if (!(stream = sgx_fopen_auto_key(full_path, fopen_mode)))
-            OE_RAISE_ERRNO(oe_errno);
+            goto done;
     }
 
     /* Allocate and initialize file struct. */
@@ -424,8 +424,7 @@ static oe_device_t* _sgxfs_open_directory(
         if (_expand_path(fs, pathname, full_path) != 0)
             OE_RAISE_ERRNO(oe_errno);
 
-        if ((ret = OE_CALL_FS(open, hostfs, full_path, flags, mode)) != 0)
-            OE_RAISE_ERRNO(oe_errno);
+        ret = OE_CALL_FS(open, hostfs, full_path, flags, mode);
     }
 
 done:
@@ -620,12 +619,16 @@ static int _sgxfs_stat(
     /* Ask HOSTFS to stat the directory. */
     {
         char full_path[OE_PATH_MAX];
+        int r;
 
         if (_expand_path(fs, pathname, full_path) != 0)
             OE_RAISE_ERRNO(oe_errno);
 
-        if (OE_CALL_FS(stat, hostfs, full_path, buf) != 0)
-            OE_RAISE_ERRNO(oe_errno);
+        if ((r = OE_CALL_FS(stat, hostfs, full_path, buf)) == -1)
+        {
+            ret = r;
+            goto done;
+        }
     }
 
     /* Recalculate the size to omit the metadata headers. */
@@ -997,11 +1000,8 @@ static int _sgxfs_rmdir(oe_device_t* fs_, const char* pathname)
         if (_expand_path(fs, pathname, full_path) != 0)
             OE_RAISE_ERRNO(oe_errno);
 
-        if (OE_CALL_FS(rmdir, hostfs, full_path) != 0)
-            OE_RAISE_ERRNO(oe_errno);
+        ret = OE_CALL_FS(rmdir, hostfs, full_path);
     }
-
-    ret = 0;
 
 done:
     return ret;

@@ -254,6 +254,17 @@ static oe_device_t* _hostfs_open_file(
     if (_is_rdonly(fs) && _get_open_access_mode(flags) != OE_O_RDONLY)
         OE_RAISE_ERRNO(OE_EPERM);
 
+    /* Create new file struct. */
+    {
+        if (!(file = oe_calloc(1, sizeof(file_t))))
+            OE_RAISE_ERRNO(OE_ENOMEM);
+
+        file->base.type = OE_DEVICE_TYPE_FILE;
+        file->base.name = DEVICE_NAME;
+        file->magic = FILE_MAGIC;
+        file->base.ops.fs = fs->base.ops.fs;
+    }
+
     /* Call */
     {
         if (_expand_path(fs, pathname, full_pathname) != 0)
@@ -263,18 +274,8 @@ static oe_device_t* _hostfs_open_file(
             OE_RAISE_ERRNO(OE_EINVAL);
 
         if (retval < 0)
-            OE_RAISE_ERRNO(oe_errno);
-    }
+            goto done;
 
-    /* Output */
-    {
-        if (!(file = oe_calloc(1, sizeof(file_t))))
-            OE_RAISE_ERRNO(OE_ENOMEM);
-
-        file->base.type = OE_DEVICE_TYPE_FILE;
-        file->base.name = DEVICE_NAME;
-        file->magic = FILE_MAGIC;
-        file->base.ops.fs = fs->base.ops.fs;
         file->host_fd = retval;
     }
 
@@ -739,7 +740,10 @@ static struct oe_dirent* _hostfs_readdir(oe_device_t* dir_)
     if (retval == -1)
     {
         memset(&dir->entry, 0, sizeof(dir->entry));
-        OE_RAISE_ERRNO(oe_errno);
+
+        if (oe_errno)
+            OE_RAISE_ERRNO(oe_errno);
+
         goto done;
     }
 

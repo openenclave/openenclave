@@ -3,6 +3,8 @@
 
 enclave {
 
+    from "sgxfs.edl" import *;
+
     trusted {
         public void test_fs(
             [string, in] const char* src_dir,

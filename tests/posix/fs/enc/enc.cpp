@@ -475,6 +475,7 @@ void test_fs(const char* src_dir, const char* tmp_dir)
     (void)src_dir;
 
     OE_TEST(oe_load_module_hostfs() == OE_OK);
+    OE_TEST(oe_load_module_sgxfs() == OE_OK);
 
     OE_TEST(oe_mkdir_d(OE_DEVID_HOSTFS, tmp_dir, 0777) == 0);
 
@@ -490,6 +491,14 @@ void test_fs(const char* src_dir, const char* tmp_dir)
         test_all(fs, tmp_dir);
     }
 
+    /* Test the SGXFS oe file descriptor interfaces. */
+    {
+        printf("=== testing oe-fd-sgxfs:\n");
+
+        oe_fd_sgxfs_file_system fs;
+        test_all(fs, tmp_dir);
+    }
+
     /* Test the HOSTFS standard C descriptor interfaces. */
     {
         printf("=== testing fd-hostfs:\n");
@@ -498,11 +507,27 @@ void test_fs(const char* src_dir, const char* tmp_dir)
         test_all(fs, tmp_dir);
     }
 
+    /* Test the SGXFS standard C descriptor interfaces. */
+    {
+        printf("=== testing fd-sgxfs:\n");
+
+        fd_sgxfs_file_system fs;
+        test_all(fs, tmp_dir);
+    }
+
     /* Test stream I/O hostfs functions. */
     {
         printf("=== testing stream I/O hostfs functions:\n");
 
         stream_hostfs_file_system fs;
+        test_all(fs, tmp_dir);
+    }
+
+    /* Test stream I/O sgxfs functions. */
+    {
+        printf("=== testing stream I/O sgxfs functions:\n");
+
+        stream_sgxfs_file_system fs;
         test_all(fs, tmp_dir);
     }
 
