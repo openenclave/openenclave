@@ -39,7 +39,12 @@ def azureEnvironment(String task) {
                 def image = docker.image("oetools-deploy:latest")
                 image.pull()
                 image.inside {
-                    sh "${task}"
+                    sh """#!/usr/bin/env bash
+                          set -o errexit
+                          set -o pipefail
+                          source /etc/profile
+                          ${task}
+                       """
                 }
             }
         }
@@ -57,7 +62,12 @@ def Run(String compiler, String task, Integer timeoutMinutes = 30) {
     withEnv(["CC=${c_compiler}","CXX=${cpp_compiler}"]) {
         timeout(timeoutMinutes) {
             dir("${WORKSPACE}/build") {
-                sh "${task}"
+                sh """#!/usr/bin/env bash
+                      set -o errexit
+                      set -o pipefail
+                      source /etc/profile
+                      ${task}
+                   """
             }
         }
     }
