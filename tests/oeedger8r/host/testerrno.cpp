@@ -13,3 +13,12 @@ void ocall_errno()
     // Super unique number.
     errno = 0x12345678;
 }
+
+void ocall_set_host_errno(int e)
+{
+    errno = e;
+}
+
+void ocall_noop()
+{
+}

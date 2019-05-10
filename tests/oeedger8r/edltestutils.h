@@ -49,6 +49,7 @@ struct unused
     }
 
 DEFINE_ASSERT_NO_FIELD(s_len)
+DEFINE_ASSERT_NO_FIELD(_ocall_errno)
 
 template <typename T, std::size_t N, typename U>
 inline int array_compare(const T (&a1)[N], U u)

@@ -8,5 +8,12 @@ enclave {
 
   untrusted {
     void ocall_errno() propagate_errno;
+
+    // Set host errno to given value.
+    // But do not propagate the value back to the enclave.
+    void ocall_set_host_errno(int e);
+
+    // Noop. But propagate current host errno value to enclave.
+    void ocall_noop() propagate_errno;
   };
 };
