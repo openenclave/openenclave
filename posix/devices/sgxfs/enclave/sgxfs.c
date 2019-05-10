@@ -1174,11 +1174,11 @@ done:
 }
 
 static oe_fs_ops_t _ops = {
-    .base.clone = _sgxfs_clone,
-    .base.release = _sgxfs_release,
     .base.shutdown = _sgxfs_shutdown,
     .base.ioctl = _sgxfs_ioctl,
     .base.fcntl = _sgxfs_fcntl,
+    .clone = _sgxfs_clone,
+    .release = _sgxfs_release,
     .mount = _sgxfs_mount,
     .unmount = _sgxfs_unmount,
     .open = _sgxfs_open,

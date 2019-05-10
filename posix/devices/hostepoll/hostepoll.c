@@ -114,25 +114,6 @@ done:
     return ret;
 }
 
-static int _epoll_release(oe_device_t* device)
-{
-    int ret = -1;
-    epoll_t* epoll = _cast_epoll(device);
-
-    if (!epoll)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
-
-    oe_free(epoll);
-    ret = 0;
-
-done:
-    return ret;
-}
-
 static oe_device_t* _epoll_create(oe_device_t* epoll_, int size)
 {
     oe_device_t* ret = NULL;
@@ -585,8 +566,6 @@ static oe_host_fd_t _epoll_gethostfd(oe_device_t* epoll_)
 }
 
 static oe_epoll_ops_t _ops = {
-    .base.clone = _epoll_clone,
-    .base.release = _epoll_release,
     .base.ioctl = NULL,
     .base.read = NULL,
     .base.write = NULL,

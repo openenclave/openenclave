@@ -15,13 +15,9 @@ typedef struct _oe_device oe_device_t;
 
 typedef struct _oe_device_ops
 {
-    int (*clone)(oe_device_t* device, oe_device_t** new_device);
-
     int (*dup)(oe_device_t* device, oe_device_t** new_device);
 
     int (*shutdown)(oe_device_t* pthis);
-
-    int (*release)(oe_device_t* device);
 
     oe_host_fd_t (*get_host_fd)(oe_device_t* device);
 

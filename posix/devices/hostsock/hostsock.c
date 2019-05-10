@@ -129,41 +129,6 @@ static ssize_t _hostsock_read(oe_device_t*, void* buf, size_t count);
 
 static int _hostsock_close(oe_device_t*);
 
-static int _hostsock_clone(oe_device_t* device, oe_device_t** new_device)
-{
-    int ret = -1;
-    sock_t* sock = _cast_sock(device);
-    sock_t* new_sock = NULL;
-
-    if (!sock)
-        OE_RAISE_ERRNO(OE_EINVAL);
-
-    if (!(new_sock = oe_calloc(1, sizeof(sock_t))))
-        OE_RAISE_ERRNO(OE_ENOMEM);
-
-    memcpy(new_sock, sock, sizeof(sock_t));
-    *new_device = &new_sock->base;
-    ret = 0;
-
-done:
-    return ret;
-}
-
-static int _hostsock_release(oe_device_t* device)
-{
-    int ret = -1;
-    sock_t* sock = _cast_sock(device);
-
-    if (!sock)
-        OE_RAISE_ERRNO(OE_EINVAL);
-
-    oe_free(sock);
-    ret = 0;
-
-done:
-    return ret;
-}
-
 static oe_device_t* _hostsock_socket(
     oe_device_t* dev,
     int domain,
@@ -914,8 +879,6 @@ static oe_host_fd_t _hostsock_gethostfd(oe_device_t* sock_)
 }
 
 static oe_sock_ops_t _ops = {
-    .base.clone = _hostsock_clone,
-    .base.release = _hostsock_release,
     .base.ioctl = _hostsock_ioctl,
     .base.fcntl = _hostsock_fcntl,
     .base.read = _hostsock_read,

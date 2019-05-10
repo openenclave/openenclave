@@ -1349,12 +1349,12 @@ static oe_host_fd_t _hostfs_gethostfd(oe_device_t* file_)
 }
 
 static oe_fs_ops_t _ops = {
-    .base.clone = _hostfs_clone,
     .base.dup = _hostfs_dup,
-    .base.release = _hostfs_release,
     .base.shutdown = _hostfs_shutdown,
     .base.ioctl = _hostfs_ioctl,
     .base.fcntl = _hostfs_fcntl,
+    .clone = _hostfs_clone,
+    .release = _hostfs_release,
     .mount = _hostfs_mount,
     .unmount = _hostfs_unmount,
     .open = _hostfs_open,

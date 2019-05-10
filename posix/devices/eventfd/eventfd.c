@@ -85,25 +85,6 @@ done:
     return ret;
 }
 
-static int _eventfd_release(oe_device_t* device)
-{
-    int ret = -1;
-    eventfd_dev_t* eventfd = _cast_eventfd(device);
-
-    if (!eventfd)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
-        goto done;
-    }
-
-    oe_free(eventfd);
-    ret = 0;
-
-done:
-    return ret;
-}
-
 static oe_device_t* _eventfd_eventfd(
     oe_device_t* eventfd_,
     unsigned int initval,
@@ -286,8 +267,6 @@ static oe_host_fd_t _eventfd_gethostfd(oe_device_t* eventfd_)
 }
 
 static oe_eventfd_ops_t _ops = {
-    .base.clone = _eventfd_clone,
-    .base.release = _eventfd_release,
     .base.ioctl = NULL,
     .base.read = _eventfd_read,
     .base.write = _eventfd_write,
