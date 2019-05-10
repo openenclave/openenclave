@@ -30,6 +30,7 @@ if (OE_SGX)
         sgx/td.c
         sgx/thread.c
         sgx/tracee.c
+        sgx/upcalls.c
         sgx/enter.S
         sgx/exit.S
         sgx/getkey.S

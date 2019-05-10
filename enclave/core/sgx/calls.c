@@ -26,6 +26,7 @@
 #include "init.h"
 #include "report.h"
 #include "td.h"
+#include "upcalls.h"
 
 oe_result_t __oe_enclave_status = OE_OK;
 uint8_t __oe_initialized = 0;
@@ -454,8 +455,14 @@ static void _handle_ecall(
 #if defined(OE_USE_DEBUG_MALLOC)
 
             /* If memory still allocated, print a trace and return an error */
-            if (!oe_disable_debug_malloc_check && oe_debug_malloc_check() != 0)
-                result = OE_MEMORY_LEAK;
+            if (!oe_disable_debug_malloc_check)
+            {
+                if (oe_debug_malloc_check_upcall)
+                {
+                    if (oe_debug_malloc_check_upcall() != 0)
+                        result = OE_MEMORY_LEAK;
+                }
+            }
 
 #endif /* defined(OE_USE_DEBUG_MALLOC) */
 
@@ -478,7 +485,10 @@ static void _handle_ecall(
         }
         case OE_ECALL_VERIFY_REPORT:
         {
-            oe_handle_verify_report(arg_in, &arg_out);
+            if (!oe_handle_verify_report_upcall)
+                OE_RAISE(OE_NOT_FOUND);
+
+            oe_handle_verify_report_upcall(arg_in, &arg_out);
             break;
         }
         case OE_ECALL_LOG_INIT:
@@ -488,12 +498,18 @@ static void _handle_ecall(
         }
         case OE_ECALL_GET_PUBLIC_KEY_BY_POLICY:
         {
-            oe_handle_get_public_key_by_policy(arg_in);
+            if (!oe_handle_get_public_key_by_policy_upcall)
+                OE_RAISE(OE_NOT_FOUND);
+
+            oe_handle_get_public_key_by_policy_upcall(arg_in);
             break;
         }
         case OE_ECALL_GET_PUBLIC_KEY:
         {
-            oe_handle_get_public_key(arg_in);
+            if (!oe_handle_get_public_key_upcall)
+                OE_RAISE(OE_NOT_FOUND);
+
+            oe_handle_get_public_key_upcall(arg_in);
             break;
         }
         default:
