@@ -210,18 +210,18 @@ done:
 }
 
 static oe_fs_ops_t _ops = {
-    .base.clone = NULL,
     .base.dup = _consolefs_dup,
-    .base.release = NULL,
     .base.shutdown = NULL,
     .base.ioctl = _consolefs_ioctl,
     .base.fcntl = _consolefs_fcntl,
-    .mount = NULL,
-    .unmount = NULL,
     .open = NULL,
     .base.read = _consolefs_read,
     .base.write = _consolefs_write,
     .base.get_host_fd = _consolefs_gethostfd,
+    .clone = NULL,
+    .release = NULL,
+    .mount = NULL,
+    .unmount = NULL,
     .lseek = _consolefs_lseek,
     .base.close = _consolefs_close,
     .getdents = NULL,

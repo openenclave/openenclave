@@ -175,7 +175,7 @@ int oe_mount(
     }
 
     /* Clone the device. */
-    retval = OE_CALL_BASE(clone, device, &new_device);
+    retval = OE_CALL_FS(clone, device, &new_device);
     if (retval != 0)
         OE_RAISE_ERRNO(OE_ENOMEM);
 
@@ -210,7 +210,7 @@ done:
         oe_spin_unlock(&_lock);
 
     if (new_device)
-        OE_CALL_BASE(release, new_device);
+        OE_CALL_FS(release, new_device);
 
     return ret;
 }
@@ -258,7 +258,7 @@ int oe_umount2(const char* target, int flags)
         if ((retval = OE_CALL_FS(unmount, fs, target)) != 0)
             OE_RAISE_ERRNO(oe_errno);
 
-        OE_CALL_BASE(release, fs);
+        OE_CALL_FS(release, fs);
     }
 
     ret = 0;
