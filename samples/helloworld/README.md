@@ -51,9 +51,9 @@ This method will be implemented inside the trusted enclave itself and the untrus
 void host_helloworld();
 ```
 
-The reverse is also true for functions defined in the untrusted host that the trusted enclave needs to call into. The untrusted host will implement this function and the `oeedger8r` tool generates some marshaling code in the enc directory with the same signature as the function in the host.
+The reverse is also true for functions defined in the untrusted host that the trusted enclave needs to call into. The untrusted host will implement this function and the `oeedger8r` tool generates some marshaling code in the enclave directory with the same signature as the function in the host.
 
-To generate the functions with the marshaling code the `oeedger8r` is called in both the host and enc directories from their Makefiles:
+To generate the functions with the marshaling code the `oeedger8r` is called in both the host and enclave directories from their Makefiles:
 
 To generate the marshaling code the untrusted host uses to call into the trusted enclave the following command is run:
 
@@ -77,27 +77,27 @@ oeedger8r ../helloworld.edl --trusted
 
 | file | description |
 |---|---|
-| enc/helloworld_args.h | Defines the parameters that are passed to all functions defined in the edl file |
-| enc/helloworld_t.c | Contains the `host_helloworld()` function with the marshaling code to call into the host version of the `host_helloworld()` function |
-| enc/helloworld_t.h | function prototype for `host_helloworld()` function |
+| enclave/helloworld_args.h | Defines the parameters that are passed to all functions defined in the edl file |
+| enclave/helloworld_t.c | Contains the `host_helloworld()` function with the marshaling code to call into the host version of the `host_helloworld()` function |
+| enclave/helloworld_t.h | function prototype for `host_helloworld()` function |
 
 The Makefile in the root of this sample directory has three rules
 
-- build: Calls into the Makefiles in the host and enc directories to build
-- clean: Calls in to the Makefiles in the host and enc directories to clean all generated files
+- build: Calls into the Makefiles in the host and enclave directories to build
+- clean: Calls in to the Makefiles in the host and enclave directories to clean all generated files
 - run: Runs the generated host executable, passing the signed enclave executable as a parameter
 
 ```make
 build:
-        $(MAKE) -C enc
+        $(MAKE) -C enclave
         $(MAKE) -C host
 
 clean:
-        $(MAKE) -C enc clean
+        $(MAKE) -C enclave clean
         $(MAKE) -C host clean
 
 run:
-        host/helloworldhost ./enc/helloworldenc.signed
+        host/helloworldhost ./enclave/helloworldenc.signed
 ```
 
 Build the project with the following command:
@@ -128,7 +128,7 @@ An enclave exposes its functionality to the host application in the form of a se
 
 The helloworld sample implements a single function named `enclave_helloworld` which is called by the host. All it does is print out a message and then call back to the host. No parameters are passed in this sample for simplicity.
 
-The full source for the enclave implementation is here: [helloworld/enc/enc.c](enc/enc.c)
+The full source for the enclave implementation is here: [helloworld/enclave/enc.c](enclave/enc.c)
 
 ```c
 #include <stdio.h>
@@ -222,7 +222,7 @@ Only the signed version of the enclave `helloworldenc.signed` is loadable on Lin
 
 #### Under the hood for the `make build` operation
 
-Here is a listing of key components in the helloworld/enc/Makefile. Also see the [complete listing](enc/Makefile).
+Here is a listing of key components in the helloworld/enclave/Makefile. Also see the [complete listing](enclave/Makefile).
 
 ```make
 # Detect C and C++ compiler options
@@ -254,7 +254,7 @@ build:
 	$(CC) -o helloworldenc helloworld_t.o enc.o $(LDFLAGS)
 
 sign:
-	oesign helloworldenc helloworld.conf private.pem
+	oesign -e helloworldenc -c helloworld.conf -k private.pem
 
 clean:
 	rm -f enc.o helloworldenc helloworldenc.signed private.pem ...
@@ -492,27 +492,36 @@ The following files are generated during the build.
 | helloworld_u.h | Function prototype for `enclave_helloworld()` function |
 | helloworld_u.o | compiled helloworld_u.c source file |
 
-# How to Run
 
-You can run the helloworld sample directly on the command line as follows:
+## Build and run
+
+Note that there are two different build systems supported, one using GNU Make and
+`pkg-config`, the other using CMake.
+
+### CMake
+
+This uses the CMake package provided by the Open Enclave SDK.
 
 ```bash
-./host/helloworldhost ./enc/helloworldenc.signed
+cd helloworld
+mkdir build && cd build
+cmake ..
+make run
 ```
 
-Or execute `make run` from the root of the sample:
+### GNU Make
 
 ```bash
-$ make run
-host/helloworldhost ./enc/helloworldenc.signed
-Hello world from the enclave
-Enclave called into host to print: Hello World!
+cd helloworld
+make build
+make run
 ```
+#### Note
 
 helloworld sample can run under OE simulation mode.
 
 To run the helloworld sample in simulation mode from the command like, use the following:
 
 ```bash
-./host/helloworldhost ./enc/helloworldenc.signed --simulate
+./host/helloworldhost ./enclave/helloworldenc.signed --simulate
 ```

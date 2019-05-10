@@ -1,48 +1,20 @@
+@Library("OpenEnclaveCommon") _
+oe = new jenkins.common.Openenclave()
+
 def packageUpload(String version, String build_type) {
     stage("Ubuntu${version} SGX1FLC Package ${build_type}") {
         node("ACC-${version}") {
             cleanWs()
             checkout scm
-
-            timeout(15) {
-                dir('build') {
-                    withEnv(["CC=clang-7","CXX=clang++-7"]) {
-                        sh """
-                        CMAKE="cmake .. -DCMAKE_BUILD_TYPE=${build_type} -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave' -DCPACK_GENERATOR=DEB"
-                        echo "CMake command is '\${CMAKE}'"
-
-                        if ! \${CMAKE}; then
-                            echo ""
-                            echo "cmake failed for SGX1FLC"
-                            echo ""
-                            exit 1
-                        fi
-                        if ! make; then
-                            echo ""
-                            echo "Build failed for SGX1FLC"
-                            echo ""
-                            exit 1
-                        fi
-                        if ! ctest --output-on-failure; then
-                            echo ""
-                            echo "Test failed for SGX1FLC ${build_type} in ${version} hardware mode"
-                            echo ""
-                            exit 1
-                        fi
-                        echo "Building package"
-                        echo ""
-                        make package
-                        """
-                    }
-                }
-                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: "master/${BUILD_NUMBER}/ubuntu/${version}/${build_type}/SGX1FLC/", containerName: 'oejenkins')
-                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: "master/latest/ubuntu/${version}/${build_type}/SGX1FLC/", containerName: 'oejenkins')
-                if ( build_type == 'Release' ) {
-                  withCredentials([usernamePassword(credentialsId: 'https_gh_pages_push', passwordVariable: 'GHUSER_PASSWORD', usernameVariable: 'GHUSER_ID')]) {
-                    sh 'bash ./scripts/deploy-docs build https $GHUSER_ID $GHUSER_PASSWORD'
-                  }
-                }
-            }
+            def task = """
+                       cmake ${WORKSPACE} -DCMAKE_BUILD_TYPE=${build_type} -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave' -DCPACK_GENERATOR=DEB
+                       make
+                       ctest --output-on-failure
+                       make package
+                       """
+            oe.Run("clang-7", task)
+            azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: "master/${BUILD_NUMBER}/ubuntu/${version}/${build_type}/SGX1FLC/", containerName: 'oejenkins')
+            azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: "master/latest/ubuntu/${version}/${build_type}/SGX1FLC/", containerName: 'oejenkins')
         }
     }
 }

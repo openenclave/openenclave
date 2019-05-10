@@ -2,10 +2,8 @@
 #include <string.h>
 #include "pthread_impl.h"
 #include "syscall.h"
-#include "libc.h"
 
-__attribute__((__visibility__("hidden")))
-long __cancel(), __syscall_cp_asm(), __syscall_cp_c();
+hidden long __cancel(), __syscall_cp_asm(), __syscall_cp_c();
 
 long __cancel()
 {
@@ -45,8 +43,7 @@ static void _sigaddset(sigset_t *set, int sig)
 	set->__bits[s/8/sizeof *set->__bits] |= 1UL<<(s&8*sizeof *set->__bits-1);
 }
 
-__attribute__((__visibility__("hidden")))
-extern const char __cp_begin[1], __cp_end[1], __cp_cancel[1];
+extern hidden const char __cp_begin[1], __cp_end[1], __cp_cancel[1];
 
 static void cancel_handler(int sig, siginfo_t *si, void *ctx)
 {

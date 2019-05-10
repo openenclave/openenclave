@@ -85,6 +85,8 @@ add_library(oecore STATIC
 # Suppress type conversion warnings introduced by 3rdparty code
 set_source_files_properties(${MUSL_SRC_DIR}/prng/rand.c ROPERTIES
     COMPILE_FLAGS -Wno-conversion)
+set_source_files_properties(${MUSL_SRC_DIR}/string/memmove.c PROPERTIES
+    COMPILE_FLAGS -Wno-sign-conversion)
 set_source_files_properties(${MUSL_SRC_DIR}/string/memset.c PROPERTIES
     COMPILE_FLAGS -Wno-conversion)
 set_source_files_properties(__secs_to_tm.c PROPERTIES
@@ -121,18 +123,43 @@ if (CMAKE_C_COMPILER_ID MATCHES GNU)
     target_compile_options(oecore PRIVATE -Wjump-misses-init)
 endif ()
 
+# NOTE: All code inside an enclave must be compile with "position
+# independent executable" semantics via -fPIE, and linked with -pie.
+# Hence the PUBLIC (and INTERFACE) use of these flags instead of -fPIC
+# or POSITION_INDEPENDENT_CODE, which would use the incorrect flag as
+# enclaves actually are executables.
 target_compile_options(oecore PUBLIC
-    -fPIC
+    -fPIE
     -nostdinc
     -fno-stack-protector
-    -fvisibility=hidden)
+    -fvisibility=hidden
+    # "The default without -fpic is 'initial-exec'; with -fpic the
+    # default is 'global-dynamic'."
+    # https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#Code-Gen-Options
+    #
+    # Enclaves are linked using -pie and therefore global-dynamic is
+    # too conservative. Of the two efficient static thread-local
+    # storage models, inital-exec and local-exec, we choose the most
+    # optimal one.
+    -ftls-model=local-exec
+    # Disable builtin functions for enclaves, but only in our build.
+    #
+    # We do this to work-around compiler bugs (see #1429) due to our
+    # redefinition of `memmove` to `oe_memmove` causing an undefined
+    # symbol error when a built-in was inlined. However, we only do
+    # this for our code as we don't want to force these flags on the
+    # user. There are valid reasons for an end user to use built-ins.
+    $<BUILD_INTERFACE:-fno-builtin-malloc -fno-builtin-calloc -fno-builtin>)
 
 target_compile_options(oecore INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>)
 
 target_compile_definitions(oecore
     PUBLIC
     OE_BUILD_ENCLAVE
-    OE_API_VERSION=2)
+    # NOTE: This definition is public to the rest of our project's
+    # targets, but should not yet be exposed to consumers of our
+    # package.
+    $<BUILD_INTERFACE:OE_API_VERSION=2>)
 
 if(USE_LIBSGX)
     target_compile_definitions(oecore PUBLIC OE_USE_LIBSGX)
@@ -143,10 +170,12 @@ if(USE_DEBUG_MALLOC)
     message("USE_DEBUG_MALLOC is set, building oecore with memory leak detection.")
 endif()
 
-# addl link-options for enclave apps
+# Interface link flags for enclaves.
 target_link_libraries(oecore INTERFACE
     -nostdlib -nodefaultlibs -nostartfiles
-    -Wl,--no-undefined,-Bstatic,-Bsymbolic,--export-dynamic,-pie,--build-id)
+    -Wl,--no-undefined,-Bstatic,-Bsymbolic,--export-dynamic,-pie,--build-id
+    -Wl,-z,noexecstack
+    -Wl,-z,now)
 
 set_property(TARGET oecore PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 install (TARGETS oecore EXPORT openenclave-targets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)

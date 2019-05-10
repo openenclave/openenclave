@@ -1,7 +1,6 @@
 #include <errno.h>
 #include <string.h>
 #include "locale_impl.h"
-#include "libc.h"
 
 #define E(a,b) ((unsigned char)a),
 static const unsigned char errid[] = {

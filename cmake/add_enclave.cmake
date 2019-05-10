@@ -87,7 +87,7 @@ function(add_enclave)
   # Sign the enclave using `oesign`.
   if(ENCLAVE_CONFIG)
     add_custom_command(OUTPUT ${SIGNED_LOCATION}
-      COMMAND oesign sign $<TARGET_FILE:${ENCLAVE_TARGET}> ${ENCLAVE_CONFIG} ${ENCLAVE_KEY}
+      COMMAND oesign sign -e $<TARGET_FILE:${ENCLAVE_TARGET}> -c ${ENCLAVE_CONFIG} -k ${ENCLAVE_KEY}
       DEPENDS oesign ${ENCLAVE_TARGET} ${ENCLAVE_CONFIG} ${ENCLAVE_KEY}
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
   endif()

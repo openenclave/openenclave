@@ -10,6 +10,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased]
 ------------
 
+### Changed
+
+- Rename `oe-gdb` to `oegdb` for consistency with other tools, such as `oesign`.
+- Update pkg-config and CMake exports to include the following hardening build
+  flags by default:
+    - Enclaves will:
+       - Compile with `-fPIE` instead of `-fPIC`.
+       - Link with `-Wl,-z,noexecstack`, `-Wl,-z,now`.
+    - Host apps will:
+       - Compile with `-D_FORTIFY_SOURCE=2` (only effective if compiling under
+         GCC with `-O2` specified) and `-fstack-protector-strong`.
+       - Link with `-Wl,-z,noexecstack`.
+       - Note that `-Wl,-z,now` is _not_ enabled by default, but app authors
+         should enable it themselves after assessing its startup impact.
+
+[v0.5.0] - 2019-4-9
+-------------------
+
 ### Added
 
 - Open Enclave SDK works in Windows
@@ -21,44 +39,68 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    - oeedger8r generates `oe_create_foo_enclave` function for `foo.edl`
    - oe-gdb allows attaching to a host that is already running
 - oe-gdb allows attaching to a host that is already running
-- Added Quote Enclave Identity validation into oe_verify_report implementation
+- Added Quote Enclave Identity validation into `oe_verify_report` implementation
 - Added OE SDK internal logging mechanism
 - Support for thread local variables
-   - Both GNU __thread and C++11 thread_local
+   - Both GNU `__thread` and C++11 `thread_local`
    - Both hardware and simulation mode
-   - Local-Exec and Initial-Exec thread-local storage models
+   - Enclaves are compiled using local-exec thread-local model (-ftls-model=local-exec)
+- Added `oe_get_public_key` and `oe_get_public_key_by_policy` host functions,
+  which allow the host to get a public key derived from an enclave's identity.
 - Added v2 versions of the following APIs that instead of passing in buffers now
-  return a buffer that needs to be freed via an associated free method. OE_API_VERSION
+  return a buffer that needs to be freed via an associated free method. `OE_API_VERSION`
   needs to be set to 2 to pick up the versions. The mentioned APIs have a *_V1 and *_V2
-  version that the below versions map to detending on the OE_API_VERSION.
-   - oe_get_report, free report buffer via oe_free_report
-   - oe_get_target_info, free target_info_buffer via oe_free_target_info
-   - oe_get_seal_key, free key_buffer and key_info via oe_free_seal_key
-   - oe_get_seal_key_by_policy, free key_buffer and key_info via oe_free_seal_key
-- Added new enumeration for enclave type parameter of oe_create_enclave. Now use
-  OE_ENCLAVE_TYPE_AUTO to have the enclave appropriate to your built environment
-  be chosen automatically. For instance, building intel binaries will select SGX
-  automatically, where on ARM it will pick trustzone.
+  version that the below versions map to detending on the `OE_API_VERSION`.
+   - `oe_get_report`, free `report_buffer` via `oe_free_report`
+   - `oe_get_target_info`, free `target_info_buffer` via `oe_free_target_info`
+   - `oe_get_seal_key`, free `key_buffer` and `key_info` via `oe_free_seal_key`
+   - `oe_get_seal_key_by_policy`, free `key_buffer` and `key_info` via `oe_free_seal_key`
+- Added new enumeration for enclave type parameter of `oe_create_enclave`. Now use
+  `OE_ENCLAVE_TYPE_AUTO` to have the enclave appropriate to your built environment
+  be chosen automatically. For instance, building Intel binaries will select SGX
+  automatically, where on ARM it will pick TrustZone.
 
 ### Changed
 
 - `oe_create_enclave` takes two additional parameters: `ocall_table` and
   `ocall_table_size`.
-- Update mbed TLS library to version 2.7.6.
-- Update musl libc to version 1.1.20.
+- Update mbedTLS library to version 2.7.9.
+- Update MUSL libc to version 1.1.20.
 - Update LLVM libcxx to version 7.0.0.
    - Some libcxx headers (e.g. `<string>`) now use C++11 template features and
      may require compiling with the `-std=c++11` option when building with GCC.
 - Update minimum required CMake version for building from source to 3.13.1.
 - Update minimum required C++ standard for building from source to C++14.
+- Moved `oe_seal_policy_t`, `oe_asymmetric_key_type_t`, `oe_asymmetric_key_format_t`,
+  and `oe_asymmetric_key_params_t` to `bits/types.h` from `enclave.h`.
+- Changed minimum required QE ISVSVN version from 1 to 2 for the QE Identity
+  revocation check that is performed during quote verification. Remote reports
+  that were generated with a QE ISVSVN version of 1 will fail during report
+  verification now. To resolve this issue, please install the latest version
+  of the [Intel SGX DCAP packages](https://01.org/intel-software-guard-extensions/downloads)
+  (1.0.1 or newer) on the system that generates the remote report.
+- Revamped `oesign` CLI tool arguments parsing. Instead of relying on the arguments
+  order and name, named parameters are used as such:
+   - The `sign` subcommand accepts the following mandatory flags:
+     - `--enclave-image [-e]`, the enclave image file path
+     - `--config-file [-c]`, the path of the config file with enclave properties
+     - `--key-file [-k]`, the path of the private key file used to digitally sign the enclave image
+   - The `dump` subcommand accepts only the `--enclave-image [-e]` mandatory flag, for the enclave file path.
 
 ### Deprecated
 
 - String based `ocalls`/`ecalls`, `OE_ECALL`, and `OE_OCALL` macros.
-- OE_ENCLAVE_TYPE_UNDEFINED was removed and replaced with OE_ENCLAVE_TYPE_AUTO.
+- `OE_ENCLAVE_TYPE_UNDEFINED` was removed and replaced with `OE_ENCLAVE_TYPE_AUTO`.
 
-[v0.4.1] - 2018-12-21
----------------------
+### Fixed
+
+- Check support for AVX in platform/OS before setting SECS.ATTRIBUTES.XFRM in enclave.
+- Fix CVE-2019-0876
+   - `_handle_sgx_get_report` will now write to the supplied argument if it lies in host memory.
+   - Added check for missing null terminator in oeedger8r generated code.
+
+[v0.4.1] - 2018-12-21 (DEPRECATED)
+----------------------------------
 
 v0.4.1 contains a small fix to work with Intel's new ISV version bump.
 
@@ -68,8 +110,8 @@ v0.4.1 contains a small fix to work with Intel's new ISV version bump.
   and at the same time also allow a newer QE SVN (greater than 1) during the
   oe_verify_report process.
 
-[v0.4.0] - 2018-10-08
----------------------
+[v0.4.0] - 2018-10-08 (DEPRECATED)
+----------------------------------
 
 v0.4.0 is the first public preview release, with numerous breaking changes from v0.1.0
 as listed below.
@@ -139,6 +181,8 @@ as listed below.
 
 Initial private preview release, no longer supported.
 
-[Unreleased]: https://github.com/microsoft/openenclave/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/microsoft/openenclave/compare/v0.5.0...HEAD
+[v0.5.0]: https://github.com/microsoft/openenclave/compare/v0.4.1...v0.5.0
+[v0.4.1]: https://github.com/microsoft/openenclave/compare/v0.4.0...v0.4.1
 [v0.4.0]: https://github.com/microsoft/openenclave/compare/v0.1.0...v0.4.0
 [v0.1.0]: https://github.com/microsoft/openenclave/compare/beb546f...v0.1.0

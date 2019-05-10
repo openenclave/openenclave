@@ -1,51 +1,19 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-if(USE_LIBSGX)
-
-# Install the remote_attestation sample.
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/remote_attestation
+if (USE_LIBSGX)
+  install(DIRECTORY remote_attestation local_attestation
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
-    )
+    PATTERN "gen_pubkey_header.sh"
+    PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+        GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ)
+endif ()
 
-# Install the local_attestation sample.
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/local_attestation
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
-    )
+install(DIRECTORY helloworld file-encryptor data-sealing
+  DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
 
-endif()
+install(FILES README.md
+  DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
 
-# Install the helloworld sample.
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/helloworld
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
-    )
-
-# Install the file-encryptor sample
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/file-encryptor
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
-    )
-
-# Install the data-sealing sample
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/data-sealing
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
-    )
-
-# Install make file for samples folder.
-install(FILES  ${CMAKE_CURRENT_LIST_DIR}/Makefile
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
-    )
-
-# Install README.md file for samples folder.
-install(FILES  ${CMAKE_CURRENT_LIST_DIR}/README.md
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
-    )
-
-# for testing the samples, do an install to a local dir to build&run
-add_test(samples
-    sh ${CMAKE_CURRENT_SOURCE_DIR}/test-samples.sh
-        -i ${PROJECT_BINARY_DIR} ${CMAKE_INSTALL_PREFIX}
-        ${PROJECT_BINARY_DIR}/samples/samples-test)
-
-set(env_vars USE_LIBSGX=${USE_LIBSGX})
-
-set_property(TEST samples PROPERTY ENVIRONMENT "${env_vars}")
+add_test(NAME samples
+  COMMAND ${CMAKE_COMMAND} -DUSE_LIBSGX=${USE_LIBSGX} -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR} -DBUILD_DIR=${PROJECT_BINARY_DIR} -DPREFIX_DIR=${CMAKE_INSTALL_PREFIX} -P ${CMAKE_CURRENT_SOURCE_DIR}/test-samples.cmake)

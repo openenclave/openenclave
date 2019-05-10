@@ -8,7 +8,46 @@
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include "../../../host/sgx/enclave.h"
+#include "../host/sgx/cpuid.h"
 #include "props_u.h"
+
+/* Set the Enclave XFRM to Legacy mode */
+static uint64_t cur_enclave_xfrm = SGX_XFRM_LEGACY;
+
+static bool _is_avx_supported()
+{
+    uint32_t eax, ebx, ecx, edx;
+
+    eax = ebx = ecx = edx = 0;
+
+    // Obtain feature information using CPUID Leaf 1
+    oe_get_cpuid(1, 0, &eax, &ebx, &ecx, &edx);
+
+    // Check if AVX instruction extensions (bit 28) are supported in the
+    // processor
+    if (!(ecx & (1 << 28)))
+        return false;
+    else
+        return true;
+}
+
+static void _set_xfrm(uint64_t xfrm)
+{
+    if (((xfrm & SGX_XFRM_AVX) == SGX_XFRM_AVX) && (!_is_avx_supported()))
+        OE_TRACE_INFO("Skipping testing enclave in AVX mode as unsupported by "
+                      "platform\n");
+    else
+        cur_enclave_xfrm = xfrm;
+}
+
+/*
+ * Overriding oe_get_xfrm() function in the core to facilitate iterating through
+ * Legacy and AVX configurations
+ */
+uint64_t oe_get_xfrm()
+{
+    return cur_enclave_xfrm;
+}
 
 static void _check_properties(
     oe_sgx_enclave_properties_t* props,
@@ -35,6 +74,7 @@ static void _check_properties(
     OE_TEST(config->security_version == security_version);
     OE_TEST(config->padding == 0);
     OE_TEST(config->attributes == attributes);
+    OE_TEST(config->xfrm == cur_enclave_xfrm);
 
     /* Initialize a zero-filled sigstruct */
     const uint8_t sigstruct[OE_SGX_SIGSTRUCT_SIZE] = {0};
@@ -69,6 +109,9 @@ static oe_result_t _sgx_load_enclave_properties(
             &oeimage, OE_INFO_SECTION_NAME, properties) != OE_OK)
         OE_RAISE(OE_NOT_FOUND);
 
+    /* Since XFRM isn't stored in the image, set it here */
+    properties->config.xfrm = oe_get_xfrm();
+
     result = OE_OK;
 
 done:
@@ -96,10 +139,12 @@ int main(int argc, const char* argv[])
     if (strcmp(argv[2], "signed") == 0)
     {
         is_signed = true;
+        _set_xfrm(SGX_XFRM_LEGACY);
     }
     else if (strcmp(argv[2], "unsigned") == 0)
     {
         is_signed = false;
+        _set_xfrm(SGX_XFRM_LEGACY | SGX_XFRM_AVX);
     }
     else
     {

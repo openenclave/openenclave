@@ -3,7 +3,6 @@
 #include <unistd.h>
 #include <errno.h>
 #include <limits.h>
-#include "libc.h"
 
 extern char **__environ;
 

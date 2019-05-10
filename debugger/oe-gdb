@@ -3,5 +3,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-export PYTHONPATH=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/openenclave/debugger/gdb-sgx-plugin
-LD_PRELOAD=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/openenclave/debugger/liboe_ptrace.so gdb -iex "directory ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/openenclave/debugger/gdb-sgx-plugin" -iex "source ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/openenclave/debugger/gdb-sgx-plugin/gdb_sgx_plugin.py" -iex "set environment LD_PRELOAD" -iex "add-auto-load-safe-path /usr/lib" "$@"
+echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+echo "!!! WARNING: This script was renamed 'oegdb' and will be deleted in v0.7.0 !!!"
+echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+
+OE_GDB_DIR=$(dirname "${BASH_SOURCE[0]}")
+
+exec "$OE_GDB_DIR/oegdb" "$@"

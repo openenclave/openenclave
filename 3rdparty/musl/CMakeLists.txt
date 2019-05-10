@@ -18,7 +18,7 @@ endif()
 #
 # The build command here is just a set of copy instructions to setup
 # `oelibc_includes`. See that CMake target for compile options.
-set(MUSL_CFLAGS "-fPIC -DSYSCALL_NO_INLINE")
+set(MUSL_CFLAGS "-DSYSCALL_NO_INLINE -ftls-model=local-exec")
 set(MUSL_CC ${CMAKE_C_COMPILER})
 set(MUSL_CXX ${CMAKE_CXX_COMPILER})
 

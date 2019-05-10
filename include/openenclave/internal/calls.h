@@ -6,6 +6,7 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/defs.h>
 #include "backtrace.h"
@@ -72,17 +73,16 @@ typedef enum _oe_func
 {
     OE_ECALL_DESTRUCTOR = OE_ECALL_BASE,
     OE_ECALL_INIT_ENCLAVE,
-    OE_ECALL_CALL_ENCLAVE,
     OE_ECALL_CALL_ENCLAVE_FUNCTION,
     OE_ECALL_VERIFY_REPORT,
     OE_ECALL_GET_SGX_REPORT,
     OE_ECALL_VIRTUAL_EXCEPTION_HANDLER,
     OE_ECALL_LOG_INIT,
+    OE_ECALL_GET_PUBLIC_KEY_BY_POLICY,
+    OE_ECALL_GET_PUBLIC_KEY,
     /* Caution: always add new ECALL function numbers here */
 
-    OE_OCALL_CALL_HOST = OE_OCALL_BASE,
-    OE_OCALL_CALL_HOST_FUNCTION,
-    OE_OCALL_CALL_HOST_BY_ADDRESS,
+    OE_OCALL_CALL_HOST_FUNCTION = OE_OCALL_BASE,
     OE_OCALL_GET_QE_TARGET_INFO,
     OE_OCALL_GET_QUOTE,
     OE_OCALL_GET_REVOCATION_INFO,
@@ -190,24 +190,6 @@ OE_INLINE uint16_t oe_get_result_from_call_arg1(uint64_t arg)
 /*
 **==============================================================================
 **
-** oe_call_enclave_args_t
-**
-**==============================================================================
-*/
-
-typedef void (*oe_enclave_func_t)(void* args);
-
-typedef struct _oe_call_enclave_args
-{
-    uint64_t func;
-    uint64_t vaddr;
-    void* args;
-    oe_result_t result;
-} oe_call_enclave_args_t;
-
-/*
-**==============================================================================
-**
 ** oe_call_enclave_function_args_t
 **
 **==============================================================================
@@ -215,6 +197,10 @@ typedef struct _oe_call_enclave_args
 
 typedef struct _oe_call_enclave_function_args
 {
+    // OE_UINT64_MAX refers to default function table. Other values are
+    // reserved for alternative function tables.
+    uint64_t table_id;
+
     uint64_t function_id;
     const void* input_buffer;
     size_t input_buffer_size;
@@ -227,14 +213,37 @@ typedef struct _oe_call_enclave_function_args
 /*
 **==============================================================================
 **
-** oe_call_enclave_function_args_t
+** oe_call_enclave_function_by_table_id()
+**
+**==============================================================================
+*/
+
+oe_result_t oe_call_enclave_function_by_table_id(
+    oe_enclave_t* enclave,
+    uint64_t table_id,
+    uint64_t function_id,
+    const void* input_buffer,
+    size_t input_buffer_size,
+    void* output_buffer,
+    size_t output_buffer_size,
+    size_t* output_bytes_written);
+
+/*
+**==============================================================================
+**
+** oe_call_host_function_args_t
 **
 **==============================================================================
 */
 
 typedef struct _oe_call_host_function_args
 {
+    // OE_UINT64_MAX refers to default function table. Other values are
+    // reserved for alternative function tables.
+    uint64_t table_id;
+
     uint64_t function_id;
+
     const void* input_buffer;
     size_t input_buffer_size;
     void* output_buffer;
@@ -246,65 +255,67 @@ typedef struct _oe_call_host_function_args
 /*
 **==============================================================================
 **
-** oe_host_func_t:
-**
-**     The oe_call_host() enclave function is dispatched to a host function
-**     with the following prototype.
-**
-**         OE_OCALL void (*)(void* args, oe_enclave_t* enclave);
-**
-**     Host-application developers may legally omit one or more parameters, and
-**     therefore define functions with the following prototypes (where the last
-**     is the maximal form).
-**
-**         OE_OCALL void (*)(void);
-**         OE_OCALL void (*)(void* args);
-**         OE_OCALL void (*)(void* args, oe_enclave_t* enclave);
-**
-**     This pattern is common in the C language where the following forms of
-**     main() are prevalent.
-**
-**         int main(void);
-**         int main(int argc, char* argv[]);
-**         int main(int argc, char* argv[], char* envp[]);
-**
-**     In this case the _start() function passes all parameters but the main()
-**     prototype may omit parameters from right to left.
+** oe_call_host_function_by_table_id()
 **
 **==============================================================================
 */
 
-typedef void (*oe_host_func_t)(void* args, oe_enclave_t* enclave);
+oe_result_t oe_call_host_function_by_table_id(
+    size_t table_id,
+    size_t function_id,
+    const void* input_buffer,
+    size_t input_buffer_size,
+    void* output_buffer,
+    size_t output_buffer_size,
+    size_t* output_bytes_written);
 
 /*
 **==============================================================================
 **
-** oe_call_host_args_t
+** oe_register_ocall_function_table()
+**
+**     Register an ocall table with the given table id.
 **
 **==============================================================================
 */
 
-typedef struct _oe_call_host_args
-{
-    void* args;
-    oe_result_t result;
-    OE_ZERO_SIZED_ARRAY char func[];
-} oe_call_host_args_t;
+#define OE_MAX_OCALL_TABLES 64
+
+typedef void (*oe_ocall_func_t)(
+    const uint8_t* input_buffer,
+    size_t input_buffer_size,
+    uint8_t* output_buffer,
+    size_t output_buffer_size,
+    size_t* output_bytes_written);
+
+oe_result_t oe_register_ocall_function_table(
+    uint64_t table_id,
+    const oe_ocall_func_t* ocalls,
+    size_t num_ocalls);
 
 /*
 **==============================================================================
 **
-** oe_call_host_by_address_args_t
+** oe_register_ecall_function_table()
+**
+**     Register an ecall table with the given table id.
 **
 **==============================================================================
 */
 
-typedef struct _oe_call_host_by_address_args
-{
-    void* args;
-    oe_host_func_t func;
-    oe_result_t result;
-} oe_call_host_by_address_args_t;
+#define OE_MAX_ECALL_TABLES 64
+
+typedef void (*oe_ecall_func_t)(
+    const uint8_t* input_buffer,
+    size_t input_buffer_size,
+    uint8_t* output_buffer,
+    size_t output_buffer_size,
+    size_t* output_bytes_written);
+
+oe_result_t oe_register_ecall_function_table(
+    uint64_t table_id,
+    const oe_ecall_func_t* ecalls,
+    size_t num_ecalls);
 
 /*
 **==============================================================================
@@ -460,6 +471,23 @@ oe_result_t oe_ecall(
  *
  */
 oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out);
+
+/*
+**==============================================================================
+**
+** The POSIX function tables.
+**
+**==============================================================================
+*/
+
+#define OE_POSIX_OCALL_FUNCTION_TABLE_ID 0
+#define OE_POSIX_ECALL_FUNCTION_TABLE_ID 0
+
+/* Register the OCALL table needed by the POSIX interface (host side). */
+void oe_register_posix_ocall_function_table(void);
+
+/* Register the ECALL table needed by the POSIX interface (enclave side). */
+void oe_register_posix_ecall_function_table(void);
 
 OE_EXTERNC_END
 

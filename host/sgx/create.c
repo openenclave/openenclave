@@ -251,7 +251,6 @@ done:
 
 static oe_result_t _calculate_enclave_size(
     size_t image_size,
-    size_t ecall_size,
     const oe_sgx_enclave_properties_t* props,
     size_t* enclave_end, /* end may be less than size due to rounding */
     size_t* enclave_size)
@@ -280,7 +279,7 @@ static oe_result_t _calculate_enclave_size(
     control_size = 6 * OE_PAGE_SIZE;
 
     /* Compute end of the enclave */
-    *enclave_end = image_size + ecall_size + heap_size +
+    *enclave_end = image_size + heap_size +
                    (size_settings->num_tcs * (stack_size + control_size));
 
     /* Calculate the total size of the enclave */
@@ -290,101 +289,7 @@ static oe_result_t _calculate_enclave_size(
     return result;
 }
 
-static oe_result_t _add_ecall_pages(
-    oe_sgx_load_context_t* context,
-    uint64_t enclave_addr,
-    const void* ecall_data,
-    const size_t ecall_size,
-    uint64_t* vaddr)
-{
-    oe_result_t result = OE_UNEXPECTED;
-
-    if (!context || !ecall_data || !ecall_size || !vaddr)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    {
-        const oe_page_t* pages = (const oe_page_t*)ecall_data;
-        size_t npages = ecall_size / sizeof(oe_page_t);
-
-        for (size_t i = 0; i < npages; i++)
-        {
-            uint64_t addr = enclave_addr + *vaddr;
-            uint64_t src = (uint64_t)&pages[i];
-            uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R;
-            bool extend = true;
-
-            OE_CHECK(oe_sgx_load_enclave_data(
-                context, enclave_addr, addr, src, flags, extend));
-            (*vaddr) += sizeof(oe_page_t);
-        }
-    }
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
-/*
-**==============================================================================
-**
-** _build_ecall_data()
-**
-**     Build the ECALL pages that will be included in the enclave image. These
-**     pages contain the virtual addresses of all ECALL functions. During an
-**     ECALL, the enclave uses the function number for that call as an index
-**     into the array of virtual addresses to obtain the virtual address of
-**     the ECALL function.
-**
-**==============================================================================
-*/
-
-static oe_result_t _build_ecall_data(
-    oe_enclave_t* enclave,
-    void** ecall_data,
-    size_t* ecall_size)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    oe_ecall_pages_t* data;
-    size_t size = 0;
-
-    if (ecall_data)
-        *ecall_data = NULL;
-
-    if (ecall_size)
-        *ecall_size = 0;
-
-    if (!enclave || !ecall_data || !ecall_size)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Calculate size needed for the ECALL pages */
-    size = oe_round_up_to_page_size(
-        sizeof(oe_ecall_pages_t) + (enclave->num_ecalls * sizeof(uint64_t)));
-
-    /* Allocate the pages */
-    if (!(data = (oe_ecall_pages_t*)calloc(1, size)))
-        OE_RAISE(OE_OUT_OF_MEMORY);
-
-    /* Initialize the pages */
-    {
-        data->magic = OE_ECALL_PAGES_MAGIC;
-        data->num_vaddrs = enclave->num_ecalls;
-
-        for (size_t i = 0; i < enclave->num_ecalls; i++)
-            data->vaddrs[i] = enclave->ecalls[i].vaddr;
-    }
-
-    /* Set the output parameters */
-    *ecall_data = data;
-    *ecall_size = size;
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
-static oe_result_t _oe_add_data_pages(
+static oe_result_t _add_data_pages(
     oe_sgx_load_context_t* context,
     oe_enclave_t* enclave,
     const oe_sgx_enclave_properties_t* props,
@@ -572,7 +477,6 @@ oe_result_t oe_sgx_build_enclave(
     uint64_t enclave_addr = 0;
     oe_enclave_image_t oeimage;
     void* ecall_data = NULL;
-    size_t ecall_size;
     size_t image_size;
     uint64_t vaddr = 0;
     oe_sgx_enclave_properties_t props;
@@ -640,19 +544,15 @@ oe_result_t oe_sgx_build_enclave(
                 NULL);
         }
     }
+    // Set the XFRM field
+    props.config.xfrm = context->attributes.xfrm;
 
     /* Calculate the size of image */
     OE_CHECK(oeimage.calculate_size(&oeimage, &image_size));
 
-    /* Build an array of all the ECALL functions in the .ecalls section */
-    OE_CHECK(oeimage.build_ecall_array(&oeimage, enclave));
-
-    /* Build ECALL pages for enclave (list of addresses) */
-    OE_CHECK(_build_ecall_data(enclave, &ecall_data, &ecall_size));
-
     /* Calculate the size of this enclave in memory */
     OE_CHECK(_calculate_enclave_size(
-        image_size, ecall_size, &props, &enclave_end, &enclave_size));
+        image_size, &props, &enclave_end, &enclave_size));
 
     /* Perform the ECREATE operation */
     OE_CHECK(oe_sgx_create_enclave(context, enclave_size, &enclave_addr));
@@ -663,18 +563,14 @@ oe_result_t oe_sgx_build_enclave(
     enclave->text = enclave_addr + oeimage.text_rva;
 
     /* Patch image */
-    OE_CHECK(oeimage.patch(&oeimage, ecall_size, enclave_end));
+    OE_CHECK(oeimage.patch(&oeimage, enclave_end));
 
     /* Add image to enclave */
     OE_CHECK(oeimage.add_pages(&oeimage, context, enclave, &vaddr));
 
-    /* Add ecall pages */
-    OE_CHECK(_add_ecall_pages(
-        context, enclave->addr, ecall_data, ecall_size, &vaddr));
-
     /* Add data pages */
-    OE_CHECK(_oe_add_data_pages(
-        context, enclave, &props, oeimage.entry_rva, &vaddr));
+    OE_CHECK(
+        _add_data_pages(context, enclave, &props, oeimage.entry_rva, &vaddr));
 
     /* Ask the platform to initialize the enclave and finalize the hash */
     OE_CHECK(oe_sgx_initialize_enclave(
@@ -700,17 +596,6 @@ done:
     oe_unload_enclave_image(&oeimage);
 
     return result;
-}
-
-void oe_free_enclave_ecalls(oe_enclave_t* enclave)
-{
-    if (enclave->ecalls)
-    {
-        for (size_t i = 0; i < enclave->num_ecalls; i++)
-            free(enclave->ecalls[i].name);
-
-        free(enclave->ecalls);
-    }
 }
 
 /*
@@ -753,6 +638,9 @@ oe_result_t oe_create_enclave(
          (enclave_type != OE_ENCLAVE_TYPE_AUTO)) ||
         (flags & OE_ENCLAVE_FLAG_RESERVED) || config || config_size > 0)
         OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Install the POSIX ocall function table. */
+    oe_register_posix_ocall_function_table();
 
     /* Allocate and zero-fill the enclave structure */
     if (!(enclave = (oe_enclave_t*)calloc(1, sizeof(oe_enclave_t))))
@@ -820,7 +708,6 @@ done:
 
     if (result != OE_OK && enclave)
     {
-        oe_free_enclave_ecalls(enclave);
         free(enclave);
     }
 
@@ -862,9 +749,6 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
         /* Unmap the enclave memory region.
          * Track failures reported by the platform, but do not exit early */
         result = oe_sgx_delete_enclave(enclave);
-
-        /* Release the enclave->ecalls[] array */
-        oe_free_enclave_ecalls(enclave);
 
 #if defined(_WIN32)
 

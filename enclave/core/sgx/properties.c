@@ -17,13 +17,13 @@ OE_STATIC_ASSERT(
 
 OE_CHECK_SIZE(sizeof(oe_enclave_properties_header_t), 32);
 
-OE_CHECK_SIZE(sizeof(oe_sgx_enclave_config_t), 16);
+OE_CHECK_SIZE(sizeof(oe_sgx_enclave_config_t), 24);
 
 OE_CHECK_SIZE(OE_OFFSETOF(oe_sgx_enclave_properties_t, header), 0);
 OE_CHECK_SIZE(OE_OFFSETOF(oe_sgx_enclave_properties_t, config), 32);
-OE_CHECK_SIZE(OE_OFFSETOF(oe_sgx_enclave_properties_t, image_info), 48);
-OE_CHECK_SIZE(OE_OFFSETOF(oe_sgx_enclave_properties_t, sigstruct), 112);
-OE_CHECK_SIZE(sizeof(oe_sgx_enclave_properties_t), 1928);
+OE_CHECK_SIZE(OE_OFFSETOF(oe_sgx_enclave_properties_t, image_info), 56);
+OE_CHECK_SIZE(OE_OFFSETOF(oe_sgx_enclave_properties_t, sigstruct), 104);
+OE_CHECK_SIZE(sizeof(oe_sgx_enclave_properties_t), 1920);
 
 //
 // Declare an invalid oeinfo to ensure .oeinfo section exists

@@ -25,10 +25,17 @@ OE_EXTERNC_BEGIN
 #define SGX_FLAGS_PROVISION_KEY 0x0000000000000010ULL
 #define SGX_FLAGS_EINITTOKEN_KEY 0x0000000000000020ULL
 
-#define SGX_XFRM_LEGACY 0x0000000000000003ULL
-#define SGX_XFRM_AVX 0x0000000000000006ULL
-#define SGX_XFRM_AVX512 0x00000000000000E6ULL
-#define SGX_XFRM_MPX 0x0000000000000018ULL
+#define SGX_XFRM_LEGACY                                                     \
+    0x0000000000000003ULL /* Legacy XFRM which includes basic feature bits  \
+                             required by SGX i.e. X87 (bit 0) and SSE state \
+                             (bit 1) */
+#define SGX_XFRM_AVX                                                           \
+    0x0000000000000006ULL /* AVX XFRM which includes AVX (bit 2) and SSE State \
+                             (Bit 1) required by AVX */
+#define SGX_XFRM_AVX512 \
+    0x00000000000000E6ULL /* AVX512 - not supported by Intel SGX */
+#define SGX_XFRM_MPX \
+    0x0000000000000018ULL /* MPX XFRM - not supported by Intel SGX */
 
 #define SGX_SECINFO_R 0x0000000000000000001
 #define SGX_SECINFO_W 0x0000000000000000002
@@ -83,10 +90,10 @@ OE_STATIC_ASSERT(sizeof(sgx_enclu_leaf_t) == sizeof(unsigned int));
 */
 
 /* Default value for sgx_attributes_t.flags */
-#define SGX_ATTRIBUTES_DEFAULT_FLAGS 0x0000000000000006
+#define SGX_ATTRIBUTES_DEFAULT_FLAGS 0x0000000000000006ULL
 
 /* Default value for sgx_attributes_t.xfrm */
-#define SGX_ATTRIBUTES_DEFAULT_XFRM 0x0000000000000007
+#define SGX_ATTRIBUTES_DEFAULT_XFRM 0x0000000000000003ULL
 
 OE_PACK_BEGIN
 typedef struct _sgx_attributes
@@ -122,10 +129,10 @@ OE_CHECK_SIZE(sizeof(sgx_attributes_t), 16);
 #define SGX_SIGSTRUCT_MISCMASK 0xffffffff
 
 /* sgx_sigstruct_t.flags */
-#define SGX_SIGSTRUCT_ATTRIBUTEMASK_FLAGS 0Xfffffffffffffffb
+#define SGX_SIGSTRUCT_ATTRIBUTEMASK_FLAGS 0XfffffffffffffffbULL
 
 /* sgx_sigstruct_t.xfrm */
-#define SGX_SIGSTRUCT_ATTRIBUTEMASK_XFRM 0x0000000000000000
+#define SGX_SIGSTRUCT_ATTRIBUTEMASK_XFRM 0x0000000000000000ULL
 
 /* 1808 bytes */
 OE_PACK_BEGIN
@@ -1008,33 +1015,6 @@ typedef struct _sgx_nonce
 {
     uint8_t rand[16];
 } sgx_nonce_t;
-
-/*
-**==============================================================================
-**
-** oe_ecall_pages_t
-**
-**     The enclave image has ECALL address pages that keep the virtual
-**     addresses of all ECALL functions. When the host performs an OCALL, it
-**     passes a function number that the enclave uses as an index into this
-**     table to obtain the virtual address of the corresponding function.
-**
-**==============================================================================
-*/
-
-#define OE_ECALL_PAGES_MAGIC 0x927ccf78a3de9f9d
-
-typedef struct _oe_ecall_pages
-{
-    /* Should be OE_ECALL_PAGES_MAGIC if page is valid */
-    uint64_t magic;
-
-    /* Number of ECALL virtual addresses */
-    uint64_t num_vaddrs;
-
-    /* ECALL virtual addresses (index by function number) */
-    OE_ZERO_SIZED_ARRAY uint64_t vaddrs[];
-} oe_ecall_pages_t;
 
 /*
 **==============================================================================

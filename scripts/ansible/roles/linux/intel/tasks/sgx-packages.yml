@@ -5,17 +5,23 @@
 - name: Gather Ansible facts
   setup:
 
+- name: Include vars
+  include_vars: "{{ ansible_distribution_release | lower }}.yml"
+
 - import_role:
     name: linux/common
     tasks_from: apt-repo-intel.yml
 
+- name: Install the Intel libsgx package dependencies
+  apt:
+    name: "{{ intel_sgx_package_dependencies }}"
+    state: present
+    update_cache: yes
+    install_recommends: no
+
 - name: Install the Intel libsgx packages
   apt:
-    name:
-      - "libsgx-enclave-common"
-      - "libsgx-enclave-common-dev"
-      - "libsgx-dcap-ql"
-      - "libsgx-dcap-ql-dev"
+    name: "{{ intel_sgx_packages }}"
     state: present
     update_cache: yes
     install_recommends: no

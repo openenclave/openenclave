@@ -2,11 +2,33 @@
 # Licensed under the MIT License.
 
 ---
+- name: Intel SGX Driver | Include vars
+  include_vars: "{{ ansible_distribution_release | lower }}.yml"
+
+- name: Install the dkms package
+  apt:
+    name:
+      - "dkms"
+    state: present
+    update_cache: yes
+    install_recommends: no
+
+- name: Populate service facts
+  service_facts:
+
+- name: Ensure aesmd service stopped
+  service:
+    name: aesmd
+    state: stopped
+  when: "'aesmd.service' in ansible_facts.services"
+
 - name: Download Intel SGX DCAP Driver
   get_url:
-    url: https://download.01.org/intel-sgx/dcap-1.0/sgx_linux_x64_driver_dcap_36594a7.bin
+    url: "{{ intel_sgx_driver_url }}"
     dest: /tmp/sgx_linux_x64_driver_dcap.bin
     mode: 0755
+    timeout: 120
+  retries: 3
 
 - name: Install the Intel SGX DCAP Driver
   command: /tmp/sgx_linux_x64_driver_dcap.bin
@@ -15,3 +37,10 @@
   file:
     path: /tmp/sgx_linux_x64_driver_dcap.bin
     state: absent
+
+- name: Ensure aesmd service running
+  service:
+    name: aesmd
+    state: started
+    enabled: yes
+  when: "'aesmd.service' in ansible_facts.services"

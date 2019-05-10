@@ -36,6 +36,10 @@ directly. For example, to see the host linker options when building C++ code wit
 ```bash
 pkg-config opt/openenclave/share/pkgconfig/oehost-g++.pc --libs
 ```
+## Build options for using Open Enclave SDK with a CMake project
+If you have a CMake project and would like to bring in Open Enclave targets,
+please look at instructions available
+[here](https://github.com/Microsoft/openenclave/blob/master/cmake/sdk_cmake_targets_readme.md).
 
 ## Signing the Enclave
 
@@ -49,12 +53,12 @@ of the signing process. To do so, you will need to use the oesign tool, which
 takes the following parameters:
 
 ```bash
-Usage: oesign ENCLAVE CONFFILE KEYFILE
+Usage: oesign sign --enclave-image ENCLAVE --config-file CONFFILE --key-file KEYFILE
 ```
 
 For example, to sign the helloworld sample enclave in the output folder:
 ```bash
-/opt/openenclave/bin/oesign helloworld_enc enc.conf private.pem
+/opt/openenclave/bin/oesign sign --enclave-image helloworld_enc --config-file enc.conf --key-file private.pem
 ```
 
 **When signing the enclave, the `KEYFILE` specified must contain a 3072-bit RSA keys
@@ -69,7 +73,7 @@ openssl genrsa -out myprivate.pem -3 3072
 The `CONFFILE` is a simple text file that defines enclave settings.
 All the settings must be provided for the enclave to be successfully loaded:
 
-- **Debug**: Is the enclave allowed to load in debug mode? 
+- **Debug**: Is the enclave allowed to load in debug mode?
 - **NumTCS**: The number of thread control structures (TCS) to allocate in the enclave.
   This determines the maximum number of concurrent threads that can be executing in the enclave.
 - **NumStackPages**: The number of stack pages to allocate for each thread in the enclave.
@@ -80,7 +84,7 @@ In addition, the following two properties are defined by the developer and map d
 
 - **ProductID**: The product identity (ISVPRODID) for the developer to distinguish
   between different enclaves signed with the same MRSIGNER value.
-- **SecurityVersion**: The security version number for the enclave (ISVSVN), which 
+- **SecurityVersion**: The security version number for the enclave (ISVSVN), which
   can be used to prevent rollback attacks against sealing keys. This value should be
   incremented whenever a security fix is made to the enclave code.
 
@@ -97,7 +101,7 @@ SecurityVersion=1
 
 As a convenience, you can also specify the enclave properties in code using the
 `OE_SET_ENCLAVE_SGX` macro. For example, the equivalent properties could be
-defined in any .cpp compiled into the enclave: 
+defined in any .cpp compiled into the enclave:
 
 ```c
 OE_SET_ENCLAVE_SGX(

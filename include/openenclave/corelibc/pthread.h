@@ -7,6 +7,16 @@
 #include <openenclave/bits/types.h>
 #include <openenclave/corelibc/time.h>
 
+OE_EXTERNC_BEGIN
+
+/*
+**==============================================================================
+**
+** OE names:
+**
+**==============================================================================
+*/
+
 // clang-format off
 #define OE_PTHREAD_MUTEX_INITIALIZER {{0}}
 #define OE_PTHREAD_RWLOCK_INITIALIZER {{0}}
@@ -138,19 +148,28 @@ int oe_pthread_setspecific(oe_pthread_key_t key, const void* value);
 
 void* oe_pthread_getspecific(oe_pthread_key_t key);
 
+/*
+**==============================================================================
+**
+** Standard-C names:
+**
+**==============================================================================
+*/
+
 #if defined(OE_NEED_STDC_NAMES)
 
-#include "bits/pthread_def.h"
-
-#include "bits/pthread_cond.h"
-#include "bits/pthread_create.h"
-#include "bits/pthread_equal.h"
-#include "bits/pthread_key.h"
-#include "bits/pthread_mutex.h"
-#include "bits/pthread_once.h"
-#include "bits/pthread_rwlock.h"
-#include "bits/pthread_spin.h"
+#include <openenclave/corelibc/bits/pthread_def.h>
+#include <openenclave/corelibc/bits/pthread_cond.h>
+#include <openenclave/corelibc/bits/pthread_create.h>
+#include <openenclave/corelibc/bits/pthread_equal.h>
+#include <openenclave/corelibc/bits/pthread_key.h>
+#include <openenclave/corelibc/bits/pthread_mutex.h>
+#include <openenclave/corelibc/bits/pthread_once.h>
+#include <openenclave/corelibc/bits/pthread_rwlock.h>
+#include <openenclave/corelibc/bits/pthread_spin.h>
 
 #endif /* defined(OE_NEED_STDC_NAMES) */
+
+OE_EXTERNC_END
 
 #endif /* _OE_PTHREAD_H */

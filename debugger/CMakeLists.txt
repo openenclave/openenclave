@@ -4,18 +4,15 @@
 add_subdirectory(ptraceLib)
 add_subdirectory(pythonExtension)
 
+# Copy oegdb to build/output/bin so that it can be used
+# for debugging enclaves built as part of OE SDK.
+file(COPY oegdb DESTINATION ${OE_BINDIR})
 
-# During build do an install of debugger to the output folder
-set(CMAKE_INSTALL_PREFIX_BAK ${CMAKE_INSTALL_PREFIX})
+install(PROGRAMS oegdb DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/output)
-configure_file(oe-gdb ${OE_BINDIR}/oe-gdb)
+# Copy and install a script with the deprecated name that emits a
+# warning about the rename and then replaces itself with `oegdb`.
+# TODO: Remove this in v0.7.0.
+file(COPY oe-gdb DESTINATION ${OE_BINDIR})
 
-# Reset variables
-set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX_BAK})
-
-# Patch oe-gdb script based on install location.
-configure_file(oe-gdb oe-gdb-for-install)
-
-# Install oe-gdb script upon install-time
-install (PROGRAMS ${CMAKE_BINARY_DIR}/debugger/oe-gdb-for-install DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(PROGRAMS oe-gdb DESTINATION ${CMAKE_INSTALL_BINDIR})

@@ -3,16 +3,16 @@
 
 enclave {
 
-    include "../shared.h"
+    include "common/shared.h"
     trusted {
-        public int seal_data(int sealPolicy, 
+        public int seal_data(int sealPolicy,
                              [in, size = opt_msg_len] unsigned char* opt_mgs,
                              size_t opt_msg_len,
                              [in, size = data_size] unsigned char* data,
                              size_t data_size,
                              [out] sealed_data_t** sealed_data,
-                             [out] size_t* sealed_data_size); 
-       
+                             [out] size_t* sealed_data_size);
+
         public int unseal_data([in, size = sealed_data_size] sealed_data_t *sealed_data,
                                size_t sealed_data_size,
                                [out] unsigned char** data,
@@ -24,4 +24,3 @@ enclave {
     //    no untrusted functions in this sample
     //};
 };
-

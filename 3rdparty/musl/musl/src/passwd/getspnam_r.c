@@ -67,6 +67,7 @@ int getspnam_r(const char *name, struct spwd *sp, char *buf, size_t size, struct
 	size_t k, l = strlen(name);
 	int skip = 0;
 	int cs;
+	int orig_errno = errno;
 
 	*res = 0;
 
@@ -93,8 +94,14 @@ int getspnam_r(const char *name, struct spwd *sp, char *buf, size_t size, struct
 			return errno;
 		}
 	} else {
+		if (errno != ENOENT && errno != ENOTDIR)
+			return errno;
 		f = fopen("/etc/shadow", "rbe");
-		if (!f) return errno;
+		if (!f) {
+			if (errno != ENOENT && errno != ENOTDIR)
+				return errno;
+			return 0;
+		}
 	}
 
 	pthread_cleanup_push(cleanup, f);
@@ -113,6 +120,6 @@ int getspnam_r(const char *name, struct spwd *sp, char *buf, size_t size, struct
 		break;
 	}
 	pthread_cleanup_pop(1);
-	if (rv) errno = rv;
+	errno = rv ? rv : orig_errno;
 	return rv;
 }

@@ -91,6 +91,14 @@ function(add_mbed_selftest_enclave)
     ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/mbedtls-wrap-prefix/src/mbedtls-wrap/include/)
   target_link_libraries(mbedtest_selftest oelibc)
 
+  # The following variables remain uninitialized on Linux and throw warnings
+  # Calling the function maybe_build_using_clangw(mbedtest_selftest) skips setting
+  # the following variables on linux and returns noop
+  set(CMAKE_C_CREATE_STATIC_LIBRARY "")
+  set(CMAKE_CXX_CREATE_STATIC_LIBRARY "")
+  set(CMAKE_C_STANDARD_LIBRARIES "")
+  set(CMAKE_CXX_STANDARD_LIBRARIES "")
+
   maybe_build_using_clangw(mbedtest_selftest)
 
   # maybe_build_using_clangw populates variables in its parent scope (ie current scope)
@@ -119,6 +127,8 @@ endfunction()
 string(TOUPPER ${CMAKE_BUILD_TYPE} build_type)
 if (NOT "${build_type}" STREQUAL "DEBUG")
   set(is_nondebug_build TRUE)
+else()
+  set(is_nondebug_build FALSE)
 endif ()
 
 # Here we parse the list of tests and use the functions above to

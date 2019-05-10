@@ -2,7 +2,6 @@
 #include <signal.h>
 #include <stdint.h>
 #include "syscall.h"
-#include "libc.h"
 
 int pselect(int n, fd_set *restrict rfds, fd_set *restrict wfds, fd_set *restrict efds, const struct timespec *restrict ts, const sigset_t *restrict mask)
 {

@@ -40,6 +40,17 @@ void test_string_edl_ocalls()
     // Multiple string params. One null.
     OE_TEST(ocall_string_fun7(str, NULL) == OE_OK);
 
+    // Test scenario where host does not null-terminate an
+    // in-out string. The first call preserves the null-terminator.
+    // The second call does not preserve the null terminator.
+    {
+        char str1[] = "Hello";
+        OE_TEST(ocall_string_no_null_terminator(false, str1) == OE_OK);
+        OE_TEST(
+            ocall_string_no_null_terminator(true, str1) ==
+            OE_INVALID_PARAMETER);
+    }
+
     printf("=== test_string_edl_ocalls passed\n");
 }
 
@@ -129,6 +140,18 @@ void ecall_string_fun7(char* s1, char* s2)
     OE_TEST(s2 == NULL);
 }
 
+void ecall_string_no_null_terminator(char* s1, char* s2)
+{
+    OE_UNUSED(s1);
+    OE_UNUSED(s2);
+}
+
+void ecall_wstring_no_null_terminator(wchar_t* s1, wchar_t* s2)
+{
+    OE_UNUSED(s1);
+    OE_UNUSED(s2);
+}
+
 void test_wstring_edl_ocalls()
 {
     const wchar_t* str_value = L"Hello, World\n";
@@ -162,6 +185,17 @@ void test_wstring_edl_ocalls()
 
     // Multiple string params. One null.
     OE_TEST(ocall_wstring_fun7(str, NULL) == OE_OK);
+
+    // Test scenario where host does not null-terminate an
+    // in-out string. The first call preserves the null-terminator.
+    // The second call does not preserve the null terminator.
+    {
+        wchar_t str1[] = L"Hello";
+        OE_TEST(ocall_wstring_no_null_terminator(false, str1) == OE_OK);
+        OE_TEST(
+            ocall_wstring_no_null_terminator(true, str1) ==
+            OE_INVALID_PARAMETER);
+    }
 
     printf("=== test_wstring_edl_ocalls passed\n");
 }

@@ -1,6 +1,7 @@
 #ifndef _INTERNAL_SYSCALL_H
 #define _INTERNAL_SYSCALL_H
 
+#include <features.h>
 #include <sys/syscall.h>
 #include "syscall_arch.h"
 
@@ -21,8 +22,7 @@
 typedef long syscall_arg_t;
 #endif
 
-__attribute__((visibility("hidden")))
-long __syscall_ret(unsigned long), __syscall(syscall_arg_t, ...),
+hidden long __syscall_ret(unsigned long), __syscall(syscall_arg_t, ...),
 	__syscall_cp(syscall_arg_t, syscall_arg_t, syscall_arg_t, syscall_arg_t,
 	             syscall_arg_t, syscall_arg_t, syscall_arg_t);
 
@@ -243,5 +243,9 @@ long __syscall_ret(unsigned long), __syscall(syscall_arg_t, ...),
 
 #define __sys_open_cp(...) __SYSCALL_DISP(__sys_open_cp,,__VA_ARGS__)
 #define sys_open_cp(...) __syscall_ret(__sys_open_cp(__VA_ARGS__))
+
+hidden void __procfdname(char __buf[static 15+3*sizeof(int)], unsigned);
+
+hidden void *__vdsosym(const char *, const char *);
 
 #endif

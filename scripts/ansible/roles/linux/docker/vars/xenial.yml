@@ -1,0 +1,17 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+---
+apt_packages:
+  - "docker-ce"
+
+ci_apt_packages:
+  - "automake"
+  - "dh-exec"
+  - "dpkg-dev"
+  - "gawk"
+  - "git"
+  - "libmbedtls10"
+  - "sudo"
+  - "libcurl3"
+  - "libprotobuf9v5"

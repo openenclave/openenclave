@@ -1,8 +1,9 @@
 #include <locale.h>
 #include <string.h>
+#include <sys/mman.h>
 #include "locale_impl.h"
 #include "libc.h"
-#include "atomic.h"
+#include "lock.h"
 
 const char *__lctrans_impl(const char *msg, const struct __locale_map *lm)
 {
@@ -10,10 +11,6 @@ const char *__lctrans_impl(const char *msg, const struct __locale_map *lm)
 	if (lm) trans = __mo_lookup(lm->map, lm->map_size, msg);
 	return trans ? trans : msg;
 }
-
-const unsigned char *__map_file(const char *, size_t *);
-int __munmap(void *, size_t);
-char *__strchrnul(const char *, int);
 
 static const char envvars[][12] = {
 	"LC_CTYPE",

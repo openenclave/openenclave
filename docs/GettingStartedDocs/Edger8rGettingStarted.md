@@ -68,14 +68,14 @@ A simple example of an enclave method and host method are as follows, lets call 
 ```edl
 enclave {
     trusted {
-        public oe_return_t enclave_hello(
-            char *this_is_a_string
+        public oe_result_t enclave_hello(
+            [user_check] char *this_is_a_string
             );
     };
 
     untrusted {
-        public oe_return_t host_hello(
-            char *this_is_a_string
+        oe_result_t host_hello(
+            [user_check] char *this_is_a_string
             );
     };
 };
@@ -88,7 +88,7 @@ A single command can be issued to generate both the secure and unsecure files, o
 To generate both secure and insecure headers and marshaling files run the following:
 
 ```bash
-oeedger8r --trusted-dir enclave-directory --untrusted-die host-directory hello.edl
+oeedger8r --trusted-dir enclave-directory --untrusted-dir host-directory hello.edl
 ```
 
 To generate just the secure code for the enclave in the current directory run the following:
@@ -118,11 +118,11 @@ In this example the enclave will implement a method called `enclave_hello()` sim
 ```c
 #include "hello_t.h"
 
-oe_return_t enclave_hello(
+oe_result_t enclave_hello(
     char* this_is_a_string
     )
 {
-    oe_return_t oe_return_value, method_return_value;
+    oe_result_t oe_return_value, method_return_value, return_value;
 
     // your code goes here
 
@@ -154,13 +154,13 @@ The unsecure host method `host_hello()` would be similar as follows:
 #include <openenclave.h>
 #include "hello_u.h"
 
-oe_return_t host_hello(
+oe_result_t host_hello(
     char* this_is_a_string
     )
 {
     // code goes here
 
-    return OE_SUCCESS;
+    return OE_OK;
 }
 ```
 
@@ -186,7 +186,7 @@ int main(int argc, const char* argv[])
     }
 
     // Create the enclave
-    result = oe_create_enclave(
+    result = oe_create_hello_enclave(
         argv[1], OE_ENCLAVE_TYPE_SGX, 0, NULL, 0, &enclave);
     if (result != OE_OK)
     {
@@ -589,7 +589,7 @@ void main(void)
 {
     //enclave initialization goes here
 
-    oe_return_t result;
+    oe_result_t result;
     char* out_string = NULL;
     result = call_one(enclave, &out_string);
     if (result == OE_OK)
@@ -597,7 +597,7 @@ void main(void)
         // We now have a string in out_string
 
         // When we are done we need to free it
-        oe_host_free(out_string);
+        free(out_string);
     }
 }
 ```

@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-
 oeedl_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/../edl/all.edl 
     host
@@ -15,6 +14,12 @@ oeedl_file(
     bar_u
 )
 
+oeedl_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/../edl/other.edl
+    host
+    other_u
+)
+
 add_executable(edl_host 
     main.cpp
     bar.cpp
@@ -22,12 +27,15 @@ add_executable(edl_host
     testarray.cpp
     testbasic.cpp
     testenum.cpp
+    testerrno.cpp
     testforeign.cpp
+    testother.cpp
     testpointer.cpp
     teststring.cpp
     teststruct.cpp
     ${all_u}
     ${bar_u}
+    ${other_u}
 )
 
 # The tests intentionally use floats etc in size context.
@@ -45,4 +53,8 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
 endif()
 
 target_include_directories(edl_host PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)
+if (NOT WIN32)
+  # Re-enable strict aliasing. TODO: Remove this when #1717 is resolved.
+  target_compile_options(edl_host PUBLIC -fstrict-aliasing -Werror=strict-aliasing)
+endif ()
 target_link_libraries(edl_host oehostapp)

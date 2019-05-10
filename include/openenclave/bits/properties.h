@@ -25,7 +25,6 @@ OE_EXTERNC_BEGIN
  */
 /* Injected by OE_SET_ENCLAVE_SGX macro and by the signing tool (oesign) */
 #define OE_INFO_SECTION_NAME ".oeinfo"
-#define OE_ECALL_SECTION_NAME ".ecall"
 
 typedef struct _oe_enclave_size_settings
 {

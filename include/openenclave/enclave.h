@@ -69,71 +69,6 @@ oe_result_t oe_remove_vectored_exception_handler(
     oe_vectored_exception_handler_t vectored_handler);
 
 /**
- * Perform a high-level enclave function call (OCALL).
- *
- * Call the host function whose name is given by the **func** parameter.
- * The host must define a corresponding function with the following
- * prototype.
- *
- *     OE_OCALL void (*)(void* args);
- *
- * The meaning of the **args** parameter is defined by the implementer of the
- * function and may be null.
- *
- * Note that the return value of this function only indicates the success of
- * the call and not of the underlying function. The OCALL implementation must
- * define its own error reporting scheme based on **args**.
- *
- * While handling the OCALL, the host is not allowed to make an ECALL back into
- * the enclave. A re-entrant ECALL will fail and return OE_REENTRANT_ECALL.
- *
- * @deprecated This function has been deprecated. Use oeedger8r to generate
- * code that will call oe_ocall() instead.
- *
- * @param func The name of the enclave function that will be called.
- * @param args The arguments to be passed to the enclave function.
- *
- * @returns This function return **OE_OK** on success.
- *
- */
-OE_DEPRECATED(
-    oe_result_t oe_call_host(const char* func, void* args),
-    "This function is deprecated. Use oeedger8r to generate code that will "
-    "call oe_ocall() instead.");
-
-/**
- * Perform a high-level host function call (OCALL).
- *
- * Call the host function whose address is given by the **func** parameter,
- * which is the address of a function defined in the host with the following
- * prototoype.
- *
- *     OE_OCALL void (*)(void* args);
- *
- * The meaning of the **args** parameter is defined by the implementer of the
- * function and may be null.
- *
- * Note that the return value of this function only indicates the success of
- * the call and not of the underlying function. The OCALL implementation must
- * define its own error reporting scheme based on **args**.
- *
- * @deprecated This function has been deprecated. Use oeedger8r to generate
- * code that will call oe_ocall() instead.
- *
- * @param func The address of the host function that will be called.
- * @param args The arguments to be passed to the host function.
- *
- * @return OE_OK the call was successful.
- * @return OE_INVALID_PARAMETER a parameter is invalid.
- * @return OE_FAILURE the call failed.
- */
-OE_DEPRECATED(
-    oe_result_t
-        oe_call_host_by_address(void (*func)(void*, oe_enclave_t*), void* args),
-    "This function is deprecated. Use oeedger8r to generate code that will "
-    "call oe_ocall() instead.");
-
-/**
  * Check whether the given buffer is strictly within the enclave.
  *
  * Check whether the buffer given by the **ptr** and **size** parameters is
@@ -260,6 +195,10 @@ char* oe_host_strndup(const char* str, size_t n);
 void oe_abort(void);
 
 /**
+ * @cond IGNORE
+ */
+
+/**
  * Called whenever an assertion fails.
  *
  * This internal function is called when the expression of the oe_assert()
@@ -285,9 +224,15 @@ void __oe_assert_fail(
     const char* file,
     int line,
     const char* func);
+/**
+ * @endcond
+ */
 
 /**
  * Evaluates assertion.
+ * If EXPR evaulates to zero, this function is called with the
+ * string representation of the expression as well as the file, the line, and
+ * the function name where the macro was expanded.
  */
 #ifndef NDEBUG
 #define oe_assert(EXPR)                                                \
@@ -498,30 +443,6 @@ oe_result_t oe_verify_report(
     size_t report_size,
     oe_report_t* parsed_report);
 
-/**
- * This enumeration type defines the policy used to derive a seal key.
- */
-typedef enum _oe_seal_policy
-{
-    /**
-     * Key is derived from a measurement of the enclave. Under this policy,
-     * the sealed secret can only be unsealed by an instance of the exact
-     * enclave code that sealed it.
-     */
-    OE_SEAL_POLICY_UNIQUE = 1,
-    /**
-     * Key is derived from the signer of the enclave. Under this policy,
-     * the sealed secret can be unsealed by any enclave signed by the same
-     * signer as that of the sealing enclave.
-     */
-    OE_SEAL_POLICY_PRODUCT = 2,
-    /**
-     * Unused.
-     */
-    _OE_SEAL_POLICY_MAX = OE_ENUM_MAX,
-} oe_seal_policy_t;
-/**< typedef enum _oe_seal_policy oe_seal_policy_t*/
-
 #if (OE_API_VERSION < 2)
 #define oe_get_seal_key_by_policy oe_get_seal_key_by_policy_v1
 #else
@@ -630,64 +551,6 @@ oe_result_t oe_get_seal_key_v1(
     size_t* key_buffer_size);
 
 /**
- * This enumeration defines the type of a asymmetric key.
- */
-typedef enum _oe_asymmetric_key_type
-{
-    /**
-     * A secp256r1/NIST P-256 elliptic curve key.
-     */
-    OE_ASYMMETRIC_KEY_EC_SECP256P1 = 1,
-
-    /**
-     * Unused.
-     */
-    _OE_ASYMMETRIC_KEY_TYPE_MAX = OE_ENUM_MAX,
-} oe_asymmetric_key_type_t;
-/**< typedef enum _oe_asymmetric_key_type oe_asymmetric_key_type_t*/
-
-/**
- * This enumeration defines the format of the asymmetric key.
- */
-typedef enum _oe_asymmetric_key_format
-{
-    /**
-     * The PEM format.
-     */
-    OE_ASYMMETRIC_KEY_PEM = 1,
-
-    /**
-     * Unused.
-     */
-    _OE_ASYMMETRIC_KEY_FORMAT_MAX = OE_ENUM_MAX,
-} oe_asymmetric_key_format_t;
-/**< typedef enum _oe_asymmetric_key_format oe_asymmetric_key_format_t*/
-
-typedef struct _oe_asymmetric_key_params
-{
-    /**
-     *  The type of asymmetric key.
-     */
-    oe_asymmetric_key_type_t type;
-
-    /**
-     * The exported format of the key.
-     */
-    oe_asymmetric_key_format_t format;
-
-    /**
-     * Optional user data to add to the key derivation.
-     */
-    void* user_data;
-
-    /**
-     * The size of user_data.
-     */
-    size_t user_data_size;
-} oe_asymmetric_key_params_t;
-/**< typedef enum _oe_asymmetric_key_params oe_asymmetric_key_params_t*/
-
-/**
  * Returns a public key that is associated with the identity of the enclave
  * and the specified policy.
  *
@@ -790,7 +653,8 @@ oe_result_t oe_get_private_key(
     size_t* key_buffer_size);
 
 /**
- * Frees the given key and/or key info.
+ * Frees the given key and/or key info. Before freeing, this function will
+ * zero out the key buffers to avoid leaking any confidential data..
  *
  * @param key_buffer If not NULL, the key buffer to free.
  * @param key_buffer_size The size of key_buffer.
@@ -828,10 +692,11 @@ oe_result_t oe_get_seal_key_v2(
     uint8_t** key_buffer,
     size_t* key_buffer_size);
 
-/* Free a key and/or key info.
+/**
+ * Frees a key and/or key info.
  *
- * @param[in] key_buffer If non-NULL, the key buffer to free.
- * @param[in] key_info If non-NULL, the key info buffer to free.
+ * @param key_buffer If non-NULL, the key buffer to free.
+ * @param key_info If non-NULL, the key info buffer to free.
  */
 void oe_free_seal_key(uint8_t* key_buffer, uint8_t* key_info);
 

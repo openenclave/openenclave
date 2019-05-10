@@ -2,18 +2,15 @@
 #include <limits.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <net/if.h>
 #include <ctype.h>
+#include <resolv.h>
 #include "lookup.h"
 #include "stdio_impl.h"
-
-int __dns_parse(const unsigned char *, int, int (*)(void *, int, const void *, int, const void *), void *);
-int __dn_expand(const unsigned char *, const unsigned char *, const unsigned char *, char *, int);
-int __res_mkquery(int, const char *, int, int, const unsigned char *, int, const unsigned char*, unsigned char *, int);
-int __res_send(const unsigned char *, int, unsigned char *, int);
 
 #define PTR_MAX (64 + sizeof ".in-addr.arpa")
 #define RR_PTR 12

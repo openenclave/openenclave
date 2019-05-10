@@ -25,7 +25,8 @@ endif ()
 set(CMAKE_C_COMPILER_NAMES clang-7 cc)
 set(CMAKE_CXX_COMPILER_NAMES clang++-7 c++)
 
-project("Open Enclave SDK" VERSION ${OE_VERSION} LANGUAGES C CXX ${OE_ASM})
+project("Open Enclave SDK" LANGUAGES C CXX ${OE_ASM})
+set(PROJECT_VERSION ${OE_VERSION})
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
@@ -58,9 +59,17 @@ endif ()
 # ignored.
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Validate CMAKE_BUILD_TYPE
+string(TOUPPER "${CMAKE_BUILD_TYPE}" uppercase_CMAKE_BUILD_TYPE)
+list(APPEND uppercase_build_type "" "DEBUG" "RELEASE" "RELWITHDEBINFO")
+if (NOT uppercase_CMAKE_BUILD_TYPE IN_LIST uppercase_build_type)
+  message(FATAL_ERROR "UNKNOWN CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+endif()
+
 # Get Jenkins build number
-set(BUILD_NUMBER $ENV{BUILD_NUMBER})
-if (NOT BUILD_NUMBER)
+if (DEFINED ENV{BUILD_NUMBER})
+  set(BUILD_NUMBER $ENV{BUILD_NUMBER})
+else()
   set(BUILD_NUMBER "0")
 endif ()
 
@@ -163,7 +172,6 @@ endif ()
 
 # TODO: See #756: Fix this because it is incompatible with
 # multi-configuration generators
-string(TOUPPER "${CMAKE_BUILD_TYPE}" uppercase_CMAKE_BUILD_TYPE)
 if (uppercase_CMAKE_BUILD_TYPE STREQUAL "DEBUG" AND NOT WIN32)
   # In non-win32 debug build, debug_malloc is on by default
   option(USE_DEBUG_MALLOC "Build oeenclave with memory leak detection capability." ON)
@@ -215,3 +223,6 @@ if (UNIX)
   add_subdirectory(pkgconfig)
   add_subdirectory(samples)
 endif()
+
+install(FILES LICENSE THIRD_PARTY_NOTICES
+  DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/licenses)

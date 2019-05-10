@@ -1,0 +1,20 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+---
+- hosts: linux-agents
+  any_errors_fatal: true
+  gather_facts: true
+  become: yes
+  tasks:
+    - import_role:
+        name: linux/jenkins
+        tasks_from: slave-setup.yml
+
+- hosts: windows-agents
+  any_errors_fatal: true
+  become_method: runas
+  tasks:
+    - import_role:
+        name: windows/jenkins
+        tasks_from: slave-setup.yml

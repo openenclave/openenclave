@@ -95,62 +95,47 @@ int ecall_dispatcher::get_target_info(
 
     // Generate a report for the public key so that the enclave that
     // receives the key can attest this enclave.
-    report = (uint8_t*)oe_host_malloc(OE_MAX_REPORT_SIZE);
-    if (report == NULL)
-    {
-        goto exit;
-    }
-    report_size = OE_MAX_REPORT_SIZE;
-
     if (m_attestation->generate_local_report(
-            NULL, 0, NULL, 0, report, &report_size))
+            NULL, 0, NULL, 0, &report, &report_size))
     {
         size_t info_size = 0;
 
         TRACE_ENCLAVE("report_size = %ld", report_size);
         // get the target info
-        result =
-            oe_get_target_info(report, report_size, info_buffer, &info_size);
-        if (result != OE_BUFFER_TOO_SMALL)
-        {
-            TRACE_ENCLAVE(
-                "oe_get_target_info: query buffer size failed with %x", result);
-            goto exit;
-        }
-
-        TRACE_ENCLAVE("info_size = %ld", info_size);
-
-        info_buffer = (uint8_t*)oe_host_malloc(info_size);
-        if (info_buffer == NULL)
-        {
-            goto exit;
-        }
         // caller of info_buffer needs to free this memory
-
-        result =
-            oe_get_target_info(report, report_size, info_buffer, &info_size);
+        result = oe_get_target_info(
+            report, report_size, (void**)&info_buffer, &info_size);
         if (result != OE_OK)
         {
             TRACE_ENCLAVE(
                 "oe_get_target_info: query buffer info failed with %x", result);
             goto exit;
         }
+        TRACE_ENCLAVE("info_size = %ld", info_size);
 
-        *target_info_buffer = info_buffer;
+        // Allocate memory on the host and copy the target info over.
+        *target_info_buffer = (uint8_t*)oe_host_malloc(info_size);
+        if (*target_info_buffer == NULL)
+        {
+            ret = OE_OUT_OF_MEMORY;
+            goto exit;
+        }
+        memcpy(*target_info_buffer, info_buffer, info_size);
         *target_info_size = info_size;
+        oe_free_target_info(info_buffer);
         ret = 0;
     }
 
 exit:
 
     if (report)
-        oe_host_free(report);
+        oe_free_report(report);
 
     if (ret != 0)
     {
         TRACE_ENCLAVE("get_target_info failed.");
         if (info_buffer)
-            oe_host_free(info_buffer);
+            oe_free_target_info(info_buffer);
     }
     return ret;
 }
@@ -185,27 +170,29 @@ int ecall_dispatcher::get_targeted_report_with_pubkey(
 
     // Generate a report for the public key so that the enclave that
     // receives the key can attest this enclave.
-    report = (uint8_t*)oe_host_malloc(OE_MAX_REPORT_SIZE);
-    if (report == NULL)
-    {
-        goto exit;
-    }
-    report_size = OE_MAX_REPORT_SIZE;
-
     if (m_attestation->generate_local_report(
             target_info_buffer,
             target_info_size,
             pem_public_key,
             sizeof(pem_public_key),
-            report,
+            &report,
             &report_size))
     {
-        *local_report = report;
+        // Allocate memory on the host and copy the report over.
+        *local_report = (uint8_t*)oe_host_malloc(report_size);
+        if (*local_report == NULL)
+        {
+            ret = OE_OUT_OF_MEMORY;
+            goto exit;
+        }
+        memcpy(*local_report, report, report_size);
         *local_report_size = report_size;
+        oe_free_report(report);
 
         key_buf = (uint8_t*)oe_host_malloc(512);
         if (key_buf == NULL)
         {
+            ret = OE_OUT_OF_MEMORY;
             goto exit;
         }
         memcpy(key_buf, pem_public_key, sizeof(pem_public_key));
@@ -226,10 +213,13 @@ exit:
     if (ret != 0)
     {
         if (report)
-            oe_host_free(report);
+            oe_free_report(report);
 
         if (key_buf)
             oe_host_free(key_buf);
+
+        if (*local_report)
+            oe_host_free(*local_report);
     }
     return ret;
 }

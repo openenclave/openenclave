@@ -9,9 +9,10 @@ By default, the Open Enclave SDK is installed to `/opt/openenclave`. It contains
 
 | Path                         | Description                     |
 |------------------------------|---------------------------------|
-| bin                          | Developer tools such as oe-gdb for debugging and oesign for signing your enclaves. |
+| bin                          | Developer tools such as oegdb for debugging and oesign for signing your enclaves. |
 | include/openenclave          | Open Enclave runtime headers for use in your enclave (enclave.h) and its host (host.h). |
 | include/openenclave/3rdparty | Headers for libc, libcxx and mbedlts libraries for use inside the enclave.<br>See the API Reference section for supported functions. |
+| lib/openenclave/cmake        | Open Enclave SDK CMake Package for integration with your CMake projects. See [README.md](/cmake/sdk_cmake_targets_readme.md) for more details. |
 | lib/openenclave/enclave      | Libraries for linking into the enclave, including the libc, libcxx and mbedtls libraries for Open Enclave. |
 | lib/openenclave/host         | Library for linking into the host process of the enclave. |
 | lib/openenclave/debugger     | Libraries used by the gdb plug-in for debugging enclaves. |

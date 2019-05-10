@@ -1,6 +1,7 @@
 .syntax unified
 .text
 .global __clone
+.hidden __clone
 .type   __clone,%function
 __clone:
 	stmfd sp!,{r4,r5,r6,r7}

@@ -1,8 +1,5 @@
 #include "time_impl.h"
 #include <errno.h>
-#include "libc.h"
-
-extern const char __utc[];
 
 struct tm *__gmtime_r(const time_t *restrict t, struct tm *restrict tm)
 {

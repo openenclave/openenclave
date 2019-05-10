@@ -28,6 +28,7 @@ __signgam;
 optarg;
 optind;
 opterr;
+optopt;
 optreset;
 __optreset;
 

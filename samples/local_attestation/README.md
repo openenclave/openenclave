@@ -34,23 +34,23 @@ For two enclaves on the same system to locally attest each other, the enclaves n
 
 Here are the basic steps of a typical local attestation between two enclaves.
 
-Let's say two enclaves involved are enclave1 and enclave2.
+Let's say two enclaves involved are enclave_a and enclave_b.
 
-1. Inside enclave1, call `oe_get_report` to get enclave1's report, then call `oe_get_target_info` on enclave1's report
-   to get enclave1's target info, enclave1's identity.
+1. Inside enclave_a, call `oe_get_report` to get enclave_a's report, then call `oe_get_target_info` on enclave_a's report
+   to get enclave_a's target info, enclave_a's identity.
 
-2. Send enclave1's identity to enclave2.
+2. Send enclave_a's identity to enclave_b.
 
-3. Inside enclave2, create an **enclave2 report targeted at enclave1**, that is, a report with enclave2's identity
-   signed so that enclave1 can verify it.
+3. Inside enclave_b, create an **enclave_b report targeted at enclave_a**, that is, a report with enclave_b's identity
+   signed so that enclave_a can verify it.
 
-4. Send the enclave2 report above to enclave1.
+4. Send the enclave_b report above to enclave_a.
 
-5. Inside enclave1, call `oe_verify_report` to verify enclave2 report, on success, it means enclave2 was successfully attested to enclave1.
+5. Inside enclave_a, call `oe_verify_report` to verify enclave_b report, on success, it means enclave_b was successfully attested to enclave_a.
 
-Step 1-5 completes the process of local attesting enclave2 to enclave1
+Step 1-5 completes the process of local attesting enclave_b to enclave_a
 
-Repeating step 1-4 with reverse roles of enclave1 and enclave2 can achieve attesting enclave1 to enclave2.
+Repeating step 1-4 with reverse roles of enclave_a and enclave_b can achieve attesting enclave_a to enclave_b.
 
 ### Authoring the Host
 
@@ -58,7 +58,7 @@ The host application coordinates the local attestation steps described above for
 
 The host does the following in this sample:
 
-1. Create two enclaves for attesting each other, let's say they are enclave1 and enclave2
+1. Create two enclaves for attesting each other, let's say they are enclave_a and enclave_b
 
     ```c
     oe_create_localattestation_enclave( enclaveImagePath, OE_ENCLAVE_TYPE_SGX, OE_ENCLAVE_FLAG_DEBUG, NULL, 0, &enclave);
@@ -67,13 +67,13 @@ The host does the following in this sample:
 2.  Attest enclave 1 to enclave 2
 
     ```c
-    attest_one_enclave_to_the_other("enclave1", enclave1, "enclave2", enclave2);
+    attest_one_enclave_to_the_other("enclave_a", enclave_a, "enclave_b", enclave_b);
     ```
 
 3. Attest enclave 2 to enclave 1
 
     ```c
-    attest_one_enclave_to_the_other("enclave2", enclave2, "enclave1", enclave1);
+    attest_one_enclave_to_the_other("enclave_b", enclave_b, "enclave_a", enclave_a);
     ```
 
     With successfully attestation on each other, we are ready to securely exchange data between enclaves via asymmetric encryption.
@@ -81,7 +81,7 @@ The host does the following in this sample:
 4. Get encrypted message from 1st enclave
 
     ```c
-    generate_encrypted_message(enclave1, &ret, &encrypted_msg, &encrypted_msg_size);
+    generate_encrypted_message(enclave_a, &ret, &encrypted_msg, &encrypted_msg_size);
     ```
 
 5. Sending the encrypted message to 2nd enclave to decrypt and validate if the decrypted 
@@ -90,22 +90,22 @@ The host does the following in this sample:
    Note: both enclaves hardcode their sample messages for this validation.
 
     ```c
-    process_encrypted_msg(enclave2, &ret, encrypted_msg, encrypted_msg_size);
+    process_encrypted_msg(enclave_b, &ret, encrypted_msg, encrypted_msg_size);
     ```
 
 #### attest_one_enclave_to_the_other() routine
 
-This routine handles the process of attesting enclave2 to enclave1 with the following three steps.
+This routine handles the process of attesting enclave_b to enclave_a with the following three steps.
 
 ```c
-get_target_info(enclave1, &ret, &target_info_buf, &target_info_size);
+get_target_info(enclave_a, &ret, &target_info_buf, &target_info_size);
 
-get_targeted_report_with_pubkey(enclave2, &ret,
+get_targeted_report_with_pubkey(enclave_b, &ret,
                                 target_info_buf, target_info_size,
                                 &pem_key, &pem_key_size,
                                 &report, &report_size);
 
-verify_report_and_set_pubkey(enclave1, &ret, 
+verify_report_and_set_pubkey(enclave_a, &ret,
                              pem_key,pem_key_size,
                              report, report_size);
 ```
@@ -135,7 +135,7 @@ On a successful return, target_info_buffer will be deposited with platform speci
 
 ##### 2) Generate a targeted report with the other enclave's target info (identity)
 
-Inside enclave 2, call oe_get_report with the target info as opt_params. This creates a enclave2 report that' targeted at enclave 1, 
+Inside enclave 2, call oe_get_report with the target info as opt_params. This creates a enclave_b report that' targeted at enclave 1,
 that is, for enclave 1 to validate.
 
 ```c
@@ -226,12 +226,24 @@ See [here](https://github.com/Microsoft/openenclave/tree/master/docs/MbedtlsSupp
 
 ## Build and run
 
-To build the sample, change into the local_attestation directory and run `make build` to build the sample and run `make run` to run it.
+Note that there are two different build systems supported, one using GNU Make and
+`pkg-config`, the other using CMake.
 
-For example:
+### CMake
+
+This uses the CMake package provided by the Open Enclave SDK.
 
 ```bash
-yourusername@yourVMname:~/openenclave/share/openenclave/samples$ cd local_attestation
-yourusername@yourVMname:~/openenclave/share/openenclave/samples/local_attestation$ make build
-yourusername@yourVMname:~/openenclave/share/openenclave/samples/local_attestation$ make run
+cd local_attestation
+mkdir build && cd build
+cmake ..
+make run
+```
+
+### GNU Make
+
+```bash
+cd local_attestation
+make build
+make run
 ```

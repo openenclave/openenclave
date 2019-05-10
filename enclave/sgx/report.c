@@ -17,7 +17,7 @@
 
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
 
-static oe_result_t _oe_get_report_key(
+static oe_result_t _get_report_key(
     const sgx_report_t* sgx_report,
     sgx_key_t* sgx_key)
 {
@@ -72,7 +72,7 @@ oe_result_t oe_verify_report(
     {
         sgx_report = (sgx_report_t*)header->report;
 
-        OE_CHECK(_oe_get_report_key(sgx_report, &sgx_key));
+        OE_CHECK(_get_report_key(sgx_report, &sgx_key));
 
         OE_CHECK(oe_aes_cmac_sign(
             (uint8_t*)&sgx_key,

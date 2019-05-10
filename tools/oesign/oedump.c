@@ -178,6 +178,8 @@ void dump_enclave_properties(const oe_sgx_enclave_properties_t* props)
     bool debug = props->config.attributes & OE_SGX_FLAGS_DEBUG;
     printf("debug=%u\n", debug);
 
+    printf("xfrm=%lx\n", props->config.xfrm);
+
     printf(
         "num_heap_pages=%llu\n",
         OE_LLU(props->header.size_settings.num_heap_pages));
@@ -200,82 +202,6 @@ void dump_enclave_properties(const oe_sgx_enclave_properties_t* props)
 
     if (verbose_opt)
         __sgx_dump_sigstruct(sigstruct);
-}
-
-typedef struct _visit_sym_data
-{
-    const elf64_t* elf;
-    const elf64_shdr_t* shdr;
-    oe_result_t result;
-} visit_sym_data_t;
-
-static int _visit_sym(const elf64_sym_t* sym, void* data_)
-{
-    int rc = -1;
-    visit_sym_data_t* data = (visit_sym_data_t*)data_;
-    const elf64_shdr_t* shdr = data->shdr;
-    const char* name;
-
-    data->result = OE_UNEXPECTED;
-
-    /* Skip symbol if not a function */
-    if ((sym->st_info & 0x0F) != STT_FUNC)
-    {
-        rc = 0;
-        goto done;
-    }
-
-    /* Skip symbol if not in the ".ecall" section */
-    if (sym->st_value < shdr->sh_addr ||
-        sym->st_value + sym->st_size > shdr->sh_addr + shdr->sh_size)
-    {
-        rc = 0;
-        goto done;
-    }
-
-    /* Skip null names */
-    if (!(name = elf64_get_string_from_dynstr(data->elf, sym->st_name)))
-    {
-        rc = 0;
-        goto done;
-    }
-
-    /* Dump the ECALL name */
-    printf("%s (%016llx)\n", name, OE_LLX(sym->st_value));
-
-    rc = 0;
-
-done:
-    return rc;
-}
-
-void dump_ecall_section(elf64_t* elf)
-{
-    elf64_shdr_t shdr;
-
-    printf("=== ECALLs:\n");
-
-    /* Find the .ecall section */
-    if (elf64_find_section_header(elf, ".ecall", &shdr) != 0)
-    {
-        err("missing .ecall section");
-        return;
-    }
-
-    /* Dump all the ECALLs */
-    {
-        visit_sym_data_t data;
-        data.elf = elf;
-        data.shdr = &shdr;
-
-        if (elf64_visit_symbols(elf, _visit_sym, &data) != 0)
-        {
-            err("failed to find ECALLs in .ecall section");
-            return;
-        }
-    }
-
-    printf("\n");
 }
 
 int oedump(const char* enc_bin)
@@ -305,9 +231,6 @@ int oedump(const char* enc_bin)
 
     /* Dump the signature section */
     dump_enclave_properties(&props);
-
-    /* Dump the ECALL section */
-    dump_ecall_section(&elf);
 
     if (errors)
     {

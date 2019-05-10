@@ -1,11 +1,7 @@
 #include "pthread_impl.h"
 #include <sys/mman.h>
 
-int __munmap(void *, size_t);
-void __pthread_testcancel(void);
-int __pthread_setcancelstate(int, int *);
-
-int __pthread_timedjoin_np(pthread_t t, void **res, const struct timespec *at)
+static int __pthread_timedjoin_np(pthread_t t, void **res, const struct timespec *at)
 {
 	int state, cs, r = 0;
 	__pthread_testcancel();
@@ -28,7 +24,7 @@ int __pthread_join(pthread_t t, void **res)
 	return __pthread_timedjoin_np(t, res, 0);
 }
 
-int __pthread_tryjoin_np(pthread_t t, void **res)
+static int __pthread_tryjoin_np(pthread_t t, void **res)
 {
 	return t->detach_state==DT_JOINABLE ? EBUSY : __pthread_join(t, res);
 }

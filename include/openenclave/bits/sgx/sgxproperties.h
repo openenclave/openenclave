@@ -21,8 +21,6 @@ typedef struct _oe_sgx_enclave_image_info_t
     uint64_t oeinfo_size;
     uint64_t reloc_rva;
     uint64_t reloc_size;
-    uint64_t ecall_rva;
-    uint64_t ecall_size;
     uint64_t heap_rva; /* heap size is in header.sizesettings */
     uint64_t enclave_size;
 } oe_sgx_enclave_image_info_t;
@@ -45,6 +43,9 @@ typedef struct oe_sgx_enclave_config_t
 
     /* (OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT) */
     uint64_t attributes;
+
+    /* XSave Feature Request Mask */
+    uint64_t xfrm;
 } oe_sgx_enclave_config_t;
 
 /* Extends oe_enclave_properties_header_t base type */
@@ -59,10 +60,10 @@ typedef struct _oe_sgx_enclave_properties
     /* (48) */
     oe_sgx_enclave_image_info_t image_info;
 
-    /* (112)  */
+    /* (96)  */
     uint8_t sigstruct[OE_SGX_SIGSTRUCT_SIZE];
 
-    /* (1920) end-marker to make sure 0-filled signstruct doesn't get omitted */
+    /* (1904) end-marker to make sure 0-filled signstruct doesn't get omitted */
     uint64_t end_marker;
 } oe_sgx_enclave_properties_t;
 

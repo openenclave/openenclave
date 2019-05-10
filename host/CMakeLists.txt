@@ -1,6 +1,30 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+##==============================================================================
+##
+## These rules generate the edge routines for the POSIX interface, which is
+## installed by oe_register_posix_ecall_function_table().
+##
+##==============================================================================
+
+set(EDL_DIR ${CMAKE_SOURCE_DIR}/common)
+set(EDL_FILE ${EDL_DIR}/posix.edl)
+
+add_custom_command(
+    OUTPUT posix_u.h posix_u.c posix_args.h
+    DEPENDS ${EDL_FILE}
+    COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${EDL_FILE})
+
+add_custom_target(posix_untrusted_edl
+    DEPENDS posix_u.h posix_u.c posix_args.h)
+
+##==============================================================================
+##
+## these rules build the oehost target.
+##
+##==============================================================================
+
 # OS specific but arch agnostic files.
 if (UNIX)
   set(PLATFORM_SRC
@@ -16,6 +40,7 @@ if (UNIX)
     crypto/openssl/random.c
     crypto/openssl/rsa.c
     linux/hostthread.c
+    linux/posix.c
     linux/time.c
     linux/windows.c)
 elseif (WIN32)
@@ -24,6 +49,7 @@ elseif (WIN32)
     crypto/bcrypt/hmac.c
     crypto/bcrypt/rsa.c
     windows/hostthread.c
+    windows/posix.c
     windows/time.c)
 else()
   message(FATAL_ERROR "Unknown OS. Only supported OSes are Linux and Windows")
@@ -63,20 +89,20 @@ if (OE_SGX)
     list(APPEND PLATFORM_SRC
       sgx/linux/aep.S
       sgx/linux/aesm.c
-      sgx/linux/cpuid.c
       sgx/linux/enter.S
       sgx/linux/entersim.S
       sgx/linux/exception.c
       sgx/linux/sgxioctl.c
-      sgx/linux/sgxquoteprovider.c)
+      sgx/linux/sgxquoteprovider.c
+      sgx/linux/xstate.c)
   else()
     list(APPEND PLATFORM_SRC
       sgx/windows/aep.asm
       sgx/windows/aesm.c
-      sgx/windows/cpuid.c
       sgx/windows/enter.asm
       sgx/windows/entersim.asm
-      sgx/windows/exception.c)
+      sgx/windows/exception.c
+      sgx/windows/xstate.c)
   endif()
 
   set(PLATFORM_FLAGS "-m64")
@@ -92,11 +118,13 @@ add_library(oehost STATIC
   ../common/datetime.c
   ../common/kdf.c
   ../common/safecrt.c
+  asym_keys.c
   dupenv.c
   error.c
   files.c
   fopen.c
   hexdump.c
+  posix_u_wrapper.c
   memalign.c
   ocalls.c
   result.c
@@ -106,9 +134,12 @@ add_library(oehost STATIC
   crypto/sha.c
   ${PLATFORM_SRC})
 
-# Link libraries
 target_link_libraries(oehost PUBLIC oe_includes)
 
+add_dependencies(oehost posix_untrusted_edl)
+
+# TODO: Replace these with `find_package` and add as dependencies to
+# the CMake package.
 if (UNIX)
   find_library(CRYPTO_LIB NAMES crypto)
   add_library(crypto SHARED IMPORTED)
@@ -128,6 +159,9 @@ elseif (WIN32)
     ${CMAKE_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
   target_link_libraries(oehost PRIVATE bcrypt Crypt32)
 endif ()
+
+# For including edge routines.
+target_include_directories(oehost PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 # TODO: Handle Trust Zone etc.
 if (USE_LIBSGX)
@@ -154,7 +188,11 @@ endif ()
 
 # Compile definitions and options
 target_compile_definitions(oehost
-  PUBLIC -DOE_API_VERSION=2
+  PUBLIC
+  # NOTE: This definition is public to the rest of our project's
+  # targets, but should not yet be exposed to consumers of our
+  # package.
+  $<BUILD_INTERFACE:OE_API_VERSION=2>
   PRIVATE
   OE_BUILD_UNTRUSTED
   OE_REPO_BRANCH_NAME="${GIT_BRANCH}"
@@ -165,9 +203,12 @@ if (USE_DEBUG_MALLOC)
 endif ()
 
 if (UNIX)
-  target_compile_options(oehost PRIVATE
-    -Wno-attributes -Wmissing-prototypes -fPIC ${PLATFORM_FLAGS})
-  target_compile_definitions(oehost PRIVATE _GNU_SOURCE)
+  target_compile_options(oehost
+     PRIVATE -Wno-attributes -Wmissing-prototypes -fPIC ${PLATFORM_FLAGS}
+     PUBLIC -fstack-protector-strong)
+  target_compile_definitions(oehost
+     PRIVATE _GNU_SOURCE
+     PUBLIC $<$<NOT:$<CONFIG:debug>>:_FORTIFY_SOURCE=2>)
 endif ()
 
 if (CMAKE_C_COMPILER_ID MATCHES GNU)
@@ -185,7 +226,9 @@ add_library(oehostapp INTERFACE)
 target_link_libraries(oehostapp INTERFACE oehost)
 
 if (UNIX)
-  target_link_libraries(oehostapp INTERFACE -rdynamic)
+  target_link_libraries(oehostapp INTERFACE
+      -rdynamic
+      -Wl,-z,noexecstack)
 endif ()
 
 # Install targets

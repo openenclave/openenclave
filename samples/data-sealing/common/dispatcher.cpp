@@ -201,7 +201,7 @@ int ecall_dispatcher::unseal_data(
     // validate signature
     if (memcmp(signature, m_sealed_data->signature, SIGNATURE_LEN) != 0)
     {
-        TRACE_ENCLAVE("signature validation failed");
+        TRACE_ENCLAVE("signature mismatched");
         ret = ERROR_SIGNATURE_VERIFY_FAIL;
         goto exit;
     }

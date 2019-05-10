@@ -11,6 +11,7 @@ fegetround:
 	bx lr
 
 .global __fesetround
+.hidden __fesetround
 .type __fesetround,%function
 __fesetround:
 	fmrx r3, fpscr

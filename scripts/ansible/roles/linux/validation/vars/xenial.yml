@@ -1,0 +1,9 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+---
+cmake_target_version: "3.13.1"
+docker_target_version: "18.09"
+dockerd_target_version: "18.09"
+clang_target_version: "7.1.0"
+ocaml_target_version: "4.02.3"

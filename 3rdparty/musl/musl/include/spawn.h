@@ -28,7 +28,9 @@ typedef struct {
 	int __flags;
 	pid_t __pgrp;
 	sigset_t __def, __mask;
-	int __prio, __pol, __pad[16];
+	int __prio, __pol;
+	void *__fn;
+	char __pad[64-sizeof(void *)];
 } posix_spawnattr_t;
 
 typedef struct {

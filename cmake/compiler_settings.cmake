@@ -51,17 +51,20 @@ include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 
 # Apply Spectre mitigations if available.
-set(SPECTRE_MITIGATION_FLAGS "-mllvm;-x86-speculative-load-hardening")
+set(SPECTRE_MITIGATION_FLAGS -mllvm -x86-speculative-load-hardening)
 check_c_compiler_flag("${SPECTRE_MITIGATION_FLAGS}" SPECTRE_MITIGATION_C_FLAGS_SUPPORTED)
 check_cxx_compiler_flag("${SPECTRE_MITIGATION_FLAGS}" SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
 if (SPECTRE_MITIGATION_C_FLAGS_SUPPORTED AND SPECTRE_MITIGATION_CXX_FLAGS_SUPPORTED)
   message(STATUS "Spectre 1 mitigations supported")
-  add_compile_options(${SPECTRE_MITIGATION_FLAGS})
-  # Allows reuse in cases where ExternalProject is used and global compile flags wouldn't propagate.
-  string(REPLACE ";" "  " SPECTRE_MITIGATION_FLAGS "${SPECTRE_MITIGATION_FLAGS}")
+  # We set this variable to indicate the flags are supported. It is
+  # empty otherwise.
+  set(OE_SPECTRE_MITIGATION_FLAGS ${SPECTRE_MITIGATION_FLAGS})
+  # TODO: We really should specify this only on the `oecore` target;
+  # however, the third-party mbed TLS build needs it set to, so we
+  # have to keep this here for now.
+  add_compile_options(${OE_SPECTRE_MITIGATION_FLAGS})
 else ()
   message(WARNING "Spectre 1 mitigations NOT supported")
-  set(SPECTRE_MITIGATION_FLAGS "")
 endif ()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
@@ -76,10 +79,6 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
   if (OE_SGX)
       add_compile_options(-mxsave)
   endif()
-
-  # We should only need this for in-enclave code but it's easier
-  # and conservative to specify everywhere
-  add_compile_options(-fno-builtin-malloc -fno-builtin-calloc -fno-builtin)
 elseif (MSVC)
   # MSVC options go here
   if (MSVC_VERSION VERSION_LESS 1910)

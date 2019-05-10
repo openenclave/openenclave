@@ -130,12 +130,6 @@
 #endif
 #endif
 
-/* OE_ECALL */
-#define OE_ECALL OE_EXTERNC OE_EXPORT __attribute__((section(".ecall")))
-
-/* OE_OCALL */
-#define OE_OCALL OE_EXTERNC OE_EXPORT
-
 /* The maxiumum value for a four-byte enum tag */
 #define OE_ENUM_MAX 0xffffffff
 

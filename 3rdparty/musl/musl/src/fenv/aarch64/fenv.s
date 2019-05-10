@@ -6,6 +6,7 @@ fegetround:
 	ret
 
 .global __fesetround
+.hidden __fesetround
 .type __fesetround,%function
 __fesetround:
 	mrs x1, fpcr

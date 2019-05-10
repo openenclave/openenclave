@@ -56,3 +56,5 @@ tests/print/printhost\.stdout
 tests/str/test1\.txt
 tools/oeedger8r/\.merlin
 tools/oeedger8r/main\.ml
+tools/oesign/getopt\.h
+tools/oesign/getopt_long\.c

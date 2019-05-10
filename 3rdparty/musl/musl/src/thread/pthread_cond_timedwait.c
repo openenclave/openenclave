@@ -1,10 +1,5 @@
 #include "pthread_impl.h"
 
-void __pthread_testcancel(void);
-int __pthread_mutex_lock(pthread_mutex_t *);
-int __pthread_mutex_unlock(pthread_mutex_t *);
-int __pthread_setcancelstate(int, int *);
-
 /*
  * struct waiter
  *

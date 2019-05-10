@@ -11,9 +11,7 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <pthread.h>
-#include "libc.h"
-
-char *__shm_mapname(const char *, char *);
+#include "lock.h"
 
 static struct {
 	ino_t ino;

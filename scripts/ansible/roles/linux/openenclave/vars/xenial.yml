@@ -1,0 +1,25 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+---
+apt_packages:
+  - "clang-7"
+  - "clang-format-7"
+  - "make"
+  - "ocaml-native-compilers"
+  - "ninja-build"
+  - "shellcheck"
+  - "gcc"
+  - "g++"
+  - "gdb"
+  - "libssl-dev"
+  - "openssl"
+  - "pkg-config"
+  - "apt-transport-https"
+  - "autoconf"
+  - "doxygen"
+  - "graphviz"
+  - "libexpat1-dev"
+  - "libtool"
+  - "subversion"
+  - "libcurl4-openssl-dev"

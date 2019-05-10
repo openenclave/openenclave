@@ -9,7 +9,7 @@
 #include <openenclave/internal/utils.h>
 #include "../common.h"
 
-static oe_result_t _oe_parse_sgx_report_body(
+static oe_result_t _parse_sgx_report_body(
     const sgx_report_body_t* report_body,
     bool remote,
     oe_report_t* parsed_report)
@@ -98,13 +98,13 @@ oe_result_t oe_parse_report(
     {
         sgx_report = (const sgx_report_t*)header->report;
         OE_CHECK(
-            _oe_parse_sgx_report_body(&sgx_report->body, false, parsed_report));
+            _parse_sgx_report_body(&sgx_report->body, false, parsed_report));
         result = OE_OK;
     }
     else if (header->report_type == OE_REPORT_TYPE_SGX_REMOTE)
     {
         sgx_quote = (const sgx_quote_t*)header->report;
-        OE_CHECK(_oe_parse_sgx_report_body(
+        OE_CHECK(_parse_sgx_report_body(
             &sgx_quote->report_body, true, parsed_report));
         result = OE_OK;
     }
@@ -117,7 +117,7 @@ done:
     return result;
 }
 
-static oe_result_t _oe_sgx_get_target_info(
+static oe_result_t _sgx_get_target_info(
     const uint8_t* report,
     size_t report_size,
     void* target_info_buffer,
@@ -133,7 +133,7 @@ static oe_result_t _oe_sgx_get_target_info(
     if (target_info_buffer == NULL || *target_info_size < sizeof(*info))
     {
         *target_info_size = sizeof(*info);
-        OE_RAISE(OE_BUFFER_TOO_SMALL);
+        OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
     }
 
     OE_CHECK(oe_memset_s(info, sizeof(*info), 0, sizeof(*info)));
@@ -176,8 +176,12 @@ oe_result_t oe_get_target_info_v1(
     {
         case OE_REPORT_TYPE_SGX_LOCAL:
         case OE_REPORT_TYPE_SGX_REMOTE:
-            OE_CHECK(_oe_sgx_get_target_info(
-                report, report_size, target_info_buffer, target_info_size));
+            result = _sgx_get_target_info(
+                report, report_size, target_info_buffer, target_info_size);
+            if (result == OE_BUFFER_TOO_SMALL)
+                OE_CHECK_NO_TRACE(result);
+            else
+                OE_CHECK(result);
             break;
         default:
             OE_RAISE(OE_INVALID_PARAMETER);

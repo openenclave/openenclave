@@ -194,31 +194,6 @@ size_t __oe_get_reloc_size()
 /*
 **==============================================================================
 **
-** ECall boundaries:
-**
-**==============================================================================
-*/
-
-const void* __oe_get_ecall_base()
-{
-    const unsigned char* base = __oe_get_enclave_base();
-
-    return base + oe_enclave_properties_sgx.image_info.ecall_rva;
-}
-
-const void* __oe_get_ecall_end()
-{
-    return (const uint8_t*)__oe_get_ecall_base() + __oe_get_ecall_size();
-}
-
-size_t __oe_get_ecall_size()
-{
-    return oe_enclave_properties_sgx.image_info.ecall_size;
-}
-
-/*
-**==============================================================================
-**
 ** Heap boundaries:
 **
 **==============================================================================

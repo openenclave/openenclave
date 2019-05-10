@@ -8,7 +8,7 @@
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/raise.h>
 
-static uint32_t _oe_cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
+static uint32_t _cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
 
 /*
 **==============================================================================
@@ -32,9 +32,9 @@ oe_result_t oe_initialize_cpuid(uint64_t arg_in)
             oe_abort();
 
         OE_CHECK(oe_memcpy_s(
-            _oe_cpuid_table,
+            _cpuid_table,
             OE_CPUID_LEAF_COUNT * OE_CPUID_REG_COUNT *
-                sizeof(_oe_cpuid_table[0][0]),
+                sizeof(_cpuid_table[0][0]),
             args->cpuid_table,
             OE_CPUID_LEAF_COUNT * OE_CPUID_REG_COUNT *
                 sizeof(args->cpuid_table[0][0])));
@@ -83,10 +83,10 @@ int oe_emulate_cpuid(uint64_t* rax, uint64_t* rbx, uint64_t* rcx, uint64_t* rdx)
         if ((cpuid_leaf == 4) && (cpuid_sub_leaf != 0))
             return -1;
 
-        *rax = _oe_cpuid_table[cpuid_leaf][OE_CPUID_RAX];
-        *rbx = _oe_cpuid_table[cpuid_leaf][OE_CPUID_RBX];
-        *rcx = _oe_cpuid_table[cpuid_leaf][OE_CPUID_RCX];
-        *rdx = _oe_cpuid_table[cpuid_leaf][OE_CPUID_RDX];
+        *rax = _cpuid_table[cpuid_leaf][OE_CPUID_RAX];
+        *rbx = _cpuid_table[cpuid_leaf][OE_CPUID_RBX];
+        *rcx = _cpuid_table[cpuid_leaf][OE_CPUID_RCX];
+        *rdx = _cpuid_table[cpuid_leaf][OE_CPUID_RDX];
         return 0;
     }
     return -1;

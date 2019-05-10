@@ -592,7 +592,7 @@ oe_result_t oe_cert_chain_free(oe_cert_chain_t* chain)
 
     /* Check the parameter */
     if (_cert_chain_is_valid(impl))
-        OE_RAISE(OE_INVALID_PARAMETER);
+        OE_RAISE_NO_TRACE(OE_INVALID_PARAMETER);
 
     /* Release the stack of certificates */
     sk_X509_pop_free(impl->sk, X509_free);
@@ -988,7 +988,7 @@ oe_result_t oe_cert_find_extension(
             if ((size_t)str->length > *size)
             {
                 *size = (size_t)str->length;
-                OE_RAISE(OE_BUFFER_TOO_SMALL);
+                OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
             }
 
             if (data)

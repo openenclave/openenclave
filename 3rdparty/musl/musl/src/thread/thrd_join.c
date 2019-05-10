@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include <threads.h>
-
-int __pthread_join(thrd_t, void**);
+#include <pthread.h>
 
 int thrd_join(thrd_t t, int *res)
 {

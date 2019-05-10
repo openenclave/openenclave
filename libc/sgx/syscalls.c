@@ -216,7 +216,7 @@ static long _syscall_nanosleep(long n, long x1, long x2)
     milliseconds += req->tv_nsec / 1000000UL;
 
     /* Perform OCALL */
-    ret = oe_sleep(milliseconds);
+    ret = oe_sleep_msec(milliseconds);
 
 done:
 

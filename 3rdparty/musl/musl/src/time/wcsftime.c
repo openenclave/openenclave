@@ -2,9 +2,7 @@
 #include <time.h>
 #include <locale.h>
 #include "locale_impl.h"
-#include "libc.h"
-
-const char *__strftime_fmt_1(char (*s)[100], size_t *l, int f, const struct tm *tm, locale_t loc, int pad);
+#include "time_impl.h"
 
 size_t __wcsftime_l(wchar_t *restrict s, size_t n, const wchar_t *restrict f, const struct tm *restrict tm, locale_t loc)
 {
