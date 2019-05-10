@@ -8,21 +8,14 @@
 // clang-format on
 
 #include <openenclave/internal/posix/device.h>
-#include <openenclave/internal/posix/sockops.h>
-#include <openenclave/bits/safemath.h>
-#include <openenclave/internal/calls.h>
 #include <openenclave/internal/thread.h>
-#include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
-#include <openenclave/corelibc/sys/uio.h>
 #include <openenclave/corelibc/sys/socket.h>
-#include <openenclave/corelibc/stdio.h>
-#include <openenclave/internal/print.h>
-#include <openenclave/bits/module.h>
-#include <openenclave/internal/trace.h>
 #include <openenclave/internal/posix/raise.h>
+#include <openenclave/corelibc/stdlib.h>
 #include "posix_t.h"
 
+#define SOCKET_MAGIC 0x536f636b
 #define DEVICE_NAME "hostsock"
 
 static size_t _get_iov_size(const struct oe_iovec* iov, size_t iov_len)
@@ -95,17 +88,11 @@ done:
     return ret;
 }
 
-#define SOCKET_MAGIC 0x536f636b
-
 typedef struct _sock
 {
     struct _oe_device base;
     uint32_t magic;
     oe_host_fd_t host_fd;
-    uint64_t ready_mask;
-    // epoll registers with us.
-    int max_event_fds;
-    int num_event_fds;
 } sock_t;
 
 static oe_sock_ops_t* _get_ops(void);
@@ -130,11 +117,8 @@ static sock_t* _cast_sock(const oe_device_t* device)
     sock_t* sock = (sock_t*)device;
 
     if (sock == NULL || sock->magic != SOCKET_MAGIC)
-    {
-        sock = NULL;
-        OE_TRACE_ERROR("sock is invalid");
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
+
 done:
     return sock;
 }
@@ -152,18 +136,10 @@ static int _hostsock_clone(oe_device_t* device, oe_device_t** new_device)
     sock_t* new_sock = NULL;
 
     if (!sock)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (!(new_sock = oe_calloc(1, sizeof(sock_t))))
-    {
-        oe_errno = OE_ENOMEM;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_ENOMEM);
 
     memcpy(new_sock, sock, sizeof(sock_t));
     *new_device = &new_sock->base;
@@ -179,14 +155,11 @@ static int _hostsock_release(oe_device_t* device)
     sock_t* sock = _cast_sock(device);
 
     if (!sock)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     oe_free(sock);
     ret = 0;
+
 done:
     return ret;
 }
@@ -253,7 +226,6 @@ static ssize_t _hostsock_socketpair(
     if (!sock)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    /* Input */
     if (domain == OE_AF_HOST)
         domain = OE_AF_INET;
 
@@ -322,26 +294,20 @@ static int _hostsock_connect(
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
     sockaddr_t buf;
-    oe_result_t result = OE_FAILURE;
 
     oe_errno = 0;
 
     if (!sock || !addr || sizeof(buf) < addrlen)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     memcpy(&buf, addr, addrlen);
     _fix_address_family(&buf.addr);
 
-    if ((result = oe_posix_connect_ocall(
-             &ret, sock->host_fd, &buf.addr, addrlen)) != OE_OK)
+    /* Call host. */
+    if (oe_posix_connect_ocall(&ret, sock->host_fd, &buf.addr, addrlen) !=
+        OE_OK)
     {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("%s oe_errno=%d", oe_result_str(result), oe_errno);
-        goto done;
+        OE_RAISE_ERRNO(OE_EINVAL);
     }
 
 done:
@@ -417,28 +383,18 @@ static int _hostsock_bind(
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
     sockaddr_t buf;
-    oe_result_t result = OE_FAILURE;
 
     oe_errno = 0;
 
     if (!sock || !addr || sizeof(buf) < addrlen)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
-    /* Input */
     memcpy(&buf, addr, addrlen);
     _fix_address_family(&buf.addr);
 
-    if ((result = oe_posix_bind_ocall(
-             &ret, sock->host_fd, &buf.addr, addrlen)) != OE_OK)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("host_fd=%ld %s", sock->host_fd, oe_result_str(result));
-        goto done;
-    }
+    /* Call the host. */
+    if (oe_posix_bind_ocall(&ret, sock->host_fd, &buf.addr, addrlen) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
 
@@ -449,22 +405,14 @@ static int _hostsock_listen(oe_device_t* sock_, int backlog)
 {
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
-    oe_result_t result = OE_FAILURE;
 
     oe_errno = 0;
 
     if (!sock)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
-    if ((result = oe_posix_listen_ocall(&ret, sock->host_fd, backlog)) != OE_OK)
-    {
-        OE_TRACE_ERROR("host_fd=%ld %s", sock->host_fd, oe_result_str(result));
-        goto done;
-    }
+    if (oe_posix_listen_ocall(&ret, sock->host_fd, backlog) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
     return ret;
@@ -478,27 +426,17 @@ static ssize_t _hostsock_recv(
 {
     ssize_t ret = -1;
     sock_t* sock = _cast_sock(sock_);
-    oe_result_t result = OE_FAILURE;
 
     oe_errno = 0;
 
     if (!sock || (count && !buf))
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (buf)
         memset(buf, 0, sizeof(count));
 
-    if ((result = oe_posix_recv_ocall(
-             &ret, sock->host_fd, buf, count, flags)) != OE_OK)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("host_fd=%ld %s", sock->host_fd, oe_result_str(result));
-        goto done;
-    }
+    if (oe_posix_recv_ocall(&ret, sock->host_fd, buf, count, flags) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
     return ret;
@@ -515,33 +453,26 @@ static ssize_t _hostsock_recvfrom(
     ssize_t ret = -1;
     sock_t* sock = _cast_sock(sock_);
     oe_socklen_t addrlen_in = 0;
-    oe_result_t result = OE_FAILURE;
 
     oe_errno = 0;
 
     if (!sock || (count && !buf))
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (addrlen)
         addrlen_in = *addrlen;
 
-    if ((result = oe_posix_recvfrom_ocall(
-             &ret,
-             sock->host_fd,
-             buf,
-             count,
-             flags,
-             (struct oe_sockaddr*)src_addr,
-             addrlen_in,
-             addrlen)) != OE_OK)
+    if (oe_posix_recvfrom_ocall(
+            &ret,
+            sock->host_fd,
+            buf,
+            count,
+            flags,
+            (struct oe_sockaddr*)src_addr,
+            addrlen_in,
+            addrlen) != OE_OK)
     {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("host_fd=%ld %s", sock->host_fd, oe_result_str(result));
-        goto done;
+        OE_RAISE_ERRNO(OE_EINVAL);
     }
 
 done:
@@ -561,59 +492,40 @@ static ssize_t _hostsock_recvmsg(
 
     /* Check the parameters. */
     if (!sock || !msg || (msg->msg_iovlen && !msg->msg_iov))
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Get the size the total (flat) size of the msg_iov array. */
     buf_len = _get_iov_size(msg->msg_iov, msg->msg_iovlen);
 
     /* Allocate the read buffer if its length is non-zero. */
     if (buf_len && !(buf = oe_calloc(1, buf_len)))
-    {
-        oe_errno = OE_ENOMEM;
-        OE_TRACE_ERROR("oe_errno=%d buf_len=%zu", oe_errno, buf_len);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_ENOMEM);
 
     /* Call the host. */
     {
-        oe_result_t result;
-
-        if ((result = oe_posix_recvmsg_ocall(
-                 &ret,
-                 sock->host_fd,
-                 msg->msg_name,
-                 msg->msg_namelen,
-                 &msg->msg_namelen,
-                 buf,
-                 buf_len,
-                 msg->msg_control,
-                 msg->msg_controllen,
-                 &msg->msg_controllen,
-                 flags)) != OE_OK)
+        if (oe_posix_recvmsg_ocall(
+                &ret,
+                sock->host_fd,
+                msg->msg_name,
+                msg->msg_namelen,
+                &msg->msg_namelen,
+                buf,
+                buf_len,
+                msg->msg_control,
+                msg->msg_controllen,
+                &msg->msg_controllen,
+                flags) != OE_OK)
         {
-            oe_errno = OE_EINVAL;
-            OE_TRACE_ERROR("%s", oe_result_str(result));
-            goto done;
+            OE_RAISE_ERRNO(OE_EINVAL);
         }
 
-        if (ret < 0)
-        {
-            OE_TRACE_ERROR("ret=%ld oe_errno=%d", ret, oe_errno);
-            goto done;
-        }
+        if (ret == -1)
+            OE_RAISE_ERRNO(oe_errno);
     }
 
     /* Copy the buffer back onto the original iov array. */
     if (_inflate_iov(buf, (size_t)ret, msg->msg_iov, msg->msg_iovlen) != 0)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("_inflate_iov(): oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
 
@@ -631,24 +543,14 @@ static ssize_t _hostsock_send(
 {
     ssize_t ret = -1;
     sock_t* sock = _cast_sock(sock_);
-    oe_result_t result = OE_FAILURE;
 
     oe_errno = 0;
 
     if (!sock || (count && !buf))
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
-    if ((result = oe_posix_send_ocall(
-             &ret, sock->host_fd, buf, count, flags)) != OE_OK)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("host_fd=%ld %s", sock->host_fd, oe_result_str(result));
-        goto done;
-    }
+    if (oe_posix_send_ocall(&ret, sock->host_fd, buf, count, flags) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
     return ret;
@@ -664,29 +566,22 @@ static ssize_t _hostsock_sendto(
 {
     ssize_t ret = -1;
     sock_t* sock = _cast_sock(sock_);
-    oe_result_t result = OE_FAILURE;
 
     oe_errno = 0;
 
     if (!sock || (count && !buf))
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
-    if ((result = oe_posix_sendto_ocall(
-             &ret,
-             sock->host_fd,
-             buf,
-             count,
-             flags,
-             (struct oe_sockaddr*)dest_addr,
-             addrlen)) != OE_OK)
+    if (oe_posix_sendto_ocall(
+            &ret,
+            sock->host_fd,
+            buf,
+            count,
+            flags,
+            (struct oe_sockaddr*)dest_addr,
+            addrlen) != OE_OK)
     {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("host_fd=%ld %s", sock->host_fd, oe_result_str(result));
-        goto done;
+        OE_RAISE_ERRNO(OE_EINVAL);
     }
 
 done:
@@ -707,56 +602,32 @@ static ssize_t _hostsock_sendmsg(
 
     /* Check the parameters. */
     if (!sock || !msg || (msg->msg_iovlen && !msg->msg_iov))
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Get the size the total (flat) size of the msg_iov array. */
     buf_len = _get_iov_size(msg->msg_iov, msg->msg_iovlen);
 
     /* Allocate the write buffer if its length is non-zero. */
     if (buf_len && !(buf = oe_calloc(1, buf_len)))
-    {
-        oe_errno = OE_ENOMEM;
-        OE_TRACE_ERROR("oe_errno=%d buf_len=%zu", oe_errno, buf_len);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_ENOMEM);
 
     /* Flatten the iov array onto the buffer. */
     if (_deflate_iov(msg->msg_iov, msg->msg_iovlen, buf, buf_len) != 0)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("_deflate_iov(): oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Call the host. */
+    if (oe_posix_sendmsg_ocall(
+            &ret,
+            sock->host_fd,
+            msg->msg_name,
+            msg->msg_namelen,
+            buf,
+            buf_len,
+            msg->msg_control,
+            msg->msg_controllen,
+            flags) != OE_OK)
     {
-        oe_result_t result;
-
-        if ((result = oe_posix_sendmsg_ocall(
-                 &ret,
-                 sock->host_fd,
-                 msg->msg_name,
-                 msg->msg_namelen,
-                 buf,
-                 buf_len,
-                 msg->msg_control,
-                 msg->msg_controllen,
-                 flags)) != OE_OK)
-        {
-            oe_errno = OE_EINVAL;
-            OE_TRACE_ERROR("ocall failed: %s", oe_result_str(result));
-            goto done;
-        }
-
-        if (ret == -1)
-        {
-            OE_TRACE_ERROR("ret=%ld oe_errno=%d", ret, oe_errno);
-            goto done;
-        }
+        OE_RAISE_ERRNO(OE_EINVAL);
     }
 
 done:
@@ -771,23 +642,14 @@ static int _hostsock_close(oe_device_t* sock_)
 {
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
-    oe_result_t result = OE_FAILURE;
 
     oe_errno = 0;
 
     if (!sock)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
-    if ((result = (oe_posix_close_ocall(&ret, sock->host_fd))) != OE_OK)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("host_fd=%ld %s", sock->host_fd, oe_result_str(result));
-        goto done;
-    }
+    if (oe_posix_close_ocall(&ret, sock->host_fd) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (ret == 0)
         oe_free(sock);
@@ -801,23 +663,14 @@ static int _hostsock_fcntl(oe_device_t* sock_, int cmd, uint64_t arg)
 {
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
-    oe_result_t result = OE_FAILURE;
 
     oe_errno = 0;
 
     if (!sock)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
-    if ((result = oe_posix_fcntl_ocall(&ret, sock->host_fd, cmd, arg)) != OE_OK)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("host_fd=%ld %s", sock->host_fd, oe_result_str(result));
-        goto done;
-    }
+    if (oe_posix_fcntl_ocall(&ret, sock->host_fd, cmd, arg) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
 
@@ -876,27 +729,20 @@ static int _hostsock_getsockopt(
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
     oe_socklen_t optlen_in = 0;
-    oe_result_t result = OE_FAILURE;
 
     oe_errno = 0;
 
     if (!sock)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (optlen)
         optlen_in = *optlen;
 
-    if ((result = oe_posix_getsockopt_ocall(
-             &ret, sock->host_fd, level, optname, optval, optlen_in, optlen)) !=
+    if (oe_posix_getsockopt_ocall(
+            &ret, sock->host_fd, level, optname, optval, optlen_in, optlen) !=
         OE_OK)
     {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("host_fd=%ld %s", sock->host_fd, oe_result_str(result));
-        goto done;
+        OE_RAISE_ERRNO(OE_EINVAL);
     }
 
 done:
@@ -913,23 +759,16 @@ static int _hostsock_setsockopt(
 {
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
-    oe_result_t result = OE_FAILURE;
 
     oe_errno = 0;
 
     if (!sock || !optval || !optlen)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
-    if ((result = oe_posix_setsockopt_ocall(
-             &ret, sock->host_fd, level, optname, optval, optlen)) != OE_OK)
+    if (oe_posix_setsockopt_ocall(
+            &ret, sock->host_fd, level, optname, optval, optlen) != OE_OK)
     {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("host_fd=%ld %s", sock->host_fd, oe_result_str(result));
-        goto done;
+        OE_RAISE_ERRNO(OE_EINVAL);
     }
 
 done:
@@ -946,9 +785,9 @@ static int _hostsock_ioctl(
     OE_UNUSED(request);
     OE_UNUSED(arg);
 
-    oe_errno = OE_ENOTSUP;
-    OE_TRACE_ERROR("oe_errno=%d ", oe_errno);
+    OE_RAISE_ERRNO(OE_ENOTSUP);
 
+done:
     return -1;
 }
 
@@ -960,30 +799,23 @@ static int _hostsock_getpeername(
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
     oe_socklen_t addrlen_in = 0;
-    oe_result_t result = OE_FAILURE;
 
     oe_errno = 0;
 
     if (!sock)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (addrlen)
         addrlen_in = *addrlen;
 
-    if ((result = oe_posix_getpeername_ocall(
-             &ret,
-             sock->host_fd,
-             (struct oe_sockaddr*)addr,
-             addrlen_in,
-             addrlen)) != OE_OK)
+    if (oe_posix_getpeername_ocall(
+            &ret,
+            sock->host_fd,
+            (struct oe_sockaddr*)addr,
+            addrlen_in,
+            addrlen) != OE_OK)
     {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("host_fd=%ld %s", sock->host_fd, oe_result_str(result));
-        goto done;
+        OE_RAISE_ERRNO(OE_EINVAL);
     }
 
 done:
@@ -999,30 +831,23 @@ static int _hostsock_getsockname(
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
     oe_socklen_t addrlen_in = 0;
-    oe_result_t result = OE_FAILURE;
 
     oe_errno = 0;
 
     if (!sock)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (addrlen)
         addrlen_in = *addrlen;
 
-    if ((result = oe_posix_getsockname_ocall(
-             &ret,
-             sock->host_fd,
-             (struct oe_sockaddr*)addr,
-             addrlen_in,
-             addrlen)) != OE_OK)
+    if (oe_posix_getsockname_ocall(
+            &ret,
+            sock->host_fd,
+            (struct oe_sockaddr*)addr,
+            addrlen_in,
+            addrlen) != OE_OK)
     {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("host_fd=%ld %s", sock->host_fd, oe_result_str(result));
-        goto done;
+        OE_RAISE_ERRNO(OE_EINVAL);
     }
 
 done:
@@ -1047,26 +872,15 @@ static int _hostsock_socket_shutdown(oe_device_t* sock_, int how)
 {
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
-    oe_result_t result = OE_FAILURE;
 
     oe_errno = 0;
 
     if (!sock)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
-    if ((result = oe_posix_shutdown_ocall(&ret, sock->host_fd, how)) != OE_OK)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("host_fd=%ld %s", sock->host_fd, oe_result_str(result));
-        goto done;
-    }
+    if (oe_posix_shutdown_ocall(&ret, sock->host_fd, how) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
-    // shutdown call could be followed by a close call on a socket
-    // to avoid double-free, no need  to free it here
 done:
 
     return ret;
@@ -1076,24 +890,14 @@ static int _hostsock_shutdown_device(oe_device_t* sock_)
 {
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
-    oe_result_t result = OE_FAILURE;
 
     oe_errno = 0;
 
     if (!sock)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("oe_errno=%d", oe_errno);
-        goto done;
-    }
+        OE_RAISE_ERRNO(OE_EINVAL);
 
-    if ((result = oe_posix_shutdown_sockets_device_ocall(
-             &ret, sock->host_fd)) != OE_OK)
-    {
-        oe_errno = OE_EINVAL;
-        OE_TRACE_ERROR("host_fd=%ld %s", sock->host_fd, oe_result_str(result));
-        goto done;
-    }
+    if (oe_posix_shutdown_sockets_device_ocall(&ret, sock->host_fd) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (ret != -1)
         oe_free(sock);
@@ -1149,10 +953,6 @@ static sock_t _hostsock = {
     .base.name = DEVICE_NAME,
     .base.ops.sock = &_ops,
     .magic = SOCKET_MAGIC,
-    .ready_mask = 0,
-    .max_event_fds = 0,
-    .num_event_fds = 0,
-    // oe_event_device_t *event_fds;
 };
 
 static oe_once_t _once = OE_ONCE_INITIALIZER;
@@ -1164,10 +964,7 @@ static void _load_once(void)
     const uint64_t devid = OE_DEVID_HOSTSOCK;
 
     if (oe_set_device(devid, &_hostsock.base) != 0)
-    {
-        OE_TRACE_ERROR("devid=%lu ", devid);
-        goto done;
-    }
+        OE_RAISE_ERRNO(oe_errno);
 
     result = OE_OK;
 
