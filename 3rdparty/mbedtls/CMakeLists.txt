@@ -50,7 +50,8 @@ configure_file(config.h config.h) # This copies from source to binary folders.
 # the mbedcrypto library, so that we avoid link errors and also circular
 # library dependecies.
 add_library(oe_mbedtls_hardware_poll OBJECT
-    mbedtls_hardware_poll.c)
+  mbedtls_hardware_poll.c)
+maybe_build_using_clangw(oe_mbedtls_hardware_poll)
 target_link_libraries(oe_mbedtls_hardware_poll oecore)
 
 include(ExternalProject)
