@@ -1,5 +1,5 @@
 (*
- * Copyright (C) 2011-2018 Intel Corporation. All rights reserved.
+ * Copyright (C) 2011-2019 Intel Corporation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,19 +29,23 @@
  *
  *)
 
-(* Available types. *)
+(* [unsigned] *)
 type signedness = Signed | Unsigned
+
+(* [short|long] *)
 type shortness  = IShort | ILong | INone
 
+(* [unsigned] [short|long] int *)
 type int_attr = {
   ia_signedness : signedness;
   ia_shortness  : shortness;
 }
 
+(* All available types. *)
 type atype =
-  | Char  of signedness
-  | Long  of signedness
-  | LLong of signedness
+  | Char  of signedness  (* 'char' *)
+  | Long  of signedness  (* 'long' *)
+  | LLong of signedness  (* 'long long' *)
   | Int   of int_attr
   | Float | Double | LDouble
   | Int8  | Int16  | Int32  | Int64
@@ -50,18 +54,19 @@ type atype =
   | Struct  of string
   | Union   of string
   | Enum    of string
-  | Foreign of string
-  | Ptr     of atype
+  | Foreign of string (* typedef in other places *)
+  | Ptr     of atype  (* Pointer to a type *)
 
-(* Pointer parameter direction *)
+(* Pointer parameter direction attribute 'in', 'out', 'inout' *)
 type ptr_direction =
   | PtrIn | PtrOut | PtrInOut | PtrNoDirection
 
 (* It holds possible values for a given attribute. *)
 type attr_value =
-  | AString of string
-  | ANumber of int
+  | AString of string  (* a varable *)
+  | ANumber of int     (* a number *)
 
+(* Pointer parameter can have option attribute of 'size=' and 'count='. *)
 type ptr_size = {
   ps_size     : attr_value option;
   ps_count    : attr_value option;
@@ -76,12 +81,12 @@ let empty_ptr_size = {
 type ptr_attr = {
   pa_direction  : ptr_direction;
   pa_size       : ptr_size;
-  pa_isptr      : bool;       (* If a foreign type is a pointer type *)
-  pa_isary      : bool;       (* If a foreign type is an array *)
-  pa_isstr      : bool;
-  pa_iswstr     : bool;
-  pa_rdonly     : bool;       (* If the pointer is 'const' qualified *)
-  pa_chkptr     : bool;       (* Whether to generate code to check pointer *)
+  pa_isptr      : bool;       (* If a foreign type is a pointer type, 'isptr' *)
+  pa_isary      : bool;       (* If a foreign type is an array, 'isary' *)
+  pa_isstr      : bool;       (* 'char*' pointer with length of strlen(x), 'isstr' *)
+  pa_iswstr     : bool;       (* 'wchar*' pointer with length of wcslen(x), 'iswstr' *)
+  pa_rdonly     : bool;       (* If the pointer is 'const' qualified, 'readonly' *)
+  pa_chkptr     : bool;       (* Whether to generate code to check pointer, 'user_check' *)
 }
 
 (* parameter type *)
@@ -89,6 +94,7 @@ type parameter_type =
   | PTVal of atype            (* Passed by value *)
   | PTPtr of atype * ptr_attr (* Passed by address *)
 
+(* function calling convention *)  
 type call_conv = CC_CDECL | CC_STDCALL | CC_FASTCALL | CC_NONE
 
 let get_call_conv_str (cc: call_conv) =
@@ -115,16 +121,22 @@ type declarator = {
 
 let is_array (declr: declarator) = declr.array_dims <> []
 
-(* Parameter declaration. *)
+(* Parameter and Struct declaration. *)
 type pdecl = parameter_type * declarator
 
-(* Structure member declaration *)
+(* Union member declaration *)
 type mdecl = atype * declarator
 
-(* Definition of a struct or union *)
+(* Definition of a struct *)
 type struct_def = {
   sname : string;       (* structure name. *)
-  mlist : mdecl list;   (* structure members. *)
+  smlist : pdecl list;   (* structure members. *)
+}
+
+(* Definition of a union *)
+type union_def = {
+  uname : string;       (* union name. *)
+  umlist : mdecl list;   (* union members. *)
 }
 
 (* Definition of a enum *)
@@ -139,7 +151,7 @@ type enum_def = {
 (* Composite type - the form for struct/union definition are the same. *)
 type composite_type =
     StructDef of struct_def
-  | UnionDef  of struct_def
+  | UnionDef  of union_def
   | EnumDef   of enum_def
 
 (* Function declaration. *)
@@ -154,17 +166,19 @@ type func_decl = {
  * have a bool tag to identify whether it is private or not (private
  * means it can only be accessed by an OCALL).
  *)
+(* Trust function(aka ecall) declaration. *)
 type trusted_func = {
   tf_fdecl   : func_decl;
-  tf_is_priv : bool;
+  tf_is_priv : bool;   (* private or not, see above comment *)
   tf_is_switchless : bool;
 }
 
+(* untrust function(aka ocall) declaration. *)
 type untrusted_func = {
   uf_fdecl      : func_decl;
-  uf_fattr      : func_attr;
-  uf_allow_list : string list;
-  uf_propagate_errno : bool;
+  uf_fattr      : func_attr; (* function attribute *)
+  uf_allow_list : string list; (* allow list, see above comment *)
+  uf_propagate_errno : bool; (* whether this function changes errno *)
   uf_is_switchless    : bool;
 }
 
@@ -172,7 +186,7 @@ type enclave_func =
   | Trusted   of trusted_func
   | Untrusted of untrusted_func
 
-(* Module import declaration. *)
+(* Module import declaration. 'import' *)
 type import_decl = {
   mname : string;       (* from which to import functions. *)
   flist : string list;  (* a list of functions to be imported. *)
