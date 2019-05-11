@@ -186,7 +186,7 @@ static oe_device_t* _get_fd_device(int fd)
         }
     }
 
-    oe_spin_unlock(&_lock);
+    oe_spin_lock(&_lock);
     locked = true;
 
     if (fd < 0 || fd >= (int)_table_size)
