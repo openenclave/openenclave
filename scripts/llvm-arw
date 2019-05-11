@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
@@ -15,15 +14,15 @@ function call_llvmar {
         # Response files start with an @
         if [[ "$a" == \@* ]]; then
             # Transform directory separators within the response file.
-            sed -i 's/\\/\//g' ${a:1}
+            sed -i 's/\\/\//g' "${a:1}"
         fi
 
-        args+="$a "
+        args+=("$a ")
     done
 
     # Replace \ by / in each argument
     args+="$a "
-    llvm-ar ${args[@]}
+    llvm-ar "${args[@]}"
 }
 
-call_llvmar $@ 
+call_llvmar "$@"

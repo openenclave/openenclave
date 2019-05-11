@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+# shellcheck disable=SC2068 disable=SC2006
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
@@ -43,12 +43,12 @@ function call_clang {
         [ "$a" == "/showIncludes" ] && continue
 
         # Map the following arguments
-        [ "$a" == "/DNDEBUG" ]   && args+="-DNDEBUG "  && continue
-        [ "$a" == "/Zi" ]        && args+="-g "        && continue
-        [ "$a" == "/O2" ]        && args+="/O2 "       && continue
-        [ "$a" == "-std:c++11" ] && args+="-std=c++11 " && continue
-        [ "$a" == "-std:c++14" ] && args+="-std=c++14 " && continue
-        [ "$a" == "-std:c++17" ] && args+="-std=c++17 " && continue
+        [ "$a" == "/DNDEBUG" ]   && args+=("-DNDEBUG ")   && continue
+        [ "$a" == "/Zi" ]        && args+=("-g "      )   && continue
+        [ "$a" == "/O2" ]        && args+=("/O2 ")        && continue
+        [ "$a" == "-std:c++11" ] && args+=("-std=c++11 ") && continue
+        [ "$a" == "-std:c++14" ] && args+=("-std=c++14 ") && continue
+        [ "$a" == "-std:c++17" ] && args+=("-std=c++17 ") && continue
 
         # link is passed in when clang is used as a linker
         [ "$a" == "link" ]  && linking=1 && continue
@@ -71,4 +71,4 @@ function call_clang {
     fi
 }
 
-call_clang $@
+call_clang "$@"
