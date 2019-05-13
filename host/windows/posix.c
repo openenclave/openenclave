@@ -17,7 +17,7 @@
 #include <stdint.h>
 #include <sys/stat.h>
 // clang-format off
-#include "winsock2.h"
+#include "ws2tcpip.h"
 #include "windows.h"
 // clang-format on
 
@@ -26,9 +26,6 @@
 #include "openenclave/corelibc/errno.h"
 #include "openenclave/corelibc/fcntl.h"
 #include "openenclave/corelibc/sys/epoll.h"
-
-#undef errno
-static __declspec(thread) int errno = 0;
 
 static BOOL _winsock_inited = 0;
 
@@ -506,7 +503,7 @@ oe_host_fd_t oe_posix_open_ocall(
     {
         if ((flags & 0x00000003) != OE_O_RDONLY)
         {
-            errno = OE_EINVAL;
+            _set_errno(OE_EINVAL);
             goto done;
         }
 
@@ -516,7 +513,7 @@ oe_host_fd_t oe_posix_open_ocall(
     {
         if ((flags & 0x00000003) != OE_O_WRONLY)
         {
-            errno = OE_EINVAL;
+            _set_errno(OE_EINVAL);
             goto done;
         }
 
@@ -526,7 +523,7 @@ oe_host_fd_t oe_posix_open_ocall(
     {
         if ((flags & 0x00000003) != OE_O_WRONLY)
         {
-            errno = OE_EINVAL;
+            _set_errno(OE_EINVAL);
             goto done;
         }
 
@@ -559,7 +556,7 @@ oe_host_fd_t oe_posix_open_ocall(
         }
 
         /* Open flags are neither a bitmask nor a sequence, so switching or
-         * maskign don't really work. */
+         * masking don't really work. */
 
         if ((flags & OE_O_CREAT) != 0)
         {
@@ -597,11 +594,14 @@ oe_host_fd_t oe_posix_open_ocall(
 
             default:
                 ret = -1;
-                errno = OE_EINVAL;
+                _set_errno(OE_EINVAL);
                 goto done;
                 break;
         }
 
+        if (mode & OE_S_IRUSR) desired_access |= GENERIC_READ;
+        if (mode & OE_S_IWUSR) desired_access |= GENERIC_WRITE;
+        
         // 2do: mode
 
         HANDLE h = CreateFileW(
@@ -614,12 +614,23 @@ oe_host_fd_t oe_posix_open_ocall(
             NULL);
         if (h == INVALID_HANDLE_VALUE)
         {
-            errno = _winerr_to_errno(GetLastError());
+            _set_errno(_winerr_to_errno(GetLastError()));
             goto done;
         }
 
         ret = (oe_host_fd_t)h;
-        _wchmod(wpathname, mode);
+	
+#if 0
+	// Windows doesn't do mode very well. We translate. Win32 only cares about 
+	// user read/write. 
+	int wmode = ( (mode & OE_S_IRUSR)? _S_IREAD : 0) | ((mode & OE_S_IWUSR)?  _S_IWRITE: 0);
+
+        int retx = _wchmod(wpathname, wmode);
+	if (retx < 0)
+	{
+	     printf("chmod failed, err = %d\n", GetLastError());
+	}
+#endif
         if (wpathname_buffer)
         {
             free(wpathname_buffer);
@@ -643,11 +654,11 @@ ssize_t oe_posix_read_ocall(oe_host_fd_t fd, void* buf, size_t count)
             break;
 
         case 1:
-            errno = OE_EBADF;
+            _set_errno(OE_EBADF);
             goto done;
 
         case 2:
-            errno = OE_EBADF;
+            _set_errno(OE_EBADF);
             goto done;
 
         default:
@@ -656,7 +667,7 @@ ssize_t oe_posix_read_ocall(oe_host_fd_t fd, void* buf, size_t count)
 
     if (!ReadFile((HANDLE)fd, buf, (DWORD)count, &bytes_returned, NULL))
     {
-        errno = _winerr_to_errno(GetLastError());
+        _set_errno(_winerr_to_errno(GetLastError()));
         goto done;
     }
 
@@ -676,7 +687,7 @@ ssize_t oe_posix_write_ocall(oe_host_fd_t fd, const void* buf, size_t count)
     {
         case 0:
             // Error. You cant write to stdin
-            errno = OE_EBADF;
+            _set_errno(OE_EBADF);
             goto done;
 
         case 1:
@@ -693,7 +704,7 @@ ssize_t oe_posix_write_ocall(oe_host_fd_t fd, const void* buf, size_t count)
 
     if (!WriteFile((HANDLE)fd, buf, (DWORD)count, &bytes_written, NULL))
     {
-        errno = _winerr_to_errno(GetLastError());
+        _set_errno(_winerr_to_errno(GetLastError()));
         goto done;
     }
 
@@ -713,7 +724,7 @@ oe_off_t oe_posix_lseek_ocall(oe_host_fd_t fd, oe_off_t offset, int whence)
     if (SetFilePointerEx(
             (HANDLE)fd, new_offset, (PLARGE_INTEGER)&new_offset, whence))
     {
-        errno = _winerr_to_errno(GetLastError());
+        _set_errno(_winerr_to_errno(GetLastError()));
         goto done;
     }
 
@@ -727,7 +738,7 @@ int oe_posix_close_ocall(oe_host_fd_t fd)
 {
     if (!CloseHandle((HANDLE)fd))
     {
-        errno = OE_EINVAL;
+        _set_errno(OE_EINVAL);
         return -1;
     }
     return 0;
@@ -766,7 +777,7 @@ oe_host_fd_t oe_posix_dup_ocall(oe_host_fd_t oldfd)
 
         if (sockerr != WSAENOTSOCK)
         {
-            errno = _winsockerr_to_errno(WSAGetLastError());
+            _set_errno(_winsockerr_to_errno(WSAGetLastError()));
             goto done;
         }
     }
@@ -774,7 +785,7 @@ oe_host_fd_t oe_posix_dup_ocall(oe_host_fd_t oldfd)
     {
         newfd = WSASocketA(-1, -1, -1, pi, 0, 0);
         ret = newfd;
-        errno = 0;
+        _set_errno(0);
         goto done;
     }
 
@@ -787,7 +798,7 @@ oe_host_fd_t oe_posix_dup_ocall(oe_host_fd_t oldfd)
             FALSE,
             DUPLICATE_SAME_ACCESS))
     {
-        errno = _winerr_to_errno(GetLastError());
+        _set_errno(_winerr_to_errno(GetLastError()));
         goto done;
     }
 
@@ -842,7 +853,7 @@ int oe_posix_stat_ocall(const char* pathname, struct oe_stat* buf)
     {
         // How do we get to  wstat's error
 
-        errno = _winerr_to_errno(GetLastError());
+        _set_errno(_winerr_to_errno(GetLastError()));
         goto done;
     }
 
@@ -913,7 +924,7 @@ int oe_posix_mkdir_ocall(const char* pathname, oe_mode_t mode)
     ret = _wmkdir(wpathname);
     if (ret < 0)
     {
-        errno = _winerr_to_errno(GetLastError());
+        _set_errno(_winerr_to_errno(GetLastError()));
         goto done;
     }
 
@@ -935,7 +946,7 @@ int oe_posix_rmdir_ocall(const char* pathname)
     ret = _wrmdir(wpathname);
     if (ret < 0)
     {
-        errno = _winerr_to_errno(GetLastError());
+        _set_errno(_winerr_to_errno(GetLastError()));
         goto done;
     }
 
@@ -964,7 +975,7 @@ oe_host_fd_t oe_posix_socket_ocall(int domain, int type, int protocol)
     {
         if (!_winsock_init())
         {
-            errno = OE_ENOTSOCK;
+            _set_errno(OE_ENOTSOCK);
         }
     }
 
@@ -973,7 +984,7 @@ oe_host_fd_t oe_posix_socket_ocall(int domain, int type, int protocol)
     ret = socket(domain, type, protocol);
     if (ret == SOCKET_ERROR)
     {
-        errno = _winsockerr_to_errno(WSAGetLastError());
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
     }
 
     return ret;
@@ -1006,7 +1017,7 @@ int oe_posix_connect_ocall(
     ret = connect((SOCKET)sockfd, (const struct sockaddr*)addr, (int)addrlen);
     if (ret == SOCKET_ERROR)
     {
-        errno = _winsockerr_to_errno(WSAGetLastError());
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
     }
     return ret;
 }
@@ -1024,7 +1035,7 @@ oe_host_fd_t oe_posix_accept_ocall(
     ret = accept((SOCKET)sockfd, (struct sockaddr*)addr, (int*)addrlen_out);
     if (ret == SOCKET_ERROR)
     {
-        errno = _winsockerr_to_errno(WSAGetLastError());
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
     }
 
     return ret;
@@ -1040,7 +1051,7 @@ int oe_posix_bind_ocall(
     ret = bind((SOCKET)sockfd, (struct sockaddr*)addr, (int)addrlen);
     if (ret == SOCKET_ERROR)
     {
-        errno = _winsockerr_to_errno(WSAGetLastError());
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
     }
 
     return ret;
@@ -1053,7 +1064,7 @@ int oe_posix_listen_ocall(oe_host_fd_t sockfd, int backlog)
     ret = listen((SOCKET)sockfd, backlog);
     if (ret == SOCKET_ERROR)
     {
-        errno = _winsockerr_to_errno(WSAGetLastError());
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
     }
     return ret;
 }
@@ -1080,7 +1091,7 @@ ssize_t oe_posix_recvmsg_ocall(
     rslt = WSARecv((SOCKET)sockfd, &buf, 1, &recv_bytes, &flags, NULL, NULL);
     if (rslt == SOCKET_ERROR)
     {
-        errno = _winsockerr_to_errno(WSAGetLastError());
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
         return -1;
     }
 
@@ -1108,7 +1119,7 @@ ssize_t oe_posix_sendmsg_ocall(
     rslt = WSASend((SOCKET)sockfd, &buf, 1, &sent_bytes, flags, NULL, NULL);
     if (rslt == SOCKET_ERROR)
     {
-        errno = _winsockerr_to_errno(WSAGetLastError());
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
         return -1;
     }
 
@@ -1126,7 +1137,7 @@ ssize_t oe_posix_recv_ocall(
     ret = recv((SOCKET)sockfd, buf, (int)len, flags);
     if (ret == SOCKET_ERROR)
     {
-        errno = _winsockerr_to_errno(WSAGetLastError());
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
     }
 
     return ret;
@@ -1153,7 +1164,7 @@ ssize_t oe_posix_recvfrom_ocall(
         &fromlen);
     if (ret == SOCKET_ERROR)
     {
-        errno = _winsockerr_to_errno(WSAGetLastError());
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
     }
     if (addrlen_out)
     {
@@ -1174,7 +1185,7 @@ ssize_t oe_posix_send_ocall(
     ret = send((SOCKET)sockfd, buf, (int)len, flags);
     if (ret == SOCKET_ERROR)
     {
-        errno = _winsockerr_to_errno(WSAGetLastError());
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
     }
 
     return ret;
@@ -1199,7 +1210,7 @@ ssize_t oe_posix_sendto_ocall(
         (int)addrlen);
     if (ret == SOCKET_ERROR)
     {
-        errno = _winsockerr_to_errno(WSAGetLastError());
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
     }
 
     return ret;
@@ -1228,7 +1239,7 @@ int oe_posix_setsockopt_ocall(
 
     if (winsock_optname <= 0)
     {
-        errno = OE_EINVAL;
+        _set_errno(OE_EINVAL);
         return ret;
     }
     // We lose. The option values are gratutiously juggled. Have to translate
@@ -1236,7 +1247,7 @@ int oe_posix_setsockopt_ocall(
         (SOCKET)sockfd, winsock_optlevel, winsock_optname, optval, optlen);
     if (ret == SOCKET_ERROR)
     {
-        errno = _winsockerr_to_errno(WSAGetLastError());
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
     }
 
     return ret;
@@ -1258,7 +1269,7 @@ int oe_posix_getsockopt_ocall(
     ret = getsockopt((SOCKET)sockfd, level, optname, optval, &optlen);
     if (ret == SOCKET_ERROR)
     {
-        errno = _winsockerr_to_errno(WSAGetLastError());
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
     }
 
     *optlen_out = (oe_socklen_t)optlen;
@@ -1308,13 +1319,129 @@ int oe_posix_kill_ocall(int pid, int signum)
 **
 **==============================================================================
 */
+#define GETADDRINFO_HANDLE_MAGIC 0xed11d13a
+
+typedef struct _getaddrinfo_handle
+{
+    uint32_t magic;
+    struct oe_addrinfo *res;
+    struct oe_addrinfo* next;
+} getaddrinfo_handle_t;
+
+static getaddrinfo_handle_t* _cast_getaddrinfo_handle(void* handle_)
+{
+    getaddrinfo_handle_t* handle = (getaddrinfo_handle_t*)handle_;
+
+    if (!handle || handle->magic != GETADDRINFO_HANDLE_MAGIC || !handle->res)
+        return NULL;
+
+    return handle;
+}
+
 
 uint64_t oe_posix_getaddrinfo_open_ocall(
     const char* node,
     const char* service,
     const struct oe_addrinfo* hints)
 {
-    PANIC;
+    getaddrinfo_handle_t* ret = NULL;
+    getaddrinfo_handle_t* handle = NULL;
+
+    _set_errno(0);
+
+    if (!_winsock_inited)
+    {
+        if (!_winsock_init())
+        {
+            _set_errno(OE_ENOTSOCK);
+        }
+    }
+
+    if (!(handle = calloc(1, sizeof(getaddrinfo_handle_t))))
+    {
+        _set_errno(OE_ENOMEM);
+        goto done;
+    }
+
+    struct addrinfo *paddr = NULL;
+    if (getaddrinfo(
+            node, service, (const struct addrinfo*)hints, &paddr) != 0)
+    {
+        goto done;
+    }
+
+    // In Windows addrinfo is volatile, so we need to deep copy here.
+    // Build the info as a single allocation so its easy to free
+    size_t size_required = 0;
+    struct addrinfo *pwin_ai = paddr;
+    for ( ; pwin_ai != NULL; pwin_ai = pwin_ai->ai_next)
+    {
+         size_required += sizeof(struct oe_addrinfo);
+	 if (pwin_ai->ai_canonname)
+	 {
+             size_required += strlen(pwin_ai->ai_canonname)+1;
+	 }
+         if (pwin_ai->ai_addr)
+	 {
+	     // Allocates the max size for a sockaddr
+             size_required += sizeof(struct oe_sockaddr_storage);
+	 }
+    }
+
+    if (!size_required)
+    {
+        // This should never happen
+        handle->res = NULL;
+        goto done;
+    }
+
+    handle->res = (struct oe_addrinfo *)calloc(1, size_required);
+
+    pwin_ai = paddr;
+    struct oe_addrinfo *pthis_res = handle->res;
+    char *palloc = (char*)handle->res;
+    for ( ; pwin_ai != NULL; pwin_ai = pwin_ai->ai_next)
+    {
+        pthis_res = (struct oe_addrinfo *)palloc;
+	palloc += sizeof(struct oe_addrinfo);
+
+	// Fields are not in the same order and sometimes not the same size;
+	pthis_res->ai_flags = pwin_ai->ai_flags;
+	pthis_res->ai_family = pwin_ai->ai_family;
+	pthis_res->ai_socktype = pwin_ai->ai_socktype;
+	pthis_res->ai_protocol = pwin_ai->ai_protocol;
+	pthis_res->ai_addrlen = (oe_socklen_t)pwin_ai->ai_addrlen;
+	if (pthis_res->ai_addrlen)
+	{
+	    pthis_res->ai_addr = (struct oe_sockaddr *)palloc;
+	    palloc += pwin_ai->ai_addrlen;
+	    memcpy(pthis_res->ai_addr, pwin_ai->ai_addr, pwin_ai->ai_addrlen);
+	}
+	if (pwin_ai->ai_canonname)
+	{
+	    pthis_res->ai_canonname = pwin_ai->ai_canonname;
+	    palloc += strlen(pwin_ai->ai_canonname)+1;
+	    memcpy(pthis_res->ai_canonname, pwin_ai->ai_canonname, strlen(pwin_ai->ai_canonname));
+	}
+	if (pwin_ai->ai_next)
+	{
+	    pthis_res->ai_next = (struct oe_addrinfo *)palloc;
+	}
+    }
+
+    freeaddrinfo(paddr);
+
+    handle->magic = GETADDRINFO_HANDLE_MAGIC;
+    handle->next = handle->res;
+    ret = handle;
+    handle = NULL;
+
+done:
+
+    if (handle)
+        free(handle);
+
+    return (uint64_t)ret;
 }
 
 int oe_posix_getaddrinfo_read_ocall(
@@ -1330,12 +1457,98 @@ int oe_posix_getaddrinfo_read_ocall(
     size_t* ai_canonnamelen,
     char* ai_canonname)
 {
-    PANIC;
+    int ret = -1;
+    getaddrinfo_handle_t* handle = _cast_getaddrinfo_handle((void*)handle_);
+
+    _set_errno(0);
+
+    if (!handle || !ai_flags || !ai_family || !ai_socktype || !ai_protocol ||
+        !ai_addrlen || !ai_canonnamelen)
+    {
+        _set_errno(OE_EINVAL);
+        goto done;
+    }
+
+    if (!ai_addr && ai_addrlen_in)
+    {
+        _set_errno(OE_EINVAL);
+        goto done;
+    }
+
+    if (!ai_canonname && ai_canonnamelen_in)
+    {
+        _set_errno(OE_EINVAL);
+        goto done;
+    }
+
+    if (handle->next)
+    {
+        struct oe_addrinfo * p = handle->next;
+
+        *ai_flags = p->ai_flags;
+        *ai_family = p->ai_family;
+        *ai_socktype = p->ai_socktype;
+        *ai_protocol = p->ai_protocol;
+        *ai_addrlen = (oe_socklen_t)p->ai_addrlen;
+
+        if (p->ai_canonname)
+            *ai_canonnamelen = strlen(p->ai_canonname) + 1;
+        else
+            *ai_canonnamelen = 0;
+
+        if (*ai_addrlen > ai_addrlen_in)
+        {
+            _set_errno(OE_ENAMETOOLONG);
+            goto done;
+        }
+
+        if (*ai_canonnamelen > ai_canonnamelen_in)
+        {
+            _set_errno(OE_ENAMETOOLONG);
+            goto done;
+        }
+
+        memcpy(ai_addr, p->ai_addr, *ai_addrlen);
+
+        if (p->ai_canonname)
+            memcpy(ai_canonname, p->ai_canonname, *ai_canonnamelen);
+
+        handle->next = handle->next->ai_next;
+
+        ret = 0;
+        goto done;
+    }
+    else
+    {
+        /* Done */
+        ret = 1;
+        goto done;
+    }
+
+done:
+    return ret;
 }
 
 int oe_posix_getaddrinfo_close_ocall(uint64_t handle_)
 {
-    PANIC;
+    int ret = -1;
+    getaddrinfo_handle_t* handle = _cast_getaddrinfo_handle((void*)handle_);
+
+    _set_errno(0);
+
+    if (!handle)
+    {
+        _set_errno(OE_EINVAL);
+        goto done;
+    }
+
+    free(handle->res);
+    free(handle);
+
+    ret = 0;
+
+done:
+    return ret;
 }
 
 int oe_posix_getnameinfo_ocall(
@@ -1347,7 +1560,10 @@ int oe_posix_getnameinfo_ocall(
     oe_socklen_t servlen,
     int flags)
 {
-    PANIC;
+    errno = 0;
+
+    return getnameinfo(
+        (const struct sockaddr*)sa, salen, host, hostlen, serv, servlen, flags);
 }
 
 int oe_posix_shutdown_resolver_device_ocall()
@@ -1623,13 +1839,14 @@ int oe_posix_epoll_wait_ocall(
             ret = 0;
             break;
         case WSA_WAIT_FAILED:
-            errno = _winsockerr_to_errno(WSAGetLastError());
+            _set_errno(_winsockerr_to_errno(WSAGetLastError()));
             ret = -1;
             break;
         default:
             if (ret == pepoll->num_events)
             {
-                errno = EINTR;
+                _set_errno(EINTR);
+                ret = -1;
             }
             else if (ret < pepoll->num_events)
             {

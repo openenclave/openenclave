@@ -2,21 +2,24 @@
 // Licensed under the MIT License.
 
 #define OE_LIBC_SUPPRESS_DEPRECATIONS
-#include <netinet/in.h>
-#include <openenclave/internal/tests.h>
-
-#include <errno.h>
-#include <fcntl.h>
-#include <netdb.h>
-#include <netinet/in.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/tests.h>
+#if defined(_MSC_VER)
+#define OE_NEED_STD_NAMES
+#include <winsock2.h>
+#include <windows.h>
+static void sleep(int secs)
+{
+    Sleep(secs * 1000);
+}
+typedef HANDLE pthread_t;
+#else
+#include <netinet/in.h>
 #include <pthread.h>
-#include <stdio.h>
-#include <sys/socket.h>
 #include <unistd.h>
+#endif
+#include <stdio.h>
 #include "../utils.h"
-
 #include "resolver_test_u.h"
 
 #define SERVER_PORT "12345"
@@ -103,7 +106,7 @@ int main(int argc, const char* argv[])
         ecall_getnameinfo(client_enclave, &ret, host, sizeof(host)) == OE_OK);
 
     {
-        OE_TEST(strcmp(host, "localhost") == 0);
+        OE_TEST(strlen(host) > 0);  // Can't be sure what the host result will be. Windows returns the node name
         printf("host received: host = %s\n", host);
     }
 
