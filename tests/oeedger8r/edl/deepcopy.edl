@@ -1,0 +1,17 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+  include "stdint.h"
+
+  struct MyStruct {
+    uint64_t count;
+    size_t size;
+    uint64_t* ptr;
+  };
+
+  trusted {
+    // Since `s` is passed by value, `s.ptr` is not deep copied.
+    public void deepcopy_value(struct MyStruct s, [user_check] uint64_t* ptr);
+  };
+};

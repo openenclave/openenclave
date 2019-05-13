@@ -8,6 +8,7 @@ add_custom_command(
   ../edl/all.edl
   ../edl/array.edl
   ../edl/basic.edl
+  ../edl/deepcopy.edl
   ../edl/enum.edl
   ../edl/errno.edl
   ../edl/foreign.edl
@@ -36,6 +37,7 @@ add_enclave(TARGET edl_enc CXX
     testaliasing.cpp
     testarray.cpp
     testbasic.cpp
+    testdeepcopy.cpp
     testenum.cpp
     testerrno.cpp
     testforeign.cpp
