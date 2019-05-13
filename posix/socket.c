@@ -82,10 +82,6 @@ int oe_socketpair(int domain, int type, int protocol, int retfd[2])
     /* Resolve the device id. */
     switch (domain)
     {
-        case OE_AF_ENCLAVE:
-            devid = OE_DEVID_ENCLAVESOCK;
-            break;
-
         case OE_AF_HOST:
             devid = OE_DEVID_HOSTSOCK;
             break;

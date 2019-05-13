@@ -4,6 +4,7 @@
 #include <openenclave/enclave.h>
 
 #include <openenclave/corelibc/errno.h>
+#include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/posix/raise.h>

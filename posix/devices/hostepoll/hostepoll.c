@@ -510,7 +510,7 @@ static oe_epoll_ops_t _ops = {
 };
 
 static epoll_t _epoll = {
-    .base.type = OE_DEVID_HOSTEPOLL,
+    .base.type = OE_DEVICE_TYPE_EPOLL,
     .base.name = DEVICE_NAME,
     .base.ops.epoll = &_ops,
     .magic = EPOLL_MAGIC,
