@@ -29,7 +29,7 @@ int oe_reserve(
     void** array,
     size_t size,
     size_t elem_size,
-    size_t* capacity,
+    size_t capacity,
     size_t new_capacity);
 
 #endif /* _OE_INTERNAL_RESERVE_H */

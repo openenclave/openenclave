@@ -14,11 +14,14 @@
 #include <openenclave/internal/reserve.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
+#include <openenclave/internal/utils.h>
 #include "posix_t.h"
+
+/* The map allocation grows in multiples of the chunk size. */
+#define MAP_CHUNK_SIZE 1024
 
 #define DEVICE_NAME "hostepoll"
 #define EPOLL_MAGIC 0x4504f4c
-#define MIN_MAP_SIZE 64
 
 /* epoll_ctl(OE_EPOLL_CTL_ADD) establishes this pair. */
 typedef struct _pair
@@ -45,15 +48,29 @@ typedef struct _epoll
 
 static int _map_reserve(epoll_t* epoll, size_t new_capacity)
 {
-    if (new_capacity < MIN_MAP_SIZE)
-        new_capacity = MIN_MAP_SIZE;
+    int ret = -1;
 
-    return oe_reserve(
-        (void**)&epoll->map,
-        epoll->map_size,
-        sizeof(pair_t),
-        &epoll->map_capacity,
-        new_capacity);
+    new_capacity = oe_round_up_to_multiple(new_capacity, MAP_CHUNK_SIZE);
+
+    if (new_capacity > epoll->map_capacity)
+    {
+        if (oe_reserve(
+                (void**)&epoll->map,
+                epoll->map_size,
+                sizeof(pair_t),
+                epoll->map_capacity,
+                new_capacity) != 0)
+        {
+            goto done;
+        }
+
+        epoll->map_capacity = new_capacity;
+    }
+
+    ret = 0;
+
+done:
+    return ret;
 }
 
 static const pair_t* _map_find(epoll_t* epoll, int fd)

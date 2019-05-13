@@ -10,11 +10,11 @@
 
 OE_EXTERNC_BEGIN
 
-int oe_fdtable_set(int fd, oe_device_t* device);
+int oe_fdtable_reassign(int fd, oe_device_t* device);
 
 oe_device_t* oe_fdtable_get(int fd, oe_device_type_t type);
 
-int oe_fdtable_clear(int fd);
+int oe_fdtable_release(int fd);
 
 int oe_fdtable_assign(oe_device_t* device);
 

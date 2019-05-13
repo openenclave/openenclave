@@ -282,7 +282,7 @@ int oe_close(int fd)
         OE_RAISE_ERRNO(OE_EBADF);
 
     if ((ret = OE_CALL_BASE(close, device)) == 0)
-        oe_fdtable_clear(fd);
+        oe_fdtable_release(fd);
 
 done:
     return ret;
@@ -320,16 +320,12 @@ int oe_dup2(int oldfd, int newfd)
     if (!(old_dev = oe_fdtable_get(oldfd, OE_DEVICE_TYPE_NONE)))
         OE_RAISE_ERRNO(OE_EBADF);
 
-    /* Silently close any file associated with thie descritpor. */
-    if (oe_fdtable_get(newfd, OE_DEVICE_TYPE_NONE))
-        oe_close(newfd);
-
     if ((retval = OE_CALL_BASE(dup, old_dev, &new_dev)) < 0)
         OE_RAISE_ERRNO(oe_errno);
 
-    if (oe_fdtable_set(newfd, new_dev) == -1)
+    if (oe_fdtable_reassign(newfd, new_dev) == -1)
     {
-        oe_close(newfd);
+        OE_CALL_BASE(close, new_dev);
         OE_RAISE_ERRNO(OE_EINVAL);
     }
 
