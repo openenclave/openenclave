@@ -118,6 +118,10 @@ done:
 int oe_fdtable_clear(int fd)
 {
     int ret = -1;
+    bool locked = true;
+
+    oe_spin_lock(&_lock);
+    locked = true;
 
     if (!(fd >= 0 && (size_t)fd < _table_size))
     {
@@ -125,13 +129,15 @@ int oe_fdtable_clear(int fd)
         goto done;
     }
 
-    oe_spin_lock(&_lock);
     _table[fd] = NULL;
-    oe_spin_unlock(&_lock);
 
     ret = 0;
 
 done:
+
+    if (locked)
+        oe_spin_unlock(&_lock);
+
     return ret;
 }
 
