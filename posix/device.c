@@ -190,9 +190,6 @@ uint64_t oe_get_thread_devid(void)
     uint64_t ret = OE_DEVID_NONE;
     uint64_t devid;
 
-    if (oe_once(&_tls_device_once, _create_tls_device_key) != OE_OK)
-        goto done;
-
     if (!(devid = (uint64_t)oe_thread_getspecific(_tls_device_key)))
         goto done;
 
