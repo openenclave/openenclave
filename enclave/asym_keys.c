@@ -5,7 +5,7 @@
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/asym_keys.h>
-#include <openenclave/internal/ec.h>
+#include <openenclave/internal/crypto/ec.h>
 #include <openenclave/internal/kdf.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>

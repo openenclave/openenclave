@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 #include "quote.h"
-#include <openenclave/internal/cert.h>
+#include <openenclave/internal/crypto/cert.h>
+#include <openenclave/internal/crypto/ec.h>
+#include <openenclave/internal/crypto/sha.h>
 #include <openenclave/internal/datetime.h>
-#include <openenclave/internal/ec.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxtypes.h>
-#include <openenclave/internal/sha.h>
 #include <openenclave/internal/utils.h>
 #include "../common.h"
 #include "qeidentity.h"

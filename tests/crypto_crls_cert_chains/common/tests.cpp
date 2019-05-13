@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/internal/cert.h>
-#include <openenclave/internal/crl.h>
+#include <openenclave/internal/crypto/crl.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <string>
