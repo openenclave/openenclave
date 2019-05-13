@@ -255,12 +255,10 @@ int main(int argc, const char* argv[])
 
         sleep(3);
 
-#if defined(__linux__)
         for (size_t i = 0; i < 3; i++)
         {
             OE_TEST(ecall_wake_test(enclave, &ret) == OE_OK);
         }
-#endif
 
 #if defined(_WIN32)
         ret = WaitForSingleObject(thread, INFINITE);
