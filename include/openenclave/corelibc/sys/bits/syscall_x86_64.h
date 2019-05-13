@@ -334,3 +334,5 @@
 #define OE_SYS_pkey_alloc 330
 #define OE_SYS_pkey_free 331
 #define OE_SYS_statx 332
+#define OE_SYS_io_pgetevents 333
+#define OE_SYS_io_rseq 334
