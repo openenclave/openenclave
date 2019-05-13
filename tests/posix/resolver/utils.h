@@ -4,9 +4,16 @@
 #ifndef _TEST_RESOLVER_UTILS_H
 #define _TEST_RESOLVER_UTILS_H
 
+#if defined(_MSC_VER)
+typedef int64_t oe_socklen_t ;
+#include <openenclave/corelibc/bits/addrinfo.h>
+#define __inline__ __inline
+#define addrinfo __OE_ADDRINFO
+#else
 #include <netdb.h>
-#include <string.h>
 #include <sys/socket.h>
+#endif
+#include <string.h>
 #include <sys/types.h>
 
 static __inline__ int addrinfo_compare(struct addrinfo* p, struct addrinfo* q)

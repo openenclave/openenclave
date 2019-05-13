@@ -17,7 +17,7 @@
 #include <stdint.h>
 #include <sys/stat.h>
 // clang-format off
-#include "winsock2.h"
+#include "ws2tcpip.h"
 #include "windows.h"
 // clang-format on
 
@@ -26,8 +26,6 @@
 #include "openenclave/corelibc/errno.h"
 #include "openenclave/corelibc/fcntl.h"
 #include "openenclave/corelibc/sys/epoll.h"
-
-#undef errno
 
 static BOOL _winsock_inited = 0;
 
@@ -1321,13 +1319,129 @@ int oe_posix_kill_ocall(int pid, int signum)
 **
 **==============================================================================
 */
+#define GETADDRINFO_HANDLE_MAGIC 0xed11d13a
+
+typedef struct _getaddrinfo_handle
+{
+    uint32_t magic;
+    struct oe_addrinfo *res;
+    struct oe_addrinfo* next;
+} getaddrinfo_handle_t;
+
+static getaddrinfo_handle_t* _cast_getaddrinfo_handle(void* handle_)
+{
+    getaddrinfo_handle_t* handle = (getaddrinfo_handle_t*)handle_;
+
+    if (!handle || handle->magic != GETADDRINFO_HANDLE_MAGIC || !handle->res)
+        return NULL;
+
+    return handle;
+}
+
 
 uint64_t oe_posix_getaddrinfo_open_ocall(
     const char* node,
     const char* service,
     const struct oe_addrinfo* hints)
 {
-    PANIC;
+    getaddrinfo_handle_t* ret = NULL;
+    getaddrinfo_handle_t* handle = NULL;
+
+    _set_errno(0);
+
+    if (!_winsock_inited)
+    {
+        if (!_winsock_init())
+        {
+            _set_errno(OE_ENOTSOCK);
+        }
+    }
+
+    if (!(handle = calloc(1, sizeof(getaddrinfo_handle_t))))
+    {
+        _set_errno(OE_ENOMEM);
+        goto done;
+    }
+
+    struct addrinfo *paddr = NULL;
+    if (getaddrinfo(
+            node, service, (const struct addrinfo*)hints, &paddr) != 0)
+    {
+        goto done;
+    }
+
+    // In Windows addrinfo is volatile, so we need to deep copy here.
+    // Build the info as a single allocation so its easy to free
+    size_t size_required = 0;
+    struct addrinfo *pwin_ai = paddr;
+    for ( ; pwin_ai != NULL; pwin_ai = pwin_ai->ai_next)
+    {
+         size_required += sizeof(struct oe_addrinfo);
+	 if (pwin_ai->ai_canonname)
+	 {
+             size_required += strlen(pwin_ai->ai_canonname)+1;
+	 }
+         if (pwin_ai->ai_addr)
+	 {
+	     // Allocates the max size for a sockaddr
+             size_required += sizeof(struct oe_sockaddr_storage);
+	 }
+    }
+
+    if (!size_required)
+    {
+        // This should never happen
+        handle->res = NULL;
+        goto done;
+    }
+
+    handle->res = (struct oe_addrinfo *)calloc(1, size_required);
+
+    pwin_ai = paddr;
+    struct oe_addrinfo *pthis_res = handle->res;
+    char *palloc = (char*)handle->res;
+    for ( ; pwin_ai != NULL; pwin_ai = pwin_ai->ai_next)
+    {
+        pthis_res = (struct oe_addrinfo *)palloc;
+	palloc += sizeof(struct oe_addrinfo);
+
+	// Fields are not in the same order and sometimes not the same size;
+	pthis_res->ai_flags = pwin_ai->ai_flags;
+	pthis_res->ai_family = pwin_ai->ai_family;
+	pthis_res->ai_socktype = pwin_ai->ai_socktype;
+	pthis_res->ai_protocol = pwin_ai->ai_protocol;
+	pthis_res->ai_addrlen = (oe_socklen_t)pwin_ai->ai_addrlen;
+	if (pthis_res->ai_addrlen)
+	{
+	    pthis_res->ai_addr = (struct oe_sockaddr *)palloc;
+	    palloc += pwin_ai->ai_addrlen;
+	    memcpy(pthis_res->ai_addr, pwin_ai->ai_addr, pwin_ai->ai_addrlen);
+	}
+	if (pwin_ai->ai_canonname)
+	{
+	    pthis_res->ai_canonname = pwin_ai->ai_canonname;
+	    palloc += strlen(pwin_ai->ai_canonname)+1;
+	    memcpy(pthis_res->ai_canonname, pwin_ai->ai_canonname, strlen(pwin_ai->ai_canonname));
+	}
+	if (pwin_ai->ai_next)
+	{
+	    pthis_res->ai_next = (struct oe_addrinfo *)palloc;
+	}
+    }
+
+    freeaddrinfo(paddr);
+
+    handle->magic = GETADDRINFO_HANDLE_MAGIC;
+    handle->next = handle->res;
+    ret = handle;
+    handle = NULL;
+
+done:
+
+    if (handle)
+        free(handle);
+
+    return (uint64_t)ret;
 }
 
 int oe_posix_getaddrinfo_read_ocall(
@@ -1343,12 +1457,98 @@ int oe_posix_getaddrinfo_read_ocall(
     size_t* ai_canonnamelen,
     char* ai_canonname)
 {
-    PANIC;
+    int ret = -1;
+    getaddrinfo_handle_t* handle = _cast_getaddrinfo_handle((void*)handle_);
+
+    _set_errno(0);
+
+    if (!handle || !ai_flags || !ai_family || !ai_socktype || !ai_protocol ||
+        !ai_addrlen || !ai_canonnamelen)
+    {
+        _set_errno(OE_EINVAL);
+        goto done;
+    }
+
+    if (!ai_addr && ai_addrlen_in)
+    {
+        _set_errno(OE_EINVAL);
+        goto done;
+    }
+
+    if (!ai_canonname && ai_canonnamelen_in)
+    {
+        _set_errno(OE_EINVAL);
+        goto done;
+    }
+
+    if (handle->next)
+    {
+        struct oe_addrinfo * p = handle->next;
+
+        *ai_flags = p->ai_flags;
+        *ai_family = p->ai_family;
+        *ai_socktype = p->ai_socktype;
+        *ai_protocol = p->ai_protocol;
+        *ai_addrlen = (oe_socklen_t)p->ai_addrlen;
+
+        if (p->ai_canonname)
+            *ai_canonnamelen = strlen(p->ai_canonname) + 1;
+        else
+            *ai_canonnamelen = 0;
+
+        if (*ai_addrlen > ai_addrlen_in)
+        {
+            _set_errno(OE_ENAMETOOLONG);
+            goto done;
+        }
+
+        if (*ai_canonnamelen > ai_canonnamelen_in)
+        {
+            _set_errno(OE_ENAMETOOLONG);
+            goto done;
+        }
+
+        memcpy(ai_addr, p->ai_addr, *ai_addrlen);
+
+        if (p->ai_canonname)
+            memcpy(ai_canonname, p->ai_canonname, *ai_canonnamelen);
+
+        handle->next = handle->next->ai_next;
+
+        ret = 0;
+        goto done;
+    }
+    else
+    {
+        /* Done */
+        ret = 1;
+        goto done;
+    }
+
+done:
+    return ret;
 }
 
 int oe_posix_getaddrinfo_close_ocall(uint64_t handle_)
 {
-    PANIC;
+    int ret = -1;
+    getaddrinfo_handle_t* handle = _cast_getaddrinfo_handle((void*)handle_);
+
+    _set_errno(0);
+
+    if (!handle)
+    {
+        _set_errno(OE_EINVAL);
+        goto done;
+    }
+
+    free(handle->res);
+    free(handle);
+
+    ret = 0;
+
+done:
+    return ret;
 }
 
 int oe_posix_getnameinfo_ocall(
@@ -1360,7 +1560,10 @@ int oe_posix_getnameinfo_ocall(
     oe_socklen_t servlen,
     int flags)
 {
-    PANIC;
+    errno = 0;
+
+    return getnameinfo(
+        (const struct sockaddr*)sa, salen, host, hostlen, serv, servlen, flags);
 }
 
 int oe_posix_shutdown_resolver_device_ocall()
