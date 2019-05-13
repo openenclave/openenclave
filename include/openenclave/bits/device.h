@@ -27,9 +27,6 @@ enum
     /** The non-secure host socket device. */
     OE_DEVID_HOSTSOCK,
 
-    /** The secure enclave sockets device (future). */
-    OE_DEVID_ENCLAVESOCK,
-
     /** The host epoll device. */
     OE_DEVID_HOSTEPOLL,
 
