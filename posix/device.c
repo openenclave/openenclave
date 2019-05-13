@@ -177,8 +177,6 @@ oe_result_t oe_clear_thread_devid(void)
 {
     oe_result_t result = OE_UNEXPECTED;
 
-    OE_CHECK(oe_once(&_tls_device_once, _create_tls_device_key));
-
     OE_CHECK((oe_thread_setspecific(_tls_device_key, NULL)));
 
     result = OE_OK;
@@ -192,7 +190,7 @@ uint64_t oe_get_thread_devid(void)
     uint64_t ret = OE_DEVID_NONE;
     uint64_t devid;
 
-    if (oe_once(&_tls_device_once, _create_tls_device_key) != 0)
+    if (oe_once(&_tls_device_once, _create_tls_device_key) != OE_OK)
         goto done;
 
     if (!(devid = (uint64_t)oe_thread_getspecific(_tls_device_key)))
