@@ -45,7 +45,7 @@ function call_clang {
         # Map the following arguments
         [ "$a" == "/DNDEBUG" ]   && args+=("-DNDEBUG ")   && continue
         [ "$a" == "/Zi" ]        && args+=("-g "      )   && continue
-        [ "$a" == "/O2" ]        && args+=("/O2 ")        && continue
+        [ "$a" == "/O2" ]        && args+=("-O2 ")        && continue
         [ "$a" == "-std:c++11" ] && args+=("-std=c++11 ") && continue
         [ "$a" == "-std:c++14" ] && args+=("-std=c++14 ") && continue
         [ "$a" == "-std:c++17" ] && args+=("-std=c++17 ") && continue
