@@ -11,7 +11,6 @@
 #include <openenclave/internal/posix/fdtable.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/print.h>
-#include <openenclave/internal/reserve.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
@@ -80,16 +79,17 @@ static int _resize_table(size_t new_size)
 
     if (new_size > _table_size)
     {
-        if (oe_reserve(
-                (void**)&_table,
-                _table_size,
-                sizeof(entry_t),
-                _table_size,
-                new_size) != 0)
-        {
-            goto done;
-        }
+        entry_t* p;
+        size_t n = new_size;
 
+        /* Reallocate the table. */
+        if (!(p = oe_realloc(_table, n * sizeof(entry_t))))
+            goto done;
+
+        /* Zero-fill the unused porition. */
+        memset(p + _table_size, 0, (n - _table_size) * sizeof(entry_t));
+
+        _table = p;
         _table_size = new_size;
     }
 

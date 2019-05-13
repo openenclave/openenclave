@@ -41,10 +41,10 @@ extern "C" int ecall_device_init(const char* tmp_dir)
     /* Create a file. */
     {
         int fd = oe_open(_path, OE_O_CREAT | OE_O_WRONLY | OE_O_TRUNC, 0666);
-	if (fd < 0)
-	{
-	    printf("could not open file %s.\n", _path);
-	}
+        if (fd < 0)
+        {
+            printf("could not open file %s.\n", _path);
+        }
         OE_TEST(fd != -1);
         oe_close(fd);
         printf("Created %s\n", _path);

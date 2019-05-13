@@ -6,8 +6,8 @@
 #include <openenclave/internal/tests.h>
 #if defined(_MSC_VER)
 #define OE_NEED_STD_NAMES
-#include <winsock2.h>
 #include <windows.h>
+#include <winsock2.h>
 static void sleep(int secs)
 {
     Sleep(secs * 1000);
@@ -106,7 +106,8 @@ int main(int argc, const char* argv[])
         ecall_getnameinfo(client_enclave, &ret, host, sizeof(host)) == OE_OK);
 
     {
-        OE_TEST(strlen(host) > 0);  // Can't be sure what the host result will be. Windows returns the node name
+        OE_TEST(strlen(host) > 0); // Can't be sure what the host result will
+                                   // be. Windows returns the node name
         printf("host received: host = %s\n", host);
     }
 

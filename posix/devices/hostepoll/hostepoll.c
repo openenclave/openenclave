@@ -11,7 +11,6 @@
 #include <openenclave/internal/posix/epollops.h>
 #include <openenclave/internal/posix/fdtable.h>
 #include <openenclave/internal/posix/raise.h>
-#include <openenclave/internal/reserve.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
@@ -54,16 +53,18 @@ static int _map_reserve(epoll_t* epoll, size_t new_capacity)
 
     if (new_capacity > epoll->map_capacity)
     {
-        if (oe_reserve(
-                (void**)&epoll->map,
-                epoll->map_size,
-                sizeof(pair_t),
-                epoll->map_capacity,
-                new_capacity) != 0)
-        {
-            goto done;
-        }
+        pair_t* p;
+        size_t n = new_capacity;
+        ;
 
+        /* Reallocate the table. */
+        if (!(p = oe_realloc(epoll->map, n * sizeof(pair_t))))
+            goto done;
+
+        /* Zero-fill the unused porition. */
+        memset(p + epoll->map_size, 0, (n - epoll->map_size) * sizeof(pair_t));
+
+        epoll->map = p;
         epoll->map_capacity = new_capacity;
     }
 

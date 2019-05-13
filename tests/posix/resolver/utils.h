@@ -5,7 +5,7 @@
 #define _TEST_RESOLVER_UTILS_H
 
 #if defined(_MSC_VER)
-typedef int64_t oe_socklen_t ;
+typedef int64_t oe_socklen_t;
 #include <openenclave/corelibc/bits/addrinfo.h>
 #define __inline__ __inline
 #define addrinfo __OE_ADDRINFO
