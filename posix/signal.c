@@ -92,6 +92,8 @@ oe_sighandler_t oe_signal(int signum, oe_sighandler_t handler)
 {
     oe_sighandler_t retval = OE_SIG_ERR;
 
+    oe_spin_lock(&_lock);
+
     oe_register_posix_ecall_function_table();
 
     if (signum >= __OE_NSIG)
@@ -103,6 +105,7 @@ oe_sighandler_t oe_signal(int signum, oe_sighandler_t handler)
 
 done:
 
+    oe_spin_unlock(&_lock);
     return retval;
 }
 
