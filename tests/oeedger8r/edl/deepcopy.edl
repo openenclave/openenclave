@@ -4,7 +4,7 @@
 enclave {
   include "stdint.h"
 
-  struct MyStruct {
+  struct ShallowStruct {
     uint64_t count;
     size_t size;
     uint64_t* ptr;
@@ -12,10 +12,10 @@ enclave {
 
   trusted {
     // Since `s` is passed by value, `s.ptr` is not deep copied.
-    public void deepcopy_value(struct MyStruct s, [user_check] uint64_t* ptr);
+    public void deepcopy_value(ShallowStruct s, [user_check] uint64_t* ptr);
 
     // Although `s` is passed by pointer, because `s.ptr` does not
     // have any attribute, it is still not deep copied.
-    public void deepcopy_shallow([in, count=1] struct MyStruct* s, [user_check] uint64_t* ptr);
+    public void deepcopy_shallow([in, count=1] ShallowStruct* s, [user_check] uint64_t* ptr);
   };
 };

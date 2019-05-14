@@ -9,7 +9,7 @@
 
 // Assert that the struct is copied by value, such that `s.ptr` is the
 // address of `data[]` in the host (also passed via `ptr`).
-void deepcopy_value(struct MyStruct s, uint64_t* ptr)
+void deepcopy_value(ShallowStruct s, uint64_t* ptr)
 {
     OE_TEST(s.count == 7);
     OE_TEST(s.size == 64);
@@ -20,7 +20,7 @@ void deepcopy_value(struct MyStruct s, uint64_t* ptr)
 // Assert that the struct is shallow-copied (even though it is passed
 // by pointer), such that `s->ptr` is the address of `data[]` in the
 // host (also passed via `ptr`).
-void deepcopy_shallow(struct MyStruct* s, uint64_t* ptr)
+void deepcopy_shallow(ShallowStruct* s, uint64_t* ptr)
 {
     OE_TEST(s->count == 7);
     OE_TEST(s->size == 64);
