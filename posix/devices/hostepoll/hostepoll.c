@@ -5,6 +5,7 @@
 
 #include <openenclave/enclave.h>
 
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/internal/calls.h>
@@ -62,7 +63,13 @@ static int _map_reserve(epoll_t* epoll, size_t new_capacity)
             goto done;
 
         /* Zero-fill the unused porition. */
-        memset(p + epoll->map_size, 0, (n - epoll->map_size) * sizeof(pair_t));
+        {
+            const size_t num_bytes = (n - epoll->map_size) * sizeof(pair_t);
+            void* ptr = p + epoll->map_size;
+
+            if (oe_memset_s(ptr, num_bytes, 0, num_bytes) != OE_OK)
+                goto done;
+        }
 
         epoll->map = p;
         epoll->map_capacity = new_capacity;
@@ -205,7 +212,11 @@ static int _epoll_ctl_add(epoll_t* epoll, int fd, struct oe_epoll_event* event)
 
     /* Initialize the host event. */
     {
-        memset(&host_event, 0, sizeof(host_event));
+        const size_t num_bytes = sizeof(host_event);
+
+        if (oe_memset_s(&host_event, num_bytes, 0, num_bytes) != OE_OK)
+            OE_RAISE_ERRNO(OE_EINVAL);
+
         host_event.events = event->events;
         host_event.data.fd = fd;
     }
@@ -257,7 +268,11 @@ static int _epoll_ctl_mod(epoll_t* epoll, int fd, struct oe_epoll_event* event)
 
     /* Initialize the host event. */
     {
-        memset(&host_event, 0, sizeof(host_event));
+        const size_t num_bytes = sizeof(host_event);
+
+        if (oe_memset_s(&host_event, num_bytes, 0, num_bytes) != OE_OK)
+            OE_RAISE_ERRNO(OE_EINVAL);
+
         host_event.events = event->events;
         host_event.data.fd = fd;
     }

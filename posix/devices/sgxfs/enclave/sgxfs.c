@@ -19,6 +19,7 @@
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/posix/raise.h>
+#include <openenclave/bits/safecrt.h>
 
 #define DEVICE_NAME "sgxfs"
 #define FS_MAGIC 0x4a335f60
@@ -252,7 +253,6 @@ static int _sgxfs_release(oe_device_t* device)
     if (!fs)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    memset(fs, 0xDD, sizeof(fs_t));
     oe_free(fs);
     ret = 0;
 
@@ -393,7 +393,7 @@ done:
 
     if (file)
     {
-        memset(file, 0xDD, sizeof(file_t));
+        oe_memset_s(file, sizeof(file_t), 0xDD, sizeof(file_t));
         oe_free(file);
     }
 
@@ -521,7 +521,7 @@ static int _sgxfs_close_file(oe_device_t* file_)
     if (sgx_fclose(file->stream) != 0)
         OE_RAISE_ERRNO(OE_EBADF);
 
-    memset(file, 0xDD, sizeof(file_t));
+    oe_memset_s(file, sizeof(file_t), 0xDD, sizeof(file_t));
     oe_free(file);
 
     ret = 0;

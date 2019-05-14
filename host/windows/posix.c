@@ -599,9 +599,11 @@ oe_host_fd_t oe_posix_open_ocall(
                 break;
         }
 
-        if (mode & OE_S_IRUSR) desired_access |= GENERIC_READ;
-        if (mode & OE_S_IWUSR) desired_access |= GENERIC_WRITE;
-        
+        if (mode & OE_S_IRUSR)
+            desired_access |= GENERIC_READ;
+        if (mode & OE_S_IWUSR)
+            desired_access |= GENERIC_WRITE;
+
         // 2do: mode
 
         HANDLE h = CreateFileW(
@@ -619,7 +621,7 @@ oe_host_fd_t oe_posix_open_ocall(
         }
 
         ret = (oe_host_fd_t)h;
-	
+
 #if 0
 	// Windows doesn't do mode very well. We translate. Win32 only cares about 
 	// user read/write. 
@@ -1324,7 +1326,7 @@ int oe_posix_kill_ocall(int pid, int signum)
 typedef struct _getaddrinfo_handle
 {
     uint32_t magic;
-    struct oe_addrinfo *res;
+    struct oe_addrinfo* res;
     struct oe_addrinfo* next;
 } getaddrinfo_handle_t;
 
@@ -1337,7 +1339,6 @@ static getaddrinfo_handle_t* _cast_getaddrinfo_handle(void* handle_)
 
     return handle;
 }
-
 
 uint64_t oe_posix_getaddrinfo_open_ocall(
     const char* node,
@@ -1363,9 +1364,8 @@ uint64_t oe_posix_getaddrinfo_open_ocall(
         goto done;
     }
 
-    struct addrinfo *paddr = NULL;
-    if (getaddrinfo(
-            node, service, (const struct addrinfo*)hints, &paddr) != 0)
+    struct addrinfo* paddr = NULL;
+    if (getaddrinfo(node, service, (const struct addrinfo*)hints, &paddr) != 0)
     {
         goto done;
     }
@@ -1373,19 +1373,19 @@ uint64_t oe_posix_getaddrinfo_open_ocall(
     // In Windows addrinfo is volatile, so we need to deep copy here.
     // Build the info as a single allocation so its easy to free
     size_t size_required = 0;
-    struct addrinfo *pwin_ai = paddr;
-    for ( ; pwin_ai != NULL; pwin_ai = pwin_ai->ai_next)
+    struct addrinfo* pwin_ai = paddr;
+    for (; pwin_ai != NULL; pwin_ai = pwin_ai->ai_next)
     {
-         size_required += sizeof(struct oe_addrinfo);
-	 if (pwin_ai->ai_canonname)
-	 {
-             size_required += strlen(pwin_ai->ai_canonname)+1;
-	 }
-         if (pwin_ai->ai_addr)
-	 {
-	     // Allocates the max size for a sockaddr
-             size_required += sizeof(struct oe_sockaddr_storage);
-	 }
+        size_required += sizeof(struct oe_addrinfo);
+        if (pwin_ai->ai_canonname)
+        {
+            size_required += strlen(pwin_ai->ai_canonname) + 1;
+        }
+        if (pwin_ai->ai_addr)
+        {
+            // Allocates the max size for a sockaddr
+            size_required += sizeof(struct oe_sockaddr_storage);
+        }
     }
 
     if (!size_required)
@@ -1395,38 +1395,41 @@ uint64_t oe_posix_getaddrinfo_open_ocall(
         goto done;
     }
 
-    handle->res = (struct oe_addrinfo *)calloc(1, size_required);
+    handle->res = (struct oe_addrinfo*)calloc(1, size_required);
 
     pwin_ai = paddr;
-    struct oe_addrinfo *pthis_res = handle->res;
-    char *palloc = (char*)handle->res;
-    for ( ; pwin_ai != NULL; pwin_ai = pwin_ai->ai_next)
+    struct oe_addrinfo* pthis_res = handle->res;
+    char* palloc = (char*)handle->res;
+    for (; pwin_ai != NULL; pwin_ai = pwin_ai->ai_next)
     {
-        pthis_res = (struct oe_addrinfo *)palloc;
-	palloc += sizeof(struct oe_addrinfo);
+        pthis_res = (struct oe_addrinfo*)palloc;
+        palloc += sizeof(struct oe_addrinfo);
 
-	// Fields are not in the same order and sometimes not the same size;
-	pthis_res->ai_flags = pwin_ai->ai_flags;
-	pthis_res->ai_family = pwin_ai->ai_family;
-	pthis_res->ai_socktype = pwin_ai->ai_socktype;
-	pthis_res->ai_protocol = pwin_ai->ai_protocol;
-	pthis_res->ai_addrlen = (oe_socklen_t)pwin_ai->ai_addrlen;
-	if (pthis_res->ai_addrlen)
-	{
-	    pthis_res->ai_addr = (struct oe_sockaddr *)palloc;
-	    palloc += pwin_ai->ai_addrlen;
-	    memcpy(pthis_res->ai_addr, pwin_ai->ai_addr, pwin_ai->ai_addrlen);
-	}
-	if (pwin_ai->ai_canonname)
-	{
-	    pthis_res->ai_canonname = pwin_ai->ai_canonname;
-	    palloc += strlen(pwin_ai->ai_canonname)+1;
-	    memcpy(pthis_res->ai_canonname, pwin_ai->ai_canonname, strlen(pwin_ai->ai_canonname));
-	}
-	if (pwin_ai->ai_next)
-	{
-	    pthis_res->ai_next = (struct oe_addrinfo *)palloc;
-	}
+        // Fields are not in the same order and sometimes not the same size;
+        pthis_res->ai_flags = pwin_ai->ai_flags;
+        pthis_res->ai_family = pwin_ai->ai_family;
+        pthis_res->ai_socktype = pwin_ai->ai_socktype;
+        pthis_res->ai_protocol = pwin_ai->ai_protocol;
+        pthis_res->ai_addrlen = (oe_socklen_t)pwin_ai->ai_addrlen;
+        if (pthis_res->ai_addrlen)
+        {
+            pthis_res->ai_addr = (struct oe_sockaddr*)palloc;
+            palloc += pwin_ai->ai_addrlen;
+            memcpy(pthis_res->ai_addr, pwin_ai->ai_addr, pwin_ai->ai_addrlen);
+        }
+        if (pwin_ai->ai_canonname)
+        {
+            pthis_res->ai_canonname = pwin_ai->ai_canonname;
+            palloc += strlen(pwin_ai->ai_canonname) + 1;
+            memcpy(
+                pthis_res->ai_canonname,
+                pwin_ai->ai_canonname,
+                strlen(pwin_ai->ai_canonname));
+        }
+        if (pwin_ai->ai_next)
+        {
+            pthis_res->ai_next = (struct oe_addrinfo*)palloc;
+        }
     }
 
     freeaddrinfo(paddr);
@@ -1483,7 +1486,7 @@ int oe_posix_getaddrinfo_read_ocall(
 
     if (handle->next)
     {
-        struct oe_addrinfo * p = handle->next;
+        struct oe_addrinfo* p = handle->next;
 
         *ai_flags = p->ai_flags;
         *ai_family = p->ai_family;

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
@@ -96,7 +97,12 @@ int oe_select(
         timeout_ms += (int)(timeout->tv_usec / 1000);
     }
 
-    memset(fd_list, 0xff, sizeof(uint32_t) * (size_t)(nfds + 1));
+    {
+        const size_t num_bytes = sizeof(uint32_t) * (size_t)(nfds + 1);
+
+        if (oe_memset_s(fd_list, num_bytes, 0xff, num_bytes) != OE_OK)
+            OE_RAISE_ERRNO(OE_EINVAL);
+    }
 
     if (readfds)
     {

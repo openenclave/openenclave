@@ -6,15 +6,19 @@
 #include <openenclave/corelibc/sys/socket.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/posix/resolver.h>
+#include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 
 static size_t _resolver_table_len = 3;
 static oe_resolver_t* _resolver_table[3] = {0}; // At most 3
+static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
 
 /* Called by the public oe_load_module_hostresolver() function. */
 int oe_register_resolver(int resolver_priority, oe_resolver_t* presolver)
 {
     int ret = -1;
+
+    oe_spin_lock(&_lock);
 
     if (presolver == NULL)
         OE_RAISE_ERRNO(OE_EINVAL);
@@ -26,6 +30,8 @@ int oe_register_resolver(int resolver_priority, oe_resolver_t* presolver)
 
     ret = 0;
 done:
+    oe_spin_unlock(&_lock);
+
     return ret;
 }
 
@@ -37,6 +43,8 @@ int oe_getaddrinfo(
 {
     int ret = OE_EAI_FAIL;
     size_t i;
+
+    oe_spin_lock(&_lock);
 
     if (res_out)
         *res_out = NULL;
@@ -59,6 +67,7 @@ int oe_getaddrinfo(
     }
 
 done:
+    oe_spin_unlock(&_lock);
 
     return ret;
 }
@@ -92,6 +101,8 @@ int oe_getnameinfo(
     size_t resolver_idx = 0;
     ssize_t ret = -1;
 
+    oe_spin_lock(&_lock);
+
     for (resolver_idx = 0; resolver_idx < _resolver_table_len; resolver_idx++)
     {
         if (_resolver_table[resolver_idx] != NULL)
@@ -111,5 +122,7 @@ int oe_getnameinfo(
     }
 
 done:
+    oe_spin_unlock(&_lock);
+
     return (int)ret;
 }

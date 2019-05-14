@@ -22,6 +22,7 @@
 #include <openenclave/bits/module.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/posix/raise.h>
+#include <openenclave/bits/safecrt.h>
 
 /*
 **==============================================================================
@@ -738,7 +739,10 @@ static struct oe_dirent* _hostfs_readdir(oe_device_t* dir_)
     /* Handle any error. */
     if (retval == -1)
     {
-        memset(&dir->entry, 0, sizeof(dir->entry));
+        const size_t num_bytes = sizeof(dir->entry);
+
+        if (oe_memset_s(&dir->entry, num_bytes, 0, num_bytes) != OE_OK)
+            OE_RAISE_ERRNO(OE_EINVAL);
 
         if (oe_errno)
             OE_RAISE_ERRNO(oe_errno);
@@ -787,7 +791,10 @@ static int _hostfs_stat(
     char full_pathname[OE_PATH_MAX];
 
     if (buf)
-        memset(buf, 0, sizeof(*buf));
+    {
+        if (oe_memset_s(buf, sizeof(*buf), 0, sizeof(*buf)) != OE_OK)
+            OE_RAISE_ERRNO(OE_EINVAL);
+    }
 
     if (!fs || !pathname || !buf)
         OE_RAISE_ERRNO(OE_EINVAL);

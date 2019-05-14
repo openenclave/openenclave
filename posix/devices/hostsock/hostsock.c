@@ -302,7 +302,8 @@ static oe_device_t* _hostsock_accept(
     if (!sock || (addr && !addrlen) || (addrlen && !addr))
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    memset(&buf, 0, sizeof(buf));
+    if (oe_memset_s(&buf, sizeof(buf), 0, sizeof(buf)) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Fixup the address. */
     if (addr && addrlen)
@@ -409,7 +410,10 @@ static ssize_t _hostsock_recv(
         OE_RAISE_ERRNO(OE_EINVAL);
 
     if (buf)
-        memset(buf, 0, sizeof(count));
+    {
+        if (oe_memset_s(buf, sizeof(count), 0, sizeof(count)) != OE_OK)
+            OE_RAISE_ERRNO(OE_EINVAL);
+    }
 
     if (oe_posix_recv_ocall(&ret, sock->host_fd, buf, count, flags) != OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
