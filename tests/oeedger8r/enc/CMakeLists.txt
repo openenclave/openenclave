@@ -1,27 +1,38 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-oeedl_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/../edl/all.edl 
-    enclave
-    all_t
-    --edl-search-dir ../moreedl
-)
+add_custom_command(
+  OUTPUT all_t.h all_t.c all_args.h
+  DEPENDS
+  ../edl/aliasing.edl
+  ../edl/all.edl
+  ../edl/array.edl
+  ../edl/basic.edl
+  ../edl/enum.edl
+  ../edl/errno.edl
+  ../edl/foreign.edl
+  ../edl/other.edl
+  ../edl/pointer.edl
+  ../edl/string.edl
+  ../edl/struct.edl
+  COMMAND edger8r --trusted --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../edl --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../moreedl all.edl)
 
 # Dummy target used for generating from EDL on demand.
-add_custom_target(edl_gen DEPENDS ${all_t})
+add_custom_target(edl_enc_trusted DEPENDS all_t.h all_t.c all_args.h)
 
-oeedl_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/../moreedl/bar.edl 
-    enclave-headers
-    bar_t
-)
+add_custom_command(
+  OUTPUT bar_t.h bar_args.h
+  DEPENDS ../moreedl/bar.edl
+  COMMAND edger8r --trusted --header-only --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../moreedl bar.edl)
 
 add_enclave(TARGET edl_enc CXX
     SOURCES
+    all_t.c
+    bar_t.h
     bar.cpp
     config.cpp
     foo.cpp
+
     testaliasing.cpp
     testarray.cpp
     testbasic.cpp
@@ -30,16 +41,13 @@ add_enclave(TARGET edl_enc CXX
     testforeign.cpp
     testpointer.cpp
     teststring.cpp
-    teststruct.cpp
-    ${all_t}
-    ${bar_t}
-    )
+    teststruct.cpp)
 
 # The tests intentionally use floats etc in size context.
 # Disable warnings.
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang OR USE_CLANGW)
     set_source_files_properties(
-        ${all_t}
+        all_t.c
         PROPERTIES COMPILE_FLAGS "-Wno-conversion"
     )
     set_source_files_properties(
