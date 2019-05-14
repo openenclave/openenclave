@@ -40,11 +40,8 @@ int oe_getdomainname(char* name, size_t len)
     if ((ret = oe_uname(&uts)) != 0)
         OE_RAISE_ERRNO(oe_errno);
 
-#ifdef _GNU_SOURCE
     oe_strlcpy(name, uts.domainname, len);
-#else
-    oe_strlcpy(name, uts.__domainname, len);
-#endif
+
     ret = 0;
 
 done:
