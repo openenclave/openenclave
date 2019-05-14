@@ -81,13 +81,8 @@ done:
 int oe_clear_devid(uint64_t devid)
 {
     int ret = -1;
-    bool locked = false;
 
     oe_spin_lock(&_lock);
-    locked = true;
-
-    if (_resize_table(devid + 1) != 0)
-        OE_RAISE_ERRNO(OE_ENOMEM);
 
     if (devid >= _table_size || _table[devid] == NULL)
         OE_RAISE_ERRNO(OE_EINVAL);
@@ -97,9 +92,7 @@ int oe_clear_devid(uint64_t devid)
     ret = 0;
 
 done:
-
-    if (locked)
-        oe_spin_unlock(&_lock);
+    oe_spin_unlock(&_lock);
 
     return ret;
 }
@@ -133,15 +126,12 @@ oe_device_t* oe_get_device(uint64_t devid, oe_device_type_t type)
 
     oe_spin_lock(&_lock);
 
-    if (_resize_table(devid + 1) != 0)
-        OE_RAISE_ERRNO(OE_ENOMEM);
-
     if (devid >= _table_size)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     device = _table[devid];
 
-    if (device && type != OE_DEVICE_TYPE_NONE && device->type != type)
+    if (device && type != OE_DEVICE_TYPE_ANY && device->type != type)
         goto done;
 
     ret = device;
@@ -191,10 +181,7 @@ int oe_remove_device(uint64_t devid)
     int retval = -1;
     oe_device_t* device;
 
-    if (_resize_table(devid + 1) != 0)
-        OE_RAISE_ERRNO(OE_ENOMEM);
-
-    if (!(device = oe_get_device(devid, OE_DEVICE_TYPE_NONE)))
+    if (!(device = oe_get_device(devid, OE_DEVICE_TYPE_ANY)))
         OE_RAISE_ERRNO(OE_EINVAL);
 
     OE_CALL_BASE(shutdown, device);
