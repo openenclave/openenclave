@@ -92,11 +92,9 @@ done:
 int oe_fdtable_assign(oe_device_t* device)
 {
     int ret = -1;
-    bool locked = false;
     size_t index;
 
     oe_spin_lock(&_lock);
-    locked = true;
 
     if (!device)
         OE_RAISE_ERRNO(OE_EINVAL);
@@ -130,8 +128,7 @@ int oe_fdtable_assign(oe_device_t* device)
 
 done:
 
-    if (locked)
-        oe_spin_unlock(&_lock);
+    oe_spin_unlock(&_lock);
 
     return ret;
 }
@@ -139,10 +136,8 @@ done:
 int oe_fdtable_release(int fd)
 {
     int ret = -1;
-    bool locked = true;
 
     oe_spin_lock(&_lock);
-    locked = true;
 
     /* Fail if fd is out of range. */
     if (!(fd >= 0 && (size_t)fd < _table_size))
@@ -158,8 +153,7 @@ int oe_fdtable_release(int fd)
 
 done:
 
-    if (locked)
-        oe_spin_unlock(&_lock);
+    oe_spin_unlock(&_lock);
 
     return ret;
 }
@@ -167,10 +161,8 @@ done:
 int oe_fdtable_reassign(int fd, oe_device_t* device)
 {
     int ret = -1;
-    bool locked = false;
 
     oe_spin_lock(&_lock);
-    locked = true;
 
     _resize_table(TABLE_CHUNK_SIZE);
 
@@ -190,8 +182,7 @@ int oe_fdtable_reassign(int fd, oe_device_t* device)
 
 done:
 
-    if (locked)
-        oe_spin_unlock(&_lock);
+    oe_spin_unlock(&_lock);
 
     return ret;
 }
@@ -199,10 +190,8 @@ done:
 static oe_device_t* _get_fd_device(int fd)
 {
     oe_device_t* ret = NULL;
-    bool locked = false;
 
     oe_spin_lock(&_lock);
-    locked = true;
 
     if (fd < 0 || fd >= (int)_table_size)
         OE_RAISE_ERRNO(OE_EBADF);
@@ -214,8 +203,7 @@ static oe_device_t* _get_fd_device(int fd)
 
 done:
 
-    if (locked)
-        oe_spin_unlock(&_lock);
+    oe_spin_unlock(&_lock);
 
     return ret;
 }
