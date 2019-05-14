@@ -3,6 +3,7 @@
 
 #include <openenclave/enclave.h>
 
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/sys/epoll.h>
@@ -14,7 +15,6 @@
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/thread.h>
-#include <openenclave/internal/trace.h>
 
 /* This module assumes that the following flags are consistent. */
 OE_STATIC_ASSERT(OE_POLLIN == OE_EPOLLIN);
@@ -51,7 +51,9 @@ int oe_poll(struct oe_pollfd* fds, nfds_t nfds, int timeout)
         const struct oe_pollfd* fd = &fds[i];
         struct oe_epoll_event event;
 
-        memset(&event, 0, sizeof(event));
+        if (oe_memset_s(&event, sizeof(event), 0, sizeof(event)) != OE_OK)
+            OE_RAISE_ERRNO(OE_EINVAL);
+
         event.data.fd = fd->fd;
         event.events = (uint32_t)fd->events;
 

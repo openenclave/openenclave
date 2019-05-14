@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
@@ -69,7 +70,12 @@ static int _resize_table(size_t new_size)
             goto done;
 
         /* Zero-fill the unused porition. */
-        memset(p + _table_size, 0, (n - _table_size) * sizeof(entry_t));
+        {
+            const size_t num_bytes = (n - _table_size) * sizeof(entry_t);
+
+            if (oe_memset_s(p + _table_size, num_bytes, 0, num_bytes) != OE_OK)
+                goto done;
+        }
 
         _table = p;
         _table_size = new_size;
