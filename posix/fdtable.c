@@ -101,10 +101,14 @@ int oe_fdtable_assign(oe_device_t* device)
     if (!device)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (_resize_table(OE_STDERR_FILENO + 1) != 0)
+    /* The file-descriptor table must be big enough for standard devices. */
+    if (_table_size < OE_STDERR_FILENO + 1)
     {
-        oe_errno = OE_ENOMEM;
-        goto done;
+        if (_resize_table(OE_STDERR_FILENO + 1) != 0)
+        {
+            oe_errno = OE_ENOMEM;
+            goto done;
+        }
     }
 
     /* Search for a free slot in the file descriptor table. */
@@ -114,7 +118,7 @@ int oe_fdtable_assign(oe_device_t* device)
             break;
     }
 
-    /* If free slot not found, expand size of the file descriptor table. */
+    /* If no free slot found, expand size of the file descriptor table. */
     if (index == _table_size)
     {
         if (_resize_table(_table_size + 1) != 0)
