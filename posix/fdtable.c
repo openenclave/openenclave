@@ -197,6 +197,10 @@ static oe_device_t* _get_fd_device(int fd)
 {
     oe_device_t* ret = NULL;
 
+    /* Auto-load the console file system. */
+    if (oe_load_module_consolefs() != OE_OK)
+        OE_RAISE_ERRNO(oe_errno);
+
     oe_spin_lock(&_lock);
 
     if (fd < 0 || fd >= (int)_table_size)
