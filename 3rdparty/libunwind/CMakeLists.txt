@@ -45,7 +45,6 @@ add_library(libunwind OBJECT
   libunwind/src/dwarf/Lfind_unwind_table.c
   libunwind/src/dwarf/Lparser.c
   libunwind/src/dwarf/Lpe.c
-  libunwind/src/dwarf/Lstep.c
   libunwind/src/mi/_ReadULEB.c
   libunwind/src/mi/_ReadSLEB.c
   libunwind/src/mi/backtrace.c
@@ -63,6 +62,7 @@ add_library(libunwind OBJECT
   libunwind/src/mi/Lget_proc_name.c
   libunwind/src/mi/Lget_reg.c
   libunwind/src/mi/Lput_dynamic_unwind_info.c
+  libunwind/src/mi/Lset_cache_size.c
   libunwind/src/mi/Lset_caching_policy.c
   libunwind/src/mi/Lset_fpreg.c
   libunwind/src/mi/Lset_reg.c
