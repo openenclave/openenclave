@@ -3,7 +3,6 @@
 
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/limits.h>
-#include <openenclave/corelibc/pthread.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/sys/stat.h>
@@ -12,6 +11,7 @@
 #include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/posix/fdtable.h>
 #include <openenclave/internal/posix/raise.h>
+#include <openenclave/internal/thread.h>
 #include <openenclave/internal/time.h>
 #include <openenclave/internal/trace.h>
 #include "mount.h"
@@ -49,7 +49,7 @@ done:
 }
 
 static char _cwd[OE_PATH_MAX] = "/";
-static oe_pthread_spinlock_t _lock;
+static oe_spinlock_t _lock;
 
 char* oe_getcwd(char* buf, size_t size)
 {
@@ -75,13 +75,13 @@ char* oe_getcwd(char* buf, size_t size)
         p = buf;
     }
 
-    oe_pthread_spin_lock(&_lock);
+    oe_spin_lock(&_lock);
     locked = true;
 
     if (oe_strlcpy(p, _cwd, n) >= n)
         OE_RAISE_ERRNO(OE_ERANGE);
 
-    oe_pthread_spin_unlock(&_lock);
+    oe_spin_unlock(&_lock);
     locked = false;
 
     ret = p;
@@ -90,7 +90,7 @@ char* oe_getcwd(char* buf, size_t size)
 done:
 
     if (locked)
-        oe_pthread_spin_unlock(&_lock);
+        oe_spin_unlock(&_lock);
 
     if (p && p != buf)
         oe_free(p);
@@ -124,21 +124,18 @@ int oe_chdir(const char* path)
     }
 
     /* Set the _cwd global. */
-    oe_pthread_spin_lock(&_lock);
+    oe_spin_lock(&_lock);
     locked = true;
 
     if (oe_strlcpy(_cwd, real_path, OE_PATH_MAX) >= OE_PATH_MAX)
         OE_RAISE_ERRNO(OE_ENAMETOOLONG);
-
-    oe_pthread_spin_unlock(&_lock);
-    locked = false;
 
     ret = 0;
 
 done:
 
     if (locked)
-        oe_pthread_spin_unlock(&_lock);
+        oe_spin_unlock(&_lock);
 
     return ret;
 }
@@ -247,7 +244,7 @@ ssize_t oe_read(int fd, void* buf, size_t count)
     ssize_t ret = -1;
     oe_device_t* device;
 
-    if (!(device = oe_fdtable_get(fd, OE_DEVICE_TYPE_NONE)))
+    if (!(device = oe_fdtable_get(fd, OE_DEVICE_TYPE_ANY)))
         OE_RAISE_ERRNO(OE_EBADF);
 
     ret = OE_CALL_BASE(read, device, buf, count);
@@ -261,7 +258,7 @@ ssize_t oe_write(int fd, const void* buf, size_t count)
     ssize_t ret = -1;
     oe_device_t* device;
 
-    if (!(device = oe_fdtable_get(fd, OE_DEVICE_TYPE_NONE)))
+    if (!(device = oe_fdtable_get(fd, OE_DEVICE_TYPE_ANY)))
         OE_RAISE_ERRNO(OE_EBADF);
 
     ret = OE_CALL_BASE(write, device, buf, count);
@@ -275,7 +272,7 @@ int oe_close(int fd)
     int ret = -1;
     oe_device_t* device;
 
-    if (!(device = oe_fdtable_get(fd, OE_DEVICE_TYPE_NONE)))
+    if (!(device = oe_fdtable_get(fd, OE_DEVICE_TYPE_ANY)))
         OE_RAISE_ERRNO(OE_EBADF);
 
     if ((ret = OE_CALL_BASE(close, device)) == 0)
@@ -292,7 +289,7 @@ int oe_dup(int oldfd)
     oe_device_t* new_dev = NULL;
     int newfd;
 
-    if (!(old_dev = oe_fdtable_get(oldfd, OE_DEVICE_TYPE_NONE)))
+    if (!(old_dev = oe_fdtable_get(oldfd, OE_DEVICE_TYPE_ANY)))
         OE_RAISE_ERRNO(OE_EBADF);
 
     if (OE_CALL_BASE(dup, old_dev, &new_dev) == -1)
@@ -318,7 +315,7 @@ int oe_dup2(int oldfd, int newfd)
     oe_device_t* new_dev = NULL;
     int retval = -1;
 
-    if (!(old_dev = oe_fdtable_get(oldfd, OE_DEVICE_TYPE_NONE)))
+    if (!(old_dev = oe_fdtable_get(oldfd, OE_DEVICE_TYPE_ANY)))
         OE_RAISE_ERRNO(OE_EBADF);
 
     if ((retval = OE_CALL_BASE(dup, old_dev, &new_dev)) < 0)

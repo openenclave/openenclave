@@ -15,7 +15,7 @@ int __oe_fcntl(int fd, int cmd, uint64_t arg)
     int ret = -1;
     oe_device_t* device;
 
-    if (!(device = oe_fdtable_get(fd, OE_DEVICE_TYPE_NONE)))
+    if (!(device = oe_fdtable_get(fd, OE_DEVICE_TYPE_ANY)))
         OE_RAISE_ERRNO(OE_EINVAL);
 
     ret = OE_CALL_BASE(fcntl, device, cmd, arg);

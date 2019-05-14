@@ -149,7 +149,7 @@ static oe_device_t* _epoll_create(oe_device_t* epoll_, int size)
 
     if (retval != -1)
     {
-        epoll->base.type = OE_DEVID_HOSTEPOLL;
+        epoll->base.type = OE_DEVICE_TYPE_EPOLL;
         epoll->base.name = DEVICE_NAME;
         epoll->magic = EPOLL_MAGIC;
         epoll->base.ops.epoll = _epoll.base.ops.epoll;
@@ -177,7 +177,7 @@ static oe_device_t* _epoll_create1(oe_device_t* epoll_, int32_t flags)
 
     if (retval != -1)
     {
-        epoll->base.type = OE_DEVID_HOSTEPOLL;
+        epoll->base.type = OE_DEVICE_TYPE_EPOLL;
         epoll->base.name = DEVICE_NAME;
         epoll->magic = EPOLL_MAGIC;
         epoll->base.ops.epoll = _epoll.base.ops.epoll;
@@ -191,7 +191,7 @@ done:
 static int _epoll_ctl_add(epoll_t* epoll, int fd, struct oe_epoll_event* event)
 {
     int ret = -1;
-    oe_device_t* dev = oe_fdtable_get(fd, OE_DEVICE_TYPE_NONE);
+    oe_device_t* dev = oe_fdtable_get(fd, OE_DEVICE_TYPE_ANY);
     oe_host_fd_t host_epfd;
     oe_host_fd_t host_fd;
     struct oe_epoll_event host_event;
@@ -247,7 +247,7 @@ done:
 static int _epoll_ctl_mod(epoll_t* epoll, int fd, struct oe_epoll_event* event)
 {
     int ret = -1;
-    oe_device_t* dev = oe_fdtable_get(fd, OE_DEVICE_TYPE_NONE);
+    oe_device_t* dev = oe_fdtable_get(fd, OE_DEVICE_TYPE_ANY);
     oe_host_fd_t host_epfd;
     oe_host_fd_t host_fd;
     struct oe_epoll_event host_event;
@@ -312,7 +312,7 @@ done:
 static int _epoll_ctl_del(epoll_t* epoll, int fd)
 {
     int ret = -1;
-    oe_device_t* dev = oe_fdtable_get(fd, OE_DEVICE_TYPE_NONE);
+    oe_device_t* dev = oe_fdtable_get(fd, OE_DEVICE_TYPE_ANY);
     oe_host_fd_t host_epfd;
     oe_host_fd_t host_fd;
     int retval;

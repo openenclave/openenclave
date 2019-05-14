@@ -40,7 +40,7 @@ int __oe_ioctl(int fd, unsigned long request, uint64_t arg)
     {
         oe_device_t* device;
 
-        if (!(device = oe_fdtable_get(fd, OE_DEVICE_TYPE_NONE)))
+        if (!(device = oe_fdtable_get(fd, OE_DEVICE_TYPE_ANY)))
             OE_RAISE_ERRNO(oe_errno);
 
         ret = OE_CALL_BASE(ioctl, device, request, arg);
