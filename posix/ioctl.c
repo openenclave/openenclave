@@ -16,32 +16,24 @@ int __oe_ioctl(int fd, unsigned long request, uint64_t arg)
 
     if (request == _TIOCGWINSZ)
     {
-        static const unsigned long _TIOCGWINSZ = 0x5413;
-
-        if (request == _TIOCGWINSZ)
+        struct winsize
         {
-            struct winsize
-            {
-                unsigned short int ws_row;
-                unsigned short int ws_col;
-                unsigned short int ws_xpixel;
-                unsigned short int ws_ypixel;
-            };
-            struct winsize* p;
+            unsigned short int ws_row;
+            unsigned short int ws_col;
+            unsigned short int ws_xpixel;
+            unsigned short int ws_ypixel;
+        };
+        struct winsize* p;
 
-            if (!(p = (struct winsize*)arg))
-                OE_RAISE_ERRNO(OE_EINVAL);
+        if (!(p = (struct winsize*)arg))
+            OE_RAISE_ERRNO(OE_EINVAL);
 
-            p->ws_row = 24;
-            p->ws_col = 80;
-            p->ws_xpixel = 0;
-            p->ws_ypixel = 0;
+        p->ws_row = 24;
+        p->ws_col = 80;
+        p->ws_xpixel = 0;
+        p->ws_ypixel = 0;
 
-            ret = 0;
-            goto done;
-        }
-
-        ret = -1;
+        ret = 0;
         goto done;
     }
     else
