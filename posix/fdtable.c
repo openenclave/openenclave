@@ -92,11 +92,9 @@ done:
 int oe_fdtable_assign(oe_device_t* device)
 {
     int ret = -1;
-    bool locked = false;
     size_t index;
 
     oe_spin_lock(&_lock);
-    locked = true;
 
     if (!device)
         OE_RAISE_ERRNO(OE_EINVAL);
@@ -130,8 +128,7 @@ int oe_fdtable_assign(oe_device_t* device)
 
 done:
 
-    if (locked)
-        oe_spin_unlock(&_lock);
+    oe_spin_unlock(&_lock);
 
     return ret;
 }
