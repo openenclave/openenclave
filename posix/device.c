@@ -4,17 +4,79 @@
 #include <openenclave/enclave.h>
 
 #include <openenclave/corelibc/errno.h>
+#include <openenclave/corelibc/stdio.h>
+#include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
+#include <openenclave/internal/utils.h>
 
-#define MAX_TABLE_SIZE 128
+/*
+**==============================================================================
+**
+** Define the table of file-descriptor entries:
+**
+**==============================================================================
+*/
 
-static oe_device_t* _table[MAX_TABLE_SIZE];
+#define TABLE_CHUNK_SIZE 64
+
+typedef oe_device_t* entry_t;
+static entry_t* _table;
+static size_t _table_size;
 static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
+static bool _installed_atexit_handler;
+
+static void _atexit_handler(void)
+{
+    oe_free(_table);
+}
+
+static int _resize_table(size_t new_size)
+{
+    int ret = -1;
+
+    if (!_installed_atexit_handler)
+    {
+        oe_atexit(_atexit_handler);
+        _installed_atexit_handler = true;
+    }
+
+    /* Round the new capacity up to the next multiple of the chunk size. */
+    new_size = oe_round_up_to_multiple(new_size, TABLE_CHUNK_SIZE);
+
+    if (new_size > _table_size)
+    {
+        entry_t* p;
+        size_t n = new_size;
+
+        /* Reallocate the table. */
+        if (!(p = oe_realloc(_table, n * sizeof(entry_t))))
+            goto done;
+
+        /* Zero-fill the unused porition. */
+        memset(p + _table_size, 0, (n - _table_size) * sizeof(entry_t));
+
+        _table = p;
+        _table_size = new_size;
+    }
+
+    ret = 0;
+
+done:
+    return ret;
+}
+
+/*
+**==============================================================================
+**
+** Public functions:
+**
+**==============================================================================
+*/
 
 int oe_clear_devid(uint64_t devid)
 {
@@ -24,7 +86,10 @@ int oe_clear_devid(uint64_t devid)
     oe_spin_lock(&_lock);
     locked = true;
 
-    if (devid >= MAX_TABLE_SIZE || _table[devid] == NULL)
+    if (_resize_table(devid + 1) != 0)
+        OE_RAISE_ERRNO(OE_ENOMEM);
+
+    if (devid >= _table_size || _table[devid] == NULL)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     _table[devid] = NULL;
@@ -45,8 +110,8 @@ int oe_set_device(uint64_t devid, oe_device_t* device)
 
     oe_spin_lock(&_lock);
 
-    if (devid > MAX_TABLE_SIZE)
-        OE_RAISE_ERRNO(OE_EINVAL);
+    if (_resize_table(devid + 1) != 0)
+        OE_RAISE_ERRNO(OE_ENOMEM);
 
     if (_table[devid] != NULL)
         OE_RAISE_ERRNO(OE_EADDRINUSE);
@@ -68,7 +133,10 @@ oe_device_t* oe_get_device(uint64_t devid, oe_device_type_t type)
 
     oe_spin_lock(&_lock);
 
-    if (devid >= MAX_TABLE_SIZE)
+    if (_resize_table(devid + 1) != 0)
+        OE_RAISE_ERRNO(OE_ENOMEM);
+
+    if (devid >= _table_size)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     device = _table[devid];
@@ -95,7 +163,7 @@ oe_device_t* oe_find_device(const char* name, oe_device_type_t type)
     if (!name)
         goto done;
 
-    for (i = 0; i < MAX_TABLE_SIZE; i++)
+    for (i = 0; i < _table_size; i++)
     {
         oe_device_t* p = _table[i];
 
@@ -122,6 +190,9 @@ int oe_remove_device(uint64_t devid)
     int ret = -1;
     int retval = -1;
     oe_device_t* device;
+
+    if (_resize_table(devid + 1) != 0)
+        OE_RAISE_ERRNO(OE_ENOMEM);
 
     if (!(device = oe_get_device(devid, OE_DEVICE_TYPE_NONE)))
         OE_RAISE_ERRNO(OE_EINVAL);
