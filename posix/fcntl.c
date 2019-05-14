@@ -29,7 +29,7 @@ int oe_open(const char* pathname, int flags, oe_mode_t mode)
     int ret = -1;
     int fd;
     oe_device_t* fs;
-    oe_device_t* file;
+    oe_device_t* file = NULL;
     char filepath[OE_PATH_MAX] = {0};
 
     if (!(fs = oe_mount_resolve(pathname, filepath)))
@@ -42,14 +42,20 @@ int oe_open(const char* pathname, int flags, oe_mode_t mode)
         OE_RAISE_ERRNO(oe_errno);
 
     ret = fd;
+    file = NULL;
 
 done:
+
+    if (file)
+        OE_CALL_BASE(close, file);
+
     return ret;
 }
 
 int oe_open_d(uint64_t devid, const char* pathname, int flags, oe_mode_t mode)
 {
     int ret = -1;
+    oe_device_t* file = NULL;
 
     if (devid == OE_DEVID_NONE)
     {
@@ -58,7 +64,6 @@ int oe_open_d(uint64_t devid, const char* pathname, int flags, oe_mode_t mode)
     else
     {
         oe_device_t* dev = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM);
-        oe_device_t* file;
 
         if (!dev)
             OE_RAISE_ERRNO(OE_EINVAL);
@@ -70,6 +75,12 @@ int oe_open_d(uint64_t devid, const char* pathname, int flags, oe_mode_t mode)
             OE_RAISE_ERRNO(oe_errno);
     }
 
+    file = NULL;
+
 done:
+
+    if (file)
+        OE_CALL_BASE(close, file);
+
     return ret;
 }

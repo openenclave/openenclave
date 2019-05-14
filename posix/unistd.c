@@ -289,7 +289,7 @@ int oe_dup(int oldfd)
 {
     int ret = -1;
     oe_device_t* old_dev;
-    oe_device_t* new_dev;
+    oe_device_t* new_dev = NULL;
     int newfd;
 
     if (!(old_dev = oe_fdtable_get(oldfd, OE_DEVICE_TYPE_NONE)))
@@ -299,11 +299,15 @@ int oe_dup(int oldfd)
         OE_RAISE_ERRNO(oe_errno);
 
     if ((newfd = oe_fdtable_assign(new_dev)) == -1)
-        OE_CALL_BASE(close, new_dev);
+        OE_RAISE_ERRNO(oe_errno);
 
     ret = newfd;
+    new_dev = NULL;
 
 done:
+
+    if (new_dev)
+        OE_CALL_BASE(close, new_dev);
 
     return ret;
 }
@@ -311,7 +315,7 @@ done:
 int oe_dup2(int oldfd, int newfd)
 {
     oe_device_t* old_dev;
-    oe_device_t* new_dev;
+    oe_device_t* new_dev = NULL;
     int retval = -1;
 
     if (!(old_dev = oe_fdtable_get(oldfd, OE_DEVICE_TYPE_NONE)))
@@ -321,12 +325,14 @@ int oe_dup2(int oldfd, int newfd)
         OE_RAISE_ERRNO(oe_errno);
 
     if (oe_fdtable_reassign(newfd, new_dev) == -1)
-    {
-        OE_CALL_BASE(close, new_dev);
         OE_RAISE_ERRNO(OE_EINVAL);
-    }
+
+    new_dev = NULL;
 
 done:
+
+    if (new_dev)
+        OE_CALL_BASE(close, new_dev);
 
     return newfd;
 }
