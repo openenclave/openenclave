@@ -58,7 +58,9 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
                 OE_RAISE_ERRNO(OE_EINVAL);
 
             /* Use this device. */
-            oe_strlcpy(suffix, path, OE_PATH_MAX);
+            if (oe_strlcpy(suffix, path, OE_PATH_MAX) >= OE_PATH_MAX)
+                OE_RAISE_ERRNO(OE_ENAMETOOLONG);
+
             ret = device;
             goto done;
         }
