@@ -19,6 +19,7 @@
 static void _handle_ignore(int signum);
 
 static struct oe_sigaction _actions[__OE_NSIG] = {{{0}}};
+
 static oe_sighandler_t _default_actions[__OE_NSIG] = {
     _handle_ignore, _handle_ignore, _handle_ignore, _handle_ignore,
     _handle_ignore, _handle_ignore, _handle_ignore, _handle_ignore,
@@ -28,6 +29,8 @@ static oe_sighandler_t _default_actions[__OE_NSIG] = {
     _handle_ignore, _handle_ignore, _handle_ignore, _handle_ignore,
     _handle_ignore, _handle_ignore, _handle_ignore, _handle_ignore,
     _handle_ignore, _handle_ignore, _handle_ignore, _handle_ignore};
+
+static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
 
 static void _handle_ignore(int signum)
 {
@@ -60,6 +63,8 @@ int oe_sigaction(
 {
     int retval = -1;
 
+    oe_spin_lock(&_lock);
+
     oe_register_posix_ecall_function_table();
 
     if (signum >= __OE_NSIG)
@@ -77,6 +82,9 @@ int oe_sigaction(
 
     retval = 0;
 done:
+
+    oe_spin_unlock(&_lock);
+
     return retval;
 }
 
@@ -89,15 +97,20 @@ oe_sighandler_t oe_signal(int signum, oe_sighandler_t handler)
     if (signum >= __OE_NSIG)
         OE_RAISE_ERRNO(OE_EINVAL);
 
+    oe_spin_lock(&_lock);
     _actions[signum].__oe_sigaction_handler.oe_sa_handler = handler;
+    oe_spin_unlock(&_lock);
 
 done:
+
     return retval;
 }
 
 int oe_posix_signal_notify_ecall(int signum)
 {
     int ret = -1;
+
+    oe_spin_lock(&_lock);
 
     if (signum >= __OE_NSIG)
         OE_RAISE_ERRNO(OE_EINVAL);
@@ -144,5 +157,7 @@ int oe_posix_signal_notify_ecall(int signum)
     }
 
 done:
+    oe_spin_unlock(&_lock);
+
     return ret;
 }
