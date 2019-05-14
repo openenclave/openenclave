@@ -59,15 +59,16 @@ int oe_socket_d(uint64_t devid, int domain, int type, int protocol)
     }
 
     if ((sd = oe_fdtable_assign(sock)) == -1)
-    {
-        OE_CALL_BASE(close, sock);
         OE_RAISE_ERRNO(oe_errno);
-        goto done;
-    }
 
     ret = sd;
+    sock = NULL;
 
 done:
+
+    if (sock)
+        OE_CALL_BASE(close, sock);
+
     return ret;
 }
 
@@ -107,21 +108,23 @@ int oe_socketpair(int domain, int type, int protocol, int retfd[2])
     }
 
     if ((retfd[0] = oe_fdtable_assign(socks[0])) < 0)
-    {
-        OE_CALL_BASE(close, socks[0]);
         OE_RAISE_ERRNO(oe_errno);
-        goto done;
-    }
 
     if ((retfd[1] = oe_fdtable_assign(socks[1])) < 0)
-    {
-        OE_CALL_BASE(close, socks[1]);
         OE_RAISE_ERRNO(oe_errno);
-    }
 
     ret = (int)retval;
+    socks[0] = NULL;
+    socks[1] = NULL;
 
 done:
+
+    if (socks[0])
+        OE_CALL_BASE(close, socks[0]);
+
+    if (socks[1])
+        OE_CALL_BASE(close, socks[1]);
+
     return ret;
 }
 
@@ -160,7 +163,13 @@ int oe_accept(int sockfd, struct oe_sockaddr* addr, oe_socklen_t* addrlen)
     if ((ret = oe_fdtable_assign(new_sock)) == -1)
         OE_RAISE_ERRNO(oe_errno);
 
+    new_sock = NULL;
+
 done:
+
+    if (new_sock)
+        OE_CALL_BASE(close, new_sock);
+
     return ret;
 }
 
