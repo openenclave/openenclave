@@ -25,7 +25,7 @@ OE_EXTERNC_BEGIN
 // clang-format on
 
 // clang-format off
-#define OE_RAISE_ERRNO_F(ERRNO, FMT, ...)                           \
+#define OE_RAISE_ERRNO_MSG(ERRNO, FMT, ...)                         \
     do                                                              \
     {                                                               \
         int __err = ERRNO;                                          \

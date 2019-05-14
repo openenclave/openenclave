@@ -30,7 +30,7 @@ OE_DIR* oe_opendir_d(uint64_t devid, const char* pathname)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     if ((fd = oe_open_d(devid, pathname, OE_O_RDONLY | OE_O_DIRECTORY, 0)) < 0)
-        OE_RAISE_ERRNO_F(oe_errno, "pathname=%s", pathname);
+        OE_RAISE_ERRNO_MSG(oe_errno, "pathname=%s", pathname);
 
     dir->magic = DIR_MAGIC;
     dir->fd = fd;

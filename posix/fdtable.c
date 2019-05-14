@@ -14,7 +14,6 @@
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
-#include "console.h"
 
 /*
 **==============================================================================
@@ -27,48 +26,31 @@
 /* The table allocation grows in multiples of the chunk size. */
 #define TABLE_CHUNK_SIZE 1024
 
-typedef struct _entry entry_t;
-
-struct _entry
-{
-    entry_t* prev;
-    entry_t* next;
-    bool is_on_list;
-    oe_device_t* device;
-};
-
-typedef struct _entry_list
-{
-    entry_t* head;
-    entry_t* tail;
-} list_t;
+typedef oe_device_t* entry_t;
 
 static entry_t* _table;
 static size_t _table_size;
-static size_t _next = OE_STDERR_FILENO + 1;
-static list_t _free_list;
 static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
-static oe_once_t _once = OE_ONCE_INITIALIZER;
+static bool _installed_atexit_handler;
 
-static void _free_table(void)
+static void _atexit_handler(void)
 {
     oe_free(_table);
-}
-
-static void _install_atexit_handler_once(void)
-{
-    oe_atexit(_free_table);
 }
 
 static int _resize_table(size_t new_size)
 {
     int ret = -1;
 
+    /* Install the atexit handler on the first call. */
+    if (!_installed_atexit_handler)
+    {
+        oe_atexit(_atexit_handler);
+        _installed_atexit_handler = true;
+    }
+
     /* The fdtable cannot be bigger than the maximum int file descriptor. */
     if (new_size > OE_INT_MAX)
-        goto done;
-
-    if (oe_once(&_once, _install_atexit_handler_once) != OE_OK)
         goto done;
 
     /* Round the new capacity up to the next multiple of the chunk size. */
@@ -99,43 +81,6 @@ done:
     return ret;
 }
 
-static void _list_remove(list_t* list, entry_t* entry)
-{
-    if (entry->prev)
-        entry->prev->next = entry->next;
-    else
-        list->head = entry->next;
-
-    if (entry->next)
-        entry->next->prev = entry->prev;
-    else
-        list->tail = entry->prev;
-
-    entry->prev = NULL;
-    entry->next = NULL;
-    entry->is_on_list = true;
-}
-
-static void _list_prepend(list_t* list, entry_t* entry)
-{
-    if (list->head)
-    {
-        entry->prev = NULL;
-        entry->next = list->head;
-        list->head->prev = entry;
-        list->head = entry;
-    }
-    else
-    {
-        entry->next = NULL;
-        entry->prev = NULL;
-        list->head = entry;
-        list->tail = entry;
-    }
-
-    entry->is_on_list = true;
-}
-
 /*
 **==============================================================================
 **
@@ -148,7 +93,7 @@ int oe_fdtable_assign(oe_device_t* device)
 {
     int ret = -1;
     bool locked = false;
-    entry_t* entry;
+    size_t index;
 
     oe_spin_lock(&_lock);
     locked = true;
@@ -156,7 +101,7 @@ int oe_fdtable_assign(oe_device_t* device)
     if (!device)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    /* Reserve space for stdin, stdout, and stderr on the first call. */
+    /* The file-descriptor table must be big enough for standard devices. */
     if (_table_size < OE_STDERR_FILENO + 1)
     {
         if (_resize_table(OE_STDERR_FILENO + 1) != 0)
@@ -166,25 +111,22 @@ int oe_fdtable_assign(oe_device_t* device)
         }
     }
 
-    /* Get an entry either from the free list or from the table. */
-    if (_free_list.head)
+    /* Search for a free slot in the file descriptor table. */
+    for (index = OE_STDERR_FILENO + 1; index < _table_size; index++)
     {
-        entry = _free_list.head;
-        _list_remove(&_free_list, entry);
+        if (!_table[index])
+            break;
     }
-    else
+
+    /* If no free slot found, expand size of the file descriptor table. */
+    if (index == _table_size)
     {
-        if (_next == _table_size && _resize_table(_next + 1) != 0)
+        if (_resize_table(_table_size + 1) != 0)
             OE_RAISE_ERRNO(OE_ENOMEM);
-
-        entry = &_table[_next++];
     }
 
-    /* Initialize the entry. */
-    entry->device = device;
-
-    /* Set the file descriptor return value. */
-    ret = (int)(entry - _table);
+    _table[index] = device;
+    ret = (int)index;
 
 done:
 
@@ -198,7 +140,6 @@ int oe_fdtable_release(int fd)
 {
     int ret = -1;
     bool locked = true;
-    entry_t* entry;
 
     oe_spin_lock(&_lock);
     locked = true;
@@ -207,20 +148,11 @@ int oe_fdtable_release(int fd)
     if (!(fd >= 0 && (size_t)fd < _table_size))
         OE_RAISE_ERRNO(OE_EBADF);
 
-    /* Set a pointer to the entry. */
-    entry = &_table[fd];
-
     /* Fail if entry was never assigned. */
-    if (!entry->device)
+    if (!_table[fd])
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    /* Fail if the entry is on the free list. */
-    if (entry->is_on_list)
-        OE_RAISE_ERRNO(OE_EINVAL);
-
-    /* Clear the entry and add it to the beginning of the free list. */
-    entry->device = NULL;
-    _list_prepend(&_free_list, entry);
+    _table[fd] = NULL;
 
     ret = 0;
 
@@ -236,38 +168,23 @@ int oe_fdtable_reassign(int fd, oe_device_t* device)
 {
     int ret = -1;
     bool locked = false;
-    entry_t* entry;
 
     oe_spin_lock(&_lock);
     locked = true;
 
+    _resize_table(TABLE_CHUNK_SIZE);
+
     if (fd < 0 || (size_t)fd >= _table_size)
         OE_RAISE_ERRNO(OE_EBADF);
 
-    /* Set a pointer to the entry. */
-    entry = &_table[fd];
-
-    /* If the entry is on the free list. Else it is in use. */
-    if (entry->is_on_list)
+    if (_table[fd])
     {
-        _list_remove(&_free_list, entry);
-        oe_assert(entry->device == NULL);
-    }
-    else
-    {
-        oe_assert(entry->device != NULL);
-
-        if ((ret = OE_CALL_BASE(close, device)) != 0)
-        {
-            oe_assert(entry->device == NULL);
+        if (OE_CALL_BASE(close, _table[fd]) != 0)
             OE_RAISE_ERRNO(oe_errno);
-        }
-
-        entry->device = NULL;
     }
 
     /* Set the device. */
-    entry->device = device;
+    _table[fd] = device;
 
     ret = 0;
 
@@ -284,36 +201,16 @@ static oe_device_t* _get_fd_device(int fd)
     oe_device_t* ret = NULL;
     bool locked = false;
 
-    /* First check whether it is a console device. */
-    switch (fd)
-    {
-        case OE_STDIN_FILENO:
-        {
-            ret = oe_get_stdin_device();
-            goto done;
-        }
-        case OE_STDOUT_FILENO:
-        {
-            ret = oe_get_stdout_device();
-            goto done;
-        }
-        case OE_STDERR_FILENO:
-        {
-            ret = oe_get_stderr_device();
-            goto done;
-        }
-    }
-
     oe_spin_lock(&_lock);
     locked = true;
 
     if (fd < 0 || fd >= (int)_table_size)
         OE_RAISE_ERRNO(OE_EBADF);
 
-    if (_table[fd].device == NULL)
+    if (_table[fd] == NULL)
         OE_RAISE_ERRNO(OE_EBADF);
 
-    ret = _table[fd].device;
+    ret = _table[fd];
 
 done:
 
