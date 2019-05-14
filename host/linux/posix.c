@@ -1172,7 +1172,6 @@ int oe_posix_uname_ocall(struct oe_utsname* buf)
             strcpy(buf->machine, uts.machine);
         }
 
-#if defined(_GNU_SOURCE)
         /* domainname: */
         {
             if (strlen(uts.domainname) >= sizeof(buf->domainname))
@@ -1183,7 +1182,6 @@ int oe_posix_uname_ocall(struct oe_utsname* buf)
 
             strcpy(buf->domainname, uts.domainname);
         }
-#endif
     }
 
 done:
