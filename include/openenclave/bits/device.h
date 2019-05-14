@@ -18,6 +18,15 @@ enum
     /** The null device id. */
     OE_DEVID_NONE,
 
+    /** The standard input device. */
+    OE_DEVID_STDIN,
+
+    /** The standard output device. */
+    OE_DEVID_STDOUT,
+
+    /** The standard errord evice. */
+    OE_DEVID_STDERR,
+
     /** The non-secure host file system. */
     OE_DEVID_HOSTFS,
 
@@ -32,15 +41,6 @@ enum
 
     /** The host eventfd device. */
     OE_DEVID_EVENTFD,
-
-    /** The standard input device. */
-    OE_DEVID_STDIN,
-
-    /** The standard output device. */
-    OE_DEVID_STDOUT,
-
-    /** The standard errord evice. */
-    OE_DEVID_STDERR,
 };
 
 OE_EXTERNC_END
