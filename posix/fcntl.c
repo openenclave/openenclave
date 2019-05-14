@@ -36,7 +36,7 @@ int oe_open(const char* pathname, int flags, oe_mode_t mode)
         OE_RAISE_ERRNO(oe_errno);
 
     if (!(file = OE_CALL_FS(open, fs, filepath, flags, mode)))
-        OE_RAISE_ERRNO_F(oe_errno, "pathname=%s", pathname);
+        OE_RAISE_ERRNO_MSG(oe_errno, "pathname=%s", pathname);
 
     if ((fd = oe_fdtable_assign(file)) == -1)
         OE_RAISE_ERRNO(oe_errno);
@@ -64,7 +64,7 @@ int oe_open_d(uint64_t devid, const char* pathname, int flags, oe_mode_t mode)
             OE_RAISE_ERRNO(OE_EINVAL);
 
         if (!(file = OE_CALL_FS(open, dev, pathname, flags, mode)))
-            OE_RAISE_ERRNO_F(oe_errno, "pathname=%s mode=%u", pathname, mode);
+            OE_RAISE_ERRNO_MSG(oe_errno, "pathname=%s mode=%u", pathname, mode);
 
         if ((ret = oe_fdtable_assign(file)) == -1)
             OE_RAISE_ERRNO(oe_errno);

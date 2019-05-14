@@ -112,7 +112,7 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
     oe_spin_unlock(&_lock);
 
     if (!ret)
-        OE_RAISE_ERRNO_F(OE_ENOENT, "path=%s", path);
+        OE_RAISE_ERRNO_MSG(OE_ENOENT, "path=%s", path);
 
 done:
     return ret;
@@ -138,7 +138,7 @@ int oe_mount(
 
     /* Resolve the device for the given filesystemtype. */
     if (!(device = oe_find_device(filesystemtype, OE_DEVICE_TYPE_FILESYSTEM)))
-        OE_RAISE_ERRNO_F(OE_EINVAL, "filesystemtype=%s", filesystemtype);
+        OE_RAISE_ERRNO_MSG(OE_EINVAL, "filesystemtype=%s", filesystemtype);
 
     /* Be sure the full_target directory exists (if not root). */
     if (oe_strcmp(target, "/") != 0)

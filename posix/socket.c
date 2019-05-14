@@ -48,7 +48,7 @@ int oe_socket_d(uint64_t devid, int domain, int type, int protocol)
 
     if (!(sock = OE_CALL_SOCK(socket, device, domain, type, protocol)))
     {
-        OE_RAISE_ERRNO_F(
+        OE_RAISE_ERRNO_MSG(
             oe_errno,
             "devid=%ld domain=%d type=%d protocol=%d",
             devid,
@@ -96,7 +96,7 @@ int oe_socketpair(int domain, int type, int protocol, int retfd[2])
     if (!(retval =
               OE_CALL_SOCK(socketpair, device, domain, type, protocol, socks)))
     {
-        OE_RAISE_ERRNO_F(
+        OE_RAISE_ERRNO_MSG(
             OE_EINVAL,
             "retval=%zd devid=%lu, domain=%d type=%d protocol=%d",
             retval,

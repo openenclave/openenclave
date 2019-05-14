@@ -141,7 +141,14 @@ int oe_select(
 
         ret = oe_epoll_ctl(epoll_fd, OE_EPOLL_CTL_ADD, fd_list[i], &ev);
         if (ret < 0)
-            OE_RAISE_ERRNO(OE_EINVAL);
+        {
+            OE_RAISE_ERRNO_MSG(
+                OE_EINVAL,
+                "epoll_fd=%d fd_list[%d]=%d",
+                epoll_fd,
+                i,
+                fd_list[i]);
+        }
     }
 
     ret_fds = oe_epoll_wait(epoll_fd, rtn_ev, OE_FD_SETSIZE, timeout_ms);

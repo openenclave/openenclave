@@ -19,6 +19,7 @@
 
 static void _initialize()
 {
+    OE_TEST(oe_load_module_consolefs() == OE_OK);
     OE_TEST(oe_load_module_hostsock() == OE_OK);
 
     {

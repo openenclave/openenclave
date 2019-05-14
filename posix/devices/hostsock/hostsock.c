@@ -164,7 +164,7 @@ static oe_device_t* _hostsock_socket(
             OE_RAISE_ERRNO(OE_EINVAL);
 
         if (retval == -1)
-            OE_RAISE_ERRNO_F(oe_errno, "retval=%ld\n", retval);
+            OE_RAISE_ERRNO_MSG(oe_errno, "retval=%ld\n", retval);
 
         new_sock->host_fd = retval;
     }
@@ -220,7 +220,7 @@ static ssize_t _hostsock_socketpair(
         }
 
         if (retval == -1)
-            OE_RAISE_ERRNO_F(oe_errno, "retval=%d\n", retval);
+            OE_RAISE_ERRNO_MSG(oe_errno, "retval=%d\n", retval);
 
         pair[0]->host_fd = host_sv[0];
         pair[1]->host_fd = host_sv[1];
@@ -308,7 +308,7 @@ static oe_device_t* _hostsock_accept(
     if (addr && addrlen)
     {
         if (sizeof(buf) < *addrlen)
-            OE_RAISE_ERRNO_F(OE_EINVAL, "*addrlen=%u", *addrlen);
+            OE_RAISE_ERRNO_MSG(OE_EINVAL, "*addrlen=%u", *addrlen);
 
         if (oe_memcpy_s(&buf, sizeof(buf), addr, *addrlen) != OE_OK)
             OE_RAISE_ERRNO(OE_EINVAL);
@@ -333,7 +333,7 @@ static oe_device_t* _hostsock_accept(
         }
 
         if (retval == -1)
-            OE_RAISE_ERRNO_F(oe_errno, "retval=%d", retval);
+            OE_RAISE_ERRNO_MSG(oe_errno, "retval=%d", retval);
 
         new_sock->host_fd = retval;
     }

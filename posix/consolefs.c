@@ -1,12 +1,14 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/posix/fdtable.h>
 #include <openenclave/internal/posix/raise.h>
+#include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include "posix_t.h"
 
@@ -90,6 +92,7 @@ done:
 static int _consolefs_fcntl(oe_device_t* file, int cmd, uint64_t arg)
 {
     int ret = -1;
+
     OE_UNUSED(file);
     OE_UNUSED(cmd);
     OE_UNUSED(arg);
@@ -259,17 +262,34 @@ static file_t _stderr_file = {
     .host_fd = OE_STDERR_FILENO,
 };
 
-oe_device_t* oe_get_stdin_device(void)
+static oe_once_t _once = OE_ONCE_INITIALIZER;
+static bool _loaded;
+
+static void _load_once(void)
 {
-    return &_stdin_file.base;
+    oe_result_t result = OE_FAILURE;
+
+    if (oe_fdtable_reassign(OE_STDIN_FILENO, &_stdin_file.base) != 0)
+        OE_RAISE_ERRNO(oe_errno);
+
+    if (oe_fdtable_reassign(OE_STDOUT_FILENO, &_stdout_file.base) != 0)
+        OE_RAISE_ERRNO(oe_errno);
+
+    if (oe_fdtable_reassign(OE_STDERR_FILENO, &_stderr_file.base) != 0)
+        OE_RAISE_ERRNO(oe_errno);
+
+    result = OE_OK;
+
+done:
+
+    if (result == OE_OK)
+        _loaded = true;
 }
 
-oe_device_t* oe_get_stdout_device(void)
+oe_result_t oe_load_module_consolefs(void)
 {
-    return &_stdout_file.base;
-}
+    if (oe_once(&_once, _load_once) != OE_OK || !_loaded)
+        return OE_FAILURE;
 
-oe_device_t* oe_get_stderr_device(void)
-{
-    return &_stderr_file.base;
+    return OE_OK;
 }

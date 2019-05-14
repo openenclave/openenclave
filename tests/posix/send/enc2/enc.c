@@ -13,6 +13,7 @@ static void _init(void)
 
     if (!_initialized)
     {
+        OE_TEST(oe_load_module_consolefs() == OE_OK);
         OE_TEST(oe_load_module_hostsock() == OE_OK);
 
         _initialized = true;

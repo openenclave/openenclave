@@ -47,7 +47,7 @@ int oe_rename_d(uint64_t devid, const char* oldpath, const char* newpath)
 
         if ((ret = OE_CALL_FS(rename, dev, oldpath, newpath)) == -1)
         {
-            OE_RAISE_ERRNO_F(
+            OE_RAISE_ERRNO_MSG(
                 oe_errno,
                 "ret=%d oldpath=%s newpath=%s",
                 ret,

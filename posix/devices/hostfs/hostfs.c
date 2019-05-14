@@ -267,7 +267,7 @@ static oe_device_t* _hostfs_open_file(
     /* Call */
     {
         if (_expand_path(fs, pathname, full_pathname) != 0)
-            OE_RAISE_ERRNO_F(oe_errno, "pathname=%s", pathname);
+            OE_RAISE_ERRNO_MSG(oe_errno, "pathname=%s", pathname);
 
         if (oe_posix_open_ocall(&retval, full_pathname, flags, mode) != OE_OK)
             OE_RAISE_ERRNO(OE_EINVAL);
@@ -317,7 +317,7 @@ static oe_device_t* _hostfs_open_directory(
 
     /* Attempt to open the directory. */
     if (!(dir = _hostfs_opendir(fs_, pathname)))
-        OE_RAISE_ERRNO_F(oe_errno, "pathname=%s", pathname);
+        OE_RAISE_ERRNO_MSG(oe_errno, "pathname=%s", pathname);
 
     /* Allocate and initialize the file struct. */
     {
@@ -677,7 +677,7 @@ static oe_device_t* _hostfs_opendir(oe_device_t* fs_, const char* name)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     if (_expand_path(fs, name, full_name) != 0)
-        OE_RAISE_ERRNO_F(oe_errno, "name=%s", name);
+        OE_RAISE_ERRNO_MSG(oe_errno, "name=%s", name);
 
     if (oe_posix_opendir_ocall(&retval, full_name) != OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
