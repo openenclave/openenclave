@@ -57,10 +57,10 @@ function call_clang {
         # Response files start with an @
         if [[ "$a" == \@* ]]; then
             # Transform directory separators within the response file.
-            sed -i 's/\\/\//g' ${a:1}
+            sed -i 's/\\/\//g' "${a:1}"
         fi
 
-        args+="$a "
+        args+=("$a ")
     done
 
     # Call clang with the transformed arguments arguments

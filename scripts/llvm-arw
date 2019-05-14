@@ -21,7 +21,7 @@ function call_llvmar {
     done
 
     # Replace \ by / in each argument
-    args+="$a "
+    args+=("$a ")
     llvm-ar "${args[@]}"
 }
 
