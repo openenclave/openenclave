@@ -1,0 +1,7 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+---
+opam_bin_url: "https://github.com/ocaml/opam/releases/download/2.0.4/opam-2.0.4-x86_64-linux"
+opam_root: "/usr/local/opam"
+ocaml_version: "4.07.0"

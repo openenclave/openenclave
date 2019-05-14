@@ -30,6 +30,10 @@
     update_cache: yes
     install_recommends: no
 
+- import_role:
+    name: linux/openenclave
+    tasks_from: opam-setup.yml
+
 - name: Install CMake 3.13.1
   unarchive:
     src: https://cmake.org/files/v3.13/cmake-3.13.1-Linux-x86_64.tar.gz

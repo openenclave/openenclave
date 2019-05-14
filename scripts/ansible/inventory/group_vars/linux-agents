@@ -6,15 +6,14 @@ ansible_ssh_user: azureuser
 validation_directories:
   - "/opt/intel/sgxdriver"
   - "/opt/intel/libsgx-enclave-common"
-  - "/usr/lib/ocaml"
-  - "/usr/lib/ocaml/compiler-libs"
+  - "/usr/local/opam"
+  - "/usr/local/opam/4.07.0"
   - "/usr/share/libtool"
 
 validation_files:
   - "/usr/lib/x86_64-linux-gnu/libsgx_dcap_ql.so"
   - "/usr/lib/libdcap_quoteprov.so"
   - "/usr/lib/x86_64-linux-gnu/libssl.so"
-  - "/usr/lib/ocaml/arg.cmi"
 
 validation_binaries:
   - "/usr/bin/make"
@@ -32,7 +31,7 @@ validation_binaries:
   - "/usr/bin/docker"
   - "/usr/bin/dockerd"
   - "/usr/bin/doxygen"
-  - "/usr/bin/ocaml"
+  - "/usr/local/opam/4.07.0/bin/ocaml"
   - "/usr/bin/openssl"
   - "/usr/bin/pkg-config"
   - "/usr/bin/clang-7"
