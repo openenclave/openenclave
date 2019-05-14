@@ -9,11 +9,11 @@
 
 - name: Add Microsoft APT repository key
   apt_key:
-    url: "https://packages.microsoft.com/keys/microsoft.asc"
+    url: "{{ apt_key_url }}"
     state: present
 
 - name: Add Microsoft APT repository
   apt_repository:
-    repo: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/{{ ansible_distribution_version }}/prod {{ ansible_distribution_release }} main"
+    repo: "{{ apt_repository }}"
     state: present
     update_cache: yes
