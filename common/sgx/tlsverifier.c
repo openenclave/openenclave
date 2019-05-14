@@ -13,15 +13,10 @@
 
 #define KEY_BUFF_SIZE 512
 
-oe_result_t verify_report_user_data(
-    uint8_t* key_buff,
-    size_t key_buff_size,
-    uint8_t* report_data);
-
 static const char* oid_oe_report = X509_OID_FOR_QUOTE_STRING;
 
 // verify report user data against peer certificate
-oe_result_t verify_report_user_data(
+static oe_result_t verify_report_user_data(
     uint8_t* key_buff,
     size_t key_buff_size,
     uint8_t* report_data)
@@ -63,7 +58,7 @@ done:
 oe_result_t oe_verify_tls_cert(
     uint8_t* cert_in_der,
     size_t cert_in_der_len,
-    oe_enclave_identity_verify_callback_t enclave_identity_callback,
+    oe_identity_verify_callback_t enclave_identity_callback,
     void* arg)
 {
     oe_result_t result = OE_FAILURE;

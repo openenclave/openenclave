@@ -374,7 +374,7 @@ typedef struct _oe_cert_config
     size_t ext_oid_size;
 } oe_cert_config_t;
 
-#define MAX_CERT_SIZE 8 * 1024
+#define OE_MAX_CERT_SIZE 8192
 oe_result_t oe_gen_custom_x509_cert(
     oe_cert_config_t* cert_config,
     unsigned char* cert_buf,

@@ -23,7 +23,7 @@
 #include "rsa.h"
 
 // Todo: consider set CN with enclave's MRENCLAVE values
-#define ISSUER_NAME "CN=Open Enclave SDK,O=OESDK TLS,C=UK"
+#define ISSUER_NAME "CN=Open Enclave SDK,O=OESDK TLS,C=US"
 #define SUBJECT_NAME ISSUER_NAME
 #define DATE_NOT_VALID_BEFORE "20190501000000"
 #define DATE_NOT_VALID_AFTER "20501231235959"
@@ -77,12 +77,12 @@ oe_result_t generate_x509_cert(
     config.ext_oid_size = sizeof(oid_oe_report);
 
     // allocate memory for cert output buffer
-    cert_buf = (uint8_t*)oe_malloc(MAX_CERT_SIZE);
+    cert_buf = (uint8_t*)oe_malloc(OE_MAX_CERT_SIZE);
     if (cert_buf == NULL)
         goto done;
 
     result = oe_gen_custom_x509_cert(
-        &config, cert_buf, MAX_CERT_SIZE, &bytes_written);
+        &config, cert_buf, OE_MAX_CERT_SIZE, &bytes_written);
     OE_CHECK_MSG(
         result,
         "oe_gen_custom_x509_cert failed with %s",
@@ -95,47 +95,6 @@ oe_result_t generate_x509_cert(
     cert_buf = NULL;
 done:
     oe_free(cert_buf);
-    return result;
-}
-
-// input: input_data and input_data_len
-// output: key, key_size
-oe_result_t generate_key_pair(
-    uint8_t** public_key,
-    size_t* public_key_size,
-    uint8_t** private_key,
-    size_t* private_key_size)
-{
-    oe_result_t result = OE_FAILURE;
-    oe_asymmetric_key_params_t params = {0};
-    char user_data[] = "optional user data!";
-    size_t user_data_size = sizeof(user_data) - 1;
-
-    OE_TRACE_VERBOSE("Generate key pair");
-
-    params.type = OE_ASYMMETRIC_KEY_EC_SECP256P1; // MBEDTLS_ECP_DP_SECP256R1
-    params.format = OE_ASYMMETRIC_KEY_PEM;
-    params.user_data = user_data;
-    params.user_data_size = user_data_size;
-    result = oe_get_public_key_by_policy(
-        OE_SEAL_POLICY_UNIQUE,
-        &params,
-        public_key,
-        public_key_size,
-        NULL,
-        NULL);
-    OE_CHECK(result);
-
-    result = oe_get_private_key_by_policy(
-        OE_SEAL_POLICY_UNIQUE,
-        &params,
-        private_key,
-        private_key_size,
-        NULL,
-        NULL);
-    OE_CHECK(result);
-
-done:
     return result;
 }
 

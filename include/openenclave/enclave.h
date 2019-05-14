@@ -755,6 +755,14 @@ oe_result_t oe_gen_tls_cert(
 void oe_free_tls_cert(uint8_t* cert);
 
 /**
+ * identity validation callback type
+ * @param identity: a pointer to an enclave's identity information
+ * @param arg: caller defined context
+ */
+typedef oe_result_t (
+    *oe_identity_verify_callback_t)(oe_identity_t* identity, void* arg);
+
+/**
  * oe_verify_tls_cert
  *
  * This function preform a custom validation on the input certificate. This
@@ -765,12 +773,10 @@ void oe_free_tls_cert(uint8_t* cert);
  * @retval OE_OK on a successful validation
  * @retval appropriate error code when failed.
  */
-typedef oe_result_t (
-    *oe_enclave_identity_verify_callback_t)(oe_identity_t* identity, void* arg);
 oe_result_t oe_verify_tls_cert(
     uint8_t* cert_in_der,
     size_t cert_in_der_len,
-    oe_enclave_identity_verify_callback_t enclave_identity_callback,
+    oe_identity_verify_callback_t enclave_identity_callback,
     void* arg);
 
 OE_EXTERNC_END

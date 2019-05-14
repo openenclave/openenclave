@@ -72,9 +72,9 @@ int main(int argc, const char* argv[])
         oe_put_err("oe_create_enclave(): result=%u", result);
 
     OE_TRACE_INFO("Host: get tls certificate from an enclave \n");
-    result = get_TLS_cert(enclave, &ecall_result, &cert, &cert_size);
+    result = get_tls_cert(enclave, &ecall_result, &cert, &cert_size);
     if ((result != OE_OK) || (ecall_result != OE_OK))
-        oe_put_err("get_TLS_cert() failed: result=%u", result);
+        oe_put_err("get_tls_cert() failed: result=%u", result);
 
     fflush(stdout);
 

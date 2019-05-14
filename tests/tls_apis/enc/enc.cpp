@@ -12,11 +12,9 @@
 #include <string.h>
 #include "tls_t.h"
 
-//#define printf oe_host_printf
-
-// This is the identity validation callback. An TLS connecting party (client or
+// This is the identity validation callback. A TLS connecting party (client or
 // server) can verify the passed in "identity" information to decide whether to
-// accept an connection reqest
+// accept a connection reqest
 oe_result_t enclave_identity_verifier(oe_identity_t* identity, void* arg)
 {
     oe_result_t result = OE_VERIFY_FAILED;
@@ -95,7 +93,7 @@ done:
     return result;
 }
 
-oe_result_t get_TLS_cert(unsigned char** cert, size_t* cert_size)
+oe_result_t get_tls_cert(unsigned char** cert, size_t* cert_size)
 {
     oe_result_t result = OE_FAILURE;
     uint8_t* host_cert_buf = NULL;
@@ -167,16 +165,9 @@ done:
 
     // free certificate buffer
     if (output_cert)
-        oe_free(output_cert);
+        oe_free_tls_cert(output_cert);
 
     return result;
-}
-
-void free_TLS_cert(unsigned char* cert, size_t cert_size)
-{
-    OE_TRACE_INFO(
-        "test from tls enclave: cert = %p cert_size = 0x%x", cert, cert_size);
-    oe_host_free(cert);
 }
 
 OE_SET_ENCLAVE_SGX(

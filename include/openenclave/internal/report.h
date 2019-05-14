@@ -161,7 +161,7 @@ OE_STATIC_ASSERT(sizeof(oe_report_header_t) == 16);
 OE_STATIC_ASSERT(
     OE_OFFSETOF(oe_report_header_t, report) == sizeof(oe_report_header_t));
 
-// ISO(1).ANSI(2).USA(840).Microsoft(113556).ACC(10).Classes(103).Subclass(1)
+// ISO(1).ANSI(2).USA(840).Microsoft(113556).ACC(10).Classes(1).Subclass(1)
 #define X509_OID_FOR_QUOTE_EXT                               \
     {                                                        \
         0x2A, 0x86, 0x48, 0x86, 0xF7, 0x14, 0x0A, 0x01, 0x01 \

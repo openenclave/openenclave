@@ -3,7 +3,6 @@
 
 enclave {
     trusted {
-        public oe_result_t get_TLS_cert([out] unsigned char** data, [out] size_t* data_size);
-        public void free_TLS_cert([in] unsigned char* data, size_t data_size);
+        public oe_result_t get_tls_cert([out] unsigned char** data, [out] size_t* data_size);
     };
 };
