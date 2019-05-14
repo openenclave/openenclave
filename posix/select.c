@@ -85,7 +85,7 @@ int oe_select(
     int fd_list[OE_FD_SETSIZE] = {0};  // <nfds> members
     int fd_flags[OE_FD_SETSIZE] = {0}; // indexed by fd
     int i = 0;
-    int epoll_fd = -1;
+    int epfd = -1;
     int ret = -1;
     int ret_fds = -1;
     struct oe_epoll_event rtn_ev[OE_FD_SETSIZE] = {{0}};
@@ -134,8 +134,8 @@ int oe_select(
             fd_flags);
     }
 
-    epoll_fd = oe_epoll_create1(0);
-    if (epoll_fd < 0)
+    epfd = oe_epoll_create1(0);
+    if (epfd < 0)
         OE_RAISE_ERRNO(oe_errno);
 
     for (i = 0; i < nfds; i++)
@@ -145,19 +145,15 @@ int oe_select(
             .events = (uint32_t)fd_flags[fd_list[i]],
         };
 
-        ret = oe_epoll_ctl(epoll_fd, OE_EPOLL_CTL_ADD, fd_list[i], &ev);
+        ret = oe_epoll_ctl(epfd, OE_EPOLL_CTL_ADD, fd_list[i], &ev);
         if (ret < 0)
         {
             OE_RAISE_ERRNO_MSG(
-                OE_EINVAL,
-                "epoll_fd=%d fd_list[%d]=%d",
-                epoll_fd,
-                i,
-                fd_list[i]);
+                OE_EINVAL, "epfd=%d fd_list[%d]=%d", epfd, i, fd_list[i]);
         }
     }
 
-    ret_fds = oe_epoll_wait(epoll_fd, rtn_ev, OE_FD_SETSIZE, timeout_ms);
+    ret_fds = oe_epoll_wait(epfd, rtn_ev, OE_FD_SETSIZE, timeout_ms);
     if (ret_fds < 0)
     {
         goto done;
@@ -199,7 +195,10 @@ int oe_select(
             exceptfds);
     }
 done:
-    oe_close(epoll_fd);
+
+    if (epfd >= 0)
+        oe_close(epfd);
+
     return ret_fds;
 }
 

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/module.h>
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/stdio.h>
@@ -106,14 +107,8 @@ int oe_fdtable_assign(oe_device_t* device)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* The file-descriptor table must be big enough for standard devices. */
-    if (_table_size < OE_STDERR_FILENO + 1)
-    {
-        if (_resize_table(OE_STDERR_FILENO + 1) != 0)
-        {
-            oe_errno = OE_ENOMEM;
-            goto done;
-        }
-    }
+    if (_resize_table(TABLE_CHUNK_SIZE) != 0)
+        OE_RAISE_ERRNO(OE_ENOMEM);
 
     /* Search for a free slot in the file descriptor table. */
     for (index = OE_STDERR_FILENO + 1; index < _table_size; index++)
@@ -170,7 +165,9 @@ int oe_fdtable_reassign(int fd, oe_device_t* device)
 
     oe_spin_lock(&_lock);
 
-    _resize_table(TABLE_CHUNK_SIZE);
+    /* Make table big enough to contain this file-descriptor. */
+    if (fd >= 0)
+        _resize_table((size_t)fd + 1);
 
     if (fd < 0 || (size_t)fd >= _table_size)
         OE_RAISE_ERRNO(OE_EBADF);
@@ -203,7 +200,7 @@ static oe_device_t* _get_fd_device(int fd)
 
     oe_spin_lock(&_lock);
 
-    if (fd < 0 || fd >= (int)_table_size)
+    if (fd < 0 || (size_t)fd >= _table_size)
         OE_RAISE_ERRNO(OE_EBADF);
 
     if (_table[fd] == NULL)
@@ -224,10 +221,13 @@ oe_device_t* oe_fdtable_get(int fd, oe_device_type_t type)
     oe_device_t* device;
 
     if (!(device = _get_fd_device(fd)))
-        goto done;
+        OE_RAISE_ERRNO(OE_EBADF);
 
-    if (type != OE_DEVICE_TYPE_NONE && device->type != type)
-        oe_errno = OE_EINVAL;
+    if (type != OE_DEVICE_TYPE_ANY && device->type != type)
+    {
+        OE_RAISE_ERRNO_MSG(
+            OE_EBADF, "fd=%d type=%u device->type=%u", fd, type, device->type);
+    }
 
     ret = device;
 
