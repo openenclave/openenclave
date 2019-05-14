@@ -281,7 +281,7 @@ if (FALSE)
         3rdparty/musl/libc-test/src/functional/pthread_robust.c
         3rdparty/musl/libc-test/src/functional/pthread_tsd.c
         # sscanf_long Runs out of memory on Windows and Linux CI
-		3rdparty/musl/libc-test/src/functional/sscanf_long.c
+        3rdparty/musl/libc-test/src/functional/sscanf_long.c
         3rdparty/musl/libc-test/src/functional/search_hsearch.c
         3rdparty/musl/libc-test/src/functional/sem_init.c
         3rdparty/musl/libc-test/src/functional/sem_open.
