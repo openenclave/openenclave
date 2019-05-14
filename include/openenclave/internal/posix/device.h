@@ -16,12 +16,13 @@ OE_EXTERNC_BEGIN
 typedef enum _oe_device_type
 {
     OE_DEVICE_TYPE_NONE = 0,
+    OE_DEVICE_TYPE_ANY,
     OE_DEVICE_TYPE_FILESYSTEM,
     OE_DEVICE_TYPE_DIRECTORY,
     OE_DEVICE_TYPE_FILE,
     OE_DEVICE_TYPE_SOCKET,
     OE_DEVICE_TYPE_EPOLL,
-    OE_DEVICE_TYPE_EVENTFD
+    OE_DEVICE_TYPE_EVENTFD,
 } oe_device_type_t;
 
 typedef struct _oe_device oe_device_t;
