@@ -25,6 +25,7 @@ void test_deepcopy_edl_ecalls(oe_enclave_t* enclave)
     OE_TEST(s[1].ptr[3] == data[7]);
 
     OE_TEST(deepcopy_value(enclave, s[0], data) == OE_OK);
+    OE_TEST(deepcopy_shallow(enclave, &s[0], data) == OE_OK);
 
     printf("=== test_deepcopy_edl_ecalls passed\n");
 }

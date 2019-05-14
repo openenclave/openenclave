@@ -16,3 +16,14 @@ void deepcopy_value(struct MyStruct s, uint64_t* ptr)
     OE_TEST(s.ptr == ptr);
     OE_TEST(oe_is_outside_enclave(s.ptr, sizeof(uint64_t)));
 }
+
+// Assert that the struct is shallow-copied (even though it is passed
+// by pointer), such that `s->ptr` is the address of `data[]` in the
+// host (also passed via `ptr`).
+void deepcopy_shallow(struct MyStruct* s, uint64_t* ptr)
+{
+    OE_TEST(s->count == 7);
+    OE_TEST(s->size == 64);
+    OE_TEST(s->ptr == ptr);
+    OE_TEST(oe_is_outside_enclave(s->ptr, sizeof(uint64_t)));
+}
