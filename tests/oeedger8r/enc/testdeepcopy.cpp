@@ -118,3 +118,21 @@ void deepcopy_sizeparamarray(SizeParamStruct* s)
         OE_TEST(s[1].ptr[i] == data[4 + i]);
     OE_TEST_IGNORE(oe_is_within_enclave(s[1].ptr, s[1].size));
 }
+
+// Assert that the struct array is deep-copied such that each
+// element's `ptr` has a copy of its `count * size` bytes of `data` in
+// enclave memory.
+void deepcopy_countsizeparamarray(CountSizeParamStruct* s)
+{
+    OE_TEST(s[0].count == 8);
+    OE_TEST(s[0].size == 4);
+    for (size_t i = 0; i < (s[0].count * s[0].size) / sizeof(uint64_t); ++i)
+        OE_TEST(s[0].ptr[i] == data[i]);
+    OE_TEST_IGNORE(oe_is_within_enclave(s[0].ptr, s[0].count * s[0].size));
+
+    OE_TEST(s[1].count == 3);
+    OE_TEST(s[1].size == 8);
+    for (size_t i = 0; i < (s[1].count * s[1].size) / sizeof(uint64_t); ++i)
+        OE_TEST(s[1].ptr[i] == data[4 + i]);
+    OE_TEST_IGNORE(oe_is_within_enclave(s[1].ptr, s[1].count * s[1].size));
+}
