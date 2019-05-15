@@ -3,18 +3,16 @@
 
 enclave {
 
-    include "unistd.h"
-
     trusted {
         public void test_ids(
-            pid_t pid,
-            pid_t ppid,
-            uid_t uid,
-            uid_t euid,
-            gid_t gid,
-            gid_t egid,
-            pid_t pgrp,
-            [in, count=num_groups] const gid_t* groups,
+            int32_t pid,
+            int32_t ppid,
+            int32_t uid,
+            int32_t euid,
+            int32_t gid,
+            int32_t egid,
+            int32_t pgrp,
+            [in, count=num_groups] const int32_t* groups,
             size_t num_groups);
     };
 };

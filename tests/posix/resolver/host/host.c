@@ -6,8 +6,10 @@
 #include <openenclave/internal/tests.h>
 #if defined(_MSC_VER)
 #define OE_NEED_STD_NAMES
-#include <windows.h>
+// clang-format off
 #include <winsock2.h>
+#include <windows.h>
+// clang-format on
 static void sleep(int secs)
 {
     Sleep(secs * 1000);
