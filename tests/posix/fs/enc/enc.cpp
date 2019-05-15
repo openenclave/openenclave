@@ -340,7 +340,7 @@ void test_all(FILE_SYSTEM& fs, const char* tmp_dir)
 void test_fprintf_fscanf(const char* tmp_dir)
 {
     char path[OE_PAGE_SIZE];
-    device_registrant registrant(OE_DEVID_HOSTFS);
+    device_registrant registrant(OE_DEVID_HOST_FILE_SYSTEM);
 
     printf("--- %s()\n", __FUNCTION__);
 
@@ -475,11 +475,11 @@ void test_fs(const char* src_dir, const char* tmp_dir)
 {
     (void)src_dir;
 
-    OE_TEST(oe_load_module_consolefs() == OE_OK);
-    OE_TEST(oe_load_module_hostfs() == OE_OK);
+    OE_TEST(oe_load_module_console_file_system() == OE_OK);
+    OE_TEST(oe_load_module_host_file_system() == OE_OK);
     OE_TEST(oe_load_module_sgxfs() == OE_OK);
 
-    OE_TEST(oe_mkdir_d(OE_DEVID_HOSTFS, tmp_dir, 0777) == 0);
+    OE_TEST(oe_mkdir_d(OE_DEVID_HOST_FILE_SYSTEM, tmp_dir, 0777) == 0);
 
     printf("=== running all tests\n");
     printf("--- src_dir=%s\n", src_dir);
@@ -538,7 +538,7 @@ void test_fs(const char* src_dir, const char* tmp_dir)
         printf("=== testing oe_set_thread_devid:\n");
 
         fd_file_system fs;
-        device_registrant reg(OE_DEVID_HOSTFS);
+        device_registrant reg(OE_DEVID_HOST_FILE_SYSTEM);
         test_all(fs, tmp_dir);
     }
 

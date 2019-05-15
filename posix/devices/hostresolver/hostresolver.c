@@ -282,7 +282,7 @@ done:
         _loaded = true;
 }
 
-oe_result_t oe_load_module_hostresolver(void)
+oe_result_t oe_load_module_host_resolver(void)
 {
     if (oe_once(&_once, _load_once) != OE_OK || !_loaded)
         return OE_FAILURE;

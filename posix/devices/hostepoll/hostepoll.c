@@ -537,7 +537,7 @@ static bool _loaded;
 static void _load_once(void)
 {
     oe_result_t result = OE_FAILURE;
-    const uint64_t devid = OE_DEVID_HOSTEPOLL;
+    const uint64_t devid = OE_DEVID_HOST_EPOLL;
 
     if (oe_set_device(devid, &_epoll.base) != 0)
         OE_RAISE_ERRNO(oe_errno);
@@ -550,7 +550,7 @@ done:
         _loaded = true;
 }
 
-oe_result_t oe_load_module_hostepoll(void)
+oe_result_t oe_load_module_host_epoll(void)
 {
     if (oe_once(&_once, _load_once) != OE_OK || !_loaded)
         return OE_FAILURE;

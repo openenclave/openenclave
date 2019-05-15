@@ -40,7 +40,7 @@ int oe_socket_d(uint64_t devid, int domain, int type, int protocol)
     if (devid == OE_DEVID_NONE)
     {
         /* Only one device today. */
-        devid = OE_DEVID_HOSTSOCK;
+        devid = OE_DEVID_HOST_SOCKET_INTERFACE;
     }
 
     if (!(device = oe_get_device(devid, OE_DEVICE_TYPE_SOCKET)))
@@ -84,7 +84,7 @@ int oe_socketpair(int domain, int type, int protocol, int retfd[2])
     switch (domain)
     {
         case OE_AF_HOST:
-            devid = OE_DEVID_HOSTSOCK;
+            devid = OE_DEVID_HOST_SOCKET_INTERFACE;
             break;
 
         default:

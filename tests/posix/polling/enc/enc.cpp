@@ -29,10 +29,10 @@ static char _path[OE_PATH_MAX];
 extern "C" int ecall_device_init(const char* tmp_dir)
 {
     OE_TEST(tmp_dir != NULL);
-    OE_TEST(oe_load_module_consolefs() == OE_OK);
-    OE_TEST(oe_load_module_hostfs() == OE_OK);
-    OE_TEST(oe_load_module_hostsock() == OE_OK);
-    OE_TEST(oe_load_module_hostepoll() == OE_OK);
+    OE_TEST(oe_load_module_console_file_system() == OE_OK);
+    OE_TEST(oe_load_module_host_file_system() == OE_OK);
+    OE_TEST(oe_load_module_host_socket_interface() == OE_OK);
+    OE_TEST(oe_load_module_host_epoll() == OE_OK);
 
     strlcpy(_path, tmp_dir, sizeof(_path));
     strlcat(_path, "/test", sizeof(_path));

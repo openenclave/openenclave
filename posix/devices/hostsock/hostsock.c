@@ -939,7 +939,7 @@ static bool _loaded;
 static void _load_once(void)
 {
     oe_result_t result = OE_FAILURE;
-    const uint64_t devid = OE_DEVID_HOSTSOCK;
+    const uint64_t devid = OE_DEVID_HOST_SOCKET_INTERFACE;
 
     if (oe_set_device(devid, &_hostsock.base) != 0)
         OE_RAISE_ERRNO(oe_errno);
@@ -952,7 +952,7 @@ done:
         _loaded = true;
 }
 
-oe_result_t oe_load_module_hostsock(void)
+oe_result_t oe_load_module_host_socket_interface(void)
 {
     if (oe_once(&_once, _load_once) != OE_OK || !_loaded)
         return OE_FAILURE;

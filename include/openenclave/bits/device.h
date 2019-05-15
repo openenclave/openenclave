@@ -28,16 +28,16 @@ enum
     OE_DEVID_STDERR,
 
     /** The non-secure host file system. */
-    OE_DEVID_HOSTFS,
+    OE_DEVID_HOST_FILE_SYSTEM,
 
     /** The Intel SGX protected file system. */
     OE_DEVID_SGXFS,
 
     /** The non-secure host socket device. */
-    OE_DEVID_HOSTSOCK,
+    OE_DEVID_HOST_SOCKET_INTERFACE,
 
     /** The host epoll device. */
-    OE_DEVID_HOSTEPOLL,
+    OE_DEVID_HOST_EPOLL,
 
     /** The host eventfd device. */
     OE_DEVID_EVENTFD,

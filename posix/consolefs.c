@@ -286,7 +286,7 @@ done:
         _loaded = true;
 }
 
-oe_result_t oe_load_module_consolefs(void)
+oe_result_t oe_load_module_console_file_system(void)
 {
     if (oe_once(&_once, _load_once) != OE_OK || !_loaded)
         return OE_FAILURE;

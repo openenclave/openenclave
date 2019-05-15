@@ -20,8 +20,8 @@ struct addrinfo;
 
 int ecall_device_init()
 {
-    OE_TEST(oe_load_module_consolefs() == OE_OK);
-    OE_TEST(oe_load_module_hostresolver() == OE_OK);
+    OE_TEST(oe_load_module_console_file_system() == OE_OK);
+    OE_TEST(oe_load_module_host_resolver() == OE_OK);
     return 0;
 }
 

@@ -12,9 +12,9 @@ void test_sgxfs(const char* tmp_dir)
 {
     extern int run_main(const char* tmp_dir);
 
-    if (oe_load_module_consolefs() != OE_OK)
+    if (oe_load_module_console_file_system() != OE_OK)
     {
-        fprintf(stderr, "oe_load_module_consolefs() failed\n");
+        fprintf(stderr, "oe_load_module_console_file_system() failed\n");
         exit(1);
     }
 

@@ -88,11 +88,11 @@ extern int run_tests(void);
 
 int test()
 {
-    OE_TEST(oe_load_module_hostfs() == OE_OK);
-    OE_TEST(oe_load_module_hostsock() == OE_OK);
-    OE_TEST(oe_load_module_hostresolver() == OE_OK);
-    OE_TEST(oe_load_module_hostepoll() == OE_OK);
-    OE_TEST(oe_load_module_hostresolver() == OE_OK);
+    OE_TEST(oe_load_module_host_file_system() == OE_OK);
+    OE_TEST(oe_load_module_host_socket_interface() == OE_OK);
+    OE_TEST(oe_load_module_host_resolver() == OE_OK);
+    OE_TEST(oe_load_module_host_epoll() == OE_OK);
+    OE_TEST(oe_load_module_host_resolver() == OE_OK);
     OE_TEST(oe_load_module_eventfd() == OE_OK);
 
     if (mount("/", "/", "hostfs", 0, NULL) != 0)

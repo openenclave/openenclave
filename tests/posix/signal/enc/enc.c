@@ -22,8 +22,8 @@ void print_signal_success(int signum)
 
 int ecall_device_init()
 {
-    OE_TEST(oe_load_module_consolefs() == OE_OK);
-    OE_TEST(oe_load_module_hostfs() == OE_OK);
+    OE_TEST(oe_load_module_console_file_system() == OE_OK);
+    OE_TEST(oe_load_module_host_file_system() == OE_OK);
 
     oe_signal(OE_SIGUSR1, print_signal_success);
     return 0;
