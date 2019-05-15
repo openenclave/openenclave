@@ -265,12 +265,12 @@ typedef enum _oe_result
     OE_UNSUPPORTED_ENCLAVE_IMAGE,
 
     /**
-     * The CRL for a PCK certificate has expired.
+     * The CRL for a certificate has expired.
      */
     OE_VERIFY_CRL_EXPIRED,
 
     /**
-     * The CRL for a PCK certificate could not be found.
+     * The CRL for a certificate could not be found.
      */
     OE_VERIFY_CRL_MISSING,
 

@@ -448,13 +448,16 @@ void TestRSA(void)
     OE_TEST(read_cert("../data/Leaf.crt.pem", _CERT1) == OE_OK);
     OE_TEST(
         read_chain(
-            "../data/Intermediate.crt.pem", "../data/RootCA.crt.pem", CHAIN1) ==
-        OE_OK);
+            "../data/Intermediate.crt.pem",
+            "../data/RootCA.crt.pem",
+            CHAIN1,
+            OE_COUNTOF(CHAIN1)) == OE_OK);
     OE_TEST(
         read_chain(
             "../data/Intermediate2.crt.pem",
             "../data/RootCA2.crt.pem",
-            CHAIN2) == OE_OK);
+            CHAIN2,
+            OE_COUNTOF(CHAIN2)) == OE_OK);
     OE_TEST(
         read_mod(
             "../data/Leaf_modulus.hex",
@@ -465,7 +468,9 @@ void TestRSA(void)
     OE_TEST(
         read_sign("../data/test_rsa_signature", _SIGNATURE, &sign_size) ==
         OE_OK);
-    OE_TEST(read_mixed_chain(MIXED_CHAIN, CHAIN1, CHAIN2) == OE_OK);
+    OE_TEST(
+        read_mixed_chain(
+            CHAIN1, CHAIN2, MIXED_CHAIN, OE_COUNTOF(MIXED_CHAIN)) == OE_OK);
     _test_cert_methods();
     _test_cert_verify_good();
     _test_cert_verify_bad();

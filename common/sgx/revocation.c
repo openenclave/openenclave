@@ -238,7 +238,8 @@ oe_result_t oe_enforce_revocation(
     // constraint. If the crl_issuer_chain was different from the certificate
     // chain, then verification would fail because the CRLs will not be found
     // for certificates in the chain.
-    OE_CHECK(oe_cert_verify(leaf_cert, &crl_issuer_chain[0], crl_ptrs, 2));
+    OE_CHECK(oe_cert_verify(
+        leaf_cert, crl_issuer_chain, crl_ptrs, OE_COUNTOF(crl_ptrs)));
 
     for (uint32_t i = 0; i < OE_COUNTOF(platform_tcb_level.sgx_tcb_comp_svn);
          ++i)
@@ -273,7 +274,7 @@ oe_result_t oe_enforce_revocation(
     for (uint32_t i = 0; i < OE_COUNTOF(crls); ++i)
     {
         OE_CHECK(oe_crl_get_update_dates(
-            &crls[0], &crl_this_update_date, &crl_next_update_date));
+            &crls[i], &crl_this_update_date, &crl_next_update_date));
 
         _trace_datetime("crl this update date ", &crl_this_update_date);
         _trace_datetime("crl next update date ", &crl_next_update_date);

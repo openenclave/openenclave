@@ -250,13 +250,17 @@ void TestCRL(void)
     OE_TEST(read_cert("../data/Leaf.crt.pem", _CERT2) == OE_OK);
 
     OE_TEST(
-        read_chain("../data/Leaf.crt.pem", "../data/RootCA.crt.pem", _CHAIN1) ==
-        OE_OK);
+        read_chain(
+            "../data/Leaf.crt.pem",
+            "../data/RootCA.crt.pem",
+            _CHAIN1,
+            OE_COUNTOF(_CHAIN1)) == OE_OK);
     OE_TEST(
         read_chain(
             "../data/Intermediate.crt.pem",
             "../data/RootCA.crt.pem",
-            _CHAIN2) == OE_OK);
+            _CHAIN2,
+            OE_COUNTOF(_CHAIN2)) == OE_OK);
 
     OE_TEST(
         read_crl("../data/intermediate_crl.der", _CRL1, &crl_size1) == OE_OK);
