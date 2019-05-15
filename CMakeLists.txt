@@ -185,6 +185,7 @@ if (USE_DEBUG_MALLOC AND WIN32)
 endif ()
 
 option(ADD_WINDOWS_ENCLAVE_TESTS "Build Windows enclave tests" OFF)
+# Warning: turning on simulation mode on Windows may cause test failures and random crashes
 option(WIN32_SIMULATION "Windows Simulation Mode" OFF)
 
 find_program(VALGRIND "valgrind")
