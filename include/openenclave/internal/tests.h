@@ -21,7 +21,7 @@
 
 OE_EXTERNC_BEGIN
 
-#define OE_TEST(COND)                           \
+#define OE_TEST_IF(COND, OE_TEST_ABORT)         \
     do                                          \
     {                                           \
         if (!(COND))                            \
@@ -33,9 +33,14 @@ OE_EXTERNC_BEGIN
                 __LINE__,                       \
                 __FUNCTION__,                   \
                 #COND);                         \
-            OE_ABORT();                         \
+            if (OE_TEST_ABORT)                  \
+                OE_ABORT();                     \
         }                                       \
     } while (0)
+
+#define OE_TEST(COND) OE_TEST_IF(COND, true)
+
+#define OE_TEST_IGNORE(COND) OE_TEST_IF(COND, false)
 
 /*
  * Return flags to pass to oe_create_enclave() based on the OE_SIMULATION
