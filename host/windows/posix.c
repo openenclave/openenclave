@@ -2027,7 +2027,7 @@ int oe_posix_uname_ocall(struct oe_utsname* buf)
     memset(buf->release, 0, __OE_UTSNAME_FIELD_SIZE);
     memset(buf->version, 0, __OE_UTSNAME_FIELD_SIZE);
     memset(buf->machine, 0, __OE_UTSNAME_FIELD_SIZE);
-    memset(buf->__domainname, 0, __OE_UTSNAME_FIELD_SIZE);
+    memset(buf->domainname, 0, __OE_UTSNAME_FIELD_SIZE);
 
     snprintf(
         buf->release,
@@ -2039,7 +2039,7 @@ int oe_posix_uname_ocall(struct oe_utsname* buf)
 
     GetEnvironmentVariable("OS", buf->sysname, __OE_UTSNAME_FIELD_SIZE);
     GetEnvironmentVariable(
-        "USERDNSDOMAIN", buf->__domainname, __OE_UTSNAME_FIELD_SIZE);
+        "USERDNSDOMAIN", buf->domainname, __OE_UTSNAME_FIELD_SIZE);
     GetEnvironmentVariable(
         "COMPUTERNAME", buf->nodename, __OE_UTSNAME_FIELD_SIZE);
 
