@@ -284,7 +284,7 @@ if (FALSE)
         3rdparty/musl/libc-test/src/functional/sscanf_long.c
         3rdparty/musl/libc-test/src/functional/search_hsearch.c
         3rdparty/musl/libc-test/src/functional/sem_init.c
-        3rdparty/musl/libc-test/src/functional/sem_open.
+        3rdparty/musl/libc-test/src/functional/sem_open.c
         3rdparty/musl/libc-test/src/functional/setjmp.c
         3rdparty/musl/libc-test/src/functional/socket.c
         3rdparty/musl/libc-test/src/functional/spawn.c
