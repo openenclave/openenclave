@@ -24,7 +24,7 @@ void _set_to_fd_list(
     uint32_t* pbits = (uint32_t*)set->fds_bits;
     uint32_t bitpos;
 
-    for (idx = 0; idx<OE_FD_SETSIZE>> 5; idx++)
+    for (idx = 0; idx < (OE_FD_SETSIZE >> 5); idx++)
     {
         uint32_t bitmask = 1;
         for (bitpos = 0; bitpos < 8 * sizeof(long); bitpos++)

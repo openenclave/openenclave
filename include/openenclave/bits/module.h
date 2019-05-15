@@ -20,22 +20,22 @@
 OE_EXTERNC_BEGIN
 
 /* Load the host file system module. */
-oe_result_t oe_load_module_hostfs(void);
+oe_result_t oe_load_module_host_file_system(void);
 
 /* Load the host socket module. */
-oe_result_t oe_load_module_hostsock(void);
+oe_result_t oe_load_module_host_socket_interface(void);
 
 /* Load the host resolver module. */
-oe_result_t oe_load_module_hostresolver(void);
+oe_result_t oe_load_module_host_resolver(void);
 
 /* Load the event polling module. */
-oe_result_t oe_load_module_hostepoll(void);
+oe_result_t oe_load_module_host_epoll(void);
 
 /* Load the eventfd module. */
 oe_result_t oe_load_module_eventfd(void);
 
 /* Load the console devices (stdin, stdout, stderr). */
-oe_result_t oe_load_module_consolefs(void);
+oe_result_t oe_load_module_console_file_system(void);
 
 OE_EXTERNC_END
 

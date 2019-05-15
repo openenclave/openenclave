@@ -12,7 +12,6 @@
 #include <openenclave/internal/trace.h>
 #include "posix_t.h"
 
-#define DEVICE_NAME "consolefs"
 #define MAGIC 0x0b292bab
 
 typedef struct _file
@@ -74,29 +73,37 @@ done:
 }
 
 static int _consolefs_ioctl(
-    oe_device_t* file,
+    oe_device_t* dev,
     unsigned long request,
     uint64_t arg)
 {
     int ret = -1;
+    file_t* file = _cast_file(dev);
 
-    OE_UNUSED(file);
-    OE_UNUSED(request);
-    OE_UNUSED(arg);
-    OE_RAISE_ERRNO(OE_ENOTSUP);
+    oe_errno = 0;
+
+    if (!file)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    if (oe_posix_ioctl_ocall(&ret, file->host_fd, request, arg) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
     return ret;
 }
 
-static int _consolefs_fcntl(oe_device_t* file, int cmd, uint64_t arg)
+static int _consolefs_fcntl(oe_device_t* dev, int cmd, uint64_t arg)
 {
     int ret = -1;
+    file_t* file = _cast_file(dev);
 
-    OE_UNUSED(file);
-    OE_UNUSED(cmd);
-    OE_UNUSED(arg);
-    OE_RAISE_ERRNO(OE_ENOTSUP);
+    oe_errno = 0;
+
+    if (!file)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    if (oe_posix_fcntl_ocall(&ret, file->host_fd, cmd, arg) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
     return ret;
@@ -240,7 +247,7 @@ static oe_fs_ops_t _ops = {
 
 static file_t _stdin_file = {
     .base.type = OE_DEVICE_TYPE_FILESYSTEM,
-    .base.name = DEVICE_NAME,
+    .base.name = OE_DEVICE_NAME_STDIN,
     .base.ops.fs = &_ops,
     .magic = MAGIC,
     .host_fd = OE_STDIN_FILENO,
@@ -248,7 +255,7 @@ static file_t _stdin_file = {
 
 static file_t _stdout_file = {
     .base.type = OE_DEVICE_TYPE_FILESYSTEM,
-    .base.name = DEVICE_NAME,
+    .base.name = OE_DEVICE_NAME_STDOUT,
     .base.ops.fs = &_ops,
     .magic = MAGIC,
     .host_fd = OE_STDOUT_FILENO,
@@ -256,7 +263,7 @@ static file_t _stdout_file = {
 
 static file_t _stderr_file = {
     .base.type = OE_DEVICE_TYPE_FILESYSTEM,
-    .base.name = DEVICE_NAME,
+    .base.name = OE_DEVICE_NAME_STDERR,
     .base.ops.fs = &_ops,
     .magic = MAGIC,
     .host_fd = OE_STDERR_FILENO,
@@ -286,7 +293,7 @@ done:
         _loaded = true;
 }
 
-oe_result_t oe_load_module_consolefs(void)
+oe_result_t oe_load_module_console_file_system(void)
 {
     if (oe_once(&_once, _load_once) != OE_OK || !_loaded)
         return OE_FAILURE;

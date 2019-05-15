@@ -13,7 +13,7 @@ static size_t _resolver_table_len = 3;
 static oe_resolver_t* _resolver_table[3] = {0}; // At most 3
 static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
 
-/* Called by the public oe_load_module_hostresolver() function. */
+/* Called by the public oe_load_module_host_resolver() function. */
 int oe_register_resolver(int resolver_priority, oe_resolver_t* presolver)
 {
     int ret = -1;

@@ -315,6 +315,9 @@ int oe_dup2(int oldfd, int newfd)
     oe_device_t* new_dev = NULL;
     int retval = -1;
 
+    if (oldfd == newfd)
+        return newfd;
+
     if (!(old_dev = oe_fdtable_get(oldfd, OE_DEVICE_TYPE_ANY)))
         OE_RAISE_ERRNO(OE_EBADF);
 

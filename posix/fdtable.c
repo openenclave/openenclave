@@ -70,7 +70,7 @@ static int _resize_table(size_t new_size)
         if (!(p = oe_realloc(_table, n * sizeof(entry_t))))
             goto done;
 
-        /* Zero-fill the unused porition. */
+        /* Zero-fill the unused portion. */
         {
             const size_t num_bytes = (n - _table_size) * sizeof(entry_t);
 
@@ -195,7 +195,7 @@ static oe_device_t* _get_fd_device(int fd)
     oe_device_t* ret = NULL;
 
     /* Auto-load the console file system. */
-    if (oe_load_module_consolefs() != OE_OK)
+    if (oe_load_module_console_file_system() != OE_OK)
         OE_RAISE_ERRNO(oe_errno);
 
     oe_spin_lock(&_lock);
