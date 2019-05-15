@@ -16,6 +16,12 @@ enclave {
     [count=3] uint64_t* ptr;
   };
 
+  struct CountParamStruct {
+    uint64_t count;
+    size_t size;
+    [count=count] uint64_t* ptr;
+  };
+
   trusted {
     // Since `s` is passed by value, `s.ptr` is not deep copied.
     public void deepcopy_value(ShallowStruct s, [user_check] uint64_t* ptr);
@@ -27,5 +33,9 @@ enclave {
     // Deep copy of one `CountStruct` with an embedded array should
     // take place.
     public void deepcopy_count([in, count=1] CountStruct* s);
+
+    // Deep copy of one `CountParamStruct` with an embedded array
+    // should take place.
+    public void deepcopy_countparam([in, count=1] CountParamStruct* s);
   };
 };
