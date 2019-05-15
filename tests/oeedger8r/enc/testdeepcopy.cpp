@@ -7,6 +7,15 @@
 #include <openenclave/internal/tests.h>
 #include "all_t.h"
 
+static uint64_t data[8] = {0x1112131415161718,
+                           0x2122232425262728,
+                           0x3132333435363738,
+                           0x4142434445464748,
+                           0x5152535455565758,
+                           0x6162636465666768,
+                           0x7172737475767778,
+                           0x8182838485868788};
+
 // Assert that the struct is copied by value, such that `s.ptr` is the
 // address of `data[]` in the host (also passed via `ptr`).
 void deepcopy_value(ShallowStruct s, uint64_t* ptr)
@@ -26,4 +35,15 @@ void deepcopy_shallow(ShallowStruct* s, uint64_t* ptr)
     OE_TEST(s->size == 64);
     OE_TEST(s->ptr == ptr);
     OE_TEST(oe_is_outside_enclave(s->ptr, sizeof(uint64_t)));
+}
+
+// Assert that the struct is deep-copied such that `s->ptr` has a copy
+// of three elements of `data` in enclave memory.
+void deepcopy_count(CountStruct* s)
+{
+    OE_TEST(s->count == 7);
+    OE_TEST(s->size == 64);
+    for (size_t i = 0; i < 3; ++i)
+        OE_TEST(s->ptr[i] == data[i]);
+    OE_TEST(oe_is_within_enclave(s->ptr, 3 * sizeof(uint64_t)));
 }

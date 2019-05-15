@@ -30,9 +30,15 @@ std::array<T, 2> init_structs()
 
 void test_deepcopy_edl_ecalls(oe_enclave_t* enclave)
 {
+    // NOTE: These test backwards-compatibility and so should succeed
+    // without deep copy support.
     auto shallow = init_structs<ShallowStruct>();
     OE_TEST(deepcopy_value(enclave, shallow[0], data) == OE_OK);
     OE_TEST(deepcopy_shallow(enclave, &shallow[0], data) == OE_OK);
+
+    // TODO: This should succeed only once deep copy is enabled.
+    auto count = init_structs<CountStruct>();
+    OE_TEST(deepcopy_count(enclave, &count[0]) == OE_OK);
 
     printf("=== test_deepcopy_edl_ecalls passed\n");
 }

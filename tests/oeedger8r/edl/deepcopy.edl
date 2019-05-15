@@ -10,6 +10,12 @@ enclave {
     uint64_t* ptr;
   };
 
+  struct CountStruct {
+    uint64_t count;
+    size_t size;
+    [count=3] uint64_t* ptr;
+  };
+
   trusted {
     // Since `s` is passed by value, `s.ptr` is not deep copied.
     public void deepcopy_value(ShallowStruct s, [user_check] uint64_t* ptr);
@@ -17,5 +23,9 @@ enclave {
     // Although `s` is passed by pointer, because `s.ptr` does not
     // have any attribute, it is still not deep copied.
     public void deepcopy_shallow([in, count=1] ShallowStruct* s, [user_check] uint64_t* ptr);
+
+    // Deep copy of one `CountStruct` with an embedded array should
+    // take place.
+    public void deepcopy_count([in, count=1] CountStruct* s);
   };
 };
