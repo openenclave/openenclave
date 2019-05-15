@@ -6,8 +6,8 @@
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #if defined(_MSC_VER)
-#include <windows.h>
 #include <stdint.h>
+#include <windows.h>
 typedef int32_t gid_t;
 #else
 #include <unistd.h>
@@ -23,11 +23,11 @@ static int _getppid(void)
     int pid = -1;
     int ppid = -1;
     HANDLE h = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-    PROCESSENTRY32 pe = { 0 };
+    PROCESSENTRY32 pe = {0};
     pe.dwSize = sizeof(PROCESSENTRY32);
 
     pid = GetCurrentProcessId();
-    if(Process32First(h, &pe))
+    if (Process32First(h, &pe))
     {
         do
         {
@@ -36,7 +36,7 @@ static int _getppid(void)
                 ppid = pe.th32ParentProcessID;
                 break;
             }
-        } while( Process32Next(h, &pe));
+        } while (Process32Next(h, &pe));
     }
     CloseHandle(h);
     return ppid;
@@ -87,7 +87,7 @@ int main(int argc, const char* argv[])
             list,
             (size_t)size);
 #else
-        gid_t list[] = {4,20,24,25,27,29,30,44,46,109,110};
+        gid_t list[] = {4, 20, 24, 25, 27, 29, 30, 44, 46, 109, 110};
 
         r = test_ids(
             enclave,
@@ -99,7 +99,7 @@ int main(int argc, const char* argv[])
             1001, // getegid(),
             0,    // getpgrp(),
             list,
-            sizeof(list)/sizeof(list[0]));
+            sizeof(list) / sizeof(list[0]));
 #endif
 
         // size_t num_groups,
