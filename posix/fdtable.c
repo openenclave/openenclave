@@ -70,7 +70,7 @@ static int _resize_table(size_t new_size)
         if (!(p = oe_realloc(_table, n * sizeof(entry_t))))
             goto done;
 
-        /* Zero-fill the unused porition. */
+        /* Zero-fill the unused portion. */
         {
             const size_t num_bytes = (n - _table_size) * sizeof(entry_t);
 

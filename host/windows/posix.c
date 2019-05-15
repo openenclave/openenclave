@@ -1959,12 +1959,13 @@ int oe_posix_shutdown_polling_device_ocall(oe_host_fd_t fd)
 **==============================================================================
 */
 
-/* You cna't make an automatic translation between windows SID and unix uid/gid. Eventually you need 
- * to just return plausible dummy data. In this case, the default group memberships from ubuntu 18.04
+/* You cna't make an automatic translation between windows SID and unix uid/gid.
+ * Eventually you need to just return plausible dummy data. In this case, the
+ * default group memberships from ubuntu 18.04
  */
 static const int32_t USER_ID = 1001;
 static const int32_t GROUP_ID = 1001;
-static const int32_t GROUPS[] = {4,20,24,25,27,29,30,44,46,109,110};
+static const int32_t GROUPS[] = {4, 20, 24, 25, 27, 29, 30, 44, 46, 109, 110};
 
 int oe_posix_getpid(void)
 {
@@ -1979,20 +1980,20 @@ int oe_posix_getppid(void)
     int pid = -1;
     int ppid = -1;
     HANDLE h = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-    PROCESSENTRY32 pe = { 0 };
+    PROCESSENTRY32 pe = {0};
     pe.dwSize = sizeof(PROCESSENTRY32);
 
     pid = GetCurrentProcessId();
-    if(Process32First(h, &pe))
+    if (Process32First(h, &pe))
     {
-        do 
+        do
         {
             if (pe.th32ProcessID == pid)
             {
                 ppid = pe.th32ParentProcessID;
                 break;
             }
-        } while( Process32Next(h, &pe));
+        } while (Process32Next(h, &pe));
     }
     CloseHandle(h);
     return ppid;
@@ -2000,7 +2001,8 @@ int oe_posix_getppid(void)
 
 int oe_posix_getpgrp(void)
 {
-    return 0; // Means the process group is identical to the process. Windows doens't really have process groups
+    return 0; // Means the process group is identical to the process. Windows
+              // doens't really have process groups
 }
 
 unsigned int oe_posix_getuid(void)
@@ -2032,20 +2034,20 @@ int oe_posix_getgroups(size_t size, unsigned int* list)
 {
     if (size == 0)
     {
-        return (int32_t)(sizeof(GROUPS)/sizeof(GROUPS[0]));
+        return (int32_t)(sizeof(GROUPS) / sizeof(GROUPS[0]));
     }
-    if ( size < (sizeof(GROUPS)/sizeof(GROUPS[0])))
+    if (size < (sizeof(GROUPS) / sizeof(GROUPS[0])))
     {
         _set_errno(OE_EINVAL);
         return -1;
     }
-    else 
+    else
     {
-        size = (sizeof(GROUPS)/sizeof(GROUPS[0]));
+        size = (sizeof(GROUPS) / sizeof(GROUPS[0]));
     }
-    
+
     memcpy(list, GROUPS, sizeof(GROUPS));
-    return (int32_t) size;
+    return (int32_t)size;
 }
 
 /*

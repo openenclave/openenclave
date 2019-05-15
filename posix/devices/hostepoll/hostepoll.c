@@ -61,7 +61,7 @@ static int _map_reserve(epoll_t* epoll, size_t new_capacity)
         if (!(p = oe_realloc(epoll->map, n * sizeof(pair_t))))
             goto done;
 
-        /* Zero-fill the unused porition. */
+        /* Zero-fill the unused portion. */
         {
             const size_t num_bytes = (n - epoll->map_size) * sizeof(pair_t);
             void* ptr = p + epoll->map_size;

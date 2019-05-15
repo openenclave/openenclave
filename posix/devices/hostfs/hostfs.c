@@ -635,14 +635,14 @@ static int _hostfs_ioctl(
 {
     int ret = -1;
     file_t* file = _cast_file(file_);
-    OE_UNUSED(file);
-    OE_UNUSED(request);
-    OE_UNUSED(arg);
+
+    oe_errno = 0;
 
     if (!file)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    OE_RAISE_ERRNO(OE_ENOTSUP);
+    if (oe_posix_ioctl_ocall(&ret, file->host_fd, request, arg) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
     return ret;

@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/epoll.h>
+#include <sys/ioctl.h>
 #include <sys/poll.h>
 #include <sys/signal.h>
 #include <sys/socket.h>
@@ -464,6 +465,16 @@ int oe_posix_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg)
     errno = 0;
 
     return fcntl((int)fd, cmd, arg);
+}
+
+int oe_posix_ioctl_ocall(
+    oe_host_fd_t fd,
+    unsigned long request,
+    unsigned long arg)
+{
+    errno = 0;
+
+    return ioctl((int)fd, request, arg);
 }
 
 int oe_posix_setsockopt_ocall(

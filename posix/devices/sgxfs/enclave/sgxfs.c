@@ -561,16 +561,19 @@ static int _sgxfs_ioctl(oe_device_t* file, unsigned long request, uint64_t arg)
     OE_UNUSED(request);
     OE_UNUSED(arg);
 
+    /* Note: ioctl() is unsupportable on this device. */
+
     oe_errno = ENOTSUP;
     return -1;
 }
 
 static int _sgxfs_fcntl(oe_device_t* file, int cmd, uint64_t arg)
 {
-    /* Unsupported */
     OE_UNUSED(file);
     OE_UNUSED(cmd);
     OE_UNUSED(arg);
+
+    /* Note: ioctl() is unsupportable on this device. */
 
     oe_errno = ENOTSUP;
     return -1;
