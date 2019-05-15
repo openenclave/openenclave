@@ -24,7 +24,6 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/functional/search_tsearch.c
     3rdparty/musl/libc-test/src/functional/snprintf.c
     3rdparty/musl/libc-test/src/functional/sscanf.c
-    3rdparty/musl/libc-test/src/functional/sscanf_long.c
     3rdparty/musl/libc-test/src/functional/string.c
     3rdparty/musl/libc-test/src/functional/string_memcpy.c
     3rdparty/musl/libc-test/src/functional/string_memmem.c
@@ -38,6 +37,7 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/functional/strtof.c
     3rdparty/musl/libc-test/src/functional/strtol.c
     3rdparty/musl/libc-test/src/functional/strtold.c
+    3rdparty/musl/libc-test/src/functional/tls_align.c
     3rdparty/musl/libc-test/src/functional/udiv.c
     3rdparty/musl/libc-test/src/functional/wcsstr.c
     3rdparty/musl/libc-test/src/functional/wcstol.c
@@ -233,7 +233,7 @@ set(LIBC_TESTS
 )
 
 # Exclude tests that fail on Clang:
-if (NOT MY_COMPILER MATCHES "CLANG")
+if (NOT (USE_CLANGW OR MY_COMPILER MATCHES "CLANG"))
     list(APPEND LIBC_TESTS 
         3rdparty/musl/libc-test/src/functional/tgmath.c
         3rdparty/musl/libc-test/src/math/fmax.c
@@ -249,32 +249,6 @@ if (NOT MY_COMPILER MATCHES "CLANG")
         3rdparty/musl/libc-test/src/math/y1.c
         3rdparty/musl/libc-test/src/math/y1f.c
         3rdparty/musl/libc-test/src/math/yn.c
-    )
-endif()
-
-# Exclude tests that fail these Clang builds:
-if (NOT (BUILD MATCHES "CLANG:DEBUG" OR BUILD MATCHES "CLANG:RELWITHDEBINFO"))
-    list(APPEND LIBC_TESTS 
-        #3rdparty/musl/libc-test/src/math/fdim.c
-        #3rdparty/musl/libc-test/src/math/fdimf.c
-        #3rdparty/musl/libc-test/src/math/fdiml.c
-        #3rdparty/musl/libc-test/src/math/fmaf.c
-        #3rdparty/musl/libc-test/src/math/log1p.c
-        #3rdparty/musl/libc-test/src/math/log1pf.c
-        #3rdparty/musl/libc-test/src/math/powf.c
-    )
-endif()
-
-##==============================================================================
-##
-## Broken tests:
-##
-##==============================================================================
-
-if (FALSE)
-    list(APPEND LIBC_TESTS 
-        #Issue #1090 opened to track broken test
-        3rdparty/musl/libc-test/src/functional/tls_align.c
     )
 endif()
 
@@ -306,6 +280,8 @@ if (FALSE)
         3rdparty/musl/libc-test/src/functional/pthread_mutex.c
         3rdparty/musl/libc-test/src/functional/pthread_robust.c
         3rdparty/musl/libc-test/src/functional/pthread_tsd.c
+        # sscanf_long Runs out of memory on Windows and Linux CI
+        3rdparty/musl/libc-test/src/functional/sscanf_long.c
         3rdparty/musl/libc-test/src/functional/search_hsearch.c
         3rdparty/musl/libc-test/src/functional/sem_init.c
         3rdparty/musl/libc-test/src/functional/sem_open.c

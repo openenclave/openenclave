@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <libgen.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/tests.h>
 #include <search.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -16,7 +17,34 @@
 #include "libc_t.h"
 #include "mtest.h"
 
+#pragma STDC FENV_ACCESS ON
+
+/* Type of the control word.  */
+typedef unsigned int fpu_control_t __attribute__((__mode__(__HI__)));
+/* Macros for accessing the hardware control word.  */
+#define _FPU_GETCW(cw) __asm__ __volatile__("fnstcw %0" : "=m"(*&cw))
+#define _FPU_SETCW(cw) __asm__ __volatile__("fldcw %0" : : "m"(*&cw))
+
 int t_status = 0;
+
+int my_printfpu_control()
+{
+    fpu_control_t cw;
+    _FPU_GETCW(cw);
+    return cw;
+}
+
+uint32_t my_getmxcsr()
+{
+    uint32_t csr;
+    asm volatile("stmxcsr %0" : "=m"(csr));
+    return csr;
+}
+
+void my_setmxcsr(uint32_t csr)
+{
+    asm volatile("ldmxcsr %0" : : "m"(csr));
+}
 
 int t_printf(const char* s, ...)
 {
@@ -45,6 +73,14 @@ int run_test(const char* name, int (*main)(int argc, const char* argv[]))
 
     /* Print running message. */
     printf("=== running: %s\n", name);
+
+    /* Verify that the FPU control word and SSE control/status flags are set
+     * correctly before each test */
+    uint32_t cw = my_printfpu_control();
+    OE_TEST(cw == 0x37f);
+
+    uint32_t csr = my_getmxcsr();
+    OE_TEST(csr == 0x1f80);
 
     /* Disable Open Enclave debug malloc checks. */
     {
@@ -93,6 +129,6 @@ OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
     true, /* AllowDebug */
-    4096, /* HeapPageCount */
-    1024, /* StackPageCount */
+    512,  /* HeapPageCount */
+    256,  /* StackPageCount */
     2);   /* TCSCount */

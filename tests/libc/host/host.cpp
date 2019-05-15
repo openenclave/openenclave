@@ -10,6 +10,24 @@
 #include <cstring>
 #include "libc_u.h"
 
+#if defined(_WIN32)
+#include <xmmintrin.h>
+
+uint32_t my_getmxcsr()
+{
+    uint32_t csr;
+
+    csr = _mm_getcsr();
+    return csr;
+}
+
+void my_setmxcsr(uint32_t csr)
+{
+    _mm_setcsr(csr);
+}
+
+#endif
+
 void Test(oe_enclave_t* enclave)
 {
     int rval = 1;
@@ -47,12 +65,28 @@ int main(int argc, const char* argv[])
 
     printf("=== %s: %s\n", argv[0], argv[1]);
 
+#if defined(_WIN32)
+    volatile uint32_t csr;
+    csr = my_getmxcsr();
+    OE_TEST(csr == 0x1f80);
+#endif
+
     // Create the enclave:
     if ((result = oe_create_libc_enclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
         oe_put_err("oe_create_libc_enclave(): result=%u", result);
 
+#if defined(_WIN32)
+    csr = my_getmxcsr();
+    OE_TEST(csr == 0x1f80);
+#endif
+
     Test(enclave);
+
+#if defined(_WIN32)
+    csr = my_getmxcsr();
+    OE_TEST(csr == 0x1f80);
+#endif
 
     r = oe_terminate_enclave(enclave);
     OE_TEST(r == OE_OK);

@@ -117,8 +117,6 @@ if (OE_SGX)
       message(FATAL_ERROR "Clang version 7.0 or higher is required")
     endif ()
 
-    # Setup cross compiler (clangw)
-    add_subdirectory(windows/clangw)
     set(USE_CLANGW ON)
   endif()
 else() # NOT OE_SGX
