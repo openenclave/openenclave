@@ -64,5 +64,9 @@ enclave {
     // Deep copy of two `CountParamStruct`s each with an embedded
     // array and different counts should take place.
     public void deepcopy_countparamarray([in, count=2] CountParamStruct* s);
+
+    // Deep copy of two `SizeParamStruct`s each with an embedded
+    // array and different sizes should take place.
+    public void deepcopy_sizeparamarray([in, count=2] SizeParamStruct* s);
   };
 };

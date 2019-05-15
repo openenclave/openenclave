@@ -69,5 +69,10 @@ void test_deepcopy_edl_ecalls(oe_enclave_t* enclave)
         OE_TEST(deepcopy_countparamarray(enclave, s.data()) == OE_OK);
     }
 
+    {
+        auto s = init_structs<SizeParamStruct>();
+        OE_TEST(deepcopy_sizeparamarray(enclave, s.data()) == OE_OK);
+    }
+
     printf("=== test_deepcopy_edl_ecalls failures ignored!\n");
 }
