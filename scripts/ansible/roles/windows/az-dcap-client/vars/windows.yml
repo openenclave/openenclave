@@ -2,8 +2,8 @@
 # Licensed under the MIT License.
 
 ---
-psw_archive_url: 'http://registrationcenter-download.intel.com/akdlm/irc_nas/15018/Intel%20SGX%20PSW%20for%20Windows%20v2.2.100.48339.exe'
-dcap_archive_url: 'http://registrationcenter-download.intel.com/akdlm/irc_nas/15017/Intel%20SGX%20DCAP%20for%20Windows%20v1.0.100.48134.exe'
+psw_archive_url: 'https://oejenkins.blob.core.windows.net/oejenkins/Intel_SGX_PSW_for_Windows_v2.3.100.49777.exe'
+dcap_archive_url: 'https://oejenkins.blob.core.windows.net/oejenkins/Intel_SGX_DCAP_for_Windows_v1.1.100.49925.exe'
 azure_dcap_client_nupkg_url: 'https://oejenkins.blob.core.windows.net/oejenkins/Microsoft.Azure.DCAP.Client.1.0.0.nupkg'
 nuget_bin_url: 'https://dist.nuget.org/win-x86-commandline/latest/nuget.exe'
 devcon_bin_url: 'https://oejenkins.blob.core.windows.net/oejenkins/devcon.exe'

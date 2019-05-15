@@ -115,7 +115,7 @@
     $ErrorActionPreference = "Stop"
     $drivers = @{
         'sgx_base_dev' = @{
-            'zip_path' = '{{ tmp_dir }}\Intel_SGX_DCAP\Intel SGX DCAP for Windows *\LC_driver_WinServer2016\WinServer2016\Signed_*.zip'
+            'zip_path' = '{{ tmp_dir }}\Intel_SGX_DCAP\Intel SGX DCAP for Windows *\LC_driver_WinServer2016\Signed_*.zip'
             'location' = 'root\SgxLCDevice'
         }
         'sgx_dcap_dev' = @{
