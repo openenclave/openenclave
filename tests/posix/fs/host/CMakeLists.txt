@@ -8,4 +8,9 @@ add_executable(fs_host host.c ${gen})
 
 target_include_directories(fs_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
+if (UNIX)
 target_link_libraries(fs_host oesgxfshost oehostapp)
+else ()
+target_link_libraries(fs_host oehostapp)
+endif()
+
