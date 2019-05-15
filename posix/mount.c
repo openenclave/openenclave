@@ -131,7 +131,6 @@ int oe_mount(
     oe_device_t* device = NULL;
     oe_device_t* new_device = NULL;
     bool locked = false;
-    int retval = -1;
 
     OE_UNUSED(data);
 
@@ -173,15 +172,13 @@ int oe_mount(
     /* Reject duplicate mount paths. */
     for (size_t i = 0; i < _mount_table_size; i++)
     {
-        retval = oe_strcmp(_mount_table[i].path, target);
-        if (retval == 0)
+        if (oe_strcmp(_mount_table[i].path, target) == 0)
             OE_RAISE_ERRNO(OE_EEXIST);
     }
 
     /* Clone the device. */
-    retval = OE_CALL_FS(clone, device, &new_device);
-    if (retval != 0)
-        OE_RAISE_ERRNO(OE_ENOMEM);
+    if (OE_CALL_FS(clone, device, &new_device) != 0)
+        OE_RAISE_ERRNO(oe_errno);
 
     /* Assign and initialize new mount point. */
     {
@@ -261,14 +258,13 @@ int oe_umount2(const char* target, int flags)
     /* Remove the entry by swapping with the last entry. */
     {
         oe_device_t* fs = _mount_table[index].fs;
-        int retval = -1;
 
         oe_free(_mount_table[index].path);
         fs = _mount_table[index].fs;
         _mount_table[index] = _mount_table[_mount_table_size - 1];
         _mount_table_size--;
 
-        if ((retval = OE_CALL_FS(unmount, fs, target)) != 0)
+        if (OE_CALL_FS(unmount, fs, target) != 0)
             OE_RAISE_ERRNO(oe_errno);
 
         OE_CALL_FS(release, fs);
