@@ -2,6 +2,10 @@
 # Licensed under the MIT License.
 
 ---
+- name: Include distribution vars
+  include_vars:
+    file: "{{ ansible_distribution | lower }}.yml"
+
 - block:
   - import_role:
       name: common/jenkins

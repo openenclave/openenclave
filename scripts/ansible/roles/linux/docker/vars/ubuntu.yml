@@ -1,0 +1,14 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+---
+docker_target_version: "18.09"
+dockerd_target_version: "18.09"
+
+apt_packages:
+  - "docker-ce"
+
+validation_binaries:
+  - "/usr/bin/docker"
+  - "/usr/bin/dockerd"
+  - "/usr/bin/git"

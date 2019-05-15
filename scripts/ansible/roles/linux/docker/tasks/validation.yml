@@ -1,0 +1,28 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+---
+- name: Include distribution vars
+  include_vars:
+    file: "{{ ansible_distribution | lower }}.yml"
+
+- name: Include distribution release specific vars
+  include_vars:
+    file: "{{ ansible_distribution_release | lower }}.yml"
+
+- name: Check for existing required binaries
+  stat:
+    path: "{{ item }}"
+  with_items: "{{ validation_binaries }}"
+  register: binary
+  failed_when: binary.stat.executable == False
+
+- name: Docker version check
+  command: "docker --version"
+  register: docker_check_version
+  failed_when: docker_check_version.stdout.find(docker_target_version) == -1
+
+- name: Dockerd version check
+  command: "dockerd --version"
+  register: dockerd_check_version
+  failed_when: dockerd_check_version.stdout.find(dockerd_target_version) == -1

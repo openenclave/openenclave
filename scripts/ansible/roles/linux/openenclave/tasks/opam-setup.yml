@@ -9,10 +9,6 @@
   include_vars:
     file: "{{ ansible_distribution | lower }}.yml"
 
-- name: Include distribution release specific vars
-  include_vars:
-    file: "{{ ansible_distribution_release | lower }}.yml"
-
 - name: Add extra bubblewrap APT repository for Ubuntu Xenial
   block:
     - apt_key:

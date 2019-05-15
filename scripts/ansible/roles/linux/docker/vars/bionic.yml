@@ -2,9 +2,6 @@
 # Licensed under the MIT License.
 
 ---
-apt_packages:
-  - "docker-ce"
-
 ci_apt_packages:
   - "automake"
   - "dh-exec"

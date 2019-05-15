@@ -19,9 +19,9 @@
     apt_key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
     apt_repository: "deb http://apt.llvm.org/{{ ansible_distribution_release }} llvm-toolchain-{{ ansible_distribution_release }}-7 main"
 
-- name: Include vars
+- name: Include distribution vars
   include_vars:
-    file: "{{ ansible_distribution_release | lower }}.yml"
+    file: "{{ ansible_distribution | lower }}.yml"
 
 - name: Install all the Open Enclave prerequisites APT packages for development
   apt:
