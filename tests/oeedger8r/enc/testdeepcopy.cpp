@@ -69,3 +69,14 @@ void deepcopy_sizeparam(SizeParamStruct* s)
         OE_TEST(s->ptr[i] == data[i]);
     OE_TEST(oe_is_within_enclave(s->ptr, s->size));
 }
+
+// Assert that the struct is deep-copied such that `s->ptr` has a copy
+// of `s->count * s->size` bytes of `data` in enclave memory.
+void deepcopy_countsizeparam(CountSizeParamStruct* s)
+{
+    OE_TEST(s->count == 8);
+    OE_TEST(s->size == 4);
+    for (size_t i = 0; i < (s->count * s->size) / sizeof(uint64_t); ++i)
+        OE_TEST(s->ptr[i] == data[i]);
+    OE_TEST(oe_is_within_enclave(s->ptr, s->count * s->size));
+}

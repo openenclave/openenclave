@@ -56,5 +56,13 @@ void test_deepcopy_edl_ecalls(oe_enclave_t* enclave)
         OE_TEST(deepcopy_sizeparam(enclave, &s[0]) == OE_OK);
     }
 
+    {
+        // TODO: This should succeed only once deep copy is enabled.
+        auto s = init_structs<CountSizeParamStruct>();
+        s[0].count = 8;
+        s[0].size = 4;
+        OE_TEST(deepcopy_countsizeparam(enclave, &s[0]) == OE_OK);
+    }
+
     printf("=== test_deepcopy_edl_ecalls passed\n");
 }
