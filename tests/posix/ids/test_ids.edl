@@ -7,12 +7,12 @@ enclave {
         public void test_ids(
             int32_t pid,
             int32_t ppid,
-            int32_t uid,
-            int32_t euid,
-            int32_t gid,
-            int32_t egid,
+            uint32_t uid,
+            uint32_t euid,
+            uint32_t gid,
+            uint32_t egid,
             int32_t pgrp,
-            [in, count=num_groups] const int32_t* groups,
+            [in, count=num_groups] const uint32_t* groups,
             size_t num_groups);
     };
 };

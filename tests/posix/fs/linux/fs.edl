@@ -3,7 +3,7 @@
 
 enclave {
 
-//    from "sgxfs.edl" import *;
+    from "sgxfs.edl" import *;
 
     trusted {
         public void test_fs(

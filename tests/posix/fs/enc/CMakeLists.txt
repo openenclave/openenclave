@@ -1,16 +1,24 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-oeedl_file(../fs.edl enclave gen
-    --edl-search-dir ../../../../posix/devices/sgxfs)
+if(UNIX)
+    set(EDL_FILE "../linux/fs.edl")
+else()
+    set(EDL_FILE "../windows/fs.edl")
+endif()
+
+set(EDL_SEARCH_DIR "../../../../posix/devices/sgxfs")
+
+oeedl_file(${EDL_FILE} enclave gen --edl-search-dir ${EDL_SEARCH_DIR})
 
 add_enclave(TARGET fs_enc SOURCES enc.cpp ${gen})
 
 target_include_directories(fs_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 if (UNIX)
-target_compile_definitions(fs_enc PRIVATE -DWANT_SGXFS=1)
+    target_compile_definitions(fs_enc PRIVATE TEST_SGXFS=1)
+    set(OESGXFSENCLAVE oesgxfsenclave)
 endif()
 
-
-target_link_libraries(fs_enc oesgxfsenclave oelibcxx oecpio oeenclave oehostfs)
+target_link_libraries(fs_enc
+    ${OESGXFSENCLAVE} oelibcxx oecpio oeenclave oehostfs)

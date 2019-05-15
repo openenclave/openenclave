@@ -16,6 +16,7 @@ add_enclave_test(tests/fs2
     fs_enc
     "${PROJECT_SOURCE_DIR}"
     "${TMP_DIR}")
+
 maybe_build_using_clangw(fs_enc)
 
 set_tests_properties(tests/fs2 PROPERTIES SKIP_RETURN_CODE 2)
