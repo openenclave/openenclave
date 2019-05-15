@@ -24,7 +24,7 @@ void test_sgxfs(const char* tmp_dir)
         exit(1);
     }
 
-    if (mount("/", "/", "sgxfs", 0, NULL) != 0)
+    if (mount("/", "/", OE_DEVICE_NAME_SGX_FILE_SYSTEM, 0, NULL) != 0)
     {
         fprintf(stderr, "mount() failed\n");
         exit(1);

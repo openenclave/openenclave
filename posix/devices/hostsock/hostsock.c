@@ -17,7 +17,6 @@
 #include "posix_t.h"
 
 #define SOCKET_MAGIC 0x536f636b
-#define DEVICE_NAME "hostsock"
 
 static size_t _get_iov_size(const struct oe_iovec* iov, size_t iov_len)
 {
@@ -110,7 +109,7 @@ static sock_t* _new_sock(void)
         return NULL;
 
     sock->base.type = OE_DEVICE_TYPE_SOCKET;
-    sock->base.name = DEVICE_NAME;
+    sock->base.name = OE_DEVICE_NAME_HOST_SOCKET_INTERFACE;
     sock->base.ops.sock = _get_ops();
     sock->magic = SOCKET_MAGIC;
 
@@ -928,7 +927,7 @@ static oe_sock_ops_t* _get_ops(void)
 
 static sock_t _hostsock = {
     .base.type = OE_DEVICE_TYPE_SOCKET,
-    .base.name = DEVICE_NAME,
+    .base.name = OE_DEVICE_NAME_HOST_SOCKET_INTERFACE,
     .base.ops.sock = &_ops,
     .magic = SOCKET_MAGIC,
 };

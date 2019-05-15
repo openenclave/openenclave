@@ -387,14 +387,16 @@ void _test_mount(const char* tmp_dir)
     mkpath(source, tmp_dir, "source");
     mkpath(target, tmp_dir, "target");
 
-    OE_TEST(oe_mount("/", "/", "hostfs", 0, NULL) == 0);
+    OE_TEST(oe_mount("/", "/", OE_DEVICE_NAME_HOST_FILE_SYSTEM, 0, NULL) == 0);
     oe_unlink(mkpath(path, source, "newfile"));
     oe_rmdir(source);
     oe_rmdir(target);
 
     OE_TEST(oe_mkdir(source, 0777) == 0);
     OE_TEST(oe_mkdir(target, 0777) == 0);
-    OE_TEST(oe_mount(source, target, "hostfs", 0, NULL) == 0);
+    OE_TEST(
+        oe_mount(source, target, OE_DEVICE_NAME_HOST_FILE_SYSTEM, 0, NULL) ==
+        0);
 
     _touch(mkpath(path, target, "file1"));
     _touch(mkpath(path, target, "file2"));
@@ -429,7 +431,7 @@ static void test_realpath(const char* tmp_dir)
 
     printf("--- %s()\n", __FUNCTION__);
 
-    OE_TEST(mount("/", "/", "hostfs", 0, NULL) == 0);
+    OE_TEST(mount("/", "/", OE_DEVICE_NAME_HOST_FILE_SYSTEM, 0, NULL) == 0);
 
     OE_TEST(oe_realpath("/../../..", buf));
     OE_TEST(strcmp(buf, "/") == 0);
@@ -548,7 +550,13 @@ void test_fs(const char* src_dir, const char* tmp_dir)
         mkpath(path, tmp_dir, "somefile");
         const int flags = OE_O_CREAT | OE_O_TRUNC | OE_O_WRONLY;
 
-        OE_TEST(oe_mount("/", "/", "hostfs", OE_MS_RDONLY, NULL) == 0);
+        OE_TEST(
+            oe_mount(
+                "/",
+                "/",
+                OE_DEVICE_NAME_HOST_FILE_SYSTEM,
+                OE_MS_RDONLY,
+                NULL) == 0);
         OE_TEST(oe_open(path, flags, MODE) == -1);
         OE_TEST(oe_errno == EPERM);
         OE_TEST(oe_umount("/") == 0);

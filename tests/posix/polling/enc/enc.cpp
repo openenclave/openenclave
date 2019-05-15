@@ -37,7 +37,7 @@ extern "C" int ecall_device_init(const char* tmp_dir)
     strlcpy(_path, tmp_dir, sizeof(_path));
     strlcat(_path, "/test", sizeof(_path));
 
-    OE_TEST(mount("/", "/", "hostfs", 0, NULL) == 0);
+    OE_TEST(mount("/", "/", OE_DEVICE_NAME_HOST_FILE_SYSTEM, 0, NULL) == 0);
 
     /* Create a file. */
     {

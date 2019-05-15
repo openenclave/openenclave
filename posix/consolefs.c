@@ -12,7 +12,6 @@
 #include <openenclave/internal/trace.h>
 #include "posix_t.h"
 
-#define DEVICE_NAME "consolefs"
 #define MAGIC 0x0b292bab
 
 typedef struct _file
@@ -240,7 +239,7 @@ static oe_fs_ops_t _ops = {
 
 static file_t _stdin_file = {
     .base.type = OE_DEVICE_TYPE_FILESYSTEM,
-    .base.name = DEVICE_NAME,
+    .base.name = OE_DEVICE_NAME_STDIN,
     .base.ops.fs = &_ops,
     .magic = MAGIC,
     .host_fd = OE_STDIN_FILENO,
@@ -248,7 +247,7 @@ static file_t _stdin_file = {
 
 static file_t _stdout_file = {
     .base.type = OE_DEVICE_TYPE_FILESYSTEM,
-    .base.name = DEVICE_NAME,
+    .base.name = OE_DEVICE_NAME_STDOUT,
     .base.ops.fs = &_ops,
     .magic = MAGIC,
     .host_fd = OE_STDOUT_FILENO,
@@ -256,7 +255,7 @@ static file_t _stdout_file = {
 
 static file_t _stderr_file = {
     .base.type = OE_DEVICE_TYPE_FILESYSTEM,
-    .base.name = DEVICE_NAME,
+    .base.name = OE_DEVICE_NAME_STDERR,
     .base.ops.fs = &_ops,
     .magic = MAGIC,
     .host_fd = OE_STDERR_FILENO,

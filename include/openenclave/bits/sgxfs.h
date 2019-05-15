@@ -25,7 +25,7 @@ OE_EXTERNC_BEGIN
  *         // error!
  *     }
  *
- *     if (mount("/", "/", "sgxfs", 0, NULL) != 0)
+ *     if (mount("/", "/", OE_DEVICE_NAME_SGX_FILE_SYSTEM, 0, NULL) != 0)
  *     {
  *         // error!
  *     }

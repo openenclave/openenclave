@@ -20,7 +20,6 @@
 /* The map allocation grows in multiples of the chunk size. */
 #define MAP_CHUNK_SIZE 1024
 
-#define DEVICE_NAME "hostepoll"
 #define EPOLL_MAGIC 0x4504f4c
 
 /* epoll_ctl(OE_EPOLL_CTL_ADD) establishes this pair. */
@@ -150,7 +149,7 @@ static oe_device_t* _epoll_create(oe_device_t* epoll_, int size)
     if (retval != -1)
     {
         epoll->base.type = OE_DEVICE_TYPE_EPOLL;
-        epoll->base.name = DEVICE_NAME;
+        epoll->base.name = OE_DEVICE_NAME_HOST_EPOLL;
         epoll->magic = EPOLL_MAGIC;
         epoll->base.ops.epoll = _epoll.base.ops.epoll;
         epoll->host_fd = retval;
@@ -178,7 +177,7 @@ static oe_device_t* _epoll_create1(oe_device_t* epoll_, int32_t flags)
     if (retval != -1)
     {
         epoll->base.type = OE_DEVICE_TYPE_EPOLL;
-        epoll->base.name = DEVICE_NAME;
+        epoll->base.name = OE_DEVICE_NAME_HOST_EPOLL;
         epoll->magic = EPOLL_MAGIC;
         epoll->base.ops.epoll = _epoll.base.ops.epoll;
         epoll->host_fd = retval;
@@ -526,7 +525,7 @@ static oe_epoll_ops_t _ops = {
 
 static epoll_t _epoll = {
     .base.type = OE_DEVICE_TYPE_EPOLL,
-    .base.name = DEVICE_NAME,
+    .base.name = OE_DEVICE_NAME_HOST_EPOLL,
     .base.ops.epoll = &_ops,
     .magic = EPOLL_MAGIC,
 };

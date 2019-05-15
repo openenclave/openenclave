@@ -122,7 +122,8 @@ class oe_fd_hostfs_file_system : public oe_fd_file_system
   public:
     oe_fd_hostfs_file_system()
     {
-        OE_TEST(oe_mount("/", "/", "hostfs", 0, NULL) == 0);
+        OE_TEST(
+            oe_mount("/", "/", OE_DEVICE_NAME_HOST_FILE_SYSTEM, 0, NULL) == 0);
     }
 
     ~oe_fd_hostfs_file_system()
@@ -138,7 +139,8 @@ class oe_fd_sgxfs_file_system : public oe_fd_file_system
     {
         OE_TEST(oe_load_module_console_file_system() == OE_OK);
         OE_TEST(oe_load_module_sgxfs() == OE_OK);
-        OE_TEST(oe_mount("/", "/", "sgxfs", 0, NULL) == 0);
+        OE_TEST(
+            oe_mount("/", "/", OE_DEVICE_NAME_SGX_FILE_SYSTEM, 0, NULL) == 0);
     }
 
     ~oe_fd_sgxfs_file_system()
@@ -247,7 +249,8 @@ class fd_hostfs_file_system : public fd_file_system
   public:
     fd_hostfs_file_system()
     {
-        OE_TEST(oe_mount("/", "/", "hostfs", 0, NULL) == 0);
+        OE_TEST(
+            oe_mount("/", "/", OE_DEVICE_NAME_HOST_FILE_SYSTEM, 0, NULL) == 0);
     }
 
     ~fd_hostfs_file_system()
@@ -263,7 +266,8 @@ class fd_sgxfs_file_system : public fd_file_system
     {
         OE_TEST(oe_load_module_console_file_system() == OE_OK);
         OE_TEST(oe_load_module_sgxfs() == OE_OK);
-        OE_TEST(oe_mount("/", "/", "sgxfs", 0, NULL) == 0);
+        OE_TEST(
+            oe_mount("/", "/", OE_DEVICE_NAME_SGX_FILE_SYSTEM, 0, NULL) == 0);
     }
 
     ~fd_sgxfs_file_system()
@@ -478,7 +482,8 @@ class stream_hostfs_file_system : public stream_file_system
   public:
     stream_hostfs_file_system()
     {
-        OE_TEST(oe_mount("/", "/", "hostfs", 0, NULL) == 0);
+        OE_TEST(
+            oe_mount("/", "/", OE_DEVICE_NAME_HOST_FILE_SYSTEM, 0, NULL) == 0);
     }
 
     ~stream_hostfs_file_system()
@@ -494,7 +499,8 @@ class stream_sgxfs_file_system : public stream_file_system
     {
         OE_TEST(oe_load_module_console_file_system() == OE_OK);
         OE_TEST(oe_load_module_sgxfs() == OE_OK);
-        OE_TEST(oe_mount("/", "/", "sgxfs", 0, NULL) == 0);
+        OE_TEST(
+            oe_mount("/", "/", OE_DEVICE_NAME_SGX_FILE_SYSTEM, 0, NULL) == 0);
     }
 
     ~stream_sgxfs_file_system()

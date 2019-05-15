@@ -21,7 +21,6 @@
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/bits/safecrt.h>
 
-#define DEVICE_NAME "sgxfs"
 #define FS_MAGIC 0x4a335f60
 #define FILE_MAGIC 0x8d7e422f
 #define DIR_MAGIC 0xc1bfdfa4
@@ -379,7 +378,7 @@ static oe_device_t* _sgxfs_open_file(
             OE_RAISE_ERRNO(OE_ENOMEM);
 
         file->base.type = OE_DEVICE_TYPE_FILE;
-        file->base.name = DEVICE_NAME;
+        file->base.name = OE_DEVICE_NAME_SGX_FILE_SYSTEM;
         file->magic = FILE_MAGIC;
         file->base.ops.fs = fs->base.ops.fs;
         file->stream = stream;
@@ -1032,7 +1031,7 @@ static oe_fs_ops_t _ops = {
 
 static fs_t _sgxfs = {
     .base.type = OE_DEVICE_TYPE_FILESYSTEM,
-    .base.name = DEVICE_NAME,
+    .base.name = OE_DEVICE_NAME_SGX_FILE_SYSTEM,
     .base.ops.fs = &_ops,
     .magic = FS_MAGIC,
 };
@@ -1048,7 +1047,7 @@ static bool _loaded;
 static void _load_once()
 {
     oe_result_t result = OE_FAILURE;
-    const uint64_t devid = OE_DEVID_SGXFS;
+    const uint64_t devid = OE_DEVID_SGX_FILE_SYSTEM;
 
     if (oe_set_device(devid, _get_sgxfs_device()) != 0)
         OE_RAISE_ERRNO(OE_EINVAL);

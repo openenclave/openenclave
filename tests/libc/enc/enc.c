@@ -95,7 +95,7 @@ int test()
     OE_TEST(oe_load_module_host_resolver() == OE_OK);
     OE_TEST(oe_load_module_eventfd() == OE_OK);
 
-    if (mount("/", "/", "hostfs", 0, NULL) != 0)
+    if (mount("/", "/", OE_DEVICE_NAME_HOST_FILE_SYSTEM, 0, NULL) != 0)
     {
         fprintf(stderr, "mount() failed\n");
         exit(1);

@@ -108,11 +108,11 @@ int oe_remove_device(uint64_t devid);
  * file system (SGXFS).
  *
  *     ```
- *     oe_set_thread_devid(OE_DEVID_SGXFS);
+ *     oe_set_thread_devid(OE_DEVID_SGX_FILE_SYSTEM);
  *
  *     int fd = open(pathname, flags, mode);
  *
- *     oe_clear_thread_devid(OE_DEVID_SGXFS);
+ *     oe_clear_thread_devid(OE_DEVID_SGX_FILE_SYSTEM);
  *     ```
  *
  * After the operation is performed, the thread should clear the device id
@@ -124,7 +124,7 @@ int oe_remove_device(uint64_t devid);
  *     ```
  *     int open_sgxfs(const char *pathname, int flags, mode_t mode)
  *     {
- *         if (oe_set_thread_devid(OE_DEVID_SGXFS) != OE_OK)
+ *         if (oe_set_thread_devid(OE_DEVID_SGX_FILE_SYSTEM) != OE_OK)
  *         {
  *             errno = EINVAL;
  *             return -1;
@@ -132,7 +132,7 @@ int oe_remove_device(uint64_t devid);
  *
  *         int fd = open(pathname, flags, mode);
  *
- *         if (oe_clear_thread_devid(OE_DEVID_SGXFS) != OE_OK)
+ *         if (oe_clear_thread_devid(OE_DEVID_SGX_FILE_SYSTEM) != OE_OK)
  *         {
  *             errno = EINVAL;
  *             return -1;
