@@ -32,8 +32,8 @@ int main(int argc, const char* argv[])
     }
 
     const char* enclave_path = argv[1];
-    const char* src_dir = argv[2];
-    const char* tmp_dir = argv[3];
+    char* src_dir = (char *)argv[2];
+    char* tmp_dir = (char *)argv[3];
 
     umask(0022);
 
@@ -42,7 +42,15 @@ int main(int argc, const char* argv[])
     r = oe_create_fs_enclave(enclave_path, type, flags, NULL, 0, &enclave);
     OE_TEST(r == OE_OK);
 
+#if defined(_WIN32)
+    src_dir = oe_win_path_to_posix(src_dir);
+    tmp_dir = oe_win_path_to_posix(tmp_dir);
+#endif
     r = test_fs(enclave, src_dir, tmp_dir);
+#if defined(_WIN32)
+    free(src_dir);
+    free(tmp_dir);
+#endif
     OE_TEST(r == OE_OK);
 
     r = oe_terminate_enclave(enclave);
