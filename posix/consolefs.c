@@ -245,9 +245,9 @@ static oe_fs_ops_t _ops = {
     .rmdir = NULL,
 };
 
-static file_t* _new_file(oe_host_fd_t host_fd)
+static oe_device_t* _new_file(oe_host_fd_t host_fd)
 {
-    file_t* ret = NULL;
+    oe_device_t* ret = NULL;
     file_t* file = NULL;
 
     if (!(file = oe_calloc(1, sizeof(file_t))))
@@ -259,76 +259,23 @@ static file_t* _new_file(oe_host_fd_t host_fd)
     file->magic = MAGIC;
     file->host_fd = host_fd;
 
-    ret = file;
+    ret = &file->base;
 
 done:
     return ret;
 }
 
-static oe_once_t _once = OE_ONCE_INITIALIZER;
-static bool _loaded;
-
-static void _load_once(void)
+oe_device_t* oe_consolefs_create_file(uint32_t fileno)
 {
-    int ret = -1;
-    static file_t* stdin_file = NULL;
-    static file_t* stdout_file = NULL;
-    static file_t* stderr_file = NULL;
-
-    /* Create STDIN device */
+    switch (fileno)
     {
-        if (!(stdin_file = _new_file(OE_DEVICE_TYPE_FILESYSTEM)))
-            goto done;
-
-        if (oe_fdtable_reassign(OE_STDIN_FILENO, &stdin_file->base) != 0)
-            OE_RAISE_ERRNO(oe_errno);
-
-        stdin_file = NULL;
+        case OE_STDIN_FILENO:
+            return _new_file(OE_STDIN_FILENO);
+        case OE_STDOUT_FILENO:
+            return _new_file(OE_STDOUT_FILENO);
+        case OE_STDERR_FILENO:
+            return _new_file(OE_STDERR_FILENO);
+        default:
+            return NULL;
     }
-
-    /* Create STDOUT device */
-    {
-        if (!(stdout_file = _new_file(OE_DEVICE_TYPE_FILESYSTEM)))
-            goto done;
-
-        if (oe_fdtable_reassign(OE_STDOUT_FILENO, &stdout_file->base) != 0)
-            OE_RAISE_ERRNO(oe_errno);
-
-        stdout_file = NULL;
-    }
-
-    /* Create STDERR device */
-    {
-        if (!(stderr_file = _new_file(OE_DEVICE_TYPE_FILESYSTEM)))
-            goto done;
-
-        if (oe_fdtable_reassign(OE_STDERR_FILENO, &stderr_file->base) != 0)
-            OE_RAISE_ERRNO(oe_errno);
-
-        stderr_file = NULL;
-    }
-
-    ret = 0;
-
-done:
-
-    if (stdin_file)
-        oe_free(stdin_file);
-
-    if (stdout_file)
-        oe_free(stdout_file);
-
-    if (stderr_file)
-        oe_free(stderr_file);
-
-    if (ret == 0)
-        _loaded = true;
-}
-
-oe_result_t oe_load_module_console_file_system(void)
-{
-    if (oe_once(&_once, _load_once) != OE_OK || !_loaded)
-        return OE_FAILURE;
-
-    return OE_OK;
 }
