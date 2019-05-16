@@ -33,6 +33,31 @@ namespace OpenEnclaveSDK
         {
         }
 
+        // Look in <folder>/conf.mk for CFG_TA_FLOAT_SUPPORT := y
+        // to see if hardware float support is enabled.
+        private bool IsHardwareFloatSupported(string folder)
+        {
+            try
+            {
+                string fileName = Path.Combine(folder, "mk\\conf.mk");
+                var lines = File.ReadLines(fileName);
+                foreach (var line in lines)
+                {
+                    if (!line.Contains("CFG_TA_FLOAT_SUPPORT"))
+                    {
+                        continue;
+                    }
+
+                    return line.TrimEnd().EndsWith("y");
+                }
+                return false;
+            }
+            catch (IOException e)
+            {
+                return false;
+            }
+        }
+
         private bool SetOETADevKitPath(Dictionary<string, string> replacementsDictionary)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -96,7 +121,23 @@ namespace OpenEnclaveSDK
             string buildFlavor = pathComponents[pathComponents.Length - 2];
             replacementsDictionary.Add("$OpteeBuildFlavor$", buildFlavor);
 
-            string opteeCompilerFlavor = (pathComponents[pathComponents.Length - 1] == "export-ta_arm32") ? "arm-linux-gnueabihf-" : "aarch64-linux-gnu-";
+            string archFlavor = pathComponents[pathComponents.Length - 1];
+            string opteeCompilerFlavor;
+            if (archFlavor != "export-ta_arm32")
+            {
+                opteeCompilerFlavor = "aarch64-linux-gnu-";
+            }
+            else
+            {
+                if (IsHardwareFloatSupported(folder))
+                {
+                    opteeCompilerFlavor = "arm-linux-gnueabihf-";
+                }
+                else
+                {
+                    opteeCompilerFlavor = "arm-linux-gnueabi-";
+                }
+            }
             replacementsDictionary.Add("$OpteeCompilerFlavor$", opteeCompilerFlavor);
 
             return true;
