@@ -29,7 +29,6 @@ static char _path[OE_PATH_MAX];
 extern "C" int ecall_device_init(const char* tmp_dir)
 {
     OE_TEST(tmp_dir != NULL);
-    OE_TEST(oe_load_module_console_file_system() == OE_OK);
     OE_TEST(oe_load_module_host_file_system() == OE_OK);
     OE_TEST(oe_load_module_host_socket_interface() == OE_OK);
     OE_TEST(oe_load_module_host_epoll() == OE_OK);

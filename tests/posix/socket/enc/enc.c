@@ -19,7 +19,6 @@
 
 static void _initialize()
 {
-    OE_TEST(oe_load_module_console_file_system() == OE_OK);
     OE_TEST(oe_load_module_host_socket_interface() == OE_OK);
 
     {

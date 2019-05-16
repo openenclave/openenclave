@@ -531,7 +531,6 @@ void test_fs(const char* src_dir, const char* tmp_dir)
 {
     (void)src_dir;
 
-    OE_TEST(oe_load_module_console_file_system() == OE_OK);
     OE_TEST(oe_load_module_host_file_system() == OE_OK);
 #if defined(TEST_SGXFS)
     OE_TEST(oe_load_module_sgxfs() == OE_OK);

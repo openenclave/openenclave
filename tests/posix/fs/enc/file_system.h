@@ -137,7 +137,6 @@ class oe_fd_sgxfs_file_system : public oe_fd_file_system
   public:
     oe_fd_sgxfs_file_system()
     {
-        OE_TEST(oe_load_module_console_file_system() == OE_OK);
         OE_TEST(oe_load_module_sgxfs() == OE_OK);
         OE_TEST(
             oe_mount("/", "/", OE_DEVICE_NAME_SGX_FILE_SYSTEM, 0, NULL) == 0);
@@ -264,7 +263,6 @@ class fd_sgxfs_file_system : public fd_file_system
   public:
     fd_sgxfs_file_system()
     {
-        OE_TEST(oe_load_module_console_file_system() == OE_OK);
         OE_TEST(oe_load_module_sgxfs() == OE_OK);
         OE_TEST(
             oe_mount("/", "/", OE_DEVICE_NAME_SGX_FILE_SYSTEM, 0, NULL) == 0);
@@ -497,7 +495,6 @@ class stream_sgxfs_file_system : public stream_file_system
   public:
     stream_sgxfs_file_system()
     {
-        OE_TEST(oe_load_module_console_file_system() == OE_OK);
         OE_TEST(oe_load_module_sgxfs() == OE_OK);
         OE_TEST(
             oe_mount("/", "/", OE_DEVICE_NAME_SGX_FILE_SYSTEM, 0, NULL) == 0);

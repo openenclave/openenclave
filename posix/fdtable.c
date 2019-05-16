@@ -16,11 +16,12 @@
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
+#include "consolefs.h"
 
 /*
 **==============================================================================
 **
-** Define the table of file-descriptor entries:
+** Local definitions:
 **
 **==============================================================================
 */
@@ -28,12 +29,11 @@
 /* The table allocation grows in multiples of the chunk size. */
 #define TABLE_CHUNK_SIZE 1024
 
+/* Define a table of file-descriptors. */
 typedef oe_device_t* entry_t;
-
 static entry_t* _table;
 static size_t _table_size;
 static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
-static bool _installed_atexit_handler;
 
 static void _atexit_handler(void)
 {
@@ -52,13 +52,6 @@ static void _atexit_handler(void)
 static int _resize_table(size_t new_size)
 {
     int ret = -1;
-
-    /* Install the atexit handler on the first call. */
-    if (!_installed_atexit_handler)
-    {
-        oe_atexit(_atexit_handler);
-        _installed_atexit_handler = true;
-    }
 
     /* The fdtable cannot be bigger than the maximum int file descriptor. */
     if (new_size > OE_INT_MAX)
@@ -97,6 +90,61 @@ done:
     return ret;
 }
 
+static int _initialize(void)
+{
+    int ret = -1;
+    static bool _initialized;
+
+    /* Do this the first time only. */
+    if (!_initialized)
+    {
+        /* Make the table more than large enough for standard files. */
+        if (_resize_table(TABLE_CHUNK_SIZE) != 0)
+            OE_RAISE_ERRNO(OE_ENOMEM);
+
+        /* Create the STDIN file. */
+        {
+            oe_device_t* file;
+
+            if (!(file = oe_consolefs_create_file(OE_STDIN_FILENO)))
+                OE_RAISE_ERRNO(OE_ENOMEM);
+
+            _table[OE_STDIN_FILENO] = file;
+        }
+
+        /* Create the STDOUT file. */
+        {
+            oe_device_t* file;
+
+            if (!(file = oe_consolefs_create_file(OE_STDOUT_FILENO)))
+                OE_RAISE_ERRNO(OE_ENOMEM);
+
+            _table[OE_STDOUT_FILENO] = file;
+        }
+
+        /* Create the STDERR file. */
+        {
+            oe_device_t* file;
+
+            if (!(file = oe_consolefs_create_file(OE_STDERR_FILENO)))
+                OE_RAISE_ERRNO(OE_ENOMEM);
+
+            _table[OE_STDERR_FILENO] = file;
+        }
+
+        /* Install the atexit handler that will release the table. */
+        oe_atexit(_atexit_handler);
+
+        _initialized = true;
+    }
+
+    ret = 0;
+
+done:
+
+    return ret;
+}
+
 /*
 **==============================================================================
 **
@@ -111,6 +159,9 @@ int oe_fdtable_assign(oe_device_t* device)
     size_t index;
 
     oe_spin_lock(&_lock);
+
+    if (_initialize() != 0)
+        OE_RAISE_ERRNO(oe_errno);
 
     if (!device)
         OE_RAISE_ERRNO(OE_EINVAL);
@@ -149,6 +200,9 @@ int oe_fdtable_release(int fd)
 
     oe_spin_lock(&_lock);
 
+    if (_initialize() != 0)
+        OE_RAISE_ERRNO(oe_errno);
+
     /* Fail if fd is out of range. */
     if (!(fd >= 0 && (size_t)fd < _table_size))
         OE_RAISE_ERRNO(OE_EBADF);
@@ -173,6 +227,9 @@ int oe_fdtable_reassign(int fd, oe_device_t* device)
     int ret = -1;
 
     oe_spin_lock(&_lock);
+
+    if (_initialize() != 0)
+        OE_RAISE_ERRNO(oe_errno);
 
     /* Make table big enough to contain this file-descriptor. */
     if (fd >= 0)
@@ -203,11 +260,10 @@ static oe_device_t* _get_fd_device(int fd)
 {
     oe_device_t* ret = NULL;
 
-    /* Auto-load the console file system. */
-    if (oe_load_module_console_file_system() != OE_OK)
-        OE_RAISE_ERRNO(oe_errno);
-
     oe_spin_lock(&_lock);
+
+    if (_initialize() != 0)
+        OE_RAISE_ERRNO(oe_errno);
 
     if (fd < 0 || (size_t)fd >= _table_size)
         OE_RAISE_ERRNO(OE_EBADF);

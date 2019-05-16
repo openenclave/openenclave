@@ -34,9 +34,6 @@ oe_result_t oe_load_module_host_epoll(void);
 /* Load the eventfd module. */
 oe_result_t oe_load_module_eventfd(void);
 
-/* Load the console devices (stdin, stdout, stderr). */
-oe_result_t oe_load_module_console_file_system(void);
-
 OE_EXTERNC_END
 
 #endif /* _OE_BITS_MODULE_H */
