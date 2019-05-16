@@ -457,27 +457,40 @@ WCHAR *oe_posix_path_to_win(const char *path, const char *post)
             wpath[0] = drive_letter;
             wpath[1] = ':';
         }
-        else {
-            // Relative path
-            WCHAR *current_dir = _wgetcwd(NULL, 32767);
-            if (!current_dir)
-            {
-               _set_errno(OE_ENOMEM);
-               return NULL;
-            }
-            size_t current_dir_len = wcslen(current_dir);
-             
-            wpath = (WCHAR*)(calloc((pathlen + current_dir_len+postlen+1) * sizeof(WCHAR), 1));
-            memcpy(wpath, current_dir, current_dir_len);
-            wpath[current_dir_len] = '/';
-            MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath+current_dir_len, pathlen);
+        else
+        {
+            // Absolute path needs drive letter
+            wpath = (WCHAR*)(calloc((pathlen + postlen + 3) * sizeof(WCHAR), 1));
+            MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath+2, (int)pathlen);
             if (postlen)
             {
-                MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath+current_dir_len+pathlen-1, (int)postlen);
+                MultiByteToWideChar(CP_UTF8, 0, post, -1, wpath+pathlen-1, (int)postlen);
             }
-             
-            free(current_dir);
+            WCHAR drive_letter = _getdrive() + 'A';
+            wpath[0] = drive_letter;
+            wpath[1] = ':';
         }
+    }
+    else {
+        // Relative path
+        WCHAR *current_dir = _wgetcwd(NULL, 32767);
+        if (!current_dir)
+        {
+           _set_errno(OE_ENOMEM);
+           return NULL;
+        }
+        size_t current_dir_len = wcslen(current_dir);
+         
+        wpath = (WCHAR*)(calloc((pathlen + current_dir_len+postlen+1) * sizeof(WCHAR), 1));
+        memcpy(wpath, current_dir, current_dir_len);
+        wpath[current_dir_len] = '/';
+        MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath+current_dir_len, pathlen);
+        if (postlen)
+        {
+            MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath+current_dir_len+pathlen-1, (int)postlen);
+        }
+         
+        free(current_dir);
     }
     return wpath;   
 }
@@ -952,6 +965,24 @@ done:
 
 int oe_posix_close_ocall(oe_host_fd_t fd)
 {
+    // Convert fd 0, 1, 2 as needed
+    switch (fd)
+    {
+        case 0:
+            fd = (oe_host_fd_t)GetStdHandle(STD_INPUT_HANDLE);
+            break;
+
+        case 1:
+            fd = (oe_host_fd_t)GetStdHandle(STD_OUTPUT_HANDLE);
+            break;
+
+        case 2:
+            fd = (oe_host_fd_t)GetStdHandle(STD_ERROR_HANDLE);
+            break;
+
+        default:
+            break;
+    }
     if (!CloseHandle((HANDLE)fd))
     {
         _set_errno(OE_EINVAL);
@@ -991,7 +1022,7 @@ oe_host_fd_t oe_posix_dup_ocall(oe_host_fd_t oldfd)
     {
         int sockerr = WSAGetLastError();
 
-        if (sockerr != WSAENOTSOCK)
+        if (sockerr != WSAENOTSOCK && sockerr != WSANOTINITIALISED)
         {
             _set_errno(_winsockerr_to_errno(WSAGetLastError()));
             goto done;
@@ -1635,6 +1666,20 @@ int oe_posix_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg)
     
     // Currently we do nothing but accept it.
     // We will need to define which fcntls do what.
+    return 0;
+}
+
+int oe_posix_ioctl_ocall(
+    oe_host_fd_t fd,
+    unsigned long request,
+    unsigned long arg)
+{
+    errno = 0;
+
+    // We don't support any ioctls right now as we will have to translate the codes from the 
+    // enclave to be the equivelent for windows. But... no such codes are currently being used
+    // So we panic to highlight the problem line of code. In this way, we can see what ioctls are needed
+    PANIC;
     return 0;
 }
 

@@ -384,6 +384,22 @@ void oe_free_key(
     uint8_t* key_info,
     size_t key_info_size);
 
+#if defined(_WIN32)
+/* Allocates char* string which follows the expected rules for
+ * enclaves. Paths in the format
+ * <driveletter>:\<item>\<item> -> /<driveletter>/<item>/item>
+ * <driveletter>:/<item>/<item> -> /<driveletter>/<item>/item>
+ * paths without drive letter are detected and the drive added
+ * /<item>/<item> -> /<current driveletter>/<item>/item>
+ * relative paths are translated to absolute with drive letter
+ * returns null if the string is illegal
+ *
+ * The string  must be freed
+ *
+ * ATTN: we don't handle paths which start with the "\\?\" thing. don't really think we need them
+ */
+char *oe_win_path_to_posix(const char *path);
+#endif
 OE_EXTERNC_END
 
 #endif /* _OE_HOST_H */
