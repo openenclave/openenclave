@@ -175,8 +175,9 @@ static void test_stat_file(FILE_SYSTEM& fs, const char* tmp_dir)
     OE_TEST(buf.st_size == sizeof(ALPHABET));
     OE_TEST(OE_S_ISREG(buf.st_mode));
     /* windows cannot return the whole mode in stat bits */
-    OE_TEST((buf.st_mode & (OE_S_IFREG | MODE&(OE_S_IRUSR|OE_S_IWUSR))) ==
-                           (OE_S_IFREG | MODE&(OE_S_IRUSR|OE_S_IWUSR)));
+    OE_TEST(
+        (buf.st_mode & (OE_S_IFREG | MODE & (OE_S_IRUSR | OE_S_IWUSR))) ==
+        (OE_S_IFREG | MODE & (OE_S_IRUSR | OE_S_IWUSR)));
 }
 
 template <class FILE_SYSTEM>

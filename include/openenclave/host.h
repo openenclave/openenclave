@@ -396,9 +396,10 @@ void oe_free_key(
  *
  * The string  must be freed
  *
- * ATTN: we don't handle paths which start with the "\\?\" thing. don't really think we need them
+ * ATTN: we don't handle paths which start with the "\\?\" thing. don't really
+ * think we need them
  */
-char *oe_win_path_to_posix(const char *path);
+char* oe_win_path_to_posix(const char* path);
 #endif
 OE_EXTERNC_END
 

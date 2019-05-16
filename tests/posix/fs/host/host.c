@@ -32,8 +32,8 @@ int main(int argc, const char* argv[])
     }
 
     const char* enclave_path = argv[1];
-    char* src_dir = (char *)argv[2];
-    char* tmp_dir = (char *)argv[3];
+    char* src_dir = (char*)argv[2];
+    char* tmp_dir = (char*)argv[3];
 
     umask(0022);
 
