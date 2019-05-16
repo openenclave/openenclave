@@ -3,6 +3,7 @@
 
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/limits.h>
+#include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/sys/stat.h>
@@ -49,7 +50,7 @@ done:
 }
 
 static char _cwd[OE_PATH_MAX] = "/";
-static oe_spinlock_t _lock;
+static oe_spinlock_t _cwd_lock;
 
 char* oe_getcwd(char* buf, size_t size)
 {
@@ -75,13 +76,13 @@ char* oe_getcwd(char* buf, size_t size)
         p = buf;
     }
 
-    oe_spin_lock(&_lock);
+    oe_spin_lock(&_cwd_lock);
     locked = true;
 
     if (oe_strlcpy(p, _cwd, n) >= n)
         OE_RAISE_ERRNO(OE_ERANGE);
 
-    oe_spin_unlock(&_lock);
+    oe_spin_unlock(&_cwd_lock);
     locked = false;
 
     ret = p;
@@ -90,7 +91,7 @@ char* oe_getcwd(char* buf, size_t size)
 done:
 
     if (locked)
-        oe_spin_unlock(&_lock);
+        oe_spin_unlock(&_cwd_lock);
 
     if (p && p != buf)
         oe_free(p);
@@ -124,7 +125,7 @@ int oe_chdir(const char* path)
     }
 
     /* Set the _cwd global. */
-    oe_spin_lock(&_lock);
+    oe_spin_lock(&_cwd_lock);
     locked = true;
 
     if (oe_strlcpy(_cwd, real_path, OE_PATH_MAX) >= OE_PATH_MAX)
@@ -135,7 +136,7 @@ int oe_chdir(const char* path)
 done:
 
     if (locked)
-        oe_spin_unlock(&_lock);
+        oe_spin_unlock(&_cwd_lock);
 
     return ret;
 }

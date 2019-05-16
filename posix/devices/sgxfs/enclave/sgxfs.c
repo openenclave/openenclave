@@ -259,20 +259,6 @@ done:
     return ret;
 }
 
-static int _sgxfs_shutdown(oe_device_t* device)
-{
-    int ret = -1;
-    fs_t* fs = _cast_fs(device);
-
-    if (!fs)
-        OE_RAISE_ERRNO(OE_EINVAL);
-
-    ret = 0;
-
-done:
-    return ret;
-}
-
 static oe_device_t* _sgxfs_open_file(
     oe_device_t* fs_,
     const char* pathname,
@@ -1009,11 +995,10 @@ done:
 }
 
 static oe_fs_ops_t _ops = {
-    .base.shutdown = _sgxfs_shutdown,
+    .base.release = _sgxfs_release,
     .base.ioctl = _sgxfs_ioctl,
     .base.fcntl = _sgxfs_fcntl,
     .clone = _sgxfs_clone,
-    .release = _sgxfs_release,
     .mount = _sgxfs_mount,
     .unmount = _sgxfs_unmount,
     .open = _sgxfs_open,

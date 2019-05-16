@@ -37,6 +37,15 @@ static bool _installed_atexit_handler;
 
 static void _atexit_handler(void)
 {
+    /* Free the standard devices (but do not close them). */
+    for (size_t i = 0; i <= OE_STDERR_FILENO; i++)
+    {
+        oe_device_t* dev = _table[i];
+
+        if (dev)
+            oe_free(dev);
+    }
+
     oe_free(_table);
 }
 

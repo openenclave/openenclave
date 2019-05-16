@@ -485,7 +485,7 @@ done:
     return ret;
 }
 
-static int _epoll_shutdown_device(oe_device_t* epoll_)
+static int _epoll_shutdown(oe_device_t* epoll_)
 {
     int ret = -1;
     epoll_t* epoll = _cast_epoll(epoll_);
@@ -516,7 +516,7 @@ static oe_epoll_ops_t _ops = {
     .base.write = NULL,
     .base.close = _epoll_close,
     .base.get_host_fd = _epoll_gethostfd,
-    .base.shutdown = _epoll_shutdown_device,
+    .base.release = _epoll_shutdown,
     .epoll_create = _epoll_create,
     .epoll_create1 = _epoll_create1,
     .epoll_ctl = _epoll_ctl,

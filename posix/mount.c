@@ -220,7 +220,7 @@ done:
         oe_spin_unlock(&_lock);
 
     if (new_device)
-        OE_CALL_FS(release, new_device);
+        OE_CALL_BASE(release, new_device);
 
     return ret;
 }
@@ -267,7 +267,7 @@ int oe_umount2(const char* target, int flags)
         if (OE_CALL_FS(unmount, fs, target) != 0)
             OE_RAISE_ERRNO(oe_errno);
 
-        OE_CALL_FS(release, fs);
+        OE_CALL_BASE(release, fs);
     }
 
     ret = 0;

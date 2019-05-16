@@ -6,6 +6,7 @@
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/posix/device.h>
+#include <openenclave/internal/print.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <string.h>
@@ -473,6 +474,59 @@ static void test_realpath(const char* tmp_dir)
     OE_TEST(umount("/") == 0);
 }
 
+extern "C" void test_dup_case1(const char* tmp_dir)
+{
+    FILE* stream;
+
+    printf("--- %s()\n", __FUNCTION__);
+
+    OE_TEST(mount("/", "/", OE_DEVICE_NAME_HOST_FILE_SYSTEM, 0, NULL) == 0);
+
+    /* Create and close a file. */
+    int fd;
+    {
+        char path[OE_PATH_MAX];
+        mkpath(path, tmp_dir, "dummy");
+        fd = open(path, OE_O_CREAT | OE_O_TRUNC | OE_O_WRONLY, MODE);
+        OE_TEST(fd >= 0);
+        OE_TEST(close(fd) == 0);
+    }
+
+    OE_TEST(dup2(OE_STDERR_FILENO, fd) == fd);
+    OE_TEST(close(OE_STDERR_FILENO) == 0);
+    OE_TEST((stream = fdopen(fd, "w")));
+    OE_TEST(dup2(fd, OE_STDERR_FILENO) == OE_STDERR_FILENO);
+    fclose(stream);
+
+    OE_TEST(umount("/") == 0);
+}
+
+extern "C" void test_dup_case2(const char* tmp_dir)
+{
+    char path[OE_PATH_MAX];
+    int fd;
+
+    printf("--- %s()\n", __FUNCTION__);
+
+    OE_TEST(mount("/", "/", OE_DEVICE_NAME_HOST_FILE_SYSTEM, 0, NULL) == 0);
+
+    /* Create a file named "STDOUT" */
+    mkpath(path, tmp_dir, "STDOUT");
+    fd = open(path, OE_O_CREAT | OE_O_TRUNC | OE_O_WRONLY, MODE);
+    OE_TEST(fd >= 0);
+
+    /* Close standard output. */
+    int r = oe_close(OE_STDOUT_FILENO);
+    OE_TEST(r == 0);
+
+    /* Dup "STDOUT" file to STDOUT */
+    OE_TEST(oe_dup2(fd, OE_STDOUT_FILENO) == OE_STDOUT_FILENO);
+
+    OE_TEST(close(fd) == 0);
+
+    OE_TEST(umount("/") == 0);
+}
+
 void test_fs(const char* src_dir, const char* tmp_dir)
 {
     (void)src_dir;
@@ -592,6 +646,10 @@ void test_fs(const char* src_dir, const char* tmp_dir)
     }
 
     test_realpath(tmp_dir);
+
+    /* Note: these must come last since they change STDOUT and STDERR. */
+    test_dup_case1(tmp_dir);
+    test_dup_case2(tmp_dir);
 }
 
 OE_SET_ENCLAVE_SGX(

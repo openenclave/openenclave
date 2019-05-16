@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/corelibc/stdio.h>
+#include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/enclave.h>
@@ -20,6 +21,10 @@ typedef struct _file
     uint32_t magic;
     oe_host_fd_t host_fd;
 } file_t;
+
+static file_t* _stdin_file = NULL;
+static file_t* _stdout_file = NULL;
+static file_t* _stderr_file = NULL;
 
 static file_t* _cast_file(const oe_device_t* device)
 {
@@ -67,6 +72,20 @@ static int _consolefs_dup(oe_device_t* file_, oe_device_t** new_file_out)
     }
 
     ret = 0;
+
+done:
+    return ret;
+}
+
+static int _consolefs_release(oe_device_t* dev)
+{
+    int ret = -1;
+
+    if (!dev)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    /* Free the device without closing the file descriptor. */
+    oe_free(dev);
 
 done:
     return ret;
@@ -198,21 +217,19 @@ static int _consolefs_close(oe_device_t* file_)
             OE_RAISE_ERRNO(oe_errno);
     }
 
-    switch (file->host_fd)
+    /* Free the file structure. */
+    oe_free(file);
+
+    /* Prevent the atexit() handler from double freeing these. */
     {
-        case OE_STDIN_FILENO:
-        case OE_STDOUT_FILENO:
-        case OE_STDERR_FILENO:
-        {
-            /* Do not free these statically initialized structures. */
-            file->host_fd = -1;
-            break;
-        }
-        default:
-        {
-            /* Free file obtained with dup(). */
-            oe_free(file);
-        }
+        if (file == _stdin_file)
+            _stdin_file = NULL;
+
+        if (file == _stdout_file)
+            _stdout_file = NULL;
+
+        if (file == _stderr_file)
+            _stderr_file = NULL;
     }
 
 done:
@@ -221,7 +238,7 @@ done:
 
 static oe_fs_ops_t _ops = {
     .base.dup = _consolefs_dup,
-    .base.shutdown = NULL,
+    .base.release = _consolefs_release,
     .base.ioctl = _consolefs_ioctl,
     .base.fcntl = _consolefs_fcntl,
     .open = NULL,
@@ -229,7 +246,6 @@ static oe_fs_ops_t _ops = {
     .base.write = _consolefs_write,
     .base.get_host_fd = _consolefs_gethostfd,
     .clone = NULL,
-    .release = NULL,
     .mount = NULL,
     .unmount = NULL,
     .lseek = _consolefs_lseek,
@@ -245,51 +261,79 @@ static oe_fs_ops_t _ops = {
     .rmdir = NULL,
 };
 
-static file_t _stdin_file = {
-    .base.type = OE_DEVICE_TYPE_FILESYSTEM,
-    .base.name = OE_DEVICE_NAME_STDIN,
-    .base.ops.fs = &_ops,
-    .magic = MAGIC,
-    .host_fd = OE_STDIN_FILENO,
-};
+static file_t* _new_file(oe_host_fd_t host_fd)
+{
+    file_t* ret = NULL;
+    file_t* file = NULL;
 
-static file_t _stdout_file = {
-    .base.type = OE_DEVICE_TYPE_FILESYSTEM,
-    .base.name = OE_DEVICE_NAME_STDOUT,
-    .base.ops.fs = &_ops,
-    .magic = MAGIC,
-    .host_fd = OE_STDOUT_FILENO,
-};
+    if (!(file = oe_calloc(1, sizeof(file_t))))
+        goto done;
 
-static file_t _stderr_file = {
-    .base.type = OE_DEVICE_TYPE_FILESYSTEM,
-    .base.name = OE_DEVICE_NAME_STDERR,
-    .base.ops.fs = &_ops,
-    .magic = MAGIC,
-    .host_fd = OE_STDERR_FILENO,
-};
+    file->base.type = OE_DEVICE_TYPE_FILESYSTEM;
+    file->base.name = OE_DEVICE_NAME_CONSOLE_FILE_SYSTEM;
+    file->base.ops.fs = &_ops;
+    file->magic = MAGIC;
+    file->host_fd = host_fd;
+
+    ret = file;
+
+done:
+    return ret;
+}
 
 static oe_once_t _once = OE_ONCE_INITIALIZER;
 static bool _loaded;
 
+static void _atexit_handler(void)
+{
+    if (_stdin_file)
+        oe_free(_stdin_file);
+
+    if (_stdout_file)
+        oe_free(_stdout_file);
+
+    if (_stderr_file)
+        oe_free(_stderr_file);
+}
+
 static void _load_once(void)
 {
-    oe_result_t result = OE_FAILURE;
+    int ret = -1;
 
-    if (oe_fdtable_reassign(OE_STDIN_FILENO, &_stdin_file.base) != 0)
-        OE_RAISE_ERRNO(oe_errno);
+    oe_atexit(_atexit_handler);
 
-    if (oe_fdtable_reassign(OE_STDOUT_FILENO, &_stdout_file.base) != 0)
-        OE_RAISE_ERRNO(oe_errno);
+    /* Create STDIN device */
+    {
+        if (!(_stdin_file = _new_file(OE_DEVICE_TYPE_FILESYSTEM)))
+            goto done;
 
-    if (oe_fdtable_reassign(OE_STDERR_FILENO, &_stderr_file.base) != 0)
-        OE_RAISE_ERRNO(oe_errno);
+        if (oe_fdtable_reassign(OE_STDIN_FILENO, &_stdin_file->base) != 0)
+            OE_RAISE_ERRNO(oe_errno);
+    }
 
-    result = OE_OK;
+    /* Create STDOUT device */
+    {
+        if (!(_stdout_file = _new_file(OE_DEVICE_TYPE_FILESYSTEM)))
+            goto done;
+
+        if (oe_fdtable_reassign(OE_STDOUT_FILENO, &_stdout_file->base) != 0)
+            OE_RAISE_ERRNO(oe_errno);
+    }
+
+    /* Create STDERR device */
+    {
+        if (!(_stderr_file = _new_file(OE_DEVICE_TYPE_FILESYSTEM)))
+            goto done;
+
+        if (oe_fdtable_reassign(OE_STDERR_FILENO, &_stderr_file->base) != 0)
+            OE_RAISE_ERRNO(oe_errno);
+    }
+
+    ret = 0;
 
 done:
 
-    if (result == OE_OK)
+    if (ret == 0)
         _loaded = true;
 }
 

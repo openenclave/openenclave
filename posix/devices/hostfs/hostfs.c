@@ -211,20 +211,7 @@ static int _hostfs_release(oe_device_t* device)
     if (!fs)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    oe_free(fs);
-    ret = 0;
-done:
-    return ret;
-}
-
-static int _hostfs_shutdown(oe_device_t* device)
-{
-    int ret = -1;
-    fs_t* fs = _cast_fs(device);
-
-    if (!fs)
-        OE_RAISE_ERRNO(OE_EINVAL);
-
+    oe_free(device);
     ret = 0;
 
 done:
@@ -1000,11 +987,10 @@ static oe_host_fd_t _hostfs_gethostfd(oe_device_t* file_)
 
 static oe_fs_ops_t _ops = {
     .base.dup = _hostfs_dup,
-    .base.shutdown = _hostfs_shutdown,
+    .base.release = _hostfs_release,
     .base.ioctl = _hostfs_ioctl,
     .base.fcntl = _hostfs_fcntl,
     .clone = _hostfs_clone,
-    .release = _hostfs_release,
     .mount = _hostfs_mount,
     .unmount = _hostfs_unmount,
     .open = _hostfs_open,

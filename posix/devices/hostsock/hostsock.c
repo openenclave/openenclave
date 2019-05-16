@@ -871,7 +871,7 @@ done:
     return ret;
 }
 
-static int _hostsock_shutdown_device(oe_device_t* sock_)
+static int _hostsock_release(oe_device_t* sock_)
 {
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
@@ -906,7 +906,7 @@ static oe_sock_ops_t _ops = {
     .base.close = _hostsock_close,
     .base.dup = _hostsock_dup,
     .base.get_host_fd = _hostsock_gethostfd,
-    .base.shutdown = _hostsock_shutdown_device,
+    .base.release = _hostsock_release,
     .socket = _hostsock_socket,
     .socketpair = _hostsock_socketpair,
     .connect = _hostsock_connect,

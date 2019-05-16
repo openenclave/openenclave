@@ -202,7 +202,7 @@ done:
     return ret;
 }
 
-static int _eventfd_shutdown_device(oe_device_t* eventfd_)
+static int _eventfd_release(oe_device_t* eventfd_)
 {
     int ret = -1;
     eventfd_dev_t* eventfd = _cast_eventfd(eventfd_);
@@ -232,7 +232,7 @@ static oe_eventfd_ops_t _ops = {
     .base.write = _eventfd_write,
     .base.close = _eventfd_close,
     .base.get_host_fd = _eventfd_gethostfd,
-    .base.shutdown = _eventfd_shutdown_device,
+    .base.release = _eventfd_release,
     .eventfd = _eventfd_eventfd,
 };
 

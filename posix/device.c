@@ -210,7 +210,7 @@ int oe_remove_device(uint64_t devid)
     if (_clear_devid(devid) != 0)
         OE_RAISE_ERRNO(oe_errno);
 
-    if (OE_CALL_BASE(shutdown, device) != 0)
+    if (OE_CALL_BASE(release, device) != 0)
         OE_RAISE_ERRNO(oe_errno);
 
     ret = 0;

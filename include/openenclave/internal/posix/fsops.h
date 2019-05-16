@@ -23,8 +23,6 @@ struct _oe_fs_ops
 
     int (*clone)(oe_device_t* device, oe_device_t** new_device);
 
-    int (*release)(oe_device_t* device);
-
     int (*mount)(
         oe_device_t* fs,
         const char* source,
