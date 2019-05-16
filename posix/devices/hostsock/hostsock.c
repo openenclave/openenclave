@@ -11,12 +11,17 @@
 #include <openenclave/internal/thread.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/sys/socket.h>
+#include <openenclave/corelibc/stdio.h>
 #include <openenclave/internal/posix/raise.h>
+#include <openenclave/internal/posix/fd.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/bits/safecrt.h>
 #include "posix_t.h"
 
-#define SOCKET_MAGIC 0x536f636b
+#define DEVICE_MAGIC 0x536f636b
+#define SOCK_MAGIC 0xe57a696d
+
+static oe_sock_operations_t _get_sock_operations(void);
 
 static size_t _get_iov_size(const struct oe_iovec* iov, size_t iov_len)
 {
@@ -92,14 +97,19 @@ done:
     return ret;
 }
 
-typedef struct _sock
+typedef struct _device
 {
     struct _oe_device base;
     uint32_t magic;
     oe_host_fd_t host_fd;
-} sock_t;
+} device_t;
 
-static oe_sock_ops_t* _get_ops(void);
+typedef struct _sock
+{
+    oe_fd_t base;
+    uint32_t magic;
+    oe_host_fd_t host_fd;
+} sock_t;
 
 static sock_t* _new_sock(void)
 {
@@ -108,39 +118,47 @@ static sock_t* _new_sock(void)
     if (!(sock = oe_calloc(1, sizeof(sock_t))))
         return NULL;
 
-    sock->base.type = OE_DEVICE_TYPE_SOCKET;
-    sock->base.name = OE_DEVICE_NAME_HOST_SOCKET_INTERFACE;
-    sock->base.ops.sock = _get_ops();
-    sock->magic = SOCKET_MAGIC;
+    sock->base.type = OE_FD_TYPE_SOCKET;
+    sock->base.ops.sock = _get_sock_operations();
+    sock->magic = SOCK_MAGIC;
 
     return sock;
 }
 
-static sock_t* _cast_sock(const oe_device_t* device)
+static device_t* _cast_device(const oe_device_t* device)
 {
-    sock_t* sock = (sock_t*)device;
+    device_t* p = (device_t*)device;
 
-    if (sock == NULL || sock->magic != SOCKET_MAGIC)
+    if (p == NULL || p->magic != DEVICE_MAGIC)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+done:
+    return p;
+}
+
+static sock_t* _cast_sock(const oe_fd_t* desc)
+{
+    sock_t* sock = (sock_t*)desc;
+
+    if (sock == NULL || sock->magic != SOCK_MAGIC)
         OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
     return sock;
 }
 
-static sock_t _hostsock;
+static ssize_t _hostsock_read(oe_fd_t*, void* buf, size_t count);
 
-static ssize_t _hostsock_read(oe_device_t*, void* buf, size_t count);
+static int _hostsock_close(oe_fd_t*);
 
-static int _hostsock_close(oe_device_t*);
-
-static oe_device_t* _hostsock_socket(
+static oe_fd_t* _hostsock_socket(
     oe_device_t* dev,
     int domain,
     int type,
     int protocol)
 {
-    oe_device_t* ret = NULL;
-    sock_t* sock = _cast_sock(dev);
+    oe_fd_t* ret = NULL;
+    device_t* sock = _cast_device(dev);
     sock_t* new_sock = NULL;
 
     oe_errno = 0;
@@ -184,10 +202,10 @@ static ssize_t _hostsock_socketpair(
     int domain,
     int type,
     int protocol,
-    oe_device_t* sv[2])
+    oe_fd_t* sv[2])
 {
     int ret = -1;
-    sock_t* sock = _cast_sock(dev);
+    device_t* sock = _cast_device(dev);
     sock_t* pair[2] = {NULL, NULL};
 
     oe_errno = 0;
@@ -256,7 +274,7 @@ typedef struct
 } sockaddr_t;
 
 static int _hostsock_connect(
-    oe_device_t* sock_,
+    oe_fd_t* sock_,
     const struct oe_sockaddr* addr,
     oe_socklen_t addrlen)
 {
@@ -285,12 +303,12 @@ done:
     return ret;
 }
 
-static oe_device_t* _hostsock_accept(
-    oe_device_t* sock_,
+static oe_fd_t* _hostsock_accept(
+    oe_fd_t* sock_,
     struct oe_sockaddr* addr,
     oe_socklen_t* addrlen)
 {
-    oe_device_t* ret = NULL;
+    oe_fd_t* ret = NULL;
     sock_t* sock = _cast_sock(sock_);
     sockaddr_t buf;
     oe_socklen_t addrlen_in = 0;
@@ -350,7 +368,7 @@ done:
 }
 
 static int _hostsock_bind(
-    oe_device_t* sock_,
+    oe_fd_t* sock_,
     const struct oe_sockaddr* addr,
     oe_socklen_t addrlen)
 {
@@ -377,7 +395,7 @@ done:
     return ret;
 }
 
-static int _hostsock_listen(oe_device_t* sock_, int backlog)
+static int _hostsock_listen(oe_fd_t* sock_, int backlog)
 {
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
@@ -395,7 +413,7 @@ done:
 }
 
 static ssize_t _hostsock_recv(
-    oe_device_t* sock_,
+    oe_fd_t* sock_,
     void* buf,
     size_t count,
     int flags)
@@ -422,7 +440,7 @@ done:
 }
 
 static ssize_t _hostsock_recvfrom(
-    oe_device_t* sock_,
+    oe_fd_t* sock_,
     void* buf,
     size_t count,
     int flags,
@@ -459,7 +477,7 @@ done:
 }
 
 static ssize_t _hostsock_recvmsg(
-    oe_device_t* sock_,
+    oe_fd_t* sock_,
     struct oe_msghdr* msg,
     int flags)
 {
@@ -515,7 +533,7 @@ done:
 }
 
 static ssize_t _hostsock_send(
-    oe_device_t* sock_,
+    oe_fd_t* sock_,
     const void* buf,
     size_t count,
     int flags)
@@ -536,7 +554,7 @@ done:
 }
 
 static ssize_t _hostsock_sendto(
-    oe_device_t* sock_,
+    oe_fd_t* sock_,
     const void* buf,
     size_t count,
     int flags,
@@ -568,7 +586,7 @@ done:
 }
 
 static ssize_t _hostsock_sendmsg(
-    oe_device_t* sock_,
+    oe_fd_t* sock_,
     const struct oe_msghdr* msg,
     int flags)
 {
@@ -617,7 +635,7 @@ done:
     return ret;
 }
 
-static int _hostsock_close(oe_device_t* sock_)
+static int _hostsock_close(oe_fd_t* sock_)
 {
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
@@ -638,7 +656,7 @@ done:
     return ret;
 }
 
-static int _hostsock_fcntl(oe_device_t* sock_, int cmd, uint64_t arg)
+static int _hostsock_fcntl(oe_fd_t* sock_, int cmd, uint64_t arg)
 {
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
@@ -656,7 +674,7 @@ done:
     return ret;
 }
 
-static int _hostsock_dup(oe_device_t* sock_, oe_device_t** new_sock_out)
+static int _hostsock_dup(oe_fd_t* sock_, oe_fd_t** new_sock_out)
 {
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
@@ -699,7 +717,7 @@ done:
 }
 
 static int _hostsock_getsockopt(
-    oe_device_t* sock_,
+    oe_fd_t* sock_,
     int level,
     int optname,
     void* optval,
@@ -730,7 +748,7 @@ done:
 }
 
 static int _hostsock_setsockopt(
-    oe_device_t* sock_,
+    oe_fd_t* sock_,
     int level,
     int optname,
     const void* optval,
@@ -755,13 +773,10 @@ done:
     return ret;
 }
 
-static int _hostsock_ioctl(
-    oe_device_t* dev,
-    unsigned long request,
-    uint64_t arg)
+static int _hostsock_ioctl(oe_fd_t* sock_, unsigned long request, uint64_t arg)
 {
     int ret = -1;
-    sock_t* sock = _cast_sock(dev);
+    sock_t* sock = _cast_sock(sock_);
 
     oe_errno = 0;
 
@@ -777,7 +792,7 @@ done:
 }
 
 static int _hostsock_getpeername(
-    oe_device_t* sock_,
+    oe_fd_t* sock_,
     struct oe_sockaddr* addr,
     oe_socklen_t* addrlen)
 {
@@ -809,7 +824,7 @@ done:
 }
 
 static int _hostsock_getsockname(
-    oe_device_t* sock_,
+    oe_fd_t* sock_,
     struct oe_sockaddr* addr,
     oe_socklen_t* addrlen)
 {
@@ -840,20 +855,17 @@ done:
     return ret;
 }
 
-static ssize_t _hostsock_read(oe_device_t* sock_, void* buf, size_t count)
+static ssize_t _hostsock_read(oe_fd_t* sock_, void* buf, size_t count)
 {
     return _hostsock_recv(sock_, buf, count, 0);
 }
 
-static ssize_t _hostsock_write(
-    oe_device_t* sock_,
-    const void* buf,
-    size_t count)
+static ssize_t _hostsock_write(oe_fd_t* sock_, const void* buf, size_t count)
 {
     return _hostsock_send(sock_, buf, count, 0);
 }
 
-static int _hostsock_socket_shutdown(oe_device_t* sock_, int how)
+static int _hostsock_socket_shutdown(oe_fd_t* sock_, int how)
 {
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
@@ -871,7 +883,7 @@ done:
     return ret;
 }
 
-static int _hostsock_release(oe_device_t* sock_)
+static int _hostsock_release(oe_fd_t* sock_)
 {
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
@@ -892,24 +904,21 @@ done:
     return ret;
 }
 
-static oe_host_fd_t _hostsock_gethostfd(oe_device_t* sock_)
+static oe_host_fd_t _hostsock_gethostfd(oe_fd_t* sock_)
 {
     sock_t* sock = _cast_sock(sock_);
     return sock->host_fd;
 }
 
-static oe_sock_ops_t _ops = {
+static oe_sock_operations_t _sock_operations = {
+    .base.dup = _hostsock_dup,
     .base.ioctl = _hostsock_ioctl,
     .base.fcntl = _hostsock_fcntl,
     .base.read = _hostsock_read,
     .base.write = _hostsock_write,
-    .base.close = _hostsock_close,
-    .base.dup = _hostsock_dup,
     .base.get_host_fd = _hostsock_gethostfd,
+    .base.close = _hostsock_close,
     .base.release = _hostsock_release,
-    .socket = _hostsock_socket,
-    .socketpair = _hostsock_socketpair,
-    .connect = _hostsock_connect,
     .accept = _hostsock_accept,
     .bind = _hostsock_bind,
     .listen = _hostsock_listen,
@@ -924,18 +933,24 @@ static oe_sock_ops_t _ops = {
     .sendto = _hostsock_sendto,
     .recvmsg = _hostsock_recvmsg,
     .sendmsg = _hostsock_sendmsg,
+    .connect = _hostsock_connect,
 };
 
-static oe_sock_ops_t* _get_ops(void)
+static oe_sock_operations_t _get_sock_operations(void)
 {
-    return &_ops;
-}
+    return _sock_operations;
+};
 
-static sock_t _hostsock = {
+static oe_sock_device_ops_t _ops = {
+    .socket = _hostsock_socket,
+    .socketpair = _hostsock_socketpair,
+};
+
+static device_t _device = {
     .base.type = OE_DEVICE_TYPE_SOCKET,
     .base.name = OE_DEVICE_NAME_HOST_SOCKET_INTERFACE,
     .base.ops.sock = &_ops,
-    .magic = SOCKET_MAGIC,
+    .magic = DEVICE_MAGIC,
 };
 
 static oe_once_t _once = OE_ONCE_INITIALIZER;
@@ -946,7 +961,7 @@ static void _load_once(void)
     oe_result_t result = OE_FAILURE;
     const uint64_t devid = OE_DEVID_HOST_SOCKET_INTERFACE;
 
-    if (oe_set_device(devid, &_hostsock.base) != 0)
+    if (oe_set_device(devid, &_device.base) != 0)
         OE_RAISE_ERRNO(oe_errno);
 
     result = OE_OK;

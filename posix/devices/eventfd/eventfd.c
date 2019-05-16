@@ -10,6 +10,7 @@
 #include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/posix/eventfdops.h>
 #include <openenclave/internal/posix/raise.h>
+#include <openenclave/internal/posix/fd.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/calls.h>
@@ -30,70 +31,68 @@
 */
 
 #define MAX_EVENTFD_COUNT 0xfffffffffffffffe
-#define EVENTFD_MAGIC 0x4e455645
+#define DEVICE_MAGIC 0x4e455645
+#define EVENTFD_MAGIC 0x87aada8f
+
+static oe_eventfd_operations_t _get_eventfd_operations(void);
+
+typedef struct _device
+{
+    struct _oe_device base;
+    uint32_t magic;
+} device_t;
 
 typedef struct _eventfd
 {
-    struct _oe_device base;
+    oe_fd_t base;
     uint32_t magic;
     uint64_t count;
     uint32_t flags;
     oe_cond_t waitfor; // blocked on by read and set by write
-} eventfd_dev_t;
+} eventfd_t;
 
-static eventfd_dev_t* _cast_eventfd(const oe_device_t* device)
+static device_t* _cast_device(const oe_device_t* device)
 {
-    eventfd_dev_t* eventfd = (eventfd_dev_t*)device;
+    device_t* p = (device_t*)device;
 
-    if (eventfd == NULL || eventfd->magic != EVENTFD_MAGIC)
+    if (p == NULL || p->magic != DEVICE_MAGIC)
         return NULL;
 
-    return eventfd;
+    return p;
 }
 
-static eventfd_dev_t _eventfd;
-
-static int _eventfd_close(oe_device_t*);
-
-static int _eventfd_clone(oe_device_t* device, oe_device_t** new_device)
+static eventfd_t* _cast_eventfd(const oe_fd_t* desc)
 {
-    int ret = -1;
-    eventfd_dev_t* eventfd = _cast_eventfd(device);
-    eventfd_dev_t* new_eventfd = NULL;
+    eventfd_t* p = (eventfd_t*)desc;
 
-    if (!eventfd || !new_device)
-        OE_RAISE_ERRNO(OE_EINVAL);
+    if (p == NULL || p->magic != EVENTFD_MAGIC)
+        return NULL;
 
-    if (!(new_eventfd = oe_calloc(1, sizeof(eventfd_dev_t))))
-        OE_RAISE_ERRNO(OE_ENOMEM);
-
-    *new_eventfd = *eventfd;
-    *new_device = &new_eventfd->base;
-    ret = 0;
-
-done:
-    return ret;
+    return p;
 }
 
-static oe_device_t* _eventfd_eventfd(
+static device_t _eventfd;
+
+static int _eventfd_close(oe_fd_t*);
+
+static oe_fd_t* _eventfd_eventfd(
     oe_device_t* eventfd_,
     unsigned int initval,
     int flags)
 {
-    oe_device_t* ret = NULL;
-    eventfd_dev_t* eventfd = _cast_eventfd(eventfd_);
-    eventfd_dev_t* new_eventfd = NULL;
+    oe_fd_t* ret = NULL;
+    device_t* eventfd = _cast_device(eventfd_);
+    eventfd_t* new_eventfd = NULL;
 
     if (!eventfd)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (_eventfd_clone(eventfd_, (oe_device_t**)&new_eventfd) != 0)
-        OE_RAISE_ERRNO(oe_errno);
+    if (!(new_eventfd = oe_calloc(1, sizeof(eventfd_t))))
+        OE_RAISE_ERRNO(OE_ENOMEM);
 
     new_eventfd->base.type = OE_DEVID_EVENTFD;
-    new_eventfd->base.name = OE_DEVICE_NAME_EVENTFD;
     new_eventfd->magic = EVENTFD_MAGIC;
-    new_eventfd->base.ops.eventfd = _eventfd.base.ops.eventfd;
+    new_eventfd->base.ops.eventfd = _get_eventfd_operations();
     new_eventfd->count = initval;
     new_eventfd->flags = (uint32_t)flags;
 
@@ -101,10 +100,10 @@ done:
     return ret;
 }
 
-static ssize_t _eventfd_read(oe_device_t* eventfd_, void* buf, size_t count)
+static ssize_t _eventfd_read(oe_fd_t* eventfd_, void* buf, size_t count)
 {
     ssize_t ret = -1;
-    eventfd_dev_t* eventfd = _cast_eventfd(eventfd_);
+    eventfd_t* eventfd = _cast_eventfd(eventfd_);
 
     oe_errno = 0;
 
@@ -141,13 +140,10 @@ done:
     return ret;
 }
 
-static ssize_t _eventfd_write(
-    oe_device_t* eventfd_,
-    const void* buf,
-    size_t count)
+static ssize_t _eventfd_write(oe_fd_t* eventfd_, const void* buf, size_t count)
 {
     ssize_t ret = -1;
-    eventfd_dev_t* eventfd = _cast_eventfd(eventfd_);
+    eventfd_t* eventfd = _cast_eventfd(eventfd_);
     uint64_t incr = 0;
     __uint128_t total;
 
@@ -182,10 +178,24 @@ done:
     return ret;
 }
 
-static int _eventfd_close(oe_device_t* eventfd_)
+static int _eventfd_ioctl(
+    oe_fd_t* eventfd_,
+    unsigned long request,
+    uint64_t arg)
+{
+    OE_UNUSED(eventfd_);
+    OE_UNUSED(request);
+    OE_UNUSED(arg);
+    OE_RAISE_ERRNO(OE_ENOTSUP);
+
+done:
+    return -1;
+}
+
+static int _eventfd_close(oe_fd_t* eventfd_)
 {
     int ret = -1;
-    eventfd_dev_t* eventfd = _cast_eventfd(eventfd_);
+    eventfd_t* eventfd = _cast_eventfd(eventfd_);
 
     oe_errno = 0;
 
@@ -205,7 +215,7 @@ done:
 static int _eventfd_release(oe_device_t* eventfd_)
 {
     int ret = -1;
-    eventfd_dev_t* eventfd = _cast_eventfd(eventfd_);
+    device_t* eventfd = _cast_device(eventfd_);
 
     oe_errno = 0;
 
@@ -220,30 +230,38 @@ done:
     return ret;
 }
 
-static oe_host_fd_t _eventfd_gethostfd(oe_device_t* eventfd_)
+static oe_host_fd_t _eventfd_gethostfd(oe_fd_t* eventfd_)
 {
-    (void)eventfd_;
+    OE_UNUSED(eventfd_);
+    OE_RAISE_ERRNO(OE_ENOTSUP);
+
+done:
     return -1;
 }
 
-static oe_eventfd_ops_t _ops = {
-    .base.ioctl = NULL,
+static oe_eventfd_operations_t _eventfd_operations = {
+    .base.ioctl = _eventfd_ioctl,
     .base.read = _eventfd_read,
     .base.write = _eventfd_write,
     .base.close = _eventfd_close,
     .base.get_host_fd = _eventfd_gethostfd,
+};
+
+static oe_eventfd_operations_t _get_eventfd_operations()
+{
+    return _eventfd_operations;
+};
+
+static oe_eventfd_device_ops_t _ops = {
     .base.release = _eventfd_release,
     .eventfd = _eventfd_eventfd,
 };
 
-static eventfd_dev_t _eventfd = {
+static device_t _eventfd = {
     .base.type = OE_DEVID_EVENTFD,
     .base.name = OE_DEVICE_NAME_EVENTFD,
     .base.ops.eventfd = &_ops,
-    .magic = EVENTFD_MAGIC,
-    .count = 0,
-    .flags = 0,
-    .waitfor = OE_COND_INITIALIZER,
+    .magic = DEVICE_MAGIC,
 };
 
 static oe_once_t _once = OE_ONCE_INITIALIZER;

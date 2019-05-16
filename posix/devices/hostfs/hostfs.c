@@ -22,6 +22,7 @@
 #include <openenclave/bits/module.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/posix/raise.h>
+#include <openenclave/internal/posix/fdtable.h>
 #include <openenclave/bits/safecrt.h>
 
 /*
@@ -46,7 +47,7 @@ typedef struct _fs
 
 typedef struct _file
 {
-    struct _oe_device base;
+    oe_fd_t base;
     uint32_t magic;
     oe_host_fd_t host_fd;
     uint32_t ready_mask;
@@ -77,9 +78,9 @@ done:
     return fs;
 }
 
-static file_t* _cast_file(const oe_device_t* device)
+static file_t* _cast_file(const oe_fd_t* desc)
 {
-    file_t* file = (file_t*)device;
+    file_t* file = (file_t*)desc;
 
     if (file == NULL || file->magic != FILE_MAGIC)
         OE_RAISE_ERRNO(OE_EINVAL);
@@ -108,6 +109,8 @@ OE_INLINE bool _is_root(const char* path)
 {
     return path[0] == '/' && path[1] == '\0';
 }
+
+static oe_file_operations_t _get_file_operations(void);
 
 /* Expand path to include the mount_source (needed by host side) */
 static int _expand_path(
@@ -179,9 +182,9 @@ done:
     return ret;
 }
 
-static ssize_t _hostfs_read(oe_device_t*, void* buf, size_t count);
+static ssize_t _hostfs_read(oe_fd_t*, void* buf, size_t count);
 
-static int _hostfs_close(oe_device_t*);
+static int _hostfs_close(oe_fd_t*);
 
 static int _hostfs_clone(oe_device_t* device, oe_device_t** new_device)
 {
@@ -218,13 +221,13 @@ done:
     return ret;
 }
 
-static oe_device_t* _hostfs_open_file(
+static oe_fd_t* _hostfs_open_file(
     oe_device_t* fs_,
     const char* pathname,
     int flags,
     oe_mode_t mode)
 {
-    oe_device_t* ret = NULL;
+    oe_fd_t* ret = NULL;
     fs_t* fs = _cast_fs(fs_);
     file_t* file = NULL;
     char full_pathname[OE_PATH_MAX];
@@ -245,10 +248,9 @@ static oe_device_t* _hostfs_open_file(
         if (!(file = oe_calloc(1, sizeof(file_t))))
             OE_RAISE_ERRNO(OE_ENOMEM);
 
-        file->base.type = OE_DEVICE_TYPE_FILE;
-        file->base.name = OE_DEVICE_NAME_HOST_FILE_SYSTEM;
+        file->base.type = OE_FD_TYPE_FILE;
         file->magic = FILE_MAGIC;
-        file->base.ops.fs = fs->base.ops.fs;
+        file->base.ops.file = _get_file_operations();
     }
 
     /* Call */
@@ -279,13 +281,13 @@ done:
 static oe_device_t* _hostfs_opendir(oe_device_t* fs, const char* name);
 static int _hostfs_closedir(oe_device_t* file);
 
-static oe_device_t* _hostfs_open_directory(
+static oe_fd_t* _hostfs_open_directory(
     oe_device_t* fs_,
     const char* pathname,
     int flags,
     oe_mode_t mode)
 {
-    oe_device_t* ret = NULL;
+    oe_fd_t* ret = NULL;
     fs_t* fs = _cast_fs(fs_);
     file_t* file = NULL;
     oe_device_t* dir = NULL;
@@ -311,10 +313,9 @@ static oe_device_t* _hostfs_open_directory(
         if (!(file = oe_calloc(1, sizeof(file_t))))
             OE_RAISE_ERRNO(OE_ENOMEM);
 
-        file->base.type = OE_DEVICE_TYPE_FILE;
-        file->base.name = OE_DEVICE_NAME_HOST_FILE_SYSTEM;
+        file->base.type = OE_FD_TYPE_FILE;
         file->magic = FILE_MAGIC;
-        file->base.ops.fs = fs->base.ops.fs;
+        file->base.ops.file = _get_file_operations();
         file->host_fd = -1;
         file->dir = dir;
     }
@@ -334,7 +335,7 @@ done:
     return ret;
 }
 
-static oe_device_t* _hostfs_open(
+static oe_fd_t* _hostfs_open(
     oe_device_t* fs,
     const char* pathname,
     int flags,
@@ -350,12 +351,15 @@ static oe_device_t* _hostfs_open(
     }
 }
 
-static int _hostfs_dup(oe_device_t* file_, oe_device_t** new_file)
+static int _hostfs_dup(oe_fd_t* file_, oe_fd_t** new_file_out)
 {
     int ret = -1;
     file_t* file = _cast_file(file_);
 
     oe_errno = 0;
+
+    if (new_file_out)
+        *new_file_out = NULL;
 
     /* Check parameters. */
     if (!file)
@@ -372,14 +376,17 @@ static int _hostfs_dup(oe_device_t* file_, oe_device_t** new_file)
             OE_RAISE_ERRNO(oe_errno);
 
         {
-            file_t* f = NULL;
-            _hostfs_clone(file_, (oe_device_t**)&f);
+            file_t* new_file = NULL;
 
-            if (!f)
+            if (!(new_file = oe_calloc(1, sizeof(file_t))))
                 OE_RAISE_ERRNO(oe_errno);
 
-            f->host_fd = retval;
-            *new_file = (oe_device_t*)f;
+            new_file->base.type = OE_FD_TYPE_FILE;
+            new_file->base.ops.file = _get_file_operations();
+            new_file->magic = FILE_MAGIC;
+            new_file->host_fd = retval;
+
+            *new_file_out = &new_file->base;
         }
     }
 
@@ -389,7 +396,7 @@ done:
     return ret;
 }
 
-static ssize_t _hostfs_read(oe_device_t* file_, void* buf, size_t count)
+static ssize_t _hostfs_read(oe_fd_t* file_, void* buf, size_t count)
 {
     ssize_t ret = -1;
     file_t* file = _cast_file(file_);
@@ -410,7 +417,7 @@ done:
 static struct oe_dirent* _hostfs_readdir(oe_device_t* dir_);
 
 static int _hostfs_getdents(
-    oe_device_t* file_,
+    oe_fd_t* file_,
     struct oe_dirent* dirp,
     unsigned int count)
 {
@@ -454,7 +461,7 @@ done:
     return ret;
 }
 
-static ssize_t _hostfs_write(oe_device_t* file, const void* buf, size_t count)
+static ssize_t _hostfs_write(oe_fd_t* file, const void* buf, size_t count)
 {
     ssize_t ret = -1;
     file_t* f = _cast_file(file);
@@ -473,10 +480,7 @@ done:
     return ret;
 }
 
-static oe_off_t _hostfs_lseek_file(
-    oe_device_t* file,
-    oe_off_t offset,
-    int whence)
+static oe_off_t _hostfs_lseek_file(oe_fd_t* file, oe_off_t offset, int whence)
 {
     oe_off_t ret = -1;
     file_t* f = _cast_file(file);
@@ -509,10 +513,7 @@ done:
     return ret;
 }
 
-static oe_off_t _hostfs_lseek_dir(
-    oe_device_t* file_,
-    oe_off_t offset,
-    int whence)
+static oe_off_t _hostfs_lseek_dir(oe_fd_t* file_, oe_off_t offset, int whence)
 {
     oe_off_t ret = -1;
     file_t* file = _cast_file(file_);
@@ -531,7 +532,7 @@ done:
     return ret;
 }
 
-static oe_off_t _hostfs_lseek(oe_device_t* file_, oe_off_t offset, int whence)
+static oe_off_t _hostfs_lseek(oe_fd_t* file_, oe_off_t offset, int whence)
 {
     oe_off_t ret = -1;
     file_t* file = _cast_file(file_);
@@ -550,7 +551,7 @@ done:
     return ret;
 }
 
-static int _hostfs_close_file(oe_device_t* file)
+static int _hostfs_close_file(oe_fd_t* file)
 {
     int ret = -1;
     file_t* f = _cast_file(file);
@@ -572,7 +573,7 @@ done:
     return ret;
 }
 
-static int _hostfs_close_directory(oe_device_t* file_)
+static int _hostfs_close_directory(oe_fd_t* file_)
 {
     int ret = -1;
     file_t* file = _cast_file(file_);
@@ -596,7 +597,7 @@ done:
     return ret;
 }
 
-static int _hostfs_close(oe_device_t* file_)
+static int _hostfs_close(oe_fd_t* file_)
 {
     int ret = -1;
     file_t* file = _cast_file(file_);
@@ -615,10 +616,7 @@ done:
     return ret;
 }
 
-static int _hostfs_ioctl(
-    oe_device_t* file_,
-    unsigned long request,
-    uint64_t arg)
+static int _hostfs_ioctl(oe_fd_t* file_, unsigned long request, uint64_t arg)
 {
     int ret = -1;
     file_t* file = _cast_file(file_);
@@ -635,7 +633,7 @@ done:
     return ret;
 }
 
-static int _hostfs_fcntl(oe_device_t* file_, int cmd, uint64_t arg)
+static int _hostfs_fcntl(oe_fd_t* file_, int cmd, uint64_t arg)
 {
     int ret = -1;
     file_t* file = _cast_file(file_);
@@ -973,7 +971,7 @@ done:
     return ret;
 }
 
-static oe_host_fd_t _hostfs_gethostfd(oe_device_t* file_)
+static oe_host_fd_t _hostfs_gethostfd(oe_fd_t* file_)
 {
     file_t* f = _cast_file(file_);
 
@@ -985,21 +983,29 @@ static oe_host_fd_t _hostfs_gethostfd(oe_device_t* file_)
     return -1;
 }
 
-static oe_fs_ops_t _ops = {
+static oe_file_operations_t _file_operations = {
     .base.dup = _hostfs_dup,
-    .base.release = _hostfs_release,
     .base.ioctl = _hostfs_ioctl,
     .base.fcntl = _hostfs_fcntl,
-    .clone = _hostfs_clone,
-    .mount = _hostfs_mount,
-    .unmount = _hostfs_unmount,
-    .open = _hostfs_open,
     .base.read = _hostfs_read,
     .base.write = _hostfs_write,
     .base.get_host_fd = _hostfs_gethostfd,
     .lseek = _hostfs_lseek,
     .base.close = _hostfs_close,
     .getdents = _hostfs_getdents,
+};
+
+static oe_file_operations_t _get_file_operations(void)
+{
+    return _file_operations;
+};
+
+static oe_fs_device_ops_t _ops = {
+    .base.release = _hostfs_release,
+    .clone = _hostfs_clone,
+    .mount = _hostfs_mount,
+    .unmount = _hostfs_unmount,
+    .open = _hostfs_open,
     .stat = _hostfs_stat,
     .access = _hostfs_access,
     .link = _hostfs_link,

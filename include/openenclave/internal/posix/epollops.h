@@ -15,28 +15,17 @@ OE_EXTERNC_BEGIN
 struct oe_epoll_event;
 struct oe_pollfd;
 typedef struct _oe_device oe_device_t;
+typedef struct _oe_fd oe_fd_t;
 
-typedef struct _oe_epoll_ops
+typedef struct _oe_epoll_device_ops
 {
     oe_device_ops_t base;
 
-    oe_device_t* (*epoll_create)(oe_device_t* epfd_device, int size);
+    oe_fd_t* (*epoll_create)(oe_device_t* epfd_device, int size);
 
-    oe_device_t* (*epoll_create1)(oe_device_t* epfd_device, int flags);
+    oe_fd_t* (*epoll_create1)(oe_device_t* epfd_device, int flags);
 
-    int (*epoll_ctl)(
-        oe_device_t* epfd_device,
-        int op,
-        int fd,
-        struct oe_epoll_event* event);
-
-    int (*epoll_wait)(
-        oe_device_t* epfd_device,
-        struct oe_epoll_event* events,
-        int maxevents,
-        int timeout);
-
-} oe_epoll_ops_t;
+} oe_epoll_device_ops_t;
 
 OE_EXTERNC_END
 

@@ -9,7 +9,7 @@
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/posix/device.h>
+#include <openenclave/internal/posix/fd.h>
 #include <openenclave/internal/posix/fdtable.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/print.h>
@@ -30,20 +30,20 @@
 #define TABLE_CHUNK_SIZE 1024
 
 /* Define a table of file-descriptors. */
-typedef oe_device_t* entry_t;
+typedef oe_fd_t* entry_t;
 static entry_t* _table;
 static size_t _table_size;
 static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
 
 static void _atexit_handler(void)
 {
-    /* Free the standard devices (but do not close them). */
+    /* Free the standard fds (but do not close them). */
     for (size_t i = 0; i <= OE_STDERR_FILENO; i++)
     {
-        oe_device_t* dev = _table[i];
+        oe_fd_t* desc = _table[i];
 
-        if (dev)
-            oe_free(dev);
+        if (desc)
+            oe_free(desc);
     }
 
     oe_free(_table);
@@ -104,7 +104,7 @@ static int _initialize(void)
 
         /* Create the STDIN file. */
         {
-            oe_device_t* file;
+            oe_fd_t* file;
 
             if (!(file = oe_consolefs_create_file(OE_STDIN_FILENO)))
                 OE_RAISE_ERRNO(OE_ENOMEM);
@@ -114,7 +114,7 @@ static int _initialize(void)
 
         /* Create the STDOUT file. */
         {
-            oe_device_t* file;
+            oe_fd_t* file;
 
             if (!(file = oe_consolefs_create_file(OE_STDOUT_FILENO)))
                 OE_RAISE_ERRNO(OE_ENOMEM);
@@ -124,7 +124,7 @@ static int _initialize(void)
 
         /* Create the STDERR file. */
         {
-            oe_device_t* file;
+            oe_fd_t* file;
 
             if (!(file = oe_consolefs_create_file(OE_STDERR_FILENO)))
                 OE_RAISE_ERRNO(OE_ENOMEM);
@@ -153,7 +153,7 @@ done:
 **==============================================================================
 */
 
-int oe_fdtable_assign(oe_device_t* device)
+int oe_fdtable_assign(oe_fd_t* fd)
 {
     int ret = -1;
     size_t index;
@@ -163,7 +163,7 @@ int oe_fdtable_assign(oe_device_t* device)
     if (_initialize() != 0)
         OE_RAISE_ERRNO(oe_errno);
 
-    if (!device)
+    if (!fd)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Find the first available file descriptor. */
@@ -180,7 +180,7 @@ int oe_fdtable_assign(oe_device_t* device)
             OE_RAISE_ERRNO(OE_ENOMEM);
     }
 
-    _table[index] = device;
+    _table[index] = fd;
     ret = (int)index;
 
 done:
@@ -218,7 +218,7 @@ done:
     return ret;
 }
 
-int oe_fdtable_reassign(int fd, oe_device_t* device)
+int oe_fdtable_reassign(int fd, oe_fd_t* desc)
 {
     int ret = -1;
 
@@ -236,12 +236,12 @@ int oe_fdtable_reassign(int fd, oe_device_t* device)
 
     if (_table[fd])
     {
-        if (OE_CALL_BASE(close, _table[fd]) != 0)
+        if (_table[fd]->ops.base.close(_table[fd]) != 0)
             OE_RAISE_ERRNO(oe_errno);
     }
 
-    /* Set the device. */
-    _table[fd] = device;
+    /* Set the fd. */
+    _table[fd] = desc;
 
     ret = 0;
 
@@ -252,9 +252,9 @@ done:
     return ret;
 }
 
-static oe_device_t* _get_fd_device(int fd)
+static oe_fd_t* _get_fd(int fd)
 {
-    oe_device_t* ret = NULL;
+    oe_fd_t* ret = NULL;
 
     oe_spin_lock(&_lock);
 
@@ -276,21 +276,21 @@ done:
     return ret;
 }
 
-oe_device_t* oe_fdtable_get(int fd, oe_device_type_t type)
+oe_fd_t* oe_fdtable_get(int fd, oe_fd_type_t type)
 {
-    oe_device_t* ret = NULL;
-    oe_device_t* device;
+    oe_fd_t* ret = NULL;
+    oe_fd_t* desc;
 
-    if (!(device = _get_fd_device(fd)))
+    if (!(desc = _get_fd(fd)))
         OE_RAISE_ERRNO(OE_EBADF);
 
-    if (type != OE_DEVICE_TYPE_ANY && device->type != type)
+    if (type != OE_DEVICE_TYPE_ANY && desc->type != type)
     {
         OE_RAISE_ERRNO_MSG(
-            OE_EBADF, "fd=%d type=%u device->type=%u", fd, type, device->type);
+            OE_EBADF, "fd=%d type=%u fd->type=%u", fd, type, desc->type);
     }
 
-    ret = device;
+    ret = desc;
 
 done:
     return ret;

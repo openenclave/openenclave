@@ -38,10 +38,10 @@ struct _oe_device
     /* Function table for this device. */
     union {
         oe_device_ops_t* base;
-        oe_fs_ops_t* fs;
-        oe_sock_ops_t* sock;
-        oe_epoll_ops_t* epoll;
-        oe_eventfd_ops_t* eventfd;
+        oe_fs_device_ops_t* fs;
+        oe_sock_device_ops_t* sock;
+        oe_epoll_device_ops_t* epoll;
+        oe_eventfd_device_ops_t* eventfd;
     } ops;
 };
 

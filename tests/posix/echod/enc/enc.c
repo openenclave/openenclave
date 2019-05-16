@@ -189,14 +189,10 @@ void echod_run_server_ecall(uint16_t port)
     sleep(1);
 
     if (close(client_sock) != 0)
-    {
         OE_TEST("close() failed" == NULL);
-    }
 
     if (close(listen_sock) != 0)
-    {
         OE_TEST("close() failed" == NULL);
-    }
 }
 
 OE_SET_ENCLAVE_SGX(

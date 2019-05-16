@@ -62,6 +62,7 @@ int ecall_run_client(char* recv_buff, ssize_t* recv_buff_len)
     printf("Connecting...\n");
     int retries = 0;
     static const int max_retries = 4;
+
     while (oe_connect(
                sockfd, (struct oe_sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
     {

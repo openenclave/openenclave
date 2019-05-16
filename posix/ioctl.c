@@ -38,12 +38,12 @@ int __oe_ioctl(int fd, unsigned long request, uint64_t arg)
     }
     else
     {
-        oe_device_t* device;
+        oe_fd_t* desc;
 
-        if (!(device = oe_fdtable_get(fd, OE_DEVICE_TYPE_ANY)))
+        if (!(desc = oe_fdtable_get(fd, OE_FD_TYPE_ANY)))
             OE_RAISE_ERRNO(oe_errno);
 
-        ret = OE_CALL_BASE(ioctl, device, request, arg);
+        ret = desc->ops.base.ioctl(desc, request, arg);
     }
 
 done:

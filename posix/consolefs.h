@@ -8,7 +8,7 @@
 
 OE_EXTERNC_BEGIN
 
-oe_device_t* oe_consolefs_create_file(uint32_t fileno);
+oe_fd_t* oe_consolefs_create_file(uint32_t fileno);
 
 OE_EXTERNC_END
 

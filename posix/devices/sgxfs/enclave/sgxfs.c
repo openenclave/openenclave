@@ -18,6 +18,7 @@
 #include <openenclave/corelibc/limits.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/posix/device.h>
+#include <openenclave/internal/posix/fd.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/bits/safecrt.h>
 
@@ -37,7 +38,7 @@ typedef struct _fs
 
 typedef struct _file
 {
-    struct _oe_device base;
+    oe_fd_t base;
     uint32_t magic;
     SGX_FILE* stream;
 } file_t;
@@ -77,9 +78,9 @@ static char* _strrchr(const char* s, char c)
     return ret;
 }
 
-static file_t* _cast_file(const oe_device_t* device)
+static file_t* _cast_file(const oe_fd_t* desc)
 {
-    file_t* file = (file_t*)device;
+    file_t* file = (file_t*)desc;
 
     if (file == NULL || file->magic != FILE_MAGIC)
         return NULL;
@@ -91,6 +92,8 @@ OE_INLINE bool _is_root(const char* path)
 {
     return path[0] == '/' && path[1] == '\0';
 }
+
+static oe_file_operations_t _get_file_operations(void);
 
 /* Expand path to include the mount_source (needed by host side) */
 static int _expand_path(
@@ -259,13 +262,13 @@ done:
     return ret;
 }
 
-static oe_device_t* _sgxfs_open_file(
+static oe_fd_t* _sgxfs_open_file(
     oe_device_t* fs_,
     const char* pathname,
     int flags,
     oe_mode_t mode)
 {
-    oe_device_t* ret = NULL;
+    oe_fd_t* ret = NULL;
     fs_t* fs = _cast_fs(fs_);
     file_t* file = NULL;
     const char* fopen_mode = NULL;
@@ -363,10 +366,9 @@ static oe_device_t* _sgxfs_open_file(
         if (!(file = oe_calloc(1, sizeof(file_t))))
             OE_RAISE_ERRNO(OE_ENOMEM);
 
-        file->base.type = OE_DEVICE_TYPE_FILE;
-        file->base.name = OE_DEVICE_NAME_SGX_FILE_SYSTEM;
+        file->base.type = OE_FD_TYPE_FILE;
         file->magic = FILE_MAGIC;
-        file->base.ops.fs = fs->base.ops.fs;
+        file->base.ops.file = _get_file_operations();
         file->stream = stream;
     }
 
@@ -388,13 +390,13 @@ done:
     return ret;
 }
 
-static oe_device_t* _sgxfs_open_directory(
+static oe_fd_t* _sgxfs_open_directory(
     oe_device_t* fs_,
     const char* pathname,
     int flags,
     oe_mode_t mode)
 {
-    oe_device_t* ret = NULL;
+    oe_fd_t* ret = NULL;
     fs_t* fs = _cast_fs(fs_);
     oe_device_t* hostfs = oe_get_hostfs_device();
 
@@ -416,7 +418,7 @@ done:
     return ret;
 }
 
-static oe_device_t* _sgxfs_open(
+static oe_fd_t* _sgxfs_open(
     oe_device_t* fs,
     const char* pathname,
     int flags,
@@ -432,7 +434,7 @@ static oe_device_t* _sgxfs_open(
     }
 }
 
-static ssize_t _sgxfs_read(oe_device_t* file_, void* buf, size_t count)
+static ssize_t _sgxfs_read(oe_fd_t* file_, void* buf, size_t count)
 {
     ssize_t ret = -1;
     size_t n;
@@ -455,7 +457,7 @@ done:
     return ret;
 }
 
-static ssize_t _sgxfs_write(oe_device_t* file_, const void* buf, size_t count)
+static ssize_t _sgxfs_write(oe_fd_t* file_, const void* buf, size_t count)
 {
     ssize_t ret = -1;
     file_t* file = _cast_file(file_);
@@ -474,7 +476,7 @@ done:
     return ret;
 }
 
-static oe_off_t _sgxfs_lseek(oe_device_t* file_, oe_off_t offset, int whence)
+static oe_off_t _sgxfs_lseek(oe_fd_t* file_, oe_off_t offset, int whence)
 {
     oe_off_t ret = -1;
     file_t* file = _cast_file(file_);
@@ -493,7 +495,7 @@ done:
     return ret;
 }
 
-static int _sgxfs_close_file(oe_device_t* file_)
+static int _sgxfs_close_file(oe_fd_t* file_)
 {
     int ret = -1;
     file_t* file = _cast_file(file_);
@@ -515,7 +517,7 @@ done:
     return ret;
 }
 
-static int _sgxfs_close(oe_device_t* file_)
+static int _sgxfs_close(oe_fd_t* file_)
 {
     int ret = -1;
     file_t* file = _cast_file(file_);
@@ -531,8 +533,7 @@ static int _sgxfs_close(oe_device_t* file_)
     }
     else
     {
-        if (OE_CALL_BASE(close, file_) != 0)
-            OE_RAISE_ERRNO(oe_errno);
+        file_->ops.base.close(file_);
     }
 
     ret = 0;
@@ -541,32 +542,30 @@ done:
     return ret;
 }
 
-static int _sgxfs_ioctl(oe_device_t* file, unsigned long request, uint64_t arg)
+static int _sgxfs_ioctl(oe_fd_t* file, unsigned long request, uint64_t arg)
 {
     OE_UNUSED(file);
     OE_UNUSED(request);
     OE_UNUSED(arg);
+    OE_RAISE_ERRNO(OE_ENOTSUP);
 
-    /* Note: ioctl() is unsupportable on this device. */
-
-    oe_errno = ENOTSUP;
+done:
     return -1;
 }
 
-static int _sgxfs_fcntl(oe_device_t* file, int cmd, uint64_t arg)
+static int _sgxfs_fcntl(oe_fd_t* file, int cmd, uint64_t arg)
 {
     OE_UNUSED(file);
     OE_UNUSED(cmd);
     OE_UNUSED(arg);
+    OE_RAISE_ERRNO(OE_ENOTSUP);
 
-    /* Note: ioctl() is unsupportable on this device. */
-
-    oe_errno = ENOTSUP;
+done:
     return -1;
 }
 
 static int _sgxfs_getdents(
-    oe_device_t* file,
+    oe_fd_t* file,
     struct oe_dirent* dirp,
     unsigned int count)
 {
@@ -578,7 +577,7 @@ static int _sgxfs_getdents(
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Delegate the request to HOSTFS. */
-    if ((n = OE_CALL_FS(getdents, file, dirp, count)) == -1)
+    if ((n = file->ops.file.getdents(file, dirp, count)) == -1)
         OE_RAISE_ERRNO(oe_errno);
 
     ret = n;
@@ -994,19 +993,48 @@ done:
     return ret;
 }
 
-static oe_fs_ops_t _ops = {
-    .base.release = _sgxfs_release,
+/* TODO: figure out how to support. */
+static int _sgxfs_dup(oe_fd_t* file_, oe_fd_t** new_file)
+{
+    OE_UNUSED(file_);
+    OE_UNUSED(new_file);
+    OE_RAISE_ERRNO(OE_ENOTSUP);
+done:
+    return -1;
+}
+
+/* TODO: figure out how to support. */
+static oe_host_fd_t _sgxfs_gethostfd(oe_fd_t* file_)
+{
+    OE_UNUSED(file_);
+    OE_RAISE_ERRNO(OE_ENOTSUP);
+done:
+    return -1;
+}
+
+static oe_file_operations_t _file_operations = {
+    .base.dup = _sgxfs_dup,
     .base.ioctl = _sgxfs_ioctl,
     .base.fcntl = _sgxfs_fcntl,
+    .base.read = _sgxfs_read,
+    .base.write = _sgxfs_write,
+    .base.get_host_fd = _sgxfs_gethostfd,
+    .lseek = _sgxfs_lseek,
+    .base.close = _sgxfs_close,
+    .getdents = _sgxfs_getdents,
+};
+
+static oe_file_operations_t _get_file_operations(void)
+{
+    return _file_operations;
+}
+
+static oe_fs_device_ops_t _ops = {
+    .base.release = _sgxfs_release,
     .clone = _sgxfs_clone,
     .mount = _sgxfs_mount,
     .unmount = _sgxfs_unmount,
     .open = _sgxfs_open,
-    .base.read = _sgxfs_read,
-    .base.write = _sgxfs_write,
-    .lseek = _sgxfs_lseek,
-    .base.close = _sgxfs_close,
-    .getdents = _sgxfs_getdents,
     .stat = _sgxfs_stat,
     .access = _sgxfs_access,
     .link = _sgxfs_link,
