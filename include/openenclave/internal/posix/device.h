@@ -55,6 +55,7 @@ typedef struct _oe_fs_device_ops
     int (*mkdir)(oe_device_t* fs, const char* pathname, oe_mode_t mode);
 
     int (*rmdir)(oe_device_t* fs, const char* pathname);
+
 } oe_fs_device_ops_t;
 
 typedef struct _oe_sock_device_ops
