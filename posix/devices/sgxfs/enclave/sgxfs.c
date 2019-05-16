@@ -14,6 +14,7 @@
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/fcntl.h>
+#include <openenclave/corelibc/sys/mount.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/corelibc/limits.h>
 #include <openenclave/internal/trace.h>

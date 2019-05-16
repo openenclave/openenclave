@@ -9,13 +9,12 @@
 
 #include <openenclave/internal/posix/device.h>
 #include <openenclave/corelibc/limits.h>
-#include <openenclave/internal/posix/fsops.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/print.h>
-#include "posix_t.h"
 #include <openenclave/corelibc/dirent.h>
+#include <openenclave/corelibc/sys/mount.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/fcntl.h>
@@ -24,6 +23,8 @@
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/posix/fdtable.h>
 #include <openenclave/bits/safecrt.h>
+
+#include "posix_t.h"
 
 /*
 **==============================================================================

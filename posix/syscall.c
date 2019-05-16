@@ -10,8 +10,10 @@
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
+#include <openenclave/corelibc/sys/epoll.h>
 #include <openenclave/corelibc/sys/eventfd.h>
 #include <openenclave/corelibc/sys/ioctl.h>
+#include <openenclave/corelibc/sys/mount.h>
 #include <openenclave/corelibc/sys/poll.h>
 #include <openenclave/corelibc/sys/select.h>
 #include <openenclave/corelibc/sys/socket.h>

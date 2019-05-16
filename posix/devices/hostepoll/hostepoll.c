@@ -10,7 +10,6 @@
 #include <openenclave/corelibc/string.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/posix/device.h>
-#include <openenclave/internal/posix/epollops.h>
 #include <openenclave/internal/posix/fdtable.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/thread.h>

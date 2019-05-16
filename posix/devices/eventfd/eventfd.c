@@ -8,7 +8,6 @@
 // clang-format on
 
 #include <openenclave/internal/posix/device.h>
-#include <openenclave/internal/posix/eventfdops.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/posix/fd.h>
 #include <openenclave/bits/safemath.h>
