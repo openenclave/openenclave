@@ -45,8 +45,6 @@ let gen_parm_str (p : pdecl) =
   let str = get_typed_declr_str aty declr in
   if is_const_ptr pt then "const " ^ str else str
 
-let retval_declr = {identifier= "_retval"; array_dims= []}
-
 (** [conv_array_to_ptr] is used to convert Array form into Pointer form.
     {[
       int array[10][20] => [count = 200] int* array
@@ -72,39 +70,6 @@ let conv_array_to_ptr (pd : pdecl) : pdecl =
         in
         (PTPtr (tmp_aty, tmp_pa), tmp_declr)
       else (pt, declr)
-
-(** Note that, for a foreign array type [foo_array_t] we will generate
-    [foo_array_t* ms_field;] in the marshalling data structure to keep
-    the pass-by-address scheme as in the C programming language. *)
-let mk_ms_member_decl (pt : parameter_type) (declr : declarator)
-    (isecall : bool) =
-  (* TODO: Clean this up. *)
-  let aty = get_param_atype pt in
-  let tystr =
-    if is_foreign_array pt then
-      sprintf "/* foreign array of type %s */ void" (get_tystr aty)
-    else get_tystr aty
-  in
-  let ptr = if is_foreign_array pt then "*" else "" in
-  let field = declr.identifier in
-  (* String attribute is available for in/in-out both ecall and ocall.
-     For ocall ,strlen is called in trusted proxy code, so no need to
-     defense it. *)
-  let need_str_len_var (pt : parameter_type) =
-    match pt with
-    | PTVal _ -> false
-    | PTPtr (_, pa) ->
-        if pa.pa_isstr || pa.pa_iswstr then
-          match pa.pa_direction with
-          | PtrInOut | PtrIn -> if isecall then true else false
-          | _ -> false
-        else false
-  in
-  let str_len =
-    if need_str_len_var pt then sprintf "    size_t %s_len;\n" field else ""
-  in
-  let dmstr = get_array_dims declr.array_dims in
-  sprintf "    %s%s %s%s;\n%s" tystr ptr field dmstr str_len
 
 (** ----- End code borrowed and tweaked from {!CodeGen.ml} ----- *)
 
@@ -141,43 +106,48 @@ let open_file (filename : string) (dir : string) =
   fprintf os " */\n" ;
   os
 
-(** [oe_mk_struct_decl] constructs the string of a [struct] definition. *)
-let oe_mk_struct_decl (fs : string) (name : string) =
-  String.concat "\n"
-    [ sprintf "typedef struct _%s" name
-    ; "{"
-    ; "    oe_result_t _result;"
-    ; sprintf "%s} %s;" fs name ]
-
 (** [oe_gen_marshal_struct_impl] generates a marshalling [struct]
     definition. *)
-let oe_gen_marshal_struct_impl (fd : func_decl) (errno : string)
-    (isecall : bool) =
-  (* TODO: Clean this up. *)
-  let member_list_str =
-    errno
-    ^
-    let new_param_list = List.map conv_array_to_ptr fd.plist in
-    List.fold_left
-      (fun acc (pt, declr) -> acc ^ mk_ms_member_decl pt declr isecall)
-      "" new_param_list
+let oe_gen_marshal_struct =
+  let gen_member_decl (ptype : parameter_type) (decl : declarator) =
+    let tystr = get_tystr (get_param_atype ptype) in
+    let tystr =
+      if is_foreign_array ptype then
+        sprintf "/* foreign array of type %s */ void*" tystr
+      else tystr
+    in
+    (* TODO: We shouldn't have to emit a strlen variable for ocalls,
+       but currently we require it. *)
+    let need_strlen p =
+      (is_str_ptr p || is_wstr_ptr p) && (is_in_ptr p || is_inout_ptr p)
+    in
+    [ sprintf "%s %s%s;" tystr decl.identifier (get_array_dims decl.array_dims)
+    ; ( if need_strlen ptype then sprintf "size_t %s_len;" decl.identifier
+      else "" ) ]
   in
-  let struct_name = fd.fname ^ "_args_t" in
-  match fd.rtype with
-  | Void -> oe_mk_struct_decl member_list_str struct_name
-  | _ ->
-      let rv_str = mk_ms_member_decl (PTVal fd.rtype) retval_declr isecall in
-      oe_mk_struct_decl (rv_str ^ member_list_str) struct_name
-
-let oe_gen_ecall_marshal_struct (tf : trusted_func) =
-  oe_gen_marshal_struct_impl tf.tf_fdecl "" true ^ "\n"
-
-let oe_gen_ocall_marshal_struct (uf : untrusted_func) =
-  let errno_decl =
-    if uf.uf_propagate_errno then "    int _ocall_errno;\n" else ""
+  let f (fd : func_decl) (errno : bool) =
+    let struct_name = fd.fname ^ "_args_t" in
+    let retval_decl = {identifier= "_retval"; array_dims= []} in
+    let members =
+      List.flatten
+        [ ["oe_result_t _result;"]
+        ; ( if fd.rtype = Void then [""]
+          else gen_member_decl (PTVal fd.rtype) retval_decl )
+        ; (if errno then ["int _ocall_errno;"] else [""])
+        ; List.flatten
+            (List.map
+               (fun (ptype, decl) -> gen_member_decl ptype decl)
+               (List.map conv_array_to_ptr fd.plist)) ]
+    in
+    [ sprintf "typedef struct _%s" struct_name
+    ; "{"
+    ; "    " ^ String.concat "\n    " (List.filter (fun p -> p <> "") members)
+    ; sprintf "} %s;" struct_name
+    ; "" ]
   in
-  (* TODO: Shouldn't this be false?! *)
-  oe_gen_marshal_struct_impl uf.uf_fdecl errno_decl true ^ "\n"
+  function
+  | Trusted tf -> f tf.tf_fdecl false
+  | Untrusted uf -> f uf.uf_fdecl uf.uf_propagate_errno
 
 (** [oe_get_param_size] is the most complex function. For a parameter,
     get its size expression. *)
@@ -265,7 +235,8 @@ let emit_composite_type =
                (get_tystr (get_param_atype ptype))
                decl.identifier dims_str )
            s.smlist)
-    ; sprintf "} %s;\n" s.sname ]
+    ; sprintf "} %s;" s.sname
+    ; "" ]
   in
   let emit_union (u : union_def) =
     [ sprintf "typedef union %s" u.uname
@@ -278,7 +249,8 @@ let emit_composite_type =
              sprintf "    %s %s%s;" (get_tystr atype) decl.identifier dims_str
              )
            u.umlist)
-    ; sprintf "} %s;\n" u.uname ]
+    ; sprintf "} %s;" u.uname
+    ; "" ]
   in
   let emit_enum (e : enum_def) =
     [ sprintf "typedef enum %s" e.enname
@@ -292,7 +264,8 @@ let emit_composite_type =
                | EnumVal (ANumber n) -> " = " ^ string_of_int n
                | EnumValNone -> "" ) )
            e.enbody)
-    ; sprintf "} %s;\n" e.enname ]
+    ; sprintf "} %s;" e.enname
+    ; "" ]
   in
   function
   | StructDef s -> emit_struct s
@@ -336,11 +309,15 @@ let oe_gen_args_header (ec : enclave_content) (dir : string) =
     else ["/* There were no user defined types. */"; ""]
   in
   let oe_gen_ecall_marshal_structs (tfs : trusted_func list) =
-    if tfs <> [] then List.map oe_gen_ecall_marshal_struct tfs
+    if tfs <> [] then
+      List.flatten
+        (List.map (fun tf -> oe_gen_marshal_struct (Trusted tf)) tfs)
     else ["/* There were no ecalls. */"; ""]
   in
   let oe_gen_ocall_marshal_structs (ufs : untrusted_func list) =
-    if ufs <> [] then List.map oe_gen_ocall_marshal_struct ufs
+    if ufs <> [] then
+      List.flatten
+        (List.map (fun uf -> oe_gen_marshal_struct (Untrusted uf)) ufs)
     else ["/* There were no ocalls. */"; ""]
   in
   let with_errno =
@@ -368,14 +345,11 @@ let oe_gen_args_header (ec : enclave_content) (dir : string) =
     ; ""
     ; "/**** User defined types in EDL. ****/"
     ; String.concat "\n" (oe_gen_user_types ec.comp_defs)
-    ; (* TODO: Fix newline generation. *)
-      "/**** ECALL marshalling structs. ****/"
+    ; "/**** ECALL marshalling structs. ****/"
     ; String.concat "\n" (oe_gen_ecall_marshal_structs ec.tfunc_decls)
-    ; (* TODO: Fix newline generation. *)
-      "/**** OCALL marshalling structs. ****/"
+    ; "/**** OCALL marshalling structs. ****/"
     ; String.concat "\n" (oe_gen_ocall_marshal_structs ec.ufunc_decls)
-    ; (* TODO: Fix newline generation. *)
-      "/**** Trusted function IDs ****/"
+    ; "/**** Trusted function IDs ****/"
     ; String.concat "\n"
         (emit_trusted_function_ids ec.tfunc_decls ec.enclave_name)
     ; ""
