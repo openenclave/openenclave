@@ -83,6 +83,13 @@ namespace OpenEnclaveSDK
             string unixPath = "/mnt/" + drive + "/" + relativeFolder;
 
             replacementsDictionary.Add("$OETADevKitPath$", unixPath);
+
+            string buildFlavor = board.Split('\\')[0];
+            replacementsDictionary.Add("$OpteeBuildFlavor$", buildFlavor);
+
+            string opteeCompilerFlavor = (buildFlavor == "vexpress-qemu_virt") ? "arm-linux-gnueabihf-" : "aarch64-linux-gnu-";
+            replacementsDictionary.Add("$OpteeCompilerFlavor$", opteeCompilerFlavor);
+
             return true;
         }
 
@@ -149,16 +156,6 @@ namespace OpenEnclaveSDK
                 else
                 {
                     SetOETADevKitPath(replacementsDictionary);
-
-                    // In the future, we should prompt the user to select between:
-                    // "vexpress-qemu_virt", "vexpress-qemu_armv8a", and
-                    // ls-ls1012grapeboard.
-                    string opteeBuildFlavor = "vexpress-qemu_armv8a";
-                    replacementsDictionary.Add("$OpteeBuildFlavor$", opteeBuildFlavor);
-
-                    // In the future, this should be "arm-linux-gnueabihf-" for any 32-bit build flavor.
-                    string opteeCompilerFlavor = "aarch64-linux-gnu-";
-                    replacementsDictionary.Add("$OpteeCompilerFlavor$", opteeCompilerFlavor);
                 }
             }
             catch (Exception ex)
