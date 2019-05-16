@@ -22,10 +22,6 @@ typedef struct _file
     oe_host_fd_t host_fd;
 } file_t;
 
-static file_t* _stdin_file = NULL;
-static file_t* _stdout_file = NULL;
-static file_t* _stderr_file = NULL;
-
 static file_t* _cast_file(const oe_device_t* device)
 {
     file_t* file = (file_t*)device;
@@ -220,18 +216,6 @@ static int _consolefs_close(oe_device_t* file_)
     /* Free the file structure. */
     oe_free(file);
 
-    /* Prevent the atexit() handler from double freeing these. */
-    {
-        if (file == _stdin_file)
-            _stdin_file = NULL;
-
-        if (file == _stdout_file)
-            _stdout_file = NULL;
-
-        if (file == _stderr_file)
-            _stderr_file = NULL;
-    }
-
 done:
     return ret;
 }
@@ -284,54 +268,58 @@ done:
 static oe_once_t _once = OE_ONCE_INITIALIZER;
 static bool _loaded;
 
-static void _atexit_handler(void)
-{
-    if (_stdin_file)
-        oe_free(_stdin_file);
-
-    if (_stdout_file)
-        oe_free(_stdout_file);
-
-    if (_stderr_file)
-        oe_free(_stderr_file);
-}
-
 static void _load_once(void)
 {
     int ret = -1;
-
-    oe_atexit(_atexit_handler);
+    static file_t* stdin_file = NULL;
+    static file_t* stdout_file = NULL;
+    static file_t* stderr_file = NULL;
 
     /* Create STDIN device */
     {
-        if (!(_stdin_file = _new_file(OE_DEVICE_TYPE_FILESYSTEM)))
+        if (!(stdin_file = _new_file(OE_DEVICE_TYPE_FILESYSTEM)))
             goto done;
 
-        if (oe_fdtable_reassign(OE_STDIN_FILENO, &_stdin_file->base) != 0)
+        if (oe_fdtable_reassign(OE_STDIN_FILENO, &stdin_file->base) != 0)
             OE_RAISE_ERRNO(oe_errno);
+
+        stdin_file = NULL;
     }
 
     /* Create STDOUT device */
     {
-        if (!(_stdout_file = _new_file(OE_DEVICE_TYPE_FILESYSTEM)))
+        if (!(stdout_file = _new_file(OE_DEVICE_TYPE_FILESYSTEM)))
             goto done;
 
-        if (oe_fdtable_reassign(OE_STDOUT_FILENO, &_stdout_file->base) != 0)
+        if (oe_fdtable_reassign(OE_STDOUT_FILENO, &stdout_file->base) != 0)
             OE_RAISE_ERRNO(oe_errno);
+
+        stdout_file = NULL;
     }
 
     /* Create STDERR device */
     {
-        if (!(_stderr_file = _new_file(OE_DEVICE_TYPE_FILESYSTEM)))
+        if (!(stderr_file = _new_file(OE_DEVICE_TYPE_FILESYSTEM)))
             goto done;
 
-        if (oe_fdtable_reassign(OE_STDERR_FILENO, &_stderr_file->base) != 0)
+        if (oe_fdtable_reassign(OE_STDERR_FILENO, &stderr_file->base) != 0)
             OE_RAISE_ERRNO(oe_errno);
+
+        stderr_file = NULL;
     }
 
     ret = 0;
 
 done:
+
+    if (stdin_file)
+        oe_free(stdin_file);
+
+    if (stdout_file)
+        oe_free(stdout_file);
+
+    if (stderr_file)
+        oe_free(stderr_file);
 
     if (ret == 0)
         _loaded = true;
