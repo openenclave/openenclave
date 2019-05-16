@@ -84,10 +84,19 @@ namespace OpenEnclaveSDK
 
             replacementsDictionary.Add("$OETADevKitPath$", unixPath);
 
-            string buildFlavor = board.Split('\\')[0];
+            // 'folder' now contains the full path to the export-ta_arm{32,64} directory.
+            // From this path, determine the compiler from the last path segment, and
+            // the build flavor from the next-to-last path segment.
+
+            string[] pathComponents = folder.Split('\\');
+            if (pathComponents.Length < 2)
+            {
+                return false;
+            }
+            string buildFlavor = pathComponents[pathComponents.Length - 2];
             replacementsDictionary.Add("$OpteeBuildFlavor$", buildFlavor);
 
-            string opteeCompilerFlavor = (buildFlavor == "vexpress-qemu_virt") ? "arm-linux-gnueabihf-" : "aarch64-linux-gnu-";
+            string opteeCompilerFlavor = (pathComponents[pathComponents.Length - 1] == "export-ta_arm32") ? "arm-linux-gnueabihf-" : "aarch64-linux-gnu-";
             replacementsDictionary.Add("$OpteeCompilerFlavor$", opteeCompilerFlavor);
 
             return true;
