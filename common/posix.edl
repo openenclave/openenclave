@@ -237,6 +237,12 @@ enclave {
             uint64_t arg)
             propagate_errno;
 
+        int oe_posix_ioctl_ocall(
+            oe_host_fd_t fd,
+            unsigned long request,
+            unsigned long arg)
+            propagate_errno;
+
         int oe_posix_setsockopt_ocall(
             oe_host_fd_t sockfd,
             int level,
@@ -309,9 +315,6 @@ enclave {
             [out, size=servlen] char* serv,
             oe_socklen_t servlen,
             int flags)
-            propagate_errno;
-
-        int oe_posix_shutdown_resolver_device_ocall()
             propagate_errno;
 
         oe_host_fd_t oe_posix_epoll_create1_ocall(

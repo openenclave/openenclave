@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/epoll.h>
+#include <sys/ioctl.h>
 #include <sys/poll.h>
 #include <sys/signal.h>
 #include <sys/socket.h>
@@ -466,6 +467,16 @@ int oe_posix_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg)
     return fcntl((int)fd, cmd, arg);
 }
 
+int oe_posix_ioctl_ocall(
+    oe_host_fd_t fd,
+    unsigned long request,
+    unsigned long arg)
+{
+    errno = 0;
+
+    return ioctl((int)fd, request, arg);
+}
+
 int oe_posix_setsockopt_ocall(
     oe_host_fd_t sockfd,
     int level,
@@ -751,14 +762,6 @@ int oe_posix_getnameinfo_ocall(
 
     return getnameinfo(
         (const struct sockaddr*)sa, salen, host, hostlen, serv, servlen, flags);
-}
-
-int oe_posix_shutdown_resolver_device_ocall(void)
-{
-    /* No shutdown actions needed for this device. */
-    errno = 0;
-
-    return 0;
 }
 
 /*
