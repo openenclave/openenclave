@@ -9,24 +9,26 @@
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 
-static size_t _resolver_table_len = 3;
-static oe_resolver_t* _resolver_table[3] = {0}; // At most 3
+#define RESOLVER_TABLE_SIZE 3
+
+static oe_resolver_t* _resolver_table[RESOLVER_TABLE_SIZE] = {0};
+static size_t _resolver_table_size = RESOLVER_TABLE_SIZE;
 static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
 
 /* Called by the public oe_load_module_host_resolver() function. */
-int oe_register_resolver(int resolver_priority, oe_resolver_t* presolver)
+int oe_register_resolver(int resolver_priority, oe_resolver_t* resolver)
 {
     int ret = -1;
 
     oe_spin_lock(&_lock);
 
-    if (presolver == NULL)
+    if (resolver == NULL)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (resolver_priority >= (int)_resolver_table_len)
+    if (resolver_priority >= (int)_resolver_table_size)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    _resolver_table[resolver_priority] = presolver;
+    _resolver_table[resolver_priority] = resolver;
 
     ret = 0;
 done:
@@ -50,7 +52,7 @@ int oe_getaddrinfo(
         *res_out = NULL;
 
     /* Try each resolver in the table. */
-    for (i = 0; i < _resolver_table_len; i++)
+    for (i = 0; i < _resolver_table_size; i++)
     {
         if (_resolver_table[i])
         {
@@ -103,7 +105,7 @@ int oe_getnameinfo(
 
     oe_spin_lock(&_lock);
 
-    for (resolver_idx = 0; resolver_idx < _resolver_table_len; resolver_idx++)
+    for (resolver_idx = 0; resolver_idx < _resolver_table_size; resolver_idx++)
     {
         if (_resolver_table[resolver_idx] != NULL)
         {

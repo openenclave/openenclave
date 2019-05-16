@@ -21,7 +21,7 @@ void _set_to_fd_list(
 {
     int fd_idx = 0;
     uint32_t idx = 0;
-    uint32_t* pbits = (uint32_t*)set->fds_bits;
+    uint32_t* bits = (uint32_t*)set->fds_bits;
     uint32_t bitpos;
 
     for (idx = 0; idx < (OE_FD_SETSIZE >> 5); idx++)
@@ -29,7 +29,7 @@ void _set_to_fd_list(
         uint32_t bitmask = 1;
         for (bitpos = 0; bitpos < 8 * sizeof(long); bitpos++)
         {
-            if (pbits[idx] & bitmask)
+            if (bits[idx] & bitmask)
             {
                 uint32_t fd = (idx << 5) + bitpos;
                 if (fd_idx < fdlist_max)

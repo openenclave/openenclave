@@ -47,7 +47,7 @@ struct _oe_device
 
 int oe_clear_devid(uint64_t devid);
 
-int oe_set_device(uint64_t devid, oe_device_t* pdevice);
+int oe_set_device(uint64_t devid, oe_device_t* dev);
 
 oe_device_t* oe_get_device(uint64_t devid, oe_device_type_t type);
 
