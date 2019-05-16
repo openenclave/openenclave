@@ -251,18 +251,18 @@ static oe_eventfd_ops_t _get_eventfd_operations()
     return _eventfd_operations;
 };
 
-// clean-format off
+// clang-format off
 static device_t _eventfd = {
     .base.type = OE_DEVID_EVENTFD,
     .base.name = OE_DEVICE_NAME_EVENTFD,
     .base.ops.eventfd =
-        {
-            .base.release = _eventfd_release,
-            .eventfd = _eventfd_eventfd,
-        },
+    {
+        .base.release = _eventfd_release,
+        .eventfd = _eventfd_eventfd,
+    },
     .magic = DEVICE_MAGIC,
 };
-// clean-format on
+// clang-format on
 
 static oe_once_t _once = OE_ONCE_INITIALIZER;
 static bool _loaded;

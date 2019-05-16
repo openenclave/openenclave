@@ -578,19 +578,19 @@ static oe_epoll_ops_t _get_epoll_operations(void)
     return _epoll_operations;
 }
 
-// clean-format off
+// clang-format off
 static device_t _device = {
     .fd.type = OE_DEVICE_TYPE_EPOLL,
     .fd.name = OE_DEVICE_NAME_HOST_EPOLL,
     .fd.ops.epoll =
-        {
-            .base.release = _epoll_shutdown,
-            .epoll_create = _epoll_create,
-            .epoll_create1 = _epoll_create1,
-        },
+    {
+        .base.release = _epoll_shutdown,
+        .epoll_create = _epoll_create,
+        .epoll_create1 = _epoll_create1,
+    },
     .magic = DEVICE_MAGIC,
 };
-// clean-format on
+// clang-format on
 
 static oe_once_t _once = OE_ONCE_INITIALIZER;
 static bool _loaded;

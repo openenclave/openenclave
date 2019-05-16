@@ -25,7 +25,7 @@ int oe_eventfd(unsigned int initval, int flags)
     if (!(device = oe_get_device(OE_DEVID_EVENTFD, OE_DEVICE_TYPE_EVENTFD)))
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (!(eventfd = OE_CALL_EVENTFD(eventfd, device, initval, flags)))
+    if (!(eventfd = device->ops.eventfd.eventfd(device, initval, flags)))
         OE_RAISE_ERRNO(oe_errno);
 
     if ((ed = oe_fdtable_assign(eventfd)) == -1)

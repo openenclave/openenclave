@@ -21,7 +21,7 @@
 #define DEVICE_MAGIC 0x536f636b
 #define SOCK_MAGIC 0xe57a696d
 
-static oe_sock_ops_t _get_sock_operations(void);
+static oe_socket_ops_t _get_socket_ops(void);
 
 static size_t _get_iov_size(const struct oe_iovec* iov, size_t iov_len)
 {
@@ -119,7 +119,7 @@ static sock_t* _new_sock(void)
         return NULL;
 
     sock->base.type = OE_FD_TYPE_SOCKET;
-    sock->base.ops.sock = _get_sock_operations();
+    sock->base.ops.socket = _get_socket_ops();
     sock->magic = SOCK_MAGIC;
 
     return sock;
@@ -910,7 +910,7 @@ static oe_host_fd_t _hostsock_gethostfd(oe_fd_t* sock_)
     return sock->host_fd;
 }
 
-static oe_sock_ops_t _sock_operations = {
+static oe_socket_ops_t _sock_operations = {
     .fd.dup = _hostsock_dup,
     .fd.ioctl = _hostsock_ioctl,
     .fd.fcntl = _hostsock_fcntl,
@@ -936,23 +936,23 @@ static oe_sock_ops_t _sock_operations = {
     .connect = _hostsock_connect,
 };
 
-static oe_sock_ops_t _get_sock_operations(void)
+static oe_socket_ops_t _get_socket_ops(void)
 {
     return _sock_operations;
 };
 
-// clean-format off
+// clang-format off
 static device_t _device = {
     .base.type = OE_DEVICE_TYPE_SOCKET,
     .base.name = OE_DEVICE_NAME_HOST_SOCKET_INTERFACE,
-    .base.ops.sock =
-        {
-            .socket = _hostsock_socket,
-            .socketpair = _hostsock_socketpair,
-        },
+    .base.ops.socket =
+    {
+        .socket = _hostsock_socket,
+        .socketpair = _hostsock_socketpair,
+    },
     .magic = DEVICE_MAGIC,
 };
-// clean-format on
+// clang-format on
 
 static oe_once_t _once = OE_ONCE_INITIALIZER;
 static bool _loaded;

@@ -347,7 +347,7 @@ int oe_rmdir(const char* pathname)
     if (!(fs = oe_mount_resolve(pathname, filepath)))
         OE_RAISE_ERRNO(oe_errno);
 
-    ret = OE_CALL_FS(rmdir, fs, filepath);
+    ret = fs->ops.fs.rmdir(fs, filepath);
 
 done:
     return ret;
@@ -368,7 +368,7 @@ int oe_rmdir_d(uint64_t devid, const char* pathname)
         if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
             OE_RAISE_ERRNO(OE_EINVAL);
 
-        ret = OE_CALL_FS(rmdir, dev, pathname);
+        ret = dev->ops.fs.rmdir(dev, pathname);
     }
 
 done:
@@ -392,7 +392,7 @@ int oe_link(const char* oldpath, const char* newpath)
     if (fs != newfs)
         OE_RAISE_ERRNO(OE_EXDEV);
 
-    ret = OE_CALL_FS(link, fs, filepath, newfilepath);
+    ret = fs->ops.fs.link(fs, filepath, newfilepath);
 
 done:
     return ret;
@@ -413,7 +413,7 @@ int oe_link_d(uint64_t devid, const char* oldpath, const char* newpath)
         if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
             OE_RAISE_ERRNO(OE_EINVAL);
 
-        ret = OE_CALL_FS(link, dev, oldpath, newpath);
+        ret = dev->ops.fs.link(dev, oldpath, newpath);
     }
 
 done:
@@ -429,7 +429,7 @@ int oe_unlink(const char* pathname)
     if (!(fs = oe_mount_resolve(pathname, filepath)))
         OE_RAISE_ERRNO(oe_errno);
 
-    ret = OE_CALL_FS(unlink, fs, filepath);
+    ret = fs->ops.fs.unlink(fs, filepath);
 
 done:
     return ret;
@@ -450,7 +450,7 @@ int oe_unlink_d(uint64_t devid, const char* pathname)
         if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
             OE_RAISE_ERRNO(OE_EINVAL);
 
-        ret = OE_CALL_FS(unlink, dev, pathname);
+        ret = dev->ops.fs.unlink(dev, pathname);
     }
 
 done:
@@ -466,7 +466,7 @@ int oe_truncate(const char* pathname, oe_off_t length)
     if (!(fs = oe_mount_resolve(pathname, filepath)))
         OE_RAISE_ERRNO(oe_errno);
 
-    ret = OE_CALL_FS(truncate, fs, filepath, length);
+    ret = fs->ops.fs.truncate(fs, filepath, length);
 
 done:
     return ret;
@@ -487,7 +487,7 @@ int oe_truncate_d(uint64_t devid, const char* path, oe_off_t length)
         if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
             OE_RAISE_ERRNO(OE_EINVAL);
 
-        ret = OE_CALL_FS(truncate, dev, path, length);
+        ret = dev->ops.fs.truncate(dev, path, length);
     }
 
 done:
@@ -574,7 +574,7 @@ int oe_access(const char* pathname, int mode)
     if (!(fs = oe_mount_resolve(pathname, suffix)))
         OE_RAISE_ERRNO(oe_errno);
 
-    ret = OE_CALL_FS(access, fs, suffix, mode);
+    ret = fs->ops.fs.access(fs, suffix, mode);
 
 done:
     return ret;

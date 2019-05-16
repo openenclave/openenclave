@@ -35,7 +35,7 @@ int oe_open(const char* pathname, int flags, oe_mode_t mode)
     if (!(fs = oe_mount_resolve(pathname, filepath)))
         OE_RAISE_ERRNO(oe_errno);
 
-    if (!(file = OE_CALL_FS(open, fs, filepath, flags, mode)))
+    if (!(file = fs->ops.fs.open(fs, filepath, flags, mode)))
         OE_RAISE_ERRNO_MSG(oe_errno, "pathname=%s", pathname);
 
     if ((fd = oe_fdtable_assign(file)) == -1)
@@ -68,7 +68,7 @@ int oe_open_d(uint64_t devid, const char* pathname, int flags, oe_mode_t mode)
         if (!dev)
             OE_RAISE_ERRNO(OE_EINVAL);
 
-        if (!(file = OE_CALL_FS(open, dev, pathname, flags, mode)))
+        if (!(file = dev->ops.fs.open(dev, pathname, flags, mode)))
             OE_RAISE_ERRNO_MSG(oe_errno, "pathname=%s mode=%u", pathname, mode);
 
         if ((ret = oe_fdtable_assign(file)) == -1)

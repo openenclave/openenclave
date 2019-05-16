@@ -59,7 +59,7 @@ typedef struct _oe_file_ops
 oe_file_ops_t;
 
 /* Socket operations .*/
-typedef struct _oe_sock_ops
+typedef struct _oe_socket_ops
 {
     /* Inherited operations. */
     oe_fd_ops_t fd;
@@ -149,7 +149,7 @@ typedef struct _oe_sock_ops
         struct oe_sockaddr* addr,
         oe_socklen_t* addrlen);
 }
-oe_sock_ops_t;
+oe_socket_ops_t;
 
 /* epoll operations. */
 typedef struct _oe_epoll_ops
@@ -185,7 +185,7 @@ struct _oe_fd
     union {
         oe_fd_ops_t fd;
         oe_file_ops_t file;
-        oe_sock_ops_t sock;
+        oe_socket_ops_t socket;
         oe_epoll_ops_t epoll;
         oe_eventfd_ops_t eventfd;
     } ops;

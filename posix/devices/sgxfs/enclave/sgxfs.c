@@ -411,7 +411,7 @@ static oe_fd_t* _sgxfs_open_directory(
         if (_expand_path(fs, pathname, full_path) != 0)
             OE_RAISE_ERRNO(oe_errno);
 
-        ret = OE_CALL_FS(open, hostfs, full_path, flags, mode);
+        ret = hostfs->ops.fs.open(hostfs, full_path, flags, mode);
     }
 
 done:
@@ -611,7 +611,7 @@ static int _sgxfs_stat(
         if (_expand_path(fs, pathname, full_path) != 0)
             OE_RAISE_ERRNO(oe_errno);
 
-        if ((r = OE_CALL_FS(stat, hostfs, full_path, buf)) == -1)
+        if ((r = hostfs->ops.fs.stat(hostfs, full_path, buf)) == -1)
         {
             ret = r;
             goto done;
@@ -667,7 +667,7 @@ static int _sgxfs_access(oe_device_t* fs_, const char* pathname, int mode)
         if (_expand_path(fs, pathname, full_path) != 0)
             OE_RAISE_ERRNO(oe_errno);
 
-        if ((ret = OE_CALL_FS(access, hostfs, full_path, mode)) != 0)
+        if ((ret = hostfs->ops.fs.access(hostfs, full_path, mode)) != 0)
             OE_RAISE_ERRNO(oe_errno);
     }
 
@@ -759,7 +759,7 @@ static int _sgxfs_unlink(oe_device_t* fs_, const char* pathname)
         if (_expand_path(fs, pathname, full_path) != 0)
             OE_RAISE_ERRNO(oe_errno);
 
-        ret = OE_CALL_FS(unlink, hostfs, full_path);
+        ret = hostfs->ops.fs.unlink(hostfs, full_path);
     }
 
 done:
@@ -822,7 +822,7 @@ static int _sgxfs_rename(
         if (_expand_path(fs, oldpath, full_path) != 0)
             OE_RAISE_ERRNO(oe_errno);
 
-        if (OE_CALL_FS(unlink, hostfs, full_path) != 0)
+        if (hostfs->ops.fs.unlink(hostfs, full_path) != 0)
             OE_RAISE_ERRNO(oe_errno);
     }
 
@@ -957,7 +957,7 @@ static int _sgxfs_mkdir(oe_device_t* fs_, const char* pathname, oe_mode_t mode)
         if (_expand_path(fs, pathname, full_path) != 0)
             OE_RAISE_ERRNO(oe_errno);
 
-        if (OE_CALL_FS(mkdir, hostfs, full_path, mode) != 0)
+        if (hostfs->ops.fs.mkdir(hostfs, full_path, mode) != 0)
             OE_RAISE_ERRNO(oe_errno);
     }
 
@@ -987,7 +987,7 @@ static int _sgxfs_rmdir(oe_device_t* fs_, const char* pathname)
         if (_expand_path(fs, pathname, full_path) != 0)
             OE_RAISE_ERRNO(oe_errno);
 
-        ret = OE_CALL_FS(rmdir, hostfs, full_path);
+        ret = hostfs->ops.fs.rmdir(hostfs, full_path);
     }
 
 done:
@@ -1030,29 +1030,29 @@ static oe_file_ops_t _get_file_operations(void)
     return _file_operations;
 }
 
-// clean-format off
+// clang-format off
 static fs_t _sgxfs = {
     .base.type = OE_DEVICE_TYPE_FILESYSTEM,
     .base.name = OE_DEVICE_NAME_SGX_FILE_SYSTEM,
     .base.ops.fs =
-        {
-            .base.release = _sgxfs_release,
-            .clone = _sgxfs_clone,
-            .mount = _sgxfs_mount,
-            .unmount = _sgxfs_unmount,
-            .open = _sgxfs_open,
-            .stat = _sgxfs_stat,
-            .access = _sgxfs_access,
-            .link = _sgxfs_link,
-            .unlink = _sgxfs_unlink,
-            .rename = _sgxfs_rename,
-            .truncate = _sgxfs_truncate,
-            .mkdir = _sgxfs_mkdir,
-            .rmdir = _sgxfs_rmdir,
-        },
+    {
+        .base.release = _sgxfs_release,
+        .clone = _sgxfs_clone,
+        .mount = _sgxfs_mount,
+        .unmount = _sgxfs_unmount,
+        .open = _sgxfs_open,
+        .stat = _sgxfs_stat,
+        .access = _sgxfs_access,
+        .link = _sgxfs_link,
+        .unlink = _sgxfs_unlink,
+        .rename = _sgxfs_rename,
+        .truncate = _sgxfs_truncate,
+        .mkdir = _sgxfs_mkdir,
+        .rmdir = _sgxfs_rmdir,
+    },
     .magic = FS_MAGIC,
 };
-// clean-format on
+// clang-format on
 
 static oe_device_t* _get_sgxfs_device(void)
 {
