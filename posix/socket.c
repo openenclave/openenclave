@@ -67,7 +67,7 @@ int oe_socket_d(uint64_t devid, int domain, int type, int protocol)
 done:
 
     if (sock)
-        sock->ops.base.close(sock);
+        sock->ops.fd.close(sock);
 
     return ret;
 }
@@ -120,10 +120,10 @@ int oe_socketpair(int domain, int type, int protocol, int retfd[2])
 done:
 
     if (socks[0])
-        socks[0]->ops.base.close(socks[0]);
+        socks[0]->ops.fd.close(socks[0]);
 
     if (socks[1])
-        socks[0]->ops.base.close(socks[1]);
+        socks[0]->ops.fd.close(socks[1]);
 
     return ret;
 }
@@ -168,7 +168,7 @@ int oe_accept(int sockfd, struct oe_sockaddr* addr, oe_socklen_t* addrlen)
 done:
 
     if (new_sock)
-        new_sock->ops.base.close(new_sock);
+        new_sock->ops.fd.close(new_sock);
 
     return ret;
 }

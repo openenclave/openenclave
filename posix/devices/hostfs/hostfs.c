@@ -110,7 +110,7 @@ OE_INLINE bool _is_root(const char* path)
     return path[0] == '/' && path[1] == '\0';
 }
 
-static oe_file_operations_t _get_file_operations(void);
+static oe_file_ops_t _get_file_operations(void);
 
 /* Expand path to include the mount_source (needed by host side) */
 static int _expand_path(
@@ -983,19 +983,19 @@ static oe_host_fd_t _hostfs_gethostfd(oe_fd_t* file_)
     return -1;
 }
 
-static oe_file_operations_t _file_operations = {
-    .base.dup = _hostfs_dup,
-    .base.ioctl = _hostfs_ioctl,
-    .base.fcntl = _hostfs_fcntl,
-    .base.read = _hostfs_read,
-    .base.write = _hostfs_write,
-    .base.get_host_fd = _hostfs_gethostfd,
+static oe_file_ops_t _file_operations = {
+    .fd.dup = _hostfs_dup,
+    .fd.ioctl = _hostfs_ioctl,
+    .fd.fcntl = _hostfs_fcntl,
+    .fd.read = _hostfs_read,
+    .fd.write = _hostfs_write,
+    .fd.get_host_fd = _hostfs_gethostfd,
+    .fd.close = _hostfs_close,
     .lseek = _hostfs_lseek,
-    .base.close = _hostfs_close,
     .getdents = _hostfs_getdents,
 };
 
-static oe_file_operations_t _get_file_operations(void)
+static oe_file_ops_t _get_file_operations(void)
 {
     return _file_operations;
 };

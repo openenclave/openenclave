@@ -34,7 +34,7 @@
 #define DEVICE_MAGIC 0x4e455645
 #define EVENTFD_MAGIC 0x87aada8f
 
-static oe_eventfd_operations_t _get_eventfd_operations(void);
+static oe_eventfd_ops_t _get_eventfd_operations(void);
 
 typedef struct _device
 {
@@ -239,15 +239,15 @@ done:
     return -1;
 }
 
-static oe_eventfd_operations_t _eventfd_operations = {
-    .base.ioctl = _eventfd_ioctl,
-    .base.read = _eventfd_read,
-    .base.write = _eventfd_write,
-    .base.close = _eventfd_close,
-    .base.get_host_fd = _eventfd_gethostfd,
+static oe_eventfd_ops_t _eventfd_operations = {
+    .fd.ioctl = _eventfd_ioctl,
+    .fd.read = _eventfd_read,
+    .fd.write = _eventfd_write,
+    .fd.close = _eventfd_close,
+    .fd.get_host_fd = _eventfd_gethostfd,
 };
 
-static oe_eventfd_operations_t _get_eventfd_operations()
+static oe_eventfd_ops_t _get_eventfd_operations()
 {
     return _eventfd_operations;
 };

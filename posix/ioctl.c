@@ -43,7 +43,7 @@ int __oe_ioctl(int fd, unsigned long request, uint64_t arg)
         if (!(desc = oe_fdtable_get(fd, OE_FD_TYPE_ANY)))
             OE_RAISE_ERRNO(oe_errno);
 
-        ret = desc->ops.base.ioctl(desc, request, arg);
+        ret = desc->ops.fd.ioctl(desc, request, arg);
     }
 
 done:

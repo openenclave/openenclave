@@ -18,7 +18,7 @@ int __oe_fcntl(int fd, int cmd, uint64_t arg)
     if (!(desc = oe_fdtable_get(fd, OE_FD_TYPE_ANY)))
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    ret = desc->ops.base.fcntl(desc, cmd, arg);
+    ret = desc->ops.fd.fcntl(desc, cmd, arg);
 
 done:
     return ret;
@@ -47,7 +47,7 @@ int oe_open(const char* pathname, int flags, oe_mode_t mode)
 done:
 
     if (file)
-        file->ops.base.close(file);
+        file->ops.fd.close(file);
 
     return ret;
 }
@@ -80,7 +80,7 @@ int oe_open_d(uint64_t devid, const char* pathname, int flags, oe_mode_t mode)
 done:
 
     if (file)
-        file->ops.base.close(file);
+        file->ops.fd.close(file);
 
     return ret;
 }

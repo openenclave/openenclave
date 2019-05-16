@@ -248,7 +248,7 @@ ssize_t oe_read(int fd, void* buf, size_t count)
     if (!(desc = oe_fdtable_get(fd, OE_FD_TYPE_ANY)))
         OE_RAISE_ERRNO(OE_EBADF);
 
-    ret = desc->ops.base.read(desc, buf, count);
+    ret = desc->ops.fd.read(desc, buf, count);
 
 done:
     return ret;
@@ -262,7 +262,7 @@ ssize_t oe_write(int fd, const void* buf, size_t count)
     if (!(desc = oe_fdtable_get(fd, OE_FD_TYPE_ANY)))
         OE_RAISE_ERRNO(OE_EBADF);
 
-    ret = desc->ops.base.write(desc, buf, count);
+    ret = desc->ops.fd.write(desc, buf, count);
 
 done:
     return ret;
@@ -276,7 +276,7 @@ int oe_close(int fd)
     if (!(desc = oe_fdtable_get(fd, OE_FD_TYPE_ANY)))
         OE_RAISE_ERRNO(OE_EBADF);
 
-    if ((ret = desc->ops.base.close(desc)) == 0)
+    if ((ret = desc->ops.fd.close(desc)) == 0)
         oe_fdtable_release(fd);
 
 done:
@@ -293,7 +293,7 @@ int oe_dup(int oldfd)
     if (!(old_desc = oe_fdtable_get(oldfd, OE_FD_TYPE_ANY)))
         OE_RAISE_ERRNO(OE_EBADF);
 
-    if (old_desc->ops.base.dup(old_desc, &new_desc) == -1)
+    if (old_desc->ops.fd.dup(old_desc, &new_desc) == -1)
         OE_RAISE_ERRNO(oe_errno);
 
     if ((newfd = oe_fdtable_assign(new_desc)) == -1)
@@ -305,7 +305,7 @@ int oe_dup(int oldfd)
 done:
 
     if (new_desc)
-        new_desc->ops.base.close(new_desc);
+        new_desc->ops.fd.close(new_desc);
 
     return ret;
 }
@@ -322,7 +322,7 @@ int oe_dup2(int oldfd, int newfd)
     if (!(old_desc = oe_fdtable_get(oldfd, OE_FD_TYPE_ANY)))
         OE_RAISE_ERRNO(OE_EBADF);
 
-    if ((retval = old_desc->ops.base.dup(old_desc, &new_desc)) < 0)
+    if ((retval = old_desc->ops.fd.dup(old_desc, &new_desc)) < 0)
         OE_RAISE_ERRNO(oe_errno);
 
     if (oe_fdtable_reassign(newfd, new_desc) == -1)
@@ -333,7 +333,7 @@ int oe_dup2(int oldfd, int newfd)
 done:
 
     if (new_desc)
-        new_desc->ops.base.close(new_desc);
+        new_desc->ops.fd.close(new_desc);
 
     return newfd;
 }

@@ -40,7 +40,7 @@ int oe_epoll_create(int size)
 done:
 
     if (epoll)
-        epoll->ops.base.close(epoll);
+        epoll->ops.fd.close(epoll);
 
     return ret;
 }
@@ -65,7 +65,7 @@ int oe_epoll_create1(int flags)
 done:
 
     if (epoll)
-        epoll->ops.base.close(epoll);
+        epoll->ops.fd.close(epoll);
 
     return epfd;
 }

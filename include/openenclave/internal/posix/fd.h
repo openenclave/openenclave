@@ -26,7 +26,7 @@ typedef enum _oe_fd_type
 typedef struct _oe_fd oe_fd_t;
 
 /* Common operations on file-descriptor objects. */
-typedef struct _oe_base_operations
+typedef struct _oe_fd_ops
 {
     ssize_t (*read)(oe_fd_t* desc, void* buf, size_t count);
 
@@ -44,25 +44,25 @@ typedef struct _oe_base_operations
 
     int (*release)(oe_fd_t* desc);
 }
-oe_base_operations_t;
+oe_fd_ops_t;
 
 /* File operations. */
-typedef struct _oe_file_operations
+typedef struct _oe_file_ops
 {
     /* Inherited operations. */
-    oe_base_operations_t base;
+    oe_fd_ops_t fd;
 
     oe_off_t (*lseek)(oe_fd_t* file, oe_off_t offset, int whence);
 
     int (*getdents)(oe_fd_t* file, struct oe_dirent* dirp, uint32_t count);
 }
-oe_file_operations_t;
+oe_file_ops_t;
 
 /* Socket operations .*/
-typedef struct _oe_sock_operations
+typedef struct _oe_sock_ops
 {
     /* Inherited operations. */
-    oe_base_operations_t base;
+    oe_fd_ops_t fd;
 
     int (*connect)(
         oe_fd_t* sock,
@@ -149,13 +149,13 @@ typedef struct _oe_sock_operations
         struct oe_sockaddr* addr,
         oe_socklen_t* addrlen);
 }
-oe_sock_operations_t;
+oe_sock_ops_t;
 
 /* epoll operations. */
-typedef struct _oe_epoll_operations
+typedef struct _oe_epoll_ops
 {
     /* Inherited operations. */
-    oe_base_operations_t base;
+    oe_fd_ops_t fd;
 
     int (*epoll_ctl)(
         oe_fd_t* epoll,
@@ -169,25 +169,25 @@ typedef struct _oe_epoll_operations
         int maxevents,
         int timeout);
 }
-oe_epoll_operations_t;
+oe_epoll_ops_t;
 
 /* eventfd operations. */
-typedef struct _oe_eventfd_operations
+typedef struct _oe_eventfd_ops
 {
     /* Inherited operations. */
-    oe_base_operations_t base;
+    oe_fd_ops_t fd;
 }
-oe_eventfd_operations_t;
+oe_eventfd_ops_t;
 
 struct _oe_fd
 {
     oe_fd_type_t type;
     union {
-        oe_base_operations_t base;
-        oe_file_operations_t file;
-        oe_sock_operations_t sock;
-        oe_epoll_operations_t epoll;
-        oe_eventfd_operations_t eventfd;
+        oe_fd_ops_t fd;
+        oe_file_ops_t file;
+        oe_sock_ops_t sock;
+        oe_epoll_ops_t epoll;
+        oe_eventfd_ops_t eventfd;
     } ops;
 };
 

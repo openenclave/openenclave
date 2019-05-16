@@ -210,15 +210,15 @@ done:
     return ret;
 }
 
-static oe_file_operations_t _ops = {
-    .base.dup = _consolefs_dup,
-    .base.release = _consolefs_release,
-    .base.ioctl = _consolefs_ioctl,
-    .base.fcntl = _consolefs_fcntl,
-    .base.read = _consolefs_read,
-    .base.write = _consolefs_write,
-    .base.get_host_fd = _consolefs_gethostfd,
-    .base.close = _consolefs_close,
+static oe_file_ops_t _ops = {
+    .fd.dup = _consolefs_dup,
+    .fd.release = _consolefs_release,
+    .fd.ioctl = _consolefs_ioctl,
+    .fd.fcntl = _consolefs_fcntl,
+    .fd.read = _consolefs_read,
+    .fd.write = _consolefs_write,
+    .fd.get_host_fd = _consolefs_gethostfd,
+    .fd.close = _consolefs_close,
     .lseek = _consolefs_lseek,
     .getdents = NULL,
 };

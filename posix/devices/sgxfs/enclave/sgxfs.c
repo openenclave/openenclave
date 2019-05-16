@@ -93,7 +93,7 @@ OE_INLINE bool _is_root(const char* path)
     return path[0] == '/' && path[1] == '\0';
 }
 
-static oe_file_operations_t _get_file_operations(void);
+static oe_file_ops_t _get_file_operations(void);
 
 /* Expand path to include the mount_source (needed by host side) */
 static int _expand_path(
@@ -533,7 +533,7 @@ static int _sgxfs_close(oe_fd_t* file_)
     }
     else
     {
-        file_->ops.base.close(file_);
+        file_->ops.fd.close(file_);
     }
 
     ret = 0;
@@ -1012,19 +1012,19 @@ done:
     return -1;
 }
 
-static oe_file_operations_t _file_operations = {
-    .base.dup = _sgxfs_dup,
-    .base.ioctl = _sgxfs_ioctl,
-    .base.fcntl = _sgxfs_fcntl,
-    .base.read = _sgxfs_read,
-    .base.write = _sgxfs_write,
-    .base.get_host_fd = _sgxfs_gethostfd,
+static oe_file_ops_t _file_operations = {
+    .fd.dup = _sgxfs_dup,
+    .fd.ioctl = _sgxfs_ioctl,
+    .fd.fcntl = _sgxfs_fcntl,
+    .fd.read = _sgxfs_read,
+    .fd.write = _sgxfs_write,
+    .fd.get_host_fd = _sgxfs_gethostfd,
+    .fd.close = _sgxfs_close,
     .lseek = _sgxfs_lseek,
-    .base.close = _sgxfs_close,
     .getdents = _sgxfs_getdents,
 };
 
-static oe_file_operations_t _get_file_operations(void)
+static oe_file_ops_t _get_file_operations(void)
 {
     return _file_operations;
 }

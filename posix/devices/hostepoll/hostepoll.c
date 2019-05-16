@@ -36,13 +36,13 @@ typedef struct _pair
 
 typedef struct _device
 {
-    struct _oe_device base;
+    struct _oe_device fd;
     uint32_t magic;
 } device_t;
 
 typedef struct _epoll
 {
-    oe_fd_t base;
+    oe_fd_t fd;
     uint32_t magic;
     oe_host_fd_t host_fd;
 
@@ -53,7 +53,7 @@ typedef struct _epoll
 
 } epoll_t;
 
-static oe_epoll_operations_t _get_epoll_operations(void);
+static oe_epoll_ops_t _get_epoll_operations(void);
 
 static device_t* _cast_device(const oe_device_t* device_)
 {
@@ -143,13 +143,13 @@ static oe_fd_t* _epoll_create1(oe_device_t* device_, int32_t flags)
 
     if (retval != -1)
     {
-        epoll->base.type = OE_FD_TYPE_EPOLL;
+        epoll->fd.type = OE_FD_TYPE_EPOLL;
         epoll->magic = EPOLL_MAGIC;
-        epoll->base.ops.epoll = _get_epoll_operations();
+        epoll->fd.ops.epoll = _get_epoll_operations();
         epoll->host_fd = retval;
     }
 
-    ret = &epoll->base;
+    ret = &epoll->fd;
     epoll = NULL;
 
 done:
@@ -188,7 +188,7 @@ static int _epoll_ctl_add(epoll_t* epoll, int fd, struct oe_epoll_event* event)
     host_epfd = epoll->host_fd;
 
     /* Get the host fd for the fd. */
-    if ((host_fd = desc->ops.base.get_host_fd(desc)) == -1)
+    if ((host_fd = desc->ops.fd.get_host_fd(desc)) == -1)
         OE_RAISE_ERRNO(oe_errno);
 
     /* Initialize the host event. */
@@ -244,7 +244,7 @@ static int _epoll_ctl_mod(epoll_t* epoll, int fd, struct oe_epoll_event* event)
     host_epfd = epoll->host_fd;
 
     /* Get the host fd for the device. */
-    if ((host_fd = desc->ops.base.get_host_fd(desc)) == -1)
+    if ((host_fd = desc->ops.fd.get_host_fd(desc)) == -1)
         OE_RAISE_ERRNO(oe_errno);
 
     /* Initialize the host event. */
@@ -308,7 +308,7 @@ static int _epoll_ctl_del(epoll_t* epoll, int fd)
     host_epfd = epoll->host_fd;
 
     /* Get the host fd for the device. */
-    if ((host_fd = desc->ops.base.get_host_fd(desc)) == -1)
+    if ((host_fd = desc->ops.fd.get_host_fd(desc)) == -1)
         OE_RAISE_ERRNO(oe_errno);
 
     if (oe_posix_epoll_ctl_ocall(
@@ -404,7 +404,7 @@ static int _epoll_wait(
 
     oe_errno = 0;
 
-    if ((host_epfd = epoll_->ops.base.get_host_fd(epoll_)) == -1)
+    if ((host_epfd = epoll_->ops.fd.get_host_fd(epoll_)) == -1)
         OE_RAISE_ERRNO(oe_errno);
 
     if (oe_posix_epoll_wait_ocall(
@@ -563,18 +563,18 @@ done:
     return ret;
 }
 
-static oe_epoll_operations_t _epoll_operations = {
-    .base.ioctl = _epoll_ioctl,
-    .base.fcntl = _epoll_fcntl,
-    .base.read = _epoll_read,
-    .base.write = _epoll_write,
-    .base.close = _epoll_close,
-    .base.get_host_fd = _epoll_gethostfd,
+static oe_epoll_ops_t _epoll_operations = {
+    .fd.ioctl = _epoll_ioctl,
+    .fd.fcntl = _epoll_fcntl,
+    .fd.read = _epoll_read,
+    .fd.write = _epoll_write,
+    .fd.close = _epoll_close,
+    .fd.get_host_fd = _epoll_gethostfd,
     .epoll_ctl = _epoll_ctl,
     .epoll_wait = _epoll_wait,
 };
 
-static oe_epoll_operations_t _get_epoll_operations(void)
+static oe_epoll_ops_t _get_epoll_operations(void)
 {
     return _epoll_operations;
 }
@@ -586,9 +586,9 @@ static oe_epoll_device_ops_t _ops = {
 };
 
 static device_t _device = {
-    .base.type = OE_DEVICE_TYPE_EPOLL,
-    .base.name = OE_DEVICE_NAME_HOST_EPOLL,
-    .base.ops.epoll = &_ops,
+    .fd.type = OE_DEVICE_TYPE_EPOLL,
+    .fd.name = OE_DEVICE_NAME_HOST_EPOLL,
+    .fd.ops.epoll = &_ops,
     .magic = DEVICE_MAGIC,
 };
 
@@ -600,7 +600,7 @@ static void _load_once(void)
     oe_result_t result = OE_FAILURE;
     const uint64_t devid = OE_DEVID_HOST_EPOLL;
 
-    if (oe_set_device(devid, &_device.base) != 0)
+    if (oe_set_device(devid, &_device.fd) != 0)
         OE_RAISE_ERRNO(oe_errno);
 
     result = OE_OK;

@@ -37,7 +37,7 @@ int oe_eventfd(unsigned int initval, int flags)
 done:
 
     if (eventfd)
-        return eventfd->ops.base.close(eventfd);
+        return eventfd->ops.fd.close(eventfd);
 
     return ret;
 }

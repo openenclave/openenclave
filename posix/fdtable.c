@@ -236,7 +236,7 @@ int oe_fdtable_reassign(int fd, oe_fd_t* desc)
 
     if (_table[fd])
     {
-        if (_table[fd]->ops.base.close(_table[fd]) != 0)
+        if (_table[fd]->ops.fd.close(_table[fd]) != 0)
             OE_RAISE_ERRNO(oe_errno);
     }
 

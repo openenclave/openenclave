@@ -21,7 +21,7 @@
 #define DEVICE_MAGIC 0x536f636b
 #define SOCK_MAGIC 0xe57a696d
 
-static oe_sock_operations_t _get_sock_operations(void);
+static oe_sock_ops_t _get_sock_operations(void);
 
 static size_t _get_iov_size(const struct oe_iovec* iov, size_t iov_len)
 {
@@ -910,15 +910,15 @@ static oe_host_fd_t _hostsock_gethostfd(oe_fd_t* sock_)
     return sock->host_fd;
 }
 
-static oe_sock_operations_t _sock_operations = {
-    .base.dup = _hostsock_dup,
-    .base.ioctl = _hostsock_ioctl,
-    .base.fcntl = _hostsock_fcntl,
-    .base.read = _hostsock_read,
-    .base.write = _hostsock_write,
-    .base.get_host_fd = _hostsock_gethostfd,
-    .base.close = _hostsock_close,
-    .base.release = _hostsock_release,
+static oe_sock_ops_t _sock_operations = {
+    .fd.dup = _hostsock_dup,
+    .fd.ioctl = _hostsock_ioctl,
+    .fd.fcntl = _hostsock_fcntl,
+    .fd.read = _hostsock_read,
+    .fd.write = _hostsock_write,
+    .fd.get_host_fd = _hostsock_gethostfd,
+    .fd.close = _hostsock_close,
+    .fd.release = _hostsock_release,
     .accept = _hostsock_accept,
     .bind = _hostsock_bind,
     .listen = _hostsock_listen,
@@ -936,7 +936,7 @@ static oe_sock_operations_t _sock_operations = {
     .connect = _hostsock_connect,
 };
 
-static oe_sock_operations_t _get_sock_operations(void)
+static oe_sock_ops_t _get_sock_operations(void)
 {
     return _sock_operations;
 };
