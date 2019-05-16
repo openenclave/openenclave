@@ -247,6 +247,7 @@ namespace OpenEnclaveSDK
                     try
                     {
                         generatedFilesFolder.ProjectItems.AddFromFile(baseName + "_u.h");
+                        generatedFilesFolder.ProjectItems.AddFromFile(baseName + "_args.h");
                         ProjectItem ucItem = generatedFilesFolder.ProjectItems.AddFromFile(baseName + "_u.c");
                         var ucFile = ucItem.Object as VCFile;
                         foreach (var config in ucFile.FileConfigurations)
