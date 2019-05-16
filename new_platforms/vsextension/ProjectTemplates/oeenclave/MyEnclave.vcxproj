@@ -403,6 +403,7 @@
     <ClCompile Include="$projectname$_t.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="$projectname$_args.h" />
     <ClInclude Include="$projectname$_t.h" />
     <ClInclude Include="optee/user_ta_header_defines.h" />
   </ItemGroup>
