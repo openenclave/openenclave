@@ -170,8 +170,8 @@ int oe_fdtable_assign(oe_device_t* device)
     if (_resize_table(TABLE_CHUNK_SIZE) != 0)
         OE_RAISE_ERRNO(OE_ENOMEM);
 
-    /* Search for a free slot in the file descriptor table. */
-    for (index = OE_STDERR_FILENO + 1; index < _table_size; index++)
+    /* Find the first available file descriptor. */
+    for (index = 0; index < _table_size; index++)
     {
         if (!_table[index])
             break;
