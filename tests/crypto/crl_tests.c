@@ -44,7 +44,6 @@ static void _test_verify(
 {
     oe_cert_t cert;
     oe_cert_chain_t chain;
-    oe_verify_cert_error_t error = {0};
     oe_result_t r;
 
     r = oe_cert_read_pem(&cert, cert_pem, strlen(cert_pem) + 1);
@@ -59,31 +58,11 @@ static void _test_verify(
     if (crl)
         OE_TEST(num_crl > 0);
 
-    r = oe_cert_verify(&cert, &chain, crl, num_crl, &error);
+    r = oe_cert_verify(&cert, &chain, crl, num_crl);
 
     if (revoked)
     {
-        OE_TEST(r == OE_VERIFY_FAILED);
-
-        /* Look for a revocation error message */
-        {
-            bool found = false;
-            const char* messages[] = {
-                "certificate revoked",
-                "The certificate has been revoked (is on a CRL)",
-            };
-
-            for (size_t i = 0; i < OE_COUNTOF(messages); i++)
-            {
-                if (strstr(error.buf, messages[i]) == 0)
-                {
-                    found = true;
-                    break;
-                }
-            }
-
-            OE_TEST(found);
-        }
+        OE_TEST(r == OE_VERIFY_REVOKED);
     }
     else
     {
@@ -271,13 +250,17 @@ void TestCRL(void)
     OE_TEST(read_cert("../data/Leaf.crt.pem", _CERT2) == OE_OK);
 
     OE_TEST(
-        read_chain("../data/Leaf.crt.pem", "../data/RootCA.crt.pem", _CHAIN1) ==
-        OE_OK);
+        read_chain(
+            "../data/Leaf.crt.pem",
+            "../data/RootCA.crt.pem",
+            _CHAIN1,
+            OE_COUNTOF(_CHAIN1)) == OE_OK);
     OE_TEST(
         read_chain(
             "../data/Intermediate.crt.pem",
             "../data/RootCA.crt.pem",
-            _CHAIN2) == OE_OK);
+            _CHAIN2,
+            OE_COUNTOF(_CHAIN2)) == OE_OK);
 
     OE_TEST(
         read_crl("../data/intermediate_crl.der", _CRL1, &crl_size1) == OE_OK);

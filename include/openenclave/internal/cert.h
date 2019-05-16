@@ -25,13 +25,6 @@ typedef struct _oe_cert_chain
     uint64_t impl[4];
 } oe_cert_chain_t;
 
-/* Error message type for oe_verify_cert_error_t() function */
-typedef struct _oe_verify_cert_error
-{
-    /* Zero-terminated string error message */
-    char buf[1024];
-} oe_verify_cert_error_t;
-
 /**
  * Read a certificate from PEM format
  *
@@ -120,7 +113,6 @@ oe_result_t oe_cert_chain_free(oe_cert_chain_t* chain);
  * @param chain verify the certificate against this certificate chain
  * @param crls verify the certificate against these CRLs (may be null).
  * @param num_crls number of CRLs.
- * @param error Optional. Holds the error message if this function failed.
  *
  * @return OE_OK verify ok
  * @return OE_VERIFY_FAILED
@@ -131,8 +123,7 @@ oe_result_t oe_cert_verify(
     oe_cert_t* cert,
     oe_cert_chain_t* chain,
     const oe_crl_t* const* crls,
-    size_t num_crls,
-    oe_verify_cert_error_t* error);
+    size_t num_crls);
 
 /**
  * Get the RSA public key from a certificate.

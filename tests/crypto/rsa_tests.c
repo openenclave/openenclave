@@ -113,7 +113,6 @@ static void _test_cert_verify_good()
     printf("=== begin %s()\n", __FUNCTION__);
 
     oe_result_t r;
-    oe_verify_cert_error_t error = {0};
     oe_cert_t cert = {0};
     oe_cert_chain_t chain = {0};
 
@@ -123,7 +122,7 @@ static void _test_cert_verify_good()
     r = oe_cert_chain_read_pem(&chain, CHAIN1, strlen(CHAIN1) + 1);
     OE_TEST(r == OE_OK);
 
-    r = oe_cert_verify(&cert, &chain, NULL, 0, &error);
+    r = oe_cert_verify(&cert, &chain, NULL, 0);
     OE_TEST(r == OE_OK);
 
     oe_cert_free(&cert);
@@ -137,7 +136,6 @@ static void _test_cert_verify_bad()
     printf("=== begin %s()\n", __FUNCTION__);
 
     oe_result_t r;
-    oe_verify_cert_error_t error = {0};
     oe_cert_t cert = {0};
     oe_cert_chain_t chain = {0};
 
@@ -148,7 +146,7 @@ static void _test_cert_verify_bad()
     r = oe_cert_chain_read_pem(&chain, CHAIN2, strlen(CHAIN2) + 1);
     OE_TEST(r == OE_OK);
 
-    r = oe_cert_verify(&cert, &chain, NULL, 0, &error);
+    r = oe_cert_verify(&cert, &chain, NULL, 0);
     OE_TEST(r == OE_VERIFY_FAILED);
 
     oe_cert_free(&cert);
@@ -170,7 +168,7 @@ static void _test_mixed_chain()
 
     /* Chain does not contain a root for this certificate */
     r = oe_cert_chain_read_pem(&chain, MIXED_CHAIN, strlen(MIXED_CHAIN) + 1);
-    OE_TEST(r == OE_FAILURE);
+    OE_TEST(r == OE_VERIFY_FAILED);
 
     oe_cert_free(&cert);
     oe_cert_chain_free(&chain);
@@ -450,13 +448,16 @@ void TestRSA(void)
     OE_TEST(read_cert("../data/Leaf.crt.pem", _CERT1) == OE_OK);
     OE_TEST(
         read_chain(
-            "../data/Intermediate.crt.pem", "../data/RootCA.crt.pem", CHAIN1) ==
-        OE_OK);
+            "../data/Intermediate.crt.pem",
+            "../data/RootCA.crt.pem",
+            CHAIN1,
+            OE_COUNTOF(CHAIN1)) == OE_OK);
     OE_TEST(
         read_chain(
             "../data/Intermediate2.crt.pem",
             "../data/RootCA2.crt.pem",
-            CHAIN2) == OE_OK);
+            CHAIN2,
+            OE_COUNTOF(CHAIN2)) == OE_OK);
     OE_TEST(
         read_mod(
             "../data/Leaf_modulus.hex",
@@ -467,7 +468,9 @@ void TestRSA(void)
     OE_TEST(
         read_sign("../data/test_rsa_signature", _SIGNATURE, &sign_size) ==
         OE_OK);
-    OE_TEST(read_mixed_chain(MIXED_CHAIN, CHAIN1, CHAIN2) == OE_OK);
+    OE_TEST(
+        read_mixed_chain(
+            CHAIN1, CHAIN2, MIXED_CHAIN, OE_COUNTOF(MIXED_CHAIN)) == OE_OK);
     _test_cert_methods();
     _test_cert_verify_good();
     _test_cert_verify_bad();
