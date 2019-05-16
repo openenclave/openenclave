@@ -115,11 +115,11 @@ struct _oe_device
 
     /* Function table for this device. */
     union {
-        oe_device_ops_t* base;
-        oe_fs_device_ops_t* fs;
-        oe_sock_device_ops_t* sock;
-        oe_epoll_device_ops_t* epoll;
-        oe_eventfd_device_ops_t* eventfd;
+        oe_device_ops_t base;
+        oe_fs_device_ops_t fs;
+        oe_sock_device_ops_t sock;
+        oe_epoll_device_ops_t epoll;
+        oe_eventfd_device_ops_t eventfd;
     } ops;
 };
 
@@ -135,16 +135,16 @@ oe_device_t* oe_find_device(const char* name, oe_device_type_t type);
 int oe_remove_device(uint64_t devid);
 
 // clang-format off
-#define __OE_CALL(OPS, FUNC, DEV, ...)                                  \
-    ({                                                                  \
-        oe_device_t* __dev__ = DEV;                                     \
-        if (!__dev__ || !__dev__->ops.OPS || !__dev__->ops.OPS->FUNC)   \
-        {                                                               \
-            oe_errno = OE_EINVAL;                                       \
-            goto done;                                                  \
-        }                                                               \
-        (*__dev__->ops.OPS->FUNC)(__dev__, ##__VA_ARGS__);              \
-    })                                                                  \
+#define __OE_CALL(OPS, FUNC, DEV, ...)                    \
+    ({                                                    \
+        oe_device_t* __dev__ = DEV;                       \
+        if (!__dev__ || !__dev__->ops.OPS.FUNC)           \
+        {                                                 \
+            oe_errno = OE_EINVAL;                         \
+            goto done;                                    \
+        }                                                 \
+        (*__dev__->ops.OPS.FUNC)(__dev__, ##__VA_ARGS__); \
+    })                                                    \
 // clang-format on
 
 #define OE_CALL_BASE(FUNC, DEV, ...) __OE_CALL(base, FUNC, DEV, ##__VA_ARGS__)

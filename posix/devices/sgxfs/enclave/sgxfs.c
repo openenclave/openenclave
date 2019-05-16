@@ -1030,28 +1030,29 @@ static oe_file_ops_t _get_file_operations(void)
     return _file_operations;
 }
 
-static oe_fs_device_ops_t _ops = {
-    .base.release = _sgxfs_release,
-    .clone = _sgxfs_clone,
-    .mount = _sgxfs_mount,
-    .unmount = _sgxfs_unmount,
-    .open = _sgxfs_open,
-    .stat = _sgxfs_stat,
-    .access = _sgxfs_access,
-    .link = _sgxfs_link,
-    .unlink = _sgxfs_unlink,
-    .rename = _sgxfs_rename,
-    .truncate = _sgxfs_truncate,
-    .mkdir = _sgxfs_mkdir,
-    .rmdir = _sgxfs_rmdir,
-};
-
+// clean-format off
 static fs_t _sgxfs = {
     .base.type = OE_DEVICE_TYPE_FILESYSTEM,
     .base.name = OE_DEVICE_NAME_SGX_FILE_SYSTEM,
-    .base.ops.fs = &_ops,
+    .base.ops.fs =
+        {
+            .base.release = _sgxfs_release,
+            .clone = _sgxfs_clone,
+            .mount = _sgxfs_mount,
+            .unmount = _sgxfs_unmount,
+            .open = _sgxfs_open,
+            .stat = _sgxfs_stat,
+            .access = _sgxfs_access,
+            .link = _sgxfs_link,
+            .unlink = _sgxfs_unlink,
+            .rename = _sgxfs_rename,
+            .truncate = _sgxfs_truncate,
+            .mkdir = _sgxfs_mkdir,
+            .rmdir = _sgxfs_rmdir,
+        },
     .magic = FS_MAGIC,
 };
+// clean-format on
 
 static oe_device_t* _get_sgxfs_device(void)
 {

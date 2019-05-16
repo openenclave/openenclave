@@ -1001,30 +1001,31 @@ static oe_file_ops_t _get_file_operations(void)
     return _file_operations;
 };
 
-static oe_fs_device_ops_t _ops = {
-    .base.release = _hostfs_release,
-    .clone = _hostfs_clone,
-    .mount = _hostfs_mount,
-    .unmount = _hostfs_unmount,
-    .open = _hostfs_open,
-    .stat = _hostfs_stat,
-    .access = _hostfs_access,
-    .link = _hostfs_link,
-    .unlink = _hostfs_unlink,
-    .rename = _hostfs_rename,
-    .truncate = _hostfs_truncate,
-    .mkdir = _hostfs_mkdir,
-    .rmdir = _hostfs_rmdir,
-};
-
+// clean-format off
 static fs_t _hostfs = {
     .base.type = OE_DEVICE_TYPE_FILESYSTEM,
     .base.name = OE_DEVICE_NAME_HOST_FILE_SYSTEM,
-    .base.ops.fs = &_ops,
+    .base.ops.fs =
+        {
+            .base.release = _hostfs_release,
+            .clone = _hostfs_clone,
+            .mount = _hostfs_mount,
+            .unmount = _hostfs_unmount,
+            .open = _hostfs_open,
+            .stat = _hostfs_stat,
+            .access = _hostfs_access,
+            .link = _hostfs_link,
+            .unlink = _hostfs_unlink,
+            .rename = _hostfs_rename,
+            .truncate = _hostfs_truncate,
+            .mkdir = _hostfs_mkdir,
+            .rmdir = _hostfs_rmdir,
+        },
     .magic = FS_MAGIC,
     .mount_flags = 0,
     .mount_source = {'/'},
 };
+// clean-format on
 
 oe_device_t* oe_get_hostfs_device(void)
 {

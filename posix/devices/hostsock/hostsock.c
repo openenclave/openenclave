@@ -941,17 +941,18 @@ static oe_sock_ops_t _get_sock_operations(void)
     return _sock_operations;
 };
 
-static oe_sock_device_ops_t _ops = {
-    .socket = _hostsock_socket,
-    .socketpair = _hostsock_socketpair,
-};
-
+// clean-format off
 static device_t _device = {
     .base.type = OE_DEVICE_TYPE_SOCKET,
     .base.name = OE_DEVICE_NAME_HOST_SOCKET_INTERFACE,
-    .base.ops.sock = &_ops,
+    .base.ops.sock =
+        {
+            .socket = _hostsock_socket,
+            .socketpair = _hostsock_socketpair,
+        },
     .magic = DEVICE_MAGIC,
 };
+// clean-format on
 
 static oe_once_t _once = OE_ONCE_INITIALIZER;
 static bool _loaded;
