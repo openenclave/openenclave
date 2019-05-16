@@ -166,10 +166,6 @@ int oe_fdtable_assign(oe_device_t* device)
     if (!device)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    /* The file-descriptor table must be big enough for standard devices. */
-    if (_resize_table(TABLE_CHUNK_SIZE) != 0)
-        OE_RAISE_ERRNO(OE_ENOMEM);
-
     /* Find the first available file descriptor. */
     for (index = 0; index < _table_size; index++)
     {
