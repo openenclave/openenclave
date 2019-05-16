@@ -153,7 +153,7 @@ typedef struct _oe_report_header
 {
     uint32_t version;
     oe_report_type_t report_type;
-    size_t report_size;
+    uint64_t report_size;
     uint8_t report[];
 } oe_report_header_t;
 
