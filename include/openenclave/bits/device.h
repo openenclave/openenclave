@@ -16,14 +16,8 @@ enum
     /** The null device id. */
     OE_DEVID_NONE,
 
-    /** The standard input device. */
-    OE_DEVID_STDIN,
-
-    /** The standard output device. */
-    OE_DEVID_STDOUT,
-
-    /** The standard errord evice. */
-    OE_DEVID_STDERR,
+    /** The console file system (stdin, stdout, stderr). */
+    OE_DEVID_CONSOLE_FILE_SYSTEM,
 
     /** The non-secure host file system. */
     OE_DEVID_HOST_FILE_SYSTEM,
@@ -42,9 +36,7 @@ enum
 };
 
 /** Device names defined by Open Enclave. */
-#define OE_DEVICE_NAME_STDIN "oe_stdin"
-#define OE_DEVICE_NAME_STDOUT "oe_stdout"
-#define OE_DEVICE_NAME_STDERR "oe_stderr"
+#define OE_DEVICE_NAME_CONSOLE_FILE_SYSTEM "oe_console_file_system"
 #define OE_DEVICE_NAME_HOST_FILE_SYSTEM "oe_host_file_system"
 #define OE_DEVICE_NAME_SGX_FILE_SYSTEM "oe_sgx_file_system"
 #define OE_DEVICE_NAME_HOST_SOCKET_INTERFACE "oe_host_socket_interface"
