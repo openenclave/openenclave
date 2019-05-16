@@ -764,14 +764,6 @@ int oe_posix_getnameinfo_ocall(
         (const struct sockaddr*)sa, salen, host, hostlen, serv, servlen, flags);
 }
 
-int oe_posix_shutdown_resolver_device_ocall(void)
-{
-    /* No shutdown actions needed for this device. */
-    errno = 0;
-
-    return 0;
-}
-
 /*
 **==============================================================================
 **

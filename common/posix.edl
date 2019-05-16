@@ -317,9 +317,6 @@ enclave {
             int flags)
             propagate_errno;
 
-        int oe_posix_shutdown_resolver_device_ocall()
-            propagate_errno;
-
         oe_host_fd_t oe_posix_epoll_create1_ocall(
             int flags)
             propagate_errno;

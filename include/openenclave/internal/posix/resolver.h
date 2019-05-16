@@ -14,22 +14,21 @@ typedef struct _oe_resolver oe_resolver_t;
 
 typedef enum _oe_resolver_type
 {
-    OE_RESOLVER_ENCLAVE_LOCAL = 0,
-    OE_RESOLVER_ENCLAVE_DNS = 1,
-    OE_RESOLVER_HOST = 2,
+    OE_RESOLVER_TYPE_NONE = 0,
+    OE_RESOLVER_TYPE_HOST = 1,
 } oe_resolver_type_t;
 
 typedef struct _oe_resolver_ops
 {
     int (*getaddrinfo)(
-        oe_resolver_t* dev,
+        oe_resolver_t* resolver,
         const char* node,
         const char* service,
         const struct oe_addrinfo* hints,
         struct oe_addrinfo** res);
 
     ssize_t (*getnameinfo)(
-        oe_resolver_t* dev,
+        oe_resolver_t* resolver,
         const struct oe_sockaddr* sa,
         oe_socklen_t salen,
         char* host,
@@ -38,7 +37,7 @@ typedef struct _oe_resolver_ops
         oe_socklen_t servlen,
         int flags);
 
-    int (*shutdown)(oe_resolver_t* dev);
+    int (*release)(oe_resolver_t* resolver);
 
 } oe_resolver_ops_t;
 
@@ -48,7 +47,7 @@ typedef struct _oe_resolver
     oe_resolver_ops_t* ops;
 } oe_resolver_t;
 
-int oe_register_resolver(int resolver_priority, oe_resolver_t* resolver);
+int oe_register_resolver(oe_resolver_t* resolver);
 
 OE_EXTERNC_END
 

@@ -22,37 +22,28 @@
 #include <openenclave/internal/trace.h>
 #include "posix_t.h"
 
-/*
-**==============================================================================
-**
-** hostresolv operations:
-**
-**==============================================================================
-*/
-
-// The host resolver is not actually a device in the file descriptor sense.
-
 #define RESOLV_MAGIC 0x536f636b
 
-typedef struct _resolv
+// The host resolver is not actually a device in the file descriptor sense.
+typedef struct _resolver
 {
     struct _oe_resolver base;
     uint32_t magic;
-} resolv_t;
+} resolver_t;
 
-static resolv_t* _cast_resolv(const oe_resolver_t* device)
+static resolver_t* _cast_resolver(const oe_resolver_t* device)
 {
-    resolv_t* resolv = (resolv_t*)device;
+    resolver_t* resolver = (resolver_t*)device;
 
-    if (resolv == NULL || resolv->magic != RESOLV_MAGIC)
+    if (resolver == NULL || resolver->magic != RESOLV_MAGIC)
         return NULL;
 
-    return resolv;
+    return resolver;
 }
 
-static resolv_t _hostresolv;
+static resolver_t _hostresolver;
 
-static ssize_t _hostresolv_getnameinfo(
+static ssize_t _hostresolver_getnameinfo(
     oe_resolver_t* dev,
     const struct oe_sockaddr* sa,
     oe_socklen_t salen,
@@ -79,8 +70,8 @@ done:
     return ret;
 }
 
-static int _hostresolv_getaddrinfo(
-    oe_resolver_t* resolv,
+static int _hostresolver_getaddrinfo(
+    oe_resolver_t* resolver,
     const char* node,
     const char* service,
     const struct oe_addrinfo* hints,
@@ -92,7 +83,7 @@ static int _hostresolv_getaddrinfo(
     struct oe_addrinfo* tail = NULL;
     struct oe_addrinfo* p = NULL;
 
-    OE_UNUSED(resolv);
+    OE_UNUSED(resolver);
 
     if (res)
         *res = NULL;
@@ -225,22 +216,20 @@ done:
     return ret;
 }
 
-static int _hostresolv_shutdown(oe_resolver_t* resolv_)
+static int _hostresolver_release(oe_resolver_t* resolv_)
 {
     int ret = -1;
-    resolv_t* resolv = _cast_resolv(resolv_);
+    resolver_t* resolver = _cast_resolver(resolv_);
 
     oe_errno = 0;
 
-    if (!resolv)
-        OE_RAISE_ERRNO(OE_EINVAL);
-
-    if (oe_posix_shutdown_resolver_device_ocall(&ret) != OE_OK)
+    if (!resolver)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Release the resolv_ object. */
-    oe_free(resolv);
+    oe_free(resolver);
     ret = 0;
+
 done:
     return ret;
 }
@@ -248,16 +237,16 @@ done:
 // clang-format off
 static oe_resolver_ops_t _ops =
 {
-    .getaddrinfo = _hostresolv_getaddrinfo,
-    .getnameinfo = _hostresolv_getnameinfo,
-    .shutdown = _hostresolv_shutdown
+    .getaddrinfo = _hostresolver_getaddrinfo,
+    .getnameinfo = _hostresolver_getnameinfo,
+    .release = _hostresolver_release
 };
 // clang-format on
 
 // clang-format off
-static resolv_t _hostresolv =
+static resolver_t _hostresolver =
 {
-    .base.type = OE_RESOLVER_HOST,
+    .base.type = OE_RESOLVER_TYPE_HOST,
     .base.ops = &_ops,
     .magic = RESOLV_MAGIC
 };
@@ -269,9 +258,9 @@ static bool _loaded;
 static void _load_once(void)
 {
     oe_result_t result = OE_FAILURE;
-    oe_resolver_t* resolver = &_hostresolv.base;
+    oe_resolver_t* resolver = &_hostresolver.base;
 
-    if (oe_register_resolver(2, resolver) != 0)
+    if (oe_register_resolver(resolver) != 0)
         OE_RAISE_ERRNO(oe_errno);
 
     result = OE_OK;
