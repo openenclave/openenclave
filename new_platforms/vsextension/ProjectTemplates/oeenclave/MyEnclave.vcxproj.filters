@@ -26,6 +26,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="$projectname$_args.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
     <ClInclude Include="$projectname$_t.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
