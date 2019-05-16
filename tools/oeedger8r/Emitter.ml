@@ -108,25 +108,25 @@ let mk_ms_member_decl (pt : parameter_type) (declr : declarator)
 
 (** ----- End code borrowed and tweaked from {!CodeGen.ml} ----- *)
 
-let is_in_ptr (ptype, _) =
+let is_in_ptr (ptype : parameter_type) =
   match ptype with
   | PTVal _ -> false
   | PTPtr (_, a) -> a.pa_chkptr && a.pa_direction = PtrIn
 
-let is_out_ptr (ptype, _) =
+let is_out_ptr (ptype : parameter_type) =
   match ptype with
   | PTVal _ -> false
   | PTPtr (_, a) -> a.pa_chkptr && a.pa_direction = PtrOut
 
-let is_inout_ptr (ptype, _) =
+let is_inout_ptr (ptype : parameter_type) =
   match ptype with
   | PTVal _ -> false
   | PTPtr (_, a) -> a.pa_chkptr && a.pa_direction = PtrInOut
 
-let is_str_ptr (ptype, _) =
+let is_str_ptr (ptype : parameter_type) =
   match ptype with PTVal _ -> false | PTPtr (_, a) -> a.pa_isstr
 
-let is_wstr_ptr (ptype, _) =
+let is_wstr_ptr (ptype : parameter_type) =
   match ptype with PTVal _ -> false | PTPtr (_, a) -> a.pa_iswstr
 
 (** [open_file] opens [filename] in the directory [dir] and emits a
@@ -422,7 +422,7 @@ let oe_compute_input_buffer_size (plist : pdecl list) =
         let size = oe_get_param_size (ptype, decl, "_args.") in
         sprintf "if (%s) OE_ADD_SIZE(_input_buffer_size, %s);" decl.identifier
           size )
-      (List.filter (fun p -> is_in_ptr p || is_inout_ptr p) plist)
+      (List.filter (fun (p, _) -> is_in_ptr p || is_inout_ptr p) plist)
   in
   (* Note that the indentation for the first line is applied by the
      parent function. *)
@@ -436,7 +436,7 @@ let oe_compute_output_buffer_size (plist : pdecl list) =
         let size = oe_get_param_size (ptype, decl, "_args.") in
         sprintf "if (%s) OE_ADD_SIZE(_output_buffer_size, %s);" decl.identifier
           size )
-      (List.filter (fun p -> is_out_ptr p || is_inout_ptr p) plist)
+      (List.filter (fun (p, _) -> is_out_ptr p || is_inout_ptr p) plist)
   in
   (* Note that the indentation for the first line is applied by the
      parent function. *)
@@ -451,9 +451,9 @@ let oe_serialize_buffer_inputs (plist : pdecl list) =
         let tystr = get_cast_to_mem_expr (ptype, decl) false in
         (* These need to be in order and so done together. *)
         sprintf "OE_WRITE_%s_PARAM(%s, %s, %s);"
-          (if is_in_ptr (ptype, decl) then "IN" else "IN_OUT")
+          (if is_in_ptr ptype then "IN" else "IN_OUT")
           decl.identifier size tystr )
-      (List.filter (fun p -> is_in_ptr p || is_inout_ptr p) plist)
+      (List.filter (fun (p, _) -> is_in_ptr p || is_inout_ptr p) plist)
   in
   (* Note that the indentation for the first line is applied by the
      parent function. *)
@@ -516,23 +516,24 @@ let oe_process_output_buffer (fd : func_decl) =
         (fun (ptype, decl) ->
           let size = oe_get_param_size (ptype, decl, "_args.") in
           (* These need to be in order and so done together. *)
-          if is_out_ptr (ptype, decl) then
+          if is_out_ptr ptype then
             sprintf "OE_READ_OUT_PARAM(%s, (size_t)(%s));" decl.identifier size
-          else if is_inout_ptr (ptype, decl) then
+          else if is_inout_ptr ptype then
             (* Check that strings are null terminated. Note output
               buffer has already been copied into the enclave. *)
-            ( if is_str_ptr (ptype, decl) || is_wstr_ptr (ptype, decl) then
+            ( if is_str_ptr ptype || is_wstr_ptr ptype then
               sprintf
                 "OE_CHECK_NULL_TERMINATOR%s(_output_buffer + \
                  _output_buffer_offset, _args.%s_len);\n"
-                (if is_wstr_ptr (ptype, decl) then "_WIDE" else "")
+                (if is_wstr_ptr ptype then "_WIDE" else "")
                 decl.identifier
             else "" )
             ^ sprintf "OE_READ_IN_OUT_PARAM(%s, (size_t)(%s));" decl.identifier
                 size
           else "" )
         (* We filter the list so an empty string is never output. *)
-        (List.filter (fun p -> is_out_ptr p || is_inout_ptr p) fd.plist) ]
+        (List.filter (fun (p, _) -> is_out_ptr p || is_inout_ptr p) fd.plist)
+    ]
 
 (** Generate a cast expression to a specific pointer type. For example,
     [int*] needs to be cast to
@@ -571,9 +572,9 @@ let oe_gen_in_and_inout_setters (plist : pdecl list) =
         let size = oe_get_param_size (ptype, decl, "pargs_in->") in
         let tystr = get_cast_to_mem_expr (ptype, decl) false in
         sprintf "OE_SET_%s_POINTER(%s, %s, %s);"
-          (if is_in_ptr (ptype, decl) then "IN" else "IN_OUT")
+          (if is_in_ptr ptype then "IN" else "IN_OUT")
           decl.identifier size tystr )
-      (List.filter (fun p -> is_in_ptr p || is_inout_ptr p) plist)
+      (List.filter (fun (p, _) -> is_in_ptr p || is_inout_ptr p) plist)
   in
   "    "
   ^ String.concat "\n    "
@@ -588,10 +589,9 @@ let oe_gen_out_and_inout_setters (plist : pdecl list) =
         let size = oe_get_param_size (ptype, decl, "pargs_in->") in
         let tystr = get_cast_to_mem_expr (ptype, decl) false in
         sprintf "OE_%s_POINTER(%s, %s, %s);"
-          ( if is_out_ptr (ptype, decl) then "SET_OUT"
-          else "COPY_AND_SET_IN_OUT" )
+          (if is_out_ptr ptype then "SET_OUT" else "COPY_AND_SET_IN_OUT")
           decl.identifier size tystr )
-      (List.filter (fun p -> is_out_ptr p || is_inout_ptr p) plist)
+      (List.filter (fun (p, _) -> is_out_ptr p || is_inout_ptr p) plist)
   in
   "    "
   ^ String.concat "\n    "
@@ -648,10 +648,10 @@ let oe_gen_ecall_function (tf : trusted_func) =
          (fun (ptype, decl) ->
            sprintf
              "    OE_CHECK_NULL_TERMINATOR%s(pargs_in->%s, pargs_in->%s_len);"
-             (if is_wstr_ptr (ptype, decl) then "_WIDE" else "")
+             (if is_wstr_ptr ptype then "_WIDE" else "")
              decl.identifier decl.identifier )
          (List.filter
-            (fun p ->
+            (fun (p, _) ->
               (is_str_ptr p || is_wstr_ptr p) && (is_in_ptr p || is_inout_ptr p)
               )
             fd.plist)
@@ -685,10 +685,10 @@ let gen_fill_marshal_struct (fd : func_decl) (args : string) =
         varname
       ^
       (* for string parameter fill the len field *)
-      if is_str_ptr (ptype, decl) then
+      if is_str_ptr ptype then
         sprintf "\n    %s.%s_len = (%s) ? (strlen(%s) + 1) : 0;" args varname
           varname varname
-      else if is_wstr_ptr (ptype, decl) then
+      else if is_wstr_ptr ptype then
         sprintf "\n    %s.%s_len = (%s) ? (wcslen(%s) + 1) : 0;" args varname
           varname varname
       else "" )
