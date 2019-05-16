@@ -12,9 +12,12 @@ OE_EXTERNC_BEGIN
 
 typedef struct _oe_resolver oe_resolver_t;
 
-#define OE_RESOLVER_ENCLAVE_LOCAL 0
-#define OE_RESOLVER_ENCLAVE_DNS 1
-#define OE_RESOLVER_HOST 2
+typedef enum _oe_resolver_type
+{
+    OE_RESOLVER_ENCLAVE_LOCAL = 0,
+    OE_RESOLVER_ENCLAVE_DNS = 1,
+    OE_RESOLVER_HOST = 2,
+} oe_resolver_type_t;
 
 typedef struct _oe_resolver_ops
 {
@@ -41,11 +44,8 @@ typedef struct _oe_resolver_ops
 
 typedef struct _oe_resolver
 {
-    /* The type of the device. */
-    int type;
-
+    oe_resolver_type_t type;
     oe_resolver_ops_t* ops;
-
 } oe_resolver_t;
 
 int oe_register_resolver(int resolver_priority, oe_resolver_t* presolver);
