@@ -13,6 +13,7 @@
 */
 
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
+#include <direct.h>
 #include <io.h>
 #include <stdint.h>
 #include <sys/stat.h>
@@ -26,14 +27,9 @@
 #include "openenclave/corelibc/errno.h"
 #include "openenclave/corelibc/fcntl.h"
 #include "openenclave/corelibc/sys/epoll.h"
+#include "openenclave/corelibc/dirent.h"
 
 static BOOL _winsock_inited = 0;
-
-// Declare these here rather than deal with header file issues.
-
-int _wmkdir(const wchar_t* dirname);
-
-int _wrmdir(const wchar_t* dirname);
 
 /*
 **==============================================================================
@@ -294,6 +290,199 @@ static int _winsockerr_to_errno(DWORD winsockerr)
     return OE_EINVAL;
 }
 
+
+
+// Allocates char* string which follows the expected rules for 
+// enclaves. Paths in the format
+// <driveletter>:\<item>\<item> -> /<driveletter>/<item>/item>
+// <driveletter>:/<item>/<item> -> /<driveletter>/<item>/item>
+// paths without drive letter are detected and the drive added
+// /<item>/<item> -> /<current driveletter>/<item>/item>
+// relative paths are translated to absolute with drive letter
+// returns null if the string is illegal
+//
+// The string  must be freed
+// ATTN: we don't handle paths which start with the "\\?\" thing. don't really think we need them
+//
+char *oe_win_path_to_posix(const char *path)
+{
+    size_t required_size   = 0;
+    size_t current_dir_len = 0;
+    char *current_dir  = NULL;
+    char *enclave_path = NULL;
+
+    if (!path)
+    {
+        return NULL;
+    }
+    // Relative or incomplete path?
+
+    // absolute path with drive letter.
+    // we do not handle device type paths ("CON:) or double-letter paths in case of 
+    // really large numbers of disks (>26). If you have those, mount on windows
+    // 
+    if (isalpha(path[0]) && path[1] == ':') 
+    {
+        // Abosolute path is drive letter
+        required_size = strlen(path)+1;
+    }
+    else if (path[0] == '/' || path[0] == '\\') 
+    {
+        required_size = strlen(path)+3; // Add a drive letter to the path
+    }
+    else 
+    {
+        current_dir = _getcwd(NULL, 32767);
+        current_dir_len = strlen(current_dir);
+  
+        if (isalpha(*current_dir) && ( current_dir[1] == ':'))
+        {
+            // This is expected. We convert drive: to /drive.
+      
+            char drive_letter = *current_dir;
+            *current_dir = '/';
+            current_dir[1] = drive_letter;
+        } 
+        // relative path. If the path starts with "." or ".." we accomodate
+        required_size = strlen(path)+current_dir_len+1;
+    }
+    
+    enclave_path = (char*)calloc(1, required_size);
+
+    const char *psrc = path;
+    const char *plimit = path+strlen(path);
+    char *pdst = enclave_path;
+
+    if (isalpha(*psrc) && psrc[1] == ':')
+    {
+        *pdst++ = '/';
+        *pdst++ = *psrc;
+        psrc += 2;
+    }
+    else if (*psrc == '/') 
+    {
+       *pdst++ = '/';
+       *pdst++ = _getdrive()+'a';
+    }
+    else if (*psrc == '.') 
+    {
+        memcpy(pdst, current_dir, current_dir_len);
+        if (psrc[1] == '/' || psrc[1] == '\\' )
+        {
+            pdst += current_dir_len;
+            psrc++;
+        }
+        else if (psrc[1] == '.' && (psrc[2] == '/' || psrc[2] == '\\' ))
+        {
+            char *rstr = strrchr(current_dir, '\\'); // getcwd always returns at least '\'
+            pdst += current_dir_len-(rstr - current_dir); 
+                                            // When we shortend the curdir by 1 slash, we perform the ".." operation
+                                            // we could leave it in here, but at least sometimes this will allow
+                                            // a path that would otherwise be too long
+            psrc += 2;
+        }
+        else {
+            // It is an incomplete which starts with a file which starts with . so we dont increment psrc at
+            // all
+            pdst += current_dir_len;
+            *pdst = '/';
+        }
+    }
+    else 
+    {
+        // Still a relative path
+        memcpy(pdst, current_dir, current_dir_len);
+        pdst += current_dir_len;
+        *pdst++ = '/';
+    }
+  
+    // Since we have to translater slashes, use a loop rather than memcpy
+    while(psrc < plimit)
+    {
+        if (*psrc == '\\')
+        {
+            *pdst = '/';
+        }
+        else 
+        {
+            *pdst = *psrc;
+        }
+        psrc++;
+        pdst++;
+    }
+    *pdst = '\0';
+
+    if (current_dir)
+    {
+        free(current_dir);
+    }
+    return enclave_path;
+}
+
+// Allocates WCHAR* string which follows the expected rules for 
+// enclaves comminication with the host file system API. Paths in the format
+// /<driveletter>/<item>/<item>  become <driveletter>:/<item>/<item>
+//
+// The resulting string, especially with a relative path, will probably contain mixed slashes. 
+// We beleive Windows handles this.
+//
+// Adds the string "post" to the resulting string end
+//
+// The string  must be freed
+WCHAR *oe_posix_path_to_win(const char *path, const char *post)
+{
+    size_t required_size   = 0;
+    size_t current_dir_len = 0;
+    char *current_dir  = NULL;
+    int pathlen = MultiByteToWideChar(CP_UTF8, 0, path, -1, NULL, 0);
+    size_t postlen = MultiByteToWideChar(CP_UTF8, 0, post, -1, NULL, 0);
+    if (post)
+    {
+        postlen = MultiByteToWideChar(CP_UTF8, 0, post, -1, NULL, 0);
+    }
+
+    WCHAR* wpath = NULL;
+
+    if (path[0] == '/')
+    {
+        if (isalpha(path[1]) && path[2] == '/')
+        {
+            wpath = (WCHAR*)(calloc((pathlen + postlen + 1) * sizeof(WCHAR), 1));
+            MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, (int)pathlen);
+            if (postlen)
+            {
+                MultiByteToWideChar(CP_UTF8, 0, post, -1, wpath+pathlen-1, (int)postlen);
+            }
+            WCHAR drive_letter = wpath[1];
+            wpath[0] = drive_letter;
+            wpath[1] = ':';
+        }
+        else {
+            // Relative path
+            WCHAR *current_dir = _wgetcwd(NULL, 32767);
+            if (!current_dir)
+            {
+               _set_errno(OE_ENOMEM);
+               return NULL;
+            }
+            size_t current_dir_len = wcslen(current_dir);
+             
+            wpath = (WCHAR*)(calloc((pathlen + current_dir_len+postlen+1) * sizeof(WCHAR), 1));
+            memcpy(wpath, current_dir, current_dir_len);
+            wpath[current_dir_len] = '/';
+            MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath+current_dir_len, pathlen);
+            if (postlen)
+            {
+                MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath+current_dir_len+pathlen-1, (int)postlen);
+            }
+             
+            free(current_dir);
+        }
+    }
+    return wpath;   
+}
+
+
 static int _sockopt_to_winsock_opt(int level, int optname)
 {
     (void)level;
@@ -451,6 +640,44 @@ long epoll_event_to_win_network_event(epoll_events)
     return ret;
 }
 
+//
+// windows is much poorer in file bits than unix, but they reencoded the corresponding bits, so we have to
+// translate
+static unsigned win_stat_to_stat(unsigned winstat)
+{
+    unsigned ret_stat = 0;
+
+    if (winstat & _S_IFDIR)
+    {
+        ret_stat |= OE_S_IFDIR;
+    }
+    if (winstat & _S_IFCHR)
+    {
+        ret_stat |= OE_S_IFCHR;
+    }
+    if (winstat & _S_IFIFO)
+    {
+        ret_stat |= OE_S_IFIFO;
+    }
+    if (winstat & _S_IFREG)
+    {
+        ret_stat |= OE_S_IFREG;
+    }
+    if (winstat & _S_IREAD)
+    {
+        ret_stat |= OE_S_IRUSR;
+    }
+    if (winstat & _S_IWRITE)
+    {
+        ret_stat |= OE_S_IWUSR;
+    }
+    if (winstat & _S_IEXEC)
+    {
+        ret_stat |= OE_S_IXUSR;
+    }
+
+    return ret_stat;
+}
 /*
 **==============================================================================
 **
@@ -535,18 +762,7 @@ oe_host_fd_t oe_posix_open_ocall(
         DWORD share_mode = 0;
         DWORD create_dispos = OPEN_EXISTING;
         DWORD file_flags = (FILE_ATTRIBUTE_NORMAL | FILE_FLAG_POSIX_SEMANTICS);
-
-        int nLen = MultiByteToWideChar(CP_UTF8, 0, pathname, -1, NULL, 0);
-        WCHAR* wpathname_buffer =
-            (WCHAR*)(calloc((nLen + 1) * sizeof(WCHAR), 1));
-        MultiByteToWideChar(CP_UTF8, 0, pathname, -1, wpathname_buffer, nLen);
-
-        WCHAR* wpathname = wpathname_buffer;
-        // Undo abosolute path forcing.
-        if (wpathname[0] == '/' && wpathname[2] == ':')
-        {
-            wpathname++;
-        }
+        WCHAR* wpathname = oe_posix_path_to_win(pathname, NULL);
 
         if ((flags & OE_O_DIRECTORY) != 0)
         {
@@ -604,8 +820,6 @@ oe_host_fd_t oe_posix_open_ocall(
         if (mode & OE_S_IWUSR)
             desired_access |= GENERIC_WRITE;
 
-        // 2do: mode
-
         HANDLE h = CreateFileW(
             wpathname,
             desired_access,
@@ -633,9 +847,9 @@ oe_host_fd_t oe_posix_open_ocall(
 	     printf("chmod failed, err = %d\n", GetLastError());
 	}
 #endif
-        if (wpathname_buffer)
+        if (wpathname)
         {
-            free(wpathname_buffer);
+            free(wpathname);
         }
     }
 
@@ -719,11 +933,11 @@ done:
 oe_off_t oe_posix_lseek_ocall(oe_host_fd_t fd, oe_off_t offset, int whence)
 {
     ssize_t ret = -1;
-    DWORD byteswritten = 0;
+    DWORD sfp_rtn = 0;
     LARGE_INTEGER new_offset = {0};
 
     new_offset.QuadPart = offset;
-    if (SetFilePointerEx(
+    if(!SetFilePointerEx(
             (HANDLE)fd, new_offset, (PLARGE_INTEGER)&new_offset, whence))
     {
         _set_errno(_winerr_to_errno(GetLastError()));
@@ -808,9 +1022,29 @@ done:
     return ret;
 }
 
-uint64_t oe_posix_opendir_ocall(const char* name)
+
+struct WIN_DIR_DATA 
 {
-    PANIC;
+    HANDLE hFind;
+    WIN32_FIND_DATAW FindFileData;
+    int dir_offs;
+    WCHAR *pdirpath;
+};
+
+uint64_t oe_posix_opendir_ocall(const char* pathname)
+{
+    struct WIN_DIR_DATA *pdir = (struct WIN_DIR_DATA *)calloc(1, sizeof(struct WIN_DIR_DATA));
+    WCHAR* wpathname = oe_posix_path_to_win(pathname, "/*");
+
+    pdir->hFind = FindFirstFileW(wpathname, &pdir->FindFileData);
+    if (pdir->hFind == INVALID_HANDLE_VALUE){
+        free(wpathname);
+        free(pdir);
+        return 0;
+    }
+    pdir->dir_offs = 0;
+    pdir->pdirpath = wpathname;
+    return (uint64_t)pdir;
 }
 
 int oe_posix_readdir_ocall(
@@ -822,32 +1056,101 @@ int oe_posix_readdir_ocall(
     char* d_name,
     size_t d_namelen)
 {
-    PANIC;
+    struct WIN_DIR_DATA *pdir = (struct WIN_DIR_DATA *)dirp;
+    int nlen = -1;
+
+    _set_errno(0);
+
+    // Find file next doesn't return '.' because it shows up in opendir and we lose it
+    // but we know it is there, so we can just return it
+    if (pdir->dir_offs == 0)
+    {
+        *d_off  = pdir->dir_offs++;
+        *d_type = OE_DT_DIR;
+        *d_reclen = sizeof(struct oe_dirent);
+        d_name[0] = '.';
+        d_name[1] = '\0';
+        return 0;
+    }
+
+    if (!FindNextFileW(pdir->hFind, &pdir->FindFileData))
+    {
+        DWORD winerr = GetLastError();
+        if (winerr != ERROR_NO_MORE_FILES)
+        {
+            _set_errno(_winerr_to_errno(GetLastError()));
+        }
+        return -1;
+    }
+
+    nlen = WideCharToMultiByte(CP_UTF8, 0, pdir->FindFileData.cFileName, -1, NULL, 0, NULL, NULL);
+    (void)WideCharToMultiByte(CP_UTF8, 0, pdir->FindFileData.cFileName, nlen, d_name, (int)d_namelen, NULL, NULL );
+
+    *d_type = 0;
+    if (pdir->FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+    {
+       *d_type = OE_DT_DIR;
+    }
+    else if (pdir->FindFileData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
+    {
+       *d_type = OE_DT_LNK;
+    }
+    else 
+    {
+       *d_type = OE_DT_REG;
+    }
+
+    *d_off  = pdir->dir_offs++;
+    *d_reclen = sizeof(struct oe_dirent);
+
+    return 0;
 }
 
 void oe_posix_rewinddir_ocall(uint64_t dirp)
 {
-    PANIC;
-}
-
-int oe_posix_closedir_ocall(uint64_t dirp)
-{
-    PANIC;
-}
-
-int oe_posix_stat_ocall(const char* pathname, struct oe_stat* buf)
-{
-    int ret = -1;
-    int nLen = MultiByteToWideChar(CP_UTF8, 0, pathname, -1, NULL, 0);
-    WCHAR* wpathname_buffer = (WCHAR*)(calloc((nLen + 1) * sizeof(WCHAR), 1));
-    MultiByteToWideChar(CP_UTF8, 0, pathname, -1, wpathname_buffer, nLen);
-    WCHAR* wpathname = wpathname_buffer;
-    // Undo abosolute path forcing.
+    DWORD err = 0;
+    struct WIN_DIR_DATA *pdir = (struct WIN_DIR_DATA *)dirp;
+    WCHAR* wpathname = pdir->pdirpath;
+    // Undo abosolute path forcing again. We do this over because we need to preserve the 
+    // allocation address for free.
     if (wpathname[0] == '/' && wpathname[2] == ':')
     {
         wpathname++;
     }
 
+    FindClose(pdir->hFind);
+    memset(&pdir->FindFileData, 0, sizeof(pdir->FindFileData));
+
+    pdir->hFind = FindFirstFileW(wpathname, &pdir->FindFileData);
+    if (pdir->hFind == INVALID_HANDLE_VALUE)
+    {
+        err = GetLastError();
+    }
+    pdir->dir_offs = 0;
+}
+
+int oe_posix_closedir_ocall(uint64_t dirp)
+{
+    struct WIN_DIR_DATA *pdir = (struct WIN_DIR_DATA *)dirp;
+
+    if (!dirp)
+    {
+        return -1;
+    }
+    if (!FindClose(pdir->hFind))
+    {
+        return -1;
+    }
+    free(pdir->pdirpath);
+    pdir->pdirpath = NULL;
+    free(pdir);
+    return 0;
+}
+
+int oe_posix_stat_ocall(const char* pathname, struct oe_stat* buf)
+{
+    int ret = -1;
+    WCHAR* wpathname = oe_posix_path_to_win(pathname, NULL);
     struct _stat64 winstat = {0};
 
     ret = _wstat64(wpathname, &winstat);
@@ -865,7 +1168,7 @@ int oe_posix_stat_ocall(const char* pathname, struct oe_stat* buf)
 
     buf->st_dev = winstat.st_dev;
     buf->st_ino = winstat.st_ino;
-    buf->st_mode = winstat.st_mode;
+    buf->st_mode = win_stat_to_stat(winstat.st_mode);
     buf->st_nlink = winstat.st_nlink;
     buf->st_uid = winstat.st_uid;
     buf->st_gid = winstat.st_gid;
@@ -877,9 +1180,9 @@ int oe_posix_stat_ocall(const char* pathname, struct oe_stat* buf)
 
 done:
 
-    if (wpathname_buffer)
+    if (wpathname)
     {
-        free(wpathname_buffer);
+        free(wpathname);
     }
 
     return ret;
@@ -887,42 +1190,148 @@ done:
 
 int oe_posix_access_ocall(const char* pathname, int mode)
 {
-    PANIC;
+    int ret = -1;
+    WCHAR* wpathname = oe_posix_path_to_win(pathname, NULL);
+
+    int winmode = mode & ~1; // X_OK is a noop but makes access unhappy
+    ret = _waccess(wpathname, winmode);
+    if (ret < 0)
+    {
+        _set_errno(_winerr_to_errno(GetLastError()));
+        goto done;
+    }
+
+done:
+    if (wpathname)
+    {
+        free(wpathname);
+    }
+    return ret;
 }
 
 int oe_posix_link_ocall(const char* oldpath, const char* newpath)
 {
-    PANIC;
+    int ret = -1;
+    WCHAR* woldpath = oe_posix_path_to_win(oldpath, NULL);
+    WCHAR* wnewpath = oe_posix_path_to_win(newpath, NULL);
+
+    if (!CreateHardLinkW(wnewpath, woldpath, NULL))
+    {
+        _set_errno(_winerr_to_errno(GetLastError()));
+        goto done;
+    }
+    ret = 0;
+
+done:
+    if (woldpath)
+    {
+        free(woldpath);
+    }
+
+    if (wnewpath)
+    {
+        free(wnewpath);
+    }
+    return ret;
 }
 
 int oe_posix_unlink_ocall(const char* pathname)
 {
-    PANIC;
+    int ret = -1;
+    WCHAR* wpathname = oe_posix_path_to_win(pathname, NULL);
+
+    ret = _wunlink(wpathname);
+    if (ret < 0)
+    {
+        _set_errno(_winerr_to_errno(GetLastError()));
+        goto done;
+    }
+
+done:
+    if (wpathname)
+    {
+        free(wpathname);
+    }
+    return ret;
 }
 
 int oe_posix_rename_ocall(const char* oldpath, const char* newpath)
 {
-    PANIC;
+    int ret = -1;
+    WCHAR* woldpath = oe_posix_path_to_win(oldpath, NULL);
+    WCHAR* wnewpath = oe_posix_path_to_win(newpath, NULL);
+
+    ret = _wrename(woldpath, wnewpath);
+    if (ret < 0)
+    {
+        _set_errno(_winerr_to_errno(GetLastError()));
+        goto done;
+    }
+
+done:
+    if (woldpath)
+    {
+        free(woldpath);
+    }
+
+    if (wnewpath)
+    {
+        free(wnewpath);
+    }
+    return ret;
 }
 
-int oe_posix_truncate_ocall(const char* path, oe_off_t length)
+int oe_posix_truncate_ocall(const char* pathname, oe_off_t length)
 {
-    PANIC;
+    int ret = -1;
+    DWORD sfp_rtn = 0;
+    LARGE_INTEGER new_offset = {0};
+    WCHAR* wpathname = oe_posix_path_to_win(pathname, NULL);
+
+    HANDLE h = CreateFileW(
+            wpathname,
+            GENERIC_WRITE,
+            FILE_SHARE_WRITE,
+            NULL,
+            OPEN_EXISTING,
+            FILE_ATTRIBUTE_NORMAL,
+            NULL);
+    if (h == INVALID_HANDLE_VALUE)
+    {
+        _set_errno(_winerr_to_errno(GetLastError()));
+        goto done;
+    }
+ 
+    new_offset.QuadPart = length;
+    if(!SetFilePointerEx(h, new_offset, (PLARGE_INTEGER)&new_offset, FILE_BEGIN))
+    {
+        _set_errno(_winerr_to_errno(GetLastError()));
+        goto done;
+    }
+
+    if (!SetEndOfFile(h))
+    {
+        _set_errno(_winerr_to_errno(GetLastError()));
+        goto done;
+    }
+
+    CloseHandle(h);
+
+    ret = 0;
+
+done:
+    if (wpathname)
+    {
+       free(wpathname);
+    }
+    return ret;
 }
 
 int oe_posix_mkdir_ocall(const char* pathname, oe_mode_t mode)
 {
     int ret = -1;
-    int nLen = MultiByteToWideChar(CP_UTF8, 0, pathname, -1, NULL, 0);
-    WCHAR* wpathname_buffer = (WCHAR*)(calloc((nLen + 1) * sizeof(WCHAR), 1));
-    MultiByteToWideChar(CP_UTF8, 0, pathname, -1, wpathname_buffer, nLen);
+    WCHAR* wpathname = oe_posix_path_to_win(pathname, NULL);
 
-    WCHAR* wpathname = wpathname_buffer;
-    // Undo abosolute path forcing.
-    if (wpathname[0] == '/' && wpathname[2] == ':')
-    {
-        wpathname++;
-    }
     ret = _wmkdir(wpathname);
     if (ret < 0)
     {
@@ -931,9 +1340,9 @@ int oe_posix_mkdir_ocall(const char* pathname, oe_mode_t mode)
     }
 
 done:
-    if (wpathname_buffer)
+    if (wpathname)
     {
-        free(wpathname_buffer);
+        free(wpathname);
     }
     return ret;
 }
@@ -941,9 +1350,7 @@ done:
 int oe_posix_rmdir_ocall(const char* pathname)
 {
     int ret = -1;
-    int nLen = MultiByteToWideChar(CP_UTF8, 0, pathname, -1, NULL, 0);
-    WCHAR* wpathname = (WCHAR*)(calloc((nLen + 1) * sizeof(WCHAR), 1));
-    MultiByteToWideChar(CP_UTF8, 0, pathname, -1, wpathname, nLen);
+    WCHAR* wpathname = oe_posix_path_to_win(pathname, NULL);
 
     ret = _wrmdir(wpathname);
     if (ret < 0)
@@ -1225,7 +1632,10 @@ int oe_posix_shutdown_ocall(oe_host_fd_t sockfd, int how)
 
 int oe_posix_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg)
 {
-    PANIC;
+    
+    // Currently we do nothing but accept it.
+    // We will need to define which fcntls do what.
+    return 0;
 }
 
 int oe_posix_setsockopt_ocall(
