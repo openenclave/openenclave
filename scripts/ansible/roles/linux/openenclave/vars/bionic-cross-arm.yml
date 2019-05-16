@@ -1,0 +1,9 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+---
+apt_arm_packages:
+  - "gcc-aarch64-linux-gnu"
+  - "g++-aarch64-linux-gnu"
+  - "libc6-dev:arm64"
+  - "libssl-dev:arm64"
