@@ -4,6 +4,7 @@
 add_custom_command(
   OUTPUT all_t.h all_t.c all_args.h
   DEPENDS
+  edger8r
   ../edl/aliasing.edl
   ../edl/all.edl
   ../edl/array.edl
