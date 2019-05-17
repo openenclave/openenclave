@@ -38,9 +38,9 @@ typedef struct _oe_fd_ops
 
     int (*fcntl)(oe_fd_t* desc, int cmd, uint64_t arg);
 
-    oe_host_fd_t (*get_host_fd)(oe_fd_t* desc);
-
     int (*close)(oe_fd_t* desc);
+
+    oe_host_fd_t (*get_host_fd)(oe_fd_t* desc);
 
     int (*release)(oe_fd_t* desc);
 }

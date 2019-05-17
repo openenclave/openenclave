@@ -9,19 +9,15 @@
 
 #include <openenclave/internal/posix/device.h>
 #include <openenclave/corelibc/limits.h>
-#include <openenclave/bits/safemath.h>
-#include <openenclave/internal/calls.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/corelibc/dirent.h>
 #include <openenclave/corelibc/sys/mount.h>
-#include <openenclave/corelibc/stdlib.h>
+#include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/fcntl.h>
 #include <openenclave/bits/module.h>
-#include <openenclave/internal/trace.h>
 #include <openenclave/internal/posix/raise.h>
-#include <openenclave/internal/posix/fdtable.h>
 #include <openenclave/bits/safecrt.h>
 
 #include "posix_t.h"
@@ -38,13 +34,13 @@
 #define FILE_MAGIC 0xfe48c6ff
 #define DIR_MAGIC 0x8add1b0b
 
-typedef struct _fs
+typedef struct _device
 {
     struct _oe_device base;
     uint32_t magic;
     unsigned long mount_flags;
     char mount_source[OE_PATH_MAX];
-} fs_t;
+} device_t;
 
 typedef struct _file
 {
@@ -52,12 +48,12 @@ typedef struct _file
     uint32_t magic;
     oe_host_fd_t host_fd;
     uint32_t ready_mask;
-    oe_device_t* dir;
+    oe_fd_t* dir;
 } file_t;
 
 typedef struct _dir
 {
-    struct _oe_device base;
+    oe_fd_t base;
     uint32_t magic;
     uint64_t host_dir;
     struct oe_dirent entry;
@@ -68,20 +64,20 @@ static int _get_open_access_mode(int flags)
     return (flags & 000000003);
 }
 
-static fs_t* _cast_fs(const oe_device_t* device)
+static device_t* _cast_device(const oe_device_t* device_)
 {
-    fs_t* fs = (fs_t*)device;
+    device_t* device = (device_t*)device_;
 
-    if (fs == NULL || fs->magic != FS_MAGIC)
+    if (device == NULL || device->magic != FS_MAGIC)
         OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
-    return fs;
+    return device;
 }
 
-static file_t* _cast_file(const oe_fd_t* desc)
+static file_t* _cast_file(const oe_fd_t* file_)
 {
-    file_t* file = (file_t*)desc;
+    file_t* file = (file_t*)file_;
 
     if (file == NULL || file->magic != FILE_MAGIC)
         OE_RAISE_ERRNO(OE_EINVAL);
@@ -90,9 +86,9 @@ done:
     return file;
 }
 
-static dir_t* _cast_dir(const oe_device_t* device)
+static dir_t* _cast_dir(const oe_fd_t* dir_)
 {
-    dir_t* dir = (dir_t*)device;
+    dir_t* dir = (dir_t*)dir_;
 
     if (dir == NULL || dir->magic != DIR_MAGIC)
         OE_RAISE_ERRNO(OE_EINVAL);
@@ -101,7 +97,7 @@ done:
     return dir;
 }
 
-OE_INLINE bool _is_rdonly(const fs_t* fs)
+OE_INLINE bool _is_rdonly(const device_t* fs)
 {
     return (fs->mount_flags & OE_MS_RDONLY);
 }
@@ -111,11 +107,11 @@ OE_INLINE bool _is_root(const char* path)
     return path[0] == '/' && path[1] == '\0';
 }
 
-static oe_file_ops_t _get_file_operations(void);
+static oe_file_ops_t _get_file_ops(void);
 
 /* Expand path to include the mount_source (needed by host side) */
 static int _expand_path(
-    const fs_t* fs,
+    const device_t* fs,
     const char* suffix,
     char path[OE_PATH_MAX])
 {
@@ -155,7 +151,7 @@ static int _hostfs_mount(
     unsigned long flags)
 {
     int ret = -1;
-    fs_t* fs = _cast_fs(dev);
+    device_t* fs = _cast_device(dev);
 
     if (!fs || !source || !target)
         OE_RAISE_ERRNO(OE_EINVAL);
@@ -172,7 +168,7 @@ done:
 static int _hostfs_unmount(oe_device_t* dev, const char* target)
 {
     int ret = -1;
-    fs_t* fs = _cast_fs(dev);
+    device_t* fs = _cast_device(dev);
 
     if (!fs || !target)
         OE_RAISE_ERRNO(OE_EINVAL);
@@ -190,13 +186,13 @@ static int _hostfs_close(oe_fd_t*);
 static int _hostfs_clone(oe_device_t* device, oe_device_t** new_device)
 {
     int ret = -1;
-    fs_t* fs = _cast_fs(device);
-    fs_t* new_fs = NULL;
+    device_t* fs = _cast_device(device);
+    device_t* new_fs = NULL;
 
     if (!fs || !new_device)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (!(new_fs = oe_calloc(1, sizeof(fs_t))))
+    if (!(new_fs = oe_calloc(1, sizeof(device_t))))
         OE_RAISE_ERRNO(OE_ENOMEM);
 
     *new_fs = *fs;
@@ -207,10 +203,10 @@ done:
     return ret;
 }
 
-static int _hostfs_release(oe_device_t* device)
+static int _hostfs_device_release(oe_device_t* device)
 {
     int ret = -1;
-    fs_t* fs = _cast_fs(device);
+    device_t* fs = _cast_device(device);
 
     if (!fs)
         OE_RAISE_ERRNO(OE_EINVAL);
@@ -229,7 +225,7 @@ static oe_fd_t* _hostfs_open_file(
     oe_mode_t mode)
 {
     oe_fd_t* ret = NULL;
-    fs_t* fs = _cast_fs(fs_);
+    device_t* fs = _cast_device(fs_);
     file_t* file = NULL;
     char full_pathname[OE_PATH_MAX];
     oe_host_fd_t retval = -1;
@@ -251,7 +247,7 @@ static oe_fd_t* _hostfs_open_file(
 
         file->base.type = OE_FD_TYPE_FILE;
         file->magic = FILE_MAGIC;
-        file->base.ops.file = _get_file_operations();
+        file->base.ops.file = _get_file_ops();
     }
 
     /* Call */
@@ -279,8 +275,9 @@ done:
     return ret;
 }
 
-static oe_device_t* _hostfs_opendir(oe_device_t* fs, const char* name);
-static int _hostfs_closedir(oe_device_t* file);
+static oe_fd_t* _hostfs_opendir(oe_device_t* fs_, const char* name);
+
+static int _hostfs_closedir(oe_fd_t* file);
 
 static oe_fd_t* _hostfs_open_directory(
     oe_device_t* fs_,
@@ -289,9 +286,9 @@ static oe_fd_t* _hostfs_open_directory(
     oe_mode_t mode)
 {
     oe_fd_t* ret = NULL;
-    fs_t* fs = _cast_fs(fs_);
+    device_t* fs = _cast_device(fs_);
     file_t* file = NULL;
-    oe_device_t* dir = NULL;
+    oe_fd_t* dir = NULL;
 
     oe_errno = 0;
 
@@ -316,7 +313,7 @@ static oe_fd_t* _hostfs_open_directory(
 
         file->base.type = OE_FD_TYPE_FILE;
         file->magic = FILE_MAGIC;
-        file->base.ops.file = _get_file_operations();
+        file->base.ops.file = _get_file_ops();
         file->host_fd = -1;
         file->dir = dir;
     }
@@ -383,7 +380,7 @@ static int _hostfs_dup(oe_fd_t* file_, oe_fd_t** new_file_out)
                 OE_RAISE_ERRNO(oe_errno);
 
             new_file->base.type = OE_FD_TYPE_FILE;
-            new_file->base.ops.file = _get_file_operations();
+            new_file->base.ops.file = _get_file_ops();
             new_file->magic = FILE_MAGIC;
             new_file->host_fd = retval;
 
@@ -415,7 +412,7 @@ done:
     return ret;
 }
 
-static struct oe_dirent* _hostfs_readdir(oe_device_t* dir_);
+static struct oe_dirent* _hostfs_readdir(oe_fd_t* dir_);
 
 static int _hostfs_getdents(
     oe_fd_t* file_,
@@ -498,7 +495,7 @@ done:
     return ret;
 }
 
-static int _hostfs_rewinddir(oe_device_t* dir_)
+static int _hostfs_rewinddir(oe_fd_t* dir_)
 {
     int ret = -1;
     dir_t* dir = _cast_dir(dir_);
@@ -617,6 +614,20 @@ done:
     return ret;
 }
 
+static int _hostfs_release(oe_fd_t* file_)
+{
+    int ret = -1;
+    file_t* file = _cast_file(file_);
+
+    if (!file)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    oe_free(file);
+
+done:
+    return ret;
+}
+
 static int _hostfs_ioctl(oe_fd_t* file_, unsigned long request, uint64_t arg)
 {
     int ret = -1;
@@ -651,10 +662,10 @@ done:
     return ret;
 }
 
-static oe_device_t* _hostfs_opendir(oe_device_t* fs_, const char* name)
+static oe_fd_t* _hostfs_opendir(oe_device_t* fs_, const char* name)
 {
-    oe_device_t* ret = NULL;
-    fs_t* fs = _cast_fs(fs_);
+    oe_fd_t* ret = NULL;
+    device_t* fs = _cast_device(fs_);
     dir_t* dir = NULL;
     char full_name[OE_PATH_MAX];
     uint64_t retval = 0;
@@ -672,10 +683,9 @@ static oe_device_t* _hostfs_opendir(oe_device_t* fs_, const char* name)
         if (!(dir = oe_calloc(1, sizeof(dir_t))))
             OE_RAISE_ERRNO(OE_ENOMEM);
 
-        dir->base.type = OE_DEVICE_TYPE_DIRECTORY;
-        dir->base.name = OE_DEVICE_NAME_HOST_FILE_SYSTEM;
+        dir->base.type = OE_FD_TYPE_FILE;
         dir->magic = DIR_MAGIC;
-        dir->base.ops.fs = fs->base.ops.fs;
+        dir->base.ops.file = _get_file_ops();
         dir->host_dir = retval;
     }
 
@@ -690,7 +700,7 @@ done:
     return ret;
 }
 
-static struct oe_dirent* _hostfs_readdir(oe_device_t* dir_)
+static struct oe_dirent* _hostfs_readdir(oe_fd_t* dir_)
 {
     struct oe_dirent* ret = NULL;
     dir_t* dir = _cast_dir(dir_);
@@ -742,7 +752,7 @@ done:
     return ret;
 }
 
-static int _hostfs_closedir(oe_device_t* dir)
+static int _hostfs_closedir(oe_fd_t* dir)
 {
     int ret = -1;
     dir_t* d = _cast_dir(dir);
@@ -772,7 +782,7 @@ static int _hostfs_stat(
     struct oe_stat* buf)
 {
     int ret = -1;
-    fs_t* fs = _cast_fs(fs_);
+    device_t* fs = _cast_device(fs_);
     char full_pathname[OE_PATH_MAX];
 
     if (buf)
@@ -798,7 +808,7 @@ done:
 static int _hostfs_access(oe_device_t* fs_, const char* pathname, int mode)
 {
     int ret = -1;
-    fs_t* fs = _cast_fs(fs_);
+    device_t* fs = _cast_device(fs_);
     char full_pathname[OE_PATH_MAX];
     const uint32_t MASK = (OE_R_OK | OE_W_OK | OE_X_OK);
 
@@ -822,7 +832,7 @@ static int _hostfs_link(
     const char* newpath)
 {
     int ret = -1;
-    fs_t* fs = _cast_fs(fs_);
+    device_t* fs = _cast_device(fs_);
     char full_oldpath[OE_PATH_MAX];
     char full_newpath[OE_PATH_MAX];
 
@@ -850,7 +860,7 @@ done:
 static int _hostfs_unlink(oe_device_t* fs_, const char* pathname)
 {
     int ret = -1;
-    fs_t* fs = _cast_fs(fs_);
+    device_t* fs = _cast_device(fs_);
     char full_pathname[OE_PATH_MAX];
 
     if (!fs)
@@ -877,7 +887,7 @@ static int _hostfs_rename(
     const char* newpath)
 {
     int ret = -1;
-    fs_t* fs = _cast_fs(fs_);
+    device_t* fs = _cast_device(fs_);
     char full_oldpath[OE_PATH_MAX];
     char full_newpath[OE_PATH_MAX];
 
@@ -904,7 +914,7 @@ done:
 static int _hostfs_truncate(oe_device_t* fs_, const char* path, oe_off_t length)
 {
     int ret = -1;
-    fs_t* fs = _cast_fs(fs_);
+    device_t* fs = _cast_device(fs_);
     char full_path[OE_PATH_MAX];
 
     if (!fs)
@@ -927,7 +937,7 @@ done:
 static int _hostfs_mkdir(oe_device_t* fs_, const char* pathname, oe_mode_t mode)
 {
     int ret = -1;
-    fs_t* fs = _cast_fs(fs_);
+    device_t* fs = _cast_device(fs_);
     char full_pathname[OE_PATH_MAX];
 
     if (!fs)
@@ -951,7 +961,7 @@ done:
 static int _hostfs_rmdir(oe_device_t* fs_, const char* pathname)
 {
     int ret = -1;
-    fs_t* fs = _cast_fs(fs_);
+    device_t* fs = _cast_device(fs_);
     char full_pathname[OE_PATH_MAX];
 
     if (!fs)
@@ -972,7 +982,7 @@ done:
     return ret;
 }
 
-static oe_host_fd_t _hostfs_gethostfd(oe_fd_t* file_)
+static oe_host_fd_t _hostfs_get_host_fd(oe_fd_t* file_)
 {
     file_t* f = _cast_file(file_);
 
@@ -984,48 +994,47 @@ static oe_host_fd_t _hostfs_gethostfd(oe_fd_t* file_)
     return -1;
 }
 
-static oe_file_ops_t _file_operations = {
+static oe_file_ops_t _file_ops = {
+    .fd.read = _hostfs_read,
+    .fd.write = _hostfs_write,
     .fd.dup = _hostfs_dup,
     .fd.ioctl = _hostfs_ioctl,
     .fd.fcntl = _hostfs_fcntl,
-    .fd.read = _hostfs_read,
-    .fd.write = _hostfs_write,
-    .fd.get_host_fd = _hostfs_gethostfd,
     .fd.close = _hostfs_close,
+    .fd.release = _hostfs_release,
+    .fd.get_host_fd = _hostfs_get_host_fd,
     .lseek = _hostfs_lseek,
     .getdents = _hostfs_getdents,
 };
 
-static oe_file_ops_t _get_file_operations(void)
+static oe_file_ops_t _get_file_ops(void)
 {
-    return _file_operations;
+    return _file_ops;
 };
 
-// clang-format off
-static fs_t _hostfs = {
+static device_t _hostfs = {
     .base.type = OE_DEVICE_TYPE_FILESYSTEM,
     .base.name = OE_DEVICE_NAME_HOST_FILE_SYSTEM,
     .base.ops.fs =
-    {
-        .base.release = _hostfs_release,
-        .clone = _hostfs_clone,
-        .mount = _hostfs_mount,
-        .unmount = _hostfs_unmount,
-        .open = _hostfs_open,
-        .stat = _hostfs_stat,
-        .access = _hostfs_access,
-        .link = _hostfs_link,
-        .unlink = _hostfs_unlink,
-        .rename = _hostfs_rename,
-        .truncate = _hostfs_truncate,
-        .mkdir = _hostfs_mkdir,
-        .rmdir = _hostfs_rmdir,
-    },
+        {
+            .base.release = _hostfs_device_release,
+            .clone = _hostfs_clone,
+            .mount = _hostfs_mount,
+            .unmount = _hostfs_unmount,
+            .open = _hostfs_open,
+            .stat = _hostfs_stat,
+            .access = _hostfs_access,
+            .link = _hostfs_link,
+            .unlink = _hostfs_unlink,
+            .rename = _hostfs_rename,
+            .truncate = _hostfs_truncate,
+            .mkdir = _hostfs_mkdir,
+            .rmdir = _hostfs_rmdir,
+        },
     .magic = FS_MAGIC,
     .mount_flags = 0,
     .mount_source = {'/'},
 };
-// clang-format on
 
 oe_device_t* oe_get_hostfs_device(void)
 {

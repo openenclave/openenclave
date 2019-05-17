@@ -76,6 +76,25 @@ done:
     return ret;
 }
 
+static int _check_device(oe_device_t* device)
+{
+    int ret = -1;
+
+    if (device->type == OE_DEVICE_TYPE_FILESYSTEM)
+    {
+        if (!device->ops.base.release)
+            goto done;
+
+        if (!device->ops.fs.open)
+            goto done;
+    }
+
+    ret = 0;
+
+done:
+    return ret;
+}
+
 /*
 **==============================================================================
 **
@@ -116,6 +135,9 @@ int oe_set_device(uint64_t devid, oe_device_t* device)
     int ret = -1;
 
     oe_spin_lock(&_lock);
+
+    if (_check_device(device) != 0)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (_resize_table(devid + 1) != 0)
         OE_RAISE_ERRNO(OE_ENOMEM);
