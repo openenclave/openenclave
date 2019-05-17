@@ -312,6 +312,7 @@ int oe_dup2(int oldfd, int newfd)
 {
     oe_fd_t* old_desc;
     oe_fd_t* new_desc = NULL;
+    oe_fd_t* resassigned_desc;
     int retval = -1;
 
     if (oldfd == newfd)
@@ -323,8 +324,11 @@ int oe_dup2(int oldfd, int newfd)
     if ((retval = old_desc->ops.fd.dup(old_desc, &new_desc)) < 0)
         OE_RAISE_ERRNO(oe_errno);
 
-    if (oe_fdtable_reassign(newfd, new_desc) == -1)
+    if (oe_fdtable_reassign(newfd, new_desc, &resassigned_desc) == -1)
         OE_RAISE_ERRNO(OE_EINVAL);
+
+    if (resassigned_desc)
+        resassigned_desc->ops.fd.close(resassigned_desc);
 
     new_desc = NULL;
 

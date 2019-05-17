@@ -10,13 +10,13 @@
 
 OE_EXTERNC_BEGIN
 
-int oe_fdtable_reassign(int fd, oe_fd_t* desc);
-
 oe_fd_t* oe_fdtable_get(int fd, oe_fd_type_t type);
 
-int oe_fdtable_release(int fd);
-
 int oe_fdtable_assign(oe_fd_t* desc);
+
+int oe_fdtable_reassign(int fd, oe_fd_t* new_desc, oe_fd_t** old_desc);
+
+int oe_fdtable_release(int fd);
 
 OE_EXTERNC_END
 
