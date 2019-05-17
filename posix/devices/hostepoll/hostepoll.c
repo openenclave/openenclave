@@ -49,7 +49,7 @@ typedef struct _epoll
     pair_t* map;
     size_t map_size;
     size_t map_capacity;
-
+    oe_spinlock_t lock;
 } epoll_t;
 
 static oe_epoll_ops_t _get_epoll_ops(void);
@@ -108,11 +108,11 @@ done:
     return ret;
 }
 
-static const pair_t* _map_find(epoll_t* epoll, int fd)
+static pair_t* _map_find(epoll_t* epoll, int fd)
 {
     for (size_t i = 0; i < epoll->map_size; i++)
     {
-        const pair_t* pair = &epoll->map[i];
+        pair_t* pair = &epoll->map[i];
 
         if (pair->fd == fd)
             return pair;
@@ -210,12 +210,19 @@ static int _epoll_ctl_add(epoll_t* epoll, int fd, struct oe_epoll_event* event)
 
     if (retval != -1)
     {
+        oe_spin_lock(&epoll->lock);
+
         if (_map_reserve(epoll, epoll->map_size + 1) != 0)
-            goto done;
+        {
+            oe_spin_lock(&epoll->lock);
+            OE_RAISE_ERRNO(OE_ENOMEM);
+        }
 
         epoll->map[epoll->map_size].fd = fd;
         epoll->map[epoll->map_size].event = *event;
         epoll->map_size++;
+
+        oe_spin_unlock(&epoll->lock);
     }
 
     ret = retval;
@@ -267,19 +274,16 @@ static int _epoll_ctl_mod(epoll_t* epoll, int fd, struct oe_epoll_event* event)
     /* Modify the pair. */
     if (retval == 0)
     {
-        bool found = false;
+        pair_t* pair;
 
-        for (size_t i = 0; epoll->map_size; i++)
+        oe_spin_lock(&epoll->lock);
         {
-            if (epoll->map[i].fd == fd)
-            {
-                epoll->map[i].event = *event;
-                found = true;
-                break;
-            }
+            if ((pair = _map_find(epoll, fd)))
+                pair->event = *event;
         }
+        oe_spin_unlock(&epoll->lock);
 
-        if (!found)
+        if (!pair)
             OE_RAISE_ERRNO(OE_ENOENT);
     }
 
@@ -321,16 +325,20 @@ static int _epoll_ctl_del(epoll_t* epoll, int fd)
     {
         bool found = false;
 
-        for (size_t i = 0; epoll->map_size; i++)
+        oe_spin_lock(&epoll->lock);
         {
-            if (epoll->map[i].fd == fd)
+            for (size_t i = 0; epoll->map_size; i++)
             {
-                /* Swap with last element of array. */
-                epoll->map[i] = epoll->map[--epoll->map_size];
-                found = true;
-                break;
+                if (epoll->map[i].fd == fd)
+                {
+                    /* Swap with last element of array. */
+                    epoll->map[i] = epoll->map[--epoll->map_size];
+                    found = true;
+                    break;
+                }
             }
         }
+        oe_spin_unlock(&epoll->lock);
 
         if (!found)
             OE_RAISE_ERRNO(OE_ENOENT);
@@ -423,10 +431,15 @@ static int _epoll_wait(
             struct oe_epoll_event* event = &events[i];
             const pair_t* pair;
 
-            if (!(pair = _map_find(epoll, event->data.fd)))
-                OE_RAISE_ERRNO(OE_ENOENT);
+            oe_spin_lock(&epoll->lock);
+            {
+                if (!(pair = _map_find(epoll, event->data.fd)))
+                    event->data.u64 = pair->event.data.u64;
+            }
+            oe_spin_unlock(&epoll->lock);
 
-            event->data.u64 = pair->event.data.u64;
+            if (!pair)
+                OE_RAISE_ERRNO(OE_ENOENT);
         }
     }
 
