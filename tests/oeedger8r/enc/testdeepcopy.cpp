@@ -136,3 +136,21 @@ void deepcopy_countsizeparamarray(CountSizeParamStruct* s)
         OE_TEST(s[1].ptr[i] == data[4 + i]);
     OE_TEST_IGNORE(oe_is_within_enclave(s[1].ptr, s[1].count * s[1].size));
 }
+
+void deepcopy_nested(NestedStruct* n)
+{
+    OE_TEST(oe_is_within_enclave(n, sizeof(NestedStruct)));
+
+    OE_TEST(n->plain_int == 13);
+
+    OE_TEST_IGNORE(oe_is_within_enclave(n->array_of_int, 4 * sizeof(int)));
+    for (int i = 0; i < 4; ++i)
+        OE_TEST(n->array_of_int[i] == i);
+
+    OE_TEST(oe_is_outside_enclave(n->shallow_struct, sizeof(ShallowStruct)));
+
+    OE_TEST_IGNORE(
+        oe_is_within_enclave(n->array_of_struct, 3 * sizeof(CountStruct)));
+    for (size_t i = 0; i < 3; ++i)
+        deepcopy_count(&(n->array_of_struct[i]));
+}

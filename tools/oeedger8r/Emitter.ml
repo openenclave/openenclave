@@ -128,7 +128,7 @@ let should_deepcopy a structs =
 (** [oe_gen_marshal_struct_impl] generates a marshalling [struct]
     definition. *)
 let oe_gen_marshal_struct (fd : func_decl) (errno : bool) structs =
-  let gen_member_decl (ptype, decl) =
+  let rec gen_member_decl prefix (ptype, decl) =
     let aty = get_param_atype ptype in
     let tystr = get_tystr aty in
     let tystr =
@@ -141,16 +141,16 @@ let oe_gen_marshal_struct (fd : func_decl) (errno : bool) structs =
     let need_strlen p =
       (is_str_ptr p || is_wstr_ptr p) && (is_in_ptr p || is_inout_ptr p)
     in
-    [ sprintf "%s %s;" tystr decl.identifier
-    ; ( if need_strlen ptype then sprintf "size_t %s_len;" decl.identifier
-      else "" )
-    ; ( if should_deepcopy aty structs <> [] then
-        sprintf "/* deep copy %s: %s */" decl.identifier
-          (String.concat ", "
-             (List.map
-                (fun (_, d) -> d.identifier)
-                (should_deepcopy aty structs)))
-      else "" ) ]
+    List.flatten
+      [ [sprintf "%s %s%s;" tystr prefix decl.identifier]
+      ; ( if need_strlen ptype then [sprintf "size_t %s_len;" decl.identifier]
+        else [""] )
+      ; ( if should_deepcopy aty structs <> [] then
+          List.flatten
+            (List.map
+               (gen_member_decl (decl.identifier ^ "_"))
+               (should_deepcopy aty structs))
+        else [""] ) ]
   in
   let struct_name = fd.fname ^ "_args_t" in
   let retval_decl = {identifier= "_retval"; array_dims= []} in
@@ -158,10 +158,11 @@ let oe_gen_marshal_struct (fd : func_decl) (errno : bool) structs =
     List.flatten
       [ ["oe_result_t _result;"]
       ; ( if fd.rtype = Void then [""]
-        else gen_member_decl (PTVal fd.rtype, retval_decl) )
+        else gen_member_decl "" (PTVal fd.rtype, retval_decl) )
       ; (if errno then ["int _ocall_errno;"] else [""])
       ; List.flatten
-          (List.map gen_member_decl (List.map conv_array_to_ptr fd.plist)) ]
+          (List.map (gen_member_decl "") (List.map conv_array_to_ptr fd.plist))
+      ]
   in
   [ sprintf "typedef struct _%s" struct_name
   ; "{"

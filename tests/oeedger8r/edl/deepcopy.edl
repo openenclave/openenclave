@@ -34,6 +34,13 @@ enclave {
     [count=count, size=size] uint64_t* ptr;
   };
 
+  struct NestedStruct {
+    int plain_int;
+    [count=4] int* array_of_int;
+    ShallowStruct* shallow_struct;
+    [count=3] CountStruct* array_of_struct;
+  };
+
   trusted {
     // Since `s` is passed by value, `s.ptr` is not deep copied.
     public void deepcopy_value(ShallowStruct s, [user_check] uint64_t* ptr);
@@ -72,5 +79,8 @@ enclave {
     // Deep copy of two `CountSizeParamStruct`s each with an embedded
     // array and different counts should take place.
     public void deepcopy_countsizeparamarray([in, count=2] CountSizeParamStruct* s);
+
+    // Maybe test for recursive copying.
+    public void deepcopy_nested([in, count=1] NestedStruct* n);
   };
 };
