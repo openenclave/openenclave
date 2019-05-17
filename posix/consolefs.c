@@ -1,11 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/enclave.h>
+
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/unistd.h>
-#include <openenclave/enclave.h>
 #include <openenclave/internal/posix/fdtable.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/thread.h>
@@ -21,9 +22,9 @@ typedef struct _file
     oe_host_fd_t host_fd;
 } file_t;
 
-static file_t* _cast_file(const oe_fd_t* desc)
+static file_t* _cast_file(const oe_fd_t* file_)
 {
-    file_t* file = (file_t*)desc;
+    file_t* file = (file_t*)file_;
 
     if (file == NULL || file->magic != MAGIC)
         return NULL;
@@ -45,8 +46,6 @@ static int _consolefs_dup(oe_fd_t* file_, oe_fd_t** new_file_out)
 
     /* Ask the host to perform this operation. */
     {
-        oe_errno = 0;
-
         if (oe_posix_dup_ocall(&retval, file->host_fd) != OE_OK)
             OE_RAISE_ERRNO(OE_EINVAL);
 
@@ -72,12 +71,10 @@ done:
     return ret;
 }
 
-static int _consolefs_ioctl(oe_fd_t* desc, unsigned long request, uint64_t arg)
+static int _consolefs_ioctl(oe_fd_t* file_, unsigned long request, uint64_t arg)
 {
     int ret = -1;
-    file_t* file = _cast_file(desc);
-
-    oe_errno = 0;
+    file_t* file = _cast_file(file_);
 
     if (!file)
         OE_RAISE_ERRNO(OE_EINVAL);
@@ -89,12 +86,10 @@ done:
     return ret;
 }
 
-static int _consolefs_fcntl(oe_fd_t* desc, int cmd, uint64_t arg)
+static int _consolefs_fcntl(oe_fd_t* file_, int cmd, uint64_t arg)
 {
     int ret = -1;
-    file_t* file = _cast_file(desc);
-
-    oe_errno = 0;
+    file_t* file = _cast_file(file_);
 
     if (!file)
         OE_RAISE_ERRNO(OE_EINVAL);
@@ -111,8 +106,6 @@ static ssize_t _consolefs_read(oe_fd_t* file_, void* buf, size_t count)
     ssize_t ret = -1;
     file_t* file = _cast_file(file_);
 
-    oe_errno = 0;
-
     if (!file)
         OE_RAISE_ERRNO(OE_EINVAL);
 
@@ -127,8 +120,6 @@ static ssize_t _consolefs_write(oe_fd_t* file_, const void* buf, size_t count)
 {
     ssize_t ret = -1;
     file_t* file = _cast_file(file_);
-
-    oe_errno = 0;
 
     if (!file)
         OE_RAISE_ERRNO(OE_EINVAL);
@@ -159,8 +150,6 @@ static oe_off_t _consolefs_lseek(oe_fd_t* file_, oe_off_t offset, int whence)
     oe_off_t ret = -1;
     file_t* file = _cast_file(file_);
 
-    oe_errno = 0;
-
     if (!file)
         OE_RAISE_ERRNO(OE_EINVAL);
 
@@ -175,7 +164,6 @@ static int _consolefs_close(oe_fd_t* file_)
 {
     int ret = -1;
     file_t* file = _cast_file(file_);
-    oe_errno = 0;
 
     if (!file)
         OE_RAISE_ERRNO(OE_EINVAL);
@@ -196,16 +184,32 @@ done:
     return ret;
 }
 
+static int _consolefs_getdents(
+    oe_fd_t* file,
+    struct oe_dirent* dirp,
+    uint32_t count)
+{
+    OE_UNUSED(file);
+    OE_UNUSED(dirp);
+    OE_UNUSED(count);
+
+    /* The standard devices are not directories, so this is unsupported. */
+    OE_RAISE_ERRNO(OE_ENOTSUP);
+
+done:
+    return -1;
+}
+
 static oe_file_ops_t _ops = {
+    .fd.read = _consolefs_read,
+    .fd.write = _consolefs_write,
     .fd.dup = _consolefs_dup,
     .fd.ioctl = _consolefs_ioctl,
     .fd.fcntl = _consolefs_fcntl,
-    .fd.read = _consolefs_read,
-    .fd.write = _consolefs_write,
-    .fd.get_host_fd = _consolefs_gethostfd,
     .fd.close = _consolefs_close,
+    .fd.get_host_fd = _consolefs_gethostfd,
     .lseek = _consolefs_lseek,
-    .getdents = NULL,
+    .getdents = _consolefs_getdents,
 };
 
 static oe_fd_t* _new_file(oe_host_fd_t host_fd)
