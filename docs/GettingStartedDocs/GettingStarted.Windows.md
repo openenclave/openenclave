@@ -22,7 +22,7 @@ Windows.
   https://software.intel.com/sites/default/files/managed/0f/c8/Intel-SGX-PSW-Release-Notes-for-Windows-OS.pdf)
 - [Microsoft Visual Studio 2017](https://visualstudio.microsoft.com/vs/older-downloads/)
 - [Git for Windows 64-bit](https://git-scm.com/download/win)
-- [OCaml for Windows 64-bit](https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/ocpwin64-20160113-4.01.0+ocp1-mingw64.exe)
+- [OCaml for Windows 64-bit](https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/)
 - [Clang/LLVM for Windows 64-bit](http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe)
 
 Intel® SGX Platform Software for Windows (PSW)
@@ -77,8 +77,8 @@ C:\Program Files\LLVM\bin\ld.lld.exe
 
 OCaml
 ---------------------------------
-Install [OCaml for Windows (64-bit)](https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/ocpwin64-20160113-4.01.0+ocp1-mingw64.exe).
-Please download and install the mingw64 exe for OCaml, for example, ocpwin64-20160113-4.02.1+ocp1-mingw64.exe.
+Install [OCaml for Windows (64-bit)](https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/).
+Please download and install the mingw64 exe for OCaml, for example, https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/ocpwin64-20160113-4.01.0+ocp1-mingw64.exe.
 
 [Alternate OCaml Web-site](https://fdopen.github.io/opam-repository-mingw/installation/)
 
@@ -157,7 +157,7 @@ Normally this is accessible under the `Visual Studio 2017` folder in the Start M
    ninja
    ```
 
-   Similarly, we could build the release version with:
+   Similarly, build the release version with:
     ```cmd
    cd C:\openenclave
    mkdir build\x64-Release
