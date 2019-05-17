@@ -41,8 +41,6 @@ typedef struct _oe_fd_ops
     int (*close)(oe_fd_t* desc);
 
     oe_host_fd_t (*get_host_fd)(oe_fd_t* desc);
-
-    int (*release)(oe_fd_t* desc);
 }
 oe_fd_ops_t;
 

@@ -883,7 +883,7 @@ done:
     return ret;
 }
 
-static int _hostsock_device_release(oe_device_t* device_)
+static int _hostsock_release(oe_device_t* device_)
 {
     int ret = -1;
     device_t* device = _cast_device(device_);
@@ -894,24 +894,6 @@ static int _hostsock_device_release(oe_device_t* device_)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     ret = 0;
-
-done:
-
-    return ret;
-}
-
-static int _hostsock_release(oe_fd_t* sock_)
-{
-    int ret = -1;
-    sock_t* sock = _cast_sock(sock_);
-
-    oe_errno = 0;
-
-    if (!sock)
-        OE_RAISE_ERRNO(OE_EINVAL);
-
-    if (ret != -1)
-        oe_free(sock);
 
 done:
 
@@ -932,7 +914,6 @@ static oe_socket_ops_t _sock_operations = {
     .fd.write = _hostsock_write,
     .fd.get_host_fd = _hostsock_gethostfd,
     .fd.close = _hostsock_close,
-    .fd.release = _hostsock_release,
     .accept = _hostsock_accept,
     .bind = _hostsock_bind,
     .listen = _hostsock_listen,
@@ -961,7 +942,7 @@ static device_t _device = {
     .base.name = OE_DEVICE_NAME_HOST_SOCKET_INTERFACE,
     .base.ops.socket =
     {
-        .base.release = _hostsock_device_release,
+        .base.release = _hostsock_release,
         .socket = _hostsock_socket,
         .socketpair = _hostsock_socketpair,
     },

@@ -76,58 +76,58 @@ done:
     return ret;
 }
 
+/* Raise and log an error if the condition is false. */
+#define CHECK_CONDITION(COND)                                         \
+    do                                                                \
+    {                                                                 \
+        if (!(COND))                                                  \
+            OE_RAISE_ERRNO_MSG(OE_EINVAL, "failed check: %s", #COND); \
+    } while (0)
+
 static int _check_device(oe_device_t* device)
 {
     int ret = -1;
 
+    CHECK_CONDITION(device->ops.base.release);
+
     switch (device->type)
     {
+        case OE_DEVICE_TYPE_NONE:
+        case OE_DEVICE_TYPE_ANY:
+        {
+            goto done;
+        }
         case OE_DEVICE_TYPE_FILE_SYSTEM:
         {
-            if (!device->ops.base.release || !device->ops.fs.clone ||
-                !device->ops.fs.mount || !device->ops.fs.umount ||
-                !device->ops.fs.open || !device->ops.fs.stat ||
-                !device->ops.fs.access || !device->ops.fs.link ||
-                !device->ops.fs.unlink || !device->ops.fs.rename ||
-                !device->ops.fs.truncate || !device->ops.fs.mkdir ||
-                !device->ops.fs.rmdir)
-            {
-                goto done;
-            }
-
+            CHECK_CONDITION(device->ops.fs.clone);
+            CHECK_CONDITION(device->ops.fs.mount);
+            CHECK_CONDITION(device->ops.fs.umount);
+            CHECK_CONDITION(device->ops.fs.open);
+            CHECK_CONDITION(device->ops.fs.stat);
+            CHECK_CONDITION(device->ops.fs.access);
+            CHECK_CONDITION(device->ops.fs.link);
+            CHECK_CONDITION(device->ops.fs.unlink);
+            CHECK_CONDITION(device->ops.fs.rename);
+            CHECK_CONDITION(device->ops.fs.truncate);
+            CHECK_CONDITION(device->ops.fs.mkdir);
+            CHECK_CONDITION(device->ops.fs.rmdir);
             break;
         }
         case OE_DEVICE_TYPE_SOCKET:
         {
-            if (!device->ops.base.release || !device->ops.socket.socket ||
-                !device->ops.socket.socketpair)
-            {
-                goto done;
-            }
-
+            CHECK_CONDITION(device->ops.socket.socket);
+            CHECK_CONDITION(device->ops.socket.socketpair);
             break;
         }
         case OE_DEVICE_TYPE_EPOLL:
         {
-            if (!device->ops.base.release || !device->ops.epoll.epoll_create ||
-                !device->ops.epoll.epoll_create1)
-            {
-                goto done;
-            }
-
+            CHECK_CONDITION(device->ops.epoll.epoll_create);
+            CHECK_CONDITION(device->ops.epoll.epoll_create1);
             break;
         }
         case OE_DEVICE_TYPE_EVENTFD:
         {
-            if (!device->ops.base.release || !device->ops.eventfd.eventfd)
-            {
-                goto done;
-            }
-
-            break;
-        }
-        default:
-        {
+            CHECK_CONDITION(device->ops.eventfd.eventfd);
             break;
         }
     }

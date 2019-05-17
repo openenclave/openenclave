@@ -145,6 +145,76 @@ done:
     return ret;
 }
 
+/* Raise and log an error if the condition is false. */
+#define CHECK_CONDITION(COND)                                         \
+    do                                                                \
+    {                                                                 \
+        if (!(COND))                                                  \
+            OE_RAISE_ERRNO_MSG(OE_EINVAL, "failed check: %s", #COND); \
+    } while (0)
+
+static int _check_fd(oe_fd_t* desc)
+{
+    int ret = -1;
+
+    CHECK_CONDITION(desc->ops.fd.read);
+    CHECK_CONDITION(desc->ops.fd.write);
+    CHECK_CONDITION(desc->ops.fd.dup);
+    CHECK_CONDITION(desc->ops.fd.ioctl);
+    CHECK_CONDITION(desc->ops.fd.fcntl);
+    CHECK_CONDITION(desc->ops.fd.close);
+    CHECK_CONDITION(desc->ops.fd.get_host_fd);
+
+    switch (desc->type)
+    {
+        case OE_FD_TYPE_NONE:
+        case OE_FD_TYPE_ANY:
+        {
+            goto done;
+        }
+        case OE_FD_TYPE_FILE:
+        {
+            CHECK_CONDITION(desc->ops.file.lseek);
+            CHECK_CONDITION(desc->ops.file.getdents);
+            break;
+        }
+        case OE_FD_TYPE_SOCKET:
+        {
+            CHECK_CONDITION(desc->ops.socket.connect);
+            CHECK_CONDITION(desc->ops.socket.accept);
+            CHECK_CONDITION(desc->ops.socket.bind);
+            CHECK_CONDITION(desc->ops.socket.listen);
+            CHECK_CONDITION(desc->ops.socket.send);
+            CHECK_CONDITION(desc->ops.socket.recv);
+            CHECK_CONDITION(desc->ops.socket.sendto);
+            CHECK_CONDITION(desc->ops.socket.recvfrom);
+            CHECK_CONDITION(desc->ops.socket.sendmsg);
+            CHECK_CONDITION(desc->ops.socket.recvmsg);
+            CHECK_CONDITION(desc->ops.socket.shutdown);
+            CHECK_CONDITION(desc->ops.socket.getsockopt);
+            CHECK_CONDITION(desc->ops.socket.setsockopt);
+            CHECK_CONDITION(desc->ops.socket.getpeername);
+            CHECK_CONDITION(desc->ops.socket.getsockname);
+            break;
+        }
+        case OE_FD_TYPE_EPOLL:
+        {
+            CHECK_CONDITION(desc->ops.epoll.epoll_ctl);
+            CHECK_CONDITION(desc->ops.epoll.epoll_wait);
+            break;
+        }
+        case OE_FD_TYPE_EVENTFD:
+        {
+            break;
+        }
+    }
+
+    ret = 0;
+
+done:
+    return ret;
+}
+
 /*
 **==============================================================================
 **
@@ -153,7 +223,7 @@ done:
 **==============================================================================
 */
 
-int oe_fdtable_assign(oe_fd_t* fd)
+int oe_fdtable_assign(oe_fd_t* desc)
 {
     int ret = -1;
     size_t index;
@@ -163,8 +233,11 @@ int oe_fdtable_assign(oe_fd_t* fd)
     if (_initialize() != 0)
         OE_RAISE_ERRNO(oe_errno);
 
-    if (!fd)
+    if (!desc)
         OE_RAISE_ERRNO(OE_EINVAL);
+
+    if (_check_fd(desc) != 0)
+        OE_RAISE_ERRNO_MSG(OE_EINVAL, "bad desc parameter: %u\n", desc->type);
 
     /* Find the first available file descriptor. */
     for (index = 0; index < _table_size; index++)
@@ -180,7 +253,7 @@ int oe_fdtable_assign(oe_fd_t* fd)
             OE_RAISE_ERRNO(OE_ENOMEM);
     }
 
-    _table[index] = fd;
+    _table[index] = desc;
     ret = (int)index;
 
 done:
@@ -226,6 +299,9 @@ int oe_fdtable_reassign(int fd, oe_fd_t* desc)
 
     if (_initialize() != 0)
         OE_RAISE_ERRNO(oe_errno);
+
+    if (desc && _check_fd(desc) != 0)
+        OE_RAISE_ERRNO_MSG(OE_EINVAL, "bad desc parameter: %u\n", desc->type);
 
     /* Make table big enough to contain this file-descriptor. */
     if (fd >= 0)

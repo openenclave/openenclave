@@ -41,7 +41,7 @@ typedef struct _device
 
 typedef struct _epoll
 {
-    oe_fd_t fd;
+    oe_fd_t base;
     uint32_t magic;
     oe_host_fd_t host_fd;
 
@@ -52,7 +52,7 @@ typedef struct _epoll
 
 } epoll_t;
 
-static oe_epoll_ops_t _get_epoll_operations(void);
+static oe_epoll_ops_t _get_epoll_ops(void);
 
 static device_t* _cast_device(const oe_device_t* device_)
 {
@@ -142,13 +142,13 @@ static oe_fd_t* _epoll_create1(oe_device_t* device_, int32_t flags)
 
     if (retval != -1)
     {
-        epoll->fd.type = OE_FD_TYPE_EPOLL;
+        epoll->base.type = OE_FD_TYPE_EPOLL;
+        epoll->base.ops.epoll = _get_epoll_ops();
         epoll->magic = EPOLL_MAGIC;
-        epoll->fd.ops.epoll = _get_epoll_operations();
         epoll->host_fd = retval;
     }
 
-    ret = &epoll->fd;
+    ret = &epoll->base;
     epoll = NULL;
 
 done:
@@ -562,20 +562,82 @@ done:
     return ret;
 }
 
-static oe_epoll_ops_t _epoll_operations = {
-    .fd.ioctl = _epoll_ioctl,
-    .fd.fcntl = _epoll_fcntl,
+static int _epoll_dup(oe_fd_t* epoll_, oe_fd_t** new_epoll_out)
+{
+    int ret = -1;
+    epoll_t* epoll = _cast_epoll(epoll_);
+    epoll_t* new_epoll = NULL;
+    oe_host_fd_t retval;
+
+    oe_errno = 0;
+
+    if (new_epoll_out)
+        *new_epoll_out = NULL;
+
+    /* Check parameters. */
+    if (!epoll)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    /* Call host: */
+    {
+        if (oe_posix_dup_ocall(&retval, epoll->host_fd) != OE_OK)
+            OE_RAISE_ERRNO(OE_EINVAL);
+
+        if (retval == -1)
+            OE_RAISE_ERRNO(oe_errno);
+    }
+
+    /* Create the new epoll object. */
+    {
+        if (!(new_epoll = oe_calloc(1, sizeof(epoll_t))))
+            OE_RAISE_ERRNO(oe_errno);
+
+        new_epoll->base.type = OE_FD_TYPE_EPOLL;
+        new_epoll->base.ops.epoll = _get_epoll_ops();
+        new_epoll->magic = EPOLL_MAGIC;
+        new_epoll->host_fd = retval;
+
+        if (epoll->map && epoll->map_size)
+        {
+            pair_t* map;
+
+            if (!(map = oe_calloc(epoll->map_size, sizeof(pair_t))))
+                OE_RAISE_ERRNO(OE_ENOMEM);
+
+            memcpy(map, epoll->map, epoll->map_size * sizeof(pair_t));
+            new_epoll->map = map;
+            new_epoll->map_size = epoll->map_size;
+        }
+
+        *new_epoll_out = &new_epoll->base;
+        new_epoll = NULL;
+    }
+
+    ret = 0;
+
+done:
+
+    if (new_epoll)
+        oe_free(new_epoll);
+
+    return ret;
+}
+
+static oe_epoll_ops_t _epoll_ops = {
     .fd.read = _epoll_read,
     .fd.write = _epoll_write,
+    .fd.dup = _epoll_dup,
+    .fd.ioctl = _epoll_ioctl,
+    .fd.fcntl = _epoll_fcntl,
     .fd.close = _epoll_close,
     .fd.get_host_fd = _epoll_gethostfd,
     .epoll_ctl = _epoll_ctl,
     .epoll_wait = _epoll_wait,
 };
 
-static oe_epoll_ops_t _get_epoll_operations(void)
+static oe_epoll_ops_t _get_epoll_ops(void)
 {
-    return _epoll_operations;
+    return _epoll_ops;
 }
 
 // clang-format off

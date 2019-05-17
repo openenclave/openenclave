@@ -203,7 +203,7 @@ done:
     return ret;
 }
 
-static int _hostfs_device_release(oe_device_t* device)
+static int _hostfs_release(oe_device_t* device)
 {
     int ret = -1;
     device_t* fs = _cast_device(device);
@@ -614,20 +614,6 @@ done:
     return ret;
 }
 
-static int _hostfs_release(oe_fd_t* file_)
-{
-    int ret = -1;
-    file_t* file = _cast_file(file_);
-
-    if (!file)
-        OE_RAISE_ERRNO(OE_EINVAL);
-
-    oe_free(file);
-
-done:
-    return ret;
-}
-
 static int _hostfs_ioctl(oe_fd_t* file_, unsigned long request, uint64_t arg)
 {
     int ret = -1;
@@ -1001,7 +987,6 @@ static oe_file_ops_t _file_ops = {
     .fd.ioctl = _hostfs_ioctl,
     .fd.fcntl = _hostfs_fcntl,
     .fd.close = _hostfs_close,
-    .fd.release = _hostfs_release,
     .fd.get_host_fd = _hostfs_get_host_fd,
     .lseek = _hostfs_lseek,
     .getdents = _hostfs_getdents,
@@ -1017,7 +1002,7 @@ static device_t _hostfs = {
     .base.name = OE_DEVICE_NAME_HOST_FILE_SYSTEM,
     .base.ops.fs =
         {
-            .base.release = _hostfs_device_release,
+            .base.release = _hostfs_release,
             .clone = _hostfs_clone,
             .mount = _hostfs_mount,
             .umount = _hostfs_umount,

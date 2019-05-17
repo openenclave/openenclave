@@ -1014,13 +1014,13 @@ done:
 }
 
 static oe_file_ops_t _file_operations = {
+    .fd.read = _sgxfs_read,
+    .fd.write = _sgxfs_write,
     .fd.dup = _sgxfs_dup,
     .fd.ioctl = _sgxfs_ioctl,
     .fd.fcntl = _sgxfs_fcntl,
-    .fd.read = _sgxfs_read,
-    .fd.write = _sgxfs_write,
-    .fd.get_host_fd = _sgxfs_gethostfd,
     .fd.close = _sgxfs_close,
+    .fd.get_host_fd = _sgxfs_gethostfd,
     .lseek = _sgxfs_lseek,
     .getdents = _sgxfs_getdents,
 };

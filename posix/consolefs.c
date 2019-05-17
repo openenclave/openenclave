@@ -72,20 +72,6 @@ done:
     return ret;
 }
 
-static int _consolefs_release(oe_fd_t* desc)
-{
-    int ret = -1;
-
-    if (!desc)
-        OE_RAISE_ERRNO(OE_EINVAL);
-
-    /* Free the desc without closing the file descriptor. */
-    oe_free(desc);
-
-done:
-    return ret;
-}
-
 static int _consolefs_ioctl(oe_fd_t* desc, unsigned long request, uint64_t arg)
 {
     int ret = -1;
@@ -212,7 +198,6 @@ done:
 
 static oe_file_ops_t _ops = {
     .fd.dup = _consolefs_dup,
-    .fd.release = _consolefs_release,
     .fd.ioctl = _consolefs_ioctl,
     .fd.fcntl = _consolefs_fcntl,
     .fd.read = _consolefs_read,
