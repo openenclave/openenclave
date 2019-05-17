@@ -80,13 +80,56 @@ static int _check_device(oe_device_t* device)
 {
     int ret = -1;
 
-    if (device->type == OE_DEVICE_TYPE_FILESYSTEM)
+    switch (device->type)
     {
-        if (!device->ops.base.release)
-            goto done;
+        case OE_DEVICE_TYPE_FILE_SYSTEM:
+        {
+            if (!device->ops.base.release || !device->ops.fs.clone ||
+                !device->ops.fs.mount || !device->ops.fs.umount ||
+                !device->ops.fs.open || !device->ops.fs.stat ||
+                !device->ops.fs.access || !device->ops.fs.link ||
+                !device->ops.fs.unlink || !device->ops.fs.rename ||
+                !device->ops.fs.truncate || !device->ops.fs.mkdir ||
+                !device->ops.fs.rmdir)
+            {
+                goto done;
+            }
 
-        if (!device->ops.fs.open)
-            goto done;
+            break;
+        }
+        case OE_DEVICE_TYPE_SOCKET:
+        {
+            if (!device->ops.base.release || !device->ops.socket.socket ||
+                !device->ops.socket.socketpair)
+            {
+                goto done;
+            }
+
+            break;
+        }
+        case OE_DEVICE_TYPE_EPOLL:
+        {
+            if (!device->ops.base.release || !device->ops.epoll.epoll_create ||
+                !device->ops.epoll.epoll_create1)
+            {
+                goto done;
+            }
+
+            break;
+        }
+        case OE_DEVICE_TYPE_EVENTFD:
+        {
+            if (!device->ops.base.release || !device->ops.eventfd.eventfd)
+            {
+                goto done;
+            }
+
+            break;
+        }
+        default:
+        {
+            break;
+        }
     }
 
     ret = 0;

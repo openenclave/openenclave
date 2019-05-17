@@ -42,7 +42,7 @@ int oe_rename_d(uint64_t devid, const char* oldpath, const char* newpath)
     {
         oe_device_t* dev;
 
-        if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
+        if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILE_SYSTEM)))
             OE_RAISE_ERRNO(OE_EINVAL);
 
         if ((ret = dev->ops.fs.rename(dev, oldpath, newpath)) == -1)

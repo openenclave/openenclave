@@ -466,7 +466,7 @@ done:
     return ret;
 }
 
-static int _epoll_shutdown(oe_device_t* epoll_)
+static int _epoll_release(oe_device_t* epoll_)
 {
     int ret = -1;
     device_t* epoll = _cast_device(epoll_);
@@ -584,7 +584,7 @@ static device_t _device = {
     .fd.name = OE_DEVICE_NAME_HOST_EPOLL,
     .fd.ops.epoll =
     {
-        .base.release = _epoll_shutdown,
+        .base.release = _epoll_release,
         .epoll_create = _epoll_create,
         .epoll_create1 = _epoll_create1,
     },

@@ -165,7 +165,7 @@ done:
     return ret;
 }
 
-static int _hostfs_unmount(oe_device_t* dev, const char* target)
+static int _hostfs_umount(oe_device_t* dev, const char* target)
 {
     int ret = -1;
     device_t* fs = _cast_device(dev);
@@ -1013,14 +1013,14 @@ static oe_file_ops_t _get_file_ops(void)
 };
 
 static device_t _hostfs = {
-    .base.type = OE_DEVICE_TYPE_FILESYSTEM,
+    .base.type = OE_DEVICE_TYPE_FILE_SYSTEM,
     .base.name = OE_DEVICE_NAME_HOST_FILE_SYSTEM,
     .base.ops.fs =
         {
             .base.release = _hostfs_device_release,
             .clone = _hostfs_clone,
             .mount = _hostfs_mount,
-            .unmount = _hostfs_unmount,
+            .umount = _hostfs_umount,
             .open = _hostfs_open,
             .stat = _hostfs_stat,
             .access = _hostfs_access,

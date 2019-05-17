@@ -12,6 +12,16 @@
 
 OE_EXTERNC_BEGIN
 
+typedef enum _oe_device_type
+{
+    OE_DEVICE_TYPE_NONE = 0,
+    OE_DEVICE_TYPE_ANY,
+    OE_DEVICE_TYPE_FILE_SYSTEM,
+    OE_DEVICE_TYPE_SOCKET,
+    OE_DEVICE_TYPE_EPOLL,
+    OE_DEVICE_TYPE_EVENTFD,
+} oe_device_type_t;
+
 typedef struct _oe_device oe_device_t;
 
 typedef struct _oe_device_ops
@@ -32,7 +42,7 @@ typedef struct _oe_fs_device_ops
         const char* target,
         unsigned long flags);
 
-    int (*unmount)(oe_device_t* fs, const char* target);
+    int (*umount)(oe_device_t* fs, const char* target);
 
     oe_fd_t* (*open)(
         oe_device_t* fs,
@@ -90,16 +100,6 @@ typedef struct _oe_eventfd_device_ops
     oe_fd_t* (*eventfd)(oe_device_t* dev, unsigned int initval, int flags);
 
 } oe_eventfd_device_ops_t;
-
-typedef enum _oe_device_type
-{
-    OE_DEVICE_TYPE_NONE = 0,
-    OE_DEVICE_TYPE_ANY,
-    OE_DEVICE_TYPE_FILESYSTEM,
-    OE_DEVICE_TYPE_SOCKET,
-    OE_DEVICE_TYPE_EPOLL,
-    OE_DEVICE_TYPE_EVENTFD,
-} oe_device_type_t;
 
 typedef struct _oe_device oe_device_t;
 
