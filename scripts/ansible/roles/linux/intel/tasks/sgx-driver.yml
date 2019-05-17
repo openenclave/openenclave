@@ -2,8 +2,13 @@
 # Licensed under the MIT License.
 
 ---
-- name: Intel SGX Driver | Include vars
-  include_vars: "{{ ansible_distribution_release | lower }}.yml"
+- name: Include distribution vars
+  include_vars:
+    file: "{{ ansible_distribution | lower }}.yml"
+
+- name: Include distribution release specific vars
+  include_vars:
+    file: "{{ ansible_distribution_release | lower }}.yml"
 
 - name: Install the dkms package
   apt:

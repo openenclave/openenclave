@@ -1,4 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-ansible_ssh_user: azureuser
+---
+validation_files:
+  - "/usr/lib/libdcap_quoteprov.so"

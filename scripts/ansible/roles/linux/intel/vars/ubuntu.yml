@@ -1,0 +1,16 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+---
+intel_sgx_packages:
+  - "libsgx-enclave-common"
+  - "libsgx-enclave-common-dev"
+  - "libsgx-dcap-ql"
+  - "libsgx-dcap-ql-dev"
+
+validation_directories:
+  - "/opt/intel/sgxdriver"
+  - "/opt/intel/libsgx-enclave-common"
+
+validation_files:
+  - "/usr/lib/x86_64-linux-gnu/libsgx_dcap_ql.so"
