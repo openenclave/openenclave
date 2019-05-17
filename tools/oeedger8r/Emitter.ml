@@ -121,7 +121,7 @@ let oe_gen_marshal_struct =
     let need_strlen p =
       (is_str_ptr p || is_wstr_ptr p) && (is_in_ptr p || is_inout_ptr p)
     in
-    [ sprintf "%s %s%s;" tystr decl.identifier (get_array_dims decl.array_dims)
+    [ sprintf "%s %s;" tystr decl.identifier
     ; ( if need_strlen ptype then sprintf "size_t %s_len;" decl.identifier
       else "" ) ]
   in
