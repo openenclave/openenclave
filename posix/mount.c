@@ -13,6 +13,7 @@
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/posix/raise.h>
+#include <openenclave/internal/posix/lock.h>
 #include <openenclave/bits/safecrt.h>
 
 #define MAX_MOUNT_TABLE_SIZE 64
@@ -42,6 +43,7 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
     oe_device_t* ret = NULL;
     size_t match_len = 0;
     char realpath[OE_PATH_MAX];
+    bool locked = false;
 
     if (!path || !suffix)
         OE_RAISE_ERRNO(OE_EINVAL);
@@ -71,53 +73,53 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
     if (!oe_realpath(path, realpath))
         OE_RAISE_ERRNO(oe_errno);
 
-    oe_spin_lock(&_lock);
+    oe_conditional_lock(&_lock, &locked);
+
+    /* Find the longest binding point that contains this path. */
+    for (size_t i = 0; i < _mount_table_size; i++)
     {
-        /* Find the longest binding point that contains this path. */
-        for (size_t i = 0; i < _mount_table_size; i++)
+        size_t len = oe_strlen(_mount_table[i].path);
+        const char* mpath = _mount_table[i].path;
+
+        if (mpath[0] == '/' && mpath[1] == '\0')
         {
-            size_t len = oe_strlen(_mount_table[i].path);
-            const char* mpath = _mount_table[i].path;
-
-            if (mpath[0] == '/' && mpath[1] == '\0')
+            if (len > match_len)
             {
-                if (len > match_len)
+                if (suffix)
                 {
-                    if (suffix)
-                    {
-                        oe_strlcpy(suffix, realpath, OE_PATH_MAX);
-                    }
-
-                    match_len = len;
-                    ret = _mount_table[i].fs;
+                    oe_strlcpy(suffix, realpath, OE_PATH_MAX);
                 }
+
+                match_len = len;
+                ret = _mount_table[i].fs;
             }
-            else if (
-                oe_strncmp(mpath, realpath, len) == 0 &&
-                (realpath[len] == '/' || realpath[len] == '\0'))
+        }
+        else if (
+            oe_strncmp(mpath, realpath, len) == 0 &&
+            (realpath[len] == '/' || realpath[len] == '\0'))
+        {
+            if (len > match_len)
             {
-                if (len > match_len)
+                if (suffix)
                 {
-                    if (suffix)
-                    {
-                        oe_strlcpy(suffix, realpath + len, OE_PATH_MAX);
+                    oe_strlcpy(suffix, realpath + len, OE_PATH_MAX);
 
-                        if (*suffix == '\0')
-                            oe_strlcpy(suffix, "/", OE_PATH_MAX);
-                    }
-
-                    match_len = len;
-                    ret = _mount_table[i].fs;
+                    if (*suffix == '\0')
+                        oe_strlcpy(suffix, "/", OE_PATH_MAX);
                 }
+
+                match_len = len;
+                ret = _mount_table[i].fs;
             }
         }
     }
-    oe_spin_unlock(&_lock);
 
     if (!ret)
         OE_RAISE_ERRNO_MSG(OE_ENOENT, "path=%s", path);
 
 done:
+    oe_conditional_unlock(&_lock, &locked);
+
     return ret;
 }
 
@@ -157,8 +159,7 @@ int oe_mount(
     }
 
     /* Lock the mount table. */
-    oe_spin_lock(&_lock);
-    locked = true;
+    oe_conditional_lock(&_lock, &locked);
 
     /* Install _free_mount_table() if not already installed. */
     if (_installed_free_mount_table == false)
@@ -218,8 +219,7 @@ int oe_mount(
 
 done:
 
-    if (locked)
-        oe_spin_unlock(&_lock);
+    oe_conditional_unlock(&_lock, &locked);
 
     if (new_device)
         new_device->ops.device.release(new_device);
@@ -240,8 +240,7 @@ int oe_umount2(const char* target, int flags)
     if (!device || device->type != OE_DEVICE_TYPE_FILE_SYSTEM || !target)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    oe_spin_lock(&_lock);
-    locked = true;
+    oe_conditional_lock(&_lock, &locked);
 
     /* Find and remove this device. */
     for (size_t i = 0; i < _mount_table_size; i++)
@@ -276,8 +275,7 @@ int oe_umount2(const char* target, int flags)
 
 done:
 
-    if (locked)
-        oe_spin_unlock(&_lock);
+    oe_conditional_unlock(&_lock, &locked);
 
     return ret;
 }

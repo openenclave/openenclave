@@ -7,6 +7,7 @@
 #include <openenclave/corelibc/sys/socket.h>
 #include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/posix/fdtable.h>
+#include <openenclave/internal/posix/lock.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/thread.h>
@@ -17,16 +18,16 @@ static oe_spinlock_t _default_socket_devid_lock;
 
 void oe_set_default_socket_devid(uint64_t devid)
 {
-    oe_spin_lock(&_default_socket_devid_lock);
+    oe_conditional_lock(&_default_socket_devid_lock, NULL);
     _default_socket_devid = devid;
-    oe_spin_unlock(&_default_socket_devid_lock);
+    oe_conditional_unlock(&_default_socket_devid_lock, NULL);
 }
 
 uint64_t oe_get_default_socket_devid(void)
 {
-    oe_spin_lock(&_default_socket_devid_lock);
+    oe_conditional_lock(&_default_socket_devid_lock, NULL);
     uint64_t ret = _default_socket_devid;
-    oe_spin_unlock(&_default_socket_devid_lock);
+    oe_conditional_unlock(&_default_socket_devid_lock, NULL);
     return ret;
 }
 
@@ -140,7 +141,7 @@ int oe_connect(int sockfd, const struct oe_sockaddr* addr, oe_socklen_t addrlen)
     oe_fd_t* sock;
 
     if (!(sock = oe_fdtable_get(sockfd, OE_FD_TYPE_SOCKET)))
-        OE_RAISE_ERRNO(OE_EBADF);
+        OE_RAISE_ERRNO(oe_errno);
 
     ret = sock->ops.socket.connect(sock, addr, addrlen);
 
@@ -155,7 +156,7 @@ int oe_accept(int sockfd, struct oe_sockaddr* addr, oe_socklen_t* addrlen)
     int ret = -1;
 
     if (!(sock = oe_fdtable_get(sockfd, OE_FD_TYPE_SOCKET)))
-        OE_RAISE_ERRNO(OE_EBADF);
+        OE_RAISE_ERRNO(oe_errno);
 
     if ((new_sock = sock->ops.socket.accept(sock, addr, addrlen)) == NULL)
         OE_RAISE_ERRNO(oe_errno);
@@ -179,7 +180,7 @@ int oe_listen(int sockfd, int backlog)
     oe_fd_t* sock;
 
     if (!(sock = oe_fdtable_get(sockfd, OE_FD_TYPE_SOCKET)))
-        OE_RAISE_ERRNO(OE_EBADFD);
+        OE_RAISE_ERRNO(oe_errno);
 
     ret = sock->ops.socket.listen(sock, backlog);
 
@@ -193,7 +194,7 @@ ssize_t oe_recv(int sockfd, void* buf, size_t len, int flags)
     oe_fd_t* sock;
 
     if (!(sock = oe_fdtable_get(sockfd, OE_FD_TYPE_SOCKET)))
-        OE_RAISE_ERRNO(OE_EBADFD);
+        OE_RAISE_ERRNO(oe_errno);
 
     ret = sock->ops.socket.recv(sock, buf, len, flags);
 
@@ -213,7 +214,7 @@ ssize_t oe_recvfrom(
     oe_fd_t* sock;
 
     if (!(sock = oe_fdtable_get(sockfd, OE_FD_TYPE_SOCKET)))
-        OE_RAISE_ERRNO(OE_EBADFD);
+        OE_RAISE_ERRNO(oe_errno);
 
     ret = sock->ops.socket.recvfrom(sock, buf, len, flags, src_addr, addrlen);
 
@@ -227,7 +228,7 @@ ssize_t oe_send(int sockfd, const void* buf, size_t len, int flags)
     oe_fd_t* sock;
 
     if (!(sock = oe_fdtable_get(sockfd, OE_FD_TYPE_SOCKET)))
-        OE_RAISE_ERRNO(OE_EBADFD);
+        OE_RAISE_ERRNO(oe_errno);
 
     ret = sock->ops.socket.send(sock, buf, len, flags);
 
@@ -247,7 +248,7 @@ ssize_t oe_sendto(
     oe_fd_t* sock;
 
     if (!(sock = oe_fdtable_get(sockfd, OE_FD_TYPE_SOCKET)))
-        OE_RAISE_ERRNO(OE_EBADFD);
+        OE_RAISE_ERRNO(oe_errno);
 
     ret = sock->ops.socket.sendto(sock, buf, len, flags, dest_addr, addrlen);
 
@@ -261,7 +262,7 @@ ssize_t oe_recvmsg(int sockfd, struct oe_msghdr* buf, int flags)
     oe_fd_t* sock;
 
     if (!(sock = oe_fdtable_get(sockfd, OE_FD_TYPE_SOCKET)))
-        OE_RAISE_ERRNO(OE_EBADFD);
+        OE_RAISE_ERRNO(oe_errno);
 
     ret = sock->ops.socket.recvmsg(sock, buf, flags);
 
@@ -275,7 +276,7 @@ ssize_t oe_sendmsg(int sockfd, const struct oe_msghdr* buf, int flags)
     oe_fd_t* sock;
 
     if (!(sock = oe_fdtable_get(sockfd, OE_FD_TYPE_SOCKET)))
-        OE_RAISE_ERRNO(OE_EBADFD);
+        OE_RAISE_ERRNO(oe_errno);
 
     ret = sock->ops.socket.sendmsg(sock, buf, flags);
 
@@ -289,7 +290,7 @@ int oe_shutdown(int sockfd, int how)
     oe_fd_t* sock;
 
     if (!(sock = oe_fdtable_get(sockfd, OE_FD_TYPE_SOCKET)))
-        OE_RAISE_ERRNO(OE_EBADFD);
+        OE_RAISE_ERRNO(oe_errno);
 
     ret = sock->ops.socket.shutdown(sock, how);
 
@@ -303,7 +304,7 @@ int oe_getsockname(int sockfd, struct oe_sockaddr* addr, oe_socklen_t* addrlen)
     oe_fd_t* sock;
 
     if (!(sock = oe_fdtable_get(sockfd, OE_FD_TYPE_SOCKET)))
-        OE_RAISE_ERRNO(OE_EBADFD);
+        OE_RAISE_ERRNO(oe_errno);
 
     ret = sock->ops.socket.getsockname(sock, addr, addrlen);
 
@@ -317,7 +318,7 @@ int oe_getpeername(int sockfd, struct oe_sockaddr* addr, oe_socklen_t* addrlen)
     oe_fd_t* sock;
 
     if (!(sock = oe_fdtable_get(sockfd, OE_FD_TYPE_SOCKET)))
-        OE_RAISE_ERRNO(OE_EBADFD);
+        OE_RAISE_ERRNO(oe_errno);
 
     ret = sock->ops.socket.getpeername(sock, addr, addrlen);
 
@@ -336,7 +337,7 @@ int oe_getsockopt(
     oe_fd_t* sock;
 
     if (!(sock = oe_fdtable_get(sockfd, OE_FD_TYPE_SOCKET)))
-        OE_RAISE_ERRNO(OE_EBADFD);
+        OE_RAISE_ERRNO(oe_errno);
 
     ret = sock->ops.socket.getsockopt(sock, level, optname, optval, optlen);
 
@@ -355,7 +356,7 @@ int oe_setsockopt(
     oe_fd_t* sock;
 
     if (!(sock = oe_fdtable_get(sockfd, OE_FD_TYPE_SOCKET)))
-        OE_RAISE_ERRNO(OE_EBADFD);
+        OE_RAISE_ERRNO(oe_errno);
 
     ret = sock->ops.socket.setsockopt(sock, level, optname, optval, optlen);
 
@@ -369,7 +370,7 @@ int oe_bind(int sockfd, const struct oe_sockaddr* name, oe_socklen_t namelen)
     oe_fd_t* sock;
 
     if (!(sock = oe_fdtable_get(sockfd, OE_FD_TYPE_SOCKET)))
-        OE_RAISE_ERRNO(OE_EBADFD);
+        OE_RAISE_ERRNO(oe_errno);
 
     ret = sock->ops.socket.bind(sock, name, namelen);
 

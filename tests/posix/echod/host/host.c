@@ -4,6 +4,7 @@
 #define OE_LIBC_SUPPRESS_DEPRECATIONS
 #include <openenclave/host.h>
 #include <openenclave/internal/tests.h>
+
 #if defined(_MSC_VER)
 #define OE_NEED_STD_NAMES
 // clang-format off
@@ -23,6 +24,7 @@ typedef SOCKET socket_t;
 typedef int socket_t;
 #include <stdio.h>
 #include "echod_u.h"
+#endif
 
 static const uint16_t PORT = 12345;
 static oe_enclave_t* _enclave;
@@ -114,7 +116,12 @@ void run_server_and_clients(void)
 
 #if defined(_WIN32)
     server = CreateThread(
-        NULL, 0, (LPTHREAD_START_ROUTINE)_server_thread_start_routine, NULL, 0, NULL);
+        NULL,
+        0,
+        (LPTHREAD_START_ROUTINE)_server_thread_start_routine,
+        NULL,
+        0,
+        NULL);
     OE_TEST(server != INVALID_HANDLE_VALUE);
 #else
     if (pthread_create(&server, NULL, _server_thread_start_routine, NULL) != 0)
@@ -127,7 +134,12 @@ void run_server_and_clients(void)
 
 #if defined(_WIN32)
     client = CreateThread(
-        NULL, 0, (LPTHREAD_START_ROUTINE)_client_thread_start_routine, NULL, 0, NULL);
+        NULL,
+        0,
+        (LPTHREAD_START_ROUTINE)_client_thread_start_routine,
+        NULL,
+        0,
+        NULL);
     OE_TEST(server != INVALID_HANDLE_VALUE);
 #else
     if (pthread_create(&client, NULL, _client_thread_start_routine, NULL) != 0)

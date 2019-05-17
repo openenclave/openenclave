@@ -22,14 +22,13 @@ int oe_epoll_create(int size)
 {
     int ret = -1;
     int epfd = -1;
-    oe_device_t* device = NULL;
+    oe_device_t* dev = NULL;
     oe_fd_t* epoll = NULL;
 
-    if (!(device =
-              oe_device_table_get(OE_DEVID_HOST_EPOLL, OE_DEVICE_TYPE_EPOLL)))
-        OE_RAISE_ERRNO(OE_EINVAL);
+    if (!(dev = oe_device_table_get(OE_DEVID_HOST_EPOLL, OE_DEVICE_TYPE_EPOLL)))
+        OE_RAISE_ERRNO(OE_ENOSYS);
 
-    if (!(epoll = device->ops.epoll.epoll_create(device, size)))
+    if (!(epoll = dev->ops.epoll.epoll_create(dev, size)))
         OE_RAISE_ERRNO(oe_errno);
 
     if ((epfd = oe_fdtable_assign(epoll)) == -1)
@@ -49,14 +48,13 @@ done:
 int oe_epoll_create1(int flags)
 {
     int epfd = -1;
-    oe_device_t* device = NULL;
+    oe_device_t* dev = NULL;
     oe_fd_t* epoll = NULL;
 
-    if (!(device =
-              oe_device_table_get(OE_DEVID_HOST_EPOLL, OE_DEVICE_TYPE_EPOLL)))
-        OE_RAISE_ERRNO(OE_EINVAL);
+    if (!(dev = oe_device_table_get(OE_DEVID_HOST_EPOLL, OE_DEVICE_TYPE_EPOLL)))
+        OE_RAISE_ERRNO(OE_ENOSYS);
 
-    if (!(epoll = device->ops.epoll.epoll_create1(device, flags)))
+    if (!(epoll = dev->ops.epoll.epoll_create1(dev, flags)))
         OE_RAISE_ERRNO(oe_errno);
 
     if ((epfd = oe_fdtable_assign(epoll)) == -1)
@@ -78,7 +76,10 @@ int oe_epoll_ctl(int epfd, int op, int fd, struct oe_epoll_event* event)
     oe_fd_t* epoll;
 
     if (!(epoll = oe_fdtable_get(epfd, OE_FD_TYPE_EPOLL)))
-        OE_RAISE_ERRNO(OE_EBADF);
+        OE_RAISE_ERRNO(oe_errno);
+
+    if (!oe_fdtable_get(fd, OE_FD_TYPE_ANY))
+        OE_RAISE_ERRNO(oe_errno);
 
     ret = epoll->ops.epoll.epoll_ctl(epoll, op, fd, event);
 
@@ -96,7 +97,7 @@ int oe_epoll_wait(
     oe_fd_t* epoll;
 
     if (!(epoll = oe_fdtable_get(epfd, OE_FD_TYPE_EPOLL)))
-        OE_RAISE_ERRNO(OE_EBADF);
+        OE_RAISE_ERRNO(oe_errno);
 
     ret = epoll->ops.epoll.epoll_wait(epoll, events, maxevents, timeout);
 
@@ -115,7 +116,7 @@ int oe_epoll_pwait(
     int ret = -1;
 
     if (sigmask)
-        OE_RAISE_ERRNO(OE_ENOTSUP);
+        OE_RAISE_ERRNO(OE_ENOSYS);
 
     ret = oe_epoll_wait(epfd, events, maxevents, timeout);
 
@@ -129,6 +130,9 @@ int oe_epoll_wake(void)
     int retval;
 
     if (oe_posix_epoll_wake_ocall(&retval) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    if (retval != 0)
         OE_RAISE_ERRNO(oe_errno);
 
     ret = retval;

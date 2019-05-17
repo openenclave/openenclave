@@ -17,8 +17,8 @@ OE_EXTERNC_BEGIN
 **==============================================================================
 */
 
-#if defined(__arm__)
-#include <openenclave/corelibc/sys/bits/syscall_arm.h>
+#if defined(__aarch64__)
+#include <openenclave/corelibc/sys/bits/syscall_aarch64.h>
 #elif defined(__x86_64__)
 #include <openenclave/corelibc/sys/bits/syscall_x86_64.h>
 #else

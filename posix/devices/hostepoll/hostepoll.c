@@ -171,7 +171,7 @@ static oe_fd_t* _epoll_create(oe_device_t* device_, int size)
 static int _epoll_ctl_add(epoll_t* epoll, int fd, struct oe_epoll_event* event)
 {
     int ret = -1;
-    oe_fd_t* desc = oe_fdtable_get(fd, OE_FD_TYPE_ANY);
+    oe_fd_t* desc;
     oe_host_fd_t host_epfd;
     oe_host_fd_t host_fd;
     struct oe_epoll_event host_event;
@@ -180,8 +180,11 @@ static int _epoll_ctl_add(epoll_t* epoll, int fd, struct oe_epoll_event* event)
     oe_errno = 0;
 
     /* Check parameters. */
-    if (!epoll || !desc || !event)
+    if (!epoll || !event)
         OE_RAISE_ERRNO(OE_EINVAL);
+
+    if (!(desc = oe_fdtable_get(fd, OE_FD_TYPE_ANY)))
+        OE_RAISE_ERRNO(oe_errno);
 
     /* Get the host fd for the epoll object. */
     host_epfd = epoll->host_fd;
@@ -234,7 +237,7 @@ done:
 static int _epoll_ctl_mod(epoll_t* epoll, int fd, struct oe_epoll_event* event)
 {
     int ret = -1;
-    oe_fd_t* desc = oe_fdtable_get(fd, OE_FD_TYPE_ANY);
+    oe_fd_t* desc;
     oe_host_fd_t host_epfd;
     oe_host_fd_t host_fd;
     struct oe_epoll_event host_event;
@@ -243,8 +246,11 @@ static int _epoll_ctl_mod(epoll_t* epoll, int fd, struct oe_epoll_event* event)
     oe_errno = 0;
 
     /* Check parameters. */
-    if (!epoll || !desc || !event)
+    if (!epoll || !event)
         OE_RAISE_ERRNO(OE_EINVAL);
+
+    if (!(desc = oe_fdtable_get(fd, OE_FD_TYPE_ANY)))
+        OE_RAISE_ERRNO(oe_errno);
 
     /* Get the host fd for the epoll device. */
     host_epfd = epoll->host_fd;
@@ -296,7 +302,7 @@ done:
 static int _epoll_ctl_del(epoll_t* epoll, int fd)
 {
     int ret = -1;
-    oe_fd_t* desc = oe_fdtable_get(fd, OE_FD_TYPE_ANY);
+    oe_fd_t* desc;
     oe_host_fd_t host_epfd;
     oe_host_fd_t host_fd;
     int retval;
@@ -304,8 +310,11 @@ static int _epoll_ctl_del(epoll_t* epoll, int fd)
     oe_errno = 0;
 
     /* Check parameters. */
-    if (!epoll || !desc)
+    if (!epoll)
         OE_RAISE_ERRNO(OE_EINVAL);
+
+    if (!(desc = oe_fdtable_get(fd, OE_FD_TYPE_ANY)))
+        OE_RAISE_ERRNO(oe_errno);
 
     /* Get the host fd for the epoll device. */
     host_epfd = epoll->host_fd;

@@ -253,7 +253,7 @@ static oe_eventfd_ops_t _get_eventfd_ops()
 
 // clang-format off
 static device_t _eventfd = {
-    .base.type = OE_DEVID_EVENTFD,
+    .base.type = OE_DEVICE_TYPE_EVENTFD,
     .base.name = OE_DEVICE_NAME_EVENTFD,
     .base.ops.eventfd =
     {

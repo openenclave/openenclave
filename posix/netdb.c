@@ -4,6 +4,7 @@
 #include <openenclave/corelibc/netdb.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/sys/socket.h>
+#include <openenclave/internal/posix/lock.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/posix/resolver.h>
 #include <openenclave/internal/thread.h>
@@ -23,8 +24,7 @@ static void _atexit_handler(void)
 int oe_register_resolver(oe_resolver_t* resolver)
 {
     int ret = -1;
-
-    oe_spin_lock(&_lock);
+    bool locked = false;
 
     /* Check parameters. */
     if (!resolver || !resolver->ops || !resolver->ops->getaddrinfo ||
@@ -32,6 +32,8 @@ int oe_register_resolver(oe_resolver_t* resolver)
     {
         OE_RAISE_ERRNO(OE_EINVAL);
     }
+
+    oe_conditional_lock(&_lock, &locked);
 
     /* This function can be called only once. */
     if (_resolver != NULL)
@@ -48,7 +50,7 @@ int oe_register_resolver(oe_resolver_t* resolver)
     ret = 0;
 
 done:
-    oe_spin_unlock(&_lock);
+    oe_conditional_unlock(&_lock, &locked);
 
     return ret;
 }
@@ -61,14 +63,15 @@ int oe_getaddrinfo(
 {
     int ret = OE_EAI_FAIL;
     struct oe_addrinfo* res;
-
-    oe_spin_lock(&_lock);
+    bool locked = false;
 
     if (res_out)
         *res_out = NULL;
 
     if (!_resolver)
         OE_RAISE_ERRNO(OE_EINVAL);
+
+    oe_conditional_lock(&_lock, &locked);
 
     if ((*_resolver->ops->getaddrinfo)(_resolver, node, service, hints, &res) ==
         0)
@@ -79,7 +82,7 @@ int oe_getaddrinfo(
     }
 
 done:
-    oe_spin_unlock(&_lock);
+    oe_conditional_unlock(&_lock, &locked);
 
     return ret;
 }
@@ -94,17 +97,18 @@ int oe_getnameinfo(
     int flags)
 {
     ssize_t ret = -1;
-
-    oe_spin_lock(&_lock);
+    bool locked = false;
 
     if (!_resolver)
         OE_RAISE_ERRNO(OE_EINVAL);
+
+    oe_conditional_lock(&_lock, &locked);
 
     ret = (*_resolver->ops->getnameinfo)(
         _resolver, sa, salen, host, hostlen, serv, servlen, flags);
 
 done:
-    oe_spin_unlock(&_lock);
+    oe_conditional_unlock(&_lock, &locked);
 
     return (int)ret;
 }

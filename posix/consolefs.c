@@ -148,13 +148,11 @@ done:
 static oe_off_t _consolefs_lseek(oe_fd_t* file_, oe_off_t offset, int whence)
 {
     oe_off_t ret = -1;
-    file_t* file = _cast_file(file_);
 
-    if (!file)
-        OE_RAISE_ERRNO(OE_EINVAL);
-
-    if (oe_posix_lseek_ocall(&ret, file->host_fd, offset, whence) != OE_OK)
-        OE_RAISE_ERRNO(OE_EINVAL);
+    OE_UNUSED(file_);
+    OE_UNUSED(offset);
+    OE_UNUSED(whence);
+    OE_RAISE_ERRNO(OE_ESPIPE);
 
 done:
     return ret;
