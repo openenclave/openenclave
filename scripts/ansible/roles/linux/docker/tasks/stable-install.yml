@@ -2,6 +2,14 @@
 # Licensed under the MIT License.
 
 ---
+- name: Include distribution vars
+  include_vars:
+    file: "{{ ansible_distribution | lower }}.yml"
+
+- name: Include distribution release specific vars
+  include_vars:
+    file: "{{ ansible_distribution_release | lower }}.yml"
+
 - name: Docker | Add the APT repository key
   apt_key:
     url: "https://download.docker.com/linux/ubuntu/gpg"
@@ -10,10 +18,6 @@
   delay: 10
   register: result
   until: result is success
-
-- name: Include vars
-  include_vars:
-    file: "{{ ansible_distribution_release | lower }}.yml"
 
 - name: Docker | Add the APT repository
   apt_repository:

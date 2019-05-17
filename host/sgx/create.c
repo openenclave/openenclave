@@ -647,6 +647,9 @@ oe_result_t oe_create_enclave(
         OE_RAISE(OE_OUT_OF_MEMORY);
 
 #if defined(_WIN32)
+    /* Disable simulation mode on windows */
+    if (flags & OE_ENCLAVE_FLAG_SIMULATE)
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Create Windows events for each TCS binding. Enclaves use
      * this event when calling into the host to handle waits/wakes

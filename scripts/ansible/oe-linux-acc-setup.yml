@@ -22,3 +22,15 @@
     - import_role:
         name: linux/az-dcap-client
         tasks_from: stable-install.yml
+
+    - import_role:
+        name: linux/openenclave
+        tasks_from: validation.yml
+
+    - import_role:
+        name: linux/intel
+        tasks_from: validation.yml
+
+    - import_role:
+        name: linux/az-dcap-client
+        tasks_from: validation.yml

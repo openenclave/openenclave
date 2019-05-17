@@ -265,9 +265,19 @@ typedef enum _oe_result
     OE_UNSUPPORTED_ENCLAVE_IMAGE,
 
     /**
-     * The CRL for a PCK certification expired
+     * The CRL for a certificate has expired.
      */
     OE_VERIFY_CRL_EXPIRED,
+
+    /**
+     * The CRL for a certificate could not be found.
+     */
+    OE_VERIFY_CRL_MISSING,
+
+    /**
+     * The certificate or signature has been revoked.
+     */
+    OE_VERIFY_REVOKED,
 
     __OE_RESULT_MAX = OE_ENUM_MAX,
 } oe_result_t;

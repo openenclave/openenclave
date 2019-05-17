@@ -24,13 +24,18 @@
 
 oe_result_t read_cert(char* filename, char* cert);
 
-oe_result_t read_chain(char* filename1, char* filename2, char* chain);
+oe_result_t read_chain(
+    char* filename1,
+    char* filename2,
+    char* chain,
+    size_t chain_size);
 
 oe_result_t read_chains(
     char* filename1,
     char* filename2,
     char* filename3,
-    char* chain);
+    char* chain,
+    size_t chain_size);
 
 oe_result_t read_crl(char* filename, uint8_t* crl, size_t* crl_size);
 
@@ -38,7 +43,11 @@ oe_result_t read_dates(char* filename, oe_datetime_t* time);
 
 oe_result_t read_mod(char* filename, uint8_t* mod, size_t* mod_size);
 
-oe_result_t read_mixed_chain(char* chain, char* chain1, char* chain2);
+oe_result_t read_mixed_chain(
+    char* chain1,
+    char* chain2,
+    char* chain,
+    size_t chain_size);
 
 oe_result_t read_sign(char* filename, uint8_t* sign, size_t* sign_size);
 

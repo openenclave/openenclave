@@ -5,8 +5,13 @@
 - name: Gather Ansible facts
   setup:
 
-- name: Include vars
-  include_vars: "{{ ansible_distribution_release | lower }}.yml"
+- name: Include distribution vars
+  include_vars:
+    file: "{{ ansible_distribution | lower }}.yml"
+
+- name: Include distribution release specific vars
+  include_vars:
+    file: "{{ ansible_distribution_release | lower }}.yml"
 
 - include_role:
     name: linux/common

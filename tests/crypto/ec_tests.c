@@ -907,7 +907,8 @@ void TestEC()
             "../data/Leafec.crt.pem",
             "../data/Intermediateec.crt.pem",
             "../data/Rootec.crt.pem",
-            _CHAIN) == OE_OK);
+            _CHAIN,
+            OE_COUNTOF(_CHAIN)) == OE_OK);
     OE_TEST(read_key("../data/Rootec.key.pem", _PRIVATE_KEY) == OE_OK);
     OE_TEST(read_key("../data/Rootec.public.key", _PUBLIC_KEY) == OE_OK);
     OE_TEST(

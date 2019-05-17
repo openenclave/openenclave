@@ -99,6 +99,10 @@ const char* oe_result_str(oe_result_t result)
             return "OE_UNSUPPORTED_ENCLAVE_IMAGE";
         case OE_VERIFY_CRL_EXPIRED:
             return "OE_VERIFY_CRL_EXPIRED";
+        case OE_VERIFY_CRL_MISSING:
+            return "OE_VERIFY_CRL_MISSING";
+        case OE_VERIFY_REVOKED:
+            return "OE_VERIFY_REVOKED";
         case __OE_RESULT_MAX:
             break;
     }
