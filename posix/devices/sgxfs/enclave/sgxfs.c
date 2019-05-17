@@ -8,7 +8,7 @@
 /* ATTN:IO: use elibc within SGX code. */
 #include <errno.h>
 #include <openenclave/enclave.h>
-#include <openenclave/bits/sgxfs.h>
+#include <openenclave/bits/fs.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/stdio.h>
@@ -1078,7 +1078,7 @@ done:
         _loaded = true;
 }
 
-oe_result_t oe_load_module_sgxfs(void)
+oe_result_t oe_load_module_sgx_file_system(void)
 {
     if (oe_once(&_once, _load_once) != OE_OK || !_loaded)
         return OE_FAILURE;

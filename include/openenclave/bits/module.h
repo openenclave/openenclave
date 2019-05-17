@@ -25,6 +25,9 @@ oe_result_t oe_load_module_host_file_system(void);
 /** Load the host socket interface module. */
 oe_result_t oe_load_module_host_socket_interface(void);
 
+/** Load the Intel protected file system module. */
+oe_result_t oe_load_module_sgx_file_system(void);
+
 /** Load the host resolver module (getaddrinfo, getnameinfo). */
 oe_result_t oe_load_module_host_resolver(void);
 
