@@ -4,13 +4,46 @@
 #ifndef _OE_POSIX_DEVICE_H
 #define _OE_POSIX_DEVICE_H
 
-#include <openenclave/bits/device.h>
+#include <openenclave/bits/fs.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/corelibc/sys/epoll.h>
 #include <openenclave/corelibc/sys/stat.h>
 #include <openenclave/internal/posix/fd.h>
 
 OE_EXTERNC_BEGIN
+
+/** Device identifiers defined by Open Enclave. */
+enum
+{
+    /** The null device id. */
+    OE_DEVID_NONE,
+
+    /** The console file system (stdin, stdout, stderr). */
+    OE_DEVID_CONSOLE_FILE_SYSTEM,
+
+    /** The non-secure host file system. */
+    OE_DEVID_HOST_FILE_SYSTEM,
+
+    /** The Intel SGX protected file system. */
+    OE_DEVID_SGX_FILE_SYSTEM,
+
+    /** The non-secure host socket device. */
+    OE_DEVID_HOST_SOCKET_INTERFACE,
+
+    /** The host epoll device. */
+    OE_DEVID_HOST_EPOLL,
+
+    /** The host eventfd device. */
+    OE_DEVID_EVENTFD,
+};
+
+/** Device names defined by Open Enclave. */
+#define OE_DEVICE_NAME_CONSOLE_FILE_SYSTEM "oe_console_file_system"
+#define OE_DEVICE_NAME_HOST_FILE_SYSTEM OE_HOST_FILE_SYSTEM
+#define OE_DEVICE_NAME_SGX_FILE_SYSTEM OE_SGX_FILE_SYSTEM
+#define OE_DEVICE_NAME_HOST_SOCKET_INTERFACE "oe_host_socket_interface"
+#define OE_DEVICE_NAME_HOST_EPOLL "oe_host_epoll"
+#define OE_DEVICE_NAME_EVENTFD "oe_eventfd"
 
 typedef enum _oe_device_type
 {

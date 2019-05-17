@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/device.h>
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/stdarg.h>
 #include <openenclave/internal/posix/device.h>

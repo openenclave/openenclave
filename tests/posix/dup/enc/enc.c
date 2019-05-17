@@ -45,7 +45,7 @@ void test_dup(const char* tmp_dir)
 
     TEST(oe_load_module_host_file_system() == OE_OK);
 
-    TEST(mount("/", "/", OE_DEVICE_NAME_HOST_FILE_SYSTEM, 0, NULL) == 0);
+    TEST(mount("/", "/", OE_HOST_FILE_SYSTEM, 0, NULL) == 0);
 
     /* Create tmp_dir if non-existent. */
     {

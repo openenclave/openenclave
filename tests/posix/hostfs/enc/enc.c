@@ -18,7 +18,7 @@ void test_hostfs(const char* tmp_dir)
         exit(1);
     }
 
-    if (mount("/", "/", OE_DEVICE_NAME_HOST_FILE_SYSTEM, 0, NULL) != 0)
+    if (mount("/", "/", OE_HOST_FILE_SYSTEM, 0, NULL) != 0)
     {
         fprintf(stderr, "mount() failed\n");
         exit(1);
