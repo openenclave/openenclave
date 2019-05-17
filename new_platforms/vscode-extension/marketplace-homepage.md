@@ -2,7 +2,7 @@
 
 A [Visual Studio Code](https://code.visualstudio.com/) [extension](https://marketplace.visualstudio.com/VSCode) supporting [Open Enclave](https://openenclave.io/sdk/), including development, debugging, emulators, and deployment!
 
-For more information on the technology, [see here](https://github.com/Microsoft/openenclave/blob/feature.new_platforms/new_platforms/README.md).
+For more information on the technology, [see here](https://github.com/Microsoft/openenclave/blob/master/new_platforms/README.md).
 
 ## Getting started
 
@@ -177,7 +177,7 @@ For development of this extension, or running from source code directly
 
 To run the extension from this repository, following these instructions:
 
-1. Clone this repository `git clone --recursive https://github.com/microsoft/openenclave --branch feature.new_platforms`.
+1. Clone this repository `git clone --recursive https://github.com/microsoft/openenclave --branch master`.
 1. Navigate to `new_platforms\vscode-extension` in the cloned folder.
 1. Run npm to install the dependencies: `npm install` (see the [requirements](#Requirements) section for npm installation link).
 1. Start VSCode: `code .`.
@@ -198,14 +198,14 @@ data to Microsoft, you can set the `telemetry.enableTelemetry` setting to `false
         
         ```bash
         rm -rf /home/$USER/.config/Code/User/globalStorage/ms-iot.msiot-vscode-openenclave/1.0.3/3rdparty/openenclave
-        git clone --recursive --branch feature.new_platforms https://github.com/Microsoft/openenclave /home/$USER/.config/Code/User/globalStorage/ms-iot.msiot-vscode-openenclave/1.0.3/3rdparty/openenclave
+        git clone --recursive --branch master https://github.com/Microsoft/openenclave /home/$USER/.config/Code/User/globalStorage/ms-iot.msiot-vscode-openenclave/1.0.3/3rdparty/openenclave
         ```
     
     * Windows (from CMD prompt): 
 
         ```bat
         rmdir /S /Q  %APPDATA%\Code\User\globalStorage\ms-iot.msiot-vscode-openenclave\1.0.3\3rdparty\openenclave
-        git clone --recursive --branch feature.new_platforms https://github.com/Microsoft/openenclave %APPDATA%\Code\User\globalStorage\ms-iot.msiot-vscode-openenclave\1.0.3\3rdparty\openenclave
+        git clone --recursive --branch master https://github.com/Microsoft/openenclave %APPDATA%\Code\User\globalStorage\ms-iot.msiot-vscode-openenclave\1.0.3\3rdparty\openenclave
         ```
 
 

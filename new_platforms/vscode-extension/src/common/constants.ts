@@ -14,7 +14,7 @@ export class Constants {
     // Github repo and branch for SDK
     //
     public static openEnclaveRepo = "https://github.com/microsoft/openenclave.git";
-    public static openEnclaveBranch = "#feature.new_platforms";
+    public static openEnclaveBranch = "#master";
     public static openEnclaveSdkVersion = "1.0.9";
     //
     // Azure storage info for DevKit

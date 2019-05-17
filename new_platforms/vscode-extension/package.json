@@ -14,7 +14,7 @@
 		"type": "git",
 		"url": "https://github.com/microsoft/openenclave.git"
 	},
-	"homepage": "https://github.com/microsoft/openenclave/blob/feature.new_platforms/new_platforms/vscode-extension/marketplace-homepage.md",
+	"homepage": "https://github.com/microsoft/openenclave/blob/master/new_platforms/vscode-extension/marketplace-homepage.md",
 	"bugs": "https://github.com/microsoft/openenclave/issues",
 	"license": "MIT",
 	"categories": [
