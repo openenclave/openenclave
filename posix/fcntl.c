@@ -16,7 +16,7 @@ int __oe_fcntl(int fd, int cmd, uint64_t arg)
     oe_fd_t* desc;
 
     if (!(desc = oe_fdtable_get(fd, OE_FD_TYPE_ANY)))
-        OE_RAISE_ERRNO(OE_EINVAL);
+        OE_RAISE_ERRNO(oe_errno);
 
     ret = desc->ops.fd.fcntl(desc, cmd, arg);
 

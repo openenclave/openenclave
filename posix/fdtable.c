@@ -283,14 +283,17 @@ done:
     return ret;
 }
 
-int oe_fdtable_reassign(int fd, oe_fd_t* desc)
+int oe_fdtable_reassign(int fd, oe_fd_t* new_desc, oe_fd_t** old_desc)
 {
     int ret = -1;
     bool locked = false;
 
 #if !defined(NDEBUG)
-    _assert_fd(desc);
+    _assert_fd(new_desc);
 #endif
+
+    if (old_desc)
+        *old_desc = NULL;
 
     oe_conditional_lock(&_lock, &locked);
 
@@ -304,14 +307,9 @@ int oe_fdtable_reassign(int fd, oe_fd_t* desc)
     if (fd < 0 || (size_t)fd >= _table_size)
         OE_RAISE_ERRNO(OE_EBADF);
 
-    if (_table[fd])
-    {
-        if (_table[fd]->ops.fd.close(_table[fd]) != 0)
-            OE_RAISE_ERRNO(oe_errno);
-    }
+    *old_desc = _table[fd];
 
-    /* Set the fd. */
-    _table[fd] = desc;
+    _table[fd] = new_desc;
 
     ret = 0;
 

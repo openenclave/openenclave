@@ -244,7 +244,7 @@ ssize_t oe_read(int fd, void* buf, size_t count)
     oe_fd_t* desc;
 
     if (!(desc = oe_fdtable_get(fd, OE_FD_TYPE_ANY)))
-        OE_RAISE_ERRNO(OE_EBADF);
+        OE_RAISE_ERRNO(oe_errno);
 
     ret = desc->ops.fd.read(desc, buf, count);
 
@@ -258,7 +258,7 @@ ssize_t oe_write(int fd, const void* buf, size_t count)
     oe_fd_t* desc;
 
     if (!(desc = oe_fdtable_get(fd, OE_FD_TYPE_ANY)))
-        OE_RAISE_ERRNO(OE_EBADF);
+        OE_RAISE_ERRNO(oe_errno);
 
     ret = desc->ops.fd.write(desc, buf, count);
 
@@ -272,7 +272,7 @@ int oe_close(int fd)
     oe_fd_t* desc;
 
     if (!(desc = oe_fdtable_get(fd, OE_FD_TYPE_ANY)))
-        OE_RAISE_ERRNO(OE_EBADF);
+        OE_RAISE_ERRNO(oe_errno);
 
     if ((ret = desc->ops.fd.close(desc)) == 0)
         oe_fdtable_release(fd);
@@ -289,7 +289,7 @@ int oe_dup(int oldfd)
     int newfd;
 
     if (!(old_desc = oe_fdtable_get(oldfd, OE_FD_TYPE_ANY)))
-        OE_RAISE_ERRNO(OE_EBADF);
+        OE_RAISE_ERRNO(oe_errno);
 
     if (old_desc->ops.fd.dup(old_desc, &new_desc) == -1)
         OE_RAISE_ERRNO(oe_errno);
@@ -312,19 +312,23 @@ int oe_dup2(int oldfd, int newfd)
 {
     oe_fd_t* old_desc;
     oe_fd_t* new_desc = NULL;
+    oe_fd_t* resassigned_desc;
     int retval = -1;
 
     if (oldfd == newfd)
         return newfd;
 
     if (!(old_desc = oe_fdtable_get(oldfd, OE_FD_TYPE_ANY)))
-        OE_RAISE_ERRNO(OE_EBADF);
+        OE_RAISE_ERRNO(oe_errno);
 
     if ((retval = old_desc->ops.fd.dup(old_desc, &new_desc)) < 0)
         OE_RAISE_ERRNO(oe_errno);
 
-    if (oe_fdtable_reassign(newfd, new_desc) == -1)
+    if (oe_fdtable_reassign(newfd, new_desc, &resassigned_desc) == -1)
         OE_RAISE_ERRNO(OE_EINVAL);
+
+    if (resassigned_desc)
+        resassigned_desc->ops.fd.close(resassigned_desc);
 
     new_desc = NULL;
 
@@ -498,7 +502,7 @@ oe_off_t oe_lseek(int fd, oe_off_t offset, int whence)
     oe_fd_t* file;
 
     if (!(file = oe_fdtable_get(fd, OE_FD_TYPE_FILE)))
-        OE_RAISE_ERRNO(OE_EBADF);
+        OE_RAISE_ERRNO(oe_errno);
 
     ret = file->ops.file.lseek(file, offset, whence);
 
