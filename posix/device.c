@@ -180,7 +180,7 @@ int oe_set_device(uint64_t devid, oe_device_t* device)
     oe_spin_lock(&_lock);
 
     if (_check_device(device) != 0)
-        OE_RAISE_ERRNO(OE_EINVAL);
+        OE_RAISE_ERRNO(oe_errno);
 
     if (_resize_table(devid + 1) != 0)
         OE_RAISE_ERRNO(OE_ENOMEM);

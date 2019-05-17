@@ -237,7 +237,7 @@ int oe_fdtable_assign(oe_fd_t* desc)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     if (_check_fd(desc) != 0)
-        OE_RAISE_ERRNO_MSG(OE_EINVAL, "bad desc parameter: %u\n", desc->type);
+        OE_RAISE_ERRNO(oe_errno);
 
     /* Find the first available file descriptor. */
     for (index = 0; index < _table_size; index++)
