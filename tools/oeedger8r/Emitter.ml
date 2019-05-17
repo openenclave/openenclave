@@ -110,7 +110,14 @@ let open_file (filename : string) (dir : string) =
     definition. *)
 let oe_gen_marshal_struct =
   let gen_member_decl (ptype : parameter_type) (decl : declarator) =
-    let tystr = get_tystr (get_param_atype ptype) in
+    let aty = get_param_atype ptype in
+    (* We need to check Ptrs for Foreign or Struct types and check
+       those against the structs in comp_defs. *)
+    let should_deepcopy = function
+      | Ptr a -> ( match a with Foreign _ | Struct _ -> true | _ -> false )
+      | _ -> false
+    in
+    let tystr = get_tystr aty in
     let tystr =
       if is_foreign_array ptype then
         sprintf "/* foreign array of type %s */ void*" tystr
@@ -123,6 +130,8 @@ let oe_gen_marshal_struct =
     in
     [ sprintf "%s %s;" tystr decl.identifier
     ; ( if need_strlen ptype then sprintf "size_t %s_len;" decl.identifier
+      else "" )
+    ; ( if should_deepcopy aty then sprintf "/* deep copy %s */" decl.identifier
       else "" ) ]
   in
   let f (fd : func_decl) (errno : bool) =
