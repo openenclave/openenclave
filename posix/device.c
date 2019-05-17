@@ -77,67 +77,59 @@ done:
     return ret;
 }
 
-/* Raise and log an error if the condition is false. */
-#define CHECK_CONDITION(COND)                                         \
-    do                                                                \
-    {                                                                 \
-        if (!(COND))                                                  \
-            OE_RAISE_ERRNO_MSG(OE_EINVAL, "failed check: %s", #COND); \
-    } while (0)
-
-static int _check_device(oe_device_t* device)
+#if !defined(NDEBUG)
+static void _assert_device(oe_device_t* device)
 {
-    int ret = -1;
-
-    CHECK_CONDITION(device->ops.device.release);
+    oe_assert(device->ops.device.release);
 
     switch (device->type)
     {
         case OE_DEVICE_TYPE_NONE:
         case OE_DEVICE_TYPE_ANY:
         {
-            goto done;
+            break;
         }
         case OE_DEVICE_TYPE_FILE_SYSTEM:
         {
-            CHECK_CONDITION(device->ops.fs.clone);
-            CHECK_CONDITION(device->ops.fs.mount);
-            CHECK_CONDITION(device->ops.fs.umount);
-            CHECK_CONDITION(device->ops.fs.open);
-            CHECK_CONDITION(device->ops.fs.stat);
-            CHECK_CONDITION(device->ops.fs.access);
-            CHECK_CONDITION(device->ops.fs.link);
-            CHECK_CONDITION(device->ops.fs.unlink);
-            CHECK_CONDITION(device->ops.fs.rename);
-            CHECK_CONDITION(device->ops.fs.truncate);
-            CHECK_CONDITION(device->ops.fs.mkdir);
-            CHECK_CONDITION(device->ops.fs.rmdir);
+            oe_assert(device->ops.fs.clone);
+            oe_assert(device->ops.fs.mount);
+            oe_assert(device->ops.fs.umount);
+            oe_assert(device->ops.fs.open);
+            oe_assert(device->ops.fs.stat);
+            oe_assert(device->ops.fs.access);
+            oe_assert(device->ops.fs.link);
+            oe_assert(device->ops.fs.unlink);
+            oe_assert(device->ops.fs.rename);
+            oe_assert(device->ops.fs.truncate);
+            oe_assert(device->ops.fs.mkdir);
+            oe_assert(device->ops.fs.rmdir);
             break;
         }
         case OE_DEVICE_TYPE_SOCKET_INTERFACE:
         {
-            CHECK_CONDITION(device->ops.socket.socket);
-            CHECK_CONDITION(device->ops.socket.socketpair);
+            oe_assert(device->ops.socket.socket);
+            oe_assert(device->ops.socket.socketpair);
             break;
         }
         case OE_DEVICE_TYPE_EPOLL:
         {
-            CHECK_CONDITION(device->ops.epoll.epoll_create);
-            CHECK_CONDITION(device->ops.epoll.epoll_create1);
+            oe_assert(device->ops.epoll.epoll_create);
+            oe_assert(device->ops.epoll.epoll_create1);
             break;
         }
         case OE_DEVICE_TYPE_EVENTFD:
         {
-            CHECK_CONDITION(device->ops.eventfd.eventfd);
+            oe_assert(device->ops.eventfd.eventfd);
+            break;
+        }
+        default:
+        {
+            oe_assert(false);
             break;
         }
     }
-
-    ret = 0;
-
-done:
-    return ret;
 }
+#endif /* !defined(NDEBUG) */
 
 /*
 **==============================================================================
@@ -157,14 +149,15 @@ int oe_device_table_set(uint64_t devid, oe_device_t* device)
 
     oe_conditional_lock(&_lock, &locked);
 
-    if (_check_device(device) != 0)
-        OE_RAISE_ERRNO(oe_errno);
+#if !defined(NDEBUG)
+    _assert_device(device);
+#endif
 
     if (_resize_table(devid + 1) != 0)
         OE_RAISE_ERRNO(OE_ENOMEM);
 
     if (_table[devid] != NULL)
-        OE_RAISE_ERRNO(OE_EADDRINUSE);
+        OE_RAISE_ERRNO(OE_EEXIST);
 
     _table[devid] = device;
 
