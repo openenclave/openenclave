@@ -212,7 +212,7 @@ data to Microsoft, you can set the `telemetry.enableTelemetry` setting to `false
 
 ## Release Notes
 
-### 1.0.9
+### 1.1.0
 
 Public Preview
 
