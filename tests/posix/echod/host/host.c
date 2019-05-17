@@ -1,15 +1,27 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <arpa/inet.h>
-#include <netinet/in.h>
+#define OE_LIBC_SUPPRESS_DEPRECATIONS
 #include <openenclave/host.h>
 #include <openenclave/internal/tests.h>
+#if defined(_MSC_VER)
+#define OE_NEED_STD_NAMES
+// clang-format off
+#include <winsock2.h>
+#include <windows.h>
+// clang-format on
+static void sleep(int secs)
+{
+    Sleep(secs * 1000);
+}
+typedef HANDLE pthread_t;
+typedef SOCKET socket_t;
+#else
+#include <netinet/in.h>
 #include <pthread.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/socket.h>
 #include <unistd.h>
+typedef int socket_t;
+#include <stdio.h>
 #include "echod_u.h"
 
 static const uint16_t PORT = 12345;
@@ -17,7 +29,7 @@ static oe_enclave_t* _enclave;
 
 static void* _client_thread_start_routine(void* arg)
 {
-    int sd;
+    socket_t sd;
     const char hello[] = "hello";
     const char quit[] = "quit";
     char buf[1024];
@@ -64,12 +76,23 @@ static void* _client_thread_start_routine(void* arg)
     }
 
     /* Send "quit" command to the server. */
+#if defined(WINDOWS_HOST)
+    if (send(sd, quit, sizeof(quit), 0) != sizeof(quit))
+#else
     if (write(sd, quit, sizeof(quit)) != sizeof(quit))
+#endif
     {
         OE_TEST("write() failed" == NULL);
     }
 
+#if defined(WINDOWS_HOST)
+    if (!CloseHandle((HANDLE)sd))
+    {
+        OE_TEST("closeHandle() failed" == NULL);
+    }
+#else
     close(sd);
+#endif
 
     return NULL;
 }
@@ -89,20 +112,37 @@ void run_server_and_clients(void)
     pthread_t server;
     void* ret;
 
+#if defined(_WIN32)
+    server = CreateThread(
+        NULL, 0, (LPTHREAD_START_ROUTINE)_server_thread_start_routine, NULL, 0, NULL);
+    OE_TEST(server != INVALID_HANDLE_VALUE);
+#else
     if (pthread_create(&server, NULL, _server_thread_start_routine, NULL) != 0)
     {
         OE_TEST("pthread_create()" == NULL);
     }
+#endif
 
     sleep(5);
 
+#if defined(_WIN32)
+    client = CreateThread(
+        NULL, 0, (LPTHREAD_START_ROUTINE)_client_thread_start_routine, NULL, 0, NULL);
+    OE_TEST(server != INVALID_HANDLE_VALUE);
+#else
     if (pthread_create(&client, NULL, _client_thread_start_routine, NULL) != 0)
     {
         OE_TEST("pthread_create()" == NULL);
     }
+#endif
 
+#if defined(_WIN32)
+    ret = WaitForSingleObject(client, INFINITE);
+    ret = WaitForSingleObject(server, INFINITE);
+#else
     pthread_join(client, &ret);
     pthread_join(server, &ret);
+#endif
 }
 
 int main(int argc, const char* argv[])
