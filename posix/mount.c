@@ -54,7 +54,8 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
         {
             oe_device_t* device;
 
-            if (!(device = oe_get_device(devid, OE_DEVICE_TYPE_FILE_SYSTEM)))
+            if (!(device =
+                      oe_device_table_get(devid, OE_DEVICE_TYPE_FILE_SYSTEM)))
                 OE_RAISE_ERRNO(OE_EINVAL);
 
             /* Use this device. */
@@ -138,7 +139,8 @@ int oe_mount(
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Resolve the device for the given filesystemtype. */
-    if (!(device = oe_find_device(filesystemtype, OE_DEVICE_TYPE_FILE_SYSTEM)))
+    if (!(device =
+              oe_device_table_find(filesystemtype, OE_DEVICE_TYPE_FILE_SYSTEM)))
         OE_RAISE_ERRNO_MSG(OE_EINVAL, "filesystemtype=%s", filesystemtype);
 
     /* Be sure the full_target directory exists (if not root). */
@@ -220,7 +222,7 @@ done:
         oe_spin_unlock(&_lock);
 
     if (new_device)
-        new_device->ops.base.release(new_device);
+        new_device->ops.device.release(new_device);
 
     return ret;
 }
@@ -267,7 +269,7 @@ int oe_umount2(const char* target, int flags)
         if (fs->ops.fs.umount(fs, target) != 0)
             OE_RAISE_ERRNO(oe_errno);
 
-        fs->ops.base.release(fs);
+        fs->ops.device.release(fs);
     }
 
     ret = 0;

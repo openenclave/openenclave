@@ -365,7 +365,7 @@ int oe_rmdir_d(uint64_t devid, const char* pathname)
     {
         oe_device_t* dev;
 
-        if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILE_SYSTEM)))
+        if (!(dev = oe_device_table_get(devid, OE_DEVICE_TYPE_FILE_SYSTEM)))
             OE_RAISE_ERRNO(OE_EINVAL);
 
         ret = dev->ops.fs.rmdir(dev, pathname);
@@ -410,7 +410,7 @@ int oe_link_d(uint64_t devid, const char* oldpath, const char* newpath)
     {
         oe_device_t* dev;
 
-        if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILE_SYSTEM)))
+        if (!(dev = oe_device_table_get(devid, OE_DEVICE_TYPE_FILE_SYSTEM)))
             OE_RAISE_ERRNO(OE_EINVAL);
 
         ret = dev->ops.fs.link(dev, oldpath, newpath);
@@ -447,7 +447,7 @@ int oe_unlink_d(uint64_t devid, const char* pathname)
     {
         oe_device_t* dev;
 
-        if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILE_SYSTEM)))
+        if (!(dev = oe_device_table_get(devid, OE_DEVICE_TYPE_FILE_SYSTEM)))
             OE_RAISE_ERRNO(OE_EINVAL);
 
         ret = dev->ops.fs.unlink(dev, pathname);
@@ -484,7 +484,7 @@ int oe_truncate_d(uint64_t devid, const char* path, oe_off_t length)
     {
         oe_device_t* dev;
 
-        if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILE_SYSTEM)))
+        if (!(dev = oe_device_table_get(devid, OE_DEVICE_TYPE_FILE_SYSTEM)))
             OE_RAISE_ERRNO(OE_EINVAL);
 
         ret = dev->ops.fs.truncate(dev, path, length);
@@ -593,7 +593,7 @@ int oe_access_d(uint64_t devid, const char* pathname, int mode)
         oe_device_t* dev;
         struct oe_stat buf;
 
-        if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILE_SYSTEM)))
+        if (!(dev = oe_device_table_get(devid, OE_DEVICE_TYPE_FILE_SYSTEM)))
             OE_RAISE_ERRNO(OE_EINVAL);
 
         if (!pathname)

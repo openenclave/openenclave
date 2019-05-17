@@ -12,32 +12,32 @@
 
 OE_EXTERNC_BEGIN
 
-/** Device identifiers defined by Open Enclave. */
+/* Device identifiers defined by Open Enclave. */
 enum
 {
-    /** The null device id. */
+    /* The null device id. */
     OE_DEVID_NONE,
 
-    /** The console file system (stdin, stdout, stderr). */
+    /* The console file system (stdin, stdout, stderr). */
     OE_DEVID_CONSOLE_FILE_SYSTEM,
 
-    /** The non-secure host file system. */
+    /* The non-secure host file system. */
     OE_DEVID_HOST_FILE_SYSTEM,
 
-    /** The Intel SGX protected file system. */
+    /* The Intel SGX protected file system. */
     OE_DEVID_SGX_FILE_SYSTEM,
 
-    /** The non-secure host socket device. */
+    /* The non-secure host socket device. */
     OE_DEVID_HOST_SOCKET_INTERFACE,
 
-    /** The host epoll device. */
+    /* The host epoll device. */
     OE_DEVID_HOST_EPOLL,
 
-    /** The host eventfd device. */
+    /* The host eventfd device. */
     OE_DEVID_EVENTFD,
 };
 
-/** Device names defined by Open Enclave. */
+/* Device names. */
 #define OE_DEVICE_NAME_CONSOLE_FILE_SYSTEM "oe_console_file_system"
 #define OE_DEVICE_NAME_HOST_FILE_SYSTEM OE_HOST_FILE_SYSTEM
 #define OE_DEVICE_NAME_SGX_FILE_SYSTEM OE_SGX_FILE_SYSTEM
@@ -146,7 +146,7 @@ struct _oe_device
 
     /* Function table for this device. */
     union {
-        oe_device_ops_t base;
+        oe_device_ops_t device;
         oe_fs_device_ops_t fs;
         oe_socket_device_ops_t socket;
         oe_epoll_device_ops_t epoll;
@@ -154,16 +154,15 @@ struct _oe_device
     } ops;
 };
 
-int oe_clear_devid(uint64_t devid);
+int oe_device_table_set(uint64_t devid, oe_device_t* dev);
 
-int oe_set_device(uint64_t devid, oe_device_t* dev);
-
-oe_device_t* oe_get_device(uint64_t devid, oe_device_type_t type);
+oe_device_t* oe_device_table_get(uint64_t devid, oe_device_type_t type);
 
 /* Find the device with the given name and type. */
-oe_device_t* oe_find_device(const char* name, oe_device_type_t type);
+oe_device_t* oe_device_table_find(const char* name, oe_device_type_t type);
 
-int oe_remove_device(uint64_t devid);
+/* Remove the given device from the table and call its release() method. */
+int oe_device_table_remove(uint64_t devid);
 
 /**
  * Associate a device id with the current thread.

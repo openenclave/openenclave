@@ -25,7 +25,8 @@ int oe_epoll_create(int size)
     oe_device_t* device = NULL;
     oe_fd_t* epoll = NULL;
 
-    if (!(device = oe_get_device(OE_DEVID_HOST_EPOLL, OE_DEVICE_TYPE_EPOLL)))
+    if (!(device =
+              oe_device_table_get(OE_DEVID_HOST_EPOLL, OE_DEVICE_TYPE_EPOLL)))
         OE_RAISE_ERRNO(OE_EINVAL);
 
     if (!(epoll = device->ops.epoll.epoll_create(device, size)))
@@ -51,7 +52,8 @@ int oe_epoll_create1(int flags)
     oe_device_t* device = NULL;
     oe_fd_t* epoll = NULL;
 
-    if (!(device = oe_get_device(OE_DEVID_HOST_EPOLL, OE_DEVICE_TYPE_EPOLL)))
+    if (!(device =
+              oe_device_table_get(OE_DEVID_HOST_EPOLL, OE_DEVICE_TYPE_EPOLL)))
         OE_RAISE_ERRNO(OE_EINVAL);
 
     if (!(epoll = device->ops.epoll.epoll_create1(device, flags)))

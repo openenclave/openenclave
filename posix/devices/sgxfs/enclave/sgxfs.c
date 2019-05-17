@@ -1067,7 +1067,7 @@ static void _load_once()
     oe_result_t result = OE_FAILURE;
     const uint64_t devid = OE_DEVID_SGX_FILE_SYSTEM;
 
-    if (oe_set_device(devid, _get_sgxfs_device()) != 0)
+    if (oe_device_table_set(devid, _get_sgxfs_device()) != 0)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     result = OE_OK;

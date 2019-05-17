@@ -34,7 +34,7 @@ int oe_stat_d(uint64_t devid, const char* pathname, struct oe_stat* buf)
     {
         oe_device_t* dev;
 
-        if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILE_SYSTEM)))
+        if (!(dev = oe_device_table_get(devid, OE_DEVICE_TYPE_FILE_SYSTEM)))
             OE_RAISE_ERRNO(OE_EINVAL);
 
         ret = dev->ops.fs.stat(dev, pathname, buf);
@@ -71,7 +71,7 @@ int oe_mkdir_d(uint64_t devid, const char* pathname, oe_mode_t mode)
     {
         oe_device_t* dev;
 
-        if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILE_SYSTEM)))
+        if (!(dev = oe_device_table_get(devid, OE_DEVICE_TYPE_FILE_SYSTEM)))
             OE_RAISE_ERRNO(OE_EINVAL);
 
         ret = dev->ops.fs.mkdir(dev, pathname, mode);

@@ -272,7 +272,7 @@ static void _load_once(void)
     oe_result_t result = OE_FAILURE;
     const uint64_t devid = OE_DEVID_EVENTFD;
 
-    if (oe_set_device(devid, &_eventfd.base) != 0)
+    if (oe_device_table_set(devid, &_eventfd.base) != 0)
         OE_RAISE_ERRNO(oe_errno);
 
     result = OE_OK;

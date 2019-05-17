@@ -817,8 +817,8 @@ oe_host_fd_t oe_posix_open_ocall(
             }
         }
 
-        // in linux land, we can always share files for read and write unless they have
-        // been opened exclusive
+        // in linux land, we can always share files for read and write unless
+        // they have been opened exclusive
         share_mode = FILE_SHARE_READ | FILE_SHARE_WRITE;
         const int ACCESS_FLAGS = 0x3; // Covers rdonly, wronly rdwr
         switch (flags & ACCESS_FLAGS)
@@ -853,7 +853,6 @@ oe_host_fd_t oe_posix_open_ocall(
                 goto done;
                 break;
         }
-
 
         if (mode & OE_S_IRUSR)
             desired_access |= GENERIC_READ;
