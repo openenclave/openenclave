@@ -113,7 +113,7 @@ static int _check_device(oe_device_t* device)
             CHECK_CONDITION(device->ops.fs.rmdir);
             break;
         }
-        case OE_DEVICE_TYPE_SOCKET:
+        case OE_DEVICE_TYPE_SOCKET_INTERFACE:
         {
             CHECK_CONDITION(device->ops.socket.socket);
             CHECK_CONDITION(device->ops.socket.socketpair);

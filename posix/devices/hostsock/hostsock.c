@@ -938,7 +938,7 @@ static oe_socket_ops_t _get_socket_ops(void)
 
 // clang-format off
 static device_t _device = {
-    .base.type = OE_DEVICE_TYPE_SOCKET,
+    .base.type = OE_DEVICE_TYPE_SOCKET_INTERFACE,
     .base.name = OE_DEVICE_NAME_HOST_SOCKET_INTERFACE,
     .base.ops.socket =
     {
