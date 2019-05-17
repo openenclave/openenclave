@@ -94,7 +94,7 @@ OE_INLINE bool _is_root(const char* path)
     return path[0] == '/' && path[1] == '\0';
 }
 
-static oe_file_ops_t _get_file_operations(void);
+static oe_file_ops_t _get_file_ops(void);
 
 /* Expand path to include the mount_source (needed by host side) */
 static int _expand_path(
@@ -369,7 +369,7 @@ static oe_fd_t* _sgxfs_open_file(
 
         file->base.type = OE_FD_TYPE_FILE;
         file->magic = FILE_MAGIC;
-        file->base.ops.file = _get_file_operations();
+        file->base.ops.file = _get_file_ops();
         file->stream = stream;
     }
 
@@ -1013,7 +1013,7 @@ done:
     return -1;
 }
 
-static oe_file_ops_t _file_operations = {
+static oe_file_ops_t _file_ops = {
     .fd.read = _sgxfs_read,
     .fd.write = _sgxfs_write,
     .fd.dup = _sgxfs_dup,
@@ -1025,9 +1025,9 @@ static oe_file_ops_t _file_operations = {
     .getdents = _sgxfs_getdents,
 };
 
-static oe_file_ops_t _get_file_operations(void)
+static oe_file_ops_t _get_file_ops(void)
 {
-    return _file_operations;
+    return _file_ops;
 }
 
 // clang-format off

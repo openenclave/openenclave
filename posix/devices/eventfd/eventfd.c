@@ -24,7 +24,7 @@
 /*
 **==============================================================================
 **
-** eventfd operations:
+** eventfd ops:
 **
 **==============================================================================
 */
@@ -33,7 +33,7 @@
 #define DEVICE_MAGIC 0x4e455645
 #define EVENTFD_MAGIC 0x87aada8f
 
-static oe_eventfd_ops_t _get_eventfd_operations(void);
+static oe_eventfd_ops_t _get_eventfd_ops(void);
 
 typedef struct _device
 {
@@ -91,7 +91,7 @@ static oe_fd_t* _eventfd_eventfd(
 
     new_eventfd->base.type = OE_DEVID_EVENTFD;
     new_eventfd->magic = EVENTFD_MAGIC;
-    new_eventfd->base.ops.eventfd = _get_eventfd_operations();
+    new_eventfd->base.ops.eventfd = _get_eventfd_ops();
     new_eventfd->count = initval;
     new_eventfd->flags = (uint32_t)flags;
 
@@ -238,7 +238,7 @@ done:
     return -1;
 }
 
-static oe_eventfd_ops_t _eventfd_operations = {
+static oe_eventfd_ops_t _eventfd_ops = {
     .fd.ioctl = _eventfd_ioctl,
     .fd.read = _eventfd_read,
     .fd.write = _eventfd_write,
@@ -246,9 +246,9 @@ static oe_eventfd_ops_t _eventfd_operations = {
     .fd.get_host_fd = _eventfd_gethostfd,
 };
 
-static oe_eventfd_ops_t _get_eventfd_operations()
+static oe_eventfd_ops_t _get_eventfd_ops()
 {
-    return _eventfd_operations;
+    return _eventfd_ops;
 };
 
 // clang-format off

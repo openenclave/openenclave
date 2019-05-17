@@ -906,7 +906,7 @@ static oe_host_fd_t _hostsock_gethostfd(oe_fd_t* sock_)
     return sock->host_fd;
 }
 
-static oe_socket_ops_t _sock_operations = {
+static oe_socket_ops_t _sock_ops = {
     .fd.dup = _hostsock_dup,
     .fd.ioctl = _hostsock_ioctl,
     .fd.fcntl = _hostsock_fcntl,
@@ -933,7 +933,7 @@ static oe_socket_ops_t _sock_operations = {
 
 static oe_socket_ops_t _get_socket_ops(void)
 {
-    return _sock_operations;
+    return _sock_ops;
 };
 
 // clang-format off
