@@ -76,6 +76,68 @@ done:
     return ret;
 }
 
+/* Raise and log an error if the condition is false. */
+#define CHECK_CONDITION(COND)                                         \
+    do                                                                \
+    {                                                                 \
+        if (!(COND))                                                  \
+            OE_RAISE_ERRNO_MSG(OE_EINVAL, "failed check: %s", #COND); \
+    } while (0)
+
+static int _check_device(oe_device_t* device)
+{
+    int ret = -1;
+
+    CHECK_CONDITION(device->ops.base.release);
+
+    switch (device->type)
+    {
+        case OE_DEVICE_TYPE_NONE:
+        case OE_DEVICE_TYPE_ANY:
+        {
+            goto done;
+        }
+        case OE_DEVICE_TYPE_FILE_SYSTEM:
+        {
+            CHECK_CONDITION(device->ops.fs.clone);
+            CHECK_CONDITION(device->ops.fs.mount);
+            CHECK_CONDITION(device->ops.fs.umount);
+            CHECK_CONDITION(device->ops.fs.open);
+            CHECK_CONDITION(device->ops.fs.stat);
+            CHECK_CONDITION(device->ops.fs.access);
+            CHECK_CONDITION(device->ops.fs.link);
+            CHECK_CONDITION(device->ops.fs.unlink);
+            CHECK_CONDITION(device->ops.fs.rename);
+            CHECK_CONDITION(device->ops.fs.truncate);
+            CHECK_CONDITION(device->ops.fs.mkdir);
+            CHECK_CONDITION(device->ops.fs.rmdir);
+            break;
+        }
+        case OE_DEVICE_TYPE_SOCKET:
+        {
+            CHECK_CONDITION(device->ops.socket.socket);
+            CHECK_CONDITION(device->ops.socket.socketpair);
+            break;
+        }
+        case OE_DEVICE_TYPE_EPOLL:
+        {
+            CHECK_CONDITION(device->ops.epoll.epoll_create);
+            CHECK_CONDITION(device->ops.epoll.epoll_create1);
+            break;
+        }
+        case OE_DEVICE_TYPE_EVENTFD:
+        {
+            CHECK_CONDITION(device->ops.eventfd.eventfd);
+            break;
+        }
+    }
+
+    ret = 0;
+
+done:
+    return ret;
+}
+
 /*
 **==============================================================================
 **
@@ -116,6 +178,9 @@ int oe_set_device(uint64_t devid, oe_device_t* device)
     int ret = -1;
 
     oe_spin_lock(&_lock);
+
+    if (_check_device(device) != 0)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (_resize_table(devid + 1) != 0)
         OE_RAISE_ERRNO(OE_ENOMEM);
@@ -210,7 +275,7 @@ int oe_remove_device(uint64_t devid)
     if (_clear_devid(devid) != 0)
         OE_RAISE_ERRNO(oe_errno);
 
-    if (OE_CALL_BASE(release, device) != 0)
+    if (device->ops.base.release(device) != 0)
         OE_RAISE_ERRNO(oe_errno);
 
     ret = 0;

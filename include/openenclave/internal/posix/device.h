@@ -6,10 +6,9 @@
 
 #include <openenclave/bits/device.h>
 #include <openenclave/bits/result.h>
-#include <openenclave/internal/posix/epollops.h>
-#include <openenclave/internal/posix/eventfdops.h>
-#include <openenclave/internal/posix/fsops.h>
-#include <openenclave/internal/posix/sockops.h>
+#include <openenclave/corelibc/sys/epoll.h>
+#include <openenclave/corelibc/sys/stat.h>
+#include <openenclave/internal/posix/fd.h>
 
 OE_EXTERNC_BEGIN
 
@@ -17,13 +16,90 @@ typedef enum _oe_device_type
 {
     OE_DEVICE_TYPE_NONE = 0,
     OE_DEVICE_TYPE_ANY,
-    OE_DEVICE_TYPE_FILESYSTEM,
-    OE_DEVICE_TYPE_DIRECTORY,
-    OE_DEVICE_TYPE_FILE,
+    OE_DEVICE_TYPE_FILE_SYSTEM,
     OE_DEVICE_TYPE_SOCKET,
     OE_DEVICE_TYPE_EPOLL,
     OE_DEVICE_TYPE_EVENTFD,
 } oe_device_type_t;
+
+typedef struct _oe_device oe_device_t;
+
+typedef struct _oe_device_ops
+{
+    int (*release)(oe_device_t* dev);
+
+} oe_device_ops_t;
+
+typedef struct _oe_fs_device_ops
+{
+    oe_device_ops_t base;
+
+    int (*clone)(oe_device_t* device, oe_device_t** new_device);
+
+    int (*mount)(
+        oe_device_t* fs,
+        const char* source,
+        const char* target,
+        unsigned long flags);
+
+    int (*umount)(oe_device_t* fs, const char* target);
+
+    oe_fd_t* (*open)(
+        oe_device_t* fs,
+        const char* pathname,
+        int flags,
+        oe_mode_t mode);
+
+    int (*stat)(oe_device_t* fs, const char* pathname, struct oe_stat* buf);
+
+    int (*access)(oe_device_t* fs, const char* pathname, int mode);
+
+    int (*link)(oe_device_t* fs, const char* oldpath, const char* newpath);
+
+    int (*unlink)(oe_device_t* fs, const char* pathname);
+
+    int (*rename)(oe_device_t* fs, const char* oldpath, const char* newpath);
+
+    int (*truncate)(oe_device_t* fs, const char* path, oe_off_t length);
+
+    int (*mkdir)(oe_device_t* fs, const char* pathname, oe_mode_t mode);
+
+    int (*rmdir)(oe_device_t* fs, const char* pathname);
+
+} oe_fs_device_ops_t;
+
+typedef struct _oe_socket_device_ops
+{
+    oe_device_ops_t base;
+
+    oe_fd_t* (*socket)(oe_device_t* dev, int domain, int type, int protocol);
+
+    ssize_t (*socketpair)(
+        oe_device_t* dev,
+        int domain,
+        int type,
+        int protocol,
+        oe_fd_t* retdevs[2]);
+
+} oe_socket_device_ops_t;
+
+typedef struct _oe_epoll_device_ops
+{
+    oe_device_ops_t base;
+
+    oe_fd_t* (*epoll_create)(oe_device_t* epfd_device, int size);
+
+    oe_fd_t* (*epoll_create1)(oe_device_t* epfd_device, int flags);
+
+} oe_epoll_device_ops_t;
+
+typedef struct _oe_eventfd_device_ops
+{
+    oe_device_ops_t base;
+
+    oe_fd_t* (*eventfd)(oe_device_t* dev, unsigned int initval, int flags);
+
+} oe_eventfd_device_ops_t;
 
 typedef struct _oe_device oe_device_t;
 
@@ -37,11 +113,11 @@ struct _oe_device
 
     /* Function table for this device. */
     union {
-        oe_device_ops_t* base;
-        oe_fs_ops_t* fs;
-        oe_sock_ops_t* sock;
-        oe_epoll_ops_t* epoll;
-        oe_eventfd_ops_t* eventfd;
+        oe_device_ops_t base;
+        oe_fs_device_ops_t fs;
+        oe_socket_device_ops_t socket;
+        oe_epoll_device_ops_t epoll;
+        oe_eventfd_device_ops_t eventfd;
     } ops;
 };
 
@@ -55,30 +131,6 @@ oe_device_t* oe_get_device(uint64_t devid, oe_device_type_t type);
 oe_device_t* oe_find_device(const char* name, oe_device_type_t type);
 
 int oe_remove_device(uint64_t devid);
-
-// clang-format off
-#define __OE_CALL(OPS, FUNC, DEV, ...)                                  \
-    ({                                                                  \
-        oe_device_t* __dev__ = DEV;                                     \
-        if (!__dev__ || !__dev__->ops.OPS || !__dev__->ops.OPS->FUNC)   \
-        {                                                               \
-            oe_errno = OE_EINVAL;                                       \
-            goto done;                                                  \
-        }                                                               \
-        (*__dev__->ops.OPS->FUNC)(__dev__, ##__VA_ARGS__);              \
-    })                                                                  \
-// clang-format on
-
-#define OE_CALL_BASE(FUNC, DEV, ...) __OE_CALL(base, FUNC, DEV, ##__VA_ARGS__)
-
-#define OE_CALL_FS(FUNC, DEV, ...) __OE_CALL(fs, FUNC, DEV, ##__VA_ARGS__)
-
-#define OE_CALL_SOCK(FUNC, DEV, ...) __OE_CALL(sock, FUNC, DEV, ##__VA_ARGS__)
-
-#define OE_CALL_EPOLL(FUNC, DEV, ...) __OE_CALL(epoll, FUNC, DEV, ##__VA_ARGS__)
-
-#define OE_CALL_EVENTFD(FUNC, DEV, ...) \
-    __OE_CALL(eventfd, FUNC, DEV, ##__VA_ARGS__)
 
 /**
  * Associate a device id with the current thread.

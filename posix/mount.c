@@ -54,7 +54,7 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
         {
             oe_device_t* device;
 
-            if (!(device = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
+            if (!(device = oe_get_device(devid, OE_DEVICE_TYPE_FILE_SYSTEM)))
                 OE_RAISE_ERRNO(OE_EINVAL);
 
             /* Use this device. */
@@ -138,7 +138,7 @@ int oe_mount(
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Resolve the device for the given filesystemtype. */
-    if (!(device = oe_find_device(filesystemtype, OE_DEVICE_TYPE_FILESYSTEM)))
+    if (!(device = oe_find_device(filesystemtype, OE_DEVICE_TYPE_FILE_SYSTEM)))
         OE_RAISE_ERRNO_MSG(OE_EINVAL, "filesystemtype=%s", filesystemtype);
 
     /* Be sure the full_target directory exists (if not root). */
@@ -177,7 +177,7 @@ int oe_mount(
     }
 
     /* Clone the device. */
-    if (OE_CALL_FS(clone, device, &new_device) != 0)
+    if (device->ops.fs.clone(device, &new_device) != 0)
         OE_RAISE_ERRNO(oe_errno);
 
     /* Assign and initialize new mount point. */
@@ -205,7 +205,7 @@ int oe_mount(
     }
 
     /* Notify the device that it has been mounted. */
-    if (OE_CALL_FS(mount, new_device, source, target, mountflags) != 0)
+    if (new_device->ops.fs.mount(new_device, source, target, mountflags) != 0)
     {
         oe_free(_mount_table[--_mount_table_size].path);
         goto done;
@@ -220,7 +220,7 @@ done:
         oe_spin_unlock(&_lock);
 
     if (new_device)
-        OE_CALL_BASE(release, new_device);
+        new_device->ops.base.release(new_device);
 
     return ret;
 }
@@ -235,7 +235,7 @@ int oe_umount2(const char* target, int flags)
 
     OE_UNUSED(flags);
 
-    if (!device || device->type != OE_DEVICE_TYPE_FILESYSTEM || !target)
+    if (!device || device->type != OE_DEVICE_TYPE_FILE_SYSTEM || !target)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     oe_spin_lock(&_lock);
@@ -264,10 +264,10 @@ int oe_umount2(const char* target, int flags)
         _mount_table[index] = _mount_table[_mount_table_size - 1];
         _mount_table_size--;
 
-        if (OE_CALL_FS(unmount, fs, target) != 0)
+        if (fs->ops.fs.umount(fs, target) != 0)
             OE_RAISE_ERRNO(oe_errno);
 
-        OE_CALL_BASE(release, fs);
+        fs->ops.base.release(fs);
     }
 
     ret = 0;

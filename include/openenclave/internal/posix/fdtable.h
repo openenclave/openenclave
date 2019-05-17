@@ -6,17 +6,17 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/internal/posix/device.h>
+#include <openenclave/internal/posix/fd.h>
 
 OE_EXTERNC_BEGIN
 
-int oe_fdtable_reassign(int fd, oe_device_t* device);
+int oe_fdtable_reassign(int fd, oe_fd_t* desc);
 
-oe_device_t* oe_fdtable_get(int fd, oe_device_type_t type);
+oe_fd_t* oe_fdtable_get(int fd, oe_fd_type_t type);
 
 int oe_fdtable_release(int fd);
 
-int oe_fdtable_assign(oe_device_t* device);
+int oe_fdtable_assign(oe_fd_t* desc);
 
 OE_EXTERNC_END
 

@@ -16,7 +16,7 @@ int oe_stat(const char* pathname, struct oe_stat* buf)
     if (!(fs = oe_mount_resolve(pathname, filepath)))
         OE_RAISE_ERRNO(oe_errno);
 
-    ret = OE_CALL_FS(stat, fs, filepath, buf);
+    ret = fs->ops.fs.stat(fs, filepath, buf);
 
 done:
     return ret;
@@ -34,10 +34,10 @@ int oe_stat_d(uint64_t devid, const char* pathname, struct oe_stat* buf)
     {
         oe_device_t* dev;
 
-        if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
+        if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILE_SYSTEM)))
             OE_RAISE_ERRNO(OE_EINVAL);
 
-        ret = OE_CALL_FS(stat, dev, pathname, buf);
+        ret = dev->ops.fs.stat(dev, pathname, buf);
     }
 
 done:
@@ -53,7 +53,7 @@ int oe_mkdir(const char* pathname, oe_mode_t mode)
     if (!(fs = oe_mount_resolve(pathname, filepath)))
         OE_RAISE_ERRNO(oe_errno);
 
-    ret = OE_CALL_FS(mkdir, fs, filepath, mode);
+    ret = fs->ops.fs.mkdir(fs, filepath, mode);
 
 done:
     return ret;
@@ -71,10 +71,10 @@ int oe_mkdir_d(uint64_t devid, const char* pathname, oe_mode_t mode)
     {
         oe_device_t* dev;
 
-        if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILESYSTEM)))
+        if (!(dev = oe_get_device(devid, OE_DEVICE_TYPE_FILE_SYSTEM)))
             OE_RAISE_ERRNO(OE_EINVAL);
 
-        ret = OE_CALL_FS(mkdir, dev, pathname, mode);
+        ret = dev->ops.fs.mkdir(dev, pathname, mode);
     }
 
 done:

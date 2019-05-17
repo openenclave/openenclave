@@ -14,6 +14,7 @@
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/posix/fdtable.h>
+#include <openenclave/internal/posix/device.h>
 
 #include "posix_t.h"
 
@@ -22,12 +23,12 @@ int oe_epoll_create(int size)
     int ret = -1;
     int epfd = -1;
     oe_device_t* device = NULL;
-    oe_device_t* epoll = NULL;
+    oe_fd_t* epoll = NULL;
 
     if (!(device = oe_get_device(OE_DEVID_HOST_EPOLL, OE_DEVICE_TYPE_EPOLL)))
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (!(epoll = OE_CALL_EPOLL(epoll_create, device, size)))
+    if (!(epoll = device->ops.epoll.epoll_create(device, size)))
         OE_RAISE_ERRNO(oe_errno);
 
     if ((epfd = oe_fdtable_assign(epoll)) == -1)
@@ -39,7 +40,7 @@ int oe_epoll_create(int size)
 done:
 
     if (epoll)
-        OE_CALL_BASE(close, epoll);
+        epoll->ops.fd.close(epoll);
 
     return ret;
 }
@@ -48,12 +49,12 @@ int oe_epoll_create1(int flags)
 {
     int epfd = -1;
     oe_device_t* device = NULL;
-    oe_device_t* epoll = NULL;
+    oe_fd_t* epoll = NULL;
 
     if (!(device = oe_get_device(OE_DEVID_HOST_EPOLL, OE_DEVICE_TYPE_EPOLL)))
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (!(epoll = OE_CALL_EPOLL(epoll_create1, device, flags)))
+    if (!(epoll = device->ops.epoll.epoll_create1(device, flags)))
         OE_RAISE_ERRNO(oe_errno);
 
     if ((epfd = oe_fdtable_assign(epoll)) == -1)
@@ -64,7 +65,7 @@ int oe_epoll_create1(int flags)
 done:
 
     if (epoll)
-        OE_CALL_BASE(close, epoll);
+        epoll->ops.fd.close(epoll);
 
     return epfd;
 }
@@ -72,14 +73,14 @@ done:
 int oe_epoll_ctl(int epfd, int op, int fd, struct oe_epoll_event* event)
 {
     int ret = -1;
-    oe_device_t* epoll;
+    oe_fd_t* epoll;
 
     oe_errno = 0;
 
-    if (!(epoll = oe_fdtable_get(epfd, OE_DEVICE_TYPE_EPOLL)))
+    if (!(epoll = oe_fdtable_get(epfd, OE_FD_TYPE_EPOLL)))
         OE_RAISE_ERRNO(OE_EBADF);
 
-    ret = OE_CALL_EPOLL(epoll_ctl, epoll, op, fd, event);
+    ret = epoll->ops.epoll.epoll_ctl(epoll, op, fd, event);
 
 done:
     return ret;
@@ -92,12 +93,12 @@ int oe_epoll_wait(
     int timeout)
 {
     int ret = -1;
-    oe_device_t* epoll;
+    oe_fd_t* epoll;
 
-    if (!(epoll = oe_fdtable_get(epfd, OE_DEVICE_TYPE_EPOLL)))
+    if (!(epoll = oe_fdtable_get(epfd, OE_FD_TYPE_EPOLL)))
         OE_RAISE_ERRNO(OE_EBADF);
 
-    ret = OE_CALL_EPOLL(epoll_wait, epoll, events, maxevents, timeout);
+    ret = epoll->ops.epoll.epoll_wait(epoll, events, maxevents, timeout);
 
 done:
 

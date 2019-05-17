@@ -6,7 +6,6 @@
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/posix/fdtable.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/thread.h>
@@ -17,14 +16,14 @@
 
 typedef struct _file
 {
-    struct _oe_device base;
+    oe_fd_t base;
     uint32_t magic;
     oe_host_fd_t host_fd;
 } file_t;
 
-static file_t* _cast_file(const oe_device_t* device)
+static file_t* _cast_file(const oe_fd_t* desc)
 {
-    file_t* file = (file_t*)device;
+    file_t* file = (file_t*)desc;
 
     if (file == NULL || file->magic != MAGIC)
         return NULL;
@@ -32,7 +31,7 @@ static file_t* _cast_file(const oe_device_t* device)
     return file;
 }
 
-static int _consolefs_dup(oe_device_t* file_, oe_device_t** new_file_out)
+static int _consolefs_dup(oe_fd_t* file_, oe_fd_t** new_file_out)
 {
     int ret = -1;
     file_t* file = _cast_file(file_);
@@ -64,7 +63,7 @@ static int _consolefs_dup(oe_device_t* file_, oe_device_t** new_file_out)
 
         *new_file = *file;
         new_file->host_fd = retval;
-        *new_file_out = (oe_device_t*)new_file;
+        *new_file_out = (oe_fd_t*)new_file;
     }
 
     ret = 0;
@@ -73,27 +72,10 @@ done:
     return ret;
 }
 
-static int _consolefs_release(oe_device_t* dev)
+static int _consolefs_ioctl(oe_fd_t* desc, unsigned long request, uint64_t arg)
 {
     int ret = -1;
-
-    if (!dev)
-        OE_RAISE_ERRNO(OE_EINVAL);
-
-    /* Free the device without closing the file descriptor. */
-    oe_free(dev);
-
-done:
-    return ret;
-}
-
-static int _consolefs_ioctl(
-    oe_device_t* dev,
-    unsigned long request,
-    uint64_t arg)
-{
-    int ret = -1;
-    file_t* file = _cast_file(dev);
+    file_t* file = _cast_file(desc);
 
     oe_errno = 0;
 
@@ -107,10 +89,10 @@ done:
     return ret;
 }
 
-static int _consolefs_fcntl(oe_device_t* dev, int cmd, uint64_t arg)
+static int _consolefs_fcntl(oe_fd_t* desc, int cmd, uint64_t arg)
 {
     int ret = -1;
-    file_t* file = _cast_file(dev);
+    file_t* file = _cast_file(desc);
 
     oe_errno = 0;
 
@@ -124,7 +106,7 @@ done:
     return ret;
 }
 
-static ssize_t _consolefs_read(oe_device_t* file_, void* buf, size_t count)
+static ssize_t _consolefs_read(oe_fd_t* file_, void* buf, size_t count)
 {
     ssize_t ret = -1;
     file_t* file = _cast_file(file_);
@@ -141,10 +123,7 @@ done:
     return ret;
 }
 
-static ssize_t _consolefs_write(
-    oe_device_t* file_,
-    const void* buf,
-    size_t count)
+static ssize_t _consolefs_write(oe_fd_t* file_, const void* buf, size_t count)
 {
     ssize_t ret = -1;
     file_t* file = _cast_file(file_);
@@ -161,7 +140,7 @@ done:
     return ret;
 }
 
-static oe_host_fd_t _consolefs_gethostfd(oe_device_t* file_)
+static oe_host_fd_t _consolefs_gethostfd(oe_fd_t* file_)
 {
     oe_host_fd_t ret = -1;
     file_t* file = _cast_file(file_);
@@ -175,10 +154,7 @@ done:
     return ret;
 }
 
-static oe_off_t _consolefs_lseek(
-    oe_device_t* file_,
-    oe_off_t offset,
-    int whence)
+static oe_off_t _consolefs_lseek(oe_fd_t* file_, oe_off_t offset, int whence)
 {
     oe_off_t ret = -1;
     file_t* file = _cast_file(file_);
@@ -195,7 +171,7 @@ done:
     return ret;
 }
 
-static int _consolefs_close(oe_device_t* file_)
+static int _consolefs_close(oe_fd_t* file_)
 {
     int ret = -1;
     file_t* file = _cast_file(file_);
@@ -220,42 +196,28 @@ done:
     return ret;
 }
 
-static oe_fs_ops_t _ops = {
-    .base.dup = _consolefs_dup,
-    .base.release = _consolefs_release,
-    .base.ioctl = _consolefs_ioctl,
-    .base.fcntl = _consolefs_fcntl,
-    .open = NULL,
-    .base.read = _consolefs_read,
-    .base.write = _consolefs_write,
-    .base.get_host_fd = _consolefs_gethostfd,
-    .clone = NULL,
-    .mount = NULL,
-    .unmount = NULL,
+static oe_file_ops_t _ops = {
+    .fd.dup = _consolefs_dup,
+    .fd.ioctl = _consolefs_ioctl,
+    .fd.fcntl = _consolefs_fcntl,
+    .fd.read = _consolefs_read,
+    .fd.write = _consolefs_write,
+    .fd.get_host_fd = _consolefs_gethostfd,
+    .fd.close = _consolefs_close,
     .lseek = _consolefs_lseek,
-    .base.close = _consolefs_close,
     .getdents = NULL,
-    .stat = NULL,
-    .access = NULL,
-    .link = NULL,
-    .unlink = NULL,
-    .rename = NULL,
-    .truncate = NULL,
-    .mkdir = NULL,
-    .rmdir = NULL,
 };
 
-static oe_device_t* _new_file(oe_host_fd_t host_fd)
+static oe_fd_t* _new_file(oe_host_fd_t host_fd)
 {
-    oe_device_t* ret = NULL;
+    oe_fd_t* ret = NULL;
     file_t* file = NULL;
 
     if (!(file = oe_calloc(1, sizeof(file_t))))
         goto done;
 
-    file->base.type = OE_DEVICE_TYPE_FILESYSTEM;
-    file->base.name = OE_DEVICE_NAME_CONSOLE_FILE_SYSTEM;
-    file->base.ops.fs = &_ops;
+    file->base.type = OE_FD_TYPE_FILE;
+    file->base.ops.file = _ops;
     file->magic = MAGIC;
     file->host_fd = host_fd;
 
@@ -265,7 +227,7 @@ done:
     return ret;
 }
 
-oe_device_t* oe_consolefs_create_file(uint32_t fileno)
+oe_fd_t* oe_consolefs_create_file(uint32_t fileno)
 {
     switch (fileno)
     {

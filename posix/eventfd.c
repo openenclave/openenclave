@@ -12,6 +12,7 @@
 #include <openenclave/internal/trace.h>
 #include <openenclave/corelibc/sys/eventfd.h>
 #include <openenclave/internal/posix/fdtable.h>
+#include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/posix/raise.h>
 
 int oe_eventfd(unsigned int initval, int flags)
@@ -19,12 +20,12 @@ int oe_eventfd(unsigned int initval, int flags)
     int ret = -1;
     int ed;
     oe_device_t* device;
-    oe_device_t* eventfd = NULL;
+    oe_fd_t* eventfd = NULL;
 
     if (!(device = oe_get_device(OE_DEVID_EVENTFD, OE_DEVICE_TYPE_EVENTFD)))
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (!(eventfd = OE_CALL_EVENTFD(eventfd, device, initval, flags)))
+    if (!(eventfd = device->ops.eventfd.eventfd(device, initval, flags)))
         OE_RAISE_ERRNO(oe_errno);
 
     if ((ed = oe_fdtable_assign(eventfd)) == -1)
@@ -36,7 +37,7 @@ int oe_eventfd(unsigned int initval, int flags)
 done:
 
     if (eventfd)
-        OE_CALL_BASE(close, eventfd);
+        return eventfd->ops.fd.close(eventfd);
 
     return ret;
 }
