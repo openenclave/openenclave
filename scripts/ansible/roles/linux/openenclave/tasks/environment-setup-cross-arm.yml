@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+---
 - name: Include base setup
   include_tasks: environment-setup.yml
 
@@ -24,10 +25,6 @@
 - apt_repository:
     repo: deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports {{ ansible_distribution_release }}-backports main restricted universe multiverse
     state: present
-
-- name: Include vars
-  include_vars:
-    file: "{{ ansible_distribution_release | lower }}-cross-arm.yml"
 
 - name: Install the additional Open Enclave prerequisites APT packages for ARM development
   apt:

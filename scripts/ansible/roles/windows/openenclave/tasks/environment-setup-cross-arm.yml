@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+---
 - name: Include base setup
   include_tasks: environment-setup.yml
 
