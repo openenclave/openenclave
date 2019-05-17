@@ -115,13 +115,23 @@ let oe_gen_marshal_struct (fd : func_decl) (errno : bool)
     (* We need to check Ptrs for Foreign or Struct types, then check
        those against the user's structs, and then check if any members
        should be deep copied. *)
-    let struct_names = List.map (fun s -> s.sname) structs in
-    let should_deepcopy = function
+    let get_struct = function
       | Ptr a -> (
         match a with
-        | Foreign n | Struct n -> List.mem n struct_names
-        | _ -> false )
-      | _ -> false
+        | Foreign n | Struct n -> List.find_opt (fun s -> s.sname = n) structs
+        | _ -> None )
+      | _ -> None
+    in
+    let should_deepcopy a =
+      let s = get_struct a in
+      let should_copy_member (ptype, _) =
+        match ptype with
+        | PTPtr (_, attr) -> attr.pa_size <> empty_ptr_size
+        | PTVal _ -> false
+      in
+      match s with
+      | Some s -> List.exists should_copy_member s.smlist
+      | None -> false
     in
     let tystr = get_tystr aty in
     let tystr =
