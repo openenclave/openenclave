@@ -108,13 +108,19 @@ let open_file (filename : string) (dir : string) =
 
 (** [oe_gen_marshal_struct_impl] generates a marshalling [struct]
     definition. *)
-let oe_gen_marshal_struct =
+let oe_gen_marshal_struct (fd : func_decl) (errno : bool)
+    (structs : struct_def list) =
   let gen_member_decl (ptype : parameter_type) (decl : declarator) =
     let aty = get_param_atype ptype in
-    (* We need to check Ptrs for Foreign or Struct types and check
-       those against the structs in comp_defs. *)
+    (* We need to check Ptrs for Foreign or Struct types, then check
+       those against the user's structs, and then check if any members
+       should be deep copied. *)
+    let struct_names = List.map (fun s -> s.sname) structs in
     let should_deepcopy = function
-      | Ptr a -> ( match a with Foreign _ | Struct _ -> true | _ -> false )
+      | Ptr a -> (
+        match a with
+        | Foreign n | Struct n -> List.mem n struct_names
+        | _ -> false )
       | _ -> false
     in
     let tystr = get_tystr aty in
@@ -134,29 +140,24 @@ let oe_gen_marshal_struct =
     ; ( if should_deepcopy aty then sprintf "/* deep copy %s */" decl.identifier
       else "" ) ]
   in
-  let f (fd : func_decl) (errno : bool) =
-    let struct_name = fd.fname ^ "_args_t" in
-    let retval_decl = {identifier= "_retval"; array_dims= []} in
-    let members =
-      List.flatten
-        [ ["oe_result_t _result;"]
-        ; ( if fd.rtype = Void then [""]
-          else gen_member_decl (PTVal fd.rtype) retval_decl )
-        ; (if errno then ["int _ocall_errno;"] else [""])
-        ; List.flatten
-            (List.map
-               (fun (ptype, decl) -> gen_member_decl ptype decl)
-               (List.map conv_array_to_ptr fd.plist)) ]
-    in
-    [ sprintf "typedef struct _%s" struct_name
-    ; "{"
-    ; "    " ^ String.concat "\n    " (List.filter (fun p -> p <> "") members)
-    ; sprintf "} %s;" struct_name
-    ; "" ]
+  let struct_name = fd.fname ^ "_args_t" in
+  let retval_decl = {identifier= "_retval"; array_dims= []} in
+  let members =
+    List.flatten
+      [ ["oe_result_t _result;"]
+      ; ( if fd.rtype = Void then [""]
+        else gen_member_decl (PTVal fd.rtype) retval_decl )
+      ; (if errno then ["int _ocall_errno;"] else [""])
+      ; List.flatten
+          (List.map
+             (fun (ptype, decl) -> gen_member_decl ptype decl)
+             (List.map conv_array_to_ptr fd.plist)) ]
   in
-  function
-  | Trusted tf -> f tf.tf_fdecl false
-  | Untrusted uf -> f uf.uf_fdecl uf.uf_propagate_errno
+  [ sprintf "typedef struct _%s" struct_name
+  ; "{"
+  ; "    " ^ String.concat "\n    " (List.filter (fun p -> p <> "") members)
+  ; sprintf "} %s;" struct_name
+  ; "" ]
 
 (** [oe_get_param_size] is the most complex function. For a parameter,
     get its size expression. *)
@@ -317,16 +318,28 @@ let oe_gen_args_header (ec : enclave_content) (dir : string) =
     if cts <> [] then List.flatten (List.map emit_composite_type cts)
     else ["/* There were no user defined types. */"; ""]
   in
+  let structs =
+    let empty_struct = {sname= ""; smlist= []} in
+    (* Where is List.filter_map?! *)
+    List.map
+      (function StructDef s -> s | _ -> empty_struct)
+      (List.filter (function StructDef _ -> true | _ -> false) ec.comp_defs)
+  in
   let oe_gen_ecall_marshal_structs (tfs : trusted_func list) =
     if tfs <> [] then
       List.flatten
-        (List.map (fun tf -> oe_gen_marshal_struct (Trusted tf)) tfs)
+        (List.map
+           (fun tf -> oe_gen_marshal_struct tf.tf_fdecl false structs)
+           tfs)
     else ["/* There were no ecalls. */"; ""]
   in
   let oe_gen_ocall_marshal_structs (ufs : untrusted_func list) =
     if ufs <> [] then
       List.flatten
-        (List.map (fun uf -> oe_gen_marshal_struct (Untrusted uf)) ufs)
+        (List.map
+           (fun uf ->
+             oe_gen_marshal_struct uf.uf_fdecl uf.uf_propagate_errno structs )
+           ufs)
     else ["/* There were no ocalls. */"; ""]
   in
   let with_errno =
