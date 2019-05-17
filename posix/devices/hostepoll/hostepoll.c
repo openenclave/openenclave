@@ -433,7 +433,7 @@ static int _epoll_wait(
 
             oe_spin_lock(&epoll->lock);
             {
-                if (!(pair = _map_find(epoll, event->data.fd)))
+                if ((pair = _map_find(epoll, event->data.fd)))
                     event->data.u64 = pair->event.data.u64;
             }
             oe_spin_unlock(&epoll->lock);

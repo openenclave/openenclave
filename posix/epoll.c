@@ -77,8 +77,6 @@ int oe_epoll_ctl(int epfd, int op, int fd, struct oe_epoll_event* event)
     int ret = -1;
     oe_fd_t* epoll;
 
-    oe_errno = 0;
-
     if (!(epoll = oe_fdtable_get(epfd, OE_FD_TYPE_EPOLL)))
         OE_RAISE_ERRNO(OE_EBADF);
 
