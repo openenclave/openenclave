@@ -55,11 +55,12 @@ done:
 int oe_open_d(uint64_t devid, const char* pathname, int flags, oe_mode_t mode)
 {
     int ret = -1;
+    int fd;
     oe_fd_t* file = NULL;
 
     if (devid == OE_DEVID_NONE)
     {
-        ret = oe_open(pathname, flags, mode);
+        fd = oe_open(pathname, flags, mode);
     }
     else
     {
@@ -72,10 +73,11 @@ int oe_open_d(uint64_t devid, const char* pathname, int flags, oe_mode_t mode)
         if (!(file = dev->ops.fs.open(dev, pathname, flags, mode)))
             OE_RAISE_ERRNO_MSG(oe_errno, "pathname=%s mode=%u", pathname, mode);
 
-        if ((ret = oe_fdtable_assign(file)) == -1)
+        if ((fd = oe_fdtable_assign(file)) == -1)
             OE_RAISE_ERRNO(oe_errno);
     }
 
+    ret = fd;
     file = NULL;
 
 done:
