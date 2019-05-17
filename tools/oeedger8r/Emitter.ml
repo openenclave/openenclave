@@ -106,33 +106,30 @@ let open_file (filename : string) (dir : string) =
   fprintf os " */\n" ;
   os
 
+(** We need to check Ptrs for Foreign or Struct types, then check
+    those against the user's structs, and then check if any members
+    should be deep copied. *)
+let should_deepcopy a structs =
+  let get_struct = function
+    | Ptr a -> (
+      match a with
+      | Foreign n | Struct n -> List.assoc_opt n structs
+      | _ -> None )
+    | _ -> None
+  in
+  let s = get_struct a in
+  let should_deepcopy_member (ptype, _) =
+    match ptype with
+    | PTPtr (_, attr) -> attr.pa_size <> empty_ptr_size
+    | PTVal _ -> false
+  in
+  match s with Some s -> List.filter should_deepcopy_member s | None -> []
+
 (** [oe_gen_marshal_struct_impl] generates a marshalling [struct]
     definition. *)
-let oe_gen_marshal_struct (fd : func_decl) (errno : bool)
-    (structs : struct_def list) =
-  let gen_member_decl (ptype : parameter_type) (decl : declarator) =
+let oe_gen_marshal_struct (fd : func_decl) (errno : bool) structs =
+  let gen_member_decl (ptype, decl) =
     let aty = get_param_atype ptype in
-    (* We need to check Ptrs for Foreign or Struct types, then check
-       those against the user's structs, and then check if any members
-       should be deep copied. *)
-    let get_struct = function
-      | Ptr a -> (
-        match a with
-        | Foreign n | Struct n -> List.find_opt (fun s -> s.sname = n) structs
-        | _ -> None )
-      | _ -> None
-    in
-    let should_deepcopy a =
-      let s = get_struct a in
-      let should_copy_member (ptype, _) =
-        match ptype with
-        | PTPtr (_, attr) -> attr.pa_size <> empty_ptr_size
-        | PTVal _ -> false
-      in
-      match s with
-      | Some s -> List.exists should_copy_member s.smlist
-      | None -> false
-    in
     let tystr = get_tystr aty in
     let tystr =
       if is_foreign_array ptype then
@@ -147,7 +144,12 @@ let oe_gen_marshal_struct (fd : func_decl) (errno : bool)
     [ sprintf "%s %s;" tystr decl.identifier
     ; ( if need_strlen ptype then sprintf "size_t %s_len;" decl.identifier
       else "" )
-    ; ( if should_deepcopy aty then sprintf "/* deep copy %s */" decl.identifier
+    ; ( if should_deepcopy aty structs <> [] then
+        sprintf "/* deep copy %s: %s */" decl.identifier
+          (String.concat ", "
+             (List.map
+                (fun (_, d) -> d.identifier)
+                (should_deepcopy aty structs)))
       else "" ) ]
   in
   let struct_name = fd.fname ^ "_args_t" in
@@ -156,12 +158,10 @@ let oe_gen_marshal_struct (fd : func_decl) (errno : bool)
     List.flatten
       [ ["oe_result_t _result;"]
       ; ( if fd.rtype = Void then [""]
-        else gen_member_decl (PTVal fd.rtype) retval_decl )
+        else gen_member_decl (PTVal fd.rtype, retval_decl) )
       ; (if errno then ["int _ocall_errno;"] else [""])
       ; List.flatten
-          (List.map
-             (fun (ptype, decl) -> gen_member_decl ptype decl)
-             (List.map conv_array_to_ptr fd.plist)) ]
+          (List.map gen_member_decl (List.map conv_array_to_ptr fd.plist)) ]
   in
   [ sprintf "typedef struct _%s" struct_name
   ; "{"
@@ -317,6 +317,13 @@ let emit_untrusted_function_ids (ufs : untrusted_func list) (name : string) =
   ; sprintf "    %s_fcn_id_untrusted_call_max = OE_ENUM_MAX" name
   ; "};" ]
 
+let get_structs cts =
+  (* Where is List.filter_map?! Transform the [struct_def list] into
+     an [assoc] list. *)
+  List.map
+    (function StructDef s -> (s.sname, s.smlist) | _ -> ("", []))
+    (List.filter (function StructDef _ -> true | _ -> false) cts)
+
 (** Generate [args.h] which contains [struct]s for ecalls and ocalls *)
 let oe_gen_args_header (ec : enclave_content) (dir : string) =
   let oe_gen_user_includes (includes : string list) =
@@ -328,13 +335,7 @@ let oe_gen_args_header (ec : enclave_content) (dir : string) =
     if cts <> [] then List.flatten (List.map emit_composite_type cts)
     else ["/* There were no user defined types. */"; ""]
   in
-  let structs =
-    let empty_struct = {sname= ""; smlist= []} in
-    (* Where is List.filter_map?! *)
-    List.map
-      (function StructDef s -> s | _ -> empty_struct)
-      (List.filter (function StructDef _ -> true | _ -> false) ec.comp_defs)
-  in
+  let structs = get_structs ec.comp_defs in
   let oe_gen_ecall_marshal_structs (tfs : trusted_func list) =
     if tfs <> [] then
       List.flatten
