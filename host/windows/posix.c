@@ -1776,7 +1776,19 @@ int oe_posix_getsockname_ocall(
     oe_socklen_t addrlen_in,
     oe_socklen_t* addrlen_out)
 {
-    PANIC;
+    int ret;
+
+    errno = 0;
+
+    ret = getsockname((int)sockfd, (struct sockaddr*)addr, &addrlen_in);
+
+    if (ret != -1)
+    {
+        if (addrlen_out)
+            *addrlen_out = addrlen_in;
+    }
+
+    return ret;
 }
 
 int oe_posix_getpeername_ocall(
@@ -1785,7 +1797,19 @@ int oe_posix_getpeername_ocall(
     oe_socklen_t addrlen_in,
     oe_socklen_t* addrlen_out)
 {
-    PANIC;
+    int ret;
+
+    errno = 0;
+
+    ret = getpeername((int)sockfd, (struct sockaddr*)addr, &addrlen_in);
+
+    if (ret != -1)
+    {
+        if (addrlen_out)
+            *addrlen_out = addrlen_in;
+    }
+
+    return ret;
 }
 
 int oe_posix_shutdown_sockets_device_ocall(oe_host_fd_t sockfd)
