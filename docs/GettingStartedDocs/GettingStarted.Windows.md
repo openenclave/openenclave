@@ -20,12 +20,10 @@ Windows.
    - For client: Windows 10 64-bit with Fall Creators Update (1709) or newer
 - [Intel® SGX Platform Software for Windows (PSW)](
   https://software.intel.com/sites/default/files/managed/0f/c8/Intel-SGX-PSW-Release-Notes-for-Windows-OS.pdf)
-- [Microsoft Visual Studio 2017](https://www.visualstudio.com/downloads/)
+- [Microsoft Visual Studio 2017](https://visualstudio.microsoft.com/vs/older-downloads/)
 - [Git for Windows 64-bit](https://git-scm.com/download/win)
-- [clang (preferably version 7.0 or above)](http://releases.llvm.org/download.html)  
-- [OCaml for Windows 64-bit](https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/) (Please download and install the mingw64 exe for OCaml)
-- [LLVM for Windows 64-bit](http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe)
-- [shellcheck for Windows](https://storage.googleapis.com/shellcheck/shellcheck-stable.zip)
+- [OCaml for Windows 64-bit](https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/ocpwin64-20160113-4.01.0+ocp1-mingw64.exe)
+- [Clang/LLVM for Windows 64-bit](http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe)
 
 Intel® SGX Platform Software for Windows (PSW)
 ---------------------------------
@@ -42,8 +40,9 @@ The state of the service should be "running" (4). Follow Intel's documentation f
 
 Microsoft Visual Studio 2017
 ---------------------------------
-Install the latest version of [Microsoft Visual Studio 2017](https://www.visualstudio.com/downloads/).
+Install [Microsoft Visual Studio 2017](https://visualstudio.microsoft.com/vs/older-downloads/).
 Visual Studio 2017's CMake support (ver 3.12 or above) is required for building the Open Enclave SDK.
+Note cmake in Visual Studio 2019 is not fully supported yet.
 For more information about cmake support, refer to
 https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studio/
 
@@ -63,7 +62,7 @@ C:\Program Files\Git\bin\bash.exe
 
 Clang
 ---------------------------------
-Install the latest version of Clang and add the LLVM folder (typically C:\Program Files\LLVM\bin)
+Install Clang 7.0.1 and add the LLVM folder (typically C:\Program Files\LLVM\bin)
 to the path. Open Enclave SDK uses clang to build the enclave binaries.
 
 Open up a command prompt and ensure that clang is available in the path:
@@ -78,7 +77,7 @@ C:\Program Files\LLVM\bin\ld.lld.exe
 
 OCaml
 ---------------------------------
-Install [OCaml for Windows (64-bit)](https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/).
+Install [OCaml for Windows (64-bit)](https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/ocpwin64-20160113-4.01.0+ocp1-mingw64.exe).
 Please download and install the mingw64 exe for OCaml, for example, ocpwin64-20160113-4.02.1+ocp1-mingw64.exe.
 
 [Alternate OCaml Web-site](https://fdopen.github.io/opam-repository-mingw/installation/)
@@ -122,7 +121,7 @@ https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studi
    (e.g. C:\openenclave\CMakeLists.txt)
 3. The CMake menu option should appear when it detects that a valid CMake project
    is loaded. VS2017 will then recursively walk the repo directory structure and
-   generate a cache for the project to display Intellisense.
+   generate a cache for the project to display Intellisense. This may take several minutes the first time.
 4. Open Enclave is only supported for 64-bit. By default the `x64-Debug` configuration is 
    selected.
 5. Once cache generation is complete, you can build the project via the CMake >
@@ -149,12 +148,21 @@ C:\openenclave\build\x64-Debug
 1. Launch the [x64 Native Tools Command Prompt for VS 2017](
 https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs)
 Normally this is accessible under the `Visual Studio 2017` folder in the Start Menu.
-2. At the x64 Native Tools command prompt, use cmake and nmake to build the project:
+2. At the x64 Native Tools command prompt, use cmake and ninja to build the debug version:
    ```cmd
    cd C:\openenclave
    mkdir build\x64-Debug
    cd build\x64-Debug
    cmake -G Ninja -DBUILD_ENCLAVES=1 ../..
+   ninja
+   ```
+
+   Similarly, we could build the release version with:
+    ```cmd
+   cd C:\openenclave
+   mkdir build\x64-Release
+   cd build\x64-Release
+   cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_ENCLAVES=1 ../..
    ninja
    ```
 
@@ -176,17 +184,9 @@ At the x64 Native Tools command prompt do:
 ctest
 ```
 
-Simulation mode
-```cmd
-set OE_SIMULATION=1
-ctest
-```
-
 Known Issues
 ------------
 * Samples have not yet been ported to Windows
 * Not all tests currently run on Windows. See See tests/CMakeLists for a list of supported tests.  
-* Failing simulation tests can be disabled by defining `WIN32_SIMULATION` in `cmake` arguments. I.e.:
-  ```cmd
-  cmake.exe -G Ninja -DBUILD_ENCLAVES=1 -DWIN32_SIMULATION=1 ../..
+* Simulation mode is disabled on Windows due to issue [#1753](https://github.com/microsoft/openenclave/issues/1753).
   ```
