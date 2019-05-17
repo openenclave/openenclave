@@ -47,16 +47,16 @@ int main(int argc, const char* argv[])
     tmp_dir = oe_win_path_to_posix(tmp_dir);
 #endif
     r = test_fs(enclave, src_dir, tmp_dir);
-#if defined(_WIN32)
-    free(src_dir);
-    free(tmp_dir);
-#endif
     OE_TEST(r == OE_OK);
 
     r = oe_terminate_enclave(enclave);
     OE_TEST(r == OE_OK);
 
     printf("=== passed all tests (hostfs)\n");
+#if defined(_WIN32)
+    free(src_dir);
+    free(tmp_dir);
+#endif
 
     return 0;
 }

@@ -20,12 +20,14 @@ int main(int argc, const char* argv[])
     }
 
     const char* enclave_path = argv[1];
-    const char* tmp_dir = argv[2];
+    char* tmp_dir = (char*)argv[2];
 
     r = oe_create_test_dup_enclave(
         enclave_path, type, flags, NULL, 0, &enclave);
     OE_TEST(r == OE_OK);
-
+#if defined(_WIN32)
+    tmp_dir = oe_win_path_to_posix(tmp_dir);
+#endif
     r = test_dup(enclave, tmp_dir);
     OE_TEST(r == OE_OK);
 
@@ -33,6 +35,9 @@ int main(int argc, const char* argv[])
     OE_TEST(r == OE_OK);
 
     printf("=== passed all tests (test_dup)\n");
+#if defined(_WIN32)
+    free(tmp_dir);
+#endif
 
     return 0;
 }

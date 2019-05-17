@@ -26,6 +26,9 @@ int main(int argc, const char* argv[])
         enclave_path, type, flags, NULL, 0, &enclave);
     OE_TEST(r == OE_OK);
 
+#if defined(_WIN32)
+    tmp_dir = oe_win_path_to_posix(tmp_dir);
+#endif
     r = test_hostfs(enclave, tmp_dir);
     OE_TEST(r == OE_OK);
 
@@ -33,6 +36,9 @@ int main(int argc, const char* argv[])
     OE_TEST(r == OE_OK);
 
     printf("=== passed all tests (test_hostfs)\n");
+#if defined(_WIN32)
+    free(tmp_dir);
+#endif
 
     return 0;
 }

@@ -131,7 +131,7 @@ int main(int argc, const char* argv[])
     size_t test_data_len = 1024;
     int done = 0;
     bool use_libc = false;
-    const char* tmp_dir;
+    char* tmp_dir;
 
     if (argc != 4)
     {
@@ -147,7 +147,10 @@ int main(int argc, const char* argv[])
     WSAStartup(MAKEWORD(2, 2), &wsadata);
 #endif
 
-    tmp_dir = argv[2];
+    tmp_dir = (char*)argv[2];
+#if defined(_WIN32)
+    tmp_dir = oe_win_path_to_posix(tmp_dir);
+#endif
 
     if (strcmp(argv[3], "libc") == 0)
         use_libc = true;
@@ -270,6 +273,9 @@ int main(int argc, const char* argv[])
     OE_TEST(oe_terminate_enclave(enclave) == OE_OK);
 
     printf("=== passed all tests (epoll_test)\n");
+#if defined(_WIN32)
+    free(tmp_dir);
+#endif
 
     return 0;
 }
