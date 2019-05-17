@@ -817,22 +817,34 @@ oe_host_fd_t oe_posix_open_ocall(
             }
         }
 
+        // in linux land, we can always share files for read and write unless they have
+        // been opened exclusive
+        share_mode = FILE_SHARE_READ | FILE_SHARE_WRITE;
         const int ACCESS_FLAGS = 0x3; // Covers rdonly, wronly rdwr
         switch (flags & ACCESS_FLAGS)
         {
             case OE_O_RDONLY: // 0
                 desired_access |= GENERIC_READ;
-                share_mode = FILE_SHARE_READ;
+                if (flags & OE_O_EXCL)
+                {
+                    share_mode = FILE_SHARE_WRITE;
+                }
                 break;
 
             case OE_O_WRONLY: // 1
                 desired_access |= GENERIC_WRITE;
-                share_mode = FILE_SHARE_WRITE;
+                if (flags & OE_O_EXCL)
+                {
+                    share_mode = FILE_SHARE_READ;
+                }
                 break;
 
             case OE_O_RDWR: // 2 or 3
                 desired_access |= GENERIC_READ | GENERIC_WRITE;
-                share_mode = FILE_SHARE_READ | FILE_SHARE_WRITE;
+                if (flags & OE_O_EXCL)
+                {
+                    share_mode = 0;
+                }
                 break;
 
             default:
@@ -841,6 +853,7 @@ oe_host_fd_t oe_posix_open_ocall(
                 goto done;
                 break;
         }
+
 
         if (mode & OE_S_IRUSR)
             desired_access |= GENERIC_READ;
