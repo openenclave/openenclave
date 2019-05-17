@@ -11,6 +11,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/posix/fd.h>
 #include <openenclave/internal/posix/fdtable.h>
+#include <openenclave/internal/posix/lock.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/thread.h>
@@ -227,14 +228,15 @@ int oe_fdtable_assign(oe_fd_t* desc)
 {
     int ret = -1;
     size_t index;
-
-    oe_spin_lock(&_lock);
-
-    if (_initialize() != 0)
-        OE_RAISE_ERRNO(oe_errno);
+    bool locked = false;
 
     if (!desc)
         OE_RAISE_ERRNO(OE_EINVAL);
+
+    oe_conditional_lock(&_lock, &locked);
+
+    if (_initialize() != 0)
+        OE_RAISE_ERRNO(oe_errno);
 
     if (_check_fd(desc) != 0)
         OE_RAISE_ERRNO(oe_errno);
@@ -258,7 +260,7 @@ int oe_fdtable_assign(oe_fd_t* desc)
 
 done:
 
-    oe_spin_unlock(&_lock);
+    oe_conditional_unlock(&_lock, &locked);
 
     return ret;
 }
@@ -266,8 +268,9 @@ done:
 int oe_fdtable_release(int fd)
 {
     int ret = -1;
+    bool locked = false;
 
-    oe_spin_lock(&_lock);
+    oe_conditional_lock(&_lock, &locked);
 
     if (_initialize() != 0)
         OE_RAISE_ERRNO(oe_errno);
@@ -286,7 +289,7 @@ int oe_fdtable_release(int fd)
 
 done:
 
-    oe_spin_unlock(&_lock);
+    oe_conditional_unlock(&_lock, &locked);
 
     return ret;
 }
@@ -294,14 +297,15 @@ done:
 int oe_fdtable_reassign(int fd, oe_fd_t* desc)
 {
     int ret = -1;
-
-    oe_spin_lock(&_lock);
-
-    if (_initialize() != 0)
-        OE_RAISE_ERRNO(oe_errno);
+    bool locked = false;
 
     if (desc && _check_fd(desc) != 0)
         OE_RAISE_ERRNO_MSG(OE_EINVAL, "bad desc parameter: %u\n", desc->type);
+
+    oe_conditional_lock(&_lock, &locked);
+
+    if (_initialize() != 0)
+        OE_RAISE_ERRNO(oe_errno);
 
     /* Make table big enough to contain this file-descriptor. */
     if (fd >= 0)
@@ -323,7 +327,7 @@ int oe_fdtable_reassign(int fd, oe_fd_t* desc)
 
 done:
 
-    oe_spin_unlock(&_lock);
+    oe_conditional_unlock(&_lock, &locked);
 
     return ret;
 }
@@ -331,8 +335,9 @@ done:
 static oe_fd_t* _get_fd(int fd)
 {
     oe_fd_t* ret = NULL;
+    bool locked = false;
 
-    oe_spin_lock(&_lock);
+    oe_conditional_lock(&_lock, &locked);
 
     if (_initialize() != 0)
         OE_RAISE_ERRNO(oe_errno);
@@ -347,7 +352,7 @@ static oe_fd_t* _get_fd(int fd)
 
 done:
 
-    oe_spin_unlock(&_lock);
+    oe_conditional_unlock(&_lock, &locked);
 
     return ret;
 }

@@ -8,6 +8,7 @@
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/posix/lock.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/thread.h>
@@ -62,13 +63,14 @@ int oe_sigaction(
     struct oe_sigaction* oldact)
 {
     int retval = -1;
-
-    oe_spin_lock(&_lock);
+    bool locked = false;
 
     oe_register_posix_ecall_function_table();
 
     if (signum >= __OE_NSIG)
         OE_RAISE_ERRNO(OE_EINVAL);
+
+    oe_conditional_lock(&_lock, &locked);
 
     if (oldact)
     {
@@ -83,7 +85,7 @@ int oe_sigaction(
     retval = 0;
 done:
 
-    oe_spin_unlock(&_lock);
+    oe_conditional_unlock(&_lock, &locked);
 
     return retval;
 }
@@ -91,17 +93,18 @@ done:
 oe_sighandler_t oe_signal(int signum, oe_sighandler_t handler)
 {
     oe_sighandler_t retval = OE_SIG_ERR;
+    bool locked = false;
 
     oe_register_posix_ecall_function_table();
 
     if (signum >= __OE_NSIG)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    oe_spin_lock(&_lock);
+    oe_conditional_lock(&_lock, &locked);
     _actions[signum].__oe_sigaction_handler.oe_sa_handler = handler;
-    oe_spin_unlock(&_lock);
 
 done:
+    oe_conditional_unlock(&_lock, &locked);
 
     return retval;
 }
@@ -109,11 +112,12 @@ done:
 int oe_posix_signal_notify_ecall(int signum)
 {
     int ret = -1;
-
-    oe_spin_lock(&_lock);
+    bool locked = false;
 
     if (signum >= __OE_NSIG)
         OE_RAISE_ERRNO(OE_EINVAL);
+
+    oe_conditional_lock(&_lock, &locked);
 
     if (_actions[signum].oe_sa_flags & OE_SA_SIGINFO)
     {
@@ -157,7 +161,7 @@ int oe_posix_signal_notify_ecall(int signum)
     }
 
 done:
-    oe_spin_unlock(&_lock);
+    oe_conditional_unlock(&_lock, &locked);
 
     return ret;
 }

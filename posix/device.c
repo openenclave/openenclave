@@ -9,6 +9,7 @@
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/internal/posix/device.h>
+#include <openenclave/internal/posix/lock.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/thread.h>
@@ -149,8 +150,12 @@ done:
 int oe_device_table_set(uint64_t devid, oe_device_t* device)
 {
     int ret = -1;
+    bool locked = false;
 
-    oe_spin_lock(&_lock);
+    if (!device)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    oe_conditional_lock(&_lock, &locked);
 
     if (_check_device(device) != 0)
         OE_RAISE_ERRNO(oe_errno);
@@ -166,7 +171,7 @@ int oe_device_table_set(uint64_t devid, oe_device_t* device)
     ret = 0;
 
 done:
-    oe_spin_unlock(&_lock);
+    oe_conditional_unlock(&_lock, &locked);
 
     return ret;
 }
@@ -195,9 +200,9 @@ oe_device_t* oe_device_table_get(uint64_t devid, oe_device_type_t type)
 {
     oe_device_t* ret;
 
-    oe_spin_lock(&_lock);
+    oe_conditional_lock(&_lock, NULL);
     ret = _get_device(devid, type);
-    oe_spin_unlock(&_lock);
+    oe_conditional_unlock(&_lock, NULL);
 
     return ret;
 }
@@ -207,11 +212,12 @@ oe_device_t* oe_device_table_find(const char* name, oe_device_type_t type)
     oe_device_t* ret = NULL;
     oe_device_t* device = NULL;
     size_t i;
-
-    oe_spin_lock(&_lock);
+    bool locked = false;
 
     if (!name)
         goto done;
+
+    oe_conditional_lock(&_lock, &locked);
 
     for (i = 0; i < _table_size; i++)
     {
@@ -230,7 +236,7 @@ oe_device_t* oe_device_table_find(const char* name, oe_device_type_t type)
     ret = device;
 
 done:
-    oe_spin_unlock(&_lock);
+    oe_conditional_unlock(&_lock, &locked);
 
     return ret;
 }
@@ -239,8 +245,9 @@ int oe_device_table_remove(uint64_t devid)
 {
     int ret = -1;
     oe_device_t* device;
+    bool locked = false;
 
-    oe_spin_lock(&_lock);
+    oe_conditional_lock(&_lock, &locked);
 
     if (!(device = _get_device(devid, OE_DEVICE_TYPE_ANY)))
         OE_RAISE_ERRNO(OE_EINVAL);
@@ -256,7 +263,7 @@ int oe_device_table_remove(uint64_t devid)
     ret = 0;
 
 done:
-    oe_spin_unlock(&_lock);
+    oe_conditional_unlock(&_lock, &locked);
 
     return ret;
 }

@@ -11,6 +11,7 @@
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/posix/fdtable.h>
+#include <openenclave/internal/posix/lock.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/time.h>
@@ -76,22 +77,19 @@ char* oe_getcwd(char* buf, size_t size)
         p = buf;
     }
 
-    oe_spin_lock(&_cwd_lock);
-    locked = true;
+    oe_conditional_lock(&_cwd_lock, &locked);
 
     if (oe_strlcpy(p, _cwd, n) >= n)
         OE_RAISE_ERRNO(OE_ERANGE);
 
-    oe_spin_unlock(&_cwd_lock);
-    locked = false;
+    oe_conditional_unlock(&_cwd_lock, &locked);
 
     ret = p;
     p = NULL;
 
 done:
 
-    if (locked)
-        oe_spin_unlock(&_cwd_lock);
+    oe_conditional_unlock(&_cwd_lock, &locked);
 
     if (p && p != buf)
         oe_free(p);
@@ -125,18 +123,18 @@ int oe_chdir(const char* path)
     }
 
     /* Set the _cwd global. */
-    oe_spin_lock(&_cwd_lock);
-    locked = true;
+    oe_conditional_lock(&_cwd_lock, &locked);
 
     if (oe_strlcpy(_cwd, real_path, OE_PATH_MAX) >= OE_PATH_MAX)
         OE_RAISE_ERRNO(OE_ENAMETOOLONG);
+
+    oe_conditional_unlock(&_cwd_lock, &locked);
 
     ret = 0;
 
 done:
 
-    if (locked)
-        oe_spin_unlock(&_cwd_lock);
+    oe_conditional_unlock(&_cwd_lock, &locked);
 
     return ret;
 }

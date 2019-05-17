@@ -37,6 +37,7 @@ add_library(oeposix STATIC
     fdtable.c
     mount.c
     netdb.c
+    lock.c
     poll.c
     select.c
     signal.c
