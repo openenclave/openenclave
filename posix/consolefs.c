@@ -3,6 +3,7 @@
 
 #include <openenclave/enclave.h>
 
+#include <openenclave/corelibc/fcntl.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
@@ -22,6 +23,8 @@ typedef struct _file
     oe_host_fd_t host_fd;
 } file_t;
 
+static oe_file_ops_t _get_ops(void);
+
 static file_t* _cast_file(const oe_fd_t* file_)
 {
     file_t* file = (file_t*)file_;
@@ -36,7 +39,7 @@ static int _consolefs_dup(oe_fd_t* file_, oe_fd_t** new_file_out)
 {
     int ret = -1;
     file_t* file = _cast_file(file_);
-    oe_host_fd_t retval = -1;
+    file_t* new_file = NULL;
 
     if (new_file_out)
         *new_file_out = NULL;
@@ -44,30 +47,39 @@ static int _consolefs_dup(oe_fd_t* file_, oe_fd_t** new_file_out)
     if (!file || !new_file_out)
         OE_RAISE_ERRNO(OE_EINVAL);
 
+    /* Allocate and initialize a new file structure. */
+    {
+        if (!(new_file = oe_calloc(1, sizeof(file_t))))
+            OE_RAISE_ERRNO(OE_ENOMEM);
+
+        new_file->base.type = OE_FD_TYPE_FILE;
+        new_file->base.ops.file = _get_ops();
+        new_file->magic = MAGIC;
+    }
+
     /* Ask the host to perform this operation. */
     {
+        oe_host_fd_t retval = -1;
+
         if (oe_posix_dup_ocall(&retval, file->host_fd) != OE_OK)
             OE_RAISE_ERRNO(OE_EINVAL);
 
         if (retval == -1)
             OE_RAISE_ERRNO(oe_errno);
-    }
 
-    /* Allocate and initialize a new file structure. */
-    {
-        file_t* new_file;
-
-        if (!(new_file = oe_calloc(1, sizeof(file_t))))
-            OE_RAISE_ERRNO(OE_ENOMEM);
-
-        *new_file = *file;
         new_file->host_fd = retval;
-        *new_file_out = (oe_fd_t*)new_file;
     }
+
+    *new_file_out = (oe_fd_t*)new_file;
 
     ret = 0;
+    new_file = NULL;
 
 done:
+
+    if (new_file)
+        oe_free(new_file);
+
     return ret;
 }
 
@@ -210,22 +222,62 @@ static oe_file_ops_t _ops = {
     .getdents = _consolefs_getdents,
 };
 
-static oe_fd_t* _new_file(oe_host_fd_t host_fd)
+static oe_file_ops_t _get_ops(void)
+{
+    return _ops;
+}
+
+static oe_fd_t* _new_file(uint32_t fileno)
 {
     oe_fd_t* ret = NULL;
     file_t* file = NULL;
+    struct _args
+    {
+        const char* path;
+        int flags;
+    };
+    struct _args args[] = {
+        {"/dev/stdin", OE_O_RDONLY},
+        {"/dev/stdout", OE_O_WRONLY},
+        {"/dev/stdout", OE_O_WRONLY},
+    };
 
-    if (!(file = oe_calloc(1, sizeof(file_t))))
+    if (fileno > OE_STDERR_FILENO)
         goto done;
 
-    file->base.type = OE_FD_TYPE_FILE;
-    file->base.ops.file = _ops;
-    file->magic = MAGIC;
-    file->host_fd = host_fd;
+    /* Create the file struct. */
+    {
+        if (!(file = oe_calloc(1, sizeof(file_t))))
+            goto done;
+
+        file->base.type = OE_FD_TYPE_FILE;
+        file->base.ops.file = _ops;
+        file->magic = MAGIC;
+    }
+
+    /* Ask the host to open this file. */
+    {
+        oe_host_fd_t retval;
+        const char* path = args[fileno].path;
+        int flags = args[fileno].flags;
+
+        if (oe_posix_open_ocall(&retval, path, flags, 0) != OE_OK)
+            goto done;
+
+        if (retval < 0)
+            goto done;
+
+        file->host_fd = retval;
+    }
 
     ret = &file->base;
+    file = NULL;
 
 done:
+
+    if (file)
+        oe_free(file);
+
     return ret;
 }
 

@@ -44,7 +44,7 @@ static void _atexit_handler(void)
         oe_fd_t* desc = _table[i];
 
         if (desc)
-            oe_free(desc);
+            desc->ops.fd.close(desc);
     }
 
     oe_free(_table);
