@@ -88,7 +88,7 @@ static int _check_device(oe_device_t* device)
 {
     int ret = -1;
 
-    CHECK_CONDITION(device->ops.base.release);
+    CHECK_CONDITION(device->ops.device.release);
 
     switch (device->type)
     {
@@ -113,7 +113,7 @@ static int _check_device(oe_device_t* device)
             CHECK_CONDITION(device->ops.fs.rmdir);
             break;
         }
-        case OE_DEVICE_TYPE_SOCKET:
+        case OE_DEVICE_TYPE_SOCKET_INTERFACE:
         {
             CHECK_CONDITION(device->ops.socket.socket);
             CHECK_CONDITION(device->ops.socket.socketpair);
@@ -146,34 +146,7 @@ done:
 **==============================================================================
 */
 
-static int _clear_devid(uint64_t devid)
-{
-    int ret = -1;
-
-    if (devid >= _table_size || _table[devid] == NULL)
-        OE_RAISE_ERRNO(OE_EINVAL);
-
-    _table[devid] = NULL;
-
-    ret = 0;
-
-done:
-
-    return ret;
-}
-
-int oe_clear_devid(uint64_t devid)
-{
-    int ret;
-
-    oe_spin_lock(&_lock);
-    ret = _clear_devid(devid);
-    oe_spin_unlock(&_lock);
-
-    return ret;
-}
-
-int oe_set_device(uint64_t devid, oe_device_t* device)
+int oe_device_table_set(uint64_t devid, oe_device_t* device)
 {
     int ret = -1;
 
@@ -218,7 +191,7 @@ done:
     return ret;
 }
 
-oe_device_t* oe_get_device(uint64_t devid, oe_device_type_t type)
+oe_device_t* oe_device_table_get(uint64_t devid, oe_device_type_t type)
 {
     oe_device_t* ret;
 
@@ -229,7 +202,7 @@ oe_device_t* oe_get_device(uint64_t devid, oe_device_type_t type)
     return ret;
 }
 
-oe_device_t* oe_find_device(const char* name, oe_device_type_t type)
+oe_device_t* oe_device_table_find(const char* name, oe_device_type_t type)
 {
     oe_device_t* ret = NULL;
     oe_device_t* device = NULL;
@@ -262,7 +235,7 @@ done:
     return ret;
 }
 
-int oe_remove_device(uint64_t devid)
+int oe_device_table_remove(uint64_t devid)
 {
     int ret = -1;
     oe_device_t* device;
@@ -272,10 +245,12 @@ int oe_remove_device(uint64_t devid)
     if (!(device = _get_device(devid, OE_DEVICE_TYPE_ANY)))
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (_clear_devid(devid) != 0)
-        OE_RAISE_ERRNO(oe_errno);
+    if (devid >= _table_size || _table[devid] == NULL)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (device->ops.base.release(device) != 0)
+    _table[devid] = NULL;
+
+    if (device->ops.device.release(device) != 0)
         OE_RAISE_ERRNO(oe_errno);
 
     ret = 0;

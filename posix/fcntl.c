@@ -63,7 +63,8 @@ int oe_open_d(uint64_t devid, const char* pathname, int flags, oe_mode_t mode)
     }
     else
     {
-        oe_device_t* dev = oe_get_device(devid, OE_DEVICE_TYPE_FILE_SYSTEM);
+        oe_device_t* dev =
+            oe_device_table_get(devid, OE_DEVICE_TYPE_FILE_SYSTEM);
 
         if (!dev)
             OE_RAISE_ERRNO(OE_EINVAL);

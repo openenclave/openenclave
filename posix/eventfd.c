@@ -22,7 +22,8 @@ int oe_eventfd(unsigned int initval, int flags)
     oe_device_t* device;
     oe_fd_t* eventfd = NULL;
 
-    if (!(device = oe_get_device(OE_DEVID_EVENTFD, OE_DEVICE_TYPE_EVENTFD)))
+    if (!(device =
+              oe_device_table_get(OE_DEVID_EVENTFD, OE_DEVICE_TYPE_EVENTFD)))
         OE_RAISE_ERRNO(OE_EINVAL);
 
     if (!(eventfd = device->ops.eventfd.eventfd(device, initval, flags)))

@@ -4,9 +4,9 @@
 #ifndef _OE_POSIX_RAISE_H
 #define _OE_POSIX_RAISE_H
 
-#include <openenclave/bits/device.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/corelibc/errno.h>
+#include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/trace.h>
 
 OE_EXTERNC_BEGIN

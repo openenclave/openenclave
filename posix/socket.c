@@ -43,7 +43,7 @@ int oe_socket_d(uint64_t devid, int domain, int type, int protocol)
         devid = OE_DEVID_HOST_SOCKET_INTERFACE;
     }
 
-    if (!(device = oe_get_device(devid, OE_DEVICE_TYPE_SOCKET)))
+    if (!(device = oe_device_table_get(devid, OE_DEVICE_TYPE_SOCKET_INTERFACE)))
         OE_RAISE_ERRNO(OE_EINVAL);
 
     if (!(sock = device->ops.socket.socket(device, domain, type, protocol)))
@@ -91,7 +91,7 @@ int oe_socketpair(int domain, int type, int protocol, int retfd[2])
             OE_RAISE_ERRNO(OE_EINVAL);
     }
 
-    if (!(device = oe_get_device(devid, OE_DEVICE_TYPE_SOCKET)))
+    if (!(device = oe_device_table_get(devid, OE_DEVICE_TYPE_SOCKET_INTERFACE)))
         OE_RAISE_ERRNO(OE_EINVAL);
 
     if (!(retval = device->ops.socket.socketpair(
