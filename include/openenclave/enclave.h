@@ -730,10 +730,10 @@ oe_result_t oe_random(void* data, size_t size);
  * This function generates a self-signed certificate with an embedded quote from
  * the underlying enclave.
  *
- * @param[in] issuer_key a private key used to sign this certificate
- * @param[in] issuer_key_size The size of the issuer_key buffer.
- * @param[in] subject_key a public key used for the certificate
- * @param[in] subject_key_size The size of the subject_key buffer.
+ * @param[in] private_key a private key used to sign this certificate
+ * @param[in] private_key_size The size of the private_key buffer.
+ * @param[in] public_key a public key used as the certificate's subject key
+ * @param[in] public_key_size The size of the public_key buffer.
  *
  * @param[out] output_cert a pointer to buffer pointer
  * @param[out] output_cert_size size of the buffer above.
@@ -741,10 +741,10 @@ oe_result_t oe_random(void* data, size_t size);
  * @return OE_OK on success
  */
 oe_result_t oe_generate_attestation_cert(
-    uint8_t* issuer_key,
-    size_t issuer_key_size,
-    uint8_t* subject_key,
-    size_t subject_key_size,
+    uint8_t* private_key,
+    size_t private_key_size,
+    uint8_t* public_key,
+    size_t public_key_size,
     uint8_t** output_cert,
     size_t* output_cert_size);
 

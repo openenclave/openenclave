@@ -328,10 +328,10 @@ oe_result_t oe_get_crl_distribution_points(
 // TODO: add comments
 typedef struct _oe_cert_config
 {
-    uint8_t* issuer_key_buf;
-    size_t issuer_key_buf_size;
-    uint8_t* subject_key_buf;
-    size_t subject_key_buf_size;
+    uint8_t* private_key_buf;
+    size_t private_key_buf_size;
+    uint8_t* public_key_buf;
+    size_t public_key_buf_size;
     unsigned char* subject_name;
     unsigned char* issuer_name;
     unsigned char* date_not_valid_before;

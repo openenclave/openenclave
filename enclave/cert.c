@@ -1145,8 +1145,8 @@ oe_result_t oe_gen_custom_x509_cert(
     // create pk_context for both public and private keys
     ret = mbedtls_pk_parse_public_key(
         &subject_key,
-        (const unsigned char*)config->subject_key_buf,
-        config->subject_key_buf_size);
+        (const unsigned char*)config->public_key_buf,
+        config->public_key_buf_size);
     if (ret)
         OE_RAISE_MSG(OE_FAILURE, "ret = 0x%x ", ret);
 
@@ -1155,8 +1155,8 @@ oe_result_t oe_gen_custom_x509_cert(
 
     ret = mbedtls_pk_parse_key(
         &issuer_key,
-        (const unsigned char*)config->issuer_key_buf,
-        config->issuer_key_buf_size,
+        (const unsigned char*)config->private_key_buf,
+        config->private_key_buf_size,
         NULL,
         0);
     if (ret)
@@ -1166,7 +1166,6 @@ oe_result_t oe_gen_custom_x509_cert(
     mbedtls_x509write_crt_init(&x509cert);
     mbedtls_x509write_crt_set_md_alg(&x509cert, MBEDTLS_MD_SHA256);
 
-    // same key for both issuer and subject in the certificate
     mbedtls_x509write_crt_set_subject_key(&x509cert, &subject_key);
     mbedtls_x509write_crt_set_issuer_key(&x509cert, &issuer_key);
 

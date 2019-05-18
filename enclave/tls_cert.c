@@ -30,29 +30,14 @@
 
 static const unsigned char oid_oe_report[] = X509_OID_FOR_QUOTE_EXT;
 
-oe_result_t calc_sha256(uint8_t* buf, size_t buf_size, OE_SHA256* sha256)
-{
-    oe_result_t result = OE_FAILURE;
-    oe_sha256_context_t sha256_ctx = {0};
-
-    oe_memset_s(sha256->buf, OE_SHA256_SIZE, 0, OE_SHA256_SIZE);
-    OE_CHECK(oe_sha256_init(&sha256_ctx));
-    OE_CHECK(oe_sha256_update(&sha256_ctx, buf, buf_size));
-    OE_CHECK(oe_sha256_final(&sha256_ctx, sha256));
-
-    result = OE_OK;
-done:
-    return result;
-}
-
 // Input: an issuer and subject key pair
 // Output: a self-signed certificate embedded critical extension with quote
 // information as its content
 oe_result_t generate_x509_cert(
-    uint8_t* issuer_key_buf,
-    size_t issuer_key_buf_size,
-    uint8_t* subject_key_buf,
-    size_t subject_key_buf_size,
+    uint8_t* private_key_buf,
+    size_t private_key_buf_size,
+    uint8_t* public_key_buf,
+    size_t public_key_buf_size,
     uint8_t* remote_report_buf,
     size_t remote_report_buf_size,
     uint8_t** output_cert,
@@ -63,10 +48,10 @@ oe_result_t generate_x509_cert(
     uint8_t* cert_buf = NULL;
     oe_cert_config_t config = {0};
 
-    config.issuer_key_buf = issuer_key_buf;
-    config.issuer_key_buf_size = issuer_key_buf_size;
-    config.subject_key_buf = subject_key_buf;
-    config.subject_key_buf_size = subject_key_buf_size;
+    config.private_key_buf = private_key_buf;
+    config.private_key_buf_size = private_key_buf_size;
+    config.public_key_buf = public_key_buf;
+    config.public_key_buf_size = public_key_buf_size;
     config.subject_name = (unsigned char*)SUBJECT_NAME;
     config.issuer_name = (unsigned char*)ISSUER_NAME;
     config.date_not_valid_before = (unsigned char*)DATE_NOT_VALID_BEFORE;
@@ -99,14 +84,15 @@ done:
 }
 
 oe_result_t oe_generate_attestation_cert(
-    uint8_t* issuer_key,
-    size_t issuer_key_size,
-    uint8_t* subject_key,
-    size_t subject_key_size,
+    uint8_t* private_key,
+    size_t private_key_size,
+    uint8_t* public_key,
+    size_t public_key_size,
     uint8_t** output_cert,
     size_t* output_cert_size)
 {
     oe_result_t result = OE_FAILURE;
+    oe_sha256_context_t sha256_ctx = {0};
     OE_SHA256 sha256 = {0};
     uint8_t* remote_report_buf = NULL;
     size_t remote_report_buf_size = OE_MAX_REPORT_SIZE;
@@ -115,10 +101,14 @@ oe_result_t oe_generate_attestation_cert(
 
     // generate quote with hash(cert's subject key) and set it as report data
     OE_TRACE_VERBOSE(
-        "subject_key_size=%d subject_key key =\n[%s]\n",
-        subject_key_size,
-        subject_key);
-    calc_sha256(subject_key, subject_key_size, &sha256);
+        "public_key_size=%d public_key key =\n[%s]\n",
+        public_key_size,
+        public_key);
+    oe_memset_s(sha256.buf, OE_SHA256_SIZE, 0, OE_SHA256_SIZE);
+    OE_CHECK(oe_sha256_init(&sha256_ctx));
+    OE_CHECK(oe_sha256_update(&sha256_ctx, public_key, public_key_size));
+    OE_CHECK(oe_sha256_final(&sha256_ctx, &sha256));
+
     OE_TRACE_VERBOSE("Report data with hash of public key:");
     for (size_t i = 0; i < OE_SHA256_SIZE; i++)
         OE_TRACE_VERBOSE(
@@ -136,10 +126,10 @@ oe_result_t oe_generate_attestation_cert(
         result, "oe_get_report failed with %s\n", oe_result_str(result));
 
     result = generate_x509_cert(
-        issuer_key,
-        issuer_key_size,
-        subject_key,
-        subject_key_size,
+        private_key,
+        private_key_size,
+        public_key,
+        public_key_size,
         remote_report_buf,
         remote_report_buf_size,
         output_cert,
