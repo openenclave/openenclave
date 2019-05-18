@@ -385,22 +385,33 @@ void oe_free_key(
     size_t key_info_size);
 
 /**
- * oe_verify_tls_cert
+ * identity validation callback type
+ * @param[in] identity a pointer to an enclave's identity information
+ * @param[in] arg caller defined context
+ */
+typedef oe_result_t (
+    *oe_identity_verify_callback_t)(oe_identity_t* identity, void* arg);
+
+/**
+ * oe_verify_attestation_cert
  *
  * This function preform a custom validation on the input certificate. This
  * validation includes extracting a quote extension from the certificate before
  * performing a quote validation on it. An optional enclave_identity_callback
  * could be passed in for a calling client to further validate the identity of
  * the enclave creating the quote.
+ * @param[in] cert_in_der a pointer to buffer holding certificate contents
+ * @param[in] cert_in_der_len size of certificate buffer above
+ * @param[in] enclave_identity_callback callback routine for custom identity
+ * checking
+ * @param[in] arg optional argument
  * @retval OE_OK on a successful validation
  * @retval OE_VERIFY_FAILED on quote failure
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid
  * @retval OE_FAILURE general failure
  * @retval other appropriate error code
  */
-typedef oe_result_t (
-    *oe_identity_verify_callback_t)(oe_identity_t* identity, void* arg);
-oe_result_t oe_verify_tls_cert(
+oe_result_t oe_verify_attestation_cert(
     uint8_t* der_crt,
     size_t der_crt_len,
     oe_identity_verify_callback_t enclave_identity_callback,

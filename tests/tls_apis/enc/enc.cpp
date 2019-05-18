@@ -13,7 +13,7 @@
 #include "tls_t.h"
 
 // This is the identity validation callback. A TLS connecting party (client or
-// server) can verify the passed in "identity" information to decide whether to
+// server) can verify the passed in identity information to decide whether to
 // accept a connection reqest
 oe_result_t enclave_identity_verifier(oe_identity_t* identity, void* arg)
 {
@@ -32,7 +32,7 @@ oe_result_t enclave_identity_verifier(oe_identity_t* identity, void* arg)
     }
 
     // Dump an enclave's unique ID, signer ID and Product ID. They are
-    // MRENCLAVE, MRSIGNER and ISVPRODID for SGX enclaves In a real scenario,
+    // MRENCLAVE, MRSIGNER and ISVPRODID for SGX enclaves. In a real scenario,
     // custom id checking should be done here
 
     OE_TRACE_INFO("identity->signer_id :\n");
@@ -120,7 +120,7 @@ oe_result_t get_tls_cert(unsigned char** cert, size_t* cert_size)
     OE_TRACE_INFO("private key:[%s]\n", private_key);
     OE_TRACE_INFO("public key:[%s]\n", public_key);
 
-    result = oe_gen_tls_cert(
+    result = oe_generate_attestation_cert(
         private_key,
         private_key_size,
         public_key,
@@ -135,10 +135,10 @@ oe_result_t get_tls_cert(unsigned char** cert, size_t* cert_size)
 
     OE_TRACE_INFO("output_cert_size = 0x%x", output_cert_size);
     // validate cert inside the enclave
-    result = oe_verify_tls_cert(
+    result = oe_verify_attestation_cert(
         output_cert, output_cert_size, enclave_identity_verifier, NULL);
     OE_TRACE_INFO(
-        "\nFrom inside encalve: verifying SGX certificate extensions... %s\n",
+        "\nFrom inside enclave: verifying the certificate... %s\n",
         result == OE_OK ? "Success" : "Fail");
 
     // copy cert to host memory
@@ -158,14 +158,9 @@ oe_result_t get_tls_cert(unsigned char** cert, size_t* cert_size)
 
 done:
 
-    if (private_key)
-        oe_free_key(private_key, private_key_size, NULL, 0);
-    if (public_key)
-        oe_free_key(public_key, public_key_size, NULL, 0);
-
-    // free certificate buffer
-    if (output_cert)
-        oe_free_tls_cert(output_cert);
+    oe_free_key(private_key, private_key_size, NULL, 0);
+    oe_free_key(public_key, public_key_size, NULL, 0);
+    oe_free_attestation_cert(output_cert);
 
     return result;
 }

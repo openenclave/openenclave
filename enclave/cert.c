@@ -1188,6 +1188,9 @@ oe_result_t oe_gen_custom_x509_cert(
     if (ret)
         OE_RAISE_MSG(OE_FAILURE, "ret = 0x%x ", ret);
 
+    OE_TRACE_VERBOSE(
+        "custom_x509_cert: key type:%d", mbedtls_pk_get_type(&subject_key));
+
     ret = mbedtls_pk_parse_key(
         &issuer_key,
         (const unsigned char*)config->issuer_key_buf,

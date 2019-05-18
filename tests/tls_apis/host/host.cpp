@@ -78,27 +78,22 @@ int main(int argc, const char* argv[])
 
     fflush(stdout);
 
-#if 1
     {
-        // Questions:
-        // what is the format of the whole certificate?
-        // what's the format of the extension data?
-        // output the whole cer in DER format
+        // for testing purpose, output the whole cer in DER format
         OE_TRACE_INFO(
             "Host: Log quote embedded certificate to file: ./cert.der\n");
         FILE* file = fopen("./cert.der", "wb");
         fwrite(cert, 1, cert_size, file);
         fclose(file);
     }
-#endif
 
     // validate cert
     OE_TRACE_INFO("Host: Verifying tls certificate\n");
     OE_TRACE_INFO("Host: cert = %p cert_size = %d\n", cert, cert_size);
-    result =
-        oe_verify_tls_cert(cert, cert_size, enclave_identity_verifier, NULL);
+    result = oe_verify_attestation_cert(
+        cert, cert_size, enclave_identity_verifier, NULL);
     OE_TRACE_INFO(
-        "Host: Verifying SGX certificate extensions from host ... %s\n",
+        "Host: Verifying the certificate from a host ... %s\n",
         result == OE_OK ? "Success" : "Fail");
     fflush(stdout);
     OE_TEST(result == OE_OK);

@@ -55,7 +55,7 @@ done:
     return result;
 }
 
-oe_result_t oe_verify_tls_cert(
+oe_result_t oe_verify_attestation_cert(
     uint8_t* cert_in_der,
     size_t cert_in_der_len,
     oe_identity_verify_callback_t enclave_identity_callback,
@@ -139,7 +139,8 @@ oe_result_t oe_verify_tls_cert(
     else
     {
         OE_TRACE_WARNING(
-            "No enclave_identity_callback provided in oe_verify_tls_cert call",
+            "No enclave_identity_callback provided in "
+            "oe_verify_attestation_cert call",
             NULL);
     }
 

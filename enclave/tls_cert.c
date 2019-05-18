@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 // clang-format off
- #include <openenclave/bits/defs.h>
- #include <openenclave/bits/safecrt.h>
+#include <openenclave/bits/defs.h>
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgxtypes.h>
@@ -98,7 +98,7 @@ done:
     return result;
 }
 
-oe_result_t oe_gen_tls_cert(
+oe_result_t oe_generate_attestation_cert(
     uint8_t* issuer_key,
     size_t issuer_key_size,
     uint8_t* subject_key,
@@ -111,7 +111,7 @@ oe_result_t oe_gen_tls_cert(
     uint8_t* remote_report_buf = NULL;
     size_t remote_report_buf_size = OE_MAX_REPORT_SIZE;
 
-    OE_TRACE_VERBOSE("Calling oe_gen_tls_cert");
+    OE_TRACE_VERBOSE("Calling oe_generate_attestation_cert");
 
     // generate quote with hash(cert's subject key) and set it as report data
     OE_TRACE_VERBOSE(
@@ -154,11 +154,11 @@ done:
     return result;
 }
 
-void oe_free_tls_cert(uint8_t* cert)
+void oe_free_attestation_cert(uint8_t* cert)
 {
     if (cert)
     {
-        OE_TRACE_VERBOSE("Calling oe_free_tls_cert=0x%p", cert);
+        OE_TRACE_VERBOSE("Calling oe_free_attestation_cert=0x%p", cert);
         oe_free(cert);
     }
 }

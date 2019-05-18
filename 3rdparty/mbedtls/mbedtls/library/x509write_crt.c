@@ -44,6 +44,14 @@
 #include "mbedtls/pem.h"
 #endif /* MBEDTLS_PEM_WRITE_C */
 
+#if defined(MBEDTLS_PLATFORM_C)
+#include "mbedtls/platform.h"
+#else
+#include <stdlib.h>
+#define mbedtls_calloc    calloc
+#define mbedtls_free       free
+#endif
+
 /* Implementation that should never be optimized out by the compiler */
 static void mbedtls_zeroize( void *v, size_t n ) {
     volatile unsigned char *p = v; while( n-- ) *p++ = 0;
@@ -308,15 +316,22 @@ int mbedtls_x509write_crt_der( mbedtls_x509write_cert *ctx, unsigned char *buf, 
     unsigned char *c, *c2;
     unsigned char hash[64];
     unsigned char sig[MBEDTLS_MPI_MAX_SIZE];
-    unsigned char tmp_buf[2048*4];
+    unsigned char *tmp_buf = NULL;
+    size_t tmp_buf_size = 8192;
     size_t sub_len = 0, pub_len = 0, sig_and_oid_len = 0, sig_len;
     size_t len = 0;
     mbedtls_pk_type_t pk_alg;
 
+    tmp_buf = (unsigned char *)mbedtls_calloc( 1, tmp_buf_size);
+    if (tmp_buf == NULL)
+    {
+        return (MBEDTLS_ERR_X509_ALLOC_FAILED);
+    }
+
     /*
      * Prepare data to be signed in tmp_buf
      */
-    c = tmp_buf + sizeof( tmp_buf );
+    c = tmp_buf + tmp_buf_size;
 
     /* Signature algorithm needed in TBS, and later for actual signature */
 
@@ -327,11 +342,15 @@ int mbedtls_x509write_crt_der( mbedtls_x509write_cert *ctx, unsigned char *buf, 
     else if( mbedtls_pk_can_do( ctx->issuer_key, MBEDTLS_PK_ECDSA ) )
         pk_alg = MBEDTLS_PK_ECDSA;
     else
+    {
+        mbedtls_free( tmp_buf );
         return( MBEDTLS_ERR_X509_INVALID_ALG );
+    }
 
     if( ( ret = mbedtls_oid_get_oid_by_sig_alg( pk_alg, ctx->md_alg,
                                           &sig_oid, &sig_oid_len ) ) != 0 )
     {
+        mbedtls_free( tmp_buf );
         return( ret );
     }
 
@@ -423,12 +442,14 @@ int mbedtls_x509write_crt_der( mbedtls_x509write_cert *ctx, unsigned char *buf, 
     if( ( ret = mbedtls_md( mbedtls_md_info_from_type( ctx->md_alg ), c,
                             len, hash ) ) != 0 )
     {
+        mbedtls_free( tmp_buf );
         return( ret );
     }
 
     if( ( ret = mbedtls_pk_sign( ctx->issuer_key, ctx->md_alg, hash, 0, sig, &sig_len,
                          f_rng, p_rng ) ) != 0 )
     {
+        mbedtls_free( tmp_buf );
         return( ret );
     }
 
@@ -440,7 +461,10 @@ int mbedtls_x509write_crt_der( mbedtls_x509write_cert *ctx, unsigned char *buf, 
                                         sig_oid, sig_oid_len, sig, sig_len ) );
 
     if( len > (size_t)( c2 - buf ) )
+    {
+        mbedtls_free( tmp_buf );
         return( MBEDTLS_ERR_ASN1_BUF_TOO_SMALL );
+    }
 
     c2 -= len;
     memcpy( c2, c, len );
@@ -450,6 +474,7 @@ int mbedtls_x509write_crt_der( mbedtls_x509write_cert *ctx, unsigned char *buf, 
     MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_tag( &c2, buf, MBEDTLS_ASN1_CONSTRUCTED |
                                                  MBEDTLS_ASN1_SEQUENCE ) );
 
+    mbedtls_free( tmp_buf );
     return( (int) len );
 }
 
@@ -462,12 +487,19 @@ int mbedtls_x509write_crt_pem( mbedtls_x509write_cert *crt, unsigned char *buf, 
                        void *p_rng )
 {
     int ret;
-    unsigned char output_buf[4096*2];
+    unsigned char *output_buf = NULL;
     size_t olen = 0;
+
+    output_buf = (unsigned char *)mbedtls_calloc( 1, 8192);
+    if (output_buf == NULL)
+    {
+        return (MBEDTLS_ERR_X509_ALLOC_FAILED);
+    }
 
     if( ( ret = mbedtls_x509write_crt_der( crt, output_buf, sizeof(output_buf),
                                    f_rng, p_rng ) ) < 0 )
     {
+        mbedtls_free( output_buf );
         return( ret );
     }
 
@@ -475,9 +507,11 @@ int mbedtls_x509write_crt_pem( mbedtls_x509write_cert *crt, unsigned char *buf, 
                                   output_buf + sizeof(output_buf) - ret,
                                   ret, buf, size, &olen ) ) != 0 )
     {
+        mbedtls_free( output_buf );
         return( ret );
     }
 
+    mbedtls_free( output_buf );
     return( 0 );
 }
 #endif /* MBEDTLS_PEM_WRITE_C */
