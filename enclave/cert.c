@@ -859,7 +859,7 @@ oe_result_t oe_cert_verify(
     }
 
     /* Reject invalid certificate chain */
-    if (!_cert_chain_is_valid(chain_impl))
+    if (chain && !_cert_chain_is_valid(chain_impl))
     {
         OE_RAISE_MSG(OE_INVALID_PARAMETER, "Invalid chain parameter", NULL);
     }
@@ -908,7 +908,7 @@ oe_result_t oe_cert_verify(
     {
         /* Verify the current certificate in the chain. */
         OE_CHECK(
-            _mbedtls_x509_crt_verify(p, chain_impl->referent->crt, crl_list));
+            _mbedtls_x509_crt_verify(p, ((chain!=NULL) ? chain_impl->referent->crt : NULL), crl_list));
 
         /* Verify that the CRL list has an issuer for this certificate. */
         if (crl_list)
@@ -938,44 +938,6 @@ done:
         }
     }
 
-    return result;
-}
-
-oe_result_t oe_verify_self_signed_cert(
-    oe_cert_t* cert,
-    oe_verify_cert_error_t* error)
-{
-    oe_result_t result = OE_VERIFY_FAILED;
-    Cert* cert_impl = (Cert*)cert;
-    uint32_t flags = 0;
-    int ret = 0;
-
-    /* Initialize error */
-    if (error)
-        *error->buf = '\0';
-
-    /* Reject invalid certificate */
-    if (!_cert_is_valid(cert_impl))
-    {
-        _set_err(error, "invalid cert parameter");
-        OE_RAISE(OE_INVALID_PARAMETER);
-    }
-
-    // get pubic key and verify this signature
-    ret = mbedtls_x509_crt_verify(
-        cert_impl->cert, cert_impl->cert, NULL, NULL, &flags, NULL, NULL);
-    if (ret)
-    {
-        oe_verify_cert_error_t error;
-        mbedtls_x509_crt_verify_info(error.buf, sizeof(error.buf), "", flags);
-        OE_RAISE_MSG(
-            OE_FAILURE,
-            "mbedtls_x509_crt_verify failed with %s (flags=0x%x)",
-            error.buf,
-            flags);
-    }
-    result = OE_OK;
-done:
     return result;
 }
 
@@ -1025,7 +987,7 @@ oe_result_t oe_cert_get_ec_public_key(
 
     /* If certificate does not contain an EC key */
     if (!oe_is_ec_key(&impl->cert->pk))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Copy the public key from the certificate */
     OE_RAISE(oe_ec_public_key_init(public_key, &impl->cert->pk));

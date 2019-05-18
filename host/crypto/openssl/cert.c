@@ -291,7 +291,7 @@ static oe_result_t _verify_cert(
         OE_RAISE_MSG(OE_FAILURE, "Failed to clone X509 cert", NULL);
 
     /* Clone the chain to clear any cached verification state */
-    if (!(chain = _clone_chain(chain_)))
+    if (chain_ && !(chain = _clone_chain(chain_)))
         OE_RAISE_MSG(OE_FAILURE, "Failed to clone X509 cert chain", NULL);
 
     /* Create a store for the verification */
@@ -309,6 +309,7 @@ static oe_result_t _verify_cert(
         OE_RAISE_MSG(
             OE_CRYPTO_ERROR, "Failed to initialize X509 context", NULL);
     }
+
 
     /* Create a store with CRLs if needed */
     if (crls && num_crls)
@@ -338,7 +339,10 @@ static oe_result_t _verify_cert(
     X509_STORE_CTX_set_cert(ctx, x509);
 
     /* Set the CA chain into the verification context */
-    X509_STORE_CTX_trusted_stack(ctx, chain);
+    if (chain)
+        X509_STORE_CTX_trusted_stack(ctx, chain);
+    else
+        X509_STORE_add_cert(store, x509);
 
     /* Finally verify the certificate */
     if (!X509_verify_cert(ctx))
@@ -704,7 +708,7 @@ oe_result_t oe_cert_verify(
     }
 
     /* Check for invalid chain parameter */
-    if (!_cert_chain_is_valid(chain_impl))
+    if (chain && !_cert_chain_is_valid(chain_impl))
     {
         OE_RAISE_MSG(OE_INVALID_PARAMETER, "Invalid chain parameter", NULL);
     }
@@ -713,83 +717,11 @@ oe_result_t oe_cert_verify(
     oe_initialize_openssl();
 
     /* Verify the certificate */
-    OE_CHECK(_verify_cert(cert_impl->x509, chain_impl->sk, crls, num_crls));
+    OE_CHECK(_verify_cert(cert_impl->x509, (chain_impl!=NULL ? chain_impl->sk : NULL), crls, num_crls));
 
     result = OE_OK;
 
 done:
-    return result;
-}
-
-oe_result_t oe_verify_self_signed_cert(
-    oe_cert_t* cert,
-    oe_verify_cert_error_t* error)
-{
-    oe_result_t result = OE_VERIFY_FAILED;
-    const Cert* impl = (const Cert*)cert;
-    EVP_PKEY* pubkey = NULL;
-    int ret = 0;
-
-    /* Initialize error to NULL for now */
-    if (error)
-        *error->buf = '\0';
-
-    // get the public key.
-    pubkey = X509_get_pubkey(impl->x509);
-    if (pubkey == NULL)
-    {
-        _set_err(error, "X509_get_pubkey failed");
-        OE_RAISE(OE_VERIFY_FAILED);
-    }
-
-    // verifies the signature of certificate cert using pubkey
-    ret = X509_verify(impl->x509, pubkey);
-    if (ret != 1)
-    {
-        _set_err(error, "X509_verify failed");
-        OE_RAISE(
-            OE_VERIFY_FAILED, "cert signature validation failed (ret=%d)", ret);
-    }
-
-    result = OE_OK;
-done:
-    EVP_PKEY_free(pubkey);
-    return result;
-}
-
-oe_result_t oe_verify_self_signed_cert(
-    oe_cert_t* cert,
-    oe_verify_cert_error_t* error)
-{
-    oe_result_t result = OE_VERIFY_FAILED;
-    const Cert* impl = (const Cert*)cert;
-    EVP_PKEY* pubkey = NULL;
-    int ret = 0;
-
-    /* Initialize error to NULL for now */
-    if (error)
-        *error->buf = '\0';
-
-    // get the public key.
-    pubkey = X509_get_pubkey(impl->x509);
-    if (pubkey == NULL)
-    {
-        _set_err(error, "X509_get_pubkey failed");
-        OE_RAISE(OE_VERIFY_FAILED);
-    }
-
-    // verifies the signature of certificate cert using pubkey
-    ret = X509_verify(impl->x509, pubkey);
-    if (ret != 1)
-    {
-        _set_err(error, "X509_verify failed");
-        OE_RAISE(
-            OE_VERIFY_FAILED, "cert signature validation failed (ret=%d)", ret);
-    }
-
-    result = OE_OK;
-done:
-    EVP_PKEY_free(pubkey);
     return result;
 }
 

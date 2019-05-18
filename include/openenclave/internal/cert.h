@@ -145,38 +145,6 @@ oe_result_t oe_cert_verify(
     size_t num_crls);
 
 /**
- * Verify a self-signed certificate's signature
- *
- *
- * @param cert verify this certificate
- * @param error Optional. Holds the error message if this function failed.
- *
- * @return OE_OK verify ok
- * @return OE_VERIFY_FAILED
- * @return OE_INVALID_PARAMETER
- * @return OE_FAILURE
- */
-oe_result_t oe_verify_self_signed_cert(
-    oe_cert_t* cert,
-    oe_verify_cert_error_t* error);
-
-/**
- * Verify a self-signed certificate's signature
- *
- *
- * @param cert verify this certificate
- * @param error Optional. Holds the error message if this function failed.
- *
- * @return OE_OK verify ok
- * @return OE_VERIFY_FAILED
- * @return OE_INVALID_PARAMETER
- * @return OE_FAILURE
- */
-oe_result_t oe_verify_self_signed_cert(
-    oe_cert_t* cert,
-    oe_verify_cert_error_t* error);
-
-/**
  * Get the RSA public key from a certificate.
  *
  * This function gets the RSA public key from the given certificate. If the

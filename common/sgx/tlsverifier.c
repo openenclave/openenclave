@@ -75,10 +75,10 @@ oe_result_t oe_verify_attestation_cert(
     OE_CHECK_MSG(result, "cert_in_der_len=%d", cert_in_der_len);
 
     // validate the certificate signature
-    result = oe_verify_self_signed_cert(&cert, &cert_verify_error);
+    result = oe_cert_verify(&cert, NULL, NULL, 0, &cert_verify_error);
     OE_CHECK_MSG(
         result,
-        "oe_verify_self_signed_cert failed with error = %s\n",
+        "oe_cert_verify failed with error = %s\n",
         cert_verify_error.buf);
 
     //------------------------------------------------------------------------
