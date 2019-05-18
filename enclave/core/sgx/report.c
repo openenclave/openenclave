@@ -314,7 +314,7 @@ oe_result_t oe_get_report_v1(
     header->report_type = (flags & OE_REPORT_FLAGS_REMOTE_ATTESTATION)
                               ? OE_REPORT_TYPE_SGX_REMOTE
                               : OE_REPORT_TYPE_SGX_LOCAL;
-    header->report_size = (uint64_t)*report_buffer_size;
+    header->report_size = *report_buffer_size;
     OE_CHECK(oe_safe_add_u64(
         *report_buffer_size, sizeof(oe_report_header_t), report_buffer_size));
     result = OE_OK;
