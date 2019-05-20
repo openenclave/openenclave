@@ -84,6 +84,8 @@ let filter_map f l =
 (* Helper to flatten and map at the same time. *)
 let flatten_map f l = List.flatten (List.map f l)
 
+let remove_empty_str l = List.filter (( <> ) "") l
+
 let is_in_ptr (ptype : parameter_type) =
   match ptype with
   | PTVal _ -> false
@@ -615,8 +617,7 @@ let oe_gen_out_and_inout_setters (plist : pdecl list) =
 (** Generate ecall function. *)
 let oe_gen_ecall_function (tf : trusted_func) =
   let fd = tf.tf_fdecl in
-  [ ""
-  ; sprintf "void ecall_%s(" fd.fname
+  [ sprintf "void ecall_%s(" fd.fname
   ; "    uint8_t* input_buffer,"
   ; "    size_t input_buffer_size,"
   ; "    uint8_t* output_buffer,"
@@ -685,31 +686,30 @@ let oe_gen_ecall_function (tf : trusted_func) =
   ; "done:"
   ; "    if (pargs_out && output_buffer_size >= sizeof(*pargs_out))"
   ; "        pargs_out->_result = _result;"
-  ; "}" ]
+  ; "}"
+  ; "" ]
 
 let gen_fill_marshal_struct (fd : func_decl) (args : string) =
   (* Generate assignment argument to corresponding field in args *)
-  List.map
+  flatten_map
     (fun (ptype, decl) ->
-      let varname = decl.identifier in
-      sprintf "    %s.%s = %s%s;" args varname
-        (get_cast_to_mem_expr (ptype, decl) true)
-        varname
-      ^
-      (* for string parameter fill the len field *)
-      if is_str_ptr ptype then
-        sprintf "\n    %s.%s_len = (%s) ? (strlen(%s) + 1) : 0;" args varname
-          varname varname
-      else if is_wstr_ptr ptype then
-        sprintf "\n    %s.%s_len = (%s) ? (wcslen(%s) + 1) : 0;" args varname
-          varname varname
-      else "" )
+      let id = decl.identifier in
+      remove_empty_str
+        [ sprintf "%s.%s = %s%s;" args id
+            (get_cast_to_mem_expr (ptype, decl) true)
+            id
+        ; (* for string parameter fill the len field *)
+          ( if is_str_ptr ptype then
+            sprintf "%s.%s_len = (%s) ? (strlen(%s) + 1) : 0;" args id id id
+          else if is_wstr_ptr ptype then
+            sprintf "%s.%s_len = (%s) ? (wcslen(%s) + 1) : 0;" args id id id
+          else "" ) ] )
     fd.plist
 
 (** Generate host ECALL wrapper function. *)
 let oe_gen_host_ecall_wrapper (name : string) (tf : trusted_func) =
   let fd = tf.tf_fdecl in
-  [ sprintf "%s" (oe_gen_wrapper_prototype fd true)
+  [ oe_gen_wrapper_prototype fd true
   ; "{"
   ; "    oe_result_t _result = OE_FAILURE;"
   ; ""
@@ -730,17 +730,16 @@ let oe_gen_host_ecall_wrapper (name : string) (tf : trusted_func) =
   ; ""
   ; "    /* Fill marshalling struct. */"
   ; "    memset(&_args, 0, sizeof(_args));"
-  ; sprintf "%s" (String.concat "\n" (gen_fill_marshal_struct fd "_args"))
+  ; "    " ^ String.concat "\n    " (gen_fill_marshal_struct fd "_args")
   ; ""
-  ; sprintf "    %s"
-      (String.concat "\n    " (oe_prepare_input_buffer fd "malloc"))
+  ; "    " ^ String.concat "\n    " (oe_prepare_input_buffer fd "malloc")
   ; ""
   ; "    /* Call enclave function. */"
   ; "    if ((_result = oe_call_enclave_function("
   ; "             "
     ^ String.concat ",\n             "
         [ "enclave"
-        ; sprintf "%s" (get_function_id fd name)
+        ; get_function_id fd name
         ; "_input_buffer"
         ; "_input_buffer_size"
         ; "_output_buffer"
@@ -748,7 +747,7 @@ let oe_gen_host_ecall_wrapper (name : string) (tf : trusted_func) =
         ; "&_output_bytes_written)) != OE_OK)" ]
   ; "        goto done;"
   ; ""
-  ; sprintf "%s" (String.concat "\n    " (oe_process_output_buffer fd))
+  ; "    " ^ String.concat "\n    " (oe_process_output_buffer fd)
   ; ""
   ; "    _result = OE_OK;"
   ; ""
@@ -788,7 +787,7 @@ let oe_gen_enclave_ocall_wrapper (name : string) (uf : untrusted_func) =
   ; ""
   ; "    /* Fill marshalling struct. */"
   ; "    memset(&_args, 0, sizeof(_args));"
-  ; String.concat "\n" (gen_fill_marshal_struct fd "_args")
+  ; "    " ^ String.concat "\n    " (gen_fill_marshal_struct fd "_args")
   ; ""
   ; "    "
     ^ String.concat "\n    "
@@ -798,7 +797,7 @@ let oe_gen_enclave_ocall_wrapper (name : string) (uf : untrusted_func) =
   ; "    if ((_result = oe_call_host_function("
   ; "             "
     ^ String.concat ",\n             "
-        [ sprintf "%s" (get_function_id fd name)
+        [ get_function_id fd name
         ; "_input_buffer"
         ; "_input_buffer_size"
         ; "_output_buffer"
@@ -806,7 +805,7 @@ let oe_gen_enclave_ocall_wrapper (name : string) (uf : untrusted_func) =
         ; "&_output_bytes_written)) != OE_OK)" ]
   ; "        goto done;"
   ; ""
-  ; String.concat "\n    " (oe_process_output_buffer fd)
+  ; "    " ^ String.concat "\n    " (oe_process_output_buffer fd)
   ; ""
   ; "    /* Retrieve propagated errno from OCALL. */"
   ; ( if uf.uf_propagate_errno then "    errno = _pargs_out->_ocall_errno;\n"
@@ -824,8 +823,7 @@ let oe_gen_enclave_ocall_wrapper (name : string) (uf : untrusted_func) =
 (** Generate ocall function. *)
 let oe_gen_ocall_function (uf : untrusted_func) =
   let fd = uf.uf_fdecl in
-  [ ""
-  ; sprintf "void ocall_%s(" fd.fname
+  [ sprintf "void ocall_%s(" fd.fname
   ; "    uint8_t* input_buffer,"
   ; "    size_t input_buffer_size,"
   ; "    uint8_t* output_buffer,"
@@ -1110,14 +1108,15 @@ let gen_t_c (ec : enclave_content) (ep : edger8r_params) =
     ; "OE_EXTERNC_BEGIN"
     ; ""
     ; "/**** ECALL functions. ****/"
-    ; String.concat "\n" oe_gen_ecall_functions
     ; ""
+    ; String.concat "\n" oe_gen_ecall_functions
     ; "/**** ECALL function table. ****/"
+    ; ""
     ; String.concat "\n" oe_gen_ecall_table
     ; ""
     ; "/**** OCALL function wrappers. ****/"
-    ; String.concat "\n" oe_gen_enclave_ocall_wrappers
     ; ""
+    ; String.concat "\n" oe_gen_enclave_ocall_wrappers
     ; "OE_EXTERNC_END"
     ; "" ]
   in
@@ -1209,12 +1208,13 @@ let gen_u_c (ec : enclave_content) (ep : edger8r_params) =
     ; "OE_EXTERNC_BEGIN"
     ; ""
     ; "/**** ECALL function wrappers. ****/"
+    ; ""
     ; String.concat "\n" oe_gen_host_ecall_wrappers
-    ; ""
     ; "/**** OCALL functions. ****/"
-    ; String.concat "\n" oe_gen_ocall_functions
     ; ""
+    ; String.concat "\n" oe_gen_ocall_functions
     ; "/**** OCALL function table. ****/"
+    ; ""
     ; String.concat "\n" oe_gen_ocall_table
     ; ""
     ; sprintf "oe_result_t oe_create_%s_enclave(" ec.enclave_name
