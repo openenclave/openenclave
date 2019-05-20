@@ -159,7 +159,7 @@ if(WIN32 AND TZ AND SIM)
     add_subdirectory(opteesim)
 endif()
 
-if(TZ)
+if(UNIX AND TZ AND NOT OE_USE_SIMULATION)
     file(GLOB TA_DEV_KIT
         LIST_DIRECTORIES true
         ${TA_DEV_KIT_DIR}/*)
