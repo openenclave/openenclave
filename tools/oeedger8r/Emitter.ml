@@ -84,8 +84,6 @@ let filter_map f l =
 (* Helper to flatten and map at the same time. *)
 let flatten_map f l = List.flatten (List.map f l)
 
-let remove_empty_str l = List.filter (( <> ) "") l
-
 let is_in_ptr (ptype : parameter_type) =
   match ptype with
   | PTVal _ -> false
@@ -154,28 +152,27 @@ let oe_gen_marshal_struct (fd : func_decl) (errno : bool) structs =
     let need_strlen p =
       (is_str_ptr p || is_wstr_ptr p) && (is_in_ptr p || is_inout_ptr p)
     in
-    List.flatten
-      [ [sprintf "%s %s%s;" tystr prefix decl.identifier]
-      ; ( if need_strlen ptype then [sprintf "size_t %s_len;" decl.identifier]
-        else [""] )
-      ; flatten_map
-          (gen_member_decl (prefix ^ decl.identifier ^ "__"))
-          (should_deepcopy aty structs) ]
+    [ [sprintf "%s %s%s;" tystr prefix decl.identifier]
+    ; ( if need_strlen ptype then [sprintf "size_t %s_len;" decl.identifier]
+      else [] )
+    ; flatten_map
+        (gen_member_decl (prefix ^ decl.identifier ^ "__"))
+        (should_deepcopy aty structs) ]
+    |> List.flatten
   in
   let struct_name = fd.fname ^ "_args_t" in
   let retval_decl = {identifier= "_retval"; array_dims= []} in
   let members =
-    List.flatten
-      [ ["oe_result_t _result;"]
-      ; ( if fd.rtype = Void then [""]
-        else gen_member_decl "" (PTVal fd.rtype, retval_decl) )
-      ; (if errno then ["int _ocall_errno;"] else [""])
-      ; flatten_map (gen_member_decl "") (List.map conv_array_to_ptr fd.plist)
-      ]
+    [ ["oe_result_t _result;"]
+    ; ( if fd.rtype = Void then []
+      else gen_member_decl "" (PTVal fd.rtype, retval_decl) )
+    ; (if errno then ["int _ocall_errno;"] else [])
+    ; flatten_map (gen_member_decl "") (List.map conv_array_to_ptr fd.plist) ]
+    |> List.flatten
   in
   [ sprintf "typedef struct _%s" struct_name
   ; "{"
-  ; "    " ^ String.concat "\n    " (List.filter (fun p -> p <> "") members)
+  ; "    " ^ String.concat "\n    " members
   ; sprintf "} %s;" struct_name
   ; "" ]
 
@@ -259,7 +256,7 @@ let emit_composite_type =
     ; String.concat "\n"
         (List.map
            (fun (ptype, decl) ->
-             let dims = List.map (fun d -> sprintf "[%d]" d) decl.array_dims in
+             let dims = List.map (sprintf "[%d]") decl.array_dims in
              let dims_str = String.concat "" dims in
              sprintf "    %s %s%s;"
                (get_tystr (get_param_atype ptype))
@@ -274,7 +271,7 @@ let emit_composite_type =
     ; String.concat "\n"
         (List.map
            (fun (atype, decl) ->
-             let dims = List.map (fun d -> sprintf "[%d]" d) decl.array_dims in
+             let dims = List.map (sprintf "[%d]") decl.array_dims in
              let dims_str = String.concat "" dims in
              sprintf "    %s %s%s;" (get_tystr atype) decl.identifier dims_str
              )
@@ -333,8 +330,7 @@ let get_structs =
 (** Generate [args.h] which contains [struct]s for ecalls and ocalls *)
 let oe_gen_args_header (ec : enclave_content) (dir : string) =
   let oe_gen_user_includes (includes : string list) =
-    if includes <> [] then
-      List.map (fun i -> sprintf "#include \"%s\"" i) includes
+    if includes <> [] then List.map (sprintf "#include \"%s\"") includes
     else ["/* There were no user includes. */"]
   in
   let oe_gen_user_types (cts : composite_type list) =
@@ -502,49 +498,48 @@ let oe_prepare_input_buffer (fd : func_decl) (alloc_func : string) =
   ; "memcpy(_pargs_in, &_args, sizeof(*_pargs_in));" ]
 
 let oe_process_output_buffer (fd : func_decl) =
-  List.flatten
-    [ [ (* Verify that the ecall succeeded *)
-        "/* Setup output arg struct pointer. */"
-      ; sprintf "_pargs_out = (%s_args_t*)_output_buffer;" fd.fname
-      ; "OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));"
-      ; ""
-      ; "/* Check if the call succeeded. */"
-      ; "if ((_result = _pargs_out->_result) != OE_OK)"
-      ; "    goto done;"
-      ; ""
-      ; "/* Currently exactly _output_buffer_size bytes must be written. */"
-      ; "if (_output_bytes_written != _output_buffer_size)"
-      ; "{"
-      ; "    _result = OE_FAILURE;"
-      ; "    goto done;"
-      ; "}"
-      ; ""
-      ; "/* Unmarshal return value and out, in-out parameters. */"
-      ; ( if fd.rtype <> Void then "*_retval = _pargs_out->_retval;"
-        else "/* No return value. */" ) ]
-    ; (* This does not use String.concat because the elements are multiple lines. *)
-      List.map
-        (fun (ptype, decl) ->
-          let size = oe_get_param_size (ptype, decl, "_args.") in
-          (* These need to be in order and so done together. *)
-          if is_out_ptr ptype then
-            sprintf "OE_READ_OUT_PARAM(%s, (size_t)(%s));" decl.identifier size
-          else if is_inout_ptr ptype then
-            (* Check that strings are null terminated. Note output
+  [ [ (* Verify that the ecall succeeded *)
+      "/* Setup output arg struct pointer. */"
+    ; sprintf "_pargs_out = (%s_args_t*)_output_buffer;" fd.fname
+    ; "OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));"
+    ; ""
+    ; "/* Check if the call succeeded. */"
+    ; "if ((_result = _pargs_out->_result) != OE_OK)"
+    ; "    goto done;"
+    ; ""
+    ; "/* Currently exactly _output_buffer_size bytes must be written. */"
+    ; "if (_output_bytes_written != _output_buffer_size)"
+    ; "{"
+    ; "    _result = OE_FAILURE;"
+    ; "    goto done;"
+    ; "}"
+    ; ""
+    ; "/* Unmarshal return value and out, in-out parameters. */"
+    ; ( if fd.rtype <> Void then "*_retval = _pargs_out->_retval;"
+      else "/* No return value. */" ) ]
+  ; (* This does not use String.concat because the elements are multiple lines. *)
+    List.map
+      (fun (ptype, decl) ->
+        let size = oe_get_param_size (ptype, decl, "_args.") in
+        (* These need to be in order and so done together. *)
+        if is_out_ptr ptype then
+          sprintf "OE_READ_OUT_PARAM(%s, (size_t)(%s));" decl.identifier size
+        else if is_inout_ptr ptype then
+          (* Check that strings are null terminated. Note output
               buffer has already been copied into the enclave. *)
-            ( if is_str_ptr ptype || is_wstr_ptr ptype then
-              sprintf
-                "OE_CHECK_NULL_TERMINATOR%s(_output_buffer + \
-                 _output_buffer_offset, _args.%s_len);\n"
-                (if is_wstr_ptr ptype then "_WIDE" else "")
-                decl.identifier
-            else "" )
-            ^ sprintf "OE_READ_IN_OUT_PARAM(%s, (size_t)(%s));" decl.identifier
-                size
+          ( if is_str_ptr ptype || is_wstr_ptr ptype then
+            sprintf
+              "OE_CHECK_NULL_TERMINATOR%s(_output_buffer + \
+               _output_buffer_offset, _args.%s_len);\n"
+              (if is_wstr_ptr ptype then "_WIDE" else "")
+              decl.identifier
           else "" )
-        (* We filter the list so an empty string is never output. *)
-        (List.filter (fun (p, _) -> is_out_ptr p || is_inout_ptr p) fd.plist)
-    ]
+          ^ sprintf "OE_READ_IN_OUT_PARAM(%s, (size_t)(%s));" decl.identifier
+              size
+        else "" )
+      (* We filter the list so an empty string is never output. *)
+      (List.filter (fun (p, _) -> is_out_ptr p || is_inout_ptr p) fd.plist) ]
+  |> List.flatten
 
 (** Generate a cast expression to a specific pointer type. For example,
     [int*] needs to be cast to
@@ -690,23 +685,23 @@ let gen_fill_marshal_struct (fd : func_decl) structs =
   (* Generate assignment argument to corresponding field in args *)
   let rec gen_assignment prefix1 prefix2 (ptype, decl) =
     let id = decl.identifier in
-    List.flatten
-      [ [ sprintf "_args.%s%s = %s%s%s;" prefix1 id
-            (get_cast_to_mem_expr (ptype, decl) true)
-            prefix2 id ]
-      ; (* for string parameter fill the len field *)
-        ( if is_str_ptr ptype then
-          [ sprintf "_args.%s%s_len = (%s) ? (strlen(%s) + 1) : 0;" prefix1 id
-              id id ]
-        else if is_wstr_ptr ptype then
-          [ sprintf "_args.%s%s_len = (%s) ? (wcslen(%s) + 1) : 0;" prefix1 id
-              id id ]
-        else [""] )
-      ; flatten_map
-          (gen_assignment (prefix1 ^ id ^ "__") (prefix2 ^ id ^ "->"))
-          (should_deepcopy (get_param_atype ptype) structs) ]
+    [ [ sprintf "_args.%s%s = %s%s%s;" prefix1 id
+          (get_cast_to_mem_expr (ptype, decl) true)
+          prefix2 id ]
+    ; (* for string parameter fill the len field *)
+      ( if is_str_ptr ptype then
+        [ sprintf "_args.%s%s_len = (%s) ? (strlen(%s) + 1) : 0;" prefix1 id id
+            id ]
+      else if is_wstr_ptr ptype then
+        [ sprintf "_args.%s%s_len = (%s) ? (wcslen(%s) + 1) : 0;" prefix1 id id
+            id ]
+      else [] )
+    ; flatten_map
+        (gen_assignment (prefix1 ^ id ^ "__") (prefix2 ^ id ^ "->"))
+        (should_deepcopy (get_param_atype ptype) structs) ]
+    |> List.flatten
   in
-  flatten_map (gen_assignment "" "") fd.plist |> remove_empty_str
+  flatten_map (gen_assignment "" "") fd.plist
 
 (** Generate host ECALL wrapper function. *)
 let oe_gen_host_ecall_wrapper (name : string) structs (tf : trusted_func) =
@@ -924,27 +919,25 @@ let warn_signed_size_or_count_types (fd : func_decl) =
   in
   (* Get the names of all size and count parameters for the function [fd]. *)
   let size_params =
-    List.map
-      (fun (ptype, decl) ->
+    filter_map
+      (fun (ptype, _) ->
         (* The size may be either a [count] or [size], and then either a
          number or string. We are interested in the strings, as the
          indicate named [size] or [count] parameters. *)
         let param_name {ps_size; ps_count} =
           match (ps_size, ps_count) with
           (* [s] is the name of the parameter as a string. *)
-          | None, Some (AString s) | Some (AString s), None -> s
+          | None, Some (AString s) | Some (AString s), None -> Some s
           (* TODO: Check for [Some (ANumber n)] that [n > 0] *)
-          | _ -> ""
+          | _ -> None
         in
         (* Only variables that are pointers where [chkptr] is true may
          have size parameters. TODO: Validate this! *)
         match ptype with
         | PTPtr (_, ptr_attr) when ptr_attr.pa_chkptr ->
             param_name ptr_attr.pa_size
-        | _ -> "" )
+        | _ -> None )
       fd.plist
-    |> List.filter (fun x -> String.length x > 0)
-    (* Remove the empty strings. *)
   in
   (* Print warnings for size parameters that are [Signed]. *)
   List.iter
