@@ -78,7 +78,7 @@ C:\Program Files\LLVM\bin\ld.lld.exe
 OCaml
 ---------------------------------
 Install [OCaml for Windows (64-bit)](https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/).
-Please download and install the mingw64 exe for OCaml, for example, https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/ocpwin64-20160113-4.01.0+ocp1-mingw64.exe.
+Please download and install the mingw64 exe for OCaml, for example, https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/ocpwin64-20160113-4.02.1+ocp1-mingw64.exe.
 
 [Alternate OCaml Web-site](https://fdopen.github.io/opam-repository-mingw/installation/)
 
