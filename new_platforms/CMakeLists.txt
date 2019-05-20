@@ -158,3 +158,11 @@ add_subdirectory(tests)
 if(WIN32 AND TZ AND SIM)
     add_subdirectory(opteesim)
 endif()
+
+if(TZ)
+    file(GLOB TA_DEV_KIT
+        LIST_DIRECTORIES true
+        ${TA_DEV_KIT_DIR}/*)
+    file(COPY ${TA_DEV_KIT}
+        DESTINATION ${CMAKE_BINARY_DIR}/out/devkit)
+endif()
