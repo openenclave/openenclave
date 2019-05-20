@@ -176,6 +176,7 @@ static int _epoll_ctl_add(epoll_t* epoll, int fd, struct oe_epoll_event* event)
     oe_host_fd_t host_fd;
     struct oe_epoll_event host_event;
     int retval;
+    bool locked = false;
 
     oe_errno = 0;
 
@@ -214,23 +215,23 @@ static int _epoll_ctl_add(epoll_t* epoll, int fd, struct oe_epoll_event* event)
     if (retval != -1)
     {
         oe_spin_lock(&epoll->lock);
+        locked = true;
 
         if (_map_reserve(epoll, epoll->map_size + 1) != 0)
-        {
-            oe_spin_lock(&epoll->lock);
             OE_RAISE_ERRNO(OE_ENOMEM);
-        }
 
         epoll->map[epoll->map_size].fd = fd;
         epoll->map[epoll->map_size].event = *event;
         epoll->map_size++;
-
-        oe_spin_unlock(&epoll->lock);
     }
 
     ret = retval;
 
 done:
+
+    if (locked)
+        oe_spin_unlock(&epoll->lock);
+
     return ret;
 }
 

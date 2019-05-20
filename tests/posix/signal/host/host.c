@@ -14,6 +14,7 @@ static void sleep(int secs)
 typedef HANDLE pthread_t;
 #else
 #include <pthread.h>
+#include <signal.h>
 #include <unistd.h>
 #endif
 
@@ -81,14 +82,20 @@ int main(int argc, const char* argv[])
     }
 #if defined(_WIN32)
     signal_thread_id = CreateThread(
-        NULL, 0, (LPTHREAD_START_ROUTINE)host_signal_thread, (void*)(&done), 0, NULL);
+        NULL,
+        0,
+        (LPTHREAD_START_ROUTINE)host_signal_thread,
+        (void*)(&done),
+        0,
+        NULL);
     OE_TEST(signal_thread_id != INVALID_HANDLE_VALUE);
 #else
     struct sigaction action = {{sigusr2_handler}};
     sigaction(OE_SIGUSR2, &action, NULL);
 
     // host signal to enclave client
-    // This is only applicable to linux as windows hardly has any signal facility
+    // This is only applicable to linux as windows hardly has any signal
+    // facility
     OE_TEST(
         pthread_create(
             &signal_thread_id, NULL, host_signal_thread, (void*)&done) == 0);
@@ -138,7 +145,7 @@ int main(int argc, const char* argv[])
 
     pthread_join(signal_thread_id, NULL);
 #else
-   ret = WaitForSingleObject(signal_thread_id, INFINITE);
+    ret = WaitForSingleObject(signal_thread_id, INFINITE);
 #endif
 
     OE_TEST(oe_terminate_enclave(client_enclave) == OE_OK);

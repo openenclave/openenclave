@@ -9,7 +9,6 @@
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/internal/posix/device.h>
-#include <openenclave/internal/posix/lock.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/thread.h>
@@ -147,11 +146,12 @@ int oe_device_table_set(uint64_t devid, oe_device_t* device)
     if (!device)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    oe_conditional_lock(&_lock, &locked);
-
 #if !defined(NDEBUG)
     _assert_device(device);
 #endif
+
+    oe_spin_lock(&_lock);
+    locked = true;
 
     if (_resize_table(devid + 1) != 0)
         OE_RAISE_ERRNO(OE_ENOMEM);
@@ -164,7 +164,9 @@ int oe_device_table_set(uint64_t devid, oe_device_t* device)
     ret = 0;
 
 done:
-    oe_conditional_unlock(&_lock, &locked);
+
+    if (locked)
+        oe_spin_unlock(&_lock);
 
     return ret;
 }
@@ -193,9 +195,9 @@ oe_device_t* oe_device_table_get(uint64_t devid, oe_device_type_t type)
 {
     oe_device_t* ret;
 
-    oe_conditional_lock(&_lock, NULL);
+    oe_spin_lock(&_lock);
     ret = _get_device(devid, type);
-    oe_conditional_unlock(&_lock, NULL);
+    oe_spin_unlock(&_lock);
 
     return ret;
 }
@@ -210,7 +212,8 @@ oe_device_t* oe_device_table_find(const char* name, oe_device_type_t type)
     if (!name)
         goto done;
 
-    oe_conditional_lock(&_lock, &locked);
+    oe_spin_lock(&_lock);
+    locked = true;
 
     for (i = 0; i < _table_size; i++)
     {
@@ -229,7 +232,9 @@ oe_device_t* oe_device_table_find(const char* name, oe_device_type_t type)
     ret = device;
 
 done:
-    oe_conditional_unlock(&_lock, &locked);
+
+    if (locked)
+        oe_spin_unlock(&_lock);
 
     return ret;
 }
@@ -240,7 +245,8 @@ int oe_device_table_remove(uint64_t devid)
     oe_device_t* device;
     bool locked = false;
 
-    oe_conditional_lock(&_lock, &locked);
+    oe_spin_lock(&_lock);
+    locked = true;
 
     if (!(device = _get_device(devid, OE_DEVICE_TYPE_ANY)))
         OE_RAISE_ERRNO(OE_EINVAL);
@@ -250,13 +256,21 @@ int oe_device_table_remove(uint64_t devid)
 
     _table[devid] = NULL;
 
+    if (locked)
+    {
+        oe_spin_unlock(&_lock);
+        locked = false;
+    }
+
     if (device->ops.device.release(device) != 0)
         OE_RAISE_ERRNO(oe_errno);
 
     ret = 0;
 
 done:
-    oe_conditional_unlock(&_lock, &locked);
+
+    if (locked)
+        oe_spin_unlock(&_lock);
 
     return ret;
 }

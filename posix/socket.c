@@ -7,27 +7,26 @@
 #include <openenclave/corelibc/sys/socket.h>
 #include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/posix/fdtable.h>
-#include <openenclave/internal/posix/lock.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 
 static uint64_t _default_socket_devid = OE_DEVID_NONE;
-static oe_spinlock_t _default_socket_devid_lock;
+static oe_spinlock_t _default_socket_devid_lock = OE_SPINLOCK_INITIALIZER;
 
 void oe_set_default_socket_devid(uint64_t devid)
 {
-    oe_conditional_lock(&_default_socket_devid_lock, NULL);
+    oe_spin_lock(&_default_socket_devid_lock);
     _default_socket_devid = devid;
-    oe_conditional_unlock(&_default_socket_devid_lock, NULL);
+    oe_spin_unlock(&_default_socket_devid_lock);
 }
 
 uint64_t oe_get_default_socket_devid(void)
 {
-    oe_conditional_lock(&_default_socket_devid_lock, NULL);
+    oe_spin_lock(&_default_socket_devid_lock);
     uint64_t ret = _default_socket_devid;
-    oe_conditional_unlock(&_default_socket_devid_lock, NULL);
+    oe_spin_unlock(&_default_socket_devid_lock);
     return ret;
 }
 

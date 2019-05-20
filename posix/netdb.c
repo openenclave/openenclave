@@ -4,7 +4,6 @@
 #include <openenclave/corelibc/netdb.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/sys/socket.h>
-#include <openenclave/internal/posix/lock.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/posix/resolver.h>
 #include <openenclave/internal/thread.h>
@@ -33,7 +32,8 @@ int oe_register_resolver(oe_resolver_t* resolver)
         OE_RAISE_ERRNO(OE_EINVAL);
     }
 
-    oe_conditional_lock(&_lock, &locked);
+    oe_spin_lock(&_lock);
+    locked = true;
 
     /* This function can be called only once. */
     if (_resolver != NULL)
@@ -50,7 +50,9 @@ int oe_register_resolver(oe_resolver_t* resolver)
     ret = 0;
 
 done:
-    oe_conditional_unlock(&_lock, &locked);
+
+    if (locked)
+        oe_spin_unlock(&_lock);
 
     return ret;
 }
@@ -71,7 +73,8 @@ int oe_getaddrinfo(
     if (!_resolver)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    oe_conditional_lock(&_lock, &locked);
+    oe_spin_lock(&_lock);
+    locked = true;
 
     if ((*_resolver->ops->getaddrinfo)(_resolver, node, service, hints, &res) ==
         0)
@@ -82,7 +85,9 @@ int oe_getaddrinfo(
     }
 
 done:
-    oe_conditional_unlock(&_lock, &locked);
+
+    if (locked)
+        oe_spin_unlock(&_lock);
 
     return ret;
 }
@@ -102,13 +107,16 @@ int oe_getnameinfo(
     if (!_resolver)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    oe_conditional_lock(&_lock, &locked);
+    oe_spin_lock(&_lock);
+    locked = true;
 
     ret = (*_resolver->ops->getnameinfo)(
         _resolver, sa, salen, host, hostlen, serv, servlen, flags);
 
 done:
-    oe_conditional_unlock(&_lock, &locked);
+
+    if (locked)
+        oe_spin_unlock(&_lock);
 
     return (int)ret;
 }

@@ -13,7 +13,6 @@
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/posix/raise.h>
-#include <openenclave/internal/posix/lock.h>
 #include <openenclave/bits/safecrt.h>
 
 #define MAX_MOUNT_TABLE_SIZE 64
@@ -73,7 +72,8 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
     if (!oe_realpath(path, realpath))
         OE_RAISE_ERRNO(oe_errno);
 
-    oe_conditional_lock(&_lock, &locked);
+    oe_spin_lock(&_lock);
+    locked = true;
 
     /* Find the longest binding point that contains this path. */
     for (size_t i = 0; i < _mount_table_size; i++)
@@ -114,11 +114,19 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
         }
     }
 
+    if (locked)
+    {
+        oe_spin_unlock(&_lock);
+        locked = false;
+    }
+
     if (!ret)
         OE_RAISE_ERRNO_MSG(OE_ENOENT, "path=%s", path);
 
 done:
-    oe_conditional_unlock(&_lock, &locked);
+
+    if (locked)
+        oe_spin_unlock(&_lock);
 
     return ret;
 }
@@ -159,7 +167,8 @@ int oe_mount(
     }
 
     /* Lock the mount table. */
-    oe_conditional_lock(&_lock, &locked);
+    oe_spin_lock(&_lock);
+    locked = true;
 
     /* Install _free_mount_table() if not already installed. */
     if (_installed_free_mount_table == false)
@@ -219,7 +228,8 @@ int oe_mount(
 
 done:
 
-    oe_conditional_unlock(&_lock, &locked);
+    if (locked)
+        oe_spin_unlock(&_lock);
 
     if (new_device)
         new_device->ops.device.release(new_device);
@@ -240,7 +250,8 @@ int oe_umount2(const char* target, int flags)
     if (!device || device->type != OE_DEVICE_TYPE_FILE_SYSTEM || !target)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    oe_conditional_lock(&_lock, &locked);
+    oe_spin_lock(&_lock);
+    locked = true;
 
     /* Find and remove this device. */
     for (size_t i = 0; i < _mount_table_size; i++)
@@ -275,7 +286,8 @@ int oe_umount2(const char* target, int flags)
 
 done:
 
-    oe_conditional_unlock(&_lock, &locked);
+    if (locked)
+        oe_spin_unlock(&_lock);
 
     return ret;
 }

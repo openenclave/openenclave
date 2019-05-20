@@ -1820,7 +1820,7 @@ int oe_posix_getsockname_ocall(
         if (addrlen_out)
             *addrlen_out = addrlen_in;
     }
-    else 
+    else
     {
         _set_errno(_winsockerr_to_errno(WSAGetLastError()));
     }
@@ -1845,7 +1845,7 @@ int oe_posix_getpeername_ocall(
         if (addrlen_out)
             *addrlen_out = addrlen_in;
     }
-    else 
+    else
     {
         _set_errno(_winsockerr_to_errno(WSAGetLastError()));
     }

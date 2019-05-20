@@ -11,7 +11,6 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/posix/fd.h>
 #include <openenclave/internal/posix/fdtable.h>
-#include <openenclave/internal/posix/lock.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/thread.h>
@@ -221,7 +220,8 @@ int oe_fdtable_assign(oe_fd_t* desc)
     if (!desc)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    oe_conditional_lock(&_lock, &locked);
+    oe_spin_lock(&_lock);
+    locked = true;
 
     if (_initialize() != 0)
         OE_RAISE_ERRNO(oe_errno);
@@ -249,7 +249,8 @@ int oe_fdtable_assign(oe_fd_t* desc)
 
 done:
 
-    oe_conditional_unlock(&_lock, &locked);
+    if (locked)
+        oe_spin_unlock(&_lock);
 
     return ret;
 }
@@ -257,9 +258,8 @@ done:
 int oe_fdtable_release(int fd)
 {
     int ret = -1;
-    bool locked = false;
 
-    oe_conditional_lock(&_lock, &locked);
+    oe_spin_lock(&_lock);
 
     if (_initialize() != 0)
         OE_RAISE_ERRNO(oe_errno);
@@ -278,7 +278,7 @@ int oe_fdtable_release(int fd)
 
 done:
 
-    oe_conditional_unlock(&_lock, &locked);
+    oe_spin_unlock(&_lock);
 
     return ret;
 }
@@ -295,7 +295,8 @@ int oe_fdtable_reassign(int fd, oe_fd_t* new_desc, oe_fd_t** old_desc)
     if (old_desc)
         *old_desc = NULL;
 
-    oe_conditional_lock(&_lock, &locked);
+    oe_spin_lock(&_lock);
+    locked = true;
 
     if (_initialize() != 0)
         OE_RAISE_ERRNO(oe_errno);
@@ -315,7 +316,8 @@ int oe_fdtable_reassign(int fd, oe_fd_t* new_desc, oe_fd_t** old_desc)
 
 done:
 
-    oe_conditional_unlock(&_lock, &locked);
+    if (locked)
+        oe_spin_unlock(&_lock);
 
     return ret;
 }
@@ -323,9 +325,8 @@ done:
 static oe_fd_t* _get_fd(int fd)
 {
     oe_fd_t* ret = NULL;
-    bool locked = false;
 
-    oe_conditional_lock(&_lock, &locked);
+    oe_spin_lock(&_lock);
 
     if (_initialize() != 0)
         OE_RAISE_ERRNO(oe_errno);
@@ -340,7 +341,7 @@ static oe_fd_t* _get_fd(int fd)
 
 done:
 
-    oe_conditional_unlock(&_lock, &locked);
+    oe_spin_unlock(&_lock);
 
     return ret;
 }

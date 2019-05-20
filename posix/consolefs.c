@@ -239,7 +239,7 @@ static oe_fd_t* _new_file(uint32_t fileno)
     struct _args args[] = {
         {"/dev/stdin", OE_O_RDONLY},
         {"/dev/stdout", OE_O_WRONLY},
-        {"/dev/stdout", OE_O_WRONLY},
+        {"/dev/stderr", OE_O_WRONLY},
     };
 
     if (fileno > OE_STDERR_FILENO)

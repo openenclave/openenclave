@@ -11,7 +11,6 @@
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/posix/fdtable.h>
-#include <openenclave/internal/posix/lock.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/time.h>
@@ -51,7 +50,7 @@ done:
 }
 
 static char _cwd[OE_PATH_MAX] = "/";
-static oe_spinlock_t _cwd_lock;
+static oe_spinlock_t _cwd_lock = OE_SPINLOCK_INITIALIZER;
 
 char* oe_getcwd(char* buf, size_t size)
 {
@@ -77,19 +76,19 @@ char* oe_getcwd(char* buf, size_t size)
         p = buf;
     }
 
-    oe_conditional_lock(&_cwd_lock, &locked);
+    oe_spin_lock(&_cwd_lock);
+    locked = true;
 
     if (oe_strlcpy(p, _cwd, n) >= n)
         OE_RAISE_ERRNO(OE_ERANGE);
-
-    oe_conditional_unlock(&_cwd_lock, &locked);
 
     ret = p;
     p = NULL;
 
 done:
 
-    oe_conditional_unlock(&_cwd_lock, &locked);
+    if (locked)
+        oe_spin_unlock(&_cwd_lock);
 
     if (p && p != buf)
         oe_free(p);
@@ -123,18 +122,18 @@ int oe_chdir(const char* path)
     }
 
     /* Set the _cwd global. */
-    oe_conditional_lock(&_cwd_lock, &locked);
+    oe_spin_lock(&_cwd_lock);
+    locked = true;
 
     if (oe_strlcpy(_cwd, real_path, OE_PATH_MAX) >= OE_PATH_MAX)
         OE_RAISE_ERRNO(OE_ENAMETOOLONG);
-
-    oe_conditional_unlock(&_cwd_lock, &locked);
 
     ret = 0;
 
 done:
 
-    oe_conditional_unlock(&_cwd_lock, &locked);
+    if (locked)
+        oe_spin_unlock(&_cwd_lock);
 
     return ret;
 }
@@ -312,7 +311,7 @@ int oe_dup2(int oldfd, int newfd)
 {
     oe_fd_t* old_desc;
     oe_fd_t* new_desc = NULL;
-    oe_fd_t* resassigned_desc;
+    oe_fd_t* reassigned_desc;
     int retval = -1;
 
     if (oldfd == newfd)
@@ -324,11 +323,11 @@ int oe_dup2(int oldfd, int newfd)
     if ((retval = old_desc->ops.fd.dup(old_desc, &new_desc)) < 0)
         OE_RAISE_ERRNO(oe_errno);
 
-    if (oe_fdtable_reassign(newfd, new_desc, &resassigned_desc) == -1)
+    if (oe_fdtable_reassign(newfd, new_desc, &reassigned_desc) == -1)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (resassigned_desc)
-        resassigned_desc->ops.fd.close(resassigned_desc);
+    if (reassigned_desc)
+        reassigned_desc->ops.fd.close(reassigned_desc);
 
     new_desc = NULL;
 
