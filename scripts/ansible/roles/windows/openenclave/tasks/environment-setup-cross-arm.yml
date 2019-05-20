@@ -1,0 +1,9 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+---
+- name: Include base setup
+  include_tasks: environment-setup.yml
+
+- name: Microsoft Visual Studio 2017 (ARM) - Install
+  raw: "{{ packages['vs_2017']['dest'] }} --quiet --wait --add Microsoft.VisualStudio.Component.VC.v141.ARM.Spectre --add Microsoft.VisualStudio.Component.VC.v141.ARM64.Spectre --includeRecommended"

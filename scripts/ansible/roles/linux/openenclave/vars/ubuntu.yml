@@ -30,6 +30,12 @@ apt_packages:
   - "subversion"
   - "libcurl4-openssl-dev"
 
+apt_arm_packages:
+  - "gcc-aarch64-linux-gnu"
+  - "g++-aarch64-linux-gnu"
+  - "libc6-dev:arm64"
+  - "libssl-dev:arm64"
+
 validation_directories:
   - "/usr/local/opam"
   - "/usr/local/opam/{{ ocaml_version }}"
