@@ -25,7 +25,7 @@ declare -a PLATFORMS=(
     "ls-ls1012grapeboard"
 )
 
-mkdir $TARGET || exit 1
+mkdir -p $TARGET || exit 1
 mkdir -p nuget/tools || exit 1
 
 # Copy the TA Dev Kits used to build the SDK into the NuGet package.
