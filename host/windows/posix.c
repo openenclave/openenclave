@@ -761,7 +761,18 @@ oe_host_fd_t oe_posix_open_ocall(
             goto done;
         }
 
-        ret = (oe_host_fd_t)GetStdHandle(STD_INPUT_HANDLE);
+        if (!DuplicateHandle(
+                GetCurrentProcess(),
+                GetStdHandle(STD_INPUT_HANDLE),
+                GetCurrentProcess(),
+                (HANDLE*)&ret,
+                0,
+                FALSE,
+                DUPLICATE_SAME_ACCESS))
+        {
+            _set_errno(_winerr_to_errno(GetLastError()));
+            goto done;
+        }
     }
     else if (strcmp(pathname, "/dev/stdout") == 0)
     {
@@ -771,7 +782,18 @@ oe_host_fd_t oe_posix_open_ocall(
             goto done;
         }
 
-        ret = (oe_host_fd_t)GetStdHandle(STD_OUTPUT_HANDLE);
+        if (!DuplicateHandle(
+                GetCurrentProcess(),
+                GetStdHandle(STD_OUTPUT_HANDLE),
+                GetCurrentProcess(),
+                (HANDLE*)&ret,
+                0,
+                FALSE,
+                DUPLICATE_SAME_ACCESS))
+        {
+            _set_errno(_winerr_to_errno(GetLastError()));
+            goto done;
+        }
     }
     else if (strcmp(pathname, "/dev/stderr") == 0)
     {
@@ -781,7 +803,18 @@ oe_host_fd_t oe_posix_open_ocall(
             goto done;
         }
 
-        ret = (oe_host_fd_t)GetStdHandle(STD_ERROR_HANDLE);
+        if (!DuplicateHandle(
+                GetCurrentProcess(),
+                GetStdHandle(STD_ERROR_HANDLE),
+                GetCurrentProcess(),
+                (HANDLE*)&ret,
+                0,
+                FALSE,
+                DUPLICATE_SAME_ACCESS))
+        {
+            _set_errno(_winerr_to_errno(GetLastError()));
+            goto done;
+        }
     }
     else
     {
