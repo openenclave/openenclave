@@ -25,15 +25,23 @@ declare -a PLATFORMS=(
     "ls-ls1012grapeboard"
 )
 
-mkdir -p $TARGET || exit 1
+mkdir $TARGET || exit 1
 mkdir -p nuget/tools || exit 1
 
-for PLATFORM in "${PLATFORMS[@]}"
-do
-    mkdir -p $TARGET/$PLATFORM || exit 1
-    cp -R optee/$PLATFORM/export-ta_arm* $TARGET/$PLATFORM || exit 1
-done
+# Copy the TA Dev Kits used to build the SDK into the NuGet package.
+PLATFORM=vexpress-qemu_virt
+mkdir $TARGET/$PLATFORM || exit 1
+cp -R optee/$PLATFORM/export-ta_arm32 $TARGET/$PLATFORM/devkit || exit 1
 
+PLATFORM=vexpress-qemu_armv8a
+mkdir $TARGET/$PLATFORM || exit 1
+cp -R optee/$PLATFORM/export-ta_arm64 $TARGET/$PLATFORM/devkit || exit 1
+
+PLATFORM=ls-ls1012grapeboard
+mkdir $TARGET/$PLATFORM || exit 1
+cp -R optee/$PLATFORM/export-ta_arm64 $TARGET/$PLATFORM/devkit || exit 1
+
+# Copy the SDK binaries into the NuGet package.
 for LIBRARY in "${LIBRARIES[@]}"
 do
     for PLATFORM in "${PLATFORMS[@]}"
@@ -42,4 +50,5 @@ do
     done
 done
 
+# Copy the oeedger8r tool into the NuGet package, too.
 cp build/oeedger8r nuget/tools || exit 1
