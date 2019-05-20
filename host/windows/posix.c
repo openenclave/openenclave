@@ -1787,6 +1787,10 @@ int oe_posix_getsockname_ocall(
         if (addrlen_out)
             *addrlen_out = addrlen_in;
     }
+    else 
+    {
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
+    }
 
     return ret;
 }
@@ -1808,6 +1812,10 @@ int oe_posix_getpeername_ocall(
         if (addrlen_out)
             *addrlen_out = addrlen_in;
     }
+    else 
+    {
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
+    }
 
     return ret;
 }
@@ -1827,7 +1835,12 @@ int oe_posix_shutdown_sockets_device_ocall(oe_host_fd_t sockfd)
 
 int oe_posix_kill_ocall(int pid, int signum)
 {
-    PANIC;
+    if (!GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, pid))
+    {
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
+        return -1;
+    }
+    return 0;
 }
 
 /*

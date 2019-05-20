@@ -10,6 +10,7 @@ add_enclave(
     TARGET signal_test_enc
     SOURCES enc.c ${signal_test_t}
 )
+maybe_build_using_clangw(signal_test_enc)
 
 target_include_directories(signal_test_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(signal_test_enc oelibc oehostfs)
