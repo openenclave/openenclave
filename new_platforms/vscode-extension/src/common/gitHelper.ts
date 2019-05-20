@@ -14,7 +14,7 @@ export class GitHelper {
             "--branch",
             gitBranch.startsWith("#") ? gitBranch.substr(1) : gitBranch,
             gitRepo,
-            destination,
+            `\"${destination}\"`,
         ];
 
         outputChannel.show();
