@@ -18,7 +18,7 @@ Ensure that you have an instance of [Azure IoT Hub](https://ms.portal.azure.com/
 ## Device
 
 Once you have created an Azure IoT Hub Edge device, the next step is connecting that to a real device.  In broad strokes, this amounts to
-putting the Azure IoT Edge runtime and agent on a device and connecting it to the Azure IoT Hub Edge device you creaed above.  Below are the 
+putting the Azure IoT Edge runtime and agent on a device and connecting it to the Azure IoT Hub Edge device you created above.  Below are the 
 steps for setting that up on an AArch64 or ARM32v7 device.
 
 ### AArch64

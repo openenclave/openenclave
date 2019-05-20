@@ -74,7 +74,7 @@ to an Azure Edge device by:
 1. Navigate to the `config` folder and right click on `deployment.*.json`
 1. Select `Create Deployment for Single Device` or `Create Deployment at Scale`.
 
-To set up an actual device to receive a deployment, you can follow [these](./SetupDevice.md) instructions.
+To set up an actual device to receive a deployment, you can follow [these](./SetUpDevice.md) instructions.
 
 ### Debug your Open Enclave solution.
 
