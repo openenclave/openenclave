@@ -81,6 +81,9 @@ let filter_map f l =
     (function Some x -> x | None -> invalid_arg "None")
     (List.filter (function Some _ -> true | None -> false) (List.map f l))
 
+(* Helper to flatten and map at the same time. *)
+let flatten_map f l = List.flatten (List.map f l)
+
 let is_in_ptr (ptype : parameter_type) =
   match ptype with
   | PTVal _ -> false
@@ -154,10 +157,9 @@ let oe_gen_marshal_struct (fd : func_decl) (errno : bool) structs =
       ; ( if need_strlen ptype then [sprintf "size_t %s_len;" decl.identifier]
         else [""] )
       ; ( if should_deepcopy aty structs <> [] then
-          List.flatten
-            (List.map
-               (gen_member_decl (decl.identifier ^ "_"))
-               (should_deepcopy aty structs))
+          flatten_map
+            (gen_member_decl (decl.identifier ^ "_"))
+            (should_deepcopy aty structs)
         else [""] ) ]
   in
   let struct_name = fd.fname ^ "_args_t" in
@@ -168,8 +170,7 @@ let oe_gen_marshal_struct (fd : func_decl) (errno : bool) structs =
       ; ( if fd.rtype = Void then [""]
         else gen_member_decl "" (PTVal fd.rtype, retval_decl) )
       ; (if errno then ["int _ocall_errno;"] else [""])
-      ; List.flatten
-          (List.map (gen_member_decl "") (List.map conv_array_to_ptr fd.plist))
+      ; flatten_map (gen_member_decl "") (List.map conv_array_to_ptr fd.plist)
       ]
   in
   [ sprintf "typedef struct _%s" struct_name
@@ -334,7 +335,7 @@ let oe_gen_args_header (ec : enclave_content) (dir : string) =
     else ["/* There were no user includes. */"]
   in
   let oe_gen_user_types (cts : composite_type list) =
-    if cts <> [] then List.flatten (List.map emit_composite_type cts)
+    if cts <> [] then flatten_map emit_composite_type cts
     else ["/* There were no user defined types. */"; ""]
   in
   let structs =
@@ -344,19 +345,17 @@ let oe_gen_args_header (ec : enclave_content) (dir : string) =
   in
   let oe_gen_ecall_marshal_structs (tfs : trusted_func list) =
     if tfs <> [] then
-      List.flatten
-        (List.map
-           (fun tf -> oe_gen_marshal_struct tf.tf_fdecl false structs)
-           tfs)
+      flatten_map
+        (fun tf -> oe_gen_marshal_struct tf.tf_fdecl false structs)
+        tfs
     else ["/* There were no ecalls. */"; ""]
   in
   let oe_gen_ocall_marshal_structs (ufs : untrusted_func list) =
     if ufs <> [] then
-      List.flatten
-        (List.map
-           (fun uf ->
-             oe_gen_marshal_struct uf.uf_fdecl uf.uf_propagate_errno structs )
-           ufs)
+      flatten_map
+        (fun uf ->
+          oe_gen_marshal_struct uf.uf_fdecl uf.uf_propagate_errno structs )
+        ufs
     else ["/* There were no ocalls. */"; ""]
   in
   let with_errno =
@@ -1077,7 +1076,7 @@ let gen_t_c (ec : enclave_content) (ep : edger8r_params) =
   let tfs = ec.tfunc_decls in
   let ufs = ec.ufunc_decls in
   let oe_gen_ecall_functions =
-    if tfs <> [] then List.flatten (List.map oe_gen_ecall_function tfs)
+    if tfs <> [] then flatten_map oe_gen_ecall_function tfs
     else ["/* There were no ecalls. */"]
   in
   let oe_gen_ecall_table =
@@ -1096,8 +1095,7 @@ let gen_t_c (ec : enclave_content) (ep : edger8r_params) =
   in
   let oe_gen_enclave_ocall_wrappers =
     if ufs <> [] then
-      List.flatten
-        (List.map (oe_gen_enclave_ocall_wrapper ec.enclave_name) ufs)
+      flatten_map (oe_gen_enclave_ocall_wrapper ec.enclave_name) ufs
     else ["/* There were no ocalls. */"]
   in
   let content =
@@ -1181,11 +1179,11 @@ let gen_u_c (ec : enclave_content) (ep : edger8r_params) =
   let ufs = ec.ufunc_decls in
   let oe_gen_host_ecall_wrappers =
     if tfs <> [] then
-      List.flatten (List.map (oe_gen_host_ecall_wrapper ec.enclave_name) tfs)
+      flatten_map (oe_gen_host_ecall_wrapper ec.enclave_name) tfs
     else ["/* There were no ecalls. */"]
   in
   let oe_gen_ocall_functions =
-    if ufs <> [] then List.flatten (List.map oe_gen_ocall_function ufs)
+    if ufs <> [] then flatten_map oe_gen_ocall_function ufs
     else ["/* There were no ocalls. */"]
   in
   let oe_gen_ocall_table =
