@@ -41,7 +41,7 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
 {
     oe_device_t* ret = NULL;
     size_t match_len = 0;
-    char realpath[OE_PATH_MAX];
+    oe_posix_path_t realpath;
     bool locked = false;
 
     if (!path || !suffix)
@@ -69,7 +69,7 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
     }
 
     /* Find the real path (the absolute non-relative path). */
-    if (!oe_realpath(path, realpath))
+    if (!oe_realpath(path, &realpath))
         OE_RAISE_ERRNO(oe_errno);
 
     oe_spin_lock(&_lock);
@@ -87,7 +87,7 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
             {
                 if (suffix)
                 {
-                    oe_strlcpy(suffix, realpath, OE_PATH_MAX);
+                    oe_strlcpy(suffix, realpath.buf, OE_PATH_MAX);
                 }
 
                 match_len = len;
@@ -95,14 +95,14 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
             }
         }
         else if (
-            oe_strncmp(mpath, realpath, len) == 0 &&
-            (realpath[len] == '/' || realpath[len] == '\0'))
+            oe_strncmp(mpath, realpath.buf, len) == 0 &&
+            (realpath.buf[len] == '/' || realpath.buf[len] == '\0'))
         {
             if (len > match_len)
             {
                 if (suffix)
                 {
-                    oe_strlcpy(suffix, realpath + len, OE_PATH_MAX);
+                    oe_strlcpy(suffix, realpath.buf + len, OE_PATH_MAX);
 
                     if (*suffix == '\0')
                         oe_strlcpy(suffix, "/", OE_PATH_MAX);

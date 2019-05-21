@@ -99,16 +99,16 @@ done:
 int oe_chdir(const char* path)
 {
     int ret = -1;
-    char real_path[OE_PATH_MAX];
+    oe_posix_path_t real_path;
     struct oe_stat st;
     bool locked = false;
 
     /* Resolve to an absolute canonical path. */
-    if (!oe_realpath(path, real_path))
+    if (!oe_realpath(path, &real_path))
         return -1;
 
     /* Fail if unable to stat the path. */
-    if (oe_stat(real_path, &st) != 0)
+    if (oe_stat(real_path.buf, &st) != 0)
     {
         // oe_errno set by oe_stat().
         return -1;
@@ -125,7 +125,7 @@ int oe_chdir(const char* path)
     oe_spin_lock(&_cwd_lock);
     locked = true;
 
-    if (oe_strlcpy(_cwd, real_path, OE_PATH_MAX) >= OE_PATH_MAX)
+    if (oe_strlcpy(_cwd, real_path.buf, OE_PATH_MAX) >= OE_PATH_MAX)
         OE_RAISE_ERRNO(OE_ENAMETOOLONG);
 
     ret = 0;
@@ -206,9 +206,6 @@ oe_pid_t oe_getpgid(oe_pid_t pid)
         goto done;
     }
 
-    if (retval == -1)
-        goto done;
-
     ret = retval;
 
 done:
@@ -223,11 +220,6 @@ int oe_getgroups(int size, oe_gid_t list[])
     if (oe_posix_getgroups(&retval, (size_t)size, list) != OE_OK)
     {
         oe_errno = OE_EINVAL;
-        goto done;
-    }
-
-    if (retval == -1)
-    {
         goto done;
     }
 

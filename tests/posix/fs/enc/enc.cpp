@@ -431,14 +431,14 @@ void _test_mount(const char* tmp_dir)
 
 static void test_realpath(const char* tmp_dir)
 {
-    char buf[OE_PATH_MAX];
+    oe_posix_path_t buf;
 
     printf("--- %s()\n", __FUNCTION__);
 
     OE_TEST(mount("/", "/", OE_DEVICE_NAME_HOST_FILE_SYSTEM, 0, NULL) == 0);
 
-    OE_TEST(oe_realpath("/../../..", buf));
-    OE_TEST(strcmp(buf, "/") == 0);
+    OE_TEST(oe_realpath("/../../..", &buf));
+    OE_TEST(strcmp(buf.buf, "/") == 0);
 
     char path_a[OE_PATH_MAX];
     char path_a_b[OE_PATH_MAX];
@@ -457,15 +457,15 @@ static void test_realpath(const char* tmp_dir)
     OE_TEST(mkdir(path_a_b_c, 0777) == 0);
 
     OE_TEST(chdir(path_a_b_c) == 0);
-    OE_TEST(getcwd(buf, sizeof(buf)));
-    OE_TEST(strcmp(buf, path_a_b_c) == 0);
+    OE_TEST(getcwd(buf.buf, sizeof(buf.buf)));
+    OE_TEST(strcmp(buf.buf, path_a_b_c) == 0);
 
-    OE_TEST(oe_realpath("./.././../././", buf));
-    OE_TEST(strcmp(buf, path_a) == 0);
+    OE_TEST(oe_realpath("./.././../././", &buf));
+    OE_TEST(strcmp(buf.buf, path_a) == 0);
 
     OE_TEST(chdir(tmp_dir) == 0);
-    OE_TEST(getcwd(buf, sizeof(buf)));
-    OE_TEST(strcmp(buf, tmp_dir) == 0);
+    OE_TEST(getcwd(buf.buf, sizeof(buf)));
+    OE_TEST(strcmp(buf.buf, tmp_dir) == 0);
 
     {
         struct stat st;
