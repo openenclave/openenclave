@@ -4715,7 +4715,6 @@
 ../../3rdparty/libcxx/libcxx/test/std/utilities/time/time.cal/time.cal.weekday/time.cal.weekday.members/decrement.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/time/time.cal/time.cal.weekday/time.cal.weekday.members/increment.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/time/time.cal/time.cal.weekday/time.cal.weekday.members/ok.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/utilities/time/time.cal/time.cal.weekday/time.cal.weekday.members/operator[].pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/time/time.cal/time.cal.weekday/time.cal.weekday.members/plus_minus_equal.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/time/time.cal/time.cal.weekday/time.cal.weekday.nonmembers/comparisons.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/time/time.cal/time.cal.weekday/time.cal.weekday.nonmembers/literals.pass.cpp

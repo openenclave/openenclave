@@ -610,6 +610,7 @@
 ../../3rdparty/libcxx/libcxx/test/std/utilities/optional/optional.specalg/make_optional_explicit_initializer_list.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/optional/optional.specalg/swap.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/optional/optional.syn/optional_includes_initializer_list.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/utilities/time/time.cal/time.cal.weekday/time.cal.weekday.members/operator[].pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/time/time.clock/time.clock.hires/now.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/time/time.clock/time.clock.steady/now.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/time/time.duration/time.duration.alg/abs.pass.cpp
