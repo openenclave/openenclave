@@ -506,7 +506,7 @@ ssize_t oe_readv(int fd, const struct oe_iovec* iov, int iovcnt)
     ssize_t ret = -1;
     ssize_t nread = 0;
 
-    if (fd < 0 || !iov)
+    if (fd < 0 || !iov || iovcnt < 0 || iovcnt > OE_IOV_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     for (int i = 0; i < iovcnt; i++)
@@ -536,7 +536,7 @@ ssize_t oe_writev(int fd, const struct oe_iovec* iov, int iovcnt)
     ssize_t ret = -1;
     ssize_t nwritten = 0;
 
-    if (fd < 0 || !iov)
+    if (fd < 0 || !iov || iovcnt < 0 || iovcnt > OE_IOV_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     for (int i = 0; i < iovcnt; i++)
