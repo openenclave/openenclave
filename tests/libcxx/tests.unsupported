@@ -79,12 +79,6 @@
 ../../3rdparty/libcxx/libcxx/test/std/containers/unord/unord.set/extract_key.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/containers/unord/unord.set/insert_node_type_hint.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/containers/unord/unord.set/insert_node_type.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/containers/views/span.comparison/op.eq.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/containers/views/span.comparison/op.ge.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/containers/views/span.comparison/op.gt.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/containers/views/span.comparison/op.le.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/containers/views/span.comparison/op.lt.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/containers/views/span.comparison/op.ne.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/containers/views/span.cons/array.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/containers/views/span.cons/assign.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/containers/views/span.cons/container.pass.cpp
@@ -604,7 +598,6 @@
 ../../3rdparty/libcxx/libcxx/test/std/utilities/optional/optional.object/optional.object.observe/value.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/optional/optional.object/optional.object.observe/value_rvalue.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/optional/optional.object/optional.object.swap/swap.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/utilities/optional/optional.object/special_member_gen.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/optional/optional.object/types.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/optional/optional.relops/equal.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/optional/optional.relops/greater_equal.pass.cpp

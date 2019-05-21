@@ -88,19 +88,6 @@
 ../../3rdparty/libcxx/libcxx/test/libcxx/double_include.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/experimental/algorithms/header.algorithm.synop/includes.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/experimental/algorithms/version.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/experimental/containers/sequences/dynarray/dynarray.cons/alloc.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/experimental/containers/sequences/dynarray/dynarray.cons/default.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/experimental/containers/sequences/dynarray/dynarray.cons/default_throws_bad_alloc.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/experimental/containers/sequences/dynarray/dynarray.data/default.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/experimental/containers/sequences/dynarray/dynarray.mutate/default.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/experimental/containers/sequences/dynarray/dynarray.overview/at.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/experimental/containers/sequences/dynarray/dynarray.overview/begin_end.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/experimental/containers/sequences/dynarray/dynarray.overview/capacity.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/experimental/containers/sequences/dynarray/dynarray.overview/front_back.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/experimental/containers/sequences/dynarray/dynarray.overview/indexing.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/experimental/containers/sequences/dynarray/dynarray.traits/default.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/experimental/containers/sequences/dynarray/dynarray.zero/default.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/experimental/containers/sequences/dynarray/nothing_to_do.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/experimental/filesystem/version.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/experimental/language.support/support.coroutines/version.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/experimental/memory/memory.polymorphic.allocator.class/memory.polymorphic.allocator.mem/construct_piecewise_pair.pass.cpp
@@ -166,7 +153,6 @@
 ../../3rdparty/libcxx/libcxx/test/libcxx/language.support/cmp/version.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/language.support/cstdint/version.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/language.support/cxa_deleted_virtual.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/language.support/support.dynamic/alloc.errors/new.badlength/bad_array_length.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/language.support/support.dynamic/version.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/language.support/support.exception/version.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/language.support/support.initlist/version.pass.cpp
@@ -240,7 +226,6 @@
 ../../3rdparty/libcxx/libcxx/test/libcxx/thread/thread.threads/thread.thread.class/types.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/thread/thread.threads/version.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/type_traits/convert_to_integral.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/type_traits/is_floating_point.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/type_traits/lazy_metafunctions.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/utilities/any/version.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/utilities/function.objects/func.require/bullet_1_2_3.pass.cpp
@@ -603,7 +588,6 @@
 ../../3rdparty/libcxx/libcxx/test/std/containers/associative/multiset/erase_key.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/containers/associative/multiset/find.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/containers/associative/multiset/incomplete_type.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/containers/associative/multiset/insert_allocator_requirements.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/containers/associative/multiset/insert_cv.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/containers/associative/multiset/insert_initializer_list.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/containers/associative/multiset/insert_iter_cv.pass.cpp
@@ -1287,7 +1271,6 @@
 ../../3rdparty/libcxx/libcxx/test/std/containers/unord/unord.multiset/find_const.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/containers/unord/unord.multiset/find_non_const.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/containers/unord/unord.multiset/incomplete.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/containers/unord/unord.multiset/insert_allocator_requirements.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/containers/unord/unord.multiset/insert_const_lvalue.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/containers/unord/unord.multiset/insert_hint_const_lvalue.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/containers/unord/unord.multiset/insert_hint_rvalue.pass.cpp
