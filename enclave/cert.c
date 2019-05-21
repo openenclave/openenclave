@@ -901,28 +901,34 @@ oe_result_t oe_cert_verify(
 
     /* Verify the certificate */
     OE_CHECK(_mbedtls_x509_crt_verify(
-        cert_impl->cert, chain_impl->referent->crt, crl_list));
+        cert_impl->cert,
+        (chain != NULL) ? chain_impl->referent->crt : cert_impl->cert,
+        crl_list));
 
-    /* Verify every certificate in the certificate chain. */
-    for (mbedtls_x509_crt* p = chain_impl->referent->crt; p; p = p->next)
+    if (chain)
     {
-        /* Verify the current certificate in the chain. */
-        OE_CHECK(
-            _mbedtls_x509_crt_verify(p, ((chain!=NULL) ? chain_impl->referent->crt : NULL), crl_list));
-
-        /* Verify that the CRL list has an issuer for this certificate. */
-        if (crl_list)
+        /* Verify every certificate in the certificate chain. */
+        for (mbedtls_x509_crt* p = chain_impl->referent->crt; p; p = p->next)
         {
-            if (!_crl_list_find_issuer_for_cert(crl_list, p))
+            /* Verify the current certificate in the chain. */
+            OE_CHECK(_mbedtls_x509_crt_verify(
+                p,
+                ((chain != NULL) ? chain_impl->referent->crt : NULL),
+                crl_list));
+
+            /* Verify that the CRL list has an issuer for this certificate. */
+            if (crl_list)
             {
-                OE_RAISE_MSG(
-                    OE_VERIFY_CRL_MISSING,
-                    "Unable to get certificate CRL",
-                    NULL);
+                if (!_crl_list_find_issuer_for_cert(crl_list, p))
+                {
+                    OE_RAISE_MSG(
+                        OE_VERIFY_CRL_MISSING,
+                        "Unable to get certificate CRL",
+                        NULL);
+                }
             }
         }
     }
-
     result = OE_OK;
 
 done:

@@ -310,7 +310,6 @@ static oe_result_t _verify_cert(
             OE_CRYPTO_ERROR, "Failed to initialize X509 context", NULL);
     }
 
-
     /* Create a store with CRLs if needed */
     if (crls && num_crls)
     {
@@ -717,7 +716,11 @@ oe_result_t oe_cert_verify(
     oe_initialize_openssl();
 
     /* Verify the certificate */
-    OE_CHECK(_verify_cert(cert_impl->x509, (chain_impl!=NULL ? chain_impl->sk : NULL), crls, num_crls));
+    OE_CHECK(_verify_cert(
+        cert_impl->x509,
+        (chain_impl != NULL ? chain_impl->sk : NULL),
+        crls,
+        num_crls));
 
     result = OE_OK;
 

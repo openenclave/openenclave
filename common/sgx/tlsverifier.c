@@ -68,18 +68,17 @@ oe_result_t oe_verify_attestation_cert(
     uint8_t pub_key_buf[KEY_BUFF_SIZE];
     size_t pub_key_buf_size = KEY_BUFF_SIZE;
     oe_report_t parsed_report = {0};
-    oe_verify_cert_error_t cert_verify_error = {0};
     oe_ec_public_key_t public_key = {0};
 
     result = oe_cert_read_der(&cert, cert_in_der, cert_in_der_len);
     OE_CHECK_MSG(result, "cert_in_der_len=%d", cert_in_der_len);
 
     // validate the certificate signature
-    result = oe_cert_verify(&cert, NULL, NULL, 0, &cert_verify_error);
+    result = oe_cert_verify(&cert, NULL, NULL, 0);
     OE_CHECK_MSG(
         result,
         "oe_cert_verify failed with error = %s\n",
-        cert_verify_error.buf);
+        oe_result_str(result));
 
     //------------------------------------------------------------------------
     // Validate the report's trustworthiness
@@ -112,12 +111,9 @@ oe_result_t oe_verify_attestation_cert(
 
     // verify report data: hash(public key)
     // extract public key from the cert
-    result = oe_cert_get_ec_public_key(&cert, &public_key);
-    OE_CHECK(result);
-
     oe_memset_s(pub_key_buf, sizeof(pub_key_buf), 0, sizeof(pub_key_buf));
     result =
-        oe_ec_public_key_write_pem(&public_key, pub_key_buf, &pub_key_buf_size);
+        oe_cert_write_public_key_pem(&cert, pub_key_buf, &pub_key_buf_size);
     OE_CHECK(result);
     OE_TRACE_VERBOSE("pub_key_buf_size=%d", pub_key_buf_size);
 

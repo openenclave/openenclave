@@ -210,3 +210,31 @@ done:
 
     return result;
 }
+
+oe_result_t oe_cert_write_public_key_pem(
+    const oe_cert_t* cert,
+    uint8_t* pem_data,
+    size_t* pem_size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_ec_public_key_t ec_public_key;
+    oe_rsa_public_key_t rsa_public_key;
+
+    if (oe_cert_get_ec_public_key(cert, &ec_public_key) == OE_OK)
+    {
+        OE_CHECK(
+            oe_ec_public_key_write_pem(&ec_public_key, pem_data, pem_size));
+        OE_CHECK(oe_ec_public_key_free(&ec_public_key));
+    }
+    else if (oe_cert_get_rsa_public_key(cert, &rsa_public_key) == OE_OK)
+    {
+        OE_CHECK(
+            oe_rsa_public_key_write_pem(&rsa_public_key, pem_data, pem_size));
+        OE_CHECK(oe_rsa_public_key_free(&rsa_public_key));
+    }
+    result = OE_OK;
+
+done:
+
+    return result;
+}

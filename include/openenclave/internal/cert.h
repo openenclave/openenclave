@@ -189,6 +189,26 @@ oe_result_t oe_cert_get_ec_public_key(
     oe_ec_public_key_t* public_key);
 
 /**
+ * Get the public key (in PRM frfrom a certificate.
+ *
+ * This function gets the EC public key from the given certificate. If the
+ * the certificate does not contain an EC public key, this function returns
+ * OE_PUBLIC_KEY_NOT_FOUND.
+ *
+ * @param cert the certificate whose public key is sought.
+ * @param pem_data the buffer to hold returned public key in PEM foramt
+ * @param pem_size size of of pem_data buffer
+ *
+ * @return OE_OK success
+ * @return OE_INVALID_PARAMETER a parameter is invalid
+ * @return OE_FAILURE general failure
+ */
+oe_result_t oe_cert_write_public_key_pem(
+    const oe_cert_t* cert,
+    uint8_t* pem_data,
+    size_t* pem_size);
+
+/**
  * Get the length of a certificate chain.
  *
  * This function gets the length of the certificate chain. This length
