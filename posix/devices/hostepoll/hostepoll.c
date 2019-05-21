@@ -11,6 +11,7 @@
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/posix/fdtable.h>
+#include <openenclave/internal/posix/iov.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
@@ -585,6 +586,69 @@ done:
     return ret;
 }
 
+static ssize_t _epoll_readv(
+    oe_fd_t* desc,
+    const struct oe_iovec* iov,
+    int iovcnt)
+{
+    ssize_t ret = -1;
+    void* buf = NULL;
+    size_t buf_size;
+
+    if (!iov || iovcnt < 0 || iovcnt > OE_IOV_MAX)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    /* Calcualte the size of the read buffer. */
+    buf_size = oe_iov_compute_size(iov, (size_t)iovcnt);
+
+    /* Allocate the read buffer. */
+    if (!(buf = oe_malloc(buf_size)))
+        OE_RAISE_ERRNO(OE_ENOMEM);
+
+    /* Perform the read. */
+    if ((ret = _epoll_read(desc, buf, buf_size)) <= 0)
+        goto done;
+
+    if (oe_iov_inflate(
+            buf, (size_t)ret, (struct oe_iovec*)iov, (size_t)iovcnt) != 0)
+    {
+        OE_RAISE_ERRNO(OE_EINVAL);
+    }
+
+done:
+
+    if (buf)
+        oe_free(buf);
+
+    return ret;
+}
+
+static ssize_t _epoll_writev(
+    oe_fd_t* desc,
+    const struct oe_iovec* iov,
+    int iovcnt)
+{
+    ssize_t ret = -1;
+    void* buf = NULL;
+    size_t buf_size = 0;
+
+    if (!iov || iovcnt < 0 || iovcnt > OE_IOV_MAX)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    /* Create the write buffer from the IOV vector. */
+    if (oe_iov_deflate(iov, (size_t)iovcnt, &buf, &buf_size) != 0)
+        OE_RAISE_ERRNO(OE_ENOMEM);
+
+    ret = _epoll_write(desc, buf, buf_size);
+
+done:
+
+    if (buf)
+        oe_free(buf);
+
+    return ret;
+}
+
 static int _epoll_dup(oe_fd_t* epoll_, oe_fd_t** new_epoll_out)
 {
     int ret = -1;
@@ -649,6 +713,8 @@ done:
 static oe_epoll_ops_t _epoll_ops = {
     .fd.read = _epoll_read,
     .fd.write = _epoll_write,
+    .fd.readv = _epoll_readv,
+    .fd.writev = _epoll_writev,
     .fd.dup = _epoll_dup,
     .fd.ioctl = _epoll_ioctl,
     .fd.fcntl = _epoll_fcntl,

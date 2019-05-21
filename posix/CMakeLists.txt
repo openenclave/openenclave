@@ -35,6 +35,7 @@ add_library(oeposix STATIC
     eventfd.c
     fcntl.c
     fdtable.c
+    iov.c
     mount.c
     netdb.c
     poll.c

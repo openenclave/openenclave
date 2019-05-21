@@ -13,7 +13,9 @@
 #include <openenclave/corelibc/sys/socket.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/internal/posix/raise.h>
+#include <openenclave/internal/posix/iov.h>
 #include <openenclave/internal/posix/fd.h>
+#include <openenclave/internal/posix/iov.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/bits/safecrt.h>
 #include "posix_t.h"
@@ -22,80 +24,6 @@
 #define SOCK_MAGIC 0xe57a696d
 
 static oe_socket_ops_t _get_socket_ops(void);
-
-static size_t _get_iov_size(const struct oe_iovec* iov, size_t iov_len)
-{
-    size_t size = 0;
-
-    for (size_t i = 0; i < iov_len; i++)
-        size += iov[i].iov_len;
-
-    return size;
-}
-
-static int _deflate_iov(
-    const struct oe_iovec* iov,
-    size_t iov_len,
-    void* buf_,
-    size_t buf_len)
-{
-    int ret = -1;
-    uint8_t* buf = (uint8_t*)buf_;
-
-    if (!iov || (buf_len && !buf))
-        goto done;
-
-    for (size_t i = 0; i < iov_len; i++)
-    {
-        const void* base = iov[i].iov_base;
-        size_t len = iov[i].iov_len;
-
-        if (len > buf_len)
-            goto done;
-
-        if (oe_memcpy_s(buf, buf_len, base, len) != OE_OK)
-            goto done;
-
-        buf += len;
-        buf_len -= len;
-    }
-
-    ret = 0;
-
-done:
-    return ret;
-}
-
-static int _inflate_iov(
-    const void* buf_,
-    size_t buf_len,
-    struct oe_iovec* iov,
-    size_t iov_len)
-{
-    int ret = -1;
-    const uint8_t* buf = (uint8_t*)buf_;
-
-    if (!buf || !iov)
-        goto done;
-
-    for (size_t i = 0; i < iov_len && buf_len; i++)
-    {
-        void* base = iov[i].iov_base;
-        size_t len = iov[i].iov_len;
-        size_t min = (len < buf_len) ? len : buf_len;
-
-        if (oe_memcpy_s(base, len, buf, min) != OE_OK)
-            goto done;
-
-        buf += min;
-        buf_len -= min;
-    }
-
-    ret = 0;
-
-done:
-    return ret;
-}
 
 typedef struct _device
 {
@@ -492,7 +420,7 @@ static ssize_t _hostsock_recvmsg(
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Get the size the total (flat) size of the msg_iov array. */
-    buf_len = _get_iov_size(msg->msg_iov, msg->msg_iovlen);
+    buf_len = oe_iov_compute_size(msg->msg_iov, msg->msg_iovlen);
 
     /* Allocate the read buffer if its length is non-zero. */
     if (buf_len && !(buf = oe_calloc(1, buf_len)))
@@ -521,7 +449,7 @@ static ssize_t _hostsock_recvmsg(
     }
 
     /* Copy the buffer back onto the original iov array. */
-    if (_inflate_iov(buf, (size_t)ret, msg->msg_iov, msg->msg_iovlen) != 0)
+    if (oe_iov_inflate(buf, (size_t)ret, msg->msg_iov, msg->msg_iovlen) != 0)
         OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
@@ -601,15 +529,8 @@ static ssize_t _hostsock_sendmsg(
     if (!sock || !msg || (msg->msg_iovlen && !msg->msg_iov))
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    /* Get the size the total (flat) size of the msg_iov array. */
-    buf_len = _get_iov_size(msg->msg_iov, msg->msg_iovlen);
-
-    /* Allocate the write buffer if its length is non-zero. */
-    if (buf_len && !(buf = oe_calloc(1, buf_len)))
-        OE_RAISE_ERRNO(OE_ENOMEM);
-
     /* Flatten the iov array onto the buffer. */
-    if (_deflate_iov(msg->msg_iov, msg->msg_iovlen, buf, buf_len) != 0)
+    if (oe_iov_deflate(msg->msg_iov, msg->msg_iovlen, &buf, &buf_len) != 0)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Call the host. */
@@ -865,6 +786,69 @@ static ssize_t _hostsock_write(oe_fd_t* sock_, const void* buf, size_t count)
     return _hostsock_send(sock_, buf, count, 0);
 }
 
+static ssize_t _hostsock_readv(
+    oe_fd_t* desc,
+    const struct oe_iovec* iov,
+    int iovcnt)
+{
+    ssize_t ret = -1;
+    void* buf = NULL;
+    size_t buf_size;
+
+    if (!iov || iovcnt < 0 || iovcnt > OE_IOV_MAX)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    /* Calcualte the size of the read buffer. */
+    buf_size = oe_iov_compute_size(iov, (size_t)iovcnt);
+
+    /* Allocate the read buffer. */
+    if (!(buf = oe_malloc(buf_size)))
+        OE_RAISE_ERRNO(OE_ENOMEM);
+
+    /* Perform the read. */
+    if ((ret = _hostsock_read(desc, buf, buf_size)) <= 0)
+        goto done;
+
+    if (oe_iov_inflate(
+            buf, (size_t)ret, (struct oe_iovec*)iov, (size_t)iovcnt) != 0)
+    {
+        OE_RAISE_ERRNO(OE_EINVAL);
+    }
+
+done:
+
+    if (buf)
+        oe_free(buf);
+
+    return ret;
+}
+
+static ssize_t _hostsock_writev(
+    oe_fd_t* desc,
+    const struct oe_iovec* iov,
+    int iovcnt)
+{
+    ssize_t ret = -1;
+    void* buf = NULL;
+    size_t buf_size = 0;
+
+    if (!iov || iovcnt < 0 || iovcnt > OE_IOV_MAX)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    /* Create the write buffer from the IOV vector. */
+    if (oe_iov_deflate(iov, (size_t)iovcnt, &buf, &buf_size) != 0)
+        OE_RAISE_ERRNO(OE_ENOMEM);
+
+    ret = _hostsock_write(desc, buf, buf_size);
+
+done:
+
+    if (buf)
+        oe_free(buf);
+
+    return ret;
+}
+
 static int _hostsock_socket_shutdown(oe_fd_t* sock_, int how)
 {
     int ret = -1;
@@ -912,6 +896,8 @@ static oe_socket_ops_t _sock_ops = {
     .fd.fcntl = _hostsock_fcntl,
     .fd.read = _hostsock_read,
     .fd.write = _hostsock_write,
+    .fd.readv = _hostsock_readv,
+    .fd.writev = _hostsock_writev,
     .fd.get_host_fd = _hostsock_gethostfd,
     .fd.close = _hostsock_close,
     .accept = _hostsock_accept,

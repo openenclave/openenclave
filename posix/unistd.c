@@ -504,28 +504,12 @@ done:
 ssize_t oe_readv(int fd, const struct oe_iovec* iov, int iovcnt)
 {
     ssize_t ret = -1;
-    ssize_t nread = 0;
+    oe_fd_t* desc;
 
-    if (fd < 0 || !iov || iovcnt < 0 || iovcnt > OE_IOV_MAX)
-        OE_RAISE_ERRNO(OE_EINVAL);
+    if (!(desc = oe_fdtable_get(fd, OE_FD_TYPE_ANY)))
+        OE_RAISE_ERRNO(oe_errno);
 
-    for (int i = 0; i < iovcnt; i++)
-    {
-        const struct oe_iovec* p = &iov[i];
-        ssize_t n;
-
-        n = oe_read(fd, p->iov_base, p->iov_len);
-
-        if (n < 0)
-            goto done;
-
-        nread += n;
-
-        if ((size_t)n < p->iov_len)
-            break;
-    }
-
-    ret = nread;
+    ret = desc->ops.fd.readv(desc, iov, iovcnt);
 
 done:
     return ret;
@@ -534,25 +518,13 @@ done:
 ssize_t oe_writev(int fd, const struct oe_iovec* iov, int iovcnt)
 {
     ssize_t ret = -1;
-    ssize_t nwritten = 0;
 
-    if (fd < 0 || !iov || iovcnt < 0 || iovcnt > OE_IOV_MAX)
-        OE_RAISE_ERRNO(OE_EINVAL);
+    oe_fd_t* desc;
 
-    for (int i = 0; i < iovcnt; i++)
-    {
-        const struct oe_iovec* p = &iov[i];
-        ssize_t n;
+    if (!(desc = oe_fdtable_get(fd, OE_FD_TYPE_ANY)))
+        OE_RAISE_ERRNO(oe_errno);
 
-        n = oe_write(fd, p->iov_base, p->iov_len);
-
-        if ((size_t)n != p->iov_len)
-            OE_RAISE_ERRNO(OE_EIO);
-
-        nwritten += n;
-    }
-
-    ret = nwritten;
+    ret = desc->ops.fd.writev(desc, iov, iovcnt);
 
 done:
     return ret;

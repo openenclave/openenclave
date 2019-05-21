@@ -1,0 +1,31 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+#ifndef _OE_POSIX_IOV_H
+#define _OE_POSIX_IOV_H
+
+#include <openenclave/bits/fs.h>
+#include <openenclave/bits/result.h>
+#include <openenclave/corelibc/sys/epoll.h>
+#include <openenclave/corelibc/sys/stat.h>
+#include <openenclave/internal/posix/fd.h>
+
+OE_EXTERNC_BEGIN
+
+size_t oe_iov_compute_size(const struct oe_iovec* iov, size_t iov_count);
+
+int oe_iov_deflate(
+    const struct oe_iovec* iov,
+    size_t iov_len,
+    void** buf,
+    size_t* buf_size);
+
+int oe_iov_inflate(
+    const void* buf_,
+    size_t buf_size,
+    struct oe_iovec* iov,
+    size_t iov_len);
+
+OE_EXTERNC_END
+
+#endif // _OE_POSIX_IOV_H
