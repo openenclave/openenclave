@@ -129,7 +129,19 @@ namespace OpenEnclaveSDK
 
             // Add the configuration to the project.
             var dte = Package.GetGlobalService(typeof(SDTE)) as DTE;
-            project.ConfigurationManager.AddConfigurationRow(newName, baseName, true);
+            Configurations projectConfigs = project.ConfigurationManager.AddConfigurationRow(newName, baseName, true);
+
+            // Set the VcpkgConfiguration property of each new configuration to the baseName.
+            var vcProject = project.Object as VCProject;
+            foreach (var config in vcProject.Configurations)
+            {
+                string name = config.Name;
+                if (name.Contains(newName))
+                {
+                    var config3 = config as VCConfiguration3;
+                    config3.SetPropertyValue("Configuration", true, "VcpkgConfiguration", baseName);
+                }
+            }
 
             // Now set the solution's configuration to use the relevant project's configurations.
             foreach (SolutionConfiguration2 solutionConfig in dte.Solution.SolutionBuild.SolutionConfigurations)
@@ -158,6 +170,21 @@ namespace OpenEnclaveSDK
                     }
                 }
             }
+        }
+
+        private bool HavePlatform(Project project, string baseName)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var arr = project.ConfigurationManager.PlatformNames as Array;
+            foreach (string p in arr)
+            {
+                if (p == baseName)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void AddPlatform(Project project, string newName, string baseName)
@@ -297,7 +324,14 @@ namespace OpenEnclaveSDK
                     // Add any configurations/platforms to the project.
                     AddConfiguration(project, "OPTEE-Simulation-Debug", "Debug");
                     AddConfiguration(project, "SGX-Simulation-Debug", "Debug");
-                    AddPlatform(project, "ARM", "Win32");
+                    if (HavePlatform(project, "Win32"))
+                    {
+                        AddPlatform(project, "ARM", "Win32");
+                    }
+                    else if (HavePlatform(project, "x64"))
+                    {
+                        AddPlatform(project, "ARM", "x64");
+                    }
 
                     // Set the debugger.
                     var vcProject = project.Object as VCProject;
