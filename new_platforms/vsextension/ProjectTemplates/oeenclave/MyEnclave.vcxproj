@@ -399,7 +399,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ecalls.c" />
+    <ClCompile Include="$projectname$_ecalls.c" />
     <ClCompile Include="$projectname$_t.c" />
   </ItemGroup>
   <ItemGroup>
