@@ -422,20 +422,6 @@ let get_cast_to_mem_expr (ptype, decl) (parens : bool) =
       else if parens then sprintf "(%s)" tystr
       else tystr
 
-let oe_compute_output_buffer_size (plist : pdecl list) =
-  let params =
-    List.map
-      (fun (ptype, decl) ->
-        let size = oe_get_param_size (ptype, decl, "_args.") in
-        sprintf "if (%s) OE_ADD_SIZE(_output_buffer_size, %s);" decl.identifier
-          size )
-      (List.filter (fun (p, _) -> is_out_ptr p || is_inout_ptr p) plist)
-  in
-  (* Note that the indentation for the first line is applied by the
-     parent function. *)
-  if params <> [] then String.concat "\n    " params
-  else "/* There were no out nor in-out parameters. */"
-
 let oe_serialize_buffer_inputs (plist : pdecl list) structs =
   let rec gen_serialize prefix1 prefix2 (ptype, decl) =
     let size = oe_get_param_size (ptype, decl, "_args." ^ prefix1) in
@@ -480,6 +466,25 @@ let oe_prepare_input_buffer (fd : func_decl) (alloc_func : string) structs =
      parent function. *)
     if params <> [] then String.concat "\n    " params
     else "/* There were no in nor in-out parameters. */"
+  in
+  let oe_compute_output_buffer_size (plist : pdecl list) =
+    let rec gen_add_size prefix (ptype, decl) =
+      let size = oe_get_param_size (ptype, decl, "_args." ^ prefix) in
+      let argname = prefix ^ decl.identifier in
+      [ [sprintf "if (%s) OE_ADD_SIZE(_output_buffer_size, %s);" argname size]
+      ; flatten_map
+          (gen_add_size (argname ^ "->"))
+          (should_deepcopy (get_param_atype ptype) structs) ]
+      |> List.flatten
+    in
+    let params =
+      flatten_map (gen_add_size "")
+        (List.filter (fun (p, _) -> is_out_ptr p || is_inout_ptr p) plist)
+    in
+    (* Note that the indentation for the first line is applied by the
+     parent function. *)
+    if params <> [] then String.concat "\n    " params
+    else "/* There were no out nor in-out parameters. */"
   in
   [ "/* Compute input buffer size. Include in and in-out parameters. */"
   ; sprintf "OE_ADD_SIZE(_input_buffer_size, sizeof(%s_args_t));" fd.fname
