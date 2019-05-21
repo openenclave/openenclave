@@ -129,7 +129,7 @@ namespace OpenEnclaveSDK
 
             // Add the configuration to the project.
             var dte = Package.GetGlobalService(typeof(SDTE)) as DTE;
-            Configurations projectConfigs = project.ConfigurationManager.AddConfigurationRow(newName, baseName, true);
+            project.ConfigurationManager.AddConfigurationRow(newName, baseName, true);
 
             // Set the VcpkgConfiguration property of each new configuration to the baseName.
             var vcProject = project.Object as VCProject;
