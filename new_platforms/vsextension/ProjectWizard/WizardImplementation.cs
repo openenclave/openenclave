@@ -37,6 +37,8 @@ namespace OpenEnclaveSDK
         // Look in <folder>/conf.mk to see what is supported.
         private void GetConfFlags(string folder, out bool hardwareFloatSupported, out bool is32Bit)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             // Set default values.
             hardwareFloatSupported = false;
             is32Bit = false;
@@ -64,6 +66,23 @@ namespace OpenEnclaveSDK
             }
             catch (IOException e)
             {
+                // Output a warning so the developer knows they won't get hardware float support.
+                IVsOutputWindow outWindow = Package.GetGlobalService(typeof(SVsOutputWindow)) as IVsOutputWindow;
+                Guid generalPaneGuid = VSConstants.GUID_OutWindowGeneralPane;
+                IVsOutputWindowPane generalPane;
+                outWindow.GetPane(ref generalPaneGuid, out generalPane);
+                if (generalPane == null)
+                {
+                    // The General pane isn't there yet, so create it.
+                    string customTitle = "General";
+                    outWindow.CreatePane(ref generalPaneGuid, customTitle, 1, 1);
+                    outWindow.GetPane(ref generalPaneGuid, out generalPane);
+                }
+                if (generalPane != null)
+                {
+                    generalPane.OutputString("Warning: No hardware float support detected, using software support instead");
+                    generalPane.Activate(); // Bring the pane into view.
+                }
             }
         }
 
@@ -80,8 +99,6 @@ namespace OpenEnclaveSDK
         // Set the path to the OpenEnclave libs and TA Dev Kit.
         private bool SetOELibPath(Dictionary<string, string> replacementsDictionary)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             // First try picking the board from a menu.
             BoardPickerPage picker = new BoardPickerPage();
             DialogResult result = picker.ShowDialog();
@@ -153,24 +170,6 @@ namespace OpenEnclaveSDK
                 else
                 {
                     opteeCompilerFlavor = "arm-linux-gnueabi-";
-
-                    // Output a warning so the developer knows they won't get hardware float support.
-                    IVsOutputWindow outWindow = Package.GetGlobalService(typeof(SVsOutputWindow)) as IVsOutputWindow;
-                    Guid generalPaneGuid = VSConstants.GUID_OutWindowGeneralPane;
-                    IVsOutputWindowPane generalPane;
-                    outWindow.GetPane(ref generalPaneGuid, out generalPane);
-                    if (generalPane == null)
-                    {
-                        // The General pane isn't there yet, so create it.
-                        string customTitle = "General";
-                        outWindow.CreatePane(ref generalPaneGuid, customTitle, 1, 1);
-                        outWindow.GetPane(ref generalPaneGuid, out generalPane);
-                    }
-                    if (generalPane != null)
-                    {
-                        generalPane.OutputString("Warning: No hardware float support detected, using software support instead");
-                        generalPane.Activate(); // Bring the pane into view.
-                    }
                 }
             }
             replacementsDictionary.Add("$OpteeCompilerFlavor$", opteeCompilerFlavor);
