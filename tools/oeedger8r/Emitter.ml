@@ -588,15 +588,24 @@ let oe_gen_call_user_function (fd : func_decl) =
          fd.plist)
     ^ ");" ]
 
-let oe_gen_in_and_inout_setters (plist : pdecl list) =
+let rec oe_gen_set_pointers prefix1 prefix2 structs setter (ptype, decl) =
+  let size = oe_get_param_size (ptype, decl, "pargs_in->" ^ prefix1) in
+  let tystr = get_cast_to_mem_expr (ptype, decl) false in
+  let argname = prefix1 ^ decl.identifier in
+  let argsname = prefix2 ^ decl.identifier in
+  [ [sprintf "OE_%s_POINTER(%s, %s, %s);" (setter ptype) argsname size tystr]
+  ; [sprintf "pargs_in->%s = pargs_in->%s;" argname argsname]
+    (* TODO: Only for nested structs. *)
+  ; flatten_map
+      (oe_gen_set_pointers (argname ^ "->") (argsname ^ "__") structs setter)
+      (should_deepcopy (get_param_atype ptype) structs) ]
+  |> List.flatten
+
+let oe_gen_in_and_inout_setters (plist : pdecl list) structs =
   let params =
-    List.map
-      (fun (ptype, decl) ->
-        let size = oe_get_param_size (ptype, decl, "pargs_in->") in
-        let tystr = get_cast_to_mem_expr (ptype, decl) false in
-        sprintf "OE_SET_%s_POINTER(%s, %s, %s);"
-          (if is_in_ptr ptype then "IN" else "IN_OUT")
-          decl.identifier size tystr )
+    flatten_map
+      (oe_gen_set_pointers "" "" structs (fun p ->
+           if is_inout_ptr p then "SET_IN_OUT" else "SET_IN" ))
       (List.filter (fun (p, _) -> is_in_ptr p || is_inout_ptr p) plist)
   in
   "    "
@@ -605,15 +614,11 @@ let oe_gen_in_and_inout_setters (plist : pdecl list) =
       ; ( if params <> [] then String.concat "\n    " params
         else "/* There were no in nor in-out parameters. */" ) ]
 
-let oe_gen_out_and_inout_setters (plist : pdecl list) =
+let oe_gen_out_and_inout_setters (plist : pdecl list) structs =
   let params =
-    List.map
-      (fun (ptype, decl) ->
-        let size = oe_get_param_size (ptype, decl, "pargs_in->") in
-        let tystr = get_cast_to_mem_expr (ptype, decl) false in
-        sprintf "OE_%s_POINTER(%s, %s, %s);"
-          (if is_out_ptr ptype then "SET_OUT" else "COPY_AND_SET_IN_OUT")
-          decl.identifier size tystr )
+    flatten_map
+      (oe_gen_set_pointers "" "" structs (fun p ->
+           if is_inout_ptr p then "COPY_AND_SET_IN_OUT" else "SET_OUT" ))
       (List.filter (fun (p, _) -> is_out_ptr p || is_inout_ptr p) plist)
   in
   "    "
@@ -624,7 +629,7 @@ let oe_gen_out_and_inout_setters (plist : pdecl list) =
         else "/* There were no out nor in-out parameters. */" ) ]
 
 (** Generate ecall function. *)
-let oe_gen_ecall_function (tf : trusted_func) =
+let oe_gen_ecall_function structs (tf : trusted_func) =
   let fd = tf.tf_fdecl in
   [ sprintf "void ecall_%s(" fd.fname
   ; "    uint8_t* input_buffer,"
@@ -658,11 +663,11 @@ let oe_gen_ecall_function (tf : trusted_func) =
   ; "        goto done;"
   ; ""
   ; (* Prepare in and in-out parameters *)
-    oe_gen_in_and_inout_setters fd.plist
+    oe_gen_in_and_inout_setters fd.plist structs
   ; ""
   ; (* Prepare out and in-out parameters. The in-out parameter is copied
      to output buffer. *)
-    oe_gen_out_and_inout_setters fd.plist
+    oe_gen_out_and_inout_setters fd.plist structs
   ; ""
   ; "    /* Check that in/in-out strings are null terminated. */"
   ; (let params =
@@ -698,9 +703,10 @@ let oe_gen_ecall_function (tf : trusted_func) =
   ; "}"
   ; "" ]
 
-(* TODO: Only copy values and pointers without in/out/in-out attributes. *)
 let gen_fill_marshal_struct (fd : func_decl) structs =
-  (* Generate assignment argument to corresponding field in args *)
+  (* Generate assignment argument to corresponding field in args. This
+     is necessary for all arguments, not just copy-as-value, because
+     they are used directly by later marshalling code. *)
   let rec gen_assignment prefix1 prefix2 (ptype, decl) =
     let id = decl.identifier in
     let argname = prefix1 ^ id in
@@ -838,7 +844,7 @@ let oe_gen_enclave_ocall_wrapper (name : string) structs (uf : untrusted_func)
   ; "" ]
 
 (** Generate ocall function. *)
-let oe_gen_ocall_function (uf : untrusted_func) =
+let oe_gen_ocall_function structs (uf : untrusted_func) =
   let fd = uf.uf_fdecl in
   [ sprintf "void ocall_%s(" fd.fname
   ; "    uint8_t* input_buffer,"
@@ -870,10 +876,10 @@ let oe_gen_ocall_function (uf : untrusted_func) =
   ; "    }"
   ; ""
   ; (* Prepare in and in-out parameters *)
-    oe_gen_in_and_inout_setters fd.plist
+    oe_gen_in_and_inout_setters fd.plist structs
   ; ""
   ; (* Prepare out and in-out parameters. The in-out parameter is copied to output buffer. *)
-    oe_gen_out_and_inout_setters fd.plist
+    oe_gen_out_and_inout_setters fd.plist structs
   ; ""
   ; (* Call the host function *)
     "    " ^ String.concat "\n    " (oe_gen_call_user_function fd)
@@ -1088,8 +1094,9 @@ let gen_t_h (ec : enclave_content) (ep : edger8r_params) =
 let gen_t_c (ec : enclave_content) (ep : edger8r_params) =
   let tfs = ec.tfunc_decls in
   let ufs = ec.ufunc_decls in
+  let structs = get_structs ec.comp_defs in
   let oe_gen_ecall_functions =
-    if tfs <> [] then flatten_map oe_gen_ecall_function tfs
+    if tfs <> [] then flatten_map (oe_gen_ecall_function structs) tfs
     else ["/* There were no ecalls. */"]
   in
   let oe_gen_ecall_table =
@@ -1106,7 +1113,6 @@ let gen_t_c (ec : enclave_content) (ep : edger8r_params) =
       ; sprintf "size_t %s_size = OE_COUNTOF(%s);" table table ]
     else ["/* There were no ecalls. */"]
   in
-  let structs = get_structs ec.comp_defs in
   let oe_gen_enclave_ocall_wrappers =
     if ufs <> [] then
       flatten_map (oe_gen_enclave_ocall_wrapper ec.enclave_name structs) ufs
@@ -1199,7 +1205,7 @@ let gen_u_c (ec : enclave_content) (ep : edger8r_params) =
     else ["/* There were no ecalls. */"]
   in
   let oe_gen_ocall_functions =
-    if ufs <> [] then flatten_map oe_gen_ocall_function ufs
+    if ufs <> [] then flatten_map (oe_gen_ocall_function structs) ufs
     else ["/* There were no ocalls. */"]
   in
   let oe_gen_ocall_table =
