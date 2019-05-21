@@ -390,6 +390,11 @@ static oe_result_t _handle_ocall(
     if (arg_out)
         *arg_out = 0;
 
+    oe_log_args_t log_args;
+    log_args.level = OE_LOG_LEVEL_INFO;
+    memcpy(log_args.message, "OCALL", 6);
+    oe_handle_log(enclave, (uint64_t) &log_args);
+
     switch ((oe_func_t)func)
     {
         case OE_OCALL_CALL_HOST_FUNCTION:
