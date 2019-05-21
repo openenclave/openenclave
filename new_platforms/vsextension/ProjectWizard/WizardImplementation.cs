@@ -6,6 +6,7 @@ using EnvDTE;
 using System.IO;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio;
 
 namespace OpenEnclaveSDK
 {
@@ -33,10 +34,71 @@ namespace OpenEnclaveSDK
         {
         }
 
-        private bool SetOETADevKitPath(Dictionary<string, string> replacementsDictionary)
+        // Look in <folder>/conf.mk to see what is supported.
+        private void GetConfFlags(string folder, out bool hardwareFloatSupported, out bool is32Bit)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            // Set default values.
+            hardwareFloatSupported = false;
+            is32Bit = false;
+
+            try
+            {
+                string fileName = Path.Combine(folder, "mk\\conf.mk");
+                var lines = File.ReadLines(fileName);
+                foreach (var line in lines)
+                {
+                    string trimmed = line.Trim();
+                    string token = trimmed.Split(' ', ':', '?')[0];
+
+                    if (token == "CFG_TA_FLOAT_SUPPORT")
+                    {
+                        // "CFG_TA_FLOAT_SUPPORT := y" means hardware float support is enabled.
+                        hardwareFloatSupported = trimmed.EndsWith("y");
+                    }
+                    else if (token == "sm")
+                    {
+                        // "sm := ta_arm32" means 32-bit.
+                        is32Bit = trimmed.EndsWith("ta_arm32");
+                    }
+                }
+            }
+            catch (IOException e)
+            {
+                // Output a warning so the developer knows they won't get hardware float support.
+                IVsOutputWindow outWindow = Package.GetGlobalService(typeof(SVsOutputWindow)) as IVsOutputWindow;
+                Guid generalPaneGuid = VSConstants.GUID_OutWindowGeneralPane;
+                IVsOutputWindowPane generalPane;
+                outWindow.GetPane(ref generalPaneGuid, out generalPane);
+                if (generalPane == null)
+                {
+                    // The General pane isn't there yet, so create it.
+                    string customTitle = "General";
+                    outWindow.CreatePane(ref generalPaneGuid, customTitle, 1, 1);
+                    outWindow.GetPane(ref generalPaneGuid, out generalPane);
+                }
+                if (generalPane != null)
+                {
+                    generalPane.OutputString("Warning: No hardware float support detected, using software support instead");
+                    generalPane.Activate(); // Bring the pane into view.
+                }
+            }
+        }
+
+        // Convert a path in Windows format to a path in WSL format.
+        private string GetUnixPath(string folder)
+        {
+            string root = Path.GetPathRoot(folder).ToLower();
+            string relativeFolder = folder.Substring(root.Length).Replace('\\', '/');
+            string drive = root.Substring(0, 1);
+            string unixPath = "/mnt/" + drive + "/" + relativeFolder;
+            return unixPath;
+        }
+
+        // Set the path to the OpenEnclave libs and TA Dev Kit.
+        private bool SetOELibPath(Dictionary<string, string> replacementsDictionary)
+        {
             // First try picking the board from a menu.
             BoardPickerPage picker = new BoardPickerPage();
             DialogResult result = picker.ShowDialog();
@@ -46,23 +108,23 @@ namespace OpenEnclaveSDK
                 return false;
             }
 
-            string folder = null;
+            string oeFolder = null;
             string board = picker.Board;
             if (board != "Other")
             {
-                // User picked a specific board for which we have a TA Dev Kit in the nuget package.
+                // User picked a specific board for which we have binaries in the nuget package.
                 string solutionDirectory;
                 replacementsDictionary.TryGetValue("$solutiondirectory$", out solutionDirectory);
-                folder = Path.Combine(solutionDirectory, "packages\\openenclave.0.2.0-CI-20190409-193849\\lib\\native\\gcc6\\optee\\v3.3.0\\" + board);
+                oeFolder = Path.Combine(solutionDirectory, "packages\\openenclave.0.2.0-CI-20190409-193849\\lib\\native\\gcc6\\optee\\v3.3.0\\" + board);
             }
             else
             {
-                // Ok, the user picked "Other", so ask the user for their own TA Dev Kit location.
+                // Ok, the user picked "Other", so ask the user for their own Open Enclave build location.
                 using (OpenFileDialog openFileDialog = new OpenFileDialog())
                 {
-                    openFileDialog.Title = "Select ta_dev_kit.mk in your ARM TA Dev Kit, or hit Cancel to skip ARM support";
+                    openFileDialog.Title = "Select the path to the liboeenclave.a in your Open Enclave build output directory, or hit Cancel to skip ARM support";
                     openFileDialog.InitialDirectory = Directory.GetCurrentDirectory(); // Must be an absolute path.
-                    openFileDialog.Filter = "ta_dev_kit.mk|ta_dev_kit.mk";
+                    openFileDialog.Filter = "liboeenclave.a|liboeenclave.a";
                     openFileDialog.RestoreDirectory = true;
 
                     if (openFileDialog.ShowDialog() != DialogResult.OK)
@@ -72,22 +134,44 @@ namespace OpenEnclaveSDK
 
                     // Get the path of specified file.
                     string filePath = openFileDialog.FileName;
-                    folder = Path.GetFullPath(Path.Combine(filePath, "..\\.."));
+                    oeFolder = Path.GetFullPath(Path.Combine(filePath, ".."));
                 }
             }
+            replacementsDictionary.Add("$OELibPath$", GetUnixPath(oeFolder));
 
-            // We now have the full path in Windows format, but we need to convert it to Unix format.
-            string root = Path.GetPathRoot(folder).ToLower();
-            string relativeFolder = folder.Substring(root.Length).Replace('\\', '/');
-            string drive = root.Substring(0, 1);
-            string unixPath = "/mnt/" + drive + "/" + relativeFolder;
+            // Now get the path to the associated TA Dev Kit, which should be under
+            // devkit or export-ta_arm64 or export-ta_arm32.
+            string taDevKitFolder = Path.Combine(oeFolder, "devkit");
+            if (!Directory.Exists(taDevKitFolder))
+            {
+                taDevKitFolder = Path.Combine(oeFolder, "export-ta_arm64");
+            }
+            if (!Directory.Exists(taDevKitFolder))
+            {
+                taDevKitFolder = Path.Combine(oeFolder, "export-ta_arm32");
+            }
+            replacementsDictionary.Add("$OETADevKitPath$", GetUnixPath(taDevKitFolder));
 
-            replacementsDictionary.Add("$OETADevKitPath$", unixPath);
+            bool hardwareFloatSupported;
+            bool is32Bit;
+            GetConfFlags(taDevKitFolder, out hardwareFloatSupported, out is32Bit);
 
-            string buildFlavor = board.Split('\\')[0];
-            replacementsDictionary.Add("$OpteeBuildFlavor$", buildFlavor);
-
-            string opteeCompilerFlavor = (buildFlavor == "vexpress-qemu_virt") ? "arm-linux-gnueabihf-" : "aarch64-linux-gnu-";
+            string opteeCompilerFlavor;
+            if (!is32Bit)
+            {
+                opteeCompilerFlavor = "aarch64-linux-gnu-";
+            }
+            else
+            {
+                if (hardwareFloatSupported)
+                {
+                    opteeCompilerFlavor = "arm-linux-gnueabihf-";
+                }
+                else
+                {
+                    opteeCompilerFlavor = "arm-linux-gnueabi-";
+                }
+            }
             replacementsDictionary.Add("$OpteeCompilerFlavor$", opteeCompilerFlavor);
 
             return true;
@@ -124,7 +208,8 @@ namespace OpenEnclaveSDK
                 replacementsDictionary.Add("$enclaveguid$", enclaveguid);
 
                 return true;
-            } catch (Exception)
+            }
+            catch (Exception)
             {
 
             }
@@ -155,7 +240,7 @@ namespace OpenEnclaveSDK
                 }
                 else
                 {
-                    SetOETADevKitPath(replacementsDictionary);
+                    SetOELibPath(replacementsDictionary);
                 }
             }
             catch (Exception ex)

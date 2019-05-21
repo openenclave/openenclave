@@ -235,6 +235,8 @@ namespace OpenEnclaveSDK
 
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
+                    Cursor.Current = Cursors.WaitCursor;
+
                     // Get the path of specified file.
                     filePath = openFileDialog.FileName;
                     WizardImplementation.EdlLocation = Path.GetDirectoryName(filePath);
@@ -338,6 +340,8 @@ namespace OpenEnclaveSDK
 
                     // Add a host code item to the project.
                     AddProjectItem("OEHostItem", "VC", baseName + "_host.c");
+
+                    Cursor.Current = Cursors.Default;
                 }
             }
         }
