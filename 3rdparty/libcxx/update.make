@@ -4,7 +4,7 @@
 # Licensed under the MIT License.
 
 # libcxx SVN revision
-SVN_REVISON = RELEASE_700
+SVN_REVISON = RELEASE_800
 
 all: update-libcxx
 	echo All done - please review changes
