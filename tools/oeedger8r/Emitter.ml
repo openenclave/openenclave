@@ -423,12 +423,14 @@ let get_cast_to_mem_expr (ptype, decl) (parens : bool) =
 
 (** Prepare [input_buffer]. *)
 let oe_prepare_input_buffer (fd : func_decl) (alloc_func : string) structs =
+  (* TODO: Combine these two functions with the target buffer as an input. *)
   let oe_compute_input_buffer_size (plist : pdecl list) =
     let rec gen_add_size prefix (ptype, decl) =
       let size = oe_get_param_size (ptype, decl, "_args." ^ prefix) in
       let argname = prefix ^ decl.identifier in
       [ [sprintf "if (%s) OE_ADD_SIZE(_input_buffer_size, %s);" argname size]
       ; flatten_map
+          (* TODO: Fix for arrays. *)
           (gen_add_size (argname ^ "->"))
           (should_deepcopy (get_param_atype ptype) structs) ]
       |> List.flatten
@@ -448,6 +450,7 @@ let oe_prepare_input_buffer (fd : func_decl) (alloc_func : string) structs =
       let argname = prefix ^ decl.identifier in
       [ [sprintf "if (%s) OE_ADD_SIZE(_output_buffer_size, %s);" argname size]
       ; flatten_map
+          (* TODO: Fix for arrays. *)
           (gen_add_size (argname ^ "->"))
           (should_deepcopy (get_param_atype ptype) structs) ]
       |> List.flatten
@@ -472,6 +475,7 @@ let oe_prepare_input_buffer (fd : func_decl) (alloc_func : string) structs =
             (if is_in_ptr ptype then "IN" else "IN_OUT")
             argname argsname size tystr ]
       ; flatten_map
+          (* TODO: Fix for arrays. *)
           (gen_serialize (argname ^ "->") (argsname ^ "__"))
           (should_deepcopy (get_param_atype ptype) structs) ]
       |> List.flatten
@@ -534,6 +538,7 @@ let oe_process_output_buffer (fd : func_decl) =
     ; ( if fd.rtype <> Void then "*_retval = _pargs_out->_retval;"
       else "/* No return value. */" ) ]
   ; (* This does not use String.concat because the elements are multiple lines. *)
+    (* TODO: Fix for deep copy. *)
     flatten_map
       (fun (ptype, decl) ->
         let size = oe_get_param_size (ptype, decl, "_args.") in
@@ -668,6 +673,7 @@ let oe_gen_ecall_function structs (tf : trusted_func) =
     oe_gen_out_and_inout_setters fd.plist structs
   ; ""
   ; "    /* Check that in/in-out strings are null terminated. */"
+    (* TODO: Fix for deep copy. *)
   ; (let params =
        List.map
          (fun (ptype, decl) ->
@@ -719,6 +725,7 @@ let gen_fill_marshal_struct (fd : func_decl) structs =
         [sprintf "_args.%s_len = (%s) ? (wcslen(%s) + 1) : 0;" argsname id id]
       else [] )
     ; flatten_map
+        (* TODO: Fix for arrays. *)
         (gen_assignment (argname ^ "->") (argsname ^ "__"))
         (should_deepcopy (get_param_atype ptype) structs) ]
     |> List.flatten
