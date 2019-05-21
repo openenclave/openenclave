@@ -123,7 +123,7 @@ done:
         socks[0]->ops.fd.close(socks[0]);
 
     if (socks[1])
-        socks[0]->ops.fd.close(socks[1]);
+        socks[1]->ops.fd.close(socks[1]);
 
     return ret;
 }

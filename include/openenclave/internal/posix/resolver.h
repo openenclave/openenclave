@@ -27,7 +27,7 @@ typedef struct _oe_resolver_ops
         const struct oe_addrinfo* hints,
         struct oe_addrinfo** res);
 
-    ssize_t (*getnameinfo)(
+    int (*getnameinfo)(
         oe_resolver_t* resolver,
         const struct oe_sockaddr* sa,
         oe_socklen_t salen,

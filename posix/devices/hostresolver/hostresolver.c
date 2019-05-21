@@ -43,7 +43,7 @@ static resolver_t* _cast_resolver(const oe_resolver_t* device)
 
 static resolver_t _hostresolver;
 
-static ssize_t _hostresolver_getnameinfo(
+static int _hostresolver_getnameinfo(
     oe_resolver_t* dev,
     const struct oe_sockaddr* sa,
     oe_socklen_t salen,
@@ -89,18 +89,27 @@ static int _hostresolver_getaddrinfo(
         *res = NULL;
 
     if (!res)
+    {
+        ret = OE_EAI_SYSTEM;
         OE_RAISE_ERRNO(OE_EINVAL);
+    }
 
     /* Get the handle for enumerating addrinfo structures. */
     {
-        if (oe_posix_getaddrinfo_open_ocall(&handle, node, service, hints) !=
-            OE_OK)
+        int retval = OE_EAI_FAIL;
+
+        if (oe_posix_getaddrinfo_open_ocall(
+                &retval, node, service, hints, &handle) != OE_OK)
         {
+            ret = OE_EAI_SYSTEM;
             OE_RAISE_ERRNO(OE_EINVAL);
         }
 
         if (!handle)
-            OE_RAISE_ERRNO(oe_errno);
+        {
+            ret = retval;
+            goto done;
+        }
     }
 
     /* Enumerate addrinfo structures. */
@@ -110,7 +119,10 @@ static int _hostresolver_getaddrinfo(
         size_t canonnamelen = 0;
 
         if (!(p = oe_calloc(1, sizeof(struct oe_addrinfo))))
-            OE_RAISE_ERRNO(OE_ENOMEM);
+        {
+            ret = OE_EAI_MEMORY;
+            goto done;
+        }
 
         /* Determine required size ai_addr and ai_canonname buffers. */
         if (oe_posix_getaddrinfo_read_ocall(
@@ -127,6 +139,7 @@ static int _hostresolver_getaddrinfo(
                 &canonnamelen,
                 NULL) != OE_OK)
         {
+            ret = OE_EAI_SYSTEM;
             OE_RAISE_ERRNO(OE_EINVAL);
         }
 
@@ -136,13 +149,22 @@ static int _hostresolver_getaddrinfo(
 
         /* Expecting that addr and canonname buffers were too small. */
         if (retval != -1 || oe_errno != OE_ENAMETOOLONG)
-            OE_RAISE_ERRNO(OE_EINVAL);
+        {
+            ret = OE_EAI_SYSTEM;
+            OE_RAISE_ERRNO(oe_errno);
+        }
 
         if (p->ai_addrlen && !(p->ai_addr = oe_calloc(1, p->ai_addrlen)))
-            OE_RAISE_ERRNO(OE_ENOMEM);
+        {
+            ret = OE_EAI_MEMORY;
+            goto done;
+        }
 
         if (canonnamelen && !(p->ai_canonname = oe_calloc(1, canonnamelen)))
-            OE_RAISE_ERRNO(OE_ENOMEM);
+        {
+            ret = OE_EAI_MEMORY;
+            goto done;
+        }
 
         if (oe_posix_getaddrinfo_read_ocall(
                 &retval,
@@ -158,6 +180,7 @@ static int _hostresolver_getaddrinfo(
                 &canonnamelen,
                 p->ai_canonname) != OE_OK)
         {
+            ret = OE_EAI_SYSTEM;
             OE_RAISE_ERRNO(OE_EINVAL);
         }
 
@@ -182,17 +205,26 @@ static int _hostresolver_getaddrinfo(
         int retval = -1;
 
         if (oe_posix_getaddrinfo_close_ocall(&retval, handle) != OE_OK)
+        {
+            ret = OE_EAI_SYSTEM;
             OE_RAISE_ERRNO(OE_EINVAL);
+        }
 
         handle = 0;
 
         if (retval != 0)
+        {
+            ret = OE_EAI_SYSTEM;
             OE_RAISE_ERRNO(oe_errno);
+        }
     }
 
     /* If the list is empty. */
     if (!head)
+    {
+        ret = OE_EAI_SYSTEM;
         OE_RAISE_ERRNO(OE_EINVAL);
+    }
 
     *res = head;
     head = NULL;

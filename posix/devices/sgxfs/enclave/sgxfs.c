@@ -195,13 +195,17 @@ static int _sgxfs_mount(
     oe_device_t* dev,
     const char* source,
     const char* target,
-    unsigned long flags)
+    const char* filesystemtype,
+    unsigned long flags,
+    const void* data)
 {
     int ret = -1;
     fs_t* fs = _cast_fs(dev);
 
     OE_UNUSED(source);
     OE_UNUSED(flags);
+    OE_UNUSED(filesystemtype);
+    OE_UNUSED(data);
 
     if (!fs || !source || !target)
         OE_RAISE_ERRNO(OE_EINVAL);

@@ -70,19 +70,19 @@ int oe_getaddrinfo(
     if (res_out)
         *res_out = NULL;
 
-    if (!_resolver)
-        OE_RAISE_ERRNO(OE_EINVAL);
-
     oe_spin_lock(&_lock);
     locked = true;
 
-    if ((*_resolver->ops->getaddrinfo)(_resolver, node, service, hints, &res) ==
-        0)
+    if (!_resolver)
     {
-        *res_out = res;
-        ret = 0;
-        goto done;
+        ret = OE_EAI_SYSTEM;
+        OE_RAISE_ERRNO(OE_EINVAL);
     }
+
+    ret = (_resolver->ops->getaddrinfo)(_resolver, node, service, hints, &res);
+
+    if (ret == 0)
+        *res_out = res;
 
 done:
 
@@ -101,14 +101,17 @@ int oe_getnameinfo(
     oe_socklen_t servlen,
     int flags)
 {
-    ssize_t ret = -1;
+    ssize_t ret = OE_EAI_FAIL;
     bool locked = false;
-
-    if (!_resolver)
-        OE_RAISE_ERRNO(OE_EINVAL);
 
     oe_spin_lock(&_lock);
     locked = true;
+
+    if (!_resolver)
+    {
+        ret = OE_EAI_SYSTEM;
+        OE_RAISE_ERRNO(OE_EINVAL);
+    }
 
     ret = (*_resolver->ops->getnameinfo)(
         _resolver, sa, salen, host, hostlen, serv, servlen, flags);

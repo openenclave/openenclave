@@ -57,7 +57,9 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
 
             if (!(device =
                       oe_device_table_get(devid, OE_DEVICE_TYPE_FILE_SYSTEM)))
+            {
                 OE_RAISE_ERRNO(OE_EINVAL);
+            }
 
             /* Use this device. */
             if (oe_strlcpy(suffix, path, OE_PATH_MAX) >= OE_PATH_MAX)
@@ -85,11 +87,7 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
         {
             if (len > match_len)
             {
-                if (suffix)
-                {
-                    oe_strlcpy(suffix, realpath.buf, OE_PATH_MAX);
-                }
-
+                oe_strlcpy(suffix, realpath.buf, OE_PATH_MAX);
                 match_len = len;
                 ret = _mount_table[i].fs;
             }
@@ -100,13 +98,10 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
         {
             if (len > match_len)
             {
-                if (suffix)
-                {
-                    oe_strlcpy(suffix, realpath.buf + len, OE_PATH_MAX);
+                oe_strlcpy(suffix, realpath.buf + len, OE_PATH_MAX);
 
-                    if (*suffix == '\0')
-                        oe_strlcpy(suffix, "/", OE_PATH_MAX);
-                }
+                if (*suffix == '\0')
+                    oe_strlcpy(suffix, "/", OE_PATH_MAX);
 
                 match_len = len;
                 ret = _mount_table[i].fs;
@@ -142,15 +137,32 @@ int oe_mount(
     oe_device_t* device = NULL;
     oe_device_t* new_device = NULL;
     bool locked = false;
-
-    OE_UNUSED(data);
+    oe_posix_path_t source_path;
+    oe_posix_path_t target_path;
 
     if (!target || !filesystemtype)
         OE_RAISE_ERRNO(OE_EINVAL);
 
+    /* Normalize the target path. */
+    {
+        if (!oe_realpath(target, &target_path))
+            OE_RAISE_ERRNO(OE_EINVAL);
+
+        target = target_path.buf;
+    }
+
+    /* Normalize the source path if any. */
+    if (source)
+    {
+        if (!oe_realpath(source, &source_path))
+            OE_RAISE_ERRNO(OE_EINVAL);
+
+        source = source_path.buf;
+    }
+
     /* Resolve the device for the given filesystemtype. */
-    if (!(device =
-              oe_device_table_find(filesystemtype, OE_DEVICE_TYPE_FILE_SYSTEM)))
+    device = oe_device_table_find(filesystemtype, OE_DEVICE_TYPE_FILE_SYSTEM);
+    if (!device)
         OE_RAISE_ERRNO_MSG(OE_EINVAL, "filesystemtype=%s", filesystemtype);
 
     /* Be sure the full_target directory exists (if not root). */
@@ -209,6 +221,7 @@ int oe_mount(
                 target,
                 len + 1) != OE_OK)
         {
+            oe_free(_mount_table[index].path);
             OE_RAISE_ERRNO(OE_EINVAL);
         }
 
@@ -217,7 +230,8 @@ int oe_mount(
     }
 
     /* Notify the device that it has been mounted. */
-    if (new_device->ops.fs.mount(new_device, source, target, mountflags) != 0)
+    if (new_device->ops.fs.mount(
+            new_device, source, target, filesystemtype, mountflags, data) != 0)
     {
         oe_free(_mount_table[--_mount_table_size].path);
         goto done;
@@ -242,12 +256,25 @@ int oe_umount2(const char* target, int flags)
     int ret = -1;
     size_t index = (size_t)-1;
     char suffix[OE_PATH_MAX];
-    oe_device_t* device = oe_mount_resolve(target, suffix);
+    oe_device_t* device;
     bool locked = false;
+    oe_posix_path_t target_path;
 
     OE_UNUSED(flags);
 
-    if (!device || device->type != OE_DEVICE_TYPE_FILE_SYSTEM || !target)
+    if (!target)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    /* Normalize the target path. */
+    {
+        if (!oe_realpath(target, &target_path))
+            OE_RAISE_ERRNO(OE_EINVAL);
+
+        target = target_path.buf;
+    }
+
+    /* Resolve the device. */
+    if (!(device = oe_mount_resolve(target, suffix)))
         OE_RAISE_ERRNO(OE_EINVAL);
 
     oe_spin_lock(&_lock);
@@ -272,7 +299,6 @@ int oe_umount2(const char* target, int flags)
         oe_device_t* fs = _mount_table[index].fs;
 
         oe_free(_mount_table[index].path);
-        fs = _mount_table[index].fs;
         _mount_table[index] = _mount_table[_mount_table_size - 1];
         _mount_table_size--;
 

@@ -556,7 +556,6 @@ int oe_access_d(uint64_t devid, const char* pathname, int mode)
     else
     {
         oe_device_t* dev;
-        struct oe_stat buf;
 
         if (!(dev = oe_device_table_get(devid, OE_DEVICE_TYPE_FILE_SYSTEM)))
             OE_RAISE_ERRNO(OE_EINVAL);
@@ -564,10 +563,7 @@ int oe_access_d(uint64_t devid, const char* pathname, int mode)
         if (!pathname)
             OE_RAISE_ERRNO(OE_EINVAL);
 
-        if (oe_stat(pathname, &buf) != 0)
-            OE_RAISE_ERRNO(OE_ENOENT);
-
-        ret = 0;
+        ret = oe_access(pathname, mode);
     }
 
 done:

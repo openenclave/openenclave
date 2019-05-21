@@ -11,7 +11,7 @@ int oe_stat(const char* pathname, struct oe_stat* buf)
 {
     int ret = -1;
     oe_device_t* fs = NULL;
-    char filepath[OE_PATH_MAX] = {0};
+    char filepath[OE_PATH_MAX];
 
     if (!(fs = oe_mount_resolve(pathname, filepath)))
         OE_RAISE_ERRNO(oe_errno);

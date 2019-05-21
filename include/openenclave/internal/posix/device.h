@@ -73,7 +73,9 @@ typedef struct _oe_fs_device_ops
         oe_device_t* fs,
         const char* source,
         const char* target,
-        unsigned long flags);
+        const char* filesystemtype,
+        unsigned long flags,
+        const void* data);
 
     int (*umount)(oe_device_t* fs, const char* target);
 

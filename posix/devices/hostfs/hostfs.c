@@ -149,13 +149,18 @@ static int _hostfs_mount(
     oe_device_t* dev,
     const char* source,
     const char* target,
-    unsigned long flags)
+    const char* filesystemtype,
+    unsigned long flags,
+    const void* data)
 {
     int ret = -1;
     device_t* fs = _cast_device(dev);
 
     if (!fs || !source || !target)
         OE_RAISE_ERRNO(OE_EINVAL);
+
+    OE_UNUSED(filesystemtype);
+    OE_UNUSED(data);
 
     fs->mount_flags = flags;
     oe_strlcpy(fs->mount_source, source, sizeof(fs->mount_source));
