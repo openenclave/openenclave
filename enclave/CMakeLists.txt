@@ -49,6 +49,9 @@ target_include_directories(oeenclave PRIVATE
 target_link_libraries(oeenclave PUBLIC
     oe_includes
     mbedcrypto)
+if(OE_TRUSTZONE)
+    target_link_libraries(oeenclave PUBLIC oeutee)
+endif()
 
 set_property(TARGET oeenclave PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 
