@@ -10,6 +10,7 @@
 #include <openenclave/internal/posix/types.h>
 #include <openenclave/corelibc/sys/socket.h>
 #include <openenclave/corelibc/sys/epoll.h>
+#include <openenclave/corelibc/sys/uio.h>
 
 OE_EXTERNC_BEGIN
 
@@ -31,6 +32,10 @@ typedef struct _oe_fd_ops
     ssize_t (*read)(oe_fd_t* desc, void* buf, size_t count);
 
     ssize_t (*write)(oe_fd_t* desc, const void* buf, size_t count);
+
+    ssize_t (*readv)(oe_fd_t* desc, const struct oe_iovec *iov, int iovcnt);
+
+    ssize_t (*writev)(oe_fd_t* desc, const struct oe_iovec *iov, int iovcnt);
 
     int (*dup)(oe_fd_t* desc, oe_fd_t** new_fd);
 

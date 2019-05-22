@@ -11,7 +11,6 @@
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/posix/fdtable.h>
-#include <openenclave/internal/posix/lock.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/time.h>
@@ -51,7 +50,7 @@ done:
 }
 
 static char _cwd[OE_PATH_MAX] = "/";
-static oe_spinlock_t _cwd_lock;
+static oe_spinlock_t _cwd_lock = OE_SPINLOCK_INITIALIZER;
 
 char* oe_getcwd(char* buf, size_t size)
 {
@@ -77,19 +76,19 @@ char* oe_getcwd(char* buf, size_t size)
         p = buf;
     }
 
-    oe_conditional_lock(&_cwd_lock, &locked);
+    oe_spin_lock(&_cwd_lock);
+    locked = true;
 
     if (oe_strlcpy(p, _cwd, n) >= n)
         OE_RAISE_ERRNO(OE_ERANGE);
-
-    oe_conditional_unlock(&_cwd_lock, &locked);
 
     ret = p;
     p = NULL;
 
 done:
 
-    oe_conditional_unlock(&_cwd_lock, &locked);
+    if (locked)
+        oe_spin_unlock(&_cwd_lock);
 
     if (p && p != buf)
         oe_free(p);
@@ -100,16 +99,16 @@ done:
 int oe_chdir(const char* path)
 {
     int ret = -1;
-    char real_path[OE_PATH_MAX];
+    oe_posix_path_t real_path;
     struct oe_stat st;
     bool locked = false;
 
     /* Resolve to an absolute canonical path. */
-    if (!oe_realpath(path, real_path))
+    if (!oe_realpath(path, &real_path))
         return -1;
 
     /* Fail if unable to stat the path. */
-    if (oe_stat(real_path, &st) != 0)
+    if (oe_stat(real_path.buf, &st) != 0)
     {
         // oe_errno set by oe_stat().
         return -1;
@@ -123,18 +122,18 @@ int oe_chdir(const char* path)
     }
 
     /* Set the _cwd global. */
-    oe_conditional_lock(&_cwd_lock, &locked);
+    oe_spin_lock(&_cwd_lock);
+    locked = true;
 
-    if (oe_strlcpy(_cwd, real_path, OE_PATH_MAX) >= OE_PATH_MAX)
+    if (oe_strlcpy(_cwd, real_path.buf, OE_PATH_MAX) >= OE_PATH_MAX)
         OE_RAISE_ERRNO(OE_ENAMETOOLONG);
-
-    oe_conditional_unlock(&_cwd_lock, &locked);
 
     ret = 0;
 
 done:
 
-    oe_conditional_unlock(&_cwd_lock, &locked);
+    if (locked)
+        oe_spin_unlock(&_cwd_lock);
 
     return ret;
 }
@@ -207,9 +206,6 @@ oe_pid_t oe_getpgid(oe_pid_t pid)
         goto done;
     }
 
-    if (retval == -1)
-        goto done;
-
     ret = retval;
 
 done:
@@ -224,11 +220,6 @@ int oe_getgroups(int size, oe_gid_t list[])
     if (oe_posix_getgroups(&retval, (size_t)size, list) != OE_OK)
     {
         oe_errno = OE_EINVAL;
-        goto done;
-    }
-
-    if (retval == -1)
-    {
         goto done;
     }
 
@@ -312,7 +303,7 @@ int oe_dup2(int oldfd, int newfd)
 {
     oe_fd_t* old_desc;
     oe_fd_t* new_desc = NULL;
-    oe_fd_t* resassigned_desc;
+    oe_fd_t* reassigned_desc;
     int retval = -1;
 
     if (oldfd == newfd)
@@ -324,11 +315,11 @@ int oe_dup2(int oldfd, int newfd)
     if ((retval = old_desc->ops.fd.dup(old_desc, &new_desc)) < 0)
         OE_RAISE_ERRNO(oe_errno);
 
-    if (oe_fdtable_reassign(newfd, new_desc, &resassigned_desc) == -1)
+    if (oe_fdtable_reassign(newfd, new_desc, &reassigned_desc) == -1)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (resassigned_desc)
-        resassigned_desc->ops.fd.close(resassigned_desc);
+    if (reassigned_desc)
+        reassigned_desc->ops.fd.close(reassigned_desc);
 
     new_desc = NULL;
 
@@ -513,28 +504,12 @@ done:
 ssize_t oe_readv(int fd, const struct oe_iovec* iov, int iovcnt)
 {
     ssize_t ret = -1;
-    ssize_t nread = 0;
+    oe_fd_t* desc;
 
-    if (fd < 0 || !iov)
-        OE_RAISE_ERRNO(OE_EINVAL);
+    if (!(desc = oe_fdtable_get(fd, OE_FD_TYPE_ANY)))
+        OE_RAISE_ERRNO(oe_errno);
 
-    for (int i = 0; i < iovcnt; i++)
-    {
-        const struct oe_iovec* p = &iov[i];
-        ssize_t n;
-
-        n = oe_read(fd, p->iov_base, p->iov_len);
-
-        if (n < 0)
-            goto done;
-
-        nread += n;
-
-        if ((size_t)n < p->iov_len)
-            break;
-    }
-
-    ret = nread;
+    ret = desc->ops.fd.readv(desc, iov, iovcnt);
 
 done:
     return ret;
@@ -543,25 +518,13 @@ done:
 ssize_t oe_writev(int fd, const struct oe_iovec* iov, int iovcnt)
 {
     ssize_t ret = -1;
-    ssize_t nwritten = 0;
 
-    if (fd < 0 || !iov)
-        OE_RAISE_ERRNO(OE_EINVAL);
+    oe_fd_t* desc;
 
-    for (int i = 0; i < iovcnt; i++)
-    {
-        const struct oe_iovec* p = &iov[i];
-        ssize_t n;
+    if (!(desc = oe_fdtable_get(fd, OE_FD_TYPE_ANY)))
+        OE_RAISE_ERRNO(oe_errno);
 
-        n = oe_write(fd, p->iov_base, p->iov_len);
-
-        if ((size_t)n != p->iov_len)
-            OE_RAISE_ERRNO(OE_EIO);
-
-        nwritten += n;
-    }
-
-    ret = nwritten;
+    ret = desc->ops.fd.writev(desc, iov, iovcnt);
 
 done:
     return ret;
@@ -593,7 +556,6 @@ int oe_access_d(uint64_t devid, const char* pathname, int mode)
     else
     {
         oe_device_t* dev;
-        struct oe_stat buf;
 
         if (!(dev = oe_device_table_get(devid, OE_DEVICE_TYPE_FILE_SYSTEM)))
             OE_RAISE_ERRNO(OE_EINVAL);
@@ -601,10 +563,7 @@ int oe_access_d(uint64_t devid, const char* pathname, int mode)
         if (!pathname)
             OE_RAISE_ERRNO(OE_EINVAL);
 
-        if (oe_stat(pathname, &buf) != 0)
-            OE_RAISE_ERRNO(OE_ENOENT);
-
-        ret = 0;
+        ret = oe_access(pathname, mode);
     }
 
 done:

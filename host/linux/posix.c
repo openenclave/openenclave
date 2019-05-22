@@ -607,39 +607,50 @@ static getaddrinfo_handle_t* _cast_getaddrinfo_handle(void* handle_)
     return handle;
 }
 
-uint64_t oe_posix_getaddrinfo_open_ocall(
+int oe_posix_getaddrinfo_open_ocall(
     const char* node,
     const char* service,
-    const struct oe_addrinfo* hints)
+    const struct oe_addrinfo* hints,
+    uint64_t* handle_out)
 {
-    getaddrinfo_handle_t* ret = NULL;
+    int ret = EAI_FAIL;
     getaddrinfo_handle_t* handle = NULL;
 
     errno = 0;
 
+    if (handle_out)
+        *handle_out = 0;
+
+    if (!handle_out)
+    {
+        ret = EAI_SYSTEM;
+        errno = EINVAL;
+        goto done;
+    }
+
     if (!(handle = calloc(1, sizeof(getaddrinfo_handle_t))))
     {
-        errno = ENOMEM;
+        ret = EAI_MEMORY;
         goto done;
     }
 
-    if (getaddrinfo(
-            node, service, (const struct addrinfo*)hints, &handle->res) != 0)
+    ret =
+        getaddrinfo(node, service, (const struct addrinfo*)hints, &handle->res);
+
+    if (ret == 0)
     {
-        goto done;
+        handle->magic = GETADDRINFO_HANDLE_MAGIC;
+        handle->next = handle->res;
+        *handle_out = (uint64_t)handle;
+        handle = NULL;
     }
-
-    handle->magic = GETADDRINFO_HANDLE_MAGIC;
-    handle->next = handle->res;
-    ret = handle;
-    handle = NULL;
 
 done:
 
     if (handle)
         free(handle);
 
-    return (uint64_t)ret;
+    return ret;
 }
 
 int oe_posix_getaddrinfo_read_ocall(

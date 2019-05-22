@@ -13,7 +13,6 @@
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/posix/raise.h>
-#include <openenclave/internal/posix/lock.h>
 #include <openenclave/bits/safecrt.h>
 
 #define MAX_MOUNT_TABLE_SIZE 64
@@ -42,7 +41,7 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
 {
     oe_device_t* ret = NULL;
     size_t match_len = 0;
-    char realpath[OE_PATH_MAX];
+    oe_posix_path_t realpath;
     bool locked = false;
 
     if (!path || !suffix)
@@ -58,7 +57,9 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
 
             if (!(device =
                       oe_device_table_get(devid, OE_DEVICE_TYPE_FILE_SYSTEM)))
+            {
                 OE_RAISE_ERRNO(OE_EINVAL);
+            }
 
             /* Use this device. */
             if (oe_strlcpy(suffix, path, OE_PATH_MAX) >= OE_PATH_MAX)
@@ -70,10 +71,11 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
     }
 
     /* Find the real path (the absolute non-relative path). */
-    if (!oe_realpath(path, realpath))
+    if (!oe_realpath(path, &realpath))
         OE_RAISE_ERRNO(oe_errno);
 
-    oe_conditional_lock(&_lock, &locked);
+    oe_spin_lock(&_lock);
+    locked = true;
 
     /* Find the longest binding point that contains this path. */
     for (size_t i = 0; i < _mount_table_size; i++)
@@ -85,28 +87,21 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
         {
             if (len > match_len)
             {
-                if (suffix)
-                {
-                    oe_strlcpy(suffix, realpath, OE_PATH_MAX);
-                }
-
+                oe_strlcpy(suffix, realpath.buf, OE_PATH_MAX);
                 match_len = len;
                 ret = _mount_table[i].fs;
             }
         }
         else if (
-            oe_strncmp(mpath, realpath, len) == 0 &&
-            (realpath[len] == '/' || realpath[len] == '\0'))
+            oe_strncmp(mpath, realpath.buf, len) == 0 &&
+            (realpath.buf[len] == '/' || realpath.buf[len] == '\0'))
         {
             if (len > match_len)
             {
-                if (suffix)
-                {
-                    oe_strlcpy(suffix, realpath + len, OE_PATH_MAX);
+                oe_strlcpy(suffix, realpath.buf + len, OE_PATH_MAX);
 
-                    if (*suffix == '\0')
-                        oe_strlcpy(suffix, "/", OE_PATH_MAX);
-                }
+                if (*suffix == '\0')
+                    oe_strlcpy(suffix, "/", OE_PATH_MAX);
 
                 match_len = len;
                 ret = _mount_table[i].fs;
@@ -114,11 +109,19 @@ oe_device_t* oe_mount_resolve(const char* path, char suffix[OE_PATH_MAX])
         }
     }
 
+    if (locked)
+    {
+        oe_spin_unlock(&_lock);
+        locked = false;
+    }
+
     if (!ret)
         OE_RAISE_ERRNO_MSG(OE_ENOENT, "path=%s", path);
 
 done:
-    oe_conditional_unlock(&_lock, &locked);
+
+    if (locked)
+        oe_spin_unlock(&_lock);
 
     return ret;
 }
@@ -134,16 +137,34 @@ int oe_mount(
     oe_device_t* device = NULL;
     oe_device_t* new_device = NULL;
     bool locked = false;
-
-    OE_UNUSED(data);
+    oe_posix_path_t source_path;
+    oe_posix_path_t target_path;
+    mount_point_t mount_point;
 
     if (!target || !filesystemtype)
         OE_RAISE_ERRNO(OE_EINVAL);
 
+    /* Normalize the target path. */
+    {
+        if (!oe_realpath(target, &target_path))
+            OE_RAISE_ERRNO(OE_EINVAL);
+
+        target = target_path.buf;
+    }
+
+    /* Normalize the source path if any. */
+    if (source)
+    {
+        if (!oe_realpath(source, &source_path))
+            OE_RAISE_ERRNO(OE_EINVAL);
+
+        source = source_path.buf;
+    }
+
     /* Resolve the device for the given filesystemtype. */
-    if (!(device =
-              oe_device_table_find(filesystemtype, OE_DEVICE_TYPE_FILE_SYSTEM)))
-        OE_RAISE_ERRNO_MSG(OE_EINVAL, "filesystemtype=%s", filesystemtype);
+    device = oe_device_table_find(filesystemtype, OE_DEVICE_TYPE_FILE_SYSTEM);
+    if (!device)
+        OE_RAISE_ERRNO_MSG(OE_ENODEV, "filesystemtype=%s", filesystemtype);
 
     /* Be sure the full_target directory exists (if not root). */
     if (oe_strcmp(target, "/") != 0)
@@ -159,7 +180,8 @@ int oe_mount(
     }
 
     /* Lock the mount table. */
-    oe_conditional_lock(&_lock, &locked);
+    oe_spin_lock(&_lock);
+    locked = true;
 
     /* Install _free_mount_table() if not already installed. */
     if (_installed_free_mount_table == false)
@@ -185,41 +207,33 @@ int oe_mount(
 
     /* Assign and initialize new mount point. */
     {
-        size_t index = _mount_table_size;
-        size_t len = oe_strlen(target);
-
-        _mount_table[index].path_size = len + 1;
-        _mount_table[index].path = oe_malloc(len + 1);
-
-        if (!_mount_table[index].path)
+        if (!(mount_point.path = oe_strdup(target)))
             OE_RAISE_ERRNO(OE_ENOMEM);
 
-        if (oe_memcpy_s(
-                _mount_table[index].path,
-                _mount_table[index].path_size,
-                target,
-                len + 1) != OE_OK)
-        {
-            OE_RAISE_ERRNO(OE_EINVAL);
-        }
-
-        _mount_table[index].fs = new_device;
-        _mount_table_size++;
+        mount_point.path_size = oe_strlen(target) + 1;
+        mount_point.fs = new_device;
+        mount_point.flags = 0;
     }
 
     /* Notify the device that it has been mounted. */
-    if (new_device->ops.fs.mount(new_device, source, target, mountflags) != 0)
+    if (new_device->ops.fs.mount(
+            new_device, source, target, filesystemtype, mountflags, data) != 0)
     {
-        oe_free(_mount_table[--_mount_table_size].path);
         goto done;
     }
 
+    _mount_table[_mount_table_size++] = mount_point;
     new_device = NULL;
+    mount_point.path = NULL;
     ret = 0;
 
 done:
 
-    oe_conditional_unlock(&_lock, &locked);
+    if (mount_point.path)
+        oe_free(mount_point.path);
+
+    if (locked)
+        oe_spin_unlock(&_lock);
 
     if (new_device)
         new_device->ops.device.release(new_device);
@@ -232,15 +246,27 @@ int oe_umount2(const char* target, int flags)
     int ret = -1;
     size_t index = (size_t)-1;
     char suffix[OE_PATH_MAX];
-    oe_device_t* device = oe_mount_resolve(target, suffix);
+    oe_device_t* device;
     bool locked = false;
+    oe_posix_path_t target_path;
 
-    OE_UNUSED(flags);
-
-    if (!device || device->type != OE_DEVICE_TYPE_FILE_SYSTEM || !target)
+    if (!target)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    oe_conditional_lock(&_lock, &locked);
+    /* Normalize the target path. */
+    {
+        if (!oe_realpath(target, &target_path))
+            OE_RAISE_ERRNO(OE_EINVAL);
+
+        target = target_path.buf;
+    }
+
+    /* Resolve the device. */
+    if (!(device = oe_mount_resolve(target, suffix)))
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    oe_spin_lock(&_lock);
+    locked = true;
 
     /* Find and remove this device. */
     for (size_t i = 0; i < _mount_table_size; i++)
@@ -261,11 +287,10 @@ int oe_umount2(const char* target, int flags)
         oe_device_t* fs = _mount_table[index].fs;
 
         oe_free(_mount_table[index].path);
-        fs = _mount_table[index].fs;
         _mount_table[index] = _mount_table[_mount_table_size - 1];
         _mount_table_size--;
 
-        if (fs->ops.fs.umount(fs, target) != 0)
+        if (fs->ops.fs.umount2(fs, target, flags) != 0)
             OE_RAISE_ERRNO(oe_errno);
 
         fs->ops.device.release(fs);
@@ -275,7 +300,8 @@ int oe_umount2(const char* target, int flags)
 
 done:
 
-    oe_conditional_unlock(&_lock, &locked);
+    if (locked)
+        oe_spin_unlock(&_lock);
 
     return ret;
 }

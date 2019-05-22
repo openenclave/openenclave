@@ -9,7 +9,6 @@
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/internal/posix/device.h>
-#include <openenclave/internal/posix/lock.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/thread.h>
@@ -93,7 +92,7 @@ static void _assert_device(oe_device_t* device)
         {
             oe_assert(device->ops.fs.clone);
             oe_assert(device->ops.fs.mount);
-            oe_assert(device->ops.fs.umount);
+            oe_assert(device->ops.fs.umount2);
             oe_assert(device->ops.fs.open);
             oe_assert(device->ops.fs.stat);
             oe_assert(device->ops.fs.access);
@@ -147,11 +146,12 @@ int oe_device_table_set(uint64_t devid, oe_device_t* device)
     if (!device)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    oe_conditional_lock(&_lock, &locked);
-
 #if !defined(NDEBUG)
     _assert_device(device);
 #endif
+
+    oe_spin_lock(&_lock);
+    locked = true;
 
     if (_resize_table(devid + 1) != 0)
         OE_RAISE_ERRNO(OE_ENOMEM);
@@ -164,7 +164,9 @@ int oe_device_table_set(uint64_t devid, oe_device_t* device)
     ret = 0;
 
 done:
-    oe_conditional_unlock(&_lock, &locked);
+
+    if (locked)
+        oe_spin_unlock(&_lock);
 
     return ret;
 }
@@ -193,9 +195,9 @@ oe_device_t* oe_device_table_get(uint64_t devid, oe_device_type_t type)
 {
     oe_device_t* ret;
 
-    oe_conditional_lock(&_lock, NULL);
+    oe_spin_lock(&_lock);
     ret = _get_device(devid, type);
-    oe_conditional_unlock(&_lock, NULL);
+    oe_spin_unlock(&_lock);
 
     return ret;
 }
@@ -210,7 +212,8 @@ oe_device_t* oe_device_table_find(const char* name, oe_device_type_t type)
     if (!name)
         goto done;
 
-    oe_conditional_lock(&_lock, &locked);
+    oe_spin_lock(&_lock);
+    locked = true;
 
     for (i = 0; i < _table_size; i++)
     {
@@ -229,7 +232,9 @@ oe_device_t* oe_device_table_find(const char* name, oe_device_type_t type)
     ret = device;
 
 done:
-    oe_conditional_unlock(&_lock, &locked);
+
+    if (locked)
+        oe_spin_unlock(&_lock);
 
     return ret;
 }
@@ -240,7 +245,8 @@ int oe_device_table_remove(uint64_t devid)
     oe_device_t* device;
     bool locked = false;
 
-    oe_conditional_lock(&_lock, &locked);
+    oe_spin_lock(&_lock);
+    locked = true;
 
     if (!(device = _get_device(devid, OE_DEVICE_TYPE_ANY)))
         OE_RAISE_ERRNO(OE_EINVAL);
@@ -250,13 +256,21 @@ int oe_device_table_remove(uint64_t devid)
 
     _table[devid] = NULL;
 
+    if (locked)
+    {
+        oe_spin_unlock(&_lock);
+        locked = false;
+    }
+
     if (device->ops.device.release(device) != 0)
         OE_RAISE_ERRNO(oe_errno);
 
     ret = 0;
 
 done:
-    oe_conditional_unlock(&_lock, &locked);
+
+    if (locked)
+        oe_spin_unlock(&_lock);
 
     return ret;
 }
@@ -271,51 +285,21 @@ done:
 **==============================================================================
 */
 
-static oe_once_t _tls_device_once = OE_ONCE_INIT;
-static oe_thread_key_t _tls_device_key = OE_THREADKEY_INITIALIZER;
-
-static void _create_tls_device_key()
-{
-    if (oe_thread_key_create(&_tls_device_key, NULL) != 0)
-        oe_abort();
-}
+static __thread uint64_t _devid;
 
 oe_result_t oe_set_thread_devid(uint64_t devid)
 {
-    oe_result_t result = OE_UNEXPECTED;
-
-    OE_CHECK(oe_once(&_tls_device_once, _create_tls_device_key));
-
-    OE_CHECK(oe_thread_setspecific(_tls_device_key, (void*)devid));
-
-    result = OE_OK;
-
-done:
-    return result;
+    _devid = devid;
+    return OE_OK;
 }
 
 oe_result_t oe_clear_thread_devid(void)
 {
-    oe_result_t result = OE_UNEXPECTED;
-
-    OE_CHECK((oe_thread_setspecific(_tls_device_key, NULL)));
-
-    result = OE_OK;
-
-done:
-    return result;
+    _devid = 0;
+    return OE_OK;
 }
 
 uint64_t oe_get_thread_devid(void)
 {
-    uint64_t ret = OE_DEVID_NONE;
-    uint64_t devid;
-
-    if (!(devid = (uint64_t)oe_thread_getspecific(_tls_device_key)))
-        goto done;
-
-    ret = devid;
-
-done:
-    return ret;
+    return _devid;
 }

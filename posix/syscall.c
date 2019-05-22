@@ -57,9 +57,12 @@ static long _syscall(
             int flags = (OE_O_CREAT | OE_O_WRONLY | OE_O_TRUNC);
 
             ret = oe_open(pathname, flags, mode);
+
             if (oe_errno == OE_ENOENT)
             {
-                /* Not handled. Let caller dispatch this syscall. */
+                /* If the file was not found, give the caller (libc) a chance
+                 * to handle this syscall.
+                 */
                 oe_errno = OE_ENOSYS;
                 goto done;
             }
@@ -230,7 +233,7 @@ static long _syscall(
         {
             int fd = (int)arg1;
             int cmd = (int)arg2;
-            int arg = (int)arg3;
+            uint64_t arg = (uint64_t)arg3;
             ret = oe_fcntl(fd, cmd, arg);
             goto done;
         }

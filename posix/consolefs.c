@@ -8,7 +8,9 @@
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/unistd.h>
+#include <openenclave/internal/posix/fd.h>
 #include <openenclave/internal/posix/fdtable.h>
+#include <openenclave/internal/posix/iov.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
@@ -91,6 +93,42 @@ static int _consolefs_ioctl(oe_fd_t* file_, unsigned long request, uint64_t arg)
     if (!file)
         OE_RAISE_ERRNO(OE_EINVAL);
 
+    /*
+     * MUSL uses the TIOCGWINSZ ioctl request to determine whether the file
+     * descriptor refers to a terminal device (such as stdin, stdout, and
+     * stderr) so that it can use line-bufferred input and output. This check
+     * fails when delegated to the host since this implementation opens the
+     * devices by name (/dev/stdin, /dev/stderr, /dev/stdout). So the following
+     * block works around this problem by implementing TIOCGWINSZ on the
+     * enclave side. Other terminal control ioctls are left unimplemented.
+     */
+    {
+        static const unsigned long _TIOCGWINSZ = 0x5413;
+
+        if (request == _TIOCGWINSZ)
+        {
+            struct winsize
+            {
+                unsigned short int ws_row;
+                unsigned short int ws_col;
+                unsigned short int ws_xpixel;
+                unsigned short int ws_ypixel;
+            };
+            struct winsize* p;
+
+            if (!(p = (struct winsize*)arg))
+                OE_RAISE_ERRNO(OE_EINVAL);
+
+            p->ws_row = 24;
+            p->ws_col = 80;
+            p->ws_xpixel = 0;
+            p->ws_ypixel = 0;
+
+            ret = 0;
+            goto done;
+        }
+    }
+
     if (oe_posix_ioctl_ocall(&ret, file->host_fd, request, arg) != OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
 
@@ -140,6 +178,69 @@ static ssize_t _consolefs_write(oe_fd_t* file_, const void* buf, size_t count)
         OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
+    return ret;
+}
+
+static ssize_t _consolefs_readv(
+    oe_fd_t* desc,
+    const struct oe_iovec* iov,
+    int iovcnt)
+{
+    ssize_t ret = -1;
+    void* buf = NULL;
+    size_t buf_size;
+
+    if (!iov || iovcnt < 0 || iovcnt > OE_IOV_MAX)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    /* Calcualte the size of the read buffer. */
+    buf_size = oe_iov_compute_size(iov, (size_t)iovcnt);
+
+    /* Allocate the read buffer. */
+    if (!(buf = oe_malloc(buf_size)))
+        OE_RAISE_ERRNO(OE_ENOMEM);
+
+    /* Perform the read. */
+    if ((ret = _consolefs_read(desc, buf, buf_size)) <= 0)
+        goto done;
+
+    if (oe_iov_inflate(
+            buf, (size_t)ret, (struct oe_iovec*)iov, (size_t)iovcnt) != 0)
+    {
+        OE_RAISE_ERRNO(OE_EINVAL);
+    }
+
+done:
+
+    if (buf)
+        oe_free(buf);
+
+    return ret;
+}
+
+static ssize_t _consolefs_writev(
+    oe_fd_t* desc,
+    const struct oe_iovec* iov,
+    int iovcnt)
+{
+    ssize_t ret = -1;
+    void* buf = NULL;
+    size_t buf_size = 0;
+
+    if (!iov || iovcnt < 0 || iovcnt > OE_IOV_MAX)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    /* Create the write buffer from the IOV vector. */
+    if (oe_iov_deflate(iov, (size_t)iovcnt, &buf, &buf_size) != 0)
+        OE_RAISE_ERRNO(OE_ENOMEM);
+
+    ret = _consolefs_write(desc, buf, buf_size);
+
+done:
+
+    if (buf)
+        oe_free(buf);
+
     return ret;
 }
 
@@ -213,6 +314,8 @@ done:
 static oe_file_ops_t _ops = {
     .fd.read = _consolefs_read,
     .fd.write = _consolefs_write,
+    .fd.readv = _consolefs_readv,
+    .fd.writev = _consolefs_writev,
     .fd.dup = _consolefs_dup,
     .fd.ioctl = _consolefs_ioctl,
     .fd.fcntl = _consolefs_fcntl,
@@ -239,7 +342,7 @@ static oe_fd_t* _new_file(uint32_t fileno)
     struct _args args[] = {
         {"/dev/stdin", OE_O_RDONLY},
         {"/dev/stdout", OE_O_WRONLY},
-        {"/dev/stdout", OE_O_WRONLY},
+        {"/dev/stderr", OE_O_WRONLY},
     };
 
     if (fileno > OE_STDERR_FILENO)
@@ -267,6 +370,7 @@ static oe_fd_t* _new_file(uint32_t fileno)
         if (retval < 0)
             goto done;
 
+        oe_printf("STANDARD_DEVICE=%ld\n", retval);
         file->host_fd = retval;
     }
 

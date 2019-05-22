@@ -4,7 +4,6 @@
 #include <openenclave/corelibc/netdb.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/sys/socket.h>
-#include <openenclave/internal/posix/lock.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/posix/resolver.h>
 #include <openenclave/internal/thread.h>
@@ -33,7 +32,8 @@ int oe_register_resolver(oe_resolver_t* resolver)
         OE_RAISE_ERRNO(OE_EINVAL);
     }
 
-    oe_conditional_lock(&_lock, &locked);
+    oe_spin_lock(&_lock);
+    locked = true;
 
     /* This function can be called only once. */
     if (_resolver != NULL)
@@ -50,7 +50,9 @@ int oe_register_resolver(oe_resolver_t* resolver)
     ret = 0;
 
 done:
-    oe_conditional_unlock(&_lock, &locked);
+
+    if (locked)
+        oe_spin_unlock(&_lock);
 
     return ret;
 }
@@ -68,21 +70,24 @@ int oe_getaddrinfo(
     if (res_out)
         *res_out = NULL;
 
+    oe_spin_lock(&_lock);
+    locked = true;
+
     if (!_resolver)
-        OE_RAISE_ERRNO(OE_EINVAL);
-
-    oe_conditional_lock(&_lock, &locked);
-
-    if ((*_resolver->ops->getaddrinfo)(_resolver, node, service, hints, &res) ==
-        0)
     {
-        *res_out = res;
-        ret = 0;
-        goto done;
+        ret = OE_EAI_SYSTEM;
+        OE_RAISE_ERRNO(OE_EINVAL);
     }
 
+    ret = (_resolver->ops->getaddrinfo)(_resolver, node, service, hints, &res);
+
+    if (ret == 0)
+        *res_out = res;
+
 done:
-    oe_conditional_unlock(&_lock, &locked);
+
+    if (locked)
+        oe_spin_unlock(&_lock);
 
     return ret;
 }
@@ -96,19 +101,25 @@ int oe_getnameinfo(
     oe_socklen_t servlen,
     int flags)
 {
-    ssize_t ret = -1;
+    ssize_t ret = OE_EAI_FAIL;
     bool locked = false;
 
-    if (!_resolver)
-        OE_RAISE_ERRNO(OE_EINVAL);
+    oe_spin_lock(&_lock);
+    locked = true;
 
-    oe_conditional_lock(&_lock, &locked);
+    if (!_resolver)
+    {
+        ret = OE_EAI_SYSTEM;
+        OE_RAISE_ERRNO(OE_EINVAL);
+    }
 
     ret = (*_resolver->ops->getnameinfo)(
         _resolver, sa, salen, host, hostlen, serv, servlen, flags);
 
 done:
-    oe_conditional_unlock(&_lock, &locked);
+
+    if (locked)
+        oe_spin_unlock(&_lock);
 
     return (int)ret;
 }

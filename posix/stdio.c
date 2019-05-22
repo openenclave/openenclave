@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/corelibc/stdio.h>
+#include <openenclave/corelibc/stdlib.h>
 #include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/trace.h>
@@ -12,21 +13,32 @@ int oe_rename(const char* oldpath, const char* newpath)
     int ret = -1;
     oe_device_t* fs = NULL;
     oe_device_t* newfs = NULL;
-    char filepath[OE_PATH_MAX];
-    char newfilepath[OE_PATH_MAX];
+    typedef struct _variables
+    {
+        char filepath[OE_PATH_MAX];
+        char newfilepath[OE_PATH_MAX];
+    } variables_t;
+    variables_t* v = NULL;
 
-    if (!(fs = oe_mount_resolve(oldpath, filepath)))
+    if (!(v = oe_malloc(sizeof(variables_t))))
+        OE_RAISE_ERRNO(OE_ENOMEM);
+
+    if (!(fs = oe_mount_resolve(oldpath, v->filepath)))
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (!(newfs = oe_mount_resolve(newpath, newfilepath)))
+    if (!(newfs = oe_mount_resolve(newpath, v->newfilepath)))
         OE_RAISE_ERRNO(oe_errno);
 
     if (fs != newfs)
         OE_RAISE_ERRNO(OE_EXDEV);
 
-    ret = fs->ops.fs.rename(fs, filepath, newfilepath);
+    ret = fs->ops.fs.rename(fs, v->filepath, v->newfilepath);
 
 done:
+
+    if (v)
+        oe_free(v);
+
     return ret;
 }
 

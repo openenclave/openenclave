@@ -283,10 +283,11 @@ enclave {
             int signum)
             propagate_errno;
 
-        uint64_t oe_posix_getaddrinfo_open_ocall(
+        int oe_posix_getaddrinfo_open_ocall(
             [in, string] const char* node,
             [in, string] const char* service,
-            [in, count=1] const struct oe_addrinfo* hints)
+            [in, count=1] const struct oe_addrinfo* hints,
+            [out, count=1] uint64_t* handle)
             propagate_errno;
 
         int oe_posix_getaddrinfo_read_ocall(
