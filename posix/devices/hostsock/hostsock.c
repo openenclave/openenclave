@@ -165,7 +165,9 @@ static ssize_t _hostsock_socketpair(
         }
 
         if (retval == -1)
+        {
             OE_RAISE_ERRNO_MSG(oe_errno, "retval=%d\n", retval);
+        }
 
         pair[0]->host_fd = host_sv[0];
         pair[1]->host_fd = host_sv[1];

@@ -1506,7 +1506,97 @@ int oe_posix_socketpair_ocall(
     int protocol,
     oe_host_fd_t sv_out[2])
 {
-    PANIC;
+    int ret = -1;
+    char reuse_addr = true;
+    int addrlen = 0;
+
+    oe_host_fd_t listener = (oe_host_fd_t)INVALID_HANDLE_VALUE;
+
+    SOCKADDR_IN addr;
+
+    if (!_winsock_inited)
+    {
+        if (!_winsock_init())
+        {
+            _set_errno(OE_ENOTSOCK);
+        }
+    }
+
+    sv_out[1] = (oe_host_fd_t)INVALID_HANDLE_VALUE;
+    sv_out[0] = (oe_host_fd_t)INVALID_HANDLE_VALUE;
+
+    _set_errno(0);
+    listener = socket(domain, type, protocol);
+    if (listener == SOCKET_ERROR)
+    {
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
+        goto done;
+    }
+
+    addrlen = sizeof(addr);
+    memset(&addr, 0, addrlen);
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    addr.sin_port = 0; 
+
+    if (setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &reuse_addr, (socklen_t) sizeof(reuse_addr)) == -1)
+    {
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
+        goto done;
+    }
+
+    if  (bind(listener, (struct sockaddr*)&addr, addrlen) == SOCKET_ERROR)
+    {
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
+        goto done;
+    }
+
+    if  (getsockname(listener, (struct sockaddr*)&addr, &addrlen) == SOCKET_ERROR)
+    {
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
+        goto done;
+    }
+
+    if (listen(listener, 1) == SOCKET_ERROR)
+    {
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
+        goto done;
+    }
+
+    sv_out[0] = socket(domain, type, protocol);
+    if (sv_out[0] == SOCKET_ERROR)
+    {
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
+        goto done;
+    }
+
+    if (connect(sv_out[0], (struct sockaddr *)&addr, sizeof(addr)) == SOCKET_ERROR)
+    {
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
+        goto done;
+    }
+
+    sv_out[1] = accept(listener, NULL, NULL);
+    if (sv_out[1] == INVALID_SOCKET)
+    {
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
+        goto done;
+    }
+
+    closesocket(listener);
+    ret = 0;
+
+done:
+    if (ret < 0)
+    {
+        closesocket(listener);
+        closesocket(sv_out[0]);
+        closesocket(sv_out[1]);
+        sv_out[0] = INVALID_SOCKET;
+        sv_out[1] = INVALID_SOCKET;
+    }
+
+    return ret;
 }
 
 int oe_posix_connect_ocall(
@@ -1727,8 +1817,17 @@ ssize_t oe_posix_sendto_ocall(
 }
 
 int oe_posix_shutdown_ocall(oe_host_fd_t sockfd, int how)
-{
-    PANIC;
+{  
+    int ret = -1;
+
+    ret = shutdown((SOCKET)sockfd, how);
+    if (ret  == SOCKET_ERROR)
+    {
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
+        ret = -1;
+    }
+   
+    return ret;
 }
 
 int oe_posix_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg)
@@ -1749,7 +1848,7 @@ int oe_posix_ioctl_ocall(
     // codes from the enclave to be the equivelent for windows. But... no such
     // codes are currently being used So we panic to highlight the problem line
     // of code. In this way, we can see what ioctls are needed
-    PANIC;
+    PANIC;   
     return 0;
 }
 
@@ -1855,7 +1954,8 @@ int oe_posix_getpeername_ocall(
 
 int oe_posix_shutdown_sockets_device_ocall(oe_host_fd_t sockfd)
 {
-    PANIC;
+    // 2do: track all of the handles so we can be sure to close everything on exit
+    return 0;
 }
 
 /*
@@ -2516,7 +2616,8 @@ int oe_posix_epoll_close_ocall(oe_host_fd_t epfd)
 
 int oe_posix_shutdown_polling_device_ocall(oe_host_fd_t fd)
 {
-    PANIC;
+    // 2do: track all of the handles so we can be sure to close everything on exit
+    return 0;
 }
 
 /*
