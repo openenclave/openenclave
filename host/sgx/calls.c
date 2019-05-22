@@ -365,9 +365,7 @@ done:
     return result;
 }
 
-const char* oe_ocall_str(oe_func_t ocall);
-
-const char* oe_ocall_str(oe_func_t ocall)
+static const char* oe_ocall_str(oe_func_t ocall)
 {
     switch (ocall)
     {
@@ -405,7 +403,7 @@ const char* oe_ocall_str(oe_func_t ocall)
             return "OE_OCALL_LOG";
         default:
             return "UNKNOWN";
-     }
+    }
 };
 
 /*
@@ -437,7 +435,11 @@ static oe_result_t _handle_ocall(
     {
         oe_log_args_t log_args;
         log_args.level = OE_LOG_LEVEL_INFO;
-        snprintf(log_args.message, OE_LOG_MESSAGE_LEN_MAX, "OE_OCALL: %s\n", oe_ocall_str(func));
+        snprintf(
+            log_args.message,
+            OE_LOG_MESSAGE_LEN_MAX,
+            "OE_OCALL: %s\n",
+            oe_ocall_str(func));
         oe_handle_log(enclave, (uint64_t)&log_args);
     }
 
