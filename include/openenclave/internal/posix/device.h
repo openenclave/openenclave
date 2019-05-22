@@ -77,7 +77,7 @@ typedef struct _oe_fs_device_ops
         unsigned long flags,
         const void* data);
 
-    int (*umount)(oe_device_t* fs, const char* target);
+    int (*umount2)(oe_device_t* fs, const char* target, int flags);
 
     oe_fd_t* (*open)(
         oe_device_t* fs,

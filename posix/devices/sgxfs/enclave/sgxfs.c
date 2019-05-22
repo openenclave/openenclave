@@ -219,10 +219,12 @@ done:
     return ret;
 }
 
-static int _sgxfs_umount(oe_device_t* dev, const char* target)
+static int _sgxfs_umount2(oe_device_t* dev, const char* target, int flags)
 {
     int ret = -1;
     fs_t* fs = _cast_fs(dev);
+
+    OE_UNUSED(flags);
 
     if (!fs || !target)
         OE_RAISE_ERRNO(OE_EINVAL);
@@ -1108,7 +1110,7 @@ static fs_t _sgxfs = {
         .base.release = _sgxfs_release,
         .clone = _sgxfs_clone,
         .mount = _sgxfs_mount,
-        .umount = _sgxfs_umount,
+        .umount2 = _sgxfs_umount2,
         .open = _sgxfs_open,
         .stat = _sgxfs_stat,
         .access = _sgxfs_access,

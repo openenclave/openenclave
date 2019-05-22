@@ -171,10 +171,12 @@ done:
     return ret;
 }
 
-static int _hostfs_umount(oe_device_t* dev, const char* target)
+static int _hostfs_umount2(oe_device_t* dev, const char* target, int flags)
 {
     int ret = -1;
     device_t* fs = _cast_device(dev);
+
+    OE_UNUSED(flags);
 
     if (!fs || !target)
         OE_RAISE_ERRNO(OE_EINVAL);
@@ -1076,7 +1078,7 @@ static device_t _hostfs = {
             .base.release = _hostfs_release,
             .clone = _hostfs_clone,
             .mount = _hostfs_mount,
-            .umount = _hostfs_umount,
+            .umount2 = _hostfs_umount2,
             .open = _hostfs_open,
             .stat = _hostfs_stat,
             .access = _hostfs_access,

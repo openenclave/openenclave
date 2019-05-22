@@ -92,7 +92,7 @@ static void _assert_device(oe_device_t* device)
         {
             oe_assert(device->ops.fs.clone);
             oe_assert(device->ops.fs.mount);
-            oe_assert(device->ops.fs.umount);
+            oe_assert(device->ops.fs.umount2);
             oe_assert(device->ops.fs.open);
             oe_assert(device->ops.fs.stat);
             oe_assert(device->ops.fs.access);
@@ -285,51 +285,21 @@ done:
 **==============================================================================
 */
 
-static oe_once_t _tls_device_once = OE_ONCE_INIT;
-static oe_thread_key_t _tls_device_key = OE_THREADKEY_INITIALIZER;
-
-static void _create_tls_device_key()
-{
-    if (oe_thread_key_create(&_tls_device_key, NULL) != 0)
-        oe_abort();
-}
+static __thread uint64_t _devid;
 
 oe_result_t oe_set_thread_devid(uint64_t devid)
 {
-    oe_result_t result = OE_UNEXPECTED;
-
-    OE_CHECK(oe_once(&_tls_device_once, _create_tls_device_key));
-
-    OE_CHECK(oe_thread_setspecific(_tls_device_key, (void*)devid));
-
-    result = OE_OK;
-
-done:
-    return result;
+    _devid = devid;
+    return OE_OK;
 }
 
 oe_result_t oe_clear_thread_devid(void)
 {
-    oe_result_t result = OE_UNEXPECTED;
-
-    OE_CHECK((oe_thread_setspecific(_tls_device_key, NULL)));
-
-    result = OE_OK;
-
-done:
-    return result;
+    _devid = 0;
+    return OE_OK;
 }
 
 uint64_t oe_get_thread_devid(void)
 {
-    uint64_t ret = OE_DEVID_NONE;
-    uint64_t devid;
-
-    if (!(devid = (uint64_t)oe_thread_getspecific(_tls_device_key)))
-        goto done;
-
-    ret = devid;
-
-done:
-    return ret;
+    return _devid;
 }

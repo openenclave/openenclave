@@ -139,6 +139,7 @@ int oe_mount(
     bool locked = false;
     oe_posix_path_t source_path;
     oe_posix_path_t target_path;
+    mount_point_t mount_point;
 
     if (!target || !filesystemtype)
         OE_RAISE_ERRNO(OE_EINVAL);
@@ -163,7 +164,7 @@ int oe_mount(
     /* Resolve the device for the given filesystemtype. */
     device = oe_device_table_find(filesystemtype, OE_DEVICE_TYPE_FILE_SYSTEM);
     if (!device)
-        OE_RAISE_ERRNO_MSG(OE_EINVAL, "filesystemtype=%s", filesystemtype);
+        OE_RAISE_ERRNO_MSG(OE_ENODEV, "filesystemtype=%s", filesystemtype);
 
     /* Be sure the full_target directory exists (if not root). */
     if (oe_strcmp(target, "/") != 0)
@@ -206,41 +207,30 @@ int oe_mount(
 
     /* Assign and initialize new mount point. */
     {
-        size_t index = _mount_table_size;
-        size_t len = oe_strlen(target);
-
-        _mount_table[index].path_size = len + 1;
-        _mount_table[index].path = oe_malloc(len + 1);
-
-        if (!_mount_table[index].path)
+        if (!(mount_point.path = oe_strdup(target)))
             OE_RAISE_ERRNO(OE_ENOMEM);
 
-        if (oe_memcpy_s(
-                _mount_table[index].path,
-                _mount_table[index].path_size,
-                target,
-                len + 1) != OE_OK)
-        {
-            oe_free(_mount_table[index].path);
-            OE_RAISE_ERRNO(OE_EINVAL);
-        }
-
-        _mount_table[index].fs = new_device;
-        _mount_table_size++;
+        mount_point.path_size = oe_strlen(target) + 1;
+        mount_point.fs = new_device;
+        mount_point.flags = 0;
     }
 
     /* Notify the device that it has been mounted. */
     if (new_device->ops.fs.mount(
             new_device, source, target, filesystemtype, mountflags, data) != 0)
     {
-        oe_free(_mount_table[--_mount_table_size].path);
         goto done;
     }
 
+    _mount_table[_mount_table_size++] = mount_point;
     new_device = NULL;
+    mount_point.path = NULL;
     ret = 0;
 
 done:
+
+    if (mount_point.path)
+        oe_free(mount_point.path);
 
     if (locked)
         oe_spin_unlock(&_lock);
@@ -259,8 +249,6 @@ int oe_umount2(const char* target, int flags)
     oe_device_t* device;
     bool locked = false;
     oe_posix_path_t target_path;
-
-    OE_UNUSED(flags);
 
     if (!target)
         OE_RAISE_ERRNO(OE_EINVAL);
@@ -302,7 +290,7 @@ int oe_umount2(const char* target, int flags)
         _mount_table[index] = _mount_table[_mount_table_size - 1];
         _mount_table_size--;
 
-        if (fs->ops.fs.umount(fs, target) != 0)
+        if (fs->ops.fs.umount2(fs, target, flags) != 0)
             OE_RAISE_ERRNO(oe_errno);
 
         fs->ops.device.release(fs);
