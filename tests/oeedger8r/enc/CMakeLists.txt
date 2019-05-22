@@ -25,7 +25,7 @@ add_custom_command(
   DEPENDS ../moreedl/bar.edl
   COMMAND edger8r --trusted --header-only --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../moreedl bar.edl)
 
-add_enclave(TARGET edl_enc CXX
+add_enclave(TARGET edl_enc UUID e71cbbea-a638-4653-b46e-2e58a2ca3408 CXX
     SOURCES
     all_t.c
     bar_t.h
@@ -70,5 +70,5 @@ oeedl_file(
     other_t
 )
 
-add_enclave(TARGET edl_other_enc CXX SOURCES testother.cpp ${other_t})
+add_enclave(TARGET edl_other_enc UUID 6d92103c-1a1c-48b7-a469-f455acef249e CXX SOURCES testother.cpp ${other_t})
 target_include_directories(edl_other_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)

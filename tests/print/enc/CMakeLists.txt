@@ -5,7 +5,7 @@
 oeedl_file(../print.edl enclave gen)
 
 # TODO: Does this need CXX?
-add_enclave(TARGET print_enc SOURCES enc.cpp ${gen})
+add_enclave(TARGET print_enc UUID 58f3e795-00c3-45e0-9435-3e6fcf734acc SOURCES enc.cpp ${gen})
 
 target_compile_options(print_enc PRIVATE
     -fno-builtin-strcpy

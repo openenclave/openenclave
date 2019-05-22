@@ -5,7 +5,7 @@
 
 oeedl_file(../SampleAppCRT.edl enclave gen)
 
-add_enclave(TARGET SampleAppCRT SOURCES SampleAppCRT.cpp ${gen})
+add_enclave(TARGET SampleAppCRT UUID 31c4ecec-b94a-432a-ab76-4df401b6ee59 SOURCES SampleAppCRT.cpp ${gen})
 
 target_include_directories(SampleAppCRT PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
