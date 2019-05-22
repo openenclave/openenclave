@@ -390,10 +390,13 @@ static oe_result_t _handle_ocall(
     if (arg_out)
         *arg_out = 0;
 
-    oe_log_args_t log_args;
-    log_args.level = OE_LOG_LEVEL_INFO;
-    memcpy(log_args.message, "OCALL", 6);
-    oe_handle_log(enclave, (uint64_t) &log_args);
+    if (func != OE_OCALL_LOG)
+    {
+        oe_log_args_t log_args;
+        log_args.level = OE_LOG_LEVEL_INFO;
+        snprintf(log_args.message, OE_LOG_MESSAGE_LEN_MAX, "OE_OCALL\n");
+        oe_handle_log(enclave, (uint64_t)&log_args);
+    }
 
     switch ((oe_func_t)func)
     {
