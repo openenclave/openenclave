@@ -64,7 +64,7 @@ struct oe_dirent* oe_readdir(OE_DIR* dir)
     if (!dir || dir->magic != DIR_MAGIC)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (oe_getdents((unsigned int)dir->fd, &dir->buf, count) != (int)count)
+    if (oe_getdents64((unsigned int)dir->fd, &dir->buf, count) != (int)count)
     {
         if (oe_errno)
             OE_RAISE_ERRNO(oe_errno);
@@ -103,7 +103,7 @@ void oe_rewinddir(OE_DIR* dir)
     }
 }
 
-int oe_getdents(unsigned int fd, struct oe_dirent* dirp, unsigned int count)
+int oe_getdents64(unsigned int fd, struct oe_dirent* dirp, unsigned int count)
 {
     int ret = -1;
     oe_fd_t* file;
@@ -111,7 +111,7 @@ int oe_getdents(unsigned int fd, struct oe_dirent* dirp, unsigned int count)
     if (!(file = oe_fdtable_get((int)fd, OE_FD_TYPE_FILE)))
         OE_RAISE_ERRNO(oe_errno);
 
-    ret = file->ops.file.getdents(file, dirp, count);
+    ret = file->ops.file.getdents64(file, dirp, count);
 
 done:
     return ret;

@@ -57,7 +57,7 @@ typedef struct _oe_file_ops
 
     oe_off_t (*lseek)(oe_fd_t* file, oe_off_t offset, int whence);
 
-    int (*getdents)(oe_fd_t* file, struct oe_dirent* dirp, uint32_t count);
+    int (*getdents64)(oe_fd_t* file, struct oe_dirent* dirp, uint32_t count);
 }
 oe_file_ops_t;
 

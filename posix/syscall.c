@@ -208,13 +208,12 @@ static long _syscall(
             ret = oe_access(pathname, mode);
             goto done;
         }
-        case OE_SYS_getdents:
         case OE_SYS_getdents64:
         {
             unsigned int fd = (unsigned int)arg1;
             struct oe_dirent* ent = (struct oe_dirent*)arg2;
             unsigned int count = (unsigned int)arg3;
-            ret = oe_getdents(fd, ent, count);
+            ret = oe_getdents64(fd, ent, count);
             goto done;
         }
         case OE_SYS_ioctl:

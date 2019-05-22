@@ -634,7 +634,7 @@ done:
     return -1;
 }
 
-static int _sgxfs_getdents(
+static int _sgxfs_getdents64(
     oe_fd_t* file,
     struct oe_dirent* dirp,
     unsigned int count)
@@ -647,7 +647,7 @@ static int _sgxfs_getdents(
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Delegate the request to HOSTFS. */
-    if ((n = file->ops.file.getdents(file, dirp, count)) == -1)
+    if ((n = file->ops.file.getdents64(file, dirp, count)) == -1)
         OE_RAISE_ERRNO(oe_errno);
 
     ret = n;
@@ -1093,7 +1093,7 @@ static oe_file_ops_t _file_ops = {
     .fd.close = _sgxfs_close,
     .fd.get_host_fd = _sgxfs_gethostfd,
     .lseek = _sgxfs_lseek,
-    .getdents = _sgxfs_getdents,
+    .getdents64 = _sgxfs_getdents64,
 };
 
 static oe_file_ops_t _get_file_ops(void)

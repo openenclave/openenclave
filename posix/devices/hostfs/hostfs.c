@@ -422,7 +422,7 @@ done:
 
 static struct oe_dirent* _hostfs_readdir(oe_fd_t* dir_);
 
-static int _hostfs_getdents(
+static int _hostfs_getdents64(
     oe_fd_t* file_,
     struct oe_dirent* dirp,
     unsigned int count)
@@ -1062,7 +1062,7 @@ static oe_file_ops_t _file_ops = {
     .fd.close = _hostfs_close,
     .fd.get_host_fd = _hostfs_get_host_fd,
     .lseek = _hostfs_lseek,
-    .getdents = _hostfs_getdents,
+    .getdents64 = _hostfs_getdents64,
 };
 
 static oe_file_ops_t _get_file_ops(void)
