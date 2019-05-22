@@ -1,0 +1,50 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+---
+tmp_dir: "C:\\Windows\\Temp"
+cmake_target_version: 3.12.18081601
+ninja_target_version: 1.8.2
+clang_target_version: 7.0.1
+ocaml_target_version: 4.02.1
+
+packages:
+  7z:
+    url: "https://www.7-zip.org/a/7z1806-x64.msi"
+    dest: "{{ tmp_dir }}\\7z1806-x64.msi"
+  vs_2017:
+    url: "https://aka.ms/vs/15/release/vs_buildtools.exe"
+    dest: "{{ tmp_dir }}\\vs_buildtools-2017.exe"
+  ocaml:
+    url: "https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/ocpwin64-20160113-4.02.1+ocp1-mingw64.zip"
+    dest: "{{ tmp_dir }}\\ocpwin64-4.02.1-ocp1-mingw64.zip"
+  clang7:
+    url: "http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe"
+    dest: "{{ tmp_dir }}\\LLVM-7.0.1-win64.exe"
+  git:
+    url: "https://github.com/git-for-windows/git/releases/download/v2.20.1.windows.1/Git-2.20.1-64-bit.exe"
+    dest: "{{ tmp_dir }}\\Git-2.20.1-64-bit.exe"
+  shellcheck:
+    url: "https://storage.googleapis.com/shellcheck/shellcheck-stable.exe"
+    dest: "{{ tmp_dir }}\\shellcheck.exe"
+
+packages_env_path:
+  - 'C:\Program Files\7-Zip'
+  - 'C:\Program Files\OCaml\bin'
+  - 'C:\Program Files\LLVM\bin'
+  - 'C:\Program Files\Git\bin'
+  - 'C:\Program Files\shellcheck'
+  - 'C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build'
+
+validation_files:
+  - "C:\\Program Files\\LLVM\\lib\\libclang.lib"
+  - "C:\\Program Files\\OCaml\\lib\\arg.cmi"
+  - "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Tools\\MSVC\\14.16.27023\\lib\\x64\\vcomp.lib"
+
+validation_binaries:
+  - "C:\\Program Files\\LLVM\\bin\\clang.exe"
+  - "C:\\Program Files\\LLVM\\bin\\llvm-ar.exe"
+  - "C:\\Program Files\\OCaml\\bin\\ocaml.exe"
+  - "C:\\Program Files\\shellcheck\\shellcheck.exe"
+  - "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Tools\\MSVC\\14.16.27023\\bin\\Hostx64\\x64\\cl.exe"
+  - "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Tools\\MSVC\\14.16.27023\\bin\\Hostx64\\x64\\link.exe"

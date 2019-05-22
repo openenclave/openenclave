@@ -2,19 +2,22 @@
 # Licensed under the MIT License.
 
 ---
+- name: Include vars
+  include_vars: "{{ ansible_os_family | lower }}.yml"
+
+- name: Check for existing required folders and files
+  win_stat:
+    path: "{{ item }}"
+  with_items: "{{ packages_env_path }}"
+  register: directory
+  failed_when: directory.stat.isdir == False
+
 - name: Check for existing required executables and files
   win_stat:
     path: "{{ item }}"
   with_items: "{{ validation_binaries + validation_files }}"
   register: file
   failed_when: file.stat.isreg == False
-
-- name: Check for existing required folders
-  win_stat:
-    path: "{{ item }}"
-  with_items: "{{ validation_directories }}"
-  register: directory
-  failed_when: directory.stat.isdir == False
 
 - name: CMake version check
   win_command: vcvars64.bat x64 && cmake --version

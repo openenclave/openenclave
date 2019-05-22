@@ -2,6 +2,10 @@
 # Licensed under the MIT License.
 
 ---
+
+- name: Include vars
+  include_vars: "{{ ansible_os_family | lower }}.yml"
+
 - block:
   - import_role:
       name: common/jenkins
