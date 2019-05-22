@@ -3,8 +3,8 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-$SOURCES_PATH=$1
-$BUILD_TYPE=$2
+SOURCES_PATH=$1
+BUILD_TYPE=$2
 
 # -------------------------------------
 # Build Open Enclave SDK

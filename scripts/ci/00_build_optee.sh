@@ -3,7 +3,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-$SOURCES_PATH=$1
+SOURCES_PATH=$1
 
 # -------------------------------------
 # Build OP-TEE
