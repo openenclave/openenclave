@@ -753,37 +753,15 @@ static int _hostfs_ioctl(oe_fd_t* file_, unsigned long request, uint64_t arg)
 
     /*
      * MUSL uses the TIOCGWINSZ ioctl request to determine whether the file
-     * descriptor refers to a terminal device (such as stdin, stdout, and
-     * stderr) so that it can use line-bufferred input and output. This check
-     * fails when delegated to the host on Windows. So the following block
-     * works around this problem by implementing TIOCGWINSZ on the enclave
-     * side. Other terminal control ioctls are left unimplemented.
+     * descriptor refers to a terminal device. This request cannot be handled
+     * by Windows hosts, so the error is handled on the enclave side. This is
+     * the correct behavior since host files can never be terminal devices.
      */
     {
         static const unsigned long _TIOCGWINSZ = 0x5413;
 
         if (request == _TIOCGWINSZ)
-        {
-            struct winsize
-            {
-                unsigned short int ws_row;
-                unsigned short int ws_col;
-                unsigned short int ws_xpixel;
-                unsigned short int ws_ypixel;
-            };
-            struct winsize* p;
-
-            if (!(p = (struct winsize*)arg))
-                OE_RAISE_ERRNO(OE_EINVAL);
-
-            p->ws_row = 24;
-            p->ws_col = 80;
-            p->ws_xpixel = 0;
-            p->ws_ypixel = 0;
-
-            ret = 0;
-            goto done;
-        }
+            OE_RAISE_ERRNO(OE_ENOTTY);
     }
 
     if (oe_posix_ioctl_ocall(&ret, file->host_fd, request, arg) != OE_OK)
