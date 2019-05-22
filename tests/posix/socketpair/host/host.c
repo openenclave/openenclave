@@ -29,20 +29,23 @@ static void sleep(int secs)
 
 typedef HANDLE pthread_t;
 #else
-#include <netinet/in.h>
-#include <openenclave/internal/tests.h>
-
-#include "socketpair_test_u.h"
-
 #include <errno.h>
 #include <fcntl.h>
 #include <netinet/in.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/tests.h>
 #include <pthread.h>
+#include <signal.h>
 #include <stdio.h>
 #include <sys/socket.h>
 #include <unistd.h>
+
+void sigpipe_handler(int unused)
+{
+    (void)unused;
+    // Doens't do anything. We expect sigpipe from the server pipe
+    printf("received sigpipe\n");
+}
 #endif
 
 #include "socketpair_test_u.h"
@@ -84,6 +87,9 @@ void run_test()
         NULL, 0, (LPTHREAD_START_ROUTINE)_run_enclave_server, NULL, 0, NULL);
     OE_TEST(server != INVALID_HANDLE_VALUE);
 #else
+    struct sigaction action = {{sigpipe_handler}};
+    sigaction(SIGPIPE, &action, NULL);
+
     if (pthread_create(&server, NULL, _run_enclave_server, NULL) != 0)
     {
         OE_TEST("pthread_create()" == NULL);
