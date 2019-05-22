@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "../atexit.h"
+
 void oe_call_init_functions(void)
 {
     void (**fn)(void);

@@ -22,7 +22,6 @@ if (OE_SGX)
         sgx/once.c
         sgx/properties.c
         sgx/report.c
-        sgx/sbrk.c
         sgx/sched_yield.c
         sgx/spinlock.c
         sgx/td.c
@@ -47,11 +46,12 @@ if (OE_SGX)
     endif()
 elseif(OE_TRUSTZONE)
     list(APPEND PLATFORM_SRC
-        optee/abort.c
         optee/bounds.c
-        optee/dl.c
+        optee/calls.c
+        optee/globals.c
         optee/host.c
         optee/printf.c
+        optee/reloc.c
         optee/sched_yield.c
         optee/start.c)
 endif()
@@ -75,6 +75,7 @@ add_library(oecore STATIC
     printf.c
     pthread.c
     result.c
+    sbrk.c
     stdio.c
     strerror.c
     string.c
