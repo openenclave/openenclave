@@ -32,7 +32,7 @@ enclave {
 
     trusted {
 
-        public int oe_posix_signal_notify_ecall(int signum);
+        public void oe_posix_stub_ecall();
     };
 
     untrusted {
@@ -142,7 +142,7 @@ enclave {
             int domain,
             int type,
             int protocol,
-            [in] oe_host_fd_t sv[2])
+            [out] oe_host_fd_t sv[2])
             propagate_errno;
 
         int oe_posix_connect_ocall(

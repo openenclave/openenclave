@@ -6,6 +6,7 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/corelibc/bits/types.h>
+#include <openenclave/corelibc/limits.h>
 
 OE_EXTERNC_BEGIN
 
@@ -44,7 +45,7 @@ void oe_rewinddir(OE_DIR* dir);
 
 int oe_closedir(OE_DIR* dir);
 
-int oe_getdents(unsigned int fd, struct oe_dirent* dirp, unsigned int count);
+int oe_getdents64(unsigned int fd, struct oe_dirent* dirp, unsigned int count);
 
 /*
 **==============================================================================

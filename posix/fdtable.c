@@ -166,7 +166,7 @@ static void _assert_fd(oe_fd_t* desc)
         case OE_FD_TYPE_FILE:
         {
             oe_assert(desc->ops.file.lseek);
-            oe_assert(desc->ops.file.getdents);
+            oe_assert(desc->ops.file.getdents64);
             break;
         }
         case OE_FD_TYPE_SOCKET:
@@ -192,11 +192,6 @@ static void _assert_fd(oe_fd_t* desc)
         {
             oe_assert(desc->ops.epoll.epoll_ctl);
             oe_assert(desc->ops.epoll.epoll_wait);
-            break;
-        }
-        case OE_FD_TYPE_EVENTFD:
-        {
-            oe_assert(false);
             break;
         }
     }

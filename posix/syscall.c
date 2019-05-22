@@ -11,7 +11,6 @@
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/sys/epoll.h>
-#include <openenclave/corelibc/sys/eventfd.h>
 #include <openenclave/corelibc/sys/ioctl.h>
 #include <openenclave/corelibc/sys/mount.h>
 #include <openenclave/corelibc/sys/poll.h>
@@ -208,13 +207,12 @@ static long _syscall(
             ret = oe_access(pathname, mode);
             goto done;
         }
-        case OE_SYS_getdents:
         case OE_SYS_getdents64:
         {
             unsigned int fd = (unsigned int)arg1;
             struct oe_dirent* ent = (struct oe_dirent*)arg2;
             unsigned int count = (unsigned int)arg3;
-            ret = oe_getdents(fd, ent, count);
+            ret = oe_getdents64(fd, ent, count);
             goto done;
         }
         case OE_SYS_ioctl:
@@ -491,14 +489,6 @@ static long _syscall(
             ret = oe_epoll_ctl(epfd, op, fd, event);
             goto done;
         }
-        case OE_SYS_eventfd:
-        case OE_SYS_eventfd2:
-        {
-            unsigned int initval = (unsigned int)arg1;
-            int flags = (int)arg2;
-            ret = oe_eventfd(initval, flags);
-            goto done;
-        }
         case OE_SYS_exit_group:
         {
             ret = 0;
@@ -558,24 +548,6 @@ static long _syscall(
             ret = (long)oe_getpgrp();
             goto done;
         }
-        case OE_SYS_rt_sigaction:
-        {
-            int signum = (int)arg1;
-            struct oe_sigaction* act = (struct oe_sigaction*)arg2;
-            struct oe_sigaction* oact = (struct oe_sigaction*)arg3;
-
-            ret = (long)oe_sigaction(signum, act, oact);
-            goto done;
-        }
-        case OE_SYS_kill:
-        {
-            int pid = (int)arg1;
-            int signum = (int)arg2;
-
-            ret = (long)oe_kill(pid, signum);
-            goto done;
-        }
-
         default:
         {
             oe_errno = OE_ENOSYS;

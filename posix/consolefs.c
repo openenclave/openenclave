@@ -295,7 +295,7 @@ done:
     return ret;
 }
 
-static int _consolefs_getdents(
+static int _consolefs_getdents64(
     oe_fd_t* file,
     struct oe_dirent* dirp,
     uint32_t count)
@@ -322,7 +322,7 @@ static oe_file_ops_t _ops = {
     .fd.close = _consolefs_close,
     .fd.get_host_fd = _consolefs_gethostfd,
     .lseek = _consolefs_lseek,
-    .getdents = _consolefs_getdents,
+    .getdents64 = _consolefs_getdents64,
 };
 
 static oe_file_ops_t _get_ops(void)

@@ -226,11 +226,9 @@ void OE_FD_SET(int fd, oe_fd_set* set)
 
 void OE_FD_ZERO(oe_fd_set* set)
 {
-    int i = 0;
-    uint64_t* bits = set->fds_bits;
-
-    while ((uint32_t)i < (sizeof(oe_fd_set) / sizeof(uint64_t)))
+    if (set)
     {
-        bits[i++] = 0;
+        /* oe_memset_s() cannot fail with these parameters. */
+        oe_memset_s(set, sizeof(oe_fd_set), 0, sizeof(oe_fd_set));
     }
 }

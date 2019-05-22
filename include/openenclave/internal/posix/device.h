@@ -32,9 +32,6 @@ enum
 
     /* The host epoll device. */
     OE_DEVID_HOST_EPOLL,
-
-    /* The host eventfd device. */
-    OE_DEVID_EVENTFD,
 };
 
 /* Device names. */
@@ -43,7 +40,6 @@ enum
 #define OE_DEVICE_NAME_SGX_FILE_SYSTEM OE_SGX_FILE_SYSTEM
 #define OE_DEVICE_NAME_HOST_SOCKET_INTERFACE "oe_host_socket_interface"
 #define OE_DEVICE_NAME_HOST_EPOLL "oe_host_epoll"
-#define OE_DEVICE_NAME_EVENTFD "oe_eventfd"
 
 typedef enum _oe_device_type
 {
@@ -52,7 +48,6 @@ typedef enum _oe_device_type
     OE_DEVICE_TYPE_FILE_SYSTEM,
     OE_DEVICE_TYPE_SOCKET_INTERFACE,
     OE_DEVICE_TYPE_EPOLL,
-    OE_DEVICE_TYPE_EVENTFD,
 } oe_device_type_t;
 
 typedef struct _oe_device oe_device_t;
@@ -128,14 +123,6 @@ typedef struct _oe_epoll_device_ops
 
 } oe_epoll_device_ops_t;
 
-typedef struct _oe_eventfd_device_ops
-{
-    oe_device_ops_t base;
-
-    oe_fd_t* (*eventfd)(oe_device_t* dev, unsigned int initval, int flags);
-
-} oe_eventfd_device_ops_t;
-
 typedef struct _oe_device oe_device_t;
 
 struct _oe_device
@@ -152,7 +139,6 @@ struct _oe_device
         oe_fs_device_ops_t fs;
         oe_socket_device_ops_t socket;
         oe_epoll_device_ops_t epoll;
-        oe_eventfd_device_ops_t eventfd;
     } ops;
 };
 

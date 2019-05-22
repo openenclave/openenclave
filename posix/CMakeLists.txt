@@ -32,7 +32,6 @@ add_library(oeposix STATIC
     dirent.c
     ioctl.c
     epoll.c
-    eventfd.c
     fcntl.c
     fdtable.c
     iov.c
@@ -40,11 +39,11 @@ add_library(oeposix STATIC
     netdb.c
     poll.c
     select.c
-    signal.c
     socket.c
     stat.c
     stdio.c
     stdlib.c
+    stub.c
     syscall.c
     unistd.c
     utsname.c)
