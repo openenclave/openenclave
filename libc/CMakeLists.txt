@@ -43,7 +43,9 @@ set (PLATFORM_SRC "")
 
 if (OE_SGX)
     list(APPEND PLATFORM_SRC
-        sgx/syscalls.c)
+        sgx/link.c
+        sgx/syscalls.c
+        sgx/sysconf.c)
 
     if (UNIX OR USE_CLANGW)
         list(APPEND PLATFORM_SRC
@@ -54,9 +56,13 @@ if (OE_SGX)
     endif()
 else()
     list(APPEND PLATFORM_SRC
-        optee/syscalls.c
         optee/abort.c
-        optee/exp2l.c)
+        optee/exp2l.c
+        optee/link.c
+        optee/stack.c
+        optee/syscalls.c
+        optee/sysconf.c
+        optee/trace.c)
 endif()
 
 add_library(oelibc STATIC
@@ -64,14 +70,12 @@ add_library(oelibc STATIC
     atexit.c
     dladdr.c
     libunwind_stubs.c
-    link.c
     locale.c
     malloc.c
     pthread.c
     sched_yield.c
     stdlib.c
     strerror.c
-    sysconf.c
     time.c
     __printf_chk.c
     __vfprintf_chk.c
@@ -761,7 +765,11 @@ else()
 target_include_directories(oelibc PRIVATE
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/include
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal
-  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/aarch64)
+  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/aarch64
+  # Keep these at the end to ensure that musl headers are always found first
+  # first by the preprocessor.
+  ${OE_TZ_LIBUTILS_EXT_INC}
+  ${OE_TZ_LIBUTEE_INC})
 endif()
 
 set_property(TARGET oelibc PROPERTY
