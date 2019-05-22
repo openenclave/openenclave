@@ -40,7 +40,11 @@ add_library(oeenclave STATIC
 maybe_build_using_clangw(oeenclave)
 
 if(CMAKE_C_COMPILER_ID MATCHES GNU)
-target_compile_options(oeenclave PRIVATE -Wjump-misses-init)
+  target_compile_options(oeenclave PRIVATE -Wjump-misses-init)
+
+  if(OE_TRUSTZONE)
+    target_compile_options(oeenclave PUBLIC ${OE_TZ_TA_C_FLAGS})
+  endif()
 endif()
 
 target_include_directories(oeenclave PRIVATE

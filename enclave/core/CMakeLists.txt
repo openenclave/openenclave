@@ -128,6 +128,7 @@ endif ()
 # Hence the PUBLIC (and INTERFACE) use of these flags instead of -fPIC
 # or POSITION_INDEPENDENT_CODE, which would use the incorrect flag as
 # enclaves actually are executables.
+if (OE_SGX)
 target_compile_options(oecore PUBLIC
     -fPIE
     -nostdinc
@@ -150,6 +151,11 @@ target_compile_options(oecore PUBLIC
     # this for our code as we don't want to force these flags on the
     # user. There are valid reasons for an end user to use built-ins.
     $<BUILD_INTERFACE:-fno-builtin-malloc -fno-builtin-calloc -fno-builtin>)
+elseif (OE_TRUSTZONE)
+    target_compile_options(oecore PUBLIC
+        -fvisibility=hidden
+        ${OE_TZ_TA_C_FLAGS})
+endif()
 
 target_compile_options(oecore INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>)
 
@@ -171,11 +177,20 @@ if(USE_DEBUG_MALLOC)
 endif()
 
 # Interface link flags for enclaves.
+if(OE_SGX)
 target_link_libraries(oecore INTERFACE
     -nostdlib -nodefaultlibs -nostartfiles
     -Wl,--no-undefined,-Bstatic,-Bsymbolic,--export-dynamic,-pie,--build-id
     -Wl,-z,noexecstack
     -Wl,-z,now)
+elseif(OE_TRUSTZONE)
+    target_link_libraries(oecore INTERFACE
+        -nostdlib -nodefaultlibs -nostartfiles
+        --no-undefined
+        -pie
+        --build-id
+        --sort-section=alignment)
+endif()
 
 set_property(TARGET oecore PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 install (TARGETS oecore EXPORT openenclave-targets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
