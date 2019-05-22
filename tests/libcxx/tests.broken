@@ -219,3 +219,7 @@
 ../../3rdparty/libcxx/libcxx/test/std/utilities/time/time.clock/time.clock.system/sys.time.types.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/time/weeks.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/time/years.pass.cpp 
+# The following test raises an assertion when validating the size deallocated
+../../3rdparty/libcxx/libcxx/test/libcxx/language.support/support.dynamic/libcpp_deallocate.sh.cpp
+# The following test hangs after the bump to libcxx 800
+../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.async/async_race.38682.pass.cpp

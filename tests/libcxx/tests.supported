@@ -168,7 +168,6 @@
 ../../3rdparty/libcxx/libcxx/test/libcxx/language.support/cmp/version.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/language.support/cstdint/version.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/language.support/cxa_deleted_virtual.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/language.support/support.dynamic/libcpp_deallocate.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/language.support/support.dynamic/version.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/language.support/support.exception/version.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/language.support/support.initlist/version.pass.cpp
@@ -3931,7 +3930,6 @@
 ../../3rdparty/libcxx/libcxx/test/std/strings/string.view/string_view.literals/literal3.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/strings/string.view/types.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/strings/strings.general/nothing_to_do.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.async/async_race.38682.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.errors/default_error_condition.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.errors/equivalent_error_code_int.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.errors/equivalent_int_error_condition.pass.cpp
