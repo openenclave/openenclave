@@ -171,7 +171,7 @@ static oe_device_t* _get_device(uint64_t devid, oe_device_type_t type)
     oe_device_t* ret = NULL;
     oe_device_t* device;
 
-    if (devid >= _table_size)
+    if (devid == OE_DEVID_NONE || devid >= _table_size)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     device = _table[devid];

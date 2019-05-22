@@ -5,6 +5,7 @@
 
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/sys/socket.h>
+#include <openenclave/corelibc/stdio.h>
 #include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/posix/fdtable.h>
 #include <openenclave/internal/posix/raise.h>
@@ -78,7 +79,7 @@ int oe_socketpair(int domain, int type, int protocol, int retfd[2])
     ssize_t retval;
     oe_fd_t* socks[2] = {0};
     oe_device_t* device;
-    uint64_t devid = oe_get_default_socket_devid();
+    uint64_t devid = OE_DEVID_HOST_SOCKET_INTERFACE;
 
     /* Resolve the device id. */
     /* 2do: select based on address family */
