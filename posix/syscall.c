@@ -11,7 +11,6 @@
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/sys/epoll.h>
-#include <openenclave/corelibc/sys/eventfd.h>
 #include <openenclave/corelibc/sys/ioctl.h>
 #include <openenclave/corelibc/sys/mount.h>
 #include <openenclave/corelibc/sys/poll.h>
@@ -488,14 +487,6 @@ static long _syscall(
             int fd = (int)arg3;
             struct oe_epoll_event* event = (struct oe_epoll_event*)arg4;
             ret = oe_epoll_ctl(epfd, op, fd, event);
-            goto done;
-        }
-        case OE_SYS_eventfd:
-        case OE_SYS_eventfd2:
-        {
-            unsigned int initval = (unsigned int)arg1;
-            int flags = (int)arg2;
-            ret = oe_eventfd(initval, flags);
             goto done;
         }
         case OE_SYS_exit_group:

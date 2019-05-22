@@ -34,9 +34,6 @@ oe_result_t oe_load_module_host_resolver(void);
 /** Load the event polling module (epoll, poll, and select). */
 oe_result_t oe_load_module_host_epoll(void);
 
-/** Load the eventfd module (eventfd). */
-oe_result_t oe_load_module_eventfd(void);
-
 OE_EXTERNC_END
 
 #endif /* _OE_BITS_MODULE_H */

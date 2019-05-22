@@ -194,11 +194,6 @@ static void _assert_fd(oe_fd_t* desc)
             oe_assert(desc->ops.epoll.epoll_wait);
             break;
         }
-        case OE_FD_TYPE_EVENTFD:
-        {
-            oe_assert(false);
-            break;
-        }
     }
 }
 #endif /* !defined(NDEBUG) */

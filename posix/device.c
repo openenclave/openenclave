@@ -116,11 +116,6 @@ static void _assert_device(oe_device_t* device)
             oe_assert(device->ops.epoll.epoll_create1);
             break;
         }
-        case OE_DEVICE_TYPE_EVENTFD:
-        {
-            oe_assert(device->ops.eventfd.eventfd);
-            break;
-        }
         default:
         {
             oe_assert(false);

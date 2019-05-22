@@ -21,7 +21,6 @@ typedef enum _oe_fd_type
     OE_FD_TYPE_FILE,
     OE_FD_TYPE_SOCKET,
     OE_FD_TYPE_EPOLL,
-    OE_FD_TYPE_EVENTFD,
 } oe_fd_type_t;
 
 typedef struct _oe_fd oe_fd_t;
@@ -174,14 +173,6 @@ typedef struct _oe_epoll_ops
 }
 oe_epoll_ops_t;
 
-/* eventfd operations. */
-typedef struct _oe_eventfd_ops
-{
-    /* Inherited operations. */
-    oe_fd_ops_t fd;
-}
-oe_eventfd_ops_t;
-
 struct _oe_fd
 {
     oe_fd_type_t type;
@@ -190,7 +181,6 @@ struct _oe_fd
         oe_file_ops_t file;
         oe_socket_ops_t socket;
         oe_epoll_ops_t epoll;
-        oe_eventfd_ops_t eventfd;
     } ops;
 };
 

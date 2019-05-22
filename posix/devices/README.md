@@ -15,4 +15,3 @@ functions.
 - **liboehostsock** - oe_load_module_hostsock()
 - **liboehostresolver** - oe_load_module_hostresolver()
 - **liboehostepoll** - oe_load_module_hostepoll()
-- **liboeeventfd** - oe_load_module_eventfd()
