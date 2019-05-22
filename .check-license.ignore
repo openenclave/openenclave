@@ -46,6 +46,7 @@ VERSION
 \.cspellignore
 \.gitattributes
 \.gitignore
+\.gitmodules
 debugger/pythonExtension/load_symbol_cmd\.py
 debugger/pythonExtension/readelf\.py
 host/linux/pe\.h
