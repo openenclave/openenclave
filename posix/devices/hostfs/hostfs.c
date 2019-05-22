@@ -23,6 +23,9 @@
 #define FILE_MAGIC 0xfe48c6ff
 #define DIR_MAGIC 0x8add1b0b
 
+/* Mask to extract the open-flags access mode: O_RDONLY, O_WRONLY, O_RDWR. */
+#define ACCESS_MODE_MASK 000000003
+
 typedef struct _fs
 {
     oe_device_t base;
@@ -86,12 +89,6 @@ static int _hostfs_closedir(oe_fd_t* file);
 OE_INLINE bool _is_read_only(const fs_t* fs)
 {
     return fs->mount.flags & OE_MS_RDONLY;
-}
-
-/* Get the access mode from the open() flags (O_RDONLY, O_WRONLY, O_RDWR). */
-static int _get_open_access_mode(int flags)
-{
-    return (flags & 000000003);
 }
 
 static fs_t* _cast_fs(const oe_device_t* device)
@@ -206,7 +203,7 @@ static int _hostfs_mount(
     /* Save the source parameter (will be needed to form host paths). */
     oe_strlcpy(fs->mount.source, source, sizeof(fs->mount.source));
 
-    /* Save the target parameter (checked by the umount() function). */
+    /* Save the target parameter (checked by the umount2() function). */
     oe_strlcpy(fs->mount.target, target, sizeof(fs->mount.target));
 
     /* Set the flag indicating that this file system is mounted. */
@@ -308,7 +305,7 @@ static oe_fd_t* _hostfs_open_file(
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Fail if attempting to write to a read-only file system. */
-    if (_is_read_only(fs) && _get_open_access_mode(flags) != OE_O_RDONLY)
+    if (_is_read_only(fs) && (flags & ACCESS_MODE_MASK) != OE_O_RDONLY)
         OE_RAISE_ERRNO(OE_EPERM);
 
     /* Create new file struct. */
@@ -363,7 +360,7 @@ static oe_fd_t* _hostfs_open_directory(
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Directories can only be opened for read access. */
-    if (_get_open_access_mode(flags) != OE_O_RDONLY)
+    if ((flags & ACCESS_MODE_MASK) != OE_O_RDONLY)
         OE_RAISE_ERRNO(OE_EACCES);
 
     /* Attempt to open the directory. */
@@ -1136,28 +1133,34 @@ static oe_file_ops_t _get_file_ops(void)
     return _file_ops;
 };
 
-static fs_t _hostfs = {.base.type = OE_DEVICE_TYPE_FILE_SYSTEM,
-                       .base.name = OE_DEVICE_NAME_HOST_FILE_SYSTEM,
-                       .base.ops.fs =
-                           {
-                               .base.release = _hostfs_release,
-                               .clone = _hostfs_clone,
-                               .mount = _hostfs_mount,
-                               .umount2 = _hostfs_umount2,
-                               .open = _hostfs_open,
-                               .stat = _hostfs_stat,
-                               .access = _hostfs_access,
-                               .link = _hostfs_link,
-                               .unlink = _hostfs_unlink,
-                               .rename = _hostfs_rename,
-                               .truncate = _hostfs_truncate,
-                               .mkdir = _hostfs_mkdir,
-                               .rmdir = _hostfs_rmdir,
-                           },
-                       .magic = FS_MAGIC,
-                       .mount = {
-                           .source = {'/'},
-                       }};
+// clang-format off
+static fs_t _hostfs =
+{
+    .base.type = OE_DEVICE_TYPE_FILE_SYSTEM,
+    .base.name = OE_DEVICE_NAME_HOST_FILE_SYSTEM,
+    .base.ops.fs =
+    {
+        .base.release = _hostfs_release,
+        .clone = _hostfs_clone,
+        .mount = _hostfs_mount,
+        .umount2 = _hostfs_umount2,
+        .open = _hostfs_open,
+        .stat = _hostfs_stat,
+        .access = _hostfs_access,
+        .link = _hostfs_link,
+        .unlink = _hostfs_unlink,
+        .rename = _hostfs_rename,
+        .truncate = _hostfs_truncate,
+        .mkdir = _hostfs_mkdir,
+        .rmdir = _hostfs_rmdir,
+    },
+    .magic = FS_MAGIC,
+    .mount =
+    {
+         .source = {'/'},
+    }
+};
+// clang-format on
 
 oe_device_t* oe_get_hostfs_device(void)
 {

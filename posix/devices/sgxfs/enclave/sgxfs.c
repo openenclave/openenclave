@@ -26,29 +26,41 @@
 
 #define FS_MAGIC 0x4a335f60
 #define FILE_MAGIC 0x8d7e422f
-#define DIR_MAGIC 0xc1bfdfa4
+
+/* Mask to extract the open-flags access mode: O_RDONLY, O_WRONLY, O_RDWR. */
+#define ACCESS_MODE_MASK 000000003
 
 extern oe_device_t* oe_get_hostfs_device(void);
 
 typedef struct _fs
 {
     struct _oe_device base;
+
+    /* Must be FS_MAGIC. */
     uint32_t magic;
-    unsigned long mount_flags;
-    char mount_source[OE_PATH_MAX];
+
+    /* True if this file system has been mounted. */
+    bool is_mounted;
+
+    /* Parameters passed to the mount() function. */
+    struct
+    {
+        unsigned long flags;
+        char source[OE_PATH_MAX];
+        char target[OE_PATH_MAX];
+    } mount;
 } fs_t;
 
 typedef struct _file
 {
     oe_fd_t base;
+
+    /* Must be FILE_MAGIC. */
     uint32_t magic;
+
+    /* The stream from the host side. */
     SGX_FILE* stream;
 } file_t;
-
-static int _get_open_access_mode(int flags)
-{
-    return (flags & 000000003);
-}
 
 static fs_t* _cast_fs(const oe_device_t* device)
 {
@@ -60,24 +72,10 @@ static fs_t* _cast_fs(const oe_device_t* device)
     return fs;
 }
 
-OE_INLINE bool _is_rdonly(const fs_t* fs)
+/* Return true if the file system was mounted as read-only. */
+OE_INLINE bool _is_read_only(const fs_t* fs)
 {
-    return fs->mount_flags & OE_MS_RDONLY;
-}
-
-static char* _strrchr(const char* s, char c)
-{
-    char* ret = NULL;
-
-    while (*s)
-    {
-        if (*s == c)
-            ret = (char*)s;
-
-        s++;
-    }
-
-    return ret;
+    return fs->mount.flags & OE_MS_RDONLY;
 }
 
 static file_t* _cast_file(const oe_fd_t* desc)
@@ -88,11 +86,6 @@ static file_t* _cast_file(const oe_fd_t* desc)
         return NULL;
 
     return file;
-}
-
-OE_INLINE bool _is_root(const char* path)
-{
-    return path[0] == '/' && path[1] == '\0';
 }
 
 static oe_file_ops_t _get_file_ops(void);
@@ -106,17 +99,17 @@ static int _expand_path(
     const size_t n = OE_PATH_MAX;
     int ret = -1;
 
-    if (_is_root(fs->mount_source))
+    if (oe_strcmp(fs->mount.source, "/") == 0)
     {
         if (oe_strlcpy(path, suffix, OE_PATH_MAX) >= n)
             OE_RAISE_ERRNO(OE_ENAMETOOLONG);
     }
     else
     {
-        if (oe_strlcpy(path, fs->mount_source, OE_PATH_MAX) >= n)
+        if (oe_strlcpy(path, fs->mount.source, OE_PATH_MAX) >= n)
             OE_RAISE_ERRNO(OE_ENAMETOOLONG);
 
-        if (!_is_root(suffix))
+        if (oe_strcmp(suffix, "/") != 0)
         {
             if (oe_strlcat(path, "/", OE_PATH_MAX) >= n)
                 OE_RAISE_ERRNO(OE_ENAMETOOLONG);
@@ -158,7 +151,7 @@ static int _split_path(
     }
 
     /* This cannot fail (prechecked) */
-    if (!(slash = _strrchr(path, '/')))
+    if (!(slash = oe_strrchr(path, '/')))
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* If path ends with '/' character */
@@ -191,8 +184,9 @@ done:
     return ret;
 }
 
+/* Called by oe_mount(). */
 static int _sgxfs_mount(
-    oe_device_t* dev,
+    oe_device_t* device,
     const char* source,
     const char* target,
     const char* filesystemtype,
@@ -200,18 +194,36 @@ static int _sgxfs_mount(
     const void* data)
 {
     int ret = -1;
-    fs_t* fs = _cast_fs(dev);
+    fs_t* fs = _cast_fs(device);
 
-    OE_UNUSED(source);
-    OE_UNUSED(flags);
-    OE_UNUSED(filesystemtype);
-    OE_UNUSED(data);
-
+    /* Fail if required parameters are null. */
     if (!fs || !source || !target)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    fs->mount_flags = flags;
-    oe_strlcpy(fs->mount_source, source, sizeof(fs->mount_source));
+    /* Fail if this file system is already mounted. */
+    if (fs->is_mounted)
+        OE_RAISE_ERRNO(OE_EBUSY);
+
+    /* Cross check the file system type. */
+    if (oe_strcmp(filesystemtype, OE_DEVICE_NAME_SGX_FILE_SYSTEM) != 0)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    /* The data parameter is not supported for host file systems. */
+    if (data)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    /* Remember whether this is a read-only mount. */
+    if ((flags & OE_MS_RDONLY))
+        fs->mount.flags = flags;
+
+    /* Save the source parameter (will be needed to form host paths). */
+    oe_strlcpy(fs->mount.source, source, sizeof(fs->mount.source));
+
+    /* Save the target parameter (checked by the umount2() function). */
+    oe_strlcpy(fs->mount.target, target, sizeof(fs->mount.target));
+
+    /* Set the flag indicating that this file system is mounted. */
+    fs->is_mounted = true;
 
     ret = 0;
 
@@ -219,15 +231,31 @@ done:
     return ret;
 }
 
-static int _sgxfs_umount2(oe_device_t* dev, const char* target, int flags)
+/* Called by oe_umount2(). */
+static int _sgxfs_umount2(oe_device_t* device, const char* target, int flags)
 {
     int ret = -1;
-    fs_t* fs = _cast_fs(dev);
+    fs_t* fs = _cast_fs(device);
 
     OE_UNUSED(flags);
 
+    /* Fail if any required parameters are null. */
     if (!fs || !target)
         OE_RAISE_ERRNO(OE_EINVAL);
+
+    /* Fail if this file system is not mounted. */
+    if (!fs->is_mounted)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    /* Cross check target parameter with the one passed to mount. */
+    if (oe_strcmp(target, fs->mount.target) != 0)
+        OE_RAISE_ERRNO(OE_ENOENT);
+
+    /* Clear the cached mount parameters. */
+    oe_memset_s(&fs->mount, sizeof(fs->mount), 0, sizeof(fs->mount));
+
+    /* Set the flag indicating that this file system is mounted. */
+    fs->is_mounted = false;
 
     ret = 0;
 
@@ -235,6 +263,7 @@ done:
     return ret;
 }
 
+/* Called by oe_mount() to make a copy of this device. */
 static int _sgxfs_clone(oe_device_t* device, oe_device_t** new_device)
 {
     int ret = -1;
@@ -255,6 +284,7 @@ done:
     return ret;
 }
 
+/* Called by oe_umount() to release this device. */
 static int _sgxfs_release(oe_device_t* device)
 {
     int ret = -1;
@@ -270,6 +300,7 @@ done:
     return ret;
 }
 
+/* Called by oe_open(). */
 static oe_fd_t* _sgxfs_open_file(
     oe_device_t* fs_,
     const char* pathname,
@@ -291,7 +322,7 @@ static oe_fd_t* _sgxfs_open_file(
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Fail if attempting to write to a read-only file system. */
-    if (_is_rdonly(fs) && _get_open_access_mode(flags) != OE_O_RDONLY)
+    if (_is_read_only(fs) && (flags & ACCESS_MODE_MASK) != OE_O_RDONLY)
         OE_RAISE_ERRNO(OE_EPERM);
 
     /* Nonblocking I/O is unsupported. */
@@ -299,7 +330,7 @@ static oe_fd_t* _sgxfs_open_file(
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Convert the flags to an fopen-mode string. */
-    switch ((flags & 0x00000003))
+    switch ((flags & ACCESS_MODE_MASK))
     {
         case OE_O_RDONLY:
         {
@@ -763,7 +794,7 @@ static int _sgxfs_link(
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Fail if attempting to write to a read-only file system. */
-    if (_is_rdonly(fs))
+    if (_is_read_only(fs))
         OE_RAISE_ERRNO(EPERM);
 
     /* Open the input file. */
@@ -818,7 +849,7 @@ static int _sgxfs_unlink(oe_device_t* fs_, const char* pathname)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Fail if attempting to write to a read-only file system. */
-    if (_is_rdonly(fs))
+    if (_is_read_only(fs))
         OE_RAISE_ERRNO(OE_EPERM);
 
     /* Delegate unlink operation to HOSTFS. */
@@ -852,7 +883,7 @@ static int _sgxfs_rename(
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Fail if attempting to write to a read-only file system. */
-    if (_is_rdonly(fs))
+    if (_is_read_only(fs))
         OE_RAISE_ERRNO(OE_EPERM);
 
     /* Open the input file. */
@@ -926,7 +957,7 @@ static int _sgxfs_truncate(oe_device_t* fs_, const char* path, oe_off_t length)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Fail if attempting to write to a read-only file system. */
-    if (_is_rdonly(fs))
+    if (_is_read_only(fs))
         OE_RAISE_ERRNO(OE_EPERM);
 
     /* Form the name of a temporary file. */
@@ -1016,7 +1047,7 @@ static int _sgxfs_mkdir(oe_device_t* fs_, const char* pathname, oe_mode_t mode)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Fail if attempting to write to a read-only file system. */
-    if (_is_rdonly(fs))
+    if (_is_read_only(fs))
         OE_RAISE_ERRNO(OE_EPERM);
 
     /* Delegate directory creation to HOSTFS. */
@@ -1046,7 +1077,7 @@ static int _sgxfs_rmdir(oe_device_t* fs_, const char* pathname)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Fail if attempting to write to a read-only file system. */
-    if (_is_rdonly(fs))
+    if (_is_read_only(fs))
         OE_RAISE_ERRNO(OE_EPERM);
 
     /* Delegate directory removal to HOSTFS. */
