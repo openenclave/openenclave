@@ -365,6 +365,49 @@ done:
     return result;
 }
 
+const char* oe_ocall_str(oe_func_t ocall);
+
+const char* oe_ocall_str(oe_func_t ocall)
+{
+    switch (ocall)
+    {
+        case OE_OCALL_CALL_HOST_FUNCTION:
+            return "OE_OCALL_CALL_HOST_FUNCTION";
+        case OE_OCALL_GET_QE_TARGET_INFO:
+            return "OE_OCALL_GET_QE_TARGET_INFO";
+        case OE_OCALL_GET_QUOTE:
+            return "OE_OCALL_GET_QUOTE";
+        case OE_OCALL_GET_REVOCATION_INFO:
+            return "OE_OCALL_GET_REVOCATION_INFO";
+        case OE_OCALL_GET_QE_ID_INFO:
+            return "OE_OCALL_GET_QE_ID_INFO";
+        case OE_OCALL_THREAD_WAKE:
+            return "OE_OCALL_THREAD_WAKE";
+        case OE_OCALL_THREAD_WAIT:
+            return "OE_OCALL_THREAD_WAIT";
+        case OE_OCALL_THREAD_WAKE_WAIT:
+            return "OE_OCALL_THREAD_WAKE_WAIT";
+        case OE_OCALL_MALLOC:
+            return "OE_OCALL_MALLOC";
+        case OE_OCALL_REALLOC:
+            return "OE_OCALL_REALLOC";
+        case OE_OCALL_FREE:
+            return "OE_OCALL_FREE";
+        case OE_OCALL_WRITE:
+            return "OE_OCALL_WRITE";
+        case OE_OCALL_SLEEP:
+            return "OE_OCALL_SLEEP";
+        case OE_OCALL_GET_TIME:
+            return "OE_OCALL_GET_TIME";
+        case OE_OCALL_BACKTRACE_SYMBOLS:
+            return "OE_OCALL_BACKTRACE_SYMBOLS";
+        case OE_OCALL_LOG:
+            return "OE_OCALL_LOG";
+        default:
+            return "UNKNOWN";
+     }
+};
+
 /*
 **==============================================================================
 **
@@ -394,7 +437,7 @@ static oe_result_t _handle_ocall(
     {
         oe_log_args_t log_args;
         log_args.level = OE_LOG_LEVEL_INFO;
-        snprintf(log_args.message, OE_LOG_MESSAGE_LEN_MAX, "OE_OCALL\n");
+        snprintf(log_args.message, OE_LOG_MESSAGE_LEN_MAX, "OE_OCALL: %s\n", oe_ocall_str(func));
         oe_handle_log(enclave, (uint64_t)&log_args);
     }
 
