@@ -3,6 +3,7 @@
 
 #include <openenclave/enclave.h>
 
+#include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/sys/socket.h>
 #include <openenclave/internal/posix/device.h>
@@ -22,7 +23,7 @@ void oe_set_default_socket_devid(uint64_t devid)
     oe_spin_unlock(&_default_socket_devid_lock);
 }
 
-uint64_t oe_get_default_socket_devid(void)
+uint64_t oe_get_default_socket_devid()
 {
     oe_spin_lock(&_default_socket_devid_lock);
     uint64_t ret = _default_socket_devid;
@@ -78,18 +79,10 @@ int oe_socketpair(int domain, int type, int protocol, int retfd[2])
     ssize_t retval;
     oe_fd_t* socks[2] = {0};
     oe_device_t* device;
-    uint64_t devid = OE_DEVID_NONE;
+    uint64_t devid = OE_DEVID_HOST_SOCKET_INTERFACE;
 
     /* Resolve the device id. */
-    switch (domain)
-    {
-        case OE_AF_HOST:
-            devid = OE_DEVID_HOST_SOCKET_INTERFACE;
-            break;
-
-        default:
-            OE_RAISE_ERRNO(OE_EINVAL);
-    }
+    /* 2do: select based on address family */
 
     if (!(device = oe_device_table_get(devid, OE_DEVICE_TYPE_SOCKET_INTERFACE)))
         OE_RAISE_ERRNO(OE_EINVAL);
