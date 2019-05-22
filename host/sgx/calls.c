@@ -438,7 +438,8 @@ static oe_result_t _handle_ocall(
         snprintf(
             log_args.message,
             OE_LOG_MESSAGE_LEN_MAX,
-            "OE_OCALL: %s\n",
+            "Enclave %s OE_OCALL: %s\n",
+            enclave->path,
             oe_ocall_str(func));
         oe_handle_log(enclave, (uint64_t)&log_args);
     }
