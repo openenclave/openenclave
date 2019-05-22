@@ -23,8 +23,7 @@
 #include "rsa.h"
 
 // Todo: consider set CN with enclave's MRENCLAVE values
-#define ISSUER_NAME "CN=Open Enclave SDK,O=OESDK TLS,C=US"
-#define SUBJECT_NAME ISSUER_NAME
+#define SUBJECT_NAME "CN=Open Enclave SDK,O=OESDK TLS,C=US"
 #define DATE_NOT_VALID_BEFORE "20190501000000"
 #define DATE_NOT_VALID_AFTER "20501231235959"
 
@@ -34,6 +33,7 @@ static const unsigned char oid_oe_report[] = X509_OID_FOR_QUOTE_EXT;
 // Output: a self-signed certificate embedded critical extension with quote
 // information as its content
 oe_result_t generate_x509_cert(
+    const unsigned char* subject_name,
     uint8_t* private_key_buf,
     size_t private_key_buf_size,
     uint8_t* public_key_buf,
@@ -52,8 +52,10 @@ oe_result_t generate_x509_cert(
     config.private_key_buf_size = private_key_buf_size;
     config.public_key_buf = public_key_buf;
     config.public_key_buf_size = public_key_buf_size;
-    config.subject_name = (unsigned char*)SUBJECT_NAME;
-    config.issuer_name = (unsigned char*)ISSUER_NAME;
+    config.subject_name = (subject_name != NULL)
+                              ? subject_name
+                              : (const unsigned char*)SUBJECT_NAME;
+    config.issuer_name = config.subject_name;
     config.date_not_valid_before = (unsigned char*)DATE_NOT_VALID_BEFORE;
     config.date_not_valid_after = (unsigned char*)DATE_NOT_VALID_AFTER;
     config.ext_data_buf = remote_report_buf;
@@ -84,6 +86,7 @@ done:
 }
 
 oe_result_t oe_generate_attestation_cert(
+    const unsigned char* subject_name,
     uint8_t* private_key,
     size_t private_key_size,
     uint8_t* public_key,
@@ -127,6 +130,7 @@ oe_result_t oe_generate_attestation_cert(
         result, "oe_get_report failed with %s\n", oe_result_str(result));
 
     result = generate_x509_cert(
+        subject_name,
         private_key,
         private_key_size,
         public_key,

@@ -352,8 +352,8 @@ typedef struct _oe_cert_config
     size_t private_key_buf_size;
     uint8_t* public_key_buf;
     size_t public_key_buf_size;
-    unsigned char* subject_name;
-    unsigned char* issuer_name;
+    const unsigned char* subject_name;
+    const unsigned char* issuer_name;
     unsigned char* date_not_valid_before;
     unsigned char* date_not_valid_after;
     uint8_t* ext_data_buf;

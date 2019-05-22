@@ -727,8 +727,14 @@ oe_result_t oe_random(void* data, size_t size);
 /**
  * oe_generate_attestation_cert.
  *
- * This function generates a self-signed certificate with an embedded quote from
- * the underlying enclave.
+ * This function generates a self-signed x509 certificate with an embedded
+ * quote from the underlying enclave.
+ *
+ * @param[in] subject_name a string contains contain an X.509 distinguished
+ * name (DN) for customizing the generated certificate. This name is also used
+ * as the issuer name because this is a self-signed certificate
+ * See RFC5280 (https://tools.ietf.org/html/rfc5280) specification for details.
+ * Example value "CN=Open Enclave SDK,O=OESDK TLS,C=US"
  *
  * @param[in] private_key a private key used to sign this certificate
  * @param[in] private_key_size The size of the private_key buffer.
@@ -741,6 +747,7 @@ oe_result_t oe_random(void* data, size_t size);
  * @return OE_OK on success
  */
 oe_result_t oe_generate_attestation_cert(
+    const unsigned char* subject_name,
     uint8_t* private_key,
     size_t private_key_size,
     uint8_t* public_key,
