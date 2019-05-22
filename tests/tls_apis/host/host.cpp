@@ -11,6 +11,9 @@
 #include <string.h>
 #include "tls_u.h"
 
+#define TEST_EC_KEY 0
+#define TEST_RSA_KEY 1
+
 // This is the identity validation callback. An TLS connecting party (client or
 // server) can verify the passed in "identity" information to decide whether to
 // accept an connection reqest
@@ -52,37 +55,47 @@ done:
     return result;
 }
 
-int main(int argc, const char* argv[])
+void run_test(oe_enclave_t* enclave, int test_type)
 {
-    oe_result_t result;
+    oe_result_t result = OE_FAILURE;
     oe_result_t ecall_result;
-    oe_enclave_t* enclave = NULL;
     unsigned char* cert = NULL;
     size_t cert_size = 0;
 
-    if (argc != 2)
+    OE_TRACE_INFO(
+        "Host: get tls certificate signed with %s key from an enclave \n",
+        test_type == TEST_RSA_KEY ? "a RSA" : "an EC");
+    if (test_type == TEST_EC_KEY)
     {
-        OE_TRACE_ERROR("Usage: %s ENCLAVE_PATH\n", argv[0]);
-        return 1;
+        result = get_tls_cert_signed_with_ec_key(
+            enclave, &ecall_result, &cert, &cert_size);
+    }
+    else if (test_type == TEST_RSA_KEY)
+    {
+        result = get_tls_cert_signed_with_rsa_key(
+            enclave, &ecall_result, &cert, &cert_size);
     }
 
-    const uint32_t flags = oe_get_create_flags();
-    if ((result = oe_create_tls_enclave(
-             argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
-        oe_put_err("oe_create_enclave(): result=%u", result);
-
-    OE_TRACE_INFO("Host: get tls certificate from an enclave \n");
-    result = get_tls_cert(enclave, &ecall_result, &cert, &cert_size);
     if ((result != OE_OK) || (ecall_result != OE_OK))
-        oe_put_err("get_tls_cert() failed: result=%u", result);
+        oe_put_err(
+            "get_tls_cert_signed_with_%s_key() failed: result=%u",
+            test_type == TEST_RSA_KEY ? "rsa" : "ec",
+            result);
 
     fflush(stdout);
 
     {
         // for testing purpose, output the whole cer in DER format
+        char filename[80];
+        FILE* file = NULL;
+
+        sprintf(
+            filename,
+            "./cert_%s.der",
+            test_type == TEST_RSA_KEY ? "rsa" : "ec");
         OE_TRACE_INFO(
-            "Host: Log quote embedded certificate to file: ./cert.der\n");
-        FILE* file = fopen("./cert.der", "wb");
+            "Host: Log quote embedded certificate to file: [%s]\n", filename);
+        file = fopen(filename, "wb");
         fwrite(cert, 1, cert_size, file);
         fclose(file);
     }
@@ -100,6 +113,29 @@ int main(int argc, const char* argv[])
 
     OE_TRACE_INFO("free cert 0xx%p\n", cert);
     free(cert);
+}
+
+int main(int argc, const char* argv[])
+{
+    oe_result_t result;
+    // oe_result_t ecall_result;
+    oe_enclave_t* enclave = NULL;
+    // unsigned char* cert = NULL;
+    // size_t cert_size = 0;
+
+    if (argc != 2)
+    {
+        OE_TRACE_ERROR("Usage: %s ENCLAVE_PATH\n", argv[0]);
+        return 1;
+    }
+
+    const uint32_t flags = oe_get_create_flags();
+    if ((result = oe_create_tls_enclave(
+             argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
+        oe_put_err("oe_create_enclave(): result=%u", result);
+
+    run_test(enclave, TEST_EC_KEY);
+    run_test(enclave, TEST_RSA_KEY);
 
     result = oe_terminate_enclave(enclave);
     OE_TEST(result == OE_OK);

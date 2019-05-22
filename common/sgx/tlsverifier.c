@@ -68,7 +68,6 @@ oe_result_t oe_verify_attestation_cert(
     uint8_t pub_key_buf[KEY_BUFF_SIZE];
     size_t pub_key_buf_size = KEY_BUFF_SIZE;
     oe_report_t parsed_report = {0};
-    oe_ec_public_key_t public_key = {0};
 
     result = oe_cert_read_der(&cert, cert_in_der, cert_in_der_len);
     OE_CHECK_MSG(result, "cert_in_der_len=%d", cert_in_der_len);
@@ -115,7 +114,8 @@ oe_result_t oe_verify_attestation_cert(
     result =
         oe_cert_write_public_key_pem(&cert, pub_key_buf, &pub_key_buf_size);
     OE_CHECK(result);
-    OE_TRACE_VERBOSE("pub_key_buf_size=%d", pub_key_buf_size);
+    OE_TRACE_VERBOSE(
+        "oe_cert_write_public_key_pem pub_key_buf_size=%d", pub_key_buf_size);
 
     // verify report data against peer certificate
     result = verify_report_user_data(
@@ -141,7 +141,6 @@ oe_result_t oe_verify_attestation_cert(
     }
 
 done:
-    oe_ec_public_key_free(&public_key);
     oe_cert_free(&cert);
     oe_free(report);
     return result;

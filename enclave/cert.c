@@ -8,6 +8,9 @@
 #include <mbedtls/platform.h>
 #include <mbedtls/x509_crt.h>
 #include <mbedtls/ctr_drbg.h>
+#include <mbedtls/error.h>
+#include <mbedtls/debug.h>
+#include <mbedtls/entropy.h>
 #include "mbedtls_corelibc_undef.h"
 // clang-format on
 
@@ -993,7 +996,11 @@ oe_result_t oe_cert_get_ec_public_key(
 
     /* If certificate does not contain an EC key */
     if (!oe_is_ec_key(&impl->cert->pk))
+<<<<<<< HEAD
         OE_RAISE(OE_CRYPTO_ERROR);
+=======
+        OE_RAISE_NO_TRACE(OE_FAILURE);
+>>>>>>> attestation cert apis: added RSA key support
 
     /* Copy the public key from the certificate */
     OE_RAISE(oe_ec_public_key_init(public_key, &impl->cert->pk));
@@ -1136,9 +1143,11 @@ oe_result_t oe_gen_custom_x509_cert(
     mbedtls_x509write_cert x509cert = {0};
     mbedtls_pk_context subject_key;
     mbedtls_pk_context issuer_key;
-    unsigned char* buff = NULL;
-    int ret = 0;
     mbedtls_ctr_drbg_context ctr_drbg;
+    mbedtls_entropy_context entropy;
+    unsigned char* buff = NULL;
+    const char* pers = "OE SDK cert";
+    int ret = 0;
 
     if ((buff = oe_malloc(cert_buf_size)) == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
@@ -1147,7 +1156,22 @@ oe_result_t oe_gen_custom_x509_cert(
     mbedtls_pk_init(&issuer_key);
     mbedtls_mpi_init(&serial);
     mbedtls_ctr_drbg_init(&ctr_drbg);
+    mbedtls_entropy_init(&entropy);
 
+    ret = mbedtls_ctr_drbg_seed(
+        &ctr_drbg,
+        mbedtls_entropy_func,
+        &entropy,
+        (const unsigned char*)pers,
+        oe_strlen(pers));
+    if (ret)
+    {
+        char buf[256];
+        mbedtls_strerror(ret, buf, sizeof(buf));
+        OE_TRACE_ERROR(
+            " failed\n  !  mbedtls_ctr_drbg_seed returned %d - %s\n", ret, buf);
+        goto done;
+    }
     // create pk_context for both public and private keys
     ret = mbedtls_pk_parse_public_key(
         &subject_key,

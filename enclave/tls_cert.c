@@ -101,7 +101,8 @@ oe_result_t oe_generate_attestation_cert(
 
     // generate quote with hash(cert's subject key) and set it as report data
     OE_TRACE_VERBOSE(
-        "public_key_size=%d public_key key =\n[%s]\n",
+        "generate quote with hash from public_key_size=%d public_key key "
+        "=\n[%s]\n",
         public_key_size,
         public_key);
     oe_memset_s(sha256.buf, OE_SHA256_SIZE, 0, OE_SHA256_SIZE);

@@ -7,6 +7,37 @@
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/tests.h>
 
+/* Nest mbedtls header includes with required corelibc defines */
+
+/* Only map CHAR_BIT out of limits.h to scope potential standard definition
+ * name conflicts in enclave sources.
+ */
+#if !defined(CHAR_BIT)
+#define CHAR_BIT OE_CHAR_BIT
+#endif
+
+/* Custom redefine of the pthread_mutex_t to oe_pthread_t.
+ * This uses a define rather than the typedef in pthread.h so that its use
+ * can be scoped to the mbedtls headers and subsequently undefined afterwards.
+ */
+#if !defined(pthread_mutex_t)
+#define pthread_mutex_t oe_pthread_mutex_t
+#endif
+#include <mbedtls/config.h>
+#include <mbedtls/ctr_drbg.h>
+#include <mbedtls/entropy.h>
+#include <mbedtls/pk.h>
+#include <mbedtls/rsa.h>
+/* Remove the CHAR_BIT mappings provided by limits.h */
+#if defined(CHAR_BIT)
+#undef CHAR_BIT
+#endif
+
+/* Undefine the custom pthread_mutex_t redefine */
+#if defined(pthread_mutex_t)
+#undef pthread_mutex_t
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -55,6 +86,7 @@ done:
 // input: input_data and input_data_len
 // output: key, key_size
 oe_result_t generate_key_pair(
+    int key_type,
     uint8_t** public_key,
     size_t* public_key_size,
     uint8_t** private_key,
@@ -64,36 +96,143 @@ oe_result_t generate_key_pair(
     oe_asymmetric_key_params_t params;
     char user_data[] = "test user data!";
     size_t user_data_size = sizeof(user_data) - 1;
+    uint8_t* local_public_key = NULL;
+    uint8_t* local_private_key = NULL;
 
     OE_TRACE_INFO("Generate key pair");
 
-    params.type = OE_ASYMMETRIC_KEY_EC_SECP256P1; // MBEDTLS_ECP_DP_SECP256R1
-    params.format = OE_ASYMMETRIC_KEY_PEM;
-    params.user_data = user_data;
-    params.user_data_size = user_data_size;
-    result = oe_get_public_key_by_policy(
-        OE_SEAL_POLICY_UNIQUE,
-        &params,
-        public_key,
-        public_key_size,
-        NULL,
-        NULL);
-    OE_CHECK(result);
+    if (key_type == MBEDTLS_PK_ECKEY)
+    {
+        params.type =
+            OE_ASYMMETRIC_KEY_EC_SECP256P1; // MBEDTLS_ECP_DP_SECP256R1
+        params.format = OE_ASYMMETRIC_KEY_PEM;
+        params.user_data = user_data;
+        params.user_data_size = user_data_size;
+        result = oe_get_public_key_by_policy(
+            OE_SEAL_POLICY_UNIQUE,
+            &params,
+            public_key,
+            public_key_size,
+            NULL,
+            NULL);
+        OE_CHECK(result);
 
-    result = oe_get_private_key_by_policy(
-        OE_SEAL_POLICY_UNIQUE,
-        &params,
-        private_key,
-        private_key_size,
-        NULL,
-        NULL);
-    OE_CHECK(result);
+        result = oe_get_private_key_by_policy(
+            OE_SEAL_POLICY_UNIQUE,
+            &params,
+            private_key,
+            private_key_size,
+            NULL,
+            NULL);
+        OE_CHECK(result);
+    }
+    else if (key_type == MBEDTLS_PK_RSA)
+    {
+        int res = -1;
+        mbedtls_ctr_drbg_context ctr_drbg_contex;
+        mbedtls_entropy_context entropy_context;
+        mbedtls_pk_context pk_context;
+        size_t local_public_key_size = 512;
+        size_t local_private_key_size = 2048;
+
+        mbedtls_ctr_drbg_init(&ctr_drbg_contex);
+        mbedtls_entropy_init(&entropy_context);
+        mbedtls_pk_init(&pk_context);
+
+        // Initialize entropy.
+        res = mbedtls_ctr_drbg_seed(
+            &ctr_drbg_contex, mbedtls_entropy_func, &entropy_context, NULL, 0);
+        if (res != 0)
+        {
+            OE_TRACE_ERROR("mbedtls_ctr_drbg_seed failed.");
+            goto done;
+        }
+
+        // Initialize RSA context.
+        res = mbedtls_pk_setup(
+            &pk_context, mbedtls_pk_info_from_type(MBEDTLS_PK_RSA));
+        if (res != 0)
+        {
+            OE_TRACE_ERROR("mbedtls_pk_setup failed (%d).", res);
+            goto done;
+        }
+
+        // Generate an ephemeral 2048-bit RSA key pair with
+        // exponent 65537 for the enclave.
+        res = mbedtls_rsa_gen_key(
+            mbedtls_pk_rsa(pk_context),
+            mbedtls_ctr_drbg_random,
+            &ctr_drbg_contex,
+            2048,
+            65537);
+        if (res != 0)
+        {
+            OE_TRACE_ERROR("mbedtls_rsa_gen_key failed (%d)\n", res);
+            goto done;
+        }
+
+        /* Call again with the allocated memory. */
+        local_public_key = (uint8_t*)oe_malloc(local_public_key_size);
+        if (local_public_key == NULL)
+            OE_RAISE(OE_OUT_OF_MEMORY);
+        memset((void*)local_public_key, 0, local_public_key_size);
+
+        local_private_key = (uint8_t*)oe_malloc(local_private_key_size);
+        if (local_private_key == NULL)
+            OE_RAISE(OE_OUT_OF_MEMORY);
+        memset((void*)local_private_key, 0, local_private_key_size);
+
+        // Write out the public/private key in PEM format for exchange with
+        // other enclaves.
+        res = mbedtls_pk_write_pubkey_pem(
+            &pk_context, local_public_key, local_public_key_size);
+        if (res != 0)
+        {
+            OE_TRACE_ERROR("mbedtls_pk_write_pubkey_pem failed (%d)\n", res);
+            goto done;
+        }
+
+        res = mbedtls_pk_write_key_pem(
+            &pk_context, local_private_key, local_private_key_size);
+        if (res != 0)
+        {
+            OE_TRACE_ERROR("mbedtls_pk_write_key_pem failed (%d)\n", res);
+            goto done;
+        }
+
+        *public_key = local_public_key;
+        // plus one to make sure \0 at the end if counted
+        *public_key_size = oe_strlen((const char*)local_public_key) + 1;
+
+        *private_key = local_private_key;
+        *private_key_size = oe_strlen((const char*)local_private_key) + 1;
+
+        local_public_key = NULL;
+        local_private_key = NULL;
+
+        OE_TRACE_INFO("public_key_size\n[%d]\n", *public_key_size);
+        OE_TRACE_INFO("public_key\n[%s]\n", *public_key);
+
+        result = OE_OK;
+    }
+    else
+    {
+        OE_TRACE_ERROR("Unsupported key type [%d]\n", key_type);
+    }
 
 done:
+    if (local_public_key)
+        oe_free(local_public_key);
+    if (local_private_key)
+        oe_free(local_private_key);
+
     return result;
 }
 
-oe_result_t get_tls_cert(unsigned char** cert, size_t* cert_size)
+oe_result_t get_tls_cert_signed_with_key(
+    int key_type,
+    unsigned char** cert,
+    size_t* cert_size)
 {
     oe_result_t result = OE_FAILURE;
     uint8_t* host_cert_buf = NULL;
@@ -110,7 +249,16 @@ oe_result_t get_tls_cert(unsigned char** cert, size_t* cert_size)
 
     // generate public/private key pair
     result = generate_key_pair(
-        &public_key, &public_key_size, &private_key, &private_key_size);
+        key_type,
+        &public_key,
+        &public_key_size,
+        &private_key,
+        &private_key_size);
+    if (result != OE_OK)
+    {
+        OE_TRACE_ERROR(" failed with %s\n", oe_result_str(result));
+        goto done;
+    }
     if (result != OE_OK)
     {
         OE_TRACE_ERROR(" failed with %s\n", oe_result_str(result));
@@ -158,11 +306,25 @@ oe_result_t get_tls_cert(unsigned char** cert, size_t* cert_size)
 
 done:
 
-    oe_free_key(private_key, private_key_size, NULL, 0);
-    oe_free_key(public_key, public_key_size, NULL, 0);
+    oe_free(private_key);
+    oe_free(public_key);
     oe_free_attestation_cert(output_cert);
 
     return result;
+}
+
+oe_result_t get_tls_cert_signed_with_ec_key(
+    unsigned char** cert,
+    size_t* cert_size)
+{
+    return get_tls_cert_signed_with_key(MBEDTLS_PK_ECKEY, cert, cert_size);
+}
+
+oe_result_t get_tls_cert_signed_with_rsa_key(
+    unsigned char** cert,
+    size_t* cert_size)
+{
+    return get_tls_cert_signed_with_key(MBEDTLS_PK_RSA, cert, cert_size);
 }
 
 OE_SET_ENCLAVE_SGX(
