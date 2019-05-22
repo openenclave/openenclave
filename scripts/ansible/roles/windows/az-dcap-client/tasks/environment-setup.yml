@@ -27,7 +27,7 @@
       with_items:
         - "{{ tmp_dir }}\\Intel_SGX_PSW"
         - "{{ tmp_dir }}\\Intel_SGX_DCAP"
-        - "{{ tmp_dir }}\\Azure_DCAP_Cient_nupkg"
+        - "{{ tmp_dir }}\\Azure_DCAP_Client_nupkg"
 
     - win_file:
         state: directory
@@ -35,7 +35,7 @@
       with_items:
         - "{{ tmp_dir }}\\Intel_SGX_PSW"
         - "{{ tmp_dir }}\\Intel_SGX_DCAP"
-        - "{{ tmp_dir }}\\Azure_DCAP_Cient_nupkg"
+        - "{{ tmp_dir }}\\Azure_DCAP_Client_nupkg"
 
 - name: Azure DCAP Client | Extract files from self-extracting archives
   raw: "{{ item.path }} /auto {{ item.dest_dir }}"
@@ -151,7 +151,7 @@
 - name: Azure DCAP Client | Download Azure DCAP Client nupkg file
   win_get_url:
     url: "{{ azure_dcap_client_nupkg_url }}"
-    dest: "{{ tmp_dir }}\\Azure_DCAP_Cient_nupkg\\{{ azure_dcap_client_nupkg_url.split('/')[-1] }}"
+    dest: "{{ tmp_dir }}\\Azure_DCAP_Client_nupkg\\{{ azure_dcap_client_nupkg_url.split('/')[-1] }}"
     timeout: 60
   retries: 3
 
@@ -165,7 +165,7 @@
     if($nupkgDir.Count -gt 1) {
         Throw "Multiple Intel DCAP nupkg directories found"
     }
-    Copy-Item -Recurse -Force "$nupkgDir\*" "{{ tmp_dir }}\Azure_DCAP_Cient_nupkg"
+    Copy-Item -Recurse -Force "$nupkgDir\*" "{{ tmp_dir }}\Azure_DCAP_Client_nupkg"
 
 - name: Azure DCAP Client | Create the OE nuget directory
   win_file:
@@ -175,20 +175,20 @@
 - name: Azure DCAP Client | Download NuGet binary
   win_get_url:
     url: "{{ nuget_bin_url }}"
-    dest: "{{ tmp_dir }}\\Azure_DCAP_Cient_nupkg\\nuget.exe"
+    dest: "{{ tmp_dir }}\\Azure_DCAP_Client_nupkg\\nuget.exe"
     timeout: 60
   retries: 3
 
 - name: Azure DCAP Client | Install the nupkg packages
   raw: >
-    {{ tmp_dir }}\\Azure_DCAP_Cient_nupkg\\nuget.exe install '{{ item.name }}' -Source '{{ item.source }}' -OutputDirectory '{{ oe_nuget_dir }}' -ExcludeVersion
+    {{ tmp_dir }}\\Azure_DCAP_Client_nupkg\\nuget.exe install '{{ item.name }}' -Source '{{ item.source }}' -OutputDirectory '{{ oe_nuget_dir }}' -ExcludeVersion
   register: result
   retries: 5
   until: result.rc == 0
   with_items:
-    - { name: "EnclaveCommonAPI", source: "{{ tmp_dir }}\\Azure_DCAP_Cient_nupkg" }
-    - { name: "DCAP_Components", source: "{{ tmp_dir }}\\Azure_DCAP_Cient_nupkg" }
-    - { name: "Microsoft.Azure.DCAP.Client", source: "{{ tmp_dir }}\\Azure_DCAP_Cient_nupkg;nuget.org" }
+    - { name: "EnclaveCommonAPI", source: "{{ tmp_dir }}\\Azure_DCAP_Client_nupkg" }
+    - { name: "DCAP_Components", source: "{{ tmp_dir }}\\Azure_DCAP_Client_nupkg" }
+    - { name: "Microsoft.Azure.DCAP.Client", source: "{{ tmp_dir }}\\Azure_DCAP_Client_nupkg;nuget.org" }
 
 - name: Azure DCAP Client | Enable LC driver
   block:
@@ -209,5 +209,5 @@
   with_items:
     - "{{ tmp_dir }}\\Intel_SGX_PSW"
     - "{{ tmp_dir }}\\Intel_SGX_DCAP"
-    - "{{ tmp_dir }}\\Azure_DCAP_Cient_nupkg"
+    - "{{ tmp_dir }}\\Azure_DCAP_Client_nupkg"
     - "{{ tmp_dir }}\\devcon.exe"

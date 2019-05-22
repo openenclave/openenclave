@@ -2,6 +2,7 @@
 # Licensed under the MIT License.
 
 ---
+tmp_dir: "C:\\Windows\\Temp"
 psw_archive_url: 'https://oejenkins.blob.core.windows.net/oejenkins/Intel_SGX_PSW_for_Windows_v2.3.100.49777.exe'
 dcap_archive_url: 'https://oejenkins.blob.core.windows.net/oejenkins/Intel_SGX_DCAP_for_Windows_v1.1.100.49925.exe'
 azure_dcap_client_nupkg_url: 'https://oejenkins.blob.core.windows.net/oejenkins/Microsoft.Azure.DCAP.Client.1.0.0.nupkg'
