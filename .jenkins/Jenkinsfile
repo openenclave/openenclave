@@ -58,7 +58,7 @@ def AArch64GNUTest(String version, String build_type) {
             cleanWs()
             checkout scm
             def task = """
-                       wget -qO- ${DEVKITS_URI} | tar xvz
+                       curl ${DEVKITS_URI} | tar xvz
                        cmake ${WORKSPACE}                                                         \
                            -G Ninja                                                               \
                            -DCMAKE_BUILD_TYPE=${build_type}                                       \
