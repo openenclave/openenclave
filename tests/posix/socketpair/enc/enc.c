@@ -17,9 +17,6 @@
 #include <stdio.h>
 #include <string.h>
 
-int oe_host_printf(const char* fmt, ...);
-#define printf oe_host_printf
-
 int sockfd[2] = {-1, -1};
 char done = false;
 
@@ -43,7 +40,7 @@ int init_enclave()
     }
 
     {
-        if (oe_socketpair(OE_AF_HOST, OE_SOCK_STREAM, 0, sockfd) < 0)
+        if (oe_socketpair(OE_AF_LOCAL, OE_SOCK_STREAM, 0, sockfd) < 0)
         {
             printf("could not create socketpair. errno = %d\n", oe_errno);
             OE_TEST(oe_errno == 0);
