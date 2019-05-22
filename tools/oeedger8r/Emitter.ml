@@ -292,9 +292,8 @@ let get_structs =
 
 (** Generate [args.h] which contains [struct]s for ecalls and ocalls *)
 let oe_gen_args_header (ec : enclave_content) (dir : string) =
-  let structs = get_structs ec.comp_defs in
   let oe_gen_marshal_struct (fd : func_decl) (errno : bool) =
-    let rec gen_member_decl prefix (ptype, decl) =
+    let gen_member_decl (ptype, decl) =
       let aty = get_param_atype ptype in
       let tystr = get_tystr aty in
       let tystr =
@@ -307,12 +306,9 @@ let oe_gen_args_header (ec : enclave_content) (dir : string) =
       let need_strlen p =
         (is_str_ptr p || is_wstr_ptr p) && (is_in_ptr p || is_inout_ptr p)
       in
-      let argsname = prefix ^ decl.identifier in
-      [ [sprintf "%s %s;" tystr argsname]
-      ; (if need_strlen ptype then [sprintf "size_t %s_len;" argsname] else [])
-      ; flatten_map
-          (gen_member_decl (argsname ^ "__"))
-          (should_deepcopy aty structs) ]
+      let id = decl.identifier in
+      [ [sprintf "%s %s;" tystr id]
+      ; (if need_strlen ptype then [sprintf "size_t %s_len;" id] else []) ]
       |> List.flatten
     in
     let struct_name = fd.fname ^ "_args_t" in
@@ -320,10 +316,9 @@ let oe_gen_args_header (ec : enclave_content) (dir : string) =
     let members =
       [ ["oe_result_t _result;"]
       ; ( if fd.rtype = Void then []
-        else gen_member_decl "" (PTVal fd.rtype, retval_decl) )
+        else gen_member_decl (PTVal fd.rtype, retval_decl) )
       ; (if errno then ["int _ocall_errno;"] else [])
-      ; flatten_map (gen_member_decl "") (List.map conv_array_to_ptr fd.plist)
-      ]
+      ; flatten_map gen_member_decl (List.map conv_array_to_ptr fd.plist) ]
       |> List.flatten
     in
     [ sprintf "typedef struct _%s" struct_name
@@ -427,11 +422,11 @@ let oe_prepare_input_buffer (fd : func_decl) (alloc_func : string) structs =
   let oe_compute_input_buffer_size (plist : pdecl list) =
     let rec gen_add_size prefix (ptype, decl) =
       let size = oe_get_param_size (ptype, decl, "_args." ^ prefix) in
-      let argname = prefix ^ decl.identifier in
-      [ [sprintf "if (%s) OE_ADD_SIZE(_input_buffer_size, %s);" argname size]
+      let arg = prefix ^ decl.identifier in
+      [ [sprintf "if (%s) OE_ADD_SIZE(_input_buffer_size, %s);" arg size]
       ; flatten_map
           (* TODO: Fix for arrays. *)
-          (gen_add_size (argname ^ "->"))
+          (gen_add_size (arg ^ "->"))
           (should_deepcopy (get_param_atype ptype) structs) ]
       |> List.flatten
     in
@@ -447,11 +442,11 @@ let oe_prepare_input_buffer (fd : func_decl) (alloc_func : string) structs =
   let oe_compute_output_buffer_size (plist : pdecl list) =
     let rec gen_add_size prefix (ptype, decl) =
       let size = oe_get_param_size (ptype, decl, "_args." ^ prefix) in
-      let argname = prefix ^ decl.identifier in
-      [ [sprintf "if (%s) OE_ADD_SIZE(_output_buffer_size, %s);" argname size]
+      let arg = prefix ^ decl.identifier in
+      [ [sprintf "if (%s) OE_ADD_SIZE(_output_buffer_size, %s);" arg size]
       ; flatten_map
           (* TODO: Fix for arrays. *)
-          (gen_add_size (argname ^ "->"))
+          (gen_add_size (arg ^ "->"))
           (should_deepcopy (get_param_atype ptype) structs) ]
       |> List.flatten
     in
@@ -465,23 +460,22 @@ let oe_prepare_input_buffer (fd : func_decl) (alloc_func : string) structs =
     else "/* There were no out nor in-out parameters. */"
   in
   let oe_serialize_buffer_inputs (plist : pdecl list) =
-    let rec gen_serialize prefix1 prefix2 (ptype, decl) =
-      let size = oe_get_param_size (ptype, decl, "_args." ^ prefix1) in
+    let rec gen_serialize prefix (ptype, decl) =
+      let size = oe_get_param_size (ptype, decl, "_args." ^ prefix) in
       let tystr = get_cast_to_mem_expr (ptype, decl) false in
-      let argname = prefix1 ^ decl.identifier in
-      let argsname = prefix2 ^ decl.identifier in
+      let arg = prefix ^ decl.identifier in
       (* These need to be in order and so done together. *)
       [ [ sprintf "OE_WRITE_%s_PARAM(%s, %s, %s, %s);"
             (if is_in_ptr ptype then "IN" else "IN_OUT")
-            argname argsname size tystr ]
+            arg arg size tystr ]
       ; flatten_map
           (* TODO: Fix for arrays. *)
-          (gen_serialize (argname ^ "->") (argsname ^ "__"))
+          (gen_serialize (arg ^ "->"))
           (should_deepcopy (get_param_atype ptype) structs) ]
       |> List.flatten
     in
     let params =
-      flatten_map (gen_serialize "" "")
+      flatten_map (gen_serialize "")
         (List.filter (fun (p, _) -> is_in_ptr p || is_inout_ptr p) plist)
     in
     (* Note that the indentation for the first line is applied by the
@@ -591,23 +585,21 @@ let oe_gen_call_user_function (fd : func_decl) =
          fd.plist)
     ^ ");" ]
 
-let rec oe_gen_set_pointers prefix1 prefix2 structs setter (ptype, decl) =
-  let size = oe_get_param_size (ptype, decl, "pargs_in->" ^ prefix1) in
+let rec oe_gen_set_pointers prefix structs setter (ptype, decl) =
+  let size = oe_get_param_size (ptype, decl, "pargs_in->" ^ prefix) in
   let tystr = get_cast_to_mem_expr (ptype, decl) false in
-  let argname = prefix1 ^ decl.identifier in
-  let argsname = prefix2 ^ decl.identifier in
-  [ [sprintf "OE_%s_POINTER(%s, %s, %s);" (setter ptype) argsname size tystr]
-  ; [sprintf "pargs_in->%s = pargs_in->%s;" argname argsname]
-    (* TODO: Only for nested structs. *)
+  let arg = prefix ^ decl.identifier in
+  [ [sprintf "OE_%s_POINTER(%s, %s, %s);" (setter ptype) arg size tystr]
   ; flatten_map
-      (oe_gen_set_pointers (argname ^ "->") (argsname ^ "__") structs setter)
+      (* TODO: Fix for arrays. *)
+      (oe_gen_set_pointers (arg ^ "->") structs setter)
       (should_deepcopy (get_param_atype ptype) structs) ]
   |> List.flatten
 
 let oe_gen_in_and_inout_setters (plist : pdecl list) structs =
   let params =
     flatten_map
-      (oe_gen_set_pointers "" "" structs (fun p ->
+      (oe_gen_set_pointers "" structs (fun p ->
            if is_inout_ptr p then "SET_IN_OUT" else "SET_IN" ))
       (List.filter (fun (p, _) -> is_in_ptr p || is_inout_ptr p) plist)
   in
@@ -620,7 +612,7 @@ let oe_gen_in_and_inout_setters (plist : pdecl list) structs =
 let oe_gen_out_and_inout_setters (plist : pdecl list) structs =
   let params =
     flatten_map
-      (oe_gen_set_pointers "" "" structs (fun p ->
+      (oe_gen_set_pointers "" structs (fun p ->
            if is_inout_ptr p then "COPY_AND_SET_IN_OUT" else "SET_OUT" ))
       (List.filter (fun (p, _) -> is_out_ptr p || is_inout_ptr p) plist)
   in
@@ -711,26 +703,25 @@ let gen_fill_marshal_struct (fd : func_decl) structs =
   (* Generate assignment argument to corresponding field in args. This
      is necessary for all arguments, not just copy-as-value, because
      they are used directly by later marshalling code. *)
-  let rec gen_assignment prefix1 prefix2 (ptype, decl) =
+  let rec gen_assignment prefix (ptype, decl) =
     let id = decl.identifier in
-    let argname = prefix1 ^ id in
-    let argsname = prefix2 ^ id in
-    [ [ sprintf "_args.%s = %s%s;" argsname
+    let arg = prefix ^ id in
+    [ [ sprintf "_args.%s = %s%s;" arg
           (get_cast_to_mem_expr (ptype, decl) true)
-          argname ]
+          arg ]
     ; (* for string parameter fill the len field *)
       ( if is_str_ptr ptype then
-        [sprintf "_args.%s_len = (%s) ? (strlen(%s) + 1) : 0;" argsname id id]
+        [sprintf "_args.%s_len = (%s) ? (strlen(%s) + 1) : 0;" arg id id]
       else if is_wstr_ptr ptype then
-        [sprintf "_args.%s_len = (%s) ? (wcslen(%s) + 1) : 0;" argsname id id]
+        [sprintf "_args.%s_len = (%s) ? (wcslen(%s) + 1) : 0;" arg id id]
       else [] )
     ; flatten_map
         (* TODO: Fix for arrays. *)
-        (gen_assignment (argname ^ "->") (argsname ^ "__"))
+        (gen_assignment (arg ^ "->"))
         (should_deepcopy (get_param_atype ptype) structs) ]
     |> List.flatten
   in
-  flatten_map (gen_assignment "" "") fd.plist
+  flatten_map (gen_assignment "") fd.plist
 
 (** Generate host ECALL wrapper function. *)
 let oe_gen_host_ecall_wrapper (name : string) structs (tf : trusted_func) =
