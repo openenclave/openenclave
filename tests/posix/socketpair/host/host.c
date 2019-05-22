@@ -50,7 +50,7 @@ typedef HANDLE pthread_t;
 #define SERVER_PORT "12345"
 
 static char test_data[1024] = {0};
-static int  test_data_len = sizeof(test_data);
+static ssize_t test_data_len = sizeof(test_data);
 static oe_enclave_t* _enclave;
 
 static int server_status = 0;
@@ -125,9 +125,10 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    r = oe_create_socketpair_test_enclave(argv[1], type, flags, NULL, 0, &_enclave);
+    r = oe_create_socketpair_test_enclave(
+        argv[1], type, flags, NULL, 0, &_enclave);
     OE_TEST(r == OE_OK);
-    
+
     r = init_enclave(_enclave, &retval);
     OE_TEST(r == OE_OK);
 
