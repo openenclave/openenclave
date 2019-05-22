@@ -2016,7 +2016,7 @@ int oe_posix_getaddrinfo_open_ocall(
     const struct oe_addrinfo* hints,
     uint64_t* handle_out)
 {
-    int ret = EAI_FAIL;
+    int ret = OE_EAI_FAIL;
     getaddrinfo_handle_t* handle = NULL;
 
     _set_errno(0);
@@ -2026,7 +2026,7 @@ int oe_posix_getaddrinfo_open_ocall(
 
     if (!handle_out)
     {
-        ret = EAI_SYSTEM;
+        ret = OE_EAI_SYSTEM;
         errno = EINVAL;
         goto done;
     }
