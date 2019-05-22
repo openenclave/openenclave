@@ -418,10 +418,7 @@ static oe_fd_t* _sgxfs_open_file(
 done:
 
     if (file)
-    {
-        oe_memset_s(file, sizeof(file_t), 0xDD, sizeof(file_t));
         oe_free(file);
-    }
 
     if (stream)
         sgx_fclose(stream);
@@ -609,7 +606,6 @@ static int _sgxfs_close_file(oe_fd_t* file_)
     if (sgx_fclose(file->stream) != 0)
         OE_RAISE_ERRNO(OE_EBADF);
 
-    oe_memset_s(file, sizeof(file_t), 0xDD, sizeof(file_t));
     oe_free(file);
 
     ret = 0;
@@ -1113,7 +1109,9 @@ done:
     return -1;
 }
 
-static oe_file_ops_t _file_ops = {
+// clang-format off
+static oe_file_ops_t _file_ops =
+{
     .fd.read = _sgxfs_read,
     .fd.write = _sgxfs_write,
     .fd.readv = _sgxfs_readv,
@@ -1126,6 +1124,7 @@ static oe_file_ops_t _file_ops = {
     .lseek = _sgxfs_lseek,
     .getdents64 = _sgxfs_getdents64,
 };
+// clang-format on
 
 static oe_file_ops_t _get_file_ops(void)
 {
@@ -1133,7 +1132,8 @@ static oe_file_ops_t _get_file_ops(void)
 }
 
 // clang-format off
-static fs_t _sgxfs = {
+static fs_t _sgxfs =
+{
     .base.type = OE_DEVICE_TYPE_FILE_SYSTEM,
     .base.name = OE_DEVICE_NAME_SGX_FILE_SYSTEM,
     .base.ops.fs =
