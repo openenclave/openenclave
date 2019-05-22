@@ -63,7 +63,7 @@ void test_dup(const char* tmp_dir)
     {
         strlcpy(path, tmp_dir, sizeof(path));
         strlcat(path, "/STDERR", sizeof(path));
-        fd = open(path, O_WRONLY | O_CREAT | O_TRUNC);
+        fd = open(path, (O_WRONLY | O_CREAT | O_TRUNC), 0666);
         TEST(fd >= 0);
 
         printf("Created %s\n", path);
