@@ -59,12 +59,12 @@ def AArch64GNUTest(String version, String build_type) {
             checkout scm
             def task = """
                        curl ${DEVKITS_URI} | tar xvz
-                       cmake ${WORKSPACE}                                                         \
-                           -G Ninja                                                               \
-                           -DCMAKE_BUILD_TYPE=${build_type}                                       \
-                           -DCMAKE_TOOLCHAIN_FILE=${WORKSPACE}/cmake/arm-cross.cmake              \
-                           -DOE_TA_DEV_KIT_DIR=$PWD/devkits/vexpress-qemu_armv8a/export-ta_arm64  \
-                           -DUSE_LIBSGX=OFF                                                       \
+                       cmake ${WORKSPACE}                                                    \
+                           -G Ninja                                                          \
+                           -DCMAKE_BUILD_TYPE=${build_type}                                  \
+                           -DCMAKE_TOOLCHAIN_FILE=${WORKSPACE}/cmake/arm-cross.cmake         \
+                           -DOE_TA_DEV_KIT_DIR=devkits/vexpress-qemu_armv8a/export-ta_arm64  \
+                           -DUSE_LIBSGX=OFF                                                  \
                            -Wdev
                        ninja -v
                        """
