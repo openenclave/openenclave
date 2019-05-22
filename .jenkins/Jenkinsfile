@@ -58,9 +58,16 @@ def AArch64GNUTest(String version, String build_type) {
             cleanWs()
             checkout scm
             def task = """
-                        ${WORKSPACE}/scripts/ci/00_build_optee.sh ${WORKSPACE}
-                        ${WORKSPACE}/scripts/ci/01_build_sdk.sh ${WORKSPACE} ${build_type}
-                        """
+                       wget -qO- ${DEVKITS_URI} | tar xvz
+                       cmake ${WORKSPACE}                                                         \
+                           -G Ninja                                                               \
+                           -DCMAKE_BUILD_TYPE=${build_type}                                       \
+                           -DCMAKE_TOOLCHAIN_FILE=${WORKSPACE}/cmake/arm-cross.cmake              \
+                           -DOE_TA_DEV_KIT_DIR=$PWD/devkits/vexpress-qemu_armv8a/export-ta_arm64  \
+                           -DUSE_LIBSGX=OFF                                                       \
+                           -Wdev
+                       ninja -v
+                       """
             oe.ContainerRun("oetools-full-${version}", "cross", task, "--cap-add=SYS_PTRACE")
         }
     }
