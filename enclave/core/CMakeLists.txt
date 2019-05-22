@@ -6,13 +6,11 @@ set(MUSL_SRC_DIR ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
 if (OE_SGX)
     list(APPEND PLATFORM_SRC
-        sgx/atexit.c
         sgx/backtrace.c
         sgx/calls.c
         sgx/cpuid.c
         sgx/debugmalloc.c
         sgx/entropy.c
-        sgx/errno.c
         sgx/exception.c
         sgx/globals.c
         sgx/hostcalls.c
@@ -48,10 +46,10 @@ if (OE_SGX)
             sgx/windows/reloc.c)
     endif()
 elseif(OE_TRUSTZONE)
-    message("TODO: ADD ARM files.")
     list(APPEND PLATFORM_SRC
         optee/abort.c
         optee/bounds.c
+        optee/dl.c
         optee/host.c
         optee/printf.c
         optee/sched_yield.c
@@ -68,7 +66,9 @@ add_library(oecore STATIC
     __secs_to_tm.c
     __stack_chk_fail.c
     assert.c
+    atexit.c
     ctype.c
+    errno.c
     gmtime.c
     hexdump.c
     intstr.c
@@ -129,28 +129,28 @@ endif ()
 # or POSITION_INDEPENDENT_CODE, which would use the incorrect flag as
 # enclaves actually are executables.
 if (OE_SGX)
-target_compile_options(oecore PUBLIC
-    -fPIE
-    -nostdinc
-    -fno-stack-protector
-    -fvisibility=hidden
-    # "The default without -fpic is 'initial-exec'; with -fpic the
-    # default is 'global-dynamic'."
-    # https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#Code-Gen-Options
-    #
-    # Enclaves are linked using -pie and therefore global-dynamic is
-    # too conservative. Of the two efficient static thread-local
-    # storage models, inital-exec and local-exec, we choose the most
-    # optimal one.
-    -ftls-model=local-exec
-    # Disable builtin functions for enclaves, but only in our build.
-    #
-    # We do this to work-around compiler bugs (see #1429) due to our
-    # redefinition of `memmove` to `oe_memmove` causing an undefined
-    # symbol error when a built-in was inlined. However, we only do
-    # this for our code as we don't want to force these flags on the
-    # user. There are valid reasons for an end user to use built-ins.
-    $<BUILD_INTERFACE:-fno-builtin-malloc -fno-builtin-calloc -fno-builtin>)
+    target_compile_options(oecore PUBLIC
+        -fPIE
+        -nostdinc
+        -fno-stack-protector
+        -fvisibility=hidden
+        # "The default without -fpic is 'initial-exec'; with -fpic the
+        # default is 'global-dynamic'."
+        # https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#Code-Gen-Options
+        #
+        # Enclaves are linked using -pie and therefore global-dynamic is
+        # too conservative. Of the two efficient static thread-local
+        # storage models, inital-exec and local-exec, we choose the most
+        # optimal one.
+        -ftls-model=local-exec
+        # Disable builtin functions for enclaves, but only in our build.
+        #
+        # We do this to work-around compiler bugs (see #1429) due to our
+        # redefinition of `memmove` to `oe_memmove` causing an undefined
+        # symbol error when a built-in was inlined. However, we only do
+        # this for our code as we don't want to force these flags on the
+        # user. There are valid reasons for an end user to use built-ins.
+        $<BUILD_INTERFACE:-fno-builtin-malloc -fno-builtin-calloc -fno-builtin>)
 elseif (OE_TRUSTZONE)
     target_compile_options(oecore PUBLIC
         -fvisibility=hidden
@@ -178,11 +178,11 @@ endif()
 
 # Interface link flags for enclaves.
 if(OE_SGX)
-target_link_libraries(oecore INTERFACE
-    -nostdlib -nodefaultlibs -nostartfiles
-    -Wl,--no-undefined,-Bstatic,-Bsymbolic,--export-dynamic,-pie,--build-id
-    -Wl,-z,noexecstack
-    -Wl,-z,now)
+    target_link_libraries(oecore INTERFACE
+        -nostdlib -nodefaultlibs -nostartfiles
+        -Wl,--no-undefined,-Bstatic,-Bsymbolic,--export-dynamic,-pie,--build-id
+        -Wl,-z,noexecstack
+        -Wl,-z,now)
 elseif(OE_TRUSTZONE)
     target_link_libraries(oecore INTERFACE
         -nostdlib -nodefaultlibs -nostartfiles

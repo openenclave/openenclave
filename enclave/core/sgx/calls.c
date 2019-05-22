@@ -20,8 +20,8 @@
 #include <openenclave/internal/utils.h>
 #include "../../asym_keys.h"
 #include "../../sgx/report.h"
+#include "../atexit.h"
 #include "asmdefs.h"
-#include "atexit.h"
 #include "cpuid.h"
 #include "init.h"
 #include "report.h"
