@@ -491,7 +491,7 @@ static int _parse_extensions(
         rc = mbedtls_asn1_get_tag(&p, end, &len, tag);
         if (rc != 0)
         {
-            OE_TRACE_ERROR("mbedtls_asn1_get_tag rc= 0x%x\n", rc);
+            OE_TRACE_ERROR("mbedtls_asn1_get_tag rc = 0x%x\n", rc);
             goto done;
         }
     }
@@ -515,7 +515,7 @@ static int _parse_extensions(
                 rc = mbedtls_asn1_get_tag(&p, end, &len, tag);
                 if (rc != 0)
                 {
-                    OE_TRACE_ERROR("mbedtls_asn1_get_tag rc= 0x%x\n", rc);
+                    OE_TRACE_ERROR("mbedtls_asn1_get_tag rc = 0x%x\n", rc);
                     goto done;
                 }
 
@@ -527,7 +527,7 @@ static int _parse_extensions(
                 rc = mbedtls_asn1_get_tag(&p, end, &len, MBEDTLS_ASN1_OID);
                 if (rc != 0)
                 {
-                    OE_TRACE_ERROR("mbedtls_asn1_get_tag rc= 0x%x\n", rc);
+                    OE_TRACE_ERROR("mbedtls_asn1_get_tag rc = 0x%x\n", rc);
                     goto done;
                 }
 
@@ -541,7 +541,8 @@ static int _parse_extensions(
                 oidstr.buf, sizeof(oidstr.buf), &oid);
             if (rc < 0)
             {
-                OE_TRACE_ERROR("mbedtls_oid_get_numeric_string rc= 0x%x\n", rc);
+                OE_TRACE_ERROR(
+                    "mbedtls_oid_get_numeric_string rc = 0x%x\n", rc);
                 goto done;
             }
         }
@@ -551,7 +552,7 @@ static int _parse_extensions(
             rc = (mbedtls_asn1_get_bool(&p, end, &is_critical));
             if (rc != 0 && rc != MBEDTLS_ERR_ASN1_UNEXPECTED_TAG)
             {
-                OE_TRACE_ERROR("mbedtls_asn1_get_bool rc= 0x%x\n", rc);
+                OE_TRACE_ERROR("mbedtls_asn1_get_bool rc = 0x%x\n", rc);
                 goto done;
             }
         }
@@ -562,7 +563,7 @@ static int _parse_extensions(
             rc = mbedtls_asn1_get_tag(&p, end, &len, tag);
             if (rc != 0)
             {
-                OE_TRACE_ERROR("mbedtls_asn1_get_tag rc= 0x%x\n", rc);
+                OE_TRACE_ERROR("mbedtls_asn1_get_tag rc = 0x%x\n", rc);
                 goto done;
             }
 
@@ -628,7 +629,7 @@ oe_result_t oe_cert_read_pem(
     /* Read the PEM buffer into DER format */
     rc = mbedtls_x509_crt_parse(crt, (const uint8_t*)pem_data, pem_size);
     if (rc != 0)
-        OE_RAISE(OE_FAILURE, "mbedtls_x509_crt_parse rc= 0x%x\n", rc);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "mbedtls_x509_crt_parse rc = 0x%x\n", rc);
 
     /* Initialize the implementation */
     _cert_init(impl, crt, NULL);
@@ -696,7 +697,7 @@ oe_result_t oe_cert_chain_read_pem(
     rc = mbedtls_x509_crt_parse(
         referent->crt, (const uint8_t*)pem_data, pem_size);
     if (rc != 0)
-        OE_RAISE(OE_FAILURE, "mbedtls_x509_crt_parse rc= 0x%x\n", rc);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "mbedtls_x509_crt_parse rc = 0x%x\n", rc);
 
     /* Reorder certs in the chain to preferred order */
     referent->crt = _sort_certs_by_issue_date(referent->crt);

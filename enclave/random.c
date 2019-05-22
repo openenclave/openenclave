@@ -80,7 +80,7 @@ oe_result_t oe_random_internal(void* data, size_t size)
     /* Generate random data (synchronize access to _drbg instance) */
     rc = mbedtls_ctr_drbg_random(&_drbg, data, size);
     if (rc != 0)
-        OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x\n", rc);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "rc = 0x%x\n", rc);
 
     result = OE_OK;
 done:

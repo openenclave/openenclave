@@ -81,7 +81,7 @@ static oe_result_t _rsa_pem_to_der(
 
     /* With a null buffer, CryptStringToA returns true and sets the size. */
     if (!success)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     der_local = (uint8_t*)malloc(der_local_size);
     if (der_local == NULL)
@@ -97,7 +97,7 @@ static oe_result_t _rsa_pem_to_der(
         NULL);
 
     if (!success)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     *der_data = der_local;
     *der_size = der_local_size;
@@ -146,7 +146,7 @@ oe_result_t oe_rsa_private_key_read_pem(
             &rsa_blob_size);
 
         if (!success)
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
     }
 
     /* Step 3: Convert the Crypt object to a BCrypt Key. */
@@ -160,8 +160,8 @@ oe_result_t oe_rsa_private_key_read_pem(
             rsa_blob_size,
             0);
 
-        if (status != STATUS_SUCCESS)
-            OE_RAISE(OE_FAILURE);
+        if (!BCRYPT_SUCCESS(status))
+            OE_RAISE(OE_CRYPTO_ERROR);
     }
 
     /* Step 4: Convery BCrypt Handle to OE type. */
@@ -307,8 +307,8 @@ oe_result_t oe_rsa_private_key_sign(
             &sig_size,
             BCRYPT_PAD_PKCS1);
 
-        if (status != STATUS_SUCCESS)
-            OE_RAISE(OE_FAILURE);
+        if (!BCRYPT_SUCCESS(status))
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         *signature_size = sig_size;
     }
@@ -336,8 +336,8 @@ static oe_result_t _get_public_rsa_blob_info(
     status = BCryptExportKey(
         key, NULL, BCRYPT_RSAPUBLIC_BLOB, NULL, 0, &buffer_local_size, 0);
 
-    if (status != STATUS_SUCCESS)
-        OE_RAISE(OE_FAILURE);
+    if (!BCRYPT_SUCCESS(status))
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     buffer_local = (uint8_t*)malloc(buffer_local_size);
     if (buffer_local == NULL)
@@ -352,13 +352,13 @@ static oe_result_t _get_public_rsa_blob_info(
         &buffer_local_size,
         0);
 
-    if (status != STATUS_SUCCESS)
-        OE_RAISE(OE_FAILURE);
+    if (!BCRYPT_SUCCESS(status))
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Sanity check to ensure we get modulus and public exponent. */
     key_header = (BCRYPT_RSAKEY_BLOB*)buffer_local;
     if (key_header->cbPublicExp == 0 || key_header->cbModulus == 0)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     *buffer = buffer_local;
     *buffer_size = buffer_local_size;
@@ -408,8 +408,8 @@ oe_result_t oe_rsa_get_public_key_from_private(
             keybuf_size,
             0);
 
-        if (status != STATUS_SUCCESS)
-            OE_RAISE(OE_FAILURE);
+        if (!BCRYPT_SUCCESS(status))
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         ((oe_public_key_t*)public_key)->magic = _PUBLIC_KEY_MAGIC;
         ((oe_public_key_t*)public_key)->pkey = public_key_handle;

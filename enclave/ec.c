@@ -53,7 +53,7 @@ static oe_result_t _copy_key(
     /* Setup the context for this key type */
     rc = mbedtls_pk_setup(dest, info);
     if (rc != 0)
-        OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x", rc);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "rc = 0x%x", rc);
 
     /* Copy all fields of the key structure */
     {
@@ -64,16 +64,16 @@ static oe_result_t _copy_key(
             OE_RAISE(OE_FAILURE);
 
         if (mbedtls_ecp_group_copy(&ec_dest->grp, &ec_src->grp) != 0)
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         if (copy_private_fields)
         {
             if (mbedtls_mpi_copy(&ec_dest->d, &ec_src->d) != 0)
-                OE_RAISE(OE_FAILURE);
+                OE_RAISE(OE_CRYPTO_ERROR);
         }
 
         if (mbedtls_ecp_copy(&ec_dest->Q, &ec_src->Q) != 0)
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
     }
 
     result = OE_OK;
@@ -126,18 +126,18 @@ static oe_result_t _generate_key_pair(
 
     /* Get the drbg object */
     if (!(drbg = oe_mbedtls_get_drbg()))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Create key struct */
     rc = mbedtls_pk_setup(&pk, mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY));
     if (rc != 0)
-        OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x", rc);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "rc = 0x%x", rc);
 
     /* Generate the EC key */
     rc = mbedtls_ecp_gen_key(
         curve, mbedtls_pk_ec(pk), mbedtls_ctr_drbg_random, drbg);
     if (rc != 0)
-        OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x", rc);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "rc = 0x%x", rc);
 
     /* Initialize the private key parameter */
     OE_CHECK(
@@ -342,26 +342,26 @@ oe_result_t oe_ec_generate_key_pair_from_private(
     mbedtls_result =
         mbedtls_pk_setup(&key, mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY));
     if (mbedtls_result != 0)
-        OE_RAISE_MSG(OE_FAILURE, "mbedtls error: 0x%x", mbedtls_result);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "mbedtls error: 0x%x", mbedtls_result);
 
     keypair = mbedtls_pk_ec(key);
     mbedtls_result =
         mbedtls_ecp_group_load(&keypair->grp, _get_group_id(curve));
     if (mbedtls_result != 0)
-        OE_RAISE_MSG(OE_FAILURE, "mbedtls error: 0x%x", mbedtls_result);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "mbedtls error: 0x%x", mbedtls_result);
 
     mbedtls_result = mbedtls_mpi_read_binary(
         &keypair->d, private_key_buf, private_key_buf_size);
 
     if (mbedtls_result != 0)
-        OE_RAISE_MSG(OE_FAILURE, "mbedtls error: 0x%x", mbedtls_result);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "mbedtls error: 0x%x", mbedtls_result);
 
     mbedtls_result = mbedtls_ecp_check_privkey(&keypair->grp, &keypair->d);
     if (mbedtls_result != 0)
-        OE_RAISE_MSG(OE_FAILURE, "mbedtls error: 0x%x", mbedtls_result);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "mbedtls error: 0x%x", mbedtls_result);
 
     if (!(drbg = oe_mbedtls_get_drbg()))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /*
      * To get the public key, we perform the elliptical curve point
@@ -377,11 +377,11 @@ oe_result_t oe_ec_generate_key_pair_from_private(
         drbg);
 
     if (mbedtls_result != 0)
-        OE_RAISE_MSG(OE_FAILURE, "mbedtls error: 0x%x", mbedtls_result);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "mbedtls error: 0x%x", mbedtls_result);
 
     mbedtls_result = mbedtls_ecp_check_pubkey(&keypair->grp, &keypair->Q);
     if (mbedtls_result != 0)
-        OE_RAISE_MSG(OE_FAILURE, "mbedtls error: 0x%x", mbedtls_result);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "mbedtls error: 0x%x", mbedtls_result);
 
     /* Export to OE structs. */
     OE_CHECK(oe_ec_public_key_init(public_key, &key));
@@ -439,7 +439,7 @@ oe_result_t oe_ec_public_key_from_coordinates(
     /* Setup the context for this key type */
     rc = mbedtls_pk_setup(&impl->pk, info);
     if (rc != 0)
-        OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x", rc);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "rc = 0x%x", rc);
 
     /* Initialize the key */
     {
@@ -450,20 +450,20 @@ oe_result_t oe_ec_public_key_from_coordinates(
             OE_RAISE(OE_FAILURE);
 
         if (mbedtls_ecp_group_load(&ecp->grp, group_id) != 0)
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         if (mbedtls_mpi_read_binary(&ecp->Q.X, x_data, x_size) != 0)
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         if (mbedtls_mpi_read_binary(&ecp->Q.Y, y_data, y_size) != 0)
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         // Used internally by MBEDTLS. Set Z to 1 to indicate that X-Y
         // represents a standard coordinate point. Zero indicates that the
         // point is zero or infinite, and values >= 2 have internal meaning
         // only to MBEDTLS.
         if (mbedtls_mpi_lset(&ecp->Q.Z, 1) != 0)
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
     }
 
     /* Set the magic number */
@@ -508,16 +508,16 @@ oe_result_t oe_ecdsa_signature_write_der(
 
     /* Convert raw R data to big number */
     if (mbedtls_mpi_read_binary(&r, data, size) != 0)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Convert raw S data to big number */
     if (mbedtls_mpi_read_binary(&s, s_data, s_size) != 0)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Write S to ASN.1 */
     {
         if ((n = mbedtls_asn1_write_mpi(&p, buf, &s)) < 0)
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         len += (size_t)n;
     }
@@ -525,7 +525,7 @@ oe_result_t oe_ecdsa_signature_write_der(
     /* Write R to ASN.1 */
     {
         if ((n = mbedtls_asn1_write_mpi(&p, buf, &r)) < 0)
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         len += (size_t)n;
     }
@@ -533,7 +533,7 @@ oe_result_t oe_ecdsa_signature_write_der(
     /* Write the length to ASN.1 */
     {
         if ((n = mbedtls_asn1_write_len(&p, buf, len)) < 0)
-            OE_RAISE_MSG(OE_FAILURE, "n = 0x%x\n", n);
+            OE_RAISE_MSG(OE_CRYPTO_ERROR, "n = 0x%x\n", n);
 
         len += (size_t)n;
     }
@@ -543,7 +543,7 @@ oe_result_t oe_ecdsa_signature_write_der(
         unsigned char tag = MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE;
 
         if ((n = mbedtls_asn1_write_tag(&p, buf, tag)) < 0)
-            OE_RAISE_MSG(OE_FAILURE, "n = 0x%x\n", n);
+            OE_RAISE_MSG(OE_CRYPTO_ERROR, "n = 0x%x\n", n);
 
         len += (size_t)n;
     }

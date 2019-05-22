@@ -153,7 +153,7 @@ oe_result_t oe_private_key_read_pem(
     /* Parse PEM format into key structure */
     rc = mbedtls_pk_parse_key(&private_key->pk, pem_data, pem_size, NULL, 0);
     if (rc != 0)
-        OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x\n", rc);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "rc = 0x%x\n", rc);
 
     /* Fail if PEM data did not contain this type of key */
     if (private_key->pk.pk_info != mbedtls_pk_info_from_type(key_type))
@@ -191,7 +191,7 @@ oe_result_t oe_private_key_write_pem(
     rc = mbedtls_pk_write_key_pem(
         (mbedtls_pk_context*)&private_key->pk, buf, sizeof(buf));
     if (rc != 0)
-        OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x\n", rc);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "rc = 0x%x\n", rc);
 
     /* Handle case where caller's buffer is too small */
     {
@@ -238,7 +238,7 @@ oe_result_t oe_public_key_read_pem(
     /* Parse PEM format into key structure */
     rc = mbedtls_pk_parse_public_key(&public_key->pk, pem_data, pem_size);
     if (rc != 0)
-        OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x\n", rc);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "rc = 0x%x\n", rc);
 
     /* Fail if PEM data did not contain an EC key */
     if (public_key->pk.pk_info != mbedtls_pk_info_from_type(key_type))
@@ -276,7 +276,7 @@ oe_result_t oe_public_key_write_pem(
     rc = mbedtls_pk_write_pubkey_pem(
         (mbedtls_pk_context*)&public_key->pk, buf, sizeof(buf));
     if (rc != 0)
-        OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x\n", rc);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "rc = 0x%x\n", rc);
 
     /* Handle case where caller's buffer is too small */
     {
@@ -373,7 +373,7 @@ oe_result_t oe_private_key_sign(
         NULL,
         NULL);
     if (rc != 0)
-        OE_RAISE_MSG(OE_FAILURE, "rc = 0x%x\n", rc);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "rc = 0x%x\n", rc);
 
     // If signature buffer parameter is too small:
     if (*signature_size < buffer_size)

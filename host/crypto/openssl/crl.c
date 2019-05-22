@@ -62,7 +62,7 @@ oe_result_t oe_crl_read_der(
     const uint8_t* der_data,
     size_t der_size)
 {
-    oe_result_t result = OE_UNEXPECTED;
+    oe_result_t result = OE_CRYPTO_ERROR;
     crl_t* impl = (crl_t*)crl;
     BIO* bio = NULL;
     X509_CRL* x509_crl = NULL;
@@ -73,7 +73,7 @@ oe_result_t oe_crl_read_der(
 
     /* Check for invalid parameters */
     if (!der_data || !der_size || der_size > OE_INT_MAX || !crl)
-        OE_RAISE(OE_UNEXPECTED);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Create a BIO for reading the DER-formatted data */
     if (!(bio = BIO_new_mem_buf(der_data, (int)der_size)))
@@ -188,16 +188,16 @@ static oe_result_t _asn1_time_to_date(
     const char null_terminator = '\0';
 
     if (!(bio = BIO_new(BIO_s_mem())))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     if (!ASN1_TIME_print(bio, time))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     if (!BIO_get_mem_ptr(bio, &mem))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     if (BIO_write(bio, &null_terminator, sizeof(null_terminator)) <= 0)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     OE_CHECK(_string_to_date(mem->data, date));
 
@@ -233,7 +233,7 @@ oe_result_t oe_crl_get_update_dates(
         const ASN1_TIME* time;
 
         if (!(time = X509_CRL_get0_lastUpdate(impl->crl)))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         OE_CHECK(_asn1_time_to_date(time, last));
     }
@@ -243,7 +243,7 @@ oe_result_t oe_crl_get_update_dates(
         const ASN1_TIME* time;
 
         if (!(time = X509_CRL_get0_nextUpdate(impl->crl)))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         OE_CHECK(_asn1_time_to_date(time, next));
     }

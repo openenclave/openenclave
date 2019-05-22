@@ -239,7 +239,7 @@ static oe_result_t _cert_chain_get_length(const CertChain* impl, int* length)
     *length = 0;
 
     if ((num = sk_X509_num(impl->sk)) <= 0)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     *length = num;
 
@@ -296,16 +296,18 @@ static oe_result_t _verify_cert(
 
     /* Create a store for the verification */
     if (!(store = X509_STORE_new()))
-        OE_RAISE_MSG(OE_FAILURE, "Failed to allocate X509 store", NULL);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "Failed to allocate X509 store", NULL);
 
     /* Create a context for verification */
     if (!(ctx = X509_STORE_CTX_new()))
-        OE_RAISE_MSG(OE_FAILURE, "Failed to create new X509 context", NULL);
+        OE_RAISE_MSG(
+            OE_CRYPTO_ERROR, "Failed to create new X509 context", NULL);
 
     /* Initialize the context that will be used to verify the certificate */
     if (!X509_STORE_CTX_init(ctx, store, NULL, NULL))
     {
-        OE_RAISE_MSG(OE_FAILURE, "Failed to initialize X509 context", NULL);
+        OE_RAISE_MSG(
+            OE_CRYPTO_ERROR, "Failed to initialize X509 context", NULL);
     }
 
     /* Create a store with CRLs if needed */
@@ -320,13 +322,13 @@ static oe_result_t _verify_cert(
             /* X509_STORE_add_crl manages its own addition refcount */
             if (!X509_STORE_add_crl(store, crl_impl->crl))
                 OE_RAISE_MSG(
-                    OE_FAILURE, "Failed to add CRL to X509 store", NULL);
+                    OE_CRYPTO_ERROR, "Failed to add CRL to X509 store", NULL);
         }
 
         /* Get the verify parameter (must not be null) */
         if (!(verify_param = X509_STORE_CTX_get0_param(ctx)))
             OE_RAISE_MSG(
-                OE_FAILURE, "Failed to get X509 verify parameter", NULL);
+                OE_CRYPTO_ERROR, "Failed to get X509 verify parameter", NULL);
 
         X509_VERIFY_PARAM_set_flags(verify_param, X509_V_FLAG_CRL_CHECK);
         X509_VERIFY_PARAM_set_flags(verify_param, X509_V_FLAG_CRL_CHECK_ALL);
@@ -437,7 +439,7 @@ static oe_result_t _verify_whole_chain(STACK_OF(X509) * chain)
         X509_up_ref(root);
 
         if (!sk_X509_push(subchain, root))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
     }
 
     /* Verify each certificate in the chain against the subchain */
@@ -446,7 +448,7 @@ static oe_result_t _verify_whole_chain(STACK_OF(X509) * chain)
         X509* cert = sk_X509_value(chain, i);
 
         if (!cert)
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         /* Verify cert chain without CRL checks */
         OE_CHECK(_verify_cert(cert, subchain, NULL, 0));
@@ -456,7 +458,7 @@ static oe_result_t _verify_whole_chain(STACK_OF(X509) * chain)
             X509_up_ref(cert);
 
             if (!sk_X509_push(subchain, cert))
-                OE_RAISE(OE_FAILURE);
+                OE_RAISE(OE_CRYPTO_ERROR);
         }
     }
 
@@ -505,11 +507,11 @@ oe_result_t oe_cert_read_pem(
 
     /* Create a BIO object for reading the PEM data */
     if (!(bio = BIO_new_mem_buf(pem_data, (int)pem_size)))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Convert the PEM BIO into a certificate object */
     if (!(x509 = PEM_read_bio_X509(bio, NULL, 0, NULL)))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     _cert_init(impl, x509);
     x509 = NULL;
@@ -699,7 +701,7 @@ oe_result_t oe_cert_get_rsa_public_key(
 
     /* Get public key (increments reference count) */
     if (!(pkey = X509_get_pubkey(impl->x509)))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Get RSA public key (increments reference count) */
     if (!(rsa = EVP_PKEY_get1_RSA(pkey)))
@@ -740,14 +742,14 @@ oe_result_t oe_cert_get_ec_public_key(
 
     /* Get public key (increments reference count) */
     if (!(pkey = X509_get_pubkey(impl->x509)))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* If this is not an EC key */
     {
         EC_KEY* ec;
 
         if (!(ec = EVP_PKEY_get1_EC_KEY(pkey)))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         EC_KEY_free(ec);
     }
@@ -833,11 +835,11 @@ oe_result_t oe_cert_chain_get_cert(
 
     /* Get the certificate with the given index */
     if (!(x509 = sk_X509_value(impl->sk, (int)index)))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Increment the reference count and initialize the output certificate */
     if (!X509_up_ref(x509))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
     _cert_init((Cert*)cert, x509);
 
     result = OE_OK;
@@ -908,15 +910,15 @@ oe_result_t oe_cert_find_extension(
 
         /* Get the i-th extension from the stack */
         if (!(ext = sk_X509_EXTENSION_value(extensions, i)))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         /* Get the OID */
         if (!(obj = X509_EXTENSION_get_object(ext)))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         /* Get the string name of the OID */
         if (!OBJ_obj2txt(ext_oid.buf, sizeof(ext_oid.buf), obj, 1))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         /* If found then get the data */
         if (strcmp(ext_oid.buf, oid) == 0)
@@ -925,7 +927,7 @@ oe_result_t oe_cert_find_extension(
 
             /* Get the data from the extension */
             if (!(str = X509_EXTENSION_get_data(ext)))
-                OE_RAISE(OE_FAILURE);
+                OE_RAISE(OE_CRYPTO_ERROR);
 
             /* If the caller's buffer is too small, raise error */
             if ((size_t)str->length > *size)
