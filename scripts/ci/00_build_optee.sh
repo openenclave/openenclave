@@ -44,7 +44,7 @@ CROSS_COMPILE=/usr/bin/aarch64-linux-gnu-
 TA_CROSS_COMPILE=/usr/bin/aarch64-linux-gnu-
 TA_CROSS_COMPILE_32=/usr/bin/arm-linux-gnueabihf-
 
-ARCH=arm make -j$(nproc) -C $OPTEE_OS_PATH               \
+ARCH=arm make -j$(nproc) -C $OPTEE_OS_PATH       \
     PLATFORM=vexpress-qemu_armv8a                \
     O=$PWD/optee/vexpress-qemu_armv8a            \
     $OPTEE_FLAGS                                 \
