@@ -40,11 +40,11 @@ add_library(oeposix STATIC
     netdb.c
     poll.c
     select.c
-    signal.c
     socket.c
     stat.c
     stdio.c
     stdlib.c
+    stub.c
     syscall.c
     unistd.c
     utsname.c)

@@ -12,7 +12,6 @@ add_subdirectory(socket)
 add_subdirectory(socketpair)
 add_subdirectory(send)
 add_subdirectory(sendmsg)
-add_subdirectory(signal)
 
 if(UNIX)
 add_subdirectory(echod)

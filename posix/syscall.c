@@ -557,24 +557,6 @@ static long _syscall(
             ret = (long)oe_getpgrp();
             goto done;
         }
-        case OE_SYS_rt_sigaction:
-        {
-            int signum = (int)arg1;
-            struct oe_sigaction* act = (struct oe_sigaction*)arg2;
-            struct oe_sigaction* oact = (struct oe_sigaction*)arg3;
-
-            ret = (long)oe_sigaction(signum, act, oact);
-            goto done;
-        }
-        case OE_SYS_kill:
-        {
-            int pid = (int)arg1;
-            int signum = (int)arg2;
-
-            ret = (long)oe_kill(pid, signum);
-            goto done;
-        }
-
         default:
         {
             oe_errno = OE_ENOSYS;

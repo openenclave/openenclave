@@ -20,13 +20,12 @@
 int oe_host_printf(const char* fmt, ...);
 #define printf oe_host_printf
 
-int sockfd[2] = {-1,-1};
+int sockfd[2] = {-1, -1};
 char done = false;
 
 int init_enclave()
 {
     int ret = -1;
-
 
     OE_TEST(oe_load_module_host_socket_interface() == OE_OK);
     {
@@ -47,7 +46,7 @@ int init_enclave()
         if (oe_socketpair(OE_AF_HOST, OE_SOCK_STREAM, 0, sockfd) < 0)
         {
             printf("could not create socketpair. errno = %d\n", oe_errno);
-            OE_TEST( oe_errno == 0);
+            OE_TEST(oe_errno == 0);
         }
     }
     ret = 0;
@@ -90,7 +89,7 @@ int run_enclave_client(char* recv_buff, ssize_t* recv_buff_len)
         }
     } while (numtries < 10);
 
-    done = true;  // Stop the server
+    done = true; // Stop the server
     if (numtries >= 10)
     {
         printf("Read error, Fail\n");
@@ -110,7 +109,7 @@ int run_enclave_server()
     static const char TESTDATA[] = "This is TEST DATA\n";
 
     printf("------------ start server\n");
-    
+
     do
     {
         printf("enclave: writing on sockfd[0]\n");
@@ -130,8 +129,9 @@ int run_enclave_server()
 
     if (oe_shutdown(sockfd[0], OE_SHUT_WR) < 0)
     {
-         printf("could not shutdown socket %d. errno = %d\n", sockfd[0], oe_errno);
-         OE_TEST( oe_errno == 0);
+        printf(
+            "could not shutdown socket %d. errno = %d\n", sockfd[0], oe_errno);
+        OE_TEST(oe_errno == 0);
     }
 
     ssize_t bytes_written = oe_write(sockfd[0], TESTDATA, strlen(TESTDATA));

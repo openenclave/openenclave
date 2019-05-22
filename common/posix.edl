@@ -32,7 +32,7 @@ enclave {
 
     trusted {
 
-        public int oe_posix_signal_notify_ecall(int signum);
+        public void oe_posix_stub_ecall();
     };
 
     untrusted {

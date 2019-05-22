@@ -95,7 +95,7 @@ int oe_socketpair(int domain, int type, int protocol, int retfd[2])
         OE_RAISE_ERRNO(OE_EINVAL);
 
     if ((retval = device->ops.socket.socketpair(
-              device, domain, type, protocol, socks)) < 0)
+             device, domain, type, protocol, socks)) < 0)
     {
         OE_RAISE_ERRNO_MSG(
             OE_EINVAL,

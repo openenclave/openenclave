@@ -1537,21 +1537,27 @@ int oe_posix_socketpair_ocall(
     memset(&addr, 0, addrlen);
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-    addr.sin_port = 0; 
+    addr.sin_port = 0;
 
-    if (setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &reuse_addr, (socklen_t) sizeof(reuse_addr)) == -1)
+    if (setsockopt(
+            listener,
+            SOL_SOCKET,
+            SO_REUSEADDR,
+            &reuse_addr,
+            (socklen_t)sizeof(reuse_addr)) == -1)
     {
         _set_errno(_winsockerr_to_errno(WSAGetLastError()));
         goto done;
     }
 
-    if  (bind(listener, (struct sockaddr*)&addr, addrlen) == SOCKET_ERROR)
+    if (bind(listener, (struct sockaddr*)&addr, addrlen) == SOCKET_ERROR)
     {
         _set_errno(_winsockerr_to_errno(WSAGetLastError()));
         goto done;
     }
 
-    if  (getsockname(listener, (struct sockaddr*)&addr, &addrlen) == SOCKET_ERROR)
+    if (getsockname(listener, (struct sockaddr*)&addr, &addrlen) ==
+        SOCKET_ERROR)
     {
         _set_errno(_winsockerr_to_errno(WSAGetLastError()));
         goto done;
@@ -1570,7 +1576,8 @@ int oe_posix_socketpair_ocall(
         goto done;
     }
 
-    if (connect(sv_out[0], (struct sockaddr *)&addr, sizeof(addr)) == SOCKET_ERROR)
+    if (connect(sv_out[0], (struct sockaddr*)&addr, sizeof(addr)) ==
+        SOCKET_ERROR)
     {
         _set_errno(_winsockerr_to_errno(WSAGetLastError()));
         goto done;
@@ -1817,16 +1824,16 @@ ssize_t oe_posix_sendto_ocall(
 }
 
 int oe_posix_shutdown_ocall(oe_host_fd_t sockfd, int how)
-{  
+{
     int ret = -1;
 
     ret = shutdown((SOCKET)sockfd, how);
-    if (ret  == SOCKET_ERROR)
+    if (ret == SOCKET_ERROR)
     {
         _set_errno(_winsockerr_to_errno(WSAGetLastError()));
         ret = -1;
     }
-   
+
     return ret;
 }
 
@@ -1848,7 +1855,7 @@ int oe_posix_ioctl_ocall(
     // codes from the enclave to be the equivelent for windows. But... no such
     // codes are currently being used So we panic to highlight the problem line
     // of code. In this way, we can see what ioctls are needed
-    PANIC;   
+    PANIC;
     return 0;
 }
 
@@ -1954,7 +1961,8 @@ int oe_posix_getpeername_ocall(
 
 int oe_posix_shutdown_sockets_device_ocall(oe_host_fd_t sockfd)
 {
-    // 2do: track all of the handles so we can be sure to close everything on exit
+    // 2do: track all of the handles so we can be sure to close everything on
+    // exit
     return 0;
 }
 
@@ -2616,7 +2624,8 @@ int oe_posix_epoll_close_ocall(oe_host_fd_t epfd)
 
 int oe_posix_shutdown_polling_device_ocall(oe_host_fd_t fd)
 {
-    // 2do: track all of the handles so we can be sure to close everything on exit
+    // 2do: track all of the handles so we can be sure to close everything on
+    // exit
     return 0;
 }
 
