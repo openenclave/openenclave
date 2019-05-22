@@ -16,6 +16,7 @@
 
 #define OE_PATH_MAX 4096
 #define OE_NGROUPS_MAX 32
+#define OE_IOV_MAX 1024
 
 /*
 **==============================================================================
@@ -47,6 +48,7 @@
 #define ULLONG_MAX OE_ULLONG_MAX
 #define PATH_MAX OE_PATH_MAX
 #define NGROUPS_MAX OE_NGROUPS_MAX
+#define IOV_MAX 1024
 
 #endif /* defined(OE_NEED_STDC_NAMES) */
 
