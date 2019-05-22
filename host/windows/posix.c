@@ -1522,9 +1522,9 @@ int oe_posix_socketpair_ocall(
         }
     }
 
-    // Windows doesn't support AF_UNIX, but it does loopback. Linux only supports
-    // socketpair on unix-domain sockets. To square the circle, we convert unix domain
-    // to inet loopback.
+    // Windows doesn't support AF_UNIX, but it does loopback. Linux only
+    // supports socketpair on unix-domain sockets. To square the circle, we
+    // convert unix domain to inet loopback.
     if (domain == OE_AF_LOCAL)
     {
         domain = OE_AF_INET;
@@ -1852,13 +1852,8 @@ int oe_posix_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg)
     return 0;
 }
 
-<<<<<<< HEAD
 #define TIOCGWINSZ 0x5413
 #define TIOCSWINSZ 0x5414
-=======
-
-#define TIOCGWINSZ   0x5413
-#define TIOCSWINSZ   0x5414
 int oe_posix_ioctl_ocall(
     oe_host_fd_t fd,
     unsigned long request,
