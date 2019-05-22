@@ -349,7 +349,7 @@ oe_fd_t* oe_fdtable_get(int fd, oe_fd_type_t type)
     if (!(desc = _get_fd(fd)))
         OE_RAISE_ERRNO(OE_EBADF);
 
-    if (type != OE_DEVICE_TYPE_ANY && desc->type != type)
+    if (type != OE_FD_TYPE_ANY && desc->type != type)
     {
         OE_RAISE_ERRNO_MSG(
             OE_EINVAL, "fd=%d type=%u fd->type=%u", fd, type, desc->type);
