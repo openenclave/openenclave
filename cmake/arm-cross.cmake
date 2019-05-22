@@ -7,6 +7,19 @@ set(CMAKE_C_COMPILER aarch64-linux-gnu-gcc)
 set(CMAKE_CXX_COMPILER aarch64-linux-gnu-g++)
 set(CMAKE_C_COMPILER_ID GNU)
 
+# Allow the developer to target a runtime environment other than that of the
+# build host.
+if (OE_PROGRAM_PATH AND OE_SYSROOT)
+    set(CMAKE_PROGRAM_PATH ${OE_PROGRAM_PATH})
+    set(CMAKE_SYSROOT ${OE_SYSROOT})
+    set(CMAKE_FIND_ROOT_PATH ${OE_SYSROOT})
+    set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+    set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
+    set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+    set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+    set(ENV{PKG_CONFIG_SYSROOT_DIR} ${OE_SYSROOT})
+endif ()
+
 # When using GCC to compile assembly files.
 set(OE_TZ_TA_S_FLAGS
     -DASM=1
