@@ -142,7 +142,7 @@ enclave {
             int domain,
             int type,
             int protocol,
-            [in] oe_host_fd_t sv[2])
+            [out] oe_host_fd_t sv[2])
             propagate_errno;
 
         int oe_posix_connect_ocall(
