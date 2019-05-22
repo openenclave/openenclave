@@ -1,0 +1,12 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+---
+tmp_dir: "C:\\Windows\\Temp"
+shellcheck_dest: "C:\\Program Files\\shellcheck"
+jenkins_agent_root_dir: "C:/Jenkins"
+servicewrapper_url: "https://github.com/cloudbase/OpenStackService/releases/download/v0.1/service-wrapper-sdk10-x64.zip"
+jdk8_url: "https://javadl.oracle.com/webapps/download/GetFile/1.8.0_211-b12/478a62b7d4e34b78b671c754eaaf38ab/windows-i586/jdk-8u211-windows-x64.exe"
+
+validation_binaries:
+  - "C:\\Program Files\\Java\\jdk1.8.0_211\\bin\\java.exe"
