@@ -9,6 +9,7 @@
 ../../3rdparty/libcxx/libcxx/test/libcxx/input.output/file.streams/fstreams/fstream.close.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/input.output/filesystems/class.path/path.itr/iterator_db.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/language.support/has_c11_features.pass.cpp
+../../3rdparty/libcxx/libcxx/test/libcxx/language.support/support.dynamic/libcpp_deallocate.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/language.support/support.dynamic/new_faligned_allocation.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/memory/aligned_allocation_macro.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/memory/is_allocator.pass.cpp
@@ -455,6 +456,7 @@
 ../../3rdparty/libcxx/libcxx/test/std/strings/strings.erasure/erase.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/strings/strings.erasure/erase_if.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.async/async.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.async/async_race.38682.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.async/async_race.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.shared_future/wait.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.shared_future/wait_for.pass.cpp
