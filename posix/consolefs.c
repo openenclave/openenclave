@@ -7,6 +7,7 @@
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
+#include <openenclave/corelibc/sys/ioctl.h>
 #include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/posix/fd.h>
 #include <openenclave/internal/posix/fdtable.h>
@@ -102,31 +103,27 @@ static int _consolefs_ioctl(oe_fd_t* file_, unsigned long request, uint64_t arg)
      * block works around this problem by implementing TIOCGWINSZ on the
      * enclave side. Other terminal control ioctls are left unimplemented.
      */
+    if (request == OE_TIOCGWINSZ)
     {
-        static const unsigned long _TIOCGWINSZ = 0x5413;
-
-        if (request == _TIOCGWINSZ)
+        struct winsize
         {
-            struct winsize
-            {
-                unsigned short int ws_row;
-                unsigned short int ws_col;
-                unsigned short int ws_xpixel;
-                unsigned short int ws_ypixel;
-            };
-            struct winsize* p;
+            unsigned short int ws_row;
+            unsigned short int ws_col;
+            unsigned short int ws_xpixel;
+            unsigned short int ws_ypixel;
+        };
+        struct winsize* p;
 
-            if (!(p = (struct winsize*)arg))
-                OE_RAISE_ERRNO(OE_EINVAL);
+        if (!(p = (struct winsize*)arg))
+            OE_RAISE_ERRNO(OE_EINVAL);
 
-            p->ws_row = 24;
-            p->ws_col = 80;
-            p->ws_xpixel = 0;
-            p->ws_ypixel = 0;
+        p->ws_row = 24;
+        p->ws_col = 80;
+        p->ws_xpixel = 0;
+        p->ws_ypixel = 0;
 
-            ret = 0;
-            goto done;
-        }
+        ret = 0;
+        goto done;
     }
 
     if (oe_posix_ioctl_ocall(&ret, file->host_fd, request, arg) != OE_OK)

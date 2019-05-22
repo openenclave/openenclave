@@ -12,6 +12,7 @@
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/fcntl.h>
+#include <openenclave/corelibc/sys/ioctl.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/posix/iov.h>
 #include <openenclave/bits/safecrt.h>
@@ -757,12 +758,8 @@ static int _hostfs_ioctl(oe_fd_t* file_, unsigned long request, uint64_t arg)
      * by Windows hosts, so the error is handled on the enclave side. This is
      * the correct behavior since host files can never be terminal devices.
      */
-    {
-        static const unsigned long _TIOCGWINSZ = 0x5413;
-
-        if (request == _TIOCGWINSZ)
-            OE_RAISE_ERRNO(OE_ENOTTY);
-    }
+    if (request == OE_TIOCGWINSZ)
+        OE_RAISE_ERRNO(OE_ENOTTY);
 
     if (oe_posix_ioctl_ocall(&ret, file->host_fd, request, arg) != OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);

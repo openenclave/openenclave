@@ -3,9 +3,9 @@
 
 #include <openenclave/enclave.h>
 
+#include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/sys/socket.h>
-#include <openenclave/corelibc/stdio.h>
 #include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/posix/fdtable.h>
 #include <openenclave/internal/posix/raise.h>

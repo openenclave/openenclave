@@ -1844,9 +1844,8 @@ int oe_posix_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg)
     return 0;
 }
 
-
-#define TIOCGWINSZ   0x5413
-#define TIOCSWINSZ   0x5414
+#define TIOCGWINSZ 0x5413
+#define TIOCSWINSZ 0x5414
 int oe_posix_ioctl_ocall(
     oe_host_fd_t fd,
     unsigned long request,
@@ -1858,16 +1857,16 @@ int oe_posix_ioctl_ocall(
     // codes from the enclave to be the equivelent for windows. But... no such
     // codes are currently being used So we panic to highlight the problem line
     // of code. In this way, we can see what ioctls are needed
-    
-    switch(request)
+
+    switch (request)
     {
-    case TIOCGWINSZ:
-    case TIOCSWINSZ:
-        _set_errno(OE_ENOTTY);
-        break;
-    default:
-        _set_errno(OE_EINVAL);
-        break;
+        case TIOCGWINSZ:
+        case TIOCSWINSZ:
+            _set_errno(OE_ENOTTY);
+            break;
+        default:
+            _set_errno(OE_EINVAL);
+            break;
     }
 
     return -1;
