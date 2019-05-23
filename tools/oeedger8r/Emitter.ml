@@ -351,8 +351,6 @@ let oe_gen_args_header (ec : enclave_content) (dir : string) =
           sprintf "/* foreign array of type %s */ void*" tystr
         else tystr
       in
-      (* TODO: We shouldn't have to emit a strlen variable for ocalls,
-       but currently we require it. *)
       let need_strlen p =
         (is_str_ptr p || is_wstr_ptr p) && (is_in_ptr p || is_inout_ptr p)
       in
@@ -468,13 +466,13 @@ let get_cast_to_mem_expr (ptype, decl) (parens : bool) =
 
 (** Prepare [input_buffer]. *)
 let oe_prepare_input_buffer (fd : func_decl) (alloc_func : string) structs =
-  (* TODO: Combine these two functions with the target buffer as an input. *)
-  let oe_compute_input_buffer_size (plist : pdecl list) =
+  let oe_compute_buffer_size (buffer : string)
+      (predicate : parameter_type * declarator -> bool) (plist : pdecl list) =
     let rec gen_add_size prefix count (ptype, decl) =
       let size = oe_get_param_size (ptype, decl, "_args." ^ prefix) in
       let arg = prefix ^ decl.identifier in
       [ gen_c_for count
-      ; [sprintf "if (%s) OE_ADD_SIZE(_input_buffer_size, %s);" arg size]
+      ; [sprintf "if (%s) OE_ADD_SIZE(%s, %s);" arg buffer size]
       ; (let param_count =
            oe_get_param_count (ptype, decl, "_args." ^ prefix)
          in
@@ -484,36 +482,20 @@ let oe_prepare_input_buffer (fd : func_decl) (alloc_func : string) structs =
       |> List.flatten
     in
     let params =
-      flatten_map (gen_add_size "" "1")
-        (List.filter (fun (p, _) -> is_in_ptr p || is_inout_ptr p) plist)
+      flatten_map (gen_add_size "" "1") (List.filter predicate plist)
     in
     (* Note that the indentation for the first line is applied by the
      parent function. *)
     if params <> [] then String.concat "\n    " params
-    else "/* There were no in nor in-out parameters. */"
+    else "/* There were no corresponding parameters. */"
   in
-  let oe_compute_output_buffer_size (plist : pdecl list) =
-    let rec gen_add_size prefix count (ptype, decl) =
-      let size = oe_get_param_size (ptype, decl, "_args." ^ prefix) in
-      let arg = prefix ^ decl.identifier in
-      [ gen_c_for count
-      ; [sprintf "if (%s) OE_ADD_SIZE(_output_buffer_size, %s);" arg size]
-      ; (let param_count =
-           oe_get_param_count (ptype, decl, "_args." ^ prefix)
-         in
-         flatten_map
-           (gen_add_size (arg ^ gen_c_deref param_count) param_count)
-           (should_deepcopy (get_param_atype ptype) structs)) ]
-      |> List.flatten
-    in
-    let params =
-      flatten_map (gen_add_size "" "1")
-        (List.filter (fun (p, _) -> is_out_ptr p || is_inout_ptr p) plist)
-    in
-    (* Note that the indentation for the first line is applied by the
-     parent function. *)
-    if params <> [] then String.concat "\n    " params
-    else "/* There were no out nor in-out parameters. */"
+  let oe_compute_input_buffer_size =
+    oe_compute_buffer_size "_input_buffer_size" (fun (p, _) ->
+        is_in_ptr p || is_inout_ptr p )
+  in
+  let oe_compute_output_buffer_size =
+    oe_compute_buffer_size "_output_buffer_size" (fun (p, _) ->
+        is_out_ptr p || is_inout_ptr p )
   in
   let oe_serialize_buffer_inputs (plist : pdecl list) =
     let rec gen_serialize prefix count (ptype, decl) =
