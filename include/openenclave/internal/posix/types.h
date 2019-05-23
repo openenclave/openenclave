@@ -6,6 +6,7 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/internal/defs.h>
 
 OE_EXTERNC_BEGIN
 
@@ -18,6 +19,11 @@ struct oe_host_pollfd
     short int events;
     short int revents;
 };
+
+OE_STATIC_ASSERT(sizeof(struct oe_host_pollfd) == (2 * sizeof(uint64_t)));
+OE_STATIC_ASSERT(OE_OFFSETOF(struct oe_host_pollfd, fd) == 0);
+OE_STATIC_ASSERT(OE_OFFSETOF(struct oe_host_pollfd, events) == 8);
+OE_STATIC_ASSERT(OE_OFFSETOF(struct oe_host_pollfd, revents) == 10);
 
 OE_EXTERNC_END
 
