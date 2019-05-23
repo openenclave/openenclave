@@ -24,6 +24,7 @@ add_library(oeenclave STATIC
     ../common/cert.c
     ../common/datetime.c
     ../common/kdf.c
+    ../common/lockless_queue.c
     asn1.c
     asym_keys.c
     cert.c

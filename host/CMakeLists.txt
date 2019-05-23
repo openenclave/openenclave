@@ -117,6 +117,7 @@ endif()
 add_library(oehost STATIC
   ../common/datetime.c
   ../common/kdf.c
+  ../common/lockless_queue.c
   ../common/safecrt.c
   asym_keys.c
   dupenv.c
