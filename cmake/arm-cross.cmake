@@ -42,11 +42,6 @@ set(OE_TZ_TA_C_FLAGS
     -fPIC
     -gdwarf)
 
-string(REPLACE ";"
-    " "
-    OE_TZ_TA_C_FLAGS_STRING
-    "${OE_TZ_TA_C_FLAGS}")
-
 # Path to required bits of the TA Dev Kit.
 set(OE_TZ_TA_DEV_KIT_CONF                   ${OE_TA_DEV_KIT_DIR}/host_include/conf.h)
 set(OE_TZ_TA_DEV_KIT_LINKER_SCRIPT_TEMPLATE ${OE_TA_DEV_KIT_DIR}/src/ta.ld.S)
