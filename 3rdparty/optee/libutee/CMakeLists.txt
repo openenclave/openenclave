@@ -60,8 +60,5 @@ set_source_files_properties(
   PROPERTIES
     COMPILE_FLAGS -Wno-conversion)
 
-set_property(TARGET oeutee PROPERTY
-  ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
-
 install(TARGETS oeutee oeuteeasm EXPORT openenclave-targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
