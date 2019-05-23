@@ -432,17 +432,11 @@ static oe_result_t _handle_ocall(
         *arg_out = 0;
 
     if (func != OE_OCALL_LOG)
-    {
-        oe_log_args_t log_args;
-        log_args.level = OE_LOG_LEVEL_INFO;
-        snprintf(
-            log_args.message,
-            OE_LOG_MESSAGE_LEN_MAX,
-            "Enclave %s OE_OCALL: %s\n",
+        oe_log(
+            OE_LOG_LEVEL_INFO,
+            "%s OE_OCALL: %s\n",
             enclave->path,
             oe_ocall_str(func));
-        oe_handle_log(enclave, (uint64_t)&log_args);
-    }
 
     switch ((oe_func_t)func)
     {
