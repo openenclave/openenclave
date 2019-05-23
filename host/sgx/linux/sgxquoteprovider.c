@@ -15,8 +15,6 @@
 #include "../platformquoteprovider.h"
 #include "../sgxquoteprovider.h"
 
-#ifdef OE_USE_LIBSGX
-
 /**
  * This file manages the libdcap_quoteprov.so shared library.
  * It loads the .so during program startup and keeps it loaded till application
@@ -141,9 +139,7 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
     uint8_t* p = 0;
     uint8_t* p_end = 0;
 
-#if defined(OE_USE_LIBSGX)
     OE_CHECK(oe_initialize_quote_provider());
-#endif
 
     if (!_get_revocation_info || !_free_revocation_info)
         OE_RAISE(OE_QUOTE_PROVIDER_LOAD_ERROR);
@@ -333,9 +329,7 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args)
     uint8_t* p_end = 0;
     OE_TRACE_INFO("Calling %s\n", __PRETTY_FUNCTION__);
 
-#if defined(OE_USE_LIBSGX)
     OE_CHECK(oe_initialize_quote_provider());
-#endif
 
     if (!_get_qe_identity_info || !_free_qe_identity_info)
     {
@@ -421,4 +415,3 @@ void oe_cleanup_qe_identity_info_args(oe_get_qe_identity_info_args_t* args)
             free(args->host_out_buffer);
     }
 }
-#endif

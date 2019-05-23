@@ -46,11 +46,9 @@ void generate_and_save_report(oe_enclave_t* enclave)
 
 void load_and_verify_report()
 {
-#ifdef OE_USE_LIBSGX
     std::vector<uint8_t> report = FileToBytes("./data/generated_report.bytes");
     OE_TEST(
         oe_verify_report(NULL, &report[0], report.size() - 1, NULL) == OE_OK);
-#endif
 }
 
 int main(int argc, const char* argv[])

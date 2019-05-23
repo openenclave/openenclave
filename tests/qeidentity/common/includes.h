@@ -7,10 +7,4 @@
 #include "../../../common/sgx/tcbinfo.h"
 #include "../../../host/sgx/quote.h"
 
-#ifndef OE_USE_LIBSGX
-// the following empty type was added to avoid build error in host/tests_u.h
-typedef struct
-{
-} oe_parsed_qe_identity_info_t;
-#endif
 #endif
