@@ -284,29 +284,26 @@ static resolver_t _hostresolver =
 };
 // clang-format on
 
-static oe_once_t _once = OE_ONCE_INITIALIZER;
-static bool _loaded;
-
-static void _load_once(void)
+oe_result_t oe_load_module_host_resolver(void)
 {
-    oe_result_t result = OE_FAILURE;
-    oe_resolver_t* resolver = &_hostresolver.base;
+    oe_result_t result = OE_UNEXPECTED;
+    static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
+    static bool _loaded = false;
 
-    if (oe_register_resolver(resolver) != 0)
-        OE_RAISE_ERRNO(oe_errno);
+    oe_spin_lock(&_lock);
+
+    if (!_loaded)
+    {
+        if (oe_register_resolver(&_hostresolver.base) != 0)
+            OE_RAISE_ERRNO(oe_errno);
+
+        _loaded = true;
+    }
 
     result = OE_OK;
 
 done:
+    oe_spin_unlock(&_lock);
 
-    if (result == OE_OK)
-        _loaded = true;
-}
-
-oe_result_t oe_load_module_host_resolver(void)
-{
-    if (oe_once(&_once, _load_once) != OE_OK || !_loaded)
-        return OE_FAILURE;
-
-    return OE_OK;
+    return result;
 }

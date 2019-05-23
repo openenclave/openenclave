@@ -13,6 +13,7 @@
 #include <openenclave/internal/posix/fdtable.h>
 #include <openenclave/internal/posix/iov.h>
 #include <openenclave/internal/posix/raise.h>
+#include <openenclave/internal/raise.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
@@ -36,7 +37,7 @@ typedef struct _pair
 
 typedef struct _device
 {
-    struct _oe_device fd;
+    struct _oe_device base;
     uint32_t magic;
 } device_t;
 
@@ -509,7 +510,7 @@ done:
     return ret;
 }
 
-static oe_host_fd_t _epoll_gethostfd(oe_fd_t* epoll_)
+static oe_host_fd_t _epoll_get_host_fd(oe_fd_t* epoll_)
 {
     epoll_t* epoll = _cast_epoll(epoll_);
     return epoll->host_fd;
@@ -719,7 +720,7 @@ static oe_epoll_ops_t _epoll_ops = {
     .fd.ioctl = _epoll_ioctl,
     .fd.fcntl = _epoll_fcntl,
     .fd.close = _epoll_close,
-    .fd.get_host_fd = _epoll_gethostfd,
+    .fd.get_host_fd = _epoll_get_host_fd,
     .epoll_ctl = _epoll_ctl,
     .epoll_wait = _epoll_wait,
 };
@@ -730,10 +731,11 @@ static oe_epoll_ops_t _get_epoll_ops(void)
 }
 
 // clang-format off
-static device_t _device = {
-    .fd.type = OE_DEVICE_TYPE_EPOLL,
-    .fd.name = OE_DEVICE_NAME_HOST_EPOLL,
-    .fd.ops.epoll =
+static device_t _device =
+{
+    .base.type = OE_DEVICE_TYPE_EPOLL,
+    .base.name = OE_DEVICE_NAME_HOST_EPOLL,
+    .base.ops.epoll =
     {
         .base.release = _epoll_release,
         .epoll_create = _epoll_create,
@@ -743,29 +745,30 @@ static device_t _device = {
 };
 // clang-format on
 
-static oe_once_t _once = OE_ONCE_INITIALIZER;
-static bool _loaded;
-
-static void _load_once(void)
+oe_result_t oe_load_module_host_epoll(void)
 {
-    oe_result_t result = OE_FAILURE;
-    const uint64_t devid = OE_DEVID_HOST_EPOLL;
+    oe_result_t result = OE_UNEXPECTED;
+    static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
+    static bool _loaded = false;
 
-    if (oe_device_table_set(devid, &_device.fd) != 0)
-        OE_RAISE_ERRNO(oe_errno);
+    oe_spin_lock(&_lock);
+
+    if (!_loaded)
+    {
+        if (oe_device_table_set(OE_DEVID_HOST_EPOLL, &_device.base) != 0)
+        {
+            /* Do not propagate errno to caller. */
+            oe_errno = 0;
+            OE_RAISE(OE_FAILURE);
+        }
+
+        _loaded = true;
+    }
 
     result = OE_OK;
 
 done:
+    oe_spin_unlock(&_lock);
 
-    if (result == OE_OK)
-        _loaded = true;
-}
-
-oe_result_t oe_load_module_host_epoll(void)
-{
-    if (oe_once(&_once, _load_once) != OE_OK || !_loaded)
-        return OE_FAILURE;
-
-    return OE_OK;
+    return result;
 }

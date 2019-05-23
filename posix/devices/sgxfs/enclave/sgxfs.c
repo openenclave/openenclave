@@ -22,6 +22,7 @@
 #include <openenclave/internal/posix/fd.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/posix/iov.h>
+#include <openenclave/internal/raise.h>
 #include <openenclave/bits/safecrt.h>
 
 #define FS_MAGIC 0x4a335f60
@@ -42,7 +43,7 @@ typedef struct _fs
     /* True if this file system has been mounted. */
     bool is_mounted;
 
-    /* Parameters passed to the mount() function. */
+    /* The parameters that were passed to the mount() function. */
     struct
     {
         unsigned long flags;
@@ -1101,7 +1102,7 @@ done:
 }
 
 /* TODO: figure out how to support. */
-static oe_host_fd_t _sgxfs_gethostfd(oe_fd_t* file_)
+static oe_host_fd_t _sgxfs_get_host_fd(oe_fd_t* file_)
 {
     OE_UNUSED(file_);
     OE_RAISE_ERRNO(OE_ENOTSUP);
@@ -1120,7 +1121,7 @@ static oe_file_ops_t _file_ops =
     .fd.ioctl = _sgxfs_ioctl,
     .fd.fcntl = _sgxfs_fcntl,
     .fd.close = _sgxfs_close,
-    .fd.get_host_fd = _sgxfs_gethostfd,
+    .fd.get_host_fd = _sgxfs_get_host_fd,
     .lseek = _sgxfs_lseek,
     .getdents64 = _sgxfs_getdents64,
 };
@@ -1156,34 +1157,30 @@ static fs_t _sgxfs =
 };
 // clang-format on
 
-static oe_device_t* _get_sgxfs_device(void)
+oe_result_t oe_load_module_sgx_file_system(void)
 {
-    return &_sgxfs.base;
-}
+    oe_result_t result = OE_UNEXPECTED;
+    static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
+    static bool _loaded = false;
 
-static oe_once_t _once = OE_ONCE_INITIALIZER;
-static bool _loaded;
+    oe_spin_lock(&_lock);
 
-static void _load_once()
-{
-    oe_result_t result = OE_FAILURE;
-    const uint64_t devid = OE_DEVID_SGX_FILE_SYSTEM;
+    if (!_loaded)
+    {
+        if (oe_device_table_set(OE_DEVID_SGX_FILE_SYSTEM, &_sgxfs.base) != 0)
+        {
+            /* Do not propagate errno to caller. */
+            oe_errno = 0;
+            OE_RAISE(OE_FAILURE);
+        }
 
-    if (oe_device_table_set(devid, _get_sgxfs_device()) != 0)
-        OE_RAISE_ERRNO(OE_EINVAL);
+        _loaded = true;
+    }
 
     result = OE_OK;
 
 done:
+    oe_spin_unlock(&_lock);
 
-    if (result == OE_OK)
-        _loaded = true;
-}
-
-oe_result_t oe_load_module_sgx_file_system(void)
-{
-    if (oe_once(&_once, _load_once) != OE_OK || !_loaded)
-        return OE_FAILURE;
-
-    return OE_OK;
+    return result;
 }

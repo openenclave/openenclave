@@ -17,6 +17,7 @@
 #include <openenclave/internal/posix/fd.h>
 #include <openenclave/internal/posix/iov.h>
 #include <openenclave/corelibc/stdlib.h>
+#include <openenclave/internal/raise.h>
 #include <openenclave/bits/safecrt.h>
 #include "posix_t.h"
 
@@ -886,7 +887,7 @@ done:
     return ret;
 }
 
-static oe_host_fd_t _hostsock_gethostfd(oe_fd_t* sock_)
+static oe_host_fd_t _hostsock_get_host_fd(oe_fd_t* sock_)
 {
     sock_t* sock = _cast_sock(sock_);
     return sock->host_fd;
@@ -900,7 +901,7 @@ static oe_socket_ops_t _sock_ops = {
     .fd.write = _hostsock_write,
     .fd.readv = _hostsock_readv,
     .fd.writev = _hostsock_writev,
-    .fd.get_host_fd = _hostsock_gethostfd,
+    .fd.get_host_fd = _hostsock_get_host_fd,
     .fd.close = _hostsock_close,
     .accept = _hostsock_accept,
     .bind = _hostsock_bind,
@@ -938,29 +939,32 @@ static device_t _device = {
 };
 // clang-format on
 
-static oe_once_t _once = OE_ONCE_INITIALIZER;
-static bool _loaded;
-
-static void _load_once(void)
+oe_result_t oe_load_module_host_socket_interface(void)
 {
-    oe_result_t result = OE_FAILURE;
-    const uint64_t devid = OE_DEVID_HOST_SOCKET_INTERFACE;
+    oe_result_t result = OE_UNEXPECTED;
+    static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
+    static bool _loaded = false;
 
-    if (oe_device_table_set(devid, &_device.base) != 0)
-        OE_RAISE_ERRNO(oe_errno);
+    oe_spin_lock(&_lock);
+
+    if (!_loaded)
+    {
+        const uint64_t devid = OE_DEVID_HOST_SOCKET_INTERFACE;
+
+        if (oe_device_table_set(devid, &_device.base) != 0)
+        {
+            /* Do not propagate errno to caller. */
+            oe_errno = 0;
+            OE_RAISE(OE_FAILURE);
+        }
+
+        _loaded = true;
+    }
 
     result = OE_OK;
 
 done:
+    oe_spin_unlock(&_lock);
 
-    if (result == OE_OK)
-        _loaded = true;
-}
-
-oe_result_t oe_load_module_host_socket_interface(void)
-{
-    if (oe_once(&_once, _load_once) != OE_OK || !_loaded)
-        return OE_FAILURE;
-
-    return OE_OK;
+    return result;
 }
