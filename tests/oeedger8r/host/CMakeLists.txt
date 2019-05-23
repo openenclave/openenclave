@@ -17,7 +17,7 @@ add_custom_command(
   ../edl/pointer.edl
   ../edl/string.edl
   ../edl/struct.edl
-  COMMAND edger8r --untrusted --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../edl --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../moreedl all.edl)
+  COMMAND edger8r --experimental --untrusted --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../edl --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../moreedl all.edl)
 
 add_custom_command(
   OUTPUT bar_u.h bar_args.h
