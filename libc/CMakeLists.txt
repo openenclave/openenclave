@@ -59,7 +59,6 @@ else()
         optee/abort.c
         optee/exp2l.c
         optee/link.c
-        optee/stack.c
         optee/syscalls.c
         optee/sysconf.c
         optee/trace.c)
