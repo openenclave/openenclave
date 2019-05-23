@@ -775,7 +775,7 @@ int oe_posix_getnameinfo_ocall(
 /*
 **==============================================================================
 **
-** Polling:
+** epoll:
 **
 **==============================================================================
 */
@@ -1032,6 +1032,60 @@ int oe_posix_shutdown_polling_device_ocall(oe_host_fd_t fd)
     errno = 0;
 
     return 0;
+}
+
+/*
+**==============================================================================
+**
+** poll:
+**
+**==============================================================================
+*/
+
+int oe_posix_poll_ocall(
+    struct oe_host_pollfd* host_fds,
+    oe_nfds_t nfds,
+    int timeout)
+{
+    int ret = -1;
+    struct oe_pollfd* fds = NULL;
+
+    errno = 0;
+
+    if (nfds == 0)
+    {
+        errno = EINVAL;
+        goto done;
+    }
+
+    if (!(fds = calloc(nfds, sizeof(struct oe_pollfd))))
+    {
+        errno = ENOMEM;
+        goto done;
+    }
+
+    /* Convert host_fds[] array to fds[] array. */
+    for (oe_nfds_t i = 0; i < nfds; i++)
+    {
+        fds[i].events = host_fds[i].events;
+        fds[i].fd = (int)host_fds[i].fd;
+    }
+
+    if ((ret = poll((struct pollfd*)fds, nfds, timeout)) <= 0)
+        goto done;
+
+    /* Update the revents in the fds[] array. */
+    for (oe_nfds_t i = 0; i < nfds; i++)
+    {
+        host_fds[i].revents = fds[i].revents;
+    }
+
+done:
+
+    if (fds)
+        free(fds);
+
+    return ret;
 }
 
 /*

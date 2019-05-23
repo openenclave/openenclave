@@ -29,6 +29,7 @@ enclave {
     include "openenclave/corelibc/sys/utsname.h"
     include "openenclave/corelibc/sys/stat.h"
     include "openenclave/corelibc/dirent.h"
+    include "openenclave/corelibc/poll.h"
     include "openenclave/internal/posix/types.h"
 
     trusted {
@@ -342,6 +343,12 @@ enclave {
 
         int oe_posix_shutdown_polling_device_ocall(
             oe_host_fd_t fd)
+            propagate_errno;
+
+        int oe_posix_poll_ocall(
+            [in, out, count=nfds] struct oe_host_pollfd* host_fds,
+            oe_nfds_t nfds,
+            int timeout)
             propagate_errno;
 
         int oe_posix_getpid();

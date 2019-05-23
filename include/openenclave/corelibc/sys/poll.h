@@ -32,7 +32,7 @@ OE_EXTERNC_BEGIN
 #define OE_POLLNVAL   0x020
 // clang-format on
 
-typedef unsigned long int nfds_t;
+typedef unsigned long int oe_nfds_t;
 
 struct oe_pollfd
 {
@@ -41,7 +41,7 @@ struct oe_pollfd
     short int revents; /* Types of events that actually occurred.  */
 };
 
-int oe_poll(struct oe_pollfd* fds, nfds_t nfds, int timeout);
+int oe_poll(struct oe_pollfd* fds, oe_nfds_t nfds, int timeout);
 
 /*
 **==============================================================================
@@ -72,6 +72,8 @@ struct pollfd
     short int events;
     short int revents;
 };
+
+typedef oe_nfds_t nfds_t;
 
 OE_INLINE int poll(struct pollfd* fds, nfds_t nfds, int timeout)
 {
