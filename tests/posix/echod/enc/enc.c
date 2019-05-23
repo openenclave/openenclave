@@ -130,7 +130,8 @@ void echod_run_server_ecall(uint16_t port)
             memcpy(&tmp_readfds, &readfds, sizeof(tmp_readfds));
             memcpy(&tmp_writefds, &writefds, sizeof(tmp_writefds));
 
-            nfds = select(1, &tmp_readfds, &tmp_writefds, NULL, &timeout);
+            nfds = select(
+                listen_sock + 1, &tmp_readfds, &tmp_writefds, NULL, &timeout);
 
             if (nfds > 0)
             {

@@ -438,7 +438,7 @@ static long _syscall(
         case OE_SYS_poll:
         {
             struct oe_pollfd* fds = (struct oe_pollfd*)arg1;
-            nfds_t nfds = (nfds_t)arg2;
+            oe_nfds_t nfds = (oe_nfds_t)arg2;
             int millis = (int)arg3;
             ret = oe_poll(fds, nfds, millis);
             goto done;

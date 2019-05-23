@@ -2,77 +2,92 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/safecrt.h>
+#include <openenclave/corelibc/poll.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
-#include <openenclave/corelibc/sys/epoll.h>
 #include <openenclave/corelibc/sys/select.h>
 #include <openenclave/corelibc/time.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/trace.h>
 
-void _set_to_fd_list(
-    oe_fd_set* set,
-    int flags,
-    int fdlist_max,
-    int* fd_list,
-    int* fd_flags)
+typedef struct _poll_fds
 {
-    int fd_idx = 0;
-    uint32_t idx = 0;
-    uint32_t* bits = (uint32_t*)set->fds_bits;
-    uint32_t bitpos;
+    oe_nfds_t size;
+    struct oe_pollfd data[OE_FD_SETSIZE];
+} poll_fds_t;
 
-    for (idx = 0; idx < (OE_FD_SETSIZE >> 5); idx++)
+int _update_fds(poll_fds_t* fds, int fd, short events)
+{
+    int ret = -1;
+    oe_nfds_t i;
+
+    /* If the fd is already in the array, update it. */
+    for (i = 0; i < fds->size; i++)
     {
-        uint32_t bitmask = 1;
-        for (bitpos = 0; bitpos < 8 * sizeof(long); bitpos++)
+        if (fds->data[i].fd == fd)
         {
-            if (bits[idx] & bitmask)
-            {
-                uint32_t fd = (idx << 5) + bitpos;
-                if (fd_idx < fdlist_max)
-                {
-                    for (fd_idx = 0; fd_idx < fdlist_max; fd_idx++)
-                    {
-                        if ((fd_list[fd_idx] == (int)fd) ||
-                            (fd_list[fd_idx] == (int)0xffffffff))
-                        {
-                            // If the fd is in the list, break
-                            // if the fdlist is empty here, break
-                            break;
-                        }
-                    }
-
-                    if (fd_list[fd_idx] == (int)0xffffffff)
-                    {
-                        fd_list[fd_idx] = (int)fd;
-                    }
-
-                    fd_flags[fd] |= flags;
-                }
-            }
-            bitmask <<= 1;
+            fds->data[i].events = events;
+            ret = 0;
+            goto done;
         }
     }
+
+    /* If the array is exhausted. */
+    if (fds->size == OE_COUNTOF(fds->data))
+        goto done;
+
+    /* Append the new element. */
+
+    fds->data[fds->size].fd = fd;
+    fds->data[fds->size].events = events;
+    fds->data[fds->size].revents = 0;
+    fds->size++;
+
+    ret = 0;
+
+done:
+    return ret;
 }
 
-void _ev_list_to_set(
-    int nev,
-    struct oe_epoll_event* pevent,
-    uint32_t mask,
-    oe_fd_set* set)
+int _fdset_to_fds(poll_fds_t* fds, short events, oe_fd_set* set, int nfds)
 {
-    int i = 0;
+    int ret = -1;
+    int fd;
 
-    for (i = 0; i < nev; i++)
+    for (fd = 0; fd < nfds; fd++)
     {
-        if ((pevent[i].events & mask) != 0)
+        if (OE_FD_ISSET(fd, set))
         {
-            OE_FD_SET(pevent[i].data.fd, set);
+            if (_update_fds(fds, fd, events) != 0)
+                goto done;
         }
     }
+
+    ret = 0;
+
+done:
+    return ret;
+}
+
+int _fds_to_fdset(poll_fds_t* fds, short revents, oe_fd_set* set)
+{
+    int num_ready = 0;
+    oe_nfds_t i;
+
+    for (i = 0; i < fds->size; i++)
+    {
+        const struct oe_pollfd* p = &fds->data[i];
+
+        if ((p->revents & revents))
+        {
+            OE_FD_SET(p->fd, set);
+            num_ready++;
+        }
+    }
+
+    return num_ready;
 }
 
 int oe_select(
@@ -82,82 +97,43 @@ int oe_select(
     oe_fd_set* exceptfds,
     struct oe_timeval* timeout)
 {
-    int fd_list[OE_FD_SETSIZE] = {0};  // <nfds> members
-    int fd_flags[OE_FD_SETSIZE] = {0}; // indexed by fd
-    int i = 0;
-    int epfd = -1;
     int ret = -1;
-    int ret_fds = -1;
-    struct oe_epoll_event rtn_ev[OE_FD_SETSIZE] = {{0}};
-    int timeout_ms = -1;
+    int num_ready = 0;
+    poll_fds_t fds = {0};
+    int poll_timeout = -1;
 
     if (timeout)
     {
-        timeout_ms = (int)timeout->tv_sec * 1000;
-        timeout_ms += (int)(timeout->tv_usec / 1000);
-    }
-
-    {
-        const size_t num_bytes = sizeof(uint32_t) * (size_t)(nfds + 1);
-
-        if (oe_memset_s(fd_list, num_bytes, 0xff, num_bytes) != OE_OK)
-            OE_RAISE_ERRNO(OE_EINVAL);
+        poll_timeout = (int)timeout->tv_sec * 1000;
+        poll_timeout += (int)(timeout->tv_usec / 1000);
     }
 
     if (readfds)
     {
-        _set_to_fd_list(
-            readfds,
-            (OE_EPOLLIN | OE_EPOLLRDNORM | OE_EPOLLRDBAND),
-            nfds,
-            fd_list,
-            fd_flags);
+        const short events = OE_POLLIN | OE_POLLRDNORM | OE_POLLRDBAND;
+
+        if (_fdset_to_fds(&fds, events, readfds, nfds) != 0)
+            goto done;
     }
 
     if (writefds)
     {
-        _set_to_fd_list(
-            writefds,
-            (OE_EPOLLOUT | OE_EPOLLWRNORM | OE_EPOLLWRBAND),
-            nfds,
-            fd_list,
-            fd_flags);
+        const short events = OE_POLLOUT | OE_POLLWRNORM | OE_POLLWRBAND;
+
+        if (_fdset_to_fds(&fds, events, writefds, nfds) != 0)
+            goto done;
     }
 
     if (exceptfds)
     {
-        _set_to_fd_list(
-            exceptfds,
-            (OE_EPOLLERR | OE_EPOLLHUP | OE_EPOLLRDHUP | OE_EPOLLWAKEUP),
-            nfds,
-            fd_list,
-            fd_flags);
+        const short events = OE_POLLERR | OE_POLLHUP | OE_POLLRDHUP;
+
+        if (_fdset_to_fds(&fds, events, exceptfds, nfds) != 0)
+            goto done;
     }
 
-    epfd = oe_epoll_create1(0);
-    if (epfd < 0)
-        OE_RAISE_ERRNO(oe_errno);
-
-    for (i = 0; i < nfds; i++)
-    {
-        struct oe_epoll_event ev = {
-            .data.fd = fd_list[i],
-            .events = (uint32_t)fd_flags[fd_list[i]],
-        };
-
-        ret = oe_epoll_ctl(epfd, OE_EPOLL_CTL_ADD, fd_list[i], &ev);
-        if (ret < 0)
-        {
-            OE_RAISE_ERRNO_MSG(
-                OE_EINVAL, "epfd=%d fd_list[%d]=%d", epfd, i, fd_list[i]);
-        }
-    }
-
-    ret_fds = oe_epoll_wait(epfd, rtn_ev, OE_FD_SETSIZE, timeout_ms);
-    if (ret_fds < 0)
-    {
+    if ((ret = oe_poll(fds.data, fds.size, poll_timeout)) < 0)
         goto done;
-    }
 
     if (readfds)
         OE_FD_ZERO(readfds);
@@ -170,36 +146,36 @@ int oe_select(
 
     if (readfds)
     {
-        _ev_list_to_set(
-            ret_fds,
-            rtn_ev,
-            (OE_EPOLLIN | OE_EPOLLRDNORM | OE_EPOLLRDBAND),
-            readfds);
+        short events = OE_POLLIN | OE_POLLRDNORM | OE_POLLRDBAND;
+        int n;
+
+        if ((n = _fds_to_fdset(&fds, events, readfds)) > num_ready)
+            num_ready += n;
     }
 
     if (writefds)
     {
-        _ev_list_to_set(
-            ret_fds,
-            rtn_ev,
-            (OE_EPOLLOUT | OE_EPOLLWRNORM | OE_EPOLLWRBAND),
-            writefds);
+        short events = OE_POLLOUT | OE_POLLWRNORM | OE_POLLWRBAND;
+        int n;
+
+        if ((n = _fds_to_fdset(&fds, events, writefds)) > num_ready)
+            num_ready += n;
     }
 
     if (exceptfds)
     {
-        _ev_list_to_set(
-            ret_fds,
-            rtn_ev,
-            (OE_EPOLLERR | OE_EPOLLHUP | OE_EPOLLRDHUP | OE_EPOLLWAKEUP),
-            exceptfds);
+        short events = OE_POLLERR | OE_POLLHUP | OE_POLLRDHUP;
+        int n;
+
+        if ((n = _fds_to_fdset(&fds, events, exceptfds)) > num_ready)
+            num_ready += n;
     }
+
+    ret = num_ready;
+
 done:
 
-    if (epfd >= 0)
-        oe_close(epfd);
-
-    return ret_fds;
+    return ret;
 }
 
 void OE_FD_CLR(int fd, oe_fd_set* set)

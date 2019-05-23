@@ -231,6 +231,7 @@ static int _ecall_select_test(INTERFACE& x, size_t buff_len, char* recv_buff)
     FD_SET_T writefds;
     FD_SET_T exceptfds;
     TIMEVAL_T timeout = {0};
+    int max_fd = 0;
 
     OE_UNUSED(x);
 
@@ -252,6 +253,7 @@ static int _ecall_select_test(INTERFACE& x, size_t buff_len, char* recv_buff)
 
     printf("socket fd = %d\n", sockfd);
     printf("Connecting...\n");
+
     int retries = 0;
     static const int max_retries = 4;
     while (x.connect(sockfd, (SOCKADDR_T*)&serv_addr, sizeof(serv_addr)) < 0)
@@ -270,8 +272,11 @@ static int _ecall_select_test(INTERFACE& x, size_t buff_len, char* recv_buff)
     if (sockfd >= 0)
     {
         x.FD_SET_F(sockfd, &readfds);
-        x.FD_SET_F(sockfd, &writefds);
-        x.FD_SET_F(sockfd, &exceptfds);
+        // x.FD_SET_F(sockfd, &writefds);
+        // x.FD_SET_F(sockfd, &exceptfds);
+
+        if (sockfd > max_fd)
+            max_fd = sockfd;
     }
 
     const int flags = x.O_NONBLOCK_T | x.O_RDONLY_T;
@@ -279,19 +284,25 @@ static int _ecall_select_test(INTERFACE& x, size_t buff_len, char* recv_buff)
     OE_TEST(file_fd >= 0);
 
     printf("polling...\n");
+#if 0
     if (file_fd >= 0)
     {
         x.FD_SET_F(file_fd, &readfds);
         x.FD_SET_F(file_fd, &writefds);
         x.FD_SET_F(file_fd, &exceptfds);
+
+        if (file_fd > max_fd)
+            max_fd = file_fd;
     }
+#endif
 
     size_t nevents = 0;
     int nfds = 0;
     do
     {
         timeout.tv_sec = 30;
-        if ((nfds = x.select(1, &readfds, &writefds, &exceptfds, &timeout)) < 0)
+        if ((nfds = x.select(
+                 max_fd + 1, &readfds, &writefds, &exceptfds, &timeout)) < 0)
         {
             printf("select error.\n");
         }
@@ -302,6 +313,8 @@ static int _ecall_select_test(INTERFACE& x, size_t buff_len, char* recv_buff)
 
             if (x.FD_ISSET_F(sockfd, &readfds))
             {
+                printf("select: read event\n");
+
                 ssize_t n;
                 char buff[1024] = {0};
 
@@ -317,6 +330,14 @@ static int _ecall_select_test(INTERFACE& x, size_t buff_len, char* recv_buff)
                     nfds = -1;
                     break;
                 }
+            }
+            else if (x.FD_ISSET_F(sockfd, &writefds))
+            {
+                printf("select: write event\n");
+            }
+            else if (x.FD_ISSET_F(sockfd, &exceptfds))
+            {
+                printf("select: exception event\n");
             }
         }
 
