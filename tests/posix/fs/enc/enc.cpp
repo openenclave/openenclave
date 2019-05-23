@@ -477,6 +477,14 @@ static void test_realpath(const char* tmp_dir)
     OE_TEST(umount("/") == 0);
 }
 
+void test_zero_sized_iovs(void)
+{
+    struct oe_iovec iov;
+
+    OE_TEST(oe_writev(OE_STDOUT_FILENO, &iov, 0) == 0);
+    OE_TEST(oe_readv(OE_STDIN_FILENO, &iov, 0) == 0);
+}
+
 extern "C" void test_dup_case1(const char* tmp_dir)
 {
     FILE* stream;
@@ -648,6 +656,8 @@ void test_fs(const char* src_dir, const char* tmp_dir)
     }
 
     test_realpath(tmp_dir);
+
+    test_zero_sized_iovs();
 
     /* Note: these must come last since they change STDOUT and STDERR. */
     test_dup_case1(tmp_dir);

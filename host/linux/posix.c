@@ -464,10 +464,7 @@ int oe_posix_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg)
     return fcntl((int)fd, cmd, arg);
 }
 
-int oe_posix_ioctl_ocall(
-    oe_host_fd_t fd,
-    unsigned long request,
-    unsigned long arg)
+int oe_posix_ioctl_ocall(oe_host_fd_t fd, uint64_t request, uint64_t arg)
 {
     errno = 0;
 

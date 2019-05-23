@@ -525,8 +525,9 @@ static ssize_t _sgxfs_readv(
     if (!iov || iovcnt < 0 || iovcnt > OE_IOV_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    /* Calcualte the size of the read buffer. */
-    buf_size = oe_iov_compute_size(iov, (size_t)iovcnt);
+    /* Calculate the size of the read buffer. */
+    if ((buf_size = oe_iov_compute_size(iov, (size_t)iovcnt)) == (size_t)-1)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Allocate the read buffer. */
     if (!(buf = oe_malloc(buf_size)))

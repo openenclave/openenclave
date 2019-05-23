@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/safecrt.h>
+#include <openenclave/bits/safemath.h>
 #include <openenclave/corelibc/limits.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
@@ -9,15 +10,21 @@
 #include <openenclave/corelibc/sys/uio.h>
 #include <openenclave/internal/posix/iov.h>
 
-/* Get the deflated size of the IO vector. */
 size_t oe_iov_compute_size(const struct oe_iovec* iov, size_t iov_count)
 {
+    size_t ret = (size_t)-1;
     size_t size = 0;
 
     for (size_t i = 0; i < iov_count; i++)
-        size += iov[i].iov_len;
+    {
+        if (oe_safe_add_sizet(iov[i].iov_len, size, &size) != OE_OK)
+            goto done;
+    }
 
-    return size;
+    ret = size;
+
+done:
+    return ret;
 }
 
 int oe_iov_deflate(
@@ -36,11 +43,12 @@ int oe_iov_deflate(
     if (buf_size_out)
         *buf_size_out = 0;
 
-    if (!iov || !buf_out || !buf_size_out)
+    if ((!iov && iov_count) || !buf_out || !buf_size_out)
         goto done;
 
     /* Calculate the size of the deflated buffer. */
-    buf_size = oe_iov_compute_size(iov, iov_count);
+    if ((buf_size = oe_iov_compute_size(iov, iov_count)) == (size_t)-1)
+        goto done;
 
     /* Allocate the output buffer. */
     if (!(buf = oe_malloc(buf_size)))

@@ -82,8 +82,6 @@ int oe_socketpair(int domain, int type, int protocol, int retfd[2])
     uint64_t devid = OE_DEVID_HOST_SOCKET_INTERFACE;
 
     /* Resolve the device id. */
-    /* 2do: select based on address family */
-
     if (!(device = oe_device_table_get(devid, OE_DEVICE_TYPE_SOCKET_INTERFACE)))
         OE_RAISE_ERRNO(OE_EINVAL);
 

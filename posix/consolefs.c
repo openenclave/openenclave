@@ -187,11 +187,12 @@ static ssize_t _consolefs_readv(
     void* buf = NULL;
     size_t buf_size;
 
-    if (!iov || iovcnt < 0 || iovcnt > OE_IOV_MAX)
+    if ((!iov && iovcnt) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    /* Calcualte the size of the read buffer. */
-    buf_size = oe_iov_compute_size(iov, (size_t)iovcnt);
+    /* Calculate the size of the read buffer. */
+    if ((buf_size = oe_iov_compute_size(iov, (size_t)iovcnt)) == (size_t)-1)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Allocate the read buffer. */
     if (!(buf = oe_malloc(buf_size)))
@@ -224,7 +225,7 @@ static ssize_t _consolefs_writev(
     void* buf = NULL;
     size_t buf_size = 0;
 
-    if (!iov || iovcnt < 0 || iovcnt > OE_IOV_MAX)
+    if ((!iov && iovcnt) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Create the write buffer from the IOV vector. */
@@ -367,7 +368,6 @@ static oe_fd_t* _new_file(uint32_t fileno)
         if (retval < 0)
             goto done;
 
-        oe_printf("STANDARD_DEVICE=%ld\n", retval);
         file->host_fd = retval;
     }
 

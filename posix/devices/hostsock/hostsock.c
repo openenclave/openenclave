@@ -423,7 +423,12 @@ static ssize_t _hostsock_recvmsg(
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Get the size the total (flat) size of the msg_iov array. */
-    buf_len = oe_iov_compute_size(msg->msg_iov, msg->msg_iovlen);
+    {
+        buf_len = oe_iov_compute_size(msg->msg_iov, msg->msg_iovlen);
+
+        if (buf_len == (size_t)-1)
+            OE_RAISE_ERRNO(OE_EINVAL);
+    }
 
     /* Allocate the read buffer if its length is non-zero. */
     if (buf_len && !(buf = oe_calloc(1, buf_len)))
@@ -801,8 +806,9 @@ static ssize_t _hostsock_readv(
     if (!iov || iovcnt < 0 || iovcnt > OE_IOV_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    /* Calcualte the size of the read buffer. */
-    buf_size = oe_iov_compute_size(iov, (size_t)iovcnt);
+    /* Calculate the size of the read buffer. */
+    if ((buf_size = oe_iov_compute_size(iov, (size_t)iovcnt)) == (size_t)-1)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Allocate the read buffer. */
     if (!(buf = oe_malloc(buf_size)))
