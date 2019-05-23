@@ -79,14 +79,7 @@ uint64_t oe_posix_opendir_ocall(const char* name)
     return (uint64_t)opendir(name);
 }
 
-int oe_posix_readdir_ocall(
-    uint64_t dirp,
-    uint64_t* d_ino,
-    int64_t* d_off,
-    uint16_t* d_reclen,
-    uint8_t* d_type,
-    char* d_name,
-    size_t d_namelen)
+int oe_posix_readdir_ocall(uint64_t dirp, struct oe_dirent* entry)
 {
     int ret = -1;
     struct dirent* ent;
@@ -99,38 +92,42 @@ int oe_posix_readdir_ocall(
         goto done;
     }
 
-    if (!d_ino || !d_off || !d_reclen || !d_type || !d_name)
+    if (!entry)
     {
         errno = EINVAL;
         goto done;
     }
 
-    errno = 0;
-
-    if (!(ent = readdir((DIR*)dirp)))
+    /* Perform the readdir() operation. */
     {
-        if (errno)
-            goto done;
+        errno = 0;
 
-        ret = -1;
-        goto done;
+        if (!(ent = readdir((DIR*)dirp)))
+        {
+            if (errno)
+                goto done;
+
+            ret = 1;
+            goto done;
+        }
     }
 
+    /* Copy the local entry to the caller's entry structure. */
     {
         size_t len = strlen(ent->d_name);
 
-        *d_ino = ent->d_ino;
-        *d_off = ent->d_off;
-        *d_reclen = ent->d_reclen;
-        *d_type = ent->d_type;
+        entry->d_ino = ent->d_ino;
+        entry->d_off = ent->d_off;
+        entry->d_type = ent->d_type;
+        entry->d_reclen = sizeof(struct oe_dirent);
 
-        if (len >= d_namelen)
+        if (len >= sizeof(entry->d_name))
         {
             errno = ENAMETOOLONG;
             goto done;
         }
 
-        memcpy(d_name, ent->d_name, len + 1);
+        memcpy(entry->d_name, ent->d_name, len + 1);
     }
 
     ret = 0;
