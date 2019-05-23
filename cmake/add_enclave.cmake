@@ -1,29 +1,76 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 #
-# Helper function to sign an enclave binary.
+# Helper mecro to either sign an SGX enclave binary or to generate and sign
+# an OP-TEE-compatible enclave binary.
 #
 # Usage:
 #
 #  add_enclave(<TARGET target>
+#              [<UUID uuid>]
 #              [CXX]
 #              <SOURCES sources>
 #              [<CONFIG config>]
 #              [<KEY key>])
 #
+# For SGX enclaves:
 # Given <target> and <config>, this function adds custom commands to
 # generate a signing key if key is not specified and call `oesign` to
 # sign the target, resulting in `<target>.signed`. It also adds
 # `<target>_signed` as an imported target so that it can be referenced
 # later in the CMake graph.
 #
+# For OP-TEE enclaves:
+# Given <target> and <uuid>, this function adds custom commands to
+# generate and sign an OP-TEE Trusted Application (TA), the equivalent
+# of an enclave for ARM TrustZone. TA binaries must follow a specific
+# layout to be loadable by OP-TEE's loader. This macro helps ensure that
+# that layout is indeed followed, adding a `<target>.ta` target to generate
+# the final TA binary. Additionally, TA binaries must be named with a UUID.
+# As such, while the CMake target names remain in sync with <target>, the
+# resulting binaries use <uuid> plus their corresponding extension as their
+# on-disk name.
+#
 # The target is always linked to `oeenclave`, and if the optional flag
 # `CXX` is passed, it is also linked to `oelibcxx`
+#
+# NOTE: This must be a macro! To generate TA binaries, a custom linker
+#       command is necessary. The only way to control the linker command
+#       is for it to appear at the bottom of the CMakeLists.txt file that
+#       calls for the generation of the TA. Making add_enclave and/or
+#       add_enclave_optee into a function breaks their functionality.
 #
 # TODO: (1) Replace the name guessing logic.
 # TODO: (2) Setup the dependency using `${BIN}_signed` instead of the
 # default custom target.
 # TODO: (3) Validate arguments into this function
+macro(add_enclave)
+  set(options CXX)
+  set(oneValueArgs TARGET UUID CONFIG KEY)
+  set(multiValueArgs SOURCES)
+  cmake_parse_arguments(ENCLAVE
+    "${options}"
+    "${oneValueArgs}"
+    "${multiValueArgs}"
+    ${ARGN})
+
+  if(OE_SGX)
+    add_enclave_sgx(
+      CXX ${ENCLAVE_CXX}
+      TARGET ${ENCLAVE_TARGET}
+      CONFIG ${ENCLAVE_CONFIG}
+      KEY ${ENCLAVE_KEY}
+      SOURCES ${ENCLAVE_SOURCES})
+  elseif(OE_TRUSTZONE)
+    add_enclave_optee(
+      CXX ${ENCLAVE_CXX}
+      TARGET ${ENCLAVE_TARGET}
+      UUID ${ENCLAVE_UUID}
+      KEY ${ENCLAVE_KEY}
+      SOURCES ${ENCLAVE_SOURCES})
+  endif()
+endmacro()
+
 function(add_enclave_sgx)
   set(options CXX)
   set(oneValueArgs TARGET CONFIG KEY)
@@ -186,32 +233,5 @@ macro(add_enclave_optee)
   set(CMAKE_EXE_LINKER_FLAGS "-T ${TA_LINKER_SCRIPT} -L${LIBGCC_PATH}")
   if(ENCLAVE_CXX)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --eh-frame-hdr")
-  endif()
-endmacro()
-
-macro(add_enclave)
-  set(options CXX)
-  set(oneValueArgs TARGET UUID CONFIG KEY)
-  set(multiValueArgs SOURCES)
-  cmake_parse_arguments(ENCLAVE
-    "${options}"
-    "${oneValueArgs}"
-    "${multiValueArgs}"
-    ${ARGN})
-
-  if(OE_SGX)
-    add_enclave_sgx(
-      CXX ${ENCLAVE_CXX}
-      TARGET ${ENCLAVE_TARGET}
-      CONFIG ${ENCLAVE_CONFIG}
-      KEY ${ENCLAVE_KEY}
-      SOURCES ${ENCLAVE_SOURCES})
-  elseif(OE_TRUSTZONE)
-    add_enclave_optee(
-      CXX ${ENCLAVE_CXX}
-      TARGET ${ENCLAVE_TARGET}
-      UUID ${ENCLAVE_UUID}
-      KEY ${ENCLAVE_KEY}
-      SOURCES ${ENCLAVE_SOURCES})
   endif()
 endmacro()

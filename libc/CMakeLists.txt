@@ -766,8 +766,6 @@ target_include_directories(oelibc PRIVATE
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/include
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/aarch64
-  # Keep these at the end to ensure that musl headers are always found first
-  # first by the preprocessor.
   ${OE_TZ_LIBUTILS_EXT_INC}
   ${OE_TZ_LIBUTEE_INC})
 endif()
