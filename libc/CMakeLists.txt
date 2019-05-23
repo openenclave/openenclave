@@ -44,8 +44,7 @@ set (PLATFORM_SRC "")
 if (OE_SGX)
     list(APPEND PLATFORM_SRC
         sgx/link.c
-        sgx/syscalls.c
-        sgx/sysconf.c)
+        sgx/syscalls.c)
 
     if (UNIX OR USE_CLANGW)
         list(APPEND PLATFORM_SRC
@@ -60,7 +59,6 @@ else()
         optee/exp2l.c
         optee/link.c
         optee/syscalls.c
-        optee/sysconf.c
         optee/trace.c)
 endif()
 
@@ -75,6 +73,7 @@ add_library(oelibc STATIC
     sched_yield.c
     stdlib.c
     strerror.c
+    sysconf.c
     time.c
     __printf_chk.c
     __vfprintf_chk.c
