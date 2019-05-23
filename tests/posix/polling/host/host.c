@@ -132,6 +132,11 @@ int main(int argc, const char* argv[])
     int done = 0;
     bool use_libc = false;
     char* tmp_dir;
+#if defined(_WIN32)
+    const bool test_regular_file = false;
+#else
+    const bool test_regular_file = true;
+#endif
 
     if (argc != 4)
     {
@@ -196,7 +201,12 @@ int main(int argc, const char* argv[])
         test_data_len = 1024;
         OE_TEST(
             ecall_poll_test(
-                enclave, &ret, test_data_len, test_data_r, use_libc) == OE_OK);
+                enclave,
+                &ret,
+                test_data_len,
+                test_data_r,
+                use_libc,
+                test_regular_file) == OE_OK);
 
         sleep(5);
 
@@ -224,7 +234,12 @@ int main(int argc, const char* argv[])
         test_data_len = 1024;
         OE_TEST(
             ecall_select_test(
-                enclave, &ret, test_data_len, test_data_r, use_libc) == OE_OK);
+                enclave,
+                &ret,
+                test_data_len,
+                test_data_r,
+                use_libc,
+                test_regular_file) == OE_OK);
 
         printf("select: host received: %s\n", test_data_r);
         OE_TEST(strncmp(TESTDATA, test_data_r, strlen(TESTDATA)) == 0);

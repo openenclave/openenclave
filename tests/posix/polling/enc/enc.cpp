@@ -218,7 +218,11 @@ int ecall_epoll_test(size_t buff_len, char* recv_buff, bool use_libc)
 }
 
 template <class INTERFACE>
-static int _ecall_select_test(INTERFACE& x, size_t buff_len, char* recv_buff)
+static int _ecall_select_test(
+    INTERFACE& x,
+    size_t buff_len,
+    char* recv_buff,
+    bool test_regular_files)
 {
     typedef typename INTERFACE::SOCKADDR_IN_T SOCKADDR_IN_T;
     typedef typename INTERFACE::SOCKADDR_T SOCKADDR_T;
@@ -284,8 +288,7 @@ static int _ecall_select_test(INTERFACE& x, size_t buff_len, char* recv_buff)
     OE_TEST(file_fd >= 0);
 
     printf("polling...\n");
-#if 0
-    if (file_fd >= 0)
+    if (file_fd >= 0 && test_regular_files)
     {
         x.FD_SET_F(file_fd, &readfds);
         x.FD_SET_F(file_fd, &writefds);
@@ -294,7 +297,6 @@ static int _ecall_select_test(INTERFACE& x, size_t buff_len, char* recv_buff)
         if (file_fd > max_fd)
             max_fd = file_fd;
     }
-#endif
 
     size_t nevents = 0;
     int nfds = 0;
@@ -351,22 +353,30 @@ static int _ecall_select_test(INTERFACE& x, size_t buff_len, char* recv_buff)
     return OE_OK;
 }
 
-int ecall_select_test(size_t buff_len, char* recv_buff, bool use_libc)
+int ecall_select_test(
+    size_t buff_len,
+    char* recv_buff,
+    bool use_libc,
+    bool test_regular_files)
 {
     if (use_libc)
     {
         libc x;
-        return _ecall_select_test(x, buff_len, recv_buff);
+        return _ecall_select_test(x, buff_len, recv_buff, test_regular_files);
     }
     else
     {
         corelibc x;
-        return _ecall_select_test(x, buff_len, recv_buff);
+        return _ecall_select_test(x, buff_len, recv_buff, test_regular_files);
     }
 }
 
 template <class INTERFACE>
-static int _ecall_poll_test(INTERFACE& x, size_t buff_len, char* recv_buff)
+static int _ecall_poll_test(
+    INTERFACE& x,
+    size_t buff_len,
+    char* recv_buff,
+    bool test_regular_files)
 {
     typedef typename INTERFACE::SOCKADDR_IN_T SOCKADDR_IN_T;
     typedef typename INTERFACE::SOCKADDR_T SOCKADDR_T;
@@ -376,6 +386,8 @@ static int _ecall_poll_test(INTERFACE& x, size_t buff_len, char* recv_buff)
     SOCKADDR_IN_T serv_addr = {0};
     POLLFD_T pollfds[3] = {{0}};
     int timeout_ms = 30000; // in millis
+
+    OE_UNUSED(test_regular_files);
 
     printf("--------------- poll -------------\n");
     memset(recv_buff, 0, buff_len);
@@ -470,17 +482,21 @@ static int _ecall_poll_test(INTERFACE& x, size_t buff_len, char* recv_buff)
     return OE_OK;
 }
 
-int ecall_poll_test(size_t buff_len, char* recv_buff, bool use_libc)
+int ecall_poll_test(
+    size_t buff_len,
+    char* recv_buff,
+    bool use_libc,
+    bool test_regular_files)
 {
     if (use_libc)
     {
         libc x;
-        return _ecall_poll_test(x, buff_len, recv_buff);
+        return _ecall_poll_test(x, buff_len, recv_buff, test_regular_files);
     }
     else
     {
         corelibc x;
-        return _ecall_poll_test(x, buff_len, recv_buff);
+        return _ecall_poll_test(x, buff_len, recv_buff, test_regular_files);
     }
 }
 
