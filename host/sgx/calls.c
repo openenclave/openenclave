@@ -367,43 +367,27 @@ done:
 
 static const char* oe_ocall_str(oe_func_t ocall)
 {
-    switch (ocall)
-    {
-        case OE_OCALL_CALL_HOST_FUNCTION:
-            return "OE_OCALL_CALL_HOST_FUNCTION";
-        case OE_OCALL_GET_QE_TARGET_INFO:
-            return "OE_OCALL_GET_QE_TARGET_INFO";
-        case OE_OCALL_GET_QUOTE:
-            return "OE_OCALL_GET_QUOTE";
-        case OE_OCALL_GET_REVOCATION_INFO:
-            return "OE_OCALL_GET_REVOCATION_INFO";
-        case OE_OCALL_GET_QE_ID_INFO:
-            return "OE_OCALL_GET_QE_ID_INFO";
-        case OE_OCALL_THREAD_WAKE:
-            return "OE_OCALL_THREAD_WAKE";
-        case OE_OCALL_THREAD_WAIT:
-            return "OE_OCALL_THREAD_WAIT";
-        case OE_OCALL_THREAD_WAKE_WAIT:
-            return "OE_OCALL_THREAD_WAKE_WAIT";
-        case OE_OCALL_MALLOC:
-            return "OE_OCALL_MALLOC";
-        case OE_OCALL_REALLOC:
-            return "OE_OCALL_REALLOC";
-        case OE_OCALL_FREE:
-            return "OE_OCALL_FREE";
-        case OE_OCALL_WRITE:
-            return "OE_OCALL_WRITE";
-        case OE_OCALL_SLEEP:
-            return "OE_OCALL_SLEEP";
-        case OE_OCALL_GET_TIME:
-            return "OE_OCALL_GET_TIME";
-        case OE_OCALL_BACKTRACE_SYMBOLS:
-            return "OE_OCALL_BACKTRACE_SYMBOLS";
-        case OE_OCALL_LOG:
-            return "OE_OCALL_LOG";
-        default:
-            return "UNKNOWN";
-    }
+    static const char* func_names[] = {"OE_OCALL_CALL_HOST_FUNCTION",
+                                       "OE_OCALL_GET_QE_TARGET_INFO",
+                                       "OE_OCALL_GET_QUOTE",
+                                       "OE_OCALL_GET_REVOCATION_INFO",
+                                       "OE_OCALL_GET_QE_ID_INFO",
+                                       "OE_OCALL_THREAD_WAKE",
+                                       "OE_OCALL_THREAD_WAIT",
+                                       "OE_OCALL_THREAD_WAKE_WAIT",
+                                       "OE_OCALL_MALLOC",
+                                       "OE_OCALL_REALLOC",
+                                       "OE_OCALL_FREE",
+                                       "OE_OCALL_WRITE",
+                                       "OE_OCALL_SLEEP",
+                                       "OE_OCALL_GET_TIME",
+                                       "OE_OCALL_BACKTRACE_SYMBOLS"
+                                       "OE_OCALL_LOG"};
+
+    if (ocall >= OE_OCALL_BASE && ocall < __OE_FUNC_MAX)
+        return func_names[ocall - OE_OCALL_BASE];
+    else
+        return "UNKNOWN";
 };
 
 /*
