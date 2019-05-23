@@ -19,6 +19,7 @@
 #include <sys/stat.h>
 // clang-format off
 #include "ws2tcpip.h"
+#include "winsock2.h"
 #include "windows.h"
 // clang-format on
 
@@ -605,7 +606,6 @@ static int _sockoptlevel_to_winsock_optlevel(int level)
 }
 
 long epoll_event_to_win_network_event(epoll_events)
-
 {
     long ret = FD_ALL_EVENTS; // 0;
 
@@ -705,6 +705,109 @@ static unsigned win_stat_to_stat(unsigned winstat)
 
     return ret_stat;
 }
+
+static short _poll_event_to_win(short poll_events)
+{
+    short ret = 0;
+
+    if (poll_events & OE_POLLIN)
+    {
+        ret |= POLLIN;
+    }
+    if (poll_events & OE_POLLPRI)
+    {
+        // ret |= POLLPRI;
+    }
+    if (poll_events & OE_POLLOUT)
+    {
+        ret |= POLLWRNORM;  // poll out is not allowed in winsock poll events
+    }
+    if (poll_events & OE_POLLRDNORM)
+    {
+        ret |= POLLRDNORM;
+    }
+    if (poll_events & OE_POLLRDBAND)
+    {
+        ret |= POLLRDBAND;
+    }
+    if (poll_events & OE_POLLWRNORM)
+    {
+        ret |= POLLWRNORM;
+    }
+    if (poll_events & OE_POLLWRBAND)
+    {
+        // ignore. not allowed in windows
+    }
+    if (poll_events & OE_POLLMSG)
+    {
+        // ignore. not in windows
+    }
+    if (poll_events & OE_POLLRDHUP)
+    {
+        // ignore. not in windows
+    }
+    if (poll_events & OE_POLLERR)
+    {
+        // ignore. not in windows
+    }
+    if (poll_events & OE_POLLHUP)
+    {
+        // ret |= POLLHUP;
+    }
+    if (poll_events & OE_POLLNVAL )
+    {
+        // ret |= POLLNVAL;
+    }
+    return ret;
+}
+
+static short _winpoll_event_to_poll(short winpoll_events)
+{
+    short ret = 0;
+
+    if (winpoll_events & POLLIN)
+    {
+        ret |= OE_POLLIN;
+    }
+    if (winpoll_events & POLLPRI)
+    {
+        ret |= OE_POLLPRI;
+    }
+    if (winpoll_events & POLLOUT)
+    {
+        ret |= OE_POLLOUT;
+    }
+    if (winpoll_events & POLLRDNORM)
+    {
+        ret |= OE_POLLRDNORM;
+    }
+    if (winpoll_events & POLLRDBAND)
+    {
+        ret |= OE_POLLRDBAND;
+    }
+    if (winpoll_events & POLLWRNORM)
+    {
+        ret |= OE_POLLWRNORM;
+    }
+    if (winpoll_events & POLLWRBAND)
+    {
+        ret |= OE_POLLWRBAND;
+    }
+    if (winpoll_events & POLLERR)
+    {
+        ret |= OE_POLLERR;
+    }
+    if (winpoll_events & POLLHUP)
+    {
+        ret |= OE_POLLHUP;
+    }
+    if (winpoll_events & POLLNVAL )
+    {
+        ret |= OE_POLLNVAL;
+    }
+    return ret;
+}
+
 /*
 **==============================================================================
 **
@@ -2651,6 +2754,52 @@ int oe_posix_shutdown_polling_device_ocall(oe_host_fd_t fd)
     // 2do: track all of the handles so we can be sure to close everything on
     // exit
     return 0;
+}
+
+int oe_posix_poll_ocall(
+    struct oe_host_pollfd* host_fds,
+    oe_nfds_t nfds,
+    int timeout)
+{
+    int ret = -1;
+    WSAPOLLFD* fds = NULL;
+
+    _set_errno(0);
+
+    if (nfds == 0)
+    {
+        _set_errno(OE_EINVAL);
+        goto done;
+    }
+
+    fds = (WSAPOLLFD*)calloc(1, sizeof(WSAPOLLFD)*nfds);
+    // Winsock used different values for poll events, so we have to translate to and from
+    int i = 0; 
+    for ( ; i < nfds; i++ )
+    {
+        fds[i].events = _poll_event_to_win(host_fds[i].events);
+        fds[i].revents = 0;
+        fds[i].fd      = host_fds[i].fd;
+    }
+    
+    if ((ret = WSAPoll(fds, (ULONG)nfds, timeout)) <= 0)
+    {
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
+        goto done;
+    }
+    for ( ; i < nfds; i++ )
+    {
+        host_fds[i].revents = _winpoll_event_to_poll(fds[i].revents);
+    }
+
+done:
+
+    if (fds)
+    {
+        free(fds);
+    }
+
+    return ret;
 }
 
 /*
