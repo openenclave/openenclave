@@ -7,20 +7,6 @@
 #include "../common.h"
 #include "tcbinfo.h"
 
-// hardcoded property values used for validating quoting enclave when qe
-// identity info is not available
-// The mrsigner value of Intel's Production quoting enclave.
-static const uint8_t g_qe_mrsigner[32] = {
-    0x8c, 0x4f, 0x57, 0x75, 0xd7, 0x96, 0x50, 0x3e, 0x96, 0x13, 0x7f,
-    0x77, 0xc6, 0x8a, 0x82, 0x9a, 0x00, 0x56, 0xac, 0x8d, 0xed, 0x70,
-    0x14, 0x0b, 0x08, 0x1b, 0x09, 0x44, 0x90, 0xc5, 0x7b, 0xff};
-
-// The isvprodid value of Intel's Production quoting enclave.
-static const uint32_t g_qe_isvprodid = 1;
-
-// The isvsvn value of Intel's Production quoting enclave.
-static const uint32_t g_qeisvsvn = 2;
-
 extern oe_datetime_t _sgx_minimim_crl_tcb_issue_date;
 
 void dump_info(char* title, uint8_t* data, uint8_t count)
@@ -49,29 +35,10 @@ oe_result_t oe_enforce_qe_identity(sgx_report_body_t* qe_report_body)
     {
         // No qe_identity info returned from the quote provider, this could be
         // because either get_qe_identity_info API was not supported or
-        // unexpected error. In both cases, check against hardcoded quoting
-        // enclave properties instead Assert that the qe report's MRSIGNER
-        // matches Intel's quoting. We will remove these hardcoded values once
-        // the libdcap_quoteprov.so was updated to support qe identity feature.
-
-        // enclave's mrsigner.
-        if (!oe_constant_time_mem_equal(
-                qe_report_body->mrsigner, g_qe_mrsigner, sizeof(g_qe_mrsigner)))
-            OE_RAISE_MSG(OE_VERIFY_FAILED, "mrsigner mismatch", NULL);
-
-        if (qe_report_body->isvprodid != g_qe_isvprodid)
-            OE_RAISE_MSG(OE_VERIFY_FAILED, "isvprodid mismatch", NULL);
-
-        if (qe_report_body->isvsvn < g_qeisvsvn)
-            OE_RAISE_MSG(OE_VERIFY_FAILED, "isvsvn is out-of-date", NULL);
-
-        // Ensure that the QE is not a debug supporting enclave.
-        if (qe_report_body->attributes.flags & SGX_FLAGS_DEBUG)
-            OE_RAISE_MSG(
-                OE_VERIFY_FAILED, "QE has SGX_FLAGS_DEBUG set!!", NULL);
-
-        result = OE_OK;
-        goto done;
+        // unexpected error. Both cases are error conditions.
+        OE_RAISE_MSG(
+            OE_VERIFY_FAILED,
+            "unable to retrieve qe identity from DCAP quote provider");
     }
     OE_CHECK(result);
 
