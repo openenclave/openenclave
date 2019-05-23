@@ -27,7 +27,7 @@
 #define FS_MAGIC 0x4a335f60
 #define FILE_MAGIC 0x8d7e422f
 
-/* Mask to extract the open-flags access mode: O_RDONLY, O_WRONLY, O_RDWR. */
+/* Mask to extract the access mode: O_RDONLY, O_WRONLY, O_RDWR. */
 #define ACCESS_MODE_MASK 000000003
 
 extern oe_device_t* oe_get_hostfs_device(void);

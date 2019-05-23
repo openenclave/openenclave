@@ -28,6 +28,7 @@ enclave {
     include "openenclave/corelibc/sys/socket.h"
     include "openenclave/corelibc/sys/utsname.h"
     include "openenclave/corelibc/sys/stat.h"
+    include "openenclave/corelibc/dirent.h"
     include "openenclave/internal/posix/types.h"
 
     trusted {
@@ -77,14 +78,10 @@ enclave {
             [in, string] const char* name)
             propagate_errno;
 
+        /* Returns 0 if entry found, 1 if none found, and -1 on error. */
         int oe_posix_readdir_ocall(
             uint64_t dirp,
-            [out, count=1] uint64_t* d_ino,
-            [out, count=1] int64_t* d_off,
-            [out, count=1] uint16_t* d_reclen,
-            [out, count=1] uint8_t* d_type,
-            [out, count=d_namelen] char* d_name,
-            size_t d_namelen)
+            [out, count=1] struct oe_dirent* entry)
             propagate_errno;
 
         void oe_posix_rewinddir_ocall(

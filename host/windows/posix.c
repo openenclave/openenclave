@@ -1138,40 +1138,45 @@ uint64_t oe_posix_opendir_ocall(const char* pathname)
     return (uint64_t)pdir;
 }
 
-int oe_posix_readdir_ocall(
-    uint64_t dirp,
-    uint64_t* d_ino,
-    int64_t* d_off,
-    uint16_t* d_reclen,
-    uint8_t* d_type,
-    char* d_name,
-    size_t d_namelen)
+int oe_posix_readdir_ocall(uint64_t dirp, struct oe_dirent* entry)
 {
     struct WIN_DIR_DATA* pdir = (struct WIN_DIR_DATA*)dirp;
     int nlen = -1;
 
     _set_errno(0);
 
+    if (!dirp || !entry)
+    {
+        _set_errno(OE_EINVAL);
+        return -1;
+    }
+
     // Find file next doesn't return '.' because it shows up in opendir and we
     // lose it but we know it is there, so we can just return it
     if (pdir->dir_offs == 0)
     {
-        *d_off = pdir->dir_offs++;
-        *d_type = OE_DT_DIR;
-        *d_reclen = sizeof(struct oe_dirent);
-        d_name[0] = '.';
-        d_name[1] = '\0';
+        entry->d_off = pdir->dir_offs++;
+        entry->d_type = OE_DT_DIR;
+        entry->d_reclen = sizeof(struct oe_dirent);
+        entry->d_name[0] = '.';
+        entry->d_name[1] = '\0';
         return 0;
     }
 
     if (!FindNextFileW(pdir->hFind, &pdir->FindFileData))
     {
         DWORD winerr = GetLastError();
-        if (winerr != ERROR_NO_MORE_FILES)
+
+        if (winerr == ERROR_NO_MORE_FILES)
         {
-            _set_errno(_winerr_to_errno(GetLastError()));
+            /* Return 1 to indicate there no more entries. */
+            return 1;
         }
-        return -1;
+        else
+        {
+            _set_errno(_winerr_to_errno(winerr));
+            return -1;
+        }
     }
 
     nlen = WideCharToMultiByte(
@@ -1181,27 +1186,27 @@ int oe_posix_readdir_ocall(
         0,
         pdir->FindFileData.cFileName,
         nlen,
-        d_name,
-        (int)d_namelen,
+        entry->d_name,
+        sizeof(entry->d_name),
         NULL,
         NULL);
 
-    *d_type = 0;
+    entry->d_type = 0;
     if (pdir->FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
     {
-        *d_type = OE_DT_DIR;
+        entry->d_type = OE_DT_DIR;
     }
     else if (pdir->FindFileData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
     {
-        *d_type = OE_DT_LNK;
+        entry->d_type = OE_DT_LNK;
     }
     else
     {
-        *d_type = OE_DT_REG;
+        entry->d_type = OE_DT_REG;
     }
 
-    *d_off = pdir->dir_offs++;
-    *d_reclen = sizeof(struct oe_dirent);
+    entry->d_off = pdir->dir_offs++;
+    entry->d_reclen = sizeof(struct oe_dirent);
 
     return 0;
 }
@@ -1522,9 +1527,9 @@ int oe_posix_socketpair_ocall(
         }
     }
 
-    // Windows doesn't support AF_UNIX, but it does loopback. Linux only supports
-    // socketpair on unix-domain sockets. To square the circle, we convert unix domain
-    // to inet loopback.
+    // Windows doesn't support AF_UNIX, but it does loopback. Linux only
+    // supports socketpair on unix-domain sockets. To square the circle, we
+    // convert unix domain to inet loopback.
     if (domain == OE_AF_LOCAL)
     {
         domain = OE_AF_INET;
@@ -1858,7 +1863,7 @@ int oe_posix_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg)
 =======
 
 #define TIOCGWINSZ   0x5413
-#define TIOCSWINSZ   0x5414
+#define TIOCSWINSZ 0x5414
 int oe_posix_ioctl_ocall(
     oe_host_fd_t fd,
     unsigned long request,
