@@ -1,0 +1,16 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+  struct MyStruct {
+    [count=8] int* ptr;
+  };
+
+  trusted {
+    // This should error because the count parameter attached to
+    // `s.ptr` will be ignored since `s` is being passed by value.
+    // That is, the `struct` definition and its usage are a
+    // contradiction.
+    public void deepcopy_value(struct MyStruct s);
+  };
+};

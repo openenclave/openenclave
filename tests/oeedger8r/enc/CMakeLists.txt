@@ -4,10 +4,12 @@
 add_custom_command(
   OUTPUT all_t.h all_t.c all_args.h
   DEPENDS
+  edger8r
   ../edl/aliasing.edl
   ../edl/all.edl
   ../edl/array.edl
   ../edl/basic.edl
+  ../edl/deepcopy.edl
   ../edl/enum.edl
   ../edl/errno.edl
   ../edl/foreign.edl
@@ -36,6 +38,7 @@ add_enclave(TARGET edl_enc CXX
     testaliasing.cpp
     testarray.cpp
     testbasic.cpp
+    testdeepcopy.cpp
     testenum.cpp
     testerrno.cpp
     testforeign.cpp
