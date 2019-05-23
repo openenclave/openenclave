@@ -415,12 +415,11 @@ static oe_result_t _handle_ocall(
     if (arg_out)
         *arg_out = 0;
 
-    if (func != OE_OCALL_LOG)
-        oe_log(
-            OE_LOG_LEVEL_INFO,
-            "%s OE_OCALL: %s\n",
-            enclave->path,
-            oe_ocall_str(func));
+    oe_log(
+        OE_LOG_LEVEL_INFO,
+        "%s OE_OCALL: %s\n",
+        enclave->path,
+        oe_ocall_str(func));
 
     switch ((oe_func_t)func)
     {
