@@ -1857,13 +1857,9 @@ int oe_posix_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg)
     return 0;
 }
 
-<<<<<<< HEAD
 #define TIOCGWINSZ 0x5413
 #define TIOCSWINSZ 0x5414
-=======
 
-#define TIOCGWINSZ   0x5413
-#define TIOCSWINSZ 0x5414
 int oe_posix_ioctl_ocall(
     oe_host_fd_t fd,
     unsigned long request,
