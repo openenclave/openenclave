@@ -385,7 +385,19 @@ static int _ecall_poll_test(
     int file_fd = 0;
     SOCKADDR_IN_T serv_addr = {0};
     POLLFD_T pollfds[3] = {{0}};
+    oe_nfds_t num_pollfds = 0;
     int timeout_ms = 30000; // in millis
+    short events = 0;
+
+    /* Set up mask of all poll events. */
+    events |= POLLIN;
+    events |= POLLPRI;
+    events |= POLLOUT;
+    events |= POLLRDNORM;
+    events |= POLLRDBAND;
+    events |= POLLWRNORM;
+    events |= POLLWRBAND;
+    events |= POLLRDHUP;
 
     OE_UNUSED(test_regular_files);
 
@@ -418,25 +430,33 @@ static int _ecall_poll_test(
             printf("Connect Failed. Retrying \n");
         }
     }
+
     if (sockfd >= 0)
     {
-        pollfds[0].fd = sockfd;
-        pollfds[0].events =
-            (POLLIN | POLLPRI | POLLOUT | POLLRDNORM | POLLRDBAND | POLLWRNORM |
-             POLLWRBAND | POLLRDHUP);
-        pollfds[0].revents = 0;
+        pollfds[num_pollfds].fd = sockfd;
+        pollfds[num_pollfds].events = events;
+        pollfds[num_pollfds].revents = 0;
+        num_pollfds++;
     }
 
     const int flags = OE_O_NONBLOCK | OE_O_RDONLY;
     file_fd = x.open(_path, flags, 0);
     OE_TEST(file_fd >= 0);
 
+    if (file_fd >= 0 && test_regular_files)
+    {
+        pollfds[num_pollfds].fd = sockfd;
+        pollfds[num_pollfds].events = events;
+        pollfds[num_pollfds].revents = 0;
+        num_pollfds++;
+    }
+
     size_t nevents = 0;
     int nfds = 0;
     int ntries = 100;
     do
     {
-        if ((nfds = x.poll(pollfds, 2, timeout_ms)) < 0)
+        if ((nfds = x.poll(pollfds, num_pollfds, timeout_ms)) < 0)
         {
             printf("poll error.\n");
         }
