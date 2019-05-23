@@ -38,7 +38,8 @@ oe_result_t oe_enforce_qe_identity(sgx_report_body_t* qe_report_body)
         // unexpected error. Both cases are error conditions.
         OE_RAISE_MSG(
             OE_VERIFY_FAILED,
-            "unable to retrieve qe identity from DCAP quote provider");
+            "unable to retrieve qe identity from DCAP quote provider",
+            NULL);
     }
     OE_CHECK(result);
 
