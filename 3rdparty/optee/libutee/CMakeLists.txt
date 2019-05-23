@@ -1,17 +1,25 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-set(LIBUTEE_S_SRC
+add_library(oeuteeasm OBJECT
   ${OE_TZ_LIBUTEE_SRC}/arch/arm/utee_syscalls_a64.S
   ${OE_TZ_LIBUTEE_SRC}/arch/arm/gprof/gprof_a64.S)
+set_property(TARGET oeuteeasm PROPERTY C_STANDARD 99)
+target_compile_options(oeuteeasm PRIVATE
+  ${OE_TZ_TA_S_FLAGS}
+  -include ${OE_TZ_TA_DEV_KIT_CONF})
+target_include_directories(oeuteeasm PRIVATE
+  ${OE_TZ_LIBUTEE_INC}
+  ${OE_TZ_LIBUTILS_EXT_INC})
 
-set(LIBUTEE_C_SRC
+# TODO: Include the files whose paths are commented out in the build.
+add_library(oeutee OBJECT
   ${OE_TZ_LIBUTEE_SRC}/tee_api_property.c
   ${OE_TZ_LIBUTEE_SRC}/abort.c
- #${OE_TZ_LIBUTEE_SRC}/trace_ext.c
+  #${OE_TZ_LIBUTEE_SRC}/trace_ext.c
   ${OE_TZ_LIBUTEE_SRC}/assert.c
   ${OE_TZ_LIBUTEE_SRC}/base64.c
- #${OE_TZ_LIBUTEE_SRC}/tee_api_arith.c
+  #${OE_TZ_LIBUTEE_SRC}/tee_api_arith.c
   ${OE_TZ_LIBUTEE_SRC}/tee_api.c
   ${OE_TZ_LIBUTEE_SRC}/tee_api_objects.c
   ${OE_TZ_LIBUTEE_SRC}/tee_api_operations.c
@@ -23,17 +31,6 @@ set(LIBUTEE_C_SRC
   ${OE_TZ_LIBUTEE_SRC}/arch/arm/utee_misc.c
   ${OE_TZ_LIBUTILS_EXT_SRC}/snprintk.c
   ${OE_TZ_LIBUTILS_EXT_SRC}/buf_compare_ct.c)
-
-add_library(oeuteeasm OBJECT ${LIBUTEE_S_SRC})
-set_property(TARGET oeuteeasm PROPERTY C_STANDARD 99)
-target_compile_options(oeuteeasm PRIVATE
-  ${OE_TZ_TA_S_FLAGS}
-  -include ${OE_TZ_TA_DEV_KIT_CONF})
-target_include_directories(oeuteeasm PRIVATE
-  ${OE_TZ_LIBUTEE_INC}
-  ${OE_TZ_LIBUTILS_EXT_INC})
-
-add_library(oeutee OBJECT ${LIBUTEE_C_SRC})
 set_property(TARGET oeutee PROPERTY C_STANDARD 99)
 target_compile_options(oeutee PUBLIC
   -include ${OE_TZ_TA_DEV_KIT_CONF})
