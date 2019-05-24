@@ -384,6 +384,9 @@ static const char* oe_ocall_str(oe_func_t ocall)
                                        "OE_OCALL_BACKTRACE_SYMBOLS"
                                        "OE_OCALL_LOG"};
 
+    OE_STATIC_ASSERT(
+        OE_OCALL_BASE + OE_COUNTOF(func_names) == OE_OCALL_MAX - 1);
+
     if (ocall >= OE_OCALL_BASE &&
         ocall < (OE_OCALL_BASE + OE_COUNTOF(func_names)))
         return func_names[ocall - OE_OCALL_BASE];
