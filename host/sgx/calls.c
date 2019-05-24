@@ -417,8 +417,9 @@ static oe_result_t _handle_ocall(
 
     oe_log(
         OE_LOG_LEVEL_INFO,
-        "%s OE_OCALL: %s\n",
+        "%s 0x%x OE_OCALL: %s\n",
         enclave->path,
+        enclave->addr,
         oe_ocall_str(func));
 
     switch ((oe_func_t)func)
