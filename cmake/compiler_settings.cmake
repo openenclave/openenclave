@@ -4,8 +4,8 @@
 # Check Clang version.
 if (CMAKE_C_COMPILER_ID MATCHES Clang)
   if (CMAKE_C_COMPILER_VERSION VERSION_LESS 7 OR
-      CMAKE_C_COMPILER_VERSION VERSION_GREATER 7.99)
-    message(WARNING "Open Enclave officially supports Clang 7 only, "
+      CMAKE_C_COMPILER_VERSION VERSION_GREATER 8.99)
+  message(WARNING "Open Enclave officially supports only Clang 7 or Clang 8, "
       "but your Clang version (${CMAKE_C_COMPILER_VERSION}) "
       "is older or newer than that. Build problems may occur.")
   endif ()
