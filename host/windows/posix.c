@@ -720,7 +720,7 @@ static short _poll_event_to_win(short poll_events)
     }
     if (poll_events & OE_POLLOUT)
     {
-        ret |= POLLWRNORM;  // poll out is not allowed in winsock poll events
+        ret |= POLLWRNORM; // poll out is not allowed in winsock poll events
     }
     if (poll_events & OE_POLLRDNORM)
     {
@@ -754,7 +754,7 @@ static short _poll_event_to_win(short poll_events)
     {
         // ret |= POLLHUP;
     }
-    if (poll_events & OE_POLLNVAL )
+    if (poll_events & OE_POLLNVAL)
     {
         // ret |= POLLNVAL;
     }
@@ -801,7 +801,7 @@ static short _winpoll_event_to_poll(short winpoll_events)
     {
         ret |= OE_POLLHUP;
     }
-    if (winpoll_events & POLLNVAL )
+    if (winpoll_events & POLLNVAL)
     {
         ret |= OE_POLLNVAL;
     }
@@ -2772,22 +2772,23 @@ int oe_posix_poll_ocall(
         goto done;
     }
 
-    fds = (WSAPOLLFD*)calloc(1, sizeof(WSAPOLLFD)*nfds);
-    // Winsock used different values for poll events, so we have to translate to and from
-    int i = 0; 
-    for ( ; i < nfds; i++ )
+    fds = (WSAPOLLFD*)calloc(1, sizeof(WSAPOLLFD) * nfds);
+    // Winsock used different values for poll events, so we have to translate to
+    // and from
+    int i = 0;
+    for (; i < nfds; i++)
     {
         fds[i].events = _poll_event_to_win(host_fds[i].events);
         fds[i].revents = 0;
-        fds[i].fd      = host_fds[i].fd;
+        fds[i].fd = host_fds[i].fd;
     }
-    
+
     if ((ret = WSAPoll(fds, (ULONG)nfds, timeout)) <= 0)
     {
         _set_errno(_winsockerr_to_errno(WSAGetLastError()));
         goto done;
     }
-    for ( ; i < nfds; i++ )
+    for (; i < nfds; i++)
     {
         host_fds[i].revents = _winpoll_event_to_poll(fds[i].revents);
     }
