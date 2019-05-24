@@ -27,6 +27,18 @@ int oe_iov_inflate(
     struct oe_iovec* iov,
     size_t iov_len);
 
+int oe_iov_pack(
+    const struct oe_iovec* iov,
+    int iovcnt,
+    void** buf_out,
+    size_t* buf_size_out);
+
+int oe_iov_sync(
+    const struct oe_iovec* iov,
+    int iovcnt,
+    const void* buf_,
+    size_t buf_size);
+
 OE_EXTERNC_END
 
 #endif // _OE_POSIX_IOV_H

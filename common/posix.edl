@@ -61,6 +61,20 @@ enclave {
             size_t count)
             propagate_errno;
 
+        ssize_t oe_posix_readv_ocall(
+            oe_host_fd_t fd,
+            [in, out, size=iov_buf_size] void* iov_buf,
+            int iovcnt,
+            size_t iov_buf_size)
+            propagate_errno;
+
+        ssize_t oe_posix_writev_ocall(
+            oe_host_fd_t fd,
+            [in, size=iov_buf_size] const void* iov_buf,
+            int iovcnt,
+            size_t iov_buf_size)
+            propagate_errno;
+
         oe_off_t oe_posix_lseek_ocall(
             oe_host_fd_t fd,
             oe_off_t offset,
