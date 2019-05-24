@@ -30,6 +30,32 @@
     update_cache: yes
     install_recommends: no
 
+- name: Download the OCaml deb packages
+  get_url:
+    url: "{{ item.value.url }}"
+    dest: "{{ item.value.local_path }}"
+    timeout: 10
+  retries: 5
+  with_dict: "{{ ocaml_packages }}"
+
+- name: Install the OCaml deb packages
+  shell: |
+    set -o errexit
+    dpkg --install {{ ocaml_packages.ocaml_base_nox.local_path }}
+    dpkg --install {{ ocaml_packages.ocaml_base.local_path }}
+    dpkg --install --force-depends {{ ocaml_packages.ocaml_compiler_libs.local_path }}
+    dpkg --install {{ ocaml_packages.ocaml_interp.local_path }}
+    dpkg --install {{ ocaml_packages.ocaml_nox.local_path }}
+    dpkg --install {{ ocaml_packages.ocaml.local_path }}
+  args:
+    executable: /bin/bash
+
+- name: Clean OCaml downloaded deb packages
+  file:
+    state: absent
+    path: "{{ item.value.local_path }}"
+  with_dict: "{{ ocaml_packages }}"
+
 - import_role:
     name: linux/openenclave
     tasks_from: opam-setup.yml

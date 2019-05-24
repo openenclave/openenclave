@@ -4,9 +4,29 @@
 ---
 opam_bin_url: "https://github.com/ocaml/opam/releases/download/2.0.4/opam-2.0.4-x86_64-linux"
 opam_root: "/usr/local/opam"
-ocaml_version: "4.07.0"
+ocaml_version: "4.05.0"
 cmake_target_version: "3.13.1"
 clang_target_version: "7.1.0"
+
+ocaml_packages:
+  ocaml_base_nox:
+    url: "https://oejenkins.blob.core.windows.net/oejenkins/ocaml/ocaml-base-nox_amd64.deb"
+    local_path: "/tmp/ocaml-base-nox_amd64.deb"
+  ocaml_base:
+    url: "https://oejenkins.blob.core.windows.net/oejenkins/ocaml/ocaml-base_amd64.deb"
+    local_path: "/tmp/ocaml-base_amd64.deb"
+  ocaml_compiler_libs:
+    url: "https://oejenkins.blob.core.windows.net/oejenkins/ocaml/ocaml-compiler-libs_amd64.deb"
+    local_path: "/tmp/ocaml-compiler-libs_amd64.deb"
+  ocaml_interp:
+    url: "https://oejenkins.blob.core.windows.net/oejenkins/ocaml/ocaml-interp_amd64.deb"
+    local_path: "/tmp/ocaml-interp_amd64.deb"
+  ocaml_nox:
+    url: "https://oejenkins.blob.core.windows.net/oejenkins/ocaml/ocaml-nox_amd64.deb"
+    local_path: "/tmp/ocaml-nox_amd64.deb"
+  ocaml:
+    url: "https://oejenkins.blob.core.windows.net/oejenkins/ocaml/ocaml_amd64.deb"
+    local_path: "/tmp/ocaml_amd64.deb"
 
 apt_packages:
   - "curl"
@@ -29,6 +49,8 @@ apt_packages:
   - "libtool"
   - "subversion"
   - "libcurl4-openssl-dev"
+  - "libx11-dev"
+  - "libncurses5-dev"
 
 apt_arm_packages:
   - "gcc-aarch64-linux-gnu"
@@ -38,7 +60,6 @@ apt_arm_packages:
 
 validation_directories:
   - "/usr/local/opam"
-  - "/usr/local/opam/{{ ocaml_version }}"
   - "/usr/share/libtool"
 
 validation_files:
@@ -57,7 +78,7 @@ validation_binaries:
   - "/usr/bin/autoconf"
   - "/usr/bin/libtoolize"
   - "/usr/bin/doxygen"
-  - "/usr/local/opam/{{ ocaml_version }}/bin/ocaml"
+  - "/usr/bin/ocaml"
   - "/usr/bin/openssl"
   - "/usr/bin/pkg-config"
   - "/usr/bin/clang-7"
