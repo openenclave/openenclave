@@ -189,15 +189,12 @@ macro(add_enclave_optee)
   get_filename_component(LIBGCC_PATH ${LIBGCC_PATH} DIRECTORY)
 
   # Set up the target.
-  add_executable(${ENCLAVE_TARGET} ${ENCLAVE_SOURCES})
+  add_executable(${ENCLAVE_TARGET} ${ENCLAVE_SOURCES} ${OE_TZ_TA_DEV_KIT_HEADER_SOURCE})
   set_property(TARGET ${ENCLAVE_TARGET} PROPERTY C_STANDARD 99)
   set_target_properties(${ENCLAVE_TARGET} PROPERTIES OUTPUT_NAME ${ENCLAVE_UUID})
   set_target_properties(${ENCLAVE_TARGET} PROPERTIES SUFFIX ".elf")
   add_dependencies(${ENCLAVE_TARGET} ${ENCLAVE_TARGET}.ld)
-  target_include_directories(${ENCLAVE_TARGET} BEFORE PRIVATE
-    ${ENCLAVE_INCLUDES}
-    ${CMAKE_CURRENT_BINARY_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/optee)
+  target_include_directories(${ENCLAVE_TARGET} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/optee)
   target_link_libraries(${ENCLAVE_TARGET} oeenclave)
   if(ENCLAVE_CXX)
     target_link_libraries(${ENCLAVE_TARGET} oelibcxx)
