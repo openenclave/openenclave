@@ -17,7 +17,7 @@
     tasks_from: apt-repo.yml
   vars:
     apt_key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-    apt_repository: "deb http://apt.llvm.org/{{ ansible_distribution_release }} llvm-toolchain-{{ ansible_distribution_release }}-7 main"
+    apt_repository: "deb http://apt.llvm.org/{{ ansible_distribution_release }} llvm-toolchain-{{ ansible_distribution_release }}-8 main"
 
 - name: Include distribution vars
   include_vars:

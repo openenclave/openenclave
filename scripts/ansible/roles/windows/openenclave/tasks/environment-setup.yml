@@ -27,8 +27,8 @@
 - name: Microsoft Visual Studio 2017 - Install
   raw: "{{ packages['vs_2017']['dest'] }} --quiet --wait --add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.VC.CMake.Project --includeRecommended"
 
-- name: Clang 7 - Install
-  raw: "{{ packages['clang7']['dest'] }} /S"
+- name: Clang 8 - Install
+  raw: "{{ packages['clang8']['dest'] }} /S"
 
 - name: Git - Install
   raw: "{{ packages.git.dest }} /SILENT"

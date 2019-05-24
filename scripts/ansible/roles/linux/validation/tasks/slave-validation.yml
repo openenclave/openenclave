@@ -43,7 +43,7 @@
   failed_when: dockerd_check_version.stdout.find(dockerd_target_version) == -1
 
 - name: Clang version check
-  command: "clang-7 --version"
+  command: "clang-8 --version"
   register: clang_check_version
   failed_when: clang_check_version.stdout.find(clang_target_version) == -1
 
