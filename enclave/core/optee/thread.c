@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+// TODO: This file is a stub!
+
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>

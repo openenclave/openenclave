@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+// TODO: This file is a stub!
+
 #ifdef OE_BUILD_ENCLAVE
 #include <openenclave/enclave.h>
 #include <openenclave/internal/thread.h>
