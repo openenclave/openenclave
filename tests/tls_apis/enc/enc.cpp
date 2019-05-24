@@ -268,7 +268,7 @@ oe_result_t get_tls_cert_signed_with_key(
     OE_TRACE_INFO("private key:[%s]\n", private_key);
     OE_TRACE_INFO("public key:[%s]\n", public_key);
 
-    result = oe_generate_attestation_cert(
+    result = oe_generate_attestation_certificate(
         (const unsigned char*)"CN=Open Enclave SDK,O=OESDK TLS,C=US",
         private_key,
         private_key_size,
@@ -284,7 +284,7 @@ oe_result_t get_tls_cert_signed_with_key(
 
     OE_TRACE_INFO("output_cert_size = 0x%x", output_cert_size);
     // validate cert inside the enclave
-    result = oe_verify_attestation_cert(
+    result = oe_verify_attestation_certificate(
         output_cert, output_cert_size, enclave_identity_verifier, NULL);
     OE_TRACE_INFO(
         "\nFrom inside enclave: verifying the certificate... %s\n",
@@ -309,7 +309,7 @@ done:
 
     oe_free(private_key);
     oe_free(public_key);
-    oe_free_attestation_cert(output_cert);
+    oe_free_attestation_certificate(output_cert);
 
     return result;
 }

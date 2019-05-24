@@ -85,7 +85,7 @@ done:
     return result;
 }
 
-oe_result_t oe_generate_attestation_cert(
+oe_result_t oe_generate_attestation_certificate(
     const unsigned char* subject_name,
     uint8_t* private_key,
     size_t private_key_size,
@@ -100,7 +100,7 @@ oe_result_t oe_generate_attestation_cert(
     uint8_t* remote_report_buf = NULL;
     size_t remote_report_buf_size = OE_MAX_REPORT_SIZE;
 
-    OE_TRACE_VERBOSE("Calling oe_generate_attestation_cert");
+    OE_TRACE_VERBOSE("Calling oe_generate_attestation_certificate");
 
     // generate quote with hash(cert's subject key) and set it as report data
     OE_TRACE_VERBOSE(
@@ -149,11 +149,11 @@ done:
     return result;
 }
 
-void oe_free_attestation_cert(uint8_t* cert)
+void oe_free_attestation_certificate(uint8_t* cert)
 {
     if (cert)
     {
-        OE_TRACE_VERBOSE("Calling oe_free_attestation_cert=0x%p", cert);
+        OE_TRACE_VERBOSE("Calling oe_free_attestation_certificate=0x%p", cert);
         oe_free(cert);
     }
 }

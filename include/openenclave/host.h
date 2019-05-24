@@ -393,25 +393,27 @@ typedef oe_result_t (
     *oe_identity_verify_callback_t)(oe_identity_t* identity, void* arg);
 
 /**
- * oe_verify_attestation_cert
+ * oe_verify_attestation_certificate
  *
- * This function preform a custom validation on the input certificate. This
- * validation includes extracting a quote extension from the certificate before
- * performing a quote validation on it. An optional enclave_identity_callback
- * could be passed in for a calling client to further validate the identity of
- * the enclave creating the quote.
+ * This function perform a custom validation on the input certificate. This
+ * validation includes extracting an attestation evidence extension from the
+ * certificate before validating this evidence. An optional
+ * enclave_identity_callback could be passed in for a calling client to further
+ * validate the identity of the enclave creating the quote.
  * @param[in] cert_in_der a pointer to buffer holding certificate contents
+ *  in DER format
  * @param[in] cert_in_der_len size of certificate buffer above
  * @param[in] enclave_identity_callback callback routine for custom identity
  * checking
- * @param[in] arg optional argument
+ * @param[in] arg an optional context pointer argument specified by the caller
+ * when setting callback
  * @retval OE_OK on a successful validation
  * @retval OE_VERIFY_FAILED on quote failure
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid
  * @retval OE_FAILURE general failure
  * @retval other appropriate error code
  */
-oe_result_t oe_verify_attestation_cert(
+oe_result_t oe_verify_attestation_certificate(
     uint8_t* der_crt,
     size_t der_crt_len,
     oe_identity_verify_callback_t enclave_identity_callback,
