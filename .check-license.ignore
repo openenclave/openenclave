@@ -12,6 +12,7 @@
 .*\.svg$
 .*\.toml$
 .*Jenkinsfile$
+azure-pipelines.yml
 
 # Test lists
 tests/libc/tests\..*$
