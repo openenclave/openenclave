@@ -9,17 +9,13 @@ if (OE_SGX)
         sgx/backtrace.c
         sgx/calls.c
         sgx/cpuid.c
-        sgx/debugmalloc.c
         sgx/entropy.c
         sgx/exception.c
         sgx/globals.c
-        sgx/hostcalls.c
         sgx/init.c
         sgx/jump.c
         sgx/keys.c
-        sgx/malloc.c
         sgx/memory.c
-        sgx/once.c
         sgx/properties.c
         sgx/report.c
         sgx/sched_yield.c
@@ -49,11 +45,13 @@ elseif(OE_TRUSTZONE)
         optee/bounds.c
         optee/calls.c
         optee/globals.c
-        optee/host.c
+        optee/gp.c
         optee/printf.c
         optee/reloc.c
         optee/sched_yield.c
-        optee/start.c)
+        optee/spinlock.c
+        optee/start.c
+        optee/thread.c)
 endif()
 
 add_library(oecore STATIC
@@ -68,10 +66,14 @@ add_library(oecore STATIC
     assert.c
     atexit.c
     ctype.c
+    debugmalloc.c
     errno.c
     gmtime.c
     hexdump.c
+    hostcalls.c
     intstr.c
+    malloc.c
+    once.c
     printf.c
     pthread.c
     result.c
@@ -105,12 +107,12 @@ endif()
 target_include_directories(oecore PRIVATE
     ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
 
-if (OE_SGX)
-    # Unfortunately dlmalloc uses GNU extension that allows arithmetic
-    # null pointers.
-    set_source_files_properties(sgx/malloc.c
-        PROPERTIES COMPILE_FLAGS "-Wno-conversion -Wno-null-pointer-arithmetic")
+# Unfortunately dlmalloc uses GNU extension that allows arithmetic
+# null pointers.
+set_source_files_properties(malloc.c
+    PROPERTIES COMPILE_FLAGS "-Wno-conversion -Wno-null-pointer-arithmetic")
 
+if (OE_SGX)
     # jump.s must be optimized for the correct call-frame.
     set_source_files_properties(sgx/jump.c PROPERTIES COMPILE_FLAGS -O2)
 

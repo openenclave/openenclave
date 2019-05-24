@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/enclave.h>
+
 void abort(void)
 {
-    // TODO: Determine the appropriate call to make into OP-TEE on TA abort.
-    while (1)
-        ;
+    oe_abort();
 }
