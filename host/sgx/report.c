@@ -291,10 +291,6 @@ oe_result_t oe_verify_report(
     oe_verify_report_args_t arg = {0};
     oe_report_header_t* header = (oe_report_header_t*)report;
 
-    // The two host side attestation API's are oe_get_report and
-    // oe_verify_report. Initialize the quote provider in both these APIs.
-    OE_CHECK(oe_initialize_quote_provider());
-
     if (report == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
@@ -306,6 +302,12 @@ oe_result_t oe_verify_report(
 
     if (header->report_type == OE_REPORT_TYPE_SGX_REMOTE)
     {
+        // Intialize the quote provider if we want to verify a remote quote.
+        // Note that we don't have the OE_USE_LIBSGX guard here since we don't
+        // need the sgx libraries to verify the quote. All we need is the quote
+        // provider.
+        OE_CHECK(oe_initialize_quote_provider());
+
         // Quote attestation can be done entirely on the host side.
         OE_CHECK(VerifyQuoteImpl(
             header->report, header->report_size, NULL, 0, NULL, 0, NULL, 0));
