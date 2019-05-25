@@ -560,7 +560,7 @@ static ssize_t _hostfs_readv(
     void* buf = NULL;
     size_t buf_size = 0;
 
-    if (!file || !iov || iovcnt < 0 || iovcnt > OE_IOV_MAX)
+    if (!file || (!iov && iovcnt) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Flatten the IO vector into contiguous heap memory. */

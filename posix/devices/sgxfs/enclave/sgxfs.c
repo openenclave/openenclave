@@ -519,35 +519,30 @@ static ssize_t _sgxfs_readv(
     int iovcnt)
 {
     ssize_t ret = -1;
-    void* buf = NULL;
-    size_t buf_size;
+    ssize_t nread = 0;
 
-    if (!iov || iovcnt < 0 || iovcnt > OE_IOV_MAX)
+    if (!desc || (!iov && iovcnt) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    /* Calculate the size of the read buffer. */
-    if ((buf_size = oe_iov_compute_size(iov, (size_t)iovcnt)) == (size_t)-1)
-        OE_RAISE_ERRNO(OE_EINVAL);
-
-    /* Allocate the read buffer. */
-    if (!(buf = oe_malloc(buf_size)))
-        OE_RAISE_ERRNO(OE_ENOMEM);
-
-    /* Perform the read. */
-    if ((ret = _sgxfs_read(desc, buf, buf_size)) <= 0)
-        goto done;
-
-    if (oe_iov_inflate(
-            buf, (size_t)ret, (struct oe_iovec*)iov, (size_t)iovcnt) != 0)
+    for (int i = 0; i < iovcnt; i++)
     {
-        OE_RAISE_ERRNO(OE_EINVAL);
+        const struct oe_iovec* p = &iov[i];
+        ssize_t n;
+
+        n = _sgxfs_read(desc, p->iov_base, p->iov_len);
+
+        if (n < 0)
+            goto done;
+
+        nread += n;
+
+        if ((size_t)n < p->iov_len)
+            break;
     }
 
+    ret = nread;
+
 done:
-
-    if (buf)
-        oe_free(buf);
-
     return ret;
 }
 
@@ -557,25 +552,30 @@ static ssize_t _sgxfs_writev(
     int iovcnt)
 {
     ssize_t ret = -1;
-    void* buf = NULL;
-    size_t buf_size = 0;
+    ssize_t nwritten = 0;
 
-    if (!iov || iovcnt < 0 || iovcnt > OE_IOV_MAX)
+    if (!desc || (!iov && iovcnt) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    /* Create the write buffer from the IOV vector. */
-    if (oe_iov_deflate(iov, (size_t)iovcnt, &buf, &buf_size) != 0)
-        OE_RAISE_ERRNO(OE_ENOMEM);
+    for (int i = 0; i < iovcnt; i++)
+    {
+        const struct oe_iovec* p = &iov[i];
+        ssize_t n;
 
-    ret = _sgxfs_write(desc, buf, buf_size);
+        n = _sgxfs_write(desc, p->iov_base, p->iov_len);
+
+        if ((size_t)n != p->iov_len)
+            OE_RAISE_ERRNO(OE_EIO);
+
+        nwritten += n;
+    }
+
+    ret = nwritten;
 
 done:
-
-    if (buf)
-        oe_free(buf);
-
     return ret;
 }
+
 static oe_off_t _sgxfs_lseek(oe_fd_t* file_, oe_off_t offset, int whence)
 {
     oe_off_t ret = -1;
