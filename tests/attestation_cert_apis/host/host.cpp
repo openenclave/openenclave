@@ -13,6 +13,7 @@
 
 #define TEST_EC_KEY 0
 #define TEST_RSA_KEY 1
+#define SKIP_RETURN_CODE 2
 
 // This is the identity validation callback. An TLS connecting party (client or
 // server) can verify the passed in "identity" information to decide whether to
@@ -118,10 +119,7 @@ void run_test(oe_enclave_t* enclave, int test_type)
 int main(int argc, const char* argv[])
 {
     oe_result_t result;
-    // oe_result_t ecall_result;
     oe_enclave_t* enclave = NULL;
-    // unsigned char* cert = NULL;
-    // size_t cert_size = 0;
 
     if (argc != 2)
     {
@@ -130,6 +128,9 @@ int main(int argc, const char* argv[])
     }
 
     const uint32_t flags = oe_get_create_flags();
+    if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
+        return SKIP_RETURN_CODE;
+
     if ((result = oe_create_tls_enclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);
