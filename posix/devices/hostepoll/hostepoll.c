@@ -593,29 +593,27 @@ static ssize_t _epoll_readv(
     int iovcnt)
 {
     ssize_t ret = -1;
+    epoll_t* file = _cast_epoll(desc);
     void* buf = NULL;
-    size_t buf_size;
+    size_t buf_size = 0;
 
-    if (!iov || iovcnt < 0 || iovcnt > OE_IOV_MAX)
+    if (!file || (!iov && iovcnt) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    /* Calculate the size of the read buffer. */
-    if ((buf_size = oe_iov_compute_size(iov, (size_t)iovcnt)) == (size_t)-1)
-        OE_RAISE_ERRNO(OE_EINVAL);
-
-    /* Allocate the read buffer. */
-    if (!(buf = oe_malloc(buf_size)))
+    /* Flatten the IO vector into contiguous heap memory. */
+    if (oe_iov_pack(iov, iovcnt, &buf, &buf_size) != 0)
         OE_RAISE_ERRNO(OE_ENOMEM);
 
-    /* Perform the read. */
-    if ((ret = _epoll_read(desc, buf, buf_size)) <= 0)
-        goto done;
-
-    if (oe_iov_inflate(
-            buf, (size_t)ret, (struct oe_iovec*)iov, (size_t)iovcnt) != 0)
+    /* Call the host. */
+    if (oe_posix_readv_ocall(&ret, file->host_fd, buf, iovcnt, buf_size) !=
+        OE_OK)
     {
         OE_RAISE_ERRNO(OE_EINVAL);
     }
+
+    /* Synchronize data read with IO vector. */
+    if (oe_iov_sync(iov, iovcnt, buf, buf_size) != 0)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
 
@@ -631,17 +629,23 @@ static ssize_t _epoll_writev(
     int iovcnt)
 {
     ssize_t ret = -1;
+    epoll_t* file = _cast_epoll(desc);
     void* buf = NULL;
     size_t buf_size = 0;
 
-    if (!iov || iovcnt < 0 || iovcnt > OE_IOV_MAX)
+    if (!file || !iov || iovcnt < 0 || iovcnt > OE_IOV_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    /* Create the write buffer from the IOV vector. */
-    if (oe_iov_deflate(iov, (size_t)iovcnt, &buf, &buf_size) != 0)
+    /* Flatten the IO vector into contiguous heap memory. */
+    if (oe_iov_pack(iov, iovcnt, &buf, &buf_size) != 0)
         OE_RAISE_ERRNO(OE_ENOMEM);
 
-    ret = _epoll_write(desc, buf, buf_size);
+    /* Call the host. */
+    if (oe_posix_writev_ocall(&ret, file->host_fd, buf, iovcnt, buf_size) !=
+        OE_OK)
+    {
+        OE_RAISE_ERRNO(OE_EINVAL);
+    }
 
 done:
 
