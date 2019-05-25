@@ -795,7 +795,7 @@ oe_result_t oe_cert_get_ec_public_key(
         EC_KEY* ec;
 
         if (!(ec = EVP_PKEY_get1_EC_KEY(pkey)))
-            OE_RAISE(OE_CRYPTO_ERROR);
+            OE_RAISE_NO_TRACE(OE_CRYPTO_ERROR);
 
         EC_KEY_free(ec);
     }
