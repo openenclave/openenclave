@@ -12,21 +12,6 @@
 
 OE_EXTERNC_BEGIN
 
-/* Get the deflated size of the IO vector: return (size_t)-1 on overflow. */
-size_t oe_iov_compute_size(const struct oe_iovec* iov, size_t iov_count);
-
-int oe_iov_deflate(
-    const struct oe_iovec* iov,
-    size_t iov_len,
-    void** buf,
-    size_t* buf_size);
-
-int oe_iov_inflate(
-    const void* buf_,
-    size_t buf_size,
-    struct oe_iovec* iov,
-    size_t iov_len);
-
 int oe_iov_pack(
     const struct oe_iovec* iov,
     int iovcnt,

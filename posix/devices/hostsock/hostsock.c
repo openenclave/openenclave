@@ -416,22 +416,14 @@ static ssize_t _hostsock_recvmsg(
     sock_t* sock = _cast_sock(sock_);
     oe_errno = 0;
     void* buf = NULL;
-    size_t buf_len;
+    size_t buf_size = 0;
 
     /* Check the parameters. */
     if (!sock || !msg || (msg->msg_iovlen && !msg->msg_iov))
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    /* Get the size the total (flat) size of the msg_iov array. */
-    {
-        buf_len = oe_iov_compute_size(msg->msg_iov, msg->msg_iovlen);
-
-        if (buf_len == (size_t)-1)
-            OE_RAISE_ERRNO(OE_EINVAL);
-    }
-
-    /* Allocate the read buffer if its length is non-zero. */
-    if (buf_len && !(buf = oe_calloc(1, buf_len)))
+    /* Flatten the IO vector into contiguous heap memory. */
+    if (oe_iov_pack(msg->msg_iov, (int)msg->msg_iovlen, &buf, &buf_size) != 0)
         OE_RAISE_ERRNO(OE_ENOMEM);
 
     /* Call the host. */
@@ -443,7 +435,8 @@ static ssize_t _hostsock_recvmsg(
                 msg->msg_namelen,
                 &msg->msg_namelen,
                 buf,
-                buf_len,
+                msg->msg_iovlen,
+                buf_size,
                 msg->msg_control,
                 msg->msg_controllen,
                 &msg->msg_controllen,
@@ -456,8 +449,8 @@ static ssize_t _hostsock_recvmsg(
             OE_RAISE_ERRNO(oe_errno);
     }
 
-    /* Copy the buffer back onto the original iov array. */
-    if (oe_iov_inflate(buf, (size_t)ret, msg->msg_iov, msg->msg_iovlen) != 0)
+    /* Synchronize data read with IO vector. */
+    if (oe_iov_sync(msg->msg_iov, (int)msg->msg_iovlen, buf, buf_size) != 0)
         OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
@@ -529,7 +522,7 @@ static ssize_t _hostsock_sendmsg(
     ssize_t ret = -1;
     sock_t* sock = _cast_sock(sock_);
     void* buf = NULL;
-    size_t buf_len;
+    size_t buf_size = 0;
 
     oe_errno = 0;
 
@@ -537,9 +530,9 @@ static ssize_t _hostsock_sendmsg(
     if (!sock || !msg || (msg->msg_iovlen && !msg->msg_iov))
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    /* Flatten the iov array onto the buffer. */
-    if (oe_iov_deflate(msg->msg_iov, msg->msg_iovlen, &buf, &buf_len) != 0)
-        OE_RAISE_ERRNO(OE_EINVAL);
+    /* Flatten the IO vector into contiguous heap memory. */
+    if (oe_iov_pack(msg->msg_iov, (int)msg->msg_iovlen, &buf, &buf_size) != 0)
+        OE_RAISE_ERRNO(OE_ENOMEM);
 
     /* Call the host. */
     if (oe_posix_sendmsg_ocall(
@@ -548,7 +541,8 @@ static ssize_t _hostsock_sendmsg(
             msg->msg_name,
             msg->msg_namelen,
             buf,
-            buf_len,
+            msg->msg_iovlen,
+            buf_size,
             msg->msg_control,
             msg->msg_controllen,
             flags) != OE_OK)
@@ -800,29 +794,27 @@ static ssize_t _hostsock_readv(
     int iovcnt)
 {
     ssize_t ret = -1;
+    sock_t* sock = _cast_sock(desc);
     void* buf = NULL;
-    size_t buf_size;
+    size_t buf_size = 0;
 
-    if (!iov || iovcnt < 0 || iovcnt > OE_IOV_MAX)
+    if (!sock || (!iov && iovcnt) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    /* Calculate the size of the read buffer. */
-    if ((buf_size = oe_iov_compute_size(iov, (size_t)iovcnt)) == (size_t)-1)
-        OE_RAISE_ERRNO(OE_EINVAL);
-
-    /* Allocate the read buffer. */
-    if (!(buf = oe_malloc(buf_size)))
+    /* Flatten the IO vector into contiguous heap memory. */
+    if (oe_iov_pack(iov, iovcnt, &buf, &buf_size) != 0)
         OE_RAISE_ERRNO(OE_ENOMEM);
 
-    /* Perform the read. */
-    if ((ret = _hostsock_read(desc, buf, buf_size)) <= 0)
-        goto done;
-
-    if (oe_iov_inflate(
-            buf, (size_t)ret, (struct oe_iovec*)iov, (size_t)iovcnt) != 0)
+    /* Call the host. */
+    if (oe_posix_readv_ocall(&ret, sock->host_fd, buf, iovcnt, buf_size) !=
+        OE_OK)
     {
         OE_RAISE_ERRNO(OE_EINVAL);
     }
+
+    /* Synchronize data read with IO vector. */
+    if (oe_iov_sync(iov, iovcnt, buf, buf_size) != 0)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
 
@@ -838,17 +830,23 @@ static ssize_t _hostsock_writev(
     int iovcnt)
 {
     ssize_t ret = -1;
+    sock_t* sock = _cast_sock(desc);
     void* buf = NULL;
     size_t buf_size = 0;
 
-    if (!iov || iovcnt < 0 || iovcnt > OE_IOV_MAX)
+    if (!sock || !iov || iovcnt < 0 || iovcnt > OE_IOV_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    /* Create the write buffer from the IOV vector. */
-    if (oe_iov_deflate(iov, (size_t)iovcnt, &buf, &buf_size) != 0)
+    /* Flatten the IO vector into contiguous heap memory. */
+    if (oe_iov_pack(iov, iovcnt, &buf, &buf_size) != 0)
         OE_RAISE_ERRNO(OE_ENOMEM);
 
-    ret = _hostsock_write(desc, buf, buf_size);
+    /* Call the host. */
+    if (oe_posix_writev_ocall(&ret, sock->host_fd, buf, iovcnt, buf_size) !=
+        OE_OK)
+    {
+        OE_RAISE_ERRNO(OE_EINVAL);
+    }
 
 done:
 

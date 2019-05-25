@@ -395,8 +395,9 @@ ssize_t oe_posix_recvmsg_ocall(
     void* msg_name,
     oe_socklen_t msg_namelen,
     oe_socklen_t* msg_namelen_out,
-    void* msg_buf,
-    size_t msg_buflen,
+    void* msg_iov_buf,
+    size_t msg_iovlen,
+    size_t msg_iov_buf_size,
     void* msg_control,
     size_t msg_controllen,
     size_t* msg_controllen_out,
@@ -404,16 +405,18 @@ ssize_t oe_posix_recvmsg_ocall(
 {
     ssize_t ret = -1;
     struct msghdr msg;
-    struct iovec iov;
+    struct oe_iovec* msg_iov = (struct oe_iovec*)msg_iov_buf;
+
+    OE_UNUSED(msg_iov_buf_size);
 
     errno = 0;
 
-    iov.iov_base = msg_buf;
-    iov.iov_len = msg_buflen;
+    _relocate_iov_bases(msg_iov, (int)msg_iovlen, (ptrdiff_t)msg_iov_buf);
+
     msg.msg_name = msg_name;
     msg.msg_namelen = msg_namelen;
-    msg.msg_iov = &iov;
-    msg.msg_iovlen = 1;
+    msg.msg_iov = (struct iovec*)msg_iov;
+    msg.msg_iovlen = msg_iovlen;
     msg.msg_control = msg_control;
     msg.msg_controllen = msg_controllen;
     msg.msg_flags = 0;
@@ -427,6 +430,8 @@ ssize_t oe_posix_recvmsg_ocall(
             *msg_controllen_out = msg.msg_controllen;
     }
 
+    _relocate_iov_bases(msg_iov, (int)msg_iovlen, -(ptrdiff_t)msg_iov_buf);
+
     return ret;
 }
 
@@ -434,23 +439,26 @@ ssize_t oe_posix_sendmsg_ocall(
     oe_host_fd_t sockfd,
     const void* msg_name,
     oe_socklen_t msg_namelen,
-    const void* msg_buf,
-    size_t msg_buflen,
+    void* msg_iov_buf,
+    size_t msg_iovlen,
+    size_t msg_iov_buf_size,
     const void* msg_control,
     size_t msg_controllen,
     int flags)
 {
     struct msghdr msg;
-    struct iovec iov;
+    struct oe_iovec* msg_iov = (struct oe_iovec*)msg_iov_buf;
+
+    OE_UNUSED(msg_iov_buf_size);
 
     errno = 0;
 
-    iov.iov_base = (void*)msg_buf;
-    iov.iov_len = msg_buflen;
+    _relocate_iov_bases(msg_iov, (int)msg_iovlen, (ptrdiff_t)msg_iov_buf);
+
     msg.msg_name = (void*)msg_name;
     msg.msg_namelen = msg_namelen;
-    msg.msg_iov = (void*)&iov;
-    msg.msg_iovlen = 1;
+    msg.msg_iov = (struct iovec*)msg_iov;
+    msg.msg_iovlen = msg_iovlen;
     msg.msg_control = (void*)msg_control;
     msg.msg_controllen = msg_controllen;
     msg.msg_flags = 0;
