@@ -240,6 +240,20 @@ enclave {
             oe_socklen_t addrlen)
             propagate_errno;
 
+        ssize_t oe_posix_recvv_ocall(
+            oe_host_fd_t fd,
+            [in, out, size=iov_buf_size] void* iov_buf,
+            int iovcnt,
+            size_t iov_buf_size)
+            propagate_errno;
+
+        ssize_t oe_posix_sendv_ocall(
+            oe_host_fd_t fd,
+            [in, size=iov_buf_size] const void* iov_buf,
+            int iovcnt,
+            size_t iov_buf_size)
+            propagate_errno;
+
         int oe_posix_shutdown_ocall(
             oe_host_fd_t sockfd,
             int how)

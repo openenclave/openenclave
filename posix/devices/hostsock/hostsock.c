@@ -806,7 +806,7 @@ static ssize_t _hostsock_readv(
         OE_RAISE_ERRNO(OE_ENOMEM);
 
     /* Call the host. */
-    if (oe_posix_readv_ocall(&ret, sock->host_fd, buf, iovcnt, buf_size) !=
+    if (oe_posix_recvv_ocall(&ret, sock->host_fd, buf, iovcnt, buf_size) !=
         OE_OK)
     {
         OE_RAISE_ERRNO(OE_EINVAL);
@@ -842,7 +842,7 @@ static ssize_t _hostsock_writev(
         OE_RAISE_ERRNO(OE_ENOMEM);
 
     /* Call the host. */
-    if (oe_posix_writev_ocall(&ret, sock->host_fd, buf, iovcnt, buf_size) !=
+    if (oe_posix_sendv_ocall(&ret, sock->host_fd, buf, iovcnt, buf_size) !=
         OE_OK)
     {
         OE_RAISE_ERRNO(OE_EINVAL);
