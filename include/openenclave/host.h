@@ -414,8 +414,8 @@ typedef oe_result_t (
  * @retval other appropriate error code
  */
 oe_result_t oe_verify_attestation_certificate(
-    uint8_t* der_crt,
-    size_t der_crt_len,
+    uint8_t* cert_in_der,
+    size_t cert_in_der_len,
     oe_identity_verify_callback_t enclave_identity_callback,
     void* arg);
 

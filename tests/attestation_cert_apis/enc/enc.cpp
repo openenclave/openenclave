@@ -145,7 +145,7 @@ oe_result_t generate_key_pair(
         if (res != 0)
         {
             OE_TRACE_ERROR("mbedtls_ctr_drbg_seed failed.");
-            goto done;
+            goto clean_rsa;
         }
 
         // Initialize RSA context.
@@ -154,7 +154,7 @@ oe_result_t generate_key_pair(
         if (res != 0)
         {
             OE_TRACE_ERROR("mbedtls_pk_setup failed (%d).", res);
-            goto done;
+            goto clean_rsa;
         }
 
         // Generate an ephemeral 2048-bit RSA key pair with
@@ -168,7 +168,7 @@ oe_result_t generate_key_pair(
         if (res != 0)
         {
             OE_TRACE_ERROR("mbedtls_rsa_gen_key failed (%d)\n", res);
-            goto done;
+            goto clean_rsa;
         }
 
         /* Call again with the allocated memory. */
@@ -189,7 +189,7 @@ oe_result_t generate_key_pair(
         if (res != 0)
         {
             OE_TRACE_ERROR("mbedtls_pk_write_pubkey_pem failed (%d)\n", res);
-            goto done;
+            goto clean_rsa;
         }
 
         res = mbedtls_pk_write_key_pem(
@@ -197,7 +197,7 @@ oe_result_t generate_key_pair(
         if (res != 0)
         {
             OE_TRACE_ERROR("mbedtls_pk_write_key_pem failed (%d)\n", res);
-            goto done;
+            goto clean_rsa;
         }
 
         *public_key = local_public_key;
@@ -212,8 +212,12 @@ oe_result_t generate_key_pair(
 
         OE_TRACE_INFO("public_key_size\n[%d]\n", *public_key_size);
         OE_TRACE_INFO("public_key\n[%s]\n", *public_key);
-
         result = OE_OK;
+
+    clean_rsa:
+        mbedtls_pk_free(&pk_context);
+        mbedtls_ctr_drbg_free(&ctr_drbg_contex);
+        mbedtls_entropy_free(&entropy_context);
     }
     else
     {

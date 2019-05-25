@@ -11,7 +11,7 @@
 #include <openenclave/internal/utils.h>
 #include "../common/common.h"
 
-#define KEY_BUFF_SIZE 512
+#define KEY_BUFF_SIZE 2048
 
 static const char* oid_oe_report = X509_OID_FOR_QUOTE_STRING;
 
@@ -55,6 +55,27 @@ done:
     return result;
 }
 
+/**
+ * oe_verify_attestation_certificate
+ *
+ * This function perform a custom validation on the input certificate. This
+ * validation includes extracting an attestation evidence extension from the
+ * certificate before validating this evidence. An optional
+ * enclave_identity_callback could be passed in for a calling client to further
+ * validate the identity of the enclave creating the quote.
+ * @param[in] cert_in_der a pointer to buffer holding certificate contents
+ *  in DER format
+ * @param[in] cert_in_der_len size of certificate buffer above
+ * @param[in] enclave_identity_callback callback routine for custom identity
+ * checking
+ * @param[in] arg an optional context pointer argument specified by the caller
+ * when setting callback
+ * @retval OE_OK on a successful validation
+ * @retval OE_VERIFY_FAILED on quote failure
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid
+ * @retval OE_FAILURE general failure
+ * @retval other appropriate error code
+ */
 oe_result_t oe_verify_attestation_certificate(
     uint8_t* cert_in_der,
     size_t cert_in_der_len,
@@ -65,9 +86,13 @@ oe_result_t oe_verify_attestation_certificate(
     oe_cert_t cert = {0};
     uint8_t* report = NULL;
     size_t report_size = 0;
-    uint8_t pub_key_buf[KEY_BUFF_SIZE];
+    uint8_t* pub_key_buf = NULL;
     size_t pub_key_buf_size = KEY_BUFF_SIZE;
     oe_report_t parsed_report = {0};
+
+    pub_key_buf = (uint8_t*)oe_malloc(KEY_BUFF_SIZE);
+    if (!pub_key_buf)
+        OE_RAISE(OE_OUT_OF_MEMORY);
 
     result = oe_cert_read_der(&cert, cert_in_der, cert_in_der_len);
     OE_CHECK_MSG(result, "cert_in_der_len=%d", cert_in_der_len);
@@ -110,7 +135,7 @@ oe_result_t oe_verify_attestation_certificate(
 
     // verify report data: hash(public key)
     // extract public key from the cert
-    oe_memset_s(pub_key_buf, sizeof(pub_key_buf), 0, sizeof(pub_key_buf));
+    oe_memset_s(pub_key_buf, KEY_BUFF_SIZE, 0, KEY_BUFF_SIZE);
     result =
         oe_cert_write_public_key_pem(&cert, pub_key_buf, &pub_key_buf_size);
     OE_CHECK(result);
@@ -141,6 +166,7 @@ oe_result_t oe_verify_attestation_certificate(
     }
 
 done:
+    oe_free(pub_key_buf);
     oe_cert_free(&cert);
     oe_free(report);
     return result;

@@ -78,7 +78,6 @@ if ( UNIX )
         add_subdirectory(memory)
     endif()
 add_subdirectory(create-rapid)
-add_subdirectory(tls_apis)
 endif()
 
 if (OE_SGX AND UNIX)
@@ -90,4 +89,5 @@ if (OE_SGX AND UNIX)
    #Attestation supported only on Linux
    add_subdirectory(qeidentity)
    add_subdirectory(report)
+   add_subdirectory(attestation_cert_apis)
 endif()

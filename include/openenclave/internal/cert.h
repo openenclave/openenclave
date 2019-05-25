@@ -189,13 +189,12 @@ oe_result_t oe_cert_get_ec_public_key(
     oe_ec_public_key_t* public_key);
 
 /**
- * Get the public key (in PRM frfrom a certificate.
+ * Get the public key (in PEM format) from a certificate
  *
- * This function gets the EC public key from the given certificate. If the
- * the certificate does not contain an EC public key, this function returns
- * OE_PUBLIC_KEY_NOT_FOUND.
+ * This function extracts the public key from the given certificate before
+ * writing to a buffer in PEM format
  *
- * @param cert the certificate whose public key is sought.
+ * @param cert the certificate whose public key is sought
  * @param pem_data the buffer to hold returned public key in PEM foramt
  * @param pem_size size of of pem_data buffer
  *
@@ -345,7 +344,7 @@ oe_result_t oe_get_crl_distribution_points(
     size_t* buffer_size);
 
 #ifdef _OE_ENCLAVE_H
-// TODO: add comments
+
 typedef struct _oe_cert_config
 {
     uint8_t* private_key_buf;
@@ -363,6 +362,7 @@ typedef struct _oe_cert_config
 } oe_cert_config_t;
 
 #define OE_MAX_CERT_SIZE 8192
+
 oe_result_t oe_gen_custom_x509_cert(
     oe_cert_config_t* cert_config,
     unsigned char* cert_buf,

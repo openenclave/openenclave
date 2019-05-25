@@ -32,7 +32,7 @@ static const unsigned char oid_oe_report[] = X509_OID_FOR_QUOTE_EXT;
 // Input: an issuer and subject key pair
 // Output: a self-signed certificate embedded critical extension with quote
 // information as its content
-oe_result_t generate_x509_cert(
+static oe_result_t generate_x509_self_signed_certificate(
     const unsigned char* subject_name,
     uint8_t* private_key_buf,
     size_t private_key_buf_size,
@@ -85,6 +85,28 @@ done:
     return result;
 }
 
+/**
+ * oe_generate_attestation_certificate.
+ *
+ * This function generates a self-signed x.509 certificate with an embedded
+ * quote from the underlying enclave.
+ *
+ * @param[in] subject_name a string contains an X.509 distinguished
+ * name (DN) for customizing the generated certificate. This name is also used
+ * as the issuer name because this is a self-signed certificate
+ * See RFC5280 (https://tools.ietf.org/html/rfc5280) specification for details
+ * Example value "CN=Open Enclave SDK,O=OESDK TLS,C=US"
+ *
+ * @param[in] private_key a private key used to sign this certificate
+ * @param[in] private_key_size The size of the private_key buffer
+ * @param[in] public_key a public key used as the certificate's subject key
+ * @param[in] public_key_size The size of the public_key buffer.
+ *
+ * @param[out] output_cert a pointer to buffer pointer
+ * @param[out] output_cert_size size of the buffer above
+ *
+ * @return OE_OK on success
+ */
 oe_result_t oe_generate_attestation_certificate(
     const unsigned char* subject_name,
     uint8_t* private_key,
@@ -129,7 +151,7 @@ oe_result_t oe_generate_attestation_certificate(
     OE_CHECK_MSG(
         result, "oe_get_report failed with %s\n", oe_result_str(result));
 
-    result = generate_x509_cert(
+    result = generate_x509_self_signed_certificate(
         subject_name,
         private_key,
         private_key_size,
@@ -140,9 +162,11 @@ oe_result_t oe_generate_attestation_certificate(
         output_cert,
         output_cert_size);
     OE_CHECK_MSG(
-        result, "generate_x509_cert failed : %s", oe_result_str(result));
+        result,
+        "generate_x509_self_signed_certificate failed : %s",
+        oe_result_str(result));
 
-    OE_TRACE_VERBOSE("self-signed certificat size = %d", *output_cert_size);
+    OE_TRACE_VERBOSE("self-signed certificate size = %d", *output_cert_size);
     result = OE_OK;
 done:
     oe_free_report(remote_report_buf);
