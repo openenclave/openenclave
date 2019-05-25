@@ -10,6 +10,7 @@
 #include <openenclave/corelibc/sys/uio.h>
 #include <openenclave/internal/posix/iov.h>
 #include <openenclave/internal/posix/types.h>
+#include <openenclave/internal/print.h>
 #include <openenclave/internal/utils.h>
 
 size_t oe_iov_compute_size(const struct oe_iovec* iov, size_t iov_count)
@@ -153,14 +154,15 @@ int oe_iov_pack(
     {
         if (iov)
         {
-            if (!(buf = oe_calloc(1, 1)))
+            if (!(buf = oe_calloc(1, sizeof(uint64_t))))
                 goto done;
 
-            buf_size = 1;
+            buf_size = sizeof(uint64_t);
         }
 
         *buf_out = buf;
         *buf_size_out = buf_size;
+        buf = NULL;
         ret = 0;
         goto done;
     }
