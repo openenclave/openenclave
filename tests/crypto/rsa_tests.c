@@ -32,6 +32,7 @@ static char CHAIN2[max_cert_chain_size];
 static char MIXED_CHAIN[max_cert_chain_size * 2];
 static uint8_t _CERT1_RSA_MODULUS[max_cert_size];
 static uint8_t _SIGNATURE[max_sign_size];
+static char _DER_CERT[max_cert_size];
 /* RSA exponent of CERT */
 static const char _CERT_RSA_EXPONENT[] = {0x01, 0x00, 0x01};
 
@@ -108,7 +109,7 @@ static void _test_verify()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
-static void _test_cert_verify_good()
+static void _test_pem_cert_verify_good()
 {
     printf("=== begin %s()\n", __FUNCTION__);
 
@@ -127,6 +128,24 @@ static void _test_cert_verify_good()
 
     oe_cert_free(&cert);
     oe_cert_chain_free(&chain);
+
+    printf("=== passed %s()\n", __FUNCTION__);
+}
+
+static void _test_der_cert_verify_good()
+{
+    printf("=== begin %s()\n", __FUNCTION__);
+
+    oe_result_t r;
+    oe_cert_t cert = {0};
+
+    r = oe_cert_read_der(&cert, _DER_CERT, max_cert_size);
+    OE_TEST(r == OE_OK);
+
+    r = oe_cert_verify(&cert, NULL, NULL, 0);
+    OE_TEST(r == OE_OK);
+
+    oe_cert_free(&cert);
 
     printf("=== passed %s()\n", __FUNCTION__);
 }
@@ -445,6 +464,7 @@ static void _test_cert_methods()
 
 void TestRSA(void)
 {
+    OE_TEST(read_cert("../data/self_signed.crt.der", _DER_CERT) == OE_OK);
     OE_TEST(read_cert("../data/Leaf.crt.pem", _CERT1) == OE_OK);
     OE_TEST(
         read_chain(
@@ -472,7 +492,8 @@ void TestRSA(void)
         read_mixed_chain(
             CHAIN1, CHAIN2, MIXED_CHAIN, OE_COUNTOF(MIXED_CHAIN)) == OE_OK);
     _test_cert_methods();
-    _test_cert_verify_good();
+    _test_pem_cert_verify_good();
+    _test_der_cert_verify_good();
     _test_cert_verify_bad();
     _test_mixed_chain();
     _test_generate();

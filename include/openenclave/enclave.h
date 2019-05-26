@@ -724,6 +724,78 @@ oe_enclave_t* oe_get_enclave(void);
  */
 oe_result_t oe_random(void* data, size_t size);
 
+/**
+ * oe_generate_attestation_certificate.
+ *
+ * This function generates a self-signed x.509 certificate with an embedded
+ * quote from the underlying enclave.
+ *
+ * @param[in] subject_name a string contains an X.509 distinguished
+ * name (DN) for customizing the generated certificate. This name is also used
+ * as the issuer name because this is a self-signed certificate
+ * See RFC5280 (https://tools.ietf.org/html/rfc5280) specification for details
+ * Example value "CN=Open Enclave SDK,O=OESDK TLS,C=US"
+ *
+ * @param[in] private_key a private key used to sign this certificate
+ * @param[in] private_key_size The size of the private_key buffer
+ * @param[in] public_key a public key used as the certificate's subject key
+ * @param[in] public_key_size The size of the public_key buffer.
+ *
+ * @param[out] output_cert a pointer to buffer pointer
+ * @param[out] output_cert_size size of the buffer above
+ *
+ * @return OE_OK on success
+ */
+oe_result_t oe_generate_attestation_certificate(
+    const unsigned char* subject_name,
+    uint8_t* private_key,
+    size_t private_key_size,
+    uint8_t* public_key,
+    size_t public_key_size,
+    uint8_t** output_cert,
+    size_t* output_cert_size);
+
+/**
+ * Free the given cert
+ * @param[in] cert If not NULL, the buffer to free.
+ */
+void oe_free_attestation_certificate(uint8_t* cert);
+
+/**
+ * identity validation callback type
+ * @param[in] identity a pointer to an enclave's identity information
+ * @param[in] arg caller defined context
+ */
+typedef oe_result_t (
+    *oe_identity_verify_callback_t)(oe_identity_t* identity, void* arg);
+
+/**
+ * oe_verify_attestation_certificate
+ *
+ * This function perform a custom validation on the input certificate. This
+ * validation includes extracting an attestation evidence extension from the
+ * certificate before validating this evidence. An optional
+ * enclave_identity_callback could be passed in for a calling client to further
+ * validate the identity of the enclave creating the quote.
+ * @param[in] cert_in_der a pointer to buffer holding certificate contents
+ *  in DER format
+ * @param[in] cert_in_der_len size of certificate buffer above
+ * @param[in] enclave_identity_callback callback routine for custom identity
+ * checking
+ * @param[in] arg an optional context pointer argument specified by the caller
+ * when setting callback
+ * @retval OE_OK on a successful validation
+ * @retval OE_VERIFY_FAILED on quote failure
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid
+ * @retval OE_FAILURE general failure
+ * @retval other appropriate error code
+ */
+oe_result_t oe_verify_attestation_certificate(
+    uint8_t* cert_in_der,
+    size_t cert_in_der_len,
+    oe_identity_verify_callback_t enclave_identity_callback,
+    void* arg);
+
 OE_EXTERNC_END
 
 #endif /* _OE_ENCLAVE_H */

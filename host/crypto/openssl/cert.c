@@ -291,7 +291,7 @@ static oe_result_t _verify_cert(
         OE_RAISE_MSG(OE_FAILURE, "Failed to clone X509 cert", NULL);
 
     /* Clone the chain to clear any cached verification state */
-    if (!(chain = _clone_chain(chain_)))
+    if (chain_ && !(chain = _clone_chain(chain_)))
         OE_RAISE_MSG(OE_FAILURE, "Failed to clone X509 cert chain", NULL);
 
     /* Create a store for the verification */
@@ -338,7 +338,10 @@ static oe_result_t _verify_cert(
     X509_STORE_CTX_set_cert(ctx, x509);
 
     /* Set the CA chain into the verification context */
-    X509_STORE_CTX_trusted_stack(ctx, chain);
+    if (chain)
+        X509_STORE_CTX_trusted_stack(ctx, chain);
+    else
+        X509_STORE_add_cert(store, x509);
 
     /* Finally verify the certificate */
     if (!X509_verify_cert(ctx))
@@ -529,6 +532,45 @@ done:
     return result;
 }
 
+oe_result_t oe_cert_read_der(
+    oe_cert_t* cert,
+    const void* der_data,
+    size_t der_size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    Cert* impl = (Cert*)cert;
+    X509* x509 = NULL;
+    unsigned char* p = NULL;
+
+    /* Zero-initialize the implementation */
+    if (impl)
+        impl->magic = 0;
+
+    /* Check parameters */
+    if (!der_data || !der_size || der_size > OE_INT_MAX || !cert)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Initialize OpenSSL (if not already initialized) */
+    oe_initialize_openssl();
+
+    p = (unsigned char*)der_data;
+
+    /* Convert the PEM BIO into a certificate object */
+    if (!(x509 = d2i_X509(NULL, (const unsigned char**)&p, (int)der_size)))
+        OE_RAISE(OE_FAILURE);
+
+    _cert_init(impl, x509);
+    x509 = NULL;
+
+    result = OE_OK;
+
+done:
+
+    X509_free(x509);
+
+    return result;
+}
+
 oe_result_t oe_cert_free(oe_cert_t* cert)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -665,7 +707,7 @@ oe_result_t oe_cert_verify(
     }
 
     /* Check for invalid chain parameter */
-    if (!_cert_chain_is_valid(chain_impl))
+    if (chain && !_cert_chain_is_valid(chain_impl))
     {
         OE_RAISE_MSG(OE_INVALID_PARAMETER, "Invalid chain parameter", NULL);
     }
@@ -674,7 +716,11 @@ oe_result_t oe_cert_verify(
     oe_initialize_openssl();
 
     /* Verify the certificate */
-    OE_CHECK(_verify_cert(cert_impl->x509, chain_impl->sk, crls, num_crls));
+    OE_CHECK(_verify_cert(
+        cert_impl->x509,
+        (chain_impl != NULL ? chain_impl->sk : NULL),
+        crls,
+        num_crls));
 
     result = OE_OK;
 
@@ -749,7 +795,7 @@ oe_result_t oe_cert_get_ec_public_key(
         EC_KEY* ec;
 
         if (!(ec = EVP_PKEY_get1_EC_KEY(pkey)))
-            OE_RAISE(OE_CRYPTO_ERROR);
+            OE_RAISE_NO_TRACE(OE_CRYPTO_ERROR);
 
         EC_KEY_free(ec);
     }

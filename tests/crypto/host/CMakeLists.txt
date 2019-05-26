@@ -40,6 +40,10 @@ COMMAND ${CMAKE_COMMAND} -E copy  ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/root.c
 COMMAND sleep 1
 COMMAND openssl genrsa -out ${DATA_DIR}/RootCA.key.pem
 COMMAND openssl req -new -x509 -key ${DATA_DIR}/RootCA.key.pem -out ${DATA_DIR}/RootCA.crt.pem -days 3650 -subj "/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=Root" 
+
+COMMAND sleep 1
+COMMAND openssl req -new -x509 -key ${DATA_DIR}/RootCA.key.pem -out ${DATA_DIR}/self_signed.crt.der -outform DER -days 3650 -subj "/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=Root"
+
 # Creating Intermediate certificates signed by the Root CA
 COMMAND echo 'Creating Intermediate certificates signed by the root CA....'
 COMMAND sleep 1

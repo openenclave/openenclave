@@ -7,6 +7,10 @@
 #include <mbedtls/oid.h>
 #include <mbedtls/platform.h>
 #include <mbedtls/x509_crt.h>
+#include <mbedtls/ctr_drbg.h>
+#include <mbedtls/error.h>
+#include <mbedtls/debug.h>
+#include <mbedtls/entropy.h>
 #include "mbedtls_corelibc_undef.h"
 // clang-format on
 
@@ -24,6 +28,7 @@
 #include "ec.h"
 #include "pem.h"
 #include "rsa.h"
+#include "random.h"
 
 /*
 **==============================================================================
@@ -649,6 +654,55 @@ done:
     return result;
 }
 
+oe_result_t oe_cert_read_der(
+    oe_cert_t* cert,
+    const void* der_data,
+    size_t der_size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    Cert* impl = (Cert*)cert;
+    mbedtls_x509_crt* crt = NULL;
+    int rc = 0;
+
+    /* Clear the implementation */
+    if (impl)
+        memset(impl, 0, sizeof(Cert));
+
+    /* Check parameters */
+    if (!der_data || !der_size || !cert)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Allocate memory for the certificate */
+    if (!(crt = mbedtls_calloc(1, sizeof(mbedtls_x509_crt))))
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    /* Initialize the certificate structure */
+    mbedtls_x509_crt_init(crt);
+
+    /* Parse a single DER formatted certificate and add it to the chained list
+     */
+    rc = mbedtls_x509_crt_parse_der(crt, (const uint8_t*)der_data, der_size);
+    if (rc != 0)
+        OE_RAISE(OE_CRYPTO_ERROR, "mbedtls_x509_crt_parse rc= 0x%x\n", rc);
+
+    /* Initialize the implementation */
+    _cert_init(impl, crt, NULL);
+    crt = NULL;
+
+    result = OE_OK;
+
+done:
+
+    if (crt)
+    {
+        mbedtls_x509_crt_free(crt);
+        memset(crt, 0, sizeof(mbedtls_x509_crt));
+        mbedtls_free(crt);
+    }
+
+    return result;
+}
+
 oe_result_t oe_cert_free(oe_cert_t* cert)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -760,7 +814,7 @@ oe_result_t oe_cert_verify(
     }
 
     /* Reject invalid certificate chain */
-    if (!_cert_chain_is_valid(chain_impl))
+    if (chain && !_cert_chain_is_valid(chain_impl))
     {
         OE_RAISE_MSG(OE_INVALID_PARAMETER, "Invalid chain parameter", NULL);
     }
@@ -802,28 +856,34 @@ oe_result_t oe_cert_verify(
 
     /* Verify the certificate */
     OE_CHECK(_mbedtls_x509_crt_verify(
-        cert_impl->cert, chain_impl->referent->crt, crl_list));
+        cert_impl->cert,
+        (chain != NULL) ? chain_impl->referent->crt : cert_impl->cert,
+        crl_list));
 
-    /* Verify every certificate in the certificate chain. */
-    for (mbedtls_x509_crt* p = chain_impl->referent->crt; p; p = p->next)
+    if (chain)
     {
-        /* Verify the current certificate in the chain. */
-        OE_CHECK(
-            _mbedtls_x509_crt_verify(p, chain_impl->referent->crt, crl_list));
-
-        /* Verify that the CRL list has an issuer for this certificate. */
-        if (crl_list)
+        /* Verify every certificate in the certificate chain. */
+        for (mbedtls_x509_crt* p = chain_impl->referent->crt; p; p = p->next)
         {
-            if (!_crl_list_find_issuer_for_cert(crl_list, p))
+            /* Verify the current certificate in the chain. */
+            OE_CHECK(_mbedtls_x509_crt_verify(
+                p,
+                ((chain != NULL) ? chain_impl->referent->crt : NULL),
+                crl_list));
+
+            /* Verify that the CRL list has an issuer for this certificate. */
+            if (crl_list)
             {
-                OE_RAISE_MSG(
-                    OE_VERIFY_CRL_MISSING,
-                    "Unable to get certificate CRL",
-                    NULL);
+                if (!_crl_list_find_issuer_for_cert(crl_list, p))
+                {
+                    OE_RAISE_MSG(
+                        OE_VERIFY_CRL_MISSING,
+                        "Unable to get certificate CRL",
+                        NULL);
+                }
             }
         }
     }
-
     result = OE_OK;
 
 done:
@@ -888,7 +948,7 @@ oe_result_t oe_cert_get_ec_public_key(
 
     /* If certificate does not contain an EC key */
     if (!oe_is_ec_key(&impl->cert->pk))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE_NO_TRACE(OE_CRYPTO_ERROR);
 
     /* Copy the public key from the certificate */
     OE_RAISE(oe_ec_public_key_init(public_key, &impl->cert->pk));
@@ -1017,5 +1077,143 @@ oe_result_t oe_cert_chain_get_leaf_cert(
     result = OE_OK;
 
 done:
+    return result;
+}
+
+oe_result_t oe_gen_custom_x509_cert(
+    oe_cert_config_t* config,
+    unsigned char* cert_buf,
+    size_t cert_buf_size,
+    size_t* bytes_written)
+{
+    oe_result_t result = OE_CRYPTO_ERROR;
+    mbedtls_mpi serial;
+    mbedtls_x509write_cert x509cert = {0};
+    mbedtls_pk_context subject_key;
+    mbedtls_pk_context issuer_key;
+    mbedtls_ctr_drbg_context* ctr_drbg = NULL;
+    mbedtls_entropy_context entropy;
+    unsigned char* buff = NULL;
+    int ret = 0;
+
+    mbedtls_pk_init(&subject_key);
+    mbedtls_pk_init(&issuer_key);
+    mbedtls_mpi_init(&serial);
+    // mbedtls_ctr_drbg_init(&ctr_drbg);
+    mbedtls_entropy_init(&entropy);
+    mbedtls_x509write_crt_init(&x509cert);
+    mbedtls_x509write_crt_set_md_alg(&x509cert, MBEDTLS_MD_SHA256);
+    mbedtls_x509write_crt_set_subject_key(&x509cert, &subject_key);
+    mbedtls_x509write_crt_set_issuer_key(&x509cert, &issuer_key);
+
+    if ((buff = oe_malloc(cert_buf_size)) == NULL)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    /* Get the drbg object */
+    if (!(ctr_drbg = oe_mbedtls_get_drbg()))
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    // create pk_context for both public and private keys
+    ret = mbedtls_pk_parse_public_key(
+        &subject_key,
+        (const unsigned char*)config->public_key_buf,
+        config->public_key_buf_size);
+    if (ret)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "ret = 0x%x ", ret);
+
+    OE_TRACE_VERBOSE(
+        "custom_x509_cert: key type:%d", mbedtls_pk_get_type(&subject_key));
+
+    ret = mbedtls_pk_parse_key(
+        &issuer_key,
+        (const unsigned char*)config->private_key_buf,
+        config->private_key_buf_size,
+        NULL,
+        0);
+    if (ret)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "ret = 0x%x ", ret);
+
+    ret = mbedtls_x509write_crt_set_subject_name(
+        &x509cert, (const char*)config->subject_name);
+    if (ret)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "ret = 0x%x ", ret);
+
+    ret = mbedtls_x509write_crt_set_issuer_name(
+        &x509cert, (const char*)config->issuer_name);
+
+    if (ret)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "ret = 0x%x ", ret);
+
+    ret = mbedtls_mpi_read_string(&serial, 10, "1");
+    if (ret)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "ret = 0x%x ", ret);
+
+    ret = mbedtls_x509write_crt_set_serial(&x509cert, &serial);
+    if (ret)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "ret = 0x%x ", ret);
+
+    ret = mbedtls_x509write_crt_set_validity(
+        &x509cert,
+        (const char*)config->date_not_valid_before,
+        (const char*)config->date_not_valid_after);
+    if (ret)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "ret = 0x%x ", ret);
+
+    // Set the basicConstraints extension for a CRT
+    ret = mbedtls_x509write_crt_set_basic_constraints(
+        &x509cert,
+        0, // is_ca
+        -1);
+    if (ret)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "ret = 0x%x ", ret);
+
+    // Set the subjectKeyIdentifier extension for a CRT Requires that
+    // mbedtls_x509write_crt_set_subject_key() has been called before
+    ret = mbedtls_x509write_crt_set_subject_key_identifier(&x509cert);
+    if (ret)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "ret = 0x%x ", ret);
+
+    // Set the authorityKeyIdentifier extension for a CRT Requires that
+    // mbedtls_x509write_crt_set_issuer_key() has been called before.
+    ret = mbedtls_x509write_crt_set_authority_key_identifier(&x509cert);
+    if (ret)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "ret = 0x%x ", ret);
+
+    ret = mbedtls_x509write_crt_set_extension(
+        &x509cert,
+        (char*)config->ext_oid,
+        config->ext_oid_size,
+        0,
+        (const uint8_t*)config->ext_data_buf,
+        config->ext_data_buf_size);
+    if (ret)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "ret = 0x%x ", ret);
+
+    // Write a built up certificate to a X509 DER structure Note: data
+    // is written at the end of the buffer! Use the return value to
+    // determine where you should start using the buffer.
+    *bytes_written = (size_t)mbedtls_x509write_crt_der(
+        &x509cert, buff, cert_buf_size, mbedtls_ctr_drbg_random, ctr_drbg);
+    if (*bytes_written <= 0)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "bytes_written = 0x%x ", *bytes_written);
+
+    OE_CHECK(oe_memcpy_s(
+        (void*)cert_buf,
+        cert_buf_size,
+        (const void*)(buff + cert_buf_size - *bytes_written),
+        *bytes_written));
+    OE_TRACE_VERBOSE("bytes_written = 0x%x", *bytes_written);
+
+    result = OE_OK;
+done:
+    mbedtls_mpi_free(&serial);
+    mbedtls_x509write_crt_free(&x509cert);
+    // mbedtls_ctr_drbg_free(&ctr_drbg);
+    mbedtls_pk_free(&issuer_key);
+    mbedtls_pk_free(&subject_key);
+    oe_free(buff);
+    if (ret)
+        result = OE_CRYPTO_ERROR;
+
     return result;
 }
