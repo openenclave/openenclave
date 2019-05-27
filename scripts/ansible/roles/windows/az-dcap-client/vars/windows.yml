@@ -15,3 +15,22 @@ lc_driver:
   reg_path: HKLM:\SYSTEM\CurrentControlSet\Services\sgx_lc_msr\Parameters
   reg_key: SGX_Launch_Config_Optin
   reg_value: 1
+
+validation_directories:
+  - "C:\\openenclave\\prereqs\\nuget\\curl"
+  - "C:\\openenclave\\prereqs\\nuget\\DCAP_Components"
+  - "C:\\openenclave\\prereqs\\nuget\\EnclaveCommonAPI"
+  - "C:\\openenclave\\prereqs\\nuget\\Microsoft.Azure.DCAP.Client"
+  - "C:\\openenclave\\prereqs\\nuget\\openssl"
+  - "C:\\openenclave\\prereqs\\nuget\\zlib"
+
+validation_binaries:
+  - "C:\\openenclave\\prereqs\\nuget\\curl\\build\\native\\lib\\v110\\x64\\Release\\static\\libcurl.lib"
+  - "C:\\openenclave\\prereqs\\nuget\\DCAP_Components\\build\\lib\\native\\Libraries\\sgx_dcap_ql.lib"
+  - "C:\\openenclave\\prereqs\\nuget\\EnclaveCommonAPI\\lib\\native\\x64-Release\\sgx_enclave_common.lib"
+  - "C:\\openenclave\\prereqs\\nuget\\libssh2\\build\\native\\lib\\v110\\x64\\Release\\static\\cdecl\\libssh2.lib"
+  - "C:\\openenclave\\prereqs\\nuget\\Microsoft.Azure.DCAP.Client\\lib\\release\\dcap_quoteprov.dll"
+  - "C:\\openenclave\\prereqs\\nuget\\openssl\\build\\native\\lib\\v110\\x64\\Release\\static\\cdecl\\libeay32.lib"
+  - "C:\\openenclave\\prereqs\\nuget\\openssl\\build\\native\\lib\\v110\\x64\\Release\\static\\cdecl\\ssleay32.lib"
+  - "C:\\openenclave\\prereqs\\nuget\\zlib\\build\\native\\lib\\v110\\x64\\Release\\static\\stdcall\\zlib.lib"
+  - "C:\\openenclave\\prereqs\\nuget\\curl\\build\\native\\lib\\v110\\x64\\Release\\static\\libcurl.lib"
