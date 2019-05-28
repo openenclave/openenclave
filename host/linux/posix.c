@@ -18,6 +18,7 @@
 #include <sys/signal.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <sys/uio.h>
 #include <sys/utsname.h>
 #include <unistd.h>
 #include "../host/strings.h"
@@ -579,7 +580,7 @@ ssize_t oe_posix_recvv_ocall(
     {
         _relocate_iov_bases(iov, iovcnt, (ptrdiff_t)iov_buf);
 
-        size_recv = recvv((int)fd, (struct iovec*)iov, iovcnt);
+        size_recv = readv((int)fd, (struct iovec*)iov, iovcnt);
 
         _relocate_iov_bases(iov, iovcnt, -(ptrdiff_t)iov_buf);
     }
@@ -618,7 +619,7 @@ ssize_t oe_posix_sendv_ocall(
     }
 
     _relocate_iov_bases(iov, iovcnt, (ptrdiff_t)iov_buf);
-    size_sent = sendv((int)fd, (struct iovec*)iov, iovcnt);
+    size_sent = writev((int)fd, (struct iovec*)iov, iovcnt);
 
     ret = size_sent;
 
